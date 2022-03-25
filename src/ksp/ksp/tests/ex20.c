@@ -27,71 +27,71 @@ int main(int argc,char **args)
   KSP            ksp;
   MatNullSpace   nullsp;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   N    = (m+1)*(m+1); /* dimension of matrix */
   M    = m*m; /* number of elements */
   h    = 1.0/m;    /* mesh width */
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   /* Create stiffness matrix */
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&C));
-  CHKERRQ(MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,N,N));
-  CHKERRQ(MatSetFromOptions(C));
-  CHKERRQ(MatSetUp(C));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&C));
+  PetscCall(MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,N,N));
+  PetscCall(MatSetFromOptions(C));
+  PetscCall(MatSetUp(C));
   start = rank*(M/size) + ((M%size) < rank ? (M%size) : rank);
   end   = start + M/size + ((M%size) > rank);
 
   /* Assemble matrix */
-  CHKERRQ(FormElementStiffness(h*h,Ke));   /* element stiffness for Laplacian */
+  PetscCall(FormElementStiffness(h*h,Ke));   /* element stiffness for Laplacian */
   for (i=start; i<end; i++) {
     /* location of lower left corner of element */
     /* node numbers for the four corners of element */
     idx[0] = (m+1)*(i/m) + (i % m);
     idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
-    CHKERRQ(MatSetValues(C,4,idx,4,idx,Ke,ADD_VALUES));
+    PetscCall(MatSetValues(C,4,idx,4,idx,Ke,ADD_VALUES));
   }
-  CHKERRQ(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
 
   /* Create right-hand-side and solution vectors */
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&u));
-  CHKERRQ(VecSetSizes(u,PETSC_DECIDE,N));
-  CHKERRQ(VecSetFromOptions(u));
-  CHKERRQ(PetscObjectSetName((PetscObject)u,"Approx. Solution"));
-  CHKERRQ(VecDuplicate(u,&b));
-  CHKERRQ(PetscObjectSetName((PetscObject)b,"Right hand side"));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&u));
+  PetscCall(VecSetSizes(u,PETSC_DECIDE,N));
+  PetscCall(VecSetFromOptions(u));
+  PetscCall(PetscObjectSetName((PetscObject)u,"Approx. Solution"));
+  PetscCall(VecDuplicate(u,&b));
+  PetscCall(PetscObjectSetName((PetscObject)b,"Right hand side"));
 
-  CHKERRQ(VecSet(b,1.0));
-  CHKERRQ(VecSetValue(b,0,1.2,ADD_VALUES));
-  CHKERRQ(VecSet(u,0.0));
+  PetscCall(VecSet(b,1.0));
+  PetscCall(VecSetValue(b,0,1.2,ADD_VALUES));
+  PetscCall(VecSet(u,0.0));
 
   /* Solve linear system */
-  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
-  CHKERRQ(KSPSetOperators(ksp,C,C));
-  CHKERRQ(KSPSetFromOptions(ksp));
-  CHKERRQ(KSPSetInitialGuessNonzero(ksp,PETSC_TRUE));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPSetOperators(ksp,C,C));
+  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(KSPSetInitialGuessNonzero(ksp,PETSC_TRUE));
 
-  CHKERRQ(MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,NULL,&nullsp));
+  PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,NULL,&nullsp));
   /*
      The KSP solver will remove this nullspace from the solution at each iteration
   */
-  CHKERRQ(MatSetNullSpace(C,nullsp));
+  PetscCall(MatSetNullSpace(C,nullsp));
   /*
      The KSP solver will remove from the right hand side any portion in this nullspace, thus making the linear system consistent.
   */
-  CHKERRQ(MatSetTransposeNullSpace(C,nullsp));
-  CHKERRQ(MatNullSpaceDestroy(&nullsp));
+  PetscCall(MatSetTransposeNullSpace(C,nullsp));
+  PetscCall(MatNullSpaceDestroy(&nullsp));
 
-  CHKERRQ(KSPSolve(ksp,b,u));
+  PetscCall(KSPSolve(ksp,b,u));
 
   /* Free work space */
-  CHKERRQ(KSPDestroy(&ksp));
-  CHKERRQ(VecDestroy(&u));
-  CHKERRQ(VecDestroy(&b));
-  CHKERRQ(MatDestroy(&C));
-  CHKERRQ(PetscFinalize());
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(VecDestroy(&u));
+  PetscCall(VecDestroy(&b));
+  PetscCall(MatDestroy(&C));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

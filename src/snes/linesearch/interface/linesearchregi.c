@@ -22,12 +22,12 @@ PetscErrorCode SNESLineSearchRegisterAll(void)
   PetscFunctionBegin;
   if (SNESLineSearchRegisterAllCalled) PetscFunctionReturn(0);
   SNESLineSearchRegisterAllCalled = PETSC_TRUE;
-  CHKERRQ(SNESLineSearchRegister(SNESLINESEARCHSHELL,     SNESLineSearchCreate_Shell));
-  CHKERRQ(SNESLineSearchRegister(SNESLINESEARCHBASIC,     SNESLineSearchCreate_Basic));
-  CHKERRQ(SNESLineSearchRegister(SNESLINESEARCHL2,        SNESLineSearchCreate_L2));
-  CHKERRQ(SNESLineSearchRegister(SNESLINESEARCHBT,        SNESLineSearchCreate_BT));
-  CHKERRQ(SNESLineSearchRegister(SNESLINESEARCHNLEQERR,   SNESLineSearchCreate_NLEQERR));
-  CHKERRQ(SNESLineSearchRegister(SNESLINESEARCHCP,        SNESLineSearchCreate_CP));
-  CHKERRQ(SNESLineSearchRegister(SNESLINESEARCHNCGLINEAR, SNESLineSearchCreate_NCGLinear));
+  PetscCall(SNESLineSearchRegister(SNESLINESEARCHSHELL,     SNESLineSearchCreate_Shell));
+  PetscCall(SNESLineSearchRegister(SNESLINESEARCHBASIC,     SNESLineSearchCreate_Basic));
+  PetscCall(SNESLineSearchRegister(SNESLINESEARCHL2,        SNESLineSearchCreate_L2));
+  PetscCall(SNESLineSearchRegister(SNESLINESEARCHBT,        SNESLineSearchCreate_BT));
+  PetscCall(SNESLineSearchRegister(SNESLINESEARCHNLEQERR,   SNESLineSearchCreate_NLEQERR));
+  PetscCall(SNESLineSearchRegister(SNESLINESEARCHCP,        SNESLineSearchCreate_CP));
+  PetscCall(SNESLineSearchRegister(SNESLINESEARCHNCGLINEAR, SNESLineSearchCreate_NCGLinear));
   PetscFunctionReturn(0);
 }

@@ -9,20 +9,20 @@ int main(int argc,char **argv)
   PetscInt       ex,ey,ez,n[3],start[3],nExtra[3],iNext,iPrev,iCenter,d,round;
   PetscScalar    **cArrX,**cArrY,**cArrZ;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
-  CHKERRQ(DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_GHOSTED,DM_BOUNDARY_PERIODIC,4,3,2,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,1,1,DMSTAG_STENCIL_BOX,2,NULL,NULL,NULL,&dm));
-  CHKERRQ(DMSetFromOptions(dm));
-  CHKERRQ(DMSetUp(dm));
-  CHKERRQ(DMStagSetUniformCoordinatesProduct(dm,-1.0,0.0,-2.0,0.0,-3.0,0.0));
+  PetscCall(DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_GHOSTED,DM_BOUNDARY_PERIODIC,4,3,2,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,1,1,DMSTAG_STENCIL_BOX,2,NULL,NULL,NULL,&dm));
+  PetscCall(DMSetFromOptions(dm));
+  PetscCall(DMSetUp(dm));
+  PetscCall(DMStagSetUniformCoordinatesProduct(dm,-1.0,0.0,-2.0,0.0,-3.0,0.0));
 
-  CHKERRQ(DMStagGetCorners(dm,&start[0],&start[1],&start[2],&n[0],&n[1],&n[2],&nExtra[0],&nExtra[1],&nExtra[2]));
+  PetscCall(DMStagGetCorners(dm,&start[0],&start[1],&start[2],&n[0],&n[1],&n[2],&nExtra[0],&nExtra[1],&nExtra[2]));
 
   for (round=1; round<=2; ++round) {
-    CHKERRQ(DMStagGetProductCoordinateArrays(dm,&cArrX,&cArrY,&cArrZ));
-    CHKERRQ(DMStagGetProductCoordinateLocationSlot(dm,DMSTAG_LEFT,&iPrev));
-    CHKERRQ(DMStagGetProductCoordinateLocationSlot(dm,DMSTAG_RIGHT,&iNext));
-    CHKERRQ(DMStagGetProductCoordinateLocationSlot(dm,DMSTAG_ELEMENT,&iCenter));
+    PetscCall(DMStagGetProductCoordinateArrays(dm,&cArrX,&cArrY,&cArrZ));
+    PetscCall(DMStagGetProductCoordinateLocationSlot(dm,DMSTAG_LEFT,&iPrev));
+    PetscCall(DMStagGetProductCoordinateLocationSlot(dm,DMSTAG_RIGHT,&iNext));
+    PetscCall(DMStagGetProductCoordinateLocationSlot(dm,DMSTAG_ELEMENT,&iCenter));
     if (round == 1) {
       /* On first round, do a stretching operation */
       for (ex=start[0]; ex<start[0]+n[0]; ++ex) {
@@ -58,26 +58,26 @@ int main(int argc,char **argv)
         cArrZ[ez][iCenter] = 2.0;
       }
     }
-    CHKERRQ(DMStagRestoreProductCoordinateArrays(dm,&cArrX,&cArrY,&cArrZ));
+    PetscCall(DMStagRestoreProductCoordinateArrays(dm,&cArrX,&cArrY,&cArrZ));
 
     /* View the global coordinates, after explicitly calling a local-global scatter */
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"####### Round %D #######\n",round));
-    CHKERRQ(DMGetCoordinateDM(dm,&cdm));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"####### Round %D #######\n",round));
+    PetscCall(DMGetCoordinateDM(dm,&cdm));
     for (d=0; d<3; ++d) {
       DM subdm;
       Vec coor,coor_local;
 
-      CHKERRQ(DMProductGetDM(cdm,d,&subdm));
-      CHKERRQ(DMGetCoordinates(subdm,&coor));
-      CHKERRQ(DMGetCoordinatesLocal(subdm,&coor_local));
-      CHKERRQ(DMLocalToGlobal(subdm,coor_local,INSERT_VALUES,coor));
-      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Coordinates dim %D:\n",d));
-      CHKERRQ(VecView(coor,PETSC_VIEWER_STDOUT_WORLD));
+      PetscCall(DMProductGetDM(cdm,d,&subdm));
+      PetscCall(DMGetCoordinates(subdm,&coor));
+      PetscCall(DMGetCoordinatesLocal(subdm,&coor_local));
+      PetscCall(DMLocalToGlobal(subdm,coor_local,INSERT_VALUES,coor));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Coordinates dim %D:\n",d));
+      PetscCall(VecView(coor,PETSC_VIEWER_STDOUT_WORLD));
     }
   }
 
-  CHKERRQ(DMDestroy(&dm));
-  CHKERRQ(PetscFinalize());
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

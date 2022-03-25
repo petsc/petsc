@@ -11,10 +11,10 @@ PetscErrorCode  VecDuplicate_MPI_DA(Vec g,Vec *gg)
   PetscLayout    map;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetDM(g, &da));
-  CHKERRQ(DMCreateGlobalVector(da,gg));
-  CHKERRQ(VecGetLayout(g,&map));
-  CHKERRQ(VecSetLayout(*gg,map));
+  PetscCall(VecGetDM(g, &da));
+  PetscCall(DMCreateGlobalVector(da,gg));
+  PetscCall(VecGetLayout(g,&map));
+  PetscCall(VecSetLayout(*gg,map));
   PetscFunctionReturn(0);
 }
 
@@ -25,19 +25,19 @@ PetscErrorCode  DMCreateGlobalVector_DA(DM da,Vec *g)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(g,2);
-  CHKERRQ(VecCreate(PetscObjectComm((PetscObject)da),g));
-  CHKERRQ(VecSetSizes(*g,dd->Nlocal,PETSC_DETERMINE));
-  CHKERRQ(VecSetBlockSize(*g,dd->w));
-  CHKERRQ(VecSetType(*g,da->vectype));
+  PetscCall(VecCreate(PetscObjectComm((PetscObject)da),g));
+  PetscCall(VecSetSizes(*g,dd->Nlocal,PETSC_DETERMINE));
+  PetscCall(VecSetBlockSize(*g,dd->w));
+  PetscCall(VecSetType(*g,da->vectype));
   if (dd->Nlocal < da->bind_below) {
-    CHKERRQ(VecSetBindingPropagates(*g,PETSC_TRUE));
-    CHKERRQ(VecBindToCPU(*g,PETSC_TRUE));
+    PetscCall(VecSetBindingPropagates(*g,PETSC_TRUE));
+    PetscCall(VecBindToCPU(*g,PETSC_TRUE));
   }
-  CHKERRQ(VecSetDM(*g, da));
-  CHKERRQ(VecSetLocalToGlobalMapping(*g,da->ltogmap));
-  CHKERRQ(VecSetOperation(*g,VECOP_VIEW,(void (*)(void))VecView_MPI_DA));
-  CHKERRQ(VecSetOperation(*g,VECOP_LOAD,(void (*)(void))VecLoad_Default_DA));
-  CHKERRQ(VecSetOperation(*g,VECOP_DUPLICATE,(void (*)(void))VecDuplicate_MPI_DA));
+  PetscCall(VecSetDM(*g, da));
+  PetscCall(VecSetLocalToGlobalMapping(*g,da->ltogmap));
+  PetscCall(VecSetOperation(*g,VECOP_VIEW,(void (*)(void))VecView_MPI_DA));
+  PetscCall(VecSetOperation(*g,VECOP_LOAD,(void (*)(void))VecLoad_Default_DA));
+  PetscCall(VecSetOperation(*g,VECOP_DUPLICATE,(void (*)(void))VecDuplicate_MPI_DA));
   PetscFunctionReturn(0);
 }
 
@@ -76,19 +76,19 @@ PetscErrorCode  DMDACreateNaturalVector(DM da,Vec *g)
   PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidPointer(g,2);
   if (dd->natural) {
-    CHKERRQ(PetscObjectGetReference((PetscObject)dd->natural,&cnt));
+    PetscCall(PetscObjectGetReference((PetscObject)dd->natural,&cnt));
     if (cnt == 1) { /* object is not currently used by anyone */
-      CHKERRQ(PetscObjectReference((PetscObject)dd->natural));
+      PetscCall(PetscObjectReference((PetscObject)dd->natural));
       *g   = dd->natural;
     } else {
-      CHKERRQ(VecDuplicate(dd->natural,g));
+      PetscCall(VecDuplicate(dd->natural,g));
     }
   } else { /* create the first version of this guy */
-    CHKERRQ(VecCreate(PetscObjectComm((PetscObject)da),g));
-    CHKERRQ(VecSetSizes(*g,dd->Nlocal,PETSC_DETERMINE));
-    CHKERRQ(VecSetBlockSize(*g, dd->w));
-    CHKERRQ(VecSetType(*g,da->vectype));
-    CHKERRQ(PetscObjectReference((PetscObject)*g));
+    PetscCall(VecCreate(PetscObjectComm((PetscObject)da),g));
+    PetscCall(VecSetSizes(*g,dd->Nlocal,PETSC_DETERMINE));
+    PetscCall(VecSetBlockSize(*g, dd->w));
+    PetscCall(VecSetType(*g,da->vectype));
+    PetscCall(PetscObjectReference((PetscObject)*g));
 
     dd->natural = *g;
   }

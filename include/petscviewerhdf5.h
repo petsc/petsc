@@ -27,7 +27,7 @@ static inline PetscErrorCode PetscViewerHDF5PathIsRelative(const char path[], Pe
 
   PetscFunctionBegin;
   *has = emptyIsRelative;
-  CHKERRQ(PetscStrlen(path,&len));
+  PetscCall(PetscStrlen(path,&len));
   if (len) *has = (PetscBool) (path[0] != '/');
   PetscFunctionReturn(0);
 }

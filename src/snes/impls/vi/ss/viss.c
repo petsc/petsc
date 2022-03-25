@@ -18,8 +18,8 @@
 static PetscErrorCode SNESVIComputeMeritFunction(Vec phi, PetscReal *merit,PetscReal *phinorm)
 {
   PetscFunctionBegin;
-  CHKERRQ(VecNormBegin(phi,NORM_2,phinorm));
-  CHKERRQ(VecNormEnd(phi,NORM_2,phinorm));
+  PetscCall(VecNormBegin(phi,NORM_2,phinorm));
+  PetscCall(VecNormEnd(phi,NORM_2,phinorm));
 
   *merit = 0.5*(*phinorm)*(*phinorm);
   PetscFunctionReturn(0);
@@ -57,13 +57,13 @@ static PetscErrorCode SNESVIComputeFunction(SNES snes,Vec X,Vec phi,void *functx
   PetscInt          i,nlocal;
 
   PetscFunctionBegin;
-  CHKERRQ((*vi->computeuserfunction)(snes,X,F,functx));
-  CHKERRQ(VecGetLocalSize(X,&nlocal));
-  CHKERRQ(VecGetArrayRead(X,&x_arr));
-  CHKERRQ(VecGetArray(F,&f_arr));
-  CHKERRQ(VecGetArray(Xl,&l));
-  CHKERRQ(VecGetArray(Xu,&u));
-  CHKERRQ(VecGetArray(phi,&phi_arr));
+  PetscCall((*vi->computeuserfunction)(snes,X,F,functx));
+  PetscCall(VecGetLocalSize(X,&nlocal));
+  PetscCall(VecGetArrayRead(X,&x_arr));
+  PetscCall(VecGetArray(F,&f_arr));
+  PetscCall(VecGetArray(Xl,&l));
+  PetscCall(VecGetArray(Xu,&u));
+  PetscCall(VecGetArray(phi,&phi_arr));
 
   for (i=0; i < nlocal; i++) {
     if ((PetscRealPart(l[i]) <= PETSC_NINFINITY) && (PetscRealPart(u[i]) >= PETSC_INFINITY)) { /* no constraints on variable */
@@ -79,11 +79,11 @@ static PetscErrorCode SNESVIComputeFunction(SNES snes,Vec X,Vec phi,void *functx
     }
   }
 
-  CHKERRQ(VecRestoreArrayRead(X,&x_arr));
-  CHKERRQ(VecRestoreArray(F,&f_arr));
-  CHKERRQ(VecRestoreArray(Xl,&l));
-  CHKERRQ(VecRestoreArray(Xu,&u));
-  CHKERRQ(VecRestoreArray(phi,&phi_arr));
+  PetscCall(VecRestoreArrayRead(X,&x_arr));
+  PetscCall(VecRestoreArray(F,&f_arr));
+  PetscCall(VecRestoreArray(Xl,&l));
+  PetscCall(VecRestoreArray(Xu,&u));
+  PetscCall(VecRestoreArray(phi,&phi_arr));
   PetscFunctionReturn(0);
 }
 
@@ -97,13 +97,13 @@ PetscErrorCode SNESVIComputeBsubdifferentialVectors(SNES snes,Vec X,Vec F,Mat ja
   PetscInt       i,nlocal;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArray(X,&x));
-  CHKERRQ(VecGetArray(F,&f));
-  CHKERRQ(VecGetArray(snes->xl,&l));
-  CHKERRQ(VecGetArray(snes->xu,&u));
-  CHKERRQ(VecGetArray(Da,&da));
-  CHKERRQ(VecGetArray(Db,&db));
-  CHKERRQ(VecGetLocalSize(X,&nlocal));
+  PetscCall(VecGetArray(X,&x));
+  PetscCall(VecGetArray(F,&f));
+  PetscCall(VecGetArray(snes->xl,&l));
+  PetscCall(VecGetArray(snes->xu,&u));
+  PetscCall(VecGetArray(Da,&da));
+  PetscCall(VecGetArray(Db,&db));
+  PetscCall(VecGetLocalSize(X,&nlocal));
 
   for (i=0; i< nlocal; i++) {
     if ((PetscRealPart(l[i]) <= PETSC_NINFINITY) && (PetscRealPart(u[i]) >= PETSC_INFINITY)) { /* no constraints on variable */
@@ -128,12 +128,12 @@ PetscErrorCode SNESVIComputeBsubdifferentialVectors(SNES snes,Vec X,Vec F,Mat ja
     }
   }
 
-  CHKERRQ(VecRestoreArray(X,&x));
-  CHKERRQ(VecRestoreArray(F,&f));
-  CHKERRQ(VecRestoreArray(snes->xl,&l));
-  CHKERRQ(VecRestoreArray(snes->xu,&u));
-  CHKERRQ(VecRestoreArray(Da,&da));
-  CHKERRQ(VecRestoreArray(Db,&db));
+  PetscCall(VecRestoreArray(X,&x));
+  PetscCall(VecRestoreArray(F,&f));
+  PetscCall(VecRestoreArray(snes->xl,&l));
+  PetscCall(VecRestoreArray(snes->xu,&u));
+  PetscCall(VecRestoreArray(Da,&da));
+  PetscCall(VecRestoreArray(Db,&db));
   PetscFunctionReturn(0);
 }
 
@@ -160,11 +160,11 @@ PetscErrorCode SNESVIComputeJacobian(Mat jac, Mat jac_pre,Vec Da, Vec Db)
 
   /* Do row scaling  and add diagonal perturbation */
   PetscFunctionBegin;
-  CHKERRQ(MatDiagonalScale(jac,Db,NULL));
-  CHKERRQ(MatDiagonalSet(jac,Da,ADD_VALUES));
+  PetscCall(MatDiagonalScale(jac,Db,NULL));
+  PetscCall(MatDiagonalSet(jac,Da,ADD_VALUES));
   if (jac != jac_pre) { /* If jac and jac_pre are different */
-    CHKERRQ(MatDiagonalScale(jac_pre,Db,NULL));
-    CHKERRQ(MatDiagonalSet(jac_pre,Da,ADD_VALUES));
+    PetscCall(MatDiagonalScale(jac_pre,Db,NULL));
+    PetscCall(MatDiagonalSet(jac_pre,Da,ADD_VALUES));
   }
   PetscFunctionReturn(0);
 }
@@ -186,7 +186,7 @@ PetscErrorCode SNESVIComputeJacobian(Mat jac, Mat jac_pre,Vec Da, Vec Db)
 PetscErrorCode SNESVIComputeMeritFunctionGradient(Mat H, Vec phi, Vec dpsi)
 {
   PetscFunctionBegin;
-  CHKERRQ(MatMultTranspose(H,phi,dpsi));
+  PetscCall(MatMultTranspose(H,phi,dpsi));
   PetscFunctionReturn(0);
 }
 
@@ -219,8 +219,8 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
   DMSNES               sdm;
 
   PetscFunctionBegin;
-  CHKERRQ(SNESGetDM(snes,&dm));
-  CHKERRQ(DMGetDMSNES(dm,&sdm));
+  PetscCall(SNESGetDM(snes,&dm));
+  PetscCall(DMGetDMSNES(dm,&sdm));
 
   vi->computeuserfunction   = sdm->ops->computefunction;
   sdm->ops->computefunction = SNESVIComputeFunction;
@@ -234,33 +234,33 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
   F      = snes->vec_func;              /* residual vector */
   Y      = snes->work[0];               /* work vectors */
 
-  CHKERRQ(PetscObjectSAWsTakeAccess((PetscObject)snes));
+  PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
   snes->iter = 0;
   snes->norm = 0.0;
-  CHKERRQ(PetscObjectSAWsGrantAccess((PetscObject)snes));
+  PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
 
-  CHKERRQ(SNESVIProjectOntoBounds(snes,X));
-  CHKERRQ(SNESComputeFunction(snes,X,vi->phi));
+  PetscCall(SNESVIProjectOntoBounds(snes,X));
+  PetscCall(SNESComputeFunction(snes,X,vi->phi));
   if (snes->domainerror) {
     snes->reason              = SNES_DIVERGED_FUNCTION_DOMAIN;
     sdm->ops->computefunction = vi->computeuserfunction;
     PetscFunctionReturn(0);
   }
   /* Compute Merit function */
-  CHKERRQ(SNESVIComputeMeritFunction(vi->phi,&vi->merit,&vi->phinorm));
+  PetscCall(SNESVIComputeMeritFunction(vi->phi,&vi->merit,&vi->phinorm));
 
-  CHKERRQ(VecNormBegin(X,NORM_2,&xnorm));        /* xnorm <- ||x||  */
-  CHKERRQ(VecNormEnd(X,NORM_2,&xnorm));
+  PetscCall(VecNormBegin(X,NORM_2,&xnorm));        /* xnorm <- ||x||  */
+  PetscCall(VecNormEnd(X,NORM_2,&xnorm));
   SNESCheckFunctionNorm(snes,vi->merit);
 
-  CHKERRQ(PetscObjectSAWsTakeAccess((PetscObject)snes));
+  PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
   snes->norm = vi->phinorm;
-  CHKERRQ(PetscObjectSAWsGrantAccess((PetscObject)snes));
-  CHKERRQ(SNESLogConvergenceHistory(snes,vi->phinorm,0));
-  CHKERRQ(SNESMonitor(snes,0,vi->phinorm));
+  PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
+  PetscCall(SNESLogConvergenceHistory(snes,vi->phinorm,0));
+  PetscCall(SNESMonitor(snes,0,vi->phinorm));
 
   /* test convergence */
-  CHKERRQ((*snes->ops->converged)(snes,0,0.0,0.0,vi->phinorm,&snes->reason,snes->cnvP));
+  PetscCall((*snes->ops->converged)(snes,0,0.0,0.0,vi->phinorm,&snes->reason,snes->cnvP));
   if (snes->reason) {
     sdm->ops->computefunction = vi->computeuserfunction;
     PetscFunctionReturn(0);
@@ -270,57 +270,57 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
 
     /* Call general purpose update function */
     if (snes->ops->update) {
-      CHKERRQ((*snes->ops->update)(snes, snes->iter));
+      PetscCall((*snes->ops->update)(snes, snes->iter));
     }
 
     /* Solve J Y = Phi, where J is the semismooth jacobian */
 
     /* Get the jacobian -- note that the function must be the original function for snes_fd and snes_fd_color to work for this*/
     sdm->ops->computefunction = vi->computeuserfunction;
-    CHKERRQ(SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre));
+    PetscCall(SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre));
     SNESCheckJacobianDomainerror(snes);
     sdm->ops->computefunction = SNESVIComputeFunction;
 
     /* Get the diagonal shift and row scaling vectors */
-    CHKERRQ(SNESVIComputeBsubdifferentialVectors(snes,X,F,snes->jacobian,vi->Da,vi->Db));
+    PetscCall(SNESVIComputeBsubdifferentialVectors(snes,X,F,snes->jacobian,vi->Da,vi->Db));
     /* Compute the semismooth jacobian */
-    CHKERRQ(SNESVIComputeJacobian(snes->jacobian,snes->jacobian_pre,vi->Da,vi->Db));
+    PetscCall(SNESVIComputeJacobian(snes->jacobian,snes->jacobian_pre,vi->Da,vi->Db));
     /* Compute the merit function gradient */
-    CHKERRQ(SNESVIComputeMeritFunctionGradient(snes->jacobian,vi->phi,vi->dpsi));
-    CHKERRQ(KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre));
-    CHKERRQ(KSPSolve(snes->ksp,vi->phi,Y));
-    CHKERRQ(KSPGetConvergedReason(snes->ksp,&kspreason));
+    PetscCall(SNESVIComputeMeritFunctionGradient(snes->jacobian,vi->phi,vi->dpsi));
+    PetscCall(KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre));
+    PetscCall(KSPSolve(snes->ksp,vi->phi,Y));
+    PetscCall(KSPGetConvergedReason(snes->ksp,&kspreason));
 
     if (kspreason < 0) {
       if (++snes->numLinearSolveFailures >= snes->maxLinearSolveFailures) {
-        CHKERRQ(PetscInfo(snes,"iter=%D, number linear solve failures %D greater than current SNES allowed, stopping solve\n",snes->iter,snes->numLinearSolveFailures));
+        PetscCall(PetscInfo(snes,"iter=%D, number linear solve failures %D greater than current SNES allowed, stopping solve\n",snes->iter,snes->numLinearSolveFailures));
         snes->reason = SNES_DIVERGED_LINEAR_SOLVE;
         break;
       }
     }
-    CHKERRQ(KSPGetIterationNumber(snes->ksp,&lits));
+    PetscCall(KSPGetIterationNumber(snes->ksp,&lits));
     snes->linear_its += lits;
-    CHKERRQ(PetscInfo(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits));
+    PetscCall(PetscInfo(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits));
     /*
     if (snes->ops->precheck) {
       PetscBool changed_y = PETSC_FALSE;
-      CHKERRQ((*snes->ops->precheck)(snes,X,Y,snes->precheck,&changed_y));
+      PetscCall((*snes->ops->precheck)(snes,X,Y,snes->precheck,&changed_y));
     }
 
     if (PetscLogPrintInfo) {
-      CHKERRQ(SNESVICheckResidual_Private(snes,snes->jacobian,F,Y,G,W));
+      PetscCall(SNESVICheckResidual_Private(snes,snes->jacobian,F,Y,G,W));
     }
     */
     /* Compute a (scaled) negative update in the line search routine:
          Y <- X - lambda*Y
        and evaluate G = function(Y) (depends on the line search).
     */
-    CHKERRQ(VecCopy(Y,snes->vec_sol_update));
+    PetscCall(VecCopy(Y,snes->vec_sol_update));
     ynorm = 1; gnorm = vi->phinorm;
-    CHKERRQ(SNESLineSearchApply(snes->linesearch, X, vi->phi, &gnorm, Y));
-    CHKERRQ(SNESLineSearchGetReason(snes->linesearch, &lssucceed));
-    CHKERRQ(SNESLineSearchGetNorms(snes->linesearch, &xnorm, &gnorm, &ynorm));
-    CHKERRQ(PetscInfo(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n",(double)vi->phinorm,(double)gnorm,(double)ynorm,(int)lssucceed));
+    PetscCall(SNESLineSearchApply(snes->linesearch, X, vi->phi, &gnorm, Y));
+    PetscCall(SNESLineSearchGetReason(snes->linesearch, &lssucceed));
+    PetscCall(SNESLineSearchGetNorms(snes->linesearch, &xnorm, &gnorm, &ynorm));
+    PetscCall(PetscInfo(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n",(double)vi->phinorm,(double)gnorm,(double)ynorm,(int)lssucceed));
     if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
     if (snes->domainerror) {
       snes->reason              = SNES_DIVERGED_FUNCTION_DOMAIN;
@@ -331,7 +331,7 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
       if (++snes->numFailures >= snes->maxFailures) {
         PetscBool ismin;
         snes->reason = SNES_DIVERGED_LINE_SEARCH;
-        CHKERRQ(SNESVICheckLocalMin_Private(snes,snes->jacobian,vi->phi,X,gnorm,&ismin));
+        PetscCall(SNESVICheckLocalMin_Private(snes,snes->jacobian,vi->phi,X,gnorm,&ismin));
         if (ismin) snes->reason = SNES_DIVERGED_LOCAL_MIN;
         break;
       }
@@ -340,21 +340,21 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
     vi->phinorm = gnorm;
     vi->merit   = 0.5*vi->phinorm*vi->phinorm;
     /* Monitor convergence */
-    CHKERRQ(PetscObjectSAWsTakeAccess((PetscObject)snes));
+    PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
     snes->iter = i+1;
     snes->norm = vi->phinorm;
     snes->xnorm = xnorm;
     snes->ynorm = ynorm;
-    CHKERRQ(PetscObjectSAWsGrantAccess((PetscObject)snes));
-    CHKERRQ(SNESLogConvergenceHistory(snes,snes->norm,lits));
-    CHKERRQ(SNESMonitor(snes,snes->iter,snes->norm));
+    PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
+    PetscCall(SNESLogConvergenceHistory(snes,snes->norm,lits));
+    PetscCall(SNESMonitor(snes,snes->iter,snes->norm));
     /* Test for convergence, xnorm = || X || */
-    if (snes->ops->converged != SNESConvergedSkip) CHKERRQ(VecNorm(X,NORM_2,&xnorm));
-    CHKERRQ((*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,vi->phinorm,&snes->reason,snes->cnvP));
+    if (snes->ops->converged != SNESConvergedSkip) PetscCall(VecNorm(X,NORM_2,&xnorm));
+    PetscCall((*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,vi->phinorm,&snes->reason,snes->cnvP));
     if (snes->reason) break;
   }
   if (i == maxits) {
-    CHKERRQ(PetscInfo(snes,"Maximum number of iterations has been reached: %D\n",maxits));
+    PetscCall(PetscInfo(snes,"Maximum number of iterations has been reached: %D\n",maxits));
     if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
   }
   sdm->ops->computefunction = vi->computeuserfunction;
@@ -381,13 +381,13 @@ PetscErrorCode SNESSetUp_VINEWTONSSLS(SNES snes)
   SNES_VINEWTONSSLS *vi = (SNES_VINEWTONSSLS*) snes->data;
 
   PetscFunctionBegin;
-  CHKERRQ(SNESSetUp_VI(snes));
-  CHKERRQ(VecDuplicate(snes->vec_sol, &vi->dpsi));
-  CHKERRQ(VecDuplicate(snes->vec_sol, &vi->phi));
-  CHKERRQ(VecDuplicate(snes->vec_sol, &vi->Da));
-  CHKERRQ(VecDuplicate(snes->vec_sol, &vi->Db));
-  CHKERRQ(VecDuplicate(snes->vec_sol, &vi->z));
-  CHKERRQ(VecDuplicate(snes->vec_sol, &vi->t));
+  PetscCall(SNESSetUp_VI(snes));
+  PetscCall(VecDuplicate(snes->vec_sol, &vi->dpsi));
+  PetscCall(VecDuplicate(snes->vec_sol, &vi->phi));
+  PetscCall(VecDuplicate(snes->vec_sol, &vi->Da));
+  PetscCall(VecDuplicate(snes->vec_sol, &vi->Db));
+  PetscCall(VecDuplicate(snes->vec_sol, &vi->z));
+  PetscCall(VecDuplicate(snes->vec_sol, &vi->t));
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
@@ -396,13 +396,13 @@ PetscErrorCode SNESReset_VINEWTONSSLS(SNES snes)
   SNES_VINEWTONSSLS *vi = (SNES_VINEWTONSSLS*) snes->data;
 
   PetscFunctionBegin;
-  CHKERRQ(SNESReset_VI(snes));
-  CHKERRQ(VecDestroy(&vi->dpsi));
-  CHKERRQ(VecDestroy(&vi->phi));
-  CHKERRQ(VecDestroy(&vi->Da));
-  CHKERRQ(VecDestroy(&vi->Db));
-  CHKERRQ(VecDestroy(&vi->z));
-  CHKERRQ(VecDestroy(&vi->t));
+  PetscCall(SNESReset_VI(snes));
+  PetscCall(VecDestroy(&vi->dpsi));
+  PetscCall(VecDestroy(&vi->phi));
+  PetscCall(VecDestroy(&vi->Da));
+  PetscCall(VecDestroy(&vi->Db));
+  PetscCall(VecDestroy(&vi->z));
+  PetscCall(VecDestroy(&vi->t));
   PetscFunctionReturn(0);
 }
 
@@ -418,9 +418,9 @@ PetscErrorCode SNESReset_VINEWTONSSLS(SNES snes)
 static PetscErrorCode SNESSetFromOptions_VINEWTONSSLS(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   PetscFunctionBegin;
-  CHKERRQ(SNESSetFromOptions_VI(PetscOptionsObject,snes));
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"SNES semismooth method options"));
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(SNESSetFromOptions_VI(PetscOptionsObject,snes));
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"SNES semismooth method options"));
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -459,18 +459,18 @@ PETSC_EXTERN PetscErrorCode SNESCreate_VINEWTONSSLS(SNES snes)
   snes->usesksp = PETSC_TRUE;
   snes->usesnpc = PETSC_FALSE;
 
-  CHKERRQ(SNESGetLineSearch(snes, &linesearch));
+  PetscCall(SNESGetLineSearch(snes, &linesearch));
   if (!((PetscObject)linesearch)->type_name) {
-    CHKERRQ(SNESLineSearchSetType(linesearch, SNESLINESEARCHBT));
-    CHKERRQ(SNESLineSearchBTSetAlpha(linesearch, 0.0));
+    PetscCall(SNESLineSearchSetType(linesearch, SNESLINESEARCHBT));
+    PetscCall(SNESLineSearchBTSetAlpha(linesearch, 0.0));
   }
 
   snes->alwayscomputesfinalresidual = PETSC_FALSE;
 
-  CHKERRQ(PetscNewLog(snes,&vi));
+  PetscCall(PetscNewLog(snes,&vi));
   snes->data = (void*)vi;
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)snes,"SNESVISetVariableBounds_C",SNESVISetVariableBounds_VI));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)snes,"SNESVISetComputeVariableBounds_C",SNESVISetComputeVariableBounds_VI));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes,"SNESVISetVariableBounds_C",SNESVISetVariableBounds_VI));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes,"SNESVISetComputeVariableBounds_C",SNESVISetComputeVariableBounds_VI));
   PetscFunctionReturn(0);
 }

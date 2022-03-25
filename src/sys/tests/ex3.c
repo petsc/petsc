@@ -7,17 +7,17 @@ int CreateError(PetscReal x)
 {
   PetscFunctionBegin;
   x    = 1.0/x;
-  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"x = %g\n",(double)x));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"x = %g\n",(double)x));
   PetscFunctionReturn(0);
 }
 
 int main(int argc,char **argv)
 {
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"This is a contrived example to test floating pointing\n"));
-  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"It is not a true error.\n"));
-  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Run with -fp_trap to catch the floating point error\n"));
-  CHKERRQ(CreateError(0.0));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"This is a contrived example to test floating pointing\n"));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"It is not a true error.\n"));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"Run with -fp_trap to catch the floating point error\n"));
+  PetscCall(CreateError(0.0));
   return 0;
 }
 

@@ -79,17 +79,17 @@ int main(int argc,char **argv)
      Initialize program and set problem parameters
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
-  CHKERRQ(PetscOptionsCreate(&options));
-  CHKERRQ(PetscOptionsSetValue(options,"-ts_monitor","ascii"));
-  CHKERRQ(PetscOptionsSetValue(options,"-snes_monitor","ascii"));
-  CHKERRQ(PetscOptionsSetValue(options,"-ksp_monitor","ascii"));
+  PetscCall(PetscOptionsCreate(&options));
+  PetscCall(PetscOptionsSetValue(options,"-ts_monitor","ascii"));
+  PetscCall(PetscOptionsSetValue(options,"-snes_monitor","ascii"));
+  PetscCall(PetscOptionsSetValue(options,"-ksp_monitor","ascii"));
 
   appctx.comm = PETSC_COMM_WORLD;
   appctx.m    = 60;
 
-  CHKERRQ(PetscOptionsGetInt(options,NULL,"-M",&appctx.m,NULL));
+  PetscCall(PetscOptionsGetInt(options,NULL,"-M",&appctx.m,NULL));
 
   appctx.h    = 1.0/(appctx.m-1.0);
 
@@ -102,35 +102,35 @@ int main(int argc,char **argv)
      and to set up the ghost point communication pattern.  There are M
      total grid values spread equally among all the processors.
   */
-  CHKERRQ(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,appctx.m,1,1,NULL,&appctx.da));
-  CHKERRQ(PetscObjectSetOptions((PetscObject)appctx.da,options));
-  CHKERRQ(DMSetFromOptions(appctx.da));
-  CHKERRQ(DMSetUp(appctx.da));
+  PetscCall(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,appctx.m,1,1,NULL,&appctx.da));
+  PetscCall(PetscObjectSetOptions((PetscObject)appctx.da,options));
+  PetscCall(DMSetFromOptions(appctx.da));
+  PetscCall(DMSetUp(appctx.da));
 
   /*
      Extract global and local vectors from DMDA; we use these to store the
      approximate solution.  Then duplicate these for remaining vectors that
      have the same types.
   */
-  CHKERRQ(DMCreateGlobalVector(appctx.da,&u));
-  CHKERRQ(DMCreateLocalVector(appctx.da,&appctx.u_local));
+  PetscCall(DMCreateGlobalVector(appctx.da,&u));
+  PetscCall(DMCreateLocalVector(appctx.da,&appctx.u_local));
 
   /*
      Create local work vector for use in evaluating right-hand-side function;
      create global work vector for storing exact solution.
   */
-  CHKERRQ(VecDuplicate(appctx.u_local,&appctx.localwork));
-  CHKERRQ(VecDuplicate(u,&appctx.solution));
+  PetscCall(VecDuplicate(appctx.u_local,&appctx.localwork));
+  PetscCall(VecDuplicate(u,&appctx.solution));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context; set callback routine for
      right-hand-side function evaluation.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
-  CHKERRQ(PetscObjectSetOptions((PetscObject)ts,options));
-  CHKERRQ(TSSetProblemType(ts,TS_NONLINEAR));
-  CHKERRQ(TSSetRHSFunction(ts,NULL,RHSFunction,&appctx));
+  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
+  PetscCall(PetscObjectSetOptions((PetscObject)ts,options));
+  PetscCall(TSSetProblemType(ts,TS_NONLINEAR));
+  PetscCall(TSSetRHSFunction(ts,NULL,RHSFunction,&appctx));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      For nonlinear problems, the user can provide a Jacobian evaluation
@@ -139,19 +139,19 @@ int main(int argc,char **argv)
      Create matrix data structure; set Jacobian evaluation routine.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(PetscObjectSetOptions((PetscObject)A,options));
-  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,appctx.m,appctx.m));
-  CHKERRQ(MatSetFromOptions(A));
-  CHKERRQ(MatSetUp(A));
-  CHKERRQ(TSSetRHSJacobian(ts,A,A,RHSJacobian,&appctx));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(PetscObjectSetOptions((PetscObject)A,options));
+  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,appctx.m,appctx.m));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSetUp(A));
+  PetscCall(TSSetRHSJacobian(ts,A,A,RHSJacobian,&appctx));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solution vector and initial timestep
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   dt   = appctx.h/2.0;
-  CHKERRQ(TSSetTimeStep(ts,dt));
+  PetscCall(TSSetTimeStep(ts,dt));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize timestepping solver:
@@ -163,11 +163,11 @@ int main(int argc,char **argv)
      to override the defaults set by TSSetMaxSteps()/TSSetMaxTime().
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  CHKERRQ(TSSetType(ts,TSBEULER));
-  CHKERRQ(TSSetMaxSteps(ts,time_steps_max));
-  CHKERRQ(TSSetMaxTime(ts,time_total_max));
-  CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
-  CHKERRQ(TSSetFromOptions(ts));
+  PetscCall(TSSetType(ts,TSBEULER));
+  PetscCall(TSSetMaxSteps(ts,time_steps_max));
+  PetscCall(TSSetMaxTime(ts,time_total_max));
+  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
+  PetscCall(TSSetFromOptions(ts));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve the problem
@@ -176,29 +176,29 @@ int main(int argc,char **argv)
   /*
      Evaluate initial conditions
   */
-  CHKERRQ(InitialConditions(u,&appctx));
+  PetscCall(InitialConditions(u,&appctx));
 
   /*
      Run the timestepping solver
   */
-  CHKERRQ(TSSolve(ts,u));
+  PetscCall(TSSolve(ts,u));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  CHKERRQ(PetscObjectGetOptions((PetscObject)ts,&optionscopy));
+  PetscCall(PetscObjectGetOptions((PetscObject)ts,&optionscopy));
   PetscCheck(options == optionscopy,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"PetscObjectGetOptions() failed");
 
-  CHKERRQ(TSDestroy(&ts));
-  CHKERRQ(VecDestroy(&u));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(DMDestroy(&appctx.da));
-  CHKERRQ(VecDestroy(&appctx.localwork));
-  CHKERRQ(VecDestroy(&appctx.solution));
-  CHKERRQ(VecDestroy(&appctx.u_local));
-  CHKERRQ(PetscOptionsDestroy(&options));
+  PetscCall(TSDestroy(&ts));
+  PetscCall(VecDestroy(&u));
+  PetscCall(MatDestroy(&A));
+  PetscCall(DMDestroy(&appctx.da));
+  PetscCall(VecDestroy(&appctx.localwork));
+  PetscCall(VecDestroy(&appctx.solution));
+  PetscCall(VecDestroy(&appctx.u_local));
+  PetscCall(PetscOptionsDestroy(&options));
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine
@@ -206,7 +206,7 @@ int main(int argc,char **argv)
        - provides summary and diagnostic information if certain runtime
          options are chosen (e.g., -log_view).
   */
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 /* --------------------------------------------------------------------- */
@@ -229,7 +229,7 @@ PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
      Determine starting point of each processor's range of
      grid values.
   */
-  CHKERRQ(VecGetOwnershipRange(u,&mybase,&myend));
+  PetscCall(VecGetOwnershipRange(u,&mybase,&myend));
 
   /*
     Get a pointer to vector data.
@@ -240,7 +240,7 @@ PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
     - Note that the Fortran interface to VecGetArray() differs from the
       C version.  See the users manual for details.
   */
-  CHKERRQ(VecGetArray(u,&u_localptr));
+  PetscCall(VecGetArray(u,&u_localptr));
 
   /*
      We initialize the solution array by simply writing the solution
@@ -255,7 +255,7 @@ PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
   /*
      Restore vector
   */
-  CHKERRQ(VecRestoreArray(u,&u_localptr));
+  PetscCall(VecRestoreArray(u,&u_localptr));
 
   return 0;
 }
@@ -280,12 +280,12 @@ PetscErrorCode ExactSolution(PetscReal t,Vec solution,AppCtx *appctx)
      Determine starting and ending points of each processor's
      range of grid values
   */
-  CHKERRQ(VecGetOwnershipRange(solution,&mybase,&myend));
+  PetscCall(VecGetOwnershipRange(solution,&mybase,&myend));
 
   /*
      Get a pointer to vector data.
   */
-  CHKERRQ(VecGetArray(solution,&s_localptr));
+  PetscCall(VecGetArray(solution,&s_localptr));
 
   /*
      Simply write the solution directly into the array locations.
@@ -299,7 +299,7 @@ PetscErrorCode ExactSolution(PetscReal t,Vec solution,AppCtx *appctx)
   /*
      Restore vector
   */
-  CHKERRQ(VecRestoreArray(solution,&s_localptr));
+  PetscCall(VecRestoreArray(solution,&s_localptr));
   return 0;
 }
 /* --------------------------------------------------------------------- */
@@ -339,25 +339,25 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec global_in,Vec global_out,void *
      By placing code between these two statements, computations can be
      done while messages are in transition.
   */
-  CHKERRQ(DMGlobalToLocalBegin(da,global_in,INSERT_VALUES,local_in));
-  CHKERRQ(DMGlobalToLocalEnd(da,global_in,INSERT_VALUES,local_in));
+  PetscCall(DMGlobalToLocalBegin(da,global_in,INSERT_VALUES,local_in));
+  PetscCall(DMGlobalToLocalEnd(da,global_in,INSERT_VALUES,local_in));
 
   /*
       Access directly the values in our local INPUT work array
   */
-  CHKERRQ(VecGetArrayRead(local_in,&localptr));
+  PetscCall(VecGetArrayRead(local_in,&localptr));
 
   /*
       Access directly the values in our local OUTPUT work array
   */
-  CHKERRQ(VecGetArray(localwork,&copyptr));
+  PetscCall(VecGetArray(localwork,&copyptr));
 
   sc = 1.0/(appctx->h*appctx->h*2.0*(1.0+t)*(1.0+t));
 
   /*
       Evaluate our function on the nodes owned by this processor
   */
-  CHKERRQ(VecGetLocalSize(local_in,&localsize));
+  PetscCall(VecGetLocalSize(local_in,&localsize));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Compute entries for the locally owned part
@@ -372,8 +372,8 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec global_in,Vec global_out,void *
      In our case, u(t,0) = t + 1, so that u_{t}(t,0) = 1
              and  u(t,1) = 2t+ 2, so that u_{t}(t,1) = 2
   */
-  CHKERRMPI(MPI_Comm_rank(appctx->comm,&rank));
-  CHKERRMPI(MPI_Comm_size(appctx->comm,&size));
+  PetscCallMPI(MPI_Comm_rank(appctx->comm,&rank));
+  PetscCallMPI(MPI_Comm_size(appctx->comm,&size));
   if (rank == 0)          copyptr[0]           = 1.0;
   if (rank == size-1) copyptr[localsize-1] = 2.0;
 
@@ -386,15 +386,15 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec global_in,Vec global_out,void *
   /*
      Restore vectors
   */
-  CHKERRQ(VecRestoreArrayRead(local_in,&localptr));
-  CHKERRQ(VecRestoreArray(localwork,&copyptr));
+  PetscCall(VecRestoreArrayRead(local_in,&localptr));
+  PetscCall(VecRestoreArray(localwork,&copyptr));
 
   /*
      Insert values from the local OUTPUT vector into the global
      output vector
   */
-  CHKERRQ(DMLocalToGlobalBegin(da,localwork,INSERT_VALUES,global_out));
-  CHKERRQ(DMLocalToGlobalEnd(da,localwork,INSERT_VALUES,global_out));
+  PetscCall(DMLocalToGlobalBegin(da,localwork,INSERT_VALUES,global_out));
+  PetscCall(DMLocalToGlobalEnd(da,localwork,INSERT_VALUES,global_out));
 
   return 0;
 }
@@ -445,18 +445,18 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat AA,Mat BB,void *c
      By placing code between these two statements, computations can be
      done while messages are in transition.
   */
-  CHKERRQ(DMGlobalToLocalBegin(da,global_in,INSERT_VALUES,local_in));
-  CHKERRQ(DMGlobalToLocalEnd(da,global_in,INSERT_VALUES,local_in));
+  PetscCall(DMGlobalToLocalBegin(da,global_in,INSERT_VALUES,local_in));
+  PetscCall(DMGlobalToLocalEnd(da,global_in,INSERT_VALUES,local_in));
 
   /*
      Get pointer to vector data
   */
-  CHKERRQ(VecGetArrayRead(local_in,&localptr));
+  PetscCall(VecGetArrayRead(local_in,&localptr));
 
   /*
      Get starting and ending locally owned rows of the matrix
   */
-  CHKERRQ(MatGetOwnershipRange(BB,&mstarts,&mends));
+  PetscCall(MatGetOwnershipRange(BB,&mstarts,&mends));
   mstart = mstarts; mend = mends;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -476,13 +476,13 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat AA,Mat BB,void *c
   */
   if (mstart == 0) {
     v[0] = 0.0;
-    CHKERRQ(MatSetValues(BB,1,&mstart,1,&mstart,v,INSERT_VALUES));
+    PetscCall(MatSetValues(BB,1,&mstart,1,&mstart,v,INSERT_VALUES));
     mstart++;
   }
   if (mend == appctx->m) {
     mend--;
     v[0] = 0.0;
-    CHKERRQ(MatSetValues(BB,1,&mend,1,&mend,v,INSERT_VALUES));
+    PetscCall(MatSetValues(BB,1,&mend,1,&mend,v,INSERT_VALUES));
   }
 
   /*
@@ -496,13 +496,13 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat AA,Mat BB,void *c
     v[0]   = sc*localptr[is];
     v[1]   = sc*(localptr[is+1] + localptr[is-1] - 4.0*localptr[is]);
     v[2]   = sc*localptr[is];
-    CHKERRQ(MatSetValues(BB,1,&i,3,idx,v,INSERT_VALUES));
+    PetscCall(MatSetValues(BB,1,&i,3,idx,v,INSERT_VALUES));
   }
 
   /*
      Restore vector
   */
-  CHKERRQ(VecRestoreArrayRead(local_in,&localptr));
+  PetscCall(VecRestoreArrayRead(local_in,&localptr));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Complete the matrix assembly process and set some options
@@ -513,18 +513,18 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat AA,Mat BB,void *c
      Computations can be done while messages are in transition
      by placing code between these two statements.
   */
-  CHKERRQ(MatAssemblyBegin(BB,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(BB,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(BB,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(BB,MAT_FINAL_ASSEMBLY));
   if (BB != AA) {
-    CHKERRQ(MatAssemblyBegin(AA,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(AA,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyBegin(AA,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(AA,MAT_FINAL_ASSEMBLY));
   }
 
   /*
      Set and option to indicate that we will never add a new nonzero location
      to the matrix. If we do, it will generate an error.
   */
-  CHKERRQ(MatSetOption(BB,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE));
+  PetscCall(MatSetOption(BB,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE));
 
   return 0;
 }

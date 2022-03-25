@@ -16,40 +16,40 @@ int main(int argc,char **args)
   PetscInt       M = 5, N = 7;
   PetscBool      flg;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&M,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&N,NULL));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&M,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&N,NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          Create the sparse matrix
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,N));
-  CHKERRQ(MatSetOptionsPrefix(A,"A_"));
-  CHKERRQ(MatSetFromOptions(A));
-  CHKERRQ(MatSeqAIJSetPreallocation(A,5,NULL));
-  CHKERRQ(MatMPIAIJSetPreallocation(A,5,NULL,5,NULL));
-  CHKERRQ(MatSetUp(A));
-  CHKERRQ(MatSetRandom(A,NULL));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,N));
+  PetscCall(MatSetOptionsPrefix(A,"A_"));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSeqAIJSetPreallocation(A,5,NULL));
+  PetscCall(MatMPIAIJSetPreallocation(A,5,NULL,5,NULL));
+  PetscCall(MatSetUp(A));
+  PetscCall(MatSetRandom(A,NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          Create the dense matrices
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&U));
-  CHKERRQ(MatSetSizes(U,PETSC_DECIDE,PETSC_DECIDE,M,3));
-  CHKERRQ(MatSetType(U,MATDENSE));
-  CHKERRQ(MatSetOptionsPrefix(U,"U_"));
-  CHKERRQ(MatSetFromOptions(U));
-  CHKERRQ(MatSetUp(U));
-  CHKERRQ(MatSetRandom(U,NULL));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&U));
+  PetscCall(MatSetSizes(U,PETSC_DECIDE,PETSC_DECIDE,M,3));
+  PetscCall(MatSetType(U,MATDENSE));
+  PetscCall(MatSetOptionsPrefix(U,"U_"));
+  PetscCall(MatSetFromOptions(U));
+  PetscCall(MatSetUp(U));
+  PetscCall(MatSetRandom(U,NULL));
 
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&V));
-  CHKERRQ(MatSetSizes(V,PETSC_DECIDE,PETSC_DECIDE,N,3));
-  CHKERRQ(MatSetType(V,MATDENSE));
-  CHKERRQ(MatSetOptionsPrefix(V,"V_"));
-  CHKERRQ(MatSetFromOptions(V));
-  CHKERRQ(MatSetUp(V));
-  CHKERRQ(MatSetRandom(V,NULL));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&V));
+  PetscCall(MatSetSizes(V,PETSC_DECIDE,PETSC_DECIDE,N,3));
+  PetscCall(MatSetType(V,MATDENSE));
+  PetscCall(MatSetOptionsPrefix(V,"V_"));
+  PetscCall(MatSetFromOptions(V));
+  PetscCall(MatSetUp(V));
+  PetscCall(MatSetRandom(V,NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          Create a vector to hold the diagonal of C
@@ -57,62 +57,62 @@ int main(int argc,char **args)
          It is user responsibility to ensure the data in the vector
          is consistent across processors
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-use_c",&flg));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-use_c",&flg));
   if (flg) {
-    CHKERRQ(VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,3,&c));
-    CHKERRQ(VecSetRandom(c,NULL));
+    PetscCall(VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,3,&c));
+    PetscCall(VecSetRandom(c,NULL));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          Create low rank correction matrix
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-low_rank",&flg));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-low_rank",&flg));
   if (flg) {
     /* create a low-rank matrix, with no A-matrix */
-    CHKERRQ(MatCreateLRC(NULL,U,c,V,&LR));
-    CHKERRQ(MatDestroy(&A));
+    PetscCall(MatCreateLRC(NULL,U,c,V,&LR));
+    PetscCall(MatDestroy(&A));
   } else {
-    CHKERRQ(MatCreateLRC(A,U,c,V,&LR));
+    PetscCall(MatCreateLRC(A,U,c,V,&LR));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          Create the low rank correction matrix explicitly to check for
          correctness
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(MatHermitianTranspose(V,MAT_INITIAL_MATRIX,&X));
-  CHKERRQ(MatDiagonalScale(X,c,NULL));
-  CHKERRQ(MatMatMult(U,X,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&LRe));
-  CHKERRQ(MatDestroy(&X));
+  PetscCall(MatHermitianTranspose(V,MAT_INITIAL_MATRIX,&X));
+  PetscCall(MatDiagonalScale(X,c,NULL));
+  PetscCall(MatMatMult(U,X,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&LRe));
+  PetscCall(MatDestroy(&X));
   if (A) {
-    CHKERRQ(MatAYPX(LRe,1.0,A,DIFFERENT_NONZERO_PATTERN));
+    PetscCall(MatAYPX(LRe,1.0,A,DIFFERENT_NONZERO_PATTERN));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          Create test vectors
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(MatCreateVecs(LR,&x,&b));
-  CHKERRQ(VecSetRandom(x,NULL));
-  CHKERRQ(MatMult(LR,x,b));
-  CHKERRQ(MatMultTranspose(LR,b,x));
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&b));
+  PetscCall(MatCreateVecs(LR,&x,&b));
+  PetscCall(VecSetRandom(x,NULL));
+  PetscCall(MatMult(LR,x,b));
+  PetscCall(MatMultTranspose(LR,b,x));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&b));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          Check correctness
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(MatMultEqual(LR,LRe,10,&flg));
-  if (!flg) CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Error in MatMult\n"));
+  PetscCall(MatMultEqual(LR,LRe,10,&flg));
+  if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error in MatMult\n"));
 #if !defined(PETSC_USE_COMPLEX)
-  CHKERRQ(MatMultHermitianTransposeEqual(LR,LRe,10,&flg));
-  if (!flg) CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Error in MatMultTranspose\n"));
+  PetscCall(MatMultHermitianTransposeEqual(LR,LRe,10,&flg));
+  if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error in MatMultTranspose\n"));
 #endif
 
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(MatDestroy(&LRe));
-  CHKERRQ(MatDestroy(&U));
-  CHKERRQ(MatDestroy(&V));
-  CHKERRQ(VecDestroy(&c));
-  CHKERRQ(MatDestroy(&LR));
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&LRe));
+  PetscCall(MatDestroy(&U));
+  PetscCall(MatDestroy(&V));
+  PetscCall(VecDestroy(&c));
+  PetscCall(MatDestroy(&LR));
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine
@@ -120,7 +120,7 @@ int main(int argc,char **args)
        - provides summary and diagnostic information if certain runtime
          options are chosen (e.g., -log_view).
   */
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

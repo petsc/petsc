@@ -35,25 +35,25 @@ PetscErrorCode PetscAdolcComputeRHSJacobian(PetscInt tag,Mat A,const PetscScalar
   PetscScalar    **J;
 
   PetscFunctionBegin;
-  CHKERRQ(AdolcMalloc2(m,p,&J));
+  PetscCall(AdolcMalloc2(m,p,&J));
   if (adctx->Seed)
     fov_forward(tag,m,n,p,u_vec,adctx->Seed,NULL,J);
   else
     jacobian(tag,m,n,u_vec,J);
   if (adctx->sparse) {
-    CHKERRQ(RecoverJacobian(A,INSERT_VALUES,m,p,adctx->Rec,J,NULL));
+    PetscCall(RecoverJacobian(A,INSERT_VALUES,m,p,adctx->Rec,J,NULL));
   } else {
     for (i=0; i<m; i++) {
       for (j=0; j<n; j++) {
         if (fabs(J[i][j]) > 1.e-16) {
-          CHKERRQ(MatSetValues(A,1,&i,1,&j,&J[i][j],INSERT_VALUES));
+          PetscCall(MatSetValues(A,1,&i,1,&j,&J[i][j],INSERT_VALUES));
         }
       }
     }
   }
-  CHKERRQ(AdolcFree2(J));
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(AdolcFree2(J));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
@@ -77,25 +77,25 @@ PetscErrorCode PetscAdolcComputeRHSJacobianLocal(PetscInt tag,Mat A,const PetscS
   PetscScalar    **J;
 
   PetscFunctionBegin;
-  CHKERRQ(AdolcMalloc2(m,p,&J));
+  PetscCall(AdolcMalloc2(m,p,&J));
   if (adctx->Seed)
     fov_forward(tag,m,n,p,u_vec,adctx->Seed,NULL,J);
   else
     jacobian(tag,m,n,u_vec,J);
   if (adctx->sparse) {
-    CHKERRQ(RecoverJacobianLocal(A,INSERT_VALUES,m,p,adctx->Rec,J,NULL));
+    PetscCall(RecoverJacobianLocal(A,INSERT_VALUES,m,p,adctx->Rec,J,NULL));
   } else {
     for (i=0; i<m; i++) {
       for (j=0; j<n; j++) {
         if (fabs(J[i][j]) > 1.e-16) {
-          CHKERRQ(MatSetValuesLocal(A,1,&i,1,&j,&J[i][j],INSERT_VALUES));
+          PetscCall(MatSetValuesLocal(A,1,&i,1,&j,&J[i][j],INSERT_VALUES));
         }
       }
     }
   }
-  CHKERRQ(AdolcFree2(J));
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(AdolcFree2(J));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
@@ -120,27 +120,27 @@ PetscErrorCode PetscAdolcComputeIJacobian(PetscInt tag1,PetscInt tag2,Mat A,cons
   PetscScalar    **J;
 
   PetscFunctionBegin;
-  CHKERRQ(AdolcMalloc2(m,p,&J));
+  PetscCall(AdolcMalloc2(m,p,&J));
 
   /* dF/dx part */
   if (adctx->Seed)
     fov_forward(tag1,m,n,p,u_vec,adctx->Seed,NULL,J);
   else
     jacobian(tag1,m,n,u_vec,J);
-  CHKERRQ(MatZeroEntries(A));
+  PetscCall(MatZeroEntries(A));
   if (adctx->sparse) {
-    CHKERRQ(RecoverJacobian(A,INSERT_VALUES,m,p,adctx->Rec,J,NULL));
+    PetscCall(RecoverJacobian(A,INSERT_VALUES,m,p,adctx->Rec,J,NULL));
   } else {
     for (i=0; i<m; i++) {
       for (j=0; j<n; j++) {
         if (fabs(J[i][j]) > 1.e-16) {
-          CHKERRQ(MatSetValues(A,1,&i,1,&j,&J[i][j],INSERT_VALUES));
+          PetscCall(MatSetValues(A,1,&i,1,&j,&J[i][j],INSERT_VALUES));
         }
       }
     }
   }
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
   /* a * dF/d(xdot) part */
   if (adctx->Seed)
@@ -148,20 +148,20 @@ PetscErrorCode PetscAdolcComputeIJacobian(PetscInt tag1,PetscInt tag2,Mat A,cons
   else
     jacobian(tag2,m,n,u_vec,J);
   if (adctx->sparse) {
-    CHKERRQ(RecoverJacobian(A,ADD_VALUES,m,p,adctx->Rec,J,&a));
+    PetscCall(RecoverJacobian(A,ADD_VALUES,m,p,adctx->Rec,J,&a));
   } else {
     for (i=0; i<m; i++) {
       for (j=0; j<n; j++) {
         if (fabs(J[i][j]) > 1.e-16) {
           J[i][j] *= a;
-          CHKERRQ(MatSetValues(A,1,&i,1,&j,&J[i][j],ADD_VALUES));
+          PetscCall(MatSetValues(A,1,&i,1,&j,&J[i][j],ADD_VALUES));
         }
       }
     }
   }
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(AdolcFree2(J));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(AdolcFree2(J));
   PetscFunctionReturn(0);
 }
 
@@ -186,31 +186,31 @@ PetscErrorCode PetscAdolcComputeIJacobianIDMass(PetscInt tag,Mat A,PetscScalar *
   PetscScalar    **J;
 
   PetscFunctionBegin;
-  CHKERRQ(AdolcMalloc2(m,p,&J));
+  PetscCall(AdolcMalloc2(m,p,&J));
 
   /* dF/dx part */
   if (adctx->Seed)
     fov_forward(tag,m,n,p,u_vec,adctx->Seed,NULL,J);
   else
     jacobian(tag,m,n,u_vec,J);
-  CHKERRQ(MatZeroEntries(A));
+  PetscCall(MatZeroEntries(A));
   if (adctx->sparse) {
-    CHKERRQ(RecoverJacobian(A,INSERT_VALUES,m,p,adctx->Rec,J,NULL));
+    PetscCall(RecoverJacobian(A,INSERT_VALUES,m,p,adctx->Rec,J,NULL));
   } else {
     for (i=0; i<m; i++) {
       for (j=0; j<n; j++) {
         if (fabs(J[i][j]) > 1.e-16) {
-          CHKERRQ(MatSetValues(A,1,&i,1,&j,&J[i][j],INSERT_VALUES));
+          PetscCall(MatSetValues(A,1,&i,1,&j,&J[i][j],INSERT_VALUES));
         }
       }
     }
   }
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(AdolcFree2(J));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(AdolcFree2(J));
 
   /* a * dF/d(xdot) part */
-  CHKERRQ(MatShift(A,a));
+  PetscCall(MatShift(A,a));
   PetscFunctionReturn(0);
 }
 
@@ -235,7 +235,7 @@ PetscErrorCode PetscAdolcComputeIJacobianLocal(PetscInt tag1,PetscInt tag2,Mat A
   PetscScalar    **J;
 
   PetscFunctionBegin;
-  CHKERRQ(AdolcMalloc2(m,p,&J));
+  PetscCall(AdolcMalloc2(m,p,&J));
 
   /* dF/dx part */
   if (adctx->Seed)
@@ -243,18 +243,18 @@ PetscErrorCode PetscAdolcComputeIJacobianLocal(PetscInt tag1,PetscInt tag2,Mat A
   else
     jacobian(tag1,m,n,u_vec,J);
   if (adctx->sparse) {
-    CHKERRQ(RecoverJacobianLocal(A,INSERT_VALUES,m,p,adctx->Rec,J,NULL));
+    PetscCall(RecoverJacobianLocal(A,INSERT_VALUES,m,p,adctx->Rec,J,NULL));
   } else {
     for (i=0; i<m; i++) {
       for (j=0; j<n; j++) {
         if (fabs(J[i][j]) > 1.e-16) {
-          CHKERRQ(MatSetValuesLocal(A,1,&i,1,&j,&J[i][j],INSERT_VALUES));
+          PetscCall(MatSetValuesLocal(A,1,&i,1,&j,&J[i][j],INSERT_VALUES));
         }
       }
     }
   }
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
   /* a * dF/d(xdot) part */
   if (adctx->Seed)
@@ -262,20 +262,20 @@ PetscErrorCode PetscAdolcComputeIJacobianLocal(PetscInt tag1,PetscInt tag2,Mat A
   else
     jacobian(tag2,m,n,u_vec,J);
   if (adctx->sparse) {
-    CHKERRQ(RecoverJacobianLocal(A,ADD_VALUES,m,p,adctx->Rec,J,&a));
+    PetscCall(RecoverJacobianLocal(A,ADD_VALUES,m,p,adctx->Rec,J,&a));
   } else {
     for (i=0; i<m; i++) {
       for (j=0; j<n; j++) {
         if (fabs(J[i][j]) > 1.e-16) {
           J[i][j] *= a;
-          CHKERRQ(MatSetValuesLocal(A,1,&i,1,&j,&J[i][j],ADD_VALUES));
+          PetscCall(MatSetValuesLocal(A,1,&i,1,&j,&J[i][j],ADD_VALUES));
         }
       }
     }
   }
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(AdolcFree2(J));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(AdolcFree2(J));
   PetscFunctionReturn(0);
 }
 
@@ -300,7 +300,7 @@ PetscErrorCode PetscAdolcComputeIJacobianLocalIDMass(PetscInt tag,Mat A,const Pe
   PetscScalar    **J;
 
   PetscFunctionBegin;
-  CHKERRQ(AdolcMalloc2(m,p,&J));
+  PetscCall(AdolcMalloc2(m,p,&J));
 
   /* dF/dx part */
   if (adctx->Seed)
@@ -308,22 +308,22 @@ PetscErrorCode PetscAdolcComputeIJacobianLocalIDMass(PetscInt tag,Mat A,const Pe
   else
     jacobian(tag,m,n,u_vec,J);
   if (adctx->sparse) {
-    CHKERRQ(RecoverJacobianLocal(A,INSERT_VALUES,m,p,adctx->Rec,J,NULL));
+    PetscCall(RecoverJacobianLocal(A,INSERT_VALUES,m,p,adctx->Rec,J,NULL));
   } else {
     for (i=0; i<m; i++) {
       for (j=0; j<n; j++) {
         if (fabs(J[i][j]) > 1.e-16) {
-          CHKERRQ(MatSetValuesLocal(A,1,&i,1,&j,&J[i][j],INSERT_VALUES));
+          PetscCall(MatSetValuesLocal(A,1,&i,1,&j,&J[i][j],INSERT_VALUES));
         }
       }
     }
   }
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(AdolcFree2(J));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(AdolcFree2(J));
 
   /* a * dF/d(xdot) part */
-  CHKERRQ(MatShift(A,a));
+  PetscCall(MatShift(A,a));
   PetscFunctionReturn(0);
 }
 
@@ -352,29 +352,29 @@ PetscErrorCode PetscAdolcComputeRHSJacobianP(PetscInt tag,Mat A,const PetscScala
   PetscFunctionBegin;
 
   /* Allocate memory and concatenate independent variable values with parameter */
-  CHKERRQ(AdolcMalloc2(m,p,&J));
-  CHKERRQ(PetscMalloc1(n+p,&concat));
-  CHKERRQ(AdolcMalloc2(n+p,p,&S));
-  CHKERRQ(Subidentity(p,n,S));
+  PetscCall(AdolcMalloc2(m,p,&J));
+  PetscCall(PetscMalloc1(n+p,&concat));
+  PetscCall(AdolcMalloc2(n+p,p,&S));
+  PetscCall(Subidentity(p,n,S));
   for (i=0; i<n; i++) concat[i] = u_vec[i];
   for (i=0; i<p; i++) concat[n+i] = params[i];
 
   /* Propagate the appropriate seed matrix through the forward mode of AD */
   fov_forward(tag,m,n+p,p,concat,S,NULL,J);
-  CHKERRQ(AdolcFree2(S));
-  CHKERRQ(PetscFree(concat));
+  PetscCall(AdolcFree2(S));
+  PetscCall(PetscFree(concat));
 
   /* Set matrix values */
   for (i=0; i<m; i++) {
     for (j=0; j<p; j++) {
       if (fabs(J[i][j]) > 1.e-16) {
-        CHKERRQ(MatSetValues(A,1,&i,1,&j,&J[i][j],INSERT_VALUES));
+        PetscCall(MatSetValues(A,1,&i,1,&j,&J[i][j],INSERT_VALUES));
       }
     }
   }
-  CHKERRQ(AdolcFree2(J));
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(AdolcFree2(J));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
@@ -399,29 +399,29 @@ PetscErrorCode PetscAdolcComputeRHSJacobianPLocal(PetscInt tag,Mat A,const Petsc
   PetscFunctionBegin;
 
   /* Allocate memory and concatenate independent variable values with parameter */
-  CHKERRQ(AdolcMalloc2(m,p,&J));
-  CHKERRQ(PetscMalloc1(n+p,&concat));
-  CHKERRQ(AdolcMalloc2(n+p,p,&S));
-  CHKERRQ(Subidentity(p,n,S));
+  PetscCall(AdolcMalloc2(m,p,&J));
+  PetscCall(PetscMalloc1(n+p,&concat));
+  PetscCall(AdolcMalloc2(n+p,p,&S));
+  PetscCall(Subidentity(p,n,S));
   for (i=0; i<n; i++) concat[i] = u_vec[i];
   for (i=0; i<p; i++) concat[n+i] = params[i];
 
   /* Propagate the appropriate seed matrix through the forward mode of AD */
   fov_forward(tag,m,n+p,p,concat,S,NULL,J);
-  CHKERRQ(AdolcFree2(S));
-  CHKERRQ(PetscFree(concat));
+  PetscCall(AdolcFree2(S));
+  PetscCall(PetscFree(concat));
 
   /* Set matrix values */
   for (i=0; i<m; i++) {
     for (j=0; j<p; j++) {
       if (fabs(J[i][j]) > 1.e-16) {
-        CHKERRQ(MatSetValuesLocal(A,1,&i,1,&j,&J[i][j],INSERT_VALUES));
+        PetscCall(MatSetValuesLocal(A,1,&i,1,&j,&J[i][j],INSERT_VALUES));
       }
     }
   }
-  CHKERRQ(AdolcFree2(J));
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(AdolcFree2(J));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
@@ -449,7 +449,7 @@ PetscErrorCode PetscAdolcComputeIJacobianAndDiagonalLocal(PetscInt tag1,PetscInt
   PetscScalar    **J;
 
   PetscFunctionBegin;
-  CHKERRQ(AdolcMalloc2(m,p,&J));
+  PetscCall(AdolcMalloc2(m,p,&J));
 
   /* dF/dx part */
   if (adctx->Seed)
@@ -457,16 +457,16 @@ PetscErrorCode PetscAdolcComputeIJacobianAndDiagonalLocal(PetscInt tag1,PetscInt
   else
     jacobian(tag1,m,n,u_vec,J);
   if (adctx->sparse) {
-    CHKERRQ(RecoverDiagonalLocal(diag,INSERT_VALUES,m,adctx->rec,J,NULL));
+    PetscCall(RecoverDiagonalLocal(diag,INSERT_VALUES,m,adctx->rec,J,NULL));
   } else {
     for (i=0; i<m; i++) {
       if (fabs(J[i][i]) > 1.e-16) {
-        CHKERRQ(VecSetValuesLocal(diag,1,&i,&J[i][i],INSERT_VALUES));
+        PetscCall(VecSetValuesLocal(diag,1,&i,&J[i][i],INSERT_VALUES));
       }
     }
   }
-  CHKERRQ(VecAssemblyBegin(diag));
-  CHKERRQ(VecAssemblyEnd(diag));
+  PetscCall(VecAssemblyBegin(diag));
+  PetscCall(VecAssemblyEnd(diag));
 
   /* a * dF/d(xdot) part */
   if (adctx->Seed)
@@ -474,17 +474,17 @@ PetscErrorCode PetscAdolcComputeIJacobianAndDiagonalLocal(PetscInt tag1,PetscInt
   else
     jacobian(tag2,m,n,u_vec,J);
   if (adctx->sparse) {
-    CHKERRQ(RecoverDiagonalLocal(diag,ADD_VALUES,m,adctx->rec,J,NULL));
+    PetscCall(RecoverDiagonalLocal(diag,ADD_VALUES,m,adctx->rec,J,NULL));
   } else {
     for (i=0; i<m; i++) {
       if (fabs(J[i][i]) > 1.e-16) {
         J[i][i] *= a;
-        CHKERRQ(VecSetValuesLocal(diag,1,&i,&J[i][i],ADD_VALUES));
+        PetscCall(VecSetValuesLocal(diag,1,&i,&J[i][i],ADD_VALUES));
       }
     }
   }
-  CHKERRQ(VecAssemblyBegin(diag));
-  CHKERRQ(VecAssemblyEnd(diag));
-  CHKERRQ(AdolcFree2(J));
+  PetscCall(VecAssemblyBegin(diag));
+  PetscCall(VecAssemblyEnd(diag));
+  PetscCall(AdolcFree2(J));
   PetscFunctionReturn(0);
 }

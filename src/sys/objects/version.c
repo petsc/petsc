@@ -23,9 +23,9 @@ PetscErrorCode PetscGetVersion(char version[], size_t len)
 {
   PetscFunctionBegin;
 #if (PETSC_VERSION_RELEASE == 1)
-  CHKERRQ(PetscSNPrintf(version,len,"Petsc Release Version %d.%d.%d, %s ",PETSC_VERSION_MAJOR,PETSC_VERSION_MINOR, PETSC_VERSION_SUBMINOR,PETSC_VERSION_DATE));
+  PetscCall(PetscSNPrintf(version,len,"Petsc Release Version %d.%d.%d, %s ",PETSC_VERSION_MAJOR,PETSC_VERSION_MINOR, PETSC_VERSION_SUBMINOR,PETSC_VERSION_DATE));
 #else
-  CHKERRQ(PetscSNPrintf(version,len,"Petsc Development GIT revision: %s  GIT Date: %s",PETSC_VERSION_GIT, PETSC_VERSION_DATE_GIT));
+  PetscCall(PetscSNPrintf(version,len,"Petsc Development GIT revision: %s  GIT Date: %s",PETSC_VERSION_GIT, PETSC_VERSION_DATE_GIT));
 #endif
   PetscFunctionReturn(0);
 }

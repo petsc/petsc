@@ -69,7 +69,7 @@ M*/
 PETSC_EXTERN PetscErrorCode PetscRandomCreate_Sprng(PetscRandom r)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscMemcpy(r->ops,&PetscRandomOps_Values,sizeof(PetscRandomOps_Values)));
-  CHKERRQ(PetscObjectChangeTypeName((PetscObject)r,PETSCSPRNG));
+  PetscCall(PetscMemcpy(r->ops,&PetscRandomOps_Values,sizeof(PetscRandomOps_Values)));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)r,PETSCSPRNG));
   PetscFunctionReturn(0);
 }

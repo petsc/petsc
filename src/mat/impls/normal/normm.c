@@ -23,18 +23,18 @@ PetscErrorCode MatDiagonalScale_Normal(Mat inA,Vec left,Vec right)
   PetscFunctionBegin;
   if (left) {
     if (!a->left) {
-      CHKERRQ(VecDuplicate(left,&a->left));
-      CHKERRQ(VecCopy(left,a->left));
+      PetscCall(VecDuplicate(left,&a->left));
+      PetscCall(VecCopy(left,a->left));
     } else {
-      CHKERRQ(VecPointwiseMult(a->left,left,a->left));
+      PetscCall(VecPointwiseMult(a->left,left,a->left));
     }
   }
   if (right) {
     if (!a->right) {
-      CHKERRQ(VecDuplicate(right,&a->right));
-      CHKERRQ(VecCopy(right,a->right));
+      PetscCall(VecDuplicate(right,&a->right));
+      PetscCall(VecCopy(right,a->right));
     } else {
-      CHKERRQ(VecPointwiseMult(a->right,right,a->right));
+      PetscCall(VecPointwiseMult(a->right,right,a->right));
     }
   }
   PetscFunctionReturn(0);
@@ -47,12 +47,12 @@ PetscErrorCode MatIncreaseOverlap_Normal(Mat A,PetscInt is_max,IS is[],PetscInt 
 
   PetscFunctionBegin;
   PetscCheckFalse(ov < 0,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified");
-  CHKERRQ(MatProductCreate(a->A,a->A,NULL,&pattern));
-  CHKERRQ(MatProductSetType(pattern,MATPRODUCT_AtB));
-  CHKERRQ(MatProductSetFromOptions(pattern));
-  CHKERRQ(MatProductSymbolic(pattern));
-  CHKERRQ(MatIncreaseOverlap(pattern,is_max,is,ov));
-  CHKERRQ(MatDestroy(&pattern));
+  PetscCall(MatProductCreate(a->A,a->A,NULL,&pattern));
+  PetscCall(MatProductSetType(pattern,MATPRODUCT_AtB));
+  PetscCall(MatProductSetFromOptions(pattern));
+  PetscCall(MatProductSymbolic(pattern));
+  PetscCall(MatIncreaseOverlap(pattern,is_max,is,ov));
+  PetscCall(MatDestroy(&pattern));
   PetscFunctionReturn(0);
 }
 
@@ -66,21 +66,21 @@ PetscErrorCode MatCreateSubMatrices_Normal(Mat mat,PetscInt n,const IS irow[],co
   PetscFunctionBegin;
   PetscCheckFalse(a->left || a->right || irow != icol,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Not implemented");
   if (scall != MAT_REUSE_MATRIX) {
-    CHKERRQ(PetscCalloc1(n,submat));
+    PetscCall(PetscCalloc1(n,submat));
   }
-  CHKERRQ(MatGetSize(B,&M,NULL));
-  CHKERRQ(PetscMalloc1(n,&row));
-  CHKERRQ(ISCreateStride(PETSC_COMM_SELF,M,0,1,&row[0]));
-  CHKERRQ(ISSetIdentity(row[0]));
+  PetscCall(MatGetSize(B,&M,NULL));
+  PetscCall(PetscMalloc1(n,&row));
+  PetscCall(ISCreateStride(PETSC_COMM_SELF,M,0,1,&row[0]));
+  PetscCall(ISSetIdentity(row[0]));
   for (M = 1; M < n; ++M) row[M] = row[0];
-  CHKERRQ(MatCreateSubMatrices(B,n,row,icol,MAT_INITIAL_MATRIX,&suba));
+  PetscCall(MatCreateSubMatrices(B,n,row,icol,MAT_INITIAL_MATRIX,&suba));
   for (M = 0; M < n; ++M) {
-    CHKERRQ(MatCreateNormal(suba[M],*submat+M));
+    PetscCall(MatCreateNormal(suba[M],*submat+M));
     ((Mat_Normal*)(*submat)[M]->data)->scale = a->scale;
   }
-  CHKERRQ(ISDestroy(&row[0]));
-  CHKERRQ(PetscFree(row));
-  CHKERRQ(MatDestroySubMatrices(n,&suba));
+  PetscCall(ISDestroy(&row[0]));
+  PetscCall(PetscFree(row));
+  PetscCall(MatDestroySubMatrices(n,&suba));
   PetscFunctionReturn(0);
 }
 
@@ -92,12 +92,12 @@ PetscErrorCode MatPermute_Normal(Mat A,IS rowp,IS colp,Mat *B)
 
   PetscFunctionBegin;
   PetscCheckFalse(rowp != colp,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"Row permutation and column permutation must be the same");
-  CHKERRQ(ISCreateStride(PetscObjectComm((PetscObject)Aa),Aa->rmap->n,Aa->rmap->rstart,1,&row));
-  CHKERRQ(ISSetIdentity(row));
-  CHKERRQ(MatPermute(Aa,row,colp,&C));
-  CHKERRQ(ISDestroy(&row));
-  CHKERRQ(MatCreateNormal(C,B));
-  CHKERRQ(MatDestroy(&C));
+  PetscCall(ISCreateStride(PetscObjectComm((PetscObject)Aa),Aa->rmap->n,Aa->rmap->rstart,1,&row));
+  PetscCall(ISSetIdentity(row));
+  PetscCall(MatPermute(Aa,row,colp,&C));
+  PetscCall(ISDestroy(&row));
+  PetscCall(MatCreateNormal(C,B));
+  PetscCall(MatDestroy(&C));
   PetscFunctionReturn(0);
 }
 
@@ -108,9 +108,9 @@ PetscErrorCode MatDuplicate_Normal(Mat A, MatDuplicateOption op, Mat *B)
 
   PetscFunctionBegin;
   PetscCheckFalse(a->left || a->right,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not implemented");
-  CHKERRQ(MatDuplicate(a->A,op,&C));
-  CHKERRQ(MatCreateNormal(C,B));
-  CHKERRQ(MatDestroy(&C));
+  PetscCall(MatDuplicate(a->A,op,&C));
+  PetscCall(MatCreateNormal(C,B));
+  PetscCall(MatDestroy(&C));
   if (op == MAT_COPY_VALUES) ((Mat_Normal*)(*B)->data)->scale = a->scale;
   PetscFunctionReturn(0);
 }
@@ -121,12 +121,12 @@ PetscErrorCode MatCopy_Normal(Mat A,Mat B,MatStructure str)
 
   PetscFunctionBegin;
   PetscCheckFalse(a->left || a->right,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not implemented");
-  CHKERRQ(MatCopy(a->A,b->A,str));
+  PetscCall(MatCopy(a->A,b->A,str));
   b->scale = a->scale;
-  CHKERRQ(VecDestroy(&b->left));
-  CHKERRQ(VecDestroy(&b->right));
-  CHKERRQ(VecDestroy(&b->leftwork));
-  CHKERRQ(VecDestroy(&b->rightwork));
+  PetscCall(VecDestroy(&b->left));
+  PetscCall(VecDestroy(&b->right));
+  PetscCall(VecDestroy(&b->leftwork));
+  PetscCall(VecDestroy(&b->rightwork));
   PetscFunctionReturn(0);
 }
 
@@ -139,17 +139,17 @@ PetscErrorCode MatMult_Normal(Mat N,Vec x,Vec y)
   in = x;
   if (Na->right) {
     if (!Na->rightwork) {
-      CHKERRQ(VecDuplicate(Na->right,&Na->rightwork));
+      PetscCall(VecDuplicate(Na->right,&Na->rightwork));
     }
-    CHKERRQ(VecPointwiseMult(Na->rightwork,Na->right,in));
+    PetscCall(VecPointwiseMult(Na->rightwork,Na->right,in));
     in   = Na->rightwork;
   }
-  CHKERRQ(MatMult(Na->A,in,Na->w));
-  CHKERRQ(MatMultTranspose(Na->A,Na->w,y));
+  PetscCall(MatMult(Na->A,in,Na->w));
+  PetscCall(MatMultTranspose(Na->A,Na->w,y));
   if (Na->left) {
-    CHKERRQ(VecPointwiseMult(y,Na->left,y));
+    PetscCall(VecPointwiseMult(y,Na->left,y));
   }
-  CHKERRQ(VecScale(y,Na->scale));
+  PetscCall(VecScale(y,Na->scale));
   PetscFunctionReturn(0);
 }
 
@@ -162,19 +162,19 @@ PetscErrorCode MatMultAdd_Normal(Mat N,Vec v1,Vec v2,Vec v3)
   in = v1;
   if (Na->right) {
     if (!Na->rightwork) {
-      CHKERRQ(VecDuplicate(Na->right,&Na->rightwork));
+      PetscCall(VecDuplicate(Na->right,&Na->rightwork));
     }
-    CHKERRQ(VecPointwiseMult(Na->rightwork,Na->right,in));
+    PetscCall(VecPointwiseMult(Na->rightwork,Na->right,in));
     in   = Na->rightwork;
   }
-  CHKERRQ(MatMult(Na->A,in,Na->w));
-  CHKERRQ(VecScale(Na->w,Na->scale));
+  PetscCall(MatMult(Na->A,in,Na->w));
+  PetscCall(VecScale(Na->w,Na->scale));
   if (Na->left) {
-    CHKERRQ(MatMultTranspose(Na->A,Na->w,v3));
-    CHKERRQ(VecPointwiseMult(v3,Na->left,v3));
-    CHKERRQ(VecAXPY(v3,1.0,v2));
+    PetscCall(MatMultTranspose(Na->A,Na->w,v3));
+    PetscCall(VecPointwiseMult(v3,Na->left,v3));
+    PetscCall(VecAXPY(v3,1.0,v2));
   } else {
-    CHKERRQ(MatMultTransposeAdd(Na->A,Na->w,v2,v3));
+    PetscCall(MatMultTransposeAdd(Na->A,Na->w,v2,v3));
   }
   PetscFunctionReturn(0);
 }
@@ -188,17 +188,17 @@ PetscErrorCode MatMultTranspose_Normal(Mat N,Vec x,Vec y)
   in = x;
   if (Na->left) {
     if (!Na->leftwork) {
-      CHKERRQ(VecDuplicate(Na->left,&Na->leftwork));
+      PetscCall(VecDuplicate(Na->left,&Na->leftwork));
     }
-    CHKERRQ(VecPointwiseMult(Na->leftwork,Na->left,in));
+    PetscCall(VecPointwiseMult(Na->leftwork,Na->left,in));
     in   = Na->leftwork;
   }
-  CHKERRQ(MatMult(Na->A,in,Na->w));
-  CHKERRQ(MatMultTranspose(Na->A,Na->w,y));
+  PetscCall(MatMult(Na->A,in,Na->w));
+  PetscCall(MatMultTranspose(Na->A,Na->w,y));
   if (Na->right) {
-    CHKERRQ(VecPointwiseMult(y,Na->right,y));
+    PetscCall(VecPointwiseMult(y,Na->right,y));
   }
-  CHKERRQ(VecScale(y,Na->scale));
+  PetscCall(VecScale(y,Na->scale));
   PetscFunctionReturn(0);
 }
 
@@ -211,19 +211,19 @@ PetscErrorCode MatMultTransposeAdd_Normal(Mat N,Vec v1,Vec v2,Vec v3)
   in = v1;
   if (Na->left) {
     if (!Na->leftwork) {
-      CHKERRQ(VecDuplicate(Na->left,&Na->leftwork));
+      PetscCall(VecDuplicate(Na->left,&Na->leftwork));
     }
-    CHKERRQ(VecPointwiseMult(Na->leftwork,Na->left,in));
+    PetscCall(VecPointwiseMult(Na->leftwork,Na->left,in));
     in   = Na->leftwork;
   }
-  CHKERRQ(MatMult(Na->A,in,Na->w));
-  CHKERRQ(VecScale(Na->w,Na->scale));
+  PetscCall(MatMult(Na->A,in,Na->w));
+  PetscCall(VecScale(Na->w,Na->scale));
   if (Na->right) {
-    CHKERRQ(MatMultTranspose(Na->A,Na->w,v3));
-    CHKERRQ(VecPointwiseMult(v3,Na->right,v3));
-    CHKERRQ(VecAXPY(v3,1.0,v2));
+    PetscCall(MatMultTranspose(Na->A,Na->w,v3));
+    PetscCall(VecPointwiseMult(v3,Na->right,v3));
+    PetscCall(VecAXPY(v3,1.0,v2));
   } else {
-    CHKERRQ(MatMultTransposeAdd(Na->A,Na->w,v2,v3));
+    PetscCall(MatMultTransposeAdd(Na->A,Na->w,v2,v3));
   }
   PetscFunctionReturn(0);
 }
@@ -233,19 +233,19 @@ PetscErrorCode MatDestroy_Normal(Mat N)
   Mat_Normal     *Na = (Mat_Normal*)N->data;
 
   PetscFunctionBegin;
-  CHKERRQ(MatDestroy(&Na->A));
-  CHKERRQ(VecDestroy(&Na->w));
-  CHKERRQ(VecDestroy(&Na->left));
-  CHKERRQ(VecDestroy(&Na->right));
-  CHKERRQ(VecDestroy(&Na->leftwork));
-  CHKERRQ(VecDestroy(&Na->rightwork));
-  CHKERRQ(PetscFree(N->data));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)N,"MatNormalGetMat_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)N,"MatConvert_normal_seqaij_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)N,"MatConvert_normal_mpiaij_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)N,"MatProductSetFromOptions_normal_seqdense_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)N,"MatProductSetFromOptions_normal_mpidense_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)N,"MatProductSetFromOptions_normal_dense_C",NULL));
+  PetscCall(MatDestroy(&Na->A));
+  PetscCall(VecDestroy(&Na->w));
+  PetscCall(VecDestroy(&Na->left));
+  PetscCall(VecDestroy(&Na->right));
+  PetscCall(VecDestroy(&Na->leftwork));
+  PetscCall(VecDestroy(&Na->rightwork));
+  PetscCall(PetscFree(N->data));
+  PetscCall(PetscObjectComposeFunction((PetscObject)N,"MatNormalGetMat_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)N,"MatConvert_normal_seqaij_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)N,"MatConvert_normal_mpiaij_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)N,"MatProductSetFromOptions_normal_seqdense_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)N,"MatProductSetFromOptions_normal_mpidense_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)N,"MatProductSetFromOptions_normal_dense_C",NULL));
   PetscFunctionReturn(0);
 }
 
@@ -262,24 +262,24 @@ PetscErrorCode MatGetDiagonal_Normal(Mat N,Vec v)
   const PetscScalar *mvalues;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscMalloc2(A->cmap->N,&diag,A->cmap->N,&work));
-  CHKERRQ(PetscArrayzero(work,A->cmap->N));
-  CHKERRQ(MatGetOwnershipRange(A,&rstart,&rend));
+  PetscCall(PetscMalloc2(A->cmap->N,&diag,A->cmap->N,&work));
+  PetscCall(PetscArrayzero(work,A->cmap->N));
+  PetscCall(MatGetOwnershipRange(A,&rstart,&rend));
   for (i=rstart; i<rend; i++) {
-    CHKERRQ(MatGetRow(A,i,&nnz,&cols,&mvalues));
+    PetscCall(MatGetRow(A,i,&nnz,&cols,&mvalues));
     for (j=0; j<nnz; j++) {
       work[cols[j]] += mvalues[j]*mvalues[j];
     }
-    CHKERRQ(MatRestoreRow(A,i,&nnz,&cols,&mvalues));
+    PetscCall(MatRestoreRow(A,i,&nnz,&cols,&mvalues));
   }
-  CHKERRMPI(MPIU_Allreduce(work,diag,A->cmap->N,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)N)));
+  PetscCallMPI(MPIU_Allreduce(work,diag,A->cmap->N,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)N)));
   rstart = N->cmap->rstart;
   rend   = N->cmap->rend;
-  CHKERRQ(VecGetArray(v,&values));
-  CHKERRQ(PetscArraycpy(values,diag+rstart,rend-rstart));
-  CHKERRQ(VecRestoreArray(v,&values));
-  CHKERRQ(PetscFree2(diag,work));
-  CHKERRQ(VecScale(v,Na->scale));
+  PetscCall(VecGetArray(v,&values));
+  PetscCall(PetscArraycpy(values,diag+rstart,rend-rstart));
+  PetscCall(VecRestoreArray(v,&values));
+  PetscCall(PetscFree2(diag,work));
+  PetscCall(VecScale(v,Na->scale));
   PetscFunctionReturn(0);
 }
 
@@ -314,7 +314,7 @@ PetscErrorCode MatNormalGetMat(Mat A,Mat *M)
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
   PetscValidPointer(M,2);
-  CHKERRQ(PetscUseMethod(A,"MatNormalGetMat_C",(Mat,Mat*),(A,M)));
+  PetscCall(PetscUseMethod(A,"MatNormalGetMat_C",(Mat,Mat*),(A,M)));
   PetscFunctionReturn(0);
 }
 
@@ -325,23 +325,23 @@ PetscErrorCode MatConvert_Normal_AIJ(Mat A,MatType newtype,MatReuse reuse,Mat *n
   PetscInt       m,n,M,N;
 
   PetscFunctionBegin;
-  CHKERRQ(MatGetSize(A,&M,&N));
-  CHKERRQ(MatGetLocalSize(A,&m,&n));
+  PetscCall(MatGetSize(A,&M,&N));
+  PetscCall(MatGetLocalSize(A,&m,&n));
   if (reuse == MAT_REUSE_MATRIX) {
     B = *newmat;
-    CHKERRQ(MatProductReplaceMats(Aa->A,Aa->A,NULL,B));
+    PetscCall(MatProductReplaceMats(Aa->A,Aa->A,NULL,B));
   } else {
-    CHKERRQ(MatProductCreate(Aa->A,Aa->A,NULL,&B));
-    CHKERRQ(MatProductSetType(B,MATPRODUCT_AtB));
-    CHKERRQ(MatProductSetFromOptions(B));
-    CHKERRQ(MatProductSymbolic(B));
-    CHKERRQ(MatSetOption(B,MAT_SYMMETRIC,PETSC_TRUE));
+    PetscCall(MatProductCreate(Aa->A,Aa->A,NULL,&B));
+    PetscCall(MatProductSetType(B,MATPRODUCT_AtB));
+    PetscCall(MatProductSetFromOptions(B));
+    PetscCall(MatProductSymbolic(B));
+    PetscCall(MatSetOption(B,MAT_SYMMETRIC,PETSC_TRUE));
   }
-  CHKERRQ(MatProductNumeric(B));
+  PetscCall(MatProductNumeric(B));
   if (reuse == MAT_INPLACE_MATRIX) {
-    CHKERRQ(MatHeaderReplace(A,&B));
+    PetscCall(MatHeaderReplace(A,&B));
   } else if (reuse == MAT_INITIAL_MATRIX) *newmat = B;
-  CHKERRQ(MatConvert(*newmat,MATAIJ,MAT_INPLACE_MATRIX,newmat));
+  PetscCall(MatConvert(*newmat,MATAIJ,MAT_INPLACE_MATRIX,newmat));
   PetscFunctionReturn(0);
 }
 
@@ -364,19 +364,19 @@ PetscErrorCode MatProductNumeric_Normal_Dense(Mat C)
   contents = (Normal_Dense*)C->product->data;
   PetscCheck(contents,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data empty");
   if (a->right) {
-    CHKERRQ(MatCopy(B,C,SAME_NONZERO_PATTERN));
-    CHKERRQ(MatDiagonalScale(C,a->right,NULL));
+    PetscCall(MatCopy(B,C,SAME_NONZERO_PATTERN));
+    PetscCall(MatDiagonalScale(C,a->right,NULL));
   }
-  CHKERRQ(MatProductNumeric(contents->work[0]));
-  CHKERRQ(MatDenseGetArrayWrite(C,&array));
-  CHKERRQ(MatDensePlaceArray(contents->work[1],array));
-  CHKERRQ(MatProductNumeric(contents->work[1]));
-  CHKERRQ(MatDenseRestoreArrayWrite(C,&array));
-  CHKERRQ(MatDenseResetArray(contents->work[1]));
-  CHKERRQ(MatSetOption(C,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE));
-  CHKERRQ(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatScale(C,a->scale));
+  PetscCall(MatProductNumeric(contents->work[0]));
+  PetscCall(MatDenseGetArrayWrite(C,&array));
+  PetscCall(MatDensePlaceArray(contents->work[1],array));
+  PetscCall(MatProductNumeric(contents->work[1]));
+  PetscCall(MatDenseRestoreArrayWrite(C,&array));
+  PetscCall(MatDenseResetArray(contents->work[1]));
+  PetscCall(MatSetOption(C,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE));
+  PetscCall(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatScale(C,a->scale));
   PetscFunctionReturn(0);
 }
 
@@ -385,9 +385,9 @@ PetscErrorCode MatNormal_DenseDestroy(void *ctx)
   Normal_Dense   *contents = (Normal_Dense*)ctx;
 
   PetscFunctionBegin;
-  CHKERRQ(MatDestroy(contents->work));
-  CHKERRQ(MatDestroy(contents->work+1));
-  CHKERRQ(PetscFree(contents));
+  PetscCall(MatDestroy(contents->work));
+  PetscCall(MatDestroy(contents->work+1));
+  PetscCall(PetscFree(contents));
   PetscFunctionReturn(0);
 }
 
@@ -406,36 +406,36 @@ PetscErrorCode MatProductSymbolic_Normal_Dense(Mat C)
   a = (Mat_Normal*)A->data;
   PetscCheck(!a->left,PetscObjectComm((PetscObject)C),PETSC_ERR_SUP,"Not implemented");
   B = C->product->B;
-  CHKERRQ(MatGetLocalSize(C,&m,&n));
-  CHKERRQ(MatGetSize(C,&M,&N));
+  PetscCall(MatGetLocalSize(C,&m,&n));
+  PetscCall(MatGetSize(C,&M,&N));
   if (m == PETSC_DECIDE || n == PETSC_DECIDE || M == PETSC_DECIDE || N == PETSC_DECIDE) {
-    CHKERRQ(MatGetLocalSize(B,NULL,&n));
-    CHKERRQ(MatGetSize(B,NULL,&N));
-    CHKERRQ(MatGetLocalSize(A,&m,NULL));
-    CHKERRQ(MatGetSize(A,&M,NULL));
-    CHKERRQ(MatSetSizes(C,m,n,M,N));
+    PetscCall(MatGetLocalSize(B,NULL,&n));
+    PetscCall(MatGetSize(B,NULL,&N));
+    PetscCall(MatGetLocalSize(A,&m,NULL));
+    PetscCall(MatGetSize(A,&M,NULL));
+    PetscCall(MatSetSizes(C,m,n,M,N));
   }
-  CHKERRQ(MatSetType(C,((PetscObject)B)->type_name));
-  CHKERRQ(MatSetUp(C));
-  CHKERRQ(PetscNew(&contents));
+  PetscCall(MatSetType(C,((PetscObject)B)->type_name));
+  PetscCall(MatSetUp(C));
+  PetscCall(PetscNew(&contents));
   C->product->data = contents;
   C->product->destroy = MatNormal_DenseDestroy;
   if (a->right) {
-    CHKERRQ(MatProductCreate(a->A,C,NULL,contents->work));
+    PetscCall(MatProductCreate(a->A,C,NULL,contents->work));
   } else {
-    CHKERRQ(MatProductCreate(a->A,B,NULL,contents->work));
+    PetscCall(MatProductCreate(a->A,B,NULL,contents->work));
   }
-  CHKERRQ(MatProductSetType(contents->work[0],MATPRODUCT_AB));
-  CHKERRQ(MatProductSetFromOptions(contents->work[0]));
-  CHKERRQ(MatProductSymbolic(contents->work[0]));
-  CHKERRQ(MatProductCreate(a->A,contents->work[0],NULL,contents->work+1));
-  CHKERRQ(MatProductSetType(contents->work[1],MATPRODUCT_AtB));
-  CHKERRQ(MatProductSetFromOptions(contents->work[1]));
-  CHKERRQ(MatProductSymbolic(contents->work[1]));
-  CHKERRQ(MatDenseGetArrayWrite(C,&array));
-  CHKERRQ(MatSeqDenseSetPreallocation(contents->work[1],array));
-  CHKERRQ(MatMPIDenseSetPreallocation(contents->work[1],array));
-  CHKERRQ(MatDenseRestoreArrayWrite(C,&array));
+  PetscCall(MatProductSetType(contents->work[0],MATPRODUCT_AB));
+  PetscCall(MatProductSetFromOptions(contents->work[0]));
+  PetscCall(MatProductSymbolic(contents->work[0]));
+  PetscCall(MatProductCreate(a->A,contents->work[0],NULL,contents->work+1));
+  PetscCall(MatProductSetType(contents->work[1],MATPRODUCT_AtB));
+  PetscCall(MatProductSetFromOptions(contents->work[1]));
+  PetscCall(MatProductSymbolic(contents->work[1]));
+  PetscCall(MatDenseGetArrayWrite(C,&array));
+  PetscCall(MatSeqDenseSetPreallocation(contents->work[1],array));
+  PetscCall(MatMPIDenseSetPreallocation(contents->work[1],array));
+  PetscCall(MatDenseRestoreArrayWrite(C,&array));
   C->ops->productnumeric = MatProductNumeric_Normal_Dense;
   PetscFunctionReturn(0);
 }
@@ -453,7 +453,7 @@ PetscErrorCode MatProductSetFromOptions_Normal_Dense(Mat C)
 
   PetscFunctionBegin;
   if (product->type == MATPRODUCT_AB) {
-    CHKERRQ(MatProductSetFromOptions_Normal_Dense_AB(C));
+    PetscCall(MatProductSetFromOptions_Normal_Dense_AB(C));
   }
   PetscFunctionReturn(0);
 }
@@ -483,21 +483,21 @@ PetscErrorCode  MatCreateNormal(Mat A,Mat *N)
   VecType        vtype;
 
   PetscFunctionBegin;
-  CHKERRQ(MatGetSize(A,NULL,&nn));
-  CHKERRQ(MatGetLocalSize(A,NULL,&n));
-  CHKERRQ(MatCreate(PetscObjectComm((PetscObject)A),N));
-  CHKERRQ(MatSetSizes(*N,n,n,nn,nn));
-  CHKERRQ(PetscObjectChangeTypeName((PetscObject)*N,MATNORMAL));
-  CHKERRQ(PetscLayoutReference(A->cmap,&(*N)->rmap));
-  CHKERRQ(PetscLayoutReference(A->cmap,&(*N)->cmap));
+  PetscCall(MatGetSize(A,NULL,&nn));
+  PetscCall(MatGetLocalSize(A,NULL,&n));
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)A),N));
+  PetscCall(MatSetSizes(*N,n,n,nn,nn));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)*N,MATNORMAL));
+  PetscCall(PetscLayoutReference(A->cmap,&(*N)->rmap));
+  PetscCall(PetscLayoutReference(A->cmap,&(*N)->cmap));
 
-  CHKERRQ(PetscNewLog(*N,&Na));
+  PetscCall(PetscNewLog(*N,&Na));
   (*N)->data = (void*) Na;
-  CHKERRQ(PetscObjectReference((PetscObject)A));
+  PetscCall(PetscObjectReference((PetscObject)A));
   Na->A      = A;
   Na->scale  = 1.0;
 
-  CHKERRQ(MatCreateVecs(A,NULL,&Na->w));
+  PetscCall(MatCreateVecs(A,NULL,&Na->w));
 
   (*N)->ops->destroy           = MatDestroy_Normal;
   (*N)->ops->mult              = MatMult_Normal;
@@ -515,17 +515,17 @@ PetscErrorCode  MatCreateNormal(Mat A,Mat *N)
   (*N)->assembled              = PETSC_TRUE;
   (*N)->preallocated           = PETSC_TRUE;
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)(*N),"MatNormalGetMat_C",MatNormalGetMat_Normal));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)(*N),"MatConvert_normal_seqaij_C",MatConvert_Normal_AIJ));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)(*N),"MatConvert_normal_mpiaij_C",MatConvert_Normal_AIJ));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)(*N),"MatProductSetFromOptions_normal_seqdense_C",MatProductSetFromOptions_Normal_Dense));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)(*N),"MatProductSetFromOptions_normal_mpidense_C",MatProductSetFromOptions_Normal_Dense));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)(*N),"MatProductSetFromOptions_normal_dense_C",MatProductSetFromOptions_Normal_Dense));
-  CHKERRQ(MatSetOption(*N,MAT_SYMMETRIC,PETSC_TRUE));
-  CHKERRQ(MatGetVecType(A,&vtype));
-  CHKERRQ(MatSetVecType(*N,vtype));
+  PetscCall(PetscObjectComposeFunction((PetscObject)(*N),"MatNormalGetMat_C",MatNormalGetMat_Normal));
+  PetscCall(PetscObjectComposeFunction((PetscObject)(*N),"MatConvert_normal_seqaij_C",MatConvert_Normal_AIJ));
+  PetscCall(PetscObjectComposeFunction((PetscObject)(*N),"MatConvert_normal_mpiaij_C",MatConvert_Normal_AIJ));
+  PetscCall(PetscObjectComposeFunction((PetscObject)(*N),"MatProductSetFromOptions_normal_seqdense_C",MatProductSetFromOptions_Normal_Dense));
+  PetscCall(PetscObjectComposeFunction((PetscObject)(*N),"MatProductSetFromOptions_normal_mpidense_C",MatProductSetFromOptions_Normal_Dense));
+  PetscCall(PetscObjectComposeFunction((PetscObject)(*N),"MatProductSetFromOptions_normal_dense_C",MatProductSetFromOptions_Normal_Dense));
+  PetscCall(MatSetOption(*N,MAT_SYMMETRIC,PETSC_TRUE));
+  PetscCall(MatGetVecType(A,&vtype));
+  PetscCall(MatSetVecType(*N,vtype));
 #if defined(PETSC_HAVE_DEVICE)
-  CHKERRQ(MatBindToCPU(*N,A->boundtocpu));
+  PetscCall(MatBindToCPU(*N,A->boundtocpu));
 #endif
   PetscFunctionReturn(0);
 }

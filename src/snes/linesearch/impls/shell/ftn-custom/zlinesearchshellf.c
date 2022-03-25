@@ -12,7 +12,7 @@
 static PetscErrorCode oursneslinesearchshellfunction(SNESLineSearch linesearch, void *ctx)
 {
   PetscFunctionBegin;
-  CHKERR_FORTRAN_VOID_FUNCTION((*(void (*)(SNESLineSearch*,void*,PetscErrorCode*))(((PetscObject)linesearch)->fortran_func_pointers[0]))(&linesearch,ctx,&ierr));
+  PetscCallFortranVoidFunction((*(void (*)(SNESLineSearch*,void*,PetscErrorCode*))(((PetscObject)linesearch)->fortran_func_pointers[0]))(&linesearch,ctx,&ierr));
   PetscFunctionReturn(0);
 }
 

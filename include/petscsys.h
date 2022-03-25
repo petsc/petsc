@@ -1619,7 +1619,7 @@ static inline PetscErrorCode PetscMemcpy(void *a,const void *b,size_t n)
       size_t len = n/sizeof(PetscScalar);
 #if defined(PETSC_PREFER_DCOPY_FOR_MEMCPY)
       PetscBLASInt one = 1,blen;
-      CHKERRQ(PetscBLASIntCast(len,&blen));
+      PetscCall(PetscBLASIntCast(len,&blen));
       PetscStackCallBLAS("BLAScopy",BLAScopy_(&blen,(PetscScalar *)b,&one,(PetscScalar *)a,&one));
 #elif defined(PETSC_PREFER_FORTRAN_FORMEMCPY)
       fortrancopy_(&len,(PetscScalar*)b,(PetscScalar*)a);
@@ -2581,9 +2581,9 @@ static inline PetscErrorCode PetscCitationsRegister(const char cit[],PetscBool *
 
   PetscFunctionBegin;
   if (set && *set) PetscFunctionReturn(0);
-  CHKERRQ(PetscStrlen(cit,&len));
-  CHKERRQ(PetscSegBufferGet(PetscCitationsList,len,&vstring));
-  CHKERRQ(PetscArraycpy(vstring,cit,len));
+  PetscCall(PetscStrlen(cit,&len));
+  PetscCall(PetscSegBufferGet(PetscCitationsList,len,&vstring));
+  PetscCall(PetscArraycpy(vstring,cit,len));
   if (set) *set = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -2641,7 +2641,7 @@ static inline unsigned int PetscStrHash(const char *str)
 
      This is defined as a macro that can return error codes internally so it cannot be used in a subroutine that returns void.
 
-     The error code this returns should be checked with CHKERRMPI()
+     The error code this returns should be checked with PetscCallMPI()
 
    Level: developer
 
@@ -2653,11 +2653,11 @@ M*/
     a_b1[0] = -(PetscMPIInt)__LINE__;                          a_b1[1] = -a_b1[0];             \
     a_b1[2] = -(PetscMPIInt)PetscStrHash(PETSC_FUNCTION_NAME); a_b1[3] = -a_b1[2];             \
     a_b1[4] = -(PetscMPIInt)(c);                               a_b1[5] = -a_b1[4];             \
-    CHKERRMPI(MPI_Allreduce(a_b1,a_b2,6,MPI_INT,MPI_MAX,fcomm));                               \
+    PetscCallMPI(MPI_Allreduce(a_b1,a_b2,6,MPI_INT,MPI_MAX,fcomm));                               \
     PetscCheck(-a_b2[0] == a_b2[1],PETSC_COMM_SELF,PETSC_ERR_PLIB,"MPI_Allreduce() called in different locations (code lines) on different processors"); \
     PetscCheck(-a_b2[2] == a_b2[3],PETSC_COMM_SELF,PETSC_ERR_PLIB,"MPI_Allreduce() called in different locations (functions) on different processors"); \
     PetscCheck(-a_b2[4] == a_b2[5],PETSC_COMM_SELF,PETSC_ERR_PLIB,"MPI_Allreduce() called with different counts %d on different processors",_mpiu_allreduce_c_int); \
-    CHKERRMPI(MPI_Allreduce((a),(b),(c),d,e,(fcomm)));                                         \
+    PetscCallMPI(MPI_Allreduce((a),(b),(c),d,e,(fcomm)));                                         \
   )
 #else
 #define MPIU_Allreduce(a,b,c,d,e,fcomm) MPI_Allreduce((a),(b),(c),d,e,(fcomm))

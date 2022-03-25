@@ -11,16 +11,16 @@ int main(int argc,char **argv)
   Vec            local,global;
   PetscScalar    ***l;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   /* Create distributed array and get vectors */
-  CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,N,m,n,3,1,NULL,NULL,&da));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
-  CHKERRQ(DMCreateGlobalVector(da,&global));
-  CHKERRQ(DMCreateLocalVector(da,&local));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,N,m,n,3,1,NULL,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMCreateGlobalVector(da,&global));
+  PetscCall(DMCreateLocalVector(da,&local));
 
-  CHKERRQ(DMDAGetCorners(da,&is,&js,0,&in,&jen,0));
-  CHKERRQ(DMDAVecGetArrayDOF(da,local,&l));
+  PetscCall(DMDAGetCorners(da,&is,&js,0,&in,&jen,0));
+  PetscCall(DMDAVecGetArrayDOF(da,local,&l));
   for (i=is; i<is+in; i++) {
     for (j=js; j<js+jen; j++) {
       l[j][i][0] = 3*(i + j*M);
@@ -28,17 +28,17 @@ int main(int argc,char **argv)
       l[j][i][2] = 3*(i + j*M) + 2;
     }
   }
-  CHKERRQ(DMDAVecRestoreArrayDOF(da,local,&l));
-  CHKERRQ(DMLocalToGlobalBegin(da,local,ADD_VALUES,global));
-  CHKERRQ(DMLocalToGlobalEnd(da,local,ADD_VALUES,global));
+  PetscCall(DMDAVecRestoreArrayDOF(da,local,&l));
+  PetscCall(DMLocalToGlobalBegin(da,local,ADD_VALUES,global));
+  PetscCall(DMLocalToGlobalEnd(da,local,ADD_VALUES,global));
 
-  CHKERRQ(VecView(global,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecView(global,PETSC_VIEWER_STDOUT_WORLD));
 
   /* Free memory */
-  CHKERRQ(VecDestroy(&local));
-  CHKERRQ(VecDestroy(&global));
-  CHKERRQ(DMDestroy(&da));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&local));
+  PetscCall(VecDestroy(&global));
+  PetscCall(DMDestroy(&da));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

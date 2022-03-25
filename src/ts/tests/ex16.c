@@ -23,35 +23,35 @@ int main(int argc,char **argv)
   Vec             f;
   Mat             A;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
-  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
+  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
 
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&f));
-  CHKERRQ(VecSetSizes(f,1,PETSC_DECIDE));
-  CHKERRQ(VecSetFromOptions(f));
-  CHKERRQ(VecSetUp(f));
-  CHKERRQ(TSSetRHSFunction(ts,f,RHSFunction,NULL));
-  CHKERRQ(VecDestroy(&f));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&f));
+  PetscCall(VecSetSizes(f,1,PETSC_DECIDE));
+  PetscCall(VecSetFromOptions(f));
+  PetscCall(VecSetUp(f));
+  PetscCall(TSSetRHSFunction(ts,f,RHSFunction,NULL));
+  PetscCall(VecDestroy(&f));
 
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(MatSetSizes(A,1,1,PETSC_DECIDE,PETSC_DECIDE));
-  CHKERRQ(MatSetFromOptions(A));
-  CHKERRQ(MatSetUp(A));
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A,1,1,PETSC_DECIDE,PETSC_DECIDE));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSetUp(A));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   /* ensure that the Jacobian matrix has diagonal entries since that is required by TS */
-  CHKERRQ(MatShift(A,(PetscReal)1));
-  CHKERRQ(MatShift(A,(PetscReal)-1));
-  CHKERRQ(TSSetRHSJacobian(ts,A,A,RHSJacobian,NULL));
-  CHKERRQ(MatDestroy(&A));
+  PetscCall(MatShift(A,(PetscReal)1));
+  PetscCall(MatShift(A,(PetscReal)-1));
+  PetscCall(TSSetRHSJacobian(ts,A,A,RHSJacobian,NULL));
+  PetscCall(MatDestroy(&A));
 
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
-  CHKERRQ(VecSetSizes(x,1,PETSC_DECIDE));
-  CHKERRQ(VecSetFromOptions(x));
-  CHKERRQ(VecSetUp(x));
-  CHKERRQ(TSSetSolution(ts,x));
-  CHKERRQ(VecDestroy(&x));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+  PetscCall(VecSetSizes(x,1,PETSC_DECIDE));
+  PetscCall(VecSetFromOptions(x));
+  PetscCall(VecSetUp(x));
+  PetscCall(TSSetSolution(ts,x));
+  PetscCall(VecDestroy(&x));
 
   {
     PetscInt  direction[3];
@@ -59,31 +59,31 @@ int main(int argc,char **argv)
     direction[0] = +1; terminate[0] = PETSC_FALSE;
     direction[1] = -1; terminate[1] = PETSC_FALSE;
     direction[2] =  0; terminate[2] = PETSC_FALSE;
-    CHKERRQ(TSSetEventHandler(ts,3,direction,terminate,Event,PostEvent,NULL));
+    PetscCall(TSSetEventHandler(ts,3,direction,terminate,Event,PostEvent,NULL));
   }
-  CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
-  CHKERRQ(TSSetMaxTime(ts,t_end));
-  CHKERRQ(TSSetFromOptions(ts));
+  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
+  PetscCall(TSSetMaxTime(ts,t_end));
+  PetscCall(TSSetFromOptions(ts));
 
-  CHKERRQ(TSSolve(ts,NULL));
+  PetscCall(TSSolve(ts,NULL));
 
-  CHKERRQ(TSDestroy(&ts));
-  CHKERRQ(PetscFinalize());
+  PetscCall(TSDestroy(&ts));
+  PetscCall(PetscFinalize());
   return 0;
 }
 
 PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec x,Vec f,void *ctx)
 {
   PetscFunctionBegin;
-  CHKERRQ(VecSet(f,(PetscReal)1));
+  PetscCall(VecSet(f,(PetscReal)1));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec x,Mat A,Mat B,void *ctx)
 {
   PetscFunctionBegin;
-  CHKERRQ(MatZeroEntries(B));
-  if (B != A) CHKERRQ(MatZeroEntries(A));
+  PetscCall(MatZeroEntries(B));
+  if (B != A) PetscCall(MatZeroEntries(A));
   PetscFunctionReturn(0);
 }
 
@@ -102,10 +102,10 @@ PetscErrorCode PostEvent(TS ts,PetscInt nevents,PetscInt event_list[],PetscReal 
   const PetscScalar *a;
 
   PetscFunctionBegin;
-  CHKERRQ(TSGetStepNumber(ts,&i));
-  CHKERRQ(VecGetArrayRead(x,&a));
-  CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject)ts),"%-10s-> step %D time %g value %g\n",PETSC_FUNCTION_NAME,i,(double)t,(double)PetscRealPart(a[0])));
-  CHKERRQ(VecRestoreArrayRead(x,&a));
+  PetscCall(TSGetStepNumber(ts,&i));
+  PetscCall(VecGetArrayRead(x,&a));
+  PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts),"%-10s-> step %D time %g value %g\n",PETSC_FUNCTION_NAME,i,(double)t,(double)PetscRealPart(a[0])));
+  PetscCall(VecRestoreArrayRead(x,&a));
   PetscFunctionReturn(0);
 }
 

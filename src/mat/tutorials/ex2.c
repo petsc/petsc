@@ -17,166 +17,166 @@ int main(int argc,char **argv)
   PetscInt       size=8,size1=6,size2=2, i,j;
   PetscRandom    rnd;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,0,help));
-  CHKERRQ(PetscRandomCreate(PETSC_COMM_SELF,&rnd));
+  PetscCall(PetscInitialize(&argc,&argv,0,help));
+  PetscCall(PetscRandomCreate(PETSC_COMM_SELF,&rnd));
 
   /*
    * Create matrix and three vectors: these are all normal
    */
-  CHKERRQ(PetscMalloc1(size*size,&a));
-  CHKERRQ(PetscMalloc1(size*size,&b));
+  PetscCall(PetscMalloc1(size*size,&a));
+  PetscCall(PetscMalloc1(size*size,&b));
   for (i=0; i<size; i++) {
     for (j=0; j<size; j++) {
-      CHKERRQ(PetscRandomGetValue(rnd,&a[i+j*size]));
+      PetscCall(PetscRandomGetValue(rnd,&a[i+j*size]));
       b[i+j*size] = a[i+j*size];
     }
   }
-  CHKERRQ(MatCreate(PETSC_COMM_SELF,&A));
-  CHKERRQ(MatSetSizes(A,size,size,size,size));
-  CHKERRQ(MatSetType(A,MATSEQDENSE));
-  CHKERRQ(MatSeqDenseSetPreallocation(A,a));
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatCreate(PETSC_COMM_SELF,&A));
+  PetscCall(MatSetSizes(A,size,size,size,size));
+  PetscCall(MatSetType(A,MATSEQDENSE));
+  PetscCall(MatSeqDenseSetPreallocation(A,a));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
-  CHKERRQ(PetscMalloc1(size,&x));
+  PetscCall(PetscMalloc1(size,&x));
   for (i=0; i<size; i++) {
     x[i] = one;
   }
-  CHKERRQ(VecCreateSeqWithArray(PETSC_COMM_SELF,1,size,x,&X));
-  CHKERRQ(VecAssemblyBegin(X));
-  CHKERRQ(VecAssemblyEnd(X));
+  PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,1,size,x,&X));
+  PetscCall(VecAssemblyBegin(X));
+  PetscCall(VecAssemblyEnd(X));
 
-  CHKERRQ(PetscMalloc1(size,&y));
-  CHKERRQ(VecCreateSeqWithArray(PETSC_COMM_SELF,1,size,y,&Y));
-  CHKERRQ(VecAssemblyBegin(Y));
-  CHKERRQ(VecAssemblyEnd(Y));
+  PetscCall(PetscMalloc1(size,&y));
+  PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,1,size,y,&Y));
+  PetscCall(VecAssemblyBegin(Y));
+  PetscCall(VecAssemblyEnd(Y));
 
-  CHKERRQ(PetscMalloc1(size,&z));
-  CHKERRQ(VecCreateSeqWithArray(PETSC_COMM_SELF,1,size,z,&Z));
-  CHKERRQ(VecAssemblyBegin(Z));
-  CHKERRQ(VecAssemblyEnd(Z));
+  PetscCall(PetscMalloc1(size,&z));
+  PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,1,size,z,&Z));
+  PetscCall(VecAssemblyBegin(Z));
+  PetscCall(VecAssemblyEnd(Z));
 
   /*
    * Now create submatrices and subvectors
    */
-  CHKERRQ(MatCreate(PETSC_COMM_SELF,&A11));
-  CHKERRQ(MatSetSizes(A11,size1,size1,size1,size1));
-  CHKERRQ(MatSetType(A11,MATSEQDENSE));
-  CHKERRQ(MatSeqDenseSetPreallocation(A11,b));
-  CHKERRQ(MatDenseSetLDA(A11,size));
-  CHKERRQ(MatAssemblyBegin(A11,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A11,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatCreate(PETSC_COMM_SELF,&A11));
+  PetscCall(MatSetSizes(A11,size1,size1,size1,size1));
+  PetscCall(MatSetType(A11,MATSEQDENSE));
+  PetscCall(MatSeqDenseSetPreallocation(A11,b));
+  PetscCall(MatDenseSetLDA(A11,size));
+  PetscCall(MatAssemblyBegin(A11,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A11,MAT_FINAL_ASSEMBLY));
 
-  CHKERRQ(MatCreate(PETSC_COMM_SELF,&A12));
-  CHKERRQ(MatSetSizes(A12,size1,size2,size1,size2));
-  CHKERRQ(MatSetType(A12,MATSEQDENSE));
-  CHKERRQ(MatSeqDenseSetPreallocation(A12,b+size1*size));
-  CHKERRQ(MatDenseSetLDA(A12,size));
-  CHKERRQ(MatAssemblyBegin(A12,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A12,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatCreate(PETSC_COMM_SELF,&A12));
+  PetscCall(MatSetSizes(A12,size1,size2,size1,size2));
+  PetscCall(MatSetType(A12,MATSEQDENSE));
+  PetscCall(MatSeqDenseSetPreallocation(A12,b+size1*size));
+  PetscCall(MatDenseSetLDA(A12,size));
+  PetscCall(MatAssemblyBegin(A12,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A12,MAT_FINAL_ASSEMBLY));
 
-  CHKERRQ(MatCreate(PETSC_COMM_SELF,&A21));
-  CHKERRQ(MatSetSizes(A21,size2,size1,size2,size1));
-  CHKERRQ(MatSetType(A21,MATSEQDENSE));
-  CHKERRQ(MatSeqDenseSetPreallocation(A21,b+size1));
-  CHKERRQ(MatDenseSetLDA(A21,size));
-  CHKERRQ(MatAssemblyBegin(A21,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A21,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatCreate(PETSC_COMM_SELF,&A21));
+  PetscCall(MatSetSizes(A21,size2,size1,size2,size1));
+  PetscCall(MatSetType(A21,MATSEQDENSE));
+  PetscCall(MatSeqDenseSetPreallocation(A21,b+size1));
+  PetscCall(MatDenseSetLDA(A21,size));
+  PetscCall(MatAssemblyBegin(A21,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A21,MAT_FINAL_ASSEMBLY));
 
-  CHKERRQ(MatCreate(PETSC_COMM_SELF,&A22));
-  CHKERRQ(MatSetSizes(A22,size2,size2,size2,size2));
-  CHKERRQ(MatSetType(A22,MATSEQDENSE));
-  CHKERRQ(MatSeqDenseSetPreallocation(A22,b+size1*size+size1));
-  CHKERRQ(MatDenseSetLDA(A22,size));
-  CHKERRQ(MatAssemblyBegin(A22,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A22,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatCreate(PETSC_COMM_SELF,&A22));
+  PetscCall(MatSetSizes(A22,size2,size2,size2,size2));
+  PetscCall(MatSetType(A22,MATSEQDENSE));
+  PetscCall(MatSeqDenseSetPreallocation(A22,b+size1*size+size1));
+  PetscCall(MatDenseSetLDA(A22,size));
+  PetscCall(MatAssemblyBegin(A22,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A22,MAT_FINAL_ASSEMBLY));
 
-  CHKERRQ(VecCreateSeqWithArray(PETSC_COMM_SELF,1,size1,x,&X1));
-  CHKERRQ(VecCreateSeqWithArray(PETSC_COMM_SELF,1,size2,x+size1,&X2));
-  CHKERRQ(VecCreateSeqWithArray(PETSC_COMM_SELF,1,size1,z,&Z1));
-  CHKERRQ(VecCreateSeqWithArray(PETSC_COMM_SELF,1,size2,z+size1,&Z2));
+  PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,1,size1,x,&X1));
+  PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,1,size2,x+size1,&X2));
+  PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,1,size1,z,&Z1));
+  PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,1,size2,z+size1,&Z2));
 
   /*
    * Now multiple matrix times input in two ways;
    * compare the results
    */
-  CHKERRQ(MatMult(A,X,Y));
-  CHKERRQ(MatMult(A11,X1,Z1));
-  CHKERRQ(MatMultAdd(A12,X2,Z1,Z1));
-  CHKERRQ(MatMult(A22,X2,Z2));
-  CHKERRQ(MatMultAdd(A21,X1,Z2,Z2));
-  CHKERRQ(VecAXPY(Z,-1.0,Y));
-  CHKERRQ(VecNorm(Z,NORM_2,&nrm));
+  PetscCall(MatMult(A,X,Y));
+  PetscCall(MatMult(A11,X1,Z1));
+  PetscCall(MatMultAdd(A12,X2,Z1,Z1));
+  PetscCall(MatMult(A22,X2,Z2));
+  PetscCall(MatMultAdd(A21,X1,Z2,Z2));
+  PetscCall(VecAXPY(Z,-1.0,Y));
+  PetscCall(VecNorm(Z,NORM_2,&nrm));
   if (nrm > 100.0*PETSC_MACHINE_EPSILON) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Test1; error norm=%g\n",(double)nrm));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Test1; error norm=%g\n",(double)nrm));
   }
 
   /*
    * Next test: change both matrices
    */
-  CHKERRQ(PetscRandomGetValue(rnd,&v));
+  PetscCall(PetscRandomGetValue(rnd,&v));
   i    = 1;
   j    = size-2;
-  CHKERRQ(MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES));
+  PetscCall(MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES));
   j   -= size1;
-  CHKERRQ(MatSetValues(A12,1,&i,1,&j,&v,INSERT_VALUES));
-  CHKERRQ(PetscRandomGetValue(rnd,&v));
+  PetscCall(MatSetValues(A12,1,&i,1,&j,&v,INSERT_VALUES));
+  PetscCall(PetscRandomGetValue(rnd,&v));
   i    = j = size1+1;
-  CHKERRQ(MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES));
+  PetscCall(MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES));
   i     =j = 1;
-  CHKERRQ(MatSetValues(A22,1,&i,1,&j,&v,INSERT_VALUES));
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyBegin(A12,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A12,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyBegin(A22,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A22,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatSetValues(A22,1,&i,1,&j,&v,INSERT_VALUES));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A12,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A12,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A22,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A22,MAT_FINAL_ASSEMBLY));
 
-  CHKERRQ(MatMult(A,X,Y));
-  CHKERRQ(MatMult(A11,X1,Z1));
-  CHKERRQ(MatMultAdd(A12,X2,Z1,Z1));
-  CHKERRQ(MatMult(A22,X2,Z2));
-  CHKERRQ(MatMultAdd(A21,X1,Z2,Z2));
-  CHKERRQ(VecAXPY(Z,-1.0,Y));
-  CHKERRQ(VecNorm(Z,NORM_2,&nrm));
+  PetscCall(MatMult(A,X,Y));
+  PetscCall(MatMult(A11,X1,Z1));
+  PetscCall(MatMultAdd(A12,X2,Z1,Z1));
+  PetscCall(MatMult(A22,X2,Z2));
+  PetscCall(MatMultAdd(A21,X1,Z2,Z2));
+  PetscCall(VecAXPY(Z,-1.0,Y));
+  PetscCall(VecNorm(Z,NORM_2,&nrm));
   if (nrm > 100.0*PETSC_MACHINE_EPSILON) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Test2; error norm=%g\n",(double)nrm));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Test2; error norm=%g\n",(double)nrm));
   }
 
   /*
    * Transpose product
    */
-  CHKERRQ(MatMultTranspose(A,X,Y));
-  CHKERRQ(MatMultTranspose(A11,X1,Z1));
-  CHKERRQ(MatMultTransposeAdd(A21,X2,Z1,Z1));
-  CHKERRQ(MatMultTranspose(A22,X2,Z2));
-  CHKERRQ(MatMultTransposeAdd(A12,X1,Z2,Z2));
-  CHKERRQ(VecAXPY(Z,-1.0,Y));
-  CHKERRQ(VecNorm(Z,NORM_2,&nrm));
+  PetscCall(MatMultTranspose(A,X,Y));
+  PetscCall(MatMultTranspose(A11,X1,Z1));
+  PetscCall(MatMultTransposeAdd(A21,X2,Z1,Z1));
+  PetscCall(MatMultTranspose(A22,X2,Z2));
+  PetscCall(MatMultTransposeAdd(A12,X1,Z2,Z2));
+  PetscCall(VecAXPY(Z,-1.0,Y));
+  PetscCall(VecNorm(Z,NORM_2,&nrm));
   if (nrm > 100.0*PETSC_MACHINE_EPSILON) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Test3; error norm=%g\n",(double)nrm));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Test3; error norm=%g\n",(double)nrm));
   }
-  CHKERRQ(PetscFree(a));
-  CHKERRQ(PetscFree(b));
-  CHKERRQ(PetscFree(x));
-  CHKERRQ(PetscFree(y));
-  CHKERRQ(PetscFree(z));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(MatDestroy(&A11));
-  CHKERRQ(MatDestroy(&A12));
-  CHKERRQ(MatDestroy(&A21));
-  CHKERRQ(MatDestroy(&A22));
+  PetscCall(PetscFree(a));
+  PetscCall(PetscFree(b));
+  PetscCall(PetscFree(x));
+  PetscCall(PetscFree(y));
+  PetscCall(PetscFree(z));
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&A11));
+  PetscCall(MatDestroy(&A12));
+  PetscCall(MatDestroy(&A21));
+  PetscCall(MatDestroy(&A22));
 
-  CHKERRQ(VecDestroy(&X));
-  CHKERRQ(VecDestroy(&Y));
-  CHKERRQ(VecDestroy(&Z));
+  PetscCall(VecDestroy(&X));
+  PetscCall(VecDestroy(&Y));
+  PetscCall(VecDestroy(&Z));
 
-  CHKERRQ(VecDestroy(&X1));
-  CHKERRQ(VecDestroy(&X2));
-  CHKERRQ(VecDestroy(&Z1));
-  CHKERRQ(VecDestroy(&Z2));
-  CHKERRQ(PetscRandomDestroy(&rnd));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&X1));
+  PetscCall(VecDestroy(&X2));
+  PetscCall(VecDestroy(&Z1));
+  PetscCall(VecDestroy(&Z2));
+  PetscCall(PetscRandomDestroy(&rnd));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

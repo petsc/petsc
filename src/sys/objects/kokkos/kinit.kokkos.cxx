@@ -28,8 +28,8 @@ PetscErrorCode PetscKokkosInitializeCheck(void)
     /* Kokkos does not support CUDA and HIP at the same time (but we do :)) */
     PetscDeviceContext dctx;
 
-    CHKERRQ(PetscDeviceContextGetCurrentContext(&dctx));
-    CHKERRQ(PetscMPIIntCast(dctx->device->deviceId,&args.device_id));
+    PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
+    PetscCall(PetscMPIIntCast(dctx->device->deviceId,&args.device_id));
 #endif
 
     args.disable_warnings = !PetscDefined(HAVE_KOKKOS_INIT_WARNINGS);

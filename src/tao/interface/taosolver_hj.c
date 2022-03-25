@@ -41,13 +41,13 @@ PetscErrorCode TaoSetHessian(Tao tao, Mat H, Mat Hpre, PetscErrorCode (*func)(Ta
   if (ctx) tao->user_hessP = ctx;
   if (func) tao->ops->computehessian = func;
   if (H) {
-    CHKERRQ(PetscObjectReference((PetscObject)H));
-    CHKERRQ(MatDestroy(&tao->hessian));
+    PetscCall(PetscObjectReference((PetscObject)H));
+    PetscCall(MatDestroy(&tao->hessian));
     tao->hessian = H;
   }
   if (Hpre) {
-    CHKERRQ(PetscObjectReference((PetscObject)Hpre));
-    CHKERRQ(MatDestroy(&tao->hessian_pre));
+    PetscCall(PetscObjectReference((PetscObject)Hpre));
+    PetscCall(MatDestroy(&tao->hessian_pre));
     tao->hessian_pre = Hpre;
   }
   PetscFunctionReturn(0);
@@ -107,67 +107,67 @@ PetscErrorCode TaoTestHessian(Tao tao)
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  ierr = PetscObjectOptionsBegin((PetscObject)tao);CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsName("-tao_test_hessian","Compare hand-coded and finite difference Hessians","None",&test));
-  CHKERRQ(PetscOptionsReal("-tao_test_hessian", "Threshold for element difference between hand-coded and finite difference being meaningful","None",threshold,&threshold,NULL));
-  CHKERRQ(PetscOptionsViewer("-tao_test_hessian_view","View difference between hand-coded and finite difference Hessians element entries","None",&mviewer,&format,&complete_print));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscObjectOptionsBegin((PetscObject)tao);PetscCall(ierr);
+  PetscCall(PetscOptionsName("-tao_test_hessian","Compare hand-coded and finite difference Hessians","None",&test));
+  PetscCall(PetscOptionsReal("-tao_test_hessian", "Threshold for element difference between hand-coded and finite difference being meaningful","None",threshold,&threshold,NULL));
+  PetscCall(PetscOptionsViewer("-tao_test_hessian_view","View difference between hand-coded and finite difference Hessians element entries","None",&mviewer,&format,&complete_print));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
   if (!test) PetscFunctionReturn(0);
 
-  CHKERRQ(PetscObjectGetComm((PetscObject)tao,&comm));
-  CHKERRQ(PetscViewerASCIIGetStdout(comm,&viewer));
-  CHKERRQ(PetscViewerASCIIGetTab(viewer, &tabs));
-  CHKERRQ(PetscViewerASCIISetTab(viewer, ((PetscObject)tao)->tablevel));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  ---------- Testing Hessian -------------\n"));
+  PetscCall(PetscObjectGetComm((PetscObject)tao,&comm));
+  PetscCall(PetscViewerASCIIGetStdout(comm,&viewer));
+  PetscCall(PetscViewerASCIIGetTab(viewer, &tabs));
+  PetscCall(PetscViewerASCIISetTab(viewer, ((PetscObject)tao)->tablevel));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  ---------- Testing Hessian -------------\n"));
   if (!complete_print && !directionsprinted) {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Run with -tao_test_hessian_view and optionally -tao_test_hessian <threshold> to show difference\n"));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"    of hand-coded and finite difference Hessian entries greater than <threshold>.\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Run with -tao_test_hessian_view and optionally -tao_test_hessian <threshold> to show difference\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    of hand-coded and finite difference Hessian entries greater than <threshold>.\n"));
   }
   if (!directionsprinted) {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Testing hand-coded Hessian, if (for double precision runs) ||J - Jfd||_F/||J||_F is\n"));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"    O(1.e-8), the hand-coded Hessian is probably correct.\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Testing hand-coded Hessian, if (for double precision runs) ||J - Jfd||_F/||J||_F is\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    O(1.e-8), the hand-coded Hessian is probably correct.\n"));
     directionsprinted = PETSC_TRUE;
   }
   if (complete_print) {
-    CHKERRQ(PetscViewerPushFormat(mviewer,format));
+    PetscCall(PetscViewerPushFormat(mviewer,format));
   }
 
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)tao->hessian,MATMFFD,&flg));
+  PetscCall(PetscObjectTypeCompare((PetscObject)tao->hessian,MATMFFD,&flg));
   if (!flg) hessian = tao->hessian;
   else hessian = tao->hessian_pre;
 
   while (hessian) {
-    CHKERRQ(PetscObjectBaseTypeCompareAny((PetscObject)hessian,&flg,MATSEQAIJ,MATMPIAIJ,MATSEQDENSE,MATMPIDENSE,MATSEQBAIJ,MATMPIBAIJ,MATSEQSBAIJ,MATMPIBAIJ,""));
+    PetscCall(PetscObjectBaseTypeCompareAny((PetscObject)hessian,&flg,MATSEQAIJ,MATMPIAIJ,MATSEQDENSE,MATMPIDENSE,MATSEQBAIJ,MATMPIBAIJ,MATSEQSBAIJ,MATMPIBAIJ,""));
     if (flg) {
       A    = hessian;
-      CHKERRQ(PetscObjectReference((PetscObject)A));
+      PetscCall(PetscObjectReference((PetscObject)A));
     } else {
-      CHKERRQ(MatComputeOperator(hessian,MATAIJ,&A));
+      PetscCall(MatComputeOperator(hessian,MATAIJ,&A));
     }
 
-    CHKERRQ(MatCreate(PetscObjectComm((PetscObject)A),&B));
-    CHKERRQ(MatGetSize(A,&M,&N));
-    CHKERRQ(MatGetLocalSize(A,&m,&n));
-    CHKERRQ(MatSetSizes(B,m,n,M,N));
-    CHKERRQ(MatSetType(B,((PetscObject)A)->type_name));
-    CHKERRQ(MatSetUp(B));
-    CHKERRQ(MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE));
+    PetscCall(MatCreate(PetscObjectComm((PetscObject)A),&B));
+    PetscCall(MatGetSize(A,&M,&N));
+    PetscCall(MatGetLocalSize(A,&m,&n));
+    PetscCall(MatSetSizes(B,m,n,M,N));
+    PetscCall(MatSetType(B,((PetscObject)A)->type_name));
+    PetscCall(MatSetUp(B));
+    PetscCall(MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE));
 
-    CHKERRQ(TaoDefaultComputeHessian(tao,x,B,B,NULL));
+    PetscCall(TaoDefaultComputeHessian(tao,x,B,B,NULL));
 
-    CHKERRQ(MatDuplicate(B,MAT_COPY_VALUES,&D));
-    CHKERRQ(MatAYPX(D,-1.0,A,DIFFERENT_NONZERO_PATTERN));
-    CHKERRQ(MatNorm(D,NORM_FROBENIUS,&nrm));
-    CHKERRQ(MatNorm(A,NORM_FROBENIUS,&gnorm));
-    CHKERRQ(MatDestroy(&D));
+    PetscCall(MatDuplicate(B,MAT_COPY_VALUES,&D));
+    PetscCall(MatAYPX(D,-1.0,A,DIFFERENT_NONZERO_PATTERN));
+    PetscCall(MatNorm(D,NORM_FROBENIUS,&nrm));
+    PetscCall(MatNorm(A,NORM_FROBENIUS,&gnorm));
+    PetscCall(MatDestroy(&D));
     if (!gnorm) gnorm = 1; /* just in case */
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  ||H - Hfd||_F/||H||_F = %g, ||H - Hfd||_F = %g\n",(double)(nrm/gnorm),(double)nrm));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  ||H - Hfd||_F/||H||_F = %g, ||H - Hfd||_F = %g\n",(double)(nrm/gnorm),(double)nrm));
 
     if (complete_print) {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Hand-coded Hessian ----------\n"));
-      CHKERRQ(MatView(A,mviewer));
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Finite difference Hessian ----------\n"));
-      CHKERRQ(MatView(B,mviewer));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  Hand-coded Hessian ----------\n"));
+      PetscCall(MatView(A,mviewer));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  Finite difference Hessian ----------\n"));
+      PetscCall(MatView(B,mviewer));
     }
 
     if (complete_print) {
@@ -176,17 +176,17 @@ PetscErrorCode TaoTestHessian(Tao tao)
       const PetscInt    *bcols;
       const PetscScalar *bvals;
 
-      CHKERRQ(MatAYPX(B,-1.0,A,DIFFERENT_NONZERO_PATTERN));
-      CHKERRQ(MatCreate(PetscObjectComm((PetscObject)A),&C));
-      CHKERRQ(MatSetSizes(C,m,n,M,N));
-      CHKERRQ(MatSetType(C,((PetscObject)A)->type_name));
-      CHKERRQ(MatSetUp(C));
-      CHKERRQ(MatSetOption(C,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE));
-      CHKERRQ(MatGetOwnershipRange(B,&Istart,&Iend));
+      PetscCall(MatAYPX(B,-1.0,A,DIFFERENT_NONZERO_PATTERN));
+      PetscCall(MatCreate(PetscObjectComm((PetscObject)A),&C));
+      PetscCall(MatSetSizes(C,m,n,M,N));
+      PetscCall(MatSetType(C,((PetscObject)A)->type_name));
+      PetscCall(MatSetUp(C));
+      PetscCall(MatSetOption(C,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE));
+      PetscCall(MatGetOwnershipRange(B,&Istart,&Iend));
 
       for (row = Istart; row < Iend; row++) {
-        CHKERRQ(MatGetRow(B,row,&bncols,&bcols,&bvals));
-        CHKERRQ(PetscMalloc2(bncols,&ccols,bncols,&cvals));
+        PetscCall(MatGetRow(B,row,&bncols,&bcols,&bvals));
+        PetscCall(PetscMalloc2(bncols,&ccols,bncols,&cvals));
         for (j = 0, cncols = 0; j < bncols; j++) {
           if (PetscAbsScalar(bvals[j]) > threshold) {
             ccols[cncols] = bcols[j];
@@ -195,30 +195,30 @@ PetscErrorCode TaoTestHessian(Tao tao)
           }
         }
         if (cncols) {
-          CHKERRQ(MatSetValues(C,1,&row,cncols,ccols,cvals,INSERT_VALUES));
+          PetscCall(MatSetValues(C,1,&row,cncols,ccols,cvals,INSERT_VALUES));
         }
-        CHKERRQ(MatRestoreRow(B,row,&bncols,&bcols,&bvals));
-        CHKERRQ(PetscFree2(ccols,cvals));
+        PetscCall(MatRestoreRow(B,row,&bncols,&bcols,&bvals));
+        PetscCall(PetscFree2(ccols,cvals));
       }
-      CHKERRQ(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
-      CHKERRQ(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Finite-difference minus hand-coded Hessian with tolerance %g ----------\n",(double)threshold));
-      CHKERRQ(MatView(C,mviewer));
-      CHKERRQ(MatDestroy(&C));
+      PetscCall(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
+      PetscCall(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  Finite-difference minus hand-coded Hessian with tolerance %g ----------\n",(double)threshold));
+      PetscCall(MatView(C,mviewer));
+      PetscCall(MatDestroy(&C));
     }
-    CHKERRQ(MatDestroy(&A));
-    CHKERRQ(MatDestroy(&B));
+    PetscCall(MatDestroy(&A));
+    PetscCall(MatDestroy(&B));
 
     if (hessian != tao->hessian_pre) {
       hessian = tao->hessian_pre;
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"  ---------- Testing Hessian for preconditioner -------------\n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  ---------- Testing Hessian for preconditioner -------------\n"));
     } else hessian = NULL;
   }
   if (complete_print) {
-    CHKERRQ(PetscViewerPopFormat(mviewer));
-    CHKERRQ(PetscViewerDestroy(&mviewer));
+    PetscCall(PetscViewerPopFormat(mviewer));
+    PetscCall(PetscViewerDestroy(&mviewer));
   }
-  CHKERRQ(PetscViewerASCIISetTab(viewer,tabs));
+  PetscCall(PetscViewerASCIISetTab(viewer,tabs));
   PetscFunctionReturn(0);
 }
 
@@ -264,15 +264,15 @@ PetscErrorCode TaoComputeHessian(Tao tao, Vec X, Mat H, Mat Hpre)
   PetscCheckSameComm(tao,1,X,2);
   PetscCheck(tao->ops->computehessian,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSetHessian() first");
   ++tao->nhess;
-  CHKERRQ(VecLockReadPush(X));
-  CHKERRQ(PetscLogEventBegin(TAO_HessianEval,tao,X,H,Hpre));
+  PetscCall(VecLockReadPush(X));
+  PetscCall(PetscLogEventBegin(TAO_HessianEval,tao,X,H,Hpre));
   PetscStackPush("Tao user Hessian function");
-  CHKERRQ((*tao->ops->computehessian)(tao,X,H,Hpre,tao->user_hessP));
+  PetscCall((*tao->ops->computehessian)(tao,X,H,Hpre,tao->user_hessP));
   PetscStackPop;
-  CHKERRQ(PetscLogEventEnd(TAO_HessianEval,tao,X,H,Hpre));
-  CHKERRQ(VecLockReadPop(X));
+  PetscCall(PetscLogEventEnd(TAO_HessianEval,tao,X,H,Hpre));
+  PetscCall(VecLockReadPop(X));
 
-  CHKERRQ(TaoTestHessian(tao));
+  PetscCall(TaoTestHessian(tao));
   PetscFunctionReturn(0);
 }
 
@@ -310,13 +310,13 @@ PetscErrorCode TaoComputeJacobian(Tao tao, Vec X, Mat J, Mat Jpre)
   PetscCheckSameComm(tao,1,X,2);
   PetscCheck(tao->ops->computejacobian,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSetJacobian() first");
   ++tao->njac;
-  CHKERRQ(VecLockReadPush(X));
-  CHKERRQ(PetscLogEventBegin(TAO_JacobianEval,tao,X,J,Jpre));
+  PetscCall(VecLockReadPush(X));
+  PetscCall(PetscLogEventBegin(TAO_JacobianEval,tao,X,J,Jpre));
   PetscStackPush("Tao user Jacobian function");
-  CHKERRQ((*tao->ops->computejacobian)(tao,X,J,Jpre,tao->user_jacP));
+  PetscCall((*tao->ops->computejacobian)(tao,X,J,Jpre,tao->user_jacP));
   PetscStackPop;
-  CHKERRQ(PetscLogEventEnd(TAO_JacobianEval,tao,X,J,Jpre));
-  CHKERRQ(VecLockReadPop(X));
+  PetscCall(PetscLogEventEnd(TAO_JacobianEval,tao,X,J,Jpre));
+  PetscCall(VecLockReadPop(X));
   PetscFunctionReturn(0);
 }
 
@@ -354,13 +354,13 @@ PetscErrorCode TaoComputeResidualJacobian(Tao tao, Vec X, Mat J, Mat Jpre)
   PetscCheckSameComm(tao,1,X,2);
   PetscCheck(tao->ops->computeresidualjacobian,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSetResidualJacobian() first");
   ++tao->njac;
-  CHKERRQ(VecLockReadPush(X));
-  CHKERRQ(PetscLogEventBegin(TAO_JacobianEval,tao,X,J,Jpre));
+  PetscCall(VecLockReadPush(X));
+  PetscCall(PetscLogEventBegin(TAO_JacobianEval,tao,X,J,Jpre));
   PetscStackPush("Tao user least-squares residual Jacobian function");
-  CHKERRQ((*tao->ops->computeresidualjacobian)(tao,X,J,Jpre,tao->user_lsjacP));
+  PetscCall((*tao->ops->computeresidualjacobian)(tao,X,J,Jpre,tao->user_lsjacP));
   PetscStackPop;
-  CHKERRQ(PetscLogEventEnd(TAO_JacobianEval,tao,X,J,Jpre));
-  CHKERRQ(VecLockReadPop(X));
+  PetscCall(PetscLogEventEnd(TAO_JacobianEval,tao,X,J,Jpre));
+  PetscCall(VecLockReadPop(X));
   PetscFunctionReturn(0);
 }
 
@@ -399,13 +399,13 @@ PetscErrorCode TaoComputeJacobianState(Tao tao, Vec X, Mat J, Mat Jpre, Mat Jinv
   PetscCheckSameComm(tao,1,X,2);
   PetscCheck(tao->ops->computejacobianstate,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSetJacobianState() first");
   ++tao->njac_state;
-  CHKERRQ(VecLockReadPush(X));
-  CHKERRQ(PetscLogEventBegin(TAO_JacobianEval,tao,X,J,Jpre));
+  PetscCall(VecLockReadPush(X));
+  PetscCall(PetscLogEventBegin(TAO_JacobianEval,tao,X,J,Jpre));
   PetscStackPush("Tao user Jacobian(state) function");
-  CHKERRQ((*tao->ops->computejacobianstate)(tao,X,J,Jpre,Jinv,tao->user_jac_stateP));
+  PetscCall((*tao->ops->computejacobianstate)(tao,X,J,Jpre,Jinv,tao->user_jac_stateP));
   PetscStackPop;
-  CHKERRQ(PetscLogEventEnd(TAO_JacobianEval,tao,X,J,Jpre));
-  CHKERRQ(VecLockReadPop(X));
+  PetscCall(PetscLogEventEnd(TAO_JacobianEval,tao,X,J,Jpre));
+  PetscCall(VecLockReadPop(X));
   PetscFunctionReturn(0);
 }
 
@@ -442,13 +442,13 @@ PetscErrorCode TaoComputeJacobianDesign(Tao tao, Vec X, Mat J)
   PetscCheckSameComm(tao,1,X,2);
   PetscCheck(tao->ops->computejacobiandesign,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSetJacobianDesign() first");
   ++tao->njac_design;
-  CHKERRQ(VecLockReadPush(X));
-  CHKERRQ(PetscLogEventBegin(TAO_JacobianEval,tao,X,J,NULL));
+  PetscCall(VecLockReadPush(X));
+  PetscCall(PetscLogEventBegin(TAO_JacobianEval,tao,X,J,NULL));
   PetscStackPush("Tao user Jacobian(design) function");
-  CHKERRQ((*tao->ops->computejacobiandesign)(tao,X,J,tao->user_jac_designP));
+  PetscCall((*tao->ops->computejacobiandesign)(tao,X,J,tao->user_jac_designP));
   PetscStackPop;
-  CHKERRQ(PetscLogEventEnd(TAO_JacobianEval,tao,X,J,NULL));
-  CHKERRQ(VecLockReadPop(X));
+  PetscCall(PetscLogEventEnd(TAO_JacobianEval,tao,X,J,NULL));
+  PetscCall(VecLockReadPop(X));
   PetscFunctionReturn(0);
 }
 
@@ -495,13 +495,13 @@ PetscErrorCode TaoSetJacobianRoutine(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*
     tao->ops->computejacobian = func;
   }
   if (J) {
-    CHKERRQ(PetscObjectReference((PetscObject)J));
-    CHKERRQ(MatDestroy(&tao->jacobian));
+    PetscCall(PetscObjectReference((PetscObject)J));
+    PetscCall(MatDestroy(&tao->jacobian));
     tao->jacobian = J;
   }
   if (Jpre) {
-    CHKERRQ(PetscObjectReference((PetscObject)Jpre));
-    CHKERRQ(MatDestroy(&tao->jacobian_pre));
+    PetscCall(PetscObjectReference((PetscObject)Jpre));
+    PetscCall(MatDestroy(&tao->jacobian_pre));
     tao->jacobian_pre=Jpre;
   }
   PetscFunctionReturn(0);
@@ -551,13 +551,13 @@ PetscErrorCode TaoSetJacobianResidualRoutine(Tao tao, Mat J, Mat Jpre, PetscErro
     tao->ops->computeresidualjacobian = func;
   }
   if (J) {
-    CHKERRQ(PetscObjectReference((PetscObject)J));
-    CHKERRQ(MatDestroy(&tao->ls_jac));
+    PetscCall(PetscObjectReference((PetscObject)J));
+    PetscCall(MatDestroy(&tao->ls_jac));
     tao->ls_jac = J;
   }
   if (Jpre) {
-    CHKERRQ(PetscObjectReference((PetscObject)Jpre));
-    CHKERRQ(MatDestroy(&tao->ls_jac_pre));
+    PetscCall(PetscObjectReference((PetscObject)Jpre));
+    PetscCall(MatDestroy(&tao->ls_jac_pre));
     tao->ls_jac_pre=Jpre;
   }
   PetscFunctionReturn(0);
@@ -615,18 +615,18 @@ PetscErrorCode TaoSetJacobianStateRoutine(Tao tao, Mat J, Mat Jpre, Mat Jinv, Pe
     tao->ops->computejacobianstate = func;
   }
   if (J) {
-    CHKERRQ(PetscObjectReference((PetscObject)J));
-    CHKERRQ(MatDestroy(&tao->jacobian_state));
+    PetscCall(PetscObjectReference((PetscObject)J));
+    PetscCall(MatDestroy(&tao->jacobian_state));
     tao->jacobian_state = J;
   }
   if (Jpre) {
-    CHKERRQ(PetscObjectReference((PetscObject)Jpre));
-    CHKERRQ(MatDestroy(&tao->jacobian_state_pre));
+    PetscCall(PetscObjectReference((PetscObject)Jpre));
+    PetscCall(MatDestroy(&tao->jacobian_state_pre));
     tao->jacobian_state_pre=Jpre;
   }
   if (Jinv) {
-    CHKERRQ(PetscObjectReference((PetscObject)Jinv));
-    CHKERRQ(MatDestroy(&tao->jacobian_state_inv));
+    PetscCall(PetscObjectReference((PetscObject)Jinv));
+    PetscCall(MatDestroy(&tao->jacobian_state_inv));
     tao->jacobian_state_inv=Jinv;
   }
   PetscFunctionReturn(0);
@@ -673,8 +673,8 @@ PetscErrorCode TaoSetJacobianDesignRoutine(Tao tao, Mat J, PetscErrorCode (*func
     tao->ops->computejacobiandesign = func;
   }
   if (J) {
-    CHKERRQ(PetscObjectReference((PetscObject)J));
-    CHKERRQ(MatDestroy(&tao->jacobian_design));
+    PetscCall(PetscObjectReference((PetscObject)J));
+    PetscCall(MatDestroy(&tao->jacobian_design));
     tao->jacobian_design = J;
   }
   PetscFunctionReturn(0);
@@ -699,11 +699,11 @@ PetscErrorCode TaoSetJacobianDesignRoutine(Tao tao, Mat J, PetscErrorCode (*func
 PetscErrorCode TaoSetStateDesignIS(Tao tao, IS s_is, IS d_is)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectReference((PetscObject)s_is));
-  CHKERRQ(ISDestroy(&tao->state_is));
+  PetscCall(PetscObjectReference((PetscObject)s_is));
+  PetscCall(ISDestroy(&tao->state_is));
   tao->state_is = s_is;
-  CHKERRQ(PetscObjectReference((PetscObject)(d_is)));
-  CHKERRQ(ISDestroy(&tao->design_is));
+  PetscCall(PetscObjectReference((PetscObject)(d_is)));
+  PetscCall(ISDestroy(&tao->design_is));
   tao->design_is = d_is;
   PetscFunctionReturn(0);
 }
@@ -738,13 +738,13 @@ PetscErrorCode TaoComputeJacobianEquality(Tao tao, Vec X, Mat J, Mat Jpre)
   PetscCheckSameComm(tao,1,X,2);
   PetscCheck(tao->ops->computejacobianequality,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSetJacobianEquality() first");
   ++tao->njac_equality;
-  CHKERRQ(VecLockReadPush(X));
-  CHKERRQ(PetscLogEventBegin(TAO_JacobianEval,tao,X,J,Jpre));
+  PetscCall(VecLockReadPush(X));
+  PetscCall(PetscLogEventBegin(TAO_JacobianEval,tao,X,J,Jpre));
   PetscStackPush("Tao user Jacobian(equality) function");
-  CHKERRQ((*tao->ops->computejacobianequality)(tao,X,J,Jpre,tao->user_jac_equalityP));
+  PetscCall((*tao->ops->computejacobianequality)(tao,X,J,Jpre,tao->user_jac_equalityP));
   PetscStackPop;
-  CHKERRQ(PetscLogEventEnd(TAO_JacobianEval,tao,X,J,Jpre));
-  CHKERRQ(VecLockReadPop(X));
+  PetscCall(PetscLogEventEnd(TAO_JacobianEval,tao,X,J,Jpre));
+  PetscCall(VecLockReadPop(X));
   PetscFunctionReturn(0);
 }
 
@@ -778,13 +778,13 @@ PetscErrorCode TaoComputeJacobianInequality(Tao tao, Vec X, Mat J, Mat Jpre)
   PetscCheckSameComm(tao,1,X,2);
   PetscCheck(tao->ops->computejacobianinequality,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSetJacobianInequality() first");
   ++tao->njac_inequality;
-  CHKERRQ(VecLockReadPush(X));
-  CHKERRQ(PetscLogEventBegin(TAO_JacobianEval,tao,X,J,Jpre));
+  PetscCall(VecLockReadPush(X));
+  PetscCall(PetscLogEventBegin(TAO_JacobianEval,tao,X,J,Jpre));
   PetscStackPush("Tao user Jacobian(inequality) function");
-  CHKERRQ((*tao->ops->computejacobianinequality)(tao,X,J,Jpre,tao->user_jac_inequalityP));
+  PetscCall((*tao->ops->computejacobianinequality)(tao,X,J,Jpre,tao->user_jac_inequalityP));
   PetscStackPop;
-  CHKERRQ(PetscLogEventEnd(TAO_JacobianEval,tao,X,J,Jpre));
-  CHKERRQ(VecLockReadPop(X));
+  PetscCall(PetscLogEventEnd(TAO_JacobianEval,tao,X,J,Jpre));
+  PetscCall(VecLockReadPop(X));
   PetscFunctionReturn(0);
 }
 
@@ -835,13 +835,13 @@ PetscErrorCode TaoSetJacobianEqualityRoutine(Tao tao, Mat J, Mat Jpre, PetscErro
     tao->ops->computejacobianequality = func;
   }
   if (J) {
-    CHKERRQ(PetscObjectReference((PetscObject)J));
-    CHKERRQ(MatDestroy(&tao->jacobian_equality));
+    PetscCall(PetscObjectReference((PetscObject)J));
+    PetscCall(MatDestroy(&tao->jacobian_equality));
     tao->jacobian_equality = J;
   }
   if (Jpre) {
-    CHKERRQ(PetscObjectReference((PetscObject)Jpre));
-    CHKERRQ(MatDestroy(&tao->jacobian_equality_pre));
+    PetscCall(PetscObjectReference((PetscObject)Jpre));
+    PetscCall(MatDestroy(&tao->jacobian_equality_pre));
     tao->jacobian_equality_pre=Jpre;
   }
   PetscFunctionReturn(0);
@@ -894,13 +894,13 @@ PetscErrorCode TaoSetJacobianInequalityRoutine(Tao tao, Mat J, Mat Jpre, PetscEr
     tao->ops->computejacobianinequality = func;
   }
   if (J) {
-    CHKERRQ(PetscObjectReference((PetscObject)J));
-    CHKERRQ(MatDestroy(&tao->jacobian_inequality));
+    PetscCall(PetscObjectReference((PetscObject)J));
+    PetscCall(MatDestroy(&tao->jacobian_inequality));
     tao->jacobian_inequality = J;
   }
   if (Jpre) {
-    CHKERRQ(PetscObjectReference((PetscObject)Jpre));
-    CHKERRQ(MatDestroy(&tao->jacobian_inequality_pre));
+    PetscCall(PetscObjectReference((PetscObject)Jpre));
+    PetscCall(MatDestroy(&tao->jacobian_inequality_pre));
     tao->jacobian_inequality_pre=Jpre;
   }
   PetscFunctionReturn(0);

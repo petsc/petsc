@@ -19,71 +19,71 @@ int main(int argc, char **argv)
   PetscBool   test_dupped_type;
   MPI_Datatype contig;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD, PETSC_ERR_USER, "Only coded for one MPI process");
 
-  ierr             = PetscOptionsBegin(PETSC_COMM_WORLD,"","PetscSF type freeing options","none");CHKERRQ(ierr);
+  ierr             = PetscOptionsBegin(PETSC_COMM_WORLD,"","PetscSF type freeing options","none");PetscCall(ierr);
   test_dupped_type = PETSC_FALSE;
-  CHKERRQ(PetscOptionsBool("-test_dupped_type", "Test dupped input type","",test_dupped_type,&test_dupped_type,NULL));
-  ierr             = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(PetscOptionsBool("-test_dupped_type", "Test dupped input type","",test_dupped_type,&test_dupped_type,NULL));
+  ierr             = PetscOptionsEnd();PetscCall(ierr);
 
-  CHKERRQ(PetscSFCreate(PETSC_COMM_WORLD,&sf));
-  CHKERRQ(PetscSFSetFromOptions(sf));
+  PetscCall(PetscSFCreate(PETSC_COMM_WORLD,&sf));
+  PetscCall(PetscSFSetFromOptions(sf));
 
   nleaves = 1;
   nroots = 1;
-  CHKERRQ(PetscMalloc1(nleaves,&ilocal));
+  PetscCall(PetscMalloc1(nleaves,&ilocal));
 
   for (i = 0; i<nleaves; i++) {
     ilocal[i] = i;
   }
 
-  CHKERRQ(PetscMalloc1(nleaves,&iremote));
+  PetscCall(PetscMalloc1(nleaves,&iremote));
   iremote[0].rank = 0;
   iremote[0].index = 0;
-  CHKERRQ(PetscSFSetGraph(sf,nroots,nleaves,ilocal,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER));
-  CHKERRQ(PetscSFSetUp(sf));
-  CHKERRQ(PetscSFView(sf,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(VecSetSizes(A,4,PETSC_DETERMINE));
-  CHKERRQ(VecSetFromOptions(A));
-  CHKERRQ(VecSetUp(A));
+  PetscCall(PetscSFSetGraph(sf,nroots,nleaves,ilocal,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER));
+  PetscCall(PetscSFSetUp(sf));
+  PetscCall(PetscSFView(sf,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(VecSetSizes(A,4,PETSC_DETERMINE));
+  PetscCall(VecSetFromOptions(A));
+  PetscCall(VecSetUp(A));
 
-  CHKERRQ(VecDuplicate(A,&Aout));
-  CHKERRQ(VecGetArray(A,&bufA));
+  PetscCall(VecDuplicate(A,&Aout));
+  PetscCall(VecGetArray(A,&bufA));
   for (i=0; i<4; i++) {
     bufA[i] = (PetscScalar)i;
   }
-  CHKERRQ(VecRestoreArray(A,&bufA));
+  PetscCall(VecRestoreArray(A,&bufA));
 
-  CHKERRQ(VecGetArrayRead(A,(const PetscScalar**)&bufA));
-  CHKERRQ(VecGetArray(Aout,&bufAout));
+  PetscCall(VecGetArrayRead(A,(const PetscScalar**)&bufA));
+  PetscCall(VecGetArray(Aout,&bufAout));
 
-  CHKERRMPI(MPI_Type_contiguous(4, MPIU_SCALAR, &contig));
-  CHKERRMPI(MPI_Type_commit(&contig));
+  PetscCallMPI(MPI_Type_contiguous(4, MPIU_SCALAR, &contig));
+  PetscCallMPI(MPI_Type_commit(&contig));
 
   if (test_dupped_type) {
     MPI_Datatype tmp;
-    CHKERRMPI(MPI_Type_dup(contig, &tmp));
-    CHKERRMPI(MPI_Type_free(&contig));
+    PetscCallMPI(MPI_Type_dup(contig, &tmp));
+    PetscCallMPI(MPI_Type_free(&contig));
     contig = tmp;
   }
   for (i=0;i<10000;i++) {
-    CHKERRQ(PetscSFBcastBegin(sf,contig,bufA,bufAout,MPI_REPLACE));
-    CHKERRQ(PetscSFBcastEnd(sf,contig,bufA,bufAout,MPI_REPLACE));
+    PetscCall(PetscSFBcastBegin(sf,contig,bufA,bufAout,MPI_REPLACE));
+    PetscCall(PetscSFBcastEnd(sf,contig,bufA,bufAout,MPI_REPLACE));
   }
-  CHKERRQ(VecRestoreArrayRead(A,(const PetscScalar**)&bufA));
-  CHKERRQ(VecRestoreArray(Aout,&bufAout));
+  PetscCall(VecRestoreArrayRead(A,(const PetscScalar**)&bufA));
+  PetscCall(VecRestoreArray(Aout,&bufAout));
 
-  CHKERRQ(VecView(Aout,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(VecDestroy(&A));
-  CHKERRQ(VecDestroy(&Aout));
-  CHKERRQ(PetscSFDestroy(&sf));
-  CHKERRMPI(MPI_Type_free(&contig));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecView(Aout,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecDestroy(&A));
+  PetscCall(VecDestroy(&Aout));
+  PetscCall(PetscSFDestroy(&sf));
+  PetscCallMPI(MPI_Type_free(&contig));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

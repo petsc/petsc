@@ -28,16 +28,16 @@ int main(int argc,char **argv)
   PETSC_UINTPTR_T   clmemptr;
   const size_t      gsize=10, lsize=2;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
-  CHKERRQ(VecSetSizes(x,size,PETSC_DECIDE));
-  CHKERRQ(VecSetType(x, VECVIENNACL));
-  CHKERRQ(VecSet(x, 42.0));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+  PetscCall(VecSetSizes(x,size,PETSC_DECIDE));
+  PetscCall(VecSetType(x, VECVIENNACL));
+  PetscCall(VecSet(x, 42.0));
 
-  CHKERRQ(VecViennaCLGetCLContext(x, &clctxptr));
-  CHKERRQ(VecViennaCLGetCLQueue(x, &clqueueptr));
-  CHKERRQ(VecViennaCLGetCLMem(x, &clmemptr));
+  PetscCall(VecViennaCLGetCLContext(x, &clctxptr));
+  PetscCall(VecViennaCLGetCLQueue(x, &clqueueptr));
+  PetscCall(VecViennaCLGetCLMem(x, &clmemptr));
 
   const cl_context       ctx   = ((const cl_context)clctxptr);
   const cl_command_queue queue = ((const cl_command_queue)clqueueptr);
@@ -55,19 +55,19 @@ int main(int argc,char **argv)
   clFinish(queue);
 
   // let petsc know that device data is altered
-  CHKERRQ(VecViennaCLRestoreCLMem(x));
+  PetscCall(VecViennaCLRestoreCLMem(x));
 
   // 'x' should contain 84 as all its entries
-  CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
 
-  CHKERRQ(VecDestroy(&x));
+  PetscCall(VecDestroy(&x));
   clReleaseContext(ctx);
   clReleaseCommandQueue(queue);
   clReleaseMemObject(mem);
   clReleaseProgram(prg);
   clReleaseKernel(knl);
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

@@ -21,7 +21,7 @@ PetscErrorCode MatLoad_Dense_HDF5(Mat mat, PetscViewer viewer)
   PetscMPIInt         rank, size;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscViewerGetFormat(viewer, &format));
+  PetscCall(PetscViewerGetFormat(viewer, &format));
   switch (format) {
     case PETSC_VIEWER_HDF5_PETSC:
     case PETSC_VIEWER_DEFAULT:
@@ -46,16 +46,16 @@ PetscErrorCode MatLoad_Dense_HDF5(Mat mat, PetscViewer viewer)
   scalartype = H5T_NATIVE_DOUBLE;
 #endif
 
-  CHKERRQ(PetscObjectGetComm((PetscObject)mat,&comm));
-  CHKERRMPI(MPI_Comm_rank(comm,&rank));
-  CHKERRMPI(MPI_Comm_size(comm,&size));
-  CHKERRQ(PetscObjectGetName((PetscObject)mat,&mat_name));
+  PetscCall(PetscObjectGetComm((PetscObject)mat,&comm));
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
+  PetscCallMPI(MPI_Comm_size(comm,&size));
+  PetscCall(PetscObjectGetName((PetscObject)mat,&mat_name));
 
   /* Convert user-defined rmap and cmap to the dataset layout */
-  CHKERRQ(PetscLayoutCreate(PetscObjectComm((PetscObject)mat),&vmap));
+  PetscCall(PetscLayoutCreate(PetscObjectComm((PetscObject)mat),&vmap));
   if (mat->rmap->n >= 0 && mat->cmap->N < 0) {
     /* We need to know mat->cmap->N if user specifies custom mat->rmap->n, otherwise the latter would get ignored below */
-    CHKERRQ(PetscViewerHDF5ReadSizes(viewer, mat_name, &mat->cmap->N, NULL));
+    PetscCall(PetscViewerHDF5ReadSizes(viewer, mat_name, &mat->cmap->N, NULL));
   }
   vmap->bs = mat->cmap->N;
   vmap->n = (mat->rmap->n < 0 || mat->cmap->N < 0) ? -1 : mat->rmap->n * mat->cmap->N;
@@ -63,34 +63,34 @@ PetscErrorCode MatLoad_Dense_HDF5(Mat mat, PetscViewer viewer)
 
   /* Read the dataset and setup its layout */
   /* Note: PetscViewerHDF5ReadSizes_Private takes into account that the dataset is transposed for MATLAB MAT files */
-  CHKERRQ(PetscViewerHDF5Load(viewer, mat_name, vmap, scalartype, (void**)&a));
+  PetscCall(PetscViewerHDF5Load(viewer, mat_name, vmap, scalartype, (void**)&a));
 
   /* Convert the dataset layout back to rmap and cmap */
   mat->cmap->N = vmap->bs;
   mat->rmap->n = vmap->n / mat->cmap->N;
   mat->rmap->N = vmap->N / mat->cmap->N;
-  CHKERRQ(PetscLayoutSetUp(mat->rmap));
-  CHKERRQ(PetscLayoutSetUp(mat->cmap));
-  CHKERRQ(PetscLayoutDestroy(&vmap));
+  PetscCall(PetscLayoutSetUp(mat->rmap));
+  PetscCall(PetscLayoutSetUp(mat->cmap));
+  PetscCall(PetscLayoutDestroy(&vmap));
 
   /* TODO adding PetscCopyMode flag to MatSeqDenseSetPreallocation would make this code cleaner and simpler */
   {
     PetscBool flg;
     Mat_SeqDense *impl;
-    CHKERRQ(PetscObjectTypeCompare((PetscObject)mat,MATSEQDENSE,&flg));
+    PetscCall(PetscObjectTypeCompare((PetscObject)mat,MATSEQDENSE,&flg));
     if (flg) {
       impl = (Mat_SeqDense*)mat->data;
-      CHKERRQ(MatSeqDenseSetPreallocation(mat,a));
+      PetscCall(MatSeqDenseSetPreallocation(mat,a));
     } else {
       Mat_MPIDense *implm = (Mat_MPIDense*)mat->data;
-      CHKERRQ(MatMPIDenseSetPreallocation(mat,a));
+      PetscCall(MatMPIDenseSetPreallocation(mat,a));
       impl = (Mat_SeqDense*)implm->A->data;
     }
     impl->user_alloc = PETSC_FALSE;
   }
 
-  CHKERRQ(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 #endif

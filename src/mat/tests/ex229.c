@@ -9,10 +9,10 @@ static PetscErrorCode myF(void* ctx,Vec x,Vec y)
   PetscInt          i,j,m,n;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(x,&ax));
-  CHKERRQ(VecGetArray(y,&ay));
-  CHKERRQ(VecGetLocalSize(y,&m));
-  CHKERRQ(VecGetLocalSize(x,&n));
+  PetscCall(VecGetArrayRead(x,&ax));
+  PetscCall(VecGetArray(y,&ay));
+  PetscCall(VecGetLocalSize(y,&m));
+  PetscCall(VecGetLocalSize(x,&n));
   for (i=0;i<m;i++) {
     PetscScalar xx,yy;
 
@@ -23,8 +23,8 @@ static PetscErrorCode myF(void* ctx,Vec x,Vec y)
     }
     ay[i] = yy;
   }
-  CHKERRQ(VecRestoreArray(y,&ay));
-  CHKERRQ(VecRestoreArrayRead(x,&ax));
+  PetscCall(VecRestoreArray(y,&ay));
+  PetscCall(VecRestoreArrayRead(x,&ax));
   PetscFunctionReturn(0);
 }
 
@@ -34,21 +34,21 @@ int main(int argc,char **args)
   Vec            base;
   PetscInt       m = 3 ,n = 2;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
-  CHKERRQ(MatCreateMFFD(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,&A));
-  CHKERRQ(MatCreateVecs(A,&base,NULL));
-  CHKERRQ(VecSet(base,2.0));
-  CHKERRQ(MatMFFDSetFunction(A,myF,NULL));
-  CHKERRQ(MatMFFDSetBase(A,base,NULL));
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatComputeOperator(A,NULL,&B));
-  CHKERRQ(VecDestroy(&base));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(MatDestroy(&B));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
+  PetscCall(MatCreateMFFD(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,&A));
+  PetscCall(MatCreateVecs(A,&base,NULL));
+  PetscCall(VecSet(base,2.0));
+  PetscCall(MatMFFDSetFunction(A,myF,NULL));
+  PetscCall(MatMFFDSetBase(A,base,NULL));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatComputeOperator(A,NULL,&B));
+  PetscCall(VecDestroy(&base));
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&B));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

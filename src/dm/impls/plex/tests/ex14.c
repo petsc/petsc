@@ -13,28 +13,28 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionBegin;
   options->uninterpolate = PETSC_FALSE;
 
-  ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsBool("-uninterpolate", "Uninterpolate the mesh at the end", "ex14.c", options->uninterpolate, &options->uninterpolate, NULL));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");PetscCall(ierr);
+  PetscCall(PetscOptionsBool("-uninterpolate", "Uninterpolate the mesh at the end", "ex14.c", options->uninterpolate, &options->uninterpolate, NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscFunctionBegin;
-  CHKERRQ(DMCreate(comm, dm));
-  CHKERRQ(DMSetType(*dm, DMPLEX));
-  CHKERRQ(DMSetFromOptions(*dm));
-  CHKERRQ(DMViewFromOptions(*dm, NULL, "-orig_dm_view"));
+  PetscCall(DMCreate(comm, dm));
+  PetscCall(DMSetType(*dm, DMPLEX));
+  PetscCall(DMSetFromOptions(*dm));
+  PetscCall(DMViewFromOptions(*dm, NULL, "-orig_dm_view"));
   if (user->uninterpolate) {
     DM udm = NULL;
 
-    CHKERRQ(DMPlexUninterpolate(*dm, &udm));
-    CHKERRQ(DMDestroy(dm));
+    PetscCall(DMPlexUninterpolate(*dm, &udm));
+    PetscCall(DMDestroy(dm));
     *dm  = udm;
-    CHKERRQ(DMViewFromOptions(*dm, NULL, "-un_dm_view"));
+    PetscCall(DMViewFromOptions(*dm, NULL, "-un_dm_view"));
   }
-  CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
+  PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   PetscFunctionReturn(0);
 }
 
@@ -43,11 +43,11 @@ int main(int argc, char **argv)
   DM             dm;
   AppCtx         user;
 
-  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
-  CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));
-  CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
-  CHKERRQ(DMDestroy(&dm));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
+  PetscCall(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

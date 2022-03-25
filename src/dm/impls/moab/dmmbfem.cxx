@@ -138,10 +138,10 @@ PetscErrorCode Compute_Lagrange_Basis_1D_Internal(const PetscInt nverts, const P
   PetscValidPointer(ijacobian, 10);
   PetscValidPointer(volume, 11);
   if (phypts) {
-    CHKERRQ(PetscArrayzero(phypts, npts * 3));
+    PetscCall(PetscArrayzero(phypts, npts * 3));
   }
   if (dphidx) { /* Reset arrays. */
-    CHKERRQ(PetscArrayzero(dphidx, npts * nverts));
+    PetscCall(PetscArrayzero(dphidx, npts * nverts));
   }
   if (nverts == 2) { /* Linear Edge */
 
@@ -256,13 +256,13 @@ PetscErrorCode Compute_Lagrange_Basis_2D_Internal(const PetscInt nverts, const P
   PetscValidPointer(jacobian, 10);
   PetscValidPointer(ijacobian, 11);
   PetscValidPointer(volume, 12);
-  CHKERRQ(PetscArrayzero(phi, npts));
+  PetscCall(PetscArrayzero(phi, npts));
   if (phypts) {
-    CHKERRQ(PetscArrayzero(phypts, npts * 3));
+    PetscCall(PetscArrayzero(phypts, npts * 3));
   }
   if (dphidx) { /* Reset arrays. */
-    CHKERRQ(PetscArrayzero(dphidx, npts * nverts));
-    CHKERRQ(PetscArrayzero(dphidy, npts * nverts));
+    PetscCall(PetscArrayzero(dphidx, npts * nverts));
+    PetscCall(PetscArrayzero(dphidy, npts * nverts));
   }
   if (nverts == 4) { /* Linear Quadrangle */
 
@@ -280,8 +280,8 @@ PetscErrorCode Compute_Lagrange_Basis_2D_Internal(const PetscInt nverts, const P
       const PetscReal dNi_dxi[4]  = { -1.0 + s, 1.0 - s, s, -s };
       const PetscReal dNi_deta[4] = { -1.0 + r, -r, r, 1.0 - r };
 
-      CHKERRQ(PetscArrayzero(jacobian, 4));
-      CHKERRQ(PetscArrayzero(ijacobian, 4));
+      PetscCall(PetscArrayzero(jacobian, 4));
+      PetscCall(PetscArrayzero(ijacobian, 4));
       for (i = 0; i < nverts; ++i) {
         const PetscReal* vertices = coords + i * 3;
         jacobian[0] += dNi_dxi[i] * vertices[0];
@@ -296,7 +296,7 @@ PetscErrorCode Compute_Lagrange_Basis_2D_Internal(const PetscInt nverts, const P
       }
 
       /* invert the jacobian */
-      CHKERRQ(DMatrix_Invert_2x2_Internal(jacobian, ijacobian, volume));
+      PetscCall(DMatrix_Invert_2x2_Internal(jacobian, ijacobian, volume));
       PetscCheckFalse(*volume < 1e-12,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Quadrangular element has zero volume: %g. Degenerate element or invalid connectivity", *volume);
 
       if (jxw) jxw[j] *= *volume;
@@ -314,15 +314,15 @@ PetscErrorCode Compute_Lagrange_Basis_2D_Internal(const PetscInt nverts, const P
   } else if (nverts == 3) { /* Linear triangle */
     const PetscReal x2 = coords[2 * 3 + 0], y2 = coords[2 * 3 + 1];
 
-    CHKERRQ(PetscArrayzero(jacobian, 4));
-    CHKERRQ(PetscArrayzero(ijacobian, 4));
+    PetscCall(PetscArrayzero(jacobian, 4));
+    PetscCall(PetscArrayzero(ijacobian, 4));
 
     /* Jacobian is constant */
     jacobian[0] = (coords[0 * 3 + 0] - x2); jacobian[1] = (coords[1 * 3 + 0] - x2);
     jacobian[2] = (coords[0 * 3 + 1] - y2); jacobian[3] = (coords[1 * 3 + 1] - y2);
 
     /* invert the jacobian */
-    CHKERRQ(DMatrix_Invert_2x2_Internal(jacobian, ijacobian, volume));
+    PetscCall(DMatrix_Invert_2x2_Internal(jacobian, ijacobian, volume));
     PetscCheckFalse(*volume < 1e-12,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Triangular element has zero volume: %g. Degenerate element or invalid connectivity", (double)*volume);
 
     const PetscReal Dx[3] = { ijacobian[0], ijacobian[2], - ijacobian[0] - ijacobian[2] };
@@ -418,14 +418,14 @@ PetscErrorCode Compute_Lagrange_Basis_3D_Internal(const PetscInt nverts, const P
   PetscValidPointer(ijacobian, 12);
   PetscValidPointer(volume, 13);
 
-  CHKERRQ(PetscArrayzero(phi, npts));
+  PetscCall(PetscArrayzero(phi, npts));
   if (phypts) {
-    CHKERRQ(PetscArrayzero(phypts, npts * 3));
+    PetscCall(PetscArrayzero(phypts, npts * 3));
   }
   if (dphidx) {
-    CHKERRQ(PetscArrayzero(dphidx, npts * nverts));
-    CHKERRQ(PetscArrayzero(dphidy, npts * nverts));
-    CHKERRQ(PetscArrayzero(dphidz, npts * nverts));
+    PetscCall(PetscArrayzero(dphidx, npts * nverts));
+    PetscCall(PetscArrayzero(dphidy, npts * nverts));
+    PetscCall(PetscArrayzero(dphidz, npts * nverts));
   }
 
   if (nverts == 8) { /* Linear Hexahedra */
@@ -475,8 +475,8 @@ PetscErrorCode Compute_Lagrange_Basis_3D_Internal(const PetscInt nverts, const P
                                           ( 1.0 - r) * (       s)
                                      };
 
-      CHKERRQ(PetscArrayzero(jacobian, 9));
-      CHKERRQ(PetscArrayzero(ijacobian, 9));
+      PetscCall(PetscArrayzero(jacobian, 9));
+      PetscCall(PetscArrayzero(ijacobian, 9));
       for (i = 0; i < nverts; ++i) {
         const PetscReal* vertex = coords + i * 3;
         jacobian[0] += dNi_dxi[i]   * vertex[0];
@@ -496,7 +496,7 @@ PetscErrorCode Compute_Lagrange_Basis_3D_Internal(const PetscInt nverts, const P
       }
 
       /* invert the jacobian */
-      CHKERRQ(DMatrix_Invert_3x3_Internal(jacobian, ijacobian, volume));
+      PetscCall(DMatrix_Invert_3x3_Internal(jacobian, ijacobian, volume));
       PetscCheckFalse(*volume < 1e-8,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Hexahedral element has zero volume: %g. Degenerate element or invalid connectivity", *volume);
 
       if (jxw) jxw[j] *= (*volume);
@@ -514,8 +514,8 @@ PetscErrorCode Compute_Lagrange_Basis_3D_Internal(const PetscInt nverts, const P
     PetscReal       Dx[4]={0,0,0,0}, Dy[4]={0,0,0,0}, Dz[4]={0,0,0,0};
     const PetscReal x0 = coords[/*0 * 3 +*/ 0], y0 = coords[/*0 * 3 +*/ 1], z0 = coords[/*0 * 3 +*/ 2];
 
-    CHKERRQ(PetscArrayzero(jacobian, 9));
-    CHKERRQ(PetscArrayzero(ijacobian, 9));
+    PetscCall(PetscArrayzero(jacobian, 9));
+    PetscCall(PetscArrayzero(ijacobian, 9));
 
     /* compute the jacobian */
     jacobian[0] = coords[1 * 3 + 0] - x0;  jacobian[1] = coords[2 * 3 + 0] - x0; jacobian[2] = coords[3 * 3 + 0] - x0;
@@ -523,7 +523,7 @@ PetscErrorCode Compute_Lagrange_Basis_3D_Internal(const PetscInt nverts, const P
     jacobian[6] = coords[1 * 3 + 2] - z0;  jacobian[7] = coords[2 * 3 + 2] - z0; jacobian[8] = coords[3 * 3 + 2] - z0;
 
     /* invert the jacobian */
-    CHKERRQ(DMatrix_Invert_3x3_Internal(jacobian, ijacobian, volume));
+    PetscCall(DMatrix_Invert_3x3_Internal(jacobian, ijacobian, volume));
     PetscCheckFalse(*volume < 1e-8,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Tetrahedral element has zero volume: %g. Degenerate element or invalid connectivity", (double)*volume);
 
     if (dphidx) {
@@ -641,28 +641,28 @@ PetscErrorCode DMMoabFEMComputeBasis(const PetscInt dim, const PetscInt nverts, 
   compute_der = (fe_basis_derivatives != NULL);
 
   /* Get the quadrature points and weights for the given quadrature rule */
-  CHKERRQ(PetscQuadratureGetData(quadrature, &idim, NULL, &npoints, &quadpts, &quadwts));
+  PetscCall(PetscQuadratureGetData(quadrature, &idim, NULL, &npoints, &quadpts, &quadwts));
   PetscCheckFalse(idim != dim,PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Dimension mismatch: provided (%D) vs quadrature (%D)",idim,dim);
   if (jacobian_quadrature_weight_product) {
-    CHKERRQ(PetscArraycpy(jacobian_quadrature_weight_product, quadwts, npoints));
+    PetscCall(PetscArraycpy(jacobian_quadrature_weight_product, quadwts, npoints));
   }
 
   switch (dim) {
   case 1:
-    CHKERRQ(Compute_Lagrange_Basis_1D_Internal(nverts, coordinates, npoints, quadpts, phypts,
+    PetscCall(Compute_Lagrange_Basis_1D_Internal(nverts, coordinates, npoints, quadpts, phypts,
                                                jacobian_quadrature_weight_product, fe_basis,
                                                (compute_der ? fe_basis_derivatives[0] : NULL),
                                                jacobian, ijacobian, &volume));
     break;
   case 2:
-    CHKERRQ(Compute_Lagrange_Basis_2D_Internal(nverts, coordinates, npoints, quadpts, phypts,
+    PetscCall(Compute_Lagrange_Basis_2D_Internal(nverts, coordinates, npoints, quadpts, phypts,
                                                jacobian_quadrature_weight_product, fe_basis,
                                                (compute_der ? fe_basis_derivatives[0] : NULL),
                                                (compute_der ? fe_basis_derivatives[1] : NULL),
                                                jacobian, ijacobian, &volume));
     break;
   case 3:
-    CHKERRQ(Compute_Lagrange_Basis_3D_Internal(nverts, coordinates, npoints, quadpts, phypts,
+    PetscCall(Compute_Lagrange_Basis_3D_Internal(nverts, coordinates, npoints, quadpts, phypts,
                                                jacobian_quadrature_weight_product, fe_basis,
                                                (compute_der ? fe_basis_derivatives[0] : NULL),
                                                (compute_der ? fe_basis_derivatives[1] : NULL),
@@ -701,14 +701,14 @@ PetscErrorCode DMMoabFEMCreateQuadratureDefault(const PetscInt dim, const PetscI
   {
   case 1:
     /* Create Gauss quadrature rules with <order = nverts> in the span [-1, 1] */
-    CHKERRQ(PetscDTStroudConicalQuadrature(1, nc, nverts, 0, 1.0, quadrature));
+    PetscCall(PetscDTStroudConicalQuadrature(1, nc, nverts, 0, 1.0, quadrature));
     break;
   case 2:
     /* Create Gauss quadrature rules with <order = nverts> in the span [-1, 1] */
     if (nverts == 3) {
       const PetscInt order = 2;
       const PetscInt npoints = (order == 2 ? 3 : 6);
-      CHKERRQ(PetscMalloc2(npoints * 2, &x, npoints, &w));
+      PetscCall(PetscMalloc2(npoints * 2, &x, npoints, &w));
       if (npoints == 3) {
         x[0] = x[1] = x[2] = x[5] = 1.0 / 6.0;
         x[3] = x[4] = 2.0 / 3.0;
@@ -723,12 +723,12 @@ PetscErrorCode DMMoabFEMCreateQuadratureDefault(const PetscInt dim, const PetscI
         w[0] = w[1] = w[2] = 0.22338158967801;
         w[3] = w[4] = w[5] = 0.10995174365532;
       } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Triangle quadrature rules for points 3 and 6 supported; npoints : %D", npoints);
-      CHKERRQ(PetscQuadratureCreate(PETSC_COMM_SELF, quadrature));
-      CHKERRQ(PetscQuadratureSetOrder(*quadrature, order));
-      CHKERRQ(PetscQuadratureSetData(*quadrature, dim, nc, npoints, x, w));
-      /* CHKERRQ(PetscDTStroudConicalQuadrature(dim, nc, nverts, 0.0, 1.0, quadrature)); */
+      PetscCall(PetscQuadratureCreate(PETSC_COMM_SELF, quadrature));
+      PetscCall(PetscQuadratureSetOrder(*quadrature, order));
+      PetscCall(PetscQuadratureSetData(*quadrature, dim, nc, npoints, x, w));
+      /* PetscCall(PetscDTStroudConicalQuadrature(dim, nc, nverts, 0.0, 1.0, quadrature)); */
     } else {
-      CHKERRQ(PetscDTGaussTensorQuadrature(dim, nc, nverts, 0.0, 1.0, quadrature));
+      PetscCall(PetscDTGaussTensorQuadrature(dim, nc, nverts, 0.0, 1.0, quadrature));
     }
     break;
   case 3:
@@ -736,14 +736,14 @@ PetscErrorCode DMMoabFEMCreateQuadratureDefault(const PetscInt dim, const PetscI
     if (nverts == 4) {
       PetscInt order;
       const PetscInt npoints = 4; // Choose between 4 and 10
-      CHKERRQ(PetscMalloc2(npoints * 3, &x, npoints, &w));
+      PetscCall(PetscMalloc2(npoints * 3, &x, npoints, &w));
       if (npoints == 4) { /*  KEAST1, K1,  N=4, O=4 */
         const PetscReal x_4[12] = { 0.5854101966249685, 0.1381966011250105, 0.1381966011250105,
                                     0.1381966011250105, 0.1381966011250105, 0.1381966011250105,
                                     0.1381966011250105, 0.1381966011250105, 0.5854101966249685,
                                     0.1381966011250105, 0.5854101966249685, 0.1381966011250105
                                   };
-        CHKERRQ(PetscArraycpy(x, x_4, 12));
+        PetscCall(PetscArraycpy(x, x_4, 12));
 
         w[0] = w[1] = w[2] = w[3] = 1.0 / 24.0;
         order = 4;
@@ -759,18 +759,18 @@ PetscErrorCode DMMoabFEMCreateQuadratureDefault(const PetscInt dim, const PetscI
                                      0.0000000000000000, 0.5000000000000000, 0.0000000000000000,
                                      0.0000000000000000, 0.0000000000000000, 0.5000000000000000
                                    };
-        CHKERRQ(PetscArraycpy(x, x_10, 30));
+        PetscCall(PetscArraycpy(x, x_10, 30));
 
         w[0] = w[1] = w[2] = w[3] = 0.2177650698804054;
         w[4] = w[5] = w[6] = w[7] = w[8] = w[9] = 0.0214899534130631;
         order = 10;
       } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Tetrahedral quadrature rules for points 4 and 10 supported; npoints : %D", npoints);
-      CHKERRQ(PetscQuadratureCreate(PETSC_COMM_SELF, quadrature));
-      CHKERRQ(PetscQuadratureSetOrder(*quadrature, order));
-      CHKERRQ(PetscQuadratureSetData(*quadrature, dim, nc, npoints, x, w));
-      /* CHKERRQ(PetscDTStroudConicalQuadrature(dim, nc, nverts, 0.0, 1.0, quadrature)); */
+      PetscCall(PetscQuadratureCreate(PETSC_COMM_SELF, quadrature));
+      PetscCall(PetscQuadratureSetOrder(*quadrature, order));
+      PetscCall(PetscQuadratureSetData(*quadrature, dim, nc, npoints, x, w));
+      /* PetscCall(PetscDTStroudConicalQuadrature(dim, nc, nverts, 0.0, 1.0, quadrature)); */
     } else {
-      CHKERRQ(PetscDTGaussTensorQuadrature(dim, nc, nverts, 0.0, 1.0, quadrature));
+      PetscCall(PetscDTGaussTensorQuadrature(dim, nc, nverts, 0.0, 1.0, quadrature));
     }
     break;
   default:
@@ -790,12 +790,12 @@ PetscErrorCode ComputeJacobian_Internal (const PetscInt dim, const PetscInt nver
   PetscValidPointer(coordinates, 3);
   PetscValidPointer(quad, 4);
   PetscValidPointer(jacobian, 5);
-  CHKERRQ(PetscArrayzero(jacobian, dim * dim));
+  PetscCall(PetscArrayzero(jacobian, dim * dim));
   if (ijacobian) {
-    CHKERRQ(PetscArrayzero(ijacobian, dim * dim));
+    PetscCall(PetscArrayzero(ijacobian, dim * dim));
   }
   if (phypts) {
-    CHKERRQ(PetscArrayzero(phypts, /*npts=1 * */ 3));
+    PetscCall(PetscArrayzero(phypts, /*npts=1 * */ 3));
   }
 
   if (dim == 1) {
@@ -848,7 +848,7 @@ PetscErrorCode ComputeJacobian_Internal (const PetscInt dim, const PetscInt nver
 
     /* invert the jacobian */
     if (ijacobian) {
-      CHKERRQ(DMatrix_Invert_2x2_Internal(jacobian, ijacobian, &volume));
+      PetscCall(DMatrix_Invert_2x2_Internal(jacobian, ijacobian, &volume));
     }
   } else {
 
@@ -909,7 +909,7 @@ PetscErrorCode ComputeJacobian_Internal (const PetscInt dim, const PetscInt nver
 
     if (ijacobian) {
       /* invert the jacobian */
-      CHKERRQ(DMatrix_Invert_3x3_Internal(jacobian, ijacobian, &volume));
+      PetscCall(DMatrix_Invert_3x3_Internal(jacobian, ijacobian, &volume));
     }
 
   }
@@ -924,13 +924,13 @@ PetscErrorCode FEMComputeBasis_JandF(const PetscInt dim, const PetscInt nverts, 
   PetscFunctionBegin;
   switch (dim) {
     case 1:
-      CHKERRQ(Compute_Lagrange_Basis_1D_Internal(nverts, coordinates, 1, quadrature, phypts, NULL, phibasis, NULL, jacobian, ijacobian, volume));
+      PetscCall(Compute_Lagrange_Basis_1D_Internal(nverts, coordinates, 1, quadrature, phypts, NULL, phibasis, NULL, jacobian, ijacobian, volume));
       break;
     case 2:
-      CHKERRQ(Compute_Lagrange_Basis_2D_Internal(nverts, coordinates, 1, quadrature, phypts, NULL, phibasis, NULL, NULL, jacobian, ijacobian, volume));
+      PetscCall(Compute_Lagrange_Basis_2D_Internal(nverts, coordinates, 1, quadrature, phypts, NULL, phibasis, NULL, NULL, jacobian, ijacobian, volume));
       break;
     case 3:
-      CHKERRQ(Compute_Lagrange_Basis_3D_Internal(nverts, coordinates, 1, quadrature, phypts, NULL, phibasis, NULL, NULL, NULL, jacobian, ijacobian, volume));
+      PetscCall(Compute_Lagrange_Basis_3D_Internal(nverts, coordinates, 1, quadrature, phypts, NULL, phibasis, NULL, NULL, NULL, jacobian, ijacobian, volume));
       break;
     default:
       SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension; should be in [1,3] : %D", dim);
@@ -973,15 +973,15 @@ PetscErrorCode DMMoabPToRMapping(const PetscInt dim, const PetscInt nverts, cons
   PetscValidPointer(xphy, 4);
   PetscValidPointer(natparam, 5);
 
-  CHKERRQ(PetscArrayzero(jacobian, dim * dim));
-  CHKERRQ(PetscArrayzero(ijacobian, dim * dim));
-  CHKERRQ(PetscArrayzero(phibasis, nverts));
+  PetscCall(PetscArrayzero(jacobian, dim * dim));
+  PetscCall(PetscArrayzero(ijacobian, dim * dim));
+  PetscCall(PetscArrayzero(phibasis, nverts));
 
   /* zero initial guess */
   natparam[0] = natparam[1] = natparam[2] = 0.0;
 
   /* Compute delta = evaluate( xi) - x */
-  CHKERRQ(FEMComputeBasis_JandF(dim, nverts, coordinates, natparam, phypts, phibasis, jacobian, ijacobian, &volume));
+  PetscCall(FEMComputeBasis_JandF(dim, nverts, coordinates, natparam, phypts, phibasis, jacobian, ijacobian, &volume));
 
   error = 0.0;
   switch(dim) {
@@ -1019,7 +1019,7 @@ PetscErrorCode DMMoabPToRMapping(const PetscInt dim, const PetscInt nverts, cons
     }
 
     /* Compute delta = evaluate( xi) - x */
-    CHKERRQ(FEMComputeBasis_JandF(dim, nverts, coordinates, natparam, phypts, phibasis, jacobian, ijacobian, &volume));
+    PetscCall(FEMComputeBasis_JandF(dim, nverts, coordinates, natparam, phypts, phibasis, jacobian, ijacobian, &volume));
 
     error = 0.0;
     switch(dim) {
@@ -1036,7 +1036,7 @@ PetscErrorCode DMMoabPToRMapping(const PetscInt dim, const PetscInt nverts, cons
     }
   }
   if (phi) {
-    CHKERRQ(PetscArraycpy(phi, phibasis, nverts));
+    PetscCall(PetscArraycpy(phi, phibasis, nverts));
   }
   PetscFunctionReturn(0);
 }

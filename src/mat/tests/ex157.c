@@ -13,74 +13,74 @@ int main(int argc,char **args)
   PetscReal      fac;
   PetscScalar    one=1,two=2,three=3;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires real numbers");
 #endif
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
-  CHKERRQ(PetscRandomCreate(PETSC_COMM_WORLD, &rdm));
-  CHKERRQ(PetscRandomSetFromOptions(rdm));
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&input));
-  CHKERRQ(VecSetSizes(input,PETSC_DECIDE,N));
-  CHKERRQ(VecSetFromOptions(input));
-/*  CHKERRQ(VecSet(input,one)); */
-/*  CHKERRQ(VecSetValue(input,1,two,INSERT_VALUES)); */
-/*  CHKERRQ(VecSetValue(input,2,three,INSERT_VALUES)); */
-/*  CHKERRQ(VecSetValue(input,3,three,INSERT_VALUES)); */
-  CHKERRQ(VecSetRandom(input,rdm));
-/*  CHKERRQ(VecSetRandom(input,rdm)); */
-/*  CHKERRQ(VecSetRandom(input,rdm)); */
-  CHKERRQ(VecDuplicate(input,&output));
+  PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &rdm));
+  PetscCall(PetscRandomSetFromOptions(rdm));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&input));
+  PetscCall(VecSetSizes(input,PETSC_DECIDE,N));
+  PetscCall(VecSetFromOptions(input));
+/*  PetscCall(VecSet(input,one)); */
+/*  PetscCall(VecSetValue(input,1,two,INSERT_VALUES)); */
+/*  PetscCall(VecSetValue(input,2,three,INSERT_VALUES)); */
+/*  PetscCall(VecSetValue(input,3,three,INSERT_VALUES)); */
+  PetscCall(VecSetRandom(input,rdm));
+/*  PetscCall(VecSetRandom(input,rdm)); */
+/*  PetscCall(VecSetRandom(input,rdm)); */
+  PetscCall(VecDuplicate(input,&output));
 
   DIM  = 2; dim[0] = N0; dim[1] = N1; dim[2] = N2; dim[3] = N3; dim[4] = N4;
-  CHKERRQ(MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A));
-  CHKERRQ(MatCreateVecsFFTW(A,&x,&y,&z));
-/*  CHKERRQ(MatCreateVecs(A,&x,&y)); */
-/*  CHKERRQ(MatCreateVecs(A,&z,NULL)); */
+  PetscCall(MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A));
+  PetscCall(MatCreateVecsFFTW(A,&x,&y,&z));
+/*  PetscCall(MatCreateVecs(A,&x,&y)); */
+/*  PetscCall(MatCreateVecs(A,&z,NULL)); */
 
-  CHKERRQ(VecGetSize(x,&vsize));
+  PetscCall(VecGetSize(x,&vsize));
   printf("The vector size  of input from the main routine is %d\n",vsize);
 
-  CHKERRQ(VecGetSize(z,&vsize));
+  PetscCall(VecGetSize(z,&vsize));
   printf("The vector size of output from the main routine is %d\n",vsize);
 
-  CHKERRQ(InputTransformFFT(A,input,x));
+  PetscCall(InputTransformFFT(A,input,x));
 
-  CHKERRQ(MatMult(A,x,y));
-  CHKERRQ(VecAssemblyBegin(y));
-  CHKERRQ(VecAssemblyEnd(y));
-  CHKERRQ(VecView(y,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatMult(A,x,y));
+  PetscCall(VecAssemblyBegin(y));
+  PetscCall(VecAssemblyEnd(y));
+  PetscCall(VecView(y,PETSC_VIEWER_STDOUT_WORLD));
 
-  CHKERRQ(MatMultTranspose(A,y,z));
+  PetscCall(MatMultTranspose(A,y,z));
 
-  CHKERRQ(OutputTransformFFT(A,z,output));
+  PetscCall(OutputTransformFFT(A,z,output));
   fac  = 1.0/(PetscReal)N;
-  CHKERRQ(VecScale(output,fac));
+  PetscCall(VecScale(output,fac));
 
-  CHKERRQ(VecAssemblyBegin(input));
-  CHKERRQ(VecAssemblyEnd(input));
-  CHKERRQ(VecAssemblyBegin(output));
-  CHKERRQ(VecAssemblyEnd(output));
+  PetscCall(VecAssemblyBegin(input));
+  PetscCall(VecAssemblyEnd(input));
+  PetscCall(VecAssemblyBegin(output));
+  PetscCall(VecAssemblyEnd(output));
 
-/*  CHKERRQ(VecView(input,PETSC_VIEWER_STDOUT_WORLD)); */
-/*  CHKERRQ(VecView(output,PETSC_VIEWER_STDOUT_WORLD)); */
+/*  PetscCall(VecView(input,PETSC_VIEWER_STDOUT_WORLD)); */
+/*  PetscCall(VecView(output,PETSC_VIEWER_STDOUT_WORLD)); */
 
-  CHKERRQ(VecAXPY(output,-1.0,input));
-  CHKERRQ(VecNorm(output,NORM_1,&enorm));
+  PetscCall(VecAXPY(output,-1.0,input));
+  PetscCall(VecNorm(output,NORM_1,&enorm));
 /*  if (enorm > 1.e-14) { */
-  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %e\n",enorm));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %e\n",enorm));
 /*      } */
 
-  CHKERRQ(VecDestroy(&output));
-  CHKERRQ(VecDestroy(&input));
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&y));
-  CHKERRQ(VecDestroy(&z));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(PetscRandomDestroy(&rdm));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&output));
+  PetscCall(VecDestroy(&input));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&y));
+  PetscCall(VecDestroy(&z));
+  PetscCall(MatDestroy(&A));
+  PetscCall(PetscRandomDestroy(&rdm));
+  PetscCall(PetscFinalize());
   return 0;
 
 }

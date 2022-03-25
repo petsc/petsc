@@ -38,7 +38,7 @@ PetscErrorCode  PetscGetUserName(char name[],size_t nlen)
   PetscFunctionBegin;
   user = getenv("USER");
   if (!user) user = "Unknown";
-  CHKERRQ(PetscStrncpy(name,user,nlen));
+  PetscCall(PetscStrncpy(name,user,nlen));
   PetscFunctionReturn(0);
 }
 #endif

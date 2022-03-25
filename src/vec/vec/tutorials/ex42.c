@@ -9,15 +9,15 @@ int main(int argc,char **args)
   PetscViewer    fd;               /* viewer */
   PetscInt       i;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   fd = PETSC_VIEWER_SOCKET_WORLD;
 
   for (i=0; i<1000; i++) {
-    CHKERRQ(VecCreate(PETSC_COMM_WORLD,&b));
-    CHKERRQ(VecLoad(b,fd));
-    CHKERRQ(VecView(b,fd));
-    CHKERRQ(VecDestroy(&b));
+    PetscCall(VecCreate(PETSC_COMM_WORLD,&b));
+    PetscCall(VecLoad(b,fd));
+    PetscCall(VecView(b,fd));
+    PetscCall(VecDestroy(&b));
   }
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }

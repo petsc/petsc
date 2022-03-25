@@ -80,16 +80,16 @@ PetscErrorCode SaveSolution(TS ts)
   PetscReal         t;
 
   PetscFunctionBegin;
-  CHKERRQ(TSGetApplicationContext(ts,&user));
-  CHKERRQ(TSGetTime(ts,&t));
-  CHKERRQ(TSGetSolution(ts,&X));
+  PetscCall(TSGetApplicationContext(ts,&user));
+  PetscCall(TSGetTime(ts,&t));
+  PetscCall(TSGetSolution(ts,&X));
   idx      =  3*user->stepnum;
-  CHKERRQ(MatDenseGetArray(user->Sol,&mat));
-  CHKERRQ(VecGetArrayRead(X,&x));
+  PetscCall(MatDenseGetArray(user->Sol,&mat));
+  PetscCall(VecGetArrayRead(X,&x));
   mat[idx] = t;
-  CHKERRQ(PetscArraycpy(mat+idx+1,x,2));
-  CHKERRQ(MatDenseRestoreArray(user->Sol,&mat));
-  CHKERRQ(VecRestoreArrayRead(X,&x));
+  PetscCall(PetscArraycpy(mat+idx+1,x,2));
+  PetscCall(MatDenseRestoreArray(user->Sol,&mat));
+  PetscCall(VecRestoreArrayRead(X,&x));
   user->stepnum++;
   PetscFunctionReturn(0);
 }
@@ -106,35 +106,35 @@ PetscErrorCode WindSpeeds(AppCtx *user)
   user->kw       = 2; /* Rayleigh distribution */
   user->nsamples = 2000;
   user->Tw       = 0.2;
-  ierr           = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Wind Speed Options","");CHKERRQ(ierr);
+  ierr           = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Wind Speed Options","");PetscCall(ierr);
   {
-    CHKERRQ(PetscOptionsReal("-cw","","",user->cw,&user->cw,NULL));
-    CHKERRQ(PetscOptionsReal("-kw","","",user->kw,&user->kw,NULL));
-    CHKERRQ(PetscOptionsInt("-nsamples","","",user->nsamples,&user->nsamples,NULL));
-    CHKERRQ(PetscOptionsReal("-Tw","","",user->Tw,&user->Tw,NULL));
+    PetscCall(PetscOptionsReal("-cw","","",user->cw,&user->cw,NULL));
+    PetscCall(PetscOptionsReal("-kw","","",user->kw,&user->kw,NULL));
+    PetscCall(PetscOptionsInt("-nsamples","","",user->nsamples,&user->nsamples,NULL));
+    PetscCall(PetscOptionsReal("-Tw","","",user->Tw,&user->Tw,NULL));
   }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&user->wind_data));
-  CHKERRQ(VecSetSizes(user->wind_data,PETSC_DECIDE,user->nsamples));
-  CHKERRQ(VecSetFromOptions(user->wind_data));
-  CHKERRQ(VecDuplicate(user->wind_data,&user->t_wind));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&user->wind_data));
+  PetscCall(VecSetSizes(user->wind_data,PETSC_DECIDE,user->nsamples));
+  PetscCall(VecSetFromOptions(user->wind_data));
+  PetscCall(VecDuplicate(user->wind_data,&user->t_wind));
 
-  CHKERRQ(VecGetArray(user->t_wind,&t));
+  PetscCall(VecGetArray(user->t_wind,&t));
   for (i=0; i < user->nsamples; i++) t[i] = (i+1)*tmax/user->nsamples;
-  CHKERRQ(VecRestoreArray(user->t_wind,&t));
+  PetscCall(VecRestoreArray(user->t_wind,&t));
 
   /* Wind speed deviation = (-log(rand)/cw)^(1/kw) */
-  CHKERRQ(VecSetRandom(user->wind_data,NULL));
-  CHKERRQ(VecLog(user->wind_data));
-  CHKERRQ(VecScale(user->wind_data,-1/user->cw));
-  CHKERRQ(VecGetArray(user->wind_data,&x));
+  PetscCall(VecSetRandom(user->wind_data,NULL));
+  PetscCall(VecLog(user->wind_data));
+  PetscCall(VecScale(user->wind_data,-1/user->cw));
+  PetscCall(VecGetArray(user->wind_data,&x));
   for (i=0;i < user->nsamples;i++) x[i] = PetscPowScalar(x[i],(1/user->kw));
-  CHKERRQ(VecRestoreArray(user->wind_data,&x));
-  CHKERRQ(VecSum(user->wind_data,&sum));
+  PetscCall(VecRestoreArray(user->wind_data,&x));
+  PetscCall(VecSum(user->wind_data,&sum));
   avg_dev = sum/user->nsamples;
   /* Wind speed (t) = (1 + wind speed deviation(t) - avg_dev)*average wind speed */
-  CHKERRQ(VecShift(user->wind_data,(1-avg_dev)));
-  CHKERRQ(VecScale(user->wind_data,vwa));
+  PetscCall(VecShift(user->wind_data,(1-avg_dev)));
+  PetscCall(VecScale(user->wind_data,vwa));
   PetscFunctionReturn(0);
 }
 
@@ -190,22 +190,22 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *u
   PetscInt          stepnum;
 
   PetscFunctionBegin;
-  CHKERRQ(TSGetStepNumber(ts,&stepnum));
+  PetscCall(TSGetStepNumber(ts,&stepnum));
   /*  The next three lines allow us to access the entries of the vectors directly */
-  CHKERRQ(VecGetArrayRead(U,&u));
-  CHKERRQ(VecGetArrayRead(Udot,&udot));
-  CHKERRQ(VecGetArray(F,&f));
-  CHKERRQ(VecGetArray(user->wind_data,&wd));
+  PetscCall(VecGetArrayRead(U,&u));
+  PetscCall(VecGetArrayRead(Udot,&udot));
+  PetscCall(VecGetArray(F,&f));
+  PetscCall(VecGetArray(user->wind_data,&wd));
 
   f[0] = user->Tw*udot[0] - wd[stepnum] + u[0];
   wm   = 1-u[1];
-  CHKERRQ(GetWindPower(wm,u[0],&Pw,user));
+  PetscCall(GetWindPower(wm,u[0],&Pw,user));
   f[1] = 2.0*(user->Ht+user->Hm)*udot[1] - Pw/wm + user->Te;
 
-  CHKERRQ(VecRestoreArray(user->wind_data,&wd));
-  CHKERRQ(VecRestoreArrayRead(U,&u));
-  CHKERRQ(VecRestoreArrayRead(Udot,&udot));
-  CHKERRQ(VecRestoreArray(F,&f));
+  PetscCall(VecRestoreArray(user->wind_data,&wd));
+  PetscCall(VecRestoreArrayRead(U,&u));
+  PetscCall(VecRestoreArrayRead(Udot,&udot));
+  PetscCall(VecRestoreArray(F,&f));
   PetscFunctionReturn(0);
 }
 
@@ -228,102 +228,102 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Only for sequential runs");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create necessary matrix and vectors
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(MatSetSizes(A,n,n,PETSC_DETERMINE,PETSC_DETERMINE));
-  CHKERRQ(MatSetFromOptions(A));
-  CHKERRQ(MatSetUp(A));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A,n,n,PETSC_DETERMINE,PETSC_DETERMINE));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSetUp(A));
 
-  CHKERRQ(MatCreateVecs(A,&U,NULL));
+  PetscCall(MatCreateVecs(A,&U,NULL));
 
   /* Create wind speed data using Weibull distribution */
-  CHKERRQ(WindSpeeds(&user));
+  PetscCall(WindSpeeds(&user));
   /* Set parameters for wind turbine and induction generator */
-  CHKERRQ(SetWindTurbineParams(&user));
-  CHKERRQ(SetInductionGeneratorParams(&user));
+  PetscCall(SetWindTurbineParams(&user));
+  PetscCall(SetInductionGeneratorParams(&user));
 
-  CHKERRQ(VecGetArray(U,&u));
+  PetscCall(VecGetArray(U,&u));
   u[0] = vwa;
   u[1] = s;
-  CHKERRQ(VecRestoreArray(U,&u));
+  PetscCall(VecRestoreArray(U,&u));
 
   /* Create matrix to save solutions at each time step */
   user.stepnum = 0;
 
-  CHKERRQ(MatCreateSeqDense(PETSC_COMM_SELF,3,2010,NULL,&user.Sol));
+  PetscCall(MatCreateSeqDense(PETSC_COMM_SELF,3,2010,NULL,&user.Sol));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
-  CHKERRQ(TSSetProblemType(ts,TS_NONLINEAR));
-  CHKERRQ(TSSetType(ts,TSBEULER));
-  CHKERRQ(TSSetIFunction(ts,NULL,(TSIFunction) IFunction,&user));
+  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
+  PetscCall(TSSetProblemType(ts,TS_NONLINEAR));
+  PetscCall(TSSetType(ts,TSBEULER));
+  PetscCall(TSSetIFunction(ts,NULL,(TSIFunction) IFunction,&user));
 
-  CHKERRQ(TSGetSNES(ts,&snes));
-  CHKERRQ(SNESSetJacobian(snes,A,A,SNESComputeJacobianDefault,NULL));
-  /*  CHKERRQ(TSSetIJacobian(ts,A,A,(TSIJacobian)IJacobian,&user)); */
-  CHKERRQ(TSSetApplicationContext(ts,&user));
+  PetscCall(TSGetSNES(ts,&snes));
+  PetscCall(SNESSetJacobian(snes,A,A,SNESComputeJacobianDefault,NULL));
+  /*  PetscCall(TSSetIJacobian(ts,A,A,(TSIJacobian)IJacobian,&user)); */
+  PetscCall(TSSetApplicationContext(ts,&user));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSSetSolution(ts,U));
+  PetscCall(TSSetSolution(ts,U));
 
   /* Save initial solution */
   idx=3*user.stepnum;
 
-  CHKERRQ(MatDenseGetArray(user.Sol,&mat));
-  CHKERRQ(VecGetArrayRead(U,&x));
+  PetscCall(MatDenseGetArray(user.Sol,&mat));
+  PetscCall(VecGetArrayRead(U,&x));
 
   mat[idx] = 0.0;
 
-  CHKERRQ(PetscArraycpy(mat+idx+1,x,2));
-  CHKERRQ(MatDenseRestoreArray(user.Sol,&mat));
-  CHKERRQ(VecRestoreArrayRead(U,&x));
+  PetscCall(PetscArraycpy(mat+idx+1,x,2));
+  PetscCall(MatDenseRestoreArray(user.Sol,&mat));
+  PetscCall(VecRestoreArrayRead(U,&x));
   user.stepnum++;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSSetMaxTime(ts,20.0));
-  CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP));
-  CHKERRQ(TSSetTimeStep(ts,.01));
-  CHKERRQ(TSSetFromOptions(ts));
-  CHKERRQ(TSSetPostStep(ts,SaveSolution));
+  PetscCall(TSSetMaxTime(ts,20.0));
+  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP));
+  PetscCall(TSSetTimeStep(ts,.01));
+  PetscCall(TSSetFromOptions(ts));
+  PetscCall(TSSetPostStep(ts,SaveSolution));
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSSolve(ts,U));
+  PetscCall(TSSolve(ts,U));
 
-  CHKERRQ(MatCreateSeqDense(PETSC_COMM_SELF,3,user.stepnum,NULL,&B));
-  CHKERRQ(MatDenseGetArrayRead(user.Sol,&rmat));
-  CHKERRQ(MatDenseGetArray(B,&amat));
-  CHKERRQ(PetscArraycpy(amat,rmat,user.stepnum*3));
-  CHKERRQ(MatDenseRestoreArray(B,&amat));
-  CHKERRQ(MatDenseRestoreArrayRead(user.Sol,&rmat));
+  PetscCall(MatCreateSeqDense(PETSC_COMM_SELF,3,user.stepnum,NULL,&B));
+  PetscCall(MatDenseGetArrayRead(user.Sol,&rmat));
+  PetscCall(MatDenseGetArray(B,&amat));
+  PetscCall(PetscArraycpy(amat,rmat,user.stepnum*3));
+  PetscCall(MatDenseRestoreArray(B,&amat));
+  PetscCall(MatDenseRestoreArrayRead(user.Sol,&rmat));
 
-  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_SELF,"out.bin",FILE_MODE_WRITE,&viewer));
-  CHKERRQ(MatView(B,viewer));
-  CHKERRQ(PetscViewerDestroy(&viewer));
-  CHKERRQ(MatDestroy(&user.Sol));
-  CHKERRQ(MatDestroy(&B));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_SELF,"out.bin",FILE_MODE_WRITE,&viewer));
+  PetscCall(MatView(B,viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
+  PetscCall(MatDestroy(&user.Sol));
+  PetscCall(MatDestroy(&B));
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(VecDestroy(&user.wind_data));
-  CHKERRQ(VecDestroy(&user.t_wind));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(VecDestroy(&U));
-  CHKERRQ(TSDestroy(&ts));
+  PetscCall(VecDestroy(&user.wind_data));
+  PetscCall(VecDestroy(&user.t_wind));
+  PetscCall(MatDestroy(&A));
+  PetscCall(VecDestroy(&U));
+  PetscCall(TSDestroy(&ts));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

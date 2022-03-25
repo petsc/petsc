@@ -143,22 +143,22 @@ static PetscErrorCode PCTelescopeSetUp_dmda_repart_coors2d(PC_Telescope sred,DM 
   VecScatter     sctx;
 
   PetscFunctionBegin;
-  CHKERRQ(DMGetCoordinates(dm,&coor));
+  PetscCall(DMGetCoordinates(dm,&coor));
   if (!coor) return(0);
   if (PCTelescope_isActiveRank(sred)) {
-    CHKERRQ(DMDASetUniformCoordinates(subdm,0.0,1.0,0.0,1.0,0.0,1.0));
+    PetscCall(DMDASetUniformCoordinates(subdm,0.0,1.0,0.0,1.0,0.0,1.0));
   }
   /* Get the coordinate vector from the distributed array */
-  CHKERRQ(DMGetCoordinateDM(dm,&cdm));
-  CHKERRQ(DMDACreateNaturalVector(cdm,&coor_natural));
+  PetscCall(DMGetCoordinateDM(dm,&cdm));
+  PetscCall(DMDACreateNaturalVector(cdm,&coor_natural));
 
-  CHKERRQ(DMDAGlobalToNaturalBegin(cdm,coor,INSERT_VALUES,coor_natural));
-  CHKERRQ(DMDAGlobalToNaturalEnd(cdm,coor,INSERT_VALUES,coor_natural));
+  PetscCall(DMDAGlobalToNaturalBegin(cdm,coor,INSERT_VALUES,coor_natural));
+  PetscCall(DMDAGlobalToNaturalEnd(cdm,coor,INSERT_VALUES,coor_natural));
 
   /* get indices of the guys I want to grab */
-  CHKERRQ(DMDAGetInfo(dm,NULL,&M,&N,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(DMDAGetInfo(dm,NULL,&M,&N,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL));
   if (PCTelescope_isActiveRank(sred)) {
-    CHKERRQ(DMDAGetCorners(subdm,&si,&sj,NULL,&ni,&nj,NULL));
+    PetscCall(DMDAGetCorners(subdm,&si,&sj,NULL,&ni,&nj,NULL));
     Ml = ni;
     Nl = nj;
   } else {
@@ -167,7 +167,7 @@ static PetscErrorCode PCTelescopeSetUp_dmda_repart_coors2d(PC_Telescope sred,DM 
     Ml = Nl = 0;
   }
 
-  CHKERRQ(PetscMalloc1(Ml*Nl*2,&fine_indices));
+  PetscCall(PetscMalloc1(Ml*Nl*2,&fine_indices));
   c = 0;
   if (PCTelescope_isActiveRank(sred)) {
     for (j=sj; j<sj+nj; j++) {
@@ -182,49 +182,49 @@ static PetscErrorCode PCTelescopeSetUp_dmda_repart_coors2d(PC_Telescope sred,DM 
   }
 
   /* generate scatter */
-  CHKERRQ(ISCreateGeneral(PetscObjectComm((PetscObject)dm),Ml*Nl*2,fine_indices,PETSC_USE_POINTER,&is_fine));
-  CHKERRQ(ISCreateStride(PETSC_COMM_SELF,Ml*Nl*2,0,1,&is_local));
+  PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)dm),Ml*Nl*2,fine_indices,PETSC_USE_POINTER,&is_fine));
+  PetscCall(ISCreateStride(PETSC_COMM_SELF,Ml*Nl*2,0,1,&is_local));
 
   /* scatter */
-  CHKERRQ(VecCreate(PETSC_COMM_SELF,&perm_coors));
-  CHKERRQ(VecSetSizes(perm_coors,PETSC_DECIDE,Ml*Nl*2));
-  CHKERRQ(VecSetType(perm_coors,VECSEQ));
+  PetscCall(VecCreate(PETSC_COMM_SELF,&perm_coors));
+  PetscCall(VecSetSizes(perm_coors,PETSC_DECIDE,Ml*Nl*2));
+  PetscCall(VecSetType(perm_coors,VECSEQ));
 
-  CHKERRQ(VecScatterCreate(coor_natural,is_fine,perm_coors,is_local,&sctx));
-  CHKERRQ(VecScatterBegin(sctx,coor_natural,perm_coors,INSERT_VALUES,SCATTER_FORWARD));
-  CHKERRQ(VecScatterEnd(  sctx,coor_natural,perm_coors,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterCreate(coor_natural,is_fine,perm_coors,is_local,&sctx));
+  PetscCall(VecScatterBegin(sctx,coor_natural,perm_coors,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(  sctx,coor_natural,perm_coors,INSERT_VALUES,SCATTER_FORWARD));
   /* access */
   if (PCTelescope_isActiveRank(sred)) {
     Vec               _coors;
     const PetscScalar *LA_perm;
     PetscScalar       *LA_coors;
 
-    CHKERRQ(DMGetCoordinates(subdm,&_coors));
-    CHKERRQ(VecGetArrayRead(perm_coors,&LA_perm));
-    CHKERRQ(VecGetArray(_coors,&LA_coors));
+    PetscCall(DMGetCoordinates(subdm,&_coors));
+    PetscCall(VecGetArrayRead(perm_coors,&LA_perm));
+    PetscCall(VecGetArray(_coors,&LA_coors));
     for (i=0; i<Ml*Nl*2; i++) {
       LA_coors[i] = LA_perm[i];
     }
-    CHKERRQ(VecRestoreArray(_coors,&LA_coors));
-    CHKERRQ(VecRestoreArrayRead(perm_coors,&LA_perm));
+    PetscCall(VecRestoreArray(_coors,&LA_coors));
+    PetscCall(VecRestoreArrayRead(perm_coors,&LA_perm));
   }
 
   /* update local coords */
   if (PCTelescope_isActiveRank(sred)) {
     DM  _dmc;
     Vec _coors,_coors_local;
-    CHKERRQ(DMGetCoordinateDM(subdm,&_dmc));
-    CHKERRQ(DMGetCoordinates(subdm,&_coors));
-    CHKERRQ(DMGetCoordinatesLocal(subdm,&_coors_local));
-    CHKERRQ(DMGlobalToLocalBegin(_dmc,_coors,INSERT_VALUES,_coors_local));
-    CHKERRQ(DMGlobalToLocalEnd(_dmc,_coors,INSERT_VALUES,_coors_local));
+    PetscCall(DMGetCoordinateDM(subdm,&_dmc));
+    PetscCall(DMGetCoordinates(subdm,&_coors));
+    PetscCall(DMGetCoordinatesLocal(subdm,&_coors_local));
+    PetscCall(DMGlobalToLocalBegin(_dmc,_coors,INSERT_VALUES,_coors_local));
+    PetscCall(DMGlobalToLocalEnd(_dmc,_coors,INSERT_VALUES,_coors_local));
   }
-  CHKERRQ(VecScatterDestroy(&sctx));
-  CHKERRQ(ISDestroy(&is_fine));
-  CHKERRQ(PetscFree(fine_indices));
-  CHKERRQ(ISDestroy(&is_local));
-  CHKERRQ(VecDestroy(&perm_coors));
-  CHKERRQ(VecDestroy(&coor_natural));
+  PetscCall(VecScatterDestroy(&sctx));
+  PetscCall(ISDestroy(&is_fine));
+  PetscCall(PetscFree(fine_indices));
+  PetscCall(ISDestroy(&is_local));
+  PetscCall(VecDestroy(&perm_coors));
+  PetscCall(VecDestroy(&coor_natural));
   PetscFunctionReturn(0);
 }
 
@@ -238,24 +238,24 @@ static PetscErrorCode PCTelescopeSetUp_dmda_repart_coors3d(PC_Telescope sred,DM 
   VecScatter     sctx;
 
   PetscFunctionBegin;
-  CHKERRQ(DMGetCoordinates(dm,&coor));
+  PetscCall(DMGetCoordinates(dm,&coor));
   if (!coor) PetscFunctionReturn(0);
 
   if (PCTelescope_isActiveRank(sred)) {
-    CHKERRQ(DMDASetUniformCoordinates(subdm,0.0,1.0,0.0,1.0,0.0,1.0));
+    PetscCall(DMDASetUniformCoordinates(subdm,0.0,1.0,0.0,1.0,0.0,1.0));
   }
 
   /* Get the coordinate vector from the distributed array */
-  CHKERRQ(DMGetCoordinateDM(dm,&cdm));
-  CHKERRQ(DMDACreateNaturalVector(cdm,&coor_natural));
-  CHKERRQ(DMDAGlobalToNaturalBegin(cdm,coor,INSERT_VALUES,coor_natural));
-  CHKERRQ(DMDAGlobalToNaturalEnd(cdm,coor,INSERT_VALUES,coor_natural));
+  PetscCall(DMGetCoordinateDM(dm,&cdm));
+  PetscCall(DMDACreateNaturalVector(cdm,&coor_natural));
+  PetscCall(DMDAGlobalToNaturalBegin(cdm,coor,INSERT_VALUES,coor_natural));
+  PetscCall(DMDAGlobalToNaturalEnd(cdm,coor,INSERT_VALUES,coor_natural));
 
   /* get indices of the guys I want to grab */
-  CHKERRQ(DMDAGetInfo(dm,NULL,&M,&N,&P,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(DMDAGetInfo(dm,NULL,&M,&N,&P,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL));
 
   if (PCTelescope_isActiveRank(sred)) {
-    CHKERRQ(DMDAGetCorners(subdm,&si,&sj,&sk,&ni,&nj,&nk));
+    PetscCall(DMDAGetCorners(subdm,&si,&sj,&sk,&ni,&nj,&nk));
     Ml = ni;
     Nl = nj;
     Pl = nk;
@@ -265,7 +265,7 @@ static PetscErrorCode PCTelescopeSetUp_dmda_repart_coors3d(PC_Telescope sred,DM 
     Ml = Nl = Pl = 0;
   }
 
-  CHKERRQ(PetscMalloc1(Ml*Nl*Pl*3,&fine_indices));
+  PetscCall(PetscMalloc1(Ml*Nl*Pl*3,&fine_indices));
 
   c = 0;
   if (PCTelescope_isActiveRank(sred)) {
@@ -283,16 +283,16 @@ static PetscErrorCode PCTelescopeSetUp_dmda_repart_coors3d(PC_Telescope sred,DM 
   }
 
   /* generate scatter */
-  CHKERRQ(ISCreateGeneral(PetscObjectComm((PetscObject)dm),Ml*Nl*Pl*3,fine_indices,PETSC_USE_POINTER,&is_fine));
-  CHKERRQ(ISCreateStride(PETSC_COMM_SELF,Ml*Nl*Pl*3,0,1,&is_local));
+  PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)dm),Ml*Nl*Pl*3,fine_indices,PETSC_USE_POINTER,&is_fine));
+  PetscCall(ISCreateStride(PETSC_COMM_SELF,Ml*Nl*Pl*3,0,1,&is_local));
 
   /* scatter */
-  CHKERRQ(VecCreate(PETSC_COMM_SELF,&perm_coors));
-  CHKERRQ(VecSetSizes(perm_coors,PETSC_DECIDE,Ml*Nl*Pl*3));
-  CHKERRQ(VecSetType(perm_coors,VECSEQ));
-  CHKERRQ(VecScatterCreate(coor_natural,is_fine,perm_coors,is_local,&sctx));
-  CHKERRQ(VecScatterBegin(sctx,coor_natural,perm_coors,INSERT_VALUES,SCATTER_FORWARD));
-  CHKERRQ(VecScatterEnd(  sctx,coor_natural,perm_coors,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecCreate(PETSC_COMM_SELF,&perm_coors));
+  PetscCall(VecSetSizes(perm_coors,PETSC_DECIDE,Ml*Nl*Pl*3));
+  PetscCall(VecSetType(perm_coors,VECSEQ));
+  PetscCall(VecScatterCreate(coor_natural,is_fine,perm_coors,is_local,&sctx));
+  PetscCall(VecScatterBegin(sctx,coor_natural,perm_coors,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(  sctx,coor_natural,perm_coors,INSERT_VALUES,SCATTER_FORWARD));
 
   /* access */
   if (PCTelescope_isActiveRank(sred)) {
@@ -300,14 +300,14 @@ static PetscErrorCode PCTelescopeSetUp_dmda_repart_coors3d(PC_Telescope sred,DM 
     const PetscScalar *LA_perm;
     PetscScalar       *LA_coors;
 
-    CHKERRQ(DMGetCoordinates(subdm,&_coors));
-    CHKERRQ(VecGetArrayRead(perm_coors,&LA_perm));
-    CHKERRQ(VecGetArray(_coors,&LA_coors));
+    PetscCall(DMGetCoordinates(subdm,&_coors));
+    PetscCall(VecGetArrayRead(perm_coors,&LA_perm));
+    PetscCall(VecGetArray(_coors,&LA_coors));
     for (i=0; i<Ml*Nl*Pl*3; i++) {
       LA_coors[i] = LA_perm[i];
     }
-    CHKERRQ(VecRestoreArray(_coors,&LA_coors));
-    CHKERRQ(VecRestoreArrayRead(perm_coors,&LA_perm));
+    PetscCall(VecRestoreArray(_coors,&LA_coors));
+    PetscCall(VecRestoreArrayRead(perm_coors,&LA_perm));
   }
 
   /* update local coords */
@@ -315,19 +315,19 @@ static PetscErrorCode PCTelescopeSetUp_dmda_repart_coors3d(PC_Telescope sred,DM 
     DM  _dmc;
     Vec _coors,_coors_local;
 
-    CHKERRQ(DMGetCoordinateDM(subdm,&_dmc));
-    CHKERRQ(DMGetCoordinates(subdm,&_coors));
-    CHKERRQ(DMGetCoordinatesLocal(subdm,&_coors_local));
-    CHKERRQ(DMGlobalToLocalBegin(_dmc,_coors,INSERT_VALUES,_coors_local));
-    CHKERRQ(DMGlobalToLocalEnd(_dmc,_coors,INSERT_VALUES,_coors_local));
+    PetscCall(DMGetCoordinateDM(subdm,&_dmc));
+    PetscCall(DMGetCoordinates(subdm,&_coors));
+    PetscCall(DMGetCoordinatesLocal(subdm,&_coors_local));
+    PetscCall(DMGlobalToLocalBegin(_dmc,_coors,INSERT_VALUES,_coors_local));
+    PetscCall(DMGlobalToLocalEnd(_dmc,_coors,INSERT_VALUES,_coors_local));
   }
 
-  CHKERRQ(VecScatterDestroy(&sctx));
-  CHKERRQ(ISDestroy(&is_fine));
-  CHKERRQ(PetscFree(fine_indices));
-  CHKERRQ(ISDestroy(&is_local));
-  CHKERRQ(VecDestroy(&perm_coors));
-  CHKERRQ(VecDestroy(&coor_natural));
+  PetscCall(VecScatterDestroy(&sctx));
+  PetscCall(ISDestroy(&is_fine));
+  PetscCall(PetscFree(fine_indices));
+  PetscCall(ISDestroy(&is_local));
+  PetscCall(VecDestroy(&perm_coors));
+  PetscCall(VecDestroy(&coor_natural));
   PetscFunctionReturn(0);
 }
 
@@ -340,21 +340,21 @@ static PetscErrorCode PCTelescopeSetUp_dmda_repart_coors(PC pc,PC_Telescope sred
   Vec            coor;
 
   PetscFunctionBegin;
-  CHKERRQ(PCGetDM(pc,&dm));
-  CHKERRQ(DMGetCoordinates(dm,&coor));
+  PetscCall(PCGetDM(pc,&dm));
+  PetscCall(DMGetCoordinates(dm,&coor));
   if (!coor) PetscFunctionReturn(0);
   psubcomm = sred->psubcomm;
   comm = PetscSubcommParent(psubcomm);
   subdm = ctx->dmrepart;
 
-  CHKERRQ(PetscInfo(pc,"PCTelescope: setting up the coordinates (DMDA)\n"));
-  CHKERRQ(DMDAGetInfo(dm,&dim,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(PetscInfo(pc,"PCTelescope: setting up the coordinates (DMDA)\n"));
+  PetscCall(DMDAGetInfo(dm,&dim,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL));
   switch (dim) {
   case 1:
     SETERRQ(comm,PETSC_ERR_SUP,"Telescope: DMDA (1D) repartitioning not provided");
-  case 2: CHKERRQ(PCTelescopeSetUp_dmda_repart_coors2d(sred,dm,subdm));
+  case 2: PetscCall(PCTelescopeSetUp_dmda_repart_coors2d(sred,dm,subdm));
     break;
-  case 3: CHKERRQ(PCTelescopeSetUp_dmda_repart_coors3d(sred,dm,subdm));
+  case 3: PetscCall(PCTelescopeSetUp_dmda_repart_coors3d(sred,dm,subdm));
     break;
   }
   PetscFunctionReturn(0);
@@ -378,11 +378,11 @@ PetscErrorCode PCTelescopeSetUp_dmda_repart(PC pc,PC_Telescope sred,PC_Telescope
   PetscFunctionBegin;
   comm = PetscSubcommParent(sred->psubcomm);
   subcomm = PetscSubcommChild(sred->psubcomm);
-  CHKERRQ(PCGetDM(pc,&dm));
+  PetscCall(PCGetDM(pc,&dm));
 
-  CHKERRQ(DMDAGetInfo(dm,&dim,&nx,&ny,&nz,NULL,NULL,NULL,&ndof,&nsw,&bx,&by,&bz,&stencil));
-  CHKERRQ(DMDAGetInterpolationType(dm,&itype));
-  CHKERRQ(DMDAGetRefinementFactor(dm,&refine_x,&refine_y,&refine_z));
+  PetscCall(DMDAGetInfo(dm,&dim,&nx,&ny,&nz,NULL,NULL,NULL,&ndof,&nsw,&bx,&by,&bz,&stencil));
+  PetscCall(DMDAGetInterpolationType(dm,&itype));
+  PetscCall(DMDAGetRefinementFactor(dm,&refine_x,&refine_y,&refine_z));
 
   ctx->dmrepart = NULL;
   _range_i_re = _range_j_re = _range_k_re = NULL;
@@ -390,20 +390,22 @@ PetscErrorCode PCTelescopeSetUp_dmda_repart(PC pc,PC_Telescope sred,PC_Telescope
   if (PCTelescope_isActiveRank(sred)) {
     switch (dim) {
     case 1:
-      CHKERRQ(PetscInfo(pc,"PCTelescope: setting up the DMDA on comm subset (1D)\n"));
-      /*CHKERRQ(DMDACreate1d(subcomm,bx,nx,ndof,nsw,NULL,&ctx->dmrepart));*/
+      PetscCall(PetscInfo(pc,"PCTelescope: setting up the DMDA on comm subset (1D)\n"));
+      /* PetscCall(DMDACreate1d(subcomm,bx,nx,ndof,nsw,NULL,&ctx->dmrepart)); */
       ny = nz = 1;
       by = bz = DM_BOUNDARY_NONE;
       break;
     case 2:
-      CHKERRQ(PetscInfo(pc,"PCTelescope: setting up the DMDA on comm subset (2D)\n"));
-      /*CHKERRQ(DMDACreate2d(subcomm,bx,by,stencil,nx,ny, PETSC_DECIDE,PETSC_DECIDE, ndof,nsw, NULL,NULL,&ctx->dmrepart));*/
+      PetscCall(PetscInfo(pc,"PCTelescope: setting up the DMDA on comm subset (2D)\n"));
+      /* PetscCall(DMDACreate2d(subcomm,bx,by,stencil,nx,ny, PETSC_DECIDE,PETSC_DECIDE,
+         ndof,nsw, NULL,NULL,&ctx->dmrepart)); */
       nz = 1;
       bz = DM_BOUNDARY_NONE;
       break;
     case 3:
-      CHKERRQ(PetscInfo(pc,"PCTelescope: setting up the DMDA on comm subset (3D)\n"));
-      /*CHKERRQ(DMDACreate3d(subcomm,bx,by,bz,stencil,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, ndof,nsw, NULL,NULL,NULL,&ctx->dmrepart));*/
+      PetscCall(PetscInfo(pc,"PCTelescope: setting up the DMDA on comm subset (3D)\n"));
+      /* PetscCall(DMDACreate3d(subcomm,bx,by,bz,stencil,nx,ny,nz,
+         PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, ndof,nsw, NULL,NULL,NULL,&ctx->dmrepart)); */
       break;
     }
     /*
@@ -411,28 +413,28 @@ PetscErrorCode PCTelescopeSetUp_dmda_repart(PC pc,PC_Telescope sred,PC_Telescope
      a unique option prefix for the DM, thus I prefer to expose the contents of these API's here.
      This allows users to control the partitioning of the subDM.
     */
-    CHKERRQ(DMDACreate(subcomm,&ctx->dmrepart));
+    PetscCall(DMDACreate(subcomm,&ctx->dmrepart));
     /* Set unique option prefix name */
-    CHKERRQ(KSPGetOptionsPrefix(sred->ksp,&prefix));
-    CHKERRQ(DMSetOptionsPrefix(ctx->dmrepart,prefix));
-    CHKERRQ(DMAppendOptionsPrefix(ctx->dmrepart,"repart_"));
+    PetscCall(KSPGetOptionsPrefix(sred->ksp,&prefix));
+    PetscCall(DMSetOptionsPrefix(ctx->dmrepart,prefix));
+    PetscCall(DMAppendOptionsPrefix(ctx->dmrepart,"repart_"));
     /* standard setup from DMDACreate{1,2,3}d() */
-    CHKERRQ(DMSetDimension(ctx->dmrepart,dim));
-    CHKERRQ(DMDASetSizes(ctx->dmrepart,nx,ny,nz));
-    CHKERRQ(DMDASetNumProcs(ctx->dmrepart,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE));
-    CHKERRQ(DMDASetBoundaryType(ctx->dmrepart,bx,by,bz));
-    CHKERRQ(DMDASetDof(ctx->dmrepart,ndof));
-    CHKERRQ(DMDASetStencilType(ctx->dmrepart,stencil));
-    CHKERRQ(DMDASetStencilWidth(ctx->dmrepart,nsw));
-    CHKERRQ(DMDASetOwnershipRanges(ctx->dmrepart,NULL,NULL,NULL));
-    CHKERRQ(DMSetFromOptions(ctx->dmrepart));
-    CHKERRQ(DMSetUp(ctx->dmrepart));
+    PetscCall(DMSetDimension(ctx->dmrepart,dim));
+    PetscCall(DMDASetSizes(ctx->dmrepart,nx,ny,nz));
+    PetscCall(DMDASetNumProcs(ctx->dmrepart,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE));
+    PetscCall(DMDASetBoundaryType(ctx->dmrepart,bx,by,bz));
+    PetscCall(DMDASetDof(ctx->dmrepart,ndof));
+    PetscCall(DMDASetStencilType(ctx->dmrepart,stencil));
+    PetscCall(DMDASetStencilWidth(ctx->dmrepart,nsw));
+    PetscCall(DMDASetOwnershipRanges(ctx->dmrepart,NULL,NULL,NULL));
+    PetscCall(DMSetFromOptions(ctx->dmrepart));
+    PetscCall(DMSetUp(ctx->dmrepart));
     /* Set refinement factors and interpolation type from the partent */
-    CHKERRQ(DMDASetRefinementFactor(ctx->dmrepart,refine_x,refine_y,refine_z));
-    CHKERRQ(DMDASetInterpolationType(ctx->dmrepart,itype));
+    PetscCall(DMDASetRefinementFactor(ctx->dmrepart,refine_x,refine_y,refine_z));
+    PetscCall(DMDASetInterpolationType(ctx->dmrepart,itype));
 
-    CHKERRQ(DMDAGetInfo(ctx->dmrepart,NULL,NULL,NULL,NULL,&ctx->Mp_re,&ctx->Np_re,&ctx->Pp_re,NULL,NULL,NULL,NULL,NULL,NULL));
-    CHKERRQ(DMDAGetOwnershipRanges(ctx->dmrepart,&_range_i_re,&_range_j_re,&_range_k_re));
+    PetscCall(DMDAGetInfo(ctx->dmrepart,NULL,NULL,NULL,NULL,&ctx->Mp_re,&ctx->Np_re,&ctx->Pp_re,NULL,NULL,NULL,NULL,NULL,NULL));
+    PetscCall(DMDAGetOwnershipRanges(ctx->dmrepart,&_range_i_re,&_range_j_re,&_range_k_re));
 
     ctx->dmrepart->ops->creatematrix = dm->ops->creatematrix;
     ctx->dmrepart->ops->createdomaindecomposition = dm->ops->createdomaindecomposition;
@@ -441,22 +443,22 @@ PetscErrorCode PCTelescopeSetUp_dmda_repart(PC pc,PC_Telescope sred,PC_Telescope
   /* generate ranges for repartitioned dm */
   /* note - assume rank 0 always participates */
   /* TODO: use a single MPI call */
-  CHKERRMPI(MPI_Bcast(&ctx->Mp_re,1,MPIU_INT,0,comm));
-  CHKERRMPI(MPI_Bcast(&ctx->Np_re,1,MPIU_INT,0,comm));
-  CHKERRMPI(MPI_Bcast(&ctx->Pp_re,1,MPIU_INT,0,comm));
+  PetscCallMPI(MPI_Bcast(&ctx->Mp_re,1,MPIU_INT,0,comm));
+  PetscCallMPI(MPI_Bcast(&ctx->Np_re,1,MPIU_INT,0,comm));
+  PetscCallMPI(MPI_Bcast(&ctx->Pp_re,1,MPIU_INT,0,comm));
 
-  CHKERRQ(PetscCalloc3(ctx->Mp_re,&ctx->range_i_re,ctx->Np_re,&ctx->range_j_re,ctx->Pp_re,&ctx->range_k_re));
+  PetscCall(PetscCalloc3(ctx->Mp_re,&ctx->range_i_re,ctx->Np_re,&ctx->range_j_re,ctx->Pp_re,&ctx->range_k_re));
 
-  if (_range_i_re) CHKERRQ(PetscArraycpy(ctx->range_i_re,_range_i_re,ctx->Mp_re));
-  if (_range_j_re) CHKERRQ(PetscArraycpy(ctx->range_j_re,_range_j_re,ctx->Np_re));
-  if (_range_k_re) CHKERRQ(PetscArraycpy(ctx->range_k_re,_range_k_re,ctx->Pp_re));
+  if (_range_i_re) PetscCall(PetscArraycpy(ctx->range_i_re,_range_i_re,ctx->Mp_re));
+  if (_range_j_re) PetscCall(PetscArraycpy(ctx->range_j_re,_range_j_re,ctx->Np_re));
+  if (_range_k_re) PetscCall(PetscArraycpy(ctx->range_k_re,_range_k_re,ctx->Pp_re));
 
   /* TODO: use a single MPI call */
-  CHKERRMPI(MPI_Bcast(ctx->range_i_re,ctx->Mp_re,MPIU_INT,0,comm));
-  CHKERRMPI(MPI_Bcast(ctx->range_j_re,ctx->Np_re,MPIU_INT,0,comm));
-  CHKERRMPI(MPI_Bcast(ctx->range_k_re,ctx->Pp_re,MPIU_INT,0,comm));
+  PetscCallMPI(MPI_Bcast(ctx->range_i_re,ctx->Mp_re,MPIU_INT,0,comm));
+  PetscCallMPI(MPI_Bcast(ctx->range_j_re,ctx->Np_re,MPIU_INT,0,comm));
+  PetscCallMPI(MPI_Bcast(ctx->range_k_re,ctx->Pp_re,MPIU_INT,0,comm));
 
-  CHKERRQ(PetscMalloc3(ctx->Mp_re,&ctx->start_i_re,ctx->Np_re,&ctx->start_j_re,ctx->Pp_re,&ctx->start_k_re));
+  PetscCall(PetscMalloc3(ctx->Mp_re,&ctx->start_i_re,ctx->Np_re,&ctx->start_j_re,ctx->Pp_re,&ctx->start_k_re));
 
   sum = 0;
   for (k=0; k<ctx->Mp_re; k++) {
@@ -481,18 +483,18 @@ PetscErrorCode PCTelescopeSetUp_dmda_repart(PC pc,PC_Telescope sred,PC_Telescope
     PetscErrorCode (*dmksp_func)(KSP,Mat,Mat,void*);
     void           *dmksp_ctx;
 
-    CHKERRQ(DMKSPGetComputeOperators(dm,&dmksp_func,&dmksp_ctx));
+    PetscCall(DMKSPGetComputeOperators(dm,&dmksp_func,&dmksp_ctx));
 
     /* attach dm to ksp on sub communicator */
     if (PCTelescope_isActiveRank(sred)) {
-      CHKERRQ(KSPSetDM(sred->ksp,ctx->dmrepart));
+      PetscCall(KSPSetDM(sred->ksp,ctx->dmrepart));
 
       if (!dmksp_func || sred->ignore_kspcomputeoperators) {
-        CHKERRQ(KSPSetDMActive(sred->ksp,PETSC_FALSE));
+        PetscCall(KSPSetDMActive(sred->ksp,PETSC_FALSE));
       } else {
         /* sub ksp inherits dmksp_func and context provided by user */
-        CHKERRQ(KSPSetComputeOperators(sred->ksp,dmksp_func,dmksp_ctx));
-        CHKERRQ(KSPSetDMActive(sred->ksp,PETSC_TRUE));
+        PetscCall(KSPSetComputeOperators(sred->ksp,dmksp_func,dmksp_ctx));
+        PetscCall(KSPSetDMActive(sred->ksp,PETSC_TRUE));
       }
     }
   }
@@ -511,28 +513,28 @@ PetscErrorCode PCTelescopeSetUp_dmda_permutation_3d(PC pc,PC_Telescope sred,PC_T
   Vec            V;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscInfo(pc,"PCTelescope: setting up the permutation matrix (DMDA-3D)\n"));
-  CHKERRQ(PetscObjectGetComm((PetscObject)pc,&comm));
+  PetscCall(PetscInfo(pc,"PCTelescope: setting up the permutation matrix (DMDA-3D)\n"));
+  PetscCall(PetscObjectGetComm((PetscObject)pc,&comm));
 
-  CHKERRQ(PCGetDM(pc,&dm));
-  CHKERRQ(DMDAGetInfo(dm,NULL,&nx,&ny,&nz,NULL,NULL,NULL,&ndof,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(PCGetDM(pc,&dm));
+  PetscCall(DMDAGetInfo(dm,NULL,&nx,&ny,&nz,NULL,NULL,NULL,&ndof,NULL,NULL,NULL,NULL,NULL));
 
-  CHKERRQ(DMGetGlobalVector(dm,&V));
-  CHKERRQ(VecGetSize(V,&Mr));
-  CHKERRQ(VecGetOwnershipRange(V,&sr,&er));
-  CHKERRQ(DMRestoreGlobalVector(dm,&V));
+  PetscCall(DMGetGlobalVector(dm,&V));
+  PetscCall(VecGetSize(V,&Mr));
+  PetscCall(VecGetOwnershipRange(V,&sr,&er));
+  PetscCall(DMRestoreGlobalVector(dm,&V));
   sr = sr / ndof;
   er = er / ndof;
   Mr = Mr / ndof;
 
-  CHKERRQ(MatCreate(comm,&Pscalar));
-  CHKERRQ(MatSetSizes(Pscalar,(er-sr),(er-sr),Mr,Mr));
-  CHKERRQ(MatSetType(Pscalar,MATAIJ));
-  CHKERRQ(MatSeqAIJSetPreallocation(Pscalar,1,NULL));
-  CHKERRQ(MatMPIAIJSetPreallocation(Pscalar,1,NULL,1,NULL));
+  PetscCall(MatCreate(comm,&Pscalar));
+  PetscCall(MatSetSizes(Pscalar,(er-sr),(er-sr),Mr,Mr));
+  PetscCall(MatSetType(Pscalar,MATAIJ));
+  PetscCall(MatSeqAIJSetPreallocation(Pscalar,1,NULL));
+  PetscCall(MatMPIAIJSetPreallocation(Pscalar,1,NULL,1,NULL));
 
-  CHKERRQ(DMDAGetCorners(dm,NULL,NULL,NULL,&lenI[0],&lenI[1],&lenI[2]));
-  CHKERRQ(DMDAGetCorners(dm,&startI[0],&startI[1],&startI[2],&endI[0],&endI[1],&endI[2]));
+  PetscCall(DMDAGetCorners(dm,NULL,NULL,NULL,&lenI[0],&lenI[1],&lenI[2]));
+  PetscCall(DMDAGetCorners(dm,&startI[0],&startI[1],&startI[2],&endI[0],&endI[1],&endI[2]));
   endI[0] += startI[0];
   endI[1] += startI[1];
   endI[2] += startI[2];
@@ -549,8 +551,8 @@ PetscErrorCode PCTelescopeSetUp_dmda_permutation_3d(PC pc,PC_Telescope sred,PC_T
         ierr = _DMDADetermineRankFromGlobalIJK(3,i,j,k,   ctx->Mp_re,ctx->Np_re,ctx->Pp_re,
                                                ctx->start_i_re,ctx->start_j_re,ctx->start_k_re,
                                                ctx->range_i_re,ctx->range_j_re,ctx->range_k_re,
-                                               &rank_reI[0],&rank_reI[1],&rank_reI[2],&rank_ijk_re);CHKERRQ(ierr);
-        CHKERRQ(_DMDADetermineGlobalS0(3,rank_ijk_re, ctx->Mp_re,ctx->Np_re,ctx->Pp_re, ctx->range_i_re,ctx->range_j_re,ctx->range_k_re, &s0_re));
+                                               &rank_reI[0],&rank_reI[1],&rank_reI[2],&rank_ijk_re);PetscCall(ierr);
+        PetscCall(_DMDADetermineGlobalS0(3,rank_ijk_re, ctx->Mp_re,ctx->Np_re,ctx->Pp_re, ctx->range_i_re,ctx->range_j_re,ctx->range_k_re, &s0_re));
         ii = i - ctx->start_i_re[ rank_reI[0] ];
         PetscCheckFalse(ii < 0,PETSC_COMM_SELF,PETSC_ERR_USER,"[dmdarepart-perm3d] index error ii");
         jj = j - ctx->start_j_re[ rank_reI[1] ];
@@ -562,14 +564,14 @@ PetscErrorCode PCTelescopeSetUp_dmda_permutation_3d(PC pc,PC_Telescope sred,PC_T
         lenI_re[2] = ctx->range_k_re[ rank_reI[2] ];
         local_ijk_re = ii + jj * lenI_re[0] + kk * lenI_re[0] * lenI_re[1];
         mapped_ijk = s0_re + local_ijk_re;
-        CHKERRQ(MatSetValue(Pscalar,sr+location,mapped_ijk,1.0,INSERT_VALUES));
+        PetscCall(MatSetValue(Pscalar,sr+location,mapped_ijk,1.0,INSERT_VALUES));
       }
     }
   }
-  CHKERRQ(MatAssemblyBegin(Pscalar,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(Pscalar,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatCreateMAIJ(Pscalar,ndof,&P));
-  CHKERRQ(MatDestroy(&Pscalar));
+  PetscCall(MatAssemblyBegin(Pscalar,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(Pscalar,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatCreateMAIJ(Pscalar,ndof,&P));
+  PetscCall(MatDestroy(&Pscalar));
   ctx->permutation = P;
   PetscFunctionReturn(0);
 }
@@ -586,26 +588,26 @@ PetscErrorCode PCTelescopeSetUp_dmda_permutation_2d(PC pc,PC_Telescope sred,PC_T
   Vec            V;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscInfo(pc,"PCTelescope: setting up the permutation matrix (DMDA-2D)\n"));
-  CHKERRQ(PetscObjectGetComm((PetscObject)pc,&comm));
-  CHKERRQ(PCGetDM(pc,&dm));
-  CHKERRQ(DMDAGetInfo(dm,NULL,&nx,&ny,&nz,NULL,NULL,NULL,&ndof,NULL,NULL,NULL,NULL,NULL));
-  CHKERRQ(DMGetGlobalVector(dm,&V));
-  CHKERRQ(VecGetSize(V,&Mr));
-  CHKERRQ(VecGetOwnershipRange(V,&sr,&er));
-  CHKERRQ(DMRestoreGlobalVector(dm,&V));
+  PetscCall(PetscInfo(pc,"PCTelescope: setting up the permutation matrix (DMDA-2D)\n"));
+  PetscCall(PetscObjectGetComm((PetscObject)pc,&comm));
+  PetscCall(PCGetDM(pc,&dm));
+  PetscCall(DMDAGetInfo(dm,NULL,&nx,&ny,&nz,NULL,NULL,NULL,&ndof,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(DMGetGlobalVector(dm,&V));
+  PetscCall(VecGetSize(V,&Mr));
+  PetscCall(VecGetOwnershipRange(V,&sr,&er));
+  PetscCall(DMRestoreGlobalVector(dm,&V));
   sr = sr / ndof;
   er = er / ndof;
   Mr = Mr / ndof;
 
-  CHKERRQ(MatCreate(comm,&Pscalar));
-  CHKERRQ(MatSetSizes(Pscalar,(er-sr),(er-sr),Mr,Mr));
-  CHKERRQ(MatSetType(Pscalar,MATAIJ));
-  CHKERRQ(MatSeqAIJSetPreallocation(Pscalar,1,NULL));
-  CHKERRQ(MatMPIAIJSetPreallocation(Pscalar,1,NULL,1,NULL));
+  PetscCall(MatCreate(comm,&Pscalar));
+  PetscCall(MatSetSizes(Pscalar,(er-sr),(er-sr),Mr,Mr));
+  PetscCall(MatSetType(Pscalar,MATAIJ));
+  PetscCall(MatSeqAIJSetPreallocation(Pscalar,1,NULL));
+  PetscCall(MatMPIAIJSetPreallocation(Pscalar,1,NULL,1,NULL));
 
-  CHKERRQ(DMDAGetCorners(dm,NULL,NULL,NULL,&lenI[0],&lenI[1],NULL));
-  CHKERRQ(DMDAGetCorners(dm,&startI[0],&startI[1],NULL,&endI[0],&endI[1],NULL));
+  PetscCall(DMDAGetCorners(dm,NULL,NULL,NULL,&lenI[0],&lenI[1],NULL));
+  PetscCall(DMDAGetCorners(dm,&startI[0],&startI[1],NULL,&endI[0],&endI[1],NULL));
   endI[0] += startI[0];
   endI[1] += startI[1];
 
@@ -620,9 +622,9 @@ PetscErrorCode PCTelescopeSetUp_dmda_permutation_2d(PC pc,PC_Telescope sred,PC_T
       ierr = _DMDADetermineRankFromGlobalIJK(2,i,j,0,   ctx->Mp_re,ctx->Np_re,ctx->Pp_re,
                                              ctx->start_i_re,ctx->start_j_re,ctx->start_k_re,
                                              ctx->range_i_re,ctx->range_j_re,ctx->range_k_re,
-                                             &rank_reI[0],&rank_reI[1],NULL,&rank_ijk_re);CHKERRQ(ierr);
+                                             &rank_reI[0],&rank_reI[1],NULL,&rank_ijk_re);PetscCall(ierr);
 
-      CHKERRQ(_DMDADetermineGlobalS0(2,rank_ijk_re, ctx->Mp_re,ctx->Np_re,ctx->Pp_re, ctx->range_i_re,ctx->range_j_re,ctx->range_k_re, &s0_re));
+      PetscCall(_DMDADetermineGlobalS0(2,rank_ijk_re, ctx->Mp_re,ctx->Np_re,ctx->Pp_re, ctx->range_i_re,ctx->range_j_re,ctx->range_k_re, &s0_re));
 
       ii = i - ctx->start_i_re[ rank_reI[0] ];
       PetscCheckFalse(ii < 0,PETSC_COMM_SELF,PETSC_ERR_USER,"[dmdarepart-perm2d] index error ii");
@@ -633,13 +635,13 @@ PetscErrorCode PCTelescopeSetUp_dmda_permutation_2d(PC pc,PC_Telescope sred,PC_T
       lenI_re[1] = ctx->range_j_re[ rank_reI[1] ];
       local_ijk_re = ii + jj * lenI_re[0];
       mapped_ijk = s0_re + local_ijk_re;
-      CHKERRQ(MatSetValue(Pscalar,sr+location,mapped_ijk,1.0,INSERT_VALUES));
+      PetscCall(MatSetValue(Pscalar,sr+location,mapped_ijk,1.0,INSERT_VALUES));
     }
   }
-  CHKERRQ(MatAssemblyBegin(Pscalar,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(Pscalar,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatCreateMAIJ(Pscalar,ndof,&P));
-  CHKERRQ(MatDestroy(&Pscalar));
+  PetscCall(MatAssemblyBegin(Pscalar,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(Pscalar,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatCreateMAIJ(Pscalar,ndof,&P));
+  PetscCall(MatDestroy(&Pscalar));
   ctx->permutation = P;
   PetscFunctionReturn(0);
 }
@@ -654,30 +656,30 @@ PetscErrorCode PCTelescopeSetUp_dmda_scatters(PC pc,PC_Telescope sred,PC_Telesco
   MPI_Comm       comm;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectGetComm((PetscObject)pc,&comm));
-  CHKERRQ(PCGetOperators(pc,NULL,&B));
-  CHKERRQ(MatCreateVecs(B,&x,NULL));
-  CHKERRQ(MatGetBlockSize(B,&bs));
-  CHKERRQ(VecDuplicate(x,&xp));
+  PetscCall(PetscObjectGetComm((PetscObject)pc,&comm));
+  PetscCall(PCGetOperators(pc,NULL,&B));
+  PetscCall(MatCreateVecs(B,&x,NULL));
+  PetscCall(MatGetBlockSize(B,&bs));
+  PetscCall(VecDuplicate(x,&xp));
   m = 0;
   xred = NULL;
   yred = NULL;
   if (PCTelescope_isActiveRank(sred)) {
-    CHKERRQ(DMCreateGlobalVector(ctx->dmrepart,&xred));
-    CHKERRQ(VecDuplicate(xred,&yred));
-    CHKERRQ(VecGetOwnershipRange(xred,&st,&ed));
-    CHKERRQ(ISCreateStride(comm,ed-st,st,1,&isin));
-    CHKERRQ(VecGetLocalSize(xred,&m));
+    PetscCall(DMCreateGlobalVector(ctx->dmrepart,&xred));
+    PetscCall(VecDuplicate(xred,&yred));
+    PetscCall(VecGetOwnershipRange(xred,&st,&ed));
+    PetscCall(ISCreateStride(comm,ed-st,st,1,&isin));
+    PetscCall(VecGetLocalSize(xred,&m));
   } else {
-    CHKERRQ(VecGetOwnershipRange(x,&st,&ed));
-    CHKERRQ(ISCreateStride(comm,0,st,1,&isin));
+    PetscCall(VecGetOwnershipRange(x,&st,&ed));
+    PetscCall(ISCreateStride(comm,0,st,1,&isin));
   }
-  CHKERRQ(ISSetBlockSize(isin,bs));
-  CHKERRQ(VecCreate(comm,&xtmp));
-  CHKERRQ(VecSetSizes(xtmp,m,PETSC_DECIDE));
-  CHKERRQ(VecSetBlockSize(xtmp,bs));
-  CHKERRQ(VecSetType(xtmp,((PetscObject)x)->type_name));
-  CHKERRQ(VecScatterCreate(x,isin,xtmp,NULL,&scatter));
+  PetscCall(ISSetBlockSize(isin,bs));
+  PetscCall(VecCreate(comm,&xtmp));
+  PetscCall(VecSetSizes(xtmp,m,PETSC_DECIDE));
+  PetscCall(VecSetBlockSize(xtmp,bs));
+  PetscCall(VecSetType(xtmp,((PetscObject)x)->type_name));
+  PetscCall(VecScatterCreate(x,isin,xtmp,NULL,&scatter));
   sred->xred    = xred;
   sred->yred    = yred;
   sred->isin    = isin;
@@ -685,7 +687,7 @@ PetscErrorCode PCTelescopeSetUp_dmda_scatters(PC pc,PC_Telescope sred,PC_Telesco
   sred->xtmp    = xtmp;
 
   ctx->xp       = xp;
-  CHKERRQ(VecDestroy(&x));
+  PetscCall(VecDestroy(&x));
   PetscFunctionReturn(0);
 }
 
@@ -697,25 +699,25 @@ PetscErrorCode PCTelescopeSetUp_dmda(PC pc,PC_Telescope sred)
   MPI_Comm             comm;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscInfo(pc,"PCTelescope: setup (DMDA)\n"));
-  CHKERRQ(PetscNew(&ctx));
+  PetscCall(PetscInfo(pc,"PCTelescope: setup (DMDA)\n"));
+  PetscCall(PetscNew(&ctx));
   sred->dm_ctx = (void*)ctx;
 
-  CHKERRQ(PetscObjectGetComm((PetscObject)pc,&comm));
-  CHKERRQ(PCGetDM(pc,&dm));
-  CHKERRQ(DMDAGetInfo(dm,&dim,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(PetscObjectGetComm((PetscObject)pc,&comm));
+  PetscCall(PCGetDM(pc,&dm));
+  PetscCall(DMDAGetInfo(dm,&dim,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL));
 
   PCTelescopeSetUp_dmda_repart(pc,sred,ctx);
   PCTelescopeSetUp_dmda_repart_coors(pc,sred,ctx);
   switch (dim) {
   case 1:
     SETERRQ(comm,PETSC_ERR_SUP,"Telescope: DMDA (1D) repartitioning not provided");
-  case 2: CHKERRQ(PCTelescopeSetUp_dmda_permutation_2d(pc,sred,ctx));
+  case 2: PetscCall(PCTelescopeSetUp_dmda_permutation_2d(pc,sred,ctx));
     break;
-  case 3: CHKERRQ(PCTelescopeSetUp_dmda_permutation_3d(pc,sred,ctx));
+  case 3: PetscCall(PCTelescopeSetUp_dmda_permutation_3d(pc,sred,ctx));
     break;
   }
-  CHKERRQ(PCTelescopeSetUp_dmda_scatters(pc,sred,ctx));
+  PetscCall(PCTelescopeSetUp_dmda_scatters(pc,sred,ctx));
   PetscFunctionReturn(0);
 }
 
@@ -729,37 +731,37 @@ PetscErrorCode PCTelescopeMatCreate_dmda_dmactivefalse(PC pc,PC_Telescope sred,M
   Mat                  Blocal,*_Blocal;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscInfo(pc,"PCTelescope: updating the redundant preconditioned operator (DMDA)\n"));
-  CHKERRQ(PetscObjectGetComm((PetscObject)pc,&comm));
+  PetscCall(PetscInfo(pc,"PCTelescope: updating the redundant preconditioned operator (DMDA)\n"));
+  PetscCall(PetscObjectGetComm((PetscObject)pc,&comm));
   subcomm = PetscSubcommChild(sred->psubcomm);
   ctx = (PC_Telescope_DMDACtx*)sred->dm_ctx;
 
-  CHKERRQ(PCGetOperators(pc,NULL,&B));
-  CHKERRQ(MatGetSize(B,&nr,&nc));
+  PetscCall(PCGetOperators(pc,NULL,&B));
+  PetscCall(MatGetSize(B,&nr,&nc));
 
   P = ctx->permutation;
-  CHKERRQ(MatPtAP(B,P,MAT_INITIAL_MATRIX,1.1,&Bperm));
+  PetscCall(MatPtAP(B,P,MAT_INITIAL_MATRIX,1.1,&Bperm));
 
   /* Get submatrices */
   isrow = sred->isin;
-  CHKERRQ(ISCreateStride(comm,nc,0,1,&iscol));
+  PetscCall(ISCreateStride(comm,nc,0,1,&iscol));
 
-  CHKERRQ(MatCreateSubMatrices(Bperm,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&_Blocal));
+  PetscCall(MatCreateSubMatrices(Bperm,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&_Blocal));
   Blocal = *_Blocal;
   Bred = NULL;
   if (PCTelescope_isActiveRank(sred)) {
     PetscInt mm;
 
     if (reuse != MAT_INITIAL_MATRIX) {Bred = *A;}
-    CHKERRQ(MatGetSize(Blocal,&mm,NULL));
-    /* CHKERRQ(MatCreateMPIMatConcatenateSeqMat(subcomm,Blocal,PETSC_DECIDE,reuse,&Bred)); */
-    CHKERRQ(MatCreateMPIMatConcatenateSeqMat(subcomm,Blocal,mm,reuse,&Bred));
+    PetscCall(MatGetSize(Blocal,&mm,NULL));
+    /* PetscCall(MatCreateMPIMatConcatenateSeqMat(subcomm,Blocal,PETSC_DECIDE,reuse,&Bred)); */
+    PetscCall(MatCreateMPIMatConcatenateSeqMat(subcomm,Blocal,mm,reuse,&Bred));
   }
   *A = Bred;
 
-  CHKERRQ(ISDestroy(&iscol));
-  CHKERRQ(MatDestroy(&Bperm));
-  CHKERRQ(MatDestroyMatrices(1,&_Blocal));
+  PetscCall(ISDestroy(&iscol));
+  PetscCall(MatDestroy(&Bperm));
+  PetscCall(MatDestroyMatrices(1,&_Blocal));
   PetscFunctionReturn(0);
 }
 
@@ -770,8 +772,8 @@ PetscErrorCode PCTelescopeMatCreate_dmda(PC pc,PC_Telescope sred,MatReuse reuse,
   void           *dmksp_ctx;
 
   PetscFunctionBegin;
-  CHKERRQ(PCGetDM(pc,&dm));
-  CHKERRQ(DMKSPGetComputeOperators(dm,&dmksp_func,&dmksp_ctx));
+  PetscCall(PCGetDM(pc,&dm));
+  PetscCall(DMKSPGetComputeOperators(dm,&dmksp_func,&dmksp_ctx));
   /* We assume that dmksp_func = NULL, is equivalent to dmActive = PETSC_FALSE */
   if (dmksp_func && !sred->ignore_kspcomputeoperators) {
     DM  dmrepart;
@@ -779,9 +781,9 @@ PetscErrorCode PCTelescopeMatCreate_dmda(PC pc,PC_Telescope sred,MatReuse reuse,
 
     *A = NULL;
     if (PCTelescope_isActiveRank(sred)) {
-      CHKERRQ(KSPGetDM(sred->ksp,&dmrepart));
+      PetscCall(KSPGetDM(sred->ksp,&dmrepart));
       if (reuse == MAT_INITIAL_MATRIX) {
-        CHKERRQ(DMCreateMatrix(dmrepart,&Ak));
+        PetscCall(DMCreateMatrix(dmrepart,&Ak));
         *A = Ak;
       } else if (reuse == MAT_REUSE_MATRIX) {
         Ak = *A;
@@ -792,7 +794,7 @@ PetscErrorCode PCTelescopeMatCreate_dmda(PC pc,PC_Telescope sred,MatReuse reuse,
       */
     }
   } else {
-    CHKERRQ(PCTelescopeMatCreate_dmda_dmactivefalse(pc,sred,reuse,A));
+    PetscCall(PCTelescopeMatCreate_dmda_dmactivefalse(pc,sred,reuse,A));
   }
   PetscFunctionReturn(0);
 }
@@ -809,12 +811,12 @@ PetscErrorCode PCTelescopeSubNullSpaceCreate_dmda_Telescope(PC pc,PC_Telescope s
   PetscFunctionBegin;
   ctx = (PC_Telescope_DMDACtx*)sred->dm_ctx;
   subcomm = PetscSubcommChild(sred->psubcomm);
-  CHKERRQ(MatNullSpaceGetVecs(nullspace,&has_const,&n,&vecs));
+  PetscCall(MatNullSpaceGetVecs(nullspace,&has_const,&n,&vecs));
 
   if (PCTelescope_isActiveRank(sred)) {
     /* create new vectors */
     if (n) {
-      CHKERRQ(VecDuplicateVecs(sred->xred,n,&sub_vecs));
+      PetscCall(VecDuplicateVecs(sred->xred,n,&sub_vecs));
     }
   }
 
@@ -825,31 +827,31 @@ PetscErrorCode PCTelescopeSubNullSpaceCreate_dmda_Telescope(PC pc,PC_Telescope s
     PetscInt          st,ed;
 
     /* permute vector into ordering associated with re-partitioned dmda */
-    CHKERRQ(MatMultTranspose(ctx->permutation,vecs[k],ctx->xp));
+    PetscCall(MatMultTranspose(ctx->permutation,vecs[k],ctx->xp));
 
     /* pull in vector x->xtmp */
-    CHKERRQ(VecScatterBegin(sred->scatter,ctx->xp,sred->xtmp,INSERT_VALUES,SCATTER_FORWARD));
-    CHKERRQ(VecScatterEnd(sred->scatter,ctx->xp,sred->xtmp,INSERT_VALUES,SCATTER_FORWARD));
+    PetscCall(VecScatterBegin(sred->scatter,ctx->xp,sred->xtmp,INSERT_VALUES,SCATTER_FORWARD));
+    PetscCall(VecScatterEnd(sred->scatter,ctx->xp,sred->xtmp,INSERT_VALUES,SCATTER_FORWARD));
 
     /* copy vector entries into xred */
-    CHKERRQ(VecGetArrayRead(sred->xtmp,&x_array));
+    PetscCall(VecGetArrayRead(sred->xtmp,&x_array));
     if (sub_vecs) {
       if (sub_vecs[k]) {
-        CHKERRQ(VecGetOwnershipRange(sub_vecs[k],&st,&ed));
-        CHKERRQ(VecGetArray(sub_vecs[k],&LA_sub_vec));
+        PetscCall(VecGetOwnershipRange(sub_vecs[k],&st,&ed));
+        PetscCall(VecGetArray(sub_vecs[k],&LA_sub_vec));
         for (i=0; i<ed-st; i++) {
           LA_sub_vec[i] = x_array[i];
         }
-        CHKERRQ(VecRestoreArray(sub_vecs[k],&LA_sub_vec));
+        PetscCall(VecRestoreArray(sub_vecs[k],&LA_sub_vec));
       }
     }
-    CHKERRQ(VecRestoreArrayRead(sred->xtmp,&x_array));
+    PetscCall(VecRestoreArrayRead(sred->xtmp,&x_array));
   }
 
   if (PCTelescope_isActiveRank(sred)) {
     /* create new (near) nullspace for redundant object */
-    CHKERRQ(MatNullSpaceCreate(subcomm,has_const,n,sub_vecs,sub_nullspace));
-    CHKERRQ(VecDestroyVecs(n,&sub_vecs));
+    PetscCall(MatNullSpaceCreate(subcomm,has_const,n,sub_vecs,sub_nullspace));
+    PetscCall(VecDestroyVecs(n,&sub_vecs));
     PetscCheck(!nullspace->remove,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Propagation of custom remove callbacks not supported when propagating (near) nullspaces with PCTelescope");
     PetscCheck(!nullspace->rmctx,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Propagation of custom remove callback context not supported when propagating (near) nullspaces with PCTelescope");
   }
@@ -861,28 +863,28 @@ PetscErrorCode PCTelescopeMatNullSpaceCreate_dmda(PC pc,PC_Telescope sred,Mat su
   Mat            B;
 
   PetscFunctionBegin;
-  CHKERRQ(PCGetOperators(pc,NULL,&B));
+  PetscCall(PCGetOperators(pc,NULL,&B));
   {
     MatNullSpace nullspace,sub_nullspace;
-    CHKERRQ(MatGetNullSpace(B,&nullspace));
+    PetscCall(MatGetNullSpace(B,&nullspace));
     if (nullspace) {
-      CHKERRQ(PetscInfo(pc,"PCTelescope: generating nullspace (DMDA)\n"));
-      CHKERRQ(PCTelescopeSubNullSpaceCreate_dmda_Telescope(pc,sred,nullspace,&sub_nullspace));
+      PetscCall(PetscInfo(pc,"PCTelescope: generating nullspace (DMDA)\n"));
+      PetscCall(PCTelescopeSubNullSpaceCreate_dmda_Telescope(pc,sred,nullspace,&sub_nullspace));
       if (PCTelescope_isActiveRank(sred)) {
-        CHKERRQ(MatSetNullSpace(sub_mat,sub_nullspace));
-        CHKERRQ(MatNullSpaceDestroy(&sub_nullspace));
+        PetscCall(MatSetNullSpace(sub_mat,sub_nullspace));
+        PetscCall(MatNullSpaceDestroy(&sub_nullspace));
       }
     }
   }
   {
     MatNullSpace nearnullspace,sub_nearnullspace;
-    CHKERRQ(MatGetNearNullSpace(B,&nearnullspace));
+    PetscCall(MatGetNearNullSpace(B,&nearnullspace));
     if (nearnullspace) {
-      CHKERRQ(PetscInfo(pc,"PCTelescope: generating near nullspace (DMDA)\n"));
-      CHKERRQ(PCTelescopeSubNullSpaceCreate_dmda_Telescope(pc,sred,nearnullspace,&sub_nearnullspace));
+      PetscCall(PetscInfo(pc,"PCTelescope: generating near nullspace (DMDA)\n"));
+      PetscCall(PCTelescopeSubNullSpaceCreate_dmda_Telescope(pc,sred,nearnullspace,&sub_nearnullspace));
       if (PCTelescope_isActiveRank(sred)) {
-        CHKERRQ(MatSetNearNullSpace(sub_mat,sub_nearnullspace));
-        CHKERRQ(MatNullSpaceDestroy(&sub_nearnullspace));
+        PetscCall(MatSetNearNullSpace(sub_mat,sub_nearnullspace));
+        PetscCall(MatNullSpaceDestroy(&sub_nearnullspace));
       }
     }
   }
@@ -909,50 +911,50 @@ PetscErrorCode PCApply_Telescope_dmda(PC pc,Vec x,Vec y)
   xp      = ctx->xp;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscCitationsRegister(citation,&cited));
+  PetscCall(PetscCitationsRegister(citation,&cited));
 
   /* permute vector into ordering associated with re-partitioned dmda */
-  CHKERRQ(MatMultTranspose(perm,x,xp));
+  PetscCall(MatMultTranspose(perm,x,xp));
 
   /* pull in vector x->xtmp */
-  CHKERRQ(VecScatterBegin(scatter,xp,xtmp,INSERT_VALUES,SCATTER_FORWARD));
-  CHKERRQ(VecScatterEnd(scatter,xp,xtmp,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterBegin(scatter,xp,xtmp,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(scatter,xp,xtmp,INSERT_VALUES,SCATTER_FORWARD));
 
   /* copy vector entries into xred */
-  CHKERRQ(VecGetArrayRead(xtmp,&x_array));
+  PetscCall(VecGetArrayRead(xtmp,&x_array));
   if (xred) {
     PetscScalar *LA_xred;
-    CHKERRQ(VecGetOwnershipRange(xred,&st,&ed));
+    PetscCall(VecGetOwnershipRange(xred,&st,&ed));
 
-    CHKERRQ(VecGetArray(xred,&LA_xred));
+    PetscCall(VecGetArray(xred,&LA_xred));
     for (i=0; i<ed-st; i++) {
       LA_xred[i] = x_array[i];
     }
-    CHKERRQ(VecRestoreArray(xred,&LA_xred));
+    PetscCall(VecRestoreArray(xred,&LA_xred));
   }
-  CHKERRQ(VecRestoreArrayRead(xtmp,&x_array));
+  PetscCall(VecRestoreArrayRead(xtmp,&x_array));
 
   /* solve */
   if (PCTelescope_isActiveRank(sred)) {
-    CHKERRQ(KSPSolve(sred->ksp,xred,yred));
-    CHKERRQ(KSPCheckSolve(sred->ksp,pc,yred));
+    PetscCall(KSPSolve(sred->ksp,xred,yred));
+    PetscCall(KSPCheckSolve(sred->ksp,pc,yred));
   }
 
   /* return vector */
-  CHKERRQ(VecGetArray(xtmp,&array));
+  PetscCall(VecGetArray(xtmp,&array));
   if (yred) {
     const PetscScalar *LA_yred;
-    CHKERRQ(VecGetOwnershipRange(yred,&st,&ed));
-    CHKERRQ(VecGetArrayRead(yred,&LA_yred));
+    PetscCall(VecGetOwnershipRange(yred,&st,&ed));
+    PetscCall(VecGetArrayRead(yred,&LA_yred));
     for (i=0; i<ed-st; i++) {
       array[i] = LA_yred[i];
     }
-    CHKERRQ(VecRestoreArrayRead(yred,&LA_yred));
+    PetscCall(VecRestoreArrayRead(yred,&LA_yred));
   }
-  CHKERRQ(VecRestoreArray(xtmp,&array));
-  CHKERRQ(VecScatterBegin(scatter,xtmp,xp,INSERT_VALUES,SCATTER_REVERSE));
-  CHKERRQ(VecScatterEnd(scatter,xtmp,xp,INSERT_VALUES,SCATTER_REVERSE));
-  CHKERRQ(MatMult(perm,xp,y));
+  PetscCall(VecRestoreArray(xtmp,&array));
+  PetscCall(VecScatterBegin(scatter,xtmp,xp,INSERT_VALUES,SCATTER_REVERSE));
+  PetscCall(VecScatterEnd(scatter,xtmp,xp,INSERT_VALUES,SCATTER_REVERSE));
+  PetscCall(MatMult(perm,xp,y));
   PetscFunctionReturn(0);
 }
 
@@ -979,37 +981,37 @@ PetscErrorCode PCApplyRichardson_Telescope_dmda(PC pc,Vec x,Vec y,Vec w,PetscRea
   *reason = (PCRichardsonConvergedReason)0;
 
   if (!zeroguess) {
-    CHKERRQ(PetscInfo(pc,"PCTelescopeDMDA: Scattering y for non-zero-initial guess\n"));
+    PetscCall(PetscInfo(pc,"PCTelescopeDMDA: Scattering y for non-zero-initial guess\n"));
     /* permute vector into ordering associated with re-partitioned dmda */
-    CHKERRQ(MatMultTranspose(perm,y,xp));
+    PetscCall(MatMultTranspose(perm,y,xp));
 
     /* pull in vector x->xtmp */
-    CHKERRQ(VecScatterBegin(scatter,xp,xtmp,INSERT_VALUES,SCATTER_FORWARD));
-    CHKERRQ(VecScatterEnd(scatter,xp,xtmp,INSERT_VALUES,SCATTER_FORWARD));
+    PetscCall(VecScatterBegin(scatter,xp,xtmp,INSERT_VALUES,SCATTER_FORWARD));
+    PetscCall(VecScatterEnd(scatter,xp,xtmp,INSERT_VALUES,SCATTER_FORWARD));
 
     /* copy vector entries into xred */
-    CHKERRQ(VecGetArrayRead(xtmp,&x_array));
+    PetscCall(VecGetArrayRead(xtmp,&x_array));
     if (yred) {
       PetscScalar *LA_yred;
-      CHKERRQ(VecGetOwnershipRange(yred,&st,&ed));
-      CHKERRQ(VecGetArray(yred,&LA_yred));
+      PetscCall(VecGetOwnershipRange(yred,&st,&ed));
+      PetscCall(VecGetArray(yred,&LA_yred));
       for (i=0; i<ed-st; i++) {
         LA_yred[i] = x_array[i];
       }
-      CHKERRQ(VecRestoreArray(yred,&LA_yred));
+      PetscCall(VecRestoreArray(yred,&LA_yred));
     }
-    CHKERRQ(VecRestoreArrayRead(xtmp,&x_array));
+    PetscCall(VecRestoreArrayRead(xtmp,&x_array));
   }
 
   if (PCTelescope_isActiveRank(sred)) {
-    CHKERRQ(KSPGetInitialGuessNonzero(sred->ksp,&default_init_guess_value));
-    if (!zeroguess) CHKERRQ(KSPSetInitialGuessNonzero(sred->ksp,PETSC_TRUE));
+    PetscCall(KSPGetInitialGuessNonzero(sred->ksp,&default_init_guess_value));
+    if (!zeroguess) PetscCall(KSPSetInitialGuessNonzero(sred->ksp,PETSC_TRUE));
   }
 
-  CHKERRQ(PCApply_Telescope_dmda(pc,x,y));
+  PetscCall(PCApply_Telescope_dmda(pc,x,y));
 
   if (PCTelescope_isActiveRank(sred)) {
-    CHKERRQ(KSPSetInitialGuessNonzero(sred->ksp,default_init_guess_value));
+    PetscCall(KSPSetInitialGuessNonzero(sred->ksp,default_init_guess_value));
   }
 
   if (!*reason) *reason = PCRICHARDSON_CONVERGED_ITS;
@@ -1024,11 +1026,11 @@ PetscErrorCode PCReset_Telescope_dmda(PC pc)
 
   PetscFunctionBegin;
   ctx = (PC_Telescope_DMDACtx*)sred->dm_ctx;
-  CHKERRQ(VecDestroy(&ctx->xp));
-  CHKERRQ(MatDestroy(&ctx->permutation));
-  CHKERRQ(DMDestroy(&ctx->dmrepart));
-  CHKERRQ(PetscFree3(ctx->range_i_re,ctx->range_j_re,ctx->range_k_re));
-  CHKERRQ(PetscFree3(ctx->start_i_re,ctx->start_j_re,ctx->start_k_re));
+  PetscCall(VecDestroy(&ctx->xp));
+  PetscCall(MatDestroy(&ctx->permutation));
+  PetscCall(DMDestroy(&ctx->dmrepart));
+  PetscCall(PetscFree3(ctx->range_i_re,ctx->range_j_re,ctx->range_k_re));
+  PetscCall(PetscFree3(ctx->start_i_re,ctx->start_j_re,ctx->start_k_re));
   PetscFunctionReturn(0);
 }
 
@@ -1040,13 +1042,13 @@ PetscErrorCode DMView_DA_Short_3d(DM dm,PetscViewer v)
   const char*    prefix;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectGetComm((PetscObject)dm,&comm));
-  CHKERRMPI(MPI_Comm_size(comm,&size));
-  CHKERRQ(DMGetOptionsPrefix(dm,&prefix));
-  CHKERRQ(DMDAGetInfo(dm,NULL,&M,&N,&P,&m,&n,&p,&ndof,&nsw,NULL,NULL,NULL,NULL));
-  if (prefix) CHKERRQ(PetscViewerASCIIPrintf(v,"DMDA Object:    (%s)    %d MPI processes\n",prefix,size));
-  else CHKERRQ(PetscViewerASCIIPrintf(v,"DMDA Object:    %d MPI processes\n",size));
-  CHKERRQ(PetscViewerASCIIPrintf(v,"  M %D N %D P %D m %D n %D p %D dof %D overlap %D\n",M,N,P,m,n,p,ndof,nsw));
+  PetscCall(PetscObjectGetComm((PetscObject)dm,&comm));
+  PetscCallMPI(MPI_Comm_size(comm,&size));
+  PetscCall(DMGetOptionsPrefix(dm,&prefix));
+  PetscCall(DMDAGetInfo(dm,NULL,&M,&N,&P,&m,&n,&p,&ndof,&nsw,NULL,NULL,NULL,NULL));
+  if (prefix) PetscCall(PetscViewerASCIIPrintf(v,"DMDA Object:    (%s)    %d MPI processes\n",prefix,size));
+  else PetscCall(PetscViewerASCIIPrintf(v,"DMDA Object:    %d MPI processes\n",size));
+  PetscCall(PetscViewerASCIIPrintf(v,"  M %D N %D P %D m %D n %D p %D dof %D overlap %D\n",M,N,P,m,n,p,ndof,nsw));
   PetscFunctionReturn(0);
 }
 
@@ -1058,13 +1060,13 @@ PetscErrorCode DMView_DA_Short_2d(DM dm,PetscViewer v)
   const char*    prefix;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectGetComm((PetscObject)dm,&comm));
-  CHKERRMPI(MPI_Comm_size(comm,&size));
-  CHKERRQ(DMGetOptionsPrefix(dm,&prefix));
-  CHKERRQ(DMDAGetInfo(dm,NULL,&M,&N,NULL,&m,&n,NULL,&ndof,&nsw,NULL,NULL,NULL,NULL));
-  if (prefix) CHKERRQ(PetscViewerASCIIPrintf(v,"DMDA Object:    (%s)    %d MPI processes\n",prefix,size));
-  else CHKERRQ(PetscViewerASCIIPrintf(v,"DMDA Object:    %d MPI processes\n",size));
-  CHKERRQ(PetscViewerASCIIPrintf(v,"  M %D N %D m %D n %D dof %D overlap %D\n",M,N,m,n,ndof,nsw));
+  PetscCall(PetscObjectGetComm((PetscObject)dm,&comm));
+  PetscCallMPI(MPI_Comm_size(comm,&size));
+  PetscCall(DMGetOptionsPrefix(dm,&prefix));
+  PetscCall(DMDAGetInfo(dm,NULL,&M,&N,NULL,&m,&n,NULL,&ndof,&nsw,NULL,NULL,NULL,NULL));
+  if (prefix) PetscCall(PetscViewerASCIIPrintf(v,"DMDA Object:    (%s)    %d MPI processes\n",prefix,size));
+  else PetscCall(PetscViewerASCIIPrintf(v,"DMDA Object:    %d MPI processes\n",size));
+  PetscCall(PetscViewerASCIIPrintf(v,"  M %D N %D m %D n %D dof %D overlap %D\n",M,N,m,n,ndof,nsw));
   PetscFunctionReturn(0);
 }
 
@@ -1073,11 +1075,11 @@ PetscErrorCode DMView_DA_Short(DM dm,PetscViewer v)
   PetscInt       dim;
 
   PetscFunctionBegin;
-  CHKERRQ(DMDAGetInfo(dm,&dim,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(DMDAGetInfo(dm,&dim,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL));
   switch (dim) {
-  case 2: CHKERRQ(DMView_DA_Short_2d(dm,v));
+  case 2: PetscCall(DMView_DA_Short_2d(dm,v));
     break;
-  case 3: CHKERRQ(DMView_DA_Short_3d(dm,v));
+  case 3: PetscCall(DMView_DA_Short_3d(dm,v));
     break;
   }
   PetscFunctionReturn(0);

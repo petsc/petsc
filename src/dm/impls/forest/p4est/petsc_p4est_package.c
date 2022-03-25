@@ -41,7 +41,7 @@ static PetscErrorCode PetscP4estFinalize(void)
     PetscStackCallP4est(sc_package_set_abort_alloc_mismatch,(-1,0));
     PetscStackCallP4est(sc_finalize,());
   }
-  CHKERRQ(PetscHeaderDestroy(&P4estLoggingObject));
+  PetscCall(PetscHeaderDestroy(&P4estLoggingObject));
   PetscFunctionReturn(0);
 }
 
@@ -59,29 +59,29 @@ PetscErrorCode PetscP4estInitialize(void)
   PetscP4estInitialized = PETSC_TRUE;
 
   /* Register Classes */
-  CHKERRQ(PetscClassIdRegister("p4est logging",&P4ESTLOGGING_CLASSID));
+  PetscCall(PetscClassIdRegister("p4est logging",&P4ESTLOGGING_CLASSID));
   /* Process Info */
   {
     PetscClassId  classids[1];
 
     classids[0] = P4ESTLOGGING_CLASSID;
-    CHKERRQ(PetscInfoProcessClass("p4est", 1, classids));
+    PetscCall(PetscInfoProcessClass("p4est", 1, classids));
   }
   /* Process summary exclusions */
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt));
   if (opt) {
-    CHKERRQ(PetscStrInList("p4est",logList,',',&pkg));
-    if (pkg) CHKERRQ(PetscLogEventExcludeClass(P4ESTLOGGING_CLASSID));
+    PetscCall(PetscStrInList("p4est",logList,',',&pkg));
+    if (pkg) PetscCall(PetscLogEventExcludeClass(P4ESTLOGGING_CLASSID));
   }
-  CHKERRQ(PetscHeaderCreate(P4estLoggingObject,P4ESTLOGGING_CLASSID,"p4est","p4est logging","DM",PETSC_COMM_WORLD,NULL,PetscObjectView));
+  PetscCall(PetscHeaderCreate(P4estLoggingObject,P4ESTLOGGING_CLASSID,"p4est","p4est logging","DM",PETSC_COMM_WORLD,NULL,PetscObjectView));
   if (sc_package_id == -1) {
     int       log_threshold_shifted = psc_log_threshold + 1;
     PetscBool set;
 
     PetscBeganSc = PETSC_TRUE;
-    CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-petsc_sc_catch_signals",&psc_catch_signals,NULL));
-    CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-petsc_sc_print_backtrace",&psc_print_backtrace,NULL));
-    CHKERRQ(PetscOptionsGetEnum(NULL,NULL,"-petsc_sc_log_threshold",SCLogTypes,(PetscEnum*)&log_threshold_shifted,&set));
+    PetscCall(PetscOptionsGetBool(NULL,NULL,"-petsc_sc_catch_signals",&psc_catch_signals,NULL));
+    PetscCall(PetscOptionsGetBool(NULL,NULL,"-petsc_sc_print_backtrace",&psc_print_backtrace,NULL));
+    PetscCall(PetscOptionsGetEnum(NULL,NULL,"-petsc_sc_log_threshold",SCLogTypes,(PetscEnum*)&log_threshold_shifted,&set));
     if (set) psc_log_threshold = log_threshold_shifted - 1;
     sc_init(PETSC_COMM_WORLD,(int)psc_catch_signals,(int)psc_print_backtrace,PetscScLogHandler,psc_log_threshold);
     PetscCheckFalse(sc_package_id == -1,PETSC_COMM_WORLD,PETSC_ERR_LIB,"Could not initialize libsc package used by p4est");
@@ -91,13 +91,13 @@ PetscErrorCode PetscP4estInitialize(void)
     int       log_threshold_shifted = pp4est_log_threshold + 1;
     PetscBool set;
 
-    CHKERRQ(PetscOptionsGetEnum(NULL,NULL,"-petsc_p4est_log_threshold",SCLogTypes,(PetscEnum*)&log_threshold_shifted,&set));
+    PetscCall(PetscOptionsGetEnum(NULL,NULL,"-petsc_p4est_log_threshold",SCLogTypes,(PetscEnum*)&log_threshold_shifted,&set));
     if (set) pp4est_log_threshold = log_threshold_shifted - 1;
     PetscStackCallP4est(p4est_init,(PetscScLogHandler,pp4est_log_threshold));
     PetscCheckFalse(p4est_package_id == -1,PETSC_COMM_WORLD,PETSC_ERR_LIB,"Could not initialize p4est");
   }
-  CHKERRQ(DMForestRegisterType(DMP4EST));
-  CHKERRQ(DMForestRegisterType(DMP8EST));
-  CHKERRQ(PetscRegisterFinalize(PetscP4estFinalize));
+  PetscCall(DMForestRegisterType(DMP4EST));
+  PetscCall(DMForestRegisterType(DMP8EST));
+  PetscCall(PetscRegisterFinalize(PetscP4estFinalize));
   PetscFunctionReturn(0);
 }

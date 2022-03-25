@@ -109,17 +109,17 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec U,Vec F,void *ctx)
   const PetscScalar *mu2;
 
   PetscFunctionBeginUser;
-  CHKERRQ(TSGetStepNumber(ts,&curr_step));
-  CHKERRQ(VecGetArrayRead(U,&u));
-  CHKERRQ(VecGetArrayRead(user->mu1,&mu1));
-  CHKERRQ(VecGetArrayRead(user->mu2,&mu2));
-  CHKERRQ(VecGetArray(F,&f));
+  PetscCall(TSGetStepNumber(ts,&curr_step));
+  PetscCall(VecGetArrayRead(U,&u));
+  PetscCall(VecGetArrayRead(user->mu1,&mu1));
+  PetscCall(VecGetArrayRead(user->mu2,&mu2));
+  PetscCall(VecGetArray(F,&f));
   f[0] = mu1[curr_step]*u[1];
   f[1] = mu2[curr_step]*((1.-u[0]*u[0])*u[1]-u[0]);
-  CHKERRQ(VecRestoreArrayRead(U,&u));
-  CHKERRQ(VecRestoreArrayRead(user->mu1,&mu1));
-  CHKERRQ(VecRestoreArrayRead(user->mu2,&mu2));
-  CHKERRQ(VecRestoreArray(F,&f));
+  PetscCall(VecRestoreArrayRead(U,&u));
+  PetscCall(VecRestoreArrayRead(user->mu1,&mu1));
+  PetscCall(VecRestoreArrayRead(user->mu2,&mu2));
+  PetscCall(VecRestoreArray(F,&f));
   PetscFunctionReturn(0);
 }
 
@@ -134,20 +134,20 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B,void *ctx)
   const PetscScalar *mu2;
 
   PetscFunctionBeginUser;
-  CHKERRQ(TSGetStepNumber(ts,&curr_step));
-  CHKERRQ(VecGetArrayRead(user->mu1,&mu1));
-  CHKERRQ(VecGetArrayRead(user->mu2,&mu2));
-  CHKERRQ(VecGetArrayRead(U,&u));
+  PetscCall(TSGetStepNumber(ts,&curr_step));
+  PetscCall(VecGetArrayRead(user->mu1,&mu1));
+  PetscCall(VecGetArrayRead(user->mu2,&mu2));
+  PetscCall(VecGetArrayRead(U,&u));
   J[0][0] = 0;
   J[1][0] = -mu2[curr_step]*(2.0*u[1]*u[0]+1.);
   J[0][1] = mu1[curr_step];
   J[1][1] = mu2[curr_step]*(1.0-u[0]*u[0]);
-  CHKERRQ(MatSetValues(A,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES));
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(VecRestoreArrayRead(U,&u));
-  CHKERRQ(VecRestoreArrayRead(user->mu1,&mu1));
-  CHKERRQ(VecRestoreArrayRead(user->mu2,&mu2));
+  PetscCall(MatSetValues(A,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(VecRestoreArrayRead(U,&u));
+  PetscCall(VecRestoreArrayRead(user->mu1,&mu1));
+  PetscCall(VecRestoreArrayRead(user->mu2,&mu2));
   PetscFunctionReturn(0);
 }
 
@@ -160,15 +160,15 @@ PetscErrorCode RHSJacobianP_track(TS ts,PetscReal t,Vec U,Mat A,void *ctx)
   const PetscScalar *u;
 
   PetscFunctionBeginUser;
-  CHKERRQ(VecGetArrayRead(U,&u));
+  PetscCall(VecGetArrayRead(U,&u));
   J[0][0] = u[1];
   J[1][0] = 0;
   J[0][1] = 0;
   J[1][1] = (1.-u[0]*u[0])*u[1]-u[0];
-  CHKERRQ(MatSetValues(A,2,row,2,col,&J[0][0],INSERT_VALUES));
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(VecRestoreArrayRead(U,&u));
+  PetscCall(MatSetValues(A,2,row,2,col,&J[0][0],INSERT_VALUES));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(VecRestoreArrayRead(U,&u));
   PetscFunctionReturn(0);
 }
 
@@ -182,18 +182,18 @@ PetscErrorCode RHSJacobianP_global(TS ts,PetscReal t,Vec U,Mat A,void *ctx)
   PetscInt          curr_step;
 
   PetscFunctionBeginUser;
-  CHKERRQ(TSGetStepNumber(ts,&curr_step));
-  CHKERRQ(VecGetArrayRead(U,&u));
+  PetscCall(TSGetStepNumber(ts,&curr_step));
+  PetscCall(VecGetArrayRead(U,&u));
   J[0][0] = u[1];
   J[1][0] = 0;
   J[0][1] = 0;
   J[1][1] = (1.-u[0]*u[0])*u[1]-u[0];
   col[0] = (curr_step)*2;
   col[1] = (curr_step)*2+1;
-  CHKERRQ(MatSetValues(A,2,row,2,col,&J[0][0],INSERT_VALUES));
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(VecRestoreArrayRead(U,&u));
+  PetscCall(MatSetValues(A,2,row,2,col,&J[0][0],INSERT_VALUES));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(VecRestoreArrayRead(U,&u));
   PetscFunctionReturn(0);
 }
 
@@ -201,8 +201,8 @@ PetscErrorCode RHSJacobianP_global(TS ts,PetscReal t,Vec U,Mat A,void *ctx)
 PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec U,void *ctx)
 {
   PetscFunctionBeginUser;
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\n Solution at time %e is \n", t));
-  CHKERRQ(VecView(U,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n Solution at time %e is \n", t));
+  PetscCall(VecView(U,PETSC_VIEWER_STDOUT_WORLD));
   PetscFunctionReturn(0);
 }
 
@@ -218,7 +218,7 @@ PetscErrorCode AdjointMonitor(TS ts,PetscInt steps,PetscReal time,Vec u,PetscInt
   const PetscScalar *sensmu_loc;
 
   PetscFunctionBeginUser;
-  CHKERRQ(TSGetStepNumber(ts,&curr_step));
+  PetscCall(TSGetStepNumber(ts,&curr_step));
   /* Note that we skip the first call to the monitor in the adjoint
      solve since the sensitivities are already set (during
      initialization of adjoint vectors).
@@ -229,14 +229,14 @@ PetscErrorCode AdjointMonitor(TS ts,PetscInt steps,PetscReal time,Vec u,PetscInt
   if (curr_step == user->adj_idx) {
     PetscFunctionReturn(0);
   } else {
-    CHKERRQ(VecGetArrayRead(*mu,&sensmu_loc));
-    CHKERRQ(VecGetArray(user->sens_mu1,&sensmu1_glob));
-    CHKERRQ(VecGetArray(user->sens_mu2,&sensmu2_glob));
+    PetscCall(VecGetArrayRead(*mu,&sensmu_loc));
+    PetscCall(VecGetArray(user->sens_mu1,&sensmu1_glob));
+    PetscCall(VecGetArray(user->sens_mu2,&sensmu2_glob));
     sensmu1_glob[curr_step] = sensmu_loc[0];
     sensmu2_glob[curr_step] = sensmu_loc[1];
-    CHKERRQ(VecRestoreArray(user->sens_mu1,&sensmu1_glob));
-    CHKERRQ(VecRestoreArray(user->sens_mu2,&sensmu2_glob));
-    CHKERRQ(VecRestoreArrayRead(*mu,&sensmu_loc));
+    PetscCall(VecRestoreArray(user->sens_mu1,&sensmu1_glob));
+    PetscCall(VecRestoreArray(user->sens_mu2,&sensmu2_glob));
+    PetscCall(VecRestoreArrayRead(*mu,&sensmu_loc));
     PetscFunctionReturn(0);
   }
 }
@@ -254,18 +254,18 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"SA analysis options.","");CHKERRQ(ierr);{
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-monitor",&monitor,NULL));
-  CHKERRQ(PetscOptionsEnum("-sa_method","Sensitivity analysis method (track or global)","",SAMethods,(PetscEnum)sa,(PetscEnum*)&sa,NULL));
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"SA analysis options.","");PetscCall(ierr);{
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-monitor",&monitor,NULL));
+  PetscCall(PetscOptionsEnum("-sa_method","Sensitivity analysis method (track or global)","",SAMethods,(PetscEnum)sa,(PetscEnum*)&sa,NULL));
   }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
   user.final_time = 0.1;
   user.max_steps  = 5;
@@ -275,114 +275,114 @@ int main(int argc,char **argv)
      Create necessary matrix and vectors for forward solve.
      Create Jacp matrix for adjoint solve.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(VecCreateSeq(PETSC_COMM_WORLD,user.max_steps,&user.mu1));
-  CHKERRQ(VecCreateSeq(PETSC_COMM_WORLD,user.max_steps,&user.mu2));
-  CHKERRQ(VecSet(user.mu1,1.25));
-  CHKERRQ(VecSet(user.mu2,1.0e2));
+  PetscCall(VecCreateSeq(PETSC_COMM_WORLD,user.max_steps,&user.mu1));
+  PetscCall(VecCreateSeq(PETSC_COMM_WORLD,user.max_steps,&user.mu2));
+  PetscCall(VecSet(user.mu1,1.25));
+  PetscCall(VecSet(user.mu2,1.0e2));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       For tracking method : create the global sensitivity array to
       accumulate sensitivity with respect to parameters at each step.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   if (sa == SA_TRACK) {
-    CHKERRQ(VecCreateSeq(PETSC_COMM_WORLD,user.max_steps,&user.sens_mu1));
-    CHKERRQ(VecCreateSeq(PETSC_COMM_WORLD,user.max_steps,&user.sens_mu2));
+    PetscCall(VecCreateSeq(PETSC_COMM_WORLD,user.max_steps,&user.sens_mu1));
+    PetscCall(VecCreateSeq(PETSC_COMM_WORLD,user.max_steps,&user.sens_mu2));
   }
 
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&user.A));
-  CHKERRQ(MatSetSizes(user.A,PETSC_DECIDE,PETSC_DECIDE,2,2));
-  CHKERRQ(MatSetFromOptions(user.A));
-  CHKERRQ(MatSetUp(user.A));
-  CHKERRQ(MatCreateVecs(user.A,&user.U,NULL));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&user.A));
+  PetscCall(MatSetSizes(user.A,PETSC_DECIDE,PETSC_DECIDE,2,2));
+  PetscCall(MatSetFromOptions(user.A));
+  PetscCall(MatSetUp(user.A));
+  PetscCall(MatCreateVecs(user.A,&user.U,NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       Note that the dimensions of the Jacp matrix depend upon the
       sensitivity analysis method being used !
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&user.Jacp));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&user.Jacp));
   if (sa == SA_TRACK) {
-    CHKERRQ(MatSetSizes(user.Jacp,PETSC_DECIDE,PETSC_DECIDE,2,2));
+    PetscCall(MatSetSizes(user.Jacp,PETSC_DECIDE,PETSC_DECIDE,2,2));
   }
   if (sa == SA_GLOBAL) {
-    CHKERRQ(MatSetSizes(user.Jacp,PETSC_DECIDE,PETSC_DECIDE,2,user.max_steps*2));
+    PetscCall(MatSetSizes(user.Jacp,PETSC_DECIDE,PETSC_DECIDE,2,user.max_steps*2));
   }
-  CHKERRQ(MatSetFromOptions(user.Jacp));
-  CHKERRQ(MatSetUp(user.Jacp));
+  PetscCall(MatSetFromOptions(user.Jacp));
+  PetscCall(MatSetUp(user.Jacp));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
-  CHKERRQ(TSSetEquationType(ts,TS_EQ_ODE_EXPLICIT));
-  CHKERRQ(TSSetType(ts,TSCN));
+  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
+  PetscCall(TSSetEquationType(ts,TS_EQ_ODE_EXPLICIT));
+  PetscCall(TSSetType(ts,TSCN));
 
-  CHKERRQ(TSSetRHSFunction(ts,NULL,RHSFunction,&user));
-  CHKERRQ(TSSetRHSJacobian(ts,user.A,user.A,RHSJacobian,&user));
+  PetscCall(TSSetRHSFunction(ts,NULL,RHSFunction,&user));
+  PetscCall(TSSetRHSJacobian(ts,user.A,user.A,RHSJacobian,&user));
   if (sa == SA_TRACK) {
-    CHKERRQ(TSSetRHSJacobianP(ts,user.Jacp,RHSJacobianP_track,&user));
+    PetscCall(TSSetRHSJacobianP(ts,user.Jacp,RHSJacobianP_track,&user));
   }
   if (sa == SA_GLOBAL) {
-    CHKERRQ(TSSetRHSJacobianP(ts,user.Jacp,RHSJacobianP_global,&user));
+    PetscCall(TSSetRHSJacobianP(ts,user.Jacp,RHSJacobianP_global,&user));
   }
 
-  CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP));
-  CHKERRQ(TSSetMaxTime(ts,user.final_time));
-  CHKERRQ(TSSetTimeStep(ts,user.final_time/user.max_steps));
+  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP));
+  PetscCall(TSSetMaxTime(ts,user.final_time));
+  PetscCall(TSSetTimeStep(ts,user.final_time/user.max_steps));
 
   if (monitor) {
-    CHKERRQ(TSMonitorSet(ts,Monitor,&user,NULL));
+    PetscCall(TSMonitorSet(ts,Monitor,&user,NULL));
   }
   if (sa == SA_TRACK) {
-    CHKERRQ(TSAdjointMonitorSet(ts,AdjointMonitor,&user,NULL));
+    PetscCall(TSAdjointMonitorSet(ts,AdjointMonitor,&user,NULL));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(VecGetArray(user.U,&x_ptr));
+  PetscCall(VecGetArray(user.U,&x_ptr));
   x_ptr[0] = 2.0;
   x_ptr[1] = -2.0/3.0;
-  CHKERRQ(VecRestoreArray(user.U,&x_ptr));
+  PetscCall(VecRestoreArray(user.U,&x_ptr));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Save trajectory of solution so that TSAdjointSolve() may be used
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSSetSaveTrajectory(ts));
+  PetscCall(TSSetSaveTrajectory(ts));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSSetFromOptions(ts));
+  PetscCall(TSSetFromOptions(ts));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Execute forward model and print solution.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSSolve(ts,user.U));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\n Solution of forward TS :\n"));
-  CHKERRQ(VecView(user.U,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\n Forward TS solve successfull! Adjoint run begins!\n"));
+  PetscCall(TSSolve(ts,user.U));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n Solution of forward TS :\n"));
+  PetscCall(VecView(user.U,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n Forward TS solve successfull! Adjoint run begins!\n"));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Adjoint model starts here! Create adjoint vectors.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(MatCreateVecs(user.A,&user.lambda,NULL));
-  CHKERRQ(MatCreateVecs(user.Jacp,&user.mup,NULL));
+  PetscCall(MatCreateVecs(user.A,&user.lambda,NULL));
+  PetscCall(MatCreateVecs(user.Jacp,&user.mup,NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions for the adjoint vector
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(VecGetArray(user.U,&u_ptr));
-  CHKERRQ(VecGetArray(user.lambda,&y_ptr));
+  PetscCall(VecGetArray(user.U,&u_ptr));
+  PetscCall(VecGetArray(user.lambda,&y_ptr));
   y_ptr[0] = 2*(u_ptr[0] - 1.5967);
   y_ptr[1] = 2*(u_ptr[1] - -(1.02969));
-  CHKERRQ(VecRestoreArray(user.lambda,&y_ptr));
-  CHKERRQ(VecRestoreArray(user.U,&y_ptr));
-  CHKERRQ(VecSet(user.mup,0));
+  PetscCall(VecRestoreArray(user.lambda,&y_ptr));
+  PetscCall(VecRestoreArray(user.U,&y_ptr));
+  PetscCall(VecSet(user.mup,0));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set number of cost functions.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSSetCostGradients(ts,1,&user.lambda,&user.mup));
+  PetscCall(TSSetCostGradients(ts,1,&user.lambda,&user.mup));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      The adjoint vector mup has to be reset for each adjoint step when
@@ -394,51 +394,51 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   if (sa == SA_TRACK) {
     for (user.adj_idx=user.max_steps; user.adj_idx>0; user.adj_idx--) {
-      CHKERRQ(VecSet(user.mup,0));
-      CHKERRQ(TSAdjointSetSteps(ts, 1));
-      CHKERRQ(TSAdjointSolve(ts));
+      PetscCall(VecSet(user.mup,0));
+      PetscCall(TSAdjointSetSteps(ts, 1));
+      PetscCall(TSAdjointSolve(ts));
     }
   }
   if (sa == SA_GLOBAL) {
-    CHKERRQ(TSAdjointSolve(ts));
+    PetscCall(TSAdjointSolve(ts));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Dispaly adjoint sensitivities wrt parameters and initial conditions
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   if (sa == SA_TRACK) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt  mu1: d[cost]/d[mu1]\n"));
-    CHKERRQ(VecView(user.sens_mu1,PETSC_VIEWER_STDOUT_WORLD));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt  mu2: d[cost]/d[mu2]\n"));
-    CHKERRQ(VecView(user.sens_mu2,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt  mu1: d[cost]/d[mu1]\n"));
+    PetscCall(VecView(user.sens_mu1,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt  mu2: d[cost]/d[mu2]\n"));
+    PetscCall(VecView(user.sens_mu2,PETSC_VIEWER_STDOUT_WORLD));
   }
 
   if (sa == SA_GLOBAL) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt  params: d[cost]/d[p], where p refers to \n\
-                    the interlaced vector made by combining mu1,mu2\n");CHKERRQ(ierr);
-    CHKERRQ(VecView(user.mup,PETSC_VIEWER_STDOUT_WORLD));
+                    the interlaced vector made by combining mu1,mu2\n");PetscCall(ierr);
+    PetscCall(VecView(user.mup,PETSC_VIEWER_STDOUT_WORLD));
   }
 
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt initial conditions: d[cost]/d[u(t=0)]\n"));
-  CHKERRQ(VecView(user.lambda,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt initial conditions: d[cost]/d[u(t=0)]\n"));
+  PetscCall(VecView(user.lambda,PETSC_VIEWER_STDOUT_WORLD));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space!
      All PETSc objects should be destroyed when they are no longer needed.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(MatDestroy(&user.A));
-  CHKERRQ(MatDestroy(&user.Jacp));
-  CHKERRQ(VecDestroy(&user.U));
-  CHKERRQ(VecDestroy(&user.lambda));
-  CHKERRQ(VecDestroy(&user.mup));
-  CHKERRQ(VecDestroy(&user.mu1));
-  CHKERRQ(VecDestroy(&user.mu2));
+  PetscCall(MatDestroy(&user.A));
+  PetscCall(MatDestroy(&user.Jacp));
+  PetscCall(VecDestroy(&user.U));
+  PetscCall(VecDestroy(&user.lambda));
+  PetscCall(VecDestroy(&user.mup));
+  PetscCall(VecDestroy(&user.mu1));
+  PetscCall(VecDestroy(&user.mu2));
   if (sa == SA_TRACK) {
-    CHKERRQ(VecDestroy(&user.sens_mu1));
-    CHKERRQ(VecDestroy(&user.sens_mu2));
+    PetscCall(VecDestroy(&user.sens_mu1));
+    PetscCall(VecDestroy(&user.sens_mu2));
   }
-  CHKERRQ(TSDestroy(&ts));
-  CHKERRQ(PetscFinalize());
+  PetscCall(TSDestroy(&ts));
+  PetscCall(PetscFinalize());
   return(ierr);
 }
 

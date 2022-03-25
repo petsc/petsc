@@ -25,34 +25,34 @@ int main(int argc,char **args)
   MatPartitioning part;
   IS              is;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRMPI(MPI_Comm_size(MPI_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(MPI_COMM_WORLD,&size));
   PetscCheckFalse(size != 2,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This example is for exactly two processes");
-  CHKERRMPI(MPI_Comm_rank(MPI_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD,&rank));
 
-  CHKERRQ(PetscMalloc1(3,&ii));
-  CHKERRQ(PetscMalloc1(6,&jj));
+  PetscCall(PetscMalloc1(3,&ii));
+  PetscCall(PetscMalloc1(6,&jj));
   ii[0] = 0; ii[1] = 3; ii[2] = 6;
   if (rank == 0) {
     jj[0] = 0; jj[1] = 1; jj[2] = 2; jj[3] = 1; jj[4] = 2; jj[5] = 3;
   } else {
     jj[0] = 1; jj[1] = 4; jj[2] = 5; jj[3] = 1; jj[4] = 3; jj[5] = 5;
   }
-  CHKERRQ(MatCreateMPIAdj(MPI_COMM_WORLD,ncells,Nvertices,ii,jj,NULL,&mesh));
-  CHKERRQ(MatMeshToCellGraph(mesh,2,&dual));
-  CHKERRQ(MatView(dual,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatCreateMPIAdj(MPI_COMM_WORLD,ncells,Nvertices,ii,jj,NULL,&mesh));
+  PetscCall(MatMeshToCellGraph(mesh,2,&dual));
+  PetscCall(MatView(dual,PETSC_VIEWER_STDOUT_WORLD));
 
-  CHKERRQ(MatPartitioningCreate(MPI_COMM_WORLD,&part));
-  CHKERRQ(MatPartitioningSetAdjacency(part,dual));
-  CHKERRQ(MatPartitioningSetFromOptions(part));
-  CHKERRQ(MatPartitioningApply(part,&is));
-  CHKERRQ(ISView(is,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(ISDestroy(&is));
-  CHKERRQ(MatPartitioningDestroy(&part));
+  PetscCall(MatPartitioningCreate(MPI_COMM_WORLD,&part));
+  PetscCall(MatPartitioningSetAdjacency(part,dual));
+  PetscCall(MatPartitioningSetFromOptions(part));
+  PetscCall(MatPartitioningApply(part,&is));
+  PetscCall(ISView(is,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(ISDestroy(&is));
+  PetscCall(MatPartitioningDestroy(&part));
 
-  CHKERRQ(MatDestroy(&mesh));
-  CHKERRQ(MatDestroy(&dual));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatDestroy(&mesh));
+  PetscCall(MatDestroy(&dual));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

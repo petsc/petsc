@@ -11,21 +11,21 @@ int main(int argc,char **argv)
   IS                     is;
   PetscBool              broken = PETSC_FALSE;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-broken",&broken,NULL));
-  CHKERRQ(ISCreateBlock(PETSC_COMM_SELF,bs,n,ix,PETSC_COPY_VALUES,&is));
-  CHKERRQ(ISGetIndices(is,&indices));
-  CHKERRQ(PetscIntView(bs*3,indices,NULL));
-  CHKERRQ(ISRestoreIndices(is,&indices));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-broken",&broken,NULL));
+  PetscCall(ISCreateBlock(PETSC_COMM_SELF,bs,n,ix,PETSC_COPY_VALUES,&is));
+  PetscCall(ISGetIndices(is,&indices));
+  PetscCall(PetscIntView(bs*3,indices,NULL));
+  PetscCall(ISRestoreIndices(is,&indices));
   if (broken) {
-    CHKERRQ(ISSetBlockSize(is,3));
-    CHKERRQ(ISGetIndices(is,&indices));
-    CHKERRQ(PetscIntView(bs*3,indices,NULL));
-    CHKERRQ(ISRestoreIndices(is,&indices));
+    PetscCall(ISSetBlockSize(is,3));
+    PetscCall(ISGetIndices(is,&indices));
+    PetscCall(PetscIntView(bs*3,indices,NULL));
+    PetscCall(ISRestoreIndices(is,&indices));
   }
-  CHKERRQ(ISDestroy(&is));
+  PetscCall(ISDestroy(&is));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

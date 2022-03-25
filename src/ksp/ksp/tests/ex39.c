@@ -25,31 +25,31 @@ int main(int argc,char **args)
   PetscInt       i,j,k,Ii,J,Istart,Iend;
   PetscScalar    v, co1, co2;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   n1 = 32;
   n2 = 32;
   n3 = 32;
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n1",&n1,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n2",&n2,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n3",&n3,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n1",&n1,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n2",&n2,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n3",&n3,NULL));
 
   h     = 1.0/n1;
   gamma = 4.0/h;
   beta  = 0.01/(h*h);
-  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-h",&h,NULL));
-  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-gamma",&gamma,NULL));
-  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-beta",&beta,NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-h",&h,NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-gamma",&gamma,NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-beta",&beta,NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          Compute the matrix and set right-hand-side vector.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,n1*n2*n3,n1*n2*n3));
-  CHKERRQ(MatSetFromOptions(A));
-  CHKERRQ(MatMPIAIJSetPreallocation(A,7,NULL,7,NULL));
-  CHKERRQ(MatSeqAIJSetPreallocation(A,7,NULL));
-  CHKERRQ(MatSetUp(A));
-  CHKERRQ(MatGetOwnershipRange(A,&Istart,&Iend));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,n1*n2*n3,n1*n2*n3));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatMPIAIJSetPreallocation(A,7,NULL,7,NULL));
+  PetscCall(MatSeqAIJSetPreallocation(A,7,NULL));
+  PetscCall(MatSetUp(A));
+  PetscCall(MatGetOwnershipRange(A,&Istart,&Iend));
 
   /*
      Set matrix elements for the 3-D, seven-point stencil in parallel.
@@ -64,56 +64,56 @@ int main(int argc,char **args)
     i = Ii/(n2*n3); j = (Ii - i*n2*n3)/n3; k = Ii - i*n2*n3 - j*n3;
     if (i>0) {
       J    = Ii - n2*n3;  v = -1.0 + co1*(PetscScalar)i;
-      CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));
+      PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));
     }
     if (i<n1-1) {
       J    = Ii + n2*n3;  v = -1.0 + co1*(PetscScalar)i;
-      CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));
+      PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));
     }
     if (j>0) {
       J    = Ii - n3;  v = -1.0 + co1*(PetscScalar)j;
-      CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));
+      PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));
     }
     if (j<n2-1) {
       J    = Ii + n3;  v = -1.0 + co1*(PetscScalar)j;
-      CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));
+      PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));
     }
     if (k>0) {
       J    = Ii - 1;  v = -1.0 + co1*(PetscScalar)k;
-      CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));
+      PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));
     }
     if (k<n3-1) {
       J    = Ii + 1;  v = -1.0 + co1*(PetscScalar)k;
-      CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));
+      PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));
     }
     v    = 6.0 + co2;
-    CHKERRQ(MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES));
+    PetscCall(MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES));
   }
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
   /* Create parallel vectors and Set right-hand side. */
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&b));
-  CHKERRQ(VecSetSizes(b,PETSC_DECIDE,n1*n2*n3));
-  CHKERRQ(VecSetFromOptions(b));
-  CHKERRQ(VecDuplicate(b,&x));
-  CHKERRQ(VecDuplicate(b,&u));
-  CHKERRQ(VecSet(b,1.0));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&b));
+  PetscCall(VecSetSizes(b,PETSC_DECIDE,n1*n2*n3));
+  PetscCall(VecSetFromOptions(b));
+  PetscCall(VecDuplicate(b,&x));
+  PetscCall(VecDuplicate(b,&u));
+  PetscCall(VecSet(b,1.0));
 
   /* Create linear solver context */
-  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
-  CHKERRQ(KSPSetOperators(ksp,A,A));
-  CHKERRQ(KSPSetTolerances(ksp,1.e-6,PETSC_DEFAULT,PETSC_DEFAULT,200));
-  CHKERRQ(KSPSetFromOptions(ksp));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPSetOperators(ksp,A,A));
+  PetscCall(KSPSetTolerances(ksp,1.e-6,PETSC_DEFAULT,PETSC_DEFAULT,200));
+  PetscCall(KSPSetFromOptions(ksp));
 
   /* Solve the linear system */
-  CHKERRQ(KSPSolve(ksp,b,x));
+  PetscCall(KSPSolve(ksp,b,x));
 
   /* Free work space.  */
-  CHKERRQ(KSPDestroy(&ksp));
-  CHKERRQ(VecDestroy(&u));  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&b));  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(PetscFinalize());
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(VecDestroy(&u));  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&b));  PetscCall(MatDestroy(&A));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

@@ -24,11 +24,11 @@ static PetscErrorCode PetscFortranCallbackFinalize(void)
     FortranCallbackLink next,link = base->subtypes;
     for (; link; link=next) {
       next = link->next;
-      CHKERRQ(PetscFree(link->type_name));
-      CHKERRQ(PetscFree(link));
+      PetscCall(PetscFree(link->type_name));
+      PetscCall(PetscFree(link));
     }
   }
-  CHKERRQ(PetscFree(_classbase));
+  PetscCall(PetscFree(_classbase));
   _maxclassid = PETSC_SMALLEST_CLASSID;
   PetscFunctionReturn(0);
 }
@@ -62,10 +62,10 @@ PetscErrorCode PetscFortranCallbackRegister(PetscClassId classid,const char *sub
   if (classid >= _maxclassid) {
     PetscClassId        newmax = PETSC_SMALLEST_CLASSID + 2*(PETSC_LARGEST_CLASSID-PETSC_SMALLEST_CLASSID);
     FortranCallbackBase *newbase;
-    if (!_classbase) CHKERRQ(PetscRegisterFinalize(PetscFortranCallbackFinalize));
-    CHKERRQ(PetscCalloc1(newmax-PETSC_SMALLEST_CLASSID,&newbase));
-    CHKERRQ(PetscArraycpy(newbase,_classbase,_maxclassid-PETSC_SMALLEST_CLASSID));
-    CHKERRQ(PetscFree(_classbase));
+    if (!_classbase) PetscCall(PetscRegisterFinalize(PetscFortranCallbackFinalize));
+    PetscCall(PetscCalloc1(newmax-PETSC_SMALLEST_CLASSID,&newbase));
+    PetscCall(PetscArraycpy(newbase,_classbase,_maxclassid-PETSC_SMALLEST_CLASSID));
+    PetscCall(PetscFree(_classbase));
 
     _classbase = newbase;
     _maxclassid = newmax;
@@ -75,14 +75,14 @@ PetscErrorCode PetscFortranCallbackRegister(PetscClassId classid,const char *sub
   else {
     for (link=base->subtypes; link; link=link->next) { /* look for either both NULL or matching values (implies both non-NULL) */
       PetscBool match;
-      CHKERRQ(PetscStrcmp(subtype,link->type_name,&match));
+      PetscCall(PetscStrcmp(subtype,link->type_name,&match));
       if (match) { /* base type or matching subtype */
         goto found;
       }
     }
     /* Not found. Create node and prepend to class' subtype list */
-    CHKERRQ(PetscNew(&link));
-    CHKERRQ(PetscStrallocpy(subtype,&link->type_name));
+    PetscCall(PetscNew(&link));
+    PetscCall(PetscStrallocpy(subtype,&link->type_name));
 
     link->max      = PETSC_SMALLEST_FORTRAN_CALLBACK;
     link->next     = base->subtypes;

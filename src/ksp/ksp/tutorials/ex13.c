@@ -44,18 +44,18 @@ int main(int argc,char **args)
   /*
      Initialize the PETSc libraries
   */
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   /*
      The next two lines are for testing only; these allow the user to
      decide the grid size at runtime.
   */
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
   /*
      Create the empty sparse matrix and linear solver data structures
   */
-  CHKERRQ(UserInitializeLinearSolver(m,n,&userctx));
+  PetscCall(UserInitializeLinearSolver(m,n,&userctx));
   N    = m*n;
 
   /*
@@ -66,14 +66,14 @@ int main(int argc,char **args)
      the context of a larger application these would be provided by
      other (non-PETSc) parts of the application code.
   */
-  CHKERRQ(PetscMalloc1(N,&userx));
-  CHKERRQ(PetscMalloc1(N,&userb));
-  CHKERRQ(PetscMalloc1(N,&solution));
+  PetscCall(PetscMalloc1(N,&userx));
+  PetscCall(PetscMalloc1(N,&userb));
+  PetscCall(PetscMalloc1(N,&solution));
 
   /*
       Allocate an array to hold the coefficients in the elliptic operator
   */
-  CHKERRQ(PetscMalloc1(N,&rho));
+  PetscCall(PetscMalloc1(N,&rho));
 
   /*
      Fill up the array rho[] with the function rho(x,y) = x; fill the
@@ -104,7 +104,7 @@ int main(int argc,char **args)
      one may reuse the linear solver stuff in each time-step.
   */
   for (t=0; t<tmax; t++) {
-    CHKERRQ(UserDoLinearSolver(rho,&userctx,userb,userx));
+    PetscCall(UserDoLinearSolver(rho,&userctx,userb,userx));
 
     /*
         Compute error: Note that this could (and usually should) all be done
@@ -115,19 +115,19 @@ int main(int argc,char **args)
     enorm = 0.0;
     for (i=0; i<N; i++) enorm += PetscRealPart(PetscConj(solution[i]-userx[i])*(solution[i]-userx[i]));
     enorm *= PetscRealPart(hx*hy);
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"m %D n %D error norm %g\n",m,n,(double)enorm));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"m %D n %D error norm %g\n",m,n,(double)enorm));
   }
 
   /*
      We are all finished solving linear systems, so we clean up the
      data structures.
   */
-  CHKERRQ(PetscFree(rho));
-  CHKERRQ(PetscFree(solution));
-  CHKERRQ(PetscFree(userx));
-  CHKERRQ(PetscFree(userb));
-  CHKERRQ(UserFinalizeLinearSolver(&userctx));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFree(rho));
+  PetscCall(PetscFree(solution));
+  PetscCall(PetscFree(userx));
+  PetscCall(PetscFree(userb));
+  PetscCall(UserFinalizeLinearSolver(&userctx));
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -151,21 +151,21 @@ PetscErrorCode UserInitializeLinearSolver(PetscInt m,PetscInt n,UserCtx *userctx
   /*
      Create the sparse matrix. Preallocate 5 nonzeros per row.
   */
-  CHKERRQ(MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,5,0,&userctx->A));
+  PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,5,0,&userctx->A));
 
   /*
      Create vectors. Here we create vectors with no memory allocated.
      This way, we can use the data structures already in the program
      by using VecPlaceArray() subroutine at a later stage.
   */
-  CHKERRQ(VecCreateSeqWithArray(PETSC_COMM_SELF,1,N,NULL,&userctx->b));
-  CHKERRQ(VecDuplicate(userctx->b,&userctx->x));
+  PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,1,N,NULL,&userctx->b));
+  PetscCall(VecDuplicate(userctx->b,&userctx->x));
 
   /*
      Create linear solver context. This will be used repeatedly for all
      the linear solves needed.
   */
-  CHKERRQ(KSPCreate(PETSC_COMM_SELF,&userctx->ksp));
+  PetscCall(KSPCreate(PETSC_COMM_SELF,&userctx->ksp));
 
   return 0;
 }
@@ -202,25 +202,25 @@ PetscErrorCode UserDoLinearSolver(PetscScalar *rho,UserCtx *userctx,PetscScalar 
       if (j>0) {
         J    = Ii - m;
         v    = -.5*(rho[Ii] + rho[J])*hy2;
-        CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));
+        PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));
       }
       if (j<n-1) {
         J    = Ii + m;
         v    = -.5*(rho[Ii] + rho[J])*hy2;
-        CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));
+        PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));
       }
       if (i>0) {
         J    = Ii - 1;
         v    = -.5*(rho[Ii] + rho[J])*hx2;
-        CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));
+        PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));
       }
       if (i<m-1) {
         J    = Ii + 1;
         v    = -.5*(rho[Ii] + rho[J])*hx2;
-        CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));
+        PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));
       }
       v    = 2.0*rho[Ii]*(hx2+hy2);
-      CHKERRQ(MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES));
+      PetscCall(MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES));
       Ii++;
     }
   }
@@ -228,8 +228,8 @@ PetscErrorCode UserDoLinearSolver(PetscScalar *rho,UserCtx *userctx,PetscScalar 
   /*
      Assemble matrix
   */
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
   /*
      Set operators. Here the matrix that defines the linear system
@@ -237,14 +237,14 @@ PetscErrorCode UserDoLinearSolver(PetscScalar *rho,UserCtx *userctx,PetscScalar 
      will have the same nonzero pattern here, we indicate this so the
      linear solvers can take advantage of this.
   */
-  CHKERRQ(KSPSetOperators(userctx->ksp,A,A));
+  PetscCall(KSPSetOperators(userctx->ksp,A,A));
 
   /*
      Set linear solver defaults for this problem (optional).
      - Here we set it to use direct LU factorization for the solution
   */
-  CHKERRQ(KSPGetPC(userctx->ksp,&pc));
-  CHKERRQ(PCSetType(pc,PCLU));
+  PetscCall(KSPGetPC(userctx->ksp,&pc));
+  PetscCall(PCSetType(pc,PCLU));
 
   /*
      Set runtime options, e.g.,
@@ -256,7 +256,7 @@ PetscErrorCode UserDoLinearSolver(PetscScalar *rho,UserCtx *userctx,PetscScalar 
      Run the program with the option -help to see all the possible
      linear solver options.
   */
-  CHKERRQ(KSPSetFromOptions(userctx->ksp));
+  PetscCall(KSPSetFromOptions(userctx->ksp));
 
   /*
      This allows the PETSc linear solvers to compute the solution
@@ -267,20 +267,20 @@ PetscErrorCode UserDoLinearSolver(PetscScalar *rho,UserCtx *userctx,PetscScalar 
      write their entire application using PETSc vectors rather than
      arrays.
   */
-  CHKERRQ(VecPlaceArray(userctx->x,userx));
-  CHKERRQ(VecPlaceArray(userctx->b,userb));
+  PetscCall(VecPlaceArray(userctx->x,userx));
+  PetscCall(VecPlaceArray(userctx->b,userb));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  CHKERRQ(KSPSolve(userctx->ksp,userctx->b,userctx->x));
+  PetscCall(KSPSolve(userctx->ksp,userctx->b,userctx->x));
 
   /*
     Put back the PETSc array that belongs in the vector xuserctx->x
   */
-  CHKERRQ(VecResetArray(userctx->x));
-  CHKERRQ(VecResetArray(userctx->b));
+  PetscCall(VecResetArray(userctx->x));
+  PetscCall(VecResetArray(userctx->b));
 
   return 0;
 }
@@ -293,10 +293,10 @@ PetscErrorCode UserFinalizeLinearSolver(UserCtx *userctx)
      we free the work space.  All PETSc objects should be destroyed when
      they are no longer needed.
   */
-  CHKERRQ(KSPDestroy(&userctx->ksp));
-  CHKERRQ(VecDestroy(&userctx->x));
-  CHKERRQ(VecDestroy(&userctx->b));
-  CHKERRQ(MatDestroy(&userctx->A));
+  PetscCall(KSPDestroy(&userctx->ksp));
+  PetscCall(VecDestroy(&userctx->x));
+  PetscCall(VecDestroy(&userctx->b));
+  PetscCall(MatDestroy(&userctx->A));
   return 0;
 }
 

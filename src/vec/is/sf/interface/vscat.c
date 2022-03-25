@@ -14,11 +14,11 @@ static inline PetscErrorCode ISGetTypeID_Private(IS is,ISTypeID *id)
 
   PetscFunctionBegin;
   *id  = IS_INVALID;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)is,ISGENERAL,&same));
+  PetscCall(PetscObjectTypeCompare((PetscObject)is,ISGENERAL,&same));
   if (same) {*id = IS_GENERAL; goto functionend;}
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)is,ISBLOCK,&same));
+  PetscCall(PetscObjectTypeCompare((PetscObject)is,ISBLOCK,&same));
   if (same) {*id = IS_BLOCK; goto functionend;}
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)is,ISSTRIDE,&same));
+  PetscCall(PetscObjectTypeCompare((PetscObject)is,ISSTRIDE,&same));
   if (same) {*id = IS_STRIDE; goto functionend;}
 functionend:
   PetscFunctionReturn(0);
@@ -32,15 +32,15 @@ static PetscErrorCode VecScatterBegin_Internal(VecScatter sf,Vec x,Vec y,InsertM
   PetscMemType   xmtype=PETSC_MEMTYPE_HOST,ymtype=PETSC_MEMTYPE_HOST;
 
   PetscFunctionBegin;
-  if (x != y) CHKERRQ(VecLockReadPush(x));
-  CHKERRQ(VecGetArrayReadAndMemType(x,&sf->vscat.xdata,&xmtype));
-  CHKERRQ(VecGetArrayAndMemType(y,&sf->vscat.ydata,&ymtype));
-  CHKERRQ(VecLockWriteSet_Private(y,PETSC_TRUE));
+  if (x != y) PetscCall(VecLockReadPush(x));
+  PetscCall(VecGetArrayReadAndMemType(x,&sf->vscat.xdata,&xmtype));
+  PetscCall(VecGetArrayAndMemType(y,&sf->vscat.ydata,&ymtype));
+  PetscCall(VecLockWriteSet_Private(y,PETSC_TRUE));
 
   /* SCATTER_LOCAL indicates ignoring inter-process communication */
-  CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)sf),&size));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)sf),&size));
   if ((mode & SCATTER_LOCAL) && size > 1) { /* Lazy creation of sf->vscat.lsf since SCATTER_LOCAL is uncommon */
-    if (!sf->vscat.lsf) CHKERRQ(PetscSFCreateLocalSF_Private(sf,&sf->vscat.lsf));
+    if (!sf->vscat.lsf) PetscCall(PetscSFCreateLocalSF_Private(sf,&sf->vscat.lsf));
     wsf = sf->vscat.lsf;
   } else {
     wsf = sf;
@@ -54,9 +54,9 @@ static PetscErrorCode VecScatterBegin_Internal(VecScatter sf,Vec x,Vec y,InsertM
   else SETERRQ(PetscObjectComm((PetscObject)sf),PETSC_ERR_SUP,"Unsupported InsertMode %d in VecScatterBegin/End",addv);
 
   if (mode & SCATTER_REVERSE) { /* REVERSE indicates leaves to root scatter. Note that x and y are swapped in input */
-    CHKERRQ(PetscSFReduceWithMemTypeBegin(wsf,sf->vscat.unit,xmtype,sf->vscat.xdata,ymtype,sf->vscat.ydata,mop));
+    PetscCall(PetscSFReduceWithMemTypeBegin(wsf,sf->vscat.unit,xmtype,sf->vscat.xdata,ymtype,sf->vscat.ydata,mop));
   } else { /* FORWARD indicates x to y scatter, where x is root and y is leaf */
-    CHKERRQ(PetscSFBcastWithMemTypeBegin(wsf,sf->vscat.unit,xmtype,sf->vscat.xdata,ymtype,sf->vscat.ydata,mop));
+    PetscCall(PetscSFBcastWithMemTypeBegin(wsf,sf->vscat.unit,xmtype,sf->vscat.xdata,ymtype,sf->vscat.ydata,mop));
   }
   PetscFunctionReturn(0);
 }
@@ -69,7 +69,7 @@ static PetscErrorCode VecScatterEnd_Internal(VecScatter sf,Vec x,Vec y,InsertMod
 
   PetscFunctionBegin;
   /* SCATTER_LOCAL indicates ignoring inter-process communication */
-  CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)sf),&size));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)sf),&size));
   wsf  = ((mode & SCATTER_LOCAL) && size > 1) ? sf->vscat.lsf : sf;
 
   if (addv == INSERT_VALUES)   mop = MPI_REPLACE;
@@ -79,15 +79,15 @@ static PetscErrorCode VecScatterEnd_Internal(VecScatter sf,Vec x,Vec y,InsertMod
   else SETERRQ(PetscObjectComm((PetscObject)sf),PETSC_ERR_SUP,"Unsupported InsertMode %d in VecScatterBegin/End",addv);
 
   if (mode & SCATTER_REVERSE) { /* reverse scatter sends leaves to roots. Note that x and y are swapped in input */
-    CHKERRQ(PetscSFReduceEnd(wsf,sf->vscat.unit,sf->vscat.xdata,sf->vscat.ydata,mop));
+    PetscCall(PetscSFReduceEnd(wsf,sf->vscat.unit,sf->vscat.xdata,sf->vscat.ydata,mop));
   } else { /* forward scatter sends roots to leaves, i.e., x to y */
-    CHKERRQ(PetscSFBcastEnd(wsf,sf->vscat.unit,sf->vscat.xdata,sf->vscat.ydata,mop));
+    PetscCall(PetscSFBcastEnd(wsf,sf->vscat.unit,sf->vscat.xdata,sf->vscat.ydata,mop));
   }
 
-  CHKERRQ(VecRestoreArrayReadAndMemType(x,&sf->vscat.xdata));
-  if (x != y) CHKERRQ(VecLockReadPop(x));
-  CHKERRQ(VecRestoreArrayAndMemType(y,&sf->vscat.ydata));
-  CHKERRQ(VecLockWriteSet_Private(y,PETSC_FALSE));
+  PetscCall(VecRestoreArrayReadAndMemType(x,&sf->vscat.xdata));
+  if (x != y) PetscCall(VecLockReadPop(x));
+  PetscCall(VecRestoreArrayAndMemType(y,&sf->vscat.ydata));
+  PetscCall(VecLockWriteSet_Private(y,PETSC_FALSE));
   PetscFunctionReturn(0);
 }
 
@@ -112,19 +112,19 @@ static PetscErrorCode VecScatterRemap_Internal(VecScatter sf,const PetscInt *tom
   PetscCheck(!frommap,PETSC_COMM_SELF,PETSC_ERR_SUP,"Unable to remap the FROM in scatters yet");
   if (!tomap) PetscFunctionReturn(0);
 
-  CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)sf),&size));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)sf),&size));
 
   /* Since the indices changed, we must also update the local SF. But we do not do it since
      lsf is rarely used. We just destroy lsf and rebuild it on demand from updated sf.
   */
-  if (sf->vscat.lsf) CHKERRQ(PetscSFDestroy(&sf->vscat.lsf));
+  if (sf->vscat.lsf) PetscCall(PetscSFDestroy(&sf->vscat.lsf));
 
-  CHKERRQ(PetscSFGetType(sf,&type));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)sf,PETSCSFBASIC,&isbasic));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)sf,PETSCSFNEIGHBOR,&isneighbor));
+  PetscCall(PetscSFGetType(sf,&type));
+  PetscCall(PetscObjectTypeCompare((PetscObject)sf,PETSCSFBASIC,&isbasic));
+  PetscCall(PetscObjectTypeCompare((PetscObject)sf,PETSCSFNEIGHBOR,&isneighbor));
   PetscCheckFalse(!isbasic && !isneighbor,PetscObjectComm((PetscObject)sf),PETSC_ERR_SUP,"VecScatterRemap on SF type %s is not supported",type);
 
-  CHKERRQ(PetscSFSetUp(sf)); /* to bulid sf->irootloc if SetUp is not yet called */
+  PetscCall(PetscSFSetUp(sf)); /* to bulid sf->irootloc if SetUp is not yet called */
 
   /* Root indices are going to be remapped. This is tricky for SF. Root indices are used in sf->rremote,
     sf->remote and bas->irootloc. The latter one is cheap to remap, but the former two are not.
@@ -137,7 +137,7 @@ static PetscErrorCode VecScatterRemap_Internal(VecScatter sf,const PetscInt *tom
     which are used by VecScatter and only rely on bas->irootloc, are updated and correct.
   */
   sf->remote = NULL;
-  CHKERRQ(PetscFree(sf->remote_alloc));
+  PetscCall(PetscFree(sf->remote_alloc));
   /* Not easy to free sf->rremote since it was allocated with PetscMalloc4(), so just give it crazy values */
   for (i=0; i<sf->roffset[sf->nranks]; i++) sf->rremote[i] = PETSC_MIN_INT;
 
@@ -149,11 +149,11 @@ static PetscErrorCode VecScatterRemap_Internal(VecScatter sf,const PetscInt *tom
   for (i=0; i<bas->ioffset[bas->niranks]; i++) bas->irootloc[i] = tomap[bas->irootloc[i]*bs]/bs;
 #if defined(PETSC_HAVE_DEVICE)
   /* Free the irootloc copy on device. We allocate a new copy and get the updated value on demand. See PetscSFLinkGetRootPackOptAndIndices() */
-  for (i=0; i<2; i++) CHKERRQ(PetscSFFree(sf,PETSC_MEMTYPE_DEVICE,bas->irootloc_d[i]));
+  for (i=0; i<2; i++) PetscCall(PetscSFFree(sf,PETSC_MEMTYPE_DEVICE,bas->irootloc_d[i]));
 #endif
   /* Destroy and then rebuild root packing optimizations since indices are changed */
-  CHKERRQ(PetscSFResetPackFields(sf));
-  CHKERRQ(PetscSFSetUpPackFields(sf));
+  PetscCall(PetscSFResetPackFields(sf));
+  PetscCall(PetscSFSetUpPackFields(sf));
   PetscFunctionReturn(0);
 }
 
@@ -181,16 +181,16 @@ PetscErrorCode VecScatterGetRemoteCount_Private(VecScatter sf,PetscBool send,Pet
   const PetscMPIInt *ranks;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscSFSetUp(sf));
-  CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank));
+  PetscCall(PetscSFSetUp(sf));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank));
 
   /* This routine is mainly used for MatMult's Mvctx. In Mvctx, we scatter an MPI vector x to a sequential vector lvec.
      Remember x is roots and lvec is leaves. 'send' means roots to leaves communication. If 'send' is true, we need to
      get info about which ranks this processor needs to send to. In other words, we need to call PetscSFGetLeafRanks().
      If send is false, we do the opposite, calling PetscSFGetRootRanks().
   */
-  if (send) CHKERRQ(PetscSFGetLeafRanks(sf,&nranks,&ranks,&offset,NULL));
-  else CHKERRQ(PetscSFGetRootRanks(sf,&nranks,&ranks,&offset,NULL,NULL));
+  if (send) PetscCall(PetscSFGetLeafRanks(sf,&nranks,&ranks,&offset,NULL));
+  else PetscCall(PetscSFGetRootRanks(sf,&nranks,&ranks,&offset,NULL,NULL));
   if (nranks) {
     remote_start = (rank == ranks[0])? 1 : 0;
     if (num_procs)   *num_procs   = nranks - remote_start;
@@ -229,11 +229,11 @@ PetscErrorCode VecScatterGetRemote_Private(VecScatter sf,PetscBool send,PetscInt
   const PetscMPIInt *ranks;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscSFSetUp(sf));
-  CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank));
+  PetscCall(PetscSFSetUp(sf));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank));
 
-  if (send) CHKERRQ(PetscSFGetLeafRanks(sf,&nranks,&ranks,&offset,&location));
-  else CHKERRQ(PetscSFGetRootRanks(sf,&nranks,&ranks,&offset,&location,NULL));
+  if (send) PetscCall(PetscSFGetLeafRanks(sf,&nranks,&ranks,&offset,&location));
+  else PetscCall(PetscSFGetRootRanks(sf,&nranks,&ranks,&offset,&location,NULL));
 
   if (nranks) {
     remote_start = (rank == ranks[0])? 1 : 0;
@@ -277,7 +277,7 @@ PetscErrorCode VecScatterGetRemote_Private(VecScatter sf,PetscBool send,PetscInt
 PetscErrorCode VecScatterGetRemoteOrdered_Private(VecScatter sf,PetscBool send,PetscInt *n,const PetscInt **starts,const PetscInt **indices,const PetscMPIInt **procs,PetscInt *bs)
 {
   PetscFunctionBegin;
-  CHKERRQ(VecScatterGetRemote_Private(sf,send,n,starts,indices,procs,bs));
+  PetscCall(VecScatterGetRemote_Private(sf,send,n,starts,indices,procs,bs));
   if (PetscUnlikelyDebug(n && procs)) {
     PetscInt i;
     /* from back to front to also handle cases *n=0 */
@@ -330,7 +330,7 @@ PetscErrorCode VecScatterRestoreRemote_Private(VecScatter sf,PetscBool send,Pets
 PetscErrorCode VecScatterRestoreRemoteOrdered_Private(VecScatter sf,PetscBool send,PetscInt *n,const PetscInt **starts,const PetscInt **indices,const PetscMPIInt **procs,PetscInt *bs)
 {
   PetscFunctionBegin;
-  CHKERRQ(VecScatterRestoreRemote_Private(sf,send,n,starts,indices,procs,bs));
+  PetscCall(VecScatterRestoreRemote_Private(sf,send,n,starts,indices,procs,bs));
   PetscFunctionReturn(0);
 }
 
@@ -349,7 +349,7 @@ PetscErrorCode VecScatterRestoreRemoteOrdered_Private(VecScatter sf,PetscBool se
 PetscErrorCode VecScatterSetUp(VecScatter sf)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscSFSetUp(sf));
+  PetscCall(PetscSFSetUp(sf));
   PetscFunctionReturn(0);
 }
 
@@ -375,7 +375,7 @@ PetscErrorCode VecScatterSetUp(VecScatter sf)
 PetscErrorCode VecScatterSetType(VecScatter sf, VecScatterType type)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscSFSetType(sf,type));
+  PetscCall(PetscSFSetType(sf,type));
   PetscFunctionReturn(0);
 }
 
@@ -397,7 +397,7 @@ PetscErrorCode VecScatterSetType(VecScatter sf, VecScatterType type)
 PetscErrorCode VecScatterGetType(VecScatter sf, VecScatterType *type)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscSFGetType(sf,type));
+  PetscCall(PetscSFGetType(sf,type));
   PetscFunctionReturn(0);
 }
 
@@ -417,7 +417,7 @@ PetscErrorCode VecScatterGetType(VecScatter sf, VecScatterType *type)
 PetscErrorCode VecScatterRegister(const char sname[], PetscErrorCode (*function)(VecScatter))
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscSFRegister(sname,function));
+  PetscCall(PetscSFRegister(sname,function));
   PetscFunctionReturn(0);
 }
 
@@ -460,7 +460,7 @@ PetscErrorCode  VecScatterGetMerged(VecScatter sf,PetscBool *flg)
 PetscErrorCode VecScatterDestroy(VecScatter *sf)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscSFDestroy(sf));
+  PetscCall(PetscSFDestroy(sf));
   PetscFunctionReturn(0);
 }
 
@@ -483,8 +483,8 @@ PetscErrorCode  VecScatterCopy(VecScatter sf,VecScatter *newsf)
 {
   PetscFunctionBegin;
   PetscValidPointer(newsf,2);
-  CHKERRQ(PetscSFDuplicate(sf,PETSCSF_DUPLICATE_GRAPH,newsf));
-  CHKERRQ(PetscSFSetUp(*newsf));
+  PetscCall(PetscSFDuplicate(sf,PETSCSF_DUPLICATE_GRAPH,newsf));
+  PetscCall(PetscSFSetUp(*newsf));
   PetscFunctionReturn(0);
 }
 
@@ -505,7 +505,7 @@ PetscErrorCode  VecScatterViewFromOptions(VecScatter sf,PetscObject obj,const ch
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
-  CHKERRQ(PetscObjectViewFromOptions((PetscObject)sf,obj,name));
+  PetscCall(PetscObjectViewFromOptions((PetscObject)sf,obj,name));
   PetscFunctionReturn(0);
 }
 
@@ -525,7 +525,7 @@ PetscErrorCode  VecScatterViewFromOptions(VecScatter sf,PetscObject obj,const ch
 PetscErrorCode  VecScatterView(VecScatter sf,PetscViewer viewer)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscSFView(sf,viewer));
+  PetscCall(PetscSFView(sf,viewer));
   PetscFunctionReturn(0);
 }
 
@@ -557,7 +557,7 @@ PetscErrorCode  VecScatterRemap(VecScatter sf,PetscInt tomap[],PetscInt frommap[
   PetscFunctionBegin;
   if (tomap)   PetscValidIntPointer(tomap,2);
   if (frommap) PetscValidIntPointer(frommap,3);
-  CHKERRQ(VecScatterRemap_Internal(sf,tomap,frommap));
+  PetscCall(VecScatterRemap_Internal(sf,tomap,frommap));
   PetscCheck(!frommap,PETSC_COMM_SELF,PETSC_ERR_SUP,"Unable to remap the FROM in scatters yet");
   /* Mark then vector lengths as unknown because we do not know the lengths of the remapped vectors */
   sf->vscat.from_n = -1;
@@ -587,12 +587,12 @@ PetscErrorCode VecScatterSetFromOptions(VecScatter sf)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
-  ierr = PetscObjectOptionsBegin((PetscObject)sf);CHKERRQ(ierr);
+  ierr = PetscObjectOptionsBegin((PetscObject)sf);PetscCall(ierr);
 
   sf->vscat.beginandendtogether = PETSC_FALSE;
-  CHKERRQ(PetscOptionsBool("-vecscatter_merge","Use combined (merged) vector scatter begin and end","VecScatterCreate",sf->vscat.beginandendtogether,&sf->vscat.beginandendtogether,NULL));
-  if (sf->vscat.beginandendtogether) CHKERRQ(PetscInfo(sf,"Using combined (merged) vector scatter begin and end\n"));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(PetscOptionsBool("-vecscatter_merge","Use combined (merged) vector scatter begin and end","VecScatterCreate",sf->vscat.beginandendtogether,&sf->vscat.beginandendtogether,NULL));
+  if (sf->vscat.beginandendtogether) PetscCall(PetscInfo(sf,"Using combined (merged) vector scatter begin and end\n"));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -665,12 +665,12 @@ PetscErrorCode VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *newsf)
   PetscCheckFalse(!ix && !iy,PetscObjectComm((PetscObject)x),PETSC_ERR_SUP,"Cannot pass default in for both input and output indices");
 
   /* Get comm from x and y */
-  CHKERRQ(PetscObjectGetComm((PetscObject)x,&xcomm));
-  CHKERRMPI(MPI_Comm_size(xcomm,&xcommsize));
-  CHKERRQ(PetscObjectGetComm((PetscObject)y,&ycomm));
-  CHKERRMPI(MPI_Comm_size(ycomm,&ycommsize));
+  PetscCall(PetscObjectGetComm((PetscObject)x,&xcomm));
+  PetscCallMPI(MPI_Comm_size(xcomm,&xcommsize));
+  PetscCall(PetscObjectGetComm((PetscObject)y,&ycomm));
+  PetscCallMPI(MPI_Comm_size(ycomm,&ycommsize));
   if (xcommsize > 1 && ycommsize > 1) {
-    CHKERRMPI(MPI_Comm_compare(xcomm,ycomm,&result));
+    PetscCallMPI(MPI_Comm_compare(xcomm,ycomm,&result));
     PetscCheckFalse(result == MPI_UNEQUAL,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"VecScatterCreate: parallel vectors x and y must have identical/congruent/similar communicators");
   }
   bs = 1; /* default, no blocking */
@@ -687,45 +687,45 @@ PetscErrorCode VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *newsf)
   /* NULL ix or iy in VecScatterCreate(x,ix,y,iy,newctx) has special meaning. Recover them for these cases */
   if (!ix) {
     if (xcommsize > 1 && ycommsize == 1) { /* PtoS: null ix means the whole x will be scattered to each seq y */
-      CHKERRQ(VecGetSize(x,&N));
-      CHKERRQ(ISCreateStride(PETSC_COMM_SELF,N,0,1,&ix));
+      PetscCall(VecGetSize(x,&N));
+      PetscCall(ISCreateStride(PETSC_COMM_SELF,N,0,1,&ix));
     } else { /* PtoP, StoP or StoS: null ix means the whole local part of x will be scattered */
-      CHKERRQ(VecGetLocalSize(x,&n));
-      CHKERRQ(VecGetOwnershipRange(x,&xstart,NULL));
-      CHKERRQ(ISCreateStride(PETSC_COMM_SELF,n,xstart,1,&ix));
+      PetscCall(VecGetLocalSize(x,&n));
+      PetscCall(VecGetOwnershipRange(x,&xstart,NULL));
+      PetscCall(ISCreateStride(PETSC_COMM_SELF,n,xstart,1,&ix));
     }
   }
 
   if (!iy) {
     if (xcommsize == 1 && ycommsize > 1) { /* StoP: null iy means the whole y will be scattered to from each seq x */
-      CHKERRQ(VecGetSize(y,&N));
-      CHKERRQ(ISCreateStride(PETSC_COMM_SELF,N,0,1,&iy));
+      PetscCall(VecGetSize(y,&N));
+      PetscCall(ISCreateStride(PETSC_COMM_SELF,N,0,1,&iy));
     } else { /* PtoP, StoP or StoS: null iy means the whole local part of y will be scattered to */
-      CHKERRQ(VecGetLocalSize(y,&n));
-      CHKERRQ(VecGetOwnershipRange(y,&ystart,NULL));
-      CHKERRQ(ISCreateStride(PETSC_COMM_SELF,n,ystart,1,&iy));
+      PetscCall(VecGetLocalSize(y,&n));
+      PetscCall(VecGetOwnershipRange(y,&ystart,NULL));
+      PetscCall(ISCreateStride(PETSC_COMM_SELF,n,ystart,1,&iy));
     }
   }
 
   /* Do error checking immediately after we have non-empty ix, iy */
-  CHKERRQ(ISGetLocalSize(ix,&ixsize));
-  CHKERRQ(ISGetLocalSize(iy,&iysize));
-  CHKERRQ(VecGetSize(x,&xlen));
-  CHKERRQ(VecGetSize(y,&ylen));
+  PetscCall(ISGetLocalSize(ix,&ixsize));
+  PetscCall(ISGetLocalSize(iy,&iysize));
+  PetscCall(VecGetSize(x,&xlen));
+  PetscCall(VecGetSize(y,&ylen));
   PetscCheckFalse(ixsize != iysize,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Scatter sizes of ix and iy don't match locally ix=%" PetscInt_FMT " iy=%" PetscInt_FMT,ixsize,iysize);
-  CHKERRQ(ISGetMinMax(ix,&min,&max));
+  PetscCall(ISGetMinMax(ix,&min,&max));
   PetscCheckFalse(min < 0 || max >= xlen,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Scatter indices in ix are out of range");
-  CHKERRQ(ISGetMinMax(iy,&min,&max));
+  PetscCall(ISGetMinMax(iy,&min,&max));
   PetscCheckFalse(min < 0 || max >= ylen,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Scatter indices in iy are out of range");
 
   /* Extract info about ix, iy for further test */
-  CHKERRQ(ISGetTypeID_Private(ix,&ixid));
-  CHKERRQ(ISGetTypeID_Private(iy,&iyid));
-  if (ixid == IS_BLOCK)       CHKERRQ(ISGetBlockSize(ix,&bsx));
-  else if (ixid == IS_STRIDE) CHKERRQ(ISStrideGetInfo(ix,&ixfirst,&ixstep));
+  PetscCall(ISGetTypeID_Private(ix,&ixid));
+  PetscCall(ISGetTypeID_Private(iy,&iyid));
+  if (ixid == IS_BLOCK)       PetscCall(ISGetBlockSize(ix,&bsx));
+  else if (ixid == IS_STRIDE) PetscCall(ISStrideGetInfo(ix,&ixfirst,&ixstep));
 
-  if (iyid == IS_BLOCK)      CHKERRQ(ISGetBlockSize(iy,&bsy));
-  else if (iyid == IS_STRIDE) CHKERRQ(ISStrideGetInfo(iy,&iyfirst,&iystep));
+  if (iyid == IS_BLOCK)      PetscCall(ISGetBlockSize(iy,&bsy));
+  else if (iyid == IS_STRIDE) PetscCall(ISStrideGetInfo(iy,&iyfirst,&iystep));
 
   /* Check if a PtoS is special ToAll/ToZero scatters, which can be results of VecScatterCreateToAll/Zero.
      ToAll means a whole MPI vector is copied to a seq vector on every process. ToZero means a whole MPI
@@ -737,8 +737,8 @@ PetscErrorCode VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *newsf)
     PetscInt    pattern[2] = {0, 0}; /* A boolean array with pattern[0] for allgather-like (ToAll) and pattern[1] for gather-like (ToZero) */
     PetscLayout map;
 
-    CHKERRMPI(MPI_Comm_rank(xcomm,&rank));
-    CHKERRQ(VecGetLayout(x,&map));
+    PetscCallMPI(MPI_Comm_rank(xcomm,&rank));
+    PetscCall(VecGetLayout(x,&map));
     if (rank == 0) {
       if (ixid == IS_STRIDE && iyid == IS_STRIDE && ixsize == xlen && ixfirst == 0 && ixstep == 1 && iyfirst == 0 && iystep == 1) {
         /* Rank 0 scatters the whole mpi x to seq y, so it is either a ToAll or a ToZero candidate in its view */
@@ -755,12 +755,12 @@ PetscErrorCode VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *newsf)
     }
 
     /* One stone (the expensive allreduce) two birds: pattern[] tells if it is ToAll or ToZero */
-    CHKERRMPI(MPIU_Allreduce(MPI_IN_PLACE,pattern,2,MPIU_INT,MPI_LAND,xcomm));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE,pattern,2,MPIU_INT,MPI_LAND,xcomm));
 
     if (pattern[0] || pattern[1]) {
-      CHKERRQ(PetscSFCreate(xcomm,&sf));
-      CHKERRQ(PetscSFSetFromOptions(sf));
-      CHKERRQ(PetscSFSetGraphWithPattern(sf,map,pattern[0] ? PETSCSF_PATTERN_ALLGATHER : PETSCSF_PATTERN_GATHER));
+      PetscCall(PetscSFCreate(xcomm,&sf));
+      PetscCall(PetscSFSetFromOptions(sf));
+      PetscCall(PetscSFSetGraphWithPattern(sf,map,pattern[0] ? PETSCSF_PATTERN_ALLGATHER : PETSCSF_PATTERN_GATHER));
       goto functionend; /* No further analysis needed. What a big win! */
     }
   }
@@ -788,7 +788,7 @@ PetscErrorCode VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *newsf)
     m[1] = -bsy;
   }
   /* Get max and min of bsx,bsy over all processes in one allreduce */
-  CHKERRMPI(MPIU_Allreduce(MPI_IN_PLACE,m,2,MPIU_INT,MPI_MAX,bigcomm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE,m,2,MPIU_INT,MPI_MAX,bigcomm));
   max = m[0]; min = -m[1];
 
   /* Since we used allreduce above, all ranks will have the same min and max. min==max
@@ -796,11 +796,11 @@ PetscErrorCode VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *newsf)
      by bs on ALL ranks. If they are, we are ensured that no blocks span more than one processor.
    */
   if (min == max && min > 1) {
-    CHKERRQ(VecGetLocalSize(x,&xlen));
-    CHKERRQ(VecGetLocalSize(y,&ylen));
+    PetscCall(VecGetLocalSize(x,&xlen));
+    PetscCall(VecGetLocalSize(y,&ylen));
     m[0] = xlen%min;
     m[1] = ylen%min;
-    CHKERRMPI(MPIU_Allreduce(MPI_IN_PLACE,m,2,MPIU_INT,MPI_LOR,bigcomm));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE,m,2,MPIU_INT,MPI_LOR,bigcomm));
     if (!m[0] && !m[1]) can_do_block_opt = PETSC_TRUE;
   }
 
@@ -816,39 +816,39 @@ PetscErrorCode VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *newsf)
 
     /* Shrink x and ix */
     bs   = min;
-    CHKERRQ(VecCreateMPIWithArray(bigcomm,1,xlen/bs,PETSC_DECIDE,NULL,&xx)); /* We only care xx's layout */
+    PetscCall(VecCreateMPIWithArray(bigcomm,1,xlen/bs,PETSC_DECIDE,NULL,&xx)); /* We only care xx's layout */
     if (ixid == IS_BLOCK) {
-      CHKERRQ(ISBlockGetIndices(ix,&indices));
-      CHKERRQ(ISBlockGetLocalSize(ix,&ixsize));
-      CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,ixsize,indices,PETSC_COPY_VALUES,&ixx));
-      CHKERRQ(ISBlockRestoreIndices(ix,&indices));
+      PetscCall(ISBlockGetIndices(ix,&indices));
+      PetscCall(ISBlockGetLocalSize(ix,&ixsize));
+      PetscCall(ISCreateGeneral(PETSC_COMM_SELF,ixsize,indices,PETSC_COPY_VALUES,&ixx));
+      PetscCall(ISBlockRestoreIndices(ix,&indices));
     } else { /* ixid == IS_STRIDE */
-      CHKERRQ(ISGetLocalSize(ix,&ixsize));
-      CHKERRQ(ISCreateStride(PETSC_COMM_SELF,ixsize/bs,ixfirst/bs,1,&ixx));
+      PetscCall(ISGetLocalSize(ix,&ixsize));
+      PetscCall(ISCreateStride(PETSC_COMM_SELF,ixsize/bs,ixfirst/bs,1,&ixx));
     }
 
     /* Shrink y and iy */
-    CHKERRQ(VecCreateMPIWithArray(ycomm,1,ylen/bs,PETSC_DECIDE,NULL,&yy));
+    PetscCall(VecCreateMPIWithArray(ycomm,1,ylen/bs,PETSC_DECIDE,NULL,&yy));
     if (iyid == IS_BLOCK) {
-      CHKERRQ(ISBlockGetIndices(iy,&indices));
-      CHKERRQ(ISBlockGetLocalSize(iy,&iysize));
-      CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,iysize,indices,PETSC_COPY_VALUES,&iyy));
-      CHKERRQ(ISBlockRestoreIndices(iy,&indices));
+      PetscCall(ISBlockGetIndices(iy,&indices));
+      PetscCall(ISBlockGetLocalSize(iy,&iysize));
+      PetscCall(ISCreateGeneral(PETSC_COMM_SELF,iysize,indices,PETSC_COPY_VALUES,&iyy));
+      PetscCall(ISBlockRestoreIndices(iy,&indices));
     } else { /* iyid == IS_STRIDE */
-      CHKERRQ(ISGetLocalSize(iy,&iysize));
-      CHKERRQ(ISCreateStride(PETSC_COMM_SELF,iysize/bs,iyfirst/bs,1,&iyy));
+      PetscCall(ISGetLocalSize(iy,&iysize));
+      PetscCall(ISCreateStride(PETSC_COMM_SELF,iysize/bs,iyfirst/bs,1,&iyy));
     }
   } else {
     ixx = ix;
     iyy = iy;
     yy  = y;
-    if (xcommsize == 1) CHKERRQ(VecCreateMPIWithArray(bigcomm,1,xlen,PETSC_DECIDE,NULL,&xx)); else xx = x;
+    if (xcommsize == 1) PetscCall(VecCreateMPIWithArray(bigcomm,1,xlen,PETSC_DECIDE,NULL,&xx)); else xx = x;
   }
 
   /* Now it is ready to build SF with preprocessed (xx, yy) and (ixx, iyy) */
-  CHKERRQ(ISGetIndices(ixx,&xindices));
-  CHKERRQ(ISGetIndices(iyy,&yindices));
-  CHKERRQ(VecGetLayout(xx,&xlayout));
+  PetscCall(ISGetIndices(ixx,&xindices));
+  PetscCall(ISGetIndices(iyy,&yindices));
+  PetscCall(VecGetLayout(xx,&xlayout));
 
   if (ycommsize > 1) {
     /* PtoP or StoP */
@@ -866,47 +866,47 @@ PetscErrorCode VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *newsf)
     PetscSF        tmpsf;
     PetscInt       inedges=0,*leafdata,*rootdata;
 
-    CHKERRQ(VecGetOwnershipRange(xx,&xstart,NULL));
-    CHKERRQ(VecGetLayout(yy,&ylayout));
-    CHKERRQ(VecGetOwnershipRange(yy,&ystart,NULL));
+    PetscCall(VecGetOwnershipRange(xx,&xstart,NULL));
+    PetscCall(VecGetLayout(yy,&ylayout));
+    PetscCall(VecGetOwnershipRange(yy,&ystart,NULL));
 
-    CHKERRQ(VecGetLocalSize(yy,&nroots));
-    CHKERRQ(ISGetLocalSize(iyy,&nleaves));
-    CHKERRQ(PetscMalloc2(nleaves,&iremote,nleaves*2,&leafdata));
+    PetscCall(VecGetLocalSize(yy,&nroots));
+    PetscCall(ISGetLocalSize(iyy,&nleaves));
+    PetscCall(PetscMalloc2(nleaves,&iremote,nleaves*2,&leafdata));
 
     for (i=0; i<nleaves; i++) {
-      CHKERRQ(PetscLayoutFindOwnerIndex(ylayout,yindices[i],&iremote[i].rank,&iremote[i].index));
+      PetscCall(PetscLayoutFindOwnerIndex(ylayout,yindices[i],&iremote[i].rank,&iremote[i].index));
       leafdata[2*i]   = yindices[i];
       leafdata[2*i+1] = (xcommsize > 1)? xindices[i] : xindices[i] + xstart;
     }
 
-    CHKERRQ(PetscSFCreate(ycomm,&tmpsf));
-    CHKERRQ(PetscSFSetGraph(tmpsf,nroots,nleaves,NULL,PETSC_USE_POINTER,iremote,PETSC_USE_POINTER));
+    PetscCall(PetscSFCreate(ycomm,&tmpsf));
+    PetscCall(PetscSFSetGraph(tmpsf,nroots,nleaves,NULL,PETSC_USE_POINTER,iremote,PETSC_USE_POINTER));
 
-    CHKERRQ(PetscSFComputeDegreeBegin(tmpsf,&degree));
-    CHKERRQ(PetscSFComputeDegreeEnd(tmpsf,&degree));
+    PetscCall(PetscSFComputeDegreeBegin(tmpsf,&degree));
+    PetscCall(PetscSFComputeDegreeEnd(tmpsf,&degree));
 
     for (i=0; i<nroots; i++) inedges += degree[i];
-    CHKERRQ(PetscMalloc1(inedges*2,&rootdata));
-    CHKERRQ(PetscSFGatherBegin(tmpsf,MPIU_2INT,leafdata,rootdata));
-    CHKERRQ(PetscSFGatherEnd(tmpsf,MPIU_2INT,leafdata,rootdata));
+    PetscCall(PetscMalloc1(inedges*2,&rootdata));
+    PetscCall(PetscSFGatherBegin(tmpsf,MPIU_2INT,leafdata,rootdata));
+    PetscCall(PetscSFGatherEnd(tmpsf,MPIU_2INT,leafdata,rootdata));
 
-    CHKERRQ(PetscFree2(iremote,leafdata));
-    CHKERRQ(PetscSFDestroy(&tmpsf));
+    PetscCall(PetscFree2(iremote,leafdata));
+    PetscCall(PetscSFDestroy(&tmpsf));
 
     /* rootdata contains global index pairs (i, j). j's are owned by the current process, but i's can point to anywhere.
        We convert j to local, and convert i to (rank, index). In the end, we get an PtoS suitable for building SF.
      */
     nleaves = inedges;
-    CHKERRQ(VecGetLocalSize(xx,&nroots));
-    CHKERRQ(PetscMalloc1(nleaves,&ilocal));
-    CHKERRQ(PetscMalloc1(nleaves,&iremote));
+    PetscCall(VecGetLocalSize(xx,&nroots));
+    PetscCall(PetscMalloc1(nleaves,&ilocal));
+    PetscCall(PetscMalloc1(nleaves,&iremote));
 
     for (i=0; i<inedges; i++) {
       ilocal[i] = rootdata[2*i] - ystart; /* covert y's global index to local index */
-      CHKERRQ(PetscLayoutFindOwnerIndex(xlayout,rootdata[2*i+1],&iremote[i].rank,&iremote[i].index)); /* convert x's global index to (rank, index) */
+      PetscCall(PetscLayoutFindOwnerIndex(xlayout,rootdata[2*i+1],&iremote[i].rank,&iremote[i].index)); /* convert x's global index to (rank, index) */
     }
-    CHKERRQ(PetscFree(rootdata));
+    PetscCall(PetscFree(rootdata));
 #else
     PetscInt       j,k,n,disp,rlentotal,*sstart,*xindices_sorted,*yindices_sorted;
     const PetscInt *yrange;
@@ -919,12 +919,12 @@ PetscErrorCode VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *newsf)
        yindices_sorted - sorted yindices
        xindices_sorted - xindices sorted along with yindces
      */
-    CHKERRQ(ISGetLocalSize(ixx,&n)); /*ixx, iyy have the same local size */
-    CHKERRQ(PetscMalloc2(n,&xindices_sorted,n,&yindices_sorted));
-    CHKERRQ(PetscArraycpy(xindices_sorted,xindices,n));
-    CHKERRQ(PetscArraycpy(yindices_sorted,yindices,n));
-    CHKERRQ(PetscSortIntWithArray(n,yindices_sorted,xindices_sorted));
-    CHKERRQ(VecGetOwnershipRange(xx,&xstart,NULL));
+    PetscCall(ISGetLocalSize(ixx,&n)); /*ixx, iyy have the same local size */
+    PetscCall(PetscMalloc2(n,&xindices_sorted,n,&yindices_sorted));
+    PetscCall(PetscArraycpy(xindices_sorted,xindices,n));
+    PetscCall(PetscArraycpy(yindices_sorted,yindices,n));
+    PetscCall(PetscSortIntWithArray(n,yindices_sorted,xindices_sorted));
+    PetscCall(VecGetOwnershipRange(xx,&xstart,NULL));
     if (xcommsize == 1) {for (i=0; i<n; i++) xindices_sorted[i] += xstart;} /* Convert to global indices */
 
     /*=============================================================================
@@ -935,9 +935,9 @@ PetscErrorCode VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *newsf)
        sstart   - [nsend+1] sstart[i] is the start index in xsindices_sorted[] I send to rank sendto[i]
        slens    - [ycommsize] I want to send slens[i] entries to rank i.
      */
-    CHKERRQ(VecGetLayout(yy,&ylayout));
-    CHKERRQ(PetscLayoutGetRanges(ylayout,&yrange));
-    CHKERRQ(PetscCalloc1(ycommsize,&slens)); /* The only O(P) array in this algorithm */
+    PetscCall(VecGetLayout(yy,&ylayout));
+    PetscCall(PetscLayoutGetRanges(ylayout,&yrange));
+    PetscCall(PetscCalloc1(ycommsize,&slens)); /* The only O(P) array in this algorithm */
 
     i = j = nsend = 0;
     while (i < n) {
@@ -949,7 +949,7 @@ PetscErrorCode VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *newsf)
       if (!slens[j]++) nsend++;
     }
 
-    CHKERRQ(PetscMalloc2(nsend+1,&sstart,nsend,&sendto));
+    PetscCall(PetscMalloc2(nsend+1,&sstart,nsend,&sendto));
 
     sstart[0] = 0;
     for (i=j=0; i<ycommsize; i++) {
@@ -970,66 +970,66 @@ PetscErrorCode VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *newsf)
        rxindices - [rlentotal] recv buffer for xindices_sorted
        ryindices - [rlentotal] recv buffer for yindices_sorted
      */
-    CHKERRQ(PetscGatherNumberOfMessages_Private(ycomm,NULL,slens,&nrecv));
-    CHKERRQ(PetscGatherMessageLengths_Private(ycomm,nsend,nrecv,slens,&recvfrom,&rlens));
-    CHKERRQ(PetscFree(slens)); /* Free the O(P) array ASAP */
+    PetscCall(PetscGatherNumberOfMessages_Private(ycomm,NULL,slens,&nrecv));
+    PetscCall(PetscGatherMessageLengths_Private(ycomm,nsend,nrecv,slens,&recvfrom,&rlens));
+    PetscCall(PetscFree(slens)); /* Free the O(P) array ASAP */
     rlentotal = 0; for (i=0; i<nrecv; i++) rlentotal += rlens[i];
 
     /*=============================================================================
       Communicate with processors in recvfrom[] to populate rxindices and ryindices
       ============================================================================*/
-    CHKERRQ(PetscCommGetNewTag(ycomm,&tag1));
-    CHKERRQ(PetscCommGetNewTag(ycomm,&tag2));
-    CHKERRQ(PetscMalloc2(rlentotal,&rxindices,rlentotal,&ryindices));
-    CHKERRQ(PetscMPIIntCast((nsend+nrecv)*2,&nreq));
-    CHKERRQ(PetscMalloc1(nreq,&reqs));
+    PetscCall(PetscCommGetNewTag(ycomm,&tag1));
+    PetscCall(PetscCommGetNewTag(ycomm,&tag2));
+    PetscCall(PetscMalloc2(rlentotal,&rxindices,rlentotal,&ryindices));
+    PetscCall(PetscMPIIntCast((nsend+nrecv)*2,&nreq));
+    PetscCall(PetscMalloc1(nreq,&reqs));
     sreqs = reqs;
     rreqs = reqs + nsend*2;
 
     for (i=disp=0; i<nrecv; i++) {
       count = rlens[i];
-      CHKERRMPI(MPIU_Irecv(rxindices+disp,count,MPIU_INT,recvfrom[i],tag1,ycomm,rreqs+i));
-      CHKERRMPI(MPIU_Irecv(ryindices+disp,count,MPIU_INT,recvfrom[i],tag2,ycomm,rreqs+nrecv+i));
+      PetscCallMPI(MPIU_Irecv(rxindices+disp,count,MPIU_INT,recvfrom[i],tag1,ycomm,rreqs+i));
+      PetscCallMPI(MPIU_Irecv(ryindices+disp,count,MPIU_INT,recvfrom[i],tag2,ycomm,rreqs+nrecv+i));
       disp += rlens[i];
     }
 
     for (i=0; i<nsend; i++) {
       count = sstart[i+1]-sstart[i];
-      CHKERRMPI(MPIU_Isend(xindices_sorted+sstart[i],count,MPIU_INT,sendto[i],tag1,ycomm,sreqs+i));
-      CHKERRMPI(MPIU_Isend(yindices_sorted+sstart[i],count,MPIU_INT,sendto[i],tag2,ycomm,sreqs+nsend+i));
+      PetscCallMPI(MPIU_Isend(xindices_sorted+sstart[i],count,MPIU_INT,sendto[i],tag1,ycomm,sreqs+i));
+      PetscCallMPI(MPIU_Isend(yindices_sorted+sstart[i],count,MPIU_INT,sendto[i],tag2,ycomm,sreqs+nsend+i));
     }
-    CHKERRMPI(MPI_Waitall(nreq,reqs,MPI_STATUS_IGNORE));
+    PetscCallMPI(MPI_Waitall(nreq,reqs,MPI_STATUS_IGNORE));
 
     /* Transform VecScatter into SF */
     nleaves = rlentotal;
-    CHKERRQ(PetscMalloc1(nleaves,&ilocal));
-    CHKERRQ(PetscMalloc1(nleaves,&iremote));
-    CHKERRMPI(MPI_Comm_rank(ycomm,&yrank));
+    PetscCall(PetscMalloc1(nleaves,&ilocal));
+    PetscCall(PetscMalloc1(nleaves,&iremote));
+    PetscCallMPI(MPI_Comm_rank(ycomm,&yrank));
     for (i=disp=0; i<nrecv; i++) {
       for (j=0; j<rlens[i]; j++) {
         k               = disp + j; /* k-th index pair */
         ilocal[k]       = ryindices[k] - yrange[yrank]; /* Convert y's global index to local index */
-        CHKERRQ(PetscLayoutFindOwnerIndex(xlayout,rxindices[k],&rank,&iremote[k].index)); /* Convert x's global index to (rank, index) */
+        PetscCall(PetscLayoutFindOwnerIndex(xlayout,rxindices[k],&rank,&iremote[k].index)); /* Convert x's global index to (rank, index) */
         iremote[k].rank = rank;
       }
       disp += rlens[i];
     }
 
-    CHKERRQ(PetscFree2(sstart,sendto));
-    CHKERRQ(PetscFree(rlens));
-    CHKERRQ(PetscFree(recvfrom));
-    CHKERRQ(PetscFree(reqs));
-    CHKERRQ(PetscFree2(rxindices,ryindices));
-    CHKERRQ(PetscFree2(xindices_sorted,yindices_sorted));
+    PetscCall(PetscFree2(sstart,sendto));
+    PetscCall(PetscFree(rlens));
+    PetscCall(PetscFree(recvfrom));
+    PetscCall(PetscFree(reqs));
+    PetscCall(PetscFree2(rxindices,ryindices));
+    PetscCall(PetscFree2(xindices_sorted,yindices_sorted));
 #endif
   } else {
     /* PtoS or StoS */
-    CHKERRQ(ISGetLocalSize(iyy,&nleaves));
-    CHKERRQ(PetscMalloc1(nleaves,&ilocal));
-    CHKERRQ(PetscMalloc1(nleaves,&iremote));
-    CHKERRQ(PetscArraycpy(ilocal,yindices,nleaves));
+    PetscCall(ISGetLocalSize(iyy,&nleaves));
+    PetscCall(PetscMalloc1(nleaves,&ilocal));
+    PetscCall(PetscMalloc1(nleaves,&iremote));
+    PetscCall(PetscArraycpy(ilocal,yindices,nleaves));
     for (i=0; i<nleaves; i++) {
-      CHKERRQ(PetscLayoutFindOwnerIndex(xlayout,xindices[i],&rank,&iremote[i].index));
+      PetscCall(PetscLayoutFindOwnerIndex(xlayout,xindices[i],&rank,&iremote[i].index));
       iremote[i].rank = rank;
     }
   }
@@ -1037,39 +1037,39 @@ PetscErrorCode VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *newsf)
   /* MUST build SF on xx's comm, which is not necessarily identical to yy's comm.
      In SF's view, xx contains the roots (i.e., the remote) and iremote[].rank are ranks in xx's comm.
      yy contains leaves, which are local and can be thought as part of PETSC_COMM_SELF. */
-  CHKERRQ(PetscSFCreate(PetscObjectComm((PetscObject)xx),&sf));
+  PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)xx),&sf));
   sf->allow_multi_leaves = PETSC_TRUE;
-  CHKERRQ(PetscSFSetFromOptions(sf));
-  CHKERRQ(VecGetLocalSize(xx,&nroots));
-  CHKERRQ(PetscSFSetGraph(sf,nroots,nleaves,ilocal,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER)); /* Give ilocal/iremote to petsc and no need to free them here */
+  PetscCall(PetscSFSetFromOptions(sf));
+  PetscCall(VecGetLocalSize(xx,&nroots));
+  PetscCall(PetscSFSetGraph(sf,nroots,nleaves,ilocal,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER)); /* Give ilocal/iremote to petsc and no need to free them here */
 
   /* Free memory no longer needed */
-  CHKERRQ(ISRestoreIndices(ixx,&xindices));
-  CHKERRQ(ISRestoreIndices(iyy,&yindices));
+  PetscCall(ISRestoreIndices(ixx,&xindices));
+  PetscCall(ISRestoreIndices(iyy,&yindices));
   if (can_do_block_opt) {
-    CHKERRQ(VecDestroy(&xx));
-    CHKERRQ(VecDestroy(&yy));
-    CHKERRQ(ISDestroy(&ixx));
-    CHKERRQ(ISDestroy(&iyy));
+    PetscCall(VecDestroy(&xx));
+    PetscCall(VecDestroy(&yy));
+    PetscCall(ISDestroy(&ixx));
+    PetscCall(ISDestroy(&iyy));
   } else if (xcommsize == 1) {
-    CHKERRQ(VecDestroy(&xx));
+    PetscCall(VecDestroy(&xx));
   }
 
 functionend:
   sf->vscat.bs = bs;
   if (sf->vscat.bs > 1) {
-    CHKERRMPI(MPI_Type_contiguous(sf->vscat.bs,MPIU_SCALAR,&sf->vscat.unit));
-    CHKERRMPI(MPI_Type_commit(&sf->vscat.unit));
+    PetscCallMPI(MPI_Type_contiguous(sf->vscat.bs,MPIU_SCALAR,&sf->vscat.unit));
+    PetscCallMPI(MPI_Type_commit(&sf->vscat.unit));
   } else {
     sf->vscat.unit = MPIU_SCALAR;
   }
-  CHKERRQ(VecGetLocalSize(x,&sf->vscat.from_n));
-  CHKERRQ(VecGetLocalSize(y,&sf->vscat.to_n));
-  if (!ix_old) CHKERRQ(ISDestroy(&ix)); /* We created helper ix, iy. Free them */
-  if (!iy_old) CHKERRQ(ISDestroy(&iy));
+  PetscCall(VecGetLocalSize(x,&sf->vscat.from_n));
+  PetscCall(VecGetLocalSize(y,&sf->vscat.to_n));
+  if (!ix_old) PetscCall(ISDestroy(&ix)); /* We created helper ix, iy. Free them */
+  if (!iy_old) PetscCall(ISDestroy(&iy));
 
   /* Set default */
-  CHKERRQ(VecScatterSetFromOptions(sf));
+  PetscCall(VecScatterSetFromOptions(sf));
 
   *newsf = sf;
   PetscFunctionReturn(0);
@@ -1132,16 +1132,16 @@ PetscErrorCode  VecScatterCreateToAll(Vec vin,VecScatter *ctx,Vec *vout)
   }
 
   /* Create seq vec on each proc, with the same size of the original vec */
-  CHKERRQ(VecGetSize(vin,&N));
-  CHKERRQ(VecGetRootType_Private(vin,&roottype));
-  CHKERRQ(VecCreate(PETSC_COMM_SELF,tmpv));
-  CHKERRQ(VecSetSizes(*tmpv,N,PETSC_DECIDE));
-  CHKERRQ(VecSetType(*tmpv,roottype));
+  PetscCall(VecGetSize(vin,&N));
+  PetscCall(VecGetRootType_Private(vin,&roottype));
+  PetscCall(VecCreate(PETSC_COMM_SELF,tmpv));
+  PetscCall(VecSetSizes(*tmpv,N,PETSC_DECIDE));
+  PetscCall(VecSetType(*tmpv,roottype));
   /* Create the VecScatter ctx with the communication info */
-  CHKERRQ(ISCreateStride(PETSC_COMM_SELF,N,0,1,&is));
-  CHKERRQ(VecScatterCreate(vin,is,*tmpv,is,ctx));
-  CHKERRQ(ISDestroy(&is));
-  if (tmpvout) CHKERRQ(VecDestroy(tmpv));
+  PetscCall(ISCreateStride(PETSC_COMM_SELF,N,0,1,&is));
+  PetscCall(VecScatterCreate(vin,is,*tmpv,is,ctx));
+  PetscCall(ISDestroy(&is));
+  if (tmpvout) PetscCall(VecDestroy(tmpv));
   PetscFunctionReturn(0);
 }
 
@@ -1205,18 +1205,18 @@ PetscErrorCode  VecScatterCreateToZero(Vec vin,VecScatter *ctx,Vec *vout)
   }
 
   /* Create vec on each proc, with the same size of the original vec all on process 0 */
-  CHKERRQ(VecGetSize(vin,&N));
-  CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)vin),&rank));
+  PetscCall(VecGetSize(vin,&N));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)vin),&rank));
   if (rank) N = 0;
-  CHKERRQ(VecGetRootType_Private(vin,&roottype));
-  CHKERRQ(VecCreate(PETSC_COMM_SELF,tmpv));
-  CHKERRQ(VecSetSizes(*tmpv,N,PETSC_DECIDE));
-  CHKERRQ(VecSetType(*tmpv,roottype));
+  PetscCall(VecGetRootType_Private(vin,&roottype));
+  PetscCall(VecCreate(PETSC_COMM_SELF,tmpv));
+  PetscCall(VecSetSizes(*tmpv,N,PETSC_DECIDE));
+  PetscCall(VecSetType(*tmpv,roottype));
   /* Create the VecScatter ctx with the communication info */
-  CHKERRQ(ISCreateStride(PETSC_COMM_SELF,N,0,1,&is));
-  CHKERRQ(VecScatterCreate(vin,is,*tmpv,is,ctx));
-  CHKERRQ(ISDestroy(&is));
-  if (tmpvout) CHKERRQ(VecDestroy(tmpv));
+  PetscCall(ISCreateStride(PETSC_COMM_SELF,N,0,1,&is));
+  PetscCall(VecScatterCreate(vin,is,*tmpv,is,ctx));
+  PetscCall(ISDestroy(&is));
+  if (tmpvout) PetscCall(VecDestroy(tmpv));
   PetscFunctionReturn(0);
 }
 
@@ -1278,8 +1278,8 @@ PetscErrorCode  VecScatterBegin(VecScatter sf,Vec x,Vec y,InsertMode addv,Scatte
      no error checking is performed.
      */
     if (sf->vscat.from_n >= 0 && sf->vscat.to_n >= 0) {
-      CHKERRQ(VecGetLocalSize(x,&from_n));
-      CHKERRQ(VecGetLocalSize(y,&to_n));
+      PetscCall(VecGetLocalSize(x,&from_n));
+      PetscCall(VecGetLocalSize(y,&to_n));
       if (mode & SCATTER_REVERSE) {
         PetscCheckFalse(to_n != sf->vscat.from_n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Vector wrong size %" PetscInt_FMT " for scatter %" PetscInt_FMT " (scatter reverse and vector to != sf from size)",to_n,sf->vscat.from_n);
         PetscCheckFalse(from_n != sf->vscat.to_n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Vector wrong size %" PetscInt_FMT " for scatter %" PetscInt_FMT " (scatter reverse and vector from != sf to size)",from_n,sf->vscat.to_n);
@@ -1291,12 +1291,12 @@ PetscErrorCode  VecScatterBegin(VecScatter sf,Vec x,Vec y,InsertMode addv,Scatte
   }
 
   sf->vscat.logging = PETSC_TRUE;
-  CHKERRQ(PetscLogEventBegin(VEC_ScatterBegin,sf,x,y,0));
-  CHKERRQ(VecScatterBegin_Internal(sf,x,y,addv,mode));
+  PetscCall(PetscLogEventBegin(VEC_ScatterBegin,sf,x,y,0));
+  PetscCall(VecScatterBegin_Internal(sf,x,y,addv,mode));
   if (sf->vscat.beginandendtogether) {
-    CHKERRQ(VecScatterEnd_Internal(sf,x,y,addv,mode));
+    PetscCall(VecScatterEnd_Internal(sf,x,y,addv,mode));
   }
-  CHKERRQ(PetscLogEventEnd(VEC_ScatterBegin,sf,x,y,0));
+  PetscCall(PetscLogEventEnd(VEC_ScatterBegin,sf,x,y,0));
   sf->vscat.logging = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -1332,9 +1332,9 @@ PetscErrorCode  VecScatterEnd(VecScatter sf,Vec x,Vec y,InsertMode addv,ScatterM
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
   if (!sf->vscat.beginandendtogether) {
     sf->vscat.logging = PETSC_TRUE;
-    CHKERRQ(PetscLogEventBegin(VEC_ScatterEnd,sf,x,y,0));
-    CHKERRQ(VecScatterEnd_Internal(sf,x,y,addv,mode));
-    CHKERRQ(PetscLogEventEnd(VEC_ScatterEnd,sf,x,y,0));
+    PetscCall(PetscLogEventBegin(VEC_ScatterEnd,sf,x,y,0));
+    PetscCall(VecScatterEnd_Internal(sf,x,y,addv,mode));
+    PetscCall(PetscLogEventEnd(VEC_ScatterEnd,sf,x,y,0));
     sf->vscat.logging = PETSC_FALSE;
   }
   PetscFunctionReturn(0);

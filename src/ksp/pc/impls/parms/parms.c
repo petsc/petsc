@@ -52,14 +52,14 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
 
   PetscFunctionBegin;
   /* Get preconditioner matrix from PETSc and setup pARMS structs */
-  CHKERRQ(PCGetOperators(pc,NULL,&pmat));
+  PetscCall(PCGetOperators(pc,NULL,&pmat));
   MPI_Comm_size(PetscObjectComm((PetscObject)pmat),&npro);
   MPI_Comm_rank(PetscObjectComm((PetscObject)pmat),&rank);
 
-  CHKERRQ(MatGetSize(pmat,&n,NULL));
-  CHKERRQ(PetscMalloc1(npro+1,&mapptr));
-  CHKERRQ(PetscMalloc1(n,&maptmp));
-  CHKERRQ(MatGetOwnershipRanges(pmat,&mapptr0));
+  PetscCall(MatGetSize(pmat,&n,NULL));
+  PetscCall(PetscMalloc1(npro+1,&mapptr));
+  PetscCall(PetscMalloc1(n,&maptmp));
+  PetscCall(MatGetOwnershipRanges(pmat,&mapptr0));
   low   = mapptr0[rank];
   high  = mapptr0[rank+1];
   lsize = high - low;
@@ -86,37 +86,37 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
   parms_MatCreate(&parms->A,parms->map);
 
   /* setup and copy csr data structure for pARMS */
-  CHKERRQ(PetscMalloc1(lsize+1,&ia));
+  PetscCall(PetscMalloc1(lsize+1,&ia));
   ia[0]  = 1;
-  CHKERRQ(MatGetInfo(pmat,MAT_LOCAL,&matinfo));
+  PetscCall(MatGetInfo(pmat,MAT_LOCAL,&matinfo));
   length = matinfo.nz_used;
-  CHKERRQ(PetscMalloc1(length,&ja));
-  CHKERRQ(PetscMalloc1(length,&aa));
+  PetscCall(PetscMalloc1(length,&ja));
+  PetscCall(PetscMalloc1(length,&aa));
 
   for (i = low; i<high; i++) {
     pos         = ia[i-low]-1;
-    CHKERRQ(MatGetRow(pmat,i,&ncols,&cols,&values));
+    PetscCall(MatGetRow(pmat,i,&ncols,&cols,&values));
     ia[i-low+1] = ia[i-low] + ncols;
 
     if (ia[i-low+1] >= length) {
       length += ncols;
-      CHKERRQ(PetscMalloc1(length,&ja1));
-      CHKERRQ(PetscArraycpy(ja1,ja,ia[i-low]-1));
-      CHKERRQ(PetscFree(ja));
+      PetscCall(PetscMalloc1(length,&ja1));
+      PetscCall(PetscArraycpy(ja1,ja,ia[i-low]-1));
+      PetscCall(PetscFree(ja));
       ja      = ja1;
-      CHKERRQ(PetscMalloc1(length,&aa1));
-      CHKERRQ(PetscArraycpy(aa1,aa,ia[i-low]-1));
-      CHKERRQ(PetscFree(aa));
+      PetscCall(PetscMalloc1(length,&aa1));
+      PetscCall(PetscArraycpy(aa1,aa,ia[i-low]-1));
+      PetscCall(PetscFree(aa));
       aa      = aa1;
     }
-    CHKERRQ(PetscArraycpy(&ja[pos],cols,ncols));
-    CHKERRQ(PetscArraycpy(&aa[pos],values,ncols));
-    CHKERRQ(MatRestoreRow(pmat,i,&ncols,&cols,&values));
+    PetscCall(PetscArraycpy(&ja[pos],cols,ncols));
+    PetscCall(PetscArraycpy(&aa[pos],values,ncols));
+    PetscCall(MatRestoreRow(pmat,i,&ncols,&cols,&values));
   }
 
   /* csr info is for local matrix so initialize im[] locally */
-  CHKERRQ(PetscMalloc1(lsize,&im));
-  CHKERRQ(PetscArraycpy(im,&maptmp[mapptr[rank]-1],lsize));
+  PetscCall(PetscMalloc1(lsize,&im));
+  PetscCall(PetscArraycpy(im,&maptmp[mapptr[rank]-1],lsize));
 
   /* 1-based indexing */
   for (i=0; i<ia[lsize]-1; i++) ja[i] = ja[i]+1;
@@ -125,12 +125,12 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
   parms_MatSetValues(parms->A,(int)lsize,im,ia,ja,aa,INSERT);
 
   /* free memory */
-  CHKERRQ(PetscFree(maptmp));
-  CHKERRQ(PetscFree(mapptr));
-  CHKERRQ(PetscFree(aa));
-  CHKERRQ(PetscFree(ja));
-  CHKERRQ(PetscFree(ia));
-  CHKERRQ(PetscFree(im));
+  PetscCall(PetscFree(maptmp));
+  PetscCall(PetscFree(mapptr));
+  PetscCall(PetscFree(aa));
+  PetscCall(PetscFree(ja));
+  PetscCall(PetscFree(ia));
+  PetscCall(PetscFree(im));
 
   /* setup parms matrix */
   parms_MatSetup(parms->A);
@@ -172,10 +172,10 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
   parms_PCSetup(parms->pc);
 
   /* Allocate two auxiliary vector of length lsize */
-  if (parms->lvec0) CHKERRQ(PetscFree(parms->lvec0));
-  CHKERRQ(PetscMalloc1(lsize, &parms->lvec0));
-  if (parms->lvec1) CHKERRQ(PetscFree(parms->lvec1));
-  CHKERRQ(PetscMalloc1(lsize, &parms->lvec1));
+  if (parms->lvec0) PetscCall(PetscFree(parms->lvec0));
+  PetscCall(PetscMalloc1(lsize, &parms->lvec0));
+  if (parms->lvec1) PetscCall(PetscFree(parms->lvec1));
+  PetscCall(PetscMalloc1(lsize, &parms->lvec1));
   PetscFunctionReturn(0);
 }
 
@@ -187,53 +187,53 @@ static PetscErrorCode PCView_PARMS(PC pc,PetscViewer viewer)
   double     fill_fact;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
     parms_PCGetName(parms->pc,&str);
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  global preconditioner: %s\n",str));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  global preconditioner: %s\n",str));
     parms_PCILUGetName(parms->pc,&str);
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  local preconditioner: %s\n",str));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  local preconditioner: %s\n",str));
     parms_PCGetRatio(parms->pc,&fill_fact);
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  non-zero elements/original non-zero entries: %-4.2f\n",fill_fact));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Tolerance for local solve: %g\n",parms->solvetol));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Number of levels: %d\n",parms->levels));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  non-zero elements/original non-zero entries: %-4.2f\n",fill_fact));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Tolerance for local solve: %g\n",parms->solvetol));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Number of levels: %d\n",parms->levels));
     if (parms->nonsymperm) {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Using nonsymmetric permutation\n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  Using nonsymmetric permutation\n"));
     }
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Block size: %d\n",parms->blocksize));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Tolerance for independent sets: %g\n",parms->indtol));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Inner Krylov dimension: %d\n",parms->maxdim));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Maximum number of inner iterations: %d\n",parms->maxits));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Block size: %d\n",parms->blocksize));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Tolerance for independent sets: %g\n",parms->indtol));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Inner Krylov dimension: %d\n",parms->maxdim));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Maximum number of inner iterations: %d\n",parms->maxits));
     if (parms->meth[0]) {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Using nonsymmetric permutation for interlevel blocks\n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  Using nonsymmetric permutation for interlevel blocks\n"));
     }
     if (parms->meth[1]) {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Using column permutation for interlevel blocks\n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  Using column permutation for interlevel blocks\n"));
     }
     if (parms->meth[2]) {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Using row scaling for interlevel blocks\n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  Using row scaling for interlevel blocks\n"));
     }
     if (parms->meth[3]) {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Using column scaling for interlevel blocks\n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  Using column scaling for interlevel blocks\n"));
     }
     if (parms->meth[4]) {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Using nonsymmetric permutation for last level blocks\n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  Using nonsymmetric permutation for last level blocks\n"));
     }
     if (parms->meth[5]) {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Using column permutation for last level blocks\n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  Using column permutation for last level blocks\n"));
     }
     if (parms->meth[6]) {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Using row scaling for last level blocks\n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  Using row scaling for last level blocks\n"));
     }
     if (parms->meth[7]) {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Using column scaling for last level blocks\n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  Using column scaling for last level blocks\n"));
     }
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  amount of fill-in for ilut, iluk and arms: %d\n",parms->lfil[0]));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  amount of fill-in for schur: %d\n",parms->lfil[4]));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  amount of fill-in for ILUT L and U: %d\n",parms->lfil[5]));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  drop tolerance for L, U, L^{-1}F and EU^{-1}: %g\n",parms->droptol[0]));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  drop tolerance for schur complement at each level: %g\n",parms->droptol[4]));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  drop tolerance for ILUT in last level schur complement: %g\n",parms->droptol[5]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  amount of fill-in for ilut, iluk and arms: %d\n",parms->lfil[0]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  amount of fill-in for schur: %d\n",parms->lfil[4]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  amount of fill-in for ILUT L and U: %d\n",parms->lfil[5]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  drop tolerance for L, U, L^{-1}F and EU^{-1}: %g\n",parms->droptol[0]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  drop tolerance for schur complement at each level: %g\n",parms->droptol[4]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  drop tolerance for ILUT in last level schur complement: %g\n",parms->droptol[5]));
   }
   PetscFunctionReturn(0);
 }
@@ -247,20 +247,20 @@ static PetscErrorCode PCDestroy_PARMS(PC pc)
   if (parms->A) parms_MatFree(&parms->A);
   if (parms->pc) parms_PCFree(&parms->pc);
   if (parms->lvec0) {
-    CHKERRQ(PetscFree(parms->lvec0));
+    PetscCall(PetscFree(parms->lvec0));
   }
   if (parms->lvec1) {
-    CHKERRQ(PetscFree(parms->lvec1));
+    PetscCall(PetscFree(parms->lvec1));
   }
-  CHKERRQ(PetscFree(pc->data));
+  PetscCall(PetscFree(pc->data));
 
-  CHKERRQ(PetscObjectChangeTypeName((PetscObject)pc,0));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetGlobal_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetLocal_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetSolveTolerances_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetSolveRestart_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetNonsymPerm_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetFill_C",NULL));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)pc,0));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetGlobal_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetLocal_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetSolveTolerances_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetSolveRestart_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetNonsymPerm_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetFill_C",NULL));
   PetscFunctionReturn(0);
 }
 
@@ -272,37 +272,37 @@ static PetscErrorCode PCSetFromOptions_PARMS(PetscOptionItems *PetscOptionsObjec
   PCPARMSLocalType   local;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"PARMS Options"));
-  CHKERRQ(PetscOptionsEnum("-pc_parms_global","Global preconditioner","PCPARMSSetGlobal",PCPARMSGlobalTypes,(PetscEnum)parms->global,(PetscEnum*)&global,&flag));
-  if (flag) CHKERRQ(PCPARMSSetGlobal(pc,global));
-  CHKERRQ(PetscOptionsEnum("-pc_parms_local","Local preconditioner","PCPARMSSetLocal",PCPARMSLocalTypes,(PetscEnum)parms->local,(PetscEnum*)&local,&flag));
-  if (flag) CHKERRQ(PCPARMSSetLocal(pc,local));
-  CHKERRQ(PetscOptionsReal("-pc_parms_solve_tol","Tolerance for local solve","PCPARMSSetSolveTolerances",parms->solvetol,&parms->solvetol,NULL));
-  CHKERRQ(PetscOptionsInt("-pc_parms_levels","Number of levels","None",parms->levels,&parms->levels,NULL));
-  CHKERRQ(PetscOptionsBool("-pc_parms_nonsymmetric_perm","Use nonsymmetric permutation","PCPARMSSetNonsymPerm",parms->nonsymperm,&parms->nonsymperm,NULL));
-  CHKERRQ(PetscOptionsInt("-pc_parms_blocksize","Block size","None",parms->blocksize,&parms->blocksize,NULL));
-  CHKERRQ(PetscOptionsReal("-pc_parms_ind_tol","Tolerance for independent sets","None",parms->indtol,&parms->indtol,NULL));
-  CHKERRQ(PetscOptionsInt("-pc_parms_max_dim","Inner Krylov dimension","PCPARMSSetSolveRestart",parms->maxdim,&parms->maxdim,NULL));
-  CHKERRQ(PetscOptionsInt("-pc_parms_max_it","Maximum number of inner iterations","PCPARMSSetSolveTolerances",parms->maxits,&parms->maxits,NULL));
-  CHKERRQ(PetscOptionsBool("-pc_parms_inter_nonsymmetric_perm","nonsymmetric permutation for interlevel blocks","None",parms->meth[0],&parms->meth[0],NULL));
-  CHKERRQ(PetscOptionsBool("-pc_parms_inter_column_perm","column permutation for interlevel blocks","None",parms->meth[1],&parms->meth[1],NULL));
-  CHKERRQ(PetscOptionsBool("-pc_parms_inter_row_scaling","row scaling for interlevel blocks","None",parms->meth[2],&parms->meth[2],NULL));
-  CHKERRQ(PetscOptionsBool("-pc_parms_inter_column_scaling","column scaling for interlevel blocks","None",parms->meth[3],&parms->meth[3],NULL));
-  CHKERRQ(PetscOptionsBool("-pc_parms_last_nonsymmetric_perm","nonsymmetric permutation for last level blocks","None",parms->meth[4],&parms->meth[4],NULL));
-  CHKERRQ(PetscOptionsBool("-pc_parms_last_column_perm","column permutation for last level blocks","None",parms->meth[5],&parms->meth[5],NULL));
-  CHKERRQ(PetscOptionsBool("-pc_parms_last_row_scaling","row scaling for last level blocks","None",parms->meth[6],&parms->meth[6],NULL));
-  CHKERRQ(PetscOptionsBool("-pc_parms_last_column_scaling","column scaling for last level blocks","None",parms->meth[7],&parms->meth[7],NULL));
-  CHKERRQ(PetscOptionsInt("-pc_parms_lfil_ilu_arms","amount of fill-in for ilut, iluk and arms","PCPARMSSetFill",parms->lfil[0],&parms->lfil[0],&flag));
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"PARMS Options"));
+  PetscCall(PetscOptionsEnum("-pc_parms_global","Global preconditioner","PCPARMSSetGlobal",PCPARMSGlobalTypes,(PetscEnum)parms->global,(PetscEnum*)&global,&flag));
+  if (flag) PetscCall(PCPARMSSetGlobal(pc,global));
+  PetscCall(PetscOptionsEnum("-pc_parms_local","Local preconditioner","PCPARMSSetLocal",PCPARMSLocalTypes,(PetscEnum)parms->local,(PetscEnum*)&local,&flag));
+  if (flag) PetscCall(PCPARMSSetLocal(pc,local));
+  PetscCall(PetscOptionsReal("-pc_parms_solve_tol","Tolerance for local solve","PCPARMSSetSolveTolerances",parms->solvetol,&parms->solvetol,NULL));
+  PetscCall(PetscOptionsInt("-pc_parms_levels","Number of levels","None",parms->levels,&parms->levels,NULL));
+  PetscCall(PetscOptionsBool("-pc_parms_nonsymmetric_perm","Use nonsymmetric permutation","PCPARMSSetNonsymPerm",parms->nonsymperm,&parms->nonsymperm,NULL));
+  PetscCall(PetscOptionsInt("-pc_parms_blocksize","Block size","None",parms->blocksize,&parms->blocksize,NULL));
+  PetscCall(PetscOptionsReal("-pc_parms_ind_tol","Tolerance for independent sets","None",parms->indtol,&parms->indtol,NULL));
+  PetscCall(PetscOptionsInt("-pc_parms_max_dim","Inner Krylov dimension","PCPARMSSetSolveRestart",parms->maxdim,&parms->maxdim,NULL));
+  PetscCall(PetscOptionsInt("-pc_parms_max_it","Maximum number of inner iterations","PCPARMSSetSolveTolerances",parms->maxits,&parms->maxits,NULL));
+  PetscCall(PetscOptionsBool("-pc_parms_inter_nonsymmetric_perm","nonsymmetric permutation for interlevel blocks","None",parms->meth[0],&parms->meth[0],NULL));
+  PetscCall(PetscOptionsBool("-pc_parms_inter_column_perm","column permutation for interlevel blocks","None",parms->meth[1],&parms->meth[1],NULL));
+  PetscCall(PetscOptionsBool("-pc_parms_inter_row_scaling","row scaling for interlevel blocks","None",parms->meth[2],&parms->meth[2],NULL));
+  PetscCall(PetscOptionsBool("-pc_parms_inter_column_scaling","column scaling for interlevel blocks","None",parms->meth[3],&parms->meth[3],NULL));
+  PetscCall(PetscOptionsBool("-pc_parms_last_nonsymmetric_perm","nonsymmetric permutation for last level blocks","None",parms->meth[4],&parms->meth[4],NULL));
+  PetscCall(PetscOptionsBool("-pc_parms_last_column_perm","column permutation for last level blocks","None",parms->meth[5],&parms->meth[5],NULL));
+  PetscCall(PetscOptionsBool("-pc_parms_last_row_scaling","row scaling for last level blocks","None",parms->meth[6],&parms->meth[6],NULL));
+  PetscCall(PetscOptionsBool("-pc_parms_last_column_scaling","column scaling for last level blocks","None",parms->meth[7],&parms->meth[7],NULL));
+  PetscCall(PetscOptionsInt("-pc_parms_lfil_ilu_arms","amount of fill-in for ilut, iluk and arms","PCPARMSSetFill",parms->lfil[0],&parms->lfil[0],&flag));
   if (flag) parms->lfil[1] = parms->lfil[2] = parms->lfil[3] = parms->lfil[0];
-  CHKERRQ(PetscOptionsInt("-pc_parms_lfil_schur","amount of fill-in for schur","PCPARMSSetFill",parms->lfil[4],&parms->lfil[4],NULL));
-  CHKERRQ(PetscOptionsInt("-pc_parms_lfil_ilut_L_U","amount of fill-in for ILUT L and U","PCPARMSSetFill",parms->lfil[5],&parms->lfil[5],&flag));
+  PetscCall(PetscOptionsInt("-pc_parms_lfil_schur","amount of fill-in for schur","PCPARMSSetFill",parms->lfil[4],&parms->lfil[4],NULL));
+  PetscCall(PetscOptionsInt("-pc_parms_lfil_ilut_L_U","amount of fill-in for ILUT L and U","PCPARMSSetFill",parms->lfil[5],&parms->lfil[5],&flag));
   if (flag) parms->lfil[6] = parms->lfil[5];
-  CHKERRQ(PetscOptionsReal("-pc_parms_droptol_factors","drop tolerance for L, U, L^{-1}F and EU^{-1}","None",parms->droptol[0],&parms->droptol[0],NULL));
-  CHKERRQ(PetscOptionsReal("-pc_parms_droptol_schur_compl","drop tolerance for schur complement at each level","None",parms->droptol[4],&parms->droptol[4],&flag));
+  PetscCall(PetscOptionsReal("-pc_parms_droptol_factors","drop tolerance for L, U, L^{-1}F and EU^{-1}","None",parms->droptol[0],&parms->droptol[0],NULL));
+  PetscCall(PetscOptionsReal("-pc_parms_droptol_schur_compl","drop tolerance for schur complement at each level","None",parms->droptol[4],&parms->droptol[4],&flag));
   if (flag) parms->droptol[1] = parms->droptol[2] = parms->droptol[3] = parms->droptol[0];
-  CHKERRQ(PetscOptionsReal("-pc_parms_droptol_last_schur","drop tolerance for ILUT in last level schur complement","None",parms->droptol[5],&parms->droptol[5],&flag));
+  PetscCall(PetscOptionsReal("-pc_parms_droptol_last_schur","drop tolerance for ILUT in last level schur complement","None",parms->droptol[5],&parms->droptol[5],&flag));
   if (flag) parms->droptol[6] = parms->droptol[5];
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -313,13 +313,13 @@ static PetscErrorCode PCApply_PARMS(PC pc,Vec b,Vec x)
   PetscScalar       *x1;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(b,&b1));
-  CHKERRQ(VecGetArray(x,&x1));
+  PetscCall(VecGetArrayRead(b,&b1));
+  PetscCall(VecGetArray(x,&x1));
   parms_VecPermAux((PetscScalar*)b1,parms->lvec0,parms->map);
   parms_PCApply(parms->pc,parms->lvec0,parms->lvec1);
   parms_VecInvPermAux(parms->lvec1,x1,parms->map);
-  CHKERRQ(VecRestoreArrayRead(b,&b1));
-  CHKERRQ(VecRestoreArray(x,&x1));
+  PetscCall(VecRestoreArrayRead(b,&b1));
+  PetscCall(VecRestoreArray(x,&x1));
   PetscFunctionReturn(0);
 }
 
@@ -364,7 +364,7 @@ PetscErrorCode PCPARMSSetGlobal(PC pc,PCPARMSGlobalType type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveEnum(pc,type,2);
-  CHKERRQ(PetscTryMethod(pc,"PCPARMSSetGlobal_C",(PC,PCPARMSGlobalType),(pc,type)));
+  PetscCall(PetscTryMethod(pc,"PCPARMSSetGlobal_C",(PC,PCPARMSGlobalType),(pc,type)));
   PetscFunctionReturn(0);
 }
 
@@ -414,7 +414,7 @@ PetscErrorCode PCPARMSSetLocal(PC pc,PCPARMSLocalType type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveEnum(pc,type,2);
-  CHKERRQ(PetscTryMethod(pc,"PCPARMSSetLocal_C",(PC,PCPARMSLocalType),(pc,type)));
+  PetscCall(PetscTryMethod(pc,"PCPARMSSetLocal_C",(PC,PCPARMSLocalType),(pc,type)));
   PetscFunctionReturn(0);
 }
 
@@ -460,7 +460,7 @@ PetscErrorCode PCPARMSSetSolveTolerances(PC pc,PetscReal tol,PetscInt maxits)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  CHKERRQ(PetscTryMethod(pc,"PCPARMSSetSolveTolerances_C",(PC,PetscReal,PetscInt),(pc,tol,maxits)));
+  PetscCall(PetscTryMethod(pc,"PCPARMSSetSolveTolerances_C",(PC,PetscReal,PetscInt),(pc,tol,maxits)));
   PetscFunctionReturn(0);
 }
 
@@ -500,7 +500,7 @@ PetscErrorCode PCPARMSSetSolveRestart(PC pc,PetscInt restart)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  CHKERRQ(PetscTryMethod(pc,"PCPARMSSetSolveRestart_C",(PC,PetscInt),(pc,restart)));
+  PetscCall(PetscTryMethod(pc,"PCPARMSSetSolveRestart_C",(PC,PetscInt),(pc,restart)));
   PetscFunctionReturn(0);
 }
 
@@ -541,7 +541,7 @@ PetscErrorCode PCPARMSSetNonsymPerm(PC pc,PetscBool nonsym)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  CHKERRQ(PetscTryMethod(pc,"PCPARMSSetNonsymPerm_C",(PC,PetscBool),(pc,nonsym)));
+  PetscCall(PetscTryMethod(pc,"PCPARMSSetNonsymPerm_C",(PC,PetscBool),(pc,nonsym)));
   PetscFunctionReturn(0);
 }
 
@@ -594,7 +594,7 @@ PetscErrorCode PCPARMSSetFill(PC pc,PetscInt lfil0,PetscInt lfil1,PetscInt lfil2
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  CHKERRQ(PetscTryMethod(pc,"PCPARMSSetFill_C",(PC,PetscInt,PetscInt,PetscInt),(pc,lfil0,lfil1,lfil2)));
+  PetscCall(PetscTryMethod(pc,"PCPARMSSetFill_C",(PC,PetscInt,PetscInt,PetscInt),(pc,lfil0,lfil1,lfil2)));
   PetscFunctionReturn(0);
 }
 
@@ -642,7 +642,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_PARMS(PC pc)
   PC_PARMS *parms;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNewLog(pc,&parms));
+  PetscCall(PetscNewLog(pc,&parms));
 
   parms->map        = 0;
   parms->A          = 0;
@@ -677,11 +677,11 @@ PETSC_EXTERN PetscErrorCode PCCreate_PARMS(PC pc)
   pc->ops->apply          = PCApply_PARMS;
   pc->ops->view           = PCView_PARMS;
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetGlobal_C",PCPARMSSetGlobal_PARMS));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetLocal_C",PCPARMSSetLocal_PARMS));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetSolveTolerances_C",PCPARMSSetSolveTolerances_PARMS));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetSolveRestart_C",PCPARMSSetSolveRestart_PARMS));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetNonsymPerm_C",PCPARMSSetNonsymPerm_PARMS));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetFill_C",PCPARMSSetFill_PARMS));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetGlobal_C",PCPARMSSetGlobal_PARMS));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetLocal_C",PCPARMSSetLocal_PARMS));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetSolveTolerances_C",PCPARMSSetSolveTolerances_PARMS));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetSolveRestart_C",PCPARMSSetSolveRestart_PARMS));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetNonsymPerm_C",PCPARMSSetNonsymPerm_PARMS));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetFill_C",PCPARMSSetFill_PARMS));
   PetscFunctionReturn(0);
 }

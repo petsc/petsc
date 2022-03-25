@@ -11,64 +11,64 @@ int main(int argc,char **argv)
   PetscInt       n, off, array[4],na,nb,i,*marray,size;
   PetscBool      has, flag;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
-  CHKERRQ(PetscHSetICreate(&ht));
+  PetscCall(PetscHSetICreate(&ht));
   PetscTestCheck(ht != NULL);
-  CHKERRQ(PetscHSetIGetSize(ht,&n));
+  PetscCall(PetscHSetIGetSize(ht,&n));
   PetscTestCheck(n == 0);
 
-  CHKERRQ(PetscHSetIResize(ht,0));
-  CHKERRQ(PetscHSetIGetSize(ht,&n));
+  PetscCall(PetscHSetIResize(ht,0));
+  PetscCall(PetscHSetIGetSize(ht,&n));
   PetscTestCheck(n == 0);
 
-  CHKERRQ(PetscHSetIHas(ht,42,&has));
+  PetscCall(PetscHSetIHas(ht,42,&has));
   PetscTestCheck(has == PETSC_FALSE);
 
-  CHKERRQ(PetscHSetIAdd(ht,42));
-  CHKERRQ(PetscHSetIGetSize(ht,&n));
+  PetscCall(PetscHSetIAdd(ht,42));
+  PetscCall(PetscHSetIGetSize(ht,&n));
   PetscTestCheck(n == 1);
-  CHKERRQ(PetscHSetIHas(ht,42,&has));
+  PetscCall(PetscHSetIHas(ht,42,&has));
   PetscTestCheck(has == PETSC_TRUE);
 
-  CHKERRQ(PetscHSetIDel(ht,42));
-  CHKERRQ(PetscHSetIGetSize(ht,&n));
+  PetscCall(PetscHSetIDel(ht,42));
+  PetscCall(PetscHSetIGetSize(ht,&n));
   PetscTestCheck(n == 0);
-  CHKERRQ(PetscHSetIHas(ht,42,&has));
+  PetscCall(PetscHSetIHas(ht,42,&has));
   PetscTestCheck(has == PETSC_FALSE);
-  CHKERRQ(PetscHSetIDel(ht,42));
-  CHKERRQ(PetscHSetIDel(ht,24));
+  PetscCall(PetscHSetIDel(ht,42));
+  PetscCall(PetscHSetIDel(ht,24));
 
-  CHKERRQ(PetscHSetIQueryAdd(ht,123,&flag));
+  PetscCall(PetscHSetIQueryAdd(ht,123,&flag));
   PetscTestCheck(flag == PETSC_TRUE);
-  CHKERRQ(PetscHSetIQueryAdd(ht,123,&flag));
+  PetscCall(PetscHSetIQueryAdd(ht,123,&flag));
   PetscTestCheck(flag == PETSC_FALSE);
-  CHKERRQ(PetscHSetIQueryDel(ht,123,&flag));
+  PetscCall(PetscHSetIQueryDel(ht,123,&flag));
   PetscTestCheck(flag == PETSC_TRUE);
-  CHKERRQ(PetscHSetIQueryDel(ht,123,&flag));
+  PetscCall(PetscHSetIQueryDel(ht,123,&flag));
   PetscTestCheck(flag == PETSC_FALSE);
 
-  CHKERRQ(PetscHSetIResize(ht,13));
-  CHKERRQ(PetscHSetIGetSize(ht,&n));
+  PetscCall(PetscHSetIResize(ht,13));
+  PetscCall(PetscHSetIGetSize(ht,&n));
   PetscTestCheck(n == 0);
 
-  CHKERRQ(PetscHSetIClear(ht));
-  CHKERRQ(PetscHSetIGetSize(ht,&n));
+  PetscCall(PetscHSetIClear(ht));
+  PetscCall(PetscHSetIGetSize(ht,&n));
   PetscTestCheck(n == 0);
 
-  CHKERRQ(PetscHSetIAdd(ht,42));
-  CHKERRQ(PetscHSetIAdd(ht,13));
-  CHKERRQ(PetscHSetIGetSize(ht,&n));
+  PetscCall(PetscHSetIAdd(ht,42));
+  PetscCall(PetscHSetIAdd(ht,13));
+  PetscCall(PetscHSetIGetSize(ht,&n));
   PetscTestCheck(n == 2);
 
   off = 0;
-  CHKERRQ(PetscHSetIGetElems(ht,&off,array));
-  CHKERRQ(PetscSortInt(off,array));
+  PetscCall(PetscHSetIGetElems(ht,&off,array));
+  PetscCall(PetscSortInt(off,array));
   PetscTestCheck(off == 2);
   PetscTestCheck(array[0] == 13);
   PetscTestCheck(array[1] == 42);
-  CHKERRQ(PetscHSetIGetElems(ht,&off,array));
-  CHKERRQ(PetscSortInt(2,array+2));
+  PetscCall(PetscHSetIGetElems(ht,&off,array));
+  PetscCall(PetscSortInt(2,array+2));
   PetscTestCheck(off == 4);
   PetscTestCheck(array[0] == 13);
   PetscTestCheck(array[1] == 42);
@@ -76,69 +76,69 @@ int main(int argc,char **argv)
   PetscTestCheck(array[1] == 42);
 
   off = 0;
-  CHKERRQ(PetscHSetIDuplicate(ht,&hd));
-  CHKERRQ(PetscHSetIGetElems(hd,&off,array));
-  CHKERRQ(PetscSortInt(off,array));
+  PetscCall(PetscHSetIDuplicate(ht,&hd));
+  PetscCall(PetscHSetIGetElems(hd,&off,array));
+  PetscCall(PetscSortInt(off,array));
   PetscTestCheck(off == 2);
   PetscTestCheck(array[0] == 13);
   PetscTestCheck(array[1] == 42);
-  CHKERRQ(PetscHSetIDestroy(&hd));
+  PetscCall(PetscHSetIDestroy(&hd));
 
-  CHKERRQ(PetscHSetIAdd(ht,0));
-  CHKERRQ(PetscHSetIGetSize(ht,&n));
+  PetscCall(PetscHSetIAdd(ht,0));
+  PetscCall(PetscHSetIGetSize(ht,&n));
   PetscTestCheck(n != 0);
-  CHKERRQ(PetscHSetIReset(ht));
-  CHKERRQ(PetscHSetIGetSize(ht,&n));
+  PetscCall(PetscHSetIReset(ht));
+  PetscCall(PetscHSetIGetSize(ht,&n));
   PetscTestCheck(n == 0);
-  CHKERRQ(PetscHSetIReset(ht));
-  CHKERRQ(PetscHSetIGetSize(ht,&n));
+  PetscCall(PetscHSetIReset(ht));
+  PetscCall(PetscHSetIGetSize(ht,&n));
   PetscTestCheck(n == 0);
-  CHKERRQ(PetscHSetIAdd(ht,0));
-  CHKERRQ(PetscHSetIGetSize(ht,&n));
+  PetscCall(PetscHSetIAdd(ht,0));
+  PetscCall(PetscHSetIGetSize(ht,&n));
   PetscTestCheck(n != 0);
 
-  CHKERRQ(PetscHSetIDestroy(&ht));
+  PetscCall(PetscHSetIDestroy(&ht));
   PetscTestCheck(ht == NULL);
 
-  CHKERRQ(PetscHSetICreate(&ht));
-  CHKERRQ(PetscHSetIReset(ht));
-  CHKERRQ(PetscHSetIGetSize(ht,&n));
+  PetscCall(PetscHSetICreate(&ht));
+  PetscCall(PetscHSetIReset(ht));
+  PetscCall(PetscHSetIGetSize(ht,&n));
   PetscTestCheck(n == 0);
-  CHKERRQ(PetscHSetIDestroy(&ht));
+  PetscCall(PetscHSetIDestroy(&ht));
 
-  CHKERRQ(PetscHSetICreate(&ht));
-  CHKERRQ(PetscHSetICreate(&hd));
+  PetscCall(PetscHSetICreate(&ht));
+  PetscCall(PetscHSetICreate(&hd));
   n = 10;
-  CHKERRQ(PetscHSetIResize(ht,n));
-  CHKERRQ(PetscHSetIResize(hd,n));
-  CHKERRQ(PetscHSetIGetCapacity(ht,&na));
-  CHKERRQ(PetscHSetIGetCapacity(hd,&nb));
+  PetscCall(PetscHSetIResize(ht,n));
+  PetscCall(PetscHSetIResize(hd,n));
+  PetscCall(PetscHSetIGetCapacity(ht,&na));
+  PetscCall(PetscHSetIGetCapacity(hd,&nb));
   PetscTestCheck(na>=n);
   PetscTestCheck(nb>=n);
   for (i=0; i<n; i++) {
-    CHKERRQ(PetscHSetIAdd(ht,i+1));
-    CHKERRQ(PetscHSetIAdd(hd,i+1+n));
+    PetscCall(PetscHSetIAdd(ht,i+1));
+    PetscCall(PetscHSetIAdd(hd,i+1+n));
   }
-  CHKERRQ(PetscHSetIGetCapacity(ht,&nb));
+  PetscCall(PetscHSetIGetCapacity(ht,&nb));
   PetscTestCheck(nb>=na);
   /* Merge ht and hd, and the result is in ht */
-  CHKERRQ(PetscHSetIUpdate(ht,hd));
-  CHKERRQ(PetscHSetIDestroy(&hd));
-  CHKERRQ(PetscHSetIGetSize(ht,&size));
+  PetscCall(PetscHSetIUpdate(ht,hd));
+  PetscCall(PetscHSetIDestroy(&hd));
+  PetscCall(PetscHSetIGetSize(ht,&size));
   PetscTestCheck(size==(2*n));
-  CHKERRQ(PetscMalloc1(n*2,&marray));
+  PetscCall(PetscMalloc1(n*2,&marray));
   off = 0;
-  CHKERRQ(PetscHSetIGetElems(ht,&off,marray));
-  CHKERRQ(PetscHSetIDestroy(&ht));
+  PetscCall(PetscHSetIGetElems(ht,&off,marray));
+  PetscCall(PetscHSetIDestroy(&ht));
   PetscTestCheck(off==(2*n));
-  CHKERRQ(PetscSortInt(off,marray));
+  PetscCall(PetscSortInt(off,marray));
   for (i=0; i<n; i++) {
     PetscTestCheck(marray[i]==(i+1));
     PetscTestCheck(marray[n+i]==(i+1+n));
   }
-  CHKERRQ(PetscFree(marray));
+  PetscCall(PetscFree(marray));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

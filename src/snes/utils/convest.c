@@ -32,9 +32,9 @@ PetscErrorCode PetscConvEstDestroy(PetscConvEst *ce)
     *ce = NULL;
     PetscFunctionReturn(0);
   }
-  CHKERRQ(PetscFree3((*ce)->initGuess, (*ce)->exactSol, (*ce)->ctxs));
-  CHKERRQ(PetscFree2((*ce)->dofs, (*ce)->errors));
-  CHKERRQ(PetscHeaderDestroy(ce));
+  PetscCall(PetscFree3((*ce)->initGuess, (*ce)->exactSol, (*ce)->ctxs));
+  PetscCall(PetscFree2((*ce)->dofs, (*ce)->errors));
+  PetscCall(PetscHeaderDestroy(ce));
   PetscFunctionReturn(0);
 }
 
@@ -55,12 +55,12 @@ PetscErrorCode PetscConvEstSetFromOptions(PetscConvEst ce)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject) ce), "", "Convergence Estimator Options", "PetscConvEst");CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsInt("-convest_num_refine", "The number of refinements for the convergence check", "PetscConvEst", ce->Nr, &ce->Nr, NULL));
-  CHKERRQ(PetscOptionsReal("-convest_refine_factor", "The increase in resolution in each dimension", "PetscConvEst", ce->r, &ce->r, NULL));
-  CHKERRQ(PetscOptionsBool("-convest_monitor", "Monitor the error for each convergence check", "PetscConvEst", ce->monitor, &ce->monitor, NULL));
-  CHKERRQ(PetscOptionsBool("-convest_no_refine", "Debugging flag to run on the same mesh each time", "PetscConvEst", ce->noRefine, &ce->noRefine, NULL));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject) ce), "", "Convergence Estimator Options", "PetscConvEst");PetscCall(ierr);
+  PetscCall(PetscOptionsInt("-convest_num_refine", "The number of refinements for the convergence check", "PetscConvEst", ce->Nr, &ce->Nr, NULL));
+  PetscCall(PetscOptionsReal("-convest_refine_factor", "The increase in resolution in each dimension", "PetscConvEst", ce->r, &ce->r, NULL));
+  PetscCall(PetscOptionsBool("-convest_monitor", "Monitor the error for each convergence check", "PetscConvEst", ce->monitor, &ce->monitor, NULL));
+  PetscCall(PetscOptionsBool("-convest_no_refine", "Debugging flag to run on the same mesh each time", "PetscConvEst", ce->noRefine, &ce->noRefine, NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -80,8 +80,8 @@ PetscErrorCode PetscConvEstSetFromOptions(PetscConvEst ce)
 PetscErrorCode PetscConvEstView(PetscConvEst ce, PetscViewer viewer)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectPrintClassNamePrefixType((PetscObject) ce, viewer));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer, "ConvEst with %D levels\n", ce->Nr+1));
+  PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject) ce, viewer));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "ConvEst with %D levels\n", ce->Nr+1));
   PetscFunctionReturn(0);
 }
 
@@ -130,7 +130,7 @@ PetscErrorCode PetscConvEstSetSolver(PetscConvEst ce, PetscObject solver)
   PetscValidHeaderSpecific(ce, PETSC_OBJECT_CLASSID, 1);
   PetscValidHeader(solver, 2);
   ce->solver = solver;
-  CHKERRQ((*ce->ops->setsolver)(ce, solver));
+  PetscCall((*ce->ops->setsolver)(ce, solver));
   PetscFunctionReturn(0);
 }
 
@@ -151,12 +151,12 @@ PetscErrorCode PetscConvEstSetUp(PetscConvEst ce)
   PetscInt       Nf, f, Nds, s;
 
   PetscFunctionBegin;
-  CHKERRQ(DMGetNumFields(ce->idm, &Nf));
+  PetscCall(DMGetNumFields(ce->idm, &Nf));
   ce->Nf = PetscMax(Nf, 1);
-  CHKERRQ(PetscMalloc2((ce->Nr+1)*ce->Nf, &ce->dofs, (ce->Nr+1)*ce->Nf, &ce->errors));
-  CHKERRQ(PetscCalloc3(ce->Nf, &ce->initGuess, ce->Nf, &ce->exactSol, ce->Nf, &ce->ctxs));
+  PetscCall(PetscMalloc2((ce->Nr+1)*ce->Nf, &ce->dofs, (ce->Nr+1)*ce->Nf, &ce->errors));
+  PetscCall(PetscCalloc3(ce->Nf, &ce->initGuess, ce->Nf, &ce->exactSol, ce->Nf, &ce->ctxs));
   for (f = 0; f < Nf; ++f) ce->initGuess[f] = zero_private;
-  CHKERRQ(DMGetNumDS(ce->idm, &Nds));
+  PetscCall(DMGetNumDS(ce->idm, &Nds));
   for (s = 0; s < Nds; ++s) {
     PetscDS         ds;
     DMLabel         label;
@@ -164,14 +164,14 @@ PetscErrorCode PetscConvEstSetUp(PetscConvEst ce)
     const PetscInt *fields;
     PetscInt        dsNf;
 
-    CHKERRQ(DMGetRegionNumDS(ce->idm, s, &label, &fieldIS, &ds));
-    CHKERRQ(PetscDSGetNumFields(ds, &dsNf));
-    if (fieldIS) CHKERRQ(ISGetIndices(fieldIS, &fields));
+    PetscCall(DMGetRegionNumDS(ce->idm, s, &label, &fieldIS, &ds));
+    PetscCall(PetscDSGetNumFields(ds, &dsNf));
+    if (fieldIS) PetscCall(ISGetIndices(fieldIS, &fields));
     for (f = 0; f < dsNf; ++f) {
       const PetscInt field = fields[f];
-      CHKERRQ(PetscDSGetExactSolution(ds, field, &ce->exactSol[field], &ce->ctxs[field]));
+      PetscCall(PetscDSGetExactSolution(ds, field, &ce->exactSol[field], &ce->ctxs[field]));
     }
-    if (fieldIS) CHKERRQ(ISRestoreIndices(fieldIS, &fields));
+    if (fieldIS) PetscCall(ISRestoreIndices(fieldIS, &fields));
   }
   for (f = 0; f < Nf; ++f) {
     PetscCheckFalse(!ce->exactSol[f],PetscObjectComm((PetscObject) ce), PETSC_ERR_ARG_WRONG, "DS must contain exact solution functions in order to estimate convergence, missing for field %D", f);
@@ -185,7 +185,7 @@ PetscErrorCode PetscConvEstComputeInitialGuess(PetscConvEst ce, PetscInt r, DM d
   PetscValidHeaderSpecific(ce, PETSC_OBJECT_CLASSID, 1);
   if (dm) PetscValidHeaderSpecific(dm, DM_CLASSID, 3);
   PetscValidHeaderSpecific(u, VEC_CLASSID, 4);
-  CHKERRQ((*ce->ops->initguess)(ce, r, dm, u));
+  PetscCall((*ce->ops->initguess)(ce, r, dm, u));
   PetscFunctionReturn(0);
 }
 
@@ -196,7 +196,7 @@ PetscErrorCode PetscConvEstComputeError(PetscConvEst ce, PetscInt r, DM dm, Vec 
   if (dm) PetscValidHeaderSpecific(dm, DM_CLASSID, 3);
   PetscValidHeaderSpecific(u, VEC_CLASSID, 4);
   PetscValidRealPointer(errors, 5);
-  CHKERRQ((*ce->ops->computeerror)(ce, r, dm, u, errors));
+  PetscCall((*ce->ops->computeerror)(ce, r, dm, u, errors));
   PetscFunctionReturn(0);
 }
 
@@ -226,24 +226,24 @@ PetscErrorCode PetscConvEstMonitorDefault(PetscConvEst ce, PetscInt r)
     PetscInt  *dofs   = &ce->dofs[r*ce->Nf];
     PetscReal *errors = &ce->errors[r*ce->Nf];
 
-    CHKERRQ(PetscObjectGetComm((PetscObject) ce, &comm));
-    CHKERRQ(PetscPrintf(comm, "N: "));
-    if (ce->Nf > 1) CHKERRQ(PetscPrintf(comm, "["));
+    PetscCall(PetscObjectGetComm((PetscObject) ce, &comm));
+    PetscCall(PetscPrintf(comm, "N: "));
+    if (ce->Nf > 1) PetscCall(PetscPrintf(comm, "["));
     for (f = 0; f < ce->Nf; ++f) {
-      if (f > 0) CHKERRQ(PetscPrintf(comm, ", "));
-      CHKERRQ(PetscPrintf(comm, "%7D", dofs[f]));
+      if (f > 0) PetscCall(PetscPrintf(comm, ", "));
+      PetscCall(PetscPrintf(comm, "%7D", dofs[f]));
     }
-    if (ce->Nf > 1) CHKERRQ(PetscPrintf(comm, "]"));
-    CHKERRQ(PetscPrintf(comm, "  "));
-    CHKERRQ(PetscPrintf(comm, "L_2 Error: "));
-    if (ce->Nf > 1) CHKERRQ(PetscPrintf(comm, "["));
+    if (ce->Nf > 1) PetscCall(PetscPrintf(comm, "]"));
+    PetscCall(PetscPrintf(comm, "  "));
+    PetscCall(PetscPrintf(comm, "L_2 Error: "));
+    if (ce->Nf > 1) PetscCall(PetscPrintf(comm, "["));
     for (f = 0; f < ce->Nf; ++f) {
-      if (f > 0) CHKERRQ(PetscPrintf(comm, ", "));
-      if (errors[f] < 1.0e-11) CHKERRQ(PetscPrintf(comm, "< 1e-11"));
-      else                     CHKERRQ(PetscPrintf(comm, "%g", (double) errors[f]));
+      if (f > 0) PetscCall(PetscPrintf(comm, ", "));
+      if (errors[f] < 1.0e-11) PetscCall(PetscPrintf(comm, "< 1e-11"));
+      else                     PetscCall(PetscPrintf(comm, "%g", (double) errors[f]));
     }
-    if (ce->Nf > 1) CHKERRQ(PetscPrintf(comm, "]"));
-    CHKERRQ(PetscPrintf(comm, "\n"));
+    if (ce->Nf > 1) PetscCall(PetscPrintf(comm, "]"));
+    PetscCall(PetscPrintf(comm, "\n"));
   }
   PetscFunctionReturn(0);
 }
@@ -253,23 +253,23 @@ static PetscErrorCode PetscConvEstSetSNES_Private(PetscConvEst ce, PetscObject s
   PetscClassId   id;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectGetClassId(ce->solver, &id));
+  PetscCall(PetscObjectGetClassId(ce->solver, &id));
   PetscCheckFalse(id != SNES_CLASSID,PetscObjectComm((PetscObject) ce), PETSC_ERR_ARG_WRONG, "Solver was not a SNES");
-  CHKERRQ(SNESGetDM((SNES) ce->solver, &ce->idm));
+  PetscCall(SNESGetDM((SNES) ce->solver, &ce->idm));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscConvEstInitGuessSNES_Private(PetscConvEst ce, PetscInt r, DM dm, Vec u)
 {
   PetscFunctionBegin;
-  CHKERRQ(DMProjectFunction(dm, 0.0, ce->initGuess, ce->ctxs, INSERT_VALUES, u));
+  PetscCall(DMProjectFunction(dm, 0.0, ce->initGuess, ce->ctxs, INSERT_VALUES, u));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscConvEstComputeErrorSNES_Private(PetscConvEst ce, PetscInt r, DM dm, Vec u, PetscReal errors[])
 {
   PetscFunctionBegin;
-  CHKERRQ(DMComputeL2FieldDiff(dm, 0.0, ce->exactSol, ce->ctxs, u, errors));
+  PetscCall(DMComputeL2FieldDiff(dm, 0.0, ce->exactSol, ce->ctxs, u, errors));
   PetscFunctionReturn(0);
 }
 
@@ -279,20 +279,20 @@ static PetscErrorCode PetscConvEstSetJacobianNullspace_Private(PetscConvEst ce, 
   PetscInt       f;
 
   PetscFunctionBegin;
-  CHKERRQ(SNESGetDM(snes, &dm));
+  PetscCall(SNESGetDM(snes, &dm));
   for (f = 0; f < ce->Nf; ++f) {
     PetscErrorCode (*nspconstr)(DM, PetscInt, PetscInt, MatNullSpace *);
 
-    CHKERRQ(DMGetNullSpaceConstructor(dm, f, &nspconstr));
+    PetscCall(DMGetNullSpaceConstructor(dm, f, &nspconstr));
     if (nspconstr) {
       MatNullSpace nullsp;
       Mat          J;
 
-      CHKERRQ((*nspconstr)(dm, f, f,&nullsp));
-      CHKERRQ(SNESSetUp(snes));
-      CHKERRQ(SNESGetJacobian(snes, &J, NULL, NULL, NULL));
-      CHKERRQ(MatSetNullSpace(J, nullsp));
-      CHKERRQ(MatNullSpaceDestroy(&nullsp));
+      PetscCall((*nspconstr)(dm, f, f,&nullsp));
+      PetscCall(SNESSetUp(snes));
+      PetscCall(SNESGetJacobian(snes, &J, NULL, NULL, NULL));
+      PetscCall(MatSetNullSpace(J, nullsp));
+      PetscCall(MatNullSpaceDestroy(&nullsp));
       break;
     }
   }
@@ -310,11 +310,11 @@ static PetscErrorCode PetscConvEstGetConvRateSNES_Private(PetscConvEst ce, Petsc
 
   PetscFunctionBegin;
   PetscCheckFalse(ce->r != 2.0,PetscObjectComm((PetscObject) ce), PETSC_ERR_SUP, "Only refinement factor 2 is currently supported (not %g)", (double) ce->r);
-  CHKERRQ(DMGetDimension(ce->idm, &dim));
-  CHKERRQ(DMGetApplicationContext(ce->idm, &ctx));
-  CHKERRQ(DMPlexSetRefinementUniform(ce->idm, PETSC_TRUE));
-  CHKERRQ(DMGetRefineLevel(ce->idm, &oldlevel));
-  CHKERRQ(PetscMalloc1((Nr+1), &dm));
+  PetscCall(DMGetDimension(ce->idm, &dim));
+  PetscCall(DMGetApplicationContext(ce->idm, &ctx));
+  PetscCall(DMPlexSetRefinementUniform(ce->idm, PETSC_TRUE));
+  PetscCall(DMGetRefineLevel(ce->idm, &oldlevel));
+  PetscCall(PetscMalloc1((Nr+1), &dm));
   /* Loop over meshes */
   dm[0] = ce->idm;
   for (r = 0; r <= Nr; ++r) {
@@ -325,113 +325,113 @@ static PetscErrorCode PetscConvEstGetConvRateSNES_Private(PetscConvEst ce, Petsc
     char          stageName[PETSC_MAX_PATH_LEN];
     const char   *dmname, *uname;
 
-    CHKERRQ(PetscSNPrintf(stageName, PETSC_MAX_PATH_LEN-1, "ConvEst Refinement Level %D", r));
+    PetscCall(PetscSNPrintf(stageName, PETSC_MAX_PATH_LEN-1, "ConvEst Refinement Level %D", r));
 #if defined(PETSC_USE_LOG)
-    CHKERRQ(PetscLogStageGetId(stageName, &stage));
-    if (stage < 0) CHKERRQ(PetscLogStageRegister(stageName, &stage));
+    PetscCall(PetscLogStageGetId(stageName, &stage));
+    if (stage < 0) PetscCall(PetscLogStageRegister(stageName, &stage));
 #endif
-    CHKERRQ(PetscLogStagePush(stage));
+    PetscCall(PetscLogStagePush(stage));
     if (r > 0) {
       if (!ce->noRefine) {
-        CHKERRQ(DMRefine(dm[r-1], MPI_COMM_NULL, &dm[r]));
-        CHKERRQ(DMSetCoarseDM(dm[r], dm[r-1]));
+        PetscCall(DMRefine(dm[r-1], MPI_COMM_NULL, &dm[r]));
+        PetscCall(DMSetCoarseDM(dm[r], dm[r-1]));
       } else {
         DM cdm, rcdm;
 
-        CHKERRQ(DMClone(dm[r-1], &dm[r]));
-        CHKERRQ(DMCopyDisc(dm[r-1], dm[r]));
-        CHKERRQ(DMGetCoordinateDM(dm[r-1], &cdm));
-        CHKERRQ(DMGetCoordinateDM(dm[r],   &rcdm));
-        CHKERRQ(DMCopyDisc(cdm, rcdm));
+        PetscCall(DMClone(dm[r-1], &dm[r]));
+        PetscCall(DMCopyDisc(dm[r-1], dm[r]));
+        PetscCall(DMGetCoordinateDM(dm[r-1], &cdm));
+        PetscCall(DMGetCoordinateDM(dm[r],   &rcdm));
+        PetscCall(DMCopyDisc(cdm, rcdm));
       }
-      CHKERRQ(DMCopyTransform(ce->idm, dm[r]));
-      CHKERRQ(PetscObjectGetName((PetscObject) dm[r-1], &dmname));
-      CHKERRQ(PetscObjectSetName((PetscObject) dm[r], dmname));
+      PetscCall(DMCopyTransform(ce->idm, dm[r]));
+      PetscCall(PetscObjectGetName((PetscObject) dm[r-1], &dmname));
+      PetscCall(PetscObjectSetName((PetscObject) dm[r], dmname));
       for (f = 0; f < ce->Nf; ++f) {
         PetscErrorCode (*nspconstr)(DM, PetscInt, PetscInt, MatNullSpace *);
 
-        CHKERRQ(DMGetNullSpaceConstructor(dm[r-1], f, &nspconstr));
-        CHKERRQ(DMSetNullSpaceConstructor(dm[r],   f,  nspconstr));
+        PetscCall(DMGetNullSpaceConstructor(dm[r-1], f, &nspconstr));
+        PetscCall(DMSetNullSpaceConstructor(dm[r],   f,  nspconstr));
       }
     }
-    CHKERRQ(DMViewFromOptions(dm[r], NULL, "-conv_dm_view"));
+    PetscCall(DMViewFromOptions(dm[r], NULL, "-conv_dm_view"));
     /* Create solution */
-    CHKERRQ(DMCreateGlobalVector(dm[r], &u));
-    CHKERRQ(DMGetField(dm[r], 0, NULL, &disc));
-    CHKERRQ(PetscObjectGetName(disc, &uname));
-    CHKERRQ(PetscObjectSetName((PetscObject) u, uname));
+    PetscCall(DMCreateGlobalVector(dm[r], &u));
+    PetscCall(DMGetField(dm[r], 0, NULL, &disc));
+    PetscCall(PetscObjectGetName(disc, &uname));
+    PetscCall(PetscObjectSetName((PetscObject) u, uname));
     /* Setup solver */
-    CHKERRQ(SNESReset(snes));
-    CHKERRQ(SNESSetDM(snes, dm[r]));
-    CHKERRQ(DMPlexSetSNESLocalFEM(dm[r], ctx, ctx, ctx));
-    CHKERRQ(SNESSetFromOptions(snes));
+    PetscCall(SNESReset(snes));
+    PetscCall(SNESSetDM(snes, dm[r]));
+    PetscCall(DMPlexSetSNESLocalFEM(dm[r], ctx, ctx, ctx));
+    PetscCall(SNESSetFromOptions(snes));
     /* Set nullspace for Jacobian */
-    CHKERRQ(PetscConvEstSetJacobianNullspace_Private(ce, snes));
+    PetscCall(PetscConvEstSetJacobianNullspace_Private(ce, snes));
     /* Create initial guess */
-    CHKERRQ(PetscConvEstComputeInitialGuess(ce, r, dm[r], u));
-    CHKERRQ(SNESSolve(snes, NULL, u));
-    CHKERRQ(PetscLogEventBegin(ce->event, ce, 0, 0, 0));
-    CHKERRQ(PetscConvEstComputeError(ce, r, dm[r], u, &ce->errors[r*ce->Nf]));
-    CHKERRQ(PetscLogEventEnd(ce->event, ce, 0, 0, 0));
+    PetscCall(PetscConvEstComputeInitialGuess(ce, r, dm[r], u));
+    PetscCall(SNESSolve(snes, NULL, u));
+    PetscCall(PetscLogEventBegin(ce->event, ce, 0, 0, 0));
+    PetscCall(PetscConvEstComputeError(ce, r, dm[r], u, &ce->errors[r*ce->Nf]));
+    PetscCall(PetscLogEventEnd(ce->event, ce, 0, 0, 0));
     for (f = 0; f < ce->Nf; ++f) {
       PetscSection s, fs;
       PetscInt     lsize;
 
       /* Could use DMGetOutputDM() to add in Dirichlet dofs */
-      CHKERRQ(DMGetLocalSection(dm[r], &s));
-      CHKERRQ(PetscSectionGetField(s, f, &fs));
-      CHKERRQ(PetscSectionGetConstrainedStorageSize(fs, &lsize));
-      CHKERRMPI(MPI_Allreduce(&lsize, &ce->dofs[r*ce->Nf+f], 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject) snes)));
-      CHKERRQ(PetscLogEventSetDof(ce->event, f, ce->dofs[r*ce->Nf+f]));
-      CHKERRQ(PetscLogEventSetError(ce->event, f, ce->errors[r*ce->Nf+f]));
+      PetscCall(DMGetLocalSection(dm[r], &s));
+      PetscCall(PetscSectionGetField(s, f, &fs));
+      PetscCall(PetscSectionGetConstrainedStorageSize(fs, &lsize));
+      PetscCallMPI(MPI_Allreduce(&lsize, &ce->dofs[r*ce->Nf+f], 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject) snes)));
+      PetscCall(PetscLogEventSetDof(ce->event, f, ce->dofs[r*ce->Nf+f]));
+      PetscCall(PetscLogEventSetError(ce->event, f, ce->errors[r*ce->Nf+f]));
     }
     /* Monitor */
-    CHKERRQ(PetscConvEstMonitorDefault(ce, r));
+    PetscCall(PetscConvEstMonitorDefault(ce, r));
     if (!r) {
       /* PCReset() does not wipe out the level structure */
       KSP ksp;
       PC  pc;
 
-      CHKERRQ(SNESGetKSP(snes, &ksp));
-      CHKERRQ(KSPGetPC(ksp, &pc));
-      CHKERRQ(PCMGGetLevels(pc, &oldnlev));
+      PetscCall(SNESGetKSP(snes, &ksp));
+      PetscCall(KSPGetPC(ksp, &pc));
+      PetscCall(PCMGGetLevels(pc, &oldnlev));
     }
     /* Cleanup */
-    CHKERRQ(VecDestroy(&u));
-    CHKERRQ(PetscLogStagePop());
+    PetscCall(VecDestroy(&u));
+    PetscCall(PetscLogStagePop());
   }
   for (r = 1; r <= Nr; ++r) {
-    CHKERRQ(DMDestroy(&dm[r]));
+    PetscCall(DMDestroy(&dm[r]));
   }
   /* Fit convergence rate */
-  CHKERRQ(PetscMalloc2(Nr+1, &x, Nr+1, &y));
+  PetscCall(PetscMalloc2(Nr+1, &x, Nr+1, &y));
   for (f = 0; f < ce->Nf; ++f) {
     for (r = 0; r <= Nr; ++r) {
       x[r] = PetscLog10Real(ce->dofs[r*ce->Nf+f]);
       y[r] = PetscLog10Real(ce->errors[r*ce->Nf+f]);
     }
-    CHKERRQ(PetscLinearRegression(Nr+1, x, y, &slope, &intercept));
+    PetscCall(PetscLinearRegression(Nr+1, x, y, &slope, &intercept));
     /* Since h^{-dim} = N, lg err = s lg N + b = -s dim lg h + b */
     alpha[f] = -slope * dim;
   }
-  CHKERRQ(PetscFree2(x, y));
-  CHKERRQ(PetscFree(dm));
+  PetscCall(PetscFree2(x, y));
+  PetscCall(PetscFree(dm));
   /* Restore solver */
-  CHKERRQ(SNESReset(snes));
+  PetscCall(SNESReset(snes));
   {
     /* PCReset() does not wipe out the level structure */
     KSP ksp;
     PC  pc;
 
-    CHKERRQ(SNESGetKSP(snes, &ksp));
-    CHKERRQ(KSPGetPC(ksp, &pc));
-    CHKERRQ(PCMGSetLevels(pc, oldnlev, NULL));
-    CHKERRQ(DMSetRefineLevel(ce->idm, oldlevel)); /* The damn DMCoarsen() calls in PCMG can reset this */
+    PetscCall(SNESGetKSP(snes, &ksp));
+    PetscCall(KSPGetPC(ksp, &pc));
+    PetscCall(PCMGSetLevels(pc, oldnlev, NULL));
+    PetscCall(DMSetRefineLevel(ce->idm, oldlevel)); /* The damn DMCoarsen() calls in PCMG can reset this */
   }
-  CHKERRQ(SNESSetDM(snes, ce->idm));
-  CHKERRQ(DMPlexSetSNESLocalFEM(ce->idm, ctx, ctx, ctx));
-  CHKERRQ(SNESSetFromOptions(snes));
-  CHKERRQ(PetscConvEstSetJacobianNullspace_Private(ce, snes));
+  PetscCall(SNESSetDM(snes, ce->idm));
+  PetscCall(DMPlexSetSNESLocalFEM(ce->idm, ctx, ctx, ctx));
+  PetscCall(SNESSetFromOptions(snes));
+  PetscCall(PetscConvEstSetJacobianNullspace_Private(ce, snes));
   PetscFunctionReturn(0);
 }
 
@@ -467,9 +467,9 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
   PetscInt       f;
 
   PetscFunctionBegin;
-  if (ce->event < 0) CHKERRQ(PetscLogEventRegister("ConvEst Error", PETSC_OBJECT_CLASSID, &ce->event));
+  if (ce->event < 0) PetscCall(PetscLogEventRegister("ConvEst Error", PETSC_OBJECT_CLASSID, &ce->event));
   for (f = 0; f < ce->Nf; ++f) alpha[f] = 0.0;
-  CHKERRQ((*ce->ops->getconvrate)(ce, alpha));
+  PetscCall((*ce->ops->getconvrate)(ce, alpha));
   PetscFunctionReturn(0);
 }
 
@@ -495,20 +495,20 @@ PetscErrorCode PetscConvEstRateView(PetscConvEst ce, const PetscReal alpha[], Pe
   PetscBool      isAscii;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isAscii));
+  PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isAscii));
   if (isAscii) {
     PetscInt Nf = ce->Nf, f;
 
-    CHKERRQ(PetscViewerASCIIAddTab(viewer, ((PetscObject) ce)->tablevel));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer, "L_2 convergence rate: "));
-    if (Nf > 1) CHKERRQ(PetscViewerASCIIPrintf(viewer, "["));
+    PetscCall(PetscViewerASCIIAddTab(viewer, ((PetscObject) ce)->tablevel));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "L_2 convergence rate: "));
+    if (Nf > 1) PetscCall(PetscViewerASCIIPrintf(viewer, "["));
     for (f = 0; f < Nf; ++f) {
-      if (f > 0) CHKERRQ(PetscViewerASCIIPrintf(viewer, ", "));
-      CHKERRQ(PetscViewerASCIIPrintf(viewer, "%#.2g", (double) alpha[f]));
+      if (f > 0) PetscCall(PetscViewerASCIIPrintf(viewer, ", "));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "%#.2g", (double) alpha[f]));
     }
-    if (Nf > 1) CHKERRQ(PetscViewerASCIIPrintf(viewer, "]"));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer, "\n"));
-    CHKERRQ(PetscViewerASCIISubtractTab(viewer, ((PetscObject) ce)->tablevel));
+    if (Nf > 1) PetscCall(PetscViewerASCIIPrintf(viewer, "]"));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
+    PetscCall(PetscViewerASCIISubtractTab(viewer, ((PetscObject) ce)->tablevel));
   }
   PetscFunctionReturn(0);
 }
@@ -532,8 +532,8 @@ PetscErrorCode PetscConvEstCreate(MPI_Comm comm, PetscConvEst *ce)
 {
   PetscFunctionBegin;
   PetscValidPointer(ce, 2);
-  CHKERRQ(PetscSysInitializePackage());
-  CHKERRQ(PetscHeaderCreate(*ce, PETSC_OBJECT_CLASSID, "PetscConvEst", "ConvergenceEstimator", "SNES", comm, PetscConvEstDestroy, PetscConvEstView));
+  PetscCall(PetscSysInitializePackage());
+  PetscCall(PetscHeaderCreate(*ce, PETSC_OBJECT_CLASSID, "PetscConvEst", "ConvergenceEstimator", "SNES", comm, PetscConvEstDestroy, PetscConvEstView));
   (*ce)->monitor = PETSC_FALSE;
   (*ce)->r       = 2.0;
   (*ce)->Nr      = 4;

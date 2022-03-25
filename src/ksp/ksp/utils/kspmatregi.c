@@ -18,14 +18,14 @@ PetscErrorCode KSPMatRegisterAll(void)
   PetscFunctionBegin;
   if (KSPMatRegisterAllCalled) PetscFunctionReturn(0);
   KSPMatRegisterAllCalled = PETSC_TRUE;
-  CHKERRQ(MatRegister(MATSCHURCOMPLEMENT,       MatCreate_SchurComplement));
-  CHKERRQ(MatRegister(MATLMVMDFP,               MatCreate_LMVMDFP));
-  CHKERRQ(MatRegister(MATLMVMBFGS,              MatCreate_LMVMBFGS));
-  CHKERRQ(MatRegister(MATLMVMSR1,               MatCreate_LMVMSR1));
-  CHKERRQ(MatRegister(MATLMVMBROYDEN,           MatCreate_LMVMBrdn));
-  CHKERRQ(MatRegister(MATLMVMBADBROYDEN,        MatCreate_LMVMBadBrdn));
-  CHKERRQ(MatRegister(MATLMVMSYMBROYDEN,        MatCreate_LMVMSymBrdn));
-  CHKERRQ(MatRegister(MATLMVMSYMBADBROYDEN,     MatCreate_LMVMSymBadBrdn));
-  CHKERRQ(MatRegister(MATLMVMDIAGBROYDEN,       MatCreate_LMVMDiagBrdn));
+  PetscCall(MatRegister(MATSCHURCOMPLEMENT,       MatCreate_SchurComplement));
+  PetscCall(MatRegister(MATLMVMDFP,               MatCreate_LMVMDFP));
+  PetscCall(MatRegister(MATLMVMBFGS,              MatCreate_LMVMBFGS));
+  PetscCall(MatRegister(MATLMVMSR1,               MatCreate_LMVMSR1));
+  PetscCall(MatRegister(MATLMVMBROYDEN,           MatCreate_LMVMBrdn));
+  PetscCall(MatRegister(MATLMVMBADBROYDEN,        MatCreate_LMVMBadBrdn));
+  PetscCall(MatRegister(MATLMVMSYMBROYDEN,        MatCreate_LMVMSymBrdn));
+  PetscCall(MatRegister(MATLMVMSYMBADBROYDEN,     MatCreate_LMVMSymBadBrdn));
+  PetscCall(MatRegister(MATLMVMDIAGBROYDEN,       MatCreate_LMVMDiagBrdn));
   PetscFunctionReturn(0);
 }

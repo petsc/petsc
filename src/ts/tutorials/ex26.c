@@ -127,15 +127,15 @@ int main(int argc,char **argv)
   PetscReal         ftime;
   TSConvergedReason reason;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
-  CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,4,4,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
-  CHKERRQ(TSSetDM(ts,(DM)da));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,4,4,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(TSSetDM(ts,(DM)da));
 
   ierr = DMDAGetInfo(da,0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
+                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);PetscCall(ierr);
   /*
      Problem parameters (velocity of lid, prandtl, and grashof numbers)
   */
@@ -145,18 +145,18 @@ int main(int argc,char **argv)
   user.parabolic   = PETSC_FALSE;
   user.cfl_initial = 50.;
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Driven cavity/natural convection options","");CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsReal("-lidvelocity","Lid velocity, related to Reynolds number","",user.lidvelocity,&user.lidvelocity,NULL));
-  CHKERRQ(PetscOptionsReal("-prandtl","Ratio of viscous to thermal diffusivity","",user.prandtl,&user.prandtl,NULL));
-  CHKERRQ(PetscOptionsReal("-grashof","Ratio of bouyant to viscous forces","",user.grashof,&user.grashof,NULL));
-  CHKERRQ(PetscOptionsBool("-parabolic","Relax incompressibility to make the system parabolic instead of differential-algebraic","",user.parabolic,&user.parabolic,NULL));
-  CHKERRQ(PetscOptionsReal("-cfl_initial","Advective CFL for the first time step","",user.cfl_initial,&user.cfl_initial,NULL));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Driven cavity/natural convection options","");PetscCall(ierr);
+  PetscCall(PetscOptionsReal("-lidvelocity","Lid velocity, related to Reynolds number","",user.lidvelocity,&user.lidvelocity,NULL));
+  PetscCall(PetscOptionsReal("-prandtl","Ratio of viscous to thermal diffusivity","",user.prandtl,&user.prandtl,NULL));
+  PetscCall(PetscOptionsReal("-grashof","Ratio of bouyant to viscous forces","",user.grashof,&user.grashof,NULL));
+  PetscCall(PetscOptionsBool("-parabolic","Relax incompressibility to make the system parabolic instead of differential-algebraic","",user.parabolic,&user.parabolic,NULL));
+  PetscCall(PetscOptionsReal("-cfl_initial","Advective CFL for the first time step","",user.cfl_initial,&user.cfl_initial,NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
-  CHKERRQ(DMDASetFieldName(da,0,"x-velocity"));
-  CHKERRQ(DMDASetFieldName(da,1,"y-velocity"));
-  CHKERRQ(DMDASetFieldName(da,2,"Omega"));
-  CHKERRQ(DMDASetFieldName(da,3,"temperature"));
+  PetscCall(DMDASetFieldName(da,0,"x-velocity"));
+  PetscCall(DMDASetFieldName(da,1,"y-velocity"));
+  PetscCall(DMDASetFieldName(da,2,"Omega"));
+  PetscCall(DMDASetFieldName(da,3,"temperature"));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create user context, set problem data, create vector data structures.
@@ -166,39 +166,39 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create time integration context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(DMSetApplicationContext(da,&user));
-  CHKERRQ(DMDATSSetIFunctionLocal(da,INSERT_VALUES,(DMDATSIFunctionLocal)FormIFunctionLocal,&user));
-  CHKERRQ(TSSetMaxSteps(ts,10000));
-  CHKERRQ(TSSetMaxTime(ts,1e12));
-  CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
-  CHKERRQ(TSSetTimeStep(ts,user.cfl_initial/(user.lidvelocity*mx)));
-  CHKERRQ(TSSetFromOptions(ts));
+  PetscCall(DMSetApplicationContext(da,&user));
+  PetscCall(DMDATSSetIFunctionLocal(da,INSERT_VALUES,(DMDATSIFunctionLocal)FormIFunctionLocal,&user));
+  PetscCall(TSSetMaxSteps(ts,10000));
+  PetscCall(TSSetMaxTime(ts,1e12));
+  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
+  PetscCall(TSSetTimeStep(ts,user.cfl_initial/(user.lidvelocity*mx)));
+  PetscCall(TSSetFromOptions(ts));
 
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"%Dx%D grid, lid velocity = %g, prandtl # = %g, grashof # = %g\n",mx,my,(double)user.lidvelocity,(double)user.prandtl,(double)user.grashof));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%Dx%D grid, lid velocity = %g, prandtl # = %g, grashof # = %g\n",mx,my,(double)user.lidvelocity,(double)user.prandtl,(double)user.grashof));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve the nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  CHKERRQ(DMCreateGlobalVector(da,&X));
-  CHKERRQ(FormInitialSolution(ts,X,&user));
+  PetscCall(DMCreateGlobalVector(da,&X));
+  PetscCall(FormInitialSolution(ts,X,&user));
 
-  CHKERRQ(TSSolve(ts,X));
-  CHKERRQ(TSGetSolveTime(ts,&ftime));
-  CHKERRQ(TSGetStepNumber(ts,&steps));
-  CHKERRQ(TSGetConvergedReason(ts,&reason));
+  PetscCall(TSSolve(ts,X));
+  PetscCall(TSGetSolveTime(ts,&ftime));
+  PetscCall(TSGetStepNumber(ts,&steps));
+  PetscCall(TSGetConvergedReason(ts,&reason));
 
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after %D steps\n",TSConvergedReasons[reason],(double)ftime,steps));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after %D steps\n",TSConvergedReasons[reason],(double)ftime,steps));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(VecDestroy(&X));
-  CHKERRQ(DMDestroy(&da));
-  CHKERRQ(TSDestroy(&ts));
+  PetscCall(VecDestroy(&X));
+  PetscCall(DMDestroy(&da));
+  PetscCall(TSDestroy(&ts));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -222,8 +222,8 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,AppCtx *user)
   Field          **x;
 
   grashof = user->grashof;
-  CHKERRQ(TSGetDM(ts,&da));
-  CHKERRQ(DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0));
+  PetscCall(TSGetDM(ts,&da));
+  PetscCall(DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0));
   dx      = 1.0/(mx-1);
 
   /*
@@ -231,7 +231,7 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,AppCtx *user)
        xs, ys   - starting grid indices (no ghost points)
        xm, ym   - widths of local grid (no ghost points)
   */
-  CHKERRQ(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
+  PetscCall(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
 
   /*
      Get a pointer to vector data.
@@ -240,7 +240,7 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,AppCtx *user)
        - You MUST call VecRestoreArray() when you no longer need access to
          the array.
   */
-  CHKERRQ(DMDAVecGetArray(da,X,&x));
+  PetscCall(DMDAVecGetArray(da,X,&x));
 
   /*
      Compute initial guess over the locally owned part of the grid
@@ -258,7 +258,7 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,AppCtx *user)
   /*
      Restore vector
   */
-  CHKERRQ(DMDAVecRestoreArray(da,X,&x));
+  PetscCall(DMDAVecRestoreArray(da,X,&x));
   return 0;
 }
 
@@ -392,7 +392,7 @@ PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info,PetscReal ptime,Field **x,
   /*
      Flop count (multiply-adds are counted as 2 operations)
   */
-  CHKERRQ(PetscLogFlops(84.0*info->ym*info->xm));
+  PetscCall(PetscLogFlops(84.0*info->ym*info->xm));
   PetscFunctionReturn(0);
 }
 

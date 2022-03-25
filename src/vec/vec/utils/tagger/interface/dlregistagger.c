@@ -21,9 +21,9 @@ PetscErrorCode VecTaggerInitializePackage(void)
   if (VecTaggerPackageInitialized) PetscFunctionReturn(0);
   VecTaggerPackageInitialized = PETSC_TRUE;
 
-  CHKERRQ(PetscClassIdRegister("Vector Indices Tagger",&VEC_TAGGER_CLASSID));
-  CHKERRQ(VecTaggerRegisterAll());
-  CHKERRQ(PetscRegisterFinalize(VecTaggerFinalizePackage));
+  PetscCall(PetscClassIdRegister("Vector Indices Tagger",&VEC_TAGGER_CLASSID));
+  PetscCall(VecTaggerRegisterAll());
+  PetscCall(PetscRegisterFinalize(VecTaggerFinalizePackage));
   PetscFunctionReturn(0);
 }
 
@@ -39,7 +39,7 @@ PetscErrorCode VecTaggerInitializePackage(void)
 PetscErrorCode VecTaggerFinalizePackage(void)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscFunctionListDestroy(&VecTaggerList));
+  PetscCall(PetscFunctionListDestroy(&VecTaggerList));
   VecTaggerPackageInitialized = PETSC_FALSE;
   VecTaggerRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);

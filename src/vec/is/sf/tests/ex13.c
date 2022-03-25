@@ -15,75 +15,75 @@ int main(int argc,char **argv)
   VecScatter     ctx;
   PetscViewer    sviewer;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   PetscCheckFalse(size <2,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must run more than one processor");
 
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL));
   n    = bs*n;
 
   /* Create vector x over shared memory */
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
-  CHKERRQ(VecSetSizes(x,n,PETSC_DECIDE));
-  CHKERRQ(VecSetFromOptions(x));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+  PetscCall(VecSetSizes(x,n,PETSC_DECIDE));
+  PetscCall(VecSetFromOptions(x));
 
-  CHKERRQ(VecGetOwnershipRange(x,&low,NULL));
-  CHKERRQ(VecGetArray(x,&array));
+  PetscCall(VecGetOwnershipRange(x,&low,NULL));
+  PetscCall(VecGetArray(x,&array));
   for (i=0; i<n; i++) {
     array[i] = (PetscScalar)(i + low);
   }
-  CHKERRQ(VecRestoreArray(x,&array));
+  PetscCall(VecRestoreArray(x,&array));
 
   /* Create a sequential vector y */
-  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,n,&y));
-  CHKERRQ(VecGetArray(y,&array));
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,n,&y));
+  PetscCall(VecGetArray(y,&array));
   for (i=0; i<n; i++) {
     array[i] = (PetscScalar)(i + 100*rank);
   }
-  CHKERRQ(VecRestoreArray(y,&array));
+  PetscCall(VecRestoreArray(y,&array));
 
   /* Create two index sets */
   if (rank == 0) {
-    CHKERRQ(ISCreateBlock(PETSC_COMM_SELF,bs,3,ix0,PETSC_COPY_VALUES,&isx));
-    CHKERRQ(ISCreateBlock(PETSC_COMM_SELF,bs,3,iy0,PETSC_COPY_VALUES,&isy));
+    PetscCall(ISCreateBlock(PETSC_COMM_SELF,bs,3,ix0,PETSC_COPY_VALUES,&isx));
+    PetscCall(ISCreateBlock(PETSC_COMM_SELF,bs,3,iy0,PETSC_COPY_VALUES,&isy));
   } else {
-    CHKERRQ(ISCreateBlock(PETSC_COMM_SELF,bs,3,ix1,PETSC_COPY_VALUES,&isx));
-    CHKERRQ(ISCreateBlock(PETSC_COMM_SELF,bs,3,iy1,PETSC_COPY_VALUES,&isy));
+    PetscCall(ISCreateBlock(PETSC_COMM_SELF,bs,3,ix1,PETSC_COPY_VALUES,&isx));
+    PetscCall(ISCreateBlock(PETSC_COMM_SELF,bs,3,iy1,PETSC_COPY_VALUES,&isy));
   }
 
   if (rank == 10) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"\n[%d] isx:\n",rank));
-    CHKERRQ(ISView(isx,PETSC_VIEWER_STDOUT_SELF));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"\n[%d] isx:\n",rank));
+    PetscCall(ISView(isx,PETSC_VIEWER_STDOUT_SELF));
   }
 
-  CHKERRQ(VecScatterCreate(y,isy,x,isx,&ctx));
-  CHKERRQ(VecScatterSetFromOptions(ctx));
+  PetscCall(VecScatterCreate(y,isy,x,isx,&ctx));
+  PetscCall(VecScatterSetFromOptions(ctx));
 
   /* Test forward vecscatter */
-  CHKERRQ(VecSet(x,0.0));
-  CHKERRQ(VecScatterBegin(ctx,y,x,ADD_VALUES,SCATTER_FORWARD));
-  CHKERRQ(VecScatterEnd(ctx,y,x,ADD_VALUES,SCATTER_FORWARD));
-  CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecSet(x,0.0));
+  PetscCall(VecScatterBegin(ctx,y,x,ADD_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(ctx,y,x,ADD_VALUES,SCATTER_FORWARD));
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
 
   /* Test reverse vecscatter */
-  CHKERRQ(VecScale(x,-1.0));
-  CHKERRQ(VecScatterBegin(ctx,x,y,ADD_VALUES,SCATTER_REVERSE));
-  CHKERRQ(VecScatterEnd(ctx,x,y,ADD_VALUES,SCATTER_REVERSE));
-  CHKERRQ(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer));
+  PetscCall(VecScale(x,-1.0));
+  PetscCall(VecScatterBegin(ctx,x,y,ADD_VALUES,SCATTER_REVERSE));
+  PetscCall(VecScatterEnd(ctx,x,y,ADD_VALUES,SCATTER_REVERSE));
+  PetscCall(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer));
   if (rank == 1) {
-    CHKERRQ(VecView(y,sviewer));
+    PetscCall(VecView(y,sviewer));
   }
-  CHKERRQ(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer));
+  PetscCall(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer));
 
   /* Free spaces */
-  CHKERRQ(VecScatterDestroy(&ctx));
-  CHKERRQ(ISDestroy(&isx));
-  CHKERRQ(ISDestroy(&isy));
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&y));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecScatterDestroy(&ctx));
+  PetscCall(ISDestroy(&isx));
+  PetscCall(ISDestroy(&isy));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&y));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

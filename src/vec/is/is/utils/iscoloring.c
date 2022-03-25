@@ -84,13 +84,13 @@ PetscErrorCode  ISColoringDestroy(ISColoring *iscoloring)
 
   if ((*iscoloring)->is) {
     for (i=0; i<(*iscoloring)->n; i++) {
-      CHKERRQ(ISDestroy(&(*iscoloring)->is[i]));
+      PetscCall(ISDestroy(&(*iscoloring)->is[i]));
     }
-    CHKERRQ(PetscFree((*iscoloring)->is));
+    PetscCall(PetscFree((*iscoloring)->is));
   }
-  if ((*iscoloring)->allocated) CHKERRQ(PetscFree((*iscoloring)->colors));
-  CHKERRQ(PetscCommDestroy(&(*iscoloring)->comm));
-  CHKERRQ(PetscFree((*iscoloring)));
+  if ((*iscoloring)->allocated) PetscCall(PetscFree((*iscoloring)->colors));
+  PetscCall(PetscCommDestroy(&(*iscoloring)->comm));
+  PetscCall(PetscFree((*iscoloring)));
   PetscFunctionReturn(0);
 }
 
@@ -118,12 +118,12 @@ PetscErrorCode ISColoringViewFromOptions(ISColoring obj,PetscObject bobj,const c
 
   PetscFunctionBegin;
   prefix = bobj ? bobj->prefix : NULL;
-  CHKERRQ(PetscOptionsGetViewer(obj->comm,NULL,prefix,optionname,&viewer,&format,&flg));
+  PetscCall(PetscOptionsGetViewer(obj->comm,NULL,prefix,optionname,&viewer,&format,&flg));
   if (flg) {
-    CHKERRQ(PetscViewerPushFormat(viewer,format));
-    CHKERRQ(ISColoringView(obj,viewer));
-    CHKERRQ(PetscViewerPopFormat(viewer));
-    CHKERRQ(PetscViewerDestroy(&viewer));
+    PetscCall(PetscViewerPushFormat(viewer,format));
+    PetscCall(ISColoringView(obj,viewer));
+    PetscCall(PetscViewerPopFormat(viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
   }
   PetscFunctionReturn(0);
 }
@@ -150,31 +150,31 @@ PetscErrorCode  ISColoringView(ISColoring iscoloring,PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidPointer(iscoloring,1);
   if (!viewer) {
-    CHKERRQ(PetscViewerASCIIGetStdout(iscoloring->comm,&viewer));
+    PetscCall(PetscViewerASCIIGetStdout(iscoloring->comm,&viewer));
   }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
 
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
     MPI_Comm    comm;
     PetscMPIInt size,rank;
 
-    CHKERRQ(PetscObjectGetComm((PetscObject)viewer,&comm));
-    CHKERRMPI(MPI_Comm_size(comm,&size));
-    CHKERRMPI(MPI_Comm_rank(comm,&rank));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"ISColoring Object: %d MPI processes\n",size));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"ISColoringType: %s\n",ISColoringTypes[iscoloring->ctype]));
-    CHKERRQ(PetscViewerASCIIPushSynchronized(viewer));
-    CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of colors %" PetscInt_FMT "\n",rank,iscoloring->n));
-    CHKERRQ(PetscViewerFlush(viewer));
-    CHKERRQ(PetscViewerASCIIPopSynchronized(viewer));
+    PetscCall(PetscObjectGetComm((PetscObject)viewer,&comm));
+    PetscCallMPI(MPI_Comm_size(comm,&size));
+    PetscCallMPI(MPI_Comm_rank(comm,&rank));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"ISColoring Object: %d MPI processes\n",size));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"ISColoringType: %s\n",ISColoringTypes[iscoloring->ctype]));
+    PetscCall(PetscViewerASCIIPushSynchronized(viewer));
+    PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of colors %" PetscInt_FMT "\n",rank,iscoloring->n));
+    PetscCall(PetscViewerFlush(viewer));
+    PetscCall(PetscViewerASCIIPopSynchronized(viewer));
   }
 
-  CHKERRQ(ISColoringGetIS(iscoloring,PETSC_USE_POINTER,PETSC_IGNORE,&is));
+  PetscCall(ISColoringGetIS(iscoloring,PETSC_USE_POINTER,PETSC_IGNORE,&is));
   for (i=0; i<iscoloring->n; i++) {
-    CHKERRQ(ISView(iscoloring->is[i],viewer));
+    PetscCall(ISView(iscoloring->is[i],viewer));
   }
-  CHKERRQ(ISColoringRestoreIS(iscoloring,PETSC_USE_POINTER,&is));
+  PetscCall(ISColoringRestoreIS(iscoloring,PETSC_USE_POINTER,&is));
   PetscFunctionReturn(0);
 }
 
@@ -242,32 +242,32 @@ PetscErrorCode  ISColoringGetIS(ISColoring iscoloring,PetscCopyMode mode, PetscI
       }
 
       /* generate the lists of nodes for each color */
-      CHKERRQ(PetscCalloc1(nc,&mcolors));
+      PetscCall(PetscCalloc1(nc,&mcolors));
       for (i=0; i<n; i++) mcolors[colors[i]]++;
 
-      CHKERRQ(PetscMalloc1(nc,&ii));
-      CHKERRQ(PetscMalloc1(n,&ii[0]));
+      PetscCall(PetscMalloc1(nc,&ii));
+      PetscCall(PetscMalloc1(n,&ii[0]));
       for (i=1; i<nc; i++) ii[i] = ii[i-1] + mcolors[i-1];
-      CHKERRQ(PetscArrayzero(mcolors,nc));
+      PetscCall(PetscArrayzero(mcolors,nc));
 
       if (iscoloring->ctype == IS_COLORING_GLOBAL) {
-        CHKERRMPI(MPI_Scan(&iscoloring->N,&base,1,MPIU_INT,MPI_SUM,iscoloring->comm));
+        PetscCallMPI(MPI_Scan(&iscoloring->N,&base,1,MPIU_INT,MPI_SUM,iscoloring->comm));
         base -= iscoloring->N;
         for (i=0; i<n; i++) ii[colors[i]][mcolors[colors[i]]++] = i + base; /* global idx */
       } else if (iscoloring->ctype == IS_COLORING_LOCAL) {
         for (i=0; i<n; i++) ii[colors[i]][mcolors[colors[i]]++] = i;   /* local idx */
       } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not provided for this ISColoringType type");
 
-      CHKERRQ(PetscMalloc1(nc,&is));
+      PetscCall(PetscMalloc1(nc,&is));
       for (i=0; i<nc; i++) {
-        CHKERRQ(ISCreateGeneral(iscoloring->comm,mcolors[i],ii[i],PETSC_COPY_VALUES,is+i));
+        PetscCall(ISCreateGeneral(iscoloring->comm,mcolors[i],ii[i],PETSC_COPY_VALUES,is+i));
       }
 
       if (mode != PETSC_OWN_POINTER) iscoloring->is = is;
       *isis = is;
-      CHKERRQ(PetscFree(ii[0]));
-      CHKERRQ(PetscFree(ii));
-      CHKERRQ(PetscFree(mcolors));
+      PetscCall(PetscFree(ii[0]));
+      PetscCall(PetscFree(ii));
+      PetscCall(PetscFree(mcolors));
     } else {
       *isis = iscoloring->is;
     }
@@ -337,24 +337,24 @@ PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const
     PetscCheckFalse(ncolors > PETSC_MAX_UINT16,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Max color value exceeds %d limit. This number is unrealistic. Perhaps a bug in code?\nCurrent max: %d user requested: %" PetscInt_FMT,PETSC_MAX_UINT16,PETSC_IS_COLORING_MAX,ncolors);
     else                 SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Max color value exceeds limit. Perhaps reconfigure PETSc with --with-is-color-value-type=short?\n Current max: %d user requested: %" PetscInt_FMT,PETSC_IS_COLORING_MAX,ncolors);
   }
-  CHKERRQ(PetscNew(iscoloring));
-  CHKERRQ(PetscCommDuplicate(comm,&(*iscoloring)->comm,&tag));
+  PetscCall(PetscNew(iscoloring));
+  PetscCall(PetscCommDuplicate(comm,&(*iscoloring)->comm,&tag));
   comm = (*iscoloring)->comm;
 
   /* compute the number of the first node on my processor */
-  CHKERRMPI(MPI_Comm_size(comm,&size));
+  PetscCallMPI(MPI_Comm_size(comm,&size));
 
   /* should use MPI_Scan() */
-  CHKERRMPI(MPI_Comm_rank(comm,&rank));
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
   if (rank == 0) {
     base = 0;
     top  = n;
   } else {
-    CHKERRMPI(MPI_Recv(&base,1,MPIU_INT,rank-1,tag,comm,&status));
+    PetscCallMPI(MPI_Recv(&base,1,MPIU_INT,rank-1,tag,comm,&status));
     top  = base+n;
   }
   if (rank < size-1) {
-    CHKERRMPI(MPI_Send(&top,1,MPIU_INT,rank+1,tag,comm));
+    PetscCallMPI(MPI_Send(&top,1,MPIU_INT,rank+1,tag,comm));
   }
 
   /* compute the total number of colors */
@@ -363,7 +363,7 @@ PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const
     if (ncwork < colors[i]) ncwork = colors[i];
   }
   ncwork++;
-  CHKERRMPI(MPIU_Allreduce(&ncwork,&nc,1,MPIU_INT,MPI_MAX,comm));
+  PetscCallMPI(MPIU_Allreduce(&ncwork,&nc,1,MPIU_INT,MPI_MAX,comm));
   PetscCheckFalse(nc > ncolors,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of colors passed in %" PetscInt_FMT " is less then the actual number of colors in array %" PetscInt_FMT,ncolors,nc);
   (*iscoloring)->n      = nc;
   (*iscoloring)->is     = NULL;
@@ -371,9 +371,9 @@ PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const
   (*iscoloring)->refct  = 1;
   (*iscoloring)->ctype  = IS_COLORING_GLOBAL;
   if (mode == PETSC_COPY_VALUES) {
-    CHKERRQ(PetscMalloc1(n,&(*iscoloring)->colors));
-    CHKERRQ(PetscLogObjectMemory((PetscObject)(*iscoloring),n*sizeof(ISColoringValue)));
-    CHKERRQ(PetscArraycpy((*iscoloring)->colors,colors,n));
+    PetscCall(PetscMalloc1(n,&(*iscoloring)->colors));
+    PetscCall(PetscLogObjectMemory((PetscObject)(*iscoloring),n*sizeof(ISColoringValue)));
+    PetscCall(PetscArraycpy((*iscoloring)->colors,colors,n));
     (*iscoloring)->allocated = PETSC_TRUE;
   } else if (mode == PETSC_OWN_POINTER) {
     (*iscoloring)->colors    = (ISColoringValue*)colors;
@@ -382,8 +382,8 @@ PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const
     (*iscoloring)->colors    = (ISColoringValue*)colors;
     (*iscoloring)->allocated = PETSC_FALSE;
   }
-  CHKERRQ(ISColoringViewFromOptions(*iscoloring,NULL,"-is_coloring_view"));
-  CHKERRQ(PetscInfo(0,"Number of colors %" PetscInt_FMT "\n",nc));
+  PetscCall(ISColoringViewFromOptions(*iscoloring,NULL,"-is_coloring_view"));
+  PetscCall(PetscInfo(0,"Number of colors %" PetscInt_FMT "\n",nc));
   PetscFunctionReturn(0);
 }
 
@@ -417,13 +417,13 @@ PetscErrorCode  ISBuildTwoSided(IS ito,IS toindx, IS *rows)
    PetscSFNode    *iremote;
 
    PetscFunctionBegin;
-   CHKERRQ(PetscObjectGetComm((PetscObject)ito,&comm));
-   CHKERRMPI(MPI_Comm_size(comm,&size));
-   CHKERRQ(ISGetLocalSize(ito,&ito_ln));
-   CHKERRQ(ISGetLayout(ito,&isrmap));
-   CHKERRQ(PetscLayoutGetRange(isrmap,&rstart,NULL));
-   CHKERRQ(ISGetIndices(ito,&ito_indices));
-   CHKERRQ(PetscCalloc2(size,&tosizes_tmp,size+1,&tooffsets_tmp));
+   PetscCall(PetscObjectGetComm((PetscObject)ito,&comm));
+   PetscCallMPI(MPI_Comm_size(comm,&size));
+   PetscCall(ISGetLocalSize(ito,&ito_ln));
+   PetscCall(ISGetLayout(ito,&isrmap));
+   PetscCall(PetscLayoutGetRange(isrmap,&rstart,NULL));
+   PetscCall(ISGetIndices(ito,&ito_indices));
+   PetscCall(PetscCalloc2(size,&tosizes_tmp,size+1,&tooffsets_tmp));
    for (i=0; i<ito_ln; i++) {
      if (ito_indices[i]<0) continue;
      else PetscCheckFalse(ito_indices[i]>=size,comm,PETSC_ERR_ARG_OUTOFRANGE,"target rank %" PetscInt_FMT " is larger than communicator size %d ",ito_indices[i],size);
@@ -434,7 +434,7 @@ PetscErrorCode  ISBuildTwoSided(IS ito,IS toindx, IS *rows)
      tooffsets_tmp[i+1] = tooffsets_tmp[i]+tosizes_tmp[i];
      if (tosizes_tmp[i]>0) nto++;
    }
-   CHKERRQ(PetscCalloc2(nto,&toranks,2*nto,&tosizes));
+   PetscCall(PetscCalloc2(nto,&toranks,2*nto,&tosizes));
    nto  = 0;
    for (i=0; i<size; i++) {
      if (tosizes_tmp[i]>0) {
@@ -445,9 +445,9 @@ PetscErrorCode  ISBuildTwoSided(IS ito,IS toindx, IS *rows)
      }
    }
    nsends = tooffsets_tmp[size];
-   CHKERRQ(PetscCalloc1(nsends,&send_indices));
+   PetscCall(PetscCalloc1(nsends,&send_indices));
    if (toindx) {
-     CHKERRQ(ISGetIndices(toindx,&toindx_indices));
+     PetscCall(ISGetIndices(toindx,&toindx_indices));
    }
    for (i=0; i<ito_ln; i++) {
      if (ito_indices[i]<0) continue;
@@ -456,19 +456,19 @@ PetscErrorCode  ISBuildTwoSided(IS ito,IS toindx, IS *rows)
      tooffsets_tmp[target_rank]++;
    }
    if (toindx) {
-     CHKERRQ(ISRestoreIndices(toindx,&toindx_indices));
+     PetscCall(ISRestoreIndices(toindx,&toindx_indices));
    }
-   CHKERRQ(ISRestoreIndices(ito,&ito_indices));
-   CHKERRQ(PetscFree2(tosizes_tmp,tooffsets_tmp));
-   CHKERRQ(PetscCommBuildTwoSided(comm,2,MPIU_INT,nto,toranks,tosizes,&nfrom,&fromranks,&fromsizes));
-   CHKERRQ(PetscFree2(toranks,tosizes));
-   CHKERRQ(PetscMalloc1(nfrom,&fromperm_newtoold));
+   PetscCall(ISRestoreIndices(ito,&ito_indices));
+   PetscCall(PetscFree2(tosizes_tmp,tooffsets_tmp));
+   PetscCall(PetscCommBuildTwoSided(comm,2,MPIU_INT,nto,toranks,tosizes,&nfrom,&fromranks,&fromsizes));
+   PetscCall(PetscFree2(toranks,tosizes));
+   PetscCall(PetscMalloc1(nfrom,&fromperm_newtoold));
    for (i=0; i<nfrom; i++) fromperm_newtoold[i] = i;
-   CHKERRQ(PetscSortMPIIntWithArray(nfrom,fromranks,fromperm_newtoold));
+   PetscCall(PetscSortMPIIntWithArray(nfrom,fromranks,fromperm_newtoold));
    nrecvs = 0;
    for (i=0; i<nfrom; i++) nrecvs += fromsizes[i*2];
-   CHKERRQ(PetscCalloc1(nrecvs,&recv_indices));
-   CHKERRQ(PetscMalloc1(nrecvs,&iremote));
+   PetscCall(PetscCalloc1(nrecvs,&recv_indices));
+   PetscCall(PetscMalloc1(nrecvs,&iremote));
    nrecvs = 0;
    for (i=0; i<nfrom; i++) {
      for (j=0; j<fromsizes[2*fromperm_newtoold[i]]; j++) {
@@ -476,23 +476,23 @@ PetscErrorCode  ISBuildTwoSided(IS ito,IS toindx, IS *rows)
        iremote[nrecvs++].index = fromsizes[2*fromperm_newtoold[i]+1]+j;
      }
    }
-   CHKERRQ(PetscSFCreate(comm,&sf));
-   CHKERRQ(PetscSFSetGraph(sf,nsends,nrecvs,NULL,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER));
-   CHKERRQ(PetscSFSetType(sf,PETSCSFBASIC));
+   PetscCall(PetscSFCreate(comm,&sf));
+   PetscCall(PetscSFSetGraph(sf,nsends,nrecvs,NULL,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER));
+   PetscCall(PetscSFSetType(sf,PETSCSFBASIC));
    /* how to put a prefix ? */
-   CHKERRQ(PetscSFSetFromOptions(sf));
-   CHKERRQ(PetscSFBcastBegin(sf,MPIU_INT,send_indices,recv_indices,MPI_REPLACE));
-   CHKERRQ(PetscSFBcastEnd(sf,MPIU_INT,send_indices,recv_indices,MPI_REPLACE));
-   CHKERRQ(PetscSFDestroy(&sf));
-   CHKERRQ(PetscFree(fromranks));
-   CHKERRQ(PetscFree(fromsizes));
-   CHKERRQ(PetscFree(fromperm_newtoold));
-   CHKERRQ(PetscFree(send_indices));
+   PetscCall(PetscSFSetFromOptions(sf));
+   PetscCall(PetscSFBcastBegin(sf,MPIU_INT,send_indices,recv_indices,MPI_REPLACE));
+   PetscCall(PetscSFBcastEnd(sf,MPIU_INT,send_indices,recv_indices,MPI_REPLACE));
+   PetscCall(PetscSFDestroy(&sf));
+   PetscCall(PetscFree(fromranks));
+   PetscCall(PetscFree(fromsizes));
+   PetscCall(PetscFree(fromperm_newtoold));
+   PetscCall(PetscFree(send_indices));
    if (rows) {
-     CHKERRQ(PetscSortInt(nrecvs,recv_indices));
-     CHKERRQ(ISCreateGeneral(comm,nrecvs,recv_indices,PETSC_OWN_POINTER,rows));
+     PetscCall(PetscSortInt(nrecvs,recv_indices));
+     PetscCall(ISCreateGeneral(comm,nrecvs,recv_indices,PETSC_OWN_POINTER,rows));
    } else {
-     CHKERRQ(PetscFree(recv_indices));
+     PetscCall(PetscFree(recv_indices));
    }
    PetscFunctionReturn(0);
 }
@@ -529,20 +529,20 @@ PetscErrorCode  ISPartitioningToNumbering(IS part,IS *is)
   PetscValidHeaderSpecific(part,IS_CLASSID,1);
   PetscValidPointer(is,2);
   /* see if the partitioning comes from nested dissection */
-  CHKERRQ(PetscObjectQuery((PetscObject)part,"_petsc_matpartitioning_ndorder",(PetscObject*)&ndorder));
+  PetscCall(PetscObjectQuery((PetscObject)part,"_petsc_matpartitioning_ndorder",(PetscObject*)&ndorder));
   if (ndorder) {
-    CHKERRQ(PetscObjectReference((PetscObject)ndorder));
+    PetscCall(PetscObjectReference((PetscObject)ndorder));
     *is  = ndorder;
     PetscFunctionReturn(0);
   }
 
-  CHKERRQ(PetscObjectGetComm((PetscObject)part,&comm));
+  PetscCall(PetscObjectGetComm((PetscObject)part,&comm));
   /* count the number of partitions, i.e., virtual processors */
-  CHKERRQ(ISGetLocalSize(part,&n));
-  CHKERRQ(ISGetIndices(part,&indices));
+  PetscCall(ISGetLocalSize(part,&n));
+  PetscCall(ISGetIndices(part,&indices));
   np   = 0;
   for (i=0; i<n; i++) np = PetscMax(np,indices[i]);
-  CHKERRMPI(MPIU_Allreduce(&np,&npt,1,MPIU_INT,MPI_MAX,comm));
+  PetscCallMPI(MPIU_Allreduce(&np,&npt,1,MPIU_INT,MPI_MAX,comm));
   np   = npt+1; /* so that it looks like a MPI_Comm_size output */
 
   /*
@@ -550,11 +550,11 @@ PetscErrorCode  ISPartitioningToNumbering(IS part,IS *is)
         sums - total number of "previous" nodes for any particular partition
         starts - global number of first element in each partition on this processor
   */
-  CHKERRQ(PetscMalloc3(np,&lsizes,np,&starts,np,&sums));
-  CHKERRQ(PetscArrayzero(lsizes,np));
+  PetscCall(PetscMalloc3(np,&lsizes,np,&starts,np,&sums));
+  PetscCall(PetscArrayzero(lsizes,np));
   for (i=0; i<n; i++) lsizes[indices[i]]++;
-  CHKERRMPI(MPIU_Allreduce(lsizes,sums,np,MPIU_INT,MPI_SUM,comm));
-  CHKERRMPI(MPI_Scan(lsizes,starts,np,MPIU_INT,MPI_SUM,comm));
+  PetscCallMPI(MPIU_Allreduce(lsizes,sums,np,MPIU_INT,MPI_SUM,comm));
+  PetscCallMPI(MPI_Scan(lsizes,starts,np,MPIU_INT,MPI_SUM,comm));
   for (i=0; i<np; i++) starts[i] -= lsizes[i];
   for (i=1; i<np; i++) {
     sums[i]   += sums[i-1];
@@ -564,13 +564,13 @@ PetscErrorCode  ISPartitioningToNumbering(IS part,IS *is)
   /*
       For each local index give it the new global number
   */
-  CHKERRQ(PetscMalloc1(n,&newi));
+  PetscCall(PetscMalloc1(n,&newi));
   for (i=0; i<n; i++) newi[i] = starts[indices[i]]++;
-  CHKERRQ(PetscFree3(lsizes,starts,sums));
+  PetscCall(PetscFree3(lsizes,starts,sums));
 
-  CHKERRQ(ISRestoreIndices(part,&indices));
-  CHKERRQ(ISCreateGeneral(comm,n,newi,PETSC_OWN_POINTER,is));
-  CHKERRQ(ISSetPermutation(*is));
+  PetscCall(ISRestoreIndices(part,&indices));
+  PetscCall(ISCreateGeneral(comm,n,newi,PETSC_OWN_POINTER,is));
+  PetscCall(ISSetPermutation(*is));
   PetscFunctionReturn(0);
 }
 
@@ -612,20 +612,20 @@ PetscErrorCode  ISPartitioningCount(IS part,PetscInt len,PetscInt count[])
   PetscMPIInt    npp;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectGetComm((PetscObject)part,&comm));
+  PetscCall(PetscObjectGetComm((PetscObject)part,&comm));
   if (len == PETSC_DEFAULT) {
     PetscMPIInt size;
-    CHKERRMPI(MPI_Comm_size(comm,&size));
+    PetscCallMPI(MPI_Comm_size(comm,&size));
     len  = (PetscInt) size;
   }
 
   /* count the number of partitions */
-  CHKERRQ(ISGetLocalSize(part,&n));
-  CHKERRQ(ISGetIndices(part,&indices));
+  PetscCall(ISGetLocalSize(part,&n));
+  PetscCall(ISGetIndices(part,&indices));
   if (PetscDefined(USE_DEBUG)) {
     PetscInt np = 0,npt;
     for (i=0; i<n; i++) np = PetscMax(np,indices[i]);
-    CHKERRMPI(MPIU_Allreduce(&np,&npt,1,MPIU_INT,MPI_MAX,comm));
+    PetscCallMPI(MPIU_Allreduce(&np,&npt,1,MPIU_INT,MPI_MAX,comm));
     np   = npt+1; /* so that it looks like a MPI_Comm_size output */
     PetscCheckFalse(np > len,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Length of count array %" PetscInt_FMT " is less than number of partitions %" PetscInt_FMT,len,np);
   }
@@ -635,14 +635,14 @@ PetscErrorCode  ISPartitioningCount(IS part,PetscInt len,PetscInt count[])
         sums - total number of "previous" nodes for any particular partition
         starts - global number of first element in each partition on this processor
   */
-  CHKERRQ(PetscCalloc1(len,&lsizes));
+  PetscCall(PetscCalloc1(len,&lsizes));
   for (i=0; i<n; i++) {
     if (indices[i] > -1) lsizes[indices[i]]++;
   }
-  CHKERRQ(ISRestoreIndices(part,&indices));
-  CHKERRQ(PetscMPIIntCast(len,&npp));
-  CHKERRMPI(MPIU_Allreduce(lsizes,count,npp,MPIU_INT,MPI_SUM,comm));
-  CHKERRQ(PetscFree(lsizes));
+  PetscCall(ISRestoreIndices(part,&indices));
+  PetscCall(PetscMPIIntCast(len,&npp));
+  PetscCallMPI(MPIU_Allreduce(lsizes,count,npp,MPIU_INT,MPI_SUM,comm));
+  PetscCall(PetscFree(lsizes));
   PetscFunctionReturn(0);
 }
 
@@ -686,32 +686,32 @@ PetscErrorCode  ISAllGather(IS is,IS *isout)
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(isout,2);
 
-  CHKERRQ(PetscObjectGetComm((PetscObject)is,&comm));
-  CHKERRMPI(MPI_Comm_size(comm,&size));
-  CHKERRQ(ISGetLocalSize(is,&n));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)is,ISSTRIDE,&stride));
+  PetscCall(PetscObjectGetComm((PetscObject)is,&comm));
+  PetscCallMPI(MPI_Comm_size(comm,&size));
+  PetscCall(ISGetLocalSize(is,&n));
+  PetscCall(PetscObjectTypeCompare((PetscObject)is,ISSTRIDE,&stride));
   if (size == 1 && stride) { /* should handle parallel ISStride also */
-    CHKERRQ(ISStrideGetInfo(is,&first,&step));
-    CHKERRQ(ISCreateStride(PETSC_COMM_SELF,n,first,step,isout));
+    PetscCall(ISStrideGetInfo(is,&first,&step));
+    PetscCall(ISCreateStride(PETSC_COMM_SELF,n,first,step,isout));
   } else {
-    CHKERRQ(PetscMalloc2(size,&sizes,size,&offsets));
+    PetscCall(PetscMalloc2(size,&sizes,size,&offsets));
 
-    CHKERRQ(PetscMPIIntCast(n,&nn));
-    CHKERRMPI(MPI_Allgather(&nn,1,MPI_INT,sizes,1,MPI_INT,comm));
+    PetscCall(PetscMPIIntCast(n,&nn));
+    PetscCallMPI(MPI_Allgather(&nn,1,MPI_INT,sizes,1,MPI_INT,comm));
     offsets[0] = 0;
     for (i=1; i<size; i++) {
       PetscInt s = offsets[i-1] + sizes[i-1];
-      CHKERRQ(PetscMPIIntCast(s,&offsets[i]));
+      PetscCall(PetscMPIIntCast(s,&offsets[i]));
     }
     N = offsets[size-1] + sizes[size-1];
 
-    CHKERRQ(PetscMalloc1(N,&indices));
-    CHKERRQ(ISGetIndices(is,&lindices));
-    CHKERRMPI(MPI_Allgatherv((void*)lindices,nn,MPIU_INT,indices,sizes,offsets,MPIU_INT,comm));
-    CHKERRQ(ISRestoreIndices(is,&lindices));
-    CHKERRQ(PetscFree2(sizes,offsets));
+    PetscCall(PetscMalloc1(N,&indices));
+    PetscCall(ISGetIndices(is,&lindices));
+    PetscCallMPI(MPI_Allgatherv((void*)lindices,nn,MPIU_INT,indices,sizes,offsets,MPIU_INT,comm));
+    PetscCall(ISRestoreIndices(is,&lindices));
+    PetscCall(PetscFree2(sizes,offsets));
 
-    CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,N,indices,PETSC_OWN_POINTER,isout));
+    PetscCall(ISCreateGeneral(PETSC_COMM_SELF,N,indices,PETSC_OWN_POINTER,isout));
   }
   PetscFunctionReturn(0);
 }
@@ -745,17 +745,17 @@ PetscErrorCode  ISAllGatherColors(MPI_Comm comm,PetscInt n,ISColoringValue *lind
   PetscMPIInt     size,*offsets = NULL,*sizes = NULL, nn = n;
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_size(comm,&size));
-  CHKERRQ(PetscMalloc2(size,&sizes,size,&offsets));
+  PetscCallMPI(MPI_Comm_size(comm,&size));
+  PetscCall(PetscMalloc2(size,&sizes,size,&offsets));
 
-  CHKERRMPI(MPI_Allgather(&nn,1,MPI_INT,sizes,1,MPI_INT,comm));
+  PetscCallMPI(MPI_Allgather(&nn,1,MPI_INT,sizes,1,MPI_INT,comm));
   offsets[0] = 0;
   for (i=1; i<size; i++) offsets[i] = offsets[i-1] + sizes[i-1];
   N    = offsets[size-1] + sizes[size-1];
-  CHKERRQ(PetscFree2(sizes,offsets));
+  PetscCall(PetscFree2(sizes,offsets));
 
-  CHKERRQ(PetscMalloc1(N+1,&indices));
-  CHKERRMPI(MPI_Allgatherv(lindices,(PetscMPIInt)n,MPIU_COLORING_VALUE,indices,sizes,offsets,MPIU_COLORING_VALUE,comm));
+  PetscCall(PetscMalloc1(N+1,&indices));
+  PetscCallMPI(MPI_Allgatherv(lindices,(PetscMPIInt)n,MPIU_COLORING_VALUE,indices,sizes,offsets,MPIU_COLORING_VALUE,comm));
 
   *outindices = indices;
   if (outN) *outN = N;
@@ -799,11 +799,11 @@ PetscErrorCode  ISComplement(IS is,PetscInt nmin,PetscInt nmax,IS *isout)
   PetscValidPointer(isout,4);
   PetscCheckFalse(nmin < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nmin %" PetscInt_FMT " cannot be negative",nmin);
   PetscCheckFalse(nmin > nmax,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nmin %" PetscInt_FMT " cannot be greater than nmax %" PetscInt_FMT,nmin,nmax);
-  CHKERRQ(ISSorted(is,&sorted));
+  PetscCall(ISSorted(is,&sorted));
   PetscCheck(sorted,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Index set must be sorted");
 
-  CHKERRQ(ISGetLocalSize(is,&n));
-  CHKERRQ(ISGetIndices(is,&indices));
+  PetscCall(ISGetLocalSize(is,&n));
+  PetscCall(ISGetIndices(is,&indices));
   if (PetscDefined(USE_DEBUG)) {
     for (i=0; i<n; i++) {
       PetscCheckFalse(indices[i] <  nmin,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index %" PetscInt_FMT "'s value %" PetscInt_FMT " is smaller than minimum given %" PetscInt_FMT,i,indices[i],nmin);
@@ -815,14 +815,14 @@ PetscErrorCode  ISComplement(IS is,PetscInt nmin,PetscInt nmax,IS *isout)
   for (i=0; i<n-1; i++) {
     if (indices[i+1] != indices[i]) unique++;
   }
-  CHKERRQ(PetscMalloc1(nmax-nmin-unique,&nindices));
+  PetscCall(PetscMalloc1(nmax-nmin-unique,&nindices));
   cnt  = 0;
   for (i=nmin,j=0; i<nmax; i++) {
     if (j<n && i==indices[j]) do { j++; } while (j<n && i==indices[j]);
     else nindices[cnt++] = i;
   }
   PetscCheckFalse(cnt != nmax-nmin-unique,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of entries found in complement %" PetscInt_FMT " does not match expected %" PetscInt_FMT,cnt,nmax-nmin-unique);
-  CHKERRQ(ISCreateGeneral(PetscObjectComm((PetscObject)is),cnt,nindices,PETSC_OWN_POINTER,isout));
-  CHKERRQ(ISRestoreIndices(is,&indices));
+  PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)is),cnt,nindices,PETSC_OWN_POINTER,isout));
+  PetscCall(ISRestoreIndices(is,&indices));
   PetscFunctionReturn(0);
 }

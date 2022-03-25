@@ -31,25 +31,25 @@ PetscErrorCode  PetscMPIDump(FILE *fd)
   int            err;
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   if (!fd) fd = PETSC_STDOUT;
 
   /* Did we wait on all the non-blocking sends and receives? */
-  CHKERRQ(PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1));
+  PetscCall(PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1));
   if (petsc_irecv_ct + petsc_isend_ct != petsc_sum_of_waits_ct) {
-    CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,fd,"[%d]You have not waited on all non-blocking sends and receives",rank));
-    CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,fd,"[%d]Number non-blocking sends %g receives %g number of waits %g\n",rank,petsc_isend_ct,petsc_irecv_ct,petsc_sum_of_waits_ct));
+    PetscCall(PetscFPrintf(PETSC_COMM_SELF,fd,"[%d]You have not waited on all non-blocking sends and receives",rank));
+    PetscCall(PetscFPrintf(PETSC_COMM_SELF,fd,"[%d]Number non-blocking sends %g receives %g number of waits %g\n",rank,petsc_isend_ct,petsc_irecv_ct,petsc_sum_of_waits_ct));
     err  = fflush(fd);
     PetscCheck(!err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
   }
-  CHKERRQ(PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1));
+  PetscCall(PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1));
   /* Did we receive all the messages that we sent? */
   work = petsc_irecv_ct + petsc_recv_ct;
-  CHKERRMPI(MPI_Reduce(&work,&trecvs,1,MPI_DOUBLE,MPI_SUM,0,PETSC_COMM_WORLD));
+  PetscCallMPI(MPI_Reduce(&work,&trecvs,1,MPI_DOUBLE,MPI_SUM,0,PETSC_COMM_WORLD));
   work = petsc_isend_ct + petsc_send_ct;
-  CHKERRMPI(MPI_Reduce(&work,&tsends,1,MPI_DOUBLE,MPI_SUM,0,PETSC_COMM_WORLD));
+  PetscCallMPI(MPI_Reduce(&work,&tsends,1,MPI_DOUBLE,MPI_SUM,0,PETSC_COMM_WORLD));
   if (rank == 0 && tsends != trecvs) {
-    CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,fd,"Total number sends %g not equal receives %g\n",tsends,trecvs));
+    PetscCall(PetscFPrintf(PETSC_COMM_SELF,fd,"Total number sends %g not equal receives %g\n",tsends,trecvs));
     err  = fflush(fd);
     PetscCheck(!err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
   }
@@ -76,7 +76,7 @@ PetscErrorCode MPIU_Win_allocate_shared(MPI_Aint sz,PetscMPIInt szind,MPI_Info i
   float          *tmp;
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Win_allocate_shared(16+sz,szind,info,comm,&tmp,win));
+  PetscCallMPI(MPI_Win_allocate_shared(16+sz,szind,info,comm,&tmp,win));
   tmp += ((size_t)tmp) % szind ? szind/4 - ((((size_t)tmp) % szind)/4) : 0;
   *(void**)ptr = (void*)tmp;
   PetscFunctionReturn(0);
@@ -87,7 +87,7 @@ PETSC_EXTERN PetscErrorCode MPIU_Win_shared_query(MPI_Win win,PetscMPIInt rank,M
   float          *tmp;
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Win_shared_query(win,rank,sz,szind,&tmp));
+  PetscCallMPI(MPI_Win_shared_query(win,rank,sz,szind,&tmp));
   PetscCheckFalse(*szind <= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"szkind %d must be positive",*szind);
   tmp += ((size_t)tmp) % *szind ? *szind/4 - ((((size_t)tmp) % *szind)/4) : 0;
   *(void**)ptr = (void*)tmp;

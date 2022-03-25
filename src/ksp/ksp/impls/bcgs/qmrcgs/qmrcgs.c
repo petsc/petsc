@@ -13,7 +13,7 @@
 static PetscErrorCode KSPSetUp_QMRCGS(KSP ksp)
 {
   PetscFunctionBegin;
-  CHKERRQ(KSPSetWorkVecs(ksp,14));
+  PetscCall(KSPSetWorkVecs(ksp,14));
   PetscFunctionReturn(0);
 }
 
@@ -51,58 +51,58 @@ static PetscErrorCode  KSPSolve_QMRCGS(KSP ksp)
   PetscCheckFalse(ksp->pc_side != PC_RIGHT,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"KSP qmrcgs does not support %s",PCSides[ksp->pc_side]);
   if (!ksp->guess_zero) {
     if (!bcgs->guess) {
-      CHKERRQ(VecDuplicate(X,&bcgs->guess));
+      PetscCall(VecDuplicate(X,&bcgs->guess));
     }
-    CHKERRQ(VecCopy(X,bcgs->guess));
+    PetscCall(VecCopy(X,bcgs->guess));
   } else {
-    CHKERRQ(VecSet(X,0.0));
+    PetscCall(VecSet(X,0.0));
   }
 
   /* Compute initial residual */
-  CHKERRQ(KSPGetPC(ksp,&pc));
-  CHKERRQ(PCSetUp(pc));
-  CHKERRQ(PCGetOperators(pc,&mat,NULL));
+  PetscCall(KSPGetPC(ksp,&pc));
+  PetscCall(PCSetUp(pc));
+  PetscCall(PCGetOperators(pc,&mat,NULL));
   if (!ksp->guess_zero) {
-    CHKERRQ(KSP_MatMult(ksp,mat,X,S2));
-    CHKERRQ(VecCopy(B,R));
-    CHKERRQ(VecAXPY(R,-1.0,S2));
+    PetscCall(KSP_MatMult(ksp,mat,X,S2));
+    PetscCall(VecCopy(B,R));
+    PetscCall(VecAXPY(R,-1.0,S2));
   } else {
-    CHKERRQ(VecCopy(B,R));
+    PetscCall(VecCopy(B,R));
   }
 
   /* Test for nothing to do */
   if (ksp->normtype != KSP_NORM_NONE) {
-    CHKERRQ(VecNorm(R,NORM_2,&dp));
+    PetscCall(VecNorm(R,NORM_2,&dp));
   }
-  CHKERRQ(PetscObjectSAWsTakeAccess((PetscObject)ksp));
+  PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
   ksp->its   = 0;
   ksp->rnorm = dp;
-  CHKERRQ(PetscObjectSAWsGrantAccess((PetscObject)ksp));
-  CHKERRQ(KSPLogResidualHistory(ksp,dp));
-  CHKERRQ(KSPMonitor(ksp,0,dp));
-  CHKERRQ((*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP));
+  PetscCall(PetscObjectSAWsGrantAccess((PetscObject)ksp));
+  PetscCall(KSPLogResidualHistory(ksp,dp));
+  PetscCall(KSPMonitor(ksp,0,dp));
+  PetscCall((*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP));
   if (ksp->reason) PetscFunctionReturn(0);
 
   /* Make the initial Rp == R */
-  CHKERRQ(VecCopy(R,RP));
+  PetscCall(VecCopy(R,RP));
 
   eta   = 1.0;
   theta = 1.0;
   if (dp == 0.0) {
-    CHKERRQ(VecNorm(R,NORM_2,&tau));
+    PetscCall(VecNorm(R,NORM_2,&tau));
   } else {
     tau = dp;
   }
 
-  CHKERRQ(VecDot(RP,RP,&rho1));
-  CHKERRQ(VecCopy(R,P));
+  PetscCall(VecDot(RP,RP,&rho1));
+  PetscCall(VecCopy(R,P));
 
   i=0;
   do {
-    CHKERRQ(KSP_PCApply(ksp,P,PH)); /*  ph <- K p */
-    CHKERRQ(KSP_MatMult(ksp,mat,PH,V)); /* v <- A ph */
+    PetscCall(KSP_PCApply(ksp,P,PH)); /*  ph <- K p */
+    PetscCall(KSP_MatMult(ksp,mat,PH,V)); /* v <- A ph */
 
-    CHKERRQ(VecDot(V,RP,&rho2)); /* rho2 <- (v,rp) */
+    PetscCall(VecDot(V,RP,&rho2)); /* rho2 <- (v,rp) */
     if (rho2 == 0.0) {
       PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to division by zero");
       else {
@@ -120,10 +120,10 @@ static PetscErrorCode  KSPSolve_QMRCGS(KSP ksp)
     }
 
     alpha = rho1 / rho2;
-    CHKERRQ(VecWAXPY(S,-alpha,V,R)); /* s <- r - alpha v */
+    PetscCall(VecWAXPY(S,-alpha,V,R)); /* s <- r - alpha v */
 
     /* First quasi-minimization step */
-    CHKERRQ(VecNorm(S,NORM_2,&F)); /* f <- norm(s) */
+    PetscCall(VecNorm(S,NORM_2,&F)); /* f <- norm(s) */
     theta2 =  F / tau;
 
     c = 1.0 / PetscSqrtReal(1.0 + theta2 * theta2);
@@ -131,16 +131,16 @@ static PetscErrorCode  KSPSolve_QMRCGS(KSP ksp)
     tau2 = tau * theta2 * c;
     eta2 = c * c * alpha;
     cf  = theta * theta * eta / alpha;
-    CHKERRQ(VecWAXPY(D2,cf,D,PH));        /* d2 <- ph + cf d */
-    CHKERRQ(VecWAXPY(X2,eta2,D2,X));      /* x2 <- x + eta2 d2 */
+    PetscCall(VecWAXPY(D2,cf,D,PH));        /* d2 <- ph + cf d */
+    PetscCall(VecWAXPY(X2,eta2,D2,X));      /* x2 <- x + eta2 d2 */
 
     /* Apply the right preconditioner again */
-    CHKERRQ(KSP_PCApply(ksp,S,SH)); /*  sh <- K s */
-    CHKERRQ(KSP_MatMult(ksp,mat,SH,T)); /* t <- A sh */
+    PetscCall(KSP_PCApply(ksp,S,SH)); /*  sh <- K s */
+    PetscCall(KSP_MatMult(ksp,mat,SH,T)); /* t <- A sh */
 
-    CHKERRQ(VecDotNorm2(S,T,&uu,&vv));
+    PetscCall(VecDotNorm2(S,T,&uu,&vv));
     if (vv == 0.0) {
-      CHKERRQ(VecDot(S,S,&uu));
+      PetscCall(VecDot(S,S,&uu));
       if (uu != 0.0) {
         PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to division by zero");
         else {
@@ -148,17 +148,17 @@ static PetscErrorCode  KSPSolve_QMRCGS(KSP ksp)
           break;
         }
       }
-      CHKERRQ(VecAXPY(X,alpha,SH));   /* x <- x + alpha sh */
-      CHKERRQ(PetscObjectSAWsTakeAccess((PetscObject)ksp));
+      PetscCall(VecAXPY(X,alpha,SH));   /* x <- x + alpha sh */
+      PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
       ksp->its++;
       ksp->rnorm  = 0.0;
       ksp->reason = KSP_CONVERGED_RTOL;
-      CHKERRQ(PetscObjectSAWsGrantAccess((PetscObject)ksp));
-      CHKERRQ(KSPLogResidualHistory(ksp,dp));
-      CHKERRQ(KSPMonitor(ksp,i+1,0.0));
+      PetscCall(PetscObjectSAWsGrantAccess((PetscObject)ksp));
+      PetscCall(KSPLogResidualHistory(ksp,dp));
+      PetscCall(KSPMonitor(ksp,i+1,0.0));
       break;
     }
-    CHKERRQ(VecNorm(V,NORM_2,&NV)); /* nv <- norm(v) */
+    PetscCall(VecNorm(V,NORM_2,&NV)); /* nv <- norm(v) */
 
     if (NV == 0) {
       PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to singular matrix");
@@ -178,11 +178,11 @@ static PetscErrorCode  KSPSolve_QMRCGS(KSP ksp)
     omega = uu / vv; /* omega <- uu/vv; */
 
     /* Computing the residual */
-    CHKERRQ(VecWAXPY(R,-omega,T,S));  /* r <- s - omega t */
+    PetscCall(VecWAXPY(R,-omega,T,S));  /* r <- s - omega t */
 
     /* Second quasi-minimization step */
     if (ksp->normtype != KSP_NORM_NONE && ksp->chknorm < i+2) {
-      CHKERRQ(VecNorm(R,NORM_2,&dp));
+      PetscCall(VecNorm(R,NORM_2,&dp));
     }
 
     if (tau2 == 0) {
@@ -195,7 +195,7 @@ static PetscErrorCode  KSPSolve_QMRCGS(KSP ksp)
     theta = dp / tau2;
     c = 1.0 / PetscSqrtReal(1.0 + theta * theta);
     if (dp == 0.0) {
-      CHKERRQ(VecNorm(R,NORM_2,&tau));
+      PetscCall(VecNorm(R,NORM_2,&tau));
     } else {
       tau = dp;
     }
@@ -203,24 +203,24 @@ static PetscErrorCode  KSPSolve_QMRCGS(KSP ksp)
     eta = c * c * omega;
 
     cf1  = theta2 * theta2 * eta2 / omega;
-    CHKERRQ(VecWAXPY(D,cf1,D2,SH));     /* d <- sh + cf1 d2 */
-    CHKERRQ(VecWAXPY(X,eta,D,X2));      /* x <- x2 + eta d */
+    PetscCall(VecWAXPY(D,cf1,D2,SH));     /* d <- sh + cf1 d2 */
+    PetscCall(VecWAXPY(X,eta,D,X2));      /* x <- x2 + eta d */
 
-    CHKERRQ(VecDot(R,RP,&rho2));
-    CHKERRQ(PetscObjectSAWsTakeAccess((PetscObject)ksp));
+    PetscCall(VecDot(R,RP,&rho2));
+    PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
     ksp->its++;
     ksp->rnorm = dp;
-    CHKERRQ(PetscObjectSAWsGrantAccess((PetscObject)ksp));
-    CHKERRQ(KSPLogResidualHistory(ksp,dp));
-    CHKERRQ(KSPMonitor(ksp,i+1,dp));
+    PetscCall(PetscObjectSAWsGrantAccess((PetscObject)ksp));
+    PetscCall(KSPLogResidualHistory(ksp,dp));
+    PetscCall(KSPMonitor(ksp,i+1,dp));
 
     beta = (alpha*rho2)/ (omega*rho1);
-    CHKERRQ(VecAXPBYPCZ(P,1.0,-omega*beta,beta,R,V)); /* p <- r - omega * beta* v + beta * p */
+    PetscCall(VecAXPBYPCZ(P,1.0,-omega*beta,beta,R,V)); /* p <- r - omega * beta* v + beta * p */
     rho1 = rho2;
-    CHKERRQ(KSP_MatMult(ksp,mat,X,AX)); /* Ax <- A x */
-    CHKERRQ(VecWAXPY(Z,-1.0,AX,B));  /* r <- b - Ax */
-    CHKERRQ(VecNorm(Z,NORM_2,&final));
-    CHKERRQ((*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP));
+    PetscCall(KSP_MatMult(ksp,mat,X,AX)); /* Ax <- A x */
+    PetscCall(VecWAXPY(Z,-1.0,AX,B));  /* r <- b - Ax */
+    PetscCall(VecNorm(Z,NORM_2,&final));
+    PetscCall((*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP));
     if (ksp->reason) break;
     i++;
   } while (i<ksp->max_it);
@@ -274,8 +274,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_QMRCGS(KSP ksp)
 
   PetscFunctionBegin;
 
-  CHKERRQ(PetscCitationsRegister(citations,&cite));
-  CHKERRQ(PetscNewLog(ksp,&bcgs));
+  PetscCall(PetscCitationsRegister(citations,&cite));
+  PetscCall(PetscNewLog(ksp,&bcgs));
 
   ksp->data                = bcgs;
   ksp->ops->setup          = KSPSetUp_QMRCGS;
@@ -286,7 +286,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_QMRCGS(KSP ksp)
   ksp->ops->setfromoptions = KSPSetFromOptions_BCGS;
   ksp->pc_side             = PC_RIGHT;  /* set default PC side */
 
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2));
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1));
   PetscFunctionReturn(0);
 }

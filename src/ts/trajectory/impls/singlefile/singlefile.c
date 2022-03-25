@@ -12,14 +12,14 @@ static PetscErrorCode TSTrajectorySet_Singlefile(TSTrajectory tj,TS ts,PetscInt 
 
   PetscFunctionBegin;
   if (stepnum == 0) {
-    CHKERRQ(PetscViewerCreate(PetscObjectComm((PetscObject)X),&sf->viewer));
-    CHKERRQ(PetscViewerSetType(sf->viewer,PETSCVIEWERBINARY));
-    CHKERRQ(PetscViewerFileSetMode(sf->viewer,FILE_MODE_WRITE));
-    CHKERRQ(PetscObjectGetName((PetscObject)tj,&filename));
-    CHKERRQ(PetscViewerFileSetName(sf->viewer,filename));
+    PetscCall(PetscViewerCreate(PetscObjectComm((PetscObject)X),&sf->viewer));
+    PetscCall(PetscViewerSetType(sf->viewer,PETSCVIEWERBINARY));
+    PetscCall(PetscViewerFileSetMode(sf->viewer,FILE_MODE_WRITE));
+    PetscCall(PetscObjectGetName((PetscObject)tj,&filename));
+    PetscCall(PetscViewerFileSetName(sf->viewer,filename));
   }
-  CHKERRQ(VecView(X,sf->viewer));
-  CHKERRQ(PetscViewerBinaryWrite(sf->viewer,&time,1,PETSC_REAL));
+  PetscCall(VecView(X,sf->viewer));
+  PetscCall(PetscViewerBinaryWrite(sf->viewer,&time,1,PETSC_REAL));
   PetscFunctionReturn(0);
 }
 
@@ -28,8 +28,8 @@ static PetscErrorCode TSTrajectoryDestroy_Singlefile(TSTrajectory tj)
   TSTrajectory_Singlefile *sf = (TSTrajectory_Singlefile*)tj->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscViewerDestroy(&sf->viewer));
-  CHKERRQ(PetscFree(sf));
+  PetscCall(PetscViewerDestroy(&sf->viewer));
+  PetscCall(PetscFree(sf));
   PetscFunctionReturn(0);
 }
 
@@ -46,7 +46,7 @@ PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Singlefile(TSTrajectory tj,TS ts)
   TSTrajectory_Singlefile *sf;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNew(&sf));
+  PetscCall(PetscNew(&sf));
   tj->data         = sf;
   tj->ops->set     = TSTrajectorySet_Singlefile;
   tj->ops->get     = NULL;

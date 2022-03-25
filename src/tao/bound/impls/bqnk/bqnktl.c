@@ -6,9 +6,9 @@ static PetscErrorCode TaoSetUp_BQNKTL(Tao tao)
   PetscVoidFunction valid;
 
   PetscFunctionBegin;
-  CHKERRQ(TaoSetUp_BQNK(tao));
-  CHKERRQ(TaoGetKSP(tao,&ksp));
-  CHKERRQ(PetscObjectQueryFunction((PetscObject)ksp,"KSPCGSetRadius_C",&valid));
+  PetscCall(TaoSetUp_BQNK(tao));
+  PetscCall(TaoGetKSP(tao,&ksp));
+  PetscCall(PetscObjectQueryFunction((PetscObject)ksp,"KSPCGSetRadius_C",&valid));
   PetscCheck(valid,PetscObjectComm((PetscObject)tao),PETSC_ERR_SUP,"Not for KSP type %s. Must use a trust-region CG method for KSP (e.g. KSPNASH, KSPSTCG, KSPGLTR)",((PetscObject)ksp)->type_name);
   PetscFunctionReturn(0);
 }
@@ -29,7 +29,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BQNKTL(Tao tao)
   TAO_BQNK       *bqnk;
 
   PetscFunctionBegin;
-  CHKERRQ(TaoCreate_BQNK(tao));
+  PetscCall(TaoCreate_BQNK(tao));
   tao->ops->setup = TaoSetUp_BQNKTL;
   bnk = (TAO_BNK*)tao->data;
   bqnk = (TAO_BQNK*)bnk->ctx;

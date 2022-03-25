@@ -101,23 +101,23 @@ int main(int argc,char **argv)
   DM             da;
   Vec            x;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   PetscFunctionBeginUser;
   comm = PETSC_COMM_WORLD;
-  CHKERRQ(SNESCreate(comm,&snes));
+  PetscCall(SNESCreate(comm,&snes));
 
   /*
       Create distributed array object to manage parallel grid and vectors
       for principal unknowns (x) and governing residuals (f)
   */
-  CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,4,4,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
-  CHKERRQ(SNESSetDM(snes,(DM)da));
-  CHKERRQ(SNESSetNGS(snes, NonlinearGS, (void*)&user));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,4,4,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(SNESSetDM(snes,(DM)da));
+  PetscCall(SNESSetNGS(snes, NonlinearGS, (void*)&user));
 
-  CHKERRQ(DMDAGetInfo(da,0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
+  PetscCall(DMDAGetInfo(da,0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
   /*
      Problem parameters (velocity of lid, prandtl, and grashof numbers)
   */
@@ -125,15 +125,15 @@ int main(int argc,char **argv)
   user.prandtl     = 1.0;
   user.grashof     = 1.0;
 
-  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-lidvelocity",&user.lidvelocity,NULL));
-  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-prandtl",&user.prandtl,NULL));
-  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-grashof",&user.grashof,NULL));
-  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-contours",&user.draw_contours));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-lidvelocity",&user.lidvelocity,NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-prandtl",&user.prandtl,NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-grashof",&user.grashof,NULL));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-contours",&user.draw_contours));
 
-  CHKERRQ(DMDASetFieldName(da,0,"x_velocity"));
-  CHKERRQ(DMDASetFieldName(da,1,"y_velocity"));
-  CHKERRQ(DMDASetFieldName(da,2,"Omega"));
-  CHKERRQ(DMDASetFieldName(da,3,"temperature"));
+  PetscCall(DMDASetFieldName(da,0,"x_velocity"));
+  PetscCall(DMDASetFieldName(da,1,"y_velocity"));
+  PetscCall(DMDASetFieldName(da,2,"Omega"));
+  PetscCall(DMDASetFieldName(da,3,"temperature"));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create user context, set problem data, create vector data structures.
@@ -144,37 +144,37 @@ int main(int argc,char **argv)
      Create nonlinear solver context
 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(DMSetApplicationContext(da,&user));
-  CHKERRQ(DMDASNESSetFunctionLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))FormFunctionLocal,&user));
-  CHKERRQ(SNESSetFromOptions(snes));
-  CHKERRQ(PetscPrintf(comm,"lid velocity = %g, prandtl # = %g, grashof # = %g\n",(double)user.lidvelocity,(double)user.prandtl,(double)user.grashof));
+  PetscCall(DMSetApplicationContext(da,&user));
+  PetscCall(DMDASNESSetFunctionLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))FormFunctionLocal,&user));
+  PetscCall(SNESSetFromOptions(snes));
+  PetscCall(PetscPrintf(comm,"lid velocity = %g, prandtl # = %g, grashof # = %g\n",(double)user.lidvelocity,(double)user.prandtl,(double)user.grashof));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve the nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(DMCreateGlobalVector(da,&x));
-  CHKERRQ(FormInitialGuess(&user,da,x));
+  PetscCall(DMCreateGlobalVector(da,&x));
+  PetscCall(FormInitialGuess(&user,da,x));
 
-  CHKERRQ(SNESSolve(snes,NULL,x));
+  PetscCall(SNESSolve(snes,NULL,x));
 
-  CHKERRQ(SNESGetIterationNumber(snes,&its));
-  CHKERRQ(PetscPrintf(comm,"Number of SNES iterations = %D\n", its));
+  PetscCall(SNESGetIterationNumber(snes,&its));
+  PetscCall(PetscPrintf(comm,"Number of SNES iterations = %D\n", its));
 
   /*
      Visualize solution
   */
   if (user.draw_contours) {
-    CHKERRQ(VecView(x,PETSC_VIEWER_DRAW_WORLD));
+    PetscCall(VecView(x,PETSC_VIEWER_DRAW_WORLD));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(DMDestroy(&da));
-  CHKERRQ(SNESDestroy(&snes));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&x));
+  PetscCall(DMDestroy(&da));
+  PetscCall(SNESDestroy(&snes));
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -199,7 +199,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
   PetscFunctionBeginUser;
   grashof = user->grashof;
 
-  CHKERRQ(DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0));
+  PetscCall(DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0));
   dx   = 1.0/(mx-1);
 
   /*
@@ -207,7 +207,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
        xs, ys   - starting grid indices (no ghost points)
        xm, ym   - widths of local grid (no ghost points)
   */
-  CHKERRQ(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
+  PetscCall(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
 
   /*
      Get a pointer to vector data.
@@ -216,7 +216,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
        - You MUST call VecRestoreArray() when you no longer need access to
          the array.
   */
-  CHKERRQ(DMDAVecGetArrayWrite(da,X,&x));
+  PetscCall(DMDAVecGetArrayWrite(da,X,&x));
 
   /*
      Compute initial guess over the locally owned part of the grid
@@ -234,7 +234,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
   /*
      Restore vector
   */
-  CHKERRQ(DMDAVecRestoreArrayWrite(da,X,&x));
+  PetscCall(DMDAVecRestoreArrayWrite(da,X,&x));
   PetscFunctionReturn(0);
 }
 
@@ -360,7 +360,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
   /*
      Flop count (multiply-adds are counted as 2 operations)
   */
-  CHKERRQ(PetscLogFlops(84.0*info->ym*info->xm));
+  PetscCall(PetscLogFlops(84.0*info->ym*info->xm));
   PetscFunctionReturn(0);
 }
 
@@ -396,27 +396,27 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
   prandtl = user->prandtl;
   lid     = user->lidvelocity;
   tot_its = 0;
-  CHKERRQ(SNESNGSGetTolerances(snes,&rtol,&atol,&stol,&max_its));
-  CHKERRQ(SNESNGSGetSweeps(snes,&sweeps));
-  CHKERRQ(SNESGetDM(snes,(DM*)&da));
-  CHKERRQ(DMGetLocalVector(da,&localX));
+  PetscCall(SNESNGSGetTolerances(snes,&rtol,&atol,&stol,&max_its));
+  PetscCall(SNESNGSGetSweeps(snes,&sweeps));
+  PetscCall(SNESGetDM(snes,(DM*)&da));
+  PetscCall(DMGetLocalVector(da,&localX));
   if (B) {
-    CHKERRQ(DMGetLocalVector(da,&localB));
+    PetscCall(DMGetLocalVector(da,&localB));
   }
   /*
      Scatter ghost points to local vector, using the 2-step process
         DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
   */
-  CHKERRQ(DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX));
-  CHKERRQ(DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX));
+  PetscCall(DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX));
+  PetscCall(DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX));
   if (B) {
-    CHKERRQ(DMGlobalToLocalBegin(da,B,INSERT_VALUES,localB));
-    CHKERRQ(DMGlobalToLocalEnd(da,B,INSERT_VALUES,localB));
+    PetscCall(DMGlobalToLocalBegin(da,B,INSERT_VALUES,localB));
+    PetscCall(DMGlobalToLocalEnd(da,B,INSERT_VALUES,localB));
   }
-  CHKERRQ(DMDAGetLocalInfo(da,&info));
-  CHKERRQ(DMDAVecGetArrayWrite(da,localX,&x));
+  PetscCall(DMDAGetLocalInfo(da,&info));
+  PetscCall(DMDAVecGetArrayWrite(da,localX,&x));
   if (B) {
-    CHKERRQ(DMDAVecGetArrayRead(da,localB,&b));
+    PetscCall(DMDAVecGetArrayRead(da,localB,&b));
   }
   /* looks like a combination of the formfunction / formjacobian routines */
   dhx   = (PetscReal)(info.mx-1);dhy   = (PetscReal)(info.my-1);
@@ -627,16 +627,16 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
       }
     }
   }
-  CHKERRQ(DMDAVecRestoreArrayWrite(da,localX,&x));
+  PetscCall(DMDAVecRestoreArrayWrite(da,localX,&x));
   if (B) {
-    CHKERRQ(DMDAVecRestoreArrayRead(da,localB,&b));
+    PetscCall(DMDAVecRestoreArrayRead(da,localB,&b));
   }
-  CHKERRQ(DMLocalToGlobalBegin(da,localX,INSERT_VALUES,X));
-  CHKERRQ(DMLocalToGlobalEnd(da,localX,INSERT_VALUES,X));
-  CHKERRQ(PetscLogFlops(tot_its*(84.0 + 41.0 + 26.0)));
-  CHKERRQ(DMRestoreLocalVector(da,&localX));
+  PetscCall(DMLocalToGlobalBegin(da,localX,INSERT_VALUES,X));
+  PetscCall(DMLocalToGlobalEnd(da,localX,INSERT_VALUES,X));
+  PetscCall(PetscLogFlops(tot_its*(84.0 + 41.0 + 26.0)));
+  PetscCall(DMRestoreLocalVector(da,&localX));
   if (B) {
-    CHKERRQ(DMRestoreLocalVector(da,&localB));
+    PetscCall(DMRestoreLocalVector(da,&localB));
   }
   PetscFunctionReturn(0);
 }

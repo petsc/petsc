@@ -12,10 +12,10 @@ int main(int argc,char **argv)
 {
   char           buff[4096];
 
-  CHKERRQ(PetscInitialize(&argc,&argv,NULL,NULL));
-  CHKERRQ(PetscGlobusGetTransfers(PETSC_COMM_WORLD,NULL,buff,sizeof(buff)));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Transfers are %s\n",buff));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscInitialize(&argc,&argv,NULL,NULL));
+  PetscCall(PetscGlobusGetTransfers(PETSC_COMM_WORLD,NULL,buff,sizeof(buff)));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Transfers are %s\n",buff));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

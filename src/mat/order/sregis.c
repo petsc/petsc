@@ -43,21 +43,21 @@ PetscErrorCode  MatOrderingRegisterAll(void)
   if (MatOrderingRegisterAllCalled) PetscFunctionReturn(0);
   MatOrderingRegisterAllCalled = PETSC_TRUE;
 
-  CHKERRQ(MatOrderingRegister(MATORDERINGNATURAL,  MatGetOrdering_Natural));
-  CHKERRQ(MatOrderingRegister(MATORDERINGND,       MatGetOrdering_ND));
-  CHKERRQ(MatOrderingRegister(MATORDERING1WD,      MatGetOrdering_1WD));
-  CHKERRQ(MatOrderingRegister(MATORDERINGRCM,      MatGetOrdering_RCM));
-  CHKERRQ(MatOrderingRegister(MATORDERINGQMD,      MatGetOrdering_QMD));
-  CHKERRQ(MatOrderingRegister(MATORDERINGROWLENGTH,MatGetOrdering_RowLength));
+  PetscCall(MatOrderingRegister(MATORDERINGNATURAL,  MatGetOrdering_Natural));
+  PetscCall(MatOrderingRegister(MATORDERINGND,       MatGetOrdering_ND));
+  PetscCall(MatOrderingRegister(MATORDERING1WD,      MatGetOrdering_1WD));
+  PetscCall(MatOrderingRegister(MATORDERINGRCM,      MatGetOrdering_RCM));
+  PetscCall(MatOrderingRegister(MATORDERINGQMD,      MatGetOrdering_QMD));
+  PetscCall(MatOrderingRegister(MATORDERINGROWLENGTH,MatGetOrdering_RowLength));
 #if defined(PETSC_HAVE_SUPERLU_DIST)
-  CHKERRQ(MatOrderingRegister(MATORDERINGWBM,      MatGetOrdering_WBM));
+  PetscCall(MatOrderingRegister(MATORDERINGWBM,      MatGetOrdering_WBM));
 #endif
-  CHKERRQ(MatOrderingRegister(MATORDERINGSPECTRAL, MatGetOrdering_Spectral));
+  PetscCall(MatOrderingRegister(MATORDERINGSPECTRAL, MatGetOrdering_Spectral));
 #if defined(PETSC_HAVE_SUITESPARSE)
-  CHKERRQ(MatOrderingRegister(MATORDERINGAMD,      MatGetOrdering_AMD));
+  PetscCall(MatOrderingRegister(MATORDERINGAMD,      MatGetOrdering_AMD));
 #endif
 #if defined(PETSC_HAVE_METIS)
-  CHKERRQ(MatOrderingRegister(MATORDERINGMETISND,  MatGetOrdering_METISND));
+  PetscCall(MatOrderingRegister(MATORDERINGMETISND,  MatGetOrdering_METISND));
 #endif
   PetscFunctionReturn(0);
 }

@@ -22,13 +22,13 @@ int main(int argc,char **args)
   PetscInt       *ia,*ja;
   PetscMPIInt    rank,size;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 4,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must run with 4 processors");
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
-  CHKERRQ(PetscMalloc1(5,&ia));
-  CHKERRQ(PetscMalloc1(16,&ja));
+  PetscCall(PetscMalloc1(5,&ia));
+  PetscCall(PetscMalloc1(16,&ja));
   if (rank == 0) {
     ja[0] = 1; ja[1] = 4; ja[2] = 0; ja[3] = 2; ja[4] = 5; ja[5] = 1; ja[6] = 3; ja[7] = 6;
     ja[8] = 2; ja[9] = 7;
@@ -47,15 +47,15 @@ int main(int argc,char **args)
     ia[0] = 0; ia[1] = 2; ia[2] = 5; ia[3] = 8; ia[4] = 10;
   }
 
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(MatSetSizes(A,4,4,16,16));
-  CHKERRQ(MatSetType(A,MATMPIAIJ));
-  CHKERRQ(MatMPIAIJSetPreallocationCSR(A,ia,ja,NULL));
-  CHKERRQ(PetscFree(ia));
-  CHKERRQ(PetscFree(ja));
-  CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A,4,4,16,16));
+  PetscCall(MatSetType(A,MATMPIAIJ));
+  PetscCall(MatMPIAIJSetPreallocationCSR(A,ia,ja,NULL));
+  PetscCall(PetscFree(ia));
+  PetscCall(PetscFree(ja));
+  PetscCall(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatDestroy(&A));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

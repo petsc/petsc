@@ -13,11 +13,11 @@ PetscErrorCode Print_memory(PetscLogDouble mem)
   double         max_mem,min_mem;
 
   PetscFunctionBeginUser;
-  CHKERRMPI(MPI_Reduce(&mem, &max_mem, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD));
-  CHKERRMPI(MPI_Reduce(&mem, &min_mem, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD));
+  PetscCallMPI(MPI_Reduce(&mem, &max_mem, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD));
+  PetscCallMPI(MPI_Reduce(&mem, &min_mem, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD));
   max_mem = max_mem / 1024.0 / 1024.0;
   min_mem = min_mem / 1024.0 / 1024.0;
-  CHKERRQ(PetscPrintf(MPI_COMM_WORLD, " max and min memory across all processors %.4f Mb, %.4f Mb.\n", (double)max_mem,(double)min_mem));
+  PetscCall(PetscPrintf(MPI_COMM_WORLD, " max and min memory across all processors %.4f Mb, %.4f Mb.\n", (double)max_mem,(double)min_mem));
   PetscFunctionReturn(0);
 }
 
@@ -34,20 +34,20 @@ PetscErrorCode TestMPIDerivedDataType()
   PetscMPIInt       rank,size,disp[2];
 
   PetscFunctionBeginUser;
-  CHKERRMPI(MPI_Comm_size(MPI_COMM_WORLD, &size));
+  PetscCallMPI(MPI_Comm_size(MPI_COMM_WORLD, &size));
   PetscCheckFalse(size < 2,PETSC_COMM_SELF,PETSC_ERR_SUP,"Must use at least 2 processors");
-  CHKERRMPI(MPI_Comm_rank(MPI_COMM_WORLD, &rank));
+  PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD, &rank));
 
   if (rank == 0) {
     /* proc[0] sends 2 rows to proc[1] */
     for (i=0; i<24; i++) buffer[i] = (PetscScalar)i;
 
     disp[0] = 0;  disp[1] = 2;
-    CHKERRMPI(MPI_Type_create_indexed_block(2, 1, (const PetscMPIInt *)disp, MPIU_SCALAR, &type1));
+    PetscCallMPI(MPI_Type_create_indexed_block(2, 1, (const PetscMPIInt *)disp, MPIU_SCALAR, &type1));
     /* one column has 4 entries */
-    CHKERRMPI(MPI_Type_create_resized(type1,0,4*sizeof(PetscScalar),&type2));
-    CHKERRMPI(MPI_Type_commit(&type2));
-    CHKERRMPI(MPI_Send(buffer, 6, type2, 1, 123, MPI_COMM_WORLD));
+    PetscCallMPI(MPI_Type_create_resized(type1,0,4*sizeof(PetscScalar),&type2));
+    PetscCallMPI(MPI_Type_commit(&type2));
+    PetscCallMPI(MPI_Send(buffer, 6, type2, 1, 123, MPI_COMM_WORLD));
 
   } else if (rank == 1) {
     /* proc[1] receives 2 rows from proc[0], and put them into contiguous rows, starting at the row 1 (disp[0]) */
@@ -55,27 +55,27 @@ PetscErrorCode TestMPIDerivedDataType()
     for (i=0; i<24; i++) buffer[i] = 0.0;
 
     disp[0] = 1;
-    CHKERRMPI(MPI_Type_create_indexed_block(1, blen, (const PetscMPIInt *)disp, MPIU_SCALAR, &rtype1));
-    CHKERRMPI(MPI_Type_create_resized(rtype1, 0, 4*sizeof(PetscScalar), &rtype2));
+    PetscCallMPI(MPI_Type_create_indexed_block(1, blen, (const PetscMPIInt *)disp, MPIU_SCALAR, &rtype1));
+    PetscCallMPI(MPI_Type_create_resized(rtype1, 0, 4*sizeof(PetscScalar), &rtype2));
 
-    CHKERRMPI(MPI_Type_commit(&rtype2));
-    CHKERRMPI(MPI_Recv(buffer, 6, rtype2, 0, 123, MPI_COMM_WORLD, &status));
+    PetscCallMPI(MPI_Type_commit(&rtype2));
+    PetscCallMPI(MPI_Recv(buffer, 6, rtype2, 0, 123, MPI_COMM_WORLD, &status));
     for (i=0; i<4; i++) {
       for (j=0; j<6; j++) {
-        CHKERRQ(PetscPrintf(MPI_COMM_SELF,"  %g", (double)PetscRealPart(buffer[i+j*4])));
+        PetscCall(PetscPrintf(MPI_COMM_SELF,"  %g", (double)PetscRealPart(buffer[i+j*4])));
       }
-      CHKERRQ(PetscPrintf(MPI_COMM_SELF,"\n"));
+      PetscCall(PetscPrintf(MPI_COMM_SELF,"\n"));
     }
   }
 
   if (rank == 0) {
-    CHKERRMPI(MPI_Type_free(&type1));
-    CHKERRMPI(MPI_Type_free(&type2));
+    PetscCallMPI(MPI_Type_free(&type1));
+    PetscCallMPI(MPI_Type_free(&type2));
   } else if (rank == 1) {
-    CHKERRMPI(MPI_Type_free(&rtype1));
-    CHKERRMPI(MPI_Type_free(&rtype2));
+    PetscCallMPI(MPI_Type_free(&rtype1));
+    PetscCallMPI(MPI_Type_free(&rtype2));
   }
-  CHKERRMPI(MPI_Barrier(MPI_COMM_WORLD));
+  PetscCallMPI(MPI_Barrier(MPI_COMM_WORLD));
   PetscFunctionReturn(0);
 }
 
@@ -87,61 +87,61 @@ int main(int argc, char **args)
   Mat               A,X,Y;
   PetscBool         flg = PETSC_FALSE;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-test_mpiderivedtype",&flg,NULL));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-test_mpiderivedtype",&flg,NULL));
   if (flg) {
-    CHKERRQ(TestMPIDerivedDataType());
-    CHKERRQ(PetscFinalize());
+    PetscCall(TestMPIDerivedDataType());
+    PetscCall(PetscFinalize());
     return 0;
   }
 
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-mem_view",&flg,NULL));
-  CHKERRQ(PetscMemoryGetCurrentUsage(&mem));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-mem_view",&flg,NULL));
+  PetscCall(PetscMemoryGetCurrentUsage(&mem));
   if (flg) {
-    CHKERRQ(PetscPrintf(MPI_COMM_WORLD, "Before start,"));
-    CHKERRQ(Print_memory(mem));
+    PetscCall(PetscPrintf(MPI_COMM_WORLD, "Before start,"));
+    PetscCall(Print_memory(mem));
   }
 
-  CHKERRQ(MatCreateAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,mA,mA,nz,PETSC_NULL,nz,PETSC_NULL,&A));
-  CHKERRQ(MatSetRandom(A,PETSC_NULL));
-  CHKERRQ(PetscMemoryGetCurrentUsage(&mem));
+  PetscCall(MatCreateAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,mA,mA,nz,PETSC_NULL,nz,PETSC_NULL,&A));
+  PetscCall(MatSetRandom(A,PETSC_NULL));
+  PetscCall(PetscMemoryGetCurrentUsage(&mem));
   if (flg) {
-    CHKERRQ(PetscPrintf(MPI_COMM_WORLD, "After creating A,"));
-    CHKERRQ(Print_memory(mem));
+    PetscCall(PetscPrintf(MPI_COMM_WORLD, "After creating A,"));
+    PetscCall(Print_memory(mem));
   }
 
-  CHKERRQ(MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,mA,nX,PETSC_NULL,&X));
-  CHKERRQ(MatSetRandom(X,PETSC_NULL));
-  CHKERRQ(PetscMemoryGetCurrentUsage(&mem));
+  PetscCall(MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,mA,nX,PETSC_NULL,&X));
+  PetscCall(MatSetRandom(X,PETSC_NULL));
+  PetscCall(PetscMemoryGetCurrentUsage(&mem));
   if (flg) {
-    CHKERRQ(PetscPrintf(MPI_COMM_WORLD, "After creating X,"));
-    CHKERRQ(Print_memory(mem));
+    PetscCall(PetscPrintf(MPI_COMM_WORLD, "After creating X,"));
+    PetscCall(Print_memory(mem));
   }
 
-  CHKERRQ(MatMatMult(A,X,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&Y));
-  CHKERRQ(PetscMemoryGetCurrentUsage(&mem));
+  PetscCall(MatMatMult(A,X,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&Y));
+  PetscCall(PetscMemoryGetCurrentUsage(&mem));
   if (flg) {
-    CHKERRQ(PetscPrintf(MPI_COMM_WORLD, "After MatMatMult,"));
-    CHKERRQ(Print_memory(mem));
+    PetscCall(PetscPrintf(MPI_COMM_WORLD, "After MatMatMult,"));
+    PetscCall(Print_memory(mem));
   }
 
   /* Test reuse */
-  CHKERRQ(MatMatMult(A,X,MAT_REUSE_MATRIX,PETSC_DEFAULT,&Y));
-  CHKERRQ(PetscMemoryGetCurrentUsage(&mem));
+  PetscCall(MatMatMult(A,X,MAT_REUSE_MATRIX,PETSC_DEFAULT,&Y));
+  PetscCall(PetscMemoryGetCurrentUsage(&mem));
   if (flg) {
-    CHKERRQ(PetscPrintf(MPI_COMM_WORLD, "After reuse MatMatMult,"));
-    CHKERRQ(Print_memory(mem));
+    PetscCall(PetscPrintf(MPI_COMM_WORLD, "After reuse MatMatMult,"));
+    PetscCall(Print_memory(mem));
   }
 
   /* Check accuracy */
-  CHKERRQ(MatMatMultEqual(A,X,Y,10,&flg));
+  PetscCall(MatMatMultEqual(A,X,Y,10,&flg));
   PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatMatMult()");
 
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(MatDestroy(&X));
-  CHKERRQ(MatDestroy(&Y));
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&X));
+  PetscCall(MatDestroy(&Y));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

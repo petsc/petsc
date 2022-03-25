@@ -24,21 +24,21 @@ static PetscErrorCode SNESPatchComputeResidual_Private(SNES snes, Vec x, Vec F, 
 
   /* scatter from x to patch->patchStateWithAll[pt] */
   pt = pcpatch->currentPatch;
-  CHKERRQ(ISGetSize(pcpatch->dofMappingWithoutToWithAll[pt], &size));
+  PetscCall(ISGetSize(pcpatch->dofMappingWithoutToWithAll[pt], &size));
 
-  CHKERRQ(ISGetIndices(pcpatch->dofMappingWithoutToWithAll[pt], &indices));
-  CHKERRQ(VecGetArrayRead(x, &X));
-  CHKERRQ(VecGetArray(pcpatch->patchStateWithAll, &XWithAll));
+  PetscCall(ISGetIndices(pcpatch->dofMappingWithoutToWithAll[pt], &indices));
+  PetscCall(VecGetArrayRead(x, &X));
+  PetscCall(VecGetArray(pcpatch->patchStateWithAll, &XWithAll));
 
   for (i = 0; i < size; ++i) {
     XWithAll[indices[i]] = X[i];
   }
 
-  CHKERRQ(VecRestoreArray(pcpatch->patchStateWithAll, &XWithAll));
-  CHKERRQ(VecRestoreArrayRead(x, &X));
-  CHKERRQ(ISRestoreIndices(pcpatch->dofMappingWithoutToWithAll[pt], &indices));
+  PetscCall(VecRestoreArray(pcpatch->patchStateWithAll, &XWithAll));
+  PetscCall(VecRestoreArrayRead(x, &X));
+  PetscCall(ISRestoreIndices(pcpatch->dofMappingWithoutToWithAll[pt], &indices));
 
-  CHKERRQ(PCPatchComputeFunction_Internal(pc, pcpatch->patchStateWithAll, F, pt));
+  PetscCall(PCPatchComputeFunction_Internal(pc, pcpatch->patchStateWithAll, F, pt));
   PetscFunctionReturn(0);
 }
 
@@ -54,21 +54,21 @@ static PetscErrorCode SNESPatchComputeJacobian_Private(SNES snes, Vec x, Mat J, 
   PetscFunctionBegin;
   /* scatter from x to patch->patchStateWithAll[pt] */
   pt = pcpatch->currentPatch;
-  CHKERRQ(ISGetSize(pcpatch->dofMappingWithoutToWithAll[pt], &size));
+  PetscCall(ISGetSize(pcpatch->dofMappingWithoutToWithAll[pt], &size));
 
-  CHKERRQ(ISGetIndices(pcpatch->dofMappingWithoutToWithAll[pt], &indices));
-  CHKERRQ(VecGetArrayRead(x, &X));
-  CHKERRQ(VecGetArray(pcpatch->patchStateWithAll, &XWithAll));
+  PetscCall(ISGetIndices(pcpatch->dofMappingWithoutToWithAll[pt], &indices));
+  PetscCall(VecGetArrayRead(x, &X));
+  PetscCall(VecGetArray(pcpatch->patchStateWithAll, &XWithAll));
 
   for (i = 0; i < size; ++i) {
     XWithAll[indices[i]] = X[i];
   }
 
-  CHKERRQ(VecRestoreArray(pcpatch->patchStateWithAll, &XWithAll));
-  CHKERRQ(VecRestoreArrayRead(x, &X));
-  CHKERRQ(ISRestoreIndices(pcpatch->dofMappingWithoutToWithAll[pt], &indices));
+  PetscCall(VecRestoreArray(pcpatch->patchStateWithAll, &XWithAll));
+  PetscCall(VecRestoreArrayRead(x, &X));
+  PetscCall(ISRestoreIndices(pcpatch->dofMappingWithoutToWithAll[pt], &indices));
 
-  CHKERRQ(PCPatchComputeOperator_Internal(pc, pcpatch->patchStateWithAll, M, pcpatch->currentPatch, PETSC_FALSE));
+  PetscCall(PCPatchComputeOperator_Internal(pc, pcpatch->patchStateWithAll, M, pcpatch->currentPatch, PETSC_FALSE));
   PetscFunctionReturn(0);
 }
 
@@ -80,36 +80,36 @@ static PetscErrorCode PCSetUp_PATCH_Nonlinear(PC pc)
 
   PetscFunctionBegin;
   if (!pc->setupcalled) {
-    CHKERRQ(PetscMalloc1(patch->npatch, &patch->solver));
-    CHKERRQ(PCGetOptionsPrefix(pc, &prefix));
-    CHKERRQ(PetscSectionGetChart(patch->gtolCounts, &pStart, NULL));
+    PetscCall(PetscMalloc1(patch->npatch, &patch->solver));
+    PetscCall(PCGetOptionsPrefix(pc, &prefix));
+    PetscCall(PetscSectionGetChart(patch->gtolCounts, &pStart, NULL));
     for (i = 0; i < patch->npatch; ++i) {
       SNES snes;
 
-      CHKERRQ(SNESCreate(PETSC_COMM_SELF, &snes));
-      CHKERRQ(SNESSetOptionsPrefix(snes, prefix));
-      CHKERRQ(SNESAppendOptionsPrefix(snes, "sub_"));
-      CHKERRQ(PetscObjectIncrementTabLevel((PetscObject) snes, (PetscObject) pc, 2));
-      CHKERRQ(PetscLogObjectParent((PetscObject) pc, (PetscObject) snes));
+      PetscCall(SNESCreate(PETSC_COMM_SELF, &snes));
+      PetscCall(SNESSetOptionsPrefix(snes, prefix));
+      PetscCall(SNESAppendOptionsPrefix(snes, "sub_"));
+      PetscCall(PetscObjectIncrementTabLevel((PetscObject) snes, (PetscObject) pc, 2));
+      PetscCall(PetscLogObjectParent((PetscObject) pc, (PetscObject) snes));
       patch->solver[i] = (PetscObject) snes;
 
-      CHKERRQ(PetscSectionGetDof(patch->gtolCountsWithAll, i+pStart, &dof));
+      PetscCall(PetscSectionGetDof(patch->gtolCountsWithAll, i+pStart, &dof));
       maxDof = PetscMax(maxDof, dof);
     }
-    CHKERRQ(VecDuplicate(patch->localUpdate, &patch->localState));
-    CHKERRQ(VecDuplicate(patch->patchRHS, &patch->patchResidual));
-    CHKERRQ(VecDuplicate(patch->patchUpdate, &patch->patchState));
+    PetscCall(VecDuplicate(patch->localUpdate, &patch->localState));
+    PetscCall(VecDuplicate(patch->patchRHS, &patch->patchResidual));
+    PetscCall(VecDuplicate(patch->patchUpdate, &patch->patchState));
 
-    CHKERRQ(VecCreateSeq(PETSC_COMM_SELF, maxDof, &patch->patchStateWithAll));
-    CHKERRQ(VecSetUp(patch->patchStateWithAll));
+    PetscCall(VecCreateSeq(PETSC_COMM_SELF, maxDof, &patch->patchStateWithAll));
+    PetscCall(VecSetUp(patch->patchStateWithAll));
   }
   for (i = 0; i < patch->npatch; ++i) {
     SNES snes = (SNES) patch->solver[i];
 
-    CHKERRQ(SNESSetFunction(snes, patch->patchResidual, SNESPatchComputeResidual_Private, pc));
-    CHKERRQ(SNESSetJacobian(snes, patch->mat[i], patch->mat[i], SNESPatchComputeJacobian_Private, pc));
+    PetscCall(SNESSetFunction(snes, patch->patchResidual, SNESPatchComputeResidual_Private, pc));
+    PetscCall(SNESSetJacobian(snes, patch->mat[i], patch->mat[i], SNESPatchComputeJacobian_Private, pc));
   }
-  if (!pc->setupcalled && patch->optionsSet) for (i = 0; i < patch->npatch; ++i) CHKERRQ(SNESSetFromOptions((SNES) patch->solver[i]));
+  if (!pc->setupcalled && patch->optionsSet) for (i = 0; i < patch->npatch; ++i) PetscCall(SNESSetFromOptions((SNES) patch->solver[i]));
   PetscFunctionReturn(0);
 }
 
@@ -120,14 +120,14 @@ static PetscErrorCode PCApply_PATCH_Nonlinear(PC pc, PetscInt i, Vec patchRHS, V
 
   PetscFunctionBegin;
   patch->currentPatch = i;
-  CHKERRQ(PetscLogEventBegin(PC_Patch_Solve, pc, 0, 0, 0));
+  PetscCall(PetscLogEventBegin(PC_Patch_Solve, pc, 0, 0, 0));
 
   /* Scatter the overlapped global state to our patch state vector */
-  CHKERRQ(PetscSectionGetChart(patch->gtolCounts, &pStart, NULL));
-  CHKERRQ(PCPatch_ScatterLocal_Private(pc, i+pStart, patch->localState, patch->patchState, INSERT_VALUES, SCATTER_FORWARD, SCATTER_INTERIOR));
-  CHKERRQ(PCPatch_ScatterLocal_Private(pc, i+pStart, patch->localState, patch->patchStateWithAll, INSERT_VALUES, SCATTER_FORWARD, SCATTER_WITHALL));
+  PetscCall(PetscSectionGetChart(patch->gtolCounts, &pStart, NULL));
+  PetscCall(PCPatch_ScatterLocal_Private(pc, i+pStart, patch->localState, patch->patchState, INSERT_VALUES, SCATTER_FORWARD, SCATTER_INTERIOR));
+  PetscCall(PCPatch_ScatterLocal_Private(pc, i+pStart, patch->localState, patch->patchStateWithAll, INSERT_VALUES, SCATTER_FORWARD, SCATTER_WITHALL));
 
-  CHKERRQ(MatGetLocalSize(patch->mat[i], NULL, &n));
+  PetscCall(MatGetLocalSize(patch->mat[i], NULL, &n));
   patch->patchState->map->n = n;
   patch->patchState->map->N = n;
   patchUpdate->map->n = n;
@@ -135,13 +135,13 @@ static PetscErrorCode PCApply_PATCH_Nonlinear(PC pc, PetscInt i, Vec patchRHS, V
   patchRHS->map->n = n;
   patchRHS->map->N = n;
   /* Set initial guess to be current state*/
-  CHKERRQ(VecCopy(patch->patchState, patchUpdate));
+  PetscCall(VecCopy(patch->patchState, patchUpdate));
   /* Solve for new state */
-  CHKERRQ(SNESSolve((SNES) patch->solver[i], patchRHS, patchUpdate));
+  PetscCall(SNESSolve((SNES) patch->solver[i], patchRHS, patchUpdate));
   /* To compute update, subtract off previous state */
-  CHKERRQ(VecAXPY(patchUpdate, -1.0, patch->patchState));
+  PetscCall(VecAXPY(patchUpdate, -1.0, patch->patchState));
 
-  CHKERRQ(PetscLogEventEnd(PC_Patch_Solve, pc, 0, 0, 0));
+  PetscCall(PetscLogEventEnd(PC_Patch_Solve, pc, 0, 0, 0));
   PetscFunctionReturn(0);
 }
 
@@ -152,14 +152,14 @@ static PetscErrorCode PCReset_PATCH_Nonlinear(PC pc)
 
   PetscFunctionBegin;
   if (patch->solver) {
-    for (i = 0; i < patch->npatch; ++i) CHKERRQ(SNESReset((SNES) patch->solver[i]));
+    for (i = 0; i < patch->npatch; ++i) PetscCall(SNESReset((SNES) patch->solver[i]));
   }
 
-  CHKERRQ(VecDestroy(&patch->patchResidual));
-  CHKERRQ(VecDestroy(&patch->patchState));
-  CHKERRQ(VecDestroy(&patch->patchStateWithAll));
+  PetscCall(VecDestroy(&patch->patchResidual));
+  PetscCall(VecDestroy(&patch->patchState));
+  PetscCall(VecDestroy(&patch->patchStateWithAll));
 
-  CHKERRQ(VecDestroy(&patch->localState));
+  PetscCall(VecDestroy(&patch->localState));
   PetscFunctionReturn(0);
 }
 
@@ -170,8 +170,8 @@ static PetscErrorCode PCDestroy_PATCH_Nonlinear(PC pc)
 
   PetscFunctionBegin;
   if (patch->solver) {
-    for (i = 0; i < patch->npatch; ++i) CHKERRQ(SNESDestroy((SNES *) &patch->solver[i]));
-    CHKERRQ(PetscFree(patch->solver));
+    for (i = 0; i < patch->npatch; ++i) PetscCall(SNESDestroy((SNES *) &patch->solver[i]));
+    PetscCall(PetscFree(patch->solver));
   }
   PetscFunctionReturn(0);
 }
@@ -181,7 +181,7 @@ static PetscErrorCode PCUpdateMultiplicative_PATCH_Nonlinear(PC pc, PetscInt i, 
   PC_PATCH      *patch = (PC_PATCH *) pc->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PCPatch_ScatterLocal_Private(pc, i + pStart, patch->patchUpdate, patch->localState, ADD_VALUES, SCATTER_REVERSE, SCATTER_INTERIOR));
+  PetscCall(PCPatch_ScatterLocal_Private(pc, i + pStart, patch->patchUpdate, patch->localState, ADD_VALUES, SCATTER_REVERSE, SCATTER_INTERIOR));
   PetscFunctionReturn(0);
 }
 
@@ -194,15 +194,15 @@ static PetscErrorCode SNESSetUp_Patch(SNES snes)
   PetscInt       n, N;
 
   PetscFunctionBegin;
-  CHKERRQ(SNESGetDM(snes, &dm));
-  CHKERRQ(PCSetDM(patch->pc, dm));
-  CHKERRQ(SNESGetFunction(snes, &F, NULL, NULL));
-  CHKERRQ(VecGetLocalSize(F, &n));
-  CHKERRQ(VecGetSize(F, &N));
-  CHKERRQ(MatCreateShell(PetscObjectComm((PetscObject) snes), n, n, N, N, (void *) snes, &dummy));
-  CHKERRQ(PCSetOperators(patch->pc, dummy, dummy));
-  CHKERRQ(MatDestroy(&dummy));
-  CHKERRQ(PCSetUp(patch->pc));
+  PetscCall(SNESGetDM(snes, &dm));
+  PetscCall(PCSetDM(patch->pc, dm));
+  PetscCall(SNESGetFunction(snes, &F, NULL, NULL));
+  PetscCall(VecGetLocalSize(F, &n));
+  PetscCall(VecGetSize(F, &N));
+  PetscCall(MatCreateShell(PetscObjectComm((PetscObject) snes), n, n, N, N, (void *) snes, &dummy));
+  PetscCall(PCSetOperators(patch->pc, dummy, dummy));
+  PetscCall(MatDestroy(&dummy));
+  PetscCall(PCSetUp(patch->pc));
   /* allocate workspace */
   PetscFunctionReturn(0);
 }
@@ -212,7 +212,7 @@ static PetscErrorCode SNESReset_Patch(SNES snes)
   SNES_Patch    *patch = (SNES_Patch *) snes->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PCReset(patch->pc));
+  PetscCall(PCReset(patch->pc));
   PetscFunctionReturn(0);
 }
 
@@ -221,9 +221,9 @@ static PetscErrorCode SNESDestroy_Patch(SNES snes)
   SNES_Patch    *patch = (SNES_Patch *) snes->data;
 
   PetscFunctionBegin;
-  CHKERRQ(SNESReset_Patch(snes));
-  CHKERRQ(PCDestroy(&patch->pc));
-  CHKERRQ(PetscFree(snes->data));
+  PetscCall(SNESReset_Patch(snes));
+  PetscCall(PCDestroy(&patch->pc));
+  PetscCall(PetscFree(snes->data));
   PetscFunctionReturn(0);
 }
 
@@ -233,9 +233,9 @@ static PetscErrorCode SNESSetFromOptions_Patch(PetscOptionItems *PetscOptionsObj
   const char    *prefix;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectGetOptionsPrefix((PetscObject)snes, &prefix));
-  CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject)patch->pc, prefix));
-  CHKERRQ(PCSetFromOptions(patch->pc));
+  PetscCall(PetscObjectGetOptionsPrefix((PetscObject)snes, &prefix));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)patch->pc, prefix));
+  PetscCall(PCSetFromOptions(patch->pc));
   PetscFunctionReturn(0);
 }
 
@@ -245,13 +245,13 @@ static PetscErrorCode SNESView_Patch(SNES snes,PetscViewer viewer)
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"SNESPATCH\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"SNESPATCH\n"));
   }
-  CHKERRQ(PetscViewerASCIIPushTab(viewer));
-  CHKERRQ(PCView(patch->pc, viewer));
-  CHKERRQ(PetscViewerASCIIPopTab(viewer));
+  PetscCall(PetscViewerASCIIPushTab(viewer));
+  PetscCall(PCView(patch->pc, viewer));
+  PetscCall(PetscViewerASCIIPopTab(viewer));
   PetscFunctionReturn(0);
 }
 
@@ -267,66 +267,66 @@ static PetscErrorCode SNESSolve_Patch(SNES snes)
   PetscReal         xnorm = 0.0, ynorm = 0.0, fnorm = 0.0;
 
   PetscFunctionBegin;
-  CHKERRQ(SNESGetSolution(snes, &state));
-  CHKERRQ(SNESGetSolutionUpdate(snes, &update));
-  CHKERRQ(SNESGetRhs(snes, &rhs));
+  PetscCall(SNESGetSolution(snes, &state));
+  PetscCall(SNESGetSolutionUpdate(snes, &update));
+  PetscCall(SNESGetRhs(snes, &rhs));
 
-  CHKERRQ(SNESGetFunction(snes, &residual, NULL, NULL));
-  CHKERRQ(SNESGetLineSearch(snes, &ls));
+  PetscCall(SNESGetFunction(snes, &residual, NULL, NULL));
+  PetscCall(SNESGetLineSearch(snes, &ls));
 
-  CHKERRQ(SNESSetConvergedReason(snes, SNES_CONVERGED_ITERATING));
-  CHKERRQ(VecSet(update, 0.0));
-  CHKERRQ(SNESComputeFunction(snes, state, residual));
+  PetscCall(SNESSetConvergedReason(snes, SNES_CONVERGED_ITERATING));
+  PetscCall(VecSet(update, 0.0));
+  PetscCall(SNESComputeFunction(snes, state, residual));
 
-  CHKERRQ(VecNorm(state, NORM_2, &xnorm));
-  CHKERRQ(VecNorm(residual, NORM_2, &fnorm));
+  PetscCall(VecNorm(state, NORM_2, &xnorm));
+  PetscCall(VecNorm(residual, NORM_2, &fnorm));
   snes->ttol = fnorm*snes->rtol;
 
   if (snes->ops->converged) {
-    CHKERRQ((*snes->ops->converged)(snes,its,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP));
+    PetscCall((*snes->ops->converged)(snes,its,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP));
   } else {
-    CHKERRQ(SNESConvergedSkip(snes,its,xnorm,ynorm,fnorm,&snes->reason,NULL));
+    PetscCall(SNESConvergedSkip(snes,its,xnorm,ynorm,fnorm,&snes->reason,NULL));
   }
-  CHKERRQ(SNESLogConvergenceHistory(snes, fnorm, 0)); /* should we count lits from the patches? */
-  CHKERRQ(SNESMonitor(snes, its, fnorm));
+  PetscCall(SNESLogConvergenceHistory(snes, fnorm, 0)); /* should we count lits from the patches? */
+  PetscCall(SNESMonitor(snes, its, fnorm));
 
   /* The main solver loop */
   for (its = 0; its < snes->max_its; its++) {
 
-    CHKERRQ(SNESSetIterationNumber(snes, its));
+    PetscCall(SNESSetIterationNumber(snes, its));
 
     /* Scatter state vector to overlapped vector on all patches.
        The vector pcpatch->localState is scattered to each patch
        in PCApply_PATCH_Nonlinear. */
-    CHKERRQ(VecGetArrayRead(state, &globalState));
-    CHKERRQ(VecGetArray(pcpatch->localState, &localState));
-    CHKERRQ(PetscSFBcastBegin(pcpatch->sectionSF, MPIU_SCALAR, globalState, localState,MPI_REPLACE));
-    CHKERRQ(PetscSFBcastEnd(pcpatch->sectionSF, MPIU_SCALAR, globalState, localState,MPI_REPLACE));
-    CHKERRQ(VecRestoreArray(pcpatch->localState, &localState));
-    CHKERRQ(VecRestoreArrayRead(state, &globalState));
+    PetscCall(VecGetArrayRead(state, &globalState));
+    PetscCall(VecGetArray(pcpatch->localState, &localState));
+    PetscCall(PetscSFBcastBegin(pcpatch->sectionSF, MPIU_SCALAR, globalState, localState,MPI_REPLACE));
+    PetscCall(PetscSFBcastEnd(pcpatch->sectionSF, MPIU_SCALAR, globalState, localState,MPI_REPLACE));
+    PetscCall(VecRestoreArray(pcpatch->localState, &localState));
+    PetscCall(VecRestoreArrayRead(state, &globalState));
 
     /* The looping over patches happens here */
-    CHKERRQ(PCApply(patch->pc, rhs, update));
+    PetscCall(PCApply(patch->pc, rhs, update));
 
     /* Apply a line search. This will often be basic with
        damping = 1/(max number of patches a dof can be in),
        but not always */
-    CHKERRQ(VecScale(update, -1.0));
-    CHKERRQ(SNESLineSearchApply(ls, state, residual, &fnorm, update));
+    PetscCall(VecScale(update, -1.0));
+    PetscCall(SNESLineSearchApply(ls, state, residual, &fnorm, update));
 
-    CHKERRQ(VecNorm(state, NORM_2, &xnorm));
-    CHKERRQ(VecNorm(update, NORM_2, &ynorm));
+    PetscCall(VecNorm(state, NORM_2, &xnorm));
+    PetscCall(VecNorm(update, NORM_2, &ynorm));
 
     if (snes->ops->converged) {
-      CHKERRQ((*snes->ops->converged)(snes,its,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP));
+      PetscCall((*snes->ops->converged)(snes,its,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP));
     } else {
-      CHKERRQ(SNESConvergedSkip(snes,its,xnorm,ynorm,fnorm,&snes->reason,NULL));
+      PetscCall(SNESConvergedSkip(snes,its,xnorm,ynorm,fnorm,&snes->reason,NULL));
     }
-    CHKERRQ(SNESLogConvergenceHistory(snes, fnorm, 0)); /* FIXME: should we count lits? */
-    CHKERRQ(SNESMonitor(snes, its, fnorm));
+    PetscCall(SNESLogConvergenceHistory(snes, fnorm, 0)); /* FIXME: should we count lits? */
+    PetscCall(SNESMonitor(snes, its, fnorm));
   }
 
-  if (its == snes->max_its) CHKERRQ(SNESSetConvergedReason(snes, SNES_DIVERGED_MAX_IT));
+  if (its == snes->max_its) PetscCall(SNESSetConvergedReason(snes, SNES_DIVERGED_MAX_IT));
   PetscFunctionReturn(0);
 }
 
@@ -349,7 +349,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Patch(SNES snes)
   SNESLineSearch linesearch;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNewLog(snes, &patch));
+  PetscCall(PetscNewLog(snes, &patch));
 
   snes->ops->solve          = SNESSolve_Patch;
   snes->ops->setup          = SNESSetUp_Patch;
@@ -358,17 +358,17 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Patch(SNES snes)
   snes->ops->setfromoptions = SNESSetFromOptions_Patch;
   snes->ops->view           = SNESView_Patch;
 
-  CHKERRQ(SNESGetLineSearch(snes,&linesearch));
+  PetscCall(SNESGetLineSearch(snes,&linesearch));
   if (!((PetscObject)linesearch)->type_name) {
-    CHKERRQ(SNESLineSearchSetType(linesearch,SNESLINESEARCHBASIC));
+    PetscCall(SNESLineSearchSetType(linesearch,SNESLINESEARCHBASIC));
   }
   snes->usesksp        = PETSC_FALSE;
 
   snes->alwayscomputesfinalresidual = PETSC_FALSE;
 
   snes->data = (void *) patch;
-  CHKERRQ(PCCreate(PetscObjectComm((PetscObject) snes), &patch->pc));
-  CHKERRQ(PCSetType(patch->pc, PCPATCH));
+  PetscCall(PCCreate(PetscObjectComm((PetscObject) snes), &patch->pc));
+  PetscCall(PCSetType(patch->pc, PCPATCH));
 
   patchpc = (PC_PATCH*) patch->pc->data;
   patchpc->classname = "snes";
@@ -390,10 +390,10 @@ PetscErrorCode SNESPatchSetDiscretisationInfo(SNES snes, PetscInt nsubspaces, DM
   DM             dm;
 
   PetscFunctionBegin;
-  CHKERRQ(SNESGetDM(snes, &dm));
+  PetscCall(SNESGetDM(snes, &dm));
   PetscCheck(dm,PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONGSTATE, "DM not yet set on patch SNES");
-  CHKERRQ(PCSetDM(patch->pc, dm));
-  CHKERRQ(PCPatchSetDiscretisationInfo(patch->pc, nsubspaces, dms, bs, nodesPerCell, cellNodeMap, subspaceOffsets, numGhostBcs, ghostBcNodes, numGlobalBcs, globalBcNodes));
+  PetscCall(PCSetDM(patch->pc, dm));
+  PetscCall(PCPatchSetDiscretisationInfo(patch->pc, nsubspaces, dms, bs, nodesPerCell, cellNodeMap, subspaceOffsets, numGhostBcs, ghostBcNodes, numGlobalBcs, globalBcNodes));
   PetscFunctionReturn(0);
 }
 
@@ -402,7 +402,7 @@ PetscErrorCode SNESPatchSetComputeOperator(SNES snes, PetscErrorCode (*func)(PC,
   SNES_Patch    *patch = (SNES_Patch *) snes->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PCPatchSetComputeOperator(patch->pc, func, ctx));
+  PetscCall(PCPatchSetComputeOperator(patch->pc, func, ctx));
   PetscFunctionReturn(0);
 }
 
@@ -411,7 +411,7 @@ PetscErrorCode SNESPatchSetComputeFunction(SNES snes, PetscErrorCode (*func)(PC,
   SNES_Patch    *patch = (SNES_Patch *) snes->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PCPatchSetComputeFunction(patch->pc, func, ctx));
+  PetscCall(PCPatchSetComputeFunction(patch->pc, func, ctx));
   PetscFunctionReturn(0);
 }
 
@@ -420,7 +420,7 @@ PetscErrorCode SNESPatchSetConstructType(SNES snes, PCPatchConstructType ctype, 
   SNES_Patch    *patch = (SNES_Patch *) snes->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PCPatchSetConstructType(patch->pc, ctype, func, ctx));
+  PetscCall(PCPatchSetConstructType(patch->pc, ctype, func, ctx));
   PetscFunctionReturn(0);
 }
 
@@ -429,6 +429,6 @@ PetscErrorCode SNESPatchSetCellNumbering(SNES snes, PetscSection cellNumbering)
   SNES_Patch    *patch = (SNES_Patch *) snes->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PCPatchSetCellNumbering(patch->pc, cellNumbering));
+  PetscCall(PCPatchSetCellNumbering(patch->pc, cellNumbering));
   PetscFunctionReturn(0);
 }

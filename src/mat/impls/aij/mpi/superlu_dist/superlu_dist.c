@@ -94,7 +94,7 @@ PetscErrorCode MatSuperluDistGetDiagU(Mat F,PetscScalar *diagU)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F,MAT_CLASSID,1);
-  CHKERRQ(PetscTryMethod(F,"MatSuperluDistGetDiagU_C",(Mat,PetscScalar*),(F,diagU)));
+  PetscCall(PetscTryMethod(F,"MatSuperluDistGetDiagU_C",(Mat,PetscScalar*),(F,diagU)));
   PetscFunctionReturn(0);
 }
 
@@ -116,15 +116,15 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_Superlu_dist_keyval_Delete_Fn(MPI_Comm com
 
   PetscFunctionBegin;
   if (keyval != Petsc_Superlu_dist_keyval) SETERRMPI(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Unexpected keyval");
-  CHKERRQ(PetscInfo(NULL,"Removing Petsc_Superlu_dist_keyval attribute from communicator that is being freed\n"));
+  PetscCall(PetscInfo(NULL,"Removing Petsc_Superlu_dist_keyval attribute from communicator that is being freed\n"));
 #if PETSC_PKG_SUPERLU_DIST_VERSION_GE(7,2,0)
   if (context->use3d) {
     PetscStackCall("SuperLU_DIST:superlu_gridexit3d",superlu_gridexit3d(&context->grid3d));
   } else
 #endif
     PetscStackCall("SuperLU_DIST:superlu_gridexit",superlu_gridexit(&context->grid));
-  CHKERRMPI(MPI_Comm_free(&context->comm));
-  CHKERRQ(PetscFree(context));
+  PetscCallMPI(MPI_Comm_free(&context->comm));
+  PetscCall(PetscFree(context));
   PetscFunctionReturn(MPI_SUCCESS);
 }
 
@@ -143,8 +143,8 @@ static PetscErrorCode Petsc_Superlu_dist_keyval_free(void)
   PetscMPIInt    Petsc_Superlu_dist_keyval_temp = Petsc_Superlu_dist_keyval;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscInfo(NULL,"Freeing Petsc_Superlu_dist_keyval\n"));
-  CHKERRMPI(MPI_Comm_free_keyval(&Petsc_Superlu_dist_keyval_temp));
+  PetscCall(PetscInfo(NULL,"Freeing Petsc_Superlu_dist_keyval\n"));
+  PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Superlu_dist_keyval_temp));
   PetscFunctionReturn(0);
 }
 
@@ -192,22 +192,22 @@ static PetscErrorCode MatDestroy_SuperLU_DIST(Mat A)
    * Here we try to release comm regardless.
   */
   if (lu->comm_superlu) {
-    CHKERRQ(PetscCommRestoreComm(PetscObjectComm((PetscObject)A),&lu->comm_superlu));
+    PetscCall(PetscCommRestoreComm(PetscObjectComm((PetscObject)A),&lu->comm_superlu));
   } else {
     PetscSuperLU_DIST *context;
     MPI_Comm          comm;
     PetscMPIInt       flg;
 
-    CHKERRQ(PetscObjectGetComm((PetscObject)A,&comm));
-    CHKERRMPI(MPI_Comm_get_attr(comm,Petsc_Superlu_dist_keyval,&context,&flg));
+    PetscCall(PetscObjectGetComm((PetscObject)A,&comm));
+    PetscCallMPI(MPI_Comm_get_attr(comm,Petsc_Superlu_dist_keyval,&context,&flg));
     PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Communicator does not have expected Petsc_Superlu_dist_keyval attribute");
     context->busy = PETSC_FALSE;
   }
 
-  CHKERRQ(PetscFree(A->data));
+  PetscCall(PetscFree(A->data));
   /* clear composed functions */
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverType_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)A,"MatSuperluDistGetDiagU_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatSuperluDistGetDiagU_C",NULL));
 
   PetscFunctionReturn(0);
 }
@@ -224,15 +224,15 @@ static PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
 
   PetscFunctionBegin;
   PetscCheck(lu->options.Fact == FACTORED,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"SuperLU_DIST options.Fact must equal FACTORED");
-  CHKERRQ(PetscCitationsRegister("@article{lidemmel03,\n  author = {Xiaoye S. Li and James W. Demmel},\n  title = {{SuperLU_DIST}: A Scalable Distributed-Memory Sparse Direct\n           Solver for Unsymmetric Linear Systems},\n  journal = {ACM Trans. Mathematical Software},\n  volume = {29},\n  number = {2},\n  pages = {110-140},\n  year = 2003\n}\n",&cite));
+  PetscCall(PetscCitationsRegister("@article{lidemmel03,\n  author = {Xiaoye S. Li and James W. Demmel},\n  title = {{SuperLU_DIST}: A Scalable Distributed-Memory Sparse Direct\n           Solver for Unsymmetric Linear Systems},\n  journal = {ACM Trans. Mathematical Software},\n  volume = {29},\n  number = {2},\n  pages = {110-140},\n  year = 2003\n}\n",&cite));
 
   if (lu->options.SolveInitialized && !lu->matsolve_iscalled) {
     /* see comments in MatMatSolve() */
     PetscStackCall("SuperLU_DIST:SolveFinalize",SolveFinalize(&lu->options, &lu->SOLVEstruct));
     lu->options.SolveInitialized = NO;
   }
-  CHKERRQ(VecCopy(b_mpi,x));
-  CHKERRQ(VecGetArray(x,&bptr));
+  PetscCall(VecCopy(b_mpi,x));
+  PetscCall(VecGetArray(x,&bptr));
 
   PetscStackCall("SuperLU_DIST:PStatInit",PStatInit(&stat));        /* Initialize the statistics variables. */
 #if PETSC_PKG_SUPERLU_DIST_VERSION_GE(7,2,0) && !PetscDefined(MISSING_GETLINE)
@@ -246,7 +246,7 @@ static PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
   if (lu->options.PrintStat) PetscStackCall("SuperLU_DIST:PStatPrint",PStatPrint(&lu->options, &stat, &lu->grid));  /* Print the statistics. */
   PetscStackCall("SuperLU_DIST:PStatFree",PStatFree(&stat));
 
-  CHKERRQ(VecRestoreArray(x,&bptr));
+  PetscCall(VecRestoreArray(x,&bptr));
   lu->matsolve_iscalled    = PETSC_TRUE;
   lu->matmatsolve_iscalled = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -264,10 +264,10 @@ static PetscErrorCode MatMatSolve_SuperLU_DIST(Mat A,Mat B_mpi,Mat X)
 
   PetscFunctionBegin;
   PetscCheck(lu->options.Fact == FACTORED,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"SuperLU_DIST options.Fact must equal FACTORED");
-  CHKERRQ(PetscObjectTypeCompareAny((PetscObject)B_mpi,&flg,MATSEQDENSE,MATMPIDENSE,NULL));
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)B_mpi,&flg,MATSEQDENSE,MATMPIDENSE,NULL));
   PetscCheck(flg,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix B must be MATDENSE matrix");
   if (X != B_mpi) {
-    CHKERRQ(PetscObjectTypeCompareAny((PetscObject)X,&flg,MATSEQDENSE,MATMPIDENSE,NULL));
+    PetscCall(PetscObjectTypeCompareAny((PetscObject)X,&flg,MATSEQDENSE,MATMPIDENSE,NULL));
     PetscCheck(flg,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix X must be MATDENSE matrix");
   }
 
@@ -280,13 +280,13 @@ static PetscErrorCode MatMatSolve_SuperLU_DIST(Mat A,Mat B_mpi,Mat X)
     lu->options.SolveInitialized = NO;
   }
   if (X != B_mpi) {
-    CHKERRQ(MatCopy(B_mpi,X,SAME_NONZERO_PATTERN));
+    PetscCall(MatCopy(B_mpi,X,SAME_NONZERO_PATTERN));
   }
 
-  CHKERRQ(MatGetSize(B_mpi,NULL,&nrhs));
+  PetscCall(MatGetSize(B_mpi,NULL,&nrhs));
 
   PetscStackCall("SuperLU_DIST:PStatInit",PStatInit(&stat));        /* Initialize the statistics variables. */
-  CHKERRQ(MatDenseGetArray(X,&bptr));
+  PetscCall(MatDenseGetArray(X,&bptr));
 
 #if PETSC_PKG_SUPERLU_DIST_VERSION_GE(7,2,0) && !PetscDefined(MISSING_GETLINE)
   if (lu->use3d)
@@ -296,7 +296,7 @@ static PetscErrorCode MatMatSolve_SuperLU_DIST(Mat A,Mat B_mpi,Mat X)
     PetscStackCall("SuperLU_DIST:pgssvx",pgssvx(&lu->options,&lu->A_sup,&lu->ScalePermstruct,CASTDOUBLECOMPLEX bptr,m,nrhs,&lu->grid,&lu->LUstruct,&lu->SOLVEstruct,berr,&stat,&info));
 
   PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"pdgssvx fails, info: %d",info);
-  CHKERRQ(MatDenseRestoreArray(X,&bptr));
+  PetscCall(MatDenseRestoreArray(X,&bptr));
 
   if (lu->options.PrintStat) PetscStackCall("SuperLU_DIST:PStatPrint",PStatPrint(&lu->options, &stat, &lu->grid));  /* Print the statistics. */
   PetscStackCall("SuperLU_DIST:PStatFree",PStatFree(&stat));
@@ -323,9 +323,9 @@ static PetscErrorCode MatGetInertia_SuperLU_DIST(Mat F,PetscInt *nneg,PetscInt *
   PetscFunctionBegin;
   PetscCheck(F->assembled,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Matrix factor F is not assembled");
   PetscCheck(lu->options.RowPerm == NOROWPERM,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must set NOROWPERM");
-  CHKERRQ(MatGetSize(F,&M,NULL));
-  CHKERRQ(PetscMalloc1(M,&diagU));
-  CHKERRQ(MatSuperluDistGetDiagU(F,diagU));
+  PetscCall(MatGetSize(F,&M,NULL));
+  PetscCall(PetscMalloc1(M,&diagU));
+  PetscCall(MatSuperluDistGetDiagU(F,diagU));
   for (i=0; i<M; i++) {
 #if defined(PETSC_USE_COMPLEX)
     r = PetscImaginaryPart(diagU[i])/10.0;
@@ -341,7 +341,7 @@ static PetscErrorCode MatGetInertia_SuperLU_DIST(Mat F,PetscInt *nneg,PetscInt *
     } else zero++;
   }
 
-  CHKERRQ(PetscFree(diagU));
+  PetscCall(PetscFree(diagU));
   if (nneg)  *nneg  = neg;
   if (nzero) *nzero = zero;
   if (npos)  *npos  = pos;
@@ -361,18 +361,18 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFacto
   PetscBool         ismpiaij,isseqaij,flg;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectBaseTypeCompare((PetscObject)A,MATSEQAIJ,&isseqaij));
-  CHKERRQ(PetscObjectBaseTypeCompare((PetscObject)A,MATMPIAIJ,&ismpiaij));
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)A,MATSEQAIJ,&isseqaij));
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)A,MATMPIAIJ,&ismpiaij));
   if (ismpiaij) {
-    CHKERRQ(MatMPIAIJGetLocalMat(A,MAT_INITIAL_MATRIX,&Aloc));
+    PetscCall(MatMPIAIJGetLocalMat(A,MAT_INITIAL_MATRIX,&Aloc));
   } else if (isseqaij) {
-    CHKERRQ(PetscObjectReference((PetscObject)A));
+    PetscCall(PetscObjectReference((PetscObject)A));
     Aloc = A;
   } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not for type %s",((PetscObject)A)->type_name);
 
-  CHKERRQ(MatGetRowIJ(Aloc,0,PETSC_FALSE,PETSC_FALSE,&dummy,&ai,&aj,&flg));
+  PetscCall(MatGetRowIJ(Aloc,0,PETSC_FALSE,PETSC_FALSE,&dummy,&ai,&aj,&flg));
   PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_SUP,"GetRowIJ failed");
-  CHKERRQ(MatSeqAIJGetArrayRead(Aloc,&av));
+  PetscCall(MatSeqAIJGetArrayRead(Aloc,&av));
   nz   = ai[Aloc->rmap->n];
 
   /* Allocations for A_sup */
@@ -404,13 +404,13 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFacto
   }
 
   /* Copy AIJ matrix to superlu_dist matrix */
-  CHKERRQ(PetscArraycpy(lu->row,ai,Aloc->rmap->n+1));
-  CHKERRQ(PetscArraycpy(lu->col,aj,nz));
-  CHKERRQ(PetscArraycpy(lu->val,av,nz));
-  CHKERRQ(MatRestoreRowIJ(Aloc,0,PETSC_FALSE,PETSC_FALSE,&dummy,&ai,&aj,&flg));
+  PetscCall(PetscArraycpy(lu->row,ai,Aloc->rmap->n+1));
+  PetscCall(PetscArraycpy(lu->col,aj,nz));
+  PetscCall(PetscArraycpy(lu->val,av,nz));
+  PetscCall(MatRestoreRowIJ(Aloc,0,PETSC_FALSE,PETSC_FALSE,&dummy,&ai,&aj,&flg));
   PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_SUP,"RestoreRowIJ failed");
-  CHKERRQ(MatSeqAIJRestoreArrayRead(Aloc,&av));
-  CHKERRQ(MatDestroy(&Aloc));
+  PetscCall(MatSeqAIJRestoreArrayRead(Aloc,&av));
+  PetscCall(MatDestroy(&Aloc));
 
   /* Create and setup A_sup */
   if (lu->options.Fact == DOFACT) {
@@ -430,14 +430,14 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFacto
     else {
       if (sinfo <= lu->A_sup.ncol) {
         F->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
-        CHKERRQ(PetscInfo(F,"U(i,i) is exactly zero, i= %d\n",sinfo));
+        PetscCall(PetscInfo(F,"U(i,i) is exactly zero, i= %d\n",sinfo));
       } else if (sinfo > lu->A_sup.ncol) {
         /*
          number of bytes allocated when memory allocation
          failure occurred, plus A->ncol.
          */
         F->factorerrortype = MAT_FACTOR_OUTMEMORY;
-        CHKERRQ(PetscInfo(F,"Number of bytes allocated when memory allocation fails %d\n",sinfo));
+        PetscCall(PetscInfo(F,"Number of bytes allocated when memory allocation fails %d\n",sinfo));
       }
     }
   } else PetscCheck(sinfo >= 0,PETSC_COMM_SELF,PETSC_ERR_LIB, "info = %d, argument in p*gssvx() had an illegal value", sinfo);
@@ -475,7 +475,7 @@ static PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat F,Mat A,IS r,IS c,con
 static PetscErrorCode MatCholeskyFactorSymbolic_SuperLU_DIST(Mat F,Mat A,IS r,const MatFactorInfo *info)
 {
   PetscFunctionBegin;
-  CHKERRQ(MatLUFactorSymbolic_SuperLU_DIST(F,A,r,r,info));
+  PetscCall(MatLUFactorSymbolic_SuperLU_DIST(F,A,r,r,info));
   F->ops->choleskyfactornumeric = MatLUFactorNumeric_SuperLU_DIST;
   PetscFunctionReturn(0);
 }
@@ -497,33 +497,33 @@ static PetscErrorCode MatView_Info_SuperLU_DIST(Mat A,PetscViewer viewer)
   if (A->ops->solve != MatSolve_SuperLU_DIST) PetscFunctionReturn(0);
 
   options = lu->options;
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"SuperLU_DIST run parameters:\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"SuperLU_DIST run parameters:\n"));
   /* would love to use superlu 'IFMT' macro but it looks like it's inconsistently applied, the
    * format spec for int64_t is set to %d for whatever reason */
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Process grid nprow %lld x npcol %lld \n",(long long)lu->nprow,(long long)lu->npcol));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  Process grid nprow %lld x npcol %lld \n",(long long)lu->nprow,(long long)lu->npcol));
 #if PETSC_PKG_SUPERLU_DIST_VERSION_GE(7,2,0)
   if (lu->use3d) {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Using 3d decomposition with npdep %lld \n",(long long)lu->npdep));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Using 3d decomposition with npdep %lld \n",(long long)lu->npdep));
   }
 #endif
 
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Equilibrate matrix %s \n",PetscBools[options.Equil != NO]));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Replace tiny pivots %s \n",PetscBools[options.ReplaceTinyPivot != NO]));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Use iterative refinement %s \n",PetscBools[options.IterRefine == SLU_DOUBLE]));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Processors in row %lld col partition %lld \n",(long long)lu->nprow,(long long)lu->npcol));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  Equilibrate matrix %s \n",PetscBools[options.Equil != NO]));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  Replace tiny pivots %s \n",PetscBools[options.ReplaceTinyPivot != NO]));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  Use iterative refinement %s \n",PetscBools[options.IterRefine == SLU_DOUBLE]));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  Processors in row %lld col partition %lld \n",(long long)lu->nprow,(long long)lu->npcol));
 
   switch (options.RowPerm) {
   case NOROWPERM:
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Row permutation NOROWPERM\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Row permutation NOROWPERM\n"));
     break;
   case LargeDiag_MC64:
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Row permutation LargeDiag_MC64\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Row permutation LargeDiag_MC64\n"));
     break;
   case LargeDiag_AWPM:
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Row permutation LargeDiag_AWPM\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Row permutation LargeDiag_AWPM\n"));
     break;
   case MY_PERMR:
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Row permutation MY_PERMR\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Row permutation MY_PERMR\n"));
     break;
   default:
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown column permutation");
@@ -531,33 +531,33 @@ static PetscErrorCode MatView_Info_SuperLU_DIST(Mat A,PetscViewer viewer)
 
   switch (options.ColPerm) {
   case NATURAL:
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Column permutation NATURAL\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Column permutation NATURAL\n"));
     break;
   case MMD_AT_PLUS_A:
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Column permutation MMD_AT_PLUS_A\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Column permutation MMD_AT_PLUS_A\n"));
     break;
   case MMD_ATA:
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Column permutation MMD_ATA\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Column permutation MMD_ATA\n"));
     break;
   /*  Even though this is called METIS, the SuperLU_DIST code sets this by default if PARMETIS is defined, not METIS */
   case METIS_AT_PLUS_A:
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Column permutation METIS_AT_PLUS_A\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Column permutation METIS_AT_PLUS_A\n"));
     break;
   case PARMETIS:
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Column permutation PARMETIS\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Column permutation PARMETIS\n"));
     break;
   default:
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown column permutation");
   }
 
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Parallel symbolic factorization %s \n",PetscBools[options.ParSymbFact != NO]));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  Parallel symbolic factorization %s \n",PetscBools[options.ParSymbFact != NO]));
 
   if (lu->FactPattern == SamePattern) {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Repeated factorization SamePattern\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Repeated factorization SamePattern\n"));
   } else if (lu->FactPattern == SamePattern_SameRowPerm) {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Repeated factorization SamePattern_SameRowPerm\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Repeated factorization SamePattern_SameRowPerm\n"));
   } else if (lu->FactPattern == DOFACT) {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Repeated factorization DOFACT\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Repeated factorization DOFACT\n"));
   } else {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown factorization pattern");
   }
@@ -570,11 +570,11 @@ static PetscErrorCode MatView_SuperLU_DIST(Mat A,PetscViewer viewer)
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    CHKERRQ(PetscViewerGetFormat(viewer,&format));
+    PetscCall(PetscViewerGetFormat(viewer,&format));
     if (format == PETSC_VIEWER_ASCII_INFO) {
-      CHKERRQ(MatView_Info_SuperLU_DIST(A,viewer));
+      PetscCall(MatView_Info_SuperLU_DIST(A,viewer));
     }
   }
   PetscFunctionReturn(0);
@@ -596,10 +596,10 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
 
   PetscFunctionBegin;
   /* Create the factorization matrix */
-  CHKERRQ(MatCreate(PetscObjectComm((PetscObject)A),&B));
-  CHKERRQ(MatSetSizes(B,A->rmap->n,A->cmap->n,M,N));
-  CHKERRQ(PetscStrallocpy("superlu_dist",&((PetscObject)B)->type_name));
-  CHKERRQ(MatSetUp(B));
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)A),&B));
+  PetscCall(MatSetSizes(B,A->rmap->n,A->cmap->n,M,N));
+  PetscCall(PetscStrallocpy("superlu_dist",&((PetscObject)B)->type_name));
+  PetscCall(MatSetUp(B));
   B->ops->getinfo = MatGetInfo_External;
   B->ops->view    = MatView_SuperLU_DIST;
   B->ops->destroy = MatDestroy_SuperLU_DIST;
@@ -631,32 +631,32 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
   }
 
   /* set solvertype */
-  CHKERRQ(PetscFree(B->solvertype));
-  CHKERRQ(PetscStrallocpy(MATSOLVERSUPERLU_DIST,&B->solvertype));
+  PetscCall(PetscFree(B->solvertype));
+  PetscCall(PetscStrallocpy(MATSOLVERSUPERLU_DIST,&B->solvertype));
 
-  CHKERRQ(PetscNewLog(B,&lu));
+  PetscCall(PetscNewLog(B,&lu));
   B->data = lu;
-  CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A),&size));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A),&size));
 
   {
     PetscMPIInt       flg;
     MPI_Comm          comm;
     PetscSuperLU_DIST *context = NULL;
 
-    CHKERRQ(PetscObjectGetComm((PetscObject)A,&comm));
+    PetscCall(PetscObjectGetComm((PetscObject)A,&comm));
     if (Petsc_Superlu_dist_keyval == MPI_KEYVAL_INVALID) {
-      CHKERRMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,Petsc_Superlu_dist_keyval_Delete_Fn,&Petsc_Superlu_dist_keyval,(void*)0));
-      CHKERRQ(PetscRegisterFinalize(Petsc_Superlu_dist_keyval_free));
+      PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,Petsc_Superlu_dist_keyval_Delete_Fn,&Petsc_Superlu_dist_keyval,(void*)0));
+      PetscCall(PetscRegisterFinalize(Petsc_Superlu_dist_keyval_free));
     }
-    CHKERRMPI(MPI_Comm_get_attr(comm,Petsc_Superlu_dist_keyval,&context,&flg));
+    PetscCallMPI(MPI_Comm_get_attr(comm,Petsc_Superlu_dist_keyval,&context,&flg));
     if (!flg || context->busy) {
       if (!flg) {
-        CHKERRQ(PetscNew(&context));
+        PetscCall(PetscNew(&context));
         context->busy = PETSC_TRUE;
-        CHKERRMPI(MPI_Comm_dup(comm,&context->comm));
-        CHKERRMPI(MPI_Comm_set_attr(comm,Petsc_Superlu_dist_keyval,context));
+        PetscCallMPI(MPI_Comm_dup(comm,&context->comm));
+        PetscCallMPI(MPI_Comm_set_attr(comm,Petsc_Superlu_dist_keyval,context));
       } else {
-        CHKERRQ(PetscCommGetComm(PetscObjectComm((PetscObject)A),&lu->comm_superlu));
+        PetscCall(PetscCommGetComm(PetscObjectComm((PetscObject)A),&lu->comm_superlu));
       }
 
       /* Default number of process columns and rows */
@@ -671,13 +671,13 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
       lu->use3d = PETSC_FALSE;
       lu->npdep = 1;
 #endif
-      ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"SuperLU_Dist Options","Mat");CHKERRQ(ierr);
+      ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"SuperLU_Dist Options","Mat");PetscCall(ierr);
 #if PETSC_PKG_SUPERLU_DIST_VERSION_GE(7,2,0)
-      CHKERRQ(PetscOptionsBool("-mat_superlu_dist_3d","Use SuperLU_DIST 3D distribution","None",lu->use3d,&lu->use3d,NULL));
+      PetscCall(PetscOptionsBool("-mat_superlu_dist_3d","Use SuperLU_DIST 3D distribution","None",lu->use3d,&lu->use3d,NULL));
       PetscCheck(!PetscDefined(MISSING_GETLINE) || !lu->use3d,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP_SYS,"-mat_superlu_dist_3d requires a system with a getline() implementation");
       if (lu->use3d) {
         PetscInt t;
-        CHKERRQ(PetscOptionsInt("-mat_superlu_dist_d","Number of z entries in processor partition","None",lu->npdep,(PetscInt*)&lu->npdep,NULL));
+        PetscCall(PetscOptionsInt("-mat_superlu_dist_d","Number of z entries in processor partition","None",lu->npdep,(PetscInt*)&lu->npdep,NULL));
         t = (PetscInt) PetscLog2Real((PetscReal)lu->npdep);
         PetscCheck(PetscPowInt(2,t) == lu->npdep,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_OUTOFRANGE,"-mat_superlu_dist_d %lld must be a power of 2",(long long)lu->npdep);
         if (lu->npdep > 1) {
@@ -691,14 +691,14 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
         }
       }
 #endif
-      CHKERRQ(PetscOptionsInt("-mat_superlu_dist_r","Number rows in processor partition","None",lu->nprow,(PetscInt*)&lu->nprow,NULL));
-      CHKERRQ(PetscOptionsInt("-mat_superlu_dist_c","Number columns in processor partition","None",lu->npcol,(PetscInt*)&lu->npcol,NULL));
+      PetscCall(PetscOptionsInt("-mat_superlu_dist_r","Number rows in processor partition","None",lu->nprow,(PetscInt*)&lu->nprow,NULL));
+      PetscCall(PetscOptionsInt("-mat_superlu_dist_c","Number columns in processor partition","None",lu->npcol,(PetscInt*)&lu->npcol,NULL));
 #if PETSC_PKG_SUPERLU_DIST_VERSION_GE(7,2,0)
       PetscCheck(size == lu->nprow*lu->npcol*lu->npdep,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number of processes %d must equal to nprow %lld * npcol %lld * npdep %lld",size,(long long)lu->nprow,(long long)lu->npcol,(long long)lu->npdep);
 #else
       PetscCheck(size == lu->nprow*lu->npcol,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number of processes %d must equal to nprow %lld * npcol %lld",size,(long long)lu->nprow,(long long)lu->npcol);
 #endif
-      ierr = PetscOptionsEnd();CHKERRQ(ierr);
+      ierr = PetscOptionsEnd();PetscCall(ierr);
 #if PETSC_PKG_SUPERLU_DIST_VERSION_GE(7,2,0)
       if (lu->use3d) {
         PetscStackCall("SuperLU_DIST:superlu_gridinit3d",superlu_gridinit3d(context ? context->comm : lu->comm_superlu, lu->nprow, lu->npcol,lu->npdep, &lu->grid3d));
@@ -710,24 +710,24 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
 #if PETSC_PKG_SUPERLU_DIST_VERSION_GE(7,2,0)
       }
 #endif
-      CHKERRQ(PetscInfo(NULL,"Duplicating a communicator for SuperLU_DIST and calling superlu_gridinit()\n"));
+      PetscCall(PetscInfo(NULL,"Duplicating a communicator for SuperLU_DIST and calling superlu_gridinit()\n"));
       if (flg) {
-        CHKERRQ(PetscInfo(NULL,"Communicator attribute already in use so not saving communicator and SuperLU_DIST grid in communicator attribute \n"));
+        PetscCall(PetscInfo(NULL,"Communicator attribute already in use so not saving communicator and SuperLU_DIST grid in communicator attribute \n"));
       } else {
-        CHKERRQ(PetscInfo(NULL,"Storing communicator and SuperLU_DIST grid in communicator attribute\n"));
+        PetscCall(PetscInfo(NULL,"Storing communicator and SuperLU_DIST grid in communicator attribute\n"));
       }
     } else {
-      CHKERRQ(PetscInfo(NULL,"Reusing communicator and superlu_gridinit() for SuperLU_DIST from communicator attribute."));
+      PetscCall(PetscInfo(NULL,"Reusing communicator and superlu_gridinit() for SuperLU_DIST from communicator attribute."));
       context->busy = PETSC_TRUE;
       lu->grid      = context->grid;
     }
   }
 
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"SuperLU_Dist Options","Mat");CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsBool("-mat_superlu_dist_equil","Equilibrate matrix","None",options.Equil ? PETSC_TRUE : PETSC_FALSE,&flg,&set));
+  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"SuperLU_Dist Options","Mat");PetscCall(ierr);
+  PetscCall(PetscOptionsBool("-mat_superlu_dist_equil","Equilibrate matrix","None",options.Equil ? PETSC_TRUE : PETSC_FALSE,&flg,&set));
   if (set && !flg) options.Equil = NO;
 
-  CHKERRQ(PetscOptionsEList("-mat_superlu_dist_rowperm","Row permutation","None",rowperm,4,rowperm[1],&indx,&flg));
+  PetscCall(PetscOptionsEList("-mat_superlu_dist_rowperm","Row permutation","None",rowperm,4,rowperm[1],&indx,&flg));
   if (flg) {
     switch (indx) {
     case 0:
@@ -747,7 +747,7 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
     }
   }
 
-  CHKERRQ(PetscOptionsEList("-mat_superlu_dist_colperm","Column permutation","None",colperm,5,colperm[3],&indx,&flg));
+  PetscCall(PetscOptionsEList("-mat_superlu_dist_colperm","Column permutation","None",colperm,5,colperm[3],&indx,&flg));
   if (flg) {
     switch (indx) {
     case 0:
@@ -771,11 +771,11 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
   }
 
   options.ReplaceTinyPivot = NO;
-  CHKERRQ(PetscOptionsBool("-mat_superlu_dist_replacetinypivot","Replace tiny pivots","None",options.ReplaceTinyPivot ? PETSC_TRUE : PETSC_FALSE,&flg,&set));
+  PetscCall(PetscOptionsBool("-mat_superlu_dist_replacetinypivot","Replace tiny pivots","None",options.ReplaceTinyPivot ? PETSC_TRUE : PETSC_FALSE,&flg,&set));
   if (set && flg) options.ReplaceTinyPivot = YES;
 
   options.ParSymbFact = NO;
-  CHKERRQ(PetscOptionsBool("-mat_superlu_dist_parsymbfact","Parallel symbolic factorization","None",PETSC_FALSE,&flg,&set));
+  PetscCall(PetscOptionsBool("-mat_superlu_dist_parsymbfact","Parallel symbolic factorization","None",PETSC_FALSE,&flg,&set));
   if (set && flg && size>1) {
 #if defined(PETSC_HAVE_PARMETIS)
     options.ParSymbFact = YES;
@@ -786,7 +786,7 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
   }
 
   lu->FactPattern = SamePattern;
-  CHKERRQ(PetscOptionsEList("-mat_superlu_dist_fact","Sparsity pattern for repeated matrix factorization","None",factPattern,3,factPattern[0],&indx,&flg));
+  PetscCall(PetscOptionsEList("-mat_superlu_dist_fact","Sparsity pattern for repeated matrix factorization","None",factPattern,3,factPattern[0],&indx,&flg));
   if (flg) {
     switch (indx) {
     case 0:
@@ -802,7 +802,7 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
   }
 
   options.IterRefine = NOREFINE;
-  CHKERRQ(PetscOptionsBool("-mat_superlu_dist_iterrefine","Use iterative refinement","None",options.IterRefine == NOREFINE ? PETSC_FALSE : PETSC_TRUE ,&flg,&set));
+  PetscCall(PetscOptionsBool("-mat_superlu_dist_iterrefine","Use iterative refinement","None",options.IterRefine == NOREFINE ? PETSC_FALSE : PETSC_TRUE ,&flg,&set));
   if (set) {
     if (flg) options.IterRefine = SLU_DOUBLE;
     else options.IterRefine = NOREFINE;
@@ -810,16 +810,16 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
 
   if (PetscLogPrintInfo) options.PrintStat = YES;
   else options.PrintStat = NO;
-  CHKERRQ(PetscOptionsBool("-mat_superlu_dist_statprint","Print factorization information","None",(PetscBool)options.PrintStat,(PetscBool*)&options.PrintStat,NULL));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(PetscOptionsBool("-mat_superlu_dist_statprint","Print factorization information","None",(PetscBool)options.PrintStat,(PetscBool*)&options.PrintStat,NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
   lu->options              = options;
   lu->options.Fact         = DOFACT;
   lu->matsolve_iscalled    = PETSC_FALSE;
   lu->matmatsolve_iscalled = PETSC_FALSE;
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_aij_superlu_dist));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)B,"MatSuperluDistGetDiagU_C",MatSuperluDistGetDiagU_SuperLU_DIST));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_aij_superlu_dist));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatSuperluDistGetDiagU_C",MatSuperluDistGetDiagU_SuperLU_DIST));
 
   *F = B;
   PetscFunctionReturn(0);
@@ -828,10 +828,10 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SuperLU_DIST(void)
 {
   PetscFunctionBegin;
-  CHKERRQ(MatSolverTypeRegister(MATSOLVERSUPERLU_DIST,MATMPIAIJ,MAT_FACTOR_LU,MatGetFactor_aij_superlu_dist));
-  CHKERRQ(MatSolverTypeRegister(MATSOLVERSUPERLU_DIST,MATSEQAIJ,MAT_FACTOR_LU,MatGetFactor_aij_superlu_dist));
-  CHKERRQ(MatSolverTypeRegister(MATSOLVERSUPERLU_DIST,MATMPIAIJ,MAT_FACTOR_CHOLESKY,MatGetFactor_aij_superlu_dist));
-  CHKERRQ(MatSolverTypeRegister(MATSOLVERSUPERLU_DIST,MATSEQAIJ,MAT_FACTOR_CHOLESKY,MatGetFactor_aij_superlu_dist));
+  PetscCall(MatSolverTypeRegister(MATSOLVERSUPERLU_DIST,MATMPIAIJ,MAT_FACTOR_LU,MatGetFactor_aij_superlu_dist));
+  PetscCall(MatSolverTypeRegister(MATSOLVERSUPERLU_DIST,MATSEQAIJ,MAT_FACTOR_LU,MatGetFactor_aij_superlu_dist));
+  PetscCall(MatSolverTypeRegister(MATSOLVERSUPERLU_DIST,MATMPIAIJ,MAT_FACTOR_CHOLESKY,MatGetFactor_aij_superlu_dist));
+  PetscCall(MatSolverTypeRegister(MATSOLVERSUPERLU_DIST,MATSEQAIJ,MAT_FACTOR_CHOLESKY,MatGetFactor_aij_superlu_dist));
   PetscFunctionReturn(0);
 }
 

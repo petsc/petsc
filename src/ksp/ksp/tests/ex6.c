@@ -11,14 +11,14 @@ static PetscErrorCode KSPTestResidualMonitor(KSP ksp, PetscInt i, PetscReal r, v
   PetscReal      err;
 
   PetscFunctionBeginUser;
-  CHKERRQ(KSPCreateVecs(ksp,2,&t,2,&v));
-  CHKERRQ(KSPBuildResidualDefault(ksp,t[0],v[0],&v[0]));
-  CHKERRQ(KSPBuildResidual(ksp,t[1],v[1],&v[1]));
-  CHKERRQ(VecAXPY(v[1],-1.0,v[0]));
-  CHKERRQ(VecNorm(v[1],NORM_INFINITY,&err));
+  PetscCall(KSPCreateVecs(ksp,2,&t,2,&v));
+  PetscCall(KSPBuildResidualDefault(ksp,t[0],v[0],&v[0]));
+  PetscCall(KSPBuildResidual(ksp,t[1],v[1],&v[1]));
+  PetscCall(VecAXPY(v[1],-1.0,v[0]));
+  PetscCall(VecNorm(v[1],NORM_INFINITY,&err));
   PetscCheckFalse(err > PETSC_SMALL,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Inconsistent residual computed at step %D: %g (KSP %g)",i,(double)err,(double)r);
-  CHKERRQ(VecDestroyVecs(2,&t));
-  CHKERRQ(VecDestroyVecs(2,&v));
+  PetscCall(VecDestroyVecs(2,&t));
+  PetscCall(VecDestroyVecs(2,&v));
   PetscFunctionReturn(0);
 }
 
@@ -36,25 +36,25 @@ int main(int argc,char **args)
   PetscBool      table = PETSC_FALSE,flg,test_residual = PETSC_FALSE,b_in_f = PETSC_TRUE;
   KSP            ksp;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-table",&table,NULL));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-test_residual",&test_residual,NULL));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-b_in_f",&b_in_f,NULL));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-table",&table,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-test_residual",&test_residual,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-b_in_f",&b_in_f,NULL));
 
   /* Read matrix and RHS */
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
   PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Must indicate binary file with the -f option");
-  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(MatLoad(A,fd));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatLoad(A,fd));
   if (b_in_f) {
-    CHKERRQ(VecCreate(PETSC_COMM_WORLD,&b));
-    CHKERRQ(VecLoad(b,fd));
+    PetscCall(VecCreate(PETSC_COMM_WORLD,&b));
+    PetscCall(VecLoad(b,fd));
   } else {
-    CHKERRQ(MatCreateVecs(A,NULL,&b));
-    CHKERRQ(VecSetRandom(b,NULL));
+    PetscCall(MatCreateVecs(A,NULL,&b));
+    PetscCall(VecSetRandom(b,NULL));
   }
-  CHKERRQ(PetscViewerDestroy(&fd));
+  PetscCall(PetscViewerDestroy(&fd));
 
   /*
    If the load matrix is larger then the vector, due to being padded
@@ -65,73 +65,73 @@ int main(int argc,char **args)
     Vec         tmp;
     PetscScalar *bold;
 
-    CHKERRQ(MatGetLocalSize(A,&m,&n));
-    CHKERRQ(VecCreate(PETSC_COMM_WORLD,&tmp));
-    CHKERRQ(VecSetSizes(tmp,m,PETSC_DECIDE));
-    CHKERRQ(VecSetFromOptions(tmp));
-    CHKERRQ(VecGetOwnershipRange(b,&start,&end));
-    CHKERRQ(VecGetLocalSize(b,&mvec));
-    CHKERRQ(VecGetArray(b,&bold));
+    PetscCall(MatGetLocalSize(A,&m,&n));
+    PetscCall(VecCreate(PETSC_COMM_WORLD,&tmp));
+    PetscCall(VecSetSizes(tmp,m,PETSC_DECIDE));
+    PetscCall(VecSetFromOptions(tmp));
+    PetscCall(VecGetOwnershipRange(b,&start,&end));
+    PetscCall(VecGetLocalSize(b,&mvec));
+    PetscCall(VecGetArray(b,&bold));
     for (j=0; j<mvec; j++) {
       indx = start+j;
-      CHKERRQ(VecSetValues(tmp,1,&indx,bold+j,INSERT_VALUES));
+      PetscCall(VecSetValues(tmp,1,&indx,bold+j,INSERT_VALUES));
     }
-    CHKERRQ(VecRestoreArray(b,&bold));
-    CHKERRQ(VecDestroy(&b));
-    CHKERRQ(VecAssemblyBegin(tmp));
-    CHKERRQ(VecAssemblyEnd(tmp));
+    PetscCall(VecRestoreArray(b,&bold));
+    PetscCall(VecDestroy(&b));
+    PetscCall(VecAssemblyBegin(tmp));
+    PetscCall(VecAssemblyEnd(tmp));
     b    = tmp;
   }
-  CHKERRQ(VecDuplicate(b,&x));
-  CHKERRQ(VecDuplicate(b,&u));
+  PetscCall(VecDuplicate(b,&x));
+  PetscCall(VecDuplicate(b,&u));
 
-  CHKERRQ(VecSet(x,0.0));
-  CHKERRQ(PetscBarrier((PetscObject)A));
+  PetscCall(VecSet(x,0.0));
+  PetscCall(PetscBarrier((PetscObject)A));
 
-  CHKERRQ(PetscLogStageRegister("mystage 1",&stage1));
-  CHKERRQ(PetscLogStagePush(stage1));
-  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
-  CHKERRQ(KSPSetOperators(ksp,A,A));
-  CHKERRQ(KSPSetFromOptions(ksp));
+  PetscCall(PetscLogStageRegister("mystage 1",&stage1));
+  PetscCall(PetscLogStagePush(stage1));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPSetOperators(ksp,A,A));
+  PetscCall(KSPSetFromOptions(ksp));
   if (test_residual) {
-    CHKERRQ(KSPMonitorSet(ksp,KSPTestResidualMonitor,NULL,NULL));
+    PetscCall(KSPMonitorSet(ksp,KSPTestResidualMonitor,NULL,NULL));
   }
-  CHKERRQ(KSPSetUp(ksp));
-  CHKERRQ(KSPSetUpOnBlocks(ksp));
-  CHKERRQ(PetscLogStagePop());
-  CHKERRQ(PetscBarrier((PetscObject)A));
+  PetscCall(KSPSetUp(ksp));
+  PetscCall(KSPSetUpOnBlocks(ksp));
+  PetscCall(PetscLogStagePop());
+  PetscCall(PetscBarrier((PetscObject)A));
 
-  CHKERRQ(PetscLogStageRegister("mystage 2",&stage2));
-  CHKERRQ(PetscLogStagePush(stage2));
-  CHKERRQ(KSPSolve(ksp,b,x));
-  CHKERRQ(PetscLogStagePop());
+  PetscCall(PetscLogStageRegister("mystage 2",&stage2));
+  PetscCall(PetscLogStagePush(stage2));
+  PetscCall(KSPSolve(ksp,b,x));
+  PetscCall(PetscLogStagePop());
 
   /* Show result */
-  CHKERRQ(MatMult(A,x,u));
-  CHKERRQ(VecAXPY(u,-1.0,b));
-  CHKERRQ(VecNorm(u,NORM_2,&norm));
-  CHKERRQ(KSPGetIterationNumber(ksp,&its));
+  PetscCall(MatMult(A,x,u));
+  PetscCall(VecAXPY(u,-1.0,b));
+  PetscCall(VecNorm(u,NORM_2,&norm));
+  PetscCall(KSPGetIterationNumber(ksp,&its));
   /*  matrix PC   KSP   Options       its    residual  */
   if (table) {
     char        *matrixname,kspinfo[120];
     PetscViewer viewer;
-    CHKERRQ(PetscViewerStringOpen(PETSC_COMM_WORLD,kspinfo,sizeof(kspinfo),&viewer));
-    CHKERRQ(KSPView(ksp,viewer));
-    CHKERRQ(PetscStrrchr(file,'/',&matrixname));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"%-8.8s %3D %2.0e %s \n",matrixname,its,norm,kspinfo));
-    CHKERRQ(PetscViewerDestroy(&viewer));
+    PetscCall(PetscViewerStringOpen(PETSC_COMM_WORLD,kspinfo,sizeof(kspinfo),&viewer));
+    PetscCall(KSPView(ksp,viewer));
+    PetscCall(PetscStrrchr(file,'/',&matrixname));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%-8.8s %3D %2.0e %s \n",matrixname,its,norm,kspinfo));
+    PetscCall(PetscViewerDestroy(&viewer));
   } else {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Residual norm = %g\n",(double)norm));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Residual norm = %g\n",(double)norm));
   }
 
   /* Cleanup */
-  CHKERRQ(KSPDestroy(&ksp));
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&b));
-  CHKERRQ(VecDestroy(&u));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(PetscFinalize());
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&b));
+  PetscCall(VecDestroy(&u));
+  PetscCall(MatDestroy(&A));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

@@ -14,109 +14,109 @@ int main(int argc,char **argv)
   PetscViewer            vx,vl;
   PetscBool              equal;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size > 3,PETSC_COMM_WORLD,PETSC_ERR_ARG_SIZ,"Example only works with up to three processes");
 
-  CHKERRQ(PetscCalloc1(size*n,&izero));
+  PetscCall(PetscCalloc1(size*n,&izero));
   for (i = 0; i < 3; i++) {
-    CHKERRQ(ISCreateGeneral(PETSC_COMM_WORLD,n,ix[i][rank],PETSC_COPY_VALUES,&isx[i]));
+    PetscCall(ISCreateGeneral(PETSC_COMM_WORLD,n,ix[i][rank],PETSC_COPY_VALUES,&isx[i]));
   }
 
   for (j = 0; j < 3; j++) {
-    CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"testfile",FILE_MODE_WRITE,&vx));
-    CHKERRQ(ISView(isx[0],vx));
-    CHKERRQ(PetscViewerDestroy(&vx));
+    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"testfile",FILE_MODE_WRITE,&vx));
+    PetscCall(ISView(isx[0],vx));
+    PetscCall(PetscViewerDestroy(&vx));
 
-    CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"testfile",FILE_MODE_READ,&vl));
-    CHKERRQ(ISCreate(PETSC_COMM_WORLD,&il));
-    CHKERRQ(ISLoad(il,vl));
-    CHKERRQ(ISEqual(il,isx[0],&equal));
+    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"testfile",FILE_MODE_READ,&vl));
+    PetscCall(ISCreate(PETSC_COMM_WORLD,&il));
+    PetscCall(ISLoad(il,vl));
+    PetscCall(ISEqual(il,isx[0],&equal));
     PetscCheck(equal,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Iteration %" PetscInt_FMT " - Index set loaded from file does not match",j);
-    CHKERRQ(ISDestroy(&il));
-    CHKERRQ(PetscViewerDestroy(&vl));
+    PetscCall(ISDestroy(&il));
+    PetscCall(PetscViewerDestroy(&vl));
 
-    CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"testfile",FILE_MODE_APPEND,&vx));
-    CHKERRQ(ISView(isx[1],vx));
-    CHKERRQ(ISView(isx[2],vx));
-    CHKERRQ(PetscViewerDestroy(&vx));
+    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"testfile",FILE_MODE_APPEND,&vx));
+    PetscCall(ISView(isx[1],vx));
+    PetscCall(ISView(isx[2],vx));
+    PetscCall(PetscViewerDestroy(&vx));
 
-    CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"testfile",FILE_MODE_READ,&vl));
+    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"testfile",FILE_MODE_READ,&vl));
     for (i = 0; i < 3; i++) {
-      CHKERRQ(ISCreate(PETSC_COMM_WORLD,&il));
-      CHKERRQ(ISLoad(il,vl));
-      CHKERRQ(ISEqual(il,isx[i],&equal));
+      PetscCall(ISCreate(PETSC_COMM_WORLD,&il));
+      PetscCall(ISLoad(il,vl));
+      PetscCall(ISEqual(il,isx[i],&equal));
       PetscCheck(equal,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Iteration %" PetscInt_FMT " - Index set %" PetscInt_FMT " loaded from file does not match",j,i);
-      CHKERRQ(ISDestroy(&il));
+      PetscCall(ISDestroy(&il));
     }
-    CHKERRQ(PetscViewerDestroy(&vl));
+    PetscCall(PetscViewerDestroy(&vl));
 
-    CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"testfile",FILE_MODE_READ,&vl));
+    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"testfile",FILE_MODE_READ,&vl));
     for (i = 0; i < 3; i++) {
-      CHKERRQ(ISCreateGeneral(PETSC_COMM_WORLD,n,izero,PETSC_COPY_VALUES,&il));
-      CHKERRQ(ISLoad(il,vl));
-      CHKERRQ(ISEqual(il,isx[i],&equal));
+      PetscCall(ISCreateGeneral(PETSC_COMM_WORLD,n,izero,PETSC_COPY_VALUES,&il));
+      PetscCall(ISLoad(il,vl));
+      PetscCall(ISEqual(il,isx[i],&equal));
       PetscCheck(equal,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Iteration %" PetscInt_FMT " - Index set %" PetscInt_FMT " loaded from file does not match",j,i);
-      CHKERRQ(ISDestroy(&il));
+      PetscCall(ISDestroy(&il));
     }
-    CHKERRQ(PetscViewerDestroy(&vl));
+    PetscCall(PetscViewerDestroy(&vl));
   }
 
   for (j = 0; j < 3; j++) {
-    CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"testfile_noheader",FILE_MODE_WRITE,&vx));
-    CHKERRQ(PetscViewerBinarySetSkipHeader(vx,PETSC_TRUE));
+    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"testfile_noheader",FILE_MODE_WRITE,&vx));
+    PetscCall(PetscViewerBinarySetSkipHeader(vx,PETSC_TRUE));
     for (i = 0; i < 3; i++) {
-      CHKERRQ(ISView(isx[i],vx));
+      PetscCall(ISView(isx[i],vx));
     }
-    CHKERRQ(PetscViewerDestroy(&vx));
+    PetscCall(PetscViewerDestroy(&vx));
 
-    CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"testfile_noheader",FILE_MODE_READ,&vl));
-    CHKERRQ(PetscViewerBinarySetSkipHeader(vl,PETSC_TRUE));
+    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"testfile_noheader",FILE_MODE_READ,&vl));
+    PetscCall(PetscViewerBinarySetSkipHeader(vl,PETSC_TRUE));
     for (i = 0; i < 3; i++) {
-      CHKERRQ(ISCreateGeneral(PETSC_COMM_WORLD,n,izero,PETSC_COPY_VALUES,&il));
-      CHKERRQ(ISLoad(il,vl));
-      CHKERRQ(ISEqual(il,isx[i],&equal));
+      PetscCall(ISCreateGeneral(PETSC_COMM_WORLD,n,izero,PETSC_COPY_VALUES,&il));
+      PetscCall(ISLoad(il,vl));
+      PetscCall(ISEqual(il,isx[i],&equal));
       PetscCheck(equal,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Iteration %" PetscInt_FMT " - Index set %" PetscInt_FMT " loaded from file does not match",j,i);
-      CHKERRQ(ISDestroy(&il));
+      PetscCall(ISDestroy(&il));
     }
-    CHKERRQ(PetscViewerDestroy(&vl));
+    PetscCall(PetscViewerDestroy(&vl));
   }
 
   for (i = 0; i < 3; i++) {
-    CHKERRQ(ISDestroy(&isx[i]));
+    PetscCall(ISDestroy(&isx[i]));
   }
 
   for (j = 0; j < 2; j++) {
     const char *filename  = (j == 0) ? "testfile_isstride" : "testfile_isblock";
     PetscInt    blocksize = (j == 0) ? 1 : size;
-    CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_WRITE,&vx));
+    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_WRITE,&vx));
     for (i = 0; i < 3; i++) {
       if (j == 0) {
-        CHKERRQ(ISCreateStride(PETSC_COMM_WORLD,n,rank,rank+1,&isx[i]));
+        PetscCall(ISCreateStride(PETSC_COMM_WORLD,n,rank,rank+1,&isx[i]));
       } else {
-        CHKERRQ(ISCreateBlock(PETSC_COMM_WORLD,blocksize,n,ix[i][rank],PETSC_COPY_VALUES,&isx[i]));
+        PetscCall(ISCreateBlock(PETSC_COMM_WORLD,blocksize,n,ix[i][rank],PETSC_COPY_VALUES,&isx[i]));
       }
-      CHKERRQ(ISView(isx[i],vx));
-      CHKERRQ(ISToGeneral(isx[i]));
+      PetscCall(ISView(isx[i],vx));
+      PetscCall(ISToGeneral(isx[i]));
     }
-    CHKERRQ(PetscViewerDestroy(&vx));
-    CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&vl));
+    PetscCall(PetscViewerDestroy(&vx));
+    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&vl));
     for (i = 0; i < 3; i++) {
-      CHKERRQ(ISCreateGeneral(PETSC_COMM_WORLD,blocksize*n,izero,PETSC_COPY_VALUES,&il));
-      CHKERRQ(ISLoad(il,vl));
-      CHKERRQ(ISEqual(il,isx[i],&equal));
+      PetscCall(ISCreateGeneral(PETSC_COMM_WORLD,blocksize*n,izero,PETSC_COPY_VALUES,&il));
+      PetscCall(ISLoad(il,vl));
+      PetscCall(ISEqual(il,isx[i],&equal));
       PetscCheck(equal,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Iteration %" PetscInt_FMT " - Index set %" PetscInt_FMT " loaded from file does not match",j,i);
-      CHKERRQ(ISDestroy(&il));
+      PetscCall(ISDestroy(&il));
     }
-    CHKERRQ(PetscViewerDestroy(&vl));
+    PetscCall(PetscViewerDestroy(&vl));
     for (i = 0; i < 3; i++) {
-      CHKERRQ(ISDestroy(&isx[i]));
+      PetscCall(ISDestroy(&isx[i]));
     }
   }
-  CHKERRQ(PetscFree(izero));
+  PetscCall(PetscFree(izero));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

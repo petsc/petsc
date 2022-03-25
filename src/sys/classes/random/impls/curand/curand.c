@@ -11,7 +11,7 @@ PetscErrorCode PetscRandomSeed_CURAND(PetscRandom r)
   PetscRandom_CURAND *curand = (PetscRandom_CURAND*)r->data;
 
   PetscFunctionBegin;
-  CHKERRCURAND(curandSetPseudoRandomGeneratorSeed(curand->gen,r->seed));
+  PetscCallCURAND(curandSetPseudoRandomGeneratorSeed(curand->gen,r->seed));
   PetscFunctionReturn(0);
 }
 
@@ -24,12 +24,12 @@ PetscErrorCode  PetscRandomGetValuesReal_CURAND(PetscRandom r, PetscInt n, Petsc
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_REAL_SINGLE)
-  CHKERRCURAND(curandGenerateUniform(curand->gen,val,nn));
+  PetscCallCURAND(curandGenerateUniform(curand->gen,val,nn));
 #else
-  CHKERRCURAND(curandGenerateUniformDouble(curand->gen,val,nn));
+  PetscCallCURAND(curandGenerateUniformDouble(curand->gen,val,nn));
 #endif
   if (r->iset) {
-    CHKERRQ(PetscRandomCurandScale_Private(r,nn,val,(PetscBool)(n<0)));
+    PetscCall(PetscRandomCurandScale_Private(r,nn,val,(PetscBool)(n<0)));
   }
   PetscFunctionReturn(0);
 }
@@ -39,9 +39,9 @@ PetscErrorCode PetscRandomGetValues_CURAND(PetscRandom r, PetscInt n, PetscScala
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
   /* pass negative size to flag complex scaling (if needed) */
-  CHKERRQ(PetscRandomGetValuesReal_CURAND(r,-n,(PetscReal*)val));
+  PetscCall(PetscRandomGetValuesReal_CURAND(r,-n,(PetscReal*)val));
 #else
-  CHKERRQ(PetscRandomGetValuesReal_CURAND(r,n,val));
+  PetscCall(PetscRandomGetValuesReal_CURAND(r,n,val));
 #endif
   PetscFunctionReturn(0);
 }
@@ -51,8 +51,8 @@ PetscErrorCode PetscRandomDestroy_CURAND(PetscRandom r)
   PetscRandom_CURAND *curand = (PetscRandom_CURAND*)r->data;
 
   PetscFunctionBegin;
-  CHKERRCURAND(curandDestroyGenerator(curand->gen));
-  CHKERRQ(PetscFree(r->data));
+  PetscCallCURAND(curandDestroyGenerator(curand->gen));
+  PetscCall(PetscFree(r->data));
   PetscFunctionReturn(0);
 }
 
@@ -78,15 +78,15 @@ PETSC_EXTERN PetscErrorCode PetscRandomCreate_CURAND(PetscRandom r)
   PetscRandom_CURAND *curand;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscDeviceInitialize(PETSC_DEVICE_CUDA));
-  CHKERRQ(PetscNewLog(r,&curand));
-  CHKERRCURAND(curandCreateGenerator(&curand->gen,CURAND_RNG_PSEUDO_DEFAULT));
+  PetscCall(PetscDeviceInitialize(PETSC_DEVICE_CUDA));
+  PetscCall(PetscNewLog(r,&curand));
+  PetscCallCURAND(curandCreateGenerator(&curand->gen,CURAND_RNG_PSEUDO_DEFAULT));
   /* https://docs.nvidia.com/cuda/curand/host-api-overview.html#performance-notes2 */
-  CHKERRCURAND(curandSetGeneratorOrdering(curand->gen,CURAND_ORDERING_PSEUDO_SEEDED));
-  CHKERRQ(PetscMemcpy(r->ops,&PetscRandomOps_Values,sizeof(PetscRandomOps_Values)));
-  CHKERRQ(PetscObjectChangeTypeName((PetscObject)r,PETSCCURAND));
+  PetscCallCURAND(curandSetGeneratorOrdering(curand->gen,CURAND_ORDERING_PSEUDO_SEEDED));
+  PetscCall(PetscMemcpy(r->ops,&PetscRandomOps_Values,sizeof(PetscRandomOps_Values)));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)r,PETSCCURAND));
   r->data = curand;
   r->seed = 1234ULL; /* taken from example */
-  CHKERRQ(PetscRandomSeed_CURAND(r));
+  PetscCall(PetscRandomSeed_CURAND(r));
   PetscFunctionReturn(0);
 }

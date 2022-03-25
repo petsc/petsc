@@ -12,20 +12,20 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_QMD(Mat mat,MatOrderingType type,IS *
   PetscBool      done;
 
   PetscFunctionBegin;
-  CHKERRQ(MatGetRowIJ(mat,1,PETSC_TRUE,PETSC_TRUE,&nrow,&ia,&ja,&done));
+  PetscCall(MatGetRowIJ(mat,1,PETSC_TRUE,PETSC_TRUE,&nrow,&ia,&ja,&done));
   PetscCheck(done,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot get rows for matrix");
 
-  CHKERRQ(PetscMalloc1(nrow,&perm));
-  CHKERRQ(PetscMalloc5(nrow,&iperm,nrow,&deg,nrow,&marker,nrow,&rchset,nrow,&nbrhd));
-  CHKERRQ(PetscMalloc2(nrow,&qsize,nrow,&qlink));
+  PetscCall(PetscMalloc1(nrow,&perm));
+  PetscCall(PetscMalloc5(nrow,&iperm,nrow,&deg,nrow,&marker,nrow,&rchset,nrow,&nbrhd));
+  PetscCall(PetscMalloc2(nrow,&qsize,nrow,&qlink));
   /* WARNING - genqmd trashes ja */
   SPARSEPACKgenqmd(&nrow,ia,ja,perm,iperm,deg,marker,rchset,nbrhd,qsize,qlink,&nofsub);
-  CHKERRQ(MatRestoreRowIJ(mat,1,PETSC_TRUE,PETSC_TRUE,NULL,&ia,&ja,&done));
+  PetscCall(MatRestoreRowIJ(mat,1,PETSC_TRUE,PETSC_TRUE,NULL,&ia,&ja,&done));
 
-  CHKERRQ(PetscFree2(qsize,qlink));
-  CHKERRQ(PetscFree5(iperm,deg,marker,rchset,nbrhd));
+  PetscCall(PetscFree2(qsize,qlink));
+  PetscCall(PetscFree5(iperm,deg,marker,rchset,nbrhd));
   for (i=0; i<nrow; i++) perm[i]--;
-  CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,PETSC_COPY_VALUES,row));
-  CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,PETSC_OWN_POINTER,col));
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,PETSC_COPY_VALUES,row));
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,PETSC_OWN_POINTER,col));
   PetscFunctionReturn(0);
 }

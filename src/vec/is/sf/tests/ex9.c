@@ -20,155 +20,155 @@ int main(int argc,char **argv)
   PetscBool      sub2sub    = PETSC_FALSE;  /* Copy a vector from a subcomm to another subcomm? */
   PetscBool      world2subs = PETSC_FALSE;  /* Copy a vector from WORLD to multiple subcomms? */
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&nproc));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&grank));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&nproc));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&grank));
 
   PetscCheckFalse(nproc < 2,PETSC_COMM_WORLD,PETSC_ERR_ARG_SIZ,"This test must have at least two processes to run");
 
-  CHKERRQ(PetscOptionsGetBool(NULL,0,"-world2sub",&world2sub,NULL));
-  CHKERRQ(PetscOptionsGetBool(NULL,0,"-sub2sub",&sub2sub,NULL));
-  CHKERRQ(PetscOptionsGetBool(NULL,0,"-world2subs",&world2subs,NULL));
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-vectype",vectypename,sizeof(vectypename),&optionflag));
+  PetscCall(PetscOptionsGetBool(NULL,0,"-world2sub",&world2sub,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,0,"-sub2sub",&sub2sub,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,0,"-world2subs",&world2subs,NULL));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-vectype",vectypename,sizeof(vectypename),&optionflag));
   if (optionflag) {
-    CHKERRQ(PetscStrncmp(vectypename, "cuda", (size_t)4, &compareflag));
+    PetscCall(PetscStrncmp(vectypename, "cuda", (size_t)4, &compareflag));
     if (compareflag) iscuda = PETSC_TRUE;
   }
 
   /* Split PETSC_COMM_WORLD into three subcomms. Each process can only see the subcomm it belongs to */
   mycolor = grank % 3;
-  CHKERRMPI(MPI_Comm_split(PETSC_COMM_WORLD,mycolor,grank,&subcomm));
+  PetscCallMPI(MPI_Comm_split(PETSC_COMM_WORLD,mycolor,grank,&subcomm));
 
   /*===========================================================================
    *  Transfer a vector x defined on PETSC_COMM_WORLD to a vector y defined on
    *  a subcommunicator of PETSC_COMM_WORLD and vice versa.
    *===========================================================================*/
   if (world2sub) {
-    CHKERRQ(VecCreate(PETSC_COMM_WORLD, &x));
-    CHKERRQ(VecSetSizes(x, PETSC_DECIDE, N));
+    PetscCall(VecCreate(PETSC_COMM_WORLD, &x));
+    PetscCall(VecSetSizes(x, PETSC_DECIDE, N));
     if (iscuda) {
-      CHKERRQ(VecSetType(x, VECCUDA));
+      PetscCall(VecSetType(x, VECCUDA));
     } else {
-      CHKERRQ(VecSetType(x, VECSTANDARD));
+      PetscCall(VecSetType(x, VECSTANDARD));
     }
-    CHKERRQ(VecSetUp(x));
-    CHKERRQ(PetscObjectSetName((PetscObject)x,"x_commworld")); /* Give a name to view x clearly */
+    PetscCall(VecSetUp(x));
+    PetscCall(PetscObjectSetName((PetscObject)x,"x_commworld")); /* Give a name to view x clearly */
 
     /* Initialize x to [-0.0, -1.0, -2.0, ..., -19.0] */
-    CHKERRQ(VecGetOwnershipRange(x,&low,&high));
+    PetscCall(VecGetOwnershipRange(x,&low,&high));
     for (i=low; i<high; i++) {
       PetscScalar val = -i;
-      CHKERRQ(VecSetValue(x,i,val,INSERT_VALUES));
+      PetscCall(VecSetValue(x,i,val,INSERT_VALUES));
     }
-    CHKERRQ(VecAssemblyBegin(x));
-    CHKERRQ(VecAssemblyEnd(x));
+    PetscCall(VecAssemblyBegin(x));
+    PetscCall(VecAssemblyEnd(x));
 
     /* Transfer x to a vector y only defined on subcomm0 and vice versa */
     if (mycolor == 0) { /* subcomm0 contains ranks 0, 3, 6, ... in PETSC_COMM_WORLD */
       Vec         y;
       PetscScalar *yvalue;
-       CHKERRQ(VecCreate(subcomm, &y));
-      CHKERRQ(VecSetSizes(y, PETSC_DECIDE, N));
+       PetscCall(VecCreate(subcomm, &y));
+      PetscCall(VecSetSizes(y, PETSC_DECIDE, N));
       if (iscuda) {
-        CHKERRQ(VecSetType(y, VECCUDA));
+        PetscCall(VecSetType(y, VECCUDA));
       } else {
-        CHKERRQ(VecSetType(y, VECSTANDARD));
+        PetscCall(VecSetType(y, VECSTANDARD));
       }
-      CHKERRQ(VecSetUp(y));
-      CHKERRQ(PetscObjectSetName((PetscObject)y,"y_subcomm_0")); /* Give a name to view y clearly */
-      CHKERRQ(VecGetLocalSize(y,&n));
+      PetscCall(VecSetUp(y));
+      PetscCall(PetscObjectSetName((PetscObject)y,"y_subcomm_0")); /* Give a name to view y clearly */
+      PetscCall(VecGetLocalSize(y,&n));
       if (iscuda) {
         #if defined(PETSC_HAVE_CUDA)
-          CHKERRQ(VecCUDAGetArray(y,&yvalue));
+          PetscCall(VecCUDAGetArray(y,&yvalue));
         #endif
       } else {
-        CHKERRQ(VecGetArray(y,&yvalue));
+        PetscCall(VecGetArray(y,&yvalue));
       }
       /* Create yg on PETSC_COMM_WORLD and alias yg with y. They share the memory pointed by yvalue.
         Note this is a collective call. All processes have to call it and supply consistent N.
       */
       if (iscuda) {
         #if defined(PETSC_HAVE_CUDA)
-          CHKERRQ(VecCreateMPICUDAWithArray(PETSC_COMM_WORLD,1,n,N,yvalue,&yg));
+          PetscCall(VecCreateMPICUDAWithArray(PETSC_COMM_WORLD,1,n,N,yvalue,&yg));
         #endif
       } else {
-        CHKERRQ(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,N,yvalue,&yg));
+        PetscCall(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,N,yvalue,&yg));
       }
 
       /* Create an identity map that makes yg[i] = x[i], i=0..N-1 */
-      CHKERRQ(VecGetOwnershipRange(yg,&low,&high)); /* low, high are global indices */
-      CHKERRQ(ISCreateStride(PETSC_COMM_SELF,high-low,low,1,&ix));
-      CHKERRQ(ISDuplicate(ix,&iy));
+      PetscCall(VecGetOwnershipRange(yg,&low,&high)); /* low, high are global indices */
+      PetscCall(ISCreateStride(PETSC_COMM_SELF,high-low,low,1,&ix));
+      PetscCall(ISDuplicate(ix,&iy));
 
       /* Union of ix's on subcomm0 covers the full range of [0,N) */
-      CHKERRQ(VecScatterCreate(x,ix,yg,iy,&vscat));
-      CHKERRQ(VecScatterBegin(vscat,x,yg,INSERT_VALUES,SCATTER_FORWARD));
-      CHKERRQ(VecScatterEnd(vscat,x,yg,INSERT_VALUES,SCATTER_FORWARD));
+      PetscCall(VecScatterCreate(x,ix,yg,iy,&vscat));
+      PetscCall(VecScatterBegin(vscat,x,yg,INSERT_VALUES,SCATTER_FORWARD));
+      PetscCall(VecScatterEnd(vscat,x,yg,INSERT_VALUES,SCATTER_FORWARD));
 
       /* Once yg got the data from x, we return yvalue to y so that we can use y in other operations.
         VecGetArray must be paired with VecRestoreArray.
       */
       if (iscuda) {
          #if defined(PETSC_HAVE_CUDA)
-           CHKERRQ(VecCUDARestoreArray(y,&yvalue));
+           PetscCall(VecCUDARestoreArray(y,&yvalue));
          #endif
       } else {
-        CHKERRQ(VecRestoreArray(y,&yvalue));
+        PetscCall(VecRestoreArray(y,&yvalue));
       }
 
       /* Libraries on subcomm0 can safely use y now, for example, view and scale it */
-      CHKERRQ(VecView(y,PETSC_VIEWER_STDOUT_(subcomm)));
-      CHKERRQ(VecScale(y,2.0));
+      PetscCall(VecView(y,PETSC_VIEWER_STDOUT_(subcomm)));
+      PetscCall(VecScale(y,2.0));
 
       /* Send the new y back to x */
-      CHKERRQ(VecGetArray(y,&yvalue)); /* If VecScale is done on GPU, Petsc will prepare a valid yvalue for access */
+      PetscCall(VecGetArray(y,&yvalue)); /* If VecScale is done on GPU, Petsc will prepare a valid yvalue for access */
       /* Supply new yvalue to yg without memory copying */
-      CHKERRQ(VecPlaceArray(yg,yvalue));
-      CHKERRQ(VecScatterBegin(vscat,yg,x,INSERT_VALUES,SCATTER_REVERSE));
-      CHKERRQ(VecScatterEnd(vscat,yg,x,INSERT_VALUES,SCATTER_REVERSE));
-      CHKERRQ(VecResetArray(yg));
+      PetscCall(VecPlaceArray(yg,yvalue));
+      PetscCall(VecScatterBegin(vscat,yg,x,INSERT_VALUES,SCATTER_REVERSE));
+      PetscCall(VecScatterEnd(vscat,yg,x,INSERT_VALUES,SCATTER_REVERSE));
+      PetscCall(VecResetArray(yg));
       if (iscuda) {
         #if defined(PETSC_HAVE_CUDA)
-          CHKERRQ(VecCUDARestoreArray(y,&yvalue));
+          PetscCall(VecCUDARestoreArray(y,&yvalue));
         #endif
       } else {
-        CHKERRQ(VecRestoreArray(y,&yvalue));
+        PetscCall(VecRestoreArray(y,&yvalue));
       }
 
-      CHKERRQ(VecDestroy(&y));
+      PetscCall(VecDestroy(&y));
     } else {
       /* Ranks outside of subcomm0 do not supply values to yg */
       if (iscuda) {
         #if defined(PETSC_HAVE_CUDA)
-          CHKERRQ(VecCreateMPICUDAWithArray(PETSC_COMM_WORLD,1,0/*n*/,N,NULL,&yg));
+          PetscCall(VecCreateMPICUDAWithArray(PETSC_COMM_WORLD,1,0/*n*/,N,NULL,&yg));
         #endif
       } else {
-        CHKERRQ(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,0/*n*/,N,NULL,&yg));
+        PetscCall(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,0/*n*/,N,NULL,&yg));
       }
 
       /* Ranks in subcomm0 already specified the full range of the identity map. The remaining
         ranks just need to create empty ISes to cheat VecScatterCreate.
       */
-      CHKERRQ(ISCreateStride(PETSC_COMM_SELF,0,0,1,&ix));
-      CHKERRQ(ISDuplicate(ix,&iy));
+      PetscCall(ISCreateStride(PETSC_COMM_SELF,0,0,1,&ix));
+      PetscCall(ISDuplicate(ix,&iy));
 
-      CHKERRQ(VecScatterCreate(x,ix,yg,iy,&vscat));
-      CHKERRQ(VecScatterBegin(vscat,x,yg,INSERT_VALUES,SCATTER_FORWARD));
-      CHKERRQ(VecScatterEnd(vscat,x,yg,INSERT_VALUES,SCATTER_FORWARD));
+      PetscCall(VecScatterCreate(x,ix,yg,iy,&vscat));
+      PetscCall(VecScatterBegin(vscat,x,yg,INSERT_VALUES,SCATTER_FORWARD));
+      PetscCall(VecScatterEnd(vscat,x,yg,INSERT_VALUES,SCATTER_FORWARD));
 
       /* Send the new y back to x. Ranks outside of subcomm0 actually have nothing to send.
         But they have to call VecScatterBegin/End since these routines are collective.
       */
-      CHKERRQ(VecScatterBegin(vscat,yg,x,INSERT_VALUES,SCATTER_REVERSE));
-      CHKERRQ(VecScatterEnd(vscat,yg,x,INSERT_VALUES,SCATTER_REVERSE));
+      PetscCall(VecScatterBegin(vscat,yg,x,INSERT_VALUES,SCATTER_REVERSE));
+      PetscCall(VecScatterEnd(vscat,yg,x,INSERT_VALUES,SCATTER_REVERSE));
     }
 
-    CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
-    CHKERRQ(ISDestroy(&ix));
-    CHKERRQ(ISDestroy(&iy));
-    CHKERRQ(VecDestroy(&x));
-    CHKERRQ(VecDestroy(&yg));
-    CHKERRQ(VecScatterDestroy(&vscat));
+    PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(ISDestroy(&ix));
+    PetscCall(ISDestroy(&iy));
+    PetscCall(VecDestroy(&x));
+    PetscCall(VecDestroy(&yg));
+    PetscCall(VecScatterDestroy(&vscat));
   } /* world2sub */
 
   /*===========================================================================
@@ -187,83 +187,83 @@ int main(int argc,char **argv)
       MPI_Comm          intercomm,parentcomm;
       PetscMPIInt       lrank;
 
-      CHKERRMPI(MPI_Comm_rank(subcomm,&lrank));
+      PetscCallMPI(MPI_Comm_rank(subcomm,&lrank));
       /* x is on subcomm */
-      CHKERRQ(VecCreate(subcomm, &x));
-      CHKERRQ(VecSetSizes(x, PETSC_DECIDE, N));
+      PetscCall(VecCreate(subcomm, &x));
+      PetscCall(VecSetSizes(x, PETSC_DECIDE, N));
       if (iscuda) {
-        CHKERRQ(VecSetType(x, VECCUDA));
+        PetscCall(VecSetType(x, VECCUDA));
       } else {
-        CHKERRQ(VecSetType(x, VECSTANDARD));
+        PetscCall(VecSetType(x, VECSTANDARD));
       }
-      CHKERRQ(VecSetUp(x));
-      CHKERRQ(VecGetOwnershipRange(x,&low,&high));
+      PetscCall(VecSetUp(x));
+      PetscCall(VecGetOwnershipRange(x,&low,&high));
 
       /* initialize x = [0.0, 1.0, 2.0, ..., 21.0] */
       for (i=low; i<high; i++) {
         PetscScalar val = i;
-        CHKERRQ(VecSetValue(x,i,val,INSERT_VALUES));
+        PetscCall(VecSetValue(x,i,val,INSERT_VALUES));
       }
-      CHKERRQ(VecAssemblyBegin(x));
-      CHKERRQ(VecAssemblyEnd(x));
+      PetscCall(VecAssemblyBegin(x));
+      PetscCall(VecAssemblyEnd(x));
 
-      CHKERRMPI(MPI_Intercomm_create(subcomm,0,PETSC_COMM_WORLD/*peer_comm*/,1,100/*tag*/,&intercomm));
+      PetscCallMPI(MPI_Intercomm_create(subcomm,0,PETSC_COMM_WORLD/*peer_comm*/,1,100/*tag*/,&intercomm));
 
       /* Tell rank 0 of subcomm1 the global size of x */
-      if (!lrank) CHKERRMPI(MPI_Send(&N,1,MPIU_INT,0/*receiver's rank in remote comm, i.e., subcomm1*/,200/*tag*/,intercomm));
+      if (!lrank) PetscCallMPI(MPI_Send(&N,1,MPIU_INT,0/*receiver's rank in remote comm, i.e., subcomm1*/,200/*tag*/,intercomm));
 
       /* Create an intracomm Petsc can work on. Ranks in subcomm0 are ordered before ranks in subcomm1 in parentcomm.
         But this order actually does not matter, since what we care is vector y, which is defined on subcomm1.
       */
-      CHKERRMPI(MPI_Intercomm_merge(intercomm,0/*low*/,&parentcomm));
+      PetscCallMPI(MPI_Intercomm_merge(intercomm,0/*low*/,&parentcomm));
 
       /* Create a vector xg on parentcomm, which shares memory with x */
-      CHKERRQ(VecGetLocalSize(x,&n));
+      PetscCall(VecGetLocalSize(x,&n));
       if (iscuda) {
         #if defined(PETSC_HAVE_CUDA)
-          CHKERRQ(VecCUDAGetArrayRead(x,&xvalue));
-          CHKERRQ(VecCreateMPICUDAWithArray(parentcomm,1,n,N,xvalue,&xg));
+          PetscCall(VecCUDAGetArrayRead(x,&xvalue));
+          PetscCall(VecCreateMPICUDAWithArray(parentcomm,1,n,N,xvalue,&xg));
         #endif
       } else {
-        CHKERRQ(VecGetArrayRead(x,&xvalue));
-        CHKERRQ(VecCreateMPIWithArray(parentcomm,1,n,N,xvalue,&xg));
+        PetscCall(VecGetArrayRead(x,&xvalue));
+        PetscCall(VecCreateMPIWithArray(parentcomm,1,n,N,xvalue,&xg));
       }
 
       /* Ranks in subcomm 0 have nothing on yg, so they simply have n=0, array=NULL */
       if (iscuda) {
         #if defined(PETSC_HAVE_CUDA)
-          CHKERRQ(VecCreateMPICUDAWithArray(parentcomm,1,0/*n*/,N,NULL/*array*/,&yg));
+          PetscCall(VecCreateMPICUDAWithArray(parentcomm,1,0/*n*/,N,NULL/*array*/,&yg));
         #endif
       } else {
-        CHKERRQ(VecCreateMPIWithArray(parentcomm,1,0/*n*/,N,NULL/*array*/,&yg));
+        PetscCall(VecCreateMPIWithArray(parentcomm,1,0/*n*/,N,NULL/*array*/,&yg));
       }
 
       /* Create the vecscatter, which does identity map by setting yg[i] = xg[i], i=0..N-1. */
-      CHKERRQ(VecGetOwnershipRange(xg,&low,&high)); /* low, high are global indices of xg */
-      CHKERRQ(ISCreateStride(PETSC_COMM_SELF,high-low,low,1,&ix));
-      CHKERRQ(ISDuplicate(ix,&iy));
-      CHKERRQ(VecScatterCreate(xg,ix,yg,iy,&vscat));
+      PetscCall(VecGetOwnershipRange(xg,&low,&high)); /* low, high are global indices of xg */
+      PetscCall(ISCreateStride(PETSC_COMM_SELF,high-low,low,1,&ix));
+      PetscCall(ISDuplicate(ix,&iy));
+      PetscCall(VecScatterCreate(xg,ix,yg,iy,&vscat));
 
       /* Scatter values from xg to yg */
-      CHKERRQ(VecScatterBegin(vscat,xg,yg,INSERT_VALUES,SCATTER_FORWARD));
-      CHKERRQ(VecScatterEnd(vscat,xg,yg,INSERT_VALUES,SCATTER_FORWARD));
+      PetscCall(VecScatterBegin(vscat,xg,yg,INSERT_VALUES,SCATTER_FORWARD));
+      PetscCall(VecScatterEnd(vscat,xg,yg,INSERT_VALUES,SCATTER_FORWARD));
 
       /* After the VecScatter is done, xg is idle so we can safely return xvalue to x */
       if (iscuda) {
         #if defined(PETSC_HAVE_CUDA)
-          CHKERRQ(VecCUDARestoreArrayRead(x,&xvalue));
+          PetscCall(VecCUDARestoreArrayRead(x,&xvalue));
         #endif
       } else {
-        CHKERRQ(VecRestoreArrayRead(x,&xvalue));
+        PetscCall(VecRestoreArrayRead(x,&xvalue));
       }
-      CHKERRQ(VecDestroy(&x));
-      CHKERRQ(ISDestroy(&ix));
-      CHKERRQ(ISDestroy(&iy));
-      CHKERRQ(VecDestroy(&xg));
-      CHKERRQ(VecDestroy(&yg));
-      CHKERRQ(VecScatterDestroy(&vscat));
-      CHKERRMPI(MPI_Comm_free(&intercomm));
-      CHKERRMPI(MPI_Comm_free(&parentcomm));
+      PetscCall(VecDestroy(&x));
+      PetscCall(ISDestroy(&ix));
+      PetscCall(ISDestroy(&iy));
+      PetscCall(VecDestroy(&xg));
+      PetscCall(VecDestroy(&yg));
+      PetscCall(VecScatterDestroy(&vscat));
+      PetscCallMPI(MPI_Comm_free(&intercomm));
+      PetscCallMPI(MPI_Comm_free(&parentcomm));
     } else if (mycolor == 1) { /* subcomm 1, containing ranks 1, 4, 7, ... in PETSC_COMM_WORLD */
       PetscInt    n,N;
       Vec         y,xg,yg;
@@ -273,43 +273,43 @@ int main(int argc,char **argv)
       MPI_Comm    intercomm,parentcomm;
       PetscMPIInt lrank;
 
-      CHKERRMPI(MPI_Comm_rank(subcomm,&lrank));
-      CHKERRMPI(MPI_Intercomm_create(subcomm,0,PETSC_COMM_WORLD/*peer_comm*/,0/*remote_leader*/,100/*tag*/,&intercomm));
+      PetscCallMPI(MPI_Comm_rank(subcomm,&lrank));
+      PetscCallMPI(MPI_Intercomm_create(subcomm,0,PETSC_COMM_WORLD/*peer_comm*/,0/*remote_leader*/,100/*tag*/,&intercomm));
 
       /* Two rank-0 are talking */
-      if (!lrank) CHKERRMPI(MPI_Recv(&N,1,MPIU_INT,0/*sender's rank in remote comm, i.e. subcomm0*/,200/*tag*/,intercomm,MPI_STATUS_IGNORE));
+      if (!lrank) PetscCallMPI(MPI_Recv(&N,1,MPIU_INT,0/*sender's rank in remote comm, i.e. subcomm0*/,200/*tag*/,intercomm,MPI_STATUS_IGNORE));
       /* Rank 0 of subcomm1 bcasts N to its members */
-      CHKERRMPI(MPI_Bcast(&N,1,MPIU_INT,0/*local root*/,subcomm));
+      PetscCallMPI(MPI_Bcast(&N,1,MPIU_INT,0/*local root*/,subcomm));
 
       /* Create a intracomm Petsc can work on */
-      CHKERRMPI(MPI_Intercomm_merge(intercomm,1/*high*/,&parentcomm));
+      PetscCallMPI(MPI_Intercomm_merge(intercomm,1/*high*/,&parentcomm));
 
       /* Ranks in subcomm1 have nothing on xg, so they simply have n=0, array=NULL.*/
       if (iscuda) {
         #if defined(PETSC_HAVE_CUDA)
-          CHKERRQ(VecCreateMPICUDAWithArray(parentcomm,1/*bs*/,0/*n*/,N,NULL/*array*/,&xg));
+          PetscCall(VecCreateMPICUDAWithArray(parentcomm,1/*bs*/,0/*n*/,N,NULL/*array*/,&xg));
         #endif
       } else {
-        CHKERRQ(VecCreateMPIWithArray(parentcomm,1/*bs*/,0/*n*/,N,NULL/*array*/,&xg));
+        PetscCall(VecCreateMPIWithArray(parentcomm,1/*bs*/,0/*n*/,N,NULL/*array*/,&xg));
       }
 
-      CHKERRQ(VecCreate(subcomm, &y));
-      CHKERRQ(VecSetSizes(y, PETSC_DECIDE, N));
+      PetscCall(VecCreate(subcomm, &y));
+      PetscCall(VecSetSizes(y, PETSC_DECIDE, N));
       if (iscuda) {
-        CHKERRQ(VecSetType(y, VECCUDA));
+        PetscCall(VecSetType(y, VECCUDA));
       } else {
-        CHKERRQ(VecSetType(y, VECSTANDARD));
+        PetscCall(VecSetType(y, VECSTANDARD));
       }
-      CHKERRQ(VecSetUp(y));
+      PetscCall(VecSetUp(y));
 
-      CHKERRQ(PetscObjectSetName((PetscObject)y,"y_subcomm_1")); /* Give a name to view y clearly */
-      CHKERRQ(VecGetLocalSize(y,&n));
+      PetscCall(PetscObjectSetName((PetscObject)y,"y_subcomm_1")); /* Give a name to view y clearly */
+      PetscCall(VecGetLocalSize(y,&n));
       if (iscuda) {
         #if defined(PETSC_HAVE_CUDA)
-          CHKERRQ(VecCUDAGetArray(y,&yvalue));
+          PetscCall(VecCUDAGetArray(y,&yvalue));
         #endif
       } else {
-        CHKERRQ(VecGetArray(y,&yvalue));
+        PetscCall(VecGetArray(y,&yvalue));
       }
       /* Create a vector yg on parentcomm, which shares memory with y. xg and yg must be
         created in the same order in subcomm0/1. For example, we can not reverse the order of
@@ -317,43 +317,43 @@ int main(int argc,char **argv)
       */
       if (iscuda) {
         #if defined(PETSC_HAVE_CUDA)
-          CHKERRQ(VecCreateMPICUDAWithArray(parentcomm,1/*bs*/,n,N,yvalue,&yg));
+          PetscCall(VecCreateMPICUDAWithArray(parentcomm,1/*bs*/,n,N,yvalue,&yg));
         #endif
       } else {
-        CHKERRQ(VecCreateMPIWithArray(parentcomm,1/*bs*/,n,N,yvalue,&yg));
+        PetscCall(VecCreateMPIWithArray(parentcomm,1/*bs*/,n,N,yvalue,&yg));
       }
 
       /* Ranks in subcomm0 already specified the full range of the identity map.
         ranks in subcomm1 just need to create empty ISes to cheat VecScatterCreate.
       */
-      CHKERRQ(ISCreateStride(PETSC_COMM_SELF,0,0,1,&ix));
-      CHKERRQ(ISDuplicate(ix,&iy));
-      CHKERRQ(VecScatterCreate(xg,ix,yg,iy,&vscat));
+      PetscCall(ISCreateStride(PETSC_COMM_SELF,0,0,1,&ix));
+      PetscCall(ISDuplicate(ix,&iy));
+      PetscCall(VecScatterCreate(xg,ix,yg,iy,&vscat));
 
       /* Scatter values from xg to yg */
-      CHKERRQ(VecScatterBegin(vscat,xg,yg,INSERT_VALUES,SCATTER_FORWARD));
-      CHKERRQ(VecScatterEnd(vscat,xg,yg,INSERT_VALUES,SCATTER_FORWARD));
+      PetscCall(VecScatterBegin(vscat,xg,yg,INSERT_VALUES,SCATTER_FORWARD));
+      PetscCall(VecScatterEnd(vscat,xg,yg,INSERT_VALUES,SCATTER_FORWARD));
 
       /* After the VecScatter is done, values in yg are available. y is our interest, so we return yvalue to y */
       if (iscuda) {
         #if defined(PETSC_HAVE_CUDA)
-          CHKERRQ(VecCUDARestoreArray(y,&yvalue));
+          PetscCall(VecCUDARestoreArray(y,&yvalue));
         #endif
       } else {
-        CHKERRQ(VecRestoreArray(y,&yvalue));
+        PetscCall(VecRestoreArray(y,&yvalue));
       }
 
       /* Libraries on subcomm1 can safely use y now, for example, view it */
-      CHKERRQ(VecView(y,PETSC_VIEWER_STDOUT_(subcomm)));
+      PetscCall(VecView(y,PETSC_VIEWER_STDOUT_(subcomm)));
 
-      CHKERRQ(VecDestroy(&y));
-      CHKERRQ(ISDestroy(&ix));
-      CHKERRQ(ISDestroy(&iy));
-      CHKERRQ(VecDestroy(&xg));
-      CHKERRQ(VecDestroy(&yg));
-      CHKERRQ(VecScatterDestroy(&vscat));
-      CHKERRMPI(MPI_Comm_free(&intercomm));
-      CHKERRMPI(MPI_Comm_free(&parentcomm));
+      PetscCall(VecDestroy(&y));
+      PetscCall(ISDestroy(&ix));
+      PetscCall(ISDestroy(&iy));
+      PetscCall(VecDestroy(&xg));
+      PetscCall(VecDestroy(&yg));
+      PetscCall(VecScatterDestroy(&vscat));
+      PetscCallMPI(MPI_Comm_free(&intercomm));
+      PetscCallMPI(MPI_Comm_free(&parentcomm));
     } else if (mycolor == 2) { /* subcomm2 */
       /* Processes in subcomm2 do not participate in the VecScatter. They can freely do unrelated things on subcomm2 */
     }
@@ -371,29 +371,29 @@ int main(int argc,char **argv)
     PetscScalar *yvalue;
 
     /* Initialize x to [0, 1, 2, 3, ..., N-1] */
-    CHKERRQ(VecCreate(PETSC_COMM_WORLD, &x));
-    CHKERRQ(VecSetSizes(x, PETSC_DECIDE, N));
+    PetscCall(VecCreate(PETSC_COMM_WORLD, &x));
+    PetscCall(VecSetSizes(x, PETSC_DECIDE, N));
     if (iscuda) {
-      CHKERRQ(VecSetType(x, VECCUDA));
+      PetscCall(VecSetType(x, VECCUDA));
     } else {
-      CHKERRQ(VecSetType(x, VECSTANDARD));
+      PetscCall(VecSetType(x, VECSTANDARD));
     }
-    CHKERRQ(VecSetUp(x));
-    CHKERRQ(VecGetOwnershipRange(x,&low,&high));
-    for (i=low; i<high; i++) CHKERRQ(VecSetValue(x,i,(PetscScalar)i,INSERT_VALUES));
-    CHKERRQ(VecAssemblyBegin(x));
-    CHKERRQ(VecAssemblyEnd(x));
+    PetscCall(VecSetUp(x));
+    PetscCall(VecGetOwnershipRange(x,&low,&high));
+    for (i=low; i<high; i++) PetscCall(VecSetValue(x,i,(PetscScalar)i,INSERT_VALUES));
+    PetscCall(VecAssemblyBegin(x));
+    PetscCall(VecAssemblyEnd(x));
 
     /* Every subcomm has a y as long as x */
-    CHKERRQ(VecCreate(subcomm, &y));
-    CHKERRQ(VecSetSizes(y, PETSC_DECIDE, N));
+    PetscCall(VecCreate(subcomm, &y));
+    PetscCall(VecSetSizes(y, PETSC_DECIDE, N));
     if (iscuda) {
-      CHKERRQ(VecSetType(y, VECCUDA));
+      PetscCall(VecSetType(y, VECCUDA));
     } else {
-      CHKERRQ(VecSetType(y, VECSTANDARD));
+      PetscCall(VecSetType(y, VECSTANDARD));
     }
-    CHKERRQ(VecSetUp(y));
-    CHKERRQ(VecGetLocalSize(y,&n));
+    PetscCall(VecSetUp(y));
+    PetscCall(VecGetLocalSize(y,&n));
 
     /* Create a global vector yg on PETSC_COMM_WORLD using y's memory. yg's global size = N*(number of subcommunicators).
        Eeach rank in subcomms contributes a piece to construct the global yg. Keep in mind that pieces from a subcomm are not
@@ -402,50 +402,50 @@ int main(int argc,char **argv)
     */
     if (iscuda) {
       #if defined(PETSC_HAVE_CUDA)
-        CHKERRQ(VecCUDAGetArray(y,&yvalue));
-        CHKERRQ(VecCreateMPICUDAWithArray(PETSC_COMM_WORLD,1,n,PETSC_DECIDE,yvalue,&yg));
+        PetscCall(VecCUDAGetArray(y,&yvalue));
+        PetscCall(VecCreateMPICUDAWithArray(PETSC_COMM_WORLD,1,n,PETSC_DECIDE,yvalue,&yg));
       #endif
     } else {
-      CHKERRQ(VecGetArray(y,&yvalue));
-      CHKERRQ(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,PETSC_DECIDE,yvalue,&yg));
+      PetscCall(VecGetArray(y,&yvalue));
+      PetscCall(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,PETSC_DECIDE,yvalue,&yg));
     }
-    CHKERRQ(PetscObjectSetName((PetscObject)yg,"yg_on_subcomms")); /* Give a name to view yg clearly */
+    PetscCall(PetscObjectSetName((PetscObject)yg,"yg_on_subcomms")); /* Give a name to view yg clearly */
 
     /* The following two lines are key. From xstart, we know where to pull entries from x. Note that we get xstart from y,
        since first entry of y on this rank is from x[xstart]. From ystart, we know where ot put entries to yg.
      */
-    CHKERRQ(VecGetOwnershipRange(y,&xstart,NULL));
-    CHKERRQ(VecGetOwnershipRange(yg,&ystart,NULL));
+    PetscCall(VecGetOwnershipRange(y,&xstart,NULL));
+    PetscCall(VecGetOwnershipRange(yg,&ystart,NULL));
 
-    CHKERRQ(ISCreateStride(PETSC_COMM_SELF,n,xstart,1,&ix));
-    CHKERRQ(ISCreateStride(PETSC_COMM_SELF,n,ystart,1,&iy));
-    CHKERRQ(VecScatterCreate(x,ix,yg,iy,&vscat));
-    CHKERRQ(VecScatterBegin(vscat,x,yg,INSERT_VALUES,SCATTER_FORWARD));
-    CHKERRQ(VecScatterEnd(vscat,x,yg,INSERT_VALUES,SCATTER_FORWARD));
+    PetscCall(ISCreateStride(PETSC_COMM_SELF,n,xstart,1,&ix));
+    PetscCall(ISCreateStride(PETSC_COMM_SELF,n,ystart,1,&iy));
+    PetscCall(VecScatterCreate(x,ix,yg,iy,&vscat));
+    PetscCall(VecScatterBegin(vscat,x,yg,INSERT_VALUES,SCATTER_FORWARD));
+    PetscCall(VecScatterEnd(vscat,x,yg,INSERT_VALUES,SCATTER_FORWARD));
 
     /* View yg on PETSC_COMM_WORLD before destroying it. We shall see the interleaving effect in output. */
-    CHKERRQ(VecView(yg,PETSC_VIEWER_STDOUT_WORLD));
-    CHKERRQ(VecDestroy(&yg));
+    PetscCall(VecView(yg,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(VecDestroy(&yg));
 
     /* Restory yvalue so that processes in subcomm can use y from now on. */
     if (iscuda) {
       #if defined(PETSC_HAVE_CUDA)
-        CHKERRQ(VecCUDARestoreArray(y,&yvalue));
+        PetscCall(VecCUDARestoreArray(y,&yvalue));
       #endif
     } else {
-      CHKERRQ(VecRestoreArray(y,&yvalue));
+      PetscCall(VecRestoreArray(y,&yvalue));
     }
-    CHKERRQ(VecScale(y,3.0));
+    PetscCall(VecScale(y,3.0));
 
-    CHKERRQ(ISDestroy(&ix)); /* One can also destroy ix, iy immediately after VecScatterCreate() */
-    CHKERRQ(ISDestroy(&iy));
-    CHKERRQ(VecDestroy(&x));
-    CHKERRQ(VecDestroy(&y));
-    CHKERRQ(VecScatterDestroy(&vscat));
+    PetscCall(ISDestroy(&ix)); /* One can also destroy ix, iy immediately after VecScatterCreate() */
+    PetscCall(ISDestroy(&iy));
+    PetscCall(VecDestroy(&x));
+    PetscCall(VecDestroy(&y));
+    PetscCall(VecScatterDestroy(&vscat));
   } /* world2subs */
 
-  CHKERRMPI(MPI_Comm_free(&subcomm));
-  CHKERRQ(PetscFinalize());
+  PetscCallMPI(MPI_Comm_free(&subcomm));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

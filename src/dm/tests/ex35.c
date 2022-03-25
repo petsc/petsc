@@ -15,33 +15,33 @@ int main(int argc,char **argv)
   PetscViewer    viewer;
   Mat            A;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"temp.dat",FILE_MODE_WRITE,&viewer));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"temp.dat",FILE_MODE_WRITE,&viewer));
 
   /* Read options */
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-X",&X,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-Y",&Y,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-Z",&Z,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-X",&X,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-Y",&Y,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-Z",&Z,NULL));
 
   /* Create distributed array and get vectors */
-  CHKERRQ(DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,X,Y,Z,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,NULL,&da));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
-  CHKERRQ(DMSetMatType(da,MATMPIAIJ));
-  CHKERRQ(DMCreateMatrix(da,&A));
-  CHKERRQ(MatShift(A,X));
-  CHKERRQ(MatView(A,viewer));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(PetscViewerDestroy(&viewer));
+  PetscCall(DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,X,Y,Z,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMSetMatType(da,MATMPIAIJ));
+  PetscCall(DMCreateMatrix(da,&A));
+  PetscCall(MatShift(A,X));
+  PetscCall(MatView(A,viewer));
+  PetscCall(MatDestroy(&A));
+  PetscCall(PetscViewerDestroy(&viewer));
 
-  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"temp.dat",FILE_MODE_READ,&viewer));
-  CHKERRQ(DMCreateMatrix(da,&A));
-  CHKERRQ(MatLoad(A,viewer));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"temp.dat",FILE_MODE_READ,&viewer));
+  PetscCall(DMCreateMatrix(da,&A));
+  PetscCall(MatLoad(A,viewer));
 
   /* Free memory */
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(PetscViewerDestroy(&viewer));
-  CHKERRQ(DMDestroy(&da));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatDestroy(&A));
+  PetscCall(PetscViewerDestroy(&viewer));
+  PetscCall(DMDestroy(&da));
+  PetscCall(PetscFinalize());
   return 0;
 }

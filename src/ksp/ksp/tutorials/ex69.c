@@ -29,17 +29,17 @@ PetscErrorCode ComputeSolution(DM da,PetscGLL *gll,Vec u)
   Vec            x;
 
   PetscFunctionBegin;
-  CHKERRQ(DMDAGetCorners(da,&xs,NULL,NULL,&xn,NULL,NULL));
-  CHKERRQ(DMGetCoordinates(da,&x));
-  CHKERRQ(DMDAVecGetArray(da,x,&xx));
-  CHKERRQ(DMDAVecGetArray(da,u,&uu));
+  PetscCall(DMDAGetCorners(da,&xs,NULL,NULL,&xn,NULL,NULL));
+  PetscCall(DMGetCoordinates(da,&x));
+  PetscCall(DMDAVecGetArray(da,x,&xx));
+  PetscCall(DMDAVecGetArray(da,u,&uu));
   /* loop over local nodes */
   for (j=xs; j<xs+xn; j++) {
     xd    = xx[j];
     uu[j] = (xd*xd - 1.0)*PetscCosReal(5.*PETSC_PI*xd);
   }
-  CHKERRQ(DMDAVecRestoreArray(da,x,&xx));
-  CHKERRQ(DMDAVecRestoreArray(da,u,&uu));
+  PetscCall(DMDAVecRestoreArray(da,x,&xx));
+  PetscCall(DMDAVecRestoreArray(da,u,&uu));
   PetscFunctionReturn(0);
 }
 
@@ -56,14 +56,14 @@ PetscErrorCode ComputeRhs(DM da,PetscGLL *gll,Vec b)
   Vec            blocal,xlocal;
 
   PetscFunctionBegin;
-  CHKERRQ(DMDAGetCorners(da,&xs,NULL,NULL,&xn,NULL,NULL));
+  PetscCall(DMDAGetCorners(da,&xs,NULL,NULL,&xn,NULL,NULL));
   xs   = xs/(n-1);
   xn   = xn/(n-1);
-  CHKERRQ(DMGetLocalVector(da,&blocal));
-  CHKERRQ(VecZeroEntries(blocal));
-  CHKERRQ(DMDAVecGetArray(da,blocal,&bb));
-  CHKERRQ(DMGetCoordinatesLocal(da,&xlocal));
-  CHKERRQ(DMDAVecGetArray(da,xlocal,&xx));
+  PetscCall(DMGetLocalVector(da,&blocal));
+  PetscCall(VecZeroEntries(blocal));
+  PetscCall(DMDAVecGetArray(da,blocal,&bb));
+  PetscCall(DMGetCoordinatesLocal(da,&xlocal));
+  PetscCall(DMDAVecGetArray(da,xlocal,&xx));
   /* loop over local spectral elements */
   for (j=xs; j<xs+xn; j++) {
     /* loop over GLL points in each element */
@@ -72,12 +72,12 @@ PetscErrorCode ComputeRhs(DM da,PetscGLL *gll,Vec b)
       bb[j*(n-1) + i] += -gll->weights[i]*(-20.*PETSC_PI*xd*PetscSinReal(5.*PETSC_PI*xd) + (2. - (5.*PETSC_PI)*(5.*PETSC_PI)*(xd*xd - 1.))*PetscCosReal(5.*PETSC_PI*xd));
     }
   }
-  CHKERRQ(DMDAVecRestoreArray(da,xlocal,&xx));
-  CHKERRQ(DMDAVecRestoreArray(da,blocal,&bb));
-  CHKERRQ(VecZeroEntries(b));
-  CHKERRQ(DMLocalToGlobalBegin(da,blocal,ADD_VALUES,b));
-  CHKERRQ(DMLocalToGlobalEnd(da,blocal,ADD_VALUES,b));
-  CHKERRQ(DMRestoreLocalVector(da,&blocal));
+  PetscCall(DMDAVecRestoreArray(da,xlocal,&xx));
+  PetscCall(DMDAVecRestoreArray(da,blocal,&bb));
+  PetscCall(VecZeroEntries(b));
+  PetscCall(DMLocalToGlobalBegin(da,blocal,ADD_VALUES,b));
+  PetscCall(DMLocalToGlobalEnd(da,blocal,ADD_VALUES,b));
+  PetscCall(DMRestoreLocalVector(da,&blocal));
   PetscFunctionReturn(0);
 }
 
@@ -107,42 +107,42 @@ int main(int argc,char **args)
   DM             da;
   PetscMPIInt    rank,size;
 
-  CHKERRQ(PetscInitialize(&argc,&args,NULL,NULL));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-q",&q,NULL));
+  PetscCall(PetscInitialize(&argc,&args,NULL,NULL));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-q",&q,NULL));
 
-  CHKERRQ(PetscDrawCreate(PETSC_COMM_WORLD,NULL,"Log(Error norm) vs Number of GLL points",0,0,500,500,&draw));
-  CHKERRQ(PetscDrawSetFromOptions(draw));
-  CHKERRQ(PetscDrawLGCreate(draw,1,&lg));
-  CHKERRQ(PetscDrawLGSetUseMarkers(lg,PETSC_TRUE));
-  CHKERRQ(PetscDrawLGGetAxis(lg,&axis));
-  CHKERRQ(PetscDrawAxisSetLabels(axis,NULL,"Number of GLL points","Log(Error Norm)"));
+  PetscCall(PetscDrawCreate(PETSC_COMM_WORLD,NULL,"Log(Error norm) vs Number of GLL points",0,0,500,500,&draw));
+  PetscCall(PetscDrawSetFromOptions(draw));
+  PetscCall(PetscDrawLGCreate(draw,1,&lg));
+  PetscCall(PetscDrawLGSetUseMarkers(lg,PETSC_TRUE));
+  PetscCall(PetscDrawLGGetAxis(lg,&axis));
+  PetscCall(PetscDrawAxisSetLabels(axis,NULL,"Number of GLL points","Log(Error Norm)"));
 
   for (n=4; n<N; n+=2) {
 
     /*
        da contains the information about the parallel layout of the elements
     */
-    CHKERRQ(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,q*(n-1)+1,1,1,NULL,&da));
-    CHKERRQ(DMSetFromOptions(da));
-    CHKERRQ(DMSetUp(da));
-    CHKERRQ(DMDAGetInfo(da,NULL,&q,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL));
+    PetscCall(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,q*(n-1)+1,1,1,NULL,&da));
+    PetscCall(DMSetFromOptions(da));
+    PetscCall(DMSetUp(da));
+    PetscCall(DMDAGetInfo(da,NULL,&q,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL));
     q = (q-1)/(n-1);  /* number of spectral elements */
 
     /*
        gll simply contains the GLL node and weight values
     */
-    CHKERRQ(PetscMalloc2(n,&gll.nodes,n,&gll.weights));
-    CHKERRQ(PetscDTGaussLobattoLegendreQuadrature(n,PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA,gll.nodes,gll.weights));
+    PetscCall(PetscMalloc2(n,&gll.nodes,n,&gll.weights));
+    PetscCall(PetscDTGaussLobattoLegendreQuadrature(n,PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA,gll.nodes,gll.weights));
     gll.n = n;
-    CHKERRQ(DMDASetGLLCoordinates(da,gll.n,gll.nodes));
+    PetscCall(DMDASetGLLCoordinates(da,gll.n,gll.nodes));
 
     /*
        Creates the element stiffness matrix for the given gll
     */
-    CHKERRQ(PetscGaussLobattoLegendreElementLaplacianCreate(gll.n,gll.nodes,gll.weights,&A));
+    PetscCall(PetscGaussLobattoLegendreElementLaplacianCreate(gll.n,gll.nodes,gll.weights,&A));
 
     /*
       Scale the element stiffness and weights by the size of the element
@@ -158,67 +158,67 @@ int main(int argc,char **args)
     /*
         Create the global stiffness matrix and add the element stiffness for each local element
     */
-    CHKERRQ(DMCreateMatrix(da,&K));
-    CHKERRQ(MatSetOption(K,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE));
-    CHKERRQ(DMDAGetCorners(da,&xs,NULL,NULL,&xn,NULL,NULL));
+    PetscCall(DMCreateMatrix(da,&K));
+    PetscCall(MatSetOption(K,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE));
+    PetscCall(DMDAGetCorners(da,&xs,NULL,NULL,&xn,NULL,NULL));
     xs   = xs/(n-1);
     xn   = xn/(n-1);
-    CHKERRQ(PetscMalloc1(n,&rows));
+    PetscCall(PetscMalloc1(n,&rows));
     /*
         loop over local elements
     */
     for (j=xs; j<xs+xn; j++) {
       for (l=0; l<n; l++) rows[l] = j*(n-1)+l;
-      CHKERRQ(MatSetValues(K,n,rows,n,rows,&A[0][0],ADD_VALUES));
+      PetscCall(MatSetValues(K,n,rows,n,rows,&A[0][0],ADD_VALUES));
     }
-    CHKERRQ(MatAssemblyBegin(K,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(K,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyBegin(K,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(K,MAT_FINAL_ASSEMBLY));
 
-    CHKERRQ(MatCreateVecs(K,&x,&b));
-    CHKERRQ(ComputeRhs(da,&gll,b));
+    PetscCall(MatCreateVecs(K,&x,&b));
+    PetscCall(ComputeRhs(da,&gll,b));
 
     /*
         Replace the first and last rows/columns of the matrix with the identity to obtain the zero Dirichlet boundary conditions
     */
     rows[0] = 0;
     rows[1] = q*(n-1);
-    CHKERRQ(MatZeroRowsColumns(K,2,rows,1.0,x,b));
-    CHKERRQ(PetscFree(rows));
+    PetscCall(MatZeroRowsColumns(K,2,rows,1.0,x,b));
+    PetscCall(PetscFree(rows));
 
-    CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
-    CHKERRQ(KSPSetOperators(ksp,K,K));
-    CHKERRQ(KSPGetPC(ksp,&pc));
-    CHKERRQ(PCSetType(pc,PCLU));
-    CHKERRQ(KSPSetFromOptions(ksp));
-    CHKERRQ(KSPSolve(ksp,b,x));
+    PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+    PetscCall(KSPSetOperators(ksp,K,K));
+    PetscCall(KSPGetPC(ksp,&pc));
+    PetscCall(PCSetType(pc,PCLU));
+    PetscCall(KSPSetFromOptions(ksp));
+    PetscCall(KSPSolve(ksp,b,x));
 
     /* compute the error to the continium problem */
-    CHKERRQ(ComputeSolution(da,&gll,b));
-    CHKERRQ(VecAXPY(x,-1.0,b));
+    PetscCall(ComputeSolution(da,&gll,b));
+    PetscCall(VecAXPY(x,-1.0,b));
 
     /* compute the L^2 norm of the error */
-    CHKERRQ(VecGetArray(x,&f));
-    CHKERRQ(PetscGaussLobattoLegendreIntegrate(gll.n,gll.nodes,gll.weights,f,&norm));
-    CHKERRQ(VecRestoreArray(x,&f));
+    PetscCall(VecGetArray(x,&f));
+    PetscCall(PetscGaussLobattoLegendreIntegrate(gll.n,gll.nodes,gll.weights,f,&norm));
+    PetscCall(VecRestoreArray(x,&f));
     norm = PetscSqrtReal(norm);
-    CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"L^2 norm of the error %D %g\n",n,(double)norm));
+    PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"L^2 norm of the error %D %g\n",n,(double)norm));
     PetscCheckFalse(n > 10 && norm > 1.e-8,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Slower convergence than expected");
     xc   = (PetscReal)n;
     yc   = PetscLog10Real(norm);
-    CHKERRQ(PetscDrawLGAddPoint(lg,&xc,&yc));
-    CHKERRQ(PetscDrawLGDraw(lg));
+    PetscCall(PetscDrawLGAddPoint(lg,&xc,&yc));
+    PetscCall(PetscDrawLGDraw(lg));
 
-    CHKERRQ(VecDestroy(&b));
-    CHKERRQ(VecDestroy(&x));
-    CHKERRQ(KSPDestroy(&ksp));
-    CHKERRQ(MatDestroy(&K));
-    CHKERRQ(PetscGaussLobattoLegendreElementLaplacianDestroy(gll.n,gll.nodes,gll.weights,&A));
-    CHKERRQ(PetscFree2(gll.nodes,gll.weights));
-    CHKERRQ(DMDestroy(&da));
+    PetscCall(VecDestroy(&b));
+    PetscCall(VecDestroy(&x));
+    PetscCall(KSPDestroy(&ksp));
+    PetscCall(MatDestroy(&K));
+    PetscCall(PetscGaussLobattoLegendreElementLaplacianDestroy(gll.n,gll.nodes,gll.weights,&A));
+    PetscCall(PetscFree2(gll.nodes,gll.weights));
+    PetscCall(DMDestroy(&da));
   }
-  CHKERRQ(PetscDrawLGDestroy(&lg));
-  CHKERRQ(PetscDrawDestroy(&draw));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscDrawLGDestroy(&lg));
+  PetscCall(PetscDrawDestroy(&draw));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

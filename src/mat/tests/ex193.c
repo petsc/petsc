@@ -25,67 +25,67 @@ int main(int argc,char **args)
   IS              is,isn,isrows;
   MPI_Comm        comm;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   comm = PETSC_COMM_WORLD;
-  CHKERRMPI(MPI_Comm_size(comm,&size));
-  ierr = PetscOptionsBegin(comm,NULL,"ex193","hierarchical partitioning");CHKERRQ(ierr);
+  PetscCallMPI(MPI_Comm_size(comm,&size));
+  ierr = PetscOptionsBegin(comm,NULL,"ex193","hierarchical partitioning");PetscCall(ierr);
   m = 15;
-  CHKERRQ(PetscOptionsInt("-M","Number of mesh points in the x-direction","partitioning",m,&m,NULL));
+  PetscCall(PetscOptionsInt("-M","Number of mesh points in the x-direction","partitioning",m,&m,NULL));
   n = 15;
-  CHKERRQ(PetscOptionsInt("-N","Number of mesh points in the y-direction","partitioning",n,&n,NULL));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-N","Number of mesh points in the y-direction","partitioning",n,&n,NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
   /*
      Assemble the matrix for the five point stencil (finite difference), YET AGAIN
   */
-  CHKERRQ(MatCreate(comm,&A));
-  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n));
-  CHKERRQ(MatSetFromOptions(A));
-  CHKERRQ(MatSetUp(A));
-  CHKERRQ(MatGetOwnershipRange(A,&Istart,&Iend));
+  PetscCall(MatCreate(comm,&A));
+  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSetUp(A));
+  PetscCall(MatGetOwnershipRange(A,&Istart,&Iend));
   for (Ii=Istart; Ii<Iend; Ii++) {
     v = -1.0; i = Ii/n; j = Ii - i*n;
-    if (i>0)   {J = Ii - n; CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
-    if (i<m-1) {J = Ii + n; CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
-    if (j>0)   {J = Ii - 1; CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
-    if (j<n-1) {J = Ii + 1; CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
-    v = 4.0; CHKERRQ(MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES));
+    if (i>0)   {J = Ii - n; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
+    if (i<m-1) {J = Ii + n; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
+    if (j>0)   {J = Ii - 1; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
+    if (j<n-1) {J = Ii + 1; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
+    v = 4.0; PetscCall(MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES));
   }
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
   /*
    Partition the graph of the matrix
   */
-  CHKERRQ(MatPartitioningCreate(comm,&part));
-  CHKERRQ(MatPartitioningSetAdjacency(part,A));
-  CHKERRQ(MatPartitioningSetType(part,MATPARTITIONINGHIERARCH));
-  CHKERRQ(MatPartitioningHierarchicalSetNcoarseparts(part,2));
-  CHKERRQ(MatPartitioningHierarchicalSetNfineparts(part,4));
-  CHKERRQ(MatPartitioningSetFromOptions(part));
+  PetscCall(MatPartitioningCreate(comm,&part));
+  PetscCall(MatPartitioningSetAdjacency(part,A));
+  PetscCall(MatPartitioningSetType(part,MATPARTITIONINGHIERARCH));
+  PetscCall(MatPartitioningHierarchicalSetNcoarseparts(part,2));
+  PetscCall(MatPartitioningHierarchicalSetNfineparts(part,4));
+  PetscCall(MatPartitioningSetFromOptions(part));
   /* get new processor owner number of each vertex */
-  CHKERRQ(MatPartitioningApply(part,&is));
+  PetscCall(MatPartitioningApply(part,&is));
   /* coarse parts */
-  CHKERRQ(MatPartitioningHierarchicalGetCoarseparts(part,&coarseparts));
-  CHKERRQ(ISView(coarseparts,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatPartitioningHierarchicalGetCoarseparts(part,&coarseparts));
+  PetscCall(ISView(coarseparts,PETSC_VIEWER_STDOUT_WORLD));
   /* fine parts */
-  CHKERRQ(MatPartitioningHierarchicalGetFineparts(part,&fineparts));
-  CHKERRQ(ISView(fineparts,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatPartitioningHierarchicalGetFineparts(part,&fineparts));
+  PetscCall(ISView(fineparts,PETSC_VIEWER_STDOUT_WORLD));
   /* partitioning */
-  CHKERRQ(ISView(is,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(ISView(is,PETSC_VIEWER_STDOUT_WORLD));
   /* get new global number of each old global number */
-  CHKERRQ(ISPartitioningToNumbering(is,&isn));
-  CHKERRQ(ISView(isn,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(ISBuildTwoSided(is,NULL,&isrows));
-  CHKERRQ(ISView(isrows,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(ISDestroy(&is));
-  CHKERRQ(ISDestroy(&coarseparts));
-  CHKERRQ(ISDestroy(&fineparts));
-  CHKERRQ(ISDestroy(&isrows));
-  CHKERRQ(ISDestroy(&isn));
-  CHKERRQ(MatPartitioningDestroy(&part));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(PetscFinalize());
+  PetscCall(ISPartitioningToNumbering(is,&isn));
+  PetscCall(ISView(isn,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(ISBuildTwoSided(is,NULL,&isrows));
+  PetscCall(ISView(isrows,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(ISDestroy(&is));
+  PetscCall(ISDestroy(&coarseparts));
+  PetscCall(ISDestroy(&fineparts));
+  PetscCall(ISDestroy(&isrows));
+  PetscCall(ISDestroy(&isn));
+  PetscCall(MatPartitioningDestroy(&part));
+  PetscCall(MatDestroy(&A));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

@@ -18,35 +18,35 @@ int main(int argc,char **argv)
   AO             ao;
   const PetscInt *app;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   /* create the index sets */
-  CHKERRQ(ISCreateStride(PETSC_COMM_WORLD,n,rank,size,&isapp));
-  CHKERRQ(ISCreateStride(PETSC_COMM_WORLD,n,n*rank,1,&ispetsc)); /* natural numbering */
+  PetscCall(ISCreateStride(PETSC_COMM_WORLD,n,rank,size,&isapp));
+  PetscCall(ISCreateStride(PETSC_COMM_WORLD,n,n*rank,1,&ispetsc)); /* natural numbering */
 
   /* create the application ordering */
-  CHKERRQ(AOCreateBasicIS(isapp,ispetsc,&ao));
-  CHKERRQ(AOView(ao,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(AOCreateBasicIS(isapp,ispetsc,&ao));
+  PetscCall(AOView(ao,PETSC_VIEWER_STDOUT_WORLD));
 
-  CHKERRQ(AOPetscToApplication(ao,4,getapp));
-  CHKERRQ(AOApplicationToPetsc(ao,3,getpetsc));
+  PetscCall(AOPetscToApplication(ao,4,getapp));
+  PetscCall(AOApplicationToPetsc(ao,3,getpetsc));
 
-  CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] 2,1,9,7 PetscToApplication %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n",rank,getapp[0],getapp[1],getapp[2],getapp[3]));
-  CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] 0,3,4 ApplicationToPetsc %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n",rank,getpetsc[0],getpetsc[1],getpetsc[2]));
-  CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
-  CHKERRQ(AODestroy(&ao));
+  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] 2,1,9,7 PetscToApplication %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n",rank,getapp[0],getapp[1],getapp[2],getapp[3]));
+  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] 0,3,4 ApplicationToPetsc %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n",rank,getpetsc[0],getpetsc[1],getpetsc[2]));
+  PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
+  PetscCall(AODestroy(&ao));
 
   /* test MemoryScalable ao */
   /*-------------------------*/
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\nTest AOCreateMemoryScalable: \n"));
-  CHKERRQ(AOCreateMemoryScalableIS(isapp,ispetsc,&ao));
-  CHKERRQ(AOView(ao,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\nTest AOCreateMemoryScalable: \n"));
+  PetscCall(AOCreateMemoryScalableIS(isapp,ispetsc,&ao));
+  PetscCall(AOView(ao,PETSC_VIEWER_STDOUT_WORLD));
 
-  CHKERRQ(AOPetscToApplication(ao,4,getapp1));
-  CHKERRQ(AOApplicationToPetsc(ao,3,getpetsc1));
+  PetscCall(AOPetscToApplication(ao,4,getapp1));
+  PetscCall(AOApplicationToPetsc(ao,3,getpetsc1));
 
   /* Check accuracy */;
   for (i=0; i<4; i++) {
@@ -56,17 +56,17 @@ int main(int argc,char **argv)
     PetscCheckFalse(getpetsc1[i] != getpetsc[i],PETSC_COMM_SELF,PETSC_ERR_USER,"getpetsc1 %" PetscInt_FMT " != getpetsc %" PetscInt_FMT,getpetsc1[i],getpetsc[i]);
   }
 
-  CHKERRQ(AODestroy(&ao));
+  PetscCall(AODestroy(&ao));
 
   /* test MemoryScalable ao: ispetsc = NULL */
   /*-----------------------------------------------*/
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\nTest AOCreateMemoryScalable with ispetsc=NULL:\n"));
-  CHKERRQ(AOCreateMemoryScalableIS(isapp,NULL,&ao));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\nTest AOCreateMemoryScalable with ispetsc=NULL:\n"));
+  PetscCall(AOCreateMemoryScalableIS(isapp,NULL,&ao));
 
-  CHKERRQ(AOView(ao,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(AOView(ao,PETSC_VIEWER_STDOUT_WORLD));
 
-  CHKERRQ(AOPetscToApplication(ao,4,getapp2));
-  CHKERRQ(AOApplicationToPetsc(ao,3,getpetsc2));
+  PetscCall(AOPetscToApplication(ao,4,getapp2));
+  PetscCall(AOApplicationToPetsc(ao,3,getpetsc2));
 
   /* Check accuracy */;
   for (i=0; i<4; i++) {
@@ -75,15 +75,15 @@ int main(int argc,char **argv)
   for (i=0; i<3; i++) {
     PetscCheckFalse(getpetsc2[i] != getpetsc[i],PETSC_COMM_SELF,PETSC_ERR_USER,"getpetsc2 %" PetscInt_FMT " != getpetsc %" PetscInt_FMT,getpetsc2[i],getpetsc[i]);
   }
-  CHKERRQ(AODestroy(&ao));
+  PetscCall(AODestroy(&ao));
 
   /* test AOCreateMemoryScalable() ao: */
-  CHKERRQ(ISGetIndices(isapp,&app));
-  CHKERRQ(AOCreateMemoryScalable(PETSC_COMM_WORLD,n,app,NULL,&ao));
-  CHKERRQ(ISRestoreIndices(isapp,&app));
+  PetscCall(ISGetIndices(isapp,&app));
+  PetscCall(AOCreateMemoryScalable(PETSC_COMM_WORLD,n,app,NULL,&ao));
+  PetscCall(ISRestoreIndices(isapp,&app));
 
-  CHKERRQ(AOPetscToApplication(ao,4,getapp4));
-  CHKERRQ(AOApplicationToPetsc(ao,3,getpetsc4));
+  PetscCall(AOPetscToApplication(ao,4,getapp4));
+  PetscCall(AOApplicationToPetsc(ao,3,getpetsc4));
 
   /* Check accuracy */;
   for (i=0; i<4; i++) {
@@ -92,26 +92,26 @@ int main(int argc,char **argv)
   for (i=0; i<3; i++) {
     PetscCheckFalse(getpetsc4[i] != getpetsc[i],PETSC_COMM_SELF,PETSC_ERR_USER,"getpetsc4 %" PetscInt_FMT " != getpetsc %" PetscInt_FMT,getpetsc4[i],getpetsc[i]);
   }
-  CHKERRQ(AODestroy(&ao));
+  PetscCall(AODestroy(&ao));
 
   /* test general API */
   /*------------------*/
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\nTest general API: \n"));
-  CHKERRQ(AOCreate(PETSC_COMM_WORLD,&ao));
-  CHKERRQ(AOSetIS(ao,isapp,ispetsc));
-  CHKERRQ(AOSetType(ao,AOMEMORYSCALABLE));
-  CHKERRQ(AOSetFromOptions(ao));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\nTest general API: \n"));
+  PetscCall(AOCreate(PETSC_COMM_WORLD,&ao));
+  PetscCall(AOSetIS(ao,isapp,ispetsc));
+  PetscCall(AOSetType(ao,AOMEMORYSCALABLE));
+  PetscCall(AOSetFromOptions(ao));
 
   /* ispetsc and isapp are nolonger used. */
-  CHKERRQ(ISDestroy(&ispetsc));
-  CHKERRQ(ISDestroy(&isapp));
+  PetscCall(ISDestroy(&ispetsc));
+  PetscCall(ISDestroy(&isapp));
 
-  CHKERRQ(AOPetscToApplication(ao,4,getapp3));
-  CHKERRQ(AOApplicationToPetsc(ao,3,getpetsc3));
+  PetscCall(AOPetscToApplication(ao,4,getapp3));
+  PetscCall(AOApplicationToPetsc(ao,3,getpetsc3));
 
-  CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] 2,1,9,7 PetscToApplication %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n",rank,getapp3[0],getapp3[1],getapp3[2],getapp3[3]));
-  CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] 0,3,4 ApplicationToPetsc %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n",rank,getpetsc3[0],getpetsc3[1],getpetsc3[2]));
-  CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
+  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] 2,1,9,7 PetscToApplication %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n",rank,getapp3[0],getapp3[1],getapp3[2],getapp3[3]));
+  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] 0,3,4 ApplicationToPetsc %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n",rank,getpetsc3[0],getpetsc3[1],getpetsc3[2]));
+  PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
 
   /* Check accuracy */;
   for (i=0; i<4; i++) {
@@ -121,8 +121,8 @@ int main(int argc,char **argv)
     PetscCheckFalse(getpetsc3[i] != getpetsc[i],PETSC_COMM_SELF,PETSC_ERR_USER,"getpetsc3 %" PetscInt_FMT " != getpetsc %" PetscInt_FMT,getpetsc3[i],getpetsc[i]);
   }
 
-  CHKERRQ(AODestroy(&ao));
-  CHKERRQ(PetscFinalize());
+  PetscCall(AODestroy(&ao));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

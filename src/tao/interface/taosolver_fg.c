@@ -17,8 +17,8 @@ PetscErrorCode TaoSetSolution(Tao tao, Vec x0)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   if (x0) PetscValidHeaderSpecific(x0,VEC_CLASSID,2);
-  CHKERRQ(PetscObjectReference((PetscObject)x0));
-  CHKERRQ(VecDestroy(&tao->solution));
+  PetscCall(PetscObjectReference((PetscObject)x0));
+  PetscCall(VecDestroy(&tao->solution));
   tao->solution = x0;
   PetscFunctionReturn(0);
 }
@@ -37,70 +37,70 @@ PetscErrorCode TaoTestGradient(Tao tao,Vec x,Vec g1)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectOptionsBegin((PetscObject)tao);CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsName("-tao_test_gradient","Compare hand-coded and finite difference Gradients","None",&test));
-  CHKERRQ(PetscOptionsViewer("-tao_test_gradient_view","View difference between hand-coded and finite difference Gradients element entries","None",&mviewer,&format,&complete_print));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscObjectOptionsBegin((PetscObject)tao);PetscCall(ierr);
+  PetscCall(PetscOptionsName("-tao_test_gradient","Compare hand-coded and finite difference Gradients","None",&test));
+  PetscCall(PetscOptionsViewer("-tao_test_gradient_view","View difference between hand-coded and finite difference Gradients element entries","None",&mviewer,&format,&complete_print));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
   if (!test) {
     if (complete_print) {
-      CHKERRQ(PetscViewerDestroy(&mviewer));
+      PetscCall(PetscViewerDestroy(&mviewer));
     }
     PetscFunctionReturn(0);
   }
 
-  CHKERRQ(PetscObjectGetComm((PetscObject)tao,&comm));
-  CHKERRQ(PetscViewerASCIIGetStdout(comm,&viewer));
-  CHKERRQ(PetscViewerASCIIGetTab(viewer, &tabs));
-  CHKERRQ(PetscViewerASCIISetTab(viewer, ((PetscObject)tao)->tablevel));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  ---------- Testing Gradient -------------\n"));
+  PetscCall(PetscObjectGetComm((PetscObject)tao,&comm));
+  PetscCall(PetscViewerASCIIGetStdout(comm,&viewer));
+  PetscCall(PetscViewerASCIIGetTab(viewer, &tabs));
+  PetscCall(PetscViewerASCIISetTab(viewer, ((PetscObject)tao)->tablevel));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  ---------- Testing Gradient -------------\n"));
   if (!complete_print && !directionsprinted) {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Run with -tao_test_gradient_view and optionally -tao_test_gradient <threshold> to show difference\n"));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"    of hand-coded and finite difference gradient entries greater than <threshold>.\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Run with -tao_test_gradient_view and optionally -tao_test_gradient <threshold> to show difference\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    of hand-coded and finite difference gradient entries greater than <threshold>.\n"));
   }
   if (!directionsprinted) {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Testing hand-coded Gradient, if (for double precision runs) ||G - Gfd||/||G|| is\n"));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"    O(1.e-8), the hand-coded Gradient is probably correct.\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Testing hand-coded Gradient, if (for double precision runs) ||G - Gfd||/||G|| is\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    O(1.e-8), the hand-coded Gradient is probably correct.\n"));
     directionsprinted = PETSC_TRUE;
   }
   if (complete_print) {
-    CHKERRQ(PetscViewerPushFormat(mviewer,format));
+    PetscCall(PetscViewerPushFormat(mviewer,format));
   }
 
-  CHKERRQ(VecDuplicate(x,&g2));
-  CHKERRQ(VecDuplicate(x,&g3));
+  PetscCall(VecDuplicate(x,&g2));
+  PetscCall(VecDuplicate(x,&g3));
 
   /* Compute finite difference gradient, assume the gradient is already computed by TaoComputeGradient() and put into g1 */
-  CHKERRQ(TaoDefaultComputeGradient(tao,x,g2,NULL));
+  PetscCall(TaoDefaultComputeGradient(tao,x,g2,NULL));
 
-  CHKERRQ(VecNorm(g2,NORM_2,&fdnorm));
-  CHKERRQ(VecNorm(g1,NORM_2,&hcnorm));
-  CHKERRQ(VecNorm(g2,NORM_INFINITY,&fdmax));
-  CHKERRQ(VecNorm(g1,NORM_INFINITY,&hcmax));
-  CHKERRQ(VecDot(g1,g2,&dot));
-  CHKERRQ(VecCopy(g1,g3));
-  CHKERRQ(VecAXPY(g3,-1.0,g2));
-  CHKERRQ(VecNorm(g3,NORM_2,&diffnorm));
-  CHKERRQ(VecNorm(g3,NORM_INFINITY,&diffmax));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  ||Gfd|| %g, ||G|| = %g, angle cosine = (Gfd'G)/||Gfd||||G|| = %g\n", (double)fdnorm, (double)hcnorm, (double)(PetscRealPart(dot)/(fdnorm*hcnorm))));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  2-norm ||G - Gfd||/||G|| = %g, ||G - Gfd|| = %g\n",(double)(diffnorm/PetscMax(hcnorm,fdnorm)),(double)diffnorm));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  max-norm ||G - Gfd||/||G|| = %g, ||G - Gfd|| = %g\n",(double)(diffmax/PetscMax(hcmax,fdmax)),(double)diffmax));
-
-  if (complete_print) {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Hand-coded gradient ----------\n"));
-    CHKERRQ(VecView(g1,mviewer));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Finite difference gradient ----------\n"));
-    CHKERRQ(VecView(g2,mviewer));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Hand-coded minus finite-difference gradient ----------\n"));
-    CHKERRQ(VecView(g3,mviewer));
-  }
-  CHKERRQ(VecDestroy(&g2));
-  CHKERRQ(VecDestroy(&g3));
+  PetscCall(VecNorm(g2,NORM_2,&fdnorm));
+  PetscCall(VecNorm(g1,NORM_2,&hcnorm));
+  PetscCall(VecNorm(g2,NORM_INFINITY,&fdmax));
+  PetscCall(VecNorm(g1,NORM_INFINITY,&hcmax));
+  PetscCall(VecDot(g1,g2,&dot));
+  PetscCall(VecCopy(g1,g3));
+  PetscCall(VecAXPY(g3,-1.0,g2));
+  PetscCall(VecNorm(g3,NORM_2,&diffnorm));
+  PetscCall(VecNorm(g3,NORM_INFINITY,&diffmax));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  ||Gfd|| %g, ||G|| = %g, angle cosine = (Gfd'G)/||Gfd||||G|| = %g\n", (double)fdnorm, (double)hcnorm, (double)(PetscRealPart(dot)/(fdnorm*hcnorm))));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  2-norm ||G - Gfd||/||G|| = %g, ||G - Gfd|| = %g\n",(double)(diffnorm/PetscMax(hcnorm,fdnorm)),(double)diffnorm));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  max-norm ||G - Gfd||/||G|| = %g, ||G - Gfd|| = %g\n",(double)(diffmax/PetscMax(hcmax,fdmax)),(double)diffmax));
 
   if (complete_print) {
-    CHKERRQ(PetscViewerPopFormat(mviewer));
-    CHKERRQ(PetscViewerDestroy(&mviewer));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Hand-coded gradient ----------\n"));
+    PetscCall(VecView(g1,mviewer));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Finite difference gradient ----------\n"));
+    PetscCall(VecView(g2,mviewer));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Hand-coded minus finite-difference gradient ----------\n"));
+    PetscCall(VecView(g3,mviewer));
   }
-  CHKERRQ(PetscViewerASCIISetTab(viewer,tabs));
+  PetscCall(VecDestroy(&g2));
+  PetscCall(VecDestroy(&g3));
+
+  if (complete_print) {
+    PetscCall(PetscViewerPopFormat(mviewer));
+    PetscCall(PetscViewerDestroy(&mviewer));
+  }
+  PetscCall(PetscViewerASCIISetTab(viewer,tabs));
   PetscFunctionReturn(0);
 }
 
@@ -138,25 +138,25 @@ PetscErrorCode TaoComputeGradient(Tao tao, Vec X, Vec G)
   PetscValidHeaderSpecific(G,VEC_CLASSID,3);
   PetscCheckSameComm(tao,1,X,2);
   PetscCheckSameComm(tao,1,G,3);
-  CHKERRQ(VecLockReadPush(X));
+  PetscCall(VecLockReadPush(X));
   if (tao->ops->computegradient) {
-    CHKERRQ(PetscLogEventBegin(TAO_GradientEval,tao,X,G,NULL));
+    PetscCall(PetscLogEventBegin(TAO_GradientEval,tao,X,G,NULL));
     PetscStackPush("Tao user gradient evaluation routine");
-    CHKERRQ((*tao->ops->computegradient)(tao,X,G,tao->user_gradP));
+    PetscCall((*tao->ops->computegradient)(tao,X,G,tao->user_gradP));
     PetscStackPop;
-    CHKERRQ(PetscLogEventEnd(TAO_GradientEval,tao,X,G,NULL));
+    PetscCall(PetscLogEventEnd(TAO_GradientEval,tao,X,G,NULL));
     tao->ngrads++;
   } else if (tao->ops->computeobjectiveandgradient) {
-    CHKERRQ(PetscLogEventBegin(TAO_ObjGradEval,tao,X,G,NULL));
+    PetscCall(PetscLogEventBegin(TAO_ObjGradEval,tao,X,G,NULL));
     PetscStackPush("Tao user objective/gradient evaluation routine");
-    CHKERRQ((*tao->ops->computeobjectiveandgradient)(tao,X,&dummy,G,tao->user_objgradP));
+    PetscCall((*tao->ops->computeobjectiveandgradient)(tao,X,&dummy,G,tao->user_objgradP));
     PetscStackPop;
-    CHKERRQ(PetscLogEventEnd(TAO_ObjGradEval,tao,X,G,NULL));
+    PetscCall(PetscLogEventEnd(TAO_ObjGradEval,tao,X,G,NULL));
     tao->nfuncgrads++;
   } else SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"TaoSetGradient() has not been called");
-  CHKERRQ(VecLockReadPop(X));
+  PetscCall(VecLockReadPop(X));
 
-  CHKERRQ(TaoTestGradient(tao,X,G));
+  PetscCall(TaoTestGradient(tao,X,G));
   PetscFunctionReturn(0);
 }
 
@@ -188,27 +188,27 @@ PetscErrorCode TaoComputeObjective(Tao tao, Vec X, PetscReal *f)
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidHeaderSpecific(X,VEC_CLASSID,2);
   PetscCheckSameComm(tao,1,X,2);
-  CHKERRQ(VecLockReadPush(X));
+  PetscCall(VecLockReadPush(X));
   if (tao->ops->computeobjective) {
-    CHKERRQ(PetscLogEventBegin(TAO_ObjectiveEval,tao,X,NULL,NULL));
+    PetscCall(PetscLogEventBegin(TAO_ObjectiveEval,tao,X,NULL,NULL));
     PetscStackPush("Tao user objective evaluation routine");
-    CHKERRQ((*tao->ops->computeobjective)(tao,X,f,tao->user_objP));
+    PetscCall((*tao->ops->computeobjective)(tao,X,f,tao->user_objP));
     PetscStackPop;
-    CHKERRQ(PetscLogEventEnd(TAO_ObjectiveEval,tao,X,NULL,NULL));
+    PetscCall(PetscLogEventEnd(TAO_ObjectiveEval,tao,X,NULL,NULL));
     tao->nfuncs++;
   } else if (tao->ops->computeobjectiveandgradient) {
-    CHKERRQ(PetscInfo(tao,"Duplicating variable vector in order to call func/grad routine\n"));
-    CHKERRQ(VecDuplicate(X,&temp));
-    CHKERRQ(PetscLogEventBegin(TAO_ObjGradEval,tao,X,NULL,NULL));
+    PetscCall(PetscInfo(tao,"Duplicating variable vector in order to call func/grad routine\n"));
+    PetscCall(VecDuplicate(X,&temp));
+    PetscCall(PetscLogEventBegin(TAO_ObjGradEval,tao,X,NULL,NULL));
     PetscStackPush("Tao user objective/gradient evaluation routine");
-    CHKERRQ((*tao->ops->computeobjectiveandgradient)(tao,X,f,temp,tao->user_objgradP));
+    PetscCall((*tao->ops->computeobjectiveandgradient)(tao,X,f,temp,tao->user_objgradP));
     PetscStackPop;
-    CHKERRQ(PetscLogEventEnd(TAO_ObjGradEval,tao,X,NULL,NULL));
-    CHKERRQ(VecDestroy(&temp));
+    PetscCall(PetscLogEventEnd(TAO_ObjGradEval,tao,X,NULL,NULL));
+    PetscCall(VecDestroy(&temp));
     tao->nfuncgrads++;
   } else SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"TaoSetObjective() has not been called");
-  CHKERRQ(PetscInfo(tao,"TAO Function evaluation: %20.19e\n",(double)(*f)));
-  CHKERRQ(VecLockReadPop(X));
+  PetscCall(PetscInfo(tao,"TAO Function evaluation: %20.19e\n",(double)(*f)));
+  PetscCall(VecLockReadPop(X));
   PetscFunctionReturn(0);
 }
 
@@ -241,37 +241,37 @@ PetscErrorCode TaoComputeObjectiveAndGradient(Tao tao, Vec X, PetscReal *f, Vec 
   PetscValidHeaderSpecific(G,VEC_CLASSID,4);
   PetscCheckSameComm(tao,1,X,2);
   PetscCheckSameComm(tao,1,G,4);
-  CHKERRQ(VecLockReadPush(X));
+  PetscCall(VecLockReadPush(X));
   if (tao->ops->computeobjectiveandgradient) {
-    CHKERRQ(PetscLogEventBegin(TAO_ObjGradEval,tao,X,G,NULL));
+    PetscCall(PetscLogEventBegin(TAO_ObjGradEval,tao,X,G,NULL));
     if (tao->ops->computegradient == TaoDefaultComputeGradient) {
-      CHKERRQ(TaoComputeObjective(tao,X,f));
-      CHKERRQ(TaoDefaultComputeGradient(tao,X,G,NULL));
+      PetscCall(TaoComputeObjective(tao,X,f));
+      PetscCall(TaoDefaultComputeGradient(tao,X,G,NULL));
     } else {
       PetscStackPush("Tao user objective/gradient evaluation routine");
-      CHKERRQ((*tao->ops->computeobjectiveandgradient)(tao,X,f,G,tao->user_objgradP));
+      PetscCall((*tao->ops->computeobjectiveandgradient)(tao,X,f,G,tao->user_objgradP));
       PetscStackPop;
     }
-    CHKERRQ(PetscLogEventEnd(TAO_ObjGradEval,tao,X,G,NULL));
+    PetscCall(PetscLogEventEnd(TAO_ObjGradEval,tao,X,G,NULL));
     tao->nfuncgrads++;
   } else if (tao->ops->computeobjective && tao->ops->computegradient) {
-    CHKERRQ(PetscLogEventBegin(TAO_ObjectiveEval,tao,X,NULL,NULL));
+    PetscCall(PetscLogEventBegin(TAO_ObjectiveEval,tao,X,NULL,NULL));
     PetscStackPush("Tao user objective evaluation routine");
-    CHKERRQ((*tao->ops->computeobjective)(tao,X,f,tao->user_objP));
+    PetscCall((*tao->ops->computeobjective)(tao,X,f,tao->user_objP));
     PetscStackPop;
-    CHKERRQ(PetscLogEventEnd(TAO_ObjectiveEval,tao,X,NULL,NULL));
+    PetscCall(PetscLogEventEnd(TAO_ObjectiveEval,tao,X,NULL,NULL));
     tao->nfuncs++;
-    CHKERRQ(PetscLogEventBegin(TAO_GradientEval,tao,X,G,NULL));
+    PetscCall(PetscLogEventBegin(TAO_GradientEval,tao,X,G,NULL));
     PetscStackPush("Tao user gradient evaluation routine");
-    CHKERRQ((*tao->ops->computegradient)(tao,X,G,tao->user_gradP));
+    PetscCall((*tao->ops->computegradient)(tao,X,G,tao->user_gradP));
     PetscStackPop;
-    CHKERRQ(PetscLogEventEnd(TAO_GradientEval,tao,X,G,NULL));
+    PetscCall(PetscLogEventEnd(TAO_GradientEval,tao,X,G,NULL));
     tao->ngrads++;
   } else SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"TaoSetObjective() or TaoSetGradient() not set");
-  CHKERRQ(PetscInfo(tao,"TAO Function evaluation: %20.19e\n",(double)(*f)));
-  CHKERRQ(VecLockReadPop(X));
+  PetscCall(PetscInfo(tao,"TAO Function evaluation: %20.19e\n",(double)(*f)));
+  PetscCall(VecLockReadPop(X));
 
-  CHKERRQ(TaoTestGradient(tao,X,G));
+  PetscCall(TaoTestGradient(tao,X,G));
   PetscFunctionReturn(0);
 }
 
@@ -365,9 +365,9 @@ PetscErrorCode TaoSetResidualRoutine(Tao tao, Vec res, PetscErrorCode (*func)(Ta
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidHeaderSpecific(res,VEC_CLASSID,2);
-  CHKERRQ(PetscObjectReference((PetscObject)res));
+  PetscCall(PetscObjectReference((PetscObject)res));
   if (tao->ls_res) {
-    CHKERRQ(VecDestroy(&tao->ls_res));
+    PetscCall(VecDestroy(&tao->ls_res));
   }
   tao->ls_res = res;
   tao->user_lsresP = ctx;
@@ -402,16 +402,16 @@ PetscErrorCode TaoSetResidualWeights(Tao tao, Vec sigma_v, PetscInt n, PetscInt 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   if (sigma_v) PetscValidHeaderSpecific(sigma_v,VEC_CLASSID,2);
-  CHKERRQ(PetscObjectReference((PetscObject)sigma_v));
-  CHKERRQ(VecDestroy(&tao->res_weights_v));
+  PetscCall(PetscObjectReference((PetscObject)sigma_v));
+  PetscCall(VecDestroy(&tao->res_weights_v));
   tao->res_weights_v = sigma_v;
   if (vals) {
-    CHKERRQ(PetscFree(tao->res_weights_rows));
-    CHKERRQ(PetscFree(tao->res_weights_cols));
-    CHKERRQ(PetscFree(tao->res_weights_w));
-    CHKERRQ(PetscMalloc1(n,&tao->res_weights_rows));
-    CHKERRQ(PetscMalloc1(n,&tao->res_weights_cols));
-    CHKERRQ(PetscMalloc1(n,&tao->res_weights_w));
+    PetscCall(PetscFree(tao->res_weights_rows));
+    PetscCall(PetscFree(tao->res_weights_cols));
+    PetscCall(PetscFree(tao->res_weights_w));
+    PetscCall(PetscMalloc1(n,&tao->res_weights_rows));
+    PetscCall(PetscMalloc1(n,&tao->res_weights_cols));
+    PetscCall(PetscMalloc1(n,&tao->res_weights_w));
     tao->res_weights_n = n;
     for (i=0;i<n;i++) {
       tao->res_weights_rows[i] = rows[i];
@@ -455,14 +455,14 @@ PetscErrorCode TaoComputeResidual(Tao tao, Vec X, Vec F)
   PetscCheckSameComm(tao,1,X,2);
   PetscCheckSameComm(tao,1,F,3);
   if (tao->ops->computeresidual) {
-    CHKERRQ(PetscLogEventBegin(TAO_ObjectiveEval,tao,X,NULL,NULL));
+    PetscCall(PetscLogEventBegin(TAO_ObjectiveEval,tao,X,NULL,NULL));
     PetscStackPush("Tao user least-squares residual evaluation routine");
-    CHKERRQ((*tao->ops->computeresidual)(tao,X,F,tao->user_lsresP));
+    PetscCall((*tao->ops->computeresidual)(tao,X,F,tao->user_lsresP));
     PetscStackPop;
-    CHKERRQ(PetscLogEventEnd(TAO_ObjectiveEval,tao,X,NULL,NULL));
+    PetscCall(PetscLogEventEnd(TAO_ObjectiveEval,tao,X,NULL,NULL));
     tao->nfuncs++;
   } else SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"TaoSetResidualRoutine() has not been called");
-  CHKERRQ(PetscInfo(tao,"TAO least-squares residual evaluation.\n"));
+  PetscCall(PetscInfo(tao,"TAO least-squares residual evaluation.\n"));
   PetscFunctionReturn(0);
 }
 
@@ -496,8 +496,8 @@ PetscErrorCode TaoSetGradient(Tao tao, Vec g, PetscErrorCode (*func)(Tao, Vec, V
   if (g) {
     PetscValidHeaderSpecific(g,VEC_CLASSID,2);
     PetscCheckSameComm(tao,1,g,2);
-    CHKERRQ(PetscObjectReference((PetscObject)g));
-    CHKERRQ(VecDestroy(&tao->gradient));
+    PetscCall(PetscObjectReference((PetscObject)g));
+    PetscCall(VecDestroy(&tao->gradient));
     tao->gradient = g;
   }
   if (func) tao->ops->computegradient = func;
@@ -570,8 +570,8 @@ PetscErrorCode TaoSetObjectiveAndGradient(Tao tao, Vec g, PetscErrorCode (*func)
   if (g) {
     PetscValidHeaderSpecific(g,VEC_CLASSID,2);
     PetscCheckSameComm(tao,1,g,2);
-    CHKERRQ(PetscObjectReference((PetscObject)g));
-    CHKERRQ(VecDestroy(&tao->gradient));
+    PetscCall(PetscObjectReference((PetscObject)g));
+    PetscCall(VecDestroy(&tao->gradient));
     tao->gradient = g;
   }
   if (ctx) tao->user_objgradP = ctx;

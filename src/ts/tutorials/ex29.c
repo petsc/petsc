@@ -41,33 +41,33 @@ static PetscErrorCode CoefficientCoarsenHook(DM dm, DM dmc,void *ctx)
   DM             cdm,cdmc;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectQuery((PetscObject)dm,"coefficientdm",(PetscObject*)&cdm));
+  PetscCall(PetscObjectQuery((PetscObject)dm,"coefficientdm",(PetscObject*)&cdm));
 
   PetscCheck(cdm,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"The coefficient DM needs to be set up!");
 
-  CHKERRQ(DMDACreateCompatibleDMDA(dmc,2,&cdmc));
-  CHKERRQ(PetscObjectCompose((PetscObject)dmc,"coefficientdm",(PetscObject)cdmc));
+  PetscCall(DMDACreateCompatibleDMDA(dmc,2,&cdmc));
+  PetscCall(PetscObjectCompose((PetscObject)dmc,"coefficientdm",(PetscObject)cdmc));
 
-  CHKERRQ(DMGetNamedGlobalVector(cdm,"coefficient",&c));
-  CHKERRQ(DMGetNamedGlobalVector(cdmc,"coefficient",&cc));
-  CHKERRQ(DMGetNamedLocalVector(cdmc,"coefficient",&ccl));
+  PetscCall(DMGetNamedGlobalVector(cdm,"coefficient",&c));
+  PetscCall(DMGetNamedGlobalVector(cdmc,"coefficient",&cc));
+  PetscCall(DMGetNamedLocalVector(cdmc,"coefficient",&ccl));
 
-  CHKERRQ(DMCreateInterpolation(cdmc,cdm,&J,&vscale));
-  CHKERRQ(MatRestrict(J,c,cc));
-  CHKERRQ(VecPointwiseMult(cc,vscale,cc));
+  PetscCall(DMCreateInterpolation(cdmc,cdm,&J,&vscale));
+  PetscCall(MatRestrict(J,c,cc));
+  PetscCall(VecPointwiseMult(cc,vscale,cc));
 
-  CHKERRQ(MatDestroy(&J));
-  CHKERRQ(VecDestroy(&vscale));
+  PetscCall(MatDestroy(&J));
+  PetscCall(VecDestroy(&vscale));
 
-  CHKERRQ(DMGlobalToLocalBegin(cdmc,cc,INSERT_VALUES,ccl));
-  CHKERRQ(DMGlobalToLocalEnd(cdmc,cc,INSERT_VALUES,ccl));
+  PetscCall(DMGlobalToLocalBegin(cdmc,cc,INSERT_VALUES,ccl));
+  PetscCall(DMGlobalToLocalEnd(cdmc,cc,INSERT_VALUES,ccl));
 
-  CHKERRQ(DMRestoreNamedGlobalVector(cdm,"coefficient",&c));
-  CHKERRQ(DMRestoreNamedGlobalVector(cdmc,"coefficient",&cc));
-  CHKERRQ(DMRestoreNamedLocalVector(cdmc,"coefficient",&ccl));
+  PetscCall(DMRestoreNamedGlobalVector(cdm,"coefficient",&c));
+  PetscCall(DMRestoreNamedGlobalVector(cdmc,"coefficient",&cc));
+  PetscCall(DMRestoreNamedLocalVector(cdmc,"coefficient",&ccl));
 
-  CHKERRQ(DMCoarsenHookAdd(dmc,CoefficientCoarsenHook,NULL,NULL));
-  CHKERRQ(DMDestroy(&cdmc));
+  PetscCall(DMCoarsenHookAdd(dmc,CoefficientCoarsenHook,NULL,NULL));
+  PetscCall(DMDestroy(&cdmc));
   PetscFunctionReturn(0);
 }
 
@@ -80,32 +80,32 @@ static PetscErrorCode CoefficientSubDomainRestrictHook(DM dm,DM subdm,void *ctx)
   VecScatter     *iscat,*oscat,*gscat;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectQuery((PetscObject)dm,"coefficientdm",(PetscObject*)&cdm));
+  PetscCall(PetscObjectQuery((PetscObject)dm,"coefficientdm",(PetscObject*)&cdm));
 
   PetscCheck(cdm,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"The coefficient DM needs to be set up!");
 
-  CHKERRQ(DMDACreateCompatibleDMDA(subdm,2,&csubdm));
-  CHKERRQ(PetscObjectCompose((PetscObject)subdm,"coefficientdm",(PetscObject)csubdm));
+  PetscCall(DMDACreateCompatibleDMDA(subdm,2,&csubdm));
+  PetscCall(PetscObjectCompose((PetscObject)subdm,"coefficientdm",(PetscObject)csubdm));
 
-  CHKERRQ(DMGetNamedGlobalVector(cdm,"coefficient",&c));
-  CHKERRQ(DMGetNamedLocalVector(csubdm,"coefficient",&cc));
+  PetscCall(DMGetNamedGlobalVector(cdm,"coefficient",&c));
+  PetscCall(DMGetNamedLocalVector(csubdm,"coefficient",&cc));
 
-  CHKERRQ(DMCreateDomainDecompositionScatters(cdm,1,&csubdm,&iscat,&oscat,&gscat));
+  PetscCall(DMCreateDomainDecompositionScatters(cdm,1,&csubdm,&iscat,&oscat,&gscat));
 
-  CHKERRQ(VecScatterBegin(*gscat,c,cc,INSERT_VALUES,SCATTER_FORWARD));
-  CHKERRQ(VecScatterEnd(*gscat,c,cc,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterBegin(*gscat,c,cc,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(*gscat,c,cc,INSERT_VALUES,SCATTER_FORWARD));
 
-  CHKERRQ(VecScatterDestroy(iscat));
-  CHKERRQ(VecScatterDestroy(oscat));
-  CHKERRQ(VecScatterDestroy(gscat));
-  CHKERRQ(PetscFree(iscat));
-  CHKERRQ(PetscFree(oscat));
-  CHKERRQ(PetscFree(gscat));
+  PetscCall(VecScatterDestroy(iscat));
+  PetscCall(VecScatterDestroy(oscat));
+  PetscCall(VecScatterDestroy(gscat));
+  PetscCall(PetscFree(iscat));
+  PetscCall(PetscFree(oscat));
+  PetscCall(PetscFree(gscat));
 
-  CHKERRQ(DMRestoreNamedGlobalVector(cdm,"coefficient",&c));
-  CHKERRQ(DMRestoreNamedLocalVector(csubdm,"coefficient",&cc));
+  PetscCall(DMRestoreNamedGlobalVector(cdm,"coefficient",&c));
+  PetscCall(DMRestoreNamedLocalVector(csubdm,"coefficient",&cc));
 
-  CHKERRQ(DMDestroy(&csubdm));
+  PetscCall(DMDestroy(&csubdm));
   PetscFunctionReturn(0);
 }
 
@@ -116,57 +116,57 @@ int main(int argc,char **argv)
   Vec            x,c,clocal;
   DM             da,cda;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(TSCreate(PETSC_COMM_WORLD, &ts));
-  CHKERRQ(TSSetType(ts,TSARKIMEX));
-  CHKERRQ(TSSetProblemType(ts,TS_NONLINEAR));
-  CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,4,4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
-  CHKERRQ(DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
+  PetscCall(TSSetType(ts,TSARKIMEX));
+  PetscCall(TSSetProblemType(ts,TS_NONLINEAR));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,4,4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0));
 
-  CHKERRQ(DMDASetFieldName(da,0,"u"));
-  CHKERRQ(DMCreateGlobalVector(da,&x));
+  PetscCall(DMDASetFieldName(da,0,"u"));
+  PetscCall(DMCreateGlobalVector(da,&x));
 
-  CHKERRQ(TSSetDM(ts, da));
+  PetscCall(TSSetDM(ts, da));
 
-  CHKERRQ(FormInitialGuess(da,NULL,x));
-  CHKERRQ(DMDATSSetIFunctionLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,PetscReal,void*,void*,void*,void*))FormIFunctionLocal,NULL));
+  PetscCall(FormInitialGuess(da,NULL,x));
+  PetscCall(DMDATSSetIFunctionLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,PetscReal,void*,void*,void*,void*))FormIFunctionLocal,NULL));
 
   /* set up the coefficient */
 
-  CHKERRQ(DMDACreateCompatibleDMDA(da,2,&cda));
-  CHKERRQ(PetscObjectCompose((PetscObject)da,"coefficientdm",(PetscObject)cda));
+  PetscCall(DMDACreateCompatibleDMDA(da,2,&cda));
+  PetscCall(PetscObjectCompose((PetscObject)da,"coefficientdm",(PetscObject)cda));
 
-  CHKERRQ(DMGetNamedGlobalVector(cda,"coefficient",&c));
-  CHKERRQ(DMGetNamedLocalVector(cda,"coefficient",&clocal));
+  PetscCall(DMGetNamedGlobalVector(cda,"coefficient",&c));
+  PetscCall(DMGetNamedLocalVector(cda,"coefficient",&clocal));
 
-  CHKERRQ(FormDiffusionCoefficient(cda,NULL,c));
+  PetscCall(FormDiffusionCoefficient(cda,NULL,c));
 
-  CHKERRQ(DMGlobalToLocalBegin(cda,c,INSERT_VALUES,clocal));
-  CHKERRQ(DMGlobalToLocalEnd(cda,c,INSERT_VALUES,clocal));
+  PetscCall(DMGlobalToLocalBegin(cda,c,INSERT_VALUES,clocal));
+  PetscCall(DMGlobalToLocalEnd(cda,c,INSERT_VALUES,clocal));
 
-  CHKERRQ(DMRestoreNamedLocalVector(cda,"coefficient",&clocal));
-  CHKERRQ(DMRestoreNamedGlobalVector(cda,"coefficient",&c));
+  PetscCall(DMRestoreNamedLocalVector(cda,"coefficient",&clocal));
+  PetscCall(DMRestoreNamedGlobalVector(cda,"coefficient",&c));
 
-  CHKERRQ(DMCoarsenHookAdd(da,CoefficientCoarsenHook,NULL,NULL));
-  CHKERRQ(DMSubDomainHookAdd(da,CoefficientSubDomainRestrictHook,NULL,NULL));
+  PetscCall(DMCoarsenHookAdd(da,CoefficientCoarsenHook,NULL,NULL));
+  PetscCall(DMSubDomainHookAdd(da,CoefficientSubDomainRestrictHook,NULL,NULL));
 
-  CHKERRQ(TSSetMaxSteps(ts,10000));
-  CHKERRQ(TSSetMaxTime(ts,10000.0));
-  CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
-  CHKERRQ(TSSetTimeStep(ts,0.05));
-  CHKERRQ(TSSetSolution(ts,x));
-  CHKERRQ(TSSetFromOptions(ts));
+  PetscCall(TSSetMaxSteps(ts,10000));
+  PetscCall(TSSetMaxTime(ts,10000.0));
+  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
+  PetscCall(TSSetTimeStep(ts,0.05));
+  PetscCall(TSSetSolution(ts,x));
+  PetscCall(TSSetFromOptions(ts));
 
-  CHKERRQ(TSSolve(ts,x));
+  PetscCall(TSSolve(ts,x));
 
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(TSDestroy(&ts));
-  CHKERRQ(DMDestroy(&da));
-  CHKERRQ(DMDestroy(&cda));
+  PetscCall(VecDestroy(&x));
+  PetscCall(TSDestroy(&ts));
+  PetscCall(DMDestroy(&da));
+  PetscCall(DMDestroy(&cda));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -179,10 +179,10 @@ PetscErrorCode FormInitialGuess(DM da,void *ctx,Vec X)
   PetscReal      x0,x1;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
+  PetscCall(DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
 
-  CHKERRQ(DMDAVecGetArray(da,X,&x));
-  CHKERRQ(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
+  PetscCall(DMDAVecGetArray(da,X,&x));
+  PetscCall(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
 
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {
@@ -192,7 +192,7 @@ PetscErrorCode FormInitialGuess(DM da,void *ctx,Vec X)
     }
   }
 
-  CHKERRQ(DMDAVecRestoreArray(da,X,&x));
+  PetscCall(DMDAVecRestoreArray(da,X,&x));
   PetscFunctionReturn(0);
 
 }
@@ -204,15 +204,15 @@ PetscErrorCode FormDiffusionCoefficient(DM da,void *ctx,Vec X)
   PetscReal      x1,x0;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
+  PetscCall(DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
 
   /*
   ierr = VecSetRandom(X,NULL);
-  CHKERRQ(VecMin(X,NULL,&min));
+  PetscCall(VecMin(X,NULL,&min));
    */
 
-  CHKERRQ(DMDAVecGetArray(da,X,&x));
-  CHKERRQ(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
+  PetscCall(DMDAVecGetArray(da,X,&x));
+  PetscCall(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
 
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {
@@ -224,7 +224,7 @@ PetscErrorCode FormDiffusionCoefficient(DM da,void *ctx,Vec X)
     }
   }
 
-  CHKERRQ(DMDAVecRestoreArray(da,X,&x));
+  PetscCall(DMDAVecRestoreArray(da,X,&x));
   PetscFunctionReturn(0);
 
 }
@@ -240,9 +240,9 @@ PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info,PetscReal ptime,Field **x,
   DM             cdm;
 
   PetscFunctionBeginUser;
-  CHKERRQ(PetscObjectQuery((PetscObject)info->da,"coefficientdm",(PetscObject*)&cdm));
-  CHKERRQ(DMGetNamedLocalVector(cdm,"coefficient",&C));
-  CHKERRQ(DMDAVecGetArray(cdm,C,&c));
+  PetscCall(PetscObjectQuery((PetscObject)info->da,"coefficientdm",(PetscObject*)&cdm));
+  PetscCall(DMGetNamedLocalVector(cdm,"coefficient",&C));
+  PetscCall(DMDAVecGetArray(cdm,C,&c));
 
   hx = 10.0/((PetscReal)(info->mx-1));
   hy = 10.0/((PetscReal)(info->my-1));
@@ -280,10 +280,10 @@ PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info,PetscReal ptime,Field **x,
        }
     }
   }
-  CHKERRQ(PetscLogFlops(11.*info->ym*info->xm));
+  PetscCall(PetscLogFlops(11.*info->ym*info->xm));
 
-  CHKERRQ(DMDAVecRestoreArray(cdm,C,&c));
-  CHKERRQ(DMRestoreNamedLocalVector(cdm,"coefficient",&C));
+  PetscCall(DMDAVecRestoreArray(cdm,C,&c));
+  PetscCall(DMRestoreNamedLocalVector(cdm,"coefficient",&C));
   PetscFunctionReturn(0);
 }
 

@@ -34,30 +34,30 @@ int main(int argc,char **argv)
   PetscInt       m = 10, n = 10, dof = 2;
   PF             pf;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,m,n,PETSC_DECIDE,PETSC_DECIDE,dof,1,0,0,&da));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
-  CHKERRQ(DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,1.0));
-  CHKERRQ(DMCreateGlobalVector(da,&u));
-  CHKERRQ(DMGetCoordinates(da,&xy));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,m,n,PETSC_DECIDE,PETSC_DECIDE,dof,1,0,0,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,1.0));
+  PetscCall(DMCreateGlobalVector(da,&u));
+  PetscCall(DMGetCoordinates(da,&xy));
 
-  CHKERRQ(DMDACreatePF(da,&pf));
-  CHKERRQ(PFSet(pf,myfunction,0,0,0,0));
-  CHKERRQ(PFSetFromOptions(pf));
+  PetscCall(DMDACreatePF(da,&pf));
+  PetscCall(PFSet(pf,myfunction,0,0,0,0));
+  PetscCall(PFSetFromOptions(pf));
 
-  CHKERRQ(PFApplyVec(pf,xy,u));
+  PetscCall(PFApplyVec(pf,xy,u));
 
-  CHKERRQ(VecView(u,PETSC_VIEWER_DRAW_WORLD));
+  PetscCall(VecView(u,PETSC_VIEWER_DRAW_WORLD));
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  CHKERRQ(VecDestroy(&u));
-  CHKERRQ(PFDestroy(&pf));
-  CHKERRQ(DMDestroy(&da));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&u));
+  PetscCall(PFDestroy(&pf));
+  PetscCall(DMDestroy(&da));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

@@ -12,17 +12,17 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_1WD(Mat mat,MatOrderingType type,IS *
   PetscBool      done;
 
   PetscFunctionBegin;
-  CHKERRQ(MatGetRowIJ(mat,1,PETSC_TRUE,PETSC_TRUE,&nrow,&ia,&ja,&done));
+  PetscCall(MatGetRowIJ(mat,1,PETSC_TRUE,PETSC_TRUE,&nrow,&ia,&ja,&done));
   PetscCheck(done,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot get rows for matrix");
 
-  CHKERRQ(PetscMalloc5(nrow,&mask,nrow+1,&xls,nrow,&ls,nrow+1,&xblk,nrow,&perm));
+  PetscCall(PetscMalloc5(nrow,&mask,nrow+1,&xls,nrow,&ls,nrow+1,&xblk,nrow,&perm));
   SPARSEPACKgen1wd(&nrow,ia,ja,mask,&nblks,xblk,perm,xls,ls);
-  CHKERRQ(MatRestoreRowIJ(mat,1,PETSC_TRUE,PETSC_TRUE,NULL,&ia,&ja,&done));
+  PetscCall(MatRestoreRowIJ(mat,1,PETSC_TRUE,PETSC_TRUE,NULL,&ia,&ja,&done));
 
   for (i=0; i<nrow; i++) perm[i]--;
 
-  CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,PETSC_COPY_VALUES,row));
-  CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,PETSC_COPY_VALUES,col));
-  CHKERRQ(PetscFree5(mask,xls,ls,xblk,perm));
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,PETSC_COPY_VALUES,row));
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,PETSC_COPY_VALUES,col));
+  PetscCall(PetscFree5(mask,xls,ls,xblk,perm));
   PetscFunctionReturn(0);
 }

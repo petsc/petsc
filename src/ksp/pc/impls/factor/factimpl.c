@@ -10,7 +10,7 @@ PetscErrorCode PCFactorSetUpMatSolverType_Factor(PC pc)
   PetscFunctionBegin;
   PetscCheck(pc->pmat,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"You can only call this routine after the matrix object has been provided to the solver, for example with KSPSetOperators() or SNESSetJacobian()");
   if (!pc->setupcalled && !((PC_Factor*)icc)->fact) {
-    CHKERRQ(MatGetFactor(pc->pmat,((PC_Factor*)icc)->solvertype,((PC_Factor*)icc)->factortype,&((PC_Factor*)icc)->fact));
+    PetscCall(MatGetFactor(pc->pmat,((PC_Factor*)icc)->solvertype,((PC_Factor*)icc)->factortype,&((PC_Factor*)icc)->fact));
   }
   PetscFunctionReturn(0);
 }
@@ -81,10 +81,10 @@ PetscErrorCode  PCFactorSetMatOrderingType_Factor(PC pc,MatOrderingType ordering
 
   PetscFunctionBegin;
   if (!pc->setupcalled) {
-    CHKERRQ(PetscFree(dir->ordering));
-    CHKERRQ(PetscStrallocpy(ordering,(char**)&dir->ordering));
+    PetscCall(PetscFree(dir->ordering));
+    PetscCall(PetscStrallocpy(ordering,(char**)&dir->ordering));
   } else {
-    CHKERRQ(PetscStrcmp(dir->ordering,ordering,&flg));
+    PetscCall(PetscStrcmp(dir->ordering,ordering,&flg));
     PetscCheck(flg,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Cannot change ordering after use");
   }
   PetscFunctionReturn(0);
@@ -133,7 +133,7 @@ PetscErrorCode  PCFactorSetLevels_Factor(PC pc,PetscInt levels)
   PetscFunctionBegin;
   if (!pc->setupcalled) ilu->info.levels = levels;
   else if (ilu->info.levels != levels) {
-    CHKERRQ((*pc->ops->reset)(pc)); /* remove previous factored matrices */
+    PetscCall((*pc->ops->reset)(pc)); /* remove previous factored matrices */
     pc->setupcalled  = 0; /* force a complete rebuild of preconditioner factored matrices */
     ilu->info.levels = levels;
   } else PetscCheckFalse(ilu->info.usedt,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Cannot change levels after use with ILUdt");
@@ -190,13 +190,13 @@ PetscErrorCode  PCFactorSetMatSolverType_Factor(PC pc,MatSolverType stype)
   if (lu->fact && lu->fact->assembled) {
     MatSolverType ltype;
     PetscBool     flg;
-    CHKERRQ(MatFactorGetSolverType(lu->fact,&ltype));
-    CHKERRQ(PetscStrcmp(stype,ltype,&flg));
+    PetscCall(MatFactorGetSolverType(lu->fact,&ltype));
+    PetscCall(PetscStrcmp(stype,ltype,&flg));
     PetscCheck(flg,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Cannot change solver matrix package from %s to %s after PC has been setup or used",ltype,stype);
   }
 
-  CHKERRQ(PetscFree(lu->solvertype));
-  CHKERRQ(PetscStrallocpy(stype,&lu->solvertype));
+  PetscCall(PetscFree(lu->solvertype));
+  PetscCall(PetscStrallocpy(stype,&lu->solvertype));
   PetscFunctionReturn(0);
 }
 
@@ -229,46 +229,46 @@ PetscErrorCode  PCSetFromOptions_Factor(PetscOptionItems *PetscOptionsObject,PC 
   PetscBool         inplace;
 
   PetscFunctionBegin;
-  CHKERRQ(PCFactorGetUseInPlace(pc,&inplace));
-  CHKERRQ(PetscOptionsBool("-pc_factor_in_place","Form factored matrix in the same memory as the matrix","PCFactorSetUseInPlace",inplace,&flg,&set));
+  PetscCall(PCFactorGetUseInPlace(pc,&inplace));
+  PetscCall(PetscOptionsBool("-pc_factor_in_place","Form factored matrix in the same memory as the matrix","PCFactorSetUseInPlace",inplace,&flg,&set));
   if (set) {
-    CHKERRQ(PCFactorSetUseInPlace(pc,flg));
+    PetscCall(PCFactorSetUseInPlace(pc,flg));
   }
-  CHKERRQ(PetscOptionsReal("-pc_factor_fill","Expected non-zeros in factored matrix","PCFactorSetFill",((PC_Factor*)factor)->info.fill,&((PC_Factor*)factor)->info.fill,NULL));
+  PetscCall(PetscOptionsReal("-pc_factor_fill","Expected non-zeros in factored matrix","PCFactorSetFill",((PC_Factor*)factor)->info.fill,&((PC_Factor*)factor)->info.fill,NULL));
 
-  CHKERRQ(PetscOptionsEnum("-pc_factor_shift_type","Type of shift to add to diagonal","PCFactorSetShiftType",MatFactorShiftTypes,(PetscEnum)(int)((PC_Factor*)factor)->info.shifttype,&etmp,&flg));
+  PetscCall(PetscOptionsEnum("-pc_factor_shift_type","Type of shift to add to diagonal","PCFactorSetShiftType",MatFactorShiftTypes,(PetscEnum)(int)((PC_Factor*)factor)->info.shifttype,&etmp,&flg));
   if (flg) {
-    CHKERRQ(PCFactorSetShiftType(pc,(MatFactorShiftType)etmp));
+    PetscCall(PCFactorSetShiftType(pc,(MatFactorShiftType)etmp));
   }
-  CHKERRQ(PetscOptionsReal("-pc_factor_shift_amount","Shift added to diagonal","PCFactorSetShiftAmount",((PC_Factor*)factor)->info.shiftamount,&((PC_Factor*)factor)->info.shiftamount,NULL));
+  PetscCall(PetscOptionsReal("-pc_factor_shift_amount","Shift added to diagonal","PCFactorSetShiftAmount",((PC_Factor*)factor)->info.shiftamount,&((PC_Factor*)factor)->info.shiftamount,NULL));
 
-  CHKERRQ(PetscOptionsReal("-pc_factor_zeropivot","Pivot is considered zero if less than","PCFactorSetZeroPivot",((PC_Factor*)factor)->info.zeropivot,&((PC_Factor*)factor)->info.zeropivot,NULL));
-  CHKERRQ(PetscOptionsReal("-pc_factor_column_pivot","Column pivot tolerance (used only for some factorization)","PCFactorSetColumnPivot",((PC_Factor*)factor)->info.dtcol,&((PC_Factor*)factor)->info.dtcol,&flg));
+  PetscCall(PetscOptionsReal("-pc_factor_zeropivot","Pivot is considered zero if less than","PCFactorSetZeroPivot",((PC_Factor*)factor)->info.zeropivot,&((PC_Factor*)factor)->info.zeropivot,NULL));
+  PetscCall(PetscOptionsReal("-pc_factor_column_pivot","Column pivot tolerance (used only for some factorization)","PCFactorSetColumnPivot",((PC_Factor*)factor)->info.dtcol,&((PC_Factor*)factor)->info.dtcol,&flg));
 
-  CHKERRQ(PetscOptionsBool("-pc_factor_pivot_in_blocks","Pivot inside matrix dense blocks for BAIJ and SBAIJ","PCFactorSetPivotInBlocks",((PC_Factor*)factor)->info.pivotinblocks ? PETSC_TRUE : PETSC_FALSE,&flg,&set));
+  PetscCall(PetscOptionsBool("-pc_factor_pivot_in_blocks","Pivot inside matrix dense blocks for BAIJ and SBAIJ","PCFactorSetPivotInBlocks",((PC_Factor*)factor)->info.pivotinblocks ? PETSC_TRUE : PETSC_FALSE,&flg,&set));
   if (set) {
-    CHKERRQ(PCFactorSetPivotInBlocks(pc,flg));
+    PetscCall(PCFactorSetPivotInBlocks(pc,flg));
   }
 
-  CHKERRQ(PetscOptionsBool("-pc_factor_reuse_fill","Use fill from previous factorization","PCFactorSetReuseFill",PETSC_FALSE,&flg,&set));
+  PetscCall(PetscOptionsBool("-pc_factor_reuse_fill","Use fill from previous factorization","PCFactorSetReuseFill",PETSC_FALSE,&flg,&set));
   if (set) {
-    CHKERRQ(PCFactorSetReuseFill(pc,flg));
+    PetscCall(PCFactorSetReuseFill(pc,flg));
   }
-  CHKERRQ(PetscOptionsBool("-pc_factor_reuse_ordering","Reuse ordering from previous factorization","PCFactorSetReuseOrdering",PETSC_FALSE,&flg,&set));
+  PetscCall(PetscOptionsBool("-pc_factor_reuse_ordering","Reuse ordering from previous factorization","PCFactorSetReuseOrdering",PETSC_FALSE,&flg,&set));
   if (set) {
-    CHKERRQ(PCFactorSetReuseOrdering(pc,flg));
+    PetscCall(PCFactorSetReuseOrdering(pc,flg));
   }
 
-  CHKERRQ(PetscOptionsDeprecated("-pc_factor_mat_solver_package","-pc_factor_mat_solver_type","3.9",NULL));
-  CHKERRQ(PetscOptionsString("-pc_factor_mat_solver_type","Specific direct solver to use","MatGetFactor",((PC_Factor*)factor)->solvertype,solvertype,sizeof(solvertype),&flg));
+  PetscCall(PetscOptionsDeprecated("-pc_factor_mat_solver_package","-pc_factor_mat_solver_type","3.9",NULL));
+  PetscCall(PetscOptionsString("-pc_factor_mat_solver_type","Specific direct solver to use","MatGetFactor",((PC_Factor*)factor)->solvertype,solvertype,sizeof(solvertype),&flg));
   if (flg) {
-    CHKERRQ(PCFactorSetMatSolverType(pc,solvertype));
+    PetscCall(PCFactorSetMatSolverType(pc,solvertype));
   }
-  CHKERRQ(PCFactorSetDefaultOrdering_Factor(pc));
-  CHKERRQ(MatGetOrderingList(&ordlist));
-  CHKERRQ(PetscOptionsFList("-pc_factor_mat_ordering_type","Reordering to reduce nonzeros in factored matrix","PCFactorSetMatOrderingType",ordlist,((PC_Factor*)factor)->ordering,tname,sizeof(tname),&flg));
+  PetscCall(PCFactorSetDefaultOrdering_Factor(pc));
+  PetscCall(MatGetOrderingList(&ordlist));
+  PetscCall(PetscOptionsFList("-pc_factor_mat_ordering_type","Reordering to reduce nonzeros in factored matrix","PCFactorSetMatOrderingType",ordlist,((PC_Factor*)factor)->ordering,tname,sizeof(tname),&flg));
   if (flg) {
-    CHKERRQ(PCFactorSetMatOrderingType(pc,tname));
+    PetscCall(PCFactorSetMatOrderingType(pc,tname));
   }
   PetscFunctionReturn(0);
 }
@@ -281,63 +281,63 @@ PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
   MatOrderingType ordering;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
     if (factor->inplace) {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"  in-place factorization\n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  in-place factorization\n"));
     } else {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"  out-of-place factorization\n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  out-of-place factorization\n"));
     }
 
-    if (factor->reusefill)     CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Reusing fill from past factorization\n"));
-    if (factor->reuseordering) CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Reusing reordering from past factorization\n"));
+    if (factor->reusefill)     PetscCall(PetscViewerASCIIPrintf(viewer,"  Reusing fill from past factorization\n"));
+    if (factor->reuseordering) PetscCall(PetscViewerASCIIPrintf(viewer,"  Reusing reordering from past factorization\n"));
     if (factor->factortype == MAT_FACTOR_ILU || factor->factortype == MAT_FACTOR_ICC) {
       if (factor->info.dt > 0) {
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"  drop tolerance %g\n",(double)factor->info.dt));
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"  max nonzeros per row %D\n",factor->info.dtcount));
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"  column permutation tolerance %g\n",(double)factor->info.dtcol));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"  drop tolerance %g\n",(double)factor->info.dt));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"  max nonzeros per row %D\n",factor->info.dtcount));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"  column permutation tolerance %g\n",(double)factor->info.dtcol));
       } else if (factor->info.levels == 1) {
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"  %D level of fill\n",(PetscInt)factor->info.levels));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"  %D level of fill\n",(PetscInt)factor->info.levels));
       } else {
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"  %D levels of fill\n",(PetscInt)factor->info.levels));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"  %D levels of fill\n",(PetscInt)factor->info.levels));
       }
     }
 
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  tolerance for zero pivot %g\n",(double)factor->info.zeropivot));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  tolerance for zero pivot %g\n",(double)factor->info.zeropivot));
     if (MatFactorShiftTypesDetail[(int)factor->info.shifttype]) { /* Only print when using a nontrivial shift */
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"  using %s [%s]\n",MatFactorShiftTypesDetail[(int)factor->info.shifttype],MatFactorShiftTypes[(int)factor->info.shifttype]));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  using %s [%s]\n",MatFactorShiftTypesDetail[(int)factor->info.shifttype],MatFactorShiftTypes[(int)factor->info.shifttype]));
     }
 
     if (factor->fact) {
-      CHKERRQ(MatFactorGetCanUseOrdering(factor->fact,&canuseordering));
+      PetscCall(MatFactorGetCanUseOrdering(factor->fact,&canuseordering));
       if (!canuseordering) ordering = MATORDERINGEXTERNAL;
       else ordering = factor->ordering;
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"  matrix ordering: %s\n",ordering));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  matrix ordering: %s\n",ordering));
       if (!factor->fact->assembled) {
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"  matrix solver type: %s\n",factor->fact->solvertype));
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"  matrix not yet factored; no additional information available\n"));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"  matrix solver type: %s\n",factor->fact->solvertype));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"  matrix not yet factored; no additional information available\n"));
       } else {
-        CHKERRQ(MatGetInfo(factor->fact,MAT_LOCAL,&info));
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"  factor fill ratio given %g, needed %g\n",(double)info.fill_ratio_given,(double)info.fill_ratio_needed));
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"    Factored matrix follows:\n"));
-        CHKERRQ(PetscViewerASCIIPushTab(viewer));
-        CHKERRQ(PetscViewerASCIIPushTab(viewer));
-        CHKERRQ(PetscViewerASCIIPushTab(viewer));
-        CHKERRQ(PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_INFO));
-        CHKERRQ(MatView(factor->fact,viewer));
-        CHKERRQ(PetscViewerPopFormat(viewer));
-        CHKERRQ(PetscViewerASCIIPopTab(viewer));
-        CHKERRQ(PetscViewerASCIIPopTab(viewer));
-        CHKERRQ(PetscViewerASCIIPopTab(viewer));
+        PetscCall(MatGetInfo(factor->fact,MAT_LOCAL,&info));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"  factor fill ratio given %g, needed %g\n",(double)info.fill_ratio_given,(double)info.fill_ratio_needed));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"    Factored matrix follows:\n"));
+        PetscCall(PetscViewerASCIIPushTab(viewer));
+        PetscCall(PetscViewerASCIIPushTab(viewer));
+        PetscCall(PetscViewerASCIIPushTab(viewer));
+        PetscCall(PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_INFO));
+        PetscCall(MatView(factor->fact,viewer));
+        PetscCall(PetscViewerPopFormat(viewer));
+        PetscCall(PetscViewerASCIIPopTab(viewer));
+        PetscCall(PetscViewerASCIIPopTab(viewer));
+        PetscCall(PetscViewerASCIIPopTab(viewer));
       }
     }
 
   } else if (isstring) {
     MatFactorType t;
-    CHKERRQ(MatGetFactorType(factor->fact,&t));
+    PetscCall(MatGetFactorType(factor->fact,&t));
     if (t == MAT_FACTOR_ILU || t == MAT_FACTOR_ICC) {
-      CHKERRQ(PetscViewerStringSPrintf(viewer," lvls=%D,order=%s",(PetscInt)factor->info.levels,factor->ordering));
+      PetscCall(PetscViewerStringSPrintf(viewer," lvls=%D,order=%s",(PetscInt)factor->info.levels,factor->ordering));
     }
   }
   PetscFunctionReturn(0);

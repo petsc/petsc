@@ -30,7 +30,7 @@ typedef const char *PetscSFType;
 
   Sample Usage:
 $      PetscSFNode    *remote;
-$    CHKERRQ(PetscMalloc1(nleaves,&remote));
+$    PetscCall(PetscMalloc1(nleaves,&remote));
 $    for (i=0; i<size; i++) {
 $      remote[i].rank = i;
 $      remote[i].index = rank;

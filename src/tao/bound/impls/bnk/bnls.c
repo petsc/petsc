@@ -100,74 +100,74 @@ PetscErrorCode TaoSolve_BNLS(Tao tao)
   PetscFunctionBegin;
   /* Initialize the preconditioner, KSP solver and trust radius/line search */
   tao->reason = TAO_CONTINUE_ITERATING;
-  CHKERRQ(TaoBNKInitialize(tao, bnk->init_type, &needH));
+  PetscCall(TaoBNKInitialize(tao, bnk->init_type, &needH));
   if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
 
   /* Have not converged; continue with Newton method */
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     /* Call general purpose update function */
     if (tao->ops->update) {
-      CHKERRQ((*tao->ops->update)(tao, tao->niter, tao->user_update));
+      PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
     }
     ++tao->niter;
 
     if (needH && bnk->inactive_idx) {
       /* Take BNCG steps (if enabled) to trade-off Hessian evaluations for more gradient evaluations */
-      CHKERRQ(TaoBNKTakeCGSteps(tao, &cgTerminate));
+      PetscCall(TaoBNKTakeCGSteps(tao, &cgTerminate));
       if (cgTerminate) {
         tao->reason = bnk->bncg->reason;
         PetscFunctionReturn(0);
       }
       /* Compute the hessian and update the BFGS preconditioner at the new iterate */
-      CHKERRQ((*bnk->computehessian)(tao));
+      PetscCall((*bnk->computehessian)(tao));
       needH = PETSC_FALSE;
     }
 
     /* Use the common BNK kernel to compute the safeguarded Newton step (for inactive variables only) */
-    CHKERRQ((*bnk->computestep)(tao, shift, &ksp_reason, &stepType));
-    CHKERRQ(TaoBNKSafeguardStep(tao, ksp_reason, &stepType));
+    PetscCall((*bnk->computestep)(tao, shift, &ksp_reason, &stepType));
+    PetscCall(TaoBNKSafeguardStep(tao, ksp_reason, &stepType));
 
     /* Store current solution before it changes */
     bnk->fold = bnk->f;
-    CHKERRQ(VecCopy(tao->solution, bnk->Xold));
-    CHKERRQ(VecCopy(tao->gradient, bnk->Gold));
-    CHKERRQ(VecCopy(bnk->unprojected_gradient, bnk->unprojected_gradient_old));
+    PetscCall(VecCopy(tao->solution, bnk->Xold));
+    PetscCall(VecCopy(tao->gradient, bnk->Gold));
+    PetscCall(VecCopy(bnk->unprojected_gradient, bnk->unprojected_gradient_old));
 
     /* Trigger the line search */
-    CHKERRQ(TaoBNKPerformLineSearch(tao, &stepType, &steplen, &ls_reason));
+    PetscCall(TaoBNKPerformLineSearch(tao, &stepType, &steplen, &ls_reason));
 
     if (ls_reason != TAOLINESEARCH_SUCCESS && ls_reason != TAOLINESEARCH_SUCCESS_USER) {
       /* Failed to find an improving point */
       needH = PETSC_FALSE;
       bnk->f = bnk->fold;
-      CHKERRQ(VecCopy(bnk->Xold, tao->solution));
-      CHKERRQ(VecCopy(bnk->Gold, tao->gradient));
-      CHKERRQ(VecCopy(bnk->unprojected_gradient_old, bnk->unprojected_gradient));
+      PetscCall(VecCopy(bnk->Xold, tao->solution));
+      PetscCall(VecCopy(bnk->Gold, tao->gradient));
+      PetscCall(VecCopy(bnk->unprojected_gradient_old, bnk->unprojected_gradient));
       steplen = 0.0;
       tao->reason = TAO_DIVERGED_LS_FAILURE;
     } else {
       /* new iterate so we need to recompute the Hessian */
       needH = PETSC_TRUE;
       /* compute the projected gradient */
-      CHKERRQ(TaoBNKEstimateActiveSet(tao, bnk->as_type));
-      CHKERRQ(VecCopy(bnk->unprojected_gradient, tao->gradient));
-      CHKERRQ(VecISSet(tao->gradient, bnk->active_idx, 0.0));
-      CHKERRQ(TaoGradientNorm(tao, tao->gradient, NORM_2, &bnk->gnorm));
+      PetscCall(TaoBNKEstimateActiveSet(tao, bnk->as_type));
+      PetscCall(VecCopy(bnk->unprojected_gradient, tao->gradient));
+      PetscCall(VecISSet(tao->gradient, bnk->active_idx, 0.0));
+      PetscCall(TaoGradientNorm(tao, tao->gradient, NORM_2, &bnk->gnorm));
       /* update the trust radius based on the step length */
-      CHKERRQ(TaoBNKUpdateTrustRadius(tao, 0.0, 0.0, BNK_UPDATE_STEP, stepType, &stepAccepted));
+      PetscCall(TaoBNKUpdateTrustRadius(tao, 0.0, 0.0, BNK_UPDATE_STEP, stepType, &stepAccepted));
       /* count the accepted step type */
-      CHKERRQ(TaoBNKAddStepCounts(tao, stepType));
+      PetscCall(TaoBNKAddStepCounts(tao, stepType));
       /* active BNCG recycling for next iteration */
-      CHKERRQ(TaoSetRecycleHistory(bnk->bncg, PETSC_TRUE));
+      PetscCall(TaoSetRecycleHistory(bnk->bncg, PETSC_TRUE));
     }
 
     /*  Check for termination */
-    CHKERRQ(VecFischer(tao->solution, bnk->unprojected_gradient, tao->XL, tao->XU, bnk->W));
-    CHKERRQ(VecNorm(bnk->W, NORM_2, &resnorm));
+    PetscCall(VecFischer(tao->solution, bnk->unprojected_gradient, tao->XL, tao->XU, bnk->W));
+    PetscCall(VecNorm(bnk->W, NORM_2, &resnorm));
     PetscCheck(!PetscIsInfOrNanReal(resnorm),PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
-    CHKERRQ(TaoLogConvergenceHistory(tao, bnk->f, resnorm, 0.0, tao->ksp_its));
-    CHKERRQ(TaoMonitor(tao, tao->niter, bnk->f, resnorm, 0.0, steplen));
-    CHKERRQ((*tao->ops->convergencetest)(tao, tao->cnvP));
+    PetscCall(TaoLogConvergenceHistory(tao, bnk->f, resnorm, 0.0, tao->ksp_its));
+    PetscCall(TaoMonitor(tao, tao->niter, bnk->f, resnorm, 0.0, steplen));
+    PetscCall((*tao->ops->convergencetest)(tao, tao->cnvP));
   }
   PetscFunctionReturn(0);
 }
@@ -189,7 +189,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BNLS(Tao tao)
   TAO_BNK        *bnk;
 
   PetscFunctionBegin;
-  CHKERRQ(TaoCreate_BNK(tao));
+  PetscCall(TaoCreate_BNK(tao));
   tao->ops->solve = TaoSolve_BNLS;
 
   bnk = (TAO_BNK *)tao->data;

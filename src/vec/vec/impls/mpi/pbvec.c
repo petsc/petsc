@@ -10,8 +10,8 @@ PetscErrorCode VecDot_MPI(Vec xin,Vec yin,PetscScalar *z)
   PetscScalar    sum,work;
 
   PetscFunctionBegin;
-  CHKERRQ(VecDot_Seq(xin,yin,&work));
-  CHKERRMPI(MPIU_Allreduce(&work,&sum,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)xin)));
+  PetscCall(VecDot_Seq(xin,yin,&work));
+  PetscCallMPI(MPIU_Allreduce(&work,&sum,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)xin)));
   *z   = sum;
   PetscFunctionReturn(0);
 }
@@ -21,8 +21,8 @@ PetscErrorCode VecTDot_MPI(Vec xin,Vec yin,PetscScalar *z)
   PetscScalar    sum,work;
 
   PetscFunctionBegin;
-  CHKERRQ(VecTDot_Seq(xin,yin,&work));
-  CHKERRMPI(MPIU_Allreduce(&work,&sum,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)xin)));
+  PetscCall(VecTDot_Seq(xin,yin,&work));
+  PetscCallMPI(MPIU_Allreduce(&work,&sum,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)xin)));
   *z   = sum;
   PetscFunctionReturn(0);
 }
@@ -38,7 +38,7 @@ static PetscErrorCode VecPlaceArray_MPI(Vec vin,const PetscScalar *a)
   v->unplacedarray = v->array;  /* save previous array so reset can bring it back */
   v->array         = (PetscScalar*)a;
   if (v->localrep) {
-    CHKERRQ(VecPlaceArray(v->localrep,a));
+    PetscCall(VecPlaceArray(v->localrep,a));
   }
   PetscFunctionReturn(0);
 }
@@ -49,24 +49,24 @@ PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
   PetscScalar    *array;
 
   PetscFunctionBegin;
-  CHKERRQ(VecCreate(PetscObjectComm((PetscObject)win),v));
-  CHKERRQ(PetscLayoutReference(win->map,&(*v)->map));
+  PetscCall(VecCreate(PetscObjectComm((PetscObject)win),v));
+  PetscCall(PetscLayoutReference(win->map,&(*v)->map));
 
-  CHKERRQ(VecCreate_MPI_Private(*v,PETSC_TRUE,w->nghost,NULL));
+  PetscCall(VecCreate_MPI_Private(*v,PETSC_TRUE,w->nghost,NULL));
   vw   = (Vec_MPI*)(*v)->data;
-  CHKERRQ(PetscMemcpy((*v)->ops,win->ops,sizeof(struct _VecOps)));
+  PetscCall(PetscMemcpy((*v)->ops,win->ops,sizeof(struct _VecOps)));
 
   /* save local representation of the parallel vector (and scatter) if it exists */
   if (w->localrep) {
-    CHKERRQ(VecGetArray(*v,&array));
-    CHKERRQ(VecCreateSeqWithArray(PETSC_COMM_SELF,PetscAbs(win->map->bs),win->map->n+w->nghost,array,&vw->localrep));
-    CHKERRQ(PetscMemcpy(vw->localrep->ops,w->localrep->ops,sizeof(struct _VecOps)));
-    CHKERRQ(VecRestoreArray(*v,&array));
-    CHKERRQ(PetscLogObjectParent((PetscObject)*v,(PetscObject)vw->localrep));
+    PetscCall(VecGetArray(*v,&array));
+    PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,PetscAbs(win->map->bs),win->map->n+w->nghost,array,&vw->localrep));
+    PetscCall(PetscMemcpy(vw->localrep->ops,w->localrep->ops,sizeof(struct _VecOps)));
+    PetscCall(VecRestoreArray(*v,&array));
+    PetscCall(PetscLogObjectParent((PetscObject)*v,(PetscObject)vw->localrep));
 
     vw->localupdate = w->localupdate;
     if (vw->localupdate) {
-      CHKERRQ(PetscObjectReference((PetscObject)vw->localupdate));
+      PetscCall(PetscObjectReference((PetscObject)vw->localupdate));
     }
   }
 
@@ -74,8 +74,8 @@ PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
   (*v)->stash.donotstash   = win->stash.donotstash;
   (*v)->stash.ignorenegidx = win->stash.ignorenegidx;
 
-  CHKERRQ(PetscObjectListDuplicate(((PetscObject)win)->olist,&((PetscObject)(*v))->olist));
-  CHKERRQ(PetscFunctionListDuplicate(((PetscObject)win)->qlist,&((PetscObject)(*v))->qlist));
+  PetscCall(PetscObjectListDuplicate(((PetscObject)win)->olist,&((PetscObject)(*v))->olist));
+  PetscCall(PetscFunctionListDuplicate(((PetscObject)win)->qlist,&((PetscObject)(*v))->qlist));
 
   (*v)->map->bs   = PetscAbs(win->map->bs);
   (*v)->bstash.bs = win->bstash.bs;
@@ -95,7 +95,7 @@ static PetscErrorCode VecSetOption_MPI(Vec V,VecOption op,PetscBool flag)
   case VEC_SUBSET_OFF_PROC_ENTRIES:
     v->assembly_subset = flag; /* See the same logic in MatAssembly wrt MAT_SUBSET_OFF_PROC_ENTRIES */
     if (!v->assembly_subset) { /* User indicates "do not reuse the communication pattern" */
-      CHKERRQ(VecAssemblyReset_MPI(V)); /* Reset existing pattern to free memory */
+      PetscCall(VecAssemblyReset_MPI(V)); /* Reset existing pattern to free memory */
       v->first_assembly_done = PETSC_FALSE; /* Mark the first assembly is not done */
     }
     break;
@@ -112,7 +112,7 @@ static PetscErrorCode VecResetArray_MPI(Vec vin)
   v->array         = v->unplacedarray;
   v->unplacedarray = NULL;
   if (v->localrep) {
-    CHKERRQ(VecResetArray(v->localrep));
+    PetscCall(VecResetArray(v->localrep));
   }
   PetscFunctionReturn(0);
 }
@@ -130,12 +130,12 @@ static PetscErrorCode VecAssemblySend_MPI_Private(MPI_Comm comm,const PetscMPIIn
      receiver is expecting them.
    */
   if (hdr->count || (x->first_assembly_done && x->sendptrs[rankid].ints)) {
-    CHKERRMPI(MPI_Isend(x->sendptrs[rankid].ints,hdr->count,MPIU_INT,rank,tag[0],comm,&req[0]));
-    CHKERRMPI(MPI_Isend(x->sendptrs[rankid].scalars,hdr->count,MPIU_SCALAR,rank,tag[1],comm,&req[1]));
+    PetscCallMPI(MPI_Isend(x->sendptrs[rankid].ints,hdr->count,MPIU_INT,rank,tag[0],comm,&req[0]));
+    PetscCallMPI(MPI_Isend(x->sendptrs[rankid].scalars,hdr->count,MPIU_SCALAR,rank,tag[1],comm,&req[1]));
   }
   if (hdr->bcount || (x->first_assembly_done && x->sendptrs[rankid].intb)) {
-    CHKERRMPI(MPI_Isend(x->sendptrs[rankid].intb,hdr->bcount,MPIU_INT,rank,tag[2],comm,&req[2]));
-    CHKERRMPI(MPI_Isend(x->sendptrs[rankid].scalarb,hdr->bcount*bs,MPIU_SCALAR,rank,tag[3],comm,&req[3]));
+    PetscCallMPI(MPI_Isend(x->sendptrs[rankid].intb,hdr->bcount,MPIU_INT,rank,tag[2],comm,&req[2]));
+    PetscCallMPI(MPI_Isend(x->sendptrs[rankid].scalarb,hdr->bcount*bs,MPIU_SCALAR,rank,tag[3],comm,&req[3]));
   }
   PetscFunctionReturn(0);
 }
@@ -149,13 +149,13 @@ static PetscErrorCode VecAssemblyRecv_MPI_Private(MPI_Comm comm,const PetscMPIIn
   VecAssemblyFrame *frame;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscSegBufferGet(x->segrecvframe,1,&frame));
+  PetscCall(PetscSegBufferGet(x->segrecvframe,1,&frame));
 
   if (hdr->count) {
-    CHKERRQ(PetscSegBufferGet(x->segrecvint,hdr->count,&frame->ints));
-    CHKERRMPI(MPI_Irecv(frame->ints,hdr->count,MPIU_INT,rank,tag[0],comm,&req[0]));
-    CHKERRQ(PetscSegBufferGet(x->segrecvscalar,hdr->count,&frame->scalars));
-    CHKERRMPI(MPI_Irecv(frame->scalars,hdr->count,MPIU_SCALAR,rank,tag[1],comm,&req[1]));
+    PetscCall(PetscSegBufferGet(x->segrecvint,hdr->count,&frame->ints));
+    PetscCallMPI(MPI_Irecv(frame->ints,hdr->count,MPIU_INT,rank,tag[0],comm,&req[0]));
+    PetscCall(PetscSegBufferGet(x->segrecvscalar,hdr->count,&frame->scalars));
+    PetscCallMPI(MPI_Irecv(frame->scalars,hdr->count,MPIU_SCALAR,rank,tag[1],comm,&req[1]));
     frame->pendings = 2;
   } else {
     frame->ints = NULL;
@@ -164,10 +164,10 @@ static PetscErrorCode VecAssemblyRecv_MPI_Private(MPI_Comm comm,const PetscMPIIn
   }
 
   if (hdr->bcount) {
-    CHKERRQ(PetscSegBufferGet(x->segrecvint,hdr->bcount,&frame->intb));
-    CHKERRMPI(MPI_Irecv(frame->intb,hdr->bcount,MPIU_INT,rank,tag[2],comm,&req[2]));
-    CHKERRQ(PetscSegBufferGet(x->segrecvscalar,hdr->bcount*bs,&frame->scalarb));
-    CHKERRMPI(MPI_Irecv(frame->scalarb,hdr->bcount*bs,MPIU_SCALAR,rank,tag[3],comm,&req[3]));
+    PetscCall(PetscSegBufferGet(x->segrecvint,hdr->bcount,&frame->intb));
+    PetscCallMPI(MPI_Irecv(frame->intb,hdr->bcount,MPIU_INT,rank,tag[2],comm,&req[2]));
+    PetscCall(PetscSegBufferGet(x->segrecvscalar,hdr->bcount*bs,&frame->scalarb));
+    PetscCallMPI(MPI_Irecv(frame->scalarb,hdr->bcount*bs,MPIU_SCALAR,rank,tag[3],comm,&req[3]));
     frame->pendingb = 2;
   } else {
     frame->intb = NULL;
@@ -186,29 +186,29 @@ static PetscErrorCode VecAssemblyBegin_MPI_BTS(Vec X)
   PetscFunctionBegin;
   if (X->stash.donotstash) PetscFunctionReturn(0);
 
-  CHKERRQ(PetscObjectGetComm((PetscObject)X,&comm));
-  CHKERRQ(VecGetBlockSize(X,&bs));
+  PetscCall(PetscObjectGetComm((PetscObject)X,&comm));
+  PetscCall(VecGetBlockSize(X,&bs));
   if (PetscDefined(USE_DEBUG)) {
     InsertMode addv;
-    CHKERRMPI(MPIU_Allreduce((PetscEnum*)&X->stash.insertmode,(PetscEnum*)&addv,1,MPIU_ENUM,MPI_BOR,comm));
+    PetscCallMPI(MPIU_Allreduce((PetscEnum*)&X->stash.insertmode,(PetscEnum*)&addv,1,MPIU_ENUM,MPI_BOR,comm));
     PetscCheckFalse(addv == (ADD_VALUES|INSERT_VALUES),comm,PETSC_ERR_ARG_NOTSAMETYPE,"Some processors inserted values while others added");
   }
   X->bstash.insertmode = X->stash.insertmode; /* Block stash implicitly tracks InsertMode of scalar stash */
 
-  CHKERRQ(VecStashSortCompress_Private(&X->stash));
-  CHKERRQ(VecStashSortCompress_Private(&X->bstash));
+  PetscCall(VecStashSortCompress_Private(&X->stash));
+  PetscCall(VecStashSortCompress_Private(&X->bstash));
 
   if (!x->sendranks) {
     PetscMPIInt nowners,bnowners,*owners,*bowners;
     PetscInt ntmp;
-    CHKERRQ(VecStashGetOwnerList_Private(&X->stash,X->map,&nowners,&owners));
-    CHKERRQ(VecStashGetOwnerList_Private(&X->bstash,X->map,&bnowners,&bowners));
-    CHKERRQ(PetscMergeMPIIntArray(nowners,owners,bnowners,bowners,&ntmp,&x->sendranks));
+    PetscCall(VecStashGetOwnerList_Private(&X->stash,X->map,&nowners,&owners));
+    PetscCall(VecStashGetOwnerList_Private(&X->bstash,X->map,&bnowners,&bowners));
+    PetscCall(PetscMergeMPIIntArray(nowners,owners,bnowners,bowners,&ntmp,&x->sendranks));
     x->nsendranks = ntmp;
-    CHKERRQ(PetscFree(owners));
-    CHKERRQ(PetscFree(bowners));
-    CHKERRQ(PetscMalloc1(x->nsendranks,&x->sendhdr));
-    CHKERRQ(PetscCalloc1(x->nsendranks,&x->sendptrs));
+    PetscCall(PetscFree(owners));
+    PetscCall(PetscFree(bowners));
+    PetscCall(PetscMalloc1(x->nsendranks,&x->sendhdr));
+    PetscCall(PetscCalloc1(x->nsendranks,&x->sendptrs));
   }
   for (i=0,j=0,jb=0; i<x->nsendranks; i++) {
     PetscMPIInt rank = x->sendranks[i];
@@ -230,21 +230,21 @@ static PetscErrorCode VecAssemblyBegin_MPI_BTS(Vec X)
     }
   }
 
-  if (!x->segrecvint) CHKERRQ(PetscSegBufferCreate(sizeof(PetscInt),1000,&x->segrecvint));
-  if (!x->segrecvscalar) CHKERRQ(PetscSegBufferCreate(sizeof(PetscScalar),1000,&x->segrecvscalar));
-  if (!x->segrecvframe) CHKERRQ(PetscSegBufferCreate(sizeof(VecAssemblyFrame),50,&x->segrecvframe));
+  if (!x->segrecvint) PetscCall(PetscSegBufferCreate(sizeof(PetscInt),1000,&x->segrecvint));
+  if (!x->segrecvscalar) PetscCall(PetscSegBufferCreate(sizeof(PetscScalar),1000,&x->segrecvscalar));
+  if (!x->segrecvframe) PetscCall(PetscSegBufferCreate(sizeof(VecAssemblyFrame),50,&x->segrecvframe));
   if (x->first_assembly_done) { /* this is not the first assembly */
     PetscMPIInt tag[4];
-    for (i=0; i<4; i++) CHKERRQ(PetscCommGetNewTag(comm,&tag[i]));
+    for (i=0; i<4; i++) PetscCall(PetscCommGetNewTag(comm,&tag[i]));
     for (i=0; i<x->nsendranks; i++) {
-      CHKERRQ(VecAssemblySend_MPI_Private(comm,tag,i,x->sendranks[i],x->sendhdr+i,x->sendreqs+4*i,X));
+      PetscCall(VecAssemblySend_MPI_Private(comm,tag,i,x->sendranks[i],x->sendhdr+i,x->sendreqs+4*i,X));
     }
     for (i=0; i<x->nrecvranks; i++) {
-      CHKERRQ(VecAssemblyRecv_MPI_Private(comm,tag,x->recvranks[i],x->recvhdr+i,x->recvreqs+4*i,X));
+      PetscCall(VecAssemblyRecv_MPI_Private(comm,tag,x->recvranks[i],x->recvhdr+i,x->recvreqs+4*i,X));
     }
     x->use_status = PETSC_TRUE;
   } else { /* First time assembly */
-    CHKERRQ(PetscCommBuildTwoSidedFReq(comm,3,MPIU_INT,x->nsendranks,x->sendranks,(PetscInt*)x->sendhdr,&x->nrecvranks,&x->recvranks,&x->recvhdr,4,&x->sendreqs,&x->recvreqs,VecAssemblySend_MPI_Private,VecAssemblyRecv_MPI_Private,X));
+    PetscCall(PetscCommBuildTwoSidedFReq(comm,3,MPIU_INT,x->nsendranks,x->sendranks,(PetscInt*)x->sendhdr,&x->nrecvranks,&x->recvranks,&x->recvhdr,4,&x->sendreqs,&x->recvreqs,VecAssemblySend_MPI_Private,VecAssemblyRecv_MPI_Private,X));
     x->use_status = PETSC_FALSE;
   }
 
@@ -255,10 +255,10 @@ static PetscErrorCode VecAssemblyBegin_MPI_BTS(Vec X)
 
   {
     PetscInt nstash,reallocs;
-    CHKERRQ(VecStashGetInfo_Private(&X->stash,&nstash,&reallocs));
-    CHKERRQ(PetscInfo(X,"Stash has %" PetscInt_FMT " entries, uses %" PetscInt_FMT " mallocs.\n",nstash,reallocs));
-    CHKERRQ(VecStashGetInfo_Private(&X->bstash,&nstash,&reallocs));
-    CHKERRQ(PetscInfo(X,"Block-Stash has %" PetscInt_FMT " entries, uses %" PetscInt_FMT " mallocs.\n",nstash,reallocs));
+    PetscCall(VecStashGetInfo_Private(&X->stash,&nstash,&reallocs));
+    PetscCall(PetscInfo(X,"Stash has %" PetscInt_FMT " entries, uses %" PetscInt_FMT " mallocs.\n",nstash,reallocs));
+    PetscCall(VecStashGetInfo_Private(&X->bstash,&nstash,&reallocs));
+    PetscCall(PetscInfo(X,"Block-Stash has %" PetscInt_FMT " entries, uses %" PetscInt_FMT " mallocs.\n",nstash,reallocs));
   }
   PetscFunctionReturn(0);
 }
@@ -280,9 +280,9 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
   }
 
   PetscCheck(x->segrecvframe,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing segrecvframe! Probably you forgot to call VecAssemblyBegin first");
-  CHKERRQ(VecGetArray(X,&xarray));
-  CHKERRQ(PetscSegBufferExtractInPlace(x->segrecvframe,&frame));
-  CHKERRQ(PetscMalloc2(4*x->nrecvranks,&some_indices,x->use_status?4*x->nrecvranks:0,&some_statuses));
+  PetscCall(VecGetArray(X,&xarray));
+  PetscCall(PetscSegBufferExtractInPlace(x->segrecvframe,&frame));
+  PetscCall(PetscMalloc2(4*x->nrecvranks,&some_indices,x->use_status?4*x->nrecvranks:0,&some_statuses));
   for (r=0,npending=0; r<x->nrecvranks; r++) npending += frame[r].pendings + frame[r].pendingb;
   while (npending>0) {
     PetscMPIInt ndone=0,ii;
@@ -290,7 +290,7 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
      * when VEC_SUBSET_OFF_PROC_ENTRIES has not been set, because we could exchange exact sizes in the initial
      * rendezvous.  When the rendezvous is elided, however, we use MPI_Status to get actual message lengths, so that
      * subsequent assembly can set a proper subset of the values. */
-    CHKERRMPI(MPI_Waitsome(4*x->nrecvranks,x->recvreqs,&ndone,some_indices,x->use_status?some_statuses:MPI_STATUSES_IGNORE));
+    PetscCallMPI(MPI_Waitsome(4*x->nrecvranks,x->recvreqs,&ndone,some_indices,x->use_status?some_statuses:MPI_STATUSES_IGNORE));
     for (ii=0; ii<ndone; ii++) {
       PetscInt i = some_indices[ii]/4,j,k;
       InsertMode imode = (InsertMode)x->recvhdr[i].insertmode;
@@ -303,7 +303,7 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
         PetscMPIInt count;
         if (--frame[i].pendings > 0) continue;
         if (x->use_status) {
-          CHKERRMPI(MPI_Get_count(&some_statuses[ii],intmsg ? MPIU_INT : MPIU_SCALAR,&count));
+          PetscCallMPI(MPI_Get_count(&some_statuses[ii],intmsg ? MPIU_INT : MPIU_SCALAR,&count));
         } else count = x->recvhdr[i].count;
         for (j=0,recvint=frame[i].ints,recvscalar=frame[i].scalars; j<count; j++,recvint++) {
           PetscInt loc = *recvint - X->map->rstart;
@@ -322,7 +322,7 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
         PetscMPIInt count;
         if (--frame[i].pendingb > 0) continue;
         if (x->use_status) {
-          CHKERRMPI(MPI_Get_count(&some_statuses[ii],intmsg ? MPIU_INT : MPIU_SCALAR,&count));
+          PetscCallMPI(MPI_Get_count(&some_statuses[ii],intmsg ? MPIU_INT : MPIU_SCALAR,&count));
           if (!intmsg) count /= bs; /* Convert from number of scalars to number of blocks */
         } else count = x->recvhdr[i].bcount;
         for (j=0,recvint=frame[i].intb,recvscalar=frame[i].scalarb; j<count; j++,recvint++) {
@@ -340,21 +340,21 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
       }
     }
   }
-  CHKERRQ(VecRestoreArray(X,&xarray));
-  CHKERRMPI(MPI_Waitall(4*x->nsendranks,x->sendreqs,MPI_STATUSES_IGNORE));
-  CHKERRQ(PetscFree2(some_indices,some_statuses));
+  PetscCall(VecRestoreArray(X,&xarray));
+  PetscCallMPI(MPI_Waitall(4*x->nsendranks,x->sendreqs,MPI_STATUSES_IGNORE));
+  PetscCall(PetscFree2(some_indices,some_statuses));
   if (x->assembly_subset) {
     void *dummy;                /* reset segbuffers */
-    CHKERRQ(PetscSegBufferExtractInPlace(x->segrecvint,&dummy));
-    CHKERRQ(PetscSegBufferExtractInPlace(x->segrecvscalar,&dummy));
+    PetscCall(PetscSegBufferExtractInPlace(x->segrecvint,&dummy));
+    PetscCall(PetscSegBufferExtractInPlace(x->segrecvscalar,&dummy));
   } else {
-    CHKERRQ(VecAssemblyReset_MPI(X));
+    PetscCall(VecAssemblyReset_MPI(X));
   }
 
   X->stash.insertmode = NOT_SET_VALUES;
   X->bstash.insertmode = NOT_SET_VALUES;
-  CHKERRQ(VecStashScatterEnd_Private(&X->stash));
-  CHKERRQ(VecStashScatterEnd_Private(&X->bstash));
+  PetscCall(VecStashScatterEnd_Private(&X->stash));
+  PetscCall(VecStashScatterEnd_Private(&X->bstash));
   PetscFunctionReturn(0);
 }
 
@@ -363,16 +363,16 @@ PetscErrorCode VecAssemblyReset_MPI(Vec X)
   Vec_MPI *x = (Vec_MPI*)X->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscFree(x->sendreqs));
-  CHKERRQ(PetscFree(x->recvreqs));
-  CHKERRQ(PetscFree(x->sendranks));
-  CHKERRQ(PetscFree(x->recvranks));
-  CHKERRQ(PetscFree(x->sendhdr));
-  CHKERRQ(PetscFree(x->recvhdr));
-  CHKERRQ(PetscFree(x->sendptrs));
-  CHKERRQ(PetscSegBufferDestroy(&x->segrecvint));
-  CHKERRQ(PetscSegBufferDestroy(&x->segrecvscalar));
-  CHKERRQ(PetscSegBufferDestroy(&x->segrecvframe));
+  PetscCall(PetscFree(x->sendreqs));
+  PetscCall(PetscFree(x->recvreqs));
+  PetscCall(PetscFree(x->sendranks));
+  PetscCall(PetscFree(x->recvranks));
+  PetscCall(PetscFree(x->sendhdr));
+  PetscCall(PetscFree(x->recvhdr));
+  PetscCall(PetscFree(x->sendptrs));
+  PetscCall(PetscSegBufferDestroy(&x->segrecvint));
+  PetscCall(PetscSegBufferDestroy(&x->segrecvscalar));
+  PetscCall(PetscSegBufferDestroy(&x->segrecvframe));
   PetscFunctionReturn(0);
 }
 
@@ -382,13 +382,13 @@ static PetscErrorCode VecSetFromOptions_MPI(PetscOptionItems *PetscOptionsObject
   PetscBool      flg = PETSC_FALSE,set;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"VecMPI Options"));
-  CHKERRQ(PetscOptionsBool("-vec_assembly_legacy","Use MPI 1 version of assembly","",flg,&flg,&set));
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"VecMPI Options"));
+  PetscCall(PetscOptionsBool("-vec_assembly_legacy","Use MPI 1 version of assembly","",flg,&flg,&set));
   if (set) {
     X->ops->assemblybegin = flg ? VecAssemblyBegin_MPI : VecAssemblyBegin_MPI_BTS;
     X->ops->assemblyend   = flg ? VecAssemblyEnd_MPI   : VecAssemblyEnd_MPI_BTS;
   }
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(PetscOptionsTail());
 #else
   PetscFunctionBegin;
   X->ops->assemblybegin = VecAssemblyBegin_MPI;
@@ -484,21 +484,21 @@ PetscErrorCode VecCreate_MPI_Private(Vec v,PetscBool alloc,PetscInt nghost,const
   Vec_MPI        *s;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNewLog(v,&s));
+  PetscCall(PetscNewLog(v,&s));
   v->data        = (void*)s;
-  CHKERRQ(PetscMemcpy(v->ops,&DvOps,sizeof(DvOps)));
+  PetscCall(PetscMemcpy(v->ops,&DvOps,sizeof(DvOps)));
   s->nghost      = nghost;
   v->petscnative = PETSC_TRUE;
   if (array) v->offloadmask = PETSC_OFFLOAD_CPU;
 
-  CHKERRQ(PetscLayoutSetUp(v->map));
+  PetscCall(PetscLayoutSetUp(v->map));
 
   s->array           = (PetscScalar*)array;
   s->array_allocated = NULL;
   if (alloc && !array) {
     PetscInt n = v->map->n+nghost;
-    CHKERRQ(PetscCalloc1(n,&s->array));
-    CHKERRQ(PetscLogObjectMemory((PetscObject)v,n*sizeof(PetscScalar)));
+    PetscCall(PetscCalloc1(n,&s->array));
+    PetscCall(PetscLogObjectMemory((PetscObject)v,n*sizeof(PetscScalar)));
     s->array_allocated = s->array;
   }
 
@@ -511,14 +511,14 @@ PetscErrorCode VecCreate_MPI_Private(Vec v,PetscBool alloc,PetscInt nghost,const
   /* create the stashes. The block-size for bstash is set later when
      VecSetValuesBlocked is called.
   */
-  CHKERRQ(VecStashCreate_Private(PetscObjectComm((PetscObject)v),1,&v->stash));
-  CHKERRQ(VecStashCreate_Private(PetscObjectComm((PetscObject)v),PetscAbs(v->map->bs),&v->bstash));
+  PetscCall(VecStashCreate_Private(PetscObjectComm((PetscObject)v),1,&v->stash));
+  PetscCall(VecStashCreate_Private(PetscObjectComm((PetscObject)v),PetscAbs(v->map->bs),&v->bstash));
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)v,"PetscMatlabEnginePut_C",VecMatlabEnginePut_Default));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)v,"PetscMatlabEngineGet_C",VecMatlabEngineGet_Default));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscMatlabEnginePut_C",VecMatlabEnginePut_Default));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscMatlabEngineGet_C",VecMatlabEngineGet_Default));
 #endif
-  CHKERRQ(PetscObjectChangeTypeName((PetscObject)v,VECMPI));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)v,VECMPI));
   PetscFunctionReturn(0);
 }
 
@@ -536,7 +536,7 @@ M*/
 PetscErrorCode VecCreate_MPI(Vec vv)
 {
   PetscFunctionBegin;
-  CHKERRQ(VecCreate_MPI_Private(vv,PETSC_TRUE,0,NULL));
+  PetscCall(VecCreate_MPI_Private(vv,PETSC_TRUE,0,NULL));
   PetscFunctionReturn(0);
 }
 
@@ -556,11 +556,11 @@ PETSC_EXTERN PetscErrorCode VecCreate_Standard(Vec v)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)v),&size));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)v),&size));
   if (size == 1) {
-    CHKERRQ(VecSetType(v,VECSEQ));
+    PetscCall(VecSetType(v,VECSEQ));
   } else {
-    CHKERRQ(VecSetType(v,VECMPI));
+    PetscCall(VecSetType(v,VECMPI));
   }
   PetscFunctionReturn(0);
 }
@@ -601,11 +601,11 @@ PetscErrorCode  VecCreateMPIWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,Petsc
 {
   PetscFunctionBegin;
   PetscCheckFalse(n == PETSC_DECIDE,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must set local size of vector");
-  CHKERRQ(PetscSplitOwnership(comm,&n,&N));
-  CHKERRQ(VecCreate(comm,vv));
-  CHKERRQ(VecSetSizes(*vv,n,N));
-  CHKERRQ(VecSetBlockSize(*vv,bs));
-  CHKERRQ(VecCreate_MPI_Private(*vv,PETSC_FALSE,0,array));
+  PetscCall(PetscSplitOwnership(comm,&n,&N));
+  PetscCall(VecCreate(comm,vv));
+  PetscCall(VecSetSizes(*vv,n,N));
+  PetscCall(VecSetBlockSize(*vv,bs));
+  PetscCall(VecCreate_MPI_Private(*vv,PETSC_FALSE,0,array));
   PetscFunctionReturn(0);
 }
 
@@ -653,40 +653,40 @@ PetscErrorCode  VecCreateGhostWithArray(MPI_Comm comm,PetscInt n,PetscInt N,Pets
   PetscCheckFalse(n == PETSC_DECIDE,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must set local size");
   PetscCheckFalse(nghost == PETSC_DECIDE,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must set local ghost size");
   PetscCheckFalse(nghost < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Ghost length must be >= 0");
-  CHKERRQ(PetscSplitOwnership(comm,&n,&N));
+  PetscCall(PetscSplitOwnership(comm,&n,&N));
   /* Create global representation */
-  CHKERRQ(VecCreate(comm,vv));
-  CHKERRQ(VecSetSizes(*vv,n,N));
-  CHKERRQ(VecCreate_MPI_Private(*vv,PETSC_TRUE,nghost,array));
+  PetscCall(VecCreate(comm,vv));
+  PetscCall(VecSetSizes(*vv,n,N));
+  PetscCall(VecCreate_MPI_Private(*vv,PETSC_TRUE,nghost,array));
   w    = (Vec_MPI*)(*vv)->data;
   /* Create local representation */
-  CHKERRQ(VecGetArray(*vv,&larray));
-  CHKERRQ(VecCreateSeqWithArray(PETSC_COMM_SELF,1,n+nghost,larray,&w->localrep));
-  CHKERRQ(PetscLogObjectParent((PetscObject)*vv,(PetscObject)w->localrep));
-  CHKERRQ(VecRestoreArray(*vv,&larray));
+  PetscCall(VecGetArray(*vv,&larray));
+  PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,1,n+nghost,larray,&w->localrep));
+  PetscCall(PetscLogObjectParent((PetscObject)*vv,(PetscObject)w->localrep));
+  PetscCall(VecRestoreArray(*vv,&larray));
 
   /*
        Create scatter context for scattering (updating) ghost values
   */
-  CHKERRQ(ISCreateGeneral(comm,nghost,ghosts,PETSC_COPY_VALUES,&from));
-  CHKERRQ(ISCreateStride(PETSC_COMM_SELF,nghost,n,1,&to));
-  CHKERRQ(VecScatterCreate(*vv,from,w->localrep,to,&w->localupdate));
-  CHKERRQ(PetscLogObjectParent((PetscObject)*vv,(PetscObject)w->localupdate));
-  CHKERRQ(ISDestroy(&to));
-  CHKERRQ(ISDestroy(&from));
+  PetscCall(ISCreateGeneral(comm,nghost,ghosts,PETSC_COPY_VALUES,&from));
+  PetscCall(ISCreateStride(PETSC_COMM_SELF,nghost,n,1,&to));
+  PetscCall(VecScatterCreate(*vv,from,w->localrep,to,&w->localupdate));
+  PetscCall(PetscLogObjectParent((PetscObject)*vv,(PetscObject)w->localupdate));
+  PetscCall(ISDestroy(&to));
+  PetscCall(ISDestroy(&from));
 
   /* set local to global mapping for ghosted vector */
-  CHKERRQ(PetscMalloc1(n+nghost,&indices));
-  CHKERRQ(VecGetOwnershipRange(*vv,&rstart,NULL));
+  PetscCall(PetscMalloc1(n+nghost,&indices));
+  PetscCall(VecGetOwnershipRange(*vv,&rstart,NULL));
   for (i=0; i<n; i++) {
     indices[i] = rstart + i;
   }
   for (i=0; i<nghost; i++) {
     indices[n+i] = ghosts[i];
   }
-  CHKERRQ(ISLocalToGlobalMappingCreate(comm,1,n+nghost,indices,PETSC_OWN_POINTER,&ltog));
-  CHKERRQ(VecSetLocalToGlobalMapping(*vv,ltog));
-  CHKERRQ(ISLocalToGlobalMappingDestroy(&ltog));
+  PetscCall(ISLocalToGlobalMappingCreate(comm,1,n+nghost,indices,PETSC_OWN_POINTER,&ltog));
+  PetscCall(VecSetLocalToGlobalMapping(*vv,ltog));
+  PetscCall(ISLocalToGlobalMappingDestroy(&ltog));
   PetscFunctionReturn(0);
 }
 
@@ -722,7 +722,7 @@ PetscErrorCode  VecCreateGhostWithArray(MPI_Comm comm,PetscInt n,PetscInt N,Pets
 PetscErrorCode  VecCreateGhost(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt nghost,const PetscInt ghosts[],Vec *vv)
 {
   PetscFunctionBegin;
-  CHKERRQ(VecCreateGhostWithArray(comm,n,N,nghost,ghosts,NULL,vv));
+  PetscCall(VecCreateGhostWithArray(comm,n,N,nghost,ghosts,NULL,vv));
   PetscFunctionReturn(0);
 }
 
@@ -757,7 +757,7 @@ PetscErrorCode  VecMPISetGhost(Vec vv,PetscInt nghost,const PetscInt ghosts[])
   PetscBool      flg;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)vv,VECMPI,&flg));
+  PetscCall(PetscObjectTypeCompare((PetscObject)vv,VECMPI,&flg));
   /* if already fully existant VECMPI then basically destroy it and rebuild with ghosting */
   if (flg) {
     PetscInt               n,N;
@@ -768,39 +768,39 @@ PetscErrorCode  VecMPISetGhost(Vec vv,PetscInt nghost,const PetscInt ghosts[])
     PetscInt               rstart,i,*indices;
     MPI_Comm               comm;
 
-    CHKERRQ(PetscObjectGetComm((PetscObject)vv,&comm));
+    PetscCall(PetscObjectGetComm((PetscObject)vv,&comm));
     n    = vv->map->n;
     N    = vv->map->N;
-    CHKERRQ((*vv->ops->destroy)(vv));
-    CHKERRQ(VecSetSizes(vv,n,N));
-    CHKERRQ(VecCreate_MPI_Private(vv,PETSC_TRUE,nghost,NULL));
+    PetscCall((*vv->ops->destroy)(vv));
+    PetscCall(VecSetSizes(vv,n,N));
+    PetscCall(VecCreate_MPI_Private(vv,PETSC_TRUE,nghost,NULL));
     w    = (Vec_MPI*)(vv)->data;
     /* Create local representation */
-    CHKERRQ(VecGetArray(vv,&larray));
-    CHKERRQ(VecCreateSeqWithArray(PETSC_COMM_SELF,1,n+nghost,larray,&w->localrep));
-    CHKERRQ(PetscLogObjectParent((PetscObject)vv,(PetscObject)w->localrep));
-    CHKERRQ(VecRestoreArray(vv,&larray));
+    PetscCall(VecGetArray(vv,&larray));
+    PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,1,n+nghost,larray,&w->localrep));
+    PetscCall(PetscLogObjectParent((PetscObject)vv,(PetscObject)w->localrep));
+    PetscCall(VecRestoreArray(vv,&larray));
 
     /*
      Create scatter context for scattering (updating) ghost values
      */
-    CHKERRQ(ISCreateGeneral(comm,nghost,ghosts,PETSC_COPY_VALUES,&from));
-    CHKERRQ(ISCreateStride(PETSC_COMM_SELF,nghost,n,1,&to));
-    CHKERRQ(VecScatterCreate(vv,from,w->localrep,to,&w->localupdate));
-    CHKERRQ(PetscLogObjectParent((PetscObject)vv,(PetscObject)w->localupdate));
-    CHKERRQ(ISDestroy(&to));
-    CHKERRQ(ISDestroy(&from));
+    PetscCall(ISCreateGeneral(comm,nghost,ghosts,PETSC_COPY_VALUES,&from));
+    PetscCall(ISCreateStride(PETSC_COMM_SELF,nghost,n,1,&to));
+    PetscCall(VecScatterCreate(vv,from,w->localrep,to,&w->localupdate));
+    PetscCall(PetscLogObjectParent((PetscObject)vv,(PetscObject)w->localupdate));
+    PetscCall(ISDestroy(&to));
+    PetscCall(ISDestroy(&from));
 
     /* set local to global mapping for ghosted vector */
-    CHKERRQ(PetscMalloc1(n+nghost,&indices));
-    CHKERRQ(VecGetOwnershipRange(vv,&rstart,NULL));
+    PetscCall(PetscMalloc1(n+nghost,&indices));
+    PetscCall(VecGetOwnershipRange(vv,&rstart,NULL));
 
     for (i=0; i<n; i++)      indices[i]   = rstart + i;
     for (i=0; i<nghost; i++) indices[n+i] = ghosts[i];
 
-    CHKERRQ(ISLocalToGlobalMappingCreate(comm,1,n+nghost,indices,PETSC_OWN_POINTER,&ltog));
-    CHKERRQ(VecSetLocalToGlobalMapping(vv,ltog));
-    CHKERRQ(ISLocalToGlobalMappingDestroy(&ltog));
+    PetscCall(ISLocalToGlobalMappingCreate(comm,1,n+nghost,indices,PETSC_OWN_POINTER,&ltog));
+    PetscCall(VecSetLocalToGlobalMapping(vv,ltog));
+    PetscCall(ISLocalToGlobalMappingDestroy(&ltog));
   } else PetscCheckFalse(vv->ops->create == VecCreate_MPI,PetscObjectComm((PetscObject)vv),PETSC_ERR_ARG_WRONGSTATE,"Must set local or global size before setting ghosting");
   else PetscCheckFalse(!((PetscObject)vv)->type_name,PetscObjectComm((PetscObject)vv),PETSC_ERR_ARG_WRONGSTATE,"Must set type to VECMPI before ghosting");
   PetscFunctionReturn(0);
@@ -855,41 +855,41 @@ PetscErrorCode  VecCreateGhostBlockWithArray(MPI_Comm comm,PetscInt bs,PetscInt 
   PetscCheckFalse(nghost == PETSC_DECIDE,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must set local ghost size");
   PetscCheckFalse(nghost < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Ghost length must be >= 0");
   PetscCheckFalse(n % bs,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local size must be a multiple of block size");
-  CHKERRQ(PetscSplitOwnership(comm,&n,&N));
+  PetscCall(PetscSplitOwnership(comm,&n,&N));
   /* Create global representation */
-  CHKERRQ(VecCreate(comm,vv));
-  CHKERRQ(VecSetSizes(*vv,n,N));
-  CHKERRQ(VecSetBlockSize(*vv,bs));
-  CHKERRQ(VecCreate_MPI_Private(*vv,PETSC_TRUE,nghost*bs,array));
+  PetscCall(VecCreate(comm,vv));
+  PetscCall(VecSetSizes(*vv,n,N));
+  PetscCall(VecSetBlockSize(*vv,bs));
+  PetscCall(VecCreate_MPI_Private(*vv,PETSC_TRUE,nghost*bs,array));
   w    = (Vec_MPI*)(*vv)->data;
   /* Create local representation */
-  CHKERRQ(VecGetArray(*vv,&larray));
-  CHKERRQ(VecCreateSeqWithArray(PETSC_COMM_SELF,bs,n+bs*nghost,larray,&w->localrep));
-  CHKERRQ(PetscLogObjectParent((PetscObject)*vv,(PetscObject)w->localrep));
-  CHKERRQ(VecRestoreArray(*vv,&larray));
+  PetscCall(VecGetArray(*vv,&larray));
+  PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,bs,n+bs*nghost,larray,&w->localrep));
+  PetscCall(PetscLogObjectParent((PetscObject)*vv,(PetscObject)w->localrep));
+  PetscCall(VecRestoreArray(*vv,&larray));
 
   /*
        Create scatter context for scattering (updating) ghost values
   */
-  CHKERRQ(ISCreateBlock(comm,bs,nghost,ghosts,PETSC_COPY_VALUES,&from));
-  CHKERRQ(ISCreateStride(PETSC_COMM_SELF,bs*nghost,n,1,&to));
-  CHKERRQ(VecScatterCreate(*vv,from,w->localrep,to,&w->localupdate));
-  CHKERRQ(PetscLogObjectParent((PetscObject)*vv,(PetscObject)w->localupdate));
-  CHKERRQ(ISDestroy(&to));
-  CHKERRQ(ISDestroy(&from));
+  PetscCall(ISCreateBlock(comm,bs,nghost,ghosts,PETSC_COPY_VALUES,&from));
+  PetscCall(ISCreateStride(PETSC_COMM_SELF,bs*nghost,n,1,&to));
+  PetscCall(VecScatterCreate(*vv,from,w->localrep,to,&w->localupdate));
+  PetscCall(PetscLogObjectParent((PetscObject)*vv,(PetscObject)w->localupdate));
+  PetscCall(ISDestroy(&to));
+  PetscCall(ISDestroy(&from));
 
   /* set local to global mapping for ghosted vector */
   nb     = n/bs;
-  CHKERRQ(PetscMalloc1(nb+nghost,&indices));
-  CHKERRQ(VecGetOwnershipRange(*vv,&rstart,NULL));
+  PetscCall(PetscMalloc1(nb+nghost,&indices));
+  PetscCall(VecGetOwnershipRange(*vv,&rstart,NULL));
   rstart = rstart/bs;
 
   for (i=0; i<nb; i++)      indices[i]    = rstart + i;
   for (i=0; i<nghost; i++)  indices[nb+i] = ghosts[i];
 
-  CHKERRQ(ISLocalToGlobalMappingCreate(comm,bs,nb+nghost,indices,PETSC_OWN_POINTER,&ltog));
-  CHKERRQ(VecSetLocalToGlobalMapping(*vv,ltog));
-  CHKERRQ(ISLocalToGlobalMappingDestroy(&ltog));
+  PetscCall(ISLocalToGlobalMappingCreate(comm,bs,nb+nghost,indices,PETSC_OWN_POINTER,&ltog));
+  PetscCall(VecSetLocalToGlobalMapping(*vv,ltog));
+  PetscCall(ISLocalToGlobalMappingDestroy(&ltog));
   PetscFunctionReturn(0);
 }
 
@@ -928,6 +928,6 @@ PetscErrorCode  VecCreateGhostBlockWithArray(MPI_Comm comm,PetscInt bs,PetscInt 
 PetscErrorCode  VecCreateGhostBlock(MPI_Comm comm,PetscInt bs,PetscInt n,PetscInt N,PetscInt nghost,const PetscInt ghosts[],Vec *vv)
 {
   PetscFunctionBegin;
-  CHKERRQ(VecCreateGhostBlockWithArray(comm,bs,n,N,nghost,ghosts,NULL,vv));
+  PetscCall(VecCreateGhostBlockWithArray(comm,bs,n,N,nghost,ghosts,NULL,vv));
   PetscFunctionReturn(0);
 }

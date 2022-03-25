@@ -67,25 +67,25 @@ static PetscErrorCode MatView_Info_SuperLU(Mat A,PetscViewer viewer)
   PetscFunctionBegin;
   options = lu->options;
 
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"SuperLU run parameters:\n"));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Equil: %s\n",(options.Equil != NO) ? "YES" : "NO"));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  ColPerm: %" PetscInt_FMT "\n",options.ColPerm));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  IterRefine: %" PetscInt_FMT "\n",options.IterRefine));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  SymmetricMode: %s\n",(options.SymmetricMode != NO) ? "YES" : "NO"));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  DiagPivotThresh: %g\n",options.DiagPivotThresh));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  PivotGrowth: %s\n",(options.PivotGrowth != NO) ? "YES" : "NO"));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  ConditionNumber: %s\n",(options.ConditionNumber != NO) ? "YES" : "NO"));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  RowPerm: %" PetscInt_FMT "\n",options.RowPerm));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  ReplaceTinyPivot: %s\n",(options.ReplaceTinyPivot != NO) ? "YES" : "NO"));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  PrintStat: %s\n",(options.PrintStat != NO) ? "YES" : "NO"));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  lwork: %" PetscInt_FMT "\n",lu->lwork));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"SuperLU run parameters:\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  Equil: %s\n",(options.Equil != NO) ? "YES" : "NO"));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  ColPerm: %" PetscInt_FMT "\n",options.ColPerm));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  IterRefine: %" PetscInt_FMT "\n",options.IterRefine));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  SymmetricMode: %s\n",(options.SymmetricMode != NO) ? "YES" : "NO"));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  DiagPivotThresh: %g\n",options.DiagPivotThresh));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  PivotGrowth: %s\n",(options.PivotGrowth != NO) ? "YES" : "NO"));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  ConditionNumber: %s\n",(options.ConditionNumber != NO) ? "YES" : "NO"));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  RowPerm: %" PetscInt_FMT "\n",options.RowPerm));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  ReplaceTinyPivot: %s\n",(options.ReplaceTinyPivot != NO) ? "YES" : "NO"));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  PrintStat: %s\n",(options.PrintStat != NO) ? "YES" : "NO"));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  lwork: %" PetscInt_FMT "\n",lu->lwork));
   if (A->factortype == MAT_FACTOR_ILU) {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  ILU_DropTol: %g\n",options.ILU_DropTol));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  ILU_FillTol: %g\n",options.ILU_FillTol));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  ILU_FillFactor: %g\n",options.ILU_FillFactor));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  ILU_DropRule: %" PetscInt_FMT "\n",options.ILU_DropRule));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  ILU_Norm: %" PetscInt_FMT "\n",options.ILU_Norm));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  ILU_MILU: %" PetscInt_FMT "\n",options.ILU_MILU));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  ILU_DropTol: %g\n",options.ILU_DropTol));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  ILU_FillTol: %g\n",options.ILU_FillTol));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  ILU_FillFactor: %g\n",options.ILU_FillFactor));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  ILU_DropRule: %" PetscInt_FMT "\n",options.ILU_DropRule));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  ILU_Norm: %" PetscInt_FMT "\n",options.ILU_Norm));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  ILU_MILU: %" PetscInt_FMT "\n",options.ILU_MILU));
   }
   PetscFunctionReturn(0);
 }
@@ -101,24 +101,24 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
 
   PetscFunctionBegin;
   if (lu->lwork == -1) PetscFunctionReturn(0);
-  CHKERRQ(PetscCitationsRegister("@article{superlu99,\n  author  = {James W. Demmel and Stanley C. Eisenstat and\n             John R. Gilbert and Xiaoye S. Li and Joseph W. H. Liu},\n  title = {A supernodal approach to sparse partial pivoting},\n  journal = {SIAM J. Matrix Analysis and Applications},\n  year = {1999},\n  volume  = {20},\n  number = {3},\n  pages = {720-755}\n}\n",&cite));
+  PetscCall(PetscCitationsRegister("@article{superlu99,\n  author  = {James W. Demmel and Stanley C. Eisenstat and\n             John R. Gilbert and Xiaoye S. Li and Joseph W. H. Liu},\n  title = {A supernodal approach to sparse partial pivoting},\n  journal = {SIAM J. Matrix Analysis and Applications},\n  year = {1999},\n  volume  = {20},\n  number = {3},\n  pages = {720-755}\n}\n",&cite));
 
-  CHKERRQ(VecGetLocalSize(x,&n));
+  PetscCall(VecGetLocalSize(x,&n));
   lu->B.ncol = 1;   /* Set the number of right-hand side */
   if (lu->options.Equil && !lu->rhs_dup) {
     /* superlu overwrites b when Equil is used, thus create rhs_dup to keep user's b unchanged */
-    CHKERRQ(PetscMalloc1(n,&lu->rhs_dup));
+    PetscCall(PetscMalloc1(n,&lu->rhs_dup));
   }
   if (lu->options.Equil) {
     /* Copy b into rsh_dup */
-    CHKERRQ(VecGetArrayRead(b,&barray));
-    CHKERRQ(PetscArraycpy(lu->rhs_dup,barray,n));
-    CHKERRQ(VecRestoreArrayRead(b,&barray));
+    PetscCall(VecGetArrayRead(b,&barray));
+    PetscCall(PetscArraycpy(lu->rhs_dup,barray,n));
+    PetscCall(VecRestoreArrayRead(b,&barray));
     barray = lu->rhs_dup;
   } else {
-    CHKERRQ(VecGetArrayRead(b,&barray));
+    PetscCall(VecGetArrayRead(b,&barray));
   }
-  CHKERRQ(VecGetArray(x,&xarray));
+  PetscCall(VecGetArray(x,&xarray));
 
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
@@ -180,26 +180,26 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
 #endif
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
   if (!lu->options.Equil) {
-    CHKERRQ(VecRestoreArrayRead(b,&barray));
+    PetscCall(VecRestoreArrayRead(b,&barray));
   }
-  CHKERRQ(VecRestoreArray(x,&xarray));
+  PetscCall(VecRestoreArray(x,&xarray));
 
   if (!info || info == lu->A.ncol+1) {
     if (lu->options.IterRefine) {
-      CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Iterative Refinement:\n"));
-      CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"  %8s%8s%16s%16s\n", "rhs", "Steps", "FERR", "BERR"));
-      for (i = 0; i < 1; ++i) CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"  %8d%8d%16e%16e\n", i+1, lu->stat.RefineSteps, ferr, berr));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,"Iterative Refinement:\n"));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,"  %8s%8s%16s%16s\n", "rhs", "Steps", "FERR", "BERR"));
+      for (i = 0; i < 1; ++i) PetscCall(PetscPrintf(PETSC_COMM_SELF,"  %8d%8d%16e%16e\n", i+1, lu->stat.RefineSteps, ferr, berr));
     }
   } else if (info > 0) {
     if (lu->lwork == -1) {
-      CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"  ** Estimated memory: %" PetscInt_FMT " bytes\n", info - lu->A.ncol));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,"  ** Estimated memory: %" PetscInt_FMT " bytes\n", info - lu->A.ncol));
     } else {
-      CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"  Warning: gssvx() returns info %" PetscInt_FMT "\n",info));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,"  Warning: gssvx() returns info %" PetscInt_FMT "\n",info));
     }
   } else PetscCheck(info >= 0,PETSC_COMM_SELF,PETSC_ERR_LIB, "info = %" PetscInt_FMT ", the %" PetscInt_FMT "-th argument in gssvx() had an illegal value", info,-info);
 
   if (lu->options.PrintStat) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"MatSolve__SuperLU():\n"));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"MatSolve__SuperLU():\n"));
     PetscStackCall("SuperLU:StatPrint",StatPrint(&lu->stat));
   }
   PetscFunctionReturn(0);
@@ -211,13 +211,13 @@ PetscErrorCode MatSolve_SuperLU(Mat A,Vec b,Vec x)
 
   PetscFunctionBegin;
   if (A->factorerrortype) {
-    CHKERRQ(PetscInfo(A,"MatSolve is called with singular matrix factor, skip\n"));
-    CHKERRQ(VecSetInf(x));
+    PetscCall(PetscInfo(A,"MatSolve is called with singular matrix factor, skip\n"));
+    PetscCall(VecSetInf(x));
     PetscFunctionReturn(0);
   }
 
   lu->options.Trans = TRANS;
-  CHKERRQ(MatSolve_SuperLU_Private(A,b,x));
+  PetscCall(MatSolve_SuperLU_Private(A,b,x));
   PetscFunctionReturn(0);
 }
 
@@ -227,13 +227,13 @@ PetscErrorCode MatSolveTranspose_SuperLU(Mat A,Vec b,Vec x)
 
   PetscFunctionBegin;
   if (A->factorerrortype) {
-    CHKERRQ(PetscInfo(A,"MatSolve is called with singular matrix factor, skip\n"));
-    CHKERRQ(VecSetInf(x));
+    PetscCall(PetscInfo(A,"MatSolve is called with singular matrix factor, skip\n"));
+    PetscCall(VecSetInf(x));
     PetscFunctionReturn(0);
   }
 
   lu->options.Trans = NOTRANS;
-  CHKERRQ(MatSolve_SuperLU_Private(A,b,x));
+  PetscCall(MatSolve_SuperLU_Private(A,b,x));
   PetscFunctionReturn(0);
 }
 
@@ -252,7 +252,7 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo
     /* Ref: ~SuperLU_3.0/EXAMPLE/dlinsolx2.c */
     Destroy_SuperMatrix_Store(&lu->A);
     if (lu->A_dup) {
-      CHKERRQ(MatCopy_SeqAIJ(A,lu->A_dup,SAME_NONZERO_PATTERN));
+      PetscCall(MatCopy_SeqAIJ(A,lu->A_dup,SAME_NONZERO_PATTERN));
     }
 
     if (lu->lwork >= 0) {
@@ -334,10 +334,10 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
   if (!sinfo || sinfo == lu->A.ncol+1) {
     if (lu->options.PivotGrowth) {
-      CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"  Recip. pivot growth = %e\n", lu->rpg));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,"  Recip. pivot growth = %e\n", lu->rpg));
     }
     if (lu->options.ConditionNumber) {
-      CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"  Recip. condition number = %e\n", lu->rcond));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,"  Recip. condition number = %e\n", lu->rcond));
     }
   } else if (sinfo > 0) {
     if (A->erroriffailure) {
@@ -347,7 +347,7 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo
         if (lu->options.ILU_FillTol == 0.0) {
           F->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
         }
-        CHKERRQ(PetscInfo(F,"Number of zero pivots %" PetscInt_FMT ", ILU_FillTol %g\n",sinfo,lu->options.ILU_FillTol));
+        PetscCall(PetscInfo(F,"Number of zero pivots %" PetscInt_FMT ", ILU_FillTol %g\n",sinfo,lu->options.ILU_FillTol));
       } else if (sinfo == lu->A.ncol + 1) {
         /*
          U is nonsingular, but RCOND is less than machine
@@ -357,23 +357,23 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo
                       of situations where the computed solution can be more
                       accurate than the value of RCOND would suggest.
          */
-        CHKERRQ(PetscInfo(F,"Matrix factor U is nonsingular, but is singular to working precision. The solution is computed. info %" PetscInt_FMT,sinfo));
+        PetscCall(PetscInfo(F,"Matrix factor U is nonsingular, but is singular to working precision. The solution is computed. info %" PetscInt_FMT,sinfo));
       } else { /* sinfo > lu->A.ncol + 1 */
         F->factorerrortype = MAT_FACTOR_OUTMEMORY;
-        CHKERRQ(PetscInfo(F,"Number of bytes allocated when memory allocation fails %" PetscInt_FMT "\n",sinfo));
+        PetscCall(PetscInfo(F,"Number of bytes allocated when memory allocation fails %" PetscInt_FMT "\n",sinfo));
       }
     }
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB, "info = %" PetscInt_FMT ", the %" PetscInt_FMT "-th argument in gssvx() had an illegal value", sinfo,-sinfo);
 
   if (lu->options.PrintStat) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"MatLUFactorNumeric_SuperLU():\n"));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"MatLUFactorNumeric_SuperLU():\n"));
     PetscStackCall("SuperLU:StatPrint",StatPrint(&lu->stat));
     Lstore = (SCformat*) lu->L.Store;
     Ustore = (NCformat*) lu->U.Store;
-    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"  No of nonzeros in factor L = %" PetscInt_FMT "\n", Lstore->nnz));
-    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"  No of nonzeros in factor U = %" PetscInt_FMT "\n", Ustore->nnz));
-    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"  No of nonzeros in L+U = %" PetscInt_FMT "\n", Lstore->nnz + Ustore->nnz - lu->A.ncol));
-    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"  L\\U MB %.3f\ttotal MB needed %.3f\n",lu->mem_usage.for_lu/1e6, lu->mem_usage.total_needed/1e6));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"  No of nonzeros in factor L = %" PetscInt_FMT "\n", Lstore->nnz));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"  No of nonzeros in factor U = %" PetscInt_FMT "\n", Ustore->nnz));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"  No of nonzeros in L+U = %" PetscInt_FMT "\n", Lstore->nnz + Ustore->nnz - lu->A.ncol));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"  L\\U MB %.3f\ttotal MB needed %.3f\n",lu->mem_usage.for_lu/1e6, lu->mem_usage.total_needed/1e6));
   }
 
   lu->flg                = SAME_NONZERO_PATTERN;
@@ -398,18 +398,18 @@ static PetscErrorCode MatDestroy_SuperLU(Mat A)
       PetscStackCall("SuperLU:Destroy_CompCol_Matrix",Destroy_CompCol_Matrix(&lu->U));
     }
   }
-  CHKERRQ(PetscFree(lu->etree));
-  CHKERRQ(PetscFree(lu->perm_r));
-  CHKERRQ(PetscFree(lu->perm_c));
-  CHKERRQ(PetscFree(lu->R));
-  CHKERRQ(PetscFree(lu->C));
-  CHKERRQ(PetscFree(lu->rhs_dup));
-  CHKERRQ(MatDestroy(&lu->A_dup));
-  CHKERRQ(PetscFree(A->data));
+  PetscCall(PetscFree(lu->etree));
+  PetscCall(PetscFree(lu->perm_r));
+  PetscCall(PetscFree(lu->perm_c));
+  PetscCall(PetscFree(lu->R));
+  PetscCall(PetscFree(lu->C));
+  PetscCall(PetscFree(lu->rhs_dup));
+  PetscCall(MatDestroy(&lu->A_dup));
+  PetscCall(PetscFree(A->data));
 
   /* clear composed functions */
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverType_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)A,"MatSuperluSetILUDropTol_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatSuperluSetILUDropTol_C",NULL));
   PetscFunctionReturn(0);
 }
 
@@ -419,11 +419,11 @@ static PetscErrorCode MatView_SuperLU(Mat A,PetscViewer viewer)
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    CHKERRQ(PetscViewerGetFormat(viewer,&format));
+    PetscCall(PetscViewerGetFormat(viewer,&format));
     if (format == PETSC_VIEWER_ASCII_INFO) {
-      CHKERRQ(MatView_Info_SuperLU(A,viewer));
+      PetscCall(MatView_Info_SuperLU(A,viewer));
     }
   }
   PetscFunctionReturn(0);
@@ -435,9 +435,9 @@ PetscErrorCode MatMatSolve_SuperLU(Mat A,Mat B,Mat X)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompareAny((PetscObject)B,&flg,MATSEQDENSE,MATMPIDENSE,NULL));
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)B,&flg,MATSEQDENSE,MATMPIDENSE,NULL));
   PetscCheck(flg,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix B must be MATDENSE matrix");
-  CHKERRQ(PetscObjectTypeCompareAny((PetscObject)X,&flg,MATSEQDENSE,MATMPIDENSE,NULL));
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)X,&flg,MATSEQDENSE,MATMPIDENSE,NULL));
   PetscCheck(flg,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix X must be MATDENSE matrix");
   lu->options.Trans = TRANS;
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatMatSolve_SuperLU() is not implemented yet");
@@ -454,12 +454,12 @@ static PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat F,Mat A,IS r,IS c,const Ma
   F->ops->lufactornumeric = MatLUFactorNumeric_SuperLU;
 
   /* if we are here, the nonzero pattern has changed unless the user explicitly called MatLUFactorSymbolic */
-  CHKERRQ(MatDestroy(&lu->A_dup));
+  PetscCall(MatDestroy(&lu->A_dup));
   if (lu->needconversion) {
-    CHKERRQ(MatConvert(A,MATSEQAIJ,MAT_INITIAL_MATRIX,&lu->A_dup));
+    PetscCall(MatConvert(A,MATSEQAIJ,MAT_INITIAL_MATRIX,&lu->A_dup));
   }
   if (lu->options.Equil == YES && !lu->A_dup) { /* superlu overwrites input matrix and rhs when Equil is used, thus create A_dup to keep user's A unchanged */
-    CHKERRQ(MatDuplicate_SeqAIJ(A,MAT_COPY_VALUES,&lu->A_dup));
+    PetscCall(MatDuplicate_SeqAIJ(A,MAT_COPY_VALUES,&lu->A_dup));
   }
   PetscFunctionReturn(0);
 }
@@ -497,7 +497,7 @@ PetscErrorCode MatSuperluSetILUDropTol(Mat F,PetscReal dtol)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F,MAT_CLASSID,1);
   PetscValidLogicalCollectiveReal(F,dtol,2);
-  CHKERRQ(PetscTryMethod(F,"MatSuperluSetILUDropTol_C",(Mat,PetscReal),(F,dtol)));
+  PetscCall(PetscTryMethod(F,"MatSuperluSetILUDropTol_C",(Mat,PetscReal),(F,dtol)));
   PetscFunctionReturn(0);
 }
 
@@ -558,18 +558,18 @@ static PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  CHKERRQ(MatCreate(PetscObjectComm((PetscObject)A),&B));
-  CHKERRQ(MatSetSizes(B,A->rmap->n,A->cmap->n,PETSC_DETERMINE,PETSC_DETERMINE));
-  CHKERRQ(PetscStrallocpy("superlu",&((PetscObject)B)->type_name));
-  CHKERRQ(MatSetUp(B));
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)A),&B));
+  PetscCall(MatSetSizes(B,A->rmap->n,A->cmap->n,PETSC_DETERMINE,PETSC_DETERMINE));
+  PetscCall(PetscStrallocpy("superlu",&((PetscObject)B)->type_name));
+  PetscCall(MatSetUp(B));
   B->trivialsymbolic = PETSC_TRUE;
   if (ftype == MAT_FACTOR_LU || ftype == MAT_FACTOR_ILU) {
     B->ops->lufactorsymbolic  = MatLUFactorSymbolic_SuperLU;
     B->ops->ilufactorsymbolic = MatLUFactorSymbolic_SuperLU;
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
 
-  CHKERRQ(PetscFree(B->solvertype));
-  CHKERRQ(PetscStrallocpy(MATSOLVERSUPERLU,&B->solvertype));
+  PetscCall(PetscFree(B->solvertype));
+  PetscCall(PetscStrallocpy(MATSOLVERSUPERLU,&B->solvertype));
 
   B->ops->getinfo     = MatGetInfo_External;
   B->ops->destroy     = MatDestroy_SuperLU;
@@ -578,7 +578,7 @@ static PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat 
   B->assembled        = PETSC_TRUE;           /* required by -ksp_view */
   B->preallocated     = PETSC_TRUE;
 
-  CHKERRQ(PetscNewLog(B,&lu));
+  PetscCall(PetscNewLog(B,&lu));
 
   if (ftype == MAT_FACTOR_LU) {
     set_default_options(&lu->options);
@@ -600,54 +600,54 @@ static PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat 
   PetscStackCall("SuperLU:StatInit",StatInit(&lu->stat));
   lu->lwork = 0;   /* allocate space internally by system malloc */
 
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"SuperLU Options","Mat");CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsBool("-mat_superlu_equil","Equil","None",(PetscBool)lu->options.Equil,(PetscBool*)&lu->options.Equil,NULL));
-  CHKERRQ(PetscOptionsEList("-mat_superlu_colperm","ColPerm","None",colperm,4,colperm[3],&indx,&flg));
+  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"SuperLU Options","Mat");PetscCall(ierr);
+  PetscCall(PetscOptionsBool("-mat_superlu_equil","Equil","None",(PetscBool)lu->options.Equil,(PetscBool*)&lu->options.Equil,NULL));
+  PetscCall(PetscOptionsEList("-mat_superlu_colperm","ColPerm","None",colperm,4,colperm[3],&indx,&flg));
   if (flg) lu->options.ColPerm = (colperm_t)indx;
-  CHKERRQ(PetscOptionsEList("-mat_superlu_iterrefine","IterRefine","None",iterrefine,4,iterrefine[0],&indx,&flg));
+  PetscCall(PetscOptionsEList("-mat_superlu_iterrefine","IterRefine","None",iterrefine,4,iterrefine[0],&indx,&flg));
   if (flg) lu->options.IterRefine = (IterRefine_t)indx;
-  CHKERRQ(PetscOptionsBool("-mat_superlu_symmetricmode","SymmetricMode","None",(PetscBool)lu->options.SymmetricMode,&flg,&set));
+  PetscCall(PetscOptionsBool("-mat_superlu_symmetricmode","SymmetricMode","None",(PetscBool)lu->options.SymmetricMode,&flg,&set));
   if (set && flg) lu->options.SymmetricMode = YES;
-  CHKERRQ(PetscOptionsReal("-mat_superlu_diagpivotthresh","DiagPivotThresh","None",lu->options.DiagPivotThresh,&real_input,&flg));
+  PetscCall(PetscOptionsReal("-mat_superlu_diagpivotthresh","DiagPivotThresh","None",lu->options.DiagPivotThresh,&real_input,&flg));
   if (flg) lu->options.DiagPivotThresh = (double) real_input;
-  CHKERRQ(PetscOptionsBool("-mat_superlu_pivotgrowth","PivotGrowth","None",(PetscBool)lu->options.PivotGrowth,&flg,&set));
+  PetscCall(PetscOptionsBool("-mat_superlu_pivotgrowth","PivotGrowth","None",(PetscBool)lu->options.PivotGrowth,&flg,&set));
   if (set && flg) lu->options.PivotGrowth = YES;
-  CHKERRQ(PetscOptionsBool("-mat_superlu_conditionnumber","ConditionNumber","None",(PetscBool)lu->options.ConditionNumber,&flg,&set));
+  PetscCall(PetscOptionsBool("-mat_superlu_conditionnumber","ConditionNumber","None",(PetscBool)lu->options.ConditionNumber,&flg,&set));
   if (set && flg) lu->options.ConditionNumber = YES;
-  CHKERRQ(PetscOptionsEList("-mat_superlu_rowperm","rowperm","None",rowperm,2,rowperm[lu->options.RowPerm],&indx,&flg));
+  PetscCall(PetscOptionsEList("-mat_superlu_rowperm","rowperm","None",rowperm,2,rowperm[lu->options.RowPerm],&indx,&flg));
   if (flg) lu->options.RowPerm = (rowperm_t)indx;
-  CHKERRQ(PetscOptionsBool("-mat_superlu_replacetinypivot","ReplaceTinyPivot","None",(PetscBool)lu->options.ReplaceTinyPivot,&flg,&set));
+  PetscCall(PetscOptionsBool("-mat_superlu_replacetinypivot","ReplaceTinyPivot","None",(PetscBool)lu->options.ReplaceTinyPivot,&flg,&set));
   if (set && flg) lu->options.ReplaceTinyPivot = YES;
-  CHKERRQ(PetscOptionsBool("-mat_superlu_printstat","PrintStat","None",(PetscBool)lu->options.PrintStat,&flg,&set));
+  PetscCall(PetscOptionsBool("-mat_superlu_printstat","PrintStat","None",(PetscBool)lu->options.PrintStat,&flg,&set));
   if (set && flg) lu->options.PrintStat = YES;
-  CHKERRQ(PetscOptionsInt("-mat_superlu_lwork","size of work array in bytes used by factorization","None",lu->lwork,&lu->lwork,NULL));
+  PetscCall(PetscOptionsInt("-mat_superlu_lwork","size of work array in bytes used by factorization","None",lu->lwork,&lu->lwork,NULL));
   if (lu->lwork > 0) {
     /* lwork is in bytes, hence PetscMalloc() is used here, not PetscMalloc1()*/
-    CHKERRQ(PetscMalloc(lu->lwork,&lu->work));
+    PetscCall(PetscMalloc(lu->lwork,&lu->work));
   } else if (lu->lwork != 0 && lu->lwork != -1) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"   Warning: lwork %" PetscInt_FMT " is not supported by SUPERLU. The default lwork=0 is used.\n",lu->lwork));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"   Warning: lwork %" PetscInt_FMT " is not supported by SUPERLU. The default lwork=0 is used.\n",lu->lwork));
     lu->lwork = 0;
   }
   /* ilu options */
-  CHKERRQ(PetscOptionsReal("-mat_superlu_ilu_droptol","ILU_DropTol","None",lu->options.ILU_DropTol,&real_input,&flg));
+  PetscCall(PetscOptionsReal("-mat_superlu_ilu_droptol","ILU_DropTol","None",lu->options.ILU_DropTol,&real_input,&flg));
   if (flg) lu->options.ILU_DropTol = (double) real_input;
-  CHKERRQ(PetscOptionsReal("-mat_superlu_ilu_filltol","ILU_FillTol","None",lu->options.ILU_FillTol,&real_input,&flg));
+  PetscCall(PetscOptionsReal("-mat_superlu_ilu_filltol","ILU_FillTol","None",lu->options.ILU_FillTol,&real_input,&flg));
   if (flg) lu->options.ILU_FillTol = (double) real_input;
-  CHKERRQ(PetscOptionsReal("-mat_superlu_ilu_fillfactor","ILU_FillFactor","None",lu->options.ILU_FillFactor,&real_input,&flg));
+  PetscCall(PetscOptionsReal("-mat_superlu_ilu_fillfactor","ILU_FillFactor","None",lu->options.ILU_FillFactor,&real_input,&flg));
   if (flg) lu->options.ILU_FillFactor = (double) real_input;
-  CHKERRQ(PetscOptionsInt("-mat_superlu_ilu_droprull","ILU_DropRule","None",lu->options.ILU_DropRule,&lu->options.ILU_DropRule,NULL));
-  CHKERRQ(PetscOptionsInt("-mat_superlu_ilu_norm","ILU_Norm","None",lu->options.ILU_Norm,&indx,&flg));
+  PetscCall(PetscOptionsInt("-mat_superlu_ilu_droprull","ILU_DropRule","None",lu->options.ILU_DropRule,&lu->options.ILU_DropRule,NULL));
+  PetscCall(PetscOptionsInt("-mat_superlu_ilu_norm","ILU_Norm","None",lu->options.ILU_Norm,&indx,&flg));
   if (flg) lu->options.ILU_Norm = (norm_t)indx;
-  CHKERRQ(PetscOptionsInt("-mat_superlu_ilu_milu","ILU_MILU","None",lu->options.ILU_MILU,&indx,&flg));
+  PetscCall(PetscOptionsInt("-mat_superlu_ilu_milu","ILU_MILU","None",lu->options.ILU_MILU,&indx,&flg));
   if (flg) lu->options.ILU_MILU = (milu_t)indx;
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
   /* Allocate spaces (notice sizes are for the transpose) */
-  CHKERRQ(PetscMalloc1(m,&lu->etree));
-  CHKERRQ(PetscMalloc1(n,&lu->perm_r));
-  CHKERRQ(PetscMalloc1(m,&lu->perm_c));
-  CHKERRQ(PetscMalloc1(n,&lu->R));
-  CHKERRQ(PetscMalloc1(m,&lu->C));
+  PetscCall(PetscMalloc1(m,&lu->etree));
+  PetscCall(PetscMalloc1(n,&lu->perm_r));
+  PetscCall(PetscMalloc1(m,&lu->perm_c));
+  PetscCall(PetscMalloc1(n,&lu->R));
+  PetscCall(PetscMalloc1(m,&lu->C));
 
   /* create rhs and solution x without allocate space for .Store */
 #if defined(PETSC_USE_COMPLEX)
@@ -668,8 +668,8 @@ static PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat 
 #endif
 #endif
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_seqaij_superlu));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)B,"MatSuperluSetILUDropTol_C",MatSuperluSetILUDropTol_SuperLU));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_seqaij_superlu));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatSuperluSetILUDropTol_C",MatSuperluSetILUDropTol_SuperLU));
   B->data  = lu;
 
   *F       = B;
@@ -681,7 +681,7 @@ static PetscErrorCode MatGetFactor_seqsell_superlu(Mat A,MatFactorType ftype,Mat
   Mat_SuperLU    *lu;
 
   PetscFunctionBegin;
-  CHKERRQ(MatGetFactor_seqaij_superlu(A,ftype,F));
+  PetscCall(MatGetFactor_seqaij_superlu(A,ftype,F));
   lu   = (Mat_SuperLU*)((*F)->data);
   lu->needconversion = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -690,9 +690,9 @@ static PetscErrorCode MatGetFactor_seqsell_superlu(Mat A,MatFactorType ftype,Mat
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SuperLU(void)
 {
   PetscFunctionBegin;
-  CHKERRQ(MatSolverTypeRegister(MATSOLVERSUPERLU,MATSEQAIJ,MAT_FACTOR_LU,MatGetFactor_seqaij_superlu));
-  CHKERRQ(MatSolverTypeRegister(MATSOLVERSUPERLU,MATSEQAIJ,MAT_FACTOR_ILU,MatGetFactor_seqaij_superlu));
-  CHKERRQ(MatSolverTypeRegister(MATSOLVERSUPERLU,MATSEQSELL,MAT_FACTOR_LU,MatGetFactor_seqsell_superlu));
-  CHKERRQ(MatSolverTypeRegister(MATSOLVERSUPERLU,MATSEQSELL,MAT_FACTOR_ILU,MatGetFactor_seqsell_superlu));
+  PetscCall(MatSolverTypeRegister(MATSOLVERSUPERLU,MATSEQAIJ,MAT_FACTOR_LU,MatGetFactor_seqaij_superlu));
+  PetscCall(MatSolverTypeRegister(MATSOLVERSUPERLU,MATSEQAIJ,MAT_FACTOR_ILU,MatGetFactor_seqaij_superlu));
+  PetscCall(MatSolverTypeRegister(MATSOLVERSUPERLU,MATSEQSELL,MAT_FACTOR_LU,MatGetFactor_seqsell_superlu));
+  PetscCall(MatSolverTypeRegister(MATSOLVERSUPERLU,MATSEQSELL,MAT_FACTOR_ILU,MatGetFactor_seqsell_superlu));
   PetscFunctionReturn(0);
 }

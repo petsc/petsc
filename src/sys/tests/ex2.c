@@ -7,18 +7,18 @@ int CreateError(int n)
 {
   PetscReal      *x = 0;
   if (!n) {x[0] = 100.; return 0;}
-  CHKERRQ(CreateError(n-1));
+  PetscCall(CreateError(n-1));
   return 0;
 }
 
 int main(int argc,char **argv)
 {
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(PetscFPrintf(PETSC_COMM_WORLD,stdout,"Demonstrates how PETSc can trap error interrupts\n"));
-  CHKERRQ(PetscFPrintf(PETSC_COMM_WORLD,stdout,"The error below is contrived to test the code!\n"));
-  CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
-  CHKERRQ(CreateError(5));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscFPrintf(PETSC_COMM_WORLD,stdout,"Demonstrates how PETSc can trap error interrupts\n"));
+  PetscCall(PetscFPrintf(PETSC_COMM_WORLD,stdout,"The error below is contrived to test the code!\n"));
+  PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
+  PetscCall(CreateError(5));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

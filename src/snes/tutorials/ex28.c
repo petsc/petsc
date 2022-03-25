@@ -76,50 +76,50 @@ static PetscErrorCode FormFunction_All(SNES snes,Vec X,Vec F,void *ctx)
   Vec            Uloc,Kloc,Fu,Fk;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMCompositeGetEntries(user->pack,&dau,&dak));
-  CHKERRQ(DMDAGetLocalInfo(dau,&infou));
-  CHKERRQ(DMDAGetLocalInfo(dak,&infok));
-  CHKERRQ(DMCompositeGetLocalVectors(user->pack,&Uloc,&Kloc));
+  PetscCall(DMCompositeGetEntries(user->pack,&dau,&dak));
+  PetscCall(DMDAGetLocalInfo(dau,&infou));
+  PetscCall(DMDAGetLocalInfo(dak,&infok));
+  PetscCall(DMCompositeGetLocalVectors(user->pack,&Uloc,&Kloc));
   switch (user->ptype) {
   case 0:
-    CHKERRQ(DMGlobalToLocalBegin(dau,X,INSERT_VALUES,Uloc));
-    CHKERRQ(DMGlobalToLocalEnd  (dau,X,INSERT_VALUES,Uloc));
-    CHKERRQ(DMDAVecGetArray(dau,Uloc,&u));
-    CHKERRQ(DMDAVecGetArray(dak,user->Kloc,&k));
-    CHKERRQ(DMDAVecGetArray(dau,F,&fu));
-    CHKERRQ(FormFunctionLocal_U(user,&infou,u,k,fu));
-    CHKERRQ(DMDAVecRestoreArray(dau,F,&fu));
-    CHKERRQ(DMDAVecRestoreArray(dau,Uloc,&u));
-    CHKERRQ(DMDAVecRestoreArray(dak,user->Kloc,&k));
+    PetscCall(DMGlobalToLocalBegin(dau,X,INSERT_VALUES,Uloc));
+    PetscCall(DMGlobalToLocalEnd  (dau,X,INSERT_VALUES,Uloc));
+    PetscCall(DMDAVecGetArray(dau,Uloc,&u));
+    PetscCall(DMDAVecGetArray(dak,user->Kloc,&k));
+    PetscCall(DMDAVecGetArray(dau,F,&fu));
+    PetscCall(FormFunctionLocal_U(user,&infou,u,k,fu));
+    PetscCall(DMDAVecRestoreArray(dau,F,&fu));
+    PetscCall(DMDAVecRestoreArray(dau,Uloc,&u));
+    PetscCall(DMDAVecRestoreArray(dak,user->Kloc,&k));
     break;
   case 1:
-    CHKERRQ(DMGlobalToLocalBegin(dak,X,INSERT_VALUES,Kloc));
-    CHKERRQ(DMGlobalToLocalEnd  (dak,X,INSERT_VALUES,Kloc));
-    CHKERRQ(DMDAVecGetArray(dau,user->Uloc,&u));
-    CHKERRQ(DMDAVecGetArray(dak,Kloc,&k));
-    CHKERRQ(DMDAVecGetArray(dak,F,&fk));
-    CHKERRQ(FormFunctionLocal_K(user,&infok,u,k,fk));
-    CHKERRQ(DMDAVecRestoreArray(dak,F,&fk));
-    CHKERRQ(DMDAVecRestoreArray(dau,user->Uloc,&u));
-    CHKERRQ(DMDAVecRestoreArray(dak,Kloc,&k));
+    PetscCall(DMGlobalToLocalBegin(dak,X,INSERT_VALUES,Kloc));
+    PetscCall(DMGlobalToLocalEnd  (dak,X,INSERT_VALUES,Kloc));
+    PetscCall(DMDAVecGetArray(dau,user->Uloc,&u));
+    PetscCall(DMDAVecGetArray(dak,Kloc,&k));
+    PetscCall(DMDAVecGetArray(dak,F,&fk));
+    PetscCall(FormFunctionLocal_K(user,&infok,u,k,fk));
+    PetscCall(DMDAVecRestoreArray(dak,F,&fk));
+    PetscCall(DMDAVecRestoreArray(dau,user->Uloc,&u));
+    PetscCall(DMDAVecRestoreArray(dak,Kloc,&k));
     break;
   case 2:
-    CHKERRQ(DMCompositeScatter(user->pack,X,Uloc,Kloc));
-    CHKERRQ(DMDAVecGetArray(dau,Uloc,&u));
-    CHKERRQ(DMDAVecGetArray(dak,Kloc,&k));
-    CHKERRQ(DMCompositeGetAccess(user->pack,F,&Fu,&Fk));
-    CHKERRQ(DMDAVecGetArray(dau,Fu,&fu));
-    CHKERRQ(DMDAVecGetArray(dak,Fk,&fk));
-    CHKERRQ(FormFunctionLocal_U(user,&infou,u,k,fu));
-    CHKERRQ(FormFunctionLocal_K(user,&infok,u,k,fk));
-    CHKERRQ(DMDAVecRestoreArray(dau,Fu,&fu));
-    CHKERRQ(DMDAVecRestoreArray(dak,Fk,&fk));
-    CHKERRQ(DMCompositeRestoreAccess(user->pack,F,&Fu,&Fk));
-    CHKERRQ(DMDAVecRestoreArray(dau,Uloc,&u));
-    CHKERRQ(DMDAVecRestoreArray(dak,Kloc,&k));
+    PetscCall(DMCompositeScatter(user->pack,X,Uloc,Kloc));
+    PetscCall(DMDAVecGetArray(dau,Uloc,&u));
+    PetscCall(DMDAVecGetArray(dak,Kloc,&k));
+    PetscCall(DMCompositeGetAccess(user->pack,F,&Fu,&Fk));
+    PetscCall(DMDAVecGetArray(dau,Fu,&fu));
+    PetscCall(DMDAVecGetArray(dak,Fk,&fk));
+    PetscCall(FormFunctionLocal_U(user,&infou,u,k,fu));
+    PetscCall(FormFunctionLocal_K(user,&infok,u,k,fk));
+    PetscCall(DMDAVecRestoreArray(dau,Fu,&fu));
+    PetscCall(DMDAVecRestoreArray(dak,Fk,&fk));
+    PetscCall(DMCompositeRestoreAccess(user->pack,F,&Fu,&Fk));
+    PetscCall(DMDAVecRestoreArray(dau,Uloc,&u));
+    PetscCall(DMDAVecRestoreArray(dak,Kloc,&k));
     break;
   }
-  CHKERRQ(DMCompositeRestoreLocalVectors(user->pack,&Uloc,&Kloc));
+  PetscCall(DMCompositeRestoreLocalVectors(user->pack,&Uloc,&Kloc));
   PetscFunctionReturn(0);
 }
 
@@ -133,12 +133,12 @@ static PetscErrorCode FormJacobianLocal_U(User user,DMDALocalInfo *info,const Pe
     PetscInt    row = i-info->gxs,cols[] = {row-1,row,row+1};
     PetscScalar val = 1./hx;
     if (i == 0) {
-      CHKERRQ(MatSetValuesLocal(Buu,1,&row,1,&row,&val,INSERT_VALUES));
+      PetscCall(MatSetValuesLocal(Buu,1,&row,1,&row,&val,INSERT_VALUES));
     } else if (i == info->mx-1) {
-      CHKERRQ(MatSetValuesLocal(Buu,1,&row,1,&row,&val,INSERT_VALUES));
+      PetscCall(MatSetValuesLocal(Buu,1,&row,1,&row,&val,INSERT_VALUES));
     } else {
       PetscScalar vals[] = {-k[i-1]/hx,(k[i-1]+k[i])/hx,-k[i]/hx};
-      CHKERRQ(MatSetValuesLocal(Buu,1,&row,3,cols,vals,INSERT_VALUES));
+      PetscCall(MatSetValuesLocal(Buu,1,&row,3,cols,vals,INSERT_VALUES));
     }
   }
   PetscFunctionReturn(0);
@@ -153,7 +153,7 @@ static PetscErrorCode FormJacobianLocal_K(User user,DMDALocalInfo *info,const Pe
   for (i=info->xs; i<info->xs+info->xm; i++) {
     PetscInt    row    = i-info->gxs;
     PetscScalar vals[] = {hx*(PetscExpScalar(k[i]-1.)+ (PetscScalar)1.)};
-    CHKERRQ(MatSetValuesLocal(Bkk,1,&row,1,&row,vals,INSERT_VALUES));
+    PetscCall(MatSetValuesLocal(Bkk,1,&row,1,&row,vals,INSERT_VALUES));
   }
   PetscFunctionReturn(0);
 }
@@ -172,7 +172,7 @@ static PetscErrorCode FormJacobianLocal_UK(User user,DMDALocalInfo *info,DMDALoc
     row     = i-info->gxs;
     cols[0] = i-1-infok->gxs;  vals[0] = (u[i]-u[i-1])/hx;
     cols[1] = i-infok->gxs;    vals[1] = (u[i]-u[i+1])/hx;
-    CHKERRQ(MatSetValuesLocal(Buk,1,&row,2,cols,vals,INSERT_VALUES));
+    PetscCall(MatSetValuesLocal(Buk,1,&row,2,cols,vals,INSERT_VALUES));
   }
   PetscFunctionReturn(0);
 }
@@ -204,7 +204,7 @@ static PetscErrorCode FormJacobianLocal_KU(User user,DMDALocalInfo *info,DMDALoc
       iw_gradu = -w_gradu * PetscSqr(iw);
     cols[0] = i-info->gxs;         vals[0] = -hx*(iw_ubar*ubar_L + iw_gradu*gradu_L);
     cols[1] = i+1-info->gxs;       vals[1] = -hx*(iw_ubar*ubar_R + iw_gradu*gradu_R);
-    CHKERRQ(MatSetValuesLocal(Bku,1,&row,2,cols,vals,INSERT_VALUES));
+    PetscCall(MatSetValuesLocal(Bku,1,&row,2,cols,vals,INSERT_VALUES));
   }
   PetscFunctionReturn(0);
 }
@@ -218,43 +218,43 @@ static PetscErrorCode FormJacobian_All(SNES snes,Vec X,Mat J,Mat B,void *ctx)
   Vec            Uloc,Kloc;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMCompositeGetEntries(user->pack,&dau,&dak));
-  CHKERRQ(DMDAGetLocalInfo(dau,&infou));
-  CHKERRQ(DMDAGetLocalInfo(dak,&infok));
-  CHKERRQ(DMCompositeGetLocalVectors(user->pack,&Uloc,&Kloc));
+  PetscCall(DMCompositeGetEntries(user->pack,&dau,&dak));
+  PetscCall(DMDAGetLocalInfo(dau,&infou));
+  PetscCall(DMDAGetLocalInfo(dak,&infok));
+  PetscCall(DMCompositeGetLocalVectors(user->pack,&Uloc,&Kloc));
   switch (user->ptype) {
   case 0:
-    CHKERRQ(DMGlobalToLocalBegin(dau,X,INSERT_VALUES,Uloc));
-    CHKERRQ(DMGlobalToLocalEnd  (dau,X,INSERT_VALUES,Uloc));
-    CHKERRQ(DMDAVecGetArray(dau,Uloc,&u));
-    CHKERRQ(DMDAVecGetArray(dak,user->Kloc,&k));
-    CHKERRQ(FormJacobianLocal_U(user,&infou,u,k,B));
-    CHKERRQ(DMDAVecRestoreArray(dau,Uloc,&u));
-    CHKERRQ(DMDAVecRestoreArray(dak,user->Kloc,&k));
+    PetscCall(DMGlobalToLocalBegin(dau,X,INSERT_VALUES,Uloc));
+    PetscCall(DMGlobalToLocalEnd  (dau,X,INSERT_VALUES,Uloc));
+    PetscCall(DMDAVecGetArray(dau,Uloc,&u));
+    PetscCall(DMDAVecGetArray(dak,user->Kloc,&k));
+    PetscCall(FormJacobianLocal_U(user,&infou,u,k,B));
+    PetscCall(DMDAVecRestoreArray(dau,Uloc,&u));
+    PetscCall(DMDAVecRestoreArray(dak,user->Kloc,&k));
     break;
   case 1:
-    CHKERRQ(DMGlobalToLocalBegin(dak,X,INSERT_VALUES,Kloc));
-    CHKERRQ(DMGlobalToLocalEnd  (dak,X,INSERT_VALUES,Kloc));
-    CHKERRQ(DMDAVecGetArray(dau,user->Uloc,&u));
-    CHKERRQ(DMDAVecGetArray(dak,Kloc,&k));
-    CHKERRQ(FormJacobianLocal_K(user,&infok,u,k,B));
-    CHKERRQ(DMDAVecRestoreArray(dau,user->Uloc,&u));
-    CHKERRQ(DMDAVecRestoreArray(dak,Kloc,&k));
+    PetscCall(DMGlobalToLocalBegin(dak,X,INSERT_VALUES,Kloc));
+    PetscCall(DMGlobalToLocalEnd  (dak,X,INSERT_VALUES,Kloc));
+    PetscCall(DMDAVecGetArray(dau,user->Uloc,&u));
+    PetscCall(DMDAVecGetArray(dak,Kloc,&k));
+    PetscCall(FormJacobianLocal_K(user,&infok,u,k,B));
+    PetscCall(DMDAVecRestoreArray(dau,user->Uloc,&u));
+    PetscCall(DMDAVecRestoreArray(dak,Kloc,&k));
     break;
   case 2: {
     Mat       Buu,Buk,Bku,Bkk;
     PetscBool nest;
     IS        *is;
-    CHKERRQ(DMCompositeScatter(user->pack,X,Uloc,Kloc));
-    CHKERRQ(DMDAVecGetArray(dau,Uloc,&u));
-    CHKERRQ(DMDAVecGetArray(dak,Kloc,&k));
-    CHKERRQ(DMCompositeGetLocalISs(user->pack,&is));
-    CHKERRQ(MatGetLocalSubMatrix(B,is[0],is[0],&Buu));
-    CHKERRQ(MatGetLocalSubMatrix(B,is[0],is[1],&Buk));
-    CHKERRQ(MatGetLocalSubMatrix(B,is[1],is[0],&Bku));
-    CHKERRQ(MatGetLocalSubMatrix(B,is[1],is[1],&Bkk));
-    CHKERRQ(FormJacobianLocal_U(user,&infou,u,k,Buu));
-    CHKERRQ(PetscObjectTypeCompare((PetscObject)B,MATNEST,&nest));
+    PetscCall(DMCompositeScatter(user->pack,X,Uloc,Kloc));
+    PetscCall(DMDAVecGetArray(dau,Uloc,&u));
+    PetscCall(DMDAVecGetArray(dak,Kloc,&k));
+    PetscCall(DMCompositeGetLocalISs(user->pack,&is));
+    PetscCall(MatGetLocalSubMatrix(B,is[0],is[0],&Buu));
+    PetscCall(MatGetLocalSubMatrix(B,is[0],is[1],&Buk));
+    PetscCall(MatGetLocalSubMatrix(B,is[1],is[0],&Bku));
+    PetscCall(MatGetLocalSubMatrix(B,is[1],is[1],&Bkk));
+    PetscCall(FormJacobianLocal_U(user,&infou,u,k,Buu));
+    PetscCall(PetscObjectTypeCompare((PetscObject)B,MATNEST,&nest));
     if (!nest) {
       /*
          DMCreateMatrix_Composite()  for a nested matrix does not generate off-block matrices that one can call MatSetValuesLocal() on, it just creates dummy
@@ -262,28 +262,28 @@ static PetscErrorCode FormJacobian_All(SNES snes,Vec X,Mat J,Mat B,void *ctx)
          changed Mat_Nest() from returning NULL pointers for these submatrices to dummy matrices because PCFIELDSPLIT could not
          handle the returned null matrices.
       */
-      CHKERRQ(FormJacobianLocal_UK(user,&infou,&infok,u,k,Buk));
-      CHKERRQ(FormJacobianLocal_KU(user,&infou,&infok,u,k,Bku));
+      PetscCall(FormJacobianLocal_UK(user,&infou,&infok,u,k,Buk));
+      PetscCall(FormJacobianLocal_KU(user,&infou,&infok,u,k,Bku));
     }
-    CHKERRQ(FormJacobianLocal_K(user,&infok,u,k,Bkk));
-    CHKERRQ(MatRestoreLocalSubMatrix(B,is[0],is[0],&Buu));
-    CHKERRQ(MatRestoreLocalSubMatrix(B,is[0],is[1],&Buk));
-    CHKERRQ(MatRestoreLocalSubMatrix(B,is[1],is[0],&Bku));
-    CHKERRQ(MatRestoreLocalSubMatrix(B,is[1],is[1],&Bkk));
-    CHKERRQ(DMDAVecRestoreArray(dau,Uloc,&u));
-    CHKERRQ(DMDAVecRestoreArray(dak,Kloc,&k));
+    PetscCall(FormJacobianLocal_K(user,&infok,u,k,Bkk));
+    PetscCall(MatRestoreLocalSubMatrix(B,is[0],is[0],&Buu));
+    PetscCall(MatRestoreLocalSubMatrix(B,is[0],is[1],&Buk));
+    PetscCall(MatRestoreLocalSubMatrix(B,is[1],is[0],&Bku));
+    PetscCall(MatRestoreLocalSubMatrix(B,is[1],is[1],&Bkk));
+    PetscCall(DMDAVecRestoreArray(dau,Uloc,&u));
+    PetscCall(DMDAVecRestoreArray(dak,Kloc,&k));
 
-    CHKERRQ(ISDestroy(&is[0]));
-    CHKERRQ(ISDestroy(&is[1]));
-    CHKERRQ(PetscFree(is));
+    PetscCall(ISDestroy(&is[0]));
+    PetscCall(ISDestroy(&is[1]));
+    PetscCall(PetscFree(is));
   } break;
   }
-  CHKERRQ(DMCompositeRestoreLocalVectors(user->pack,&Uloc,&Kloc));
-  CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd  (B,MAT_FINAL_ASSEMBLY));
+  PetscCall(DMCompositeRestoreLocalVectors(user->pack,&Uloc,&Kloc));
+  PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd  (B,MAT_FINAL_ASSEMBLY));
   if (J != B) {
-    CHKERRQ(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd  (J,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd  (J,MAT_FINAL_ASSEMBLY));
   }
   PetscFunctionReturn(0);
 }
@@ -297,19 +297,19 @@ static PetscErrorCode FormInitial_Coupled(User user,Vec X)
   PetscInt       i;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMCompositeGetEntries(user->pack,&dau,&dak));
-  CHKERRQ(DMCompositeGetAccess(user->pack,X,&Xu,&Xk));
-  CHKERRQ(DMDAVecGetArray(dau,Xu,&u));
-  CHKERRQ(DMDAVecGetArray(dak,Xk,&k));
-  CHKERRQ(DMDAGetLocalInfo(dau,&infou));
-  CHKERRQ(DMDAGetLocalInfo(dak,&infok));
+  PetscCall(DMCompositeGetEntries(user->pack,&dau,&dak));
+  PetscCall(DMCompositeGetAccess(user->pack,X,&Xu,&Xk));
+  PetscCall(DMDAVecGetArray(dau,Xu,&u));
+  PetscCall(DMDAVecGetArray(dak,Xk,&k));
+  PetscCall(DMDAGetLocalInfo(dau,&infou));
+  PetscCall(DMDAGetLocalInfo(dak,&infok));
   hx   = 1./(infok.mx);
   for (i=infou.xs; i<infou.xs+infou.xm; i++) u[i] = (PetscScalar)i*hx * (1.-(PetscScalar)i*hx);
   for (i=infok.xs; i<infok.xs+infok.xm; i++) k[i] = 1.0 + 0.5*PetscSinScalar(2*PETSC_PI*i*hx);
-  CHKERRQ(DMDAVecRestoreArray(dau,Xu,&u));
-  CHKERRQ(DMDAVecRestoreArray(dak,Xk,&k));
-  CHKERRQ(DMCompositeRestoreAccess(user->pack,X,&Xu,&Xk));
-  CHKERRQ(DMCompositeScatter(user->pack,X,user->Uloc,user->Kloc));
+  PetscCall(DMDAVecRestoreArray(dau,Xu,&u));
+  PetscCall(DMDAVecRestoreArray(dak,Xk,&k));
+  PetscCall(DMCompositeRestoreAccess(user->pack,X,&Xu,&Xk));
+  PetscCall(DMCompositeScatter(user->pack,X,user->Uloc,user->Kloc));
   PetscFunctionReturn(0);
 }
 
@@ -326,102 +326,102 @@ int main(int argc, char *argv[])
   IS             *isg;
   PetscBool      pass_dm;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,0,help));
-  CHKERRQ(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,10,1,1,NULL,&dau));
-  CHKERRQ(DMSetOptionsPrefix(dau,"u_"));
-  CHKERRQ(DMSetFromOptions(dau));
-  CHKERRQ(DMSetUp(dau));
-  CHKERRQ(DMDAGetOwnershipRanges(dau,&lxu,0,0));
-  CHKERRQ(DMDAGetInfo(dau,0, &m,0,0, &sizes,0,0, 0,0,0,0,0,0));
-  CHKERRQ(PetscMalloc1(sizes,&lxk));
-  CHKERRQ(PetscArraycpy(lxk,lxu,sizes));
+  PetscCall(PetscInitialize(&argc,&argv,0,help));
+  PetscCall(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,10,1,1,NULL,&dau));
+  PetscCall(DMSetOptionsPrefix(dau,"u_"));
+  PetscCall(DMSetFromOptions(dau));
+  PetscCall(DMSetUp(dau));
+  PetscCall(DMDAGetOwnershipRanges(dau,&lxu,0,0));
+  PetscCall(DMDAGetInfo(dau,0, &m,0,0, &sizes,0,0, 0,0,0,0,0,0));
+  PetscCall(PetscMalloc1(sizes,&lxk));
+  PetscCall(PetscArraycpy(lxk,lxu,sizes));
   lxk[0]--;
-  CHKERRQ(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,m-1,1,1,lxk,&dak));
-  CHKERRQ(DMSetOptionsPrefix(dak,"k_"));
-  CHKERRQ(DMSetFromOptions(dak));
-  CHKERRQ(DMSetUp(dak));
-  CHKERRQ(PetscFree(lxk));
+  PetscCall(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,m-1,1,1,lxk,&dak));
+  PetscCall(DMSetOptionsPrefix(dak,"k_"));
+  PetscCall(DMSetFromOptions(dak));
+  PetscCall(DMSetUp(dak));
+  PetscCall(PetscFree(lxk));
 
-  CHKERRQ(DMCompositeCreate(PETSC_COMM_WORLD,&pack));
-  CHKERRQ(DMSetOptionsPrefix(pack,"pack_"));
-  CHKERRQ(DMCompositeAddDM(pack,dau));
-  CHKERRQ(DMCompositeAddDM(pack,dak));
-  CHKERRQ(DMDASetFieldName(dau,0,"u"));
-  CHKERRQ(DMDASetFieldName(dak,0,"k"));
-  CHKERRQ(DMSetFromOptions(pack));
+  PetscCall(DMCompositeCreate(PETSC_COMM_WORLD,&pack));
+  PetscCall(DMSetOptionsPrefix(pack,"pack_"));
+  PetscCall(DMCompositeAddDM(pack,dau));
+  PetscCall(DMCompositeAddDM(pack,dak));
+  PetscCall(DMDASetFieldName(dau,0,"u"));
+  PetscCall(DMDASetFieldName(dak,0,"k"));
+  PetscCall(DMSetFromOptions(pack));
 
-  CHKERRQ(DMCreateGlobalVector(pack,&X));
-  CHKERRQ(VecDuplicate(X,&F));
+  PetscCall(DMCreateGlobalVector(pack,&X));
+  PetscCall(VecDuplicate(X,&F));
 
-  CHKERRQ(PetscNew(&user));
+  PetscCall(PetscNew(&user));
 
   user->pack = pack;
 
-  CHKERRQ(DMCompositeGetGlobalISs(pack,&isg));
-  CHKERRQ(DMCompositeGetLocalVectors(pack,&user->Uloc,&user->Kloc));
-  CHKERRQ(DMCompositeScatter(pack,X,user->Uloc,user->Kloc));
+  PetscCall(DMCompositeGetGlobalISs(pack,&isg));
+  PetscCall(DMCompositeGetLocalVectors(pack,&user->Uloc,&user->Kloc));
+  PetscCall(DMCompositeScatter(pack,X,user->Uloc,user->Kloc));
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Coupled problem options","SNES");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Coupled problem options","SNES");PetscCall(ierr);
   {
     user->ptype = 0; pass_dm = PETSC_TRUE;
 
-    CHKERRQ(PetscOptionsInt("-problem_type","0: solve for u only, 1: solve for k only, 2: solve for both",0,user->ptype,&user->ptype,NULL));
-    CHKERRQ(PetscOptionsBool("-pass_dm","Pass the packed DM to SNES to use when determining splits and forward into splits",0,pass_dm,&pass_dm,NULL));
+    PetscCall(PetscOptionsInt("-problem_type","0: solve for u only, 1: solve for k only, 2: solve for both",0,user->ptype,&user->ptype,NULL));
+    PetscCall(PetscOptionsBool("-pass_dm","Pass the packed DM to SNES to use when determining splits and forward into splits",0,pass_dm,&pass_dm,NULL));
   }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
-  CHKERRQ(FormInitial_Coupled(user,X));
+  PetscCall(FormInitial_Coupled(user,X));
 
-  CHKERRQ(SNESCreate(PETSC_COMM_WORLD,&snes));
+  PetscCall(SNESCreate(PETSC_COMM_WORLD,&snes));
   switch (user->ptype) {
   case 0:
-    CHKERRQ(DMCompositeGetAccess(pack,X,&Xu,0));
-    CHKERRQ(DMCompositeGetAccess(pack,F,&Fu,0));
-    CHKERRQ(DMCreateMatrix(dau,&B));
-    CHKERRQ(SNESSetFunction(snes,Fu,FormFunction_All,user));
-    CHKERRQ(SNESSetJacobian(snes,B,B,FormJacobian_All,user));
-    CHKERRQ(SNESSetFromOptions(snes));
-    CHKERRQ(SNESSetDM(snes,dau));
-    CHKERRQ(SNESSolve(snes,NULL,Xu));
-    CHKERRQ(DMCompositeRestoreAccess(pack,X,&Xu,0));
-    CHKERRQ(DMCompositeRestoreAccess(pack,F,&Fu,0));
+    PetscCall(DMCompositeGetAccess(pack,X,&Xu,0));
+    PetscCall(DMCompositeGetAccess(pack,F,&Fu,0));
+    PetscCall(DMCreateMatrix(dau,&B));
+    PetscCall(SNESSetFunction(snes,Fu,FormFunction_All,user));
+    PetscCall(SNESSetJacobian(snes,B,B,FormJacobian_All,user));
+    PetscCall(SNESSetFromOptions(snes));
+    PetscCall(SNESSetDM(snes,dau));
+    PetscCall(SNESSolve(snes,NULL,Xu));
+    PetscCall(DMCompositeRestoreAccess(pack,X,&Xu,0));
+    PetscCall(DMCompositeRestoreAccess(pack,F,&Fu,0));
     break;
   case 1:
-    CHKERRQ(DMCompositeGetAccess(pack,X,0,&Xk));
-    CHKERRQ(DMCompositeGetAccess(pack,F,0,&Fk));
-    CHKERRQ(DMCreateMatrix(dak,&B));
-    CHKERRQ(SNESSetFunction(snes,Fk,FormFunction_All,user));
-    CHKERRQ(SNESSetJacobian(snes,B,B,FormJacobian_All,user));
-    CHKERRQ(SNESSetFromOptions(snes));
-    CHKERRQ(SNESSetDM(snes,dak));
-    CHKERRQ(SNESSolve(snes,NULL,Xk));
-    CHKERRQ(DMCompositeRestoreAccess(pack,X,0,&Xk));
-    CHKERRQ(DMCompositeRestoreAccess(pack,F,0,&Fk));
+    PetscCall(DMCompositeGetAccess(pack,X,0,&Xk));
+    PetscCall(DMCompositeGetAccess(pack,F,0,&Fk));
+    PetscCall(DMCreateMatrix(dak,&B));
+    PetscCall(SNESSetFunction(snes,Fk,FormFunction_All,user));
+    PetscCall(SNESSetJacobian(snes,B,B,FormJacobian_All,user));
+    PetscCall(SNESSetFromOptions(snes));
+    PetscCall(SNESSetDM(snes,dak));
+    PetscCall(SNESSolve(snes,NULL,Xk));
+    PetscCall(DMCompositeRestoreAccess(pack,X,0,&Xk));
+    PetscCall(DMCompositeRestoreAccess(pack,F,0,&Fk));
     break;
   case 2:
-    CHKERRQ(DMCreateMatrix(pack,&B));
+    PetscCall(DMCreateMatrix(pack,&B));
     /* This example does not correctly allocate off-diagonal blocks. These options allows new nonzeros (slow). */
-    CHKERRQ(MatSetOption(B,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE));
-    CHKERRQ(MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE));
-    CHKERRQ(SNESSetFunction(snes,F,FormFunction_All,user));
-    CHKERRQ(SNESSetJacobian(snes,B,B,FormJacobian_All,user));
-    CHKERRQ(SNESSetFromOptions(snes));
+    PetscCall(MatSetOption(B,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE));
+    PetscCall(MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE));
+    PetscCall(SNESSetFunction(snes,F,FormFunction_All,user));
+    PetscCall(SNESSetJacobian(snes,B,B,FormJacobian_All,user));
+    PetscCall(SNESSetFromOptions(snes));
     if (!pass_dm) {             /* Manually provide index sets and names for the splits */
       KSP ksp;
       PC  pc;
-      CHKERRQ(SNESGetKSP(snes,&ksp));
-      CHKERRQ(KSPGetPC(ksp,&pc));
-      CHKERRQ(PCFieldSplitSetIS(pc,"u",isg[0]));
-      CHKERRQ(PCFieldSplitSetIS(pc,"k",isg[1]));
+      PetscCall(SNESGetKSP(snes,&ksp));
+      PetscCall(KSPGetPC(ksp,&pc));
+      PetscCall(PCFieldSplitSetIS(pc,"u",isg[0]));
+      PetscCall(PCFieldSplitSetIS(pc,"k",isg[1]));
     } else {
       /* The same names come from the options prefix for dau and dak. This option can support geometric multigrid inside
        * of splits, but it requires using a DM (perhaps your own implementation). */
-      CHKERRQ(SNESSetDM(snes,pack));
+      PetscCall(SNESSetDM(snes,pack));
     }
-    CHKERRQ(SNESSolve(snes,NULL,X));
+    PetscCall(SNESSolve(snes,NULL,X));
     break;
   }
-  CHKERRQ(VecViewFromOptions(X,NULL,"-view_sol"));
+  PetscCall(VecViewFromOptions(X,NULL,"-view_sol"));
 
   if (0) {
     PetscInt  col      = 0;
@@ -429,40 +429,40 @@ int main(int argc, char *argv[])
     Mat       D;
     Vec       Y;
 
-    CHKERRQ(PetscOptionsGetInt(NULL,0,"-col",&col,0));
-    CHKERRQ(PetscOptionsGetBool(NULL,0,"-mult_dup",&mult_dup,0));
-    CHKERRQ(PetscOptionsGetBool(NULL,0,"-view_dup",&view_dup,0));
+    PetscCall(PetscOptionsGetInt(NULL,0,"-col",&col,0));
+    PetscCall(PetscOptionsGetBool(NULL,0,"-mult_dup",&mult_dup,0));
+    PetscCall(PetscOptionsGetBool(NULL,0,"-view_dup",&view_dup,0));
 
-    CHKERRQ(VecDuplicate(X,&Y));
-    /* CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY)); */
-    /* CHKERRQ(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY)); */
-    CHKERRQ(MatConvert(B,MATAIJ,MAT_INITIAL_MATRIX,&D));
-    CHKERRQ(VecZeroEntries(X));
-    CHKERRQ(VecSetValue(X,col,1.0,INSERT_VALUES));
-    CHKERRQ(VecAssemblyBegin(X));
-    CHKERRQ(VecAssemblyEnd(X));
-    CHKERRQ(MatMult(mult_dup ? D : B,X,Y));
-    CHKERRQ(MatView(view_dup ? D : B,PETSC_VIEWER_STDOUT_WORLD));
-    /* CHKERRQ(VecView(X,PETSC_VIEWER_STDOUT_WORLD)); */
-    CHKERRQ(VecView(Y,PETSC_VIEWER_STDOUT_WORLD));
-    CHKERRQ(MatDestroy(&D));
-    CHKERRQ(VecDestroy(&Y));
+    PetscCall(VecDuplicate(X,&Y));
+    /* PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY)); */
+    /* PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY)); */
+    PetscCall(MatConvert(B,MATAIJ,MAT_INITIAL_MATRIX,&D));
+    PetscCall(VecZeroEntries(X));
+    PetscCall(VecSetValue(X,col,1.0,INSERT_VALUES));
+    PetscCall(VecAssemblyBegin(X));
+    PetscCall(VecAssemblyEnd(X));
+    PetscCall(MatMult(mult_dup ? D : B,X,Y));
+    PetscCall(MatView(view_dup ? D : B,PETSC_VIEWER_STDOUT_WORLD));
+    /* PetscCall(VecView(X,PETSC_VIEWER_STDOUT_WORLD)); */
+    PetscCall(VecView(Y,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(MatDestroy(&D));
+    PetscCall(VecDestroy(&Y));
   }
 
-  CHKERRQ(DMCompositeRestoreLocalVectors(pack,&user->Uloc,&user->Kloc));
-  CHKERRQ(PetscFree(user));
+  PetscCall(DMCompositeRestoreLocalVectors(pack,&user->Uloc,&user->Kloc));
+  PetscCall(PetscFree(user));
 
-  CHKERRQ(ISDestroy(&isg[0]));
-  CHKERRQ(ISDestroy(&isg[1]));
-  CHKERRQ(PetscFree(isg));
-  CHKERRQ(VecDestroy(&X));
-  CHKERRQ(VecDestroy(&F));
-  CHKERRQ(MatDestroy(&B));
-  CHKERRQ(DMDestroy(&dau));
-  CHKERRQ(DMDestroy(&dak));
-  CHKERRQ(DMDestroy(&pack));
-  CHKERRQ(SNESDestroy(&snes));
-  CHKERRQ(PetscFinalize());
+  PetscCall(ISDestroy(&isg[0]));
+  PetscCall(ISDestroy(&isg[1]));
+  PetscCall(PetscFree(isg));
+  PetscCall(VecDestroy(&X));
+  PetscCall(VecDestroy(&F));
+  PetscCall(MatDestroy(&B));
+  PetscCall(DMDestroy(&dau));
+  PetscCall(DMDestroy(&dak));
+  PetscCall(DMDestroy(&pack));
+  PetscCall(SNESDestroy(&snes));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

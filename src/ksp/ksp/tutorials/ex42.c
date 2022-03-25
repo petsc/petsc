@@ -53,10 +53,10 @@ PetscErrorCode CellPropertiesCreate(DM da_stokes,CellProperties *C)
   PetscInt       mx,my,mz,sex,sey,sez;
 
   PetscFunctionBeginUser;
-  CHKERRQ(PetscNew(&cells));
+  PetscCall(PetscNew(&cells));
 
-  CHKERRQ(DMDAGetElementsCorners(da_stokes,&sex,&sey,&sez));
-  CHKERRQ(DMDAGetElementsSizes(da_stokes,&mx,&my,&mz));
+  PetscCall(DMDAGetElementsCorners(da_stokes,&sex,&sey,&sez));
+  PetscCall(DMDAGetElementsSizes(da_stokes,&mx,&my,&mz));
   cells->mx     = mx;
   cells->my     = my;
   cells->mz     = mz;
@@ -65,7 +65,7 @@ PetscErrorCode CellPropertiesCreate(DM da_stokes,CellProperties *C)
   cells->sey    = sey;
   cells->sez    = sez;
 
-  CHKERRQ(PetscMalloc1(mx*my*mz,&cells->gpc));
+  PetscCall(PetscMalloc1(mx*my*mz,&cells->gpc));
 
   *C = cells;
   PetscFunctionReturn(0);
@@ -78,8 +78,8 @@ PetscErrorCode CellPropertiesDestroy(CellProperties *C)
   PetscFunctionBeginUser;
   if (!C) PetscFunctionReturn(0);
   cells = *C;
-  CHKERRQ(PetscFree(cells->gpc));
-  CHKERRQ(PetscFree(cells));
+  PetscCall(PetscFree(cells->gpc));
+  PetscCall(PetscFree(cells));
   *C = NULL;
   PetscFunctionReturn(0);
 }
@@ -760,28 +760,28 @@ static PetscErrorCode AssembleA_Stokes(Mat A,DM stokes_da,CellProperties cell_pr
   PetscInt               n,M,N,P;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMDAGetInfo(stokes_da,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0));
+  PetscCall(DMDAGetInfo(stokes_da,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0));
   /* setup for coords */
-  CHKERRQ(DMGetCoordinateDM(stokes_da,&cda));
-  CHKERRQ(DMGetCoordinatesLocal(stokes_da,&coords));
-  CHKERRQ(DMDAVecGetArray(cda,coords,&_coords));
-  CHKERRQ(DMDAGetElementsCorners(stokes_da,&sex,&sey,&sez));
-  CHKERRQ(DMDAGetElementsSizes(stokes_da,&mx,&my,&mz));
+  PetscCall(DMGetCoordinateDM(stokes_da,&cda));
+  PetscCall(DMGetCoordinatesLocal(stokes_da,&coords));
+  PetscCall(DMDAVecGetArray(cda,coords,&_coords));
+  PetscCall(DMDAGetElementsCorners(stokes_da,&sex,&sey,&sez));
+  PetscCall(DMDAGetElementsSizes(stokes_da,&mx,&my,&mz));
   for (ek = sez; ek < sez+mz; ek++) {
     for (ej = sey; ej < sey+my; ej++) {
       for (ei = sex; ei < sex+mx; ei++) {
         /* get coords for the element */
-        CHKERRQ(GetElementCoords3D(_coords,ei,ej,ek,el_coords));
+        PetscCall(GetElementCoords3D(_coords,ei,ej,ek,el_coords));
         /* get cell properties */
-        CHKERRQ(CellPropertiesGetCell(cell_properties,ei,ej,ek,&props));
+        PetscCall(CellPropertiesGetCell(cell_properties,ei,ej,ek,&props));
         /* get coefficients for the element */
         prop_eta = props->eta;
 
         /* initialise element stiffness matrix */
-        CHKERRQ(PetscMemzero(Ae,sizeof(Ae)));
-        CHKERRQ(PetscMemzero(Ge,sizeof(Ge)));
-        CHKERRQ(PetscMemzero(De,sizeof(De)));
-        CHKERRQ(PetscMemzero(Ce,sizeof(Ce)));
+        PetscCall(PetscMemzero(Ae,sizeof(Ae)));
+        PetscCall(PetscMemzero(Ge,sizeof(Ge)));
+        PetscCall(PetscMemzero(De,sizeof(De)));
+        PetscCall(PetscMemzero(Ce,sizeof(Ce)));
 
         /* form element stiffness matrix */
         FormStressOperatorQ13D(Ae,el_coords,prop_eta);
@@ -792,7 +792,7 @@ static PetscErrorCode AssembleA_Stokes(Mat A,DM stokes_da,CellProperties cell_pr
         FormStabilisationOperatorQ13D(Ce,el_coords,prop_eta);
 
         /* insert element matrix into global matrix */
-        CHKERRQ(DMDAGetElementEqnums3D_up(u_eqn,p_eqn,ei,ej,ek));
+        PetscCall(DMDAGetElementEqnums3D_up(u_eqn,p_eqn,ei,ej,ek));
 
         for (n=0; n<NODES_PER_EL; n++) {
           if ((u_eqn[3*n].i == 0) || (u_eqn[3*n].i == M-1)) {
@@ -813,17 +813,17 @@ static PetscErrorCode AssembleA_Stokes(Mat A,DM stokes_da,CellProperties cell_pr
             _ZERO_COL_i   (De,3*n+2);
           }
         }
-        CHKERRQ(MatSetValuesStencil(A,NODES_PER_EL*U_DOFS,u_eqn,NODES_PER_EL*U_DOFS,u_eqn,Ae,ADD_VALUES));
-        CHKERRQ(MatSetValuesStencil(A,NODES_PER_EL*U_DOFS,u_eqn,NODES_PER_EL*P_DOFS,p_eqn,Ge,ADD_VALUES));
-        CHKERRQ(MatSetValuesStencil(A,NODES_PER_EL*P_DOFS,p_eqn,NODES_PER_EL*U_DOFS,u_eqn,De,ADD_VALUES));
-        CHKERRQ(MatSetValuesStencil(A,NODES_PER_EL*P_DOFS,p_eqn,NODES_PER_EL*P_DOFS,p_eqn,Ce,ADD_VALUES));
+        PetscCall(MatSetValuesStencil(A,NODES_PER_EL*U_DOFS,u_eqn,NODES_PER_EL*U_DOFS,u_eqn,Ae,ADD_VALUES));
+        PetscCall(MatSetValuesStencil(A,NODES_PER_EL*U_DOFS,u_eqn,NODES_PER_EL*P_DOFS,p_eqn,Ge,ADD_VALUES));
+        PetscCall(MatSetValuesStencil(A,NODES_PER_EL*P_DOFS,p_eqn,NODES_PER_EL*U_DOFS,u_eqn,De,ADD_VALUES));
+        PetscCall(MatSetValuesStencil(A,NODES_PER_EL*P_DOFS,p_eqn,NODES_PER_EL*P_DOFS,p_eqn,Ce,ADD_VALUES));
       }
     }
   }
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
-  CHKERRQ(DMDAVecRestoreArray(cda,coords,&_coords));
+  PetscCall(DMDAVecRestoreArray(cda,coords,&_coords));
 
   PetscFunctionReturn(0);
 }
@@ -847,29 +847,29 @@ static PetscErrorCode AssembleA_PCStokes(Mat A,DM stokes_da,CellProperties cell_
   PetscInt               n,M,N,P;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMDAGetInfo(stokes_da,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0));
+  PetscCall(DMDAGetInfo(stokes_da,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0));
   /* setup for coords */
-  CHKERRQ(DMGetCoordinateDM(stokes_da,&cda));
-  CHKERRQ(DMGetCoordinatesLocal(stokes_da,&coords));
-  CHKERRQ(DMDAVecGetArray(cda,coords,&_coords));
+  PetscCall(DMGetCoordinateDM(stokes_da,&cda));
+  PetscCall(DMGetCoordinatesLocal(stokes_da,&coords));
+  PetscCall(DMDAVecGetArray(cda,coords,&_coords));
 
-  CHKERRQ(DMDAGetElementsCorners(stokes_da,&sex,&sey,&sez));
-  CHKERRQ(DMDAGetElementsSizes(stokes_da,&mx,&my,&mz));
+  PetscCall(DMDAGetElementsCorners(stokes_da,&sex,&sey,&sez));
+  PetscCall(DMDAGetElementsSizes(stokes_da,&mx,&my,&mz));
   for (ek = sez; ek < sez+mz; ek++) {
     for (ej = sey; ej < sey+my; ej++) {
       for (ei = sex; ei < sex+mx; ei++) {
         /* get coords for the element */
-        CHKERRQ(GetElementCoords3D(_coords,ei,ej,ek,el_coords));
+        PetscCall(GetElementCoords3D(_coords,ei,ej,ek,el_coords));
         /* get cell properties */
-        CHKERRQ(CellPropertiesGetCell(cell_properties,ei,ej,ek,&props));
+        PetscCall(CellPropertiesGetCell(cell_properties,ei,ej,ek,&props));
         /* get coefficients for the element */
         prop_eta = props->eta;
 
         /* initialise element stiffness matrix */
-        CHKERRQ(PetscMemzero(Ae,sizeof(Ae)));
-        CHKERRQ(PetscMemzero(Ge,sizeof(Ge)));
-        CHKERRQ(PetscMemzero(De,sizeof(De)));
-        CHKERRQ(PetscMemzero(Ce,sizeof(Ce)));
+        PetscCall(PetscMemzero(Ae,sizeof(Ae)));
+        PetscCall(PetscMemzero(Ge,sizeof(Ge)));
+        PetscCall(PetscMemzero(De,sizeof(De)));
+        PetscCall(PetscMemzero(Ce,sizeof(Ce)));
 
         /* form element stiffness matrix */
         FormStressOperatorQ13D(Ae,el_coords,prop_eta);
@@ -878,7 +878,7 @@ static PetscErrorCode AssembleA_PCStokes(Mat A,DM stokes_da,CellProperties cell_
         FormScaledMassMatrixOperatorQ13D(Ce,el_coords,prop_eta);
 
         /* insert element matrix into global matrix */
-        CHKERRQ(DMDAGetElementEqnums3D_up(u_eqn,p_eqn,ei,ej,ek));
+        PetscCall(DMDAGetElementEqnums3D_up(u_eqn,p_eqn,ei,ej,ek));
 
         for (n=0; n<NODES_PER_EL; n++) {
           if ((u_eqn[3*n].i == 0) || (u_eqn[3*n].i == M-1)) {
@@ -899,17 +899,17 @@ static PetscErrorCode AssembleA_PCStokes(Mat A,DM stokes_da,CellProperties cell_
             _ZERO_COL_i   (De,3*n+2);
           }
         }
-        CHKERRQ(MatSetValuesStencil(A,NODES_PER_EL*U_DOFS,u_eqn,NODES_PER_EL*U_DOFS,u_eqn,Ae,ADD_VALUES));
-        CHKERRQ(MatSetValuesStencil(A,NODES_PER_EL*U_DOFS,u_eqn,NODES_PER_EL*P_DOFS,p_eqn,Ge,ADD_VALUES));
-        /*CHKERRQ(MatSetValuesStencil(A,NODES_PER_EL*P_DOFS,p_eqn,NODES_PER_EL*U_DOFS,u_eqn,De,ADD_VALUES));*/
-        CHKERRQ(MatSetValuesStencil(A,NODES_PER_EL*P_DOFS,p_eqn,NODES_PER_EL*P_DOFS,p_eqn,Ce,ADD_VALUES));
+        PetscCall(MatSetValuesStencil(A,NODES_PER_EL*U_DOFS,u_eqn,NODES_PER_EL*U_DOFS,u_eqn,Ae,ADD_VALUES));
+        PetscCall(MatSetValuesStencil(A,NODES_PER_EL*U_DOFS,u_eqn,NODES_PER_EL*P_DOFS,p_eqn,Ge,ADD_VALUES));
+        /*PetscCall(MatSetValuesStencil(A,NODES_PER_EL*P_DOFS,p_eqn,NODES_PER_EL*U_DOFS,u_eqn,De,ADD_VALUES));*/
+        PetscCall(MatSetValuesStencil(A,NODES_PER_EL*P_DOFS,p_eqn,NODES_PER_EL*P_DOFS,p_eqn,Ce,ADD_VALUES));
       }
     }
   }
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
-  CHKERRQ(DMDAVecRestoreArray(cda,coords,&_coords));
+  PetscCall(DMDAVecRestoreArray(cda,coords,&_coords));
   PetscFunctionReturn(0);
 }
 
@@ -932,25 +932,25 @@ static PetscErrorCode AssembleF_Stokes(Vec F,DM stokes_da,CellProperties cell_pr
   PetscInt               n,M,N,P;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMDAGetInfo(stokes_da,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0));
+  PetscCall(DMDAGetInfo(stokes_da,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0));
   /* setup for coords */
-  CHKERRQ(DMGetCoordinateDM(stokes_da,&cda));
-  CHKERRQ(DMGetCoordinatesLocal(stokes_da,&coords));
-  CHKERRQ(DMDAVecGetArray(cda,coords,&_coords));
+  PetscCall(DMGetCoordinateDM(stokes_da,&cda));
+  PetscCall(DMGetCoordinatesLocal(stokes_da,&coords));
+  PetscCall(DMDAVecGetArray(cda,coords,&_coords));
 
   /* get access to the vector */
-  CHKERRQ(DMGetLocalVector(stokes_da,&local_F));
-  CHKERRQ(VecZeroEntries(local_F));
-  CHKERRQ(DMDAVecGetArray(stokes_da,local_F,&ff));
-  CHKERRQ(DMDAGetElementsCorners(stokes_da,&sex,&sey,&sez));
-  CHKERRQ(DMDAGetElementsSizes(stokes_da,&mx,&my,&mz));
+  PetscCall(DMGetLocalVector(stokes_da,&local_F));
+  PetscCall(VecZeroEntries(local_F));
+  PetscCall(DMDAVecGetArray(stokes_da,local_F,&ff));
+  PetscCall(DMDAGetElementsCorners(stokes_da,&sex,&sey,&sez));
+  PetscCall(DMDAGetElementsSizes(stokes_da,&mx,&my,&mz));
   for (ek = sez; ek < sez+mz; ek++) {
     for (ej = sey; ej < sey+my; ej++) {
       for (ei = sex; ei < sex+mx; ei++) {
         /* get coords for the element */
-        CHKERRQ(GetElementCoords3D(_coords,ei,ej,ek,el_coords));
+        PetscCall(GetElementCoords3D(_coords,ei,ej,ek,el_coords));
         /* get cell properties */
-        CHKERRQ(CellPropertiesGetCell(cell_properties,ei,ej,ek,&props));
+        PetscCall(CellPropertiesGetCell(cell_properties,ei,ej,ek,&props));
         /* get coefficients for the element */
         prop_fx = props->fx;
         prop_fy = props->fy;
@@ -958,15 +958,15 @@ static PetscErrorCode AssembleF_Stokes(Vec F,DM stokes_da,CellProperties cell_pr
         prop_hc = props->hc;
 
         /* initialise element stiffness matrix */
-        CHKERRQ(PetscMemzero(Fe,sizeof(Fe)));
-        CHKERRQ(PetscMemzero(He,sizeof(He)));
+        PetscCall(PetscMemzero(Fe,sizeof(Fe)));
+        PetscCall(PetscMemzero(He,sizeof(He)));
 
         /* form element stiffness matrix */
         FormMomentumRhsQ13D(Fe,el_coords,prop_fx,prop_fy,prop_fz);
         FormContinuityRhsQ13D(He,el_coords,prop_hc);
 
         /* insert element matrix into global matrix */
-        CHKERRQ(DMDAGetElementEqnums3D_up(u_eqn,p_eqn,ei,ej,ek));
+        PetscCall(DMDAGetElementEqnums3D_up(u_eqn,p_eqn,ei,ej,ek));
 
         for (n=0; n<NODES_PER_EL; n++) {
           if ((u_eqn[3*n].i == 0) || (u_eqn[3*n].i == M-1)) Fe[3*n] = 0.0;
@@ -976,16 +976,16 @@ static PetscErrorCode AssembleF_Stokes(Vec F,DM stokes_da,CellProperties cell_pr
           if ((u_eqn[3*n+2].k == 0) || (u_eqn[3*n+2].k == P-1)) Fe[3*n+2] = 0.0;
         }
 
-        CHKERRQ(DMDASetValuesLocalStencil3D_ADD_VALUES(ff,u_eqn,p_eqn,Fe,He));
+        PetscCall(DMDASetValuesLocalStencil3D_ADD_VALUES(ff,u_eqn,p_eqn,Fe,He));
       }
     }
   }
-  CHKERRQ(DMDAVecRestoreArray(stokes_da,local_F,&ff));
-  CHKERRQ(DMLocalToGlobalBegin(stokes_da,local_F,ADD_VALUES,F));
-  CHKERRQ(DMLocalToGlobalEnd(stokes_da,local_F,ADD_VALUES,F));
-  CHKERRQ(DMRestoreLocalVector(stokes_da,&local_F));
+  PetscCall(DMDAVecRestoreArray(stokes_da,local_F,&ff));
+  PetscCall(DMLocalToGlobalBegin(stokes_da,local_F,ADD_VALUES,F));
+  PetscCall(DMLocalToGlobalEnd(stokes_da,local_F,ADD_VALUES,F));
+  PetscCall(DMRestoreLocalVector(stokes_da,&local_F));
 
-  CHKERRQ(DMDAVecRestoreArray(cda,coords,&_coords));
+  PetscCall(DMDAVecRestoreArray(cda,coords,&_coords));
   PetscFunctionReturn(0);
 }
 
@@ -1065,24 +1065,24 @@ static PetscErrorCode DMDACreateManufacturedSolution(PetscInt mx,PetscInt my,Pet
 
   PetscFunctionBeginUser;
   ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,
-                      mx+1,my+1,mz+1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,4,1,NULL,NULL,NULL,&da);CHKERRQ(ierr);
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
-  CHKERRQ(DMDASetFieldName(da,0,"anlytic_Vx"));
-  CHKERRQ(DMDASetFieldName(da,1,"anlytic_Vy"));
-  CHKERRQ(DMDASetFieldName(da,2,"anlytic_Vz"));
-  CHKERRQ(DMDASetFieldName(da,3,"analytic_P"));
+                      mx+1,my+1,mz+1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,4,1,NULL,NULL,NULL,&da);PetscCall(ierr);
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMDASetFieldName(da,0,"anlytic_Vx"));
+  PetscCall(DMDASetFieldName(da,1,"anlytic_Vy"));
+  PetscCall(DMDASetFieldName(da,2,"anlytic_Vz"));
+  PetscCall(DMDASetFieldName(da,3,"analytic_P"));
 
-  CHKERRQ(DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,1.0));
+  PetscCall(DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,1.0));
 
-  CHKERRQ(DMGetCoordinatesLocal(da,&coords));
-  CHKERRQ(DMGetCoordinateDM(da,&cda));
-  CHKERRQ(DMDAVecGetArray(cda,coords,&_coords));
+  PetscCall(DMGetCoordinatesLocal(da,&coords));
+  PetscCall(DMGetCoordinateDM(da,&cda));
+  PetscCall(DMDAVecGetArray(cda,coords,&_coords));
 
-  CHKERRQ(DMCreateGlobalVector(da,&X));
-  CHKERRQ(DMDAVecGetArray(da,X,&_stokes));
+  PetscCall(DMCreateGlobalVector(da,&X));
+  PetscCall(DMDAVecGetArray(da,X,&_stokes));
 
-  CHKERRQ(DMDAGetCorners(da,&si,&sj,&sk,&ei,&ej,&ek));
+  PetscCall(DMDAGetCorners(da,&si,&sj,&sk,&ei,&ej,&ek));
   for (k = sk; k < sk+ek; k++) {
     for (j = sj; j < sj+ej; j++) {
       for (i = si; i < si+ei; i++) {
@@ -1101,8 +1101,8 @@ static PetscErrorCode DMDACreateManufacturedSolution(PetscInt mx,PetscInt my,Pet
       }
     }
   }
-  CHKERRQ(DMDAVecRestoreArray(da,X,&_stokes));
-  CHKERRQ(DMDAVecRestoreArray(cda,coords,&_coords));
+  PetscCall(DMDAVecRestoreArray(da,X,&_stokes));
+  PetscCall(DMDAVecRestoreArray(cda,coords,&_coords));
 
   *_da = da;
   *_X  = X;
@@ -1137,39 +1137,39 @@ static PetscErrorCode DMDAIntegrateErrors3D(DM stokes_da,Vec X,Vec X_analytic)
   ConstructGaussQuadrature3D(&ngp,gp_xi,gp_weight);
 
   /* setup for coords */
-  CHKERRQ(DMGetCoordinateDM(stokes_da,&cda));
-  CHKERRQ(DMGetCoordinatesLocal(stokes_da,&coords));
-  CHKERRQ(DMDAVecGetArray(cda,coords,&_coords));
+  PetscCall(DMGetCoordinateDM(stokes_da,&cda));
+  PetscCall(DMGetCoordinatesLocal(stokes_da,&coords));
+  PetscCall(DMDAVecGetArray(cda,coords,&_coords));
 
   /* setup for analytic */
-  CHKERRQ(DMCreateLocalVector(stokes_da,&X_analytic_local));
-  CHKERRQ(DMGlobalToLocalBegin(stokes_da,X_analytic,INSERT_VALUES,X_analytic_local));
-  CHKERRQ(DMGlobalToLocalEnd(stokes_da,X_analytic,INSERT_VALUES,X_analytic_local));
-  CHKERRQ(DMDAVecGetArray(stokes_da,X_analytic_local,&stokes_analytic));
+  PetscCall(DMCreateLocalVector(stokes_da,&X_analytic_local));
+  PetscCall(DMGlobalToLocalBegin(stokes_da,X_analytic,INSERT_VALUES,X_analytic_local));
+  PetscCall(DMGlobalToLocalEnd(stokes_da,X_analytic,INSERT_VALUES,X_analytic_local));
+  PetscCall(DMDAVecGetArray(stokes_da,X_analytic_local,&stokes_analytic));
 
   /* setup for solution */
-  CHKERRQ(DMCreateLocalVector(stokes_da,&X_local));
-  CHKERRQ(DMGlobalToLocalBegin(stokes_da,X,INSERT_VALUES,X_local));
-  CHKERRQ(DMGlobalToLocalEnd(stokes_da,X,INSERT_VALUES,X_local));
-  CHKERRQ(DMDAVecGetArray(stokes_da,X_local,&stokes));
+  PetscCall(DMCreateLocalVector(stokes_da,&X_local));
+  PetscCall(DMGlobalToLocalBegin(stokes_da,X,INSERT_VALUES,X_local));
+  PetscCall(DMGlobalToLocalEnd(stokes_da,X,INSERT_VALUES,X_local));
+  PetscCall(DMDAVecGetArray(stokes_da,X_local,&stokes));
 
-  CHKERRQ(DMDAGetInfo(stokes_da,0,&M,0,0,0,0,0,0,0,0,0,0,0));
-  CHKERRQ(DMGetBoundingBox(stokes_da,xymin,xymax));
+  PetscCall(DMDAGetInfo(stokes_da,0,&M,0,0,0,0,0,0,0,0,0,0,0));
+  PetscCall(DMGetBoundingBox(stokes_da,xymin,xymax));
 
   h = (xymax[0]-xymin[0])/((PetscReal)(M-1));
 
   tp_L2     = tu_L2 = tu_H1 = 0.0;
   tint_p_ms = tint_p = 0.0;
 
-  CHKERRQ(DMDAGetElementsCorners(stokes_da,&sex,&sey,&sez));
-  CHKERRQ(DMDAGetElementsSizes(stokes_da,&mx,&my,&mz));
+  PetscCall(DMDAGetElementsCorners(stokes_da,&sex,&sey,&sez));
+  PetscCall(DMDAGetElementsSizes(stokes_da,&mx,&my,&mz));
   for (ek = sez; ek < sez+mz; ek++) {
     for (ej = sey; ej < sey+my; ej++) {
       for (ei = sex; ei < sex+mx; ei++) {
         /* get coords for the element */
-        CHKERRQ(GetElementCoords3D(_coords,ei,ej,ek,el_coords));
-        CHKERRQ(StokesDAGetNodalFields3D(stokes,ei,ej,ek,stokes_e));
-        CHKERRQ(StokesDAGetNodalFields3D(stokes_analytic,ei,ej,ek,stokes_analytic_e));
+        PetscCall(GetElementCoords3D(_coords,ei,ej,ek,el_coords));
+        PetscCall(StokesDAGetNodalFields3D(stokes,ei,ej,ek,stokes_e));
+        PetscCall(StokesDAGetNodalFields3D(stokes_analytic,ei,ej,ek,stokes_analytic_e));
 
         /* evaluate integral */
         for (p = 0; p < ngp; p++) {
@@ -1186,41 +1186,41 @@ static PetscErrorCode DMDAIntegrateErrors3D(DM stokes_da,Vec X,Vec X_analytic)
       }
     }
   }
-  CHKERRMPI(MPI_Allreduce(&tint_p_ms,&int_p_ms,1,MPIU_SCALAR,MPIU_SUM,PETSC_COMM_WORLD));
-  CHKERRMPI(MPI_Allreduce(&tint_p,&int_p,1,MPIU_SCALAR,MPIU_SUM,PETSC_COMM_WORLD));
+  PetscCallMPI(MPI_Allreduce(&tint_p_ms,&int_p_ms,1,MPIU_SCALAR,MPIU_SUM,PETSC_COMM_WORLD));
+  PetscCallMPI(MPI_Allreduce(&tint_p,&int_p,1,MPIU_SCALAR,MPIU_SUM,PETSC_COMM_WORLD));
 
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\\int P dv %1.4e (h)  %1.4e (ms)\n",PetscRealPart(int_p),PetscRealPart(int_p_ms)));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\\int P dv %1.4e (h)  %1.4e (ms)\n",PetscRealPart(int_p),PetscRealPart(int_p_ms)));
 
   /* remove mine and add manufacture one */
-  CHKERRQ(DMDAVecRestoreArray(stokes_da,X_analytic_local,&stokes_analytic));
-  CHKERRQ(DMDAVecRestoreArray(stokes_da,X_local,&stokes));
+  PetscCall(DMDAVecRestoreArray(stokes_da,X_analytic_local,&stokes_analytic));
+  PetscCall(DMDAVecRestoreArray(stokes_da,X_local,&stokes));
 
   {
     PetscInt    k,L,dof;
     PetscScalar *fields;
-    CHKERRQ(DMDAGetInfo(stokes_da,0, 0,0,0, 0,0,0, &dof,0,0,0,0,0));
+    PetscCall(DMDAGetInfo(stokes_da,0, 0,0,0, 0,0,0, &dof,0,0,0,0,0));
 
-    CHKERRQ(VecGetLocalSize(X_local,&L));
-    CHKERRQ(VecGetArray(X_local,&fields));
+    PetscCall(VecGetLocalSize(X_local,&L));
+    PetscCall(VecGetArray(X_local,&fields));
     for (k=0; k<L/dof; k++) fields[dof*k+3] = fields[dof*k+3] - int_p + int_p_ms;
-    CHKERRQ(VecRestoreArray(X_local,&fields));
+    PetscCall(VecRestoreArray(X_local,&fields));
 
-    CHKERRQ(VecGetLocalSize(X,&L));
-    CHKERRQ(VecGetArray(X,&fields));
+    PetscCall(VecGetLocalSize(X,&L));
+    PetscCall(VecGetArray(X,&fields));
     for (k=0; k<L/dof; k++) fields[dof*k+3] = fields[dof*k+3] - int_p + int_p_ms;
-    CHKERRQ(VecRestoreArray(X,&fields));
+    PetscCall(VecRestoreArray(X,&fields));
   }
 
-  CHKERRQ(DMDAVecGetArray(stokes_da,X_local,&stokes));
-  CHKERRQ(DMDAVecGetArray(stokes_da,X_analytic_local,&stokes_analytic));
+  PetscCall(DMDAVecGetArray(stokes_da,X_local,&stokes));
+  PetscCall(DMDAVecGetArray(stokes_da,X_analytic_local,&stokes_analytic));
 
   for (ek = sez; ek < sez+mz; ek++) {
     for (ej = sey; ej < sey+my; ej++) {
       for (ei = sex; ei < sex+mx; ei++) {
         /* get coords for the element */
-        CHKERRQ(GetElementCoords3D(_coords,ei,ej,ek,el_coords));
-        CHKERRQ(StokesDAGetNodalFields3D(stokes,ei,ej,ek,stokes_e));
-        CHKERRQ(StokesDAGetNodalFields3D(stokes_analytic,ei,ej,ek,stokes_analytic_e));
+        PetscCall(GetElementCoords3D(_coords,ei,ej,ek,el_coords));
+        PetscCall(StokesDAGetNodalFields3D(stokes,ei,ej,ek,stokes_e));
+        PetscCall(StokesDAGetNodalFields3D(stokes_analytic,ei,ej,ek,stokes_analytic_e));
 
         /* evaluate integral */
         p_e_L2 = 0.0;
@@ -1260,21 +1260,21 @@ static PetscErrorCode DMDAIntegrateErrors3D(DM stokes_da,Vec X,Vec X_analytic)
       }
     }
   }
-  CHKERRMPI(MPI_Allreduce(&tp_L2,&p_L2,1,MPIU_SCALAR,MPIU_SUM,PETSC_COMM_WORLD));
-  CHKERRMPI(MPI_Allreduce(&tu_L2,&u_L2,1,MPIU_SCALAR,MPIU_SUM,PETSC_COMM_WORLD));
-  CHKERRMPI(MPI_Allreduce(&tu_H1,&u_H1,1,MPIU_SCALAR,MPIU_SUM,PETSC_COMM_WORLD));
+  PetscCallMPI(MPI_Allreduce(&tp_L2,&p_L2,1,MPIU_SCALAR,MPIU_SUM,PETSC_COMM_WORLD));
+  PetscCallMPI(MPI_Allreduce(&tu_L2,&u_L2,1,MPIU_SCALAR,MPIU_SUM,PETSC_COMM_WORLD));
+  PetscCallMPI(MPI_Allreduce(&tu_H1,&u_H1,1,MPIU_SCALAR,MPIU_SUM,PETSC_COMM_WORLD));
   p_L2 = PetscSqrtScalar(p_L2);
   u_L2 = PetscSqrtScalar(u_L2);
   u_H1 = PetscSqrtScalar(u_H1);
 
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"%1.4e   %1.4e   %1.4e   %1.4e \n",PetscRealPart(h),PetscRealPart(p_L2),PetscRealPart(u_L2),PetscRealPart(u_H1)));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%1.4e   %1.4e   %1.4e   %1.4e \n",PetscRealPart(h),PetscRealPart(p_L2),PetscRealPart(u_L2),PetscRealPart(u_H1)));
 
-  CHKERRQ(DMDAVecRestoreArray(cda,coords,&_coords));
+  PetscCall(DMDAVecRestoreArray(cda,coords,&_coords));
 
-  CHKERRQ(DMDAVecRestoreArray(stokes_da,X_analytic_local,&stokes_analytic));
-  CHKERRQ(VecDestroy(&X_analytic_local));
-  CHKERRQ(DMDAVecRestoreArray(stokes_da,X_local,&stokes));
-  CHKERRQ(VecDestroy(&X_local));
+  PetscCall(DMDAVecRestoreArray(stokes_da,X_analytic_local,&stokes_analytic));
+  PetscCall(VecDestroy(&X_analytic_local));
+  PetscCall(DMDAVecRestoreArray(stokes_da,X_local,&stokes));
+  PetscCall(VecDestroy(&X_local));
   PetscFunctionReturn(0);
 }
 
@@ -1299,7 +1299,7 @@ PetscErrorCode DAView_3DVTK_StructuredGrid_appended(DM da,Vec FIELD,const char f
   /* create file name */
   PetscObjectGetComm((PetscObject)da,&comm);
   MPI_Comm_rank(comm,&rank);
-  CHKERRQ(PetscSNPrintf(vtk_filename,sizeof(vtk_filename),"subdomain-%s-p%1.4d.vts",file_prefix,rank));
+  PetscCall(PetscSNPrintf(vtk_filename,sizeof(vtk_filename),"subdomain-%s-p%1.4d.vts",file_prefix,rank));
 
   /* open file and write header */
   vtk_fp = fopen(vtk_filename,"w");
@@ -1308,7 +1308,7 @@ PetscErrorCode DAView_3DVTK_StructuredGrid_appended(DM da,Vec FIELD,const char f
   PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"<?xml version=\"1.0\"?>\n");
 
   /* coords */
-  CHKERRQ(DMDAGetGhostCorners(da,&si,&sj,&sk,&nx,&ny,&nz));
+  PetscCall(DMDAGetGhostCorners(da,&si,&sj,&sk,&nx,&ny,&nz));
   N    = nx * ny * nz;
 
   PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"%s\">\n",byte_order);
@@ -1322,18 +1322,18 @@ PetscErrorCode DAView_3DVTK_StructuredGrid_appended(DM da,Vec FIELD,const char f
   PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"      <Points>\n");
 
   /* copy coordinates */
-  CHKERRQ(DMGetCoordinateDM(da,&cda));
-  CHKERRQ(DMGetCoordinatesLocal(da,&coords));
+  PetscCall(DMGetCoordinateDM(da,&cda));
+  PetscCall(DMGetCoordinatesLocal(da,&coords));
   PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"        <DataArray type=\"Float64\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%d\" />\n",memory_offset);
   memory_offset = memory_offset + sizeof(PetscInt) + sizeof(PetscScalar)*N*3;
 
   PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"      </Points>\n");
 
   PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"      <PointData Scalars=\" ");
-  CHKERRQ(DMDAGetInfo(da,0,0,0,0,0,0,0,&n_fields,0,0,0,0,0));
+  PetscCall(DMDAGetInfo(da,0,0,0,0,0,0,0,&n_fields,0,0,0,0,0));
   for (f=0; f<n_fields; f++) {
     const char *field_name;
-    CHKERRQ(DMDAGetFieldName(da,f,&field_name));
+    PetscCall(DMDAGetFieldName(da,f,&field_name));
     PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"%s ",field_name);
   }
   PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"\">\n");
@@ -1341,7 +1341,7 @@ PetscErrorCode DAView_3DVTK_StructuredGrid_appended(DM da,Vec FIELD,const char f
   for (f=0; f<n_fields; f++) {
     const char *field_name;
 
-    CHKERRQ(DMDAGetFieldName(da,f,&field_name));
+    PetscCall(DMDAGetFieldName(da,f,&field_name));
     PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"        <DataArray type=\"Float64\" Name=\"%s\" format=\"appended\" offset=\"%d\"/>\n", field_name,memory_offset);
     memory_offset = memory_offset + sizeof(PetscInt) + sizeof(PetscScalar)*N;
   }
@@ -1350,11 +1350,11 @@ PetscErrorCode DAView_3DVTK_StructuredGrid_appended(DM da,Vec FIELD,const char f
   PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"    </Piece>\n");
   PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"  </StructuredGrid>\n");
 
-  CHKERRQ(PetscMalloc1(N,&buffer));
-  CHKERRQ(DMGetLocalVector(da,&l_FIELD));
-  CHKERRQ(DMGlobalToLocalBegin(da, FIELD,INSERT_VALUES,l_FIELD));
-  CHKERRQ(DMGlobalToLocalEnd(da,FIELD,INSERT_VALUES,l_FIELD));
-  CHKERRQ(VecGetArray(l_FIELD,&_L_FIELD));
+  PetscCall(PetscMalloc1(N,&buffer));
+  PetscCall(DMGetLocalVector(da,&l_FIELD));
+  PetscCall(DMGlobalToLocalBegin(da, FIELD,INSERT_VALUES,l_FIELD));
+  PetscCall(DMGlobalToLocalEnd(da,FIELD,INSERT_VALUES,l_FIELD));
+  PetscCall(VecGetArray(l_FIELD,&_L_FIELD));
 
   PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"  <AppendedData encoding=\"raw\">\n");
   PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"_");
@@ -1365,9 +1365,9 @@ PetscErrorCode DAView_3DVTK_StructuredGrid_appended(DM da,Vec FIELD,const char f
     PetscScalar *allcoords;
 
     fwrite(&length,sizeof(int),1,vtk_fp);
-    CHKERRQ(VecGetArray(coords,&allcoords));
+    PetscCall(VecGetArray(coords,&allcoords));
     fwrite(allcoords,sizeof(PetscScalar),3*N,vtk_fp);
-    CHKERRQ(VecRestoreArray(coords,&allcoords));
+    PetscCall(VecRestoreArray(coords,&allcoords));
   }
   /* write fields */
   for (f=0; f<n_fields; f++) {
@@ -1383,9 +1383,9 @@ PetscErrorCode DAView_3DVTK_StructuredGrid_appended(DM da,Vec FIELD,const char f
 
   PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"</VTKFile>\n");
 
-  CHKERRQ(PetscFree(buffer));
-  CHKERRQ(VecRestoreArray(l_FIELD,&_L_FIELD));
-  CHKERRQ(DMRestoreLocalVector(da,&l_FIELD));
+  PetscCall(PetscFree(buffer));
+  PetscCall(VecRestoreArray(l_FIELD,&_L_FIELD));
+  PetscCall(DMRestoreLocalVector(da,&l_FIELD));
 
   if (vtk_fp) {
     fclose(vtk_fp);
@@ -1410,13 +1410,13 @@ PetscErrorCode DAViewVTK_write_PieceExtend(FILE *vtk_fp,PetscInt indent_level,DM
   MPI_Comm_size(comm,&size);
   MPI_Comm_rank(comm,&rank);
 
-  CHKERRQ(DMDAGetInfo(da,0,&M,&N,&P,&pM,&pN,&pP,0,&stencil,0,0,0,0));
-  CHKERRQ(DMDAGetOwnershipRanges(da,&lx,&ly,&lz));
+  PetscCall(DMDAGetInfo(da,0,&M,&N,&P,&pM,&pN,&pP,0,&stencil,0,0,0,0));
+  PetscCall(DMDAGetOwnershipRanges(da,&lx,&ly,&lz));
 
   /* generate start,end list */
-  CHKERRQ(PetscMalloc1(pM+1,&olx));
-  CHKERRQ(PetscMalloc1(pN+1,&oly));
-  CHKERRQ(PetscMalloc1(pP+1,&olz));
+  PetscCall(PetscMalloc1(pM+1,&olx));
+  PetscCall(PetscMalloc1(pN+1,&oly));
+  PetscCall(PetscMalloc1(pP+1,&olz));
   sum  = 0;
   for (i=0; i<pM; i++) {
     olx[i] = sum;
@@ -1436,12 +1436,12 @@ PetscErrorCode DAViewVTK_write_PieceExtend(FILE *vtk_fp,PetscInt indent_level,DM
   }
   olz[pP] = sum;
 
-  CHKERRQ(PetscMalloc1(pM,&osx));
-  CHKERRQ(PetscMalloc1(pN,&osy));
-  CHKERRQ(PetscMalloc1(pP,&osz));
-  CHKERRQ(PetscMalloc1(pM,&oex));
-  CHKERRQ(PetscMalloc1(pN,&oey));
-  CHKERRQ(PetscMalloc1(pP,&oez));
+  PetscCall(PetscMalloc1(pM,&osx));
+  PetscCall(PetscMalloc1(pN,&osy));
+  PetscCall(PetscMalloc1(pP,&osz));
+  PetscCall(PetscMalloc1(pM,&oex));
+  PetscCall(PetscMalloc1(pN,&oey));
+  PetscCall(PetscMalloc1(pP,&oez));
   for (i=0; i<pM; i++) {
     osx[i] = olx[i] - stencil;
     oex[i] = olx[i] + lx[i] + stencil;
@@ -1467,7 +1467,7 @@ PetscErrorCode DAViewVTK_write_PieceExtend(FILE *vtk_fp,PetscInt indent_level,DM
       for (i=0; i<pM; i++) {
         char     name[PETSC_MAX_PATH_LEN];
         PetscInt procid = i + j*pM + k*pM*pN; /* convert proc(i,j,k) to pid */
-        CHKERRQ(PetscSNPrintf(name,sizeof(name),"subdomain-%s-p%1.4d.vts",local_file_prefix,procid));
+        PetscCall(PetscSNPrintf(name,sizeof(name),"subdomain-%s-p%1.4d.vts",local_file_prefix,procid));
         for (II=0; II<indent_level; II++) PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"  ");
 
         PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"<Piece Extent=\"%d %d %d %d %d %d\"      Source=\"%s\"/>\n",
@@ -1477,15 +1477,15 @@ PetscErrorCode DAViewVTK_write_PieceExtend(FILE *vtk_fp,PetscInt indent_level,DM
       }
     }
   }
-  CHKERRQ(PetscFree(olx));
-  CHKERRQ(PetscFree(oly));
-  CHKERRQ(PetscFree(olz));
-  CHKERRQ(PetscFree(osx));
-  CHKERRQ(PetscFree(osy));
-  CHKERRQ(PetscFree(osz));
-  CHKERRQ(PetscFree(oex));
-  CHKERRQ(PetscFree(oey));
-  CHKERRQ(PetscFree(oez));
+  PetscCall(PetscFree(olx));
+  PetscCall(PetscFree(oly));
+  PetscCall(PetscFree(olz));
+  PetscCall(PetscFree(osx));
+  PetscCall(PetscFree(osy));
+  PetscCall(PetscFree(osz));
+  PetscCall(PetscFree(oex));
+  PetscCall(PetscFree(oey));
+  PetscCall(PetscFree(oez));
   PetscFunctionReturn(0);
 }
 
@@ -1508,7 +1508,7 @@ PetscErrorCode DAView_3DVTK_PStructuredGrid(DM da,const char file_prefix[],const
   if (rank != 0) PetscFunctionReturn(0);
 
   /* create file name */
-  CHKERRQ(PetscSNPrintf(vtk_filename,sizeof(vtk_filename),"%s.pvts",file_prefix));
+  PetscCall(PetscSNPrintf(vtk_filename,sizeof(vtk_filename),"%s.pvts",file_prefix));
   vtk_fp = fopen(vtk_filename,"w");
   PetscCheck(vtk_fp,PETSC_COMM_SELF,PETSC_ERR_SYS,"Cannot open file = %s ",vtk_filename);
 
@@ -1518,8 +1518,8 @@ PetscErrorCode DAView_3DVTK_PStructuredGrid(DM da,const char file_prefix[],const
   PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"<VTKFile type=\"PStructuredGrid\" version=\"0.1\" byte_order=\"%s\">\n",byte_order);
 
   /* define size of the nodal mesh based on the cell DM */
-  CHKERRQ(DMDAGetInfo(da,0,&M,&N,&P,0,0,0,&dofs,0,0,0,0,0));
-  CHKERRQ(DMDAGetGhostCorners(da,&si,&sj,&sk,&nx,&ny,&nz));
+  PetscCall(DMDAGetInfo(da,0,&M,&N,&P,0,0,0,&dofs,0,0,0,0,0));
+  PetscCall(DMDAGetGhostCorners(da,&si,&sj,&sk,&nx,&ny,&nz));
   PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"  <PStructuredGrid GhostLevel=\"1\" WholeExtent=\"%d %d %d %d %d %d\">\n",0,M-1,0,N-1,0,P-1); /* note overlap = 1 for Q1 */
 
   /* DUMP THE CELL REFERENCES */
@@ -1533,13 +1533,13 @@ PetscErrorCode DAView_3DVTK_PStructuredGrid(DM da,const char file_prefix[],const
   PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"    <PPointData>\n");
   for (i=0; i<dofs; i++) {
     const char *fieldname;
-    CHKERRQ(DMDAGetFieldName(da,i,&fieldname));
+    PetscCall(DMDAGetFieldName(da,i,&fieldname));
     PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"      <PDataArray type=\"Float64\" Name=\"%s\" NumberOfComponents=\"1\"/>\n",fieldname);
   }
   PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"    </PPointData>\n");
 
   /* write out the parallel information */
-  CHKERRQ(DAViewVTK_write_PieceExtend(vtk_fp,2,da,local_file_prefix));
+  PetscCall(DAViewVTK_write_PieceExtend(vtk_fp,2,da,local_file_prefix));
 
   /* close the file */
   PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"  </PStructuredGrid>\n");
@@ -1558,11 +1558,11 @@ PetscErrorCode DAView3DPVTS(DM da, Vec x,const char NAME[])
   char           pvts_filename[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBeginUser;
-  CHKERRQ(PetscSNPrintf(vts_filename,sizeof(vts_filename),"%s-mesh",NAME));
-  CHKERRQ(DAView_3DVTK_StructuredGrid_appended(da,x,vts_filename));
+  PetscCall(PetscSNPrintf(vts_filename,sizeof(vts_filename),"%s-mesh",NAME));
+  PetscCall(DAView_3DVTK_StructuredGrid_appended(da,x,vts_filename));
 
-  CHKERRQ(PetscSNPrintf(pvts_filename,sizeof(pvts_filename),"%s-mesh",NAME));
-  CHKERRQ(DAView_3DVTK_PStructuredGrid(da,pvts_filename,vts_filename));
+  PetscCall(PetscSNPrintf(pvts_filename,sizeof(pvts_filename),"%s-mesh",NAME));
+  PetscCall(DAView_3DVTK_PStructuredGrid(da,pvts_filename,vts_filename));
   PetscFunctionReturn(0);
 }
 
@@ -1573,20 +1573,20 @@ PetscErrorCode KSPMonitorStokesBlocks(KSP ksp,PetscInt n,PetscReal rnorm,void *d
   Mat            A;
 
   PetscFunctionBeginUser;
-  CHKERRQ(KSPGetOperators(ksp,&A,NULL));
-  CHKERRQ(MatCreateVecs(A,&w,&v));
+  PetscCall(KSPGetOperators(ksp,&A,NULL));
+  PetscCall(MatCreateVecs(A,&w,&v));
 
-  CHKERRQ(KSPBuildResidual(ksp,v,w,&Br));
+  PetscCall(KSPBuildResidual(ksp,v,w,&Br));
 
-  CHKERRQ(VecStrideNorm(Br,0,NORM_2,&norms[0]));
-  CHKERRQ(VecStrideNorm(Br,1,NORM_2,&norms[1]));
-  CHKERRQ(VecStrideNorm(Br,2,NORM_2,&norms[2]));
-  CHKERRQ(VecStrideNorm(Br,3,NORM_2,&norms[3]));
+  PetscCall(VecStrideNorm(Br,0,NORM_2,&norms[0]));
+  PetscCall(VecStrideNorm(Br,1,NORM_2,&norms[1]));
+  PetscCall(VecStrideNorm(Br,2,NORM_2,&norms[2]));
+  PetscCall(VecStrideNorm(Br,3,NORM_2,&norms[3]));
 
-  CHKERRQ(VecDestroy(&v));
-  CHKERRQ(VecDestroy(&w));
+  PetscCall(VecDestroy(&v));
+  PetscCall(VecDestroy(&w));
 
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"%3D KSP Component U,V,W,P residual norm [ %1.12e, %1.12e, %1.12e, %1.12e ]\n",n,norms[0],norms[1],norms[2],norms[3]));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%3D KSP Component U,V,W,P residual norm [ %1.12e, %1.12e, %1.12e, %1.12e ]\n",n,norms[0],norms[1],norms[2],norms[3]));
   PetscFunctionReturn(0);
 }
 
@@ -1601,37 +1601,37 @@ static PetscErrorCode PCMGSetupViaCoarsen(PC pc,DM da_fine)
   nlevels = 1;
   PetscOptionsGetInt(NULL,NULL,"-levels",&nlevels,0);
 
-  CHKERRQ(PetscMalloc1(nlevels,&da_list));
+  PetscCall(PetscMalloc1(nlevels,&da_list));
   for (k=0; k<nlevels; k++) da_list[k] = NULL;
-  CHKERRQ(PetscMalloc1(nlevels,&daclist));
+  PetscCall(PetscMalloc1(nlevels,&daclist));
   for (k=0; k<nlevels; k++) daclist[k] = NULL;
 
   /* finest grid is nlevels - 1 */
   finest     = nlevels - 1;
   daclist[0] = da_fine;
   PetscObjectReference((PetscObject)da_fine);
-  CHKERRQ(DMCoarsenHierarchy(da_fine,nlevels-1,&daclist[1]));
+  PetscCall(DMCoarsenHierarchy(da_fine,nlevels-1,&daclist[1]));
   for (k=0; k<nlevels; k++) {
     da_list[k] = daclist[nlevels-1-k];
-    CHKERRQ(DMDASetUniformCoordinates(da_list[k],0.0,1.0,0.0,1.0,0.0,1.0));
+    PetscCall(DMDASetUniformCoordinates(da_list[k],0.0,1.0,0.0,1.0,0.0,1.0));
   }
 
-  CHKERRQ(PCMGSetLevels(pc,nlevels,NULL));
-  CHKERRQ(PCMGSetType(pc,PC_MG_MULTIPLICATIVE));
-  CHKERRQ(PCMGSetGalerkin(pc,PC_MG_GALERKIN_PMAT));
+  PetscCall(PCMGSetLevels(pc,nlevels,NULL));
+  PetscCall(PCMGSetType(pc,PC_MG_MULTIPLICATIVE));
+  PetscCall(PCMGSetGalerkin(pc,PC_MG_GALERKIN_PMAT));
 
   for (k=1; k<nlevels; k++) {
-    CHKERRQ(DMCreateInterpolation(da_list[k-1],da_list[k],&R,NULL));
-    CHKERRQ(PCMGSetInterpolation(pc,k,R));
-    CHKERRQ(MatDestroy(&R));
+    PetscCall(DMCreateInterpolation(da_list[k-1],da_list[k],&R,NULL));
+    PetscCall(PCMGSetInterpolation(pc,k,R));
+    PetscCall(MatDestroy(&R));
   }
 
   /* tidy up */
   for (k=0; k<nlevels; k++) {
-    CHKERRQ(DMDestroy(&da_list[k]));
+    PetscCall(DMDestroy(&da_list[k]));
   }
-  CHKERRQ(PetscFree(da_list));
-  CHKERRQ(PetscFree(daclist));
+  PetscCall(PetscFree(da_list));
+  PetscCall(PetscFree(daclist));
   PetscFunctionReturn(0);
 }
 
@@ -1654,7 +1654,7 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-resolve",&resolve,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-resolve",&resolve,NULL));
   /* Generate the da for velocity and pressure */
   /* Num nodes in each direction is mx+1, my+1, mz+1 */
   u_dof         = U_DOFS; /* Vx, Vy - velocities */
@@ -1662,27 +1662,27 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
   dof           = u_dof+p_dof;
   stencil_width = 1;
   ierr          = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,
-                               mx+1,my+1,mz+1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,NULL,NULL,NULL,&da_Stokes);CHKERRQ(ierr);
-  CHKERRQ(DMSetMatType(da_Stokes,MATAIJ));
-  CHKERRQ(DMSetFromOptions(da_Stokes));
-  CHKERRQ(DMSetUp(da_Stokes));
-  CHKERRQ(DMDASetFieldName(da_Stokes,0,"Vx"));
-  CHKERRQ(DMDASetFieldName(da_Stokes,1,"Vy"));
-  CHKERRQ(DMDASetFieldName(da_Stokes,2,"Vz"));
-  CHKERRQ(DMDASetFieldName(da_Stokes,3,"P"));
+                               mx+1,my+1,mz+1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,NULL,NULL,NULL,&da_Stokes);PetscCall(ierr);
+  PetscCall(DMSetMatType(da_Stokes,MATAIJ));
+  PetscCall(DMSetFromOptions(da_Stokes));
+  PetscCall(DMSetUp(da_Stokes));
+  PetscCall(DMDASetFieldName(da_Stokes,0,"Vx"));
+  PetscCall(DMDASetFieldName(da_Stokes,1,"Vy"));
+  PetscCall(DMDASetFieldName(da_Stokes,2,"Vz"));
+  PetscCall(DMDASetFieldName(da_Stokes,3,"P"));
 
   /* unit box [0,1] x [0,1] x [0,1] */
-  CHKERRQ(DMDASetUniformCoordinates(da_Stokes,0.0,1.0,0.0,1.0,0.0,1.0));
+  PetscCall(DMDASetUniformCoordinates(da_Stokes,0.0,1.0,0.0,1.0,0.0,1.0));
 
   /* create quadrature point info for PDE coefficients */
-  CHKERRQ(CellPropertiesCreate(da_Stokes,&cell_properties));
+  PetscCall(CellPropertiesCreate(da_Stokes,&cell_properties));
 
   /* interpolate the coordinates to quadrature points */
-  CHKERRQ(DMGetCoordinateDM(da_Stokes,&vel_cda));
-  CHKERRQ(DMGetCoordinatesLocal(da_Stokes,&vel_coords));
-  CHKERRQ(DMDAVecGetArray(vel_cda,vel_coords,&_vel_coords));
-  CHKERRQ(DMDAGetElementsCorners(da_Stokes,&sex,&sey,&sez));
-  CHKERRQ(DMDAGetElementsSizes(da_Stokes,&Imx,&Jmy,&Kmz));
+  PetscCall(DMGetCoordinateDM(da_Stokes,&vel_cda));
+  PetscCall(DMGetCoordinatesLocal(da_Stokes,&vel_coords));
+  PetscCall(DMDAVecGetArray(vel_cda,vel_coords,&_vel_coords));
+  PetscCall(DMDAGetElementsCorners(da_Stokes,&sex,&sey,&sez));
+  PetscCall(DMDAGetElementsSizes(da_Stokes,&Imx,&Jmy,&Kmz));
   for (ek = sez; ek < sez+Kmz; ek++) {
     for (ej = sey; ej < sey+Jmy; ej++) {
       for (ei = sex; ei < sex+Imx; ei++) {
@@ -1692,8 +1692,8 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
         PetscScalar            el_coords[NSD*NODES_PER_EL];
         GaussPointCoefficients *cell;
 
-        CHKERRQ(CellPropertiesGetCell(cell_properties,ei,ej,ek,&cell));
-        CHKERRQ(GetElementCoords3D(_vel_coords,ei,ej,ek,el_coords));
+        PetscCall(CellPropertiesGetCell(cell_properties,ei,ej,ek,&cell));
+        PetscCall(GetElementCoords3D(_vel_coords,ei,ej,ek,el_coords));
         ConstructGaussQuadrature3D(&ngp,gp_xi,gp_weight);
 
         for (p = 0; p < GAUSS_POINTS; p++) {
@@ -1720,7 +1720,7 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
     }
   }
 
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-model",&model_definition,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-model",&model_definition,NULL));
 
   switch (model_definition) {
   case 0: /* isoviscous */
@@ -1729,7 +1729,7 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
         for (ei = sex; ei < sex+Imx; ei++) {
           GaussPointCoefficients *cell;
 
-          CHKERRQ(CellPropertiesGetCell(cell_properties,ei,ej,ek,&cell));
+          PetscCall(CellPropertiesGetCell(cell_properties,ei,ej,ek,&cell));
           for (p = 0; p < GAUSS_POINTS; p++) {
             PetscReal coord_x = PetscRealPart(cell->gp_coords[NSD*p]);
             PetscReal coord_y = PetscRealPart(cell->gp_coords[NSD*p+1]);
@@ -1754,7 +1754,7 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
           PetscReal              eta,Fm[NSD],Fc,pos[NSD];
           GaussPointCoefficients *cell;
 
-          CHKERRQ(CellPropertiesGetCell(cell_properties,ei,ej,ek,&cell));
+          PetscCall(CellPropertiesGetCell(cell_properties,ei,ej,ek,&cell));
           for (p = 0; p < GAUSS_POINTS; p++) {
             PetscReal coord_x = PetscRealPart(cell->gp_coords[NSD*p]);
             PetscReal coord_y = PetscRealPart(cell->gp_coords[NSD*p+1]);
@@ -1783,7 +1783,7 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
         for (ei = sex; ei < sex+Imx; ei++) {
           GaussPointCoefficients *cell;
 
-          CHKERRQ(CellPropertiesGetCell(cell_properties,ei,ej,ek,&cell));
+          PetscCall(CellPropertiesGetCell(cell_properties,ei,ej,ek,&cell));
           for (p = 0; p < GAUSS_POINTS; p++) {
             PetscReal coord_x = PetscRealPart(cell->gp_coords[NSD*p]);
             PetscReal coord_y = PetscRealPart(cell->gp_coords[NSD*p+1]);
@@ -1807,7 +1807,7 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
         for (ei = sex; ei < sex+Imx; ei++) {
           GaussPointCoefficients *cell;
 
-          CHKERRQ(CellPropertiesGetCell(cell_properties,ei,ej,ek,&cell));
+          PetscCall(CellPropertiesGetCell(cell_properties,ei,ej,ek,&cell));
           for (p = 0; p < GAUSS_POINTS; p++) {
             PetscReal xp = PetscRealPart(cell->gp_coords[NSD*p]);
             PetscReal yp = PetscRealPart(cell->gp_coords[NSD*p+1]);
@@ -1843,15 +1843,15 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
           opts_mag  = 1.0;
           opts_eta0 = 1.e-2;
 
-          CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-jump_eta0",&opts_eta0,NULL));
-          CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-jump_magnitude",&opts_mag,NULL));
-          CHKERRQ(DMDAGetInfo(da_Stokes,NULL,NULL,NULL,NULL,&px,&py,&pz,NULL,NULL,NULL,NULL,NULL,NULL));
+          PetscCall(PetscOptionsGetReal(NULL,NULL,"-jump_eta0",&opts_eta0,NULL));
+          PetscCall(PetscOptionsGetReal(NULL,NULL,"-jump_magnitude",&opts_mag,NULL));
+          PetscCall(DMDAGetInfo(da_Stokes,NULL,NULL,NULL,NULL,&px,&py,&pz,NULL,NULL,NULL,NULL,NULL,NULL));
           rr   = PetscGlobalRank%(px*py);
           if (px%2) jump = (PetscBool)(rr%2);
           else jump = (PetscBool)((rr/px)%2 ? rr%2 : !(rr%2));
           rr = PetscGlobalRank/(px*py);
           if (rr%2) jump = (PetscBool)!jump;
-          CHKERRQ(CellPropertiesGetCell(cell_properties,ei,ej,ek,&cell));
+          PetscCall(CellPropertiesGetCell(cell_properties,ei,ej,ek,&cell));
           for (p = 0; p < GAUSS_POINTS; p++) {
             PetscReal xp = PetscRealPart(cell->gp_coords[NSD*p]);
             PetscReal yp = PetscRealPart(cell->gp_coords[NSD*p+1]);
@@ -1870,125 +1870,125 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"No default model is supported. Choose either -model {0,1,2,3}");
   }
 
-  CHKERRQ(DMDAVecRestoreArray(vel_cda,vel_coords,&_vel_coords));
+  PetscCall(DMDAVecRestoreArray(vel_cda,vel_coords,&_vel_coords));
 
   /* Generate a matrix with the correct non-zero pattern of type AIJ. This will work in parallel and serial */
-  CHKERRQ(DMCreateMatrix(da_Stokes,&A));
-  CHKERRQ(DMCreateMatrix(da_Stokes,&B));
-  CHKERRQ(DMCreateGlobalVector(da_Stokes,&X));
-  CHKERRQ(DMCreateGlobalVector(da_Stokes,&f));
+  PetscCall(DMCreateMatrix(da_Stokes,&A));
+  PetscCall(DMCreateMatrix(da_Stokes,&B));
+  PetscCall(DMCreateGlobalVector(da_Stokes,&X));
+  PetscCall(DMCreateGlobalVector(da_Stokes,&f));
 
   /* assemble A11 */
-  CHKERRQ(MatZeroEntries(A));
-  CHKERRQ(MatZeroEntries(B));
-  CHKERRQ(VecZeroEntries(f));
+  PetscCall(MatZeroEntries(A));
+  PetscCall(MatZeroEntries(B));
+  PetscCall(VecZeroEntries(f));
 
-  CHKERRQ(AssembleA_Stokes(A,da_Stokes,cell_properties));
-  CHKERRQ(MatViewFromOptions(A,NULL,"-amat_view"));
-  CHKERRQ(AssembleA_PCStokes(B,da_Stokes,cell_properties));
-  CHKERRQ(MatViewFromOptions(B,NULL,"-bmat_view"));
+  PetscCall(AssembleA_Stokes(A,da_Stokes,cell_properties));
+  PetscCall(MatViewFromOptions(A,NULL,"-amat_view"));
+  PetscCall(AssembleA_PCStokes(B,da_Stokes,cell_properties));
+  PetscCall(MatViewFromOptions(B,NULL,"-bmat_view"));
   /* build force vector */
-  CHKERRQ(AssembleF_Stokes(f,da_Stokes,cell_properties));
+  PetscCall(AssembleF_Stokes(f,da_Stokes,cell_properties));
 
   /* SOLVE */
-  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp_S));
-  ierr = KSPSetOptionsPrefix(ksp_S,"stokes_"); /* stokes */ CHKERRQ(ierr);
-  CHKERRQ(KSPSetOperators(ksp_S,A,B));
-  CHKERRQ(KSPSetFromOptions(ksp_S));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp_S));
+  ierr = KSPSetOptionsPrefix(ksp_S,"stokes_"); /* stokes */ PetscCall(ierr);
+  PetscCall(KSPSetOperators(ksp_S,A,B));
+  PetscCall(KSPSetFromOptions(ksp_S));
 
   {
     PC             pc;
     const PetscInt ufields[] = {0,1,2},pfields[] = {3};
-    CHKERRQ(KSPGetPC(ksp_S,&pc));
-    CHKERRQ(PCFieldSplitSetBlockSize(pc,4));
-    CHKERRQ(PCFieldSplitSetFields(pc,"u",3,ufields,ufields));
-    CHKERRQ(PCFieldSplitSetFields(pc,"p",1,pfields,pfields));
+    PetscCall(KSPGetPC(ksp_S,&pc));
+    PetscCall(PCFieldSplitSetBlockSize(pc,4));
+    PetscCall(PCFieldSplitSetFields(pc,"u",3,ufields,ufields));
+    PetscCall(PCFieldSplitSetFields(pc,"p",1,pfields,pfields));
   }
 
   {
     PC        pc;
     PetscBool same = PETSC_FALSE;
-    CHKERRQ(KSPGetPC(ksp_S,&pc));
-    CHKERRQ(PetscObjectTypeCompare((PetscObject)pc,PCMG,&same));
+    PetscCall(KSPGetPC(ksp_S,&pc));
+    PetscCall(PetscObjectTypeCompare((PetscObject)pc,PCMG,&same));
     if (same) {
-      CHKERRQ(PCMGSetupViaCoarsen(pc,da_Stokes));
+      PetscCall(PCMGSetupViaCoarsen(pc,da_Stokes));
     }
   }
 
   {
     PC        pc;
     PetscBool same = PETSC_FALSE;
-    CHKERRQ(KSPGetPC(ksp_S,&pc));
-    CHKERRQ(PetscObjectTypeCompare((PetscObject)pc,PCBDDC,&same));
+    PetscCall(KSPGetPC(ksp_S,&pc));
+    PetscCall(PetscObjectTypeCompare((PetscObject)pc,PCBDDC,&same));
     if (same) {
-      CHKERRQ(KSPSetOperators(ksp_S,A,A));
+      PetscCall(KSPSetOperators(ksp_S,A,A));
     }
   }
 
   {
     PetscBool stokes_monitor = PETSC_FALSE;
-    CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-stokes_ksp_monitor_blocks",&stokes_monitor,0));
+    PetscCall(PetscOptionsGetBool(NULL,NULL,"-stokes_ksp_monitor_blocks",&stokes_monitor,0));
     if (stokes_monitor) {
-      CHKERRQ(KSPMonitorSet(ksp_S,KSPMonitorStokesBlocks,NULL,NULL));
+      PetscCall(KSPMonitorSet(ksp_S,KSPMonitorStokesBlocks,NULL,NULL));
     }
   }
 
   if (resolve) {
     /* Test changing matrix data structure and resolve */
-    CHKERRQ(VecDuplicate(X,&X1));
+    PetscCall(VecDuplicate(X,&X1));
   }
 
-  CHKERRQ(KSPSolve(ksp_S,f,X));
+  PetscCall(KSPSolve(ksp_S,f,X));
   if (resolve) {
     Mat C;
-    CHKERRQ(MatDuplicate(A,MAT_COPY_VALUES,&C));
-    CHKERRQ(KSPSetOperators(ksp_S,C,C));
-    CHKERRQ(KSPSolve(ksp_S,f,X1));
-    CHKERRQ(MatDestroy(&C));
-    CHKERRQ(VecDestroy(&X1));
+    PetscCall(MatDuplicate(A,MAT_COPY_VALUES,&C));
+    PetscCall(KSPSetOperators(ksp_S,C,C));
+    PetscCall(KSPSolve(ksp_S,f,X1));
+    PetscCall(MatDestroy(&C));
+    PetscCall(VecDestroy(&X1));
   }
 
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-write_pvts",&write_output,NULL));
-  if (write_output) CHKERRQ(DAView3DPVTS(da_Stokes,X,"up"));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-write_pvts",&write_output,NULL));
+  if (write_output) PetscCall(DAView3DPVTS(da_Stokes,X,"up"));
   {
     PetscBool flg = PETSC_FALSE;
     char      filename[PETSC_MAX_PATH_LEN];
-    CHKERRQ(PetscOptionsGetString(NULL,NULL,"-write_binary",filename,sizeof(filename),&flg));
+    PetscCall(PetscOptionsGetString(NULL,NULL,"-write_binary",filename,sizeof(filename),&flg));
     if (flg) {
       PetscViewer viewer;
-      /* CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename[0]?filename:"ex42-binaryoutput",FILE_MODE_WRITE,&viewer)); */
-      CHKERRQ(PetscViewerVTKOpen(PETSC_COMM_WORLD,"ex42.vts",FILE_MODE_WRITE,&viewer));
-      CHKERRQ(VecView(X,viewer));
-      CHKERRQ(PetscViewerDestroy(&viewer));
+      /* PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename[0]?filename:"ex42-binaryoutput",FILE_MODE_WRITE,&viewer)); */
+      PetscCall(PetscViewerVTKOpen(PETSC_COMM_WORLD,"ex42.vts",FILE_MODE_WRITE,&viewer));
+      PetscCall(VecView(X,viewer));
+      PetscCall(PetscViewerDestroy(&viewer));
     }
   }
-  CHKERRQ(KSPGetIterationNumber(ksp_S,&its));
+  PetscCall(KSPGetIterationNumber(ksp_S,&its));
 
   /* verify */
   if (model_definition == 1) {
     DM  da_Stokes_analytic;
     Vec X_analytic;
 
-    CHKERRQ(DMDACreateManufacturedSolution(mx,my,mz,&da_Stokes_analytic,&X_analytic));
+    PetscCall(DMDACreateManufacturedSolution(mx,my,mz,&da_Stokes_analytic,&X_analytic));
     if (write_output) {
-      CHKERRQ(DAView3DPVTS(da_Stokes_analytic,X_analytic,"ms"));
+      PetscCall(DAView3DPVTS(da_Stokes_analytic,X_analytic,"ms"));
     }
-    CHKERRQ(DMDAIntegrateErrors3D(da_Stokes_analytic,X,X_analytic));
+    PetscCall(DMDAIntegrateErrors3D(da_Stokes_analytic,X,X_analytic));
     if (write_output) {
-      CHKERRQ(DAView3DPVTS(da_Stokes,X,"up2"));
+      PetscCall(DAView3DPVTS(da_Stokes,X,"up2"));
     }
-    CHKERRQ(DMDestroy(&da_Stokes_analytic));
-    CHKERRQ(VecDestroy(&X_analytic));
+    PetscCall(DMDestroy(&da_Stokes_analytic));
+    PetscCall(VecDestroy(&X_analytic));
   }
 
-  CHKERRQ(KSPDestroy(&ksp_S));
-  CHKERRQ(VecDestroy(&X));
-  CHKERRQ(VecDestroy(&f));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(MatDestroy(&B));
+  PetscCall(KSPDestroy(&ksp_S));
+  PetscCall(VecDestroy(&X));
+  PetscCall(VecDestroy(&f));
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&B));
 
-  CHKERRQ(CellPropertiesDestroy(&cell_properties));
-  CHKERRQ(DMDestroy(&da_Stokes));
+  PetscCall(CellPropertiesDestroy(&cell_properties));
+  PetscCall(DMDestroy(&da_Stokes));
   PetscFunctionReturn(0);
 }
 
@@ -1996,14 +1996,14 @@ int main(int argc,char **args)
 {
   PetscInt       mx,my,mz;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   mx   = my = mz = 10;
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-mx",&mx,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-mx",&mx,NULL));
   my   = mx; mz = mx;
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-my",&my,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-mz",&mz,NULL));
-  CHKERRQ(solve_stokes_3d_coupled(mx,my,mz));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-my",&my,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-mz",&mz,NULL));
+  PetscCall(solve_stokes_3d_coupled(mx,my,mz));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

@@ -10,12 +10,12 @@ static PetscErrorCode CreateIS(MPI_Comm comm, PetscInt n, PetscInt first, PetscI
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_rank(comm,&rank));
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
   *is = NULL;
   first += rank;
-  CHKERRQ(PetscMalloc1(n,&idx));
+  PetscCall(PetscMalloc1(n,&idx));
   for (i=0,j=first; i<n; i++,j+=step) idx[i] = j;
-  CHKERRQ(ISCreateGeneral(comm,n,idx,PETSC_OWN_POINTER,is));
+  PetscCall(ISCreateGeneral(comm,n,idx,PETSC_OWN_POINTER,is));
   PetscFunctionReturn(0);
 }
 
@@ -26,24 +26,24 @@ int main(int argc,char **argv)
   PetscMPIInt    rank;
   MPI_Comm       comm;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   comm = PETSC_COMM_WORLD;
-  CHKERRMPI(MPI_Comm_rank(comm,&rank));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-first",&first,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-step",&step,NULL));
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-first",&first,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-step",&step,NULL));
   start = 0; end = n;
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-start",&start,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-end",&end,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-start",&start,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-end",&end,NULL));
 
-  CHKERRQ(CreateIS(comm, n, first, step, &is));
-  CHKERRQ(ISGeneralFilter(is, start, end));
-  CHKERRQ(ISView(is,PETSC_VIEWER_STDOUT_(comm)));
-  CHKERRQ(ISGetSize(is, &N));
-  CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_(comm), "global size: %" PetscInt_FMT "\n", N));
+  PetscCall(CreateIS(comm, n, first, step, &is));
+  PetscCall(ISGeneralFilter(is, start, end));
+  PetscCall(ISView(is,PETSC_VIEWER_STDOUT_(comm)));
+  PetscCall(ISGetSize(is, &N));
+  PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_(comm), "global size: %" PetscInt_FMT "\n", N));
 
-  CHKERRQ(ISDestroy(&is));
-  CHKERRQ(PetscFinalize());
+  PetscCall(ISDestroy(&is));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

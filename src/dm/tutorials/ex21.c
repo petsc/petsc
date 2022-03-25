@@ -26,8 +26,8 @@ PetscErrorCode pic_advect(PetscInt ppcell,PetscInt meshtype)
   PetscViewer viewer;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-view",&view,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-nt",&nt,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-view",&view,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-nt",&nt,NULL));
 
   /* Create the background cell DM */
   if (meshtype == 0) { /* DA */
@@ -35,21 +35,21 @@ PetscErrorCode pic_advect(PetscInt ppcell,PetscInt meshtype)
     PetscInt dof = 1;
     PetscInt stencil_width = 1;
 
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Mesh type: DMDA\n"));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Mesh type: DMDA\n"));
     nxy = 33;
-    CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nxy,nxy,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,NULL,NULL,&celldm));
+    PetscCall(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nxy,nxy,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,NULL,NULL,&celldm));
 
-    CHKERRQ(DMDASetElementType(celldm,DMDA_ELEMENT_Q1));
+    PetscCall(DMDASetElementType(celldm,DMDA_ELEMENT_Q1));
 
-    CHKERRQ(DMSetFromOptions(celldm));
+    PetscCall(DMSetFromOptions(celldm));
 
-    CHKERRQ(DMSetUp(celldm));
+    PetscCall(DMSetUp(celldm));
 
-    CHKERRQ(DMDASetUniformCoordinates(celldm,0.0,1.0,0.0,1.0,0.0,1.5));
+    PetscCall(DMDASetUniformCoordinates(celldm,0.0,1.0,0.0,1.0,0.0,1.5));
 
     minradius = 1.0/((PetscReal)(nxy-1));
 
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"DA(minradius) %1.4e\n",(double)minradius));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"DA(minradius) %1.4e\n",(double)minradius));
   }
 
   if (meshtype == 1){ /* PLEX */
@@ -62,62 +62,62 @@ PetscErrorCode pic_advect(PetscInt ppcell,PetscInt meshtype)
     Vec cellgeom = NULL;
     Vec facegeom = NULL;
 
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Mesh type: DMPLEX\n"));
-    CHKERRQ(DMPlexCreateBoxMesh(PETSC_COMM_WORLD, dim, PETSC_TRUE, faces, NULL, NULL, PETSC_TRUE, &celldm));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Mesh type: DMPLEX\n"));
+    PetscCall(DMPlexCreateBoxMesh(PETSC_COMM_WORLD, dim, PETSC_TRUE, faces, NULL, NULL, PETSC_TRUE, &celldm));
 
     /* Distribute mesh over processes */
-    CHKERRQ(DMPlexDistribute(celldm,0,NULL,&distributedMesh));
+    PetscCall(DMPlexDistribute(celldm,0,NULL,&distributedMesh));
     if (distributedMesh) {
-      CHKERRQ(DMDestroy(&celldm));
+      PetscCall(DMDestroy(&celldm));
       celldm = distributedMesh;
     }
 
-    CHKERRQ(DMSetFromOptions(celldm));
+    PetscCall(DMSetFromOptions(celldm));
 
-    CHKERRQ(DMPlexCreateSection(celldm,NULL,numComp,numDof,numBC,NULL,NULL,NULL,NULL,&section));
-    CHKERRQ(DMSetLocalSection(celldm,section));
+    PetscCall(DMPlexCreateSection(celldm,NULL,numComp,numDof,numBC,NULL,NULL,NULL,NULL,&section));
+    PetscCall(DMSetLocalSection(celldm,section));
 
-    CHKERRQ(DMSetUp(celldm));
+    PetscCall(DMSetUp(celldm));
 
     /* Calling DMPlexComputeGeometryFVM() generates the value returned by DMPlexGetMinRadius() */
-    CHKERRQ(DMPlexComputeGeometryFVM(celldm,&cellgeom,&facegeom));
-    CHKERRQ(DMPlexGetMinRadius(celldm,&minradius));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"PLEX(minradius) %1.4e\n",(double)minradius));
-    CHKERRQ(VecDestroy(&cellgeom));
-    CHKERRQ(VecDestroy(&facegeom));
-    CHKERRQ(PetscSectionDestroy(&section));
+    PetscCall(DMPlexComputeGeometryFVM(celldm,&cellgeom,&facegeom));
+    PetscCall(DMPlexGetMinRadius(celldm,&minradius));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"PLEX(minradius) %1.4e\n",(double)minradius));
+    PetscCall(VecDestroy(&cellgeom));
+    PetscCall(VecDestroy(&facegeom));
+    PetscCall(PetscSectionDestroy(&section));
   }
 
   /* Create the DMSwarm */
-  CHKERRQ(DMCreate(PETSC_COMM_WORLD,&swarm));
-  CHKERRQ(DMSetType(swarm,DMSWARM));
-  CHKERRQ(DMSetDimension(swarm,dim));
+  PetscCall(DMCreate(PETSC_COMM_WORLD,&swarm));
+  PetscCall(DMSetType(swarm,DMSWARM));
+  PetscCall(DMSetDimension(swarm,dim));
 
   /* Configure swarm to be of type PIC */
-  CHKERRQ(DMSwarmSetType(swarm,DMSWARM_PIC));
-  CHKERRQ(DMSwarmSetCellDM(swarm,celldm));
+  PetscCall(DMSwarmSetType(swarm,DMSWARM_PIC));
+  PetscCall(DMSwarmSetCellDM(swarm,celldm));
 
   /* Register two scalar fields within the DMSwarm */
-  CHKERRQ(DMSwarmRegisterPetscDatatypeField(swarm,"phi",1,PETSC_REAL));
-  CHKERRQ(DMSwarmRegisterPetscDatatypeField(swarm,"region",1,PETSC_REAL));
-  CHKERRQ(DMSwarmFinalizeFieldRegister(swarm));
+  PetscCall(DMSwarmRegisterPetscDatatypeField(swarm,"phi",1,PETSC_REAL));
+  PetscCall(DMSwarmRegisterPetscDatatypeField(swarm,"region",1,PETSC_REAL));
+  PetscCall(DMSwarmFinalizeFieldRegister(swarm));
 
   /* Set initial local sizes of the DMSwarm with a buffer length of zero */
-  CHKERRQ(DMSwarmSetLocalSizes(swarm,4,0));
+  PetscCall(DMSwarmSetLocalSizes(swarm,4,0));
 
   /* Insert swarm coordinates cell-wise */
-  /*CHKERRQ(DMSwarmInsertPointsUsingCellDM(swarm,DMSWARMPIC_LAYOUT_REGULAR,ppcell));*/
-  CHKERRQ(DMSwarmInsertPointsUsingCellDM(swarm,DMSWARMPIC_LAYOUT_SUBDIVISION,ppcell));
+  /*PetscCall(DMSwarmInsertPointsUsingCellDM(swarm,DMSWARMPIC_LAYOUT_REGULAR,ppcell));*/
+  PetscCall(DMSwarmInsertPointsUsingCellDM(swarm,DMSWARMPIC_LAYOUT_SUBDIVISION,ppcell));
 
   /* Define initial conditions for th swarm fields "phi" and "region" */
   {
     PetscReal *s_coor,*s_phi,*s_region;
     PetscInt npoints,p;
 
-    CHKERRQ(DMSwarmGetLocalSize(swarm,&npoints));
-    CHKERRQ(DMSwarmGetField(swarm,DMSwarmPICField_coor,NULL,NULL,(void**)&s_coor));
-    CHKERRQ(DMSwarmGetField(swarm,"phi",NULL,NULL,(void**)&s_phi));
-    CHKERRQ(DMSwarmGetField(swarm,"region",NULL,NULL,(void**)&s_region));
+    PetscCall(DMSwarmGetLocalSize(swarm,&npoints));
+    PetscCall(DMSwarmGetField(swarm,DMSwarmPICField_coor,NULL,NULL,(void**)&s_coor));
+    PetscCall(DMSwarmGetField(swarm,"phi",NULL,NULL,(void**)&s_phi));
+    PetscCall(DMSwarmGetField(swarm,"region",NULL,NULL,(void**)&s_region));
     for (p=0; p<npoints; p++) {
       PetscReal pos[2];
       pos[0] = s_coor[2*p+0];
@@ -126,53 +126,53 @@ PetscErrorCode pic_advect(PetscInt ppcell,PetscInt meshtype)
       s_region[p] = 1.0;
       s_phi[p] = 1.0 + PetscExpReal(-200.0*((pos[0]-0.5)*(pos[0]-0.5) + (pos[1]-0.5)*(pos[1]-0.5)));
     }
-    CHKERRQ(DMSwarmRestoreField(swarm,"region",NULL,NULL,(void**)&s_region));
-    CHKERRQ(DMSwarmRestoreField(swarm,"phi",NULL,NULL,(void**)&s_phi));
-    CHKERRQ(DMSwarmRestoreField(swarm,DMSwarmPICField_coor,NULL,NULL,(void**)&s_coor));
+    PetscCall(DMSwarmRestoreField(swarm,"region",NULL,NULL,(void**)&s_region));
+    PetscCall(DMSwarmRestoreField(swarm,"phi",NULL,NULL,(void**)&s_phi));
+    PetscCall(DMSwarmRestoreField(swarm,DMSwarmPICField_coor,NULL,NULL,(void**)&s_coor));
   }
 
   /* Project initial value of phi onto the mesh */
-  CHKERRQ(DMSwarmProjectFields(swarm,1,fieldnames,&pfields,PETSC_FALSE));
+  PetscCall(DMSwarmProjectFields(swarm,1,fieldnames,&pfields,PETSC_FALSE));
 
   if (view) {
     /* View swarm all swarm fields using data type PETSC_REAL */
-    CHKERRQ(DMSwarmViewXDMF(swarm,"ic_dms.xmf"));
+    PetscCall(DMSwarmViewXDMF(swarm,"ic_dms.xmf"));
 
     /* View projected swarm field "phi" */
-    CHKERRQ(PetscViewerCreate(PETSC_COMM_WORLD,&viewer));
-    CHKERRQ(PetscViewerSetType(viewer,PETSCVIEWERVTK));
-    CHKERRQ(PetscViewerFileSetMode(viewer,FILE_MODE_WRITE));
+    PetscCall(PetscViewerCreate(PETSC_COMM_WORLD,&viewer));
+    PetscCall(PetscViewerSetType(viewer,PETSCVIEWERVTK));
+    PetscCall(PetscViewerFileSetMode(viewer,FILE_MODE_WRITE));
     if (meshtype == 0) { /* DA */
-      CHKERRQ(PetscViewerFileSetName(viewer,"ic_dmda.vts"));
-      CHKERRQ(VecView(pfields[0],viewer));
+      PetscCall(PetscViewerFileSetName(viewer,"ic_dmda.vts"));
+      PetscCall(VecView(pfields[0],viewer));
     }
     if (meshtype == 1) { /* PLEX */
-      CHKERRQ(PetscViewerFileSetName(viewer,"ic_dmplex.vtk"));
-      CHKERRQ(DMView(celldm,viewer));
-      CHKERRQ(VecView(pfields[0],viewer));
+      PetscCall(PetscViewerFileSetName(viewer,"ic_dmplex.vtk"));
+      PetscCall(DMView(celldm,viewer));
+      PetscCall(VecView(pfields[0],viewer));
     }
-    CHKERRQ(PetscViewerDestroy(&viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
   }
 
-  CHKERRQ(DMView(celldm,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(DMView(swarm,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(DMView(celldm,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(DMView(swarm,PETSC_VIEWER_STDOUT_WORLD));
 
   dt = 0.5 * minradius / PetscSqrtReal(vel[0]*vel[0] + vel[1]*vel[1]);
   for (tk=1; tk<=nt; tk++) {
     PetscReal *s_coor;
     PetscInt npoints,p;
 
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"[step %D]\n",tk));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"[step %D]\n",tk));
     /* advect with analytic prescribed (constant) velocity field */
-    CHKERRQ(DMSwarmGetLocalSize(swarm,&npoints));
-    CHKERRQ(DMSwarmGetField(swarm,DMSwarmPICField_coor,NULL,NULL,(void**)&s_coor));
+    PetscCall(DMSwarmGetLocalSize(swarm,&npoints));
+    PetscCall(DMSwarmGetField(swarm,DMSwarmPICField_coor,NULL,NULL,(void**)&s_coor));
     for (p=0; p<npoints; p++) {
       s_coor[2*p+0] += dt * vel[0];
       s_coor[2*p+1] += dt * vel[1];
     }
-    CHKERRQ(DMSwarmRestoreField(swarm,DMSwarmPICField_coor,NULL,NULL,(void**)&s_coor));
+    PetscCall(DMSwarmRestoreField(swarm,DMSwarmPICField_coor,NULL,NULL,(void**)&s_coor));
 
-    CHKERRQ(DMSwarmMigrate(swarm,PETSC_TRUE));
+    PetscCall(DMSwarmMigrate(swarm,PETSC_TRUE));
 
     /* Ad-hoc cell filling algorithm */
     /*
@@ -186,7 +186,7 @@ PetscErrorCode pic_advect(PetscInt ppcell,PetscInt meshtype)
 
       min[0] = 0.5 * dx;  max[0] = 0.5 * dx + 31.0 * dx;
       min[1] = 0.5 * dx;  max[1] = 0.5 * dx;
-      CHKERRQ(DMSwarmSetPointsUniformCoordinates(swarm,min,max,npoints_dir_x,ADD_VALUES));
+      PetscCall(DMSwarmSetPointsUniformCoordinates(swarm,min,max,npoints_dir_x,ADD_VALUES));
     }
     if (tk%2 == 0) {
       PetscReal dx = 1.0/32.0;
@@ -195,44 +195,44 @@ PetscErrorCode pic_advect(PetscInt ppcell,PetscInt meshtype)
 
       min[0] = 0.05 * dx; max[0] = 0.5 * dx;
       min[1] = 0.5 * dx;  max[1] = 0.5 * dx + 31.0 * dx;
-      CHKERRQ(DMSwarmSetPointsUniformCoordinates(swarm,min,max,npoints_dir_y,ADD_VALUES));
+      PetscCall(DMSwarmSetPointsUniformCoordinates(swarm,min,max,npoints_dir_y,ADD_VALUES));
     }
 
     /* Project swarm field "phi" onto the cell DM */
-    CHKERRQ(DMSwarmProjectFields(swarm,1,fieldnames,&pfields,PETSC_TRUE));
+    PetscCall(DMSwarmProjectFields(swarm,1,fieldnames,&pfields,PETSC_TRUE));
 
     if (view) {
       PetscViewer viewer;
       char fname[PETSC_MAX_PATH_LEN];
 
       /* View swarm fields */
-      CHKERRQ(PetscSNPrintf(fname,PETSC_MAX_PATH_LEN-1,"step%.4D_dms.xmf",tk));
-      CHKERRQ(DMSwarmViewXDMF(swarm,fname));
+      PetscCall(PetscSNPrintf(fname,PETSC_MAX_PATH_LEN-1,"step%.4D_dms.xmf",tk));
+      PetscCall(DMSwarmViewXDMF(swarm,fname));
 
       /* View projected field */
-      CHKERRQ(PetscViewerCreate(PETSC_COMM_WORLD,&viewer));
-      CHKERRQ(PetscViewerSetType(viewer,PETSCVIEWERVTK));
-      CHKERRQ(PetscViewerFileSetMode(viewer,FILE_MODE_WRITE));
+      PetscCall(PetscViewerCreate(PETSC_COMM_WORLD,&viewer));
+      PetscCall(PetscViewerSetType(viewer,PETSCVIEWERVTK));
+      PetscCall(PetscViewerFileSetMode(viewer,FILE_MODE_WRITE));
 
       if (meshtype == 0) { /* DA */
-        CHKERRQ(PetscSNPrintf(fname,PETSC_MAX_PATH_LEN-1,"step%.4D_dmda.vts",tk));
-        CHKERRQ(PetscViewerFileSetName(viewer,fname));
-        CHKERRQ(VecView(pfields[0],viewer));
+        PetscCall(PetscSNPrintf(fname,PETSC_MAX_PATH_LEN-1,"step%.4D_dmda.vts",tk));
+        PetscCall(PetscViewerFileSetName(viewer,fname));
+        PetscCall(VecView(pfields[0],viewer));
       }
       if (meshtype == 1) { /* PLEX */
-        CHKERRQ(PetscSNPrintf(fname,PETSC_MAX_PATH_LEN-1,"step%.4D_dmplex.vtk",tk));
-        CHKERRQ(PetscViewerFileSetName(viewer,fname));
-        CHKERRQ(DMView(celldm,viewer));
-        CHKERRQ(VecView(pfields[0],viewer));
+        PetscCall(PetscSNPrintf(fname,PETSC_MAX_PATH_LEN-1,"step%.4D_dmplex.vtk",tk));
+        PetscCall(PetscViewerFileSetName(viewer,fname));
+        PetscCall(DMView(celldm,viewer));
+        PetscCall(VecView(pfields[0],viewer));
       }
-      CHKERRQ(PetscViewerDestroy(&viewer));
+      PetscCall(PetscViewerDestroy(&viewer));
     }
 
   }
-  CHKERRQ(VecDestroy(&pfields[0]));
-  CHKERRQ(PetscFree(pfields));
-  CHKERRQ(DMDestroy(&celldm));
-  CHKERRQ(DMDestroy(&swarm));
+  PetscCall(VecDestroy(&pfields[0]));
+  PetscCall(PetscFree(pfields));
+  PetscCall(DMDestroy(&celldm));
+  PetscCall(DMDestroy(&swarm));
 
   PetscFunctionReturn(0);
 }
@@ -243,13 +243,13 @@ int main(int argc,char **args)
   PetscInt ppcell = 1;
   PetscInt meshtype = 0;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-ppcell",&ppcell,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-meshtype",&meshtype,NULL));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-ppcell",&ppcell,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-meshtype",&meshtype,NULL));
   PetscCheckFalse(meshtype > 1,PETSC_COMM_WORLD,PETSC_ERR_USER,"-meshtype <value> must be 0 or 1");
 
-  CHKERRQ(pic_advect(ppcell,meshtype));
+  PetscCall(pic_advect(ppcell,meshtype));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }

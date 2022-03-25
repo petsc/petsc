@@ -18,24 +18,24 @@ static PetscErrorCode KSPSolve_TCQMR(KSP ksp)
   PetscFunctionBegin;
   ksp->its = 0;
 
-  CHKERRQ(KSPInitialResidual(ksp,x,u,v,r,b));
-  CHKERRQ(VecNorm(r,NORM_2,&rnorm0));          /*  rnorm0 = ||r|| */
+  PetscCall(KSPInitialResidual(ksp,x,u,v,r,b));
+  PetscCall(VecNorm(r,NORM_2,&rnorm0));          /*  rnorm0 = ||r|| */
   KSPCheckNorm(ksp,rnorm0);
   if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = rnorm0;
   else ksp->rnorm = 0;
-  CHKERRQ((*ksp->converged)(ksp,0,ksp->rnorm,&ksp->reason,ksp->cnvP));
+  PetscCall((*ksp->converged)(ksp,0,ksp->rnorm,&ksp->reason,ksp->cnvP));
   if (ksp->reason) PetscFunctionReturn(0);
 
-  CHKERRQ(VecSet(um1,0.0));
-  CHKERRQ(VecCopy(r,u));
+  PetscCall(VecSet(um1,0.0));
+  PetscCall(VecCopy(r,u));
   rnorm = rnorm0;
-  tmp   = 1.0/rnorm; CHKERRQ(VecScale(u,tmp));
-  CHKERRQ(VecSet(vm1,0.0));
-  CHKERRQ(VecCopy(u,v));
-  CHKERRQ(VecCopy(u,v0));
-  CHKERRQ(VecSet(pvec1,0.0));
-  CHKERRQ(VecSet(pvec2,0.0));
-  CHKERRQ(VecSet(p,0.0));
+  tmp   = 1.0/rnorm; PetscCall(VecScale(u,tmp));
+  PetscCall(VecSet(vm1,0.0));
+  PetscCall(VecCopy(u,v));
+  PetscCall(VecCopy(u,v0));
+  PetscCall(VecSet(pvec1,0.0));
+  PetscCall(VecSet(pvec2,0.0));
+  PetscCall(VecSet(p,0.0));
   theta = 0.0;
   ep    = 0.0;
   cl1   = 0.0;
@@ -53,47 +53,47 @@ static PetscErrorCode KSPSolve_TCQMR(KSP ksp)
    */
   if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = rnorm;
   else ksp->rnorm = 0;
-  CHKERRQ((*ksp->converged)(ksp,ksp->its,ksp->rnorm,&ksp->reason,ksp->cnvP));
+  PetscCall((*ksp->converged)(ksp,ksp->its,ksp->rnorm,&ksp->reason,ksp->cnvP));
   while (!ksp->reason) {
-    CHKERRQ(KSPMonitor(ksp,ksp->its,ksp->rnorm));
+    PetscCall(KSPMonitor(ksp,ksp->its,ksp->rnorm));
     ksp->its++;
 
-    CHKERRQ(KSP_PCApplyBAorAB(ksp,u,y,vtmp)); /* y = A*u */
-    CHKERRQ(VecDot(y,v0,&dp11));
+    PetscCall(KSP_PCApplyBAorAB(ksp,u,y,vtmp)); /* y = A*u */
+    PetscCall(VecDot(y,v0,&dp11));
     KSPCheckDot(ksp,dp11);
-    CHKERRQ(VecDot(u,v0,&dp2));
+    PetscCall(VecDot(u,v0,&dp2));
     alpha  = dp11 / dp2;                          /* alpha = v0'*y/v0'*u */
     deltmp = alpha;
-    CHKERRQ(VecCopy(y,z));
-    CHKERRQ(VecAXPY(z,-alpha,u)); /* z = y - alpha u */
-    CHKERRQ(VecDot(u,v0,&rho));
+    PetscCall(VecCopy(y,z));
+    PetscCall(VecAXPY(z,-alpha,u)); /* z = y - alpha u */
+    PetscCall(VecDot(u,v0,&rho));
     beta   = rho / (f*rhom1);
     rhom1  = rho;
-    CHKERRQ(VecCopy(z,utmp));    /* up1 = (A-alpha*I)*
+    PetscCall(VecCopy(z,utmp));    /* up1 = (A-alpha*I)*
                                                 (z-2*beta*p) + f*beta*
                                                 beta*um1 */
-    CHKERRQ(VecAXPY(utmp,-2.0*beta,p));
-    CHKERRQ(KSP_PCApplyBAorAB(ksp,utmp,up1,vtmp));
-    CHKERRQ(VecAXPY(up1,-alpha,utmp));
-    CHKERRQ(VecAXPY(up1,f*beta*beta,um1));
-    CHKERRQ(VecNorm(up1,NORM_2,&dp1));
+    PetscCall(VecAXPY(utmp,-2.0*beta,p));
+    PetscCall(KSP_PCApplyBAorAB(ksp,utmp,up1,vtmp));
+    PetscCall(VecAXPY(up1,-alpha,utmp));
+    PetscCall(VecAXPY(up1,f*beta*beta,um1));
+    PetscCall(VecNorm(up1,NORM_2,&dp1));
     KSPCheckNorm(ksp,dp1);
     f      = 1.0 / dp1;
-    CHKERRQ(VecScale(up1,f));
-    CHKERRQ(VecAYPX(p,-beta,z));   /* p = f*(z-beta*p) */
-    CHKERRQ(VecScale(p,f));
-    CHKERRQ(VecCopy(u,um1));
-    CHKERRQ(VecCopy(up1,u));
+    PetscCall(VecScale(up1,f));
+    PetscCall(VecAYPX(p,-beta,z));   /* p = f*(z-beta*p) */
+    PetscCall(VecScale(p,f));
+    PetscCall(VecCopy(u,um1));
+    PetscCall(VecCopy(up1,u));
     beta   = beta/Gamma;
     eptmp  = beta;
-    CHKERRQ(KSP_PCApplyBAorAB(ksp,v,vp1,vtmp));
-    CHKERRQ(VecAXPY(vp1,-alpha,v));
-    CHKERRQ(VecAXPY(vp1,-beta,vm1));
-    CHKERRQ(VecNorm(vp1,NORM_2,&Gamma));
+    PetscCall(KSP_PCApplyBAorAB(ksp,v,vp1,vtmp));
+    PetscCall(VecAXPY(vp1,-alpha,v));
+    PetscCall(VecAXPY(vp1,-beta,vm1));
+    PetscCall(VecNorm(vp1,NORM_2,&Gamma));
     KSPCheckNorm(ksp,Gamma);
-    CHKERRQ(VecScale(vp1,1.0/Gamma));
-    CHKERRQ(VecCopy(v,vm1));
-    CHKERRQ(VecCopy(vp1,v));
+    PetscCall(VecScale(vp1,1.0/Gamma));
+    PetscCall(VecCopy(v,vm1));
+    PetscCall(VecCopy(vp1,v));
 
     /*
        SOLVE  Ax = b
@@ -119,29 +119,29 @@ static PetscErrorCode KSPSolve_TCQMR(KSP ksp)
 
     delta = -c*deltmp + s*Gamma;
     tau_n = -c*tau_n1; tau_n1 = -s*tau_n1;
-    CHKERRQ(VecCopy(vm1,pvec));
-    CHKERRQ(VecAXPY(pvec,-theta,pvec2));
-    CHKERRQ(VecAXPY(pvec,-ep,pvec1));
-    CHKERRQ(VecScale(pvec,1.0/delta));
-    CHKERRQ(VecAXPY(x,tau_n,pvec));
+    PetscCall(VecCopy(vm1,pvec));
+    PetscCall(VecAXPY(pvec,-theta,pvec2));
+    PetscCall(VecAXPY(pvec,-ep,pvec1));
+    PetscCall(VecScale(pvec,1.0/delta));
+    PetscCall(VecAXPY(x,tau_n,pvec));
     cl1   = cl; sl1 = sl; cl = c; sl = s;
 
-    CHKERRQ(VecCopy(pvec1,pvec2));
-    CHKERRQ(VecCopy(pvec,pvec1));
+    PetscCall(VecCopy(pvec1,pvec2));
+    PetscCall(VecCopy(pvec,pvec1));
 
     /* Compute the upper bound on the residual norm r (See QMR paper p. 13) */
     sprod = sprod*PetscAbsScalar(s);
     rnorm = rnorm0 * PetscSqrtReal((PetscReal)ksp->its+2.0) * PetscRealPart(sprod);
     if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = rnorm;
     else ksp->rnorm = 0;
-    CHKERRQ((*ksp->converged)(ksp,ksp->its,ksp->rnorm,&ksp->reason,ksp->cnvP));
+    PetscCall((*ksp->converged)(ksp,ksp->its,ksp->rnorm,&ksp->reason,ksp->cnvP));
     if (ksp->its >= ksp->max_it) {
       if (!ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
       break;
     }
   }
-  CHKERRQ(KSPMonitor(ksp,ksp->its,ksp->rnorm));
-  CHKERRQ(KSPUnwindPreconditioner(ksp,x,vtmp));
+  PetscCall(KSPMonitor(ksp,ksp->its,ksp->rnorm));
+  PetscCall(KSPUnwindPreconditioner(ksp,x,vtmp));
   PetscFunctionReturn(0);
 }
 
@@ -149,7 +149,7 @@ static PetscErrorCode KSPSetUp_TCQMR(KSP ksp)
 {
   PetscFunctionBegin;
   PetscCheckFalse(ksp->pc_side == PC_SYMMETRIC,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"no symmetric preconditioning for KSPTCQMR");
-  CHKERRQ(KSPSetWorkVecs(ksp,TCQMR_VECS));
+  PetscCall(KSPSetWorkVecs(ksp,TCQMR_VECS));
   PetscFunctionReturn(0);
 }
 
@@ -179,9 +179,9 @@ M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_TCQMR(KSP ksp)
 {
   PetscFunctionBegin;
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3));
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2));
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1));
 
   ksp->data                = (void*)0;
   ksp->ops->buildsolution  = KSPBuildSolutionDefault;

@@ -32,21 +32,21 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionBegin;
   options->pointType = CENTROID;
 
-  ierr = PetscOptionsBegin(comm, "", "Interpolation Options", "DMPLEX");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm, "", "Interpolation Options", "DMPLEX");PetscCall(ierr);
   pt   = options->pointType;
-  CHKERRQ(PetscOptionsEList("-point_type", "The point type", "ex2.c", pointTypes, 3, pointTypes[options->pointType], &pt, NULL));
+  PetscCall(PetscOptionsEList("-point_type", "The point type", "ex2.c", pointTypes, 3, pointTypes[options->pointType], &pt, NULL));
   options->pointType = (PointType) pt;
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();PetscCall(ierr);
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm)
 {
   PetscFunctionBegin;
-  CHKERRQ(DMCreate(comm, dm));
-  CHKERRQ(DMSetType(*dm, DMPLEX));
-  CHKERRQ(DMSetFromOptions(*dm));
-  CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
+  PetscCall(DMCreate(comm, dm));
+  PetscCall(DMSetType(*dm, DMPLEX));
+  PetscCall(DMSetFromOptions(*dm));
+  PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   PetscFunctionReturn(0);
 }
 
@@ -58,30 +58,30 @@ static PetscErrorCode CreatePoints_Centroid(DM dm, PetscInt *Np, PetscReal **pco
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
-  CHKERRQ(DMGetCoordinatesLocal(dm, &coordsLocal));
-  CHKERRQ(DMGetCoordinateSection(dm, &coordSection));
-  CHKERRQ(DMGetCoordinateDim(dm, &spaceDim));
-  CHKERRQ(DMPlexGetHeightStratum(dm, 0, NULL, Np));
-  CHKERRQ(PetscCalloc1(*Np * spaceDim, pcoords));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
+  PetscCall(DMGetCoordinatesLocal(dm, &coordsLocal));
+  PetscCall(DMGetCoordinateSection(dm, &coordSection));
+  PetscCall(DMGetCoordinateDim(dm, &spaceDim));
+  PetscCall(DMPlexGetHeightStratum(dm, 0, NULL, Np));
+  PetscCall(PetscCalloc1(*Np * spaceDim, pcoords));
   for (p = 0; p < *Np; ++p) {
     PetscScalar *coords = NULL;
     PetscInt     size, num, n, d;
 
-    CHKERRQ(DMPlexVecGetClosure(dm, coordSection, coordsLocal, p, &size, &coords));
+    PetscCall(DMPlexVecGetClosure(dm, coordSection, coordsLocal, p, &size, &coords));
     num  = size/spaceDim;
     for (n = 0; n < num; ++n) {
       for (d = 0; d < spaceDim; ++d) (*pcoords)[p*spaceDim+d] += PetscRealPart(coords[n*spaceDim+d]) / num;
     }
-    CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]Point %D (", rank, p));
+    PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]Point %D (", rank, p));
     for (d = 0; d < spaceDim; ++d) {
-      CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%g", (double)(*pcoords)[p*spaceDim+d]));
-      if (d < spaceDim-1) CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD, ", "));
+      PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%g", (double)(*pcoords)[p*spaceDim+d]));
+      if (d < spaceDim-1) PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, ", "));
     }
-    CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD, ")\n"));
-    CHKERRQ(DMPlexVecRestoreClosure(dm, coordSection, coordsLocal, p, &num, &coords));
+    PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, ")\n"));
+    PetscCall(DMPlexVecRestoreClosure(dm, coordSection, coordsLocal, p, &num, &coords));
   }
-  CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD, NULL));
+  PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, NULL));
   *pointsAllProcs = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -95,22 +95,22 @@ static PetscErrorCode CreatePoints_Grid(DM dm, PetscInt *Np, PetscReal **pcoords
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
-  CHKERRQ(DMGetDimension(dm, &dim));
-  CHKERRQ(DMGetCoordinateDim(dm, &spaceDim));
-  CHKERRQ(PetscCalloc1(spaceDim,&ind));
-  CHKERRQ(PetscCalloc1(spaceDim,&h));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMGetCoordinateDim(dm, &spaceDim));
+  PetscCall(PetscCalloc1(spaceDim,&ind));
+  PetscCall(PetscCalloc1(spaceDim,&h));
   h[0] = 1.0/(N-1); h[1] = 1.0/(N-1); h[2] = 1.0/(N-1);
-  CHKERRQ(DMDACreate(PetscObjectComm((PetscObject) dm), &da));
-  CHKERRQ(DMSetDimension(da, dim));
-  CHKERRQ(DMDASetSizes(da, N, N, N));
-  CHKERRQ(DMDASetDof(da, 1));
-  CHKERRQ(DMDASetStencilWidth(da, 1));
-  CHKERRQ(DMSetUp(da));
-  CHKERRQ(DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0));
-  CHKERRQ(DMDAGetLocalInfo(da, &info));
+  PetscCall(DMDACreate(PetscObjectComm((PetscObject) dm), &da));
+  PetscCall(DMSetDimension(da, dim));
+  PetscCall(DMDASetSizes(da, N, N, N));
+  PetscCall(DMDASetDof(da, 1));
+  PetscCall(DMDASetStencilWidth(da, 1));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0));
+  PetscCall(DMDAGetLocalInfo(da, &info));
   *Np  = info.xm * info.ym * info.zm;
-  CHKERRQ(PetscCalloc1(*Np * spaceDim, pcoords));
+  PetscCall(PetscCalloc1(*Np * spaceDim, pcoords));
   for (k = info.zs; k < info.zs + info.zm; ++k) {
     ind[2] = k;
     for (j = info.ys; j < info.ys + info.ym; ++j) {
@@ -119,19 +119,19 @@ static PetscErrorCode CreatePoints_Grid(DM dm, PetscInt *Np, PetscReal **pcoords
         ind[0] = i;
 
         for (d = 0; d < spaceDim; ++d) (*pcoords)[n*spaceDim+d] = ind[d]*h[d];
-        CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]Point %D (", rank, n));
+        PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]Point %D (", rank, n));
         for (d = 0; d < spaceDim; ++d) {
-          CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%g", (double)(*pcoords)[n*spaceDim+d]));
-          if (d < spaceDim-1) CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD, ", "));
+          PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%g", (double)(*pcoords)[n*spaceDim+d]));
+          if (d < spaceDim-1) PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, ", "));
         }
-        CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD, ")\n"));
+        PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, ")\n"));
       }
     }
   }
-  CHKERRQ(DMDestroy(&da));
-  CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD, NULL));
-  CHKERRQ(PetscFree(ind));
-  CHKERRQ(PetscFree(h));
+  PetscCall(DMDestroy(&da));
+  PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, NULL));
+  PetscCall(PetscFree(ind));
+  PetscCall(PetscFree(h));
   *pointsAllProcs = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -143,14 +143,14 @@ static PetscErrorCode CreatePoints_GridReplicated(DM dm, PetscInt *Np, PetscReal
   PetscMPIInt    rank;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetDimension(dm, &dim));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
-  CHKERRQ(DMGetCoordinateDim(dm, &spaceDim));
-  CHKERRQ(PetscCalloc1(spaceDim,&ind));
-  CHKERRQ(PetscCalloc1(spaceDim,&h));
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
+  PetscCall(DMGetCoordinateDim(dm, &spaceDim));
+  PetscCall(PetscCalloc1(spaceDim,&ind));
+  PetscCall(PetscCalloc1(spaceDim,&h));
   h[0] = 1.0/(N-1); h[1] = 1.0/(N-1); h[2] = 1.0/(N-1);
   *Np  = N * (dim > 1 ? N : 1) * (dim > 2 ? N : 1);
-  CHKERRQ(PetscCalloc1(*Np * spaceDim, pcoords));
+  PetscCall(PetscCalloc1(*Np * spaceDim, pcoords));
   for (k = 0; k < N; ++k) {
     ind[2] = k;
     for (j = 0; j < N; ++j) {
@@ -159,19 +159,19 @@ static PetscErrorCode CreatePoints_GridReplicated(DM dm, PetscInt *Np, PetscReal
         ind[0] = i;
 
         for (d = 0; d < spaceDim; ++d) (*pcoords)[n*spaceDim+d] = ind[d]*h[d];
-        CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]Point %D (", rank, n));
+        PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]Point %D (", rank, n));
         for (d = 0; d < spaceDim; ++d) {
-          CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%g", (double)(*pcoords)[n*spaceDim+d]));
-          if (d < spaceDim-1) CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD, ", "));
+          PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%g", (double)(*pcoords)[n*spaceDim+d]));
+          if (d < spaceDim-1) PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, ", "));
         }
-        CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD, ")\n"));
+        PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, ")\n"));
       }
     }
   }
-  CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD, NULL));
+  PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, NULL));
   *pointsAllProcs = PETSC_TRUE;
-  CHKERRQ(PetscFree(ind));
-  CHKERRQ(PetscFree(h));
+  PetscCall(PetscFree(ind));
+  PetscCall(PetscFree(h));
   PetscFunctionReturn(0);
 }
 
@@ -180,9 +180,9 @@ static PetscErrorCode CreatePoints(DM dm, PetscInt *Np, PetscReal **pcoords, Pet
   PetscFunctionBegin;
   *pointsAllProcs = PETSC_FALSE;
   switch (ctx->pointType) {
-  case CENTROID:        CHKERRQ(CreatePoints_Centroid(dm, Np, pcoords, pointsAllProcs, ctx));break;
-  case GRID:            CHKERRQ(CreatePoints_Grid(dm, Np, pcoords, pointsAllProcs, ctx));break;
-  case GRID_REPLICATED: CHKERRQ(CreatePoints_GridReplicated(dm, Np, pcoords, pointsAllProcs, ctx));break;
+  case CENTROID:        PetscCall(CreatePoints_Centroid(dm, Np, pcoords, pointsAllProcs, ctx));break;
+  case GRID:            PetscCall(CreatePoints_Grid(dm, Np, pcoords, pointsAllProcs, ctx));break;
+  case GRID_REPLICATED: PetscCall(CreatePoints_GridReplicated(dm, Np, pcoords, pointsAllProcs, ctx));break;
   default: SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Invalid point generation type %d", (int) ctx->pointType);
   }
   PetscFunctionReturn(0);
@@ -204,58 +204,58 @@ int main(int argc, char **argv)
   PetscMPIInt         rank, size;
   PetscViewer         selfviewer;
 
-  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
-  CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &ctx));
-  CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &ctx, &dm));
-  CHKERRQ(DMGetDimension(dm, &dim));
-  CHKERRQ(DMGetCoordinateDim(dm, &spaceDim));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  PetscCall(PetscInitialize(&argc, &argv, NULL,help));
+  PetscCall(ProcessOptions(PETSC_COMM_WORLD, &ctx));
+  PetscCall(CreateMesh(PETSC_COMM_WORLD, &ctx, &dm));
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMGetCoordinateDim(dm, &spaceDim));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   /* Create points */
-  CHKERRQ(CreatePoints(dm, &Np, &pcoords, &pointsAllProcs, &ctx));
+  PetscCall(CreatePoints(dm, &Np, &pcoords, &pointsAllProcs, &ctx));
   /* Create interpolator */
-  CHKERRQ(DMInterpolationCreate(PETSC_COMM_WORLD, &interpolator));
-  CHKERRQ(DMInterpolationSetDim(interpolator, spaceDim));
-  CHKERRQ(DMInterpolationAddPoints(interpolator, Np, pcoords));
-  CHKERRQ(DMInterpolationSetUp(interpolator, dm, pointsAllProcs, PETSC_FALSE));
+  PetscCall(DMInterpolationCreate(PETSC_COMM_WORLD, &interpolator));
+  PetscCall(DMInterpolationSetDim(interpolator, spaceDim));
+  PetscCall(DMInterpolationAddPoints(interpolator, Np, pcoords));
+  PetscCall(DMInterpolationSetUp(interpolator, dm, pointsAllProcs, PETSC_FALSE));
   /* Check locations */
   for (c = 0; c < interpolator->n; ++c) {
-    CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]Point %D is in Cell %D\n", rank, c, interpolator->cells[c]));
+    PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]Point %D is in Cell %D\n", rank, c, interpolator->cells[c]));
   }
-  CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD, NULL));
-  CHKERRQ(VecView(interpolator->coords, PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, NULL));
+  PetscCall(VecView(interpolator->coords, PETSC_VIEWER_STDOUT_WORLD));
   /* Setup Discretization */
   Nc   = dim;
-  CHKERRQ(DMPlexIsSimplex(dm, &simplex));
-  CHKERRQ(PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, Nc, simplex, NULL, -1, &fe));
-  CHKERRQ(DMSetField(dm, 0, NULL, (PetscObject) fe));
-  CHKERRQ(DMCreateDS(dm));
-  CHKERRQ(PetscFEDestroy(&fe));
+  PetscCall(DMPlexIsSimplex(dm, &simplex));
+  PetscCall(PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, Nc, simplex, NULL, -1, &fe));
+  PetscCall(DMSetField(dm, 0, NULL, (PetscObject) fe));
+  PetscCall(DMCreateDS(dm));
+  PetscCall(PetscFEDestroy(&fe));
   /* Create function */
-  CHKERRQ(PetscCalloc2(Nc, &funcs, Nc, &vals));
+  PetscCall(PetscCalloc2(Nc, &funcs, Nc, &vals));
   for (c = 0; c < Nc; ++c) funcs[c] = linear;
-  CHKERRQ(DMGetLocalVector(dm, &lu));
-  CHKERRQ(DMProjectFunctionLocal(dm, 0.0, funcs, NULL, INSERT_ALL_VALUES, lu));
-  CHKERRQ(PetscViewerASCIIPushSynchronized(PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&selfviewer));
-  CHKERRQ(PetscViewerASCIIPrintf(selfviewer, "[%d]solution\n", rank));
-  CHKERRQ(VecView(lu,selfviewer));
-  CHKERRQ(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&selfviewer));
-  CHKERRQ(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(PetscViewerASCIIPopSynchronized(PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(DMGetLocalVector(dm, &lu));
+  PetscCall(DMProjectFunctionLocal(dm, 0.0, funcs, NULL, INSERT_ALL_VALUES, lu));
+  PetscCall(PetscViewerASCIIPushSynchronized(PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&selfviewer));
+  PetscCall(PetscViewerASCIIPrintf(selfviewer, "[%d]solution\n", rank));
+  PetscCall(VecView(lu,selfviewer));
+  PetscCall(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&selfviewer));
+  PetscCall(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscViewerASCIIPopSynchronized(PETSC_VIEWER_STDOUT_WORLD));
   /* Check interpolant */
-  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF, interpolator->n * Nc, &fieldVals));
-  CHKERRQ(DMInterpolationSetDof(interpolator, Nc));
-  CHKERRQ(DMInterpolationEvaluate(interpolator, dm, lu, fieldVals));
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF, interpolator->n * Nc, &fieldVals));
+  PetscCall(DMInterpolationSetDof(interpolator, Nc));
+  PetscCall(DMInterpolationEvaluate(interpolator, dm, lu, fieldVals));
   for (p = 0; p < size; ++p) {
     if (p == rank) {
-      CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "[%d]Field values\n", rank));
-      CHKERRQ(VecView(fieldVals, PETSC_VIEWER_STDOUT_SELF));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d]Field values\n", rank));
+      PetscCall(VecView(fieldVals, PETSC_VIEWER_STDOUT_SELF));
     }
-    CHKERRQ(PetscBarrier((PetscObject) dm));
+    PetscCall(PetscBarrier((PetscObject) dm));
   }
-  CHKERRQ(VecGetArrayRead(interpolator->coords, &vcoords));
-  CHKERRQ(VecGetArrayRead(fieldVals, &ivals));
+  PetscCall(VecGetArrayRead(interpolator->coords, &vcoords));
+  PetscCall(VecGetArrayRead(fieldVals, &ivals));
   for (p = 0; p < interpolator->n; ++p) {
     for (c = 0; c < Nc; ++c) {
 #if defined(PETSC_USE_COMPLEX)
@@ -271,16 +271,16 @@ int main(int argc, char **argv)
         SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid interpolated value %g != %g (%D, %D)", (double) PetscRealPart(ivals[p*Nc+c]), (double) PetscRealPart(vals[c]), p, c);
     }
   }
-  CHKERRQ(VecRestoreArrayRead(interpolator->coords, &vcoords));
-  CHKERRQ(VecRestoreArrayRead(fieldVals, &ivals));
+  PetscCall(VecRestoreArrayRead(interpolator->coords, &vcoords));
+  PetscCall(VecRestoreArrayRead(fieldVals, &ivals));
   /* Cleanup */
-  CHKERRQ(PetscFree(pcoords));
-  CHKERRQ(PetscFree2(funcs, vals));
-  CHKERRQ(VecDestroy(&fieldVals));
-  CHKERRQ(DMRestoreLocalVector(dm, &lu));
-  CHKERRQ(DMInterpolationDestroy(&interpolator));
-  CHKERRQ(DMDestroy(&dm));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFree(pcoords));
+  PetscCall(PetscFree2(funcs, vals));
+  PetscCall(VecDestroy(&fieldVals));
+  PetscCall(DMRestoreLocalVector(dm, &lu));
+  PetscCall(DMInterpolationDestroy(&interpolator));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

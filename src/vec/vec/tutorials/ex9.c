@@ -29,9 +29,9 @@ int main(int argc,char **argv)
   PetscScalar    value,*array,*tarray=0;
   Vec            lx,gx,gxs;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 2,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must run example with two processors");
 
   /*
@@ -66,84 +66,84 @@ int main(int argc,char **argv)
      the local vector (lx) and the global vector (gx) share the same
      array for storing vector values.
   */
-  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-allocate",&flg));
-  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-vecmpisetghost",&flg2));
-  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-minvalues",&flg3));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-allocate",&flg));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-vecmpisetghost",&flg2));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-minvalues",&flg3));
   if (flg) {
-    CHKERRQ(PetscMalloc1(nlocal+nghost,&tarray));
-    CHKERRQ(VecCreateGhostWithArray(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,nghost,ifrom,tarray,&gxs));
+    PetscCall(PetscMalloc1(nlocal+nghost,&tarray));
+    PetscCall(VecCreateGhostWithArray(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,nghost,ifrom,tarray,&gxs));
   } else if (flg2) {
-    CHKERRQ(VecCreate(PETSC_COMM_WORLD,&gxs));
-    CHKERRQ(VecSetType(gxs,VECMPI));
-    CHKERRQ(VecSetSizes(gxs,nlocal,PETSC_DECIDE));
-    CHKERRQ(VecMPISetGhost(gxs,nghost,ifrom));
+    PetscCall(VecCreate(PETSC_COMM_WORLD,&gxs));
+    PetscCall(VecSetType(gxs,VECMPI));
+    PetscCall(VecSetSizes(gxs,nlocal,PETSC_DECIDE));
+    PetscCall(VecMPISetGhost(gxs,nghost,ifrom));
   } else {
-    CHKERRQ(VecCreateGhost(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,nghost,ifrom,&gxs));
+    PetscCall(VecCreateGhost(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,nghost,ifrom,&gxs));
   }
 
   /*
       Test VecDuplicate()
   */
-  CHKERRQ(VecDuplicate(gxs,&gx));
-  CHKERRQ(VecDestroy(&gxs));
+  PetscCall(VecDuplicate(gxs,&gx));
+  PetscCall(VecDestroy(&gxs));
 
   /*
      Access the local representation
   */
-  CHKERRQ(VecGhostGetLocalForm(gx,&lx));
+  PetscCall(VecGhostGetLocalForm(gx,&lx));
 
   /*
      Set the values from 0 to 12 into the "global" vector
   */
-  CHKERRQ(VecGetOwnershipRange(gx,&rstart,&rend));
+  PetscCall(VecGetOwnershipRange(gx,&rstart,&rend));
   for (i=rstart; i<rend; i++) {
     value = (PetscScalar) i;
-    CHKERRQ(VecSetValues(gx,1,&i,&value,INSERT_VALUES));
+    PetscCall(VecSetValues(gx,1,&i,&value,INSERT_VALUES));
   }
-  CHKERRQ(VecAssemblyBegin(gx));
-  CHKERRQ(VecAssemblyEnd(gx));
+  PetscCall(VecAssemblyBegin(gx));
+  PetscCall(VecAssemblyEnd(gx));
 
-  CHKERRQ(VecGhostUpdateBegin(gx,INSERT_VALUES,SCATTER_FORWARD));
-  CHKERRQ(VecGhostUpdateEnd(gx,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecGhostUpdateBegin(gx,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecGhostUpdateEnd(gx,INSERT_VALUES,SCATTER_FORWARD));
 
   /*
      Print out each vector, including the ghost padding region.
   */
-  CHKERRQ(VecGetArray(lx,&array));
+  PetscCall(VecGetArray(lx,&array));
   for (i=0; i<nlocal+nghost; i++) {
-    CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT " %g\n",i,(double)PetscRealPart(array[i])));
+    PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT " %g\n",i,(double)PetscRealPart(array[i])));
   }
-  CHKERRQ(VecRestoreArray(lx,&array));
-  CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
-  CHKERRQ(VecGhostRestoreLocalForm(gx,&lx));
+  PetscCall(VecRestoreArray(lx,&array));
+  PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
+  PetscCall(VecGhostRestoreLocalForm(gx,&lx));
 
   /* Another test that sets ghost values and then accumulates onto the owning processors using MIN_VALUES */
   if (flg3) {
-    if (rank == 0)CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\nTesting VecGhostUpdate with MIN_VALUES\n"));
-    CHKERRQ(VecGhostGetLocalForm(gx,&lx));
-    CHKERRQ(VecGetArray(lx,&array));
+    if (rank == 0)PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\nTesting VecGhostUpdate with MIN_VALUES\n"));
+    PetscCall(VecGhostGetLocalForm(gx,&lx));
+    PetscCall(VecGetArray(lx,&array));
     for (i=0; i<nghost; i++) array[nlocal+i] = rank ? (PetscScalar)4 : (PetscScalar)8;
-    CHKERRQ(VecRestoreArray(lx,&array));
-    CHKERRQ(VecGhostRestoreLocalForm(gx,&lx));
+    PetscCall(VecRestoreArray(lx,&array));
+    PetscCall(VecGhostRestoreLocalForm(gx,&lx));
 
-    CHKERRQ(VecGhostUpdateBegin(gx,MIN_VALUES,SCATTER_REVERSE));
-    CHKERRQ(VecGhostUpdateEnd(gx,MIN_VALUES,SCATTER_REVERSE));
+    PetscCall(VecGhostUpdateBegin(gx,MIN_VALUES,SCATTER_REVERSE));
+    PetscCall(VecGhostUpdateEnd(gx,MIN_VALUES,SCATTER_REVERSE));
 
-    CHKERRQ(VecGhostGetLocalForm(gx,&lx));
-    CHKERRQ(VecGetArray(lx,&array));
+    PetscCall(VecGhostGetLocalForm(gx,&lx));
+    PetscCall(VecGetArray(lx,&array));
 
     for (i=0; i<nlocal+nghost; i++) {
-      CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT " %g\n",i,(double)PetscRealPart(array[i])));
+      PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT " %g\n",i,(double)PetscRealPart(array[i])));
     }
-    CHKERRQ(VecRestoreArray(lx,&array));
-    CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
-    CHKERRQ(VecGhostRestoreLocalForm(gx,&lx));
+    PetscCall(VecRestoreArray(lx,&array));
+    PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
+    PetscCall(VecGhostRestoreLocalForm(gx,&lx));
   }
 
-  CHKERRQ(VecDestroy(&gx));
+  PetscCall(VecDestroy(&gx));
 
-  if (flg) CHKERRQ(PetscFree(tarray));
-  CHKERRQ(PetscFinalize());
+  if (flg) PetscCall(PetscFree(tarray));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

@@ -38,33 +38,33 @@ PetscErrorCode PetscTextBelt(MPI_Comm comm,const char number[],const char messag
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscStrlen(number,&nlen));
+  PetscCall(PetscStrlen(number,&nlen));
   PetscCheckFalse(nlen != 10,comm,PETSC_ERR_ARG_WRONG,"Number %s is not ten digits",number);
-  CHKERRQ(PetscStrlen(message,&mlen));
+  PetscCall(PetscStrlen(message,&mlen));
   PetscCheckFalse(mlen > 100,comm,PETSC_ERR_ARG_WRONG,"Message  %s is too long",message);
-  CHKERRMPI(MPI_Comm_rank(comm,&rank));
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
   if (rank == 0) {
     int       sock;
     char      buff[474],*body;
     PetscInt  i;
 
-    CHKERRQ(PetscMalloc1(mlen+nlen+100,&body));
-    CHKERRQ(PetscStrcpy(body,"number="));
-    CHKERRQ(PetscStrcat(body,number));
-    CHKERRQ(PetscStrcat(body,"&"));
-    CHKERRQ(PetscStrcat(body,"message="));
-    CHKERRQ(PetscStrcat(body,message));
-    CHKERRQ(PetscStrlen(body,&blen));
+    PetscCall(PetscMalloc1(mlen+nlen+100,&body));
+    PetscCall(PetscStrcpy(body,"number="));
+    PetscCall(PetscStrcat(body,number));
+    PetscCall(PetscStrcat(body,"&"));
+    PetscCall(PetscStrcat(body,"message="));
+    PetscCall(PetscStrcat(body,message));
+    PetscCall(PetscStrlen(body,&blen));
     for (i=0; i<(int)blen; i++) {
       if (body[i] == ' ') body[i] = '+';
     }
-    CHKERRQ(PetscOpenSocket("textbelt.com",80,&sock));
-    CHKERRQ(PetscHTTPRequest("POST","textbelt.com/text",NULL,"application/x-www-form-urlencoded",body,sock,buff,sizeof(buff)));
+    PetscCall(PetscOpenSocket("textbelt.com",80,&sock));
+    PetscCall(PetscHTTPRequest("POST","textbelt.com/text",NULL,"application/x-www-form-urlencoded",body,sock,buff,sizeof(buff)));
     close(sock);
-    CHKERRQ(PetscFree(body));
+    PetscCall(PetscFree(body));
     if (flg) {
       char *found;
-      CHKERRQ(PetscStrstr(buff,"\"success\":tr",&found));
+      PetscCall(PetscStrstr(buff,"\"success\":tr",&found));
       *flg = found ? PETSC_TRUE : PETSC_FALSE;
     }
   }

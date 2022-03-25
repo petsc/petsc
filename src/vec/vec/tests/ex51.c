@@ -29,38 +29,38 @@ int main(int argc,char **argv)
   PetscScalar    mean;                    /* used to test mean of parent vector elements */
   PetscBool      usehdf5 = PETSC_FALSE;
 
-  CHKERRQ(PetscInitialize(&argc, &argv, (char*) 0, help));
+  PetscCall(PetscInitialize(&argc, &argv, (char*) 0, help));
 
   /* parse input options to determine I/O format */
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-hdf5",&usehdf5,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-hdf5",&usehdf5,NULL));
 
   /* Create parent vector with 100 elements, set it to 1 */
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD, &testvec));
-  CHKERRQ(VecSetSizes(testvec, PETSC_DECIDE,100));
-  CHKERRQ(VecSetUp(testvec));
-  CHKERRQ(VecSet(testvec, (PetscScalar) 1));
+  PetscCall(VecCreate(PETSC_COMM_WORLD, &testvec));
+  PetscCall(VecSetSizes(testvec, PETSC_DECIDE,100));
+  PetscCall(VecSetUp(testvec));
+  PetscCall(VecSet(testvec, (PetscScalar) 1));
 
   /* Create a vector with 50 elements, set it to 2. */
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD, &writevec));
-  CHKERRQ(VecSetSizes(writevec, PETSC_DECIDE,50));
-  CHKERRQ(VecSetUp(writevec));
-  CHKERRQ(VecSet(writevec, (PetscScalar) 2));
-  CHKERRQ(PetscObjectSetName((PetscObject)writevec,"temp"));
+  PetscCall(VecCreate(PETSC_COMM_WORLD, &writevec));
+  PetscCall(VecSetSizes(writevec, PETSC_DECIDE,50));
+  PetscCall(VecSetUp(writevec));
+  PetscCall(VecSet(writevec, (PetscScalar) 2));
+  PetscCall(PetscObjectSetName((PetscObject)writevec,"temp"));
 
   /* Save to disk in specified format, destroy vector & viewer */
   if (usehdf5) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"writing vector in hdf5 to vector.dat ...\n"));
-    CHKERRQ(PetscViewerHDF5Open(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_WRITE,&viewer));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"writing vector in hdf5 to vector.dat ...\n"));
+    PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_WRITE,&viewer));
   } else {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"writing vector in binary to vector.dat ...\n"));
-    CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_WRITE,&viewer));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"writing vector in binary to vector.dat ...\n"));
+    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_WRITE,&viewer));
   }
-  CHKERRQ(VecView(writevec,viewer));
-  CHKERRQ(VecDestroy(&writevec));
-  CHKERRQ(PetscViewerDestroy(&viewer));
+  PetscCall(VecView(writevec,viewer));
+  PetscCall(VecDestroy(&writevec));
+  PetscCall(PetscViewerDestroy(&viewer));
 
   /* Create index sets on each mpi rank to select the last 50 elements of parent vec */
-  CHKERRQ(VecGetOwnershipRange(testvec, &low, &high));
+  PetscCall(VecGetOwnershipRange(testvec, &low, &high));
   if (low>=skipuntil) {
     isstart = low;
     issize = high - low;
@@ -71,39 +71,39 @@ int main(int argc,char **argv)
     isstart = low;
     issize  = 0;
   }
-  CHKERRQ(ISCreateStride(PETSC_COMM_WORLD, issize, isstart, 1, &loadis));
+  PetscCall(ISCreateStride(PETSC_COMM_WORLD, issize, isstart, 1, &loadis));
 
   /* Create subvector using the index set created above */
-  CHKERRQ(VecGetSubVector(testvec, loadis, &loadvec));
-  CHKERRQ(PetscObjectSetName((PetscObject)loadvec,"temp"));
+  PetscCall(VecGetSubVector(testvec, loadis, &loadvec));
+  PetscCall(PetscObjectSetName((PetscObject)loadvec,"temp"));
 
   /* Load the previously saved vector into the subvector, destroy viewer */
   if (usehdf5) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"reading vector in hdf5 from vector.dat ...\n"));
-    CHKERRQ(PetscViewerHDF5Open(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_READ,&viewer));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"reading vector in hdf5 from vector.dat ...\n"));
+    PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_READ,&viewer));
   } else {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"reading vector in binary from vector.dat ...\n"));
-    CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_READ,&viewer));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"reading vector in binary from vector.dat ...\n"));
+    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_READ,&viewer));
   }
-  CHKERRQ(VecLoad(loadvec, viewer));
-  CHKERRQ(PetscViewerDestroy(&viewer));
+  PetscCall(VecLoad(loadvec, viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
 
   /* Restore subvector to transfer loaded data into parent vector */
-  CHKERRQ(VecRestoreSubVector(testvec, loadis, &loadvec));
+  PetscCall(VecRestoreSubVector(testvec, loadis, &loadvec));
 
   /* Compute sum of parent vector elements */
-  CHKERRQ(VecSum(testvec, &sum));
-  CHKERRQ(VecMean(testvec, &mean));
+  PetscCall(VecSum(testvec, &sum));
+  PetscCall(VecMean(testvec, &mean));
 
   /* to verify that the loaded data has been transferred */
   PetscCheckFalse(sum != 150,PETSC_COMM_WORLD, PETSC_ERR_PLIB,"Data has not been transferred from subvector to parent vector");
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"VecSum on parent vec is : %e\n",(double)PetscAbsScalar(sum)));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"VecMean on parent vec is : %e\n",(double)PetscAbsScalar(mean)));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"VecSum on parent vec is : %e\n",(double)PetscAbsScalar(sum)));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"VecMean on parent vec is : %e\n",(double)PetscAbsScalar(mean)));
 
   /* destroy parent vector, index set and exit */
-  CHKERRQ(VecDestroy(&testvec));
-  CHKERRQ(ISDestroy(&loadis));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&testvec));
+  PetscCall(ISDestroy(&loadis));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

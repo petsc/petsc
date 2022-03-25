@@ -24,14 +24,14 @@ int main(int argc,char **argv)
                  runtime.  The user can use the "help" variable to place
                  additional help messages in this printout.
   */
-  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
   /*
      The following MPI calls return the number of processes
      being used and the rank of this process in the group.
    */
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   /*
      Here we would like to print only one message that represents
@@ -39,7 +39,7 @@ int main(int argc,char **argv)
      communicator PETSC_COMM_WORLD.  Thus, only one message is
      printed representing PETSC_COMM_WORLD, i.e., all the processors.
   */
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Number of processors = %d, rank = %d\n",size,rank));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of processors = %d, rank = %d\n",size,rank));
   /*
      Here we would like to print info from each process, such that
      output from process "n" appears after output from process "n-1".
@@ -50,20 +50,20 @@ int main(int argc,char **argv)
      given communicator has concluded printing, so that the next process
      in the communicator can begin printing to the screen.
      */
-  CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Synchronized Hello World.\n",rank));
-  CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Synchronized Hello World - Part II.\n",rank));
-  CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
+  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Synchronized Hello World.\n",rank));
+  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Synchronized Hello World - Part II.\n",rank));
+  PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
   /*
     Here a barrier is used to separate the two states.
   */
-  CHKERRMPI(MPI_Barrier(PETSC_COMM_WORLD));
+  PetscCallMPI(MPI_Barrier(PETSC_COMM_WORLD));
 
   /*
     Here we simply use PetscPrintf() with the communicator PETSC_COMM_SELF
     (where each process is considered separately).  Thus, this time the
     output from different processes does not appear in any particular order.
   */
-  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"[%d] Jumbled Hello World\n",rank));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"[%d] Jumbled Hello World\n",rank));
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine
@@ -72,7 +72,7 @@ int main(int argc,char **argv)
          options are chosen (e.g., -log_view).
      See the PetscFinalize() manpage for more information.
   */
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

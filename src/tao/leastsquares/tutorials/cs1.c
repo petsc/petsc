@@ -72,67 +72,67 @@ int main(int argc,char **argv)
   PetscInt       lits[100];
   AppCtx         user;               /* user-defined work context */
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char *)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char *)0,help));
 
   /* Allocate solution and vector function vectors */
-  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,N,&x));
-  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,M,&f));
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,N,&x));
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,M,&f));
 
   /* Allocate Jacobian and Dictionary matrix. */
-  CHKERRQ(MatCreateSeqDense(PETSC_COMM_SELF,M,N,NULL,&J));
-  CHKERRQ(MatCreateSeqDense(PETSC_COMM_SELF,K,N,NULL,&D)); /* XH: TODO: dense -> sparse/dense/shell etc, do it on fly  */
+  PetscCall(MatCreateSeqDense(PETSC_COMM_SELF,M,N,NULL,&J));
+  PetscCall(MatCreateSeqDense(PETSC_COMM_SELF,K,N,NULL,&D)); /* XH: TODO: dense -> sparse/dense/shell etc, do it on fly  */
 
   for (i=0;i<M;i++) user.idm[i] = i;
   for (i=0;i<N;i++) user.idn[i] = i;
   for (i=0;i<K;i++) user.idk[i] = i;
 
   /* Create TAO solver and set desired solution method */
-  CHKERRQ(TaoCreate(PETSC_COMM_SELF,&tao));
-  CHKERRQ(TaoSetType(tao,TAOBRGN));
+  PetscCall(TaoCreate(PETSC_COMM_SELF,&tao));
+  PetscCall(TaoSetType(tao,TAOBRGN));
 
   /* User set application context: A, D matrice, and b vector. */
-  CHKERRQ(InitializeUserData(&user));
+  PetscCall(InitializeUserData(&user));
 
   /* Set initial guess */
-  CHKERRQ(FormStartingPoint(x));
+  PetscCall(FormStartingPoint(x));
 
   /* Fill the content of matrix D from user application Context */
-  CHKERRQ(FormDictionaryMatrix(D,&user));
+  PetscCall(FormDictionaryMatrix(D,&user));
 
   /* Bind x to tao->solution. */
-  CHKERRQ(TaoSetSolution(tao,x));
+  PetscCall(TaoSetSolution(tao,x));
   /* Bind D to tao->data->D */
-  CHKERRQ(TaoBRGNSetDictionaryMatrix(tao,D));
+  PetscCall(TaoBRGNSetDictionaryMatrix(tao,D));
 
   /* Set the function and Jacobian routines. */
-  CHKERRQ(TaoSetResidualRoutine(tao,f,EvaluateFunction,(void*)&user));
-  CHKERRQ(TaoSetJacobianResidualRoutine(tao,J,J,EvaluateJacobian,(void*)&user));
+  PetscCall(TaoSetResidualRoutine(tao,f,EvaluateFunction,(void*)&user));
+  PetscCall(TaoSetJacobianResidualRoutine(tao,J,J,EvaluateJacobian,(void*)&user));
 
   /* Check for any TAO command line arguments */
-  CHKERRQ(TaoSetFromOptions(tao));
+  PetscCall(TaoSetFromOptions(tao));
 
-  CHKERRQ(TaoSetConvergenceHistory(tao,hist,resid,0,lits,100,PETSC_TRUE));
+  PetscCall(TaoSetConvergenceHistory(tao,hist,resid,0,lits,100,PETSC_TRUE));
 
   /* Perform the Solve */
-  CHKERRQ(TaoSolve(tao));
+  PetscCall(TaoSolve(tao));
 
   /* XH: Debug: View the result, function and Jacobian.  */
-  CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "-------- result x, residual f=A*x-b, and Jacobian=A. -------- \n"));
-  CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_SELF));
-  CHKERRQ(VecView(f,PETSC_VIEWER_STDOUT_SELF));
-  CHKERRQ(MatView(J,PETSC_VIEWER_STDOUT_SELF));
-  CHKERRQ(MatView(D,PETSC_VIEWER_STDOUT_SELF));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "-------- result x, residual f=A*x-b, and Jacobian=A. -------- \n"));
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_SELF));
+  PetscCall(VecView(f,PETSC_VIEWER_STDOUT_SELF));
+  PetscCall(MatView(J,PETSC_VIEWER_STDOUT_SELF));
+  PetscCall(MatView(D,PETSC_VIEWER_STDOUT_SELF));
 
   /* Free TAO data structures */
-  CHKERRQ(TaoDestroy(&tao));
+  PetscCall(TaoDestroy(&tao));
 
    /* Free PETSc data structures */
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&f));
-  CHKERRQ(MatDestroy(&J));
-  CHKERRQ(MatDestroy(&D));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&f));
+  PetscCall(MatDestroy(&J));
+  PetscCall(MatDestroy(&D));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -145,8 +145,8 @@ PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
   PetscReal      *b=user->b,*f;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(X,&x));
-  CHKERRQ(VecGetArray(F,&f));
+  PetscCall(VecGetArrayRead(X,&x));
+  PetscCall(VecGetArray(F,&f));
 
   /* Even for linear least square, we do not direct use matrix operation f = A*x - b now, just for future modification and compatibility for nonlinear least square */
   for (m=0;m<M;m++) {
@@ -155,8 +155,8 @@ PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
       f[m] += user->A[m][n]*x[n];
     }
   }
-  CHKERRQ(VecRestoreArrayRead(X,&x));
-  CHKERRQ(VecRestoreArray(F,&f));
+  PetscCall(VecRestoreArrayRead(X,&x));
+  PetscCall(VecRestoreArray(F,&f));
   PetscLogFlops(2.0*M*N);
   PetscFunctionReturn(0);
 }
@@ -170,7 +170,7 @@ PetscErrorCode EvaluateJacobian(Tao tao, Vec X, Mat J, Mat Jpre, void *ptr)
   const PetscReal *x;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(X,&x)); /* not used for linear least square, but keep for future nonlinear least square) */
+  PetscCall(VecGetArrayRead(X,&x)); /* not used for linear least square, but keep for future nonlinear least square) */
   /* XH: TODO:  For linear least square, we can just set J=A fixed once, instead of keep update it! Maybe just create a function getFixedJacobian?
     For nonlinear least square, we require x to compute J, keep codes here for future nonlinear least square*/
   for (m=0; m<M; ++m) {
@@ -179,11 +179,11 @@ PetscErrorCode EvaluateJacobian(Tao tao, Vec X, Mat J, Mat Jpre, void *ptr)
     }
   }
 
-  CHKERRQ(MatSetValues(J,M,user->idm,N,user->idn,(PetscReal *)user->J,INSERT_VALUES));
-  CHKERRQ(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatSetValues(J,M,user->idm,N,user->idn,(PetscReal *)user->J,INSERT_VALUES));
+  PetscCall(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY));
 
-  CHKERRQ(VecRestoreArrayRead(X,&x));/* not used for linear least square, but keep for future nonlinear least square) */
+  PetscCall(VecRestoreArrayRead(X,&x));/* not used for linear least square, but keep for future nonlinear least square) */
   PetscLogFlops(0);  /* 0 for linear least square, >0 for nonlinear least square */
   PetscFunctionReturn(0);
 }
@@ -193,9 +193,9 @@ PetscErrorCode EvaluateJacobian(Tao tao, Vec X, Mat J, Mat Jpre, void *ptr)
 PetscErrorCode FormDictionaryMatrix(Mat D,AppCtx *user)
 {
   PetscFunctionBegin;
-  CHKERRQ(MatSetValues(D,K,user->idk,N,user->idn,(PetscReal *)user->D,INSERT_VALUES));
-  CHKERRQ(MatAssemblyBegin(D,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(D,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatSetValues(D,K,user->idk,N,user->idn,(PetscReal *)user->D,INSERT_VALUES));
+  PetscCall(MatAssemblyBegin(D,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(D,MAT_FINAL_ASSEMBLY));
 
   PetscLogFlops(0); /* 0 for fixed dictionary matrix, >0 for varying dictionary matrix */
   PetscFunctionReturn(0);
@@ -205,7 +205,7 @@ PetscErrorCode FormDictionaryMatrix(Mat D,AppCtx *user)
 PetscErrorCode FormStartingPoint(Vec X)
 {
   PetscFunctionBegin;
-  CHKERRQ(VecSet(X,0.0));
+  PetscCall(VecSet(X,0.0));
   PetscFunctionReturn(0);
 }
 

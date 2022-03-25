@@ -14,10 +14,10 @@ static PetscErrorCode GetISs(Vec vecs[],IS is[])
   PetscInt       rstart[2],rend[2];
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetOwnershipRange(vecs[0],&rstart[0],&rend[0]));
-  CHKERRQ(VecGetOwnershipRange(vecs[1],&rstart[1],&rend[1]));
-  CHKERRQ(ISCreateStride(PETSC_COMM_WORLD,rend[0]-rstart[0],rstart[0]+rstart[1],1,&is[0]));
-  CHKERRQ(ISCreateStride(PETSC_COMM_WORLD,rend[1]-rstart[1],rend[0]+rstart[1],1,&is[1]));
+  PetscCall(VecGetOwnershipRange(vecs[0],&rstart[0],&rend[0]));
+  PetscCall(VecGetOwnershipRange(vecs[1],&rstart[1],&rend[1]));
+  PetscCall(ISCreateStride(PETSC_COMM_WORLD,rend[0]-rstart[0],rstart[0]+rstart[1],1,&is[0]));
+  PetscCall(ISCreateStride(PETSC_COMM_WORLD,rend[1]-rstart[1],rend[0]+rstart[1],1,&is[1]));
   PetscFunctionReturn(0);
 }
 
@@ -34,62 +34,62 @@ PetscErrorCode test_view(void)
   PetscBool      explcit = PETSC_FALSE;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "\n\n============== %s ==============\n", PETSC_FUNCTION_NAME));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n\n============== %s ==============\n", PETSC_FUNCTION_NAME));
 
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD, &c));
-  CHKERRQ(VecSetSizes(c, PETSC_DECIDE, 3));
-  CHKERRQ(VecSetFromOptions(c));
-  CHKERRQ(VecDuplicate(c, &d));
-  CHKERRQ(VecDuplicate(c, &e));
-  CHKERRQ(VecDuplicate(c, &f));
+  PetscCall(VecCreate(PETSC_COMM_WORLD, &c));
+  PetscCall(VecSetSizes(c, PETSC_DECIDE, 3));
+  PetscCall(VecSetFromOptions(c));
+  PetscCall(VecDuplicate(c, &d));
+  PetscCall(VecDuplicate(c, &e));
+  PetscCall(VecDuplicate(c, &f));
 
-  CHKERRQ(VecSet(c, 1.0));
-  CHKERRQ(VecSet(d, 2.0));
-  CHKERRQ(VecSet(e, 3.0));
-  CHKERRQ(VecSetValues(f,3,list,vals,INSERT_VALUES));
-  CHKERRQ(VecAssemblyBegin(f));
-  CHKERRQ(VecAssemblyEnd(f));
-  CHKERRQ(VecScale(f, 10.0));
+  PetscCall(VecSet(c, 1.0));
+  PetscCall(VecSet(d, 2.0));
+  PetscCall(VecSet(e, 3.0));
+  PetscCall(VecSetValues(f,3,list,vals,INSERT_VALUES));
+  PetscCall(VecAssemblyBegin(f));
+  PetscCall(VecAssemblyEnd(f));
+  PetscCall(VecScale(f, 10.0));
 
   tmp_buf[0] = e;
   tmp_buf[1] = f;
-  CHKERRQ(PetscOptionsGetBool(NULL,0,"-explicit_is",&explcit,0));
-  CHKERRQ(GetISs(tmp_buf,tmp_is));
-  CHKERRQ(VecCreateNest(PETSC_COMM_WORLD,2,explcit ? tmp_is : NULL,tmp_buf,&b));
-  CHKERRQ(VecDestroy(&e));
-  CHKERRQ(VecDestroy(&f));
-  CHKERRQ(ISDestroy(&tmp_is[0]));
-  CHKERRQ(ISDestroy(&tmp_is[1]));
+  PetscCall(PetscOptionsGetBool(NULL,0,"-explicit_is",&explcit,0));
+  PetscCall(GetISs(tmp_buf,tmp_is));
+  PetscCall(VecCreateNest(PETSC_COMM_WORLD,2,explcit ? tmp_is : NULL,tmp_buf,&b));
+  PetscCall(VecDestroy(&e));
+  PetscCall(VecDestroy(&f));
+  PetscCall(ISDestroy(&tmp_is[0]));
+  PetscCall(ISDestroy(&tmp_is[1]));
 
   tmp_buf[0] = c;
   tmp_buf[1] = d;
-  CHKERRQ(VecCreateNest(PETSC_COMM_WORLD,2,NULL,tmp_buf,&a));
-  CHKERRQ(VecDestroy(&c));   CHKERRQ(VecDestroy(&d));
+  PetscCall(VecCreateNest(PETSC_COMM_WORLD,2,NULL,tmp_buf,&a));
+  PetscCall(VecDestroy(&c));   PetscCall(VecDestroy(&d));
 
   tmp_buf[0] = a;
   tmp_buf[1] = b;
-  CHKERRQ(VecCreateNest(PETSC_COMM_WORLD,2,NULL,tmp_buf,&X));
-  CHKERRQ(VecDestroy(&a));
+  PetscCall(VecCreateNest(PETSC_COMM_WORLD,2,NULL,tmp_buf,&X));
+  PetscCall(VecDestroy(&a));
 
-  CHKERRQ(VecAssemblyBegin(X));
-  CHKERRQ(VecAssemblyEnd(X));
+  PetscCall(VecAssemblyBegin(X));
+  PetscCall(VecAssemblyEnd(X));
 
-  CHKERRQ(VecMax(b, &index, &val));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "(max-b) = %f : index = %" PetscInt_FMT " \n",(double) val, index));
+  PetscCall(VecMax(b, &index, &val));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "(max-b) = %f : index = %" PetscInt_FMT " \n",(double) val, index));
 
-  CHKERRQ(VecMin(b, &index, &val));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "(min-b) = %f : index = %" PetscInt_FMT " \n",(double) val, index));
+  PetscCall(VecMin(b, &index, &val));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "(min-b) = %f : index = %" PetscInt_FMT " \n",(double) val, index));
 
-  CHKERRQ(VecDestroy(&b));
+  PetscCall(VecDestroy(&b));
 
-  CHKERRQ(VecMax(X, &index, &val));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "(max-X) = %f : index = %" PetscInt_FMT " \n",(double) val, index));
-  CHKERRQ(VecMin(X, &index, &val));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "(min-X) = %f : index = %" PetscInt_FMT " \n",(double) val, index));
+  PetscCall(VecMax(X, &index, &val));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "(max-X) = %f : index = %" PetscInt_FMT " \n",(double) val, index));
+  PetscCall(VecMin(X, &index, &val));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "(min-X) = %f : index = %" PetscInt_FMT " \n",(double) val, index));
 
-  CHKERRQ(VecView(X, PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecView(X, PETSC_VIEWER_STDOUT_WORLD));
 
-  CHKERRQ(VecDestroy(&X));
+  PetscCall(VecDestroy(&X));
   PetscFunctionReturn(0);
 }
 
@@ -101,52 +101,52 @@ PetscErrorCode test_vec_ops(void)
   PetscScalar    val;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "\n\n============== %s ==============\n",PETSC_FUNCTION_NAME));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n\n============== %s ==============\n",PETSC_FUNCTION_NAME));
 
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD, &X));
-  CHKERRQ(VecSetSizes(X, 2, 2));
-  CHKERRQ(VecSetType(X, VECNEST));
+  PetscCall(VecCreate(PETSC_COMM_WORLD, &X));
+  PetscCall(VecSetSizes(X, 2, 2));
+  PetscCall(VecSetType(X, VECNEST));
 
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD, &a));
-  CHKERRQ(VecSetSizes(a, 2, 2));
-  CHKERRQ(VecSetType(a, VECNEST));
+  PetscCall(VecCreate(PETSC_COMM_WORLD, &a));
+  PetscCall(VecSetSizes(a, 2, 2));
+  PetscCall(VecSetType(a, VECNEST));
 
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD, &b));
-  CHKERRQ(VecSetSizes(b, 2, 2));
-  CHKERRQ(VecSetType(b, VECNEST));
+  PetscCall(VecCreate(PETSC_COMM_WORLD, &b));
+  PetscCall(VecSetSizes(b, 2, 2));
+  PetscCall(VecSetType(b, VECNEST));
 
   /* assemble X */
-  CHKERRQ(VecNestSetSubVec(X, 0, a));
-  CHKERRQ(VecNestSetSubVec(X, 1, b));
-  CHKERRQ(VecAssemblyBegin(X));
-  CHKERRQ(VecAssemblyEnd(X));
+  PetscCall(VecNestSetSubVec(X, 0, a));
+  PetscCall(VecNestSetSubVec(X, 1, b));
+  PetscCall(VecAssemblyBegin(X));
+  PetscCall(VecAssemblyEnd(X));
 
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD, &c));
-  CHKERRQ(VecSetSizes(c, 3, 3));
-  CHKERRQ(VecSetType(c, VECSEQ));
-  CHKERRQ(VecDuplicate(c, &d));
-  CHKERRQ(VecDuplicate(c, &e));
-  CHKERRQ(VecDuplicate(c, &f));
+  PetscCall(VecCreate(PETSC_COMM_WORLD, &c));
+  PetscCall(VecSetSizes(c, 3, 3));
+  PetscCall(VecSetType(c, VECSEQ));
+  PetscCall(VecDuplicate(c, &d));
+  PetscCall(VecDuplicate(c, &e));
+  PetscCall(VecDuplicate(c, &f));
 
-  CHKERRQ(VecSet(c, 1.0));
-  CHKERRQ(VecSet(d, 2.0));
-  CHKERRQ(VecSet(e, 3.0));
-  CHKERRQ(VecSet(f, 4.0));
+  PetscCall(VecSet(c, 1.0));
+  PetscCall(VecSet(d, 2.0));
+  PetscCall(VecSet(e, 3.0));
+  PetscCall(VecSet(f, 4.0));
 
   /* assemble a */
-  CHKERRQ(VecNestSetSubVec(a, 0, c));
-  CHKERRQ(VecNestSetSubVec(a, 1, d));
-  CHKERRQ(VecAssemblyBegin(a));
-  CHKERRQ(VecAssemblyEnd(a));
+  PetscCall(VecNestSetSubVec(a, 0, c));
+  PetscCall(VecNestSetSubVec(a, 1, d));
+  PetscCall(VecAssemblyBegin(a));
+  PetscCall(VecAssemblyEnd(a));
 
   /* assemble b */
-  CHKERRQ(VecNestSetSubVec(b, 0, e));
-  CHKERRQ(VecNestSetSubVec(b, 1, f));
-  CHKERRQ(VecAssemblyBegin(b));
-  CHKERRQ(VecAssemblyEnd(b));
+  PetscCall(VecNestSetSubVec(b, 0, e));
+  PetscCall(VecNestSetSubVec(b, 1, f));
+  PetscCall(VecAssemblyBegin(b));
+  PetscCall(VecAssemblyEnd(b));
 
-  CHKERRQ(VecDot(X,X, &val));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "X.X = %f \n",(double) val));
+  PetscCall(VecDot(X,X, &val));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "X.X = %f \n",(double) val));
   PetscFunctionReturn(0);
 }
 #endif
@@ -159,18 +159,18 @@ PetscErrorCode gen_test_vector(MPI_Comm comm, PetscInt length, PetscInt start_va
   PetscScalar    vx;
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_size(comm, &size));
-  CHKERRQ(VecCreate(comm, &v));
-  CHKERRQ(VecSetSizes(v, PETSC_DECIDE, length));
-  if (size == 1) CHKERRQ(VecSetType(v, VECSEQ));
-  else CHKERRQ(VecSetType(v, VECMPI));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCall(VecCreate(comm, &v));
+  PetscCall(VecSetSizes(v, PETSC_DECIDE, length));
+  if (size == 1) PetscCall(VecSetType(v, VECSEQ));
+  else PetscCall(VecSetType(v, VECMPI));
 
   for (i=0; i<length; i++) {
     vx   = (PetscScalar)(start_value + i * stride);
-    CHKERRQ(VecSetValue(v, i, vx, INSERT_VALUES));
+    PetscCall(VecSetValue(v, i, vx, INSERT_VALUES));
   }
-  CHKERRQ(VecAssemblyBegin(v));
-  CHKERRQ(VecAssemblyEnd(v));
+  PetscCall(VecAssemblyBegin(v));
+  PetscCall(VecAssemblyEnd(v));
 
   *_v = v;
   PetscFunctionReturn(0);
@@ -194,7 +194,7 @@ PetscErrorCode test_axpy_dot_max(void)
   PetscInt       index;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "\n\n============== %s ==============\n", PETSC_FUNCTION_NAME));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n\n============== %s ==============\n", PETSC_FUNCTION_NAME));
 
   gen_test_vector(PETSC_COMM_WORLD, 4, 0, 1, &x1);
   gen_test_vector(PETSC_COMM_WORLD, 5, 10, 2, &x2);
@@ -204,65 +204,65 @@ PetscErrorCode test_axpy_dot_max(void)
 
   tmp_buf[0] = x1;
   tmp_buf[1] = x2;
-  CHKERRQ(VecCreateNest(PETSC_COMM_WORLD,2,NULL,tmp_buf,&X));
-  CHKERRQ(VecAssemblyBegin(X));
-  CHKERRQ(VecAssemblyEnd(X));
-  CHKERRQ(VecDestroy(&x1));
-  CHKERRQ(VecDestroy(&x2));
+  PetscCall(VecCreateNest(PETSC_COMM_WORLD,2,NULL,tmp_buf,&X));
+  PetscCall(VecAssemblyBegin(X));
+  PetscCall(VecAssemblyEnd(X));
+  PetscCall(VecDestroy(&x1));
+  PetscCall(VecDestroy(&x2));
 
   tmp_buf[0] = y1;
   tmp_buf[1] = y2;
-  CHKERRQ(VecCreateNest(PETSC_COMM_WORLD,2,NULL,tmp_buf,&Y));
-  CHKERRQ(VecAssemblyBegin(Y));
-  CHKERRQ(VecAssemblyEnd(Y));
-  CHKERRQ(VecDestroy(&y1));
-  CHKERRQ(VecDestroy(&y2));
+  PetscCall(VecCreateNest(PETSC_COMM_WORLD,2,NULL,tmp_buf,&Y));
+  PetscCall(VecAssemblyBegin(Y));
+  PetscCall(VecAssemblyEnd(Y));
+  PetscCall(VecDestroy(&y1));
+  PetscCall(VecDestroy(&y2));
 
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "VecAXPY \n"));
-  CHKERRQ(VecAXPY(Y, 1.0, X)); /* Y <- a X + Y */
-  CHKERRQ(VecNestGetSubVec(Y, 0, &y1));
-  CHKERRQ(VecNestGetSubVec(Y, 1, &y2));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "(1) y1 = \n"));
-  CHKERRQ(VecView(y1, PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "(1) y2 = \n"));
-  CHKERRQ(VecView(y2, PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(VecDot(X,Y, &scalar));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "VecAXPY \n"));
+  PetscCall(VecAXPY(Y, 1.0, X)); /* Y <- a X + Y */
+  PetscCall(VecNestGetSubVec(Y, 0, &y1));
+  PetscCall(VecNestGetSubVec(Y, 1, &y2));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "(1) y1 = \n"));
+  PetscCall(VecView(y1, PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "(1) y2 = \n"));
+  PetscCall(VecView(y2, PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecDot(X,Y, &scalar));
 
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "X.Y = %lf + %lfi \n", (double)PetscRealPart(scalar), (double)PetscImaginaryPart(scalar)));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "X.Y = %lf + %lfi \n", (double)PetscRealPart(scalar), (double)PetscImaginaryPart(scalar)));
 
-  CHKERRQ(VecDotNorm2(X,Y, &scalar, &real2));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "X.Y = %lf + %lfi     norm2(Y) = %lf\n", (double)PetscRealPart(scalar), (double)PetscImaginaryPart(scalar), (double)real2));
+  PetscCall(VecDotNorm2(X,Y, &scalar, &real2));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "X.Y = %lf + %lfi     norm2(Y) = %lf\n", (double)PetscRealPart(scalar), (double)PetscImaginaryPart(scalar), (double)real2));
 
-  CHKERRQ(VecAXPY(Y, 1.0, X)); /* Y <- a X + Y */
-  CHKERRQ(VecNestGetSubVec(Y, 0, &y1));
-  CHKERRQ(VecNestGetSubVec(Y, 1, &y2));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "(2) y1 = \n"));
-  CHKERRQ(VecView(y1, PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "(2) y2 = \n"));
-  CHKERRQ(VecView(y2, PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(VecDot(X,Y, &scalar));
+  PetscCall(VecAXPY(Y, 1.0, X)); /* Y <- a X + Y */
+  PetscCall(VecNestGetSubVec(Y, 0, &y1));
+  PetscCall(VecNestGetSubVec(Y, 1, &y2));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "(2) y1 = \n"));
+  PetscCall(VecView(y1, PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "(2) y2 = \n"));
+  PetscCall(VecView(y2, PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecDot(X,Y, &scalar));
 
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "X.Y = %lf + %lfi \n", (double)PetscRealPart(scalar), (double)PetscImaginaryPart(scalar)));
-  CHKERRQ(VecDotNorm2(X,Y, &scalar, &real2));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "X.Y = %lf + %lfi     norm2(Y) = %lf\n", (double)PetscRealPart(scalar), (double)PetscImaginaryPart(scalar), (double)real2));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "X.Y = %lf + %lfi \n", (double)PetscRealPart(scalar), (double)PetscImaginaryPart(scalar)));
+  PetscCall(VecDotNorm2(X,Y, &scalar, &real2));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "X.Y = %lf + %lfi     norm2(Y) = %lf\n", (double)PetscRealPart(scalar), (double)PetscImaginaryPart(scalar), (double)real2));
 
-  CHKERRQ(VecMax(X, &index, &real));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "(max-X) = %f : index = %" PetscInt_FMT " \n",(double) real, index));
-  CHKERRQ(VecMin(X, &index, &real));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "(min-X) = %f : index = %" PetscInt_FMT " \n",(double) real, index));
+  PetscCall(VecMax(X, &index, &real));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "(max-X) = %f : index = %" PetscInt_FMT " \n",(double) real, index));
+  PetscCall(VecMin(X, &index, &real));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "(min-X) = %f : index = %" PetscInt_FMT " \n",(double) real, index));
 
-  CHKERRQ(VecDestroy(&X));
-  CHKERRQ(VecDestroy(&Y));
+  PetscCall(VecDestroy(&X));
+  PetscCall(VecDestroy(&Y));
   PetscFunctionReturn(0);
 }
 
 int main(int argc, char **args)
 {
 
-  CHKERRQ(PetscInitialize(&argc, &args,(char*)0, help));
-  CHKERRQ(test_view());
-  CHKERRQ(test_axpy_dot_max());
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscInitialize(&argc, &args,(char*)0, help));
+  PetscCall(test_view());
+  PetscCall(test_axpy_dot_max());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

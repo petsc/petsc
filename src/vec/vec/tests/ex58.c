@@ -10,27 +10,27 @@ int main(int argc,char **argv)
   PetscInt    n        = 5;
   PetscScalar xHost[5] = {0.,1.,2.,3.,4.};
 
-  CHKERRQ(PetscInitialize(&argc, &argv, (char*)0, help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc, &argv, (char*)0, help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
-  if (size == 1) CHKERRQ(VecCreateSeqCUDAWithArrays(PETSC_COMM_WORLD,1,n,xHost,NULL,&x));
-  else CHKERRQ(VecCreateMPICUDAWithArrays(PETSC_COMM_WORLD,1,n,PETSC_DECIDE,xHost,NULL,&x));
+  if (size == 1) PetscCall(VecCreateSeqCUDAWithArrays(PETSC_COMM_WORLD,1,n,xHost,NULL,&x));
+  else PetscCall(VecCreateMPICUDAWithArrays(PETSC_COMM_WORLD,1,n,PETSC_DECIDE,xHost,NULL,&x));
 
   /* print x should be equivalent too xHost */
-  CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(VecSet(x,42.0));
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecSet(x,42.0));
   /* print x should be all 42 */
-  CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
 
-  if (size == 1) CHKERRQ(VecCreateSeqWithArray(PETSC_COMM_WORLD,1,n,xHost,&y));
-  else CHKERRQ(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,PETSC_DECIDE,xHost,&y));
+  if (size == 1) PetscCall(VecCreateSeqWithArray(PETSC_COMM_WORLD,1,n,xHost,&y));
+  else PetscCall(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,PETSC_DECIDE,xHost,&y));
 
   /* print y should be all 42 */
-  CHKERRQ(VecView(y, PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecView(y, PETSC_VIEWER_STDOUT_WORLD));
 
-  CHKERRQ(VecDestroy(&y));
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&y));
+  PetscCall(VecDestroy(&x));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

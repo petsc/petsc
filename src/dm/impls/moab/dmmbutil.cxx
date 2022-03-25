@@ -215,7 +215,7 @@ PetscErrorCode DMMoab_GenerateVertices_Private(moab::Interface *mbImpl, moab::Re
    * x will vary from  m*A*q*block + a*q*block to m*A*q*block+(a+1)*q*block etc.
    */
   nnodes = genCtx.blockSizeVertexXYZ[0] * (genCtx.dim > 1 ? genCtx.blockSizeVertexXYZ[1] * (genCtx.dim > 2 ? genCtx.blockSizeVertexXYZ[2] : 1) : 1);
-  CHKERRQ(PetscMalloc1(nnodes, &gids));
+  PetscCall(PetscMalloc1(nnodes, &gids));
 
   merr = iface->get_node_coords(3, nnodes, 0, startv, arrays);MBERR("Can't get node coords.", merr);
 
@@ -227,7 +227,7 @@ PetscErrorCode DMMoab_GenerateVertices_Private(moab::Interface *mbImpl, moab::Re
   x = ( m * genCtx.A + a) * genCtx.q;
   y = ( n * genCtx.B + b) * genCtx.q;
   z = ( k * genCtx.C + c) * genCtx.q;
-  CHKERRQ(PetscInfo(NULL, "Starting offset for coordinates := %" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT "\n", x, y, z));
+  PetscCall(PetscInfo(NULL, "Starting offset for coordinates := %" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT "\n", x, y, z));
   ix = 0;
   moab::Range verts(startv, startv + nnodes - 1);
   for (kk = 0; kk < (genCtx.dim > 2 ? genCtx.blockSizeVertexXYZ[2] : 1); kk++) {
@@ -237,7 +237,7 @@ PetscErrorCode DMMoab_GenerateVertices_Private(moab::Interface *mbImpl, moab::Re
         arrays[0][ix] = (x + ii) * genCtx.dx + genCtx.xyzbounds[0];
         arrays[1][ix] = (y + jj) * genCtx.dy + genCtx.xyzbounds[2];
         arrays[2][ix] = (z + kk) * genCtx.dz + genCtx.xyzbounds[4];
-        CHKERRQ(PetscInfo(NULL, "Creating vertex with coordinates := %f, %f, %f\n", arrays[0][ix], arrays[1][ix], arrays[2][ix]));
+        PetscCall(PetscInfo(NULL, "Creating vertex with coordinates := %f, %f, %f\n", arrays[0][ix], arrays[1][ix], arrays[2][ix]));
 
         /* If we want to set some tags on the vertices -> use the following entity handle definition:
            moab::EntityHandle v = startv + ix;
@@ -250,7 +250,7 @@ PetscErrorCode DMMoab_GenerateVertices_Private(moab::Interface *mbImpl, moab::Re
   /* set global ID data on vertices */
   mbImpl->tag_set_data(global_id_tag, verts, &gids[0]);
   verts.swap(uverts);
-  CHKERRQ(PetscFree(gids));
+  PetscCall(PetscFree(gids));
   PetscFunctionReturn(0);
 }
 
@@ -359,7 +359,7 @@ PetscErrorCode DMMBUtil_InitializeOptions(DMMoabMeshGeneratorCtx& genCtx, PetscI
     if (rank < genCtx.remainder)    /* This process gets "fraction+1" elements */
       genCtx.fraction++;
 
-    CHKERRQ(PetscInfo(NULL, "Fraction = %" PetscInt_FMT ", Remainder = %" PetscInt_FMT ", Cumulative fraction = %" PetscInt_FMT "\n", genCtx.fraction, genCtx.remainder, genCtx.cumfraction));
+    PetscCall(PetscInfo(NULL, "Fraction = %" PetscInt_FMT ", Remainder = %" PetscInt_FMT ", Cumulative fraction = %" PetscInt_FMT "\n", genCtx.fraction, genCtx.remainder, genCtx.cumfraction));
     switch (genCtx.dim) {
     case 1:
       genCtx.blockSizeElementXYZ[0] = genCtx.fraction;
@@ -470,13 +470,13 @@ PetscErrorCode DMMBUtil_InitializeOptions(DMMoabMeshGeneratorCtx& genCtx, PetscI
   PetscCheckFalse(genCtx.dim > 1 && (genCtx.xyzbounds[2] >= genCtx.xyzbounds[3]),PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Y-dim: Left boundary cannot be greater than right. [%G >= %G]", genCtx.xyzbounds[2], genCtx.xyzbounds[3]);
   PetscCheckFalse(genCtx.dim > 2 && (genCtx.xyzbounds[4] >= genCtx.xyzbounds[5]),PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Z-dim: Left boundary cannot be greater than right. [%G >= %G]", genCtx.xyzbounds[4], genCtx.xyzbounds[5]);
 
-  CHKERRQ(PetscInfo(NULL, "Local elements:= %" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT "\n", genCtx.blockSizeElementXYZ[0], genCtx.blockSizeElementXYZ[1], genCtx.blockSizeElementXYZ[2]));
-  CHKERRQ(PetscInfo(NULL, "Local vertices:= %" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT "\n", genCtx.blockSizeVertexXYZ[0], genCtx.blockSizeVertexXYZ[1], genCtx.blockSizeVertexXYZ[2]));
-  CHKERRQ(PetscInfo(NULL, "Local blocks/processors := %" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT "\n", genCtx.A, genCtx.B, genCtx.C));
-  CHKERRQ(PetscInfo(NULL, "Local processors := %" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT "\n", genCtx.M, genCtx.N, genCtx.K));
-  CHKERRQ(PetscInfo(NULL, "Local nexyz:= %" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT "\n", genCtx.nex, genCtx.ney, genCtx.nez));
-  CHKERRQ(PetscInfo(NULL, "Local delxyz:= %g, %g, %g\n", genCtx.dx, genCtx.dy, genCtx.dz));
-  CHKERRQ(PetscInfo(NULL, "Local strides:= %" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT "\n", genCtx.xstride, genCtx.ystride, genCtx.zstride));
+  PetscCall(PetscInfo(NULL, "Local elements:= %" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT "\n", genCtx.blockSizeElementXYZ[0], genCtx.blockSizeElementXYZ[1], genCtx.blockSizeElementXYZ[2]));
+  PetscCall(PetscInfo(NULL, "Local vertices:= %" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT "\n", genCtx.blockSizeVertexXYZ[0], genCtx.blockSizeVertexXYZ[1], genCtx.blockSizeVertexXYZ[2]));
+  PetscCall(PetscInfo(NULL, "Local blocks/processors := %" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT "\n", genCtx.A, genCtx.B, genCtx.C));
+  PetscCall(PetscInfo(NULL, "Local processors := %" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT "\n", genCtx.M, genCtx.N, genCtx.K));
+  PetscCall(PetscInfo(NULL, "Local nexyz:= %" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT "\n", genCtx.nex, genCtx.ney, genCtx.nez));
+  PetscCall(PetscInfo(NULL, "Local delxyz:= %g, %g, %g\n", genCtx.dx, genCtx.dy, genCtx.dz));
+  PetscCall(PetscInfo(NULL, "Local strides:= %" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT "\n", genCtx.xstride, genCtx.ystride, genCtx.zstride));
   PetscFunctionReturn(0);
 }
 
@@ -522,12 +522,12 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
   PetscFunctionBegin;
   PetscCheckFalse(dim < 1 || dim > 3,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension argument for mesh: dim=[1,3].");
 
-  CHKERRQ(PetscLogEventRegister("GenerateMesh", DM_CLASSID,   &genCtx.generateMesh));
-  CHKERRQ(PetscLogEventRegister("AddVertices", DM_CLASSID,   &genCtx.generateVertices));
-  CHKERRQ(PetscLogEventRegister("AddElements", DM_CLASSID,   &genCtx.generateElements));
-  CHKERRQ(PetscLogEventRegister("ParResolve", DM_CLASSID,   &genCtx.parResolve));
-  CHKERRQ(PetscLogEventBegin(genCtx.generateMesh, 0, 0, 0, 0));
-  CHKERRMPI(MPI_Comm_size(comm, &global_size));
+  PetscCall(PetscLogEventRegister("GenerateMesh", DM_CLASSID,   &genCtx.generateMesh));
+  PetscCall(PetscLogEventRegister("AddVertices", DM_CLASSID,   &genCtx.generateVertices));
+  PetscCall(PetscLogEventRegister("AddElements", DM_CLASSID,   &genCtx.generateElements));
+  PetscCall(PetscLogEventRegister("ParResolve", DM_CLASSID,   &genCtx.parResolve));
+  PetscCall(PetscLogEventBegin(genCtx.generateMesh, 0, 0, 0, 0));
+  PetscCallMPI(MPI_Comm_size(comm, &global_size));
   /* total number of vertices in all dimensions */
   n = pow(npts, dim);
 
@@ -537,7 +537,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
   PetscCheckFalse(nghost < 0,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Number of ghost layers cannot be negative.");
 
   /* Create the basic DMMoab object and keep the default parameters created by DM impls */
-  CHKERRQ(DMMoabCreateMoab(comm, NULL, NULL, NULL, dm));
+  PetscCall(DMMoabCreateMoab(comm, NULL, NULL, NULL, dm));
 
   /* get all the necessary handles from the private DM object */
   dmmoab = (DM_Moab*)(*dm)->data;
@@ -566,24 +566,24 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
   genCtx.blockSizeElementXYZ[1] = 0;
   genCtx.blockSizeElementXYZ[2] = 0;
 
-  ierr = PetscOptionsBegin(comm, "", "DMMoab Creation Options", "DMMOAB");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm, "", "DMMoab Creation Options", "DMMOAB");PetscCall(ierr);
   /* Handle DMMoab spatial resolution */
-  CHKERRQ(PetscOptionsInt("-dmb_grid_x", "Number of grid points in x direction", "DMMoabSetSizes", genCtx.blockSizeElementXYZ[0], &genCtx.blockSizeElementXYZ[0], &genCtx.usrxyzgrid));
-  if (dim > 1) CHKERRQ(PetscOptionsInt("-dmb_grid_y", "Number of grid points in y direction", "DMMoabSetSizes", genCtx.blockSizeElementXYZ[1], &genCtx.blockSizeElementXYZ[1], &genCtx.usrxyzgrid));
-  if (dim > 2) CHKERRQ(PetscOptionsInt("-dmb_grid_z", "Number of grid points in z direction", "DMMoabSetSizes", genCtx.blockSizeElementXYZ[2], &genCtx.blockSizeElementXYZ[2], &genCtx.usrxyzgrid));
+  PetscCall(PetscOptionsInt("-dmb_grid_x", "Number of grid points in x direction", "DMMoabSetSizes", genCtx.blockSizeElementXYZ[0], &genCtx.blockSizeElementXYZ[0], &genCtx.usrxyzgrid));
+  if (dim > 1) PetscCall(PetscOptionsInt("-dmb_grid_y", "Number of grid points in y direction", "DMMoabSetSizes", genCtx.blockSizeElementXYZ[1], &genCtx.blockSizeElementXYZ[1], &genCtx.usrxyzgrid));
+  if (dim > 2) PetscCall(PetscOptionsInt("-dmb_grid_z", "Number of grid points in z direction", "DMMoabSetSizes", genCtx.blockSizeElementXYZ[2], &genCtx.blockSizeElementXYZ[2], &genCtx.usrxyzgrid));
 
   /* Handle DMMoab parallel distibution */
-  CHKERRQ(PetscOptionsInt("-dmb_processors_x", "Number of processors in x direction", "DMMoabSetNumProcs", genCtx.M, &genCtx.M, &genCtx.usrprocgrid));
-  if (dim > 1) CHKERRQ(PetscOptionsInt("-dmb_processors_y", "Number of processors in y direction", "DMMoabSetNumProcs", genCtx.N, &genCtx.N, &genCtx.usrprocgrid));
-  if (dim > 2) CHKERRQ(PetscOptionsInt("-dmb_processors_z", "Number of processors in z direction", "DMMoabSetNumProcs", genCtx.K, &genCtx.K, &genCtx.usrprocgrid));
+  PetscCall(PetscOptionsInt("-dmb_processors_x", "Number of processors in x direction", "DMMoabSetNumProcs", genCtx.M, &genCtx.M, &genCtx.usrprocgrid));
+  if (dim > 1) PetscCall(PetscOptionsInt("-dmb_processors_y", "Number of processors in y direction", "DMMoabSetNumProcs", genCtx.N, &genCtx.N, &genCtx.usrprocgrid));
+  if (dim > 2) PetscCall(PetscOptionsInt("-dmb_processors_z", "Number of processors in z direction", "DMMoabSetNumProcs", genCtx.K, &genCtx.K, &genCtx.usrprocgrid));
 
   /* Handle DMMoab block refinement */
-  CHKERRQ(PetscOptionsInt("-dmb_refine_x", "Number of refinement blocks in x direction", "DMMoabSetRefinement", genCtx.A, &genCtx.A, &genCtx.usrrefgrid));
-  if (dim > 1) CHKERRQ(PetscOptionsInt("-dmb_refine_y", "Number of refinement blocks in y direction", "DMMoabSetRefinement", genCtx.B, &genCtx.B, &genCtx.usrrefgrid));
-  if (dim > 2) CHKERRQ(PetscOptionsInt("-dmb_refine_z", "Number of refinement blocks in z direction", "DMMoabSetRefinement", genCtx.C, &genCtx.C, &genCtx.usrrefgrid));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-dmb_refine_x", "Number of refinement blocks in x direction", "DMMoabSetRefinement", genCtx.A, &genCtx.A, &genCtx.usrrefgrid));
+  if (dim > 1) PetscCall(PetscOptionsInt("-dmb_refine_y", "Number of refinement blocks in y direction", "DMMoabSetRefinement", genCtx.B, &genCtx.B, &genCtx.usrrefgrid));
+  if (dim > 2) PetscCall(PetscOptionsInt("-dmb_refine_z", "Number of refinement blocks in z direction", "DMMoabSetRefinement", genCtx.C, &genCtx.C, &genCtx.usrrefgrid));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
-  CHKERRQ(DMMBUtil_InitializeOptions(genCtx, dim, useSimplex, global_rank, global_size, bounds, nele));
+  PetscCall(DMMBUtil_InitializeOptions(genCtx, dim, useSimplex, global_rank, global_size, bounds, nele));
 
   //PetscCheckFalse(nele<nprocs,PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"The dimensional discretization size should be greater or equal to number of processors: %D < %D",nele,nprocs);
 
@@ -626,7 +626,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
   /* lets create some sets */
   merr = mbImpl->tag_get_handle(GEOM_DIMENSION_TAG_NAME, 1, moab::MB_TYPE_INTEGER, geom_tag, moab::MB_TAG_CREAT | moab::MB_TAG_SPARSE, &dum_id);MBERRNM(merr);
   merr = mbImpl->create_meshset(moab::MESHSET_SET, regionset);MBERRNM(merr);
-  CHKERRQ(PetscLogEventEnd(genCtx.generateMesh, 0, 0, 0, 0));
+  PetscCall(PetscLogEventEnd(genCtx.generateMesh, 0, 0, 0, 0));
 
   for (a = 0; a < (genCtx.dim > 0 ? genCtx.A : genCtx.A); a++) {
     for (b = 0; b < (genCtx.dim > 1 ? genCtx.B : 1); b++) {
@@ -634,13 +634,13 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
 
         moab::EntityHandle startv;
 
-        CHKERRQ(PetscLogEventBegin(genCtx.generateVertices, 0, 0, 0, 0));
-        CHKERRQ(DMMoab_GenerateVertices_Private(mbImpl, readMeshIface, genCtx, ml, nl, kl, a, b, c, global_id_tag, startv, verts));
-        CHKERRQ(PetscLogEventEnd(genCtx.generateVertices, 0, 0, 0, 0));
+        PetscCall(PetscLogEventBegin(genCtx.generateVertices, 0, 0, 0, 0));
+        PetscCall(DMMoab_GenerateVertices_Private(mbImpl, readMeshIface, genCtx, ml, nl, kl, a, b, c, global_id_tag, startv, verts));
+        PetscCall(PetscLogEventEnd(genCtx.generateVertices, 0, 0, 0, 0));
 
-        CHKERRQ(PetscLogEventBegin(genCtx.generateElements, 0, 0, 0, 0));
-        CHKERRQ(DMMoab_GenerateElements_Private(mbImpl, readMeshIface, genCtx, ml, nl, kl, a, b, c, global_id_tag, startv, cells));
-        CHKERRQ(PetscLogEventEnd(genCtx.generateElements, 0, 0, 0, 0));
+        PetscCall(PetscLogEventBegin(genCtx.generateElements, 0, 0, 0, 0));
+        PetscCall(DMMoab_GenerateElements_Private(mbImpl, readMeshIface, genCtx, ml, nl, kl, a, b, c, global_id_tag, startv, cells));
+        PetscCall(PetscLogEventEnd(genCtx.generateElements, 0, 0, 0, 0));
 
         PetscInt part_num = 0;
         switch (genCtx.dim) {
@@ -691,7 +691,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
   /* Only in parallel: resolve shared entities between processors and exchange ghost layers */
   if (global_size > 1) {
 
-    CHKERRQ(PetscLogEventBegin(genCtx.parResolve, 0, 0, 0, 0));
+    PetscCall(PetscLogEventBegin(genCtx.parResolve, 0, 0, 0, 0));
 
     merr = mbImpl->get_entities_by_dimension(dmmoab->fileset, genCtx.dim, cells);MBERR("Can't get all d-dimensional elements.", merr);
     merr = mbImpl->get_entities_by_dimension(dmmoab->fileset, 0, verts);MBERR("Can't get all vertices.", merr);
@@ -723,7 +723,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
     merr = pcomm->assign_global_ids(dmmoab->fileset, dim, 1, false, true, false);MBERRNM(merr);
 #endif
 
-    CHKERRQ(PetscLogEventEnd(genCtx.parResolve, 0, 0, 0, 0));
+    PetscCall(PetscLogEventEnd(genCtx.parResolve, 0, 0, 0, 0));
   }
 
   if (!genCtx.keep_skins) { // default is to delete the 1- and 2-dimensional entities
@@ -761,28 +761,28 @@ PetscErrorCode DMMoab_GetReadOptions_Private(PetscBool by_rank, PetscInt numproc
   char  ropts_dbg[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  CHKERRQ(PetscMalloc1(PETSC_MAX_PATH_LEN, &ropts));
-  CHKERRQ(PetscMemzero(&ropts_par, PETSC_MAX_PATH_LEN));
-  CHKERRQ(PetscMemzero(&ropts_pargh, PETSC_MAX_PATH_LEN));
-  CHKERRQ(PetscMemzero(&ropts_dbg, PETSC_MAX_PATH_LEN));
+  PetscCall(PetscMalloc1(PETSC_MAX_PATH_LEN, &ropts));
+  PetscCall(PetscMemzero(&ropts_par, PETSC_MAX_PATH_LEN));
+  PetscCall(PetscMemzero(&ropts_pargh, PETSC_MAX_PATH_LEN));
+  PetscCall(PetscMemzero(&ropts_dbg, PETSC_MAX_PATH_LEN));
 
   /* do parallel read unless using only one processor */
   if (numproc > 1) {
-    // CHKERRQ(PetscSNPrintf(ropts_par, PETSC_MAX_PATH_LEN, "PARALLEL=%s;PARTITION=PARALLEL_PARTITION;PARTITION_DISTRIBUTE;PARALLEL_RESOLVE_SHARED_ENTS;PARALLEL_GHOSTS=%d.0.1%s;",MoabReadModes[mode],dim,(by_rank ? ";PARTITION_BY_RANK":"")));
-    CHKERRQ(PetscSNPrintf(ropts_par, PETSC_MAX_PATH_LEN, "PARALLEL=%s;PARTITION=PARALLEL_PARTITION;PARTITION_DISTRIBUTE;PARALLEL_RESOLVE_SHARED_ENTS;%s", MoabReadModes[mode], (by_rank ? "PARTITION_BY_RANK;" : "")));
+    // PetscCall(PetscSNPrintf(ropts_par, PETSC_MAX_PATH_LEN, "PARALLEL=%s;PARTITION=PARALLEL_PARTITION;PARTITION_DISTRIBUTE;PARALLEL_RESOLVE_SHARED_ENTS;PARALLEL_GHOSTS=%d.0.1%s;",MoabReadModes[mode],dim,(by_rank ? ";PARTITION_BY_RANK":"")));
+    PetscCall(PetscSNPrintf(ropts_par, PETSC_MAX_PATH_LEN, "PARALLEL=%s;PARTITION=PARALLEL_PARTITION;PARTITION_DISTRIBUTE;PARALLEL_RESOLVE_SHARED_ENTS;%s", MoabReadModes[mode], (by_rank ? "PARTITION_BY_RANK;" : "")));
     if (nghost) {
-      CHKERRQ(PetscSNPrintf(ropts_pargh, PETSC_MAX_PATH_LEN, "PARALLEL_GHOSTS=%" PetscInt_FMT ".0.%" PetscInt_FMT ";", dim, nghost));
+      PetscCall(PetscSNPrintf(ropts_pargh, PETSC_MAX_PATH_LEN, "PARALLEL_GHOSTS=%" PetscInt_FMT ".0.%" PetscInt_FMT ";", dim, nghost));
     }
   }
 
   if (dbglevel) {
     if (numproc > 1) {
-      CHKERRQ(PetscSNPrintf(ropts_dbg, PETSC_MAX_PATH_LEN, "CPUTIME;DEBUG_IO=%" PetscInt_FMT ";DEBUG_PIO=%" PetscInt_FMT ";", dbglevel, dbglevel));
+      PetscCall(PetscSNPrintf(ropts_dbg, PETSC_MAX_PATH_LEN, "CPUTIME;DEBUG_IO=%" PetscInt_FMT ";DEBUG_PIO=%" PetscInt_FMT ";", dbglevel, dbglevel));
     }
-    else CHKERRQ(PetscSNPrintf(ropts_dbg, PETSC_MAX_PATH_LEN, "CPUTIME;DEBUG_IO=%" PetscInt_FMT ";", dbglevel));
+    else PetscCall(PetscSNPrintf(ropts_dbg, PETSC_MAX_PATH_LEN, "CPUTIME;DEBUG_IO=%" PetscInt_FMT ";", dbglevel));
   }
 
-  CHKERRQ(PetscSNPrintf(ropts, PETSC_MAX_PATH_LEN, "%s%s%s%s%s", ropts_par, (nghost ? ropts_pargh : ""), ropts_dbg, (extra_opts ? extra_opts : ""), (dm_opts ? dm_opts : "")));
+  PetscCall(PetscSNPrintf(ropts, PETSC_MAX_PATH_LEN, "%s%s%s%s%s", ropts_par, (nghost ? ropts_pargh : ""), ropts_dbg, (extra_opts ? extra_opts : ""), (dm_opts ? dm_opts : "")));
   *read_opts = ropts;
   PetscFunctionReturn(0);
 }
@@ -823,7 +823,7 @@ PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm, PetscInt dim, PetscInt nghost, 
   PetscValidPointer(dm, 6);
 
   /* Create the basic DMMoab object and keep the default parameters created by DM impls */
-  CHKERRQ(DMMoabCreateMoab(comm, NULL, NULL, NULL, dm));
+  PetscCall(DMMoabCreateMoab(comm, NULL, NULL, NULL, dm));
 
   /* get all the necessary handles from the private DM object */
   dmmoab = (DM_Moab*)(*dm)->data;
@@ -843,10 +843,10 @@ PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm, PetscInt dim, PetscInt nghost, 
   merr = dmmoab->mbiface->create_meshset(moab::MESHSET_SET, dmmoab->fileset);MBERR("Creating file set failed", merr);
 
   /* add mesh loading options specific to the DM */
-  CHKERRQ(DMMoab_GetReadOptions_Private(dmmoab->partition_by_rank, nprocs, dim, nghost, dmmoab->read_mode,
+  PetscCall(DMMoab_GetReadOptions_Private(dmmoab->partition_by_rank, nprocs, dim, nghost, dmmoab->read_mode,
                                         dmmoab->rw_dbglevel, dmmoab->extra_read_options, usrreadopts, &readopts));
 
-  CHKERRQ(PetscInfo(*dm, "Reading file %s with options: %s\n", filename, readopts));
+  PetscCall(PetscInfo(*dm, "Reading file %s with options: %s\n", filename, readopts));
 
   /* Load the mesh from a file. */
   if (dmmoab->fileset) {
@@ -874,8 +874,8 @@ PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm, PetscInt dim, PetscInt nghost, 
   merr = pcomm->collective_sync_partition();MBERR("Collective sync failed", merr);
 #endif
 
-  CHKERRQ(PetscInfo(*dm, "MOAB file '%s' was successfully loaded. Found %D vertices and %D elements.\n", filename, verts.size(), elems.size()));
-  CHKERRQ(PetscFree(readopts));
+  PetscCall(PetscInfo(*dm, "MOAB file '%s' was successfully loaded. Found %D vertices and %D elements.\n", filename, verts.size(), elems.size()));
+  PetscCall(PetscFree(readopts));
   PetscFunctionReturn(0);
 }
 

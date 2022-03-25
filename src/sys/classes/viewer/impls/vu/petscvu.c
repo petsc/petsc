@@ -24,12 +24,12 @@ static PetscErrorCode PetscViewerFileClose_VU(PetscViewer viewer)
 
   PetscFunctionBegin;
   if (vu->vecSeen) {
-    CHKERRQ(PetscViewerVUPrintDeferred(viewer, "};\n\n"));
+    PetscCall(PetscViewerVUPrintDeferred(viewer, "};\n\n"));
   }
-  CHKERRQ(PetscViewerVUFlushDeferred(viewer));
-  CHKERRQ(PetscFClose(PetscObjectComm((PetscObject)viewer), vu->fd));
+  PetscCall(PetscViewerVUFlushDeferred(viewer));
+  PetscCall(PetscFClose(PetscObjectComm((PetscObject)viewer), vu->fd));
   vu->fd = NULL;
-  CHKERRQ(PetscFree(vu->filename));
+  PetscCall(PetscFree(vu->filename));
   PetscFunctionReturn(0);
 }
 
@@ -38,8 +38,8 @@ PetscErrorCode PetscViewerDestroy_VU(PetscViewer viewer)
   PetscViewer_VU *vu = (PetscViewer_VU*) viewer->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscViewerFileClose_VU(viewer));
-  CHKERRQ(PetscFree(vu));
+  PetscCall(PetscViewerFileClose_VU(viewer));
+  PetscCall(PetscFree(vu));
   PetscFunctionReturn(0);
 }
 
@@ -50,7 +50,7 @@ PetscErrorCode PetscViewerFlush_VU(PetscViewer viewer)
   int            err;
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &rank));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &rank));
   if (rank == 0) {
     err = fflush(vu->fd);
     PetscCheck(!err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
@@ -93,11 +93,11 @@ static PetscErrorCode  PetscViewerFileSetName_VU(PetscViewer viewer, const char 
 
   PetscFunctionBegin;
   if (!name) PetscFunctionReturn(0);
-  CHKERRQ(PetscViewerFileClose_VU(viewer));
-  CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &rank));
+  PetscCall(PetscViewerFileClose_VU(viewer));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &rank));
   if (rank != 0) PetscFunctionReturn(0);
-  CHKERRQ(PetscStrallocpy(name, &vu->filename));
-  CHKERRQ(PetscFixFilename(name, fname));
+  PetscCall(PetscStrallocpy(name, &vu->filename));
+  PetscCall(PetscFixFilename(name, fname));
   switch (vu->mode) {
   case FILE_MODE_READ:
     vu->fd = fopen(fname, "r");
@@ -119,7 +119,7 @@ static PetscErrorCode  PetscViewerFileSetName_VU(PetscViewer viewer, const char 
     vu->fd = fopen(fname, "r+");
     if (!vu->fd) vu->fd = fopen(fname, "w+");
     else {
-      CHKERRQ(fseek(vu->fd, 0, SEEK_END));
+      PetscCall(fseek(vu->fd, 0, SEEK_END));
     }
     break;
   default:
@@ -138,7 +138,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_VU(PetscViewer viewer)
   PetscViewer_VU *vu;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNewLog(viewer,&vu));
+  PetscCall(PetscNewLog(viewer,&vu));
   viewer->data = (void*) vu;
 
   viewer->ops->destroy          = PetscViewerDestroy_VU;
@@ -154,10 +154,10 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_VU(PetscViewer viewer)
   vu->queueBase   = NULL;
   vu->queueLength = 0;
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject) viewer,"PetscViewerFileSetName_C",PetscViewerFileSetName_VU));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject) viewer,"PetscViewerFileGetName_C",PetscViewerFileGetName_VU));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject) viewer,"PetscViewerFileSetMode_C",PetscViewerFileSetMode_VU));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject) viewer,"PetscViewerFileGetMode_C",PetscViewerFileGetMode_VU));
+  PetscCall(PetscObjectComposeFunction((PetscObject) viewer,"PetscViewerFileSetName_C",PetscViewerFileSetName_VU));
+  PetscCall(PetscObjectComposeFunction((PetscObject) viewer,"PetscViewerFileGetName_C",PetscViewerFileGetName_VU));
+  PetscCall(PetscObjectComposeFunction((PetscObject) viewer,"PetscViewerFileSetMode_C",PetscViewerFileSetMode_VU));
+  PetscCall(PetscObjectComposeFunction((PetscObject) viewer,"PetscViewerFileGetMode_C",PetscViewerFileGetMode_VU));
   PetscFunctionReturn(0);
 }
 
@@ -258,7 +258,7 @@ PetscErrorCode  PetscViewerVUPrintDeferred(PetscViewer viewer, const char format
   PrintfQueue    next;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNew(&next));
+  PetscCall(PetscNew(&next));
   if (vu->queue) {
     vu->queue->next = next;
     vu->queue       = next;
@@ -269,8 +269,8 @@ PetscErrorCode  PetscViewerVUPrintDeferred(PetscViewer viewer, const char format
   vu->queueLength++;
 
   va_start(Argp, format);
-  CHKERRQ(PetscArrayzero(next->string,QUEUESTRINGSIZE));
-  CHKERRQ(PetscVSNPrintf(next->string, QUEUESTRINGSIZE,format,&fullLength, Argp));
+  PetscCall(PetscArrayzero(next->string,QUEUESTRINGSIZE));
+  PetscCall(PetscVSNPrintf(next->string, QUEUESTRINGSIZE,format,&fullLength, Argp));
   va_end(Argp);
   PetscFunctionReturn(0);
 }
@@ -299,7 +299,7 @@ PetscErrorCode  PetscViewerVUFlushDeferred(PetscViewer viewer)
     PetscFPrintf(PetscObjectComm((PetscObject)viewer), vu->fd, "%s", next->string);
     previous = next;
     next     = next->next;
-    CHKERRQ(PetscFree(previous));
+    PetscCall(PetscFree(previous));
   }
   vu->queue       = NULL;
   vu->queueLength = 0;

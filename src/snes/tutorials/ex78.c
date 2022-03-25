@@ -39,14 +39,14 @@ int main(int argc,char **argv)
   PetscInt       N = 5;
   MatNullSpace   constants;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&N,NULL));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&N,NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  CHKERRQ(SNESCreate(PETSC_COMM_WORLD,&snes));
+  PetscCall(SNESCreate(PETSC_COMM_WORLD,&snes));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create vector data structures; set function evaluation routine
@@ -55,16 +55,16 @@ int main(int argc,char **argv)
   /*
      Create distributed array (DMDA) to manage parallel grid and vectors
   */
-  CHKERRQ(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,N,1,1,NULL,&da));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
+  PetscCall(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,N,1,1,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
 
   /*
      Extract global and local vectors from DMDA; then duplicate for remaining
      vectors that are the same types
   */
-  CHKERRQ(DMCreateGlobalVector(da,&x));
-  CHKERRQ(VecDuplicate(x,&r));
+  PetscCall(DMCreateGlobalVector(da,&x));
+  PetscCall(VecDuplicate(x,&r));
 
   /*
      Set function evaluation routine and vector.  Whenever the nonlinear
@@ -74,26 +74,26 @@ int main(int argc,char **argv)
         context that provides application-specific data for the
         function evaluation routine.
   */
-  CHKERRQ(SNESSetFunction(snes,r,FormFunction,da));
+  PetscCall(SNESSetFunction(snes,r,FormFunction,da));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create matrix data structure; set Jacobian evaluation routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(DMCreateMatrix(da,&J));
-  CHKERRQ(MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,NULL,&constants));
-  CHKERRQ(MatSetNullSpace(J,constants));
-  CHKERRQ(SNESSetJacobian(snes,J,J,FormJacobian,da));
+  PetscCall(DMCreateMatrix(da,&J));
+  PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,NULL,&constants));
+  PetscCall(MatSetNullSpace(J,constants));
+  PetscCall(SNESSetJacobian(snes,J,J,FormJacobian,da));
 
-  CHKERRQ(SNESSetFromOptions(snes));
-  CHKERRQ(SNESSolve(snes,NULL,x));
+  PetscCall(SNESSetFromOptions(snes));
+  PetscCall(SNESSolve(snes,NULL,x));
 
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&r));
-  CHKERRQ(MatDestroy(&J));
-  CHKERRQ(MatNullSpaceDestroy(&constants));
-  CHKERRQ(SNESDestroy(&snes));
-  CHKERRQ(DMDestroy(&da));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&r));
+  PetscCall(MatDestroy(&J));
+  PetscCall(MatNullSpaceDestroy(&constants));
+  PetscCall(SNESDestroy(&snes));
+  PetscCall(DMDestroy(&da));
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -122,7 +122,7 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
 
   PetscFunctionBeginUser;
   /* Get local work vector */
-  CHKERRQ(DMGetLocalVector(da,&xlocal));
+  PetscCall(DMGetLocalVector(da,&xlocal));
 
   /*
      Scatter ghost points to local vector, using the 2-step process
@@ -130,8 +130,8 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
      By placing code between these two statements, computations can
      be done while messages are in transition.
   */
-  CHKERRQ(DMGlobalToLocalBegin(da,x,INSERT_VALUES,xlocal));
-  CHKERRQ(DMGlobalToLocalEnd(da,x,INSERT_VALUES,xlocal));
+  PetscCall(DMGlobalToLocalBegin(da,x,INSERT_VALUES,xlocal));
+  PetscCall(DMGlobalToLocalEnd(da,x,INSERT_VALUES,xlocal));
 
   /*
      Get pointers to vector data.
@@ -139,15 +139,15 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
          NOT include ghost points.
        - Using DMDAVecGetArray() allows accessing the values using global ordering
   */
-  CHKERRQ(DMDAVecGetArray(da,xlocal,&xx));
-  CHKERRQ(DMDAVecGetArray(da,f,&ff));
+  PetscCall(DMDAVecGetArray(da,xlocal,&xx));
+  PetscCall(DMDAVecGetArray(da,f,&ff));
 
   /*
      Get local grid boundaries (for 1-dimensional DMDA):
        xs, xm  - starting grid index, width of local grid (no ghost points)
   */
-  CHKERRQ(DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL));
-  CHKERRQ(DMDAGetInfo(da,NULL,&M,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL));
+  PetscCall(DMDAGetInfo(da,NULL,&M,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL));
 
   /*
      Compute function over locally owned part of the grid
@@ -159,9 +159,9 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
   /*
      Restore vectors
   */
-  CHKERRQ(DMDAVecRestoreArray(da,xlocal,&xx));
-  CHKERRQ(DMDAVecRestoreArray(da,f,&ff));
-  CHKERRQ(DMRestoreLocalVector(da,&xlocal));
+  PetscCall(DMDAVecRestoreArray(da,xlocal,&xx));
+  PetscCall(DMDAVecRestoreArray(da,f,&ff));
+  PetscCall(DMRestoreLocalVector(da,&xlocal));
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */
@@ -190,15 +190,15 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat jac,Mat B,void *ctx)
   /*
      Get pointer to vector data
   */
-  CHKERRQ(DMDAVecGetArrayRead(da,x,&xx));
-  CHKERRQ(DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL));
+  PetscCall(DMDAVecGetArrayRead(da,x,&xx));
+  PetscCall(DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL));
 
   /*
     Get range of locally owned matrix
   */
-  CHKERRQ(DMDAGetInfo(da,NULL,&M,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(DMDAGetInfo(da,NULL,&M,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL));
 
-  CHKERRQ(MatZeroEntries(jac));
+  PetscCall(MatZeroEntries(jac));
   h = 1.0/M;
   /* because of periodic boundary conditions we can simply loop over all local nodes and access to the left and right */
   for (i=xs; i<xs+xm; i++) {
@@ -207,12 +207,12 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat jac,Mat B,void *ctx)
     cols[1].i = i;
     cols[2].i = i + 1;
     A[0] = A[2] = 1.0/(h*h); A[1] = -2.0/(h*h);
-    CHKERRQ(MatSetValuesStencil(jac,1,&row,3,cols,A,ADD_VALUES));
+    PetscCall(MatSetValuesStencil(jac,1,&row,3,cols,A,ADD_VALUES));
   }
 
-  CHKERRQ(DMDAVecRestoreArrayRead(da,x,&xx));
-  CHKERRQ(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
+  PetscCall(DMDAVecRestoreArrayRead(da,x,&xx));
+  PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 

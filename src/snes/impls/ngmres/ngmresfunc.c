@@ -9,8 +9,8 @@ PetscErrorCode SNESNGMRESUpdateSubspace_Private(SNES snes,PetscInt ivec,PetscInt
 
   PetscFunctionBegin;
   PetscCheckFalse(ivec > l,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Cannot update vector %D with space size %D!",ivec,l);
-  CHKERRQ(VecCopy(F,Fdot[ivec]));
-  CHKERRQ(VecCopy(X,Xdot[ivec]));
+  PetscCall(VecCopy(F,Fdot[ivec]));
+  PetscCall(VecCopy(X,Xdot[ivec]));
 
   ngmres->fnorms[ivec] = fnorm;
   PetscFunctionReturn(0);
@@ -34,10 +34,10 @@ PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes,PetscInt ivec,Pe
 
   /* construct the right hand side and xi factors */
   if (l > 0) {
-    CHKERRQ(VecMDotBegin(FM,l,Fdot,xi));
-    CHKERRQ(VecMDotBegin(Fdot[ivec],l,Fdot,beta));
-    CHKERRQ(VecMDotEnd(FM,l,Fdot,xi));
-    CHKERRQ(VecMDotEnd(Fdot[ivec],l,Fdot,beta));
+    PetscCall(VecMDotBegin(FM,l,Fdot,xi));
+    PetscCall(VecMDotBegin(Fdot[ivec],l,Fdot,beta));
+    PetscCall(VecMDotEnd(FM,l,Fdot,xi));
+    PetscCall(VecMDotEnd(Fdot[ivec],l,Fdot,beta));
     for (i = 0; i < l; i++) {
       Q(i,ivec) = beta[i];
       Q(ivec,i) = beta[i];
@@ -59,17 +59,17 @@ PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes,PetscInt ivec,Pe
     if (H(0,0) != 0.) beta[0] = beta[0]/H(0,0);
     else beta[0] = 0.;
   } else {
-    CHKERRQ(PetscBLASIntCast(l,&ngmres->m));
-    CHKERRQ(PetscBLASIntCast(l,&ngmres->n));
+    PetscCall(PetscBLASIntCast(l,&ngmres->m));
+    PetscCall(PetscBLASIntCast(l,&ngmres->n));
     ngmres->info  = 0;
     ngmres->rcond = -1.;
-    CHKERRQ(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
+    PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
 #if defined(PETSC_USE_COMPLEX)
     PetscStackCallBLAS("LAPACKgelss",LAPACKgelss_(&ngmres->m,&ngmres->n,&ngmres->nrhs,ngmres->h,&ngmres->lda,ngmres->beta,&ngmres->ldb,ngmres->s,&ngmres->rcond,&ngmres->rank,ngmres->work,&ngmres->lwork,ngmres->rwork,&ngmres->info));
 #else
     PetscStackCallBLAS("LAPACKgelss",LAPACKgelss_(&ngmres->m,&ngmres->n,&ngmres->nrhs,ngmres->h,&ngmres->lda,ngmres->beta,&ngmres->ldb,ngmres->s,&ngmres->rcond,&ngmres->rank,ngmres->work,&ngmres->lwork,&ngmres->info));
 #endif
-    CHKERRQ(PetscFPTrapPop());
+    PetscCall(PetscFPTrapPop());
     PetscCheckFalse(ngmres->info < 0,PetscObjectComm((PetscObject)snes),PETSC_ERR_LIB,"Bad argument to GELSS");
     PetscCheckFalse(ngmres->info > 0,PetscObjectComm((PetscObject)snes),PETSC_ERR_LIB,"SVD failed to converge");
   }
@@ -79,23 +79,23 @@ PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes,PetscInt ivec,Pe
   alph_total = 0.;
   for (i = 0; i < l; i++) alph_total += beta[i];
 
-  CHKERRQ(VecCopy(XM,XA));
-  CHKERRQ(VecScale(XA,1.-alph_total));
-  CHKERRQ(VecMAXPY(XA,l,beta,Xdot));
+  PetscCall(VecCopy(XM,XA));
+  PetscCall(VecScale(XA,1.-alph_total));
+  PetscCall(VecMAXPY(XA,l,beta,Xdot));
   /* check the validity of the step */
-  CHKERRQ(VecCopy(XA,Y));
-  CHKERRQ(VecAXPY(Y,-1.0,X));
-  CHKERRQ(SNESLineSearchPostCheck(snes->linesearch,X,Y,XA,&changed_y,&changed_w));
+  PetscCall(VecCopy(XA,Y));
+  PetscCall(VecAXPY(Y,-1.0,X));
+  PetscCall(SNESLineSearchPostCheck(snes->linesearch,X,Y,XA,&changed_y,&changed_w));
   if (!ngmres->approxfunc) {
     if (snes->npc && snes->npcside== PC_LEFT) {
-      CHKERRQ(SNESApplyNPC(snes,XA,NULL,FA));
+      PetscCall(SNESApplyNPC(snes,XA,NULL,FA));
     } else {
-      CHKERRQ(SNESComputeFunction(snes,XA,FA));
+      PetscCall(SNESComputeFunction(snes,XA,FA));
     }
   } else {
-    CHKERRQ(VecCopy(FM,FA));
-    CHKERRQ(VecScale(FA,1.-alph_total));
-    CHKERRQ(VecMAXPY(FA,l,beta,Fdot));
+    PetscCall(VecCopy(FM,FA));
+    PetscCall(VecScale(FA,1.-alph_total));
+    PetscCall(VecMAXPY(FA,l,beta,Fdot));
   }
   PetscFunctionReturn(0);
 }
@@ -109,49 +109,49 @@ PetscErrorCode SNESNGMRESNorms_Private(SNES snes,PetscInt l,Vec X,Vec F,Vec XM,V
 
   PetscFunctionBegin;
   if (xMnorm) {
-    CHKERRQ(VecNormBegin(XM,NORM_2,xMnorm));
+    PetscCall(VecNormBegin(XM,NORM_2,xMnorm));
   }
   if (fMnorm) {
-    CHKERRQ(VecNormBegin(FM,NORM_2,fMnorm));
+    PetscCall(VecNormBegin(FM,NORM_2,fMnorm));
   }
   if (yMnorm) {
-    CHKERRQ(VecCopy(X,D));
-    CHKERRQ(VecAXPY(D,-1.0,XM));
-    CHKERRQ(VecNormBegin(D,NORM_2,yMnorm));
+    PetscCall(VecCopy(X,D));
+    PetscCall(VecAXPY(D,-1.0,XM));
+    PetscCall(VecNormBegin(D,NORM_2,yMnorm));
   }
   if (xAnorm) {
-    CHKERRQ(VecNormBegin(XA,NORM_2,xAnorm));
+    PetscCall(VecNormBegin(XA,NORM_2,xAnorm));
   }
   if (fAnorm) {
-    CHKERRQ(VecNormBegin(FA,NORM_2,fAnorm));
+    PetscCall(VecNormBegin(FA,NORM_2,fAnorm));
   }
   if (yAnorm) {
-    CHKERRQ(VecCopy(X,D));
-    CHKERRQ(VecAXPY(D,-1.0,XA));
-    CHKERRQ(VecNormBegin(D,NORM_2,yAnorm));
+    PetscCall(VecCopy(X,D));
+    PetscCall(VecAXPY(D,-1.0,XA));
+    PetscCall(VecNormBegin(D,NORM_2,yAnorm));
   }
   if (dnorm) {
-    CHKERRQ(VecCopy(XA,D));
-    CHKERRQ(VecAXPY(D,-1.0,XM));
-    CHKERRQ(VecNormBegin(D,NORM_2,dnorm));
+    PetscCall(VecCopy(XA,D));
+    PetscCall(VecAXPY(D,-1.0,XM));
+    PetscCall(VecNormBegin(D,NORM_2,dnorm));
   }
   if (dminnorm) {
     for (i=0; i<l; i++) {
-      CHKERRQ(VecCopy(Xdot[i],D));
-      CHKERRQ(VecAXPY(D,-1.0,XA));
-      CHKERRQ(VecNormBegin(D,NORM_2,&ngmres->xnorms[i]));
+      PetscCall(VecCopy(Xdot[i],D));
+      PetscCall(VecAXPY(D,-1.0,XA));
+      PetscCall(VecNormBegin(D,NORM_2,&ngmres->xnorms[i]));
     }
   }
-  if (xMnorm) CHKERRQ(VecNormEnd(XM,NORM_2,xMnorm));
-  if (fMnorm) CHKERRQ(VecNormEnd(FM,NORM_2,fMnorm));
-  if (yMnorm) CHKERRQ(VecNormEnd(D,NORM_2,yMnorm));
-  if (xAnorm) CHKERRQ(VecNormEnd(XA,NORM_2,xAnorm));
-  if (fAnorm) CHKERRQ(VecNormEnd(FA,NORM_2,fAnorm));
-  if (yAnorm) CHKERRQ(VecNormEnd(D,NORM_2,yAnorm));
-  if (dnorm) CHKERRQ(VecNormEnd(D,NORM_2,dnorm));
+  if (xMnorm) PetscCall(VecNormEnd(XM,NORM_2,xMnorm));
+  if (fMnorm) PetscCall(VecNormEnd(FM,NORM_2,fMnorm));
+  if (yMnorm) PetscCall(VecNormEnd(D,NORM_2,yMnorm));
+  if (xAnorm) PetscCall(VecNormEnd(XA,NORM_2,xAnorm));
+  if (fAnorm) PetscCall(VecNormEnd(FA,NORM_2,fAnorm));
+  if (yAnorm) PetscCall(VecNormEnd(D,NORM_2,yAnorm));
+  if (dnorm) PetscCall(VecNormEnd(D,NORM_2,dnorm));
   if (dminnorm) {
     for (i=0; i<l; i++) {
-      CHKERRQ(VecNormEnd(D,NORM_2,&ngmres->xnorms[i]));
+      PetscCall(VecNormEnd(D,NORM_2,&ngmres->xnorms[i]));
       dcurnorm = ngmres->xnorms[i];
       if ((dcurnorm < dmin) || (dmin < 0.0)) dmin = dcurnorm;
     }
@@ -170,16 +170,16 @@ PetscErrorCode SNESNGMRESSelect_Private(SNES snes,PetscInt k_restart,Vec XM,Vec 
   if (ngmres->select_type == SNES_NGMRES_SELECT_LINESEARCH) {
     /* X = X + \lambda(XA - X) */
     if (ngmres->monitor) {
-      CHKERRQ(PetscViewerASCIIPrintf(ngmres->monitor,"||F_A||_2 = %e, ||F_M||_2 = %e\n",fAnorm,fMnorm));
+      PetscCall(PetscViewerASCIIPrintf(ngmres->monitor,"||F_A||_2 = %e, ||F_M||_2 = %e\n",fAnorm,fMnorm));
     }
-    CHKERRQ(VecCopy(FM,F));
-    CHKERRQ(VecCopy(XM,X));
-    CHKERRQ(VecCopy(XA,Y));
-    CHKERRQ(VecAYPX(Y,-1.0,X));
+    PetscCall(VecCopy(FM,F));
+    PetscCall(VecCopy(XM,X));
+    PetscCall(VecCopy(XA,Y));
+    PetscCall(VecAYPX(Y,-1.0,X));
     *fnorm = fMnorm;
-    CHKERRQ(SNESLineSearchApply(ngmres->additive_linesearch,X,F,fnorm,Y));
-    CHKERRQ(SNESLineSearchGetReason(ngmres->additive_linesearch,&lssucceed));
-    CHKERRQ(SNESLineSearchGetNorms(ngmres->additive_linesearch,xnorm,fnorm,ynorm));
+    PetscCall(SNESLineSearchApply(ngmres->additive_linesearch,X,F,fnorm,Y));
+    PetscCall(SNESLineSearchGetReason(ngmres->additive_linesearch,&lssucceed));
+    PetscCall(SNESLineSearchGetNorms(ngmres->additive_linesearch,xnorm,fnorm,ynorm));
     if (lssucceed) {
       if (++snes->numFailures >= snes->maxFailures) {
         snes->reason = SNES_DIVERGED_LINE_SEARCH;
@@ -187,7 +187,7 @@ PetscErrorCode SNESNGMRESSelect_Private(SNES snes,PetscInt k_restart,Vec XM,Vec 
       }
     }
     if (ngmres->monitor) {
-      CHKERRQ(PetscViewerASCIIPrintf(ngmres->monitor,"Additive solution: ||F||_2 = %e\n",*fnorm));
+      PetscCall(PetscViewerASCIIPrintf(ngmres->monitor,"Additive solution: ||F||_2 = %e\n",*fnorm));
     }
   } else if (ngmres->select_type == SNES_NGMRES_SELECT_DIFFERENCE) {
     selectA = PETSC_TRUE;
@@ -201,32 +201,32 @@ PetscErrorCode SNESNGMRESSelect_Private(SNES snes,PetscInt k_restart,Vec XM,Vec 
 
     if (selectA) {
       if (ngmres->monitor) {
-        CHKERRQ(PetscViewerASCIIPrintf(ngmres->monitor,"picked X_A, ||F_A||_2 = %e, ||F_M||_2 = %e\n",fAnorm,fMnorm));
+        PetscCall(PetscViewerASCIIPrintf(ngmres->monitor,"picked X_A, ||F_A||_2 = %e, ||F_M||_2 = %e\n",fAnorm,fMnorm));
       }
       /* copy it over */
       *xnorm = xAnorm;
       *fnorm = fAnorm;
       *ynorm = yAnorm;
-      CHKERRQ(VecCopy(FA,F));
-      CHKERRQ(VecCopy(XA,X));
+      PetscCall(VecCopy(FA,F));
+      PetscCall(VecCopy(XA,X));
     } else {
       if (ngmres->monitor) {
-        CHKERRQ(PetscViewerASCIIPrintf(ngmres->monitor,"picked X_M, ||F_A||_2 = %e, ||F_M||_2 = %e\n",fAnorm,fMnorm));
+        PetscCall(PetscViewerASCIIPrintf(ngmres->monitor,"picked X_M, ||F_A||_2 = %e, ||F_M||_2 = %e\n",fAnorm,fMnorm));
       }
       *xnorm = xMnorm;
       *fnorm = fMnorm;
       *ynorm = yMnorm;
-      CHKERRQ(VecCopy(XM,Y));
-      CHKERRQ(VecAXPY(Y,-1.0,X));
-      CHKERRQ(VecCopy(FM,F));
-      CHKERRQ(VecCopy(XM,X));
+      PetscCall(VecCopy(XM,Y));
+      PetscCall(VecAXPY(Y,-1.0,X));
+      PetscCall(VecCopy(FM,F));
+      PetscCall(VecCopy(XM,X));
     }
   } else { /* none */
     *xnorm = xAnorm;
     *fnorm = fAnorm;
     *ynorm = yAnorm;
-    CHKERRQ(VecCopy(FA,F));
-    CHKERRQ(VecCopy(XA,X));
+    PetscCall(VecCopy(FA,F));
+    PetscCall(VecCopy(XA,X));
   }
   PetscFunctionReturn(0);
 }
@@ -240,14 +240,14 @@ PetscErrorCode SNESNGMRESSelectRestart_Private(SNES snes,PetscInt l,PetscReal fM
   /* difference stagnation restart */
   if ((ngmres->epsilonB*dnorm > dminnorm) && (PetscSqrtReal(fAnorm) > ngmres->deltaB*PetscSqrtReal(fminnorm)) && l > 0) {
     if (ngmres->monitor) {
-      CHKERRQ(PetscViewerASCIIPrintf(ngmres->monitor,"difference restart: %e > %e\n",ngmres->epsilonB*dnorm,dminnorm));
+      PetscCall(PetscViewerASCIIPrintf(ngmres->monitor,"difference restart: %e > %e\n",ngmres->epsilonB*dnorm,dminnorm));
     }
     *selectRestart = PETSC_TRUE;
   }
   /* residual stagnation restart */
   if (PetscSqrtReal(fAnorm) > ngmres->gammaC*PetscSqrtReal(fminnorm)) {
     if (ngmres->monitor) {
-      CHKERRQ(PetscViewerASCIIPrintf(ngmres->monitor,"residual restart: %e > %e\n",PetscSqrtReal(fAnorm),ngmres->gammaC*PetscSqrtReal(fminnorm)));
+      PetscCall(PetscViewerASCIIPrintf(ngmres->monitor,"residual restart: %e > %e\n",PetscSqrtReal(fAnorm),ngmres->gammaC*PetscSqrtReal(fminnorm)));
     }
     *selectRestart = PETSC_TRUE;
   }
@@ -255,7 +255,7 @@ PetscErrorCode SNESNGMRESSelectRestart_Private(SNES snes,PetscInt l,PetscReal fM
   /* F_M stagnation restart */
   if (ngmres->restart_fm_rise && fMnorm > snes->norm) {
     if (ngmres->monitor) {
-      CHKERRQ(PetscViewerASCIIPrintf(ngmres->monitor,"F_M rise restart: %e > %e\n",fMnorm,snes->norm));
+      PetscCall(PetscViewerASCIIPrintf(ngmres->monitor,"F_M rise restart: %e > %e\n",fMnorm,snes->norm));
     }
     *selectRestart = PETSC_TRUE;
   }

@@ -20,31 +20,31 @@ int main(int argc,char **argv)
   MPI_Comm       comm;
   PetscMPIInt    rank;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* create the large DMDA and set coordinates (which we will copy down to the small DA). */
-  CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,m,n,PETSC_DECIDE,PETSC_DECIDE,dof,1,0,0,&da));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
-  CHKERRQ(DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,1.0));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,m,n,PETSC_DECIDE,PETSC_DECIDE,dof,1,0,0,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,1.0));
   /* Just as a simple example we use the coordinates as the variables in the vectors we wish to examine. */
-  CHKERRQ(DMGetCoordinates(da,&xy));
+  PetscCall(DMGetCoordinates(da,&xy));
   /* The vector entries are displayed in the "natural" ordering on the two dimensional grid; interlaced x and y with with the x variable increasing more rapidly than the y */
-  CHKERRQ(VecView(xy,0));
+  PetscCall(VecView(xy,0));
 
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   if (rank == 0) comm = MPI_COMM_SELF;
   else comm = MPI_COMM_NULL;
 
-  CHKERRQ(DMPatchZoom(da,lower,upper,comm,&sda, NULL,&sf));
+  PetscCall(DMPatchZoom(da,lower,upper,comm,&sda, NULL,&sf));
   if (rank == 0) {
-    CHKERRQ(DMCreateGlobalVector(sda,&sxy));
+    PetscCall(DMCreateGlobalVector(sda,&sxy));
   } else {
-    CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,0,&sxy));
+    PetscCall(VecCreateSeq(PETSC_COMM_SELF,0,&sxy));
   }
   /*  A PetscSF can also be used as a VecScatter context */
-  CHKERRQ(VecScatterBegin(sf,xy,sxy,INSERT_VALUES,SCATTER_FORWARD));
-  CHKERRQ(VecScatterEnd(sf,xy,sxy,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterBegin(sf,xy,sxy,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(sf,xy,sxy,INSERT_VALUES,SCATTER_FORWARD));
   /* Only rank == 0 has the entries of the patch, so run code only at that rank */
   if (rank == 0) {
     Field         **vars;
@@ -53,25 +53,25 @@ int main(int argc,char **argv)
     PetscScalar   sum = 0;
 
     /* The vector entries of the patch are displayed in the "natural" ordering on the two grid; interlaced x and y with with the x variable increasing more rapidly */
-    CHKERRQ(VecView(sxy,PETSC_VIEWER_STDOUT_SELF));
+    PetscCall(VecView(sxy,PETSC_VIEWER_STDOUT_SELF));
     /* Compute some trivial statistic of the coordinates */
-    CHKERRQ(DMDAGetLocalInfo(sda,&info));
-    CHKERRQ(DMDAVecGetArray(sda,sxy,&vars));
+    PetscCall(DMDAGetLocalInfo(sda,&info));
+    PetscCall(DMDAVecGetArray(sda,sxy,&vars));
     /* Loop over the patch of the entire domain */
     for (j=info.ys; j<info.ys+info.ym; j++) {
       for (i=info.xs; i<info.xs+info.xm; i++) {
         sum += vars[j][i].x;
       }
     }
-    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"The sum of the x coordinates is %g\n",(double)PetscRealPart(sum)));
-    CHKERRQ(DMDAVecRestoreArray(sda,sxy,&vars));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"The sum of the x coordinates is %g\n",(double)PetscRealPart(sum)));
+    PetscCall(DMDAVecRestoreArray(sda,sxy,&vars));
   }
 
-  CHKERRQ(VecDestroy(&sxy));
-  CHKERRQ(PetscSFDestroy(&sf));
-  CHKERRQ(DMDestroy(&sda));
-  CHKERRQ(DMDestroy(&da));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&sxy));
+  PetscCall(PetscSFDestroy(&sf));
+  PetscCall(DMDestroy(&sda));
+  PetscCall(DMDestroy(&da));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

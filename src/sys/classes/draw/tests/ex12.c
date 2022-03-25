@@ -18,29 +18,29 @@ int main(int argc,char **argv)
 
   xlabel = "X-axis Label"; toplabel = "Top Label"; ylabel = "Y-axis Label";
 
-  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
-  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-nolabels",&nolabels));
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-nolabels",&nolabels));
   if (nolabels) { xlabel = NULL; ylabel = NULL; toplabel = NULL; }
-  CHKERRQ(PetscOptionsGetRealArray(NULL,NULL,"-limits",limits,&nlimits,&setlimits));
+  PetscCall(PetscOptionsGetRealArray(NULL,NULL,"-limits",limits,&nlimits,&setlimits));
 
-  CHKERRQ(PetscDrawCreate(PETSC_COMM_WORLD,NULL,"Title",PETSC_DECIDE,PETSC_DECIDE,400,300,&draw));
-  CHKERRQ(PetscDrawSetFromOptions(draw));
-  CHKERRQ(PetscDrawBarCreate(draw,&bar));
+  PetscCall(PetscDrawCreate(PETSC_COMM_WORLD,NULL,"Title",PETSC_DECIDE,PETSC_DECIDE,400,300,&draw));
+  PetscCall(PetscDrawSetFromOptions(draw));
+  PetscCall(PetscDrawBarCreate(draw,&bar));
 
-  CHKERRQ(PetscDrawBarGetAxis(bar,&axis));
-  CHKERRQ(PetscDrawAxisSetColors(axis,PETSC_DRAW_BLACK,PETSC_DRAW_RED,PETSC_DRAW_BLUE));
-  CHKERRQ(PetscDrawAxisSetLabels(axis,toplabel,xlabel,ylabel));
-  CHKERRQ(PetscDrawBarSetColor(bar,color));
-  CHKERRQ(PetscDrawBarSetFromOptions(bar));
+  PetscCall(PetscDrawBarGetAxis(bar,&axis));
+  PetscCall(PetscDrawAxisSetColors(axis,PETSC_DRAW_BLACK,PETSC_DRAW_RED,PETSC_DRAW_BLUE));
+  PetscCall(PetscDrawAxisSetLabels(axis,toplabel,xlabel,ylabel));
+  PetscCall(PetscDrawBarSetColor(bar,color));
+  PetscCall(PetscDrawBarSetFromOptions(bar));
 
-  if (setlimits) CHKERRQ(PetscDrawBarSetLimits(bar,limits[0],limits[1]));
-  CHKERRQ(PetscDrawBarSetData(bar,4,values,labels));
-  CHKERRQ(PetscDrawBarDraw(bar));
-  CHKERRQ(PetscDrawBarSave(bar));
+  if (setlimits) PetscCall(PetscDrawBarSetLimits(bar,limits[0],limits[1]));
+  PetscCall(PetscDrawBarSetData(bar,4,values,labels));
+  PetscCall(PetscDrawBarDraw(bar));
+  PetscCall(PetscDrawBarSave(bar));
 
-  CHKERRQ(PetscDrawBarDestroy(&bar));
-  CHKERRQ(PetscDrawDestroy(&draw));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscDrawBarDestroy(&bar));
+  PetscCall(PetscDrawDestroy(&draw));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

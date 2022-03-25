@@ -42,13 +42,13 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->hmax   = 0.5;
   options->doL2   = PETSC_FALSE;
 
-  ierr = PetscOptionsBegin(comm, "", "Meshing Adaptation Options", "DMPLEX");CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsBoundedInt("-Nr", "Numberof refinement passes", "ex19.c", options->Nr, &options->Nr, NULL, 1));
-  CHKERRQ(PetscOptionsBoundedInt("-met", "Different choices of metric", "ex19.c", options->metOpt, &options->metOpt, NULL,0));
-  CHKERRQ(PetscOptionsReal("-hmax", "Max size prescribed by the metric", "ex19.c", options->hmax, &options->hmax, NULL));
-  CHKERRQ(PetscOptionsReal("-hmin", "Min size prescribed by the metric", "ex19.c", options->hmin, &options->hmin, NULL));
-  CHKERRQ(PetscOptionsBool("-do_L2", "Test L2 projection", "ex19.c", options->doL2, &options->doL2, NULL));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm, "", "Meshing Adaptation Options", "DMPLEX");PetscCall(ierr);
+  PetscCall(PetscOptionsBoundedInt("-Nr", "Numberof refinement passes", "ex19.c", options->Nr, &options->Nr, NULL, 1));
+  PetscCall(PetscOptionsBoundedInt("-met", "Different choices of metric", "ex19.c", options->metOpt, &options->metOpt, NULL,0));
+  PetscCall(PetscOptionsReal("-hmax", "Max size prescribed by the metric", "ex19.c", options->hmax, &options->hmax, NULL));
+  PetscCall(PetscOptionsReal("-hmin", "Min size prescribed by the metric", "ex19.c", options->hmin, &options->hmin, NULL));
+  PetscCall(PetscOptionsBool("-do_L2", "Test L2 projection", "ex19.c", options->doL2, &options->doL2, NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -56,11 +56,11 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
 {
   PetscFunctionBegin;
-  CHKERRQ(DMCreate(comm, dm));
-  CHKERRQ(DMSetType(*dm, DMPLEX));
-  CHKERRQ(DMSetFromOptions(*dm));
-  CHKERRQ(PetscObjectSetName((PetscObject) *dm, "DMinit"));
-  CHKERRQ(DMViewFromOptions(*dm, NULL, "-init_dm_view"));
+  PetscCall(DMCreate(comm, dm));
+  PetscCall(DMSetType(*dm, DMPLEX));
+  PetscCall(DMSetFromOptions(*dm));
+  PetscCall(PetscObjectSetName((PetscObject) *dm, "DMinit"));
+  PetscCall(DMViewFromOptions(*dm, NULL, "-init_dm_view"));
   PetscFunctionReturn(0);
 }
 
@@ -74,42 +74,42 @@ static PetscErrorCode ComputeMetricSensor(DM dm, AppCtx *user, Vec *metric)
   PetscInt       dim;
 
   PetscFunctionBegin;
-  CHKERRQ(DMGetDimension(dm, &dim));
-  CHKERRQ(DMPlexIsSimplex(dm, &simplex));
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMPlexIsSimplex(dm, &simplex));
 
-  CHKERRQ(DMClone(dm, &dmSensor));
-  CHKERRQ(PetscFECreateLagrange(PETSC_COMM_SELF, dim, 1, simplex, 1, -1, &fe));
-  CHKERRQ(DMSetField(dmSensor, 0, NULL, (PetscObject) fe));
-  CHKERRQ(PetscFEDestroy(&fe));
-  CHKERRQ(DMCreateDS(dmSensor));
-  CHKERRQ(DMCreateLocalVector(dmSensor, &f));
-  CHKERRQ(DMProjectFunctionLocal(dmSensor, 0., funcs, NULL, INSERT_VALUES, f));
-  CHKERRQ(VecViewFromOptions(f, NULL, "-sensor_view"));
+  PetscCall(DMClone(dm, &dmSensor));
+  PetscCall(PetscFECreateLagrange(PETSC_COMM_SELF, dim, 1, simplex, 1, -1, &fe));
+  PetscCall(DMSetField(dmSensor, 0, NULL, (PetscObject) fe));
+  PetscCall(PetscFEDestroy(&fe));
+  PetscCall(DMCreateDS(dmSensor));
+  PetscCall(DMCreateLocalVector(dmSensor, &f));
+  PetscCall(DMProjectFunctionLocal(dmSensor, 0., funcs, NULL, INSERT_VALUES, f));
+  PetscCall(VecViewFromOptions(f, NULL, "-sensor_view"));
 
   // Recover the gradient of the sensor function
-  CHKERRQ(DMClone(dm, &dmGrad));
-  CHKERRQ(PetscFECreateLagrange(PETSC_COMM_SELF, dim, dim, simplex, 1, -1, &fe));
-  CHKERRQ(DMSetField(dmGrad, 0, NULL, (PetscObject) fe));
-  CHKERRQ(PetscFEDestroy(&fe));
-  CHKERRQ(DMCreateDS(dmGrad));
-  CHKERRQ(DMCreateLocalVector(dmGrad, &g));
-  CHKERRQ(DMPlexComputeGradientClementInterpolant(dmSensor, f, g));
-  CHKERRQ(VecDestroy(&f));
-  CHKERRQ(VecViewFromOptions(g, NULL, "-gradient_view"));
+  PetscCall(DMClone(dm, &dmGrad));
+  PetscCall(PetscFECreateLagrange(PETSC_COMM_SELF, dim, dim, simplex, 1, -1, &fe));
+  PetscCall(DMSetField(dmGrad, 0, NULL, (PetscObject) fe));
+  PetscCall(PetscFEDestroy(&fe));
+  PetscCall(DMCreateDS(dmGrad));
+  PetscCall(DMCreateLocalVector(dmGrad, &g));
+  PetscCall(DMPlexComputeGradientClementInterpolant(dmSensor, f, g));
+  PetscCall(VecDestroy(&f));
+  PetscCall(VecViewFromOptions(g, NULL, "-gradient_view"));
 
   // Recover the Hessian of the sensor function
-  CHKERRQ(DMClone(dm, &dmHess));
-  CHKERRQ(DMPlexMetricCreate(dmHess, 0, &H));
-  CHKERRQ(DMPlexComputeGradientClementInterpolant(dmGrad, g, H));
-  CHKERRQ(VecDestroy(&g));
-  CHKERRQ(VecViewFromOptions(H, NULL, "-hessian_view"));
+  PetscCall(DMClone(dm, &dmHess));
+  PetscCall(DMPlexMetricCreate(dmHess, 0, &H));
+  PetscCall(DMPlexComputeGradientClementInterpolant(dmGrad, g, H));
+  PetscCall(VecDestroy(&g));
+  PetscCall(VecViewFromOptions(H, NULL, "-hessian_view"));
 
   // Obtain a metric by Lp normalization
-  CHKERRQ(DMPlexMetricNormalize(dmHess, H, PETSC_TRUE, PETSC_TRUE, metric));
-  CHKERRQ(VecDestroy(&H));
-  CHKERRQ(DMDestroy(&dmHess));
-  CHKERRQ(DMDestroy(&dmGrad));
-  CHKERRQ(DMDestroy(&dmSensor));
+  PetscCall(DMPlexMetricNormalize(dmHess, H, PETSC_TRUE, PETSC_TRUE, metric));
+  PetscCall(VecDestroy(&H));
+  PetscCall(DMDestroy(&dmHess));
+  PetscCall(DMDestroy(&dmGrad));
+  PetscCall(DMDestroy(&dmSensor));
   PetscFunctionReturn(0);
 }
 
@@ -120,9 +120,9 @@ static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
   PetscFunctionBeginUser;
   if (user->metOpt == 0) {
     /* Specify a uniform, isotropic metric */
-    CHKERRQ(DMPlexMetricCreateUniform(dm, 0, lambda, metric));
+    PetscCall(DMPlexMetricCreateUniform(dm, 0, lambda, metric));
   } else if (user->metOpt == 3) {
-    CHKERRQ(ComputeMetricSensor(dm, user, metric));
+    PetscCall(ComputeMetricSensor(dm, user, metric));
   } else {
     DM                 cdm;
     Vec                coordinates;
@@ -131,18 +131,18 @@ static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
     PetscReal          h;
     PetscInt           dim, i, j, vStart, vEnd, v;
 
-    CHKERRQ(DMPlexMetricCreate(dm, 0, metric));
-    CHKERRQ(DMGetDimension(dm, &dim));
-    CHKERRQ(DMGetCoordinateDM(dm, &cdm));
-    CHKERRQ(DMGetCoordinatesLocal(dm, &coordinates));
-    CHKERRQ(VecGetArrayRead(coordinates, &coords));
-    CHKERRQ(VecGetArray(*metric, &met));
-    CHKERRQ(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
+    PetscCall(DMPlexMetricCreate(dm, 0, metric));
+    PetscCall(DMGetDimension(dm, &dim));
+    PetscCall(DMGetCoordinateDM(dm, &cdm));
+    PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
+    PetscCall(VecGetArrayRead(coordinates, &coords));
+    PetscCall(VecGetArray(*metric, &met));
+    PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
     for (v = vStart; v < vEnd; ++v) {
       PetscScalar *vcoords;
       PetscScalar *pmet;
 
-      CHKERRQ(DMPlexPointLocalRead(cdm, v, coords, &vcoords));
+      PetscCall(DMPlexPointLocalRead(cdm, v, coords, &vcoords));
       switch (user->metOpt) {
       case 1:
         h = user->hmax - (user->hmax-user->hmin)*PetscRealPart(vcoords[0]);
@@ -153,7 +153,7 @@ static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
       default:
         SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "metOpt = 0, 1, 2 or 3, cannot be %d", user->metOpt);
       }
-      CHKERRQ(DMPlexPointLocalRef(dm, v, met, &pmet));
+      PetscCall(DMPlexPointLocalRef(dm, v, met, &pmet));
       for (i = 0; i < dim; ++i) {
         for (j = 0; j < dim; ++j) {
           if (i == j) {
@@ -163,8 +163,8 @@ static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
         }
       }
     }
-    CHKERRQ(VecRestoreArray(*metric, &met));
-    CHKERRQ(VecRestoreArrayRead(coordinates, &coords));
+    PetscCall(VecRestoreArray(*metric, &met));
+    PetscCall(VecRestoreArrayRead(coordinates, &coords));
   }
   PetscFunctionReturn(0);
 }
@@ -188,70 +188,70 @@ static PetscErrorCode TestL2Projection(DM dm, DM dma, AppCtx *user)
   PetscInt         dim;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetDimension(dm, &dim));
-  CHKERRQ(DMPlexIsSimplex(dm, &simplex));
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMPlexIsSimplex(dm, &simplex));
 
-  CHKERRQ(DMClone(dm, &dmProj));
-  CHKERRQ(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, NULL, -1, &fe));
-  CHKERRQ(DMSetField(dmProj, 0, NULL, (PetscObject) fe));
-  CHKERRQ(PetscFEDestroy(&fe));
-  CHKERRQ(DMCreateDS(dmProj));
+  PetscCall(DMClone(dm, &dmProj));
+  PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, NULL, -1, &fe));
+  PetscCall(DMSetField(dmProj, 0, NULL, (PetscObject) fe));
+  PetscCall(PetscFEDestroy(&fe));
+  PetscCall(DMCreateDS(dmProj));
 
-  CHKERRQ(DMClone(dma, &dmaProj));
-  CHKERRQ(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, NULL, -1, &fe));
-  CHKERRQ(DMSetField(dmaProj, 0, NULL, (PetscObject) fe));
-  CHKERRQ(PetscFEDestroy(&fe));
-  CHKERRQ(DMCreateDS(dmaProj));
+  PetscCall(DMClone(dma, &dmaProj));
+  PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, NULL, -1, &fe));
+  PetscCall(DMSetField(dmaProj, 0, NULL, (PetscObject) fe));
+  PetscCall(PetscFEDestroy(&fe));
+  PetscCall(DMCreateDS(dmaProj));
 
-  CHKERRQ(DMGetGlobalVector(dmProj, &u));
-  CHKERRQ(DMGetGlobalVector(dmaProj, &ua));
-  CHKERRQ(DMGetGlobalVector(dmaProj, &rhs));
-  CHKERRQ(DMGetGlobalVector(dmaProj, &uproj));
+  PetscCall(DMGetGlobalVector(dmProj, &u));
+  PetscCall(DMGetGlobalVector(dmaProj, &ua));
+  PetscCall(DMGetGlobalVector(dmaProj, &rhs));
+  PetscCall(DMGetGlobalVector(dmaProj, &uproj));
 
   // Interpolate onto original mesh using dual basis
-  CHKERRQ(DMProjectFunction(dmProj, 0.0, funcs, NULL, INSERT_VALUES, u));
-  CHKERRQ(PetscObjectSetName((PetscObject) u, "Original"));
-  CHKERRQ(VecViewFromOptions(u, NULL, "-orig_vec_view"));
-  CHKERRQ(DMComputeL2Diff(dmProj, 0.0, funcs, NULL, u, &error));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Original L2 Error: %g\n", (double) error));
+  PetscCall(DMProjectFunction(dmProj, 0.0, funcs, NULL, INSERT_VALUES, u));
+  PetscCall(PetscObjectSetName((PetscObject) u, "Original"));
+  PetscCall(VecViewFromOptions(u, NULL, "-orig_vec_view"));
+  PetscCall(DMComputeL2Diff(dmProj, 0.0, funcs, NULL, u, &error));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Original L2 Error: %g\n", (double) error));
   // Interpolate onto NEW mesh using dual basis
-  CHKERRQ(DMProjectFunction(dmaProj, 0.0, funcs, NULL, INSERT_VALUES, ua));
-  CHKERRQ(PetscObjectSetName((PetscObject) ua, "Adapted"));
-  CHKERRQ(VecViewFromOptions(ua, NULL, "-adapt_vec_view"));
-  CHKERRQ(DMComputeL2Diff(dmaProj, 0.0, funcs, NULL, ua, &error));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Adapted L2 Error: %g\n", (double) error));
+  PetscCall(DMProjectFunction(dmaProj, 0.0, funcs, NULL, INSERT_VALUES, ua));
+  PetscCall(PetscObjectSetName((PetscObject) ua, "Adapted"));
+  PetscCall(VecViewFromOptions(ua, NULL, "-adapt_vec_view"));
+  PetscCall(DMComputeL2Diff(dmaProj, 0.0, funcs, NULL, ua, &error));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Adapted L2 Error: %g\n", (double) error));
   // Interpolate between meshes using interpolation matrix
-  CHKERRQ(DMCreateInterpolation(dmProj, dmaProj, &Interp, &scaling));
-  CHKERRQ(MatInterpolate(Interp, u, ua));
-  CHKERRQ(MatDestroy(&Interp));
-  CHKERRQ(VecDestroy(&scaling));
-  CHKERRQ(PetscObjectSetName((PetscObject) ua, "Interpolation"));
-  CHKERRQ(VecViewFromOptions(ua, NULL, "-interp_vec_view"));
-  CHKERRQ(DMComputeL2Diff(dmaProj, 0.0, funcs, NULL, ua, &error));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Interpolated L2 Error: %g\n", (double) error));
+  PetscCall(DMCreateInterpolation(dmProj, dmaProj, &Interp, &scaling));
+  PetscCall(MatInterpolate(Interp, u, ua));
+  PetscCall(MatDestroy(&Interp));
+  PetscCall(VecDestroy(&scaling));
+  PetscCall(PetscObjectSetName((PetscObject) ua, "Interpolation"));
+  PetscCall(VecViewFromOptions(ua, NULL, "-interp_vec_view"));
+  PetscCall(DMComputeL2Diff(dmaProj, 0.0, funcs, NULL, ua, &error));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Interpolated L2 Error: %g\n", (double) error));
   // L2 projection
-  CHKERRQ(DMCreateMassMatrix(dmaProj, dmaProj, &mass));
-  CHKERRQ(MatViewFromOptions(mass, NULL, "-mass_mat_view"));
-  CHKERRQ(KSPCreate(PETSC_COMM_WORLD, &ksp));
-  CHKERRQ(KSPSetOperators(ksp, mass, mass));
-  CHKERRQ(KSPSetFromOptions(ksp));
+  PetscCall(DMCreateMassMatrix(dmaProj, dmaProj, &mass));
+  PetscCall(MatViewFromOptions(mass, NULL, "-mass_mat_view"));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
+  PetscCall(KSPSetOperators(ksp, mass, mass));
+  PetscCall(KSPSetFromOptions(ksp));
   //   Compute rhs as M f, could also direclty project the analytic function but we might not have it
-  CHKERRQ(DMCreateMassMatrix(dmProj, dmaProj, &mass2));
-  CHKERRQ(MatMult(mass2, u, rhs));
-  CHKERRQ(MatDestroy(&mass2));
-  CHKERRQ(KSPSolve(ksp, rhs, uproj));
-  CHKERRQ(PetscObjectSetName((PetscObject) uproj, "L_2 Projection"));
-  CHKERRQ(VecViewFromOptions(uproj, NULL, "-proj_vec_view"));
-  CHKERRQ(DMComputeL2Diff(dmaProj, 0.0, funcs, NULL, uproj, &error));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Projected L2 Error: %g\n", (double) error));
-  CHKERRQ(KSPDestroy(&ksp));
-  CHKERRQ(MatDestroy(&mass));
-  CHKERRQ(DMRestoreGlobalVector(dmProj, &u));
-  CHKERRQ(DMRestoreGlobalVector(dmaProj, &ua));
-  CHKERRQ(DMRestoreGlobalVector(dmaProj, &rhs));
-  CHKERRQ(DMRestoreGlobalVector(dmaProj, &uproj));
-  CHKERRQ(DMDestroy(&dmProj));
-  CHKERRQ(DMDestroy(&dmaProj));
+  PetscCall(DMCreateMassMatrix(dmProj, dmaProj, &mass2));
+  PetscCall(MatMult(mass2, u, rhs));
+  PetscCall(MatDestroy(&mass2));
+  PetscCall(KSPSolve(ksp, rhs, uproj));
+  PetscCall(PetscObjectSetName((PetscObject) uproj, "L_2 Projection"));
+  PetscCall(VecViewFromOptions(uproj, NULL, "-proj_vec_view"));
+  PetscCall(DMComputeL2Diff(dmaProj, 0.0, funcs, NULL, uproj, &error));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Projected L2 Error: %g\n", (double) error));
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(MatDestroy(&mass));
+  PetscCall(DMRestoreGlobalVector(dmProj, &u));
+  PetscCall(DMRestoreGlobalVector(dmaProj, &ua));
+  PetscCall(DMRestoreGlobalVector(dmaProj, &rhs));
+  PetscCall(DMRestoreGlobalVector(dmaProj, &uproj));
+  PetscCall(DMDestroy(&dmProj));
+  PetscCall(DMDestroy(&dmaProj));
   PetscFunctionReturn(0);
 }
 
@@ -263,34 +263,34 @@ int main (int argc, char * argv[]) {
   Vec            metric;
   PetscInt       r;
 
-  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
-  CHKERRQ(ProcessOptions(comm, &user));
-  CHKERRQ(CreateMesh(comm, &dm));
+  PetscCall(ProcessOptions(comm, &user));
+  PetscCall(CreateMesh(comm, &dm));
 
   odm  = dm;
-  CHKERRQ(DMPlexDistributeOverlap(odm, 1, NULL, &dm));
+  PetscCall(DMPlexDistributeOverlap(odm, 1, NULL, &dm));
   if (!dm) {dm = odm;}
-  else     CHKERRQ(DMDestroy(&odm));
+  else     PetscCall(DMDestroy(&odm));
 
   for (r = 0; r < user.Nr; ++r) {
     DMLabel label;
 
-    CHKERRQ(ComputeMetric(dm, &user, &metric));
-    CHKERRQ(DMGetLabel(dm, "marker", &label));
-    CHKERRQ(DMAdaptMetric(dm, metric, label, NULL, &dma));
-    CHKERRQ(VecDestroy(&metric));
-    CHKERRQ(PetscObjectSetName((PetscObject) dma, "DMadapt"));
-    CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) dma, "adapt_"));
-    CHKERRQ(DMViewFromOptions(dma, NULL, "-dm_view"));
-    if (user.doL2) CHKERRQ(TestL2Projection(dm, dma, &user));
-    CHKERRQ(DMDestroy(&dm));
+    PetscCall(ComputeMetric(dm, &user, &metric));
+    PetscCall(DMGetLabel(dm, "marker", &label));
+    PetscCall(DMAdaptMetric(dm, metric, label, NULL, &dma));
+    PetscCall(VecDestroy(&metric));
+    PetscCall(PetscObjectSetName((PetscObject) dma, "DMadapt"));
+    PetscCall(PetscObjectSetOptionsPrefix((PetscObject) dma, "adapt_"));
+    PetscCall(DMViewFromOptions(dma, NULL, "-dm_view"));
+    if (user.doL2) PetscCall(TestL2Projection(dm, dma, &user));
+    PetscCall(DMDestroy(&dm));
     dm   = dma;
   }
-  CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) dm, "final_"));
-  CHKERRQ(DMViewFromOptions(dm, NULL, "-dm_view"));
-  CHKERRQ(DMDestroy(&dm));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject) dm, "final_"));
+  PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

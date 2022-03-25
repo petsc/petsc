@@ -165,7 +165,7 @@ PetscErrorCode TSGLEERegisterAll(void)
       Fembed[2] = {1,1-GAMMA},
       Ferror[2] = {0,1},
       Serror[2] = {1,0};
-    CHKERRQ(TSGLEERegister(TSGLEEi1,p,s,r,GAMMA,&A[0][0],&B[0][0],&U[0][0],&V[0][0],S,F,NULL,Fembed,Ferror,Serror,0,NULL));
+    PetscCall(TSGLEERegister(TSGLEEi1,p,s,r,GAMMA,&A[0][0],&B[0][0],&U[0][0],&V[0][0],S,F,NULL,Fembed,Ferror,Serror,0,NULL));
   }
   {
 #undef GAMMA
@@ -185,7 +185,7 @@ PetscErrorCode TSGLEERegisterAll(void)
       Fembed[2] = {1,1-GAMMA},
       Ferror[2] = {0,1},
       Serror[2] = {1,0};
-    CHKERRQ(TSGLEERegister(TSGLEE23,p,s,r,GAMMA,&A[0][0],&B[0][0],&U[0][0],&V[0][0],S,F,NULL,Fembed,Ferror,Serror,0,NULL));
+    PetscCall(TSGLEERegister(TSGLEE23,p,s,r,GAMMA,&A[0][0],&B[0][0],&U[0][0],&V[0][0],S,F,NULL,Fembed,Ferror,Serror,0,NULL));
   }
   {
 #undef GAMMA
@@ -205,7 +205,7 @@ PetscErrorCode TSGLEERegisterAll(void)
       Fembed[2] = {0,1},
       Ferror[2] = {-1.0/(1.0-GAMMA),1.0/(1.0-GAMMA)},
       Serror[2] = {1.0-GAMMA,1.0};
-      CHKERRQ(TSGLEERegister(TSGLEE24,p,s,r,GAMMA,&A[0][0],&B[0][0],&U[0][0],&V[0][0],S,F,NULL,Fembed,Ferror,Serror,0,NULL));
+      PetscCall(TSGLEERegister(TSGLEE24,p,s,r,GAMMA,&A[0][0],&B[0][0],&U[0][0],&V[0][0],S,F,NULL,Fembed,Ferror,Serror,0,NULL));
   }
   {
 #undef GAMMA
@@ -234,7 +234,7 @@ PetscErrorCode TSGLEERegisterAll(void)
       Fembed[2] = {0,1},
       Ferror[2] = {-1.0/(1.0-GAMMA),1.0/(1.0-GAMMA)},
       Serror[2] = {1.0-GAMMA,1.0};
-    CHKERRQ(TSGLEERegister(TSGLEE25I,p,s,r,GAMMA,&A[0][0],&B[0][0],&U[0][0],&V[0][0],S,F,NULL,Fembed,Ferror,Serror,0,NULL));
+    PetscCall(TSGLEERegister(TSGLEE25I,p,s,r,GAMMA,&A[0][0],&B[0][0],&U[0][0],&V[0][0],S,F,NULL,Fembed,Ferror,Serror,0,NULL));
   }
   {
 #undef GAMMA
@@ -263,7 +263,7 @@ PetscErrorCode TSGLEERegisterAll(void)
       Fembed[2] = {0,1},
       Ferror[2] = {-1.0/(1.0-GAMMA),1.0/(1.0-GAMMA)},
       Serror[2] = {1.0-GAMMA,1.0};
-    CHKERRQ(TSGLEERegister(TSGLEE35,p,s,r,GAMMA,&A[0][0],&B[0][0],&U[0][0],&V[0][0],S,F,NULL,Fembed,Ferror,Serror,0,NULL));
+    PetscCall(TSGLEERegister(TSGLEE35,p,s,r,GAMMA,&A[0][0],&B[0][0],&U[0][0],&V[0][0],S,F,NULL,Fembed,Ferror,Serror,0,NULL));
   }
   {
 #undef GAMMA
@@ -289,7 +289,7 @@ PetscErrorCode TSGLEERegisterAll(void)
       Fembed[2] = {1,1-GAMMA},
       Ferror[2] = {0,1},
       Serror[2] = {1,0};
-    CHKERRQ(TSGLEERegister(TSGLEEEXRK2A,p,s,r,GAMMA,&A[0][0],&B[0][0],&U[0][0],&V[0][0],S,F,NULL,Fembed,Ferror,Serror,0,NULL));
+    PetscCall(TSGLEERegister(TSGLEEEXRK2A,p,s,r,GAMMA,&A[0][0],&B[0][0],&U[0][0],&V[0][0],S,F,NULL,Fembed,Ferror,Serror,0,NULL));
   }
   {
 #undef GAMMA
@@ -317,7 +317,7 @@ PetscErrorCode TSGLEERegisterAll(void)
       Fembed[2] = {1,1-GAMMA},
       Ferror[2] = {0,1},
       Serror[2] = {1,0};
-    CHKERRQ(TSGLEERegister(TSGLEERK32G1,p,s,r,GAMMA,&A[0][0],&B[0][0],&U[0][0],&V[0][0],S,F,NULL,Fembed,Ferror,Serror,0,NULL));
+    PetscCall(TSGLEERegister(TSGLEERK32G1,p,s,r,GAMMA,&A[0][0],&B[0][0],&U[0][0],&V[0][0],S,F,NULL,Fembed,Ferror,Serror,0,NULL));
   }
   {
 #undef GAMMA
@@ -346,7 +346,7 @@ PetscErrorCode TSGLEERegisterAll(void)
       Fembed[2] = {1,1-GAMMA},
       Ferror[2] = {0,1},
       Serror[2] = {1,0};
-    CHKERRQ(TSGLEERegister(TSGLEERK285EX,p,s,r,GAMMA,&A[0][0],&B[0][0],&U[0][0],&V[0][0],S,F,NULL,Fembed,Ferror,Serror,0,NULL));
+    PetscCall(TSGLEERegister(TSGLEERK285EX,p,s,r,GAMMA,&A[0][0],&B[0][0],&U[0][0],&V[0][0],S,F,NULL,Fembed,Ferror,Serror,0,NULL));
   }
 
   PetscFunctionReturn(0);
@@ -370,14 +370,14 @@ PetscErrorCode TSGLEERegisterDestroy(void)
   while ((link = GLEETableauList)) {
     GLEETableau t = &link->tab;
     GLEETableauList = link->next;
-    CHKERRQ(PetscFree5(t->A,t->B,t->U,t->V,t->c));
-    ierr = PetscFree2(t->S,t->F);               CHKERRQ(ierr);
-    ierr = PetscFree (t->Fembed);               CHKERRQ(ierr);
-    ierr = PetscFree (t->Ferror);               CHKERRQ(ierr);
-    ierr = PetscFree (t->Serror);               CHKERRQ(ierr);
-    ierr = PetscFree (t->binterp);              CHKERRQ(ierr);
-    ierr = PetscFree (t->name);                 CHKERRQ(ierr);
-    ierr = PetscFree (link);                    CHKERRQ(ierr);
+    PetscCall(PetscFree5(t->A,t->B,t->U,t->V,t->c));
+    ierr = PetscFree2(t->S,t->F);               PetscCall(ierr);
+    ierr = PetscFree (t->Fembed);               PetscCall(ierr);
+    ierr = PetscFree (t->Ferror);               PetscCall(ierr);
+    ierr = PetscFree (t->Serror);               PetscCall(ierr);
+    ierr = PetscFree (t->binterp);              PetscCall(ierr);
+    ierr = PetscFree (t->name);                 PetscCall(ierr);
+    ierr = PetscFree (link);                    PetscCall(ierr);
   }
   TSGLEERegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -396,9 +396,9 @@ PetscErrorCode TSGLEEInitializePackage(void)
   PetscFunctionBegin;
   if (TSGLEEPackageInitialized) PetscFunctionReturn(0);
   TSGLEEPackageInitialized = PETSC_TRUE;
-  CHKERRQ(TSGLEERegisterAll());
-  CHKERRQ(PetscObjectComposedDataRegister(&explicit_stage_time_id));
-  CHKERRQ(PetscRegisterFinalize(TSGLEEFinalizePackage));
+  PetscCall(TSGLEERegisterAll());
+  PetscCall(PetscObjectComposedDataRegister(&explicit_stage_time_id));
+  PetscCall(PetscRegisterFinalize(TSGLEEFinalizePackage));
   PetscFunctionReturn(0);
 }
 
@@ -414,7 +414,7 @@ PetscErrorCode TSGLEEFinalizePackage(void)
 {
   PetscFunctionBegin;
   TSGLEEPackageInitialized = PETSC_FALSE;
-  CHKERRQ(TSGLEERegisterDestroy());
+  PetscCall(TSGLEERegisterDestroy());
   PetscFunctionReturn(0);
 }
 
@@ -464,36 +464,36 @@ PetscErrorCode TSGLEERegister(TSGLEEType name,PetscInt order,PetscInt s, PetscIn
   PetscInt          i,j;
 
   PetscFunctionBegin;
-  CHKERRQ(TSGLEEInitializePackage());
-  CHKERRQ(PetscNew(&link));
+  PetscCall(TSGLEEInitializePackage());
+  PetscCall(PetscNew(&link));
   t        = &link->tab;
-  CHKERRQ(PetscStrallocpy(name,&t->name));
+  PetscCall(PetscStrallocpy(name,&t->name));
   t->order = order;
   t->s     = s;
   t->r     = r;
   t->gamma = gamma;
-  CHKERRQ(PetscMalloc5(s*s,&t->A,r*r,&t->V,s,&t->c,r*s,&t->B,s*r,&t->U));
-  CHKERRQ(PetscMalloc2(r,&t->S,r,&t->F));
-  CHKERRQ(PetscArraycpy(t->A,A,s*s));
-  CHKERRQ(PetscArraycpy(t->B,B,r*s));
-  CHKERRQ(PetscArraycpy(t->U,U,s*r));
-  CHKERRQ(PetscArraycpy(t->V,V,r*r));
-  CHKERRQ(PetscArraycpy(t->S,S,r));
-  CHKERRQ(PetscArraycpy(t->F,F,r));
+  PetscCall(PetscMalloc5(s*s,&t->A,r*r,&t->V,s,&t->c,r*s,&t->B,s*r,&t->U));
+  PetscCall(PetscMalloc2(r,&t->S,r,&t->F));
+  PetscCall(PetscArraycpy(t->A,A,s*s));
+  PetscCall(PetscArraycpy(t->B,B,r*s));
+  PetscCall(PetscArraycpy(t->U,U,s*r));
+  PetscCall(PetscArraycpy(t->V,V,r*r));
+  PetscCall(PetscArraycpy(t->S,S,r));
+  PetscCall(PetscArraycpy(t->F,F,r));
   if (c) {
-    CHKERRQ(PetscArraycpy(t->c,c,s));
+    PetscCall(PetscArraycpy(t->c,c,s));
   } else {
     for (i=0; i<s; i++) for (j=0,t->c[i]=0; j<s; j++) t->c[i] += A[i*s+j];
   }
-  CHKERRQ(PetscMalloc1(r,&t->Fembed));
-  CHKERRQ(PetscMalloc1(r,&t->Ferror));
-  CHKERRQ(PetscMalloc1(r,&t->Serror));
-  CHKERRQ(PetscArraycpy(t->Fembed,Fembed,r));
-  CHKERRQ(PetscArraycpy(t->Ferror,Ferror,r));
-  CHKERRQ(PetscArraycpy(t->Serror,Serror,r));
+  PetscCall(PetscMalloc1(r,&t->Fembed));
+  PetscCall(PetscMalloc1(r,&t->Ferror));
+  PetscCall(PetscMalloc1(r,&t->Serror));
+  PetscCall(PetscArraycpy(t->Fembed,Fembed,r));
+  PetscCall(PetscArraycpy(t->Ferror,Ferror,r));
+  PetscCall(PetscArraycpy(t->Serror,Serror,r));
   t->pinterp = pinterp;
-  CHKERRQ(PetscMalloc1(s*pinterp,&t->binterp));
-  CHKERRQ(PetscArraycpy(t->binterp,binterp,s*pinterp));
+  PetscCall(PetscMalloc1(s*pinterp,&t->binterp));
+  PetscCall(PetscArraycpy(t->binterp,binterp,s*pinterp));
 
   link->next      = GLEETableauList;
   GLEETableauList = link;
@@ -530,31 +530,31 @@ static PetscErrorCode TSEvaluateStep_GLEE(TS ts,PetscInt order,Vec X,PetscBool *
     */
     if (glee->status == TS_STEP_INCOMPLETE) {
       for (i=0; i<r; i++) {
-        CHKERRQ(VecZeroEntries(Y[i]));
+        PetscCall(VecZeroEntries(Y[i]));
         for (j=0; j<r; j++) wr[j] = V[i*r+j];
-        CHKERRQ(VecMAXPY(Y[i],r,wr,glee->X));
+        PetscCall(VecMAXPY(Y[i],r,wr,glee->X));
         for (j=0; j<s; j++) ws[j] = h*B[i*s+j];
-        CHKERRQ(VecMAXPY(Y[i],s,ws,YdotStage));
+        PetscCall(VecMAXPY(Y[i],s,ws,YdotStage));
       }
-      CHKERRQ(VecZeroEntries(X));
+      PetscCall(VecZeroEntries(X));
       for (j=0; j<r; j++) wr[j] = F[j];
-      CHKERRQ(VecMAXPY(X,r,wr,Y));
-    } else CHKERRQ(VecCopy(ts->vec_sol,X));
+      PetscCall(VecMAXPY(X,r,wr,Y));
+    } else PetscCall(VecCopy(ts->vec_sol,X));
     PetscFunctionReturn(0);
 
   } else if (order == tab->order-1) {
 
     /* Complete with the embedded method (Fembed) */
     for (i=0; i<r; i++) {
-      CHKERRQ(VecZeroEntries(Y[i]));
+      PetscCall(VecZeroEntries(Y[i]));
       for (j=0; j<r; j++) wr[j] = V[i*r+j];
-      CHKERRQ(VecMAXPY(Y[i],r,wr,glee->X));
+      PetscCall(VecMAXPY(Y[i],r,wr,glee->X));
       for (j=0; j<s; j++) ws[j] = h*B[i*s+j];
-      CHKERRQ(VecMAXPY(Y[i],s,ws,YdotStage));
+      PetscCall(VecMAXPY(Y[i],s,ws,YdotStage));
     }
-    CHKERRQ(VecZeroEntries(X));
+    PetscCall(VecZeroEntries(X));
     for (j=0; j<r; j++) wr[j] = Fembed[j];
-    CHKERRQ(VecMAXPY(X,r,wr,Y));
+    PetscCall(VecMAXPY(X,r,wr,Y));
 
     if (done) *done = PETSC_TRUE;
     PetscFunctionReturn(0);
@@ -585,11 +585,11 @@ static PetscErrorCode TSStep_GLEE(TS ts)
   PetscBool       accept;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscCitationsRegister(citation,&cited));
+  PetscCall(PetscCitationsRegister(citation,&cited));
 
-  for (i=0; i<r; i++) CHKERRQ(VecCopy(Y[i],X[i]));
+  for (i=0; i<r; i++) PetscCall(VecCopy(Y[i],X[i]));
 
-  CHKERRQ(TSGetSNES(ts,&snes));
+  PetscCall(TSGetSNES(ts,&snes));
   next_time_step = ts->time_step;
   t              = ts->ptime;
   accept         = PETSC_TRUE;
@@ -598,50 +598,50 @@ static PetscErrorCode TSStep_GLEE(TS ts)
   for (reject=0; reject<ts->max_reject && !ts->reason; reject++,ts->reject++) {
 
     PetscReal h = ts->time_step;
-    CHKERRQ(TSPreStep(ts));
+    PetscCall(TSPreStep(ts));
 
     for (i=0; i<s; i++) {
 
       glee->stage_time = t + h*c[i];
-      CHKERRQ(TSPreStage(ts,glee->stage_time));
+      PetscCall(TSPreStage(ts,glee->stage_time));
 
       if (A[i*s+i] == 0) {  /* Explicit stage */
-        CHKERRQ(VecZeroEntries(YStage[i]));
+        PetscCall(VecZeroEntries(YStage[i]));
         for (j=0; j<r; j++) wr[j] = U[i*r+j];
-        CHKERRQ(VecMAXPY(YStage[i],r,wr,X));
+        PetscCall(VecMAXPY(YStage[i],r,wr,X));
         for (j=0; j<i; j++) ws[j] = h*A[i*s+j];
-        CHKERRQ(VecMAXPY(YStage[i],i,ws,YdotStage));
+        PetscCall(VecMAXPY(YStage[i],i,ws,YdotStage));
       } else {              /* Implicit stage */
         glee->scoeff = 1.0/A[i*s+i];
         /* compute right-hand-side */
-        CHKERRQ(VecZeroEntries(W));
+        PetscCall(VecZeroEntries(W));
         for (j=0; j<r; j++) wr[j] = U[i*r+j];
-        CHKERRQ(VecMAXPY(W,r,wr,X));
+        PetscCall(VecMAXPY(W,r,wr,X));
         for (j=0; j<i; j++) ws[j] = h*A[i*s+j];
-        CHKERRQ(VecMAXPY(W,i,ws,YdotStage));
-        CHKERRQ(VecScale(W,glee->scoeff/h));
+        PetscCall(VecMAXPY(W,i,ws,YdotStage));
+        PetscCall(VecScale(W,glee->scoeff/h));
         /* set initial guess */
-        CHKERRQ(VecCopy(i>0 ? YStage[i-1] : ts->vec_sol,YStage[i]));
+        PetscCall(VecCopy(i>0 ? YStage[i-1] : ts->vec_sol,YStage[i]));
         /* solve for this stage */
-        CHKERRQ(SNESSolve(snes,W,YStage[i]));
-        CHKERRQ(SNESGetIterationNumber(snes,&its));
-        CHKERRQ(SNESGetLinearSolveIterations(snes,&lits));
+        PetscCall(SNESSolve(snes,W,YStage[i]));
+        PetscCall(SNESGetIterationNumber(snes,&its));
+        PetscCall(SNESGetLinearSolveIterations(snes,&lits));
         ts->snes_its += its; ts->ksp_its += lits;
       }
-      CHKERRQ(TSGetAdapt(ts,&adapt));
-      CHKERRQ(TSAdaptCheckStage(adapt,ts,glee->stage_time,YStage[i],&accept));
+      PetscCall(TSGetAdapt(ts,&adapt));
+      PetscCall(TSAdaptCheckStage(adapt,ts,glee->stage_time,YStage[i],&accept));
       if (!accept) goto reject_step;
-      CHKERRQ(TSPostStage(ts,glee->stage_time,i,YStage));
-      CHKERRQ(TSComputeRHSFunction(ts,t+h*c[i],YStage[i],YdotStage[i]));
+      PetscCall(TSPostStage(ts,glee->stage_time,i,YStage));
+      PetscCall(TSComputeRHSFunction(ts,t+h*c[i],YStage[i],YdotStage[i]));
     }
-    CHKERRQ(TSEvaluateStep(ts,tab->order,ts->vec_sol,NULL));
+    PetscCall(TSEvaluateStep(ts,tab->order,ts->vec_sol,NULL));
     glee->status = TS_STEP_PENDING;
 
     /* Register only the current method as a candidate because we're not supporting multiple candidates yet. */
-    CHKERRQ(TSGetAdapt(ts,&adapt));
-    CHKERRQ(TSAdaptCandidatesClear(adapt));
-    CHKERRQ(TSAdaptCandidateAdd(adapt,tab->name,tab->order,1,tab->ccfl,(PetscReal)tab->s,PETSC_TRUE));
-    CHKERRQ(TSAdaptChoose(adapt,ts,ts->time_step,&next_scheme,&next_time_step,&accept));
+    PetscCall(TSGetAdapt(ts,&adapt));
+    PetscCall(TSAdaptCandidatesClear(adapt));
+    PetscCall(TSAdaptCandidateAdd(adapt,tab->name,tab->order,1,tab->ccfl,(PetscReal)tab->s,PETSC_TRUE));
+    PetscCall(TSAdaptChoose(adapt,ts,ts->time_step,&next_scheme,&next_time_step,&accept));
     if (accept) {
       /* ignore next_scheme for now */
       ts->ptime     += ts->time_step;
@@ -649,12 +649,12 @@ static PetscErrorCode TSStep_GLEE(TS ts)
       glee->status = TS_STEP_COMPLETE;
       /* compute and store the global error */
       /* Note: this is not needed if TSAdaptGLEE is not used */
-      CHKERRQ(TSGetTimeError(ts,0,&(glee->yGErr)));
-      CHKERRQ(PetscObjectComposedDataSetReal((PetscObject)ts->vec_sol,explicit_stage_time_id,ts->ptime));
+      PetscCall(TSGetTimeError(ts,0,&(glee->yGErr)));
+      PetscCall(PetscObjectComposedDataSetReal((PetscObject)ts->vec_sol,explicit_stage_time_id,ts->ptime));
       break;
     } else {                    /* Roll back the current step */
       for (j=0; j<r; j++) wr[j] = F[j];
-      CHKERRQ(VecMAXPY(ts->vec_sol,r,wr,X));
+      PetscCall(VecMAXPY(ts->vec_sol,r,wr,X));
       ts->time_step = next_time_step;
       glee->status  = TS_STEP_INCOMPLETE;
     }
@@ -686,16 +686,16 @@ static PetscErrorCode TSInterpolate_GLEE(TS ts,PetscReal itime,Vec X)
       break;
     default: SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_PLIB,"Invalid TSStepStatus");
   }
-  CHKERRQ(PetscMalloc1(s,&b));
+  PetscCall(PetscMalloc1(s,&b));
   for (i=0; i<s; i++) b[i] = 0;
   for (j=0,tt=t; j<pinterp; j++,tt*=t) {
     for (i=0; i<s; i++) {
       b[i]  += h * B[i*pinterp+j] * tt;
     }
   }
-  CHKERRQ(VecCopy(glee->YStage[0],X));
-  CHKERRQ(VecMAXPY(X,s,b,glee->YdotStage));
-  CHKERRQ(PetscFree(b));
+  PetscCall(VecCopy(glee->YStage[0],X));
+  PetscCall(VecMAXPY(X,s,b,glee->YdotStage));
+  PetscCall(PetscFree(b));
   PetscFunctionReturn(0);
 }
 
@@ -709,14 +709,14 @@ static PetscErrorCode TSReset_GLEE(TS ts)
   if (!glee->tableau) PetscFunctionReturn(0);
   s    = glee->tableau->s;
   r    = glee->tableau->r;
-  CHKERRQ(VecDestroyVecs(r,&glee->Y));
-  CHKERRQ(VecDestroyVecs(r,&glee->X));
-  CHKERRQ(VecDestroyVecs(s,&glee->YStage));
-  CHKERRQ(VecDestroyVecs(s,&glee->YdotStage));
-  CHKERRQ(VecDestroy(&glee->Ydot));
-  CHKERRQ(VecDestroy(&glee->yGErr));
-  CHKERRQ(VecDestroy(&glee->W));
-  CHKERRQ(PetscFree2(glee->swork,glee->rwork));
+  PetscCall(VecDestroyVecs(r,&glee->Y));
+  PetscCall(VecDestroyVecs(r,&glee->X));
+  PetscCall(VecDestroyVecs(s,&glee->YStage));
+  PetscCall(VecDestroyVecs(s,&glee->YdotStage));
+  PetscCall(VecDestroy(&glee->Ydot));
+  PetscCall(VecDestroy(&glee->yGErr));
+  PetscCall(VecDestroy(&glee->W));
+  PetscCall(PetscFree2(glee->swork,glee->rwork));
   PetscFunctionReturn(0);
 }
 
@@ -727,7 +727,7 @@ static PetscErrorCode TSGLEEGetVecs(TS ts,DM dm,Vec *Ydot)
   PetscFunctionBegin;
   if (Ydot) {
     if (dm && dm != ts->dm) {
-      CHKERRQ(DMGetNamedGlobalVector(dm,"TSGLEE_Ydot",Ydot));
+      PetscCall(DMGetNamedGlobalVector(dm,"TSGLEE_Ydot",Ydot));
     } else *Ydot = glee->Ydot;
   }
   PetscFunctionReturn(0);
@@ -738,7 +738,7 @@ static PetscErrorCode TSGLEERestoreVecs(TS ts,DM dm,Vec *Ydot)
   PetscFunctionBegin;
   if (Ydot) {
     if (dm && dm != ts->dm) {
-      CHKERRQ(DMRestoreNamedGlobalVector(dm,"TSGLEE_Ydot",Ydot));
+      PetscCall(DMRestoreNamedGlobalVector(dm,"TSGLEE_Ydot",Ydot));
     }
   }
   PetscFunctionReturn(0);
@@ -755,18 +755,18 @@ static PetscErrorCode SNESTSFormFunction_GLEE(SNES snes,Vec X,Vec F,TS ts)
   PetscReal      shift = glee->scoeff / ts->time_step;
 
   PetscFunctionBegin;
-  CHKERRQ(SNESGetDM(snes,&dm));
-  CHKERRQ(TSGLEEGetVecs(ts,dm,&Ydot));
+  PetscCall(SNESGetDM(snes,&dm));
+  PetscCall(TSGLEEGetVecs(ts,dm,&Ydot));
   /* Set Ydot = shift*X */
-  CHKERRQ(VecCopy(X,Ydot));
-  CHKERRQ(VecScale(Ydot,shift));
+  PetscCall(VecCopy(X,Ydot));
+  PetscCall(VecScale(Ydot,shift));
   dmsave = ts->dm;
   ts->dm = dm;
 
-  CHKERRQ(TSComputeIFunction(ts,glee->stage_time,X,Ydot,F,PETSC_FALSE));
+  PetscCall(TSComputeIFunction(ts,glee->stage_time,X,Ydot,F,PETSC_FALSE));
 
   ts->dm = dmsave;
-  CHKERRQ(TSGLEERestoreVecs(ts,dm,&Ydot));
+  PetscCall(TSGLEERestoreVecs(ts,dm,&Ydot));
   PetscFunctionReturn(0);
 }
 
@@ -778,16 +778,16 @@ static PetscErrorCode SNESTSFormJacobian_GLEE(SNES snes,Vec X,Mat A,Mat B,TS ts)
   PetscReal      shift = glee->scoeff / ts->time_step;
 
   PetscFunctionBegin;
-  CHKERRQ(SNESGetDM(snes,&dm));
-  CHKERRQ(TSGLEEGetVecs(ts,dm,&Ydot));
+  PetscCall(SNESGetDM(snes,&dm));
+  PetscCall(TSGLEEGetVecs(ts,dm,&Ydot));
   /* glee->Ydot has already been computed in SNESTSFormFunction_GLEE (SNES guarantees this) */
   dmsave = ts->dm;
   ts->dm = dm;
 
-  CHKERRQ(TSComputeIJacobian(ts,glee->stage_time,X,Ydot,shift,A,B,PETSC_FALSE));
+  PetscCall(TSComputeIJacobian(ts,glee->stage_time,X,Ydot,shift,A,B,PETSC_FALSE));
 
   ts->dm = dmsave;
-  CHKERRQ(TSGLEERestoreVecs(ts,dm,&Ydot));
+  PetscCall(TSGLEERestoreVecs(ts,dm,&Ydot));
   PetscFunctionReturn(0);
 }
 
@@ -824,23 +824,23 @@ static PetscErrorCode TSSetUp_GLEE(TS ts)
 
   PetscFunctionBegin;
   if (!glee->tableau) {
-    CHKERRQ(TSGLEESetType(ts,TSGLEEDefaultType));
+    PetscCall(TSGLEESetType(ts,TSGLEEDefaultType));
   }
   tab  = glee->tableau;
   s    = tab->s;
   r    = tab->r;
-  CHKERRQ(VecDuplicateVecs(ts->vec_sol,r,&glee->Y));
-  CHKERRQ(VecDuplicateVecs(ts->vec_sol,r,&glee->X));
-  CHKERRQ(VecDuplicateVecs(ts->vec_sol,s,&glee->YStage));
-  CHKERRQ(VecDuplicateVecs(ts->vec_sol,s,&glee->YdotStage));
-  CHKERRQ(VecDuplicate(ts->vec_sol,&glee->Ydot));
-  CHKERRQ(VecDuplicate(ts->vec_sol,&glee->yGErr));
-  CHKERRQ(VecZeroEntries(glee->yGErr));
-  CHKERRQ(VecDuplicate(ts->vec_sol,&glee->W));
-  CHKERRQ(PetscMalloc2(s,&glee->swork,r,&glee->rwork));
-  CHKERRQ(TSGetDM(ts,&dm));
-  CHKERRQ(DMCoarsenHookAdd(dm,DMCoarsenHook_TSGLEE,DMRestrictHook_TSGLEE,ts));
-  CHKERRQ(DMSubDomainHookAdd(dm,DMSubDomainHook_TSGLEE,DMSubDomainRestrictHook_TSGLEE,ts));
+  PetscCall(VecDuplicateVecs(ts->vec_sol,r,&glee->Y));
+  PetscCall(VecDuplicateVecs(ts->vec_sol,r,&glee->X));
+  PetscCall(VecDuplicateVecs(ts->vec_sol,s,&glee->YStage));
+  PetscCall(VecDuplicateVecs(ts->vec_sol,s,&glee->YdotStage));
+  PetscCall(VecDuplicate(ts->vec_sol,&glee->Ydot));
+  PetscCall(VecDuplicate(ts->vec_sol,&glee->yGErr));
+  PetscCall(VecZeroEntries(glee->yGErr));
+  PetscCall(VecDuplicate(ts->vec_sol,&glee->W));
+  PetscCall(PetscMalloc2(s,&glee->swork,r,&glee->rwork));
+  PetscCall(TSGetDM(ts,&dm));
+  PetscCall(DMCoarsenHookAdd(dm,DMCoarsenHook_TSGLEE,DMRestrictHook_TSGLEE,ts));
+  PetscCall(DMSubDomainHookAdd(dm,DMSubDomainHook_TSGLEE,DMSubDomainRestrictHook_TSGLEE,ts));
   PetscFunctionReturn(0);
 }
 
@@ -853,8 +853,8 @@ PetscErrorCode TSStartingMethod_GLEE(TS ts)
 
   PetscFunctionBegin;
   for (i=0; i<r; i++) {
-    CHKERRQ(VecZeroEntries(glee->Y[i]));
-    CHKERRQ(VecAXPY(glee->Y[i],S[i],ts->vec_sol));
+    PetscCall(VecZeroEntries(glee->Y[i]));
+    PetscCall(VecAXPY(glee->Y[i],S[i],ts->vec_sol));
   }
 
   PetscFunctionReturn(0);
@@ -867,22 +867,22 @@ static PetscErrorCode TSSetFromOptions_GLEE(PetscOptionItems *PetscOptionsObject
   char           gleetype[256];
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"GLEE ODE solver options"));
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"GLEE ODE solver options"));
   {
     GLEETableauLink link;
     PetscInt        count,choice;
     PetscBool       flg;
     const char      **namelist;
 
-    CHKERRQ(PetscStrncpy(gleetype,TSGLEEDefaultType,sizeof(gleetype)));
+    PetscCall(PetscStrncpy(gleetype,TSGLEEDefaultType,sizeof(gleetype)));
     for (link=GLEETableauList,count=0; link; link=link->next,count++) ;
-    CHKERRQ(PetscMalloc1(count,(char***)&namelist));
+    PetscCall(PetscMalloc1(count,(char***)&namelist));
     for (link=GLEETableauList,count=0; link; link=link->next,count++) namelist[count] = link->tab.name;
-    CHKERRQ(PetscOptionsEList("-ts_glee_type","Family of GLEE method","TSGLEESetType",(const char*const*)namelist,count,gleetype,&choice,&flg));
-    CHKERRQ(TSGLEESetType(ts,flg ? namelist[choice] : gleetype));
-    CHKERRQ(PetscFree(namelist));
+    PetscCall(PetscOptionsEList("-ts_glee_type","Family of GLEE method","TSGLEESetType",(const char*const*)namelist,count,gleetype,&choice,&flg));
+    PetscCall(TSGLEESetType(ts,flg ? namelist[choice] : gleetype));
+    PetscCall(PetscFree(namelist));
   }
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -893,14 +893,14 @@ static PetscErrorCode TSView_GLEE(TS ts,PetscViewer viewer)
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
     TSGLEEType gleetype;
     char       buf[512];
-    CHKERRQ(TSGLEEGetType(ts,&gleetype));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  GLEE type %s\n",gleetype));
-    CHKERRQ(PetscFormatRealArray(buf,sizeof(buf),"% 8.6f",tab->s,tab->c));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Abscissa     c = %s\n",buf));
+    PetscCall(TSGLEEGetType(ts,&gleetype));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  GLEE type %s\n",gleetype));
+    PetscCall(PetscFormatRealArray(buf,sizeof(buf),"% 8.6f",tab->s,tab->c));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Abscissa     c = %s\n",buf));
     /* Note: print out r as well */
   }
   PetscFunctionReturn(0);
@@ -912,13 +912,13 @@ static PetscErrorCode TSLoad_GLEE(TS ts,PetscViewer viewer)
   TSAdapt        tsadapt;
 
   PetscFunctionBegin;
-  CHKERRQ(TSGetAdapt(ts,&tsadapt));
-  CHKERRQ(TSAdaptLoad(tsadapt,viewer));
-  CHKERRQ(TSGetSNES(ts,&snes));
-  CHKERRQ(SNESLoad(snes,viewer));
+  PetscCall(TSGetAdapt(ts,&tsadapt));
+  PetscCall(TSAdaptLoad(tsadapt,viewer));
+  PetscCall(TSGetSNES(ts,&snes));
+  PetscCall(SNESLoad(snes,viewer));
   /* function and Jacobian context for SNES when used with TS is always ts object */
-  CHKERRQ(SNESSetFunction(snes,NULL,NULL,ts));
-  CHKERRQ(SNESSetJacobian(snes,NULL,NULL,NULL,ts));
+  PetscCall(SNESSetFunction(snes,NULL,NULL,ts));
+  PetscCall(SNESSetJacobian(snes,NULL,NULL,NULL,ts));
   PetscFunctionReturn(0);
 }
 
@@ -940,7 +940,7 @@ PetscErrorCode TSGLEESetType(TS ts,TSGLEEType gleetype)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidCharPointer(gleetype,2);
-  CHKERRQ(PetscTryMethod(ts,"TSGLEESetType_C",(TS,TSGLEEType),(ts,gleetype)));
+  PetscCall(PetscTryMethod(ts,"TSGLEESetType_C",(TS,TSGLEEType),(ts,gleetype)));
   PetscFunctionReturn(0);
 }
 
@@ -963,7 +963,7 @@ PetscErrorCode TSGLEEGetType(TS ts,TSGLEEType *gleetype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  CHKERRQ(PetscUseMethod(ts,"TSGLEEGetType_C",(TS,TSGLEEType*),(ts,gleetype)));
+  PetscCall(PetscUseMethod(ts,"TSGLEEGetType_C",(TS,TSGLEEType*),(ts,gleetype)));
   PetscFunctionReturn(0);
 }
 
@@ -973,7 +973,7 @@ PetscErrorCode  TSGLEEGetType_GLEE(TS ts,TSGLEEType *gleetype)
 
   PetscFunctionBegin;
   if (!glee->tableau) {
-    CHKERRQ(TSGLEESetType(ts,TSGLEEDefaultType));
+    PetscCall(TSGLEESetType(ts,TSGLEEDefaultType));
   }
   *gleetype = glee->tableau->name;
   PetscFunctionReturn(0);
@@ -986,13 +986,13 @@ PetscErrorCode  TSGLEESetType_GLEE(TS ts,TSGLEEType gleetype)
 
   PetscFunctionBegin;
   if (glee->tableau) {
-    CHKERRQ(PetscStrcmp(glee->tableau->name,gleetype,&match));
+    PetscCall(PetscStrcmp(glee->tableau->name,gleetype,&match));
     if (match) PetscFunctionReturn(0);
   }
   for (link = GLEETableauList; link; link=link->next) {
-    CHKERRQ(PetscStrcmp(link->tab.name,gleetype,&match));
+    PetscCall(PetscStrcmp(link->tab.name,gleetype,&match));
     if (match) {
-      CHKERRQ(TSReset_GLEE(ts));
+      PetscCall(TSReset_GLEE(ts));
       glee->tableau = &link->tab;
       PetscFunctionReturn(0);
     }
@@ -1019,7 +1019,7 @@ PetscErrorCode TSGetSolutionComponents_GLEE(TS ts,PetscInt *n,Vec *Y)
   if (!Y) *n = tab->r;
   else {
     if ((*n >= 0) && (*n < tab->r)) {
-      CHKERRQ(VecCopy(glee->Y[*n],*Y));
+      PetscCall(VecCopy(glee->Y[*n],*Y));
     } else SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Second argument (%d) out of range[%d,%d].",*n,0,tab->r-1);
   }
   PetscFunctionReturn(0);
@@ -1036,9 +1036,9 @@ PetscErrorCode TSGetAuxSolution_GLEE(TS ts,Vec *X)
   PetscInt        i;
 
   PetscFunctionBegin;
-  CHKERRQ(VecZeroEntries(*X));
+  PetscCall(VecZeroEntries(*X));
   for (i=0; i<r; i++) wr[i] = F[i];
-  CHKERRQ(VecMAXPY((*X),r,wr,Y));
+  PetscCall(VecMAXPY((*X),r,wr,Y));
   PetscFunctionReturn(0);
 }
 
@@ -1053,10 +1053,10 @@ PetscErrorCode TSGetTimeError_GLEE(TS ts,PetscInt n,Vec *X)
   PetscInt        i;
 
   PetscFunctionBegin;
-  CHKERRQ(VecZeroEntries(*X));
+  PetscCall(VecZeroEntries(*X));
   if (n==0) {
     for (i=0; i<r; i++) wr[i] = F[i];
-    CHKERRQ(VecMAXPY((*X),r,wr,Y));
+    PetscCall(VecMAXPY((*X),r,wr,Y));
   } else if (n==-1) {
     *X=glee->yGErr;
   }
@@ -1074,9 +1074,9 @@ PetscErrorCode TSSetTimeError_GLEE(TS ts,Vec X)
   PetscFunctionBegin;
   PetscCheck(r == 2,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSSetTimeError_GLEE not supported for '%s' with r=%D.",tab->name,tab->r);
   for (i=1; i<r; i++) {
-    CHKERRQ(VecCopy(ts->vec_sol,Y[i]));
-    CHKERRQ(VecAXPBY(Y[i],S[0],S[1],X));
-    CHKERRQ(VecCopy(X,glee->yGErr));
+    PetscCall(VecCopy(ts->vec_sol,Y[i]));
+    PetscCall(VecAXPBY(Y[i],S[0],S[1],X));
+    PetscCall(VecCopy(X,glee->yGErr));
   }
   PetscFunctionReturn(0);
 }
@@ -1084,14 +1084,14 @@ PetscErrorCode TSSetTimeError_GLEE(TS ts,Vec X)
 static PetscErrorCode TSDestroy_GLEE(TS ts)
 {
   PetscFunctionBegin;
-  CHKERRQ(TSReset_GLEE(ts));
+  PetscCall(TSReset_GLEE(ts));
   if (ts->dm) {
-    CHKERRQ(DMCoarsenHookRemove(ts->dm,DMCoarsenHook_TSGLEE,DMRestrictHook_TSGLEE,ts));
-    CHKERRQ(DMSubDomainHookRemove(ts->dm,DMSubDomainHook_TSGLEE,DMSubDomainRestrictHook_TSGLEE,ts));
+    PetscCall(DMCoarsenHookRemove(ts->dm,DMCoarsenHook_TSGLEE,DMRestrictHook_TSGLEE,ts));
+    PetscCall(DMSubDomainHookRemove(ts->dm,DMSubDomainHook_TSGLEE,DMSubDomainRestrictHook_TSGLEE,ts));
   }
-  CHKERRQ(PetscFree(ts->data));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSGLEEGetType_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSGLEESetType_C",NULL));
+  PetscCall(PetscFree(ts->data));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSGLEEGetType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSGLEESetType_C",NULL));
   PetscFunctionReturn(0);
 }
 
@@ -1117,7 +1117,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_GLEE(TS ts)
   TS_GLEE         *th;
 
   PetscFunctionBegin;
-  CHKERRQ(TSGLEEInitializePackage());
+  PetscCall(TSGLEEInitializePackage());
 
   ts->ops->reset                  = TSReset_GLEE;
   ts->ops->destroy                = TSDestroy_GLEE;
@@ -1140,10 +1140,10 @@ PETSC_EXTERN PetscErrorCode TSCreate_GLEE(TS ts)
 
   ts->usessnes = PETSC_TRUE;
 
-  CHKERRQ(PetscNewLog(ts,&th));
+  PetscCall(PetscNewLog(ts,&th));
   ts->data = (void*)th;
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSGLEEGetType_C",TSGLEEGetType_GLEE));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSGLEESetType_C",TSGLEESetType_GLEE));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSGLEEGetType_C",TSGLEEGetType_GLEE));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSGLEESetType_C",TSGLEESetType_GLEE));
   PetscFunctionReturn(0);
 }

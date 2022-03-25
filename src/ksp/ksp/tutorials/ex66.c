@@ -37,25 +37,25 @@ int main(int argc,char **argv)
   DM             da;
   UserContext    user;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
-  CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_PERIODIC, DM_BOUNDARY_MIRROR,DMDA_STENCIL_STAR,11,11,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
-  CHKERRQ(KSPSetDM(ksp,(DM)da));
-  CHKERRQ(DMSetApplicationContext(da,&user));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_PERIODIC, DM_BOUNDARY_MIRROR,DMDA_STENCIL_STAR,11,11,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(KSPSetDM(ksp,(DM)da));
+  PetscCall(DMSetApplicationContext(da,&user));
 
   user.uu     = 1.0;
   user.tt     = 1.0;
 
-  CHKERRQ(KSPSetComputeRHS(ksp,ComputeRHS,&user));
-  CHKERRQ(KSPSetComputeOperators(ksp,ComputeJacobian,&user));
-  CHKERRQ(KSPSetFromOptions(ksp));
-  CHKERRQ(KSPSolve(ksp,NULL,NULL));
+  PetscCall(KSPSetComputeRHS(ksp,ComputeRHS,&user));
+  PetscCall(KSPSetComputeOperators(ksp,ComputeJacobian,&user));
+  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(KSPSolve(ksp,NULL,NULL));
 
-  CHKERRQ(DMDestroy(&da));
-  CHKERRQ(KSPDestroy(&ksp));
-  CHKERRQ(PetscFinalize());
+  PetscCall(DMDestroy(&da));
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -69,29 +69,29 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
   MatNullSpace   nullspace;
 
   PetscFunctionBeginUser;
-  CHKERRQ(KSPGetDM(ksp,&da));
-  CHKERRQ(DMDAGetInfo(da, 0, &M, &N, 0,0,0,0,0,0,0,0,0,0));
+  PetscCall(KSPGetDM(ksp,&da));
+  PetscCall(DMDAGetInfo(da, 0, &M, &N, 0,0,0,0,0,0,0,0,0,0));
   uu   = user->uu; tt = user->tt;
   pi   = 4*PetscAtanReal(1.0);
   Hx   = 1.0/(PetscReal)(M);
   Hy   = 1.0/(PetscReal)(N);
 
-  CHKERRQ(DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0)); /* Fine grid */
-  CHKERRQ(DMDAVecGetArray(da, b, &array));
+  PetscCall(DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0)); /* Fine grid */
+  PetscCall(DMDAVecGetArray(da, b, &array));
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {
       array[j][i] = -PetscCosScalar(uu*pi*((PetscReal)i+0.5)*Hx)*PetscCosScalar(tt*pi*((PetscReal)j+0.5)*Hy)*Hx*Hy;
     }
   }
-  CHKERRQ(DMDAVecRestoreArray(da, b, &array));
-  CHKERRQ(VecAssemblyBegin(b));
-  CHKERRQ(VecAssemblyEnd(b));
+  PetscCall(DMDAVecRestoreArray(da, b, &array));
+  PetscCall(VecAssemblyBegin(b));
+  PetscCall(VecAssemblyEnd(b));
 
   /* force right hand side to be consistent for singular matrix */
   /* note this is really a hack, normally the model would provide you with a consistent right handside */
-  CHKERRQ(MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace));
-  CHKERRQ(MatNullSpaceRemove(nullspace,b));
-  CHKERRQ(MatNullSpaceDestroy(&nullspace));
+  PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace));
+  PetscCall(MatNullSpaceRemove(nullspace,b));
+  PetscCall(MatNullSpaceDestroy(&nullspace));
   PetscFunctionReturn(0);
 }
 
@@ -104,13 +104,13 @@ PetscErrorCode ComputeJacobian(KSP ksp,Mat J, Mat jac,void *ctx)
   MatNullSpace   nullspace;
 
   PetscFunctionBeginUser;
-  CHKERRQ(KSPGetDM(ksp,&da));
-  CHKERRQ(DMDAGetInfo(da,0,&M,&N,0,0,0,0,0,0,0,0,0,0));
+  PetscCall(KSPGetDM(ksp,&da));
+  PetscCall(DMDAGetInfo(da,0,&M,&N,0,0,0,0,0,0,0,0,0,0));
   Hx    = 1.0 / (PetscReal)(M);
   Hy    = 1.0 / (PetscReal)(N);
   HxdHy = Hx/Hy;
   HydHx = Hy/Hx;
-  CHKERRQ(DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0));
+  PetscCall(DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0));
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {
       row.i = i; row.j = j;
@@ -119,15 +119,15 @@ PetscErrorCode ComputeJacobian(KSP ksp,Mat J, Mat jac,void *ctx)
       v[2] = 2.0*(HxdHy + HydHx); col[2].i = i;   col[2].j = j;
       v[3] = -HydHx;              col[3].i = i+1; col[3].j = j;
       v[4] = -HxdHy;              col[4].i = i;   col[4].j = j+1;
-      CHKERRQ(MatSetValuesStencil(jac,1,&row,5,col,v,ADD_VALUES));
+      PetscCall(MatSetValuesStencil(jac,1,&row,5,col,v,ADD_VALUES));
     }
   }
-  CHKERRQ(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
 
-  CHKERRQ(MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace));
-  CHKERRQ(MatSetNullSpace(J,nullspace));
-  CHKERRQ(MatNullSpaceDestroy(&nullspace));
+  PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace));
+  PetscCall(MatSetNullSpace(J,nullspace));
+  PetscCall(MatNullSpaceDestroy(&nullspace));
   PetscFunctionReturn(0);
 }
 

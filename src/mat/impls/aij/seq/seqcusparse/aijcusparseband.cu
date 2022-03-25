@@ -200,8 +200,8 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSEBAND(Mat B,Mat A,const Ma
   aa_d    = thrust::raw_pointer_cast(matrixA->values->data().get());
   r       = thrust::raw_pointer_cast(cusparseTriFactors->rpermIndices->data());
 
-  CHKERRCUDA(WaitForCUDA());
-  CHKERRQ(PetscLogGpuTimeBegin());
+  PetscCallCUDA(WaitForCUDA());
+  PetscCall(PetscLogGpuTimeBegin());
   {
     int bw = (int)(2.*(double)n-1. - (double)(PetscSqrtReal(1.+4.*((double)n*(double)n-(double)b->nz))+PETSC_MACHINE_EPSILON))/2, bm1=bw-1,nl=n/Nf;
 #if !defined(AIJBANDUSEGROUPS)
@@ -219,7 +219,7 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSEBAND(Mat B,Mat A,const Ma
 #endif
     team_size = bw/Ni + !!(bw%Ni);
     nVec = PetscMin(bw, 1024/team_size);
-    CHKERRQ(PetscInfo(A,"Matrix Bandwidth = %d, number SMs/block = %d, num concurency = %d, num fields = %d, numSMs/GPU = %d, thread group size = %d,%d\n",bw,Ni,nconcurrent,Nf,nsm,team_size,nVec));
+    PetscCall(PetscInfo(A,"Matrix Bandwidth = %d, number SMs/block = %d, num concurency = %d, num fields = %d, numSMs/GPU = %d, thread group size = %d,%d\n",bw,Ni,nconcurrent,Nf,nsm,team_size,nVec));
     {
       dim3 dimBlockTeam(nVec,team_size);
       dim3 dimBlockLeague(Nf,Ni);
@@ -237,11 +237,11 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSEBAND(Mat B,Mat A,const Ma
 #endif
       CHECK_LAUNCH_ERROR(); // does a sync
 #if defined(PETSC_USE_LOG)
-      CHKERRQ(PetscLogGpuFlops((PetscLogDouble)Nf*(bm1*(bm1 + 1)*(PetscLogDouble)(2*bm1 + 1)/3 + (PetscLogDouble)2*(nl-bw)*bw*bw + (PetscLogDouble)nl*(nl+1)/2)));
+      PetscCall(PetscLogGpuFlops((PetscLogDouble)Nf*(bm1*(bm1 + 1)*(PetscLogDouble)(2*bm1 + 1)/3 + (PetscLogDouble)2*(nl-bw)*bw*bw + (PetscLogDouble)nl*(nl+1)/2)));
 #endif
     }
   }
-  CHKERRQ(PetscLogGpuTimeEnd());
+  PetscCall(PetscLogGpuTimeEnd());
   /* determine which version of MatSolve needs to be used. from MatLUFactorNumeric_AIJ_SeqAIJCUSPARSE */
   B->ops->solve = MatSolve_SeqAIJCUSPARSEBAND;
   B->ops->solvetranspose = NULL; // need transpose
@@ -264,17 +264,17 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJCUSPARSEBAND(Mat B,Mat A,IS isrow,IS is
 
   PetscFunctionBegin;
   PetscCheckFalse(A->rmap->N != A->cmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"matrix must be square");
-  CHKERRQ(MatMissingDiagonal(A,&missing,&i));
+  PetscCall(MatMissingDiagonal(A,&missing,&i));
   PetscCheck(!missing,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %" PetscInt_FMT,i);
   PetscCheck(cusparseTriFactors,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"!cusparseTriFactors");
-  CHKERRQ(MatGetOption(A,MAT_STRUCTURALLY_SYMMETRIC,&missing));
+  PetscCall(MatGetOption(A,MAT_STRUCTURALLY_SYMMETRIC,&missing));
   PetscCheck(missing,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"only structrally symmetric matrices supported");
 
-  CHKERRQ(ISInvertPermutation(iscol,PETSC_DECIDE,&isicol));
-  CHKERRQ(ISGetIndices(isicol,&ic));
+  PetscCall(ISInvertPermutation(iscol,PETSC_DECIDE,&isicol));
+  PetscCall(ISGetIndices(isicol,&ic));
 
-  CHKERRQ(MatSeqAIJSetPreallocation_SeqAIJ(B,MAT_SKIP_ALLOCATION,NULL));
-  CHKERRQ(PetscLogObjectParent((PetscObject)B,(PetscObject)isicol));
+  PetscCall(MatSeqAIJSetPreallocation_SeqAIJ(B,MAT_SKIP_ALLOCATION,NULL));
+  PetscCall(PetscLogObjectParent((PetscObject)B,(PetscObject)isicol));
   b    = (Mat_SeqAIJ*)(B)->data;
 
   /* get band widths, MatComputeBandwidth should take a reordering ic and do this */
@@ -290,21 +290,21 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJCUSPARSEBAND(Mat B,Mat A,IS isrow,IS is
       }
     }
   }
-  CHKERRQ(ISRestoreIndices(isicol,&ic));
+  PetscCall(ISRestoreIndices(isicol,&ic));
   /* only support structurally symmetric, but it might work */
   PetscCheckFalse(bwL!=bwU,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Only symmetric structure supported (now) W_L=%" PetscInt_FMT " W_U=%" PetscInt_FMT,bwL,bwU);
-  CHKERRQ(MatSeqAIJCUSPARSETriFactors_Reset(&cusparseTriFactors));
+  PetscCall(MatSeqAIJCUSPARSETriFactors_Reset(&cusparseTriFactors));
   nzBcsr = n + (2*n-1)*bwU - bwU*bwU;
   b->maxnz = b->nz = nzBcsr;
   cusparseTriFactors->nnz = b->nz; // only meta data needed: n & nz
-  CHKERRQ(PetscInfo(A,"Matrix Bandwidth = %" PetscInt_FMT ", nnz = %" PetscInt_FMT "\n",bwL,b->nz));
+  PetscCall(PetscInfo(A,"Matrix Bandwidth = %" PetscInt_FMT ", nnz = %" PetscInt_FMT "\n",bwL,b->nz));
   if (!cusparseTriFactors->workVector) { cusparseTriFactors->workVector = new THRUSTARRAY(n); }
-  CHKERRCUDA(cudaMalloc(&ba_t,(b->nz+1)*sizeof(PetscScalar))); // include a place for flops
-  CHKERRCUDA(cudaMalloc(&bi_t,(n+1)*sizeof(int)));
+  PetscCallCUDA(cudaMalloc(&ba_t,(b->nz+1)*sizeof(PetscScalar))); // include a place for flops
+  PetscCallCUDA(cudaMalloc(&bi_t,(n+1)*sizeof(int)));
   cusparseTriFactors->a_band_d = ba_t;
   cusparseTriFactors->i_band_d = bi_t;
   /* In b structure:  Free imax, ilen, old a, old j.  Allocate solve_work, new a, new j */
-  CHKERRQ(PetscLogObjectMemory((PetscObject)B,(nzBcsr+1)*(sizeof(PetscInt)+sizeof(PetscScalar))));
+  PetscCall(PetscLogObjectMemory((PetscObject)B,(nzBcsr+1)*(sizeof(PetscInt)+sizeof(PetscScalar))));
   {
     dim3 dimBlockTeam(1,128);
     dim3 dimBlockLeague(Nf,1);
@@ -316,21 +316,21 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJCUSPARSEBAND(Mat B,Mat A,IS isrow,IS is
   if (!cusparseTriFactors->rpermIndices) {
     const PetscInt *r;
 
-    CHKERRQ(ISGetIndices(isrow,&r));
+    PetscCall(ISGetIndices(isrow,&r));
     cusparseTriFactors->rpermIndices = new THRUSTINTARRAY(n);
     cusparseTriFactors->rpermIndices->assign(r, r+n);
-    CHKERRQ(ISRestoreIndices(isrow,&r));
-    CHKERRQ(PetscLogCpuToGpu(n*sizeof(PetscInt)));
+    PetscCall(ISRestoreIndices(isrow,&r));
+    PetscCall(PetscLogCpuToGpu(n*sizeof(PetscInt)));
   }
   /* upper triangular indices */
   if (!cusparseTriFactors->cpermIndices) {
     const PetscInt *c;
 
-    CHKERRQ(ISGetIndices(isicol,&c));
+    PetscCall(ISGetIndices(isicol,&c));
     cusparseTriFactors->cpermIndices = new THRUSTINTARRAY(n);
     cusparseTriFactors->cpermIndices->assign(c, c+n);
-    CHKERRQ(ISRestoreIndices(isicol,&c));
-    CHKERRQ(PetscLogCpuToGpu(n*sizeof(PetscInt)));
+    PetscCall(ISRestoreIndices(isicol,&c));
+    PetscCall(PetscLogCpuToGpu(n*sizeof(PetscInt)));
   }
 
   /* put together the new matrix */
@@ -341,10 +341,10 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJCUSPARSEBAND(Mat B,Mat A,IS isrow,IS is
   b->imax = NULL;
   b->row  = isrow;
   b->col  = iscol;
-  CHKERRQ(PetscObjectReference((PetscObject)isrow));
-  CHKERRQ(PetscObjectReference((PetscObject)iscol));
+  PetscCall(PetscObjectReference((PetscObject)isrow));
+  PetscCall(PetscObjectReference((PetscObject)iscol));
   b->icol = isicol;
-  CHKERRQ(PetscMalloc1(n+1,&b->solve_work));
+  PetscCall(PetscMalloc1(n+1,&b->solve_work));
 
   B->factortype            = MAT_FACTOR_LU;
   B->info.factor_mallocs   = 0;
@@ -358,15 +358,15 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJCUSPARSEBAND(Mat B,Mat A,IS isrow,IS is
 #if defined(PETSC_USE_INFO)
   if (ai[n] != 0) {
     PetscReal af = B->info.fill_ratio_needed;
-    CHKERRQ(PetscInfo(A,"Band fill ratio %g\n",(double)af));
+    PetscCall(PetscInfo(A,"Band fill ratio %g\n",(double)af));
   } else {
-    CHKERRQ(PetscInfo(A,"Empty matrix\n"));
+    PetscCall(PetscInfo(A,"Empty matrix\n"));
   }
 #endif
   if (a->inode.size) {
-    CHKERRQ(PetscInfo(A,"Warning: using inodes in band solver.\n"));
+    PetscCall(PetscInfo(A,"Warning: using inodes in band solver.\n"));
   }
-  CHKERRQ(MatSeqAIJCheckInode_FactorLU(B));
+  PetscCall(MatSeqAIJCheckInode_FactorLU(B));
   B->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJCUSPARSEBAND;
   B->offloadmask = PETSC_OFFLOAD_GPU;
 
@@ -386,21 +386,21 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaijcusparse_cusparse_band(Mat A,MatF
   PetscInt       n = A->rmap->n;
 
   PetscFunctionBegin;
-  CHKERRQ(MatCreate(PetscObjectComm((PetscObject)A),B));
-  CHKERRQ(MatSetSizes(*B,n,n,n,n));
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)A),B));
+  PetscCall(MatSetSizes(*B,n,n,n,n));
   (*B)->factortype = ftype;
   (*B)->canuseordering = PETSC_TRUE;
-  CHKERRQ(MatSetType(*B,MATSEQAIJCUSPARSE));
+  PetscCall(MatSetType(*B,MATSEQAIJCUSPARSE));
 
   if (ftype == MAT_FACTOR_LU) {
-    CHKERRQ(MatSetBlockSizesFromMats(*B,A,A));
+    PetscCall(MatSetBlockSizesFromMats(*B,A,A));
     (*B)->ops->ilufactorsymbolic = NULL; // MatILUFactorSymbolic_SeqAIJCUSPARSE;
     (*B)->ops->lufactorsymbolic  = MatLUFactorSymbolic_SeqAIJCUSPARSEBAND;
-    CHKERRQ(PetscStrallocpy(MATORDERINGRCM,(char**)&(*B)->preferredordering[MAT_FACTOR_LU]));
+    PetscCall(PetscStrallocpy(MATORDERINGRCM,(char**)&(*B)->preferredordering[MAT_FACTOR_LU]));
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported for CUSPARSEBAND Matrix Types");
 
-  CHKERRQ(MatSeqAIJSetPreallocation(*B,MAT_SKIP_ALLOCATION,NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)(*B),"MatFactorGetSolverType_C",MatFactorGetSolverType_seqaij_cusparse_band));
+  PetscCall(MatSeqAIJSetPreallocation(*B,MAT_SKIP_ALLOCATION,NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)(*B),"MatFactorGetSolverType_C",MatFactorGetSolverType_seqaij_cusparse_band));
   PetscFunctionReturn(0);
 }
 
@@ -524,12 +524,12 @@ static PetscErrorCode MatSolve_SeqAIJCUSPARSEBAND(Mat A,Vec bb,Vec xx)
   }
 
   /* Get the GPU pointers */
-  CHKERRQ(VecCUDAGetArrayWrite(xx,&xarray));
-  CHKERRQ(VecCUDAGetArrayRead(bb,&barray));
+  PetscCall(VecCUDAGetArrayWrite(xx,&xarray));
+  PetscCall(VecCUDAGetArrayRead(bb,&barray));
   xGPU = thrust::device_pointer_cast(xarray);
   bGPU = thrust::device_pointer_cast(barray);
 
-  CHKERRQ(PetscLogGpuTimeBegin());
+  PetscCall(PetscLogGpuTimeBegin());
   /* First, reorder with the row permutation */
   thrust::copy(thrust::cuda::par.on(PetscDefaultCudaStream),thrust::make_permutation_iterator(bGPU, cusparseTriFactors->rpermIndices->begin()),
                thrust::make_permutation_iterator(bGPU, cusparseTriFactors->rpermIndices->end()),
@@ -543,10 +543,10 @@ static PetscErrorCode MatSolve_SeqAIJCUSPARSEBAND(Mat A,Vec bb,Vec xx)
                thrust::make_permutation_iterator(tempGPU->begin(), cusparseTriFactors->cpermIndices->end()),
                xGPU);
 
-  CHKERRQ(VecCUDARestoreArrayRead(bb,&barray));
-  CHKERRQ(VecCUDARestoreArrayWrite(xx,&xarray));
-  CHKERRQ(PetscLogGpuFlops(2.0*cusparseTriFactors->nnz - A->cmap->n));
-  CHKERRQ(PetscLogGpuTimeEnd());
+  PetscCall(VecCUDARestoreArrayRead(bb,&barray));
+  PetscCall(VecCUDARestoreArrayWrite(xx,&xarray));
+  PetscCall(PetscLogGpuFlops(2.0*cusparseTriFactors->nnz - A->cmap->n));
+  PetscCall(PetscLogGpuTimeEnd());
 
   PetscFunctionReturn(0);
 }

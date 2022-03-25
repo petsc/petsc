@@ -14,43 +14,43 @@ int main(int argc,char **argv)
   PetscMPIInt     size, rank;
   MPI_Comm        comm;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   comm = PETSC_COMM_WORLD;
-  CHKERRMPI(MPI_Comm_size(comm, &size));
-  CHKERRMPI(MPI_Comm_rank(comm, &rank));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
 
   {
     PetscInt *idx, i, n, start, end;
 
     n = rank + 2;
-    CHKERRQ(PetscCalloc1(n, &idx));
-    CHKERRQ(ISCreateGeneral(comm, n, idx, PETSC_OWN_POINTER, &is0));
-    CHKERRQ(PetscObjectSetName((PetscObject)is0, objname));
-    CHKERRQ(ISGetLayout(is0, &map));
-    CHKERRQ(PetscLayoutGetRange(map, &start, &end));
+    PetscCall(PetscCalloc1(n, &idx));
+    PetscCall(ISCreateGeneral(comm, n, idx, PETSC_OWN_POINTER, &is0));
+    PetscCall(PetscObjectSetName((PetscObject)is0, objname));
+    PetscCall(ISGetLayout(is0, &map));
+    PetscCall(PetscLayoutGetRange(map, &start, &end));
     PetscCheck(end - start == n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "end - start == n");
     for (i=0; i<n; i++) idx[i] = i + start;
   }
 
-  CHKERRQ(PetscViewerHDF5Open(comm, filename, FILE_MODE_WRITE, &viewer));
-  CHKERRQ(ISView(is0, viewer));
+  PetscCall(PetscViewerHDF5Open(comm, filename, FILE_MODE_WRITE, &viewer));
+  PetscCall(ISView(is0, viewer));
 
-  CHKERRQ(ISCreate(comm, &is1));
-  CHKERRQ(PetscObjectSetName((PetscObject)is1, objname));
-  CHKERRQ(ISSetLayout(is1, map));
-  CHKERRQ(ISLoad(is1, viewer));
+  PetscCall(ISCreate(comm, &is1));
+  PetscCall(PetscObjectSetName((PetscObject)is1, objname));
+  PetscCall(ISSetLayout(is1, map));
+  PetscCall(ISLoad(is1, viewer));
 
   {
     PetscBool flg;
 
-    CHKERRQ(ISEqual(is0, is1, &flg));
+    PetscCall(ISEqual(is0, is1, &flg));
     PetscCheck(flg, comm, PETSC_ERR_PLIB, "is0 and is1 differ");
   }
 
-  CHKERRQ(ISDestroy(&is0));
-  CHKERRQ(ISDestroy(&is1));
-  CHKERRQ(PetscViewerDestroy(&viewer));
-  CHKERRQ(PetscFinalize());
+  PetscCall(ISDestroy(&is0));
+  PetscCall(ISDestroy(&is1));
+  PetscCall(PetscViewerDestroy(&viewer));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

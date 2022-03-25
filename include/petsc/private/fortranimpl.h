@@ -205,19 +205,19 @@ typedef PETSC_UINTPTR_T PetscFortranAddr;
     }                                                                   \
   } while (0)
 
-#define CHKERR_FORTRAN_VOID_FUNCTION(...) do {          \
+#define PetscCallFortranVoidFunction(...) do {          \
     PetscErrorCode ierr = 0;                            \
     /* the function may or may not access ierr */       \
     __VA_ARGS__;                                        \
-    CHKERRQ(ierr);                                      \
+    PetscCall(ierr);                                    \
   } while (0)
 
 /* Entire function body, _ctx is a "special" variable that can be passed along */
 #define PetscObjectUseFortranCallback_Private(obj,cid,types,args,cbclass) {                    \
     void (*func) types,*_ctx;                                                                  \
     PetscFunctionBegin;                                                                        \
-    CHKERRQ(PetscObjectGetFortranCallback((PetscObject)(obj),(cbclass),(cid),(PetscVoidFunction*)&func,&_ctx)); \
-    if (func) CHKERR_FORTRAN_VOID_FUNCTION((*func)args);                                       \
+    PetscCall(PetscObjectGetFortranCallback((PetscObject)(obj),(cbclass),(cid),(PetscVoidFunction*)&func,&_ctx)); \
+    if (func) PetscCallFortranVoidFunction((*func)args);                                       \
     PetscFunctionReturn(0);                                                                    \
   }
 #define PetscObjectUseFortranCallback(obj,cid,types,args) PetscObjectUseFortranCallback_Private(obj,cid,types,args,PETSC_FORTRAN_CALLBACK_CLASS)

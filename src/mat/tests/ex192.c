@@ -19,89 +19,89 @@ int main(int argc,char **args)
   char           solver[256];
   char           file[PETSC_MAX_PATH_LEN]; /* input file name */
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheckFalse(size > 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor test");
   /* Determine which type of solver we want to test for */
   herm = PETSC_FALSE;
   symm = PETSC_FALSE;
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-symmetric_solve",&symm,NULL));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-hermitian_solve",&herm,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-symmetric_solve",&symm,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-hermitian_solve",&herm,NULL));
   if (herm) symm = PETSC_TRUE;
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-cuda_solve",&cuda,NULL));
-  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-tol",&tol,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-cuda_solve",&cuda,NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-tol",&tol,NULL));
 
   /* Determine file from which we read the matrix A */
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&data_provided));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&data_provided));
   if (!data_provided) { /* get matrices from PETSc distribution */
-    CHKERRQ(PetscStrncpy(file,"${PETSC_DIR}/share/petsc/datafiles/matrices/",sizeof(file)));
+    PetscCall(PetscStrncpy(file,"${PETSC_DIR}/share/petsc/datafiles/matrices/",sizeof(file)));
     if (symm) {
 #if defined (PETSC_USE_COMPLEX)
-      CHKERRQ(PetscStrlcat(file,"hpd-complex-",sizeof(file)));
+      PetscCall(PetscStrlcat(file,"hpd-complex-",sizeof(file)));
 #else
-      CHKERRQ(PetscStrlcat(file,"spd-real-",sizeof(file)));
+      PetscCall(PetscStrlcat(file,"spd-real-",sizeof(file)));
 #endif
     } else {
 #if defined (PETSC_USE_COMPLEX)
-      CHKERRQ(PetscStrlcat(file,"nh-complex-",sizeof(file)));
+      PetscCall(PetscStrlcat(file,"nh-complex-",sizeof(file)));
 #else
-      CHKERRQ(PetscStrlcat(file,"ns-real-",sizeof(file)));
+      PetscCall(PetscStrlcat(file,"ns-real-",sizeof(file)));
 #endif
     }
 #if defined(PETSC_USE_64BIT_INDICES)
-    CHKERRQ(PetscStrlcat(file,"int64-",sizeof(file)));
+    PetscCall(PetscStrlcat(file,"int64-",sizeof(file)));
 #else
-    CHKERRQ(PetscStrlcat(file,"int32-",sizeof(file)));
+    PetscCall(PetscStrlcat(file,"int32-",sizeof(file)));
 #endif
 #if defined (PETSC_USE_REAL_SINGLE)
-    CHKERRQ(PetscStrlcat(file,"float32",sizeof(file)));
+    PetscCall(PetscStrlcat(file,"float32",sizeof(file)));
 #else
-    CHKERRQ(PetscStrlcat(file,"float64",sizeof(file)));
+    PetscCall(PetscStrlcat(file,"float64",sizeof(file)));
 #endif
   }
   /* Load matrix A */
-  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(MatLoad(A,fd));
-  CHKERRQ(PetscViewerDestroy(&fd));
-  CHKERRQ(MatGetSize(A,&m,&n));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatLoad(A,fd));
+  PetscCall(PetscViewerDestroy(&fd));
+  PetscCall(MatGetSize(A,&m,&n));
   PetscCheckFalse(m != n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%" PetscInt_FMT ", %" PetscInt_FMT ")", m, n);
 
   /* Create dense matrix C and X; C holds true solution with identical columns */
   nrhs = 2;
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-nrhs",&nrhs,NULL));
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&C));
-  CHKERRQ(MatSetSizes(C,m,PETSC_DECIDE,PETSC_DECIDE,nrhs));
-  CHKERRQ(MatSetType(C,MATDENSE));
-  CHKERRQ(MatSetFromOptions(C));
-  CHKERRQ(MatSetUp(C));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-nrhs",&nrhs,NULL));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&C));
+  PetscCall(MatSetSizes(C,m,PETSC_DECIDE,PETSC_DECIDE,nrhs));
+  PetscCall(MatSetType(C,MATDENSE));
+  PetscCall(MatSetFromOptions(C));
+  PetscCall(MatSetUp(C));
 
-  CHKERRQ(PetscRandomCreate(PETSC_COMM_WORLD,&rand));
-  CHKERRQ(PetscRandomSetFromOptions(rand));
-  CHKERRQ(MatSetRandom(C,rand));
-  CHKERRQ(MatDuplicate(C,MAT_DO_NOT_COPY_VALUES,&X));
+  PetscCall(PetscRandomCreate(PETSC_COMM_WORLD,&rand));
+  PetscCall(PetscRandomSetFromOptions(rand));
+  PetscCall(MatSetRandom(C,rand));
+  PetscCall(MatDuplicate(C,MAT_DO_NOT_COPY_VALUES,&X));
 
   /* Create vectors */
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
-  CHKERRQ(VecSetSizes(x,n,PETSC_DECIDE));
-  CHKERRQ(VecSetFromOptions(x));
-  CHKERRQ(VecDuplicate(x,&b));
-  CHKERRQ(VecDuplicate(x,&u)); /* save the true solution */
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+  PetscCall(VecSetSizes(x,n,PETSC_DECIDE));
+  PetscCall(VecSetFromOptions(x));
+  PetscCall(VecDuplicate(x,&b));
+  PetscCall(VecDuplicate(x,&u)); /* save the true solution */
 
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-solver",&isolver,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-solver",&isolver,NULL));
   switch (isolver) {
 #if defined(PETSC_HAVE_MUMPS)
     case 0:
-      CHKERRQ(PetscStrcpy(solver,MATSOLVERMUMPS));
+      PetscCall(PetscStrcpy(solver,MATSOLVERMUMPS));
       break;
 #endif
 #if defined(PETSC_HAVE_MKL_PARDISO)
     case 1:
-      CHKERRQ(PetscStrcpy(solver,MATSOLVERMKL_PARDISO));
+      PetscCall(PetscStrcpy(solver,MATSOLVERMKL_PARDISO));
       break;
 #endif
     default:
-      CHKERRQ(PetscStrcpy(solver,MATSOLVERPETSC));
+      PetscCall(PetscStrcpy(solver,MATSOLVERPETSC));
       break;
   }
 
@@ -110,17 +110,17 @@ int main(int argc,char **args)
     PetscScalar im = PetscSqrtScalar((PetscScalar)-1.);
     PetscScalar val = -1.0;
     val = val + im;
-    CHKERRQ(MatSetValue(A,1,0,val,INSERT_VALUES));
-    CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatSetValue(A,1,0,val,INSERT_VALUES));
+    PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   }
 #endif
 
-  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-schur_ratio",&sratio,NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-schur_ratio",&sratio,NULL));
   PetscCheckFalse(sratio < 0. || sratio > 1.,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Invalid ratio for schur degrees of freedom %g", (double)sratio);
   size_schur = (PetscInt)(sratio*m);
 
-  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Solving with %s: nrhs %" PetscInt_FMT ", sym %d, herm %d, size schur %" PetscInt_FMT ", size mat %" PetscInt_FMT "\n",solver,nrhs,symm,herm,size_schur,m));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"Solving with %s: nrhs %" PetscInt_FMT ", sym %d, herm %d, size schur %" PetscInt_FMT ", size mat %" PetscInt_FMT "\n",solver,nrhs,symm,herm,size_schur,m));
 
   /* Test LU/Cholesky Factorization */
   use_lu = PETSC_FALSE;
@@ -131,171 +131,171 @@ int main(int argc,char **args)
   if (cuda && symm && !herm) use_lu = PETSC_TRUE;
 
   if (herm && !use_lu) { /* test also conversion routines inside the solver packages */
-    CHKERRQ(MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE));
-    CHKERRQ(MatConvert(A,MATSEQSBAIJ,MAT_INPLACE_MATRIX,&A));
+    PetscCall(MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE));
+    PetscCall(MatConvert(A,MATSEQSBAIJ,MAT_INPLACE_MATRIX,&A));
   }
 
   if (use_lu) {
-    CHKERRQ(MatGetFactor(A,solver,MAT_FACTOR_LU,&F));
+    PetscCall(MatGetFactor(A,solver,MAT_FACTOR_LU,&F));
   } else {
     if (herm) {
-      CHKERRQ(MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE));
-      CHKERRQ(MatSetOption(A,MAT_SPD,PETSC_TRUE));
+      PetscCall(MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE));
+      PetscCall(MatSetOption(A,MAT_SPD,PETSC_TRUE));
     } else {
-      CHKERRQ(MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE));
-      CHKERRQ(MatSetOption(A,MAT_SPD,PETSC_FALSE));
+      PetscCall(MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE));
+      PetscCall(MatSetOption(A,MAT_SPD,PETSC_FALSE));
     }
-    CHKERRQ(MatGetFactor(A,solver,MAT_FACTOR_CHOLESKY,&F));
+    PetscCall(MatGetFactor(A,solver,MAT_FACTOR_CHOLESKY,&F));
   }
-  CHKERRQ(ISCreateStride(PETSC_COMM_SELF,size_schur,m-size_schur,1,&is_schur));
-  CHKERRQ(MatFactorSetSchurIS(F,is_schur));
+  PetscCall(ISCreateStride(PETSC_COMM_SELF,size_schur,m-size_schur,1,&is_schur));
+  PetscCall(MatFactorSetSchurIS(F,is_schur));
 
-  CHKERRQ(ISDestroy(&is_schur));
+  PetscCall(ISDestroy(&is_schur));
   if (use_lu) {
-    CHKERRQ(MatLUFactorSymbolic(F,A,NULL,NULL,NULL));
+    PetscCall(MatLUFactorSymbolic(F,A,NULL,NULL,NULL));
   } else {
-    CHKERRQ(MatCholeskyFactorSymbolic(F,A,NULL,NULL));
+    PetscCall(MatCholeskyFactorSymbolic(F,A,NULL,NULL));
   }
 
   for (nfact = 0; nfact < 3; nfact++) {
     Mat AD;
 
     if (!nfact) {
-      CHKERRQ(VecSetRandom(x,rand));
+      PetscCall(VecSetRandom(x,rand));
       if (symm && herm) {
-        CHKERRQ(VecAbs(x));
+        PetscCall(VecAbs(x));
       }
-      CHKERRQ(MatDiagonalSet(A,x,ADD_VALUES));
+      PetscCall(MatDiagonalSet(A,x,ADD_VALUES));
     }
     if (use_lu) {
-      CHKERRQ(MatLUFactorNumeric(F,A,NULL));
+      PetscCall(MatLUFactorNumeric(F,A,NULL));
     } else {
-      CHKERRQ(MatCholeskyFactorNumeric(F,A,NULL));
+      PetscCall(MatCholeskyFactorNumeric(F,A,NULL));
     }
     if (cuda) {
-      CHKERRQ(MatFactorGetSchurComplement(F,&S,NULL));
-      CHKERRQ(MatSetType(S,MATSEQDENSECUDA));
-      CHKERRQ(MatCreateVecs(S,&xschur,&bschur));
-      CHKERRQ(MatFactorRestoreSchurComplement(F,&S,MAT_FACTOR_SCHUR_UNFACTORED));
+      PetscCall(MatFactorGetSchurComplement(F,&S,NULL));
+      PetscCall(MatSetType(S,MATSEQDENSECUDA));
+      PetscCall(MatCreateVecs(S,&xschur,&bschur));
+      PetscCall(MatFactorRestoreSchurComplement(F,&S,MAT_FACTOR_SCHUR_UNFACTORED));
     }
-    CHKERRQ(MatFactorCreateSchurComplement(F,&S,NULL));
+    PetscCall(MatFactorCreateSchurComplement(F,&S,NULL));
     if (!cuda) {
-      CHKERRQ(MatCreateVecs(S,&xschur,&bschur));
+      PetscCall(MatCreateVecs(S,&xschur,&bschur));
     }
-    CHKERRQ(VecDuplicate(xschur,&uschur));
+    PetscCall(VecDuplicate(xschur,&uschur));
     if (nfact == 1 && (!cuda || (herm && symm))) {
-      CHKERRQ(MatFactorInvertSchurComplement(F));
+      PetscCall(MatFactorInvertSchurComplement(F));
     }
     for (nsolve = 0; nsolve < 2; nsolve++) {
-      CHKERRQ(VecSetRandom(x,rand));
-      CHKERRQ(VecCopy(x,u));
+      PetscCall(VecSetRandom(x,rand));
+      PetscCall(VecCopy(x,u));
 
       if (nsolve) {
-        CHKERRQ(MatMult(A,x,b));
-        CHKERRQ(MatSolve(F,b,x));
+        PetscCall(MatMult(A,x,b));
+        PetscCall(MatSolve(F,b,x));
       } else {
-        CHKERRQ(MatMultTranspose(A,x,b));
-        CHKERRQ(MatSolveTranspose(F,b,x));
+        PetscCall(MatMultTranspose(A,x,b));
+        PetscCall(MatSolveTranspose(F,b,x));
       }
       /* Check the error */
-      CHKERRQ(VecAXPY(u,-1.0,x));  /* u <- (-1.0)x + u */
-      CHKERRQ(VecNorm(u,NORM_2,&norm));
+      PetscCall(VecAXPY(u,-1.0,x));  /* u <- (-1.0)x + u */
+      PetscCall(VecNorm(u,NORM_2,&norm));
       if (norm > tol) {
         PetscReal resi;
         if (nsolve) {
-          CHKERRQ(MatMult(A,x,u)); /* u = A*x */
+          PetscCall(MatMult(A,x,u)); /* u = A*x */
         } else {
-          CHKERRQ(MatMultTranspose(A,x,u)); /* u = A*x */
+          PetscCall(MatMultTranspose(A,x,u)); /* u = A*x */
         }
-        CHKERRQ(VecAXPY(u,-1.0,b));  /* u <- (-1.0)b + u */
-        CHKERRQ(VecNorm(u,NORM_2,&resi));
+        PetscCall(VecAXPY(u,-1.0,b));  /* u <- (-1.0)b + u */
+        PetscCall(VecNorm(u,NORM_2,&resi));
         if (nsolve) {
-          CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"(f %" PetscInt_FMT ", s %" PetscInt_FMT ") MatSolve error: Norm of error %g, residual %g\n",nfact,nsolve,(double)norm,(double)resi));
+          PetscCall(PetscPrintf(PETSC_COMM_SELF,"(f %" PetscInt_FMT ", s %" PetscInt_FMT ") MatSolve error: Norm of error %g, residual %g\n",nfact,nsolve,(double)norm,(double)resi));
         } else {
-          CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"(f %" PetscInt_FMT ", s %" PetscInt_FMT ") MatSolveTranspose error: Norm of error %g, residual %f\n",nfact,nsolve,(double)norm,(double)resi));
+          PetscCall(PetscPrintf(PETSC_COMM_SELF,"(f %" PetscInt_FMT ", s %" PetscInt_FMT ") MatSolveTranspose error: Norm of error %g, residual %f\n",nfact,nsolve,(double)norm,(double)resi));
         }
       }
-      CHKERRQ(VecSetRandom(xschur,rand));
-      CHKERRQ(VecCopy(xschur,uschur));
+      PetscCall(VecSetRandom(xschur,rand));
+      PetscCall(VecCopy(xschur,uschur));
       if (nsolve) {
-        CHKERRQ(MatMult(S,xschur,bschur));
-        CHKERRQ(MatFactorSolveSchurComplement(F,bschur,xschur));
+        PetscCall(MatMult(S,xschur,bschur));
+        PetscCall(MatFactorSolveSchurComplement(F,bschur,xschur));
       } else {
-        CHKERRQ(MatMultTranspose(S,xschur,bschur));
-        CHKERRQ(MatFactorSolveSchurComplementTranspose(F,bschur,xschur));
+        PetscCall(MatMultTranspose(S,xschur,bschur));
+        PetscCall(MatFactorSolveSchurComplementTranspose(F,bschur,xschur));
       }
       /* Check the error */
-      CHKERRQ(VecAXPY(uschur,-1.0,xschur));  /* u <- (-1.0)x + u */
-      CHKERRQ(VecNorm(uschur,NORM_2,&norm));
+      PetscCall(VecAXPY(uschur,-1.0,xschur));  /* u <- (-1.0)x + u */
+      PetscCall(VecNorm(uschur,NORM_2,&norm));
       if (norm > tol) {
         PetscReal resi;
         if (nsolve) {
-          CHKERRQ(MatMult(S,xschur,uschur)); /* u = A*x */
+          PetscCall(MatMult(S,xschur,uschur)); /* u = A*x */
         } else {
-          CHKERRQ(MatMultTranspose(S,xschur,uschur)); /* u = A*x */
+          PetscCall(MatMultTranspose(S,xschur,uschur)); /* u = A*x */
         }
-        CHKERRQ(VecAXPY(uschur,-1.0,bschur));  /* u <- (-1.0)b + u */
-        CHKERRQ(VecNorm(uschur,NORM_2,&resi));
+        PetscCall(VecAXPY(uschur,-1.0,bschur));  /* u <- (-1.0)b + u */
+        PetscCall(VecNorm(uschur,NORM_2,&resi));
         if (nsolve) {
-          CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"(f %" PetscInt_FMT ", s %" PetscInt_FMT ") MatFactorSolveSchurComplement error: Norm of error %g, residual %g\n",nfact,nsolve,(double)norm,(double)resi));
+          PetscCall(PetscPrintf(PETSC_COMM_SELF,"(f %" PetscInt_FMT ", s %" PetscInt_FMT ") MatFactorSolveSchurComplement error: Norm of error %g, residual %g\n",nfact,nsolve,(double)norm,(double)resi));
         } else {
-          CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"(f %" PetscInt_FMT ", s %" PetscInt_FMT ") MatFactorSolveSchurComplementTranspose error: Norm of error %g, residual %f\n",nfact,nsolve,(double)norm,(double)resi));
+          PetscCall(PetscPrintf(PETSC_COMM_SELF,"(f %" PetscInt_FMT ", s %" PetscInt_FMT ") MatFactorSolveSchurComplementTranspose error: Norm of error %g, residual %f\n",nfact,nsolve,(double)norm,(double)resi));
         }
       }
     }
-    CHKERRQ(MatConvert(A,MATSEQAIJ,MAT_INITIAL_MATRIX,&AD));
+    PetscCall(MatConvert(A,MATSEQAIJ,MAT_INITIAL_MATRIX,&AD));
     if (!nfact) {
-      CHKERRQ(MatMatMult(AD,C,MAT_INITIAL_MATRIX,2.0,&RHS));
+      PetscCall(MatMatMult(AD,C,MAT_INITIAL_MATRIX,2.0,&RHS));
     } else {
-      CHKERRQ(MatMatMult(AD,C,MAT_REUSE_MATRIX,2.0,&RHS));
+      PetscCall(MatMatMult(AD,C,MAT_REUSE_MATRIX,2.0,&RHS));
     }
-    CHKERRQ(MatDestroy(&AD));
+    PetscCall(MatDestroy(&AD));
     for (nsolve = 0; nsolve < 2; nsolve++) {
-      CHKERRQ(MatMatSolve(F,RHS,X));
+      PetscCall(MatMatSolve(F,RHS,X));
 
       /* Check the error */
-      CHKERRQ(MatAXPY(X,-1.0,C,SAME_NONZERO_PATTERN));
-      CHKERRQ(MatNorm(X,NORM_FROBENIUS,&norm));
+      PetscCall(MatAXPY(X,-1.0,C,SAME_NONZERO_PATTERN));
+      PetscCall(MatNorm(X,NORM_FROBENIUS,&norm));
       if (norm > tol) {
-        CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"(f %" PetscInt_FMT ", s %" PetscInt_FMT ") MatMatSolve: Norm of error %g\n",nfact,nsolve,(double)norm));
+        PetscCall(PetscPrintf(PETSC_COMM_SELF,"(f %" PetscInt_FMT ", s %" PetscInt_FMT ") MatMatSolve: Norm of error %g\n",nfact,nsolve,(double)norm));
       }
     }
     if (isolver == 0) {
       Mat spRHS,spRHST,RHST;
 
-      CHKERRQ(MatTranspose(RHS,MAT_INITIAL_MATRIX,&RHST));
-      CHKERRQ(MatConvert(RHST,MATSEQAIJ,MAT_INITIAL_MATRIX,&spRHST));
-      CHKERRQ(MatCreateTranspose(spRHST,&spRHS));
+      PetscCall(MatTranspose(RHS,MAT_INITIAL_MATRIX,&RHST));
+      PetscCall(MatConvert(RHST,MATSEQAIJ,MAT_INITIAL_MATRIX,&spRHST));
+      PetscCall(MatCreateTranspose(spRHST,&spRHS));
       for (nsolve = 0; nsolve < 2; nsolve++) {
-        CHKERRQ(MatMatSolve(F,spRHS,X));
+        PetscCall(MatMatSolve(F,spRHS,X));
 
         /* Check the error */
-        CHKERRQ(MatAXPY(X,-1.0,C,SAME_NONZERO_PATTERN));
-        CHKERRQ(MatNorm(X,NORM_FROBENIUS,&norm));
+        PetscCall(MatAXPY(X,-1.0,C,SAME_NONZERO_PATTERN));
+        PetscCall(MatNorm(X,NORM_FROBENIUS,&norm));
         if (norm > tol) {
-          CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"(f %" PetscInt_FMT ", s %" PetscInt_FMT ") sparse MatMatSolve: Norm of error %g\n",nfact,nsolve,(double)norm));
+          PetscCall(PetscPrintf(PETSC_COMM_SELF,"(f %" PetscInt_FMT ", s %" PetscInt_FMT ") sparse MatMatSolve: Norm of error %g\n",nfact,nsolve,(double)norm));
         }
       }
-      CHKERRQ(MatDestroy(&spRHST));
-      CHKERRQ(MatDestroy(&spRHS));
-      CHKERRQ(MatDestroy(&RHST));
+      PetscCall(MatDestroy(&spRHST));
+      PetscCall(MatDestroy(&spRHS));
+      PetscCall(MatDestroy(&RHST));
     }
-    CHKERRQ(MatDestroy(&S));
-    CHKERRQ(VecDestroy(&xschur));
-    CHKERRQ(VecDestroy(&bschur));
-    CHKERRQ(VecDestroy(&uschur));
+    PetscCall(MatDestroy(&S));
+    PetscCall(VecDestroy(&xschur));
+    PetscCall(VecDestroy(&bschur));
+    PetscCall(VecDestroy(&uschur));
   }
   /* Free data structures */
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(MatDestroy(&C));
-  CHKERRQ(MatDestroy(&F));
-  CHKERRQ(MatDestroy(&X));
-  CHKERRQ(MatDestroy(&RHS));
-  CHKERRQ(PetscRandomDestroy(&rand));
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&b));
-  CHKERRQ(VecDestroy(&u));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&C));
+  PetscCall(MatDestroy(&F));
+  PetscCall(MatDestroy(&X));
+  PetscCall(MatDestroy(&RHS));
+  PetscCall(PetscRandomDestroy(&rand));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&b));
+  PetscCall(VecDestroy(&u));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

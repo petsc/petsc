@@ -503,7 +503,7 @@ PETSC_EXTERN void  matgetrowmaxabs_(Mat *mat,Vec *v,PetscInt idx[], int *ierr)
 
 static PetscErrorCode ournullfunction(MatNullSpace sp,Vec x,void *ctx)
 {
-  CHKERR_FORTRAN_VOID_FUNCTION((*(void (*)(MatNullSpace*,Vec*,void*,PetscErrorCode*))(((PetscObject)sp)->fortran_func_pointers[0]))(&sp,&x,ctx,&ierr));
+  PetscCallFortranVoidFunction((*(void (*)(MatNullSpace*,Vec*,void*,PetscErrorCode*))(((PetscObject)sp)->fortran_func_pointers[0]))(&sp,&x,ctx,&ierr));
   return 0;
 }
 

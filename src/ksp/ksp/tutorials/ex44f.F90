@@ -67,15 +67,15 @@
       PetscScalar, pointer :: xx(:)
       call DMDAGetInfo(da,PETSC_NULL_INTEGER,mx,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER, &
      &                 PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER, &
-     &                 PETSC_NULL_INTEGER,ierr);CHKERRQ(ierr)
-      call DMDAGetCorners(da,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,xm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr);CHKERRQ(ierr)
+     &                 PETSC_NULL_INTEGER,ierr);PetscCall(ierr)
+      call DMDAGetCorners(da,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,xm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr);PetscCall(ierr)
       hx     = 1.0_PETSC_REAL_KIND/(mx-1)
-      call DMDAVecGetArrayF90(da,x,xx,ierr);CHKERRQ(ierr)
+      call DMDAVecGetArrayF90(da,x,xx,ierr);PetscCall(ierr)
       do i=xs,xs+xm-1
         call knl_workaround(xx(i))
         xx(i) = i*hx
       enddo
-      call DMDAVecRestoreArrayF90(da,x,xx,ierr);CHKERRQ(ierr)
+      call DMDAVecRestoreArrayF90(da,x,xx,ierr);PetscCall(ierr)
       return
       end
 
@@ -92,20 +92,20 @@
       one = 1.0
       call DMDAGetInfo(da,PETSC_NULL_INTEGER,mx,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER, &
      &                 PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,   &
-     &                 PETSC_NULL_INTEGER,ierr);CHKERRQ(ierr)
-      call DMDAGetCorners(da,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,xm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr);CHKERRQ(ierr)
+     &                 PETSC_NULL_INTEGER,ierr);PetscCall(ierr)
+      call DMDAGetCorners(da,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,xm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr);PetscCall(ierr)
       hx     = 1.0_PETSC_REAL_KIND/(mx-1)
       do i=xs,xs+xm-1
         if ((i .eq. 0) .or. (i .eq. mx-1)) then
-          call MatSetValue(J,i,i,one,INSERT_VALUES,ierr);CHKERRQ(ierr)
+          call MatSetValue(J,i,i,one,INSERT_VALUES,ierr);PetscCall(ierr)
         else
-          call MatSetValue(J,i,i-1,-hx,INSERT_VALUES,ierr);CHKERRQ(ierr)
-          call MatSetValue(J,i,i+1,-hx,INSERT_VALUES,ierr);CHKERRQ(ierr)
-          call MatSetValue(J,i,i,2*hx,INSERT_VALUES,ierr);CHKERRQ(ierr)
+          call MatSetValue(J,i,i-1,-hx,INSERT_VALUES,ierr);PetscCall(ierr)
+          call MatSetValue(J,i,i+1,-hx,INSERT_VALUES,ierr);PetscCall(ierr)
+          call MatSetValue(J,i,i,2*hx,INSERT_VALUES,ierr);PetscCall(ierr)
         endif
       enddo
-      call MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
-      call MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
+      call MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY,ierr);PetscCall(ierr)
+      call MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY,ierr);PetscCall(ierr)
       return
       end
 

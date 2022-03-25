@@ -14,9 +14,9 @@ static PetscErrorCode MatCreateVecs_KSP(Mat A,Vec *X,Vec *Y)
   Mat            M;
 
   PetscFunctionBegin;
-  CHKERRQ(MatShellGetContext(A,&ctx));
-  CHKERRQ(KSPGetOperators(ctx->ksp,&M,NULL));
-  CHKERRQ(MatCreateVecs(M,X,Y));
+  PetscCall(MatShellGetContext(A,&ctx));
+  PetscCall(KSPGetOperators(ctx->ksp,&M,NULL));
+  PetscCall(MatCreateVecs(M,X,Y));
   PetscFunctionReturn(0);
 }
 
@@ -25,8 +25,8 @@ static PetscErrorCode MatMult_KSP(Mat A,Vec X,Vec Y)
   Mat_KSP        *ctx;
 
   PetscFunctionBegin;
-  CHKERRQ(MatShellGetContext(A,&ctx));
-  CHKERRQ(KSP_PCApplyBAorAB(ctx->ksp,X,Y,ctx->work));
+  PetscCall(MatShellGetContext(A,&ctx));
+  PetscCall(KSP_PCApplyBAorAB(ctx->ksp,X,Y,ctx->work));
   PetscFunctionReturn(0);
 }
 
@@ -63,17 +63,17 @@ PetscErrorCode  KSPComputeOperator(KSP ksp, MatType mattype, Mat *mat)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidPointer(mat,3);
-  CHKERRQ(KSPGetOperators(ksp,&A,NULL));
-  CHKERRQ(MatGetLocalSize(A,&m,&n));
-  CHKERRQ(MatGetSize(A,&M,&N));
-  CHKERRQ(MatCreateShell(PetscObjectComm((PetscObject)ksp),m,n,M,N,&ctx,&Aksp));
-  CHKERRQ(MatShellSetOperation(Aksp,MATOP_MULT,(void (*)(void))MatMult_KSP));
-  CHKERRQ(MatShellSetOperation(Aksp,MATOP_CREATE_VECS,(void (*)(void))MatCreateVecs_KSP));
+  PetscCall(KSPGetOperators(ksp,&A,NULL));
+  PetscCall(MatGetLocalSize(A,&m,&n));
+  PetscCall(MatGetSize(A,&M,&N));
+  PetscCall(MatCreateShell(PetscObjectComm((PetscObject)ksp),m,n,M,N,&ctx,&Aksp));
+  PetscCall(MatShellSetOperation(Aksp,MATOP_MULT,(void (*)(void))MatMult_KSP));
+  PetscCall(MatShellSetOperation(Aksp,MATOP_CREATE_VECS,(void (*)(void))MatCreateVecs_KSP));
   ctx.ksp = ksp;
-  CHKERRQ(MatCreateVecs(A,&ctx.work,NULL));
-  CHKERRQ(MatComputeOperator(Aksp,mattype,mat));
-  CHKERRQ(VecDestroy(&ctx.work));
-  CHKERRQ(MatDestroy(&Aksp));
+  PetscCall(MatCreateVecs(A,&ctx.work,NULL));
+  PetscCall(MatComputeOperator(Aksp,mattype,mat));
+  PetscCall(VecDestroy(&ctx.work));
+  PetscCall(MatDestroy(&Aksp));
   PetscFunctionReturn(0);
 }
 
@@ -121,37 +121,37 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
   const PetscScalar *vals;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectGetComm((PetscObject)ksp,&comm));
-  CHKERRQ(KSPComputeOperator(ksp,MATDENSE,&BA));
-  CHKERRMPI(MPI_Comm_size(comm,&size));
-  CHKERRMPI(MPI_Comm_rank(comm,&rank));
+  PetscCall(PetscObjectGetComm((PetscObject)ksp,&comm));
+  PetscCall(KSPComputeOperator(ksp,MATDENSE,&BA));
+  PetscCallMPI(MPI_Comm_size(comm,&size));
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
 
-  CHKERRQ(MatGetSize(BA,&n,&n));
+  PetscCall(MatGetSize(BA,&n,&n));
   if (size > 1) { /* assemble matrix on first processor */
-    CHKERRQ(MatCreate(PetscObjectComm((PetscObject)ksp),&A));
+    PetscCall(MatCreate(PetscObjectComm((PetscObject)ksp),&A));
     if (rank == 0) {
-      CHKERRQ(MatSetSizes(A,n,n,n,n));
+      PetscCall(MatSetSizes(A,n,n,n,n));
     } else {
-      CHKERRQ(MatSetSizes(A,0,0,n,n));
+      PetscCall(MatSetSizes(A,0,0,n,n));
     }
-    CHKERRQ(MatSetType(A,MATMPIDENSE));
-    CHKERRQ(MatMPIDenseSetPreallocation(A,NULL));
-    CHKERRQ(PetscLogObjectParent((PetscObject)BA,(PetscObject)A));
+    PetscCall(MatSetType(A,MATMPIDENSE));
+    PetscCall(MatMPIDenseSetPreallocation(A,NULL));
+    PetscCall(PetscLogObjectParent((PetscObject)BA,(PetscObject)A));
 
-    CHKERRQ(MatGetOwnershipRange(BA,&row,&dummy));
-    CHKERRQ(MatGetLocalSize(BA,&m,&dummy));
+    PetscCall(MatGetOwnershipRange(BA,&row,&dummy));
+    PetscCall(MatGetLocalSize(BA,&m,&dummy));
     for (i=0; i<m; i++) {
-      CHKERRQ(MatGetRow(BA,row,&nz,&cols,&vals));
-      CHKERRQ(MatSetValues(A,1,&row,nz,cols,vals,INSERT_VALUES));
-      CHKERRQ(MatRestoreRow(BA,row,&nz,&cols,&vals));
+      PetscCall(MatGetRow(BA,row,&nz,&cols,&vals));
+      PetscCall(MatSetValues(A,1,&row,nz,cols,vals,INSERT_VALUES));
+      PetscCall(MatRestoreRow(BA,row,&nz,&cols,&vals));
       row++;
     }
 
-    CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatDenseGetArray(A,&array));
+    PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatDenseGetArray(A,&array));
   } else {
-    CHKERRQ(MatDenseGetArray(BA,&array));
+    PetscCall(MatDenseGetArray(BA,&array));
   }
 
 #if !defined(PETSC_USE_COMPLEX)
@@ -163,30 +163,30 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
 
     idummy   = n;
     lwork    = 5*n;
-    CHKERRQ(PetscMalloc2(n,&realpart,n,&imagpart));
-    CHKERRQ(PetscMalloc1(5*n,&work));
+    PetscCall(PetscMalloc2(n,&realpart,n,&imagpart));
+    PetscCall(PetscMalloc1(5*n,&work));
     {
       PetscBLASInt lierr;
       PetscScalar  sdummy;
       PetscBLASInt bn;
 
-      CHKERRQ(PetscBLASIntCast(n,&bn));
-      CHKERRQ(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
+      PetscCall(PetscBLASIntCast(n,&bn));
+      PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
       PetscStackCallBLAS("LAPACKgeev",LAPACKgeev_("N","N",&bn,array,&bn,realpart,imagpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&lierr));
       PetscCheck(!lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in LAPACK routine %d",(int)lierr);
-      CHKERRQ(PetscFPTrapPop());
+      PetscCall(PetscFPTrapPop());
     }
-    CHKERRQ(PetscFree(work));
-    CHKERRQ(PetscMalloc1(n,&perm));
+    PetscCall(PetscFree(work));
+    PetscCall(PetscMalloc1(n,&perm));
 
     for (i=0; i<n; i++)  perm[i] = i;
-    CHKERRQ(PetscSortRealWithPermutation(n,realpart,perm));
+    PetscCall(PetscSortRealWithPermutation(n,realpart,perm));
     for (i=0; i<n; i++) {
       r[i] = realpart[perm[i]];
       c[i] = imagpart[perm[i]];
     }
-    CHKERRQ(PetscFree(perm));
-    CHKERRQ(PetscFree2(realpart,imagpart));
+    PetscCall(PetscFree(perm));
+    PetscCall(PetscFree2(realpart,imagpart));
   }
 #else
   if (rank == 0) {
@@ -197,40 +197,40 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
 
     idummy = n;
     lwork  = 5*n;
-    CHKERRQ(PetscMalloc1(5*n,&work));
-    CHKERRQ(PetscMalloc1(2*n,&rwork));
-    CHKERRQ(PetscMalloc1(n,&eigs));
+    PetscCall(PetscMalloc1(5*n,&work));
+    PetscCall(PetscMalloc1(2*n,&rwork));
+    PetscCall(PetscMalloc1(n,&eigs));
     {
       PetscBLASInt lierr;
       PetscScalar  sdummy;
       PetscBLASInt nb;
-      CHKERRQ(PetscBLASIntCast(n,&nb));
-      CHKERRQ(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
+      PetscCall(PetscBLASIntCast(n,&nb));
+      PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
       PetscStackCallBLAS("LAPACKgeev",LAPACKgeev_("N","N",&nb,array,&nb,eigs,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,rwork,&lierr));
       PetscCheck(!lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in LAPACK routine %d",(int)lierr);
-      CHKERRQ(PetscFPTrapPop());
+      PetscCall(PetscFPTrapPop());
     }
-    CHKERRQ(PetscFree(work));
-    CHKERRQ(PetscFree(rwork));
-    CHKERRQ(PetscMalloc1(n,&perm));
+    PetscCall(PetscFree(work));
+    PetscCall(PetscFree(rwork));
+    PetscCall(PetscMalloc1(n,&perm));
     for (i=0; i<n; i++) perm[i] = i;
     for (i=0; i<n; i++) r[i]    = PetscRealPart(eigs[i]);
-    CHKERRQ(PetscSortRealWithPermutation(n,r,perm));
+    PetscCall(PetscSortRealWithPermutation(n,r,perm));
     for (i=0; i<n; i++) {
       r[i] = PetscRealPart(eigs[perm[i]]);
       c[i] = PetscImaginaryPart(eigs[perm[i]]);
     }
-    CHKERRQ(PetscFree(perm));
-    CHKERRQ(PetscFree(eigs));
+    PetscCall(PetscFree(perm));
+    PetscCall(PetscFree(eigs));
   }
 #endif
   if (size > 1) {
-    CHKERRQ(MatDenseRestoreArray(A,&array));
-    CHKERRQ(MatDestroy(&A));
+    PetscCall(MatDenseRestoreArray(A,&array));
+    PetscCall(MatDestroy(&A));
   } else {
-    CHKERRQ(MatDenseRestoreArray(BA,&array));
+    PetscCall(MatDenseRestoreArray(BA,&array));
   }
-  CHKERRQ(MatDestroy(&BA));
+  PetscCall(MatDestroy(&BA));
   PetscFunctionReturn(0);
 }
 
@@ -263,7 +263,7 @@ PetscErrorCode KSPPlotEigenContours_Private(KSP ksp,PetscInt neig,const PetscRea
   PetscDrawAxis  drawaxis;
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)ksp),&rank));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)ksp),&rank));
   if (rank) PetscFunctionReturn(0);
   M    = 80;
   N    = 80;
@@ -275,16 +275,16 @@ PetscErrorCode KSPPlotEigenContours_Private(KSP ksp,PetscInt neig,const PetscRea
     ymin = PetscMin(ymin,c[i]);
     ymax = PetscMax(ymax,c[i]);
   }
-  CHKERRQ(PetscMalloc3(M,&xloc,N,&yloc,M*N,&value));
+  PetscCall(PetscMalloc3(M,&xloc,N,&yloc,M*N,&value));
   for (i=0; i<M; i++) xloc[i] = xmin - 0.1*(xmax-xmin) + 1.2*(xmax-xmin)*i/(M-1);
   for (i=0; i<N; i++) yloc[i] = ymin - 0.1*(ymax-ymin) + 1.2*(ymax-ymin)*i/(N-1);
-  CHKERRQ(PolyEval(neig,r,c,0,0,&px0,&py0));
+  PetscCall(PolyEval(neig,r,c,0,0,&px0,&py0));
   rscale = px0/(PetscSqr(px0)+PetscSqr(py0));
   iscale = -py0/(PetscSqr(px0)+PetscSqr(py0));
   for (j=0; j<N; j++) {
     for (i=0; i<M; i++) {
       PetscReal px,py,tx,ty,tmod;
-      CHKERRQ(PolyEval(neig,r,c,xloc[i],yloc[j],&px,&py));
+      PetscCall(PolyEval(neig,r,c,xloc[i],yloc[j],&px,&py));
       tx   = px*rscale - py*iscale;
       ty   = py*rscale + px*iscale;
       tmod = PetscSqr(tx) + PetscSqr(ty); /* modulus of the complex polynomial */
@@ -296,17 +296,17 @@ PetscErrorCode KSPPlotEigenContours_Private(KSP ksp,PetscInt neig,const PetscRea
       value[i+j*M] = PetscLogReal(tmod) / PetscLogReal(10.0);
     }
   }
-  CHKERRQ(PetscViewerDrawOpen(PETSC_COMM_SELF,NULL,"Iteratively Computed Eigen-contours",PETSC_DECIDE,PETSC_DECIDE,450,450,&viewer));
-  CHKERRQ(PetscViewerDrawGetDraw(viewer,0,&draw));
-  CHKERRQ(PetscDrawTensorContour(draw,M,N,NULL,NULL,value));
+  PetscCall(PetscViewerDrawOpen(PETSC_COMM_SELF,NULL,"Iteratively Computed Eigen-contours",PETSC_DECIDE,PETSC_DECIDE,450,450,&viewer));
+  PetscCall(PetscViewerDrawGetDraw(viewer,0,&draw));
+  PetscCall(PetscDrawTensorContour(draw,M,N,NULL,NULL,value));
   if (0) {
-    CHKERRQ(PetscDrawAxisCreate(draw,&drawaxis));
-    CHKERRQ(PetscDrawAxisSetLimits(drawaxis,xmin,xmax,ymin,ymax));
-    CHKERRQ(PetscDrawAxisSetLabels(drawaxis,"Eigen-counters","real","imag"));
-    CHKERRQ(PetscDrawAxisDraw(drawaxis));
-    CHKERRQ(PetscDrawAxisDestroy(&drawaxis));
+    PetscCall(PetscDrawAxisCreate(draw,&drawaxis));
+    PetscCall(PetscDrawAxisSetLimits(drawaxis,xmin,xmax,ymin,ymax));
+    PetscCall(PetscDrawAxisSetLabels(drawaxis,"Eigen-counters","real","imag"));
+    PetscCall(PetscDrawAxisDraw(drawaxis));
+    PetscCall(PetscDrawAxisDestroy(&drawaxis));
   }
-  CHKERRQ(PetscViewerDestroy(&viewer));
-  CHKERRQ(PetscFree3(xloc,yloc,value));
+  PetscCall(PetscViewerDestroy(&viewer));
+  PetscCall(PetscFree3(xloc,yloc,value));
   PetscFunctionReturn(0);
 }

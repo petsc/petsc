@@ -37,49 +37,49 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscCoarsenD
   PetscSF          sf;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectGetComm((PetscObject)Gmat,&comm));
+  PetscCall(PetscObjectGetComm((PetscObject)Gmat,&comm));
 
   /* get submatrices */
-  CHKERRQ(PetscObjectBaseTypeCompare((PetscObject)Gmat,MATMPIAIJ,&isMPI));
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)Gmat,MATMPIAIJ,&isMPI));
   if (isMPI) {
     mpimat = (Mat_MPIAIJ*)Gmat->data;
     matA   = (Mat_SeqAIJ*)mpimat->A->data;
     matB   = (Mat_SeqAIJ*)mpimat->B->data;
     /* force compressed storage of B */
-    CHKERRQ(MatCheckCompressedRow(mpimat->B,matB->nonzerorowcnt,&matB->compressedrow,matB->i,Gmat->rmap->n,-1.0));
+    PetscCall(MatCheckCompressedRow(mpimat->B,matB->nonzerorowcnt,&matB->compressedrow,matB->i,Gmat->rmap->n,-1.0));
   } else {
-    CHKERRQ(PetscObjectBaseTypeCompare((PetscObject)Gmat,MATSEQAIJ,&isAIJ));
+    PetscCall(PetscObjectBaseTypeCompare((PetscObject)Gmat,MATSEQAIJ,&isAIJ));
     PetscCheck(isAIJ,PETSC_COMM_SELF,PETSC_ERR_USER,"Require AIJ matrix.");
     matA = (Mat_SeqAIJ*)Gmat->data;
   }
-  CHKERRQ(MatGetOwnershipRange(Gmat,&my0,&Iend));
-  CHKERRQ(PetscMalloc1(nloc,&lid_gid)); /* explicit array needed */
+  PetscCall(MatGetOwnershipRange(Gmat,&my0,&Iend));
+  PetscCall(PetscMalloc1(nloc,&lid_gid)); /* explicit array needed */
   if (mpimat) {
     for (kk=0,gid=my0; kk<nloc; kk++,gid++) {
       lid_gid[kk] = gid;
     }
-    CHKERRQ(VecGetLocalSize(mpimat->lvec, &num_fine_ghosts));
-    CHKERRQ(PetscMalloc1(num_fine_ghosts,&cpcol_gid));
-    CHKERRQ(PetscMalloc1(num_fine_ghosts,&cpcol_state));
-    CHKERRQ(PetscSFCreate(PetscObjectComm((PetscObject)Gmat),&sf));
-    CHKERRQ(MatGetLayouts(Gmat,&layout,NULL));
-    CHKERRQ(PetscSFSetGraphLayout(sf,layout,num_fine_ghosts,NULL,PETSC_COPY_VALUES,mpimat->garray));
-    CHKERRQ(PetscSFBcastBegin(sf,MPIU_INT,lid_gid,cpcol_gid,MPI_REPLACE));
-    CHKERRQ(PetscSFBcastEnd(sf,MPIU_INT,lid_gid,cpcol_gid,MPI_REPLACE));
+    PetscCall(VecGetLocalSize(mpimat->lvec, &num_fine_ghosts));
+    PetscCall(PetscMalloc1(num_fine_ghosts,&cpcol_gid));
+    PetscCall(PetscMalloc1(num_fine_ghosts,&cpcol_state));
+    PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)Gmat),&sf));
+    PetscCall(MatGetLayouts(Gmat,&layout,NULL));
+    PetscCall(PetscSFSetGraphLayout(sf,layout,num_fine_ghosts,NULL,PETSC_COPY_VALUES,mpimat->garray));
+    PetscCall(PetscSFBcastBegin(sf,MPIU_INT,lid_gid,cpcol_gid,MPI_REPLACE));
+    PetscCall(PetscSFBcastEnd(sf,MPIU_INT,lid_gid,cpcol_gid,MPI_REPLACE));
     for (kk=0;kk<num_fine_ghosts;kk++) {
       cpcol_state[kk]=MIS_NOT_DONE;
     }
   } else num_fine_ghosts = 0;
 
-  CHKERRQ(PetscMalloc1(nloc, &lid_cprowID));
-  CHKERRQ(PetscMalloc1(nloc, &lid_removed)); /* explicit array needed */
+  PetscCall(PetscMalloc1(nloc, &lid_cprowID));
+  PetscCall(PetscMalloc1(nloc, &lid_removed)); /* explicit array needed */
   if (strict_aggs) {
-    CHKERRQ(PetscMalloc1(nloc,&lid_parent_gid));
+    PetscCall(PetscMalloc1(nloc,&lid_parent_gid));
   }
-  CHKERRQ(PetscMalloc1(nloc,&lid_state));
+  PetscCall(PetscMalloc1(nloc,&lid_state));
 
   /* has ghost nodes for !strict and uses local indexing (yuck) */
-  CHKERRQ(PetscCDCreate(strict_aggs ? nloc : num_fine_ghosts+nloc, &agg_lists));
+  PetscCall(PetscCDCreate(strict_aggs ? nloc : num_fine_ghosts+nloc, &agg_lists));
   if (a_locals_llist) *a_locals_llist = agg_lists;
 
   /* need an inverse map - locals */
@@ -99,7 +99,7 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscCoarsenD
   }
   /* MIS */
   iter = nremoved = nDone = 0;
-  CHKERRQ(ISGetIndices(perm, &perm_ix));
+  PetscCall(ISGetIndices(perm, &perm_ix));
   while (nDone < nloc || PETSC_TRUE) { /* asyncronous not implemented */
     iter++;
     /* check all vertices */
@@ -141,9 +141,9 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscCoarsenD
           lid_state[lid] = lid+my0; /* needed???? */
           nselected++;
           if (strict_aggs) {
-            CHKERRQ(PetscCDAppendID(agg_lists, lid, lid+my0));
+            PetscCall(PetscCDAppendID(agg_lists, lid, lid+my0));
           } else {
-            CHKERRQ(PetscCDAppendID(agg_lists, lid, lid));
+            PetscCall(PetscCDAppendID(agg_lists, lid, lid));
           }
           /* delete local adj */
           idx = matA->j + ii[lid];
@@ -153,9 +153,9 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscCoarsenD
             if (statej == MIS_NOT_DONE) {
               nDone++;
               if (strict_aggs) {
-                CHKERRQ(PetscCDAppendID(agg_lists, lid, lidj+my0));
+                PetscCall(PetscCDAppendID(agg_lists, lid, lidj+my0));
               } else {
-                CHKERRQ(PetscCDAppendID(agg_lists, lid, lidj));
+                PetscCall(PetscCDAppendID(agg_lists, lid, lidj));
               }
               lid_state[lidj] = MIS_DELETED;  /* delete this */
             }
@@ -169,7 +169,7 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscCoarsenD
                 cpid   = idx[j]; /* compressed row ID in B mat */
                 statej = cpcol_state[cpid];
                 if (statej == MIS_NOT_DONE) {
-                  CHKERRQ(PetscCDAppendID(agg_lists, lid, nloc+cpid));
+                  PetscCall(PetscCDAppendID(agg_lists, lid, nloc+cpid));
                 }
               }
             }
@@ -181,8 +181,8 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscCoarsenD
     /* update ghost states and count todos */
     if (mpimat) {
       /* scatter states, check for done */
-      CHKERRQ(PetscSFBcastBegin(sf,MPIU_INT,lid_state,cpcol_state,MPI_REPLACE));
-      CHKERRQ(PetscSFBcastEnd(sf,MPIU_INT,lid_state,cpcol_state,MPI_REPLACE));
+      PetscCall(PetscSFBcastBegin(sf,MPIU_INT,lid_state,cpcol_state,MPI_REPLACE));
+      PetscCall(PetscSFBcastEnd(sf,MPIU_INT,lid_state,cpcol_state,MPI_REPLACE));
       ii   = matB->compressedrow.i;
       for (ix=0; ix<matB->compressedrow.nrows; ix++) {
         lid   = matB->compressedrow.rindex[ix]; /* local boundary node */
@@ -199,7 +199,7 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscCoarsenD
               lid_state[lid] = MIS_DELETED; /* delete this */
               if (!strict_aggs) {
                 lidj = nloc + cpid;
-                CHKERRQ(PetscCDAppendID(agg_lists, lidj, lid));
+                PetscCall(PetscCDAppendID(agg_lists, lidj, lid));
               } else {
                 sgid = cpcol_gid[cpid];
                 lid_parent_gid[lid] = sgid; /* keep track of proc that I belong to */
@@ -211,46 +211,46 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscCoarsenD
       }
       /* all done? */
       t1   = nloc - nDone;
-      CHKERRMPI(MPIU_Allreduce(&t1, &t2, 1, MPIU_INT, MPI_SUM, comm)); /* synchronous version */
+      PetscCallMPI(MPIU_Allreduce(&t1, &t2, 1, MPIU_INT, MPI_SUM, comm)); /* synchronous version */
       if (!t2) break;
     } else break; /* all done */
   } /* outer parallel MIS loop */
-  CHKERRQ(ISRestoreIndices(perm,&perm_ix));
-  CHKERRQ(PetscInfo(Gmat,"\t removed %" PetscInt_FMT " of %" PetscInt_FMT " vertices.  %" PetscInt_FMT " selected.\n",nremoved,nloc,nselected));
+  PetscCall(ISRestoreIndices(perm,&perm_ix));
+  PetscCall(PetscInfo(Gmat,"\t removed %" PetscInt_FMT " of %" PetscInt_FMT " vertices.  %" PetscInt_FMT " selected.\n",nremoved,nloc,nselected));
 
   /* tell adj who my lid_parent_gid vertices belong to - fill in agg_lists selected ghost lists */
   if (strict_aggs && matB) {
     /* need to copy this to free buffer -- should do this globaly */
-    CHKERRQ(PetscMalloc1(num_fine_ghosts, &cpcol_sel_gid));
-    CHKERRQ(PetscMalloc1(num_fine_ghosts, &icpcol_gid));
+    PetscCall(PetscMalloc1(num_fine_ghosts, &cpcol_sel_gid));
+    PetscCall(PetscMalloc1(num_fine_ghosts, &icpcol_gid));
     for (cpid=0; cpid<num_fine_ghosts; cpid++) icpcol_gid[cpid] = cpcol_gid[cpid];
 
     /* get proc of deleted ghost */
-    CHKERRQ(PetscSFBcastBegin(sf,MPIU_INT,lid_parent_gid,cpcol_sel_gid,MPI_REPLACE));
-    CHKERRQ(PetscSFBcastEnd(sf,MPIU_INT,lid_parent_gid,cpcol_sel_gid,MPI_REPLACE));
+    PetscCall(PetscSFBcastBegin(sf,MPIU_INT,lid_parent_gid,cpcol_sel_gid,MPI_REPLACE));
+    PetscCall(PetscSFBcastEnd(sf,MPIU_INT,lid_parent_gid,cpcol_sel_gid,MPI_REPLACE));
     for (cpid=0; cpid<num_fine_ghosts; cpid++) {
       sgid = cpcol_sel_gid[cpid];
       gid  = icpcol_gid[cpid];
       if (sgid >= my0 && sgid < Iend) { /* I own this deleted */
         slid = sgid - my0;
-        CHKERRQ(PetscCDAppendID(agg_lists, slid, gid));
+        PetscCall(PetscCDAppendID(agg_lists, slid, gid));
       }
     }
-    CHKERRQ(PetscFree(icpcol_gid));
-    CHKERRQ(PetscFree(cpcol_sel_gid));
+    PetscCall(PetscFree(icpcol_gid));
+    PetscCall(PetscFree(cpcol_sel_gid));
   }
   if (mpimat) {
-    CHKERRQ(PetscSFDestroy(&sf));
-    CHKERRQ(PetscFree(cpcol_gid));
-    CHKERRQ(PetscFree(cpcol_state));
+    PetscCall(PetscSFDestroy(&sf));
+    PetscCall(PetscFree(cpcol_gid));
+    PetscCall(PetscFree(cpcol_state));
   }
-  CHKERRQ(PetscFree(lid_cprowID));
-  CHKERRQ(PetscFree(lid_gid));
-  CHKERRQ(PetscFree(lid_removed));
+  PetscCall(PetscFree(lid_cprowID));
+  PetscCall(PetscFree(lid_gid));
+  PetscCall(PetscFree(lid_removed));
   if (strict_aggs) {
-    CHKERRQ(PetscFree(lid_parent_gid));
+    PetscCall(PetscFree(lid_parent_gid));
   }
-  CHKERRQ(PetscFree(lid_state));
+  PetscCall(PetscFree(lid_state));
   PetscFunctionReturn(0);
 }
 
@@ -267,13 +267,13 @@ static PetscErrorCode MatCoarsenApply_MIS(MatCoarsen coarse)
     PetscInt n,m;
     MPI_Comm comm;
 
-    CHKERRQ(PetscObjectGetComm((PetscObject)mat,&comm));
-    CHKERRQ(MatGetLocalSize(mat, &m, &n));
-    CHKERRQ(ISCreateStride(comm, m, 0, 1, &perm));
-    CHKERRQ(maxIndSetAgg(perm, mat, coarse->strict_aggs, &coarse->agg_lists));
-    CHKERRQ(ISDestroy(&perm));
+    PetscCall(PetscObjectGetComm((PetscObject)mat,&comm));
+    PetscCall(MatGetLocalSize(mat, &m, &n));
+    PetscCall(ISCreateStride(comm, m, 0, 1, &perm));
+    PetscCall(maxIndSetAgg(perm, mat, coarse->strict_aggs, &coarse->agg_lists));
+    PetscCall(ISDestroy(&perm));
   } else {
-    CHKERRQ(maxIndSetAgg(coarse->perm, mat, coarse->strict_aggs,  &coarse->agg_lists));
+    PetscCall(maxIndSetAgg(coarse->perm, mat, coarse->strict_aggs,  &coarse->agg_lists));
   }
   PetscFunctionReturn(0);
 }
@@ -284,13 +284,13 @@ PetscErrorCode MatCoarsenView_MIS(MatCoarsen coarse,PetscViewer viewer)
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)coarse),&rank));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)coarse),&rank));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    CHKERRQ(PetscViewerASCIIPushSynchronized(viewer));
-    CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer,"  [%d] MIS aggregator\n",rank));
-    CHKERRQ(PetscViewerFlush(viewer));
-    CHKERRQ(PetscViewerASCIIPopSynchronized(viewer));
+    PetscCall(PetscViewerASCIIPushSynchronized(viewer));
+    PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"  [%d] MIS aggregator\n",rank));
+    PetscCall(PetscViewerFlush(viewer));
+    PetscCall(PetscViewerASCIIPopSynchronized(viewer));
   }
   PetscFunctionReturn(0);
 }

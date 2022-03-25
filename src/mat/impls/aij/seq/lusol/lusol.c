@@ -184,22 +184,22 @@ PetscErrorCode MatDestroy_LUSOL(Mat A)
 
   PetscFunctionBegin;
   if (lusol && lusol->CleanUpLUSOL) {
-    CHKERRQ(PetscFree(lusol->ip));
-    CHKERRQ(PetscFree(lusol->iq));
-    CHKERRQ(PetscFree(lusol->lenc));
-    CHKERRQ(PetscFree(lusol->lenr));
-    CHKERRQ(PetscFree(lusol->locc));
-    CHKERRQ(PetscFree(lusol->locr));
-    CHKERRQ(PetscFree(lusol->iploc));
-    CHKERRQ(PetscFree(lusol->iqloc));
-    CHKERRQ(PetscFree(lusol->ipinv));
-    CHKERRQ(PetscFree(lusol->iqinv));
-    CHKERRQ(PetscFree(lusol->mnsw));
-    CHKERRQ(PetscFree(lusol->mnsv));
-    CHKERRQ(PetscFree3(lusol->data,lusol->indc,lusol->indr));
+    PetscCall(PetscFree(lusol->ip));
+    PetscCall(PetscFree(lusol->iq));
+    PetscCall(PetscFree(lusol->lenc));
+    PetscCall(PetscFree(lusol->lenr));
+    PetscCall(PetscFree(lusol->locc));
+    PetscCall(PetscFree(lusol->locr));
+    PetscCall(PetscFree(lusol->iploc));
+    PetscCall(PetscFree(lusol->iqloc));
+    PetscCall(PetscFree(lusol->ipinv));
+    PetscCall(PetscFree(lusol->iqinv));
+    PetscCall(PetscFree(lusol->mnsw));
+    PetscCall(PetscFree(lusol->mnsv));
+    PetscCall(PetscFree3(lusol->data,lusol->indc,lusol->indr));
   }
-  CHKERRQ(PetscFree(A->spptr));
-  CHKERRQ(MatDestroy_SeqAIJ(A));
+  PetscCall(PetscFree(A->spptr));
+  PetscCall(MatDestroy_SeqAIJ(A));
   PetscFunctionReturn(0);
 }
 
@@ -213,8 +213,8 @@ PetscErrorCode MatSolve_LUSOL(Mat A,Vec b,Vec x)
   int            i,m,n,nnz,status;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArray(x, &xx));
-  CHKERRQ(VecGetArrayRead(b, &bb));
+  PetscCall(VecGetArray(x, &xx));
+  PetscCall(VecGetArrayRead(b, &bb));
 
   m   = n = lusol->n;
   nnz = lusol->nnz;
@@ -228,8 +228,8 @@ PetscErrorCode MatSolve_LUSOL(Mat A,Vec b,Vec x)
 
   PetscCheck(!status,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"solve failed, error code %d",status);
 
-  CHKERRQ(VecRestoreArray(x, &xx));
-  CHKERRQ(VecRestoreArrayRead(b, &bb));
+  PetscCall(VecRestoreArray(x, &xx));
+  PetscCall(VecRestoreArrayRead(b, &bb));
   PetscFunctionReturn(0);
 }
 
@@ -243,7 +243,7 @@ PetscErrorCode MatLUFactorNumeric_LUSOL(Mat F,Mat A,const MatFactorInfo *info)
   int            factorizations;
 
   PetscFunctionBegin;
-  CHKERRQ(MatGetSize(A,&m,&n));
+  PetscCall(MatGetSize(A,&m,&n));
   a    = (Mat_SeqAIJ*)A->data;
 
   PetscCheckFalse(m != lusol->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"factorization struct inconsistent");
@@ -267,8 +267,8 @@ PetscErrorCode MatLUFactorNumeric_LUSOL(Mat F,Mat A,const MatFactorInfo *info)
     nnz = PetscMax(nnz, (int)(lusol->luroom*(lusol->luparm[22] + lusol->luparm[23])));
 
     if (nnz > lusol->nnz) {
-      CHKERRQ(PetscFree3(lusol->data,lusol->indc,lusol->indr));
-      CHKERRQ(PetscMalloc3(nnz,&lusol->data,nnz,&lusol->indc,nnz,&lusol->indr));
+      PetscCall(PetscFree3(lusol->data,lusol->indc,lusol->indr));
+      PetscCall(PetscMalloc3(nnz,&lusol->data,nnz,&lusol->indc,nnz,&lusol->indr));
       lusol->nnz = nnz;
     }
 
@@ -350,7 +350,7 @@ PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat F,Mat A, IS r, IS c,const MatFactor
   /* Check the arguments.                                                 */
   /************************************************************************/
 
-  CHKERRQ(MatGetSize(A, &m, &n));
+  PetscCall(MatGetSize(A, &m, &n));
   nz   = ((Mat_SeqAIJ*)A->data)->nz;
 
   /************************************************************************/
@@ -407,7 +407,7 @@ PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat F,Mat A, IS r, IS c,const MatFactor
   ierr = PetscMalloc(sizeof(double)*n,&lusol->mnsw);
   ierr = PetscMalloc(sizeof(double)*n,&lusol->mnsv);
 
-  CHKERRQ(PetscMalloc3(nnz,&lusol->data,nnz,&lusol->indc,nnz,&lusol->indr));
+  PetscCall(PetscMalloc3(nnz,&lusol->data,nnz,&lusol->indc,nnz,&lusol->indr));
 
   lusol->CleanUpLUSOL     = PETSC_TRUE;
   F->ops->lufactornumeric = MatLUFactorNumeric_LUSOL;
@@ -429,24 +429,24 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_lusol(Mat A,MatFactorType ftype,
   int            m, n;
 
   PetscFunctionBegin;
-  CHKERRQ(MatGetSize(A, &m, &n));
-  CHKERRQ(MatCreate(PetscObjectComm((PetscObject)A),&B));
-  CHKERRQ(MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,m,n));
-  CHKERRQ(MatSetType(B,((PetscObject)A)->type_name));
-  CHKERRQ(MatSeqAIJSetPreallocation(B,0,NULL));
+  PetscCall(MatGetSize(A, &m, &n));
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)A),&B));
+  PetscCall(MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,m,n));
+  PetscCall(MatSetType(B,((PetscObject)A)->type_name));
+  PetscCall(MatSeqAIJSetPreallocation(B,0,NULL));
 
-  CHKERRQ(PetscNewLog(B,&lusol));
+  PetscCall(PetscNewLog(B,&lusol));
   B->spptr = lusol;
 
   B->trivialsymbolic       = PETSC_TRUE;
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_LUSOL;
   B->ops->destroy          = MatDestroy_LUSOL;
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_seqaij_lusol));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_seqaij_lusol));
 
   B->factortype = MAT_FACTOR_LU;
-  CHKERRQ(PetscFree(B->solvertype));
-  CHKERRQ(PetscStrallocpy(MATSOLVERLUSOL,&B->solvertype));
+  PetscCall(PetscFree(B->solvertype));
+  PetscCall(PetscStrallocpy(MATSOLVERLUSOL,&B->solvertype));
 
   PetscFunctionReturn(0);
 }
@@ -456,7 +456,7 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Lusol(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  CHKERRQ(MatSolverTypeRegister(MATSOLVERLUSOL,MATSEQAIJ,        MAT_FACTOR_LU,MatGetFactor_seqaij_lusol));
+  PetscCall(MatSolverTypeRegister(MATSOLVERLUSOL,MATSEQAIJ,        MAT_FACTOR_LU,MatGetFactor_seqaij_lusol));
   PetscFunctionReturn(0);
 }
 

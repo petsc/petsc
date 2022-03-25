@@ -10,23 +10,23 @@ int main(int argc,char **argv)
   IS                     isx;
   ISLocalToGlobalMapping ltog;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
-  CHKERRQ(ISCreateBlock(PETSC_COMM_SELF,bs,n,ix,PETSC_COPY_VALUES,&isx));
-  CHKERRQ(ISLocalToGlobalMappingCreateIS(isx,&ltog));
+  PetscCall(ISCreateBlock(PETSC_COMM_SELF,bs,n,ix,PETSC_COPY_VALUES,&isx));
+  PetscCall(ISLocalToGlobalMappingCreateIS(isx,&ltog));
 
-  CHKERRQ(PetscIntView(2,iy,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(ISLocalToGlobalMappingApply(ltog,2,iy,mp));
-  CHKERRQ(PetscIntView(2,mp,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscIntView(2,iy,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(ISLocalToGlobalMappingApply(ltog,2,iy,mp));
+  PetscCall(PetscIntView(2,mp,PETSC_VIEWER_STDOUT_WORLD));
 
-  CHKERRQ(PetscIntView(2,iy,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(ISLocalToGlobalMappingApplyBlock(ltog,2,iy,mp));
-  CHKERRQ(PetscIntView(2,mp,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscIntView(2,iy,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(ISLocalToGlobalMappingApplyBlock(ltog,2,iy,mp));
+  PetscCall(PetscIntView(2,mp,PETSC_VIEWER_STDOUT_WORLD));
 
-  CHKERRQ(ISLocalToGlobalMappingDestroy(&ltog));
-  CHKERRQ(ISDestroy(&isx));
+  PetscCall(ISLocalToGlobalMappingDestroy(&ltog));
+  PetscCall(ISDestroy(&isx));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

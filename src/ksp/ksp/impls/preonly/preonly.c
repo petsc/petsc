@@ -13,16 +13,16 @@ static PetscErrorCode  KSPSolve_PREONLY(KSP ksp)
   PCFailedReason pcreason;
 
   PetscFunctionBegin;
-  CHKERRQ(PCGetDiagonalScale(ksp->pc,&diagonalscale));
+  PetscCall(PCGetDiagonalScale(ksp->pc,&diagonalscale));
   PetscCheck(!diagonalscale,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
   PetscCheck(ksp->guess_zero,PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Running KSP of preonly doesn't make sense with nonzero initial guess\n\
                you probably want a KSP type of Richardson");
   ksp->its = 0;
-  CHKERRQ(KSP_PCApply(ksp,ksp->vec_rhs,ksp->vec_sol));
-  CHKERRQ(PCGetFailedReasonRank(ksp->pc,&pcreason));
+  PetscCall(KSP_PCApply(ksp,ksp->vec_rhs,ksp->vec_sol));
+  PetscCall(PCGetFailedReasonRank(ksp->pc,&pcreason));
   /* Note: only some ranks may have this set; this may lead to problems if the caller assumes ksp->reason is set on all processes or just uses the result */
   if (pcreason) {
-    CHKERRQ(VecSetInf(ksp->vec_sol));
+    PetscCall(VecSetInf(ksp->vec_sol));
     ksp->reason = KSP_DIVERGED_PC_FAILED;
   } else {
     ksp->its    = 1;
@@ -33,15 +33,15 @@ static PetscErrorCode  KSPSolve_PREONLY(KSP ksp)
     PetscReal norm;
     Mat       A;
 
-    CHKERRQ(VecNorm(ksp->vec_rhs,NORM_2,&norm));
-    CHKERRQ(KSPMonitor(ksp,0,norm));
-    CHKERRQ(VecDuplicate(ksp->vec_rhs,&v));
-    CHKERRQ(PCGetOperators(ksp->pc,&A,NULL));
-    CHKERRQ(KSP_MatMult(ksp,A,ksp->vec_sol,v));
-    CHKERRQ(VecAYPX(v,-1.0,ksp->vec_rhs));
-    CHKERRQ(VecNorm(v,NORM_2,&norm));
-    CHKERRQ(VecDestroy(&v));
-    CHKERRQ(KSPMonitor(ksp,1,norm));
+    PetscCall(VecNorm(ksp->vec_rhs,NORM_2,&norm));
+    PetscCall(KSPMonitor(ksp,0,norm));
+    PetscCall(VecDuplicate(ksp->vec_rhs,&v));
+    PetscCall(PCGetOperators(ksp->pc,&A,NULL));
+    PetscCall(KSP_MatMult(ksp,A,ksp->vec_sol,v));
+    PetscCall(VecAYPX(v,-1.0,ksp->vec_rhs));
+    PetscCall(VecNorm(v,NORM_2,&norm));
+    PetscCall(VecDestroy(&v));
+    PetscCall(KSPMonitor(ksp,1,norm));
   }
   PetscFunctionReturn(0);
 }
@@ -52,16 +52,16 @@ static PetscErrorCode KSPMatSolve_PREONLY(KSP ksp, Mat B, Mat X)
   PCFailedReason pcreason;
 
   PetscFunctionBegin;
-  CHKERRQ(PCGetDiagonalScale(ksp->pc,&diagonalscale));
+  PetscCall(PCGetDiagonalScale(ksp->pc,&diagonalscale));
   PetscCheck(!diagonalscale,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
   PetscCheck(ksp->guess_zero,PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Running KSP of preonly doesn't make sense with nonzero initial guess\n\
                you probably want a KSP type of Richardson");
   ksp->its = 0;
-  CHKERRQ(PCMatApply(ksp->pc,B,X));
-  CHKERRQ(PCGetFailedReason(ksp->pc,&pcreason));
+  PetscCall(PCMatApply(ksp->pc,B,X));
+  PetscCall(PCGetFailedReason(ksp->pc,&pcreason));
   /* Note: only some ranks may have this set; this may lead to problems if the caller assumes ksp->reason is set on all processes or just uses the result */
   if (pcreason) {
-    CHKERRQ(MatSetInf(X));
+    PetscCall(MatSetInf(X));
     ksp->reason = KSP_DIVERGED_PC_FAILED;
   } else {
     ksp->its    = 1;
@@ -98,13 +98,13 @@ M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_PREONLY(KSP ksp)
 {
   PetscFunctionBegin;
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,3));
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,2));
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2));
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_RIGHT,2));
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2));
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2));
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,3));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,2));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_RIGHT,2));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2));
 
   ksp->data                = NULL;
   ksp->ops->setup          = KSPSetUp_PREONLY;

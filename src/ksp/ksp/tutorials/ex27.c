@@ -22,19 +22,19 @@ static PetscErrorCode VecLoadIfExists_Private(Vec b,PetscViewer fd,PetscBool *ha
   PetscBool      hdf5=PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)fd,PETSCVIEWERHDF5,&hdf5));
+  PetscCall(PetscObjectTypeCompare((PetscObject)fd,PETSCVIEWERHDF5,&hdf5));
   if (hdf5) {
 #if defined(PETSC_HAVE_HDF5)
-    CHKERRQ(PetscViewerHDF5HasObject(fd,(PetscObject)b,has));
-    if (*has) CHKERRQ(VecLoad(b,fd));
+    PetscCall(PetscViewerHDF5HasObject(fd,(PetscObject)b,has));
+    if (*has) PetscCall(VecLoad(b,fd));
 #else
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"PETSc must be configured with HDF5 to use this feature");
 #endif
   } else {
     PetscErrorCode ierrp;
-    CHKERRQ(PetscPushErrorHandler(PetscReturnErrorHandler,NULL));
+    PetscCall(PetscPushErrorHandler(PetscReturnErrorHandler,NULL));
     ierrp = VecLoad(b,fd);
-    CHKERRQ(PetscPopErrorHandler());
+    PetscCall(PetscPopErrorHandler());
     *has  = ierrp ? PETSC_FALSE : PETSC_TRUE;
   }
   PetscFunctionReturn(0);
@@ -59,31 +59,31 @@ int main(int argc,char **args)
   PetscBool      test_custom_layout=PETSC_FALSE;
   PetscMPIInt    rank,size;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   /*
      Determine files from which we read the linear system
      (matrix, right-hand-side and initial guess vector).
   */
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),NULL));
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f_x0",file_x0,sizeof(file_x0),NULL));
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-A_name",A_name,sizeof(A_name),NULL));
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-b_name",b_name,sizeof(b_name),NULL));
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-x0_name",x0_name,sizeof(x0_name),NULL));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),NULL));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-f_x0",file_x0,sizeof(file_x0),NULL));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-A_name",A_name,sizeof(A_name),NULL));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-b_name",b_name,sizeof(b_name),NULL));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-x0_name",x0_name,sizeof(x0_name),NULL));
   /*
      Decide whether to solve the original system (-solve_normal 0)
      or the normal equation (-solve_normal 1).
   */
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-solve_normal",&solve_normal,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-solve_normal",&solve_normal,NULL));
   /*
      Decide whether to use the HDF5 reader.
   */
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-hdf5",&hdf5,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-hdf5",&hdf5,NULL));
   /*
      Decide whether custom matrix layout will be tested.
   */
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-test_custom_layout",&test_custom_layout,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-test_custom_layout",&test_custom_layout,NULL));
 
   /* -----------------------------------------------------------
                   Beginning of linear solver loop
@@ -109,13 +109,13 @@ int main(int argc,char **args)
   */
   if (hdf5) {
 #if defined(PETSC_HAVE_HDF5)
-    CHKERRQ(PetscViewerHDF5Open(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
-    CHKERRQ(PetscViewerPushFormat(fd,PETSC_VIEWER_HDF5_MAT));
+    PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
+    PetscCall(PetscViewerPushFormat(fd,PETSC_VIEWER_HDF5_MAT));
 #else
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"PETSc must be configured with HDF5 to use this feature");
 #endif
   } else {
-    CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
+    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
   }
 
   /*
@@ -123,66 +123,66 @@ int main(int argc,char **args)
      Matrix type is set automatically but you can override it by MatSetType() prior to MatLoad().
      Do that only if you really insist on the given type.
   */
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(PetscObjectSetName((PetscObject)A,A_name));
-  CHKERRQ(MatSetFromOptions(A));
-  CHKERRQ(MatLoad(A,fd));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(PetscObjectSetName((PetscObject)A,A_name));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatLoad(A,fd));
   if (test_custom_layout && size > 1) {
     /* Perturb the local sizes and create the matrix anew */
     PetscInt m1,n1;
-    CHKERRQ(MatGetLocalSize(A,&m,&n));
+    PetscCall(MatGetLocalSize(A,&m,&n));
     m = rank ? m-1 : m+size-1;
     n = (rank == size-1) ? n+size-1 : n-1;
-    CHKERRQ(MatDestroy(&A));
-    CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-    CHKERRQ(PetscObjectSetName((PetscObject)A,A_name));
-    CHKERRQ(MatSetSizes(A,m,n,PETSC_DECIDE,PETSC_DECIDE));
-    CHKERRQ(MatSetFromOptions(A));
-    CHKERRQ(MatLoad(A,fd));
-    CHKERRQ(MatGetLocalSize(A,&m1,&n1));
+    PetscCall(MatDestroy(&A));
+    PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+    PetscCall(PetscObjectSetName((PetscObject)A,A_name));
+    PetscCall(MatSetSizes(A,m,n,PETSC_DECIDE,PETSC_DECIDE));
+    PetscCall(MatSetFromOptions(A));
+    PetscCall(MatLoad(A,fd));
+    PetscCall(MatGetLocalSize(A,&m1,&n1));
     PetscCheckFalse(m1 != m || n1 != n,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"resulting sizes differ from demanded ones: %D %D != %D %D",m1,n1,m,n);
   }
-  CHKERRQ(MatGetLocalSize(A,&m,&n));
+  PetscCall(MatGetLocalSize(A,&m,&n));
 
   /*
      Load the RHS vector if it is present in the file, otherwise use a vector of all ones.
   */
-  CHKERRQ(MatCreateVecs(A, &x, &b));
-  CHKERRQ(PetscObjectSetName((PetscObject)b,b_name));
-  CHKERRQ(VecSetFromOptions(b));
-  CHKERRQ(VecLoadIfExists_Private(b,fd,&has));
+  PetscCall(MatCreateVecs(A, &x, &b));
+  PetscCall(PetscObjectSetName((PetscObject)b,b_name));
+  PetscCall(VecSetFromOptions(b));
+  PetscCall(VecLoadIfExists_Private(b,fd,&has));
   if (!has) {
     PetscScalar one = 1.0;
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Failed to load RHS, so use a vector of all ones.\n"));
-    CHKERRQ(VecSetFromOptions(b));
-    CHKERRQ(VecSet(b,one));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Failed to load RHS, so use a vector of all ones.\n"));
+    PetscCall(VecSetFromOptions(b));
+    PetscCall(VecSet(b,one));
   }
 
   /*
      Load the initial guess vector if it is present in the file, otherwise use a vector of all zeros.
   */
-  CHKERRQ(PetscObjectSetName((PetscObject)x,x0_name));
-  CHKERRQ(VecSetFromOptions(x));
+  PetscCall(PetscObjectSetName((PetscObject)x,x0_name));
+  PetscCall(VecSetFromOptions(x));
   /* load file_x0 if it is specified, otherwise try to reuse file */
   if (file_x0[0]) {
-    CHKERRQ(PetscViewerDestroy(&fd));
+    PetscCall(PetscViewerDestroy(&fd));
     if (hdf5) {
 #if defined(PETSC_HAVE_HDF5)
-      CHKERRQ(PetscViewerHDF5Open(PETSC_COMM_WORLD,file_x0,FILE_MODE_READ,&fd));
+      PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD,file_x0,FILE_MODE_READ,&fd));
 #endif
     } else {
-      CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file_x0,FILE_MODE_READ,&fd));
+      PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file_x0,FILE_MODE_READ,&fd));
     }
   }
-  CHKERRQ(VecLoadIfExists_Private(x,fd,&has));
+  PetscCall(VecLoadIfExists_Private(x,fd,&has));
   if (!has) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Failed to load initial guess, so use a vector of all zeros.\n"));
-    CHKERRQ(VecSet(x,0.0));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Failed to load initial guess, so use a vector of all zeros.\n"));
+    PetscCall(VecSet(x,0.0));
     nonzero_guess=PETSC_FALSE;
   }
-  CHKERRQ(PetscViewerDestroy(&fd));
+  PetscCall(PetscViewerDestroy(&fd));
 
-  CHKERRQ(VecDuplicate(x,&Ab));
+  PetscCall(VecDuplicate(x,&Ab));
 
   /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
                     Setup solve for system
@@ -193,25 +193,25 @@ int main(int argc,char **args)
   */
   PetscPreLoadStage("KSPSetUp");
 
-  CHKERRQ(MatCreateNormalHermitian(A,&N));
-  CHKERRQ(MatMultHermitianTranspose(A,b,Ab));
+  PetscCall(MatCreateNormalHermitian(A,&N));
+  PetscCall(MatMultHermitianTranspose(A,b,Ab));
 
   /*
      Create linear solver; set operators; set runtime options.
   */
-  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
 
   if (solve_normal) {
-    CHKERRQ(KSPSetOperators(ksp,N,N));
+    PetscCall(KSPSetOperators(ksp,N,N));
   } else {
     PC pc;
-    CHKERRQ(KSPSetType(ksp,KSPLSQR));
-    CHKERRQ(KSPGetPC(ksp,&pc));
-    CHKERRQ(PCSetType(pc,PCNONE));
-    CHKERRQ(KSPSetOperators(ksp,A,N));
+    PetscCall(KSPSetType(ksp,KSPLSQR));
+    PetscCall(KSPGetPC(ksp,&pc));
+    PetscCall(PCSetType(pc,PCNONE));
+    PetscCall(KSPSetOperators(ksp,A,N));
   }
-  CHKERRQ(KSPSetInitialGuessNonzero(ksp,nonzero_guess));
-  CHKERRQ(KSPSetFromOptions(ksp));
+  PetscCall(KSPSetInitialGuessNonzero(ksp,nonzero_guess));
+  PetscCall(KSPSetFromOptions(ksp));
 
   /*
      Here we explicitly call KSPSetUp() and KSPSetUpOnBlocks() to
@@ -219,8 +219,8 @@ int main(int argc,char **args)
      These calls are optional, since both will be called within
      KSPSolve() if they haven't been called already.
   */
-  CHKERRQ(KSPSetUp(ksp));
-  CHKERRQ(KSPSetUpOnBlocks(ksp));
+  PetscCall(KSPSetUp(ksp));
+  PetscCall(KSPSetUpOnBlocks(ksp));
 
   /*
                          Solve system
@@ -235,11 +235,11 @@ int main(int argc,char **args)
      Solve linear system
   */
   if (solve_normal) {
-    CHKERRQ(KSPSolve(ksp,Ab,x));
+    PetscCall(KSPSolve(ksp,Ab,x));
   } else {
-    CHKERRQ(KSPSolve(ksp,b,x));
+    PetscCall(KSPSolve(ksp,b,x));
   }
-  CHKERRQ(PetscObjectSetName((PetscObject)x,"x"));
+  PetscCall(PetscObjectSetName((PetscObject)x,"x"));
 
   /*
       Conclude profiling this stage
@@ -253,30 +253,30 @@ int main(int argc,char **args)
   /*
      Check error
   */
-  CHKERRQ(VecDuplicate(b,&r));
-  CHKERRQ(MatMult(A,x,r));
-  CHKERRQ(VecAXPY(r,-1.0,b));
-  CHKERRQ(VecNorm(r,NORM_2,&norm));
-  CHKERRQ(KSPGetIterationNumber(ksp,&its));
-  CHKERRQ(KSPGetType(ksp,&ksptype));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"KSP type: %s\n",ksptype));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",(double)norm));
+  PetscCall(VecDuplicate(b,&r));
+  PetscCall(MatMult(A,x,r));
+  PetscCall(VecAXPY(r,-1.0,b));
+  PetscCall(VecNorm(r,NORM_2,&norm));
+  PetscCall(KSPGetIterationNumber(ksp,&its));
+  PetscCall(KSPGetType(ksp,&ksptype));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"KSP type: %s\n",ksptype));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",(double)norm));
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  CHKERRQ(MatDestroy(&A)); CHKERRQ(VecDestroy(&b));
-  CHKERRQ(MatDestroy(&N)); CHKERRQ(VecDestroy(&Ab));
-  CHKERRQ(VecDestroy(&r)); CHKERRQ(VecDestroy(&x));
-  CHKERRQ(KSPDestroy(&ksp));
+  PetscCall(MatDestroy(&A)); PetscCall(VecDestroy(&b));
+  PetscCall(MatDestroy(&N)); PetscCall(VecDestroy(&Ab));
+  PetscCall(VecDestroy(&r)); PetscCall(VecDestroy(&x));
+  PetscCall(KSPDestroy(&ksp));
   PetscPreLoadEnd();
   /* -----------------------------------------------------------
                       End of linear solver loop
      ----------------------------------------------------------- */
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

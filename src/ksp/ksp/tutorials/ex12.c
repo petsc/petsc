@@ -50,9 +50,9 @@ int main(int argc,char **args)
   PetscScalar    v,one = 1.0;
   PC             pc;      /* preconditioner context */
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          Compute the matrix and right-hand-side vector that define
@@ -64,17 +64,17 @@ int main(int argc,char **args)
      runtime. Also, the parallel partitioning of the matrix can be
      determined by PETSc at runtime.
   */
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n));
-  CHKERRQ(MatSetFromOptions(A));
-  CHKERRQ(MatSetUp(A));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSetUp(A));
 
   /*
      Currently, all PETSc parallel matrix formats are partitioned by
      contiguous chunks of rows across the processors.  Determine which
      rows of the matrix are locally owned.
   */
-  CHKERRQ(MatGetOwnershipRange(A,&Istart,&Iend));
+  PetscCall(MatGetOwnershipRange(A,&Istart,&Iend));
 
   /*
      Set matrix elements for the 2-D, five-point stencil in parallel.
@@ -85,11 +85,11 @@ int main(int argc,char **args)
    */
   for (Ii=Istart; Ii<Iend; Ii++) {
     v = -1.0; i = Ii/n; j = Ii - i*n;
-    if (i>0)   {J = Ii - n; CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
-    if (i<m-1) {J = Ii + n; CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
-    if (j>0)   {J = Ii - 1; CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
-    if (j<n-1) {J = Ii + 1; CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
-    v = 4.0; CHKERRQ(MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES));
+    if (i>0)   {J = Ii - n; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
+    if (i<m-1) {J = Ii + n; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
+    if (j>0)   {J = Ii - 1; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
+    if (j<n-1) {J = Ii + 1; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
+    v = 4.0; PetscCall(MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES));
   }
 
   /*
@@ -98,8 +98,8 @@ int main(int argc,char **args)
      Computations can be done while messages are in transition
      by placing code between these two statements.
   */
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
   /*
      Create parallel vectors.
@@ -112,18 +112,18 @@ int main(int argc,char **args)
         and VecCreate() are used with the same communicator.
       - Note: We form 1 vector from scratch and then duplicate as needed.
   */
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&u));
-  CHKERRQ(VecSetSizes(u,PETSC_DECIDE,m*n));
-  CHKERRQ(VecSetFromOptions(u));
-  CHKERRQ(VecDuplicate(u,&b));
-  CHKERRQ(VecDuplicate(b,&x));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&u));
+  PetscCall(VecSetSizes(u,PETSC_DECIDE,m*n));
+  PetscCall(VecSetFromOptions(u));
+  PetscCall(VecDuplicate(u,&b));
+  PetscCall(VecDuplicate(b,&x));
 
   /*
      Set exact solution; then compute right-hand-side vector.
      Use an exact solution of a vector with all elements of 1.0;
   */
-  CHKERRQ(VecSet(u,one));
-  CHKERRQ(MatMult(A,u,b));
+  PetscCall(VecSet(u,one));
+  PetscCall(MatMult(A,u,b));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 Create the linear solver and set various options
@@ -132,24 +132,24 @@ int main(int argc,char **args)
   /*
      Create linear solver context
   */
-  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
 
   /*
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
-  CHKERRQ(KSPSetOperators(ksp,A,A));
+  PetscCall(KSPSetOperators(ksp,A,A));
 
   /*
        First register a new PC type with the command PCRegister()
   */
-  CHKERRQ(PCRegister("ourjacobi",PCCreate_Jacobi));
+  PetscCall(PCRegister("ourjacobi",PCCreate_Jacobi));
 
   /*
      Set the PC type to be the new method
   */
-  CHKERRQ(KSPGetPC(ksp,&pc));
-  CHKERRQ(PCSetType(pc,"ourjacobi"));
+  PetscCall(KSPGetPC(ksp,&pc));
+  PetscCall(PCSetType(pc,"ourjacobi"));
 
   /*
     Set runtime options, e.g.,
@@ -158,13 +158,13 @@ int main(int argc,char **args)
     KSPSetFromOptions() is called _after_ any other customization
     routines.
   */
-  CHKERRQ(KSPSetFromOptions(ksp));
+  PetscCall(KSPSetFromOptions(ksp));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  CHKERRQ(KSPSolve(ksp,b,x));
+  PetscCall(KSPSolve(ksp,b,x));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Check solution and clean up
@@ -173,23 +173,23 @@ int main(int argc,char **args)
   /*
      Check the error
   */
-  CHKERRQ(VecAXPY(x,-1.0,u));
-  CHKERRQ(VecNorm(x,NORM_2,&norm));
-  CHKERRQ(KSPGetIterationNumber(ksp,&its));
+  PetscCall(VecAXPY(x,-1.0,u));
+  PetscCall(VecNorm(x,NORM_2,&norm));
+  PetscCall(KSPGetIterationNumber(ksp,&its));
 
   /*
      Print convergence information.  PetscPrintf() produces a single
      print statement from all processes that share a communicator.
   */
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %D\n",(double)norm,its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %D\n",(double)norm,its));
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  CHKERRQ(KSPDestroy(&ksp));
-  CHKERRQ(VecDestroy(&u));  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&b));  CHKERRQ(MatDestroy(&A));
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(VecDestroy(&u));  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&b));  PetscCall(MatDestroy(&A));
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine
@@ -197,7 +197,7 @@ int main(int argc,char **args)
        - provides summary and diagnostic information if certain runtime
          options are chosen (e.g., -log_view).
   */
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

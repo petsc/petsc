@@ -330,14 +330,14 @@ PETSC_EXTERN PetscXIOErrorHandler PetscSetXIOErrorHandler(PetscXIOErrorHandler);
   jmp_buf                       _Petsc_jmpbuf;                                                 \
   volatile PetscXIOErrorHandler _Petsc_xioerrhdl=NULL;                                         \
   PetscBool                     _Petsc_isdrawx,_Petsc_xioerr,_Petsc_xioerr_local=PETSC_FALSE;  \
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)(draw),PETSC_DRAW_X,&_Petsc_isdrawx));           \
+  PetscCall(PetscObjectTypeCompare((PetscObject)(draw),PETSC_DRAW_X,&_Petsc_isdrawx));           \
   if (_Petsc_isdrawx) {                                                                        \
-  CHKERRQ(PetscMemcpy(&_Petsc_jmpbuf,&PetscXIOErrorHandlerJumpBuf,sizeof(_Petsc_jmpbuf)));     \
+  PetscCall(PetscMemcpy(&_Petsc_jmpbuf,&PetscXIOErrorHandlerJumpBuf,sizeof(_Petsc_jmpbuf)));     \
   _Petsc_xioerrhdl = PetscSetXIOErrorHandler(PetscXIOErrorHandlerJump);                        \
   if (setjmp(PetscXIOErrorHandlerJumpBuf)) {                                                   \
     _Petsc_xioerr_local = PETSC_TRUE;                                                          \
     do {                                                                                       \
-      _ierr_draw_collective_ = PetscDrawCollectiveEnd(draw);CHKERRQ(_ierr_draw_collective_);   \
+      _ierr_draw_collective_ = PetscDrawCollectiveEnd(draw);PetscCall(_ierr_draw_collective_);   \
     }                                                                                          \
   }                                                                                            \
   do {} while (0)
@@ -345,10 +345,10 @@ PETSC_EXTERN PetscXIOErrorHandler PetscSetXIOErrorHandler(PetscXIOErrorHandler);
 #define PetscDrawCollectiveEnd(draw) 0;                                                        \
   if (_Petsc_isdrawx) {                                                                        \
     (void)PetscSetXIOErrorHandler(_Petsc_xioerrhdl);                                           \
-    CHKERRQ(PetscMemcpy(&PetscXIOErrorHandlerJumpBuf,&_Petsc_jmpbuf,sizeof(PetscXIOErrorHandlerJumpBuf))); \
-    CHKERRMPI(MPI_Allreduce(&_Petsc_xioerr_local,&_Petsc_xioerr,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)(draw)))); \
+    PetscCall(PetscMemcpy(&PetscXIOErrorHandlerJumpBuf,&_Petsc_jmpbuf,sizeof(PetscXIOErrorHandlerJumpBuf))); \
+    PetscCallMPI(MPI_Allreduce(&_Petsc_xioerr_local,&_Petsc_xioerr,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)(draw)))); \
     if (_Petsc_xioerr) {                                                                       \
-      CHKERRQ(PetscDrawSetType((draw),PETSC_DRAW_NULL));                                       \
+      PetscCall(PetscDrawSetType((draw),PETSC_DRAW_NULL));                                       \
       PetscFunctionReturn(0);                                                                  \
     }                                                                                          \
   }                                                                                            \

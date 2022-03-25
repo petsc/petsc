@@ -37,34 +37,34 @@ PetscErrorCode  PetscOptionsGetenv(MPI_Comm comm,const char name[],char env[],si
 
   PetscFunctionBegin;
   /* first check options database */
-  CHKERRQ(PetscStrncmp(name,"PETSC_",6,&spetsc));
+  PetscCall(PetscStrncmp(name,"PETSC_",6,&spetsc));
 
-  CHKERRQ(PetscStrcpy(work,"-"));
+  PetscCall(PetscStrcpy(work,"-"));
   if (spetsc) {
-    CHKERRQ(PetscStrlcat(work,name+6,sizeof(work)));
+    PetscCall(PetscStrlcat(work,name+6,sizeof(work)));
   } else {
-    CHKERRQ(PetscStrlcat(work,name,sizeof(work)));
+    PetscCall(PetscStrlcat(work,name,sizeof(work)));
   }
-  CHKERRQ(PetscStrtolower(work));
+  PetscCall(PetscStrtolower(work));
   if (env) {
-    CHKERRQ(PetscOptionsGetString(NULL,NULL,work,env,len,&flg));
+    PetscCall(PetscOptionsGetString(NULL,NULL,work,env,len,&flg));
     if (flg) {
       if (flag) *flag = PETSC_TRUE;
     } else { /* now check environment */
-      CHKERRQ(PetscArrayzero(env,len));
+      PetscCall(PetscArrayzero(env,len));
 
-      CHKERRMPI(MPI_Comm_rank(comm,&rank));
+      PetscCallMPI(MPI_Comm_rank(comm,&rank));
       if (rank == 0) {
         str = getenv(name);
         if (str) flg = PETSC_TRUE;
-        if (str && env) CHKERRQ(PetscStrncpy(env,str,len));
+        if (str && env) PetscCall(PetscStrncpy(env,str,len));
       }
-      CHKERRMPI(MPI_Bcast(&flg,1,MPIU_BOOL,0,comm));
-      CHKERRMPI(MPI_Bcast(env,len,MPI_CHAR,0,comm));
+      PetscCallMPI(MPI_Bcast(&flg,1,MPIU_BOOL,0,comm));
+      PetscCallMPI(MPI_Bcast(env,len,MPI_CHAR,0,comm));
       if (flag) *flag = flg;
     }
   } else {
-    CHKERRQ(PetscOptionsHasName(NULL,NULL,work,flag));
+    PetscCall(PetscOptionsHasName(NULL,NULL,work,flag));
   }
   PetscFunctionReturn(0);
 }
@@ -83,14 +83,14 @@ static PetscErrorCode PetscWorldIsSingleHost(PetscBool  *onehost)
   PetscBool      flag;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscGetHostName(hostname,sizeof(hostname)));
-  CHKERRQ(PetscMemcpy(roothostname,hostname,sizeof(hostname)));
-  CHKERRMPI(MPI_Bcast(roothostname,sizeof(roothostname),MPI_CHAR,0,PETSC_COMM_WORLD));
-  CHKERRQ(PetscStrcmp(hostname,roothostname,&flag));
+  PetscCall(PetscGetHostName(hostname,sizeof(hostname)));
+  PetscCall(PetscMemcpy(roothostname,hostname,sizeof(hostname)));
+  PetscCallMPI(MPI_Bcast(roothostname,sizeof(roothostname),MPI_CHAR,0,PETSC_COMM_WORLD));
+  PetscCall(PetscStrcmp(hostname,roothostname,&flag));
 
   localmatch = (PetscMPIInt)flag;
 
-  CHKERRMPI(MPIU_Allreduce(&localmatch,&allmatch,1,MPI_INT,MPI_LAND,PETSC_COMM_WORLD));
+  PetscCallMPI(MPIU_Allreduce(&localmatch,&allmatch,1,MPI_INT,MPI_LAND,PETSC_COMM_WORLD));
 
   *onehost = (PetscBool)allmatch;
   PetscFunctionReturn(0);
@@ -104,36 +104,36 @@ PetscErrorCode  PetscSetDisplay(void)
   const char     *str;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-display",PetscDisplay,sizeof(PetscDisplay),&flag));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-display",PetscDisplay,sizeof(PetscDisplay),&flag));
   if (flag) PetscFunctionReturn(0);
 
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
-  CHKERRQ(PetscWorldIsSingleHost(&singlehost));
+  PetscCall(PetscWorldIsSingleHost(&singlehost));
 
   str = getenv("DISPLAY");
   if (!str) str = ":0.0";
 #if defined(PETSC_HAVE_X)
   flag = PETSC_FALSE;
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-x_virtual",&flag,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-x_virtual",&flag,NULL));
   if (flag) {
     /*  this is a crude hack, but better than nothing */
-    CHKERRQ(PetscPOpen(PETSC_COMM_WORLD,NULL,"pkill -9 Xvfb","r",NULL));
-    CHKERRQ(PetscSleep(1));
-    CHKERRQ(PetscPOpen(PETSC_COMM_WORLD,NULL,"Xvfb :15 -screen 0 1600x1200x24","r",NULL));
-    CHKERRQ(PetscSleep(5));
+    PetscCall(PetscPOpen(PETSC_COMM_WORLD,NULL,"pkill -9 Xvfb","r",NULL));
+    PetscCall(PetscSleep(1));
+    PetscCall(PetscPOpen(PETSC_COMM_WORLD,NULL,"Xvfb :15 -screen 0 1600x1200x24","r",NULL));
+    PetscCall(PetscSleep(5));
     str  = ":15";
   }
 #endif
   if (str[0] != ':' || singlehost) {
-    CHKERRQ(PetscStrncpy(display,str,sizeof(display)));
+    PetscCall(PetscStrncpy(display,str,sizeof(display)));
   } else if (rank == 0) {
-    CHKERRQ(PetscGetHostName(display,sizeof(display)));
-    CHKERRQ(PetscStrlcat(display,str,sizeof(display)));
+    PetscCall(PetscGetHostName(display,sizeof(display)));
+    PetscCall(PetscStrlcat(display,str,sizeof(display)));
   }
-  CHKERRMPI(MPI_Bcast(display,sizeof(display),MPI_CHAR,0,PETSC_COMM_WORLD));
-  CHKERRQ(PetscMemcpy(PetscDisplay,display,sizeof(PetscDisplay)));
+  PetscCallMPI(MPI_Bcast(display,sizeof(display),MPI_CHAR,0,PETSC_COMM_WORLD));
+  PetscCall(PetscMemcpy(PetscDisplay,display,sizeof(PetscDisplay)));
 
   PetscDisplay[sizeof(PetscDisplay)-1] = 0;
   PetscFunctionReturn(0);
@@ -157,6 +157,6 @@ PetscErrorCode  PetscSetDisplay(void)
 PetscErrorCode  PetscGetDisplay(char display[],size_t n)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscStrncpy(display,PetscDisplay,n));
+  PetscCall(PetscStrncpy(display,PetscDisplay,n));
   PetscFunctionReturn(0);
 }

@@ -9,8 +9,8 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_5_NaturalOrdering_inplace(Mat A,Vec bb,
   PetscScalar     s1,s2,s3,s4,s5,x1,x2,x3,x4,x5,*x;
 
   PetscFunctionBegin;
-  CHKERRQ(VecCopy(bb,xx));
-  CHKERRQ(VecGetArray(xx,&x));
+  PetscCall(VecCopy(bb,xx));
+  PetscCall(VecGetArray(xx,&x));
 
   /* forward solve the U^T */
   idx = 0;
@@ -57,8 +57,8 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_5_NaturalOrdering_inplace(Mat A,Vec bb,
       v        -= 25;
     }
   }
-  CHKERRQ(VecRestoreArray(xx,&x));
-  CHKERRQ(PetscLogFlops(2.0*25*(a->nz) - 5.0*A->cmap->n));
+  PetscCall(VecRestoreArray(xx,&x));
+  PetscCall(PetscLogFlops(2.0*25*(a->nz) - 5.0*A->cmap->n));
   PetscFunctionReturn(0);
 }
 
@@ -72,8 +72,8 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_5_NaturalOrdering(Mat A,Vec bb,Vec xx)
   PetscScalar     s1,s2,s3,s4,s5,x1,x2,x3,x4,x5,*x;
 
   PetscFunctionBegin;
-  CHKERRQ(VecCopy(bb,xx));
-  CHKERRQ(VecGetArray(xx,&x));
+  PetscCall(VecCopy(bb,xx));
+  PetscCall(VecGetArray(xx,&x));
 
   /* forward solve the U^T */
   idx = 0;
@@ -120,7 +120,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_5_NaturalOrdering(Mat A,Vec bb,Vec xx)
       v        += bs2;
     }
   }
-  CHKERRQ(VecRestoreArray(xx,&x));
-  CHKERRQ(PetscLogFlops(2.0*bs2*(a->nz) - bs*A->cmap->n));
+  PetscCall(VecRestoreArray(xx,&x));
+  PetscCall(PetscLogFlops(2.0*bs2*(a->nz) - bs*A->cmap->n));
   PetscFunctionReturn(0);
 }

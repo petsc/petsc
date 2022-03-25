@@ -6,18 +6,18 @@ static char help[] = "Demonstrates PETSc error handlers.\n";
 int CreateError(int n)
 {
   PetscCheck(n,PETSC_COMM_SELF,PETSC_ERR_USER,"Error Created");
-  CHKERRQ(CreateError(n-1));
+  PetscCall(CreateError(n-1));
   return 0;
 }
 
 int main(int argc,char **argv)
 {
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(PetscFPrintf(PETSC_COMM_WORLD,stdout,"Demonstrates PETSc Error Handlers\n"));
-  CHKERRQ(PetscFPrintf(PETSC_COMM_WORLD,stdout,"The error is a contrived error to test error handling\n"));
-  CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
-  CHKERRQ(CreateError(5));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscFPrintf(PETSC_COMM_WORLD,stdout,"Demonstrates PETSc Error Handlers\n"));
+  PetscCall(PetscFPrintf(PETSC_COMM_WORLD,stdout,"The error is a contrived error to test error handling\n"));
+  PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
+  PetscCall(CreateError(5));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

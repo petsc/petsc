@@ -28,18 +28,18 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->numOrnt       = -1;
   options->initOrnt      = 0;
 
-  ierr = PetscOptionsBegin(comm, "", "Mesh Orientation Tutorials Options", "DMPLEX");CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsBool("-gen_arrangements", "Flag for generating all arrangements of the cell", "ex11.c", options->genArr, &options->genArr, NULL));
-  CHKERRQ(PetscOptionsBool("-ref_arrangements", "Flag for refining all arrangements of the cell", "ex11.c", options->refArr, &options->refArr, NULL));
-  CHKERRQ(PetscOptionsBool("-print_table", "Print the Cayley table", "ex11.c", options->printTable, &options->printTable, NULL));
-  CHKERRQ(PetscOptionsIntArray("-ornt_bounds", "Bounds for orientation checks", "ex11.c", options->orntBounds, &n, NULL));
+  ierr = PetscOptionsBegin(comm, "", "Mesh Orientation Tutorials Options", "DMPLEX");PetscCall(ierr);
+  PetscCall(PetscOptionsBool("-gen_arrangements", "Flag for generating all arrangements of the cell", "ex11.c", options->genArr, &options->genArr, NULL));
+  PetscCall(PetscOptionsBool("-ref_arrangements", "Flag for refining all arrangements of the cell", "ex11.c", options->refArr, &options->refArr, NULL));
+  PetscCall(PetscOptionsBool("-print_table", "Print the Cayley table", "ex11.c", options->printTable, &options->printTable, NULL));
+  PetscCall(PetscOptionsIntArray("-ornt_bounds", "Bounds for orientation checks", "ex11.c", options->orntBounds, &n, NULL));
   n    = 48;
-  CHKERRQ(PetscOptionsIntArray("-ornts", "Specific orientations for checks", "ex11.c", options->ornts, &n, &flg));
+  PetscCall(PetscOptionsIntArray("-ornts", "Specific orientations for checks", "ex11.c", options->ornts, &n, &flg));
   if (flg) {
     options->numOrnt = n;
-    CHKERRQ(PetscSortInt(n, options->ornts));
+    PetscCall(PetscSortInt(n, options->ornts));
   }
-  CHKERRQ(PetscOptionsInt("-init_ornt", "Initial orientation for starting mesh", "ex11.c", options->initOrnt, &options->initOrnt, NULL));
+  PetscCall(PetscOptionsInt("-init_ornt", "Initial orientation for starting mesh", "ex11.c", options->initOrnt, &options->initOrnt, NULL));
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -58,10 +58,10 @@ static PetscBool ignoreOrnt(AppCtx *user, PetscInt o)
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscFunctionBeginUser;
-  CHKERRQ(DMCreate(comm, dm));
-  CHKERRQ(DMSetType(*dm, DMPLEX));
-  CHKERRQ(DMSetFromOptions(*dm));
-  CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
+  PetscCall(DMCreate(comm, dm));
+  PetscCall(DMSetType(*dm, DMPLEX));
+  PetscCall(DMSetFromOptions(*dm));
+  PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   PetscFunctionReturn(0);
 }
 
@@ -74,10 +74,10 @@ static PetscErrorCode CheckCellVertices(DM dm, PetscInt cell, PetscInt o)
   MPI_Comm        comm;
 
   PetscFunctionBeginUser;
-  CHKERRQ(PetscObjectGetComm((PetscObject) dm, &comm));
-  CHKERRQ(DMPlexGetCellType(dm, cell, &ct));
-  CHKERRQ(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
-  CHKERRQ(DMPlexGetTransitiveClosure(dm, cell, PETSC_TRUE, &Ncl, &closure));
+  PetscCall(PetscObjectGetComm((PetscObject) dm, &comm));
+  PetscCall(DMPlexGetCellType(dm, cell, &ct));
+  PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
+  PetscCall(DMPlexGetTransitiveClosure(dm, cell, PETSC_TRUE, &Ncl, &closure));
   for (cl = 0, Nv = 0; cl < Ncl*2; cl += 2) {
     const PetscInt vertex = closure[cl];
 
@@ -89,7 +89,7 @@ static PetscErrorCode CheckCellVertices(DM dm, PetscInt cell, PetscInt o)
   for (v = 0; v < Nv; ++v) {
     PetscCheckFalse(closure[v] != arrVerts[v]+vStart,comm, PETSC_ERR_ARG_WRONG, "Cell %D vertex[%D]: %D should be %D for arrangement %D", cell, v, closure[v], arrVerts[v]+vStart, o);
   }
-  CHKERRQ(DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &Ncl, &closure));
+  PetscCall(DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &Ncl, &closure));
   PetscFunctionReturn(0);
 }
 
@@ -104,30 +104,30 @@ static PetscErrorCode ReorientCell(DM dm, PetscInt cell, PetscInt o, PetscBool s
 
   PetscFunctionBegin;
   /* Change vertex coordinates so that it plots as we expect */
-  CHKERRQ(DMGetCoordinateDM(dm, &cdm));
-  CHKERRQ(DMGetCoordinateDim(dm, &cdim));
-  CHKERRQ(DMGetCoordinatesLocal(dm, &coordinates));
-  CHKERRQ(DMPlexVecGetClosure(cdm, NULL, coordinates, cell, &Nc, &ccoords));
+  PetscCall(DMGetCoordinateDM(dm, &cdm));
+  PetscCall(DMGetCoordinateDim(dm, &cdim));
+  PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
+  PetscCall(DMPlexVecGetClosure(cdm, NULL, coordinates, cell, &Nc, &ccoords));
   /* Reorient cone */
-  CHKERRQ(DMPlexOrientPoint(dm, cell, o));
+  PetscCall(DMPlexOrientPoint(dm, cell, o));
   /* Finish resetting coordinates */
   if (swapCoords) {
-    CHKERRQ(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
-    CHKERRQ(VecGetArrayWrite(coordinates, &coords));
-    CHKERRQ(DMPlexGetTransitiveClosure(dm, cell, PETSC_TRUE, &Ncl, &closure));
+    PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
+    PetscCall(VecGetArrayWrite(coordinates, &coords));
+    PetscCall(DMPlexGetTransitiveClosure(dm, cell, PETSC_TRUE, &Ncl, &closure));
     for (cl = 0, Nv = 0; cl < Ncl*2; cl += 2) {
       const PetscInt vertex = closure[cl];
       PetscScalar   *vcoords;
 
       if (vertex < vStart || vertex >= vEnd) continue;
-      CHKERRQ(DMPlexPointLocalRef(cdm, vertex, coords, &vcoords));
+      PetscCall(DMPlexPointLocalRef(cdm, vertex, coords, &vcoords));
       for (d = 0; d < cdim; ++d) vcoords[d] = ccoords[Nv*cdim + d];
       ++Nv;
     }
-    CHKERRQ(DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &Ncl, &closure));
-    CHKERRQ(VecRestoreArrayWrite(coordinates, &coords));
+    PetscCall(DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &Ncl, &closure));
+    PetscCall(VecRestoreArrayWrite(coordinates, &coords));
   }
-  CHKERRQ(DMPlexVecRestoreClosure(cdm, NULL, coordinates, cell, &Nc, &ccoords));
+  PetscCall(DMPlexVecRestoreClosure(cdm, NULL, coordinates, cell, &Nc, &ccoords));
   PetscFunctionReturn(0);
 }
 
@@ -140,17 +140,17 @@ static PetscErrorCode GenerateArrangments(DM dm, AppCtx *user)
 
   PetscFunctionBeginUser;
   if (!user->genArr) PetscFunctionReturn(0);
-  CHKERRQ(PetscObjectGetName((PetscObject) dm, &name));
-  CHKERRQ(DMPlexGetCellType(dm, 0, &ct));
+  PetscCall(PetscObjectGetName((PetscObject) dm, &name));
+  PetscCall(DMPlexGetCellType(dm, 0, &ct));
   No   = DMPolytopeTypeGetNumArrangments(ct)/2;
   for (o = PetscMax(-No, user->orntBounds[0]); o < PetscMin(No, user->orntBounds[1]); ++o) {
     if (ignoreOrnt(user, o)) continue;
-    CHKERRQ(CreateMesh(PetscObjectComm((PetscObject) dm), user, &odm));
-    CHKERRQ(ReorientCell(odm, 0, o, PETSC_TRUE));
-    CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject) dm), "%s orientation %D\n", name, o));
-    CHKERRQ(DMViewFromOptions(odm, NULL, "-gen_dm_view"));
-    CHKERRQ(CheckCellVertices(odm, 0, o));
-    CHKERRQ(DMDestroy(&odm));
+    PetscCall(CreateMesh(PetscObjectComm((PetscObject) dm), user, &odm));
+    PetscCall(ReorientCell(odm, 0, o, PETSC_TRUE));
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject) dm), "%s orientation %D\n", name, o));
+    PetscCall(DMViewFromOptions(odm, NULL, "-gen_dm_view"));
+    PetscCall(CheckCellVertices(odm, 0, o));
+    PetscCall(DMDestroy(&odm));
   }
   PetscFunctionReturn(0);
 }
@@ -166,38 +166,38 @@ static PetscErrorCode VerifyCayleyTable(DM dm, AppCtx *user)
 
   PetscFunctionBeginUser;
   if (!user->genArr) PetscFunctionReturn(0);
-  CHKERRQ(PetscObjectGetName((PetscObject) dm, &name));
-  CHKERRQ(DMPlexGetCellType(dm, 0, &ct));
-  CHKERRQ(DMPlexGetCone(dm, 0, &refcone));
+  PetscCall(PetscObjectGetName((PetscObject) dm, &name));
+  PetscCall(DMPlexGetCellType(dm, 0, &ct));
+  PetscCall(DMPlexGetCone(dm, 0, &refcone));
   No   = DMPolytopeTypeGetNumArrangments(ct)/2;
-  if (user->printTable) CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "Cayley Table for %s\n", DMPolytopeTypes[ct]));
+  if (user->printTable) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Cayley Table for %s\n", DMPolytopeTypes[ct]));
   for (o1 = PetscMax(-No, user->orntBounds[0]); o1 < PetscMin(No, user->orntBounds[1]); ++o1) {
     for (o2 = PetscMax(-No, user->orntBounds[0]); o2 < PetscMin(No, user->orntBounds[1]); ++o2) {
-      CHKERRQ(CreateMesh(PetscObjectComm((PetscObject) dm), user, &dm1));
-      CHKERRQ(DMPlexOrientPoint(dm1, 0, o2));
-      CHKERRQ(DMPlexCheckFaces(dm1, 0));
-      CHKERRQ(DMPlexOrientPoint(dm1, 0, o1));
-      CHKERRQ(DMPlexCheckFaces(dm1, 0));
+      PetscCall(CreateMesh(PetscObjectComm((PetscObject) dm), user, &dm1));
+      PetscCall(DMPlexOrientPoint(dm1, 0, o2));
+      PetscCall(DMPlexCheckFaces(dm1, 0));
+      PetscCall(DMPlexOrientPoint(dm1, 0, o1));
+      PetscCall(DMPlexCheckFaces(dm1, 0));
       o3   = DMPolytopeTypeComposeOrientation(ct, o1, o2);
       /* First verification */
-      CHKERRQ(CreateMesh(PetscObjectComm((PetscObject) dm), user, &dm2));
-      CHKERRQ(DMPlexOrientPoint(dm2, 0, o3));
-      CHKERRQ(DMPlexCheckFaces(dm2, 0));
-      CHKERRQ(DMPlexEqual(dm1, dm2, &equal));
+      PetscCall(CreateMesh(PetscObjectComm((PetscObject) dm), user, &dm2));
+      PetscCall(DMPlexOrientPoint(dm2, 0, o3));
+      PetscCall(DMPlexCheckFaces(dm2, 0));
+      PetscCall(DMPlexEqual(dm1, dm2, &equal));
       if (!equal) {
-        CHKERRQ(DMViewFromOptions(dm1, NULL, "-error_dm_view"));
-        CHKERRQ(DMViewFromOptions(dm2, NULL, "-error_dm_view"));
+        PetscCall(DMViewFromOptions(dm1, NULL, "-error_dm_view"));
+        PetscCall(DMViewFromOptions(dm2, NULL, "-error_dm_view"));
         SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cayley table error for %s: %D * %D != %D", DMPolytopeTypes[ct], o1, o2, o3);
       }
       /* Second verification */
-      CHKERRQ(DMPlexGetCone(dm1, 0, &cone));
-      CHKERRQ(DMPolytopeGetOrientation(ct, refcone, cone, &o4));
-      if (user->printTable) CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "%D, ", o4));
+      PetscCall(DMPlexGetCone(dm1, 0, &cone));
+      PetscCall(DMPolytopeGetOrientation(ct, refcone, cone, &o4));
+      if (user->printTable) PetscCall(PetscPrintf(PETSC_COMM_SELF, "%D, ", o4));
       PetscCheckFalse(o3 != o4,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cayley table error for %s: %D * %D = %D != %D", DMPolytopeTypes[ct], o1, o2, o3, o4);
-      CHKERRQ(DMDestroy(&dm1));
-      CHKERRQ(DMDestroy(&dm2));
+      PetscCall(DMDestroy(&dm1));
+      PetscCall(DMDestroy(&dm2));
     }
-    if (user->printTable) CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "\n"));
+    if (user->printTable) PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
   }
   PetscFunctionReturn(0);
 }
@@ -213,36 +213,36 @@ static PetscErrorCode VerifyInverse(DM dm, AppCtx *user)
 
   PetscFunctionBeginUser;
   if (!user->genArr) PetscFunctionReturn(0);
-  CHKERRQ(PetscObjectGetName((PetscObject) dm, &name));
-  CHKERRQ(DMPlexGetCellType(dm, 0, &ct));
-  CHKERRQ(DMPlexGetCone(dm, 0, &refcone));
+  PetscCall(PetscObjectGetName((PetscObject) dm, &name));
+  PetscCall(DMPlexGetCellType(dm, 0, &ct));
+  PetscCall(DMPlexGetCone(dm, 0, &refcone));
   No   = DMPolytopeTypeGetNumArrangments(ct)/2;
-  if (user->printTable) CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "Inverse table for %s\n", DMPolytopeTypes[ct]));
+  if (user->printTable) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Inverse table for %s\n", DMPolytopeTypes[ct]));
   for (o = PetscMax(-No, user->orntBounds[0]); o < PetscMin(No, user->orntBounds[1]); ++o) {
     if (ignoreOrnt(user, o)) continue;
     oi   = DMPolytopeTypeComposeOrientationInv(ct, 0, o);
-    CHKERRQ(CreateMesh(PetscObjectComm((PetscObject) dm), user, &dm1));
-    CHKERRQ(DMPlexOrientPoint(dm1, 0, o));
-    CHKERRQ(DMPlexCheckFaces(dm1, 0));
-    CHKERRQ(DMPlexOrientPoint(dm1, 0, oi));
-    CHKERRQ(DMPlexCheckFaces(dm1, 0));
+    PetscCall(CreateMesh(PetscObjectComm((PetscObject) dm), user, &dm1));
+    PetscCall(DMPlexOrientPoint(dm1, 0, o));
+    PetscCall(DMPlexCheckFaces(dm1, 0));
+    PetscCall(DMPlexOrientPoint(dm1, 0, oi));
+    PetscCall(DMPlexCheckFaces(dm1, 0));
     /* First verification */
-    CHKERRQ(CreateMesh(PetscObjectComm((PetscObject) dm), user, &dm2));
-    CHKERRQ(DMPlexEqual(dm1, dm2, &equal));
+    PetscCall(CreateMesh(PetscObjectComm((PetscObject) dm), user, &dm2));
+    PetscCall(DMPlexEqual(dm1, dm2, &equal));
     if (!equal) {
-      CHKERRQ(DMViewFromOptions(dm1, NULL, "-error_dm_view"));
-      CHKERRQ(DMViewFromOptions(dm2, NULL, "-error_dm_view"));
+      PetscCall(DMViewFromOptions(dm1, NULL, "-error_dm_view"));
+      PetscCall(DMViewFromOptions(dm2, NULL, "-error_dm_view"));
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inverse error for %s: %D * %D != 0", DMPolytopeTypes[ct], o, oi);
     }
     /* Second verification */
-    CHKERRQ(DMPlexGetCone(dm1, 0, &cone));
-    CHKERRQ(DMPolytopeGetOrientation(ct, refcone, cone, &o2));
-    if (user->printTable) CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "%D, ", oi));
+    PetscCall(DMPlexGetCone(dm1, 0, &cone));
+    PetscCall(DMPolytopeGetOrientation(ct, refcone, cone, &o2));
+    if (user->printTable) PetscCall(PetscPrintf(PETSC_COMM_SELF, "%D, ", oi));
     PetscCheckFalse(o2 != 0,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inverse error for %s: %D * %D = %D != 0", DMPolytopeTypes[ct], o, oi, o2);
-    CHKERRQ(DMDestroy(&dm1));
-    CHKERRQ(DMDestroy(&dm2));
+    PetscCall(DMDestroy(&dm1));
+    PetscCall(DMDestroy(&dm2));
   }
-  if (user->printTable) CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "\n"));
+  if (user->printTable) PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
   PetscFunctionReturn(0);
 }
 
@@ -257,60 +257,60 @@ static PetscErrorCode CheckSubcells(DM dm, DM odm, PetscInt p, PetscInt o, AppCt
   PetscInt        Nct, n, oi, debug = 0;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMPlexTransformCreate(PetscObjectComm((PetscObject) dm), &tr));
-  CHKERRQ(DMPlexTransformSetDM(tr, dm));
-  CHKERRQ(DMPlexTransformSetFromOptions(tr));
-  CHKERRQ(DMPlexTransformSetUp(tr));
+  PetscCall(DMPlexTransformCreate(PetscObjectComm((PetscObject) dm), &tr));
+  PetscCall(DMPlexTransformSetDM(tr, dm));
+  PetscCall(DMPlexTransformSetFromOptions(tr));
+  PetscCall(DMPlexTransformSetUp(tr));
 
-  CHKERRQ(DMPlexTransformCreate(PetscObjectComm((PetscObject) odm), &otr));
-  CHKERRQ(DMPlexTransformSetDM(otr, odm));
-  CHKERRQ(DMPlexTransformSetFromOptions(otr));
-  CHKERRQ(DMPlexTransformSetUp(otr));
+  PetscCall(DMPlexTransformCreate(PetscObjectComm((PetscObject) odm), &otr));
+  PetscCall(DMPlexTransformSetDM(otr, odm));
+  PetscCall(DMPlexTransformSetFromOptions(otr));
+  PetscCall(DMPlexTransformSetUp(otr));
 
-  CHKERRQ(DMPlexGetCellType(dm, p, &ct));
-  CHKERRQ(DMPlexGetCone(dm, p, &cone));
-  CHKERRQ(DMPlexGetConeOrientation(dm, p, &ornt));
-  CHKERRQ(DMPlexGetCone(odm, p, &ocone));
-  CHKERRQ(DMPlexGetConeOrientation(odm, p, &oornt));
+  PetscCall(DMPlexGetCellType(dm, p, &ct));
+  PetscCall(DMPlexGetCone(dm, p, &cone));
+  PetscCall(DMPlexGetConeOrientation(dm, p, &ornt));
+  PetscCall(DMPlexGetCone(odm, p, &ocone));
+  PetscCall(DMPlexGetConeOrientation(odm, p, &oornt));
   oi   = DMPolytopeTypeComposeOrientationInv(ct, 0, o);
-  if (user->printTable) CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "Orientation %D\n", oi));
+  if (user->printTable) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Orientation %D\n", oi));
 
-  CHKERRQ(DMPlexTransformCellTransform(tr, ct, p, NULL, &Nct, &rct, &rsize, &rcone, &rornt));
+  PetscCall(DMPlexTransformCellTransform(tr, ct, p, NULL, &Nct, &rct, &rsize, &rcone, &rornt));
   for (n = 0; n < Nct; ++n) {
     DMPolytopeType ctNew = rct[n];
     PetscInt       r, ro;
 
-    if (debug) CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "  Checking type %s\n", DMPolytopeTypes[ctNew]));
+    if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Checking type %s\n", DMPolytopeTypes[ctNew]));
     for (r = 0; r < rsize[n]; ++r) {
       const PetscInt *qcone, *qornt, *oqcone, *oqornt;
       PetscInt        pNew, opNew, oo, pr, fo;
       PetscBool       restore = PETSC_TRUE;
 
-      CHKERRQ(DMPlexTransformGetTargetPoint(tr, ct, ctNew, p, r, &pNew));
-      CHKERRQ(DMPlexTransformGetCone(tr, pNew, &qcone, &qornt));
+      PetscCall(DMPlexTransformGetTargetPoint(tr, ct, ctNew, p, r, &pNew));
+      PetscCall(DMPlexTransformGetCone(tr, pNew, &qcone, &qornt));
       if (debug) {
         PetscInt c;
 
-        CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "    Checking replica %D (%D)\n      Original Cone", r, pNew));
-        for (c = 0; c < DMPolytopeTypeGetConeSize(ctNew); ++c) CHKERRQ(PetscPrintf(PETSC_COMM_SELF, " %D (%D)", qcone[c], qornt[c]));
-        CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "\n"));
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, "    Checking replica %D (%D)\n      Original Cone", r, pNew));
+        for (c = 0; c < DMPolytopeTypeGetConeSize(ctNew); ++c) PetscCall(PetscPrintf(PETSC_COMM_SELF, " %D (%D)", qcone[c], qornt[c]));
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
       }
       for (ro = 0; ro < rsize[n]; ++ro) {
         PetscBool found;
 
-        CHKERRQ(DMPlexTransformGetTargetPoint(otr, ct, ctNew, p, ro, &opNew));
-        CHKERRQ(DMPlexTransformGetConeOriented(otr, opNew, o, &oqcone, &oqornt));
-        CHKERRQ(DMPolytopeMatchOrientation(ctNew, oqcone, qcone, &oo, &found));
+        PetscCall(DMPlexTransformGetTargetPoint(otr, ct, ctNew, p, ro, &opNew));
+        PetscCall(DMPlexTransformGetConeOriented(otr, opNew, o, &oqcone, &oqornt));
+        PetscCall(DMPolytopeMatchOrientation(ctNew, oqcone, qcone, &oo, &found));
         if (found) break;
-        CHKERRQ(DMPlexTransformRestoreCone(otr, pNew, &oqcone, &oqornt));
+        PetscCall(DMPlexTransformRestoreCone(otr, pNew, &oqcone, &oqornt));
       }
       if (debug) {
         PetscInt c;
 
-        CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "    Checking transform replica %D (%D) (%D)\n      Transform Cone", ro, opNew, o));
-        for (c = 0; c < DMPolytopeTypeGetConeSize(ctNew); ++c) CHKERRQ(PetscPrintf(PETSC_COMM_SELF, " %D (%D)", oqcone[c], oqornt[c]));
-        CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "\n"));
-        CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "    Matched %D\n", oo));
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, "    Checking transform replica %D (%D) (%D)\n      Transform Cone", ro, opNew, o));
+        for (c = 0; c < DMPolytopeTypeGetConeSize(ctNew); ++c) PetscCall(PetscPrintf(PETSC_COMM_SELF, " %D (%D)", oqcone[c], oqornt[c]));
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, "    Matched %D\n", oo));
       }
       if (ro == rsize[n]) {
         /* The tetrahedron has 3 pairs of opposing edges, and any pair can be connected by the interior segment */
@@ -324,19 +324,19 @@ static PetscErrorCode CheckSubcells(DM dm, DM odm, PetscInt p, PetscInt o, AppCt
         }
         PetscCheck(!restore,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unable to find matching %s %D orientation for cell orientation %D", DMPolytopeTypes[ctNew], r, o);
       }
-      if (user->printTable) CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "%D, %D, ", ro, oo));
-      CHKERRQ(DMPlexTransformGetSubcellOrientation(tr, ct, p, oi, ctNew, r, 0, &pr, &fo));
+      if (user->printTable) PetscCall(PetscPrintf(PETSC_COMM_SELF, "%D, %D, ", ro, oo));
+      PetscCall(DMPlexTransformGetSubcellOrientation(tr, ct, p, oi, ctNew, r, 0, &pr, &fo));
       if (!user->printTable) {
         PetscCheckFalse(pr != ro,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Choose wrong replica %D != %D", pr, ro);
         PetscCheckFalse(fo != oo,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Choose wrong orientation %D != %D", fo, oo);
       }
-      CHKERRQ(DMPlexTransformRestoreCone(tr, pNew, &qcone, &qornt));
-      if (restore) CHKERRQ(DMPlexTransformRestoreCone(otr, pNew, &oqcone, &oqornt));
+      PetscCall(DMPlexTransformRestoreCone(tr, pNew, &qcone, &qornt));
+      if (restore) PetscCall(DMPlexTransformRestoreCone(otr, pNew, &oqcone, &oqornt));
     }
-    if (user->printTable) CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "\n"));
+    if (user->printTable) PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
   }
-  CHKERRQ(DMPlexTransformDestroy(&tr));
-  CHKERRQ(DMPlexTransformDestroy(&otr));
+  PetscCall(DMPlexTransformDestroy(&tr));
+  PetscCall(DMPlexTransformDestroy(&otr));
   PetscFunctionReturn(0);
 }
 
@@ -349,22 +349,22 @@ static PetscErrorCode RefineArrangments(DM dm, AppCtx *user)
 
   PetscFunctionBeginUser;
   if (!user->refArr) PetscFunctionReturn(0);
-  CHKERRQ(PetscObjectGetName((PetscObject) dm, &name));
-  CHKERRQ(DMPlexGetCellType(dm, 0, &ct));
+  PetscCall(PetscObjectGetName((PetscObject) dm, &name));
+  PetscCall(DMPlexGetCellType(dm, 0, &ct));
   No   = DMPolytopeTypeGetNumArrangments(ct)/2;
   for (o = PetscMax(-No, user->orntBounds[0]); o < PetscMin(No, user->orntBounds[1]); ++o) {
     if (ignoreOrnt(user, o)) continue;
-    CHKERRQ(CreateMesh(PetscObjectComm((PetscObject) dm), user, &odm));
-    if (user->initOrnt) CHKERRQ(ReorientCell(odm, 0, user->initOrnt, PETSC_FALSE));
-    CHKERRQ(ReorientCell(odm, 0, o, PETSC_TRUE));
-    CHKERRQ(DMViewFromOptions(odm, NULL, "-orig_dm_view"));
-    CHKERRQ(DMRefine(odm, MPI_COMM_NULL, &rdm));
-    CHKERRQ(DMSetFromOptions(rdm));
-    CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject) dm), "%s orientation %D\n", name, o));
-    CHKERRQ(DMViewFromOptions(rdm, NULL, "-ref_dm_view"));
-    CHKERRQ(CheckSubcells(dm, odm, 0, o, user));
-    CHKERRQ(DMDestroy(&odm));
-    CHKERRQ(DMDestroy(&rdm));
+    PetscCall(CreateMesh(PetscObjectComm((PetscObject) dm), user, &odm));
+    if (user->initOrnt) PetscCall(ReorientCell(odm, 0, user->initOrnt, PETSC_FALSE));
+    PetscCall(ReorientCell(odm, 0, o, PETSC_TRUE));
+    PetscCall(DMViewFromOptions(odm, NULL, "-orig_dm_view"));
+    PetscCall(DMRefine(odm, MPI_COMM_NULL, &rdm));
+    PetscCall(DMSetFromOptions(rdm));
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject) dm), "%s orientation %D\n", name, o));
+    PetscCall(DMViewFromOptions(rdm, NULL, "-ref_dm_view"));
+    PetscCall(CheckSubcells(dm, odm, 0, o, user));
+    PetscCall(DMDestroy(&odm));
+    PetscCall(DMDestroy(&rdm));
   }
   PetscFunctionReturn(0);
 }
@@ -374,19 +374,19 @@ int main(int argc, char **argv)
   DM             dm;
   AppCtx         user;
 
-  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
-  CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));
-  CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
+  PetscCall(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
   if (user.initOrnt) {
-    CHKERRQ(ReorientCell(dm, 0, user.initOrnt, PETSC_FALSE));
-    CHKERRQ(DMViewFromOptions(dm, NULL, "-ornt_dm_view"));
+    PetscCall(ReorientCell(dm, 0, user.initOrnt, PETSC_FALSE));
+    PetscCall(DMViewFromOptions(dm, NULL, "-ornt_dm_view"));
   }
-  CHKERRQ(GenerateArrangments(dm, &user));
-  CHKERRQ(VerifyCayleyTable(dm, &user));
-  CHKERRQ(VerifyInverse(dm, &user));
-  CHKERRQ(RefineArrangments(dm, &user));
-  CHKERRQ(DMDestroy(&dm));
-  CHKERRQ(PetscFinalize());
+  PetscCall(GenerateArrangments(dm, &user));
+  PetscCall(VerifyCayleyTable(dm, &user));
+  PetscCall(VerifyInverse(dm, &user));
+  PetscCall(RefineArrangments(dm, &user));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

@@ -16,14 +16,14 @@ static PetscErrorCode KSPSetUp_CGLS(KSP ksp)
   PetscFunctionBegin;
   cgls->nwork_m = 2;
   if (cgls->vwork_m) {
-    CHKERRQ(VecDestroyVecs(cgls->nwork_m,&cgls->vwork_m));
+    PetscCall(VecDestroyVecs(cgls->nwork_m,&cgls->vwork_m));
   }
 
   cgls->nwork_n = 2;
   if (cgls->vwork_n) {
-    CHKERRQ(VecDestroyVecs(cgls->nwork_n,&cgls->vwork_n));
+    PetscCall(VecDestroyVecs(cgls->nwork_n,&cgls->vwork_n));
   }
-  CHKERRQ(KSPCreateVecs(ksp,cgls->nwork_n,&cgls->vwork_n,cgls->nwork_m,&cgls->vwork_m));
+  PetscCall(KSPCreateVecs(ksp,cgls->nwork_n,&cgls->vwork_n,cgls->nwork_m,&cgls->vwork_m));
   PetscFunctionReturn(0);
 }
 
@@ -36,7 +36,7 @@ static PetscErrorCode KSPSolve_CGLS(KSP ksp)
   PetscReal      alpha,gamma,oldgamma;
 
   PetscFunctionBegin;
-  CHKERRQ(KSPGetOperators(ksp,&A,NULL)); /* Matrix of the system */
+  PetscCall(KSPGetOperators(ksp,&A,NULL)); /* Matrix of the system */
 
   /* vectors of length n, where system size is mxn */
   x  = ksp->vec_sol; /* Solution vector */
@@ -51,37 +51,37 @@ static PetscErrorCode KSPSolve_CGLS(KSP ksp)
   /* Minimization with the CGLS method */
   ksp->its = 0;
   ksp->rnorm = 0;
-  CHKERRQ(MatMult(A,x,r));
-  CHKERRQ(VecAYPX(r,-1,b));         /* r_0 = b - A * x_0  */
-  CHKERRQ(KSP_MatMultHermitianTranspose(ksp,A,r,p)); /* p_0 = A^T * r_0    */
-  CHKERRQ(VecCopy(p,ss));           /* s_0 = p_0          */
-  CHKERRQ(VecNorm(ss,NORM_2,&gamma));
+  PetscCall(MatMult(A,x,r));
+  PetscCall(VecAYPX(r,-1,b));         /* r_0 = b - A * x_0  */
+  PetscCall(KSP_MatMultHermitianTranspose(ksp,A,r,p)); /* p_0 = A^T * r_0    */
+  PetscCall(VecCopy(p,ss));           /* s_0 = p_0          */
+  PetscCall(VecNorm(ss,NORM_2,&gamma));
   KSPCheckNorm(ksp,gamma);
   if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = gamma;
-  CHKERRQ((*ksp->converged)(ksp,ksp->its,ksp->rnorm,&ksp->reason,ksp->cnvP));
+  PetscCall((*ksp->converged)(ksp,ksp->its,ksp->rnorm,&ksp->reason,ksp->cnvP));
   if (ksp->reason) PetscFunctionReturn(0);
   gamma = gamma*gamma;                          /* gamma = norm2(s)^2 */
 
   do {
-    CHKERRQ(MatMult(A,p,q));           /* q = A * p               */
-    CHKERRQ(VecNorm(q,NORM_2,&alpha));
+    PetscCall(MatMult(A,p,q));           /* q = A * p               */
+    PetscCall(VecNorm(q,NORM_2,&alpha));
     KSPCheckNorm(ksp,alpha);
     alpha = alpha*alpha;                           /* alpha = norm2(q)^2      */
     alpha = gamma / alpha;                         /* alpha = gamma / alpha   */
-    CHKERRQ(VecAXPY(x,alpha,p));       /* x += alpha * p          */
-    CHKERRQ(VecAXPY(r,-alpha,q));      /* r -= alpha * q          */
-    CHKERRQ(KSP_MatMultHermitianTranspose(ksp,A,r,ss)); /* ss = A^T * r            */
+    PetscCall(VecAXPY(x,alpha,p));       /* x += alpha * p          */
+    PetscCall(VecAXPY(r,-alpha,q));      /* r -= alpha * q          */
+    PetscCall(KSP_MatMultHermitianTranspose(ksp,A,r,ss)); /* ss = A^T * r            */
     oldgamma = gamma;                              /* oldgamma = gamma        */
-    CHKERRQ(VecNorm(ss,NORM_2,&gamma));
+    PetscCall(VecNorm(ss,NORM_2,&gamma));
     KSPCheckNorm(ksp,gamma);
     ksp->its++;
     if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = gamma;
-    CHKERRQ(KSPMonitor(ksp,ksp->its,ksp->rnorm));
-    CHKERRQ((*ksp->converged)(ksp,ksp->its,ksp->rnorm,&ksp->reason,ksp->cnvP));
+    PetscCall(KSPMonitor(ksp,ksp->its,ksp->rnorm));
+    PetscCall((*ksp->converged)(ksp,ksp->its,ksp->rnorm,&ksp->reason,ksp->cnvP));
     if (ksp->reason) PetscFunctionReturn(0);
     gamma = gamma*gamma;                           /* gamma = norm2(s)^2      */
     beta = gamma/oldgamma;                         /* beta = gamma / oldgamma */
-    CHKERRQ(VecAYPX(p,beta,ss));       /* p = s + beta * p        */
+    PetscCall(VecAYPX(p,beta,ss));       /* p = s + beta * p        */
   } while (ksp->its<ksp->max_it);
 
   if (ksp->its >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
@@ -95,12 +95,12 @@ static PetscErrorCode KSPDestroy_CGLS(KSP ksp)
   PetscFunctionBegin;
   /* Free work vectors */
   if (cgls->vwork_n) {
-    CHKERRQ(VecDestroyVecs(cgls->nwork_n,&cgls->vwork_n));
+    PetscCall(VecDestroyVecs(cgls->nwork_n,&cgls->vwork_n));
   }
   if (cgls->vwork_m) {
-    CHKERRQ(VecDestroyVecs(cgls->nwork_m,&cgls->vwork_m));
+    PetscCall(VecDestroyVecs(cgls->nwork_m,&cgls->vwork_m));
   }
-  CHKERRQ(PetscFree(ksp->data));
+  PetscCall(PetscFree(ksp->data));
   PetscFunctionReturn(0);
 }
 
@@ -123,10 +123,10 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CGLS(KSP ksp)
   KSP_CGLS       *cgls;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNewLog(ksp,&cgls));
+  PetscCall(PetscNewLog(ksp,&cgls));
   ksp->data                = (void*)cgls;
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,3));
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,3));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1));
   ksp->ops->setup          = KSPSetUp_CGLS;
   ksp->ops->solve          = KSPSolve_CGLS;
   ksp->ops->destroy        = KSPDestroy_CGLS;

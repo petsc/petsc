@@ -15,25 +15,25 @@ int main(int argc,char **argv)
   PetscBool      setSizes,useInjective;
 
   /* Initialize PETSc and process command line arguments */
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   dim = 2;
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));
   setSizes = PETSC_FALSE;
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-setsizes",&setSizes,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-setsizes",&setSizes,NULL));
   useInjective = PETSC_TRUE;
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-useinjective",&useInjective,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-useinjective",&useInjective,NULL));
 
   /* Creation (normal) */
   if (!setSizes) {
     switch (dim) {
       case 1:
-        CHKERRQ(DMStagCreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,3,1,1,DMSTAG_STENCIL_BOX,1,NULL,&dm));
+        PetscCall(DMStagCreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,3,1,1,DMSTAG_STENCIL_BOX,1,NULL,&dm));
         break;
       case 2:
-        CHKERRQ(DMStagCreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,3,2,PETSC_DECIDE,PETSC_DECIDE,1,1,1,DMSTAG_STENCIL_BOX,1,NULL,NULL,&dm));
+        PetscCall(DMStagCreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,3,2,PETSC_DECIDE,PETSC_DECIDE,1,1,1,DMSTAG_STENCIL_BOX,1,NULL,NULL,&dm));
         break;
       case 3:
-        CHKERRQ(DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,3,2,4,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,1,1,DMSTAG_STENCIL_BOX,1,NULL,NULL,NULL,&dm));
+        PetscCall(DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,3,2,4,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,1,1,DMSTAG_STENCIL_BOX,1,NULL,NULL,NULL,&dm));
         break;
       default:
         SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"No support for dimension %D",dim);
@@ -45,19 +45,19 @@ int main(int argc,char **argv)
     PetscInt ly[3] = {4,5},   ranksy = 2, my = 9;
     PetscInt lz[2] = {6,7},   ranksz = 2, mz = 13;
 
-    CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+    PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
     switch (dim) {
       case 1:
         PetscCheckFalse(size != ranksx,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Must run on %D ranks with -dim 1 -setSizes",ranksx);
-        CHKERRQ(DMStagCreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,mx,1,1,DMSTAG_STENCIL_BOX,1,lx,&dm));
+        PetscCall(DMStagCreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,mx,1,1,DMSTAG_STENCIL_BOX,1,lx,&dm));
         break;
       case 2:
         PetscCheckFalse(size != ranksx * ranksy,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Must run on %D ranks with -dim 2 -setSizes",ranksx * ranksy);
-        CHKERRQ(DMStagCreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,mx,my,ranksx,ranksy,1,1,1,DMSTAG_STENCIL_BOX,1,lx,ly,&dm));
+        PetscCall(DMStagCreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,mx,my,ranksx,ranksy,1,1,1,DMSTAG_STENCIL_BOX,1,lx,ly,&dm));
         break;
       case 3:
         PetscCheckFalse(size != ranksx * ranksy * ranksz,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Must run on %D ranks with -dim 3 -setSizes", ranksx * ranksy * ranksz);
-        CHKERRQ(DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,mx,my,mz,ranksx,ranksy,ranksz,1,1,1,1,DMSTAG_STENCIL_BOX,1,lx,ly,lz,&dm));
+        PetscCall(DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,mx,my,mz,ranksx,ranksy,ranksz,1,1,1,1,DMSTAG_STENCIL_BOX,1,lx,ly,lz,&dm));
         break;
       default:
         SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"No support for dimension %D",dim);
@@ -65,29 +65,29 @@ int main(int argc,char **argv)
   }
 
   /* Setup */
-  CHKERRQ(DMSetFromOptions(dm));
-  CHKERRQ(DMSetUp(dm));
+  PetscCall(DMSetFromOptions(dm));
+  PetscCall(DMSetUp(dm));
 
   /* Populate Additional Injective Local-to-Global Map */
   if (useInjective) {
-    CHKERRQ(DMStagPopulateLocalToGlobalInjective(dm));
+    PetscCall(DMStagPopulateLocalToGlobalInjective(dm));
   }
 
   /* Test: Make sure L2G inverts G2L */
-  CHKERRQ(Test1(dm));
+  PetscCall(Test1(dm));
 
   /* Test: Make sure that G2L inverts L2G, on its domain */
-  CHKERRQ(DMGetDimension(dm,&dim));
+  PetscCall(DMGetDimension(dm,&dim));
   switch (dim) {
-    case 1: CHKERRQ(Test2_1d(dm)); break;
-    case 2: CHKERRQ(Test2_2d(dm)); break;
-    case 3: CHKERRQ(Test2_3d(dm)); break;
+    case 1: PetscCall(Test2_1d(dm)); break;
+    case 2: PetscCall(Test2_2d(dm)); break;
+    case 3: PetscCall(Test2_3d(dm)); break;
     default: SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Not implemented for dimension %D",dim);
   }
 
   /* Clean up and finalize PETSc */
-  CHKERRQ(DMDestroy(&dm));
-  CHKERRQ(PetscFinalize());
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -98,20 +98,20 @@ static PetscErrorCode Test1(DM dm)
   PetscBool      equal;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMCreateLocalVector(dm,&vecLocal));
-  CHKERRQ(DMCreateGlobalVector(dm,&vecGlobal));
-  CHKERRQ(PetscRandomCreate(PETSC_COMM_WORLD,&rctx));
-  CHKERRQ(VecSetRandom(vecGlobal,rctx));
-  CHKERRQ(VecSetRandom(vecLocal,rctx)); /* garbage */
-  CHKERRQ(PetscRandomDestroy(&rctx));
-  CHKERRQ(VecDuplicate(vecGlobal,&vecGlobalCheck));
-  CHKERRQ(DMGlobalToLocal(dm,vecGlobal,INSERT_VALUES,vecLocal));
-  CHKERRQ(DMLocalToGlobal(dm,vecLocal,INSERT_VALUES,vecGlobalCheck));
-  CHKERRQ(VecEqual(vecGlobal,vecGlobalCheck,&equal));
+  PetscCall(DMCreateLocalVector(dm,&vecLocal));
+  PetscCall(DMCreateGlobalVector(dm,&vecGlobal));
+  PetscCall(PetscRandomCreate(PETSC_COMM_WORLD,&rctx));
+  PetscCall(VecSetRandom(vecGlobal,rctx));
+  PetscCall(VecSetRandom(vecLocal,rctx)); /* garbage */
+  PetscCall(PetscRandomDestroy(&rctx));
+  PetscCall(VecDuplicate(vecGlobal,&vecGlobalCheck));
+  PetscCall(DMGlobalToLocal(dm,vecGlobal,INSERT_VALUES,vecLocal));
+  PetscCall(DMLocalToGlobal(dm,vecLocal,INSERT_VALUES,vecGlobalCheck));
+  PetscCall(VecEqual(vecGlobal,vecGlobalCheck,&equal));
   PetscCheck(equal,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Check failed - vectors should be bitwise identical");
-  CHKERRQ(VecDestroy(&vecLocal));
-  CHKERRQ(VecDestroy(&vecGlobal));
-  CHKERRQ(VecDestroy(&vecGlobalCheck));
+  PetscCall(VecDestroy(&vecLocal));
+  PetscCall(VecDestroy(&vecGlobal));
+  PetscCall(VecDestroy(&vecGlobalCheck));
   PetscFunctionReturn(0);
 }
 
@@ -137,16 +137,16 @@ static PetscErrorCode Test2_1d(DM dm)
   const PetscInt j=-1,k=-1;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMCreateLocalVector(dm,&vecLocal));
-  CHKERRQ(VecSet(vecLocal,-1.0));
-  CHKERRQ(DMStagGetCorners(dm,&startx,NULL,NULL,&nx,NULL,NULL,&nExtrax,NULL,NULL));
-  CHKERRQ(DMStagGetDOF(dm,&dof0,&dof1,NULL,NULL));
-  CHKERRQ(DMStagVecGetArray(dm,vecLocal,&arr));
+  PetscCall(DMCreateLocalVector(dm,&vecLocal));
+  PetscCall(VecSet(vecLocal,-1.0));
+  PetscCall(DMStagGetCorners(dm,&startx,NULL,NULL,&nx,NULL,NULL,&nExtrax,NULL,NULL));
+  PetscCall(DMStagGetDOF(dm,&dof0,&dof1,NULL,NULL));
+  PetscCall(DMStagVecGetArray(dm,vecLocal,&arr));
   if (dof0 > 0) {
-    CHKERRQ(DMStagGetLocationSlot(dm,DMSTAG_LEFT,0,&idxLeft));
+    PetscCall(DMStagGetLocationSlot(dm,DMSTAG_LEFT,0,&idxLeft));
   }
   if (dof1 > 0) {
-    CHKERRQ(DMStagGetLocationSlot(dm,DMSTAG_ELEMENT,0,&idxElement));
+    PetscCall(DMStagGetLocationSlot(dm,DMSTAG_ELEMENT,0,&idxElement));
   }
   for (i=startx; i<startx+nx+nExtrax; ++i) {
     for (c=0; c<dof0; ++c) {
@@ -160,37 +160,37 @@ static PetscErrorCode Test2_1d(DM dm)
       }
     }
   }
-  CHKERRQ(DMStagVecRestoreArray(dm,vecLocal,&arr));
-  CHKERRQ(DMCreateGlobalVector(dm,&vecGlobal));
-  CHKERRQ(DMLocalToGlobal(dm,vecLocal,INSERT_VALUES,vecGlobal));
-  CHKERRQ(VecDuplicate(vecLocal,&vecLocalCheck));
-  CHKERRQ(VecSet(vecLocalCheck,-1.0));
-  CHKERRQ(DMGlobalToLocal(dm,vecGlobal,INSERT_VALUES,vecLocalCheck));
-  CHKERRQ(DMStagVecGetArrayRead(dm,vecLocalCheck,&arr));
+  PetscCall(DMStagVecRestoreArray(dm,vecLocal,&arr));
+  PetscCall(DMCreateGlobalVector(dm,&vecGlobal));
+  PetscCall(DMLocalToGlobal(dm,vecLocal,INSERT_VALUES,vecGlobal));
+  PetscCall(VecDuplicate(vecLocal,&vecLocalCheck));
+  PetscCall(VecSet(vecLocalCheck,-1.0));
+  PetscCall(DMGlobalToLocal(dm,vecGlobal,INSERT_VALUES,vecLocalCheck));
+  PetscCall(DMStagVecGetArrayRead(dm,vecLocalCheck,&arr));
   for (i=startx; i<startx+nx+nExtrax; ++i) {
     for (c=0; c<dof0; ++c) {
       const PetscScalar valRef = TEST_FUNCTION(i,0,0,idxLeft,c);
       const PetscScalar val    = arr[i][idxLeft+c];
-      CHKERRQ(CompareValues(i,j,k,c,val,valRef));
+      PetscCall(CompareValues(i,j,k,c,val,valRef));
     }
     if (i < startx+nx) {
       for (c=0; c<dof1; ++c) {
         const PetscScalar valRef = TEST_FUNCTION(i,0,0,idxElement,c);
         const PetscScalar val    = arr[i][idxElement+c];
-        CHKERRQ(CompareValues(i,j,k,c,val,valRef));
+        PetscCall(CompareValues(i,j,k,c,val,valRef));
       }
     } else {
       for (c=0; c<dof1; ++c) {
         const PetscScalar valRef = -1.0;
         const PetscScalar val    = arr[i][idxElement+c];
-        CHKERRQ(CompareValues(i,j,k,c,val,valRef));
+        PetscCall(CompareValues(i,j,k,c,val,valRef));
       }
     }
   }
-  CHKERRQ(DMStagVecRestoreArrayRead(dm,vecLocalCheck,&arr));
-  CHKERRQ(VecDestroy(&vecLocal));
-  CHKERRQ(VecDestroy(&vecLocalCheck));
-  CHKERRQ(VecDestroy(&vecGlobal));
+  PetscCall(DMStagVecRestoreArrayRead(dm,vecLocalCheck,&arr));
+  PetscCall(VecDestroy(&vecLocal));
+  PetscCall(VecDestroy(&vecLocalCheck));
+  PetscCall(VecDestroy(&vecGlobal));
   PetscFunctionReturn(0);
 }
 
@@ -202,20 +202,20 @@ static PetscErrorCode Test2_2d(DM dm)
   const PetscInt k=-1;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMCreateLocalVector(dm,&vecLocal));
-  CHKERRQ(VecSet(vecLocal,-1.0));
-  CHKERRQ(DMStagGetCorners(dm,&startx,&starty,NULL,&nx,&ny,NULL,&nExtrax,&nExtray,NULL));
-  CHKERRQ(DMStagGetDOF(dm,&dof0,&dof1,&dof2,NULL));
-  CHKERRQ(DMStagVecGetArray(dm,vecLocal,&arr));
+  PetscCall(DMCreateLocalVector(dm,&vecLocal));
+  PetscCall(VecSet(vecLocal,-1.0));
+  PetscCall(DMStagGetCorners(dm,&startx,&starty,NULL,&nx,&ny,NULL,&nExtrax,&nExtray,NULL));
+  PetscCall(DMStagGetDOF(dm,&dof0,&dof1,&dof2,NULL));
+  PetscCall(DMStagVecGetArray(dm,vecLocal,&arr));
   if (dof0 > 0) {
-    CHKERRQ(DMStagGetLocationSlot(dm,DMSTAG_DOWN_LEFT,0,&idxDownLeft));
+    PetscCall(DMStagGetLocationSlot(dm,DMSTAG_DOWN_LEFT,0,&idxDownLeft));
   }
   if (dof1 > 0) {
-    CHKERRQ(DMStagGetLocationSlot(dm,DMSTAG_LEFT,0,&idxLeft));
-    CHKERRQ(DMStagGetLocationSlot(dm,DMSTAG_DOWN,0,&idxDown));
+    PetscCall(DMStagGetLocationSlot(dm,DMSTAG_LEFT,0,&idxLeft));
+    PetscCall(DMStagGetLocationSlot(dm,DMSTAG_DOWN,0,&idxDown));
   }
   if (dof2 > 0) {
-    CHKERRQ(DMStagGetLocationSlot(dm,DMSTAG_ELEMENT,0,&idxElement));
+    PetscCall(DMStagGetLocationSlot(dm,DMSTAG_ELEMENT,0,&idxElement));
   }
   for (j=starty; j<starty+ny+nExtray; ++j) {
     for (i=startx; i<startx+nx+nExtrax; ++i) {
@@ -243,65 +243,65 @@ static PetscErrorCode Test2_2d(DM dm)
       }
     }
   }
-  CHKERRQ(DMStagVecRestoreArray(dm,vecLocal,&arr));
-  CHKERRQ(DMCreateGlobalVector(dm,&vecGlobal));
-  CHKERRQ(DMLocalToGlobal(dm,vecLocal,INSERT_VALUES,vecGlobal));
-  CHKERRQ(VecDuplicate(vecLocal,&vecLocalCheck));
-  CHKERRQ(VecSet(vecLocalCheck,-1.0));
-  CHKERRQ(DMGlobalToLocal(dm,vecGlobal,INSERT_VALUES,vecLocalCheck));
-  CHKERRQ(DMStagVecGetArrayRead(dm,vecLocalCheck,&arr));
+  PetscCall(DMStagVecRestoreArray(dm,vecLocal,&arr));
+  PetscCall(DMCreateGlobalVector(dm,&vecGlobal));
+  PetscCall(DMLocalToGlobal(dm,vecLocal,INSERT_VALUES,vecGlobal));
+  PetscCall(VecDuplicate(vecLocal,&vecLocalCheck));
+  PetscCall(VecSet(vecLocalCheck,-1.0));
+  PetscCall(DMGlobalToLocal(dm,vecGlobal,INSERT_VALUES,vecLocalCheck));
+  PetscCall(DMStagVecGetArrayRead(dm,vecLocalCheck,&arr));
   for (j=starty; j<starty+ny+nExtray; ++j) {
     for (i=startx; i<startx+nx+nExtrax; ++i) {
       for (c=0; c<dof0; ++c) {
         const PetscScalar valRef = TEST_FUNCTION(i,j,0,idxDownLeft,c);
         const PetscScalar val    = arr[j][i][idxDownLeft+c];
-        CHKERRQ(CompareValues(i,j,k,c,val,valRef));
+        PetscCall(CompareValues(i,j,k,c,val,valRef));
       }
       if (j < starty+ny) {
         for (c=0; c<dof1; ++c) {
           const PetscScalar valRef = TEST_FUNCTION(i,j,0,idxLeft,c);
           const PetscScalar val    = arr[j][i][idxLeft+c];
-          CHKERRQ(CompareValues(i,j,k,c,val,valRef));
+          PetscCall(CompareValues(i,j,k,c,val,valRef));
         }
       } else {
         for (c=0; c<dof1; ++c) {
           const PetscScalar valRef = -1.0;
           const PetscScalar val    = arr[j][i][idxLeft+c];
-          CHKERRQ(CompareValues(i,j,k,c,val,valRef));
+          PetscCall(CompareValues(i,j,k,c,val,valRef));
         }
       }
       if (i < startx+nx) {
         for (c=0; c<dof1; ++c) {
           const PetscScalar valRef = TEST_FUNCTION(i,j,0,idxDown,c);
           const PetscScalar val    = arr[j][i][idxDown+c];
-          CHKERRQ(CompareValues(i,j,k,c,val,valRef));
+          PetscCall(CompareValues(i,j,k,c,val,valRef));
         }
       } else {
         for (c=0; c<dof1; ++c) {
           const PetscScalar valRef = -1.0;
           const PetscScalar val    = arr[j][i][idxDown+c];
-          CHKERRQ(CompareValues(i,j,k,c,val,valRef));
+          PetscCall(CompareValues(i,j,k,c,val,valRef));
         }
       }
       if (i < startx+nx && j < starty+ny) {
         for (c=0; c<dof2; ++c) {
           const PetscScalar valRef = TEST_FUNCTION(i,j,0,idxElement,c);
           const PetscScalar val    = arr[j][i][idxElement+c];
-          CHKERRQ(CompareValues(i,j,k,c,val,valRef));
+          PetscCall(CompareValues(i,j,k,c,val,valRef));
         }
       } else {
         for (c=0; c<dof2; ++c) {
           const PetscScalar valRef = -1.0;
           const PetscScalar val    = arr[j][i][idxElement+c];
-          CHKERRQ(CompareValues(i,j,k,c,val,valRef));
+          PetscCall(CompareValues(i,j,k,c,val,valRef));
         }
       }
     }
   }
-  CHKERRQ(DMStagVecRestoreArrayRead(dm,vecLocalCheck,&arr));
-  CHKERRQ(VecDestroy(&vecLocal));
-  CHKERRQ(VecDestroy(&vecLocalCheck));
-  CHKERRQ(VecDestroy(&vecGlobal));
+  PetscCall(DMStagVecRestoreArrayRead(dm,vecLocalCheck,&arr));
+  PetscCall(VecDestroy(&vecLocal));
+  PetscCall(VecDestroy(&vecLocalCheck));
+  PetscCall(VecDestroy(&vecGlobal));
   PetscFunctionReturn(0);
 }
 
@@ -312,26 +312,26 @@ static PetscErrorCode Test2_3d(DM dm)
   PetscScalar    ****arr;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMCreateLocalVector(dm,&vecLocal));
-  CHKERRQ(VecSet(vecLocal,-1.0));
-  CHKERRQ(DMStagGetCorners(dm,&startx,&starty,&startz,&nx,&ny,&nz,&nExtrax,&nExtray,&nExtraz));
-  CHKERRQ(DMStagGetDOF(dm,&dof0,&dof1,&dof2,&dof3));
-  CHKERRQ(DMStagVecGetArray(dm,vecLocal,&arr));
+  PetscCall(DMCreateLocalVector(dm,&vecLocal));
+  PetscCall(VecSet(vecLocal,-1.0));
+  PetscCall(DMStagGetCorners(dm,&startx,&starty,&startz,&nx,&ny,&nz,&nExtrax,&nExtray,&nExtraz));
+  PetscCall(DMStagGetDOF(dm,&dof0,&dof1,&dof2,&dof3));
+  PetscCall(DMStagVecGetArray(dm,vecLocal,&arr));
   if (dof0 > 0) {
-    CHKERRQ(DMStagGetLocationSlot(dm,DMSTAG_BACK_DOWN_LEFT,0,&idxBackDownLeft));
+    PetscCall(DMStagGetLocationSlot(dm,DMSTAG_BACK_DOWN_LEFT,0,&idxBackDownLeft));
   }
   if (dof1 > 0) {
-    CHKERRQ(DMStagGetLocationSlot(dm,DMSTAG_BACK_LEFT,0,&idxBackLeft));
-    CHKERRQ(DMStagGetLocationSlot(dm,DMSTAG_BACK_DOWN,0,&idxBackDown));
-    CHKERRQ(DMStagGetLocationSlot(dm,DMSTAG_DOWN_LEFT,0,&idxDownLeft));
+    PetscCall(DMStagGetLocationSlot(dm,DMSTAG_BACK_LEFT,0,&idxBackLeft));
+    PetscCall(DMStagGetLocationSlot(dm,DMSTAG_BACK_DOWN,0,&idxBackDown));
+    PetscCall(DMStagGetLocationSlot(dm,DMSTAG_DOWN_LEFT,0,&idxDownLeft));
   }
   if (dof2 > 0) {
-    CHKERRQ(DMStagGetLocationSlot(dm,DMSTAG_LEFT,0,&idxLeft));
-    CHKERRQ(DMStagGetLocationSlot(dm,DMSTAG_DOWN,0,&idxDown));
-    CHKERRQ(DMStagGetLocationSlot(dm,DMSTAG_BACK,0,&idxBack));
+    PetscCall(DMStagGetLocationSlot(dm,DMSTAG_LEFT,0,&idxLeft));
+    PetscCall(DMStagGetLocationSlot(dm,DMSTAG_DOWN,0,&idxDown));
+    PetscCall(DMStagGetLocationSlot(dm,DMSTAG_BACK,0,&idxBack));
   }
   if (dof3 > 0) {
-    CHKERRQ(DMStagGetLocationSlot(dm,DMSTAG_ELEMENT,0,&idxElement));
+    PetscCall(DMStagGetLocationSlot(dm,DMSTAG_ELEMENT,0,&idxElement));
   }
   for (k=startz; k<startz+nz+nExtraz; ++k) {
     for (j=starty; j<starty+ny+nExtray; ++j) {
@@ -385,119 +385,119 @@ static PetscErrorCode Test2_3d(DM dm)
       }
     }
   }
-  CHKERRQ(DMStagVecRestoreArray(dm,vecLocal,&arr));
-  CHKERRQ(DMCreateGlobalVector(dm,&vecGlobal));
-  CHKERRQ(DMLocalToGlobal(dm,vecLocal,INSERT_VALUES,vecGlobal));
-  CHKERRQ(VecDuplicate(vecLocal,&vecLocalCheck));
-  CHKERRQ(VecSet(vecLocalCheck,-1.0));
-  CHKERRQ(DMGlobalToLocal(dm,vecGlobal,INSERT_VALUES,vecLocalCheck));
-  CHKERRQ(DMStagVecGetArrayRead(dm,vecLocalCheck,&arr));
+  PetscCall(DMStagVecRestoreArray(dm,vecLocal,&arr));
+  PetscCall(DMCreateGlobalVector(dm,&vecGlobal));
+  PetscCall(DMLocalToGlobal(dm,vecLocal,INSERT_VALUES,vecGlobal));
+  PetscCall(VecDuplicate(vecLocal,&vecLocalCheck));
+  PetscCall(VecSet(vecLocalCheck,-1.0));
+  PetscCall(DMGlobalToLocal(dm,vecGlobal,INSERT_VALUES,vecLocalCheck));
+  PetscCall(DMStagVecGetArrayRead(dm,vecLocalCheck,&arr));
   for (k=startz; k<startz+nz+nExtraz; ++k) {
     for (j=starty; j<starty+ny+nExtray; ++j) {
       for (i=startx; i<startx+nx+nExtrax; ++i) {
         for (c=0; c<dof0; ++c) {
           const PetscScalar valRef = TEST_FUNCTION(i,j,k,idxBackDownLeft,c);
           const PetscScalar val    = arr[k][j][i][idxBackDownLeft+c];
-          CHKERRQ(CompareValues(i,j,k,c,val,valRef));
+          PetscCall(CompareValues(i,j,k,c,val,valRef));
         }
         if (k < startz+nz) {
           for (c=0; c<dof1; ++c) {
             const PetscScalar valRef = TEST_FUNCTION(i,j,k,idxDownLeft,c);
             const PetscScalar val    =  arr[k][j][i][idxDownLeft+c];
-            CHKERRQ(CompareValues(i,j,k,c,val,valRef));
+            PetscCall(CompareValues(i,j,k,c,val,valRef));
           }
         } else {
           for (c=0; c<dof1; ++c) {
             const PetscScalar valRef = -1.0;
             const PetscScalar val    = arr[k][j][i][idxDownLeft+c];
-            CHKERRQ(CompareValues(i,j,k,c,val,valRef));
+            PetscCall(CompareValues(i,j,k,c,val,valRef));
           }
         }
         if (j < starty+ny) {
           for (c=0; c<dof1; ++c) {
             const PetscScalar valRef = TEST_FUNCTION(i,j,k,idxBackLeft,c);
             const PetscScalar val    = arr[k][j][i][idxBackLeft+c];
-            CHKERRQ(CompareValues(i,j,k,c,val,valRef));
+            PetscCall(CompareValues(i,j,k,c,val,valRef));
           }
         } else {
           for (c=0; c<dof1; ++c) {
             const PetscScalar valRef = -1.0;
             const PetscScalar val    = arr[k][j][i][idxBackLeft+c];
-            CHKERRQ(CompareValues(i,j,k,c,val,valRef));
+            PetscCall(CompareValues(i,j,k,c,val,valRef));
           }
         }
         if (i < startx+nx) {
           for (c=0; c<dof1; ++c) {
             const PetscScalar valRef = TEST_FUNCTION(i,j,k,idxBackDown,c);
             const PetscScalar val    = arr[k][j][i][idxBackDown+c];
-            CHKERRQ(CompareValues(i,j,k,c,val,valRef));
+            PetscCall(CompareValues(i,j,k,c,val,valRef));
           }
         } else {
           for (c=0; c<dof1; ++c) {
             const PetscScalar valRef = -1.0;
             const PetscScalar val    = arr[k][j][i][idxBackDown+c];
-            CHKERRQ(CompareValues(i,j,k,c,val,valRef));
+            PetscCall(CompareValues(i,j,k,c,val,valRef));
           }
         }
         if (j < starty+ny && k < startz+nz) {
           for (c=0; c<dof2; ++c) {
             const PetscScalar valRef = TEST_FUNCTION(i,j,k,idxLeft,c);
             const PetscScalar val    = arr[k][j][i][idxLeft+c];
-            CHKERRQ(CompareValues(i,j,k,c,val,valRef));
+            PetscCall(CompareValues(i,j,k,c,val,valRef));
           }
         } else {
           for (c=0; c<dof2; ++c) {
             const PetscScalar valRef = -1.0;
             const PetscScalar val    = arr[k][j][i][idxLeft+c];
-            CHKERRQ(CompareValues(i,j,k,c,val,valRef));
+            PetscCall(CompareValues(i,j,k,c,val,valRef));
           }
         }
         if (i < startx+nx && k < startz+nz) {
           for (c=0; c<dof2; ++c) {
             const PetscScalar valRef = TEST_FUNCTION(i,j,k,idxDown,c);
             const PetscScalar val    = arr[k][j][i][idxDown+c];
-            CHKERRQ(CompareValues(i,j,k,c,val,valRef));
+            PetscCall(CompareValues(i,j,k,c,val,valRef));
           }
         } else {
           for (c=0; c<dof2; ++c) {
             const PetscScalar valRef = -1.0;
             const PetscScalar val    = arr[k][j][i][idxDown+c];
-            CHKERRQ(CompareValues(i,j,k,c,val,valRef));
+            PetscCall(CompareValues(i,j,k,c,val,valRef));
           }
         }
         if (i < startx+nx && j < starty+ny) {
           for (c=0; c<dof2; ++c) {
             const PetscScalar valRef = TEST_FUNCTION(i,j,k,idxBack,c);
             const PetscScalar val    = arr[k][j][i][idxBack+c];
-            CHKERRQ(CompareValues(i,j,k,c,val,valRef));
+            PetscCall(CompareValues(i,j,k,c,val,valRef));
           }
         } else {
           for (c=0; c<dof2; ++c) {
             const PetscScalar valRef = -1.0;
             const PetscScalar val    = arr[k][j][i][idxBack+c];
-            CHKERRQ(CompareValues(i,j,k,c,val,valRef));
+            PetscCall(CompareValues(i,j,k,c,val,valRef));
           }
         }
         if (i < startx+nx && j < starty+ny && k < startz+nz) {
           for (c=0; c<dof3; ++c) {
             const PetscScalar valRef = TEST_FUNCTION(i,j,k,idxElement,c);
             const PetscScalar val    = arr[k][j][i][idxElement+c];
-            CHKERRQ(CompareValues(i,j,k,c,val,valRef));
+            PetscCall(CompareValues(i,j,k,c,val,valRef));
           }
         } else {
           for (c=0; c<dof3; ++c) {
             const PetscScalar valRef = -1.0;
             const PetscScalar val    = arr[k][j][i][idxElement+c];
-            CHKERRQ(CompareValues(i,j,k,c,val,valRef));
+            PetscCall(CompareValues(i,j,k,c,val,valRef));
           }
         }
       }
     }
   }
-  CHKERRQ(DMStagVecRestoreArrayRead(dm,vecLocalCheck,&arr));
-  CHKERRQ(VecDestroy(&vecLocal));
-  CHKERRQ(VecDestroy(&vecLocalCheck));
-  CHKERRQ(VecDestroy(&vecGlobal));
+  PetscCall(DMStagVecRestoreArrayRead(dm,vecLocalCheck,&arr));
+  PetscCall(VecDestroy(&vecLocal));
+  PetscCall(VecDestroy(&vecLocalCheck));
+  PetscCall(VecDestroy(&vecGlobal));
   PetscFunctionReturn(0);
 }
 #undef TEST_FUNCTION

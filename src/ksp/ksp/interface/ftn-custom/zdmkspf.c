@@ -15,9 +15,9 @@ static PetscErrorCode ourkspcomputerhs(KSP ksp,Vec b,void *ctx)
 {
   DM    dm;
   DMKSP kdm;
-  CHKERRQ(KSPGetDM(ksp,&dm));
-  CHKERRQ(DMGetDMKSP(dm,&kdm));
-  CHKERR_FORTRAN_VOID_FUNCTION((*(void (*)(KSP*,Vec*,void*,PetscErrorCode*))(kdm->fortran_func_pointers[0]))(&ksp,&b,ctx,&ierr));
+  PetscCall(KSPGetDM(ksp,&dm));
+  PetscCall(DMGetDMKSP(dm,&kdm));
+  PetscCallFortranVoidFunction((*(void (*)(KSP*,Vec*,void*,PetscErrorCode*))(kdm->fortran_func_pointers[0]))(&ksp,&b,ctx,&ierr));
   return 0;
 }
 
@@ -25,9 +25,9 @@ static PetscErrorCode ourkspcomputeinitialguess(KSP ksp,Vec b,void *ctx)
 {
   DM    dm;
   DMKSP kdm;
-  CHKERRQ(KSPGetDM(ksp,&dm));
-  CHKERRQ(DMGetDMKSP(dm,&kdm));
-  CHKERR_FORTRAN_VOID_FUNCTION((*(void (*)(KSP*,Vec*,void*,PetscErrorCode*))(kdm->fortran_func_pointers[2]))(&ksp,&b,ctx,&ierr));
+  PetscCall(KSPGetDM(ksp,&dm));
+  PetscCall(DMGetDMKSP(dm,&kdm));
+  PetscCallFortranVoidFunction((*(void (*)(KSP*,Vec*,void*,PetscErrorCode*))(kdm->fortran_func_pointers[2]))(&ksp,&b,ctx,&ierr));
   return 0;
 }
 
@@ -35,9 +35,9 @@ static PetscErrorCode ourkspcomputeoperators(KSP ksp,Mat A,Mat B,void *ctx)
 {
   DM    dm;
   DMKSP kdm;
-  CHKERRQ(KSPGetDM(ksp,&dm));
-  CHKERRQ(DMGetDMKSP(dm,&kdm));
-  CHKERR_FORTRAN_VOID_FUNCTION((*(void (*)(KSP*,Mat*,Mat*,void*,PetscErrorCode*))(kdm->fortran_func_pointers[1]))(&ksp,&A,&B,ctx,&ierr));
+  PetscCall(KSPGetDM(ksp,&dm));
+  PetscCall(DMGetDMKSP(dm,&kdm));
+  PetscCallFortranVoidFunction((*(void (*)(KSP*,Mat*,Mat*,void*,PetscErrorCode*))(kdm->fortran_func_pointers[1]))(&ksp,&A,&B,ctx,&ierr));
   return 0;
 }
 

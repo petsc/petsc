@@ -22,7 +22,7 @@ static PetscErrorCode base64_encode(const unsigned char *data,unsigned char *enc
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscStrlen((const char*)data,&input_length));
+  PetscCall(PetscStrlen((const char*)data,&input_length));
   output_length = 4 * ((input_length + 2) / 3);
   PetscCheckFalse(output_length > len,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Output length not large enough");
 
@@ -56,7 +56,7 @@ PETSC_UNUSED static PetscErrorCode base64_decode(const unsigned char *data,unsig
     decode_table_built = 1;
   }
 
-  CHKERRQ(PetscStrlen((const char*)data,&input_length));
+  PetscCall(PetscStrlen((const char*)data,&input_length));
   PetscCheckFalse(input_length % 4 != 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Input length must be divisible by 4");
 
   output_length = input_length / 4 * 3;
@@ -117,36 +117,36 @@ PetscErrorCode PetscGlobusAuthorize(MPI_Comm comm,char access_token[],size_t tok
   PetscBool      found;
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_rank(comm,&rank));
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
   if (rank == 0) {
     PetscCheckFalse(!isatty(fileno(PETSC_STDOUT)),PETSC_COMM_SELF,PETSC_ERR_USER,"Requires users input/output");
-    CHKERRQ(PetscPrintf(comm,"Enter globus username:"));
+    PetscCall(PetscPrintf(comm,"Enter globus username:"));
     ptr  = fgets(buff, 1024, stdin);
     PetscCheck(ptr,PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Error reading from stdin: %d", errno);
-    CHKERRQ(PetscStrlen(buff,&len));
+    PetscCall(PetscStrlen(buff,&len));
     buff[len-1] = ':'; /* remove carriage return at end of line */
 
-    CHKERRQ(PetscPrintf(comm,"Enter globus password:"));
+    PetscCall(PetscPrintf(comm,"Enter globus password:"));
     ptr  = fgets(buff+len, 1024-len, stdin);
     PetscCheck(ptr,PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Error reading from stdin: %d", errno);
-    CHKERRQ(PetscStrlen(buff,&len));
+    PetscCall(PetscStrlen(buff,&len));
     buff[len-1] = '\0'; /* remove carriage return at end of line */
-    CHKERRQ(PetscStrcpy(head,"Authorization: Basic "));
-    CHKERRQ(base64_encode((const unsigned char*)buff,(unsigned char*)(head+21),sizeof(head)-21));
-    CHKERRQ(PetscStrcat(head,"\r\n"));
+    PetscCall(PetscStrcpy(head,"Authorization: Basic "));
+    PetscCall(base64_encode((const unsigned char*)buff,(unsigned char*)(head+21),sizeof(head)-21));
+    PetscCall(PetscStrcat(head,"\r\n"));
 
-    CHKERRQ(PetscSSLInitializeContext(&ctx));
-    CHKERRQ(PetscHTTPSConnect("nexus.api.globusonline.org",443,ctx,&sock,&ssl));
-    CHKERRQ(PetscHTTPSRequest("GET","nexus.api.globusonline.org/goauth/token?grant_type=client_credentials",head,"application/x-www-form-urlencoded",NULL,ssl,buff,sizeof(buff)));
-    CHKERRQ(PetscSSLDestroyContext(ctx));
+    PetscCall(PetscSSLInitializeContext(&ctx));
+    PetscCall(PetscHTTPSConnect("nexus.api.globusonline.org",443,ctx,&sock,&ssl));
+    PetscCall(PetscHTTPSRequest("GET","nexus.api.globusonline.org/goauth/token?grant_type=client_credentials",head,"application/x-www-form-urlencoded",NULL,ssl,buff,sizeof(buff)));
+    PetscCall(PetscSSLDestroyContext(ctx));
     close(sock);
 
-    CHKERRQ(PetscPullJSONValue(buff,"access_token",access_token,tokensize,&found));
+    PetscCall(PetscPullJSONValue(buff,"access_token",access_token,tokensize,&found));
     PetscCheck(found,PETSC_COMM_SELF,PETSC_ERR_LIB,"Globus did not return access token");
 
-    CHKERRQ(PetscPrintf(comm,"Here is your Globus access token, save it in a save place, in the future you can run PETSc\n"));
-    CHKERRQ(PetscPrintf(comm,"programs with the option -globus_access_token %s\n",access_token));
-    CHKERRQ(PetscPrintf(comm,"to access Globus automatically\n"));
+    PetscCall(PetscPrintf(comm,"Here is your Globus access token, save it in a save place, in the future you can run PETSc\n"));
+    PetscCall(PetscPrintf(comm,"programs with the option -globus_access_token %s\n",access_token));
+    PetscCall(PetscPrintf(comm,"to access Globus automatically\n"));
   }
   PetscFunctionReturn(0);
 }
@@ -180,24 +180,24 @@ PetscErrorCode PetscGlobusGetTransfers(MPI_Comm comm,const char access_token[],c
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_rank(comm,&rank));
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
   if (rank == 0) {
-    CHKERRQ(PetscStrcpy(head,"Authorization : Globus-Goauthtoken "));
+    PetscCall(PetscStrcpy(head,"Authorization : Globus-Goauthtoken "));
     if (access_token) {
-      CHKERRQ(PetscStrcat(head,access_token));
+      PetscCall(PetscStrcat(head,access_token));
     } else {
       PetscBool set;
       char      accesstoken[4096];
-      CHKERRQ(PetscOptionsGetString(NULL,NULL,"-globus_access_token",accesstoken,sizeof(accesstoken),&set));
+      PetscCall(PetscOptionsGetString(NULL,NULL,"-globus_access_token",accesstoken,sizeof(accesstoken),&set));
       PetscCheck(set,PETSC_COMM_SELF,PETSC_ERR_USER,"Pass in Globus accesstoken or use -globus_access_token XXX");
-      CHKERRQ(PetscStrcat(head,accesstoken));
+      PetscCall(PetscStrcat(head,accesstoken));
     }
-    CHKERRQ(PetscStrcat(head,"\r\n"));
+    PetscCall(PetscStrcat(head,"\r\n"));
 
-    CHKERRQ(PetscSSLInitializeContext(&ctx));
-    CHKERRQ(PetscHTTPSConnect("transfer.api.globusonline.org",443,ctx,&sock,&ssl));
-    CHKERRQ(PetscHTTPSRequest("GET","transfer.api.globusonline.org/v0.10/tasksummary",head,"application/json",NULL,ssl,buff,buffsize));
-    CHKERRQ(PetscSSLDestroyContext(ctx));
+    PetscCall(PetscSSLInitializeContext(&ctx));
+    PetscCall(PetscHTTPSConnect("transfer.api.globusonline.org",443,ctx,&sock,&ssl));
+    PetscCall(PetscHTTPSRequest("GET","transfer.api.globusonline.org/v0.10/tasksummary",head,"application/json",NULL,ssl,buff,buffsize));
+    PetscCall(PetscSSLDestroyContext(ctx));
     close(sock);
   }
   PetscFunctionReturn(0);
@@ -232,58 +232,58 @@ PetscErrorCode PetscGlobusUpload(MPI_Comm comm,const char access_token[],const c
   PetscBool      flg,found;
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_rank(comm,&rank));
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
   if (rank == 0) {
-    CHKERRQ(PetscTestFile(filename,'r',&flg));
+    PetscCall(PetscTestFile(filename,'r',&flg));
     PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to find file: %s",filename);
 
-    CHKERRQ(PetscStrcpy(head,"Authorization : Globus-Goauthtoken "));
+    PetscCall(PetscStrcpy(head,"Authorization : Globus-Goauthtoken "));
     if (access_token) {
-      CHKERRQ(PetscStrcat(head,access_token));
+      PetscCall(PetscStrcat(head,access_token));
     } else {
       PetscBool set;
       char      accesstoken[4096];
-      CHKERRQ(PetscOptionsGetString(NULL,NULL,"-globus_access_token",accesstoken,sizeof(accesstoken),&set));
+      PetscCall(PetscOptionsGetString(NULL,NULL,"-globus_access_token",accesstoken,sizeof(accesstoken),&set));
       PetscCheck(set,PETSC_COMM_SELF,PETSC_ERR_USER,"Pass in Globus accesstoken or use -globus_access_token XXX");
-      CHKERRQ(PetscStrcat(head,accesstoken));
+      PetscCall(PetscStrcat(head,accesstoken));
     }
-    CHKERRQ(PetscStrcat(head,"\r\n"));
+    PetscCall(PetscStrcat(head,"\r\n"));
 
     /* Get Globus submission id */
-    CHKERRQ(PetscSSLInitializeContext(&ctx));
-    CHKERRQ(PetscHTTPSConnect("transfer.api.globusonline.org",443,ctx,&sock,&ssl));
-    CHKERRQ(PetscHTTPSRequest("GET","transfer.api.globusonline.org/v0.10/submission_id",head,"application/json",NULL,ssl,buff,sizeof(buff)));
-    CHKERRQ(PetscSSLDestroyContext(ctx));
+    PetscCall(PetscSSLInitializeContext(&ctx));
+    PetscCall(PetscHTTPSConnect("transfer.api.globusonline.org",443,ctx,&sock,&ssl));
+    PetscCall(PetscHTTPSRequest("GET","transfer.api.globusonline.org/v0.10/submission_id",head,"application/json",NULL,ssl,buff,sizeof(buff)));
+    PetscCall(PetscSSLDestroyContext(ctx));
     close(sock);
-    CHKERRQ(PetscPullJSONValue(buff,"value",submission_id,sizeof(submission_id),&found));
+    PetscCall(PetscPullJSONValue(buff,"value",submission_id,sizeof(submission_id),&found));
     PetscCheck(found,PETSC_COMM_SELF,PETSC_ERR_LIB,"Globus did not return submission id");
 
     /* build JSON body of transfer request */
-    CHKERRQ(PetscStrcpy(body,"{"));
-    CHKERRQ(PetscPushJSONValue(body,"submission_id",submission_id,sizeof(body)));                 CHKERRQ(PetscStrcat(body,","));
-    CHKERRQ(PetscPushJSONValue(body,"DATA_TYPE","transfer",sizeof(body)));                        CHKERRQ(PetscStrcat(body,","));
-    CHKERRQ(PetscPushJSONValue(body,"sync_level","null",sizeof(body)));                           CHKERRQ(PetscStrcat(body,","));
-    CHKERRQ(PetscPushJSONValue(body,"source_endpoint","barryfsmith#MacBookPro",sizeof(body)));    CHKERRQ(PetscStrcat(body,","));
-    CHKERRQ(PetscPushJSONValue(body,"label","PETSc transfer label",sizeof(body)));                CHKERRQ(PetscStrcat(body,","));
-    CHKERRQ(PetscPushJSONValue(body,"length","1",sizeof(body)));                                  CHKERRQ(PetscStrcat(body,","));
-    CHKERRQ(PetscPushJSONValue(body,"destination_endpoint","mcs#home",sizeof(body)));             CHKERRQ(PetscStrcat(body,","));
+    PetscCall(PetscStrcpy(body,"{"));
+    PetscCall(PetscPushJSONValue(body,"submission_id",submission_id,sizeof(body)));                 PetscCall(PetscStrcat(body,","));
+    PetscCall(PetscPushJSONValue(body,"DATA_TYPE","transfer",sizeof(body)));                        PetscCall(PetscStrcat(body,","));
+    PetscCall(PetscPushJSONValue(body,"sync_level","null",sizeof(body)));                           PetscCall(PetscStrcat(body,","));
+    PetscCall(PetscPushJSONValue(body,"source_endpoint","barryfsmith#MacBookPro",sizeof(body)));    PetscCall(PetscStrcat(body,","));
+    PetscCall(PetscPushJSONValue(body,"label","PETSc transfer label",sizeof(body)));                PetscCall(PetscStrcat(body,","));
+    PetscCall(PetscPushJSONValue(body,"length","1",sizeof(body)));                                  PetscCall(PetscStrcat(body,","));
+    PetscCall(PetscPushJSONValue(body,"destination_endpoint","mcs#home",sizeof(body)));             PetscCall(PetscStrcat(body,","));
 
-    CHKERRQ(PetscStrcat(body,"\"DATA\": [ {"));
-    CHKERRQ(PetscPushJSONValue(body,"source_path","/~/FEM_GPU.pdf",sizeof(body)));                CHKERRQ(PetscStrcat(body,","));
-    CHKERRQ(PetscPushJSONValue(body,"destination_path","/~/FEM_GPU.pdf",sizeof(body)));           CHKERRQ(PetscStrcat(body,","));
-    CHKERRQ(PetscPushJSONValue(body,"verify_size","null",sizeof(body)));                          CHKERRQ(PetscStrcat(body,","));
-    CHKERRQ(PetscPushJSONValue(body,"recursive","false",sizeof(body)));                           CHKERRQ(PetscStrcat(body,","));
-    CHKERRQ(PetscPushJSONValue(body,"DATA_TYPE","transfer_item",sizeof(body)));
-    CHKERRQ(PetscStrcat(body,"} ] }"));
+    PetscCall(PetscStrcat(body,"\"DATA\": [ {"));
+    PetscCall(PetscPushJSONValue(body,"source_path","/~/FEM_GPU.pdf",sizeof(body)));                PetscCall(PetscStrcat(body,","));
+    PetscCall(PetscPushJSONValue(body,"destination_path","/~/FEM_GPU.pdf",sizeof(body)));           PetscCall(PetscStrcat(body,","));
+    PetscCall(PetscPushJSONValue(body,"verify_size","null",sizeof(body)));                          PetscCall(PetscStrcat(body,","));
+    PetscCall(PetscPushJSONValue(body,"recursive","false",sizeof(body)));                           PetscCall(PetscStrcat(body,","));
+    PetscCall(PetscPushJSONValue(body,"DATA_TYPE","transfer_item",sizeof(body)));
+    PetscCall(PetscStrcat(body,"} ] }"));
 
-    CHKERRQ(PetscSSLInitializeContext(&ctx));
-    CHKERRQ(PetscHTTPSConnect("transfer.api.globusonline.org",443,ctx,&sock,&ssl));
-    CHKERRQ(PetscHTTPSRequest("POST","transfer.api.globusonline.org/v0.10/transfer",head,"application/json",body,ssl,buff,sizeof(buff)));
-    CHKERRQ(PetscSSLDestroyContext(ctx));
+    PetscCall(PetscSSLInitializeContext(&ctx));
+    PetscCall(PetscHTTPSConnect("transfer.api.globusonline.org",443,ctx,&sock,&ssl));
+    PetscCall(PetscHTTPSRequest("POST","transfer.api.globusonline.org/v0.10/transfer",head,"application/json",body,ssl,buff,sizeof(buff)));
+    PetscCall(PetscSSLDestroyContext(ctx));
     close(sock);
-    CHKERRQ(PetscPullJSONValue(buff,"code",submission_id,sizeof(submission_id),&found));
+    PetscCall(PetscPullJSONValue(buff,"code",submission_id,sizeof(submission_id),&found));
     PetscCheck(found,PETSC_COMM_SELF,PETSC_ERR_LIB,"Globus did not return code on transfer");
-    CHKERRQ(PetscStrcmp(submission_id,"Accepted",&found));
+    PetscCall(PetscStrcmp(submission_id,"Accepted",&found));
     PetscCheck(found,PETSC_COMM_SELF,PETSC_ERR_LIB,"Globus did not accept transfer");
   }
   PetscFunctionReturn(0);

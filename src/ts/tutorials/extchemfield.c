@@ -80,7 +80,7 @@ static PetscErrorCode FormRHSFunction(TS,PetscReal,Vec,Vec,void*);
 static PetscErrorCode FormRHSJacobian(TS,PetscReal,Vec,Mat,Mat,void*);
 static PetscErrorCode FormInitialSolution(TS,Vec,void*);
 
-#define CHKERRTC(ierr) do {PetscCheck(!ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in TChem library, return code %d",ierr);} while (0)
+#define PetscCallTC(ierr) do {PetscCheck(!ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in TChem library, return code %d",ierr);} while (0)
 
 int main(int argc,char **argv)
 {
@@ -98,108 +98,108 @@ int main(int argc,char **argv)
   char              **snames,*names;
   Vec               lambda;     /* used with TSAdjoint for sensitivities */
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Chemistry solver options","");CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsString("-chem","CHEMKIN input file","",chemfile,chemfile,sizeof(chemfile),NULL));
-  CHKERRQ(PetscOptionsString("-thermo","NASA thermo input file","",thermofile,thermofile,sizeof(thermofile),NULL));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Chemistry solver options","");PetscCall(ierr);
+  PetscCall(PetscOptionsString("-chem","CHEMKIN input file","",chemfile,chemfile,sizeof(chemfile),NULL));
+  PetscCall(PetscOptionsString("-thermo","NASA thermo input file","",thermofile,thermofile,sizeof(thermofile),NULL));
   user.pressure = 1.01325e5;    /* Pascal */
-  CHKERRQ(PetscOptionsReal("-pressure","Pressure of reaction [Pa]","",user.pressure,&user.pressure,NULL));
+  PetscCall(PetscOptionsReal("-pressure","Pressure of reaction [Pa]","",user.pressure,&user.pressure,NULL));
   user.Tini   = 1550;
-  CHKERRQ(PetscOptionsReal("-Tini","Initial temperature [K]","",user.Tini,&user.Tini,NULL));
+  PetscCall(PetscOptionsReal("-Tini","Initial temperature [K]","",user.Tini,&user.Tini,NULL));
   user.diffus = 100;
-  CHKERRQ(PetscOptionsReal("-diffus","Diffusion constant","",user.diffus,&user.diffus,NULL));
-  CHKERRQ(PetscOptionsBool("-draw_solution","Plot the solution for each cell","",showsolutions,&showsolutions,NULL));
+  PetscCall(PetscOptionsReal("-diffus","Diffusion constant","",user.diffus,&user.diffus,NULL));
+  PetscCall(PetscOptionsBool("-draw_solution","Plot the solution for each cell","",showsolutions,&showsolutions,NULL));
   user.diffusion = PETSC_TRUE;
-  CHKERRQ(PetscOptionsBool("-diffusion","Have diffusion","",user.diffusion,&user.diffusion,NULL));
+  PetscCall(PetscOptionsBool("-diffusion","Have diffusion","",user.diffusion,&user.diffusion,NULL));
   user.reactions = PETSC_TRUE;
-  CHKERRQ(PetscOptionsBool("-reactions","Have reactions","",user.reactions,&user.reactions,NULL));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(PetscOptionsBool("-reactions","Have reactions","",user.reactions,&user.reactions,NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
-  CHKERRTC(TC_initChem(chemfile, thermofile, 0, 1.0));
+  PetscCallTC(TC_initChem(chemfile, thermofile, 0, 1.0));
   user.Nspec = TC_getNspec();
   user.Nreac = TC_getNreac();
 
-  CHKERRQ(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,10,user.Nspec+1,1,NULL,&user.dm));
-  CHKERRQ(DMSetFromOptions(user.dm));
-  CHKERRQ(DMSetUp(user.dm));
-  CHKERRQ(DMDAGetInfo(user.dm,NULL,&ncells,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,10,user.Nspec+1,1,NULL,&user.dm));
+  PetscCall(DMSetFromOptions(user.dm));
+  PetscCall(DMSetUp(user.dm));
+  PetscCall(DMDAGetInfo(user.dm,NULL,&ncells,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL));
   user.dx = 1.0/ncells;  /* Set the coordinates of the cell centers; note final ghost cell is at x coordinate 1.0 */
-  CHKERRQ(DMDASetUniformCoordinates(user.dm,0.0,1.0,0.0,1.0,0.0,1.0));
+  PetscCall(DMDASetUniformCoordinates(user.dm,0.0,1.0,0.0,1.0,0.0,1.0));
 
   /* set the names of each field in the DMDA based on the species name */
-  CHKERRQ(PetscMalloc1((user.Nspec+1)*LENGTHOFSPECNAME,&names));
-  CHKERRQ(PetscStrcpy(names,"Temp"));
+  PetscCall(PetscMalloc1((user.Nspec+1)*LENGTHOFSPECNAME,&names));
+  PetscCall(PetscStrcpy(names,"Temp"));
   TC_getSnames(user.Nspec,names+LENGTHOFSPECNAME);
-  CHKERRQ(PetscMalloc1((user.Nspec+2),&snames));
+  PetscCall(PetscMalloc1((user.Nspec+2),&snames));
   for (i=0; i<user.Nspec+1; i++) snames[i] = names+i*LENGTHOFSPECNAME;
   snames[user.Nspec+1] = NULL;
-  CHKERRQ(DMDASetFieldNames(user.dm,(const char * const *)snames));
-  CHKERRQ(PetscFree(snames));
-  CHKERRQ(PetscFree(names));
+  PetscCall(DMDASetFieldNames(user.dm,(const char * const *)snames));
+  PetscCall(PetscFree(snames));
+  PetscCall(PetscFree(names));
 
-  CHKERRQ(DMCreateMatrix(user.dm,&J));
-  CHKERRQ(DMCreateGlobalVector(user.dm,&X));
+  PetscCall(DMCreateMatrix(user.dm,&J));
+  PetscCall(DMCreateGlobalVector(user.dm,&X));
 
-  CHKERRQ(PetscMalloc3(user.Nspec+1,&user.tchemwork,PetscSqr(user.Nspec+1),&user.Jdense,user.Nspec+1,&user.rows));
+  PetscCall(PetscMalloc3(user.Nspec+1,&user.tchemwork,PetscSqr(user.Nspec+1),&user.Jdense,user.Nspec+1,&user.rows));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
-  CHKERRQ(TSSetDM(ts,user.dm));
-  CHKERRQ(TSSetType(ts,TSARKIMEX));
-  CHKERRQ(TSARKIMEXSetFullyImplicit(ts,PETSC_TRUE));
-  CHKERRQ(TSARKIMEXSetType(ts,TSARKIMEX4));
-  CHKERRQ(TSSetRHSFunction(ts,NULL,FormRHSFunction,&user));
-  CHKERRQ(TSSetRHSJacobian(ts,J,J,FormRHSJacobian,&user));
+  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
+  PetscCall(TSSetDM(ts,user.dm));
+  PetscCall(TSSetType(ts,TSARKIMEX));
+  PetscCall(TSARKIMEXSetFullyImplicit(ts,PETSC_TRUE));
+  PetscCall(TSARKIMEXSetType(ts,TSARKIMEX4));
+  PetscCall(TSSetRHSFunction(ts,NULL,FormRHSFunction,&user));
+  PetscCall(TSSetRHSJacobian(ts,J,J,FormRHSJacobian,&user));
 
   ftime = 1.0;
-  CHKERRQ(TSSetMaxTime(ts,ftime));
-  CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
+  PetscCall(TSSetMaxTime(ts,ftime));
+  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(FormInitialSolution(ts,X,&user));
-  CHKERRQ(TSSetSolution(ts,X));
+  PetscCall(FormInitialSolution(ts,X,&user));
+  PetscCall(TSSetSolution(ts,X));
   dt   = 1e-10;                 /* Initial time step */
-  CHKERRQ(TSSetTimeStep(ts,dt));
-  CHKERRQ(TSGetAdapt(ts,&adapt));
-  CHKERRQ(TSAdaptSetStepLimits(adapt,1e-12,1e-4)); /* Also available with -ts_adapt_dt_min/-ts_adapt_dt_max */
-  CHKERRQ(TSSetMaxSNESFailures(ts,-1));            /* Retry step an unlimited number of times */
+  PetscCall(TSSetTimeStep(ts,dt));
+  PetscCall(TSGetAdapt(ts,&adapt));
+  PetscCall(TSAdaptSetStepLimits(adapt,1e-12,1e-4)); /* Also available with -ts_adapt_dt_min/-ts_adapt_dt_max */
+  PetscCall(TSSetMaxSNESFailures(ts,-1));            /* Retry step an unlimited number of times */
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Pass information to graphical monitoring routine
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   if (showsolutions) {
-    CHKERRQ(DMDAGetCorners(user.dm,&xs,NULL,NULL,&xm,NULL,NULL));
+    PetscCall(DMDAGetCorners(user.dm,&xs,NULL,NULL,&xm,NULL,NULL));
     for (i=xs;i<xs+xm;i++) {
-      CHKERRQ(MonitorCell(ts,&user,i));
+      PetscCall(MonitorCell(ts,&user,i));
     }
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSSetFromOptions(ts));
+  PetscCall(TSSetFromOptions(ts));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set final conditions for sensitivities
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(DMCreateGlobalVector(user.dm,&lambda));
-  CHKERRQ(TSSetCostGradients(ts,1,&lambda,NULL));
-  CHKERRQ(VecSetValue(lambda,0,1.0,INSERT_VALUES));
-  CHKERRQ(VecAssemblyBegin(lambda));
-  CHKERRQ(VecAssemblyEnd(lambda));
+  PetscCall(DMCreateGlobalVector(user.dm,&lambda));
+  PetscCall(TSSetCostGradients(ts,1,&lambda,NULL));
+  PetscCall(VecSetValue(lambda,0,1.0,INSERT_VALUES));
+  PetscCall(VecAssemblyBegin(lambda));
+  PetscCall(VecAssemblyEnd(lambda));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve ODE
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSSolve(ts,X));
-  CHKERRQ(TSGetSolveTime(ts,&ftime));
-  CHKERRQ(TSGetStepNumber(ts,&steps));
-  CHKERRQ(TSGetConvergedReason(ts,&reason));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after %D steps\n",TSConvergedReasons[reason],(double)ftime,steps));
+  PetscCall(TSSolve(ts,X));
+  PetscCall(TSGetSolveTime(ts,&ftime));
+  PetscCall(TSGetStepNumber(ts,&steps));
+  PetscCall(TSGetConvergedReason(ts,&reason));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after %D steps\n",TSConvergedReasons[reason],(double)ftime,steps));
 
   {
     Vec                max;
@@ -207,16 +207,16 @@ int main(int argc,char **argv)
     PetscInt           i;
     const PetscReal    *bmax;
 
-    CHKERRQ(TSMonitorEnvelopeGetBounds(ts,&max,NULL));
+    PetscCall(TSMonitorEnvelopeGetBounds(ts,&max,NULL));
     if (max) {
-      CHKERRQ(TSMonitorLGGetVariableNames(ts,&names));
+      PetscCall(TSMonitorLGGetVariableNames(ts,&names));
       if (names) {
-        CHKERRQ(VecGetArrayRead(max,&bmax));
-        CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Species - maximum mass fraction\n"));
+        PetscCall(VecGetArrayRead(max,&bmax));
+        PetscCall(PetscPrintf(PETSC_COMM_SELF,"Species - maximum mass fraction\n"));
         for (i=1; i<user.Nspec; i++) {
-          if (bmax[i] > .01) CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"%s %g\n",names[i],bmax[i]));
+          if (bmax[i] > .01) PetscCall(PetscPrintf(PETSC_COMM_SELF,"%s %g\n",names[i],bmax[i]));
         }
-        CHKERRQ(VecRestoreArrayRead(max,&bmax));
+        PetscCall(VecRestoreArrayRead(max,&bmax));
       }
     }
   }
@@ -225,13 +225,13 @@ int main(int argc,char **argv)
      Free work space.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   TC_reset();
-  CHKERRQ(DMDestroy(&user.dm));
-  CHKERRQ(MatDestroy(&J));
-  CHKERRQ(VecDestroy(&X));
-  CHKERRQ(VecDestroy(&lambda));
-  CHKERRQ(TSDestroy(&ts));
-  CHKERRQ(PetscFree3(user.tchemwork,user.Jdense,user.rows));
-  CHKERRQ(PetscFinalize());
+  PetscCall(DMDestroy(&user.dm));
+  PetscCall(MatDestroy(&J));
+  PetscCall(VecDestroy(&X));
+  PetscCall(VecDestroy(&lambda));
+  PetscCall(TSDestroy(&ts));
+  PetscCall(PetscFree3(user.tchemwork,user.Jdense,user.rows));
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -250,14 +250,14 @@ static PetscErrorCode FormDiffusionFunction(TS ts,PetscReal t,Vec X,Vec F,void *
   PetscReal         idx;
 
   PetscFunctionBeginUser;
-  CHKERRQ(TSGetDM(ts,&dm));
-  CHKERRQ(DMDAGetInfo(dm,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
-  CHKERRQ(DMGetLocalVector(dm,&Xlocal));
-  CHKERRQ(DMGlobalToLocalBegin(dm,X,INSERT_VALUES,Xlocal));
-  CHKERRQ(DMGlobalToLocalEnd(dm,X,INSERT_VALUES,Xlocal));
-  CHKERRQ(DMDAVecGetArrayDOFRead(dm,Xlocal,&x));
-  CHKERRQ(DMDAVecGetArrayDOF(dm,F,&f));
-  CHKERRQ(DMDAGetCorners(dm,&xs,NULL,NULL,&xm,NULL,NULL));
+  PetscCall(TSGetDM(ts,&dm));
+  PetscCall(DMDAGetInfo(dm,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(DMGetLocalVector(dm,&Xlocal));
+  PetscCall(DMGlobalToLocalBegin(dm,X,INSERT_VALUES,Xlocal));
+  PetscCall(DMGlobalToLocalEnd(dm,X,INSERT_VALUES,Xlocal));
+  PetscCall(DMDAVecGetArrayDOFRead(dm,Xlocal,&x));
+  PetscCall(DMDAVecGetArrayDOF(dm,F,&f));
+  PetscCall(DMDAGetCorners(dm,&xs,NULL,NULL,&xm,NULL,NULL));
 
   idx = 1.0*user->diffus/user->dx;
   for (i=xs; i<xs+xm; i++) {
@@ -265,9 +265,9 @@ static PetscErrorCode FormDiffusionFunction(TS ts,PetscReal t,Vec X,Vec F,void *
       f[i][j] += idx*(x[i+1][j] - 2.0*x[i][j] + x[i-1][j]);
     }
   }
-  CHKERRQ(DMDAVecRestoreArrayDOFRead(dm,Xlocal,&x));
-  CHKERRQ(DMDAVecRestoreArrayDOF(dm,F,&f));
-  CHKERRQ(DMRestoreLocalVector(dm,&Xlocal));
+  PetscCall(DMDAVecRestoreArrayDOFRead(dm,Xlocal,&x));
+  PetscCall(DMDAVecRestoreArrayDOF(dm,F,&f));
+  PetscCall(DMRestoreLocalVector(dm,&Xlocal));
   PetscFunctionReturn(0);
 }
 
@@ -284,9 +284,9 @@ static PetscErrorCode FormDiffusionJacobian(TS ts,PetscReal t,Vec X,Mat Amat,Mat
   MatStencil        row,col[3];
 
   PetscFunctionBeginUser;
-  CHKERRQ(TSGetDM(ts,&dm));
-  CHKERRQ(DMDAGetInfo(dm,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
-  CHKERRQ(DMDAGetCorners(dm,&xs,NULL,NULL,&xm,NULL,NULL));
+  PetscCall(TSGetDM(ts,&dm));
+  PetscCall(DMDAGetInfo(dm,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(DMDAGetCorners(dm,&xs,NULL,NULL,&xm,NULL,NULL));
 
   idx = 1.0*user->diffus/user->dx;
   values[0] = idx;
@@ -298,11 +298,11 @@ static PetscErrorCode FormDiffusionJacobian(TS ts,PetscReal t,Vec X,Mat Amat,Mat
       col[0].i = i-1; col[0].c = j;
       col[1].i = i;   col[1].c = j;
       col[2].i = i+1; col[2].c = j;
-      CHKERRQ(MatSetValuesStencil(Pmat,1,&row,3,col,values,ADD_VALUES));
+      PetscCall(MatSetValuesStencil(Pmat,1,&row,3,col,values,ADD_VALUES));
     }
   }
-  CHKERRQ(MatAssemblyBegin(Pmat,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(Pmat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(Pmat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(Pmat,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
@@ -317,25 +317,25 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 
   PetscFunctionBeginUser;
   if (user->reactions) {
-    CHKERRQ(TSGetDM(ts,&dm));
-    CHKERRQ(DMDAVecGetArrayDOFRead(dm,X,&x));
-    CHKERRQ(DMDAVecGetArrayDOF(dm,F,&f));
-    CHKERRQ(DMDAGetCorners(dm,&xs,NULL,NULL,&xm,NULL,NULL));
+    PetscCall(TSGetDM(ts,&dm));
+    PetscCall(DMDAVecGetArrayDOFRead(dm,X,&x));
+    PetscCall(DMDAVecGetArrayDOF(dm,F,&f));
+    PetscCall(DMDAGetCorners(dm,&xs,NULL,NULL,&xm,NULL,NULL));
 
     for (i=xs; i<xs+xm; i++) {
-      CHKERRQ(PetscArraycpy(user->tchemwork,x[i],user->Nspec+1));
+      PetscCall(PetscArraycpy(user->tchemwork,x[i],user->Nspec+1));
       user->tchemwork[0] *= user->Tini; /* Dimensionalize */
-      CHKERRTC(TC_getSrc(user->tchemwork,user->Nspec+1,f[i]));
+      PetscCallTC(TC_getSrc(user->tchemwork,user->Nspec+1,f[i]));
       f[i][0] /= user->Tini;           /* Non-dimensionalize */
     }
 
-    CHKERRQ(DMDAVecRestoreArrayDOFRead(dm,X,&x));
-    CHKERRQ(DMDAVecRestoreArrayDOF(dm,F,&f));
+    PetscCall(DMDAVecRestoreArrayDOFRead(dm,X,&x));
+    PetscCall(DMDAVecRestoreArrayDOF(dm,F,&f));
   } else {
-    CHKERRQ(VecZeroEntries(F));
+    PetscCall(VecZeroEntries(F));
   }
   if (user->diffusion) {
-    CHKERRQ(FormDiffusionFunction(ts,t,X,F,ptr));
+    PetscCall(FormDiffusionFunction(ts,t,X,F,ptr));
   }
   PetscFunctionReturn(0);
 }
@@ -350,35 +350,35 @@ static PetscErrorCode FormRHSJacobian(TS ts,PetscReal t,Vec X,Mat Amat,Mat Pmat,
 
   PetscFunctionBeginUser;
   if (user->reactions) {
-    CHKERRQ(TSGetDM(ts,&dm));
-    CHKERRQ(MatZeroEntries(Pmat));
-    CHKERRQ(MatSetOption(Pmat,MAT_ROW_ORIENTED,PETSC_FALSE));
-    CHKERRQ(MatSetOption(Pmat,MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE));
-    CHKERRQ(DMDAVecGetArrayDOFRead(dm,X,&x));
-    CHKERRQ(DMDAGetCorners(dm,&xs,NULL,NULL,&xm,NULL,NULL));
+    PetscCall(TSGetDM(ts,&dm));
+    PetscCall(MatZeroEntries(Pmat));
+    PetscCall(MatSetOption(Pmat,MAT_ROW_ORIENTED,PETSC_FALSE));
+    PetscCall(MatSetOption(Pmat,MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE));
+    PetscCall(DMDAVecGetArrayDOFRead(dm,X,&x));
+    PetscCall(DMDAGetCorners(dm,&xs,NULL,NULL,&xm,NULL,NULL));
 
     for (i=xs; i<xs+xm; i++) {
-      CHKERRQ(PetscArraycpy(user->tchemwork,x[i],user->Nspec+1));
+      PetscCall(PetscArraycpy(user->tchemwork,x[i],user->Nspec+1));
       user->tchemwork[0] *= user->Tini;  /* Dimensionalize temperature (first row) because that is what Tchem wants */
-      CHKERRQ(TC_getJacTYN(user->tchemwork,user->Nspec,user->Jdense,1));
+      PetscCall(TC_getJacTYN(user->tchemwork,user->Nspec,user->Jdense,1));
 
       for (j=0; j<M; j++) user->Jdense[j + 0*M] /= user->Tini; /* Non-dimensionalize first column */
       for (j=0; j<M; j++) user->Jdense[0 + j*M] /= user->Tini; /* Non-dimensionalize first row */
       for (j=0; j<M; j++) user->rows[j] = i*M+j;
-      CHKERRQ(MatSetValues(Pmat,M,user->rows,M,user->rows,user->Jdense,INSERT_VALUES));
+      PetscCall(MatSetValues(Pmat,M,user->rows,M,user->rows,user->Jdense,INSERT_VALUES));
     }
-    CHKERRQ(DMDAVecRestoreArrayDOFRead(dm,X,&x));
-    CHKERRQ(MatAssemblyBegin(Pmat,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(Pmat,MAT_FINAL_ASSEMBLY));
+    PetscCall(DMDAVecRestoreArrayDOFRead(dm,X,&x));
+    PetscCall(MatAssemblyBegin(Pmat,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(Pmat,MAT_FINAL_ASSEMBLY));
   } else {
-    CHKERRQ(MatZeroEntries(Pmat));
+    PetscCall(MatZeroEntries(Pmat));
   }
   if (user->diffusion) {
-    CHKERRQ(FormDiffusionJacobian(ts,t,X,Amat,Pmat,ptr));
+    PetscCall(FormDiffusionJacobian(ts,t,X,Amat,Pmat,ptr));
   }
   if (Amat != Pmat) {
-    CHKERRQ(MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY));
   }
   PetscFunctionReturn(0);
 }
@@ -397,23 +397,23 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
   DM             dm;
 
   PetscFunctionBeginUser;
-  CHKERRQ(VecZeroEntries(X));
-  CHKERRQ(TSGetDM(ts,&dm));
-  CHKERRQ(DMDAGetCorners(dm,&xs,NULL,NULL,&xm,NULL,NULL));
+  PetscCall(VecZeroEntries(X));
+  PetscCall(TSGetDM(ts,&dm));
+  PetscCall(DMDAGetCorners(dm,&xs,NULL,NULL,&xm,NULL,NULL));
 
-  CHKERRQ(DMDAGetCoordinateArray(dm,&xc));
-  CHKERRQ(DMDAVecGetArrayDOF(dm,X,&x));
+  PetscCall(DMDAGetCoordinateArray(dm,&xc));
+  PetscCall(DMDAVecGetArrayDOF(dm,X,&x));
   for (i=xs; i<xs+xm; i++) {
     x[i][0] = 1.0 + .05*PetscSinScalar(2.*PETSC_PI*xc[i]);  /* Non-dimensionalized by user->Tini */
     for (j=0; j<sizeof(initial)/sizeof(initial[0]); j++) {
       int ispec = TC_getSpos(initial[j].name, strlen(initial[j].name));
       PetscCheck(ispec >= 0,PETSC_COMM_SELF,PETSC_ERR_USER,"Could not find species %s",initial[j].name);
-      CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Species %d: %s %g\n",j,initial[j].name,initial[j].massfrac));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,"Species %d: %s %g\n",j,initial[j].name,initial[j].massfrac));
       x[i][1+ispec] = initial[j].massfrac;
     }
   }
-  CHKERRQ(DMDAVecRestoreArrayDOF(dm,X,&x));
-  CHKERRQ(DMDARestoreCoordinateArray(dm,&xc));
+  PetscCall(DMDAVecRestoreArrayDOF(dm,X,&x));
+  PetscCall(DMDARestoreCoordinateArray(dm,&xc));
   PetscFunctionReturn(0);
 }
 
@@ -435,19 +435,19 @@ static PetscErrorCode FormMoleFraction(UserLGCtx *ctx,Vec massf,Vec *molef)
   const PetscScalar **maf;
 
   PetscFunctionBegin;
-  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,n,molef));
-  CHKERRQ(PetscMalloc1(user->Nspec,&M));
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,n,molef));
+  PetscCall(PetscMalloc1(user->Nspec,&M));
   TC_getSmass(user->Nspec, M);
-  CHKERRQ(DMDAVecGetArrayDOFRead(user->dm,massf,&maf));
-  CHKERRQ(VecGetArray(*molef,&mof));
+  PetscCall(DMDAVecGetArrayDOFRead(user->dm,massf,&maf));
+  PetscCall(VecGetArray(*molef,&mof));
   mof[0] = maf[ctx->cell][0]; /* copy over temperature */
   for (i=1; i<n; i++) tM += maf[ctx->cell][i]/M[i-1];
   for (i=1; i<n; i++) {
     mof[i] = maf[ctx->cell][i]/(M[i-1]*tM);
   }
-  CHKERRQ(DMDAVecRestoreArrayDOFRead(user->dm,massf,&maf));
-  CHKERRQ(VecRestoreArray(*molef,&mof));
-  CHKERRQ(PetscFree(M));
+  PetscCall(DMDAVecRestoreArrayDOFRead(user->dm,massf,&maf));
+  PetscCall(VecRestoreArray(*molef,&mof));
+  PetscCall(PetscFree(M));
   PetscFunctionReturn(0);
 }
 
@@ -456,7 +456,7 @@ static PetscErrorCode MonitorCellDestroy(UserLGCtx *uctx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscFree(uctx));
+  PetscCall(PetscFree(uctx));
   PetscFunctionReturn(0);
 }
 
@@ -474,18 +474,18 @@ static PetscErrorCode MonitorCell(TS ts,User user,PetscInt cell)
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
-  CHKERRQ(DMDAGetCoordinateArray(user->dm,&xc));
+  PetscCall(DMDAGetCoordinateArray(user->dm,&xc));
   temp = 1.0 + .05*PetscSinScalar(2.*PETSC_PI*xc[cell]);  /* Non-dimensionalized by user->Tini */
-  CHKERRQ(DMDARestoreCoordinateArray(user->dm,&xc));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  CHKERRQ(PetscSNPrintf(label,sizeof(label),"Initial Temperature %g Cell %d Rank %d",(double)user->Tini*temp,(int)cell,rank));
-  CHKERRQ(TSMonitorLGCtxCreate(PETSC_COMM_SELF,NULL,label,PETSC_DECIDE,PETSC_DECIDE,600,400,1,&ctx));
-  CHKERRQ(DMDAGetFieldNames(user->dm,(const char * const **)&snames));
-  CHKERRQ(TSMonitorLGCtxSetVariableNames(ctx,(const char * const *)snames));
-  CHKERRQ(PetscNew(&uctx));
+  PetscCall(DMDARestoreCoordinateArray(user->dm,&xc));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscSNPrintf(label,sizeof(label),"Initial Temperature %g Cell %d Rank %d",(double)user->Tini*temp,(int)cell,rank));
+  PetscCall(TSMonitorLGCtxCreate(PETSC_COMM_SELF,NULL,label,PETSC_DECIDE,PETSC_DECIDE,600,400,1,&ctx));
+  PetscCall(DMDAGetFieldNames(user->dm,(const char * const **)&snames));
+  PetscCall(TSMonitorLGCtxSetVariableNames(ctx,(const char * const *)snames));
+  PetscCall(PetscNew(&uctx));
   uctx->cell = cell;
   uctx->user = user;
-  CHKERRQ(TSMonitorLGCtxSetTransform(ctx,(PetscErrorCode (*)(void*,Vec,Vec*))FormMoleFraction,(PetscErrorCode (*)(void*))MonitorCellDestroy,uctx));
-  CHKERRQ(TSMonitorSet(ts,TSMonitorLGSolution,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy));
+  PetscCall(TSMonitorLGCtxSetTransform(ctx,(PetscErrorCode (*)(void*,Vec,Vec*))FormMoleFraction,(PetscErrorCode (*)(void*))MonitorCellDestroy,uctx));
+  PetscCall(TSMonitorSet(ts,TSMonitorLGSolution,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy));
   PetscFunctionReturn(0);
 }

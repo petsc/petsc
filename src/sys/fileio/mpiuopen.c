@@ -38,22 +38,22 @@ PetscErrorCode  PetscFOpen(MPI_Comm comm,const char name[],const char mode[],FIL
   char           fname[PETSC_MAX_PATH_LEN],tname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_rank(comm,&rank));
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
   if (rank == 0) {
     PetscBool isstdout,isstderr;
-    CHKERRQ(PetscStrcmp(name,"stdout",&isstdout));
-    CHKERRQ(PetscStrcmp(name,"stderr",&isstderr));
+    PetscCall(PetscStrcmp(name,"stdout",&isstdout));
+    PetscCall(PetscStrcmp(name,"stderr",&isstderr));
     if (isstdout || !name) fd = PETSC_STDOUT;
     else if (isstderr) fd = PETSC_STDERR;
     else {
       PetscBool devnull;
-      CHKERRQ(PetscStrreplace(PETSC_COMM_SELF,name,tname,PETSC_MAX_PATH_LEN));
-      CHKERRQ(PetscFixFilename(tname,fname));
-      CHKERRQ(PetscStrbeginswith(fname,"/dev/null",&devnull));
+      PetscCall(PetscStrreplace(PETSC_COMM_SELF,name,tname,PETSC_MAX_PATH_LEN));
+      PetscCall(PetscFixFilename(tname,fname));
+      PetscCall(PetscStrbeginswith(fname,"/dev/null",&devnull));
       if (devnull) {
-        CHKERRQ(PetscStrcpy(fname,"/dev/null"));
+        PetscCall(PetscStrcpy(fname,"/dev/null"));
       }
-      CHKERRQ(PetscInfo(0,"Opening file %s\n",fname));
+      PetscCall(PetscInfo(0,"Opening file %s\n",fname));
       fd   = fopen(fname,mode);
       PetscCheck(fd,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open file %s",fname);
     }
@@ -85,7 +85,7 @@ PetscErrorCode  PetscFClose(MPI_Comm comm,FILE *fd)
   int            err;
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_rank(comm,&rank));
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
   if (rank == 0 && fd != PETSC_STDOUT && fd != PETSC_STDERR) {
     err = fclose(fd);
     PetscCheck(!err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
@@ -118,7 +118,7 @@ PetscErrorCode PetscPClose(MPI_Comm comm,FILE *fd)
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_rank(comm,&rank));
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
   if (rank == 0) {
     char buf[1024];
     while (fgets(buf,1024,fd)) ; /* wait till it prints everything */
@@ -167,34 +167,34 @@ PetscErrorCode  PetscPOpen(MPI_Comm comm,const char machine[],const char program
   PetscFunctionBegin;
   /* all processors have to do the string manipulation because PetscStrreplace() is a collective operation */
   if (PetscPOpenMachine[0] || (machine && machine[0])) {
-    CHKERRQ(PetscStrcpy(command,"ssh "));
+    PetscCall(PetscStrcpy(command,"ssh "));
     if (PetscPOpenMachine[0]) {
-      CHKERRQ(PetscStrcat(command,PetscPOpenMachine));
+      PetscCall(PetscStrcat(command,PetscPOpenMachine));
     } else {
-      CHKERRQ(PetscStrcat(command,machine));
+      PetscCall(PetscStrcat(command,machine));
     }
-    CHKERRQ(PetscStrcat(command," \" export DISPLAY=${DISPLAY}; "));
+    PetscCall(PetscStrcat(command," \" export DISPLAY=${DISPLAY}; "));
     /*
         Copy program into command but protect the " with a \ in front of it
     */
-    CHKERRQ(PetscStrlen(command,&cnt));
-    CHKERRQ(PetscStrlen(program,&len));
+    PetscCall(PetscStrlen(command,&cnt));
+    PetscCall(PetscStrlen(program,&len));
     for (i=0; i<len; i++) {
       if (program[i] == '\"') command[cnt++] = '\\';
       command[cnt++] = program[i];
     }
     command[cnt] = 0;
 
-    CHKERRQ(PetscStrcat(command,"\""));
+    PetscCall(PetscStrcat(command,"\""));
   } else {
-    CHKERRQ(PetscStrcpy(command,program));
+    PetscCall(PetscStrcpy(command,program));
   }
 
-  CHKERRQ(PetscStrreplace(comm,command,commandt,1024));
+  PetscCall(PetscStrreplace(comm,command,commandt,1024));
 
-  CHKERRMPI(MPI_Comm_rank(comm,&rank));
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
   if (rank == 0) {
-    CHKERRQ(PetscInfo(NULL,"Running command :%s\n",commandt));
+    PetscCall(PetscInfo(NULL,"Running command :%s\n",commandt));
     PetscCheckFalse(!(fd = popen(commandt,mode)),PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot run command %s",commandt);
     if (fp) *fp = fd;
   }
@@ -220,7 +220,7 @@ PetscErrorCode  PetscPOpenSetMachine(const char machine[])
 {
   PetscFunctionBegin;
   if (machine) {
-    CHKERRQ(PetscStrcpy(PetscPOpenMachine,machine));
+    PetscCall(PetscStrcpy(PetscPOpenMachine,machine));
   } else {
     PetscPOpenMachine[0] = 0;
   }

@@ -31,21 +31,21 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->final_ref         = PETSC_FALSE;
   options->final_diagnostics = PETSC_TRUE;
 
-  ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex1.c", options->dim, &options->dim, NULL,1,3));
-  CHKERRQ(PetscOptionsBoundedInt("-overlap", "The cell overlap for partitioning", "ex1.c", options->overlap, &options->overlap, NULL,0));
-  CHKERRQ(PetscOptionsBool("-test_p4est_seq", "Test p4est with sequential base DM", "ex1.c", options->testp4est[0], &options->testp4est[0], NULL));
-  CHKERRQ(PetscOptionsBool("-test_p4est_par", "Test p4est with parallel base DM", "ex1.c", options->testp4est[1], &options->testp4est[1], NULL));
-  CHKERRQ(PetscOptionsBool("-test_redistribute", "Test redistribution", "ex1.c", options->redistribute, &options->redistribute, NULL));
-  CHKERRQ(PetscOptionsBool("-final_ref", "Run uniform refinement on the final mesh", "ex1.c", options->final_ref, &options->final_ref, NULL));
-  CHKERRQ(PetscOptionsBool("-final_diagnostics", "Run diagnostics on the final mesh", "ex1.c", options->final_diagnostics, &options->final_diagnostics, NULL));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");PetscCall(ierr);
+  PetscCall(PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex1.c", options->dim, &options->dim, NULL,1,3));
+  PetscCall(PetscOptionsBoundedInt("-overlap", "The cell overlap for partitioning", "ex1.c", options->overlap, &options->overlap, NULL,0));
+  PetscCall(PetscOptionsBool("-test_p4est_seq", "Test p4est with sequential base DM", "ex1.c", options->testp4est[0], &options->testp4est[0], NULL));
+  PetscCall(PetscOptionsBool("-test_p4est_par", "Test p4est with parallel base DM", "ex1.c", options->testp4est[1], &options->testp4est[1], NULL));
+  PetscCall(PetscOptionsBool("-test_redistribute", "Test redistribution", "ex1.c", options->redistribute, &options->redistribute, NULL));
+  PetscCall(PetscOptionsBool("-final_ref", "Run uniform refinement on the final mesh", "ex1.c", options->final_ref, &options->final_ref, NULL));
+  PetscCall(PetscOptionsBool("-final_diagnostics", "Run diagnostics on the final mesh", "ex1.c", options->final_diagnostics, &options->final_diagnostics, NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
-  CHKERRQ(PetscLogEventRegister("CreateMesh", DM_CLASSID, &options->createMeshEvent));
-  CHKERRQ(PetscLogStageRegister("MeshLoad",       &options->stages[STAGE_LOAD]));
-  CHKERRQ(PetscLogStageRegister("MeshDistribute", &options->stages[STAGE_DISTRIBUTE]));
-  CHKERRQ(PetscLogStageRegister("MeshRefine",     &options->stages[STAGE_REFINE]));
-  CHKERRQ(PetscLogStageRegister("MeshOverlap",    &options->stages[STAGE_OVERLAP]));
+  PetscCall(PetscLogEventRegister("CreateMesh", DM_CLASSID, &options->createMeshEvent));
+  PetscCall(PetscLogStageRegister("MeshLoad",       &options->stages[STAGE_LOAD]));
+  PetscCall(PetscLogStageRegister("MeshDistribute", &options->stages[STAGE_DISTRIBUTE]));
+  PetscCall(PetscLogStageRegister("MeshRefine",     &options->stages[STAGE_REFINE]));
+  PetscCall(PetscLogStageRegister("MeshOverlap",    &options->stages[STAGE_OVERLAP]));
   PetscFunctionReturn(0);
 }
 
@@ -58,137 +58,137 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscBool      periodic;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscLogEventBegin(user->createMeshEvent,0,0,0,0));
-  CHKERRMPI(MPI_Comm_rank(comm, &rank));
-  CHKERRMPI(MPI_Comm_size(comm, &size));
-  CHKERRQ(PetscLogStagePush(user->stages[STAGE_LOAD]));
-  CHKERRQ(DMCreate(comm, dm));
-  CHKERRQ(DMSetType(*dm, DMPLEX));
-  CHKERRQ(DMPlexDistributeSetDefault(*dm, PETSC_FALSE));
-  CHKERRQ(DMSetFromOptions(*dm));
+  PetscCall(PetscLogEventBegin(user->createMeshEvent,0,0,0,0));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCall(PetscLogStagePush(user->stages[STAGE_LOAD]));
+  PetscCall(DMCreate(comm, dm));
+  PetscCall(DMSetType(*dm, DMPLEX));
+  PetscCall(DMPlexDistributeSetDefault(*dm, PETSC_FALSE));
+  PetscCall(DMSetFromOptions(*dm));
 
   /* For topologically periodic meshes, we first localize coordinates,
      and then remove any information related with the
      automatic computation of localized vertices.
      This way, refinement operations and conversions to p4est
      will preserve the shape of the domain in physical space */
-  CHKERRQ(DMLocalizeCoordinates(*dm));
-  CHKERRQ(DMGetPeriodicity(*dm, &periodic, NULL, NULL, NULL));
-  if (periodic) CHKERRQ(DMSetPeriodicity(*dm, PETSC_TRUE, NULL, NULL, NULL));
+  PetscCall(DMLocalizeCoordinates(*dm));
+  PetscCall(DMGetPeriodicity(*dm, &periodic, NULL, NULL, NULL));
+  if (periodic) PetscCall(DMSetPeriodicity(*dm, PETSC_TRUE, NULL, NULL, NULL));
 
-  CHKERRQ(DMViewFromOptions(*dm,NULL,"-init_dm_view"));
-  CHKERRQ(DMGetDimension(*dm, &dim));
+  PetscCall(DMViewFromOptions(*dm,NULL,"-init_dm_view"));
+  PetscCall(DMGetDimension(*dm, &dim));
 
   if (testp4est_seq) {
 #if defined(PETSC_HAVE_P4EST)
     DM dmConv = NULL;
 
-    CHKERRQ(DMPlexCheckSymmetry(*dm));
-    CHKERRQ(DMPlexCheckSkeleton(*dm, 0));
-    CHKERRQ(DMPlexCheckFaces(*dm, 0));
-    CHKERRQ(DMPlexCheckGeometry(*dm));
-    CHKERRQ(DMPlexCheckPointSF(*dm));
-    CHKERRQ(DMPlexCheckInterfaceCones(*dm));
-    CHKERRQ(DMPlexSetRefinementUniform(*dm, PETSC_TRUE));
-    CHKERRQ(DMPlexSetTransformType(*dm, DMPLEXREFINETOBOX));
-    CHKERRQ(DMRefine(*dm, PETSC_COMM_WORLD, &dmConv));
-    CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) *dm, NULL));
+    PetscCall(DMPlexCheckSymmetry(*dm));
+    PetscCall(DMPlexCheckSkeleton(*dm, 0));
+    PetscCall(DMPlexCheckFaces(*dm, 0));
+    PetscCall(DMPlexCheckGeometry(*dm));
+    PetscCall(DMPlexCheckPointSF(*dm));
+    PetscCall(DMPlexCheckInterfaceCones(*dm));
+    PetscCall(DMPlexSetRefinementUniform(*dm, PETSC_TRUE));
+    PetscCall(DMPlexSetTransformType(*dm, DMPLEXREFINETOBOX));
+    PetscCall(DMRefine(*dm, PETSC_COMM_WORLD, &dmConv));
+    PetscCall(PetscObjectSetOptionsPrefix((PetscObject) *dm, NULL));
     if (dmConv) {
-      CHKERRQ(DMDestroy(dm));
+      PetscCall(DMDestroy(dm));
       *dm  = dmConv;
     }
-    CHKERRQ(DMViewFromOptions(*dm,NULL,"-initref_dm_view"));
-    CHKERRQ(DMPlexCheckSymmetry(*dm));
-    CHKERRQ(DMPlexCheckSkeleton(*dm, 0));
-    CHKERRQ(DMPlexCheckFaces(*dm, 0));
-    CHKERRQ(DMPlexCheckGeometry(*dm));
-    CHKERRQ(DMPlexCheckPointSF(*dm));
-    CHKERRQ(DMPlexCheckInterfaceCones(*dm));
+    PetscCall(DMViewFromOptions(*dm,NULL,"-initref_dm_view"));
+    PetscCall(DMPlexCheckSymmetry(*dm));
+    PetscCall(DMPlexCheckSkeleton(*dm, 0));
+    PetscCall(DMPlexCheckFaces(*dm, 0));
+    PetscCall(DMPlexCheckGeometry(*dm));
+    PetscCall(DMPlexCheckPointSF(*dm));
+    PetscCall(DMPlexCheckInterfaceCones(*dm));
 
-    CHKERRQ(DMConvert(*dm,dim == 2 ? DMP4EST : DMP8EST,&dmConv));
+    PetscCall(DMConvert(*dm,dim == 2 ? DMP4EST : DMP8EST,&dmConv));
     if (dmConv) {
-      CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) dmConv, "conv_seq_1_"));
-      CHKERRQ(DMSetFromOptions(dmConv));
-      CHKERRQ(DMDestroy(dm));
+      PetscCall(PetscObjectSetOptionsPrefix((PetscObject) dmConv, "conv_seq_1_"));
+      PetscCall(DMSetFromOptions(dmConv));
+      PetscCall(DMDestroy(dm));
       *dm  = dmConv;
     }
-    CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) *dm, "conv_seq_1_"));
-    CHKERRQ(DMSetUp(*dm));
-    CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
-    CHKERRQ(DMConvert(*dm,DMPLEX,&dmConv));
+    PetscCall(PetscObjectSetOptionsPrefix((PetscObject) *dm, "conv_seq_1_"));
+    PetscCall(DMSetUp(*dm));
+    PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
+    PetscCall(DMConvert(*dm,DMPLEX,&dmConv));
     if (dmConv) {
-      CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) dmConv, "conv_seq_2_"));
-      CHKERRQ(DMPlexDistributeSetDefault(dmConv, PETSC_FALSE));
-      CHKERRQ(DMSetFromOptions(dmConv));
-      CHKERRQ(DMDestroy(dm));
+      PetscCall(PetscObjectSetOptionsPrefix((PetscObject) dmConv, "conv_seq_2_"));
+      PetscCall(DMPlexDistributeSetDefault(dmConv, PETSC_FALSE));
+      PetscCall(DMSetFromOptions(dmConv));
+      PetscCall(DMDestroy(dm));
       *dm  = dmConv;
     }
-    CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) *dm, "conv_seq_2_"));
-    CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
-    CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) *dm, NULL));
+    PetscCall(PetscObjectSetOptionsPrefix((PetscObject) *dm, "conv_seq_2_"));
+    PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
+    PetscCall(PetscObjectSetOptionsPrefix((PetscObject) *dm, NULL));
 #else
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Recompile with --download-p4est");
 #endif
   }
 
-  CHKERRQ(PetscLogStagePop());
+  PetscCall(PetscLogStagePop());
   if (!testp4est_seq) {
-    CHKERRQ(PetscLogStagePush(user->stages[STAGE_DISTRIBUTE]));
-    CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_pre_dist_view"));
-    CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) *dm, "dist_"));
-    CHKERRQ(DMSetFromOptions(*dm));
-    CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) *dm, NULL));
-    CHKERRQ(PetscLogStagePop());
-    CHKERRQ(DMViewFromOptions(*dm, NULL, "-distributed_dm_view"));
+    PetscCall(PetscLogStagePush(user->stages[STAGE_DISTRIBUTE]));
+    PetscCall(DMViewFromOptions(*dm, NULL, "-dm_pre_dist_view"));
+    PetscCall(PetscObjectSetOptionsPrefix((PetscObject) *dm, "dist_"));
+    PetscCall(DMSetFromOptions(*dm));
+    PetscCall(PetscObjectSetOptionsPrefix((PetscObject) *dm, NULL));
+    PetscCall(PetscLogStagePop());
+    PetscCall(DMViewFromOptions(*dm, NULL, "-distributed_dm_view"));
   }
-  CHKERRQ(PetscLogStagePush(user->stages[STAGE_REFINE]));
-  CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) *dm, "ref_"));
-  CHKERRQ(DMSetFromOptions(*dm));
-  CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) *dm, NULL));
-  CHKERRQ(PetscLogStagePop());
+  PetscCall(PetscLogStagePush(user->stages[STAGE_REFINE]));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject) *dm, "ref_"));
+  PetscCall(DMSetFromOptions(*dm));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject) *dm, NULL));
+  PetscCall(PetscLogStagePop());
 
   if (testp4est_par) {
 #if defined(PETSC_HAVE_P4EST)
     DM dmConv = NULL;
 
-    CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_tobox_view"));
-    CHKERRQ(DMPlexSetRefinementUniform(*dm, PETSC_TRUE));
-    CHKERRQ(DMPlexSetTransformType(*dm, DMPLEXREFINETOBOX));
-    CHKERRQ(DMRefine(*dm, PETSC_COMM_WORLD, &dmConv));
-    CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) *dm, NULL));
+    PetscCall(DMViewFromOptions(*dm, NULL, "-dm_tobox_view"));
+    PetscCall(DMPlexSetRefinementUniform(*dm, PETSC_TRUE));
+    PetscCall(DMPlexSetTransformType(*dm, DMPLEXREFINETOBOX));
+    PetscCall(DMRefine(*dm, PETSC_COMM_WORLD, &dmConv));
+    PetscCall(PetscObjectSetOptionsPrefix((PetscObject) *dm, NULL));
     if (dmConv) {
-      CHKERRQ(DMDestroy(dm));
+      PetscCall(DMDestroy(dm));
       *dm  = dmConv;
     }
-    CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_tobox_view"));
-    CHKERRQ(DMPlexCheckSymmetry(*dm));
-    CHKERRQ(DMPlexCheckSkeleton(*dm, 0));
-    CHKERRQ(DMPlexCheckFaces(*dm, 0));
-    CHKERRQ(DMPlexCheckGeometry(*dm));
-    CHKERRQ(DMPlexCheckPointSF(*dm));
-    CHKERRQ(DMPlexCheckInterfaceCones(*dm));
+    PetscCall(DMViewFromOptions(*dm, NULL, "-dm_tobox_view"));
+    PetscCall(DMPlexCheckSymmetry(*dm));
+    PetscCall(DMPlexCheckSkeleton(*dm, 0));
+    PetscCall(DMPlexCheckFaces(*dm, 0));
+    PetscCall(DMPlexCheckGeometry(*dm));
+    PetscCall(DMPlexCheckPointSF(*dm));
+    PetscCall(DMPlexCheckInterfaceCones(*dm));
 
-    CHKERRQ(DMConvert(*dm,dim == 2 ? DMP4EST : DMP8EST,&dmConv));
+    PetscCall(DMConvert(*dm,dim == 2 ? DMP4EST : DMP8EST,&dmConv));
     if (dmConv) {
-      CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) dmConv, "conv_par_1_"));
-      CHKERRQ(DMSetFromOptions(dmConv));
-      CHKERRQ(DMDestroy(dm));
+      PetscCall(PetscObjectSetOptionsPrefix((PetscObject) dmConv, "conv_par_1_"));
+      PetscCall(DMSetFromOptions(dmConv));
+      PetscCall(DMDestroy(dm));
       *dm  = dmConv;
     }
-    CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) *dm, "conv_par_1_"));
-    CHKERRQ(DMSetUp(*dm));
-    CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
-    CHKERRQ(DMConvert(*dm, DMPLEX, &dmConv));
+    PetscCall(PetscObjectSetOptionsPrefix((PetscObject) *dm, "conv_par_1_"));
+    PetscCall(DMSetUp(*dm));
+    PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
+    PetscCall(DMConvert(*dm, DMPLEX, &dmConv));
     if (dmConv) {
-      CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) dmConv, "conv_par_2_"));
-      CHKERRQ(DMPlexDistributeSetDefault(dmConv, PETSC_FALSE));
-      CHKERRQ(DMSetFromOptions(dmConv));
-      CHKERRQ(DMDestroy(dm));
+      PetscCall(PetscObjectSetOptionsPrefix((PetscObject) dmConv, "conv_par_2_"));
+      PetscCall(DMPlexDistributeSetDefault(dmConv, PETSC_FALSE));
+      PetscCall(DMSetFromOptions(dmConv));
+      PetscCall(DMDestroy(dm));
       *dm  = dmConv;
     }
-    CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) *dm, "conv_par_2_"));
-    CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
-    CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) *dm, NULL));
+    PetscCall(PetscObjectSetOptionsPrefix((PetscObject) *dm, "conv_par_2_"));
+    PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
+    PetscCall(PetscObjectSetOptionsPrefix((PetscObject) *dm, NULL));
 #else
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Recompile with --download-p4est");
 #endif
@@ -200,66 +200,66 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     PetscSF  sf;
     PetscInt nranks;
 
-    CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_pre_redist_view"));
-    CHKERRQ(DMPlexDistribute(*dm, 0, NULL, &distributedMesh));
+    PetscCall(DMViewFromOptions(*dm, NULL, "-dm_pre_redist_view"));
+    PetscCall(DMPlexDistribute(*dm, 0, NULL, &distributedMesh));
     if (distributedMesh) {
-      CHKERRQ(DMGetPointSF(distributedMesh, &sf));
-      CHKERRQ(PetscSFSetUp(sf));
-      CHKERRQ(DMGetNeighbors(distributedMesh, &nranks, NULL));
-      CHKERRMPI(MPI_Allreduce(MPI_IN_PLACE, &nranks, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)*dm)));
-      CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)*dm)), "Minimum number of neighbors: %D\n", nranks));
-      CHKERRQ(DMDestroy(dm));
+      PetscCall(DMGetPointSF(distributedMesh, &sf));
+      PetscCall(PetscSFSetUp(sf));
+      PetscCall(DMGetNeighbors(distributedMesh, &nranks, NULL));
+      PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &nranks, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)*dm)));
+      PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)*dm)), "Minimum number of neighbors: %D\n", nranks));
+      PetscCall(DMDestroy(dm));
       *dm  = distributedMesh;
     }
-    CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_post_redist_view"));
+    PetscCall(DMViewFromOptions(*dm, NULL, "-dm_post_redist_view"));
   }
 
   if (user->overlap) {
     DM overlapMesh = NULL;
 
     /* Add the overlap to refined mesh */
-    CHKERRQ(PetscLogStagePush(user->stages[STAGE_OVERLAP]));
-    CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_pre_overlap_view"));
-    CHKERRQ(DMPlexDistributeOverlap(*dm, user->overlap, NULL, &overlapMesh));
+    PetscCall(PetscLogStagePush(user->stages[STAGE_OVERLAP]));
+    PetscCall(DMViewFromOptions(*dm, NULL, "-dm_pre_overlap_view"));
+    PetscCall(DMPlexDistributeOverlap(*dm, user->overlap, NULL, &overlapMesh));
     if (overlapMesh) {
       PetscInt overlap;
-      CHKERRQ(DMPlexGetOverlap(overlapMesh, &overlap));
-      CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "Overlap: %D\n", overlap));
-      CHKERRQ(DMDestroy(dm));
+      PetscCall(DMPlexGetOverlap(overlapMesh, &overlap));
+      PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "Overlap: %D\n", overlap));
+      PetscCall(DMDestroy(dm));
       *dm = overlapMesh;
     }
-    CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_post_overlap_view"));
-    CHKERRQ(PetscLogStagePop());
+    PetscCall(DMViewFromOptions(*dm, NULL, "-dm_post_overlap_view"));
+    PetscCall(PetscLogStagePop());
   }
   if (user->final_ref) {
     DM refinedMesh = NULL;
 
-    CHKERRQ(DMPlexSetRefinementUniform(*dm, PETSC_TRUE));
-    CHKERRQ(DMRefine(*dm, comm, &refinedMesh));
+    PetscCall(DMPlexSetRefinementUniform(*dm, PETSC_TRUE));
+    PetscCall(DMRefine(*dm, comm, &refinedMesh));
     if (refinedMesh) {
-      CHKERRQ(DMDestroy(dm));
+      PetscCall(DMDestroy(dm));
       *dm  = refinedMesh;
     }
   }
 
-  CHKERRQ(PetscObjectSetName((PetscObject) *dm, "Generated Mesh"));
-  CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
+  PetscCall(PetscObjectSetName((PetscObject) *dm, "Generated Mesh"));
+  PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   if (user->final_diagnostics) {
     DMPlexInterpolatedFlag interpolated;
     PetscInt  dim, depth;
 
-    CHKERRQ(DMGetDimension(*dm, &dim));
-    CHKERRQ(DMPlexGetDepth(*dm, &depth));
-    CHKERRQ(DMPlexIsInterpolatedCollective(*dm, &interpolated));
+    PetscCall(DMGetDimension(*dm, &dim));
+    PetscCall(DMPlexGetDepth(*dm, &depth));
+    PetscCall(DMPlexIsInterpolatedCollective(*dm, &interpolated));
 
-    CHKERRQ(DMPlexCheckSymmetry(*dm));
+    PetscCall(DMPlexCheckSymmetry(*dm));
     if (interpolated == DMPLEX_INTERPOLATED_FULL) {
-      CHKERRQ(DMPlexCheckFaces(*dm, 0));
+      PetscCall(DMPlexCheckFaces(*dm, 0));
     }
-    CHKERRQ(DMPlexCheckSkeleton(*dm, 0));
-    CHKERRQ(DMPlexCheckGeometry(*dm));
+    PetscCall(DMPlexCheckSkeleton(*dm, 0));
+    PetscCall(DMPlexCheckGeometry(*dm));
   }
-  CHKERRQ(PetscLogEventEnd(user->createMeshEvent,0,0,0,0));
+  PetscCall(PetscLogEventEnd(user->createMeshEvent,0,0,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -268,11 +268,11 @@ int main(int argc, char **argv)
   DM             dm;
   AppCtx         user;
 
-  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
-  CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));
-  CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
-  CHKERRQ(DMDestroy(&dm));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
+  PetscCall(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

@@ -20,15 +20,15 @@ PetscErrorCode PCDestroy_TFS(PC pc)
   PetscFunctionBegin;
   /* free the XXT datastructures */
   if (tfs->xxt) {
-    CHKERRQ(XXT_free(tfs->xxt));
+    PetscCall(XXT_free(tfs->xxt));
   }
   if (tfs->xyt) {
-    CHKERRQ(XYT_free(tfs->xyt));
+    PetscCall(XYT_free(tfs->xyt));
   }
-  CHKERRQ(VecDestroy(&tfs->b));
-  CHKERRQ(VecDestroy(&tfs->xd));
-  CHKERRQ(VecDestroy(&tfs->xo));
-  CHKERRQ(PetscFree(pc->data));
+  PetscCall(VecDestroy(&tfs->b));
+  PetscCall(VecDestroy(&tfs->xd));
+  PetscCall(VecDestroy(&tfs->xo));
+  PetscCall(PetscFree(pc->data));
   PetscFunctionReturn(0);
 }
 
@@ -39,11 +39,11 @@ static PetscErrorCode PCApply_TFS_XXT(PC pc,Vec x,Vec y)
   const PetscScalar *xx;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(x,&xx));
-  CHKERRQ(VecGetArray(y,&yy));
-  CHKERRQ(XXT_solve(tfs->xxt,yy,(PetscScalar*)xx));
-  CHKERRQ(VecRestoreArrayRead(x,&xx));
-  CHKERRQ(VecRestoreArray(y,&yy));
+  PetscCall(VecGetArrayRead(x,&xx));
+  PetscCall(VecGetArray(y,&yy));
+  PetscCall(XXT_solve(tfs->xxt,yy,(PetscScalar*)xx));
+  PetscCall(VecRestoreArrayRead(x,&xx));
+  PetscCall(VecRestoreArray(y,&yy));
   PetscFunctionReturn(0);
 }
 
@@ -54,11 +54,11 @@ static PetscErrorCode PCApply_TFS_XYT(PC pc,Vec x,Vec y)
   const PetscScalar *xx;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(x,&xx));
-  CHKERRQ(VecGetArray(y,&yy));
-  CHKERRQ(XYT_solve(tfs->xyt,yy,(PetscScalar*)xx));
-  CHKERRQ(VecRestoreArrayRead(x,&xx));
-  CHKERRQ(VecRestoreArray(y,&yy));
+  PetscCall(VecGetArrayRead(x,&xx));
+  PetscCall(VecGetArray(y,&yy));
+  PetscCall(XYT_solve(tfs->xyt,yy,(PetscScalar*)xx));
+  PetscCall(VecRestoreArrayRead(x,&xx));
+  PetscCall(VecRestoreArray(y,&yy));
   PetscFunctionReturn(0);
 }
 
@@ -69,14 +69,14 @@ static PetscErrorCode PCTFSLocalMult_TFS(PC pc,PetscScalar *xin,PetscScalar *xou
   Mat_MPIAIJ     *a   = (Mat_MPIAIJ*)A->data;
 
   PetscFunctionBegin;
-  CHKERRQ(VecPlaceArray(tfs->b,xout));
-  CHKERRQ(VecPlaceArray(tfs->xd,xin));
-  CHKERRQ(VecPlaceArray(tfs->xo,xin+tfs->nd));
-  CHKERRQ(MatMult(a->A,tfs->xd,tfs->b));
-  CHKERRQ(MatMultAdd(a->B,tfs->xo,tfs->b,tfs->b));
-  CHKERRQ(VecResetArray(tfs->b));
-  CHKERRQ(VecResetArray(tfs->xd));
-  CHKERRQ(VecResetArray(tfs->xo));
+  PetscCall(VecPlaceArray(tfs->b,xout));
+  PetscCall(VecPlaceArray(tfs->xd,xin));
+  PetscCall(VecPlaceArray(tfs->xo,xin+tfs->nd));
+  PetscCall(MatMult(a->A,tfs->xd,tfs->b));
+  PetscCall(MatMultAdd(a->B,tfs->xo,tfs->b,tfs->b));
+  PetscCall(VecResetArray(tfs->b));
+  PetscCall(VecResetArray(tfs->xd));
+  PetscCall(VecResetArray(tfs->xo));
   PetscFunctionReturn(0);
 }
 
@@ -95,35 +95,35 @@ static PetscErrorCode PCSetUp_TFS(PC pc)
 
   PetscFunctionBegin;
   PetscCheckFalse(A->cmap->N != A->rmap->N,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_SIZ,"matrix must be square");
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)pc->pmat,MATMPIAIJ,&ismpiaij));
+  PetscCall(PetscObjectTypeCompare((PetscObject)pc->pmat,MATMPIAIJ,&ismpiaij));
   PetscCheck(ismpiaij,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Currently only supports MPIAIJ matrices");
 
   /* generate the local to global mapping */
   ncol = a->A->cmap->n + a->B->cmap->n;
-  CHKERRQ(PetscMalloc1(ncol,&localtoglobal));
+  PetscCall(PetscMalloc1(ncol,&localtoglobal));
   for (i=0; i<a->A->cmap->n; i++) localtoglobal[i] = A->cmap->rstart + i + 1;
   for (i=0; i<a->B->cmap->n; i++) localtoglobal[i+a->A->cmap->n] = a->garray[i] + 1;
 
   /* generate the vectors needed for the local solves */
-  CHKERRQ(VecCreateSeqWithArray(PETSC_COMM_SELF,1,a->A->rmap->n,NULL,&tfs->b));
-  CHKERRQ(VecCreateSeqWithArray(PETSC_COMM_SELF,1,a->A->cmap->n,NULL,&tfs->xd));
-  CHKERRQ(VecCreateSeqWithArray(PETSC_COMM_SELF,1,a->B->cmap->n,NULL,&tfs->xo));
+  PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,1,a->A->rmap->n,NULL,&tfs->b));
+  PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,1,a->A->cmap->n,NULL,&tfs->xd));
+  PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,1,a->B->cmap->n,NULL,&tfs->xo));
   tfs->nd = a->A->cmap->n;
 
   /*  ierr =  MatIsSymmetric(A,tol,&issymmetric); */
   /*  if (issymmetric) { */
-  CHKERRQ(PetscBarrier((PetscObject)pc));
+  PetscCall(PetscBarrier((PetscObject)pc));
   if (A->symmetric) {
     tfs->xxt       = XXT_new();
-    CHKERRQ(XXT_factor(tfs->xxt,localtoglobal,A->rmap->n,ncol,(PetscErrorCode (*)(void*,PetscScalar*,PetscScalar*))PCTFSLocalMult_TFS,pc));
+    PetscCall(XXT_factor(tfs->xxt,localtoglobal,A->rmap->n,ncol,(PetscErrorCode (*)(void*,PetscScalar*,PetscScalar*))PCTFSLocalMult_TFS,pc));
     pc->ops->apply = PCApply_TFS_XXT;
   } else {
     tfs->xyt       = XYT_new();
-    CHKERRQ(XYT_factor(tfs->xyt,localtoglobal,A->rmap->n,ncol,(PetscErrorCode (*)(void*,PetscScalar*,PetscScalar*))PCTFSLocalMult_TFS,pc));
+    PetscCall(XYT_factor(tfs->xyt,localtoglobal,A->rmap->n,ncol,(PetscErrorCode (*)(void*,PetscScalar*,PetscScalar*))PCTFSLocalMult_TFS,pc));
     pc->ops->apply = PCApply_TFS_XYT;
   }
 
-  CHKERRQ(PetscFree(localtoglobal));
+  PetscCall(PetscFree(localtoglobal));
   PetscFunctionReturn(0);
 }
 
@@ -162,9 +162,9 @@ PETSC_EXTERN PetscErrorCode PCCreate_TFS(PC pc)
   PetscMPIInt    cmp;
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_compare(PETSC_COMM_WORLD,PetscObjectComm((PetscObject)pc),&cmp));
+  PetscCallMPI(MPI_Comm_compare(PETSC_COMM_WORLD,PetscObjectComm((PetscObject)pc),&cmp));
   PetscCheckFalse(cmp != MPI_IDENT && cmp != MPI_CONGRUENT,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"TFS only works with PETSC_COMM_WORLD objects");
-  CHKERRQ(PetscNewLog(pc,&tfs));
+  PetscCall(PetscNewLog(pc,&tfs));
 
   tfs->xxt = NULL;
   tfs->xyt = NULL;

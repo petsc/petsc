@@ -22,8 +22,8 @@ int main(int argc,char **argv)
   PetscScalar    one = 1.0;
   Vec            x;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   /*
      Create a parallel vector.
@@ -33,11 +33,11 @@ int main(int argc,char **argv)
         local size PETSc will choose a reasonable partition trying
         to put nearly an equal number of elements on each processor.
   */
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
-  CHKERRQ(VecSetSizes(x,rank+1,PETSC_DECIDE));
-  CHKERRQ(VecSetFromOptions(x));
-  CHKERRQ(VecGetSize(x,&N));
-  CHKERRQ(VecSet(x,one));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+  PetscCall(VecSetSizes(x,rank+1,PETSC_DECIDE));
+  PetscCall(VecSetFromOptions(x));
+  PetscCall(VecGetSize(x,&N));
+  PetscCall(VecSet(x,one));
 
   /*
      Set the vector elements.
@@ -50,7 +50,7 @@ int main(int argc,char **argv)
         contributions will be added together.
   */
   for (i=0; i<N-rank; i++) {
-    CHKERRQ(VecSetValues(x,1,&i,&one,ADD_VALUES));
+    PetscCall(VecSetValues(x,1,&i,&one,ADD_VALUES));
   }
 
   /*
@@ -59,16 +59,16 @@ int main(int argc,char **argv)
      Computations can be done while messages are in transition
      by placing code between these two statements.
   */
-  CHKERRQ(VecAssemblyBegin(x));
-  CHKERRQ(VecAssemblyEnd(x));
+  PetscCall(VecAssemblyBegin(x));
+  PetscCall(VecAssemblyEnd(x));
 
   /*
       View the vector; then destroy it.
   */
-  CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(VecDestroy(&x));
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecDestroy(&x));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

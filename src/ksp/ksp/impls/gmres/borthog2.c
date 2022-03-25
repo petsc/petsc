@@ -43,9 +43,9 @@ PetscErrorCode  KSPGMRESClassicalGramSchmidtOrthogonalization(KSP ksp,PetscInt i
   PetscBool      refine = (PetscBool)(gmres->cgstype == KSP_GMRES_CGS_REFINE_ALWAYS);
 
   PetscFunctionBegin;
-  CHKERRQ(PetscLogEventBegin(KSP_GMRESOrthogonalization,ksp,0,0,0));
+  PetscCall(PetscLogEventBegin(KSP_GMRESOrthogonalization,ksp,0,0,0));
   if (!gmres->orthogwork) {
-    CHKERRQ(PetscMalloc1(gmres->max_k + 2,&gmres->orthogwork));
+    PetscCall(PetscMalloc1(gmres->max_k + 2,&gmres->orthogwork));
   }
   lhh = gmres->orthogwork;
 
@@ -63,7 +63,7 @@ PetscErrorCode  KSPGMRESClassicalGramSchmidtOrthogonalization(KSP ksp,PetscInt i
      This is really a matrix-vector product, with the matrix stored
      as pointer to rows
   */
-  CHKERRQ(VecMDot(VEC_VV(it+1),it+1,&(VEC_VV(0)),lhh)); /* <v,vnew> */
+  PetscCall(VecMDot(VEC_VV(it+1),it+1,&(VEC_VV(0)),lhh)); /* <v,vnew> */
   for (j=0; j<=it; j++) {
     KSPCheckDot(ksp,lhh[j]);
     if (ksp->reason) goto done;
@@ -74,7 +74,7 @@ PetscErrorCode  KSPGMRESClassicalGramSchmidtOrthogonalization(KSP ksp,PetscInt i
          This is really a matrix vector product:
          [h[0],h[1],...]*[ v[0]; v[1]; ...] subtracted from v[it+1].
   */
-  CHKERRQ(VecMAXPY(VEC_VV(it+1),it+1,lhh,&VEC_VV(0)));
+  PetscCall(VecMAXPY(VEC_VV(it+1),it+1,lhh,&VEC_VV(0)));
   /* note lhh[j] is -<v,vnew> , hence the subtraction */
   for (j=0; j<=it; j++) {
     hh[j]  -= lhh[j];     /* hh += <v,vnew> */
@@ -90,23 +90,23 @@ PetscErrorCode  KSPGMRESClassicalGramSchmidtOrthogonalization(KSP ksp,PetscInt i
     for (j=0; j<=it; j++) hnrm +=  PetscRealPart(lhh[j] * PetscConj(lhh[j]));
 
     hnrm = PetscSqrtReal(hnrm);
-    CHKERRQ(VecNorm(VEC_VV(it+1),NORM_2, &wnrm));
+    PetscCall(VecNorm(VEC_VV(it+1),NORM_2, &wnrm));
     KSPCheckNorm(ksp,wnrm);
     if (ksp->reason) goto done;
     if (wnrm < hnrm) {
       refine = PETSC_TRUE;
-      CHKERRQ(PetscInfo(ksp,"Performing iterative refinement wnorm %g hnorm %g\n",(double)wnrm,(double)hnrm));
+      PetscCall(PetscInfo(ksp,"Performing iterative refinement wnorm %g hnorm %g\n",(double)wnrm,(double)hnrm));
     }
   }
 
   if (refine) {
-    CHKERRQ(VecMDot(VEC_VV(it+1),it+1,&(VEC_VV(0)),lhh)); /* <v,vnew> */
+    PetscCall(VecMDot(VEC_VV(it+1),it+1,&(VEC_VV(0)),lhh)); /* <v,vnew> */
     for (j=0; j<=it; j++) {
        KSPCheckDot(ksp,lhh[j]);
        if (ksp->reason) goto done;
        lhh[j] = -lhh[j];
     }
-    CHKERRQ(VecMAXPY(VEC_VV(it+1),it+1,lhh,&VEC_VV(0)));
+    PetscCall(VecMAXPY(VEC_VV(it+1),it+1,lhh,&VEC_VV(0)));
     /* note lhh[j] is -<v,vnew> , hence the subtraction */
     for (j=0; j<=it; j++) {
       hh[j]  -= lhh[j];     /* hh += <v,vnew> */
@@ -114,6 +114,6 @@ PetscErrorCode  KSPGMRESClassicalGramSchmidtOrthogonalization(KSP ksp,PetscInt i
     }
   }
 done:
-  CHKERRQ(PetscLogEventEnd(KSP_GMRESOrthogonalization,ksp,0,0,0));
+  PetscCall(PetscLogEventEnd(KSP_GMRESOrthogonalization,ksp,0,0,0));
   PetscFunctionReturn(0);
 }

@@ -24,13 +24,13 @@ PETSC_INTERN PetscErrorCode PetscSFGetVectorSF(PetscSF sf, PetscInt nv, PetscInt
   PetscValidLogicalCollectiveInt(sf,nv,2);
   PetscValidPointer(vsf,5);
   if (nv == 1) {
-    CHKERRQ(PetscObjectReference((PetscObject)sf));
+    PetscCall(PetscObjectReference((PetscObject)sf));
     *vsf = sf;
     PetscFunctionReturn(0);
   }
-  CHKERRQ(PetscObjectGetComm((PetscObject)sf,&comm));
-  CHKERRQ(PetscSFGetGraph(sf,&nr,&nl,&ilocal,&iremote));
-  CHKERRQ(PetscSFGetLeafRange(sf,NULL,&maxl));
+  PetscCall(PetscObjectGetComm((PetscObject)sf,&comm));
+  PetscCall(PetscSFGetGraph(sf,&nr,&nl,&ilocal,&iremote));
+  PetscCall(PetscSFGetLeafRange(sf,NULL,&maxl));
   maxl += 1;
   if (ldl == PETSC_DECIDE) ldl = maxl;
   if (ldr == PETSC_DECIDE) ldr = nr;
@@ -38,26 +38,26 @@ PETSC_INTERN PetscErrorCode PetscSFGetVectorSF(PetscSF sf, PetscInt nv, PetscInt
   PetscCheck(ldl >= maxl,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid leading dimension %" PetscInt_FMT " < %" PetscInt_FMT,ldl,maxl);
   vnr  = nr*nv;
   vnl  = nl*nv;
-  CHKERRQ(PetscMalloc1(vnl,&viremote));
-  if (ilocal) CHKERRQ(PetscMalloc1(vnl,&vilocal));
+  PetscCall(PetscMalloc1(vnl,&viremote));
+  if (ilocal) PetscCall(PetscMalloc1(vnl,&vilocal));
 
   /* TODO: Should this special SF be available, e.g.
      PetscSFGetRanksSF or similar? */
-  CHKERRQ(PetscSFGetRootRanks(sf,&nranks,&ranks,NULL,NULL,NULL));
-  CHKERRQ(PetscMalloc1(nranks,&sranks));
-  CHKERRQ(PetscArraycpy(sranks,ranks,nranks));
-  CHKERRQ(PetscSortMPIInt(nranks,sranks));
-  CHKERRQ(PetscMalloc1(nranks,&rremotes));
+  PetscCall(PetscSFGetRootRanks(sf,&nranks,&ranks,NULL,NULL,NULL));
+  PetscCall(PetscMalloc1(nranks,&sranks));
+  PetscCall(PetscArraycpy(sranks,ranks,nranks));
+  PetscCall(PetscSortMPIInt(nranks,sranks));
+  PetscCall(PetscMalloc1(nranks,&rremotes));
   for (i=0;i<nranks;i++) {
     rremotes[i].rank  = sranks[i];
     rremotes[i].index = 0;
   }
-  CHKERRQ(PetscSFDuplicate(sf,PETSCSF_DUPLICATE_CONFONLY,&rankssf));
-  CHKERRQ(PetscSFSetGraph(rankssf,1,nranks,NULL,PETSC_OWN_POINTER,rremotes,PETSC_OWN_POINTER));
-  CHKERRQ(PetscMalloc1(nranks,&ldrs));
-  CHKERRQ(PetscSFBcastBegin(rankssf,MPIU_INT,&ldr,ldrs,MPI_REPLACE));
-  CHKERRQ(PetscSFBcastEnd(rankssf,MPIU_INT,&ldr,ldrs,MPI_REPLACE));
-  CHKERRQ(PetscSFDestroy(&rankssf));
+  PetscCall(PetscSFDuplicate(sf,PETSCSF_DUPLICATE_CONFONLY,&rankssf));
+  PetscCall(PetscSFSetGraph(rankssf,1,nranks,NULL,PETSC_OWN_POINTER,rremotes,PETSC_OWN_POINTER));
+  PetscCall(PetscMalloc1(nranks,&ldrs));
+  PetscCall(PetscSFBcastBegin(rankssf,MPIU_INT,&ldr,ldrs,MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(rankssf,MPIU_INT,&ldr,ldrs,MPI_REPLACE));
+  PetscCall(PetscSFDestroy(&rankssf));
 
   j = -1;
   for (i=0;i<nl;i++) {
@@ -65,7 +65,7 @@ PETSC_INTERN PetscErrorCode PetscSFGetVectorSF(PetscSF sf, PetscInt nv, PetscInt
     const PetscInt ii = iremote[i].index;
 
     if (j < 0 || sranks[j] != r) {
-      CHKERRQ(PetscFindMPIInt(r,nranks,sranks,&j));
+      PetscCall(PetscFindMPIInt(r,nranks,sranks,&j));
     }
     PetscCheck(j >= 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to locate neighbor rank %" PetscInt_FMT,r);
     for (v=0;v<nv;v++) {
@@ -74,10 +74,10 @@ PETSC_INTERN PetscErrorCode PetscSFGetVectorSF(PetscSF sf, PetscInt nv, PetscInt
       if (ilocal) vilocal[v*nl + i] = v*ldl + ilocal[i];
     }
   }
-  CHKERRQ(PetscFree(sranks));
-  CHKERRQ(PetscFree(ldrs));
-  CHKERRQ(PetscSFCreate(comm,vsf));
-  CHKERRQ(PetscSFSetGraph(*vsf,vnr,vnl,vilocal,PETSC_OWN_POINTER,viremote,PETSC_OWN_POINTER));
+  PetscCall(PetscFree(sranks));
+  PetscCall(PetscFree(ldrs));
+  PetscCall(PetscSFCreate(comm,vsf));
+  PetscCall(PetscSFSetGraph(*vsf,vnr,vnl,vilocal,PETSC_OWN_POINTER,viremote,PETSC_OWN_POINTER));
   PetscFunctionReturn(0);
 }
 
@@ -89,14 +89,14 @@ PETSC_INTERN PetscErrorCode MatDenseGetH2OpusVectorSF(Mat A, PetscSF h2sf, Petsc
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidHeaderSpecific(h2sf,PETSCSF_CLASSID,2);
   PetscValidPointer(osf,3);
-  CHKERRQ(PetscObjectQuery((PetscObject)A,"_math2opus_vectorsf",(PetscObject*)&asf));
+  PetscCall(PetscObjectQuery((PetscObject)A,"_math2opus_vectorsf",(PetscObject*)&asf));
   if (!asf) {
     PetscInt lda;
 
-    CHKERRQ(MatDenseGetLDA(A,&lda));
-    CHKERRQ(PetscSFGetVectorSF(h2sf,A->cmap->N,lda,PETSC_DECIDE,&asf));
-    CHKERRQ(PetscObjectCompose((PetscObject)A,"_math2opus_vectorsf",(PetscObject)asf));
-    CHKERRQ(PetscObjectDereference((PetscObject)asf));
+    PetscCall(MatDenseGetLDA(A,&lda));
+    PetscCall(PetscSFGetVectorSF(h2sf,A->cmap->N,lda,PETSC_DECIDE,&asf));
+    PetscCall(PetscObjectCompose((PetscObject)A,"_math2opus_vectorsf",(PetscObject)asf));
+    PetscCall(PetscObjectDereference((PetscObject)asf));
   }
   *osf = asf;
   PetscFunctionReturn(0);
@@ -128,30 +128,30 @@ PETSC_INTERN PetscErrorCode VecSign(Vec v, Vec s)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidHeaderSpecific(s,VEC_CLASSID,2);
-  CHKERRQ(VecGetLocalSize(s,&n));
-  CHKERRQ(VecGetLocalSize(v,&i));
+  PetscCall(VecGetLocalSize(s,&n));
+  PetscCall(VecGetLocalSize(v,&i));
   PetscCheck(i == n,PETSC_COMM_SELF,PETSC_ERR_SUP,"Invalid local sizes %" PetscInt_FMT " != %" PetscInt_FMT,i,n);
 #if defined(PETSC_HAVE_CUDA)
-  CHKERRQ(PetscObjectTypeCompareAny((PetscObject)v,&viscuda,VECSEQCUDA,VECMPICUDA,""));
-  CHKERRQ(PetscObjectTypeCompareAny((PetscObject)s,&siscuda,VECSEQCUDA,VECMPICUDA,""));
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)v,&viscuda,VECSEQCUDA,VECMPICUDA,""));
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)s,&siscuda,VECSEQCUDA,VECMPICUDA,""));
   viscuda = (PetscBool)(viscuda && !v->boundtocpu);
   siscuda = (PetscBool)(siscuda && !s->boundtocpu);
   if (viscuda && siscuda) {
-    CHKERRQ(VecCUDAGetArrayRead(v,&av));
-    CHKERRQ(VecCUDAGetArrayWrite(s,&as));
+    PetscCall(VecCUDAGetArrayRead(v,&av));
+    PetscCall(VecCUDAGetArrayWrite(s,&as));
     SignVector_Functor sign_vector(av, as);
     thrust::for_each(thrust::device,thrust::counting_iterator<PetscInt>(0),
                      thrust::counting_iterator<PetscInt>(n), sign_vector);
-    CHKERRQ(VecCUDARestoreArrayWrite(s,&as));
-    CHKERRQ(VecCUDARestoreArrayRead(v,&av));
+    PetscCall(VecCUDARestoreArrayWrite(s,&as));
+    PetscCall(VecCUDARestoreArrayRead(v,&av));
   } else
 #endif
   {
-    CHKERRQ(VecGetArrayRead(v,&av));
-    CHKERRQ(VecGetArrayWrite(s,&as));
+    PetscCall(VecGetArrayRead(v,&av));
+    PetscCall(VecGetArrayWrite(s,&as));
     for (i=0;i<n;i++) as[i] = PetscAbsScalar(av[i]) < 0 ? -1. : 1.;
-    CHKERRQ(VecRestoreArrayWrite(s,&as));
-    CHKERRQ(VecRestoreArrayRead(v,&av));
+    PetscCall(VecRestoreArrayWrite(s,&as));
+    PetscCall(VecRestoreArrayRead(v,&av));
   }
   PetscFunctionReturn(0);
 }
@@ -178,26 +178,26 @@ PETSC_INTERN PetscErrorCode VecSetDelta(Vec x, PetscInt i)
   PetscInt  st,en;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetOwnershipRange(x,&st,&en));
+  PetscCall(VecGetOwnershipRange(x,&st,&en));
 #if defined(PETSC_HAVE_CUDA)
-  CHKERRQ(PetscObjectTypeCompareAny((PetscObject)x,&iscuda,VECSEQCUDA,VECMPICUDA,""));
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)x,&iscuda,VECSEQCUDA,VECMPICUDA,""));
   iscuda = (PetscBool)(iscuda && !x->boundtocpu);
   if (iscuda) {
     PetscScalar *ax;
-    CHKERRQ(VecCUDAGetArrayWrite(x,&ax));
+    PetscCall(VecCUDAGetArrayWrite(x,&ax));
     StandardBasis_Functor delta(ax, i-st);
     thrust::for_each(thrust::device,thrust::counting_iterator<PetscInt>(0),
                      thrust::counting_iterator<PetscInt>(en-st), delta);
-    CHKERRQ(VecCUDARestoreArrayWrite(x,&ax));
+    PetscCall(VecCUDARestoreArrayWrite(x,&ax));
   } else
 #endif
   {
-    CHKERRQ(VecSet(x,0.));
+    PetscCall(VecSet(x,0.));
     if (st <= i && i < en) {
-      CHKERRQ(VecSetValue(x,i,1.0,INSERT_VALUES));
+      PetscCall(VecSetValue(x,i,1.0,INSERT_VALUES));
     }
-    CHKERRQ(VecAssemblyBegin(x));
-    CHKERRQ(VecAssemblyEnd(x));
+    PetscCall(VecAssemblyBegin(x));
+    PetscCall(VecAssemblyEnd(x));
   }
   PetscFunctionReturn(0);
 }
@@ -223,82 +223,82 @@ PETSC_INTERN PetscErrorCode MatApproximateNorm_Private(Mat A, NormType normtype,
     if (normsamples < 0) normsamples = 10; /* pure guess */
     if (normtype == NORM_INFINITY) {
       Mat B;
-      CHKERRQ(MatCreateTranspose(A,&B));
+      PetscCall(MatCreateTranspose(A,&B));
       A = B;
     } else {
-      CHKERRQ(PetscObjectReference((PetscObject)A));
+      PetscCall(PetscObjectReference((PetscObject)A));
     }
-    CHKERRQ(MatCreateVecs(A,&x,&y));
-    CHKERRQ(MatCreateVecs(A,&z,&w));
-    CHKERRQ(VecBindToCPU(x,boundtocpu));
-    CHKERRQ(VecBindToCPU(y,boundtocpu));
-    CHKERRQ(VecBindToCPU(z,boundtocpu));
-    CHKERRQ(VecBindToCPU(w,boundtocpu));
-    CHKERRQ(VecGetSize(x,&N));
-    CHKERRQ(VecSet(x,1./N));
+    PetscCall(MatCreateVecs(A,&x,&y));
+    PetscCall(MatCreateVecs(A,&z,&w));
+    PetscCall(VecBindToCPU(x,boundtocpu));
+    PetscCall(VecBindToCPU(y,boundtocpu));
+    PetscCall(VecBindToCPU(z,boundtocpu));
+    PetscCall(VecBindToCPU(w,boundtocpu));
+    PetscCall(VecGetSize(x,&N));
+    PetscCall(VecSet(x,1./N));
     *n   = 0.0;
     for (i = 0; i < normsamples; i++) {
-      CHKERRQ(MatMult(A,x,y));
-      CHKERRQ(VecSign(y,w));
-      CHKERRQ(MatMultTranspose(A,w,z));
-      CHKERRQ(VecNorm(z,NORM_INFINITY,&normz));
-      CHKERRQ(VecDot(x,z,&dot));
+      PetscCall(MatMult(A,x,y));
+      PetscCall(VecSign(y,w));
+      PetscCall(MatMultTranspose(A,w,z));
+      PetscCall(VecNorm(z,NORM_INFINITY,&normz));
+      PetscCall(VecDot(x,z,&dot));
       adot = PetscAbsScalar(dot);
-      CHKERRQ(PetscInfo(A,"%s norm it %" PetscInt_FMT " -> (%g %g)\n",NormTypes[normtype],i,(double)normz,(double)adot));
+      PetscCall(PetscInfo(A,"%s norm it %" PetscInt_FMT " -> (%g %g)\n",NormTypes[normtype],i,(double)normz,(double)adot));
       if (normz <= adot && i > 0) {
-        CHKERRQ(VecNorm(y,NORM_1,n));
+        PetscCall(VecNorm(y,NORM_1,n));
         break;
       }
-      CHKERRQ(VecMax(z,&j,&normz));
+      PetscCall(VecMax(z,&j,&normz));
       if (j == jold) {
-        CHKERRQ(VecNorm(y,NORM_1,n));
-        CHKERRQ(PetscInfo(A,"%s norm it %" PetscInt_FMT " -> breakdown (j==jold)\n",NormTypes[normtype],i));
+        PetscCall(VecNorm(y,NORM_1,n));
+        PetscCall(PetscInfo(A,"%s norm it %" PetscInt_FMT " -> breakdown (j==jold)\n",NormTypes[normtype],i));
         break;
       }
       jold = j;
-      CHKERRQ(VecSetDelta(x,j));
+      PetscCall(VecSetDelta(x,j));
     }
-    CHKERRQ(MatDestroy(&A));
-    CHKERRQ(VecDestroy(&x));
-    CHKERRQ(VecDestroy(&w));
-    CHKERRQ(VecDestroy(&y));
-    CHKERRQ(VecDestroy(&z));
+    PetscCall(MatDestroy(&A));
+    PetscCall(VecDestroy(&x));
+    PetscCall(VecDestroy(&w));
+    PetscCall(VecDestroy(&y));
+    PetscCall(VecDestroy(&z));
     break;
   case NORM_2:
     if (normsamples < 0) normsamples = 20; /* pure guess */
-    CHKERRQ(MatCreateVecs(A,&x,&y));
-    CHKERRQ(MatCreateVecs(A,&z,NULL));
-    CHKERRQ(VecBindToCPU(x,boundtocpu));
-    CHKERRQ(VecBindToCPU(y,boundtocpu));
-    CHKERRQ(VecBindToCPU(z,boundtocpu));
-    CHKERRQ(VecSetRandom(x,NULL));
-    CHKERRQ(VecNormalize(x,NULL));
+    PetscCall(MatCreateVecs(A,&x,&y));
+    PetscCall(MatCreateVecs(A,&z,NULL));
+    PetscCall(VecBindToCPU(x,boundtocpu));
+    PetscCall(VecBindToCPU(y,boundtocpu));
+    PetscCall(VecBindToCPU(z,boundtocpu));
+    PetscCall(VecSetRandom(x,NULL));
+    PetscCall(VecNormalize(x,NULL));
     *n   = 0.0;
     for (i = 0; i < normsamples; i++) {
-      CHKERRQ(MatMult(A,x,y));
-      CHKERRQ(VecNormalize(y,n));
-      CHKERRQ(MatMultTranspose(A,y,z));
-      CHKERRQ(VecNorm(z,NORM_2,&normz));
-      CHKERRQ(VecDot(x,z,&dot));
+      PetscCall(MatMult(A,x,y));
+      PetscCall(VecNormalize(y,n));
+      PetscCall(MatMultTranspose(A,y,z));
+      PetscCall(VecNorm(z,NORM_2,&normz));
+      PetscCall(VecDot(x,z,&dot));
       adot = PetscAbsScalar(dot);
-      CHKERRQ(PetscInfo(A,"%s norm it %" PetscInt_FMT " -> %g (%g %g)\n",NormTypes[normtype],i,(double)*n,(double)normz,(double)adot));
+      PetscCall(PetscInfo(A,"%s norm it %" PetscInt_FMT " -> %g (%g %g)\n",NormTypes[normtype],i,(double)*n,(double)normz,(double)adot));
       if (normz <= adot) break;
       if (i < normsamples - 1) {
         Vec t;
 
-        CHKERRQ(VecNormalize(z,NULL));
+        PetscCall(VecNormalize(z,NULL));
         t = x;
         x = z;
         z = t;
       }
     }
-    CHKERRQ(VecDestroy(&x));
-    CHKERRQ(VecDestroy(&y));
-    CHKERRQ(VecDestroy(&z));
+    PetscCall(VecDestroy(&x));
+    PetscCall(VecDestroy(&y));
+    PetscCall(VecDestroy(&z));
     break;
   default:
     SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"%s norm not supported",NormTypes[normtype]);
   }
-  CHKERRQ(PetscInfo(A,"%s norm %g computed in %" PetscInt_FMT " iterations\n",NormTypes[normtype],(double)*n,i));
+  PetscCall(PetscInfo(A,"%s norm %g computed in %" PetscInt_FMT " iterations\n",NormTypes[normtype],(double)*n,i));
   PetscFunctionReturn(0);
 }

@@ -11,21 +11,21 @@ int main(int argc,char **args)
   PetscScalar    x[6][9],y[3][3],one=1.0;
   PetscBool      flg,testsbaij=PETSC_FALSE;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
-  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-test_mat_sbaij",&testsbaij));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-test_mat_sbaij",&testsbaij));
 
   if (testsbaij) {
-    CHKERRQ(MatCreateSBAIJ(PETSC_COMM_WORLD,bs,m*bs,n*bs,PETSC_DECIDE,PETSC_DECIDE,1,NULL,1,NULL,&A));
+    PetscCall(MatCreateSBAIJ(PETSC_COMM_WORLD,bs,m*bs,n*bs,PETSC_DECIDE,PETSC_DECIDE,1,NULL,1,NULL,&A));
   } else {
-    CHKERRQ(MatCreateBAIJ(PETSC_COMM_WORLD,bs,m*bs,n*bs,PETSC_DECIDE,PETSC_DECIDE,1,NULL,1,NULL,&A));
+    PetscCall(MatCreateBAIJ(PETSC_COMM_WORLD,bs,m*bs,n*bs,PETSC_DECIDE,PETSC_DECIDE,1,NULL,1,NULL,&A));
   }
-  CHKERRQ(MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE));
+  PetscCall(MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE));
   eval = 9;
 
-  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-ass_extern",&flg));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-ass_extern",&flg));
   if (flg && (size != 1)) rstart = m*((rank+1)%size);
   else rstart = m*(rank);
 
@@ -35,38 +35,38 @@ int main(int argc,char **args)
     for (j =0; j< 9; j++) x[i][j] = (PetscScalar)val++;
   }
 
-  CHKERRQ(MatSetValuesBlocked(A,2,row,3,col,&x[0][0],INSERT_VALUES));
+  PetscCall(MatSetValuesBlocked(A,2,row,3,col,&x[0][0],INSERT_VALUES));
 
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
   /*
   This option does not work for rectangular matrices
-  CHKERRQ(MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE));
+  PetscCall(MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE));
   */
 
-  CHKERRQ(MatSetValuesBlocked(A,2,row,3,col,&x[0][0],INSERT_VALUES));
+  PetscCall(MatSetValuesBlocked(A,2,row,3,col,&x[0][0],INSERT_VALUES));
 
   /* Do another MatSetValues to test the case when only one local block is specified */
   for (i=0; i<3; i++) {
     for (j =0; j<3; j++) y[i][j] = (PetscScalar)(10 + i*eval + j);
   }
-  CHKERRQ(MatSetValuesBlocked(A,1,row,1,col,&y[0][0],INSERT_VALUES));
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatSetValuesBlocked(A,1,row,1,col,&y[0][0],INSERT_VALUES));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
-  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-zero_rows",&flg));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-zero_rows",&flg));
   if (flg) {
     col[0] = rstart*bs+0;
     col[1] = rstart*bs+1;
     col[2] = rstart*bs+2;
-    CHKERRQ(MatZeroRows(A,3,col,one,0,0));
+    PetscCall(MatZeroRows(A,3,col,one,0,0));
   }
 
-  CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
 
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatDestroy(&A));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

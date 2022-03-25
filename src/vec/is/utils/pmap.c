@@ -51,8 +51,8 @@
 PetscErrorCode PetscLayoutCreate(MPI_Comm comm,PetscLayout *map)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscNew(map));
-  CHKERRMPI(MPI_Comm_size(comm, &(*map)->size));
+  PetscCall(PetscNew(map));
+  PetscCallMPI(MPI_Comm_size(comm, &(*map)->size));
   (*map)->comm        = comm;
   (*map)->bs          = -1;
   (*map)->n           = -1;
@@ -102,11 +102,11 @@ $ PetscLayoutCreateFromSizes(comm,n,N,bs,&layout);
 PetscErrorCode PetscLayoutCreateFromSizes(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt bs,PetscLayout *map)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscLayoutCreate(comm, map));
-  CHKERRQ(PetscLayoutSetLocalSize(*map, n));
-  CHKERRQ(PetscLayoutSetSize(*map, N));
-  CHKERRQ(PetscLayoutSetBlockSize(*map, bs));
-  CHKERRQ(PetscLayoutSetUp(*map));
+  PetscCall(PetscLayoutCreate(comm, map));
+  PetscCall(PetscLayoutSetLocalSize(*map, n));
+  PetscCall(PetscLayoutSetSize(*map, N));
+  PetscCall(PetscLayoutSetBlockSize(*map, bs));
+  PetscCall(PetscLayoutSetUp(*map));
   PetscFunctionReturn(0);
 }
 
@@ -133,9 +133,9 @@ PetscErrorCode PetscLayoutDestroy(PetscLayout *map)
   PetscFunctionBegin;
   if (!*map) PetscFunctionReturn(0);
   if (!(*map)->refcnt--) {
-    if ((*map)->range_alloc) CHKERRQ(PetscFree((*map)->range));
-    CHKERRQ(ISLocalToGlobalMappingDestroy(&(*map)->mapping));
-    CHKERRQ(PetscFree((*map)));
+    if ((*map)->range_alloc) PetscCall(PetscFree((*map)->range));
+    PetscCall(ISLocalToGlobalMappingDestroy(&(*map)->mapping));
+    PetscCall(PetscFree((*map)));
   }
   *map = NULL;
   PetscFunctionReturn(0);
@@ -167,13 +167,13 @@ PetscErrorCode PetscLayoutCreateFromRanges(MPI_Comm comm,const PetscInt range[],
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_rank(comm, &rank));
-  CHKERRQ(PetscLayoutCreate(comm, &map));
-  CHKERRQ(PetscLayoutSetBlockSize(map, bs));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  PetscCall(PetscLayoutCreate(comm, &map));
+  PetscCall(PetscLayoutSetBlockSize(map, bs));
   switch (mode) {
     case PETSC_COPY_VALUES:
-      CHKERRQ(PetscMalloc1(map->size+1, &map->range));
-      CHKERRQ(PetscArraycpy(map->range, range, map->size+1));
+      PetscCall(PetscMalloc1(map->size+1, &map->range));
+      PetscCall(PetscArraycpy(map->range, range, map->size+1));
       break;
     case PETSC_USE_POINTER:
       map->range_alloc = PETSC_FALSE;
@@ -187,7 +187,7 @@ PetscErrorCode PetscLayoutCreateFromRanges(MPI_Comm comm,const PetscInt range[],
   map->N      = map->range[map->size];
   if (PetscDefined(USE_DEBUG)) {  /* just check that n, N and bs are consistent */
     PetscInt tmp;
-    CHKERRMPI(MPIU_Allreduce(&map->n,&tmp,1,MPIU_INT,MPI_SUM,map->comm));
+    PetscCallMPI(MPIU_Allreduce(&map->n,&tmp,1,MPIU_INT,MPI_SUM,map->comm));
     PetscCheckFalse(tmp != map->N,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Sum of local lengths %" PetscInt_FMT " does not equal global length %" PetscInt_FMT ", my local length %" PetscInt_FMT ".\nThe provided PetscLayout is wrong.",tmp,map->N,map->n);
     if (map->bs > 1) {
       PetscCheckFalse(map->n % map->bs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Local size %" PetscInt_FMT " must be divisible by blocksize %" PetscInt_FMT,map->n,map->bs);
@@ -247,16 +247,16 @@ PetscErrorCode PetscLayoutSetUp(PetscLayout map)
     PetscCheckFalse(map->N % map->bs,map->comm,PETSC_ERR_PLIB,"Global size %" PetscInt_FMT " must be divisible by blocksize %" PetscInt_FMT,map->N,map->bs);
   }
 
-  CHKERRMPI(MPI_Comm_rank(map->comm, &rank));
+  PetscCallMPI(MPI_Comm_rank(map->comm, &rank));
   if (map->n > 0) map->n = map->n/PetscAbs(map->bs);
   if (map->N > 0) map->N = map->N/PetscAbs(map->bs);
-  CHKERRQ(PetscSplitOwnership(map->comm,&map->n,&map->N));
+  PetscCall(PetscSplitOwnership(map->comm,&map->n,&map->N));
   map->n = map->n*PetscAbs(map->bs);
   map->N = map->N*PetscAbs(map->bs);
   if (!map->range) {
-    CHKERRQ(PetscMalloc1(map->size+1, &map->range));
+    PetscCall(PetscMalloc1(map->size+1, &map->range));
   }
-  CHKERRMPI(MPI_Allgather(&map->n, 1, MPIU_INT, map->range+1, 1, MPIU_INT, map->comm));
+  PetscCallMPI(MPI_Allgather(&map->n, 1, MPIU_INT, map->range+1, 1, MPIU_INT, map->comm));
 
   map->range[0] = 0;
   for (p = 2; p <= map->size; p++) map->range[p] += map->range[p-1];
@@ -295,12 +295,12 @@ PetscErrorCode PetscLayoutDuplicate(PetscLayout in,PetscLayout *out)
   MPI_Comm       comm = in->comm;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscLayoutDestroy(out));
-  CHKERRQ(PetscLayoutCreate(comm,out));
-  CHKERRQ(PetscMemcpy(*out,in,sizeof(struct _n_PetscLayout)));
+  PetscCall(PetscLayoutDestroy(out));
+  PetscCall(PetscLayoutCreate(comm,out));
+  PetscCall(PetscMemcpy(*out,in,sizeof(struct _n_PetscLayout)));
   if (in->range) {
-    CHKERRQ(PetscMalloc1((*out)->size+1,&(*out)->range));
-    CHKERRQ(PetscArraycpy((*out)->range,in->range,(*out)->size+1));
+    PetscCall(PetscMalloc1((*out)->size+1,&(*out)->range));
+    PetscCall(PetscArraycpy((*out)->range,in->range,(*out)->size+1));
   }
   (*out)->refcnt = 0;
   PetscFunctionReturn(0);
@@ -330,7 +330,7 @@ PetscErrorCode PetscLayoutReference(PetscLayout in,PetscLayout *out)
 {
   PetscFunctionBegin;
   in->refcnt++;
-  CHKERRQ(PetscLayoutDestroy(out));
+  PetscCall(PetscLayoutDestroy(out));
   *out = in;
   PetscFunctionReturn(0);
 }
@@ -359,11 +359,11 @@ PetscErrorCode PetscLayoutSetISLocalToGlobalMapping(PetscLayout in,ISLocalToGlob
   if (ltog) {
     PetscInt bs;
 
-    CHKERRQ(ISLocalToGlobalMappingGetBlockSize(ltog,&bs));
+    PetscCall(ISLocalToGlobalMappingGetBlockSize(ltog,&bs));
     PetscCheckFalse(in->bs > 0 && (bs != 1) && in->bs != bs,in->comm,PETSC_ERR_PLIB,"Blocksize of layout %" PetscInt_FMT " must match that of mapping %" PetscInt_FMT " (or the latter must be 1)",in->bs,bs);
-    CHKERRQ(PetscObjectReference((PetscObject)ltog));
+    PetscCall(PetscObjectReference((PetscObject)ltog));
   }
-  CHKERRQ(ISLocalToGlobalMappingDestroy(&in->mapping));
+  PetscCall(ISLocalToGlobalMappingDestroy(&in->mapping));
   in->mapping = ltog;
   PetscFunctionReturn(0);
 }
@@ -498,9 +498,9 @@ PetscErrorCode PetscLayoutSetBlockSize(PetscLayout map,PetscInt bs)
   if (map->mapping) {
     PetscInt       obs;
 
-    CHKERRQ(ISLocalToGlobalMappingGetBlockSize(map->mapping,&obs));
+    PetscCall(ISLocalToGlobalMappingGetBlockSize(map->mapping,&obs));
     if (obs > 1) {
-      CHKERRQ(ISLocalToGlobalMappingSetBlockSize(map->mapping,bs));
+      PetscCall(ISLocalToGlobalMappingSetBlockSize(map->mapping,bs));
     }
   }
   map->bs = bs;
@@ -616,7 +616,7 @@ PetscErrorCode PetscLayoutCompare(PetscLayout mapa,PetscLayout mapb,PetscBool *c
   PetscFunctionBegin;
   *congruent = PETSC_FALSE;
   if (mapa->N == mapb->N && mapa->range && mapb->range && mapa->size == mapb->size) {
-    CHKERRQ(PetscArraycmp(mapa->range,mapb->range,mapa->size+1,congruent));
+    PetscCall(PetscArraycmp(mapa->range,mapb->range,mapa->size+1,congruent));
   }
   PetscFunctionReturn(0);
 }

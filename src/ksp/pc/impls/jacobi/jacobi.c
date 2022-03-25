@@ -159,7 +159,7 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc)
        For most preconditioners the code would begin here something like
 
   if (pc->setupcalled == 0) { allocate space the first time this is ever called
-    CHKERRQ(MatCreateVecs(pc->mat,&jac->diag));
+    PetscCall(MatCreateVecs(pc->mat,&jac->diag));
     PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->diag);
   }
 
@@ -183,39 +183,39 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc)
     PetscBool isspd;
 
     if (jac->userowmax) {
-      CHKERRQ(MatGetRowMaxAbs(pc->pmat,diag,NULL));
+      PetscCall(MatGetRowMaxAbs(pc->pmat,diag,NULL));
     } else if (jac->userowsum) {
-      CHKERRQ(MatGetRowSum(pc->pmat,diag));
+      PetscCall(MatGetRowSum(pc->pmat,diag));
     } else {
-      CHKERRQ(MatGetDiagonal(pc->pmat,diag));
+      PetscCall(MatGetDiagonal(pc->pmat,diag));
     }
-    CHKERRQ(VecReciprocal(diag));
+    PetscCall(VecReciprocal(diag));
     if (jac->useabs) {
-      CHKERRQ(VecAbs(diag));
+      PetscCall(VecAbs(diag));
     }
-    CHKERRQ(MatGetOption(pc->pmat,MAT_SPD,&isspd));
+    PetscCall(MatGetOption(pc->pmat,MAT_SPD,&isspd));
     if (jac->fixdiag && !isspd) {
-      CHKERRQ(VecGetLocalSize(diag,&n));
-      CHKERRQ(VecGetArray(diag,&x));
+      PetscCall(VecGetLocalSize(diag,&n));
+      PetscCall(VecGetArray(diag,&x));
       for (i=0; i<n; i++) {
         if (x[i] == 0.0) {
           x[i]     = 1.0;
           zeroflag = PETSC_TRUE;
         }
       }
-      CHKERRQ(VecRestoreArray(diag,&x));
+      PetscCall(VecRestoreArray(diag,&x));
     }
   }
   if (diagsqrt) {
     if (jac->userowmax) {
-      CHKERRQ(MatGetRowMaxAbs(pc->pmat,diagsqrt,NULL));
+      PetscCall(MatGetRowMaxAbs(pc->pmat,diagsqrt,NULL));
     } else if (jac->userowsum) {
-      CHKERRQ(MatGetRowSum(pc->pmat,diagsqrt));
+      PetscCall(MatGetRowSum(pc->pmat,diagsqrt));
     } else {
-      CHKERRQ(MatGetDiagonal(pc->pmat,diagsqrt));
+      PetscCall(MatGetDiagonal(pc->pmat,diagsqrt));
     }
-    CHKERRQ(VecGetLocalSize(diagsqrt,&n));
-    CHKERRQ(VecGetArray(diagsqrt,&x));
+    PetscCall(VecGetLocalSize(diagsqrt,&n));
+    PetscCall(VecGetArray(diagsqrt,&x));
     for (i=0; i<n; i++) {
       if (x[i] != 0.0) x[i] = 1.0/PetscSqrtReal(PetscAbsScalar(x[i]));
       else {
@@ -223,10 +223,10 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc)
         zeroflag = PETSC_TRUE;
       }
     }
-    CHKERRQ(VecRestoreArray(diagsqrt,&x));
+    PetscCall(VecRestoreArray(diagsqrt,&x));
   }
   if (zeroflag) {
-    CHKERRQ(PetscInfo(pc,"Zero detected in diagonal of matrix, using 1 at those locations\n"));
+    PetscCall(PetscInfo(pc,"Zero detected in diagonal of matrix, using 1 at those locations\n"));
   }
   PetscFunctionReturn(0);
 }
@@ -244,9 +244,9 @@ static PetscErrorCode PCSetUp_Jacobi_Symmetric(PC pc)
   PC_Jacobi      *jac = (PC_Jacobi*)pc->data;
 
   PetscFunctionBegin;
-  CHKERRQ(MatCreateVecs(pc->pmat,&jac->diagsqrt,NULL));
-  CHKERRQ(PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->diagsqrt));
-  CHKERRQ(PCSetUp_Jacobi(pc));
+  PetscCall(MatCreateVecs(pc->pmat,&jac->diagsqrt,NULL));
+  PetscCall(PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->diagsqrt));
+  PetscCall(PCSetUp_Jacobi(pc));
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
@@ -263,9 +263,9 @@ static PetscErrorCode PCSetUp_Jacobi_NonSymmetric(PC pc)
   PC_Jacobi      *jac = (PC_Jacobi*)pc->data;
 
   PetscFunctionBegin;
-  CHKERRQ(MatCreateVecs(pc->pmat,&jac->diag,NULL));
-  CHKERRQ(PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->diag));
-  CHKERRQ(PCSetUp_Jacobi(pc));
+  PetscCall(MatCreateVecs(pc->pmat,&jac->diag,NULL));
+  PetscCall(PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->diag));
+  PetscCall(PCSetUp_Jacobi(pc));
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
@@ -287,9 +287,9 @@ static PetscErrorCode PCApply_Jacobi(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
   if (!jac->diag) {
-    CHKERRQ(PCSetUp_Jacobi_NonSymmetric(pc));
+    PetscCall(PCSetUp_Jacobi_NonSymmetric(pc));
   }
-  CHKERRQ(VecPointwiseMult(y,x,jac->diag));
+  PetscCall(VecPointwiseMult(y,x,jac->diag));
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
@@ -312,9 +312,9 @@ static PetscErrorCode PCApplySymmetricLeftOrRight_Jacobi(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
   if (!jac->diagsqrt) {
-    CHKERRQ(PCSetUp_Jacobi_Symmetric(pc));
+    PetscCall(PCSetUp_Jacobi_Symmetric(pc));
   }
-  CHKERRQ(VecPointwiseMult(y,x,jac->diagsqrt));
+  PetscCall(VecPointwiseMult(y,x,jac->diagsqrt));
   PetscFunctionReturn(0);
 }
 
@@ -324,8 +324,8 @@ static PetscErrorCode PCReset_Jacobi(PC pc)
   PC_Jacobi      *jac = (PC_Jacobi*)pc->data;
 
   PetscFunctionBegin;
-  CHKERRQ(VecDestroy(&jac->diag));
-  CHKERRQ(VecDestroy(&jac->diagsqrt));
+  PetscCall(VecDestroy(&jac->diag));
+  PetscCall(VecDestroy(&jac->diagsqrt));
   PetscFunctionReturn(0);
 }
 
@@ -341,18 +341,18 @@ static PetscErrorCode PCReset_Jacobi(PC pc)
 static PetscErrorCode PCDestroy_Jacobi(PC pc)
 {
   PetscFunctionBegin;
-  CHKERRQ(PCReset_Jacobi(pc));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCJacobiSetType_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCJacobiGetType_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCJacobiSetUseAbs_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCJacobiGetUseAbs_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCJacobiSetFixDiagonal_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCJacobiGetFixDiagonal_C",NULL));
+  PetscCall(PCReset_Jacobi(pc));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCJacobiSetType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCJacobiGetType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCJacobiSetUseAbs_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCJacobiGetUseAbs_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCJacobiSetFixDiagonal_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCJacobiGetFixDiagonal_C",NULL));
 
   /*
       Free the private data structure that was hanging off the PC
   */
-  CHKERRQ(PetscFree(pc->data));
+  PetscCall(PetscFree(pc->data));
   PetscFunctionReturn(0);
 }
 
@@ -363,15 +363,15 @@ static PetscErrorCode PCSetFromOptions_Jacobi(PetscOptionItems *PetscOptionsObje
   PCJacobiType   deflt,type;
 
   PetscFunctionBegin;
-  CHKERRQ(PCJacobiGetType(pc,&deflt));
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"Jacobi options"));
-  CHKERRQ(PetscOptionsEnum("-pc_jacobi_type","How to construct diagonal matrix","PCJacobiSetType",PCJacobiTypes,(PetscEnum)deflt,(PetscEnum*)&type,&flg));
+  PetscCall(PCJacobiGetType(pc,&deflt));
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"Jacobi options"));
+  PetscCall(PetscOptionsEnum("-pc_jacobi_type","How to construct diagonal matrix","PCJacobiSetType",PCJacobiTypes,(PetscEnum)deflt,(PetscEnum*)&type,&flg));
   if (flg) {
-    CHKERRQ(PCJacobiSetType(pc,type));
+    PetscCall(PCJacobiSetType(pc,type));
   }
-  CHKERRQ(PetscOptionsBool("-pc_jacobi_abs","Use absolute values of diagonal entries","PCJacobiSetUseAbs",jac->useabs,&jac->useabs,NULL));
-  CHKERRQ(PetscOptionsBool("-pc_jacobi_fixdiagonal","Fix null terms on diagonal","PCJacobiSetFixDiagonal",jac->fixdiag,&jac->fixdiag,NULL));
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(PetscOptionsBool("-pc_jacobi_abs","Use absolute values of diagonal entries","PCJacobiSetUseAbs",jac->useabs,&jac->useabs,NULL));
+  PetscCall(PetscOptionsBool("-pc_jacobi_fixdiagonal","Fix null terms on diagonal","PCJacobiSetFixDiagonal",jac->fixdiag,&jac->fixdiag,NULL));
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -381,19 +381,19 @@ static PetscErrorCode PCView_Jacobi(PC pc, PetscViewer viewer)
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) {
     PCJacobiType      type;
     PetscBool         useAbs,fixdiag;
     PetscViewerFormat format;
 
-    CHKERRQ(PCJacobiGetType(pc, &type));
-    CHKERRQ(PCJacobiGetUseAbs(pc, &useAbs));
-    CHKERRQ(PCJacobiGetFixDiagonal(pc, &fixdiag));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer, "  type %s%s%s\n", PCJacobiTypes[type], useAbs ? ", using absolute value of entries" : "", !fixdiag ? ", not checking null diagonal entries" : ""));
-    CHKERRQ(PetscViewerGetFormat(viewer, &format));
+    PetscCall(PCJacobiGetType(pc, &type));
+    PetscCall(PCJacobiGetUseAbs(pc, &useAbs));
+    PetscCall(PCJacobiGetFixDiagonal(pc, &fixdiag));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  type %s%s%s\n", PCJacobiTypes[type], useAbs ? ", using absolute value of entries" : "", !fixdiag ? ", not checking null diagonal entries" : ""));
+    PetscCall(PetscViewerGetFormat(viewer, &format));
     if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
-      CHKERRQ(VecView(jac->diag, viewer));
+      PetscCall(VecView(jac->diag, viewer));
     }
   }
   PetscFunctionReturn(0);
@@ -443,7 +443,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Jacobi(PC pc)
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  CHKERRQ(PetscNewLog(pc,&jac));
+  PetscCall(PetscNewLog(pc,&jac));
   pc->data = (void*)jac;
 
   /*
@@ -475,12 +475,12 @@ PETSC_EXTERN PetscErrorCode PCCreate_Jacobi(PC pc)
   pc->ops->applysymmetricleft  = PCApplySymmetricLeftOrRight_Jacobi;
   pc->ops->applysymmetricright = PCApplySymmetricLeftOrRight_Jacobi;
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCJacobiSetType_C",PCJacobiSetType_Jacobi));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCJacobiGetType_C",PCJacobiGetType_Jacobi));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCJacobiSetUseAbs_C",PCJacobiSetUseAbs_Jacobi));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCJacobiGetUseAbs_C",PCJacobiGetUseAbs_Jacobi));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCJacobiSetFixDiagonal_C",PCJacobiSetFixDiagonal_Jacobi));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCJacobiGetFixDiagonal_C",PCJacobiGetFixDiagonal_Jacobi));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCJacobiSetType_C",PCJacobiSetType_Jacobi));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCJacobiGetType_C",PCJacobiGetType_Jacobi));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCJacobiSetUseAbs_C",PCJacobiSetUseAbs_Jacobi));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCJacobiGetUseAbs_C",PCJacobiGetUseAbs_Jacobi));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCJacobiSetFixDiagonal_C",PCJacobiSetFixDiagonal_Jacobi));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCJacobiGetFixDiagonal_C",PCJacobiGetFixDiagonal_Jacobi));
   PetscFunctionReturn(0);
 }
 
@@ -509,7 +509,7 @@ PetscErrorCode  PCJacobiSetUseAbs(PC pc,PetscBool flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  CHKERRQ(PetscTryMethod(pc,"PCJacobiSetUseAbs_C",(PC,PetscBool),(pc,flg)));
+  PetscCall(PetscTryMethod(pc,"PCJacobiSetUseAbs_C",(PC,PetscBool),(pc,flg)));
   PetscFunctionReturn(0);
 }
 
@@ -534,7 +534,7 @@ PetscErrorCode  PCJacobiGetUseAbs(PC pc,PetscBool *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  CHKERRQ(PetscUseMethod(pc,"PCJacobiGetUseAbs_C",(PC,PetscBool*),(pc,flg)));
+  PetscCall(PetscUseMethod(pc,"PCJacobiGetUseAbs_C",(PC,PetscBool*),(pc,flg)));
   PetscFunctionReturn(0);
 }
 
@@ -562,7 +562,7 @@ PetscErrorCode  PCJacobiSetFixDiagonal(PC pc,PetscBool flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  CHKERRQ(PetscTryMethod(pc,"PCJacobiSetFixDiagonal_C",(PC,PetscBool),(pc,flg)));
+  PetscCall(PetscTryMethod(pc,"PCJacobiSetFixDiagonal_C",(PC,PetscBool),(pc,flg)));
   PetscFunctionReturn(0);
 }
 
@@ -589,7 +589,7 @@ PetscErrorCode  PCJacobiGetFixDiagonal(PC pc,PetscBool *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  CHKERRQ(PetscUseMethod(pc,"PCJacobiGetFixDiagonal_C",(PC,PetscBool*),(pc,flg)));
+  PetscCall(PetscUseMethod(pc,"PCJacobiGetFixDiagonal_C",(PC,PetscBool*),(pc,flg)));
   PetscFunctionReturn(0);
 }
 
@@ -614,7 +614,7 @@ PetscErrorCode  PCJacobiSetType(PC pc,PCJacobiType type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  CHKERRQ(PetscTryMethod(pc,"PCJacobiSetType_C",(PC,PCJacobiType),(pc,type)));
+  PetscCall(PetscTryMethod(pc,"PCJacobiSetType_C",(PC,PCJacobiType),(pc,type)));
   PetscFunctionReturn(0);
 }
 
@@ -637,6 +637,6 @@ PetscErrorCode  PCJacobiGetType(PC pc,PCJacobiType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  CHKERRQ(PetscUseMethod(pc,"PCJacobiGetType_C",(PC,PCJacobiType*),(pc,type)));
+  PetscCall(PetscUseMethod(pc,"PCJacobiGetType_C",(PC,PCJacobiType*),(pc,type)));
   PetscFunctionReturn(0);
 }

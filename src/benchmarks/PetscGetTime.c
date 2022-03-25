@@ -7,25 +7,25 @@ int main(int argc,char **argv)
   PetscLogDouble x,y;
   PetscInt       i;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,0,0));
+  PetscCall(PetscInitialize(&argc,&argv,0,0));
   /* To take care of paging effects */
-  CHKERRQ(PetscTime(&y));
+  PetscCall(PetscTime(&y));
 
   for (i=0; i<2; i++) {
-    CHKERRQ(PetscTime(&x));
-    CHKERRQ(PetscTime(&y));
-    CHKERRQ(PetscTime(&y));
-    CHKERRQ(PetscTime(&y));
-    CHKERRQ(PetscTime(&y));
-    CHKERRQ(PetscTime(&y));
-    CHKERRQ(PetscTime(&y));
-    CHKERRQ(PetscTime(&y));
-    CHKERRQ(PetscTime(&y));
-    CHKERRQ(PetscTime(&y));
-    CHKERRQ(PetscTime(&y));
+    PetscCall(PetscTime(&x));
+    PetscCall(PetscTime(&y));
+    PetscCall(PetscTime(&y));
+    PetscCall(PetscTime(&y));
+    PetscCall(PetscTime(&y));
+    PetscCall(PetscTime(&y));
+    PetscCall(PetscTime(&y));
+    PetscCall(PetscTime(&y));
+    PetscCall(PetscTime(&y));
+    PetscCall(PetscTime(&y));
+    PetscCall(PetscTime(&y));
     fprintf(stdout,"%-15s : %e sec\n","PetscTime",(y-x)/10.0);
   }
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }

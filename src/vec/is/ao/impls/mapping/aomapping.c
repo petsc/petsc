@@ -20,8 +20,8 @@ PetscErrorCode AODestroy_Mapping(AO ao)
   AO_Mapping     *aomap = (AO_Mapping*) ao->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscFree4(aomap->app,aomap->appPerm,aomap->petsc,aomap->petscPerm));
-  CHKERRQ(PetscFree(aomap));
+  PetscCall(PetscFree4(aomap->app,aomap->appPerm,aomap->petsc,aomap->petscPerm));
+  PetscCall(PetscFree(aomap));
   PetscFunctionReturn(0);
 }
 
@@ -33,9 +33,9 @@ PetscErrorCode AOView_Mapping(AO ao, PetscViewer viewer)
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)ao), &rank));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)ao), &rank));
   if (rank) PetscFunctionReturn(0);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) {
     PetscViewerASCIIPrintf(viewer, "Number of elements in ordering %" PetscInt_FMT "\n", aomap->N);
     PetscViewerASCIIPrintf(viewer, "   App.   PETSc\n");
@@ -238,19 +238,19 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
   PetscFunctionBegin;
   PetscValidPointer(aoout,5);
   *aoout = NULL;
-  CHKERRQ(AOInitializePackage());
+  PetscCall(AOInitializePackage());
 
-  CHKERRQ(PetscHeaderCreate(ao, AO_CLASSID, "AO", "Application Ordering", "AO", comm, AODestroy, AOView));
-  CHKERRQ(PetscNewLog(ao,&aomap));
-  CHKERRQ(PetscMemcpy(ao->ops, &AOps, sizeof(AOps)));
+  PetscCall(PetscHeaderCreate(ao, AO_CLASSID, "AO", "Application Ordering", "AO", comm, AODestroy, AOView));
+  PetscCall(PetscNewLog(ao,&aomap));
+  PetscCall(PetscMemcpy(ao->ops, &AOps, sizeof(AOps)));
   ao->data = (void*) aomap;
 
   /* transmit all lengths to all processors */
-  CHKERRMPI(MPI_Comm_size(comm, &size));
-  CHKERRMPI(MPI_Comm_rank(comm, &rank));
-  CHKERRQ(PetscMalloc2(size, &lens,size,&disp));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  PetscCall(PetscMalloc2(size, &lens,size,&disp));
   nnapp = napp;
-  CHKERRMPI(MPI_Allgather(&nnapp, 1, MPI_INT, lens, 1, MPI_INT, comm));
+  PetscCallMPI(MPI_Allgather(&nnapp, 1, MPI_INT, lens, 1, MPI_INT, comm));
   N     = 0;
   for (i = 0; i < size; i++) {
     disp[i] = N;
@@ -263,27 +263,27 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
   /* If mypetsc is 0 then use "natural" numbering */
   if (!mypetsc) {
     start = disp[rank];
-    CHKERRQ(PetscMalloc1(napp+1, &petsc));
+    PetscCall(PetscMalloc1(napp+1, &petsc));
     for (i = 0; i < napp; i++) petsc[i] = start + i;
   } else {
     petsc = (PetscInt*)mypetsc;
   }
 
   /* get all indices on all processors */
-  CHKERRQ(PetscMalloc4(N, &allapp,N,&appPerm,N,&allpetsc,N,&petscPerm));
-  CHKERRMPI(MPI_Allgatherv((void*)myapp, napp, MPIU_INT, allapp,   lens, disp, MPIU_INT, comm));
-  CHKERRMPI(MPI_Allgatherv((void*)petsc, napp, MPIU_INT, allpetsc, lens, disp, MPIU_INT, comm));
-  CHKERRQ(PetscFree2(lens,disp));
+  PetscCall(PetscMalloc4(N, &allapp,N,&appPerm,N,&allpetsc,N,&petscPerm));
+  PetscCallMPI(MPI_Allgatherv((void*)myapp, napp, MPIU_INT, allapp,   lens, disp, MPIU_INT, comm));
+  PetscCallMPI(MPI_Allgatherv((void*)petsc, napp, MPIU_INT, allpetsc, lens, disp, MPIU_INT, comm));
+  PetscCall(PetscFree2(lens,disp));
 
   /* generate a list of application and PETSc node numbers */
-  CHKERRQ(PetscMalloc4(N, &aomap->app,N,&aomap->appPerm,N,&aomap->petsc,N,&aomap->petscPerm));
-  CHKERRQ(PetscLogObjectMemory((PetscObject)ao, 4*N * sizeof(PetscInt)));
+  PetscCall(PetscMalloc4(N, &aomap->app,N,&aomap->appPerm,N,&aomap->petsc,N,&aomap->petscPerm));
+  PetscCall(PetscLogObjectMemory((PetscObject)ao, 4*N * sizeof(PetscInt)));
   for (i = 0; i < N; i++) {
     appPerm[i]   = i;
     petscPerm[i] = i;
   }
-  CHKERRQ(PetscSortIntWithPermutation(N, allpetsc, petscPerm));
-  CHKERRQ(PetscSortIntWithPermutation(N, allapp,   appPerm));
+  PetscCall(PetscSortIntWithPermutation(N, allpetsc, petscPerm));
+  PetscCall(PetscSortIntWithPermutation(N, allapp,   appPerm));
   /* Form sorted arrays of indices */
   for (i = 0; i < N; i++) {
     aomap->app[i]   = allapp[appPerm[i]];
@@ -309,11 +309,11 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
   }
   /* Cleanup */
   if (!mypetsc) {
-    CHKERRQ(PetscFree(petsc));
+    PetscCall(PetscFree(petsc));
   }
-  CHKERRQ(PetscFree4(allapp,appPerm,allpetsc,petscPerm));
+  PetscCall(PetscFree4(allapp,appPerm,allpetsc,petscPerm));
 
-  CHKERRQ(AOViewFromOptions(ao,NULL,"-ao_view"));
+  PetscCall(AOViewFromOptions(ao,NULL,"-ao_view"));
 
   *aoout = ao;
   PetscFunctionReturn(0);
@@ -348,22 +348,22 @@ PetscErrorCode  AOCreateMappingIS(IS isapp, IS ispetsc, AO *aoout)
   PetscInt       napp, npetsc;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectGetComm((PetscObject) isapp, &comm));
-  CHKERRQ(ISGetLocalSize(isapp, &napp));
+  PetscCall(PetscObjectGetComm((PetscObject) isapp, &comm));
+  PetscCall(ISGetLocalSize(isapp, &napp));
   if (ispetsc) {
-    CHKERRQ(ISGetLocalSize(ispetsc, &npetsc));
+    PetscCall(ISGetLocalSize(ispetsc, &npetsc));
     PetscCheckFalse(napp != npetsc,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Local IS lengths must match");
-    CHKERRQ(ISGetIndices(ispetsc, &mypetsc));
+    PetscCall(ISGetIndices(ispetsc, &mypetsc));
   } else {
     mypetsc = NULL;
   }
-  CHKERRQ(ISGetIndices(isapp, &myapp));
+  PetscCall(ISGetIndices(isapp, &myapp));
 
-  CHKERRQ(AOCreateMapping(comm, napp, myapp, mypetsc, aoout));
+  PetscCall(AOCreateMapping(comm, napp, myapp, mypetsc, aoout));
 
-  CHKERRQ(ISRestoreIndices(isapp, &myapp));
+  PetscCall(ISRestoreIndices(isapp, &myapp));
   if (ispetsc) {
-    CHKERRQ(ISRestoreIndices(ispetsc, &mypetsc));
+    PetscCall(ISRestoreIndices(ispetsc, &mypetsc));
   }
   PetscFunctionReturn(0);
 }

@@ -13,38 +13,38 @@ int main(int argc,char **args)
   PetscBool      flg;
   char           file[PETSC_MAX_PATH_LEN];
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-fA",file,sizeof(file),&flg));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-fA",file,sizeof(file),&flg));
   PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Input fileA not specified");
-  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&viewer));
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(MatSetType(A,MATAIJ));
-  CHKERRQ(MatLoad(A,viewer));
-  CHKERRQ(PetscViewerDestroy(&viewer));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&viewer));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetType(A,MATAIJ));
+  PetscCall(MatLoad(A,viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
 
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-fB",file,sizeof(file),&flg));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-fB",file,sizeof(file),&flg));
   PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Input fileB not specified");
-  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&viewer));
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&B));
-  CHKERRQ(MatSetType(B,MATDENSE));
-  CHKERRQ(MatLoad(B,viewer));
-  CHKERRQ(PetscViewerDestroy(&viewer));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&viewer));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&B));
+  PetscCall(MatSetType(B,MATDENSE));
+  PetscCall(MatLoad(B,viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
 
-  CHKERRQ(MatTranspose(A,MAT_INITIAL_MATRIX,&AT));
-  CHKERRQ(MatMatMult(AT,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C));
+  PetscCall(MatTranspose(A,MAT_INITIAL_MATRIX,&AT));
+  PetscCall(MatMatMult(AT,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C));
 
-  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-view_C",&flg));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-view_C",&flg));
   if (flg) {
-    CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"C.dat",FILE_MODE_WRITE,&viewer));
-    CHKERRQ(PetscViewerPushFormat(viewer,PETSC_VIEWER_NATIVE));
-    CHKERRQ(MatView(C,viewer));
-    CHKERRQ(PetscViewerPopFormat(viewer));
-    CHKERRQ(PetscViewerDestroy(&viewer));
+    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"C.dat",FILE_MODE_WRITE,&viewer));
+    PetscCall(PetscViewerPushFormat(viewer,PETSC_VIEWER_NATIVE));
+    PetscCall(MatView(C,viewer));
+    PetscCall(PetscViewerPopFormat(viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
   }
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(MatDestroy(&B));
-  CHKERRQ(MatDestroy(&AT));
-  CHKERRQ(MatDestroy(&C));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&B));
+  PetscCall(MatDestroy(&AT));
+  PetscCall(MatDestroy(&C));
+  PetscCall(PetscFinalize());
   return 0;
 }

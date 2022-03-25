@@ -15,7 +15,7 @@ static PetscErrorCode KSPSetUp_PIPEPRCG(KSP ksp)
 {
   PetscFunctionBegin;
   /* get work vectors needed by PIPEPRCG */
-  CHKERRQ(KSPSetWorkVecs(ksp,9));
+  PetscCall(KSPSetWorkVecs(ksp,9));
 
   PetscFunctionReturn(0);
 }
@@ -26,10 +26,10 @@ static PetscErrorCode KSPSetFromOptions_PIPEPRCG(PetscOptionItems *PetscOptionsO
   PetscBool      flag=PETSC_FALSE;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"KSP PIPEPRCG options"));
-  CHKERRQ(PetscOptionsBool("-recompute_w","-recompute w_k with Ar_k? (default = True)","",prcg->rc_w_q,&prcg->rc_w_q,&flag));
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"KSP PIPEPRCG options"));
+  PetscCall(PetscOptionsBool("-recompute_w","-recompute w_k with Ar_k? (default = True)","",prcg->rc_w_q,&prcg->rc_w_q,&flag));
   if (!flag) prcg->rc_w_q = PETSC_TRUE;
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -51,7 +51,7 @@ static PetscErrorCode  KSPSolve_PIPEPRCG(KSP ksp)
 
   PetscFunctionBegin;
 
-  CHKERRQ(PCGetDiagonalScale(ksp->pc,&diagonalscale));
+  PetscCall(PCGetDiagonalScale(ksp->pc,&diagonalscale));
   PetscCheck(!diagonalscale,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
   X  = ksp->vec_sol;
@@ -66,35 +66,35 @@ static PetscErrorCode  KSPSolve_PIPEPRCG(KSP ksp)
   U  = ksp->work[7];
   UT = ksp->work[8];
 
-  CHKERRQ(PCGetOperators(ksp->pc,&Amat,&Pmat));
+  PetscCall(PCGetOperators(ksp->pc,&Amat,&Pmat));
 
   /* initialize */
   ksp->its = 0;
   if (!ksp->guess_zero) {
-    CHKERRQ(KSP_MatMult(ksp,Amat,X,R));  /*   r <- b - Ax  */
-    CHKERRQ(VecAYPX(R,-1.0,B));
+    PetscCall(KSP_MatMult(ksp,Amat,X,R));  /*   r <- b - Ax  */
+    PetscCall(VecAYPX(R,-1.0,B));
   } else {
-    CHKERRQ(VecCopy(B,R));               /*   r <- b       */
+    PetscCall(VecCopy(B,R));               /*   r <- b       */
   }
 
-  CHKERRQ(KSP_PCApply(ksp,R,RT));        /*   rt <- Br     */
-  CHKERRQ(KSP_MatMult(ksp,Amat,RT,W));   /*   w <- A rt    */
-  CHKERRQ(KSP_PCApply(ksp,W,WT));        /*   wt <- B w    */
+  PetscCall(KSP_PCApply(ksp,R,RT));        /*   rt <- Br     */
+  PetscCall(KSP_MatMult(ksp,Amat,RT,W));   /*   w <- A rt    */
+  PetscCall(KSP_PCApply(ksp,W,WT));        /*   wt <- B w    */
 
-  CHKERRQ(VecCopy(RT,P));                /*   p <- rt      */
-  CHKERRQ(VecCopy(W,S));                 /*   p <- rt      */
-  CHKERRQ(VecCopy(WT,ST));               /*   p <- rt      */
+  PetscCall(VecCopy(RT,P));                /*   p <- rt      */
+  PetscCall(VecCopy(W,S));                 /*   p <- rt      */
+  PetscCall(VecCopy(WT,ST));               /*   p <- rt      */
 
-  CHKERRQ(KSP_MatMult(ksp,Amat,ST,U));   /*   u <- Ast     */
-  CHKERRQ(KSP_PCApply(ksp,U,UT));        /*   ut <- Bu     */
+  PetscCall(KSP_MatMult(ksp,Amat,ST,U));   /*   u <- Ast     */
+  PetscCall(KSP_PCApply(ksp,U,UT));        /*   ut <- Bu     */
 
-  CHKERRQ(VecDotBegin(RT,R,&nu));
-  CHKERRQ(VecDotBegin(P,S,mu_p));
-  CHKERRQ(VecDotBegin(ST,S,gamma_p));
+  PetscCall(VecDotBegin(RT,R,&nu));
+  PetscCall(VecDotBegin(P,S,mu_p));
+  PetscCall(VecDotBegin(ST,S,gamma_p));
 
-  CHKERRQ(VecDotEnd(RT,R,&nu));          /*   nu    <- (rt,r)  */
-  CHKERRQ(VecDotEnd(P,S,mu_p));          /*   mu    <- (p,s)   */
-  CHKERRQ(VecDotEnd(ST,S,gamma_p));      /*   gamma <- (st,s)  */
+  PetscCall(VecDotEnd(RT,R,&nu));          /*   nu    <- (rt,r)  */
+  PetscCall(VecDotEnd(P,S,mu_p));          /*   mu    <- (p,s)   */
+  PetscCall(VecDotEnd(ST,S,gamma_p));      /*   gamma <- (st,s)  */
   *delta_p = *mu_p;
 
   i = 0;
@@ -102,14 +102,14 @@ static PetscErrorCode  KSPSolve_PIPEPRCG(KSP ksp)
     /* Compute appropriate norm */
     switch (ksp->normtype) {
     case KSP_NORM_PRECONDITIONED:
-      CHKERRQ(VecNormBegin(RT,NORM_2,&dp));
-      CHKERRQ(PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)RT)));
-      CHKERRQ(VecNormEnd(RT,NORM_2,&dp));
+      PetscCall(VecNormBegin(RT,NORM_2,&dp));
+      PetscCall(PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)RT)));
+      PetscCall(VecNormEnd(RT,NORM_2,&dp));
       break;
     case KSP_NORM_UNPRECONDITIONED:
-      CHKERRQ(VecNormBegin(R,NORM_2,&dp));
-      CHKERRQ(PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)R)));
-      CHKERRQ(VecNormEnd(R,NORM_2,&dp));
+      PetscCall(VecNormBegin(R,NORM_2,&dp));
+      PetscCall(PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)R)));
+      PetscCall(VecNormEnd(R,NORM_2,&dp));
       break;
     case KSP_NORM_NATURAL:
       dp = PetscSqrtReal(PetscAbsScalar(nu));
@@ -121,9 +121,9 @@ static PetscErrorCode  KSPSolve_PIPEPRCG(KSP ksp)
     }
 
     ksp->rnorm = dp;
-    CHKERRQ(KSPLogResidualHistory(ksp,dp));
-    CHKERRQ(KSPMonitor(ksp,i,dp));
-    CHKERRQ((*ksp->converged)(ksp,i,dp,&ksp->reason,ksp->cnvP));
+    PetscCall(KSPLogResidualHistory(ksp,dp));
+    PetscCall(KSPMonitor(ksp,i,dp));
+    PetscCall((*ksp->converged)(ksp,i,dp,&ksp->reason,ksp->cnvP));
     if (ksp->reason) PetscFunctionReturn(0);
 
     /* update scalars */
@@ -133,35 +133,35 @@ static PetscErrorCode  KSPSolve_PIPEPRCG(KSP ksp)
     beta = nu/nu_old;
 
     /* update vectors */
-    CHKERRQ(VecAXPY(X, alpha,P));         /*   x  <- x  + alpha * p   */
-    CHKERRQ(VecAXPY(R,-alpha,S));         /*   r  <- r  - alpha * s   */
-    CHKERRQ(VecAXPY(RT,-alpha,ST));       /*   rt <- rt - alpha * st  */
-    CHKERRQ(VecAXPY(W,-alpha,U));         /*   w  <- w  - alpha * u   */
-    CHKERRQ(VecAXPY(WT,-alpha,UT));       /*   wt <- wt - alpha * ut  */
-    CHKERRQ(VecAYPX(P,beta,RT));          /*   p  <- rt + beta  * p   */
-    CHKERRQ(VecAYPX(S,beta,W));           /*   s  <- w  + beta  * s   */
-    CHKERRQ(VecAYPX(ST,beta,WT));         /*   st <- wt + beta  * st  */
+    PetscCall(VecAXPY(X, alpha,P));         /*   x  <- x  + alpha * p   */
+    PetscCall(VecAXPY(R,-alpha,S));         /*   r  <- r  - alpha * s   */
+    PetscCall(VecAXPY(RT,-alpha,ST));       /*   rt <- rt - alpha * st  */
+    PetscCall(VecAXPY(W,-alpha,U));         /*   w  <- w  - alpha * u   */
+    PetscCall(VecAXPY(WT,-alpha,UT));       /*   wt <- wt - alpha * ut  */
+    PetscCall(VecAYPX(P,beta,RT));          /*   p  <- rt + beta  * p   */
+    PetscCall(VecAYPX(S,beta,W));           /*   s  <- w  + beta  * s   */
+    PetscCall(VecAYPX(ST,beta,WT));         /*   st <- wt + beta  * st  */
 
-    CHKERRQ(VecDotBegin(RT,R,&nu));
+    PetscCall(VecDotBegin(RT,R,&nu));
 
     PRTST[0] = P; PRTST[1] = RT; PRTST[2] = ST;
 
-    CHKERRQ(VecMDotBegin(S,3,PRTST,mudelgam));
+    PetscCall(VecMDotBegin(S,3,PRTST,mudelgam));
 
-    CHKERRQ(PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)R)));
+    PetscCall(PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)R)));
 
-    CHKERRQ(KSP_MatMult(ksp,Amat,ST,U));  /*   u  <- A st             */
-    CHKERRQ(KSP_PCApply(ksp,U,UT));       /*   ut <- B u              */
+    PetscCall(KSP_MatMult(ksp,Amat,ST,U));  /*   u  <- A st             */
+    PetscCall(KSP_PCApply(ksp,U,UT));       /*   ut <- B u              */
 
     /* predict-and-recompute */
     /* ideally this is combined with the previous matvec; i.e. equivalent of MDot */
     if (rc_w_q) {
-      CHKERRQ(KSP_MatMult(ksp,Amat,RT,W));  /*   w  <- A rt             */
-      CHKERRQ(KSP_PCApply(ksp,W,WT));       /*   wt <- B w              */
+      PetscCall(KSP_MatMult(ksp,Amat,RT,W));  /*   w  <- A rt             */
+      PetscCall(KSP_PCApply(ksp,W,WT));       /*   wt <- B w              */
     }
 
-    CHKERRQ(VecDotEnd(RT,R,&nu));
-    CHKERRQ(VecMDotEnd(S,3,PRTST,mudelgam));
+    PetscCall(VecDotEnd(RT,R,&nu));
+    PetscCall(VecMDotEnd(S,3,PRTST,mudelgam));
 
     i++;
     ksp->its = i;
@@ -201,15 +201,15 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPEPRCG(KSP ksp)
 
   PetscFunctionBegin;
 
-  CHKERRQ(PetscCitationsRegister("@article{predict_and_recompute_cg,\n  author = {Tyler Chen and Erin C. Carson},\n  title = {Predict-and-recompute conjugate gradient variants},\n  journal = {},\n  year = {2020},\n  eprint = {1905.01549},\n  archivePrefix = {arXiv},\n  primaryClass = {cs.NA}\n}",&cite));
+  PetscCall(PetscCitationsRegister("@article{predict_and_recompute_cg,\n  author = {Tyler Chen and Erin C. Carson},\n  title = {Predict-and-recompute conjugate gradient variants},\n  journal = {},\n  year = {2020},\n  eprint = {1905.01549},\n  archivePrefix = {arXiv},\n  primaryClass = {cs.NA}\n}",&cite));
 
-  CHKERRQ(PetscNewLog(ksp,&prcg));
+  PetscCall(PetscNewLog(ksp,&prcg));
   ksp->data = (void*)prcg;
 
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2));
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2));
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2));
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1));
 
   ksp->ops->setup          = KSPSetUp_PIPEPRCG;
   ksp->ops->solve          = KSPSolve_PIPEPRCG;

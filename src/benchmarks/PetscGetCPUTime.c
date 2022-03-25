@@ -6,12 +6,12 @@ int main(int argc,char **argv)
   PetscLogDouble x,y;
   long int       i,j,A[100000],ierr;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,0,0));
+  PetscCall(PetscInitialize(&argc,&argv,0,0));
   /* To take care of paging effects */
-  CHKERRQ(PetscGetCPUTime(&y));
+  PetscCall(PetscGetCPUTime(&y));
 
   for (i=0; i<2; i++) {
-    CHKERRQ(PetscGetCPUTime(&x));
+    PetscCall(PetscGetCPUTime(&x));
 
     /*
        Do some work for at least 1 ms. Most CPU timers
@@ -19,10 +19,10 @@ int main(int argc,char **argv)
      */
 
     for (j=0; j<20000*(i+1); j++) A[j]=i+j;
-    CHKERRQ(PetscGetCPUTime(&y));
+    PetscCall(PetscGetCPUTime(&y));
     fprintf(stdout,"%-15s : %e sec\n","PetscGetCPUTime",(y-x)/10.0);
   }
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }

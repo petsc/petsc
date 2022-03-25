@@ -107,108 +107,108 @@ int main(int argc, char **argv)
   Mat            R;
   Vec            b, x;
 
-  CHKERRQ(PetscInitialize(&argc, &argv, (char*)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, (char*)0, help));
 
-  CHKERRQ(InitializeOptions(&user));
+  PetscCall(InitializeOptions(&user));
 
   /* Create the DM object from either a mesh file or from in-memory structured grid */
   if (user.use_extfile) {
-    CHKERRQ(DMMoabLoadFromFile(PETSC_COMM_WORLD, user.dim, 1, user.filename, "", &dm));
+    PetscCall(DMMoabLoadFromFile(PETSC_COMM_WORLD, user.dim, 1, user.filename, "", &dm));
   } else {
-    CHKERRQ(DMMoabCreateBoxMesh(PETSC_COMM_WORLD, user.dim, user.usetet, NULL, user.n, 1, &dm));
+    PetscCall(DMMoabCreateBoxMesh(PETSC_COMM_WORLD, user.dim, user.usetet, NULL, user.n, 1, &dm));
   }
-  CHKERRQ(DMSetFromOptions(dm));
-  CHKERRQ(DMMoabSetFieldNames(dm, 1, fields));
+  PetscCall(DMSetFromOptions(dm));
+  PetscCall(DMMoabSetFieldNames(dm, 1, fields));
 
   /* SetUp the data structures for DMMOAB */
-  CHKERRQ(DMSetUp(dm));
+  PetscCall(DMSetUp(dm));
 
-  CHKERRQ(DMSetApplicationContext(dm, &user));
+  PetscCall(DMSetApplicationContext(dm, &user));
 
-  CHKERRQ(KSPCreate(PETSC_COMM_WORLD, &ksp));
-  CHKERRQ(KSPSetComputeRHS(ksp, ComputeRHS_MOAB, &user));
-  CHKERRQ(KSPSetComputeOperators(ksp, ComputeMatrix_MOAB, &user));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
+  PetscCall(KSPSetComputeRHS(ksp, ComputeRHS_MOAB, &user));
+  PetscCall(KSPSetComputeOperators(ksp, ComputeMatrix_MOAB, &user));
 
   if (user.nlevels) {
-    CHKERRQ(KSPGetPC(ksp, &pc));
-    CHKERRQ(PetscMalloc(sizeof(DM) * (user.nlevels + 1), &dmhierarchy));
+    PetscCall(KSPGetPC(ksp, &pc));
+    PetscCall(PetscMalloc(sizeof(DM) * (user.nlevels + 1), &dmhierarchy));
     for (k = 0; k <= user.nlevels; k++) dmhierarchy[k] = NULL;
 
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Number of mesh hierarchy levels: %d\n", user.nlevels));
-    CHKERRQ(DMMoabGenerateHierarchy(dm, user.nlevels, PETSC_NULL));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Number of mesh hierarchy levels: %d\n", user.nlevels));
+    PetscCall(DMMoabGenerateHierarchy(dm, user.nlevels, PETSC_NULL));
 
     // coarsest grid = 0
     // finest grid = nlevels
     dmhierarchy[0] = dm;
     PetscBool usehierarchy = PETSC_FALSE;
     if (usehierarchy) {
-      CHKERRQ(DMRefineHierarchy(dm, user.nlevels, &dmhierarchy[1]));
+      PetscCall(DMRefineHierarchy(dm, user.nlevels, &dmhierarchy[1]));
     } else {
       for (k = 1; k <= user.nlevels; k++) {
-        CHKERRQ(DMRefine(dmhierarchy[k - 1], MPI_COMM_NULL, &dmhierarchy[k]));
+        PetscCall(DMRefine(dmhierarchy[k - 1], MPI_COMM_NULL, &dmhierarchy[k]));
       }
     }
     dmref = dmhierarchy[user.nlevels];
     PetscObjectReference((PetscObject)dmref);
 
     if (user.usemg) {
-      CHKERRQ(PCSetType(pc, PCMG));
-      CHKERRQ(PCMGSetLevels(pc, user.nlevels + 1, NULL));
-      CHKERRQ(PCMGSetType(pc, PC_MG_MULTIPLICATIVE));
-      CHKERRQ(PCMGSetGalerkin(pc, PC_MG_GALERKIN_BOTH));
-      CHKERRQ(PCMGSetCycleType(pc, PC_MG_CYCLE_V));
-      CHKERRQ(PCMGSetNumberSmooth(pc, 2));
+      PetscCall(PCSetType(pc, PCMG));
+      PetscCall(PCMGSetLevels(pc, user.nlevels + 1, NULL));
+      PetscCall(PCMGSetType(pc, PC_MG_MULTIPLICATIVE));
+      PetscCall(PCMGSetGalerkin(pc, PC_MG_GALERKIN_BOTH));
+      PetscCall(PCMGSetCycleType(pc, PC_MG_CYCLE_V));
+      PetscCall(PCMGSetNumberSmooth(pc, 2));
 
       for (k = 1; k <= user.nlevels; k++) {
-        CHKERRQ(DMCreateInterpolation(dmhierarchy[k - 1], dmhierarchy[k], &R, NULL));
-        CHKERRQ(PCMGSetInterpolation(pc, k, R));
-        CHKERRQ(MatDestroy(&R));
+        PetscCall(DMCreateInterpolation(dmhierarchy[k - 1], dmhierarchy[k], &R, NULL));
+        PetscCall(PCMGSetInterpolation(pc, k, R));
+        PetscCall(MatDestroy(&R));
       }
     }
 
     for (k = 1; k <= user.nlevels; k++) {
-      CHKERRQ(DMDestroy(&dmhierarchy[k]));
+      PetscCall(DMDestroy(&dmhierarchy[k]));
     }
-    CHKERRQ(PetscFree(dmhierarchy));
+    PetscCall(PetscFree(dmhierarchy));
   } else {
     dmref = dm;
     PetscObjectReference((PetscObject)dm);
   }
 
-  CHKERRQ(KSPSetDM(ksp, dmref));
-  CHKERRQ(KSPSetFromOptions(ksp));
+  PetscCall(KSPSetDM(ksp, dmref));
+  PetscCall(KSPSetFromOptions(ksp));
 
   /* Perform the actual solve */
-  CHKERRQ(KSPSolve(ksp, NULL, NULL));
-  CHKERRQ(KSPGetSolution(ksp, &x));
-  CHKERRQ(KSPGetRhs(ksp, &b));
+  PetscCall(KSPSolve(ksp, NULL, NULL));
+  PetscCall(KSPGetSolution(ksp, &x));
+  PetscCall(KSPGetRhs(ksp, &b));
 
   if (user.error) {
-    CHKERRQ(VecDuplicate(b, &errv));
-    CHKERRQ(ComputeDiscreteL2Error(ksp, errv, &user));
-    CHKERRQ(VecDestroy(&errv));
+    PetscCall(VecDuplicate(b, &errv));
+    PetscCall(ComputeDiscreteL2Error(ksp, errv, &user));
+    PetscCall(VecDestroy(&errv));
   }
 
   if (user.io) {
     /* Write out the solution along with the mesh */
-    CHKERRQ(DMMoabSetGlobalFieldVector(dmref, x));
+    PetscCall(DMMoabSetGlobalFieldVector(dmref, x));
 #ifdef MOAB_HAVE_HDF5
-    CHKERRQ(DMMoabOutput(dmref, "ex36.h5m", ""));
+    PetscCall(DMMoabOutput(dmref, "ex36.h5m", ""));
 #else
     /* MOAB does not support true parallel writers that aren't HDF5 based
        And so if you are using VTK as the output format in parallel,
        the data could be jumbled due to the order in which the processors
        write out their parts of the mesh and solution tags
     */
-    CHKERRQ(DMMoabOutput(dmref, "ex36.vtk", ""));
+    PetscCall(DMMoabOutput(dmref, "ex36.vtk", ""));
 #endif
   }
 
   /* Cleanup objects */
-  CHKERRQ(KSPDestroy(&ksp));
-  CHKERRQ(DMDestroy(&dmref));
-  CHKERRQ(DMDestroy(&dm));
-  CHKERRQ(PetscFinalize());
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(DMDestroy(&dmref));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -274,38 +274,38 @@ PetscErrorCode ComputeRHS_MOAB(KSP ksp, Vec b, void *ptr)
   PetscQuadrature   quadratureObj;
 
   PetscFunctionBegin;
-  CHKERRQ(KSPGetDM(ksp, &dm));
+  PetscCall(KSPGetDM(ksp, &dm));
 
   /* reset the RHS */
-  CHKERRQ(VecSet(b, 0.0));
+  PetscCall(VecSet(b, 0.0));
 
-  CHKERRQ(DMMoabFEMCreateQuadratureDefault (user->dim, user->VPERE, &quadratureObj));
-  CHKERRQ(PetscQuadratureGetData(quadratureObj, NULL, &nc, &npoints, NULL, NULL));
-  CHKERRQ(PetscMalloc3(user->VPERE * npoints, &phi, npoints * 3, &phypts, npoints, &jxw));
+  PetscCall(DMMoabFEMCreateQuadratureDefault (user->dim, user->VPERE, &quadratureObj));
+  PetscCall(PetscQuadratureGetData(quadratureObj, NULL, &nc, &npoints, NULL, NULL));
+  PetscCall(PetscMalloc3(user->VPERE * npoints, &phi, npoints * 3, &phypts, npoints, &jxw));
 
   /* get the essential MOAB mesh related quantities needed for FEM assembly */
-  CHKERRQ(DMMoabGetInterface(dm, &mbImpl));
-  CHKERRQ(DMMoabGetLocalElements(dm, &elocal));
+  PetscCall(DMMoabGetInterface(dm, &mbImpl));
+  PetscCall(DMMoabGetLocalElements(dm, &elocal));
 
   /* loop over local elements */
   for (moab::Range::iterator iter = elocal->begin(); iter != elocal->end(); iter++) {
     const moab::EntityHandle ehandle = *iter;
 
     /* Get connectivity information: */
-    CHKERRQ(DMMoabGetElementConnectivity(dm, ehandle, &nconn, &connect));
+    PetscCall(DMMoabGetElementConnectivity(dm, ehandle, &nconn, &connect));
     PetscCheckFalse(nconn != 4 && nconn != 8,PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Only HEX8/TET4 element bases are supported in the current example. n(Connectivity)=%D.", nconn);
 
     /* get the coordinates of the element vertices */
-    CHKERRQ(DMMoabGetVertexCoordinates(dm, nconn, connect, vpos));
+    PetscCall(DMMoabGetVertexCoordinates(dm, nconn, connect, vpos));
 
     /* get the local DoF numbers to appropriately set the element contribution in the operator */
-    CHKERRQ(DMMoabGetFieldDofsLocal(dm, nconn, connect, 0, dof_indices));
+    PetscCall(DMMoabGetFieldDofsLocal(dm, nconn, connect, 0, dof_indices));
 
     /* compute the quadrature points transformed to the physical space and then
        compute the basis functions to compute local operators */
-    CHKERRQ(DMMoabFEMComputeBasis(user->dim, nconn, vpos, quadratureObj, phypts, jxw, phi, NULL));
+    PetscCall(DMMoabFEMComputeBasis(user->dim, nconn, vpos, quadratureObj, phypts, jxw, phi, NULL));
 
-    CHKERRQ(PetscArrayzero(localv, nconn));
+    PetscCall(PetscArrayzero(localv, nconn));
     /* Compute function over the locally owned part of the grid */
     for (q = 0; q < npoints; ++q) {
       const double ff = ForcingFunction(&phypts[3 * q], user);
@@ -317,13 +317,13 @@ PetscErrorCode ComputeRHS_MOAB(KSP ksp, Vec b, void *ptr)
     }
 
     /* check if element is on the boundary */
-    CHKERRQ(DMMoabIsEntityOnBoundary(dm, ehandle, &elem_on_boundary));
+    PetscCall(DMMoabIsEntityOnBoundary(dm, ehandle, &elem_on_boundary));
 
     /* apply dirichlet boundary conditions */
     if (elem_on_boundary && user->bcType == DIRICHLET) {
 
       /* get the list of nodes on boundary so that we can enforce dirichlet conditions strongly */
-      CHKERRQ(DMMoabCheckBoundaryVertices(dm, nconn, connect, dbdry));
+      PetscCall(DMMoabCheckBoundaryVertices(dm, nconn, connect, dbdry));
 
       for (i = 0; i < nconn; ++i) {
         if (dbdry[i]) {  /* dirichlet node */
@@ -334,7 +334,7 @@ PetscErrorCode ComputeRHS_MOAB(KSP ksp, Vec b, void *ptr)
     }
 
     /* set the values directly into appropriate locations. Can alternately use VecSetValues */
-    CHKERRQ(VecSetValuesLocal(b, nconn, dof_indices, localv, ADD_VALUES));
+    PetscCall(VecSetValuesLocal(b, nconn, dof_indices, localv, ADD_VALUES));
   }
 
   /* force right hand side to be consistent for singular matrix */
@@ -342,16 +342,16 @@ PetscErrorCode ComputeRHS_MOAB(KSP ksp, Vec b, void *ptr)
   if (user->bcType == NEUMANN && false) {
     MatNullSpace nullspace;
 
-    CHKERRQ(MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, 0, &nullspace));
-    CHKERRQ(MatNullSpaceRemove(nullspace, b));
-    CHKERRQ(MatNullSpaceDestroy(&nullspace));
+    PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, 0, &nullspace));
+    PetscCall(MatNullSpaceRemove(nullspace, b));
+    PetscCall(MatNullSpaceDestroy(&nullspace));
   }
 
   /* Restore vectors */
-  CHKERRQ(VecAssemblyBegin(b));
-  CHKERRQ(VecAssemblyEnd(b));
-  CHKERRQ(PetscFree3(phi, phypts, jxw));
-  CHKERRQ(PetscQuadratureDestroy(&quadratureObj));
+  PetscCall(VecAssemblyBegin(b));
+  PetscCall(VecAssemblyEnd(b));
+  PetscCall(PetscFree3(phi, phypts, jxw));
+  PetscCall(PetscQuadratureDestroy(&quadratureObj));
   PetscFunctionReturn(0);
 }
 
@@ -372,38 +372,38 @@ PetscErrorCode ComputeMatrix_MOAB(KSP ksp, Mat J, Mat jac, void *ctx)
   PetscQuadrature   quadratureObj;
 
   PetscFunctionBeginUser;
-  CHKERRQ(KSPGetDM(ksp, &dm));
+  PetscCall(KSPGetDM(ksp, &dm));
 
   /* get the essential MOAB mesh related quantities needed for FEM assembly */
-  CHKERRQ(DMMoabGetInterface(dm, &mbImpl));
-  CHKERRQ(DMMoabGetLocalElements(dm, &elocal));
-  CHKERRQ(DMMoabGetSize(dm, &nglobale, &nglobalv));
-  CHKERRQ(DMMoabGetHierarchyLevel(dm, &hlevel));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "ComputeMatrix: Level = %d, N(elements) = %d, N(vertices) = %d \n", hlevel, nglobale, nglobalv));
+  PetscCall(DMMoabGetInterface(dm, &mbImpl));
+  PetscCall(DMMoabGetLocalElements(dm, &elocal));
+  PetscCall(DMMoabGetSize(dm, &nglobale, &nglobalv));
+  PetscCall(DMMoabGetHierarchyLevel(dm, &hlevel));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "ComputeMatrix: Level = %d, N(elements) = %d, N(vertices) = %d \n", hlevel, nglobale, nglobalv));
 
-  CHKERRQ(DMMoabFEMCreateQuadratureDefault ( user->dim, user->VPERE, &quadratureObj));
-  CHKERRQ(PetscQuadratureGetData(quadratureObj, NULL, &nc, &npoints, NULL, NULL));
-  CHKERRQ(PetscMalloc6(user->VPERE * npoints, &phi, user->VPERE * npoints, &dphi[0], user->VPERE * npoints, &dphi[1], user->VPERE * npoints, &dphi[2], npoints * 3, &phypts, npoints, &jxw));
+  PetscCall(DMMoabFEMCreateQuadratureDefault ( user->dim, user->VPERE, &quadratureObj));
+  PetscCall(PetscQuadratureGetData(quadratureObj, NULL, &nc, &npoints, NULL, NULL));
+  PetscCall(PetscMalloc6(user->VPERE * npoints, &phi, user->VPERE * npoints, &dphi[0], user->VPERE * npoints, &dphi[1], user->VPERE * npoints, &dphi[2], npoints * 3, &phypts, npoints, &jxw));
 
   /* loop over local elements */
   for (moab::Range::iterator iter = elocal->begin(); iter != elocal->end(); iter++) {
     const moab::EntityHandle ehandle = *iter;
 
     /* Get connectivity information: */
-    CHKERRQ(DMMoabGetElementConnectivity(dm, ehandle, &nconn, &connect));
+    PetscCall(DMMoabGetElementConnectivity(dm, ehandle, &nconn, &connect));
     PetscCheckFalse(nconn != 4 && nconn != 8,PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Only HEX8/TET4 element bases are supported in the current example. n(Connectivity)=%D.", nconn);
 
     /* get the coordinates of the element vertices */
-    CHKERRQ(DMMoabGetVertexCoordinates(dm, nconn, connect, vpos));
+    PetscCall(DMMoabGetVertexCoordinates(dm, nconn, connect, vpos));
 
     /* get the local DoF numbers to appropriately set the element contribution in the operator */
-    CHKERRQ(DMMoabGetFieldDofsLocal(dm, nconn, connect, 0, dof_indices));
+    PetscCall(DMMoabGetFieldDofsLocal(dm, nconn, connect, 0, dof_indices));
 
     /* compute the quadrature points transformed to the physical space and
        compute the basis functions and the derivatives wrt x, y and z directions */
-    CHKERRQ(DMMoabFEMComputeBasis(user->dim, nconn, vpos, quadratureObj, phypts, jxw, phi, dphi));
+    PetscCall(DMMoabFEMComputeBasis(user->dim, nconn, vpos, quadratureObj, phypts, jxw, phi, dphi));
 
-    CHKERRQ(PetscArrayzero(array, nconn * nconn));
+    PetscCall(PetscArrayzero(array, nconn * nconn));
 
     /* Compute function over the locally owned part of the grid */
     for (q = 0; q < npoints; ++q) {
@@ -426,13 +426,13 @@ PetscErrorCode ComputeMatrix_MOAB(KSP ksp, Mat J, Mat jac, void *ctx)
     }
 
     /* check if element is on the boundary */
-    CHKERRQ(DMMoabIsEntityOnBoundary(dm, ehandle, &elem_on_boundary));
+    PetscCall(DMMoabIsEntityOnBoundary(dm, ehandle, &elem_on_boundary));
 
     /* apply dirichlet boundary conditions */
     if (elem_on_boundary && user->bcType == DIRICHLET) {
 
       /* get the list of nodes on boundary so that we can enforce dirichlet conditions strongly */
-      CHKERRQ(DMMoabCheckBoundaryVertices(dm, nconn, connect, dbdry));
+      PetscCall(DMMoabCheckBoundaryVertices(dm, nconn, connect, dbdry));
 
       for (i = 0; i < nconn; ++i) {
         if (dbdry[i]) {  /* dirichlet node */
@@ -447,21 +447,21 @@ PetscErrorCode ComputeMatrix_MOAB(KSP ksp, Mat J, Mat jac, void *ctx)
     }
 
     /* set the values directly into appropriate locations. Can alternately use VecSetValues */
-    CHKERRQ(MatSetValuesLocal(jac, nconn, dof_indices, nconn, dof_indices, array, ADD_VALUES));
+    PetscCall(MatSetValuesLocal(jac, nconn, dof_indices, nconn, dof_indices, array, ADD_VALUES));
   }
 
-  CHKERRQ(MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY));
 
   if (user->bcType == NEUMANN && false) {
     MatNullSpace nullspace;
 
-    CHKERRQ(MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, 0, &nullspace));
-    CHKERRQ(MatSetNullSpace(jac, nullspace));
-    CHKERRQ(MatNullSpaceDestroy(&nullspace));
+    PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, 0, &nullspace));
+    PetscCall(MatSetNullSpace(jac, nullspace));
+    PetscCall(MatNullSpaceDestroy(&nullspace));
   }
-  CHKERRQ(PetscFree6(phi, dphi[0], dphi[1], dphi[2], phypts, jxw));
-  CHKERRQ(PetscQuadratureDestroy(&quadratureObj));
+  PetscCall(PetscFree6(phi, dphi[0], dphi[1], dphi[2], phypts, jxw));
+  PetscCall(PetscQuadratureDestroy(&quadratureObj));
   PetscFunctionReturn(0);
 }
 
@@ -477,30 +477,30 @@ PetscErrorCode ComputeDiscreteL2Error(KSP ksp, Vec err, UserContext *user)
   const moab::Range *ownedvtx;
 
   PetscFunctionBegin;
-  CHKERRQ(KSPGetDM(ksp, &dm));
+  PetscCall(KSPGetDM(ksp, &dm));
 
   /* get the solution vector */
-  CHKERRQ(KSPGetSolution(ksp, &sol));
+  PetscCall(KSPGetSolution(ksp, &sol));
 
   /* Get the internal reference to the vector arrays */
-  CHKERRQ(VecGetArrayRead(sol, &x));
-  CHKERRQ(VecGetSize(sol, &N));
+  PetscCall(VecGetArrayRead(sol, &x));
+  PetscCall(VecGetSize(sol, &N));
   if (err) {
     /* reset the error vector */
-    CHKERRQ(VecSet(err, 0.0));
+    PetscCall(VecSet(err, 0.0));
     /* get array reference */
-    CHKERRQ(VecGetArray(err, &e));
+    PetscCall(VecGetArray(err, &e));
   }
 
-  CHKERRQ(DMMoabGetLocalVertices(dm, &ownedvtx, NULL));
+  PetscCall(DMMoabGetLocalVertices(dm, &ownedvtx, NULL));
 
   /* Compute function over the locally owned part of the grid */
   for (moab::Range::iterator iter = ownedvtx->begin(); iter != ownedvtx->end(); iter++) {
     const moab::EntityHandle vhandle = *iter;
-    CHKERRQ(DMMoabGetDofsBlockedLocal(dm, 1, &vhandle, &dof_index));
+    PetscCall(DMMoabGetDofsBlockedLocal(dm, 1, &vhandle, &dof_index));
 
     /* compute the mid-point of the element and use a 1-point lumped quadrature */
-    CHKERRQ(DMMoabGetVertexCoordinates(dm, 1, &vhandle, vpos));
+    PetscCall(DMMoabGetVertexCoordinates(dm, 1, &vhandle, vpos));
 
     /* compute the discrete L2 error against the exact solution */
     const PetscScalar lerr = (ExactSolution(vpos, user) - x[dof_index]);
@@ -513,14 +513,14 @@ PetscErrorCode ComputeDiscreteL2Error(KSP ksp, Vec err, UserContext *user)
     }
   }
 
-  CHKERRMPI(MPI_Allreduce(&l2err, &global_l2, 1, MPI_DOUBLE, MPI_SUM, PETSC_COMM_WORLD));
-  CHKERRMPI(MPI_Allreduce(&linferr, &global_linf, 1, MPI_DOUBLE, MPI_MAX, PETSC_COMM_WORLD));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Computed Errors: L_2 = %f, L_inf = %f\n", sqrt(global_l2 / N), global_linf));
+  PetscCallMPI(MPI_Allreduce(&l2err, &global_l2, 1, MPI_DOUBLE, MPI_SUM, PETSC_COMM_WORLD));
+  PetscCallMPI(MPI_Allreduce(&linferr, &global_linf, 1, MPI_DOUBLE, MPI_MAX, PETSC_COMM_WORLD));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Computed Errors: L_2 = %f, L_inf = %f\n", sqrt(global_l2 / N), global_linf));
 
   /* Restore vectors */
-  CHKERRQ(VecRestoreArrayRead(sol, &x));
+  PetscCall(VecRestoreArrayRead(sol, &x));
   if (err) {
-    CHKERRQ(VecRestoreArray(err, &e));
+    PetscCall(VecRestoreArray(err, &e));
   }
   PetscFunctionReturn(0);
 }
@@ -550,25 +550,25 @@ PetscErrorCode InitializeOptions(UserContext* user)
   user->error  = PETSC_FALSE;
   bc           = (PetscInt)DIRICHLET;
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "ex36.cxx");CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsInt("-problem", "The type of problem being solved (controls forcing function)", "ex36.cxx", user->problem, &user->problem, NULL));
-  CHKERRQ(PetscOptionsInt("-n", "The elements in each direction", "ex36.cxx", user->n, &user->n, NULL));
-  CHKERRQ(PetscOptionsInt("-levels", "Number of levels in the multigrid hierarchy", "ex36.cxx", user->nlevels, &user->nlevels, NULL));
-  CHKERRQ(PetscOptionsReal("-rho", "The conductivity", "ex36.cxx", user->rho, &user->rho, NULL));
-  CHKERRQ(PetscOptionsReal("-x", "The domain size in x-direction", "ex36.cxx", user->bounds[1], &user->bounds[1], NULL));
-  CHKERRQ(PetscOptionsReal("-y", "The domain size in y-direction", "ex36.cxx", user->bounds[3], &user->bounds[3], NULL));
-  CHKERRQ(PetscOptionsReal("-z", "The domain size in y-direction", "ex36.cxx", user->bounds[5], &user->bounds[5], NULL));
-  CHKERRQ(PetscOptionsReal("-xref", "The x-coordinate of Gaussian center (for -problem 1)", "ex36.cxx", user->xyzref[0], &user->xyzref[0], NULL));
-  CHKERRQ(PetscOptionsReal("-yref", "The y-coordinate of Gaussian center (for -problem 1)", "ex36.cxx", user->xyzref[1], &user->xyzref[1], NULL));
-  CHKERRQ(PetscOptionsReal("-zref", "The y-coordinate of Gaussian center (for -problem 1)", "ex36.cxx", user->xyzref[2], &user->xyzref[2], NULL));
-  CHKERRQ(PetscOptionsReal("-nu", "The width of the Gaussian source (for -problem 1)", "ex36.cxx", user->nu, &user->nu, NULL));
-  CHKERRQ(PetscOptionsBool("-mg", "Use multigrid preconditioner", "ex36.cxx", user->usemg, &user->usemg, NULL));
-  CHKERRQ(PetscOptionsBool("-io", "Write out the solution and mesh data", "ex36.cxx", user->io, &user->io, NULL));
-  CHKERRQ(PetscOptionsBool("-tet", "Use tetrahedra to discretize the domain", "ex36.cxx", user->usetet, &user->usetet, NULL));
-  CHKERRQ(PetscOptionsBool("-error", "Compute the discrete L_2 and L_inf errors of the solution", "ex36.cxx", user->error, &user->error, NULL));
-  CHKERRQ(PetscOptionsEList("-bc", "Type of boundary condition", "ex36.cxx", bcTypes, 2, bcTypes[0], &bc, NULL));
-  CHKERRQ(PetscOptionsString("-file", "The mesh file for the problem", "ex36.cxx", "", user->filename, sizeof(user->filename), &user->use_extfile));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "ex36.cxx");PetscCall(ierr);
+  PetscCall(PetscOptionsInt("-problem", "The type of problem being solved (controls forcing function)", "ex36.cxx", user->problem, &user->problem, NULL));
+  PetscCall(PetscOptionsInt("-n", "The elements in each direction", "ex36.cxx", user->n, &user->n, NULL));
+  PetscCall(PetscOptionsInt("-levels", "Number of levels in the multigrid hierarchy", "ex36.cxx", user->nlevels, &user->nlevels, NULL));
+  PetscCall(PetscOptionsReal("-rho", "The conductivity", "ex36.cxx", user->rho, &user->rho, NULL));
+  PetscCall(PetscOptionsReal("-x", "The domain size in x-direction", "ex36.cxx", user->bounds[1], &user->bounds[1], NULL));
+  PetscCall(PetscOptionsReal("-y", "The domain size in y-direction", "ex36.cxx", user->bounds[3], &user->bounds[3], NULL));
+  PetscCall(PetscOptionsReal("-z", "The domain size in y-direction", "ex36.cxx", user->bounds[5], &user->bounds[5], NULL));
+  PetscCall(PetscOptionsReal("-xref", "The x-coordinate of Gaussian center (for -problem 1)", "ex36.cxx", user->xyzref[0], &user->xyzref[0], NULL));
+  PetscCall(PetscOptionsReal("-yref", "The y-coordinate of Gaussian center (for -problem 1)", "ex36.cxx", user->xyzref[1], &user->xyzref[1], NULL));
+  PetscCall(PetscOptionsReal("-zref", "The y-coordinate of Gaussian center (for -problem 1)", "ex36.cxx", user->xyzref[2], &user->xyzref[2], NULL));
+  PetscCall(PetscOptionsReal("-nu", "The width of the Gaussian source (for -problem 1)", "ex36.cxx", user->nu, &user->nu, NULL));
+  PetscCall(PetscOptionsBool("-mg", "Use multigrid preconditioner", "ex36.cxx", user->usemg, &user->usemg, NULL));
+  PetscCall(PetscOptionsBool("-io", "Write out the solution and mesh data", "ex36.cxx", user->io, &user->io, NULL));
+  PetscCall(PetscOptionsBool("-tet", "Use tetrahedra to discretize the domain", "ex36.cxx", user->usetet, &user->usetet, NULL));
+  PetscCall(PetscOptionsBool("-error", "Compute the discrete L_2 and L_inf errors of the solution", "ex36.cxx", user->error, &user->error, NULL));
+  PetscCall(PetscOptionsEList("-bc", "Type of boundary condition", "ex36.cxx", bcTypes, 2, bcTypes[0], &bc, NULL));
+  PetscCall(PetscOptionsString("-file", "The mesh file for the problem", "ex36.cxx", "", user->filename, sizeof(user->filename), &user->use_extfile));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
   if (user->problem < 1 || user->problem > 2) user->problem = 1;
   user->bcType = (BCType)bc;

@@ -21,7 +21,7 @@ PetscErrorCode test1_DAInjection3d(PetscInt mx, PetscInt my, PetscInt mz)
 
   periodicity = 0;
 
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-periodic", &periodicity, NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-periodic", &periodicity, NULL));
   if (periodicity==1) {
     bx = DM_BOUNDARY_PERIODIC;
   } else if (periodicity==2) {
@@ -31,14 +31,14 @@ PetscErrorCode test1_DAInjection3d(PetscInt mx, PetscInt my, PetscInt mz)
   }
 
   ierr = DMDACreate3d(PETSC_COMM_WORLD, bx,by,bz, DMDA_STENCIL_BOX,mx+1, my+1,mz+1,PETSC_DECIDE, PETSC_DECIDE,PETSC_DECIDE,1, /* 1 dof */
-                      1, /* stencil = 1 */NULL,NULL,NULL,&daf);CHKERRQ(ierr);
-  CHKERRQ(DMSetFromOptions(daf));
-  CHKERRQ(DMSetUp(daf));
+                      1, /* stencil = 1 */NULL,NULL,NULL,&daf);PetscCall(ierr);
+  PetscCall(DMSetFromOptions(daf));
+  PetscCall(DMSetUp(daf));
 
-  CHKERRQ(DMCoarsen(daf,MPI_COMM_NULL,&dac));
+  PetscCall(DMCoarsen(daf,MPI_COMM_NULL,&dac));
 
-  CHKERRQ(DMDASetUniformCoordinates(dac, -1.0,1.0, -1.0,1.0, -1.0,1.0));
-  CHKERRQ(DMDASetUniformCoordinates(daf, -1.0,1.0, -1.0,1.0, -1.0,1.0));
+  PetscCall(DMDASetUniformCoordinates(dac, -1.0,1.0, -1.0,1.0, -1.0,1.0));
+  PetscCall(DMDASetUniformCoordinates(daf, -1.0,1.0, -1.0,1.0, -1.0,1.0));
 
   {
     DM         cdaf,cdac;
@@ -48,48 +48,48 @@ PetscErrorCode test1_DAInjection3d(PetscInt mx, PetscInt my, PetscInt mz)
     Mat        interp;
     PetscReal  norm;
 
-    CHKERRQ(DMGetCoordinateDM(dac,&cdac));
-    CHKERRQ(DMGetCoordinateDM(daf,&cdaf));
+    PetscCall(DMGetCoordinateDM(dac,&cdac));
+    PetscCall(DMGetCoordinateDM(daf,&cdaf));
 
-    CHKERRQ(DMGetCoordinates(dac,&coordsc));
-    CHKERRQ(DMGetCoordinates(daf,&coordsf));
+    PetscCall(DMGetCoordinates(dac,&coordsc));
+    PetscCall(DMGetCoordinates(daf,&coordsf));
 
-    CHKERRQ(DMCreateInjection(cdac,cdaf,&inject));
-    CHKERRQ(MatScatterGetVecScatter(inject,&vscat));
-    CHKERRQ(VecScatterBegin(vscat,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD));
-    CHKERRQ(VecScatterEnd(vscat  ,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD));
-    CHKERRQ(MatDestroy(&inject));
+    PetscCall(DMCreateInjection(cdac,cdaf,&inject));
+    PetscCall(MatScatterGetVecScatter(inject,&vscat));
+    PetscCall(VecScatterBegin(vscat,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD));
+    PetscCall(VecScatterEnd(vscat  ,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD));
+    PetscCall(MatDestroy(&inject));
 
-    CHKERRQ(DMCreateInterpolation(cdac,cdaf,&interp,NULL));
-    CHKERRQ(VecDuplicate(coordsf,&coordsf2));
-    CHKERRQ(MatInterpolate(interp,coordsc,coordsf2));
-    CHKERRQ(VecAXPY(coordsf2,-1.0,coordsf));
-    CHKERRQ(VecNorm(coordsf2,NORM_MAX,&norm));
+    PetscCall(DMCreateInterpolation(cdac,cdaf,&interp,NULL));
+    PetscCall(VecDuplicate(coordsf,&coordsf2));
+    PetscCall(MatInterpolate(interp,coordsc,coordsf2));
+    PetscCall(VecAXPY(coordsf2,-1.0,coordsf));
+    PetscCall(VecNorm(coordsf2,NORM_MAX,&norm));
     /* The fine coordinates are only reproduced in certain cases */
-    if (!bx && !by && !bz && norm > PETSC_SQRT_MACHINE_EPSILON) CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Norm %g\n",(double)norm));
-    CHKERRQ(VecDestroy(&coordsf2));
-    CHKERRQ(MatDestroy(&interp));
+    if (!bx && !by && !bz && norm > PETSC_SQRT_MACHINE_EPSILON) PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm %g\n",(double)norm));
+    PetscCall(VecDestroy(&coordsf2));
+    PetscCall(MatDestroy(&interp));
   }
 
   if (0) {
-    CHKERRQ(DMCreateGlobalVector(dac,&ac));
-    CHKERRQ(VecZeroEntries(ac));
+    PetscCall(DMCreateGlobalVector(dac,&ac));
+    PetscCall(VecZeroEntries(ac));
 
-    CHKERRQ(DMCreateGlobalVector(daf,&af));
-    CHKERRQ(VecZeroEntries(af));
+    PetscCall(DMCreateGlobalVector(daf,&af));
+    PetscCall(VecZeroEntries(af));
 
-    CHKERRQ(PetscViewerASCIIOpen(PETSC_COMM_WORLD, "dac_7.vtu", &vv));
-    CHKERRQ(VecView(ac, vv));
-    CHKERRQ(PetscViewerDestroy(&vv));
+    PetscCall(PetscViewerASCIIOpen(PETSC_COMM_WORLD, "dac_7.vtu", &vv));
+    PetscCall(VecView(ac, vv));
+    PetscCall(PetscViewerDestroy(&vv));
 
-    CHKERRQ(PetscViewerASCIIOpen(PETSC_COMM_WORLD, "daf_7.vtu", &vv));
-    CHKERRQ(VecView(af, vv));
-    CHKERRQ(PetscViewerDestroy(&vv));
-    CHKERRQ(VecDestroy(&ac));
-    CHKERRQ(VecDestroy(&af));
+    PetscCall(PetscViewerASCIIOpen(PETSC_COMM_WORLD, "daf_7.vtu", &vv));
+    PetscCall(VecView(af, vv));
+    PetscCall(PetscViewerDestroy(&vv));
+    PetscCall(VecDestroy(&ac));
+    PetscCall(VecDestroy(&af));
   }
-  CHKERRQ(DMDestroy(&dac));
-  CHKERRQ(DMDestroy(&daf));
+  PetscCall(DMDestroy(&dac));
+  PetscCall(DMDestroy(&daf));
   PetscFunctionReturn(0);
 }
 
@@ -97,15 +97,15 @@ int main(int argc,char **argv)
 {
   PetscInt       mx,my,mz;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,0,help));
+  PetscCall(PetscInitialize(&argc,&argv,0,help));
   mx   = 2;
   my   = 2;
   mz   = 2;
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-mx", &mx, 0));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-my", &my, 0));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-mz", &mz, 0));
-  CHKERRQ(test1_DAInjection3d(mx,my,mz));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-mx", &mx, 0));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-my", &my, 0));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-mz", &mz, 0));
+  PetscCall(test1_DAInjection3d(mx,my,mz));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

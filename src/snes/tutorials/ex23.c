@@ -73,33 +73,33 @@ static PetscErrorCode DivideDomain(DM dm, AppCtx *user)
   PetscInt       cStart, cEnd, c;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMCreateLabel(dm, "top"));
-  CHKERRQ(DMCreateLabel(dm, "bottom"));
-  CHKERRQ(DMGetLabel(dm, "top", &top));
-  CHKERRQ(DMGetLabel(dm, "bottom", &bottom));
-  CHKERRQ(DMGetBoundingBox(dm, low, high));
+  PetscCall(DMCreateLabel(dm, "top"));
+  PetscCall(DMCreateLabel(dm, "bottom"));
+  PetscCall(DMGetLabel(dm, "top", &top));
+  PetscCall(DMGetLabel(dm, "bottom", &bottom));
+  PetscCall(DMGetBoundingBox(dm, low, high));
   midy = 0.5*(high[1] - low[1]);
-  CHKERRQ(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   for (c = cStart; c < cEnd; ++c) {
     PetscReal centroid[3];
 
-    CHKERRQ(DMPlexComputeCellGeometryFVM(dm, c, NULL, centroid, NULL));
-    if (centroid[1] > midy) CHKERRQ(DMLabelSetValue(top, c, 1));
-    else                    CHKERRQ(DMLabelSetValue(bottom, c, 1));
+    PetscCall(DMPlexComputeCellGeometryFVM(dm, c, NULL, centroid, NULL));
+    if (centroid[1] > midy) PetscCall(DMLabelSetValue(top, c, 1));
+    else                    PetscCall(DMLabelSetValue(bottom, c, 1));
   }
-  CHKERRQ(DMPlexLabelComplete(dm, top));
+  PetscCall(DMPlexLabelComplete(dm, top));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscFunctionBeginUser;
-  CHKERRQ(DMCreate(comm, dm));
-  CHKERRQ(DMSetType(*dm, DMPLEX));
-  CHKERRQ(DMSetFromOptions(*dm));
-  CHKERRQ(DivideDomain(*dm, user));
-  CHKERRQ(DMSetApplicationContext(*dm, user));
-  CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
+  PetscCall(DMCreate(comm, dm));
+  PetscCall(DMSetType(*dm, DMPLEX));
+  PetscCall(DMSetFromOptions(*dm));
+  PetscCall(DivideDomain(*dm, user));
+  PetscCall(DMSetApplicationContext(*dm, user));
+  PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   PetscFunctionReturn(0);
 }
 
@@ -111,21 +111,21 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
   const PetscInt id = 1;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetRegionNumDS(dm, 0, &label, NULL, &ds));
-  CHKERRQ(PetscDSGetWeakForm(ds, &wf));
-  CHKERRQ(PetscWeakFormSetIndexResidual(wf, label, 1, 0, 0, 0, f0_quad_u, 0, f1_u));
-  CHKERRQ(PetscWeakFormSetIndexJacobian(wf, label, 1, 0, 0, 0, 0, NULL, 0, NULL, 0, NULL, 0, g3_uu));
-  CHKERRQ(PetscDSSetExactSolution(ds, 0, quad_u, user));
-  CHKERRQ(DMGetRegionNumDS(dm, 1, &label, NULL, &ds));
-  CHKERRQ(PetscDSGetWeakForm(ds, &wf));
-  CHKERRQ(PetscWeakFormSetIndexResidual(wf, label, 1, 0, 0, 0, f0_quad_u, 0, f1_u));
-  CHKERRQ(PetscWeakFormSetIndexJacobian(wf, label, 1, 0, 0, 0, 0, NULL, 0, NULL, 0, NULL, 0, g3_uu));
-  CHKERRQ(PetscWeakFormSetIndexResidual(wf, label, 1, 1, 0, 0, f0_quad_p, 0, NULL));
-  CHKERRQ(PetscWeakFormSetIndexJacobian(wf, label, 1, 1, 1, 0, 0, g0_pp, 0, NULL, 0, NULL, 0, NULL));
-  CHKERRQ(PetscDSSetExactSolution(ds, 0, quad_u, user));
-  CHKERRQ(PetscDSSetExactSolution(ds, 1, quad_p, user));
-  CHKERRQ(DMGetLabel(dm, "marker", &label));
-  CHKERRQ(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) quad_u, NULL, user, NULL));
+  PetscCall(DMGetRegionNumDS(dm, 0, &label, NULL, &ds));
+  PetscCall(PetscDSGetWeakForm(ds, &wf));
+  PetscCall(PetscWeakFormSetIndexResidual(wf, label, 1, 0, 0, 0, f0_quad_u, 0, f1_u));
+  PetscCall(PetscWeakFormSetIndexJacobian(wf, label, 1, 0, 0, 0, 0, NULL, 0, NULL, 0, NULL, 0, g3_uu));
+  PetscCall(PetscDSSetExactSolution(ds, 0, quad_u, user));
+  PetscCall(DMGetRegionNumDS(dm, 1, &label, NULL, &ds));
+  PetscCall(PetscDSGetWeakForm(ds, &wf));
+  PetscCall(PetscWeakFormSetIndexResidual(wf, label, 1, 0, 0, 0, f0_quad_u, 0, f1_u));
+  PetscCall(PetscWeakFormSetIndexJacobian(wf, label, 1, 0, 0, 0, 0, NULL, 0, NULL, 0, NULL, 0, g3_uu));
+  PetscCall(PetscWeakFormSetIndexResidual(wf, label, 1, 1, 0, 0, f0_quad_p, 0, NULL));
+  PetscCall(PetscWeakFormSetIndexJacobian(wf, label, 1, 1, 1, 0, 0, g0_pp, 0, NULL, 0, NULL, 0, NULL));
+  PetscCall(PetscDSSetExactSolution(ds, 0, quad_u, user));
+  PetscCall(PetscDSSetExactSolution(ds, 1, quad_p, user));
+  PetscCall(DMGetLabel(dm, "marker", &label));
+  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) quad_u, NULL, user, NULL));
   PetscFunctionReturn(0);
 }
 
@@ -141,26 +141,26 @@ static PetscErrorCode SetupDiscretization(DM dm, const char name[], PetscErrorCo
   char            prefix[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetDimension(dm, &dim));
-  CHKERRQ(DMPlexIsSimplex(dm, &simplex));
-  CHKERRQ(PetscSNPrintf(prefix, PETSC_MAX_PATH_LEN, "%s_", name));
-  CHKERRQ(PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, 1, simplex, name ? prefix : NULL, -1, &fe));
-  CHKERRQ(PetscObjectSetName((PetscObject) fe, name));
-  CHKERRQ(DMSetField(dm, 0, NULL, (PetscObject) fe));
-  CHKERRQ(PetscFEGetQuadrature(fe, &q));
-  CHKERRQ(PetscFEDestroy(&fe));
-  CHKERRQ(DMGetLabel(dm, "top", &top));
-  CHKERRQ(PetscSNPrintf(prefix, PETSC_MAX_PATH_LEN, "%s_top_", nameTop));
-  CHKERRQ(PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, 1, simplex, name ? prefix : NULL, -1, &feTop));
-  CHKERRQ(PetscObjectSetName((PetscObject) feTop, nameTop));
-  CHKERRQ(PetscFESetQuadrature(feTop, q));
-  CHKERRQ(DMSetField(dm, 1, top, (PetscObject) feTop));
-  CHKERRQ(PetscFEDestroy(&feTop));
-  CHKERRQ(DMCreateDS(dm));
-  CHKERRQ((*setup)(dm, user));
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMPlexIsSimplex(dm, &simplex));
+  PetscCall(PetscSNPrintf(prefix, PETSC_MAX_PATH_LEN, "%s_", name));
+  PetscCall(PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, 1, simplex, name ? prefix : NULL, -1, &fe));
+  PetscCall(PetscObjectSetName((PetscObject) fe, name));
+  PetscCall(DMSetField(dm, 0, NULL, (PetscObject) fe));
+  PetscCall(PetscFEGetQuadrature(fe, &q));
+  PetscCall(PetscFEDestroy(&fe));
+  PetscCall(DMGetLabel(dm, "top", &top));
+  PetscCall(PetscSNPrintf(prefix, PETSC_MAX_PATH_LEN, "%s_top_", nameTop));
+  PetscCall(PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, 1, simplex, name ? prefix : NULL, -1, &feTop));
+  PetscCall(PetscObjectSetName((PetscObject) feTop, nameTop));
+  PetscCall(PetscFESetQuadrature(feTop, q));
+  PetscCall(DMSetField(dm, 1, top, (PetscObject) feTop));
+  PetscCall(PetscFEDestroy(&feTop));
+  PetscCall(DMCreateDS(dm));
+  PetscCall((*setup)(dm, user));
   while (cdm) {
-    CHKERRQ(DMCopyDisc(dm,cdm));
-    CHKERRQ(DMGetCoarseDM(cdm, &cdm));
+    PetscCall(DMCopyDisc(dm,cdm));
+    PetscCall(DMGetCoarseDM(cdm, &cdm));
   }
   PetscFunctionReturn(0);
 }
@@ -172,26 +172,26 @@ int main(int argc, char **argv)
   Vec            u;    /* Solutions */
   AppCtx         user; /* User-defined work context */
 
-  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   /* Primal system */
-  CHKERRQ(SNESCreate(PETSC_COMM_WORLD, &snes));
-  CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
-  CHKERRQ(SNESSetDM(snes, dm));
-  CHKERRQ(SetupDiscretization(dm, "potential", SetupPrimalProblem, &user));
-  CHKERRQ(DMCreateGlobalVector(dm, &u));
-  CHKERRQ(VecSet(u, 0.0));
-  CHKERRQ(PetscObjectSetName((PetscObject) u, "solution"));
-  CHKERRQ(DMPlexSetSNESLocalFEM(dm, &user, &user, &user));
-  CHKERRQ(SNESSetFromOptions(snes));
-  CHKERRQ(DMSNESCheckFromOptions(snes, u));
-  CHKERRQ(SNESSolve(snes, NULL, u));
-  CHKERRQ(SNESGetSolution(snes, &u));
-  CHKERRQ(VecViewFromOptions(u, NULL, "-sol_view"));
+  PetscCall(SNESCreate(PETSC_COMM_WORLD, &snes));
+  PetscCall(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
+  PetscCall(SNESSetDM(snes, dm));
+  PetscCall(SetupDiscretization(dm, "potential", SetupPrimalProblem, &user));
+  PetscCall(DMCreateGlobalVector(dm, &u));
+  PetscCall(VecSet(u, 0.0));
+  PetscCall(PetscObjectSetName((PetscObject) u, "solution"));
+  PetscCall(DMPlexSetSNESLocalFEM(dm, &user, &user, &user));
+  PetscCall(SNESSetFromOptions(snes));
+  PetscCall(DMSNESCheckFromOptions(snes, u));
+  PetscCall(SNESSolve(snes, NULL, u));
+  PetscCall(SNESGetSolution(snes, &u));
+  PetscCall(VecViewFromOptions(u, NULL, "-sol_view"));
   /* Cleanup */
-  CHKERRQ(VecDestroy(&u));
-  CHKERRQ(SNESDestroy(&snes));
-  CHKERRQ(DMDestroy(&dm));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&u));
+  PetscCall(SNESDestroy(&snes));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

@@ -66,13 +66,13 @@ static PetscErrorCode assembled_system(void)
   PetscBool      flg;
 
   PetscFunctionBeginUser;
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "\n\n========================= Assembled system =========================\n\n"));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n\n========================= Assembled system =========================\n\n"));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   Create nonlinear solver context
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  CHKERRQ(SNESCreate(PETSC_COMM_WORLD,&snes));
+  PetscCall(SNESCreate(PETSC_COMM_WORLD,&snes));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   Create matrix and vector data structures; set corresponding routines
@@ -81,31 +81,31 @@ static PetscErrorCode assembled_system(void)
   /*
   Create vectors for solution and nonlinear function
   */
-  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,2,&x));
-  CHKERRQ(VecDuplicate(x,&r));
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,2,&x));
+  PetscCall(VecDuplicate(x,&r));
 
   /*
   Create Jacobian matrix data structure
   */
-  CHKERRQ(MatCreate(PETSC_COMM_SELF,&J));
-  CHKERRQ(MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,2,2));
-  CHKERRQ(MatSetFromOptions(J));
-  CHKERRQ(MatSetUp(J));
+  PetscCall(MatCreate(PETSC_COMM_SELF,&J));
+  PetscCall(MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,2,2));
+  PetscCall(MatSetFromOptions(J));
+  PetscCall(MatSetUp(J));
 
-  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-hard",&flg));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-hard",&flg));
   if (!flg) {
     /*
     Set function evaluation routine and vector.
     */
-    CHKERRQ(SNESSetFunction(snes,r,FormFunction1,NULL));
+    PetscCall(SNESSetFunction(snes,r,FormFunction1,NULL));
 
     /*
     Set Jacobian matrix data structure and Jacobian evaluation routine
     */
-    CHKERRQ(SNESSetJacobian(snes,J,J,FormJacobian1,NULL));
+    PetscCall(SNESSetJacobian(snes,J,J,FormJacobian1,NULL));
   } else {
-    CHKERRQ(SNESSetFunction(snes,r,FormFunction2,NULL));
-    CHKERRQ(SNESSetJacobian(snes,J,J,FormJacobian2,NULL));
+    PetscCall(SNESSetFunction(snes,r,FormFunction2,NULL));
+    PetscCall(SNESSetJacobian(snes,J,J,FormJacobian2,NULL));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -117,10 +117,10 @@ static PetscErrorCode assembled_system(void)
   KSP, KSP, and PC contexts from the SNES context, we can then
   directly call any KSP, KSP, and PC routines to set various options.
   */
-  CHKERRQ(SNESGetKSP(snes,&ksp));
-  CHKERRQ(KSPGetPC(ksp,&pc));
-  CHKERRQ(PCSetType(pc,PCNONE));
-  CHKERRQ(KSPSetTolerances(ksp,1.e-4,PETSC_DEFAULT,PETSC_DEFAULT,20));
+  PetscCall(SNESGetKSP(snes,&ksp));
+  PetscCall(KSPGetPC(ksp,&pc));
+  PetscCall(PCSetType(pc,PCNONE));
+  PetscCall(KSPSetTolerances(ksp,1.e-4,PETSC_DEFAULT,PETSC_DEFAULT,20));
 
   /*
   Set SNES/KSP/KSP/PC runtime options, e.g.,
@@ -129,17 +129,17 @@ static PetscErrorCode assembled_system(void)
   SNESSetFromOptions() is called _after_ any other customization
   routines.
   */
-  CHKERRQ(SNESSetFromOptions(snes));
+  PetscCall(SNESSetFromOptions(snes));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   Evaluate initial guess; then solve nonlinear system
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   if (!flg) {
-    CHKERRQ(VecSet(x,pfive));
+    PetscCall(VecSet(x,pfive));
   } else {
-    CHKERRQ(VecGetArray(x,&xx));
+    PetscCall(VecGetArray(x,&xx));
     xx[0] = 2.0; xx[1] = 3.0;
-    CHKERRQ(VecRestoreArray(x,&xx));
+    PetscCall(VecRestoreArray(x,&xx));
   }
   /*
   Note: The user should initialize the vector, x, with the initial guess
@@ -148,23 +148,23 @@ static PetscErrorCode assembled_system(void)
   this vector to zero by calling VecSet().
   */
 
-  CHKERRQ(SNESSolve(snes,NULL,x));
-  CHKERRQ(SNESGetIterationNumber(snes,&its));
+  PetscCall(SNESSolve(snes,NULL,x));
+  PetscCall(SNESGetIterationNumber(snes,&its));
   if (flg) {
     Vec f;
-    CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
-    CHKERRQ(SNESGetFunction(snes,&f,0,0));
-    CHKERRQ(VecView(r,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(SNESGetFunction(snes,&f,0,0));
+    PetscCall(VecView(r,PETSC_VIEWER_STDOUT_WORLD));
   }
-  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"number of SNES iterations = %D\n\n",its));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"number of SNES iterations = %D\n\n",its));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   Free work space.  All PETSc objects should be destroyed when they
   are no longer needed.
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  CHKERRQ(VecDestroy(&x)); CHKERRQ(VecDestroy(&r));
-  CHKERRQ(MatDestroy(&J)); CHKERRQ(SNESDestroy(&snes));
+  PetscCall(VecDestroy(&x)); PetscCall(VecDestroy(&r));
+  PetscCall(MatDestroy(&J)); PetscCall(SNESDestroy(&snes));
   PetscFunctionReturn(0);
 }
 
@@ -193,8 +193,8 @@ static PetscErrorCode FormFunction1(SNES snes,Vec x,Vec f,void *dummy)
   - You MUST call VecRestoreArray() when you no longer need access to
   the array.
   */
-  CHKERRQ(VecGetArrayRead(x,&xx));
-  CHKERRQ(VecGetArray(f,&ff));
+  PetscCall(VecGetArrayRead(x,&xx));
+  PetscCall(VecGetArray(f,&ff));
 
   /*
   Compute function
@@ -205,8 +205,8 @@ static PetscErrorCode FormFunction1(SNES snes,Vec x,Vec f,void *dummy)
   /*
   Restore vectors
   */
-  CHKERRQ(VecRestoreArrayRead(x,&xx));
-  CHKERRQ(VecRestoreArray(f,&ff));
+  PetscCall(VecRestoreArrayRead(x,&xx));
+  PetscCall(VecRestoreArray(f,&ff));
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */
@@ -233,7 +233,7 @@ static PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
   /*
   Get pointer to vector data
   */
-  CHKERRQ(VecGetArrayRead(x,&xx));
+  PetscCall(VecGetArrayRead(x,&xx));
 
   /*
   Compute Jacobian entries and insert into matrix.
@@ -242,18 +242,18 @@ static PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
   */
   A[0]  = 2.0*xx[0] + xx[1]; A[1] = xx[0];
   A[2]  = xx[1]; A[3] = xx[0] + 2.0*xx[1];
-  CHKERRQ(MatSetValues(jac,2,idx,2,idx,A,INSERT_VALUES));
+  PetscCall(MatSetValues(jac,2,idx,2,idx,A,INSERT_VALUES));
 
   /*
   Restore vector
   */
-  CHKERRQ(VecRestoreArrayRead(x,&xx));
+  PetscCall(VecRestoreArrayRead(x,&xx));
 
   /*
   Assemble matrix
   */
-  CHKERRQ(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
@@ -271,8 +271,8 @@ static PetscErrorCode FormFunction2(SNES snes,Vec x,Vec f,void *dummy)
   - You MUST call VecRestoreArray() when you no longer need access to
   the array.
   */
-  CHKERRQ(VecGetArrayRead(x,&xx));
-  CHKERRQ(VecGetArray(f,&ff));
+  PetscCall(VecGetArrayRead(x,&xx));
+  PetscCall(VecGetArray(f,&ff));
 
   /*
   Compute function
@@ -283,8 +283,8 @@ static PetscErrorCode FormFunction2(SNES snes,Vec x,Vec f,void *dummy)
   /*
   Restore vectors
   */
-  CHKERRQ(VecRestoreArrayRead(x,&xx));
-  CHKERRQ(VecRestoreArray(f,&ff));
+  PetscCall(VecRestoreArrayRead(x,&xx));
+  PetscCall(VecRestoreArray(f,&ff));
   PetscFunctionReturn(0);
 }
 
@@ -299,7 +299,7 @@ static PetscErrorCode FormJacobian2(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
   /*
   Get pointer to vector data
   */
-  CHKERRQ(VecGetArrayRead(x,&xx));
+  PetscCall(VecGetArrayRead(x,&xx));
 
   /*
   Compute Jacobian entries and insert into matrix.
@@ -308,18 +308,18 @@ static PetscErrorCode FormJacobian2(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
   */
   A[0]  = 3.0*PetscCosScalar(3.0*xx[0]) + 1.0; A[1] = 0.0;
   A[2]  = 0.0;                     A[3] = 1.0;
-  CHKERRQ(MatSetValues(jac,2,idx,2,idx,A,INSERT_VALUES));
+  PetscCall(MatSetValues(jac,2,idx,2,idx,A,INSERT_VALUES));
 
   /*
   Restore vector
   */
-  CHKERRQ(VecRestoreArrayRead(x,&xx));
+  PetscCall(VecRestoreArrayRead(x,&xx));
 
   /*
   Assemble matrix
   */
-  CHKERRQ(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
@@ -341,9 +341,9 @@ static PetscErrorCode block_system(void)
   Mat            bA[2][2];
 
   PetscFunctionBeginUser;
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "\n\n========================= Block system =========================\n\n"));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n\n========================= Block system =========================\n\n"));
 
-  CHKERRQ(SNESCreate(PETSC_COMM_WORLD,&snes));
+  PetscCall(SNESCreate(PETSC_COMM_WORLD,&snes));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   Create matrix and vector data structures; set corresponding routines
@@ -352,53 +352,53 @@ static PetscErrorCode block_system(void)
   /*
   Create sub vectors for solution and nonlinear function
   */
-  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,1,&x1));
-  CHKERRQ(VecDuplicate(x1,&r1));
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,1,&x1));
+  PetscCall(VecDuplicate(x1,&r1));
 
-  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,1,&x2));
-  CHKERRQ(VecDuplicate(x2,&r2));
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,1,&x2));
+  PetscCall(VecDuplicate(x2,&r2));
 
   /*
   Create the block vectors
   */
   bx[0] = x1;
   bx[1] = x2;
-  CHKERRQ(VecCreateNest(PETSC_COMM_WORLD,2,NULL,bx,&x));
-  CHKERRQ(VecAssemblyBegin(x));
-  CHKERRQ(VecAssemblyEnd(x));
-  CHKERRQ(VecDestroy(&x1));
-  CHKERRQ(VecDestroy(&x2));
+  PetscCall(VecCreateNest(PETSC_COMM_WORLD,2,NULL,bx,&x));
+  PetscCall(VecAssemblyBegin(x));
+  PetscCall(VecAssemblyEnd(x));
+  PetscCall(VecDestroy(&x1));
+  PetscCall(VecDestroy(&x2));
 
   bx[0] = r1;
   bx[1] = r2;
-  CHKERRQ(VecCreateNest(PETSC_COMM_WORLD,2,NULL,bx,&r));
-  CHKERRQ(VecDestroy(&r1));
-  CHKERRQ(VecDestroy(&r2));
-  CHKERRQ(VecAssemblyBegin(r));
-  CHKERRQ(VecAssemblyEnd(r));
+  PetscCall(VecCreateNest(PETSC_COMM_WORLD,2,NULL,bx,&r));
+  PetscCall(VecDestroy(&r1));
+  PetscCall(VecDestroy(&r2));
+  PetscCall(VecAssemblyBegin(r));
+  PetscCall(VecAssemblyEnd(r));
 
   /*
   Create sub Jacobian matrix data structure
   */
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD, &j11));
-  CHKERRQ(MatSetSizes(j11, 1, 1, 1, 1));
-  CHKERRQ(MatSetType(j11, MATSEQAIJ));
-  CHKERRQ(MatSetUp(j11));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &j11));
+  PetscCall(MatSetSizes(j11, 1, 1, 1, 1));
+  PetscCall(MatSetType(j11, MATSEQAIJ));
+  PetscCall(MatSetUp(j11));
 
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD, &j12));
-  CHKERRQ(MatSetSizes(j12, 1, 1, 1, 1));
-  CHKERRQ(MatSetType(j12, MATSEQAIJ));
-  CHKERRQ(MatSetUp(j12));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &j12));
+  PetscCall(MatSetSizes(j12, 1, 1, 1, 1));
+  PetscCall(MatSetType(j12, MATSEQAIJ));
+  PetscCall(MatSetUp(j12));
 
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD, &j21));
-  CHKERRQ(MatSetSizes(j21, 1, 1, 1, 1));
-  CHKERRQ(MatSetType(j21, MATSEQAIJ));
-  CHKERRQ(MatSetUp(j21));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &j21));
+  PetscCall(MatSetSizes(j21, 1, 1, 1, 1));
+  PetscCall(MatSetType(j21, MATSEQAIJ));
+  PetscCall(MatSetUp(j21));
 
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD, &j22));
-  CHKERRQ(MatSetSizes(j22, PETSC_DECIDE, PETSC_DECIDE, 1, 1));
-  CHKERRQ(MatSetType(j22, MATSEQAIJ));
-  CHKERRQ(MatSetUp(j22));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &j22));
+  PetscCall(MatSetSizes(j22, PETSC_DECIDE, PETSC_DECIDE, 1, 1));
+  PetscCall(MatSetType(j22, MATSEQAIJ));
+  PetscCall(MatSetUp(j22));
   /*
   Create block Jacobian matrix data structure
   */
@@ -407,31 +407,31 @@ static PetscErrorCode block_system(void)
   bA[1][0] = j21;
   bA[1][1] = j22;
 
-  CHKERRQ(MatCreateNest(PETSC_COMM_WORLD,2,NULL,2,NULL,&bA[0][0],&J));
-  CHKERRQ(MatSetUp(J));
-  CHKERRQ(MatNestSetVecType(J,VECNEST));
-  CHKERRQ(MatDestroy(&j11));
-  CHKERRQ(MatDestroy(&j12));
-  CHKERRQ(MatDestroy(&j21));
-  CHKERRQ(MatDestroy(&j22));
+  PetscCall(MatCreateNest(PETSC_COMM_WORLD,2,NULL,2,NULL,&bA[0][0],&J));
+  PetscCall(MatSetUp(J));
+  PetscCall(MatNestSetVecType(J,VECNEST));
+  PetscCall(MatDestroy(&j11));
+  PetscCall(MatDestroy(&j12));
+  PetscCall(MatDestroy(&j21));
+  PetscCall(MatDestroy(&j22));
 
-  CHKERRQ(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY));
 
-  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-hard",&flg));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-hard",&flg));
   if (!flg) {
     /*
     Set function evaluation routine and vector.
     */
-    CHKERRQ(SNESSetFunction(snes,r,FormFunction1_block,NULL));
+    PetscCall(SNESSetFunction(snes,r,FormFunction1_block,NULL));
 
     /*
     Set Jacobian matrix data structure and Jacobian evaluation routine
     */
-    CHKERRQ(SNESSetJacobian(snes,J,J,FormJacobian1_block,NULL));
+    PetscCall(SNESSetJacobian(snes,J,J,FormJacobian1_block,NULL));
   } else {
-    CHKERRQ(SNESSetFunction(snes,r,FormFunction2_block,NULL));
-    CHKERRQ(SNESSetJacobian(snes,J,J,FormJacobian2_block,NULL));
+    PetscCall(SNESSetFunction(snes,r,FormFunction2_block,NULL));
+    PetscCall(SNESSetJacobian(snes,J,J,FormJacobian2_block,NULL));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -443,10 +443,10 @@ static PetscErrorCode block_system(void)
   KSP, KSP, and PC contexts from the SNES context, we can then
   directly call any KSP, KSP, and PC routines to set various options.
   */
-  CHKERRQ(SNESGetKSP(snes,&ksp));
-  CHKERRQ(KSPGetPC(ksp,&pc));
-  CHKERRQ(PCSetType(pc,PCNONE));
-  CHKERRQ(KSPSetTolerances(ksp,1.e-4,PETSC_DEFAULT,PETSC_DEFAULT,20));
+  PetscCall(SNESGetKSP(snes,&ksp));
+  PetscCall(KSPGetPC(ksp,&pc));
+  PetscCall(PCSetType(pc,PCNONE));
+  PetscCall(KSPSetTolerances(ksp,1.e-4,PETSC_DEFAULT,PETSC_DEFAULT,20));
 
   /*
   Set SNES/KSP/KSP/PC runtime options, e.g.,
@@ -455,27 +455,27 @@ static PetscErrorCode block_system(void)
   SNESSetFromOptions() is called _after_ any other customization
   routines.
   */
-  CHKERRQ(SNESSetFromOptions(snes));
+  PetscCall(SNESSetFromOptions(snes));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   Evaluate initial guess; then solve nonlinear system
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   if (!flg) {
-    CHKERRQ(VecSet(x,pfive));
+    PetscCall(VecSet(x,pfive));
   } else {
     Vec *vecs;
-    CHKERRQ(VecNestGetSubVecs(x, NULL, &vecs));
+    PetscCall(VecNestGetSubVecs(x, NULL, &vecs));
     bv   = vecs[0];
-/*    CHKERRQ(VecBlockGetSubVec(x, 0, &bv)); */
-    CHKERRQ(VecSetValue(bv, 0, 2.0, INSERT_VALUES));  /* xx[0] = 2.0; */
-    CHKERRQ(VecAssemblyBegin(bv));
-    CHKERRQ(VecAssemblyEnd(bv));
+/*    PetscCall(VecBlockGetSubVec(x, 0, &bv)); */
+    PetscCall(VecSetValue(bv, 0, 2.0, INSERT_VALUES));  /* xx[0] = 2.0; */
+    PetscCall(VecAssemblyBegin(bv));
+    PetscCall(VecAssemblyEnd(bv));
 
-/*    CHKERRQ(VecBlockGetSubVec(x, 1, &bv)); */
+/*    PetscCall(VecBlockGetSubVec(x, 1, &bv)); */
     bv   = vecs[1];
-    CHKERRQ(VecSetValue(bv, 0, 3.0, INSERT_VALUES));  /* xx[1] = 3.0; */
-    CHKERRQ(VecAssemblyBegin(bv));
-    CHKERRQ(VecAssemblyEnd(bv));
+    PetscCall(VecSetValue(bv, 0, 3.0, INSERT_VALUES));  /* xx[1] = 3.0; */
+    PetscCall(VecAssemblyBegin(bv));
+    PetscCall(VecAssemblyEnd(bv));
   }
   /*
   Note: The user should initialize the vector, x, with the initial guess
@@ -483,23 +483,23 @@ static PetscErrorCode block_system(void)
   to employ an initial guess of zero, the user should explicitly set
   this vector to zero by calling VecSet().
   */
-  CHKERRQ(SNESSolve(snes,NULL,x));
-  CHKERRQ(SNESGetIterationNumber(snes,&its));
+  PetscCall(SNESSolve(snes,NULL,x));
+  PetscCall(SNESGetIterationNumber(snes,&its));
   if (flg) {
     Vec f;
-    CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
-    CHKERRQ(SNESGetFunction(snes,&f,0,0));
-    CHKERRQ(VecView(r,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(SNESGetFunction(snes,&f,0,0));
+    PetscCall(VecView(r,PETSC_VIEWER_STDOUT_WORLD));
   }
 
-  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"number of SNES iterations = %D\n\n",its));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"number of SNES iterations = %D\n\n",its));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   Free work space.  All PETSc objects should be destroyed when they
   are no longer needed.
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(VecDestroy(&x)); CHKERRQ(VecDestroy(&r));
-  CHKERRQ(MatDestroy(&J)); CHKERRQ(SNESDestroy(&snes));
+  PetscCall(VecDestroy(&x)); PetscCall(VecDestroy(&r));
+  PetscCall(MatDestroy(&J)); PetscCall(SNESDestroy(&snes));
   PetscFunctionReturn(0);
 }
 
@@ -513,29 +513,29 @@ static PetscErrorCode FormFunction1_block(SNES snes,Vec x,Vec f,void *dummy)
 
   PetscFunctionBeginUser;
   /* get blocks for function */
-  CHKERRQ(VecNestGetSubVecs(f, &nb, &ff));
+  PetscCall(VecNestGetSubVecs(f, &nb, &ff));
   f1   = ff[0];  f2 = ff[1];
 
   /* get blocks for solution */
-  CHKERRQ(VecNestGetSubVecs(x, &nb, &xx));
+  PetscCall(VecNestGetSubVecs(x, &nb, &xx));
   x1   = xx[0];  x2 = xx[1];
 
   /* get solution values */
   index = 0;
-  CHKERRQ(VecGetValues(x1,1, &index, &xx_0));
-  CHKERRQ(VecGetValues(x2,1, &index, &xx_1));
+  PetscCall(VecGetValues(x1,1, &index, &xx_0));
+  PetscCall(VecGetValues(x2,1, &index, &xx_1));
 
   /* Compute function */
   ff_0 = xx_0*xx_0 + xx_0*xx_1 - 3.0;
   ff_1 = xx_0*xx_1 + xx_1*xx_1 - 6.0;
 
   /* set function values */
-  CHKERRQ(VecSetValue(f1, index, ff_0, INSERT_VALUES));
+  PetscCall(VecSetValue(f1, index, ff_0, INSERT_VALUES));
 
-  CHKERRQ(VecSetValue(f2, index, ff_1, INSERT_VALUES));
+  PetscCall(VecSetValue(f2, index, ff_1, INSERT_VALUES));
 
-  CHKERRQ(VecAssemblyBegin(f));
-  CHKERRQ(VecAssemblyEnd(f));
+  PetscCall(VecAssemblyBegin(f));
+  PetscCall(VecAssemblyEnd(f));
   PetscFunctionReturn(0);
 }
 
@@ -551,16 +551,16 @@ static PetscErrorCode FormJacobian1_block(SNES snes,Vec x,Mat jac,Mat B,void *du
 
   PetscFunctionBeginUser;
   /* get blocks for solution */
-  CHKERRQ(VecNestGetSubVecs(x, &nb, &xx));
+  PetscCall(VecNestGetSubVecs(x, &nb, &xx));
   x1   = xx[0];  x2 = xx[1];
 
   /* get solution values */
   index = 0;
-  CHKERRQ(VecGetValues(x1,1, &index, &xx_0));
-  CHKERRQ(VecGetValues(x2,1, &index, &xx_1));
+  PetscCall(VecGetValues(x1,1, &index, &xx_0));
+  PetscCall(VecGetValues(x2,1, &index, &xx_1));
 
   /* get block matrices */
-  CHKERRQ(MatNestGetSubMats(jac,NULL,NULL,&mats));
+  PetscCall(MatNestGetSubMats(jac,NULL,NULL,&mats));
   j11  = mats[0][0];
   j12  = mats[0][1];
   j21  = mats[1][0];
@@ -573,14 +573,14 @@ static PetscErrorCode FormJacobian1_block(SNES snes,Vec x,Mat jac,Mat B,void *du
   A_11 = xx_0 + 2.0*xx_1;
 
   /* set jacobian values */
-  CHKERRQ(MatSetValue(j11, 0,0, A_00, INSERT_VALUES));
-  CHKERRQ(MatSetValue(j12, 0,0, A_01, INSERT_VALUES));
-  CHKERRQ(MatSetValue(j21, 0,0, A_10, INSERT_VALUES));
-  CHKERRQ(MatSetValue(j22, 0,0, A_11, INSERT_VALUES));
+  PetscCall(MatSetValue(j11, 0,0, A_00, INSERT_VALUES));
+  PetscCall(MatSetValue(j12, 0,0, A_01, INSERT_VALUES));
+  PetscCall(MatSetValue(j21, 0,0, A_10, INSERT_VALUES));
+  PetscCall(MatSetValue(j22, 0,0, A_11, INSERT_VALUES));
 
   /* Assemble sub matrix */
-  CHKERRQ(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
@@ -598,8 +598,8 @@ static PetscErrorCode FormFunction2_block(SNES snes,Vec x,Vec f,void *dummy)
   - You MUST call VecRestoreArray() when you no longer need access to
   the array.
   */
-  CHKERRQ(VecGetArrayRead(x,&xx));
-  CHKERRQ(VecGetArray(f,&ff));
+  PetscCall(VecGetArrayRead(x,&xx));
+  PetscCall(VecGetArray(f,&ff));
 
   /*
   Compute function
@@ -610,8 +610,8 @@ static PetscErrorCode FormFunction2_block(SNES snes,Vec x,Vec f,void *dummy)
   /*
   Restore vectors
   */
-  CHKERRQ(VecRestoreArrayRead(x,&xx));
-  CHKERRQ(VecRestoreArray(f,&ff));
+  PetscCall(VecRestoreArrayRead(x,&xx));
+  PetscCall(VecRestoreArray(f,&ff));
   PetscFunctionReturn(0);
 }
 
@@ -626,7 +626,7 @@ static PetscErrorCode FormJacobian2_block(SNES snes,Vec x,Mat jac,Mat B,void *du
   /*
   Get pointer to vector data
   */
-  CHKERRQ(VecGetArrayRead(x,&xx));
+  PetscCall(VecGetArrayRead(x,&xx));
 
   /*
   Compute Jacobian entries and insert into matrix.
@@ -635,18 +635,18 @@ static PetscErrorCode FormJacobian2_block(SNES snes,Vec x,Mat jac,Mat B,void *du
   */
   A[0]  = 3.0*PetscCosScalar(3.0*xx[0]) + 1.0; A[1] = 0.0;
   A[2]  = 0.0;                     A[3] = 1.0;
-  CHKERRQ(MatSetValues(jac,2,idx,2,idx,A,INSERT_VALUES));
+  PetscCall(MatSetValues(jac,2,idx,2,idx,A,INSERT_VALUES));
 
   /*
   Restore vector
   */
-  CHKERRQ(VecRestoreArrayRead(x,&xx));
+  PetscCall(VecRestoreArrayRead(x,&xx));
 
   /*
   Assemble matrix
   */
-  CHKERRQ(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
@@ -654,12 +654,12 @@ int main(int argc,char **argv)
 {
   PetscMPIInt    size;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
-  CHKERRQ(assembled_system());
-  CHKERRQ(block_system());
-  CHKERRQ(PetscFinalize());
+  PetscCall(assembled_system());
+  PetscCall(block_system());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

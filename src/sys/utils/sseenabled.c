@@ -15,11 +15,11 @@ PetscErrorCode  PetscSSEHardwareTest(PetscBool  *flag)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscStrncpy(vendor,"************",sizeof(vendor)));
+  PetscCall(PetscStrncpy(vendor,"************",sizeof(vendor)));
   CPUID_GET_VENDOR(vendor);
-  CHKERRQ(PetscStrcmp(vendor,Intel,&flg));
-  if (!flg) CHKERRQ(PetscStrcmp(vendor,AMD,&flg));
-  if (!flg) {CHKERRQ(PetscStrcmp(vendor,Hygon,&flg));
+  PetscCall(PetscStrcmp(vendor,Intel,&flg));
+  if (!flg) PetscCall(PetscStrcmp(vendor,AMD,&flg));
+  if (!flg) {PetscCall(PetscStrcmp(vendor,Hygon,&flg));
     if (flg) {
     /* Intel, AMD, and Hygon use bit 25 of CPUID_FEATURES */
     /* to denote availability of SSE Support */
@@ -129,7 +129,7 @@ PetscErrorCode  PetscSSEIsEnabled(MPI_Comm comm,PetscBool  *lflag,PetscBool  *gf
   if (petsc_sse_local_is_untested && petsc_sse_global_is_untested) {
     disabled_option = PETSC_FALSE;
 
-    CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-disable_sse",&disabled_option,NULL));
+    PetscCall(PetscOptionsGetBool(NULL,NULL,"-disable_sse",&disabled_option,NULL));
     if (disabled_option) {
       petsc_sse_local_is_untested  = PETSC_FALSE;
       petsc_sse_enabled_local      = PETSC_FALSE;
@@ -138,15 +138,15 @@ PetscErrorCode  PetscSSEIsEnabled(MPI_Comm comm,PetscBool  *lflag,PetscBool  *gf
     }
 
     if (petsc_sse_local_is_untested) {
-      CHKERRQ(PetscSSEHardwareTest(&petsc_sse_enabled_local));
+      PetscCall(PetscSSEHardwareTest(&petsc_sse_enabled_local));
       if (petsc_sse_enabled_local) {
-        CHKERRQ(PetscSSEOSEnabledTest(&petsc_sse_enabled_local));
+        PetscCall(PetscSSEOSEnabledTest(&petsc_sse_enabled_local));
       }
       petsc_sse_local_is_untested = PETSC_FALSE;
     }
 
     if (gflag && petsc_sse_global_is_untested) {
-      CHKERRMPI(MPIU_Allreduce(&petsc_sse_enabled_local,&petsc_sse_enabled_global,1,MPIU_BOOL,MPI_LAND,comm));
+      PetscCallMPI(MPIU_Allreduce(&petsc_sse_enabled_local,&petsc_sse_enabled_global,1,MPIU_BOOL,MPI_LAND,comm));
 
       petsc_sse_global_is_untested = PETSC_FALSE;
     }

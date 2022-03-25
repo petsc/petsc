@@ -6,18 +6,18 @@ int main(int argc,char **argv)
    Mat            A, B;
    const char     *pfx;
 
-   CHKERRQ(PetscInitialize(&argc, &argv, NULL, NULL));
-   CHKERRQ(MatCreate(PETSC_COMM_WORLD, &A));
-   CHKERRQ(MatSetSizes(A, 1, 1, PETSC_DECIDE, PETSC_DECIDE));
-   CHKERRQ(MatSetUp(A));
-   CHKERRQ(MatSetOptionsPrefix(A, "foo_"));
-   CHKERRQ(MatGetDiagonalBlock(A, &B));
+   PetscCall(PetscInitialize(&argc, &argv, NULL, NULL));
+   PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
+   PetscCall(MatSetSizes(A, 1, 1, PETSC_DECIDE, PETSC_DECIDE));
+   PetscCall(MatSetUp(A));
+   PetscCall(MatSetOptionsPrefix(A, "foo_"));
+   PetscCall(MatGetDiagonalBlock(A, &B));
    /* Test set options prefix with the string obtained from get options prefix */
-   CHKERRQ(PetscObjectGetOptionsPrefix((PetscObject)A,&pfx));
-   CHKERRQ(MatSetOptionsPrefix(B, pfx));
-   CHKERRQ(MatDestroy(&A));
+   PetscCall(PetscObjectGetOptionsPrefix((PetscObject)A,&pfx));
+   PetscCall(MatSetOptionsPrefix(B, pfx));
+   PetscCall(MatDestroy(&A));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

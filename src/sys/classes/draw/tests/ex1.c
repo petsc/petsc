@@ -9,46 +9,46 @@ int main(int argc,char **argv)
   PetscDraw draw;
   int       x = 0,y = 0,width = 300,height = 300;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
-  CHKERRQ(PetscDrawCreate(PETSC_COMM_WORLD,0,"Title",x,y,width,height,&draw));
-  CHKERRQ(PetscDrawSetPause(draw,2.0));
-  CHKERRQ(PetscDrawSetFromOptions(draw));
-  CHKERRQ(PetscDrawSetViewPort(draw,.25,.25,.75,.75));
+  PetscCall(PetscDrawCreate(PETSC_COMM_WORLD,0,"Title",x,y,width,height,&draw));
+  PetscCall(PetscDrawSetPause(draw,2.0));
+  PetscCall(PetscDrawSetFromOptions(draw));
+  PetscCall(PetscDrawSetViewPort(draw,.25,.25,.75,.75));
 
-  CHKERRQ(PetscDrawLine(draw,0.0,0.0,1.0,1.0,PETSC_DRAW_BLACK));
-  CHKERRQ(PetscDrawString(draw,.2,.2,PETSC_DRAW_RED,"Some Text"));
-  CHKERRQ(PetscDrawString(draw,.5,.5,PETSC_DRAW_GREEN,"Some Text"));
-  CHKERRQ(PetscDrawString(draw,.2,.8,PETSC_DRAW_BLUE,"Some Text"));
-  CHKERRQ(PetscDrawFlush(draw));
-  CHKERRQ(PetscDrawPause(draw));
-  CHKERRQ(PetscDrawSave(draw));
+  PetscCall(PetscDrawLine(draw,0.0,0.0,1.0,1.0,PETSC_DRAW_BLACK));
+  PetscCall(PetscDrawString(draw,.2,.2,PETSC_DRAW_RED,"Some Text"));
+  PetscCall(PetscDrawString(draw,.5,.5,PETSC_DRAW_GREEN,"Some Text"));
+  PetscCall(PetscDrawString(draw,.2,.8,PETSC_DRAW_BLUE,"Some Text"));
+  PetscCall(PetscDrawFlush(draw));
+  PetscCall(PetscDrawPause(draw));
+  PetscCall(PetscDrawSave(draw));
 
-  CHKERRQ(PetscDrawClear(draw));
-  /*CHKERRQ(PetscDrawStringSetSize(draw,.5,.5));*/
-  CHKERRQ(PetscDrawString(draw,.2,.2,PETSC_DRAW_RED,"Some Text"));
-  CHKERRQ(PetscDrawString(draw,.5,.5,PETSC_DRAW_GREEN,"Some Text"));
-  CHKERRQ(PetscDrawString(draw,.2,.8,PETSC_DRAW_BLUE,"Some Text"));
-  CHKERRQ(PetscDrawFlush(draw));
-  CHKERRQ(PetscDrawPause(draw));
-  CHKERRQ(PetscDrawSave(draw));
+  PetscCall(PetscDrawClear(draw));
+  /*PetscCall(PetscDrawStringSetSize(draw,.5,.5));*/
+  PetscCall(PetscDrawString(draw,.2,.2,PETSC_DRAW_RED,"Some Text"));
+  PetscCall(PetscDrawString(draw,.5,.5,PETSC_DRAW_GREEN,"Some Text"));
+  PetscCall(PetscDrawString(draw,.2,.8,PETSC_DRAW_BLUE,"Some Text"));
+  PetscCall(PetscDrawFlush(draw));
+  PetscCall(PetscDrawPause(draw));
+  PetscCall(PetscDrawSave(draw));
 
-  CHKERRQ(PetscDrawResizeWindow(draw,600,600));
-  CHKERRQ(PetscDrawGetWindowSize(draw,&width,&height));
-  CHKERRQ(PetscDrawSetViewPort(draw,0,0,1,1));
-  CHKERRQ(PetscDrawClear(draw));
-  /*CHKERRQ(PetscDrawLine(draw,0.0,0.0,1.0,1.0,PETSC_DRAW_RED));*/
-  /*CHKERRQ(PetscDrawLine(draw,0.0,1.0,1.0,0.0,PETSC_DRAW_BLUE));*/
-  CHKERRQ(PetscDrawString(draw,.2,.2,PETSC_DRAW_RED,"Some Text\n  Some Other Text"));
-  CHKERRQ(PetscDrawString(draw,.5,.5,PETSC_DRAW_RED,"ABCygj\n()[]F$"));
-  CHKERRQ(PetscDrawString(draw,0,0,PETSC_DRAW_RED,"Horizontal Text (ABCygj)"));
-  CHKERRQ(PetscDrawStringVertical(draw,0,1,PETSC_DRAW_RED,"Vertical Text"));
-  CHKERRQ(PetscDrawFlush(draw));
-  CHKERRQ(PetscDrawPause(draw));
-  CHKERRQ(PetscDrawSave(draw));
+  PetscCall(PetscDrawResizeWindow(draw,600,600));
+  PetscCall(PetscDrawGetWindowSize(draw,&width,&height));
+  PetscCall(PetscDrawSetViewPort(draw,0,0,1,1));
+  PetscCall(PetscDrawClear(draw));
+  /*PetscCall(PetscDrawLine(draw,0.0,0.0,1.0,1.0,PETSC_DRAW_RED));*/
+  /*PetscCall(PetscDrawLine(draw,0.0,1.0,1.0,0.0,PETSC_DRAW_BLUE));*/
+  PetscCall(PetscDrawString(draw,.2,.2,PETSC_DRAW_RED,"Some Text\n  Some Other Text"));
+  PetscCall(PetscDrawString(draw,.5,.5,PETSC_DRAW_RED,"ABCygj\n()[]F$"));
+  PetscCall(PetscDrawString(draw,0,0,PETSC_DRAW_RED,"Horizontal Text (ABCygj)"));
+  PetscCall(PetscDrawStringVertical(draw,0,1,PETSC_DRAW_RED,"Vertical Text"));
+  PetscCall(PetscDrawFlush(draw));
+  PetscCall(PetscDrawPause(draw));
+  PetscCall(PetscDrawSave(draw));
 
-  CHKERRQ(PetscDrawDestroy(&draw));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscDrawDestroy(&draw));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

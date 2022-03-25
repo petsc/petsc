@@ -19,56 +19,56 @@ int main(int argc,char **args)
   PetscInt Annz = sizeof(Ai)/sizeof(PetscInt);
   PetscInt Bnnz = sizeof(Bi)/sizeof(PetscInt);
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,N));
-  CHKERRQ(MatSetFromOptions(A));
-  CHKERRQ(MatSeqAIJSetPreallocation(A,2,NULL));
-  CHKERRQ(MatMPIAIJSetPreallocation(A,2,NULL,2,NULL));
-  CHKERRQ(MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE));
-
-  if (rank == 0) {
-    for (k=0; k<Annz; k++) CHKERRQ(MatSetValue(A,Ai[k],Aj[k],Ai[k]+Aj[k]+1.0,INSERT_VALUES));
-  }
-
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
-
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&B));
-  CHKERRQ(MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,M,N));
-  CHKERRQ(MatSetFromOptions(B));
-  CHKERRQ(MatSeqAIJSetPreallocation(B,2,NULL));
-  CHKERRQ(MatMPIAIJSetPreallocation(B,2,NULL,2,NULL));
-  CHKERRQ(MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,N));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSeqAIJSetPreallocation(A,2,NULL));
+  PetscCall(MatMPIAIJSetPreallocation(A,2,NULL,2,NULL));
+  PetscCall(MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE));
 
   if (rank == 0) {
-    for (k=0; k<Bnnz; k++) CHKERRQ(MatSetValue(B,Bi[k],Bj[k],Bi[k]+Bj[k]+2.0,INSERT_VALUES));
+    for (k=0; k<Annz; k++) PetscCall(MatSetValue(A,Ai[k],Aj[k],Ai[k]+Aj[k]+1.0,INSERT_VALUES));
   }
-  CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
 
-  CHKERRQ(MatMatMult(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C));
-  CHKERRQ(MatView(C,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&B));
+  PetscCall(MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,M,N));
+  PetscCall(MatSetFromOptions(B));
+  PetscCall(MatSeqAIJSetPreallocation(B,2,NULL));
+  PetscCall(MatMPIAIJSetPreallocation(B,2,NULL,2,NULL));
+  PetscCall(MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE));
+
+  if (rank == 0) {
+    for (k=0; k<Bnnz; k++) PetscCall(MatSetValue(B,Bi[k],Bj[k],Bi[k]+Bj[k]+2.0,INSERT_VALUES));
+  }
+  PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
+
+  PetscCall(MatMatMult(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C));
+  PetscCall(MatView(C,PETSC_VIEWER_STDOUT_WORLD));
 
   /* B, A have the same nonzero pattern, so it is legitimate to do so */
-  CHKERRQ(MatMatMult(B,A,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C));
-  CHKERRQ(MatView(C,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatMatMult(B,A,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C));
+  PetscCall(MatView(C,PETSC_VIEWER_STDOUT_WORLD));
 
-  CHKERRQ(MatTransposeMatMult(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&D));
-  CHKERRQ(MatView(D, PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatTransposeMatMult(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&D));
+  PetscCall(MatView(D, PETSC_VIEWER_STDOUT_WORLD));
 
-  CHKERRQ(MatPtAP(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&E));
-  CHKERRQ(MatView(E,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatPtAP(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&E));
+  PetscCall(MatView(E,PETSC_VIEWER_STDOUT_WORLD));
 
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(MatDestroy(&B));
-  CHKERRQ(MatDestroy(&C));
-  CHKERRQ(MatDestroy(&D));
-  CHKERRQ(MatDestroy(&E));
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&B));
+  PetscCall(MatDestroy(&C));
+  PetscCall(MatDestroy(&D));
+  PetscCall(MatDestroy(&E));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

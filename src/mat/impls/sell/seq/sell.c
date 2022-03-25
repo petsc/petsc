@@ -87,7 +87,7 @@ PetscErrorCode MatSeqSELLSetPreallocation(Mat B,PetscInt rlenmax,const PetscInt 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B,MAT_CLASSID,1);
   PetscValidType(B,1);
-  CHKERRQ(PetscTryMethod(B,"MatSeqSELLSetPreallocation_C",(Mat,PetscInt,const PetscInt[]),(B,rlenmax,rlen)));
+  PetscCall(PetscTryMethod(B,"MatSeqSELLSetPreallocation_C",(Mat,PetscInt,const PetscInt[]),(B,rlenmax,rlen)));
   PetscFunctionReturn(0);
 }
 
@@ -104,8 +104,8 @@ PetscErrorCode MatSeqSELLSetPreallocation_SeqSELL(Mat B,PetscInt maxallocrow,con
     maxallocrow    = 0;
   }
 
-  CHKERRQ(PetscLayoutSetUp(B->rmap));
-  CHKERRQ(PetscLayoutSetUp(B->cmap));
+  PetscCall(PetscLayoutSetUp(B->rmap));
+  PetscCall(PetscLayoutSetUp(B->cmap));
 
   /* FIXME: if one preallocates more space than needed, the matrix does not shrink automatically, but for best performance it should */
   if (maxallocrow == PETSC_DEFAULT || maxallocrow == PETSC_DECIDE) maxallocrow = 5;
@@ -124,11 +124,11 @@ PetscErrorCode MatSeqSELLSetPreallocation_SeqSELL(Mat B,PetscInt maxallocrow,con
   totalslices = PetscCeilInt(B->rmap->n,8);
   b->totalslices = totalslices;
   if (!skipallocation) {
-    if (B->rmap->n & 0x07) CHKERRQ(PetscInfo(B,"Padding rows to the SEQSELL matrix because the number of rows is not the multiple of 8 (value %" PetscInt_FMT ")\n",B->rmap->n));
+    if (B->rmap->n & 0x07) PetscCall(PetscInfo(B,"Padding rows to the SEQSELL matrix because the number of rows is not the multiple of 8 (value %" PetscInt_FMT ")\n",B->rmap->n));
 
     if (!b->sliidx) { /* sliidx gives the starting index of each slice, the last element is the total space allocated */
-      CHKERRQ(PetscMalloc1(totalslices+1,&b->sliidx));
-      CHKERRQ(PetscLogObjectMemory((PetscObject)B,(totalslices+1)*sizeof(PetscInt)));
+      PetscCall(PetscMalloc1(totalslices+1,&b->sliidx));
+      PetscCall(PetscLogObjectMemory((PetscObject)B,(totalslices+1)*sizeof(PetscInt)));
     }
     if (!rlen) { /* if rlen is not provided, allocate same space for all the slices */
       if (maxallocrow == PETSC_DEFAULT || maxallocrow == PETSC_DECIDE) maxallocrow = 10;
@@ -143,7 +143,7 @@ PetscErrorCode MatSeqSELLSetPreallocation_SeqSELL(Mat B,PetscInt maxallocrow,con
           b->sliidx[i] = PetscMax(b->sliidx[i],rlen[8*(i-1)+j]);
         }
         maxallocrow = PetscMax(b->sliidx[i],maxallocrow);
-        CHKERRQ(PetscIntSumError(b->sliidx[i-1],8*b->sliidx[i],&b->sliidx[i]));
+        PetscCall(PetscIntSumError(b->sliidx[i-1],8*b->sliidx[i],&b->sliidx[i]));
       }
       /* last slice */
       b->sliidx[totalslices] = 0;
@@ -154,13 +154,13 @@ PetscErrorCode MatSeqSELLSetPreallocation_SeqSELL(Mat B,PetscInt maxallocrow,con
 
     /* allocate space for val, colidx, rlen */
     /* FIXME: should B's old memory be unlogged? */
-    CHKERRQ(MatSeqXSELLFreeSELL(B,&b->val,&b->colidx));
+    PetscCall(MatSeqXSELLFreeSELL(B,&b->val,&b->colidx));
     /* FIXME: assuming an element of the bit array takes 8 bits */
-    CHKERRQ(PetscMalloc2(b->sliidx[totalslices],&b->val,b->sliidx[totalslices],&b->colidx));
-    CHKERRQ(PetscLogObjectMemory((PetscObject)B,b->sliidx[totalslices]*(sizeof(PetscScalar)+sizeof(PetscInt))));
+    PetscCall(PetscMalloc2(b->sliidx[totalslices],&b->val,b->sliidx[totalslices],&b->colidx));
+    PetscCall(PetscLogObjectMemory((PetscObject)B,b->sliidx[totalslices]*(sizeof(PetscScalar)+sizeof(PetscInt))));
     /* b->rlen will count nonzeros in each row so far. We dont copy rlen to b->rlen because the matrix has not been set. */
-    CHKERRQ(PetscCalloc1(8*totalslices,&b->rlen));
-    CHKERRQ(PetscLogObjectMemory((PetscObject)B,8*totalslices*sizeof(PetscInt)));
+    PetscCall(PetscCalloc1(8*totalslices,&b->rlen));
+    PetscCall(PetscLogObjectMemory((PetscObject)B,8*totalslices*sizeof(PetscInt)));
 
     b->singlemalloc = PETSC_TRUE;
     b->free_val     = PETSC_TRUE;
@@ -176,7 +176,7 @@ PetscErrorCode MatSeqSELLSetPreallocation_SeqSELL(Mat B,PetscInt maxallocrow,con
   b->maxallocmat      = b->sliidx[totalslices];
   B->info.nz_unneeded = (double)b->maxallocmat;
   if (realalloc) {
-    CHKERRQ(MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE));
+    PetscCall(MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE));
   }
   PetscFunctionReturn(0);
 }
@@ -192,7 +192,7 @@ PetscErrorCode MatGetRow_SeqSELL(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,
   shift = a->sliidx[row>>3]+(row&0x07);
   if (!a->getrowcols) {
 
-    CHKERRQ(PetscMalloc2(a->rlenmax,&a->getrowcols,a->rlenmax,&a->getrowvals));
+    PetscCall(PetscMalloc2(a->rlenmax,&a->getrowcols,a->rlenmax,&a->getrowvals));
   }
   if (idx) {
     PetscInt j;
@@ -222,29 +222,29 @@ PetscErrorCode MatConvert_SeqSELL_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,M
   PetscFunctionBegin;
   if (reuse == MAT_REUSE_MATRIX) {
     B    = *newmat;
-    CHKERRQ(MatZeroEntries(B));
+    PetscCall(MatZeroEntries(B));
   } else {
-    CHKERRQ(MatCreate(PetscObjectComm((PetscObject)A),&B));
-    CHKERRQ(MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N));
-    CHKERRQ(MatSetType(B,MATSEQAIJ));
-    CHKERRQ(MatSeqAIJSetPreallocation(B,0,a->rlen));
+    PetscCall(MatCreate(PetscObjectComm((PetscObject)A),&B));
+    PetscCall(MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N));
+    PetscCall(MatSetType(B,MATSEQAIJ));
+    PetscCall(MatSeqAIJSetPreallocation(B,0,a->rlen));
   }
 
   for (i=0; i<A->rmap->n; i++) {
     PetscInt    nz = 0,*cols = NULL;
     PetscScalar *vals = NULL;
 
-    CHKERRQ(MatGetRow_SeqSELL(A,i,&nz,&cols,&vals));
-    CHKERRQ(MatSetValues(B,1,&i,nz,cols,vals,INSERT_VALUES));
-    CHKERRQ(MatRestoreRow_SeqSELL(A,i,&nz,&cols,&vals));
+    PetscCall(MatGetRow_SeqSELL(A,i,&nz,&cols,&vals));
+    PetscCall(MatSetValues(B,1,&i,nz,cols,vals,INSERT_VALUES));
+    PetscCall(MatRestoreRow_SeqSELL(A,i,&nz,&cols,&vals));
   }
 
-  CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
   B->rmap->bs = A->rmap->bs;
 
   if (reuse == MAT_INPLACE_MATRIX) {
-    CHKERRQ(MatHeaderReplace(A,&B));
+    PetscCall(MatHeaderReplace(A,&B));
   } else {
     *newmat = B;
   }
@@ -267,36 +267,36 @@ PetscErrorCode MatConvert_SeqAIJ_SeqSELL(Mat A,MatType newtype,MatReuse reuse,Ma
     B = *newmat;
   } else {
     if (PetscDefined(USE_DEBUG) || !a->ilen) {
-      CHKERRQ(PetscMalloc1(m,&rowlengths));
+      PetscCall(PetscMalloc1(m,&rowlengths));
       for (i=0; i<m; i++) {
         rowlengths[i] = ai[i+1] - ai[i];
       }
     }
     if (PetscDefined(USE_DEBUG) && a->ilen) {
       PetscBool eq;
-      CHKERRQ(PetscMemcmp(rowlengths,a->ilen,m*sizeof(PetscInt),&eq));
+      PetscCall(PetscMemcmp(rowlengths,a->ilen,m*sizeof(PetscInt),&eq));
       PetscCheck(eq,PETSC_COMM_SELF,PETSC_ERR_PLIB,"SeqAIJ ilen array incorrect");
-      CHKERRQ(PetscFree(rowlengths));
+      PetscCall(PetscFree(rowlengths));
       rowlengths = a->ilen;
     } else if (a->ilen) rowlengths = a->ilen;
-    CHKERRQ(MatCreate(PetscObjectComm((PetscObject)A),&B));
-    CHKERRQ(MatSetSizes(B,m,n,m,n));
-    CHKERRQ(MatSetType(B,MATSEQSELL));
-    CHKERRQ(MatSeqSELLSetPreallocation(B,0,rowlengths));
-    if (rowlengths != a->ilen) CHKERRQ(PetscFree(rowlengths));
+    PetscCall(MatCreate(PetscObjectComm((PetscObject)A),&B));
+    PetscCall(MatSetSizes(B,m,n,m,n));
+    PetscCall(MatSetType(B,MATSEQSELL));
+    PetscCall(MatSeqSELLSetPreallocation(B,0,rowlengths));
+    if (rowlengths != a->ilen) PetscCall(PetscFree(rowlengths));
   }
 
   for (row=0; row<m; row++) {
-    CHKERRQ(MatGetRow_SeqAIJ(A,row,&ncols,(PetscInt**)&cols,(PetscScalar**)&vals));
-    CHKERRQ(MatSetValues_SeqSELL(B,1,&row,ncols,cols,vals,INSERT_VALUES));
-    CHKERRQ(MatRestoreRow_SeqAIJ(A,row,&ncols,(PetscInt**)&cols,(PetscScalar**)&vals));
+    PetscCall(MatGetRow_SeqAIJ(A,row,&ncols,(PetscInt**)&cols,(PetscScalar**)&vals));
+    PetscCall(MatSetValues_SeqSELL(B,1,&row,ncols,cols,vals,INSERT_VALUES));
+    PetscCall(MatRestoreRow_SeqAIJ(A,row,&ncols,(PetscInt**)&cols,(PetscScalar**)&vals));
   }
-  CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
   B->rmap->bs = A->rmap->bs;
 
   if (reuse == MAT_INPLACE_MATRIX) {
-    CHKERRQ(MatHeaderReplace(A,&B));
+    PetscCall(MatHeaderReplace(A,&B));
   } else {
     *newmat = B;
   }
@@ -337,8 +337,8 @@ PetscErrorCode MatMult_SeqSELL(Mat A,Vec xx,Vec yy)
 #endif
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(xx,&x));
-  CHKERRQ(VecGetArray(yy,&y));
+  PetscCall(VecGetArrayRead(xx,&x));
+  PetscCall(VecGetArray(yy,&y));
 #if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
   for (i=0; i<totalslices; i++) { /* loop over slices */
     PetscPrefetchBlock(acolidx,a->sliidx[i+1]-a->sliidx[i],0,PETSC_PREFETCH_HINT_T0);
@@ -499,9 +499,9 @@ PetscErrorCode MatMult_SeqSELL(Mat A,Vec xx,Vec yy)
   }
 #endif
 
-  CHKERRQ(PetscLogFlops(2.0*a->nz-a->nonzerorowcnt)); /* theoretical minimal FLOPs */
-  CHKERRQ(VecRestoreArrayRead(xx,&x));
-  CHKERRQ(VecRestoreArray(yy,&y));
+  PetscCall(PetscLogFlops(2.0*a->nz-a->nonzerorowcnt)); /* theoretical minimal FLOPs */
+  PetscCall(VecRestoreArrayRead(xx,&x));
+  PetscCall(VecRestoreArray(yy,&y));
   PetscFunctionReturn(0);
 }
 
@@ -535,8 +535,8 @@ PetscErrorCode MatMultAdd_SeqSELL(Mat A,Vec xx,Vec yy,Vec zz)
 #endif
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(xx,&x));
-  CHKERRQ(VecGetArrayPair(yy,zz,&y,&z));
+  PetscCall(VecGetArrayRead(xx,&x));
+  PetscCall(VecGetArrayPair(yy,zz,&y,&z));
 #if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
   for (i=0; i<totalslices; i++) { /* loop over slices */
     PetscPrefetchBlock(acolidx,a->sliidx[i+1]-a->sliidx[i],0,PETSC_PREFETCH_HINT_T0);
@@ -664,9 +664,9 @@ PetscErrorCode MatMultAdd_SeqSELL(Mat A,Vec xx,Vec yy,Vec zz)
   }
 #endif
 
-  CHKERRQ(PetscLogFlops(2.0*a->nz));
-  CHKERRQ(VecRestoreArrayRead(xx,&x));
-  CHKERRQ(VecRestoreArrayPair(yy,zz,&y,&z));
+  PetscCall(PetscLogFlops(2.0*a->nz));
+  PetscCall(VecRestoreArrayRead(xx,&x));
+  PetscCall(VecRestoreArrayPair(yy,zz,&y,&z));
   PetscFunctionReturn(0);
 }
 
@@ -685,12 +685,12 @@ PetscErrorCode MatMultTransposeAdd_SeqSELL(Mat A,Vec xx,Vec zz,Vec yy)
 
   PetscFunctionBegin;
   if (A->symmetric) {
-    CHKERRQ(MatMultAdd_SeqSELL(A,xx,zz,yy));
+    PetscCall(MatMultAdd_SeqSELL(A,xx,zz,yy));
     PetscFunctionReturn(0);
   }
-  if (zz != yy) CHKERRQ(VecCopy(zz,yy));
-  CHKERRQ(VecGetArrayRead(xx,&x));
-  CHKERRQ(VecGetArray(yy,&y));
+  if (zz != yy) PetscCall(VecCopy(zz,yy));
+  PetscCall(VecGetArrayRead(xx,&x));
+  PetscCall(VecGetArray(yy,&y));
   for (i=0; i<a->totalslices; i++) { /* loop over slices */
     if (i == totalslices-1 && (A->rmap->n & 0x07)) {
       for (r=0; r<(A->rmap->n & 0x07); ++r) {
@@ -711,9 +711,9 @@ PetscErrorCode MatMultTransposeAdd_SeqSELL(Mat A,Vec xx,Vec zz,Vec yy)
       y[acolidx[j+7]] += aval[j+7] * x[8*i+7];
     }
   }
-  CHKERRQ(PetscLogFlops(2.0*a->sliidx[a->totalslices]));
-  CHKERRQ(VecRestoreArrayRead(xx,&x));
-  CHKERRQ(VecRestoreArray(yy,&y));
+  PetscCall(PetscLogFlops(2.0*a->sliidx[a->totalslices]));
+  PetscCall(VecRestoreArrayRead(xx,&x));
+  PetscCall(VecRestoreArray(yy,&y));
   PetscFunctionReturn(0);
 }
 
@@ -721,10 +721,10 @@ PetscErrorCode MatMultTranspose_SeqSELL(Mat A,Vec xx,Vec yy)
 {
   PetscFunctionBegin;
   if (A->symmetric) {
-    CHKERRQ(MatMult_SeqSELL(A,xx,yy));
+    PetscCall(MatMult_SeqSELL(A,xx,yy));
   } else {
-    CHKERRQ(VecSet(yy,0.0));
-    CHKERRQ(MatMultTransposeAdd_SeqSELL(A,xx,yy,yy));
+    PetscCall(VecSet(yy,0.0));
+    PetscCall(MatMultTransposeAdd_SeqSELL(A,xx,yy,yy));
   }
   PetscFunctionReturn(0);
 }
@@ -742,14 +742,14 @@ PetscErrorCode MatMissingDiagonal_SeqSELL(Mat A,PetscBool  *missing,PetscInt *d)
   if (A->rmap->n > 0 && !(a->colidx)) {
     *missing = PETSC_TRUE;
     if (d) *d = 0;
-    CHKERRQ(PetscInfo(A,"Matrix has no entries therefore is missing diagonal\n"));
+    PetscCall(PetscInfo(A,"Matrix has no entries therefore is missing diagonal\n"));
   } else {
     diag = a->diag;
     for (i=0; i<A->rmap->n; i++) {
       if (diag[i] == -1) {
         *missing = PETSC_TRUE;
         if (d) *d = i;
-        CHKERRQ(PetscInfo(A,"Matrix is missing diagonal number %" PetscInt_FMT "\n",i));
+        PetscCall(PetscInfo(A,"Matrix is missing diagonal number %" PetscInt_FMT "\n",i));
         break;
       }
     }
@@ -764,8 +764,8 @@ PetscErrorCode MatMarkDiagonal_SeqSELL(Mat A)
 
   PetscFunctionBegin;
   if (!a->diag) {
-    CHKERRQ(PetscMalloc1(m,&a->diag));
-    CHKERRQ(PetscLogObjectMemory((PetscObject)A,m*sizeof(PetscInt)));
+    PetscCall(PetscMalloc1(m,&a->diag));
+    PetscCall(PetscLogObjectMemory((PetscObject)A,m*sizeof(PetscInt)));
     a->free_diag = PETSC_TRUE;
   }
   for (i=0; i<m; i++) { /* loop over rows */
@@ -793,11 +793,11 @@ PetscErrorCode MatInvertDiagonal_SeqSELL(Mat A,PetscScalar omega,PetscScalar fsh
 
   PetscFunctionBegin;
   if (a->idiagvalid) PetscFunctionReturn(0);
-  CHKERRQ(MatMarkDiagonal_SeqSELL(A));
+  PetscCall(MatMarkDiagonal_SeqSELL(A));
   diag = a->diag;
   if (!a->idiag) {
-    CHKERRQ(PetscMalloc3(m,&a->idiag,m,&a->mdiag,m,&a->ssor_work));
-    CHKERRQ(PetscLogObjectMemory((PetscObject)A, 3*m*sizeof(PetscScalar)));
+    PetscCall(PetscMalloc3(m,&a->idiag,m,&a->mdiag,m,&a->ssor_work));
+    PetscCall(PetscLogObjectMemory((PetscObject)A, 3*m*sizeof(PetscScalar)));
     val  = a->val;
   }
   mdiag = a->mdiag;
@@ -808,7 +808,7 @@ PetscErrorCode MatInvertDiagonal_SeqSELL(Mat A,PetscScalar omega,PetscScalar fsh
       mdiag[i] = val[diag[i]];
       if (!PetscAbsScalar(mdiag[i])) { /* zero diagonal */
         if (PetscRealPart(fshift)) {
-          CHKERRQ(PetscInfo(A,"Zero diagonal on row %" PetscInt_FMT "\n",i));
+          PetscCall(PetscInfo(A,"Zero diagonal on row %" PetscInt_FMT "\n",i));
           A->factorerrortype             = MAT_FACTOR_NUMERIC_ZEROPIVOT;
           A->factorerror_zeropivot_value = 0.0;
           A->factorerror_zeropivot_row   = i;
@@ -816,13 +816,13 @@ PetscErrorCode MatInvertDiagonal_SeqSELL(Mat A,PetscScalar omega,PetscScalar fsh
       }
       idiag[i] = 1.0/val[diag[i]];
     }
-    CHKERRQ(PetscLogFlops(m));
+    PetscCall(PetscLogFlops(m));
   } else {
     for (i=0; i<m; i++) {
       mdiag[i] = val[diag[i]];
       idiag[i] = omega/(fshift + val[diag[i]]);
     }
-    CHKERRQ(PetscLogFlops(2.0*m));
+    PetscCall(PetscLogFlops(2.0*m));
   }
   a->idiagvalid = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -833,8 +833,8 @@ PetscErrorCode MatZeroEntries_SeqSELL(Mat A)
   Mat_SeqSELL    *a=(Mat_SeqSELL*)A->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscArrayzero(a->val,a->sliidx[a->totalslices]));
-  CHKERRQ(MatSeqSELLInvalidateDiagonal(A));
+  PetscCall(PetscArrayzero(a->val,a->sliidx[a->totalslices]));
+  PetscCall(MatSeqSELLInvalidateDiagonal(A));
   PetscFunctionReturn(0);
 }
 
@@ -846,24 +846,24 @@ PetscErrorCode MatDestroy_SeqSELL(Mat A)
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)A,"Rows=%" PetscInt_FMT ", Cols=%" PetscInt_FMT ", NZ=%" PetscInt_FMT,A->rmap->n,A->cmap->n,a->nz);
 #endif
-  CHKERRQ(MatSeqXSELLFreeSELL(A,&a->val,&a->colidx));
-  CHKERRQ(ISDestroy(&a->row));
-  CHKERRQ(ISDestroy(&a->col));
-  CHKERRQ(PetscFree(a->diag));
-  CHKERRQ(PetscFree(a->rlen));
-  CHKERRQ(PetscFree(a->sliidx));
-  CHKERRQ(PetscFree3(a->idiag,a->mdiag,a->ssor_work));
-  CHKERRQ(PetscFree(a->solve_work));
-  CHKERRQ(ISDestroy(&a->icol));
-  CHKERRQ(PetscFree(a->saved_values));
-  CHKERRQ(PetscFree2(a->getrowcols,a->getrowvals));
+  PetscCall(MatSeqXSELLFreeSELL(A,&a->val,&a->colidx));
+  PetscCall(ISDestroy(&a->row));
+  PetscCall(ISDestroy(&a->col));
+  PetscCall(PetscFree(a->diag));
+  PetscCall(PetscFree(a->rlen));
+  PetscCall(PetscFree(a->sliidx));
+  PetscCall(PetscFree3(a->idiag,a->mdiag,a->ssor_work));
+  PetscCall(PetscFree(a->solve_work));
+  PetscCall(ISDestroy(&a->icol));
+  PetscCall(PetscFree(a->saved_values));
+  PetscCall(PetscFree2(a->getrowcols,a->getrowvals));
 
-  CHKERRQ(PetscFree(A->data));
+  PetscCall(PetscFree(A->data));
 
-  CHKERRQ(PetscObjectChangeTypeName((PetscObject)A,NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)A,"MatStoreValues_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)A,"MatRetrieveValues_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)A,"MatSeqSELLSetPreallocation_C",NULL));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)A,NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatStoreValues_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatRetrieveValues_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatSeqSELLSetPreallocation_C",NULL));
   PetscFunctionReturn(0);
 }
 
@@ -895,7 +895,7 @@ PetscErrorCode MatSetOption_SeqSELL(Mat A,MatOption op,PetscBool flg)
   case MAT_IGNORE_OFF_PROC_ENTRIES:
   case MAT_USE_HASH_TABLE:
   case MAT_SORTED_FULL:
-    CHKERRQ(PetscInfo(A,"Option %s ignored\n",MatOptions[op]));
+    PetscCall(PetscInfo(A,"Option %s ignored\n",MatOptions[op]));
     break;
   case MAT_SPD:
   case MAT_SYMMETRIC:
@@ -917,19 +917,19 @@ PetscErrorCode MatGetDiagonal_SeqSELL(Mat A,Vec v)
   PetscScalar    *x,zero=0.0;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetLocalSize(v,&n));
+  PetscCall(VecGetLocalSize(v,&n));
   PetscCheckFalse(n != A->rmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
 
   if (A->factortype == MAT_FACTOR_ILU || A->factortype == MAT_FACTOR_LU) {
     PetscInt *diag=a->diag;
-    CHKERRQ(VecGetArray(v,&x));
+    PetscCall(VecGetArray(v,&x));
     for (i=0; i<n; i++) x[i] = 1.0/a->val[diag[i]];
-    CHKERRQ(VecRestoreArray(v,&x));
+    PetscCall(VecRestoreArray(v,&x));
     PetscFunctionReturn(0);
   }
 
-  CHKERRQ(VecSet(v,zero));
-  CHKERRQ(VecGetArray(v,&x));
+  PetscCall(VecSet(v,zero));
+  PetscCall(VecGetArray(v,&x));
   for (i=0; i<n; i++) { /* loop over rows */
     shift = a->sliidx[i>>3]+(i&0x07); /* starting index of the row i */
     x[i] = 0;
@@ -940,7 +940,7 @@ PetscErrorCode MatGetDiagonal_SeqSELL(Mat A,Vec v)
       }
     }
   }
-  CHKERRQ(VecRestoreArray(v,&x));
+  PetscCall(VecRestoreArray(v,&x));
   PetscFunctionReturn(0);
 }
 
@@ -954,9 +954,9 @@ PetscErrorCode MatDiagonalScale_SeqSELL(Mat A,Vec ll,Vec rr)
   if (ll) {
     /* The local size is used so that VecMPI can be passed to this routine
        by MatDiagonalScale_MPISELL */
-    CHKERRQ(VecGetLocalSize(ll,&m));
+    PetscCall(VecGetLocalSize(ll,&m));
     PetscCheckFalse(m != A->rmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Left scaling vector wrong length");
-    CHKERRQ(VecGetArrayRead(ll,&l));
+    PetscCall(VecGetArrayRead(ll,&l));
     for (i=0; i<a->totalslices; i++) { /* loop over slices */
       if (i == a->totalslices-1 && (A->rmap->n & 0x07)) { /* if last slice has padding rows */
         for (j=a->sliidx[i],row=0; j<a->sliidx[i+1]; j++,row=((row+1)&0x07)) {
@@ -968,13 +968,13 @@ PetscErrorCode MatDiagonalScale_SeqSELL(Mat A,Vec ll,Vec rr)
         }
       }
     }
-    CHKERRQ(VecRestoreArrayRead(ll,&l));
-    CHKERRQ(PetscLogFlops(a->nz));
+    PetscCall(VecRestoreArrayRead(ll,&l));
+    PetscCall(PetscLogFlops(a->nz));
   }
   if (rr) {
-    CHKERRQ(VecGetLocalSize(rr,&n));
+    PetscCall(VecGetLocalSize(rr,&n));
     PetscCheckFalse(n != A->cmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Right scaling vector wrong length");
-    CHKERRQ(VecGetArrayRead(rr,&r));
+    PetscCall(VecGetArrayRead(rr,&r));
     for (i=0; i<a->totalslices; i++) { /* loop over slices */
       if (i == a->totalslices-1 && (A->rmap->n & 0x07)) { /* if last slice has padding rows */
         for (j=a->sliidx[i],row=0; j<a->sliidx[i+1]; j++,row=((row+1)&0x07)) {
@@ -986,10 +986,10 @@ PetscErrorCode MatDiagonalScale_SeqSELL(Mat A,Vec ll,Vec rr)
         }
       }
     }
-    CHKERRQ(VecRestoreArrayRead(rr,&r));
-    CHKERRQ(PetscLogFlops(a->nz));
+    PetscCall(VecRestoreArrayRead(rr,&r));
+    PetscCall(PetscLogFlops(a->nz));
   }
-  CHKERRQ(MatSeqSELLInvalidateDiagonal(A));
+  PetscCall(MatSeqSELLInvalidateDiagonal(A));
   PetscFunctionReturn(0);
 }
 
@@ -1040,7 +1040,7 @@ PetscErrorCode MatView_SeqSELL_ASCII(Mat A,PetscViewer viewer)
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscViewerGetFormat(viewer,&format));
+  PetscCall(PetscViewerGetFormat(viewer,&format));
   if (format == PETSC_VIEWER_ASCII_MATLAB) {
     PetscInt nofinalvalue = 0;
     /*
@@ -1048,61 +1048,61 @@ PetscErrorCode MatView_SeqSELL_ASCII(Mat A,PetscViewer viewer)
       nofinalvalue = 1;
     }
     */
-    CHKERRQ(PetscViewerASCIIUseTabs(viewer,PETSC_FALSE));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"%% Size = %" PetscInt_FMT " %" PetscInt_FMT " \n",m,A->cmap->n));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"%% Nonzeros = %" PetscInt_FMT " \n",a->nz));
+    PetscCall(PetscViewerASCIIUseTabs(viewer,PETSC_FALSE));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"%% Size = %" PetscInt_FMT " %" PetscInt_FMT " \n",m,A->cmap->n));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"%% Nonzeros = %" PetscInt_FMT " \n",a->nz));
 #if defined(PETSC_USE_COMPLEX)
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"zzz = zeros(%" PetscInt_FMT ",4);\n",a->nz+nofinalvalue));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"zzz = zeros(%" PetscInt_FMT ",4);\n",a->nz+nofinalvalue));
 #else
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"zzz = zeros(%" PetscInt_FMT ",3);\n",a->nz+nofinalvalue));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"zzz = zeros(%" PetscInt_FMT ",3);\n",a->nz+nofinalvalue));
 #endif
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"zzz = [\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"zzz = [\n"));
 
     for (i=0; i<m; i++) {
       shift = a->sliidx[i>>3]+(i&0x07);
       for (j=0; j<a->rlen[i]; j++) {
 #if defined(PETSC_USE_COMPLEX)
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT " %" PetscInt_FMT "  %18.16e %18.16e\n",i+1,a->colidx[shift+8*j]+1,(double)PetscRealPart(a->val[shift+8*j]),(double)PetscImaginaryPart(a->val[shift+8*j])));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT " %" PetscInt_FMT "  %18.16e %18.16e\n",i+1,a->colidx[shift+8*j]+1,(double)PetscRealPart(a->val[shift+8*j]),(double)PetscImaginaryPart(a->val[shift+8*j])));
 #else
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT " %" PetscInt_FMT "  %18.16e\n",i+1,a->colidx[shift+8*j]+1,(double)a->val[shift+8*j]));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT " %" PetscInt_FMT "  %18.16e\n",i+1,a->colidx[shift+8*j]+1,(double)a->val[shift+8*j]));
 #endif
       }
     }
     /*
     if (nofinalvalue) {
 #if defined(PETSC_USE_COMPLEX)
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT " %" PetscInt_FMT "  %18.16e %18.16e\n",m,A->cmap->n,0.,0.));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT " %" PetscInt_FMT "  %18.16e %18.16e\n",m,A->cmap->n,0.,0.));
 #else
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT " %" PetscInt_FMT "  %18.16e\n",m,A->cmap->n,0.0));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT " %" PetscInt_FMT "  %18.16e\n",m,A->cmap->n,0.0));
 #endif
     }
     */
-    CHKERRQ(PetscObjectGetName((PetscObject)A,&name));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"];\n %s = spconvert(zzz);\n",name));
-    CHKERRQ(PetscViewerASCIIUseTabs(viewer,PETSC_TRUE));
+    PetscCall(PetscObjectGetName((PetscObject)A,&name));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"];\n %s = spconvert(zzz);\n",name));
+    PetscCall(PetscViewerASCIIUseTabs(viewer,PETSC_TRUE));
   } else if (format == PETSC_VIEWER_ASCII_FACTOR_INFO || format == PETSC_VIEWER_ASCII_INFO) {
     PetscFunctionReturn(0);
   } else if (format == PETSC_VIEWER_ASCII_COMMON) {
-    CHKERRQ(PetscViewerASCIIUseTabs(viewer,PETSC_FALSE));
+    PetscCall(PetscViewerASCIIUseTabs(viewer,PETSC_FALSE));
     for (i=0; i<m; i++) {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"row %" PetscInt_FMT ":",i));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"row %" PetscInt_FMT ":",i));
       shift = a->sliidx[i>>3]+(i&0x07);
       for (j=0; j<a->rlen[i]; j++) {
 #if defined(PETSC_USE_COMPLEX)
         if (PetscImaginaryPart(a->val[shift+8*j]) > 0.0 && PetscRealPart(a->val[shift+8*j]) != 0.0) {
-          CHKERRQ(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g + %g i)",a->colidx[shift+8*j],(double)PetscRealPart(a->val[shift+8*j]),(double)PetscImaginaryPart(a->val[shift+8*j])));
+          PetscCall(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g + %g i)",a->colidx[shift+8*j],(double)PetscRealPart(a->val[shift+8*j]),(double)PetscImaginaryPart(a->val[shift+8*j])));
         } else if (PetscImaginaryPart(a->val[shift+8*j]) < 0.0 && PetscRealPart(a->val[shift+8*j]) != 0.0) {
-          CHKERRQ(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g - %g i)",a->colidx[shift+8*j],(double)PetscRealPart(a->val[shift+8*j]),(double)-PetscImaginaryPart(a->val[shift+8*j])));
+          PetscCall(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g - %g i)",a->colidx[shift+8*j],(double)PetscRealPart(a->val[shift+8*j]),(double)-PetscImaginaryPart(a->val[shift+8*j])));
         } else if (PetscRealPart(a->val[shift+8*j]) != 0.0) {
-          CHKERRQ(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g) ",a->colidx[shift+8*j],(double)PetscRealPart(a->val[shift+8*j])));
+          PetscCall(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g) ",a->colidx[shift+8*j],(double)PetscRealPart(a->val[shift+8*j])));
         }
 #else
-        if (a->val[shift+8*j] != 0.0) CHKERRQ(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g) ",a->colidx[shift+8*j],(double)a->val[shift+8*j]));
+        if (a->val[shift+8*j] != 0.0) PetscCall(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g) ",a->colidx[shift+8*j],(double)a->val[shift+8*j]));
 #endif
       }
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"\n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"\n"));
     }
-    CHKERRQ(PetscViewerASCIIUseTabs(viewer,PETSC_TRUE));
+    PetscCall(PetscViewerASCIIUseTabs(viewer,PETSC_TRUE));
   } else if (format == PETSC_VIEWER_ASCII_DENSE) {
     PetscInt    cnt=0,jcnt;
     PetscScalar value;
@@ -1116,7 +1116,7 @@ PetscErrorCode MatView_SeqSELL_ASCII(Mat A,PetscViewer viewer)
     }
 #endif
 
-    CHKERRQ(PetscViewerASCIIUseTabs(viewer,PETSC_FALSE));
+    PetscCall(PetscViewerASCIIUseTabs(viewer,PETSC_FALSE));
     for (i=0; i<m; i++) {
       jcnt = 0;
       shift = a->sliidx[i>>3]+(i&0x07);
@@ -1129,128 +1129,128 @@ PetscErrorCode MatView_SeqSELL_ASCII(Mat A,PetscViewer viewer)
         }
 #if defined(PETSC_USE_COMPLEX)
         if (realonly) {
-          CHKERRQ(PetscViewerASCIIPrintf(viewer," %7.5e ",(double)PetscRealPart(value)));
+          PetscCall(PetscViewerASCIIPrintf(viewer," %7.5e ",(double)PetscRealPart(value)));
         } else {
-          CHKERRQ(PetscViewerASCIIPrintf(viewer," %7.5e+%7.5e i ",(double)PetscRealPart(value),(double)PetscImaginaryPart(value)));
+          PetscCall(PetscViewerASCIIPrintf(viewer," %7.5e+%7.5e i ",(double)PetscRealPart(value),(double)PetscImaginaryPart(value)));
         }
 #else
-        CHKERRQ(PetscViewerASCIIPrintf(viewer," %7.5e ",(double)value));
+        PetscCall(PetscViewerASCIIPrintf(viewer," %7.5e ",(double)value));
 #endif
       }
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"\n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"\n"));
     }
-    CHKERRQ(PetscViewerASCIIUseTabs(viewer,PETSC_TRUE));
+    PetscCall(PetscViewerASCIIUseTabs(viewer,PETSC_TRUE));
   } else if (format == PETSC_VIEWER_ASCII_MATRIXMARKET) {
     PetscInt fshift=1;
-    CHKERRQ(PetscViewerASCIIUseTabs(viewer,PETSC_FALSE));
+    PetscCall(PetscViewerASCIIUseTabs(viewer,PETSC_FALSE));
 #if defined(PETSC_USE_COMPLEX)
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"%%%%MatrixMarket matrix coordinate complex general\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"%%%%MatrixMarket matrix coordinate complex general\n"));
 #else
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"%%%%MatrixMarket matrix coordinate real general\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"%%%%MatrixMarket matrix coordinate real general\n"));
 #endif
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n", m, A->cmap->n, a->nz));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n", m, A->cmap->n, a->nz));
     for (i=0; i<m; i++) {
       shift = a->sliidx[i>>3]+(i&0x07);
       for (j=0; j<a->rlen[i]; j++) {
 #if defined(PETSC_USE_COMPLEX)
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT " %" PetscInt_FMT " %g %g\n",i+fshift,a->colidx[shift+8*j]+fshift,(double)PetscRealPart(a->val[shift+8*j]),(double)PetscImaginaryPart(a->val[shift+8*j])));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT " %" PetscInt_FMT " %g %g\n",i+fshift,a->colidx[shift+8*j]+fshift,(double)PetscRealPart(a->val[shift+8*j]),(double)PetscImaginaryPart(a->val[shift+8*j])));
 #else
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT " %" PetscInt_FMT " %g\n",i+fshift,a->colidx[shift+8*j]+fshift,(double)a->val[shift+8*j]));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT " %" PetscInt_FMT " %g\n",i+fshift,a->colidx[shift+8*j]+fshift,(double)a->val[shift+8*j]));
 #endif
       }
     }
-    CHKERRQ(PetscViewerASCIIUseTabs(viewer,PETSC_TRUE));
+    PetscCall(PetscViewerASCIIUseTabs(viewer,PETSC_TRUE));
   } else if (format == PETSC_VIEWER_NATIVE) {
     for (i=0; i<a->totalslices; i++) { /* loop over slices */
       PetscInt row;
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"slice %" PetscInt_FMT ": %" PetscInt_FMT " %" PetscInt_FMT "\n",i,a->sliidx[i],a->sliidx[i+1]));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"slice %" PetscInt_FMT ": %" PetscInt_FMT " %" PetscInt_FMT "\n",i,a->sliidx[i],a->sliidx[i+1]));
       for (j=a->sliidx[i],row=0; j<a->sliidx[i+1]; j++,row=((row+1)&0x07)) {
 #if defined(PETSC_USE_COMPLEX)
         if (PetscImaginaryPart(a->val[j]) > 0.0) {
-          CHKERRQ(PetscViewerASCIIPrintf(viewer,"  %" PetscInt_FMT " %" PetscInt_FMT " %g + %g i\n",8*i+row,a->colidx[j],(double)PetscRealPart(a->val[j]),(double)PetscImaginaryPart(a->val[j])));
+          PetscCall(PetscViewerASCIIPrintf(viewer,"  %" PetscInt_FMT " %" PetscInt_FMT " %g + %g i\n",8*i+row,a->colidx[j],(double)PetscRealPart(a->val[j]),(double)PetscImaginaryPart(a->val[j])));
         } else if (PetscImaginaryPart(a->val[j]) < 0.0) {
-          CHKERRQ(PetscViewerASCIIPrintf(viewer,"  %" PetscInt_FMT " %" PetscInt_FMT " %g - %g i\n",8*i+row,a->colidx[j],(double)PetscRealPart(a->val[j]),-(double)PetscImaginaryPart(a->val[j])));
+          PetscCall(PetscViewerASCIIPrintf(viewer,"  %" PetscInt_FMT " %" PetscInt_FMT " %g - %g i\n",8*i+row,a->colidx[j],(double)PetscRealPart(a->val[j]),-(double)PetscImaginaryPart(a->val[j])));
         } else {
-          CHKERRQ(PetscViewerASCIIPrintf(viewer,"  %" PetscInt_FMT " %" PetscInt_FMT " %g\n",8*i+row,a->colidx[j],(double)PetscRealPart(a->val[j])));
+          PetscCall(PetscViewerASCIIPrintf(viewer,"  %" PetscInt_FMT " %" PetscInt_FMT " %g\n",8*i+row,a->colidx[j],(double)PetscRealPart(a->val[j])));
         }
 #else
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"  %" PetscInt_FMT " %" PetscInt_FMT " %g\n",8*i+row,a->colidx[j],(double)a->val[j]));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"  %" PetscInt_FMT " %" PetscInt_FMT " %g\n",8*i+row,a->colidx[j],(double)a->val[j]));
 #endif
       }
     }
   } else {
-    CHKERRQ(PetscViewerASCIIUseTabs(viewer,PETSC_FALSE));
+    PetscCall(PetscViewerASCIIUseTabs(viewer,PETSC_FALSE));
     if (A->factortype) {
       for (i=0; i<m; i++) {
         shift = a->sliidx[i>>3]+(i&0x07);
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"row %" PetscInt_FMT ":",i));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"row %" PetscInt_FMT ":",i));
         /* L part */
         for (j=shift; j<a->diag[i]; j+=8) {
 #if defined(PETSC_USE_COMPLEX)
           if (PetscImaginaryPart(a->val[shift+8*j]) > 0.0) {
-            CHKERRQ(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g + %g i)",a->colidx[j],(double)PetscRealPart(a->val[j]),(double)PetscImaginaryPart(a->val[j])));
+            PetscCall(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g + %g i)",a->colidx[j],(double)PetscRealPart(a->val[j]),(double)PetscImaginaryPart(a->val[j])));
           } else if (PetscImaginaryPart(a->val[shift+8*j]) < 0.0) {
-            CHKERRQ(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g - %g i)",a->colidx[j],(double)PetscRealPart(a->val[j]),(double)(-PetscImaginaryPart(a->val[j]))));
+            PetscCall(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g - %g i)",a->colidx[j],(double)PetscRealPart(a->val[j]),(double)(-PetscImaginaryPart(a->val[j]))));
           } else {
-            CHKERRQ(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g) ",a->colidx[j],(double)PetscRealPart(a->val[j])));
+            PetscCall(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g) ",a->colidx[j],(double)PetscRealPart(a->val[j])));
           }
 #else
-          CHKERRQ(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g) ",a->colidx[j],(double)a->val[j]));
+          PetscCall(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g) ",a->colidx[j],(double)a->val[j]));
 #endif
         }
         /* diagonal */
         j = a->diag[i];
 #if defined(PETSC_USE_COMPLEX)
         if (PetscImaginaryPart(a->val[j]) > 0.0) {
-          CHKERRQ(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g + %g i)",a->colidx[j],(double)PetscRealPart(1.0/a->val[j]),(double)PetscImaginaryPart(1.0/a->val[j])));
+          PetscCall(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g + %g i)",a->colidx[j],(double)PetscRealPart(1.0/a->val[j]),(double)PetscImaginaryPart(1.0/a->val[j])));
         } else if (PetscImaginaryPart(a->val[j]) < 0.0) {
-          CHKERRQ(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g - %g i)",a->colidx[j],(double)PetscRealPart(1.0/a->val[j]),(double)(-PetscImaginaryPart(1.0/a->val[j]))));
+          PetscCall(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g - %g i)",a->colidx[j],(double)PetscRealPart(1.0/a->val[j]),(double)(-PetscImaginaryPart(1.0/a->val[j]))));
         } else {
-          CHKERRQ(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g) ",a->colidx[j],(double)PetscRealPart(1.0/a->val[j])));
+          PetscCall(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g) ",a->colidx[j],(double)PetscRealPart(1.0/a->val[j])));
         }
 #else
-        CHKERRQ(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g) ",a->colidx[j],(double)(1.0/a->val[j])));
+        PetscCall(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g) ",a->colidx[j],(double)(1.0/a->val[j])));
 #endif
 
         /* U part */
         for (j=a->diag[i]+1; j<shift+8*a->rlen[i]; j+=8) {
 #if defined(PETSC_USE_COMPLEX)
           if (PetscImaginaryPart(a->val[j]) > 0.0) {
-            CHKERRQ(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g + %g i)",a->colidx[j],(double)PetscRealPart(a->val[j]),(double)PetscImaginaryPart(a->val[j])));
+            PetscCall(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g + %g i)",a->colidx[j],(double)PetscRealPart(a->val[j]),(double)PetscImaginaryPart(a->val[j])));
           } else if (PetscImaginaryPart(a->val[j]) < 0.0) {
-            CHKERRQ(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g - %g i)",a->colidx[j],(double)PetscRealPart(a->val[j]),(double)(-PetscImaginaryPart(a->val[j]))));
+            PetscCall(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g - %g i)",a->colidx[j],(double)PetscRealPart(a->val[j]),(double)(-PetscImaginaryPart(a->val[j]))));
           } else {
-            CHKERRQ(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g) ",a->colidx[j],(double)PetscRealPart(a->val[j])));
+            PetscCall(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g) ",a->colidx[j],(double)PetscRealPart(a->val[j])));
           }
 #else
-          CHKERRQ(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g) ",a->colidx[j],(double)a->val[j]));
+          PetscCall(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g) ",a->colidx[j],(double)a->val[j]));
 #endif
         }
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"\n"));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"\n"));
       }
     } else {
       for (i=0; i<m; i++) {
         shift = a->sliidx[i>>3]+(i&0x07);
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"row %" PetscInt_FMT ":",i));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"row %" PetscInt_FMT ":",i));
         for (j=0; j<a->rlen[i]; j++) {
 #if defined(PETSC_USE_COMPLEX)
           if (PetscImaginaryPart(a->val[j]) > 0.0) {
-            CHKERRQ(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g + %g i)",a->colidx[shift+8*j],(double)PetscRealPart(a->val[shift+8*j]),(double)PetscImaginaryPart(a->val[shift+8*j])));
+            PetscCall(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g + %g i)",a->colidx[shift+8*j],(double)PetscRealPart(a->val[shift+8*j]),(double)PetscImaginaryPart(a->val[shift+8*j])));
           } else if (PetscImaginaryPart(a->val[j]) < 0.0) {
-            CHKERRQ(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g - %g i)",a->colidx[shift+8*j],(double)PetscRealPart(a->val[shift+8*j]),(double)-PetscImaginaryPart(a->val[shift+8*j])));
+            PetscCall(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g - %g i)",a->colidx[shift+8*j],(double)PetscRealPart(a->val[shift+8*j]),(double)-PetscImaginaryPart(a->val[shift+8*j])));
           } else {
-            CHKERRQ(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g) ",a->colidx[shift+8*j],(double)PetscRealPart(a->val[shift+8*j])));
+            PetscCall(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g) ",a->colidx[shift+8*j],(double)PetscRealPart(a->val[shift+8*j])));
           }
 #else
-          CHKERRQ(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g) ",a->colidx[shift+8*j],(double)a->val[shift+8*j]));
+          PetscCall(PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g) ",a->colidx[shift+8*j],(double)a->val[shift+8*j]));
 #endif
         }
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"\n"));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"\n"));
       }
     }
-    CHKERRQ(PetscViewerASCIIUseTabs(viewer,PETSC_TRUE));
+    PetscCall(PetscViewerASCIIUseTabs(viewer,PETSC_TRUE));
   }
-  CHKERRQ(PetscViewerFlush(viewer));
+  PetscCall(PetscViewerFlush(viewer));
   PetscFunctionReturn(0);
 }
 
@@ -1267,14 +1267,14 @@ PetscErrorCode MatView_SeqSELL_Draw_Zoom(PetscDraw draw,void *Aa)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectQuery((PetscObject)A,"Zoomviewer",(PetscObject*)&viewer));
-  CHKERRQ(PetscViewerGetFormat(viewer,&format));
-  CHKERRQ(PetscDrawGetCoordinates(draw,&xl,&yl,&xr,&yr));
+  PetscCall(PetscObjectQuery((PetscObject)A,"Zoomviewer",(PetscObject*)&viewer));
+  PetscCall(PetscViewerGetFormat(viewer,&format));
+  PetscCall(PetscDrawGetCoordinates(draw,&xl,&yl,&xr,&yr));
 
   /* loop over matrix elements drawing boxes */
 
   if (format != PETSC_VIEWER_DRAW_CONTOUR) {
-    ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
+    ierr = PetscDrawCollectiveBegin(draw);PetscCall(ierr);
     /* Blue for negative, Cyan for zero and  Red for positive */
     color = PETSC_DRAW_BLUE;
     for (i=0; i<m; i++) {
@@ -1283,7 +1283,7 @@ PetscErrorCode MatView_SeqSELL_Draw_Zoom(PetscDraw draw,void *Aa)
       for (j=0; j<a->rlen[i]; j++) {
         x_l = a->colidx[shift+j*8]; x_r = x_l + 1.0;
         if (PetscRealPart(a->val[shift+8*j]) >=  0.) continue;
-        CHKERRQ(PetscDrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color));
+        PetscCall(PetscDrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color));
       }
     }
     color = PETSC_DRAW_CYAN;
@@ -1293,7 +1293,7 @@ PetscErrorCode MatView_SeqSELL_Draw_Zoom(PetscDraw draw,void *Aa)
       for (j=0; j<a->rlen[i]; j++) {
         x_l = a->colidx[shift+j*8]; x_r = x_l + 1.0;
         if (a->val[shift+8*j] !=  0.) continue;
-        CHKERRQ(PetscDrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color));
+        PetscCall(PetscDrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color));
       }
     }
     color = PETSC_DRAW_RED;
@@ -1303,10 +1303,10 @@ PetscErrorCode MatView_SeqSELL_Draw_Zoom(PetscDraw draw,void *Aa)
       for (j=0; j<a->rlen[i]; j++) {
         x_l = a->colidx[shift+j*8]; x_r = x_l + 1.0;
         if (PetscRealPart(a->val[shift+8*j]) <=  0.) continue;
-        CHKERRQ(PetscDrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color));
+        PetscCall(PetscDrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color));
       }
     }
-    ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
+    ierr = PetscDrawCollectiveEnd(draw);PetscCall(ierr);
   } else {
     /* use contour shading to indicate magnitude of values */
     /* first determine max of all nonzero values */
@@ -1317,10 +1317,10 @@ PetscErrorCode MatView_SeqSELL_Draw_Zoom(PetscDraw draw,void *Aa)
       if (PetscAbsScalar(a->val[i]) > maxv) maxv = PetscAbsScalar(a->val[i]);
     }
     if (minv >= maxv) maxv = minv + PETSC_SMALL;
-    CHKERRQ(PetscDrawGetPopup(draw,&popup));
-    CHKERRQ(PetscDrawScalePopup(popup,minv,maxv));
+    PetscCall(PetscDrawGetPopup(draw,&popup));
+    PetscCall(PetscDrawScalePopup(popup,minv,maxv));
 
-    ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
+    ierr = PetscDrawCollectiveBegin(draw);PetscCall(ierr);
     for (i=0; i<m; i++) {
       shift = a->sliidx[i>>3]+(i&0x07);
       y_l = m - i - 1.0;
@@ -1329,11 +1329,11 @@ PetscErrorCode MatView_SeqSELL_Draw_Zoom(PetscDraw draw,void *Aa)
         x_l = a->colidx[shift+j*8];
         x_r = x_l + 1.0;
         color = PetscDrawRealToColor(PetscAbsScalar(a->val[count]),minv,maxv);
-        CHKERRQ(PetscDrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color));
+        PetscCall(PetscDrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color));
         count++;
       }
     }
-    ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
+    ierr = PetscDrawCollectiveEnd(draw);PetscCall(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1346,17 +1346,17 @@ PetscErrorCode MatView_SeqSELL_Draw(Mat A,PetscViewer viewer)
   PetscBool      isnull;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscViewerDrawGetDraw(viewer,0,&draw));
-  CHKERRQ(PetscDrawIsNull(draw,&isnull));
+  PetscCall(PetscViewerDrawGetDraw(viewer,0,&draw));
+  PetscCall(PetscDrawIsNull(draw,&isnull));
   if (isnull) PetscFunctionReturn(0);
 
   xr   = A->cmap->n; yr  = A->rmap->n; h = yr/10.0; w = xr/10.0;
   xr  += w;          yr += h;         xl = -w;     yl = -h;
-  CHKERRQ(PetscDrawSetCoordinates(draw,xl,yl,xr,yr));
-  CHKERRQ(PetscObjectCompose((PetscObject)A,"Zoomviewer",(PetscObject)viewer));
-  CHKERRQ(PetscDrawZoom(draw,MatView_SeqSELL_Draw_Zoom,A));
-  CHKERRQ(PetscObjectCompose((PetscObject)A,"Zoomviewer",NULL));
-  CHKERRQ(PetscDrawSave(draw));
+  PetscCall(PetscDrawSetCoordinates(draw,xl,yl,xr,yr));
+  PetscCall(PetscObjectCompose((PetscObject)A,"Zoomviewer",(PetscObject)viewer));
+  PetscCall(PetscDrawZoom(draw,MatView_SeqSELL_Draw_Zoom,A));
+  PetscCall(PetscObjectCompose((PetscObject)A,"Zoomviewer",NULL));
+  PetscCall(PetscDrawSave(draw));
   PetscFunctionReturn(0);
 }
 
@@ -1365,15 +1365,15 @@ PetscErrorCode MatView_SeqSELL(Mat A,PetscViewer viewer)
   PetscBool      iascii,isbinary,isdraw;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw));
   if (iascii) {
-    CHKERRQ(MatView_SeqSELL_ASCII(A,viewer));
+    PetscCall(MatView_SeqSELL_ASCII(A,viewer));
   } else if (isbinary) {
-    /* CHKERRQ(MatView_SeqSELL_Binary(A,viewer)); */
+    /* PetscCall(MatView_SeqSELL_Binary(A,viewer)); */
   } else if (isdraw) {
-    CHKERRQ(MatView_SeqSELL_Draw(A,viewer));
+    PetscCall(MatView_SeqSELL_Draw(A,viewer));
   }
   PetscFunctionReturn(0);
 }
@@ -1387,10 +1387,10 @@ PetscErrorCode MatAssemblyEnd_SeqSELL(Mat A,MatAssemblyType mode)
   PetscFunctionBegin;
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
   /* To do: compress out the unused elements */
-  CHKERRQ(MatMarkDiagonal_SeqSELL(A));
-  CHKERRQ(PetscInfo(A,"Matrix size: %" PetscInt_FMT " X %" PetscInt_FMT "; storage space: %" PetscInt_FMT " allocated %" PetscInt_FMT " used (%" PetscInt_FMT " nonzeros+%" PetscInt_FMT " paddedzeros)\n",A->rmap->n,A->cmap->n,a->maxallocmat,a->sliidx[a->totalslices],a->nz,a->sliidx[a->totalslices]-a->nz));
-  CHKERRQ(PetscInfo(A,"Number of mallocs during MatSetValues() is %" PetscInt_FMT "\n",a->reallocs));
-  CHKERRQ(PetscInfo(A,"Maximum nonzeros in any row is %" PetscInt_FMT "\n",a->rlenmax));
+  PetscCall(MatMarkDiagonal_SeqSELL(A));
+  PetscCall(PetscInfo(A,"Matrix size: %" PetscInt_FMT " X %" PetscInt_FMT "; storage space: %" PetscInt_FMT " allocated %" PetscInt_FMT " used (%" PetscInt_FMT " nonzeros+%" PetscInt_FMT " paddedzeros)\n",A->rmap->n,A->cmap->n,a->maxallocmat,a->sliidx[a->totalslices],a->nz,a->sliidx[a->totalslices]-a->nz));
+  PetscCall(PetscInfo(A,"Number of mallocs during MatSetValues() is %" PetscInt_FMT "\n",a->reallocs));
+  PetscCall(PetscInfo(A,"Maximum nonzeros in any row is %" PetscInt_FMT "\n",a->rlenmax));
   /* Set unused slots for column indices to last valid column index. Set unused slots for values to zero. This allows for a use of unmasked intrinsics -> higher performance */
   for (i=0; i<a->totalslices; ++i) {
     shift = a->sliidx[i];    /* starting index of the slice */
@@ -1427,7 +1427,7 @@ PetscErrorCode MatAssemblyEnd_SeqSELL(Mat A,MatAssemblyType mode)
   A->info.mallocs += a->reallocs;
   a->reallocs      = 0;
 
-  CHKERRQ(MatSeqSELLInvalidateDiagonal(A));
+  PetscCall(MatSeqSELLInvalidateDiagonal(A));
   PetscFunctionReturn(0);
 }
 
@@ -1535,9 +1535,9 @@ PetscErrorCode MatCopy_SeqSELL(Mat A,Mat B,MatStructure str)
     Mat_SeqSELL *b=(Mat_SeqSELL*)B->data;
 
     PetscCheckFalse(a->sliidx[a->totalslices] != b->sliidx[b->totalslices],PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of nonzeros in two matrices are different");
-    CHKERRQ(PetscArraycpy(b->val,a->val,a->sliidx[a->totalslices]));
+    PetscCall(PetscArraycpy(b->val,a->val,a->sliidx[a->totalslices]));
   } else {
-    CHKERRQ(MatCopy_Basic(A,B,str));
+    PetscCall(MatCopy_Basic(A,B,str));
   }
   PetscFunctionReturn(0);
 }
@@ -1545,7 +1545,7 @@ PetscErrorCode MatCopy_SeqSELL(Mat A,Mat B,MatStructure str)
 PetscErrorCode MatSetUp_SeqSELL(Mat A)
 {
   PetscFunctionBegin;
-  CHKERRQ(MatSeqSELLSetPreallocation(A,PETSC_DEFAULT,NULL));
+  PetscCall(MatSeqSELLSetPreallocation(A,PETSC_DEFAULT,NULL));
   PetscFunctionReturn(0);
 }
 
@@ -1583,7 +1583,7 @@ PetscErrorCode MatImaginaryPart_SeqSELL(Mat A)
 
   PetscFunctionBegin;
   for (i=0; i<a->sliidx[a->totalslices]; i++) aval[i] = PetscImaginaryPart(aval[i]);
-  CHKERRQ(MatSeqSELLInvalidateDiagonal(A));
+  PetscCall(MatSeqSELLInvalidateDiagonal(A));
   PetscFunctionReturn(0);
 }
 
@@ -1595,10 +1595,10 @@ PetscErrorCode MatScale_SeqSELL(Mat inA,PetscScalar alpha)
   PetscBLASInt   one=1,size;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscBLASIntCast(a->sliidx[a->totalslices],&size));
+  PetscCall(PetscBLASIntCast(a->sliidx[a->totalslices],&size));
   PetscStackCallBLAS("BLASscal",BLASscal_(&size,&oalpha,aval,&one));
-  CHKERRQ(PetscLogFlops(a->nz));
-  CHKERRQ(MatSeqSELLInvalidateDiagonal(inA));
+  PetscCall(PetscLogFlops(a->nz));
+  PetscCall(MatSeqSELLInvalidateDiagonal(inA));
   PetscFunctionReturn(0);
 }
 
@@ -1608,9 +1608,9 @@ PetscErrorCode MatShift_SeqSELL(Mat Y,PetscScalar a)
 
   PetscFunctionBegin;
   if (!Y->preallocated || !y->nz) {
-    CHKERRQ(MatSeqSELLSetPreallocation(Y,1,NULL));
+    PetscCall(MatSeqSELLSetPreallocation(Y,1,NULL));
   }
-  CHKERRQ(MatShift_Basic(Y,a));
+  PetscCall(MatShift_Basic(Y,a));
   PetscFunctionReturn(0);
 }
 
@@ -1627,7 +1627,7 @@ PetscErrorCode MatSOR_SeqSELL(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
   its = its*lits;
 
   if (fshift != a->fshift || omega != a->omega) a->idiagvalid = PETSC_FALSE; /* must recompute idiag[] */
-  if (!a->idiagvalid) CHKERRQ(MatInvertDiagonal_SeqSELL(A,omega,fshift));
+  if (!a->idiagvalid) PetscCall(MatInvertDiagonal_SeqSELL(A,omega,fshift));
   a->fshift = fshift;
   a->omega  = omega;
 
@@ -1636,8 +1636,8 @@ PetscErrorCode MatSOR_SeqSELL(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
   idiag = a->idiag;
   mdiag = a->mdiag;
 
-  CHKERRQ(VecGetArray(xx,&x));
-  CHKERRQ(VecGetArrayRead(bb,&b));
+  PetscCall(VecGetArray(xx,&x));
+  PetscCall(VecGetArrayRead(bb,&b));
   /* We count flops by assuming the upper triangular and lower triangular parts have the same number of nonzeros */
   PetscCheckFalse(flag == SOR_APPLY_UPPER,PETSC_COMM_SELF,PETSC_ERR_SUP,"SOR_APPLY_UPPER is not implemented");
   PetscCheckFalse(flag == SOR_APPLY_LOWER,PETSC_COMM_SELF,PETSC_ERR_SUP,"SOR_APPLY_LOWER is not implemented");
@@ -1654,7 +1654,7 @@ PetscErrorCode MatSOR_SeqSELL(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
         x[i]  = sum*idiag[i];
       }
       xb   = t;
-      CHKERRQ(PetscLogFlops(a->nz));
+      PetscCall(PetscLogFlops(a->nz));
     } else xb = b;
     if ((flag & SOR_BACKWARD_SWEEP) || (flag & SOR_LOCAL_BACKWARD_SWEEP)) {
       for (i=m-1; i>=0; i--) {
@@ -1668,7 +1668,7 @@ PetscErrorCode MatSOR_SeqSELL(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
           x[i] = (1.-omega)*x[i]+sum*idiag[i];  /* omega in idiag */
         }
       }
-      CHKERRQ(PetscLogFlops(a->nz)); /* assumes 1/2 in upper */
+      PetscCall(PetscLogFlops(a->nz)); /* assumes 1/2 in upper */
     }
     its--;
   }
@@ -1687,7 +1687,7 @@ PetscErrorCode MatSOR_SeqSELL(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
         x[i]  = (1.-omega)*x[i]+sum*idiag[i];  /* omega in idiag */
       }
       xb   = t;
-      CHKERRQ(PetscLogFlops(2.0*a->nz));
+      PetscCall(PetscLogFlops(2.0*a->nz));
     } else xb = b;
     if ((flag & SOR_BACKWARD_SWEEP) || (flag & SOR_LOCAL_BACKWARD_SWEEP)) {
       for (i=m-1; i>=0; i--) {
@@ -1705,14 +1705,14 @@ PetscErrorCode MatSOR_SeqSELL(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
         }
       }
       if (xb == b) {
-        CHKERRQ(PetscLogFlops(2.0*a->nz));
+        PetscCall(PetscLogFlops(2.0*a->nz));
       } else {
-        CHKERRQ(PetscLogFlops(a->nz)); /* assumes 1/2 in upper */
+        PetscCall(PetscLogFlops(a->nz)); /* assumes 1/2 in upper */
       }
     }
   }
-  CHKERRQ(VecRestoreArray(xx,&x));
-  CHKERRQ(VecRestoreArrayRead(bb,&b));
+  PetscCall(VecRestoreArray(xx,&x));
+  PetscCall(VecRestoreArrayRead(bb,&b));
   PetscFunctionReturn(0);
 }
 
@@ -1876,12 +1876,12 @@ PetscErrorCode MatStoreValues_SeqSELL(Mat mat)
 
   /* allocate space for values if not already there */
   if (!a->saved_values) {
-    CHKERRQ(PetscMalloc1(a->sliidx[a->totalslices]+1,&a->saved_values));
-    CHKERRQ(PetscLogObjectMemory((PetscObject)mat,(a->sliidx[a->totalslices]+1)*sizeof(PetscScalar)));
+    PetscCall(PetscMalloc1(a->sliidx[a->totalslices]+1,&a->saved_values));
+    PetscCall(PetscLogObjectMemory((PetscObject)mat,(a->sliidx[a->totalslices]+1)*sizeof(PetscScalar)));
   }
 
   /* copy values over */
-  CHKERRQ(PetscArraycpy(a->saved_values,a->val,a->sliidx[a->totalslices]));
+  PetscCall(PetscArraycpy(a->saved_values,a->val,a->sliidx[a->totalslices]));
   PetscFunctionReturn(0);
 }
 
@@ -1892,7 +1892,7 @@ PetscErrorCode MatRetrieveValues_SeqSELL(Mat mat)
   PetscFunctionBegin;
   PetscCheck(a->nonew,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);first");
   PetscCheck(a->saved_values,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call MatStoreValues(A);first");
-  CHKERRQ(PetscArraycpy(a->val,a->saved_values,a->sliidx[a->totalslices]));
+  PetscCall(PetscArraycpy(a->val,a->saved_values,a->sliidx[a->totalslices]));
   PetscFunctionReturn(0);
 }
 
@@ -1912,7 +1912,7 @@ PetscErrorCode MatRetrieveValues_SeqSELL(Mat mat)
 PetscErrorCode MatSeqSELLRestoreArray(Mat A,PetscScalar **array)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscUseMethod(A,"MatSeqSELLRestoreArray_C",(Mat,PetscScalar**),(A,array)));
+  PetscCall(PetscUseMethod(A,"MatSeqSELLRestoreArray_C",(Mat,PetscScalar**),(A,array)));
   PetscFunctionReturn(0);
 }
 
@@ -1922,15 +1922,15 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSELL(Mat B)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscCitationsRegister(citation,&cited));
-  CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)B),&size));
+  PetscCall(PetscCitationsRegister(citation,&cited));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)B),&size));
   PetscCheckFalse(size > 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Comm must be of size 1");
 
-  CHKERRQ(PetscNewLog(B,&b));
+  PetscCall(PetscNewLog(B,&b));
 
   B->data = (void*)b;
 
-  CHKERRQ(PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps)));
+  PetscCall(PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps)));
 
   b->row                = NULL;
   b->col                = NULL;
@@ -1951,13 +1951,13 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSELL(Mat B)
   b->idiagvalid         = PETSC_FALSE;
   b->keepnonzeropattern = PETSC_FALSE;
 
-  CHKERRQ(PetscObjectChangeTypeName((PetscObject)B,MATSEQSELL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)B,"MatSeqSELLGetArray_C",MatSeqSELLGetArray_SeqSELL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)B,"MatSeqSELLRestoreArray_C",MatSeqSELLRestoreArray_SeqSELL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)B,"MatStoreValues_C",MatStoreValues_SeqSELL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C",MatRetrieveValues_SeqSELL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)B,"MatSeqSELLSetPreallocation_C",MatSeqSELLSetPreallocation_SeqSELL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqsell_seqaij_C",MatConvert_SeqSELL_SeqAIJ));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)B,MATSEQSELL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatSeqSELLGetArray_C",MatSeqSELLGetArray_SeqSELL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatSeqSELLRestoreArray_C",MatSeqSELLRestoreArray_SeqSELL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatStoreValues_C",MatStoreValues_SeqSELL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C",MatRetrieveValues_SeqSELL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatSeqSELLSetPreallocation_C",MatSeqSELLSetPreallocation_SeqSELL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqsell_seqaij_C",MatConvert_SeqSELL_SeqAIJ));
   PetscFunctionReturn(0);
 }
 
@@ -1978,30 +1978,30 @@ PetscErrorCode MatDuplicateNoCreate_SeqSELL(Mat C,Mat A,MatDuplicateOption cpval
   c->reallocs   = 0;
   C->assembled = PETSC_TRUE;
 
-  CHKERRQ(PetscLayoutReference(A->rmap,&C->rmap));
-  CHKERRQ(PetscLayoutReference(A->cmap,&C->cmap));
+  PetscCall(PetscLayoutReference(A->rmap,&C->rmap));
+  PetscCall(PetscLayoutReference(A->cmap,&C->cmap));
 
-  CHKERRQ(PetscMalloc1(8*totalslices,&c->rlen));
-  CHKERRQ(PetscLogObjectMemory((PetscObject)C,m*sizeof(PetscInt)));
-  CHKERRQ(PetscMalloc1(totalslices+1,&c->sliidx));
-  CHKERRQ(PetscLogObjectMemory((PetscObject)C, (totalslices+1)*sizeof(PetscInt)));
+  PetscCall(PetscMalloc1(8*totalslices,&c->rlen));
+  PetscCall(PetscLogObjectMemory((PetscObject)C,m*sizeof(PetscInt)));
+  PetscCall(PetscMalloc1(totalslices+1,&c->sliidx));
+  PetscCall(PetscLogObjectMemory((PetscObject)C, (totalslices+1)*sizeof(PetscInt)));
 
   for (i=0; i<m; i++) c->rlen[i] = a->rlen[i];
   for (i=0; i<totalslices+1; i++) c->sliidx[i] = a->sliidx[i];
 
   /* allocate the matrix space */
   if (mallocmatspace) {
-    CHKERRQ(PetscMalloc2(a->maxallocmat,&c->val,a->maxallocmat,&c->colidx));
-    CHKERRQ(PetscLogObjectMemory((PetscObject)C,a->maxallocmat*(sizeof(PetscScalar)+sizeof(PetscInt))));
+    PetscCall(PetscMalloc2(a->maxallocmat,&c->val,a->maxallocmat,&c->colidx));
+    PetscCall(PetscLogObjectMemory((PetscObject)C,a->maxallocmat*(sizeof(PetscScalar)+sizeof(PetscInt))));
 
     c->singlemalloc = PETSC_TRUE;
 
     if (m > 0) {
-      CHKERRQ(PetscArraycpy(c->colidx,a->colidx,a->maxallocmat));
+      PetscCall(PetscArraycpy(c->colidx,a->colidx,a->maxallocmat));
       if (cpvalues == MAT_COPY_VALUES) {
-        CHKERRQ(PetscArraycpy(c->val,a->val,a->maxallocmat));
+        PetscCall(PetscArraycpy(c->val,a->val,a->maxallocmat));
       } else {
-        CHKERRQ(PetscArrayzero(c->val,a->maxallocmat));
+        PetscCall(PetscArrayzero(c->val,a->maxallocmat));
       }
     }
   }
@@ -2010,8 +2010,8 @@ PetscErrorCode MatDuplicateNoCreate_SeqSELL(Mat C,Mat A,MatDuplicateOption cpval
   c->roworiented       = a->roworiented;
   c->nonew             = a->nonew;
   if (a->diag) {
-    CHKERRQ(PetscMalloc1(m,&c->diag));
-    CHKERRQ(PetscLogObjectMemory((PetscObject)C,m*sizeof(PetscInt)));
+    PetscCall(PetscMalloc1(m,&c->diag));
+    PetscCall(PetscLogObjectMemory((PetscObject)C,m*sizeof(PetscInt)));
     for (i=0; i<m; i++) {
       c->diag[i] = a->diag[i];
     }
@@ -2034,20 +2034,20 @@ PetscErrorCode MatDuplicateNoCreate_SeqSELL(Mat C,Mat A,MatDuplicateOption cpval
   c->nonzerorowcnt = a->nonzerorowcnt;
   C->nonzerostate  = A->nonzerostate;
 
-  CHKERRQ(PetscFunctionListDuplicate(((PetscObject)A)->qlist,&((PetscObject)C)->qlist));
+  PetscCall(PetscFunctionListDuplicate(((PetscObject)A)->qlist,&((PetscObject)C)->qlist));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatDuplicate_SeqSELL(Mat A,MatDuplicateOption cpvalues,Mat *B)
 {
   PetscFunctionBegin;
-  CHKERRQ(MatCreate(PetscObjectComm((PetscObject)A),B));
-  CHKERRQ(MatSetSizes(*B,A->rmap->n,A->cmap->n,A->rmap->n,A->cmap->n));
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)A),B));
+  PetscCall(MatSetSizes(*B,A->rmap->n,A->cmap->n,A->rmap->n,A->cmap->n));
   if (!(A->rmap->n % A->rmap->bs) && !(A->cmap->n % A->cmap->bs)) {
-    CHKERRQ(MatSetBlockSizesFromMats(*B,A,A));
+    PetscCall(MatSetBlockSizesFromMats(*B,A,A));
   }
-  CHKERRQ(MatSetType(*B,((PetscObject)A)->type_name));
-  CHKERRQ(MatDuplicateNoCreate_SeqSELL(*B,A,cpvalues,PETSC_TRUE));
+  PetscCall(MatSetType(*B,((PetscObject)A)->type_name));
+  PetscCall(MatDuplicateNoCreate_SeqSELL(*B,A,cpvalues,PETSC_TRUE));
   PetscFunctionReturn(0);
 }
 
@@ -2154,10 +2154,10 @@ M*/
 PetscErrorCode MatCreateSeqSELL(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt maxallocrow,const PetscInt rlen[],Mat *A)
 {
   PetscFunctionBegin;
-  CHKERRQ(MatCreate(comm,A));
-  CHKERRQ(MatSetSizes(*A,m,n,m,n));
-  CHKERRQ(MatSetType(*A,MATSEQSELL));
-  CHKERRQ(MatSeqSELLSetPreallocation_SeqSELL(*A,maxallocrow,rlen));
+  PetscCall(MatCreate(comm,A));
+  PetscCall(MatSetSizes(*A,m,n,m,n));
+  PetscCall(MatSetType(*A,MATSEQSELL));
+  PetscCall(MatSeqSELLSetPreallocation_SeqSELL(*A,maxallocrow,rlen));
   PetscFunctionReturn(0);
 }
 
@@ -2173,10 +2173,10 @@ PetscErrorCode MatEqual_SeqSELL(Mat A,Mat B,PetscBool * flg)
     PetscFunctionReturn(0);
   }
   /* if the a->colidx are the same */
-  CHKERRQ(PetscArraycmp(a->colidx,b->colidx,a->sliidx[totalslices],flg));
+  PetscCall(PetscArraycmp(a->colidx,b->colidx,a->sliidx[totalslices],flg));
   if (!*flg) PetscFunctionReturn(0);
   /* if a->val are the same */
-  CHKERRQ(PetscArraycmp(a->val,b->val,a->sliidx[totalslices],flg));
+  PetscCall(PetscArraycmp(a->val,b->val,a->sliidx[totalslices],flg));
   PetscFunctionReturn(0);
 }
 

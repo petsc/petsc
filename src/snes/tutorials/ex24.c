@@ -234,21 +234,21 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionBeginUser;
   options->solType = SOL_LINEAR;
 
-  ierr = PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsEnum("-sol_type", "Type of exact solution", "ex24.c", SolTypeNames, (PetscEnum) options->solType, (PetscEnum *) &options->solType, NULL));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");PetscCall(ierr);
+  PetscCall(PetscOptionsEnum("-sol_type", "Type of exact solution", "ex24.c", SolTypeNames, (PetscEnum) options->solType, (PetscEnum *) &options->solType, NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscFunctionBeginUser;
-  CHKERRQ(DMCreate(comm, dm));
-  CHKERRQ(DMSetType(*dm, DMPLEX));
-  CHKERRQ(PetscObjectSetName((PetscObject)*dm, "Example Mesh"));
-  CHKERRQ(DMSetApplicationContext(*dm, user));
-  CHKERRQ(DMSetFromOptions(*dm));
-  CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
+  PetscCall(DMCreate(comm, dm));
+  PetscCall(DMSetType(*dm, DMPLEX));
+  PetscCall(PetscObjectSetName((PetscObject)*dm, "Example Mesh"));
+  PetscCall(DMSetApplicationContext(*dm, user));
+  PetscCall(DMSetFromOptions(*dm));
+  PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   PetscFunctionReturn(0);
 }
 
@@ -261,40 +261,40 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
   PetscInt       bd;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetLabel(dm, "marker", &label));
-  CHKERRQ(DMGetDS(dm, &ds));
-  CHKERRQ(PetscDSSetResidual(ds, 0, f0_q, f1_q));
-  CHKERRQ(PetscDSSetJacobian(ds, 0, 0, g0_qq, NULL, NULL, NULL));
-  CHKERRQ(PetscDSSetJacobian(ds, 0, 1, NULL, NULL, g2_qu, NULL));
-  CHKERRQ(PetscDSSetJacobian(ds, 1, 0, NULL, g1_uq, NULL, NULL));
+  PetscCall(DMGetLabel(dm, "marker", &label));
+  PetscCall(DMGetDS(dm, &ds));
+  PetscCall(PetscDSSetResidual(ds, 0, f0_q, f1_q));
+  PetscCall(PetscDSSetJacobian(ds, 0, 0, g0_qq, NULL, NULL, NULL));
+  PetscCall(PetscDSSetJacobian(ds, 0, 1, NULL, NULL, g2_qu, NULL));
+  PetscCall(PetscDSSetJacobian(ds, 1, 0, NULL, g1_uq, NULL, NULL));
   switch (user->solType)
   {
     case SOL_LINEAR:
-      CHKERRQ(PetscDSSetResidual(ds, 1, f0_linear_u, NULL));
-      CHKERRQ(DMAddBoundary(dm, DM_BC_NATURAL, "Dirichlet Bd Integral", label, 1, &id, 0, 0, NULL, NULL, NULL, user, &bd));
-      CHKERRQ(PetscDSGetBoundary(ds, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
-      CHKERRQ(PetscWeakFormSetIndexBdResidual(wf, label, 1, 0, 0, 0, f0_bd_linear_q, 0, NULL));
-      CHKERRQ(PetscDSSetExactSolution(ds, 0, linear_q, user));
-      CHKERRQ(PetscDSSetExactSolution(ds, 1, linear_u, user));
+      PetscCall(PetscDSSetResidual(ds, 1, f0_linear_u, NULL));
+      PetscCall(DMAddBoundary(dm, DM_BC_NATURAL, "Dirichlet Bd Integral", label, 1, &id, 0, 0, NULL, NULL, NULL, user, &bd));
+      PetscCall(PetscDSGetBoundary(ds, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
+      PetscCall(PetscWeakFormSetIndexBdResidual(wf, label, 1, 0, 0, 0, f0_bd_linear_q, 0, NULL));
+      PetscCall(PetscDSSetExactSolution(ds, 0, linear_q, user));
+      PetscCall(PetscDSSetExactSolution(ds, 1, linear_u, user));
       break;
     case SOL_QUADRATIC:
-      CHKERRQ(PetscDSSetResidual(ds, 1, f0_quadratic_u, NULL));
-      CHKERRQ(DMAddBoundary(dm, DM_BC_NATURAL, "Dirichlet Bd Integral", label, 1, &id, 0, 0, NULL, NULL, NULL, user, &bd));
-      CHKERRQ(PetscDSGetBoundary(ds, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
-      CHKERRQ(PetscWeakFormSetIndexBdResidual(wf, label, 1, 0, 0, 0, f0_bd_quadratic_q, 0, NULL));
-      CHKERRQ(PetscDSSetExactSolution(ds, 0, quadratic_q, user));
-      CHKERRQ(PetscDSSetExactSolution(ds, 1, quadratic_u, user));
+      PetscCall(PetscDSSetResidual(ds, 1, f0_quadratic_u, NULL));
+      PetscCall(DMAddBoundary(dm, DM_BC_NATURAL, "Dirichlet Bd Integral", label, 1, &id, 0, 0, NULL, NULL, NULL, user, &bd));
+      PetscCall(PetscDSGetBoundary(ds, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
+      PetscCall(PetscWeakFormSetIndexBdResidual(wf, label, 1, 0, 0, 0, f0_bd_quadratic_q, 0, NULL));
+      PetscCall(PetscDSSetExactSolution(ds, 0, quadratic_q, user));
+      PetscCall(PetscDSSetExactSolution(ds, 1, quadratic_u, user));
       break;
     case SOL_QUARTIC:
-      CHKERRQ(PetscDSSetResidual(ds, 1, f0_quartic_u, NULL));
-      CHKERRQ(PetscDSSetExactSolution(ds, 0, quartic_q, user));
-      CHKERRQ(PetscDSSetExactSolution(ds, 1, quartic_u, user));
+      PetscCall(PetscDSSetResidual(ds, 1, f0_quartic_u, NULL));
+      PetscCall(PetscDSSetExactSolution(ds, 0, quartic_q, user));
+      PetscCall(PetscDSSetExactSolution(ds, 1, quartic_u, user));
       break;
     case SOL_QUARTIC_NEUMANN:
-      CHKERRQ(PetscDSSetResidual(ds, 1, f0_quartic_u, NULL));
-      CHKERRQ(PetscDSSetExactSolution(ds, 0, quartic_q, user));
-      CHKERRQ(PetscDSSetExactSolution(ds, 1, quartic_u, user));
-      CHKERRQ(DMAddBoundary(dm, DM_BC_ESSENTIAL, "Flux condition", label, 1, &id, 0, 0, NULL, (void (*)(void)) quartic_q, NULL, user, NULL));
+      PetscCall(PetscDSSetResidual(ds, 1, f0_quartic_u, NULL));
+      PetscCall(PetscDSSetExactSolution(ds, 0, quartic_q, user));
+      PetscCall(PetscDSSetExactSolution(ds, 1, quartic_u, user));
+      PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "Flux condition", label, 1, &id, 0, 0, NULL, (void (*)(void)) quartic_q, NULL, user, NULL));
       break;
     default: SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Invalid exact solution type %s", SolTypeNames[PetscMin(user->solType, SOL_UNKNOWN)]);
   }
@@ -310,27 +310,27 @@ static PetscErrorCode SetupDiscretization(DM dm, PetscErrorCode (*setup)(DM, App
   PetscInt       dim, cStart;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetDimension(dm, &dim));
-  CHKERRQ(DMPlexGetHeightStratum(dm, 0, &cStart, NULL));
-  CHKERRQ(DMPlexGetCellType(dm, cStart, &ct));
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, NULL));
+  PetscCall(DMPlexGetCellType(dm, cStart, &ct));
   simplex = DMPolytopeTypeGetNumVertices(ct) == DMPolytopeTypeGetDim(ct)+1 ? PETSC_TRUE : PETSC_FALSE;
   /* Create finite element */
-  CHKERRQ(PetscFECreateDefault(PETSC_COMM_SELF, dim, dim, simplex, "field_",     -1, &feq));
-  CHKERRQ(PetscObjectSetName((PetscObject) feq, "field"));
-  CHKERRQ(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1,   simplex, "potential_", -1, &feu));
-  CHKERRQ(PetscObjectSetName((PetscObject) feu, "potential"));
-  CHKERRQ(PetscFECopyQuadrature(feq, feu));
+  PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, dim, simplex, "field_",     -1, &feq));
+  PetscCall(PetscObjectSetName((PetscObject) feq, "field"));
+  PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1,   simplex, "potential_", -1, &feu));
+  PetscCall(PetscObjectSetName((PetscObject) feu, "potential"));
+  PetscCall(PetscFECopyQuadrature(feq, feu));
   /* Set discretization and boundary conditions for each mesh */
-  CHKERRQ(DMSetField(dm, 0, NULL, (PetscObject) feq));
-  CHKERRQ(DMSetField(dm, 1, NULL, (PetscObject) feu));
-  CHKERRQ(DMCreateDS(dm));
-  CHKERRQ((*setup)(dm, user));
+  PetscCall(DMSetField(dm, 0, NULL, (PetscObject) feq));
+  PetscCall(DMSetField(dm, 1, NULL, (PetscObject) feu));
+  PetscCall(DMCreateDS(dm));
+  PetscCall((*setup)(dm, user));
   while (cdm) {
-    CHKERRQ(DMCopyDisc(dm,cdm));
-    CHKERRQ(DMGetCoarseDM(cdm, &cdm));
+    PetscCall(DMCopyDisc(dm,cdm));
+    PetscCall(DMGetCoarseDM(cdm, &cdm));
   }
-  CHKERRQ(PetscFEDestroy(&feq));
-  CHKERRQ(PetscFEDestroy(&feu));
+  PetscCall(PetscFEDestroy(&feq));
+  PetscCall(PetscFEDestroy(&feu));
   PetscFunctionReturn(0);
 }
 
@@ -341,27 +341,27 @@ int main(int argc, char **argv)
   Vec            u;    /* Solutions */
   AppCtx         user; /* User-defined work context */
 
-  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
-  CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
   /* Primal system */
-  CHKERRQ(SNESCreate(PETSC_COMM_WORLD, &snes));
-  CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
-  CHKERRQ(SNESSetDM(snes, dm));
-  CHKERRQ(SetupDiscretization(dm, SetupPrimalProblem, &user));
-  CHKERRQ(DMCreateGlobalVector(dm, &u));
-  CHKERRQ(VecSet(u, 0.0));
-  CHKERRQ(PetscObjectSetName((PetscObject) u, "potential"));
-  CHKERRQ(DMPlexSetSNESLocalFEM(dm, &user, &user, &user));
-  CHKERRQ(SNESSetFromOptions(snes));
-  CHKERRQ(DMSNESCheckFromOptions(snes, u));
-  CHKERRQ(SNESSolve(snes, NULL, u));
-  CHKERRQ(SNESGetSolution(snes, &u));
-  CHKERRQ(VecViewFromOptions(u, NULL, "-potential_view"));
+  PetscCall(SNESCreate(PETSC_COMM_WORLD, &snes));
+  PetscCall(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
+  PetscCall(SNESSetDM(snes, dm));
+  PetscCall(SetupDiscretization(dm, SetupPrimalProblem, &user));
+  PetscCall(DMCreateGlobalVector(dm, &u));
+  PetscCall(VecSet(u, 0.0));
+  PetscCall(PetscObjectSetName((PetscObject) u, "potential"));
+  PetscCall(DMPlexSetSNESLocalFEM(dm, &user, &user, &user));
+  PetscCall(SNESSetFromOptions(snes));
+  PetscCall(DMSNESCheckFromOptions(snes, u));
+  PetscCall(SNESSolve(snes, NULL, u));
+  PetscCall(SNESGetSolution(snes, &u));
+  PetscCall(VecViewFromOptions(u, NULL, "-potential_view"));
   /* Cleanup */
-  CHKERRQ(VecDestroy(&u));
-  CHKERRQ(SNESDestroy(&snes));
-  CHKERRQ(DMDestroy(&dm));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&u));
+  PetscCall(SNESDestroy(&snes));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

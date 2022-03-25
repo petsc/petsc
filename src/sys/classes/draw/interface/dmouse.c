@@ -35,14 +35,14 @@ PetscErrorCode  PetscDrawGetMouseButton(PetscDraw draw,PetscDrawButton *button,P
   *button = PETSC_BUTTON_NONE;
   if (!draw->ops->getmousebutton) PetscFunctionReturn(0);
 
-  CHKERRQ((*draw->ops->getmousebutton)(draw,button,x_user,y_user,x_phys,y_phys));
+  PetscCall((*draw->ops->getmousebutton)(draw,button,x_user,y_user,x_phys,y_phys));
 
-  CHKERRMPI(MPI_Bcast((PetscEnum*)button,1,MPIU_ENUM,0,PetscObjectComm((PetscObject)draw)));
+  PetscCallMPI(MPI_Bcast((PetscEnum*)button,1,MPIU_ENUM,0,PetscObjectComm((PetscObject)draw)));
   if (x_user) bcast[0] = *x_user;
   if (y_user) bcast[1] = *y_user;
   if (x_phys) bcast[2] = *x_phys;
   if (y_phys) bcast[3] = *y_phys;
-  CHKERRMPI(MPI_Bcast(bcast,4,MPIU_REAL,0,PetscObjectComm((PetscObject)draw)));
+  PetscCallMPI(MPI_Bcast(bcast,4,MPIU_REAL,0,PetscObjectComm((PetscObject)draw)));
   if (x_user) *x_user = bcast[0];
   if (y_user) *y_user = bcast[1];
   if (x_phys) *x_phys = bcast[2];

@@ -10,9 +10,9 @@ int main(int argc,char **argv)
   PetscInt       *localvert=NULL, nlocal;
   PetscMPIInt    rank;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  CHKERRQ(PetscMalloc1(4,&localvert));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscMalloc1(4,&localvert));
 
   if (rank == 0) {
     nlocal       = 4;
@@ -25,15 +25,15 @@ int main(int argc,char **argv)
   }
 
   /* Test AOCreateBasic() */
-  CHKERRQ(AOCreateBasic(PETSC_COMM_WORLD, nlocal, localvert, NULL, &ao));
-  CHKERRQ(AODestroy(&ao));
+  PetscCall(AOCreateBasic(PETSC_COMM_WORLD, nlocal, localvert, NULL, &ao));
+  PetscCall(AODestroy(&ao));
 
   /* Test AOCreateMemoryScalable() */
-  CHKERRQ(AOCreateMemoryScalable(PETSC_COMM_WORLD, nlocal, localvert, NULL, &ao));
-  CHKERRQ(AODestroy(&ao));
+  PetscCall(AOCreateMemoryScalable(PETSC_COMM_WORLD, nlocal, localvert, NULL, &ao));
+  PetscCall(AODestroy(&ao));
 
-  CHKERRQ(PetscFree(localvert));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFree(localvert));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

@@ -9,16 +9,16 @@ PetscErrorCode MatMult_Centering(Mat A,Vec xx,Vec yy)
   PetscInt          i,m=A->rmap->n,size;
 
   PetscFunctionBegin;
-  CHKERRQ(VecSum(xx,&sum));
-  CHKERRQ(VecGetSize(xx,&size));
+  PetscCall(VecSum(xx,&sum));
+  PetscCall(VecGetSize(xx,&size));
   mean = sum / (PetscScalar)size;
-  CHKERRQ(VecGetArrayRead(xx,&x));
-  CHKERRQ(VecGetArray(yy,&y));
+  PetscCall(VecGetArrayRead(xx,&x));
+  PetscCall(VecGetArray(yy,&y));
   for (i=0; i<m; i++) {
     y[i] = x[i] - mean;
   }
-  CHKERRQ(VecRestoreArrayRead(xx,&x));
-  CHKERRQ(VecRestoreArray(yy,&y));
+  PetscCall(VecRestoreArrayRead(xx,&x));
+  PetscCall(VecRestoreArray(yy,&y));
   PetscFunctionReturn(0);
 }
 
@@ -54,16 +54,16 @@ PetscErrorCode MatCreateCentering(MPI_Comm comm,PetscInt n,PetscInt N,Mat *C)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  CHKERRQ(MatCreate(comm,C));
-  CHKERRQ(MatSetSizes(*C,n,n,N,N));
-  CHKERRMPI(MPI_Comm_size(comm,&size));
-  CHKERRQ(PetscObjectChangeTypeName((PetscObject)*C,MATCENTERING));
+  PetscCall(MatCreate(comm,C));
+  PetscCall(MatSetSizes(*C,n,n,N,N));
+  PetscCallMPI(MPI_Comm_size(comm,&size));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)*C,MATCENTERING));
 
   (*C)->ops->mult         = MatMult_Centering;
   (*C)->assembled         = PETSC_TRUE;
   (*C)->preallocated      = PETSC_TRUE;
   (*C)->symmetric         = PETSC_TRUE;
   (*C)->symmetric_eternal = PETSC_TRUE;
-  CHKERRQ(MatSetUp(*C));
+  PetscCall(MatSetUp(*C));
   PetscFunctionReturn(0);
 }

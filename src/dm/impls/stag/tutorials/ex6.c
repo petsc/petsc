@@ -62,7 +62,7 @@ int main(int argc,char *argv[])
   PetscInt       timestep;
 
   /* Initialize PETSc */
-  CHKERRQ(PetscInitialize(&argc,&argv,0,help));
+  PetscCall(PetscInitialize(&argc,&argv,0,help));
 
   /* Populate application context */
   ctx.dim         = 2;
@@ -77,10 +77,10 @@ int main(int argc,char *argv[])
   ctx.dump_output = PETSC_TRUE;
 
   /* Update context from command line options */
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dim",&ctx.dim,NULL));
-  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-dt",&ctx.dt,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-nsteps",&ctx.timesteps,NULL));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-dump_output",&ctx.dump_output,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-dim",&ctx.dim,NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-dt",&ctx.dt,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-nsteps",&ctx.timesteps,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-dump_output",&ctx.dump_output,NULL));
 
   /* Create a DMStag, with uniform coordinates, for the velocities */
   {
@@ -90,122 +90,122 @@ int main(int argc,char *argv[])
     switch (ctx.dim) {
       case 2:
         dof0 = 0; dof1 = 1; dof2 = 0; /* 1 dof per cell boundary */
-        CHKERRQ(DMStagCreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,100,100,PETSC_DECIDE,PETSC_DECIDE,dof0,dof1,dof2,DMSTAG_STENCIL_BOX,stencilWidth,NULL,NULL,&ctx.dm_velocity));
+        PetscCall(DMStagCreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,100,100,PETSC_DECIDE,PETSC_DECIDE,dof0,dof1,dof2,DMSTAG_STENCIL_BOX,stencilWidth,NULL,NULL,&ctx.dm_velocity));
         break;
       case 3:
         dof0 = 0; dof1 = 0; dof2 = 1; dof3 = 0; /* 1 dof per cell boundary */
-        CHKERRQ(DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,30,30,30,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof0,dof1,dof2,dof3,DMSTAG_STENCIL_BOX,stencilWidth,NULL,NULL,NULL,&ctx.dm_velocity));
+        PetscCall(DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,30,30,30,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof0,dof1,dof2,dof3,DMSTAG_STENCIL_BOX,stencilWidth,NULL,NULL,NULL,&ctx.dm_velocity));
         break;
       default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not Implemented for dimension %D",ctx.dim);
     }
   }
-  CHKERRQ(DMSetFromOptions(ctx.dm_velocity)); /* Options control velocity DM */
-  CHKERRQ(DMSetUp(ctx.dm_velocity));
-  CHKERRQ(DMStagSetUniformCoordinatesProduct(ctx.dm_velocity,ctx.xmin,ctx.xmax,ctx.ymin,ctx.ymax,ctx.zmin,ctx.zmax));
+  PetscCall(DMSetFromOptions(ctx.dm_velocity)); /* Options control velocity DM */
+  PetscCall(DMSetUp(ctx.dm_velocity));
+  PetscCall(DMStagSetUniformCoordinatesProduct(ctx.dm_velocity,ctx.xmin,ctx.xmax,ctx.ymin,ctx.ymax,ctx.zmin,ctx.zmax));
 
   /* Create a second, compatible DMStag for the stresses */
   switch (ctx.dim) {
     case 2:
       /* One shear stress component on element corners, two shear stress components on elements */
-      CHKERRQ(DMStagCreateCompatibleDMStag(ctx.dm_velocity,1,0,2,0,&ctx.dm_stress));
+      PetscCall(DMStagCreateCompatibleDMStag(ctx.dm_velocity,1,0,2,0,&ctx.dm_stress));
       break;
     case 3:
       /* One shear stress component on element edges, three shear stress components on elements */
-      CHKERRQ(DMStagCreateCompatibleDMStag(ctx.dm_velocity,0,1,0,3,&ctx.dm_stress));
+      PetscCall(DMStagCreateCompatibleDMStag(ctx.dm_velocity,0,1,0,3,&ctx.dm_stress));
       break;
     default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not Implemented for dimension %D",ctx.dim);
   }
-  CHKERRQ(DMSetUp(ctx.dm_stress));
-  CHKERRQ(DMStagSetUniformCoordinatesProduct(ctx.dm_stress,ctx.xmin,ctx.xmax,ctx.ymin,ctx.ymax,ctx.zmin,ctx.zmax));
+  PetscCall(DMSetUp(ctx.dm_stress));
+  PetscCall(DMStagSetUniformCoordinatesProduct(ctx.dm_stress,ctx.xmin,ctx.xmax,ctx.ymin,ctx.ymax,ctx.zmin,ctx.zmax));
 
   /* Create two additional DMStag objects for the buoyancy and Lame parameters */
   switch (ctx.dim) {
     case 2:
       /* buoyancy on element boundaries (edges) */
-      CHKERRQ(DMStagCreateCompatibleDMStag(ctx.dm_velocity,0,1,0,0,&ctx.dm_buoyancy));
+      PetscCall(DMStagCreateCompatibleDMStag(ctx.dm_velocity,0,1,0,0,&ctx.dm_buoyancy));
       break;
     case 3:
       /* buoyancy on element boundaries (faces) */
-      CHKERRQ(DMStagCreateCompatibleDMStag(ctx.dm_velocity,0,0,1,0,&ctx.dm_buoyancy));
+      PetscCall(DMStagCreateCompatibleDMStag(ctx.dm_velocity,0,0,1,0,&ctx.dm_buoyancy));
       break;
     default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not Implemented for dimension %D",ctx.dim);
   }
-  CHKERRQ(DMSetUp(ctx.dm_buoyancy));
+  PetscCall(DMSetUp(ctx.dm_buoyancy));
 
   switch (ctx.dim) {
     case 2:
       /* mu and lambda + 2*mu on element centers, mu on corners */
-      CHKERRQ(DMStagCreateCompatibleDMStag(ctx.dm_velocity,1,0,2,0,&ctx.dm_lame));
+      PetscCall(DMStagCreateCompatibleDMStag(ctx.dm_velocity,1,0,2,0,&ctx.dm_lame));
       break;
     case 3:
       /* mu and lambda + 2*mu on element centers, mu on edges */
-      CHKERRQ(DMStagCreateCompatibleDMStag(ctx.dm_velocity,0,1,0,2,&ctx.dm_lame));
+      PetscCall(DMStagCreateCompatibleDMStag(ctx.dm_velocity,0,1,0,2,&ctx.dm_lame));
       break;
     default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not Implemented for dimension %D",ctx.dim);
   }
-  CHKERRQ(DMSetUp(ctx.dm_lame));
+  PetscCall(DMSetUp(ctx.dm_lame));
 
   /* Print out some info */
   {
     PetscInt    N[3];
     PetscScalar dx,Vp;
 
-    CHKERRQ(DMStagGetGlobalSizes(ctx.dm_velocity,&N[0],&N[1],&N[2]));
+    PetscCall(DMStagGetGlobalSizes(ctx.dm_velocity,&N[0],&N[1],&N[2]));
     dx = (ctx.xmax - ctx.xmin)/N[0];
     Vp = PetscSqrtScalar((ctx.lambda + 2 * ctx.mu) / ctx.rho);
     if (ctx.dim == 2) {
-      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Using a %D x %D mesh\n",N[0],N[1]));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Using a %D x %D mesh\n",N[0],N[1]));
     } else if (ctx.dim == 3) {
-      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Using a %D x %D x %D mesh\n",N[0],N[1],N[2]));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Using a %D x %D x %D mesh\n",N[0],N[1],N[2]));
     }
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"dx: %g\n",dx));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"dt: %g\n",ctx.dt));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"P-wave velocity: %g\n",PetscSqrtScalar((ctx.lambda + 2 * ctx.mu) / ctx.rho)));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"V_p dt / dx: %g\n",Vp * ctx.dt / dx));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"dx: %g\n",dx));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"dt: %g\n",ctx.dt));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"P-wave velocity: %g\n",PetscSqrtScalar((ctx.lambda + 2 * ctx.mu) / ctx.rho)));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"V_p dt / dx: %g\n",Vp * ctx.dt / dx));
   }
 
   /* Populate the coefficient arrays */
-  CHKERRQ(CreateLame(&ctx));
-  CHKERRQ(DMCreateGlobalVector(ctx.dm_buoyancy,&ctx.buoyancy));
-  CHKERRQ(VecSet(ctx.buoyancy,1.0/ctx.rho));
+  PetscCall(CreateLame(&ctx));
+  PetscCall(DMCreateGlobalVector(ctx.dm_buoyancy,&ctx.buoyancy));
+  PetscCall(VecSet(ctx.buoyancy,1.0/ctx.rho));
 
   /* Create vectors to store the system state */
-  CHKERRQ(DMCreateGlobalVector(ctx.dm_velocity,&velocity));
-  CHKERRQ(DMCreateGlobalVector(ctx.dm_stress,&stress));
+  PetscCall(DMCreateGlobalVector(ctx.dm_velocity,&velocity));
+  PetscCall(DMCreateGlobalVector(ctx.dm_stress,&stress));
 
   /* Initial State */
-  CHKERRQ(VecSet(velocity,0.0));
-  CHKERRQ(VecSet(stress,0.0));
-  CHKERRQ(ForceStress(&ctx,stress,0.0));
+  PetscCall(VecSet(velocity,0.0));
+  PetscCall(VecSet(stress,0.0));
+  PetscCall(ForceStress(&ctx,stress,0.0));
   if (ctx.dump_output) {
-    CHKERRQ(DumpVelocity(&ctx,velocity,0));
-    CHKERRQ(DumpStress(&ctx,stress,0));
+    PetscCall(DumpVelocity(&ctx,velocity,0));
+    PetscCall(DumpStress(&ctx,stress,0));
   }
 
   /* Time Loop */
   for (timestep = 1; timestep <= ctx.timesteps; ++timestep) {
     const PetscReal t = timestep * ctx.dt;
 
-    CHKERRQ(UpdateVelocity(&ctx,velocity,stress,ctx.buoyancy));
-    CHKERRQ(UpdateStress(&ctx,velocity,stress,ctx.lame));
-    CHKERRQ(ForceStress(&ctx,stress,t));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Timestep %d, t = %g\n",timestep,(double)t));
+    PetscCall(UpdateVelocity(&ctx,velocity,stress,ctx.buoyancy));
+    PetscCall(UpdateStress(&ctx,velocity,stress,ctx.lame));
+    PetscCall(ForceStress(&ctx,stress,t));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Timestep %d, t = %g\n",timestep,(double)t));
     if (ctx.dump_output) {
-      CHKERRQ(DumpVelocity(&ctx,velocity,timestep));
-      CHKERRQ(DumpStress(&ctx,stress,timestep));
+      PetscCall(DumpVelocity(&ctx,velocity,timestep));
+      PetscCall(DumpStress(&ctx,stress,timestep));
     }
   }
 
   /* Clean up and finalize PETSc */
-  CHKERRQ(VecDestroy(&velocity));
-  CHKERRQ(VecDestroy(&stress));
-  CHKERRQ(VecDestroy(&ctx.lame));
-  CHKERRQ(VecDestroy(&ctx.buoyancy));
-  CHKERRQ(DMDestroy(&ctx.dm_velocity));
-  CHKERRQ(DMDestroy(&ctx.dm_stress));
-  CHKERRQ(DMDestroy(&ctx.dm_buoyancy));
-  CHKERRQ(DMDestroy(&ctx.dm_lame));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&velocity));
+  PetscCall(VecDestroy(&stress));
+  PetscCall(VecDestroy(&ctx.lame));
+  PetscCall(VecDestroy(&ctx.buoyancy));
+  PetscCall(DMDestroy(&ctx.dm_velocity));
+  PetscCall(DMDestroy(&ctx.dm_stress));
+  PetscCall(DMDestroy(&ctx.dm_buoyancy));
+  PetscCall(DMDestroy(&ctx.dm_lame));
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -214,9 +214,9 @@ static PetscErrorCode CreateLame(Ctx *ctx)
   PetscInt       N[3],ex,ey,ez,startx,starty,startz,nx,ny,nz,extrax,extray,extraz;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMCreateGlobalVector(ctx->dm_lame,&ctx->lame));
-  CHKERRQ(DMStagGetGlobalSizes(ctx->dm_lame,&N[0],&N[1],&N[2]));
-  CHKERRQ(DMStagGetCorners(ctx->dm_buoyancy,&startx,&starty,&startz,&nx,&ny,&nz,&extrax,&extray,&extraz));
+  PetscCall(DMCreateGlobalVector(ctx->dm_lame,&ctx->lame));
+  PetscCall(DMStagGetGlobalSizes(ctx->dm_lame,&N[0],&N[1],&N[2]));
+  PetscCall(DMStagGetCorners(ctx->dm_buoyancy,&startx,&starty,&startz,&nx,&ny,&nz,&extrax,&extray,&extraz));
   if (ctx->dim == 2) {
     /* Element values */
     for (ey=starty; ey<starty+ny; ++ey) {
@@ -224,9 +224,9 @@ static PetscErrorCode CreateLame(Ctx *ctx)
         DMStagStencil pos;
 
         pos.i = ex; pos.j = ey; pos.c = 0; pos.loc = DMSTAG_ELEMENT;
-        CHKERRQ(DMStagVecSetValuesStencil(ctx->dm_lame,ctx->lame,1,&pos,&ctx->lambda,INSERT_VALUES));
+        PetscCall(DMStagVecSetValuesStencil(ctx->dm_lame,ctx->lame,1,&pos,&ctx->lambda,INSERT_VALUES));
         pos.i = ex; pos.j = ey; pos.c = 1; pos.loc = DMSTAG_ELEMENT;
-        CHKERRQ(DMStagVecSetValuesStencil(ctx->dm_lame,ctx->lame,1,&pos,&ctx->mu,INSERT_VALUES));
+        PetscCall(DMStagVecSetValuesStencil(ctx->dm_lame,ctx->lame,1,&pos,&ctx->mu,INSERT_VALUES));
       }
     }
     /* Vertex Values */
@@ -235,7 +235,7 @@ static PetscErrorCode CreateLame(Ctx *ctx)
         DMStagStencil pos;
 
         pos.i = ex; pos.j = ey; pos.c = 0; pos.loc = DMSTAG_DOWN_LEFT;
-        CHKERRQ(DMStagVecSetValuesStencil(ctx->dm_lame,ctx->lame,1,&pos,&ctx->mu,INSERT_VALUES));
+        PetscCall(DMStagVecSetValuesStencil(ctx->dm_lame,ctx->lame,1,&pos,&ctx->mu,INSERT_VALUES));
       }
     }
   } else if (ctx->dim == 3) {
@@ -246,9 +246,9 @@ static PetscErrorCode CreateLame(Ctx *ctx)
         DMStagStencil pos;
 
         pos.i = ex; pos.j = ey; pos.k = ez; pos.c = 0; pos.loc = DMSTAG_ELEMENT;
-        CHKERRQ(DMStagVecSetValuesStencil(ctx->dm_lame,ctx->lame,1,&pos,&ctx->lambda,INSERT_VALUES));
+        PetscCall(DMStagVecSetValuesStencil(ctx->dm_lame,ctx->lame,1,&pos,&ctx->lambda,INSERT_VALUES));
         pos.i = ex; pos.j = ey; pos.k = ez; pos.c = 1; pos.loc = DMSTAG_ELEMENT;
-        CHKERRQ(DMStagVecSetValuesStencil(ctx->dm_lame,ctx->lame,1,&pos,&ctx->mu,INSERT_VALUES));
+        PetscCall(DMStagVecSetValuesStencil(ctx->dm_lame,ctx->lame,1,&pos,&ctx->mu,INSERT_VALUES));
         }
       }
     }
@@ -260,22 +260,22 @@ static PetscErrorCode CreateLame(Ctx *ctx)
 
           if (ex < N[0]) {
             pos.i = ex; pos.j = ey; pos.k = ez; pos.c = 0; pos.loc = DMSTAG_BACK_DOWN;
-            CHKERRQ(DMStagVecSetValuesStencil(ctx->dm_lame,ctx->lame,1,&pos,&ctx->mu,INSERT_VALUES));
+            PetscCall(DMStagVecSetValuesStencil(ctx->dm_lame,ctx->lame,1,&pos,&ctx->mu,INSERT_VALUES));
           }
           if (ey < N[1]) {
             pos.i = ex; pos.j = ey; pos.k = ez; pos.c = 0; pos.loc = DMSTAG_BACK_LEFT;
-            CHKERRQ(DMStagVecSetValuesStencil(ctx->dm_lame,ctx->lame,1,&pos,&ctx->mu,INSERT_VALUES));
+            PetscCall(DMStagVecSetValuesStencil(ctx->dm_lame,ctx->lame,1,&pos,&ctx->mu,INSERT_VALUES));
           }
           if (ez < N[2]) {
             pos.i = ex; pos.j = ey; pos.k = ez; pos.c = 0; pos.loc = DMSTAG_DOWN_LEFT;
-            CHKERRQ(DMStagVecSetValuesStencil(ctx->dm_lame,ctx->lame,1,&pos,&ctx->mu,INSERT_VALUES));
+            PetscCall(DMStagVecSetValuesStencil(ctx->dm_lame,ctx->lame,1,&pos,&ctx->mu,INSERT_VALUES));
           }
         }
       }
     }
   } else SETERRQ(PetscObjectComm((PetscObject)ctx->dm_velocity),PETSC_ERR_SUP,"Unsupported dim %d",ctx->dim);
-  CHKERRQ(VecAssemblyBegin(ctx->lame));
-  CHKERRQ(VecAssemblyEnd(ctx->lame));
+  PetscCall(VecAssemblyBegin(ctx->lame));
+  PetscCall(VecAssemblyEnd(ctx->lame));
   PetscFunctionReturn(0);
 }
 
@@ -287,8 +287,8 @@ static PetscErrorCode ForceStress(const Ctx *ctx,Vec stress, PetscReal t)
   const PetscScalar val = PetscExpReal(-100.0 * t);
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMStagGetGlobalSizes(ctx->dm_stress,&N[0],&N[1],&N[2]));
-  CHKERRQ(DMStagGetCorners(ctx->dm_stress,&start[0],&start[1],&start[2],&n[0],&n[1],&n[2],NULL,NULL,NULL));
+  PetscCall(DMStagGetGlobalSizes(ctx->dm_stress,&N[0],&N[1],&N[2]));
+  PetscCall(DMStagGetCorners(ctx->dm_stress,&start[0],&start[1],&start[2],&n[0],&n[1],&n[2],NULL,NULL,NULL));
 
   /* Normal stresses at a single point */
   this_rank = (PetscBool) (start[0] <= N[0]/2 && N[0]/2 <= start[0] + n[0]);
@@ -297,17 +297,17 @@ static PetscErrorCode ForceStress(const Ctx *ctx,Vec stress, PetscReal t)
   if (this_rank) {
     /* Note integer division to pick element near the center */
     pos.i = N[0]/2; pos.j = N[1]/2; pos.k = N[2]/2; pos.c = 0; pos.loc = DMSTAG_ELEMENT;
-    CHKERRQ(DMStagVecSetValuesStencil(ctx->dm_stress,stress,1,&pos,&val,INSERT_VALUES));
+    PetscCall(DMStagVecSetValuesStencil(ctx->dm_stress,stress,1,&pos,&val,INSERT_VALUES));
     pos.i = N[0]/2; pos.j = N[1]/2; pos.k = N[2]/2; pos.c = 1; pos.loc = DMSTAG_ELEMENT;
-    CHKERRQ(DMStagVecSetValuesStencil(ctx->dm_stress,stress,1,&pos,&val,INSERT_VALUES));
+    PetscCall(DMStagVecSetValuesStencil(ctx->dm_stress,stress,1,&pos,&val,INSERT_VALUES));
     if (ctx->dim == 3) {
       pos.i = N[0]/2; pos.j = N[1]/2; pos.k = N[2]/2; pos.c = 2; pos.loc = DMSTAG_ELEMENT;
-      CHKERRQ(DMStagVecSetValuesStencil(ctx->dm_stress,stress,1,&pos,&val,INSERT_VALUES));
+      PetscCall(DMStagVecSetValuesStencil(ctx->dm_stress,stress,1,&pos,&val,INSERT_VALUES));
     }
   }
 
-  CHKERRQ(VecAssemblyBegin(stress));
-  CHKERRQ(VecAssemblyEnd(stress));
+  PetscCall(VecAssemblyBegin(stress));
+  PetscCall(VecAssemblyEnd(stress));
   PetscFunctionReturn(0);
 }
 
@@ -325,37 +325,37 @@ static PetscErrorCode UpdateVelocity_2d(const Ctx *ctx,Vec velocity,Vec stress, 
   PetscFunctionBeginUser;
 
   /* Prepare direct access to buoyancy data */
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_buoyancy,DMSTAG_LEFT,0,&slot_buoyancy_left));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_buoyancy,DMSTAG_DOWN,0,&slot_buoyancy_down));
-  CHKERRQ(DMGetLocalVector(ctx->dm_buoyancy,&buoyancy_local));
-  CHKERRQ(DMGlobalToLocal(ctx->dm_buoyancy,buoyancy,INSERT_VALUES,buoyancy_local));
-  CHKERRQ(DMStagVecGetArrayRead(ctx->dm_buoyancy,buoyancy_local,&arr_buoyancy));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_buoyancy,DMSTAG_LEFT,0,&slot_buoyancy_left));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_buoyancy,DMSTAG_DOWN,0,&slot_buoyancy_down));
+  PetscCall(DMGetLocalVector(ctx->dm_buoyancy,&buoyancy_local));
+  PetscCall(DMGlobalToLocal(ctx->dm_buoyancy,buoyancy,INSERT_VALUES,buoyancy_local));
+  PetscCall(DMStagVecGetArrayRead(ctx->dm_buoyancy,buoyancy_local,&arr_buoyancy));
 
   /* Prepare read-only access to stress data */
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_ELEMENT,   0,&slot_txx));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_ELEMENT,   1,&slot_tyy));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_UP_LEFT,   0,&slot_txy_upleft));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_DOWN_LEFT, 0,&slot_txy_downleft));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_DOWN_RIGHT,0,&slot_txy_downright));
-  CHKERRQ(DMGetLocalVector(ctx->dm_stress,&stress_local));
-  CHKERRQ(DMGlobalToLocal(ctx->dm_stress,stress,INSERT_VALUES,stress_local));
-  CHKERRQ(DMStagVecGetArrayRead(ctx->dm_stress,stress_local,&arr_stress));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_ELEMENT,   0,&slot_txx));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_ELEMENT,   1,&slot_tyy));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_UP_LEFT,   0,&slot_txy_upleft));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_DOWN_LEFT, 0,&slot_txy_downleft));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_DOWN_RIGHT,0,&slot_txy_downright));
+  PetscCall(DMGetLocalVector(ctx->dm_stress,&stress_local));
+  PetscCall(DMGlobalToLocal(ctx->dm_stress,stress,INSERT_VALUES,stress_local));
+  PetscCall(DMStagVecGetArrayRead(ctx->dm_stress,stress_local,&arr_stress));
 
   /* Prepare read-write access to velocity data */
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_velocity,DMSTAG_LEFT,0,&slot_vx_left));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_velocity,DMSTAG_DOWN,0,&slot_vy_down));
-  CHKERRQ(DMGetLocalVector(ctx->dm_velocity,&velocity_local));
-  CHKERRQ(DMGlobalToLocal(ctx->dm_velocity,velocity,INSERT_VALUES,velocity_local));
-  CHKERRQ(DMStagVecGetArray(ctx->dm_velocity,velocity_local,&arr_velocity));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_velocity,DMSTAG_LEFT,0,&slot_vx_left));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_velocity,DMSTAG_DOWN,0,&slot_vy_down));
+  PetscCall(DMGetLocalVector(ctx->dm_velocity,&velocity_local));
+  PetscCall(DMGlobalToLocal(ctx->dm_velocity,velocity,INSERT_VALUES,velocity_local));
+  PetscCall(DMStagVecGetArray(ctx->dm_velocity,velocity_local,&arr_velocity));
 
   /* Prepare read-only access to coordinate data */
-  CHKERRQ(DMStagGetProductCoordinateLocationSlot(ctx->dm_velocity,DMSTAG_LEFT,&slot_coord_prev));
-  CHKERRQ(DMStagGetProductCoordinateLocationSlot(ctx->dm_velocity,DMSTAG_RIGHT,&slot_coord_next));
-  CHKERRQ(DMStagGetProductCoordinateLocationSlot(ctx->dm_velocity,DMSTAG_ELEMENT,&slot_coord_element));
-  CHKERRQ(DMStagGetProductCoordinateArrays(ctx->dm_velocity,&arr_coord_x,&arr_coord_y,NULL));
+  PetscCall(DMStagGetProductCoordinateLocationSlot(ctx->dm_velocity,DMSTAG_LEFT,&slot_coord_prev));
+  PetscCall(DMStagGetProductCoordinateLocationSlot(ctx->dm_velocity,DMSTAG_RIGHT,&slot_coord_next));
+  PetscCall(DMStagGetProductCoordinateLocationSlot(ctx->dm_velocity,DMSTAG_ELEMENT,&slot_coord_element));
+  PetscCall(DMStagGetProductCoordinateArrays(ctx->dm_velocity,&arr_coord_x,&arr_coord_y,NULL));
 
   /* Iterate over interior of the domain, updating the velocities */
-  CHKERRQ(DMStagGetCorners(ctx->dm_velocity,&startx,&starty,NULL,&nx,&ny,NULL,NULL,NULL,NULL));
+  PetscCall(DMStagGetCorners(ctx->dm_velocity,&startx,&starty,NULL,&nx,&ny,NULL,NULL,NULL,NULL));
   for (ey = starty; ey < starty + ny; ++ey) {
     for (ex = startx; ex < startx + nx; ++ex) {
 
@@ -384,14 +384,14 @@ static PetscErrorCode UpdateVelocity_2d(const Ctx *ctx,Vec velocity,Vec stress, 
   }
 
   /* Restore all access */
-  CHKERRQ(DMStagVecRestoreArrayRead(ctx->dm_buoyancy,buoyancy_local,&arr_buoyancy));
-  CHKERRQ(DMRestoreLocalVector(ctx->dm_buoyancy,&buoyancy_local));
-  CHKERRQ(DMStagVecRestoreArrayRead(ctx->dm_stress,stress_local,&arr_stress));
-  CHKERRQ(DMRestoreLocalVector(ctx->dm_stress,&stress_local));
-  CHKERRQ(DMStagVecRestoreArray(ctx->dm_velocity,velocity_local,&arr_velocity));
-  CHKERRQ(DMLocalToGlobal(ctx->dm_velocity,velocity_local,INSERT_VALUES,velocity));
-  CHKERRQ(DMRestoreLocalVector(ctx->dm_velocity,&velocity_local));
-  CHKERRQ(DMStagRestoreProductCoordinateArrays(ctx->dm_velocity,&arr_coord_x,&arr_coord_y,NULL));
+  PetscCall(DMStagVecRestoreArrayRead(ctx->dm_buoyancy,buoyancy_local,&arr_buoyancy));
+  PetscCall(DMRestoreLocalVector(ctx->dm_buoyancy,&buoyancy_local));
+  PetscCall(DMStagVecRestoreArrayRead(ctx->dm_stress,stress_local,&arr_stress));
+  PetscCall(DMRestoreLocalVector(ctx->dm_stress,&stress_local));
+  PetscCall(DMStagVecRestoreArray(ctx->dm_velocity,velocity_local,&arr_velocity));
+  PetscCall(DMLocalToGlobal(ctx->dm_velocity,velocity_local,INSERT_VALUES,velocity));
+  PetscCall(DMRestoreLocalVector(ctx->dm_velocity,&velocity_local));
+  PetscCall(DMStagRestoreProductCoordinateArrays(ctx->dm_velocity,&arr_coord_x,&arr_coord_y,NULL));
   PetscFunctionReturn(0);
 }
 
@@ -412,46 +412,46 @@ static PetscErrorCode UpdateVelocity_3d(const Ctx *ctx,Vec velocity,Vec stress, 
   PetscFunctionBeginUser;
 
   /* Prepare direct access to buoyancy data */
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_buoyancy,DMSTAG_LEFT,0,&slot_buoyancy_left));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_buoyancy,DMSTAG_DOWN,0,&slot_buoyancy_down));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_buoyancy,DMSTAG_BACK,0,&slot_buoyancy_back));
-  CHKERRQ(DMGetLocalVector(ctx->dm_buoyancy,&buoyancy_local));
-  CHKERRQ(DMGlobalToLocal(ctx->dm_buoyancy,buoyancy,INSERT_VALUES,buoyancy_local));
-  CHKERRQ(DMStagVecGetArrayRead(ctx->dm_buoyancy,buoyancy_local,&arr_buoyancy));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_buoyancy,DMSTAG_LEFT,0,&slot_buoyancy_left));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_buoyancy,DMSTAG_DOWN,0,&slot_buoyancy_down));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_buoyancy,DMSTAG_BACK,0,&slot_buoyancy_back));
+  PetscCall(DMGetLocalVector(ctx->dm_buoyancy,&buoyancy_local));
+  PetscCall(DMGlobalToLocal(ctx->dm_buoyancy,buoyancy,INSERT_VALUES,buoyancy_local));
+  PetscCall(DMStagVecGetArrayRead(ctx->dm_buoyancy,buoyancy_local,&arr_buoyancy));
 
   /* Prepare read-only access to stress data */
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_ELEMENT,   0,&slot_txx));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_ELEMENT,   1,&slot_tyy));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_ELEMENT,   2,&slot_tzz));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_UP_LEFT,   0,&slot_txy_upleft));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_DOWN_LEFT, 0,&slot_txy_downleft));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_DOWN_RIGHT,0,&slot_txy_downright));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_BACK_LEFT, 0,&slot_txz_backleft));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_BACK_RIGHT,0,&slot_txz_backright));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_FRONT_LEFT,0,&slot_txz_frontleft));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_BACK_DOWN, 0,&slot_tyz_backdown));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_BACK_UP,   0,&slot_tyz_backup));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_FRONT_DOWN,0,&slot_tyz_frontdown));
-  CHKERRQ(DMGetLocalVector(ctx->dm_stress,&stress_local));
-  CHKERRQ(DMGlobalToLocal(ctx->dm_stress,stress,INSERT_VALUES,stress_local));
-  CHKERRQ(DMStagVecGetArrayRead(ctx->dm_stress,stress_local,&arr_stress));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_ELEMENT,   0,&slot_txx));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_ELEMENT,   1,&slot_tyy));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_ELEMENT,   2,&slot_tzz));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_UP_LEFT,   0,&slot_txy_upleft));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_DOWN_LEFT, 0,&slot_txy_downleft));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_DOWN_RIGHT,0,&slot_txy_downright));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_BACK_LEFT, 0,&slot_txz_backleft));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_BACK_RIGHT,0,&slot_txz_backright));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_FRONT_LEFT,0,&slot_txz_frontleft));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_BACK_DOWN, 0,&slot_tyz_backdown));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_BACK_UP,   0,&slot_tyz_backup));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_FRONT_DOWN,0,&slot_tyz_frontdown));
+  PetscCall(DMGetLocalVector(ctx->dm_stress,&stress_local));
+  PetscCall(DMGlobalToLocal(ctx->dm_stress,stress,INSERT_VALUES,stress_local));
+  PetscCall(DMStagVecGetArrayRead(ctx->dm_stress,stress_local,&arr_stress));
 
   /* Prepare read-write access to velocity data */
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_velocity,DMSTAG_LEFT,0,&slot_vx_left));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_velocity,DMSTAG_DOWN,0,&slot_vy_down));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_velocity,DMSTAG_BACK,0,&slot_vz_back));
-  CHKERRQ(DMGetLocalVector(ctx->dm_velocity,&velocity_local));
-  CHKERRQ(DMGlobalToLocal(ctx->dm_velocity,velocity,INSERT_VALUES,velocity_local));
-  CHKERRQ(DMStagVecGetArray(ctx->dm_velocity,velocity_local,&arr_velocity));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_velocity,DMSTAG_LEFT,0,&slot_vx_left));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_velocity,DMSTAG_DOWN,0,&slot_vy_down));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_velocity,DMSTAG_BACK,0,&slot_vz_back));
+  PetscCall(DMGetLocalVector(ctx->dm_velocity,&velocity_local));
+  PetscCall(DMGlobalToLocal(ctx->dm_velocity,velocity,INSERT_VALUES,velocity_local));
+  PetscCall(DMStagVecGetArray(ctx->dm_velocity,velocity_local,&arr_velocity));
 
   /* Prepare read-only access to coordinate data */
-  CHKERRQ(DMStagGetProductCoordinateLocationSlot(ctx->dm_velocity,DMSTAG_LEFT,&slot_coord_prev));
-  CHKERRQ(DMStagGetProductCoordinateLocationSlot(ctx->dm_velocity,DMSTAG_RIGHT,&slot_coord_next));
-  CHKERRQ(DMStagGetProductCoordinateLocationSlot(ctx->dm_velocity,DMSTAG_ELEMENT,&slot_coord_element));
-  CHKERRQ(DMStagGetProductCoordinateArrays(ctx->dm_velocity,&arr_coord_x,&arr_coord_y,&arr_coord_z));
+  PetscCall(DMStagGetProductCoordinateLocationSlot(ctx->dm_velocity,DMSTAG_LEFT,&slot_coord_prev));
+  PetscCall(DMStagGetProductCoordinateLocationSlot(ctx->dm_velocity,DMSTAG_RIGHT,&slot_coord_next));
+  PetscCall(DMStagGetProductCoordinateLocationSlot(ctx->dm_velocity,DMSTAG_ELEMENT,&slot_coord_element));
+  PetscCall(DMStagGetProductCoordinateArrays(ctx->dm_velocity,&arr_coord_x,&arr_coord_y,&arr_coord_z));
 
   /* Iterate over interior of the domain, updating the velocities */
-  CHKERRQ(DMStagGetCorners(ctx->dm_velocity,&startx,&starty,&startz,&nx,&ny,&nz,NULL,NULL,NULL));
+  PetscCall(DMStagGetCorners(ctx->dm_velocity,&startx,&starty,&startz,&nx,&ny,&nz,NULL,NULL,NULL));
   for (ez = startz; ez < startz + nz; ++ez) {
     for (ey = starty; ey < starty + ny; ++ey) {
       for (ex = startx; ex < startx + nx; ++ex) {
@@ -499,14 +499,14 @@ static PetscErrorCode UpdateVelocity_3d(const Ctx *ctx,Vec velocity,Vec stress, 
   }
 
   /* Restore all access */
-  CHKERRQ(DMStagVecRestoreArrayRead(ctx->dm_buoyancy,buoyancy_local,&arr_buoyancy));
-  CHKERRQ(DMRestoreLocalVector(ctx->dm_buoyancy,&buoyancy_local));
-  CHKERRQ(DMStagVecRestoreArrayRead(ctx->dm_stress,stress_local,&arr_stress));
-  CHKERRQ(DMRestoreLocalVector(ctx->dm_stress,&stress_local));
-  CHKERRQ(DMStagVecRestoreArray(ctx->dm_velocity,velocity_local,&arr_velocity));
-  CHKERRQ(DMLocalToGlobal(ctx->dm_velocity,velocity_local,INSERT_VALUES,velocity));
-  CHKERRQ(DMRestoreLocalVector(ctx->dm_velocity,&velocity_local));
-  CHKERRQ(DMStagRestoreProductCoordinateArrays(ctx->dm_velocity,&arr_coord_x,&arr_coord_y,&arr_coord_z));
+  PetscCall(DMStagVecRestoreArrayRead(ctx->dm_buoyancy,buoyancy_local,&arr_buoyancy));
+  PetscCall(DMRestoreLocalVector(ctx->dm_buoyancy,&buoyancy_local));
+  PetscCall(DMStagVecRestoreArrayRead(ctx->dm_stress,stress_local,&arr_stress));
+  PetscCall(DMRestoreLocalVector(ctx->dm_stress,&stress_local));
+  PetscCall(DMStagVecRestoreArray(ctx->dm_velocity,velocity_local,&arr_velocity));
+  PetscCall(DMLocalToGlobal(ctx->dm_velocity,velocity_local,INSERT_VALUES,velocity));
+  PetscCall(DMRestoreLocalVector(ctx->dm_velocity,&velocity_local));
+  PetscCall(DMStagRestoreProductCoordinateArrays(ctx->dm_velocity,&arr_coord_x,&arr_coord_y,&arr_coord_z));
   PetscFunctionReturn(0);
 }
 
@@ -514,9 +514,9 @@ static PetscErrorCode UpdateVelocity(const Ctx *ctx,Vec velocity,Vec stress, Vec
 {
   PetscFunctionBeginUser;
   if (ctx->dim == 2) {
-    CHKERRQ(UpdateVelocity_2d(ctx,velocity,stress,buoyancy));
+    PetscCall(UpdateVelocity_2d(ctx,velocity,stress,buoyancy));
   } else if (ctx->dim == 3) {
-    CHKERRQ(UpdateVelocity_3d(ctx,velocity,stress,buoyancy));
+    PetscCall(UpdateVelocity_3d(ctx,velocity,stress,buoyancy));
   } else SETERRQ(PetscObjectComm((PetscObject)ctx->dm_velocity),PETSC_ERR_SUP,"Unsupported dim %d",ctx->dim);
   PetscFunctionReturn(0);
 }
@@ -536,38 +536,38 @@ static PetscErrorCode UpdateStress_2d(const Ctx *ctx,Vec velocity,Vec stress, Ve
   PetscFunctionBeginUser;
 
   /* Prepare read-write access to stress data */
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_ELEMENT,0,&slot_txx));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_ELEMENT,1,&slot_tyy));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_DOWN_LEFT,0,&slot_txy_downleft));
-  CHKERRQ(DMGetLocalVector(ctx->dm_stress,&stress_local));
-  CHKERRQ(DMGlobalToLocal(ctx->dm_stress,stress,INSERT_VALUES,stress_local));
-  CHKERRQ(DMStagVecGetArray(ctx->dm_stress,stress_local,&arr_stress));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_ELEMENT,0,&slot_txx));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_ELEMENT,1,&slot_tyy));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_DOWN_LEFT,0,&slot_txy_downleft));
+  PetscCall(DMGetLocalVector(ctx->dm_stress,&stress_local));
+  PetscCall(DMGlobalToLocal(ctx->dm_stress,stress,INSERT_VALUES,stress_local));
+  PetscCall(DMStagVecGetArray(ctx->dm_stress,stress_local,&arr_stress));
 
   /* Prepare read-only access to velocity data */
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_velocity,DMSTAG_LEFT,0,&slot_vx_left));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_velocity,DMSTAG_RIGHT,0,&slot_vx_right));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_velocity,DMSTAG_DOWN,0,&slot_vy_down));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_velocity,DMSTAG_UP,0,&slot_vy_up));
-  CHKERRQ(DMGetLocalVector(ctx->dm_velocity,&velocity_local));
-  CHKERRQ(DMGlobalToLocal(ctx->dm_velocity,velocity,INSERT_VALUES,velocity_local));
-  CHKERRQ(DMStagVecGetArrayRead(ctx->dm_velocity,velocity_local,&arr_velocity));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_velocity,DMSTAG_LEFT,0,&slot_vx_left));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_velocity,DMSTAG_RIGHT,0,&slot_vx_right));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_velocity,DMSTAG_DOWN,0,&slot_vy_down));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_velocity,DMSTAG_UP,0,&slot_vy_up));
+  PetscCall(DMGetLocalVector(ctx->dm_velocity,&velocity_local));
+  PetscCall(DMGlobalToLocal(ctx->dm_velocity,velocity,INSERT_VALUES,velocity_local));
+  PetscCall(DMStagVecGetArrayRead(ctx->dm_velocity,velocity_local,&arr_velocity));
 
   /* Prepare read-only access to Lame' data */
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_lame,DMSTAG_ELEMENT,0,&slot_lambda_element));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_lame,DMSTAG_ELEMENT,1,&slot_mu_element));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_lame,DMSTAG_DOWN_LEFT,0,&slot_mu_downleft));
-  CHKERRQ(DMGetLocalVector(ctx->dm_lame,&lame_local));
-  CHKERRQ(DMGlobalToLocal(ctx->dm_lame,lame,INSERT_VALUES,lame_local));
-  CHKERRQ(DMStagVecGetArrayRead(ctx->dm_lame,lame_local,&arr_lame));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_lame,DMSTAG_ELEMENT,0,&slot_lambda_element));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_lame,DMSTAG_ELEMENT,1,&slot_mu_element));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_lame,DMSTAG_DOWN_LEFT,0,&slot_mu_downleft));
+  PetscCall(DMGetLocalVector(ctx->dm_lame,&lame_local));
+  PetscCall(DMGlobalToLocal(ctx->dm_lame,lame,INSERT_VALUES,lame_local));
+  PetscCall(DMStagVecGetArrayRead(ctx->dm_lame,lame_local,&arr_lame));
 
   /* Prepare read-only access to coordinate data */
-  CHKERRQ(DMStagGetProductCoordinateLocationSlot(ctx->dm_velocity,DMSTAG_LEFT,&slot_coord_prev));
-  CHKERRQ(DMStagGetProductCoordinateLocationSlot(ctx->dm_velocity,DMSTAG_RIGHT,&slot_coord_next));
-  CHKERRQ(DMStagGetProductCoordinateLocationSlot(ctx->dm_velocity,DMSTAG_ELEMENT,&slot_coord_element));
-  CHKERRQ(DMStagGetProductCoordinateArrays(ctx->dm_velocity,&arr_coord_x,&arr_coord_y,NULL));
+  PetscCall(DMStagGetProductCoordinateLocationSlot(ctx->dm_velocity,DMSTAG_LEFT,&slot_coord_prev));
+  PetscCall(DMStagGetProductCoordinateLocationSlot(ctx->dm_velocity,DMSTAG_RIGHT,&slot_coord_next));
+  PetscCall(DMStagGetProductCoordinateLocationSlot(ctx->dm_velocity,DMSTAG_ELEMENT,&slot_coord_element));
+  PetscCall(DMStagGetProductCoordinateArrays(ctx->dm_velocity,&arr_coord_x,&arr_coord_y,NULL));
 
   /* Iterate over the interior of the domain, updating the stresses */
-  CHKERRQ(DMStagGetCorners(ctx->dm_velocity,&startx,&starty,NULL,&nx,&ny,NULL,NULL,NULL,NULL));
+  PetscCall(DMStagGetCorners(ctx->dm_velocity,&startx,&starty,NULL,&nx,&ny,NULL,NULL,NULL,NULL));
   for (ey = starty; ey < starty + ny; ++ey) {
     for (ex = startx; ex < startx + nx; ++ex) {
 
@@ -601,14 +601,14 @@ static PetscErrorCode UpdateStress_2d(const Ctx *ctx,Vec velocity,Vec stress, Ve
   }
 
   /* Restore all access */
-  CHKERRQ(DMStagVecRestoreArray(ctx->dm_stress,stress_local,&arr_stress));
-  CHKERRQ(DMLocalToGlobal(ctx->dm_stress,stress_local,INSERT_VALUES,stress));
-  CHKERRQ(DMRestoreLocalVector(ctx->dm_stress,&stress_local));
-  CHKERRQ(DMStagVecRestoreArrayRead(ctx->dm_velocity,velocity_local,&arr_velocity));
-  CHKERRQ(DMRestoreLocalVector(ctx->dm_velocity,&velocity_local));
-  CHKERRQ(DMStagVecRestoreArrayRead(ctx->dm_lame,lame_local,&arr_lame));
-  CHKERRQ(DMRestoreLocalVector(ctx->dm_lame,&lame_local));
-  CHKERRQ(DMStagRestoreProductCoordinateArrays(ctx->dm_velocity,&arr_coord_x,&arr_coord_y,NULL));
+  PetscCall(DMStagVecRestoreArray(ctx->dm_stress,stress_local,&arr_stress));
+  PetscCall(DMLocalToGlobal(ctx->dm_stress,stress_local,INSERT_VALUES,stress));
+  PetscCall(DMRestoreLocalVector(ctx->dm_stress,&stress_local));
+  PetscCall(DMStagVecRestoreArrayRead(ctx->dm_velocity,velocity_local,&arr_velocity));
+  PetscCall(DMRestoreLocalVector(ctx->dm_velocity,&velocity_local));
+  PetscCall(DMStagVecRestoreArrayRead(ctx->dm_lame,lame_local,&arr_lame));
+  PetscCall(DMRestoreLocalVector(ctx->dm_lame,&lame_local));
+  PetscCall(DMStagRestoreProductCoordinateArrays(ctx->dm_velocity,&arr_coord_x,&arr_coord_y,NULL));
   PetscFunctionReturn(0);
 }
 
@@ -627,45 +627,45 @@ static PetscErrorCode UpdateStress_3d(const Ctx *ctx,Vec velocity,Vec stress, Ve
   PetscFunctionBeginUser;
 
   /* Prepare read-write access to stress data */
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_ELEMENT,0,&slot_txx));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_ELEMENT,1,&slot_tyy));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_ELEMENT,2,&slot_tzz));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_DOWN_LEFT,0,&slot_txy_downleft));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_BACK_LEFT,0,&slot_txz_backleft));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_BACK_DOWN,0,&slot_tyz_backdown));
-  CHKERRQ(DMGetLocalVector(ctx->dm_stress,&stress_local));
-  CHKERRQ(DMGlobalToLocal(ctx->dm_stress,stress,INSERT_VALUES,stress_local));
-  CHKERRQ(DMStagVecGetArray(ctx->dm_stress,stress_local,&arr_stress));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_ELEMENT,0,&slot_txx));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_ELEMENT,1,&slot_tyy));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_ELEMENT,2,&slot_tzz));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_DOWN_LEFT,0,&slot_txy_downleft));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_BACK_LEFT,0,&slot_txz_backleft));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_BACK_DOWN,0,&slot_tyz_backdown));
+  PetscCall(DMGetLocalVector(ctx->dm_stress,&stress_local));
+  PetscCall(DMGlobalToLocal(ctx->dm_stress,stress,INSERT_VALUES,stress_local));
+  PetscCall(DMStagVecGetArray(ctx->dm_stress,stress_local,&arr_stress));
 
   /* Prepare read-only access to velocity data */
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_velocity,DMSTAG_LEFT, 0,&slot_vx_left));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_velocity,DMSTAG_RIGHT,0,&slot_vx_right));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_velocity,DMSTAG_DOWN, 0,&slot_vy_down));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_velocity,DMSTAG_UP,   0,&slot_vy_up));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_velocity,DMSTAG_BACK, 0,&slot_vz_back));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_velocity,DMSTAG_FRONT,0,&slot_vz_front));
-  CHKERRQ(DMGetLocalVector(ctx->dm_velocity,&velocity_local));
-  CHKERRQ(DMGlobalToLocal(ctx->dm_velocity,velocity,INSERT_VALUES,velocity_local));
-  CHKERRQ(DMStagVecGetArrayRead(ctx->dm_velocity,velocity_local,&arr_velocity));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_velocity,DMSTAG_LEFT, 0,&slot_vx_left));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_velocity,DMSTAG_RIGHT,0,&slot_vx_right));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_velocity,DMSTAG_DOWN, 0,&slot_vy_down));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_velocity,DMSTAG_UP,   0,&slot_vy_up));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_velocity,DMSTAG_BACK, 0,&slot_vz_back));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_velocity,DMSTAG_FRONT,0,&slot_vz_front));
+  PetscCall(DMGetLocalVector(ctx->dm_velocity,&velocity_local));
+  PetscCall(DMGlobalToLocal(ctx->dm_velocity,velocity,INSERT_VALUES,velocity_local));
+  PetscCall(DMStagVecGetArrayRead(ctx->dm_velocity,velocity_local,&arr_velocity));
 
   /* Prepare read-only access to Lame' data */
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_lame,DMSTAG_ELEMENT,  0,&slot_lambda_element));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_lame,DMSTAG_ELEMENT,  1,&slot_mu_element));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_lame,DMSTAG_DOWN_LEFT,0,&slot_mu_downleft));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_lame,DMSTAG_BACK_LEFT,0,&slot_mu_backleft));
-  CHKERRQ(DMStagGetLocationSlot(ctx->dm_lame,DMSTAG_BACK_DOWN,0,&slot_mu_backdown));
-  CHKERRQ(DMGetLocalVector(ctx->dm_lame,&lame_local));
-  CHKERRQ(DMGlobalToLocal(ctx->dm_lame,lame,INSERT_VALUES,lame_local));
-  CHKERRQ(DMStagVecGetArrayRead(ctx->dm_lame,lame_local,&arr_lame));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_lame,DMSTAG_ELEMENT,  0,&slot_lambda_element));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_lame,DMSTAG_ELEMENT,  1,&slot_mu_element));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_lame,DMSTAG_DOWN_LEFT,0,&slot_mu_downleft));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_lame,DMSTAG_BACK_LEFT,0,&slot_mu_backleft));
+  PetscCall(DMStagGetLocationSlot(ctx->dm_lame,DMSTAG_BACK_DOWN,0,&slot_mu_backdown));
+  PetscCall(DMGetLocalVector(ctx->dm_lame,&lame_local));
+  PetscCall(DMGlobalToLocal(ctx->dm_lame,lame,INSERT_VALUES,lame_local));
+  PetscCall(DMStagVecGetArrayRead(ctx->dm_lame,lame_local,&arr_lame));
 
   /* Prepare read-only access to coordinate data */
-  CHKERRQ(DMStagGetProductCoordinateLocationSlot(ctx->dm_velocity,DMSTAG_LEFT,&slot_coord_prev));
-  CHKERRQ(DMStagGetProductCoordinateLocationSlot(ctx->dm_velocity,DMSTAG_RIGHT,&slot_coord_next));
-  CHKERRQ(DMStagGetProductCoordinateLocationSlot(ctx->dm_velocity,DMSTAG_ELEMENT,&slot_coord_element));
-  CHKERRQ(DMStagGetProductCoordinateArrays(ctx->dm_velocity,&arr_coord_x,&arr_coord_y,&arr_coord_z));
+  PetscCall(DMStagGetProductCoordinateLocationSlot(ctx->dm_velocity,DMSTAG_LEFT,&slot_coord_prev));
+  PetscCall(DMStagGetProductCoordinateLocationSlot(ctx->dm_velocity,DMSTAG_RIGHT,&slot_coord_next));
+  PetscCall(DMStagGetProductCoordinateLocationSlot(ctx->dm_velocity,DMSTAG_ELEMENT,&slot_coord_element));
+  PetscCall(DMStagGetProductCoordinateArrays(ctx->dm_velocity,&arr_coord_x,&arr_coord_y,&arr_coord_z));
 
   /* Iterate over the interior of the domain, updating the stresses */
-  CHKERRQ(DMStagGetCorners(ctx->dm_velocity,&startx,&starty,&startz,&nx,&ny,&nz,NULL,NULL,NULL));
+  PetscCall(DMStagGetCorners(ctx->dm_velocity,&startx,&starty,&startz,&nx,&ny,&nz,NULL,NULL,NULL));
   for (ez = startz; ez < startz + nz; ++ez) {
     for (ey = starty; ey < starty + ny; ++ey) {
       for (ex = startx; ex < startx + nx; ++ex) {
@@ -733,14 +733,14 @@ static PetscErrorCode UpdateStress_3d(const Ctx *ctx,Vec velocity,Vec stress, Ve
   }
 
   /* Restore all access */
-  CHKERRQ(DMStagVecRestoreArray(ctx->dm_stress,stress_local,&arr_stress));
-  CHKERRQ(DMLocalToGlobal(ctx->dm_stress,stress_local,INSERT_VALUES,stress));
-  CHKERRQ(DMRestoreLocalVector(ctx->dm_stress,&stress_local));
-  CHKERRQ(DMStagVecRestoreArrayRead(ctx->dm_velocity,velocity_local,&arr_velocity));
-  CHKERRQ(DMRestoreLocalVector(ctx->dm_velocity,&velocity_local));
-  CHKERRQ(DMStagVecRestoreArrayRead(ctx->dm_lame,lame_local,&arr_lame));
-  CHKERRQ(DMRestoreLocalVector(ctx->dm_lame,&lame_local));
-  CHKERRQ(DMStagRestoreProductCoordinateArrays(ctx->dm_velocity,&arr_coord_x,&arr_coord_y,&arr_coord_z));
+  PetscCall(DMStagVecRestoreArray(ctx->dm_stress,stress_local,&arr_stress));
+  PetscCall(DMLocalToGlobal(ctx->dm_stress,stress_local,INSERT_VALUES,stress));
+  PetscCall(DMRestoreLocalVector(ctx->dm_stress,&stress_local));
+  PetscCall(DMStagVecRestoreArrayRead(ctx->dm_velocity,velocity_local,&arr_velocity));
+  PetscCall(DMRestoreLocalVector(ctx->dm_velocity,&velocity_local));
+  PetscCall(DMStagVecRestoreArrayRead(ctx->dm_lame,lame_local,&arr_lame));
+  PetscCall(DMRestoreLocalVector(ctx->dm_lame,&lame_local));
+  PetscCall(DMStagRestoreProductCoordinateArrays(ctx->dm_velocity,&arr_coord_x,&arr_coord_y,&arr_coord_z));
   PetscFunctionReturn(0);
 }
 
@@ -748,9 +748,9 @@ static PetscErrorCode UpdateStress(const Ctx *ctx,Vec velocity,Vec stress, Vec l
 {
   PetscFunctionBeginUser;
   if (ctx->dim == 2) {
-    CHKERRQ(UpdateStress_2d(ctx,velocity,stress,lame));
+    PetscCall(UpdateStress_2d(ctx,velocity,stress,lame));
   } else if (ctx->dim ==3) {
-    CHKERRQ(UpdateStress_3d(ctx,velocity,stress,lame));
+    PetscCall(UpdateStress_3d(ctx,velocity,stress,lame));
   }
   PetscFunctionReturn(0);
 }
@@ -762,43 +762,43 @@ static PetscErrorCode DumpStress(const Ctx *ctx,Vec stress,PetscInt timestep)
 
   PetscFunctionBeginUser;
 
-    CHKERRQ(DMStagVecSplitToDMDA(ctx->dm_stress,stress,DMSTAG_ELEMENT,-ctx->dim,&da_normal,&vec_normal));
-    CHKERRQ(PetscObjectSetName((PetscObject)vec_normal,"normal stresses"));
+    PetscCall(DMStagVecSplitToDMDA(ctx->dm_stress,stress,DMSTAG_ELEMENT,-ctx->dim,&da_normal,&vec_normal));
+    PetscCall(PetscObjectSetName((PetscObject)vec_normal,"normal stresses"));
 
     /* Dump element-based fields to a .vtr file */
     {
       PetscViewer viewer;
       char        filename[PETSC_MAX_PATH_LEN];
 
-      CHKERRQ(PetscSNPrintf(filename,sizeof(filename),"ex6_stress_normal_%.4D.vtr",timestep));
-      CHKERRQ(PetscViewerVTKOpen(PetscObjectComm((PetscObject)da_normal),filename,FILE_MODE_WRITE,&viewer));
-      CHKERRQ(VecView(vec_normal,viewer));
-      CHKERRQ(PetscViewerDestroy(&viewer));
-      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Created %s\n",filename));
+      PetscCall(PetscSNPrintf(filename,sizeof(filename),"ex6_stress_normal_%.4D.vtr",timestep));
+      PetscCall(PetscViewerVTKOpen(PetscObjectComm((PetscObject)da_normal),filename,FILE_MODE_WRITE,&viewer));
+      PetscCall(VecView(vec_normal,viewer));
+      PetscCall(PetscViewerDestroy(&viewer));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Created %s\n",filename));
     }
 
   if (ctx->dim == 2) {
     /* (2D only) Dump vertex-based fields to a second .vtr file */
-    CHKERRQ(DMStagVecSplitToDMDA(ctx->dm_stress,stress,DMSTAG_DOWN_LEFT,0,&da_shear,&vec_shear));
-    CHKERRQ(PetscObjectSetName((PetscObject)vec_shear,"shear stresses"));
+    PetscCall(DMStagVecSplitToDMDA(ctx->dm_stress,stress,DMSTAG_DOWN_LEFT,0,&da_shear,&vec_shear));
+    PetscCall(PetscObjectSetName((PetscObject)vec_shear,"shear stresses"));
 
     {
       PetscViewer viewer;
       char        filename[PETSC_MAX_PATH_LEN];
 
-      CHKERRQ(PetscSNPrintf(filename,sizeof(filename),"ex6_stress_shear_%.4D.vtr",timestep));
-      CHKERRQ(PetscViewerVTKOpen(PetscObjectComm((PetscObject)da_normal),filename,FILE_MODE_WRITE,&viewer));
-      CHKERRQ(VecView(vec_shear,viewer));
-      CHKERRQ(PetscViewerDestroy(&viewer));
-      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Created %s\n",filename));
+      PetscCall(PetscSNPrintf(filename,sizeof(filename),"ex6_stress_shear_%.4D.vtr",timestep));
+      PetscCall(PetscViewerVTKOpen(PetscObjectComm((PetscObject)da_normal),filename,FILE_MODE_WRITE,&viewer));
+      PetscCall(VecView(vec_shear,viewer));
+      PetscCall(PetscViewerDestroy(&viewer));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Created %s\n",filename));
     }
   }
 
   /* Destroy DMDAs and Vecs */
-  CHKERRQ(DMDestroy(&da_normal));
-  CHKERRQ(DMDestroy(&da_shear));
-  CHKERRQ(VecDestroy(&vec_normal));
-  CHKERRQ(VecDestroy(&vec_shear));
+  PetscCall(DMDestroy(&da_normal));
+  PetscCall(DMDestroy(&da_shear));
+  PetscCall(VecDestroy(&vec_normal));
+  PetscCall(VecDestroy(&vec_shear));
   PetscFunctionReturn(0);
 }
 
@@ -814,16 +814,16 @@ static PetscErrorCode DumpVelocity(const Ctx *ctx,Vec velocity,PetscInt timestep
   PetscFunctionBeginUser;
 
   if (ctx->dim == 2) {
-    CHKERRQ(DMStagCreateCompatibleDMStag(ctx->dm_velocity,0,0,2,0,&dmVelAvg)); /* 2 dof per element */
+    PetscCall(DMStagCreateCompatibleDMStag(ctx->dm_velocity,0,0,2,0,&dmVelAvg)); /* 2 dof per element */
   } else if (ctx->dim == 3) {
-    CHKERRQ(DMStagCreateCompatibleDMStag(ctx->dm_velocity,0,0,0,3,&dmVelAvg)); /* 3 dof per element */
+    PetscCall(DMStagCreateCompatibleDMStag(ctx->dm_velocity,0,0,0,3,&dmVelAvg)); /* 3 dof per element */
   } else SETERRQ(PetscObjectComm((PetscObject)ctx->dm_velocity),PETSC_ERR_SUP,"Unsupported dim %d",ctx->dim);
-  CHKERRQ(DMSetUp(dmVelAvg));
-  CHKERRQ(DMStagSetUniformCoordinatesProduct(dmVelAvg,ctx->xmin,ctx->xmax,ctx->ymin,ctx->ymax,ctx->zmin,ctx->zmax));
-  CHKERRQ(DMCreateGlobalVector(dmVelAvg,&velAvg));
-  CHKERRQ(DMGetLocalVector(ctx->dm_velocity,&velocity_local));
-  CHKERRQ(DMGlobalToLocal(ctx->dm_velocity,velocity,INSERT_VALUES,velocity_local));
-  CHKERRQ(DMStagGetCorners(dmVelAvg,&startx,&starty,&startz,&nx,&ny,&nz,NULL,NULL,NULL));
+  PetscCall(DMSetUp(dmVelAvg));
+  PetscCall(DMStagSetUniformCoordinatesProduct(dmVelAvg,ctx->xmin,ctx->xmax,ctx->ymin,ctx->ymax,ctx->zmin,ctx->zmax));
+  PetscCall(DMCreateGlobalVector(dmVelAvg,&velAvg));
+  PetscCall(DMGetLocalVector(ctx->dm_velocity,&velocity_local));
+  PetscCall(DMGlobalToLocal(ctx->dm_velocity,velocity,INSERT_VALUES,velocity_local));
+  PetscCall(DMStagGetCorners(dmVelAvg,&startx,&starty,&startz,&nx,&ny,&nz,NULL,NULL,NULL));
   if (ctx->dim == 2) {
     for (ey = starty; ey<starty+ny; ++ey) {
       for (ex = startx; ex<startx+nx; ++ex) {
@@ -834,10 +834,10 @@ static PetscErrorCode DumpVelocity(const Ctx *ctx,Vec velocity,PetscInt timestep
         from[1].i = ex; from[1].j = ey; from[1].loc = DMSTAG_DOWN;  from[1].c = 0;
         from[2].i = ex; from[2].j = ey; from[2].loc = DMSTAG_LEFT;  from[2].c = 0;
         from[3].i = ex; from[3].j = ey; from[3].loc = DMSTAG_RIGHT; from[3].c = 0;
-        CHKERRQ(DMStagVecGetValuesStencil(ctx->dm_velocity,velocity_local,4,from,valFrom));
+        PetscCall(DMStagVecGetValuesStencil(ctx->dm_velocity,velocity_local,4,from,valFrom));
         to[0].i = ex; to[0].j = ey; to[0].loc = DMSTAG_ELEMENT;    to[0].c = 0; valTo[0] = 0.5 * (valFrom[2] + valFrom[3]);
         to[1].i = ex; to[1].j = ey; to[1].loc = DMSTAG_ELEMENT;    to[1].c = 1; valTo[1] = 0.5 * (valFrom[0] + valFrom[1]);
-        CHKERRQ(DMStagVecSetValuesStencil(dmVelAvg,velAvg,2,to,valTo,INSERT_VALUES));
+        PetscCall(DMStagVecSetValuesStencil(dmVelAvg,velAvg,2,to,valTo,INSERT_VALUES));
       }
     }
   } else if (ctx->dim == 3) {
@@ -853,39 +853,39 @@ static PetscErrorCode DumpVelocity(const Ctx *ctx,Vec velocity,PetscInt timestep
           from[3].i = ex; from[3].j = ey; from[3].k = ez; from[3].loc = DMSTAG_RIGHT; from[3].c = 0;
           from[4].i = ex; from[4].j = ey; from[4].k = ez; from[4].loc = DMSTAG_FRONT; from[4].c = 0;
           from[5].i = ex; from[5].j = ey; from[5].k = ez; from[5].loc = DMSTAG_BACK;  from[5].c = 0;
-          CHKERRQ(DMStagVecGetValuesStencil(ctx->dm_velocity,velocity_local,6,from,valFrom));
+          PetscCall(DMStagVecGetValuesStencil(ctx->dm_velocity,velocity_local,6,from,valFrom));
           to[0].i = ex; to[0].j = ey; to[0].k = ez; to[0].loc = DMSTAG_ELEMENT;    to[0].c = 0; valTo[0] = 0.5 * (valFrom[2] + valFrom[3]);
           to[1].i = ex; to[1].j = ey; to[1].k = ez; to[1].loc = DMSTAG_ELEMENT;    to[1].c = 1; valTo[1] = 0.5 * (valFrom[0] + valFrom[1]);
           to[2].i = ex; to[2].j = ey; to[2].k = ez; to[2].loc = DMSTAG_ELEMENT;    to[2].c = 2; valTo[2] = 0.5 * (valFrom[4] + valFrom[5]);
-          CHKERRQ(DMStagVecSetValuesStencil(dmVelAvg,velAvg,3,to,valTo,INSERT_VALUES));
+          PetscCall(DMStagVecSetValuesStencil(dmVelAvg,velAvg,3,to,valTo,INSERT_VALUES));
         }
       }
     }
   } else SETERRQ(PetscObjectComm((PetscObject)ctx->dm_velocity),PETSC_ERR_SUP,"Unsupported dim %d",ctx->dim);
-  CHKERRQ(VecAssemblyBegin(velAvg));
-  CHKERRQ(VecAssemblyEnd(velAvg));
-  CHKERRQ(DMRestoreLocalVector(ctx->dm_velocity,&velocity_local));
+  PetscCall(VecAssemblyBegin(velAvg));
+  PetscCall(VecAssemblyEnd(velAvg));
+  PetscCall(DMRestoreLocalVector(ctx->dm_velocity,&velocity_local));
 
-  CHKERRQ(DMStagVecSplitToDMDA(dmVelAvg,velAvg,DMSTAG_ELEMENT,-3,&daVelAvg,&vecVelAvg)); /* note -3 : pad with zero in 2D case */
-  CHKERRQ(PetscObjectSetName((PetscObject)vecVelAvg,"Velocity (Averaged)"));
+  PetscCall(DMStagVecSplitToDMDA(dmVelAvg,velAvg,DMSTAG_ELEMENT,-3,&daVelAvg,&vecVelAvg)); /* note -3 : pad with zero in 2D case */
+  PetscCall(PetscObjectSetName((PetscObject)vecVelAvg,"Velocity (Averaged)"));
 
   /* Dump element-based fields to a .vtr file */
   {
     PetscViewer viewer;
     char        filename[PETSC_MAX_PATH_LEN];
 
-    CHKERRQ(PetscSNPrintf(filename,sizeof(filename),"ex6_velavg_%.4D.vtr",timestep));
-    CHKERRQ(PetscViewerVTKOpen(PetscObjectComm((PetscObject)daVelAvg),filename,FILE_MODE_WRITE,&viewer));
-    CHKERRQ(VecView(vecVelAvg,viewer));
-    CHKERRQ(PetscViewerDestroy(&viewer));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Created %s\n",filename));
+    PetscCall(PetscSNPrintf(filename,sizeof(filename),"ex6_velavg_%.4D.vtr",timestep));
+    PetscCall(PetscViewerVTKOpen(PetscObjectComm((PetscObject)daVelAvg),filename,FILE_MODE_WRITE,&viewer));
+    PetscCall(VecView(vecVelAvg,viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Created %s\n",filename));
   }
 
   /* Destroy DMDAs and Vecs */
-  CHKERRQ(VecDestroy(&vecVelAvg));
-  CHKERRQ(DMDestroy(&daVelAvg));
-  CHKERRQ(VecDestroy(&velAvg));
-  CHKERRQ(DMDestroy(&dmVelAvg));
+  PetscCall(VecDestroy(&vecVelAvg));
+  PetscCall(DMDestroy(&daVelAvg));
+  PetscCall(VecDestroy(&velAvg));
+  PetscCall(DMDestroy(&dmVelAvg));
   PetscFunctionReturn(0);
 }
 

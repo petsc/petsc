@@ -318,7 +318,7 @@ M*/
 
   Level: advanced
 
-.seealso: PetscLikely(), PetscUnlikelyDebug(), CHKERRQ, PetscDefined(), PetscHasAttribute()
+.seealso: PetscLikely(), PetscUnlikelyDebug(), PetscCall(), PetscDefined(), PetscHasAttribute()
 M*/
 
 /*MC
@@ -674,7 +674,7 @@ M*/
 
   Level: advanced
 
-.seealso: PetscUnlikely(), PetscLikely(), CHKERRQ, SETERRQ
+.seealso: PetscUnlikely(), PetscLikely(), PetscCall(), SETERRQ
 M*/
 #define PetscUnlikelyDebug(cond) (PetscDefined(USE_DEBUG) && PetscUnlikely(cond))
 

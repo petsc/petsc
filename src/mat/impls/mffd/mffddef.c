@@ -71,12 +71,12 @@ static PetscErrorCode MatMFFDCompute_DS(MatMFFD ctx,Vec U,Vec a,PetscScalar *h,P
      use directly the VecNorm() and VecDot() routines (and thus have
      three separate collective operations, we use the VecxxxBegin/End() routines
     */
-    CHKERRQ(VecDotBegin(U,a,&dot));
-    CHKERRQ(VecNormBegin(a,NORM_1,&sum));
-    CHKERRQ(VecNormBegin(a,NORM_2,&nrm));
-    CHKERRQ(VecDotEnd(U,a,&dot));
-    CHKERRQ(VecNormEnd(a,NORM_1,&sum));
-    CHKERRQ(VecNormEnd(a,NORM_2,&nrm));
+    PetscCall(VecDotBegin(U,a,&dot));
+    PetscCall(VecNormBegin(a,NORM_1,&sum));
+    PetscCall(VecNormBegin(a,NORM_2,&nrm));
+    PetscCall(VecDotEnd(U,a,&dot));
+    PetscCall(VecNormEnd(a,NORM_1,&sum));
+    PetscCall(VecNormEnd(a,NORM_2,&nrm));
 
     if (nrm == 0.0) {
       *zeroa = PETSC_TRUE;
@@ -119,9 +119,9 @@ static PetscErrorCode MatMFFDView_DS(MatMFFD ctx,PetscViewer viewer)
      could be added, but for this type of object other viewers
      make less sense
   */
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"    umin=%g (minimum iterate parameter)\n",(double)hctx->umin));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    umin=%g (minimum iterate parameter)\n",(double)hctx->umin));
   }
   PetscFunctionReturn(0);
 }
@@ -139,9 +139,9 @@ static PetscErrorCode MatMFFDSetFromOptions_DS(PetscOptionItems *PetscOptionsObj
   MatMFFD_DS     *hctx = (MatMFFD_DS*)ctx->hctx;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"Finite difference matrix free parameters"));
-  CHKERRQ(PetscOptionsReal("-mat_mffd_umin","umin","MatMFFDDSSetUmin",hctx->umin,&hctx->umin,NULL));
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"Finite difference matrix free parameters"));
+  PetscCall(PetscOptionsReal("-mat_mffd_umin","umin","MatMFFDDSSetUmin",hctx->umin,&hctx->umin,NULL));
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -158,7 +158,7 @@ static PetscErrorCode MatMFFDSetFromOptions_DS(PetscOptionItems *PetscOptionsObj
 static PetscErrorCode MatMFFDDestroy_DS(MatMFFD ctx)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscFree(ctx->hctx));
+  PetscCall(PetscFree(ctx->hctx));
   PetscFunctionReturn(0);
 }
 
@@ -172,7 +172,7 @@ PetscErrorCode MatMFFDDSSetUmin_DS(Mat mat,PetscReal umin)
   MatMFFD_DS     *hctx;
 
   PetscFunctionBegin;
-  CHKERRQ(MatShellGetContext(mat,&ctx));
+  PetscCall(MatShellGetContext(mat,&ctx));
   PetscCheck(ctx,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"MatMFFDDSSetUmin() attached to non-shell matrix");
   hctx       = (MatMFFD_DS*)ctx->hctx;
   hctx->umin = umin;
@@ -201,7 +201,7 @@ PetscErrorCode  MatMFFDDSSetUmin(Mat A,PetscReal umin)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  CHKERRQ(PetscTryMethod(A,"MatMFFDDSSetUmin_C",(Mat,PetscReal),(A,umin)));
+  PetscCall(PetscTryMethod(A,"MatMFFDDSSetUmin_C",(Mat,PetscReal),(A,umin)));
   PetscFunctionReturn(0);
 }
 
@@ -238,7 +238,7 @@ PETSC_EXTERN PetscErrorCode MatCreateMFFD_DS(MatMFFD ctx)
 
   PetscFunctionBegin;
   /* allocate my own private data structure */
-  CHKERRQ(PetscNewLog(ctx,&hctx));
+  PetscCall(PetscNewLog(ctx,&hctx));
   ctx->hctx = (void*)hctx;
   /* set a default for my parameter */
   hctx->umin = 1.e-6;
@@ -249,6 +249,6 @@ PETSC_EXTERN PetscErrorCode MatCreateMFFD_DS(MatMFFD ctx)
   ctx->ops->view           = MatMFFDView_DS;
   ctx->ops->setfromoptions = MatMFFDSetFromOptions_DS;
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ctx->mat,"MatMFFDDSSetUmin_C",MatMFFDDSSetUmin_DS));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ctx->mat,"MatMFFDDSSetUmin_C",MatMFFDDSSetUmin_DS));
   PetscFunctionReturn(0);
 }

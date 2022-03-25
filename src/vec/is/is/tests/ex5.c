@@ -9,10 +9,10 @@ int main(int argc,char **argv)
   PetscInt               nlocal,local[5],nneigh,*neigh,**ineigh,*numneigh;
   ISLocalToGlobalMapping mapping;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 3,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must run with three processors");
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   if (rank == 0) {
     nlocal = 4; local[0] = 0; local[1] = 3; local[2] = 2; local[3] = 1;
   } else if (rank == 1) {
@@ -20,11 +20,11 @@ int main(int argc,char **argv)
   } else {
     nlocal = 4; local[0] = 7; local[1] = 6; local[2] = 5; local[3] = 3;
   }
-  CHKERRQ(ISLocalToGlobalMappingCreate(PETSC_COMM_WORLD,1,nlocal,local,PETSC_COPY_VALUES,&mapping));
-  CHKERRQ(ISLocalToGlobalMappingGetInfo(mapping,&nneigh,&neigh,&numneigh,&ineigh));
-  CHKERRQ(ISLocalToGlobalMappingRestoreInfo(mapping,&nneigh,&neigh,&numneigh,&ineigh));
-  CHKERRQ(ISLocalToGlobalMappingDestroy(&mapping));
-  CHKERRQ(PetscFinalize());
+  PetscCall(ISLocalToGlobalMappingCreate(PETSC_COMM_WORLD,1,nlocal,local,PETSC_COPY_VALUES,&mapping));
+  PetscCall(ISLocalToGlobalMappingGetInfo(mapping,&nneigh,&neigh,&numneigh,&ineigh));
+  PetscCall(ISLocalToGlobalMappingRestoreInfo(mapping,&nneigh,&neigh,&numneigh,&ineigh));
+  PetscCall(ISLocalToGlobalMappingDestroy(&mapping));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

@@ -67,79 +67,79 @@ int main(int argc,char **argv)
   PetscViewer    fd;   /* used to save result to file */
   char           resultFile[] = "tomographyResult_x";  /* Debug: change from "tomographyResult_x" to "cs1Result_x" */
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char *)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char *)0,help));
 
   /* Create TAO solver and set desired solution method */
-  CHKERRQ(TaoCreate(PETSC_COMM_SELF,&tao));
-  CHKERRQ(TaoSetType(tao,TAOBRGN));
+  PetscCall(TaoCreate(PETSC_COMM_SELF,&tao));
+  PetscCall(TaoSetType(tao,TAOBRGN));
 
   /* User set application context: A, D matrice, and b vector. */
-  CHKERRQ(InitializeUserData(&user));
+  PetscCall(InitializeUserData(&user));
 
   /* Allocate solution vector x,  and function vectors Ax-b, */
-  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,user.N,&x));
-  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,user.M,&res));
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,user.N,&x));
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,user.M,&res));
 
   /* Set initial guess */
-  CHKERRQ(FormStartingPoint(x,&user));
+  PetscCall(FormStartingPoint(x,&user));
 
   /* Bind x to tao->solution. */
-  CHKERRQ(TaoSetSolution(tao,x));
+  PetscCall(TaoSetSolution(tao,x));
   /* Sets the upper and lower bounds of x */
-  CHKERRQ(TaoSetVariableBounds(tao,user.xlb,user.xub));
+  PetscCall(TaoSetVariableBounds(tao,user.xlb,user.xub));
 
   /* Bind user.D to tao->data->D */
-  CHKERRQ(TaoBRGNSetDictionaryMatrix(tao,user.D));
+  PetscCall(TaoBRGNSetDictionaryMatrix(tao,user.D));
 
   /* Set the residual function and Jacobian routines for least squares. */
-  CHKERRQ(TaoSetResidualRoutine(tao,res,EvaluateResidual,(void*)&user));
+  PetscCall(TaoSetResidualRoutine(tao,res,EvaluateResidual,(void*)&user));
   /* Jacobian matrix fixed as user.A for Linear least square problem. */
-  CHKERRQ(TaoSetJacobianResidualRoutine(tao,user.A,user.A,EvaluateJacobian,(void*)&user));
+  PetscCall(TaoSetJacobianResidualRoutine(tao,user.A,user.A,EvaluateJacobian,(void*)&user));
 
   /* User set the regularizer objective, gradient, and hessian. Set it the same as using l2prox choice, for testing purpose.  */
-  CHKERRQ(TaoBRGNSetRegularizerObjectiveAndGradientRoutine(tao,EvaluateRegularizerObjectiveAndGradient,(void*)&user));
+  PetscCall(TaoBRGNSetRegularizerObjectiveAndGradientRoutine(tao,EvaluateRegularizerObjectiveAndGradient,(void*)&user));
   /* User defined regularizer Hessian setup, here is identiy shell matrix */
-  CHKERRQ(MatCreate(PETSC_COMM_SELF,&Hreg));
-  CHKERRQ(MatSetSizes(Hreg,PETSC_DECIDE,PETSC_DECIDE,user.N,user.N));
-  CHKERRQ(MatSetType(Hreg,MATSHELL));
-  CHKERRQ(MatSetUp(Hreg));
-  CHKERRQ(MatShellSetOperation(Hreg,MATOP_MULT,(void (*)(void))EvaluateRegularizerHessianProd));
-  CHKERRQ(TaoBRGNSetRegularizerHessianRoutine(tao,Hreg,EvaluateRegularizerHessian,(void*)&user));
+  PetscCall(MatCreate(PETSC_COMM_SELF,&Hreg));
+  PetscCall(MatSetSizes(Hreg,PETSC_DECIDE,PETSC_DECIDE,user.N,user.N));
+  PetscCall(MatSetType(Hreg,MATSHELL));
+  PetscCall(MatSetUp(Hreg));
+  PetscCall(MatShellSetOperation(Hreg,MATOP_MULT,(void (*)(void))EvaluateRegularizerHessianProd));
+  PetscCall(TaoBRGNSetRegularizerHessianRoutine(tao,Hreg,EvaluateRegularizerHessian,(void*)&user));
 
   /* Check for any TAO command line arguments */
-  CHKERRQ(TaoSetFromOptions(tao));
+  PetscCall(TaoSetFromOptions(tao));
 
-  CHKERRQ(TaoSetConvergenceHistory(tao,hist,resid,0,lits,100,PETSC_TRUE));
+  PetscCall(TaoSetConvergenceHistory(tao,hist,resid,0,lits,100,PETSC_TRUE));
 
   /* Perform the Solve */
-  CHKERRQ(TaoSolve(tao));
+  PetscCall(TaoSolve(tao));
 
   /* Save x (reconstruction of object) vector to a binary file, which maybe read from Matlab and convert to a 2D image for comparison. */
-  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_SELF,resultFile,FILE_MODE_WRITE,&fd));
-  CHKERRQ(VecView(x,fd));
-  CHKERRQ(PetscViewerDestroy(&fd));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_SELF,resultFile,FILE_MODE_WRITE,&fd));
+  PetscCall(VecView(x,fd));
+  PetscCall(PetscViewerDestroy(&fd));
 
   /* compute the error */
-  CHKERRQ(VecAXPY(x,-1,user.xGT));
-  CHKERRQ(VecNorm(x,NORM_2,&v1));
-  CHKERRQ(VecNorm(user.xGT,NORM_2,&v2));
-  CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "relative reconstruction error: ||x-xGT||/||xGT|| = %6.4e.\n", (double)(v1/v2)));
+  PetscCall(VecAXPY(x,-1,user.xGT));
+  PetscCall(VecNorm(x,NORM_2,&v1));
+  PetscCall(VecNorm(user.xGT,NORM_2,&v2));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "relative reconstruction error: ||x-xGT||/||xGT|| = %6.4e.\n", (double)(v1/v2)));
 
   /* Free TAO data structures */
-  CHKERRQ(TaoDestroy(&tao));
+  PetscCall(TaoDestroy(&tao));
 
    /* Free PETSc data structures */
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&res));
-  CHKERRQ(MatDestroy(&Hreg));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&res));
+  PetscCall(MatDestroy(&Hreg));
   /* Free user data structures */
-  CHKERRQ(MatDestroy(&user.A));
-  CHKERRQ(MatDestroy(&user.D));
-  CHKERRQ(VecDestroy(&user.b));
-  CHKERRQ(VecDestroy(&user.xGT));
-  CHKERRQ(VecDestroy(&user.xlb));
-  CHKERRQ(VecDestroy(&user.xub));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatDestroy(&user.A));
+  PetscCall(MatDestroy(&user.D));
+  PetscCall(VecDestroy(&user.b));
+  PetscCall(VecDestroy(&user.xGT));
+  PetscCall(VecDestroy(&user.xlb));
+  PetscCall(VecDestroy(&user.xub));
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -151,8 +151,8 @@ PetscErrorCode EvaluateResidual(Tao tao,Vec X,Vec F,void *ptr)
 
   PetscFunctionBegin;
   /* Compute Ax - b */
-  CHKERRQ(MatMult(user->A,X,F));
-  CHKERRQ(VecAXPY(F,-1,user->b));
+  PetscCall(MatMult(user->A,X,F));
+  PetscCall(VecAXPY(F,-1,user->b));
   PetscLogFlops(2.0*user->M*user->N);
   PetscFunctionReturn(0);
 }
@@ -170,17 +170,17 @@ PetscErrorCode EvaluateRegularizerObjectiveAndGradient(Tao tao,Vec X,PetscReal *
 {
   PetscFunctionBegin;
   /* compute regularizer objective = 0.5*x'*x */
-  CHKERRQ(VecDot(X,X,f_reg));
+  PetscCall(VecDot(X,X,f_reg));
   *f_reg *= 0.5;
   /* compute regularizer gradient = x */
-  CHKERRQ(VecCopy(X,G_reg));
+  PetscCall(VecCopy(X,G_reg));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode EvaluateRegularizerHessianProd(Mat Hreg,Vec in,Vec out)
 {
   PetscFunctionBegin;
-  CHKERRQ(VecCopy(in,out));
+  PetscCall(VecCopy(in,out));
   PetscFunctionReturn(0);
 }
 
@@ -196,7 +196,7 @@ PetscErrorCode EvaluateRegularizerHessian(Tao tao,Vec X,Mat Hreg,void *ptr)
 PetscErrorCode FormStartingPoint(Vec X,AppCtx *user)
 {
   PetscFunctionBegin;
-  CHKERRQ(VecSet(X,0.0));
+  PetscCall(VecSet(X,0.0));
   PetscFunctionReturn(0);
 }
 
@@ -217,22 +217,22 @@ PetscErrorCode InitializeUserData(AppCtx *user)
   https://petsc.org/release/src/mat/tutorials/ex12.c
  */
   /* Load the A matrix, b vector, and xGT vector from a binary file. */
-  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,dataFile,FILE_MODE_READ,&fd));
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&user->A));
-  CHKERRQ(MatSetType(user->A,MATSEQAIJ));
-  CHKERRQ(MatLoad(user->A,fd));
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&user->b));
-  CHKERRQ(VecLoad(user->b,fd));
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&user->xGT));
-  CHKERRQ(VecLoad(user->xGT,fd));
-  CHKERRQ(PetscViewerDestroy(&fd));
-  CHKERRQ(VecDuplicate(user->xGT,&(user->xlb)));
-  CHKERRQ(VecSet(user->xlb,0.0));
-  CHKERRQ(VecDuplicate(user->xGT,&(user->xub)));
-  CHKERRQ(VecSet(user->xub,PETSC_INFINITY));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,dataFile,FILE_MODE_READ,&fd));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&user->A));
+  PetscCall(MatSetType(user->A,MATSEQAIJ));
+  PetscCall(MatLoad(user->A,fd));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&user->b));
+  PetscCall(VecLoad(user->b,fd));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&user->xGT));
+  PetscCall(VecLoad(user->xGT,fd));
+  PetscCall(PetscViewerDestroy(&fd));
+  PetscCall(VecDuplicate(user->xGT,&(user->xlb)));
+  PetscCall(VecSet(user->xlb,0.0));
+  PetscCall(VecDuplicate(user->xGT,&(user->xub)));
+  PetscCall(VecSet(user->xub,PETSC_INFINITY));
 
   /* Specify the size */
-  CHKERRQ(MatGetSize(user->A,&user->M,&user->N));
+  PetscCall(MatGetSize(user->A,&user->M,&user->N));
 
   /* shortcut, when D is identity matrix, we may just specify it as NULL, and brgn will treat D*x as x without actually computing D*x.
   if (dictChoice == 0) {
@@ -252,31 +252,31 @@ PetscErrorCode InitializeUserData(AppCtx *user)
       break;
   }
 
-  CHKERRQ(MatCreate(PETSC_COMM_SELF,&user->D));
-  CHKERRQ(MatSetSizes(user->D,PETSC_DECIDE,PETSC_DECIDE,user->K,user->N));
-  CHKERRQ(MatSetFromOptions(user->D));
-  CHKERRQ(MatSetUp(user->D));
+  PetscCall(MatCreate(PETSC_COMM_SELF,&user->D));
+  PetscCall(MatSetSizes(user->D,PETSC_DECIDE,PETSC_DECIDE,user->K,user->N));
+  PetscCall(MatSetFromOptions(user->D));
+  PetscCall(MatSetUp(user->D));
 
   /* (2) Specify D Content */
   switch (dictChoice) {
     case 0: /* 0:identity */
       for (k=0; k<user->K; k++) {
         v = 1.0;
-        CHKERRQ(MatSetValues(user->D,1,&k,1,&k,&v,INSERT_VALUES));
+        PetscCall(MatSetValues(user->D,1,&k,1,&k,&v,INSERT_VALUES));
       }
       break;
     case 1: /* 1:gradient1D.  [-1, 1, 0,...; 0, -1, 1, 0, ...] */
       for (k=0; k<user->K; k++) {
         v = 1.0;
         n = k+1;
-        CHKERRQ(MatSetValues(user->D,1,&k,1,&n,&v,INSERT_VALUES));
+        PetscCall(MatSetValues(user->D,1,&k,1,&n,&v,INSERT_VALUES));
         v = -1.0;
-        CHKERRQ(MatSetValues(user->D,1,&k,1,&k,&v,INSERT_VALUES));
+        PetscCall(MatSetValues(user->D,1,&k,1,&k,&v,INSERT_VALUES));
       }
       break;
   }
-  CHKERRQ(MatAssemblyBegin(user->D,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(user->D,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(user->D,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(user->D,MAT_FINAL_ASSEMBLY));
 
   PetscFunctionReturn(0);
 }

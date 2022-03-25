@@ -16,19 +16,19 @@ PetscErrorCode VecDuplicate_Shared(Vec win,Vec *v)
 
   PetscFunctionBegin;
   /* first processor allocates entire array and sends it's address to the others */
-  CHKERRQ(PetscSharedMalloc(PetscObjectComm((PetscObject)win),win->map->n*sizeof(PetscScalar),win->map->N*sizeof(PetscScalar),(void**)&array));
+  PetscCall(PetscSharedMalloc(PetscObjectComm((PetscObject)win),win->map->n*sizeof(PetscScalar),win->map->N*sizeof(PetscScalar),(void**)&array));
 
-  CHKERRQ(VecCreate(PetscObjectComm((PetscObject)win),v));
-  CHKERRQ(VecSetSizes(*v,win->map->n,win->map->N));
-  CHKERRQ(VecCreate_MPI_Private(*v,PETSC_FALSE,w->nghost,array));
-  CHKERRQ(PetscLayoutReference(win->map,&(*v)->map));
+  PetscCall(VecCreate(PetscObjectComm((PetscObject)win),v));
+  PetscCall(VecSetSizes(*v,win->map->n,win->map->N));
+  PetscCall(VecCreate_MPI_Private(*v,PETSC_FALSE,w->nghost,array));
+  PetscCall(PetscLayoutReference(win->map,&(*v)->map));
 
   /* New vector should inherit stashing property of parent */
   (*v)->stash.donotstash   = win->stash.donotstash;
   (*v)->stash.ignorenegidx = win->stash.ignorenegidx;
 
-  CHKERRQ(PetscObjectListDuplicate(((PetscObject)win)->olist,&((PetscObject)*v)->olist));
-  CHKERRQ(PetscFunctionListDuplicate(((PetscObject)win)->qlist,&((PetscObject)*v)->qlist));
+  PetscCall(PetscObjectListDuplicate(((PetscObject)win)->olist,&((PetscObject)*v)->olist));
+  PetscCall(PetscFunctionListDuplicate(((PetscObject)win)->qlist,&((PetscObject)*v)->qlist));
 
   (*v)->ops->duplicate = VecDuplicate_Shared;
   (*v)->bstash.bs      = win->bstash.bs;
@@ -41,10 +41,10 @@ PETSC_EXTERN PetscErrorCode VecCreate_Shared(Vec vv)
   PetscScalar    *array;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscSplitOwnership(PetscObjectComm((PetscObject)vv),&vv->map->n,&vv->map->N));
-  CHKERRQ(PetscSharedMalloc(PetscObjectComm((PetscObject)vv),vv->map->n*sizeof(PetscScalar),vv->map->N*sizeof(PetscScalar),(void**)&array));
+  PetscCall(PetscSplitOwnership(PetscObjectComm((PetscObject)vv),&vv->map->n,&vv->map->N));
+  PetscCall(PetscSharedMalloc(PetscObjectComm((PetscObject)vv),vv->map->n*sizeof(PetscScalar),vv->map->N*sizeof(PetscScalar),(void**)&array));
 
-  CHKERRQ(VecCreate_MPI_Private(vv,PETSC_FALSE,0,array));
+  PetscCall(VecCreate_MPI_Private(vv,PETSC_FALSE,0,array));
   vv->ops->duplicate = VecDuplicate_Shared;
   PetscFunctionReturn(0);
 }
@@ -86,7 +86,7 @@ static PetscErrorCode Petsc_DeleteShared(MPI_Comm comm,PetscInt keyval,void *att
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscFree(attr_val));
+  PetscCall(PetscFree(attr_val));
   PetscFunctionReturn(MPI_SUCCESS);
 }
 
@@ -117,10 +117,10 @@ PetscErrorCode PetscSharedMalloc(MPI_Comm comm,PetscInt llen,PetscInt len,void *
   PetscFunctionBegin;
   *result = 0;
 
-  CHKERRMPI(MPI_Scan(&llen,&shift,1,MPI_INT,MPI_SUM,comm));
+  PetscCallMPI(MPI_Scan(&llen,&shift,1,MPI_INT,MPI_SUM,comm));
   shift -= llen;
 
-  CHKERRMPI(MPI_Comm_rank(comm,&rank));
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
   if (rank == 0) {
     id = shmget(key,len, 0666 |IPC_CREAT);
     if (id == -1) {
@@ -150,9 +150,9 @@ PETSC_EXTERN PetscErrorCode VecCreate_Shared(Vec vv)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)vv),&size));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)vv),&size));
   PetscCheckFalse(size > 1,PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"No supported for shared memory vector objects on this machine");
-  CHKERRQ(VecCreate_Seq(vv));
+  PetscCall(VecCreate_Seq(vv));
   PetscFunctionReturn(0);
 }
 
@@ -187,8 +187,8 @@ PETSC_EXTERN PetscErrorCode VecCreate_Shared(Vec vv)
 PetscErrorCode  VecCreateShared(MPI_Comm comm,PetscInt n,PetscInt N,Vec *v)
 {
   PetscFunctionBegin;
-  CHKERRQ(VecCreate(comm,v));
-  CHKERRQ(VecSetSizes(*v,n,N));
-  CHKERRQ(VecSetType(*v,VECSHARED));
+  PetscCall(VecCreate(comm,v));
+  PetscCall(VecSetSizes(*v,n,N));
+  PetscCall(VecSetType(*v,VECSHARED));
   PetscFunctionReturn(0);
 }

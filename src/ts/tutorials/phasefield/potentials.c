@@ -16,57 +16,57 @@ int main(int argc,char **argv)
   PetscDrawViewPorts        *ports;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscInitialize(&argc,&argv,0,help));
-  CHKERRQ(PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1200,800));
-  CHKERRQ(PetscViewerDrawGetDrawLG(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),0,&lg));
-  CHKERRQ(PetscDrawLGGetDraw(lg,&draw));
-  CHKERRQ(PetscDrawCheckResizedWindow(draw));
-  CHKERRQ(PetscDrawViewPortsCreateRect(draw,1,2,&ports));
-  CHKERRQ(PetscDrawLGGetAxis(lg,&axis));
-  CHKERRQ(PetscDrawLGReset(lg));
+  PetscCall(PetscInitialize(&argc,&argv,0,help));
+  PetscCall(PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1200,800));
+  PetscCall(PetscViewerDrawGetDrawLG(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),0,&lg));
+  PetscCall(PetscDrawLGGetDraw(lg,&draw));
+  PetscCall(PetscDrawCheckResizedWindow(draw));
+  PetscCall(PetscDrawViewPortsCreateRect(draw,1,2,&ports));
+  PetscCall(PetscDrawLGGetAxis(lg,&axis));
+  PetscCall(PetscDrawLGReset(lg));
 
   /*
       Plot the  energies
   */
-  CHKERRQ(PetscDrawLGSetDimension(lg,3));
-  CHKERRQ(PetscDrawViewPortsSet(ports,1));
+  PetscCall(PetscDrawLGSetDimension(lg,3));
+  PetscCall(PetscDrawViewPortsSet(ports,1));
   x    = .9;
   for (i=0; i<Mx; i++) {
     xx[0] = xx[1] = xx[2] = x;
     yy[0] = (1.-x*x)*(1. - x*x);
     yy[1] = (1. - x*x);
     yy[2] = -(1.-x)*PetscLogReal(1.-x);
-    CHKERRQ(PetscDrawLGAddPoint(lg,xx,yy));
+    PetscCall(PetscDrawLGAddPoint(lg,xx,yy));
     x    += hx;
   }
-  CHKERRQ(PetscDrawGetPause(draw,&pause));
-  CHKERRQ(PetscDrawSetPause(draw,0.0));
-  CHKERRQ(PetscDrawAxisSetLabels(axis,"Energy","",""));
-  CHKERRQ(PetscDrawLGSetLegend(lg,legend));
-  CHKERRQ(PetscDrawLGDraw(lg));
+  PetscCall(PetscDrawGetPause(draw,&pause));
+  PetscCall(PetscDrawSetPause(draw,0.0));
+  PetscCall(PetscDrawAxisSetLabels(axis,"Energy","",""));
+  PetscCall(PetscDrawLGSetLegend(lg,legend));
+  PetscCall(PetscDrawLGDraw(lg));
 
   /*
       Plot the  forces
   */
-  CHKERRQ(PetscDrawViewPortsSet(ports,0));
-  CHKERRQ(PetscDrawLGReset(lg));
+  PetscCall(PetscDrawViewPortsSet(ports,0));
+  PetscCall(PetscDrawLGReset(lg));
   x    = .9;
   for (i=0; i<Mx; i++) {
     xx[0] = xx[1] = xx[2] = x;
     yy[0] = x*x*x - x;
     yy[1] = -x;
     yy[2] = 1.0 + PetscLogReal(1. - x);
-    CHKERRQ(PetscDrawLGAddPoint(lg,xx,yy));
+    PetscCall(PetscDrawLGAddPoint(lg,xx,yy));
     x    += hx;
   }
-  CHKERRQ(PetscDrawAxisSetLabels(axis,"Derivative","",""));
-  CHKERRQ(PetscDrawLGSetLegend(lg,NULL));
-  CHKERRQ(PetscDrawLGDraw(lg));
+  PetscCall(PetscDrawAxisSetLabels(axis,"Derivative","",""));
+  PetscCall(PetscDrawLGSetLegend(lg,NULL));
+  PetscCall(PetscDrawLGDraw(lg));
 
-  CHKERRQ(PetscDrawSetPause(draw,pause));
-  CHKERRQ(PetscDrawPause(draw));
-  CHKERRQ(PetscDrawViewPortsDestroy(ports));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscDrawSetPause(draw,pause));
+  PetscCall(PetscDrawPause(draw));
+  PetscCall(PetscDrawViewPortsDestroy(ports));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

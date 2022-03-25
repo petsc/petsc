@@ -16,7 +16,7 @@ static const char help[] = "Test ParMETIS handling of negative weights.\n\n";
 #include <petscsys.h>
 #include <parmetis.h>
 
-#define CHKERRQPARMETIS(...) do {                                                              \
+#define PetscCallPARMETIS(...) do {                                                              \
     int metis_ierr = __VA_ARGS__;                                                              \
     PetscCheck(metis_ierr != METIS_ERROR_INPUT,PETSC_COMM_SELF,PETSC_ERR_LIB,"ParMETIS error due to wrong inputs and/or options"); \
     PetscCheck(metis_ierr != METIS_ERROR_MEMORY,PETSC_COMM_SELF,PETSC_ERR_LIB,"ParMETIS error due to insufficient memory"); \
@@ -38,52 +38,52 @@ int main(int argc, char *argv[])
   char           fname[PETSC_MAX_PATH_LEN],prefix[PETSC_MAX_PATH_LEN] = "";
   size_t         red;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 #if defined(PETSC_USE_64BIT_INDICES)
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"This example only works with 32 bit indices\n"));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"This example only works with 32 bit indices\n"));
+  PetscCall(PetscFinalize());
   return 0;
 #endif
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Parmetis test options","");CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsString("-prefix","Path and prefix of test file","",prefix,prefix,sizeof(prefix),&flg));
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Parmetis test options","");PetscCall(ierr);
+  PetscCall(PetscOptionsString("-prefix","Path and prefix of test file","",prefix,prefix,sizeof(prefix),&flg));
   PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must specify -prefix");
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
-  CHKERRQ(PetscMalloc1(size+1,&vtxdist));
+  PetscCall(PetscMalloc1(size+1,&vtxdist));
 
-  CHKERRQ(PetscSNPrintf(fname,sizeof(fname),"%s.%d.graph",prefix,rank));
+  PetscCall(PetscSNPrintf(fname,sizeof(fname),"%s.%d.graph",prefix,rank));
 
-  CHKERRQ(PetscFOpen(PETSC_COMM_SELF,fname,"r",&fp));
+  PetscCall(PetscFOpen(PETSC_COMM_SELF,fname,"r",&fp));
 
   red = fread(vtxdist, sizeof(idx_t), size+1, fp);PetscCheck(red == (size_t) (size+1),PETSC_COMM_SELF,PETSC_ERR_SYS,"Unable to read from data file");
 
   ni = vtxdist[rank+1]-vtxdist[rank];
 
-  CHKERRQ(PetscMalloc1(ni+1,&xadj));
+  PetscCall(PetscMalloc1(ni+1,&xadj));
 
   red = fread(xadj, sizeof(idx_t), ni+1, fp);PetscCheck(red == (size_t) (ni+1),PETSC_COMM_SELF,PETSC_ERR_SYS,"Unable to read from data file");
 
-  CHKERRQ(PetscMalloc1(xadj[ni],&adjncy));
+  PetscCall(PetscMalloc1(xadj[ni],&adjncy));
 
   for (PetscInt i=0; i<ni; i++) {
     red = fread(&adjncy[xadj[i]], sizeof(idx_t), xadj[i+1]-xadj[i], fp);PetscCheck(red == (size_t) (xadj[i+1]-xadj[i]),PETSC_COMM_SELF,PETSC_ERR_SYS,"Unable to read from data file");
   }
 
-  CHKERRQ(PetscFClose(PETSC_COMM_SELF,fp));
+  PetscCall(PetscFClose(PETSC_COMM_SELF,fp));
 
-  CHKERRQ(PetscSNPrintf(fname,sizeof(fname),"%s.%d.graph.xyz",prefix,rank));
-  CHKERRQ(PetscFOpen(PETSC_COMM_SELF,fname,"r",&fp));
+  PetscCall(PetscSNPrintf(fname,sizeof(fname),"%s.%d.graph.xyz",prefix,rank));
+  PetscCall(PetscFOpen(PETSC_COMM_SELF,fname,"r",&fp));
 
-  CHKERRQ(PetscMalloc3(ni*ndims,&xyz,ni,&part,size,&tpwgts));
-  CHKERRQ(PetscMalloc1(ni*ndims,&sxyz));
+  PetscCall(PetscMalloc3(ni*ndims,&xyz,ni,&part,size,&tpwgts));
+  PetscCall(PetscMalloc1(ni*ndims,&sxyz));
 
   red = fread(xyz, sizeof(PetscReal), ndims*ni, fp);PetscCheck(red == (size_t) (ndims*ni),PETSC_COMM_SELF,PETSC_ERR_SYS,"Unable to read from data file");
   for (PetscInt i=0; i<ni*ndims; i++) sxyz[i] = (size_t) xyz[i];
 
-  CHKERRQ(PetscFClose(PETSC_COMM_SELF,fp));
+  PetscCall(PetscFClose(PETSC_COMM_SELF,fp));
 
   vwgt = NULL;
 
@@ -97,16 +97,16 @@ int main(int argc, char *argv[])
   options[3] = 0;
   options[4] = 0;
 
-  CHKERRMPI(MPI_Comm_dup(MPI_COMM_WORLD, &comm));
-  CHKERRQPARMETIS(ParMETIS_V3_PartGeomKway(vtxdist, xadj, adjncy, vwgt, NULL, &wgtflag, &numflag, &ndims, sxyz, &ncon, &isize, tpwgts, ubvec,options, &edgecut, part, &comm));
-  CHKERRMPI(MPI_Comm_free(&comm));
+  PetscCallMPI(MPI_Comm_dup(MPI_COMM_WORLD, &comm));
+  PetscCallPARMETIS(ParMETIS_V3_PartGeomKway(vtxdist, xadj, adjncy, vwgt, NULL, &wgtflag, &numflag, &ndims, sxyz, &ncon, &isize, tpwgts, ubvec,options, &edgecut, part, &comm));
+  PetscCallMPI(MPI_Comm_free(&comm));
 
-  CHKERRQ(PetscFree(vtxdist));
-  CHKERRQ(PetscFree(xadj));
-  CHKERRQ(PetscFree(adjncy));
-  CHKERRQ(PetscFree3(xyz,part,tpwgts));
-  CHKERRQ(PetscFree(sxyz));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFree(vtxdist));
+  PetscCall(PetscFree(xadj));
+  PetscCall(PetscFree(adjncy));
+  PetscCall(PetscFree3(xyz,part,tpwgts));
+  PetscCall(PetscFree(sxyz));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

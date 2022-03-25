@@ -28,52 +28,52 @@ int main(int argc,char **args)
   KSP            ksp;
   PetscReal      norm;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   /* Form matrix */
-  CHKERRQ(GetElasticityMatrix(m,&mat));
+  PetscCall(GetElasticityMatrix(m,&mat));
 
   /* Generate vectors */
-  CHKERRQ(MatGetSize(mat,&rdim,&cdim));
-  CHKERRQ(MatGetOwnershipRange(mat,&rstart,&rend));
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&u));
-  CHKERRQ(VecSetSizes(u,PETSC_DECIDE,rdim));
-  CHKERRQ(VecSetFromOptions(u));
-  CHKERRQ(VecDuplicate(u,&b));
-  CHKERRQ(VecDuplicate(b,&x));
+  PetscCall(MatGetSize(mat,&rdim,&cdim));
+  PetscCall(MatGetOwnershipRange(mat,&rstart,&rend));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&u));
+  PetscCall(VecSetSizes(u,PETSC_DECIDE,rdim));
+  PetscCall(VecSetFromOptions(u));
+  PetscCall(VecDuplicate(u,&b));
+  PetscCall(VecDuplicate(b,&x));
   for (i=rstart; i<rend; i++) {
     v    = (PetscScalar)(i-rstart + 100*rank);
-    CHKERRQ(VecSetValues(u,1,&i,&v,INSERT_VALUES));
+    PetscCall(VecSetValues(u,1,&i,&v,INSERT_VALUES));
   }
-  CHKERRQ(VecAssemblyBegin(u));
-  CHKERRQ(VecAssemblyEnd(u));
+  PetscCall(VecAssemblyBegin(u));
+  PetscCall(VecAssemblyEnd(u));
 
   /* Compute right-hand-side */
-  CHKERRQ(MatMult(mat,u,b));
+  PetscCall(MatMult(mat,u,b));
 
   /* Solve linear system */
-  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
-  CHKERRQ(KSPSetOperators(ksp,mat,mat));
-  CHKERRQ(KSPSetFromOptions(ksp));
-  CHKERRQ(KSPSolve(ksp,b,x));
-  CHKERRQ(KSPGetIterationNumber(ksp,&its));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPSetOperators(ksp,mat,mat));
+  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(KSPSolve(ksp,b,x));
+  PetscCall(KSPGetIterationNumber(ksp,&its));
   /* Check error */
-  CHKERRQ(VecAXPY(x,neg1,u));
-  CHKERRQ(VecNorm(x,NORM_2,&norm));
+  PetscCall(VecAXPY(x,neg1,u));
+  PetscCall(VecNorm(x,NORM_2,&norm));
 
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Norm of residual %g Number of iterations %D\n",(double)norm,its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of residual %g Number of iterations %D\n",(double)norm,its));
 
   /* Free work space */
-  CHKERRQ(KSPDestroy(&ksp));
-  CHKERRQ(VecDestroy(&u));
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&b));
-  CHKERRQ(MatDestroy(&mat));
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(VecDestroy(&u));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&b));
+  PetscCall(MatDestroy(&mat));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 /* -------------------------------------------------------------------- */
@@ -91,15 +91,15 @@ PetscErrorCode GetElasticityMatrix(PetscInt m,Mat *newmat)
 
   m   /= 2; /* This is done just to be consistent with the old example */
   N    = 3*(2*m+1)*(2*m+1)*(2*m+1);
-  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"m = %D, N=%D\n",m,N));
-  CHKERRQ(MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,80,NULL,&mat));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"m = %D, N=%D\n",m,N));
+  PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,80,NULL,&mat));
 
   /* Form stiffness for element */
-  CHKERRQ(PetscMalloc1(81,&K));
+  PetscCall(PetscMalloc1(81,&K));
   for (i=0; i<81; i++) {
-    CHKERRQ(PetscMalloc1(81,&K[i]));
+    PetscCall(PetscMalloc1(81,&K[i]));
   }
-  CHKERRQ(Elastic20Stiff(K));
+  PetscCall(Elastic20Stiff(K));
 
   /* Loop over elements and add contribution to stiffness */
   shiftx = 3; shifty = 3*(2*m+1); shiftz = 3*(2*m+1)*(2*m+1);
@@ -117,7 +117,7 @@ PetscErrorCode GetElasticityMatrix(PetscInt m,Mat *newmat)
                 for (j2=0; j2<3; j2++) {
                   for (i2=0; i2<3; i2++) {
                     r2   = base + i2*shiftx + j2*shifty + k2*shiftz;
-                    CHKERRQ(AddElement(mat,r1,r2,K,h1,h2));
+                    PetscCall(AddElement(mat,r1,r2,K,h1,h2));
                     h2  += 3;
                   }
                 }
@@ -131,38 +131,38 @@ PetscErrorCode GetElasticityMatrix(PetscInt m,Mat *newmat)
   }
 
   for (i=0; i<81; i++) {
-    CHKERRQ(PetscFree(K[i]));
+    PetscCall(PetscFree(K[i]));
   }
-  CHKERRQ(PetscFree(K));
+  PetscCall(PetscFree(K));
 
-  CHKERRQ(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
 
   /* Exclude any superfluous rows and columns */
   nstart = 3*(2*m+1)*(2*m+1);
   ict    = 0;
-  CHKERRQ(PetscMalloc1(N-nstart,&rowkeep));
+  PetscCall(PetscMalloc1(N-nstart,&rowkeep));
   for (i=nstart; i<N; i++) {
-    CHKERRQ(MatGetRow(mat,i,&nz,0,0));
+    PetscCall(MatGetRow(mat,i,&nz,0,0));
     if (nz) rowkeep[ict++] = i;
-    CHKERRQ(MatRestoreRow(mat,i,&nz,0,0));
+    PetscCall(MatRestoreRow(mat,i,&nz,0,0));
   }
-  CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,ict,rowkeep,PETSC_COPY_VALUES,&iskeep));
-  CHKERRQ(MatCreateSubMatrices(mat,1,&iskeep,&iskeep,MAT_INITIAL_MATRIX,&submatb));
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF,ict,rowkeep,PETSC_COPY_VALUES,&iskeep));
+  PetscCall(MatCreateSubMatrices(mat,1,&iskeep,&iskeep,MAT_INITIAL_MATRIX,&submatb));
   submat = *submatb;
-  CHKERRQ(PetscFree(submatb));
-  CHKERRQ(PetscFree(rowkeep));
-  CHKERRQ(ISDestroy(&iskeep));
-  CHKERRQ(MatDestroy(&mat));
+  PetscCall(PetscFree(submatb));
+  PetscCall(PetscFree(rowkeep));
+  PetscCall(ISDestroy(&iskeep));
+  PetscCall(MatDestroy(&mat));
 
   /* Convert storage formats -- just to demonstrate conversion to various
      formats (in particular, block diagonal storage).  This is NOT the
      recommended means to solve such a problem.  */
-  CHKERRQ(MatConvert(submat,type,MAT_INITIAL_MATRIX,newmat));
-  CHKERRQ(MatDestroy(&submat));
+  PetscCall(MatConvert(submat,type,MAT_INITIAL_MATRIX,newmat));
+  PetscCall(MatDestroy(&submat));
 
-  CHKERRQ(MatNorm(*newmat,NORM_1,&norm));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"matrix 1 norm = %g\n",(double)norm));
+  PetscCall(MatNorm(*newmat,NORM_1,&norm));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"matrix 1 norm = %g\n",(double)norm));
 
   return 0;
 }
@@ -180,9 +180,9 @@ PetscErrorCode AddElement(Mat mat,PetscInt r1,PetscInt r2,PetscReal **K,PetscInt
 */
       if (K[h1+l1][h2+l2] != 0.0) {
         row  = r1+l1; col = r2+l2; val = K[h1+l1][h2+l2];
-        CHKERRQ(MatSetValues(mat,1,&row,1,&col,&val,ADD_VALUES));
+        PetscCall(MatSetValues(mat,1,&row,1,&col,&val,ADD_VALUES));
         row  = r2+l2; col = r1+l1;
-        CHKERRQ(MatSetValues(mat,1,&row,1,&col,&val,ADD_VALUES));
+        PetscCall(MatSetValues(mat,1,&row,1,&col,&val,ADD_VALUES));
       }
     }
   }

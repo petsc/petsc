@@ -25,41 +25,41 @@ int main(int argc,char **argv)
   AppCtx         user;
   PetscMPIInt    size;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
 
   /* Allocate vectors / matrix */
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
-  CHKERRQ(VecSetSizes(x,PETSC_DECIDE,1));
-  CHKERRQ(VecSetFromOptions(x));
-  CHKERRQ(VecDuplicate(x,&r));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+  PetscCall(VecSetSizes(x,PETSC_DECIDE,1));
+  PetscCall(VecSetFromOptions(x));
+  PetscCall(VecDuplicate(x,&r));
 
-  CHKERRQ(MatCreateSeqAIJ(PETSC_COMM_WORLD,1,1,1,NULL,&J));
+  PetscCall(MatCreateSeqAIJ(PETSC_COMM_WORLD,1,1,1,NULL,&J));
 
   /* Create / set-up SNES */
-  CHKERRQ(SNESCreate(PETSC_COMM_WORLD,&snes));
-  CHKERRQ(SNESSetFunction(snes,r,UserFunction,&user));
-  CHKERRQ(SNESSetJacobian(snes,J,J,UserJacobian,&user));
-  CHKERRQ(SNESSetFromOptions(snes));
+  PetscCall(SNESCreate(PETSC_COMM_WORLD,&snes));
+  PetscCall(SNESSetFunction(snes,r,UserFunction,&user));
+  PetscCall(SNESSetJacobian(snes,J,J,UserJacobian,&user));
+  PetscCall(SNESSetFromOptions(snes));
 
   /* Set initial guess (=1) and target value */
   user.value = 1e-4;
 
-  CHKERRQ(VecSet(x,1.0));
+  PetscCall(VecSet(x,1.0));
 
   /* Set initial guess / solve */
-  CHKERRQ(SNESSolve(snes,NULL,x));
-  CHKERRQ(SNESGetIterationNumber(snes,&its));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n",its));
-  CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(SNESSolve(snes,NULL,x));
+  PetscCall(SNESGetIterationNumber(snes,&its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n",its));
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
 
   /* Done */
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&r));
-  CHKERRQ(MatDestroy(&J));
-  CHKERRQ(SNESDestroy(&snes));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&r));
+  PetscCall(MatDestroy(&J));
+  PetscCall(SNESDestroy(&snes));
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -76,9 +76,9 @@ PetscErrorCode UserFunction(SNES snes,Vec X,Vec F,void *ptr)
 
   half = 0.5;
 
-  CHKERRQ(VecGetSize(X,&N));
-  CHKERRQ(VecGetArrayRead(X,&x));
-  CHKERRQ(VecGetArray(F,&f));
+  PetscCall(VecGetSize(X,&N));
+  PetscCall(VecGetArrayRead(X,&x));
+  PetscCall(VecGetArray(F,&f));
 
   /* Calculate residual */
   for (i=0; i<N; ++i) {
@@ -89,13 +89,13 @@ PetscErrorCode UserFunction(SNES snes,Vec X,Vec F,void *ptr)
        In later iterations, snes->domainerror should be cleared, allowing iterations in the feasible region to be accepted.
     */
     if ((half-user->value) < PetscRealPart(x[i]) && PetscRealPart(x[i]) < (half+user->value)) {
-      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"DOMAIN ERROR: x=%g\n",(double)PetscRealPart(x[i])));
-      CHKERRQ(SNESSetFunctionDomainError(snes));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"DOMAIN ERROR: x=%g\n",(double)PetscRealPart(x[i])));
+      PetscCall(SNESSetFunctionDomainError(snes));
     }
     f[i] = x[i]*x[i] - user->value;
   }
-  CHKERRQ(VecRestoreArrayRead(X,&x));
-  CHKERRQ(VecRestoreArray(F,&f));
+  PetscCall(VecRestoreArrayRead(X,&x));
+  PetscCall(VecRestoreArray(F,&f));
   return 0;
 }
 
@@ -108,23 +108,23 @@ PetscErrorCode UserJacobian(SNES snes,Vec X,Mat J,Mat jac,void *ptr)
   const PetscScalar *x;
   PetscScalar       v;
 
-  CHKERRQ(VecGetSize(X,&N));
-  CHKERRQ(VecGetArrayRead(X,&x));
+  PetscCall(VecGetSize(X,&N));
+  PetscCall(VecGetArrayRead(X,&x));
 
   /* Calculate Jacobian */
   for (i=0; i<N; ++i) {
     row = i;
     col = i;
     v = 2*x[i];
-    CHKERRQ(MatSetValues(jac,1,&row,1,&col,&v,INSERT_VALUES));
+    PetscCall(MatSetValues(jac,1,&row,1,&col,&v,INSERT_VALUES));
   }
-  CHKERRQ(VecRestoreArrayRead(X,&x));
-  CHKERRQ(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
+  PetscCall(VecRestoreArrayRead(X,&x));
+  PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
 
   if (jac != J) {
-    CHKERRQ(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY));
   }
   return 0;
 }

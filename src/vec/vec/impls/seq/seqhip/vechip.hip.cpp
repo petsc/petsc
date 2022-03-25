@@ -44,20 +44,20 @@ PetscErrorCode VecHIPAllocateCheckHost(Vec v)
 
   PetscFunctionBegin;
   if (!s) {
-    CHKERRQ(PetscNewLog((PetscObject)v,&s));
+    PetscCall(PetscNewLog((PetscObject)v,&s));
     v->data = s;
   }
   if (!s->array) {
     if (n*sizeof(PetscScalar) > v->minimum_bytes_pinned_memory) {
-      CHKERRQ(PetscMallocSetHIPHost());
+      PetscCall(PetscMallocSetHIPHost());
       v->pinned_memory = PETSC_TRUE;
     }
-    CHKERRQ(PetscMalloc1(n,&array));
-    CHKERRQ(PetscLogObjectMemory((PetscObject)v,n*sizeof(PetscScalar)));
+    PetscCall(PetscMalloc1(n,&array));
+    PetscCall(PetscLogObjectMemory((PetscObject)v,n*sizeof(PetscScalar)));
     s->array           = array;
     s->array_allocated = array;
     if (n*sizeof(PetscScalar) > v->minimum_bytes_pinned_memory) {
-      CHKERRQ(PetscMallocResetHIPHost());
+      PetscCall(PetscMallocResetHIPHost());
     }
     if (v->offloadmask == PETSC_OFFLOAD_UNALLOCATED) {
       v->offloadmask = PETSC_OFFLOAD_CPU;
@@ -72,14 +72,14 @@ PetscErrorCode VecCopy_SeqHIP_Private(Vec xin,Vec yin)
   const PetscScalar *xa;
 
   PetscFunctionBegin;
-  CHKERRQ(VecHIPAllocateCheckHost(xin));
-  CHKERRQ(VecHIPAllocateCheckHost(yin));
+  PetscCall(VecHIPAllocateCheckHost(xin));
+  PetscCall(VecHIPAllocateCheckHost(yin));
   if (xin != yin) {
-    CHKERRQ(VecGetArrayRead(xin,&xa));
-    CHKERRQ(VecGetArray(yin,&ya));
-    CHKERRQ(PetscArraycpy(ya,xa,xin->map->n));
-    CHKERRQ(VecRestoreArrayRead(xin,&xa));
-    CHKERRQ(VecRestoreArray(yin,&ya));
+    PetscCall(VecGetArrayRead(xin,&xa));
+    PetscCall(VecGetArray(yin,&ya));
+    PetscCall(PetscArraycpy(ya,xa,xin->map->n));
+    PetscCall(VecRestoreArrayRead(xin,&xa));
+    PetscCall(VecRestoreArray(yin,&ya));
   }
   PetscFunctionReturn(0);
 }
@@ -90,9 +90,9 @@ PetscErrorCode VecSetRandom_SeqHIP(Vec xin,PetscRandom r)
   PetscScalar *xx;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayWrite(xin,&xx));
-  CHKERRQ(PetscRandomGetValues(r,n,xx));
-  CHKERRQ(VecRestoreArrayWrite(xin,&xx));
+  PetscCall(VecGetArrayWrite(xin,&xx));
+  PetscCall(PetscRandomGetValues(r,n,xx));
+  PetscCall(VecRestoreArrayWrite(xin,&xx));
   PetscFunctionReturn(0);
 }
 
@@ -101,22 +101,22 @@ PetscErrorCode VecDestroy_SeqHIP_Private(Vec v)
   Vec_Seq *vs = (Vec_Seq*)v->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectSAWsViewOff(v));
+  PetscCall(PetscObjectSAWsViewOff(v));
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)v,"Length=%" PetscInt_FMT,v->map->n);
 #endif
   if (vs) {
     if (vs->array_allocated) {
       if (v->pinned_memory) {
-        CHKERRQ(PetscMallocSetHIPHost());
+        PetscCall(PetscMallocSetHIPHost());
       }
-      CHKERRQ(PetscFree(vs->array_allocated));
+      PetscCall(PetscFree(vs->array_allocated));
       if (v->pinned_memory) {
-        CHKERRQ(PetscMallocResetHIPHost());
+        PetscCall(PetscMallocResetHIPHost());
         v->pinned_memory = PETSC_FALSE;
       }
     }
-    CHKERRQ(PetscFree(vs));
+    PetscCall(PetscFree(vs));
   }
   PetscFunctionReturn(0);
 }
@@ -134,8 +134,8 @@ PetscErrorCode VecResetArray_SeqHIP_Private(Vec vin)
 PetscErrorCode VecResetArray_SeqHIP(Vec vin)
 {
   PetscFunctionBegin;
-  CHKERRQ(VecHIPCopyFromGPU(vin));
-  CHKERRQ(VecResetArray_SeqHIP_Private(vin));
+  PetscCall(VecHIPCopyFromGPU(vin));
+  PetscCall(VecResetArray_SeqHIP_Private(vin));
   vin->offloadmask = PETSC_OFFLOAD_CPU;
   PetscFunctionReturn(0);
 }
@@ -143,8 +143,8 @@ PetscErrorCode VecResetArray_SeqHIP(Vec vin)
 PetscErrorCode VecPlaceArray_SeqHIP(Vec vin,const PetscScalar *a)
 {
   PetscFunctionBegin;
-  CHKERRQ(VecHIPCopyFromGPU(vin));
-  CHKERRQ(VecPlaceArray_Seq(vin,a));
+  PetscCall(VecHIPCopyFromGPU(vin));
+  PetscCall(VecPlaceArray_Seq(vin,a));
   vin->offloadmask = PETSC_OFFLOAD_CPU;
   PetscFunctionReturn(0);
 }
@@ -156,15 +156,15 @@ PetscErrorCode VecReplaceArray_SeqHIP(Vec vin,const PetscScalar *a)
   PetscFunctionBegin;
   if (vs->array != vs->array_allocated) {
     /* make sure the users array has the latest values */
-    CHKERRQ(VecHIPCopyFromGPU(vin));
+    PetscCall(VecHIPCopyFromGPU(vin));
   }
   if (vs->array_allocated) {
     if (vin->pinned_memory) {
-      CHKERRQ(PetscMallocSetHIPHost());
+      PetscCall(PetscMallocSetHIPHost());
     }
-    CHKERRQ(PetscFree(vs->array_allocated));
+    PetscCall(PetscFree(vs->array_allocated));
     if (vin->pinned_memory) {
-      CHKERRQ(PetscMallocResetHIPHost());
+      PetscCall(PetscMallocResetHIPHost());
     }
   }
   vin->pinned_memory = PETSC_FALSE;
@@ -196,19 +196,19 @@ PetscErrorCode VecReplaceArray_SeqHIP(Vec vin,const PetscScalar *a)
 PetscErrorCode VecCreateSeqHIP(MPI_Comm comm,PetscInt n,Vec *v)
 {
   PetscFunctionBegin;
-  CHKERRQ(VecCreate(comm,v));
-  CHKERRQ(VecSetSizes(*v,n,n));
-  CHKERRQ(VecSetType(*v,VECSEQHIP));
+  PetscCall(VecCreate(comm,v));
+  PetscCall(VecSetSizes(*v,n,n));
+  PetscCall(VecSetType(*v,VECSEQHIP));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode VecDuplicate_SeqHIP(Vec win,Vec *V)
 {
   PetscFunctionBegin;
-  CHKERRQ(VecCreateSeqHIP(PetscObjectComm((PetscObject)win),win->map->n,V));
-  CHKERRQ(PetscLayoutReference(win->map,&(*V)->map));
-  CHKERRQ(PetscObjectListDuplicate(((PetscObject)win)->olist,&((PetscObject)(*V))->olist));
-  CHKERRQ(PetscFunctionListDuplicate(((PetscObject)win)->qlist,&((PetscObject)(*V))->qlist));
+  PetscCall(VecCreateSeqHIP(PetscObjectComm((PetscObject)win),win->map->n,V));
+  PetscCall(PetscLayoutReference(win->map,&(*V)->map));
+  PetscCall(PetscObjectListDuplicate(((PetscObject)win)->olist,&((PetscObject)(*V))->olist));
+  PetscCall(PetscFunctionListDuplicate(((PetscObject)win)->qlist,&((PetscObject)(*V))->qlist));
   (*V)->stash.ignorenegidx = win->stash.ignorenegidx;
   PetscFunctionReturn(0);
 }
@@ -216,11 +216,11 @@ PetscErrorCode VecDuplicate_SeqHIP(Vec win,Vec *V)
 PetscErrorCode VecCreate_SeqHIP(Vec V)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscDeviceInitialize(PETSC_DEVICE_HIP));
-  CHKERRQ(PetscLayoutSetUp(V->map));
-  CHKERRQ(VecHIPAllocateCheck(V));
-  CHKERRQ(VecCreate_SeqHIP_Private(V,((Vec_HIP*)V->spptr)->GPUarray_allocated));
-  CHKERRQ(VecSet_SeqHIP(V,0.0));
+  PetscCall(PetscDeviceInitialize(PETSC_DEVICE_HIP));
+  PetscCall(PetscLayoutSetUp(V->map));
+  PetscCall(VecHIPAllocateCheck(V));
+  PetscCall(VecCreate_SeqHIP_Private(V,((Vec_HIP*)V->spptr)->GPUarray_allocated));
+  PetscCall(VecSet_SeqHIP(V,0.0));
   PetscFunctionReturn(0);
 }
 
@@ -259,11 +259,11 @@ PetscErrorCode VecCreate_SeqHIP(Vec V)
 PetscErrorCode  VecCreateSeqHIPWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscScalar array[],Vec *V)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscDeviceInitialize(PETSC_DEVICE_HIP));
-  CHKERRQ(VecCreate(comm,V));
-  CHKERRQ(VecSetSizes(*V,n,n));
-  CHKERRQ(VecSetBlockSize(*V,bs));
-  CHKERRQ(VecCreate_SeqHIP_Private(*V,array));
+  PetscCall(PetscDeviceInitialize(PETSC_DEVICE_HIP));
+  PetscCall(VecCreate(comm,V));
+  PetscCall(VecSetSizes(*V,n,n));
+  PetscCall(VecSetBlockSize(*V,bs));
+  PetscCall(VecCreate_SeqHIP_Private(*V,array));
   PetscFunctionReturn(0);
 }
 
@@ -301,7 +301,7 @@ PetscErrorCode  VecCreateSeqHIPWithArrays(MPI_Comm comm,PetscInt bs,PetscInt n,c
 {
   PetscFunctionBegin;
   // set V's gpuarray to be gpuarray, do not allocate memory on host yet.
-  CHKERRQ(VecCreateSeqHIPWithArray(comm,bs,n,gpuarray,V));
+  PetscCall(VecCreateSeqHIPWithArray(comm,bs,n,gpuarray,V));
 
   if (cpuarray && gpuarray) {
     Vec_Seq *s = (Vec_Seq*)((*V)->data);
@@ -323,7 +323,7 @@ PetscErrorCode  VecCreateSeqHIPWithArrays(MPI_Comm comm,PetscInt bs,PetscInt n,c
 PetscErrorCode VecGetArray_SeqHIP(Vec v,PetscScalar **a)
 {
   PetscFunctionBegin;
-  CHKERRQ(VecHIPCopyFromGPU(v));
+  PetscCall(VecHIPCopyFromGPU(v));
   *a   = *((PetscScalar**)v->data);
   PetscFunctionReturn(0);
 }
@@ -338,7 +338,7 @@ PetscErrorCode VecRestoreArray_SeqHIP(Vec v,PetscScalar **a)
 PetscErrorCode VecGetArrayWrite_SeqHIP(Vec v,PetscScalar **a)
 {
   PetscFunctionBegin;
-  CHKERRQ(VecHIPAllocateCheckHost(v));
+  PetscCall(VecHIPAllocateCheckHost(v));
   *a   = *((PetscScalar**)v->data);
   PetscFunctionReturn(0);
 }
@@ -346,7 +346,7 @@ PetscErrorCode VecGetArrayWrite_SeqHIP(Vec v,PetscScalar **a)
 PetscErrorCode VecGetArrayAndMemType_SeqHIP(Vec v,PetscScalar** a,PetscMemType *mtype)
 {
   PetscFunctionBegin;
-  CHKERRQ(VecHIPCopyToGPU(v));
+  PetscCall(VecHIPCopyToGPU(v));
   *a   = ((Vec_HIP*)v->spptr)->GPUarray;
   if (mtype) *mtype = PETSC_MEMTYPE_HIP;
   PetscFunctionReturn(0);
@@ -363,7 +363,7 @@ PetscErrorCode VecGetArrayWriteAndMemType_SeqHIP(Vec v,PetscScalar** a,PetscMemT
 {
   PetscFunctionBegin;
   /* Allocate memory (not zeroed) on device if not yet, but no need to sync data from host to device */
-  CHKERRQ(VecHIPAllocateCheck(v));
+  PetscCall(VecHIPAllocateCheck(v));
   *a   = ((Vec_HIP*)v->spptr)->GPUarray;
   if (mtype) *mtype = PETSC_MEMTYPE_HIP;
   PetscFunctionReturn(0);
@@ -374,7 +374,7 @@ PetscErrorCode VecBindToCPU_SeqHIP(Vec V,PetscBool bind)
   PetscFunctionBegin;
   V->boundtocpu = bind;
   if (bind) {
-    CHKERRQ(VecHIPCopyFromGPU(V));
+    PetscCall(VecHIPCopyFromGPU(V));
     V->offloadmask                 = PETSC_OFFLOAD_CPU; /* since the CPU code will likely change values in the vector */
     V->ops->dot                    = VecDot_Seq;
     V->ops->norm                   = VecNorm_Seq;
@@ -473,11 +473,11 @@ PetscErrorCode VecCreate_SeqHIP_Private(Vec V,const PetscScalar *array)
   PetscBool      option_set;
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)V),&size));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)V),&size));
   PetscCheckFalse(size > 1,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQHIP on more than one process");
-  CHKERRQ(VecCreate_Seq_Private(V,0));
-  CHKERRQ(PetscObjectChangeTypeName((PetscObject)V,VECSEQHIP));
-  CHKERRQ(VecBindToCPU_SeqHIP(V,PETSC_FALSE));
+  PetscCall(VecCreate_Seq_Private(V,0));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)V,VECSEQHIP));
+  PetscCall(VecBindToCPU_SeqHIP(V,PETSC_FALSE));
   V->ops->bindtocpu = VecBindToCPU_SeqHIP;
 
   /* Later, functions check for the Vec_HIP structure existence, so do not create it without array */
@@ -486,17 +486,17 @@ PetscErrorCode VecCreate_SeqHIP_Private(Vec V,const PetscScalar *array)
       PetscReal      pinned_memory_min;
       PetscErrorCode ierr;
 
-      CHKERRQ(PetscCalloc(sizeof(Vec_HIP),&V->spptr));
+      PetscCall(PetscCalloc(sizeof(Vec_HIP),&V->spptr));
       vechip = (Vec_HIP*)V->spptr;
       V->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
 
       pinned_memory_min = 0;
       /* Need to parse command line for minimum size to use for pinned memory allocations on host here.
          Note: This same code duplicated in VecHIPAllocateCheck() and VecCreate_MPIHIP_Private(). Is there a good way to avoid this? */
-      ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)V),((PetscObject)V)->prefix,"VECHIP Options","Vec");CHKERRQ(ierr);
-      CHKERRQ(PetscOptionsReal("-vec_pinned_memory_min","Minimum size (in bytes) for an allocation to use pinned memory on host","VecSetPinnedMemoryMin",pinned_memory_min,&pinned_memory_min,&option_set));
+      ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)V),((PetscObject)V)->prefix,"VECHIP Options","Vec");PetscCall(ierr);
+      PetscCall(PetscOptionsReal("-vec_pinned_memory_min","Minimum size (in bytes) for an allocation to use pinned memory on host","VecSetPinnedMemoryMin",pinned_memory_min,&pinned_memory_min,&option_set));
       if (option_set) V->minimum_bytes_pinned_memory = pinned_memory_min;
-      ierr = PetscOptionsEnd();CHKERRQ(ierr);
+      ierr = PetscOptionsEnd();PetscCall(ierr);
     }
     vechip = (Vec_HIP*)V->spptr;
     vechip->GPUarray = (PetscScalar*)array;

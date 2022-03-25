@@ -6,17 +6,17 @@ static PetscErrorCode SNESSetFromOptions_Anderson(PetscOptionItems *PetscOptions
   PetscBool      monitor = PETSC_FALSE;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"SNES NGMRES options"));
-  CHKERRQ(PetscOptionsInt("-snes_anderson_m",            "Number of directions","SNES",ngmres->msize,&ngmres->msize,NULL));
-  CHKERRQ(PetscOptionsReal("-snes_anderson_beta",        "Mixing parameter","SNES",ngmres->andersonBeta,&ngmres->andersonBeta,NULL));
-  CHKERRQ(PetscOptionsInt("-snes_anderson_restart",      "Iterations before forced restart", "SNES",ngmres->restart_periodic,&ngmres->restart_periodic,NULL));
-  CHKERRQ(PetscOptionsInt("-snes_anderson_restart_it",   "Tolerance iterations before restart","SNES",ngmres->restart_it,&ngmres->restart_it,NULL));
-  CHKERRQ(PetscOptionsEnum("-snes_anderson_restart_type","Restart type","SNESNGMRESSetRestartType",SNESNGMRESRestartTypes,(PetscEnum)ngmres->restart_type,(PetscEnum*)&ngmres->restart_type,NULL));
-  CHKERRQ(PetscOptionsBool("-snes_anderson_monitor",     "Monitor steps of Anderson Mixing","SNES",ngmres->monitor ? PETSC_TRUE : PETSC_FALSE,&monitor,NULL));
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"SNES NGMRES options"));
+  PetscCall(PetscOptionsInt("-snes_anderson_m",            "Number of directions","SNES",ngmres->msize,&ngmres->msize,NULL));
+  PetscCall(PetscOptionsReal("-snes_anderson_beta",        "Mixing parameter","SNES",ngmres->andersonBeta,&ngmres->andersonBeta,NULL));
+  PetscCall(PetscOptionsInt("-snes_anderson_restart",      "Iterations before forced restart", "SNES",ngmres->restart_periodic,&ngmres->restart_periodic,NULL));
+  PetscCall(PetscOptionsInt("-snes_anderson_restart_it",   "Tolerance iterations before restart","SNES",ngmres->restart_it,&ngmres->restart_it,NULL));
+  PetscCall(PetscOptionsEnum("-snes_anderson_restart_type","Restart type","SNESNGMRESSetRestartType",SNESNGMRESRestartTypes,(PetscEnum)ngmres->restart_type,(PetscEnum*)&ngmres->restart_type,NULL));
+  PetscCall(PetscOptionsBool("-snes_anderson_monitor",     "Monitor steps of Anderson Mixing","SNES",ngmres->monitor ? PETSC_TRUE : PETSC_FALSE,&monitor,NULL));
   if (monitor) {
     ngmres->monitor = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)snes));
   }
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -40,7 +40,7 @@ static PetscErrorCode SNESSolve_Anderson(SNES snes)
   PetscFunctionBegin;
   PetscCheckFalse(snes->xl || snes->xu || snes->ops->computevariablebounds,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
 
-  CHKERRQ(PetscCitationsRegister(SNESCitation,&SNEScite));
+  PetscCall(PetscCitationsRegister(SNESCitation,&SNEScite));
   /* variable initialization */
   snes->reason = SNES_CONVERGED_ITERATING;
   X            = snes->vec_sol;
@@ -54,39 +54,39 @@ static PetscErrorCode SNESSolve_Anderson(SNES snes)
   XM = snes->work[3];
   FM = snes->work[4];
 
-  CHKERRQ(PetscObjectSAWsTakeAccess((PetscObject)snes));
+  PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
   snes->iter = 0;
   snes->norm = 0.;
-  CHKERRQ(PetscObjectSAWsGrantAccess((PetscObject)snes));
+  PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
 
   /* initialization */
 
   /* r = F(x) */
 
   if (snes->npc && snes->npcside== PC_LEFT) {
-    CHKERRQ(SNESApplyNPC(snes,X,NULL,F));
-    CHKERRQ(SNESGetConvergedReason(snes->npc,&reason));
+    PetscCall(SNESApplyNPC(snes,X,NULL,F));
+    PetscCall(SNESGetConvergedReason(snes->npc,&reason));
     if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
       snes->reason = SNES_DIVERGED_INNER;
       PetscFunctionReturn(0);
     }
-    CHKERRQ(VecNorm(F,NORM_2,&fnorm));
+    PetscCall(VecNorm(F,NORM_2,&fnorm));
   } else {
     if (!snes->vec_func_init_set) {
-      CHKERRQ(SNESComputeFunction(snes,X,F));
+      PetscCall(SNESComputeFunction(snes,X,F));
     } else snes->vec_func_init_set = PETSC_FALSE;
 
-    CHKERRQ(VecNorm(F,NORM_2,&fnorm));
+    PetscCall(VecNorm(F,NORM_2,&fnorm));
     SNESCheckFunctionNorm(snes,fnorm);
   }
   fminnorm = fnorm;
 
-  CHKERRQ(PetscObjectSAWsTakeAccess((PetscObject)snes));
+  PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
   snes->norm = fnorm;
-  CHKERRQ(PetscObjectSAWsGrantAccess((PetscObject)snes));
-  CHKERRQ(SNESLogConvergenceHistory(snes,fnorm,0));
-  CHKERRQ(SNESMonitor(snes,0,fnorm));
-  CHKERRQ((*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP));
+  PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
+  PetscCall(SNESLogConvergenceHistory(snes,fnorm,0));
+  PetscCall(SNESMonitor(snes,0,fnorm));
+  PetscCall((*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP));
   if (snes->reason) PetscFunctionReturn(0);
 
   k_restart = 0;
@@ -95,50 +95,50 @@ static PetscErrorCode SNESSolve_Anderson(SNES snes)
   for (k=1; k < snes->max_its+1; k++) {
     /* select which vector of the stored subspace will be updated */
     if (snes->npc && snes->npcside== PC_RIGHT) {
-      CHKERRQ(VecCopy(X,XM));
-      CHKERRQ(SNESSetInitialFunction(snes->npc,F));
+      PetscCall(VecCopy(X,XM));
+      PetscCall(SNESSetInitialFunction(snes->npc,F));
 
-      CHKERRQ(PetscLogEventBegin(SNES_NPCSolve,snes->npc,XM,B,0));
-      CHKERRQ(SNESSolve(snes->npc,B,XM));
-      CHKERRQ(PetscLogEventEnd(SNES_NPCSolve,snes->npc,XM,B,0));
+      PetscCall(PetscLogEventBegin(SNES_NPCSolve,snes->npc,XM,B,0));
+      PetscCall(SNESSolve(snes->npc,B,XM));
+      PetscCall(PetscLogEventEnd(SNES_NPCSolve,snes->npc,XM,B,0));
 
-      CHKERRQ(SNESGetConvergedReason(snes->npc,&reason));
+      PetscCall(SNESGetConvergedReason(snes->npc,&reason));
       if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
         snes->reason = SNES_DIVERGED_INNER;
         PetscFunctionReturn(0);
       }
-      CHKERRQ(SNESGetNPCFunction(snes,FM,&fMnorm));
+      PetscCall(SNESGetNPCFunction(snes,FM,&fMnorm));
       if (ngmres->andersonBeta != 1.0) {
-        CHKERRQ(VecAXPBY(XM,(1.0 - ngmres->andersonBeta),ngmres->andersonBeta,X));
+        PetscCall(VecAXPBY(XM,(1.0 - ngmres->andersonBeta),ngmres->andersonBeta,X));
       }
     } else {
-      CHKERRQ(VecCopy(F,FM));
-      CHKERRQ(VecCopy(X,XM));
-      CHKERRQ(VecAXPY(XM,-ngmres->andersonBeta,FM));
+      PetscCall(VecCopy(F,FM));
+      PetscCall(VecCopy(X,XM));
+      PetscCall(VecAXPY(XM,-ngmres->andersonBeta,FM));
       fMnorm = fnorm;
     }
 
-    CHKERRQ(SNESNGMRESFormCombinedSolution_Private(snes,ivec,l,XM,FM,fMnorm,X,XA,FA));
+    PetscCall(SNESNGMRESFormCombinedSolution_Private(snes,ivec,l,XM,FM,fMnorm,X,XA,FA));
     ivec = k_restart % ngmres->msize;
     if (ngmres->restart_type == SNES_NGMRES_RESTART_DIFFERENCE) {
-      CHKERRQ(SNESNGMRESNorms_Private(snes,l,X,F,XM,FM,XA,FA,D,&dnorm,&dminnorm,NULL,NULL,NULL,&xnorm,&fAnorm,&ynorm));
-      CHKERRQ(SNESNGMRESSelectRestart_Private(snes,l,fMnorm,fnorm,dnorm,fminnorm,dminnorm,&selectRestart));
+      PetscCall(SNESNGMRESNorms_Private(snes,l,X,F,XM,FM,XA,FA,D,&dnorm,&dminnorm,NULL,NULL,NULL,&xnorm,&fAnorm,&ynorm));
+      PetscCall(SNESNGMRESSelectRestart_Private(snes,l,fMnorm,fnorm,dnorm,fminnorm,dminnorm,&selectRestart));
       /* if the restart conditions persist for more than restart_it iterations, restart. */
       if (selectRestart) restart_count++;
       else restart_count = 0;
     } else if (ngmres->restart_type == SNES_NGMRES_RESTART_PERIODIC) {
-      CHKERRQ(SNESNGMRESNorms_Private(snes,l,X,F,XM,FM,XA,FA,D,NULL,NULL,NULL,NULL,NULL,&xnorm,&fAnorm,&ynorm));
+      PetscCall(SNESNGMRESNorms_Private(snes,l,X,F,XM,FM,XA,FA,D,NULL,NULL,NULL,NULL,NULL,&xnorm,&fAnorm,&ynorm));
       if (k_restart > ngmres->restart_periodic) {
-        if (ngmres->monitor) CHKERRQ(PetscViewerASCIIPrintf(ngmres->monitor,"periodic restart after %D iterations\n",k_restart));
+        if (ngmres->monitor) PetscCall(PetscViewerASCIIPrintf(ngmres->monitor,"periodic restart after %D iterations\n",k_restart));
         restart_count = ngmres->restart_it;
       }
     } else {
-      CHKERRQ(SNESNGMRESNorms_Private(snes,l,X,F,XM,FM,XA,FA,D,NULL,NULL,NULL,NULL,NULL,&xnorm,&fAnorm,&ynorm));
+      PetscCall(SNESNGMRESNorms_Private(snes,l,X,F,XM,FM,XA,FA,D,NULL,NULL,NULL,NULL,NULL,&xnorm,&fAnorm,&ynorm));
     }
     /* restart after restart conditions have persisted for a fixed number of iterations */
     if (restart_count >= ngmres->restart_it) {
       if (ngmres->monitor) {
-        CHKERRQ(PetscViewerASCIIPrintf(ngmres->monitor,"Restarted at iteration %d\n",k_restart));
+        PetscCall(PetscViewerASCIIPrintf(ngmres->monitor,"Restarted at iteration %d\n",k_restart));
       }
       restart_count = 0;
       k_restart     = 0;
@@ -147,24 +147,24 @@ static PetscErrorCode SNESSolve_Anderson(SNES snes)
     } else {
       if (l < ngmres->msize) l++;
       k_restart++;
-      CHKERRQ(SNESNGMRESUpdateSubspace_Private(snes,ivec,l,FM,fnorm,XM));
+      PetscCall(SNESNGMRESUpdateSubspace_Private(snes,ivec,l,FM,fnorm,XM));
     }
 
     fnorm = fAnorm;
     if (fminnorm > fnorm) fminnorm = fnorm;
 
-    CHKERRQ(VecCopy(XA,X));
-    CHKERRQ(VecCopy(FA,F));
+    PetscCall(VecCopy(XA,X));
+    PetscCall(VecCopy(FA,F));
 
-    CHKERRQ(PetscObjectSAWsTakeAccess((PetscObject)snes));
+    PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
     snes->iter = k;
     snes->norm = fnorm;
     snes->xnorm = xnorm;
     snes->ynorm = ynorm;
-    CHKERRQ(PetscObjectSAWsGrantAccess((PetscObject)snes));
-    CHKERRQ(SNESLogConvergenceHistory(snes,snes->norm,snes->iter));
-    CHKERRQ(SNESMonitor(snes,snes->iter,snes->norm));
-    CHKERRQ((*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP));
+    PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
+    PetscCall(SNESLogConvergenceHistory(snes,snes->norm,snes->iter));
+    PetscCall(SNESMonitor(snes,snes->iter,snes->norm));
+    PetscCall((*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP));
     if (snes->reason) PetscFunctionReturn(0);
   }
   snes->reason = SNES_DIVERGED_MAX_IT;
@@ -219,7 +219,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Anderson(SNES snes)
 
   snes->alwayscomputesfinalresidual = PETSC_TRUE;
 
-  CHKERRQ(PetscNewLog(snes,&ngmres));
+  PetscCall(PetscNewLog(snes,&ngmres));
   snes->data    = (void*) ngmres;
   ngmres->msize = 30;
 
@@ -228,9 +228,9 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Anderson(SNES snes)
     snes->max_its   = 10000;
   }
 
-  CHKERRQ(SNESGetLineSearch(snes,&linesearch));
+  PetscCall(SNESGetLineSearch(snes,&linesearch));
   if (!((PetscObject)linesearch)->type_name) {
-    CHKERRQ(SNESLineSearchSetType(linesearch,SNESLINESEARCHBASIC));
+    PetscCall(SNESLineSearchSetType(linesearch,SNESLINESEARCHBASIC));
   }
 
   ngmres->additive_linesearch = NULL;

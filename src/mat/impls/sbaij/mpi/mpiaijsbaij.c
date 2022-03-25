@@ -19,11 +19,11 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newtype,Ma
   PetscFunctionBegin;
   PetscCheckFalse(!A->symmetric && !A->hermitian,PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"Matrix must be symmetric or hermitian. Call MatSetOption(mat,MAT_SYMMETRIC,PETSC_TRUE) or MatSetOption(mat,MAT_HERMITIAN,PETSC_TRUE)");
   if (reuse != MAT_REUSE_MATRIX) {
-    CHKERRQ(MatGetSize(A,&m,&n));
-    CHKERRQ(MatGetLocalSize(A,&lm,&ln));
-    CHKERRQ(PetscMalloc2(lm/bs,&d_nnz,lm/bs,&o_nnz));
+    PetscCall(MatGetSize(A,&m,&n));
+    PetscCall(MatGetLocalSize(A,&lm,&ln));
+    PetscCall(PetscMalloc2(lm/bs,&d_nnz,lm/bs,&o_nnz));
 
-    CHKERRQ(MatMarkDiagonal_SeqAIJ(mpimat->A));
+    PetscCall(MatMarkDiagonal_SeqAIJ(mpimat->A));
     for (i=0; i<lm/bs; i++) {
       if (Aa->i[i*bs+1] == Aa->diag[i*bs]) { /* misses diagonal entry */
         d_nnz[i] = (Aa->i[i*bs+1] - Aa->i[i*bs])/bs;
@@ -33,39 +33,39 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newtype,Ma
       o_nnz[i] = (Ba->i[i*bs+1] - Ba->i[i*bs])/bs;
     }
 
-    CHKERRQ(MatCreate(PetscObjectComm((PetscObject)A),&M));
-    CHKERRQ(MatSetSizes(M,lm,ln,m,n));
-    CHKERRQ(MatSetType(M,MATMPISBAIJ));
-    CHKERRQ(MatSeqSBAIJSetPreallocation(M,bs,0,d_nnz));
-    CHKERRQ(MatMPISBAIJSetPreallocation(M,bs,0,d_nnz,0,o_nnz));
-    CHKERRQ(PetscFree2(d_nnz,o_nnz));
+    PetscCall(MatCreate(PetscObjectComm((PetscObject)A),&M));
+    PetscCall(MatSetSizes(M,lm,ln,m,n));
+    PetscCall(MatSetType(M,MATMPISBAIJ));
+    PetscCall(MatSeqSBAIJSetPreallocation(M,bs,0,d_nnz));
+    PetscCall(MatMPISBAIJSetPreallocation(M,bs,0,d_nnz,0,o_nnz));
+    PetscCall(PetscFree2(d_nnz,o_nnz));
   } else M = *newmat;
 
   if (bs == 1) {
-    CHKERRQ(MatGetOwnershipRange(A,&rstart,&rend));
+    PetscCall(MatGetOwnershipRange(A,&rstart,&rend));
     for (i=rstart; i<rend; i++) {
-      CHKERRQ(MatGetRow(A,i,&nz,&cwork,&vwork));
+      PetscCall(MatGetRow(A,i,&nz,&cwork,&vwork));
       if (nz) {
         j = 0;
         while (cwork[j] < i) {
           j++; nz--;
         }
-        CHKERRQ(MatSetValues(M,1,&i,nz,cwork+j,vwork+j,INSERT_VALUES));
+        PetscCall(MatSetValues(M,1,&i,nz,cwork+j,vwork+j,INSERT_VALUES));
       }
-      CHKERRQ(MatRestoreRow(A,i,&nz,&cwork,&vwork));
+      PetscCall(MatRestoreRow(A,i,&nz,&cwork,&vwork));
     }
-    CHKERRQ(MatAssemblyBegin(M,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyBegin(M,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY));
   } else {
-    CHKERRQ(MatSetOption(M,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE));
+    PetscCall(MatSetOption(M,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE));
     /* reuse may not be equal to MAT_REUSE_MATRIX, but the basic converter will reallocate or replace newmat if this value is not used */
     /* if reuse is equal to MAT_INITIAL_MATRIX, it has been appropriately preallocated before                                          */
     /*                      MAT_INPLACE_MATRIX, it will be replaced with MatHeaderReplace below                                        */
-    CHKERRQ(MatConvert_Basic(A,newtype,MAT_REUSE_MATRIX,&M));
+    PetscCall(MatConvert_Basic(A,newtype,MAT_REUSE_MATRIX,&M));
   }
 
   if (reuse == MAT_INPLACE_MATRIX) {
-    CHKERRQ(MatHeaderReplace(A,&M));
+    PetscCall(MatHeaderReplace(A,&M));
   } else *newmat = M;
   PetscFunctionReturn(0);
 }
@@ -85,37 +85,37 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPISBAIJ(Mat A, MatType newtype,M
 
   PetscFunctionBegin;
   if (reuse != MAT_REUSE_MATRIX) {
-    CHKERRQ(MatGetSize(A,&m,&n));
-    CHKERRQ(MatGetLocalSize(A,&lm,&ln));
-    CHKERRQ(PetscMalloc2(lm/bs,&d_nnz,lm/bs,&o_nnz));
+    PetscCall(MatGetSize(A,&m,&n));
+    PetscCall(MatGetLocalSize(A,&lm,&ln));
+    PetscCall(PetscMalloc2(lm/bs,&d_nnz,lm/bs,&o_nnz));
 
-    CHKERRQ(MatMarkDiagonal_SeqBAIJ(mpimat->A));
+    PetscCall(MatMarkDiagonal_SeqBAIJ(mpimat->A));
     for (i=0; i<lm/bs; i++) {
       d_nnz[i] = Aa->i[i+1] - Aa->diag[i];
       o_nnz[i] = Ba->i[i+1] - Ba->i[i];
     }
 
-    CHKERRQ(MatCreate(PetscObjectComm((PetscObject)A),&M));
-    CHKERRQ(MatSetSizes(M,lm,ln,m,n));
-    CHKERRQ(MatSetType(M,MATMPISBAIJ));
-    CHKERRQ(MatSeqSBAIJSetPreallocation(M,bs,0,d_nnz));
-    CHKERRQ(MatMPISBAIJSetPreallocation(M,bs,0,d_nnz,0,o_nnz));
+    PetscCall(MatCreate(PetscObjectComm((PetscObject)A),&M));
+    PetscCall(MatSetSizes(M,lm,ln,m,n));
+    PetscCall(MatSetType(M,MATMPISBAIJ));
+    PetscCall(MatSeqSBAIJSetPreallocation(M,bs,0,d_nnz));
+    PetscCall(MatMPISBAIJSetPreallocation(M,bs,0,d_nnz,0,o_nnz));
 
-    CHKERRQ(PetscFree2(d_nnz,o_nnz));
+    PetscCall(PetscFree2(d_nnz,o_nnz));
   } else M = *newmat;
 
-  CHKERRQ(MatGetOwnershipRange(A,&rstart,&rend));
-  CHKERRQ(MatSetOption(M,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE));
+  PetscCall(MatGetOwnershipRange(A,&rstart,&rend));
+  PetscCall(MatSetOption(M,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE));
   for (i=rstart; i<rend; i++) {
-    CHKERRQ(MatGetRow(A,i,&nz,&cwork,&vwork));
-    CHKERRQ(MatSetValues(M,1,&i,nz,cwork,vwork,INSERT_VALUES));
-    CHKERRQ(MatRestoreRow(A,i,&nz,&cwork,&vwork));
+    PetscCall(MatGetRow(A,i,&nz,&cwork,&vwork));
+    PetscCall(MatSetValues(M,1,&i,nz,cwork,vwork,INSERT_VALUES));
+    PetscCall(MatRestoreRow(A,i,&nz,&cwork,&vwork));
   }
-  CHKERRQ(MatAssemblyBegin(M,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(M,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY));
 
   if (reuse == MAT_INPLACE_MATRIX) {
-    CHKERRQ(MatHeaderReplace(A,&M));
+    PetscCall(MatHeaderReplace(A,&M));
   } else *newmat = M;
   PetscFunctionReturn(0);
 }

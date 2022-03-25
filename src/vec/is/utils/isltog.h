@@ -14,7 +14,7 @@ static PetscErrorCode PETSCMAPNAME(ISGlobalToLocalMappingApply)(ISLocalToGlobalM
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,1);
   if (!map) {
-    CHKERRQ(ISGlobalToLocalMappingSetUp(mapping));
+    PetscCall(ISGlobalToLocalMappingSetUp(mapping));
     map  = (PETSCMAPTYPE(ISLocalToGlobalMapping) *)mapping->data;
   }
   start = mapping->globalstart;

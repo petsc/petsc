@@ -8,26 +8,26 @@ static PetscErrorCode replace_submats(Mat A)
   PetscInt       i,j,nr,nc;
 
   PetscFunctionBeginUser;
-  CHKERRQ(MatNestGetSubMats(A,&nr,&nc,NULL));
-  CHKERRQ(PetscMalloc1(nr,&r));
-  CHKERRQ(PetscMalloc1(nc,&c));
-  CHKERRQ(MatNestGetISs(A,r,c));
+  PetscCall(MatNestGetSubMats(A,&nr,&nc,NULL));
+  PetscCall(PetscMalloc1(nr,&r));
+  PetscCall(PetscMalloc1(nc,&c));
+  PetscCall(MatNestGetISs(A,r,c));
   for (i=0;i<nr;i++) {
     for (j=0;j<nc;j++) {
       Mat        sA,nA;
       const char *prefix;
 
-      CHKERRQ(MatCreateSubMatrix(A,r[i],c[j],MAT_INITIAL_MATRIX,&sA));
-      CHKERRQ(MatDuplicate(sA,MAT_COPY_VALUES,&nA));
-      CHKERRQ(MatGetOptionsPrefix(sA,&prefix));
-      CHKERRQ(MatSetOptionsPrefix(nA,prefix));
-      CHKERRQ(MatNestSetSubMat(A,i,j,nA));
-      CHKERRQ(MatDestroy(&nA));
-      CHKERRQ(MatDestroy(&sA));
+      PetscCall(MatCreateSubMatrix(A,r[i],c[j],MAT_INITIAL_MATRIX,&sA));
+      PetscCall(MatDuplicate(sA,MAT_COPY_VALUES,&nA));
+      PetscCall(MatGetOptionsPrefix(sA,&prefix));
+      PetscCall(MatSetOptionsPrefix(nA,prefix));
+      PetscCall(MatNestSetSubMat(A,i,j,nA));
+      PetscCall(MatDestroy(&nA));
+      PetscCall(MatDestroy(&sA));
     }
   }
-  CHKERRQ(PetscFree(r));
-  CHKERRQ(PetscFree(c));
+  PetscCall(PetscFree(r));
+  PetscCall(PetscFree(c));
   PetscFunctionReturn(0);
 }
 
@@ -41,57 +41,57 @@ int main(int argc, char *argv[])
    PetscInt       i,j,rstart,rend;
    PetscBool      missA,missM;
 
-   CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-   CHKERRQ(MatCreateAIJ(PETSC_COMM_WORLD,10,10,PETSC_DECIDE,PETSC_DECIDE,1,NULL,0,NULL,&M));
-   CHKERRQ(MatAssemblyBegin(M,MAT_FINAL_ASSEMBLY));
-   CHKERRQ(MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY));
-   CHKERRQ(MatShift(M,1.));
-   CHKERRQ(MatGetOwnershipRange(M,&rstart,&rend));
-   CHKERRQ(ISCreateStride(PetscObjectComm((PetscObject)M),7,rstart,1,&f[0]));
-   CHKERRQ(ISComplement(f[0],rstart,rend,&f[1]));
+   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+   PetscCall(MatCreateAIJ(PETSC_COMM_WORLD,10,10,PETSC_DECIDE,PETSC_DECIDE,1,NULL,0,NULL,&M));
+   PetscCall(MatAssemblyBegin(M,MAT_FINAL_ASSEMBLY));
+   PetscCall(MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY));
+   PetscCall(MatShift(M,1.));
+   PetscCall(MatGetOwnershipRange(M,&rstart,&rend));
+   PetscCall(ISCreateStride(PetscObjectComm((PetscObject)M),7,rstart,1,&f[0]));
+   PetscCall(ISComplement(f[0],rstart,rend,&f[1]));
    for (i=0;i<2;i++) {
      for (j=0;j<2;j++) {
-       CHKERRQ(MatCreateSubMatrix(M,f[i],f[j],MAT_INITIAL_MATRIX,&sA[i][j]));
-       CHKERRQ(MatCreateSubMatrix(M,f[i],f[j],MAT_INITIAL_MATRIX,&sP[i][j]));
+       PetscCall(MatCreateSubMatrix(M,f[i],f[j],MAT_INITIAL_MATRIX,&sA[i][j]));
+       PetscCall(MatCreateSubMatrix(M,f[i],f[j],MAT_INITIAL_MATRIX,&sP[i][j]));
      }
    }
-   CHKERRQ(MatCreateNest(PetscObjectComm((PetscObject)M),2,f,2,f,&sA[0][0],&A));
-   CHKERRQ(MatCreateNest(PetscObjectComm((PetscObject)M),2,f,2,f,&sP[0][0],&P));
+   PetscCall(MatCreateNest(PetscObjectComm((PetscObject)M),2,f,2,f,&sA[0][0],&A));
+   PetscCall(MatCreateNest(PetscObjectComm((PetscObject)M),2,f,2,f,&sP[0][0],&P));
 
    /* Tests MatMissingDiagonal_Nest */
-   CHKERRQ(MatMissingDiagonal(M,&missM,NULL));
-   CHKERRQ(MatMissingDiagonal(A,&missA,NULL));
+   PetscCall(MatMissingDiagonal(M,&missM,NULL));
+   PetscCall(MatMissingDiagonal(A,&missA,NULL));
    if (missM != missA) {
-     CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Unexpected %s != %s\n",missM ? "true": "false",missA ? "true" : "false"));
+     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Unexpected %s != %s\n",missM ? "true": "false",missA ? "true" : "false"));
    }
 
-   CHKERRQ(MatDestroy(&M));
+   PetscCall(MatDestroy(&M));
 
-   CHKERRQ(KSPCreate(PetscObjectComm((PetscObject)A),&ksp));
-   CHKERRQ(KSPSetOperators(ksp,A,P));
-   CHKERRQ(KSPGetPC(ksp,&pc));
-   CHKERRQ(PCSetType(pc,PCFIELDSPLIT));
-   CHKERRQ(KSPSetFromOptions(ksp));
-   CHKERRQ(MatCreateVecs(A,&x,&b));
-   CHKERRQ(VecSetRandom(b,NULL));
-   CHKERRQ(KSPSolve(ksp,b,x));
-   CHKERRQ(replace_submats(A));
-   CHKERRQ(replace_submats(P));
-   CHKERRQ(KSPSolve(ksp,b,x));
+   PetscCall(KSPCreate(PetscObjectComm((PetscObject)A),&ksp));
+   PetscCall(KSPSetOperators(ksp,A,P));
+   PetscCall(KSPGetPC(ksp,&pc));
+   PetscCall(PCSetType(pc,PCFIELDSPLIT));
+   PetscCall(KSPSetFromOptions(ksp));
+   PetscCall(MatCreateVecs(A,&x,&b));
+   PetscCall(VecSetRandom(b,NULL));
+   PetscCall(KSPSolve(ksp,b,x));
+   PetscCall(replace_submats(A));
+   PetscCall(replace_submats(P));
+   PetscCall(KSPSolve(ksp,b,x));
 
-   CHKERRQ(KSPDestroy(&ksp));
-   CHKERRQ(VecDestroy(&x));
-   CHKERRQ(VecDestroy(&b));
-   CHKERRQ(MatDestroy(&A));
-   CHKERRQ(MatDestroy(&P));
+   PetscCall(KSPDestroy(&ksp));
+   PetscCall(VecDestroy(&x));
+   PetscCall(VecDestroy(&b));
+   PetscCall(MatDestroy(&A));
+   PetscCall(MatDestroy(&P));
    for (i=0;i<2;i++) {
-     CHKERRQ(ISDestroy(&f[i]));
+     PetscCall(ISDestroy(&f[i]));
      for (j=0;j<2;j++) {
-       CHKERRQ(MatDestroy(&sA[i][j]));
-       CHKERRQ(MatDestroy(&sP[i][j]));
+       PetscCall(MatDestroy(&sA[i][j]));
+       PetscCall(MatDestroy(&sP[i][j]));
      }
    }
-   CHKERRQ(PetscFinalize());
+   PetscCall(PetscFinalize());
    return 0;
 }
 

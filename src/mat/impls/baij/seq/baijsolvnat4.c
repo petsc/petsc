@@ -16,8 +16,8 @@ PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
   const PetscScalar *b;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(bb,&b));
-  CHKERRQ(VecGetArray(xx,&x));
+  PetscCall(VecGetArrayRead(bb,&b));
+  PetscCall(VecGetArray(xx,&x));
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_SOLVEBAIJ)
   {
@@ -84,9 +84,9 @@ PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
   }
 #endif
 
-  CHKERRQ(VecRestoreArrayRead(bb,&b));
-  CHKERRQ(VecRestoreArray(xx,&x));
-  CHKERRQ(PetscLogFlops(2.0*16*(a->nz) - 4.0*A->cmap->n));
+  PetscCall(VecRestoreArrayRead(bb,&b));
+  PetscCall(VecRestoreArray(xx,&x));
+  PetscCall(PetscLogFlops(2.0*16*(a->nz) - 4.0*A->cmap->n));
   PetscFunctionReturn(0);
 }
 
@@ -102,8 +102,8 @@ PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
   PetscScalar       s1,s2,s3,s4,x1,x2,x3,x4;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(bb,&b));
-  CHKERRQ(VecGetArray(xx,&x));
+  PetscCall(VecGetArrayRead(bb,&b));
+  PetscCall(VecGetArray(xx,&x));
   /* forward solve the lower triangular */
   idx  = 0;
   x[0] = b[idx]; x[1] = b[1+idx];x[2] = b[2+idx];x[3] = b[3+idx];
@@ -156,9 +156,9 @@ PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
   }
 
-  CHKERRQ(VecRestoreArrayRead(bb,&b));
-  CHKERRQ(VecRestoreArray(xx,&x));
-  CHKERRQ(PetscLogFlops(2.0*bs2*(a->nz) - bs*A->cmap->n));
+  PetscCall(VecRestoreArrayRead(bb,&b));
+  PetscCall(VecRestoreArray(xx,&x));
+  PetscCall(PetscLogFlops(2.0*bs2*(a->nz) - bs*A->cmap->n));
   PetscFunctionReturn(0);
 }
 
@@ -171,8 +171,8 @@ PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_Demotion(Mat A,Vec bb,Vec xx)
   PetscScalar       *x;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(bb,&b));
-  CHKERRQ(VecGetArray(xx,&x));
+  PetscCall(VecGetArrayRead(bb,&b));
+  PetscCall(VecGetArray(xx,&x));
 
   {
     MatScalar       s1,s2,s3,s4,x1,x2,x3,x4;
@@ -245,9 +245,9 @@ PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_Demotion(Mat A,Vec bb,Vec xx)
     }
   }
 
-  CHKERRQ(VecRestoreArrayRead(bb,&b));
-  CHKERRQ(VecRestoreArray(xx,&x));
-  CHKERRQ(PetscLogFlops(2.0*16*(a->nz) - 4.0*A->cmap->n));
+  PetscCall(VecRestoreArrayRead(bb,&b));
+  PetscCall(VecRestoreArray(xx,&x));
+  PetscCall(PetscLogFlops(2.0*16*(a->nz) - 4.0*A->cmap->n));
   PetscFunctionReturn(0);
 }
 
@@ -272,8 +272,8 @@ PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion_usj(Mat A,Vec bb,
   */
   PREFETCH_NTA(aa+16*ai[1]);
 
-  CHKERRQ(VecGetArray(bb,&b));
-  CHKERRQ(VecGetArray(xx,&x));
+  PetscCall(VecGetArray(bb,&b));
+  PetscCall(VecGetArray(xx,&x));
   {
     /* x will first be computed in single precision then promoted inplace to double */
     MatScalar      *v,*t=(MatScalar*)x;
@@ -442,9 +442,9 @@ PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion_usj(Mat A,Vec bb,
     }
 
   } /* End of artificial scope. */
-  CHKERRQ(VecRestoreArray(bb,&b));
-  CHKERRQ(VecRestoreArray(xx,&x));
-  CHKERRQ(PetscLogFlops(2.0*16*(a->nz) - 4.0*A->cmap->n));
+  PetscCall(VecRestoreArray(bb,&b));
+  PetscCall(VecRestoreArray(xx,&x));
+  PetscCall(PetscLogFlops(2.0*16*(a->nz) - 4.0*A->cmap->n));
   SSE_SCOPE_END;
   PetscFunctionReturn(0);
 }
@@ -467,8 +467,8 @@ PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion(Mat A,Vec bb,Vec 
   */
   PREFETCH_NTA(aa+16*ai[1]);
 
-  CHKERRQ(VecGetArray(bb,&b));
-  CHKERRQ(VecGetArray(xx,&x));
+  PetscCall(VecGetArray(bb,&b));
+  PetscCall(VecGetArray(xx,&x));
   {
     /* x will first be computed in single precision then promoted inplace to double */
     MatScalar *v,*t=(MatScalar*)x;
@@ -639,9 +639,9 @@ PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion(Mat A,Vec bb,Vec 
     }
 
   } /* End of artificial scope. */
-  CHKERRQ(VecRestoreArray(bb,&b));
-  CHKERRQ(VecRestoreArray(xx,&x));
-  CHKERRQ(PetscLogFlops(2.0*16*(a->nz) - 4.0*A->cmap->n));
+  PetscCall(VecRestoreArray(bb,&b));
+  PetscCall(VecRestoreArray(xx,&x));
+  PetscCall(PetscLogFlops(2.0*16*(a->nz) - 4.0*A->cmap->n));
   SSE_SCOPE_END;
   PetscFunctionReturn(0);
 }

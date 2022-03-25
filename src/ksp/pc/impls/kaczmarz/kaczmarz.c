@@ -8,7 +8,7 @@ typedef struct {
 static PetscErrorCode PCDestroy_Kaczmarz(PC pc)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscFree(pc->data));
+  PetscCall(PetscFree(pc->data));
   PetscFunctionReturn(0);
 }
 
@@ -24,14 +24,14 @@ static PetscErrorCode PCApply_Kaczmarz(PC pc,Vec x,Vec y)
   PetscReal         lambda=jac->lambda;
 
   PetscFunctionBegin;
-  CHKERRQ(MatGetOwnershipRange(pc->pmat,&xs,&xe));
-  CHKERRQ(MatGetOwnershipRangeColumn(pc->pmat,&ys,&ye));
-  CHKERRQ(VecSet(y,0.));
-  CHKERRQ(VecGetArrayRead(x,&xarray));
-  CHKERRQ(VecGetArray(y,&yarray));
+  PetscCall(MatGetOwnershipRange(pc->pmat,&xs,&xe));
+  PetscCall(MatGetOwnershipRangeColumn(pc->pmat,&ys,&ye));
+  PetscCall(VecSet(y,0.));
+  PetscCall(VecGetArrayRead(x,&xarray));
+  PetscCall(VecGetArray(y,&yarray));
   for (i=xs;i<xe;i++) {
     /* get the maximum row width and row norms */
-    CHKERRQ(MatGetRow(pc->pmat,i,&ncols,&cols,&vals));
+    PetscCall(MatGetRow(pc->pmat,i,&ncols,&cols,&vals));
     r = xarray[i-xs];
     anrm = 0.;
     for (j=0;j<ncols;j++) {
@@ -47,11 +47,11 @@ static PetscErrorCode PCApply_Kaczmarz(PC pc,Vec x,Vec y)
         }
       }
     }
-    CHKERRQ(MatRestoreRow(pc->pmat,i,&ncols,&cols,&vals));
+    PetscCall(MatRestoreRow(pc->pmat,i,&ncols,&cols,&vals));
   }
   if (jac->symmetric) {
     for (i=xe-1;i>=xs;i--) {
-      CHKERRQ(MatGetRow(pc->pmat,i,&ncols,&cols,&vals));
+      PetscCall(MatGetRow(pc->pmat,i,&ncols,&cols,&vals));
       r = xarray[i-xs];
       anrm = 0.;
       for (j=0;j<ncols;j++) {
@@ -67,11 +67,11 @@ static PetscErrorCode PCApply_Kaczmarz(PC pc,Vec x,Vec y)
           }
         }
       }
-      CHKERRQ(MatRestoreRow(pc->pmat,i,&ncols,&cols,&vals));
+      PetscCall(MatRestoreRow(pc->pmat,i,&ncols,&cols,&vals));
     }
   }
-  CHKERRQ(VecRestoreArray(y,&yarray));
-  CHKERRQ(VecRestoreArrayRead(x,&xarray));
+  PetscCall(VecRestoreArray(y,&yarray));
+  PetscCall(VecRestoreArrayRead(x,&xarray));
   PetscFunctionReturn(0);
 }
 
@@ -80,10 +80,10 @@ PetscErrorCode PCSetFromOptions_Kaczmarz(PetscOptionItems *PetscOptionsObject,PC
   PC_Kaczmarz    *jac = (PC_Kaczmarz*)pc->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"Kaczmarz options"));
-  CHKERRQ(PetscOptionsReal("-pc_kaczmarz_lambda","relaxation factor (0 < lambda)","",jac->lambda,&jac->lambda,NULL));
-  CHKERRQ(PetscOptionsBool("-pc_kaczmarz_symmetric","apply row projections symmetrically","",jac->symmetric,&jac->symmetric,NULL));
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"Kaczmarz options"));
+  PetscCall(PetscOptionsReal("-pc_kaczmarz_lambda","relaxation factor (0 < lambda)","",jac->lambda,&jac->lambda,NULL));
+  PetscCall(PetscOptionsBool("-pc_kaczmarz_symmetric","apply row projections symmetrically","",jac->symmetric,&jac->symmetric,NULL));
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -93,9 +93,9 @@ PetscErrorCode PCView_Kaczmarz(PC pc,PetscViewer viewer)
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  lambda = %g\n",(double)jac->lambda));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  lambda = %g\n",(double)jac->lambda));
   }
   PetscFunctionReturn(0);
 }
@@ -124,7 +124,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Kaczmarz(PC pc)
   PC_Kaczmarz    *jac;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNewLog(pc,&jac));
+  PetscCall(PetscNewLog(pc,&jac));
 
   pc->ops->apply           = PCApply_Kaczmarz;
   pc->ops->setfromoptions  = PCSetFromOptions_Kaczmarz;

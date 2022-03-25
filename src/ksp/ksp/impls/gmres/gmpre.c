@@ -21,6 +21,6 @@
 PetscErrorCode  KSPGMRESSetPreAllocateVectors(KSP ksp)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscTryMethod(ksp,"KSPGMRESSetPreAllocateVectors_C",(KSP),(ksp)));
+  PetscCall(PetscTryMethod(ksp,"KSPGMRESSetPreAllocateVectors_C",(KSP),(ksp)));
   PetscFunctionReturn(0);
 }

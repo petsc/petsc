@@ -52,17 +52,17 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program and set problem parameters
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(PetscInitialize(&argc, &argv, (char*)0, help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscInitialize(&argc, &argv, (char*)0, help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "ex22 DMDA tutorial example options", "DMDA");CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsRangeInt("-Mx", "dimension along x-axis", "ex22.c", Mx, &Mx, NULL, 0, PETSC_MAX_INT));
-  CHKERRQ(PetscOptionsRangeInt("-My", "dimension along y-axis", "ex22.c", My, &My, NULL, 0, PETSC_MAX_INT));
-  CHKERRQ(PetscOptionsRangeInt("-Mz", "dimension along z-axis", "ex22.c", Mz, &Mz, NULL, 0, PETSC_MAX_INT));
-  CHKERRQ(PetscOptionsEnum("-sliceaxis","axis along which 2D slice is extracted from : X, Y, Z","",sliceaxes,(PetscEnum)sliceaxis,(PetscEnum*)&sliceaxis,NULL));
-  CHKERRQ(PetscOptionsRangeInt("-gp", "index along sliceaxis at which 2D slice is extracted", "ex22.c", gp, &gp, NULL, 0, PETSC_MAX_INT));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "ex22 DMDA tutorial example options", "DMDA");PetscCall(ierr);
+  PetscCall(PetscOptionsRangeInt("-Mx", "dimension along x-axis", "ex22.c", Mx, &Mx, NULL, 0, PETSC_MAX_INT));
+  PetscCall(PetscOptionsRangeInt("-My", "dimension along y-axis", "ex22.c", My, &My, NULL, 0, PETSC_MAX_INT));
+  PetscCall(PetscOptionsRangeInt("-Mz", "dimension along z-axis", "ex22.c", Mz, &Mz, NULL, 0, PETSC_MAX_INT));
+  PetscCall(PetscOptionsEnum("-sliceaxis","axis along which 2D slice is extracted from : X, Y, Z","",sliceaxes,(PetscEnum)sliceaxis,(PetscEnum*)&sliceaxis,NULL));
+  PetscCall(PetscOptionsRangeInt("-gp", "index along sliceaxis at which 2D slice is extracted", "ex22.c", gp, &gp, NULL, 0, PETSC_MAX_INT));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
   /* Ensure that the requested slice is not out of bounds for the selected axis */
   if (sliceaxis==DM_X) {
@@ -83,21 +83,21 @@ int main(int argc,char **argv)
                       PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE,
                       1, 1,
                       NULL, NULL, NULL,
-                      &da3D);CHKERRQ(ierr);
-  CHKERRQ(DMSetFromOptions(da3D));
-  CHKERRQ(DMSetUp(da3D));
+                      &da3D);PetscCall(ierr);
+  PetscCall(DMSetFromOptions(da3D));
+  PetscCall(DMSetUp(da3D));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create the parent vector
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-  CHKERRQ(DMCreateGlobalVector(da3D, &vec_full));
-  CHKERRQ(PetscObjectSetName((PetscObject) vec_full, "full_vector"));
+  PetscCall(DMCreateGlobalVector(da3D, &vec_full));
+  PetscCall(PetscObjectSetName((PetscObject) vec_full, "full_vector"));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Populate the 3D vector
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(DMDAGetCorners(da3D, &ixs, &iys, &izs, &ixm, &iym, &izm));
-  CHKERRQ(DMDAVecGetArray(da3D, vec_full, &vecdata3d));
+  PetscCall(DMDAGetCorners(da3D, &ixs, &iys, &izs, &ixm, &iym, &izm));
+  PetscCall(DMDAVecGetArray(da3D, vec_full, &vecdata3d));
   for (k=izs; k<izs+izm; k++) {
     for (j=iys; j<iys+iym; j++) {
       for (i=ixs; i<ixs+ixm; i++) {
@@ -105,7 +105,7 @@ int main(int argc,char **argv)
       }
     }
   }
-  CHKERRQ(DMDAVecRestoreArray(da3D, vec_full, &vecdata3d));
+  PetscCall(DMDAVecRestoreArray(da3D, vec_full, &vecdata3d));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Get an IS corresponding to a 2D slice
@@ -120,41 +120,41 @@ int main(int argc,char **argv)
     lower.i = 0;  lower.j = 0;  lower.k = gp;
     upper.i = Mx; upper.j = My; upper.k = gp;
   }
-  CHKERRQ(DMDACreatePatchIS(da3D, &lower, &upper, &patchis_3d, patchis_offproc));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "\n IS to select slice from 3D DMDA vector : \n"));
-  CHKERRQ(ISView(patchis_3d, PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(DMDACreatePatchIS(da3D, &lower, &upper, &patchis_3d, patchis_offproc));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n IS to select slice from 3D DMDA vector : \n"));
+  PetscCall(ISView(patchis_3d, PETSC_VIEWER_STDOUT_WORLD));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Use the obtained IS to extract the slice as a subvector
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(VecGetSubVector(vec_full, patchis_3d, &vec_extracted));
+  PetscCall(VecGetSubVector(vec_full, patchis_3d, &vec_extracted));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      View the extracted subvector
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_DENSE));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "\n Extracted slice vector, in DMDA ordering : \n"));
-  CHKERRQ(VecView(vec_extracted, PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_DENSE));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n Extracted slice vector, in DMDA ordering : \n"));
+  PetscCall(VecView(vec_extracted, PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Query 3D DMDA layout, get the subset MPI communicator
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
   if (sliceaxis==DM_X) {
-    CHKERRQ(DMDAGetInfo(da3D, NULL, NULL, NULL, NULL, NULL, &m1, &m2, NULL, NULL, NULL, NULL, NULL, NULL));
-    CHKERRQ(DMDAGetOwnershipRanges(da3D, NULL, &l1, &l2));
+    PetscCall(DMDAGetInfo(da3D, NULL, NULL, NULL, NULL, NULL, &m1, &m2, NULL, NULL, NULL, NULL, NULL, NULL));
+    PetscCall(DMDAGetOwnershipRanges(da3D, NULL, &l1, &l2));
     M1 = My; M2 = Mz;
-    CHKERRQ(DMDAGetProcessorSubset(da3D, DM_X, gp, &subset_mpi_comm));
+    PetscCall(DMDAGetProcessorSubset(da3D, DM_X, gp, &subset_mpi_comm));
   } else if (sliceaxis==DM_Y) {
-    CHKERRQ(DMDAGetInfo(da3D, NULL, NULL, NULL, NULL, &m1, NULL, &m2, NULL, NULL, NULL, NULL, NULL, NULL));
-    CHKERRQ(DMDAGetOwnershipRanges(da3D, &l1, NULL, &l2));
+    PetscCall(DMDAGetInfo(da3D, NULL, NULL, NULL, NULL, &m1, NULL, &m2, NULL, NULL, NULL, NULL, NULL, NULL));
+    PetscCall(DMDAGetOwnershipRanges(da3D, &l1, NULL, &l2));
     M1 = Mx; M2 = Mz;
-    CHKERRQ(DMDAGetProcessorSubset(da3D, DM_Y, gp, &subset_mpi_comm));
+    PetscCall(DMDAGetProcessorSubset(da3D, DM_Y, gp, &subset_mpi_comm));
   } else if (sliceaxis==DM_Z) {
-    CHKERRQ(DMDAGetInfo(da3D, NULL, NULL, NULL, NULL, &m1, &m2, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
-    CHKERRQ(DMDAGetOwnershipRanges(da3D, &l1, &l2, NULL));
+    PetscCall(DMDAGetInfo(da3D, NULL, NULL, NULL, NULL, &m1, &m2, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
+    PetscCall(DMDAGetOwnershipRanges(da3D, &l1, &l2, NULL));
     M1 = Mx; M2 = My;
-    CHKERRQ(DMDAGetProcessorSubset(da3D, DM_Z, gp, &subset_mpi_comm));
+    PetscCall(DMDAGetProcessorSubset(da3D, DM_Z, gp, &subset_mpi_comm));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -164,9 +164,9 @@ int main(int argc,char **argv)
      indexed slice vector)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
   if (subset_mpi_comm != MPI_COMM_NULL) {
-    CHKERRMPI(MPI_Comm_size(subset_mpi_comm, &size));
-    CHKERRQ(PetscSynchronizedPrintf(subset_mpi_comm, "subset MPI subcomm size is : %d, includes global rank : %d \n", size, rank));
-    CHKERRQ(PetscSynchronizedFlush(subset_mpi_comm, PETSC_STDOUT));
+    PetscCallMPI(MPI_Comm_size(subset_mpi_comm, &size));
+    PetscCall(PetscSynchronizedPrintf(subset_mpi_comm, "subset MPI subcomm size is : %d, includes global rank : %d \n", size, rank));
+    PetscCall(PetscSynchronizedFlush(subset_mpi_comm, PETSC_STDOUT));
     ierr = DMDACreate2d(subset_mpi_comm,
                         DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
                         DMDA_STENCIL_STAR,
@@ -174,89 +174,89 @@ int main(int argc,char **argv)
                         m1, m2,
                         1, 1,
                         l1, l2,
-                        &da2D);CHKERRQ(ierr);
-    CHKERRQ(DMSetFromOptions(da2D));
-    CHKERRQ(DMSetUp(da2D));
+                        &da2D);PetscCall(ierr);
+    PetscCall(DMSetFromOptions(da2D));
+    PetscCall(DMSetUp(da2D));
 
     /* Create a 2D patch IS for the slice */
     lower.i = 0;  lower.j = 0;
     upper.i = M1; upper.j = M2;
-    CHKERRQ(DMDACreatePatchIS(da2D, &lower, &upper, &patchis_2d, patchis_offproc));
+    PetscCall(DMDACreatePatchIS(da2D, &lower, &upper, &patchis_2d, patchis_offproc));
 
     /* Convert the 2D patch IS to natural indexing (column major flattened) */
-    CHKERRQ(ISDuplicate(patchis_2d, &scatis_natural_slice));
-    CHKERRQ(DMDAGetAO(da2D, &da2D_ao));
-    CHKERRQ(AOPetscToApplicationIS(da2D_ao, scatis_natural_slice));
-    CHKERRQ(ISGetIndices(scatis_natural_slice, &is_array));
-    CHKERRQ(ISGetLocalSize(scatis_natural_slice, &in));
+    PetscCall(ISDuplicate(patchis_2d, &scatis_natural_slice));
+    PetscCall(DMDAGetAO(da2D, &da2D_ao));
+    PetscCall(AOPetscToApplicationIS(da2D_ao, scatis_natural_slice));
+    PetscCall(ISGetIndices(scatis_natural_slice, &is_array));
+    PetscCall(ISGetLocalSize(scatis_natural_slice, &in));
 
     /* Create an aliased IS on the 3D DMDA's communicator */
-    CHKERRQ(ISCreateGeneral(PETSC_COMM_WORLD, in, is_array, PETSC_USE_POINTER, &scatis_natural_slice_g));
-    CHKERRQ(ISRestoreIndices(scatis_natural_slice, &is_array));
+    PetscCall(ISCreateGeneral(PETSC_COMM_WORLD, in, is_array, PETSC_USE_POINTER, &scatis_natural_slice_g));
+    PetscCall(ISRestoreIndices(scatis_natural_slice, &is_array));
 
     /* Create a 2D DMDA global vector */
-    CHKERRQ(DMCreateGlobalVector(da2D, &vec_slice));
-    CHKERRQ(PetscObjectSetName((PetscObject) vec_slice, "slice_vector_natural"));
-    CHKERRQ(VecGetLocalSize(vec_slice ,&vn));
-    CHKERRQ(VecGetArrayRead(vec_slice, &array));
+    PetscCall(DMCreateGlobalVector(da2D, &vec_slice));
+    PetscCall(PetscObjectSetName((PetscObject) vec_slice, "slice_vector_natural"));
+    PetscCall(VecGetLocalSize(vec_slice ,&vn));
+    PetscCall(VecGetArrayRead(vec_slice, &array));
 
     /* Create an aliased version of the above on the 3D DMDA's communicator */
-    CHKERRQ(VecCreateMPIWithArray(PETSC_COMM_WORLD, 1, vn, M1*M2, array, &vec_slice_g));
-    CHKERRQ(VecRestoreArrayRead(vec_slice, &array));
+    PetscCall(VecCreateMPIWithArray(PETSC_COMM_WORLD, 1, vn, M1*M2, array, &vec_slice_g));
+    PetscCall(VecRestoreArrayRead(vec_slice, &array));
   } else {
     /* Ranks not part of the subset MPI communicator provide no entries, but the routines for creating
        the IS and Vec on the 3D DMDA's communicator still need to called, since they are collective routines */
-    CHKERRQ(ISCreateGeneral(PETSC_COMM_WORLD, 0, NULL, PETSC_USE_POINTER, &scatis_natural_slice_g));
-    CHKERRQ(VecCreateMPIWithArray(PETSC_COMM_WORLD, 1, 0, M1*M2, NULL, &vec_slice_g));
+    PetscCall(ISCreateGeneral(PETSC_COMM_WORLD, 0, NULL, PETSC_USE_POINTER, &scatis_natural_slice_g));
+    PetscCall(VecCreateMPIWithArray(PETSC_COMM_WORLD, 1, 0, M1*M2, NULL, &vec_slice_g));
   }
-  CHKERRQ(PetscBarrier(NULL));
+  PetscCall(PetscBarrier(NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create IS that maps from the extracted slice vector
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(VecGetOwnershipRange(vec_extracted, &low, &high));
-  CHKERRQ(ISCreateStride(PETSC_COMM_WORLD, high-low, low, 1, &scatis_extracted_slice));
+  PetscCall(VecGetOwnershipRange(vec_extracted, &low, &high));
+  PetscCall(ISCreateStride(PETSC_COMM_WORLD, high-low, low, 1, &scatis_extracted_slice));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Scatter extracted subvector -> natural 2D slice vector
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(VecScatterCreate(vec_extracted, scatis_extracted_slice, vec_slice_g, scatis_natural_slice_g, &vscat));
-  CHKERRQ(VecScatterBegin(vscat, vec_extracted, vec_slice_g, INSERT_VALUES, SCATTER_FORWARD));
-  CHKERRQ(VecScatterEnd(vscat, vec_extracted, vec_slice_g, INSERT_VALUES, SCATTER_FORWARD));
+  PetscCall(VecScatterCreate(vec_extracted, scatis_extracted_slice, vec_slice_g, scatis_natural_slice_g, &vscat));
+  PetscCall(VecScatterBegin(vscat, vec_extracted, vec_slice_g, INSERT_VALUES, SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(vscat, vec_extracted, vec_slice_g, INSERT_VALUES, SCATTER_FORWARD));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      View the natural 2D slice vector
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_DENSE));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "\n Extracted slice vector, in natural ordering : \n"));
-  CHKERRQ(VecView(vec_slice_g, PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_DENSE));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n Extracted slice vector, in natural ordering : \n"));
+  PetscCall(VecView(vec_slice_g, PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Restore subvector
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(VecRestoreSubVector(vec_full, patchis_3d, &vec_extracted));
+  PetscCall(VecRestoreSubVector(vec_full, patchis_3d, &vec_extracted));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Destroy data structures and exit.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(VecDestroy(&vec_full));
-  CHKERRQ(VecScatterDestroy(&vscat));
-  CHKERRQ(ISDestroy(&scatis_extracted_slice));
-  CHKERRQ(ISDestroy(&scatis_natural_slice_g));
-  CHKERRQ(VecDestroy(&vec_slice_g));
-  CHKERRQ(ISDestroy(&patchis_3d));
-  CHKERRQ(DMDestroy(&da3D));
+  PetscCall(VecDestroy(&vec_full));
+  PetscCall(VecScatterDestroy(&vscat));
+  PetscCall(ISDestroy(&scatis_extracted_slice));
+  PetscCall(ISDestroy(&scatis_natural_slice_g));
+  PetscCall(VecDestroy(&vec_slice_g));
+  PetscCall(ISDestroy(&patchis_3d));
+  PetscCall(DMDestroy(&da3D));
 
   if (subset_mpi_comm != MPI_COMM_NULL) {
-    CHKERRQ(ISDestroy(&patchis_2d));
-    CHKERRQ(ISDestroy(&scatis_natural_slice));
-    CHKERRQ(VecDestroy(&vec_slice));
-    CHKERRQ(DMDestroy(&da2D));
-    CHKERRMPI(MPI_Comm_free(&subset_mpi_comm));
+    PetscCall(ISDestroy(&patchis_2d));
+    PetscCall(ISDestroy(&scatis_natural_slice));
+    PetscCall(VecDestroy(&vec_slice));
+    PetscCall(DMDestroy(&da2D));
+    PetscCallMPI(MPI_Comm_free(&subset_mpi_comm));
   }
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

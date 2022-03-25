@@ -55,31 +55,31 @@ int main(int argc, char **argv)
   struct _User      user;       /* user-defined work context */
   PetscViewer       viewer;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   /* Initialize user application context */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"van der Pol options","");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"van der Pol options","");PetscCall(ierr);
   user.mu      = 1e0;
-  CHKERRQ(PetscOptionsReal("-eps","Stiffness controller","",user.mu,&user.mu,NULL));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(PetscOptionsReal("-eps","Stiffness controller","",user.mu,&user.mu,NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   /*
-   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-monitor",&monitor,NULL));
+   PetscCall(PetscOptionsGetBool(NULL,NULL,"-monitor",&monitor,NULL));
    */
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Create necessary matrix and vectors, solve same ODE on every process
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,2,2));
-  CHKERRQ(MatSetFromOptions(A));
-  CHKERRQ(MatSetUp(A));
-  CHKERRQ(MatCreateVecs(A,&x,NULL));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,2,2));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSetUp(A));
+  PetscCall(MatCreateVecs(A,&x,NULL));
 
-  CHKERRQ(MatCreateVecs(A,&ref,NULL));
-  CHKERRQ(VecGetArray(ref,&x_ptr));
+  PetscCall(MatCreateVecs(A,&ref,NULL));
+  PetscCall(VecGetArray(ref,&x_ptr));
   /*
    * [0,1], mu=10^-3
    */
@@ -103,66 +103,66 @@ int main(int argc, char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Create timestepping solver context
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
-  CHKERRQ(TSSetType(ts,TSEIMEX));
-  CHKERRQ(TSSetRHSFunction(ts,NULL,RHSFunction,&user));
-  CHKERRQ(TSSetIFunction(ts,NULL,IFunction,&user));
-  CHKERRQ(TSSetIJacobian(ts,A,A,IJacobian,&user));
+  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
+  PetscCall(TSSetType(ts,TSEIMEX));
+  PetscCall(TSSetRHSFunction(ts,NULL,RHSFunction,&user));
+  PetscCall(TSSetIFunction(ts,NULL,IFunction,&user));
+  PetscCall(TSSetIJacobian(ts,A,A,IJacobian,&user));
 
   dt    = 0.00001;
   ftime = 1.1;
-  CHKERRQ(TSSetTimeStep(ts,dt));
-  CHKERRQ(TSSetMaxTime(ts,ftime));
-  CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
+  PetscCall(TSSetTimeStep(ts,dt));
+  PetscCall(TSSetMaxTime(ts,ftime));
+  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(VecGetArray(x,&x_ptr));
+  PetscCall(VecGetArray(x,&x_ptr));
   x_ptr[0] = 2.;
   x_ptr[1] = -2./3. + 10./81.*(user.mu) - 292./2187.* (user.mu) * (user.mu)
     -1814./19683.*(user.mu)*(user.mu)*(user.mu);
-  CHKERRQ(TSSetSolution(ts,x));
-  CHKERRQ(VecGetSize(x,&mx));
+  PetscCall(TSSetSolution(ts,x));
+  PetscCall(VecGetSize(x,&mx));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSSetFromOptions(ts));
+  PetscCall(TSSetFromOptions(ts));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Solve nonlinear system
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSSolve(ts,x));
-  CHKERRQ(TSGetTime(ts,&ftime));
-  CHKERRQ(TSGetStepNumber(ts,&steps));
+  PetscCall(TSSolve(ts,x));
+  PetscCall(TSGetTime(ts,&ftime));
+  PetscCall(TSGetStepNumber(ts,&steps));
 
-  CHKERRQ(VecAXPY(x,-1.0,ref));
-  CHKERRQ(VecNorm(x,NORM_2,&norm));
-  CHKERRQ(TSGetTimeStep(ts,&dt));
+  PetscCall(VecAXPY(x,-1.0,ref));
+  PetscCall(VecNorm(x,NORM_2,&norm));
+  PetscCall(TSGetTimeStep(ts,&dt));
 
   eimex_rowcol[0] = 0; eimex_rowcol[1] = 0; two = 2;
-  CHKERRQ(PetscOptionsGetIntArray(NULL,NULL,"-ts_eimex_row_col",eimex_rowcol,&two,NULL));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"order %11s %18s %37s\n","dt","norm","final solution components 0 and 1"));
-  CHKERRQ(VecGetArray(x,&x_ptr));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"(%D,%D) %10.8f %18.15f %18.15f %18.15f\n",eimex_rowcol[0],eimex_rowcol[1],(double)dt,(double)norm,(double)PetscRealPart(x_ptr[0]),(double)PetscRealPart(x_ptr[1])));
-  CHKERRQ(VecRestoreArray(x,&x_ptr));
+  PetscCall(PetscOptionsGetIntArray(NULL,NULL,"-ts_eimex_row_col",eimex_rowcol,&two,NULL));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"order %11s %18s %37s\n","dt","norm","final solution components 0 and 1"));
+  PetscCall(VecGetArray(x,&x_ptr));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"(%D,%D) %10.8f %18.15f %18.15f %18.15f\n",eimex_rowcol[0],eimex_rowcol[1],(double)dt,(double)norm,(double)PetscRealPart(x_ptr[0]),(double)PetscRealPart(x_ptr[1])));
+  PetscCall(VecRestoreArray(x,&x_ptr));
 
   /* Write line in convergence log */
-  CHKERRQ(PetscViewerCreate(PETSC_COMM_WORLD,&viewer));
-  CHKERRQ(PetscViewerSetType(viewer,PETSCVIEWERASCII));
-  CHKERRQ(PetscViewerFileSetMode(viewer,FILE_MODE_APPEND));
-  CHKERRQ(PetscViewerFileSetName(viewer,"eimex_nonstiff_vdp.txt"));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"%D %D %10.8f %18.15f\n",eimex_rowcol[0],eimex_rowcol[1],(double)dt,(double)norm));
-  CHKERRQ(PetscViewerDestroy(&viewer));
+  PetscCall(PetscViewerCreate(PETSC_COMM_WORLD,&viewer));
+  PetscCall(PetscViewerSetType(viewer,PETSCVIEWERASCII));
+  PetscCall(PetscViewerFileSetMode(viewer,FILE_MODE_APPEND));
+  PetscCall(PetscViewerFileSetName(viewer,"eimex_nonstiff_vdp.txt"));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"%D %D %10.8f %18.15f\n",eimex_rowcol[0],eimex_rowcol[1],(double)dt,(double)norm));
+  PetscCall(PetscViewerDestroy(&viewer));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Free work space.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&ref));
-  CHKERRQ(TSDestroy(&ts));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatDestroy(&A));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&ref));
+  PetscCall(TSDestroy(&ts));
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -172,12 +172,12 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
   const PetscScalar *x;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(X,&x));
-  CHKERRQ(VecGetArray(F,&f));
+  PetscCall(VecGetArrayRead(X,&x));
+  PetscCall(VecGetArray(F,&f));
   f[0] = x[1];
   f[1] = 0.0;
-  CHKERRQ(VecRestoreArrayRead(X,&x));
-  CHKERRQ(VecRestoreArray(F,&f));
+  PetscCall(VecRestoreArrayRead(X,&x));
+  PetscCall(VecRestoreArray(F,&f));
   PetscFunctionReturn(0);
 }
 
@@ -188,14 +188,14 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ptr
   const PetscScalar *x,*xdot;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(X,&x));
-  CHKERRQ(VecGetArrayRead(Xdot,&xdot));
-  CHKERRQ(VecGetArray(F,&f));
+  PetscCall(VecGetArrayRead(X,&x));
+  PetscCall(VecGetArrayRead(Xdot,&xdot));
+  PetscCall(VecGetArray(F,&f));
   f[0] = xdot[0];
   f[1] = xdot[1]-((1.-x[0]*x[0])*x[1]-x[0])/user->mu;
-  CHKERRQ(VecRestoreArrayRead(X,&x));
-  CHKERRQ(VecRestoreArrayRead(Xdot,&xdot));
-  CHKERRQ(VecRestoreArray(F,&f));
+  PetscCall(VecRestoreArrayRead(X,&x));
+  PetscCall(VecRestoreArrayRead(Xdot,&xdot));
+  PetscCall(VecRestoreArray(F,&f));
   PetscFunctionReturn(0);
 }
 
@@ -208,19 +208,19 @@ static PetscErrorCode IJacobian(TS  ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Ma
   const PetscScalar *x;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(X,&x));
+  PetscCall(VecGetArrayRead(X,&x));
   J[0][0] = a;
   J[0][1] = 0;
   J[1][0] = (2.*x[0]*x[1]+1.)/mu;
   J[1][1] = a - (1. - x[0]*x[0])/mu;
-  CHKERRQ(MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES));
-  CHKERRQ(VecRestoreArrayRead(X,&x));
+  PetscCall(MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES));
+  PetscCall(VecRestoreArrayRead(X,&x));
 
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   if (A != B) {
-    CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
   }
   PetscFunctionReturn(0);
 }

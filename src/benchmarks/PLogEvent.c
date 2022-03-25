@@ -8,50 +8,50 @@ int main(int argc,char **argv)
   PetscLogEvent  e1;
   PetscBool      flg;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,0,0));
+  PetscCall(PetscInitialize(&argc,&argv,0,0));
   PetscLogEventRegister("*DummyEvent",0,&e1);
   /* To take care of the paging effects */
-  CHKERRQ(PetscTime(&x));
-  CHKERRQ(PetscLogEventBegin(e1,&x,0,0,0));
-  CHKERRQ(PetscLogEventEnd(e1,&x,0,0,0));
+  PetscCall(PetscTime(&x));
+  PetscCall(PetscLogEventBegin(e1,&x,0,0,0));
+  PetscCall(PetscLogEventEnd(e1,&x,0,0,0));
 
-  CHKERRQ(PetscTime(&x));
+  PetscCall(PetscTime(&x));
   /* 10 Occurrences of the dummy event */
-  CHKERRQ(PetscLogEventBegin(e1,&x,0,0,0));
-  CHKERRQ(PetscLogEventEnd(e1,&x,0,0,0));
-  CHKERRQ(PetscLogEventBegin(e1,&x,&y,0,0));
-  CHKERRQ(PetscLogEventEnd(e1,&x,&y,0,0));
-  CHKERRQ(PetscLogEventBegin(e1,&y,0,0,0));
-  CHKERRQ(PetscLogEventEnd(e1,&y,0,0,0));
-  CHKERRQ(PetscLogEventBegin(e1,&x,0,0,0));
-  CHKERRQ(PetscLogEventEnd(e1,&x,0,0,0));
-  CHKERRQ(PetscLogEventBegin(e1,&x,&y,0,0));
-  CHKERRQ(PetscLogEventEnd(e1,&x,&y,0,0));
-  CHKERRQ(PetscLogEventBegin(e1,&y,0,0,0));
-  CHKERRQ(PetscLogEventEnd(e1,&y,0,0,0));
-  CHKERRQ(PetscLogEventBegin(e1,&x,0,0,0));
-  CHKERRQ(PetscLogEventEnd(e1,&x,0,0,0));
-  CHKERRQ(PetscLogEventBegin(e1,&x,&y,0,0));
-  CHKERRQ(PetscLogEventEnd(e1,&x,&y,0,0));
-  CHKERRQ(PetscLogEventBegin(e1,&y,0,0,0));
-  CHKERRQ(PetscLogEventEnd(e1,&y,0,0,0));
-  CHKERRQ(PetscLogEventBegin(e1,&x,&e1,0,0));
-  CHKERRQ(PetscLogEventEnd(e1,&x,&e1,0,0));
+  PetscCall(PetscLogEventBegin(e1,&x,0,0,0));
+  PetscCall(PetscLogEventEnd(e1,&x,0,0,0));
+  PetscCall(PetscLogEventBegin(e1,&x,&y,0,0));
+  PetscCall(PetscLogEventEnd(e1,&x,&y,0,0));
+  PetscCall(PetscLogEventBegin(e1,&y,0,0,0));
+  PetscCall(PetscLogEventEnd(e1,&y,0,0,0));
+  PetscCall(PetscLogEventBegin(e1,&x,0,0,0));
+  PetscCall(PetscLogEventEnd(e1,&x,0,0,0));
+  PetscCall(PetscLogEventBegin(e1,&x,&y,0,0));
+  PetscCall(PetscLogEventEnd(e1,&x,&y,0,0));
+  PetscCall(PetscLogEventBegin(e1,&y,0,0,0));
+  PetscCall(PetscLogEventEnd(e1,&y,0,0,0));
+  PetscCall(PetscLogEventBegin(e1,&x,0,0,0));
+  PetscCall(PetscLogEventEnd(e1,&x,0,0,0));
+  PetscCall(PetscLogEventBegin(e1,&x,&y,0,0));
+  PetscCall(PetscLogEventEnd(e1,&x,&y,0,0));
+  PetscCall(PetscLogEventBegin(e1,&y,0,0,0));
+  PetscCall(PetscLogEventEnd(e1,&y,0,0,0));
+  PetscCall(PetscLogEventBegin(e1,&x,&e1,0,0));
+  PetscCall(PetscLogEventEnd(e1,&x,&e1,0,0));
 
-  CHKERRQ(PetscTime(&y));
+  PetscCall(PetscTime(&y));
   fprintf(stderr,"%-15s : %e sec, with options : ","PetscLogEvent",(y-x)/10.0);
 
-  CHKERRQ(PetscOptionsHasName(NULL,"-log",&flg));
+  PetscCall(PetscOptionsHasName(NULL,"-log",&flg));
   if (flg) fprintf(stderr,"-log ");
-  CHKERRQ(PetscOptionsHasName(NULL,"-log_all",&flg));
+  PetscCall(PetscOptionsHasName(NULL,"-log_all",&flg));
   if (flg) fprintf(stderr,"-log_all ");
-  CHKERRQ(PetscOptionsHasName(NULL,"-log_view",&flg));
+  PetscCall(PetscOptionsHasName(NULL,"-log_view",&flg));
   if (flg) fprintf(stderr,"-log_view ");
-  CHKERRQ(PetscOptionsHasName(NULL,"-log_mpe",&flg));
+  PetscCall(PetscOptionsHasName(NULL,"-log_mpe",&flg));
   if (flg) fprintf(stderr,"-log_mpe ");
 
   fprintf(stderr,"\n");
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }

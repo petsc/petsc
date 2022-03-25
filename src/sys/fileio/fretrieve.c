@@ -31,8 +31,8 @@
 PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelTmpShared(MPI_Comm comm,PetscMPIInt keyval,void *count_val,void *extra_state)
 {
   PetscFunctionBegin;
-  CHKERRMPI(PetscInfo(NULL,"Deleting tmp/shared data in an MPI_Comm %ld\n",(long)comm));
-  CHKERRMPI(PetscFree(count_val));
+  PetscCallMPI(PetscInfo(NULL,"Deleting tmp/shared data in an MPI_Comm %ld\n",(long)comm));
+  PetscCallMPI(PetscFree(count_val));
   PetscFunctionReturn(MPI_SUCCESS);
 }
 
@@ -66,9 +66,9 @@ PetscErrorCode  PetscGetTmp(MPI_Comm comm,char dir[],size_t len)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsGetenv(comm,"PETSC_TMP",dir,len,&flg));
+  PetscCall(PetscOptionsGetenv(comm,"PETSC_TMP",dir,len,&flg));
   if (!flg) {
-    CHKERRQ(PetscStrncpy(dir,"/tmp",len));
+    PetscCall(PetscStrncpy(dir,"/tmp",len));
   }
   PetscFunctionReturn(0);
 }
@@ -123,45 +123,45 @@ PetscErrorCode  PetscSharedTmp(MPI_Comm comm,PetscBool  *shared)
   int                err;
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_size(comm,&size));
+  PetscCallMPI(MPI_Comm_size(comm,&size));
   if (size == 1) {
     *shared = PETSC_TRUE;
     PetscFunctionReturn(0);
   }
 
-  CHKERRQ(PetscOptionsGetenv(comm,"PETSC_SHARED_TMP",NULL,0,&flg));
+  PetscCall(PetscOptionsGetenv(comm,"PETSC_SHARED_TMP",NULL,0,&flg));
   if (flg) {
     *shared = PETSC_TRUE;
     PetscFunctionReturn(0);
   }
 
-  CHKERRQ(PetscOptionsGetenv(comm,"PETSC_NOT_SHARED_TMP",NULL,0,&flg));
+  PetscCall(PetscOptionsGetenv(comm,"PETSC_NOT_SHARED_TMP",NULL,0,&flg));
   if (flg) {
     *shared = PETSC_FALSE;
     PetscFunctionReturn(0);
   }
 
   if (Petsc_Tmp_keyval == MPI_KEYVAL_INVALID) {
-    CHKERRMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,Petsc_DelTmpShared,&Petsc_Tmp_keyval,NULL));
+    PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,Petsc_DelTmpShared,&Petsc_Tmp_keyval,NULL));
   }
 
-  CHKERRMPI(MPI_Comm_get_attr(comm,Petsc_Tmp_keyval,(void**)&tagvalp,(int*)&iflg));
+  PetscCallMPI(MPI_Comm_get_attr(comm,Petsc_Tmp_keyval,(void**)&tagvalp,(int*)&iflg));
   if (!iflg) {
     char filename[PETSC_MAX_PATH_LEN],tmpname[PETSC_MAX_PATH_LEN];
 
     /* This communicator does not yet have a shared tmp attribute */
-    CHKERRQ(PetscMalloc1(1,&tagvalp));
-    CHKERRMPI(MPI_Comm_set_attr(comm,Petsc_Tmp_keyval,tagvalp));
+    PetscCall(PetscMalloc1(1,&tagvalp));
+    PetscCallMPI(MPI_Comm_set_attr(comm,Petsc_Tmp_keyval,tagvalp));
 
-    CHKERRQ(PetscOptionsGetenv(comm,"PETSC_TMP",tmpname,238,&iflg));
+    PetscCall(PetscOptionsGetenv(comm,"PETSC_TMP",tmpname,238,&iflg));
     if (!iflg) {
-      CHKERRQ(PetscStrcpy(filename,"/tmp"));
+      PetscCall(PetscStrcpy(filename,"/tmp"));
     } else {
-      CHKERRQ(PetscStrcpy(filename,tmpname));
+      PetscCall(PetscStrcpy(filename,tmpname));
     }
 
-    CHKERRQ(PetscStrcat(filename,"/petsctestshared"));
-    CHKERRMPI(MPI_Comm_rank(comm,&rank));
+    PetscCall(PetscStrcat(filename,"/petsctestshared"));
+    PetscCallMPI(MPI_Comm_rank(comm,&rank));
 
     /* each processor creates a /tmp file and all the later ones check */
     /* this makes sure no subset of processors is shared */
@@ -173,7 +173,7 @@ PetscErrorCode  PetscSharedTmp(MPI_Comm comm,PetscBool  *shared)
         err = fclose(fd);
         PetscCheck(!err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
       }
-      CHKERRMPI(MPI_Barrier(comm));
+      PetscCallMPI(MPI_Barrier(comm));
       if (rank >= i) {
         fd = fopen(filename,"r");
         if (fd) cnt = 1;
@@ -184,7 +184,7 @@ PetscErrorCode  PetscSharedTmp(MPI_Comm comm,PetscBool  *shared)
         }
       } else cnt = 0;
 
-      CHKERRMPI(MPIU_Allreduce(&cnt,&sum,1,MPI_INT,MPI_SUM,comm));
+      PetscCallMPI(MPIU_Allreduce(&cnt,&sum,1,MPI_INT,MPI_SUM,comm));
       if (rank == i) unlink(filename);
 
       if (sum == size) {
@@ -193,7 +193,7 @@ PetscErrorCode  PetscSharedTmp(MPI_Comm comm,PetscBool  *shared)
       } else PetscCheckFalse(sum != 1,PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Subset of processes share /tmp ");
     }
     *tagvalp = (int)*shared;
-    CHKERRQ(PetscInfo(NULL,"processors %s %s\n",(*shared) ? "share":"do NOT share",(iflg ? tmpname:"/tmp")));
+    PetscCall(PetscInfo(NULL,"processors %s %s\n",(*shared) ? "share":"do NOT share",(iflg ? tmpname:"/tmp")));
   } else *shared = (PetscBool) *tagvalp;
   PetscFunctionReturn(0);
 }
@@ -238,39 +238,39 @@ PetscErrorCode PetscSharedWorkingDirectory(MPI_Comm comm, PetscBool *shared)
   int                err;
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_size(comm,&size));
+  PetscCallMPI(MPI_Comm_size(comm,&size));
   if (size == 1) {
     *shared = PETSC_TRUE;
     PetscFunctionReturn(0);
   }
 
-  CHKERRQ(PetscOptionsGetenv(comm,"PETSC_SHARED_WORKING_DIRECTORY",NULL,0,&flg));
+  PetscCall(PetscOptionsGetenv(comm,"PETSC_SHARED_WORKING_DIRECTORY",NULL,0,&flg));
   if (flg) {
     *shared = PETSC_TRUE;
     PetscFunctionReturn(0);
   }
 
-  CHKERRQ(PetscOptionsGetenv(comm,"PETSC_NOT_SHARED_WORKING_DIRECTORY",NULL,0,&flg));
+  PetscCall(PetscOptionsGetenv(comm,"PETSC_NOT_SHARED_WORKING_DIRECTORY",NULL,0,&flg));
   if (flg) {
     *shared = PETSC_FALSE;
     PetscFunctionReturn(0);
   }
 
   if (Petsc_WD_keyval == MPI_KEYVAL_INVALID) {
-    CHKERRMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,Petsc_DelTmpShared,&Petsc_WD_keyval,NULL));
+    PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,Petsc_DelTmpShared,&Petsc_WD_keyval,NULL));
   }
 
-  CHKERRMPI(MPI_Comm_get_attr(comm,Petsc_WD_keyval,(void**)&tagvalp,(int*)&iflg));
+  PetscCallMPI(MPI_Comm_get_attr(comm,Petsc_WD_keyval,(void**)&tagvalp,(int*)&iflg));
   if (!iflg) {
     char filename[PETSC_MAX_PATH_LEN];
 
     /* This communicator does not yet have a shared  attribute */
-    CHKERRQ(PetscMalloc1(1,&tagvalp));
-    CHKERRMPI(MPI_Comm_set_attr(comm,Petsc_WD_keyval,tagvalp));
+    PetscCall(PetscMalloc1(1,&tagvalp));
+    PetscCallMPI(MPI_Comm_set_attr(comm,Petsc_WD_keyval,tagvalp));
 
-    CHKERRQ(PetscGetWorkingDirectory(filename,240));
-    CHKERRQ(PetscStrcat(filename,"/petsctestshared"));
-    CHKERRMPI(MPI_Comm_rank(comm,&rank));
+    PetscCall(PetscGetWorkingDirectory(filename,240));
+    PetscCall(PetscStrcat(filename,"/petsctestshared"));
+    PetscCallMPI(MPI_Comm_rank(comm,&rank));
 
     /* each processor creates a  file and all the later ones check */
     /* this makes sure no subset of processors is shared */
@@ -282,7 +282,7 @@ PetscErrorCode PetscSharedWorkingDirectory(MPI_Comm comm, PetscBool *shared)
         err = fclose(fd);
         PetscCheck(!err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
       }
-      CHKERRMPI(MPI_Barrier(comm));
+      PetscCallMPI(MPI_Barrier(comm));
       if (rank >= i) {
         fd = fopen(filename,"r");
         if (fd) cnt = 1;
@@ -293,7 +293,7 @@ PetscErrorCode PetscSharedWorkingDirectory(MPI_Comm comm, PetscBool *shared)
         }
       } else cnt = 0;
 
-      CHKERRMPI(MPIU_Allreduce(&cnt,&sum,1,MPI_INT,MPI_SUM,comm));
+      PetscCallMPI(MPIU_Allreduce(&cnt,&sum,1,MPI_INT,MPI_SUM,comm));
       if (rank == i) unlink(filename);
 
       if (sum == size) {
@@ -303,7 +303,7 @@ PetscErrorCode PetscSharedWorkingDirectory(MPI_Comm comm, PetscBool *shared)
     }
     *tagvalp = (int)*shared;
   } else *shared = (PetscBool) *tagvalp;
-  CHKERRQ(PetscInfo(NULL,"processors %s working directory\n",(*shared) ? "shared" : "do NOT share"));
+  PetscCall(PetscInfo(NULL,"processors %s working directory\n",(*shared) ? "shared" : "do NOT share"));
   PetscFunctionReturn(0);
 }
 
@@ -336,66 +336,66 @@ PetscErrorCode  PetscFileRetrieve(MPI_Comm comm,const char url[],char localname[
   PetscBool      flg1,flg2,flg3,flg4,download,compressed = PETSC_FALSE;
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_rank(comm,&rank));
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
   if (rank == 0) {
     *found = PETSC_FALSE;
 
-    CHKERRQ(PetscStrstr(url,".gz",&par));
+    PetscCall(PetscStrstr(url,".gz",&par));
     if (par) {
-      CHKERRQ(PetscStrlen(par,&len));
+      PetscCall(PetscStrlen(par,&len));
       if (len == 3) compressed = PETSC_TRUE;
     }
 
-    CHKERRQ(PetscStrncmp(url,"ftp://",6,&flg1));
-    CHKERRQ(PetscStrncmp(url,"http://",7,&flg2));
-    CHKERRQ(PetscStrncmp(url,"file://",7,&flg3));
-    CHKERRQ(PetscStrncmp(url,"https://",8,&flg4));
+    PetscCall(PetscStrncmp(url,"ftp://",6,&flg1));
+    PetscCall(PetscStrncmp(url,"http://",7,&flg2));
+    PetscCall(PetscStrncmp(url,"file://",7,&flg3));
+    PetscCall(PetscStrncmp(url,"https://",8,&flg4));
     download = (PetscBool) (flg1 || flg2 || flg3 || flg4);
 
     if (!download && !compressed) {
-      CHKERRQ(PetscStrncpy(localname,url,llen));
-      CHKERRQ(PetscTestFile(url,'r',found));
+      PetscCall(PetscStrncpy(localname,url,llen));
+      PetscCall(PetscTestFile(url,'r',found));
       if (*found) {
-        CHKERRQ(PetscInfo(NULL,"Found file %s\n",url));
+        PetscCall(PetscInfo(NULL,"Found file %s\n",url));
       } else {
-        CHKERRQ(PetscInfo(NULL,"Did not find file %s\n",url));
+        PetscCall(PetscInfo(NULL,"Did not find file %s\n",url));
       }
       goto done;
     }
 
     /* look for uncompressed file in requested directory */
     if (compressed) {
-      CHKERRQ(PetscStrncpy(localname,url,llen));
-      CHKERRQ(PetscStrstr(localname,".gz",&par));
+      PetscCall(PetscStrncpy(localname,url,llen));
+      PetscCall(PetscStrstr(localname,".gz",&par));
       *par = 0; /* remove .gz extension */
-      CHKERRQ(PetscTestFile(localname,'r',found));
+      PetscCall(PetscTestFile(localname,'r',found));
       if (*found) goto done;
     }
 
     /* look for file in current directory */
-    CHKERRQ(PetscStrrchr(url,'/',&tlocalname));
-    CHKERRQ(PetscStrncpy(localname,tlocalname,llen));
+    PetscCall(PetscStrrchr(url,'/',&tlocalname));
+    PetscCall(PetscStrncpy(localname,tlocalname,llen));
     if (compressed) {
-      CHKERRQ(PetscStrstr(localname,".gz",&par));
+      PetscCall(PetscStrstr(localname,".gz",&par));
       *par = 0; /* remove .gz extension */
     }
-    CHKERRQ(PetscTestFile(localname,'r',found));
+    PetscCall(PetscTestFile(localname,'r',found));
     if (*found) goto done;
 
     if (download) {
       /* local file is not already here so use curl to get it */
-      CHKERRQ(PetscStrncpy(localname,tlocalname,llen));
-      CHKERRQ(PetscStrcpy(buffer,"curl --fail --silent --show-error "));
-      CHKERRQ(PetscStrcat(buffer,url));
-      CHKERRQ(PetscStrcat(buffer," > "));
-      CHKERRQ(PetscStrcat(buffer,localname));
+      PetscCall(PetscStrncpy(localname,tlocalname,llen));
+      PetscCall(PetscStrcpy(buffer,"curl --fail --silent --show-error "));
+      PetscCall(PetscStrcat(buffer,url));
+      PetscCall(PetscStrcat(buffer," > "));
+      PetscCall(PetscStrcat(buffer,localname));
 #if defined(PETSC_HAVE_POPEN)
-      CHKERRQ(PetscPOpen(PETSC_COMM_SELF,NULL,buffer,"r",&fp));
-      CHKERRQ(PetscPClose(PETSC_COMM_SELF,fp));
+      PetscCall(PetscPOpen(PETSC_COMM_SELF,NULL,buffer,"r",&fp));
+      PetscCall(PetscPClose(PETSC_COMM_SELF,fp));
 #else
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
 #endif
-      CHKERRQ(PetscTestFile(localname,'r',found));
+      PetscCall(PetscTestFile(localname,'r',found));
       if (*found) {
         FILE      *fd;
         char      buf[1024],*str,*substring;
@@ -405,41 +405,41 @@ PetscErrorCode  PetscFileRetrieve(MPI_Comm comm,const char url[],char localname[
         PetscCheck(fd,PETSC_COMM_SELF,PETSC_ERR_PLIB,"PetscTestFile() indicates %s exists but fopen() cannot open it",localname);
         str = fgets(buf,sizeof(buf)-1,fd);
         while (str) {
-          CHKERRQ(PetscStrstr(buf,"<!DOCTYPE html>",&substring));
+          PetscCall(PetscStrstr(buf,"<!DOCTYPE html>",&substring));
           PetscCheck(!substring,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to download %s it does not appear to exist at this URL, dummy HTML file was downloaded",url);
-          CHKERRQ(PetscStrstr(buf,"Not Found",&substring));
+          PetscCall(PetscStrstr(buf,"Not Found",&substring));
           PetscCheck(!substring,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to download %s it does not appear to exist at this URL, dummy HTML file was downloaded",url);
           str = fgets(buf,sizeof(buf)-1,fd);
         }
         fclose(fd);
       }
     } else if (compressed) {
-      CHKERRQ(PetscTestFile(url,'r',found));
+      PetscCall(PetscTestFile(url,'r',found));
       if (!*found) goto done;
-      CHKERRQ(PetscStrncpy(localname,url,llen));
+      PetscCall(PetscStrncpy(localname,url,llen));
     }
     if (compressed) {
-      CHKERRQ(PetscStrrchr(localname,'/',&tlocalname));
-      CHKERRQ(PetscStrncpy(name,tlocalname,PETSC_MAX_PATH_LEN));
-      CHKERRQ(PetscStrstr(name,".gz",&par));
+      PetscCall(PetscStrrchr(localname,'/',&tlocalname));
+      PetscCall(PetscStrncpy(name,tlocalname,PETSC_MAX_PATH_LEN));
+      PetscCall(PetscStrstr(name,".gz",&par));
       *par = 0; /* remove .gz extension */
       /* uncompress file */
-      CHKERRQ(PetscStrcpy(buffer,"gzip -c -d "));
-      CHKERRQ(PetscStrcat(buffer,localname));
-      CHKERRQ(PetscStrcat(buffer," > "));
-      CHKERRQ(PetscStrcat(buffer,name));
+      PetscCall(PetscStrcpy(buffer,"gzip -c -d "));
+      PetscCall(PetscStrcat(buffer,localname));
+      PetscCall(PetscStrcat(buffer," > "));
+      PetscCall(PetscStrcat(buffer,name));
 #if defined(PETSC_HAVE_POPEN)
-      CHKERRQ(PetscPOpen(PETSC_COMM_SELF,NULL,buffer,"r",&fp));
-      CHKERRQ(PetscPClose(PETSC_COMM_SELF,fp));
+      PetscCall(PetscPOpen(PETSC_COMM_SELF,NULL,buffer,"r",&fp));
+      PetscCall(PetscPClose(PETSC_COMM_SELF,fp));
 #else
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
 #endif
-      CHKERRQ(PetscStrncpy(localname,name,llen));
-      CHKERRQ(PetscTestFile(localname,'r',found));
+      PetscCall(PetscStrncpy(localname,name,llen));
+      PetscCall(PetscTestFile(localname,'r',found));
     }
   }
   done:
-  CHKERRMPI(MPI_Bcast(found,1,MPIU_BOOL,0,comm));
-  CHKERRMPI(MPI_Bcast(localname, llen, MPI_CHAR, 0, comm));
+  PetscCallMPI(MPI_Bcast(found,1,MPIU_BOOL,0,comm));
+  PetscCallMPI(MPI_Bcast(localname, llen, MPI_CHAR, 0, comm));
   PetscFunctionReturn(0);
 }

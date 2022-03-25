@@ -11,7 +11,7 @@
 
     Level: beginner
 
-.seealso: CHKERRQ, SETERRQ
+.seealso: PetscCall(), SETERRQ()
 M*/
 typedef int PetscErrorCode;
 

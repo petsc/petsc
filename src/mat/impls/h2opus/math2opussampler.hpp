@@ -59,10 +59,10 @@ void PetscMatrixSampler::SetSamplingMat(Mat A)
 {
   PetscMPIInt    size = 1;
 
-  if (A) CHKERRV(MPI_Comm_size(PetscObjectComm((PetscObject)A),&size));
-  if (size > 1) CHKERRV(PETSC_ERR_SUP);
-  CHKERRV(PetscObjectReference((PetscObject)A));
-  CHKERRV(MatDestroy(&this->A));
+  if (A) PetscCallVoid(MPI_Comm_size(PetscObjectComm((PetscObject)A),&size));
+  if (size > 1) PetscCallVoid(PETSC_ERR_SUP);
+  PetscCallVoid(PetscObjectReference((PetscObject)A));
+  PetscCallVoid(MatDestroy(&this->A));
   this->A = A;
 }
 
@@ -146,7 +146,7 @@ void PetscMatrixSampler::SetGPUSampling(bool gpusampling)
 
 PetscMatrixSampler::~PetscMatrixSampler()
 {
-  CHKERRV(MatDestroy(&A));
+  PetscCallVoid(MatDestroy(&A));
 }
 
 void PetscMatrixSampler::sample(H2Opus_Real *x, H2Opus_Real *y, int samples)
@@ -156,33 +156,33 @@ void PetscMatrixSampler::sample(H2Opus_Real *x, H2Opus_Real *y, int samples)
   PetscInt       M,N,m,n;
   H2Opus_Real    *px,*py;
 
-  if (!this->A) CHKERRV(PETSC_ERR_PLIB);
-  CHKERRV(MatGetSize(this->A,&M,&N));
-  CHKERRV(MatGetLocalSize(this->A,&m,&n));
-  CHKERRV(PetscObjectGetComm((PetscObject)A,&comm));
+  if (!this->A) PetscCallVoid(PETSC_ERR_PLIB);
+  PetscCallVoid(MatGetSize(this->A,&M,&N));
+  PetscCallVoid(MatGetLocalSize(this->A,&m,&n));
+  PetscCallVoid(PetscObjectGetComm((PetscObject)A,&comm));
   PermuteBuffersIn(samples,x,&px,y,&py);
   if (!this->gpusampling) {
-    CHKERRV(MatCreateDense(comm,n,PETSC_DECIDE,N,samples,px,&X));
-    CHKERRV(MatCreateDense(comm,m,PETSC_DECIDE,M,samples,py,&Y));
+    PetscCallVoid(MatCreateDense(comm,n,PETSC_DECIDE,N,samples,px,&X));
+    PetscCallVoid(MatCreateDense(comm,m,PETSC_DECIDE,M,samples,py,&Y));
   } else {
 #if defined(PETSC_HAVE_CUDA)
-    CHKERRV(MatCreateDenseCUDA(comm,n,PETSC_DECIDE,N,samples,px,&X));
-    CHKERRV(MatCreateDenseCUDA(comm,m,PETSC_DECIDE,M,samples,py,&Y));
+    PetscCallVoid(MatCreateDenseCUDA(comm,n,PETSC_DECIDE,N,samples,px,&X));
+    PetscCallVoid(MatCreateDenseCUDA(comm,m,PETSC_DECIDE,M,samples,py,&Y));
 #endif
   }
-  CHKERRV(PetscLogObjectParent((PetscObject)this->A,(PetscObject)X));
-  CHKERRV(PetscLogObjectParent((PetscObject)this->A,(PetscObject)Y));
-  CHKERRV(MatMatMult(this->A,X,MAT_REUSE_MATRIX,PETSC_DEFAULT,&Y));
+  PetscCallVoid(PetscLogObjectParent((PetscObject)this->A,(PetscObject)X));
+  PetscCallVoid(PetscLogObjectParent((PetscObject)this->A,(PetscObject)Y));
+  PetscCallVoid(MatMatMult(this->A,X,MAT_REUSE_MATRIX,PETSC_DEFAULT,&Y));
 #if defined(PETSC_HAVE_CUDA)
   if (this->gpusampling) {
     const PetscScalar *dummy;
-    CHKERRV(MatDenseCUDAGetArrayRead(Y,&dummy));
-    CHKERRV(MatDenseCUDARestoreArrayRead(Y,&dummy));
+    PetscCallVoid(MatDenseCUDAGetArrayRead(Y,&dummy));
+    PetscCallVoid(MatDenseCUDARestoreArrayRead(Y,&dummy));
   }
 #endif
   PermuteBuffersOut(samples,y);
-  CHKERRV(MatDestroy(&X));
-  CHKERRV(MatDestroy(&Y));
+  PetscCallVoid(MatDestroy(&X));
+  PetscCallVoid(MatDestroy(&Y));
 }
 
 #endif

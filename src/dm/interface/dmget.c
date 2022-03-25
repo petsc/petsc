@@ -43,13 +43,13 @@ PetscErrorCode  DMGetLocalVector(DM dm,Vec *g)
       *g             = dm->localin[i];
       dm->localin[i] = NULL;
 
-      CHKERRQ(VecGetDM(*g,&vdm));
+      PetscCall(VecGetDM(*g,&vdm));
       PetscCheck(!vdm,PetscObjectComm((PetscObject)vdm),PETSC_ERR_LIB,"Invalid vector");
-      CHKERRQ(VecSetDM(*g,dm));
+      PetscCall(VecSetDM(*g,dm));
       goto alldone;
     }
   }
-  CHKERRQ(DMCreateLocalVector(dm,g));
+  PetscCall(DMCreateLocalVector(dm,g));
 
 alldone:
   for (PetscInt i=0; i<DM_MAX_WORK_VECTORS; i++) {
@@ -89,9 +89,9 @@ PetscErrorCode  DMRestoreLocalVector(DM dm,Vec *g)
     if (*g == dm->localout[j]) {
       DM vdm;
 
-      CHKERRQ(VecGetDM(*g,&vdm));
+      PetscCall(VecGetDM(*g,&vdm));
       PetscCheckFalse(vdm != dm,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Invalid vector");
-      CHKERRQ(VecSetDM(*g,NULL));
+      PetscCall(VecSetDM(*g,NULL));
       dm->localout[j] = NULL;
       for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
         if (!dm->localin[i]) {
@@ -101,7 +101,7 @@ PetscErrorCode  DMRestoreLocalVector(DM dm,Vec *g)
       }
     }
   }
-  CHKERRQ(VecDestroy(g));
+  PetscCall(VecDestroy(g));
 alldone:
   *g = NULL;
   PetscFunctionReturn(0);
@@ -152,13 +152,13 @@ PetscErrorCode  DMGetGlobalVector(DM dm,Vec *g)
       *g              = dm->globalin[i];
       dm->globalin[i] = NULL;
 
-      CHKERRQ(VecGetDM(*g,&vdm));
+      PetscCall(VecGetDM(*g,&vdm));
       PetscCheck(!vdm,PetscObjectComm((PetscObject)vdm),PETSC_ERR_LIB,"Invalid vector");
-      CHKERRQ(VecSetDM(*g,dm));
+      PetscCall(VecSetDM(*g,dm));
       goto alldone;
     }
   }
-  CHKERRQ(DMCreateGlobalVector(dm,g));
+  PetscCall(DMCreateGlobalVector(dm,g));
 
 alldone:
   for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
@@ -200,10 +200,10 @@ PetscErrorCode  DMClearGlobalVectors(DM dm)
     if (g) {
       DM vdm;
 
-      CHKERRQ(VecGetDM(g,&vdm));
+      PetscCall(VecGetDM(g,&vdm));
       PetscCheck(!vdm,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Clearing global vector that has a DM attached");
     }
-    CHKERRQ(VecDestroy(&g));
+    PetscCall(VecDestroy(&g));
   }
   PetscFunctionReturn(0);
 }
@@ -238,10 +238,10 @@ PetscErrorCode  DMClearLocalVectors(DM dm)
     if (g) {
       DM vdm;
 
-      CHKERRQ(VecGetDM(g,&vdm));
+      PetscCall(VecGetDM(g,&vdm));
       PetscCheck(!vdm,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Clearing local vector that has a DM attached");
     }
-    CHKERRQ(VecDestroy(&g));
+    PetscCall(VecDestroy(&g));
   }
   PetscFunctionReturn(0);
 }
@@ -270,14 +270,14 @@ PetscErrorCode  DMRestoreGlobalVector(DM dm,Vec *g)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(g,2);
-  CHKERRQ(VecSetErrorIfLocked(*g, 2));
+  PetscCall(VecSetErrorIfLocked(*g, 2));
   for (j=0; j<DM_MAX_WORK_VECTORS; j++) {
     if (*g == dm->globalout[j]) {
       DM vdm;
 
-      CHKERRQ(VecGetDM(*g,&vdm));
+      PetscCall(VecGetDM(*g,&vdm));
       PetscCheckFalse(vdm != dm,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Invalid vector");
-      CHKERRQ(VecSetDM(*g,NULL));
+      PetscCall(VecSetDM(*g,NULL));
       dm->globalout[j] = NULL;
       for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
         if (!dm->globalin[i]) {
@@ -287,7 +287,7 @@ PetscErrorCode  DMRestoreGlobalVector(DM dm,Vec *g)
       }
     }
   }
-  CHKERRQ(VecDestroy(g));
+  PetscCall(VecDestroy(g));
 alldone:
   *g = NULL;
   PetscFunctionReturn(0);
@@ -322,7 +322,7 @@ PetscErrorCode DMHasNamedGlobalVector(DM dm,const char *name,PetscBool *exists)
   *exists = PETSC_FALSE;
   for (link=dm->namedglobal; link; link=link->next) {
     PetscBool match;
-    CHKERRQ(PetscStrcmp(name,link->name,&match));
+    PetscCall(PetscStrcmp(name,link->name,&match));
     if (match) {
       *exists = PETSC_TRUE;
       break;
@@ -360,22 +360,22 @@ PetscErrorCode DMGetNamedGlobalVector(DM dm,const char *name,Vec *X)
   for (link=dm->namedglobal; link; link=link->next) {
     PetscBool match;
 
-    CHKERRQ(PetscStrcmp(name,link->name,&match));
+    PetscCall(PetscStrcmp(name,link->name,&match));
     if (match) {
       DM vdm;
 
       PetscCheckFalse(link->status != DMVEC_STATUS_IN,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Vec name '%s' already checked out",name);
-      CHKERRQ(VecGetDM(link->X,&vdm));
+      PetscCall(VecGetDM(link->X,&vdm));
       PetscCheck(!vdm,PetscObjectComm((PetscObject)vdm),PETSC_ERR_LIB,"Invalid vector");
-      CHKERRQ(VecSetDM(link->X,dm));
+      PetscCall(VecSetDM(link->X,dm));
       goto found;
     }
   }
 
   /* Create the Vec */
-  CHKERRQ(PetscNew(&link));
-  CHKERRQ(PetscStrallocpy(name,&link->name));
-  CHKERRQ(DMCreateGlobalVector(dm,&link->X));
+  PetscCall(PetscNew(&link));
+  PetscCall(PetscStrallocpy(name,&link->name));
+  PetscCall(DMCreateGlobalVector(dm,&link->X));
   link->next      = dm->namedglobal;
   dm->namedglobal = link;
 
@@ -411,17 +411,17 @@ PetscErrorCode DMRestoreNamedGlobalVector(DM dm,const char *name,Vec *X)
   for (link=dm->namedglobal; link; link=link->next) {
     PetscBool match;
 
-    CHKERRQ(PetscStrcmp(name,link->name,&match));
+    PetscCall(PetscStrcmp(name,link->name,&match));
     if (match) {
       DM vdm;
 
-      CHKERRQ(VecGetDM(*X,&vdm));
+      PetscCall(VecGetDM(*X,&vdm));
       PetscCheckFalse(link->status != DMVEC_STATUS_OUT,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Vec name '%s' was not checked out",name);
       PetscCheckFalse(link->X != *X,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_INCOMP,"Attempt to restore Vec name '%s', but Vec does not match the cache",name);
       PetscCheckFalse(vdm != dm,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Invalid vector");
 
       link->status = DMVEC_STATUS_IN;
-      CHKERRQ(VecSetDM(link->X,NULL));
+      PetscCall(VecSetDM(link->X,NULL));
       *X           = NULL;
       PetscFunctionReturn(0);
     }
@@ -458,7 +458,7 @@ PetscErrorCode DMHasNamedLocalVector(DM dm,const char *name,PetscBool *exists)
   *exists = PETSC_FALSE;
   for (link=dm->namedlocal; link; link=link->next) {
     PetscBool match;
-    CHKERRQ(PetscStrcmp(name,link->name,&match));
+    PetscCall(PetscStrcmp(name,link->name,&match));
     if (match) {
       *exists = PETSC_TRUE;
       break;
@@ -496,22 +496,22 @@ PetscErrorCode DMGetNamedLocalVector(DM dm,const char *name,Vec *X)
   for (link=dm->namedlocal; link; link=link->next) {
     PetscBool match;
 
-    CHKERRQ(PetscStrcmp(name,link->name,&match));
+    PetscCall(PetscStrcmp(name,link->name,&match));
     if (match) {
       DM vdm;
 
       PetscCheckFalse(link->status != DMVEC_STATUS_IN,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Vec name '%s' already checked out",name);
-      CHKERRQ(VecGetDM(link->X,&vdm));
+      PetscCall(VecGetDM(link->X,&vdm));
       PetscCheck(!vdm,PetscObjectComm((PetscObject)vdm),PETSC_ERR_LIB,"Invalid vector");
-      CHKERRQ(VecSetDM(link->X,dm));
+      PetscCall(VecSetDM(link->X,dm));
       goto found;
     }
   }
 
   /* Create the Vec */
-  CHKERRQ(PetscNew(&link));
-  CHKERRQ(PetscStrallocpy(name,&link->name));
-  CHKERRQ(DMCreateLocalVector(dm,&link->X));
+  PetscCall(PetscNew(&link));
+  PetscCall(PetscStrallocpy(name,&link->name));
+  PetscCall(DMCreateLocalVector(dm,&link->X));
   link->next     = dm->namedlocal;
   dm->namedlocal = link;
 
@@ -547,17 +547,17 @@ PetscErrorCode DMRestoreNamedLocalVector(DM dm,const char *name,Vec *X)
   for (link=dm->namedlocal; link; link=link->next) {
     PetscBool match;
 
-    CHKERRQ(PetscStrcmp(name,link->name,&match));
+    PetscCall(PetscStrcmp(name,link->name,&match));
     if (match) {
       DM vdm;
 
-      CHKERRQ(VecGetDM(*X,&vdm));
+      PetscCall(VecGetDM(*X,&vdm));
       PetscCheckFalse(link->status != DMVEC_STATUS_OUT,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Vec name '%s' was not checked out",name);
       PetscCheckFalse(link->X != *X,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_INCOMP,"Attempt to restore Vec name '%s', but Vec does not match the cache",name);
       PetscCheckFalse(vdm != dm,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Invalid vector");
 
       link->status = DMVEC_STATUS_IN;
-      CHKERRQ(VecSetDM(link->X,NULL));
+      PetscCall(VecSetDM(link->X,NULL));
       *X           = NULL;
       PetscFunctionReturn(0);
     }

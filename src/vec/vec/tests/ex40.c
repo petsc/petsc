@@ -10,17 +10,17 @@ int main(int argc,char **argv)
   PetscScalar    array[10];
   Vec            x;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
 
   /* create vector */
   for (i=0; i<n; i++) array[i] = i;
   n = n-1;
 
-  CHKERRQ(VecCreateSeqWithArray(PETSC_COMM_SELF,1,n,array+1,&x));
-  CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_SELF));
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,1,n,array+1,&x));
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_SELF));
+  PetscCall(VecDestroy(&x));
+  PetscCall(PetscFinalize());
   return 0;
 }

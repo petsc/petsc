@@ -12,37 +12,37 @@ int main(int argc,char **argv)
   IS             is1,is2;
   VecScatter     ctx = 0;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   /* create two vectors */
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
-  CHKERRQ(VecSetSizes(x,n,PETSC_DECIDE));
-  CHKERRQ(VecSetFromOptions(x));
-  CHKERRQ(VecCreate(PETSC_COMM_SELF,&y));
-  CHKERRQ(VecSetSizes(y,n,PETSC_DECIDE));
-  CHKERRQ(VecSetFromOptions(y));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+  PetscCall(VecSetSizes(x,n,PETSC_DECIDE));
+  PetscCall(VecSetFromOptions(x));
+  PetscCall(VecCreate(PETSC_COMM_SELF,&y));
+  PetscCall(VecSetSizes(y,n,PETSC_DECIDE));
+  PetscCall(VecSetFromOptions(y));
 
   /* create two index sets */
-  CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,2,idx1,PETSC_COPY_VALUES,&is1));
-  CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,2,idx2,PETSC_COPY_VALUES,&is2));
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF,2,idx1,PETSC_COPY_VALUES,&is1));
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF,2,idx2,PETSC_COPY_VALUES,&is2));
 
-  CHKERRQ(VecSet(x,one));
-  CHKERRQ(VecSet(y,two));
-  CHKERRQ(VecScatterCreate(x,is1,y,is2,&ctx));
-  CHKERRQ(VecScatterBegin(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD));
-  CHKERRQ(VecScatterEnd(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD));
-  CHKERRQ(VecScatterDestroy(&ctx));
+  PetscCall(VecSet(x,one));
+  PetscCall(VecSet(y,two));
+  PetscCall(VecScatterCreate(x,is1,y,is2,&ctx));
+  PetscCall(VecScatterBegin(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterDestroy(&ctx));
 
-  if (rank == 0) CHKERRQ(VecView(y,PETSC_VIEWER_STDOUT_SELF));
+  if (rank == 0) PetscCall(VecView(y,PETSC_VIEWER_STDOUT_SELF));
 
-  CHKERRQ(ISDestroy(&is1));
-  CHKERRQ(ISDestroy(&is2));
+  PetscCall(ISDestroy(&is1));
+  PetscCall(ISDestroy(&is2));
 
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&y));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&y));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

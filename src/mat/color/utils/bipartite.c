@@ -13,64 +13,64 @@ PETSC_EXTERN PetscErrorCode MatColoringCreateBipartiteGraph(MatColoring mc,Petsc
   Mat               m = mc->mat;
 
   PetscFunctionBegin;
-  CHKERRQ(MatGetOwnershipRange(m,&rs,&re));
-  CHKERRQ(MatGetOwnershipRangeColumn(m,&cs,&ce));
+  PetscCall(MatGetOwnershipRange(m,&rs,&re));
+  PetscCall(MatGetOwnershipRangeColumn(m,&cs,&ce));
   cn = ce-cs;
   nentries=0;
   for (i=rs;i<re;i++) {
-    CHKERRQ(MatGetRow(m,i,&ncol,NULL,&vcol));
+    PetscCall(MatGetRow(m,i,&ncol,NULL,&vcol));
     for (j=0;j<ncol;j++) {
       nentries++;
     }
-    CHKERRQ(MatRestoreRow(m,i,&ncol,NULL,&vcol));
+    PetscCall(MatRestoreRow(m,i,&ncol,NULL,&vcol));
   }
-  CHKERRQ(PetscMalloc1(nentries,&rowleaf));
-  CHKERRQ(PetscMalloc1(nentries,&rowdata));
+  PetscCall(PetscMalloc1(nentries,&rowleaf));
+  PetscCall(PetscMalloc1(nentries,&rowdata));
   idx=0;
   for (i=rs;i<re;i++) {
-    CHKERRQ(MatGetRow(m,i,&ncol,&icol,&vcol));
+    PetscCall(MatGetRow(m,i,&ncol,&icol,&vcol));
     for (j=0;j<ncol;j++) {
       rowleaf[idx] = icol[j];
       rowdata[idx] = i;
       idx++;
     }
-    CHKERRQ(MatRestoreRow(m,i,&ncol,&icol,&vcol));
+    PetscCall(MatRestoreRow(m,i,&ncol,&icol,&vcol));
   }
   PetscCheckFalse(idx != nentries,PetscObjectComm((PetscObject)m),PETSC_ERR_NOT_CONVERGED,"Bad number of entries %" PetscInt_FMT " vs %" PetscInt_FMT,idx,nentries);
-  CHKERRQ(PetscSFCreate(PetscObjectComm((PetscObject)m),etoc));
-  CHKERRQ(PetscSFCreate(PetscObjectComm((PetscObject)m),etor));
+  PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)m),etoc));
+  PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)m),etor));
 
-  CHKERRQ(PetscSFSetGraphLayout(*etoc,m->cmap,nentries,NULL,PETSC_COPY_VALUES,rowleaf));
-  CHKERRQ(PetscSFSetFromOptions(*etoc));
+  PetscCall(PetscSFSetGraphLayout(*etoc,m->cmap,nentries,NULL,PETSC_COPY_VALUES,rowleaf));
+  PetscCall(PetscSFSetFromOptions(*etoc));
 
   /* determine the number of entries in the column matrix */
-  CHKERRQ(PetscLogEventBegin(MATCOLORING_Comm,*etoc,0,0,0));
-  CHKERRQ(PetscSFComputeDegreeBegin(*etoc,&coldegrees));
-  CHKERRQ(PetscSFComputeDegreeEnd(*etoc,&coldegrees));
-  CHKERRQ(PetscLogEventEnd(MATCOLORING_Comm,*etoc,0,0,0));
+  PetscCall(PetscLogEventBegin(MATCOLORING_Comm,*etoc,0,0,0));
+  PetscCall(PetscSFComputeDegreeBegin(*etoc,&coldegrees));
+  PetscCall(PetscSFComputeDegreeEnd(*etoc,&coldegrees));
+  PetscCall(PetscLogEventEnd(MATCOLORING_Comm,*etoc,0,0,0));
   ncolentries=0;
   for (i=0;i<cn;i++) {
     ncolentries += coldegrees[i];
   }
-  CHKERRQ(PetscMalloc1(ncolentries,&colleaf));
+  PetscCall(PetscMalloc1(ncolentries,&colleaf));
 
   /* create the one going the other way by building the leaf set */
-  CHKERRQ(PetscLogEventBegin(MATCOLORING_Comm,*etoc,0,0,0));
-  CHKERRQ(PetscSFGatherBegin(*etoc,MPIU_INT,rowdata,colleaf));
-  CHKERRQ(PetscSFGatherEnd(*etoc,MPIU_INT,rowdata,colleaf));
-  CHKERRQ(PetscLogEventEnd(MATCOLORING_Comm,*etoc,0,0,0));
+  PetscCall(PetscLogEventBegin(MATCOLORING_Comm,*etoc,0,0,0));
+  PetscCall(PetscSFGatherBegin(*etoc,MPIU_INT,rowdata,colleaf));
+  PetscCall(PetscSFGatherEnd(*etoc,MPIU_INT,rowdata,colleaf));
+  PetscCall(PetscLogEventEnd(MATCOLORING_Comm,*etoc,0,0,0));
 
   /* this one takes mat entries in *columns* to rows -- you never have to actually be able to order the leaf entries. */
-  CHKERRQ(PetscSFSetGraphLayout(*etor,m->rmap,ncolentries,NULL,PETSC_COPY_VALUES,colleaf));
-  CHKERRQ(PetscSFSetFromOptions(*etor));
+  PetscCall(PetscSFSetGraphLayout(*etor,m->rmap,ncolentries,NULL,PETSC_COPY_VALUES,colleaf));
+  PetscCall(PetscSFSetFromOptions(*etor));
 
-  CHKERRQ(PetscLogEventBegin(MATCOLORING_Comm,*etor,0,0,0));
-  CHKERRQ(PetscSFComputeDegreeBegin(*etor,&rowdegrees));
-  CHKERRQ(PetscSFComputeDegreeEnd(*etor,&rowdegrees));
-  CHKERRQ(PetscLogEventEnd(MATCOLORING_Comm,*etor,0,0,0));
+  PetscCall(PetscLogEventBegin(MATCOLORING_Comm,*etor,0,0,0));
+  PetscCall(PetscSFComputeDegreeBegin(*etor,&rowdegrees));
+  PetscCall(PetscSFComputeDegreeEnd(*etor,&rowdegrees));
+  PetscCall(PetscLogEventEnd(MATCOLORING_Comm,*etor,0,0,0));
 
-  CHKERRQ(PetscFree(rowdata));
-  CHKERRQ(PetscFree(rowleaf));
-  CHKERRQ(PetscFree(colleaf));
+  PetscCall(PetscFree(rowdata));
+  PetscCall(PetscFree(rowleaf));
+  PetscCall(PetscFree(colleaf));
   PetscFunctionReturn(0);
 }

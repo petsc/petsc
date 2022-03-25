@@ -93,8 +93,8 @@ static inline PetscErrorCode PetscFVInterpolate_Static(PetscFV fv, const PetscSc
   PetscInt Nc;
 
   PetscFunctionBeginHot;
-  CHKERRQ(PetscFVGetNumComponents(fv, &Nc));
-  CHKERRQ(PetscArraycpy(interpolant,x,Nc));
+  PetscCall(PetscFVGetNumComponents(fv, &Nc));
+  PetscCall(PetscArraycpy(interpolant,x,Nc));
   PetscFunctionReturn(0);
 }
 

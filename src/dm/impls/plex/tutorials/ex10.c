@@ -13,9 +13,9 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionBeginUser;
   options->adapt = PETSC_FALSE;
 
-  ierr = PetscOptionsBegin(comm, "", "Meshing Interpolation Test Options", "DMPLEX");CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsBool("-adapt", "Flag for adaptation of the surface mesh", "ex10.c", options->adapt, &options->adapt, NULL));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm, "", "Meshing Interpolation Test Options", "DMPLEX");PetscCall(ierr);
+  PetscCall(PetscOptionsBool("-adapt", "Flag for adaptation of the surface mesh", "ex10.c", options->adapt, &options->adapt, NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -25,18 +25,18 @@ static PetscErrorCode CreateDomainLabel(DM dm)
   PetscInt       cStart, cEnd, c;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMCreateLabel(dm, "Cell Sets"));
-  CHKERRQ(DMGetLabel(dm, "Cell Sets", &label));
-  CHKERRQ(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+  PetscCall(DMCreateLabel(dm, "Cell Sets"));
+  PetscCall(DMGetLabel(dm, "Cell Sets", &label));
+  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   for (c = cStart; c < cEnd; ++c) {
     PetscReal centroid[3], volume, x, y;
 
-    CHKERRQ(DMPlexComputeCellGeometryFVM(dm, c, &volume, centroid, NULL));
+    PetscCall(DMPlexComputeCellGeometryFVM(dm, c, &volume, centroid, NULL));
     x = centroid[0]; y = centroid[1];
     /* Headwaters are (0.0,0.25)--(0.1,0.75) */
-    if ((x >= 0.0 && x <  0.1) && (y >= 0.25 && y <= 0.75)) {CHKERRQ(DMLabelSetValue(label, c, 1));continue;}
+    if ((x >= 0.0 && x <  0.1) && (y >= 0.25 && y <= 0.75)) {PetscCall(DMLabelSetValue(label, c, 1));continue;}
     /* River channel is (0.1,0.45)--(1.0,0.55) */
-    if ((x >= 0.1 && x <= 1.0) && (y >= 0.45 && y <= 0.55)) {CHKERRQ(DMLabelSetValue(label, c, 2));continue;}
+    if ((x >= 0.1 && x <= 1.0) && (y >= 0.45 && y <= 0.55)) {PetscCall(DMLabelSetValue(label, c, 2));continue;}
   }
   PetscFunctionReturn(0);
 }
@@ -55,29 +55,29 @@ static PetscErrorCode AdaptMesh(DM *dm, AppCtx *ctx)
 
   PetscFunctionBeginUser;
   if (!ctx->adapt) PetscFunctionReturn(0);
-  CHKERRQ(DMHasLabel(*dm, "Cell Sets", &hasLabel));
-  if (!hasLabel) CHKERRQ(CreateDomainLabel(*dm));
-  CHKERRQ(DMGetDimension(*dm, &dim));
+  PetscCall(DMHasLabel(*dm, "Cell Sets", &hasLabel));
+  if (!hasLabel) PetscCall(CreateDomainLabel(*dm));
+  PetscCall(DMGetDimension(*dm, &dim));
   ratio = PetscPowRealInt(0.5, dim);
   /* Get volume constraints */
-  CHKERRQ(DMGetLabel(*dm, "Cell Sets", &label));
-  CHKERRQ(DMLabelGetValueIS(label, &vIS));
-  CHKERRQ(ISDuplicate(vIS, &valueIS));
-  CHKERRQ(ISDestroy(&vIS));
+  PetscCall(DMGetLabel(*dm, "Cell Sets", &label));
+  PetscCall(DMLabelGetValueIS(label, &vIS));
+  PetscCall(ISDuplicate(vIS, &valueIS));
+  PetscCall(ISDestroy(&vIS));
   /* Sorting ruins the label */
-  CHKERRQ(ISSort(valueIS));
-  CHKERRQ(ISGetLocalSize(valueIS, &Nv));
-  CHKERRQ(ISGetIndices(valueIS, &values));
-  CHKERRQ(PetscMalloc1(Nv, &volConst));
+  PetscCall(ISSort(valueIS));
+  PetscCall(ISGetLocalSize(valueIS, &Nv));
+  PetscCall(ISGetIndices(valueIS, &values));
+  PetscCall(PetscMalloc1(Nv, &volConst));
   for (v = 0; v < Nv; ++v) {
     char opt[128];
 
     volConst[v] = PETSC_MAX_REAL;
-    CHKERRQ(PetscSNPrintf(opt, 128, "-volume_constraint_%d", (int) values[v]));
-    CHKERRQ(PetscOptionsGetReal(NULL, NULL, opt, &volConst[v], NULL));
+    PetscCall(PetscSNPrintf(opt, 128, "-volume_constraint_%d", (int) values[v]));
+    PetscCall(PetscOptionsGetReal(NULL, NULL, opt, &volConst[v], NULL));
   }
-  CHKERRQ(ISRestoreIndices(valueIS, &values));
-  CHKERRQ(ISDestroy(&valueIS));
+  PetscCall(ISRestoreIndices(valueIS, &values));
+  PetscCall(ISDestroy(&valueIS));
   /* Adapt mesh iteratively */
   while (adapt) {
     DM       dmAdapt;
@@ -88,45 +88,45 @@ static PetscErrorCode AdaptMesh(DM *dm, AppCtx *ctx)
     nAdaptLoc[0] = nAdaptLoc[1] = 0;
     nAdapt[0]    = nAdapt[1]    = 0;
     /* Adaptation is not preserving the domain label */
-    CHKERRQ(DMHasLabel(dmCur, "Cell Sets", &hasLabel));
-    if (!hasLabel) CHKERRQ(CreateDomainLabel(dmCur));
-    CHKERRQ(DMGetLabel(dmCur, "Cell Sets", &label));
-    CHKERRQ(DMLabelGetValueIS(label, &vIS));
-    CHKERRQ(ISDuplicate(vIS, &valueIS));
-    CHKERRQ(ISDestroy(&vIS));
+    PetscCall(DMHasLabel(dmCur, "Cell Sets", &hasLabel));
+    if (!hasLabel) PetscCall(CreateDomainLabel(dmCur));
+    PetscCall(DMGetLabel(dmCur, "Cell Sets", &label));
+    PetscCall(DMLabelGetValueIS(label, &vIS));
+    PetscCall(ISDuplicate(vIS, &valueIS));
+    PetscCall(ISDestroy(&vIS));
     /* Sorting directly the label's value IS would corrupt the label so we duplicate the IS first */
-    CHKERRQ(ISSort(valueIS));
-    CHKERRQ(ISGetLocalSize(valueIS, &Nv));
-    CHKERRQ(ISGetIndices(valueIS, &values));
+    PetscCall(ISSort(valueIS));
+    PetscCall(ISGetLocalSize(valueIS, &Nv));
+    PetscCall(ISGetIndices(valueIS, &values));
     /* Construct adaptation label */
-    CHKERRQ(DMLabelCreate(PETSC_COMM_SELF, "adapt", &adaptLabel));
-    CHKERRQ(DMPlexGetHeightStratum(dmCur, 0, &cStart, &cEnd));
+    PetscCall(DMLabelCreate(PETSC_COMM_SELF, "adapt", &adaptLabel));
+    PetscCall(DMPlexGetHeightStratum(dmCur, 0, &cStart, &cEnd));
     for (c = cStart; c < cEnd; ++c) {
       PetscReal volume, centroid[3];
       PetscInt  value, vidx;
 
-      CHKERRQ(DMPlexComputeCellGeometryFVM(dmCur, c, &volume, centroid, NULL));
-      CHKERRQ(DMLabelGetValue(label, c, &value));
+      PetscCall(DMPlexComputeCellGeometryFVM(dmCur, c, &volume, centroid, NULL));
+      PetscCall(DMLabelGetValue(label, c, &value));
       if (value < 0) continue;
-      CHKERRQ(PetscFindInt(value, Nv, values, &vidx));
+      PetscCall(PetscFindInt(value, Nv, values, &vidx));
       PetscCheckFalse(vidx < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Value %D for cell %D does not exist in label", value, c);
-      if (volume > volConst[vidx])        {CHKERRQ(DMLabelSetValue(adaptLabel, c, DM_ADAPT_REFINE));  ++nAdaptLoc[0];}
-      if (volume < volConst[vidx]*ratio) {CHKERRQ(DMLabelSetValue(adaptLabel, c, DM_ADAPT_COARSEN)); ++nAdaptLoc[1];}
+      if (volume > volConst[vidx])        {PetscCall(DMLabelSetValue(adaptLabel, c, DM_ADAPT_REFINE));  ++nAdaptLoc[0];}
+      if (volume < volConst[vidx]*ratio) {PetscCall(DMLabelSetValue(adaptLabel, c, DM_ADAPT_COARSEN)); ++nAdaptLoc[1];}
     }
-    CHKERRQ(ISRestoreIndices(valueIS, &values));
-    CHKERRQ(ISDestroy(&valueIS));
-    CHKERRMPI(MPI_Allreduce(&nAdaptLoc, &nAdapt, 2, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject) dmCur)));
+    PetscCall(ISRestoreIndices(valueIS, &values));
+    PetscCall(ISDestroy(&valueIS));
+    PetscCallMPI(MPI_Allreduce(&nAdaptLoc, &nAdapt, 2, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject) dmCur)));
     if (nAdapt[0]) {
-      CHKERRQ(PetscInfo(dmCur, "Adapted mesh, marking %D cells for refinement, and %D cells for coarsening\n", nAdapt[0], nAdapt[1]));
-      CHKERRQ(DMAdaptLabel(dmCur, adaptLabel, &dmAdapt));
-      CHKERRQ(DMDestroy(&dmCur));
-      CHKERRQ(DMViewFromOptions(dmAdapt, NULL, "-adapt_dm_view"));
+      PetscCall(PetscInfo(dmCur, "Adapted mesh, marking %D cells for refinement, and %D cells for coarsening\n", nAdapt[0], nAdapt[1]));
+      PetscCall(DMAdaptLabel(dmCur, adaptLabel, &dmAdapt));
+      PetscCall(DMDestroy(&dmCur));
+      PetscCall(DMViewFromOptions(dmAdapt, NULL, "-adapt_dm_view"));
       dmCur = dmAdapt;
       adapt = PETSC_TRUE;
     }
-    CHKERRQ(DMLabelDestroy(&adaptLabel));
+    PetscCall(DMLabelDestroy(&adaptLabel));
   }
-  CHKERRQ(PetscFree(volConst));
+  PetscCall(PetscFree(volConst));
   *dm = dmCur;
   PetscFunctionReturn(0);
 }
@@ -137,19 +137,19 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
   PetscFunctionBeginUser;
   /* Create top surface */
-  CHKERRQ(DMCreate(comm, dm));
-  CHKERRQ(DMSetType(*dm, DMPLEX));
-  CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) *dm, "init_"));
-  CHKERRQ(DMSetFromOptions(*dm));
-  CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) *dm, NULL));
+  PetscCall(DMCreate(comm, dm));
+  PetscCall(DMSetType(*dm, DMPLEX));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject) *dm, "init_"));
+  PetscCall(DMSetFromOptions(*dm));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject) *dm, NULL));
   /* Adapt surface */
-  CHKERRQ(AdaptMesh(dm, user));
+  PetscCall(AdaptMesh(dm, user));
   /* Extrude surface to get volume mesh */
-  CHKERRQ(DMGetDimension(*dm, &dim));
-  CHKERRQ(DMLocalizeCoordinates(*dm));
-  CHKERRQ(PetscObjectSetName((PetscObject) *dm, "Mesh"));
-  CHKERRQ(DMSetFromOptions(*dm));
-  CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
+  PetscCall(DMGetDimension(*dm, &dim));
+  PetscCall(DMLocalizeCoordinates(*dm));
+  PetscCall(PetscObjectSetName((PetscObject) *dm, "Mesh"));
+  PetscCall(DMSetFromOptions(*dm));
+  PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   PetscFunctionReturn(0);
 }
 
@@ -158,11 +158,11 @@ int main(int argc, char **argv)
   DM             dm;
   AppCtx         user;
 
-  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
-  CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));
-  CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
-  CHKERRQ(DMDestroy(&dm));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
+  PetscCall(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

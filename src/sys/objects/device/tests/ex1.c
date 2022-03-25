@@ -9,59 +9,59 @@ int main(int argc, char *argv[])
   PetscDevice    device = NULL;
   PetscDevice    devices[n];
 
-  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
   /* normal create and destroy */
-  CHKERRQ(PetscDeviceCreate(PETSC_DEVICE_DEFAULT,PETSC_DECIDE,&device));
-  CHKERRQ(AssertDeviceExists(device));
-  CHKERRQ(PetscDeviceDestroy(&device));
-  CHKERRQ(AssertDeviceDoesNotExist(device));
+  PetscCall(PetscDeviceCreate(PETSC_DEVICE_DEFAULT,PETSC_DECIDE,&device));
+  PetscCall(AssertDeviceExists(device));
+  PetscCall(PetscDeviceDestroy(&device));
+  PetscCall(AssertDeviceDoesNotExist(device));
   /* should not destroy twice */
-  CHKERRQ(PetscDeviceDestroy(&device));
-  CHKERRQ(AssertDeviceDoesNotExist(device));
+  PetscCall(PetscDeviceDestroy(&device));
+  PetscCall(AssertDeviceDoesNotExist(device));
 
   /* test reference counting */
   device = NULL;
-  CHKERRQ(PetscArrayzero(devices,n));
-  CHKERRQ(PetscDeviceCreate(PETSC_DEVICE_DEFAULT,PETSC_DECIDE,&device));
-  CHKERRQ(AssertDeviceExists(device));
+  PetscCall(PetscArrayzero(devices,n));
+  PetscCall(PetscDeviceCreate(PETSC_DEVICE_DEFAULT,PETSC_DECIDE,&device));
+  PetscCall(AssertDeviceExists(device));
   for (int i = 0; i < n; ++i) {
-    CHKERRQ(PetscDeviceReference_Internal(device));
+    PetscCall(PetscDeviceReference_Internal(device));
     devices[i] = device;
   }
-  CHKERRQ(AssertDeviceExists(device));
+  PetscCall(AssertDeviceExists(device));
   for (int i = 0; i < n; ++i) {
-    CHKERRQ(PetscDeviceDestroy(&devices[i]));
-    CHKERRQ(AssertDeviceExists(device));
-    CHKERRQ(AssertDeviceDoesNotExist(devices[i]));
+    PetscCall(PetscDeviceDestroy(&devices[i]));
+    PetscCall(AssertDeviceExists(device));
+    PetscCall(AssertDeviceDoesNotExist(devices[i]));
   }
-  CHKERRQ(PetscDeviceDestroy(&device));
-  CHKERRQ(AssertDeviceDoesNotExist(device));
+  PetscCall(PetscDeviceDestroy(&device));
+  PetscCall(AssertDeviceDoesNotExist(device));
 
   /* test the default devices exist */
   device = NULL;
-  CHKERRQ(PetscArrayzero(devices,n));
+  PetscCall(PetscArrayzero(devices,n));
   {
     PetscDeviceContext dctx;
     /* global context will have the default device */
-    CHKERRQ(PetscDeviceContextGetCurrentContext(&dctx));
-    CHKERRQ(PetscDeviceContextGetDevice(dctx,&device));
+    PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
+    PetscCall(PetscDeviceContextGetDevice(dctx,&device));
   }
-  CHKERRQ(AssertDeviceExists(device));
+  PetscCall(AssertDeviceExists(device));
   /* test reference counting for default device */
   for (int i = 0; i < n; ++i) {
-    CHKERRQ(PetscDeviceReference_Internal(device));
+    PetscCall(PetscDeviceReference_Internal(device));
     devices[i] = device;
   }
-  CHKERRQ(AssertDeviceExists(device));
+  PetscCall(AssertDeviceExists(device));
   for (int i = 0; i < n; ++i) {
-    CHKERRQ(PetscDeviceDestroy(&devices[i]));
-    CHKERRQ(AssertDeviceExists(device));
-    CHKERRQ(AssertDeviceDoesNotExist(devices[i]));
+    PetscCall(PetscDeviceDestroy(&devices[i]));
+    PetscCall(AssertDeviceExists(device));
+    PetscCall(AssertDeviceDoesNotExist(devices[i]));
   }
 
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"EXIT_SUCCESS\n"));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"EXIT_SUCCESS\n"));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

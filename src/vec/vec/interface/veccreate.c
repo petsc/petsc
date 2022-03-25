@@ -28,11 +28,11 @@ PetscErrorCode  VecCreate(MPI_Comm comm, Vec *vec)
   PetscFunctionBegin;
   PetscValidPointer(vec,2);
   *vec = NULL;
-  CHKERRQ(VecInitializePackage());
+  PetscCall(VecInitializePackage());
 
-  CHKERRQ(PetscHeaderCreate(v, VEC_CLASSID, "Vec", "Vector", "Vec", comm, VecDestroy, VecView));
+  PetscCall(PetscHeaderCreate(v, VEC_CLASSID, "Vec", "Vector", "Vec", comm, VecDestroy, VecView));
 
-  CHKERRQ(PetscLayoutCreate(comm,&v->map));
+  PetscCall(PetscLayoutCreate(comm,&v->map));
   v->array_gotten = PETSC_FALSE;
   v->petscnative  = PETSC_FALSE;
   v->offloadmask  = PETSC_OFFLOAD_UNALLOCATED;
@@ -43,7 +43,7 @@ PetscErrorCode  VecCreate(MPI_Comm comm, Vec *vec)
 #if defined(PETSC_HAVE_DEVICE)
   v->boundtocpu = PETSC_TRUE;
 #endif
-  CHKERRQ(PetscStrallocpy(PETSCRANDER48,&v->defaultrandtype));
+  PetscCall(PetscStrallocpy(PETSCRANDER48,&v->defaultrandtype));
   *vec = v;
   PetscFunctionReturn(0);
 }

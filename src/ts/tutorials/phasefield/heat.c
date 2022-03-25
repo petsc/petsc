@@ -50,84 +50,84 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   ctx.kappa     = 1.0;
-  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-kappa",&ctx.kappa,NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-kappa",&ctx.kappa,NULL));
   ctx.allencahn = PETSC_FALSE;
-  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-allen-cahn",&ctx.allencahn));
-  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-mymonitor",&mymonitor));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-allen-cahn",&ctx.allencahn));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-mymonitor",&mymonitor));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_PERIODIC, 10,1,2,NULL,&da));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
-  CHKERRQ(DMDASetFieldName(da,0,"Heat equation: u"));
-  CHKERRQ(DMDAGetInfo(da,0,&Mx,0,0,0,0,0,0,0,0,0,0,0));
+  PetscCall(DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_PERIODIC, 10,1,2,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMDASetFieldName(da,0,"Heat equation: u"));
+  PetscCall(DMDAGetInfo(da,0,&Mx,0,0,0,0,0,0,0,0,0,0,0));
   dt   = 1.0/(ctx.kappa*Mx*Mx);
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Extract global vectors from DMDA; then duplicate for remaining
      vectors that are the same types
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(DMCreateGlobalVector(da,&x));
-  CHKERRQ(VecDuplicate(x,&r));
+  PetscCall(DMCreateGlobalVector(da,&x));
+  PetscCall(VecDuplicate(x,&r));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
-  CHKERRQ(TSSetDM(ts,da));
-  CHKERRQ(TSSetProblemType(ts,TS_NONLINEAR));
-  CHKERRQ(TSSetRHSFunction(ts,NULL,FormFunction,&ctx));
+  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
+  PetscCall(TSSetDM(ts,da));
+  PetscCall(TSSetProblemType(ts,TS_NONLINEAR));
+  PetscCall(TSSetRHSFunction(ts,NULL,FormFunction,&ctx));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSSetType(ts,TSCN));
+  PetscCall(TSSetType(ts,TSCN));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(FormInitialSolution(da,x));
-  CHKERRQ(TSSetTimeStep(ts,dt));
-  CHKERRQ(TSSetMaxTime(ts,.02));
-  CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_INTERPOLATE));
-  CHKERRQ(TSSetSolution(ts,x));
+  PetscCall(FormInitialSolution(da,x));
+  PetscCall(TSSetTimeStep(ts,dt));
+  PetscCall(TSSetMaxTime(ts,.02));
+  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_INTERPOLATE));
+  PetscCall(TSSetSolution(ts,x));
 
   if (mymonitor) {
     ctx.ports = NULL;
-    CHKERRQ(TSMonitorSet(ts,MyMonitor,&ctx,MyDestroy));
+    PetscCall(TSMonitorSet(ts,MyMonitor,&ctx,MyDestroy));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSSetFromOptions(ts));
+  PetscCall(TSSetFromOptions(ts));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSSolve(ts,x));
-  CHKERRQ(TSGetStepNumber(ts,&steps));
-  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-square_initial",&flg));
+  PetscCall(TSSolve(ts,x));
+  PetscCall(TSGetStepNumber(ts,&steps));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-square_initial",&flg));
   if (flg) {
-    CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"InitialSolution.heat",FILE_MODE_WRITE,&viewer));
-    CHKERRQ(VecView(x,viewer));
-    CHKERRQ(PetscViewerDestroy(&viewer));
+    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"InitialSolution.heat",FILE_MODE_WRITE,&viewer));
+    PetscCall(VecView(x,viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&r));
-  CHKERRQ(TSDestroy(&ts));
-  CHKERRQ(DMDestroy(&da));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&r));
+  PetscCall(TSDestroy(&ts));
+  PetscCall(DMDestroy(&da));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 /* ------------------------------------------------------------------- */
@@ -152,9 +152,9 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
   UserCtx        *ctx = (UserCtx*)ptr;
 
   PetscFunctionBegin;
-  CHKERRQ(TSGetDM(ts,&da));
-  CHKERRQ(DMGetLocalVector(da,&localX));
-  CHKERRQ(DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
+  PetscCall(TSGetDM(ts,&da));
+  PetscCall(DMGetLocalVector(da,&localX));
+  PetscCall(DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
 
   hx = 1.0/(PetscReal)Mx; sx = 1.0/(hx*hx);
 
@@ -164,19 +164,19 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
      By placing code between these two statements, computations can be
      done while messages are in transition.
   */
-  CHKERRQ(DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX));
-  CHKERRQ(DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX));
+  PetscCall(DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX));
+  PetscCall(DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX));
 
   /*
      Get pointers to vector data
   */
-  CHKERRQ(DMDAVecGetArrayRead(da,localX,&x));
-  CHKERRQ(DMDAVecGetArray(da,F,&f));
+  PetscCall(DMDAVecGetArrayRead(da,localX,&x));
+  PetscCall(DMDAVecGetArray(da,F,&f));
 
   /*
      Get local grid boundaries
   */
-  CHKERRQ(DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL));
+  PetscCall(DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL));
 
   /*
      Compute function over the locally owned part of the grid
@@ -189,9 +189,9 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
   /*
      Restore vectors
   */
-  CHKERRQ(DMDAVecRestoreArrayRead(da,localX,&x));
-  CHKERRQ(DMDAVecRestoreArray(da,F,&f));
-  CHKERRQ(DMRestoreLocalVector(da,&localX));
+  PetscCall(DMDAVecRestoreArrayRead(da,localX,&x));
+  PetscCall(DMDAVecRestoreArray(da,F,&f));
+  PetscCall(DMRestoreLocalVector(da,&localX));
   PetscFunctionReturn(0);
 }
 
@@ -207,32 +207,32 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
   PetscBool         flg;
 
   PetscFunctionBegin;
-  CHKERRQ(DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
+  PetscCall(DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
 
   hx = 1.0/(PetscReal)Mx;
 
   /*
      Get pointers to vector data
   */
-  CHKERRQ(DMDAVecGetArray(da,U,&u));
+  PetscCall(DMDAVecGetArray(da,U,&u));
 
   /*
      Get local grid boundaries
   */
-  CHKERRQ(DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL));
+  PetscCall(DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL));
 
   /*  InitialSolution is obtained with
       ./heat -ts_monitor -snes_monitor  -pc_type lu   -snes_converged_reason    -ts_type cn  -da_refine 9 -ts_max_time 1.e-4 -ts_dt .125e-6 -snes_atol 1.e-25 -snes_rtol 1.e-25  -ts_max_steps 15
   */
-  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-square_initial",&flg));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-square_initial",&flg));
   if (!flg) {
-    CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"InitialSolution.heat",FILE_MODE_READ,&viewer));
-    CHKERRQ(VecCreate(PETSC_COMM_WORLD,&finesolution));
-    CHKERRQ(VecLoad(finesolution,viewer));
-    CHKERRQ(PetscViewerDestroy(&viewer));
-    CHKERRQ(VecGetSize(finesolution,&N));
+    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"InitialSolution.heat",FILE_MODE_READ,&viewer));
+    PetscCall(VecCreate(PETSC_COMM_WORLD,&finesolution));
+    PetscCall(VecLoad(finesolution,viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
+    PetscCall(VecGetSize(finesolution,&N));
     scale = N/Mx;
-    CHKERRQ(VecGetArrayRead(finesolution,&f));
+    PetscCall(VecGetArrayRead(finesolution,&f));
   }
 
   /*
@@ -251,14 +251,14 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
     if (!flg) u[i] = f[scale*i];
   }
   if (!flg) {
-    CHKERRQ(VecRestoreArrayRead(finesolution,&f));
-    CHKERRQ(VecDestroy(&finesolution));
+    PetscCall(VecRestoreArrayRead(finesolution,&f));
+    PetscCall(VecDestroy(&finesolution));
   }
 
   /*
      Restore vectors
   */
-  CHKERRQ(DMDAVecRestoreArray(da,U,&u));
+  PetscCall(DMDAVecRestoreArray(da,U,&u));
   PetscFunctionReturn(0);
 }
 
@@ -282,56 +282,56 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   PetscReal          vbounds[] = {-1.1,1.1};
 
   PetscFunctionBegin;
-  CHKERRQ(PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1,vbounds));
-  CHKERRQ(PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1200,800));
-  CHKERRQ(TSGetDM(ts,&da));
-  CHKERRQ(DMGetLocalVector(da,&localU));
-  CHKERRQ(DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
-  CHKERRQ(DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL));
+  PetscCall(PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1,vbounds));
+  PetscCall(PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1200,800));
+  PetscCall(TSGetDM(ts,&da));
+  PetscCall(DMGetLocalVector(da,&localU));
+  PetscCall(DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
+  PetscCall(DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL));
   hx   = 1.0/(PetscReal)Mx; sx = 1.0/(hx*hx);
-  CHKERRQ(DMGlobalToLocalBegin(da,U,INSERT_VALUES,localU));
-  CHKERRQ(DMGlobalToLocalEnd(da,U,INSERT_VALUES,localU));
-  CHKERRQ(DMDAVecGetArrayRead(da,localU,&u));
+  PetscCall(DMGlobalToLocalBegin(da,U,INSERT_VALUES,localU));
+  PetscCall(DMGlobalToLocalEnd(da,U,INSERT_VALUES,localU));
+  PetscCall(DMDAVecGetArrayRead(da,localU,&u));
 
-  CHKERRQ(PetscViewerDrawGetDrawLG(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1,&lg));
-  CHKERRQ(PetscDrawLGGetDraw(lg,&draw));
-  CHKERRQ(PetscDrawCheckResizedWindow(draw));
+  PetscCall(PetscViewerDrawGetDrawLG(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1,&lg));
+  PetscCall(PetscDrawLGGetDraw(lg,&draw));
+  PetscCall(PetscDrawCheckResizedWindow(draw));
   if (!ctx->ports) {
-    CHKERRQ(PetscDrawViewPortsCreateRect(draw,1,3,&ctx->ports));
+    PetscCall(PetscDrawViewPortsCreateRect(draw,1,3,&ctx->ports));
   }
   ports = ctx->ports;
-  CHKERRQ(PetscDrawLGGetAxis(lg,&axis));
-  CHKERRQ(PetscDrawLGReset(lg));
+  PetscCall(PetscDrawLGGetAxis(lg,&axis));
+  PetscCall(PetscDrawLGReset(lg));
 
   xx[0] = 0.0; xx[1] = 1.0; cnt = 2;
-  CHKERRQ(PetscOptionsGetRealArray(NULL,NULL,"-zoom",xx,&cnt,NULL));
+  PetscCall(PetscOptionsGetRealArray(NULL,NULL,"-zoom",xx,&cnt,NULL));
   xs    = xx[0]/hx; xm = (xx[1] - xx[0])/hx;
 
   /*
       Plot the  energies
   */
-  CHKERRQ(PetscDrawLGSetDimension(lg,1 + (ctx->allencahn ? 1 : 0)));
-  CHKERRQ(PetscDrawLGSetColors(lg,colors+1));
-  CHKERRQ(PetscDrawViewPortsSet(ports,2));
+  PetscCall(PetscDrawLGSetDimension(lg,1 + (ctx->allencahn ? 1 : 0)));
+  PetscCall(PetscDrawLGSetColors(lg,colors+1));
+  PetscCall(PetscDrawViewPortsSet(ports,2));
   x    = hx*xs;
   for (i=xs; i<xs+xm; i++) {
     xx[0] = xx[1] = x;
     yy[0] = PetscRealPart(.25*ctx->kappa*(u[i-1] - u[i+1])*(u[i-1] - u[i+1])*sx);
     if (ctx->allencahn) yy[1] = .25*PetscRealPart((1. - u[i]*u[i])*(1. - u[i]*u[i]));
-    CHKERRQ(PetscDrawLGAddPoint(lg,xx,yy));
+    PetscCall(PetscDrawLGAddPoint(lg,xx,yy));
     x   += hx;
   }
-  CHKERRQ(PetscDrawGetPause(draw,&pause));
-  CHKERRQ(PetscDrawSetPause(draw,0.0));
-  CHKERRQ(PetscDrawAxisSetLabels(axis,"Energy","",""));
-  CHKERRQ(PetscDrawLGSetLegend(lg,legend));
-  CHKERRQ(PetscDrawLGDraw(lg));
+  PetscCall(PetscDrawGetPause(draw,&pause));
+  PetscCall(PetscDrawSetPause(draw,0.0));
+  PetscCall(PetscDrawAxisSetLabels(axis,"Energy","",""));
+  PetscCall(PetscDrawLGSetLegend(lg,legend));
+  PetscCall(PetscDrawLGDraw(lg));
 
   /*
       Plot the  forces
   */
-  CHKERRQ(PetscDrawViewPortsSet(ports,1));
-  CHKERRQ(PetscDrawLGReset(lg));
+  PetscCall(PetscDrawViewPortsSet(ports,1));
+  PetscCall(PetscDrawLGReset(lg));
   x    = xs*hx;
   max  = 0.;
   for (i=xs; i<xs+xm; i++) {
@@ -342,30 +342,30 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
       yy[1] = PetscRealPart(u[i] - u[i]*u[i]*u[i]);
       max   = PetscMax(max,PetscAbs(yy[1]));
     }
-    CHKERRQ(PetscDrawLGAddPoint(lg,xx,yy));
+    PetscCall(PetscDrawLGAddPoint(lg,xx,yy));
     x   += hx;
   }
-  CHKERRQ(PetscDrawAxisSetLabels(axis,"Right hand side","",""));
-  CHKERRQ(PetscDrawLGSetLegend(lg,NULL));
-  CHKERRQ(PetscDrawLGDraw(lg));
+  PetscCall(PetscDrawAxisSetLabels(axis,"Right hand side","",""));
+  PetscCall(PetscDrawLGSetLegend(lg,NULL));
+  PetscCall(PetscDrawLGDraw(lg));
 
   /*
         Plot the solution
   */
-  CHKERRQ(PetscDrawLGSetDimension(lg,1));
-  CHKERRQ(PetscDrawViewPortsSet(ports,0));
-  CHKERRQ(PetscDrawLGReset(lg));
+  PetscCall(PetscDrawLGSetDimension(lg,1));
+  PetscCall(PetscDrawViewPortsSet(ports,0));
+  PetscCall(PetscDrawLGReset(lg));
   x    = hx*xs;
-  CHKERRQ(PetscDrawLGSetLimits(lg,x,x+(xm-1)*hx,-1.1,1.1));
-  CHKERRQ(PetscDrawLGSetColors(lg,colors));
+  PetscCall(PetscDrawLGSetLimits(lg,x,x+(xm-1)*hx,-1.1,1.1));
+  PetscCall(PetscDrawLGSetColors(lg,colors));
   for (i=xs; i<xs+xm; i++) {
     xx[0] = x;
     yy[0] = PetscRealPart(u[i]);
-    CHKERRQ(PetscDrawLGAddPoint(lg,xx,yy));
+    PetscCall(PetscDrawLGAddPoint(lg,xx,yy));
     x    += hx;
   }
-  CHKERRQ(PetscDrawAxisSetLabels(axis,"Solution","",""));
-  CHKERRQ(PetscDrawLGDraw(lg));
+  PetscCall(PetscDrawAxisSetLabels(axis,"Solution","",""));
+  PetscCall(PetscDrawLGDraw(lg));
 
   /*
       Print the  forces as arrows on the solution
@@ -377,19 +377,19 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   for (i=xs; i<xs+xm; i += cnt) {
     y    = PetscRealPart(u[i]);
     len  = .5*PetscRealPart(ctx->kappa*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
-    CHKERRQ(PetscDrawArrow(draw,x,y,x,y+len,PETSC_DRAW_RED));
+    PetscCall(PetscDrawArrow(draw,x,y,x,y+len,PETSC_DRAW_RED));
     if (ctx->allencahn) {
       len  = .5*PetscRealPart(u[i] - u[i]*u[i]*u[i])/max;
-      CHKERRQ(PetscDrawArrow(draw,x,y,x,y+len,PETSC_DRAW_BLUE));
+      PetscCall(PetscDrawArrow(draw,x,y,x,y+len,PETSC_DRAW_BLUE));
     }
     x += cnt*hx;
   }
-  CHKERRQ(DMDAVecRestoreArrayRead(da,localU,&x));
-  CHKERRQ(DMRestoreLocalVector(da,&localU));
-  CHKERRQ(PetscDrawStringSetSize(draw,.2,.2));
-  CHKERRQ(PetscDrawFlush(draw));
-  CHKERRQ(PetscDrawSetPause(draw,pause));
-  CHKERRQ(PetscDrawPause(draw));
+  PetscCall(DMDAVecRestoreArrayRead(da,localU,&x));
+  PetscCall(DMRestoreLocalVector(da,&localU));
+  PetscCall(PetscDrawStringSetSize(draw,.2,.2));
+  PetscCall(PetscDrawFlush(draw));
+  PetscCall(PetscDrawSetPause(draw,pause));
+  PetscCall(PetscDrawPause(draw));
   PetscFunctionReturn(0);
 }
 
@@ -398,7 +398,7 @@ PetscErrorCode  MyDestroy(void **ptr)
   UserCtx        *ctx = *(UserCtx**)ptr;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscDrawViewPortsDestroy(ctx->ports));
+  PetscCall(PetscDrawViewPortsDestroy(ctx->ports));
   PetscFunctionReturn(0);
 }
 

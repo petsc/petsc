@@ -25,12 +25,12 @@ PetscErrorCode  PFRegisterAll(void)
   if (PFRegisterAllCalled) PetscFunctionReturn(0);
   PFRegisterAllCalled = PETSC_TRUE;
 
-  CHKERRQ(PFRegister(PFCONSTANT,         PFCreate_Constant));
-  CHKERRQ(PFRegister(PFSTRING,           PFCreate_String));
-  CHKERRQ(PFRegister(PFQUICK,            PFCreate_Quick));
-  CHKERRQ(PFRegister(PFIDENTITY,         PFCreate_Identity));
+  PetscCall(PFRegister(PFCONSTANT,         PFCreate_Constant));
+  PetscCall(PFRegister(PFSTRING,           PFCreate_String));
+  PetscCall(PFRegister(PFQUICK,            PFCreate_Quick));
+  PetscCall(PFRegister(PFIDENTITY,         PFCreate_Identity));
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-  CHKERRQ(PFRegister(PFMATLAB,           PFCreate_Matlab));
+  PetscCall(PFRegister(PFMATLAB,           PFCreate_Matlab));
 #endif
   PetscFunctionReturn(0);
 }

@@ -200,11 +200,11 @@ typedef struct {
 static inline PetscErrorCode KSPLogResidualHistory(KSP ksp,PetscReal norm)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectSAWsTakeAccess((PetscObject)ksp));
+  PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
   if (ksp->res_hist && ksp->res_hist_max > ksp->res_hist_len) {
     ksp->res_hist[ksp->res_hist_len++] = norm;
   }
-  CHKERRQ(PetscObjectSAWsGrantAccess((PetscObject)ksp));
+  PetscCall(PetscObjectSAWsGrantAccess((PetscObject)ksp));
   PetscFunctionReturn(0);
 }
 
@@ -213,8 +213,8 @@ static inline PetscErrorCode KSPLogErrorHistory(KSP ksp)
   DM dm;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectSAWsTakeAccess((PetscObject) ksp));
-  CHKERRQ(KSPGetDM(ksp, &dm));
+  PetscCall(PetscObjectSAWsTakeAccess((PetscObject) ksp));
+  PetscCall(KSPGetDM(ksp, &dm));
   if (dm && ksp->err_hist && ksp->err_hist_max > ksp->err_hist_len) {
     PetscSimplePointFunc exactSol;
     void                *exactCtx;
@@ -223,23 +223,23 @@ static inline PetscErrorCode KSPLogErrorHistory(KSP ksp)
     PetscReal            error;
     PetscInt             Nf;
 
-    CHKERRQ(KSPBuildSolution(ksp, NULL, &u));
+    PetscCall(KSPBuildSolution(ksp, NULL, &u));
     /* TODO Was needed to correct for Newton solution, but I just need to set a solution */
-    //CHKERRQ(VecScale(u, -1.0));
+    //PetscCall(VecScale(u, -1.0));
     /* TODO Case when I have a solution */
     if (0) {
-      CHKERRQ(DMGetDS(dm, &ds));
-      CHKERRQ(PetscDSGetNumFields(ds, &Nf));
+      PetscCall(DMGetDS(dm, &ds));
+      PetscCall(PetscDSGetNumFields(ds, &Nf));
       PetscCheck(Nf <= 1,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle number of fields %D > 1 right now", Nf);
-      CHKERRQ(PetscDSGetExactSolution(ds, 0, &exactSol, &exactCtx));
-      CHKERRQ(DMComputeL2FieldDiff(dm, 0.0, &exactSol, &exactCtx, u, &error));
+      PetscCall(PetscDSGetExactSolution(ds, 0, &exactSol, &exactCtx));
+      PetscCall(DMComputeL2FieldDiff(dm, 0.0, &exactSol, &exactCtx, u, &error));
     } else {
       /* The null solution A 0 = 0 */
-      CHKERRQ(VecNorm(u, NORM_2, &error));
+      PetscCall(VecNorm(u, NORM_2, &error));
     }
     ksp->err_hist[ksp->err_hist_len++] = error;
   }
-  CHKERRQ(PetscObjectSAWsGrantAccess((PetscObject) ksp));
+  PetscCall(PetscObjectSAWsGrantAccess((PetscObject) ksp));
   PetscFunctionReturn(0);
 }
 
@@ -258,11 +258,11 @@ static inline PetscErrorCode KSPSetNoisy_Private(Vec v)
   PetscInt     n, istart;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetOwnershipRange(v, &istart, NULL));
-  CHKERRQ(VecGetLocalSize(v, &n));
-  CHKERRQ(VecGetArrayWrite(v, &a));
+  PetscCall(VecGetOwnershipRange(v, &istart, NULL));
+  PetscCall(VecGetLocalSize(v, &n));
+  PetscCall(VecGetArrayWrite(v, &a));
   for (PetscInt i = 0; i < n; ++i) a[i] = KSPNoisyHash_Private(i+istart);
-  CHKERRQ(VecRestoreArrayWrite(v, &a));
+  PetscCall(VecRestoreArrayWrite(v, &a));
   PetscFunctionReturn(0);
 }
 
@@ -312,9 +312,9 @@ static inline PetscErrorCode KSP_RemoveNullSpace(KSP ksp,Vec y)
     Mat          A;
     MatNullSpace nullsp;
 
-    CHKERRQ(PCGetOperators(ksp->pc,&A,NULL));
-    CHKERRQ(MatGetNullSpace(A,&nullsp));
-    if (nullsp) CHKERRQ(MatNullSpaceRemove(nullsp,y));
+    PetscCall(PCGetOperators(ksp->pc,&A,NULL));
+    PetscCall(MatGetNullSpace(A,&nullsp));
+    if (nullsp) PetscCall(MatNullSpaceRemove(nullsp,y));
   }
   PetscFunctionReturn(0);
 }
@@ -326,9 +326,9 @@ static inline PetscErrorCode KSP_RemoveNullSpaceTranspose(KSP ksp,Vec y)
     Mat          A;
     MatNullSpace nullsp;
 
-    CHKERRQ(PCGetOperators(ksp->pc,&A,NULL));
-    CHKERRQ(MatGetTransposeNullSpace(A,&nullsp));
-    if (nullsp) CHKERRQ(MatNullSpaceRemove(nullsp,y));
+    PetscCall(PCGetOperators(ksp->pc,&A,NULL));
+    PetscCall(MatGetTransposeNullSpace(A,&nullsp));
+    if (nullsp) PetscCall(MatNullSpaceRemove(nullsp,y));
   }
   PetscFunctionReturn(0);
 }
@@ -336,32 +336,32 @@ static inline PetscErrorCode KSP_RemoveNullSpaceTranspose(KSP ksp,Vec y)
 static inline PetscErrorCode KSP_MatMult(KSP ksp,Mat A,Vec x,Vec y)
 {
   PetscFunctionBegin;
-  if (ksp->transpose_solve) CHKERRQ(MatMultTranspose(A,x,y));
-  else                      CHKERRQ(MatMult(A,x,y));
+  if (ksp->transpose_solve) PetscCall(MatMultTranspose(A,x,y));
+  else                      PetscCall(MatMult(A,x,y));
   PetscFunctionReturn(0);
 }
 
 static inline PetscErrorCode KSP_MatMultTranspose(KSP ksp,Mat A,Vec x,Vec y)
 {
   PetscFunctionBegin;
-  if (ksp->transpose_solve) CHKERRQ(MatMult(A,x,y));
-  else                      CHKERRQ(MatMultTranspose(A,x,y));
+  if (ksp->transpose_solve) PetscCall(MatMult(A,x,y));
+  else                      PetscCall(MatMultTranspose(A,x,y));
   PetscFunctionReturn(0);
 }
 
 static inline PetscErrorCode KSP_MatMultHermitianTranspose(KSP ksp,Mat A,Vec x,Vec y)
 {
   PetscFunctionBegin;
-  if (!ksp->transpose_solve) CHKERRQ(MatMultHermitianTranspose(A,x,y));
+  if (!ksp->transpose_solve) PetscCall(MatMultHermitianTranspose(A,x,y));
   else {
     Vec w;
 
-    CHKERRQ(VecDuplicate(x,&w));
-    CHKERRQ(VecCopy(x,w));
-    CHKERRQ(VecConjugate(w));
-    CHKERRQ(MatMult(A,w,y));
-    CHKERRQ(VecDestroy(&w));
-    CHKERRQ(VecConjugate(y));
+    PetscCall(VecDuplicate(x,&w));
+    PetscCall(VecCopy(x,w));
+    PetscCall(VecConjugate(w));
+    PetscCall(MatMult(A,w,y));
+    PetscCall(VecDestroy(&w));
+    PetscCall(VecConjugate(y));
   }
   PetscFunctionReturn(0);
 }
@@ -370,11 +370,11 @@ static inline PetscErrorCode KSP_PCApply(KSP ksp,Vec x,Vec y)
 {
   PetscFunctionBegin;
   if (ksp->transpose_solve) {
-    CHKERRQ(PCApplyTranspose(ksp->pc,x,y));
-    CHKERRQ(KSP_RemoveNullSpaceTranspose(ksp,y));
+    PetscCall(PCApplyTranspose(ksp->pc,x,y));
+    PetscCall(KSP_RemoveNullSpaceTranspose(ksp,y));
   } else {
-    CHKERRQ(PCApply(ksp->pc,x,y));
-    CHKERRQ(KSP_RemoveNullSpace(ksp,y));
+    PetscCall(PCApply(ksp->pc,x,y));
+    PetscCall(KSP_RemoveNullSpace(ksp,y));
   }
   PetscFunctionReturn(0);
 }
@@ -383,11 +383,11 @@ static inline PetscErrorCode KSP_PCApplyTranspose(KSP ksp,Vec x,Vec y)
 {
   PetscFunctionBegin;
   if (ksp->transpose_solve) {
-    CHKERRQ(PCApply(ksp->pc,x,y));
-    CHKERRQ(KSP_RemoveNullSpace(ksp,y));
+    PetscCall(PCApply(ksp->pc,x,y));
+    PetscCall(KSP_RemoveNullSpace(ksp,y));
   } else {
-    CHKERRQ(PCApplyTranspose(ksp->pc,x,y));
-    CHKERRQ(KSP_RemoveNullSpaceTranspose(ksp,y));
+    PetscCall(PCApplyTranspose(ksp->pc,x,y));
+    PetscCall(KSP_RemoveNullSpaceTranspose(ksp,y));
   }
   PetscFunctionReturn(0);
 }
@@ -395,10 +395,10 @@ static inline PetscErrorCode KSP_PCApplyTranspose(KSP ksp,Vec x,Vec y)
 static inline PetscErrorCode KSP_PCApplyHermitianTranspose(KSP ksp,Vec x,Vec y)
 {
   PetscFunctionBegin;
-  CHKERRQ(VecConjugate(x));
-  CHKERRQ(KSP_PCApplyTranspose(ksp,x,y));
-  CHKERRQ(VecConjugate(x));
-  CHKERRQ(VecConjugate(y));
+  PetscCall(VecConjugate(x));
+  PetscCall(KSP_PCApplyTranspose(ksp,x,y));
+  PetscCall(VecConjugate(x));
+  PetscCall(VecConjugate(y));
   PetscFunctionReturn(0);
 }
 
@@ -406,11 +406,11 @@ static inline PetscErrorCode KSP_PCApplyBAorAB(KSP ksp,Vec x,Vec y,Vec w)
 {
   PetscFunctionBegin;
   if (ksp->transpose_solve) {
-    CHKERRQ(PCApplyBAorABTranspose(ksp->pc,ksp->pc_side,x,y,w));
-    CHKERRQ(KSP_RemoveNullSpaceTranspose(ksp,y));
+    PetscCall(PCApplyBAorABTranspose(ksp->pc,ksp->pc_side,x,y,w));
+    PetscCall(KSP_RemoveNullSpaceTranspose(ksp,y));
   } else {
-    CHKERRQ(PCApplyBAorAB(ksp->pc,ksp->pc_side,x,y,w));
-    CHKERRQ(KSP_RemoveNullSpace(ksp,y));
+    PetscCall(PCApplyBAorAB(ksp->pc,ksp->pc_side,x,y,w));
+    PetscCall(KSP_RemoveNullSpace(ksp,y));
   }
   PetscFunctionReturn(0);
 }
@@ -418,8 +418,8 @@ static inline PetscErrorCode KSP_PCApplyBAorAB(KSP ksp,Vec x,Vec y,Vec w)
 static inline PetscErrorCode KSP_PCApplyBAorABTranspose(KSP ksp,Vec x,Vec y,Vec w)
 {
   PetscFunctionBegin;
-  if (ksp->transpose_solve) CHKERRQ(PCApplyBAorAB(ksp->pc,ksp->pc_side,x,y,w));
-  else                      CHKERRQ(PCApplyBAorABTranspose(ksp->pc,ksp->pc_side,x,y,w));
+  if (ksp->transpose_solve) PetscCall(PCApplyBAorAB(ksp->pc,ksp->pc_side,x,y,w));
+  else                      PetscCall(PCApplyBAorABTranspose(ksp->pc,ksp->pc_side,x,y,w));
   PetscFunctionReturn(0);
 }
 
@@ -465,13 +465,13 @@ M*/
     else {\
       PCFailedReason pcreason;\
       PetscInt       sendbuf,recvbuf; \
-      CHKERRQ(PCGetFailedReasonRank(ksp->pc,&pcreason));\
+      PetscCall(PCGetFailedReasonRank(ksp->pc,&pcreason));\
       sendbuf = (PetscInt)pcreason; \
-      CHKERRMPI(MPI_Allreduce(&sendbuf,&recvbuf,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ksp)));\
+      PetscCallMPI(MPI_Allreduce(&sendbuf,&recvbuf,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ksp)));\
       if (recvbuf) {                                                           \
-        CHKERRQ(PCSetFailedReason(ksp->pc,(PCFailedReason)recvbuf)); \
+        PetscCall(PCSetFailedReason(ksp->pc,(PCFailedReason)recvbuf)); \
         ksp->reason = KSP_DIVERGED_PC_FAILED;\
-        CHKERRQ(VecSetInf(ksp->vec_sol));\
+        PetscCall(VecSetInf(ksp->vec_sol));\
       } else {\
         ksp->reason = KSP_DIVERGED_NANORINF;\
       }\
@@ -504,16 +504,16 @@ M*/
     else {\
       PCFailedReason pcreason;\
       PetscInt       sendbuf,recvbuf; \
-      CHKERRQ(PCGetFailedReasonRank(ksp->pc,&pcreason));\
+      PetscCall(PCGetFailedReasonRank(ksp->pc,&pcreason));\
       sendbuf = (PetscInt)pcreason; \
-      CHKERRMPI(MPI_Allreduce(&sendbuf,&recvbuf,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ksp)));\
+      PetscCallMPI(MPI_Allreduce(&sendbuf,&recvbuf,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ksp)));\
       if (recvbuf) {                                                           \
-        CHKERRQ(PCSetFailedReason(ksp->pc,(PCFailedReason)recvbuf)); \
+        PetscCall(PCSetFailedReason(ksp->pc,(PCFailedReason)recvbuf)); \
         ksp->reason = KSP_DIVERGED_PC_FAILED;                         \
-        CHKERRQ(VecSetInf(ksp->vec_sol));\
+        PetscCall(VecSetInf(ksp->vec_sol));\
         ksp->rnorm  = beta; \
       } else {\
-        CHKERRQ(PCSetFailedReason(ksp->pc,PC_NOERROR)); \
+        PetscCall(PCSetFailedReason(ksp->pc,PC_NOERROR)); \
         ksp->reason = KSP_DIVERGED_NANORINF;\
         ksp->rnorm  = beta; \
       }                                       \

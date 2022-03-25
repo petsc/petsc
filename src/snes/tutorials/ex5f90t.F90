@@ -88,9 +88,9 @@
 !     DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
 !  By placing code between these two statements, computations can
 !  be done while messages are in transition.
-      call DMGetLocalVector(user%da,localX,ierr);CHKERRQ(ierr)
-      call DMGlobalToLocalBegin(user%da,X,INSERT_VALUES,localX,ierr);CHKERRQ(ierr)
-      call DMGlobalToLocalEnd(user%da,X,INSERT_VALUES,localX,ierr);CHKERRQ(ierr)
+      call DMGetLocalVector(user%da,localX,ierr);PetscCall(ierr)
+      call DMGlobalToLocalBegin(user%da,X,INSERT_VALUES,localX,ierr);PetscCall(ierr)
+      call DMGlobalToLocalEnd(user%da,X,INSERT_VALUES,localX,ierr);PetscCall(ierr)
 
 !  Get a pointer to vector data.
 !    - For default PETSc vectors, VecGetArray90() returns a pointer to
@@ -100,19 +100,19 @@
 !    - Note that the interface to VecGetArrayF90() differs from VecGetArray(),
 !      and is useable from Fortran-90 Only.
 
-      call VecGetArrayF90(localX,lx_v,ierr);CHKERRQ(ierr)
-      call VecGetArrayF90(F,lf_v,ierr);CHKERRQ(ierr)
+      call VecGetArrayF90(localX,lx_v,ierr);PetscCall(ierr)
+      call VecGetArrayF90(F,lf_v,ierr);PetscCall(ierr)
 
 !  Compute function over the locally owned part of the grid
-      call FormFunctionLocal(lx_v,lf_v,user,ierr);CHKERRQ(ierr)
+      call FormFunctionLocal(lx_v,lf_v,user,ierr);PetscCall(ierr)
 
 !  Restore vectors
-      call VecRestoreArrayF90(localX,lx_v,ierr);CHKERRQ(ierr)
-      call VecRestoreArrayF90(F,lf_v,ierr);CHKERRQ(ierr)
+      call VecRestoreArrayF90(localX,lx_v,ierr);PetscCall(ierr)
+      call VecRestoreArrayF90(F,lf_v,ierr);PetscCall(ierr)
 
 !  Insert values into global vector
 
-      call DMRestoreLocalVector(user%da,localX,ierr);CHKERRQ(ierr)
+      call DMRestoreLocalVector(user%da,localX,ierr);PetscCall(ierr)
       call PetscLogFlops(11.0d0*user%ym*user%xm,ierr)
 
 !      call VecView(X,PETSC_VIEWER_STDOUT_WORLD,ierr)

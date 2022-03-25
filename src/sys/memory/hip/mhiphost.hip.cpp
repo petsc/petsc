@@ -1,15 +1,15 @@
 #include <petscsys.h>             /*I   "petscsys.h"   I*/
-#include <petscdevice.h>          /* Needed to provide CHKERRHIP() */
+#include <petscdevice.h>          /* Needed to provide PetscCallHIP() */
 
 PETSC_EXTERN PetscErrorCode PetscHIPHostMalloc(size_t a,PetscBool clear,int lineno,const char function[],const char filename[],void **result)
 {
-  CHKERRHIP(hipHostMalloc(result,a));
+  PetscCallHIP(hipHostMalloc(result,a));
   return 0;
 }
 
 PETSC_EXTERN PetscErrorCode PetscHIPHostFree(void *aa,int lineno,const char function[],const char filename[])
 {
-  CHKERRHIP(hipHostFree(aa));
+  PetscCallHIP(hipHostFree(aa));
   return 0;
 }
 

@@ -21,10 +21,10 @@ PetscErrorCode MatMultMtM_SeqAIJ(Mat MtM,Vec xx,Vec yy)
   MatShellCtx    *matshellctx;
 
   PetscFunctionBeginUser;
-  CHKERRQ(MatShellGetContext(MtM,&matshellctx));
+  PetscCall(MatShellGetContext(MtM,&matshellctx));
   PetscCheck(matshellctx,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "No context");
-  CHKERRQ(MatMult(matshellctx->Mp, xx, matshellctx->ff));
-  CHKERRQ(MatMult(matshellctx->MpTrans, matshellctx->ff, yy));
+  PetscCall(MatMult(matshellctx->Mp, xx, matshellctx->ff));
+  PetscCall(MatMult(matshellctx->MpTrans, matshellctx->ff, yy));
   PetscFunctionReturn(0);
 }
 
@@ -33,10 +33,10 @@ PetscErrorCode MatMultAddMtM_SeqAIJ(Mat MtM,Vec xx, Vec yy, Vec zz)
   MatShellCtx    *matshellctx;
 
   PetscFunctionBeginUser;
-  CHKERRQ(MatShellGetContext(MtM,&matshellctx));
+  PetscCall(MatShellGetContext(MtM,&matshellctx));
   PetscCheck(matshellctx,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "No context");
-  CHKERRQ(MatMult(matshellctx->Mp, xx, matshellctx->ff));
-  CHKERRQ(MatMultAdd(matshellctx->MpTrans, matshellctx->ff, yy, zz));
+  PetscCall(MatMult(matshellctx->Mp, xx, matshellctx->ff));
+  PetscCall(MatMultAdd(matshellctx->MpTrans, matshellctx->ff, yy, zz));
   PetscFunctionReturn(0);
 }
 
@@ -45,14 +45,14 @@ PetscErrorCode createSwarm(const DM dm, DM *sw)
   PetscInt Nc = 1, dim = 2;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMCreate(PETSC_COMM_SELF, sw));
-  CHKERRQ(DMSetType(*sw, DMSWARM));
-  CHKERRQ(DMSetDimension(*sw, dim));
-  CHKERRQ(DMSwarmSetType(*sw, DMSWARM_PIC));
-  CHKERRQ(DMSwarmSetCellDM(*sw, dm));
-  CHKERRQ(DMSwarmRegisterPetscDatatypeField(*sw, "w_q", Nc, PETSC_SCALAR));
-  CHKERRQ(DMSwarmFinalizeFieldRegister(*sw));
-  CHKERRQ(DMSetFromOptions(*sw));
+  PetscCall(DMCreate(PETSC_COMM_SELF, sw));
+  PetscCall(DMSetType(*sw, DMSWARM));
+  PetscCall(DMSetDimension(*sw, dim));
+  PetscCall(DMSwarmSetType(*sw, DMSWARM_PIC));
+  PetscCall(DMSwarmSetCellDM(*sw, dm));
+  PetscCall(DMSwarmRegisterPetscDatatypeField(*sw, "w_q", Nc, PETSC_SCALAR));
+  PetscCall(DMSwarmFinalizeFieldRegister(*sw));
+  PetscCall(DMSetFromOptions(*sw));
   PetscFunctionReturn(0);
 }
 
@@ -68,93 +68,93 @@ PetscErrorCode gridToParticles(const DM dm, DM sw, PetscReal *moments, Vec rhs, 
   MatShellCtx    *matshellctx;
 
   PetscFunctionBeginUser;
-  CHKERRQ(KSPCreate(PETSC_COMM_SELF, &ksp));
-  CHKERRQ(KSPSetOptionsPrefix(ksp, "ftop_"));
-  CHKERRQ(KSPSetFromOptions(ksp));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)ksp,KSPLSQR,&is_lsqr));
+  PetscCall(KSPCreate(PETSC_COMM_SELF, &ksp));
+  PetscCall(KSPSetOptionsPrefix(ksp, "ftop_"));
+  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(PetscObjectTypeCompare((PetscObject)ksp,KSPLSQR,&is_lsqr));
   if (!is_lsqr) {
-    CHKERRQ(MatGetLocalSize(M_p, &M, &N));
+    PetscCall(MatGetLocalSize(M_p, &M, &N));
     if (N>M) {
       PC        pc;
-      CHKERRQ(PetscInfo(ksp, " M (%D) < M (%D) -- skip revert to lsqr\n",M,N));
+      PetscCall(PetscInfo(ksp, " M (%D) < M (%D) -- skip revert to lsqr\n",M,N));
       is_lsqr = PETSC_TRUE;
-      CHKERRQ(KSPSetType(ksp,KSPLSQR));
-      CHKERRQ(KSPGetPC(ksp,&pc));
-      CHKERRQ(PCSetType(pc,PCNONE)); // could put in better solver -ftop_pc_type bjacobi -ftop_sub_pc_type lu -ftop_sub_pc_factor_shift_type nonzero
+      PetscCall(KSPSetType(ksp,KSPLSQR));
+      PetscCall(KSPGetPC(ksp,&pc));
+      PetscCall(PCSetType(pc,PCNONE)); // could put in better solver -ftop_pc_type bjacobi -ftop_sub_pc_type lu -ftop_sub_pc_factor_shift_type nonzero
     } else {
-      CHKERRQ(PetscNew(&matshellctx));
-      CHKERRQ(MatCreateShell(PetscObjectComm((PetscObject)dm),N,N,PETSC_DECIDE,PETSC_DECIDE,matshellctx,&MtM));
-      CHKERRQ(MatTranspose(M_p,MAT_INITIAL_MATRIX,&matshellctx->MpTrans));
+      PetscCall(PetscNew(&matshellctx));
+      PetscCall(MatCreateShell(PetscObjectComm((PetscObject)dm),N,N,PETSC_DECIDE,PETSC_DECIDE,matshellctx,&MtM));
+      PetscCall(MatTranspose(M_p,MAT_INITIAL_MATRIX,&matshellctx->MpTrans));
       matshellctx->Mp = M_p;
-      CHKERRQ(MatShellSetOperation(MtM, MATOP_MULT, (void (*)(void))MatMultMtM_SeqAIJ));
-      CHKERRQ(MatShellSetOperation(MtM, MATOP_MULT_ADD, (void (*)(void))MatMultAddMtM_SeqAIJ));
-      CHKERRQ(MatCreateVecs(M_p,&matshellctx->uu,&matshellctx->ff));
-      CHKERRQ(MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,1,NULL,&D));
+      PetscCall(MatShellSetOperation(MtM, MATOP_MULT, (void (*)(void))MatMultMtM_SeqAIJ));
+      PetscCall(MatShellSetOperation(MtM, MATOP_MULT_ADD, (void (*)(void))MatMultAddMtM_SeqAIJ));
+      PetscCall(MatCreateVecs(M_p,&matshellctx->uu,&matshellctx->ff));
+      PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,1,NULL,&D));
       for (int i=0 ; i<N ; i++) {
         const PetscScalar *vals;
         const PetscInt    *cols;
         PetscScalar dot = 0;
-        CHKERRQ(MatGetRow(matshellctx->MpTrans,i,&nzl,&cols,&vals));
+        PetscCall(MatGetRow(matshellctx->MpTrans,i,&nzl,&cols,&vals));
         for (int ii=0 ; ii<nzl ; ii++) dot += PetscSqr(vals[ii]);
         PetscCheckFalse(dot==0.0,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Row %D is empty", i);
-        CHKERRQ(MatSetValue(D,i,i,dot,INSERT_VALUES));
+        PetscCall(MatSetValue(D,i,i,dot,INSERT_VALUES));
       }
-      CHKERRQ(MatAssemblyBegin(D, MAT_FINAL_ASSEMBLY));
-      CHKERRQ(MatAssemblyEnd(D, MAT_FINAL_ASSEMBLY));
+      PetscCall(MatAssemblyBegin(D, MAT_FINAL_ASSEMBLY));
+      PetscCall(MatAssemblyEnd(D, MAT_FINAL_ASSEMBLY));
       PetscInfo(M_p,"createMtMKSP Have %D eqs, nzl = %D\n",N,nzl);
-      CHKERRQ(KSPSetOperators(ksp, MtM, D));
-      CHKERRQ(MatViewFromOptions(D,NULL,"-ftop2_D_mat_view"));
-      CHKERRQ(MatViewFromOptions(M_p,NULL,"-ftop2_Mp_mat_view"));
-      CHKERRQ(MatViewFromOptions(matshellctx->MpTrans,NULL,"-ftop2_MpTranspose_mat_view"));
+      PetscCall(KSPSetOperators(ksp, MtM, D));
+      PetscCall(MatViewFromOptions(D,NULL,"-ftop2_D_mat_view"));
+      PetscCall(MatViewFromOptions(M_p,NULL,"-ftop2_Mp_mat_view"));
+      PetscCall(MatViewFromOptions(matshellctx->MpTrans,NULL,"-ftop2_MpTranspose_mat_view"));
     }
   }
   if (is_lsqr) {
     PC        pc;
     PetscBool is_bjac;
-    CHKERRQ(KSPGetPC(ksp,&pc));
-    CHKERRQ(PetscObjectTypeCompare((PetscObject)pc,PCBJACOBI,&is_bjac));
+    PetscCall(KSPGetPC(ksp,&pc));
+    PetscCall(PetscObjectTypeCompare((PetscObject)pc,PCBJACOBI,&is_bjac));
     if (is_bjac) {
-      CHKERRQ(DMSwarmCreateMassMatrixSquare(sw, dm, &PM_p));
-      CHKERRQ(KSPSetOperators(ksp, M_p, PM_p));
+      PetscCall(DMSwarmCreateMassMatrixSquare(sw, dm, &PM_p));
+      PetscCall(KSPSetOperators(ksp, M_p, PM_p));
     } else {
-      CHKERRQ(KSPSetOperators(ksp, M_p, M_p));
+      PetscCall(KSPSetOperators(ksp, M_p, M_p));
     }
   }
-  CHKERRQ(DMSwarmCreateGlobalVectorFromField(sw, "w_q", &ff)); // this grabs access !!!!!
+  PetscCall(DMSwarmCreateGlobalVectorFromField(sw, "w_q", &ff)); // this grabs access !!!!!
   if (!is_lsqr) {
-    CHKERRQ(KSPSolve(ksp, rhs, matshellctx->uu));
-    CHKERRQ(MatMult(M_p, matshellctx->uu, ff));
-    CHKERRQ(MatDestroy(&matshellctx->MpTrans));
-    CHKERRQ(VecDestroy(&matshellctx->ff));
-    CHKERRQ(VecDestroy(&matshellctx->uu));
-    CHKERRQ(MatDestroy(&D));
-    CHKERRQ(MatDestroy(&MtM));
-    CHKERRQ(PetscFree(matshellctx));
+    PetscCall(KSPSolve(ksp, rhs, matshellctx->uu));
+    PetscCall(MatMult(M_p, matshellctx->uu, ff));
+    PetscCall(MatDestroy(&matshellctx->MpTrans));
+    PetscCall(VecDestroy(&matshellctx->ff));
+    PetscCall(VecDestroy(&matshellctx->uu));
+    PetscCall(MatDestroy(&D));
+    PetscCall(MatDestroy(&MtM));
+    PetscCall(PetscFree(matshellctx));
   } else {
-    CHKERRQ(KSPSolveTranspose(ksp, rhs, ff));
+    PetscCall(KSPSolveTranspose(ksp, rhs, ff));
   }
-  CHKERRQ(KSPDestroy(&ksp));
+  PetscCall(KSPDestroy(&ksp));
   /* Visualize particle field */
-  CHKERRQ(DMSetOutputSequenceNumber(sw, timestep, time));
-  CHKERRQ(VecViewFromOptions(ff, NULL, "-weights_view"));
-  CHKERRQ(DMSwarmDestroyGlobalVectorFromField(sw, "w_q", &ff));
+  PetscCall(DMSetOutputSequenceNumber(sw, timestep, time));
+  PetscCall(VecViewFromOptions(ff, NULL, "-weights_view"));
+  PetscCall(DMSwarmDestroyGlobalVectorFromField(sw, "w_q", &ff));
 
   /* compute energy */
   if (moments) {
     PetscReal *wq, *coords;
-    CHKERRQ(DMSwarmGetLocalSize(sw,&Np));
-    CHKERRQ(DMSwarmGetField(sw, "w_q", &bs, &dtype, (void**)&wq));
-    CHKERRQ(DMSwarmGetField(sw, "DMSwarmPIC_coor", &bs, &dtype, (void**)&coords));
+    PetscCall(DMSwarmGetLocalSize(sw,&Np));
+    PetscCall(DMSwarmGetField(sw, "w_q", &bs, &dtype, (void**)&wq));
+    PetscCall(DMSwarmGetField(sw, "DMSwarmPIC_coor", &bs, &dtype, (void**)&coords));
     moments[0] = moments[1] = moments[2] = 0;
     for (int p=0;p<Np;p++) {
       moments[0] += wq[p];
       moments[1] += wq[p] * coords[p*2+0]; // x-momentum
       moments[2] += wq[p] * (PetscSqr(coords[p*2+0])+PetscSqr(coords[p*2+1]));
     }
-    CHKERRQ(DMSwarmRestoreField(sw, "DMSwarmPIC_coor", &bs, &dtype, (void**)&coords));
-    CHKERRQ(DMSwarmRestoreField(sw, "w_q", &bs, &dtype, (void**)&wq));
+    PetscCall(DMSwarmRestoreField(sw, "DMSwarmPIC_coor", &bs, &dtype, (void**)&coords));
+    PetscCall(DMSwarmRestoreField(sw, "w_q", &bs, &dtype, (void**)&wq));
   }
-  CHKERRQ(MatDestroy(&PM_p));
+  PetscCall(MatDestroy(&PM_p));
   PetscFunctionReturn(0);
 }
 
@@ -170,32 +170,32 @@ PetscErrorCode particlesToGrid(const DM dm, DM sw, const PetscInt Np, const Pets
   PetscInt       bs,p,zero=0;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMSwarmSetLocalSizes(sw, Np, zero));
-  CHKERRQ(DMSwarmGetField(sw, "w_q", &bs, &dtype, (void**)&wq));
-  CHKERRQ(DMSwarmGetField(sw, "DMSwarmPIC_coor", &bs, &dtype, (void**)&coords));
+  PetscCall(DMSwarmSetLocalSizes(sw, Np, zero));
+  PetscCall(DMSwarmGetField(sw, "w_q", &bs, &dtype, (void**)&wq));
+  PetscCall(DMSwarmGetField(sw, "DMSwarmPIC_coor", &bs, &dtype, (void**)&coords));
   for (p=0;p<Np;p++) {
     coords[p*2+0]  = xx[p];
     coords[p*2+1]  = yy[p];
     wq[p]          = a_wp[p];
   }
-  CHKERRQ(DMSwarmRestoreField(sw, "DMSwarmPIC_coor", &bs, &dtype, (void**)&coords));
-  CHKERRQ(DMSwarmRestoreField(sw, "w_q", &bs, &dtype, (void**)&wq));
-  CHKERRQ(DMSwarmMigrate(sw, removePoints));
-  CHKERRQ(PetscObjectSetName((PetscObject)sw, "Particle Grid"));
-  if (a_tid==target) CHKERRQ(DMViewFromOptions(sw, NULL, "-swarm_view"));
+  PetscCall(DMSwarmRestoreField(sw, "DMSwarmPIC_coor", &bs, &dtype, (void**)&coords));
+  PetscCall(DMSwarmRestoreField(sw, "w_q", &bs, &dtype, (void**)&wq));
+  PetscCall(DMSwarmMigrate(sw, removePoints));
+  PetscCall(PetscObjectSetName((PetscObject)sw, "Particle Grid"));
+  if (a_tid==target) PetscCall(DMViewFromOptions(sw, NULL, "-swarm_view"));
 
   /* Project particles to field */
   /* This gives M f = \int_\Omega \phi f, which looks like a rhs for a PDE */
-  CHKERRQ(DMCreateMassMatrix(sw, dm, &M_p));
-  CHKERRQ(PetscObjectSetName((PetscObject)rho, "rho"));
+  PetscCall(DMCreateMassMatrix(sw, dm, &M_p));
+  PetscCall(PetscObjectSetName((PetscObject)rho, "rho"));
 
-  CHKERRQ(DMSwarmCreateGlobalVectorFromField(sw, "w_q", &ff)); // this grabs access !!!!!
-  CHKERRQ(PetscObjectSetName((PetscObject)ff, "weights"));
-  CHKERRQ(MatMultTranspose(M_p, ff, rho));
-  CHKERRQ(DMSwarmDestroyGlobalVectorFromField(sw, "w_q", &ff));
+  PetscCall(DMSwarmCreateGlobalVectorFromField(sw, "w_q", &ff)); // this grabs access !!!!!
+  PetscCall(PetscObjectSetName((PetscObject)ff, "weights"));
+  PetscCall(MatMultTranspose(M_p, ff, rho));
+  PetscCall(DMSwarmDestroyGlobalVectorFromField(sw, "w_q", &ff));
 
   /* Visualize mesh field */
-  if (a_tid==target) CHKERRQ(VecViewFromOptions(rho, NULL, "-rho_view"));
+  if (a_tid==target) PetscCall(VecViewFromOptions(rho, NULL, "-rho_view"));
   // output
   *Mp_out = M_p;
 
@@ -242,48 +242,48 @@ PetscErrorCode go()
   PetscCheckFalse(numthreads<=0,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "No threads %D > %D ", numthreads,  MAX_NUM_THRDS);
 #endif
   if (target >= numthreads) target = numthreads-1;
-  CHKERRQ(PetscLogEventRegister("Create Swarm", DM_CLASSID, &swarm_create_ev));
-  CHKERRQ(PetscLogEventRegister("Single solve", DM_CLASSID, &solve_ev));
-  CHKERRQ(PetscLogEventRegister("Solve loop", DM_CLASSID, &solve_loop_ev));
-  CHKERRQ(PetscLogStageRegister("Solve", &stage));
+  PetscCall(PetscLogEventRegister("Create Swarm", DM_CLASSID, &swarm_create_ev));
+  PetscCall(PetscLogEventRegister("Single solve", DM_CLASSID, &solve_ev));
+  PetscCall(PetscLogEventRegister("Solve loop", DM_CLASSID, &solve_loop_ev));
+  PetscCall(PetscLogStageRegister("Solve", &stage));
   i    = dim;
-  CHKERRQ(PetscOptionsGetIntArray(NULL, NULL, "-dm_plex_box_faces", faces, &i, NULL));
+  PetscCall(PetscOptionsGetIntArray(NULL, NULL, "-dm_plex_box_faces", faces, &i, NULL));
   i    = dim;
-  CHKERRQ(PetscOptionsGetIntArray(NULL, NULL, "-np", Np,  &i, NULL));
+  PetscCall(PetscOptionsGetIntArray(NULL, NULL, "-np", Np,  &i, NULL));
   /* Create thread meshes */
   for (int tid=0; tid<numthreads; tid++) {
     // setup mesh dm_t, could use PETSc's Landau create velocity space mesh here to get dm_t[tid]
-    CHKERRQ(DMCreate(PETSC_COMM_SELF, &dm_t[tid]));
-    CHKERRQ(DMSetType(dm_t[tid], DMPLEX));
-    CHKERRQ(DMSetFromOptions(dm_t[tid]));
-    CHKERRQ(PetscFECreateDefault(PETSC_COMM_SELF, dim, Nc, PETSC_FALSE, "", PETSC_DECIDE, &fe));
-    CHKERRQ(PetscFESetFromOptions(fe));
-    CHKERRQ(PetscObjectSetName((PetscObject)fe, "fe"));
-    CHKERRQ(DMSetField(dm_t[tid], field, NULL, (PetscObject)fe));
-    CHKERRQ(DMCreateDS(dm_t[tid]));
-    CHKERRQ(PetscFEDestroy(&fe));
+    PetscCall(DMCreate(PETSC_COMM_SELF, &dm_t[tid]));
+    PetscCall(DMSetType(dm_t[tid], DMPLEX));
+    PetscCall(DMSetFromOptions(dm_t[tid]));
+    PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, Nc, PETSC_FALSE, "", PETSC_DECIDE, &fe));
+    PetscCall(PetscFESetFromOptions(fe));
+    PetscCall(PetscObjectSetName((PetscObject)fe, "fe"));
+    PetscCall(DMSetField(dm_t[tid], field, NULL, (PetscObject)fe));
+    PetscCall(DMCreateDS(dm_t[tid]));
+    PetscCall(PetscFEDestroy(&fe));
     // helper vectors
-    CHKERRQ(DMSetOutputSequenceNumber(dm_t[tid], timestep, time)); // not used
-    CHKERRQ(DMCreateGlobalVector(dm_t[tid], &rho_t[tid]));
-    CHKERRQ(DMCreateGlobalVector(dm_t[tid], &rhs_t[tid]));
+    PetscCall(DMSetOutputSequenceNumber(dm_t[tid], timestep, time)); // not used
+    PetscCall(DMCreateGlobalVector(dm_t[tid], &rho_t[tid]));
+    PetscCall(DMCreateGlobalVector(dm_t[tid], &rhs_t[tid]));
     // this mimics application code
-    CHKERRQ(DMGetBoundingBox(dm_t[tid], lo, hi));
+    PetscCall(DMGetBoundingBox(dm_t[tid], lo, hi));
     if (tid==target) {
-      CHKERRQ(DMViewFromOptions(dm_t[tid], NULL, "-dm_view"));
+      PetscCall(DMViewFromOptions(dm_t[tid], NULL, "-dm_view"));
       for (i=0,vol=1;i<dim;i++) {
         h[i] = (hi[i] - lo[i])/faces[i];
         hp[i] = (hi[i] - lo[i])/Np[i];
         vol *= (hi[i] - lo[i]);
-        CHKERRQ(PetscInfo(dm_t[tid]," lo = %g hi = %g n = %D h = %g hp = %g\n",lo[i],hi[i],faces[i],h[i],hp[i]));
+        PetscCall(PetscInfo(dm_t[tid]," lo = %g hi = %g n = %D h = %g hp = %g\n",lo[i],hi[i],faces[i],h[i],hp[i]));
       }
     }
   }
   // prepare particle data for problems. This mimics application code
-  CHKERRQ(PetscLogEventBegin(swarm_create_ev,0,0,0,0));
+  PetscCall(PetscLogEventBegin(swarm_create_ev,0,0,0,0));
   Np2[0] = Np[0]; Np2[1] = Np[1];
   for (int tid=0; tid<numthreads; tid++) { // change size of particle list a little
     Np_t[tid] = Np2[0]*Np2[1];
-    CHKERRQ(PetscMalloc3(Np_t[tid],&xx_t[tid],Np_t[tid],&yy_t[tid],Np_t[tid],&wp_t[tid]));
+    PetscCall(PetscMalloc3(Np_t[tid],&xx_t[tid],Np_t[tid],&yy_t[tid],Np_t[tid],&wp_t[tid]));
     if (tid==target) {moments_0[0] = moments_0[1] = moments_0[2] = 0;}
     for (int pi=0, pp=0;pi<Np2[0];pi++) {
       for (int pj=0;pj<Np2[1];pj++,pp++) {
@@ -291,7 +291,7 @@ PetscErrorCode go()
         yy_t[tid][pp] = lo[1] + hp[1]/2. + pj*hp[1];
         {
           PetscReal x[] = {xx_t[tid][pp],yy_t[tid][pp]};
-          CHKERRQ(maxwellian(2, x, 1.0, vol/(PetscReal)Np_t[tid], &wp_t[tid][pp]));
+          PetscCall(maxwellian(2, x, 1.0, vol/(PetscReal)Np_t[tid], &wp_t[tid][pp]));
         }
         if (tid==target) { //energy_0 += wp_t[tid][pp]*(PetscSqr(xx_t[tid][pp])+PetscSqr(yy_t[tid][pp]));
           moments_0[0] += wp_t[tid][pp];
@@ -302,91 +302,91 @@ PetscErrorCode go()
     }
     Np2[0]++; Np2[1]++;
   }
-  CHKERRQ(PetscLogEventEnd(swarm_create_ev,0,0,0,0));
-  CHKERRQ(PetscLogEventBegin(solve_ev,0,0,0,0));
+  PetscCall(PetscLogEventEnd(swarm_create_ev,0,0,0,0));
+  PetscCall(PetscLogEventBegin(solve_ev,0,0,0,0));
   /* Create particle swarm */
   PetscPragmaOMP(parallel for)
   for (int tid=0; tid<numthreads; tid++) {
-    CHKERRABORT(PETSC_COMM_SELF,createSwarm(dm_t[tid], &sw_t[tid]));
+    PetscCallAbort(PETSC_COMM_SELF,createSwarm(dm_t[tid], &sw_t[tid]));
   }
   PetscPragmaOMP(parallel for)
   for (int tid=0; tid<numthreads; tid++) {
-    CHKERRABORT(PETSC_COMM_SELF,particlesToGrid(dm_t[tid], sw_t[tid], Np_t[tid], tid, dim, target, xx_t[tid], yy_t[tid], wp_t[tid], rho_t[tid], &M_p_t[tid]));
+    PetscCallAbort(PETSC_COMM_SELF,particlesToGrid(dm_t[tid], sw_t[tid], Np_t[tid], tid, dim, target, xx_t[tid], yy_t[tid], wp_t[tid], rho_t[tid], &M_p_t[tid]));
   }
   /* Project field to particles */
   /*   This gives f_p = M_p^+ M f */
   PetscPragmaOMP(parallel for)
   for (int tid=0; tid<numthreads; tid++) {
-    CHKERRABORT(PETSC_COMM_SELF,VecCopy(rho_t[tid], rhs_t[tid])); /* Identity: M^1 M rho */
+    PetscCallAbort(PETSC_COMM_SELF,VecCopy(rho_t[tid], rhs_t[tid])); /* Identity: M^1 M rho */
   }
   PetscPragmaOMP(parallel for)
   for (int tid=0; tid<numthreads; tid++) {
-    CHKERRABORT(PETSC_COMM_SELF,gridToParticles(dm_t[tid], sw_t[tid], (tid==target) ?  moments_1 : NULL, rhs_t[tid], M_p_t[tid]));
+    PetscCallAbort(PETSC_COMM_SELF,gridToParticles(dm_t[tid], sw_t[tid], (tid==target) ?  moments_1 : NULL, rhs_t[tid], M_p_t[tid]));
   }
   /* Cleanup */
   for (int tid=0; tid<numthreads; tid++) {
-    CHKERRQ(MatDestroy(&M_p_t[tid]));
-    CHKERRQ(DMDestroy(&sw_t[tid]));
+    PetscCall(MatDestroy(&M_p_t[tid]));
+    PetscCall(DMDestroy(&sw_t[tid]));
   }
-  CHKERRQ(PetscLogEventEnd(solve_ev,0,0,0,0));
+  PetscCall(PetscLogEventEnd(solve_ev,0,0,0,0));
   /* for timing */
-  CHKERRQ(PetscOptionsClearValue(NULL,"-ftop_ksp_converged_reason"));
-  CHKERRQ(PetscOptionsClearValue(NULL,"-ftop_ksp_monitor"));
-  CHKERRQ(PetscOptionsClearValue(NULL,"-ftop_ksp_view"));
-  CHKERRQ(PetscOptionsClearValue(NULL,"-info"));
+  PetscCall(PetscOptionsClearValue(NULL,"-ftop_ksp_converged_reason"));
+  PetscCall(PetscOptionsClearValue(NULL,"-ftop_ksp_monitor"));
+  PetscCall(PetscOptionsClearValue(NULL,"-ftop_ksp_view"));
+  PetscCall(PetscOptionsClearValue(NULL,"-info"));
   // repeat solve many times to get warmed up data
-  CHKERRQ(PetscLogStagePush(stage));
+  PetscCall(PetscLogStagePush(stage));
 #if defined(PETSC_HAVE_OPENMP) && defined(PETSC_HAVE_THREADSAFETY)
   starttime = MPI_Wtime();
 #endif
-  CHKERRQ(PetscLogEventBegin(solve_loop_ev,0,0,0,0));
+  PetscCall(PetscLogEventBegin(solve_loop_ev,0,0,0,0));
   for (int d=0; d<NUM_SOLVE_LOOPS; d++) {
   /* Create particle swarm */
     PetscPragmaOMP(parallel for)
     for (int tid=0; tid<numthreads; tid++) {
-      CHKERRABORT(PETSC_COMM_SELF,createSwarm(dm_t[tid], &sw_t[tid]));
+      PetscCallAbort(PETSC_COMM_SELF,createSwarm(dm_t[tid], &sw_t[tid]));
     }
     PetscPragmaOMP(parallel for)
     for (int tid=0; tid<numthreads; tid++) {
-      CHKERRABORT(PETSC_COMM_SELF,particlesToGrid(dm_t[tid], sw_t[tid], Np_t[tid], tid, dim, target, xx_t[tid], yy_t[tid], wp_t[tid], rho_t[tid], &M_p_t[tid]));
+      PetscCallAbort(PETSC_COMM_SELF,particlesToGrid(dm_t[tid], sw_t[tid], Np_t[tid], tid, dim, target, xx_t[tid], yy_t[tid], wp_t[tid], rho_t[tid], &M_p_t[tid]));
     }
     PetscPragmaOMP(parallel for)
     for (int tid=0; tid<numthreads; tid++) {
-      CHKERRABORT(PETSC_COMM_SELF,VecCopy(rho_t[tid], rhs_t[tid])); /* Identity: M^1 M rho */
+      PetscCallAbort(PETSC_COMM_SELF,VecCopy(rho_t[tid], rhs_t[tid])); /* Identity: M^1 M rho */
     }
     PetscPragmaOMP(parallel for)
     for (int tid=0; tid<numthreads; tid++) {
-      CHKERRABORT(PETSC_COMM_SELF,gridToParticles(dm_t[tid], sw_t[tid], NULL, rhs_t[tid], M_p_t[tid]));
+      PetscCallAbort(PETSC_COMM_SELF,gridToParticles(dm_t[tid], sw_t[tid], NULL, rhs_t[tid], M_p_t[tid]));
     }
     /* Cleanup */
     for (int tid=0; tid<numthreads; tid++) {
-      CHKERRQ(MatDestroy(&M_p_t[tid]));
-      CHKERRQ(DMDestroy(&sw_t[tid]));
+      PetscCall(MatDestroy(&M_p_t[tid]));
+      PetscCall(DMDestroy(&sw_t[tid]));
     }
   }
-  CHKERRQ(PetscLogEventEnd(solve_loop_ev,0,0,0,0));
+  PetscCall(PetscLogEventEnd(solve_loop_ev,0,0,0,0));
 #if defined(PETSC_HAVE_OPENMP) && defined(PETSC_HAVE_THREADSAFETY)
   endtime = MPI_Wtime();
   solve_time += (endtime - starttime);
 #endif
-  CHKERRQ(PetscLogStagePop());
+  PetscCall(PetscLogStagePop());
   //
-  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Total number density: %20.12e (%20.12e); x-momentum = %g (%g); energy = %g error = %e, %D particles. Use %D threads, Solve time: %g\n", moments_1[0], moments_0[0], moments_1[1], moments_0[1], moments_1[2], (moments_1[2]-moments_0[2])/moments_0[2],Np[0]*Np[1],numthreads,solve_time));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"Total number density: %20.12e (%20.12e); x-momentum = %g (%g); energy = %g error = %e, %D particles. Use %D threads, Solve time: %g\n", moments_1[0], moments_0[0], moments_1[1], moments_0[1], moments_1[2], (moments_1[2]-moments_0[2])/moments_0[2],Np[0]*Np[1],numthreads,solve_time));
   /* Cleanup */
   for (int tid=0; tid<numthreads; tid++) {
-    CHKERRQ(VecDestroy(&rho_t[tid]));
-    CHKERRQ(VecDestroy(&rhs_t[tid]));
-    CHKERRQ(DMDestroy(&dm_t[tid]));
-    CHKERRQ(PetscFree3(xx_t[tid],yy_t[tid],wp_t[tid]));
+    PetscCall(VecDestroy(&rho_t[tid]));
+    PetscCall(VecDestroy(&rhs_t[tid]));
+    PetscCall(DMDestroy(&dm_t[tid]));
+    PetscCall(PetscFree3(xx_t[tid],yy_t[tid],wp_t[tid]));
   }
   PetscFunctionReturn(0);
 }
 
 int main(int argc, char **argv)
 {
-  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
-  CHKERRQ(go());
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscInitialize(&argc, &argv, NULL,help));
+  PetscCall(go());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

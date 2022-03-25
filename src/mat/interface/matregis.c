@@ -109,117 +109,117 @@ PetscErrorCode  MatRegisterAll(void)
   if (MatRegisterAllCalled) PetscFunctionReturn(0);
   MatRegisterAllCalled = PETSC_TRUE;
 
-  CHKERRQ(MatRegister(MATMFFD,           MatCreate_MFFD));
+  PetscCall(MatRegister(MATMFFD,           MatCreate_MFFD));
 
-  CHKERRQ(MatRegister(MATMPIMAIJ,        MatCreate_MAIJ));
-  CHKERRQ(MatRegister(MATSEQMAIJ,        MatCreate_MAIJ));
-  CHKERRQ(MatRegister(MATMAIJ,           MatCreate_MAIJ));
+  PetscCall(MatRegister(MATMPIMAIJ,        MatCreate_MAIJ));
+  PetscCall(MatRegister(MATSEQMAIJ,        MatCreate_MAIJ));
+  PetscCall(MatRegister(MATMAIJ,           MatCreate_MAIJ));
 
-  CHKERRQ(MatRegister(MATMPIKAIJ,        MatCreate_KAIJ));
-  CHKERRQ(MatRegister(MATSEQKAIJ,        MatCreate_KAIJ));
-  CHKERRQ(MatRegister(MATKAIJ,           MatCreate_KAIJ));
+  PetscCall(MatRegister(MATMPIKAIJ,        MatCreate_KAIJ));
+  PetscCall(MatRegister(MATSEQKAIJ,        MatCreate_KAIJ));
+  PetscCall(MatRegister(MATKAIJ,           MatCreate_KAIJ));
 
-  CHKERRQ(MatRegister(MATIS,             MatCreate_IS));
-  CHKERRQ(MatRegister(MATSHELL,          MatCreate_Shell));
-  CHKERRQ(MatRegister(MATCOMPOSITE,      MatCreate_Composite));
+  PetscCall(MatRegister(MATIS,             MatCreate_IS));
+  PetscCall(MatRegister(MATSHELL,          MatCreate_Shell));
+  PetscCall(MatRegister(MATCOMPOSITE,      MatCreate_Composite));
 
-  CHKERRQ(MatRegisterRootName(MATAIJ,MATSEQAIJ,MATMPIAIJ));
-  CHKERRQ(MatRegister(MATMPIAIJ,         MatCreate_MPIAIJ));
-  CHKERRQ(MatRegister(MATSEQAIJ,         MatCreate_SeqAIJ));
+  PetscCall(MatRegisterRootName(MATAIJ,MATSEQAIJ,MATMPIAIJ));
+  PetscCall(MatRegister(MATMPIAIJ,         MatCreate_MPIAIJ));
+  PetscCall(MatRegister(MATSEQAIJ,         MatCreate_SeqAIJ));
 
-  CHKERRQ(MatRegisterRootName(MATAIJPERM,MATSEQAIJPERM,MATMPIAIJPERM));
-  CHKERRQ(MatRegister(MATMPIAIJPERM,     MatCreate_MPIAIJPERM));
-  CHKERRQ(MatRegister(MATSEQAIJPERM,     MatCreate_SeqAIJPERM));
+  PetscCall(MatRegisterRootName(MATAIJPERM,MATSEQAIJPERM,MATMPIAIJPERM));
+  PetscCall(MatRegister(MATMPIAIJPERM,     MatCreate_MPIAIJPERM));
+  PetscCall(MatRegister(MATSEQAIJPERM,     MatCreate_SeqAIJPERM));
 
-  CHKERRQ(MatRegisterRootName(MATAIJSELL,MATSEQAIJSELL,MATMPIAIJSELL));
-  CHKERRQ(MatRegister(MATMPIAIJSELL,     MatCreate_MPIAIJSELL));
-  CHKERRQ(MatRegister(MATSEQAIJSELL,     MatCreate_SeqAIJSELL));
+  PetscCall(MatRegisterRootName(MATAIJSELL,MATSEQAIJSELL,MATMPIAIJSELL));
+  PetscCall(MatRegister(MATMPIAIJSELL,     MatCreate_MPIAIJSELL));
+  PetscCall(MatRegister(MATSEQAIJSELL,     MatCreate_SeqAIJSELL));
 
 #if defined(PETSC_HAVE_MKL_SPARSE)
-  CHKERRQ(MatRegisterRootName(MATAIJMKL, MATSEQAIJMKL,MATMPIAIJMKL));
-  CHKERRQ(MatRegister(MATMPIAIJMKL,      MatCreate_MPIAIJMKL));
-  CHKERRQ(MatRegister(MATSEQAIJMKL,      MatCreate_SeqAIJMKL));
+  PetscCall(MatRegisterRootName(MATAIJMKL, MATSEQAIJMKL,MATMPIAIJMKL));
+  PetscCall(MatRegister(MATMPIAIJMKL,      MatCreate_MPIAIJMKL));
+  PetscCall(MatRegister(MATSEQAIJMKL,      MatCreate_SeqAIJMKL));
 #endif
 
 #if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
-  CHKERRQ(MatRegisterRootName(MATBAIJMKL,MATSEQBAIJMKL,MATMPIBAIJMKL));
-  CHKERRQ(MatRegister(MATMPIBAIJMKL,      MatCreate_MPIBAIJMKL));
-  CHKERRQ(MatRegister(MATSEQBAIJMKL,      MatCreate_SeqBAIJMKL));
+  PetscCall(MatRegisterRootName(MATBAIJMKL,MATSEQBAIJMKL,MATMPIBAIJMKL));
+  PetscCall(MatRegister(MATMPIBAIJMKL,      MatCreate_MPIBAIJMKL));
+  PetscCall(MatRegister(MATSEQBAIJMKL,      MatCreate_SeqBAIJMKL));
 #endif
 
-  CHKERRQ(MatRegisterRootName(MATAIJCRL,MATSEQAIJCRL,MATMPIAIJCRL));
-  CHKERRQ(MatRegister(MATSEQAIJCRL,      MatCreate_SeqAIJCRL));
-  CHKERRQ(MatRegister(MATMPIAIJCRL,      MatCreate_MPIAIJCRL));
+  PetscCall(MatRegisterRootName(MATAIJCRL,MATSEQAIJCRL,MATMPIAIJCRL));
+  PetscCall(MatRegister(MATSEQAIJCRL,      MatCreate_SeqAIJCRL));
+  PetscCall(MatRegister(MATMPIAIJCRL,      MatCreate_MPIAIJCRL));
 
-  CHKERRQ(MatRegisterRootName(MATBAIJ,MATSEQBAIJ,MATMPIBAIJ));
-  CHKERRQ(MatRegister(MATMPIBAIJ,        MatCreate_MPIBAIJ));
-  CHKERRQ(MatRegister(MATSEQBAIJ,        MatCreate_SeqBAIJ));
+  PetscCall(MatRegisterRootName(MATBAIJ,MATSEQBAIJ,MATMPIBAIJ));
+  PetscCall(MatRegister(MATMPIBAIJ,        MatCreate_MPIBAIJ));
+  PetscCall(MatRegister(MATSEQBAIJ,        MatCreate_SeqBAIJ));
 
-  CHKERRQ(MatRegisterRootName(MATSBAIJ,MATSEQSBAIJ,MATMPISBAIJ));
-  CHKERRQ(MatRegister(MATMPISBAIJ,       MatCreate_MPISBAIJ));
-  CHKERRQ(MatRegister(MATSEQSBAIJ,       MatCreate_SeqSBAIJ));
+  PetscCall(MatRegisterRootName(MATSBAIJ,MATSEQSBAIJ,MATMPISBAIJ));
+  PetscCall(MatRegister(MATMPISBAIJ,       MatCreate_MPISBAIJ));
+  PetscCall(MatRegister(MATSEQSBAIJ,       MatCreate_SeqSBAIJ));
 
-  CHKERRQ(MatRegisterRootName(MATDENSE,MATSEQDENSE,MATMPIDENSE));
-  CHKERRQ(MatRegister(MATMPIDENSE,       MatCreate_MPIDense));
-  CHKERRQ(MatRegister(MATSEQDENSE,       MatCreate_SeqDense));
+  PetscCall(MatRegisterRootName(MATDENSE,MATSEQDENSE,MATMPIDENSE));
+  PetscCall(MatRegister(MATMPIDENSE,       MatCreate_MPIDense));
+  PetscCall(MatRegister(MATSEQDENSE,       MatCreate_SeqDense));
 #if defined(PETSC_HAVE_CUDA)
-  CHKERRQ(MatRegisterRootName(MATDENSECUDA,MATSEQDENSECUDA,MATMPIDENSECUDA));
-  CHKERRQ(MatRegister(MATSEQDENSECUDA,   MatCreate_SeqDenseCUDA));
-  CHKERRQ(MatRegister(MATMPIDENSECUDA,   MatCreate_MPIDenseCUDA));
+  PetscCall(MatRegisterRootName(MATDENSECUDA,MATSEQDENSECUDA,MATMPIDENSECUDA));
+  PetscCall(MatRegister(MATSEQDENSECUDA,   MatCreate_SeqDenseCUDA));
+  PetscCall(MatRegister(MATMPIDENSECUDA,   MatCreate_MPIDenseCUDA));
 #endif
 
-  CHKERRQ(MatRegister(MATMPIADJ,         MatCreate_MPIAdj));
-  CHKERRQ(MatRegister(MATSCATTER,        MatCreate_Scatter));
-  CHKERRQ(MatRegister(MATBLOCKMAT,       MatCreate_BlockMat));
-  CHKERRQ(MatRegister(MATNEST,           MatCreate_Nest));
+  PetscCall(MatRegister(MATMPIADJ,         MatCreate_MPIAdj));
+  PetscCall(MatRegister(MATSCATTER,        MatCreate_Scatter));
+  PetscCall(MatRegister(MATBLOCKMAT,       MatCreate_BlockMat));
+  PetscCall(MatRegister(MATNEST,           MatCreate_Nest));
 
-  CHKERRQ(MatRegisterRootName(MATSELL,MATSEQSELL,MATMPISELL));
-  CHKERRQ(MatRegister(MATMPISELL,         MatCreate_MPISELL));
-  CHKERRQ(MatRegister(MATSEQSELL,         MatCreate_SeqSELL));
+  PetscCall(MatRegisterRootName(MATSELL,MATSEQSELL,MATMPISELL));
+  PetscCall(MatRegister(MATMPISELL,         MatCreate_MPISELL));
+  PetscCall(MatRegister(MATSEQSELL,         MatCreate_SeqSELL));
 
 #if defined(PETSC_HAVE_CUDA)
-  CHKERRQ(MatRegisterRootName(MATAIJCUSPARSE,MATSEQAIJCUSPARSE,MATMPIAIJCUSPARSE));
-  CHKERRQ(MatRegister(MATSEQAIJCUSPARSE, MatCreate_SeqAIJCUSPARSE));
-  CHKERRQ(MatRegister(MATMPIAIJCUSPARSE, MatCreate_MPIAIJCUSPARSE));
+  PetscCall(MatRegisterRootName(MATAIJCUSPARSE,MATSEQAIJCUSPARSE,MATMPIAIJCUSPARSE));
+  PetscCall(MatRegister(MATSEQAIJCUSPARSE, MatCreate_SeqAIJCUSPARSE));
+  PetscCall(MatRegister(MATMPIAIJCUSPARSE, MatCreate_MPIAIJCUSPARSE));
 #endif
 
 #if defined(PETSC_HAVE_VIENNACL)
-  CHKERRQ(MatRegisterRootName(MATAIJVIENNACL,MATSEQAIJVIENNACL,MATMPIAIJVIENNACL));
-  CHKERRQ(MatRegister(MATSEQAIJVIENNACL, MatCreate_SeqAIJViennaCL));
-  CHKERRQ(MatRegister(MATMPIAIJVIENNACL, MatCreate_MPIAIJViennaCL));
+  PetscCall(MatRegisterRootName(MATAIJVIENNACL,MATSEQAIJVIENNACL,MATMPIAIJVIENNACL));
+  PetscCall(MatRegister(MATSEQAIJVIENNACL, MatCreate_SeqAIJViennaCL));
+  PetscCall(MatRegister(MATMPIAIJVIENNACL, MatCreate_MPIAIJViennaCL));
 #endif
 
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
-  CHKERRQ(MatRegisterRootName(MATAIJKOKKOS,MATSEQAIJKOKKOS,MATMPIAIJKOKKOS));
-  CHKERRQ(MatRegister(MATSEQAIJKOKKOS,   MatCreate_SeqAIJKokkos));
-  CHKERRQ(MatRegister(MATMPIAIJKOKKOS,   MatCreate_MPIAIJKokkos));
+  PetscCall(MatRegisterRootName(MATAIJKOKKOS,MATSEQAIJKOKKOS,MATMPIAIJKOKKOS));
+  PetscCall(MatRegister(MATSEQAIJKOKKOS,   MatCreate_SeqAIJKokkos));
+  PetscCall(MatRegister(MATMPIAIJKOKKOS,   MatCreate_MPIAIJKokkos));
 #endif
 
 #if defined(PETSC_HAVE_FFTW)
-  CHKERRQ(MatRegister(MATFFTW,           MatCreate_FFTW));
+  PetscCall(MatRegister(MATFFTW,           MatCreate_FFTW));
 #endif
 #if defined(PETSC_HAVE_ELEMENTAL)
-  CHKERRQ(MatRegister(MATELEMENTAL,      MatCreate_Elemental));
+  PetscCall(MatRegister(MATELEMENTAL,      MatCreate_Elemental));
 #endif
 #if defined(PETSC_HAVE_SCALAPACK)
-  CHKERRQ(MatRegister(MATSCALAPACK,      MatCreate_ScaLAPACK));
+  PetscCall(MatRegister(MATSCALAPACK,      MatCreate_ScaLAPACK));
 #endif
 
-  CHKERRQ(MatRegister(MATPREALLOCATOR,   MatCreate_Preallocator));
-  CHKERRQ(MatRegister(MATDUMMY,          MatCreate_Dummy));
+  PetscCall(MatRegister(MATPREALLOCATOR,   MatCreate_Preallocator));
+  PetscCall(MatRegister(MATDUMMY,          MatCreate_Dummy));
 
-  CHKERRQ(MatRegister(MATCONSTANTDIAGONAL,MatCreate_ConstantDiagonal));
+  PetscCall(MatRegister(MATCONSTANTDIAGONAL,MatCreate_ConstantDiagonal));
 
 #if defined(PETSC_HAVE_HYPRE)
-  CHKERRQ(MatRegister(MATHYPRE,          MatCreate_HYPRE));
+  PetscCall(MatRegister(MATHYPRE,          MatCreate_HYPRE));
 #endif
 
 #if defined(PETSC_HAVE_H2OPUS)
-  CHKERRQ(MatRegister(MATH2OPUS,         MatCreate_H2OPUS));
+  PetscCall(MatRegister(MATH2OPUS,         MatCreate_H2OPUS));
 #endif
 
 #if defined(PETSC_HAVE_HTOOL)
-  CHKERRQ(MatRegister(MATHTOOL,          MatCreate_Htool));
+  PetscCall(MatRegister(MATHTOOL,          MatCreate_Htool));
 #endif
   PetscFunctionReturn(0);
 }

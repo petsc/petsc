@@ -28,7 +28,7 @@ PetscErrorCode KSPMonitorSAWsCreate(KSP ksp,void **ctx)
   KSPMonitor_SAWs *mon;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNewLog(ksp,&mon));
+  PetscCall(PetscNewLog(ksp,&mon));
   mon->viewer = PETSC_VIEWER_SAWS_(PetscObjectComm((PetscObject)ksp));
   PetscCheck(mon->viewer,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Cannot create SAWs default viewer");
   *ctx = (void*)mon;
@@ -52,8 +52,8 @@ PetscErrorCode KSPMonitorSAWsDestroy(void **ctx)
   KSPMonitor_SAWs *mon = (KSPMonitor_SAWs*)*ctx;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscFree2(mon->eigr,mon->eigi));
-  CHKERRQ(PetscFree(*ctx));
+  PetscCall(PetscFree2(mon->eigr,mon->eigi));
+  PetscCall(PetscFree(*ctx));
   PetscFunctionReturn(0);
 }
 
@@ -80,14 +80,14 @@ PetscErrorCode KSPMonitorSAWs(KSP ksp,PetscInt n,PetscReal rnorm,void *ctx)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  CHKERRQ(KSPComputeExtremeSingularValues(ksp,&emax,&emin));
+  PetscCall(KSPComputeExtremeSingularValues(ksp,&emax,&emin));
 
-  CHKERRQ(PetscFree2(mon->eigr,mon->eigi));
-  CHKERRQ(PetscMalloc2(n,&mon->eigr,n,&mon->eigi));
+  PetscCall(PetscFree2(mon->eigr,mon->eigi));
+  PetscCall(PetscMalloc2(n,&mon->eigr,n,&mon->eigi));
   if (n) {
-    CHKERRQ(KSPComputeEigenvalues(ksp,n,mon->eigr,mon->eigi,&mon->neigs));
+    PetscCall(KSPComputeEigenvalues(ksp,n,mon->eigr,mon->eigi,&mon->neigs));
 
-    CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+    PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
     if (rank == 0) {
       SAWs_Delete("/PETSc/ksp_monitor_saws/eigr");
       SAWs_Delete("/PETSc/ksp_monitor_saws/eigi");
@@ -98,8 +98,8 @@ PetscErrorCode KSPMonitorSAWs(KSP ksp,PetscInt n,PetscReal rnorm,void *ctx)
         PetscStackCallSAWs(SAWs_Register,("/PETSc/ksp_monitor_saws/eigr",mon->eigr,mon->neigs,SAWs_READ,SAWs_DOUBLE));
         PetscStackCallSAWs(SAWs_Register,("/PETSc/ksp_monitor_saws/eigi",mon->eigi,mon->neigs,SAWs_READ,SAWs_DOUBLE));
       }
-      CHKERRQ(PetscInfo(ksp,"KSP extreme singular values min=%g max=%g\n",(double)emin,(double)emax));
-      CHKERRQ(PetscSAWsBlock());
+      PetscCall(PetscInfo(ksp,"KSP extreme singular values min=%g max=%g\n",(double)emin,(double)emax));
+      PetscCall(PetscSAWsBlock());
     }
   }
   PetscFunctionReturn(0);

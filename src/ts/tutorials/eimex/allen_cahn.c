@@ -33,72 +33,72 @@ int main(int argc, char **argv)
   PetscReal         ftime;
   AppCtx            user;       /* user-defined work context */
 
-  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
   /* Initialize user application context */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Allen-Cahn equation","");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Allen-Cahn equation","");PetscCall(ierr);
   user.param = 9e-4;
   user.xleft = -1.;
   user.xright = 2.;
   user.mx = 400;
-  CHKERRQ(PetscOptionsReal("-eps","parameter","",user.param,&user.param,NULL));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(PetscOptionsReal("-eps","parameter","",user.param,&user.param,NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   /*
-   * CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-monitor",&monitor,NULL));
+   * PetscCall(PetscOptionsGetBool(NULL,NULL,"-monitor",&monitor,NULL));
    */
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Create necessary matrix and vectors, solve same ODE on every process
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,user.mx,user.mx));
-  CHKERRQ(MatSetFromOptions(A));
-  CHKERRQ(MatSetUp(A));
-  CHKERRQ(MatCreateVecs(A,&x,NULL));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,user.mx,user.mx));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSetUp(A));
+  PetscCall(MatCreateVecs(A,&x,NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Create time stepping solver context
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
-  CHKERRQ(TSSetType(ts,TSEIMEX));
-  CHKERRQ(TSSetRHSFunction(ts,NULL,RHSFunction,&user));
-  CHKERRQ(TSSetIFunction(ts,NULL,FormIFunction,&user));
-  CHKERRQ(TSSetIJacobian(ts,A,A,FormIJacobian,&user));
+  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
+  PetscCall(TSSetType(ts,TSEIMEX));
+  PetscCall(TSSetRHSFunction(ts,NULL,RHSFunction,&user));
+  PetscCall(TSSetIFunction(ts,NULL,FormIFunction,&user));
+  PetscCall(TSSetIJacobian(ts,A,A,FormIJacobian,&user));
   ftime = 22;
-  CHKERRQ(TSSetMaxTime(ts,ftime));
-  CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
+  PetscCall(TSSetMaxTime(ts,ftime));
+  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(FormInitialSolution(ts,x,&user));
-  CHKERRQ(TSSetSolution(ts,x));
-  CHKERRQ(VecGetSize(x,&mx));
+  PetscCall(FormInitialSolution(ts,x,&user));
+  PetscCall(TSSetSolution(ts,x));
+  PetscCall(VecGetSize(x,&mx));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSSetFromOptions(ts));
+  PetscCall(TSSetFromOptions(ts));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Solve nonlinear system
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSSolve(ts,x));
-  CHKERRQ(TSGetTime(ts,&ftime));
-  CHKERRQ(TSGetStepNumber(ts,&steps));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"eps %g, steps %D, ftime %g\n",(double)user.param,steps,(double)ftime));
-  /*   CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_WORLD));*/
+  PetscCall(TSSolve(ts,x));
+  PetscCall(TSGetTime(ts,&ftime));
+  PetscCall(TSGetStepNumber(ts,&steps));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"eps %g, steps %D, ftime %g\n",(double)user.param,steps,(double)ftime));
+  /*   PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));*/
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Free work space.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(TSDestroy(&ts));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatDestroy(&A));
+  PetscCall(VecDestroy(&x));
+  PetscCall(TSDestroy(&ts));
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -114,15 +114,15 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
   mx = user->mx;
   eps = user->param;
   hx = (user->xright-user->xleft)/(mx-1);
-  CHKERRQ(VecGetArrayRead(X,&x));
-  CHKERRQ(VecGetArray(F,&f));
+  PetscCall(VecGetArrayRead(X,&x));
+  PetscCall(VecGetArray(F,&f));
   f[0] = 2.*eps*(x[1]-x[0])/(hx*hx); /*boundary*/
   for (i=1;i<mx-1;i++) {
     f[i]= eps*(x[i+1]-2.*x[i]+x[i-1])/(hx*hx);
   }
   f[mx-1] = 2.*eps*(x[mx-2]- x[mx-1])/(hx*hx); /*boundary*/
-  CHKERRQ(VecRestoreArrayRead(X,&x));
-  CHKERRQ(VecRestoreArray(F,&f));
+  PetscCall(VecRestoreArrayRead(X,&x));
+  PetscCall(VecRestoreArray(F,&f));
   PetscFunctionReturn(0);
 }
 
@@ -135,17 +135,17 @@ static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
 
   PetscFunctionBegin;
   mx = user->mx;
-  CHKERRQ(VecGetArrayRead(X,&x));
-  CHKERRQ(VecGetArrayRead(Xdot,&xdot));
-  CHKERRQ(VecGetArray(F,&f));
+  PetscCall(VecGetArrayRead(X,&x));
+  PetscCall(VecGetArrayRead(Xdot,&xdot));
+  PetscCall(VecGetArray(F,&f));
 
   for (i=0;i<mx;i++) {
     f[i]= xdot[i] - x[i]*(1.-x[i]*x[i]);
   }
 
-  CHKERRQ(VecRestoreArrayRead(X,&x));
-  CHKERRQ(VecRestoreArrayRead(Xdot,&xdot));
-  CHKERRQ(VecRestoreArray(F,&f));
+  PetscCall(VecRestoreArrayRead(X,&x));
+  PetscCall(VecRestoreArrayRead(Xdot,&xdot));
+  PetscCall(VecRestoreArray(F,&f));
   PetscFunctionReturn(0);
 }
 
@@ -157,19 +157,19 @@ static PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec U, Vec Udot, PetscReal
   PetscInt          i,col;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(U,&x));
+  PetscCall(VecGetArrayRead(U,&x));
   for (i=0; i < user->mx; i++) {
     v = a - 1. + 3.*x[i]*x[i];
     col = i;
-    CHKERRQ(MatSetValues(J,1,&i,1,&col,&v,INSERT_VALUES));
+    PetscCall(MatSetValues(J,1,&i,1,&col,&v,INSERT_VALUES));
   }
-  CHKERRQ(VecRestoreArrayRead(U,&x));
+  PetscCall(VecRestoreArrayRead(U,&x));
 
-  CHKERRQ(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY));
   if (J != Jpre) {
-    CHKERRQ(MatAssemblyBegin(Jpre,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(Jpre,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyBegin(Jpre,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(Jpre,MAT_FINAL_ASSEMBLY));
   }
   /*  MatView(J,PETSC_VIEWER_STDOUT_WORLD);*/
   PetscFunctionReturn(0);
@@ -184,7 +184,7 @@ static PetscErrorCode FormInitialSolution(TS ts,Vec U,void *ctx)
 
   PetscFunctionBegin;
   hx = (user->xright-user->xleft)/(PetscReal)(user->mx-1);
-  CHKERRQ(VecGetArray(U,&x));
+  PetscCall(VecGetArray(U,&x));
   for (i=0;i<user->mx;i++) {
     x_map = user->xleft + i*hx;
     if (x_map >= 0.7065) {
@@ -199,7 +199,7 @@ static PetscErrorCode FormInitialSolution(TS ts,Vec U,void *ctx)
       x[i] = PetscTanhReal((x_map+0.9)/(2.*PetscSqrtReal(user->param)));
     }
   }
-  CHKERRQ(VecRestoreArray(U,&x));
+  PetscCall(VecRestoreArray(U,&x));
   PetscFunctionReturn(0);
 }
 

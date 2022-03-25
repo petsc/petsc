@@ -9,7 +9,7 @@ int main(int argc, char **argv)
     PetscScalar    *dx, *grad;
 
     PetscFunctionBeginUser;
-    CHKERRQ(PetscInitialize(&argc, &argv, PETSC_NULL, help));
+    PetscCall(PetscInitialize(&argc, &argv, PETSC_NULL, help));
 
     /*
       Working with a 2D mesh, made of triangles, and using the 2nd neighborhood
@@ -18,17 +18,17 @@ int main(int argc, char **argv)
       */
     dim = 2;
     numFaces = 9;
-    CHKERRQ(PetscMalloc2(dim * numFaces, &dx, dim * numFaces, &grad));
-    CHKERRQ(PetscFVCreate(PETSC_COMM_WORLD, &fvm));
-    CHKERRQ(PetscFVSetType(fvm, PETSCFVLEASTSQUARES));
-    CHKERRQ(PetscFVLeastSquaresSetMaxFaces(fvm, numFaces));
+    PetscCall(PetscMalloc2(dim * numFaces, &dx, dim * numFaces, &grad));
+    PetscCall(PetscFVCreate(PETSC_COMM_WORLD, &fvm));
+    PetscCall(PetscFVSetType(fvm, PETSCFVLEASTSQUARES));
+    PetscCall(PetscFVLeastSquaresSetMaxFaces(fvm, numFaces));
 
     /* Issue here */
-    CHKERRQ(PetscFVComputeGradient(fvm, numFaces, dx, grad));
+    PetscCall(PetscFVComputeGradient(fvm, numFaces, dx, grad));
 
-    CHKERRQ(PetscFVDestroy(&fvm));
-    CHKERRQ(PetscFree2(dx, grad));
-    CHKERRQ(PetscFinalize());
+    PetscCall(PetscFVDestroy(&fvm));
+    PetscCall(PetscFree2(dx, grad));
+    PetscCall(PetscFinalize());
     PetscFunctionReturn(0);
 }
 

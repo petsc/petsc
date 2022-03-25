@@ -9,51 +9,51 @@ int main(int argc,char **argv)
   PetscScalar    values[4];
   Vec            x;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   PetscCheckFalse(size != 2,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must be run with two processors");
 
   /* create vector */
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
-  CHKERRQ(VecSetSizes(x,PETSC_DECIDE,n));
-  CHKERRQ(VecSetBlockSize(x,bs));
-  CHKERRQ(VecSetFromOptions(x));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+  PetscCall(VecSetSizes(x,PETSC_DECIDE,n));
+  PetscCall(VecSetBlockSize(x,bs));
+  PetscCall(VecSetFromOptions(x));
 
   if (rank == 0) {
     for (i=0; i<4; i++) values[i] = i+1;
     indices[0] = 0;
     indices[1] = 2;
-    CHKERRQ(VecSetValuesBlocked(x,2,indices,values,INSERT_VALUES));
+    PetscCall(VecSetValuesBlocked(x,2,indices,values,INSERT_VALUES));
   }
-  CHKERRQ(VecAssemblyBegin(x));
-  CHKERRQ(VecAssemblyEnd(x));
+  PetscCall(VecAssemblyBegin(x));
+  PetscCall(VecAssemblyEnd(x));
 
   /*
       Resulting vector should be 1 2 0 0 3 4 0 0
   */
-  CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
 
   /* test insertion with negative indices */
-  CHKERRQ(VecSetOption(x,VEC_IGNORE_NEGATIVE_INDICES,PETSC_TRUE));
+  PetscCall(VecSetOption(x,VEC_IGNORE_NEGATIVE_INDICES,PETSC_TRUE));
   if (rank == 0) {
     for (i=0; i<4; i++) values[i] = -(i+1);
     indices[0] = -1;
     indices[1] = 3;
-    CHKERRQ(VecSetValuesBlocked(x,2,indices,values,INSERT_VALUES));
+    PetscCall(VecSetValuesBlocked(x,2,indices,values,INSERT_VALUES));
   }
-  CHKERRQ(VecAssemblyBegin(x));
-  CHKERRQ(VecAssemblyEnd(x));
+  PetscCall(VecAssemblyBegin(x));
+  PetscCall(VecAssemblyEnd(x));
 
   /*
       Resulting vector should be 1 2 0 0 3 4 -3 -4
   */
-  CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
 
-  CHKERRQ(VecDestroy(&x));
+  PetscCall(VecDestroy(&x));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

@@ -49,61 +49,61 @@ int main(int argc,char **argv)
   PetscMPIInt      size;
 #endif
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,300,300,&viewer));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,300,300,&viewer));
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   if (size == 1) {
-    CHKERRQ(PetscViewerMatlabOpen(PETSC_COMM_WORLD,"tmp.mat",FILE_MODE_WRITE,&mviewer));
+    PetscCall(PetscViewerMatlabOpen(PETSC_COMM_WORLD,"tmp.mat",FILE_MODE_WRITE,&mviewer));
   }
 #endif
 
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-star_stencil",&flg,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-star_stencil",&flg,NULL));
   if (flg) stype = DMDA_STENCIL_STAR;
 
   /* Create distributed array and get vectors */
-  CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD,bx,by,stype,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
-  CHKERRQ(DMCreateGlobalVector(da,&global));
-  CHKERRQ(DMCreateLocalVector(da,&local));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD,bx,by,stype,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMCreateGlobalVector(da,&global));
+  PetscCall(DMCreateLocalVector(da,&local));
 
   value = -3.0;
-  CHKERRQ(VecSet(global,value));
-  CHKERRQ(DMGlobalToLocalBegin(da,global,INSERT_VALUES,local));
-  CHKERRQ(DMGlobalToLocalEnd(da,global,INSERT_VALUES,local));
+  PetscCall(VecSet(global,value));
+  PetscCall(DMGlobalToLocalBegin(da,global,INSERT_VALUES,local));
+  PetscCall(DMGlobalToLocalEnd(da,global,INSERT_VALUES,local));
 
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   value = rank+1;
-  CHKERRQ(VecScale(local,value));
-  CHKERRQ(DMLocalToGlobalBegin(da,local,ADD_VALUES,global));
-  CHKERRQ(DMLocalToGlobalEnd(da,local,ADD_VALUES,global));
+  PetscCall(VecScale(local,value));
+  PetscCall(DMLocalToGlobalBegin(da,local,ADD_VALUES,global));
+  PetscCall(DMLocalToGlobalEnd(da,local,ADD_VALUES,global));
 
   flg  = PETSC_FALSE;
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL, "-view_global", &flg,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL, "-view_global", &flg,NULL));
   if (flg) { /* view global vector in natural ordering */
-    CHKERRQ(VecView(global,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(VecView(global,PETSC_VIEWER_STDOUT_WORLD));
   }
-  CHKERRQ(DMView(da,viewer));
-  CHKERRQ(VecView(global,viewer));
+  PetscCall(DMView(da,viewer));
+  PetscCall(VecView(global,viewer));
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   if (size == 1) {
-    CHKERRQ(DMView(da,mviewer));
-    CHKERRQ(VecView(global,mviewer));
+    PetscCall(DMView(da,mviewer));
+    PetscCall(VecView(global,mviewer));
   }
 #endif
 
   /* Free memory */
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   if (size == 1) {
-    CHKERRQ(PetscViewerDestroy(&mviewer));
+    PetscCall(PetscViewerDestroy(&mviewer));
   }
 #endif
-  CHKERRQ(PetscViewerDestroy(&viewer));
-  CHKERRQ(VecDestroy(&local));
-  CHKERRQ(VecDestroy(&global));
-  CHKERRQ(DMDestroy(&da));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscViewerDestroy(&viewer));
+  PetscCall(VecDestroy(&local));
+  PetscCall(VecDestroy(&global));
+  PetscCall(DMDestroy(&da));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

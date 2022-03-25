@@ -18,27 +18,27 @@ int main(int argc,char **argv)
   PetscScalar    *globalptr,*localptr;
   PetscReal      h,k;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-time",&time_steps,NULL));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-time",&time_steps,NULL));
 
   /* Set up the array */
-  CHKERRQ(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,M,w,s,NULL,&da));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
-  CHKERRQ(DMCreateGlobalVector(da,&global));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,M,w,s,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMCreateGlobalVector(da,&global));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   /* Make copy of local array for doing updates */
-  CHKERRQ(DMCreateLocalVector(da,&local));
+  PetscCall(DMCreateLocalVector(da,&local));
 
   /* determine starting point of each processor */
-  CHKERRQ(VecGetOwnershipRange(global,&mybase,&myend));
+  PetscCall(VecGetOwnershipRange(global,&mybase,&myend));
 
   /* Initialize the Array */
-  CHKERRQ(VecGetLocalSize (global,&globalsize));
-  CHKERRQ(VecGetArray (global,&globalptr));
+  PetscCall(VecGetLocalSize (global,&globalsize));
+  PetscCall(VecGetArray (global,&globalptr));
 
   for (i=0; i<globalsize; i++) {
     j = i + mybase;
@@ -46,22 +46,22 @@ int main(int argc,char **argv)
     globalptr[i] = PetscSinReal((PETSC_PI*j*6)/((PetscReal)M) + 1.2 * PetscSinReal((PETSC_PI*j*2)/((PetscReal)M))) * 4+4;
   }
 
-  CHKERRQ(VecRestoreArray(global,&localptr));
+  PetscCall(VecRestoreArray(global,&localptr));
 
   /* Assign Parameters */
   h= 1.0/M;
   k= h*h/2.2;
-  CHKERRQ(VecGetLocalSize(local,&localsize));
+  PetscCall(VecGetLocalSize(local,&localsize));
 
   for (j=0; j<time_steps; j++) {
 
     /* Global to Local */
-    CHKERRQ(DMGlobalToLocalBegin(da,global,INSERT_VALUES,local));
-    CHKERRQ(DMGlobalToLocalEnd(da,global,INSERT_VALUES,local));
+    PetscCall(DMGlobalToLocalBegin(da,global,INSERT_VALUES,local));
+    PetscCall(DMGlobalToLocalEnd(da,global,INSERT_VALUES,local));
 
     /*Extract local array */
-    CHKERRQ(VecGetArray(local,&localptr));
-    CHKERRQ(VecGetArray (global,&globalptr));
+    PetscCall(VecGetArray(local,&localptr));
+    PetscCall(VecGetArray (global,&globalptr));
 
     /* Update Locally - Make array of new values */
     /* Note: I don't do anything for the first and last entry */
@@ -69,19 +69,19 @@ int main(int argc,char **argv)
       globalptr[i-1] = localptr[i] + (k/(h*h)) * (localptr[i+1]-2.0*localptr[i]+localptr[i-1]);
     }
 
-    CHKERRQ(VecRestoreArray (global,&globalptr));
-    CHKERRQ(VecRestoreArray(local,&localptr));
+    PetscCall(VecRestoreArray (global,&globalptr));
+    PetscCall(VecRestoreArray(local,&localptr));
 
     /* View Wave */
     /* Set Up Display to Show Heat Graph */
 #if defined(PETSC_USE_SOCKET_VIEWER)
-    CHKERRQ(VecView(global,PETSC_VIEWER_SOCKET_WORLD));
+    PetscCall(VecView(global,PETSC_VIEWER_SOCKET_WORLD));
 #endif
   }
 
-  CHKERRQ(VecDestroy(&local));
-  CHKERRQ(VecDestroy(&global));
-  CHKERRQ(DMDestroy(&da));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&local));
+  PetscCall(VecDestroy(&global));
+  PetscCall(DMDestroy(&da));
+  PetscCall(PetscFinalize());
   return 0;
 }

@@ -6,8 +6,8 @@ PetscErrorCode  DMSetFromOptions_Network(PetscOptionItems *PetscOptionsObject,DM
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"DMNetwork Options"));
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"DMNetwork Options"));
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -30,14 +30,14 @@ static PetscErrorCode VecArrayPrint_private(PetscViewer viewer,PetscInt n,const 
   for (i=0; i<n; i++) {
 #if defined(PETSC_USE_COMPLEX)
     if (PetscImaginaryPart(xv[i]) > 0.0) {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"    %g + %g i\n",(double)PetscRealPart(xv[i]),(double)PetscImaginaryPart(xv[i])));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"    %g + %g i\n",(double)PetscRealPart(xv[i]),(double)PetscImaginaryPart(xv[i])));
     } else if (PetscImaginaryPart(xv[i]) < 0.0) {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"    %g - %g i\n",(double)PetscRealPart(xv[i]),-(double)PetscImaginaryPart(xv[i])));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"    %g - %g i\n",(double)PetscRealPart(xv[i]),-(double)PetscImaginaryPart(xv[i])));
     } else {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"    %g\n",(double)PetscRealPart(xv[i])));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"    %g\n",(double)PetscRealPart(xv[i])));
     }
 #else
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"    %g\n",(double)xv[i]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    %g\n",(double)xv[i]));
 #endif
   }
   PetscFunctionReturn(0);
@@ -49,35 +49,35 @@ static PetscErrorCode VecView_Network_Seq(DM networkdm,Vec X,PetscViewer viewer)
   const PetscScalar *xv;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(X,&xv));
+  PetscCall(VecGetArrayRead(X,&xv));
 
   /* iterate over edges */
-  CHKERRQ(DMNetworkGetEdgeRange(networkdm,&Start,&End));
+  PetscCall(DMNetworkGetEdgeRange(networkdm,&Start,&End));
   for (e=Start; e<End; e++) {
-    CHKERRQ(DMNetworkGetComponent(networkdm,e,ALL_COMPONENTS,NULL,NULL,&nvar));
+    PetscCall(DMNetworkGetComponent(networkdm,e,ALL_COMPONENTS,NULL,NULL,&nvar));
     if (!nvar) continue;
 
-    CHKERRQ(DMNetworkGetLocalVecOffset(networkdm,e,ALL_COMPONENTS,&offset));
-    CHKERRQ(DMNetworkGetGlobalEdgeIndex(networkdm,e,&id));
+    PetscCall(DMNetworkGetLocalVecOffset(networkdm,e,ALL_COMPONENTS,&offset));
+    PetscCall(DMNetworkGetGlobalEdgeIndex(networkdm,e,&id));
 
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Edge %" PetscInt_FMT ":\n",id));
-    CHKERRQ(VecArrayPrint_private(viewer,nvar,xv+offset));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Edge %" PetscInt_FMT ":\n",id));
+    PetscCall(VecArrayPrint_private(viewer,nvar,xv+offset));
   }
 
   /* iterate over vertices */
-  CHKERRQ(DMNetworkGetVertexRange(networkdm,&Start,&End));
+  PetscCall(DMNetworkGetVertexRange(networkdm,&Start,&End));
   for (v=Start; v<End; v++) {
-    CHKERRQ(DMNetworkGetComponent(networkdm,v,ALL_COMPONENTS,NULL,NULL,&nvar));
+    PetscCall(DMNetworkGetComponent(networkdm,v,ALL_COMPONENTS,NULL,NULL,&nvar));
     if (!nvar) continue;
 
-    CHKERRQ(DMNetworkGetLocalVecOffset(networkdm,v,ALL_COMPONENTS,&offset));
-    CHKERRQ(DMNetworkGetGlobalVertexIndex(networkdm,v,&id));
+    PetscCall(DMNetworkGetLocalVecOffset(networkdm,v,ALL_COMPONENTS,&offset));
+    PetscCall(DMNetworkGetGlobalVertexIndex(networkdm,v,&id));
 
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Vertex %" PetscInt_FMT ":\n",id));
-    CHKERRQ(VecArrayPrint_private(viewer,nvar,xv+offset));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Vertex %" PetscInt_FMT ":\n",id));
+    PetscCall(VecArrayPrint_private(viewer,nvar,xv+offset));
   }
-  CHKERRQ(PetscViewerFlush(viewer));
-  CHKERRQ(VecRestoreArrayRead(X,&xv));
+  PetscCall(PetscViewerFlush(viewer));
+  PetscCall(VecRestoreArrayRead(X,&xv));
   PetscFunctionReturn(0);
 }
 
@@ -94,41 +94,41 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm,Vec X,PetscViewer viewer)
   MPI_Status        status;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectGetComm((PetscObject)networkdm,&comm));
-  CHKERRMPI(MPI_Comm_size(comm,&size));
-  CHKERRMPI(MPI_Comm_rank(comm,&rank));
+  PetscCall(PetscObjectGetComm((PetscObject)networkdm,&comm));
+  PetscCallMPI(MPI_Comm_size(comm,&size));
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
 
-  CHKERRQ(DMGetLocalVector(networkdm,&localX));
-  CHKERRQ(DMGlobalToLocalBegin(networkdm,X,INSERT_VALUES,localX));
-  CHKERRQ(DMGlobalToLocalEnd(networkdm,X,INSERT_VALUES,localX));
-  CHKERRQ(VecGetArrayRead(localX,&xv));
+  PetscCall(DMGetLocalVector(networkdm,&localX));
+  PetscCall(DMGlobalToLocalBegin(networkdm,X,INSERT_VALUES,localX));
+  PetscCall(DMGlobalToLocalEnd(networkdm,X,INSERT_VALUES,localX));
+  PetscCall(VecGetArrayRead(localX,&xv));
 
-  CHKERRQ(VecGetLocalSize(localX,&len_loc));
+  PetscCall(VecGetLocalSize(localX,&len_loc));
 
-  CHKERRQ(DMNetworkGetEdgeRange(networkdm,&eStart,&eEnd));
-  CHKERRQ(DMNetworkGetVertexRange(networkdm,&vStart,&vEnd));
+  PetscCall(DMNetworkGetEdgeRange(networkdm,&eStart,&eEnd));
+  PetscCall(DMNetworkGetVertexRange(networkdm,&vStart,&vEnd));
   len_loc += 2*(1 + eEnd-eStart + vEnd-vStart);
 
   /* values = [nedges, nvertices; id, nvar, xedge; ...; id, nvars, xvertex;...], to be sent to proc[0] */
-  CHKERRMPI(MPI_Allreduce(&len_loc,&len,1,MPIU_INT,MPI_MAX,comm));
-  CHKERRQ(PetscCalloc1(len,&values));
+  PetscCallMPI(MPI_Allreduce(&len_loc,&len,1,MPIU_INT,MPI_MAX,comm));
+  PetscCall(PetscCalloc1(len,&values));
 
   if (rank == 0) {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"Process [%d]\n",rank));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"Process [%d]\n",rank));
   }
 
   /* iterate over edges */
   k = 2;
   for (e=eStart; e<eEnd; e++) {
-    CHKERRQ(DMNetworkGetComponent(networkdm,e,ALL_COMPONENTS,NULL,NULL,&nvar));
+    PetscCall(DMNetworkGetComponent(networkdm,e,ALL_COMPONENTS,NULL,NULL,&nvar));
     if (!nvar) continue;
 
-    CHKERRQ(DMNetworkGetLocalVecOffset(networkdm,e,ALL_COMPONENTS,&offset));
-    CHKERRQ(DMNetworkGetGlobalEdgeIndex(networkdm,e,&id));
+    PetscCall(DMNetworkGetLocalVecOffset(networkdm,e,ALL_COMPONENTS,&offset));
+    PetscCall(DMNetworkGetGlobalEdgeIndex(networkdm,e,&id));
 
     if (rank == 0) { /* print its own entries */
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Edge %" PetscInt_FMT ":\n",id));
-      CHKERRQ(VecArrayPrint_private(viewer,nvar,xv+offset));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  Edge %" PetscInt_FMT ":\n",id));
+      PetscCall(VecArrayPrint_private(viewer,nvar,xv+offset));
     } else {
       values[0]  += 1; /* number of edges */
       values[k++] = id;
@@ -139,17 +139,17 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm,Vec X,PetscViewer viewer)
 
   /* iterate over vertices */
   for (v=vStart; v<vEnd; v++) {
-    CHKERRQ(DMNetworkIsGhostVertex(networkdm,v,&ghostvtex));
+    PetscCall(DMNetworkIsGhostVertex(networkdm,v,&ghostvtex));
     if (ghostvtex) continue;
-    CHKERRQ(DMNetworkGetComponent(networkdm,v,ALL_COMPONENTS,NULL,NULL,&nvar));
+    PetscCall(DMNetworkGetComponent(networkdm,v,ALL_COMPONENTS,NULL,NULL,&nvar));
     if (!nvar) continue;
 
-    CHKERRQ(DMNetworkGetLocalVecOffset(networkdm,v,ALL_COMPONENTS,&offset));
-    CHKERRQ(DMNetworkGetGlobalVertexIndex(networkdm,v,&id));
+    PetscCall(DMNetworkGetLocalVecOffset(networkdm,v,ALL_COMPONENTS,&offset));
+    PetscCall(DMNetworkGetGlobalVertexIndex(networkdm,v,&id));
 
     if (rank == 0) {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Vertex %" PetscInt_FMT ":\n",id));
-      CHKERRQ(VecArrayPrint_private(viewer,nvar,xv+offset));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  Vertex %" PetscInt_FMT ":\n",id));
+      PetscCall(VecArrayPrint_private(viewer,nvar,xv+offset));
     } else {
       values[1]  += 1; /* number of vertices */
       values[k++] = id;
@@ -161,9 +161,9 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm,Vec X,PetscViewer viewer)
   if (rank == 0) {
     /* proc[0] receives and prints messages */
     for (j=1; j<size; j++) {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"Process [%d]\n",j));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"Process [%d]\n",j));
 
-      CHKERRMPI(MPI_Recv(values,(PetscMPIInt)len,MPIU_SCALAR,j,tag,comm,&status));
+      PetscCallMPI(MPI_Recv(values,(PetscMPIInt)len,MPIU_SCALAR,j,tag,comm,&status));
 
       ne = (PetscInt)PetscAbsScalar(values[0]);
       nv = (PetscInt)PetscAbsScalar(values[1]);
@@ -173,8 +173,8 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm,Vec X,PetscViewer viewer)
       for (i=0; i<ne; i++) {
         id   = (PetscInt)PetscAbsScalar(values[k++]);
         nvar = (PetscInt)PetscAbsScalar(values[k++]);
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Edge %" PetscInt_FMT ":\n",id));
-        CHKERRQ(VecArrayPrint_private(viewer,nvar,values+k));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"  Edge %" PetscInt_FMT ":\n",id));
+        PetscCall(VecArrayPrint_private(viewer,nvar,values+k));
         k   += nvar;
       }
 
@@ -182,19 +182,19 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm,Vec X,PetscViewer viewer)
       for (i=0; i<nv; i++) {
         id   = (PetscInt)PetscAbsScalar(values[k++]);
         nvar = (PetscInt)PetscAbsScalar(values[k++]);
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Vertex %" PetscInt_FMT ":\n",id));
-        CHKERRQ(VecArrayPrint_private(viewer,nvar,values+k));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"  Vertex %" PetscInt_FMT ":\n",id));
+        PetscCall(VecArrayPrint_private(viewer,nvar,values+k));
         k   += nvar;
       }
     }
   } else {
     /* sends values to proc[0] */
-    CHKERRMPI(MPI_Send((void*)values,k,MPIU_SCALAR,0,tag,comm));
+    PetscCallMPI(MPI_Send((void*)values,k,MPIU_SCALAR,0,tag,comm));
   }
 
-  CHKERRQ(PetscFree(values));
-  CHKERRQ(VecRestoreArrayRead(localX,&xv));
-  CHKERRQ(DMRestoreLocalVector(networkdm,&localX));
+  PetscCall(PetscFree(values));
+  PetscCall(VecRestoreArrayRead(localX,&xv));
+  PetscCall(DMRestoreLocalVector(networkdm,&localX));
   PetscFunctionReturn(0);
 }
 
@@ -207,23 +207,23 @@ PetscErrorCode VecView_Network(Vec v,PetscViewer viewer)
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetDM(v,&dm));
+  PetscCall(VecGetDM(v,&dm));
   PetscCheck(dm,PetscObjectComm((PetscObject)v),PETSC_ERR_ARG_WRONG,"Vector not generated from a DM");
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)v,VECSEQ,&isseq));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)v,VECSEQ,&isseq));
 
   /* Use VecView_Network if the viewer is ASCII; use VecView_Seq/MPI for other viewer formats */
   if (iascii) {
     if (isseq) {
-      CHKERRQ(VecView_Network_Seq(dm,v,viewer));
+      PetscCall(VecView_Network_Seq(dm,v,viewer));
     } else {
-      CHKERRQ(VecView_Network_MPI(dm,v,viewer));
+      PetscCall(VecView_Network_MPI(dm,v,viewer));
     }
   } else {
     if (isseq) {
-      CHKERRQ(VecView_Seq(v,viewer));
+      PetscCall(VecView_Seq(v,viewer));
     } else {
-      CHKERRQ(VecView_MPI(v,viewer));
+      PetscCall(VecView_MPI(v,viewer));
     }
   }
   PetscFunctionReturn(0);
@@ -234,9 +234,9 @@ static PetscErrorCode DMCreateGlobalVector_Network(DM dm,Vec *vec)
   DM_Network     *network = (DM_Network*) dm->data;
 
   PetscFunctionBegin;
-  CHKERRQ(DMCreateGlobalVector(network->plex,vec));
-  CHKERRQ(VecSetOperation(*vec, VECOP_VIEW, (void (*)(void)) VecView_Network));
-  CHKERRQ(VecSetDM(*vec,dm));
+  PetscCall(DMCreateGlobalVector(network->plex,vec));
+  PetscCall(VecSetOperation(*vec, VECOP_VIEW, (void (*)(void)) VecView_Network));
+  PetscCall(VecSetDM(*vec,dm));
   PetscFunctionReturn(0);
 }
 
@@ -245,15 +245,15 @@ static PetscErrorCode DMCreateLocalVector_Network(DM dm,Vec *vec)
   DM_Network     *network = (DM_Network*) dm->data;
 
   PetscFunctionBegin;
-  CHKERRQ(DMCreateLocalVector(network->plex,vec));
-  CHKERRQ(VecSetDM(*vec,dm));
+  PetscCall(DMCreateLocalVector(network->plex,vec));
+  PetscCall(VecSetDM(*vec,dm));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode DMInitialize_Network(DM dm)
 {
   PetscFunctionBegin;
-  CHKERRQ(DMSetDimension(dm,1));
+  PetscCall(DMSetDimension(dm,1));
   dm->ops->view                            = DMView_Network;
   dm->ops->setfromoptions                  = DMSetFromOptions_Network;
   dm->ops->clone                           = DMClone_Network;
@@ -288,8 +288,8 @@ PetscErrorCode DMClone_Network(DM dm, DM *newdm)
   PetscFunctionBegin;
   network->refct++;
   (*newdm)->data = network;
-  CHKERRQ(PetscObjectChangeTypeName((PetscObject) *newdm, DMNETWORK));
-  CHKERRQ(DMInitialize_Network(*newdm));
+  PetscCall(PetscObjectChangeTypeName((PetscObject) *newdm, DMNETWORK));
+  PetscCall(DMInitialize_Network(*newdm));
   PetscFunctionReturn(0);
 }
 
@@ -311,7 +311,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Network(DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  CHKERRQ(PetscNewLog(dm,&network));
+  PetscCall(PetscNewLog(dm,&network));
   dm->data = network;
 
   network->refct     = 1;
@@ -326,7 +326,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Network(DM dm)
   network->header               = NULL;
   network->cvalue               = NULL;
 
-  CHKERRQ(DMInitialize_Network(dm));
+  PetscCall(DMInitialize_Network(dm));
   PetscFunctionReturn(0);
 }
 
@@ -348,7 +348,7 @@ PetscErrorCode DMNetworkCreate(MPI_Comm comm, DM *network)
 {
   PetscFunctionBegin;
   PetscValidPointer(network,2);
-  CHKERRQ(DMCreate(comm, network));
-  CHKERRQ(DMSetType(*network, DMNETWORK));
+  PetscCall(DMCreate(comm, network));
+  PetscCall(DMSetType(*network, DMNETWORK));
   PetscFunctionReturn(0);
 }

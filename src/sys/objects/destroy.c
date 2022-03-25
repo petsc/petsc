@@ -11,20 +11,20 @@ PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj)
 
   PetscFunctionBegin;
   if (obj->intstar_idmax>0) {
-    for (i=0; i<obj->intstar_idmax; i++) CHKERRQ(PetscFree(obj->intstarcomposeddata[i]));
-    CHKERRQ(PetscFree2(obj->intstarcomposeddata,obj->intstarcomposedstate));
+    for (i=0; i<obj->intstar_idmax; i++) PetscCall(PetscFree(obj->intstarcomposeddata[i]));
+    PetscCall(PetscFree2(obj->intstarcomposeddata,obj->intstarcomposedstate));
   }
   if (obj->realstar_idmax>0) {
-    for (i=0; i<obj->realstar_idmax; i++) CHKERRQ(PetscFree(obj->realstarcomposeddata[i]));
-    CHKERRQ(PetscFree2(obj->realstarcomposeddata,obj->realstarcomposedstate));
+    for (i=0; i<obj->realstar_idmax; i++) PetscCall(PetscFree(obj->realstarcomposeddata[i]));
+    PetscCall(PetscFree2(obj->realstarcomposeddata,obj->realstarcomposedstate));
   }
   if (obj->scalarstar_idmax>0) {
-    for (i=0; i<obj->scalarstar_idmax; i++) CHKERRQ(PetscFree(obj->scalarstarcomposeddata[i]));
-    CHKERRQ(PetscFree2(obj->scalarstarcomposeddata,obj->scalarstarcomposedstate));
+    for (i=0; i<obj->scalarstar_idmax; i++) PetscCall(PetscFree(obj->scalarstarcomposeddata[i]));
+    PetscCall(PetscFree2(obj->scalarstarcomposeddata,obj->scalarstarcomposedstate));
   }
-  CHKERRQ(PetscFree2(obj->intcomposeddata,obj->intcomposedstate));
-  CHKERRQ(PetscFree2(obj->realcomposeddata,obj->realcomposedstate));
-  CHKERRQ(PetscFree2(obj->scalarcomposeddata,obj->scalarcomposedstate));
+  PetscCall(PetscFree2(obj->intcomposeddata,obj->intcomposedstate));
+  PetscCall(PetscFree2(obj->realcomposeddata,obj->realcomposedstate));
+  PetscCall(PetscFree2(obj->scalarcomposeddata,obj->scalarcomposedstate));
   PetscFunctionReturn(0);
 }
 
@@ -47,7 +47,7 @@ PetscErrorCode  PetscObjectDestroy(PetscObject *obj)
   if (!obj || !*obj) PetscFunctionReturn(0);
   PetscValidHeader(*obj,1);
   PetscCheck((*obj)->bops->destroy,PETSC_COMM_SELF,PETSC_ERR_PLIB,"This PETSc object of class %s does not have a generic destroy routine",(*obj)->class_name);
-  CHKERRQ((*(*obj)->bops->destroy)(obj));
+  PetscCall((*(*obj)->bops->destroy)(obj));
   PetscFunctionReturn(0);
 }
 
@@ -70,10 +70,10 @@ PetscErrorCode  PetscObjectView(PetscObject obj,PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
   PetscCheck(obj->bops->view,PETSC_COMM_SELF,PETSC_ERR_SUP,"This PETSc object does not have a generic viewer routine");
-  if (!viewer) CHKERRQ(PetscViewerASCIIGetStdout(obj->comm,&viewer));
+  if (!viewer) PetscCall(PetscViewerASCIIGetStdout(obj->comm,&viewer));
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
 
-  CHKERRQ((*obj->bops->view)(obj,viewer));
+  PetscCall((*obj->bops->view)(obj,viewer));
   PetscFunctionReturn(0);
 }
 
@@ -102,13 +102,13 @@ PetscErrorCode PetscObjectViewFromOptions(PetscObject obj,PetscObject bobj,const
   if (incall) PetscFunctionReturn(0);
   incall = PETSC_TRUE;
   prefix = bobj ? bobj->prefix : obj->prefix;
-  CHKERRQ(PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj),obj->options,prefix,optionname,&viewer,&format,&flg));
+  PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj),obj->options,prefix,optionname,&viewer,&format,&flg));
   if (flg) {
-    CHKERRQ(PetscViewerPushFormat(viewer,format));
-    CHKERRQ(PetscObjectView(obj,viewer));
-    CHKERRQ(PetscViewerFlush(viewer));
-    CHKERRQ(PetscViewerPopFormat(viewer));
-    CHKERRQ(PetscViewerDestroy(&viewer));
+    PetscCall(PetscViewerPushFormat(viewer,format));
+    PetscCall(PetscObjectView(obj,viewer));
+    PetscCall(PetscViewerFlush(viewer));
+    PetscCall(PetscViewerPopFormat(viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
   }
   incall = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -143,7 +143,7 @@ PetscErrorCode  PetscObjectTypeCompare(PetscObject obj,const char type_name[],Pe
   else {
     PetscValidHeader(obj,1);
     PetscValidCharPointer(type_name,2);
-    CHKERRQ(PetscStrcmp((char*)(obj->type_name),type_name,same));
+    PetscCall(PetscStrcmp((char*)(obj->type_name),type_name,same));
   }
   PetscFunctionReturn(0);
 }
@@ -175,7 +175,7 @@ PetscErrorCode  PetscObjectBaseTypeCompare(PetscObject obj,const char type_name[
   else {
     PetscValidHeader(obj,1);
     PetscValidCharPointer(type_name,2);
-    CHKERRQ(PetscStrbeginswith((char*)(obj->type_name),type_name,same));
+    PetscCall(PetscStrbeginswith((char*)(obj->type_name),type_name,same));
   }
   PetscFunctionReturn(0);
 }
@@ -209,7 +209,7 @@ PetscErrorCode PetscObjectTypeCompareAny(PetscObject obj,PetscBool *match,const 
   va_start(Argp,type_name);
   while (type_name && type_name[0]) {
     PetscBool found;
-    CHKERRQ(PetscObjectTypeCompare(obj,type_name,&found));
+    PetscCall(PetscObjectTypeCompare(obj,type_name,&found));
     if (found) {
       *match = PETSC_TRUE;
       break;
@@ -248,7 +248,7 @@ PetscErrorCode PetscObjectBaseTypeCompareAny(PetscObject obj,PetscBool *match,co
   va_start(Argp,type_name);
   while (type_name && type_name[0]) {
     PetscBool found;
-    CHKERRQ(PetscObjectBaseTypeCompare(obj,type_name,&found));
+    PetscCall(PetscObjectBaseTypeCompare(obj,type_name,&found));
     if (found) {
       *match = PETSC_TRUE;
       break;
@@ -304,7 +304,7 @@ PetscErrorCode  PetscObjectRegisterDestroy(PetscObject obj)
 PetscErrorCode  PetscObjectRegisterDestroyAll(void)
 {
   PetscFunctionBegin;
-  for (PetscInt i=0; i<PetscObjectRegisterDestroy_Count; i++) CHKERRQ(PetscObjectDestroy(&PetscObjectRegisterDestroy_Objects[i]));
+  for (PetscInt i=0; i<PetscObjectRegisterDestroy_Count; i++) PetscCall(PetscObjectDestroy(&PetscObjectRegisterDestroy_Objects[i]));
   PetscObjectRegisterDestroy_Count = 0;
   PetscFunctionReturn(0);
 }
@@ -351,7 +351,7 @@ PetscErrorCode  PetscRegisterFinalize(PetscErrorCode (*f)(void))
 PetscErrorCode  PetscRegisterFinalizeAll(void)
 {
   PetscFunctionBegin;
-  for (PetscInt i=0; i<PetscRegisterFinalize_Count; i++) CHKERRQ((*PetscRegisterFinalize_Functions[i])());
+  for (PetscInt i=0; i<PetscRegisterFinalize_Count; i++) PetscCall((*PetscRegisterFinalize_Functions[i])());
   PetscRegisterFinalize_Count = 0;
   PetscFunctionReturn(0);
 }

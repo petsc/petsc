@@ -31,13 +31,13 @@ PetscErrorCode  PetscDrawRegisterAll(void)
   if (PetscDrawRegisterAllCalled) PetscFunctionReturn(0);
   PetscDrawRegisterAllCalled = PETSC_TRUE;
 
-  CHKERRQ(PetscDrawRegister(PETSC_DRAW_IMAGE,    PetscDrawCreate_Image));
-  CHKERRQ(PetscDrawRegister(PETSC_DRAW_TIKZ,     PetscDrawCreate_TikZ));
+  PetscCall(PetscDrawRegister(PETSC_DRAW_IMAGE,    PetscDrawCreate_Image));
+  PetscCall(PetscDrawRegister(PETSC_DRAW_TIKZ,     PetscDrawCreate_TikZ));
 #if defined(PETSC_HAVE_X)
-  CHKERRQ(PetscDrawRegister(PETSC_DRAW_X,        PetscDrawCreate_X));
+  PetscCall(PetscDrawRegister(PETSC_DRAW_X,        PetscDrawCreate_X));
 #elif defined(PETSC_USE_WINDOWS_GRAPHICS)
-  CHKERRQ(PetscDrawRegister(PETSC_DRAW_WIN32,    PetscDrawCreate_Win32));
+  PetscCall(PetscDrawRegister(PETSC_DRAW_WIN32,    PetscDrawCreate_Win32));
 #endif
-  CHKERRQ(PetscDrawRegister(PETSC_DRAW_NULL,     PetscDrawCreate_Null));
+  PetscCall(PetscDrawRegister(PETSC_DRAW_NULL,     PetscDrawCreate_Null));
   PetscFunctionReturn(0);
 }

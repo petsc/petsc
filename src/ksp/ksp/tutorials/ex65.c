@@ -36,15 +36,15 @@ static PetscErrorCode CreateRestriction(DM,DM,Mat*);
 static PetscErrorCode MyDMShellCreate(MPI_Comm comm,DM da,DM *shell)
 {
 
-  CHKERRQ(DMShellCreate(comm,shell));
-  CHKERRQ(DMShellSetContext(*shell,da));
-  CHKERRQ(DMShellSetCreateMatrix(*shell,CreateMatrix));
-  CHKERRQ(DMShellSetCreateGlobalVector(*shell,CreateGlobalVector));
-  CHKERRQ(DMShellSetCreateLocalVector(*shell,CreateLocalVector));
-  CHKERRQ(DMShellSetRefine(*shell,Refine));
-  CHKERRQ(DMShellSetCoarsen(*shell,Coarsen));
-  CHKERRQ(DMShellSetCreateInterpolation(*shell,CreateInterpolation));
-  CHKERRQ(DMShellSetCreateRestriction(*shell,CreateRestriction));
+  PetscCall(DMShellCreate(comm,shell));
+  PetscCall(DMShellSetContext(*shell,da));
+  PetscCall(DMShellSetCreateMatrix(*shell,CreateMatrix));
+  PetscCall(DMShellSetCreateGlobalVector(*shell,CreateGlobalVector));
+  PetscCall(DMShellSetCreateLocalVector(*shell,CreateLocalVector));
+  PetscCall(DMShellSetRefine(*shell,Refine));
+  PetscCall(DMShellSetCoarsen(*shell,Coarsen));
+  PetscCall(DMShellSetCreateInterpolation(*shell,CreateInterpolation));
+  PetscCall(DMShellSetCreateRestriction(*shell,CreateRestriction));
   return 0;
 }
 
@@ -54,26 +54,26 @@ int main(int argc,char **argv)
   DM             da,shell;
   PetscInt       levels;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
-  CHKERRQ(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,129,1,1,0,&da));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
-  CHKERRQ(MyDMShellCreate(PETSC_COMM_WORLD,da,&shell));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,129,1,1,0,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(MyDMShellCreate(PETSC_COMM_WORLD,da,&shell));
   /* these two lines are not needed but allow PCMG to automatically know how many multigrid levels the user wants */
-  CHKERRQ(DMGetRefineLevel(da,&levels));
-  CHKERRQ(DMSetRefineLevel(shell,levels));
+  PetscCall(DMGetRefineLevel(da,&levels));
+  PetscCall(DMSetRefineLevel(shell,levels));
 
-  CHKERRQ(KSPSetDM(ksp,shell));
-  CHKERRQ(KSPSetComputeRHS(ksp,ComputeRHS,NULL));
-  CHKERRQ(KSPSetComputeOperators(ksp,ComputeMatrix,NULL));
-  CHKERRQ(KSPSetFromOptions(ksp));
-  CHKERRQ(KSPSolve(ksp,NULL,NULL));
+  PetscCall(KSPSetDM(ksp,shell));
+  PetscCall(KSPSetComputeRHS(ksp,ComputeRHS,NULL));
+  PetscCall(KSPSetComputeOperators(ksp,ComputeMatrix,NULL));
+  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(KSPSolve(ksp,NULL,NULL));
 
-  CHKERRQ(KSPDestroy(&ksp));
-  CHKERRQ(DMDestroy(&shell));
-  CHKERRQ(DMDestroy(&da));
-  CHKERRQ(PetscFinalize());
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(DMDestroy(&shell));
+  PetscCall(DMDestroy(&da));
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -81,8 +81,8 @@ static PetscErrorCode CreateMatrix(DM shell,Mat *A)
 {
   DM             da;
 
-  CHKERRQ(DMShellGetContext(shell,&da));
-  CHKERRQ(DMCreateMatrix(da,A));
+  PetscCall(DMShellGetContext(shell,&da));
+  PetscCall(DMCreateMatrix(da,A));
   return 0;
 }
 
@@ -90,9 +90,9 @@ static PetscErrorCode CreateInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
 {
   DM             da1,da2;
 
-  CHKERRQ(DMShellGetContext(dm1,&da1));
-  CHKERRQ(DMShellGetContext(dm2,&da2));
-  CHKERRQ(DMCreateInterpolation(da1,da2,mat,vec));
+  PetscCall(DMShellGetContext(dm1,&da1));
+  PetscCall(DMShellGetContext(dm2,&da2));
+  PetscCall(DMCreateInterpolation(da1,da2,mat,vec));
   return 0;
 }
 
@@ -101,11 +101,11 @@ static PetscErrorCode CreateRestriction(DM dm1,DM dm2,Mat *mat)
   DM             da1,da2;
   Mat            tmat;
 
-  CHKERRQ(DMShellGetContext(dm1,&da1));
-  CHKERRQ(DMShellGetContext(dm2,&da2));
-  CHKERRQ(DMCreateInterpolation(da1,da2,&tmat,NULL));
-  CHKERRQ(MatTranspose(tmat,MAT_INITIAL_MATRIX,mat));
-  CHKERRQ(MatDestroy(&tmat));
+  PetscCall(DMShellGetContext(dm1,&da1));
+  PetscCall(DMShellGetContext(dm2,&da2));
+  PetscCall(DMCreateInterpolation(da1,da2,&tmat,NULL));
+  PetscCall(MatTranspose(tmat,MAT_INITIAL_MATRIX,mat));
+  PetscCall(MatDestroy(&tmat));
   return 0;
 }
 
@@ -113,9 +113,9 @@ static PetscErrorCode CreateGlobalVector(DM shell,Vec *x)
 {
   DM             da;
 
-  CHKERRQ(DMShellGetContext(shell,&da));
-  CHKERRQ(DMCreateGlobalVector(da,x));
-  CHKERRQ(VecSetDM(*x,shell));
+  PetscCall(DMShellGetContext(shell,&da));
+  PetscCall(DMCreateGlobalVector(da,x));
+  PetscCall(VecSetDM(*x,shell));
   return 0;
 }
 
@@ -123,9 +123,9 @@ static PetscErrorCode CreateLocalVector(DM shell,Vec *x)
 {
   DM             da;
 
-  CHKERRQ(DMShellGetContext(shell,&da));
-  CHKERRQ(DMCreateLocalVector(da,x));
-  CHKERRQ(VecSetDM(*x,shell));
+  PetscCall(DMShellGetContext(shell,&da));
+  PetscCall(DMCreateLocalVector(da,x));
+  PetscCall(VecSetDM(*x,shell));
   return 0;
 }
 
@@ -133,9 +133,9 @@ static PetscErrorCode Refine(DM shell,MPI_Comm comm,DM *dmnew)
 {
   DM             da,dafine;
 
-  CHKERRQ(DMShellGetContext(shell,&da));
-  CHKERRQ(DMRefine(da,comm,&dafine));
-  CHKERRQ(MyDMShellCreate(PetscObjectComm((PetscObject)shell),dafine,dmnew));
+  PetscCall(DMShellGetContext(shell,&da));
+  PetscCall(DMRefine(da,comm,&dafine));
+  PetscCall(MyDMShellCreate(PetscObjectComm((PetscObject)shell),dafine,dmnew));
   return 0;
 }
 
@@ -143,11 +143,11 @@ static PetscErrorCode Coarsen(DM shell,MPI_Comm comm,DM *dmnew)
 {
   DM             da,dacoarse;
 
-  CHKERRQ(DMShellGetContext(shell,&da));
-  CHKERRQ(DMCoarsen(da,comm,&dacoarse));
-  CHKERRQ(MyDMShellCreate(PetscObjectComm((PetscObject)shell),dacoarse,dmnew));
+  PetscCall(DMShellGetContext(shell,&da));
+  PetscCall(DMCoarsen(da,comm,&dacoarse));
+  PetscCall(MyDMShellCreate(PetscObjectComm((PetscObject)shell),dacoarse,dmnew));
   /* discard an "extra" reference count to dacoarse */
-  CHKERRQ(DMDestroy(&dacoarse));
+  PetscCall(DMDestroy(&dacoarse));
   return 0;
 }
 
@@ -158,16 +158,16 @@ static PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
   DM             da,shell;
 
   PetscFunctionBeginUser;
-  CHKERRQ(KSPGetDM(ksp,&shell));
-  CHKERRQ(DMShellGetContext(shell,&da));
-  CHKERRQ(DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0));
+  PetscCall(KSPGetDM(ksp,&shell));
+  PetscCall(DMShellGetContext(shell,&da));
+  PetscCall(DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0));
   h      = 1.0/((mx-1));
-  CHKERRQ(VecSet(b,h));
+  PetscCall(VecSet(b,h));
   idx[0] = 0; idx[1] = mx -1;
   v[0]   = v[1] = 0.0;
-  CHKERRQ(VecSetValues(b,2,idx,v,INSERT_VALUES));
-  CHKERRQ(VecAssemblyBegin(b));
-  CHKERRQ(VecAssemblyEnd(b));
+  PetscCall(VecSetValues(b,2,idx,v,INSERT_VALUES));
+  PetscCall(VecAssemblyBegin(b));
+  PetscCall(VecAssemblyEnd(b));
   PetscFunctionReturn(0);
 }
 
@@ -179,26 +179,26 @@ static PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,void *ctx)
   DM             da,shell;
 
   PetscFunctionBeginUser;
-  CHKERRQ(KSPGetDM(ksp,&shell));
-  CHKERRQ(DMShellGetContext(shell,&da));
-  CHKERRQ(DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0));
-  CHKERRQ(DMDAGetCorners(da,&xs,0,0,&xm,0,0));
+  PetscCall(KSPGetDM(ksp,&shell));
+  PetscCall(DMShellGetContext(shell,&da));
+  PetscCall(DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0));
+  PetscCall(DMDAGetCorners(da,&xs,0,0,&xm,0,0));
   h    = 1.0/(mx-1);
 
   for (i=xs; i<xs+xm; i++) {
     row.i = i;
     if (i==0 || i==mx-1) {
       v[0] = 2.0/h;
-      CHKERRQ(MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES));
+      PetscCall(MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES));
     } else {
       v[0]  = (-1.0)/h;col[0].i = i-1;
       v[1]  = (2.0)/h;col[1].i = row.i;
       v[2]  = (-1.0)/h;col[2].i = i+1;
-      CHKERRQ(MatSetValuesStencil(jac,1,&row,3,col,v,INSERT_VALUES));
+      PetscCall(MatSetValuesStencil(jac,1,&row,3,col,v,INSERT_VALUES));
     }
   }
-  CHKERRQ(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 

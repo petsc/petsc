@@ -12,23 +12,23 @@ int main(int argc,char **args)
   PetscInt       i;
   const char     *common[] = {KSPGMRES,KSPCG,KSPPREONLY};
 
-  CHKERRQ(PetscInitialize(&argc,&args,NULL,help));
-  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(PetscInitialize(&argc,&args,NULL,help));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
   for (i=0; i<3; i++) {
-    CHKERRQ(KSPSetType(ksp,common[i]));
-    CHKERRQ(KSPSetType(ksp,KSPHPDDM));
+    PetscCall(KSPSetType(ksp,common[i]));
+    PetscCall(KSPSetType(ksp,KSPHPDDM));
 #if defined(PETSC_HAVE_HPDDM)
-    CHKERRQ(KSPHPDDMGetType(ksp,&type));
-    CHKERRQ(PetscStrcmp(KSPHPDDMTypes[type],common[i],&flg));
+    PetscCall(KSPHPDDMGetType(ksp,&type));
+    PetscCall(PetscStrcmp(KSPHPDDMTypes[type],common[i],&flg));
     PetscCheck(flg,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"KSPType and KSPHPDDMType do not match: %s != %s", common[i], type);
-    CHKERRQ(KSPSetFromOptions(ksp));
-    CHKERRQ(KSPHPDDMGetType(ksp,&type));
+    PetscCall(KSPSetFromOptions(ksp));
+    PetscCall(KSPHPDDMGetType(ksp,&type));
     PetscCheckFalse(type != KSP_HPDDM_TYPE_GCRODR,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"-ksp_hpddm_type gcrodr and KSPHPDDMType do not match: gcrodr != %s", KSPHPDDMTypes[type]);
-    CHKERRQ(KSPHPDDMSetType(ksp,KSP_HPDDM_TYPE_BGMRES));
+    PetscCall(KSPHPDDMSetType(ksp,KSP_HPDDM_TYPE_BGMRES));
 #endif
   }
-  CHKERRQ(KSPDestroy(&ksp));
-  CHKERRQ(PetscFinalize());
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

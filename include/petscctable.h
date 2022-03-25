@@ -74,7 +74,7 @@ static inline PetscErrorCode PetscTableAdd(PetscTable ta,PetscInt key,PetscInt d
         ta->keytable[hash] = key;
         ta->table[hash] = data;
       } else {
-        CHKERRQ(PetscTableAddExpand(ta,key,data,imode));
+        PetscCall(PetscTableAddExpand(ta,key,data,imode));
       }
       PetscFunctionReturn(0);
     }
@@ -102,7 +102,7 @@ static inline PetscErrorCode  PetscTableAddCount(PetscTable ta,PetscInt key)
         ta->keytable[hash] = key;
         ta->table[hash] = ta->count;
       } else {
-        CHKERRQ(PetscTableAddCountExpand(ta,key));
+        PetscCall(PetscTableAddCountExpand(ta,key));
       }
       PetscFunctionReturn(0);
     }

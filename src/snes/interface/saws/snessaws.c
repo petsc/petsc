@@ -25,7 +25,7 @@ PetscErrorCode SNESMonitorSAWsCreate(SNES snes,void **ctx)
   SNESMonitor_SAWs *mon;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNewLog(snes,&mon));
+  PetscCall(PetscNewLog(snes,&mon));
   mon->viewer = PETSC_VIEWER_SAWS_(PetscObjectComm((PetscObject)snes));
   PetscCheck(mon->viewer,PetscObjectComm((PetscObject)snes),PETSC_ERR_PLIB,"Cannot create SAWs default viewer");
   *ctx = (void*)mon;
@@ -47,7 +47,7 @@ PetscErrorCode SNESMonitorSAWsCreate(SNES snes,void **ctx)
 PetscErrorCode SNESMonitorSAWsDestroy(void **ctx)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscFree(*ctx));
+  PetscCall(PetscFree(*ctx));
   PetscFunctionReturn(0);
 }
 
@@ -73,11 +73,11 @@ PetscErrorCode SNESMonitorSAWs(SNES snes,PetscInt n,PetscReal rnorm,void *ctx)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
 
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   if (rank == 0) {
     PetscStackCallSAWs(SAWs_Register,("/PETSc/snes_monitor_saws/its",&snes->iter,1,SAWs_READ,SAWs_INT));
     PetscStackCallSAWs(SAWs_Register,("/PETSc/snes_monitor_saws/rnorm",&snes->norm,1,SAWs_READ,SAWs_DOUBLE));
-    CHKERRQ(PetscSAWsBlock());
+    PetscCall(PetscSAWsBlock());
   }
   PetscFunctionReturn(0);
 }

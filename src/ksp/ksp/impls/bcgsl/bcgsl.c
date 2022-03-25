@@ -39,54 +39,54 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
   bcgsl->vvR = ksp->work+vi; vi += ell+1;
   bcgsl->vvU = ksp->work+vi; vi += ell+1;
   bcgsl->vXr = ksp->work[vi]; vi++;
-  CHKERRQ(PetscBLASIntCast(ell+1,&ldMZ));
+  PetscCall(PetscBLASIntCast(ell+1,&ldMZ));
 
   /* Prime the iterative solver */
-  CHKERRQ(KSPInitialResidual(ksp, VX, VTM, VB, VVR[0], ksp->vec_rhs));
-  CHKERRQ(VecNorm(VVR[0], NORM_2, &zeta0));
+  PetscCall(KSPInitialResidual(ksp, VX, VTM, VB, VVR[0], ksp->vec_rhs));
+  PetscCall(VecNorm(VVR[0], NORM_2, &zeta0));
   KSPCheckNorm(ksp,zeta0);
   rnmax_computed = zeta0;
   rnmax_true     = zeta0;
 
-  CHKERRQ(PetscObjectSAWsTakeAccess((PetscObject)ksp));
+  PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
   ksp->its   = 0;
   if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = zeta0;
   else ksp->rnorm = 0.0;
-  CHKERRQ(PetscObjectSAWsGrantAccess((PetscObject)ksp));
-  CHKERRQ((*ksp->converged)(ksp, 0, ksp->rnorm, &ksp->reason, ksp->cnvP));
+  PetscCall(PetscObjectSAWsGrantAccess((PetscObject)ksp));
+  PetscCall((*ksp->converged)(ksp, 0, ksp->rnorm, &ksp->reason, ksp->cnvP));
   if (ksp->reason) PetscFunctionReturn(0);
 
-  CHKERRQ(VecSet(VVU[0],0.0));
+  PetscCall(VecSet(VVU[0],0.0));
   alpha = 0.;
   rho0  = omega = 1;
 
   if (bcgsl->delta>0.0) {
-    CHKERRQ(VecCopy(VX, VXR));
-    CHKERRQ(VecSet(VX,0.0));
-    CHKERRQ(VecCopy(VVR[0], VB));
+    PetscCall(VecCopy(VX, VXR));
+    PetscCall(VecSet(VX,0.0));
+    PetscCall(VecCopy(VVR[0], VB));
   } else {
-    CHKERRQ(VecCopy(ksp->vec_rhs, VB));
+    PetscCall(VecCopy(ksp->vec_rhs, VB));
   }
 
   /* Life goes on */
-  CHKERRQ(VecCopy(VVR[0], VRT));
+  PetscCall(VecCopy(VVR[0], VRT));
   zeta = zeta0;
 
-  CHKERRQ(KSPGetTolerances(ksp, NULL, NULL, NULL, &maxit));
+  PetscCall(KSPGetTolerances(ksp, NULL, NULL, NULL, &maxit));
 
   for (k=0; k<maxit; k += bcgsl->ell) {
     ksp->its = k;
     if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = zeta;
     else ksp->rnorm = 0.0;
 
-    CHKERRQ(KSPLogResidualHistory(ksp, ksp->rnorm));
-    CHKERRQ(KSPMonitor(ksp, ksp->its, ksp->rnorm));
+    PetscCall(KSPLogResidualHistory(ksp, ksp->rnorm));
+    PetscCall(KSPMonitor(ksp, ksp->its, ksp->rnorm));
 
-    CHKERRQ((*ksp->converged)(ksp, k, ksp->rnorm, &ksp->reason, ksp->cnvP));
+    PetscCall((*ksp->converged)(ksp, k, ksp->rnorm, &ksp->reason, ksp->cnvP));
     if (ksp->reason < 0) PetscFunctionReturn(0);
     if (ksp->reason) {
       if (bcgsl->delta>0.0) {
-        CHKERRQ(VecAXPY(VX,1.0,VXR));
+        PetscCall(VecAXPY(VX,1.0,VXR));
       }
       PetscFunctionReturn(0);
     }
@@ -96,7 +96,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
     nrm0 = zeta;
     for (j=0; j<bcgsl->ell; j++) {
       /* rho1 <- r_j' * r_tilde */
-      CHKERRQ(VecDot(VVR[j], VRT, &rho1));
+      PetscCall(VecDot(VVR[j], VRT, &rho1));
       KSPCheckDot(ksp,rho1);
       if (rho1 == 0.0) {
         ksp->reason = KSP_DIVERGED_BREAKDOWN_BICG;
@@ -106,12 +106,12 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
       rho0 = rho1;
       for (i=0; i<=j; i++) {
         /* u_i <- r_i - beta*u_i */
-        CHKERRQ(VecAYPX(VVU[i], -beta, VVR[i]));
+        PetscCall(VecAYPX(VVU[i], -beta, VVR[i]));
       }
       /* u_{j+1} <- inv(K)*A*u_j */
-      CHKERRQ(KSP_PCApplyBAorAB(ksp, VVU[j], VVU[j+1], VTM));
+      PetscCall(KSP_PCApplyBAorAB(ksp, VVU[j], VVU[j+1], VTM));
 
-      CHKERRQ(VecDot(VVU[j+1], VRT, &sigma));
+      PetscCall(VecDot(VVU[j+1], VRT, &sigma));
       KSPCheckDot(ksp,sigma);
       if (sigma == 0.0) {
         ksp->reason = KSP_DIVERGED_BREAKDOWN_BICG;
@@ -120,17 +120,17 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
       alpha = rho1/sigma;
 
       /* x <- x + alpha*u_0 */
-      CHKERRQ(VecAXPY(VX, alpha, VVU[0]));
+      PetscCall(VecAXPY(VX, alpha, VVU[0]));
 
       for (i=0; i<=j; i++) {
         /* r_i <- r_i - alpha*u_{i+1} */
-        CHKERRQ(VecAXPY(VVR[i], -alpha, VVU[i+1]));
+        PetscCall(VecAXPY(VVR[i], -alpha, VVU[i+1]));
       }
 
       /* r_{j+1} <- inv(K)*A*r_j */
-      CHKERRQ(KSP_PCApplyBAorAB(ksp, VVR[j], VVR[j+1], VTM));
+      PetscCall(KSP_PCApplyBAorAB(ksp, VVR[j], VVR[j+1], VTM));
 
-      CHKERRQ(VecNorm(VVR[0], NORM_2, &nrm0));
+      PetscCall(VecNorm(VVR[0], NORM_2, &nrm0));
       KSPCheckNorm(ksp,nrm0);
       if (bcgsl->delta>0.0) {
         if (rnmax_computed<nrm0) rnmax_computed = nrm0;
@@ -138,20 +138,20 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
       }
 
       /* NEW: check for early exit */
-      CHKERRQ((*ksp->converged)(ksp, k+j, nrm0, &ksp->reason, ksp->cnvP));
+      PetscCall((*ksp->converged)(ksp, k+j, nrm0, &ksp->reason, ksp->cnvP));
       if (ksp->reason) {
-        CHKERRQ(PetscObjectSAWsTakeAccess((PetscObject)ksp));
+        PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
         ksp->its   = k+j;
         ksp->rnorm = nrm0;
 
-        CHKERRQ(PetscObjectSAWsGrantAccess((PetscObject)ksp));
+        PetscCall(PetscObjectSAWsGrantAccess((PetscObject)ksp));
         if (ksp->reason < 0) PetscFunctionReturn(0);
       }
     }
 
     /* Polynomial part */
     for (i = 0; i <= bcgsl->ell; ++i) {
-      CHKERRQ(VecMDot(VVR[i], i+1, VVR, &MZa[i*ldMZ]));
+      PetscCall(VecMDot(VVR[i], i+1, VVR, &MZa[i*ldMZ]));
     }
     /* Symmetrize MZa */
     for (i = 0; i <= bcgsl->ell; ++i) {
@@ -160,11 +160,11 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
       }
     }
     /* Copy MZa to MZb */
-    CHKERRQ(PetscArraycpy(MZb,MZa,ldMZ*ldMZ));
+    PetscCall(PetscArraycpy(MZb,MZa,ldMZ*ldMZ));
 
     if (!bcgsl->bConvex || bcgsl->ell==1) {
       PetscBLASInt ione = 1,bell;
-      CHKERRQ(PetscBLASIntCast(bcgsl->ell,&bell));
+      PetscCall(PetscBLASIntCast(bcgsl->ell,&bell));
 
       AY0c[0] = -1;
       if (bcgsl->pinv) {
@@ -186,7 +186,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
         }
         /* tolerance is hardwired to bell*max(s)*PETSC_MACHINE_EPSILON */
         pinv_tol = bell*max_s*PETSC_MACHINE_EPSILON;
-        CHKERRQ(PetscArrayzero(&AY0c[1],bell));
+        PetscCall(PetscArrayzero(&AY0c[1],bell));
         for (i=0; i<bell; i++) {
           if (bcgsl->s[i] >= pinv_tol) {
             utb=0.;
@@ -205,26 +205,26 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
           ksp->reason = KSP_DIVERGED_BREAKDOWN;
           PetscFunctionReturn(0);
         }
-        CHKERRQ(PetscArraycpy(&AY0c[1],&MZb[1],bcgsl->ell));
+        PetscCall(PetscArraycpy(&AY0c[1],&MZb[1],bcgsl->ell));
         PetscStackCallBLAS("LAPACKpotrs",LAPACKpotrs_("Lower", &bell, &ione, &MZa[1+ldMZ], &ldMZ, &AY0c[1], &ldMZ, &bierr));
       }
     } else {
       PetscBLASInt ione = 1;
       PetscScalar  aone = 1.0, azero = 0.0;
       PetscBLASInt neqs;
-      CHKERRQ(PetscBLASIntCast(bcgsl->ell-1,&neqs));
+      PetscCall(PetscBLASIntCast(bcgsl->ell-1,&neqs));
 
       PetscStackCallBLAS("LAPACKpotrf",LAPACKpotrf_("Lower", &neqs, &MZa[1+ldMZ], &ldMZ, &bierr));
       if (bierr!=0) {
         ksp->reason = KSP_DIVERGED_BREAKDOWN;
         PetscFunctionReturn(0);
       }
-      CHKERRQ(PetscArraycpy(&AY0c[1],&MZb[1],bcgsl->ell-1));
+      PetscCall(PetscArraycpy(&AY0c[1],&MZb[1],bcgsl->ell-1));
       PetscStackCallBLAS("LAPACKpotrs",LAPACKpotrs_("Lower", &neqs, &ione, &MZa[1+ldMZ], &ldMZ, &AY0c[1], &ldMZ, &bierr));
       AY0c[0]          = -1;
       AY0c[bcgsl->ell] = 0.;
 
-      CHKERRQ(PetscArraycpy(&AYlc[1],&MZb[1+ldMZ*(bcgsl->ell)],bcgsl->ell-1));
+      PetscCall(PetscArraycpy(&AYlc[1],&MZb[1+ldMZ*(bcgsl->ell)],bcgsl->ell-1));
       PetscStackCallBLAS("LAPACKpotrs",LAPACKpotrs_("Lower", &neqs, &ione, &MZa[1+ldMZ], &ldMZ, &AYlc[1], &ldMZ, &bierr));
 
       AYlc[0]          = 0.;
@@ -266,12 +266,12 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
       PetscFunctionReturn(0);
     }
 
-    CHKERRQ(VecMAXPY(VX, bcgsl->ell,AY0c+1, VVR));
+    PetscCall(VecMAXPY(VX, bcgsl->ell,AY0c+1, VVR));
     for (i=1; i<=bcgsl->ell; i++) AY0c[i] *= -1.0;
-    CHKERRQ(VecMAXPY(VVU[0], bcgsl->ell,AY0c+1, VVU+1));
-    CHKERRQ(VecMAXPY(VVR[0], bcgsl->ell,AY0c+1, VVR+1));
+    PetscCall(VecMAXPY(VVU[0], bcgsl->ell,AY0c+1, VVU+1));
+    PetscCall(VecMAXPY(VVR[0], bcgsl->ell,AY0c+1, VVR+1));
     for (i=1; i<=bcgsl->ell; i++) AY0c[i] *= -1.0;
-    CHKERRQ(VecNorm(VVR[0], NORM_2, &zeta));
+    PetscCall(VecNorm(VVR[0], NORM_2, &zeta));
     KSPCheckNorm(ksp,zeta);
 
     /* Accurate Update */
@@ -282,29 +282,29 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
       bUpdateX = (PetscBool) (zeta<bcgsl->delta*zeta0 && zeta0<=rnmax_computed);
       if ((zeta<bcgsl->delta*rnmax_true && zeta0<=rnmax_true) || bUpdateX) {
         /* r0 <- b-inv(K)*A*X */
-        CHKERRQ(KSP_PCApplyBAorAB(ksp, VX, VVR[0], VTM));
-        CHKERRQ(VecAYPX(VVR[0], -1.0, VB));
+        PetscCall(KSP_PCApplyBAorAB(ksp, VX, VVR[0], VTM));
+        PetscCall(VecAYPX(VVR[0], -1.0, VB));
         rnmax_true = zeta;
 
         if (bUpdateX) {
-          CHKERRQ(VecAXPY(VXR,1.0,VX));
-          CHKERRQ(VecSet(VX,0.0));
-          CHKERRQ(VecCopy(VVR[0], VB));
+          PetscCall(VecAXPY(VXR,1.0,VX));
+          PetscCall(VecSet(VX,0.0));
+          PetscCall(VecCopy(VVR[0], VB));
           rnmax_computed = zeta;
         }
       }
     }
   }
   if (bcgsl->delta>0.0) {
-    CHKERRQ(VecAXPY(VX,1.0,VXR));
+    PetscCall(VecAXPY(VX,1.0,VXR));
   }
 
   ksp->its = k;
   if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = zeta;
   else ksp->rnorm = 0.0;
-  CHKERRQ(KSPMonitor(ksp, ksp->its, ksp->rnorm));
-  CHKERRQ(KSPLogResidualHistory(ksp, ksp->rnorm));
-  CHKERRQ((*ksp->converged)(ksp, k, ksp->rnorm, &ksp->reason, ksp->cnvP));
+  PetscCall(KSPMonitor(ksp, ksp->its, ksp->rnorm));
+  PetscCall(KSPLogResidualHistory(ksp, ksp->rnorm));
+  PetscCall((*ksp->converged)(ksp, k, ksp->rnorm, &ksp->reason, ksp->cnvP));
   if (!ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
   PetscFunctionReturn(0);
 }
@@ -335,9 +335,9 @@ PetscErrorCode  KSPBCGSLSetXRes(KSP ksp, PetscReal delta)
   PetscValidLogicalCollectiveReal(ksp,delta,2);
   if (ksp->setupstage) {
     if ((delta<=0 && bcgsl->delta>0) || (delta>0 && bcgsl->delta<=0)) {
-      CHKERRQ(VecDestroyVecs(ksp->nwork,&ksp->work));
-      CHKERRQ(PetscFree5(AY0c,AYlc,AYtc,MZa,MZb));
-      CHKERRQ(PetscFree4(bcgsl->work,bcgsl->s,bcgsl->u,bcgsl->v));
+      PetscCall(VecDestroyVecs(ksp->nwork,&ksp->work));
+      PetscCall(PetscFree5(AY0c,AYlc,AYtc,MZa,MZb));
+      PetscCall(PetscFree4(bcgsl->work,bcgsl->s,bcgsl->u,bcgsl->v));
       ksp->setupstage = KSP_SETUP_NEW;
     }
   }
@@ -402,9 +402,9 @@ PetscErrorCode  KSPBCGSLSetPol(KSP ksp, PetscBool uMROR)
     /* free the data structures,
        then create them again
      */
-    CHKERRQ(VecDestroyVecs(ksp->nwork,&ksp->work));
-    CHKERRQ(PetscFree5(AY0c,AYlc,AYtc,MZa,MZb));
-    CHKERRQ(PetscFree4(bcgsl->work,bcgsl->s,bcgsl->u,bcgsl->v));
+    PetscCall(VecDestroyVecs(ksp->nwork,&ksp->work));
+    PetscCall(PetscFree5(AY0c,AYlc,AYtc,MZa,MZb));
+    PetscCall(PetscFree4(bcgsl->work,bcgsl->s,bcgsl->u,bcgsl->v));
 
     bcgsl->bConvex  = uMROR;
     ksp->setupstage = KSP_SETUP_NEW;
@@ -445,9 +445,9 @@ PetscErrorCode  KSPBCGSLSetEll(KSP ksp, PetscInt ell)
   if (!ksp->setupstage) bcgsl->ell = ell;
   else if (bcgsl->ell != ell) {
     /* free the data structures, then create them again */
-    CHKERRQ(VecDestroyVecs(ksp->nwork,&ksp->work));
-    CHKERRQ(PetscFree5(AY0c,AYlc,AYtc,MZa,MZb));
-    CHKERRQ(PetscFree4(bcgsl->work,bcgsl->s,bcgsl->u,bcgsl->v));
+    PetscCall(VecDestroyVecs(ksp->nwork,&ksp->work));
+    PetscCall(PetscFree5(AY0c,AYlc,AYtc,MZa,MZb));
+    PetscCall(PetscFree4(bcgsl->work,bcgsl->s,bcgsl->u,bcgsl->v));
 
     bcgsl->ell      = ell;
     ksp->setupstage = KSP_SETUP_NEW;
@@ -461,11 +461,11 @@ PetscErrorCode KSPView_BCGSL(KSP ksp, PetscViewer viewer)
   PetscBool      isascii;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
 
   if (isascii) {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer, "  Ell = %D\n", bcgsl->ell));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer, "  Delta = %lg\n", bcgsl->delta));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  Ell = %D\n", bcgsl->ell));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  Delta = %lg\n", bcgsl->delta));
   }
   PetscFunctionReturn(0);
 }
@@ -481,35 +481,35 @@ PetscErrorCode KSPSetFromOptions_BCGSL(PetscOptionItems *PetscOptionsObject,KSP 
   /* PetscOptionsBegin/End are called in KSPSetFromOptions. They
      don't need to be called here.
   */
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"KSP BiCGStab(L) Options"));
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"KSP BiCGStab(L) Options"));
 
   /* Set number of search directions */
-  CHKERRQ(PetscOptionsInt("-ksp_bcgsl_ell","Number of Krylov search directions","KSPBCGSLSetEll",bcgsl->ell,&this_ell,&flg));
+  PetscCall(PetscOptionsInt("-ksp_bcgsl_ell","Number of Krylov search directions","KSPBCGSLSetEll",bcgsl->ell,&this_ell,&flg));
   if (flg) {
-    CHKERRQ(KSPBCGSLSetEll(ksp, this_ell));
+    PetscCall(KSPBCGSLSetEll(ksp, this_ell));
   }
 
   /* Set polynomial type */
-  CHKERRQ(PetscOptionsBool("-ksp_bcgsl_cxpoly", "Polynomial part of BiCGStabL is MinRes + OR", "KSPBCGSLSetPol", flga,&flga,NULL));
+  PetscCall(PetscOptionsBool("-ksp_bcgsl_cxpoly", "Polynomial part of BiCGStabL is MinRes + OR", "KSPBCGSLSetPol", flga,&flga,NULL));
   if (flga) {
-    CHKERRQ(KSPBCGSLSetPol(ksp, PETSC_TRUE));
+    PetscCall(KSPBCGSLSetPol(ksp, PETSC_TRUE));
   } else {
     flg  = PETSC_FALSE;
-    CHKERRQ(PetscOptionsBool("-ksp_bcgsl_mrpoly", "Polynomial part of BiCGStabL is MinRes", "KSPBCGSLSetPol", flg,&flg,NULL));
-    CHKERRQ(KSPBCGSLSetPol(ksp, PETSC_FALSE));
+    PetscCall(PetscOptionsBool("-ksp_bcgsl_mrpoly", "Polynomial part of BiCGStabL is MinRes", "KSPBCGSLSetPol", flg,&flg,NULL));
+    PetscCall(KSPBCGSLSetPol(ksp, PETSC_FALSE));
   }
 
   /* Will computed residual be refreshed? */
-  CHKERRQ(PetscOptionsReal("-ksp_bcgsl_xres", "Threshold used to decide when to refresh computed residuals", "KSPBCGSLSetXRes", bcgsl->delta, &delta, &flg));
+  PetscCall(PetscOptionsReal("-ksp_bcgsl_xres", "Threshold used to decide when to refresh computed residuals", "KSPBCGSLSetXRes", bcgsl->delta, &delta, &flg));
   if (flg) {
-    CHKERRQ(KSPBCGSLSetXRes(ksp, delta));
+    PetscCall(KSPBCGSLSetXRes(ksp, delta));
   }
 
   /* Use pseudoinverse? */
   flg  = bcgsl->pinv;
-  CHKERRQ(PetscOptionsBool("-ksp_bcgsl_pinv", "Polynomial correction via pseudoinverse", "KSPBCGSLSetUsePseudoinverse",flg,&flg,NULL));
-  CHKERRQ(KSPBCGSLSetUsePseudoinverse(ksp,flg));
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(PetscOptionsBool("-ksp_bcgsl_pinv", "Polynomial correction via pseudoinverse", "KSPBCGSLSetUsePseudoinverse",flg,&flg,NULL));
+  PetscCall(KSPBCGSLSetUsePseudoinverse(ksp,flg));
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -519,10 +519,10 @@ PetscErrorCode KSPSetUp_BCGSL(KSP ksp)
   PetscInt       ell    = bcgsl->ell,ldMZ = ell+1;
 
   PetscFunctionBegin;
-  CHKERRQ(KSPSetWorkVecs(ksp, 6+2*ell));
-  CHKERRQ(PetscMalloc5(ldMZ,&AY0c,ldMZ,&AYlc,ldMZ,&AYtc,ldMZ*ldMZ,&MZa,ldMZ*ldMZ,&MZb));
-  CHKERRQ(PetscBLASIntCast(5*ell,&bcgsl->lwork));
-  CHKERRQ(PetscMalloc5(bcgsl->lwork,&bcgsl->work,ell,&bcgsl->s,ell*ell,&bcgsl->u,ell*ell,&bcgsl->v,5*ell,&bcgsl->realwork));
+  PetscCall(KSPSetWorkVecs(ksp, 6+2*ell));
+  PetscCall(PetscMalloc5(ldMZ,&AY0c,ldMZ,&AYlc,ldMZ,&AYtc,ldMZ*ldMZ,&MZa,ldMZ*ldMZ,&MZb));
+  PetscCall(PetscBLASIntCast(5*ell,&bcgsl->lwork));
+  PetscCall(PetscMalloc5(bcgsl->lwork,&bcgsl->work,ell,&bcgsl->s,ell*ell,&bcgsl->u,ell*ell,&bcgsl->v,5*ell,&bcgsl->realwork));
   PetscFunctionReturn(0);
 }
 
@@ -531,17 +531,17 @@ PetscErrorCode KSPReset_BCGSL(KSP ksp)
   KSP_BCGSL      *bcgsl = (KSP_BCGSL*)ksp->data;
 
   PetscFunctionBegin;
-  CHKERRQ(VecDestroyVecs(ksp->nwork,&ksp->work));
-  CHKERRQ(PetscFree5(AY0c,AYlc,AYtc,MZa,MZb));
-  CHKERRQ(PetscFree5(bcgsl->work,bcgsl->s,bcgsl->u,bcgsl->v,bcgsl->realwork));
+  PetscCall(VecDestroyVecs(ksp->nwork,&ksp->work));
+  PetscCall(PetscFree5(AY0c,AYlc,AYtc,MZa,MZb));
+  PetscCall(PetscFree5(bcgsl->work,bcgsl->s,bcgsl->u,bcgsl->v,bcgsl->realwork));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode KSPDestroy_BCGSL(KSP ksp)
 {
   PetscFunctionBegin;
-  CHKERRQ(KSPReset_BCGSL(ksp));
-  CHKERRQ(KSPDestroyDefault(ksp));
+  PetscCall(KSPReset_BCGSL(ksp));
+  PetscCall(KSPDestroyDefault(ksp));
   PetscFunctionReturn(0);
 }
 
@@ -584,12 +584,12 @@ PETSC_EXTERN PetscErrorCode KSPCreate_BCGSL(KSP ksp)
 
   PetscFunctionBegin;
   /* allocate BiCGStab(L) context */
-  CHKERRQ(PetscNewLog(ksp,&bcgsl));
+  PetscCall(PetscNewLog(ksp,&bcgsl));
   ksp->data = (void*)bcgsl;
 
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3));
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2));
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1));
 
   ksp->ops->setup          = KSPSetUp_BCGSL;
   ksp->ops->solve          = KSPSolve_BCGSL;

@@ -22,9 +22,9 @@ static PetscErrorCode DMForestPackageFinalize(void)
   PetscFunctionBegin;
   while (link) {
     oldLink = link;
-    CHKERRQ(PetscFree(oldLink->name));
+    PetscCall(PetscFree(oldLink->name));
     link    = oldLink->next;
-    CHKERRQ(PetscFree(oldLink));
+    PetscCall(PetscFree(oldLink));
   }
   PetscFunctionReturn(0);
 }
@@ -35,8 +35,8 @@ static PetscErrorCode DMForestPackageInitialize(void)
   if (DMForestPackageInitialized) PetscFunctionReturn(0);
   DMForestPackageInitialized = PETSC_TRUE;
 
-  CHKERRQ(DMForestRegisterType(DMFOREST));
-  CHKERRQ(PetscRegisterFinalize(DMForestPackageFinalize));
+  PetscCall(DMForestRegisterType(DMFOREST));
+  PetscCall(PetscRegisterFinalize(DMForestPackageFinalize));
   PetscFunctionReturn(0);
 }
 
@@ -57,9 +57,9 @@ PetscErrorCode DMForestRegisterType(DMType name)
   DMForestTypeLink link;
 
   PetscFunctionBegin;
-  CHKERRQ(DMForestPackageInitialize());
-  CHKERRQ(PetscNew(&link));
-  CHKERRQ(PetscStrallocpy(name,&link->name));
+  PetscCall(DMForestPackageInitialize());
+  PetscCall(PetscNew(&link));
+  PetscCall(PetscStrallocpy(name,&link->name));
   link->next       = DMForestTypeList;
   DMForestTypeList = link;
   PetscFunctionReturn(0);
@@ -87,7 +87,7 @@ PetscErrorCode DMIsForest(DM dm, PetscBool *isForest)
   PetscFunctionBegin;
   while (link) {
     PetscBool sameType;
-    CHKERRQ(PetscObjectTypeCompare((PetscObject)dm,link->name,&sameType));
+    PetscCall(PetscObjectTypeCompare((PetscObject)dm,link->name,&sameType));
     if (sameType) {
       *isForest = PETSC_TRUE;
       PetscFunctionReturn(0);
@@ -132,44 +132,44 @@ PetscErrorCode DMForestTemplate(DM dm, MPI_Comm comm, DM *tdm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  CHKERRQ(DMCreate(PetscObjectComm((PetscObject)dm),tdm));
-  CHKERRQ(DMGetType(dm,&type));
-  CHKERRQ(DMSetType(*tdm,type));
-  CHKERRQ(DMForestGetBaseDM(dm,&base));
-  CHKERRQ(DMForestSetBaseDM(*tdm,base));
-  CHKERRQ(DMForestGetTopology(dm,&topology));
-  CHKERRQ(DMForestSetTopology(*tdm,topology));
-  CHKERRQ(DMForestGetAdjacencyDimension(dm,&dim));
-  CHKERRQ(DMForestSetAdjacencyDimension(*tdm,dim));
-  CHKERRQ(DMForestGetPartitionOverlap(dm,&overlap));
-  CHKERRQ(DMForestSetPartitionOverlap(*tdm,overlap));
-  CHKERRQ(DMForestGetMinimumRefinement(dm,&ref));
-  CHKERRQ(DMForestSetMinimumRefinement(*tdm,ref));
-  CHKERRQ(DMForestGetMaximumRefinement(dm,&ref));
-  CHKERRQ(DMForestSetMaximumRefinement(*tdm,ref));
-  CHKERRQ(DMForestGetAdaptivityStrategy(dm,&strat));
-  CHKERRQ(DMForestSetAdaptivityStrategy(*tdm,strat));
-  CHKERRQ(DMForestGetGradeFactor(dm,&factor));
-  CHKERRQ(DMForestSetGradeFactor(*tdm,factor));
-  CHKERRQ(DMForestGetBaseCoordinateMapping(dm,&map,&mapCtx));
-  CHKERRQ(DMForestSetBaseCoordinateMapping(*tdm,map,mapCtx));
+  PetscCall(DMCreate(PetscObjectComm((PetscObject)dm),tdm));
+  PetscCall(DMGetType(dm,&type));
+  PetscCall(DMSetType(*tdm,type));
+  PetscCall(DMForestGetBaseDM(dm,&base));
+  PetscCall(DMForestSetBaseDM(*tdm,base));
+  PetscCall(DMForestGetTopology(dm,&topology));
+  PetscCall(DMForestSetTopology(*tdm,topology));
+  PetscCall(DMForestGetAdjacencyDimension(dm,&dim));
+  PetscCall(DMForestSetAdjacencyDimension(*tdm,dim));
+  PetscCall(DMForestGetPartitionOverlap(dm,&overlap));
+  PetscCall(DMForestSetPartitionOverlap(*tdm,overlap));
+  PetscCall(DMForestGetMinimumRefinement(dm,&ref));
+  PetscCall(DMForestSetMinimumRefinement(*tdm,ref));
+  PetscCall(DMForestGetMaximumRefinement(dm,&ref));
+  PetscCall(DMForestSetMaximumRefinement(*tdm,ref));
+  PetscCall(DMForestGetAdaptivityStrategy(dm,&strat));
+  PetscCall(DMForestSetAdaptivityStrategy(*tdm,strat));
+  PetscCall(DMForestGetGradeFactor(dm,&factor));
+  PetscCall(DMForestSetGradeFactor(*tdm,factor));
+  PetscCall(DMForestGetBaseCoordinateMapping(dm,&map,&mapCtx));
+  PetscCall(DMForestSetBaseCoordinateMapping(*tdm,map,mapCtx));
   if (forest->ftemplate) {
-    CHKERRQ((*forest->ftemplate)(dm, *tdm));
+    PetscCall((*forest->ftemplate)(dm, *tdm));
   }
-  CHKERRQ(DMForestSetAdaptivityForest(*tdm,dm));
-  CHKERRQ(DMCopyDisc(dm,*tdm));
-  CHKERRQ(DMGetApplicationContext(dm,&ctx));
-  CHKERRQ(DMSetApplicationContext(*tdm,&ctx));
+  PetscCall(DMForestSetAdaptivityForest(*tdm,dm));
+  PetscCall(DMCopyDisc(dm,*tdm));
+  PetscCall(DMGetApplicationContext(dm,&ctx));
+  PetscCall(DMSetApplicationContext(*tdm,&ctx));
   {
     PetscBool            isper;
     const PetscReal      *maxCell, *L;
     const DMBoundaryType *bd;
 
-    CHKERRQ(DMGetPeriodicity(dm,&isper,&maxCell,&L,&bd));
-    CHKERRQ(DMSetPeriodicity(*tdm,isper,maxCell,L,bd));
+    PetscCall(DMGetPeriodicity(dm,&isper,&maxCell,&L,&bd));
+    PetscCall(DMSetPeriodicity(*tdm,isper,maxCell,L,bd));
   }
-  CHKERRQ(DMGetMatType(dm,&mtype));
-  CHKERRQ(DMSetMatType(*tdm,mtype));
+  PetscCall(DMGetMatType(dm,&mtype));
+  PetscCall(DMSetMatType(*tdm,mtype));
   PetscFunctionReturn(0);
 }
 
@@ -183,9 +183,9 @@ PETSC_EXTERN PetscErrorCode DMClone_Forest(DM dm, DM *newdm)
   PetscFunctionBegin;
   forest->refct++;
   (*newdm)->data = forest;
-  CHKERRQ(PetscObjectGetType((PetscObject) dm, &type));
-  CHKERRQ(PetscObjectChangeTypeName((PetscObject) *newdm, type));
-  CHKERRQ(DMInitialize_Forest(*newdm));
+  PetscCall(PetscObjectGetType((PetscObject) dm, &type));
+  PetscCall(PetscObjectChangeTypeName((PetscObject) *newdm, type));
+  PetscCall(DMInitialize_Forest(*newdm));
   PetscFunctionReturn(0);
 }
 
@@ -195,16 +195,16 @@ static PetscErrorCode DMDestroy_Forest(DM dm)
 
   PetscFunctionBegin;
   if (--forest->refct > 0) PetscFunctionReturn(0);
-  if (forest->destroy) CHKERRQ((*forest->destroy)(dm));
-  CHKERRQ(PetscSFDestroy(&forest->cellSF));
-  CHKERRQ(PetscSFDestroy(&forest->preCoarseToFine));
-  CHKERRQ(PetscSFDestroy(&forest->coarseToPreFine));
-  CHKERRQ(DMLabelDestroy(&forest->adaptLabel));
-  CHKERRQ(PetscFree(forest->adaptStrategy));
-  CHKERRQ(DMDestroy(&forest->base));
-  CHKERRQ(DMDestroy(&forest->adapt));
-  CHKERRQ(PetscFree(forest->topology));
-  CHKERRQ(PetscFree(forest));
+  if (forest->destroy) PetscCall((*forest->destroy)(dm));
+  PetscCall(PetscSFDestroy(&forest->cellSF));
+  PetscCall(PetscSFDestroy(&forest->preCoarseToFine));
+  PetscCall(PetscSFDestroy(&forest->coarseToPreFine));
+  PetscCall(DMLabelDestroy(&forest->adaptLabel));
+  PetscCall(PetscFree(forest->adaptStrategy));
+  PetscCall(DMDestroy(&forest->base));
+  PetscCall(DMDestroy(&forest->adapt));
+  PetscCall(PetscFree(forest->topology));
+  PetscCall(PetscFree(forest));
   PetscFunctionReturn(0);
 }
 
@@ -230,8 +230,8 @@ PetscErrorCode DMForestSetTopology(DM dm, DMForestTopology topology)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCheck(!dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the topology after setup");
-  CHKERRQ(PetscFree(forest->topology));
-  CHKERRQ(PetscStrallocpy((const char*)topology,(char**) &forest->topology));
+  PetscCall(PetscFree(forest->topology));
+  PetscCall(PetscStrallocpy((const char*)topology,(char**) &forest->topology));
   PetscFunctionReturn(0);
 }
 
@@ -287,8 +287,8 @@ PetscErrorCode DMForestSetBaseDM(DM dm, DM base)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCheck(!dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the base after setup");
-  CHKERRQ(PetscObjectReference((PetscObject)base));
-  CHKERRQ(DMDestroy(&forest->base));
+  PetscCall(PetscObjectReference((PetscObject)base));
+  PetscCall(DMDestroy(&forest->base));
   forest->base = base;
   if (base) {
     PetscBool        isper;
@@ -296,14 +296,14 @@ PetscErrorCode DMForestSetBaseDM(DM dm, DM base)
     const DMBoundaryType *bd;
 
     PetscValidHeaderSpecific(base, DM_CLASSID, 2);
-    CHKERRQ(DMGetDimension(base,&dim));
-    CHKERRQ(DMSetDimension(dm,dim));
-    CHKERRQ(DMGetCoordinateDim(base,&dimEmbed));
-    CHKERRQ(DMSetCoordinateDim(dm,dimEmbed));
-    CHKERRQ(DMGetPeriodicity(base,&isper,&maxCell,&L,&bd));
-    CHKERRQ(DMSetPeriodicity(dm,isper,maxCell,L,bd));
+    PetscCall(DMGetDimension(base,&dim));
+    PetscCall(DMSetDimension(dm,dim));
+    PetscCall(DMGetCoordinateDim(base,&dimEmbed));
+    PetscCall(DMSetCoordinateDim(dm,dimEmbed));
+    PetscCall(DMGetPeriodicity(base,&isper,&maxCell,&L,&bd));
+    PetscCall(DMSetPeriodicity(dm,isper,maxCell,L,bd));
   } else {
-    CHKERRQ(DMSetPeriodicity(dm,PETSC_FALSE,NULL,NULL,NULL));
+    PetscCall(DMSetPeriodicity(dm,PETSC_FALSE,NULL,NULL,NULL));
   }
   PetscFunctionReturn(0);
 }
@@ -389,30 +389,30 @@ PetscErrorCode DMForestSetAdaptivityForest(DM dm,DM adapt)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (adapt) PetscValidHeaderSpecific(adapt, DM_CLASSID, 2);
-  CHKERRQ(DMIsForest(dm, &isForest));
+  PetscCall(DMIsForest(dm, &isForest));
   if (!isForest) PetscFunctionReturn(0);
   PetscCheckFalse(adapt != NULL && dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the adaptation forest after setup");
   forest         = (DM_Forest*) dm->data;
-  CHKERRQ(DMForestGetAdaptivityForest(dm,&oldAdapt));
+  PetscCall(DMForestGetAdaptivityForest(dm,&oldAdapt));
   adaptForest    = (DM_Forest*) (adapt ? adapt->data : NULL);
   oldAdaptForest = (DM_Forest*) (oldAdapt ? oldAdapt->data : NULL);
   if (adaptForest != oldAdaptForest) {
-    CHKERRQ(PetscSFDestroy(&forest->preCoarseToFine));
-    CHKERRQ(PetscSFDestroy(&forest->coarseToPreFine));
-    if (forest->clearadaptivityforest) CHKERRQ((*forest->clearadaptivityforest)(dm));
+    PetscCall(PetscSFDestroy(&forest->preCoarseToFine));
+    PetscCall(PetscSFDestroy(&forest->coarseToPreFine));
+    if (forest->clearadaptivityforest) PetscCall((*forest->clearadaptivityforest)(dm));
   }
   switch (forest->adaptPurpose) {
   case DM_ADAPT_DETERMINE:
-    CHKERRQ(PetscObjectReference((PetscObject)adapt));
-    CHKERRQ(DMDestroy(&(forest->adapt)));
+    PetscCall(PetscObjectReference((PetscObject)adapt));
+    PetscCall(DMDestroy(&(forest->adapt)));
     forest->adapt = adapt;
     break;
   case DM_ADAPT_REFINE:
-    CHKERRQ(DMSetCoarseDM(dm,adapt));
+    PetscCall(DMSetCoarseDM(dm,adapt));
     break;
   case DM_ADAPT_COARSEN:
   case DM_ADAPT_COARSEN_LAST:
-    CHKERRQ(DMSetFineDM(dm,adapt));
+    PetscCall(DMSetFineDM(dm,adapt));
     break;
   default:
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"invalid adaptivity purpose");
@@ -447,11 +447,11 @@ PetscErrorCode DMForestGetAdaptivityForest(DM dm, DM *adapt)
     *adapt = forest->adapt;
     break;
   case DM_ADAPT_REFINE:
-    CHKERRQ(DMGetCoarseDM(dm,adapt));
+    PetscCall(DMGetCoarseDM(dm,adapt));
     break;
   case DM_ADAPT_COARSEN:
   case DM_ADAPT_COARSEN_LAST:
-    CHKERRQ(DMGetFineDM(dm,adapt));
+    PetscCall(DMGetFineDM(dm,adapt));
     break;
   default:
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"invalid adaptivity purpose");
@@ -488,14 +488,14 @@ PetscErrorCode DMForestSetAdaptivityPurpose(DM dm, DMAdaptFlag purpose)
   if (purpose != forest->adaptPurpose) {
     DM adapt;
 
-    CHKERRQ(DMForestGetAdaptivityForest(dm,&adapt));
-    CHKERRQ(PetscObjectReference((PetscObject)adapt));
-    CHKERRQ(DMForestSetAdaptivityForest(dm,NULL));
+    PetscCall(DMForestGetAdaptivityForest(dm,&adapt));
+    PetscCall(PetscObjectReference((PetscObject)adapt));
+    PetscCall(DMForestSetAdaptivityForest(dm,NULL));
 
     forest->adaptPurpose = purpose;
 
-    CHKERRQ(DMForestSetAdaptivityForest(dm,adapt));
-    CHKERRQ(DMDestroy(&adapt));
+    PetscCall(DMForestSetAdaptivityForest(dm,adapt));
+    PetscCall(DMDestroy(&adapt));
   }
   PetscFunctionReturn(0);
 }
@@ -555,7 +555,7 @@ PetscErrorCode DMForestSetAdjacencyDimension(DM dm, PetscInt adjDim)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCheck(!dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the adjacency dimension after setup");
   PetscCheckFalse(adjDim < 0,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"adjacency dim cannot be < 0: %d", adjDim);
-  CHKERRQ(DMGetDimension(dm,&dim));
+  PetscCall(DMGetDimension(dm,&dim));
   PetscCheckFalse(adjDim > dim,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"adjacency dim cannot be > %d: %d", dim, adjDim);
   forest->adjDim = adjDim;
   PetscFunctionReturn(0);
@@ -581,8 +581,8 @@ PetscErrorCode DMForestSetAdjacencyCodimension(DM dm, PetscInt adjCodim)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  CHKERRQ(DMGetDimension(dm,&dim));
-  CHKERRQ(DMForestSetAdjacencyDimension(dm,dim-adjCodim));
+  PetscCall(DMGetDimension(dm,&dim));
+  PetscCall(DMForestSetAdjacencyDimension(dm,dim-adjCodim));
   PetscFunctionReturn(0);
 }
 
@@ -637,7 +637,7 @@ PetscErrorCode DMForestGetAdjacencyCodimension(DM dm, PetscInt *adjCodim)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidIntPointer(adjCodim,2);
-  CHKERRQ(DMGetDimension(dm,&dim));
+  PetscCall(DMGetDimension(dm,&dim));
   *adjCodim = dim - forest->adjDim;
   PetscFunctionReturn(0);
 }
@@ -878,8 +878,8 @@ PetscErrorCode DMForestSetAdaptivityStrategy(DM dm, DMForestAdaptivityStrategy a
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  CHKERRQ(PetscFree(forest->adaptStrategy));
-  CHKERRQ(PetscStrallocpy((const char*) adaptStrategy,(char**)&forest->adaptStrategy));
+  PetscCall(PetscFree(forest->adaptStrategy));
+  PetscCall(PetscStrallocpy((const char*) adaptStrategy,(char**)&forest->adaptStrategy));
   PetscFunctionReturn(0);
 }
 
@@ -940,7 +940,7 @@ PetscErrorCode DMForestGetAdaptivitySuccess(DM dm, PetscBool *success)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCheck(dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"DMSetUp() has not been called yet.");
   forest = (DM_Forest *) dm->data;
-  CHKERRQ((forest->getadaptivitysuccess)(dm,success));
+  PetscCall((forest->getadaptivitysuccess)(dm,success));
   PetscFunctionReturn(0);
 }
 
@@ -981,7 +981,7 @@ PetscErrorCode DMForestTransferVec(DM dmIn, Vec vecIn, DM dmOut, Vec vecOut, Pet
   PetscValidHeaderSpecific(vecOut ,VEC_CLASSID ,4);
   forest = (DM_Forest *) dmIn->data;
   PetscCheck(forest->transfervec,PetscObjectComm((PetscObject)dmIn),PETSC_ERR_SUP,"DMForestTransferVec() not implemented");
-  CHKERRQ((forest->transfervec)(dmIn,vecIn,dmOut,vecOut,useBCs,time));
+  PetscCall((forest->transfervec)(dmIn,vecIn,dmOut,vecOut,useBCs,time));
   PetscFunctionReturn(0);
 }
 
@@ -995,7 +995,7 @@ PetscErrorCode DMForestTransferVecFromBase(DM dm, Vec vecIn, Vec vecOut)
   PetscValidHeaderSpecific(vecOut ,VEC_CLASSID ,3);
   forest = (DM_Forest *) dm->data;
   PetscCheck(forest->transfervecfrombase,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DMForestTransferVecFromBase() not implemented");
-  CHKERRQ((forest->transfervecfrombase)(dm,vecIn,vecOut));
+  PetscCall((forest->transfervecfrombase)(dm,vecIn,vecOut));
   PetscFunctionReturn(0);
 }
 
@@ -1053,7 +1053,7 @@ PetscErrorCode DMForestGetAdaptivitySF(DM dm, PetscSF *preCoarseToFine, PetscSF 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  CHKERRQ(DMSetUp(dm));
+  PetscCall(DMSetUp(dm));
   forest = (DM_Forest*) dm->data;
   if (preCoarseToFine) *preCoarseToFine = forest->preCoarseToFine;
   if (coarseToPreFine) *coarseToPreFine = forest->coarseToPreFine;
@@ -1197,7 +1197,7 @@ PetscErrorCode DMForestGetCellChart(DM dm, PetscInt *cStart, PetscInt *cEnd)
   PetscValidIntPointer(cStart,2);
   PetscValidIntPointer(cEnd,3);
   if (((forest->cStart == PETSC_DETERMINE) || (forest->cEnd == PETSC_DETERMINE)) && forest->createcellchart) {
-    CHKERRQ(forest->createcellchart(dm,&forest->cStart,&forest->cEnd));
+    PetscCall(forest->createcellchart(dm,&forest->cStart,&forest->cEnd));
   }
   *cStart =  forest->cStart;
   *cEnd   =  forest->cEnd;
@@ -1227,7 +1227,7 @@ PetscErrorCode DMForestGetCellSF(DM dm, PetscSF *cellSF)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(cellSF,2);
   if ((!forest->cellSF) && forest->createcellsf) {
-    CHKERRQ(forest->createcellsf(dm,&forest->cellSF));
+    PetscCall(forest->createcellsf(dm,&forest->cellSF));
   }
   *cellSF = forest->cellSF;
   PetscFunctionReturn(0);
@@ -1256,8 +1256,8 @@ PetscErrorCode DMForestSetAdaptivityLabel(DM dm, DMLabel adaptLabel)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   if (adaptLabel) PetscValidHeaderSpecific(adaptLabel,DMLABEL_CLASSID,2);
-  CHKERRQ(PetscObjectReference((PetscObject)adaptLabel));
-  CHKERRQ(DMLabelDestroy(&forest->adaptLabel));
+  PetscCall(PetscObjectReference((PetscObject)adaptLabel));
+  PetscCall(DMLabelDestroy(&forest->adaptLabel));
   forest->adaptLabel = adaptLabel;
   PetscFunctionReturn(0);
 }
@@ -1314,18 +1314,18 @@ PetscErrorCode DMForestSetCellWeights(DM dm, PetscReal weights[], PetscCopyMode 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  CHKERRQ(DMForestGetCellChart(dm,&cStart,&cEnd));
+  PetscCall(DMForestGetCellChart(dm,&cStart,&cEnd));
   PetscCheckFalse(cEnd < cStart,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"cell chart [%d,%d) is not valid",cStart,cEnd);
   if (copyMode == PETSC_COPY_VALUES) {
     if (forest->cellWeightsCopyMode != PETSC_OWN_POINTER || forest->cellWeights == weights) {
-      CHKERRQ(PetscMalloc1(cEnd-cStart,&forest->cellWeights));
+      PetscCall(PetscMalloc1(cEnd-cStart,&forest->cellWeights));
     }
-    CHKERRQ(PetscArraycpy(forest->cellWeights,weights,cEnd-cStart));
+    PetscCall(PetscArraycpy(forest->cellWeights,weights,cEnd-cStart));
     forest->cellWeightsCopyMode = PETSC_OWN_POINTER;
     PetscFunctionReturn(0);
   }
   if (forest->cellWeightsCopyMode == PETSC_OWN_POINTER) {
-    CHKERRQ(PetscFree(forest->cellWeights));
+    PetscCall(PetscFree(forest->cellWeights));
   }
   forest->cellWeights         = weights;
   forest->cellWeightsCopyMode = copyMode;
@@ -1431,121 +1431,121 @@ PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(PetscOptionItems *PetscOptio
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  CHKERRQ(DMForestGetTopology(dm, &oldTopo));
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"DMForest Options"));
-  CHKERRQ(PetscOptionsString("-dm_forest_topology","the topology of the forest's base mesh","DMForestSetTopology",oldTopo,stringBuffer,sizeof(stringBuffer),&flg1));
-  CHKERRQ(PetscOptionsViewer("-dm_forest_base_dm","load the base DM from a viewer specification","DMForestSetBaseDM",&viewer,&format,&flg2));
-  CHKERRQ(PetscOptionsViewer("-dm_forest_coarse_forest","load the coarse forest from a viewer specification","DMForestSetCoarseForest",&viewer,&format,&flg3));
-  CHKERRQ(PetscOptionsViewer("-dm_forest_fine_forest","load the fine forest from a viewer specification","DMForestSetFineForest",&viewer,&format,&flg4));
+  PetscCall(DMForestGetTopology(dm, &oldTopo));
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"DMForest Options"));
+  PetscCall(PetscOptionsString("-dm_forest_topology","the topology of the forest's base mesh","DMForestSetTopology",oldTopo,stringBuffer,sizeof(stringBuffer),&flg1));
+  PetscCall(PetscOptionsViewer("-dm_forest_base_dm","load the base DM from a viewer specification","DMForestSetBaseDM",&viewer,&format,&flg2));
+  PetscCall(PetscOptionsViewer("-dm_forest_coarse_forest","load the coarse forest from a viewer specification","DMForestSetCoarseForest",&viewer,&format,&flg3));
+  PetscCall(PetscOptionsViewer("-dm_forest_fine_forest","load the fine forest from a viewer specification","DMForestSetFineForest",&viewer,&format,&flg4));
   PetscCheckFalse((PetscInt) flg1 + (PetscInt) flg2 + (PetscInt) flg3 + (PetscInt) flg4 > 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_INCOMP,"Specify only one of -dm_forest_{topology,base_dm,coarse_forest,fine_forest}");
   if (flg1) {
-    CHKERRQ(DMForestSetTopology(dm,(DMForestTopology)stringBuffer));
-    CHKERRQ(DMForestSetBaseDM(dm,NULL));
-    CHKERRQ(DMForestSetAdaptivityForest(dm,NULL));
+    PetscCall(DMForestSetTopology(dm,(DMForestTopology)stringBuffer));
+    PetscCall(DMForestSetBaseDM(dm,NULL));
+    PetscCall(DMForestSetAdaptivityForest(dm,NULL));
   }
   if (flg2) {
     DM base;
 
-    CHKERRQ(DMCreate(PetscObjectComm((PetscObject)dm),&base));
-    CHKERRQ(PetscViewerPushFormat(viewer,format));
-    CHKERRQ(DMLoad(base,viewer));
-    CHKERRQ(PetscViewerDestroy(&viewer));
-    CHKERRQ(DMForestSetBaseDM(dm,base));
-    CHKERRQ(DMDestroy(&base));
-    CHKERRQ(DMForestSetTopology(dm,NULL));
-    CHKERRQ(DMForestSetAdaptivityForest(dm,NULL));
+    PetscCall(DMCreate(PetscObjectComm((PetscObject)dm),&base));
+    PetscCall(PetscViewerPushFormat(viewer,format));
+    PetscCall(DMLoad(base,viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
+    PetscCall(DMForestSetBaseDM(dm,base));
+    PetscCall(DMDestroy(&base));
+    PetscCall(DMForestSetTopology(dm,NULL));
+    PetscCall(DMForestSetAdaptivityForest(dm,NULL));
   }
   if (flg3) {
     DM coarse;
 
-    CHKERRQ(DMCreate(PetscObjectComm((PetscObject)dm),&coarse));
-    CHKERRQ(PetscViewerPushFormat(viewer,format));
-    CHKERRQ(DMLoad(coarse,viewer));
-    CHKERRQ(PetscViewerDestroy(&viewer));
-    CHKERRQ(DMForestSetAdaptivityForest(dm,coarse));
-    CHKERRQ(DMDestroy(&coarse));
-    CHKERRQ(DMForestSetTopology(dm,NULL));
-    CHKERRQ(DMForestSetBaseDM(dm,NULL));
+    PetscCall(DMCreate(PetscObjectComm((PetscObject)dm),&coarse));
+    PetscCall(PetscViewerPushFormat(viewer,format));
+    PetscCall(DMLoad(coarse,viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
+    PetscCall(DMForestSetAdaptivityForest(dm,coarse));
+    PetscCall(DMDestroy(&coarse));
+    PetscCall(DMForestSetTopology(dm,NULL));
+    PetscCall(DMForestSetBaseDM(dm,NULL));
   }
   if (flg4) {
     DM fine;
 
-    CHKERRQ(DMCreate(PetscObjectComm((PetscObject)dm),&fine));
-    CHKERRQ(PetscViewerPushFormat(viewer,format));
-    CHKERRQ(DMLoad(fine,viewer));
-    CHKERRQ(PetscViewerDestroy(&viewer));
-    CHKERRQ(DMForestSetAdaptivityForest(dm,fine));
-    CHKERRQ(DMDestroy(&fine));
-    CHKERRQ(DMForestSetTopology(dm,NULL));
-    CHKERRQ(DMForestSetBaseDM(dm,NULL));
+    PetscCall(DMCreate(PetscObjectComm((PetscObject)dm),&fine));
+    PetscCall(PetscViewerPushFormat(viewer,format));
+    PetscCall(DMLoad(fine,viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
+    PetscCall(DMForestSetAdaptivityForest(dm,fine));
+    PetscCall(DMDestroy(&fine));
+    PetscCall(DMForestSetTopology(dm,NULL));
+    PetscCall(DMForestSetBaseDM(dm,NULL));
   }
-  CHKERRQ(DMForestGetAdjacencyDimension(dm,&adjDim));
-  CHKERRQ(PetscOptionsBoundedInt("-dm_forest_adjacency_dimension","set the dimension of points that define adjacency in the forest","DMForestSetAdjacencyDimension",adjDim,&adjDim,&flg,0));
+  PetscCall(DMForestGetAdjacencyDimension(dm,&adjDim));
+  PetscCall(PetscOptionsBoundedInt("-dm_forest_adjacency_dimension","set the dimension of points that define adjacency in the forest","DMForestSetAdjacencyDimension",adjDim,&adjDim,&flg,0));
   if (flg) {
-    CHKERRQ(DMForestSetAdjacencyDimension(dm,adjDim));
+    PetscCall(DMForestSetAdjacencyDimension(dm,adjDim));
   } else {
-    CHKERRQ(DMForestGetAdjacencyCodimension(dm,&adjCodim));
-    CHKERRQ(PetscOptionsBoundedInt("-dm_forest_adjacency_codimension","set the codimension of points that define adjacency in the forest","DMForestSetAdjacencyCodimension",adjCodim,&adjCodim,&flg,1));
+    PetscCall(DMForestGetAdjacencyCodimension(dm,&adjCodim));
+    PetscCall(PetscOptionsBoundedInt("-dm_forest_adjacency_codimension","set the codimension of points that define adjacency in the forest","DMForestSetAdjacencyCodimension",adjCodim,&adjCodim,&flg,1));
     if (flg) {
-      CHKERRQ(DMForestSetAdjacencyCodimension(dm,adjCodim));
+      PetscCall(DMForestSetAdjacencyCodimension(dm,adjCodim));
     }
   }
-  CHKERRQ(DMForestGetPartitionOverlap(dm,&overlap));
-  CHKERRQ(PetscOptionsBoundedInt("-dm_forest_partition_overlap","set the degree of partition overlap","DMForestSetPartitionOverlap",overlap,&overlap,&flg,0));
+  PetscCall(DMForestGetPartitionOverlap(dm,&overlap));
+  PetscCall(PetscOptionsBoundedInt("-dm_forest_partition_overlap","set the degree of partition overlap","DMForestSetPartitionOverlap",overlap,&overlap,&flg,0));
   if (flg) {
-    CHKERRQ(DMForestSetPartitionOverlap(dm,overlap));
+    PetscCall(DMForestSetPartitionOverlap(dm,overlap));
   }
 #if 0
-  CHKERRQ(PetscOptionsBoundedInt("-dm_refine","equivalent to -dm_forest_set_minimum_refinement and -dm_forest_set_initial_refinement with the same value",NULL,minRefinement,&minRefinement,&flg,0));
+  PetscCall(PetscOptionsBoundedInt("-dm_refine","equivalent to -dm_forest_set_minimum_refinement and -dm_forest_set_initial_refinement with the same value",NULL,minRefinement,&minRefinement,&flg,0));
   if (flg) {
-    CHKERRQ(DMForestSetMinimumRefinement(dm,minRefinement));
-    CHKERRQ(DMForestSetInitialRefinement(dm,minRefinement));
+    PetscCall(DMForestSetMinimumRefinement(dm,minRefinement));
+    PetscCall(DMForestSetInitialRefinement(dm,minRefinement));
   }
-  CHKERRQ(PetscOptionsBoundedInt("-dm_refine_hierarchy","equivalent to -dm_forest_set_minimum_refinement 0 and -dm_forest_set_initial_refinement",NULL,initRefinement,&initRefinement,&flg,0));
+  PetscCall(PetscOptionsBoundedInt("-dm_refine_hierarchy","equivalent to -dm_forest_set_minimum_refinement 0 and -dm_forest_set_initial_refinement",NULL,initRefinement,&initRefinement,&flg,0));
   if (flg) {
-    CHKERRQ(DMForestSetMinimumRefinement(dm,0));
-    CHKERRQ(DMForestSetInitialRefinement(dm,initRefinement));
+    PetscCall(DMForestSetMinimumRefinement(dm,0));
+    PetscCall(DMForestSetInitialRefinement(dm,initRefinement));
   }
 #endif
-  CHKERRQ(DMForestGetMinimumRefinement(dm,&minRefinement));
-  CHKERRQ(PetscOptionsBoundedInt("-dm_forest_minimum_refinement","set the minimum level of refinement in the forest","DMForestSetMinimumRefinement",minRefinement,&minRefinement,&flg,0));
+  PetscCall(DMForestGetMinimumRefinement(dm,&minRefinement));
+  PetscCall(PetscOptionsBoundedInt("-dm_forest_minimum_refinement","set the minimum level of refinement in the forest","DMForestSetMinimumRefinement",minRefinement,&minRefinement,&flg,0));
   if (flg) {
-    CHKERRQ(DMForestSetMinimumRefinement(dm,minRefinement));
+    PetscCall(DMForestSetMinimumRefinement(dm,minRefinement));
   }
-  CHKERRQ(DMForestGetInitialRefinement(dm,&initRefinement));
-  CHKERRQ(PetscOptionsBoundedInt("-dm_forest_initial_refinement","set the initial level of refinement in the forest","DMForestSetInitialRefinement",initRefinement,&initRefinement,&flg,0));
+  PetscCall(DMForestGetInitialRefinement(dm,&initRefinement));
+  PetscCall(PetscOptionsBoundedInt("-dm_forest_initial_refinement","set the initial level of refinement in the forest","DMForestSetInitialRefinement",initRefinement,&initRefinement,&flg,0));
   if (flg) {
-    CHKERRQ(DMForestSetInitialRefinement(dm,initRefinement));
+    PetscCall(DMForestSetInitialRefinement(dm,initRefinement));
   }
-  CHKERRQ(DMForestGetMaximumRefinement(dm,&maxRefinement));
-  CHKERRQ(PetscOptionsBoundedInt("-dm_forest_maximum_refinement","set the maximum level of refinement in the forest","DMForestSetMaximumRefinement",maxRefinement,&maxRefinement,&flg,0));
+  PetscCall(DMForestGetMaximumRefinement(dm,&maxRefinement));
+  PetscCall(PetscOptionsBoundedInt("-dm_forest_maximum_refinement","set the maximum level of refinement in the forest","DMForestSetMaximumRefinement",maxRefinement,&maxRefinement,&flg,0));
   if (flg) {
-    CHKERRQ(DMForestSetMaximumRefinement(dm,maxRefinement));
+    PetscCall(DMForestSetMaximumRefinement(dm,maxRefinement));
   }
-  CHKERRQ(DMForestGetAdaptivityStrategy(dm,&adaptStrategy));
-  CHKERRQ(PetscOptionsString("-dm_forest_adaptivity_strategy","the forest's adaptivity-flag resolution strategy","DMForestSetAdaptivityStrategy",adaptStrategy,stringBuffer,sizeof(stringBuffer),&flg));
+  PetscCall(DMForestGetAdaptivityStrategy(dm,&adaptStrategy));
+  PetscCall(PetscOptionsString("-dm_forest_adaptivity_strategy","the forest's adaptivity-flag resolution strategy","DMForestSetAdaptivityStrategy",adaptStrategy,stringBuffer,sizeof(stringBuffer),&flg));
   if (flg) {
-    CHKERRQ(DMForestSetAdaptivityStrategy(dm,(DMForestAdaptivityStrategy)stringBuffer));
+    PetscCall(DMForestSetAdaptivityStrategy(dm,(DMForestAdaptivityStrategy)stringBuffer));
   }
-  CHKERRQ(DMForestGetGradeFactor(dm,&grade));
-  CHKERRQ(PetscOptionsBoundedInt("-dm_forest_grade_factor","grade factor between neighboring cells","DMForestSetGradeFactor",grade,&grade,&flg,0));
+  PetscCall(DMForestGetGradeFactor(dm,&grade));
+  PetscCall(PetscOptionsBoundedInt("-dm_forest_grade_factor","grade factor between neighboring cells","DMForestSetGradeFactor",grade,&grade,&flg,0));
   if (flg) {
-    CHKERRQ(DMForestSetGradeFactor(dm,grade));
+    PetscCall(DMForestSetGradeFactor(dm,grade));
   }
-  CHKERRQ(DMForestGetCellWeightFactor(dm,&weightsFactor));
-  CHKERRQ(PetscOptionsReal("-dm_forest_cell_weight_factor","multiplying weight factor for cell refinement","DMForestSetCellWeightFactor",weightsFactor,&weightsFactor,&flg));
+  PetscCall(DMForestGetCellWeightFactor(dm,&weightsFactor));
+  PetscCall(PetscOptionsReal("-dm_forest_cell_weight_factor","multiplying weight factor for cell refinement","DMForestSetCellWeightFactor",weightsFactor,&weightsFactor,&flg));
   if (flg) {
-    CHKERRQ(DMForestSetCellWeightFactor(dm,weightsFactor));
+    PetscCall(DMForestSetCellWeightFactor(dm,weightsFactor));
   }
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode DMCreateSubDM_Forest(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm)
 {
   PetscFunctionBegin;
-  if (subdm) CHKERRQ(DMClone(dm, subdm));
-  CHKERRQ(DMCreateSectionSubDM(dm, numFields, fields, is, subdm));
+  if (subdm) PetscCall(DMClone(dm, subdm));
+  PetscCall(DMCreateSectionSubDM(dm, numFields, fields, is, subdm));
   PetscFunctionReturn(0);
 }
 
@@ -1555,22 +1555,22 @@ PetscErrorCode DMRefine_Forest(DM dm, MPI_Comm comm, DM *dmRefined)
   DM             fineDM;
 
   PetscFunctionBegin;
-  CHKERRQ(DMGetFineDM(dm,&fineDM));
+  PetscCall(DMGetFineDM(dm,&fineDM));
   if (fineDM) {
-    CHKERRQ(PetscObjectReference((PetscObject)fineDM));
+    PetscCall(PetscObjectReference((PetscObject)fineDM));
     *dmRefined = fineDM;
     PetscFunctionReturn(0);
   }
-  CHKERRQ(DMForestTemplate(dm,comm,dmRefined));
-  CHKERRQ(DMGetLabel(dm,"refine",&refine));
+  PetscCall(DMForestTemplate(dm,comm,dmRefined));
+  PetscCall(DMGetLabel(dm,"refine",&refine));
   if (!refine) {
-    CHKERRQ(DMLabelCreate(PETSC_COMM_SELF, "refine",&refine));
-    CHKERRQ(DMLabelSetDefaultValue(refine,DM_ADAPT_REFINE));
+    PetscCall(DMLabelCreate(PETSC_COMM_SELF, "refine",&refine));
+    PetscCall(DMLabelSetDefaultValue(refine,DM_ADAPT_REFINE));
   } else {
-    CHKERRQ(PetscObjectReference((PetscObject) refine));
+    PetscCall(PetscObjectReference((PetscObject) refine));
   }
-  CHKERRQ(DMForestSetAdaptivityLabel(*dmRefined,refine));
-  CHKERRQ(DMLabelDestroy(&refine));
+  PetscCall(DMForestSetAdaptivityLabel(*dmRefined,refine));
+  PetscCall(DMLabelDestroy(&refine));
   PetscFunctionReturn(0);
 }
 
@@ -1584,26 +1584,26 @@ PetscErrorCode DMCoarsen_Forest(DM dm, MPI_Comm comm, DM *dmCoarsened)
     PetscMPIInt mpiComparison;
     MPI_Comm    dmcomm = PetscObjectComm((PetscObject)dm);
 
-    CHKERRMPI(MPI_Comm_compare(comm, dmcomm, &mpiComparison));
+    PetscCallMPI(MPI_Comm_compare(comm, dmcomm, &mpiComparison));
     PetscCheckFalse(mpiComparison != MPI_IDENT && mpiComparison != MPI_CONGRUENT,dmcomm,PETSC_ERR_SUP,"No support for different communicators yet");
   }
-  CHKERRQ(DMGetCoarseDM(dm,&coarseDM));
+  PetscCall(DMGetCoarseDM(dm,&coarseDM));
   if (coarseDM) {
-    CHKERRQ(PetscObjectReference((PetscObject)coarseDM));
+    PetscCall(PetscObjectReference((PetscObject)coarseDM));
     *dmCoarsened = coarseDM;
     PetscFunctionReturn(0);
   }
-  CHKERRQ(DMForestTemplate(dm,comm,dmCoarsened));
-  CHKERRQ(DMForestSetAdaptivityPurpose(*dmCoarsened,DM_ADAPT_COARSEN));
-  CHKERRQ(DMGetLabel(dm,"coarsen",&coarsen));
+  PetscCall(DMForestTemplate(dm,comm,dmCoarsened));
+  PetscCall(DMForestSetAdaptivityPurpose(*dmCoarsened,DM_ADAPT_COARSEN));
+  PetscCall(DMGetLabel(dm,"coarsen",&coarsen));
   if (!coarsen) {
-    CHKERRQ(DMLabelCreate(PETSC_COMM_SELF, "coarsen",&coarsen));
-    CHKERRQ(DMLabelSetDefaultValue(coarsen,DM_ADAPT_COARSEN));
+    PetscCall(DMLabelCreate(PETSC_COMM_SELF, "coarsen",&coarsen));
+    PetscCall(DMLabelSetDefaultValue(coarsen,DM_ADAPT_COARSEN));
   } else {
-    CHKERRQ(PetscObjectReference((PetscObject) coarsen));
+    PetscCall(PetscObjectReference((PetscObject) coarsen));
   }
-  CHKERRQ(DMForestSetAdaptivityLabel(*dmCoarsened,coarsen));
-  CHKERRQ(DMLabelDestroy(&coarsen));
+  PetscCall(DMForestSetAdaptivityLabel(*dmCoarsened,coarsen));
+  PetscCall(DMLabelDestroy(&coarsen));
   PetscFunctionReturn(0);
 }
 
@@ -1612,12 +1612,12 @@ PetscErrorCode DMAdaptLabel_Forest(DM dm, PETSC_UNUSED Vec metric, DMLabel label
   PetscBool      success;
 
   PetscFunctionBegin;
-  CHKERRQ(DMForestTemplate(dm,PetscObjectComm((PetscObject)dm),adaptedDM));
-  CHKERRQ(DMForestSetAdaptivityLabel(*adaptedDM,label));
-  CHKERRQ(DMSetUp(*adaptedDM));
-  CHKERRQ(DMForestGetAdaptivitySuccess(*adaptedDM,&success));
+  PetscCall(DMForestTemplate(dm,PetscObjectComm((PetscObject)dm),adaptedDM));
+  PetscCall(DMForestSetAdaptivityLabel(*adaptedDM,label));
+  PetscCall(DMSetUp(*adaptedDM));
+  PetscCall(DMForestGetAdaptivitySuccess(*adaptedDM,&success));
   if (!success) {
-    CHKERRQ(DMDestroy(adaptedDM));
+    PetscCall(DMDestroy(adaptedDM));
     *adaptedDM = NULL;
   }
   PetscFunctionReturn(0);
@@ -1626,7 +1626,7 @@ PetscErrorCode DMAdaptLabel_Forest(DM dm, PETSC_UNUSED Vec metric, DMLabel label
 static PetscErrorCode DMInitialize_Forest(DM dm)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscMemzero(dm->ops,sizeof(*(dm->ops))));
+  PetscCall(PetscMemzero(dm->ops,sizeof(*(dm->ops))));
 
   dm->ops->clone          = DMClone_Forest;
   dm->ops->setfromoptions = DMSetFromOptions_Forest;
@@ -1661,7 +1661,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Forest(DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  CHKERRQ(PetscNewLog(dm,&forest));
+  PetscCall(PetscNewLog(dm,&forest));
   dm->dim                      = 0;
   dm->data                     = forest;
   forest->refct                = 1;
@@ -1684,7 +1684,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Forest(DM dm)
   forest->cellWeightsCopyMode  = PETSC_USE_POINTER;
   forest->weightsFactor        = 1.;
   forest->weightCapacity       = 1.;
-  CHKERRQ(DMForestSetAdaptivityStrategy(dm,DMFORESTADAPTALL));
-  CHKERRQ(DMInitialize_Forest(dm));
+  PetscCall(DMForestSetAdaptivityStrategy(dm,DMFORESTADAPTALL));
+  PetscCall(DMInitialize_Forest(dm));
   PetscFunctionReturn(0);
 }

@@ -9,18 +9,18 @@ PetscErrorCode FormJacobian(Mat A)
   PetscScalar    dummy=0.0;
 
   PetscFunctionBeginUser;
-  CHKERRQ(MatGetSize(A,&M,NULL));
-  CHKERRQ(MatGetOwnershipRange(A,&ownbegin,&ownend));
+  PetscCall(MatGetSize(A,&M,NULL));
+  PetscCall(MatGetOwnershipRange(A,&ownbegin,&ownend));
 
   for (i=ownbegin; i<ownend; i++) {
     for (j=i-3; j<i+3; j++) {
       if (j >= 0 && j < M) {
-        CHKERRQ(MatSetValues(A,1,&i,1,&j,&dummy,INSERT_VALUES));
+        PetscCall(MatSetValues(A,1,&i,1,&j,&dummy,INSERT_VALUES));
       }
     }
   }
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
@@ -32,34 +32,34 @@ int main(int argc, char *argv[])
   ISColoring     iscoloring;
   MatColoring    coloring;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&J));
-  CHKERRQ(MatSetSizes(J, PETSC_DECIDE, PETSC_DECIDE, M, M));
-  CHKERRQ(MatSetFromOptions(J));
-  CHKERRQ(MatSetUp(J));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&J));
+  PetscCall(MatSetSizes(J, PETSC_DECIDE, PETSC_DECIDE, M, M));
+  PetscCall(MatSetFromOptions(J));
+  PetscCall(MatSetUp(J));
 
-  CHKERRQ(FormJacobian(J));
-  CHKERRQ(MatView(J,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(FormJacobian(J));
+  PetscCall(MatView(J,PETSC_VIEWER_STDOUT_WORLD));
 
   /*
     Color the matrix, i.e. determine groups of columns that share no common
     rows. These columns in the Jacobian can all be computed simultaneously.
    */
-  CHKERRQ(MatColoringCreate(J, &coloring));
-  CHKERRQ(MatColoringSetType(coloring,MATCOLORINGGREEDY));
-  CHKERRQ(MatColoringSetFromOptions(coloring));
-  CHKERRQ(MatColoringApply(coloring, &iscoloring));
+  PetscCall(MatColoringCreate(J, &coloring));
+  PetscCall(MatColoringSetType(coloring,MATCOLORINGGREEDY));
+  PetscCall(MatColoringSetFromOptions(coloring));
+  PetscCall(MatColoringApply(coloring, &iscoloring));
 
   if (size == 1) {
-    CHKERRQ(MatISColoringTest(J,iscoloring));
+    PetscCall(MatISColoringTest(J,iscoloring));
   }
 
-  CHKERRQ(ISColoringDestroy(&iscoloring));
-  CHKERRQ(MatColoringDestroy(&coloring));
-  CHKERRQ(MatDestroy(&J));
-  CHKERRQ(PetscFinalize());
+  PetscCall(ISColoringDestroy(&iscoloring));
+  PetscCall(MatColoringDestroy(&coloring));
+  PetscCall(MatDestroy(&J));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

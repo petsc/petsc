@@ -7,13 +7,13 @@ static PetscErrorCode GetConvergenceTestName(PetscErrorCode (*converged)(KSP,Pet
 {
   PetscFunctionBegin;
   if (converged == KSPConvergedDefault) {
-    CHKERRQ(PetscStrncpy(name,"default",n));
+    PetscCall(PetscStrncpy(name,"default",n));
   } else if (converged == KSPConvergedSkip) {
-    CHKERRQ(PetscStrncpy(name,"skip",n));
+    PetscCall(PetscStrncpy(name,"skip",n));
   } else if (converged == KSPLSQRConvergedDefault) {
-    CHKERRQ(PetscStrncpy(name,"lsqr",n));
+    PetscCall(PetscStrncpy(name,"lsqr",n));
   } else {
-    CHKERRQ(PetscStrncpy(name,"other",n));
+    PetscCall(PetscStrncpy(name,"other",n));
   }
   PetscFunctionReturn(0);
 }
@@ -27,36 +27,36 @@ int main(int argc,char **args)
   PetscReal      norm;
   PetscBool      flg=PETSC_FALSE;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
 
   /* create stiffness matrix */
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&C));
-  CHKERRQ(MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,N,N));
-  CHKERRQ(MatSetFromOptions(C));
-  CHKERRQ(MatSetUp(C));
-  CHKERRQ(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&C));
+  PetscCall(MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,N,N));
+  PetscCall(MatSetFromOptions(C));
+  PetscCall(MatSetUp(C));
+  PetscCall(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
 
   /* create right hand side and solution */
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&u));
-  CHKERRQ(VecSetSizes(u,PETSC_DECIDE,N));
-  CHKERRQ(VecSetFromOptions(u));
-  CHKERRQ(VecDuplicate(u,&b));
-  CHKERRQ(VecDuplicate(u,&x));
-  CHKERRQ(VecSet(u,0.0));
-  CHKERRQ(VecSet(b,0.0));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&u));
+  PetscCall(VecSetSizes(u,PETSC_DECIDE,N));
+  PetscCall(VecSetFromOptions(u));
+  PetscCall(VecDuplicate(u,&b));
+  PetscCall(VecDuplicate(u,&x));
+  PetscCall(VecSet(u,0.0));
+  PetscCall(VecSet(b,0.0));
 
-  CHKERRQ(VecAssemblyBegin(b));
-  CHKERRQ(VecAssemblyEnd(b));
+  PetscCall(VecAssemblyBegin(b));
+  PetscCall(VecAssemblyEnd(b));
 
   /* solve linear system */
-  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
-  CHKERRQ(KSPSetOperators(ksp,C,C));
-  CHKERRQ(KSPSetFromOptions(ksp));
-  CHKERRQ(KSPSolve(ksp,b,u));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPSetOperators(ksp,C,C));
+  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(KSPSolve(ksp,b,u));
 
   /* test proper handling of convergence test by KSPLSQR */
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-test_lsqr",&flg,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-test_lsqr",&flg,NULL));
   if (flg) {
     char                  *type;
     char                  convtestname[16];
@@ -68,15 +68,15 @@ int main(int argc,char **args)
 
     {
       const char *typeP;
-      CHKERRQ(KSPGetType(ksp,&typeP));
-      CHKERRQ(PetscStrallocpy(typeP,&type));
+      PetscCall(KSPGetType(ksp,&typeP));
+      PetscCall(PetscStrallocpy(typeP,&type));
     }
-    CHKERRQ(PetscStrcmp(type,KSPLSQR,&islsqr));
-    CHKERRQ(KSPGetConvergenceTest(ksp,&converged,&ctx,&destroy));
-    CHKERRQ(GetConvergenceTestName(converged,convtestname,16));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"convergence test: %s\n",convtestname));
-    CHKERRQ(KSPSetType(ksp,KSPLSQR));
-    CHKERRQ(KSPGetConvergenceTest(ksp,&converged1,&ctx1,&destroy1));
+    PetscCall(PetscStrcmp(type,KSPLSQR,&islsqr));
+    PetscCall(KSPGetConvergenceTest(ksp,&converged,&ctx,&destroy));
+    PetscCall(GetConvergenceTestName(converged,convtestname,16));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"convergence test: %s\n",convtestname));
+    PetscCall(KSPSetType(ksp,KSPLSQR));
+    PetscCall(KSPGetConvergenceTest(ksp,&converged1,&ctx1,&destroy1));
     PetscCheckFalse(converged1 != KSPLSQRConvergedDefault,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"convergence test should be KSPLSQRConvergedDefault");
     PetscCheckFalse(destroy1 != KSPConvergedDefaultDestroy,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"convergence test destroy function should be KSPConvergedDefaultDestroy");
     if (islsqr) {
@@ -84,30 +84,30 @@ int main(int argc,char **args)
       PetscCheckFalse(destroy1 != destroy,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"convergence test destroy function should be kept");
       PetscCheckFalse(ctx1 != ctx,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"convergence test context should be kept");
     }
-    CHKERRQ(GetConvergenceTestName(converged1,convtestname,16));
-    CHKERRQ(KSPViewFromOptions(ksp,NULL,"-ksp1_view"));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"convergence test: %s\n",convtestname));
-    CHKERRQ(KSPSetType(ksp,type));
-    CHKERRQ(KSPGetConvergenceTest(ksp,&converged1,&ctx1,&destroy1));
+    PetscCall(GetConvergenceTestName(converged1,convtestname,16));
+    PetscCall(KSPViewFromOptions(ksp,NULL,"-ksp1_view"));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"convergence test: %s\n",convtestname));
+    PetscCall(KSPSetType(ksp,type));
+    PetscCall(KSPGetConvergenceTest(ksp,&converged1,&ctx1,&destroy1));
     PetscCheckFalse(converged1 != converged,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"convergence test not reverted properly");
     PetscCheckFalse(destroy1 != destroy,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"convergence test destroy function not reverted properly");
     PetscCheckFalse(ctx1 != ctx,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"convergence test context not reverted properly");
-    CHKERRQ(GetConvergenceTestName(converged1,convtestname,16));
-    CHKERRQ(KSPViewFromOptions(ksp,NULL,"-ksp2_view"));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"convergence test: %s\n",convtestname));
-    CHKERRQ(PetscFree(type));
+    PetscCall(GetConvergenceTestName(converged1,convtestname,16));
+    PetscCall(KSPViewFromOptions(ksp,NULL,"-ksp2_view"));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"convergence test: %s\n",convtestname));
+    PetscCall(PetscFree(type));
   }
 
-  CHKERRQ(MatMult(C,u,x));
-  CHKERRQ(VecAXPY(x,-1.0,b));
-  CHKERRQ(VecNorm(x,NORM_2,&norm));
+  PetscCall(MatMult(C,u,x));
+  PetscCall(VecAXPY(x,-1.0,b));
+  PetscCall(VecNorm(x,NORM_2,&norm));
 
-  CHKERRQ(KSPDestroy(&ksp));
-  CHKERRQ(VecDestroy(&u));
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&b));
-  CHKERRQ(MatDestroy(&C));
-  CHKERRQ(PetscFinalize());
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(VecDestroy(&u));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&b));
+  PetscCall(MatDestroy(&C));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

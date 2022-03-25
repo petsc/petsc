@@ -23,7 +23,7 @@ PetscErrorCode  KSPQCGSetTrustRegionRadius(KSP ksp,PetscReal delta)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscCheckFalse(delta < 0.0,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Tolerance must be non-negative");
-  CHKERRQ(PetscTryMethod(ksp,"KSPQCGSetTrustRegionRadius_C",(KSP,PetscReal),(ksp,delta)));
+  PetscCall(PetscTryMethod(ksp,"KSPQCGSetTrustRegionRadius_C",(KSP,PetscReal),(ksp,delta)));
   PetscFunctionReturn(0);
 }
 
@@ -45,7 +45,7 @@ PetscErrorCode  KSPQCGGetTrialStepNorm(KSP ksp,PetscReal *tsnorm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  CHKERRQ(PetscUseMethod(ksp,"KSPQCGGetTrialStepNorm_C",(KSP,PetscReal*),(ksp,tsnorm)));
+  PetscCall(PetscUseMethod(ksp,"KSPQCGGetTrialStepNorm_C",(KSP,PetscReal*),(ksp,tsnorm)));
   PetscFunctionReturn(0);
 }
 
@@ -79,7 +79,7 @@ PetscErrorCode  KSPQCGGetQuadratic(KSP ksp,PetscReal *quadratic)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  CHKERRQ(PetscUseMethod(ksp,"KSPQCGGetQuadratic_C",(KSP,PetscReal*),(ksp,quadratic)));
+  PetscCall(PetscUseMethod(ksp,"KSPQCGGetQuadratic_C",(KSP,PetscReal*),(ksp,quadratic)));
   PetscFunctionReturn(0);
 }
 
@@ -105,7 +105,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   PetscBool      diagonalscale;
 
   PetscFunctionBegin;
-  CHKERRQ(PCGetDiagonalScale(ksp->pc,&diagonalscale));
+  PetscCall(PCGetDiagonalScale(ksp->pc,&diagonalscale));
   PetscCheck(!diagonalscale,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
   PetscCheck(!ksp->transpose_solve,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Currently does not support transpose solve");
 
@@ -122,87 +122,87 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   B        = ksp->vec_rhs;
 
   PetscCheckFalse(pcgP->delta <= dzero,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Input error: delta <= 0");
-  CHKERRQ(KSPGetPCSide(ksp,&side));
+  PetscCall(KSPGetPCSide(ksp,&side));
   PetscCheckFalse(side != PC_SYMMETRIC,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Requires symmetric preconditioner!");
 
   /* Initialize variables */
-  CHKERRQ(VecSet(W,0.0));  /* W = 0 */
-  CHKERRQ(VecSet(X,0.0));  /* X = 0 */
-  CHKERRQ(PCGetOperators(pc,&Amat,&Pmat));
+  PetscCall(VecSet(W,0.0));  /* W = 0 */
+  PetscCall(VecSet(X,0.0));  /* X = 0 */
+  PetscCall(PCGetOperators(pc,&Amat,&Pmat));
 
   /* Compute:  BS = D^{-1} B */
-  CHKERRQ(PCApplySymmetricLeft(pc,B,BS));
+  PetscCall(PCApplySymmetricLeft(pc,B,BS));
 
   if (ksp->normtype != KSP_NORM_NONE) {
-    CHKERRQ(VecNorm(BS,NORM_2,&bsnrm));
+    PetscCall(VecNorm(BS,NORM_2,&bsnrm));
     KSPCheckNorm(ksp,bsnrm);
   }
-  CHKERRQ(PetscObjectSAWsTakeAccess((PetscObject)ksp));
+  PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
   ksp->its   = 0;
   ksp->rnorm = bsnrm;
-  CHKERRQ(PetscObjectSAWsGrantAccess((PetscObject)ksp));
-  CHKERRQ(KSPLogResidualHistory(ksp,bsnrm));
-  CHKERRQ(KSPMonitor(ksp,0,bsnrm));
-  CHKERRQ((*ksp->converged)(ksp,0,bsnrm,&ksp->reason,ksp->cnvP));
+  PetscCall(PetscObjectSAWsGrantAccess((PetscObject)ksp));
+  PetscCall(KSPLogResidualHistory(ksp,bsnrm));
+  PetscCall(KSPMonitor(ksp,0,bsnrm));
+  PetscCall((*ksp->converged)(ksp,0,bsnrm,&ksp->reason,ksp->cnvP));
   if (ksp->reason) PetscFunctionReturn(0);
 
   /* Compute the initial scaled direction and scaled residual */
-  CHKERRQ(VecCopy(BS,R));
-  CHKERRQ(VecScale(R,-1.0));
-  CHKERRQ(VecCopy(R,P));
-  CHKERRQ(VecDotRealPart(R,R,&rtr));
+  PetscCall(VecCopy(BS,R));
+  PetscCall(VecScale(R,-1.0));
+  PetscCall(VecCopy(R,P));
+  PetscCall(VecDotRealPart(R,R,&rtr));
 
   for (i=0; i<=maxit; i++) {
-    CHKERRQ(PetscObjectSAWsTakeAccess((PetscObject)ksp));
+    PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
     ksp->its++;
-    CHKERRQ(PetscObjectSAWsGrantAccess((PetscObject)ksp));
+    PetscCall(PetscObjectSAWsGrantAccess((PetscObject)ksp));
 
     /* Compute:  asp = D^{-T}*A*D^{-1}*p  */
-    CHKERRQ(PCApplySymmetricRight(pc,P,WA));
-    CHKERRQ(KSP_MatMult(ksp,Amat,WA,WA2));
-    CHKERRQ(PCApplySymmetricLeft(pc,WA2,ASP));
+    PetscCall(PCApplySymmetricRight(pc,P,WA));
+    PetscCall(KSP_MatMult(ksp,Amat,WA,WA2));
+    PetscCall(PCApplySymmetricLeft(pc,WA2,ASP));
 
     /* Check for negative curvature */
-    CHKERRQ(VecDotRealPart(P,ASP,&ptasp));
+    PetscCall(VecDotRealPart(P,ASP,&ptasp));
     if (ptasp <= dzero) {
 
       /* Scaled negative curvature direction:  Compute a step so that
         ||w + step*p|| = delta and QS(w + step*p) is least */
 
       if (!i) {
-        CHKERRQ(VecCopy(P,X));
-        CHKERRQ(VecNorm(X,NORM_2,&xnorm));
+        PetscCall(VecCopy(P,X));
+        PetscCall(VecNorm(X,NORM_2,&xnorm));
         KSPCheckNorm(ksp,xnorm);
         scal = pcgP->delta / xnorm;
-        CHKERRQ(VecScale(X,scal));
+        PetscCall(VecScale(X,scal));
       } else {
         /* Compute roots of quadratic */
-        CHKERRQ(KSPQCGQuadraticRoots(W,P,pcgP->delta,&step1,&step2));
-        CHKERRQ(VecDotRealPart(W,ASP,&wtasp));
-        CHKERRQ(VecDotRealPart(BS,P,&bstp));
-        CHKERRQ(VecCopy(W,X));
+        PetscCall(KSPQCGQuadraticRoots(W,P,pcgP->delta,&step1,&step2));
+        PetscCall(VecDotRealPart(W,ASP,&wtasp));
+        PetscCall(VecDotRealPart(BS,P,&bstp));
+        PetscCall(VecCopy(W,X));
         q1   = step1*(bstp + wtasp + .5*step1*ptasp);
         q2   = step2*(bstp + wtasp + .5*step2*ptasp);
         if (q1 <= q2) {
-          CHKERRQ(VecAXPY(X,step1,P));
+          PetscCall(VecAXPY(X,step1,P));
         } else {
-          CHKERRQ(VecAXPY(X,step2,P));
+          PetscCall(VecAXPY(X,step2,P));
         }
       }
       pcgP->ltsnrm = pcgP->delta;                       /* convergence in direction of */
       ksp->reason  = KSP_CONVERGED_CG_NEG_CURVE;  /* negative curvature */
       if (!i) {
-        CHKERRQ(PetscInfo(ksp,"negative curvature: delta=%g\n",(double)pcgP->delta));
+        PetscCall(PetscInfo(ksp,"negative curvature: delta=%g\n",(double)pcgP->delta));
       } else {
-        CHKERRQ(PetscInfo(ksp,"negative curvature: step1=%g, step2=%g, delta=%g\n",(double)step1,(double)step2,(double)pcgP->delta));
+        PetscCall(PetscInfo(ksp,"negative curvature: step1=%g, step2=%g, delta=%g\n",(double)step1,(double)step2,(double)pcgP->delta));
       }
 
     } else {
       /* Compute step along p */
       step = rtr/ptasp;
-      CHKERRQ(VecCopy(W,X));        /*  x = w  */
-      CHKERRQ(VecAXPY(X,step,P));   /*  x <- step*p + x  */
-      CHKERRQ(VecNorm(X,NORM_2,&pcgP->ltsnrm));
+      PetscCall(VecCopy(W,X));        /*  x = w  */
+      PetscCall(VecAXPY(X,step,P));   /*  x <- step*p + x  */
+      PetscCall(VecNorm(X,NORM_2,&pcgP->ltsnrm));
       KSPCheckNorm(ksp,pcgP->ltsnrm);
 
       if (pcgP->ltsnrm > pcgP->delta) {
@@ -212,57 +212,57 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
           The positive step is always better in this case. */
         if (!i) {
           scal = pcgP->delta / pcgP->ltsnrm;
-          CHKERRQ(VecScale(X,scal));
+          PetscCall(VecScale(X,scal));
         } else {
           /* Compute roots of quadratic */
-          CHKERRQ(KSPQCGQuadraticRoots(W,P,pcgP->delta,&step1,&step2));
-          CHKERRQ(VecCopy(W,X));
-          CHKERRQ(VecAXPY(X,step1,P));  /*  x <- step1*p + x  */
+          PetscCall(KSPQCGQuadraticRoots(W,P,pcgP->delta,&step1,&step2));
+          PetscCall(VecCopy(W,X));
+          PetscCall(VecAXPY(X,step1,P));  /*  x <- step1*p + x  */
         }
         pcgP->ltsnrm = pcgP->delta;
         ksp->reason  = KSP_CONVERGED_CG_CONSTRAINED; /* convergence along constrained step */
         if (!i) {
-          CHKERRQ(PetscInfo(ksp,"constrained step: delta=%g\n",(double)pcgP->delta));
+          PetscCall(PetscInfo(ksp,"constrained step: delta=%g\n",(double)pcgP->delta));
         } else {
-          CHKERRQ(PetscInfo(ksp,"constrained step: step1=%g, step2=%g, delta=%g\n",(double)step1,(double)step2,(double)pcgP->delta));
+          PetscCall(PetscInfo(ksp,"constrained step: step1=%g, step2=%g, delta=%g\n",(double)step1,(double)step2,(double)pcgP->delta));
         }
 
       } else {
         /* Evaluate the current step */
-        CHKERRQ(VecCopy(X,W));  /* update interior iterate */
-        CHKERRQ(VecAXPY(R,-step,ASP)); /* r <- -step*asp + r */
+        PetscCall(VecCopy(X,W));  /* update interior iterate */
+        PetscCall(VecAXPY(R,-step,ASP)); /* r <- -step*asp + r */
         if (ksp->normtype != KSP_NORM_NONE) {
-          CHKERRQ(VecNorm(R,NORM_2,&rnrm));
+          PetscCall(VecNorm(R,NORM_2,&rnrm));
           KSPCheckNorm(ksp,rnrm);
         }
-        CHKERRQ(PetscObjectSAWsTakeAccess((PetscObject)ksp));
+        PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
         ksp->rnorm = rnrm;
-        CHKERRQ(PetscObjectSAWsGrantAccess((PetscObject)ksp));
-        CHKERRQ(KSPLogResidualHistory(ksp,rnrm));
-        CHKERRQ(KSPMonitor(ksp,i+1,rnrm));
-        CHKERRQ((*ksp->converged)(ksp,i+1,rnrm,&ksp->reason,ksp->cnvP));
+        PetscCall(PetscObjectSAWsGrantAccess((PetscObject)ksp));
+        PetscCall(KSPLogResidualHistory(ksp,rnrm));
+        PetscCall(KSPMonitor(ksp,i+1,rnrm));
+        PetscCall((*ksp->converged)(ksp,i+1,rnrm,&ksp->reason,ksp->cnvP));
         if (ksp->reason) {                 /* convergence for */
-          CHKERRQ(PetscInfo(ksp,"truncated step: step=%g, rnrm=%g, delta=%g\n",(double)PetscRealPart(step),(double)rnrm,(double)pcgP->delta));
+          PetscCall(PetscInfo(ksp,"truncated step: step=%g, rnrm=%g, delta=%g\n",(double)PetscRealPart(step),(double)rnrm,(double)pcgP->delta));
         }
       }
     }
     if (ksp->reason) break;  /* Convergence has been attained */
     else {                   /* Compute a new AS-orthogonal direction */
-      CHKERRQ(VecDot(R,R,&rntrn));
+      PetscCall(VecDot(R,R,&rntrn));
       beta = rntrn/rtr;
-      CHKERRQ(VecAYPX(P,beta,R));  /*  p <- r + beta*p  */
+      PetscCall(VecAYPX(P,beta,R));  /*  p <- r + beta*p  */
       rtr  = PetscRealPart(rntrn);
     }
   }
   if (!ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
 
   /* Unscale x */
-  CHKERRQ(VecCopy(X,WA2));
-  CHKERRQ(PCApplySymmetricRight(pc,WA2,X));
+  PetscCall(VecCopy(X,WA2));
+  PetscCall(PCApplySymmetricRight(pc,WA2,X));
 
-  CHKERRQ(KSP_MatMult(ksp,Amat,X,WA));
-  CHKERRQ(VecDotRealPart(B,X,&btx));
-  CHKERRQ(VecDotRealPart(X,WA,&xtax));
+  PetscCall(KSP_MatMult(ksp,Amat,X,WA));
+  PetscCall(VecDotRealPart(B,X,&btx));
+  PetscCall(VecDotRealPart(X,WA,&xtax));
 
   pcgP->quadratic = btx + .5*xtax;
   PetscFunctionReturn(0);
@@ -272,17 +272,17 @@ PetscErrorCode KSPSetUp_QCG(KSP ksp)
 {
   PetscFunctionBegin;
   /* Get work vectors from user code */
-  CHKERRQ(KSPSetWorkVecs(ksp,7));
+  PetscCall(KSPSetWorkVecs(ksp,7));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode KSPDestroy_QCG(KSP ksp)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ksp,"KSPQCGGetQuadratic_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ksp,"KSPQCGGetTrialStepNorm_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ksp,"KSPQCGSetTrustRegionRadius_C",NULL));
-  CHKERRQ(KSPDestroyDefault(ksp));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPQCGGetQuadratic_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPQCGGetTrialStepNorm_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPQCGSetTrustRegionRadius_C",NULL));
+  PetscCall(KSPDestroyDefault(ksp));
   PetscFunctionReturn(0);
 }
 
@@ -320,10 +320,10 @@ PetscErrorCode KSPSetFromOptions_QCG(PetscOptionItems *PetscOptionsObject,KSP ks
   PetscBool      flg;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"KSP QCG Options"));
-  CHKERRQ(PetscOptionsReal("-ksp_qcg_trustregionradius","Trust Region Radius","KSPQCGSetTrustRegionRadius",cgP->delta,&delta,&flg));
-  if (flg) CHKERRQ(KSPQCGSetTrustRegionRadius(ksp,delta));
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"KSP QCG Options"));
+  PetscCall(PetscOptionsReal("-ksp_qcg_trustregionradius","Trust Region Radius","KSPQCGSetTrustRegionRadius",cgP->delta,&delta,&flg));
+  if (flg) PetscCall(KSPQCGSetTrustRegionRadius(ksp,delta));
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -381,9 +381,9 @@ PETSC_EXTERN PetscErrorCode KSPCreate_QCG(KSP ksp)
   KSP_QCG        *cgP;
 
   PetscFunctionBegin;
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_SYMMETRIC,3));
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_SYMMETRIC,1));
-  CHKERRQ(PetscNewLog(ksp,&cgP));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_SYMMETRIC,3));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_SYMMETRIC,1));
+  PetscCall(PetscNewLog(ksp,&cgP));
 
   ksp->data                = (void*)cgP;
   ksp->ops->setup          = KSPSetUp_QCG;
@@ -394,9 +394,9 @@ PETSC_EXTERN PetscErrorCode KSPCreate_QCG(KSP ksp)
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
   ksp->ops->view           = NULL;
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ksp,"KSPQCGGetQuadratic_C",KSPQCGGetQuadratic_QCG));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ksp,"KSPQCGGetTrialStepNorm_C",KSPQCGGetTrialStepNorm_QCG));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ksp,"KSPQCGSetTrustRegionRadius_C",KSPQCGSetTrustRegionRadius_QCG));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPQCGGetQuadratic_C",KSPQCGGetQuadratic_QCG));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPQCGGetTrialStepNorm_C",KSPQCGGetTrialStepNorm_QCG));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPQCGSetTrustRegionRadius_C",KSPQCGSetTrustRegionRadius_QCG));
   cgP->delta = PETSC_MAX_REAL; /* default trust region radius is infinite */
   PetscFunctionReturn(0);
 }
@@ -424,9 +424,9 @@ static PetscErrorCode KSPQCGQuadraticRoots(Vec s,Vec p,PetscReal delta,PetscReal
   PetscReal      dsq,ptp,pts,rad,sts;
 
   PetscFunctionBegin;
-  CHKERRQ(VecDotRealPart(p,s,&pts));
-  CHKERRQ(VecDotRealPart(p,p,&ptp));
-  CHKERRQ(VecDotRealPart(s,s,&sts));
+  PetscCall(VecDotRealPart(p,s,&pts));
+  PetscCall(VecDotRealPart(p,p,&ptp));
+  PetscCall(VecDotRealPart(s,s,&sts));
   dsq  = delta*delta;
   rad  = PetscSqrtReal((pts*pts) - ptp*(sts - dsq));
   if (pts > 0.0) {

@@ -34,26 +34,26 @@ PetscErrorCode FormFunction_Water(DM networkdm,Vec localX,Vec localF,PetscInt nv
 
   PetscFunctionBegin;
   /* Get arrays for the vectors */
-  CHKERRQ(VecGetArrayRead(localX,&xarr));
-  CHKERRQ(VecGetArray(localF,&farr));
+  PetscCall(VecGetArrayRead(localX,&xarr));
+  PetscCall(VecGetArray(localF,&farr));
 
   for (i=0; i<ne; i++) { /* for each edge */
     /* Get the offset and the key for the component for edge number e[i] */
-    CHKERRQ(DMNetworkGetComponent(networkdm,edges[i],0,&key,(void**)&edge,NULL));
+    PetscCall(DMNetworkGetComponent(networkdm,edges[i],0,&key,(void**)&edge,NULL));
 
     /* Get the numbers for the vertices covering this edge */
-    CHKERRQ(DMNetworkGetConnectedVertices(networkdm,edges[i],&cone));
+    PetscCall(DMNetworkGetConnectedVertices(networkdm,edges[i],&cone));
     vnode1 = cone[0];
     vnode2 = cone[1];
 
     /* Get the components at the two vertices, their variable offsets */
-    CHKERRQ(DMNetworkGetNumComponents(networkdm,vnode1,&ncomp));
-    CHKERRQ(DMNetworkGetComponent(networkdm,vnode1,ncomp-1,&key,(void**)&vertexnode1,NULL));
-    CHKERRQ(DMNetworkGetLocalVecOffset(networkdm,vnode1,ncomp-1,&offsetnode1));
+    PetscCall(DMNetworkGetNumComponents(networkdm,vnode1,&ncomp));
+    PetscCall(DMNetworkGetComponent(networkdm,vnode1,ncomp-1,&key,(void**)&vertexnode1,NULL));
+    PetscCall(DMNetworkGetLocalVecOffset(networkdm,vnode1,ncomp-1,&offsetnode1));
 
-    CHKERRQ(DMNetworkGetNumComponents(networkdm,vnode2,&ncomp));
-    CHKERRQ(DMNetworkGetComponent(networkdm,vnode2,ncomp-1,&key,(void**)&vertexnode2,NULL));
-    CHKERRQ(DMNetworkGetLocalVecOffset(networkdm,vnode2,ncomp-1,&offsetnode2));
+    PetscCall(DMNetworkGetNumComponents(networkdm,vnode2,&ncomp));
+    PetscCall(DMNetworkGetComponent(networkdm,vnode2,ncomp-1,&key,(void**)&vertexnode2,NULL));
+    PetscCall(DMNetworkGetLocalVecOffset(networkdm,vnode2,ncomp-1,&offsetnode2));
 
     /* Variables at node1 and node 2 */
     hf = xarr[offsetnode1];
@@ -74,12 +74,12 @@ PetscErrorCode FormFunction_Water(DM networkdm,Vec localX,Vec localF,PetscInt nv
 
   /* Subtract Demand flows at the vertices */
   for (i=0; i<nv; i++) {
-    CHKERRQ(DMNetworkIsGhostVertex(networkdm,vtx[i],&ghostvtex));
+    PetscCall(DMNetworkIsGhostVertex(networkdm,vtx[i],&ghostvtex));
     if (ghostvtex) continue;
 
-    CHKERRQ(DMNetworkGetLocalVecOffset(networkdm,vtx[i],ALL_COMPONENTS,&offset));
-    CHKERRQ(DMNetworkGetNumComponents(networkdm,vtx[i],&ncomp));
-    CHKERRQ(DMNetworkGetComponent(networkdm,vtx[i],ncomp-1,&key,(void**)&vertex,NULL));
+    PetscCall(DMNetworkGetLocalVecOffset(networkdm,vtx[i],ALL_COMPONENTS,&offset));
+    PetscCall(DMNetworkGetNumComponents(networkdm,vtx[i],&ncomp));
+    PetscCall(DMNetworkGetComponent(networkdm,vtx[i],ncomp-1,&key,(void**)&vertex,NULL));
 
     if (vertex->type == VERTEX_TYPE_JUNCTION) {
       farr[offset] -= vertex->junc.demand;
@@ -92,8 +92,8 @@ PetscErrorCode FormFunction_Water(DM networkdm,Vec localX,Vec localF,PetscInt nv
     }
   }
 
-  CHKERRQ(VecRestoreArrayRead(localX,&xarr));
-  CHKERRQ(VecRestoreArray(localF,&farr));
+  PetscCall(VecRestoreArrayRead(localX,&xarr));
+  PetscCall(VecRestoreArray(localF,&farr));
   PetscFunctionReturn(0);
 }
 
@@ -106,30 +106,30 @@ PetscErrorCode WaterFormFunction(SNES snes,Vec X, Vec F, void *user)
 
   PetscFunctionBegin;
   /* Get the DM attached with the SNES */
-  CHKERRQ(SNESGetDM(snes,&networkdm));
+  PetscCall(SNESGetDM(snes,&networkdm));
 
   /* Get local vertices and edges */
-  CHKERRQ(DMNetworkGetSubnetwork(networkdm,0,&nv,&ne,&v,&e));
+  PetscCall(DMNetworkGetSubnetwork(networkdm,0,&nv,&ne,&v,&e));
 
   /* Get local vectors */
-  CHKERRQ(DMGetLocalVector(networkdm,&localX));
-  CHKERRQ(DMGetLocalVector(networkdm,&localF));
+  PetscCall(DMGetLocalVector(networkdm,&localX));
+  PetscCall(DMGetLocalVector(networkdm,&localF));
 
   /* Scatter values from global to local vector */
-  CHKERRQ(DMGlobalToLocalBegin(networkdm,X,INSERT_VALUES,localX));
-  CHKERRQ(DMGlobalToLocalEnd(networkdm,X,INSERT_VALUES,localX));
+  PetscCall(DMGlobalToLocalBegin(networkdm,X,INSERT_VALUES,localX));
+  PetscCall(DMGlobalToLocalEnd(networkdm,X,INSERT_VALUES,localX));
 
   /* Initialize residual */
-  CHKERRQ(VecSet(F,0.0));
-  CHKERRQ(VecSet(localF,0.0));
+  PetscCall(VecSet(F,0.0));
+  PetscCall(VecSet(localF,0.0));
 
-  CHKERRQ(FormFunction_Water(networkdm,localX,localF,nv,ne,v,e,NULL));
+  PetscCall(FormFunction_Water(networkdm,localX,localF,nv,ne,v,e,NULL));
 
-  CHKERRQ(DMRestoreLocalVector(networkdm,&localX));
-  CHKERRQ(DMLocalToGlobalBegin(networkdm,localF,ADD_VALUES,F));
-  CHKERRQ(DMLocalToGlobalEnd(networkdm,localF,ADD_VALUES,F));
+  PetscCall(DMRestoreLocalVector(networkdm,&localX));
+  PetscCall(DMLocalToGlobalBegin(networkdm,localF,ADD_VALUES,F));
+  PetscCall(DMLocalToGlobalEnd(networkdm,localF,ADD_VALUES,F));
 
-  CHKERRQ(DMRestoreLocalVector(networkdm,&localF));
+  PetscCall(DMRestoreLocalVector(networkdm,&localF));
   PetscFunctionReturn(0);
 }
 
@@ -140,19 +140,19 @@ PetscErrorCode WaterSetInitialGuess(DM networkdm,Vec X)
   Vec            localX;
 
   PetscFunctionBegin;
-  CHKERRQ(DMGetLocalVector(networkdm,&localX));
+  PetscCall(DMGetLocalVector(networkdm,&localX));
 
-  CHKERRQ(VecSet(X,0.0));
-  CHKERRQ(DMGlobalToLocalBegin(networkdm,X,INSERT_VALUES,localX));
-  CHKERRQ(DMGlobalToLocalEnd(networkdm,X,INSERT_VALUES,localX));
+  PetscCall(VecSet(X,0.0));
+  PetscCall(DMGlobalToLocalBegin(networkdm,X,INSERT_VALUES,localX));
+  PetscCall(DMGlobalToLocalEnd(networkdm,X,INSERT_VALUES,localX));
 
   /* Get subnetwork */
-  CHKERRQ(DMNetworkGetSubnetwork(networkdm,0,&nv,&ne,&vtx,&edges));
-  CHKERRQ(SetInitialGuess_Water(networkdm,localX,nv,ne,vtx,edges,NULL));
+  PetscCall(DMNetworkGetSubnetwork(networkdm,0,&nv,&ne,&vtx,&edges));
+  PetscCall(SetInitialGuess_Water(networkdm,localX,nv,ne,vtx,edges,NULL));
 
-  CHKERRQ(DMLocalToGlobalBegin(networkdm,localX,ADD_VALUES,X));
-  CHKERRQ(DMLocalToGlobalEnd(networkdm,localX,ADD_VALUES,X));
-  CHKERRQ(DMRestoreLocalVector(networkdm,&localX));
+  PetscCall(DMLocalToGlobalBegin(networkdm,localX,ADD_VALUES,X));
+  PetscCall(DMLocalToGlobalEnd(networkdm,localX,ADD_VALUES,X));
+  PetscCall(DMRestoreLocalVector(networkdm,&localX));
   PetscFunctionReturn(0);
 }
 
@@ -164,21 +164,21 @@ PetscErrorCode GetListofEdges_Water(WATERDATA *water,PetscInt *edgelist)
   PetscBool      netview=PETSC_FALSE;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsHasName(NULL,NULL, "-water_view",&netview));
+  PetscCall(PetscOptionsHasName(NULL,NULL, "-water_view",&netview));
   for (i=0; i < water->nedge; i++) {
     if (water->edge[i].type == EDGE_TYPE_PIPE) {
       pipe  = &water->edge[i].pipe;
       node1 = pipe->node1;
       node2 = pipe->node2;
       if (netview) {
-        CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"edge %d, pipe v[%d] -> v[%d]\n",i,node1,node2));
+        PetscCall(PetscPrintf(PETSC_COMM_SELF,"edge %d, pipe v[%d] -> v[%d]\n",i,node1,node2));
       }
     } else {
       pump  = &water->edge[i].pump;
       node1 = pump->node1;
       node2 = pump->node2;
       if (netview) {
-        CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"edge %d, pump v[%d] -> v[%d]\n",i,node1,node2));
+        PetscCall(PetscPrintf(PETSC_COMM_SELF,"edge %d, pump v[%d] -> v[%d]\n",i,node1,node2));
       }
     }
 
@@ -207,14 +207,14 @@ PetscErrorCode SetInitialGuess_Water(DM networkdm,Vec localX,PetscInt nv,PetscIn
   PetscScalar    *xarr;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArray(localX,&xarr));
+  PetscCall(VecGetArray(localX,&xarr));
   for (i=0; i < nv; i++) {
-    CHKERRQ(DMNetworkIsGhostVertex(networkdm,vtx[i],&ghostvtex));
-    CHKERRQ(DMNetworkIsSharedVertex(networkdm,vtx[i],&sharedv));
+    PetscCall(DMNetworkIsGhostVertex(networkdm,vtx[i],&ghostvtex));
+    PetscCall(DMNetworkIsSharedVertex(networkdm,vtx[i],&sharedv));
     if (ghostvtex || sharedv) continue;
 
-    CHKERRQ(DMNetworkGetComponent(networkdm,vtx[i],0,&key,(void**)&vertex,NULL));
-    CHKERRQ(DMNetworkGetLocalVecOffset(networkdm,vtx[i],0,&offset));
+    PetscCall(DMNetworkGetComponent(networkdm,vtx[i],0,&key,(void**)&vertex,NULL));
+    PetscCall(DMNetworkGetLocalVecOffset(networkdm,vtx[i],0,&offset));
     if (vertex->type == VERTEX_TYPE_JUNCTION) {
       xarr[offset] = 100;
     } else if (vertex->type == VERTEX_TYPE_RESERVOIR) {
@@ -223,6 +223,6 @@ PetscErrorCode SetInitialGuess_Water(DM networkdm,Vec localX,PetscInt nv,PetscIn
       xarr[offset] = vertex->tank.initlvl + vertex->tank.elev;
     }
   }
-  CHKERRQ(VecRestoreArray(localX,&xarr));
+  PetscCall(VecRestoreArray(localX,&xarr));
   PetscFunctionReturn(0);
 }

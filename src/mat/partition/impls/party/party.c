@@ -43,32 +43,32 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part,IS *partit
 
   PetscFunctionBegin;
   PetscCheck(!part->use_edge_weights,PetscObjectComm((PetscObject)part),PETSC_ERR_SUP,"Party does not support edge weights");
-  CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size));
-  CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)mat),&rank));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)mat,MATMPIADJ,&flg));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)mat),&rank));
+  PetscCall(PetscObjectTypeCompare((PetscObject)mat,MATMPIADJ,&flg));
   if (size>1) {
     if (flg) {
-      CHKERRQ(MatMPIAdjToSeq(mat,&matSeq));
+      PetscCall(MatMPIAdjToSeq(mat,&matSeq));
      } else {
-      CHKERRQ(PetscInfo(part,"Converting distributed matrix to sequential: this could be a performance loss\n"));
-      CHKERRQ(MatGetSize(mat,&M,&N));
-      CHKERRQ(ISCreateStride(PETSC_COMM_SELF,M,0,1,&isrow));
-      CHKERRQ(ISCreateStride(PETSC_COMM_SELF,N,0,1,&iscol));
-      CHKERRQ(MatCreateSubMatrices(mat,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&A));
-      CHKERRQ(ISDestroy(&isrow));
-      CHKERRQ(ISDestroy(&iscol));
+      PetscCall(PetscInfo(part,"Converting distributed matrix to sequential: this could be a performance loss\n"));
+      PetscCall(MatGetSize(mat,&M,&N));
+      PetscCall(ISCreateStride(PETSC_COMM_SELF,M,0,1,&isrow));
+      PetscCall(ISCreateStride(PETSC_COMM_SELF,N,0,1,&iscol));
+      PetscCall(MatCreateSubMatrices(mat,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&A));
+      PetscCall(ISDestroy(&isrow));
+      PetscCall(ISDestroy(&iscol));
       matSeq = *A;
-      CHKERRQ(PetscFree(A));
+      PetscCall(PetscFree(A));
      }
   } else {
-    CHKERRQ(PetscObjectReference((PetscObject)mat));
+    PetscCall(PetscObjectReference((PetscObject)mat));
     matSeq = mat;
   }
 
   if (!flg) { /* convert regular matrix to MPIADJ */
-    CHKERRQ(MatConvert(matSeq,MATMPIADJ,MAT_INITIAL_MATRIX,&matAdj));
+    PetscCall(MatConvert(matSeq,MATMPIADJ,MAT_INITIAL_MATRIX,&matAdj));
   } else {
-    CHKERRQ(PetscObjectReference((PetscObject)matSeq));
+    PetscCall(PetscObjectReference((PetscObject)matSeq));
     matAdj = matSeq;
   }
 
@@ -85,7 +85,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part,IS *partit
   redm     = party->redm ? "lam" : ""; /* matching method */
   redo     = party->redo ? "w3" : "";  /* matching optimization method */
 
-  CHKERRQ(PetscMalloc1(mat->rmap->N,&part_party));
+  PetscCall(PetscMalloc1(mat->rmap->N,&part_party));
 
   /* redirect output to buffer */
 #if defined(PETSC_HAVE_UNISTD_H)
@@ -93,7 +93,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part,IS *partit
   PetscCheckFalse(pipe(fd_pipe),PETSC_COMM_SELF,PETSC_ERR_SYS,"Could not open pipe");
   close(1);
   dup2(fd_pipe[1],1);
-  CHKERRQ(PetscMalloc1(SIZE_LOG,&mesg_log));
+  PetscCall(PetscMalloc1(SIZE_LOG,&mesg_log));
 #endif
 
   /* library call */
@@ -115,26 +115,26 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part,IS *partit
   close(fd_pipe[0]);
   close(fd_pipe[1]);
   if (party->verbose) {
-    CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject)mat),"%s",mesg_log));
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject)mat),"%s",mesg_log));
   }
-  CHKERRQ(PetscFree(mesg_log));
+  PetscCall(PetscFree(mesg_log));
 #endif
   PetscCheck(!ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Party failed");
 
-  CHKERRQ(PetscMalloc1(mat->rmap->N,&parttab));
+  PetscCall(PetscMalloc1(mat->rmap->N,&parttab));
   for (i=0; i<mat->rmap->N; i++) parttab[i] = part_party[i];
 
   /* creation of the index set */
   nb_locals = mat->rmap->n;
   locals    = parttab + mat->rmap->rstart;
 
-  CHKERRQ(ISCreateGeneral(PetscObjectComm((PetscObject)part),nb_locals,locals,PETSC_COPY_VALUES,partitioning));
+  PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)part),nb_locals,locals,PETSC_COPY_VALUES,partitioning));
 
   /* clean up */
-  CHKERRQ(PetscFree(parttab));
-  CHKERRQ(PetscFree(part_party));
-  CHKERRQ(MatDestroy(&matSeq));
-  CHKERRQ(MatDestroy(&matAdj));
+  PetscCall(PetscFree(parttab));
+  PetscCall(PetscFree(part_party));
+  PetscCall(MatDestroy(&matSeq));
+  PetscCall(MatDestroy(&matAdj));
   PetscFunctionReturn(0);
 }
 
@@ -144,14 +144,14 @@ PetscErrorCode MatPartitioningView_Party(MatPartitioning part,PetscViewer viewer
   PetscBool             isascii;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii));
   if (isascii) {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Global method: %s\n",party->global));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Local method: %s\n",party->local));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Number of vertices for the coarse graph: %d\n",party->nbvtxcoarsed));
-    if (party->redm) CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Using matching method for graph reduction\n"));
-    if (party->redo) CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Using matching optimization\n"));
-    if (party->recursive) CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Using recursive bipartitioning\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Global method: %s\n",party->global));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Local method: %s\n",party->local));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Number of vertices for the coarse graph: %d\n",party->nbvtxcoarsed));
+    if (party->redm) PetscCall(PetscViewerASCIIPrintf(viewer,"  Using matching method for graph reduction\n"));
+    if (party->redo) PetscCall(PetscViewerASCIIPrintf(viewer,"  Using matching optimization\n"));
+    if (party->recursive) PetscCall(PetscViewerASCIIPrintf(viewer,"  Using recursive bipartitioning\n"));
   }
   PetscFunctionReturn(0);
 }
@@ -182,7 +182,7 @@ PetscErrorCode MatPartitioningPartySetGlobal(MatPartitioning part,const char *gl
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
-  CHKERRQ(PetscTryMethod(part,"MatPartitioningPartySetGlobal_C",(MatPartitioning,const char*),(part,global)));
+  PetscCall(PetscTryMethod(part,"MatPartitioningPartySetGlobal_C",(MatPartitioning,const char*),(part,global)));
   PetscFunctionReturn(0);
 }
 
@@ -191,7 +191,7 @@ PetscErrorCode MatPartitioningPartySetGlobal_Party(MatPartitioning part,const ch
   MatPartitioning_Party *party = (MatPartitioning_Party*)part->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscStrncpy(party->global,global,15));
+  PetscCall(PetscStrncpy(party->global,global,15));
   PetscFunctionReturn(0);
 }
 
@@ -219,7 +219,7 @@ PetscErrorCode MatPartitioningPartySetLocal(MatPartitioning part,const char *loc
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
-  CHKERRQ(PetscTryMethod(part,"MatPartitioningPartySetLocal_C",(MatPartitioning,const char*),(part,local)));
+  PetscCall(PetscTryMethod(part,"MatPartitioningPartySetLocal_C",(MatPartitioning,const char*),(part,local)));
   PetscFunctionReturn(0);
 }
 
@@ -229,7 +229,7 @@ PetscErrorCode MatPartitioningPartySetLocal_Party(MatPartitioning part,const cha
   MatPartitioning_Party *party = (MatPartitioning_Party*)part->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscStrncpy(party->local,local,15));
+  PetscCall(PetscStrncpy(party->local,local,15));
   PetscFunctionReturn(0);
 }
 
@@ -253,7 +253,7 @@ PetscErrorCode MatPartitioningPartySetCoarseLevel(MatPartitioning part,PetscReal
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
   PetscValidLogicalCollectiveReal(part,level,2);
-  CHKERRQ(PetscTryMethod(part,"MatPartitioningPartySetCoarseLevel_C",(MatPartitioning,PetscReal),(part,level)));
+  PetscCall(PetscTryMethod(part,"MatPartitioningPartySetCoarseLevel_C",(MatPartitioning,PetscReal),(part,level)));
   PetscFunctionReturn(0);
 }
 
@@ -288,7 +288,7 @@ PetscErrorCode MatPartitioningPartySetMatchOptimization(MatPartitioning part,Pet
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
   PetscValidLogicalCollectiveBool(part,opt,2);
-  CHKERRQ(PetscTryMethod(part,"MatPartitioningPartySetMatchOptimization_C",(MatPartitioning,PetscBool),(part,opt)));
+  PetscCall(PetscTryMethod(part,"MatPartitioningPartySetMatchOptimization_C",(MatPartitioning,PetscBool),(part,opt)));
   PetscFunctionReturn(0);
 }
 
@@ -320,7 +320,7 @@ PetscErrorCode MatPartitioningPartySetBipart(MatPartitioning part,PetscBool bp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
   PetscValidLogicalCollectiveBool(part,bp,2);
-  CHKERRQ(PetscTryMethod(part,"MatPartitioningPartySetBipart_C",(MatPartitioning,PetscBool),(part,bp)));
+  PetscCall(PetscTryMethod(part,"MatPartitioningPartySetBipart_C",(MatPartitioning,PetscBool),(part,bp)));
   PetscFunctionReturn(0);
 }
 
@@ -341,17 +341,17 @@ PetscErrorCode MatPartitioningSetFromOptions_Party(PetscOptionItems *PetscOption
   MatPartitioning_Party *party = (MatPartitioning_Party*)part->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"Set Party partitioning options"));
-  CHKERRQ(PetscOptionsString("-mat_partitioning_party_global","Global method","MatPartitioningPartySetGlobal",party->global,value,sizeof(value),&flag));
-  if (flag) CHKERRQ(MatPartitioningPartySetGlobal(part,value));
-  CHKERRQ(PetscOptionsString("-mat_partitioning_party_local","Local method","MatPartitioningPartySetLocal",party->local,value,sizeof(value),&flag));
-  if (flag) CHKERRQ(MatPartitioningPartySetLocal(part,value));
-  CHKERRQ(PetscOptionsReal("-mat_partitioning_party_coarse","Coarse level","MatPartitioningPartySetCoarseLevel",0.0,&r,&flag));
-  if (flag) CHKERRQ(MatPartitioningPartySetCoarseLevel(part,r));
-  CHKERRQ(PetscOptionsBool("-mat_partitioning_party_match_optimization","Matching optimization on/off","MatPartitioningPartySetMatchOptimization",party->redo,&party->redo,NULL));
-  CHKERRQ(PetscOptionsBool("-mat_partitioning_party_bipart","Bipartitioning on/off","MatPartitioningPartySetBipart",party->recursive,&party->recursive,NULL));
-  CHKERRQ(PetscOptionsBool("-mat_partitioning_party_verbose","Show library output","",party->verbose,&party->verbose,NULL));
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"Set Party partitioning options"));
+  PetscCall(PetscOptionsString("-mat_partitioning_party_global","Global method","MatPartitioningPartySetGlobal",party->global,value,sizeof(value),&flag));
+  if (flag) PetscCall(MatPartitioningPartySetGlobal(part,value));
+  PetscCall(PetscOptionsString("-mat_partitioning_party_local","Local method","MatPartitioningPartySetLocal",party->local,value,sizeof(value),&flag));
+  if (flag) PetscCall(MatPartitioningPartySetLocal(part,value));
+  PetscCall(PetscOptionsReal("-mat_partitioning_party_coarse","Coarse level","MatPartitioningPartySetCoarseLevel",0.0,&r,&flag));
+  if (flag) PetscCall(MatPartitioningPartySetCoarseLevel(part,r));
+  PetscCall(PetscOptionsBool("-mat_partitioning_party_match_optimization","Matching optimization on/off","MatPartitioningPartySetMatchOptimization",party->redo,&party->redo,NULL));
+  PetscCall(PetscOptionsBool("-mat_partitioning_party_bipart","Bipartitioning on/off","MatPartitioningPartySetBipart",party->recursive,&party->recursive,NULL));
+  PetscCall(PetscOptionsBool("-mat_partitioning_party_verbose","Show library output","",party->verbose,&party->verbose,NULL));
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -360,13 +360,13 @@ PetscErrorCode MatPartitioningDestroy_Party(MatPartitioning part)
   MatPartitioning_Party *party = (MatPartitioning_Party*)part->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscFree(party));
+  PetscCall(PetscFree(party));
   /* clear composed functions */
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPartySetGlobal_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPartySetLocal_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPartySetCoarseLevel_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPartySetMatchOptimization_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPartySetBipart_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPartySetGlobal_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPartySetLocal_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPartySetCoarseLevel_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPartySetMatchOptimization_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPartySetBipart_C",NULL));
   PetscFunctionReturn(0);
 }
 
@@ -389,11 +389,11 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Party(MatPartitioning part)
   MatPartitioning_Party *party;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNewLog(part,&party));
+  PetscCall(PetscNewLog(part,&party));
   part->data = (void*)party;
 
-  CHKERRQ(PetscStrcpy(party->global,"gcf,gbf"));
-  CHKERRQ(PetscStrcpy(party->local,"kl"));
+  PetscCall(PetscStrcpy(party->global,"gcf,gbf"));
+  PetscCall(PetscStrcpy(party->local,"kl"));
 
   party->redm         = PETSC_TRUE;
   party->redo         = PETSC_TRUE;
@@ -406,10 +406,10 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Party(MatPartitioning part)
   part->ops->destroy        = MatPartitioningDestroy_Party;
   part->ops->setfromoptions = MatPartitioningSetFromOptions_Party;
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPartySetGlobal_C",MatPartitioningPartySetGlobal_Party));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPartySetLocal_C",MatPartitioningPartySetLocal_Party));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPartySetCoarseLevel_C",MatPartitioningPartySetCoarseLevel_Party));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPartySetMatchOptimization_C",MatPartitioningPartySetMatchOptimization_Party));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPartySetBipart_C",MatPartitioningPartySetBipart_Party));
+  PetscCall(PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPartySetGlobal_C",MatPartitioningPartySetGlobal_Party));
+  PetscCall(PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPartySetLocal_C",MatPartitioningPartySetLocal_Party));
+  PetscCall(PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPartySetCoarseLevel_C",MatPartitioningPartySetCoarseLevel_Party));
+  PetscCall(PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPartySetMatchOptimization_C",MatPartitioningPartySetMatchOptimization_Party));
+  PetscCall(PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPartySetBipart_C",MatPartitioningPartySetBipart_Party));
   PetscFunctionReturn(0);
 }

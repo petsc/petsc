@@ -4,15 +4,15 @@
 static PetscErrorCode TaoLineSearchDestroy_Unit(TaoLineSearch ls)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscFree(ls->data));
+  PetscCall(PetscFree(ls->data));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode TaoLineSearchSetFromOptions_Unit(PetscOptionItems *PetscOptionsObject,TaoLineSearch ls)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"No Unit line search options"));
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"No Unit line search options"));
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -21,9 +21,9 @@ static PetscErrorCode TaoLineSearchView_Unit(TaoLineSearch ls,PetscViewer viewer
   PetscBool      isascii;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   if (isascii) {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Line Search: Unit Step.\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Line Search: Unit Step.\n"));
   }
   PetscFunctionReturn(0);
 }
@@ -35,13 +35,13 @@ static PetscErrorCode TaoLineSearchApply_Unit(TaoLineSearch ls,Vec x,PetscReal *
 
   PetscFunctionBegin;
   /* Take unit step (newx = startx + 1.0*step_direction) */
-  CHKERRQ(TaoLineSearchMonitor(ls, 0, *f, 0.0));
-  CHKERRQ(VecAXPY(x,1.0,step_direction));
-  CHKERRQ(TaoLineSearchComputeObjectiveAndGradient(ls,x,&ftry,g));
-  CHKERRQ(TaoLineSearchMonitor(ls, 1, *f, 1.0));
-  CHKERRQ(PetscInfo(ls,"Tao Apply Unit Step: %4.4e\n",1.0));
+  PetscCall(TaoLineSearchMonitor(ls, 0, *f, 0.0));
+  PetscCall(VecAXPY(x,1.0,step_direction));
+  PetscCall(TaoLineSearchComputeObjectiveAndGradient(ls,x,&ftry,g));
+  PetscCall(TaoLineSearchMonitor(ls, 1, *f, 1.0));
+  PetscCall(PetscInfo(ls,"Tao Apply Unit Step: %4.4e\n",1.0));
   if (startf < ftry) {
-    CHKERRQ(PetscInfo(ls,"Tao Apply Unit Step, FINCREASE: F old:= %12.10e, F new: %12.10e\n",(double)startf,(double)ftry));
+    PetscCall(PetscInfo(ls,"Tao Apply Unit Step, FINCREASE: F old:= %12.10e, F new: %12.10e\n",(double)startf,(double)ftry));
   }
   *f = ftry;
   ls->step = 1.0;

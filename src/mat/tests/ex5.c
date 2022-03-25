@@ -13,134 +13,134 @@ int main(int argc,char **args)
   PetscReal      norm, tol = PETSC_SQRT_MACHINE_EPSILON;
   PetscBool      flg;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRQ(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   n    = m;
-  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-rectA",&flg));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-rectA",&flg));
   if (flg) n += 2;
-  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-rectB",&flg));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-rectB",&flg));
   if (flg) n -= 2;
 
   /* ---------- Assemble matrix and vectors ----------- */
 
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&C));
-  CHKERRQ(MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,m,n));
-  CHKERRQ(MatSetFromOptions(C));
-  CHKERRQ(MatSetUp(C));
-  CHKERRQ(MatGetOwnershipRange(C,&rstart,&rend));
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
-  CHKERRQ(VecSetSizes(x,PETSC_DECIDE,m));
-  CHKERRQ(VecSetFromOptions(x));
-  CHKERRQ(VecDuplicate(x,&z));
-  CHKERRQ(VecDuplicate(x,&w));
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&y));
-  CHKERRQ(VecSetSizes(y,PETSC_DECIDE,n));
-  CHKERRQ(VecSetFromOptions(y));
-  CHKERRQ(VecDuplicate(y,&u));
-  CHKERRQ(VecDuplicate(y,&s));
-  CHKERRQ(VecGetOwnershipRange(y,&vstart,&vend));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&C));
+  PetscCall(MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,m,n));
+  PetscCall(MatSetFromOptions(C));
+  PetscCall(MatSetUp(C));
+  PetscCall(MatGetOwnershipRange(C,&rstart,&rend));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+  PetscCall(VecSetSizes(x,PETSC_DECIDE,m));
+  PetscCall(VecSetFromOptions(x));
+  PetscCall(VecDuplicate(x,&z));
+  PetscCall(VecDuplicate(x,&w));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&y));
+  PetscCall(VecSetSizes(y,PETSC_DECIDE,n));
+  PetscCall(VecSetFromOptions(y));
+  PetscCall(VecDuplicate(y,&u));
+  PetscCall(VecDuplicate(y,&s));
+  PetscCall(VecGetOwnershipRange(y,&vstart,&vend));
 
   /* Assembly */
   for (i=rstart; i<rend; i++) {
     v    = 100*(i+1);
-    CHKERRQ(VecSetValues(z,1,&i,&v,INSERT_VALUES));
+    PetscCall(VecSetValues(z,1,&i,&v,INSERT_VALUES));
     for (j=0; j<n; j++) {
       v    = 10*(i+1)+j+1;
-      CHKERRQ(MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES));
+      PetscCall(MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES));
     }
   }
 
   /* Flush off proc Vec values and do more assembly */
-  CHKERRQ(VecAssemblyBegin(z));
+  PetscCall(VecAssemblyBegin(z));
   for (i=vstart; i<vend; i++) {
     v    = one*((PetscReal)i);
-    CHKERRQ(VecSetValues(y,1,&i,&v,INSERT_VALUES));
+    PetscCall(VecSetValues(y,1,&i,&v,INSERT_VALUES));
     v    = 100.0*i;
-    CHKERRQ(VecSetValues(u,1,&i,&v,INSERT_VALUES));
+    PetscCall(VecSetValues(u,1,&i,&v,INSERT_VALUES));
   }
 
   /* Flush off proc Mat values and do more assembly */
-  CHKERRQ(MatAssemblyBegin(C,MAT_FLUSH_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(C,MAT_FLUSH_ASSEMBLY));
   for (i=rstart; i<rend; i++) {
     for (j=0; j<n; j++) {
       v    = 10*(i+1)+j+1;
-      CHKERRQ(MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES));
+      PetscCall(MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES));
     }
   }
   /* Try overlap Coomunication with the next stage XXXSetValues */
-  CHKERRQ(VecAssemblyEnd(z));
+  PetscCall(VecAssemblyEnd(z));
 
-  CHKERRQ(MatAssemblyEnd(C,MAT_FLUSH_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(C,MAT_FLUSH_ASSEMBLY));
   CHKMEMQ;
   /* The Assembly for the second Stage */
-  CHKERRQ(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(VecAssemblyBegin(y));
-  CHKERRQ(VecAssemblyEnd(y));
-  CHKERRQ(MatScale(C,alpha));
-  CHKERRQ(VecAssemblyBegin(u));
-  CHKERRQ(VecAssemblyEnd(u));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"testing MatMult()\n"));
+  PetscCall(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
+  PetscCall(VecAssemblyBegin(y));
+  PetscCall(VecAssemblyEnd(y));
+  PetscCall(MatScale(C,alpha));
+  PetscCall(VecAssemblyBegin(u));
+  PetscCall(VecAssemblyEnd(u));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"testing MatMult()\n"));
   CHKMEMQ;
-  CHKERRQ(MatMult(C,y,x));
+  PetscCall(MatMult(C,y,x));
   CHKMEMQ;
-  CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"testing MatMultAdd()\n"));
-  CHKERRQ(MatMultAdd(C,y,z,w));
-  CHKERRQ(VecAXPY(x,one,z));
-  CHKERRQ(VecAXPY(x,negone,w));
-  CHKERRQ(VecNorm(x,NORM_2,&norm));
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"testing MatMultAdd()\n"));
+  PetscCall(MatMultAdd(C,y,z,w));
+  PetscCall(VecAXPY(x,one,z));
+  PetscCall(VecAXPY(x,negone,w));
+  PetscCall(VecNorm(x,NORM_2,&norm));
   if (norm > tol) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Norm of error difference = %g\n",(double)norm));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error difference = %g\n",(double)norm));
   }
 
   /* ------- Test MatMultTranspose(), MatMultTransposeAdd() ------- */
 
   for (i=rstart; i<rend; i++) {
     v    = one*((PetscReal)i);
-    CHKERRQ(VecSetValues(x,1,&i,&v,INSERT_VALUES));
+    PetscCall(VecSetValues(x,1,&i,&v,INSERT_VALUES));
   }
-  CHKERRQ(VecAssemblyBegin(x));
-  CHKERRQ(VecAssemblyEnd(x));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"testing MatMultTranspose()\n"));
-  CHKERRQ(MatMultTranspose(C,x,y));
-  CHKERRQ(VecView(y,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecAssemblyBegin(x));
+  PetscCall(VecAssemblyEnd(x));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"testing MatMultTranspose()\n"));
+  PetscCall(MatMultTranspose(C,x,y));
+  PetscCall(VecView(y,PETSC_VIEWER_STDOUT_WORLD));
 
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"testing MatMultTransposeAdd()\n"));
-  CHKERRQ(MatMultTransposeAdd(C,x,u,s));
-  CHKERRQ(VecAXPY(y,one,u));
-  CHKERRQ(VecAXPY(y,negone,s));
-  CHKERRQ(VecNorm(y,NORM_2,&norm));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"testing MatMultTransposeAdd()\n"));
+  PetscCall(MatMultTransposeAdd(C,x,u,s));
+  PetscCall(VecAXPY(y,one,u));
+  PetscCall(VecAXPY(y,negone,s));
+  PetscCall(VecNorm(y,NORM_2,&norm));
   if (norm > tol) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Norm of error difference = %g\n",(double)norm));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error difference = %g\n",(double)norm));
   }
 
   /* -------------------- Test MatGetDiagonal() ------------------ */
 
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"testing MatGetDiagonal(), MatDiagonalScale()\n"));
-  CHKERRQ(MatView(C,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(VecSet(x,one));
-  CHKERRQ(MatGetDiagonal(C,x));
-  CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"testing MatGetDiagonal(), MatDiagonalScale()\n"));
+  PetscCall(MatView(C,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecSet(x,one));
+  PetscCall(MatGetDiagonal(C,x));
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
   for (i=vstart; i<vend; i++) {
     v    = one*((PetscReal)(i+1));
-    CHKERRQ(VecSetValues(y,1,&i,&v,INSERT_VALUES));
+    PetscCall(VecSetValues(y,1,&i,&v,INSERT_VALUES));
   }
 
   /* -------------------- Test () MatDiagonalScale ------------------ */
-  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-test_diagonalscale",&flg));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-test_diagonalscale",&flg));
   if (flg) {
-    CHKERRQ(MatDiagonalScale(C,x,y));
-    CHKERRQ(MatView(C,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(MatDiagonalScale(C,x,y));
+    PetscCall(MatView(C,PETSC_VIEWER_STDOUT_WORLD));
   }
   /* Free data structures */
-  CHKERRQ(VecDestroy(&u)); CHKERRQ(VecDestroy(&s));
-  CHKERRQ(VecDestroy(&w)); CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&y)); CHKERRQ(VecDestroy(&z));
-  CHKERRQ(MatDestroy(&C));
+  PetscCall(VecDestroy(&u)); PetscCall(VecDestroy(&s));
+  PetscCall(VecDestroy(&w)); PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&y)); PetscCall(VecDestroy(&z));
+  PetscCall(MatDestroy(&C));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

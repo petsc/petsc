@@ -10,22 +10,22 @@ int main(int argc,char **argv)
   DM             dmstag;
   PetscInt       dim,dof[4],i,elx,ely,elz;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   dim = 3;
   for (i=0; i<4; ++i) dof[i] = 1;
   elx = ely = elz = 4;
   switch (dim) {
     case 3:
-      CHKERRQ(DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,elx,ely,elz,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof[0],dof[1],dof[2],dof[3],DMSTAG_STENCIL_BOX,1,NULL,NULL,NULL,&dmstag));
+      PetscCall(DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,elx,ely,elz,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof[0],dof[1],dof[2],dof[3],DMSTAG_STENCIL_BOX,1,NULL,NULL,NULL,&dmstag));
       break;
     default:
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"No support for dimension %D",dim);
   }
-  CHKERRQ(DMSetFromOptions(dmstag));
-  CHKERRQ(DMSetUp(dmstag));
-  CHKERRQ(Test_3d_4x4x4_3x3x3(dmstag));
-  CHKERRQ(DMDestroy(&dmstag));
-  CHKERRQ(PetscFinalize());
+  PetscCall(DMSetFromOptions(dmstag));
+  PetscCall(DMSetUp(dmstag));
+  PetscCall(Test_3d_4x4x4_3x3x3(dmstag));
+  PetscCall(DMDestroy(&dmstag));
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -40,29 +40,29 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)
   /* Check that grid and rank grid is as expected for this test */
   {
     PetscInt nRanks[3],n[3],dim;
-    CHKERRQ(DMGetDimension(dmstag,&dim));
+    PetscCall(DMGetDimension(dmstag,&dim));
     PetscCheckFalse(dim != 3,PetscObjectComm((PetscObject)dmstag),PETSC_ERR_SUP,"This is a 3d test");
-    CHKERRQ(DMStagGetNumRanks(dmstag,&nRanks[0],&nRanks[1],&nRanks[2]));
+    PetscCall(DMStagGetNumRanks(dmstag,&nRanks[0],&nRanks[1],&nRanks[2]));
     for (i=0; i<3; ++i) PetscCheckFalse(nRanks[i] != 3,PetscObjectComm((PetscObject)dmstag),PETSC_ERR_SUP,"This test requires a 3x3x3 rank grid (run on 27 ranks)");
-    CHKERRQ(DMStagGetGlobalSizes(dmstag,&n[0],&n[1],&n[2]));
+    PetscCall(DMStagGetGlobalSizes(dmstag,&n[0],&n[1],&n[2]));
     for (i=0; i<3; ++i) PetscCheckFalse(n[i] != 4,PetscObjectComm((PetscObject)dmstag),PETSC_ERR_SUP,"This test requires a 4x4x4 element grid");
   }
 
   /* Populate global vector by converting the global index number to a scalar value. */
-  CHKERRQ(DMCreateGlobalVector(dmstag,&vecGlobal));
-  CHKERRQ(VecGetOwnershipRange(vecGlobal,&low,&high));
+  PetscCall(DMCreateGlobalVector(dmstag,&vecGlobal));
+  PetscCall(VecGetOwnershipRange(vecGlobal,&low,&high));
   n = high-low;
-  CHKERRQ(VecGetArray(vecGlobal,&arr));
+  PetscCall(VecGetArray(vecGlobal,&arr));
   for (i=0; i<n; ++i) {
    arr[i] = (PetscScalar) (i + low);
   }
-  CHKERRQ(VecRestoreArray(vecGlobal,&arr));
+  PetscCall(VecRestoreArray(vecGlobal,&arr));
 
   /* Populate a local vector initially with -1, then glocal->local scatter */
-  CHKERRQ(DMCreateLocalVector(dmstag,&vecLocal));
-  CHKERRQ(VecSet(vecLocal,-1.0));
-  CHKERRQ(DMGlobalToLocalBegin(dmstag,vecGlobal,INSERT_VALUES,vecLocal));
-  CHKERRQ(DMGlobalToLocalEnd  (dmstag,vecGlobal,INSERT_VALUES,vecLocal));
+  PetscCall(DMCreateLocalVector(dmstag,&vecLocal));
+  PetscCall(VecSet(vecLocal,-1.0));
+  PetscCall(DMGlobalToLocalBegin(dmstag,vecGlobal,INSERT_VALUES,vecLocal));
+  PetscCall(DMGlobalToLocalEnd  (dmstag,vecGlobal,INSERT_VALUES,vecLocal));
 
   /* Check that entries are as expected */
   {
@@ -72,9 +72,9 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)
     const PetscScalar *arrLocal;
     PetscMPIInt       rank;
 
-    CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dmstag),&rank));
-    CHKERRQ(VecGetSize(vecLocal,&entriesGhost)); /* entriesGhost happens to always be 216 here */
-    CHKERRQ(PetscMalloc1(entriesGhost,&arrLocalExpected));
+    PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dmstag),&rank));
+    PetscCall(VecGetSize(vecLocal,&entriesGhost)); /* entriesGhost happens to always be 216 here */
+    PetscCall(PetscMalloc1(entriesGhost,&arrLocalExpected));
 
     /* Hand-computed expected entries (27 blocks of 8 in all cases) */
     if (rank == 0) {
@@ -916,27 +916,27 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)
          for (i=0; i<entriesGhost; ++i) arrLocalExpected[i] = arrLocalExpectedHere[i];
     }
 
-    CHKERRQ(VecGetArrayRead(vecLocal,&arrLocal));
+    PetscCall(VecGetArrayRead(vecLocal,&arrLocal));
     for (i=0, nerr=0; i<entriesGhost; ++i) {
       if (arrLocal[i] != arrLocalExpected[i]) {
         ++nerr;
           if (nerr <= maxErrPerRank) {
-            CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"[%d] Entry %D has value %g instead of the expected %g\n",rank,i,(double)PetscRealPart(arrLocal[i]),(double)PetscRealPart(arrLocalExpected[i])));
+            PetscCall(PetscPrintf(PETSC_COMM_SELF,"[%d] Entry %D has value %g instead of the expected %g\n",rank,i,(double)PetscRealPart(arrLocal[i]),(double)PetscRealPart(arrLocalExpected[i])));
             if (nerr == maxErrPerRank + 1) {
-              CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"[%d] Skipping additional errors on this rank\n",rank));
+              PetscCall(PetscPrintf(PETSC_COMM_SELF,"[%d] Skipping additional errors on this rank\n",rank));
             }
           }
       }
     }
     if (nerr > 0) {
-      CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"[%d] %D incorrect values on this rank\n",rank,nerr));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,"[%d] %D incorrect values on this rank\n",rank,nerr));
     }
-    CHKERRQ(VecRestoreArrayRead(vecLocal,&arrLocal));
-    CHKERRQ(PetscFree(arrLocalExpected));
+    PetscCall(VecRestoreArrayRead(vecLocal,&arrLocal));
+    PetscCall(PetscFree(arrLocalExpected));
   }
 
-  CHKERRQ(VecDestroy(&vecLocal));
-  CHKERRQ(VecDestroy(&vecGlobal));
+  PetscCall(VecDestroy(&vecLocal));
+  PetscCall(VecDestroy(&vecGlobal));
   PetscFunctionReturn(0);
 }
 

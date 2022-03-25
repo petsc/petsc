@@ -12,21 +12,21 @@ int main(int argc, char **argv)
   DMPlexTPSType  tps_type = DMPLEX_TPS_SCHWARZ_P;
   PetscErrorCode ierr;
 
-  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Schwarz P Example", NULL);CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsIntArray("-extent", "Number of replicas for each of three dimensions", NULL, extent, (three=3, &three), NULL));
-  CHKERRQ(PetscOptionsInt("-refine", "Number of refinements", NULL, refine, &refine, NULL));
-  CHKERRQ(PetscOptionsEnumArray("-periodic", "Periodicity in each of three dimensions", NULL, DMBoundaryTypes, (PetscEnum*)periodic, (three=3, &three), NULL));
-  CHKERRQ(PetscOptionsBool("-distribute", "Distribute TPS manifold prior to refinement and extrusion", NULL, distribute, &distribute, NULL));
-  CHKERRQ(PetscOptionsInt("-layers", "Number of layers in volumetric extrusion (or zero to not extrude)", NULL, layers, &layers, NULL));
-  CHKERRQ(PetscOptionsReal("-thickness", "Thickness of volumetric extrusion", NULL, thickness, &thickness, NULL));
-  CHKERRQ(PetscOptionsEnum("-tps_type", "Type of triply-periodic surface", NULL, DMPlexTPSTypes, (PetscEnum)tps_type, (PetscEnum*)&tps_type, NULL));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  CHKERRQ(DMPlexCreateTPSMesh(PETSC_COMM_WORLD, tps_type, extent, periodic, distribute, refine, layers, thickness, &dm));
-  CHKERRQ(PetscObjectSetName((PetscObject)dm, "TPS"));
-  CHKERRQ(DMViewFromOptions(dm, NULL, "-dm_view"));
-  CHKERRQ(DMDestroy(&dm));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscInitialize(&argc, &argv, NULL,help));
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Schwarz P Example", NULL);PetscCall(ierr);
+  PetscCall(PetscOptionsIntArray("-extent", "Number of replicas for each of three dimensions", NULL, extent, (three=3, &three), NULL));
+  PetscCall(PetscOptionsInt("-refine", "Number of refinements", NULL, refine, &refine, NULL));
+  PetscCall(PetscOptionsEnumArray("-periodic", "Periodicity in each of three dimensions", NULL, DMBoundaryTypes, (PetscEnum*)periodic, (three=3, &three), NULL));
+  PetscCall(PetscOptionsBool("-distribute", "Distribute TPS manifold prior to refinement and extrusion", NULL, distribute, &distribute, NULL));
+  PetscCall(PetscOptionsInt("-layers", "Number of layers in volumetric extrusion (or zero to not extrude)", NULL, layers, &layers, NULL));
+  PetscCall(PetscOptionsReal("-thickness", "Thickness of volumetric extrusion", NULL, thickness, &thickness, NULL));
+  PetscCall(PetscOptionsEnum("-tps_type", "Type of triply-periodic surface", NULL, DMPlexTPSTypes, (PetscEnum)tps_type, (PetscEnum*)&tps_type, NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscCall(DMPlexCreateTPSMesh(PETSC_COMM_WORLD, tps_type, extent, periodic, distribute, refine, layers, thickness, &dm));
+  PetscCall(PetscObjectSetName((PetscObject)dm, "TPS"));
+  PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

@@ -12,7 +12,7 @@ typedef struct {
 static PetscErrorCode MatColoringDestroy_JP(MatColoring mc)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscFree(mc->data));
+  PetscCall(PetscFree(mc->data));
   PetscFunctionReturn(0);
 }
 
@@ -21,9 +21,9 @@ static PetscErrorCode MatColoringSetFromOptions_JP(PetscOptionItems *PetscOption
   MC_JP          *jp = (MC_JP*)mc->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"JP options"));
-  CHKERRQ(PetscOptionsBool("-mat_coloring_jp_local","Do an initial coloring of local columns","",jp->local,&jp->local,NULL));
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"JP options"));
+  PetscCall(PetscOptionsBool("-mat_coloring_jp_local","Do an initial coloring of local columns","",jp->local,&jp->local,NULL));
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -44,8 +44,8 @@ static PetscErrorCode MCJPGreatestWeight_Private(MatColoring mc,const PetscReal 
   const PetscInt *cols;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)G,MATSEQAIJ,&isSeq));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)G,MATMPIAIJ,&isMPI));
+  PetscCall(PetscObjectTypeCompare((PetscObject)G,MATSEQAIJ,&isSeq));
+  PetscCall(PetscObjectTypeCompare((PetscObject)G,MATMPIAIJ,&isMPI));
   PetscCheckFalse(!isSeq && !isMPI,PetscObjectComm((PetscObject)G),PETSC_ERR_ARG_WRONGSTATE,"MatColoringDegrees requires an MPI/SEQAIJ Matrix");
 
   /* get the inner matrix structure */
@@ -62,26 +62,26 @@ static PetscErrorCode MCJPGreatestWeight_Private(MatColoring mc,const PetscReal 
     dj = daij->j;
     oi = oaij->i;
     oj = oaij->j;
-    CHKERRQ(MatGetSize(oG,&dn,&on));
+    PetscCall(MatGetSize(oG,&dn,&on));
     if (!sf) {
-      CHKERRQ(PetscSFCreate(PetscObjectComm((PetscObject)mc),&sf));
-      CHKERRQ(MatGetLayouts(G,&layout,NULL));
-      CHKERRQ(PetscSFSetGraphLayout(sf,layout,on,NULL,PETSC_COPY_VALUES,aij->garray));
+      PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)mc),&sf));
+      PetscCall(MatGetLayouts(G,&layout,NULL));
+      PetscCall(PetscSFSetGraphLayout(sf,layout,on,NULL,PETSC_COPY_VALUES,aij->garray));
       jp->sf = sf;
     }
   } else {
     dG = G;
-    CHKERRQ(MatGetSize(dG,NULL,&dn));
+    PetscCall(MatGetSize(dG,NULL,&dn));
     daij = (Mat_SeqAIJ*)dG->data;
     di = daij->i;
     dj = daij->j;
   }
   /* set up the distance-zero weights */
   if (!dwts) {
-    CHKERRQ(PetscMalloc1(dn,&dwts));
+    PetscCall(PetscMalloc1(dn,&dwts));
     jp->dwts = dwts;
     if (oG) {
-      CHKERRQ(PetscMalloc1(on,&owts));
+      PetscCall(PetscMalloc1(on,&owts));
       jp->owts = owts;
     }
   }
@@ -91,10 +91,10 @@ static PetscErrorCode MCJPGreatestWeight_Private(MatColoring mc,const PetscReal 
   }
   /* get the off-diagonal weights */
   if (oG) {
-    CHKERRQ(PetscLogEventBegin(MATCOLORING_Comm,mc,0,0,0));
-    CHKERRQ(PetscSFBcastBegin(sf,MPIU_REAL,dwts,owts,MPI_REPLACE));
-    CHKERRQ(PetscSFBcastEnd(sf,MPIU_REAL,dwts,owts,MPI_REPLACE));
-    CHKERRQ(PetscLogEventEnd(MATCOLORING_Comm,mc,0,0,0));
+    PetscCall(PetscLogEventBegin(MATCOLORING_Comm,mc,0,0,0));
+    PetscCall(PetscSFBcastBegin(sf,MPIU_REAL,dwts,owts,MPI_REPLACE));
+    PetscCall(PetscSFBcastEnd(sf,MPIU_REAL,dwts,owts,MPI_REPLACE));
+    PetscCall(PetscLogEventEnd(MATCOLORING_Comm,mc,0,0,0));
   }
   /* check for the maximum out to the distance of the coloring */
   for (l=0;l<mc->dist;l++) {
@@ -119,10 +119,10 @@ static PetscErrorCode MCJPGreatestWeight_Private(MatColoring mc,const PetscReal 
         dwts[i] = maxweights[i];
       }
       if (oG) {
-        CHKERRQ(PetscLogEventBegin(MATCOLORING_Comm,mc,0,0,0));
-        CHKERRQ(PetscSFBcastBegin(sf,MPIU_REAL,dwts,owts,MPI_REPLACE));
-        CHKERRQ(PetscSFBcastEnd(sf,MPIU_REAL,dwts,owts,MPI_REPLACE));
-        CHKERRQ(PetscLogEventEnd(MATCOLORING_Comm,mc,0,0,0));
+        PetscCall(PetscLogEventBegin(MATCOLORING_Comm,mc,0,0,0));
+        PetscCall(PetscSFBcastBegin(sf,MPIU_REAL,dwts,owts,MPI_REPLACE));
+        PetscCall(PetscSFBcastEnd(sf,MPIU_REAL,dwts,owts,MPI_REPLACE));
+        PetscCall(PetscLogEventEnd(MATCOLORING_Comm,mc,0,0,0));
       }
     }
   }
@@ -147,11 +147,11 @@ static PetscErrorCode MCJPInitialLocalColor_Private(MatColoring mc,PetscInt *lpe
   PetscInt       *oi;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscLogEventBegin(MATCOLORING_Local,mc,0,0,0));
-  CHKERRQ(MatGetOwnershipRange(G,&s,&e));
+  PetscCall(PetscLogEventBegin(MATCOLORING_Local,mc,0,0,0));
+  PetscCall(MatGetOwnershipRange(G,&s,&e));
   n=e-s;
-  CHKERRQ(PetscObjectBaseTypeCompare((PetscObject)G,MATSEQAIJ,&isSeq));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)G,MATMPIAIJ,&isMPI));
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)G,MATSEQAIJ,&isSeq));
+  PetscCall(PetscObjectTypeCompare((PetscObject)G,MATMPIAIJ,&isMPI));
   PetscCheckFalse(!isSeq && !isMPI,PetscObjectComm((PetscObject)G),PETSC_ERR_ARG_WRONGSTATE,"MatColoringDegrees requires an MPI/SEQAIJ Matrix");
 
   /* get the inner matrix structure */
@@ -166,15 +166,15 @@ static PetscErrorCode MCJPInitialLocalColor_Private(MatColoring mc,PetscInt *lpe
     di = daij->i;
     dj = daij->j;
     oi = oaij->i;
-    CHKERRQ(MatGetSize(oG,&dn,NULL));
+    PetscCall(MatGetSize(oG,&dn,NULL));
   } else {
     dG = G;
-    CHKERRQ(MatGetSize(dG,NULL,&dn));
+    PetscCall(MatGetSize(dG,NULL,&dn));
     daij = (Mat_SeqAIJ*)dG->data;
     di = daij->i;
     dj = daij->j;
   }
-  CHKERRQ(PetscMalloc5(n,&colormask,n,&seen,n,&idxbuf,n,&distbuf,n,&boundary));
+  PetscCall(PetscMalloc5(n,&colormask,n,&seen,n,&idxbuf,n,&distbuf,n,&boundary));
   for (i=0;i<dn;i++) {
     seen[i]=-1;
     colormask[i] = -1;
@@ -266,8 +266,8 @@ static PetscErrorCode MCJPInitialLocalColor_Private(MatColoring mc,PetscInt *lpe
       }
     }
   }
-  CHKERRQ(PetscFree5(colormask,seen,idxbuf,distbuf,boundary));
-  CHKERRQ(PetscLogEventEnd(MATCOLORING_Local,mc,0,0,0));
+  PetscCall(PetscFree5(colormask,seen,idxbuf,distbuf,boundary));
+  PetscCall(PetscLogEventEnd(MATCOLORING_Local,mc,0,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -292,8 +292,8 @@ static PetscErrorCode MCJPMinColor_Private(MatColoring mc,ISColoringValue maxcol
   maskradix = sizeof(PetscInt)*8;
   maskrounds = 1 + maxcolor / (maskradix);
   maskbase = 0;
-  CHKERRQ(PetscObjectBaseTypeCompare((PetscObject)G,MATSEQAIJ,&isSeq));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)G,MATMPIAIJ,&isMPI));
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)G,MATSEQAIJ,&isSeq));
+  PetscCall(PetscObjectTypeCompare((PetscObject)G,MATMPIAIJ,&isMPI));
   PetscCheckFalse(!isSeq && !isMPI,PetscObjectComm((PetscObject)G),PETSC_ERR_ARG_WRONGSTATE,"MatColoringDegrees requires an MPI/SEQAIJ Matrix");
 
   /* get the inner matrix structure */
@@ -310,16 +310,16 @@ static PetscErrorCode MCJPMinColor_Private(MatColoring mc,ISColoringValue maxcol
     dj = daij->j;
     oi = oaij->i;
     oj = oaij->j;
-    CHKERRQ(MatGetSize(oG,&dn,&on));
+    PetscCall(MatGetSize(oG,&dn,&on));
     if (!sf) {
-      CHKERRQ(PetscSFCreate(PetscObjectComm((PetscObject)mc),&sf));
-      CHKERRQ(MatGetLayouts(G,&layout,NULL));
-      CHKERRQ(PetscSFSetGraphLayout(sf,layout,on,NULL,PETSC_COPY_VALUES,aij->garray));
+      PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)mc),&sf));
+      PetscCall(MatGetLayouts(G,&layout,NULL));
+      PetscCall(PetscSFSetGraphLayout(sf,layout,on,NULL,PETSC_COPY_VALUES,aij->garray));
       jp->sf = sf;
     }
   } else {
     dG = G;
-    CHKERRQ(MatGetSize(dG,NULL,&dn));
+    PetscCall(MatGetSize(dG,NULL,&dn));
     daij = (Mat_SeqAIJ*)dG->data;
     di = daij->i;
     dj = daij->j;
@@ -329,12 +329,12 @@ static PetscErrorCode MCJPMinColor_Private(MatColoring mc,ISColoringValue maxcol
   }
   /* set up the distance-zero mask */
   if (!dmask) {
-    CHKERRQ(PetscMalloc1(dn,&dmask));
-    CHKERRQ(PetscMalloc1(dn,&cmask));
+    PetscCall(PetscMalloc1(dn,&dmask));
+    PetscCall(PetscMalloc1(dn,&cmask));
     jp->cmask = cmask;
     jp->dmask = dmask;
     if (oG) {
-      CHKERRQ(PetscMalloc1(on,&omask));
+      PetscCall(PetscMalloc1(on,&omask));
       jp->omask = omask;
     }
   }
@@ -347,10 +347,10 @@ static PetscErrorCode MCJPMinColor_Private(MatColoring mc,ISColoringValue maxcol
       dmask[i] = cmask[i];
     }
     if (oG) {
-      CHKERRQ(PetscLogEventBegin(MATCOLORING_Comm,mc,0,0,0));
-      CHKERRQ(PetscSFBcastBegin(sf,MPIU_INT,dmask,omask,MPI_REPLACE));
-      CHKERRQ(PetscSFBcastEnd(sf,MPIU_INT,dmask,omask,MPI_REPLACE));
-      CHKERRQ(PetscLogEventEnd(MATCOLORING_Comm,mc,0,0,0));
+      PetscCall(PetscLogEventBegin(MATCOLORING_Comm,mc,0,0,0));
+      PetscCall(PetscSFBcastBegin(sf,MPIU_INT,dmask,omask,MPI_REPLACE));
+      PetscCall(PetscSFBcastEnd(sf,MPIU_INT,dmask,omask,MPI_REPLACE));
+      PetscCall(PetscLogEventEnd(MATCOLORING_Comm,mc,0,0,0));
     }
     /* fill in the mask out to the distance of the coloring */
     for (l=0;l<mc->dist;l++) {
@@ -374,10 +374,10 @@ static PetscErrorCode MCJPMinColor_Private(MatColoring mc,ISColoringValue maxcol
       }
       if (l < mc->dist-1) {
         if (oG) {
-          CHKERRQ(PetscLogEventBegin(MATCOLORING_Comm,mc,0,0,0));
-          CHKERRQ(PetscSFBcastBegin(sf,MPIU_INT,dmask,omask,MPI_REPLACE));
-          CHKERRQ(PetscSFBcastEnd(sf,MPIU_INT,dmask,omask,MPI_REPLACE));
-          CHKERRQ(PetscLogEventEnd(MATCOLORING_Comm,mc,0,0,0));
+          PetscCall(PetscLogEventBegin(MATCOLORING_Comm,mc,0,0,0));
+          PetscCall(PetscSFBcastBegin(sf,MPIU_INT,dmask,omask,MPI_REPLACE));
+          PetscCall(PetscSFBcastEnd(sf,MPIU_INT,dmask,omask,MPI_REPLACE));
+          PetscCall(PetscLogEventEnd(MATCOLORING_Comm,mc,0,0,0));
         }
       }
     }
@@ -415,15 +415,15 @@ static PetscErrorCode MatColoringApply_JP(MatColoring mc,ISColoring *iscoloring)
   ISColoringValue  *color,*mincolor;
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)mc),&rank));
-  CHKERRQ(PetscLogEventBegin(MATCOLORING_Weights,mc,0,0,0));
-  CHKERRQ(MatColoringCreateWeights(mc,&weights,&lperm));
-  CHKERRQ(PetscLogEventEnd(MATCOLORING_Weights,mc,0,0,0));
-  CHKERRQ(MatGetSize(mc->mat,NULL,&ntotal));
-  CHKERRQ(MatGetLocalSize(mc->mat,NULL,&n));
-  CHKERRQ(PetscMalloc1(n,&maxweights));
-  CHKERRQ(PetscMalloc1(n,&color));
-  CHKERRQ(PetscMalloc1(n,&mincolor));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)mc),&rank));
+  PetscCall(PetscLogEventBegin(MATCOLORING_Weights,mc,0,0,0));
+  PetscCall(MatColoringCreateWeights(mc,&weights,&lperm));
+  PetscCall(PetscLogEventEnd(MATCOLORING_Weights,mc,0,0,0));
+  PetscCall(MatGetSize(mc->mat,NULL,&ntotal));
+  PetscCall(MatGetLocalSize(mc->mat,NULL,&n));
+  PetscCall(PetscMalloc1(n,&maxweights));
+  PetscCall(PetscMalloc1(n,&color));
+  PetscCall(PetscMalloc1(n,&mincolor));
   for (i=0;i<n;i++) {
     color[i] = IS_COLORING_MAX;
     mincolor[i] = 0;
@@ -433,7 +433,7 @@ static PetscErrorCode MatColoringApply_JP(MatColoring mc,ISColoring *iscoloring)
   nadded_total_old=0;
   /* compute purely local vertices */
   if (jp->local) {
-    CHKERRQ(MCJPInitialLocalColor_Private(mc,lperm,color));
+    PetscCall(MCJPInitialLocalColor_Private(mc,lperm,color));
     for (i=0;i<n;i++) {
       if (color[i] < IS_COLORING_MAX) {
         nadded++;
@@ -441,13 +441,13 @@ static PetscErrorCode MatColoringApply_JP(MatColoring mc,ISColoring *iscoloring)
         if (color[i] > maxcolor_local) maxcolor_local = color[i];
       }
     }
-    CHKERRMPI(MPIU_Allreduce(&nadded,&nadded_total,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mc)));
-    CHKERRMPI(MPIU_Allreduce(&maxcolor_local,&maxcolor_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc)));
+    PetscCallMPI(MPIU_Allreduce(&nadded,&nadded_total,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mc)));
+    PetscCallMPI(MPIU_Allreduce(&maxcolor_local,&maxcolor_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc)));
   }
   round = 0;
   while (nadded_total < ntotal) {
-    CHKERRQ(MCJPMinColor_Private(mc,(ISColoringValue)maxcolor_global,color,mincolor));
-    CHKERRQ(MCJPGreatestWeight_Private(mc,weights,maxweights));
+    PetscCall(MCJPMinColor_Private(mc,(ISColoringValue)maxcolor_global,color,mincolor));
+    PetscCall(MCJPGreatestWeight_Private(mc,weights,maxweights));
     for (i=0;i<n;i++) {
       /* choose locally maximal vertices; weights less than zero are omitted from the graph */
       if (weights[i] >= maxweights[i] && weights[i] >= 0.) {
@@ -462,25 +462,25 @@ static PetscErrorCode MatColoringApply_JP(MatColoring mc,ISColoring *iscoloring)
         nadded++;
       }
     }
-    CHKERRMPI(MPIU_Allreduce(&maxcolor_local,&maxcolor_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc)));
-    CHKERRMPI(MPIU_Allreduce(&nadded,&nadded_total,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mc)));
+    PetscCallMPI(MPIU_Allreduce(&maxcolor_local,&maxcolor_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc)));
+    PetscCallMPI(MPIU_Allreduce(&nadded,&nadded_total,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mc)));
     PetscCheckFalse(nadded_total == nadded_total_old,PetscObjectComm((PetscObject)mc),PETSC_ERR_NOT_CONVERGED,"JP didn't make progress");
     nadded_total_old = nadded_total;
     round++;
   }
-  CHKERRQ(PetscLogEventBegin(MATCOLORING_ISCreate,mc,0,0,0));
-  CHKERRQ(ISColoringCreate(PetscObjectComm((PetscObject)mc),maxcolor_global+1,n,color,PETSC_OWN_POINTER,iscoloring));
-  CHKERRQ(PetscLogEventEnd(MATCOLORING_ISCreate,mc,0,0,0));
-  CHKERRQ(PetscFree(jp->dwts));
-  CHKERRQ(PetscFree(jp->dmask));
-  CHKERRQ(PetscFree(jp->cmask));
-  CHKERRQ(PetscFree(jp->owts));
-  CHKERRQ(PetscFree(jp->omask));
-  CHKERRQ(PetscFree(weights));
-  CHKERRQ(PetscFree(lperm));
-  CHKERRQ(PetscFree(maxweights));
-  CHKERRQ(PetscFree(mincolor));
-  CHKERRQ(PetscSFDestroy(&jp->sf));
+  PetscCall(PetscLogEventBegin(MATCOLORING_ISCreate,mc,0,0,0));
+  PetscCall(ISColoringCreate(PetscObjectComm((PetscObject)mc),maxcolor_global+1,n,color,PETSC_OWN_POINTER,iscoloring));
+  PetscCall(PetscLogEventEnd(MATCOLORING_ISCreate,mc,0,0,0));
+  PetscCall(PetscFree(jp->dwts));
+  PetscCall(PetscFree(jp->dmask));
+  PetscCall(PetscFree(jp->cmask));
+  PetscCall(PetscFree(jp->owts));
+  PetscCall(PetscFree(jp->omask));
+  PetscCall(PetscFree(weights));
+  PetscCall(PetscFree(lperm));
+  PetscCall(PetscFree(maxweights));
+  PetscCall(PetscFree(mincolor));
+  PetscCall(PetscSFDestroy(&jp->sf));
   PetscFunctionReturn(0);
 }
 
@@ -506,7 +506,7 @@ PETSC_EXTERN PetscErrorCode MatColoringCreate_JP(MatColoring mc)
   MC_JP          *jp;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNewLog(mc,&jp));
+  PetscCall(PetscNewLog(mc,&jp));
   jp->sf                  = NULL;
   jp->dmask               = NULL;
   jp->omask               = NULL;

@@ -66,11 +66,11 @@ PetscErrorCode PetscHeapCreate(PetscInt maxsize,PetscHeap *heap)
 
   PetscFunctionBegin;
   *heap            = NULL;
-  CHKERRQ(PetscMalloc1(1,&h));
+  PetscCall(PetscMalloc1(1,&h));
   h->end           = 1;
   h->alloc         = maxsize+ARITY; /* We waste all but one slot (loc=1) in the first ARITY slots */
   h->stash         = h->alloc;
-  CHKERRQ(PetscCalloc1(h->alloc,&h->base));
+  PetscCall(PetscCalloc1(h->alloc,&h->base));
   h->base[0].id    = -1;
   h->base[0].value = PETSC_MIN_INT;
   *heap            = h;
@@ -156,7 +156,7 @@ PetscErrorCode PetscHeapUnstash(PetscHeap h)
   while (h->stash < h->alloc) {
     PetscInt id = Id(h,h->stash),value = Value(h,h->stash);
     h->stash++;
-    CHKERRQ(PetscHeapAdd(h,id,value));
+    PetscCall(PetscHeapAdd(h,id,value));
   }
   PetscFunctionReturn(0);
 }
@@ -164,8 +164,8 @@ PetscErrorCode PetscHeapUnstash(PetscHeap h)
 PetscErrorCode PetscHeapDestroy(PetscHeap *heap)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscFree((*heap)->base));
-  CHKERRQ(PetscFree(*heap));
+  PetscCall(PetscFree((*heap)->base));
+  PetscCall(PetscFree(*heap));
   PetscFunctionReturn(0);
 }
 
@@ -175,16 +175,16 @@ PetscErrorCode PetscHeapView(PetscHeap h,PetscViewer viewer)
 
   PetscFunctionBegin;
   if (!viewer) {
-    CHKERRQ(PetscViewerASCIIGetStdout(PETSC_COMM_SELF,&viewer));
+    PetscCall(PetscViewerASCIIGetStdout(PETSC_COMM_SELF,&viewer));
   }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"Heap size %" PetscInt_FMT " with %" PetscInt_FMT " stashed\n",h->end-1,h->alloc-h->stash));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"Heap in (id,value) pairs\n"));
-    CHKERRQ(PetscIntView(2*(h->end-1),(const PetscInt*)(h->base+1),viewer));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"Stash in (id,value) pairs\n"));
-    CHKERRQ(PetscIntView(2*(h->alloc-h->stash),(const PetscInt*)(h->base+h->stash),viewer));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"Heap size %" PetscInt_FMT " with %" PetscInt_FMT " stashed\n",h->end-1,h->alloc-h->stash));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"Heap in (id,value) pairs\n"));
+    PetscCall(PetscIntView(2*(h->end-1),(const PetscInt*)(h->base+1),viewer));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"Stash in (id,value) pairs\n"));
+    PetscCall(PetscIntView(2*(h->alloc-h->stash),(const PetscInt*)(h->base+h->stash),viewer));
   }
   PetscFunctionReturn(0);
 }

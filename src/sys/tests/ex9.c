@@ -6,10 +6,10 @@ static char help[] = "Tests PetscSequentialPhaseBegin() and PetscSequentialPhase
 int main(int argc,char **args)
 {
 
-  CHKERRQ(PetscInitialize(&argc,&args,NULL,help));
-  CHKERRQ(PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1));
-  CHKERRQ(PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscInitialize(&argc,&args,NULL,help));
+  PetscCall(PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1));
+  PetscCall(PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

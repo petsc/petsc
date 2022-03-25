@@ -12,24 +12,24 @@ static PetscErrorCode MatColoringApply_Power(MatColoring mc,ISColoring *iscolori
   if (mc->dist == 1) {
     mp = m;
   } else {
-    CHKERRQ(MatMatMult(m,m,MAT_INITIAL_MATRIX,2.0,&mp));
+    PetscCall(MatMatMult(m,m,MAT_INITIAL_MATRIX,2.0,&mp));
     for (i=2;i<mc->dist;i++) {
       ms = mp;
-      CHKERRQ(MatMatMult(m,ms,MAT_INITIAL_MATRIX,2.0,&mp));
-      CHKERRQ(MatDestroy(&ms));
+      PetscCall(MatMatMult(m,ms,MAT_INITIAL_MATRIX,2.0,&mp));
+      PetscCall(MatDestroy(&ms));
     }
   }
-  CHKERRQ(MatColoringCreate(mp,&imc));
-  CHKERRQ(PetscObjectGetOptionsPrefix((PetscObject)mc,&optionsprefix));
-  CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject)imc,optionsprefix));
-  CHKERRQ(PetscObjectAppendOptionsPrefix((PetscObject)imc,"power_"));
-  CHKERRQ(MatColoringSetType(imc,MATCOLORINGGREEDY));
-  CHKERRQ(MatColoringSetDistance(imc,1));
-  CHKERRQ(MatColoringSetWeightType(imc,mc->weight_type));
-  CHKERRQ(MatColoringSetFromOptions(imc));
-  CHKERRQ(MatColoringApply(imc,iscoloring));
-  CHKERRQ(MatColoringDestroy(&imc));
-  if (mp != m) CHKERRQ(MatDestroy(&mp));
+  PetscCall(MatColoringCreate(mp,&imc));
+  PetscCall(PetscObjectGetOptionsPrefix((PetscObject)mc,&optionsprefix));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)imc,optionsprefix));
+  PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)imc,"power_"));
+  PetscCall(MatColoringSetType(imc,MATCOLORINGGREEDY));
+  PetscCall(MatColoringSetDistance(imc,1));
+  PetscCall(MatColoringSetWeightType(imc,mc->weight_type));
+  PetscCall(MatColoringSetFromOptions(imc));
+  PetscCall(MatColoringApply(imc,iscoloring));
+  PetscCall(MatColoringDestroy(&imc));
+  if (mp != m) PetscCall(MatDestroy(&mp));
   PetscFunctionReturn(0);
 }
 

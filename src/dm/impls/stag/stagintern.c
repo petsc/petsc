@@ -40,16 +40,16 @@ PetscErrorCode DMStagDuplicateWithoutSetup(DM dm, MPI_Comm comm, DM *newdm)
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
   newcomm = (comm == MPI_COMM_NULL) ? PetscObjectComm((PetscObject)dm) : comm;
-  CHKERRQ(DMCreate(newcomm,newdm));
-  CHKERRQ(DMGetDimension(dm,&dim));
-  CHKERRQ(DMSetDimension(*newdm,dim));
+  PetscCall(DMCreate(newcomm,newdm));
+  PetscCall(DMGetDimension(dm,&dim));
+  PetscCall(DMSetDimension(*newdm,dim));
 
   /* Call routine to define all data required for setup */
-  CHKERRQ(DMStagInitialize(stag->boundaryType[0],stag->boundaryType[1],stag->boundaryType[2],stag->N[0],stag->N[1],stag->N[2],stag->nRanks[0],stag->nRanks[1],stag->nRanks[2],stag->dof[0],stag->dof[1],stag->dof[2],stag->dof[3],stag->stencilType,stag->stencilWidth,stag->l[0],stag->l[1],stag->l[2],*newdm));
+  PetscCall(DMStagInitialize(stag->boundaryType[0],stag->boundaryType[1],stag->boundaryType[2],stag->N[0],stag->N[1],stag->N[2],stag->nRanks[0],stag->nRanks[1],stag->nRanks[2],stag->dof[0],stag->dof[1],stag->dof[2],stag->dof[3],stag->stencilType,stag->stencilWidth,stag->l[0],stag->l[1],stag->l[2],*newdm));
 
   /* Copy all data unrelated to setup */
   newstag = (DM_Stag*)(*newdm)->data;
-  CHKERRQ(PetscStrallocpy(stag->coordinateDMType,(char**)&newstag->coordinateDMType));
+  PetscCall(PetscStrallocpy(stag->coordinateDMType,(char**)&newstag->coordinateDMType));
   PetscFunctionReturn(0);
 }
 
@@ -59,13 +59,13 @@ PetscErrorCode DMStagDuplicateWithoutSetup(DM dm, MPI_Comm comm, DM *newdm)
 PetscErrorCode DMStagInitialize(DMBoundaryType bndx,DMBoundaryType bndy,DMBoundaryType bndz,PetscInt M,PetscInt N,PetscInt P,PetscInt m,PetscInt n,PetscInt p,PetscInt dof0,PetscInt dof1,PetscInt dof2,PetscInt dof3,DMStagStencilType stencilType,PetscInt stencilWidth,const PetscInt lx[],const PetscInt ly[],const PetscInt lz[],DM dm)
 {
   PetscFunctionBegin;
-  CHKERRQ(DMSetType(dm,DMSTAG));
-  CHKERRQ(DMStagSetBoundaryTypes(dm,bndx,bndy,bndz));
-  CHKERRQ(DMStagSetGlobalSizes(dm,M,N,P));
-  CHKERRQ(DMStagSetNumRanks(dm,m,n,p));
-  CHKERRQ(DMStagSetStencilType(dm,stencilType));
-  CHKERRQ(DMStagSetStencilWidth(dm,stencilWidth));
-  CHKERRQ(DMStagSetDOF(dm,dof0,dof1,dof2,dof3));
-  CHKERRQ(DMStagSetOwnershipRanges(dm,lx,ly,lz));
+  PetscCall(DMSetType(dm,DMSTAG));
+  PetscCall(DMStagSetBoundaryTypes(dm,bndx,bndy,bndz));
+  PetscCall(DMStagSetGlobalSizes(dm,M,N,P));
+  PetscCall(DMStagSetNumRanks(dm,m,n,p));
+  PetscCall(DMStagSetStencilType(dm,stencilType));
+  PetscCall(DMStagSetStencilWidth(dm,stencilWidth));
+  PetscCall(DMStagSetDOF(dm,dof0,dof1,dof2,dof3));
+  PetscCall(DMStagSetOwnershipRanges(dm,lx,ly,lz));
   PetscFunctionReturn(0);
 }

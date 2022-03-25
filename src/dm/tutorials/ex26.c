@@ -13,15 +13,15 @@ int main(int argc, char **argv)
   PetscInt       tick, moment = 0,momentummax = 7;
   PetscReal      *zeros,*weights,scale,h,sigma = 1/sqrt(2), g = 0, mu = 0;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-moment_max",&momentummax,NULL));
-  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-sigma",&sigma,NULL));
-  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-mu",&mu,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-moment_max",&momentummax,NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-sigma",&sigma,NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-mu",&mu,NULL));
 
   /* calulate zeros and roots of Hermite Gauss quadrature */
-  CHKERRQ(PetscMalloc1(n,&zeros));
+  PetscCall(PetscMalloc1(n,&zeros));
   zeros[0] = 0;
   tick = n % 2;
   for (s=0; s<n/2; s++) {
@@ -29,9 +29,9 @@ int main(int argc, char **argv)
     zeros[2*s+1+tick] =  gsl_sf_hermite_zero(n,s+1);
   }
 
-  CHKERRQ(PetscDTFactorial(n, &scale));
+  PetscCall(PetscDTFactorial(n, &scale));
   scale = exp2(n-1)*scale*PetscSqrtReal(PETSC_PI)/(n*n);
-  CHKERRQ(PetscMalloc1(n+1,&weights));
+  PetscCall(PetscMalloc1(n+1,&weights));
   for (s=0; s<n; s++) {
     h          = gsl_sf_hermite(n-1, (double) zeros[s]);
     weights[s] = scale/(h*h);
@@ -53,12 +53,12 @@ int main(int argc, char **argv)
     }
     g /= sqrt(PETSC_PI);
     /* results confirmed with https://en.wikipedia.org/wiki/Normal_distribution#Moments sigma^p * (p-1)!!*/
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Moment %D %g \n",moment,(double)g));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Moment %D %g \n",moment,(double)g));
 
   }
-  CHKERRQ(PetscFree(zeros));
-  CHKERRQ(PetscFree(weights));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFree(zeros));
+  PetscCall(PetscFree(weights));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

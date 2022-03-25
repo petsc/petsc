@@ -34,33 +34,33 @@ int main(int argc,char **argv)
   Vec            x,b,r;
   Mat            A;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
-  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
-  CHKERRQ(DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,7,7,7,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
-  CHKERRQ(KSPSetDM(ksp,da));
-  CHKERRQ(KSPSetComputeInitialGuess(ksp,ComputeInitialGuess,NULL));
-  CHKERRQ(KSPSetComputeRHS(ksp,ComputeRHS,NULL));
-  CHKERRQ(KSPSetComputeOperators(ksp,ComputeMatrix,NULL));
-  CHKERRQ(DMDestroy(&da));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,7,7,7,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(KSPSetDM(ksp,da));
+  PetscCall(KSPSetComputeInitialGuess(ksp,ComputeInitialGuess,NULL));
+  PetscCall(KSPSetComputeRHS(ksp,ComputeRHS,NULL));
+  PetscCall(KSPSetComputeOperators(ksp,ComputeMatrix,NULL));
+  PetscCall(DMDestroy(&da));
 
-  CHKERRQ(KSPSetFromOptions(ksp));
-  CHKERRQ(KSPSolve(ksp,NULL,NULL));
-  CHKERRQ(KSPGetSolution(ksp,&x));
-  CHKERRQ(KSPGetRhs(ksp,&b));
-  CHKERRQ(VecDuplicate(b,&r));
-  CHKERRQ(KSPGetOperators(ksp,&A,NULL));
+  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(KSPSolve(ksp,NULL,NULL));
+  PetscCall(KSPGetSolution(ksp,&x));
+  PetscCall(KSPGetRhs(ksp,&b));
+  PetscCall(VecDuplicate(b,&r));
+  PetscCall(KSPGetOperators(ksp,&A,NULL));
 
-  CHKERRQ(MatMult(A,x,r));
-  CHKERRQ(VecAXPY(r,-1.0,b));
-  CHKERRQ(VecNorm(r,NORM_2,&norm));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",(double)norm));
+  PetscCall(MatMult(A,x,r));
+  PetscCall(VecAXPY(r,-1.0,b));
+  PetscCall(VecNorm(r,NORM_2,&norm));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",(double)norm));
 
-  CHKERRQ(VecDestroy(&r));
-  CHKERRQ(KSPDestroy(&ksp));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&r));
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -72,12 +72,12 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
   PetscScalar    ***barray;
 
   PetscFunctionBeginUser;
-  CHKERRQ(KSPGetDM(ksp,&dm));
-  CHKERRQ(DMDAGetInfo(dm,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0));
+  PetscCall(KSPGetDM(ksp,&dm));
+  PetscCall(DMDAGetInfo(dm,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0));
   Hx      = 1.0 / (PetscReal)(mx-1); Hy = 1.0 / (PetscReal)(my-1); Hz = 1.0 / (PetscReal)(mz-1);
   HxHydHz = Hx*Hy/Hz; HxHzdHy = Hx*Hz/Hy; HyHzdHx = Hy*Hz/Hx;
-  CHKERRQ(DMDAGetCorners(dm,&xs,&ys,&zs,&xm,&ym,&zm));
-  CHKERRQ(DMDAVecGetArray(dm,b,&barray));
+  PetscCall(DMDAGetCorners(dm,&xs,&ys,&zs,&xm,&ym,&zm));
+  PetscCall(DMDAVecGetArray(dm,b,&barray));
 
   for (k=zs; k<zs+zm; k++) {
     for (j=ys; j<ys+ym; j++) {
@@ -90,14 +90,14 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
       }
     }
   }
-  CHKERRQ(DMDAVecRestoreArray(dm,b,&barray));
+  PetscCall(DMDAVecRestoreArray(dm,b,&barray));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode ComputeInitialGuess(KSP ksp,Vec b,void *ctx)
 {
   PetscFunctionBeginUser;
-  CHKERRQ(VecSet(b,0));
+  PetscCall(VecSet(b,0));
   PetscFunctionReturn(0);
 }
 
@@ -109,11 +109,11 @@ PetscErrorCode ComputeMatrix(KSP ksp,Mat jac,Mat B,void *ctx)
   MatStencil     row,col[7];
 
   PetscFunctionBeginUser;
-  CHKERRQ(KSPGetDM(ksp,&da));
-  CHKERRQ(DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0));
+  PetscCall(KSPGetDM(ksp,&da));
+  PetscCall(DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0));
   Hx      = 1.0 / (PetscReal)(mx-1); Hy = 1.0 / (PetscReal)(my-1); Hz = 1.0 / (PetscReal)(mz-1);
   HxHydHz = Hx*Hy/Hz; HxHzdHy = Hx*Hz/Hy; HyHzdHx = Hy*Hz/Hx;
-  CHKERRQ(DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm));
+  PetscCall(DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm));
 
   for (k=zs; k<zs+zm; k++) {
     for (j=ys; j<ys+ym; j++) {
@@ -121,7 +121,7 @@ PetscErrorCode ComputeMatrix(KSP ksp,Mat jac,Mat B,void *ctx)
         row.i = i; row.j = j; row.k = k;
         if (i==0 || j==0 || k==0 || i==mx-1 || j==my-1 || k==mz-1) {
           v[0] = 2.0*(HxHydHz + HxHzdHy + HyHzdHx);
-          CHKERRQ(MatSetValuesStencil(B,1,&row,1,&row,v,INSERT_VALUES));
+          PetscCall(MatSetValuesStencil(B,1,&row,1,&row,v,INSERT_VALUES));
         } else {
           v[0] = -HxHydHz;col[0].i = i; col[0].j = j; col[0].k = k-1;
           v[1] = -HxHzdHy;col[1].i = i; col[1].j = j-1; col[1].k = k;
@@ -130,13 +130,13 @@ PetscErrorCode ComputeMatrix(KSP ksp,Mat jac,Mat B,void *ctx)
           v[4] = -HyHzdHx;col[4].i = i+1; col[4].j = j; col[4].k = k;
           v[5] = -HxHzdHy;col[5].i = i; col[5].j = j+1; col[5].k = k;
           v[6] = -HxHydHz;col[6].i = i; col[6].j = j; col[6].k = k+1;
-          CHKERRQ(MatSetValuesStencil(B,1,&row,7,col,v,INSERT_VALUES));
+          PetscCall(MatSetValuesStencil(B,1,&row,7,col,v,INSERT_VALUES));
         }
       }
     }
   }
-  CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 

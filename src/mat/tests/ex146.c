@@ -23,12 +23,12 @@ int main(int argc,char **args)
   PetscInt       *indx3,k,l,*indx4;
   PetscInt       low,tempindx,tempindx1;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires real numbers. Your current scalar type is complex");
 #endif
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
   PetscRandomCreate(PETSC_COMM_WORLD,&rnd);
 
@@ -53,9 +53,9 @@ int main(int argc,char **args)
 /*    printf("The value n is  %d from process %d\n",n,rank);   */
 /*    printf("The value n1 is  %d from process %d\n",n1,rank); */
   /* Creating data vector and accompanying array with VeccreateMPIWithArray */
-  CHKERRQ(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,N,(PetscScalar*)in1,&fin));
-  CHKERRQ(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,N,(PetscScalar*)out,&fout));
-  CHKERRQ(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,N,(PetscScalar*)in2,&fout1));
+  PetscCall(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,N,(PetscScalar*)in1,&fin));
+  PetscCall(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,N,(PetscScalar*)out,&fout));
+  PetscCall(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,N,(PetscScalar*)in2,&fout1));
 
 /*    VecGetSize(fin,&size); */
 /*    printf("The size is %d\n",size); */
@@ -83,7 +83,7 @@ int main(int argc,char **args)
   VecRestoreArray(fout,&y_arr);
 
 /*    a = 1.0/(PetscReal)N_factor; */
-/*    CHKERRQ(VecScale(fout1,a)); */
+/*    PetscCall(VecScale(fout1,a)); */
   VecCreate(PETSC_COMM_WORLD,&ini);
   VecCreate(PETSC_COMM_WORLD,&final);
   VecSetSizes(ini,local_n0*N1*N2,N_factor);
@@ -96,10 +96,10 @@ int main(int argc,char **args)
   if (N2%2==0) NM=N2+2;
   else NM=N2+1;
 
-  CHKERRQ(VecGetOwnershipRange(fin,&low,NULL));
+  PetscCall(VecGetOwnershipRange(fin,&low,NULL));
   printf("The local index is %d from %d\n",low,rank);
-  CHKERRQ(PetscMalloc1(local_n0*N1*N2,&indx3));
-  CHKERRQ(PetscMalloc1(local_n0*N1*N2,&indx4));
+  PetscCall(PetscMalloc1(local_n0*N1*N2,&indx3));
+  PetscCall(PetscMalloc1(local_n0*N1*N2,&indx4));
   for (i=0; i<local_n0; i++) {
     for (j=0;j<N1;j++) {
       for (k=0;k<N2;k++) {
@@ -141,8 +141,8 @@ int main(int argc,char **args)
   }
 */
   a    = 1.0/(PetscReal)N_factor;
-  CHKERRQ(VecScale(fout1,a));
-  CHKERRQ(VecScale(final,a));
+  PetscCall(VecScale(fout1,a));
+  PetscCall(VecScale(final,a));
 
   VecAssemblyBegin(ini);
   VecAssemblyEnd(ini);
@@ -151,15 +151,15 @@ int main(int argc,char **args)
   VecAssemblyEnd(final);
 
 /*    VecView(final,PETSC_VIEWER_STDOUT_WORLD); */
-  CHKERRQ(VecAXPY(final,-1.0,ini));
-  CHKERRQ(VecNorm(final,NORM_1,&enorm));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"  Error norm of |x - z|  = %e\n",enorm));
+  PetscCall(VecAXPY(final,-1.0,ini));
+  PetscCall(VecNorm(final,NORM_1,&enorm));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  Error norm of |x - z|  = %e\n",enorm));
   fftw_destroy_plan(fplan);
   fftw_destroy_plan(bplan);
-  fftw_free(in1); CHKERRQ(VecDestroy(&fin));
-  fftw_free(out); CHKERRQ(VecDestroy(&fout));
-  fftw_free(in2); CHKERRQ(VecDestroy(&fout1));
+  fftw_free(in1); PetscCall(VecDestroy(&fin));
+  fftw_free(out); PetscCall(VecDestroy(&fout));
+  fftw_free(in2); PetscCall(VecDestroy(&fout1));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }

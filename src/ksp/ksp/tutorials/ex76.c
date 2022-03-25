@@ -22,165 +22,165 @@ int main(int argc,char **args)
   PetscEventPerfInfo info1,info2;
   PetscErrorCode     ierr;
 
-  CHKERRQ(PetscInitialize(&argc,&args,NULL,help));
-  CHKERRQ(PetscLogDefaultBegin());
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&args,NULL,help));
+  PetscCall(PetscLogDefaultBegin());
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 4,PETSC_COMM_WORLD,PETSC_ERR_USER,"This example requires 4 processes");
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-rhs",&N,NULL));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(MatCreate(PETSC_COMM_SELF,&aux));
-  CHKERRQ(ISCreate(PETSC_COMM_SELF,&is));
-  CHKERRQ(PetscStrcpy(dir,"."));
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-load_dir",dir,sizeof(dir),NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-rhs",&N,NULL));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatCreate(PETSC_COMM_SELF,&aux));
+  PetscCall(ISCreate(PETSC_COMM_SELF,&is));
+  PetscCall(PetscStrcpy(dir,"."));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-load_dir",dir,sizeof(dir),NULL));
   /* loading matrices */
-  CHKERRQ(PetscSNPrintf(name,sizeof(name),"%s/sizes_%d_%d.dat",dir,rank,size));
-  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_SELF,name,FILE_MODE_READ,&viewer));
-  CHKERRQ(ISCreate(PETSC_COMM_SELF,&sizes));
-  CHKERRQ(ISLoad(sizes,viewer));
-  CHKERRQ(ISGetIndices(sizes,&idx));
-  CHKERRQ(MatSetSizes(A,idx[0],idx[1],idx[2],idx[3]));
-  CHKERRQ(ISRestoreIndices(sizes,&idx));
-  CHKERRQ(ISDestroy(&sizes));
-  CHKERRQ(PetscViewerDestroy(&viewer));
-  CHKERRQ(MatSetUp(A));
-  CHKERRQ(PetscSNPrintf(name,sizeof(name),"%s/A.dat",dir));
-  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,&viewer));
-  CHKERRQ(MatLoad(A,viewer));
-  CHKERRQ(PetscViewerDestroy(&viewer));
-  CHKERRQ(PetscSNPrintf(name,sizeof(name),"%s/is_%d_%d.dat",dir,rank,size));
-  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_SELF,name,FILE_MODE_READ,&viewer));
-  CHKERRQ(ISLoad(is,viewer));
-  CHKERRQ(PetscViewerDestroy(&viewer));
-  CHKERRQ(PetscSNPrintf(name,sizeof(name),"%s/Neumann_%d_%d.dat",dir,rank,size));
-  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_SELF,name,FILE_MODE_READ,&viewer));
-  CHKERRQ(MatLoad(aux,viewer));
-  CHKERRQ(PetscViewerDestroy(&viewer));
+  PetscCall(PetscSNPrintf(name,sizeof(name),"%s/sizes_%d_%d.dat",dir,rank,size));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_SELF,name,FILE_MODE_READ,&viewer));
+  PetscCall(ISCreate(PETSC_COMM_SELF,&sizes));
+  PetscCall(ISLoad(sizes,viewer));
+  PetscCall(ISGetIndices(sizes,&idx));
+  PetscCall(MatSetSizes(A,idx[0],idx[1],idx[2],idx[3]));
+  PetscCall(ISRestoreIndices(sizes,&idx));
+  PetscCall(ISDestroy(&sizes));
+  PetscCall(PetscViewerDestroy(&viewer));
+  PetscCall(MatSetUp(A));
+  PetscCall(PetscSNPrintf(name,sizeof(name),"%s/A.dat",dir));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,&viewer));
+  PetscCall(MatLoad(A,viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
+  PetscCall(PetscSNPrintf(name,sizeof(name),"%s/is_%d_%d.dat",dir,rank,size));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_SELF,name,FILE_MODE_READ,&viewer));
+  PetscCall(ISLoad(is,viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
+  PetscCall(PetscSNPrintf(name,sizeof(name),"%s/Neumann_%d_%d.dat",dir,rank,size));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_SELF,name,FILE_MODE_READ,&viewer));
+  PetscCall(MatLoad(aux,viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
   flg = PETSC_FALSE;
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-pc_hpddm_levels_1_st_share_sub_ksp",&flg,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-pc_hpddm_levels_1_st_share_sub_ksp",&flg,NULL));
   if (flg) { /* PETSc LU/Cholesky is struggling numerically for bs > 1          */
              /* only set the proper bs for the geneo_share_* tests, 1 otherwise */
-    CHKERRQ(MatSetBlockSizesFromMats(aux,A,A));
+    PetscCall(MatSetBlockSizesFromMats(aux,A,A));
   }
-  CHKERRQ(MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE));
-  CHKERRQ(MatSetOption(aux,MAT_SYMMETRIC,PETSC_TRUE));
+  PetscCall(MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE));
+  PetscCall(MatSetOption(aux,MAT_SYMMETRIC,PETSC_TRUE));
   /* ready for testing */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","","");CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsFList("-mat_type","Matrix type","MatSetType",MatList,deft,type,256,&flg));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","","");PetscCall(ierr);
+  PetscCall(PetscOptionsFList("-mat_type","Matrix type","MatSetType",MatList,deft,type,256,&flg));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
   if (flg) {
-    CHKERRQ(MatConvert(A,type,MAT_INPLACE_MATRIX,&A));
-    CHKERRQ(MatConvert(aux,type,MAT_INPLACE_MATRIX,&aux));
+    PetscCall(MatConvert(A,type,MAT_INPLACE_MATRIX,&A));
+    PetscCall(MatConvert(aux,type,MAT_INPLACE_MATRIX,&aux));
   }
-  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
-  CHKERRQ(KSPSetOperators(ksp,A,A));
-  CHKERRQ(KSPGetPC(ksp,&pc));
-  CHKERRQ(PCSetType(pc,PCHPDDM));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPSetOperators(ksp,A,A));
+  PetscCall(KSPGetPC(ksp,&pc));
+  PetscCall(PCSetType(pc,PCHPDDM));
 #if defined(PETSC_HAVE_HPDDM) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
   flg = PETSC_FALSE;
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-pc_hpddm_block_splitting",&flg,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-pc_hpddm_block_splitting",&flg,NULL));
   if (!flg) {
-    CHKERRQ(PCHPDDMSetAuxiliaryMat(pc,is,aux,NULL,NULL));
-    CHKERRQ(PCHPDDMHasNeumannMat(pc,PETSC_FALSE)); /* PETSC_TRUE is fine as well, just testing */
+    PetscCall(PCHPDDMSetAuxiliaryMat(pc,is,aux,NULL,NULL));
+    PetscCall(PCHPDDMHasNeumannMat(pc,PETSC_FALSE)); /* PETSC_TRUE is fine as well, just testing */
   }
   flg = PETSC_FALSE;
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-set_rhs",&flg,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-set_rhs",&flg,NULL));
   if (flg) { /* user-provided RHS for concurrent generalized eigenvalue problems                                   */
     Mat      a,c,P; /* usually assembled automatically in PCHPDDM, this is solely for testing PCHPDDMSetRHSMat() */
     PetscInt rstart,rend,location;
-    CHKERRQ(MatDuplicate(aux,MAT_DO_NOT_COPY_VALUES,&B)); /* duplicate so that MatStructure is SAME_NONZERO_PATTERN */
-    CHKERRQ(MatGetDiagonalBlock(A,&a));
-    CHKERRQ(MatGetOwnershipRange(A,&rstart,&rend));
-    CHKERRQ(ISGetLocalSize(is,&m));
-    CHKERRQ(MatCreateSeqAIJ(PETSC_COMM_SELF,rend-rstart,m,1,NULL,&P));
+    PetscCall(MatDuplicate(aux,MAT_DO_NOT_COPY_VALUES,&B)); /* duplicate so that MatStructure is SAME_NONZERO_PATTERN */
+    PetscCall(MatGetDiagonalBlock(A,&a));
+    PetscCall(MatGetOwnershipRange(A,&rstart,&rend));
+    PetscCall(ISGetLocalSize(is,&m));
+    PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF,rend-rstart,m,1,NULL,&P));
     for (m = rstart; m < rend; ++m) {
-      CHKERRQ(ISLocate(is,m,&location));
+      PetscCall(ISLocate(is,m,&location));
       PetscCheck(location >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "IS of the auxiliary Mat does not include all local rows of A");
-      CHKERRQ(MatSetValue(P,m-rstart,location,1.0,INSERT_VALUES));
+      PetscCall(MatSetValue(P,m-rstart,location,1.0,INSERT_VALUES));
     }
-    CHKERRQ(MatAssemblyBegin(P,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(P,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(PetscObjectTypeCompare((PetscObject)a,MATSEQAIJ,&flg));
+    PetscCall(MatAssemblyBegin(P,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(P,MAT_FINAL_ASSEMBLY));
+    PetscCall(PetscObjectTypeCompare((PetscObject)a,MATSEQAIJ,&flg));
     if (flg) {
-      CHKERRQ(MatPtAP(a,P,MAT_INITIAL_MATRIX,1.0,&X)); /* MatPtAP() is used to extend diagonal blocks with zeros on the overlap */
+      PetscCall(MatPtAP(a,P,MAT_INITIAL_MATRIX,1.0,&X)); /* MatPtAP() is used to extend diagonal blocks with zeros on the overlap */
     } else { /* workaround for MatPtAP() limitations with some types */
-      CHKERRQ(MatConvert(a,MATSEQAIJ,MAT_INITIAL_MATRIX,&c));
-      CHKERRQ(MatPtAP(c,P,MAT_INITIAL_MATRIX,1.0,&X));
-      CHKERRQ(MatDestroy(&c));
+      PetscCall(MatConvert(a,MATSEQAIJ,MAT_INITIAL_MATRIX,&c));
+      PetscCall(MatPtAP(c,P,MAT_INITIAL_MATRIX,1.0,&X));
+      PetscCall(MatDestroy(&c));
     }
-    CHKERRQ(MatDestroy(&P));
-    CHKERRQ(MatAXPY(B,1.0,X,SUBSET_NONZERO_PATTERN));
-    CHKERRQ(MatDestroy(&X));
-    CHKERRQ(MatSetOption(B,MAT_SYMMETRIC,PETSC_TRUE));
-    CHKERRQ(PCHPDDMSetRHSMat(pc,B));
-    CHKERRQ(MatDestroy(&B));
+    PetscCall(MatDestroy(&P));
+    PetscCall(MatAXPY(B,1.0,X,SUBSET_NONZERO_PATTERN));
+    PetscCall(MatDestroy(&X));
+    PetscCall(MatSetOption(B,MAT_SYMMETRIC,PETSC_TRUE));
+    PetscCall(PCHPDDMSetRHSMat(pc,B));
+    PetscCall(MatDestroy(&B));
   }
 #endif
-  CHKERRQ(ISDestroy(&is));
-  CHKERRQ(MatDestroy(&aux));
-  CHKERRQ(KSPSetFromOptions(ksp));
-  CHKERRQ(MatCreateVecs(A,&x,&b));
-  CHKERRQ(VecSet(b,1.0));
-  CHKERRQ(KSPSolve(ksp,b,x));
-  CHKERRQ(VecGetLocalSize(x,&m));
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&b));
+  PetscCall(ISDestroy(&is));
+  PetscCall(MatDestroy(&aux));
+  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(MatCreateVecs(A,&x,&b));
+  PetscCall(VecSet(b,1.0));
+  PetscCall(KSPSolve(ksp,b,x));
+  PetscCall(VecGetLocalSize(x,&m));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&b));
   if (N > 1) {
     KSPType type;
-    CHKERRQ(PetscOptionsClearValue(NULL,"-ksp_converged_reason"));
-    CHKERRQ(KSPSetFromOptions(ksp));
-    CHKERRQ(MatCreateDense(PETSC_COMM_WORLD,m,PETSC_DECIDE,PETSC_DECIDE,N,NULL,&B));
-    CHKERRQ(MatCreateDense(PETSC_COMM_WORLD,m,PETSC_DECIDE,PETSC_DECIDE,N,NULL,&X));
-    CHKERRQ(MatSetRandom(B,NULL));
+    PetscCall(PetscOptionsClearValue(NULL,"-ksp_converged_reason"));
+    PetscCall(KSPSetFromOptions(ksp));
+    PetscCall(MatCreateDense(PETSC_COMM_WORLD,m,PETSC_DECIDE,PETSC_DECIDE,N,NULL,&B));
+    PetscCall(MatCreateDense(PETSC_COMM_WORLD,m,PETSC_DECIDE,PETSC_DECIDE,N,NULL,&X));
+    PetscCall(MatSetRandom(B,NULL));
     /* this is algorithmically optimal in the sense that blocks of vectors are coarsened or interpolated using matrix--matrix operations */
     /* PCHPDDM however heavily relies on MPI[S]BAIJ format for which there is no efficient MatProduct implementation */
-    CHKERRQ(KSPMatSolve(ksp,B,X));
-    CHKERRQ(KSPGetType(ksp,&type));
-    CHKERRQ(PetscStrcmp(type,KSPHPDDM,&flg));
+    PetscCall(KSPMatSolve(ksp,B,X));
+    PetscCall(KSPGetType(ksp,&type));
+    PetscCall(PetscStrcmp(type,KSPHPDDM,&flg));
 #if defined(PETSC_HAVE_HPDDM)
     if (flg) {
       PetscReal    norm;
       KSPHPDDMType type;
-      CHKERRQ(KSPHPDDMGetType(ksp,&type));
+      PetscCall(KSPHPDDMGetType(ksp,&type));
       if (type == KSP_HPDDM_TYPE_PREONLY || type == KSP_HPDDM_TYPE_CG || type == KSP_HPDDM_TYPE_GMRES || type == KSP_HPDDM_TYPE_GCRODR) {
         Mat C;
-        CHKERRQ(MatDuplicate(X,MAT_DO_NOT_COPY_VALUES,&C));
-        CHKERRQ(KSPSetMatSolveBatchSize(ksp,1));
-        CHKERRQ(KSPMatSolve(ksp,B,C));
-        CHKERRQ(MatAYPX(C,-1.0,X,SAME_NONZERO_PATTERN));
-        CHKERRQ(MatNorm(C,NORM_INFINITY,&norm));
-        CHKERRQ(MatDestroy(&C));
+        PetscCall(MatDuplicate(X,MAT_DO_NOT_COPY_VALUES,&C));
+        PetscCall(KSPSetMatSolveBatchSize(ksp,1));
+        PetscCall(KSPMatSolve(ksp,B,C));
+        PetscCall(MatAYPX(C,-1.0,X,SAME_NONZERO_PATTERN));
+        PetscCall(MatNorm(C,NORM_INFINITY,&norm));
+        PetscCall(MatDestroy(&C));
         PetscCheckFalse(norm > 100*PETSC_MACHINE_EPSILON,PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"KSPMatSolve() and KSPSolve() difference has nonzero norm %g with pseudo-block KSPHPDDMType %s",(double)norm,KSPHPDDMTypes[type]);
       }
     }
 #endif
-    CHKERRQ(MatDestroy(&X));
-    CHKERRQ(MatDestroy(&B));
+    PetscCall(MatDestroy(&X));
+    PetscCall(MatDestroy(&B));
   }
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)pc,PCHPDDM,&flg));
+  PetscCall(PetscObjectTypeCompare((PetscObject)pc,PCHPDDM,&flg));
 #if defined(PETSC_HAVE_HPDDM) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
   if (flg) {
-    CHKERRQ(PCHPDDMGetSTShareSubKSP(pc,&flg));
+    PetscCall(PCHPDDMGetSTShareSubKSP(pc,&flg));
   }
 #endif
   if (flg && PetscDefined(USE_LOG)) {
-    CHKERRQ(PetscLogEventRegister("MatLUFactorSym",PC_CLASSID,&event));
-    CHKERRQ(PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info1));
-    CHKERRQ(PetscLogEventRegister("MatLUFactorNum",PC_CLASSID,&event));
-    CHKERRQ(PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info2));
+    PetscCall(PetscLogEventRegister("MatLUFactorSym",PC_CLASSID,&event));
+    PetscCall(PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info1));
+    PetscCall(PetscLogEventRegister("MatLUFactorNum",PC_CLASSID,&event));
+    PetscCall(PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info2));
     if (info1.count || info2.count) {
       PetscCheckFalse(info2.count <= info1.count,PETSC_COMM_SELF,PETSC_ERR_PLIB,"LU numerical factorization (%d) not called more times than LU symbolic factorization (%d), broken -pc_hpddm_levels_1_st_share_sub_ksp",info2.count,info1.count);
     } else {
-      CHKERRQ(PetscLogEventRegister("MatCholFctrSym",PC_CLASSID,&event));
-      CHKERRQ(PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info1));
-      CHKERRQ(PetscLogEventRegister("MatCholFctrNum",PC_CLASSID,&event));
-      CHKERRQ(PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info2));
+      PetscCall(PetscLogEventRegister("MatCholFctrSym",PC_CLASSID,&event));
+      PetscCall(PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info1));
+      PetscCall(PetscLogEventRegister("MatCholFctrNum",PC_CLASSID,&event));
+      PetscCall(PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info2));
       PetscCheckFalse(info2.count <= info1.count,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cholesky numerical factorization (%d) not called more times than Cholesky symbolic factorization (%d), broken -pc_hpddm_levels_1_st_share_sub_ksp",info2.count,info1.count);
     }
   }
-  CHKERRQ(KSPDestroy(&ksp));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(PetscFinalize());
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(MatDestroy(&A));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

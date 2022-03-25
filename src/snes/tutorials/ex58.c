@@ -62,49 +62,49 @@ int main(int argc, char **argv)
   Mat            J;                 /* Jacobian matrix */
   DM             da;
 
-  CHKERRQ(PetscInitialize(&argc, &argv, (char*)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, (char*)0, help));
 
   /* Create distributed array to manage the 2d grid */
-  CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,4,4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,4,4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
 
   /* Extract global vectors from DMDA; */
-  CHKERRQ(DMCreateGlobalVector(da,&x));
-  CHKERRQ(VecDuplicate(x, &r));
+  PetscCall(DMCreateGlobalVector(da,&x));
+  PetscCall(VecDuplicate(x, &r));
 
-  CHKERRQ(DMSetMatType(da,MATAIJ));
-  CHKERRQ(DMCreateMatrix(da,&J));
+  PetscCall(DMSetMatType(da,MATAIJ));
+  PetscCall(DMCreateMatrix(da,&J));
 
   /* Create nonlinear solver context */
-  CHKERRQ(SNESCreate(PETSC_COMM_WORLD,&snes));
-  CHKERRQ(SNESSetDM(snes,da));
+  PetscCall(SNESCreate(PETSC_COMM_WORLD,&snes));
+  PetscCall(SNESSetDM(snes,da));
 
   /*  Set function evaluation and Jacobian evaluation  routines */
-  CHKERRQ(SNESSetFunction(snes,r,FormGradient,NULL));
-  CHKERRQ(SNESSetJacobian(snes,J,J,FormJacobian,NULL));
+  PetscCall(SNESSetFunction(snes,r,FormGradient,NULL));
+  PetscCall(SNESSetJacobian(snes,J,J,FormJacobian,NULL));
 
-  CHKERRQ(SNESSetComputeApplicationContext(snes,(PetscErrorCode (*)(SNES,void**))FormBoundaryConditions,(PetscErrorCode (*)(void**))DestroyBoundaryConditions));
+  PetscCall(SNESSetComputeApplicationContext(snes,(PetscErrorCode (*)(SNES,void**))FormBoundaryConditions,(PetscErrorCode (*)(void**))DestroyBoundaryConditions));
 
-  CHKERRQ(SNESSetComputeInitialGuess(snes,ComputeInitialGuess,NULL));
+  PetscCall(SNESSetComputeInitialGuess(snes,ComputeInitialGuess,NULL));
 
-  CHKERRQ(SNESVISetComputeVariableBounds(snes,FormBounds));
+  PetscCall(SNESVISetComputeVariableBounds(snes,FormBounds));
 
-  CHKERRQ(SNESSetFromOptions(snes));
+  PetscCall(SNESSetFromOptions(snes));
 
   /* Solve the application */
-  CHKERRQ(SNESSolve(snes,NULL,x));
+  PetscCall(SNESSolve(snes,NULL,x));
 
   /* Free memory */
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&r));
-  CHKERRQ(MatDestroy(&J));
-  CHKERRQ(SNESDestroy(&snes));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&r));
+  PetscCall(MatDestroy(&J));
+  PetscCall(SNESDestroy(&snes));
 
   /* Free user-created data structures */
-  CHKERRQ(DMDestroy(&da));
+  PetscCall(DMDestroy(&da));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -124,9 +124,9 @@ PetscErrorCode FormBounds(SNES snes, Vec xl, Vec xu)
   AppCtx         *ctx;
 
   PetscFunctionBeginUser;
-  CHKERRQ(SNESGetApplicationContext(snes,&ctx));
-  CHKERRQ(VecSet(xl,ctx->lb));
-  CHKERRQ(VecSet(xu,ctx->ub));
+  PetscCall(SNESGetApplicationContext(snes,&ctx));
+  PetscCall(VecSet(xl,ctx->lb));
+  PetscCall(VecSet(xu,ctx->ub));
   PetscFunctionReturn(0);
 }
 
@@ -156,23 +156,23 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
   DM          da;
 
   PetscFunctionBeginUser;
-  CHKERRQ(SNESGetDM(snes,&da));
-  CHKERRQ(SNESGetApplicationContext(snes,&user));
-  CHKERRQ(DMDAGetInfo(da,PETSC_IGNORE,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
+  PetscCall(SNESGetDM(snes,&da));
+  PetscCall(SNESGetApplicationContext(snes,&user));
+  PetscCall(DMDAGetInfo(da,PETSC_IGNORE,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
   hx   = 1.0/(mx+1);hy=1.0/(my+1); hydhx=hy/hx; hxdhy=hx/hy;
 
-  CHKERRQ(VecSet(G,0.0));
+  PetscCall(VecSet(G,0.0));
 
   /* Get local vector */
-  CHKERRQ(DMGetLocalVector(da,&localX));
+  PetscCall(DMGetLocalVector(da,&localX));
   /* Get ghost points */
-  CHKERRQ(DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX));
-  CHKERRQ(DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX));
+  PetscCall(DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX));
+  PetscCall(DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX));
   /* Get pointer to local vector data */
-  CHKERRQ(DMDAVecGetArray(da,localX, &x));
-  CHKERRQ(DMDAVecGetArray(da,G, &g));
+  PetscCall(DMDAVecGetArray(da,localX, &x));
+  PetscCall(DMDAVecGetArray(da,G, &g));
 
-  CHKERRQ(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
+  PetscCall(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
   /* Compute function over the locally owned part of the mesh */
   for (j=ys; j < ys+ym; j++) {
     for (i=xs; i< xs+xm; i++) {
@@ -248,10 +248,10 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
   }
 
   /* Restore vectors */
-  CHKERRQ(DMDAVecRestoreArray(da,localX, &x));
-  CHKERRQ(DMDAVecRestoreArray(da,G, &g));
-  CHKERRQ(DMRestoreLocalVector(da,&localX));
-  CHKERRQ(PetscLogFlops(67.0*mx*my));
+  PetscCall(DMDAVecRestoreArray(da,localX, &x));
+  PetscCall(DMDAVecRestoreArray(da,G, &g));
+  PetscCall(DMRestoreLocalVector(da,&localX));
+  PetscCall(PetscLogFlops(67.0*mx*my));
   PetscFunctionReturn(0);
 }
 
@@ -284,25 +284,25 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat H, Mat tHPre, void *ptr)
   DM             da;
 
   PetscFunctionBeginUser;
-  CHKERRQ(SNESGetDM(snes,&da));
-  CHKERRQ(SNESGetApplicationContext(snes,&user));
-  CHKERRQ(DMDAGetInfo(da,PETSC_IGNORE,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
+  PetscCall(SNESGetDM(snes,&da));
+  PetscCall(SNESGetApplicationContext(snes,&user));
+  PetscCall(DMDAGetInfo(da,PETSC_IGNORE,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
   hx   = 1.0/(mx+1); hy=1.0/(my+1); hydhx=hy/hx; hxdhy=hx/hy;
 
 /* Set various matrix options */
-  CHKERRQ(MatAssembled(H,&assembled));
-  if (assembled) CHKERRQ(MatZeroEntries(H));
+  PetscCall(MatAssembled(H,&assembled));
+  if (assembled) PetscCall(MatZeroEntries(H));
 
   /* Get local vector */
-  CHKERRQ(DMGetLocalVector(da,&localX));
+  PetscCall(DMGetLocalVector(da,&localX));
   /* Get ghost points */
-  CHKERRQ(DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX));
-  CHKERRQ(DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX));
+  PetscCall(DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX));
+  PetscCall(DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX));
 
   /* Get pointers to vector data */
-  CHKERRQ(DMDAVecGetArray(da,localX, &x));
+  PetscCall(DMDAVecGetArray(da,localX, &x));
 
-  CHKERRQ(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
+  PetscCall(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
   /* Compute Jacobian over the locally owned part of the mesh */
   for (j=ys; j< ys+ym; j++) {
     for (i=xs; i< xs+xm; i++) {
@@ -415,17 +415,17 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat H, Mat tHPre, void *ptr)
         col[k].i = i; col[k].j = j+1; k++;
       }
 
-      CHKERRQ(MatSetValuesStencil(H,1,&row,k,col,v,INSERT_VALUES));
+      PetscCall(MatSetValuesStencil(H,1,&row,k,col,v,INSERT_VALUES));
     }
   }
 
   /* Assemble the matrix */
-  CHKERRQ(MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(DMDAVecRestoreArray(da,localX,&x));
-  CHKERRQ(MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(DMRestoreLocalVector(da,&localX));
+  PetscCall(MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY));
+  PetscCall(DMDAVecRestoreArray(da,localX,&x));
+  PetscCall(MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY));
+  PetscCall(DMRestoreLocalVector(da,&localX));
 
-  CHKERRQ(PetscLogFlops(199.0*mx*my));
+  PetscCall(PetscLogFlops(199.0*mx*my));
   PetscFunctionReturn(0);
 }
 
@@ -455,22 +455,22 @@ PetscErrorCode FormBoundaryConditions(SNES snes,AppCtx **ouser)
   DM             da;
 
   PetscFunctionBeginUser;
-  CHKERRQ(SNESGetDM(snes,&da));
-  CHKERRQ(PetscNew(&user));
+  PetscCall(SNESGetDM(snes,&da));
+  PetscCall(PetscNew(&user));
   *ouser   = user;
   user->lb = .05;
   user->ub = PETSC_INFINITY;
-  CHKERRQ(DMDAGetInfo(da,PETSC_IGNORE,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
+  PetscCall(DMDAGetInfo(da,PETSC_IGNORE,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
 
   /* Check if lower and upper bounds are set */
-  CHKERRQ(PetscOptionsGetScalar(NULL,NULL, "-lb", &user->lb, 0));
-  CHKERRQ(PetscOptionsGetScalar(NULL,NULL, "-ub", &user->ub, 0));
+  PetscCall(PetscOptionsGetScalar(NULL,NULL, "-lb", &user->lb, 0));
+  PetscCall(PetscOptionsGetScalar(NULL,NULL, "-ub", &user->ub, 0));
   bsize=mx+2; lsize=my+2; rsize=my+2; tsize=mx+2;
 
-  CHKERRQ(PetscMalloc1(bsize, &user->bottom));
-  CHKERRQ(PetscMalloc1(tsize, &user->top));
-  CHKERRQ(PetscMalloc1(lsize, &user->left));
-  CHKERRQ(PetscMalloc1(rsize, &user->right));
+  PetscCall(PetscMalloc1(bsize, &user->bottom));
+  PetscCall(PetscMalloc1(tsize, &user->top));
+  PetscCall(PetscMalloc1(lsize, &user->left));
+  PetscCall(PetscMalloc1(rsize, &user->right));
 
   hx= (r-l)/(mx+1.0); hy=(t-b)/(my+1.0);
 
@@ -527,11 +527,11 @@ PetscErrorCode DestroyBoundaryConditions(AppCtx **ouser)
   AppCtx         *user = *ouser;
 
   PetscFunctionBeginUser;
-  CHKERRQ(PetscFree(user->bottom));
-  CHKERRQ(PetscFree(user->top));
-  CHKERRQ(PetscFree(user->left));
-  CHKERRQ(PetscFree(user->right));
-  CHKERRQ(PetscFree(*ouser));
+  PetscCall(PetscFree(user->bottom));
+  PetscCall(PetscFree(user->top));
+  PetscCall(PetscFree(user->left));
+  PetscCall(PetscFree(user->right));
+  PetscCall(PetscFree(*ouser));
   PetscFunctionReturn(0);
 }
 
@@ -555,14 +555,14 @@ PetscErrorCode ComputeInitialGuess(SNES snes, Vec X,void *dummy)
   PetscInt       xs,xm,ys,ym;
 
   PetscFunctionBeginUser;
-  CHKERRQ(SNESGetDM(snes,&da));
-  CHKERRQ(SNESGetApplicationContext(snes,&user));
+  PetscCall(SNESGetDM(snes,&da));
+  PetscCall(SNESGetApplicationContext(snes,&user));
 
-  CHKERRQ(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
-  CHKERRQ(DMDAGetInfo(da,PETSC_IGNORE,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
+  PetscCall(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
+  PetscCall(DMDAGetInfo(da,PETSC_IGNORE,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
 
   /* Get pointers to vector data */
-  CHKERRQ(DMDAVecGetArray(da,X,&x));
+  PetscCall(DMDAVecGetArray(da,X,&x));
   /* Perform local computations */
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i< xs+xm; i++) {
@@ -570,7 +570,7 @@ PetscErrorCode ComputeInitialGuess(SNES snes, Vec X,void *dummy)
     }
   }
   /* Restore vectors */
-  CHKERRQ(DMDAVecRestoreArray(da,X,&x));
+  PetscCall(DMDAVecRestoreArray(da,X,&x));
   PetscFunctionReturn(0);
 }
 

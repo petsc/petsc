@@ -7,33 +7,33 @@ int main(int argc, char **args)
   Vec            x, y;
   PetscRandom    rand;
 
-  CHKERRQ(PetscInitialize(&argc, &args, (char*)0, help));
+  PetscCall(PetscInitialize(&argc, &args, (char*)0, help));
 
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD, &A));
-  CHKERRQ(MatSetType(A, MATAIJ));
-  CHKERRQ(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, 10, 10));
-  CHKERRQ(MatSetFromOptions(A));
-  CHKERRQ(MatSetUp(A));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
+  PetscCall(MatSetType(A, MATAIJ));
+  PetscCall(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, 10, 10));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSetUp(A));
 
-  CHKERRQ(MatSetValue(A, 0, 0, 1.0, INSERT_VALUES));
-  CHKERRQ(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatSetValue(A, 0, 0, 1.0, INSERT_VALUES));
+  PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
 
-  CHKERRQ(MatCreateHermitianTranspose(A, &AHT));
-  CHKERRQ(MatCreateVecs(AHT, &x, &y));
+  PetscCall(MatCreateHermitianTranspose(A, &AHT));
+  PetscCall(MatCreateVecs(AHT, &x, &y));
 
-  CHKERRQ(PetscRandomCreate(PETSC_COMM_WORLD, &rand));
-  CHKERRQ(PetscRandomSetFromOptions(rand));
-  CHKERRQ(VecSetRandom(y, rand));
-  CHKERRQ(PetscRandomDestroy(&rand));
+  PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &rand));
+  PetscCall(PetscRandomSetFromOptions(rand));
+  PetscCall(VecSetRandom(y, rand));
+  PetscCall(PetscRandomDestroy(&rand));
 
-  CHKERRQ(MatMultHermitianTranspose(AHT, y, x));
+  PetscCall(MatMultHermitianTranspose(AHT, y, x));
 
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&y));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(MatDestroy(&AHT));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&y));
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&AHT));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

@@ -21,47 +21,47 @@ int main(int argc,char **args)
   PetscViewer    viewer;    /* Load refractive index */
   PetscScalar    v;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
 
   /* Generate vector */
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&u));
-  CHKERRQ(PetscObjectSetName((PetscObject)u, "ref_index"));
-  CHKERRQ(VecSetSizes(u,PETSC_DECIDE,m));
-  CHKERRQ(VecSetFromOptions(u));
-  CHKERRQ(VecGetOwnershipRange(u,&low,&high));
-  CHKERRQ(VecGetLocalSize(u,&ldim));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&u));
+  PetscCall(PetscObjectSetName((PetscObject)u, "ref_index"));
+  PetscCall(VecSetSizes(u,PETSC_DECIDE,m));
+  PetscCall(VecSetFromOptions(u));
+  PetscCall(VecGetOwnershipRange(u,&low,&high));
+  PetscCall(VecGetLocalSize(u,&ldim));
 
   for (i=0; i<ldim; i++) {
     iglobal = i + low;
     v       = (PetscScalar)(i + low);
-    CHKERRQ(VecSetValues(u,1,&iglobal,&v,INSERT_VALUES));
+    PetscCall(VecSetValues(u,1,&iglobal,&v,INSERT_VALUES));
   }
-  CHKERRQ(VecAssemblyBegin(u));
-  CHKERRQ(VecAssemblyEnd(u));
-  CHKERRQ(PetscViewerHDF5Open(PETSC_COMM_WORLD,"ex50tmp.h5",FILE_MODE_WRITE,&viewer));
-  CHKERRQ(VecView(u,viewer));
-  CHKERRQ(VecDestroy(&u));
-  CHKERRQ(PetscViewerDestroy(&viewer));
+  PetscCall(VecAssemblyBegin(u));
+  PetscCall(VecAssemblyEnd(u));
+  PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD,"ex50tmp.h5",FILE_MODE_WRITE,&viewer));
+  PetscCall(VecView(u,viewer));
+  PetscCall(VecDestroy(&u));
+  PetscCall(PetscViewerDestroy(&viewer));
 
   /* Make FFT matrix (via interface) and create vecs aligned to it. */
-  CHKERRQ(MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A));
+  PetscCall(MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A));
 
   /* Create vectors that are compatible with parallel layout of A - must call MatCreateVecs()! */
-  CHKERRQ(MatCreateVecsFFTW(A,&u,&u_,&H));
-  CHKERRQ(VecDuplicate(u,&slice_rid));
+  PetscCall(MatCreateVecsFFTW(A,&u,&u_,&H));
+  PetscCall(VecDuplicate(u,&slice_rid));
 
   /* Load refractive index from file */
-  CHKERRQ(PetscViewerHDF5Open(PETSC_COMM_WORLD,"ex50tmp.h5",FILE_MODE_READ,&viewer));
-  CHKERRQ(PetscObjectSetName((PetscObject)slice_rid,"ref_index"));
-  CHKERRQ(VecLoad(slice_rid,viewer)); /* Test if VecLoad_HDF5 can correctly handle FFTW vectors */
-  CHKERRQ(PetscViewerDestroy(&viewer));
+  PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD,"ex50tmp.h5",FILE_MODE_READ,&viewer));
+  PetscCall(PetscObjectSetName((PetscObject)slice_rid,"ref_index"));
+  PetscCall(VecLoad(slice_rid,viewer)); /* Test if VecLoad_HDF5 can correctly handle FFTW vectors */
+  PetscCall(PetscViewerDestroy(&viewer));
 
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(VecDestroy(&slice_rid));
-  CHKERRQ(VecDestroy(&u));
-  CHKERRQ(VecDestroy(&u_));
-  CHKERRQ(VecDestroy(&H));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatDestroy(&A));
+  PetscCall(VecDestroy(&slice_rid));
+  PetscCall(VecDestroy(&u));
+  PetscCall(VecDestroy(&u_));
+  PetscCall(VecDestroy(&H));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

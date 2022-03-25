@@ -51,16 +51,16 @@ PetscErrorCode  PetscErrorPrintfInitialize(void)
   PetscBool      use_stdout = PETSC_FALSE,use_none = PETSC_FALSE;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscGetArchType(arch,sizeof(arch)));
-  CHKERRQ(PetscGetHostName(hostname,sizeof(hostname)));
-  CHKERRQ(PetscGetUserName(username,sizeof(username)));
-  CHKERRQ(PetscGetProgramName(pname,sizeof(pname)));
-  CHKERRQ(PetscGetDate(date,sizeof(date)));
-  CHKERRQ(PetscGetVersion(version,sizeof(version)));
+  PetscCall(PetscGetArchType(arch,sizeof(arch)));
+  PetscCall(PetscGetHostName(hostname,sizeof(hostname)));
+  PetscCall(PetscGetUserName(username,sizeof(username)));
+  PetscCall(PetscGetProgramName(pname,sizeof(pname)));
+  PetscCall(PetscGetDate(date,sizeof(date)));
+  PetscCall(PetscGetVersion(version,sizeof(version)));
 
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-error_output_stdout",&use_stdout,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-error_output_stdout",&use_stdout,NULL));
   if (use_stdout) PETSC_STDERR = PETSC_STDOUT;
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-error_output_none",&use_none,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-error_output_none",&use_none,NULL));
   if (use_none) PetscErrorPrintf = PetscErrorPrintfNone;
   PetscErrorPrintfInitializeCalled = PETSC_TRUE;
   PetscFunctionReturn(0);

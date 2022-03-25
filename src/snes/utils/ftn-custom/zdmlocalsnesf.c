@@ -19,9 +19,9 @@ static PetscErrorCode sourlj(DM dm, Vec X, Mat J, Mat P, void *ptr)
   DMSNES sdm;
 
   PetscFunctionBegin;
-  CHKERRQ(DMGetDMSNES(dm, &sdm));
-  CHKERRQ(PetscObjectGetFortranCallback((PetscObject) sdm, PETSC_FORTRAN_CALLBACK_SUBTYPE, _cb.lj, (PetscVoidFunction *) &func, &ctx));
-  CHKERR_FORTRAN_VOID_FUNCTION((*func)(&dm, &X, &J, &P, ctx, &ierr));
+  PetscCall(DMGetDMSNES(dm, &sdm));
+  PetscCall(PetscObjectGetFortranCallback((PetscObject) sdm, PETSC_FORTRAN_CALLBACK_SUBTYPE, _cb.lj, (PetscVoidFunction *) &func, &ctx));
+  PetscCallFortranVoidFunction((*func)(&dm, &X, &J, &P, ctx, &ierr));
   PetscFunctionReturn(0);
 }
 
@@ -40,9 +40,9 @@ static PetscErrorCode sourlf(DM dm, Vec X, Vec F, void *ptr)
   DMSNES sdm;
 
   PetscFunctionBegin;
-  CHKERRQ(DMGetDMSNES(dm, &sdm));
-  CHKERRQ(PetscObjectGetFortranCallback((PetscObject) sdm, PETSC_FORTRAN_CALLBACK_SUBTYPE, _cb.lf, (PetscVoidFunction *) &func, &ctx));
-  CHKERR_FORTRAN_VOID_FUNCTION((*func)(&dm, &X, &F, ctx, &ierr));
+  PetscCall(DMGetDMSNES(dm, &sdm));
+  PetscCall(PetscObjectGetFortranCallback((PetscObject) sdm, PETSC_FORTRAN_CALLBACK_SUBTYPE, _cb.lf, (PetscVoidFunction *) &func, &ctx));
+  PetscCallFortranVoidFunction((*func)(&dm, &X, &F, ctx, &ierr));
   PetscFunctionReturn(0);
 }
 

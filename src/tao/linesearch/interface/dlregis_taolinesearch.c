@@ -17,7 +17,7 @@ static PetscBool TaoLineSearchPackageInitialized = PETSC_FALSE;
 PetscErrorCode TaoLineSearchFinalizePackage(void)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscFunctionListDestroy(&TaoLineSearchList));
+  PetscCall(PetscFunctionListDestroy(&TaoLineSearchList));
   TaoLineSearchPackageInitialized = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -38,15 +38,15 @@ PetscErrorCode TaoLineSearchInitializePackage(void)
   if (TaoLineSearchPackageInitialized) PetscFunctionReturn(0);
   TaoLineSearchPackageInitialized=PETSC_TRUE;
 #if !defined(PETSC_USE_COMPLEX)
-  CHKERRQ(PetscClassIdRegister("TaoLineSearch",&TAOLINESEARCH_CLASSID));
-  CHKERRQ(TaoLineSearchRegister("unit",TaoLineSearchCreate_Unit));
-  CHKERRQ(TaoLineSearchRegister("more-thuente",TaoLineSearchCreate_MT));
-  CHKERRQ(TaoLineSearchRegister("gpcg",TaoLineSearchCreate_GPCG));
-  CHKERRQ(TaoLineSearchRegister("armijo",TaoLineSearchCreate_Armijo));
-  CHKERRQ(TaoLineSearchRegister("owarmijo",TaoLineSearchCreate_OWArmijo));
-  CHKERRQ(PetscLogEventRegister("TaoLSApply",TAOLINESEARCH_CLASSID,&TAOLINESEARCH_Apply));
-  CHKERRQ(PetscLogEventRegister("TaoLSEval", TAOLINESEARCH_CLASSID,&TAOLINESEARCH_Eval));
+  PetscCall(PetscClassIdRegister("TaoLineSearch",&TAOLINESEARCH_CLASSID));
+  PetscCall(TaoLineSearchRegister("unit",TaoLineSearchCreate_Unit));
+  PetscCall(TaoLineSearchRegister("more-thuente",TaoLineSearchCreate_MT));
+  PetscCall(TaoLineSearchRegister("gpcg",TaoLineSearchCreate_GPCG));
+  PetscCall(TaoLineSearchRegister("armijo",TaoLineSearchCreate_Armijo));
+  PetscCall(TaoLineSearchRegister("owarmijo",TaoLineSearchCreate_OWArmijo));
+  PetscCall(PetscLogEventRegister("TaoLSApply",TAOLINESEARCH_CLASSID,&TAOLINESEARCH_Apply));
+  PetscCall(PetscLogEventRegister("TaoLSEval", TAOLINESEARCH_CLASSID,&TAOLINESEARCH_Eval));
 #endif
-  CHKERRQ(PetscRegisterFinalize(TaoLineSearchFinalizePackage));
+  PetscCall(PetscRegisterFinalize(TaoLineSearchFinalizePackage));
   PetscFunctionReturn(0);
 }

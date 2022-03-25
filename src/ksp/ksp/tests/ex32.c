@@ -27,85 +27,85 @@ int main(int argc,char **argv)
   PetscInt       dof=1,M=8;
   PetscBool      flg,trans=PETSC_FALSE;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-trans",&trans,NULL));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-trans",&trans,NULL));
 
-  CHKERRQ(DMDACreate(PETSC_COMM_WORLD,&da));
-  CHKERRQ(DMSetDimension(da,3));
-  CHKERRQ(DMDASetBoundaryType(da,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE));
-  CHKERRQ(DMDASetStencilType(da,DMDA_STENCIL_STAR));
-  CHKERRQ(DMDASetSizes(da,M,M,M));
-  CHKERRQ(DMDASetNumProcs(da,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE));
-  CHKERRQ(DMDASetDof(da,dof));
-  CHKERRQ(DMDASetStencilWidth(da,1));
-  CHKERRQ(DMDASetOwnershipRanges(da,NULL,NULL,NULL));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
+  PetscCall(DMDACreate(PETSC_COMM_WORLD,&da));
+  PetscCall(DMSetDimension(da,3));
+  PetscCall(DMDASetBoundaryType(da,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE));
+  PetscCall(DMDASetStencilType(da,DMDA_STENCIL_STAR));
+  PetscCall(DMDASetSizes(da,M,M,M));
+  PetscCall(DMDASetNumProcs(da,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE));
+  PetscCall(DMDASetDof(da,dof));
+  PetscCall(DMDASetStencilWidth(da,1));
+  PetscCall(DMDASetOwnershipRanges(da,NULL,NULL,NULL));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
 
-  CHKERRQ(DMCreateGlobalVector(da,&x));
-  CHKERRQ(DMCreateGlobalVector(da,&b));
-  CHKERRQ(ComputeRHS(da,b));
-  CHKERRQ(DMSetMatType(da,MATBAIJ));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMCreateMatrix(da,&A));
-  CHKERRQ(ComputeMatrix(da,A));
+  PetscCall(DMCreateGlobalVector(da,&x));
+  PetscCall(DMCreateGlobalVector(da,&b));
+  PetscCall(ComputeRHS(da,b));
+  PetscCall(DMSetMatType(da,MATBAIJ));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMCreateMatrix(da,&A));
+  PetscCall(ComputeMatrix(da,A));
 
   /* A is non-symmetric. Make A = 0.5*(A + Atrans) symmetric for testing icc and cholesky */
-  CHKERRQ(MatTranspose(A,MAT_INITIAL_MATRIX,&Atrans));
-  CHKERRQ(MatAXPY(A,1.0,Atrans,DIFFERENT_NONZERO_PATTERN));
-  CHKERRQ(MatScale(A,0.5));
-  CHKERRQ(MatDestroy(&Atrans));
+  PetscCall(MatTranspose(A,MAT_INITIAL_MATRIX,&Atrans));
+  PetscCall(MatAXPY(A,1.0,Atrans,DIFFERENT_NONZERO_PATTERN));
+  PetscCall(MatScale(A,0.5));
+  PetscCall(MatDestroy(&Atrans));
 
   /* Test sbaij matrix */
   flg  = PETSC_FALSE;
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL, "-test_sbaij1", &flg,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL, "-test_sbaij1", &flg,NULL));
   if (flg) {
     Mat       sA;
     PetscBool issymm;
-    CHKERRQ(MatIsTranspose(A,A,0.0,&issymm));
+    PetscCall(MatIsTranspose(A,A,0.0,&issymm));
     if (issymm) {
-      CHKERRQ(MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE));
-    } else CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Warning: A is non-symmetric\n"));
-    CHKERRQ(MatConvert(A,MATSBAIJ,MAT_INITIAL_MATRIX,&sA));
-    CHKERRQ(MatDestroy(&A));
+      PetscCall(MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE));
+    } else PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Warning: A is non-symmetric\n"));
+    PetscCall(MatConvert(A,MATSBAIJ,MAT_INITIAL_MATRIX,&sA));
+    PetscCall(MatDestroy(&A));
     A    = sA;
   }
 
-  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
-  CHKERRQ(KSPSetFromOptions(ksp));
-  CHKERRQ(KSPSetOperators(ksp,A,A));
-  CHKERRQ(KSPGetPC(ksp,&pc));
-  CHKERRQ(PCSetDM(pc,(DM)da));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(KSPSetOperators(ksp,A,A));
+  PetscCall(KSPGetPC(ksp,&pc));
+  PetscCall(PCSetDM(pc,(DM)da));
 
   if (trans) {
-    CHKERRQ(KSPSolveTranspose(ksp,b,x));
+    PetscCall(KSPSolveTranspose(ksp,b,x));
   } else {
-    CHKERRQ(KSPSolve(ksp,b,x));
+    PetscCall(KSPSolve(ksp,b,x));
   }
 
   /* check final residual */
   flg  = PETSC_FALSE;
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL, "-check_final_residual", &flg,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL, "-check_final_residual", &flg,NULL));
   if (flg) {
     Vec       b1;
     PetscReal norm;
-    CHKERRQ(KSPGetSolution(ksp,&x));
-    CHKERRQ(VecDuplicate(b,&b1));
-    CHKERRQ(MatMult(A,x,b1));
-    CHKERRQ(VecAXPY(b1,-1.0,b));
-    CHKERRQ(VecNorm(b1,NORM_2,&norm));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Final residual %g\n",norm));
-    CHKERRQ(VecDestroy(&b1));
+    PetscCall(KSPGetSolution(ksp,&x));
+    PetscCall(VecDuplicate(b,&b1));
+    PetscCall(MatMult(A,x,b1));
+    PetscCall(VecAXPY(b1,-1.0,b));
+    PetscCall(VecNorm(b1,NORM_2,&norm));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Final residual %g\n",norm));
+    PetscCall(VecDestroy(&b1));
   }
 
-  CHKERRQ(KSPDestroy(&ksp));
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&b));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(DMDestroy(&da));
-  CHKERRQ(PetscFinalize());
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&b));
+  PetscCall(MatDestroy(&A));
+  PetscCall(DMDestroy(&da));
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -115,9 +115,9 @@ PetscErrorCode ComputeRHS(DM da,Vec b)
   PetscScalar    h;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0));
+  PetscCall(DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0));
   h    = 1.0/((mx-1)*(my-1)*(mz-1));
-  CHKERRQ(VecSet(b,h));
+  PetscCall(VecSet(b,h));
   PetscFunctionReturn(0);
 }
 
@@ -128,16 +128,16 @@ PetscErrorCode ComputeMatrix(DM da,Mat B)
   MatStencil     row,col;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,&dof,0,0,0,0,0));
+  PetscCall(DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,&dof,0,0,0,0,0));
   /* For simplicity, this example only works on mx=my=mz */
   PetscCheckFalse(mx != my || mx != mz,PETSC_COMM_SELF,PETSC_ERR_SUP,"This example only works with mx %D = my %D = mz %D",mx,my,mz);
 
   Hx      = 1.0 / (PetscReal)(mx-1); Hy = 1.0 / (PetscReal)(my-1); Hz = 1.0 / (PetscReal)(mz-1);
   HxHydHz = Hx*Hy/Hz; HxHzdHy = Hx*Hz/Hy; HyHzdHx = Hy*Hz/Hx;
 
-  CHKERRQ(PetscMalloc1(2*dof*dof+1,&v));
+  PetscCall(PetscMalloc1(2*dof*dof+1,&v));
   v_neighbor = v + dof*dof;
-  CHKERRQ(PetscArrayzero(v,2*dof*dof+1));
+  PetscCall(PetscArrayzero(v,2*dof*dof+1));
   k3         = 0;
   for (k1=0; k1<dof; k1++) {
     for (k2=0; k2<dof; k2++) {
@@ -151,43 +151,43 @@ PetscErrorCode ComputeMatrix(DM da,Mat B)
       k3++;
     }
   }
-  CHKERRQ(DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm));
+  PetscCall(DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm));
 
   for (k=zs; k<zs+zm; k++) {
     for (j=ys; j<ys+ym; j++) {
       for (i=xs; i<xs+xm; i++) {
         row.i = i; row.j = j; row.k = k;
         if (i==0 || j==0 || k==0 || i==mx-1 || j==my-1 || k==mz-1) { /* boundary points */
-          CHKERRQ(MatSetValuesBlockedStencil(B,1,&row,1,&row,v,INSERT_VALUES));
+          PetscCall(MatSetValuesBlockedStencil(B,1,&row,1,&row,v,INSERT_VALUES));
         } else { /* interior points */
           /* center */
           col.i = i; col.j = j; col.k = k;
-          CHKERRQ(MatSetValuesBlockedStencil(B,1,&row,1,&col,v,INSERT_VALUES));
+          PetscCall(MatSetValuesBlockedStencil(B,1,&row,1,&col,v,INSERT_VALUES));
 
           /* x neighbors */
           col.i = i-1; col.j = j; col.k = k;
-          CHKERRQ(MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES));
+          PetscCall(MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES));
           col.i = i+1; col.j = j; col.k = k;
-          CHKERRQ(MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES));
+          PetscCall(MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES));
 
           /* y neighbors */
           col.i = i; col.j = j-1; col.k = k;
-          CHKERRQ(MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES));
+          PetscCall(MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES));
           col.i = i; col.j = j+1; col.k = k;
-          CHKERRQ(MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES));
+          PetscCall(MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES));
 
           /* z neighbors */
           col.i = i; col.j = j; col.k = k-1;
-          CHKERRQ(MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES));
+          PetscCall(MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES));
           col.i = i; col.j = j; col.k = k+1;
-          CHKERRQ(MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES));
+          PetscCall(MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES));
         }
       }
     }
   }
-  CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(PetscFree(v));
+  PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(PetscFree(v));
   PetscFunctionReturn(0);
 }
 

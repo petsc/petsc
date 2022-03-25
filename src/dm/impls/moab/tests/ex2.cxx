@@ -32,26 +32,26 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->write_output      = PETSC_FALSE;
   options->interlace         = PETSC_FALSE;
   options->input_file[0]     = '\0';
-  CHKERRQ(PetscStrcpy(options->output_file,"ex2.h5m"));
+  PetscCall(PetscStrcpy(options->output_file,"ex2.h5m"));
 
-  ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMMOAB");CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsBool("-debug", "Enable debug messages", "ex2.cxx", options->debug, &options->debug, NULL));
-  CHKERRQ(PetscOptionsBool("-interlace", "Use interlaced arrangement for the field data", "ex2.cxx", options->interlace, &options->interlace, NULL));
-  CHKERRQ(PetscOptionsBool("-simplex", "Create simplices instead of tensor product elements", "ex2.cxx", options->simplex, &options->simplex, NULL));
-  CHKERRQ(PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex2.cxx", options->dim, &options->dim, NULL,1,3));
-  CHKERRQ(PetscOptionsBoundedInt("-n", "The number of elements in each dimension", "ex2.cxx", options->nele, &options->nele, NULL,1));
-  CHKERRQ(PetscOptionsString("-meshfile", "The input mesh file", "ex2.cxx", options->input_file, options->input_file, sizeof(options->input_file), NULL));
-  CHKERRQ(PetscOptionsString("-io", "Write out the mesh and solution that is defined on it (Default H5M format)", "ex2.cxx", options->output_file, options->output_file, sizeof(options->output_file), &options->write_output));
-  CHKERRQ(PetscOptionsStringArray("-fields", "The list of names of the field variables", "ex2.cxx", options->fieldnames,&options->nfields, &flg));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMMOAB");PetscCall(ierr);
+  PetscCall(PetscOptionsBool("-debug", "Enable debug messages", "ex2.cxx", options->debug, &options->debug, NULL));
+  PetscCall(PetscOptionsBool("-interlace", "Use interlaced arrangement for the field data", "ex2.cxx", options->interlace, &options->interlace, NULL));
+  PetscCall(PetscOptionsBool("-simplex", "Create simplices instead of tensor product elements", "ex2.cxx", options->simplex, &options->simplex, NULL));
+  PetscCall(PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex2.cxx", options->dim, &options->dim, NULL,1,3));
+  PetscCall(PetscOptionsBoundedInt("-n", "The number of elements in each dimension", "ex2.cxx", options->nele, &options->nele, NULL,1));
+  PetscCall(PetscOptionsString("-meshfile", "The input mesh file", "ex2.cxx", options->input_file, options->input_file, sizeof(options->input_file), NULL));
+  PetscCall(PetscOptionsString("-io", "Write out the mesh and solution that is defined on it (Default H5M format)", "ex2.cxx", options->output_file, options->output_file, sizeof(options->output_file), &options->write_output));
+  PetscCall(PetscOptionsStringArray("-fields", "The list of names of the field variables", "ex2.cxx", options->fieldnames,&options->nfields, &flg));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
-  if (options->debug) CHKERRQ(PetscPrintf(comm, "Total number of fields: %D.\n",options->nfields));
+  if (options->debug) PetscCall(PetscPrintf(comm, "Total number of fields: %D.\n",options->nfields));
   if (!flg) { /* if no field names were given by user, assign a default */
     options->nfields = 1;
-    CHKERRQ(PetscStrallocpy("TestEX2Var",&options->fieldnames[0]));
+    PetscCall(PetscStrallocpy("TestEX2Var",&options->fieldnames[0]));
   }
 
-  CHKERRQ(PetscLogEventRegister("CreateMesh",          DM_CLASSID,   &options->createMeshEvent));
+  PetscCall(PetscLogEventRegister("CreateMesh",          DM_CLASSID,   &options->createMeshEvent));
   PetscFunctionReturn(0);
 }
 
@@ -62,18 +62,18 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user)
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscLogEventBegin(user->createMeshEvent,0,0,0,0));
-  CHKERRMPI(MPI_Comm_rank(comm, &rank));
-  CHKERRQ(PetscStrlen(user->input_file, &len));
+  PetscCall(PetscLogEventBegin(user->createMeshEvent,0,0,0,0));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  PetscCall(PetscStrlen(user->input_file, &len));
   if (len) {
-    if (user->debug) CHKERRQ(PetscPrintf(comm, "Loading mesh from file: %s and creating a DM object.\n",user->input_file));
-    CHKERRQ(DMMoabLoadFromFile(comm, user->dim, 1, user->input_file, "", &user->dm));
+    if (user->debug) PetscCall(PetscPrintf(comm, "Loading mesh from file: %s and creating a DM object.\n",user->input_file));
+    PetscCall(DMMoabLoadFromFile(comm, user->dim, 1, user->input_file, "", &user->dm));
   }
   else {
     if (user->debug) {
-      CHKERRQ(PetscPrintf(comm, "Creating a %D-dimensional structured %s mesh of %Dx%Dx%D in memory and creating a DM object.\n",user->dim,(user->simplex?"simplex":"regular"),user->nele,user->nele,user->nele));
+      PetscCall(PetscPrintf(comm, "Creating a %D-dimensional structured %s mesh of %Dx%Dx%D in memory and creating a DM object.\n",user->dim,(user->simplex?"simplex":"regular"),user->nele,user->nele,user->nele));
     }
-    CHKERRQ(DMMoabCreateBoxMesh(comm, user->dim, user->simplex, NULL, user->nele, 1, &user->dm));
+    PetscCall(DMMoabCreateBoxMesh(comm, user->dim, user->simplex, NULL, user->nele, 1, &user->dm));
   }
 
   if (user->debug) {
@@ -81,9 +81,9 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user)
     for (i=0; i<user->nfields; i++)
       PetscPrintf(comm, "\t Field{%D} = %s.\n",i,user->fieldnames[i]);
   }
-  CHKERRQ(DMMoabSetFieldNames(user->dm, user->nfields, (const char**)user->fieldnames));
-  CHKERRQ(PetscObjectSetName((PetscObject)user->dm, "Structured Mesh"));
-  CHKERRQ(PetscLogEventEnd(user->createMeshEvent,0,0,0,0));
+  PetscCall(DMMoabSetFieldNames(user->dm, user->nfields, (const char**)user->fieldnames));
+  PetscCall(PetscObjectSetName((PetscObject)user->dm, "Structured Mesh"));
+  PetscCall(PetscLogEventEnd(user->createMeshEvent,0,0,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -96,43 +96,43 @@ int main(int argc, char **argv)
   MPI_Comm       comm;
   PetscInt       i;
 
-  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
-  CHKERRQ(ProcessOptions(comm, &user));
-  CHKERRQ(CreateMesh(comm, &user));
+  PetscCall(ProcessOptions(comm, &user));
+  PetscCall(CreateMesh(comm, &user));
 
   /* set block size */
-  CHKERRQ(DMMoabSetBlockSize(user.dm, (user.interlace?user.nfields:1)));
-  CHKERRQ(DMSetMatType(user.dm,MATAIJ));
+  PetscCall(DMMoabSetBlockSize(user.dm, (user.interlace?user.nfields:1)));
+  PetscCall(DMSetMatType(user.dm,MATAIJ));
 
-  CHKERRQ(DMSetFromOptions(user.dm));
+  PetscCall(DMSetFromOptions(user.dm));
 
   /* SetUp the data structures for DMMOAB */
-  CHKERRQ(DMSetUp(user.dm));
+  PetscCall(DMSetUp(user.dm));
 
-  if (user.debug) CHKERRQ(PetscPrintf(comm, "Creating a global vector defined on DM and setting random data.\n"));
-  CHKERRQ(DMCreateGlobalVector(user.dm,&solution));
-  CHKERRQ(PetscRandomCreate(comm,&rctx));
-  CHKERRQ(VecSetRandom(solution,rctx));
+  if (user.debug) PetscCall(PetscPrintf(comm, "Creating a global vector defined on DM and setting random data.\n"));
+  PetscCall(DMCreateGlobalVector(user.dm,&solution));
+  PetscCall(PetscRandomCreate(comm,&rctx));
+  PetscCall(VecSetRandom(solution,rctx));
 
   /* test if matrix allocation for the prescribed matrix type is done correctly */
-  if (user.debug) CHKERRQ(PetscPrintf(comm, "Creating a global matrix defined on DM with the right block structure.\n"));
-  CHKERRQ(DMCreateMatrix(user.dm,&system));
+  if (user.debug) PetscCall(PetscPrintf(comm, "Creating a global matrix defined on DM with the right block structure.\n"));
+  PetscCall(DMCreateMatrix(user.dm,&system));
 
   if (user.write_output) {
-    CHKERRQ(DMMoabSetGlobalFieldVector(user.dm, solution));
+    PetscCall(DMMoabSetGlobalFieldVector(user.dm, solution));
     if (user.debug) PetscPrintf(comm, "Output mesh and associated field data to file: %s.\n",user.output_file);
-    CHKERRQ(DMMoabOutput(user.dm,(const char*)user.output_file,""));
+    PetscCall(DMMoabOutput(user.dm,(const char*)user.output_file,""));
   }
 
   if (user.nfields) {
-    for (i=0; i<user.nfields; i++) CHKERRQ(PetscFree(user.fieldnames[i]));
+    for (i=0; i<user.nfields; i++) PetscCall(PetscFree(user.fieldnames[i]));
   }
-  CHKERRQ(PetscRandomDestroy(&rctx));
-  CHKERRQ(VecDestroy(&solution));
-  CHKERRQ(MatDestroy(&system));
-  CHKERRQ(DMDestroy(&user.dm));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscRandomDestroy(&rctx));
+  PetscCall(VecDestroy(&solution));
+  PetscCall(MatDestroy(&system));
+  PetscCall(DMDestroy(&user.dm));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

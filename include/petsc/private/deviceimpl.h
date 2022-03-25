@@ -234,8 +234,8 @@ static inline PetscErrorCode PetscDeviceContextSetDefaultDeviceForType_Internal(
   PetscDevice device;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscDeviceGetDefaultForType_Internal(type,&device));
-  CHKERRQ(PetscDeviceContextSetDevice(dctx,device));
+  PetscCall(PetscDeviceGetDefaultForType_Internal(type,&device));
+  PetscCall(PetscDeviceContextSetDevice(dctx,device));
   PetscFunctionReturn(0);
 }
 
@@ -248,7 +248,7 @@ static inline PetscErrorCode PetscDeviceContextGetCurrentContextAssertType_Inter
   PetscFunctionBegin;
   PetscValidPointer(dctx,1);
   PetscValidDeviceType(type,2);
-  CHKERRQ(PetscDeviceContextGetCurrentContext(dctx));
+  PetscCall(PetscDeviceContextGetCurrentContext(dctx));
   PetscAssert((*dctx)->device->type == type,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expected current global PetscDeviceContext (id %" PetscInt_FMT ") to have PetscDeviceType '%s' but has '%s' instead",(*dctx)->id,PetscDeviceTypes[type],PetscDeviceTypes[(*dctx)->device->type]);
   PetscFunctionReturn(0);
 }
@@ -259,7 +259,7 @@ static inline PetscErrorCode PetscDeviceContextGetBLASHandle_Internal(PetscDevic
   /* we do error checking here as this routine is an entry-point */
   PetscValidDeviceContext(dctx,1);
   PetscValidPointer(handle,2);
-  CHKERRQ((*dctx->ops->getblashandle)(dctx,handle));
+  PetscCall((*dctx->ops->getblashandle)(dctx,handle));
   PetscFunctionReturn(0);
 }
 
@@ -269,7 +269,7 @@ static inline PetscErrorCode PetscDeviceContextGetSOLVERHandle_Internal(PetscDev
   /* we do error checking here as this routine is an entry-point */
   PetscValidDeviceContext(dctx,1);
   PetscValidPointer(handle,2);
-  CHKERRQ((*dctx->ops->getsolverhandle)(dctx,handle));
+  PetscCall((*dctx->ops->getsolverhandle)(dctx,handle));
   PetscFunctionReturn(0);
 }
 
@@ -279,7 +279,7 @@ static inline PetscErrorCode PetscDeviceContextGetStreamHandle_Internal(PetscDev
   /* we do error checking here as this routine is an entry-point */
   PetscValidDeviceContext(dctx,1);
   PetscValidPointer(handle,2);
-  CHKERRQ((*dctx->ops->getstreamhandle)(dctx,handle));
+  PetscCall((*dctx->ops->getstreamhandle)(dctx,handle));
   PetscFunctionReturn(0);
 }
 
@@ -288,7 +288,7 @@ static inline PetscErrorCode PetscDeviceContextBeginTimer_Internal(PetscDeviceCo
   PetscFunctionBegin;
   /* we do error checking here as this routine is an entry-point */
   PetscValidDeviceContext(dctx,1);
-  CHKERRQ((*dctx->ops->begintimer)(dctx));
+  PetscCall((*dctx->ops->begintimer)(dctx));
   PetscFunctionReturn(0);
 }
 
@@ -298,7 +298,7 @@ static inline PetscErrorCode PetscDeviceContextEndTimer_Internal(PetscDeviceCont
   /* we do error checking here as this routine is an entry-point */
   PetscValidDeviceContext(dctx,1);
   PetscValidRealPointer(elapsed,2);
-  CHKERRQ((*dctx->ops->endtimer)(dctx,elapsed));
+  PetscCall((*dctx->ops->endtimer)(dctx,elapsed));
   PetscFunctionReturn(0);
 }
 #else /* PETSC_HAVE_CXX for PetscDeviceContext Internal Functions */

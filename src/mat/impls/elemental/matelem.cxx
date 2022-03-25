@@ -22,37 +22,37 @@ static PetscErrorCode MatView_Elemental(Mat A,PetscViewer viewer)
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
     PetscViewerFormat format;
-    CHKERRQ(PetscViewerGetFormat(viewer,&format));
+    PetscCall(PetscViewerGetFormat(viewer,&format));
     if (format == PETSC_VIEWER_ASCII_INFO) {
       /* call elemental viewing function */
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"Elemental run parameters:\n"));
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"  allocated entries=%d\n",(*a->emat).AllocatedMemory()));
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"  grid height=%d, grid width=%d\n",(*a->emat).Grid().Height(),(*a->emat).Grid().Width()));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"Elemental run parameters:\n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  allocated entries=%d\n",(*a->emat).AllocatedMemory()));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  grid height=%d, grid width=%d\n",(*a->emat).Grid().Height(),(*a->emat).Grid().Width()));
       if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
         /* call elemental viewing function */
-        CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject)viewer),"test matview_elemental 2\n"));
+        PetscCall(PetscPrintf(PetscObjectComm((PetscObject)viewer),"test matview_elemental 2\n"));
       }
 
     } else if (format == PETSC_VIEWER_DEFAULT) {
-      CHKERRQ(PetscViewerASCIIUseTabs(viewer,PETSC_FALSE));
+      PetscCall(PetscViewerASCIIUseTabs(viewer,PETSC_FALSE));
       El::Print( *a->emat, "Elemental matrix (cyclic ordering)");
-      CHKERRQ(PetscViewerASCIIUseTabs(viewer,PETSC_TRUE));
+      PetscCall(PetscViewerASCIIUseTabs(viewer,PETSC_TRUE));
       if (A->factortype == MAT_FACTOR_NONE) {
         Mat Adense;
-        CHKERRQ(MatConvert(A,MATDENSE,MAT_INITIAL_MATRIX,&Adense));
-        CHKERRQ(MatView(Adense,viewer));
-        CHKERRQ(MatDestroy(&Adense));
+        PetscCall(MatConvert(A,MATDENSE,MAT_INITIAL_MATRIX,&Adense));
+        PetscCall(MatView(Adense,viewer));
+        PetscCall(MatDestroy(&Adense));
       }
     } else SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Format");
   } else {
     /* convert to dense format and call MatView() */
     Mat Adense;
-    CHKERRQ(MatConvert(A,MATDENSE,MAT_INITIAL_MATRIX,&Adense));
-    CHKERRQ(MatView(Adense,viewer));
-    CHKERRQ(MatDestroy(&Adense));
+    PetscCall(MatConvert(A,MATDENSE,MAT_INITIAL_MATRIX,&Adense));
+    PetscCall(MatView(Adense,viewer));
+    PetscCall(MatDestroy(&Adense));
   }
   PetscFunctionReturn(0);
 }
@@ -68,14 +68,14 @@ static PetscErrorCode MatGetInfo_Elemental(Mat A,MatInfoType flag,MatInfo *info)
     info->nz_allocated   = (*a->emat).AllocatedMemory(); /* locally allocated */
     info->nz_used        = info->nz_allocated;
   } else if (flag == MAT_GLOBAL_MAX) {
-    //CHKERRMPI(MPIU_Allreduce(isend,irecv,5,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)matin)));
+    //PetscCallMPI(MPIU_Allreduce(isend,irecv,5,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)matin)));
     /* see MatGetInfo_MPIAIJ() for getting global info->nz_allocated! */
     //SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP," MAT_GLOBAL_MAX not written yet");
   } else if (flag == MAT_GLOBAL_SUM) {
     //SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP," MAT_GLOBAL_SUM not written yet");
     info->nz_allocated   = (*a->emat).AllocatedMemory(); /* locally allocated */
     info->nz_used        = info->nz_allocated; /* assume Elemental does accurate allocation */
-    //CHKERRMPI(MPIU_Allreduce(isend,irecv,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)A)));
+    //PetscCallMPI(MPIU_Allreduce(isend,irecv,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)A)));
     //PetscPrintf(PETSC_COMM_SELF,"    ... [%d] locally allocated %g\n",rank,info->nz_allocated);
   }
 
@@ -217,16 +217,16 @@ static PetscErrorCode MatMult_Elemental(Mat A,Vec X,Vec Y)
   PetscElemScalar       one = 1,zero = 0;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(X,(const PetscScalar **)&x));
-  CHKERRQ(VecGetArray(Y,(PetscScalar **)&y));
+  PetscCall(VecGetArrayRead(X,(const PetscScalar **)&x));
+  PetscCall(VecGetArray(Y,(PetscScalar **)&y));
   { /* Scoping so that constructor is called before pointer is returned */
     El::DistMatrix<PetscElemScalar,El::VC,El::STAR> xe, ye;
     xe.LockedAttach(A->cmap->N,1,*a->grid,0,0,x,A->cmap->n);
     ye.Attach(A->rmap->N,1,*a->grid,0,0,y,A->rmap->n);
     El::Gemv(El::NORMAL,one,*a->emat,xe,zero,ye);
   }
-  CHKERRQ(VecRestoreArrayRead(X,(const PetscScalar **)&x));
-  CHKERRQ(VecRestoreArray(Y,(PetscScalar **)&y));
+  PetscCall(VecRestoreArrayRead(X,(const PetscScalar **)&x));
+  PetscCall(VecRestoreArray(Y,(PetscScalar **)&y));
   PetscFunctionReturn(0);
 }
 
@@ -238,16 +238,16 @@ static PetscErrorCode MatMultTranspose_Elemental(Mat A,Vec X,Vec Y)
   PetscElemScalar       one = 1,zero = 0;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(X,(const PetscScalar **)&x));
-  CHKERRQ(VecGetArray(Y,(PetscScalar **)&y));
+  PetscCall(VecGetArrayRead(X,(const PetscScalar **)&x));
+  PetscCall(VecGetArray(Y,(PetscScalar **)&y));
   { /* Scoping so that constructor is called before pointer is returned */
     El::DistMatrix<PetscElemScalar,El::VC,El::STAR> xe, ye;
     xe.LockedAttach(A->rmap->N,1,*a->grid,0,0,x,A->rmap->n);
     ye.Attach(A->cmap->N,1,*a->grid,0,0,y,A->cmap->n);
     El::Gemv(El::TRANSPOSE,one,*a->emat,xe,zero,ye);
   }
-  CHKERRQ(VecRestoreArrayRead(X,(const PetscScalar **)&x));
-  CHKERRQ(VecRestoreArray(Y,(PetscScalar **)&y));
+  PetscCall(VecRestoreArrayRead(X,(const PetscScalar **)&x));
+  PetscCall(VecRestoreArray(Y,(PetscScalar **)&y));
   PetscFunctionReturn(0);
 }
 
@@ -259,17 +259,17 @@ static PetscErrorCode MatMultAdd_Elemental(Mat A,Vec X,Vec Y,Vec Z)
   PetscElemScalar       one = 1;
 
   PetscFunctionBegin;
-  if (Y != Z) CHKERRQ(VecCopy(Y,Z));
-  CHKERRQ(VecGetArrayRead(X,(const PetscScalar **)&x));
-  CHKERRQ(VecGetArray(Z,(PetscScalar **)&z));
+  if (Y != Z) PetscCall(VecCopy(Y,Z));
+  PetscCall(VecGetArrayRead(X,(const PetscScalar **)&x));
+  PetscCall(VecGetArray(Z,(PetscScalar **)&z));
   { /* Scoping so that constructor is called before pointer is returned */
     El::DistMatrix<PetscElemScalar,El::VC,El::STAR> xe, ze;
     xe.LockedAttach(A->cmap->N,1,*a->grid,0,0,x,A->cmap->n);
     ze.Attach(A->rmap->N,1,*a->grid,0,0,z,A->rmap->n);
     El::Gemv(El::NORMAL,one,*a->emat,xe,one,ze);
   }
-  CHKERRQ(VecRestoreArrayRead(X,(const PetscScalar **)&x));
-  CHKERRQ(VecRestoreArray(Z,(PetscScalar **)&z));
+  PetscCall(VecRestoreArrayRead(X,(const PetscScalar **)&x));
+  PetscCall(VecRestoreArray(Z,(PetscScalar **)&z));
   PetscFunctionReturn(0);
 }
 
@@ -281,17 +281,17 @@ static PetscErrorCode MatMultTransposeAdd_Elemental(Mat A,Vec X,Vec Y,Vec Z)
   PetscElemScalar       one = 1;
 
   PetscFunctionBegin;
-  if (Y != Z) CHKERRQ(VecCopy(Y,Z));
-  CHKERRQ(VecGetArrayRead(X,(const PetscScalar **)&x));
-  CHKERRQ(VecGetArray(Z,(PetscScalar **)&z));
+  if (Y != Z) PetscCall(VecCopy(Y,Z));
+  PetscCall(VecGetArrayRead(X,(const PetscScalar **)&x));
+  PetscCall(VecGetArray(Z,(PetscScalar **)&z));
   { /* Scoping so that constructor is called before pointer is returned */
     El::DistMatrix<PetscElemScalar,El::VC,El::STAR> xe, ze;
     xe.LockedAttach(A->rmap->N,1,*a->grid,0,0,x,A->rmap->n);
     ze.Attach(A->cmap->N,1,*a->grid,0,0,z,A->cmap->n);
     El::Gemv(El::TRANSPOSE,one,*a->emat,xe,one,ze);
   }
-  CHKERRQ(VecRestoreArrayRead(X,(const PetscScalar **)&x));
-  CHKERRQ(VecRestoreArray(Z,(PetscScalar **)&z));
+  PetscCall(VecRestoreArrayRead(X,(const PetscScalar **)&x));
+  PetscCall(VecRestoreArray(Z,(PetscScalar **)&z));
   PetscFunctionReturn(0);
 }
 
@@ -313,9 +313,9 @@ PetscErrorCode MatMatMultNumeric_Elemental(Mat A,Mat B,Mat C)
 PetscErrorCode MatMatMultSymbolic_Elemental(Mat A,Mat B,PetscReal fill,Mat Ce)
 {
   PetscFunctionBegin;
-  CHKERRQ(MatSetSizes(Ce,A->rmap->n,B->cmap->n,PETSC_DECIDE,PETSC_DECIDE));
-  CHKERRQ(MatSetType(Ce,MATELEMENTAL));
-  CHKERRQ(MatSetUp(Ce));
+  PetscCall(MatSetSizes(Ce,A->rmap->n,B->cmap->n,PETSC_DECIDE,PETSC_DECIDE));
+  PetscCall(MatSetType(Ce,MATELEMENTAL));
+  PetscCall(MatSetUp(Ce));
   Ce->ops->matmultnumeric = MatMatMultNumeric_Elemental;
   PetscFunctionReturn(0);
 }
@@ -338,9 +338,9 @@ static PetscErrorCode MatMatTransposeMultNumeric_Elemental(Mat A,Mat B,Mat C)
 static PetscErrorCode MatMatTransposeMultSymbolic_Elemental(Mat A,Mat B,PetscReal fill,Mat C)
 {
   PetscFunctionBegin;
-  CHKERRQ(MatSetSizes(C,A->rmap->n,B->rmap->n,PETSC_DECIDE,PETSC_DECIDE));
-  CHKERRQ(MatSetType(C,MATELEMENTAL));
-  CHKERRQ(MatSetUp(C));
+  PetscCall(MatSetSizes(C,A->rmap->n,B->rmap->n,PETSC_DECIDE,PETSC_DECIDE));
+  PetscCall(MatSetType(C,MATELEMENTAL));
+  PetscCall(MatSetUp(C));
   PetscFunctionReturn(0);
 }
 
@@ -368,10 +368,10 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Elemental(Mat C)
   PetscFunctionBegin;
   switch (product->type) {
   case MATPRODUCT_AB:
-    CHKERRQ(MatProductSetFromOptions_Elemental_AB(C));
+    PetscCall(MatProductSetFromOptions_Elemental_AB(C));
     break;
   case MATPRODUCT_ABt:
-    CHKERRQ(MatProductSetFromOptions_Elemental_ABt(C));
+    PetscCall(MatProductSetFromOptions_Elemental_ABt(C));
     break;
   default:
     break;
@@ -384,20 +384,20 @@ PetscErrorCode MatMatMultNumeric_Elemental_MPIDense(Mat A,Mat B,Mat C)
   Mat            Be,Ce;
 
   PetscFunctionBegin;
-  CHKERRQ(MatConvert(B,MATELEMENTAL,MAT_INITIAL_MATRIX,&Be));
-  CHKERRQ(MatMatMult(A,Be,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&Ce));
-  CHKERRQ(MatConvert(Ce,MATMPIDENSE,MAT_REUSE_MATRIX,&C));
-  CHKERRQ(MatDestroy(&Be));
-  CHKERRQ(MatDestroy(&Ce));
+  PetscCall(MatConvert(B,MATELEMENTAL,MAT_INITIAL_MATRIX,&Be));
+  PetscCall(MatMatMult(A,Be,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&Ce));
+  PetscCall(MatConvert(Ce,MATMPIDENSE,MAT_REUSE_MATRIX,&C));
+  PetscCall(MatDestroy(&Be));
+  PetscCall(MatDestroy(&Ce));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatMatMultSymbolic_Elemental_MPIDense(Mat A,Mat B,PetscReal fill,Mat C)
 {
   PetscFunctionBegin;
-  CHKERRQ(MatSetSizes(C,A->rmap->n,B->cmap->n,PETSC_DECIDE,PETSC_DECIDE));
-  CHKERRQ(MatSetType(C,MATMPIDENSE));
-  CHKERRQ(MatSetUp(C));
+  PetscCall(MatSetSizes(C,A->rmap->n,B->cmap->n,PETSC_DECIDE,PETSC_DECIDE));
+  PetscCall(MatSetType(C,MATMPIDENSE));
+  PetscCall(MatSetUp(C));
   C->ops->matmultnumeric = MatMatMultNumeric_Elemental_MPIDense;
   PetscFunctionReturn(0);
 }
@@ -416,7 +416,7 @@ PetscErrorCode MatProductSetFromOptions_Elemental_MPIDense(Mat C)
 
   PetscFunctionBegin;
   if (product->type == MATPRODUCT_AB) {
-    CHKERRQ(MatProductSetFromOptions_Elemental_MPIDense_AB(C));
+    PetscCall(MatProductSetFromOptions_Elemental_MPIDense_AB(C));
   }
   PetscFunctionReturn(0);
 }
@@ -430,8 +430,8 @@ static PetscErrorCode MatGetDiagonal_Elemental(Mat A,Vec D)
   MPI_Comm        comm;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectGetComm((PetscObject)A,&comm));
-  CHKERRQ(MatGetSize(A,&nrows,&ncols));
+  PetscCall(PetscObjectGetComm((PetscObject)A,&comm));
+  PetscCall(MatGetSize(A,&nrows,&ncols));
   nD = nrows>ncols ? ncols : nrows;
   for (i=0; i<nD; i++) {
     PetscInt erow,ecol;
@@ -442,10 +442,10 @@ static PetscErrorCode MatGetDiagonal_Elemental(Mat A,Vec D)
     RO2E(A,1,crank,cidx,&ecol);
     PetscCheckFalse(crank < 0 || cidx < 0 || ecol < 0,comm,PETSC_ERR_PLIB,"Incorrect col translation");
     v = a->emat->Get(erow,ecol);
-    CHKERRQ(VecSetValues(D,1,&i,(PetscScalar*)&v,INSERT_VALUES));
+    PetscCall(VecSetValues(D,1,&i,(PetscScalar*)&v,INSERT_VALUES));
   }
-  CHKERRQ(VecAssemblyBegin(D));
-  CHKERRQ(VecAssemblyEnd(D));
+  PetscCall(VecAssemblyBegin(D));
+  PetscCall(VecAssemblyEnd(D));
   PetscFunctionReturn(0);
 }
 
@@ -456,18 +456,18 @@ static PetscErrorCode MatDiagonalScale_Elemental(Mat X,Vec L,Vec R)
 
   PetscFunctionBegin;
   if (R) {
-    CHKERRQ(VecGetArrayRead(R,(const PetscScalar **)&d));
+    PetscCall(VecGetArrayRead(R,(const PetscScalar **)&d));
     El::DistMatrix<PetscElemScalar,El::VC,El::STAR> de;
     de.LockedAttach(X->cmap->N,1,*x->grid,0,0,d,X->cmap->n);
     El::DiagonalScale(El::RIGHT,El::NORMAL,de,*x->emat);
-    CHKERRQ(VecRestoreArrayRead(R,(const PetscScalar **)&d));
+    PetscCall(VecRestoreArrayRead(R,(const PetscScalar **)&d));
   }
   if (L) {
-    CHKERRQ(VecGetArrayRead(L,(const PetscScalar **)&d));
+    PetscCall(VecGetArrayRead(L,(const PetscScalar **)&d));
     El::DistMatrix<PetscElemScalar,El::VC,El::STAR> de;
     de.LockedAttach(X->rmap->N,1,*x->grid,0,0,d,X->rmap->n);
     El::DiagonalScale(El::LEFT,El::NORMAL,de,*x->emat);
-    CHKERRQ(VecRestoreArrayRead(L,(const PetscScalar **)&d));
+    PetscCall(VecRestoreArrayRead(L,(const PetscScalar **)&d));
   }
   PetscFunctionReturn(0);
 }
@@ -498,7 +498,7 @@ static PetscErrorCode MatAXPY_Elemental(Mat Y,PetscScalar a,Mat X,MatStructure s
 
   PetscFunctionBegin;
   El::Axpy((PetscElemScalar)a,*x->emat,*y->emat);
-  CHKERRQ(PetscObjectStateIncrease((PetscObject)Y));
+  PetscCall(PetscObjectStateIncrease((PetscObject)Y));
   PetscFunctionReturn(0);
 }
 
@@ -509,7 +509,7 @@ static PetscErrorCode MatCopy_Elemental(Mat A,Mat B,MatStructure str)
 
   PetscFunctionBegin;
   El::Copy(*a->emat,*b->emat);
-  CHKERRQ(PetscObjectStateIncrease((PetscObject)B));
+  PetscCall(PetscObjectStateIncrease((PetscObject)B));
   PetscFunctionReturn(0);
 }
 
@@ -520,11 +520,11 @@ static PetscErrorCode MatDuplicate_Elemental(Mat A,MatDuplicateOption op,Mat *B)
   Mat_Elemental  *a=(Mat_Elemental*)A->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectGetComm((PetscObject)A,&comm));
-  CHKERRQ(MatCreate(comm,&Be));
-  CHKERRQ(MatSetSizes(Be,A->rmap->n,A->cmap->n,PETSC_DECIDE,PETSC_DECIDE));
-  CHKERRQ(MatSetType(Be,MATELEMENTAL));
-  CHKERRQ(MatSetUp(Be));
+  PetscCall(PetscObjectGetComm((PetscObject)A,&comm));
+  PetscCall(MatCreate(comm,&Be));
+  PetscCall(MatSetSizes(Be,A->rmap->n,A->cmap->n,PETSC_DECIDE,PETSC_DECIDE));
+  PetscCall(MatSetType(Be,MATELEMENTAL));
+  PetscCall(MatSetUp(Be));
   *B = Be;
   if (op == MAT_COPY_VALUES) {
     Mat_Elemental *b=(Mat_Elemental*)Be->data;
@@ -541,14 +541,14 @@ static PetscErrorCode MatTranspose_Elemental(Mat A,MatReuse reuse,Mat *B)
   Mat_Elemental  *a = (Mat_Elemental*)A->data, *b;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectGetComm((PetscObject)A,&comm));
+  PetscCall(PetscObjectGetComm((PetscObject)A,&comm));
   /* Only out-of-place supported */
   PetscCheck(reuse != MAT_INPLACE_MATRIX,comm,PETSC_ERR_SUP,"Only out-of-place supported");
   if (reuse == MAT_INITIAL_MATRIX) {
-    CHKERRQ(MatCreate(comm,&Be));
-    CHKERRQ(MatSetSizes(Be,A->cmap->n,A->rmap->n,PETSC_DECIDE,PETSC_DECIDE));
-    CHKERRQ(MatSetType(Be,MATELEMENTAL));
-    CHKERRQ(MatSetUp(Be));
+    PetscCall(MatCreate(comm,&Be));
+    PetscCall(MatSetSizes(Be,A->cmap->n,A->rmap->n,PETSC_DECIDE,PETSC_DECIDE));
+    PetscCall(MatSetType(Be,MATELEMENTAL));
+    PetscCall(MatSetUp(Be));
     *B = Be;
   }
   b = (Mat_Elemental*)Be->data;
@@ -573,13 +573,13 @@ static PetscErrorCode MatHermitianTranspose_Elemental(Mat A,MatReuse reuse,Mat *
   Mat_Elemental  *a = (Mat_Elemental*)A->data, *b;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectGetComm((PetscObject)A,&comm));
+  PetscCall(PetscObjectGetComm((PetscObject)A,&comm));
   /* Only out-of-place supported */
   if (reuse == MAT_INITIAL_MATRIX) {
-    CHKERRQ(MatCreate(comm,&Be));
-    CHKERRQ(MatSetSizes(Be,A->cmap->n,A->rmap->n,PETSC_DECIDE,PETSC_DECIDE));
-    CHKERRQ(MatSetType(Be,MATELEMENTAL));
-    CHKERRQ(MatSetUp(Be));
+    PetscCall(MatCreate(comm,&Be));
+    PetscCall(MatSetSizes(Be,A->cmap->n,A->rmap->n,PETSC_DECIDE,PETSC_DECIDE));
+    PetscCall(MatSetType(Be,MATELEMENTAL));
+    PetscCall(MatSetUp(Be));
     *B = Be;
   }
   b = (Mat_Elemental*)Be->data;
@@ -595,8 +595,8 @@ static PetscErrorCode MatSolve_Elemental(Mat A,Vec B,Vec X)
   PetscInt          pivoting = a->pivoting;
 
   PetscFunctionBegin;
-  CHKERRQ(VecCopy(B,X));
-  CHKERRQ(VecGetArray(X,(PetscScalar **)&x));
+  PetscCall(VecCopy(B,X));
+  PetscCall(VecGetArray(X,(PetscScalar **)&x));
 
   El::DistMatrix<PetscElemScalar,El::VC,El::STAR> xe;
   xe.Attach(A->rmap->N,1,*a->grid,0,0,x,A->rmap->n);
@@ -620,15 +620,15 @@ static PetscErrorCode MatSolve_Elemental(Mat A,Vec B,Vec X)
   }
   El::Copy(xer,xe);
 
-  CHKERRQ(VecRestoreArray(X,(PetscScalar **)&x));
+  PetscCall(VecRestoreArray(X,(PetscScalar **)&x));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatSolveAdd_Elemental(Mat A,Vec B,Vec Y,Vec X)
 {
   PetscFunctionBegin;
-  CHKERRQ(MatSolve_Elemental(A,B,X));
-  CHKERRQ(VecAXPY(X,1,Y));
+  PetscCall(MatSolve_Elemental(A,B,X));
+  PetscCall(VecAXPY(X,1,Y));
   PetscFunctionReturn(0);
 }
 
@@ -642,10 +642,10 @@ static PetscErrorCode MatMatSolve_Elemental(Mat A,Mat B,Mat X)
   MatType        type;
 
   PetscFunctionBegin;
-  CHKERRQ(MatGetType(X,&type));
-  CHKERRQ(PetscStrcmp(type,MATELEMENTAL,&flg));
+  PetscCall(MatGetType(X,&type));
+  PetscCall(PetscStrcmp(type,MATELEMENTAL,&flg));
   if (!flg) {
-    CHKERRQ(MatConvert(B,MATELEMENTAL,MAT_INITIAL_MATRIX,&C));
+    PetscCall(MatConvert(B,MATELEMENTAL,MAT_INITIAL_MATRIX,&C));
     x = (Mat_Elemental*)C->data;
   } else {
     x = (Mat_Elemental*)X->data;
@@ -669,8 +669,8 @@ static PetscErrorCode MatMatSolve_Elemental(Mat A,Mat B,Mat X)
     break;
   }
   if (!flg) {
-    CHKERRQ(MatConvert(C,type,MAT_REUSE_MATRIX,&X));
-    CHKERRQ(MatDestroy(&C));
+    PetscCall(MatConvert(C,type,MAT_REUSE_MATRIX,&X));
+    PetscCall(MatDestroy(&C));
   }
   PetscFunctionReturn(0);
 }
@@ -691,16 +691,16 @@ static PetscErrorCode MatLUFactor_Elemental(Mat A,IS row,IS col,const MatFactorI
   A->factortype = MAT_FACTOR_LU;
   A->assembled  = PETSC_TRUE;
 
-  CHKERRQ(PetscFree(A->solvertype));
-  CHKERRQ(PetscStrallocpy(MATSOLVERELEMENTAL,&A->solvertype));
+  PetscCall(PetscFree(A->solvertype));
+  PetscCall(PetscStrallocpy(MATSOLVERELEMENTAL,&A->solvertype));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode  MatLUFactorNumeric_Elemental(Mat F,Mat A,const MatFactorInfo *info)
 {
   PetscFunctionBegin;
-  CHKERRQ(MatCopy(A,F,SAME_NONZERO_PATTERN));
-  CHKERRQ(MatLUFactor_Elemental(F,0,0,info));
+  PetscCall(MatCopy(A,F,SAME_NONZERO_PATTERN));
+  PetscCall(MatLUFactor_Elemental(F,0,0,info));
   PetscFunctionReturn(0);
 }
 
@@ -721,16 +721,16 @@ static PetscErrorCode MatCholeskyFactor_Elemental(Mat A,IS perm,const MatFactorI
   A->factortype = MAT_FACTOR_CHOLESKY;
   A->assembled  = PETSC_TRUE;
 
-  CHKERRQ(PetscFree(A->solvertype));
-  CHKERRQ(PetscStrallocpy(MATSOLVERELEMENTAL,&A->solvertype));
+  PetscCall(PetscFree(A->solvertype));
+  PetscCall(PetscStrallocpy(MATSOLVERELEMENTAL,&A->solvertype));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatCholeskyFactorNumeric_Elemental(Mat F,Mat A,const MatFactorInfo *info)
 {
   PetscFunctionBegin;
-  CHKERRQ(MatCopy(A,F,SAME_NONZERO_PATTERN));
-  CHKERRQ(MatCholeskyFactor_Elemental(F,0,info));
+  PetscCall(MatCopy(A,F,SAME_NONZERO_PATTERN));
+  PetscCall(MatCholeskyFactor_Elemental(F,0,info));
   PetscFunctionReturn(0);
 }
 
@@ -754,16 +754,16 @@ static PetscErrorCode MatGetFactor_elemental_elemental(Mat A,MatFactorType ftype
 
   PetscFunctionBegin;
   /* Create the factorization matrix */
-  CHKERRQ(MatCreate(PetscObjectComm((PetscObject)A),&B));
-  CHKERRQ(MatSetSizes(B,A->rmap->n,A->cmap->n,PETSC_DECIDE,PETSC_DECIDE));
-  CHKERRQ(MatSetType(B,MATELEMENTAL));
-  CHKERRQ(MatSetUp(B));
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)A),&B));
+  PetscCall(MatSetSizes(B,A->rmap->n,A->cmap->n,PETSC_DECIDE,PETSC_DECIDE));
+  PetscCall(MatSetType(B,MATELEMENTAL));
+  PetscCall(MatSetUp(B));
   B->factortype = ftype;
   B->trivialsymbolic = PETSC_TRUE;
-  CHKERRQ(PetscFree(B->solvertype));
-  CHKERRQ(PetscStrallocpy(MATSOLVERELEMENTAL,&B->solvertype));
+  PetscCall(PetscFree(B->solvertype));
+  PetscCall(PetscStrallocpy(MATSOLVERELEMENTAL,&B->solvertype));
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_elemental_elemental));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_elemental_elemental));
   *F            = B;
   PetscFunctionReturn(0);
 }
@@ -771,8 +771,8 @@ static PetscErrorCode MatGetFactor_elemental_elemental(Mat A,MatFactorType ftype
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Elemental(void)
 {
   PetscFunctionBegin;
-  CHKERRQ(MatSolverTypeRegister(MATSOLVERELEMENTAL,MATELEMENTAL,        MAT_FACTOR_LU,MatGetFactor_elemental_elemental));
-  CHKERRQ(MatSolverTypeRegister(MATSOLVERELEMENTAL,MATELEMENTAL,        MAT_FACTOR_CHOLESKY,MatGetFactor_elemental_elemental));
+  PetscCall(MatSolverTypeRegister(MATSOLVERELEMENTAL,MATELEMENTAL,        MAT_FACTOR_LU,MatGetFactor_elemental_elemental));
+  PetscCall(MatSolverTypeRegister(MATSOLVERELEMENTAL,MATELEMENTAL,        MAT_FACTOR_CHOLESKY,MatGetFactor_elemental_elemental));
   PetscFunctionReturn(0);
 }
 
@@ -816,25 +816,25 @@ static PetscErrorCode MatGetOwnershipIS_Elemental(Mat A,IS *rows,IS *cols)
     m = a->emat->LocalHeight();
     shift = a->emat->ColShift();
     stride = a->emat->ColStride();
-    CHKERRQ(PetscMalloc1(m,&idx));
+    PetscCall(PetscMalloc1(m,&idx));
     for (i=0; i<m; i++) {
       PetscInt rank,offset;
       E2RO(A,0,shift+i*stride,&rank,&offset);
       RO2P(A,0,rank,offset,&idx[i]);
     }
-    CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,m,idx,PETSC_OWN_POINTER,rows));
+    PetscCall(ISCreateGeneral(PETSC_COMM_SELF,m,idx,PETSC_OWN_POINTER,rows));
   }
   if (cols) {
     m = a->emat->LocalWidth();
     shift = a->emat->RowShift();
     stride = a->emat->RowStride();
-    CHKERRQ(PetscMalloc1(m,&idx));
+    PetscCall(PetscMalloc1(m,&idx));
     for (i=0; i<m; i++) {
       PetscInt rank,offset;
       E2RO(A,1,shift+i*stride,&rank,&offset);
       RO2P(A,1,rank,offset,&idx[i]);
     }
-    CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,m,idx,PETSC_OWN_POINTER,cols));
+    PetscCall(ISCreateGeneral(PETSC_COMM_SELF,m,idx,PETSC_OWN_POINTER,cols));
   }
   PetscFunctionReturn(0);
 }
@@ -851,23 +851,23 @@ static PetscErrorCode MatConvert_Elemental_Dense(Mat A,MatType newtype,MatReuse 
   const El::Grid     &grid = a->emat->Grid();
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectGetComm((PetscObject)A,&comm));
+  PetscCall(PetscObjectGetComm((PetscObject)A,&comm));
 
   if (reuse == MAT_REUSE_MATRIX) {
     Bmpi = *B;
   } else {
-    CHKERRQ(MatCreate(comm,&Bmpi));
-    CHKERRQ(MatSetSizes(Bmpi,A->rmap->n,A->cmap->n,PETSC_DECIDE,PETSC_DECIDE));
-    CHKERRQ(MatSetType(Bmpi,MATDENSE));
-    CHKERRQ(MatSetUp(Bmpi));
+    PetscCall(MatCreate(comm,&Bmpi));
+    PetscCall(MatSetSizes(Bmpi,A->rmap->n,A->cmap->n,PETSC_DECIDE,PETSC_DECIDE));
+    PetscCall(MatSetType(Bmpi,MATDENSE));
+    PetscCall(MatSetUp(Bmpi));
   }
 
   /* Get local entries of A */
-  CHKERRQ(MatGetOwnershipIS(A,&isrows,&iscols));
-  CHKERRQ(ISGetLocalSize(isrows,&nrows));
-  CHKERRQ(ISGetIndices(isrows,&rows));
-  CHKERRQ(ISGetLocalSize(iscols,&ncols));
-  CHKERRQ(ISGetIndices(iscols,&cols));
+  PetscCall(MatGetOwnershipIS(A,&isrows,&iscols));
+  PetscCall(ISGetLocalSize(isrows,&nrows));
+  PetscCall(ISGetIndices(isrows,&rows));
+  PetscCall(ISGetLocalSize(iscols,&ncols));
+  PetscCall(ISGetIndices(iscols,&cols));
 
   if (a->roworiented) {
     for (i=0; i<nrows; i++) {
@@ -882,7 +882,7 @@ static PetscErrorCode MatConvert_Elemental_Dense(Mat A,MatType newtype,MatReuse 
         elrow = erow / grid.MCSize(); /* Elemental local row index */
         elcol = ecol / grid.MRSize(); /* Elemental local column index */
         v = a->emat->GetLocal(elrow,elcol);
-        CHKERRQ(MatSetValues(Bmpi,1,&rows[i],1,&cols[j],(PetscScalar *)&v,INSERT_VALUES));
+        PetscCall(MatSetValues(Bmpi,1,&rows[i],1,&cols[j],(PetscScalar *)&v,INSERT_VALUES));
       }
     }
   } else { /* column-oriented */
@@ -898,19 +898,19 @@ static PetscErrorCode MatConvert_Elemental_Dense(Mat A,MatType newtype,MatReuse 
         elrow = erow / grid.MCSize(); /* Elemental local row index */
         elcol = ecol / grid.MRSize(); /* Elemental local column index */
         v = a->emat->GetLocal(elrow,elcol);
-        CHKERRQ(MatSetValues(Bmpi,1,&rows[i],1,&cols[j],(PetscScalar *)&v,INSERT_VALUES));
+        PetscCall(MatSetValues(Bmpi,1,&rows[i],1,&cols[j],(PetscScalar *)&v,INSERT_VALUES));
       }
     }
   }
-  CHKERRQ(MatAssemblyBegin(Bmpi,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(Bmpi,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(Bmpi,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(Bmpi,MAT_FINAL_ASSEMBLY));
   if (reuse == MAT_INPLACE_MATRIX) {
-    CHKERRQ(MatHeaderReplace(A,&Bmpi));
+    PetscCall(MatHeaderReplace(A,&Bmpi));
   } else {
     *B = Bmpi;
   }
-  CHKERRQ(ISDestroy(&isrows));
-  CHKERRQ(ISDestroy(&iscols));
+  PetscCall(ISDestroy(&isrows));
+  PetscCall(ISDestroy(&iscols));
   PetscFunctionReturn(0);
 }
 
@@ -924,24 +924,24 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_Elemental(Mat A, MatType newtype,M
   PetscFunctionBegin;
   if (reuse == MAT_REUSE_MATRIX) {
     mat_elemental = *newmat;
-    CHKERRQ(MatZeroEntries(mat_elemental));
+    PetscCall(MatZeroEntries(mat_elemental));
   } else {
-    CHKERRQ(MatCreate(PetscObjectComm((PetscObject)A), &mat_elemental));
-    CHKERRQ(MatSetSizes(mat_elemental,PETSC_DECIDE,PETSC_DECIDE,M,N));
-    CHKERRQ(MatSetType(mat_elemental,MATELEMENTAL));
-    CHKERRQ(MatSetUp(mat_elemental));
+    PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &mat_elemental));
+    PetscCall(MatSetSizes(mat_elemental,PETSC_DECIDE,PETSC_DECIDE,M,N));
+    PetscCall(MatSetType(mat_elemental,MATELEMENTAL));
+    PetscCall(MatSetUp(mat_elemental));
   }
   for (row=0; row<M; row++) {
-    CHKERRQ(MatGetRow(A,row,&ncols,&cols,&vals));
+    PetscCall(MatGetRow(A,row,&ncols,&cols,&vals));
     /* PETSc-Elemental interface uses axpy for setting off-processor entries, only ADD_VALUES is allowed */
-    CHKERRQ(MatSetValues(mat_elemental,1,&row,ncols,cols,vals,ADD_VALUES));
-    CHKERRQ(MatRestoreRow(A,row,&ncols,&cols,&vals));
+    PetscCall(MatSetValues(mat_elemental,1,&row,ncols,cols,vals,ADD_VALUES));
+    PetscCall(MatRestoreRow(A,row,&ncols,&cols,&vals));
   }
-  CHKERRQ(MatAssemblyBegin(mat_elemental, MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(mat_elemental, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(mat_elemental, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(mat_elemental, MAT_FINAL_ASSEMBLY));
 
   if (reuse == MAT_INPLACE_MATRIX) {
-    CHKERRQ(MatHeaderReplace(A,&mat_elemental));
+    PetscCall(MatHeaderReplace(A,&mat_elemental));
   } else {
     *newmat = mat_elemental;
   }
@@ -958,26 +958,26 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_Elemental(Mat A, MatType newtype,M
   PetscFunctionBegin;
   if (reuse == MAT_REUSE_MATRIX) {
     mat_elemental = *newmat;
-    CHKERRQ(MatZeroEntries(mat_elemental));
+    PetscCall(MatZeroEntries(mat_elemental));
   } else {
-    CHKERRQ(MatCreate(PetscObjectComm((PetscObject)A), &mat_elemental));
-    CHKERRQ(MatSetSizes(mat_elemental,PETSC_DECIDE,PETSC_DECIDE,A->rmap->N,A->cmap->N));
-    CHKERRQ(MatSetType(mat_elemental,MATELEMENTAL));
-    CHKERRQ(MatSetUp(mat_elemental));
+    PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &mat_elemental));
+    PetscCall(MatSetSizes(mat_elemental,PETSC_DECIDE,PETSC_DECIDE,A->rmap->N,A->cmap->N));
+    PetscCall(MatSetType(mat_elemental,MATELEMENTAL));
+    PetscCall(MatSetUp(mat_elemental));
   }
   for (row=rstart; row<rend; row++) {
-    CHKERRQ(MatGetRow(A,row,&ncols,&cols,&vals));
+    PetscCall(MatGetRow(A,row,&ncols,&cols,&vals));
     for (j=0; j<ncols; j++) {
       /* PETSc-Elemental interface uses axpy for setting off-processor entries, only ADD_VALUES is allowed */
-      CHKERRQ(MatSetValues(mat_elemental,1,&row,1,&cols[j],&vals[j],ADD_VALUES));
+      PetscCall(MatSetValues(mat_elemental,1,&row,1,&cols[j],&vals[j],ADD_VALUES));
     }
-    CHKERRQ(MatRestoreRow(A,row,&ncols,&cols,&vals));
+    PetscCall(MatRestoreRow(A,row,&ncols,&cols,&vals));
   }
-  CHKERRQ(MatAssemblyBegin(mat_elemental, MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(mat_elemental, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(mat_elemental, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(mat_elemental, MAT_FINAL_ASSEMBLY));
 
   if (reuse == MAT_INPLACE_MATRIX) {
-    CHKERRQ(MatHeaderReplace(A,&mat_elemental));
+    PetscCall(MatHeaderReplace(A,&mat_elemental));
   } else {
     *newmat = mat_elemental;
   }
@@ -994,32 +994,32 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_Elemental(Mat A, MatType newtype
   PetscFunctionBegin;
   if (reuse == MAT_REUSE_MATRIX) {
     mat_elemental = *newmat;
-    CHKERRQ(MatZeroEntries(mat_elemental));
+    PetscCall(MatZeroEntries(mat_elemental));
   } else {
-    CHKERRQ(MatCreate(PetscObjectComm((PetscObject)A), &mat_elemental));
-    CHKERRQ(MatSetSizes(mat_elemental,PETSC_DECIDE,PETSC_DECIDE,M,N));
-    CHKERRQ(MatSetType(mat_elemental,MATELEMENTAL));
-    CHKERRQ(MatSetUp(mat_elemental));
+    PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &mat_elemental));
+    PetscCall(MatSetSizes(mat_elemental,PETSC_DECIDE,PETSC_DECIDE,M,N));
+    PetscCall(MatSetType(mat_elemental,MATELEMENTAL));
+    PetscCall(MatSetUp(mat_elemental));
   }
-  CHKERRQ(MatGetRowUpperTriangular(A));
+  PetscCall(MatGetRowUpperTriangular(A));
   for (row=0; row<M; row++) {
-    CHKERRQ(MatGetRow(A,row,&ncols,&cols,&vals));
+    PetscCall(MatGetRow(A,row,&ncols,&cols,&vals));
     /* PETSc-Elemental interface uses axpy for setting off-processor entries, only ADD_VALUES is allowed */
-    CHKERRQ(MatSetValues(mat_elemental,1,&row,ncols,cols,vals,ADD_VALUES));
+    PetscCall(MatSetValues(mat_elemental,1,&row,ncols,cols,vals,ADD_VALUES));
     for (j=0; j<ncols; j++) { /* lower triangular part */
       PetscScalar v;
       if (cols[j] == row) continue;
       v    = A->hermitian ? PetscConj(vals[j]) : vals[j];
-      CHKERRQ(MatSetValues(mat_elemental,1,&cols[j],1,&row,&v,ADD_VALUES));
+      PetscCall(MatSetValues(mat_elemental,1,&cols[j],1,&row,&v,ADD_VALUES));
     }
-    CHKERRQ(MatRestoreRow(A,row,&ncols,&cols,&vals));
+    PetscCall(MatRestoreRow(A,row,&ncols,&cols,&vals));
   }
-  CHKERRQ(MatRestoreRowUpperTriangular(A));
-  CHKERRQ(MatAssemblyBegin(mat_elemental, MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(mat_elemental, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatRestoreRowUpperTriangular(A));
+  PetscCall(MatAssemblyBegin(mat_elemental, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(mat_elemental, MAT_FINAL_ASSEMBLY));
 
   if (reuse == MAT_INPLACE_MATRIX) {
-    CHKERRQ(MatHeaderReplace(A,&mat_elemental));
+    PetscCall(MatHeaderReplace(A,&mat_elemental));
   } else {
     *newmat = mat_elemental;
   }
@@ -1036,32 +1036,32 @@ PETSC_INTERN PetscErrorCode MatConvert_MPISBAIJ_Elemental(Mat A, MatType newtype
   PetscFunctionBegin;
   if (reuse == MAT_REUSE_MATRIX) {
     mat_elemental = *newmat;
-    CHKERRQ(MatZeroEntries(mat_elemental));
+    PetscCall(MatZeroEntries(mat_elemental));
   } else {
-    CHKERRQ(MatCreate(PetscObjectComm((PetscObject)A), &mat_elemental));
-    CHKERRQ(MatSetSizes(mat_elemental,PETSC_DECIDE,PETSC_DECIDE,M,N));
-    CHKERRQ(MatSetType(mat_elemental,MATELEMENTAL));
-    CHKERRQ(MatSetUp(mat_elemental));
+    PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &mat_elemental));
+    PetscCall(MatSetSizes(mat_elemental,PETSC_DECIDE,PETSC_DECIDE,M,N));
+    PetscCall(MatSetType(mat_elemental,MATELEMENTAL));
+    PetscCall(MatSetUp(mat_elemental));
   }
-  CHKERRQ(MatGetRowUpperTriangular(A));
+  PetscCall(MatGetRowUpperTriangular(A));
   for (row=rstart; row<rend; row++) {
-    CHKERRQ(MatGetRow(A,row,&ncols,&cols,&vals));
+    PetscCall(MatGetRow(A,row,&ncols,&cols,&vals));
     /* PETSc-Elemental interface uses axpy for setting off-processor entries, only ADD_VALUES is allowed */
-    CHKERRQ(MatSetValues(mat_elemental,1,&row,ncols,cols,vals,ADD_VALUES));
+    PetscCall(MatSetValues(mat_elemental,1,&row,ncols,cols,vals,ADD_VALUES));
     for (j=0; j<ncols; j++) { /* lower triangular part */
       PetscScalar v;
       if (cols[j] == row) continue;
       v    = A->hermitian ? PetscConj(vals[j]) : vals[j];
-      CHKERRQ(MatSetValues(mat_elemental,1,&cols[j],1,&row,&v,ADD_VALUES));
+      PetscCall(MatSetValues(mat_elemental,1,&cols[j],1,&row,&v,ADD_VALUES));
     }
-    CHKERRQ(MatRestoreRow(A,row,&ncols,&cols,&vals));
+    PetscCall(MatRestoreRow(A,row,&ncols,&cols,&vals));
   }
-  CHKERRQ(MatRestoreRowUpperTriangular(A));
-  CHKERRQ(MatAssemblyBegin(mat_elemental, MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(mat_elemental, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatRestoreRowUpperTriangular(A));
+  PetscCall(MatAssemblyBegin(mat_elemental, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(mat_elemental, MAT_FINAL_ASSEMBLY));
 
   if (reuse == MAT_INPLACE_MATRIX) {
-    CHKERRQ(MatHeaderReplace(A,&mat_elemental));
+    PetscCall(MatHeaderReplace(A,&mat_elemental));
   } else {
     *newmat = mat_elemental;
   }
@@ -1081,18 +1081,18 @@ static PetscErrorCode MatDestroy_Elemental(Mat A)
   delete a->Q;
 
   El::mpi::Comm cxxcomm(PetscObjectComm((PetscObject)A));
-  CHKERRQ(PetscCommDuplicate(cxxcomm.comm,&icomm,NULL));
-  CHKERRMPI(MPI_Comm_get_attr(icomm,Petsc_Elemental_keyval,(void**)&commgrid,(int*)&flg));
+  PetscCall(PetscCommDuplicate(cxxcomm.comm,&icomm,NULL));
+  PetscCallMPI(MPI_Comm_get_attr(icomm,Petsc_Elemental_keyval,(void**)&commgrid,(int*)&flg));
   if (--commgrid->grid_refct == 0) {
     delete commgrid->grid;
-    CHKERRQ(PetscFree(commgrid));
-    CHKERRMPI(MPI_Comm_free_keyval(&Petsc_Elemental_keyval));
+    PetscCall(PetscFree(commgrid));
+    PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Elemental_keyval));
   }
-  CHKERRQ(PetscCommDestroy(&icomm));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)A,"MatGetOwnershipIS_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverType_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_elemental_mpidense_C",NULL));
-  CHKERRQ(PetscFree(A->data));
+  PetscCall(PetscCommDestroy(&icomm));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatGetOwnershipIS_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_elemental_mpidense_C",NULL));
+  PetscCall(PetscFree(A->data));
   PetscFunctionReturn(0);
 }
 
@@ -1104,27 +1104,27 @@ PetscErrorCode MatSetUp_Elemental(Mat A)
   PetscInt       n;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscLayoutSetUp(A->rmap));
-  CHKERRQ(PetscLayoutSetUp(A->cmap));
+  PetscCall(PetscLayoutSetUp(A->rmap));
+  PetscCall(PetscLayoutSetUp(A->cmap));
 
   /* Check if local row and column sizes are equally distributed.
      Jed: Elemental uses "element" cyclic ordering so the sizes need to match that
      exactly.  The strategy in MatElemental is for PETSc to implicitly permute to block ordering (like would be returned by
      PetscSplitOwnership(comm,&n,&N), at which point Elemental matrices can act on PETSc vectors without redistributing the vectors. */
-  CHKERRQ(PetscObjectGetComm((PetscObject)A,&comm));
+  PetscCall(PetscObjectGetComm((PetscObject)A,&comm));
   n = PETSC_DECIDE;
-  CHKERRQ(PetscSplitOwnership(comm,&n,&A->rmap->N));
+  PetscCall(PetscSplitOwnership(comm,&n,&A->rmap->N));
   PetscCheck(n == A->rmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local row size %" PetscInt_FMT " of ELEMENTAL matrix must be equally distributed",A->rmap->n);
 
   n = PETSC_DECIDE;
-  CHKERRQ(PetscSplitOwnership(comm,&n,&A->cmap->N));
+  PetscCall(PetscSplitOwnership(comm,&n,&A->cmap->N));
   PetscCheck(n == A->cmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local column size %" PetscInt_FMT " of ELEMENTAL matrix must be equally distributed",A->cmap->n);
 
   a->emat->Resize(A->rmap->N,A->cmap->N);
   El::Zero(*a->emat);
 
-  CHKERRMPI(MPI_Comm_size(A->rmap->comm,&rsize));
-  CHKERRMPI(MPI_Comm_size(A->cmap->comm,&csize));
+  PetscCallMPI(MPI_Comm_size(A->rmap->comm,&rsize));
+  PetscCallMPI(MPI_Comm_size(A->cmap->comm,&csize));
   PetscCheck(csize == rsize,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"Cannot use row and column communicators of different sizes");
   a->commsize = rsize;
   a->mr[0] = A->rmap->N % rsize; if (!a->mr[0]) a->mr[0] = rsize;
@@ -1158,13 +1158,13 @@ PetscErrorCode MatLoad_Elemental(Mat newMat, PetscViewer viewer)
   MPI_Comm       comm;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectGetComm((PetscObject)newMat,&comm));
-  CHKERRQ(MatCreate(comm,&Adense));
-  CHKERRQ(MatSetType(Adense,MATDENSE));
-  CHKERRQ(MatLoad(Adense,viewer));
-  CHKERRQ(MatConvert(Adense, MATELEMENTAL, MAT_INITIAL_MATRIX,&Ae));
-  CHKERRQ(MatDestroy(&Adense));
-  CHKERRQ(MatHeaderReplace(newMat,&Ae));
+  PetscCall(PetscObjectGetComm((PetscObject)newMat,&comm));
+  PetscCall(MatCreate(comm,&Adense));
+  PetscCall(MatSetType(Adense,MATDENSE));
+  PetscCall(MatLoad(Adense,viewer));
+  PetscCall(MatConvert(Adense, MATELEMENTAL, MAT_INITIAL_MATRIX,&Ae));
+  PetscCall(MatDestroy(&Adense));
+  PetscCall(MatHeaderReplace(newMat,&Ae));
   PetscFunctionReturn(0);
 }
 
@@ -1345,10 +1345,10 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
   PetscInt           optv1;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps)));
+  PetscCall(PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps)));
   A->insertmode = NOT_SET_VALUES;
 
-  CHKERRQ(PetscNewLog(A,&a));
+  PetscCall(PetscNewLog(A,&a));
   A->data = (void*)a;
 
   /* Set up the elemental matrix */
@@ -1356,19 +1356,19 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
 
   /* Grid needs to be shared between multiple Mats on the same communicator, implement by attribute caching on the MPI_Comm */
   if (Petsc_Elemental_keyval == MPI_KEYVAL_INVALID) {
-    CHKERRMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,MPI_COMM_NULL_DELETE_FN,&Petsc_Elemental_keyval,(void*)0));
-    CHKERRQ(PetscCitationsRegister(ElementalCitation,&ElementalCite));
+    PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,MPI_COMM_NULL_DELETE_FN,&Petsc_Elemental_keyval,(void*)0));
+    PetscCall(PetscCitationsRegister(ElementalCitation,&ElementalCite));
   }
-  CHKERRQ(PetscCommDuplicate(cxxcomm.comm,&icomm,NULL));
-  CHKERRMPI(MPI_Comm_get_attr(icomm,Petsc_Elemental_keyval,(void**)&commgrid,(int*)&flg));
+  PetscCall(PetscCommDuplicate(cxxcomm.comm,&icomm,NULL));
+  PetscCallMPI(MPI_Comm_get_attr(icomm,Petsc_Elemental_keyval,(void**)&commgrid,(int*)&flg));
   if (!flg) {
     PetscErrorCode ierr;
 
-    CHKERRQ(PetscNewLog(A,&commgrid));
+    PetscCall(PetscNewLog(A,&commgrid));
 
-    ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"Elemental Options","Mat");CHKERRQ(ierr);
+    ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"Elemental Options","Mat");PetscCall(ierr);
     /* displayed default grid sizes (CommSize,1) are set by us arbitrarily until El::Grid() is called */
-    CHKERRQ(PetscOptionsInt("-mat_elemental_grid_height","Grid Height","None",El::mpi::Size(cxxcomm),&optv1,&flg1));
+    PetscCall(PetscOptionsInt("-mat_elemental_grid_height","Grid Height","None",El::mpi::Size(cxxcomm),&optv1,&flg1));
     if (flg1) {
       PetscCheckFalse(El::mpi::Size(cxxcomm) % optv1,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"Grid Height %" PetscInt_FMT " must evenly divide CommSize %" PetscInt_FMT,optv1,(PetscInt)El::mpi::Size(cxxcomm));
       commgrid->grid = new El::Grid(cxxcomm,optv1); /* use user-provided grid height */
@@ -1377,22 +1377,22 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
       /* printf("new commgrid->grid = %p\n",commgrid->grid);  -- memory leak revealed by valgrind? */
     }
     commgrid->grid_refct = 1;
-    CHKERRMPI(MPI_Comm_set_attr(icomm,Petsc_Elemental_keyval,(void*)commgrid));
+    PetscCallMPI(MPI_Comm_set_attr(icomm,Petsc_Elemental_keyval,(void*)commgrid));
 
     a->pivoting    = 1;
-    CHKERRQ(PetscOptionsInt("-mat_elemental_pivoting","Pivoting","None",a->pivoting,&a->pivoting,NULL));
+    PetscCall(PetscOptionsInt("-mat_elemental_pivoting","Pivoting","None",a->pivoting,&a->pivoting,NULL));
 
-    ierr = PetscOptionsEnd();CHKERRQ(ierr);
+    ierr = PetscOptionsEnd();PetscCall(ierr);
   } else {
     commgrid->grid_refct++;
   }
-  CHKERRQ(PetscCommDestroy(&icomm));
+  PetscCall(PetscCommDestroy(&icomm));
   a->grid        = commgrid->grid;
   a->emat        = new El::DistMatrix<PetscElemScalar>(*a->grid);
   a->roworiented = PETSC_TRUE;
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)A,"MatGetOwnershipIS_C",MatGetOwnershipIS_Elemental));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_elemental_mpidense_C",MatProductSetFromOptions_Elemental_MPIDense));
-  CHKERRQ(PetscObjectChangeTypeName((PetscObject)A,MATELEMENTAL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatGetOwnershipIS_C",MatGetOwnershipIS_Elemental));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_elemental_mpidense_C",MatProductSetFromOptions_Elemental_MPIDense));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)A,MATELEMENTAL));
   PetscFunctionReturn(0);
 }

@@ -47,11 +47,11 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
     options->v = 0.0;
     options->diffusion = 0.0;
 
-    ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
-    CHKERRQ(PetscOptionsReal("-u", "The x component of the convective coefficient", "advection_DMPLEX.c", options->u, &options->u, NULL));
-    CHKERRQ(PetscOptionsReal("-v", "The y component of the convective coefficient", "advection_DMPLEX.c", options->v, &options->v, NULL));
-    CHKERRQ(PetscOptionsScalar("-diffus", "The diffusive coefficient", "advection_DMPLEX.c", options->diffusion, &options->diffusion, NULL));
-    ierr = PetscOptionsEnd();CHKERRQ(ierr);
+    ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");PetscCall(ierr);
+    PetscCall(PetscOptionsReal("-u", "The x component of the convective coefficient", "advection_DMPLEX.c", options->u, &options->u, NULL));
+    PetscCall(PetscOptionsReal("-v", "The y component of the convective coefficient", "advection_DMPLEX.c", options->v, &options->v, NULL));
+    PetscCall(PetscOptionsScalar("-diffus", "The diffusive coefficient", "advection_DMPLEX.c", options->diffusion, &options->diffusion, NULL));
+    ierr = PetscOptionsEnd();PetscCall(ierr);
     PetscFunctionReturn(0);
 }
 
@@ -62,14 +62,14 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
     PetscFunctionBeginUser;
-    CHKERRQ(DMCreate(comm, dm));
-    CHKERRQ(DMSetType(*dm, DMPLEX));
-    CHKERRQ(DMSetFromOptions(*dm));
-    CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
+    PetscCall(DMCreate(comm, dm));
+    PetscCall(DMSetType(*dm, DMPLEX));
+    PetscCall(DMSetFromOptions(*dm));
+    PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
     {
       DMLabel label;
-      CHKERRQ(DMGetLabel(*dm, "boundary", &label));
-      CHKERRQ(DMPlexLabelComplete(*dm, label));
+      PetscCall(DMGetLabel(*dm, "boundary", &label));
+      PetscCall(DMPlexLabelComplete(*dm, label));
     }
     PetscFunctionReturn(0);
 }
@@ -87,18 +87,18 @@ PetscErrorCode FormInitialSolution(DM da, Vec U)
 
     PetscFunctionBeginUser;
     /* Get pointers to vector data */
-    CHKERRQ(VecGetArray(U, &u));
+    PetscCall(VecGetArray(U, &u));
     /* Get local grid boundaries */
-    CHKERRQ(DMPlexGetHeightStratum(da, 0, &cStart, &cEnd));
+    PetscCall(DMPlexGetHeightStratum(da, 0, &cStart, &cEnd));
     /* Assigning the values at the cell centers based on x and y directions */
     for (cell = cStart; cell < cEnd; cell++) {
-        CHKERRQ(DMPlexComputeCellGeometryFVM(da, cell, &cellvol, centroid, normal));
+        PetscCall(DMPlexComputeCellGeometryFVM(da, cell, &cellvol, centroid, normal));
         if (centroid[0] > 0.9 && centroid[0] < 0.95) {
             if (centroid[1] > 0.9 && centroid[1] < 0.95) u[cell] = 2.0;
         }
         else u[cell] = 0;
     }
-    CHKERRQ(VecRestoreArray(U, &u));
+    PetscCall(VecRestoreArray(U, &u));
     PetscFunctionReturn(0);
 }
 
@@ -109,9 +109,9 @@ PetscErrorCode MyTSMonitor(TS ts, PetscInt step, PetscReal ptime, Vec v, void *c
 
     PetscFunctionBeginUser;
     if (step < 0) PetscFunctionReturn(0); /* step of -1 indicates an interpolated solution */
-    CHKERRQ(VecNorm(v, NORM_2, &norm));
-    CHKERRQ(PetscObjectGetComm((PetscObject) ts, &comm));
-    CHKERRQ(PetscPrintf(comm, "timestep %D time %g norm %g\n", step, (double) ptime, (double) norm));
+    PetscCall(VecNorm(v, NORM_2, &norm));
+    PetscCall(PetscObjectGetComm((PetscObject) ts, &comm));
+    PetscCall(PetscPrintf(comm, "timestep %D time %g norm %g\n", step, (double) ptime, (double) norm));
     PetscFunctionReturn(0);
 }
 
@@ -127,7 +127,7 @@ PetscErrorCode MyTSMonitor(TS ts, PetscInt step, PetscReal ptime, Vec v, void *c
 PetscErrorCode MySNESMonitor(SNES snes, PetscInt its, PetscReal fnorm, PetscViewerAndFormat *vf)
 {
     PetscFunctionBeginUser;
-    CHKERRQ(SNESMonitorDefaultShort(snes, its, fnorm, vf));
+    PetscCall(SNESMonitorDefaultShort(snes, its, fnorm, vf));
     PetscFunctionReturn(0);
 }
 
@@ -164,30 +164,30 @@ PetscErrorCode FormFunction(TS ts, PetscReal ftime, Vec X, Vec F, void *ctx)
 
     /* Get the local vector from the DM object. */
     PetscFunctionBeginUser;
-    CHKERRQ(TSGetDM(ts, &da));
-    CHKERRQ(DMGetLocalVector(da, &localX));
+    PetscCall(TSGetDM(ts, &da));
+    PetscCall(DMGetLocalVector(da, &localX));
 
     /* Scatter ghost points to local vector,using the 2-step process
        DMGlobalToLocalBegin(),DMGlobalToLocalEnd(). */
-    CHKERRQ(DMGlobalToLocalBegin(da, X, INSERT_VALUES, localX));
-    CHKERRQ(DMGlobalToLocalEnd(da, X, INSERT_VALUES, localX));
+    PetscCall(DMGlobalToLocalBegin(da, X, INSERT_VALUES, localX));
+    PetscCall(DMGlobalToLocalEnd(da, X, INSERT_VALUES, localX));
     /* Get pointers to vector data. */
-    CHKERRQ(VecGetArray(localX, &x));
-    CHKERRQ(VecGetArray(F, &f));
+    PetscCall(VecGetArray(localX, &x));
+    PetscCall(VecGetArray(F, &f));
 
     /* Obtaining local cell and face ownership */
-    CHKERRQ(DMPlexGetHeightStratum(da, 0, &cStart, &cEnd));
-    CHKERRQ(DMPlexGetHeightStratum(da, 1, &fStart, &fEnd));
+    PetscCall(DMPlexGetHeightStratum(da, 0, &cStart, &cEnd));
+    PetscCall(DMPlexGetHeightStratum(da, 1, &fStart, &fEnd));
 
     /* Creating the PetscFV object to obtain face and cell geometry.
     Later to be used to compute face centroid to find cell widths. */
 
-    CHKERRQ(PetscFVCreate(PETSC_COMM_WORLD, &fvm));
-    CHKERRQ(PetscFVSetType(fvm, PETSCFVUPWIND));
+    PetscCall(PetscFVCreate(PETSC_COMM_WORLD, &fvm));
+    PetscCall(PetscFVSetType(fvm, PETSCFVUPWIND));
     /*....Retrieve precomputed cell geometry....*/
-    CHKERRQ(DMPlexGetDataFVM(da, fvm, &cellGeom, &faceGeom, NULL));
-    CHKERRQ(VecGetDM(faceGeom, &dmFace));
-    CHKERRQ(VecGetArrayRead(faceGeom, &fgeom));
+    PetscCall(DMPlexGetDataFVM(da, fvm, &cellGeom, &faceGeom, NULL));
+    PetscCall(VecGetDM(faceGeom, &dmFace));
+    PetscCall(VecGetArrayRead(faceGeom, &fgeom));
 
     /* Spanning through all the cells and an inner loop through the faces. Find the
     face neighbors and pick the upwinded cell value for flux. */
@@ -199,20 +199,20 @@ PetscErrorCode FormFunction(TS ts, PetscReal ftime, Vec X, Vec F, void *ctx)
 
     for (cell = cStart; cell < cEnd; cell++) {
         /* Obtaining the faces of the cell */
-        CHKERRQ(DMPlexGetConeSize(da, cell, &nF));
-        CHKERRQ(DMPlexGetCone(da, cell, &cellcone));
+        PetscCall(DMPlexGetConeSize(da, cell, &nF));
+        PetscCall(DMPlexGetCone(da, cell, &cellcone));
 
         /* south */
-        CHKERRQ(DMPlexPointLocalRead(dmFace, cellcone[0], fgeom, &fgA));
+        PetscCall(DMPlexPointLocalRead(dmFace, cellcone[0], fgeom, &fgA));
         centroid_y[0] = fgA->centroid[1];
         /* North */
-        CHKERRQ(DMPlexPointLocalRead(dmFace, cellcone[2], fgeom, &fgA));
+        PetscCall(DMPlexPointLocalRead(dmFace, cellcone[2], fgeom, &fgA));
         centroid_y[1] = fgA->centroid[1];
         /* West */
-        CHKERRQ(DMPlexPointLocalRead(dmFace, cellcone[3], fgeom, &fgA));
+        PetscCall(DMPlexPointLocalRead(dmFace, cellcone[3], fgeom, &fgA));
         centroid_x[0] = fgA->centroid[0];
         /* East */
-        CHKERRQ(DMPlexPointLocalRead(dmFace, cellcone[1], fgeom, &fgA));
+        PetscCall(DMPlexPointLocalRead(dmFace, cellcone[1], fgeom, &fgA));
         centroid_x[1] = fgA->centroid[0];
 
         /* Computing the cell widths in the x and y direction */
@@ -223,26 +223,26 @@ PetscErrorCode FormFunction(TS ts, PetscReal ftime, Vec X, Vec F, void *ctx)
            Going through the faces by the order (cellcone) */
 
         /* cellcone[0] - south */
-        CHKERRQ(DMPlexGetSupportSize(da, cellcone[0], &nC));
-        CHKERRQ(DMPlexGetSupport(da, cellcone[0], &cellsupport));
+        PetscCall(DMPlexGetSupportSize(da, cellcone[0], &nC));
+        PetscCall(DMPlexGetSupport(da, cellcone[0], &cellsupport));
         if (nC == 2) flux_south = (x[cellsupport[0]] * (-v_plus - user->diffusion * delta_x)) / delta_y;
         else flux_south = (boundary * (-v_plus - user->diffusion * delta_x)) / delta_y;
 
         /* cellcone[1] - east */
-        CHKERRQ(DMPlexGetSupportSize(da, cellcone[1], &nC));
-        CHKERRQ(DMPlexGetSupport(da, cellcone[1], &cellsupport));
+        PetscCall(DMPlexGetSupportSize(da, cellcone[1], &nC));
+        PetscCall(DMPlexGetSupport(da, cellcone[1], &cellsupport));
         if (nC == 2) flux_east = (x[cellsupport[1]] * (u_minus - user->diffusion * delta_y)) / delta_x;
         else flux_east = (boundary * (u_minus - user->diffusion * delta_y)) / delta_x;
 
         /* cellcone[2] - north */
-        CHKERRQ(DMPlexGetSupportSize(da, cellcone[2], &nC));
-        CHKERRQ(DMPlexGetSupport(da, cellcone[2], &cellsupport));
+        PetscCall(DMPlexGetSupportSize(da, cellcone[2], &nC));
+        PetscCall(DMPlexGetSupport(da, cellcone[2], &cellsupport));
         if (nC == 2) flux_north = (x[cellsupport[1]] * (v_minus - user->diffusion * delta_x)) / delta_y;
         else flux_north = (boundary * (v_minus - user->diffusion * delta_x)) / delta_y;
 
         /* cellcone[3] - west */
-        CHKERRQ(DMPlexGetSupportSize(da, cellcone[3], &nC));
-        CHKERRQ(DMPlexGetSupport(da, cellcone[3], &cellsupport));
+        PetscCall(DMPlexGetSupportSize(da, cellcone[3], &nC));
+        PetscCall(DMPlexGetSupport(da, cellcone[3], &cellsupport));
         if (nC == 2) flux_west = (x[cellsupport[0]] * (-u_plus - user->diffusion * delta_y)) / delta_x;
         else flux_west = (boundary_left * (-u_plus - user->diffusion * delta_y)) / delta_x;
 
@@ -254,10 +254,10 @@ PetscErrorCode FormFunction(TS ts, PetscReal ftime, Vec X, Vec F, void *ctx)
            and computing the RHS time derivative f[.] */
         f[cell] = -(flux_centre + flux_east + flux_west + flux_north + flux_south);
     }
-    CHKERRQ(PetscFVDestroy(&fvm));
-    CHKERRQ(VecRestoreArray(localX, &x));
-    CHKERRQ(VecRestoreArray(F, &f));
-    CHKERRQ(DMRestoreLocalVector(da, &localX));
+    PetscCall(PetscFVDestroy(&fvm));
+    PetscCall(VecRestoreArray(localX, &x));
+    PetscCall(VecRestoreArray(F, &f));
+    PetscCall(DMRestoreLocalVector(da, &localX));
     PetscFunctionReturn(0);
 }
 
@@ -278,12 +278,12 @@ int main(int argc, char **argv)
     IS                   bcPointIS[1];
 
     /* Initialize program */
-    CHKERRQ(PetscInitialize(&argc, &argv, (char *) 0, help));
-    CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
+    PetscCall(PetscInitialize(&argc, &argv, (char *) 0, help));
+    PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
     /* Create distributed array (DMPLEX) to manage parallel grid and vectors */
-    CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));
-    CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &user, &da));
-    CHKERRQ(DMGetDimension(da, &dim));
+    PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
+    PetscCall(CreateMesh(PETSC_COMM_WORLD, &user, &da));
+    PetscCall(DMGetDimension(da, &dim));
 
     /* Specifying the fields and dof for the formula through PETSc Section
     Create a scalar field u with 1 component on cells, faces and edges.
@@ -302,58 +302,58 @@ int main(int argc, char **argv)
     /* Prescribe a Dirichlet condition on u on the boundary
        Label "marker" is made by the mesh creation routine  */
     bcField[0] = 0;
-    CHKERRQ(DMGetStratumIS(da, "marker", 1, &bcPointIS[0]));
+    PetscCall(DMGetStratumIS(da, "marker", 1, &bcPointIS[0]));
 
     /* Create a PetscSection with this data layout */
-    CHKERRQ(DMSetNumFields(da, numFields));
-    CHKERRQ(DMPlexCreateSection(da, NULL, numComp, numDof, numBC, bcField, NULL, bcPointIS, NULL, &section));
+    PetscCall(DMSetNumFields(da, numFields));
+    PetscCall(DMPlexCreateSection(da, NULL, numComp, numDof, numBC, bcField, NULL, bcPointIS, NULL, &section));
 
     /* Name the Field variables */
-    CHKERRQ(PetscSectionSetFieldName(section, 0, "u"));
+    PetscCall(PetscSectionSetFieldName(section, 0, "u"));
 
     /* Tell the DM to use this section (with the specified fields and dof) */
-    CHKERRQ(DMSetLocalSection(da, section));
+    PetscCall(DMSetLocalSection(da, section));
 
     /* Extract global vectors from DMDA; then duplicate for remaining
        vectors that are the same types */
 
     /* Create a Vec with this layout and view it */
-    CHKERRQ(DMGetGlobalVector(da, &x));
-    CHKERRQ(VecDuplicate(x, &r));
+    PetscCall(DMGetGlobalVector(da, &x));
+    PetscCall(VecDuplicate(x, &r));
 
     /* Create timestepping solver context */
-    CHKERRQ(TSCreate(PETSC_COMM_WORLD, &ts));
-    CHKERRQ(TSSetProblemType(ts, TS_NONLINEAR));
-    CHKERRQ(TSSetRHSFunction(ts, NULL, FormFunction, &user));
+    PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
+    PetscCall(TSSetProblemType(ts, TS_NONLINEAR));
+    PetscCall(TSSetRHSFunction(ts, NULL, FormFunction, &user));
 
-    CHKERRQ(TSSetMaxTime(ts, 1.0));
-    CHKERRQ(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_STEPOVER));
-    CHKERRQ(TSMonitorSet(ts, MyTSMonitor, PETSC_VIEWER_STDOUT_WORLD, NULL));
-    CHKERRQ(TSSetDM(ts, da));
+    PetscCall(TSSetMaxTime(ts, 1.0));
+    PetscCall(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_STEPOVER));
+    PetscCall(TSMonitorSet(ts, MyTSMonitor, PETSC_VIEWER_STDOUT_WORLD, NULL));
+    PetscCall(TSSetDM(ts, da));
 
     /* Customize nonlinear solver */
-    CHKERRQ(TSSetType(ts, TSEULER));
-    CHKERRQ(TSGetSNES(ts, &snes));
-    CHKERRQ(PetscViewerAndFormatCreate(PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_DEFAULT, &vf));
-    CHKERRQ(SNESMonitorSet(snes, (PetscErrorCode (*)(SNES, PetscInt, PetscReal, void *)) MySNESMonitor, vf,(PetscErrorCode (*)(void **)) PetscViewerAndFormatDestroy));
+    PetscCall(TSSetType(ts, TSEULER));
+    PetscCall(TSGetSNES(ts, &snes));
+    PetscCall(PetscViewerAndFormatCreate(PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_DEFAULT, &vf));
+    PetscCall(SNESMonitorSet(snes, (PetscErrorCode (*)(SNES, PetscInt, PetscReal, void *)) MySNESMonitor, vf,(PetscErrorCode (*)(void **)) PetscViewerAndFormatDestroy));
 
      /* Set initial conditions */
-    CHKERRQ(FormInitialSolution(da, x));
-    CHKERRQ(TSSetTimeStep(ts, .0001));
-    CHKERRQ(TSSetSolution(ts, x));
+    PetscCall(FormInitialSolution(da, x));
+    PetscCall(TSSetTimeStep(ts, .0001));
+    PetscCall(TSSetSolution(ts, x));
     /* Set runtime options */
-    CHKERRQ(TSSetFromOptions(ts));
+    PetscCall(TSSetFromOptions(ts));
     /* Solve nonlinear system */
-    CHKERRQ(TSSolve(ts, x));
+    PetscCall(TSSolve(ts, x));
 
     /* Clean up routine */
-    CHKERRQ(DMRestoreGlobalVector(da, &x));
-    CHKERRQ(ISDestroy(&bcPointIS[0]));
-    CHKERRQ(PetscSectionDestroy(&section));
-    CHKERRQ(VecDestroy(&r));
-    CHKERRQ(TSDestroy(&ts));
-    CHKERRQ(DMDestroy(&da));
-    CHKERRQ(PetscFinalize());
+    PetscCall(DMRestoreGlobalVector(da, &x));
+    PetscCall(ISDestroy(&bcPointIS[0]));
+    PetscCall(PetscSectionDestroy(&section));
+    PetscCall(VecDestroy(&r));
+    PetscCall(TSDestroy(&ts));
+    PetscCall(DMDestroy(&da));
+    PetscCall(PetscFinalize());
     return 0;
 }
 

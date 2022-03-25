@@ -24,10 +24,10 @@ int main(int argc,char **argv)
   Vec            x;
   PetscViewer    viewer;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
   /*
      Create a vector, specifying only its global dimension.
@@ -36,16 +36,16 @@ int main(int argc,char **argv)
      determined at runtime.  Also, the parallel partitioning of
      the vector is determined by PETSc at runtime.
   */
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
-  CHKERRQ(VecSetSizes(x,PETSC_DECIDE,n));
-  CHKERRQ(VecSetFromOptions(x));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+  PetscCall(VecSetSizes(x,PETSC_DECIDE,n));
+  PetscCall(VecSetFromOptions(x));
 
   /*
      PETSc parallel vectors are partitioned by
      contiguous chunks of rows across the processors.  Determine
      which vector are locally owned.
   */
-  CHKERRQ(VecGetOwnershipRange(x,&istart,&iend));
+  PetscCall(VecGetOwnershipRange(x,&istart,&iend));
 
   /* --------------------------------------------------------------------
      Set the vector elements.
@@ -56,7 +56,7 @@ int main(int argc,char **argv)
    */
   for (i=0; i<n; i++) {
     v    = (PetscReal)(rank*i);
-    CHKERRQ(VecSetValues(x,1,&i,&v,ADD_VALUES));
+    PetscCall(VecSetValues(x,1,&i,&v,ADD_VALUES));
   }
 
   /*
@@ -65,8 +65,8 @@ int main(int argc,char **argv)
      Computations can be done while messages are in transition
      by placing code between these two statements.
   */
-  CHKERRQ(VecAssemblyBegin(x));
-  CHKERRQ(VecAssemblyEnd(x));
+  PetscCall(VecAssemblyBegin(x));
+  PetscCall(VecAssemblyEnd(x));
 
   /*
      Open an X-window viewer.  Note that we specify the same communicator
@@ -77,38 +77,38 @@ int main(int argc,char **argv)
                   (0 is default, -1 implies until user input).
 
   */
-  CHKERRQ(PetscViewerDrawOpen(PETSC_COMM_WORLD,NULL,NULL,0,0,300,300,&viewer));
-  CHKERRQ(PetscObjectSetName((PetscObject)viewer,"Line graph Plot"));
-  CHKERRQ(PetscViewerPushFormat(viewer,PETSC_VIEWER_DRAW_LG));
+  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD,NULL,NULL,0,0,300,300,&viewer));
+  PetscCall(PetscObjectSetName((PetscObject)viewer,"Line graph Plot"));
+  PetscCall(PetscViewerPushFormat(viewer,PETSC_VIEWER_DRAW_LG));
   /*
      View the vector
   */
-  CHKERRQ(VecView(x,viewer));
+  PetscCall(VecView(x,viewer));
 
   /* --------------------------------------------------------------------
        Access the vector values directly. Each processor has access only
     to its portion of the vector. For default PETSc vectors VecGetArray()
     does NOT involve a copy
   */
-  CHKERRQ(VecGetLocalSize(x,&nlocal));
-  CHKERRQ(VecGetArray(x,&array));
+  PetscCall(VecGetLocalSize(x,&nlocal));
+  PetscCall(VecGetArray(x,&array));
   for (i=0; i<nlocal; i++) array[i] = rank + 1;
-  CHKERRQ(VecRestoreArray(x,&array));
+  PetscCall(VecRestoreArray(x,&array));
 
   /*
      View the vector
   */
-  CHKERRQ(VecView(x,viewer));
+  PetscCall(VecView(x,viewer));
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  CHKERRQ(PetscViewerPopFormat(viewer));
-  CHKERRQ(PetscViewerDestroy(&viewer));
-  CHKERRQ(VecDestroy(&x));
+  PetscCall(PetscViewerPopFormat(viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
+  PetscCall(VecDestroy(&x));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

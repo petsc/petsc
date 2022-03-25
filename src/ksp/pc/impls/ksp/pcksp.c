@@ -14,16 +14,16 @@ static PetscErrorCode  PCKSPCreateKSP_KSP(PC pc)
   DM             dm;
 
   PetscFunctionBegin;
-  CHKERRQ(KSPCreate(PetscObjectComm((PetscObject)pc),&jac->ksp));
-  CHKERRQ(KSPSetErrorIfNotConverged(jac->ksp,pc->erroriffailure));
-  CHKERRQ(PetscObjectIncrementTabLevel((PetscObject)jac->ksp,(PetscObject)pc,1));
-  CHKERRQ(PCGetOptionsPrefix(pc,&prefix));
-  CHKERRQ(KSPSetOptionsPrefix(jac->ksp,prefix));
-  CHKERRQ(KSPAppendOptionsPrefix(jac->ksp,"ksp_"));
-  CHKERRQ(PCGetDM(pc, &dm));
+  PetscCall(KSPCreate(PetscObjectComm((PetscObject)pc),&jac->ksp));
+  PetscCall(KSPSetErrorIfNotConverged(jac->ksp,pc->erroriffailure));
+  PetscCall(PetscObjectIncrementTabLevel((PetscObject)jac->ksp,(PetscObject)pc,1));
+  PetscCall(PCGetOptionsPrefix(pc,&prefix));
+  PetscCall(KSPSetOptionsPrefix(jac->ksp,prefix));
+  PetscCall(KSPAppendOptionsPrefix(jac->ksp,"ksp_"));
+  PetscCall(PCGetDM(pc, &dm));
   if (dm) {
-    CHKERRQ(KSPSetDM(jac->ksp, dm));
-    CHKERRQ(KSPSetDMActive(jac->ksp, PETSC_FALSE));
+    PetscCall(KSPSetDM(jac->ksp, dm));
+    PetscCall(KSPSetDMActive(jac->ksp, PETSC_FALSE));
   }
   PetscFunctionReturn(0);
 }
@@ -35,13 +35,13 @@ static PetscErrorCode PCApply_KSP(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
   if (jac->ksp->presolve) {
-    CHKERRQ(VecCopy(x,y));
-    CHKERRQ(KSPSolve(jac->ksp,y,y));
+    PetscCall(VecCopy(x,y));
+    PetscCall(KSPSolve(jac->ksp,y,y));
   } else {
-    CHKERRQ(KSPSolve(jac->ksp,x,y));
+    PetscCall(KSPSolve(jac->ksp,x,y));
   }
-  CHKERRQ(KSPCheckSolve(jac->ksp,pc,y));
-  CHKERRQ(KSPGetIterationNumber(jac->ksp,&its));
+  PetscCall(KSPCheckSolve(jac->ksp,pc,y));
+  PetscCall(KSPGetIterationNumber(jac->ksp,&its));
   jac->its += its;
   PetscFunctionReturn(0);
 }
@@ -53,13 +53,13 @@ static PetscErrorCode PCMatApply_KSP(PC pc,Mat X,Mat Y)
 
   PetscFunctionBegin;
   if (jac->ksp->presolve) {
-    CHKERRQ(MatCopy(X,Y,SAME_NONZERO_PATTERN));
-    CHKERRQ(KSPMatSolve(jac->ksp,Y,Y)); /* TODO FIXME: this will fail since KSPMatSolve does not allow inplace solve yet */
+    PetscCall(MatCopy(X,Y,SAME_NONZERO_PATTERN));
+    PetscCall(KSPMatSolve(jac->ksp,Y,Y)); /* TODO FIXME: this will fail since KSPMatSolve does not allow inplace solve yet */
   } else {
-    CHKERRQ(KSPMatSolve(jac->ksp,X,Y));
+    PetscCall(KSPMatSolve(jac->ksp,X,Y));
   }
-  CHKERRQ(KSPCheckSolve(jac->ksp,pc,NULL));
-  CHKERRQ(KSPGetIterationNumber(jac->ksp,&its));
+  PetscCall(KSPCheckSolve(jac->ksp,pc,NULL));
+  PetscCall(KSPGetIterationNumber(jac->ksp,&its));
   jac->its += its;
   PetscFunctionReturn(0);
 }
@@ -71,13 +71,13 @@ static PetscErrorCode PCApplyTranspose_KSP(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
   if (jac->ksp->presolve) {
-    CHKERRQ(VecCopy(x,y));
-    CHKERRQ(KSPSolve(jac->ksp,y,y));
+    PetscCall(VecCopy(x,y));
+    PetscCall(KSPSolve(jac->ksp,y,y));
   } else {
-    CHKERRQ(KSPSolveTranspose(jac->ksp,x,y));
+    PetscCall(KSPSolveTranspose(jac->ksp,x,y));
   }
-  CHKERRQ(KSPCheckSolve(jac->ksp,pc,y));
-  CHKERRQ(KSPGetIterationNumber(jac->ksp,&its));
+  PetscCall(KSPCheckSolve(jac->ksp,pc,y));
+  PetscCall(KSPGetIterationNumber(jac->ksp,&its));
   jac->its += its;
   PetscFunctionReturn(0);
 }
@@ -89,13 +89,13 @@ static PetscErrorCode PCSetUp_KSP(PC pc)
 
   PetscFunctionBegin;
   if (!jac->ksp) {
-    CHKERRQ(PCKSPCreateKSP_KSP(pc));
-    CHKERRQ(KSPSetFromOptions(jac->ksp));
+    PetscCall(PCKSPCreateKSP_KSP(pc));
+    PetscCall(KSPSetFromOptions(jac->ksp));
   }
   if (pc->useAmat) mat = pc->mat;
   else             mat = pc->pmat;
-  CHKERRQ(KSPSetOperators(jac->ksp,mat,pc->pmat));
-  CHKERRQ(KSPSetUp(jac->ksp));
+  PetscCall(KSPSetOperators(jac->ksp,mat,pc->pmat));
+  PetscCall(KSPSetUp(jac->ksp));
   PetscFunctionReturn(0);
 }
 
@@ -105,7 +105,7 @@ static PetscErrorCode PCReset_KSP(PC pc)
   PC_KSP         *jac = (PC_KSP*)pc->data;
 
   PetscFunctionBegin;
-  CHKERRQ(KSPDestroy(&jac->ksp));
+  PetscCall(KSPDestroy(&jac->ksp));
   PetscFunctionReturn(0);
 }
 
@@ -114,10 +114,10 @@ static PetscErrorCode PCDestroy_KSP(PC pc)
   PC_KSP         *jac = (PC_KSP*)pc->data;
 
   PetscFunctionBegin;
-  CHKERRQ(KSPDestroy(&jac->ksp));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCKSPGetKSP_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCKSPSetKSP_C",NULL));
-  CHKERRQ(PetscFree(pc->data));
+  PetscCall(KSPDestroy(&jac->ksp));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCKSPGetKSP_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCKSPSetKSP_C",NULL));
+  PetscCall(PetscFree(pc->data));
   PetscFunctionReturn(0);
 }
 
@@ -127,20 +127,20 @@ static PetscErrorCode PCView_KSP(PC pc,PetscViewer viewer)
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  if (!jac->ksp) CHKERRQ(PCKSPCreateKSP_KSP(pc));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  if (!jac->ksp) PetscCall(PCKSPCreateKSP_KSP(pc));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
     if (pc->useAmat) {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Using Amat (not Pmat) as operator on inner solve\n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  Using Amat (not Pmat) as operator on inner solve\n"));
     }
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  KSP and PC on KSP preconditioner follow\n"));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  ---------------------------------\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  KSP and PC on KSP preconditioner follow\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  ---------------------------------\n"));
   }
-  CHKERRQ(PetscViewerASCIIPushTab(viewer));
-  CHKERRQ(KSPView(jac->ksp,viewer));
-  CHKERRQ(PetscViewerASCIIPopTab(viewer));
+  PetscCall(PetscViewerASCIIPushTab(viewer));
+  PetscCall(KSPView(jac->ksp,viewer));
+  PetscCall(PetscViewerASCIIPopTab(viewer));
   if (iascii) {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  ---------------------------------\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  ---------------------------------\n"));
   }
   PetscFunctionReturn(0);
 }
@@ -150,8 +150,8 @@ static PetscErrorCode  PCKSPSetKSP_KSP(PC pc,KSP ksp)
   PC_KSP         *jac = (PC_KSP*)pc->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectReference((PetscObject)ksp));
-  CHKERRQ(KSPDestroy(&jac->ksp));
+  PetscCall(PetscObjectReference((PetscObject)ksp));
+  PetscCall(KSPDestroy(&jac->ksp));
   jac->ksp = ksp;
   PetscFunctionReturn(0);
 }
@@ -177,7 +177,7 @@ PetscErrorCode  PCKSPSetKSP(PC pc,KSP ksp)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,2);
   PetscCheckSameComm(pc,1,ksp,2);
-  CHKERRQ(PetscTryMethod(pc,"PCKSPSetKSP_C",(PC,KSP),(pc,ksp)));
+  PetscCall(PetscTryMethod(pc,"PCKSPSetKSP_C",(PC,KSP),(pc,ksp)));
   PetscFunctionReturn(0);
 }
 
@@ -186,7 +186,7 @@ static PetscErrorCode  PCKSPGetKSP_KSP(PC pc,KSP *ksp)
   PC_KSP         *jac = (PC_KSP*)pc->data;
 
   PetscFunctionBegin;
-  if (!jac->ksp) CHKERRQ(PCKSPCreateKSP_KSP(pc));
+  if (!jac->ksp) PetscCall(PCKSPCreateKSP_KSP(pc));
   *ksp = jac->ksp;
   PetscFunctionReturn(0);
 }
@@ -215,7 +215,7 @@ PetscErrorCode  PCKSPGetKSP(PC pc,KSP *ksp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(ksp,2);
-  CHKERRQ(PetscUseMethod(pc,"PCKSPGetKSP_C",(PC,KSP*),(pc,ksp)));
+  PetscCall(PetscUseMethod(pc,"PCKSPGetKSP_C",(PC,KSP*),(pc,ksp)));
   PetscFunctionReturn(0);
 }
 
@@ -224,11 +224,11 @@ static PetscErrorCode PCSetFromOptions_KSP(PetscOptionItems *PetscOptionsObject,
   PC_KSP         *jac = (PC_KSP*)pc->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"PC KSP options"));
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"PC KSP options"));
   if (jac->ksp) {
-    CHKERRQ(KSPSetFromOptions(jac->ksp));
+    PetscCall(KSPSetFromOptions(jac->ksp));
    }
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -270,10 +270,10 @@ PETSC_EXTERN PetscErrorCode PCCreate_KSP(PC pc)
   PC_KSP         *jac;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNewLog(pc,&jac));
+  PetscCall(PetscNewLog(pc,&jac));
   pc->data = (void*)jac;
 
-  CHKERRQ(PetscMemzero(pc->ops,sizeof(struct _PCOps)));
+  PetscCall(PetscMemzero(pc->ops,sizeof(struct _PCOps)));
   pc->ops->apply           = PCApply_KSP;
   pc->ops->matapply        = PCMatApply_KSP;
   pc->ops->applytranspose  = PCApplyTranspose_KSP;
@@ -283,7 +283,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_KSP(PC pc)
   pc->ops->setfromoptions  = PCSetFromOptions_KSP;
   pc->ops->view            = PCView_KSP;
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCKSPGetKSP_C",PCKSPGetKSP_KSP));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCKSPSetKSP_C",PCKSPSetKSP_KSP));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCKSPGetKSP_C",PCKSPGetKSP_KSP));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCKSPSetKSP_C",PCKSPSetKSP_KSP));
   PetscFunctionReturn(0);
 }

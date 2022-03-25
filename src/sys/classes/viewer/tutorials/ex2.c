@@ -8,13 +8,13 @@ int main(int argc,char **args)
   PetscViewer       viewer;
   PetscViewerFormat format;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRQ(PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,NULL,"-myviewer",&viewer,&format,NULL));
-  CHKERRQ(PetscViewerPushFormat(viewer,format));
-  CHKERRQ(PetscViewerView(viewer,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(PetscViewerPopFormat(viewer));
-  CHKERRQ(PetscViewerDestroy(&viewer));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,NULL,"-myviewer",&viewer,&format,NULL));
+  PetscCall(PetscViewerPushFormat(viewer,format));
+  PetscCall(PetscViewerView(viewer,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscViewerPopFormat(viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

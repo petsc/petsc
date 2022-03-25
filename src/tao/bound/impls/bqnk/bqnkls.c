@@ -16,7 +16,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BQNKLS(Tao tao)
   TAO_BQNK       *bqnk;
 
   PetscFunctionBegin;
-  CHKERRQ(TaoCreate_BQNK(tao));
+  PetscCall(TaoCreate_BQNK(tao));
   bnk = (TAO_BNK*)tao->data;
   bnk->update_type = BNK_UPDATE_STEP;
   bqnk = (TAO_BQNK*)bnk->ctx;

@@ -43,7 +43,7 @@ PetscErrorCode SNESFASSetGalerkin(SNES snes, PetscBool flg)
   PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
   fas = (SNES_FAS*)snes->data;
   fas->galerkin = flg;
-  if (fas->next) CHKERRQ(SNESFASSetGalerkin(fas->next, flg));
+  if (fas->next) PetscCall(SNESFASSetGalerkin(fas->next, flg));
   PetscFunctionReturn(0);
 }
 
@@ -81,13 +81,13 @@ PetscErrorCode SNESFASGalerkinFunctionDefault(SNES snes, Vec X, Vec F, void *ctx
   prevsnes = fas->previous;
   prevfas  = (SNES_FAS*)prevsnes->data;
   /* interpolate down the solution */
-  CHKERRQ(MatInterpolate(prevfas->interpolate, X, prevfas->Xg));
+  PetscCall(MatInterpolate(prevfas->interpolate, X, prevfas->Xg));
   /* the RHS we care about is at the coarsest level */
   b_temp            = prevsnes->vec_rhs;
   prevsnes->vec_rhs = NULL;
-  CHKERRQ(SNESComputeFunction(prevsnes, prevfas->Xg, prevfas->Fg));
+  PetscCall(SNESComputeFunction(prevsnes, prevfas->Xg, prevfas->Fg));
   prevsnes->vec_rhs = b_temp;
   /* restrict up the function */
-  CHKERRQ(MatRestrict(prevfas->restrct, prevfas->Fg, F));
+  PetscCall(MatRestrict(prevfas->restrct, prevfas->Fg, F));
   PetscFunctionReturn(0);
 }

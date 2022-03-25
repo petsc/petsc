@@ -44,25 +44,25 @@ PetscErrorCode  DMRegisterAll(void)
   if (DMRegisterAllCalled) PetscFunctionReturn(0);
   DMRegisterAllCalled = PETSC_TRUE;
 
-  CHKERRQ(DMRegister(DMDA,       DMCreate_DA));
-  CHKERRQ(DMRegister(DMCOMPOSITE,DMCreate_Composite));
-  CHKERRQ(DMRegister(DMSLICED,   DMCreate_Sliced));
-  CHKERRQ(DMRegister(DMSHELL,    DMCreate_Shell));
-  CHKERRQ(DMRegister(DMREDUNDANT,DMCreate_Redundant));
-  CHKERRQ(DMRegister(DMPLEX,     DMCreate_Plex));
-  CHKERRQ(DMRegister(DMPATCH,    DMCreate_Patch));
-  CHKERRQ(DMRegister(DMSWARM,    DMCreate_Swarm));
+  PetscCall(DMRegister(DMDA,       DMCreate_DA));
+  PetscCall(DMRegister(DMCOMPOSITE,DMCreate_Composite));
+  PetscCall(DMRegister(DMSLICED,   DMCreate_Sliced));
+  PetscCall(DMRegister(DMSHELL,    DMCreate_Shell));
+  PetscCall(DMRegister(DMREDUNDANT,DMCreate_Redundant));
+  PetscCall(DMRegister(DMPLEX,     DMCreate_Plex));
+  PetscCall(DMRegister(DMPATCH,    DMCreate_Patch));
+  PetscCall(DMRegister(DMSWARM,    DMCreate_Swarm));
 #if defined(PETSC_HAVE_MOAB)
-  CHKERRQ(DMRegister(DMMOAB,     DMCreate_Moab));
+  PetscCall(DMRegister(DMMOAB,     DMCreate_Moab));
 #endif
-  CHKERRQ(DMRegister(DMNETWORK,  DMCreate_Network));
-  CHKERRQ(DMRegister(DMFOREST,   DMCreate_Forest));
+  PetscCall(DMRegister(DMNETWORK,  DMCreate_Network));
+  PetscCall(DMRegister(DMFOREST,   DMCreate_Forest));
 #if defined(PETSC_HAVE_P4EST)
-  CHKERRQ(DMRegister(DMP4EST,    DMCreate_p4est));
-  CHKERRQ(DMRegister(DMP8EST,    DMCreate_p8est));
+  PetscCall(DMRegister(DMP4EST,    DMCreate_p4est));
+  PetscCall(DMRegister(DMP8EST,    DMCreate_p8est));
 #endif
-  CHKERRQ(DMRegister(DMPRODUCT,  DMCreate_Product));
-  CHKERRQ(DMRegister(DMSTAG,     DMCreate_Stag));
+  PetscCall(DMRegister(DMPRODUCT,  DMCreate_Product));
+  PetscCall(DMRegister(DMSTAG,     DMCreate_Stag));
   PetscFunctionReturn(0);
 }
 
@@ -94,13 +94,13 @@ PetscErrorCode PetscSpaceRegisterAll(void)
   if (PetscSpaceRegisterAllCalled) PetscFunctionReturn(0);
   PetscSpaceRegisterAllCalled = PETSC_TRUE;
 
-  CHKERRQ(PetscSpaceRegister(PETSCSPACEPOLYNOMIAL, PetscSpaceCreate_Polynomial));
-  CHKERRQ(PetscSpaceRegister(PETSCSPACEPTRIMMED,   PetscSpaceCreate_Ptrimmed));
-  CHKERRQ(PetscSpaceRegister(PETSCSPACETENSOR,     PetscSpaceCreate_Tensor));
-  CHKERRQ(PetscSpaceRegister(PETSCSPACESUM,        PetscSpaceCreate_Sum));
-  CHKERRQ(PetscSpaceRegister(PETSCSPACEPOINT,      PetscSpaceCreate_Point));
-  CHKERRQ(PetscSpaceRegister(PETSCSPACESUBSPACE,   PetscSpaceCreate_Subspace));
-  CHKERRQ(PetscSpaceRegister(PETSCSPACEWXY,        PetscSpaceCreate_WXY));
+  PetscCall(PetscSpaceRegister(PETSCSPACEPOLYNOMIAL, PetscSpaceCreate_Polynomial));
+  PetscCall(PetscSpaceRegister(PETSCSPACEPTRIMMED,   PetscSpaceCreate_Ptrimmed));
+  PetscCall(PetscSpaceRegister(PETSCSPACETENSOR,     PetscSpaceCreate_Tensor));
+  PetscCall(PetscSpaceRegister(PETSCSPACESUM,        PetscSpaceCreate_Sum));
+  PetscCall(PetscSpaceRegister(PETSCSPACEPOINT,      PetscSpaceCreate_Point));
+  PetscCall(PetscSpaceRegister(PETSCSPACESUBSPACE,   PetscSpaceCreate_Subspace));
+  PetscCall(PetscSpaceRegister(PETSCSPACEWXY,        PetscSpaceCreate_WXY));
   PetscFunctionReturn(0);
 }
 
@@ -127,10 +127,10 @@ PetscErrorCode PetscDualSpaceRegisterAll(void)
   if (PetscDualSpaceRegisterAllCalled) PetscFunctionReturn(0);
   PetscDualSpaceRegisterAllCalled = PETSC_TRUE;
 
-  CHKERRQ(PetscDualSpaceRegister(PETSCDUALSPACELAGRANGE, PetscDualSpaceCreate_Lagrange));
-  CHKERRQ(PetscDualSpaceRegister(PETSCDUALSPACEBDM,      PetscDualSpaceCreate_Lagrange));
-  CHKERRQ(PetscDualSpaceRegister(PETSCDUALSPACESIMPLE,   PetscDualSpaceCreate_Simple));
-  CHKERRQ(PetscDualSpaceRegister(PETSCDUALSPACEREFINED,  PetscDualSpaceCreate_Refined));
+  PetscCall(PetscDualSpaceRegister(PETSCDUALSPACELAGRANGE, PetscDualSpaceCreate_Lagrange));
+  PetscCall(PetscDualSpaceRegister(PETSCDUALSPACEBDM,      PetscDualSpaceCreate_Lagrange));
+  PetscCall(PetscDualSpaceRegister(PETSCDUALSPACESIMPLE,   PetscDualSpaceCreate_Simple));
+  PetscCall(PetscDualSpaceRegister(PETSCDUALSPACEREFINED,  PetscDualSpaceCreate_Refined));
   PetscFunctionReturn(0);
 }
 
@@ -159,10 +159,10 @@ PetscErrorCode PetscFERegisterAll(void)
   if (PetscFERegisterAllCalled) PetscFunctionReturn(0);
   PetscFERegisterAllCalled = PETSC_TRUE;
 
-  CHKERRQ(PetscFERegister(PETSCFEBASIC,     PetscFECreate_Basic));
-  CHKERRQ(PetscFERegister(PETSCFECOMPOSITE, PetscFECreate_Composite));
+  PetscCall(PetscFERegister(PETSCFEBASIC,     PetscFECreate_Basic));
+  PetscCall(PetscFERegister(PETSCFECOMPOSITE, PetscFECreate_Composite));
 #if defined(PETSC_HAVE_OPENCL)
-  CHKERRQ(PetscFERegister(PETSCFEOPENCL, PetscFECreate_OpenCL));
+  PetscCall(PetscFERegister(PETSCFEOPENCL, PetscFECreate_OpenCL));
 #endif
   PetscFunctionReturn(0);
 }
@@ -195,14 +195,14 @@ PetscErrorCode PetscLimiterRegisterAll(void)
   if (PetscLimiterRegisterAllCalled) PetscFunctionReturn(0);
   PetscLimiterRegisterAllCalled = PETSC_TRUE;
 
-  CHKERRQ(PetscLimiterRegister(PETSCLIMITERSIN,       PetscLimiterCreate_Sin));
-  CHKERRQ(PetscLimiterRegister(PETSCLIMITERZERO,      PetscLimiterCreate_Zero));
-  CHKERRQ(PetscLimiterRegister(PETSCLIMITERNONE,      PetscLimiterCreate_None));
-  CHKERRQ(PetscLimiterRegister(PETSCLIMITERMINMOD,    PetscLimiterCreate_Minmod));
-  CHKERRQ(PetscLimiterRegister(PETSCLIMITERVANLEER,   PetscLimiterCreate_VanLeer));
-  CHKERRQ(PetscLimiterRegister(PETSCLIMITERVANALBADA, PetscLimiterCreate_VanAlbada));
-  CHKERRQ(PetscLimiterRegister(PETSCLIMITERSUPERBEE,  PetscLimiterCreate_Superbee));
-  CHKERRQ(PetscLimiterRegister(PETSCLIMITERMC,        PetscLimiterCreate_MC));
+  PetscCall(PetscLimiterRegister(PETSCLIMITERSIN,       PetscLimiterCreate_Sin));
+  PetscCall(PetscLimiterRegister(PETSCLIMITERZERO,      PetscLimiterCreate_Zero));
+  PetscCall(PetscLimiterRegister(PETSCLIMITERNONE,      PetscLimiterCreate_None));
+  PetscCall(PetscLimiterRegister(PETSCLIMITERMINMOD,    PetscLimiterCreate_Minmod));
+  PetscCall(PetscLimiterRegister(PETSCLIMITERVANLEER,   PetscLimiterCreate_VanLeer));
+  PetscCall(PetscLimiterRegister(PETSCLIMITERVANALBADA, PetscLimiterCreate_VanAlbada));
+  PetscCall(PetscLimiterRegister(PETSCLIMITERSUPERBEE,  PetscLimiterCreate_Superbee));
+  PetscCall(PetscLimiterRegister(PETSCLIMITERMC,        PetscLimiterCreate_MC));
   PetscFunctionReturn(0);
 }
 
@@ -227,8 +227,8 @@ PetscErrorCode PetscFVRegisterAll(void)
   if (PetscFVRegisterAllCalled) PetscFunctionReturn(0);
   PetscFVRegisterAllCalled = PETSC_TRUE;
 
-  CHKERRQ(PetscFVRegister(PETSCFVUPWIND,       PetscFVCreate_Upwind));
-  CHKERRQ(PetscFVRegister(PETSCFVLEASTSQUARES, PetscFVCreate_LeastSquares));
+  PetscCall(PetscFVRegister(PETSCFVUPWIND,       PetscFVCreate_Upwind));
+  PetscCall(PetscFVRegister(PETSCFVLEASTSQUARES, PetscFVCreate_LeastSquares));
   PetscFunctionReturn(0);
 }
 #include <petscds.h>     /*I  "petscds.h"  I*/
@@ -253,6 +253,6 @@ PetscErrorCode PetscDSRegisterAll(void)
   if (PetscDSRegisterAllCalled) PetscFunctionReturn(0);
   PetscDSRegisterAllCalled = PETSC_TRUE;
 
-  CHKERRQ(PetscDSRegister(PETSCDSBASIC, PetscDSCreate_Basic));
+  PetscCall(PetscDSRegister(PETSCDSBASIC, PetscDSCreate_Basic));
   PetscFunctionReturn(0);
 }

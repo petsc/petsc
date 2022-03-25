@@ -17,10 +17,10 @@ PetscErrorCode  TSMonitorLGCtxNetworkDestroy(TSMonitorLGCtxNetwork *ctx)
 
   PetscFunctionBegin;
   for (i=0; i<(*ctx)->nlg; i++) {
-    CHKERRQ(PetscDrawLGDestroy(&(*ctx)->lg[i]));
+    PetscCall(PetscDrawLGDestroy(&(*ctx)->lg[i]));
   }
-  CHKERRQ(PetscFree((*ctx)->lg));
-  CHKERRQ(PetscFree(*ctx));
+  PetscCall(PetscFree((*ctx)->lg));
+  PetscCall(PetscFree(*ctx));
   PetscFunctionReturn(0);
 }
 
@@ -32,53 +32,53 @@ PetscErrorCode  TSMonitorLGCtxNetworkCreate(TS ts,const char host[],const char l
   PetscInt       i,Start,End,e,nvar;
 
   PetscFunctionBegin;
-  CHKERRQ(TSGetDM(ts,&dm));
-  CHKERRQ(PetscObjectGetComm((PetscObject)ts,&comm));
-  CHKERRQ(PetscNew(ctx));
+  PetscCall(TSGetDM(ts,&dm));
+  PetscCall(PetscObjectGetComm((PetscObject)ts,&comm));
+  PetscCall(PetscNew(ctx));
   i = 0;
   /* loop over edges counting number of line graphs needed */
-  CHKERRQ(DMNetworkGetEdgeRange(dm,&Start,&End));
+  PetscCall(DMNetworkGetEdgeRange(dm,&Start,&End));
   for (e=Start; e<End; e++) {
-    CHKERRQ(DMNetworkGetComponent(dm,e,ALL_COMPONENTS,NULL,NULL,&nvar));
+    PetscCall(DMNetworkGetComponent(dm,e,ALL_COMPONENTS,NULL,NULL,&nvar));
     if (!nvar) continue;
     i++;
   }
   /* loop over vertices */
-  CHKERRQ(DMNetworkGetVertexRange(dm,&Start,&End));
+  PetscCall(DMNetworkGetVertexRange(dm,&Start,&End));
   for (e=Start; e<End; e++) {
-    CHKERRQ(DMNetworkGetComponent(dm,e,ALL_COMPONENTS,NULL,NULL,&nvar));
+    PetscCall(DMNetworkGetComponent(dm,e,ALL_COMPONENTS,NULL,NULL,&nvar));
     if (!nvar) continue;
     i++;
   }
   (*ctx)->nlg = i;
-  CHKERRQ(PetscMalloc1(i,&(*ctx)->lg));
+  PetscCall(PetscMalloc1(i,&(*ctx)->lg));
 
   i = 0;
   /* loop over edges creating all needed line graphs*/
-  CHKERRQ(DMNetworkGetEdgeRange(dm,&Start,&End));
+  PetscCall(DMNetworkGetEdgeRange(dm,&Start,&End));
   for (e=Start; e<End; e++) {
-    CHKERRQ(DMNetworkGetComponent(dm,e,ALL_COMPONENTS,NULL,NULL,&nvar));
+    PetscCall(DMNetworkGetComponent(dm,e,ALL_COMPONENTS,NULL,NULL,&nvar));
     if (!nvar) continue;
-    CHKERRQ(PetscDrawCreate(comm,host,label,x,y,m,n,&draw));
-    CHKERRQ(PetscDrawSetFromOptions(draw));
-    CHKERRQ(PetscDrawLGCreate(draw,nvar,&(*ctx)->lg[i]));
-    CHKERRQ(PetscDrawLGSetFromOptions((*ctx)->lg[i]));
-    CHKERRQ(PetscDrawDestroy(&draw));
+    PetscCall(PetscDrawCreate(comm,host,label,x,y,m,n,&draw));
+    PetscCall(PetscDrawSetFromOptions(draw));
+    PetscCall(PetscDrawLGCreate(draw,nvar,&(*ctx)->lg[i]));
+    PetscCall(PetscDrawLGSetFromOptions((*ctx)->lg[i]));
+    PetscCall(PetscDrawDestroy(&draw));
     i++;
   }
   /* loop over vertices */
-  CHKERRQ(DMNetworkGetVertexRange(dm,&Start,&End));
+  PetscCall(DMNetworkGetVertexRange(dm,&Start,&End));
   for (e=Start; e<End; e++) {
-    CHKERRQ(DMNetworkGetComponent(dm,e,ALL_COMPONENTS,NULL,NULL,&nvar));
+    PetscCall(DMNetworkGetComponent(dm,e,ALL_COMPONENTS,NULL,NULL,&nvar));
     if (!nvar) continue;
-    CHKERRQ(PetscDrawCreate(comm,host,label,x,y,m,n,&draw));
-    CHKERRQ(PetscDrawSetFromOptions(draw));
-    CHKERRQ(PetscDrawLGCreate(draw,nvar,&(*ctx)->lg[i]));
-    CHKERRQ(PetscDrawLGSetFromOptions((*ctx)->lg[i]));
-    CHKERRQ(PetscDrawDestroy(&draw));
+    PetscCall(PetscDrawCreate(comm,host,label,x,y,m,n,&draw));
+    PetscCall(PetscDrawSetFromOptions(draw));
+    PetscCall(PetscDrawLGCreate(draw,nvar,&(*ctx)->lg[i]));
+    PetscCall(PetscDrawLGSetFromOptions((*ctx)->lg[i]));
+    PetscCall(PetscDrawDestroy(&draw));
     i++;
   }
-  CHKERRQ(PetscDrawDestroy(&draw));
+  PetscCall(PetscDrawDestroy(&draw));
   (*ctx)->howoften = howoften;
   PetscFunctionReturn(0);
 }
@@ -120,62 +120,62 @@ PetscErrorCode  TSMonitorLGCtxNetworkSolution(TS ts,PetscInt step,PetscReal ptim
     PetscDrawAxis axis;
 
     for (i=0; i<ctx->nlg; i++) {
-      CHKERRQ(PetscDrawLGGetAxis(ctx->lg[i],&axis));
-      CHKERRQ(PetscDrawAxisSetLabels(axis,"Solution as function of time","Time","Solution"));
-      CHKERRQ(PetscDrawLGReset(ctx->lg[i]));
+      PetscCall(PetscDrawLGGetAxis(ctx->lg[i],&axis));
+      PetscCall(PetscDrawAxisSetLabels(axis,"Solution as function of time","Time","Solution"));
+      PetscCall(PetscDrawLGReset(ctx->lg[i]));
     }
   }
 
   if (ctx->semilogy) {
     PetscInt n,j;
 
-    CHKERRQ(VecDuplicate(u,&uv));
-    CHKERRQ(VecCopy(u,uv));
-    CHKERRQ(VecGetArray(uv,&yv));
-    CHKERRQ(VecGetLocalSize(uv,&n));
+    PetscCall(VecDuplicate(u,&uv));
+    PetscCall(VecCopy(u,uv));
+    PetscCall(VecGetArray(uv,&yv));
+    PetscCall(VecGetLocalSize(uv,&n));
     for (j=0; j<n; j++) {
       if (PetscRealPart(yv[j]) <= 0.0) yv[j] = -12;
       else yv[j] = PetscLog10Real(PetscRealPart(yv[j]));
     }
     xv = yv;
   } else {
-    CHKERRQ(VecGetArrayRead(u,&xv));
+    PetscCall(VecGetArrayRead(u,&xv));
   }
   /* iterate over edges */
-  CHKERRQ(TSGetDM(ts,&dm));
+  PetscCall(TSGetDM(ts,&dm));
   i = 0;
-  CHKERRQ(DMNetworkGetEdgeRange(dm,&Start,&End));
+  PetscCall(DMNetworkGetEdgeRange(dm,&Start,&End));
   for (e=Start; e<End; e++) {
-    CHKERRQ(DMNetworkGetComponent(dm,e,ALL_COMPONENTS,NULL,NULL,&nvar));
+    PetscCall(DMNetworkGetComponent(dm,e,ALL_COMPONENTS,NULL,NULL,&nvar));
     if (!nvar) continue;
 
-    CHKERRQ(DMNetworkGetLocalVecOffset(dm,e,ALL_COMPONENTS,&offset));
-    CHKERRQ(PetscDrawLGAddCommonPoint(ctx->lg[i],ptime,(const PetscReal*)(xv+offset)));
+    PetscCall(DMNetworkGetLocalVecOffset(dm,e,ALL_COMPONENTS,&offset));
+    PetscCall(PetscDrawLGAddCommonPoint(ctx->lg[i],ptime,(const PetscReal*)(xv+offset)));
     i++;
   }
 
   /* iterate over vertices */
-  CHKERRQ(DMNetworkGetVertexRange(dm,&Start,&End));
+  PetscCall(DMNetworkGetVertexRange(dm,&Start,&End));
   for (v=Start; v<End; v++) {
-    CHKERRQ(DMNetworkGetComponent(dm,v,ALL_COMPONENTS,NULL,NULL,&nvar));
+    PetscCall(DMNetworkGetComponent(dm,v,ALL_COMPONENTS,NULL,NULL,&nvar));
     if (!nvar) continue;
 
-    CHKERRQ(DMNetworkGetLocalVecOffset(dm,v,ALL_COMPONENTS,&offset));
-    CHKERRQ(PetscDrawLGAddCommonPoint(ctx->lg[i],ptime,(const PetscReal*)(xv+offset)));
+    PetscCall(DMNetworkGetLocalVecOffset(dm,v,ALL_COMPONENTS,&offset));
+    PetscCall(PetscDrawLGAddCommonPoint(ctx->lg[i],ptime,(const PetscReal*)(xv+offset)));
     i++;
   }
   if (ctx->semilogy) {
-    CHKERRQ(VecRestoreArray(uv,&yv));
-    CHKERRQ(VecDestroy(&uv));
+    PetscCall(VecRestoreArray(uv,&yv));
+    PetscCall(VecDestroy(&uv));
   } else {
-    CHKERRQ(VecRestoreArrayRead(u,&xv));
+    PetscCall(VecRestoreArrayRead(u,&xv));
   }
 
-  CHKERRQ(TSGetConvergedReason(ts,&reason));
+  PetscCall(TSGetConvergedReason(ts,&reason));
   if (((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && reason)) {
     for (i=0; i<ctx->nlg; i++) {
-      CHKERRQ(PetscDrawLGDraw(ctx->lg[i]));
-      CHKERRQ(PetscDrawLGSave(ctx->lg[i]));
+      PetscCall(PetscDrawLGDraw(ctx->lg[i]));
+      PetscCall(PetscDrawLGSave(ctx->lg[i]));
     }
   }
   PetscFunctionReturn(0);

@@ -67,7 +67,7 @@ PetscErrorCode read_data(PetscInt *pnnode,PetscInt *pnbranch,Node **pnode,Branch
   nnode   = 4;
   nbranch = 6;
 
-  CHKERRQ(PetscCalloc2(nnode,&node,nbranch,&branch));
+  PetscCall(PetscCalloc2(nnode,&node,nbranch,&branch));
 
   for (i = 0; i < nnode; i++) {
     node[i].id  = i;
@@ -97,7 +97,7 @@ PetscErrorCode read_data(PetscInt *pnnode,PetscInt *pnbranch,Node **pnode,Branch
       edgelist[2*i]     = from node
       edgelist[2*i + 1] = to node.
   */
-  CHKERRQ(PetscCalloc1(2*nbranch, &edgelist));
+  PetscCall(PetscCalloc1(2*nbranch, &edgelist));
 
   for (i = 0; i < nbranch; i++) {
     switch (i) {
@@ -150,10 +150,10 @@ PetscErrorCode FormOperator(DM dmnetwork,Mat A,Vec b)
   PetscScalar       *barr,val[6];
 
   PetscFunctionBegin;
-  CHKERRQ(MatZeroEntries(A));
+  PetscCall(MatZeroEntries(A));
 
-  CHKERRQ(VecSet(b,0.0));
-  CHKERRQ(VecGetArray(b,&barr));
+  PetscCall(VecSet(b,0.0));
+  PetscCall(VecGetArray(b,&barr));
 
   /*
     We define the current i as an "edge characteristic" and the voltage v as a "vertex characteristic".
@@ -163,14 +163,14 @@ PetscErrorCode FormOperator(DM dmnetwork,Mat A,Vec b)
     Branch equations: i/r + v_to - v_from     = v_source (battery)
     Node equations:   sum(i_to) - sum(i_from) = i_source
    */
-  CHKERRQ(DMNetworkGetEdgeRange(dmnetwork,&eStart,&eEnd));
+  PetscCall(DMNetworkGetEdgeRange(dmnetwork,&eStart,&eEnd));
   for (e = 0; e < eEnd; e++) {
-    CHKERRQ(DMNetworkGetComponent(dmnetwork,e,0,NULL,(void**)&branch,NULL));
-    CHKERRQ(DMNetworkGetLocalVecOffset(dmnetwork,e,ALL_COMPONENTS,&lofst));
+    PetscCall(DMNetworkGetComponent(dmnetwork,e,0,NULL,(void**)&branch,NULL));
+    PetscCall(DMNetworkGetLocalVecOffset(dmnetwork,e,ALL_COMPONENTS,&lofst));
 
-    CHKERRQ(DMNetworkGetConnectedVertices(dmnetwork,e,&cone));
-    CHKERRQ(DMNetworkGetLocalVecOffset(dmnetwork,cone[0],ALL_COMPONENTS,&lofst_fr));
-    CHKERRQ(DMNetworkGetLocalVecOffset(dmnetwork,cone[1],ALL_COMPONENTS,&lofst_to));
+    PetscCall(DMNetworkGetConnectedVertices(dmnetwork,e,&cone));
+    PetscCall(DMNetworkGetLocalVecOffset(dmnetwork,cone[0],ALL_COMPONENTS,&lofst_fr));
+    PetscCall(DMNetworkGetLocalVecOffset(dmnetwork,cone[1],ALL_COMPONENTS,&lofst_to));
 
     /* set rhs b for Branch equation */
     barr[lofst] = branch->bat;
@@ -180,50 +180,50 @@ PetscErrorCode FormOperator(DM dmnetwork,Mat A,Vec b)
     col[0] = lofst;     val[0] =  1./branch->r;
     col[1] = lofst_to;  val[1] =  1;
     col[2] = lofst_fr;  val[2] = -1;
-    CHKERRQ(MatSetValuesLocal(A,1,row,3,col,val,ADD_VALUES));
+    PetscCall(MatSetValuesLocal(A,1,row,3,col,val,ADD_VALUES));
 
     /* set Node equation */
-    CHKERRQ(DMNetworkGetComponent(dmnetwork,cone[0],0,NULL,(void**)&node,NULL));
+    PetscCall(DMNetworkGetComponent(dmnetwork,cone[0],0,NULL,(void**)&node,NULL));
 
     /* from node */
     if (!node->gr) { /* not a boundary node */
       row[0] = lofst_fr;
       col[0] = lofst;   val[0] = -1;
-      CHKERRQ(MatSetValuesLocal(A,1,row,1,col,val,ADD_VALUES));
+      PetscCall(MatSetValuesLocal(A,1,row,1,col,val,ADD_VALUES));
     }
 
     /* to node */
-    CHKERRQ(DMNetworkGetComponent(dmnetwork,cone[1],0,NULL,(void**)&node,NULL));
+    PetscCall(DMNetworkGetComponent(dmnetwork,cone[1],0,NULL,(void**)&node,NULL));
 
     if (!node->gr) { /* not a boundary node */
       row[0] = lofst_to;
       col[0] = lofst;   val[0] = 1;
-      CHKERRQ(MatSetValuesLocal(A,1,row,1,col,val,ADD_VALUES));
+      PetscCall(MatSetValuesLocal(A,1,row,1,col,val,ADD_VALUES));
     }
   }
 
   /* set rhs b for Node equation */
-  CHKERRQ(DMNetworkGetVertexRange(dmnetwork,&vStart,&vEnd));
+  PetscCall(DMNetworkGetVertexRange(dmnetwork,&vStart,&vEnd));
   for (v = vStart; v < vEnd; v++) {
-    CHKERRQ(DMNetworkIsGhostVertex(dmnetwork,v,&ghost));
+    PetscCall(DMNetworkIsGhostVertex(dmnetwork,v,&ghost));
     if (!ghost) {
-      CHKERRQ(DMNetworkGetComponent(dmnetwork,v,0,NULL,(void**)&node,NULL));
-      CHKERRQ(DMNetworkGetLocalVecOffset(dmnetwork,v,ALL_COMPONENTS,&lofst));
+      PetscCall(DMNetworkGetComponent(dmnetwork,v,0,NULL,(void**)&node,NULL));
+      PetscCall(DMNetworkGetLocalVecOffset(dmnetwork,v,ALL_COMPONENTS,&lofst));
 
       if (node->gr) { /* a boundary node */
         row[0] = lofst;
         col[0] = lofst;   val[0] = 1;
-        CHKERRQ(MatSetValuesLocal(A,1,row,1,col,val,ADD_VALUES));
+        PetscCall(MatSetValuesLocal(A,1,row,1,col,val,ADD_VALUES));
       } else {       /* not a boundary node */
         barr[lofst] += node->inj;
       }
     }
   }
 
-  CHKERRQ(VecRestoreArray(b,&barr));
+  PetscCall(VecRestoreArray(b,&barr));
 
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
@@ -241,72 +241,72 @@ int main(int argc,char ** argv)
   Branch            *branch;
   PetscInt          nE[1];
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   /* "Read" data only for processor 0 */
   if (rank == 0) {
-    CHKERRQ(read_data(&nnode, &nbranch, &node, &branch, &edgelist));
+    PetscCall(read_data(&nnode, &nbranch, &node, &branch, &edgelist));
   }
 
-  CHKERRQ(DMNetworkCreate(PETSC_COMM_WORLD,&dmnetwork));
-  CHKERRQ(DMNetworkRegisterComponent(dmnetwork,"nstr",sizeof(Node),&componentkey[0]));
-  CHKERRQ(DMNetworkRegisterComponent(dmnetwork,"bsrt",sizeof(Branch),&componentkey[1]));
+  PetscCall(DMNetworkCreate(PETSC_COMM_WORLD,&dmnetwork));
+  PetscCall(DMNetworkRegisterComponent(dmnetwork,"nstr",sizeof(Node),&componentkey[0]));
+  PetscCall(DMNetworkRegisterComponent(dmnetwork,"bsrt",sizeof(Branch),&componentkey[1]));
 
   /* Set local number of nodes/edges, add edge connectivity */
   nE[0] = nbranch;
-  CHKERRQ(DMNetworkSetNumSubNetworks(dmnetwork,PETSC_DECIDE,1));
-  CHKERRQ(DMNetworkAddSubnetwork(dmnetwork,"",nE[0],edgelist,NULL));
+  PetscCall(DMNetworkSetNumSubNetworks(dmnetwork,PETSC_DECIDE,1));
+  PetscCall(DMNetworkAddSubnetwork(dmnetwork,"",nE[0],edgelist,NULL));
 
   /* Set up the network layout */
-  CHKERRQ(DMNetworkLayoutSetUp(dmnetwork));
+  PetscCall(DMNetworkLayoutSetUp(dmnetwork));
 
   /* Add network components (physical parameters of nodes and branches) and num of variables */
   if (rank == 0) {
-    CHKERRQ(DMNetworkGetEdgeRange(dmnetwork,&eStart,&eEnd));
+    PetscCall(DMNetworkGetEdgeRange(dmnetwork,&eStart,&eEnd));
     for (i = eStart; i < eEnd; i++) {
-      CHKERRQ(DMNetworkAddComponent(dmnetwork,i,componentkey[1],&branch[i-eStart],1));
+      PetscCall(DMNetworkAddComponent(dmnetwork,i,componentkey[1],&branch[i-eStart],1));
     }
 
-    CHKERRQ(DMNetworkGetVertexRange(dmnetwork,&vStart,&vEnd));
+    PetscCall(DMNetworkGetVertexRange(dmnetwork,&vStart,&vEnd));
     for (i = vStart; i < vEnd; i++) {
-      CHKERRQ(DMNetworkAddComponent(dmnetwork,i,componentkey[0],&node[i-vStart],1));
+      PetscCall(DMNetworkAddComponent(dmnetwork,i,componentkey[0],&node[i-vStart],1));
     }
   }
 
   /* Network partitioning and distribution of data */
-  CHKERRQ(DMSetUp(dmnetwork));
-  CHKERRQ(DMNetworkDistribute(&dmnetwork,0));
+  PetscCall(DMSetUp(dmnetwork));
+  PetscCall(DMNetworkDistribute(&dmnetwork,0));
 
   /* We do not use these data structures anymore since they have been copied to dmnetwork */
   if (rank == 0) {
-    CHKERRQ(PetscFree(edgelist));
-    CHKERRQ(PetscFree2(node,branch));
+    PetscCall(PetscFree(edgelist));
+    PetscCall(PetscFree2(node,branch));
   }
 
   /* Create vectors and matrix */
-  CHKERRQ(DMCreateGlobalVector(dmnetwork,&x));
-  CHKERRQ(VecDuplicate(x,&b));
-  CHKERRQ(DMCreateMatrix(dmnetwork,&A));
+  PetscCall(DMCreateGlobalVector(dmnetwork,&x));
+  PetscCall(VecDuplicate(x,&b));
+  PetscCall(DMCreateMatrix(dmnetwork,&A));
 
   /* Assembly system of equations */
-  CHKERRQ(FormOperator(dmnetwork,A,b));
+  PetscCall(FormOperator(dmnetwork,A,b));
 
   /* Solve linear system: A x = b */
-  CHKERRQ(KSPCreate(PETSC_COMM_WORLD, &ksp));
-  CHKERRQ(KSPSetOperators(ksp, A, A));
-  CHKERRQ(KSPSetFromOptions(ksp));
-  CHKERRQ(KSPSolve(ksp, b, x));
-  CHKERRQ(VecView(x, PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
+  PetscCall(KSPSetOperators(ksp, A, A));
+  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(KSPSolve(ksp, b, x));
+  PetscCall(VecView(x, PETSC_VIEWER_STDOUT_WORLD));
 
   /* Free work space */
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&b));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(KSPDestroy(&ksp));
-  CHKERRQ(DMDestroy(&dmnetwork));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&b));
+  PetscCall(MatDestroy(&A));
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(DMDestroy(&dmnetwork));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

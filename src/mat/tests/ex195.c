@@ -20,98 +20,98 @@ int main(int argc,char **args)
   PetscMPIInt         size;
   PetscBool           equal;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   comm = PETSC_COMM_WORLD;
-  CHKERRMPI(MPI_Comm_size(comm,&size));
+  PetscCallMPI(MPI_Comm_size(comm,&size));
 
   /*
      Assemble the matrix for the five point stencil, YET AGAIN
   */
-  CHKERRQ(MatCreate(comm,&A1));
+  PetscCall(MatCreate(comm,&A1));
   m=2,n=2;
-  CHKERRQ(MatSetSizes(A1,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n));
-  CHKERRQ(MatSetFromOptions(A1));
-  CHKERRQ(MatSetUp(A1));
-  CHKERRQ(MatGetOwnershipRange(A1,&istart,&iend));
+  PetscCall(MatSetSizes(A1,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n));
+  PetscCall(MatSetFromOptions(A1));
+  PetscCall(MatSetUp(A1));
+  PetscCall(MatGetOwnershipRange(A1,&istart,&iend));
   for (ii=istart; ii<iend; ii++) {
     v = -1.0; i = ii/n; j = ii - i*n;
-    if (i>0)   {J = ii - n; CHKERRQ(MatSetValues(A1,1,&ii,1,&J,&v,INSERT_VALUES));}
-    if (i<m-1) {J = ii + n; CHKERRQ(MatSetValues(A1,1,&ii,1,&J,&v,INSERT_VALUES));}
-    if (j>0)   {J = ii - 1; CHKERRQ(MatSetValues(A1,1,&ii,1,&J,&v,INSERT_VALUES));}
-    if (j<n-1) {J = ii + 1; CHKERRQ(MatSetValues(A1,1,&ii,1,&J,&v,INSERT_VALUES));}
-    v = 4.0; CHKERRQ(MatSetValues(A1,1,&ii,1,&ii,&v,INSERT_VALUES));
+    if (i>0)   {J = ii - n; PetscCall(MatSetValues(A1,1,&ii,1,&J,&v,INSERT_VALUES));}
+    if (i<m-1) {J = ii + n; PetscCall(MatSetValues(A1,1,&ii,1,&J,&v,INSERT_VALUES));}
+    if (j>0)   {J = ii - 1; PetscCall(MatSetValues(A1,1,&ii,1,&J,&v,INSERT_VALUES));}
+    if (j<n-1) {J = ii + 1; PetscCall(MatSetValues(A1,1,&ii,1,&J,&v,INSERT_VALUES));}
+    v = 4.0; PetscCall(MatSetValues(A1,1,&ii,1,&ii,&v,INSERT_VALUES));
   }
-  CHKERRQ(MatAssemblyBegin(A1,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A1,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatView(A1,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatAssemblyBegin(A1,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A1,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatView(A1,PETSC_VIEWER_STDOUT_WORLD));
 
-  CHKERRQ(MatDuplicate(A1,MAT_COPY_VALUES,&A2));
-  CHKERRQ(MatDuplicate(A1,MAT_COPY_VALUES,&A3));
-  CHKERRQ(MatDuplicate(A1,MAT_COPY_VALUES,&A4));
+  PetscCall(MatDuplicate(A1,MAT_COPY_VALUES,&A2));
+  PetscCall(MatDuplicate(A1,MAT_COPY_VALUES,&A3));
+  PetscCall(MatDuplicate(A1,MAT_COPY_VALUES,&A4));
 
   /*create a nest matrix */
-  CHKERRQ(MatCreate(comm,&nest));
-  CHKERRQ(MatSetType(nest,MATNEST));
+  PetscCall(MatCreate(comm,&nest));
+  PetscCall(MatSetType(nest,MATNEST));
   mata[0]=A1,mata[1]=A2,mata[2]=A3,mata[3]=A4;
-  CHKERRQ(MatNestSetSubMats(nest,2,NULL,2,NULL,mata));
-  CHKERRQ(MatSetUp(nest));
-  CHKERRQ(MatConvert(nest,MATAIJ,MAT_INITIAL_MATRIX,&aij));
-  CHKERRQ(MatView(aij,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatNestSetSubMats(nest,2,NULL,2,NULL,mata));
+  PetscCall(MatSetUp(nest));
+  PetscCall(MatConvert(nest,MATAIJ,MAT_INITIAL_MATRIX,&aij));
+  PetscCall(MatView(aij,PETSC_VIEWER_STDOUT_WORLD));
 
   /* create a dense matrix */
-  CHKERRQ(MatGetSize(nest,&M,NULL));
-  CHKERRQ(MatGetLocalSize(nest,&m,NULL));
-  CHKERRQ(MatCreateDense(comm,m,PETSC_DECIDE,M,K,NULL,&B));
-  CHKERRQ(MatSetRandom(B,PETSC_NULL));
-  CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatGetSize(nest,&M,NULL));
+  PetscCall(MatGetLocalSize(nest,&m,NULL));
+  PetscCall(MatCreateDense(comm,m,PETSC_DECIDE,M,K,NULL,&B));
+  PetscCall(MatSetRandom(B,PETSC_NULL));
+  PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
 
   /* C = nest*B_dense */
-  CHKERRQ(MatMatMult(nest,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C));
-  CHKERRQ(MatMatMult(nest,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C));
-  CHKERRQ(MatMatMultEqual(nest,B,C,10,&equal));
+  PetscCall(MatMatMult(nest,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C));
+  PetscCall(MatMatMult(nest,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C));
+  PetscCall(MatMatMultEqual(nest,B,C,10,&equal));
   PetscCheck(equal,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in C != nest*B_dense");
 
   /* Test B = nest*C, reuse C and B with MatProductCreateWithMat() */
   /* C has been obtained from nest*B. Clear internal data structures related to factors to prevent circular references */
-  CHKERRQ(MatProductClear(C));
-  CHKERRQ(MatProductCreateWithMat(nest,C,NULL,B));
-  CHKERRQ(MatProductSetType(B,MATPRODUCT_AB));
-  CHKERRQ(MatProductSetFromOptions(B));
-  CHKERRQ(MatProductSymbolic(B));
-  CHKERRQ(MatProductNumeric(B));
-  CHKERRQ(MatMatMultEqual(nest,C,B,10,&equal));
+  PetscCall(MatProductClear(C));
+  PetscCall(MatProductCreateWithMat(nest,C,NULL,B));
+  PetscCall(MatProductSetType(B,MATPRODUCT_AB));
+  PetscCall(MatProductSetFromOptions(B));
+  PetscCall(MatProductSymbolic(B));
+  PetscCall(MatProductNumeric(B));
+  PetscCall(MatMatMultEqual(nest,C,B,10,&equal));
   PetscCheck(equal,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in B != nest*C_dense");
-  CHKERRQ(MatConvert(nest,MATAIJ,MAT_INPLACE_MATRIX,&nest));
-  CHKERRQ(MatEqual(nest,aij,&equal));
+  PetscCall(MatConvert(nest,MATAIJ,MAT_INPLACE_MATRIX,&nest));
+  PetscCall(MatEqual(nest,aij,&equal));
   PetscCheck(equal,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in aij != nest");
-  CHKERRQ(MatDestroy(&nest));
+  PetscCall(MatDestroy(&nest));
 
   if (size > 1) { /* Do not know why this test fails for size = 1 */
-    CHKERRQ(MatCreateTranspose(A1,&A5)); /* A1 is symmetric */
+    PetscCall(MatCreateTranspose(A1,&A5)); /* A1 is symmetric */
     mata[0] = A5;
-    CHKERRQ(MatCreate(comm,&nest));
-    CHKERRQ(MatSetType(nest,MATNEST));
-    CHKERRQ(MatNestSetSubMats(nest,2,NULL,2,NULL,mata));
-    CHKERRQ(MatSetUp(nest));
-    CHKERRQ(MatMatMult(nest,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C1));
-    CHKERRQ(MatMatMult(nest,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C1));
+    PetscCall(MatCreate(comm,&nest));
+    PetscCall(MatSetType(nest,MATNEST));
+    PetscCall(MatNestSetSubMats(nest,2,NULL,2,NULL,mata));
+    PetscCall(MatSetUp(nest));
+    PetscCall(MatMatMult(nest,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C1));
+    PetscCall(MatMatMult(nest,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C1));
 
-    CHKERRQ(MatMatMultEqual(nest,B,C1,10,&equal));
+    PetscCall(MatMatMultEqual(nest,B,C1,10,&equal));
     PetscCheck(equal,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in C1 != C");
-    CHKERRQ(MatDestroy(&C1));
-    CHKERRQ(MatDestroy(&A5));
-    CHKERRQ(MatDestroy(&nest));
+    PetscCall(MatDestroy(&C1));
+    PetscCall(MatDestroy(&A5));
+    PetscCall(MatDestroy(&nest));
   }
 
-  CHKERRQ(MatDestroy(&C));
-  CHKERRQ(MatDestroy(&B));
-  CHKERRQ(MatDestroy(&aij));
-  CHKERRQ(MatDestroy(&A1));
-  CHKERRQ(MatDestroy(&A2));
-  CHKERRQ(MatDestroy(&A3));
-  CHKERRQ(MatDestroy(&A4));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatDestroy(&C));
+  PetscCall(MatDestroy(&B));
+  PetscCall(MatDestroy(&aij));
+  PetscCall(MatDestroy(&A1));
+  PetscCall(MatDestroy(&A2));
+  PetscCall(MatDestroy(&A3));
+  PetscCall(MatDestroy(&A4));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

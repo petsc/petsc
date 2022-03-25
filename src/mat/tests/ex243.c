@@ -13,30 +13,30 @@ int main(int argc, char** argv)
   MatType        type;
   PetscBool      isDense,isAIJ,flg;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
 
   /* Create a matrix */
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD, &A));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
   mloc = PETSC_DECIDE;
-  CHKERRQ(PetscSplitOwnershipEqual(PETSC_COMM_WORLD,&mloc,&M));
+  PetscCall(PetscSplitOwnershipEqual(PETSC_COMM_WORLD,&mloc,&M));
   nloc = PETSC_DECIDE;
-  CHKERRQ(PetscSplitOwnershipEqual(PETSC_COMM_WORLD,&nloc,&N));
-  CHKERRQ(MatSetSizes(A,mloc,nloc,M,N));
-  CHKERRQ(MatSetType(A,MATDENSE));
-  CHKERRQ(MatSetFromOptions(A));
-  CHKERRQ(MatSetUp(A));
+  PetscCall(PetscSplitOwnershipEqual(PETSC_COMM_WORLD,&nloc,&N));
+  PetscCall(MatSetSizes(A,mloc,nloc,M,N));
+  PetscCall(MatSetType(A,MATDENSE));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSetUp(A));
 
   /* Set local matrix entries */
-  CHKERRQ(MatGetOwnershipIS(A,&isrows,&iscols));
-  CHKERRQ(ISGetLocalSize(isrows,&nrows));
-  CHKERRQ(ISGetIndices(isrows,&rows));
-  CHKERRQ(ISGetLocalSize(iscols,&ncols));
-  CHKERRQ(ISGetIndices(iscols,&cols));
-  CHKERRQ(PetscMalloc1(nrows*ncols,&v));
+  PetscCall(MatGetOwnershipIS(A,&isrows,&iscols));
+  PetscCall(ISGetLocalSize(isrows,&nrows));
+  PetscCall(ISGetIndices(isrows,&rows));
+  PetscCall(ISGetLocalSize(iscols,&ncols));
+  PetscCall(ISGetIndices(iscols,&cols));
+  PetscCall(PetscMalloc1(nrows*ncols,&v));
 
   for (i=0; i<nrows; i++) {
     for (j=0; j<ncols; j++) {
@@ -47,42 +47,42 @@ int main(int argc, char** argv)
       }
     }
   }
-  CHKERRQ(MatSetValues(A,nrows,rows,ncols,cols,v,INSERT_VALUES));
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatSetValues(A,nrows,rows,ncols,cols,v,INSERT_VALUES));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
   /* Test MatSetValues() by converting A to A_scalapack */
-  CHKERRQ(MatGetType(A,&type));
+  PetscCall(MatGetType(A,&type));
   if (size == 1) {
-    CHKERRQ(PetscObjectTypeCompare((PetscObject)A,MATSEQDENSE,&isDense));
-    CHKERRQ(PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&isAIJ));
+    PetscCall(PetscObjectTypeCompare((PetscObject)A,MATSEQDENSE,&isDense));
+    PetscCall(PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&isAIJ));
   } else {
-    CHKERRQ(PetscObjectTypeCompare((PetscObject)A,MATMPIDENSE,&isDense));
-    CHKERRQ(PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&isAIJ));
+    PetscCall(PetscObjectTypeCompare((PetscObject)A,MATMPIDENSE,&isDense));
+    PetscCall(PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&isAIJ));
   }
 
   if (isDense || isAIJ) {
     Mat Aexplicit;
-    CHKERRQ(MatConvert(A,MATSCALAPACK,MAT_INITIAL_MATRIX,&A_scalapack));
-    CHKERRQ(MatComputeOperator(A_scalapack,isAIJ?MATAIJ:MATDENSE,&Aexplicit));
-    CHKERRQ(MatMultEqual(Aexplicit,A_scalapack,5,&flg));
+    PetscCall(MatConvert(A,MATSCALAPACK,MAT_INITIAL_MATRIX,&A_scalapack));
+    PetscCall(MatComputeOperator(A_scalapack,isAIJ?MATAIJ:MATDENSE,&Aexplicit));
+    PetscCall(MatMultEqual(Aexplicit,A_scalapack,5,&flg));
     PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Aexplicit != A_scalapack.");
-    CHKERRQ(MatDestroy(&Aexplicit));
+    PetscCall(MatDestroy(&Aexplicit));
 
     /* Test MAT_REUSE_MATRIX which is only supported for inplace conversion */
-    CHKERRQ(MatConvert(A,MATSCALAPACK,MAT_INPLACE_MATRIX,&A));
-    CHKERRQ(MatMultEqual(A_scalapack,A,5,&flg));
+    PetscCall(MatConvert(A,MATSCALAPACK,MAT_INPLACE_MATRIX,&A));
+    PetscCall(MatMultEqual(A_scalapack,A,5,&flg));
     PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"A_scalapack != A.");
-    CHKERRQ(MatDestroy(&A_scalapack));
+    PetscCall(MatDestroy(&A_scalapack));
   }
 
-  CHKERRQ(ISRestoreIndices(isrows,&rows));
-  CHKERRQ(ISRestoreIndices(iscols,&cols));
-  CHKERRQ(ISDestroy(&isrows));
-  CHKERRQ(ISDestroy(&iscols));
-  CHKERRQ(PetscFree(v));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(PetscFinalize());
+  PetscCall(ISRestoreIndices(isrows,&rows));
+  PetscCall(ISRestoreIndices(iscols,&cols));
+  PetscCall(ISDestroy(&isrows));
+  PetscCall(ISDestroy(&iscols));
+  PetscCall(PetscFree(v));
+  PetscCall(MatDestroy(&A));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

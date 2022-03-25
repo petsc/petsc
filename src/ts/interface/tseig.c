@@ -49,26 +49,26 @@ PetscErrorCode  TSMonitorSPEigCtxCreate(MPI_Comm comm,const char host[],const ch
   PC             pc;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNew(ctx));
-  CHKERRQ(PetscRandomCreate(comm,&(*ctx)->rand));
-  CHKERRQ(PetscRandomSetFromOptions((*ctx)->rand));
-  CHKERRQ(PetscDrawCreate(comm,host,label,x,y,m,n,&win));
-  CHKERRQ(PetscDrawSetFromOptions(win));
-  CHKERRQ(PetscDrawSPCreate(win,1,&(*ctx)->drawsp));
-  CHKERRQ(KSPCreate(comm,&(*ctx)->ksp));
-  CHKERRQ(KSPSetOptionsPrefix((*ctx)->ksp,"ts_monitor_sp_eig_")); /* this is wrong, used use also prefix from the TS */
-  CHKERRQ(KSPSetType((*ctx)->ksp,KSPGMRES));
-  CHKERRQ(KSPGMRESSetRestart((*ctx)->ksp,200));
-  CHKERRQ(KSPSetTolerances((*ctx)->ksp,1.e-10,PETSC_DEFAULT,PETSC_DEFAULT,200));
-  CHKERRQ(KSPSetComputeSingularValues((*ctx)->ksp,PETSC_TRUE));
-  CHKERRQ(KSPSetFromOptions((*ctx)->ksp));
-  CHKERRQ(KSPGetPC((*ctx)->ksp,&pc));
-  CHKERRQ(PCSetType(pc,PCNONE));
+  PetscCall(PetscNew(ctx));
+  PetscCall(PetscRandomCreate(comm,&(*ctx)->rand));
+  PetscCall(PetscRandomSetFromOptions((*ctx)->rand));
+  PetscCall(PetscDrawCreate(comm,host,label,x,y,m,n,&win));
+  PetscCall(PetscDrawSetFromOptions(win));
+  PetscCall(PetscDrawSPCreate(win,1,&(*ctx)->drawsp));
+  PetscCall(KSPCreate(comm,&(*ctx)->ksp));
+  PetscCall(KSPSetOptionsPrefix((*ctx)->ksp,"ts_monitor_sp_eig_")); /* this is wrong, used use also prefix from the TS */
+  PetscCall(KSPSetType((*ctx)->ksp,KSPGMRES));
+  PetscCall(KSPGMRESSetRestart((*ctx)->ksp,200));
+  PetscCall(KSPSetTolerances((*ctx)->ksp,1.e-10,PETSC_DEFAULT,PETSC_DEFAULT,200));
+  PetscCall(KSPSetComputeSingularValues((*ctx)->ksp,PETSC_TRUE));
+  PetscCall(KSPSetFromOptions((*ctx)->ksp));
+  PetscCall(KSPGetPC((*ctx)->ksp,&pc));
+  PetscCall(PCSetType(pc,PCNONE));
 
   (*ctx)->howoften          = howoften;
   (*ctx)->computeexplicitly = PETSC_FALSE;
 
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-ts_monitor_sp_eig_explicitly",&(*ctx)->computeexplicitly,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-ts_monitor_sp_eig_explicitly",&(*ctx)->computeexplicitly,NULL));
 
   (*ctx)->comm = comm;
   (*ctx)->xmin = -2.1;
@@ -83,7 +83,7 @@ static PetscErrorCode TSLinearStabilityIndicator(TS ts, PetscReal xr,PetscReal x
   PetscReal      yr,yi;
 
   PetscFunctionBegin;
-  CHKERRQ(TSComputeLinearStability(ts,xr,xi,&yr,&yi));
+  PetscCall(TSComputeLinearStability(ts,xr,xi,&yr,&yi));
   if ((yr*yr + yi*yi) <= 1.0) *flg = PETSC_TRUE;
   else *flg = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -104,10 +104,10 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
   if (step < 0) PetscFunctionReturn(0); /* -1 indicates interpolated solution */
   if (!step) PetscFunctionReturn(0);
   if (((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && ts->reason)) {
-    CHKERRQ(VecDuplicate(v,&xdot));
-    CHKERRQ(TSGetSNES(ts,&snes));
-    CHKERRQ(SNESGetJacobian(snes,&A,&B,NULL,NULL));
-    CHKERRQ(MatDuplicate(A,MAT_DO_NOT_COPY_VALUES,&B));
+    PetscCall(VecDuplicate(v,&xdot));
+    PetscCall(TSGetSNES(ts,&snes));
+    PetscCall(SNESGetJacobian(snes,&A,&B,NULL,NULL));
+    PetscCall(MatDuplicate(A,MAT_DO_NOT_COPY_VALUES,&B));
     /*
        This doesn't work because methods keep and use internal information about the shift so it
        seems we would need code for each method to trick the correct Jacobian in being computed.
@@ -115,18 +115,18 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
     time_step_save = ts->time_step;
     ts->time_step  = PETSC_MAX_REAL;
 
-    CHKERRQ(SNESComputeJacobian(snes,v,A,B));
+    PetscCall(SNESComputeJacobian(snes,v,A,B));
 
     ts->time_step  = time_step_save;
 
-    CHKERRQ(KSPSetOperators(ksp,B,B));
-    CHKERRQ(VecGetSize(v,&n));
+    PetscCall(KSPSetOperators(ksp,B,B));
+    PetscCall(VecGetSize(v,&n));
     if (n < 200) its = n;
-    CHKERRQ(KSPSetTolerances(ksp,1.e-10,PETSC_DEFAULT,PETSC_DEFAULT,its));
-    CHKERRQ(VecSetRandom(xdot,ctx->rand));
-    CHKERRQ(KSPSolve(ksp,xdot,xdot));
-    CHKERRQ(VecDestroy(&xdot));
-    CHKERRQ(KSPGetIterationNumber(ksp,&nits));
+    PetscCall(KSPSetTolerances(ksp,1.e-10,PETSC_DEFAULT,PETSC_DEFAULT,its));
+    PetscCall(VecSetRandom(xdot,ctx->rand));
+    PetscCall(KSPSolve(ksp,xdot,xdot));
+    PetscCall(VecDestroy(&xdot));
+    PetscCall(KSPGetIterationNumber(ksp,&nits));
     N    = nits+2;
 
     if (nits) {
@@ -135,42 +135,42 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
       PetscDrawAxis axis;
       PetscReal     xmin,xmax,ymin,ymax;
 
-      CHKERRQ(PetscDrawSPReset(drawsp));
-      CHKERRQ(PetscDrawSPSetLimits(drawsp,ctx->xmin,ctx->xmax,ctx->ymin,ctx->ymax));
-      CHKERRQ(PetscMalloc2(PetscMax(n,N),&r,PetscMax(n,N),&c));
+      PetscCall(PetscDrawSPReset(drawsp));
+      PetscCall(PetscDrawSPSetLimits(drawsp,ctx->xmin,ctx->xmax,ctx->ymin,ctx->ymax));
+      PetscCall(PetscMalloc2(PetscMax(n,N),&r,PetscMax(n,N),&c));
       if (ctx->computeexplicitly) {
-        CHKERRQ(KSPComputeEigenvaluesExplicitly(ksp,n,r,c));
+        PetscCall(KSPComputeEigenvaluesExplicitly(ksp,n,r,c));
         neig = n;
       } else {
-        CHKERRQ(KSPComputeEigenvalues(ksp,N,r,c,&neig));
+        PetscCall(KSPComputeEigenvalues(ksp,N,r,c,&neig));
       }
       /* We used the positive operator to be able to reuse KSPs that require positive definiteness, now flip the spectrum as is conventional for ODEs */
       for (i=0; i<neig; i++) r[i] = -r[i];
       for (i=0; i<neig; i++) {
         if (ts->ops->linearstability) {
           PetscReal fr,fi;
-          CHKERRQ(TSComputeLinearStability(ts,r[i],c[i],&fr,&fi));
+          PetscCall(TSComputeLinearStability(ts,r[i],c[i],&fr,&fi));
           if ((fr*fr + fi*fi) > 1.0) {
-            CHKERRQ(PetscPrintf(ctx->comm,"Linearized Eigenvalue %g + %g i linear stability function %g norm indicates unstable scheme \n",(double)r[i],(double)c[i],(double)(fr*fr + fi*fi)));
+            PetscCall(PetscPrintf(ctx->comm,"Linearized Eigenvalue %g + %g i linear stability function %g norm indicates unstable scheme \n",(double)r[i],(double)c[i],(double)(fr*fr + fi*fi)));
           }
         }
-        CHKERRQ(PetscDrawSPAddPoint(drawsp,r+i,c+i));
+        PetscCall(PetscDrawSPAddPoint(drawsp,r+i,c+i));
       }
-      CHKERRQ(PetscFree2(r,c));
-      CHKERRQ(PetscDrawSPGetDraw(drawsp,&draw));
-      CHKERRQ(PetscDrawGetPause(draw,&pause));
-      CHKERRQ(PetscDrawSetPause(draw,0.0));
-      CHKERRQ(PetscDrawSPDraw(drawsp,PETSC_TRUE));
-      CHKERRQ(PetscDrawSetPause(draw,pause));
+      PetscCall(PetscFree2(r,c));
+      PetscCall(PetscDrawSPGetDraw(drawsp,&draw));
+      PetscCall(PetscDrawGetPause(draw,&pause));
+      PetscCall(PetscDrawSetPause(draw,0.0));
+      PetscCall(PetscDrawSPDraw(drawsp,PETSC_TRUE));
+      PetscCall(PetscDrawSetPause(draw,pause));
       if (ts->ops->linearstability) {
-        CHKERRQ(PetscDrawSPGetAxis(drawsp,&axis));
-        CHKERRQ(PetscDrawAxisGetLimits(axis,&xmin,&xmax,&ymin,&ymax));
-        CHKERRQ(PetscDrawIndicatorFunction(draw,xmin,xmax,ymin,ymax,PETSC_DRAW_CYAN,(PetscErrorCode (*)(void*,PetscReal,PetscReal,PetscBool*))TSLinearStabilityIndicator,ts));
-        CHKERRQ(PetscDrawSPDraw(drawsp,PETSC_FALSE));
+        PetscCall(PetscDrawSPGetAxis(drawsp,&axis));
+        PetscCall(PetscDrawAxisGetLimits(axis,&xmin,&xmax,&ymin,&ymax));
+        PetscCall(PetscDrawIndicatorFunction(draw,xmin,xmax,ymin,ymax,PETSC_DRAW_CYAN,(PetscErrorCode (*)(void*,PetscReal,PetscReal,PetscBool*))TSLinearStabilityIndicator,ts));
+        PetscCall(PetscDrawSPDraw(drawsp,PETSC_FALSE));
       }
-      CHKERRQ(PetscDrawSPSave(drawsp));
+      PetscCall(PetscDrawSPSave(drawsp));
     }
-    CHKERRQ(MatDestroy(&B));
+    PetscCall(MatDestroy(&B));
   }
   PetscFunctionReturn(0);
 }
@@ -192,11 +192,11 @@ PetscErrorCode  TSMonitorSPEigCtxDestroy(TSMonitorSPEigCtx *ctx)
   PetscDraw      draw;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscDrawSPGetDraw((*ctx)->drawsp,&draw));
-  CHKERRQ(PetscDrawDestroy(&draw));
-  CHKERRQ(PetscDrawSPDestroy(&(*ctx)->drawsp));
-  CHKERRQ(KSPDestroy(&(*ctx)->ksp));
-  CHKERRQ(PetscRandomDestroy(&(*ctx)->rand));
-  CHKERRQ(PetscFree(*ctx));
+  PetscCall(PetscDrawSPGetDraw((*ctx)->drawsp,&draw));
+  PetscCall(PetscDrawDestroy(&draw));
+  PetscCall(PetscDrawSPDestroy(&(*ctx)->drawsp));
+  PetscCall(KSPDestroy(&(*ctx)->ksp));
+  PetscCall(PetscRandomDestroy(&(*ctx)->rand));
+  PetscCall(PetscFree(*ctx));
   PetscFunctionReturn(0);
 }

@@ -14,32 +14,32 @@ int main(int argc,char **argv)
   Mat            ssbaij;
   PetscBool      rect = PETSC_FALSE;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   PetscCheckFalse(size < 2,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is an example with more then one processors");
   if (rank) {
     PetscInt i;
     for (i = 0; i < 3; i++) ia[i] = 0;
     for (i = 0; i < 5; i++) ia2[i] = 0;
   }
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-rect",&rect,NULL));
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&ssbaij));
-  CHKERRQ(MatSetBlockSize(ssbaij,2));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-rect",&rect,NULL));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&ssbaij));
+  PetscCall(MatSetBlockSize(ssbaij,2));
   if (rect) {
-    CHKERRQ(MatSetType(ssbaij,MATMPIBAIJ));
-    CHKERRQ(MatSetSizes(ssbaij,4,6,PETSC_DECIDE,PETSC_DECIDE));
+    PetscCall(MatSetType(ssbaij,MATMPIBAIJ));
+    PetscCall(MatSetSizes(ssbaij,4,6,PETSC_DECIDE,PETSC_DECIDE));
   } else {
-    CHKERRQ(MatSetType(ssbaij,MATMPISBAIJ));
-    CHKERRQ(MatSetSizes(ssbaij,4,4,PETSC_DECIDE,PETSC_DECIDE));
+    PetscCall(MatSetType(ssbaij,MATMPISBAIJ));
+    PetscCall(MatSetSizes(ssbaij,4,4,PETSC_DECIDE,PETSC_DECIDE));
   }
-  CHKERRQ(MatSetFromOptions(ssbaij));
-  CHKERRQ(MatMPIAIJSetPreallocationCSR(ssbaij,ia2,ja2,c2));
-  CHKERRQ(MatMPIBAIJSetPreallocationCSR(ssbaij,2,ia,ja,c));
-  CHKERRQ(MatMPISBAIJSetPreallocationCSR(ssbaij,2,ia,ja,c));
-  CHKERRQ(MatViewFromOptions(ssbaij,NULL,"-view"));
-  CHKERRQ(MatDestroy(&ssbaij));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatSetFromOptions(ssbaij));
+  PetscCall(MatMPIAIJSetPreallocationCSR(ssbaij,ia2,ja2,c2));
+  PetscCall(MatMPIBAIJSetPreallocationCSR(ssbaij,2,ia,ja,c));
+  PetscCall(MatMPISBAIJSetPreallocationCSR(ssbaij,2,ia,ja,c));
+  PetscCall(MatViewFromOptions(ssbaij,NULL,"-view"));
+  PetscCall(MatDestroy(&ssbaij));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

@@ -12,8 +12,8 @@ PetscErrorCode NameFields(DM da,PetscInt dof)
   PetscFunctionBeginUser;
   for (c=0; c<dof; ++c) {
     char fieldname[256];
-    CHKERRQ(PetscSNPrintf(fieldname,sizeof(fieldname),"field_%D",c));
-    CHKERRQ(DMDASetFieldName(da,c,fieldname));
+    PetscCall(PetscSNPrintf(fieldname,sizeof(fieldname),"field_%D",c));
+    PetscCall(DMDASetFieldName(da,c,fieldname));
   }
   PetscFunctionReturn(0);
 }
@@ -33,15 +33,15 @@ PetscErrorCode test_3d(const char filename[],PetscInt dof,PetscBool namefields)
   PetscScalar       ****va;
   PetscInt          i,j,k,c;
 
-  CHKERRQ(DMDACreate3d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR, M,N,P,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,sw,NULL,NULL,NULL,&da));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
-  if (namefields) CHKERRQ(NameFields(da,dof));
+  PetscCall(DMDACreate3d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR, M,N,P,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,sw,NULL,NULL,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  if (namefields) PetscCall(NameFields(da,dof));
 
-  CHKERRQ(DMDASetUniformCoordinates(da,0.0,Lx,0.0,Ly,0.0,Lz));
-  CHKERRQ(DMDAGetLocalInfo(da,&info));
-  CHKERRQ(DMCreateGlobalVector(da,&v));
-  CHKERRQ(DMDAVecGetArrayDOF(da,v,&va));
+  PetscCall(DMDASetUniformCoordinates(da,0.0,Lx,0.0,Ly,0.0,Lz));
+  PetscCall(DMDAGetLocalInfo(da,&info));
+  PetscCall(DMCreateGlobalVector(da,&v));
+  PetscCall(DMDAVecGetArrayDOF(da,v,&va));
   for (k=info.zs; k<info.zs+info.zm; k++) {
     for (j=info.ys; j<info.ys+info.ym; j++) {
       for (i=info.xs; i<info.xs+info.xm; i++) {
@@ -54,12 +54,12 @@ PetscErrorCode test_3d(const char filename[],PetscInt dof,PetscBool namefields)
       }
     }
   }
-  CHKERRQ(DMDAVecRestoreArrayDOF(da,v,&va));
-  CHKERRQ(PetscViewerVTKOpen(comm,filename,FILE_MODE_WRITE,&view));
-  CHKERRQ(VecView(v,view));
-  CHKERRQ(PetscViewerDestroy(&view));
-  CHKERRQ(VecDestroy(&v));
-  CHKERRQ(DMDestroy(&da));
+  PetscCall(DMDAVecRestoreArrayDOF(da,v,&va));
+  PetscCall(PetscViewerVTKOpen(comm,filename,FILE_MODE_WRITE,&view));
+  PetscCall(VecView(v,view));
+  PetscCall(PetscViewerDestroy(&view));
+  PetscCall(VecDestroy(&v));
+  PetscCall(DMDestroy(&da));
   return 0;
 }
 
@@ -78,14 +78,14 @@ PetscErrorCode test_2d(const char filename[],PetscInt dof,PetscBool namefields)
   PetscScalar       ***va;
   PetscInt          i,j,c;
 
-  CHKERRQ(DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR, M,N,PETSC_DECIDE,PETSC_DECIDE,dof,sw,NULL,NULL,&da));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
-  if (namefields) CHKERRQ(NameFields(da,dof));
-  CHKERRQ(DMDASetUniformCoordinates(da,0.0,Lx,0.0,Ly,0.0,Lz));
-  CHKERRQ(DMDAGetLocalInfo(da,&info));
-  CHKERRQ(DMCreateGlobalVector(da,&v));
-  CHKERRQ(DMDAVecGetArrayDOF(da,v,&va));
+  PetscCall(DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR, M,N,PETSC_DECIDE,PETSC_DECIDE,dof,sw,NULL,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  if (namefields) PetscCall(NameFields(da,dof));
+  PetscCall(DMDASetUniformCoordinates(da,0.0,Lx,0.0,Ly,0.0,Lz));
+  PetscCall(DMDAGetLocalInfo(da,&info));
+  PetscCall(DMCreateGlobalVector(da,&v));
+  PetscCall(DMDAVecGetArrayDOF(da,v,&va));
   for (j=info.ys; j<info.ys+info.ym; j++) {
     for (i=info.xs; i<info.xs+info.xm; i++) {
       const PetscScalar x = (Lx*i)/M;
@@ -95,12 +95,12 @@ PetscErrorCode test_2d(const char filename[],PetscInt dof,PetscBool namefields)
       }
     }
   }
-  CHKERRQ(DMDAVecRestoreArrayDOF(da,v,&va));
-  CHKERRQ(PetscViewerVTKOpen(comm,filename,FILE_MODE_WRITE,&view));
-  CHKERRQ(VecView(v,view));
-  CHKERRQ(PetscViewerDestroy(&view));
-  CHKERRQ(VecDestroy(&v));
-  CHKERRQ(DMDestroy(&da));
+  PetscCall(DMDAVecRestoreArrayDOF(da,v,&va));
+  PetscCall(PetscViewerVTKOpen(comm,filename,FILE_MODE_WRITE,&view));
+  PetscCall(VecView(v,view));
+  PetscCall(PetscViewerDestroy(&view));
+  PetscCall(VecDestroy(&v));
+  PetscCall(DMDestroy(&da));
   return 0;
 }
 
@@ -119,19 +119,19 @@ PetscErrorCode test_3d_compat(const char filename[],PetscInt dof,PetscBool namef
   PetscScalar       ***va,****vVectora;
   PetscInt          i,j,k,c;
 
-  CHKERRQ(DMDACreate3d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR, M,N,P,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,/* dof:*/1,sw,NULL,NULL,NULL,&da));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
-  if (namefields) CHKERRQ(NameFields(da,1));
+  PetscCall(DMDACreate3d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR, M,N,P,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,/* dof:*/1,sw,NULL,NULL,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  if (namefields) PetscCall(NameFields(da,1));
 
-  CHKERRQ(DMDASetUniformCoordinates(da,0.0,Lx,0.0,Ly,0.0,Lz));
-  CHKERRQ(DMDAGetLocalInfo(da,&info));
-  CHKERRQ(DMDACreateCompatibleDMDA(da,dof,&daVector));
-  if (namefields) CHKERRQ(NameFields(daVector,dof));
-  CHKERRQ(DMCreateGlobalVector(da,&v));
-  CHKERRQ(DMCreateGlobalVector(daVector,&vVector));
-  CHKERRQ(DMDAVecGetArray(da,v,&va));
-  CHKERRQ(DMDAVecGetArrayDOF(daVector,vVector,&vVectora));
+  PetscCall(DMDASetUniformCoordinates(da,0.0,Lx,0.0,Ly,0.0,Lz));
+  PetscCall(DMDAGetLocalInfo(da,&info));
+  PetscCall(DMDACreateCompatibleDMDA(da,dof,&daVector));
+  if (namefields) PetscCall(NameFields(daVector,dof));
+  PetscCall(DMCreateGlobalVector(da,&v));
+  PetscCall(DMCreateGlobalVector(daVector,&vVector));
+  PetscCall(DMDAVecGetArray(da,v,&va));
+  PetscCall(DMDAVecGetArrayDOF(daVector,vVector,&vVectora));
   for (k=info.zs; k<info.zs+info.zm; k++) {
     for (j=info.ys; j<info.ys+info.ym; j++) {
       for (i=info.xs; i<info.xs+info.xm; i++) {
@@ -145,16 +145,16 @@ PetscErrorCode test_3d_compat(const char filename[],PetscInt dof,PetscBool namef
       }
     }
   }
-  CHKERRQ(DMDAVecRestoreArray(da,v,&va));
-  CHKERRQ(DMDAVecRestoreArrayDOF(da,v,&vVectora));
-  CHKERRQ(PetscViewerVTKOpen(comm,filename,FILE_MODE_WRITE,&view));
-  CHKERRQ(VecView(v,view));
-  CHKERRQ(VecView(vVector,view));
-  CHKERRQ(PetscViewerDestroy(&view));
-  CHKERRQ(VecDestroy(&v));
-  CHKERRQ(VecDestroy(&vVector));
-  CHKERRQ(DMDestroy(&da));
-  CHKERRQ(DMDestroy(&daVector));
+  PetscCall(DMDAVecRestoreArray(da,v,&va));
+  PetscCall(DMDAVecRestoreArrayDOF(da,v,&vVectora));
+  PetscCall(PetscViewerVTKOpen(comm,filename,FILE_MODE_WRITE,&view));
+  PetscCall(VecView(v,view));
+  PetscCall(VecView(vVector,view));
+  PetscCall(PetscViewerDestroy(&view));
+  PetscCall(VecDestroy(&v));
+  PetscCall(VecDestroy(&vVector));
+  PetscCall(DMDestroy(&da));
+  PetscCall(DMDestroy(&daVector));
   return 0;
 }
 
@@ -173,18 +173,18 @@ PetscErrorCode test_2d_compat(const char filename[],PetscInt dof,PetscBool namef
   PetscScalar       **va,***vVectora;
   PetscInt          i,j,c;
 
-  CHKERRQ(DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR, M,N,PETSC_DECIDE,PETSC_DECIDE,/* dof:*/ 1,sw,NULL,NULL,&da));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
-  if (namefields) CHKERRQ(NameFields(da,1));
-  CHKERRQ(DMDASetUniformCoordinates(da,0.0,Lx,0.0,Ly,0.0,Lz));
-  CHKERRQ(DMDACreateCompatibleDMDA(da,dof,&daVector));
-  if (namefields) CHKERRQ(NameFields(daVector,dof));
-  CHKERRQ(DMDAGetLocalInfo(da,&info));
-  CHKERRQ(DMCreateGlobalVector(da,&v));
-  CHKERRQ(DMCreateGlobalVector(daVector,&vVector));
-  CHKERRQ(DMDAVecGetArray(da,v,&va));
-  CHKERRQ(DMDAVecGetArrayDOF(daVector,vVector,&vVectora));
+  PetscCall(DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR, M,N,PETSC_DECIDE,PETSC_DECIDE,/* dof:*/ 1,sw,NULL,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  if (namefields) PetscCall(NameFields(da,1));
+  PetscCall(DMDASetUniformCoordinates(da,0.0,Lx,0.0,Ly,0.0,Lz));
+  PetscCall(DMDACreateCompatibleDMDA(da,dof,&daVector));
+  if (namefields) PetscCall(NameFields(daVector,dof));
+  PetscCall(DMDAGetLocalInfo(da,&info));
+  PetscCall(DMCreateGlobalVector(da,&v));
+  PetscCall(DMCreateGlobalVector(daVector,&vVector));
+  PetscCall(DMDAVecGetArray(da,v,&va));
+  PetscCall(DMDAVecGetArrayDOF(daVector,vVector,&vVectora));
   for (j=info.ys; j<info.ys+info.ym; j++) {
     for (i=info.xs; i<info.xs+info.xm; i++) {
       const PetscScalar x = (Lx*i)/M;
@@ -195,16 +195,16 @@ PetscErrorCode test_2d_compat(const char filename[],PetscInt dof,PetscBool namef
       }
     }
   }
-  CHKERRQ(DMDAVecRestoreArray(da,v,&va));
-  CHKERRQ(DMDAVecRestoreArrayDOF(daVector,vVector,&vVectora));
-  CHKERRQ(PetscViewerVTKOpen(comm,filename,FILE_MODE_WRITE,&view));
-  CHKERRQ(VecView(v,view));
-  CHKERRQ(VecView(vVector,view));
-  CHKERRQ(PetscViewerDestroy(&view));
-  CHKERRQ(VecDestroy(&v));
-  CHKERRQ(VecDestroy(&vVector));
-  CHKERRQ(DMDestroy(&da));
-  CHKERRQ(DMDestroy(&daVector));
+  PetscCall(DMDAVecRestoreArray(da,v,&va));
+  PetscCall(DMDAVecRestoreArrayDOF(daVector,vVector,&vVectora));
+  PetscCall(PetscViewerVTKOpen(comm,filename,FILE_MODE_WRITE,&view));
+  PetscCall(VecView(v,view));
+  PetscCall(VecView(vVector,view));
+  PetscCall(PetscViewerDestroy(&view));
+  PetscCall(VecDestroy(&v));
+  PetscCall(VecDestroy(&vVector));
+  PetscCall(DMDestroy(&da));
+  PetscCall(DMDestroy(&daVector));
   return 0;
 }
 
@@ -213,20 +213,20 @@ int main(int argc, char *argv[])
   PetscInt       dof;
   PetscBool      namefields;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,0,help));
+  PetscCall(PetscInitialize(&argc,&argv,0,help));
   dof = 2;
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL));
   namefields = PETSC_FALSE;
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-namefields",&namefields,NULL));
-  CHKERRQ(test_3d("3d.vtr",dof,namefields));
-  CHKERRQ(test_2d("2d.vtr",dof,namefields));
-  CHKERRQ(test_3d_compat("3d_compat.vtr",dof,namefields));
-  CHKERRQ(test_2d_compat("2d_compat.vtr",dof,namefields));
-  CHKERRQ(test_3d("3d.vts",dof,namefields));
-  CHKERRQ(test_2d("2d.vts",dof,namefields));
-  CHKERRQ(test_3d_compat("3d_compat.vts",dof,namefields));
-  CHKERRQ(test_2d_compat("2d_compat.vts",dof,namefields));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-namefields",&namefields,NULL));
+  PetscCall(test_3d("3d.vtr",dof,namefields));
+  PetscCall(test_2d("2d.vtr",dof,namefields));
+  PetscCall(test_3d_compat("3d_compat.vtr",dof,namefields));
+  PetscCall(test_2d_compat("2d_compat.vtr",dof,namefields));
+  PetscCall(test_3d("3d.vts",dof,namefields));
+  PetscCall(test_2d("2d.vts",dof,namefields));
+  PetscCall(test_3d_compat("3d_compat.vts",dof,namefields));
+  PetscCall(test_2d_compat("2d_compat.vts",dof,namefields));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

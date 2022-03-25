@@ -20,55 +20,55 @@ int main(int argc,char **argv)
   PetscInt       II[10] = { 1, 4, 9, 2, 3, 6, 5, 8, 0, 7 };
   PetscBool      sort,use1,use2,check = PETSC_FALSE;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&W));
-  CHKERRQ(VecSetSizes(W,1,PETSC_DECIDE));
-  CHKERRQ(VecSetUp(W));
-  CHKERRQ(VecDuplicate(W,&Wdot));
-  CHKERRQ(VecDuplicate(W,&W2));
-  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
-  CHKERRQ(TSSetSolution(ts,W2));
-  CHKERRQ(TSSetMaxSteps(ts,10));
-  CHKERRQ(TSSetSaveTrajectory(ts));
-  CHKERRQ(TSGetTrajectory(ts,&tj));
-  CHKERRQ(TSTrajectorySetType(tj,ts,TSTRAJECTORYBASIC));
-  CHKERRQ(TSTrajectorySetFromOptions(tj,ts));
-  CHKERRQ(TSTrajectorySetSolutionOnly(tj,PETSC_TRUE));
-  CHKERRQ(TSTrajectorySetUp(tj,ts));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-check",&check,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-p",&p,NULL));
-  CHKERRQ(PetscOptionsGetRealArray(NULL,NULL,"-interptimes",times,&Nt,NULL));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&W));
+  PetscCall(VecSetSizes(W,1,PETSC_DECIDE));
+  PetscCall(VecSetUp(W));
+  PetscCall(VecDuplicate(W,&Wdot));
+  PetscCall(VecDuplicate(W,&W2));
+  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
+  PetscCall(TSSetSolution(ts,W2));
+  PetscCall(TSSetMaxSteps(ts,10));
+  PetscCall(TSSetSaveTrajectory(ts));
+  PetscCall(TSGetTrajectory(ts,&tj));
+  PetscCall(TSTrajectorySetType(tj,ts,TSTRAJECTORYBASIC));
+  PetscCall(TSTrajectorySetFromOptions(tj,ts));
+  PetscCall(TSTrajectorySetSolutionOnly(tj,PETSC_TRUE));
+  PetscCall(TSTrajectorySetUp(tj,ts));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-check",&check,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-p",&p,NULL));
+  PetscCall(PetscOptionsGetRealArray(NULL,NULL,"-interptimes",times,&Nt,NULL));
   sort = PETSC_FALSE;
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-sorttimes",&sort,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-sorttimes",&sort,NULL));
   if (sort) {
-    CHKERRQ(PetscSortReal(10,TT));
+    PetscCall(PetscSortReal(10,TT));
   }
   sort = PETSC_FALSE;
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-sortkeys",&sort,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-sortkeys",&sort,NULL));
   if (sort) {
-    CHKERRQ(PetscSortInt(10,II));
+    PetscCall(PetscSortInt(10,II));
   }
   p = PetscMax(p,-p);
 
   /* populate trajectory */
   for (i = 0; i < 10; i++) {
-    CHKERRQ(VecSet(W,func(p,TT[i])));
-    CHKERRQ(TSSetStepNumber(ts,II[i]));
-    CHKERRQ(TSTrajectorySet(tj,ts,II[i],TT[i],W));
+    PetscCall(VecSet(W,func(p,TT[i])));
+    PetscCall(TSSetStepNumber(ts,II[i]));
+    PetscCall(TSTrajectorySet(tj,ts,II[i],TT[i],W));
   }
   for (i = 0; i < Nt; i++) {
     PetscReal testtime = times[i], serr, derr;
     const PetscScalar *aW,*aWdot;
 
-    CHKERRQ(TSTrajectoryGetVecs(tj,ts,PETSC_DECIDE,&testtime,W,Wdot));
-    CHKERRQ(VecGetArrayRead(W,&aW));
-    CHKERRQ(VecGetArrayRead(Wdot,&aWdot));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD," f(%g) = %g (reconstructed %g)\n",(double)testtime,(double)PetscRealPart(func(p,testtime)),(double)PetscRealPart(aW[0])));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"df(%g) = %g (reconstructed %g)\n",(double)testtime,(double)PetscRealPart(dfunc(p,testtime)),(double)PetscRealPart(aWdot[0])));
+    PetscCall(TSTrajectoryGetVecs(tj,ts,PETSC_DECIDE,&testtime,W,Wdot));
+    PetscCall(VecGetArrayRead(W,&aW));
+    PetscCall(VecGetArrayRead(Wdot,&aWdot));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD," f(%g) = %g (reconstructed %g)\n",(double)testtime,(double)PetscRealPart(func(p,testtime)),(double)PetscRealPart(aW[0])));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"df(%g) = %g (reconstructed %g)\n",(double)testtime,(double)PetscRealPart(dfunc(p,testtime)),(double)PetscRealPart(aWdot[0])));
     serr = PetscAbsScalar(func(p,testtime)-aW[0]);
     derr = PetscAbsScalar(dfunc(p,testtime)-aWdot[0]);
-    CHKERRQ(VecRestoreArrayRead(W,&aW));
-    CHKERRQ(VecRestoreArrayRead(Wdot,&aWdot));
+    PetscCall(VecRestoreArrayRead(W,&aW));
+    PetscCall(VecRestoreArrayRead(Wdot,&aWdot));
     PetscCheck(!check || serr <= tol,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in state %g > %g",(double)serr,(double)tol);
     PetscCheck(!check || derr <= tol,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in state derivative %g > %g",(double)derr,(double)tol);
   }
@@ -76,22 +76,22 @@ int main(int argc,char **argv)
     PetscReal         testtime = times[i], serr;
     const PetscScalar *aW;
 
-    CHKERRQ(TSTrajectoryGetVecs(tj,ts,PETSC_DECIDE,&testtime,W,NULL));
-    CHKERRQ(VecGetArrayRead(W,&aW));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD," f(%g) = %g (reconstructed %g)\n",(double)testtime,(double)PetscRealPart(func(p,testtime)),(double)PetscRealPart(aW[0])));
+    PetscCall(TSTrajectoryGetVecs(tj,ts,PETSC_DECIDE,&testtime,W,NULL));
+    PetscCall(VecGetArrayRead(W,&aW));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD," f(%g) = %g (reconstructed %g)\n",(double)testtime,(double)PetscRealPart(func(p,testtime)),(double)PetscRealPart(aW[0])));
     serr = PetscAbsScalar(func(p,testtime)-aW[0]);
-    CHKERRQ(VecRestoreArrayRead(W,&aW));
+    PetscCall(VecRestoreArrayRead(W,&aW));
     PetscCheck(!check || serr <= tol,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in state %g > %g",(double)serr,(double)tol);
   }
   for (i = Nt-1; i >= 0; i--) {
     PetscReal         testtime = times[i], derr;
     const PetscScalar *aWdot;
 
-    CHKERRQ(TSTrajectoryGetVecs(tj,ts,PETSC_DECIDE,&testtime,NULL,Wdot));
-    CHKERRQ(VecGetArrayRead(Wdot,&aWdot));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"df(%g) = %g (reconstructed %g)\n",(double)testtime,(double)PetscRealPart(dfunc(p,testtime)),(double)PetscRealPart(aWdot[0])));
+    PetscCall(TSTrajectoryGetVecs(tj,ts,PETSC_DECIDE,&testtime,NULL,Wdot));
+    PetscCall(VecGetArrayRead(Wdot,&aWdot));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"df(%g) = %g (reconstructed %g)\n",(double)testtime,(double)PetscRealPart(dfunc(p,testtime)),(double)PetscRealPart(aWdot[0])));
     derr = PetscAbsScalar(dfunc(p,testtime)-aWdot[0]);
-    CHKERRQ(VecRestoreArrayRead(Wdot,&aWdot));
+    PetscCall(VecRestoreArrayRead(Wdot,&aWdot));
     PetscCheck(!check || derr <= tol,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in state derivative %g > %g",(double)derr,(double)tol);
   }
   for (i = 0; i < Nt; i++) {
@@ -99,70 +99,70 @@ int main(int argc,char **argv)
     const PetscScalar *aW,*aWdot;
     Vec               hW,hWdot;
 
-    CHKERRQ(TSTrajectoryGetUpdatedHistoryVecs(tj,ts,testtime,&hW,&hWdot));
-    CHKERRQ(VecGetArrayRead(hW,&aW));
-    CHKERRQ(VecGetArrayRead(hWdot,&aWdot));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD," f(%g) = %g (reconstructed %g)\n",(double)testtime,(double)PetscRealPart(func(p,testtime)),(double)PetscRealPart(aW[0])));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"df(%g) = %g (reconstructed %g)\n",(double)testtime,(double)PetscRealPart(dfunc(p,testtime)),(double)PetscRealPart(aWdot[0])));
+    PetscCall(TSTrajectoryGetUpdatedHistoryVecs(tj,ts,testtime,&hW,&hWdot));
+    PetscCall(VecGetArrayRead(hW,&aW));
+    PetscCall(VecGetArrayRead(hWdot,&aWdot));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD," f(%g) = %g (reconstructed %g)\n",(double)testtime,(double)PetscRealPart(func(p,testtime)),(double)PetscRealPart(aW[0])));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"df(%g) = %g (reconstructed %g)\n",(double)testtime,(double)PetscRealPart(dfunc(p,testtime)),(double)PetscRealPart(aWdot[0])));
     serr = PetscAbsScalar(func(p,testtime)-aW[0]);
     derr = PetscAbsScalar(dfunc(p,testtime)-aWdot[0]);
-    CHKERRQ(VecRestoreArrayRead(hW,&aW));
-    CHKERRQ(VecRestoreArrayRead(hWdot,&aWdot));
-    CHKERRQ(TSTrajectoryRestoreUpdatedHistoryVecs(tj,&hW,&hWdot));
+    PetscCall(VecRestoreArrayRead(hW,&aW));
+    PetscCall(VecRestoreArrayRead(hWdot,&aWdot));
+    PetscCall(TSTrajectoryRestoreUpdatedHistoryVecs(tj,&hW,&hWdot));
     PetscCheck(!check || serr <= tol,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in state %g > %g",(double)serr,(double)tol);
     PetscCheck(!check || derr <= tol,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in state derivative %g > %g",(double)derr,(double)tol);
   }
 
   /* Test on-the-fly reconstruction */
-  CHKERRQ(TSDestroy(&ts));
-  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
-  CHKERRQ(TSSetSolution(ts,W2));
-  CHKERRQ(TSSetMaxSteps(ts,10));
-  CHKERRQ(TSSetSaveTrajectory(ts));
-  CHKERRQ(TSGetTrajectory(ts,&tj));
-  CHKERRQ(TSTrajectorySetType(tj,ts,TSTRAJECTORYBASIC));
-  CHKERRQ(TSTrajectorySetFromOptions(tj,ts));
-  CHKERRQ(TSTrajectorySetSolutionOnly(tj,PETSC_TRUE));
-  CHKERRQ(TSTrajectorySetUp(tj,ts));
+  PetscCall(TSDestroy(&ts));
+  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
+  PetscCall(TSSetSolution(ts,W2));
+  PetscCall(TSSetMaxSteps(ts,10));
+  PetscCall(TSSetSaveTrajectory(ts));
+  PetscCall(TSGetTrajectory(ts,&tj));
+  PetscCall(TSTrajectorySetType(tj,ts,TSTRAJECTORYBASIC));
+  PetscCall(TSTrajectorySetFromOptions(tj,ts));
+  PetscCall(TSTrajectorySetSolutionOnly(tj,PETSC_TRUE));
+  PetscCall(TSTrajectorySetUp(tj,ts));
   use1 = PETSC_FALSE;
   use2 = PETSC_TRUE;
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-use_state",&use1,NULL));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-use_der",&use2,NULL));
-  CHKERRQ(PetscSortReal(10,TT));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-use_state",&use1,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-use_der",&use2,NULL));
+  PetscCall(PetscSortReal(10,TT));
   for (i = 0; i < 10; i++) {
 
-    CHKERRQ(TSSetStepNumber(ts,i));
-    CHKERRQ(VecSet(W,func(p,TT[i])));
-    CHKERRQ(TSTrajectorySet(tj,ts,i,TT[i],W));
+    PetscCall(TSSetStepNumber(ts,i));
+    PetscCall(VecSet(W,func(p,TT[i])));
+    PetscCall(TSTrajectorySet(tj,ts,i,TT[i],W));
     if (i) {
       const PetscScalar *aW,*aWdot;
       Vec               hW,hWdot;
       PetscReal         testtime = TT[i], serr, derr;
 
-      CHKERRQ(TSTrajectoryGetUpdatedHistoryVecs(tj,ts,testtime,use1 ? &hW : NULL,use2 ? &hWdot : NULL));
+      PetscCall(TSTrajectoryGetUpdatedHistoryVecs(tj,ts,testtime,use1 ? &hW : NULL,use2 ? &hWdot : NULL));
       if (use1) {
-        CHKERRQ(VecGetArrayRead(hW,&aW));
-        CHKERRQ(PetscPrintf(PETSC_COMM_WORLD," f(%g) = %g (reconstructed %g)\n",(double)testtime,(double)PetscRealPart(func(p,testtime)),(double)PetscRealPart(aW[0])));
+        PetscCall(VecGetArrayRead(hW,&aW));
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD," f(%g) = %g (reconstructed %g)\n",(double)testtime,(double)PetscRealPart(func(p,testtime)),(double)PetscRealPart(aW[0])));
         serr = PetscAbsScalar(func(p,testtime)-aW[0]);
-        CHKERRQ(VecRestoreArrayRead(hW,&aW));
+        PetscCall(VecRestoreArrayRead(hW,&aW));
         PetscCheck(!check || serr <= tol,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in state %g > %g",(double)serr,(double)tol);
       }
       if (use2) {
-        CHKERRQ(VecGetArrayRead(hWdot,&aWdot));
-        CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"df(%g) = %g (reconstructed %g)\n",(double)testtime,(double)PetscRealPart(dfunc(p,testtime)),(double)PetscRealPart(aWdot[0])));
+        PetscCall(VecGetArrayRead(hWdot,&aWdot));
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"df(%g) = %g (reconstructed %g)\n",(double)testtime,(double)PetscRealPart(dfunc(p,testtime)),(double)PetscRealPart(aWdot[0])));
         derr = PetscAbsScalar(dfunc(p,testtime)-aWdot[0]);
-        CHKERRQ(VecRestoreArrayRead(hWdot,&aWdot));
+        PetscCall(VecRestoreArrayRead(hWdot,&aWdot));
         PetscCheck(!check || i < p || derr <= tol,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in state derivative %g > %g",(double)derr,(double)tol);
       }
-      CHKERRQ(TSTrajectoryRestoreUpdatedHistoryVecs(tj,use1 ? &hW : NULL,use2 ? &hWdot : NULL));
+      PetscCall(TSTrajectoryRestoreUpdatedHistoryVecs(tj,use1 ? &hW : NULL,use2 ? &hWdot : NULL));
     }
   }
-  CHKERRQ(TSRemoveTrajectory(ts));
-  CHKERRQ(TSDestroy(&ts));
-  CHKERRQ(VecDestroy(&W));
-  CHKERRQ(VecDestroy(&W2));
-  CHKERRQ(VecDestroy(&Wdot));
-  CHKERRQ(PetscFinalize());
+  PetscCall(TSRemoveTrajectory(ts));
+  PetscCall(TSDestroy(&ts));
+  PetscCall(VecDestroy(&W));
+  PetscCall(VecDestroy(&W2));
+  PetscCall(VecDestroy(&Wdot));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

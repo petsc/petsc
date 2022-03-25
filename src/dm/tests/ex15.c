@@ -14,13 +14,13 @@ int main(int argc,char **argv)
   PetscBool        pt;
   DMBoundaryType   bx = DM_BOUNDARY_NONE,by = DM_BOUNDARY_NONE,bz = DM_BOUNDARY_NONE;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-M",&M1,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-stencil_width",&s,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-ratio",&ratio,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-periodic",(PetscBool*)&pt,NULL));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-M",&M1,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-stencil_width",&s,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-ratio",&ratio,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-periodic",(PetscBool*)&pt,NULL));
 
   if (pt) {
     if (dim > 0) bx = DM_BOUNDARY_PERIODIC;
@@ -35,35 +35,35 @@ int main(int argc,char **argv)
 
   /* Set up the array */
   if (dim == 1) {
-    CHKERRQ(DMDACreate1d(PETSC_COMM_WORLD,bx,M1,dof,s,NULL,&da_c));
-    CHKERRQ(DMDACreate1d(PETSC_COMM_WORLD,bx,M2,dof,s,NULL,&da_f));
+    PetscCall(DMDACreate1d(PETSC_COMM_WORLD,bx,M1,dof,s,NULL,&da_c));
+    PetscCall(DMDACreate1d(PETSC_COMM_WORLD,bx,M2,dof,s,NULL,&da_f));
   } else if (dim == 2) {
-    CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD,bx,by,DMDA_STENCIL_BOX,M1,M1,PETSC_DECIDE,PETSC_DECIDE,dof,s,NULL,NULL,&da_c));
-    CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD,bx,by,DMDA_STENCIL_BOX,M2,M2,PETSC_DECIDE,PETSC_DECIDE,dof,s,NULL,NULL,&da_f));
+    PetscCall(DMDACreate2d(PETSC_COMM_WORLD,bx,by,DMDA_STENCIL_BOX,M1,M1,PETSC_DECIDE,PETSC_DECIDE,dof,s,NULL,NULL,&da_c));
+    PetscCall(DMDACreate2d(PETSC_COMM_WORLD,bx,by,DMDA_STENCIL_BOX,M2,M2,PETSC_DECIDE,PETSC_DECIDE,dof,s,NULL,NULL,&da_f));
   } else if (dim == 3) {
-    CHKERRQ(DMDACreate3d(PETSC_COMM_WORLD,bx,by,bz,DMDA_STENCIL_BOX,M1,M1,M1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,s,NULL,NULL,NULL,&da_c));
-    CHKERRQ(DMDACreate3d(PETSC_COMM_WORLD,bx,by,bz,DMDA_STENCIL_BOX,M2,M2,M2,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,s,NULL,NULL,NULL,&da_f));
+    PetscCall(DMDACreate3d(PETSC_COMM_WORLD,bx,by,bz,DMDA_STENCIL_BOX,M1,M1,M1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,s,NULL,NULL,NULL,&da_c));
+    PetscCall(DMDACreate3d(PETSC_COMM_WORLD,bx,by,bz,DMDA_STENCIL_BOX,M2,M2,M2,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,s,NULL,NULL,NULL,&da_f));
   } else SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"dim must be 1,2, or 3");
-  CHKERRQ(DMSetFromOptions(da_c));
-  CHKERRQ(DMSetUp(da_c));
-  CHKERRQ(DMSetFromOptions(da_f));
-  CHKERRQ(DMSetUp(da_f));
+  PetscCall(DMSetFromOptions(da_c));
+  PetscCall(DMSetUp(da_c));
+  PetscCall(DMSetFromOptions(da_f));
+  PetscCall(DMSetUp(da_f));
 
-  CHKERRQ(DMCreateGlobalVector(da_c,&v_c));
-  CHKERRQ(DMCreateGlobalVector(da_f,&v_f));
+  PetscCall(DMCreateGlobalVector(da_c,&v_c));
+  PetscCall(DMCreateGlobalVector(da_f,&v_f));
 
-  CHKERRQ(VecSet(v_c,one));
-  CHKERRQ(DMCreateInterpolation(da_c,da_f,&Interp,NULL));
-  CHKERRQ(MatMult(Interp,v_c,v_f));
-  CHKERRQ(VecView(v_f,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(MatMultTranspose(Interp,v_f,v_c));
-  CHKERRQ(VecView(v_c,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecSet(v_c,one));
+  PetscCall(DMCreateInterpolation(da_c,da_f,&Interp,NULL));
+  PetscCall(MatMult(Interp,v_c,v_f));
+  PetscCall(VecView(v_f,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatMultTranspose(Interp,v_f,v_c));
+  PetscCall(VecView(v_c,PETSC_VIEWER_STDOUT_WORLD));
 
-  CHKERRQ(MatDestroy(&Interp));
-  CHKERRQ(VecDestroy(&v_c));
-  CHKERRQ(DMDestroy(&da_c));
-  CHKERRQ(VecDestroy(&v_f));
-  CHKERRQ(DMDestroy(&da_f));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatDestroy(&Interp));
+  PetscCall(VecDestroy(&v_c));
+  PetscCall(DMDestroy(&da_c));
+  PetscCall(VecDestroy(&v_f));
+  PetscCall(DMDestroy(&da_f));
+  PetscCall(PetscFinalize());
   return 0;
 }

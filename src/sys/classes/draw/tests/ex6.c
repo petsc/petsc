@@ -29,24 +29,24 @@ static PetscErrorCode DrawFunction(PetscDraw draw,void *ctx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscDrawGetWindowSize(draw,&w,&h));
-  CHKERRMPI(MPI_Comm_size(comm,&size));
-  CHKERRMPI(MPI_Comm_rank(comm,&rank));
+  PetscCall(PetscDrawGetWindowSize(draw,&w,&h));
+  PetscCallMPI(MPI_Comm_size(comm,&size));
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
 
-  ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
+  ierr = PetscDrawCollectiveBegin(draw);PetscCall(ierr);
   for (j=rank; j<h; j+=size) {
     for (i=0; i<w; i++) {
       PetscReal x,y,f; int color;
-      CHKERRQ(PetscDrawPixelToCoordinate(draw,i,j,&x,&y));
+      PetscCall(PetscDrawPixelToCoordinate(draw,i,j,&x,&y));
       f = function(x,y); color = PetscDrawRealToColor(f,-8,+8);
-      CHKERRQ(PetscDrawPointPixel(draw,i,j,color));
+      PetscCall(PetscDrawPointPixel(draw,i,j,color));
       min = PetscMin(f,min); max = PetscMax(f,max);
     }
   }
-  ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
+  ierr = PetscDrawCollectiveEnd(draw);PetscCall(ierr);
 
-  CHKERRQ(PetscDrawGetPopup(draw,&popup));
-  CHKERRQ(PetscDrawScalePopup(popup,-8,+8));
+  PetscCall(PetscDrawGetPopup(draw,&popup));
+  PetscCall(PetscDrawScalePopup(popup,-8,+8));
   PetscFunctionReturn(0);
 }
 
@@ -57,19 +57,19 @@ int main(int argc,char **argv)
   FunctionCtx ctx;
 
   ctx.function = Peaks;
-  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-draw_cmap",cmap,sizeof(cmap),NULL));
-  CHKERRQ(PetscSNPrintf(title,sizeof(title),"Colormap: %s",cmap));
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-draw_cmap",cmap,sizeof(cmap),NULL));
+  PetscCall(PetscSNPrintf(title,sizeof(title),"Colormap: %s",cmap));
 
-  CHKERRQ(PetscDrawCreate(PETSC_COMM_WORLD,NULL,title,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,&draw));
-  CHKERRQ(PetscObjectSetName((PetscObject)draw,"Peaks"));
-  CHKERRQ(PetscDrawSetFromOptions(draw));
-  CHKERRQ(PetscDrawSetCoordinates(draw,-3,-3,+3,+3));
-  CHKERRQ(PetscDrawZoom(draw,DrawFunction,&ctx));
-  CHKERRQ(PetscDrawSave(draw));
+  PetscCall(PetscDrawCreate(PETSC_COMM_WORLD,NULL,title,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,&draw));
+  PetscCall(PetscObjectSetName((PetscObject)draw,"Peaks"));
+  PetscCall(PetscDrawSetFromOptions(draw));
+  PetscCall(PetscDrawSetCoordinates(draw,-3,-3,+3,+3));
+  PetscCall(PetscDrawZoom(draw,DrawFunction,&ctx));
+  PetscCall(PetscDrawSave(draw));
 
-  CHKERRQ(PetscDrawDestroy(&draw));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscDrawDestroy(&draw));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

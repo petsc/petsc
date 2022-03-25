@@ -28,8 +28,8 @@
 PetscErrorCode  VecCreateSeq(MPI_Comm comm,PetscInt n,Vec *v)
 {
   PetscFunctionBegin;
-  CHKERRQ(VecCreate(comm,v));
-  CHKERRQ(VecSetSizes(*v,n,n));
-  CHKERRQ(VecSetType(*v,VECSEQ));
+  PetscCall(VecCreate(comm,v));
+  PetscCall(VecSetSizes(*v,n,n));
+  PetscCall(VecSetType(*v,VECSEQ));
   PetscFunctionReturn(0);
 }

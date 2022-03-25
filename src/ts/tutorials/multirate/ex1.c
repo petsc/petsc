@@ -21,12 +21,12 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec U,Vec F,AppCtx *ctx)
   PetscScalar       *f;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(U,&u));
-  CHKERRQ(VecGetArray(F,&f));
+  PetscCall(VecGetArrayRead(U,&u));
+  PetscCall(VecGetArray(F,&f));
   f[0] = u[0]/ctx->a;
   f[1] = u[0]*PetscCosScalar(t*ctx->b);
-  CHKERRQ(VecRestoreArrayRead(U,&u));
-  CHKERRQ(VecRestoreArray(F,&f));
+  PetscCall(VecRestoreArrayRead(U,&u));
+  PetscCall(VecRestoreArray(F,&f));
   PetscFunctionReturn(0);
  }
 
@@ -36,11 +36,11 @@ static PetscErrorCode RHSFunctionslow(TS ts,PetscReal t,Vec U,Vec F,AppCtx *ctx)
   PetscScalar       *f;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(U,&u));
-  CHKERRQ(VecGetArray(F,&f));
+  PetscCall(VecGetArrayRead(U,&u));
+  PetscCall(VecGetArray(F,&f));
   f[0] = u[0]/ctx->a;
-  CHKERRQ(VecRestoreArrayRead(U,&u));
-  CHKERRQ(VecRestoreArray(F,&f));
+  PetscCall(VecRestoreArrayRead(U,&u));
+  PetscCall(VecRestoreArray(F,&f));
   PetscFunctionReturn(0);
 }
 
@@ -50,11 +50,11 @@ static PetscErrorCode RHSFunctionfast(TS ts,PetscReal t,Vec U,Vec F,AppCtx *ctx)
   PetscScalar       *f;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(U,&u));
-  CHKERRQ(VecGetArray(F,&f));
+  PetscCall(VecGetArrayRead(U,&u));
+  PetscCall(VecGetArray(F,&f));
   f[0] = u[0]*PetscCosScalar(t*ctx->b);
-  CHKERRQ(VecRestoreArrayRead(U,&u));
-  CHKERRQ(VecRestoreArray(F,&f));
+  PetscCall(VecRestoreArrayRead(U,&u));
+  PetscCall(VecRestoreArray(F,&f));
   PetscFunctionReturn(0);
 }
 
@@ -66,10 +66,10 @@ static PetscErrorCode sol_true(PetscReal t, Vec U,AppCtx *ctx)
   PetscScalar    *u;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArray(U,&u));
+  PetscCall(VecGetArray(U,&u));
   u[0] = PetscExpScalar(t/ctx->a);
   u[1] = (ctx->a*PetscCosScalar(ctx->b*t)+ctx->a*ctx->a*ctx->b*PetscSinScalar(ctx->b*t))*PetscExpScalar(t/ctx->a)/(1+ctx->a*ctx->a*ctx->b*ctx->b);
-  CHKERRQ(VecRestoreArray(U,&u));
+  PetscCall(VecRestoreArray(U,&u));
   PetscFunctionReturn(0);
 }
 
@@ -92,108 +92,108 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Only for sequential runs");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create index for slow part and fast part
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(PetscMalloc1(1,&indicess));
+  PetscCall(PetscMalloc1(1,&indicess));
   indicess[0] = 0;
-  CHKERRQ(PetscMalloc1(1,&indicesf));
+  PetscCall(PetscMalloc1(1,&indicesf));
   indicesf[0] = 1;
-  CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,1,indicess,PETSC_COPY_VALUES,&iss));
-  CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,1,indicesf,PETSC_COPY_VALUES,&isf));
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF,1,indicess,PETSC_COPY_VALUES,&iss));
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF,1,indicesf,PETSC_COPY_VALUES,&isf));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create necesary vector
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&U));
-  CHKERRQ(VecSetSizes(U,n,PETSC_DETERMINE));
-  CHKERRQ(VecSetFromOptions(U));
-  CHKERRQ(VecDuplicate(U,&Utrue));
-  CHKERRQ(VecCopy(U,Utrue));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&U));
+  PetscCall(VecSetSizes(U,n,PETSC_DETERMINE));
+  PetscCall(VecSetFromOptions(U));
+  PetscCall(VecDuplicate(U,&Utrue));
+  PetscCall(VecCopy(U,Utrue));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set runtime options
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ODE options","");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ODE options","");PetscCall(ierr);
   {
     ctx.a  = 2.0;
     ctx.b  = 25.0;
-    CHKERRQ(PetscOptionsReal("-a","","",ctx.a,&ctx.a,NULL));
-    CHKERRQ(PetscOptionsReal("-b","","",ctx.b,&ctx.b,NULL));
+    PetscCall(PetscOptionsReal("-a","","",ctx.a,&ctx.a,NULL));
+    PetscCall(PetscOptionsReal("-b","","",ctx.b,&ctx.b,NULL));
     ctx.Tf = 2;
     ctx.dt = 0.01;
-    CHKERRQ(PetscOptionsReal("-Tf","","",ctx.Tf,&ctx.Tf,NULL));
-    CHKERRQ(PetscOptionsReal("-dt","","",ctx.dt,&ctx.dt,NULL));
+    PetscCall(PetscOptionsReal("-Tf","","",ctx.Tf,&ctx.Tf,NULL));
+    PetscCall(PetscOptionsReal("-dt","","",ctx.dt,&ctx.dt,NULL));
   }
- ierr = PetscOptionsEnd();CHKERRQ(ierr);
+ ierr = PetscOptionsEnd();PetscCall(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize the solution
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(VecGetArray(U,&u));
+  PetscCall(VecGetArray(U,&u));
   u[0] = 1.0;
   u[1] = ctx.a/(1+ctx.a*ctx.a*ctx.b*ctx.b);
-  CHKERRQ(VecRestoreArray(U,&u));
+  PetscCall(VecRestoreArray(U,&u));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
-  CHKERRQ(TSSetType(ts,TSMPRK));
+  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
+  PetscCall(TSSetType(ts,TSMPRK));
 
-  CHKERRQ(TSSetRHSFunction(ts,NULL,(TSRHSFunction)RHSFunction,&ctx));
-  CHKERRQ(TSRHSSplitSetIS(ts,"slow",iss));
-  CHKERRQ(TSRHSSplitSetIS(ts,"fast",isf));
-  CHKERRQ(TSRHSSplitSetRHSFunction(ts,"slow",NULL,(TSRHSFunction)RHSFunctionslow,&ctx));
-  CHKERRQ(TSRHSSplitSetRHSFunction(ts,"fast",NULL,(TSRHSFunction)RHSFunctionfast,&ctx));
+  PetscCall(TSSetRHSFunction(ts,NULL,(TSRHSFunction)RHSFunction,&ctx));
+  PetscCall(TSRHSSplitSetIS(ts,"slow",iss));
+  PetscCall(TSRHSSplitSetIS(ts,"fast",isf));
+  PetscCall(TSRHSSplitSetRHSFunction(ts,"slow",NULL,(TSRHSFunction)RHSFunctionslow,&ctx));
+  PetscCall(TSRHSSplitSetRHSFunction(ts,"fast",NULL,(TSRHSFunction)RHSFunctionfast,&ctx));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSSetSolution(ts,U));
+  PetscCall(TSSetSolution(ts,U));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSSetMaxTime(ts,ctx.Tf));
-  CHKERRQ(TSSetTimeStep(ts,ctx.dt));
-  CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP));
-  CHKERRQ(TSSetFromOptions(ts));
+  PetscCall(TSSetMaxTime(ts,ctx.Tf));
+  PetscCall(TSSetTimeStep(ts,ctx.dt));
+  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP));
+  PetscCall(TSSetFromOptions(ts));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSSolve(ts,U));
-  CHKERRQ(VecView(U,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(TSSolve(ts,U));
+  PetscCall(VecView(U,PETSC_VIEWER_STDOUT_WORLD));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Check the error of the Petsc solution
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSGetTime(ts,&tt));
-  CHKERRQ(sol_true(tt,Utrue,&ctx));
-  CHKERRQ(VecAXPY(Utrue,-1.0,U));
-  CHKERRQ(VecNorm(Utrue,NORM_2,&error));
+  PetscCall(TSGetTime(ts,&tt));
+  PetscCall(sol_true(tt,Utrue,&ctx));
+  PetscCall(VecAXPY(Utrue,-1.0,U));
+  PetscCall(VecNorm(Utrue,NORM_2,&error));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Print norm2 error
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"l2 error norm = %g\n", error));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"l2 error norm = %g\n", error));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(VecDestroy(&U));
-  CHKERRQ(VecDestroy(&Utrue));
-  CHKERRQ(TSDestroy(&ts));
-  CHKERRQ(ISDestroy(&iss));
-  CHKERRQ(ISDestroy(&isf));
-  CHKERRQ(PetscFree(indicess));
-  CHKERRQ(PetscFree(indicesf));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&U));
+  PetscCall(VecDestroy(&Utrue));
+  PetscCall(TSDestroy(&ts));
+  PetscCall(ISDestroy(&iss));
+  PetscCall(ISDestroy(&isf));
+  PetscCall(PetscFree(indicess));
+  PetscCall(PetscFree(indicesf));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

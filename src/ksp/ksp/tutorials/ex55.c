@@ -31,37 +31,37 @@ int main(int argc,char **args)
                              {6.666666666666667E-02, 0.0000E-00, -2.666666666666667E-01,  2.0000E-01, -3.333333333333333E-01,  0.0000E-00, 5.333333333333333E-01, -2.0000E-01 },
                              {0.0000E-00, -3.333333333333333E-01,  2.0000E-01, -2.666666666666667E-01, 0.0000E-00,  6.666666666666667E-02, -2.0000E-01,  5.333333333333333E-01 } };
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   comm = PETSC_COMM_WORLD;
-  CHKERRMPI(MPI_Comm_rank(comm, &mype));
-  CHKERRMPI(MPI_Comm_size(comm, &npe));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-ne",&ne,NULL));
+  PetscCallMPI(MPI_Comm_rank(comm, &mype));
+  PetscCallMPI(MPI_Comm_size(comm, &npe));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-ne",&ne,NULL));
   h    = 1./ne;
   /* ne*ne; number of global elements */
-  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-alpha",&soft_alpha,NULL));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-use_coordinates",&use_coords,NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-alpha",&soft_alpha,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-use_coordinates",&use_coords,NULL));
   M    = 2*(ne+1)*(ne+1); /* global number of equations */
   m    = (ne+1)*(ne+1)/npe;
   if (mype==npe-1) m = (ne+1)*(ne+1) - (npe-1)*m;
   m *= 2;
   /* create stiffness matrix */
-  CHKERRQ(MatCreate(comm,&Amat));
-  CHKERRQ(MatSetSizes(Amat,m,m,M,M));
-  CHKERRQ(MatSetType(Amat,MATAIJ));
-  CHKERRQ(MatSetOption(Amat,MAT_SPD,PETSC_TRUE));
-  CHKERRQ(MatSetFromOptions(Amat));
-  CHKERRQ(MatSetBlockSize(Amat,2));
-  CHKERRQ(MatSeqAIJSetPreallocation(Amat,18,NULL));
-  CHKERRQ(MatMPIAIJSetPreallocation(Amat,18,NULL,18,NULL));
+  PetscCall(MatCreate(comm,&Amat));
+  PetscCall(MatSetSizes(Amat,m,m,M,M));
+  PetscCall(MatSetType(Amat,MATAIJ));
+  PetscCall(MatSetOption(Amat,MAT_SPD,PETSC_TRUE));
+  PetscCall(MatSetFromOptions(Amat));
+  PetscCall(MatSetBlockSize(Amat,2));
+  PetscCall(MatSeqAIJSetPreallocation(Amat,18,NULL));
+  PetscCall(MatMPIAIJSetPreallocation(Amat,18,NULL,18,NULL));
 #if defined(PETSC_HAVE_HYPRE)
-  CHKERRQ(MatHYPRESetPreallocation(Amat,18,NULL,18,NULL));
+  PetscCall(MatHYPRESetPreallocation(Amat,18,NULL,18,NULL));
 #endif
 
-  CHKERRQ(MatGetOwnershipRange(Amat,&Istart,&Iend));
+  PetscCall(MatGetOwnershipRange(Amat,&Istart,&Iend));
   PetscCheckFalse(m != Iend - Istart,PETSC_COMM_SELF,PETSC_ERR_PLIB,"m %D does not equal Iend %D - Istart %D",m,Iend,Istart);
   /* Generate vectors */
-  CHKERRQ(MatCreateVecs(Amat,&xx,&bb));
-  CHKERRQ(VecSet(bb,.0));
+  PetscCall(MatCreateVecs(Amat,&xx,&bb));
+  PetscCall(VecSet(bb,.0));
   /* generate element matrices -- see ex56.c on how to use different data set */
   {
       DD[0][0] =  0.53333333333333321;
@@ -141,7 +141,7 @@ int main(int argc,char **args)
   }
   {
     PetscReal *coords;
-    CHKERRQ(PetscMalloc1(m,&coords));
+    PetscCall(PetscMalloc1(m,&coords));
     /* forms the element stiffness and coordinates */
     for (Ii = Istart/2, ix = 0; Ii < Iend/2; Ii++, ix++) {
       j = Ii/(ne+1); i = Ii%(ne+1);
@@ -160,101 +160,101 @@ int main(int argc,char **args)
           for (jj=0;jj<8;jj++) DD[ii][jj] = alpha*DD1[ii][jj];
         }
         if (j>0) {
-          CHKERRQ(MatSetValuesBlocked(Amat,4,idx,4,idx,(const PetscScalar*)DD,ADD_VALUES));
+          PetscCall(MatSetValuesBlocked(Amat,4,idx,4,idx,(const PetscScalar*)DD,ADD_VALUES));
         } else {
           /* a BC */
           for (ii=0; ii<8; ii++) {
             for (jj=0;jj<8;jj++) DD[ii][jj] = alpha*DD2[ii][jj];
           }
-          CHKERRQ(MatSetValuesBlocked(Amat,4,idx,4,idx,(const PetscScalar*)DD,ADD_VALUES));
+          PetscCall(MatSetValuesBlocked(Amat,4,idx,4,idx,(const PetscScalar*)DD,ADD_VALUES));
         }
       }
       if (j>0) {
         PetscScalar v  = h*h;
         PetscInt    jj = 2*Ii; /* load in x direction */
-        CHKERRQ(VecSetValues(bb,1,&jj,&v,INSERT_VALUES));
+        PetscCall(VecSetValues(bb,1,&jj,&v,INSERT_VALUES));
       }
     }
-    CHKERRQ(MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(VecAssemblyBegin(bb));
-    CHKERRQ(VecAssemblyEnd(bb));
+    PetscCall(MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY));
+    PetscCall(VecAssemblyBegin(bb));
+    PetscCall(VecAssemblyEnd(bb));
 
     /* Setup solver */
-    CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
-    CHKERRQ(KSPSetFromOptions(ksp));
+    PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+    PetscCall(KSPSetFromOptions(ksp));
 
     /* finish KSP/PC setup */
-    CHKERRQ(KSPSetOperators(ksp, Amat, Amat));
+    PetscCall(KSPSetOperators(ksp, Amat, Amat));
     if (use_coords) {
       PC pc;
 
-      CHKERRQ(KSPGetPC(ksp, &pc));
-      CHKERRQ(PCSetCoordinates(pc, 2, m/2, coords));
+      PetscCall(KSPGetPC(ksp, &pc));
+      PetscCall(PCSetCoordinates(pc, 2, m/2, coords));
     }
-    CHKERRQ(PetscFree(coords));
+    PetscCall(PetscFree(coords));
   }
 
   if (!PETSC_TRUE) {
     PetscViewer viewer;
-    CHKERRQ(PetscViewerASCIIOpen(comm, "Amat.m", &viewer));
-    CHKERRQ(PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATLAB));
-    CHKERRQ(MatView(Amat,viewer));
-    CHKERRQ(PetscViewerPopFormat(viewer));
-    CHKERRQ(PetscViewerDestroy(&viewer));
+    PetscCall(PetscViewerASCIIOpen(comm, "Amat.m", &viewer));
+    PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATLAB));
+    PetscCall(MatView(Amat,viewer));
+    PetscCall(PetscViewerPopFormat(viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
   }
 
   /* solve */
 #if defined(PETSC_USE_LOG)
-  CHKERRQ(PetscLogStageRegister("Setup", &stage[0]));
-  CHKERRQ(PetscLogStageRegister("Solve", &stage[1]));
-  CHKERRQ(PetscLogStagePush(stage[0]));
+  PetscCall(PetscLogStageRegister("Setup", &stage[0]));
+  PetscCall(PetscLogStageRegister("Solve", &stage[1]));
+  PetscCall(PetscLogStagePush(stage[0]));
 #endif
-  CHKERRQ(KSPSetUp(ksp));
+  PetscCall(KSPSetUp(ksp));
 #if defined(PETSC_USE_LOG)
-  CHKERRQ(PetscLogStagePop());
+  PetscCall(PetscLogStagePop());
 #endif
 
-  CHKERRQ(VecSet(xx,.0));
+  PetscCall(VecSet(xx,.0));
 
 #if defined(PETSC_USE_LOG)
-  CHKERRQ(PetscLogStagePush(stage[1]));
+  PetscCall(PetscLogStagePush(stage[1]));
 #endif
-  CHKERRQ(KSPSolve(ksp, bb, xx));
+  PetscCall(KSPSolve(ksp, bb, xx));
 #if defined(PETSC_USE_LOG)
-  CHKERRQ(PetscLogStagePop());
+  PetscCall(PetscLogStagePop());
 #endif
 
-  CHKERRQ(KSPGetIterationNumber(ksp,&its));
+  PetscCall(KSPGetIterationNumber(ksp,&its));
 
   if (0) {
     PetscReal   norm,norm2;
     PetscViewer viewer;
     Vec         res;
 
-    CHKERRQ(PetscObjectGetComm((PetscObject)bb,&comm));
-    CHKERRQ(VecNorm(bb, NORM_2, &norm2));
+    PetscCall(PetscObjectGetComm((PetscObject)bb,&comm));
+    PetscCall(VecNorm(bb, NORM_2, &norm2));
 
-    CHKERRQ(VecDuplicate(xx, &res));
-    CHKERRQ(MatMult(Amat, xx, res));
-    CHKERRQ(VecAXPY(bb, -1.0, res));
-    CHKERRQ(VecDestroy(&res));
-    CHKERRQ(VecNorm(bb, NORM_2, &norm));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"[%d]%s |b-Ax|/|b|=%e, |b|=%e\n",0,PETSC_FUNCTION_NAME,norm/norm2,norm2));
-    CHKERRQ(PetscViewerASCIIOpen(comm, "residual.m", &viewer));
-    CHKERRQ(PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATLAB));
-    CHKERRQ(VecView(bb,viewer));
-    CHKERRQ(PetscViewerPopFormat(viewer));
-    CHKERRQ(PetscViewerDestroy(&viewer));
+    PetscCall(VecDuplicate(xx, &res));
+    PetscCall(MatMult(Amat, xx, res));
+    PetscCall(VecAXPY(bb, -1.0, res));
+    PetscCall(VecDestroy(&res));
+    PetscCall(VecNorm(bb, NORM_2, &norm));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"[%d]%s |b-Ax|/|b|=%e, |b|=%e\n",0,PETSC_FUNCTION_NAME,norm/norm2,norm2));
+    PetscCall(PetscViewerASCIIOpen(comm, "residual.m", &viewer));
+    PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATLAB));
+    PetscCall(VecView(bb,viewer));
+    PetscCall(PetscViewerPopFormat(viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
   }
 
   /* Free work space */
-  CHKERRQ(KSPDestroy(&ksp));
-  CHKERRQ(VecDestroy(&xx));
-  CHKERRQ(VecDestroy(&bb));
-  CHKERRQ(MatDestroy(&Amat));
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(VecDestroy(&xx));
+  PetscCall(VecDestroy(&bb));
+  PetscCall(MatDestroy(&Amat));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

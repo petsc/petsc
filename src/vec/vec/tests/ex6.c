@@ -11,33 +11,33 @@ int main(int argc,char **argv)
   IS             is1,is2;
   VecScatter     ctx = 0;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* create two vector */
-  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,n,&x));
-  CHKERRQ(VecDuplicate(x,&y));
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,n,&x));
+  PetscCall(VecDuplicate(x,&y));
 
   /* create two index sets */
-  CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,3,idx1,PETSC_COPY_VALUES,&is1));
-  CHKERRQ(ISCreateStride(PETSC_COMM_SELF,3,0,2,&is2));
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF,3,idx1,PETSC_COPY_VALUES,&is1));
+  PetscCall(ISCreateStride(PETSC_COMM_SELF,3,0,2,&is2));
 
-  CHKERRQ(VecSetValues(x,6,loc,vals,INSERT_VALUES));
-  CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_SELF));
-  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"----\n"));
-  CHKERRQ(VecSet(y,two));
-  CHKERRQ(VecScatterCreate(x,is1,y,is2,&ctx));
-  CHKERRQ(VecScatterBegin(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD));
-  CHKERRQ(VecScatterEnd(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD));
-  CHKERRQ(VecScatterDestroy(&ctx));
+  PetscCall(VecSetValues(x,6,loc,vals,INSERT_VALUES));
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_SELF));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"----\n"));
+  PetscCall(VecSet(y,two));
+  PetscCall(VecScatterCreate(x,is1,y,is2,&ctx));
+  PetscCall(VecScatterBegin(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterDestroy(&ctx));
 
-  CHKERRQ(VecView(y,PETSC_VIEWER_STDOUT_SELF));
+  PetscCall(VecView(y,PETSC_VIEWER_STDOUT_SELF));
 
-  CHKERRQ(ISDestroy(&is1));
-  CHKERRQ(ISDestroy(&is2));
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&y));
+  PetscCall(ISDestroy(&is1));
+  PetscCall(ISDestroy(&is2));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&y));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

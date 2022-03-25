@@ -16,34 +16,34 @@ static PetscErrorCode MatColoringApply_Natural(MatColoring mc,ISColoring *iscolo
 
   PetscFunctionBegin;
   /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1 */
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)mat,MATSEQBAIJ,&flg1));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)mat,MATMPIBAIJ,&flg2));
+  PetscCall(PetscObjectTypeCompare((PetscObject)mat,MATSEQBAIJ,&flg1));
+  PetscCall(PetscObjectTypeCompare((PetscObject)mat,MATMPIBAIJ,&flg2));
   if (flg1 || flg2) {
-    CHKERRQ(MatGetBlockSize(mat,&bs));
+    PetscCall(MatGetBlockSize(mat,&bs));
   }
 
-  CHKERRQ(PetscObjectGetComm((PetscObject)mat,&comm));
-  CHKERRMPI(MPI_Comm_size(comm,&size));
+  PetscCall(PetscObjectGetComm((PetscObject)mat,&comm));
+  PetscCallMPI(MPI_Comm_size(comm,&size));
   if (size > 1) {
     /* create a sequential iscoloring on all processors */
-    CHKERRQ(MatGetSeqNonzeroStructure(mat,&mat_seq));
+    PetscCall(MatGetSeqNonzeroStructure(mat,&mat_seq));
   }
 
-  CHKERRQ(MatGetSize(mat_seq,&n,NULL));
-  CHKERRQ(MatGetOwnershipRange(mat_seq,&start,&end));
+  PetscCall(MatGetSize(mat_seq,&n,NULL));
+  PetscCall(MatGetOwnershipRange(mat_seq,&start,&end));
   n    = n/bs;
   PetscCheckFalse(n > IS_COLORING_MAX-1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Maximum color size exceeded");
 
   start = start/bs;
   end   = end/bs;
-  CHKERRQ(PetscMalloc1(end-start+1,&colors));
+  PetscCall(PetscMalloc1(end-start+1,&colors));
   for (i=start; i<end; i++) {
     colors[i-start] = (ISColoringValue)i;
   }
-  CHKERRQ(ISColoringCreate(comm,n,end-start,colors,PETSC_OWN_POINTER,iscoloring));
+  PetscCall(ISColoringCreate(comm,n,end-start,colors,PETSC_OWN_POINTER,iscoloring));
 
   if (size > 1) {
-    CHKERRQ(MatDestroySeqNonzeroStructure(&mat_seq));
+    PetscCall(MatDestroySeqNonzeroStructure(&mat_seq));
 
     /* convert iscoloring_seq to a parallel iscoloring */
     iscoloring_seq = *iscoloring;
@@ -52,14 +52,14 @@ static PetscErrorCode MatColoringApply_Natural(MatColoring mc,ISColoring *iscolo
     N_loc          = rend - rstart; /* number of local nodes */
 
     /* get local colors for each local node */
-    CHKERRQ(PetscMalloc1(N_loc+1,&colors_loc));
+    PetscCall(PetscMalloc1(N_loc+1,&colors_loc));
     for (i=rstart; i<rend; i++) {
       colors_loc[i-rstart] = iscoloring_seq->colors[i];
     }
     /* create a parallel iscoloring */
     nc   = iscoloring_seq->n;
-    CHKERRQ(ISColoringCreate(comm,nc,N_loc,colors_loc,PETSC_OWN_POINTER,iscoloring));
-    CHKERRQ(ISColoringDestroy(&iscoloring_seq));
+    PetscCall(ISColoringCreate(comm,nc,N_loc,colors_loc,PETSC_OWN_POINTER,iscoloring));
+    PetscCall(ISColoringDestroy(&iscoloring_seq));
   }
   PetscFunctionReturn(0);
 }

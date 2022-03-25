@@ -92,26 +92,26 @@ PetscErrorCode MatNullSpaceCreateRigidBody(Vec coords,MatNullSpace *sp)
   PetscReal         sN;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetBlockSize(coords,&dim));
-  CHKERRQ(VecGetLocalSize(coords,&n));
-  CHKERRQ(VecGetSize(coords,&N));
+  PetscCall(VecGetBlockSize(coords,&dim));
+  PetscCall(VecGetLocalSize(coords,&n));
+  PetscCall(VecGetSize(coords,&N));
   n   /= dim;
   N   /= dim;
   sN = 1./PetscSqrtReal((PetscReal)N);
   switch (dim) {
   case 1:
-    CHKERRQ(MatNullSpaceCreate(PetscObjectComm((PetscObject)coords),PETSC_TRUE,0,NULL,sp));
+    PetscCall(MatNullSpaceCreate(PetscObjectComm((PetscObject)coords),PETSC_TRUE,0,NULL,sp));
     break;
   case 2:
   case 3:
     nmodes = (dim == 2) ? 3 : 6;
-    CHKERRQ(VecCreate(PetscObjectComm((PetscObject)coords),&vec[0]));
-    CHKERRQ(VecSetSizes(vec[0],dim*n,dim*N));
-    CHKERRQ(VecSetBlockSize(vec[0],dim));
-    CHKERRQ(VecSetUp(vec[0]));
-    for (i=1; i<nmodes; i++) CHKERRQ(VecDuplicate(vec[0],&vec[i]));
-    for (i=0; i<nmodes; i++) CHKERRQ(VecGetArray(vec[i],&v[i]));
-    CHKERRQ(VecGetArrayRead(coords,&x));
+    PetscCall(VecCreate(PetscObjectComm((PetscObject)coords),&vec[0]));
+    PetscCall(VecSetSizes(vec[0],dim*n,dim*N));
+    PetscCall(VecSetBlockSize(vec[0],dim));
+    PetscCall(VecSetUp(vec[0]));
+    for (i=1; i<nmodes; i++) PetscCall(VecDuplicate(vec[0],&vec[i]));
+    for (i=0; i<nmodes; i++) PetscCall(VecGetArray(vec[i],&v[i]));
+    PetscCall(VecGetArrayRead(coords,&x));
     for (i=0; i<n; i++) {
       if (dim == 2) {
         v[0][i*2+0] = sN;
@@ -143,17 +143,17 @@ PetscErrorCode MatNullSpaceCreateRigidBody(Vec coords,MatNullSpace *sp)
         v[5][i*3+2] = -x[i*3+0];
       }
     }
-    for (i=0; i<nmodes; i++) CHKERRQ(VecRestoreArray(vec[i],&v[i]));
-    CHKERRQ(VecRestoreArrayRead(coords,&x));
+    for (i=0; i<nmodes; i++) PetscCall(VecRestoreArray(vec[i],&v[i]));
+    PetscCall(VecRestoreArrayRead(coords,&x));
     for (i=dim; i<nmodes; i++) {
       /* Orthonormalize vec[i] against vec[0:i-1] */
-      CHKERRQ(VecMDot(vec[i],i,vec,dots));
+      PetscCall(VecMDot(vec[i],i,vec,dots));
       for (j=0; j<i; j++) dots[j] *= -1.;
-      CHKERRQ(VecMAXPY(vec[i],i,dots,vec));
-      CHKERRQ(VecNormalize(vec[i],NULL));
+      PetscCall(VecMAXPY(vec[i],i,dots,vec));
+      PetscCall(VecNormalize(vec[i],NULL));
     }
-    CHKERRQ(MatNullSpaceCreate(PetscObjectComm((PetscObject)coords),PETSC_FALSE,nmodes,vec,sp));
-    for (i=0; i<nmodes; i++) CHKERRQ(VecDestroy(&vec[i]));
+    PetscCall(MatNullSpaceCreate(PetscObjectComm((PetscObject)coords),PETSC_FALSE,nmodes,vec,sp));
+    for (i=0; i<nmodes; i++) PetscCall(VecDestroy(&vec[i]));
   }
   PetscFunctionReturn(0);
 }
@@ -181,26 +181,26 @@ PetscErrorCode MatNullSpaceView(MatNullSpace sp,PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp,MAT_NULLSPACE_CLASSID,1);
   if (!viewer) {
-    CHKERRQ(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)sp),&viewer));
+    PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)sp),&viewer));
   }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(sp,1,viewer,2);
 
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
     PetscViewerFormat format;
     PetscInt          i;
-    CHKERRQ(PetscViewerGetFormat(viewer,&format));
-    CHKERRQ(PetscObjectPrintClassNamePrefixType((PetscObject)sp,viewer));
-    CHKERRQ(PetscViewerASCIIPushTab(viewer));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"Contains %" PetscInt_FMT " vector%s%s\n",sp->n,sp->n==1 ? "" : "s",sp->has_cnst ? " and the constant" : ""));
-    if (sp->remove) CHKERRQ(PetscViewerASCIIPrintf(viewer,"Has user-provided removal function\n"));
+    PetscCall(PetscViewerGetFormat(viewer,&format));
+    PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)sp,viewer));
+    PetscCall(PetscViewerASCIIPushTab(viewer));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"Contains %" PetscInt_FMT " vector%s%s\n",sp->n,sp->n==1 ? "" : "s",sp->has_cnst ? " and the constant" : ""));
+    if (sp->remove) PetscCall(PetscViewerASCIIPrintf(viewer,"Has user-provided removal function\n"));
     if (!(format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL)) {
       for (i=0; i<sp->n; i++) {
-        CHKERRQ(VecView(sp->vecs[i],viewer));
+        PetscCall(VecView(sp->vecs[i],viewer));
       }
     }
-    CHKERRQ(PetscViewerASCIIPopTab(viewer));
+    PetscCall(PetscViewerASCIIPopTab(viewer));
   }
   PetscFunctionReturn(0);
 }
@@ -246,38 +246,38 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool has_cnst,PetscInt n,c
   if (n) {
     for (i=0; i<n; i++) {
       /* prevent the user from changes values in the vector */
-      CHKERRQ(VecLockReadPush(vecs[i]));
+      PetscCall(VecLockReadPush(vecs[i]));
     }
   }
   if (PetscUnlikelyDebug(n)) {
     PetscScalar *dots;
     for (i=0; i<n; i++) {
       PetscReal norm;
-      CHKERRQ(VecNorm(vecs[i],NORM_2,&norm));
+      PetscCall(VecNorm(vecs[i],NORM_2,&norm));
       PetscCheckFalse(PetscAbsReal(norm - 1) > PETSC_SQRT_MACHINE_EPSILON,PetscObjectComm((PetscObject)vecs[i]),PETSC_ERR_ARG_WRONG,"Vector %" PetscInt_FMT " must have 2-norm of 1.0, it is %g",i,(double)norm);
     }
     if (has_cnst) {
       for (i=0; i<n; i++) {
         PetscScalar sum;
-        CHKERRQ(VecSum(vecs[i],&sum));
+        PetscCall(VecSum(vecs[i],&sum));
         PetscCheckFalse(PetscAbsScalar(sum) > PETSC_SQRT_MACHINE_EPSILON,PetscObjectComm((PetscObject)vecs[i]),PETSC_ERR_ARG_WRONG,"Vector %" PetscInt_FMT " must be orthogonal to constant vector, inner product is %g",i,(double)PetscAbsScalar(sum));
       }
     }
-    CHKERRQ(PetscMalloc1(n-1,&dots));
+    PetscCall(PetscMalloc1(n-1,&dots));
     for (i=0; i<n-1; i++) {
       PetscInt j;
-      CHKERRQ(VecMDot(vecs[i],n-i-1,vecs+i+1,dots));
+      PetscCall(VecMDot(vecs[i],n-i-1,vecs+i+1,dots));
       for (j=0;j<n-i-1;j++) {
         PetscCheckFalse(PetscAbsScalar(dots[j]) > PETSC_SQRT_MACHINE_EPSILON,PetscObjectComm((PetscObject)vecs[i]),PETSC_ERR_ARG_WRONG,"Vector %" PetscInt_FMT " must be orthogonal to vector %" PetscInt_FMT ", inner product is %g",i,i+j+1,(double)PetscAbsScalar(dots[j]));
       }
     }
-    CHKERRQ(PetscFree(dots));
+    PetscCall(PetscFree(dots));
   }
 
   *SP = NULL;
-  CHKERRQ(MatInitializePackage());
+  PetscCall(MatInitializePackage());
 
-  CHKERRQ(PetscHeaderCreate(sp,MAT_NULLSPACE_CLASSID,"MatNullSpace","Null space","Mat",comm,MatNullSpaceDestroy,MatNullSpaceView));
+  PetscCall(PetscHeaderCreate(sp,MAT_NULLSPACE_CLASSID,"MatNullSpace","Null space","Mat",comm,MatNullSpaceDestroy,MatNullSpaceView));
 
   sp->has_cnst = has_cnst;
   sp->n        = n;
@@ -287,11 +287,11 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool has_cnst,PetscInt n,c
   sp->rmctx    = NULL;
 
   if (n) {
-    CHKERRQ(PetscMalloc1(n,&sp->vecs));
-    CHKERRQ(PetscMalloc1(n,&sp->alpha));
-    CHKERRQ(PetscLogObjectMemory((PetscObject)sp,n*(sizeof(Vec)+sizeof(PetscScalar))));
+    PetscCall(PetscMalloc1(n,&sp->vecs));
+    PetscCall(PetscMalloc1(n,&sp->alpha));
+    PetscCall(PetscLogObjectMemory((PetscObject)sp,n*(sizeof(Vec)+sizeof(PetscScalar))));
     for (i=0; i<n; i++) {
-      CHKERRQ(PetscObjectReference((PetscObject)vecs[i]));
+      PetscCall(PetscObjectReference((PetscObject)vecs[i]));
       sp->vecs[i] = vecs[i];
     }
   }
@@ -323,12 +323,12 @@ PetscErrorCode  MatNullSpaceDestroy(MatNullSpace *sp)
   if (--((PetscObject)(*sp))->refct > 0) {*sp = NULL; PetscFunctionReturn(0);}
 
   for (i=0; i < (*sp)->n; i++) {
-    CHKERRQ(VecLockReadPop((*sp)->vecs[i]));
+    PetscCall(VecLockReadPop((*sp)->vecs[i]));
   }
 
-  CHKERRQ(VecDestroyVecs((*sp)->n,&(*sp)->vecs));
-  CHKERRQ(PetscFree((*sp)->alpha));
-  CHKERRQ(PetscHeaderDestroy(sp));
+  PetscCall(VecDestroyVecs((*sp)->n,&(*sp)->vecs));
+  PetscCall(PetscFree((*sp)->alpha));
+  PetscCall(PetscHeaderDestroy(sp));
   PetscFunctionReturn(0);
 }
 
@@ -356,22 +356,22 @@ PetscErrorCode  MatNullSpaceRemove(MatNullSpace sp,Vec vec)
   PetscValidHeaderSpecific(vec,VEC_CLASSID,2);
 
   if (sp->has_cnst) {
-    CHKERRQ(VecGetSize(vec,&N));
+    PetscCall(VecGetSize(vec,&N));
     if (N > 0) {
-      CHKERRQ(VecSum(vec,&sum));
+      PetscCall(VecSum(vec,&sum));
       sum  = sum/((PetscScalar)(-1.0*N));
-      CHKERRQ(VecShift(vec,sum));
+      PetscCall(VecShift(vec,sum));
     }
   }
 
   if (sp->n) {
-    CHKERRQ(VecMDot(vec,sp->n,sp->vecs,sp->alpha));
+    PetscCall(VecMDot(vec,sp->n,sp->vecs,sp->alpha));
     for (i=0; i<sp->n; i++) sp->alpha[i] = -sp->alpha[i];
-    CHKERRQ(VecMAXPY(vec,sp->n,sp->alpha,sp->vecs));
+    PetscCall(VecMAXPY(vec,sp->n,sp->alpha,sp->vecs));
   }
 
   if (sp->remove) {
-    CHKERRQ((*sp->remove)(sp,vec,sp->rmctx));
+    PetscCall((*sp->remove)(sp,vec,sp->rmctx));
   }
   PetscFunctionReturn(0);
 }
@@ -406,56 +406,56 @@ PetscErrorCode  MatNullSpaceTest(MatNullSpace sp,Mat mat,PetscBool  *isNull)
   PetscValidHeaderSpecific(sp,MAT_NULLSPACE_CLASSID,1);
   PetscValidHeaderSpecific(mat,MAT_CLASSID,2);
   n    = sp->n;
-  CHKERRQ(PetscOptionsGetBool(((PetscObject)sp)->options,((PetscObject)mat)->prefix,"-mat_null_space_test_view",&flg1,NULL));
-  CHKERRQ(PetscOptionsGetBool(((PetscObject)sp)->options,((PetscObject)mat)->prefix,"-mat_null_space_test_view_draw",&flg2,NULL));
+  PetscCall(PetscOptionsGetBool(((PetscObject)sp)->options,((PetscObject)mat)->prefix,"-mat_null_space_test_view",&flg1,NULL));
+  PetscCall(PetscOptionsGetBool(((PetscObject)sp)->options,((PetscObject)mat)->prefix,"-mat_null_space_test_view_draw",&flg2,NULL));
 
   if (n) {
-    CHKERRQ(VecDuplicate(sp->vecs[0],&l));
+    PetscCall(VecDuplicate(sp->vecs[0],&l));
   } else {
-    CHKERRQ(MatCreateVecs(mat,&l,NULL));
+    PetscCall(MatCreateVecs(mat,&l,NULL));
   }
 
-  CHKERRQ(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)sp),&viewer));
+  PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)sp),&viewer));
   if (sp->has_cnst) {
-    CHKERRQ(VecDuplicate(l,&r));
-    CHKERRQ(VecGetSize(l,&N));
+    PetscCall(VecDuplicate(l,&r));
+    PetscCall(VecGetSize(l,&N));
     sum  = 1.0/PetscSqrtReal(N);
-    CHKERRQ(VecSet(l,sum));
-    CHKERRQ(MatMult(mat,l,r));
-    CHKERRQ(VecNorm(r,NORM_2,&nrm));
+    PetscCall(VecSet(l,sum));
+    PetscCall(MatMult(mat,l,r));
+    PetscCall(VecNorm(r,NORM_2,&nrm));
     if (nrm >= tol) consistent = PETSC_FALSE;
     if (flg1) {
       if (consistent) {
-        CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject)sp),"Constants are likely null vector"));
+        PetscCall(PetscPrintf(PetscObjectComm((PetscObject)sp),"Constants are likely null vector"));
       } else {
-        CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject)sp),"Constants are unlikely null vector "));
+        PetscCall(PetscPrintf(PetscObjectComm((PetscObject)sp),"Constants are unlikely null vector "));
       }
-      CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject)sp),"|| A * 1/N || = %g\n",(double)nrm));
+      PetscCall(PetscPrintf(PetscObjectComm((PetscObject)sp),"|| A * 1/N || = %g\n",(double)nrm));
     }
-    if (!consistent && flg1) CHKERRQ(VecView(r,viewer));
-    if (!consistent && flg2) CHKERRQ(VecView(r,viewer));
-    CHKERRQ(VecDestroy(&r));
+    if (!consistent && flg1) PetscCall(VecView(r,viewer));
+    if (!consistent && flg2) PetscCall(VecView(r,viewer));
+    PetscCall(VecDestroy(&r));
   }
 
   for (j=0; j<n; j++) {
-    CHKERRQ((*mat->ops->mult)(mat,sp->vecs[j],l));
-    CHKERRQ(VecNorm(l,NORM_2,&nrm));
+    PetscCall((*mat->ops->mult)(mat,sp->vecs[j],l));
+    PetscCall(VecNorm(l,NORM_2,&nrm));
     if (nrm >= tol) consistent = PETSC_FALSE;
     if (flg1) {
       if (consistent) {
-        CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject)sp),"Null vector %" PetscInt_FMT " is likely null vector",j));
+        PetscCall(PetscPrintf(PetscObjectComm((PetscObject)sp),"Null vector %" PetscInt_FMT " is likely null vector",j));
       } else {
-        CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject)sp),"Null vector %" PetscInt_FMT " unlikely null vector ",j));
+        PetscCall(PetscPrintf(PetscObjectComm((PetscObject)sp),"Null vector %" PetscInt_FMT " unlikely null vector ",j));
         consistent = PETSC_FALSE;
       }
-      CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject)sp),"|| A * v[%" PetscInt_FMT "] || = %g\n",j,(double)nrm));
+      PetscCall(PetscPrintf(PetscObjectComm((PetscObject)sp),"|| A * v[%" PetscInt_FMT "] || = %g\n",j,(double)nrm));
     }
-    if (!consistent && flg1) CHKERRQ(VecView(l,viewer));
-    if (!consistent && flg2) CHKERRQ(VecView(l,viewer));
+    if (!consistent && flg1) PetscCall(VecView(l,viewer));
+    if (!consistent && flg2) PetscCall(VecView(l,viewer));
   }
 
   PetscCheck(!sp->remove,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot test a null space provided as a function with MatNullSpaceSetFunction()");
-  CHKERRQ(VecDestroy(&l));
+  PetscCall(VecDestroy(&l));
   if (isNull) *isNull = consistent;
   PetscFunctionReturn(0);
 }

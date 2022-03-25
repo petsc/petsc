@@ -202,7 +202,7 @@ PetscErrorCode TSRKRegisterAll(void)
     const PetscReal
       A[1][1] = {{0}},
       b[1]    = {RC(1.0)};
-    CHKERRQ(TSRKRegister(TSRK1FE,1,1,&A[0][0],b,NULL,NULL,0,NULL));
+    PetscCall(TSRKRegister(TSRK1FE,1,1,&A[0][0],b,NULL,NULL,0,NULL));
   }
   {
     const PetscReal
@@ -210,14 +210,14 @@ PetscErrorCode TSRKRegisterAll(void)
                    {RC(1.0),0}},
       b[2]      =  {RC(0.5),RC(0.5)},
       bembed[2] =  {RC(1.0),0};
-    CHKERRQ(TSRKRegister(TSRK2A,2,2,&A[0][0],b,NULL,bembed,0,NULL));
+    PetscCall(TSRKRegister(TSRK2A,2,2,&A[0][0],b,NULL,bembed,0,NULL));
   }
   {
     const PetscReal
       A[2][2]   = {{0,0},
                    {RC(0.5),0}},
       b[2]      =  {0,RC(1.0)};
-    CHKERRQ(TSRKRegister(TSRK2B,2,2,&A[0][0],b,NULL,NULL,0,NULL));
+    PetscCall(TSRKRegister(TSRK2B,2,2,&A[0][0],b,NULL,NULL,0,NULL));
   }
   {
     const PetscReal
@@ -225,7 +225,7 @@ PetscErrorCode TSRKRegisterAll(void)
                  {RC(2.0)/RC(3.0),0,0},
                  {RC(-1.0)/RC(3.0),RC(1.0),0}},
       b[3]    =  {RC(0.25),RC(0.5),RC(0.25)};
-    CHKERRQ(TSRKRegister(TSRK3,3,3,&A[0][0],b,NULL,NULL,0,NULL));
+    PetscCall(TSRKRegister(TSRK3,3,3,&A[0][0],b,NULL,NULL,0,NULL));
   }
   {
     const PetscReal
@@ -235,7 +235,7 @@ PetscErrorCode TSRKRegisterAll(void)
                    {RC(2.0)/RC(9.0),RC(1.0)/RC(3.0),RC(4.0)/RC(9.0),0}},
       b[4]      =  {RC(2.0)/RC(9.0),RC(1.0)/RC(3.0),RC(4.0)/RC(9.0),0},
       bembed[4] =  {RC(7.0)/RC(24.0),RC(1.0)/RC(4.0),RC(1.0)/RC(3.0),RC(1.0)/RC(8.0)};
-    CHKERRQ(TSRKRegister(TSRK3BS,3,4,&A[0][0],b,NULL,bembed,0,NULL));
+    PetscCall(TSRKRegister(TSRK3BS,3,4,&A[0][0],b,NULL,bembed,0,NULL));
   }
   {
     const PetscReal
@@ -244,7 +244,7 @@ PetscErrorCode TSRKRegisterAll(void)
                  {0,RC(0.5),0,0},
                  {0,0,RC(1.0),0}},
       b[4]    =  {RC(1.0)/RC(6.0),RC(1.0)/RC(3.0),RC(1.0)/RC(3.0),RC(1.0)/RC(6.0)};
-    CHKERRQ(TSRKRegister(TSRK4,4,4,&A[0][0],b,NULL,NULL,0,NULL));
+    PetscCall(TSRKRegister(TSRK4,4,4,&A[0][0],b,NULL,NULL,0,NULL));
   }
   {
     const PetscReal
@@ -256,7 +256,7 @@ PetscErrorCode TSRKRegisterAll(void)
                    {RC(-8.0)/RC(27.0),RC(2.0),RC(-3544.0)/RC(2565.0),RC(1859.0)/RC(4104.0),RC(-11.0)/RC(40.0),0}},
       b[6]      =  {RC(16.0)/RC(135.0),0,RC(6656.0)/RC(12825.0),RC(28561.0)/RC(56430.0),RC(-9.0)/RC(50.0),RC(2.0)/RC(55.0)},
       bembed[6] =  {RC(25.0)/RC(216.0),0,RC(1408.0)/RC(2565.0),RC(2197.0)/RC(4104.0),RC(-1.0)/RC(5.0),0};
-    CHKERRQ(TSRKRegister(TSRK5F,5,6,&A[0][0],b,NULL,bembed,0,NULL));
+    PetscCall(TSRKRegister(TSRK5F,5,6,&A[0][0],b,NULL,bembed,0,NULL));
   }
   {
     const PetscReal
@@ -276,7 +276,7 @@ PetscErrorCode TSRKRegisterAll(void)
                        {0,RC(70805911779.0)/RC(24914598704.0),RC(-4531260609.0)/RC(600351776.0),RC(988140236175.0)/RC(199316789632.0),RC(-14307999165.0)/RC(24914598704.0)},
                        {0,RC(-331320693.0)/RC(205662961.0),RC(31361737.0)/RC(7433601.0),RC(-2426908385.0)/RC(822651844.0),RC(97305120.0)/RC(205662961.0)},
                        {0,RC(44764047.0)/RC(29380423.0),RC(-1532549.0)/RC(353981.0),RC(90730570.0)/RC(29380423.0),RC(-8293050.0)/RC(29380423.0)}};
-      CHKERRQ(TSRKRegister(TSRK5DP,5,7,&A[0][0],b,NULL,bembed,5,binterp[0]));
+      PetscCall(TSRKRegister(TSRK5DP,5,7,&A[0][0],b,NULL,bembed,5,binterp[0]));
   }
   {
     const PetscReal
@@ -290,7 +290,7 @@ PetscErrorCode TSRKRegisterAll(void)
                    {RC(587.0)/RC(8064.0),0,RC(4440339.0)/RC(15491840.0),RC(24353.0)/RC(124800.0),RC(387.0)/RC(44800.0),RC(2152.0)/RC(5985.0),RC(7267.0)/RC(94080.0),0}},
       b[8]      =  {RC(587.0)/RC(8064.0),0,RC(4440339.0)/RC(15491840.0),RC(24353.0)/RC(124800.0),RC(387.0)/RC(44800.0),RC(2152.0)/RC(5985.0),RC(7267.0)/RC(94080.0),0},
       bembed[8] =  {RC(2479.0)/RC(34992.0),0,RC(123.0)/RC(416.0),RC(612941.0)/RC(3411720.0),RC(43.0)/RC(1440.0),RC(2272.0)/RC(6561.0),RC(79937.0)/RC(1113912.0),RC(3293.0)/RC(556956.0)};
-    CHKERRQ(TSRKRegister(TSRK5BS,5,8,&A[0][0],b,NULL,bembed,0,NULL));
+    PetscCall(TSRKRegister(TSRK5BS,5,8,&A[0][0],b,NULL,bembed,0,NULL));
   }
   {
     const PetscReal
@@ -305,7 +305,7 @@ PetscErrorCode TSRKRegisterAll(void)
                    {RC(7.6388888888888888888888888888888888888889e-02),0,0,RC(3.6940836940836940836940836940836940836941e-01),0,RC(2.4801587301587301587301587301587301587302e-01),RC(2.3674242424242424242424242424242424242424e-01),RC(6.9444444444444444444444444444444444444444e-02),0}},
       b[9]      =  {RC(7.6388888888888888888888888888888888888889e-02),0,0,RC(3.6940836940836940836940836940836940836941e-01),0,RC(2.4801587301587301587301587301587301587302e-01),RC(2.3674242424242424242424242424242424242424e-01),RC(6.9444444444444444444444444444444444444444e-02),0},
       bembed[9] =  {RC(5.8700209643605870020964360587002096436059e-02),0,0,RC(4.8072562358276643990929705215419501133787e-01),RC(-8.5341242076919085578832094861228313083563e-01),RC(1.2046485260770975056689342403628117913832e+00),0,RC(-5.9242373072160306202859394348756050883710e-02),RC(1.6858043453788134639198468985703028256220e-01)};
-    CHKERRQ(TSRKRegister(TSRK6VR,6,9,&A[0][0],b,NULL,bembed,0,NULL));
+    PetscCall(TSRKRegister(TSRK6VR,6,9,&A[0][0],b,NULL,bembed,0,NULL));
   }
   {
     const PetscReal
@@ -321,7 +321,7 @@ PetscErrorCode TSRKRegisterAll(void)
                     {RC(-1.4449518916777735137351003179355712360517e+00),0,RC(8.0318913859955919224117033223019560435041e+00),RC(-7.5831741663401346820798883023671588604984e+00),RC(3.5816169353190074211247685442452878696855e+00),RC(-2.4369722632199529411183809065693752383733e+00),RC(8.5158999992326179339689766032486142173390e-01),0,0,0}},
       b[10]      =  {RC(4.7425837833706756083569172717574534698932e-02),0,0,RC(2.5622361659370562659961727458274623448160e-01),RC(2.6951376833074206619473817258075952886764e-01),RC(1.2686622409092782845989138364739173247882e-01),RC(2.4887225942060071622046449427647492767292e-01),RC(3.0744837408200631335304388479099184768645e-03),RC(4.8023809989496943308189063347143123323209e-02),0},
       bembed[10] =  {RC(4.7485247699299631037531273805727961552268e-02),0,0,RC(2.5599412588690633297154918245905393870497e-01),RC(2.7058478081067688722530891099268135732387e-01),RC(1.2505618684425992913638822323746917920448e-01),RC(2.5204468723743860507184043820197442562182e-01),0,0,RC(4.8834971521418614557381971303093137592592e-02)};
-    CHKERRQ(TSRKRegister(TSRK7VR,7,10,&A[0][0],b,NULL,bembed,0,NULL));
+    PetscCall(TSRKRegister(TSRK7VR,7,10,&A[0][0],b,NULL,bembed,0,NULL));
   }
   {
     const PetscReal
@@ -340,7 +340,7 @@ PetscErrorCode TSRKRegisterAll(void)
                     {RC(8.8735762208534719663211694051981022704884e-01),0,0,RC(-2.9754597821085367558513632804709301581977e+00),RC(5.6007170094881630597990392548350098923829e+00),RC(-5.9156074505366744680014930189941657351840e+00),RC(2.2029689156134927016879142540807638331238e-01),RC(1.0155097824462216666143271340902996997549e-01),RC(1.1514345647386055909780397752125850553556e+00),RC(1.9297101665271239396134361900805843653065e+00),0,0,0}},
       b[13]      =  {RC(4.4729564666695714203015840429049382466467e-02),0,0,0,0,RC(1.5691033527708199813368698010726645409175e-01),RC(1.8460973408151637740702451873526277892035e-01),RC(2.2516380602086991042479419400350721970920e-01),RC(1.4794615651970234687005179885449141753736e-01),RC(7.6055542444955825269798361910336491012732e-02),RC(1.2277290235018619610824346315921437388535e-01),RC(4.1811958638991631583384842800871882376786e-02),0},
       bembed[13] =  {RC(4.5847111400495925878664730122010282095875e-02),0,0,0,0,RC(2.6231891404152387437443356584845803392392e-01),RC(1.9169372337852611904485738635688429008025e-01),RC(2.1709172327902618330978407422906448568196e-01),RC(1.2738189624833706796803169450656737867900e-01),RC(1.1510530385365326258240515750043192148894e-01),0,0,RC(4.0561327798437566841823391436583608050053e-02)};
-    CHKERRQ(TSRKRegister(TSRK8VR,8,13,&A[0][0],b,NULL,bembed,0,NULL));
+    PetscCall(TSRKRegister(TSRK8VR,8,13,&A[0][0],b,NULL,bembed,0,NULL));
   }
 #undef RC
   PetscFunctionReturn(0);
@@ -363,11 +363,11 @@ PetscErrorCode TSRKRegisterDestroy(void)
   while ((link = RKTableauList)) {
     RKTableau t = &link->tab;
     RKTableauList = link->next;
-    CHKERRQ(PetscFree3(t->A,t->b,t->c));
-    CHKERRQ(PetscFree(t->bembed));
-    CHKERRQ(PetscFree(t->binterp));
-    CHKERRQ(PetscFree(t->name));
-    CHKERRQ(PetscFree(link));
+    PetscCall(PetscFree3(t->A,t->b,t->c));
+    PetscCall(PetscFree(t->bembed));
+    PetscCall(PetscFree(t->binterp));
+    PetscCall(PetscFree(t->name));
+    PetscCall(PetscFree(link));
   }
   TSRKRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -386,8 +386,8 @@ PetscErrorCode TSRKInitializePackage(void)
   PetscFunctionBegin;
   if (TSRKPackageInitialized) PetscFunctionReturn(0);
   TSRKPackageInitialized = PETSC_TRUE;
-  CHKERRQ(TSRKRegisterAll());
-  CHKERRQ(PetscRegisterFinalize(TSRKFinalizePackage));
+  PetscCall(TSRKRegisterAll());
+  PetscCall(PetscRegisterFinalize(TSRKFinalizePackage));
   PetscFunctionReturn(0);
 }
 
@@ -403,7 +403,7 @@ PetscErrorCode TSRKFinalizePackage(void)
 {
   PetscFunctionBegin;
   TSRKPackageInitialized = PETSC_FALSE;
-  CHKERRQ(TSRKRegisterDestroy());
+  PetscCall(TSRKRegisterDestroy());
   PetscFunctionReturn(0);
 }
 
@@ -446,31 +446,31 @@ PetscErrorCode TSRKRegister(TSRKType name,PetscInt order,PetscInt s,
   if (bembed) PetscValidRealPointer(bembed,7);
   if (binterp || p > 1) PetscValidRealPointer(binterp,9);
 
-  CHKERRQ(TSRKInitializePackage());
-  CHKERRQ(PetscNew(&link));
+  PetscCall(TSRKInitializePackage());
+  PetscCall(PetscNew(&link));
   t = &link->tab;
 
-  CHKERRQ(PetscStrallocpy(name,&t->name));
+  PetscCall(PetscStrallocpy(name,&t->name));
   t->order = order;
   t->s = s;
-  CHKERRQ(PetscMalloc3(s*s,&t->A,s,&t->b,s,&t->c));
-  CHKERRQ(PetscArraycpy(t->A,A,s*s));
-  if (b)  CHKERRQ(PetscArraycpy(t->b,b,s));
+  PetscCall(PetscMalloc3(s*s,&t->A,s,&t->b,s,&t->c));
+  PetscCall(PetscArraycpy(t->A,A,s*s));
+  if (b)  PetscCall(PetscArraycpy(t->b,b,s));
   else for (i=0; i<s; i++) t->b[i] = A[(s-1)*s+i];
-  if (c)  CHKERRQ(PetscArraycpy(t->c,c,s));
+  if (c)  PetscCall(PetscArraycpy(t->c,c,s));
   else for (i=0; i<s; i++) for (j=0,t->c[i]=0; j<s; j++) t->c[i] += A[i*s+j];
   t->FSAL = PETSC_TRUE;
   for (i=0; i<s; i++) if (t->A[(s-1)*s+i] != t->b[i]) t->FSAL = PETSC_FALSE;
 
   if (bembed) {
-    CHKERRQ(PetscMalloc1(s,&t->bembed));
-    CHKERRQ(PetscArraycpy(t->bembed,bembed,s));
+    PetscCall(PetscMalloc1(s,&t->bembed));
+    PetscCall(PetscArraycpy(t->bembed,bembed,s));
   }
 
   if (!binterp) { p = 1; binterp = t->b; }
   t->p = p;
-  CHKERRQ(PetscMalloc1(s*p,&t->binterp));
-  CHKERRQ(PetscArraycpy(t->binterp,binterp,s*p));
+  PetscCall(PetscMalloc1(s*p,&t->binterp));
+  PetscCall(PetscArraycpy(t->binterp,binterp,s*p));
 
   link->next = RKTableauList;
   RKTableauList = link;
@@ -525,7 +525,7 @@ PetscErrorCode TSRKGetTableau(TS ts, PetscInt *s, const PetscReal **A, const Pet
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   ierr = PetscUseMethod(ts,"TSRKGetTableau_C",(TS,PetscInt*,const PetscReal**,const PetscReal**,const PetscReal**,const PetscReal**,
-                                                  PetscInt*,const PetscReal**,PetscBool*),(ts,s,A,b,c,bembed,p,binterp,FSAL));CHKERRQ(ierr);
+                                                  PetscInt*,const PetscReal**,PetscBool*),(ts,s,A,b,c,bembed,p,binterp,FSAL));PetscCall(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -564,21 +564,21 @@ static PetscErrorCode TSEvaluateStep_RK(TS ts,PetscInt order,Vec X,PetscBool *do
   }
   if (order == tab->order) {
     if (rk->status == TS_STEP_INCOMPLETE) {
-      CHKERRQ(VecCopy(ts->vec_sol,X));
+      PetscCall(VecCopy(ts->vec_sol,X));
       for (j=0; j<s; j++) w[j] = h*tab->b[j]/rk->dtratio;
-      CHKERRQ(VecMAXPY(X,s,w,rk->YdotRHS));
-    } else CHKERRQ(VecCopy(ts->vec_sol,X));
+      PetscCall(VecMAXPY(X,s,w,rk->YdotRHS));
+    } else PetscCall(VecCopy(ts->vec_sol,X));
     PetscFunctionReturn(0);
   } else if (order == tab->order-1) {
     if (!tab->bembed) goto unavailable;
     if (rk->status == TS_STEP_INCOMPLETE) { /*Complete with the embedded method (be)*/
-      CHKERRQ(VecCopy(ts->vec_sol,X));
+      PetscCall(VecCopy(ts->vec_sol,X));
       for (j=0; j<s; j++) w[j] = h*tab->bembed[j];
-      CHKERRQ(VecMAXPY(X,s,w,rk->YdotRHS));
+      PetscCall(VecMAXPY(X,s,w,rk->YdotRHS));
     } else {  /*Rollback and re-complete using (be-b) */
-      CHKERRQ(VecCopy(ts->vec_sol,X));
+      PetscCall(VecCopy(ts->vec_sol,X));
       for (j=0; j<s; j++) w[j] = h*(tab->bembed[j] - tab->b[j]);
-      CHKERRQ(VecMAXPY(X,s,w,rk->YdotRHS));
+      PetscCall(VecMAXPY(X,s,w,rk->YdotRHS));
     }
     if (done) *done = PETSC_TRUE;
     PetscFunctionReturn(0);
@@ -603,8 +603,8 @@ static PetscErrorCode TSForwardCostIntegral_RK(TS ts)
   /* No need to backup quadts->vec_sol since it can be reverted in TSRollBack_RK */
   for (i=s-1; i>=0; i--) {
     /* Evolve quadrature TS solution to compute integrals */
-    CHKERRQ(TSComputeRHSFunction(quadts,rk->ptime+rk->time_step*c[i],Y[i],ts->vec_costintegrand));
-    CHKERRQ(VecAXPY(quadts->vec_sol,rk->time_step*b[i],ts->vec_costintegrand));
+    PetscCall(TSComputeRHSFunction(quadts,rk->ptime+rk->time_step*c[i],Y[i],ts->vec_costintegrand));
+    PetscCall(VecAXPY(quadts->vec_sol,rk->time_step*b[i],ts->vec_costintegrand));
   }
   PetscFunctionReturn(0);
 }
@@ -622,8 +622,8 @@ static PetscErrorCode TSAdjointCostIntegral_RK(TS ts)
   PetscFunctionBegin;
   for (i=s-1; i>=0; i--) {
     /* Evolve quadrature TS solution to compute integrals */
-    CHKERRQ(TSComputeRHSFunction(quadts,ts->ptime+ts->time_step*(1.0-c[i]),Y[i],ts->vec_costintegrand));
-    CHKERRQ(VecAXPY(quadts->vec_sol,-ts->time_step*b[i],ts->vec_costintegrand));
+    PetscCall(TSComputeRHSFunction(quadts,ts->ptime+ts->time_step*(1.0-c[i]),Y[i],ts->vec_costintegrand));
+    PetscCall(VecAXPY(quadts->vec_sol,-ts->time_step*b[i],ts->vec_costintegrand));
   }
   PetscFunctionReturn(0);
 }
@@ -650,12 +650,12 @@ static PetscErrorCode TSRollBack_RK(TS ts)
   default: SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_PLIB,"Invalid TSStepStatus");
   }
   for (j=0; j<s; j++) w[j] = -h*b[j];
-  CHKERRQ(VecMAXPY(ts->vec_sol,s,w,YdotRHS));
+  PetscCall(VecMAXPY(ts->vec_sol,s,w,YdotRHS));
   if (quadts && ts->costintegralfwd) {
     for (j=0; j<s; j++) {
       /* Revert the quadrature TS solution */
-      CHKERRQ(TSComputeRHSFunction(quadts,rk->ptime+h*c[j],Y[j],ts->vec_costintegrand));
-      CHKERRQ(VecAXPY(quadts->vec_sol,-h*b[j],ts->vec_costintegrand));
+      PetscCall(TSComputeRHSFunction(quadts,rk->ptime+h*c[j],Y[j],ts->vec_costintegrand));
+      PetscCall(VecAXPY(quadts->vec_sol,-h*b[j],ts->vec_costintegrand));
     }
   }
   PetscFunctionReturn(0);
@@ -674,8 +674,8 @@ static PetscErrorCode TSForwardStep_RK(TS ts)
   PetscBool       zero;
 
   PetscFunctionBegin;
-  CHKERRQ(MatCopy(ts->mat_sensip,rk->MatFwdSensip0,SAME_NONZERO_PATTERN));
-  CHKERRQ(TSGetRHSJacobian(ts,&J,NULL,NULL,NULL));
+  PetscCall(MatCopy(ts->mat_sensip,rk->MatFwdSensip0,SAME_NONZERO_PATTERN));
+  PetscCall(TSGetRHSJacobian(ts,&J,NULL,NULL,NULL));
 
   for (i=0; i<s; i++) {
     stage_time = ts->ptime + h*c[i];
@@ -683,36 +683,36 @@ static PetscErrorCode TSForwardStep_RK(TS ts)
     if (b[i] == 0 && i == s-1) zero = PETSC_TRUE;
     /* TLM Stage values */
     if (!i) {
-      CHKERRQ(MatCopy(ts->mat_sensip,rk->MatsFwdStageSensip[i],SAME_NONZERO_PATTERN));
+      PetscCall(MatCopy(ts->mat_sensip,rk->MatsFwdStageSensip[i],SAME_NONZERO_PATTERN));
     } else if (!zero) {
-      CHKERRQ(MatZeroEntries(rk->MatsFwdStageSensip[i]));
+      PetscCall(MatZeroEntries(rk->MatsFwdStageSensip[i]));
       for (j=0; j<i; j++) {
-        CHKERRQ(MatAXPY(rk->MatsFwdStageSensip[i],h*A[i*s+j],MatsFwdSensipTemp[j],SAME_NONZERO_PATTERN));
+        PetscCall(MatAXPY(rk->MatsFwdStageSensip[i],h*A[i*s+j],MatsFwdSensipTemp[j],SAME_NONZERO_PATTERN));
       }
-      CHKERRQ(MatAXPY(rk->MatsFwdStageSensip[i],1.,ts->mat_sensip,SAME_NONZERO_PATTERN));
+      PetscCall(MatAXPY(rk->MatsFwdStageSensip[i],1.,ts->mat_sensip,SAME_NONZERO_PATTERN));
     } else {
-      CHKERRQ(MatZeroEntries(rk->MatsFwdStageSensip[i]));
+      PetscCall(MatZeroEntries(rk->MatsFwdStageSensip[i]));
     }
 
-    CHKERRQ(TSComputeRHSJacobian(ts,stage_time,Y[i],J,J));
-    CHKERRQ(MatMatMult(J,rk->MatsFwdStageSensip[i],MAT_REUSE_MATRIX,PETSC_DEFAULT,&MatsFwdSensipTemp[i]));
+    PetscCall(TSComputeRHSJacobian(ts,stage_time,Y[i],J,J));
+    PetscCall(MatMatMult(J,rk->MatsFwdStageSensip[i],MAT_REUSE_MATRIX,PETSC_DEFAULT,&MatsFwdSensipTemp[i]));
     if (ts->Jacprhs) {
-      CHKERRQ(TSComputeRHSJacobianP(ts,stage_time,Y[i],ts->Jacprhs)); /* get f_p */
+      PetscCall(TSComputeRHSJacobianP(ts,stage_time,Y[i],ts->Jacprhs)); /* get f_p */
       if (ts->vecs_sensi2p) { /* TLM used for 2nd-order adjoint */
         PetscScalar *xarr;
-        CHKERRQ(MatDenseGetColumn(MatsFwdSensipTemp[i],0,&xarr));
-        CHKERRQ(VecPlaceArray(rk->VecDeltaFwdSensipCol,xarr));
-        CHKERRQ(MatMultAdd(ts->Jacprhs,ts->vec_dir,rk->VecDeltaFwdSensipCol,rk->VecDeltaFwdSensipCol));
-        CHKERRQ(VecResetArray(rk->VecDeltaFwdSensipCol));
-        CHKERRQ(MatDenseRestoreColumn(MatsFwdSensipTemp[i],&xarr));
+        PetscCall(MatDenseGetColumn(MatsFwdSensipTemp[i],0,&xarr));
+        PetscCall(VecPlaceArray(rk->VecDeltaFwdSensipCol,xarr));
+        PetscCall(MatMultAdd(ts->Jacprhs,ts->vec_dir,rk->VecDeltaFwdSensipCol,rk->VecDeltaFwdSensipCol));
+        PetscCall(VecResetArray(rk->VecDeltaFwdSensipCol));
+        PetscCall(MatDenseRestoreColumn(MatsFwdSensipTemp[i],&xarr));
       } else {
-        CHKERRQ(MatAXPY(MatsFwdSensipTemp[i],1.,ts->Jacprhs,SUBSET_NONZERO_PATTERN));
+        PetscCall(MatAXPY(MatsFwdSensipTemp[i],1.,ts->Jacprhs,SUBSET_NONZERO_PATTERN));
       }
     }
   }
 
   for (i=0; i<s; i++) {
-    CHKERRQ(MatAXPY(ts->mat_sensip,h*b[i],rk->MatsFwdSensipTemp[i],SAME_NONZERO_PATTERN));
+    PetscCall(MatAXPY(ts->mat_sensip,h*b[i],rk->MatsFwdSensipTemp[i],SAME_NONZERO_PATTERN));
   }
   rk->status = TS_STEP_COMPLETE;
   PetscFunctionReturn(0);
@@ -737,15 +737,15 @@ static PetscErrorCode TSForwardSetUp_RK(TS ts)
 
   PetscFunctionBegin;
   /* backup sensitivity results for roll-backs */
-  CHKERRQ(MatDuplicate(ts->mat_sensip,MAT_DO_NOT_COPY_VALUES,&rk->MatFwdSensip0));
+  PetscCall(MatDuplicate(ts->mat_sensip,MAT_DO_NOT_COPY_VALUES,&rk->MatFwdSensip0));
 
-  CHKERRQ(PetscMalloc1(tab->s,&rk->MatsFwdStageSensip));
-  CHKERRQ(PetscMalloc1(tab->s,&rk->MatsFwdSensipTemp));
+  PetscCall(PetscMalloc1(tab->s,&rk->MatsFwdStageSensip));
+  PetscCall(PetscMalloc1(tab->s,&rk->MatsFwdSensipTemp));
   for (i=0; i<tab->s; i++) {
-    CHKERRQ(MatDuplicate(ts->mat_sensip,MAT_DO_NOT_COPY_VALUES,&rk->MatsFwdStageSensip[i]));
-    CHKERRQ(MatDuplicate(ts->mat_sensip,MAT_DO_NOT_COPY_VALUES,&rk->MatsFwdSensipTemp[i]));
+    PetscCall(MatDuplicate(ts->mat_sensip,MAT_DO_NOT_COPY_VALUES,&rk->MatsFwdStageSensip[i]));
+    PetscCall(MatDuplicate(ts->mat_sensip,MAT_DO_NOT_COPY_VALUES,&rk->MatsFwdSensipTemp[i]));
   }
-  CHKERRQ(VecDuplicate(ts->vec_sol,&rk->VecDeltaFwdSensipCol));
+  PetscCall(VecDuplicate(ts->vec_sol,&rk->VecDeltaFwdSensipCol));
   PetscFunctionReturn(0);
 }
 
@@ -756,20 +756,20 @@ static PetscErrorCode TSForwardReset_RK(TS ts)
   PetscInt       i;
 
   PetscFunctionBegin;
-  CHKERRQ(MatDestroy(&rk->MatFwdSensip0));
+  PetscCall(MatDestroy(&rk->MatFwdSensip0));
   if (rk->MatsFwdStageSensip) {
     for (i=0; i<tab->s; i++) {
-      CHKERRQ(MatDestroy(&rk->MatsFwdStageSensip[i]));
+      PetscCall(MatDestroy(&rk->MatsFwdStageSensip[i]));
     }
-    CHKERRQ(PetscFree(rk->MatsFwdStageSensip));
+    PetscCall(PetscFree(rk->MatsFwdStageSensip));
   }
   if (rk->MatsFwdSensipTemp) {
     for (i=0; i<tab->s; i++) {
-      CHKERRQ(MatDestroy(&rk->MatsFwdSensipTemp[i]));
+      PetscCall(MatDestroy(&rk->MatsFwdSensipTemp[i]));
     }
-    CHKERRQ(PetscFree(rk->MatsFwdSensipTemp));
+    PetscCall(PetscFree(rk->MatsFwdSensipTemp));
   }
-  CHKERRQ(VecDestroy(&rk->VecDeltaFwdSensipCol));
+  PetscCall(VecDestroy(&rk->VecDeltaFwdSensipCol));
   PetscFunctionReturn(0);
 }
 
@@ -790,7 +790,7 @@ static PetscErrorCode TSStep_RK(TS ts)
 
   PetscFunctionBegin;
   if (ts->steprollback || ts->steprestart) FSAL = PETSC_FALSE;
-  if (FSAL) CHKERRQ(VecCopy(YdotRHS[s-1],YdotRHS[0]));
+  if (FSAL) PetscCall(VecCopy(YdotRHS[s-1],YdotRHS[0]));
 
   rk->status = TS_STEP_INCOMPLETE;
   while (!ts->reason && rk->status != TS_STEP_COMPLETE) {
@@ -798,28 +798,28 @@ static PetscErrorCode TSStep_RK(TS ts)
     PetscReal h = ts->time_step;
     for (i=0; i<s; i++) {
       rk->stage_time = t + h*c[i];
-      CHKERRQ(TSPreStage(ts,rk->stage_time));
-      CHKERRQ(VecCopy(ts->vec_sol,Y[i]));
+      PetscCall(TSPreStage(ts,rk->stage_time));
+      PetscCall(VecCopy(ts->vec_sol,Y[i]));
       for (j=0; j<i; j++) w[j] = h*A[i*s+j];
-      CHKERRQ(VecMAXPY(Y[i],i,w,YdotRHS));
-      CHKERRQ(TSPostStage(ts,rk->stage_time,i,Y));
-      CHKERRQ(TSGetAdapt(ts,&adapt));
-      CHKERRQ(TSAdaptCheckStage(adapt,ts,rk->stage_time,Y[i],&stageok));
+      PetscCall(VecMAXPY(Y[i],i,w,YdotRHS));
+      PetscCall(TSPostStage(ts,rk->stage_time,i,Y));
+      PetscCall(TSGetAdapt(ts,&adapt));
+      PetscCall(TSAdaptCheckStage(adapt,ts,rk->stage_time,Y[i],&stageok));
       if (!stageok) goto reject_step;
       if (FSAL && !i) continue;
-      CHKERRQ(TSComputeRHSFunction(ts,t+h*c[i],Y[i],YdotRHS[i]));
+      PetscCall(TSComputeRHSFunction(ts,t+h*c[i],Y[i],YdotRHS[i]));
     }
 
     rk->status = TS_STEP_INCOMPLETE;
-    CHKERRQ(TSEvaluateStep(ts,tab->order,ts->vec_sol,NULL));
+    PetscCall(TSEvaluateStep(ts,tab->order,ts->vec_sol,NULL));
     rk->status = TS_STEP_PENDING;
-    CHKERRQ(TSGetAdapt(ts,&adapt));
-    CHKERRQ(TSAdaptCandidatesClear(adapt));
-    CHKERRQ(TSAdaptCandidateAdd(adapt,tab->name,tab->order,1,tab->ccfl,(PetscReal)tab->s,PETSC_TRUE));
-    CHKERRQ(TSAdaptChoose(adapt,ts,ts->time_step,NULL,&next_time_step,&accept));
+    PetscCall(TSGetAdapt(ts,&adapt));
+    PetscCall(TSAdaptCandidatesClear(adapt));
+    PetscCall(TSAdaptCandidateAdd(adapt,tab->name,tab->order,1,tab->ccfl,(PetscReal)tab->s,PETSC_TRUE));
+    PetscCall(TSAdaptChoose(adapt,ts,ts->time_step,NULL,&next_time_step,&accept));
     rk->status = accept ? TS_STEP_COMPLETE : TS_STEP_INCOMPLETE;
     if (!accept) { /* Roll back the current step */
-      CHKERRQ(TSRollBack_RK(ts));
+      PetscCall(TSRollBack_RK(ts));
       ts->time_step = next_time_step;
       goto reject_step;
     }
@@ -837,7 +837,7 @@ static PetscErrorCode TSStep_RK(TS ts)
     ts->reject++; accept = PETSC_FALSE;
     if (!ts->reason && ++rejections > ts->max_reject && ts->max_reject >= 0) {
       ts->reason = TS_DIVERGED_STEP_REJECTED;
-      CHKERRQ(PetscInfo(ts,"Step=%D, step rejections %D greater than current TS allowed, stopping solve\n",ts->steps,rejections));
+      PetscCall(PetscInfo(ts,"Step=%D, step rejections %D greater than current TS allowed, stopping solve\n",ts->steps,rejections));
     }
   }
   PetscFunctionReturn(0);
@@ -851,17 +851,17 @@ static PetscErrorCode TSAdjointSetUp_RK(TS ts)
 
   PetscFunctionBegin;
   if (ts->adjointsetupcalled++) PetscFunctionReturn(0);
-  CHKERRQ(VecDuplicateVecs(ts->vecs_sensi[0],s*ts->numcost,&rk->VecsDeltaLam));
-  CHKERRQ(VecDuplicateVecs(ts->vecs_sensi[0],ts->numcost,&rk->VecsSensiTemp));
+  PetscCall(VecDuplicateVecs(ts->vecs_sensi[0],s*ts->numcost,&rk->VecsDeltaLam));
+  PetscCall(VecDuplicateVecs(ts->vecs_sensi[0],ts->numcost,&rk->VecsSensiTemp));
   if (ts->vecs_sensip) {
-    CHKERRQ(VecDuplicate(ts->vecs_sensip[0],&rk->VecDeltaMu));
+    PetscCall(VecDuplicate(ts->vecs_sensip[0],&rk->VecDeltaMu));
   }
   if (ts->vecs_sensi2) {
-    CHKERRQ(VecDuplicateVecs(ts->vecs_sensi[0],s*ts->numcost,&rk->VecsDeltaLam2));
-    CHKERRQ(VecDuplicateVecs(ts->vecs_sensi2[0],ts->numcost,&rk->VecsSensi2Temp));
+    PetscCall(VecDuplicateVecs(ts->vecs_sensi[0],s*ts->numcost,&rk->VecsDeltaLam2));
+    PetscCall(VecDuplicateVecs(ts->vecs_sensi2[0],ts->numcost,&rk->VecsSensi2Temp));
   }
   if (ts->vecs_sensi2p) {
-    CHKERRQ(VecDuplicate(ts->vecs_sensi2p[0],&rk->VecDeltaMu2));
+    PetscCall(VecDuplicate(ts->vecs_sensi2p[0],&rk->VecDeltaMu2));
   }
   PetscFunctionReturn(0);
 }
@@ -889,9 +889,9 @@ static PetscErrorCode TSAdjointStep_RK(TS ts)
   PetscFunctionBegin;
   rk->status = TS_STEP_INCOMPLETE;
 
-  CHKERRQ(TSGetRHSJacobian(ts,&J,&Jpre,NULL,NULL));
+  PetscCall(TSGetRHSJacobian(ts,&J,&Jpre,NULL,NULL));
   if (quadts) {
-    CHKERRQ(TSGetRHSJacobian(quadts,&Jquad,NULL,NULL,NULL));
+    PetscCall(TSGetRHSJacobian(quadts,&Jquad,NULL,NULL,NULL));
   }
   for (i=s-1; i>=0; i--) {
     if (tab->FSAL && i == s-1) {
@@ -899,14 +899,14 @@ static PetscErrorCode TSAdjointStep_RK(TS ts)
       continue;
     }
     rk->stage_time = t + h*(1.0-c[i]);
-    CHKERRQ(TSComputeSNESJacobian(ts,Y[i],J,Jpre));
+    PetscCall(TSComputeSNESJacobian(ts,Y[i],J,Jpre));
     if (quadts) {
-      CHKERRQ(TSComputeRHSJacobian(quadts,rk->stage_time,Y[i],Jquad,Jquad)); /* get r_u^T */
+      PetscCall(TSComputeRHSJacobian(quadts,rk->stage_time,Y[i],Jquad,Jquad)); /* get r_u^T */
     }
     if (ts->vecs_sensip) {
-      CHKERRQ(TSComputeRHSJacobianP(ts,rk->stage_time,Y[i],ts->Jacprhs)); /* get f_p */
+      PetscCall(TSComputeRHSJacobianP(ts,rk->stage_time,Y[i],ts->Jacprhs)); /* get f_p */
       if (quadts) {
-        CHKERRQ(TSComputeRHSJacobianP(quadts,rk->stage_time,Y[i],quadts->Jacprhs)); /* get f_p for the quadrature */
+        PetscCall(TSComputeRHSJacobianP(quadts,rk->stage_time,Y[i],quadts->Jacprhs)); /* get f_p for the quadrature */
       }
     }
 
@@ -920,112 +920,112 @@ static PetscErrorCode TSAdjointStep_RK(TS ts)
       /* Stage values of lambda */
       if (b[i]) {
         /* lambda_{n+1} + \sum_{j=i+1}^s a_{ji}/b[i]*lambda_{s,j} */
-        CHKERRQ(VecCopy(ts->vecs_sensi[nadj],VecsSensiTemp[nadj])); /* VecDeltaLam is an vec array of size s by numcost */
-        CHKERRQ(VecMAXPY(VecsSensiTemp[nadj],s-i-1,w,&VecsDeltaLam[nadj*s+i+1]));
-        CHKERRQ(MatMultTranspose(J,VecsSensiTemp[nadj],VecsDeltaLam[nadj*s+i])); /* VecsSensiTemp will be reused by 2nd-order adjoint */
-        CHKERRQ(VecScale(VecsDeltaLam[nadj*s+i],-h*b[i]));
+        PetscCall(VecCopy(ts->vecs_sensi[nadj],VecsSensiTemp[nadj])); /* VecDeltaLam is an vec array of size s by numcost */
+        PetscCall(VecMAXPY(VecsSensiTemp[nadj],s-i-1,w,&VecsDeltaLam[nadj*s+i+1]));
+        PetscCall(MatMultTranspose(J,VecsSensiTemp[nadj],VecsDeltaLam[nadj*s+i])); /* VecsSensiTemp will be reused by 2nd-order adjoint */
+        PetscCall(VecScale(VecsDeltaLam[nadj*s+i],-h*b[i]));
         if (quadts) {
-          CHKERRQ(MatDenseGetColumn(Jquad,nadj,&xarr));
-          CHKERRQ(VecPlaceArray(VecDRDUTransCol,xarr));
-          CHKERRQ(VecAXPY(VecsDeltaLam[nadj*s+i],-h*b[i],VecDRDUTransCol));
-          CHKERRQ(VecResetArray(VecDRDUTransCol));
-          CHKERRQ(MatDenseRestoreColumn(Jquad,&xarr));
+          PetscCall(MatDenseGetColumn(Jquad,nadj,&xarr));
+          PetscCall(VecPlaceArray(VecDRDUTransCol,xarr));
+          PetscCall(VecAXPY(VecsDeltaLam[nadj*s+i],-h*b[i],VecDRDUTransCol));
+          PetscCall(VecResetArray(VecDRDUTransCol));
+          PetscCall(MatDenseRestoreColumn(Jquad,&xarr));
         }
       } else {
         /* \sum_{j=i+1}^s a_{ji}*lambda_{s,j} */
-        CHKERRQ(VecSet(VecsSensiTemp[nadj],0));
-        CHKERRQ(VecMAXPY(VecsSensiTemp[nadj],s-i-1,w,&VecsDeltaLam[nadj*s+i+1]));
-        CHKERRQ(MatMultTranspose(J,VecsSensiTemp[nadj],VecsDeltaLam[nadj*s+i]));
-        CHKERRQ(VecScale(VecsDeltaLam[nadj*s+i],-h));
+        PetscCall(VecSet(VecsSensiTemp[nadj],0));
+        PetscCall(VecMAXPY(VecsSensiTemp[nadj],s-i-1,w,&VecsDeltaLam[nadj*s+i+1]));
+        PetscCall(MatMultTranspose(J,VecsSensiTemp[nadj],VecsDeltaLam[nadj*s+i]));
+        PetscCall(VecScale(VecsDeltaLam[nadj*s+i],-h));
       }
 
       /* Stage values of mu */
       if (ts->vecs_sensip) {
         if (b[i]) {
-          CHKERRQ(MatMultTranspose(ts->Jacprhs,VecsSensiTemp[nadj],VecDeltaMu));
-          CHKERRQ(VecScale(VecDeltaMu,-h*b[i]));
+          PetscCall(MatMultTranspose(ts->Jacprhs,VecsSensiTemp[nadj],VecDeltaMu));
+          PetscCall(VecScale(VecDeltaMu,-h*b[i]));
           if (quadts) {
-            CHKERRQ(MatDenseGetColumn(quadts->Jacprhs,nadj,&xarr));
-            CHKERRQ(VecPlaceArray(VecDRDPTransCol,xarr));
-            CHKERRQ(VecAXPY(VecDeltaMu,-h*b[i],VecDRDPTransCol));
-            CHKERRQ(VecResetArray(VecDRDPTransCol));
-            CHKERRQ(MatDenseRestoreColumn(quadts->Jacprhs,&xarr));
+            PetscCall(MatDenseGetColumn(quadts->Jacprhs,nadj,&xarr));
+            PetscCall(VecPlaceArray(VecDRDPTransCol,xarr));
+            PetscCall(VecAXPY(VecDeltaMu,-h*b[i],VecDRDPTransCol));
+            PetscCall(VecResetArray(VecDRDPTransCol));
+            PetscCall(MatDenseRestoreColumn(quadts->Jacprhs,&xarr));
           }
         } else {
-          CHKERRQ(VecScale(VecDeltaMu,-h));
+          PetscCall(VecScale(VecDeltaMu,-h));
         }
-        CHKERRQ(VecAXPY(ts->vecs_sensip[nadj],1.,VecDeltaMu)); /* update sensip for each stage */
+        PetscCall(VecAXPY(ts->vecs_sensip[nadj],1.,VecDeltaMu)); /* update sensip for each stage */
       }
     }
 
     if (ts->vecs_sensi2 && ts->forward_solve) { /* 2nd-order adjoint, TLM mode has to be turned on */
       /* Get w1 at t_{n+1} from TLM matrix */
-      CHKERRQ(MatDenseGetColumn(rk->MatsFwdStageSensip[i],0,&xarr));
-      CHKERRQ(VecPlaceArray(ts->vec_sensip_col,xarr));
+      PetscCall(MatDenseGetColumn(rk->MatsFwdStageSensip[i],0,&xarr));
+      PetscCall(VecPlaceArray(ts->vec_sensip_col,xarr));
       /* lambda_s^T F_UU w_1 */
-      CHKERRQ(TSComputeRHSHessianProductFunctionUU(ts,rk->stage_time,Y[i],VecsSensiTemp,ts->vec_sensip_col,ts->vecs_guu));
+      PetscCall(TSComputeRHSHessianProductFunctionUU(ts,rk->stage_time,Y[i],VecsSensiTemp,ts->vec_sensip_col,ts->vecs_guu));
       if (quadts)  {
         /* R_UU w_1 */
-        CHKERRQ(TSComputeRHSHessianProductFunctionUU(quadts,rk->stage_time,Y[i],NULL,ts->vec_sensip_col,ts->vecs_guu));
+        PetscCall(TSComputeRHSHessianProductFunctionUU(quadts,rk->stage_time,Y[i],NULL,ts->vec_sensip_col,ts->vecs_guu));
       }
       if (ts->vecs_sensip) {
         /* lambda_s^T F_UP w_2 */
-        CHKERRQ(TSComputeRHSHessianProductFunctionUP(ts,rk->stage_time,Y[i],VecsSensiTemp,ts->vec_dir,ts->vecs_gup));
+        PetscCall(TSComputeRHSHessianProductFunctionUP(ts,rk->stage_time,Y[i],VecsSensiTemp,ts->vec_dir,ts->vecs_gup));
         if (quadts)  {
           /* R_UP w_2 */
-          CHKERRQ(TSComputeRHSHessianProductFunctionUP(quadts,rk->stage_time,Y[i],NULL,ts->vec_sensip_col,ts->vecs_gup));
+          PetscCall(TSComputeRHSHessianProductFunctionUP(quadts,rk->stage_time,Y[i],NULL,ts->vec_sensip_col,ts->vecs_gup));
         }
       }
       if (ts->vecs_sensi2p) {
         /* lambda_s^T F_PU w_1 */
-        CHKERRQ(TSComputeRHSHessianProductFunctionPU(ts,rk->stage_time,Y[i],VecsSensiTemp,ts->vec_sensip_col,ts->vecs_gpu));
+        PetscCall(TSComputeRHSHessianProductFunctionPU(ts,rk->stage_time,Y[i],VecsSensiTemp,ts->vec_sensip_col,ts->vecs_gpu));
         /* lambda_s^T F_PP w_2 */
-        CHKERRQ(TSComputeRHSHessianProductFunctionPP(ts,rk->stage_time,Y[i],VecsSensiTemp,ts->vec_dir,ts->vecs_gpp));
+        PetscCall(TSComputeRHSHessianProductFunctionPP(ts,rk->stage_time,Y[i],VecsSensiTemp,ts->vec_dir,ts->vecs_gpp));
         if (b[i] && quadts) {
           /* R_PU w_1 */
-          CHKERRQ(TSComputeRHSHessianProductFunctionPU(quadts,rk->stage_time,Y[i],NULL,ts->vec_sensip_col,ts->vecs_gpu));
+          PetscCall(TSComputeRHSHessianProductFunctionPU(quadts,rk->stage_time,Y[i],NULL,ts->vec_sensip_col,ts->vecs_gpu));
           /* R_PP w_2 */
-          CHKERRQ(TSComputeRHSHessianProductFunctionPP(quadts,rk->stage_time,Y[i],NULL,ts->vec_dir,ts->vecs_gpp));
+          PetscCall(TSComputeRHSHessianProductFunctionPP(quadts,rk->stage_time,Y[i],NULL,ts->vec_dir,ts->vecs_gpp));
         }
       }
-      CHKERRQ(VecResetArray(ts->vec_sensip_col));
-      CHKERRQ(MatDenseRestoreColumn(rk->MatsFwdStageSensip[i],&xarr));
+      PetscCall(VecResetArray(ts->vec_sensip_col));
+      PetscCall(MatDenseRestoreColumn(rk->MatsFwdStageSensip[i],&xarr));
 
       for (nadj=0; nadj<ts->numcost; nadj++) {
         /* Stage values of lambda */
         if (b[i]) {
           /* J_i^T*(Lambda_{n+1}+\sum_{j=i+1}^s a_{ji}/b_i*Lambda_{s,j} */
-          CHKERRQ(VecCopy(ts->vecs_sensi2[nadj],VecsSensi2Temp[nadj]));
-          CHKERRQ(VecMAXPY(VecsSensi2Temp[nadj],s-i-1,w,&VecsDeltaLam2[nadj*s+i+1]));
-          CHKERRQ(MatMultTranspose(J,VecsSensi2Temp[nadj],VecsDeltaLam2[nadj*s+i]));
-          CHKERRQ(VecScale(VecsDeltaLam2[nadj*s+i],-h*b[i]));
-          CHKERRQ(VecAXPY(VecsDeltaLam2[nadj*s+i],-h*b[i],ts->vecs_guu[nadj]));
+          PetscCall(VecCopy(ts->vecs_sensi2[nadj],VecsSensi2Temp[nadj]));
+          PetscCall(VecMAXPY(VecsSensi2Temp[nadj],s-i-1,w,&VecsDeltaLam2[nadj*s+i+1]));
+          PetscCall(MatMultTranspose(J,VecsSensi2Temp[nadj],VecsDeltaLam2[nadj*s+i]));
+          PetscCall(VecScale(VecsDeltaLam2[nadj*s+i],-h*b[i]));
+          PetscCall(VecAXPY(VecsDeltaLam2[nadj*s+i],-h*b[i],ts->vecs_guu[nadj]));
           if (ts->vecs_sensip) {
-            CHKERRQ(VecAXPY(VecsDeltaLam2[nadj*s+i],-h*b[i],ts->vecs_gup[nadj]));
+            PetscCall(VecAXPY(VecsDeltaLam2[nadj*s+i],-h*b[i],ts->vecs_gup[nadj]));
           }
         } else {
           /* \sum_{j=i+1}^s a_{ji}*Lambda_{s,j} */
-          CHKERRQ(VecSet(VecsDeltaLam2[nadj*s+i],0));
-          CHKERRQ(VecMAXPY(VecsSensi2Temp[nadj],s-i-1,w,&VecsDeltaLam2[nadj*s+i+1]));
-          CHKERRQ(MatMultTranspose(J,VecsSensi2Temp[nadj],VecsDeltaLam2[nadj*s+i]));
-          CHKERRQ(VecScale(VecsDeltaLam2[nadj*s+i],-h));
-          CHKERRQ(VecAXPY(VecsDeltaLam2[nadj*s+i],-h,ts->vecs_guu[nadj]));
+          PetscCall(VecSet(VecsDeltaLam2[nadj*s+i],0));
+          PetscCall(VecMAXPY(VecsSensi2Temp[nadj],s-i-1,w,&VecsDeltaLam2[nadj*s+i+1]));
+          PetscCall(MatMultTranspose(J,VecsSensi2Temp[nadj],VecsDeltaLam2[nadj*s+i]));
+          PetscCall(VecScale(VecsDeltaLam2[nadj*s+i],-h));
+          PetscCall(VecAXPY(VecsDeltaLam2[nadj*s+i],-h,ts->vecs_guu[nadj]));
           if (ts->vecs_sensip) {
-            CHKERRQ(VecAXPY(VecsDeltaLam2[nadj*s+i],-h,ts->vecs_gup[nadj]));
+            PetscCall(VecAXPY(VecsDeltaLam2[nadj*s+i],-h,ts->vecs_gup[nadj]));
           }
         }
         if (ts->vecs_sensi2p) { /* 2nd-order adjoint for parameters */
-          CHKERRQ(MatMultTranspose(ts->Jacprhs,VecsSensi2Temp[nadj],VecDeltaMu2));
+          PetscCall(MatMultTranspose(ts->Jacprhs,VecsSensi2Temp[nadj],VecDeltaMu2));
           if (b[i]) {
-            CHKERRQ(VecScale(VecDeltaMu2,-h*b[i]));
-            CHKERRQ(VecAXPY(VecDeltaMu2,-h*b[i],ts->vecs_gpu[nadj]));
-            CHKERRQ(VecAXPY(VecDeltaMu2,-h*b[i],ts->vecs_gpp[nadj]));
+            PetscCall(VecScale(VecDeltaMu2,-h*b[i]));
+            PetscCall(VecAXPY(VecDeltaMu2,-h*b[i],ts->vecs_gpu[nadj]));
+            PetscCall(VecAXPY(VecDeltaMu2,-h*b[i],ts->vecs_gpp[nadj]));
           } else {
-            CHKERRQ(VecScale(VecDeltaMu2,-h));
-            CHKERRQ(VecAXPY(VecDeltaMu2,-h,ts->vecs_gpu[nadj]));
-            CHKERRQ(VecAXPY(VecDeltaMu2,-h,ts->vecs_gpp[nadj]));
+            PetscCall(VecScale(VecDeltaMu2,-h));
+            PetscCall(VecAXPY(VecDeltaMu2,-h,ts->vecs_gpu[nadj]));
+            PetscCall(VecAXPY(VecDeltaMu2,-h,ts->vecs_gpp[nadj]));
           }
-          CHKERRQ(VecAXPY(ts->vecs_sensi2p[nadj],1,VecDeltaMu2)); /* update sensi2p for each stage */
+          PetscCall(VecAXPY(ts->vecs_sensi2p[nadj],1,VecDeltaMu2)); /* update sensi2p for each stage */
         }
       }
     }
@@ -1033,9 +1033,9 @@ static PetscErrorCode TSAdjointStep_RK(TS ts)
 
   for (j=0; j<s; j++) w[j] = 1.0;
   for (nadj=0; nadj<ts->numcost; nadj++) { /* no need to do this for mu's */
-    CHKERRQ(VecMAXPY(ts->vecs_sensi[nadj],s,w,&VecsDeltaLam[nadj*s]));
+    PetscCall(VecMAXPY(ts->vecs_sensi[nadj],s,w,&VecsDeltaLam[nadj*s]));
     if (ts->vecs_sensi2) {
-      CHKERRQ(VecMAXPY(ts->vecs_sensi2[nadj],s,w,&VecsDeltaLam2[nadj*s]));
+      PetscCall(VecMAXPY(ts->vecs_sensi2[nadj],s,w,&VecsDeltaLam2[nadj*s]));
     }
   }
   rk->status = TS_STEP_COMPLETE;
@@ -1048,12 +1048,12 @@ static PetscErrorCode TSAdjointReset_RK(TS ts)
   RKTableau      tab = rk->tableau;
 
   PetscFunctionBegin;
-  CHKERRQ(VecDestroyVecs(tab->s*ts->numcost,&rk->VecsDeltaLam));
-  CHKERRQ(VecDestroyVecs(ts->numcost,&rk->VecsSensiTemp));
-  CHKERRQ(VecDestroy(&rk->VecDeltaMu));
-  CHKERRQ(VecDestroyVecs(tab->s*ts->numcost,&rk->VecsDeltaLam2));
-  CHKERRQ(VecDestroy(&rk->VecDeltaMu2));
-  CHKERRQ(VecDestroyVecs(ts->numcost,&rk->VecsSensi2Temp));
+  PetscCall(VecDestroyVecs(tab->s*ts->numcost,&rk->VecsDeltaLam));
+  PetscCall(VecDestroyVecs(ts->numcost,&rk->VecsSensiTemp));
+  PetscCall(VecDestroy(&rk->VecDeltaMu));
+  PetscCall(VecDestroyVecs(tab->s*ts->numcost,&rk->VecsDeltaLam2));
+  PetscCall(VecDestroy(&rk->VecDeltaMu2));
+  PetscCall(VecDestroyVecs(ts->numcost,&rk->VecsSensi2Temp));
   PetscFunctionReturn(0);
 }
 
@@ -1081,16 +1081,16 @@ static PetscErrorCode TSInterpolate_RK(TS ts,PetscReal itime,Vec X)
       break;
     default: SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_PLIB,"Invalid TSStepStatus");
   }
-  CHKERRQ(PetscMalloc1(s,&b));
+  PetscCall(PetscMalloc1(s,&b));
   for (i=0; i<s; i++) b[i] = 0;
   for (j=0,tt=t; j<p; j++,tt*=t) {
     for (i=0; i<s; i++) {
       b[i]  += h * B[i*p+j] * tt;
     }
   }
-  CHKERRQ(VecCopy(rk->Y[0],X));
-  CHKERRQ(VecMAXPY(X,s,b,rk->YdotRHS));
-  CHKERRQ(PetscFree(b));
+  PetscCall(VecCopy(rk->Y[0],X));
+  PetscCall(VecMAXPY(X,s,b,rk->YdotRHS));
+  PetscCall(PetscFree(b));
   PetscFunctionReturn(0);
 }
 
@@ -1103,20 +1103,20 @@ static PetscErrorCode TSRKTableauReset(TS ts)
 
   PetscFunctionBegin;
   if (!tab) PetscFunctionReturn(0);
-  CHKERRQ(PetscFree(rk->work));
-  CHKERRQ(VecDestroyVecs(tab->s,&rk->Y));
-  CHKERRQ(VecDestroyVecs(tab->s,&rk->YdotRHS));
+  PetscCall(PetscFree(rk->work));
+  PetscCall(VecDestroyVecs(tab->s,&rk->Y));
+  PetscCall(VecDestroyVecs(tab->s,&rk->YdotRHS));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode TSReset_RK(TS ts)
 {
   PetscFunctionBegin;
-  CHKERRQ(TSRKTableauReset(ts));
+  PetscCall(TSRKTableauReset(ts));
   if (ts->use_splitrhsfunction) {
-    CHKERRQ(PetscTryMethod(ts,"TSReset_RK_MultirateSplit_C",(TS),(ts)));
+    PetscCall(PetscTryMethod(ts,"TSReset_RK_MultirateSplit_C",(TS),(ts)));
   } else {
-    CHKERRQ(PetscTryMethod(ts,"TSReset_RK_MultirateNonsplit_C",(TS),(ts)));
+    PetscCall(PetscTryMethod(ts,"TSReset_RK_MultirateNonsplit_C",(TS),(ts)));
   }
   PetscFunctionReturn(0);
 }
@@ -1151,9 +1151,9 @@ static PetscErrorCode TSRKTableauSetUp(TS ts)
   RKTableau      tab = rk->tableau;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscMalloc1(tab->s,&rk->work));
-  CHKERRQ(VecDuplicateVecs(ts->vec_sol,tab->s,&rk->Y));
-  CHKERRQ(VecDuplicateVecs(ts->vec_sol,tab->s,&rk->YdotRHS));
+  PetscCall(PetscMalloc1(tab->s,&rk->work));
+  PetscCall(VecDuplicateVecs(ts->vec_sol,tab->s,&rk->Y));
+  PetscCall(VecDuplicateVecs(ts->vec_sol,tab->s,&rk->YdotRHS));
   PetscFunctionReturn(0);
 }
 
@@ -1163,19 +1163,19 @@ static PetscErrorCode TSSetUp_RK(TS ts)
   DM             dm;
 
   PetscFunctionBegin;
-  CHKERRQ(TSCheckImplicitTerm(ts));
-  CHKERRQ(TSRKTableauSetUp(ts));
+  PetscCall(TSCheckImplicitTerm(ts));
+  PetscCall(TSRKTableauSetUp(ts));
   if (quadts && ts->costintegralfwd) {
     Mat Jquad;
-    CHKERRQ(TSGetRHSJacobian(quadts,&Jquad,NULL,NULL,NULL));
+    PetscCall(TSGetRHSJacobian(quadts,&Jquad,NULL,NULL,NULL));
   }
-  CHKERRQ(TSGetDM(ts,&dm));
-  CHKERRQ(DMCoarsenHookAdd(dm,DMCoarsenHook_TSRK,DMRestrictHook_TSRK,ts));
-  CHKERRQ(DMSubDomainHookAdd(dm,DMSubDomainHook_TSRK,DMSubDomainRestrictHook_TSRK,ts));
+  PetscCall(TSGetDM(ts,&dm));
+  PetscCall(DMCoarsenHookAdd(dm,DMCoarsenHook_TSRK,DMRestrictHook_TSRK,ts));
+  PetscCall(DMSubDomainHookAdd(dm,DMSubDomainHook_TSRK,DMSubDomainRestrictHook_TSRK,ts));
   if (ts->use_splitrhsfunction) {
-    CHKERRQ(PetscTryMethod(ts,"TSSetUp_RK_MultirateSplit_C",(TS),(ts)));
+    PetscCall(PetscTryMethod(ts,"TSSetUp_RK_MultirateSplit_C",(TS),(ts)));
   } else {
-    CHKERRQ(PetscTryMethod(ts,"TSSetUp_RK_MultirateNonsplit_C",(TS),(ts)));
+    PetscCall(PetscTryMethod(ts,"TSSetUp_RK_MultirateNonsplit_C",(TS),(ts)));
   }
   PetscFunctionReturn(0);
 }
@@ -1186,7 +1186,7 @@ static PetscErrorCode TSSetFromOptions_RK(PetscOptionItems *PetscOptionsObject,T
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"RK ODE solver options"));
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"RK ODE solver options"));
   {
     RKTableauLink link;
     PetscInt      count,choice;
@@ -1194,20 +1194,20 @@ static PetscErrorCode TSSetFromOptions_RK(PetscOptionItems *PetscOptionsObject,T
     const char    **namelist;
 
     for (link=RKTableauList,count=0; link; link=link->next,count++) ;
-    CHKERRQ(PetscMalloc1(count,(char***)&namelist));
+    PetscCall(PetscMalloc1(count,(char***)&namelist));
     for (link=RKTableauList,count=0; link; link=link->next,count++) namelist[count] = link->tab.name;
-    CHKERRQ(PetscOptionsBool("-ts_rk_multirate","Use interpolation-based multirate RK method","TSRKSetMultirate",rk->use_multirate,&use_multirate,&flg));
+    PetscCall(PetscOptionsBool("-ts_rk_multirate","Use interpolation-based multirate RK method","TSRKSetMultirate",rk->use_multirate,&use_multirate,&flg));
     if (flg) {
-      CHKERRQ(TSRKSetMultirate(ts,use_multirate));
+      PetscCall(TSRKSetMultirate(ts,use_multirate));
     }
-    CHKERRQ(PetscOptionsEList("-ts_rk_type","Family of RK method","TSRKSetType",(const char*const*)namelist,count,rk->tableau->name,&choice,&flg));
-    if (flg) CHKERRQ(TSRKSetType(ts,namelist[choice]));
-    CHKERRQ(PetscFree(namelist));
+    PetscCall(PetscOptionsEList("-ts_rk_type","Family of RK method","TSRKSetType",(const char*const*)namelist,count,rk->tableau->name,&choice,&flg));
+    if (flg) PetscCall(TSRKSetType(ts,namelist[choice]));
+    PetscCall(PetscFree(namelist));
   }
-  CHKERRQ(PetscOptionsTail());
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)ts),NULL,"Multirate methods options","");CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsInt("-ts_rk_dtratio","time step ratio between slow and fast","",rk->dtratio,&rk->dtratio,NULL));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(PetscOptionsTail());
+  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)ts),NULL,"Multirate methods options","");PetscCall(ierr);
+  PetscCall(PetscOptionsInt("-ts_rk_dtratio","time step ratio between slow and fast","",rk->dtratio,&rk->dtratio,NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1217,7 +1217,7 @@ static PetscErrorCode TSView_RK(TS ts,PetscViewer viewer)
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
     RKTableau       tab  = rk->tableau;
     TSRKType        rktype;
@@ -1226,13 +1226,13 @@ static PetscErrorCode TSView_RK(TS ts,PetscViewer viewer)
     char            buf[512];
     PetscBool       FSAL;
 
-    CHKERRQ(TSRKGetType(ts,&rktype));
-    CHKERRQ(TSRKGetTableau(ts,&s,NULL,NULL,&c,NULL,NULL,NULL,&FSAL));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  RK type %s\n",rktype));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Order: %D\n",tab->order));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  FSAL property: %s\n",FSAL ? "yes" : "no"));
-    CHKERRQ(PetscFormatRealArray(buf,sizeof(buf),"% 8.6f",s,c));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Abscissa c = %s\n",buf));
+    PetscCall(TSRKGetType(ts,&rktype));
+    PetscCall(TSRKGetTableau(ts,&s,NULL,NULL,&c,NULL,NULL,NULL,&FSAL));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  RK type %s\n",rktype));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Order: %D\n",tab->order));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  FSAL property: %s\n",FSAL ? "yes" : "no"));
+    PetscCall(PetscFormatRealArray(buf,sizeof(buf),"% 8.6f",s,c));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Abscissa c = %s\n",buf));
   }
   PetscFunctionReturn(0);
 }
@@ -1242,8 +1242,8 @@ static PetscErrorCode TSLoad_RK(TS ts,PetscViewer viewer)
   TSAdapt        adapt;
 
   PetscFunctionBegin;
-  CHKERRQ(TSGetAdapt(ts,&adapt));
-  CHKERRQ(TSAdaptLoad(adapt,viewer));
+  PetscCall(TSGetAdapt(ts,&adapt));
+  PetscCall(TSAdaptLoad(adapt,viewer));
   PetscFunctionReturn(0);
 }
 
@@ -1267,7 +1267,7 @@ PetscErrorCode TSRKGetOrder(TS ts,PetscInt *order)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidIntPointer(order,2);
-  CHKERRQ(PetscUseMethod(ts,"TSRKGetOrder_C",(TS,PetscInt*),(ts,order)));
+  PetscCall(PetscUseMethod(ts,"TSRKGetOrder_C",(TS,PetscInt*),(ts,order)));
   PetscFunctionReturn(0);
 }
 
@@ -1292,7 +1292,7 @@ PetscErrorCode TSRKSetType(TS ts,TSRKType rktype)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidCharPointer(rktype,2);
-  CHKERRQ(PetscTryMethod(ts,"TSRKSetType_C",(TS,TSRKType),(ts,rktype)));
+  PetscCall(PetscTryMethod(ts,"TSRKSetType_C",(TS,TSRKType),(ts,rktype)));
   PetscFunctionReturn(0);
 }
 
@@ -1315,7 +1315,7 @@ PetscErrorCode TSRKGetType(TS ts,TSRKType *rktype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  CHKERRQ(PetscUseMethod(ts,"TSRKGetType_C",(TS,TSRKType*),(ts,rktype)));
+  PetscCall(PetscUseMethod(ts,"TSRKGetType_C",(TS,TSRKType*),(ts,rktype)));
   PetscFunctionReturn(0);
 }
 
@@ -1345,15 +1345,15 @@ static PetscErrorCode TSRKSetType_RK(TS ts,TSRKType rktype)
 
   PetscFunctionBegin;
   if (rk->tableau) {
-    CHKERRQ(PetscStrcmp(rk->tableau->name,rktype,&match));
+    PetscCall(PetscStrcmp(rk->tableau->name,rktype,&match));
     if (match) PetscFunctionReturn(0);
   }
   for (link = RKTableauList; link; link=link->next) {
-    CHKERRQ(PetscStrcmp(link->tab.name,rktype,&match));
+    PetscCall(PetscStrcmp(link->tab.name,rktype,&match));
     if (match) {
-      if (ts->setupcalled) CHKERRQ(TSRKTableauReset(ts));
+      if (ts->setupcalled) PetscCall(TSRKTableauReset(ts));
       rk->tableau = &link->tab;
-      if (ts->setupcalled) CHKERRQ(TSRKTableauSetUp(ts));
+      if (ts->setupcalled) PetscCall(TSRKTableauSetUp(ts));
       ts->default_adapt_type = rk->tableau->bembed ? TSADAPTBASIC : TSADAPTNONE;
       PetscFunctionReturn(0);
     }
@@ -1374,18 +1374,18 @@ static PetscErrorCode  TSGetStages_RK(TS ts,PetscInt *ns,Vec **Y)
 static PetscErrorCode TSDestroy_RK(TS ts)
 {
   PetscFunctionBegin;
-  CHKERRQ(TSReset_RK(ts));
+  PetscCall(TSReset_RK(ts));
   if (ts->dm) {
-    CHKERRQ(DMCoarsenHookRemove(ts->dm,DMCoarsenHook_TSRK,DMRestrictHook_TSRK,ts));
-    CHKERRQ(DMSubDomainHookRemove(ts->dm,DMSubDomainHook_TSRK,DMSubDomainRestrictHook_TSRK,ts));
+    PetscCall(DMCoarsenHookRemove(ts->dm,DMCoarsenHook_TSRK,DMRestrictHook_TSRK,ts));
+    PetscCall(DMSubDomainHookRemove(ts->dm,DMSubDomainHook_TSRK,DMSubDomainRestrictHook_TSRK,ts));
   }
-  CHKERRQ(PetscFree(ts->data));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSRKGetOrder_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSRKGetType_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSRKSetType_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSRKGetTableau_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSRKSetMultirate_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSRKGetMultirate_C",NULL));
+  PetscCall(PetscFree(ts->data));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSRKGetOrder_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSRKGetType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSRKSetType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSRKGetTableau_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSRKSetMultirate_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSRKGetMultirate_C",NULL));
   PetscFunctionReturn(0);
 }
 
@@ -1399,11 +1399,11 @@ static PetscErrorCode SNESTSFormFunction_RK(SNES snes,Vec x,Vec y,TS ts)
   DM             dm,dmsave;
 
   PetscFunctionBegin;
-  CHKERRQ(SNESGetDM(snes,&dm));
+  PetscCall(SNESGetDM(snes,&dm));
   /* DM monkey-business allows user code to call TSGetDM() inside of functions evaluated on levels of FAS */
   dmsave = ts->dm;
   ts->dm = dm;
-  CHKERRQ(TSComputeRHSFunction(ts,rk->stage_time,x,y));
+  PetscCall(TSComputeRHSFunction(ts,rk->stage_time,x,y));
   ts->dm = dmsave;
   PetscFunctionReturn(0);
 }
@@ -1414,10 +1414,10 @@ static PetscErrorCode SNESTSFormJacobian_RK(SNES snes,Vec x,Mat A,Mat B,TS ts)
   DM             dm,dmsave;
 
   PetscFunctionBegin;
-  CHKERRQ(SNESGetDM(snes,&dm));
+  PetscCall(SNESGetDM(snes,&dm));
   dmsave = ts->dm;
   ts->dm = dm;
-  CHKERRQ(TSComputeRHSJacobian(ts,rk->stage_time,x,A,B));
+  PetscCall(TSComputeRHSJacobian(ts,rk->stage_time,x,A,B));
   ts->dm = dmsave;
   PetscFunctionReturn(0);
 }
@@ -1444,7 +1444,7 @@ static PetscErrorCode SNESTSFormJacobian_RK(SNES snes,Vec x,Mat A,Mat B,TS ts)
 PetscErrorCode TSRKSetMultirate(TS ts,PetscBool use_multirate)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscTryMethod(ts,"TSRKSetMultirate_C",(TS,PetscBool),(ts,use_multirate)));
+  PetscCall(PetscTryMethod(ts,"TSRKSetMultirate_C",(TS,PetscBool),(ts,use_multirate)));
   PetscFunctionReturn(0);
 }
 
@@ -1466,7 +1466,7 @@ PetscErrorCode TSRKSetMultirate(TS ts,PetscBool use_multirate)
 PetscErrorCode TSRKGetMultirate(TS ts,PetscBool *use_multirate)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscUseMethod(ts,"TSRKGetMultirate_C",(TS,PetscBool*),(ts,use_multirate)));
+  PetscCall(PetscUseMethod(ts,"TSRKGetMultirate_C",(TS,PetscBool*),(ts,use_multirate)));
   PetscFunctionReturn(0);
 }
 
@@ -1490,7 +1490,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_RK(TS ts)
   TS_RK          *rk;
 
   PetscFunctionBegin;
-  CHKERRQ(TSRKInitializePackage());
+  PetscCall(TSRKInitializePackage());
 
   ts->ops->reset          = TSReset_RK;
   ts->ops->destroy        = TSDestroy_RK;
@@ -1517,17 +1517,17 @@ PETSC_EXTERN PetscErrorCode TSCreate_RK(TS ts)
   ts->ops->forwardstep     = TSForwardStep_RK;
   ts->ops->forwardgetstages= TSForwardGetStages_RK;
 
-  CHKERRQ(PetscNewLog(ts,&rk));
+  PetscCall(PetscNewLog(ts,&rk));
   ts->data = (void*)rk;
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSRKGetOrder_C",TSRKGetOrder_RK));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSRKGetType_C",TSRKGetType_RK));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSRKSetType_C",TSRKSetType_RK));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSRKGetTableau_C",TSRKGetTableau_RK));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSRKSetMultirate_C",TSRKSetMultirate_RK));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSRKGetMultirate_C",TSRKGetMultirate_RK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSRKGetOrder_C",TSRKGetOrder_RK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSRKGetType_C",TSRKGetType_RK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSRKSetType_C",TSRKSetType_RK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSRKGetTableau_C",TSRKGetTableau_RK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSRKSetMultirate_C",TSRKSetMultirate_RK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSRKGetMultirate_C",TSRKGetMultirate_RK));
 
-  CHKERRQ(TSRKSetType(ts,TSRKDefault));
+  PetscCall(TSRKSetType(ts,TSRKDefault));
   rk->dtratio = 1;
   PetscFunctionReturn(0);
 }

@@ -8,30 +8,30 @@ static PetscErrorCode MatLoadComputeNorms(Mat data_mat, PetscViewer inp_viewer, 
   PetscInt       M,N;
 
   PetscFunctionBegin;
-  CHKERRQ(MatLoad(data_mat, inp_viewer));
-  CHKERRQ(MatAssemblyBegin(data_mat, MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(data_mat, MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatViewFromOptions(data_mat, NULL, "-view_mat"));
+  PetscCall(MatLoad(data_mat, inp_viewer));
+  PetscCall(MatAssemblyBegin(data_mat, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(data_mat, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatViewFromOptions(data_mat, NULL, "-view_mat"));
 
-  CHKERRQ(MatGetSize(data_mat, &M, &N));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Data matrix size: %" PetscInt_FMT " %" PetscInt_FMT "\n", M,N));
+  PetscCall(MatGetSize(data_mat, &M, &N));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Data matrix size: %" PetscInt_FMT " %" PetscInt_FMT "\n", M,N));
 
   /* compute matrix norms */
-  CHKERRQ(MatNorm(data_mat, NORM_1, &norms[0]));
-  CHKERRQ(MatNorm(data_mat, NORM_INFINITY, &norms[1]));
-  CHKERRQ(MatNorm(data_mat, NORM_FROBENIUS, &norms[2]));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Data matrix norms: %g %g %g\n", (double)norms[0],(double)norms[1],(double)norms[2]));
+  PetscCall(MatNorm(data_mat, NORM_1, &norms[0]));
+  PetscCall(MatNorm(data_mat, NORM_INFINITY, &norms[1]));
+  PetscCall(MatNorm(data_mat, NORM_FROBENIUS, &norms[2]));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Data matrix norms: %g %g %g\n", (double)norms[0],(double)norms[1],(double)norms[2]));
 
   /* compute autocorrelation matrix */
-  CHKERRQ(MatMatTransposeMult(data_mat, data_mat, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &corr_mat));
+  PetscCall(MatMatTransposeMult(data_mat, data_mat, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &corr_mat));
 
   /* compute autocorrelation matrix norms */
-  CHKERRQ(MatNorm(corr_mat, NORM_1, &norms[3]));
-  CHKERRQ(MatNorm(corr_mat, NORM_INFINITY, &norms[4]));
-  CHKERRQ(MatNorm(corr_mat, NORM_FROBENIUS, &norms[5]));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Autocorrelation matrix norms: %g %g %g\n", (double)norms[3],(double)norms[4],(double)norms[5]));
+  PetscCall(MatNorm(corr_mat, NORM_1, &norms[3]));
+  PetscCall(MatNorm(corr_mat, NORM_INFINITY, &norms[4]));
+  PetscCall(MatNorm(corr_mat, NORM_FROBENIUS, &norms[5]));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Autocorrelation matrix norms: %g %g %g\n", (double)norms[3],(double)norms[4],(double)norms[5]));
 
-  CHKERRQ(MatDestroy(&corr_mat));
+  PetscCall(MatDestroy(&corr_mat));
   PetscFunctionReturn(0);
 }
 
@@ -40,10 +40,10 @@ static PetscErrorCode GetReader(MPI_Comm comm, const char option[], PetscViewer 
   PetscBool      flg;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsGetViewer(PETSC_COMM_SELF, NULL, NULL, option, r, fmt, &flg));
+  PetscCall(PetscOptionsGetViewer(PETSC_COMM_SELF, NULL, NULL, option, r, fmt, &flg));
   if (flg) {
     PetscFileMode mode;
-    CHKERRQ(PetscViewerFileGetMode(*r, &mode));
+    PetscCall(PetscViewerFileGetMode(*r, &mode));
     flg = (PetscBool) (mode == FILE_MODE_READ);
   }
   PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Need to specify %s viewer_type:file:format:read", option);
@@ -59,38 +59,38 @@ int main(int argc, char **argv)
   Mat               data_mat;
   char              mat_name[PETSC_MAX_PATH_LEN]="dmatrix";
 
-  CHKERRQ(PetscInitialize(&argc, &argv, NULL, NULL));
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-mat_name",mat_name,sizeof(mat_name),NULL));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, NULL));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-mat_name",mat_name,sizeof(mat_name),NULL));
 
   /* load matrix sequentially */
-  CHKERRQ(MatCreate(PETSC_COMM_SELF, &data_mat));
-  CHKERRQ(MatSetType(data_mat,MATDENSE));
-  CHKERRQ(PetscObjectSetName((PetscObject)data_mat, mat_name));
-  CHKERRQ(GetReader(PETSC_COMM_SELF, "-serial_reader", &inp_viewer, &fmt));
-  CHKERRQ(PetscViewerPushFormat(inp_viewer, fmt));
-  CHKERRQ(MatLoadComputeNorms(data_mat, inp_viewer, norms0));
-  CHKERRQ(PetscViewerPopFormat(inp_viewer));
-  CHKERRQ(PetscViewerDestroy(&inp_viewer));
-  CHKERRQ(MatViewFromOptions(data_mat, NULL, "-view_serial_mat"));
-  CHKERRQ(MatDestroy(&data_mat));
+  PetscCall(MatCreate(PETSC_COMM_SELF, &data_mat));
+  PetscCall(MatSetType(data_mat,MATDENSE));
+  PetscCall(PetscObjectSetName((PetscObject)data_mat, mat_name));
+  PetscCall(GetReader(PETSC_COMM_SELF, "-serial_reader", &inp_viewer, &fmt));
+  PetscCall(PetscViewerPushFormat(inp_viewer, fmt));
+  PetscCall(MatLoadComputeNorms(data_mat, inp_viewer, norms0));
+  PetscCall(PetscViewerPopFormat(inp_viewer));
+  PetscCall(PetscViewerDestroy(&inp_viewer));
+  PetscCall(MatViewFromOptions(data_mat, NULL, "-view_serial_mat"));
+  PetscCall(MatDestroy(&data_mat));
 
   /* load matrix in parallel */
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD, &data_mat));
-  CHKERRQ(MatSetType(data_mat,MATDENSE));
-  CHKERRQ(PetscObjectSetName((PetscObject)data_mat, mat_name));
-  CHKERRQ(GetReader(PETSC_COMM_WORLD, "-parallel_reader", &inp_viewer, &fmt));
-  CHKERRQ(PetscViewerPushFormat(inp_viewer, fmt));
-  CHKERRQ(MatLoadComputeNorms(data_mat, inp_viewer, norms1));
-  CHKERRQ(PetscViewerPopFormat(inp_viewer));
-  CHKERRQ(PetscViewerDestroy(&inp_viewer));
-  CHKERRQ(MatViewFromOptions(data_mat, NULL, "-view_parallel_mat"));
-  CHKERRQ(MatDestroy(&data_mat));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &data_mat));
+  PetscCall(MatSetType(data_mat,MATDENSE));
+  PetscCall(PetscObjectSetName((PetscObject)data_mat, mat_name));
+  PetscCall(GetReader(PETSC_COMM_WORLD, "-parallel_reader", &inp_viewer, &fmt));
+  PetscCall(PetscViewerPushFormat(inp_viewer, fmt));
+  PetscCall(MatLoadComputeNorms(data_mat, inp_viewer, norms1));
+  PetscCall(PetscViewerPopFormat(inp_viewer));
+  PetscCall(PetscViewerDestroy(&inp_viewer));
+  PetscCall(MatViewFromOptions(data_mat, NULL, "-view_parallel_mat"));
+  PetscCall(MatDestroy(&data_mat));
 
   for (i=0; i<NNORMS; i++) {
     PetscCheckFalse(PetscAbs(norms0[i] - norms1[i]) > PETSC_SMALL,PETSC_COMM_SELF, PETSC_ERR_PLIB, "norm0[%" PetscInt_FMT "] = %g != %g = norms1[%" PetscInt_FMT "]", i, (double)norms0[i], (double)norms1[i], i);
   }
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

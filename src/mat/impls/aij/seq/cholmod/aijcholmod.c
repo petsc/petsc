@@ -12,14 +12,14 @@ static PetscErrorCode MatWrapCholmod_seqaij(Mat A,PetscBool values,cholmod_spars
   PetscBool         vain = PETSC_FALSE;
 
   PetscFunctionBegin;
-  CHKERRQ(MatMarkDiagonal_SeqAIJ(A));
+  PetscCall(MatMarkDiagonal_SeqAIJ(A));
   adiag = aij->diag;
   for (i=0,nz=0; i<m; i++) nz += ai[i+1] - adiag[i];
-  CHKERRQ(PetscMalloc2(m+1,&ci,nz,&cj));
+  PetscCall(PetscMalloc2(m+1,&ci,nz,&cj));
   if (values) {
     vain = PETSC_TRUE;
-    CHKERRQ(PetscMalloc1(nz,&ca));
-    CHKERRQ(MatSeqAIJGetArrayRead(A,&aa));
+    PetscCall(PetscMalloc1(nz,&ca));
+    PetscCall(MatSeqAIJGetArrayRead(A,&aa));
   }
   for (i=0,k=0; i<m; i++) {
     ci[i] = k;
@@ -32,10 +32,10 @@ static PetscErrorCode MatWrapCholmod_seqaij(Mat A,PetscBool values,cholmod_spars
   *aijalloc = PETSC_TRUE;
   *valloc   = vain;
   if (values) {
-    CHKERRQ(MatSeqAIJRestoreArrayRead(A,&aa));
+    PetscCall(MatSeqAIJRestoreArrayRead(A,&aa));
   }
 
-  CHKERRQ(PetscMemzero(C,sizeof(*C)));
+  PetscCall(PetscMemzero(C,sizeof(*C)));
 
   C->nrow   = (size_t)A->cmap->n;
   C->ncol   = (size_t)A->rmap->n;
@@ -72,13 +72,13 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_cholmod(Mat A,MatFactorType ftyp
   PetscCheck(A->hermitian,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Only for hermitian matrices");
 #endif
   /* Create the factorization matrix F */
-  CHKERRQ(MatCreate(PetscObjectComm((PetscObject)A),&B));
-  CHKERRQ(MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,m,n));
-  CHKERRQ(PetscStrallocpy("cholmod",&((PetscObject)B)->type_name));
-  CHKERRQ(MatGetOptionsPrefix(A,&prefix));
-  CHKERRQ(MatSetOptionsPrefix(B,prefix));
-  CHKERRQ(MatSetUp(B));
-  CHKERRQ(PetscNewLog(B,&chol));
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)A),&B));
+  PetscCall(MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,m,n));
+  PetscCall(PetscStrallocpy("cholmod",&((PetscObject)B)->type_name));
+  PetscCall(MatGetOptionsPrefix(A,&prefix));
+  PetscCall(MatSetOptionsPrefix(B,prefix));
+  PetscCall(MatSetUp(B));
+  PetscCall(PetscNewLog(B,&chol));
 
   chol->Wrap = MatWrapCholmod_seqaij;
   B->data    = chol;
@@ -88,17 +88,17 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_cholmod(Mat A,MatFactorType ftyp
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_CHOLMOD;
   B->ops->destroy                = MatDestroy_CHOLMOD;
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_seqaij_cholmod));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_seqaij_cholmod));
 
   B->factortype   = MAT_FACTOR_CHOLESKY;
   B->assembled    = PETSC_TRUE;
   B->preallocated = PETSC_TRUE;
 
-  CHKERRQ(PetscFree(B->solvertype));
-  CHKERRQ(PetscStrallocpy(MATSOLVERCHOLMOD,&B->solvertype));
+  PetscCall(PetscFree(B->solvertype));
+  PetscCall(PetscStrallocpy(MATSOLVERCHOLMOD,&B->solvertype));
   B->canuseordering = PETSC_TRUE;
-  CHKERRQ(PetscStrallocpy(MATORDERINGEXTERNAL,(char**)&B->preferredordering[MAT_FACTOR_CHOLESKY]));
-  CHKERRQ(CholmodStart(B));
+  PetscCall(PetscStrallocpy(MATORDERINGEXTERNAL,(char**)&B->preferredordering[MAT_FACTOR_CHOLESKY]));
+  PetscCall(CholmodStart(B));
   *F   = B;
   PetscFunctionReturn(0);
 }

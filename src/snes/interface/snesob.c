@@ -43,8 +43,8 @@ PetscErrorCode  SNESSetObjective(SNES snes,PetscErrorCode (*obj)(SNES,Vec,PetscR
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  CHKERRQ(SNESGetDM(snes,&dm));
-  CHKERRQ(DMSNESSetObjective(dm,obj,ctx));
+  PetscCall(SNESGetDM(snes,&dm));
+  PetscCall(DMSNESSetObjective(dm,obj,ctx));
   PetscFunctionReturn(0);
 }
 
@@ -70,8 +70,8 @@ PetscErrorCode SNESGetObjective(SNES snes,PetscErrorCode (**obj)(SNES,Vec,PetscR
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  CHKERRQ(SNESGetDM(snes,&dm));
-  CHKERRQ(DMSNESGetObjective(dm,obj,ctx));
+  PetscCall(SNESGetDM(snes,&dm));
+  PetscCall(DMSNESGetObjective(dm,obj,ctx));
   PetscFunctionReturn(0);
 }
 
@@ -100,12 +100,12 @@ PetscErrorCode SNESComputeObjective(SNES snes,Vec X,PetscReal *ob)
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidHeaderSpecific(X,VEC_CLASSID,2);
   PetscValidRealPointer(ob,3);
-  CHKERRQ(SNESGetDM(snes,&dm));
-  CHKERRQ(DMGetDMSNES(dm,&sdm));
+  PetscCall(SNESGetDM(snes,&dm));
+  PetscCall(DMGetDMSNES(dm,&sdm));
   if (sdm->ops->computeobjective) {
-    CHKERRQ(PetscLogEventBegin(SNES_ObjectiveEval,snes,X,0,0));
-    CHKERRQ((sdm->ops->computeobjective)(snes,X,ob,sdm->objectivectx));
-    CHKERRQ(PetscLogEventEnd(SNES_ObjectiveEval,snes,X,0,0));
+    PetscCall(PetscLogEventBegin(SNES_ObjectiveEval,snes,X,0,0));
+    PetscCall((sdm->ops->computeobjective)(snes,X,ob,sdm->objectivectx));
+    PetscCall(PetscLogEventEnd(SNES_ObjectiveEval,snes,X,0,0));
   } else SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetObjective() before SNESComputeObjective().");
   PetscFunctionReturn(0);
 }
@@ -149,67 +149,67 @@ PetscErrorCode SNESObjectiveComputeFunctionDefaultFD(SNES snes,Vec X,Vec F,void 
   PetscScalar    fv,xv;
 
   PetscFunctionBegin;
-  CHKERRQ(VecDuplicate(X,&Xh));
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)snes),((PetscObject)snes)->prefix,"Differencing parameters","SNES");CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsReal("-snes_fd_function_eps","Tolerance for nonzero entries in fd function","None",eps,&eps,NULL));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  CHKERRQ(VecSet(F,0.));
+  PetscCall(VecDuplicate(X,&Xh));
+  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)snes),((PetscObject)snes)->prefix,"Differencing parameters","SNES");PetscCall(ierr);
+  PetscCall(PetscOptionsReal("-snes_fd_function_eps","Tolerance for nonzero entries in fd function","None",eps,&eps,NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscCall(VecSet(F,0.));
 
-  CHKERRQ(VecNorm(X,NORM_2,&fob));
+  PetscCall(VecNorm(X,NORM_2,&fob));
 
-  CHKERRQ(VecGetSize(X,&N));
-  CHKERRQ(VecGetOwnershipRange(X,&start,&end));
-  CHKERRQ(SNESComputeObjective(snes,X,&ob));
+  PetscCall(VecGetSize(X,&N));
+  PetscCall(VecGetOwnershipRange(X,&start,&end));
+  PetscCall(SNESComputeObjective(snes,X,&ob));
 
   if (fob > 0.) dx =1e-6*fob;
   else dx = 1e-6;
 
   for (i=0; i<N; i++) {
     /* compute the 1st value */
-    CHKERRQ(VecCopy(X,Xh));
+    PetscCall(VecCopy(X,Xh));
     if (i>= start && i<end) {
       xv   = dx;
-      CHKERRQ(VecSetValues(Xh,1,&i,&xv,ADD_VALUES));
+      PetscCall(VecSetValues(Xh,1,&i,&xv,ADD_VALUES));
     }
-    CHKERRQ(VecAssemblyBegin(Xh));
-    CHKERRQ(VecAssemblyEnd(Xh));
-    CHKERRQ(SNESComputeObjective(snes,Xh,&ob1));
+    PetscCall(VecAssemblyBegin(Xh));
+    PetscCall(VecAssemblyEnd(Xh));
+    PetscCall(SNESComputeObjective(snes,Xh,&ob1));
 
     /* compute the 2nd value */
-    CHKERRQ(VecCopy(X,Xh));
+    PetscCall(VecCopy(X,Xh));
     if (i>= start && i<end) {
       xv   = 2.*dx;
-      CHKERRQ(VecSetValues(Xh,1,&i,&xv,ADD_VALUES));
+      PetscCall(VecSetValues(Xh,1,&i,&xv,ADD_VALUES));
     }
-    CHKERRQ(VecAssemblyBegin(Xh));
-    CHKERRQ(VecAssemblyEnd(Xh));
-    CHKERRQ(SNESComputeObjective(snes,Xh,&ob2));
+    PetscCall(VecAssemblyBegin(Xh));
+    PetscCall(VecAssemblyEnd(Xh));
+    PetscCall(SNESComputeObjective(snes,Xh,&ob2));
 
     /* compute the 3rd value */
-    CHKERRQ(VecCopy(X,Xh));
+    PetscCall(VecCopy(X,Xh));
     if (i>= start && i<end) {
       xv   = -dx;
-      CHKERRQ(VecSetValues(Xh,1,&i,&xv,ADD_VALUES));
+      PetscCall(VecSetValues(Xh,1,&i,&xv,ADD_VALUES));
     }
-    CHKERRQ(VecAssemblyBegin(Xh));
-    CHKERRQ(VecAssemblyEnd(Xh));
-    CHKERRQ(SNESComputeObjective(snes,Xh,&ob3));
+    PetscCall(VecAssemblyBegin(Xh));
+    PetscCall(VecAssemblyEnd(Xh));
+    PetscCall(SNESComputeObjective(snes,Xh,&ob3));
 
     if (i >= start && i<end) {
       /* set this entry to be the gradient of the objective */
       fv = (-ob2 + 6.*ob1 - 3.*ob -2.*ob3) / (6.*dx);
       if (PetscAbsScalar(fv) > eps) {
-        CHKERRQ(VecSetValues(F,1,&i,&fv,INSERT_VALUES));
+        PetscCall(VecSetValues(F,1,&i,&fv,INSERT_VALUES));
       } else {
         fv   = 0.;
-        CHKERRQ(VecSetValues(F,1,&i,&fv,INSERT_VALUES));
+        PetscCall(VecSetValues(F,1,&i,&fv,INSERT_VALUES));
       }
     }
   }
 
-  CHKERRQ(VecDestroy(&Xh));
+  PetscCall(VecDestroy(&Xh));
 
-  CHKERRQ(VecAssemblyBegin(F));
-  CHKERRQ(VecAssemblyEnd(F));
+  PetscCall(VecAssemblyBegin(F));
+  PetscCall(VecAssemblyEnd(F));
   PetscFunctionReturn(0);
 }

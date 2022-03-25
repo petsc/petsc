@@ -17,27 +17,27 @@ void FVPOL(int *N,double *X,double *Y,double *F,double *RPAR,void *IPAR)
   TSIFunction    ifunction;
   PetscErrorCode ierr;
 
-  CHKERRABORT(PETSC_COMM_SELF,VecPlaceArray(cvode->work,Y));
-  CHKERRABORT(PETSC_COMM_SELF,VecPlaceArray(cvode->workf,F));
+  PetscCallAbort(PETSC_COMM_SELF,VecPlaceArray(cvode->work,Y));
+  PetscCallAbort(PETSC_COMM_SELF,VecPlaceArray(cvode->workf,F));
 
   /* Now compute the right hand side function, via IFunction unless only the more efficient RHSFunction is set */
-  CHKERRABORT(PETSC_COMM_SELF,TSGetDM(ts,&dm));
-  CHKERRABORT(PETSC_COMM_SELF,DMGetDMTS(dm,&tsdm));
-  CHKERRABORT(PETSC_COMM_SELF,DMTSGetIFunction(dm,&ifunction,NULL));
+  PetscCallAbort(PETSC_COMM_SELF,TSGetDM(ts,&dm));
+  PetscCallAbort(PETSC_COMM_SELF,DMGetDMTS(dm,&tsdm));
+  PetscCallAbort(PETSC_COMM_SELF,DMTSGetIFunction(dm,&ifunction,NULL));
   if (!ifunction) {
-    CHKERRABORT(PETSC_COMM_SELF,TSComputeRHSFunction(ts,*X,cvode->work,cvode->workf));
+    PetscCallAbort(PETSC_COMM_SELF,TSComputeRHSFunction(ts,*X,cvode->work,cvode->workf));
   } else {       /* If rhsfunction is also set, this computes both parts and scale them to the right hand side */
     Vec yydot;
 
-    CHKERRABORT(PETSC_COMM_SELF,VecDuplicate(cvode->work,&yydot));
-    CHKERRABORT(PETSC_COMM_SELF,VecZeroEntries(yydot));
-    CHKERRABORT(PETSC_COMM_SELF,TSComputeIFunction(ts,*X,cvode->work,yydot,cvode->workf,PETSC_FALSE));
-    CHKERRABORT(PETSC_COMM_SELF,VecScale(cvode->workf,-1.));
-    CHKERRABORT(PETSC_COMM_SELF,VecDestroy(&yydot));
+    PetscCallAbort(PETSC_COMM_SELF,VecDuplicate(cvode->work,&yydot));
+    PetscCallAbort(PETSC_COMM_SELF,VecZeroEntries(yydot));
+    PetscCallAbort(PETSC_COMM_SELF,TSComputeIFunction(ts,*X,cvode->work,yydot,cvode->workf,PETSC_FALSE));
+    PetscCallAbort(PETSC_COMM_SELF,VecScale(cvode->workf,-1.));
+    PetscCallAbort(PETSC_COMM_SELF,VecDestroy(&yydot));
   }
 
-  CHKERRABORT(PETSC_COMM_SELF,VecResetArray(cvode->work));
-  CHKERRABORT(PETSC_COMM_SELF,VecResetArray(cvode->workf));
+  PetscCallAbort(PETSC_COMM_SELF,VecResetArray(cvode->work));
+  PetscCallAbort(PETSC_COMM_SELF,VecResetArray(cvode->workf));
 }
 
 void JVPOL(PetscInt *N,PetscScalar *X,PetscScalar *Y,PetscScalar *DFY,int *LDFY,PetscScalar *RPAR,void *IPAR)
@@ -49,16 +49,16 @@ void JVPOL(PetscInt *N,PetscScalar *X,PetscScalar *Y,PetscScalar *DFY,int *LDFY,
   PetscInt       n;
   PetscErrorCode ierr;
 
-  CHKERRABORT(PETSC_COMM_SELF,VecPlaceArray(cvode->work,Y));
-  CHKERRABORT(PETSC_COMM_SELF,VecDuplicate(cvode->work,&yydot));
-  CHKERRABORT(PETSC_COMM_SELF,VecGetSize(yydot,&n));
-  CHKERRABORT(PETSC_COMM_SELF,MatCreateSeqDense(PETSC_COMM_SELF,n,n,DFY,&mat));
-  CHKERRABORT(PETSC_COMM_SELF,VecZeroEntries(yydot));
-  CHKERRABORT(PETSC_COMM_SELF,TSComputeIJacobian(ts,*X,cvode->work,yydot,0,mat,mat,PETSC_FALSE));
-  CHKERRABORT(PETSC_COMM_SELF,MatScale(mat,-1.0));
-  CHKERRABORT(PETSC_COMM_SELF,MatDestroy(&mat));
-  CHKERRABORT(PETSC_COMM_SELF,VecDestroy(&yydot));
-  CHKERRABORT(PETSC_COMM_SELF,VecResetArray(cvode->work));
+  PetscCallAbort(PETSC_COMM_SELF,VecPlaceArray(cvode->work,Y));
+  PetscCallAbort(PETSC_COMM_SELF,VecDuplicate(cvode->work,&yydot));
+  PetscCallAbort(PETSC_COMM_SELF,VecGetSize(yydot,&n));
+  PetscCallAbort(PETSC_COMM_SELF,MatCreateSeqDense(PETSC_COMM_SELF,n,n,DFY,&mat));
+  PetscCallAbort(PETSC_COMM_SELF,VecZeroEntries(yydot));
+  PetscCallAbort(PETSC_COMM_SELF,TSComputeIJacobian(ts,*X,cvode->work,yydot,0,mat,mat,PETSC_FALSE));
+  PetscCallAbort(PETSC_COMM_SELF,MatScale(mat,-1.0));
+  PetscCallAbort(PETSC_COMM_SELF,MatDestroy(&mat));
+  PetscCallAbort(PETSC_COMM_SELF,VecDestroy(&yydot));
+  PetscCallAbort(PETSC_COMM_SELF,VecResetArray(cvode->work));
 }
 
 void SOLOUT(int *NR,double *XOLD,double *X, double *Y,double *CONT,double *LRC,int *N,double *RPAR,void *IPAR,int *IRTRN)
@@ -67,10 +67,10 @@ void SOLOUT(int *NR,double *XOLD,double *X, double *Y,double *CONT,double *LRC,i
   TS_Radau5      *cvode = (TS_Radau5*)ts->data;
   PetscErrorCode ierr;
 
-  CHKERRABORT(PETSC_COMM_SELF,VecPlaceArray(cvode->work,Y));
+  PetscCallAbort(PETSC_COMM_SELF,VecPlaceArray(cvode->work,Y));
   ts->time_step = *X - *XOLD;
-  CHKERRABORT(PETSC_COMM_SELF,TSMonitor(ts,*NR-1,*X,cvode->work));
-  CHKERRABORT(PETSC_COMM_SELF,VecResetArray(cvode->work));
+  PetscCallAbort(PETSC_COMM_SELF,TSMonitor(ts,*NR-1,*X,cvode->work));
+  PetscCallAbort(PETSC_COMM_SELF,VecResetArray(cvode->work));
 }
 
 void radau5_(int *,void*,double*,double*,double*,double*,double*,double*,int*,void*,int*,int*,int*,void*,int*,int*,int*,void*,int*,double*,int*,int*,int*,double*,void*,int*);
@@ -84,15 +84,15 @@ PetscErrorCode TSSolve_Radau5(TS ts)
   int            IJAC,MLJAC,IMAS,IOUT;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArray(ts->vec_sol,&Y));
-  CHKERRQ(VecGetSize(ts->vec_sol,&ND));
-  CHKERRQ(VecCreateSeqWithArray(PETSC_COMM_SELF,1,ND,NULL,&cvode->work));
-  CHKERRQ(VecCreateSeqWithArray(PETSC_COMM_SELF,1,ND,NULL,&cvode->workf));
+  PetscCall(VecGetArray(ts->vec_sol,&Y));
+  PetscCall(VecGetSize(ts->vec_sol,&ND));
+  PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,1,ND,NULL,&cvode->work));
+  PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,1,ND,NULL,&cvode->workf));
 
   LWORK  = 4*ND*ND+12*ND+20;
   LIWORK = 3*ND+20;
 
-  CHKERRQ(PetscCalloc2(LWORK,&WORK,LIWORK,&IWORK));
+  PetscCall(PetscCalloc2(LWORK,&WORK,LIWORK,&IWORK));
 
   /* C --- PARAMETER IN THE DIFFERENTIAL EQUATION */
   RPAR=1.0e-6;
@@ -119,7 +119,7 @@ PetscErrorCode TSSolve_Radau5(TS ts)
 
   radau5_(&ND,FVPOL,&X,Y,&XEND,&H,&RTOL,&ATOL,&ITOL,JVPOL,&IJAC,&MLJAC,&MUJAC,FVPOL,&IMAS,&MLMAS,&MUMAS,SOLOUT,&IOUT,WORK,&LWORK,IWORK,&LIWORK,&RPAR,(void*)ts,&IDID);
 
-  CHKERRQ(PetscFree2(WORK,IWORK));
+  PetscCall(PetscFree2(WORK,IWORK));
   PetscFunctionReturn(0);
 }
 
@@ -129,9 +129,9 @@ PetscErrorCode TSDestroy_Radau5(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  CHKERRQ(VecDestroy(&cvode->work));
-  CHKERRQ(VecDestroy(&cvode->workf));
-  CHKERRQ(PetscFree(ts->data));
+  PetscCall(VecDestroy(&cvode->work));
+  PetscCall(VecDestroy(&cvode->workf));
+  PetscCall(PetscFree(ts->data));
   PetscFunctionReturn(0);
 }
 
@@ -159,7 +159,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Radau5(TS ts)
   ts->ops->solve          = TSSolve_Radau5;
   ts->default_adapt_type  = TSADAPTNONE;
 
-  CHKERRQ(PetscNewLog(ts,&cvode));
+  PetscCall(PetscNewLog(ts,&cvode));
   ts->data = (void*)cvode;
   PetscFunctionReturn(0);
 }

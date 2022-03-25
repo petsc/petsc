@@ -6,21 +6,21 @@ int main(int argc, char **argv)
 {
   DM             dm;
 
-  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
-  CHKERRQ(DMCreate(PETSC_COMM_WORLD, &dm));
-  CHKERRQ(PetscObjectSetName((PetscObject) dm, "BaryDM"));
-  CHKERRQ(DMSetType(dm, DMPLEX));
-  CHKERRQ(DMSetFromOptions(dm));
-  CHKERRQ(DMViewFromOptions(dm, NULL, "-dm_view"));
-  //CHKERRQ(DMPlexSetRefinementUniform(dm, PETSC_TRUE));
-  //CHKERRQ(DMRefine(dm, comm, &rdm));
-  //CHKERRQ(DMPlexConvertOldOrientations_Internal(dm));
-  CHKERRQ(PetscObjectSetName((PetscObject) dm, "RefinedDM"));
-  CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) dm, "ref_"));
-  CHKERRQ(DMSetFromOptions(dm));
-  CHKERRQ(DMViewFromOptions(dm, NULL, "-dm_view"));
-  CHKERRQ(DMDestroy(&dm));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(DMCreate(PETSC_COMM_WORLD, &dm));
+  PetscCall(PetscObjectSetName((PetscObject) dm, "BaryDM"));
+  PetscCall(DMSetType(dm, DMPLEX));
+  PetscCall(DMSetFromOptions(dm));
+  PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
+  //PetscCall(DMPlexSetRefinementUniform(dm, PETSC_TRUE));
+  //PetscCall(DMRefine(dm, comm, &rdm));
+  //PetscCall(DMPlexConvertOldOrientations_Internal(dm));
+  PetscCall(PetscObjectSetName((PetscObject) dm, "RefinedDM"));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject) dm, "ref_"));
+  PetscCall(DMSetFromOptions(dm));
+  PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

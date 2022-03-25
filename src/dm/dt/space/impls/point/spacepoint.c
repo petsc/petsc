@@ -7,14 +7,14 @@ static PetscErrorCode PetscSpacePointView_Ascii(PetscSpace sp, PetscViewer viewe
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscViewerGetFormat(viewer, &format));
+  PetscCall(PetscViewerGetFormat(viewer, &format));
   if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer, "Point space in dimension %d:\n", sp->Nv));
-    CHKERRQ(PetscViewerASCIIPushTab(viewer));
-    CHKERRQ(PetscQuadratureView(pt->quad, viewer));
-    CHKERRQ(PetscViewerASCIIPopTab(viewer));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Point space in dimension %d:\n", sp->Nv));
+    PetscCall(PetscViewerASCIIPushTab(viewer));
+    PetscCall(PetscQuadratureView(pt->quad, viewer));
+    PetscCall(PetscViewerASCIIPopTab(viewer));
   } else {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer, "Point space in dimension %d on %d points\n", sp->Nv, pt->quad->numPoints));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Point space in dimension %d on %d points\n", sp->Nv, pt->quad->numPoints));
   }
   PetscFunctionReturn(0);
 }
@@ -26,8 +26,8 @@ static PetscErrorCode PetscSpaceView_Point(PetscSpace sp, PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) CHKERRQ(PetscSpacePointView_Ascii(sp, viewer));
+  PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii));
+  if (iascii) PetscCall(PetscSpacePointView_Ascii(sp, viewer));
   PetscFunctionReturn(0);
 }
 
@@ -37,8 +37,8 @@ static PetscErrorCode PetscSpaceSetUp_Point(PetscSpace sp)
 
   PetscFunctionBegin;
   if (!pt->quad->points && sp->degree >= 0) {
-    CHKERRQ(PetscQuadratureDestroy(&pt->quad));
-    CHKERRQ(PetscDTStroudConicalQuadrature(sp->Nv, sp->Nc, PetscMax(sp->degree + 1, 1), -1.0, 1.0, &pt->quad));
+    PetscCall(PetscQuadratureDestroy(&pt->quad));
+    PetscCall(PetscDTStroudConicalQuadrature(sp->Nv, sp->Nc, PetscMax(sp->degree + 1, 1), -1.0, 1.0, &pt->quad));
   }
   PetscFunctionReturn(0);
 }
@@ -48,8 +48,8 @@ static PetscErrorCode PetscSpaceDestroy_Point(PetscSpace sp)
   PetscSpace_Point *pt = (PetscSpace_Point *) sp->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscQuadratureDestroy(&pt->quad));
-  CHKERRQ(PetscFree(pt));
+  PetscCall(PetscQuadratureDestroy(&pt->quad));
+  PetscCall(PetscFree(pt));
   PetscFunctionReturn(0);
 }
 
@@ -69,7 +69,7 @@ static PetscErrorCode PetscSpaceEvaluate_Point(PetscSpace sp, PetscInt npoints, 
 
   PetscFunctionBegin;
   PetscCheckFalse(npoints != pt->quad->numPoints,PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot evaluate Point space on %d points != %d size", npoints, pt->quad->numPoints);
-  CHKERRQ(PetscArrayzero(B, npoints*pdim));
+  PetscCall(PetscArrayzero(B, npoints*pdim));
   for (p = 0; p < npoints; ++p) {
     for (i = 0; i < pdim; ++i) {
       for (d = 0; d < dim; ++d) {
@@ -86,8 +86,8 @@ static PetscErrorCode PetscSpaceEvaluate_Point(PetscSpace sp, PetscInt npoints, 
       }
     }
   }
-  if (D) CHKERRQ(PetscArrayzero(D, npoints*pdim*dim));
-  if (H) CHKERRQ(PetscArrayzero(H, npoints*pdim*dim*dim));
+  if (D) PetscCall(PetscArrayzero(D, npoints*pdim*dim));
+  if (H) PetscCall(PetscArrayzero(H, npoints*pdim*dim*dim));
   PetscFunctionReturn(0);
 }
 
@@ -117,15 +117,15 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Point(PetscSpace sp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  CHKERRQ(PetscNewLog(sp,&pt));
+  PetscCall(PetscNewLog(sp,&pt));
   sp->data = pt;
 
   sp->Nv = 0;
   sp->maxDegree = PETSC_MAX_INT;
-  CHKERRQ(PetscQuadratureCreate(PETSC_COMM_SELF, &pt->quad));
-  CHKERRQ(PetscQuadratureSetData(pt->quad, 0, 1, 0, NULL, NULL));
+  PetscCall(PetscQuadratureCreate(PETSC_COMM_SELF, &pt->quad));
+  PetscCall(PetscQuadratureSetData(pt->quad, 0, 1, 0, NULL, NULL));
 
-  CHKERRQ(PetscSpaceInitialize_Point(sp));
+  PetscCall(PetscSpaceInitialize_Point(sp));
   PetscFunctionReturn(0);
 }
 
@@ -149,8 +149,8 @@ PetscErrorCode PetscSpacePointSetPoints(PetscSpace sp, PetscQuadrature q)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscValidHeaderSpecific(q, PETSCQUADRATURE_CLASSID, 2);
-  CHKERRQ(PetscQuadratureDestroy(&pt->quad));
-  CHKERRQ(PetscQuadratureDuplicate(q, &pt->quad));
+  PetscCall(PetscQuadratureDestroy(&pt->quad));
+  PetscCall(PetscQuadratureDuplicate(q, &pt->quad));
   PetscFunctionReturn(0);
 }
 

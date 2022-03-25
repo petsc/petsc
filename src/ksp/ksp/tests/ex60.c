@@ -13,74 +13,74 @@ int main(int argc,char **args)
   PetscInt       M = 8, N = 8, m, n, rstart, rend, r;
   PetscBool      userSubdomains = PETSC_FALSE;
 
-  CHKERRQ(PetscInitialize(&argc, &args, NULL,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL, "-M", &M, NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL, "-N", &N, NULL));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL, "-user_subdomains", &userSubdomains, NULL));
+  PetscCall(PetscInitialize(&argc, &args, NULL,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL, "-M", &M, NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL, "-N", &N, NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL, "-user_subdomains", &userSubdomains, NULL));
   /* Do parallel decomposition */
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   sized = (PetscMPIInt) PetscSqrtReal((PetscReal) size);
   PetscCheckFalse(PetscSqr(sized) != size,PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "This test may only be run on a number of processes which is a perfect square, not %d", (int) size);
   PetscCheckFalse(M % sized,PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "The number of x-vertices %D does not divide the number of x-processes %d", M, (int) sized);
   PetscCheckFalse(N % sized,PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "The number of y-vertices %D does not divide the number of y-processes %d", N, (int) sized);
   /* Assemble the matrix for the five point stencil, YET AGAIN
        Every other process will be empty */
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD, &A));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
   m    = (sized > 1) ? (rank % 2) ? 0 : 2*M/sized : M;
   n    = N/sized;
-  CHKERRQ(MatSetSizes(A, m*n, m*n, M*N, M*N));
-  CHKERRQ(MatSetFromOptions(A));
-  CHKERRQ(MatSetUp(A));
-  CHKERRQ(MatGetOwnershipRange(A, &rstart, &rend));
+  PetscCall(MatSetSizes(A, m*n, m*n, M*N, M*N));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSetUp(A));
+  PetscCall(MatGetOwnershipRange(A, &rstart, &rend));
   for (r = rstart; r < rend; ++r) {
     const PetscScalar diag = 4.0, offdiag = -1.0;
     const PetscInt    i    = r/N;
     const PetscInt    j    = r - i*N;
     PetscInt          c;
 
-    if (i > 0)   {c = r - n; CHKERRQ(MatSetValues(A, 1, &r, 1, &c, &offdiag, INSERT_VALUES));}
-    if (i < M-1) {c = r + n; CHKERRQ(MatSetValues(A, 1, &r, 1, &c, &offdiag, INSERT_VALUES));}
-    if (j > 0)   {c = r - 1; CHKERRQ(MatSetValues(A, 1, &r, 1, &c, &offdiag, INSERT_VALUES));}
-    if (j < N-1) {c = r + 1; CHKERRQ(MatSetValues(A, 1, &r, 1, &c, &offdiag, INSERT_VALUES));}
-    CHKERRQ(MatSetValues(A, 1, &r, 1, &r, &diag, INSERT_VALUES));
+    if (i > 0)   {c = r - n; PetscCall(MatSetValues(A, 1, &r, 1, &c, &offdiag, INSERT_VALUES));}
+    if (i < M-1) {c = r + n; PetscCall(MatSetValues(A, 1, &r, 1, &c, &offdiag, INSERT_VALUES));}
+    if (j > 0)   {c = r - 1; PetscCall(MatSetValues(A, 1, &r, 1, &c, &offdiag, INSERT_VALUES));}
+    if (j < N-1) {c = r + 1; PetscCall(MatSetValues(A, 1, &r, 1, &c, &offdiag, INSERT_VALUES));}
+    PetscCall(MatSetValues(A, 1, &r, 1, &r, &diag, INSERT_VALUES));
   }
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   /* Setup Solve */
-  CHKERRQ(MatCreateVecs(A, &x, &b));
-  CHKERRQ(VecDuplicate(x, &u));
-  CHKERRQ(VecSet(u, 1.0));
-  CHKERRQ(MatMult(A, u, b));
-  CHKERRQ(KSPCreate(PETSC_COMM_WORLD, &ksp));
-  CHKERRQ(KSPSetOperators(ksp, A, A));
-  CHKERRQ(KSPGetPC(ksp, &pc));
-  CHKERRQ(PCSetType(pc, PCASM));
+  PetscCall(MatCreateVecs(A, &x, &b));
+  PetscCall(VecDuplicate(x, &u));
+  PetscCall(VecSet(u, 1.0));
+  PetscCall(MatMult(A, u, b));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
+  PetscCall(KSPSetOperators(ksp, A, A));
+  PetscCall(KSPGetPC(ksp, &pc));
+  PetscCall(PCSetType(pc, PCASM));
   /* Setup ASM by hand */
   if (userSubdomains) {
     IS        is;
     PetscInt *rows;
 
     /* Use no overlap for now */
-    CHKERRQ(PetscMalloc1(rend-rstart, &rows));
+    PetscCall(PetscMalloc1(rend-rstart, &rows));
     for (r = rstart; r < rend; ++r) rows[r-rstart] = r;
-    CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF, rend-rstart, rows, PETSC_OWN_POINTER, &is));
-    CHKERRQ(PCASMSetLocalSubdomains(pc, 1, &is, &is));
-    CHKERRQ(ISDestroy(&is));
+    PetscCall(ISCreateGeneral(PETSC_COMM_SELF, rend-rstart, rows, PETSC_OWN_POINTER, &is));
+    PetscCall(PCASMSetLocalSubdomains(pc, 1, &is, &is));
+    PetscCall(ISDestroy(&is));
   }
-  CHKERRQ(KSPSetFromOptions(ksp));
+  PetscCall(KSPSetFromOptions(ksp));
   /* Solve and Compare */
-  CHKERRQ(KSPSolve(ksp, b, x));
-  CHKERRQ(VecAXPY(x, -1.0, u));
-  CHKERRQ(VecNorm(x, NORM_INFINITY, &error));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Infinity norm of the error: %g\n", (double) error));
+  PetscCall(KSPSolve(ksp, b, x));
+  PetscCall(VecAXPY(x, -1.0, u));
+  PetscCall(VecNorm(x, NORM_INFINITY, &error));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Infinity norm of the error: %g\n", (double) error));
   /* Cleanup */
-  CHKERRQ(KSPDestroy(&ksp));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(VecDestroy(&u));
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&b));
-  CHKERRQ(PetscFinalize());
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(MatDestroy(&A));
+  PetscCall(VecDestroy(&u));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&b));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

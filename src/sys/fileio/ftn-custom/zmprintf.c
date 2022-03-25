@@ -30,8 +30,8 @@ static PetscErrorCode PetscFixSlashN(const char *in, char **out)
   size_t         i,len;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscStrallocpy(in,out));
-  CHKERRQ(PetscStrlen(*out,&len));
+  PetscCall(PetscStrallocpy(in,out));
+  PetscCall(PetscStrlen(*out,&len));
   for (i=0; i<len-1; i++) {
     if ((*out)[i] == '\\' && (*out)[i+1] == 'n') {(*out)[i] = ' '; (*out)[i+1] = '\n';}
   }

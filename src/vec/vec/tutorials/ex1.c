@@ -23,8 +23,8 @@ int main(int argc,char **argv)
   PetscInt       n = 20,maxind;
   PetscScalar    one = 1.0,two = 2.0,three = 3.0,dots[3],dot;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
   /*
      Create a vector, specifying only its global dimension.
@@ -44,16 +44,16 @@ int main(int argc,char **argv)
      -vec_type shared causes the particular type of vector to be formed.
 
   */
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
-  CHKERRQ(VecSetSizes(x,PETSC_DECIDE,n));
-  CHKERRQ(VecSetFromOptions(x));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+  PetscCall(VecSetSizes(x,PETSC_DECIDE,n));
+  PetscCall(VecSetFromOptions(x));
 
   /*
      Duplicate some work vectors (of the same format and
      partitioning as the initial vector).
   */
-  CHKERRQ(VecDuplicate(x,&y));
-  CHKERRQ(VecDuplicate(x,&w));
+  PetscCall(VecDuplicate(x,&y));
+  PetscCall(VecDuplicate(x,&w));
 
   /*
      Duplicate more work vectors (of the same format and
@@ -61,20 +61,20 @@ int main(int argc,char **argv)
      an array of vectors, which is often more convenient than
      duplicating individual ones.
   */
-  CHKERRQ(VecDuplicateVecs(x,3,&z));
+  PetscCall(VecDuplicateVecs(x,3,&z));
   /*
      Set the vectors to entries to a constant value.
   */
-  CHKERRQ(VecSet(x,one));
-  CHKERRQ(VecSet(y,two));
-  CHKERRQ(VecSet(z[0],one));
-  CHKERRQ(VecSet(z[1],two));
-  CHKERRQ(VecSet(z[2],three));
+  PetscCall(VecSet(x,one));
+  PetscCall(VecSet(y,two));
+  PetscCall(VecSet(z[0],one));
+  PetscCall(VecSet(z[1],two));
+  PetscCall(VecSet(z[2],three));
   /*
      Demonstrate various basic vector routines.
   */
-  CHKERRQ(VecDot(x,y,&dot));
-  CHKERRQ(VecMDot(x,3,z,dots));
+  PetscCall(VecDot(x,y,&dot));
+  PetscCall(VecMDot(x,3,z,dots));
 
   /*
      Note: If using a complex numbers version of PETSc, then
@@ -82,80 +82,80 @@ int main(int argc,char **argv)
      (when using real numbers) it is undefined.
   */
 
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Vector length %" PetscInt_FMT "\n",n));
-  CHKERRQ(VecMax(x,&maxind,&maxval));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"VecMax %g, VecInd %" PetscInt_FMT "\n",(double)maxval,maxind));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Vector length %" PetscInt_FMT "\n",n));
+  PetscCall(VecMax(x,&maxind,&maxval));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"VecMax %g, VecInd %" PetscInt_FMT "\n",(double)maxval,maxind));
 
-  CHKERRQ(VecMin(x,&maxind,&maxval));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"VecMin %g, VecInd %" PetscInt_FMT "\n",(double)maxval,maxind));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"All other values should be near zero\n"));
+  PetscCall(VecMin(x,&maxind,&maxval));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"VecMin %g, VecInd %" PetscInt_FMT "\n",(double)maxval,maxind));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"All other values should be near zero\n"));
 
-  CHKERRQ(VecScale(x,two));
-  CHKERRQ(VecNorm(x,NORM_2,&norm));
+  PetscCall(VecScale(x,two));
+  PetscCall(VecNorm(x,NORM_2,&norm));
   v    = norm-2.0*PetscSqrtReal((PetscReal)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0;
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"VecScale %g\n",(double)v));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"VecScale %g\n",(double)v));
 
-  CHKERRQ(VecCopy(x,w));
-  CHKERRQ(VecNorm(w,NORM_2,&norm));
+  PetscCall(VecCopy(x,w));
+  PetscCall(VecNorm(w,NORM_2,&norm));
   v    = norm-2.0*PetscSqrtReal((PetscReal)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0;
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"VecCopy  %g\n",(double)v));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"VecCopy  %g\n",(double)v));
 
-  CHKERRQ(VecAXPY(y,three,x));
-  CHKERRQ(VecNorm(y,NORM_2,&norm));
+  PetscCall(VecAXPY(y,three,x));
+  PetscCall(VecNorm(y,NORM_2,&norm));
   v    = norm-8.0*PetscSqrtReal((PetscReal)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0;
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"VecAXPY %g\n",(double)v));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"VecAXPY %g\n",(double)v));
 
-  CHKERRQ(VecAYPX(y,two,x));
-  CHKERRQ(VecNorm(y,NORM_2,&norm));
+  PetscCall(VecAYPX(y,two,x));
+  PetscCall(VecNorm(y,NORM_2,&norm));
   v    = norm-18.0*PetscSqrtReal((PetscReal)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0;
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"VecAYPX %g\n",(double)v));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"VecAYPX %g\n",(double)v));
 
-  CHKERRQ(VecSwap(x,y));
-  CHKERRQ(VecNorm(y,NORM_2,&norm));
+  PetscCall(VecSwap(x,y));
+  PetscCall(VecNorm(y,NORM_2,&norm));
   v    = norm-2.0*PetscSqrtReal((PetscReal)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0;
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"VecSwap  %g\n",(double)v));
-  CHKERRQ(VecNorm(x,NORM_2,&norm));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"VecSwap  %g\n",(double)v));
+  PetscCall(VecNorm(x,NORM_2,&norm));
   v = norm-18.0*PetscSqrtReal((PetscReal)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0;
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"VecSwap  %g\n",(double)v));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"VecSwap  %g\n",(double)v));
 
-  CHKERRQ(VecWAXPY(w,two,x,y));
-  CHKERRQ(VecNorm(w,NORM_2,&norm));
+  PetscCall(VecWAXPY(w,two,x,y));
+  PetscCall(VecNorm(w,NORM_2,&norm));
   v    = norm-38.0*PetscSqrtReal((PetscReal)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0;
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"VecWAXPY %g\n",(double)v));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"VecWAXPY %g\n",(double)v));
 
-  CHKERRQ(VecPointwiseMult(w,y,x));
-  CHKERRQ(VecNorm(w,NORM_2,&norm));
+  PetscCall(VecPointwiseMult(w,y,x));
+  PetscCall(VecNorm(w,NORM_2,&norm));
   v    = norm-36.0*PetscSqrtReal((PetscReal)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0;
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"VecPointwiseMult %g\n",(double)v));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"VecPointwiseMult %g\n",(double)v));
 
-  CHKERRQ(VecPointwiseDivide(w,x,y));
-  CHKERRQ(VecNorm(w,NORM_2,&norm));
+  PetscCall(VecPointwiseDivide(w,x,y));
+  PetscCall(VecNorm(w,NORM_2,&norm));
   v    = norm-9.0*PetscSqrtReal((PetscReal)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0;
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"VecPointwiseDivide %g\n",(double)v));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"VecPointwiseDivide %g\n",(double)v));
 
   dots[0] = one;
   dots[1] = three;
   dots[2] = two;
 
-  CHKERRQ(VecSet(x,one));
-  CHKERRQ(VecMAXPY(x,3,dots,z));
-  CHKERRQ(VecNorm(z[0],NORM_2,&norm));
+  PetscCall(VecSet(x,one));
+  PetscCall(VecMAXPY(x,3,dots,z));
+  PetscCall(VecNorm(z[0],NORM_2,&norm));
   v    = norm-PetscSqrtReal((PetscReal)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0;
-  CHKERRQ(VecNorm(z[1],NORM_2,&norm));
+  PetscCall(VecNorm(z[1],NORM_2,&norm));
   v1   = norm-2.0*PetscSqrtReal((PetscReal)n); if (v1 > -PETSC_SMALL && v1 < PETSC_SMALL) v1 = 0.0;
-  CHKERRQ(VecNorm(z[2],NORM_2,&norm));
+  PetscCall(VecNorm(z[2],NORM_2,&norm));
   v2   = norm-3.0*PetscSqrtReal((PetscReal)n); if (v2 > -PETSC_SMALL && v2 < PETSC_SMALL) v2 = 0.0;
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"VecMAXPY %g %g %g \n",(double)v,(double)v1,(double)v2));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"VecMAXPY %g %g %g \n",(double)v,(double)v1,(double)v2));
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&y));
-  CHKERRQ(VecDestroy(&w));
-  CHKERRQ(VecDestroyVecs(3,&z));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&y));
+  PetscCall(VecDestroy(&w));
+  PetscCall(VecDestroyVecs(3,&z));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

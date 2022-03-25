@@ -19,7 +19,7 @@ int main(int argc,char **argv)
   IS             set;
   PetscBool      isblock;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /*
     Create a block index set. The index set has 4 blocks each of size 3.
@@ -27,50 +27,50 @@ int main(int argc,char **argv)
     Note each processor is generating its own index set
     (in this case they are all identical)
   */
-  CHKERRQ(ISCreateBlock(PETSC_COMM_SELF,bs,n,inputindices,PETSC_COPY_VALUES,&set));
-  CHKERRQ(ISView(set,PETSC_VIEWER_STDOUT_SELF));
+  PetscCall(ISCreateBlock(PETSC_COMM_SELF,bs,n,inputindices,PETSC_COPY_VALUES,&set));
+  PetscCall(ISView(set,PETSC_VIEWER_STDOUT_SELF));
 
   /*
     Extract indices from set.
   */
-  CHKERRQ(ISGetLocalSize(set,&issize));
-  CHKERRQ(ISGetIndices(set,&indices));
-  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Printing indices directly\n"));
+  PetscCall(ISGetLocalSize(set,&issize));
+  PetscCall(ISGetIndices(set,&indices));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"Printing indices directly\n"));
   for (i=0; i<issize; i++) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"%" PetscInt_FMT "\n",indices[i]));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"%" PetscInt_FMT "\n",indices[i]));
   }
-  CHKERRQ(ISRestoreIndices(set,&indices));
+  PetscCall(ISRestoreIndices(set,&indices));
 
   /*
     Extract the block indices. This returns one index per block.
   */
-  CHKERRQ(ISBlockGetIndices(set,&indices));
-  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Printing block indices directly\n"));
+  PetscCall(ISBlockGetIndices(set,&indices));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"Printing block indices directly\n"));
   for (i=0; i<n; i++) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"%" PetscInt_FMT "\n",indices[i]));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"%" PetscInt_FMT "\n",indices[i]));
   }
-  CHKERRQ(ISBlockRestoreIndices(set,&indices));
+  PetscCall(ISBlockRestoreIndices(set,&indices));
 
   /*
     Check if this is really a block index set
   */
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)set,ISBLOCK,&isblock));
+  PetscCall(PetscObjectTypeCompare((PetscObject)set,ISBLOCK,&isblock));
   PetscCheck(isblock,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Index set is not blocked!");
 
   /*
     Determine the block size of the index set
   */
-  CHKERRQ(ISGetBlockSize(set,&bs));
+  PetscCall(ISGetBlockSize(set,&bs));
   PetscCheckFalse(bs != 3,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Block size is not 3!");
 
   /*
     Get the number of blocks
   */
-  CHKERRQ(ISBlockGetLocalSize(set,&n));
+  PetscCall(ISBlockGetLocalSize(set,&n));
   PetscCheckFalse(n != 4,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of blocks not 4!");
 
-  CHKERRQ(ISDestroy(&set));
-  CHKERRQ(PetscFinalize());
+  PetscCall(ISDestroy(&set));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

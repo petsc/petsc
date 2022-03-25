@@ -18,9 +18,9 @@ PetscErrorCode DMView_DA_Matlab(DM da,PetscViewer viewer)
   const char       *fnames[] = {"dimension","m","n","p","dof","stencil_width","bx","by","bz","stencil_type"};
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)da),&rank));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)da),&rank));
   if (rank == 0) {
-    CHKERRQ(DMDAGetInfo(da,&dim,&m,&n,&p,0,0,0,&dof,&swidth,&bx,&by,&bz,&stencil));
+    PetscCall(DMDAGetInfo(da,&dim,&m,&n,&p,0,0,0,&dof,&swidth,&bx,&by,&bz,&stencil));
     mx   = mxCreateStructMatrix(1,1,8,(const char**)fnames);
     PetscCheck(mx,PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to generate MATLAB struct array to hold DMDA information");
     mxSetFieldByNumber(mx,0,0,mxCreateDoubleScalar((double)dim));
@@ -33,8 +33,8 @@ PetscErrorCode DMView_DA_Matlab(DM da,PetscViewer viewer)
     mxSetFieldByNumber(mx,0,7,mxCreateDoubleScalar((double)by));
     mxSetFieldByNumber(mx,0,8,mxCreateDoubleScalar((double)bz));
     mxSetFieldByNumber(mx,0,9,mxCreateDoubleScalar((double)stencil));
-    CHKERRQ(PetscObjectName((PetscObject)da));
-    CHKERRQ(PetscViewerMatlabPutVariable(viewer,((PetscObject)da)->name,mx));
+    PetscCall(PetscObjectName((PetscObject)da));
+    PetscCall(PetscViewerMatlabPutVariable(viewer,((PetscObject)da)->name,mx));
   }
   PetscFunctionReturn(0);
 }
@@ -50,28 +50,28 @@ PetscErrorCode DMView_DA_Binary(DM da,PetscViewer viewer)
   PetscBool        coors = PETSC_FALSE;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectGetComm((PetscObject)da,&comm));
+  PetscCall(PetscObjectGetComm((PetscObject)da,&comm));
 
-  CHKERRQ(DMDAGetInfo(da,&dim,&m,&n,&p,&M,&N,&P,&dof,&swidth,&bx,&by,&bz,&stencil));
-  CHKERRMPI(MPI_Comm_rank(comm,&rank));
+  PetscCall(DMDAGetInfo(da,&dim,&m,&n,&p,&M,&N,&P,&dof,&swidth,&bx,&by,&bz,&stencil));
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
   if (rank == 0) {
-    CHKERRQ(PetscViewerBinaryWrite(viewer,&dim,1,PETSC_INT));
-    CHKERRQ(PetscViewerBinaryWrite(viewer,&m,1,PETSC_INT));
-    CHKERRQ(PetscViewerBinaryWrite(viewer,&n,1,PETSC_INT));
-    CHKERRQ(PetscViewerBinaryWrite(viewer,&p,1,PETSC_INT));
-    CHKERRQ(PetscViewerBinaryWrite(viewer,&dof,1,PETSC_INT));
-    CHKERRQ(PetscViewerBinaryWrite(viewer,&swidth,1,PETSC_INT));
-    CHKERRQ(PetscViewerBinaryWrite(viewer,&bx,1,PETSC_ENUM));
-    CHKERRQ(PetscViewerBinaryWrite(viewer,&by,1,PETSC_ENUM));
-    CHKERRQ(PetscViewerBinaryWrite(viewer,&bz,1,PETSC_ENUM));
-    CHKERRQ(PetscViewerBinaryWrite(viewer,&stencil,1,PETSC_ENUM));
+    PetscCall(PetscViewerBinaryWrite(viewer,&dim,1,PETSC_INT));
+    PetscCall(PetscViewerBinaryWrite(viewer,&m,1,PETSC_INT));
+    PetscCall(PetscViewerBinaryWrite(viewer,&n,1,PETSC_INT));
+    PetscCall(PetscViewerBinaryWrite(viewer,&p,1,PETSC_INT));
+    PetscCall(PetscViewerBinaryWrite(viewer,&dof,1,PETSC_INT));
+    PetscCall(PetscViewerBinaryWrite(viewer,&swidth,1,PETSC_INT));
+    PetscCall(PetscViewerBinaryWrite(viewer,&bx,1,PETSC_ENUM));
+    PetscCall(PetscViewerBinaryWrite(viewer,&by,1,PETSC_ENUM));
+    PetscCall(PetscViewerBinaryWrite(viewer,&bz,1,PETSC_ENUM));
+    PetscCall(PetscViewerBinaryWrite(viewer,&stencil,1,PETSC_ENUM));
     if (da->coordinates) coors = PETSC_TRUE;
-    CHKERRQ(PetscViewerBinaryWrite(viewer,&coors,1,PETSC_BOOL));
+    PetscCall(PetscViewerBinaryWrite(viewer,&coors,1,PETSC_BOOL));
   }
 
   /* save the coordinates if they exist to disk (in the natural ordering) */
   if (da->coordinates) {
-    CHKERRQ(VecView(da->coordinates,viewer));
+    PetscCall(VecView(da->coordinates,viewer));
   }
   PetscFunctionReturn(0);
 }
@@ -81,28 +81,28 @@ PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer)
   PetscInt       dim, dof, M = 0, N = 0, P = 0;
 
   PetscFunctionBegin;
-  CHKERRQ(DMDAGetInfo(da, &dim, &M, &N, &P, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL));
+  PetscCall(DMDAGetInfo(da, &dim, &M, &N, &P, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL));
   PetscCheck(da->coordinates,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP, "VTK output requires DMDA coordinates.");
   /* Write Header */
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"# vtk DataFile Version 2.0\n"));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"Structured Mesh Example\n"));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"ASCII\n"));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"DATASET STRUCTURED_GRID\n"));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"DIMENSIONS %d %d %d\n", M, N, P));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"POINTS %d double\n", M*N*P));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"# vtk DataFile Version 2.0\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"Structured Mesh Example\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"ASCII\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"DATASET STRUCTURED_GRID\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"DIMENSIONS %d %d %d\n", M, N, P));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"POINTS %d double\n", M*N*P));
   if (da->coordinates) {
     DM  dac;
     Vec natural;
 
-    CHKERRQ(DMGetCoordinateDM(da, &dac));
-    CHKERRQ(DMDACreateNaturalVector(dac, &natural));
-    CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) natural, "coor_"));
-    CHKERRQ(DMDAGlobalToNaturalBegin(dac, da->coordinates, INSERT_VALUES, natural));
-    CHKERRQ(DMDAGlobalToNaturalEnd(dac, da->coordinates, INSERT_VALUES, natural));
-    CHKERRQ(PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_COORDS_DEPRECATED));
-    CHKERRQ(VecView(natural, viewer));
-    CHKERRQ(PetscViewerPopFormat(viewer));
-    CHKERRQ(VecDestroy(&natural));
+    PetscCall(DMGetCoordinateDM(da, &dac));
+    PetscCall(DMDACreateNaturalVector(dac, &natural));
+    PetscCall(PetscObjectSetOptionsPrefix((PetscObject) natural, "coor_"));
+    PetscCall(DMDAGlobalToNaturalBegin(dac, da->coordinates, INSERT_VALUES, natural));
+    PetscCall(DMDAGlobalToNaturalEnd(dac, da->coordinates, INSERT_VALUES, natural));
+    PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_COORDS_DEPRECATED));
+    PetscCall(VecView(natural, viewer));
+    PetscCall(PetscViewerPopFormat(viewer));
+    PetscCall(VecDestroy(&natural));
   }
   PetscFunctionReturn(0);
 }

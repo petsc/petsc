@@ -68,7 +68,7 @@ PetscErrorCode  DMDASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p)
   dd->p = p;
   if (da->dim == 2) {
     PetscMPIInt size;
-    CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)da),&size));
+    PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)da),&size));
     if ((dd->m > 0) && (dd->n < 0)) {
       dd->n = size/dd->m;
       PetscCheck(dd->n*dd->m == size,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"%D processes in X direction not divisible into comm size %d",m,size);
@@ -309,7 +309,7 @@ PetscErrorCode  DMDASetOffset(DM da, PetscInt xo, PetscInt yo, PetscInt zo, Pets
   dd->Po = Po;
 
   if (da->coordinateDM) {
-    CHKERRQ(DMDASetOffset(da->coordinateDM,xo,yo,zo,Mo,No,Po));
+    PetscCall(DMDASetOffset(da->coordinateDM,xo,yo,zo,Mo,No,Po));
   }
   PetscFunctionReturn(0);
 }
@@ -563,27 +563,27 @@ PetscErrorCode  DMDASetOwnershipRanges(DM da, const PetscInt lx[], const PetscIn
   PetscCheck(!da->setupcalled,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
   if (lx) {
     PetscCheck(dd->m >= 0,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"Cannot set ownership ranges before setting number of procs");
-    CHKERRQ(DMDACheckOwnershipRanges_Private(da,dd->M,dd->m,lx));
+    PetscCall(DMDACheckOwnershipRanges_Private(da,dd->M,dd->m,lx));
     if (!dd->lx) {
-      CHKERRQ(PetscMalloc1(dd->m, &dd->lx));
+      PetscCall(PetscMalloc1(dd->m, &dd->lx));
     }
-    CHKERRQ(PetscArraycpy(dd->lx, lx, dd->m));
+    PetscCall(PetscArraycpy(dd->lx, lx, dd->m));
   }
   if (ly) {
     PetscCheck(dd->n >= 0,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"Cannot set ownership ranges before setting number of procs");
-    CHKERRQ(DMDACheckOwnershipRanges_Private(da,dd->N,dd->n,ly));
+    PetscCall(DMDACheckOwnershipRanges_Private(da,dd->N,dd->n,ly));
     if (!dd->ly) {
-      CHKERRQ(PetscMalloc1(dd->n, &dd->ly));
+      PetscCall(PetscMalloc1(dd->n, &dd->ly));
     }
-    CHKERRQ(PetscArraycpy(dd->ly, ly, dd->n));
+    PetscCall(PetscArraycpy(dd->ly, ly, dd->n));
   }
   if (lz) {
     PetscCheck(dd->p >= 0,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"Cannot set ownership ranges before setting number of procs");
-    CHKERRQ(DMDACheckOwnershipRanges_Private(da,dd->P,dd->p,lz));
+    PetscCall(DMDACheckOwnershipRanges_Private(da,dd->P,dd->p,lz));
     if (!dd->lz) {
-      CHKERRQ(PetscMalloc1(dd->p, &dd->lz));
+      PetscCall(PetscMalloc1(dd->p, &dd->lz));
     }
-    CHKERRQ(PetscArraycpy(dd->lz, lz, dd->p));
+    PetscCall(PetscArraycpy(dd->lz, lz, dd->p));
   }
   PetscFunctionReturn(0);
 }
@@ -828,7 +828,7 @@ static PetscErrorCode DMDARefineOwnershipRanges(DM da,PetscBool periodic,PetscIn
   PetscFunctionBegin;
   PetscCheck(ratio >= 1,PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Requested refinement ratio %D must be at least 1",ratio);
   if (ratio == 1) {
-    CHKERRQ(PetscArraycpy(lf,lc,m));
+    PetscCall(PetscArraycpy(lf,lc,m));
     PetscFunctionReturn(0);
   }
   for (i=0; i<m; i++) totalc += lc[i];
@@ -869,7 +869,7 @@ static PetscErrorCode DMDACoarsenOwnershipRanges(DM da,PetscBool periodic,PetscI
   PetscFunctionBegin;
   PetscCheck(ratio >= 1,PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Requested refinement ratio %D must be at least 1",ratio);
   if (ratio == 1) {
-    CHKERRQ(PetscArraycpy(lc,lf,m));
+    PetscCall(PetscArraycpy(lc,lf,m));
     PetscFunctionReturn(0);
   }
   for (i=0,totalf=0; i<m; i++) totalf += lf[i];
@@ -906,7 +906,7 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
   PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidPointer(daref,3);
 
-  CHKERRQ(DMGetDimension(da, &dim));
+  PetscCall(DMGetDimension(da, &dim));
   if (dd->bx == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0) {
     M = dd->refine_x*dd->M;
   } else {
@@ -930,36 +930,36 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
   } else {
     P = 1 + dd->refine_z*(dd->P - 1);
   }
-  CHKERRQ(DMDACreate(PetscObjectComm((PetscObject)da),&da2));
-  CHKERRQ(DMSetOptionsPrefix(da2,((PetscObject)da)->prefix));
-  CHKERRQ(DMSetDimension(da2,dim));
-  CHKERRQ(DMDASetSizes(da2,M,N,P));
-  CHKERRQ(DMDASetNumProcs(da2,dd->m,dd->n,dd->p));
-  CHKERRQ(DMDASetBoundaryType(da2,dd->bx,dd->by,dd->bz));
-  CHKERRQ(DMDASetDof(da2,dd->w));
-  CHKERRQ(DMDASetStencilType(da2,dd->stencil_type));
-  CHKERRQ(DMDASetStencilWidth(da2,dd->s));
+  PetscCall(DMDACreate(PetscObjectComm((PetscObject)da),&da2));
+  PetscCall(DMSetOptionsPrefix(da2,((PetscObject)da)->prefix));
+  PetscCall(DMSetDimension(da2,dim));
+  PetscCall(DMDASetSizes(da2,M,N,P));
+  PetscCall(DMDASetNumProcs(da2,dd->m,dd->n,dd->p));
+  PetscCall(DMDASetBoundaryType(da2,dd->bx,dd->by,dd->bz));
+  PetscCall(DMDASetDof(da2,dd->w));
+  PetscCall(DMDASetStencilType(da2,dd->stencil_type));
+  PetscCall(DMDASetStencilWidth(da2,dd->s));
   if (dim == 3) {
     PetscInt *lx,*ly,*lz;
-    CHKERRQ(PetscMalloc3(dd->m,&lx,dd->n,&ly,dd->p,&lz));
-    CHKERRQ(DMDARefineOwnershipRanges(da,(PetscBool)(dd->bx == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx));
-    CHKERRQ(DMDARefineOwnershipRanges(da,(PetscBool)(dd->by == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->refine_y,dd->n,dd->ly,ly));
-    CHKERRQ(DMDARefineOwnershipRanges(da,(PetscBool)(dd->bz == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->refine_z,dd->p,dd->lz,lz));
-    CHKERRQ(DMDASetOwnershipRanges(da2,lx,ly,lz));
-    CHKERRQ(PetscFree3(lx,ly,lz));
+    PetscCall(PetscMalloc3(dd->m,&lx,dd->n,&ly,dd->p,&lz));
+    PetscCall(DMDARefineOwnershipRanges(da,(PetscBool)(dd->bx == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx));
+    PetscCall(DMDARefineOwnershipRanges(da,(PetscBool)(dd->by == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->refine_y,dd->n,dd->ly,ly));
+    PetscCall(DMDARefineOwnershipRanges(da,(PetscBool)(dd->bz == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->refine_z,dd->p,dd->lz,lz));
+    PetscCall(DMDASetOwnershipRanges(da2,lx,ly,lz));
+    PetscCall(PetscFree3(lx,ly,lz));
   } else if (dim == 2) {
     PetscInt *lx,*ly;
-    CHKERRQ(PetscMalloc2(dd->m,&lx,dd->n,&ly));
-    CHKERRQ(DMDARefineOwnershipRanges(da,(PetscBool)(dd->bx == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx));
-    CHKERRQ(DMDARefineOwnershipRanges(da,(PetscBool)(dd->by == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->refine_y,dd->n,dd->ly,ly));
-    CHKERRQ(DMDASetOwnershipRanges(da2,lx,ly,NULL));
-    CHKERRQ(PetscFree2(lx,ly));
+    PetscCall(PetscMalloc2(dd->m,&lx,dd->n,&ly));
+    PetscCall(DMDARefineOwnershipRanges(da,(PetscBool)(dd->bx == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx));
+    PetscCall(DMDARefineOwnershipRanges(da,(PetscBool)(dd->by == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->refine_y,dd->n,dd->ly,ly));
+    PetscCall(DMDASetOwnershipRanges(da2,lx,ly,NULL));
+    PetscCall(PetscFree2(lx,ly));
   } else if (dim == 1) {
     PetscInt *lx;
-    CHKERRQ(PetscMalloc1(dd->m,&lx));
-    CHKERRQ(DMDARefineOwnershipRanges(da,(PetscBool)(dd->bx == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx));
-    CHKERRQ(DMDASetOwnershipRanges(da2,lx,NULL,NULL));
-    CHKERRQ(PetscFree(lx));
+    PetscCall(PetscMalloc1(dd->m,&lx));
+    PetscCall(DMDARefineOwnershipRanges(da,(PetscBool)(dd->bx == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx));
+    PetscCall(DMDASetOwnershipRanges(da2,lx,NULL,NULL));
+    PetscCall(PetscFree(lx));
   }
   dd2 = (DM_DA*)da2->data;
 
@@ -971,12 +971,12 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
 
   /* copy fill information if given */
   if (dd->dfill) {
-    CHKERRQ(PetscMalloc1(dd->dfill[dd->w]+dd->w+1,&dd2->dfill));
-    CHKERRQ(PetscArraycpy(dd2->dfill,dd->dfill,dd->dfill[dd->w]+dd->w+1));
+    PetscCall(PetscMalloc1(dd->dfill[dd->w]+dd->w+1,&dd2->dfill));
+    PetscCall(PetscArraycpy(dd2->dfill,dd->dfill,dd->dfill[dd->w]+dd->w+1));
   }
   if (dd->ofill) {
-    CHKERRQ(PetscMalloc1(dd->ofill[dd->w]+dd->w+1,&dd2->ofill));
-    CHKERRQ(PetscArraycpy(dd2->ofill,dd->ofill,dd->ofill[dd->w]+dd->w+1));
+    PetscCall(PetscMalloc1(dd->ofill[dd->w]+dd->w+1,&dd2->ofill));
+    PetscCall(PetscArraycpy(dd2->ofill,dd->ofill,dd->ofill[dd->w]+dd->w+1));
   }
   /* copy the refine information */
   dd2->coarsen_x = dd2->refine_x = dd->refine_x;
@@ -991,8 +991,8 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
       dd2->coarsen_z = dd->refine_z_hier[da->levelup - da->leveldown];
     }
     dd2->refine_z_hier_n = dd->refine_z_hier_n;
-    CHKERRQ(PetscMalloc1(dd2->refine_z_hier_n,&dd2->refine_z_hier));
-    CHKERRQ(PetscArraycpy(dd2->refine_z_hier,dd->refine_z_hier,dd2->refine_z_hier_n));
+    PetscCall(PetscMalloc1(dd2->refine_z_hier_n,&dd2->refine_z_hier));
+    PetscCall(PetscArraycpy(dd2->refine_z_hier,dd->refine_z_hier,dd2->refine_z_hier_n));
   }
   if (dd->refine_y_hier) {
     if (da->levelup - da->leveldown + 1 > -1 && da->levelup - da->leveldown + 1 < dd->refine_y_hier_n) {
@@ -1002,8 +1002,8 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
       dd2->coarsen_y = dd->refine_y_hier[da->levelup - da->leveldown];
     }
     dd2->refine_y_hier_n = dd->refine_y_hier_n;
-    CHKERRQ(PetscMalloc1(dd2->refine_y_hier_n,&dd2->refine_y_hier));
-    CHKERRQ(PetscArraycpy(dd2->refine_y_hier,dd->refine_y_hier,dd2->refine_y_hier_n));
+    PetscCall(PetscMalloc1(dd2->refine_y_hier_n,&dd2->refine_y_hier));
+    PetscCall(PetscArraycpy(dd2->refine_y_hier,dd->refine_y_hier,dd2->refine_y_hier_n));
   }
   if (dd->refine_x_hier) {
     if (da->levelup - da->leveldown + 1 > -1 && da->levelup - da->leveldown + 1 < dd->refine_x_hier_n) {
@@ -1013,12 +1013,12 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
       dd2->coarsen_x = dd->refine_x_hier[da->levelup - da->leveldown];
     }
     dd2->refine_x_hier_n = dd->refine_x_hier_n;
-    CHKERRQ(PetscMalloc1(dd2->refine_x_hier_n,&dd2->refine_x_hier));
-    CHKERRQ(PetscArraycpy(dd2->refine_x_hier,dd->refine_x_hier,dd2->refine_x_hier_n));
+    PetscCall(PetscMalloc1(dd2->refine_x_hier_n,&dd2->refine_x_hier));
+    PetscCall(PetscArraycpy(dd2->refine_x_hier,dd->refine_x_hier,dd2->refine_x_hier_n));
   }
 
   /* copy vector type information */
-  CHKERRQ(DMSetVecType(da2,da->vectype));
+  PetscCall(DMSetVecType(da2,da->vectype));
 
   dd2->lf = dd->lf;
   dd2->lj = dd->lj;
@@ -1026,7 +1026,7 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
   da2->leveldown = da->leveldown;
   da2->levelup   = da->levelup + 1;
 
-  CHKERRQ(DMSetUp(da2));
+  PetscCall(DMSetUp(da2));
 
   /* interpolate coordinates if they are set on the coarse grid */
   if (da->coordinates) {
@@ -1034,21 +1034,21 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
     Vec coordsc,coordsf;
     Mat II;
 
-    CHKERRQ(DMGetCoordinateDM(da,&cdac));
-    CHKERRQ(DMGetCoordinates(da,&coordsc));
-    CHKERRQ(DMGetCoordinateDM(da2,&cdaf));
+    PetscCall(DMGetCoordinateDM(da,&cdac));
+    PetscCall(DMGetCoordinates(da,&coordsc));
+    PetscCall(DMGetCoordinateDM(da2,&cdaf));
     /* force creation of the coordinate vector */
-    CHKERRQ(DMDASetUniformCoordinates(da2,0.0,1.0,0.0,1.0,0.0,1.0));
-    CHKERRQ(DMGetCoordinates(da2,&coordsf));
-    CHKERRQ(DMCreateInterpolation(cdac,cdaf,&II,NULL));
-    CHKERRQ(MatInterpolate(II,coordsc,coordsf));
-    CHKERRQ(MatDestroy(&II));
+    PetscCall(DMDASetUniformCoordinates(da2,0.0,1.0,0.0,1.0,0.0,1.0));
+    PetscCall(DMGetCoordinates(da2,&coordsf));
+    PetscCall(DMCreateInterpolation(cdac,cdaf,&II,NULL));
+    PetscCall(MatInterpolate(II,coordsc,coordsf));
+    PetscCall(MatDestroy(&II));
   }
 
   for (i=0; i<da->bs; i++) {
     const char *fieldname;
-    CHKERRQ(DMDAGetFieldName(da,i,&fieldname));
-    CHKERRQ(DMDASetFieldName(da2,i,fieldname));
+    PetscCall(DMDAGetFieldName(da,i,&fieldname));
+    PetscCall(DMDASetFieldName(da2,i,fieldname));
   }
 
   *daref = da2;
@@ -1065,7 +1065,7 @@ PetscErrorCode  DMCoarsen_DA(DM dmf, MPI_Comm comm,DM *dmc)
   PetscValidHeaderSpecificType(dmf,DM_CLASSID,1,DMDA);
   PetscValidPointer(dmc,3);
 
-  CHKERRQ(DMGetDimension(dmf, &dim));
+  PetscCall(DMGetDimension(dmf, &dim));
   if (dd->bx == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0) {
     M = dd->M / dd->coarsen_x;
   } else {
@@ -1089,36 +1089,36 @@ PetscErrorCode  DMCoarsen_DA(DM dmf, MPI_Comm comm,DM *dmc)
   } else {
     P = 1 + (dd->P - 1) / dd->coarsen_z;
   }
-  CHKERRQ(DMDACreate(PetscObjectComm((PetscObject)dmf),&dmc2));
-  CHKERRQ(DMSetOptionsPrefix(dmc2,((PetscObject)dmf)->prefix));
-  CHKERRQ(DMSetDimension(dmc2,dim));
-  CHKERRQ(DMDASetSizes(dmc2,M,N,P));
-  CHKERRQ(DMDASetNumProcs(dmc2,dd->m,dd->n,dd->p));
-  CHKERRQ(DMDASetBoundaryType(dmc2,dd->bx,dd->by,dd->bz));
-  CHKERRQ(DMDASetDof(dmc2,dd->w));
-  CHKERRQ(DMDASetStencilType(dmc2,dd->stencil_type));
-  CHKERRQ(DMDASetStencilWidth(dmc2,dd->s));
+  PetscCall(DMDACreate(PetscObjectComm((PetscObject)dmf),&dmc2));
+  PetscCall(DMSetOptionsPrefix(dmc2,((PetscObject)dmf)->prefix));
+  PetscCall(DMSetDimension(dmc2,dim));
+  PetscCall(DMDASetSizes(dmc2,M,N,P));
+  PetscCall(DMDASetNumProcs(dmc2,dd->m,dd->n,dd->p));
+  PetscCall(DMDASetBoundaryType(dmc2,dd->bx,dd->by,dd->bz));
+  PetscCall(DMDASetDof(dmc2,dd->w));
+  PetscCall(DMDASetStencilType(dmc2,dd->stencil_type));
+  PetscCall(DMDASetStencilWidth(dmc2,dd->s));
   if (dim == 3) {
     PetscInt *lx,*ly,*lz;
-    CHKERRQ(PetscMalloc3(dd->m,&lx,dd->n,&ly,dd->p,&lz));
-    CHKERRQ(DMDACoarsenOwnershipRanges(dmf,(PetscBool)(dd->bx == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->coarsen_x,dd->m,dd->lx,lx));
-    CHKERRQ(DMDACoarsenOwnershipRanges(dmf,(PetscBool)(dd->by == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->coarsen_y,dd->n,dd->ly,ly));
-    CHKERRQ(DMDACoarsenOwnershipRanges(dmf,(PetscBool)(dd->bz == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->coarsen_z,dd->p,dd->lz,lz));
-    CHKERRQ(DMDASetOwnershipRanges(dmc2,lx,ly,lz));
-    CHKERRQ(PetscFree3(lx,ly,lz));
+    PetscCall(PetscMalloc3(dd->m,&lx,dd->n,&ly,dd->p,&lz));
+    PetscCall(DMDACoarsenOwnershipRanges(dmf,(PetscBool)(dd->bx == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->coarsen_x,dd->m,dd->lx,lx));
+    PetscCall(DMDACoarsenOwnershipRanges(dmf,(PetscBool)(dd->by == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->coarsen_y,dd->n,dd->ly,ly));
+    PetscCall(DMDACoarsenOwnershipRanges(dmf,(PetscBool)(dd->bz == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->coarsen_z,dd->p,dd->lz,lz));
+    PetscCall(DMDASetOwnershipRanges(dmc2,lx,ly,lz));
+    PetscCall(PetscFree3(lx,ly,lz));
   } else if (dim == 2) {
     PetscInt *lx,*ly;
-    CHKERRQ(PetscMalloc2(dd->m,&lx,dd->n,&ly));
-    CHKERRQ(DMDACoarsenOwnershipRanges(dmf,(PetscBool)(dd->bx == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->coarsen_x,dd->m,dd->lx,lx));
-    CHKERRQ(DMDACoarsenOwnershipRanges(dmf,(PetscBool)(dd->by == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->coarsen_y,dd->n,dd->ly,ly));
-    CHKERRQ(DMDASetOwnershipRanges(dmc2,lx,ly,NULL));
-    CHKERRQ(PetscFree2(lx,ly));
+    PetscCall(PetscMalloc2(dd->m,&lx,dd->n,&ly));
+    PetscCall(DMDACoarsenOwnershipRanges(dmf,(PetscBool)(dd->bx == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->coarsen_x,dd->m,dd->lx,lx));
+    PetscCall(DMDACoarsenOwnershipRanges(dmf,(PetscBool)(dd->by == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->coarsen_y,dd->n,dd->ly,ly));
+    PetscCall(DMDASetOwnershipRanges(dmc2,lx,ly,NULL));
+    PetscCall(PetscFree2(lx,ly));
   } else if (dim == 1) {
     PetscInt *lx;
-    CHKERRQ(PetscMalloc1(dd->m,&lx));
-    CHKERRQ(DMDACoarsenOwnershipRanges(dmf,(PetscBool)(dd->bx == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->coarsen_x,dd->m,dd->lx,lx));
-    CHKERRQ(DMDASetOwnershipRanges(dmc2,lx,NULL,NULL));
-    CHKERRQ(PetscFree(lx));
+    PetscCall(PetscMalloc1(dd->m,&lx));
+    PetscCall(DMDACoarsenOwnershipRanges(dmf,(PetscBool)(dd->bx == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->coarsen_x,dd->m,dd->lx,lx));
+    PetscCall(DMDASetOwnershipRanges(dmc2,lx,NULL,NULL));
+    PetscCall(PetscFree(lx));
   }
   dd2 = (DM_DA*)dmc2->data;
 
@@ -1130,12 +1130,12 @@ PetscErrorCode  DMCoarsen_DA(DM dmf, MPI_Comm comm,DM *dmc)
 
   /* copy fill information if given */
   if (dd->dfill) {
-    CHKERRQ(PetscMalloc1(dd->dfill[dd->w]+dd->w+1,&dd2->dfill));
-    CHKERRQ(PetscArraycpy(dd2->dfill,dd->dfill,dd->dfill[dd->w]+dd->w+1));
+    PetscCall(PetscMalloc1(dd->dfill[dd->w]+dd->w+1,&dd2->dfill));
+    PetscCall(PetscArraycpy(dd2->dfill,dd->dfill,dd->dfill[dd->w]+dd->w+1));
   }
   if (dd->ofill) {
-    CHKERRQ(PetscMalloc1(dd->ofill[dd->w]+dd->w+1,&dd2->ofill));
-    CHKERRQ(PetscArraycpy(dd2->ofill,dd->ofill,dd->ofill[dd->w]+dd->w+1));
+    PetscCall(PetscMalloc1(dd->ofill[dd->w]+dd->w+1,&dd2->ofill));
+    PetscCall(PetscArraycpy(dd2->ofill,dd->ofill,dd->ofill[dd->w]+dd->w+1));
   }
   /* copy the refine information */
   dd2->coarsen_x = dd2->refine_x = dd->coarsen_x;
@@ -1150,8 +1150,8 @@ PetscErrorCode  DMCoarsen_DA(DM dmf, MPI_Comm comm,DM *dmc)
       dd2->coarsen_z = dd->refine_z_hier[dmf->levelup - dmf->leveldown - 2];
     }
     dd2->refine_z_hier_n = dd->refine_z_hier_n;
-    CHKERRQ(PetscMalloc1(dd2->refine_z_hier_n,&dd2->refine_z_hier));
-    CHKERRQ(PetscArraycpy(dd2->refine_z_hier,dd->refine_z_hier,dd2->refine_z_hier_n));
+    PetscCall(PetscMalloc1(dd2->refine_z_hier_n,&dd2->refine_z_hier));
+    PetscCall(PetscArraycpy(dd2->refine_z_hier,dd->refine_z_hier,dd2->refine_z_hier_n));
   }
   if (dd->refine_y_hier) {
     if (dmf->levelup - dmf->leveldown - 1 > -1 && dmf->levelup - dmf->leveldown - 1< dd->refine_y_hier_n) {
@@ -1161,8 +1161,8 @@ PetscErrorCode  DMCoarsen_DA(DM dmf, MPI_Comm comm,DM *dmc)
       dd2->coarsen_y = dd->refine_y_hier[dmf->levelup - dmf->leveldown - 2];
     }
     dd2->refine_y_hier_n = dd->refine_y_hier_n;
-    CHKERRQ(PetscMalloc1(dd2->refine_y_hier_n,&dd2->refine_y_hier));
-    CHKERRQ(PetscArraycpy(dd2->refine_y_hier,dd->refine_y_hier,dd2->refine_y_hier_n));
+    PetscCall(PetscMalloc1(dd2->refine_y_hier_n,&dd2->refine_y_hier));
+    PetscCall(PetscArraycpy(dd2->refine_y_hier,dd->refine_y_hier,dd2->refine_y_hier_n));
   }
   if (dd->refine_x_hier) {
     if (dmf->levelup - dmf->leveldown - 1 > -1 && dmf->levelup - dmf->leveldown - 1 < dd->refine_x_hier_n) {
@@ -1172,12 +1172,12 @@ PetscErrorCode  DMCoarsen_DA(DM dmf, MPI_Comm comm,DM *dmc)
       dd2->coarsen_x = dd->refine_x_hier[dmf->levelup - dmf->leveldown - 2];
     }
     dd2->refine_x_hier_n = dd->refine_x_hier_n;
-    CHKERRQ(PetscMalloc1(dd2->refine_x_hier_n,&dd2->refine_x_hier));
-    CHKERRQ(PetscArraycpy(dd2->refine_x_hier,dd->refine_x_hier,dd2->refine_x_hier_n));
+    PetscCall(PetscMalloc1(dd2->refine_x_hier_n,&dd2->refine_x_hier));
+    PetscCall(PetscArraycpy(dd2->refine_x_hier,dd->refine_x_hier,dd2->refine_x_hier_n));
   }
 
   /* copy vector type information */
-  CHKERRQ(DMSetVecType(dmc2,dmf->vectype));
+  PetscCall(DMSetVecType(dmc2,dmf->vectype));
 
   dd2->lf = dd->lf;
   dd2->lj = dd->lj;
@@ -1185,7 +1185,7 @@ PetscErrorCode  DMCoarsen_DA(DM dmf, MPI_Comm comm,DM *dmc)
   dmc2->leveldown = dmf->leveldown + 1;
   dmc2->levelup   = dmf->levelup;
 
-  CHKERRQ(DMSetUp(dmc2));
+  PetscCall(DMSetUp(dmc2));
 
   /* inject coordinates if they are set on the fine grid */
   if (dmf->coordinates) {
@@ -1194,24 +1194,24 @@ PetscErrorCode  DMCoarsen_DA(DM dmf, MPI_Comm comm,DM *dmc)
     Mat        inject;
     VecScatter vscat;
 
-    CHKERRQ(DMGetCoordinateDM(dmf,&cdaf));
-    CHKERRQ(DMGetCoordinates(dmf,&coordsf));
-    CHKERRQ(DMGetCoordinateDM(dmc2,&cdac));
+    PetscCall(DMGetCoordinateDM(dmf,&cdaf));
+    PetscCall(DMGetCoordinates(dmf,&coordsf));
+    PetscCall(DMGetCoordinateDM(dmc2,&cdac));
     /* force creation of the coordinate vector */
-    CHKERRQ(DMDASetUniformCoordinates(dmc2,0.0,1.0,0.0,1.0,0.0,1.0));
-    CHKERRQ(DMGetCoordinates(dmc2,&coordsc));
+    PetscCall(DMDASetUniformCoordinates(dmc2,0.0,1.0,0.0,1.0,0.0,1.0));
+    PetscCall(DMGetCoordinates(dmc2,&coordsc));
 
-    CHKERRQ(DMCreateInjection(cdac,cdaf,&inject));
-    CHKERRQ(MatScatterGetVecScatter(inject,&vscat));
-    CHKERRQ(VecScatterBegin(vscat,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD));
-    CHKERRQ(VecScatterEnd(vscat,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD));
-    CHKERRQ(MatDestroy(&inject));
+    PetscCall(DMCreateInjection(cdac,cdaf,&inject));
+    PetscCall(MatScatterGetVecScatter(inject,&vscat));
+    PetscCall(VecScatterBegin(vscat,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD));
+    PetscCall(VecScatterEnd(vscat,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD));
+    PetscCall(MatDestroy(&inject));
   }
 
   for (i=0; i<dmf->bs; i++) {
     const char *fieldname;
-    CHKERRQ(DMDAGetFieldName(dmf,i,&fieldname));
-    CHKERRQ(DMDASetFieldName(dmc2,i,fieldname));
+    PetscCall(DMDAGetFieldName(dmf,i,&fieldname));
+    PetscCall(DMDASetFieldName(dmc2,i,fieldname));
   }
 
   *dmc = dmc2;
@@ -1229,24 +1229,24 @@ PetscErrorCode  DMRefineHierarchy_DA(DM da,PetscInt nlevels,DM daf[])
   PetscValidPointer(daf,3);
 
   /* Get refinement factors, defaults taken from the coarse DMDA */
-  CHKERRQ(PetscMalloc3(nlevels,&refx,nlevels,&refy,nlevels,&refz));
+  PetscCall(PetscMalloc3(nlevels,&refx,nlevels,&refy,nlevels,&refz));
   for (i=0; i<nlevels; i++) {
-    CHKERRQ(DMDAGetRefinementFactor(da,&refx[i],&refy[i],&refz[i]));
+    PetscCall(DMDAGetRefinementFactor(da,&refx[i],&refy[i],&refz[i]));
   }
   n    = nlevels;
-  CHKERRQ(PetscOptionsGetIntArray(((PetscObject)da)->options,((PetscObject)da)->prefix,"-da_refine_hierarchy_x",refx,&n,NULL));
+  PetscCall(PetscOptionsGetIntArray(((PetscObject)da)->options,((PetscObject)da)->prefix,"-da_refine_hierarchy_x",refx,&n,NULL));
   n    = nlevels;
-  CHKERRQ(PetscOptionsGetIntArray(((PetscObject)da)->options,((PetscObject)da)->prefix,"-da_refine_hierarchy_y",refy,&n,NULL));
+  PetscCall(PetscOptionsGetIntArray(((PetscObject)da)->options,((PetscObject)da)->prefix,"-da_refine_hierarchy_y",refy,&n,NULL));
   n    = nlevels;
-  CHKERRQ(PetscOptionsGetIntArray(((PetscObject)da)->options,((PetscObject)da)->prefix,"-da_refine_hierarchy_z",refz,&n,NULL));
+  PetscCall(PetscOptionsGetIntArray(((PetscObject)da)->options,((PetscObject)da)->prefix,"-da_refine_hierarchy_z",refz,&n,NULL));
 
-  CHKERRQ(DMDASetRefinementFactor(da,refx[0],refy[0],refz[0]));
-  CHKERRQ(DMRefine(da,PetscObjectComm((PetscObject)da),&daf[0]));
+  PetscCall(DMDASetRefinementFactor(da,refx[0],refy[0],refz[0]));
+  PetscCall(DMRefine(da,PetscObjectComm((PetscObject)da),&daf[0]));
   for (i=1; i<nlevels; i++) {
-    CHKERRQ(DMDASetRefinementFactor(daf[i-1],refx[i],refy[i],refz[i]));
-    CHKERRQ(DMRefine(daf[i-1],PetscObjectComm((PetscObject)da),&daf[i]));
+    PetscCall(DMDASetRefinementFactor(daf[i-1],refx[i],refy[i],refz[i]));
+    PetscCall(DMRefine(daf[i-1],PetscObjectComm((PetscObject)da),&daf[i]));
   }
-  CHKERRQ(PetscFree3(refx,refy,refz));
+  PetscCall(PetscFree3(refx,refy,refz));
   PetscFunctionReturn(0);
 }
 
@@ -1259,9 +1259,9 @@ PetscErrorCode  DMCoarsenHierarchy_DA(DM da,PetscInt nlevels,DM dac[])
   PetscCheck(nlevels >= 0,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"nlevels cannot be negative");
   if (nlevels == 0) PetscFunctionReturn(0);
   PetscValidPointer(dac,3);
-  CHKERRQ(DMCoarsen(da,PetscObjectComm((PetscObject)da),&dac[0]));
+  PetscCall(DMCoarsen(da,PetscObjectComm((PetscObject)da),&dac[0]));
   for (i=1; i<nlevels; i++) {
-    CHKERRQ(DMCoarsen(dac[i-1],PetscObjectComm((PetscObject)da),&dac[i]));
+    PetscCall(DMCoarsen(dac[i-1],PetscObjectComm((PetscObject)da),&dac[i]));
   }
   PetscFunctionReturn(0);
 }
@@ -1276,15 +1276,15 @@ PetscErrorCode DMDASetGLLCoordinates_1d(DM dm,PetscInt n,PetscReal *nodes)
 
   PetscFunctionBegin;
   if (da->bx != DM_BOUNDARY_PERIODIC) {
-    CHKERRQ(DMDAGetInfo(dm,NULL,&q,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL));
+    PetscCall(DMDAGetInfo(dm,NULL,&q,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL));
     q    = (q-1)/(n-1);  /* number of spectral elements */
     h    = 2.0/q;
-    CHKERRQ(DMDAGetCorners(dm,&xs,NULL,NULL,&xn,NULL,NULL));
+    PetscCall(DMDAGetCorners(dm,&xs,NULL,NULL,&xn,NULL,NULL));
     xs   = xs/(n-1);
     xn   = xn/(n-1);
-    CHKERRQ(DMDASetUniformCoordinates(dm,-1.,1.,0.,0.,0.,0.));
-    CHKERRQ(DMGetCoordinates(dm,&x));
-    CHKERRQ(DMDAVecGetArray(dm,x,&xx));
+    PetscCall(DMDASetUniformCoordinates(dm,-1.,1.,0.,0.,0.,0.));
+    PetscCall(DMGetCoordinates(dm,&x));
+    PetscCall(DMDAVecGetArray(dm,x,&xx));
 
     /* loop over local spectral elements */
     for (j=xs; j<xs+xn; j++) {
@@ -1295,7 +1295,7 @@ PetscErrorCode DMDASetGLLCoordinates_1d(DM dm,PetscInt n,PetscReal *nodes)
         xx[j*(n-1) + i] = -1.0 + h*j + h*(nodes[i]+1.0)/2.;
       }
     }
-    CHKERRQ(DMDAVecRestoreArray(dm,x,&xx));
+    PetscCall(DMDAVecRestoreArray(dm,x,&xx));
   } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Not yet implemented for periodic");
   PetscFunctionReturn(0);
 }
@@ -1324,7 +1324,7 @@ PetscErrorCode DMDASetGLLCoordinates(DM da,PetscInt n,PetscReal *nodes)
 {
   PetscFunctionBegin;
   if (da->dim == 1) {
-    CHKERRQ(DMDASetGLLCoordinates_1d(da,n,nodes));
+    PetscCall(DMDASetGLLCoordinates_1d(da,n,nodes));
   } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Not yet implemented for 2 or 3d");
   PetscFunctionReturn(0);
 }
@@ -1339,8 +1339,8 @@ PETSC_INTERN PetscErrorCode DMGetCompatibility_DA(DM da1,DM dm2,PetscBool *compa
 
   PetscFunctionBegin;
   PetscCheck(da1->setupcalled,PetscObjectComm((PetscObject)da1),PETSC_ERR_ARG_WRONGSTATE,"DMSetUp() must be called on first DM before DMGetCompatibility()");
-  CHKERRQ(DMGetType(dm2,&dmtype2));
-  CHKERRQ(PetscStrcmp(dmtype2,DMDA,&isda));
+  PetscCall(DMGetType(dm2,&dmtype2));
+  PetscCall(PetscStrcmp(dmtype2,DMDA,&isda));
   if (isda) {
     da2 = dm2;
     dd2 = (DM_DA*)da2->data;

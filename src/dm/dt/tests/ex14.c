@@ -14,13 +14,13 @@ static PetscErrorCode VerifyDistribution(const char name[], PetscBool pos, Petsc
   PetscInt       i;
 
   PetscFunctionBeginUser;
-  CHKERRQ(PetscDTTanhSinhIntegrate((void (*)(const PetscReal[], void *, PetscReal *)) pdf, lower, upper, digits, NULL, &integral));
+  PetscCall(PetscDTTanhSinhIntegrate((void (*)(const PetscReal[], void *, PetscReal *)) pdf, lower, upper, digits, NULL, &integral));
   PetscCheck(PetscAbsReal(integral - 1.0) < 100*PETSC_MACHINE_EPSILON, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "PDF %s must integrate to 1, not %g", name, integral);
   for (i = 0; i <= 10; ++i) {
     const PetscReal x = i;
 
-    CHKERRQ(PetscDTTanhSinhIntegrate((void (*)(const PetscReal[], void *, PetscReal *)) pdf, lower, x, digits, NULL, &integral));
-    CHKERRQ(cdf(&x, NULL, &integral2));
+    PetscCall(PetscDTTanhSinhIntegrate((void (*)(const PetscReal[], void *, PetscReal *)) pdf, lower, x, digits, NULL, &integral));
+    PetscCall(cdf(&x, NULL, &integral2));
     PetscCheck(PetscAbsReal(integral - integral2) < PETSC_SQRT_MACHINE_EPSILON, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Integral of PDF %s %g != %g CDF at x = %g", name, integral, integral2, x);
   }
   PetscFunctionReturn(0);
@@ -35,7 +35,7 @@ static PetscErrorCode TestDistributions()
 
   PetscFunctionBeginUser;
   for (PetscInt i = 0; i < (PetscInt) (sizeof(pdf)/sizeof(PetscProbFunc)); ++i) {
-    CHKERRQ(VerifyDistribution(name[i], pos[i], pdf[i], cdf[i]));
+    PetscCall(VerifyDistribution(name[i], pos[i], pdf[i], cdf[i]));
   }
   PetscFunctionReturn(0);
 }
@@ -52,37 +52,37 @@ static PetscErrorCode TestSampling()
   PetscInt       n = 1000, s, i, d;
 
   PetscFunctionBeginUser;
-  CHKERRQ(PetscRandomCreate(PETSC_COMM_SELF, &rnd));
-  CHKERRQ(PetscRandomSetInterval(rnd, 0, 1.));
-  CHKERRQ(PetscRandomSetFromOptions(rnd));
+  PetscCall(PetscRandomCreate(PETSC_COMM_SELF, &rnd));
+  PetscCall(PetscRandomSetInterval(rnd, 0, 1.));
+  PetscCall(PetscRandomSetFromOptions(rnd));
 
   for (s = 0; s < 2; ++s) {
-    CHKERRQ(VecCreateSeq(PETSC_COMM_SELF, n*dim[s], &v));
-    CHKERRQ(VecSetBlockSize(v, dim[s]));
-    CHKERRQ(VecGetArray(v, &a));
+    PetscCall(VecCreateSeq(PETSC_COMM_SELF, n*dim[s], &v));
+    PetscCall(VecSetBlockSize(v, dim[s]));
+    PetscCall(VecGetArray(v, &a));
     for (i = 0; i < n; ++i) {
       PetscReal r[3], o[3];
 
-      for (d = 0; d < dim[s]; ++d) CHKERRQ(PetscRandomGetValueReal(rnd, &r[d]));
-      CHKERRQ(sampler[s](r, NULL, o));
+      for (d = 0; d < dim[s]; ++d) PetscCall(PetscRandomGetValueReal(rnd, &r[d]));
+      PetscCall(sampler[s](r, NULL, o));
       for (d = 0; d < dim[s]; ++d) a[i*dim[s]+d] = o[d];
     }
-    CHKERRQ(VecRestoreArray(v, &a));
-    CHKERRQ(PetscProbComputeKSStatistic(v, cdf[s], &alpha));
+    PetscCall(VecRestoreArray(v, &a));
+    PetscCall(PetscProbComputeKSStatistic(v, cdf[s], &alpha));
     PetscCheck(alpha < confidenceLevel, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "KS finds sampling does not match the distribution at confidence level %.2g", confidenceLevel);
-    CHKERRQ(VecDestroy(&v));
+    PetscCall(VecDestroy(&v));
   }
-  CHKERRQ(PetscRandomDestroy(&rnd));
+  PetscCall(PetscRandomDestroy(&rnd));
   PetscFunctionReturn(0);
 }
 
 int main(int argc, char **argv)
 {
 
-  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
-  CHKERRQ(TestDistributions());
-  CHKERRQ(TestSampling());
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(TestDistributions());
+  PetscCall(TestSampling());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

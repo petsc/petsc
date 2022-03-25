@@ -60,8 +60,8 @@ static PetscErrorCode TSBDF_GetVecs(TS ts,DM dm,Vec *Xdot,Vec *Ydot)
 
   PetscFunctionBegin;
   if (dm && dm != ts->dm) {
-    CHKERRQ(DMGetNamedGlobalVector(dm,"TSBDF_Vec_Xdot",Xdot));
-    CHKERRQ(DMGetNamedGlobalVector(dm,"TSBDF_Vec_Ydot",Ydot));
+    PetscCall(DMGetNamedGlobalVector(dm,"TSBDF_Vec_Xdot",Xdot));
+    PetscCall(DMGetNamedGlobalVector(dm,"TSBDF_Vec_Ydot",Ydot));
   } else {
     *Xdot = bdf->vec_dot;
     *Ydot = bdf->vec_wrk;
@@ -75,8 +75,8 @@ static PetscErrorCode TSBDF_RestoreVecs(TS ts,DM dm,Vec *Xdot,Vec *Ydot)
 
   PetscFunctionBegin;
   if (dm && dm != ts->dm) {
-    CHKERRQ(DMRestoreNamedGlobalVector(dm,"TSBDF_Vec_Xdot",Xdot));
-    CHKERRQ(DMRestoreNamedGlobalVector(dm,"TSBDF_Vec_Ydot",Ydot));
+    PetscCall(DMRestoreNamedGlobalVector(dm,"TSBDF_Vec_Xdot",Xdot));
+    PetscCall(DMRestoreNamedGlobalVector(dm,"TSBDF_Vec_Ydot",Ydot));
   } else {
     PetscCheck(*Xdot == bdf->vec_dot,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_INCOMP,"Vec does not match the cache");
     PetscCheck(*Ydot == bdf->vec_wrk,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_INCOMP,"Vec does not match the cache");
@@ -99,14 +99,14 @@ static PetscErrorCode DMRestrictHook_TSBDF(DM fine,Mat restrct,Vec rscale,Mat in
   Vec            Xdot,Xdot_c;
 
   PetscFunctionBegin;
-  CHKERRQ(TSBDF_GetVecs(ts,fine,&Xdot,&Ydot));
-  CHKERRQ(TSBDF_GetVecs(ts,coarse,&Xdot_c,&Ydot_c));
+  PetscCall(TSBDF_GetVecs(ts,fine,&Xdot,&Ydot));
+  PetscCall(TSBDF_GetVecs(ts,coarse,&Xdot_c,&Ydot_c));
 
-  CHKERRQ(MatRestrict(restrct,Ydot,Ydot_c));
-  CHKERRQ(VecPointwiseMult(Ydot_c,rscale,Ydot_c));
+  PetscCall(MatRestrict(restrct,Ydot,Ydot_c));
+  PetscCall(VecPointwiseMult(Ydot_c,rscale,Ydot_c));
 
-  CHKERRQ(TSBDF_RestoreVecs(ts,fine,&Xdot,&Ydot));
-  CHKERRQ(TSBDF_RestoreVecs(ts,coarse,&Xdot_c,&Ydot_c));
+  PetscCall(TSBDF_RestoreVecs(ts,fine,&Xdot,&Ydot));
+  PetscCall(TSBDF_RestoreVecs(ts,coarse,&Xdot_c,&Ydot_c));
   PetscFunctionReturn(0);
 }
 
@@ -126,8 +126,8 @@ static PetscErrorCode TSBDF_Advance(TS ts,PetscReal t,Vec X)
   bdf->time[1] = t;
   bdf->work[1] = tail;
   bdf->tvwork[1] = tvtail;
-  CHKERRQ(VecCopy(X,tail));
-  CHKERRQ(TSComputeTransientVariable(ts,tail,tvtail));
+  PetscCall(VecCopy(X,tail));
+  PetscCall(TSComputeTransientVariable(ts,tail,tvtail));
   PetscFunctionReturn(0);
 }
 
@@ -143,8 +143,8 @@ static PetscErrorCode TSBDF_VecLTE(TS ts,PetscInt order,Vec lte)
   LagrangeBasisDers(n+0,time[0],time,a); a[n] =0;
   LagrangeBasisDers(n+1,time[0],time,b);
   for (i=0; i<n+1; i++) alpha[i] = (a[i]-b[i])/a[0];
-  CHKERRQ(VecZeroEntries(lte));
-  CHKERRQ(VecMAXPY(lte,n+1,alpha,vecs));
+  PetscCall(VecZeroEntries(lte));
+  PetscCall(VecMAXPY(lte,n+1,alpha,vecs));
   PetscFunctionReturn(0);
 }
 
@@ -159,8 +159,8 @@ static PetscErrorCode TSBDF_Extrapolate(TS ts,PetscInt order,PetscReal t,Vec X)
   PetscFunctionBegin;
   n = PetscMin(n,bdf->n);
   LagrangeBasisVals(n,t,time,alpha);
-  CHKERRQ(VecZeroEntries(X));
-  CHKERRQ(VecMAXPY(X,n,alpha,vecs));
+  PetscCall(VecZeroEntries(X));
+  PetscCall(VecMAXPY(X,n,alpha,vecs));
   PetscFunctionReturn(0);
 }
 
@@ -174,8 +174,8 @@ static PetscErrorCode TSBDF_Interpolate(TS ts,PetscInt order,PetscReal t,Vec X)
 
   PetscFunctionBegin;
   LagrangeBasisVals(n,t,time,alpha);
-  CHKERRQ(VecZeroEntries(X));
-  CHKERRQ(VecMAXPY(X,n,alpha,vecs));
+  PetscCall(VecZeroEntries(X));
+  PetscCall(VecMAXPY(X,n,alpha,vecs));
   PetscFunctionReturn(0);
 }
 
@@ -192,15 +192,15 @@ static PetscErrorCode TSBDF_PreSolve(TS ts)
   PetscScalar    alpha[7];
 
   PetscFunctionBegin;
-  CHKERRQ(TSBDF_GetVecs(ts,NULL,&V,&V0));
+  PetscCall(TSBDF_GetVecs(ts,NULL,&V,&V0));
   LagrangeBasisDers(n,bdf->time[0],bdf->time,alpha);
   for (i=1; i<n; i++) {
     vecs[i] = bdf->transientvar ? bdf->tvwork[i] : bdf->work[i];
   }
-  CHKERRQ(VecZeroEntries(V0));
-  CHKERRQ(VecMAXPY(V0,n-1,alpha+1,vecs+1));
+  PetscCall(VecZeroEntries(V0));
+  PetscCall(VecMAXPY(V0,n-1,alpha+1,vecs+1));
   bdf->shift = PetscRealPart(alpha[0]);
-  CHKERRQ(TSBDF_RestoreVecs(ts,NULL,&V,&V0));
+  PetscCall(TSBDF_RestoreVecs(ts,NULL,&V,&V0));
   PetscFunctionReturn(0);
 }
 
@@ -209,10 +209,10 @@ static PetscErrorCode TSBDF_SNESSolve(TS ts,Vec b,Vec x)
   PetscInt       nits,lits;
 
   PetscFunctionBegin;
-  CHKERRQ(TSBDF_PreSolve(ts));
-  CHKERRQ(SNESSolve(ts->snes,b,x));
-  CHKERRQ(SNESGetIterationNumber(ts->snes,&nits));
-  CHKERRQ(SNESGetLinearSolveIterations(ts->snes,&lits));
+  PetscCall(TSBDF_PreSolve(ts));
+  PetscCall(SNESSolve(ts->snes,b,x));
+  PetscCall(SNESGetIterationNumber(ts->snes,&nits));
+  PetscCall(SNESGetLinearSolveIterations(ts->snes,&lits));
   ts->snes_its += nits; ts->ksp_its += lits;
   PetscFunctionReturn(0);
 }
@@ -223,20 +223,20 @@ static PetscErrorCode TSBDF_Restart(TS ts,PetscBool *accept)
 
   PetscFunctionBegin;
   bdf->k = 1; bdf->n = 0;
-  CHKERRQ(TSBDF_Advance(ts,ts->ptime,ts->vec_sol));
+  PetscCall(TSBDF_Advance(ts,ts->ptime,ts->vec_sol));
 
   bdf->time[0] = ts->ptime + ts->time_step/2;
-  CHKERRQ(VecCopy(bdf->work[1],bdf->work[0]));
-  CHKERRQ(TSPreStage(ts,bdf->time[0]));
-  CHKERRQ(TSBDF_SNESSolve(ts,NULL,bdf->work[0]));
-  CHKERRQ(TSPostStage(ts,bdf->time[0],0,&bdf->work[0]));
-  CHKERRQ(TSAdaptCheckStage(ts->adapt,ts,bdf->time[0],bdf->work[0],accept));
+  PetscCall(VecCopy(bdf->work[1],bdf->work[0]));
+  PetscCall(TSPreStage(ts,bdf->time[0]));
+  PetscCall(TSBDF_SNESSolve(ts,NULL,bdf->work[0]));
+  PetscCall(TSPostStage(ts,bdf->time[0],0,&bdf->work[0]));
+  PetscCall(TSAdaptCheckStage(ts->adapt,ts,bdf->time[0],bdf->work[0],accept));
   if (!*accept) PetscFunctionReturn(0);
 
   bdf->k = PetscMin(2,bdf->order); bdf->n++;
-  CHKERRQ(VecCopy(bdf->work[0],bdf->work[2]));
+  PetscCall(VecCopy(bdf->work[0],bdf->work[2]));
   bdf->time[2] = bdf->time[0];
-  CHKERRQ(TSComputeTransientVariable(ts,bdf->work[2],bdf->tvwork[2]));
+  PetscCall(TSComputeTransientVariable(ts,bdf->work[2],bdf->tvwork[2]));
   PetscFunctionReturn(0);
 }
 
@@ -250,37 +250,37 @@ static PetscErrorCode TSStep_BDF(TS ts)
   PetscReal      next_time_step = ts->time_step;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscCitationsRegister(citation,&cited));
+  PetscCall(PetscCitationsRegister(citation,&cited));
 
   if (!ts->steprollback && !ts->steprestart) {
     bdf->k = PetscMin(bdf->k+1,bdf->order);
-    CHKERRQ(TSBDF_Advance(ts,ts->ptime,ts->vec_sol));
+    PetscCall(TSBDF_Advance(ts,ts->ptime,ts->vec_sol));
   }
 
   bdf->status = TS_STEP_INCOMPLETE;
   while (!ts->reason && bdf->status != TS_STEP_COMPLETE) {
 
     if (ts->steprestart) {
-      CHKERRQ(TSBDF_Restart(ts,&stageok));
+      PetscCall(TSBDF_Restart(ts,&stageok));
       if (!stageok) goto reject_step;
     }
 
     bdf->time[0] = ts->ptime + ts->time_step;
-    CHKERRQ(TSBDF_Extrapolate(ts,bdf->k-(accept?0:1),bdf->time[0],bdf->work[0]));
-    CHKERRQ(TSPreStage(ts,bdf->time[0]));
-    CHKERRQ(TSBDF_SNESSolve(ts,NULL,bdf->work[0]));
-    CHKERRQ(TSPostStage(ts,bdf->time[0],0,&bdf->work[0]));
-    CHKERRQ(TSAdaptCheckStage(ts->adapt,ts,bdf->time[0],bdf->work[0],&stageok));
+    PetscCall(TSBDF_Extrapolate(ts,bdf->k-(accept?0:1),bdf->time[0],bdf->work[0]));
+    PetscCall(TSPreStage(ts,bdf->time[0]));
+    PetscCall(TSBDF_SNESSolve(ts,NULL,bdf->work[0]));
+    PetscCall(TSPostStage(ts,bdf->time[0],0,&bdf->work[0]));
+    PetscCall(TSAdaptCheckStage(ts->adapt,ts,bdf->time[0],bdf->work[0],&stageok));
     if (!stageok) goto reject_step;
 
     bdf->status = TS_STEP_PENDING;
-    CHKERRQ(TSAdaptCandidatesClear(ts->adapt));
-    CHKERRQ(TSAdaptCandidateAdd(ts->adapt,BDF_SchemeName[bdf->k],bdf->k,1,1.0,1.0,PETSC_TRUE));
-    CHKERRQ(TSAdaptChoose(ts->adapt,ts,ts->time_step,NULL,&next_time_step,&accept));
+    PetscCall(TSAdaptCandidatesClear(ts->adapt));
+    PetscCall(TSAdaptCandidateAdd(ts->adapt,BDF_SchemeName[bdf->k],bdf->k,1,1.0,1.0,PETSC_TRUE));
+    PetscCall(TSAdaptChoose(ts->adapt,ts,ts->time_step,NULL,&next_time_step,&accept));
     bdf->status = accept ? TS_STEP_COMPLETE : TS_STEP_INCOMPLETE;
     if (!accept) { ts->time_step = next_time_step; goto reject_step; }
 
-    CHKERRQ(VecCopy(bdf->work[0],ts->vec_sol));
+    PetscCall(VecCopy(bdf->work[0],ts->vec_sol));
     ts->ptime += ts->time_step;
     ts->time_step = next_time_step;
     break;
@@ -288,7 +288,7 @@ static PetscErrorCode TSStep_BDF(TS ts)
   reject_step:
     ts->reject++; accept = PETSC_FALSE;
     if (!ts->reason && ++rejections > ts->max_reject && ts->max_reject >= 0) {
-      CHKERRQ(PetscInfo(ts,"Step=%D, step rejections %D greater than current TS allowed, stopping solve\n",ts->steps,rejections));
+      PetscCall(PetscInfo(ts,"Step=%D, step rejections %D greater than current TS allowed, stopping solve\n",ts->steps,rejections));
       ts->reason = TS_DIVERGED_STEP_REJECTED;
     }
   }
@@ -300,7 +300,7 @@ static PetscErrorCode TSInterpolate_BDF(TS ts,PetscReal t,Vec X)
   TS_BDF         *bdf = (TS_BDF*)ts->data;
 
   PetscFunctionBegin;
-  CHKERRQ(TSBDF_Interpolate(ts,bdf->k,t,X));
+  PetscCall(TSBDF_Interpolate(ts,bdf->k,t,X));
   PetscFunctionReturn(0);
 }
 
@@ -313,9 +313,9 @@ static PetscErrorCode TSEvaluateWLTE_BDF(TS ts,NormType wnormtype,PetscInt *orde
 
   PetscFunctionBegin;
   k = PetscMin(k,bdf->n-1);
-  CHKERRQ(TSBDF_VecLTE(ts,k,Y));
-  CHKERRQ(VecAXPY(Y,1,X));
-  CHKERRQ(TSErrorWeightedNorm(ts,X,Y,wnormtype,wlte,&wltea,&wlter));
+  PetscCall(TSBDF_VecLTE(ts,k,Y));
+  PetscCall(VecAXPY(Y,1,X));
+  PetscCall(TSErrorWeightedNorm(ts,X,Y,wnormtype,wlte,&wltea,&wlter));
   if (order) *order = k + 1;
   PetscFunctionReturn(0);
 }
@@ -325,7 +325,7 @@ static PetscErrorCode TSRollBack_BDF(TS ts)
   TS_BDF         *bdf = (TS_BDF*)ts->data;
 
   PetscFunctionBegin;
-  CHKERRQ(VecCopy(bdf->work[1],ts->vec_sol));
+  PetscCall(VecCopy(bdf->work[1],ts->vec_sol));
   PetscFunctionReturn(0);
 }
 
@@ -338,21 +338,21 @@ static PetscErrorCode SNESTSFormFunction_BDF(SNES snes,Vec X,Vec F,TS ts)
   Vec            V,V0;
 
   PetscFunctionBegin;
-  CHKERRQ(SNESGetDM(snes,&dm));
-  CHKERRQ(TSBDF_GetVecs(ts,dm,&V,&V0));
+  PetscCall(SNESGetDM(snes,&dm));
+  PetscCall(TSBDF_GetVecs(ts,dm,&V,&V0));
   if (bdf->transientvar) {      /* shift*C(X) + V0 */
-    CHKERRQ(TSComputeTransientVariable(ts,X,V));
-    CHKERRQ(VecAYPX(V,shift,V0));
+    PetscCall(TSComputeTransientVariable(ts,X,V));
+    PetscCall(VecAYPX(V,shift,V0));
   } else {                      /* shift*X + V0 */
-    CHKERRQ(VecWAXPY(V,shift,X,V0));
+    PetscCall(VecWAXPY(V,shift,X,V0));
   }
 
   /* F = Function(t,X,V) */
   ts->dm = dm;
-  CHKERRQ(TSComputeIFunction(ts,t,X,V,F,PETSC_FALSE));
+  PetscCall(TSComputeIFunction(ts,t,X,V,F,PETSC_FALSE));
   ts->dm = dmsave;
 
-  CHKERRQ(TSBDF_RestoreVecs(ts,dm,&V,&V0));
+  PetscCall(TSBDF_RestoreVecs(ts,dm,&V,&V0));
   PetscFunctionReturn(0);
 }
 
@@ -365,15 +365,15 @@ static PetscErrorCode SNESTSFormJacobian_BDF(SNES snes,Vec X,Mat J,Mat P,TS ts)
   Vec            V,V0;
 
   PetscFunctionBegin;
-  CHKERRQ(SNESGetDM(snes,&dm));
-  CHKERRQ(TSBDF_GetVecs(ts,dm,&V,&V0));
+  PetscCall(SNESGetDM(snes,&dm));
+  PetscCall(TSBDF_GetVecs(ts,dm,&V,&V0));
 
   /* J,P = Jacobian(t,X,V) */
   ts->dm = dm;
-  CHKERRQ(TSComputeIJacobian(ts,t,X,V,shift,J,P,PETSC_FALSE));
+  PetscCall(TSComputeIJacobian(ts,t,X,V,shift,J,P,PETSC_FALSE));
   ts->dm = dmsave;
 
-  CHKERRQ(TSBDF_RestoreVecs(ts,dm,&V,&V0));
+  PetscCall(TSBDF_RestoreVecs(ts,dm,&V,&V0));
   PetscFunctionReturn(0);
 }
 
@@ -385,23 +385,23 @@ static PetscErrorCode TSReset_BDF(TS ts)
   PetscFunctionBegin;
   bdf->k = bdf->n = 0;
   for (i=0; i<n; i++) {
-    CHKERRQ(VecDestroy(&bdf->work[i]));
-    CHKERRQ(VecDestroy(&bdf->tvwork[i]));
+    PetscCall(VecDestroy(&bdf->work[i]));
+    PetscCall(VecDestroy(&bdf->tvwork[i]));
   }
-  CHKERRQ(VecDestroy(&bdf->vec_dot));
-  CHKERRQ(VecDestroy(&bdf->vec_wrk));
-  CHKERRQ(VecDestroy(&bdf->vec_lte));
-  if (ts->dm) CHKERRQ(DMCoarsenHookRemove(ts->dm,DMCoarsenHook_TSBDF,DMRestrictHook_TSBDF,ts));
+  PetscCall(VecDestroy(&bdf->vec_dot));
+  PetscCall(VecDestroy(&bdf->vec_wrk));
+  PetscCall(VecDestroy(&bdf->vec_lte));
+  if (ts->dm) PetscCall(DMCoarsenHookRemove(ts->dm,DMCoarsenHook_TSBDF,DMRestrictHook_TSBDF,ts));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode TSDestroy_BDF(TS ts)
 {
   PetscFunctionBegin;
-  CHKERRQ(TSReset_BDF(ts));
-  CHKERRQ(PetscFree(ts->data));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSBDFSetOrder_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSBDFGetOrder_C",NULL));
+  PetscCall(TSReset_BDF(ts));
+  PetscCall(PetscFree(ts->data));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSBDFSetOrder_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSBDFGetOrder_C",NULL));
   PetscFunctionReturn(0);
 }
 
@@ -412,41 +412,41 @@ static PetscErrorCode TSSetUp_BDF(TS ts)
   PetscReal      low,high,two = 2;
 
   PetscFunctionBegin;
-  CHKERRQ(TSHasTransientVariable(ts,&bdf->transientvar));
+  PetscCall(TSHasTransientVariable(ts,&bdf->transientvar));
   bdf->k = bdf->n = 0;
   for (i=0; i<n; i++) {
-    CHKERRQ(VecDuplicate(ts->vec_sol,&bdf->work[i]));
+    PetscCall(VecDuplicate(ts->vec_sol,&bdf->work[i]));
     if (i && bdf->transientvar) {
-      CHKERRQ(VecDuplicate(ts->vec_sol,&bdf->tvwork[i]));
+      PetscCall(VecDuplicate(ts->vec_sol,&bdf->tvwork[i]));
     }
   }
-  CHKERRQ(VecDuplicate(ts->vec_sol,&bdf->vec_dot));
-  CHKERRQ(VecDuplicate(ts->vec_sol,&bdf->vec_wrk));
-  CHKERRQ(VecDuplicate(ts->vec_sol,&bdf->vec_lte));
-  CHKERRQ(TSGetDM(ts,&ts->dm));
-  CHKERRQ(DMCoarsenHookAdd(ts->dm,DMCoarsenHook_TSBDF,DMRestrictHook_TSBDF,ts));
+  PetscCall(VecDuplicate(ts->vec_sol,&bdf->vec_dot));
+  PetscCall(VecDuplicate(ts->vec_sol,&bdf->vec_wrk));
+  PetscCall(VecDuplicate(ts->vec_sol,&bdf->vec_lte));
+  PetscCall(TSGetDM(ts,&ts->dm));
+  PetscCall(DMCoarsenHookAdd(ts->dm,DMCoarsenHook_TSBDF,DMRestrictHook_TSBDF,ts));
 
-  CHKERRQ(TSGetAdapt(ts,&ts->adapt));
-  CHKERRQ(TSAdaptCandidatesClear(ts->adapt));
-  CHKERRQ(TSAdaptGetClip(ts->adapt,&low,&high));
-  CHKERRQ(TSAdaptSetClip(ts->adapt,low,PetscMin(high,two)));
+  PetscCall(TSGetAdapt(ts,&ts->adapt));
+  PetscCall(TSAdaptCandidatesClear(ts->adapt));
+  PetscCall(TSAdaptGetClip(ts->adapt,&low,&high));
+  PetscCall(TSAdaptSetClip(ts->adapt,low,PetscMin(high,two)));
 
-  CHKERRQ(TSGetSNES(ts,&ts->snes));
+  PetscCall(TSGetSNES(ts,&ts->snes));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode TSSetFromOptions_BDF(PetscOptionItems *PetscOptionsObject,TS ts)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"BDF ODE solver options"));
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"BDF ODE solver options"));
   {
     PetscBool flg;
     PetscInt  order;
-    CHKERRQ(TSBDFGetOrder(ts,&order));
-    CHKERRQ(PetscOptionsInt("-ts_bdf_order","Order of the BDF method","TSBDFSetOrder",order,&order,&flg));
-    if (flg) CHKERRQ(TSBDFSetOrder(ts,order));
+    PetscCall(TSBDFGetOrder(ts,&order));
+    PetscCall(PetscOptionsInt("-ts_bdf_order","Order of the BDF method","TSBDFSetOrder",order,&order,&flg));
+    if (flg) PetscCall(TSBDFSetOrder(ts,order));
   }
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -456,9 +456,9 @@ static PetscErrorCode TSView_BDF(TS ts,PetscViewer viewer)
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Order=%D\n",bdf->order));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Order=%D\n",bdf->order));
   }
   PetscFunctionReturn(0);
 }
@@ -514,14 +514,14 @@ PETSC_EXTERN PetscErrorCode TSCreate_BDF(TS ts)
 
   ts->usessnes = PETSC_TRUE;
 
-  CHKERRQ(PetscNewLog(ts,&bdf));
+  PetscCall(PetscNewLog(ts,&bdf));
   ts->data = (void*)bdf;
 
   bdf->status = TS_STEP_COMPLETE;
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSBDFSetOrder_C",TSBDFSetOrder_BDF));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSBDFGetOrder_C",TSBDFGetOrder_BDF));
-  CHKERRQ(TSBDFSetOrder(ts,2));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSBDFSetOrder_C",TSBDFSetOrder_BDF));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSBDFGetOrder_C",TSBDFGetOrder_BDF));
+  PetscCall(TSBDFSetOrder(ts,2));
   PetscFunctionReturn(0);
 }
 
@@ -547,7 +547,7 @@ PetscErrorCode TSBDFSetOrder(TS ts,PetscInt order)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidLogicalCollectiveInt(ts,order,2);
-  CHKERRQ(PetscTryMethod(ts,"TSBDFSetOrder_C",(TS,PetscInt),(ts,order)));
+  PetscCall(PetscTryMethod(ts,"TSBDFSetOrder_C",(TS,PetscInt),(ts,order)));
   PetscFunctionReturn(0);
 }
 
@@ -570,6 +570,6 @@ PetscErrorCode TSBDFGetOrder(TS ts,PetscInt *order)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidIntPointer(order,2);
-  CHKERRQ(PetscUseMethod(ts,"TSBDFGetOrder_C",(TS,PetscInt*),(ts,order)));
+  PetscCall(PetscUseMethod(ts,"TSBDFGetOrder_C",(TS,PetscInt*),(ts,order)));
   PetscFunctionReturn(0);
 }

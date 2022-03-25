@@ -21,14 +21,14 @@ static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec F, void *s)
   const PetscScalar *u;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(U,&u));
-  CHKERRQ(VecGetArray(F,&f));
+  PetscCall(VecGetArrayRead(U,&u));
+  PetscCall(VecGetArray(F,&f));
 
   f[0] = PetscCosReal(t);
   f[1] = PetscSinReal(u[1]);
 
-  CHKERRQ(VecRestoreArrayRead(U,&u));
-  CHKERRQ(VecRestoreArray(F,&f));
+  PetscCall(VecRestoreArrayRead(U,&u));
+  PetscCall(VecRestoreArray(F,&f));
   PetscFunctionReturn(0);
 }
 
@@ -40,12 +40,12 @@ static PetscErrorCode ExactSolution(PetscReal t, Vec U)
   PetscScalar       *u;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArray(U,&u));
+  PetscCall(VecGetArray(U,&u));
 
   u[0] = PetscSinReal(t);
   u[1] = 2 * PetscAtanReal(PetscExpReal(t) * PetscTanReal(0.5));
 
-  CHKERRQ(VecRestoreArray(U,&u));
+  PetscCall(VecRestoreArray(U,&u));
   PetscFunctionReturn(0);
 }
 
@@ -64,71 +64,71 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Only for sequential runs");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
-  CHKERRQ(TSSetType(ts,TSROSW));
+  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
+  PetscCall(TSSetType(ts,TSROSW));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set ODE routines
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSSetProblemType(ts,TS_NONLINEAR));
-  CHKERRQ(TSSetRHSFunction(ts,NULL,RHSFunction,NULL));
+  PetscCall(TSSetProblemType(ts,TS_NONLINEAR));
+  PetscCall(TSSetRHSFunction(ts,NULL,RHSFunction,NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&U));
-  CHKERRQ(VecSetSizes(U,n,PETSC_DETERMINE));
-  CHKERRQ(VecSetUp(U));
-  CHKERRQ(VecGetArray(U,&u));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&U));
+  PetscCall(VecSetSizes(U,n,PETSC_DETERMINE));
+  PetscCall(VecSetUp(U));
+  PetscCall(VecGetArray(U,&u));
   u[0] = 0.0;
   u[1] = 1.0;
-  CHKERRQ(VecRestoreArray(U,&u));
-  CHKERRQ(TSSetSolution(ts,U));
+  PetscCall(VecRestoreArray(U,&u));
+  PetscCall(TSSetSolution(ts,U));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSSetSaveTrajectory(ts));
-  CHKERRQ(TSSetMaxTime(ts,final_time));
-  CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
-  CHKERRQ(TSSetTimeStep(ts,dt));
+  PetscCall(TSSetSaveTrajectory(ts));
+  PetscCall(TSSetMaxTime(ts,final_time));
+  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
+  PetscCall(TSSetTimeStep(ts,dt));
   /* The adaptive time step controller is forced to take constant time steps. */
-  CHKERRQ(TSGetAdapt(ts,&adapt));
-  CHKERRQ(TSAdaptSetType(adapt,TSADAPTNONE));
+  PetscCall(TSGetAdapt(ts,&adapt));
+  PetscCall(TSAdaptSetType(adapt,TSADAPTNONE));
 
-  CHKERRQ(TSSetFromOptions(ts));
+  PetscCall(TSSetFromOptions(ts));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Run timestepping solver and compute error
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSSolve(ts,U));
-  CHKERRQ(TSGetTime(ts,&t));
+  PetscCall(TSSolve(ts,U));
+  PetscCall(TSGetTime(ts,&t));
 
   if (PetscAbsReal(t-final_time)>100*PETSC_MACHINE_EPSILON) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Note: There is a difference of %g between the prescribed final time %g and the actual final time.\n",(double)(final_time-t),(double)final_time));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Note: There is a difference of %g between the prescribed final time %g and the actual final time.\n",(double)(final_time-t),(double)final_time));
   }
-  CHKERRQ(VecDuplicate(U,&Uex));
-  CHKERRQ(ExactSolution(t,Uex));
+  PetscCall(VecDuplicate(U,&Uex));
+  PetscCall(ExactSolution(t,Uex));
 
-  CHKERRQ(VecAYPX(Uex,-1.0,U));
-  CHKERRQ(VecNorm(Uex,NORM_2,&error));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Error at final time: %.2E\n",(double)error));
+  PetscCall(VecAYPX(Uex,-1.0,U));
+  PetscCall(VecNorm(Uex,NORM_2,&error));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error at final time: %.2E\n",(double)error));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they are no longer needed.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(VecDestroy(&U));
-  CHKERRQ(VecDestroy(&Uex));
-  CHKERRQ(TSDestroy(&ts));
+  PetscCall(VecDestroy(&U));
+  PetscCall(VecDestroy(&Uex));
+  PetscCall(TSDestroy(&ts));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

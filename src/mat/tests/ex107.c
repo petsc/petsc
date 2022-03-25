@@ -11,37 +11,37 @@ int main(int argc,char **argv)
   PetscScalar    v;
   PetscBool      struct_only=PETSC_TRUE;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
-  CHKERRQ(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-struct_only",&struct_only,NULL));
+  PetscCall(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-struct_only",&struct_only,NULL));
   n    = m;
 
   /* ------- Assemble matrix, test MatValid() --------- */
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&mat));
-  CHKERRQ(MatSetSizes(mat,PETSC_DECIDE,PETSC_DECIDE,m,n));
-  CHKERRQ(MatSetFromOptions(mat));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&mat));
+  PetscCall(MatSetSizes(mat,PETSC_DECIDE,PETSC_DECIDE,m,n));
+  PetscCall(MatSetFromOptions(mat));
   if (struct_only) {
-    CHKERRQ(MatSetOption(mat,MAT_STRUCTURE_ONLY,PETSC_TRUE));
+    PetscCall(MatSetOption(mat,MAT_STRUCTURE_ONLY,PETSC_TRUE));
   }
-  CHKERRQ(MatSetUp(mat));
-  CHKERRQ(MatGetOwnershipRange(mat,&rstart,&rend));
+  PetscCall(MatSetUp(mat));
+  PetscCall(MatGetOwnershipRange(mat,&rstart,&rend));
   for (i=rstart; i<rend; i++) {
     for (j=0; j<n; j++) {
       v    = 10.0*i+j;
-      CHKERRQ(MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES));
+      PetscCall(MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES));
     }
   }
-  CHKERRQ(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatView(mat,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatView(mat,PETSC_VIEWER_STDOUT_WORLD));
 
   /* Free data structures */
-  CHKERRQ(MatDestroy(&mat));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatDestroy(&mat));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

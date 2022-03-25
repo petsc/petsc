@@ -19,10 +19,10 @@ static PetscErrorCode zero(PetscInt dim, const PetscReal x[], PetscInt Nc, Petsc
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
 {
   PetscFunctionBeginUser;
-  CHKERRQ(DMCreate(comm, dm));
-  CHKERRQ(DMSetType(*dm, DMPLEX));
-  CHKERRQ(DMSetFromOptions(*dm));
-  CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
+  PetscCall(DMCreate(comm, dm));
+  PetscCall(DMSetType(*dm, DMPLEX));
+  PetscCall(DMSetFromOptions(*dm));
+  PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   PetscFunctionReturn(0);
 }
 
@@ -32,13 +32,13 @@ int main(int argc, char **argv)
   DMLabel        label;
   const PetscInt id = 1;
 
-  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
-  CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &dm));
-  CHKERRQ(DMSetNumFields(dm, 1));
-  CHKERRQ(DMGetLabel(dm, "boundary", &label));
-  CHKERRQ(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) zero, NULL, NULL, NULL));
-  CHKERRQ(DMDestroy(&dm));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscInitialize(&argc, &argv, NULL,help));
+  PetscCall(CreateMesh(PETSC_COMM_WORLD, &dm));
+  PetscCall(DMSetNumFields(dm, 1));
+  PetscCall(DMGetLabel(dm, "boundary", &label));
+  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) zero, NULL, NULL, NULL));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

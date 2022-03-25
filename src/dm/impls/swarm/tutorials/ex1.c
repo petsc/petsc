@@ -22,109 +22,109 @@ int main(int argc, char **argv)
   PetscDataType   dtype;
   PetscBool       is_bjac;
 
-  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   /* Create a mesh */
-  CHKERRQ(DMCreate(PETSC_COMM_WORLD, &dm));
-  CHKERRQ(DMSetType(dm, DMPLEX));
-  CHKERRQ(DMSetFromOptions(dm));
-  CHKERRQ(DMViewFromOptions(dm, NULL, "-dm_view"));
+  PetscCall(DMCreate(PETSC_COMM_WORLD, &dm));
+  PetscCall(DMSetType(dm, DMPLEX));
+  PetscCall(DMSetFromOptions(dm));
+  PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
 
-  CHKERRQ(DMGetDimension(dm, &dim));
+  PetscCall(DMGetDimension(dm, &dim));
   i    = dim;
-  CHKERRQ(PetscOptionsGetIntArray(NULL, NULL, "-dm_plex_box_faces", faces, &i, NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL, NULL, "-np", &Np, NULL));
-  CHKERRQ(DMGetBoundingBox(dm, lo, hi));
+  PetscCall(PetscOptionsGetIntArray(NULL, NULL, "-dm_plex_box_faces", faces, &i, NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-np", &Np, NULL));
+  PetscCall(DMGetBoundingBox(dm, lo, hi));
   for (i=0;i<dim;i++) {
     h[i] = (hi[i] - lo[i])/faces[i];
-    CHKERRQ(PetscPrintf(PETSC_COMM_SELF," lo = %g hi = %g n = %D h = %g\n",lo[i],hi[i],faces[i],h[i]));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF," lo = %g hi = %g n = %D h = %g\n",lo[i],hi[i],faces[i],h[i]));
   }
 
-  CHKERRQ(PetscFECreateDefault(PETSC_COMM_SELF, dim, Nc, PETSC_FALSE, "", PETSC_DECIDE, &fe));
-  CHKERRQ(PetscFESetFromOptions(fe));
-  CHKERRQ(PetscObjectSetName((PetscObject)fe, "fe"));
-  CHKERRQ(DMSetField(dm, field, NULL, (PetscObject)fe));
-  CHKERRQ(DMCreateDS(dm));
-  CHKERRQ(PetscFEDestroy(&fe));
+  PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, Nc, PETSC_FALSE, "", PETSC_DECIDE, &fe));
+  PetscCall(PetscFESetFromOptions(fe));
+  PetscCall(PetscObjectSetName((PetscObject)fe, "fe"));
+  PetscCall(DMSetField(dm, field, NULL, (PetscObject)fe));
+  PetscCall(DMCreateDS(dm));
+  PetscCall(PetscFEDestroy(&fe));
   /* Create particle swarm */
-  CHKERRQ(DMCreate(PETSC_COMM_SELF, &sw));
-  CHKERRQ(DMSetType(sw, DMSWARM));
-  CHKERRQ(DMSetDimension(sw, dim));
-  CHKERRQ(DMSwarmSetType(sw, DMSWARM_PIC));
-  CHKERRQ(DMSwarmSetCellDM(sw, dm));
-  CHKERRQ(DMSwarmRegisterPetscDatatypeField(sw, "w_q", Nc, PETSC_SCALAR));
-  CHKERRQ(DMSwarmFinalizeFieldRegister(sw));
-  CHKERRQ(DMSwarmSetLocalSizes(sw, Np, zero));
-  CHKERRQ(DMSetFromOptions(sw));
-  CHKERRQ(DMSwarmGetField(sw, "w_q", &bs, &dtype, (void**)&wq));
-  CHKERRQ(DMSwarmGetField(sw, "DMSwarmPIC_coor", &bs, &dtype, (void**)&coords));
+  PetscCall(DMCreate(PETSC_COMM_SELF, &sw));
+  PetscCall(DMSetType(sw, DMSWARM));
+  PetscCall(DMSetDimension(sw, dim));
+  PetscCall(DMSwarmSetType(sw, DMSWARM_PIC));
+  PetscCall(DMSwarmSetCellDM(sw, dm));
+  PetscCall(DMSwarmRegisterPetscDatatypeField(sw, "w_q", Nc, PETSC_SCALAR));
+  PetscCall(DMSwarmFinalizeFieldRegister(sw));
+  PetscCall(DMSwarmSetLocalSizes(sw, Np, zero));
+  PetscCall(DMSetFromOptions(sw));
+  PetscCall(DMSwarmGetField(sw, "w_q", &bs, &dtype, (void**)&wq));
+  PetscCall(DMSwarmGetField(sw, "DMSwarmPIC_coor", &bs, &dtype, (void**)&coords));
   for (p=0,energy_0=0;p<Np;p++) {
     coords[p*2+0]  = -PetscCosReal((PetscReal)(p+1)/(PetscReal)(Np+1) * PETSC_PI);
     coords[p*2+1] =   PetscSinReal((PetscReal)(p+1)/(PetscReal)(Np+1) * PETSC_PI);
     wq[p]          = 1.0;
     energy_0 += wq[p]*(PetscSqr(coords[p*2+0])+PetscSqr(coords[p*2+1]));
   }
-  CHKERRQ(DMSwarmRestoreField(sw, "DMSwarmPIC_coor", &bs, &dtype, (void**)&coords));
-  CHKERRQ(DMSwarmRestoreField(sw, "w_q", &bs, &dtype, (void**)&wq));
-  CHKERRQ(DMSwarmMigrate(sw, removePoints));
-  CHKERRQ(PetscObjectSetName((PetscObject)sw, "Particle Grid"));
-  CHKERRQ(DMViewFromOptions(sw, NULL, "-swarm_view"));
+  PetscCall(DMSwarmRestoreField(sw, "DMSwarmPIC_coor", &bs, &dtype, (void**)&coords));
+  PetscCall(DMSwarmRestoreField(sw, "w_q", &bs, &dtype, (void**)&wq));
+  PetscCall(DMSwarmMigrate(sw, removePoints));
+  PetscCall(PetscObjectSetName((PetscObject)sw, "Particle Grid"));
+  PetscCall(DMViewFromOptions(sw, NULL, "-swarm_view"));
 
   /* Project particles to field */
   /* This gives M f = \int_\Omega \phi f, which looks like a rhs for a PDE */
-  CHKERRQ(DMCreateMassMatrix(sw, dm, &M_p));
-  CHKERRQ(DMCreateGlobalVector(dm, &rho));
-  CHKERRQ(PetscObjectSetName((PetscObject)rho, "rho"));
+  PetscCall(DMCreateMassMatrix(sw, dm, &M_p));
+  PetscCall(DMCreateGlobalVector(dm, &rho));
+  PetscCall(PetscObjectSetName((PetscObject)rho, "rho"));
 
-  CHKERRQ(DMSwarmCreateGlobalVectorFromField(sw, "w_q", &f));
-  CHKERRQ(PetscObjectSetName((PetscObject)f, "weights"));
-  CHKERRQ(MatMultTranspose(M_p, f, rho));
+  PetscCall(DMSwarmCreateGlobalVectorFromField(sw, "w_q", &f));
+  PetscCall(PetscObjectSetName((PetscObject)f, "weights"));
+  PetscCall(MatMultTranspose(M_p, f, rho));
 
   /* Visualize mesh field */
-  CHKERRQ(DMSetOutputSequenceNumber(dm, timestep, time));
-  CHKERRQ(VecViewFromOptions(rho, NULL, "-rho_view"));
+  PetscCall(DMSetOutputSequenceNumber(dm, timestep, time));
+  PetscCall(VecViewFromOptions(rho, NULL, "-rho_view"));
 
   /* Project field to particles */
   /*   This gives f_p = M_p^+ M f */
-  CHKERRQ(DMCreateGlobalVector(dm, &rhs));
-  CHKERRQ(VecCopy(rho, rhs)); /* Identity: M^1 M rho */
+  PetscCall(DMCreateGlobalVector(dm, &rhs));
+  PetscCall(VecCopy(rho, rhs)); /* Identity: M^1 M rho */
 
-  CHKERRQ(KSPCreate(PETSC_COMM_WORLD, &ksp));
-  CHKERRQ(KSPSetOptionsPrefix(ksp, "ftop_"));
-  CHKERRQ(KSPSetFromOptions(ksp));
-  CHKERRQ(KSPGetPC(ksp,&pc));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)pc,PCBJACOBI,&is_bjac));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
+  PetscCall(KSPSetOptionsPrefix(ksp, "ftop_"));
+  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(KSPGetPC(ksp,&pc));
+  PetscCall(PetscObjectTypeCompare((PetscObject)pc,PCBJACOBI,&is_bjac));
   if (is_bjac) {
-    CHKERRQ(DMSwarmCreateMassMatrixSquare(sw, dm, &PM_p));
-    CHKERRQ(KSPSetOperators(ksp, M_p, PM_p));
+    PetscCall(DMSwarmCreateMassMatrixSquare(sw, dm, &PM_p));
+    PetscCall(KSPSetOperators(ksp, M_p, PM_p));
   } else {
-    CHKERRQ(KSPSetOperators(ksp, M_p, M_p));
+    PetscCall(KSPSetOperators(ksp, M_p, M_p));
   }
-  CHKERRQ(KSPSolveTranspose(ksp, rhs, f));
-  CHKERRQ(KSPDestroy(&ksp));
-  CHKERRQ(VecDestroy(&rhs));
+  PetscCall(KSPSolveTranspose(ksp, rhs, f));
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(VecDestroy(&rhs));
 
   /* Visualize particle field */
-  CHKERRQ(DMSetOutputSequenceNumber(sw, timestep, time));
-  CHKERRQ(VecViewFromOptions(f, NULL, "-weights_view"));
-  CHKERRQ(VecNorm(f,NORM_1,&norm));
-  CHKERRQ(DMSwarmDestroyGlobalVectorFromField(sw, "w_q", &f));
+  PetscCall(DMSetOutputSequenceNumber(sw, timestep, time));
+  PetscCall(VecViewFromOptions(f, NULL, "-weights_view"));
+  PetscCall(VecNorm(f,NORM_1,&norm));
+  PetscCall(DMSwarmDestroyGlobalVectorFromField(sw, "w_q", &f));
 
   /* compute energy */
-  CHKERRQ(DMSwarmGetField(sw, "w_q", &bs, &dtype, (void**)&wq));
-  CHKERRQ(DMSwarmGetField(sw, "DMSwarmPIC_coor", &bs, &dtype, (void**)&coords));
+  PetscCall(DMSwarmGetField(sw, "w_q", &bs, &dtype, (void**)&wq));
+  PetscCall(DMSwarmGetField(sw, "DMSwarmPIC_coor", &bs, &dtype, (void**)&coords));
   for (p=0,energy_1=0;p<Np;p++) {
     energy_1 += wq[p]*(PetscSqr(coords[p*2+0])+PetscSqr(coords[p*2+1]));
   }
-  CHKERRQ(DMSwarmRestoreField(sw, "DMSwarmPIC_coor", &bs, &dtype, (void**)&coords));
-  CHKERRQ(DMSwarmRestoreField(sw, "w_q", &bs, &dtype, (void**)&wq));
-  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Total number = %20.12e. energy = %20.12e error = %20.12e\n", norm, energy_0, (energy_1-energy_0)/energy_0));
+  PetscCall(DMSwarmRestoreField(sw, "DMSwarmPIC_coor", &bs, &dtype, (void**)&coords));
+  PetscCall(DMSwarmRestoreField(sw, "w_q", &bs, &dtype, (void**)&wq));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"Total number = %20.12e. energy = %20.12e error = %20.12e\n", norm, energy_0, (energy_1-energy_0)/energy_0));
   /* Cleanup */
-  CHKERRQ(MatDestroy(&M_p));
-  CHKERRQ(MatDestroy(&PM_p));
-  CHKERRQ(VecDestroy(&rho));
-  CHKERRQ(DMDestroy(&sw));
-  CHKERRQ(DMDestroy(&dm));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatDestroy(&M_p));
+  PetscCall(MatDestroy(&PM_p));
+  PetscCall(VecDestroy(&rho));
+  PetscCall(DMDestroy(&sw));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

@@ -15,24 +15,24 @@ int main(int argc,char **args)
   PetscMPIInt    size,rank;
   PetscReal      enorm;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-testcase",&testcase,NULL));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-testcase",&testcase,NULL));
 
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
   if (testcase == 1) { /* proc[0] holds entire A and other processes have no entry */
     if (rank == 0) {
-      CHKERRQ(MatSetSizes(A,M,N,PETSC_DECIDE,PETSC_DECIDE));
+      PetscCall(MatSetSizes(A,M,N,PETSC_DECIDE,PETSC_DECIDE));
     } else {
-      CHKERRQ(MatSetSizes(A,0,0,PETSC_DECIDE,PETSC_DECIDE));
+      PetscCall(MatSetSizes(A,0,0,PETSC_DECIDE,PETSC_DECIDE));
     }
     testcase = 0;
   } else {
-    CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,N));
+    PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,N));
   }
-  CHKERRQ(MatSetFromOptions(A));
-  CHKERRQ(MatSetUp(A));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSetUp(A));
 
   if (rank == 0) { /* proc[0] sets matrix A */
     for (j=0; j<N; j++) indices[j] = j;
@@ -42,120 +42,120 @@ int main(int argc,char **args)
     case 2:
       row = 0;
       values[0]  = -2.0; values[1] = -2.0; values[2] = -2.0; values[3] = -4.0; values[4] = 1.0; values[5] = 1.0;
-      CHKERRQ(MatSetValues(A,1,&row,N,indices,values,INSERT_VALUES));
+      PetscCall(MatSetValues(A,1,&row,N,indices,values,INSERT_VALUES));
       row = 2;
       indices[0] = 0;    indices[1] = 3;    indices[2] = 5;
       values[0]  = -2.0; values[1]  = -2.0; values[2]  = -2.0;
-      CHKERRQ(MatSetValues(A,1,&row,3,indices,values,INSERT_VALUES));
+      PetscCall(MatSetValues(A,1,&row,3,indices,values,INSERT_VALUES));
       row = 3;
       indices[0] = 0;    indices[1] = 1;    indices[2] = 4;
       values[0]  = -2.0; values[1]  = -2.0; values[2]  = -2.0;
-      CHKERRQ(MatSetValues(A,1,&row,3,indices,values,INSERT_VALUES));
+      PetscCall(MatSetValues(A,1,&row,3,indices,values,INSERT_VALUES));
       row = 4;
       indices[0] = 0;    indices[1] = 1;    indices[2] = 2;
       values[0]  = -2.0; values[1]  = -2.0; values[2]  = -2.0;
-      CHKERRQ(MatSetValues(A,1,&row,3,indices,values,INSERT_VALUES));
+      PetscCall(MatSetValues(A,1,&row,3,indices,values,INSERT_VALUES));
       break;
     case 3:
       row = 0;
       values[0]  = -2.0; values[1] = -2.0; values[2] = -2.0;
-      CHKERRQ(MatSetValues(A,1,&row,3,indices+1,values,INSERT_VALUES));
+      PetscCall(MatSetValues(A,1,&row,3,indices+1,values,INSERT_VALUES));
       row = 1;
       values[0]  = -2.0; values[1] = -2.0; values[2] = -2.0;
-      CHKERRQ(MatSetValues(A,1,&row,3,indices,values,INSERT_VALUES));
+      PetscCall(MatSetValues(A,1,&row,3,indices,values,INSERT_VALUES));
       row = 2;
       values[0]  = -2.0; values[1] = -2.0; values[2]  = -2.0;
-      CHKERRQ(MatSetValues(A,1,&row,3,indices,values,INSERT_VALUES));
+      PetscCall(MatSetValues(A,1,&row,3,indices,values,INSERT_VALUES));
       row = 3;
       values[0]  = -2.0; values[1] = -2.0; values[2]  = -2.0; values[3] = -1.0;
-      CHKERRQ(MatSetValues(A,1,&row,4,indices,values,INSERT_VALUES));
+      PetscCall(MatSetValues(A,1,&row,4,indices,values,INSERT_VALUES));
       row = 4;
       values[0]  = -2.0; values[1] = -2.0; values[2]  = -2.0; values[3] = -1.0;
-      CHKERRQ(MatSetValues(A,1,&row,4,indices,values,INSERT_VALUES));
+      PetscCall(MatSetValues(A,1,&row,4,indices,values,INSERT_VALUES));
       break;
 
     default:
       row  = 0;
       values[0]  = -1.0; values[1] = 0.0; values[2] = 1.0; values[3] = 3.0; values[4] = 4.0; values[5] = -5.0;
-      CHKERRQ(MatSetValues(A,1,&row,N,indices,values,INSERT_VALUES));
+      PetscCall(MatSetValues(A,1,&row,N,indices,values,INSERT_VALUES));
       row  = 1;
-      CHKERRQ(MatSetValues(A,1,&row,3,indices,values,INSERT_VALUES));
+      PetscCall(MatSetValues(A,1,&row,3,indices,values,INSERT_VALUES));
       row  = 3;
-      CHKERRQ(MatSetValues(A,1,&row,1,indices+4,values+4,INSERT_VALUES));
+      PetscCall(MatSetValues(A,1,&row,1,indices+4,values+4,INSERT_VALUES));
       row  = 4;
-      CHKERRQ(MatSetValues(A,1,&row,2,indices+4,values+4,INSERT_VALUES));
+      PetscCall(MatSetValues(A,1,&row,2,indices+4,values+4,INSERT_VALUES));
     }
   }
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
 
-  CHKERRQ(MatGetLocalSize(A, &m,&n));
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&min));
-  CHKERRQ(VecSetSizes(min,m,PETSC_DECIDE));
-  CHKERRQ(VecSetFromOptions(min));
-  CHKERRQ(VecDuplicate(min,&max));
-  CHKERRQ(VecDuplicate(min,&maxabs));
-  CHKERRQ(VecDuplicate(min,&e));
+  PetscCall(MatGetLocalSize(A, &m,&n));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&min));
+  PetscCall(VecSetSizes(min,m,PETSC_DECIDE));
+  PetscCall(VecSetFromOptions(min));
+  PetscCall(VecDuplicate(min,&max));
+  PetscCall(VecDuplicate(min,&maxabs));
+  PetscCall(VecDuplicate(min,&e));
 
   /* MatGetRowMax() */
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\n MatGetRowMax\n"));
-  CHKERRQ(MatGetRowMax(A,max,NULL));
-  CHKERRQ(MatGetRowMax(A,max,imax));
-  CHKERRQ(VecView(max,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(VecGetLocalSize(max,&n));
-  CHKERRQ(PetscIntView(n,imax,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n MatGetRowMax\n"));
+  PetscCall(MatGetRowMax(A,max,NULL));
+  PetscCall(MatGetRowMax(A,max,imax));
+  PetscCall(VecView(max,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecGetLocalSize(max,&n));
+  PetscCall(PetscIntView(n,imax,PETSC_VIEWER_STDOUT_WORLD));
 
   /* MatGetRowMin() */
-  CHKERRQ(MatScale(A,-1.0));
-  CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\n MatGetRowMin\n"));
-  CHKERRQ(MatGetRowMin(A,min,NULL));
-  CHKERRQ(MatGetRowMin(A,min,imin));
+  PetscCall(MatScale(A,-1.0));
+  PetscCall(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n MatGetRowMin\n"));
+  PetscCall(MatGetRowMin(A,min,NULL));
+  PetscCall(MatGetRowMin(A,min,imin));
 
-  CHKERRQ(VecWAXPY(e,1.0,max,min)); /* e = max + min */
-  CHKERRQ(VecNorm(e,NORM_INFINITY,&enorm));
+  PetscCall(VecWAXPY(e,1.0,max,min)); /* e = max + min */
+  PetscCall(VecNorm(e,NORM_INFINITY,&enorm));
   PetscCheckFalse(enorm > PETSC_MACHINE_EPSILON,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"max+min > PETSC_MACHINE_EPSILON ");
   for (j = 0; j < n; j++) {
     PetscCheckFalse(imin[j] != imax[j],PETSC_COMM_SELF,PETSC_ERR_PLIB,"imin[%" PetscInt_FMT "] %" PetscInt_FMT " != imax %" PetscInt_FMT,j,imin[j],imax[j]);
   }
 
   /* MatGetRowMaxAbs() */
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\n MatGetRowMaxAbs\n"));
-  CHKERRQ(MatGetRowMaxAbs(A,maxabs,NULL));
-  CHKERRQ(MatGetRowMaxAbs(A,maxabs,imaxabs));
-  CHKERRQ(VecView(maxabs,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(PetscIntView(n,imaxabs,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n MatGetRowMaxAbs\n"));
+  PetscCall(MatGetRowMaxAbs(A,maxabs,NULL));
+  PetscCall(MatGetRowMaxAbs(A,maxabs,imaxabs));
+  PetscCall(VecView(maxabs,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscIntView(n,imaxabs,PETSC_VIEWER_STDOUT_WORLD));
 
   /* MatGetRowMinAbs() */
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\n MatGetRowMinAbs\n"));
-  CHKERRQ(MatGetRowMinAbs(A,min,NULL));
-  CHKERRQ(MatGetRowMinAbs(A,min,imin));
-  CHKERRQ(VecView(min,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(PetscIntView(n,imin,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n MatGetRowMinAbs\n"));
+  PetscCall(MatGetRowMinAbs(A,min,NULL));
+  PetscCall(MatGetRowMinAbs(A,min,imin));
+  PetscCall(VecView(min,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscIntView(n,imin,PETSC_VIEWER_STDOUT_WORLD));
 
   if (size == 1) {
     /* Test MatGetRowMax, MatGetRowMin and MatGetRowMaxAbs for SeqDense and MPIBAIJ matrix */
     Mat Adense;
     Vec max_d,maxabs_d;
-    CHKERRQ(VecDuplicate(min,&max_d));
-    CHKERRQ(VecDuplicate(min,&maxabs_d));
+    PetscCall(VecDuplicate(min,&max_d));
+    PetscCall(VecDuplicate(min,&maxabs_d));
 
-    CHKERRQ(MatScale(A,-1.0));
-    CHKERRQ(MatConvert(A,MATDENSE,MAT_INITIAL_MATRIX,&Adense));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"MatGetRowMax for seqdense matrix\n"));
-    CHKERRQ(MatGetRowMax(Adense,max_d,imax));
+    PetscCall(MatScale(A,-1.0));
+    PetscCall(MatConvert(A,MATDENSE,MAT_INITIAL_MATRIX,&Adense));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"MatGetRowMax for seqdense matrix\n"));
+    PetscCall(MatGetRowMax(Adense,max_d,imax));
 
-    CHKERRQ(VecWAXPY(e,-1.0,max,max_d)); /* e = -max + max_d */
-    CHKERRQ(VecNorm(e,NORM_INFINITY,&enorm));
+    PetscCall(VecWAXPY(e,-1.0,max,max_d)); /* e = -max + max_d */
+    PetscCall(VecNorm(e,NORM_INFINITY,&enorm));
     PetscCheckFalse(enorm > PETSC_MACHINE_EPSILON,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"norm(-max + max_d) %g > PETSC_MACHINE_EPSILON",(double)enorm);
 
-    CHKERRQ(MatScale(Adense,-1.0));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"MatGetRowMin for seqdense matrix\n"));
-    CHKERRQ(MatGetRowMin(Adense,min,imin));
+    PetscCall(MatScale(Adense,-1.0));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"MatGetRowMin for seqdense matrix\n"));
+    PetscCall(MatGetRowMin(Adense,min,imin));
 
-    CHKERRQ(VecWAXPY(e,1.0,max,min)); /* e = max + min */
-    CHKERRQ(VecNorm(e,NORM_INFINITY,&enorm));
+    PetscCall(VecWAXPY(e,1.0,max,min)); /* e = max + min */
+    PetscCall(VecNorm(e,NORM_INFINITY,&enorm));
     PetscCheckFalse(enorm > PETSC_MACHINE_EPSILON,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"max+min > PETSC_MACHINE_EPSILON ");
     for (j = 0; j < n; j++) {
       if (imin[j] != imax[j]) {
@@ -163,15 +163,15 @@ int main(int argc,char **args)
       }
     }
 
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"MatGetRowMaxAbs for seqdense matrix\n"));
-    CHKERRQ(MatGetRowMaxAbs(Adense,maxabs_d,imaxabs));
-    CHKERRQ(VecWAXPY(e,-1.0,maxabs,maxabs_d)); /* e = -maxabs + maxabs_d */
-    CHKERRQ(VecNorm(e,NORM_INFINITY,&enorm));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"MatGetRowMaxAbs for seqdense matrix\n"));
+    PetscCall(MatGetRowMaxAbs(Adense,maxabs_d,imaxabs));
+    PetscCall(VecWAXPY(e,-1.0,maxabs,maxabs_d)); /* e = -maxabs + maxabs_d */
+    PetscCall(VecNorm(e,NORM_INFINITY,&enorm));
     PetscCheckFalse(enorm > PETSC_MACHINE_EPSILON,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"norm(-maxabs + maxabs_d) %g > PETSC_MACHINE_EPSILON",(double)enorm);
 
-    CHKERRQ(MatDestroy(&Adense));
-    CHKERRQ(VecDestroy(&max_d));
-    CHKERRQ(VecDestroy(&maxabs_d));
+    PetscCall(MatDestroy(&Adense));
+    PetscCall(VecDestroy(&max_d));
+    PetscCall(VecDestroy(&maxabs_d));
   }
 
   { /* BAIJ matrix */
@@ -182,78 +182,78 @@ int main(int argc,char **args)
     const PetscScalar *vals,*vals2;
     PetscScalar       Bvals[4];
 
-    CHKERRQ(PetscMalloc2(M,&imaxabsB,bs*M,&imaxabsB2));
+    PetscCall(PetscMalloc2(M,&imaxabsB,bs*M,&imaxabsB2));
 
     /* bs = 1 */
-    CHKERRQ(MatConvert(A,MATMPIBAIJ,MAT_INITIAL_MATRIX,&B));
-    CHKERRQ(VecDuplicate(min,&maxabsB));
-    CHKERRQ(MatGetRowMaxAbs(B,maxabsB,NULL));
-    CHKERRQ(MatGetRowMaxAbs(B,maxabsB,imaxabsB));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\n MatGetRowMaxAbs for BAIJ matrix\n"));
-    CHKERRQ(VecWAXPY(e,-1.0,maxabs,maxabsB)); /* e = -maxabs + maxabsB */
-    CHKERRQ(VecNorm(e,NORM_INFINITY,&enorm));
+    PetscCall(MatConvert(A,MATMPIBAIJ,MAT_INITIAL_MATRIX,&B));
+    PetscCall(VecDuplicate(min,&maxabsB));
+    PetscCall(MatGetRowMaxAbs(B,maxabsB,NULL));
+    PetscCall(MatGetRowMaxAbs(B,maxabsB,imaxabsB));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n MatGetRowMaxAbs for BAIJ matrix\n"));
+    PetscCall(VecWAXPY(e,-1.0,maxabs,maxabsB)); /* e = -maxabs + maxabsB */
+    PetscCall(VecNorm(e,NORM_INFINITY,&enorm));
     PetscCheckFalse(enorm > PETSC_MACHINE_EPSILON,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"norm(-maxabs + maxabs_d) %g > PETSC_MACHINE_EPSILON",(double)enorm);
 
     for (j = 0; j < n; j++) {
       PetscCheckFalse(imaxabs[j] != imaxabsB[j],PETSC_COMM_SELF,PETSC_ERR_PLIB,"imaxabs[%" PetscInt_FMT "] %" PetscInt_FMT " != imaxabsB %" PetscInt_FMT,j,imin[j],imax[j]);
     }
-    CHKERRQ(MatDestroy(&B));
+    PetscCall(MatDestroy(&B));
 
     /* Test bs = 2: Create B with bs*bs block structure of A */
-    CHKERRQ(VecCreate(PETSC_COMM_WORLD,&maxabsB2));
-    CHKERRQ(VecSetSizes(maxabsB2,bs*m,PETSC_DECIDE));
-    CHKERRQ(VecSetFromOptions(maxabsB2));
+    PetscCall(VecCreate(PETSC_COMM_WORLD,&maxabsB2));
+    PetscCall(VecSetSizes(maxabsB2,bs*m,PETSC_DECIDE));
+    PetscCall(VecSetFromOptions(maxabsB2));
 
-    CHKERRQ(MatGetOwnershipRange(A,&rstart,&rend));
-    CHKERRQ(MatGetOwnershipRangeColumn(A,&cstart,&cend));
-    CHKERRQ(MatCreate(PETSC_COMM_WORLD,&B));
-    CHKERRQ(MatSetSizes(B,bs*(rend-rstart),bs*(cend-cstart),PETSC_DECIDE,PETSC_DECIDE));
-    CHKERRQ(MatSetFromOptions(B));
-    CHKERRQ(MatSetUp(B));
+    PetscCall(MatGetOwnershipRange(A,&rstart,&rend));
+    PetscCall(MatGetOwnershipRangeColumn(A,&cstart,&cend));
+    PetscCall(MatCreate(PETSC_COMM_WORLD,&B));
+    PetscCall(MatSetSizes(B,bs*(rend-rstart),bs*(cend-cstart),PETSC_DECIDE,PETSC_DECIDE));
+    PetscCall(MatSetFromOptions(B));
+    PetscCall(MatSetUp(B));
 
     for (row=rstart; row<rend; row++) {
-      CHKERRQ(MatGetRow(A,row,&ncols,&cols,&vals));
+      PetscCall(MatGetRow(A,row,&ncols,&cols,&vals));
       for (col=0; col<ncols; col++) {
         for (j=0; j<bs; j++) {
           Brows[j] = bs*row + j;
           Bcols[j] = bs*cols[col]+j;
         }
         for (j=0; j<bs*bs; j++) Bvals[j] = vals[col];
-        CHKERRQ(MatSetValues(B,bs,Brows,bs,Bcols,Bvals,INSERT_VALUES));
+        PetscCall(MatSetValues(B,bs,Brows,bs,Bcols,Bvals,INSERT_VALUES));
       }
-      CHKERRQ(MatRestoreRow(A,row,&ncols,&cols,&vals));
+      PetscCall(MatRestoreRow(A,row,&ncols,&cols,&vals));
     }
-    CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
 
-    CHKERRQ(MatGetRowMaxAbs(B,maxabsB2,imaxabsB2));
+    PetscCall(MatGetRowMaxAbs(B,maxabsB2,imaxabsB2));
 
     /* Check maxabsB2 and imaxabsB2 */
-    CHKERRQ(VecGetArrayRead(maxabsB,&vals));
-    CHKERRQ(VecGetArrayRead(maxabsB2,&vals2));
+    PetscCall(VecGetArrayRead(maxabsB,&vals));
+    PetscCall(VecGetArrayRead(maxabsB2,&vals2));
     for (row=0; row<m; row++) {
       if (PetscAbsScalar(vals[row] - vals2[bs*row]) > PETSC_MACHINE_EPSILON)
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"row %" PetscInt_FMT " maxabsB != maxabsB2",row);
     }
-    CHKERRQ(VecRestoreArrayRead(maxabsB,&vals));
-    CHKERRQ(VecRestoreArrayRead(maxabsB2,&vals2));
+    PetscCall(VecRestoreArrayRead(maxabsB,&vals));
+    PetscCall(VecRestoreArrayRead(maxabsB2,&vals2));
 
     for (col=0; col<n; col++) {
       if (imaxabsB[col] != imaxabsB2[bs*col]/bs)
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"col %" PetscInt_FMT " imaxabsB != imaxabsB2",col);
     }
-    CHKERRQ(VecDestroy(&maxabsB));
-    CHKERRQ(MatDestroy(&B));
-    CHKERRQ(VecDestroy(&maxabsB2));
-    CHKERRQ(PetscFree2(imaxabsB,imaxabsB2));
+    PetscCall(VecDestroy(&maxabsB));
+    PetscCall(MatDestroy(&B));
+    PetscCall(VecDestroy(&maxabsB2));
+    PetscCall(PetscFree2(imaxabsB,imaxabsB2));
   }
 
-  CHKERRQ(VecDestroy(&min));
-  CHKERRQ(VecDestroy(&max));
-  CHKERRQ(VecDestroy(&maxabs));
-  CHKERRQ(VecDestroy(&e));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&min));
+  PetscCall(VecDestroy(&max));
+  PetscCall(VecDestroy(&maxabs));
+  PetscCall(VecDestroy(&e));
+  PetscCall(MatDestroy(&A));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

@@ -179,16 +179,16 @@ PetscErrorCode  PetscDrawUtilitySetCmap(const char colormap[],int mapsize,unsign
   for (i=0; i<count; i++) cmap_name_list[i] = PetscDrawCmapTable[i].name;
   if (colormap && colormap[0]) {
     PetscBool match = PETSC_FALSE;
-    for (id=0; !match && id<count; id++) CHKERRQ(PetscStrcasecmp(colormap,cmap_name_list[id],&match));
+    for (id=0; !match && id<count; id++) PetscCall(PetscStrcasecmp(colormap,cmap_name_list[id],&match));
     PetscCheck(match,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Colormap '%s' not found",colormap);
   }
-  CHKERRQ(PetscOptionsGetEList(NULL,NULL,"-draw_cmap",cmap_name_list,count,&id,NULL));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-draw_cmap_reverse",&reverse,NULL));
-  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-draw_cmap_brighten",&beta,&brighten));
+  PetscCall(PetscOptionsGetEList(NULL,NULL,"-draw_cmap",cmap_name_list,count,&id,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-draw_cmap_reverse",&reverse,NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-draw_cmap_brighten",&beta,&brighten));
   PetscCheckFalse(brighten && (beta <= (PetscReal)-1 || beta >= (PetscReal)+1),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"brighten parameter %g must be in the range (-1,1)",(double)beta);
 
   if (PetscDrawCmapTable[id].cmap) {
-    CHKERRQ(PetscDrawCmapTable[id].cmap(mapsize,R,G,B));
+    PetscCall(PetscDrawCmapTable[id].cmap(mapsize,R,G,B));
   } else {
     const unsigned char (*rgb)[3] = PetscDrawCmapTable[id].data;
     PetscCheckFalse(mapsize != 256-PETSC_DRAW_BASIC_COLORS,PETSC_COMM_SELF,PETSC_ERR_SUP,"Colormap '%s' with size %d not supported",cmap_name_list[id],mapsize);

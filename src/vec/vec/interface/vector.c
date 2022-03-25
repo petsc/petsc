@@ -41,8 +41,8 @@ PetscLogEvent VEC_HIPCopyFromGPUSome, VEC_HIPCopyToGPUSome;
 PetscErrorCode  VecStashGetInfo(Vec vec,PetscInt *nstash,PetscInt *reallocs,PetscInt *bnstash,PetscInt *breallocs)
 {
   PetscFunctionBegin;
-  CHKERRQ(VecStashGetInfo_Private(&vec->stash,nstash,reallocs));
-  CHKERRQ(VecStashGetInfo_Private(&vec->bstash,bnstash,breallocs));
+  PetscCall(VecStashGetInfo_Private(&vec->stash,nstash,reallocs));
+  PetscCall(VecStashGetInfo_Private(&vec->bstash,bnstash,breallocs));
   PetscFunctionReturn(0);
 }
 
@@ -71,9 +71,9 @@ PetscErrorCode  VecSetLocalToGlobalMapping(Vec x,ISLocalToGlobalMapping mapping)
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   if (mapping) PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,2);
   if (x->ops->setlocaltoglobalmapping) {
-    CHKERRQ((*x->ops->setlocaltoglobalmapping)(x,mapping));
+    PetscCall((*x->ops->setlocaltoglobalmapping)(x,mapping));
   } else {
-    CHKERRQ(PetscLayoutSetISLocalToGlobalMapping(x->map,mapping));
+    PetscCall(PetscLayoutSetISLocalToGlobalMapping(x->map,mapping));
   }
   PetscFunctionReturn(0);
 }
@@ -121,13 +121,13 @@ PetscErrorCode  VecAssemblyBegin(Vec vec)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
   PetscValidType(vec,1);
-  CHKERRQ(VecStashViewFromOptions(vec,NULL,"-vec_view_stash"));
-  CHKERRQ(PetscLogEventBegin(VEC_AssemblyBegin,vec,0,0,0));
+  PetscCall(VecStashViewFromOptions(vec,NULL,"-vec_view_stash"));
+  PetscCall(PetscLogEventBegin(VEC_AssemblyBegin,vec,0,0,0));
   if (vec->ops->assemblybegin) {
-    CHKERRQ((*vec->ops->assemblybegin)(vec));
+    PetscCall((*vec->ops->assemblybegin)(vec));
   }
-  CHKERRQ(PetscLogEventEnd(VEC_AssemblyBegin,vec,0,0,0));
-  CHKERRQ(PetscObjectStateIncrease((PetscObject)vec));
+  PetscCall(PetscLogEventEnd(VEC_AssemblyBegin,vec,0,0,0));
+  PetscCall(PetscObjectStateIncrease((PetscObject)vec));
   PetscFunctionReturn(0);
 }
 
@@ -157,13 +157,13 @@ PetscErrorCode  VecAssemblyEnd(Vec vec)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
-  CHKERRQ(PetscLogEventBegin(VEC_AssemblyEnd,vec,0,0,0));
+  PetscCall(PetscLogEventBegin(VEC_AssemblyEnd,vec,0,0,0));
   PetscValidType(vec,1);
   if (vec->ops->assemblyend) {
-    CHKERRQ((*vec->ops->assemblyend)(vec));
+    PetscCall((*vec->ops->assemblyend)(vec));
   }
-  CHKERRQ(PetscLogEventEnd(VEC_AssemblyEnd,vec,0,0,0));
-  CHKERRQ(VecViewFromOptions(vec,NULL,"-vec_view"));
+  PetscCall(PetscLogEventEnd(VEC_AssemblyEnd,vec,0,0,0));
+  PetscCall(VecViewFromOptions(vec,NULL,"-vec_view"));
   PetscFunctionReturn(0);
 }
 
@@ -199,9 +199,9 @@ PetscErrorCode  VecPointwiseMax(Vec w,Vec x,Vec y)
   PetscCheckSameTypeAndComm(y,3,w,1);
   VecCheckSameSize(w,1,x,2);
   VecCheckSameSize(w,1,y,3);
-  CHKERRQ(VecSetErrorIfLocked(w,1));
-  CHKERRQ((*w->ops->pointwisemax)(w,x,y));
-  CHKERRQ(PetscObjectStateIncrease((PetscObject)w));
+  PetscCall(VecSetErrorIfLocked(w,1));
+  PetscCall((*w->ops->pointwisemax)(w,x,y));
+  PetscCall(PetscObjectStateIncrease((PetscObject)w));
   PetscFunctionReturn(0);
 }
 
@@ -237,9 +237,9 @@ PetscErrorCode  VecPointwiseMin(Vec w,Vec x,Vec y)
   PetscCheckSameTypeAndComm(y,3,w,1);
   VecCheckSameSize(w,1,x,2);
   VecCheckSameSize(w,1,y,3);
-  CHKERRQ(VecSetErrorIfLocked(w,1));
-  CHKERRQ((*w->ops->pointwisemin)(w,x,y));
-  CHKERRQ(PetscObjectStateIncrease((PetscObject)w));
+  PetscCall(VecSetErrorIfLocked(w,1));
+  PetscCall((*w->ops->pointwisemin)(w,x,y));
+  PetscCall(PetscObjectStateIncrease((PetscObject)w));
   PetscFunctionReturn(0);
 }
 
@@ -274,9 +274,9 @@ PetscErrorCode  VecPointwiseMaxAbs(Vec w,Vec x,Vec y)
   PetscCheckSameTypeAndComm(y,3,w,1);
   VecCheckSameSize(w,1,x,2);
   VecCheckSameSize(w,1,y,3);
-  CHKERRQ(VecSetErrorIfLocked(w,1));
-  CHKERRQ((*w->ops->pointwisemaxabs)(w,x,y));
-  CHKERRQ(PetscObjectStateIncrease((PetscObject)w));
+  PetscCall(VecSetErrorIfLocked(w,1));
+  PetscCall((*w->ops->pointwisemaxabs)(w,x,y));
+  PetscCall(PetscObjectStateIncrease((PetscObject)w));
   PetscFunctionReturn(0);
 }
 
@@ -311,9 +311,9 @@ PetscErrorCode  VecPointwiseDivide(Vec w,Vec x,Vec y)
   PetscCheckSameTypeAndComm(y,3,w,1);
   VecCheckSameSize(w,1,x,2);
   VecCheckSameSize(w,1,y,3);
-  CHKERRQ(VecSetErrorIfLocked(w,1));
-  CHKERRQ((*w->ops->pointwisedivide)(w,x,y));
-  CHKERRQ(PetscObjectStateIncrease((PetscObject)w));
+  PetscCall(VecSetErrorIfLocked(w,1));
+  PetscCall((*w->ops->pointwisedivide)(w,x,y));
+  PetscCall(PetscObjectStateIncrease((PetscObject)w));
   PetscFunctionReturn(0);
 }
 
@@ -345,14 +345,14 @@ PetscErrorCode  VecDuplicate(Vec v,Vec *newv)
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidPointer(newv,2);
   PetscValidType(v,1);
-  CHKERRQ((*v->ops->duplicate)(v,newv));
+  PetscCall((*v->ops->duplicate)(v,newv));
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
   if (v->boundtocpu && v->bindingpropagates) {
-    CHKERRQ(VecSetBindingPropagates(*newv,PETSC_TRUE));
-    CHKERRQ(VecBindToCPU(*newv,PETSC_TRUE));
+    PetscCall(VecSetBindingPropagates(*newv,PETSC_TRUE));
+    PetscCall(VecBindToCPU(*newv,PETSC_TRUE));
   }
 #endif
-  CHKERRQ(PetscObjectStateIncrease((PetscObject)*newv));
+  PetscCall(PetscObjectStateIncrease((PetscObject)*newv));
   PetscFunctionReturn(0);
 }
 
@@ -375,15 +375,15 @@ PetscErrorCode  VecDestroy(Vec *v)
   PetscValidHeaderSpecific((*v),VEC_CLASSID,1);
   if (--((PetscObject)(*v))->refct > 0) {*v = NULL; PetscFunctionReturn(0);}
 
-  CHKERRQ(PetscObjectSAWsViewOff((PetscObject)*v));
+  PetscCall(PetscObjectSAWsViewOff((PetscObject)*v));
   /* destroy the internal part */
   if ((*v)->ops->destroy) {
-    CHKERRQ((*(*v)->ops->destroy)(*v));
+    PetscCall((*(*v)->ops->destroy)(*v));
   }
-  CHKERRQ(PetscFree((*v)->defaultrandtype));
+  PetscCall(PetscFree((*v)->defaultrandtype));
   /* destroy the external/common part */
-  CHKERRQ(PetscLayoutDestroy(&(*v)->map));
-  CHKERRQ(PetscHeaderDestroy(v));
+  PetscCall(PetscLayoutDestroy(&(*v)->map));
+  PetscCall(PetscHeaderDestroy(v));
   PetscFunctionReturn(0);
 }
 
@@ -418,7 +418,7 @@ PetscErrorCode  VecDuplicateVecs(Vec v,PetscInt m,Vec *V[])
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidPointer(V,3);
   PetscValidType(v,1);
-  CHKERRQ((*v->ops->duplicatevecs)(v,m,V));
+  PetscCall((*v->ops->duplicatevecs)(v,m,V));
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
   if (v->boundtocpu && v->bindingpropagates) {
     PetscInt i;
@@ -427,8 +427,8 @@ PetscErrorCode  VecDuplicateVecs(Vec v,PetscInt m,Vec *V[])
       /* Since ops->duplicatevecs might itself propagate the value of boundtocpu,
        * avoid unnecessary overhead by only calling VecBindToCPU() if the vector isn't already bound. */
       if (!(*V)[i]->boundtocpu) {
-        CHKERRQ(VecSetBindingPropagates((*V)[i],PETSC_TRUE));
-        CHKERRQ(VecBindToCPU((*V)[i],PETSC_TRUE));
+        PetscCall(VecSetBindingPropagates((*V)[i],PETSC_TRUE));
+        PetscCall(VecBindToCPU((*V)[i],PETSC_TRUE));
       }
     }
   }
@@ -461,7 +461,7 @@ PetscErrorCode  VecDestroyVecs(PetscInt m,Vec *vv[])
   if (!m || !*vv) {*vv  = NULL; PetscFunctionReturn(0);}
   PetscValidHeaderSpecific(**vv,VEC_CLASSID,2);
   PetscValidType(**vv,2);
-  CHKERRQ((*(**vv)->ops->destroyvecs)(m,*vv));
+  PetscCall((*(**vv)->ops->destroyvecs)(m,*vv));
   *vv  = NULL;
   PetscFunctionReturn(0);
 }
@@ -483,7 +483,7 @@ PetscErrorCode  VecViewFromOptions(Vec A,PetscObject obj,const char name[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,VEC_CLASSID,1);
-  CHKERRQ(PetscObjectViewFromOptions((PetscObject)A,obj,name));
+  PetscCall(PetscObjectViewFromOptions((PetscObject)A,obj,name));
   PetscFunctionReturn(0);
 }
 
@@ -568,40 +568,40 @@ PetscErrorCode  VecView(Vec vec,PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
   PetscValidType(vec,1);
-  if (!viewer) CHKERRQ(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)vec),&viewer));
+  if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)vec),&viewer));
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
-  CHKERRQ(PetscViewerGetFormat(viewer,&format));
-  CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)vec),&size));
+  PetscCall(PetscViewerGetFormat(viewer,&format));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)vec),&size));
   if (size == 1 && format == PETSC_VIEWER_LOAD_BALANCE) PetscFunctionReturn(0);
 
   PetscCheck(!vec->stash.n && !vec->bstash.n,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call VecAssemblyBegin/End() before viewing this vector");
 
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
     PetscInt rows,bs;
 
-    CHKERRQ(PetscObjectPrintClassNamePrefixType((PetscObject)vec,viewer));
+    PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)vec,viewer));
     if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
-      CHKERRQ(PetscViewerASCIIPushTab(viewer));
-      CHKERRQ(VecGetSize(vec,&rows));
-      CHKERRQ(VecGetBlockSize(vec,&bs));
+      PetscCall(PetscViewerASCIIPushTab(viewer));
+      PetscCall(VecGetSize(vec,&rows));
+      PetscCall(VecGetBlockSize(vec,&bs));
       if (bs != 1) {
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"length=%" PetscInt_FMT ", bs=%" PetscInt_FMT "\n",rows,bs));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"length=%" PetscInt_FMT ", bs=%" PetscInt_FMT "\n",rows,bs));
       } else {
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"length=%" PetscInt_FMT "\n",rows));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"length=%" PetscInt_FMT "\n",rows));
       }
-      CHKERRQ(PetscViewerASCIIPopTab(viewer));
+      PetscCall(PetscViewerASCIIPopTab(viewer));
     }
   }
-  CHKERRQ(VecLockReadPush(vec));
-  CHKERRQ(PetscLogEventBegin(VEC_View,vec,viewer,0,0));
+  PetscCall(VecLockReadPush(vec));
+  PetscCall(PetscLogEventBegin(VEC_View,vec,viewer,0,0));
   if ((format == PETSC_VIEWER_NATIVE || format == PETSC_VIEWER_LOAD_BALANCE) && vec->ops->viewnative) {
-    CHKERRQ((*vec->ops->viewnative)(vec,viewer));
+    PetscCall((*vec->ops->viewnative)(vec,viewer));
   } else {
-    CHKERRQ((*vec->ops->view)(vec,viewer));
+    PetscCall((*vec->ops->view)(vec,viewer));
   }
-  CHKERRQ(VecLockReadPop(vec));
-  CHKERRQ(PetscLogEventEnd(VEC_View,vec,viewer,0,0));
+  PetscCall(VecLockReadPop(vec));
+  PetscCall(PetscLogEventEnd(VEC_View,vec,viewer,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -615,10 +615,10 @@ PETSC_UNUSED static int TV_display_type(const struct _p_Vec *v)
   TV_add_row("Local rows", "int", &v->map->n);
   TV_add_row("Global rows", "int", &v->map->N);
   TV_add_row("Typename", TV_ascii_string_type, ((PetscObject)v)->type_name);
-  CHKERRQ(VecGetArrayRead((Vec)v,&values));
-  CHKERRQ(PetscSNPrintf(type,32,"double[%" PetscInt_FMT "]",v->map->n));
+  PetscCall(VecGetArrayRead((Vec)v,&values));
+  PetscCall(PetscSNPrintf(type,32,"double[%" PetscInt_FMT "]",v->map->n));
   TV_add_row("values",type, values);
-  CHKERRQ(VecRestoreArrayRead((Vec)v,&values));
+  PetscCall(VecRestoreArrayRead((Vec)v,&values));
   return TV_format_OK;
 }
 #endif
@@ -643,9 +643,9 @@ PetscErrorCode  VecViewNative(Vec vec,PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
   PetscValidType(vec,1);
-  if (!viewer) CHKERRQ(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)vec),&viewer));
+  if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)vec),&viewer));
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
-  CHKERRQ((*vec->ops->viewnative)(vec,viewer));
+  PetscCall((*vec->ops->viewnative)(vec,viewer));
   PetscFunctionReturn(0);
 }
 
@@ -670,7 +670,7 @@ PetscErrorCode  VecGetSize(Vec x,PetscInt *size)
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidIntPointer(size,2);
   PetscValidType(x,1);
-  CHKERRQ((*x->ops->getsize)(x,size));
+  PetscCall((*x->ops->getsize)(x,size));
   PetscFunctionReturn(0);
 }
 
@@ -696,7 +696,7 @@ PetscErrorCode  VecGetLocalSize(Vec x,PetscInt *size)
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidIntPointer(size,2);
   PetscValidType(x,1);
-  CHKERRQ((*x->ops->getlocalsize)(x,size));
+  PetscCall((*x->ops->getlocalsize)(x,size));
   PetscFunctionReturn(0);
 }
 
@@ -768,7 +768,7 @@ PetscErrorCode  VecGetOwnershipRanges(Vec x,const PetscInt *ranges[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidType(x,1);
-  CHKERRQ(PetscLayoutGetRanges(x->map,ranges));
+  PetscCall(PetscLayoutGetRanges(x->map,ranges));
   PetscFunctionReturn(0);
 }
 
@@ -810,7 +810,7 @@ PetscErrorCode  VecSetOption(Vec x,VecOption op,PetscBool flag)
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidType(x,1);
   if (x->ops->setoption) {
-    CHKERRQ((*x->ops->setoption)(x,op,flag));
+    PetscCall((*x->ops->setoption)(x,op,flag));
   }
   PetscFunctionReturn(0);
 }
@@ -823,8 +823,8 @@ PetscErrorCode VecDuplicateVecs_Default(Vec w,PetscInt m,Vec *V[])
   PetscValidHeaderSpecific(w,VEC_CLASSID,1);
   PetscValidPointer(V,3);
   PetscCheck(m > 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"m must be > 0: m = %" PetscInt_FMT,m);
-  CHKERRQ(PetscMalloc1(m,V));
-  for (PetscInt i=0; i<m; i++) CHKERRQ(VecDuplicate(w,*V+i));
+  PetscCall(PetscMalloc1(m,V));
+  for (PetscInt i=0; i<m; i++) PetscCall(VecDuplicate(w,*V+i));
   PetscFunctionReturn(0);
 }
 
@@ -834,8 +834,8 @@ PetscErrorCode VecDestroyVecs_Default(PetscInt m,Vec v[])
 
   PetscFunctionBegin;
   PetscValidPointer(v,2);
-  for (i=0; i<m; i++) CHKERRQ(VecDestroy(&v[i]));
-  CHKERRQ(PetscFree(v));
+  for (i=0; i<m; i++) PetscCall(VecDestroy(&v[i]));
+  PetscCall(PetscFree(v));
   PetscFunctionReturn(0);
 }
 
@@ -859,9 +859,9 @@ PetscErrorCode  VecResetArray(Vec vec)
   PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
   PetscValidType(vec,1);
   if (vec->ops->resetarray) {
-    CHKERRQ((*vec->ops->resetarray)(vec));
+    PetscCall((*vec->ops->resetarray)(vec));
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot reset array in this type of vector");
-  CHKERRQ(PetscObjectStateIncrease((PetscObject)vec));
+  PetscCall(PetscObjectStateIncrease((PetscObject)vec));
   PetscFunctionReturn(0);
 }
 
@@ -932,22 +932,22 @@ PetscErrorCode  VecLoad(Vec vec, PetscViewer viewer)
   PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(vec,1,viewer,2);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERADIOS,&isadios));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWEREXODUSII,&isexodusii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERADIOS,&isadios));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWEREXODUSII,&isexodusii));
   PetscCheck(isbinary || ishdf5 || isadios || isexodusii,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
 
-  CHKERRQ(VecSetErrorIfLocked(vec,1));
-  if (!((PetscObject)vec)->type_name && !vec->ops->create) CHKERRQ(VecSetType(vec, VECSTANDARD));
-  CHKERRQ(PetscLogEventBegin(VEC_Load,viewer,0,0,0));
-  CHKERRQ(PetscViewerGetFormat(viewer,&format));
+  PetscCall(VecSetErrorIfLocked(vec,1));
+  if (!((PetscObject)vec)->type_name && !vec->ops->create) PetscCall(VecSetType(vec, VECSTANDARD));
+  PetscCall(PetscLogEventBegin(VEC_Load,viewer,0,0,0));
+  PetscCall(PetscViewerGetFormat(viewer,&format));
   if (format == PETSC_VIEWER_NATIVE && vec->ops->loadnative) {
-    CHKERRQ((*vec->ops->loadnative)(vec,viewer));
+    PetscCall((*vec->ops->loadnative)(vec,viewer));
   } else {
-    CHKERRQ((*vec->ops->load)(vec,viewer));
+    PetscCall((*vec->ops->load)(vec,viewer));
   }
-  CHKERRQ(PetscLogEventEnd(VEC_Load,viewer,0,0,0));
+  PetscCall(PetscLogEventEnd(VEC_Load,viewer,0,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -974,9 +974,9 @@ PetscErrorCode  VecReciprocal(Vec vec)
   PetscValidType(vec,1);
   PetscCheck(vec->stash.insertmode == NOT_SET_VALUES,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
   PetscCheck(vec->ops->reciprocal,PETSC_COMM_SELF,PETSC_ERR_SUP,"Vector does not support reciprocal operation");
-  CHKERRQ(VecSetErrorIfLocked(vec,1));
-  CHKERRQ((*vec->ops->reciprocal)(vec));
-  CHKERRQ(PetscObjectStateIncrease((PetscObject)vec));
+  PetscCall(VecSetErrorIfLocked(vec,1));
+  PetscCall((*vec->ops->reciprocal)(vec));
+  PetscCall(PetscObjectStateIncrease((PetscObject)vec));
   PetscFunctionReturn(0);
 }
 
@@ -994,8 +994,8 @@ PetscErrorCode  VecReciprocal(Vec vec)
 
     Usage:
 $      PetscErrorCode userview(Vec,PetscViewer);
-$      CHKERRQ(VecCreateMPI(comm,m,M,&x));
-$      CHKERRQ(VecSetOperation(x,VECOP_VIEW,(void(*)(void))userview));
+$      PetscCall(VecCreateMPI(comm,m,M,&x));
+$      PetscCall(VecSetOperation(x,VECOP_VIEW,(void(*)(void))userview));
 
     Notes:
     See the file include/petscvec.h for a complete list of matrix
@@ -1055,8 +1055,8 @@ PetscErrorCode  VecStashSetInitialSize(Vec vec,PetscInt size,PetscInt bsize)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
-  CHKERRQ(VecStashSetInitialSize_Private(&vec->stash,size));
-  CHKERRQ(VecStashSetInitialSize_Private(&vec->bstash,bsize));
+  PetscCall(VecStashSetInitialSize_Private(&vec->stash,size));
+  PetscCall(VecStashSetInitialSize_Private(&vec->bstash,bsize));
   PetscFunctionReturn(0);
 }
 
@@ -1078,10 +1078,10 @@ PetscErrorCode  VecConjugate(Vec x)
   PetscValidType(x,1);
   PetscCheck(x->stash.insertmode == NOT_SET_VALUES,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
   if (PetscDefined(USE_COMPLEX)) {
-    CHKERRQ(VecSetErrorIfLocked(x,1));
-    CHKERRQ((*x->ops->conjugate)(x));
+    PetscCall(VecSetErrorIfLocked(x,1));
+    PetscCall((*x->ops->conjugate)(x));
     /* we need to copy norms here */
-    CHKERRQ(PetscObjectStateIncrease((PetscObject)x));
+    PetscCall(PetscObjectStateIncrease((PetscObject)x));
   }
   PetscFunctionReturn(0);
 }
@@ -1117,11 +1117,11 @@ PetscErrorCode  VecPointwiseMult(Vec w,Vec x,Vec y)
   PetscCheckSameTypeAndComm(y,3,w,1);
   VecCheckSameSize(w,1,x,2);
   VecCheckSameSize(w,2,y,3);
-  CHKERRQ(VecSetErrorIfLocked(w,1));
-  CHKERRQ(PetscLogEventBegin(VEC_PointwiseMult,x,y,w,0));
-  CHKERRQ((*w->ops->pointwisemult)(w,x,y));
-  CHKERRQ(PetscLogEventEnd(VEC_PointwiseMult,x,y,w,0));
-  CHKERRQ(PetscObjectStateIncrease((PetscObject)w));
+  PetscCall(VecSetErrorIfLocked(w,1));
+  PetscCall(PetscLogEventBegin(VEC_PointwiseMult,x,y,w,0));
+  PetscCall((*w->ops->pointwisemult)(w,x,y));
+  PetscCall(PetscLogEventEnd(VEC_PointwiseMult,x,y,w,0));
+  PetscCall(PetscObjectStateIncrease((PetscObject)w));
   PetscFunctionReturn(0);
 }
 
@@ -1158,21 +1158,21 @@ PetscErrorCode  VecSetRandom(Vec x,PetscRandom rctx)
   if (rctx) PetscValidHeaderSpecific(rctx,PETSC_RANDOM_CLASSID,2);
   PetscValidType(x,1);
   PetscCheck(x->stash.insertmode == NOT_SET_VALUES,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
-  CHKERRQ(VecSetErrorIfLocked(x,1));
+  PetscCall(VecSetErrorIfLocked(x,1));
 
   if (!rctx) {
-    CHKERRQ(PetscRandomCreate(PetscObjectComm((PetscObject)x),&randObj));
-    CHKERRQ(PetscRandomSetType(randObj,x->defaultrandtype));
-    CHKERRQ(PetscRandomSetFromOptions(randObj));
+    PetscCall(PetscRandomCreate(PetscObjectComm((PetscObject)x),&randObj));
+    PetscCall(PetscRandomSetType(randObj,x->defaultrandtype));
+    PetscCall(PetscRandomSetFromOptions(randObj));
     rctx = randObj;
   }
 
-  CHKERRQ(PetscLogEventBegin(VEC_SetRandom,x,rctx,0,0));
-  CHKERRQ((*x->ops->setrandom)(x,rctx));
-  CHKERRQ(PetscLogEventEnd(VEC_SetRandom,x,rctx,0,0));
+  PetscCall(PetscLogEventBegin(VEC_SetRandom,x,rctx,0,0));
+  PetscCall((*x->ops->setrandom)(x,rctx));
+  PetscCall(PetscLogEventEnd(VEC_SetRandom,x,rctx,0,0));
 
-  CHKERRQ(PetscRandomDestroy(&randObj));
-  CHKERRQ(PetscObjectStateIncrease((PetscObject)x));
+  PetscCall(PetscRandomDestroy(&randObj));
+  PetscCall(PetscObjectStateIncrease((PetscObject)x));
   PetscFunctionReturn(0);
 }
 
@@ -1191,7 +1191,7 @@ PetscErrorCode  VecSetRandom(Vec x,PetscRandom rctx)
 PetscErrorCode  VecZeroEntries(Vec vec)
 {
   PetscFunctionBegin;
-  CHKERRQ(VecSet(vec,0));
+  PetscCall(VecSet(vec,0));
   PetscFunctionReturn(0);
 }
 
@@ -1218,17 +1218,17 @@ static PetscErrorCode VecSetTypeFromOptions_Private(PetscOptionItems *PetscOptio
   PetscFunctionBegin;
   if (((PetscObject)vec)->type_name) defaultType = ((PetscObject)vec)->type_name;
   else {
-    CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)vec), &size));
+    PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)vec), &size));
     if (size > 1) defaultType = VECMPI;
     else defaultType = VECSEQ;
   }
 
-  CHKERRQ(VecRegisterAll());
-  CHKERRQ(PetscOptionsFList("-vec_type","Vector type","VecSetType",VecList,defaultType,typeName,256,&opt));
+  PetscCall(VecRegisterAll());
+  PetscCall(PetscOptionsFList("-vec_type","Vector type","VecSetType",VecList,defaultType,typeName,256,&opt));
   if (opt) {
-    CHKERRQ(VecSetType(vec, typeName));
+    PetscCall(VecSetType(vec, typeName));
   } else {
-    CHKERRQ(VecSetType(vec, defaultType));
+    PetscCall(VecSetType(vec, defaultType));
   }
   PetscFunctionReturn(0);
 }
@@ -1258,22 +1258,22 @@ PetscErrorCode  VecSetFromOptions(Vec vec)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
 
-  ierr = PetscObjectOptionsBegin((PetscObject)vec);CHKERRQ(ierr);
+  ierr = PetscObjectOptionsBegin((PetscObject)vec);PetscCall(ierr);
   /* Handle vector type options */
-  CHKERRQ(VecSetTypeFromOptions_Private(PetscOptionsObject,vec));
+  PetscCall(VecSetTypeFromOptions_Private(PetscOptionsObject,vec));
 
   /* Handle specific vector options */
-  if (vec->ops->setfromoptions) CHKERRQ((*vec->ops->setfromoptions)(PetscOptionsObject,vec));
+  if (vec->ops->setfromoptions) PetscCall((*vec->ops->setfromoptions)(PetscOptionsObject,vec));
 
   /* Bind to CPU if below a user-specified size threshold.
    * This perhaps belongs in the options for the GPU Vec types, but VecBindToCPU() does nothing when called on non-GPU types,
    * and putting it here makes is more maintainable than duplicating this for all. */
-  CHKERRQ(PetscOptionsInt("-vec_bind_below","Set the size threshold (in local entries) below which the Vec is bound to the CPU","VecBindToCPU",bind_below,&bind_below,&flg));
-  if (flg && vec->map->n < bind_below) CHKERRQ(VecBindToCPU(vec,PETSC_TRUE));
+  PetscCall(PetscOptionsInt("-vec_bind_below","Set the size threshold (in local entries) below which the Vec is bound to the CPU","VecBindToCPU",bind_below,&bind_below,&flg));
+  if (flg && vec->map->n < bind_below) PetscCall(VecBindToCPU(vec,PETSC_TRUE));
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  CHKERRQ(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)vec));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)vec));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1307,7 +1307,7 @@ PetscErrorCode  VecSetSizes(Vec v, PetscInt n, PetscInt N)
   v->map->n = n;
   v->map->N = N;
   if (v->ops->create) {
-    CHKERRQ((*v->ops->create)(v));
+    PetscCall((*v->ops->create)(v));
     v->ops->create = NULL;
   }
   PetscFunctionReturn(0);
@@ -1336,7 +1336,7 @@ PetscErrorCode  VecSetBlockSize(Vec v,PetscInt bs)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidLogicalCollectiveInt(v,bs,2);
-  CHKERRQ(PetscLayoutSetBlockSize(v->map,bs));
+  PetscCall(PetscLayoutSetBlockSize(v->map,bs));
   v->bstash.bs = bs; /* use the same blocksize for the vec's block-stash */
   PetscFunctionReturn(0);
 }
@@ -1366,7 +1366,7 @@ PetscErrorCode  VecGetBlockSize(Vec v,PetscInt *bs)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidIntPointer(bs,2);
-  CHKERRQ(PetscLayoutGetBlockSize(v->map,bs));
+  PetscCall(PetscLayoutGetBlockSize(v->map,bs));
   PetscFunctionReturn(0);
 }
 
@@ -1392,7 +1392,7 @@ PetscErrorCode  VecSetOptionsPrefix(Vec v,const char prefix[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-  CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject)v,prefix));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)v,prefix));
   PetscFunctionReturn(0);
 }
 
@@ -1418,7 +1418,7 @@ PetscErrorCode  VecAppendOptionsPrefix(Vec v,const char prefix[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-  CHKERRQ(PetscObjectAppendOptionsPrefix((PetscObject)v,prefix));
+  PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)v,prefix));
   PetscFunctionReturn(0);
 }
 
@@ -1446,7 +1446,7 @@ PetscErrorCode  VecGetOptionsPrefix(Vec v,const char *prefix[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-  CHKERRQ(PetscObjectGetOptionsPrefix((PetscObject)v,prefix));
+  PetscCall(PetscObjectGetOptionsPrefix((PetscObject)v,prefix));
   PetscFunctionReturn(0);
 }
 
@@ -1474,11 +1474,11 @@ PetscErrorCode  VecSetUp(Vec v)
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscCheck(v->map->n >= 0 || v->map->N >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Sizes not set");
   if (!((PetscObject)v)->type_name) {
-    CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)v), &size));
+    PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)v), &size));
     if (size == 1) {
-      CHKERRQ(VecSetType(v, VECSEQ));
+      PetscCall(VecSetType(v, VECSEQ));
     } else {
-      CHKERRQ(VecSetType(v, VECMPI));
+      PetscCall(VecSetType(v, VECMPI));
     }
   }
   PetscFunctionReturn(0);
@@ -1527,13 +1527,13 @@ PetscErrorCode  VecCopy(Vec x,Vec y)
   if (x == y) PetscFunctionReturn(0);
   VecCheckSameLocalSize(x,1,y,2);
   PetscCheck(x->stash.insertmode == NOT_SET_VALUES,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
-  CHKERRQ(VecSetErrorIfLocked(y,2));
+  PetscCall(VecSetErrorIfLocked(y,2));
 
 #if !defined(PETSC_USE_MIXED_PRECISION)
-  for (PetscInt i=0; i<4; i++) CHKERRQ(PetscObjectComposedDataGetReal((PetscObject)x,NormIds[i],norms[i],flgs[i]));
+  for (PetscInt i=0; i<4; i++) PetscCall(PetscObjectComposedDataGetReal((PetscObject)x,NormIds[i],norms[i],flgs[i]));
 #endif
 
-  CHKERRQ(PetscLogEventBegin(VEC_Copy,x,y,0,0));
+  PetscCall(PetscLogEventBegin(VEC_Copy,x,y,0,0));
 #if defined(PETSC_USE_MIXED_PRECISION)
   extern PetscErrorCode VecGetArray(Vec,double**);
   extern PetscErrorCode VecRestoreArray(Vec,double**);
@@ -1547,37 +1547,37 @@ PetscErrorCode  VecCopy(Vec x,Vec y)
     PetscInt    i,n;
     const float *xx;
     double      *yy;
-    CHKERRQ(VecGetArrayRead(x,&xx));
-    CHKERRQ(VecGetArray(y,&yy));
-    CHKERRQ(VecGetLocalSize(x,&n));
+    PetscCall(VecGetArrayRead(x,&xx));
+    PetscCall(VecGetArray(y,&yy));
+    PetscCall(VecGetLocalSize(x,&n));
     for (i=0; i<n; i++) yy[i] = xx[i];
-    CHKERRQ(VecRestoreArrayRead(x,&xx));
-    CHKERRQ(VecRestoreArray(y,&yy));
+    PetscCall(VecRestoreArrayRead(x,&xx));
+    PetscCall(VecRestoreArray(y,&yy));
   } else if ((((PetscObject)x)->precision == PETSC_PRECISION_DOUBLE) && (((PetscObject)y)->precision == PETSC_PRECISION_SINGLE)) {
     PetscInt     i,n;
     float        *yy;
     const double *xx;
-    CHKERRQ(VecGetArrayRead(x,&xx));
-    CHKERRQ(VecGetArray(y,&yy));
-    CHKERRQ(VecGetLocalSize(x,&n));
+    PetscCall(VecGetArrayRead(x,&xx));
+    PetscCall(VecGetArray(y,&yy));
+    PetscCall(VecGetLocalSize(x,&n));
     for (i=0; i<n; i++) yy[i] = (float) xx[i];
-    CHKERRQ(VecRestoreArrayRead(x,&xx));
-    CHKERRQ(VecRestoreArray(y,&yy));
+    PetscCall(VecRestoreArrayRead(x,&xx));
+    PetscCall(VecRestoreArray(y,&yy));
   } else {
-    CHKERRQ((*x->ops->copy)(x,y));
+    PetscCall((*x->ops->copy)(x,y));
   }
 #else
-  CHKERRQ((*x->ops->copy)(x,y));
+  PetscCall((*x->ops->copy)(x,y));
 #endif
 
-  CHKERRQ(PetscObjectStateIncrease((PetscObject)y));
+  PetscCall(PetscObjectStateIncrease((PetscObject)y));
 #if !defined(PETSC_USE_MIXED_PRECISION)
   for (PetscInt i=0; i<4; i++) {
-    if (flgs[i]) CHKERRQ(PetscObjectComposedDataSetReal((PetscObject)y,NormIds[i],norms[i]));
+    if (flgs[i]) PetscCall(PetscObjectComposedDataSetReal((PetscObject)y,NormIds[i],norms[i]));
   }
 #endif
 
-  CHKERRQ(PetscLogEventEnd(VEC_Copy,x,y,0,0));
+  PetscCall(PetscLogEventEnd(VEC_Copy,x,y,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -1606,22 +1606,22 @@ PetscErrorCode  VecSwap(Vec x,Vec y)
   VecCheckSameSize(x,1,y,2);
   PetscCheck(x->stash.insertmode == NOT_SET_VALUES,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
   PetscCheck(y->stash.insertmode == NOT_SET_VALUES,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
-  CHKERRQ(VecSetErrorIfLocked(x,1));
-  CHKERRQ(VecSetErrorIfLocked(y,2));
+  PetscCall(VecSetErrorIfLocked(x,1));
+  PetscCall(VecSetErrorIfLocked(y,2));
 
-  CHKERRQ(PetscLogEventBegin(VEC_Swap,x,y,0,0));
+  PetscCall(PetscLogEventBegin(VEC_Swap,x,y,0,0));
   for (PetscInt i=0; i<4; i++) {
-    CHKERRQ(PetscObjectComposedDataGetReal((PetscObject)x,NormIds[i],normxs[i],flgxs[i]));
-    CHKERRQ(PetscObjectComposedDataGetReal((PetscObject)y,NormIds[i],normys[i],flgys[i]));
+    PetscCall(PetscObjectComposedDataGetReal((PetscObject)x,NormIds[i],normxs[i],flgxs[i]));
+    PetscCall(PetscObjectComposedDataGetReal((PetscObject)y,NormIds[i],normys[i],flgys[i]));
   }
-  CHKERRQ((*x->ops->swap)(x,y));
-  CHKERRQ(PetscObjectStateIncrease((PetscObject)x));
-  CHKERRQ(PetscObjectStateIncrease((PetscObject)y));
+  PetscCall((*x->ops->swap)(x,y));
+  PetscCall(PetscObjectStateIncrease((PetscObject)x));
+  PetscCall(PetscObjectStateIncrease((PetscObject)y));
   for (PetscInt i=0; i<4; i++) {
-    if (flgxs[i]) CHKERRQ(PetscObjectComposedDataSetReal((PetscObject)y,NormIds[i],normxs[i]));
-    if (flgys[i]) CHKERRQ(PetscObjectComposedDataSetReal((PetscObject)x,NormIds[i],normys[i]));
+    if (flgxs[i]) PetscCall(PetscObjectComposedDataSetReal((PetscObject)y,NormIds[i],normxs[i]));
+    if (flgys[i]) PetscCall(PetscObjectComposedDataSetReal((PetscObject)x,NormIds[i],normys[i]));
   }
-  CHKERRQ(PetscLogEventEnd(VEC_Swap,x,y,0,0));
+  PetscCall(PetscLogEventEnd(VEC_Swap,x,y,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -1649,12 +1649,12 @@ PetscErrorCode VecStashViewFromOptions(Vec obj,PetscObject bobj,const char optio
 
   PetscFunctionBegin;
   prefix = bobj ? bobj->prefix : ((PetscObject)obj)->prefix;
-  CHKERRQ(PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj),((PetscObject)obj)->options,prefix,optionname,&viewer,&format,&flg));
+  PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj),((PetscObject)obj)->options,prefix,optionname,&viewer,&format,&flg));
   if (flg) {
-    CHKERRQ(PetscViewerPushFormat(viewer,format));
-    CHKERRQ(VecStashView(obj,viewer));
-    CHKERRQ(PetscViewerPopFormat(viewer));
-    CHKERRQ(PetscViewerDestroy(&viewer));
+    PetscCall(PetscViewerPushFormat(viewer,format));
+    PetscCall(VecStashView(obj,viewer));
+    PetscCall(PetscViewerPopFormat(viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
   }
   PetscFunctionReturn(0);
 }
@@ -1686,44 +1686,44 @@ PetscErrorCode  VecStashView(Vec v,PetscViewer viewer)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(v,1,viewer,2);
 
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&match));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&match));
   PetscCheck(match,PETSC_COMM_SELF,PETSC_ERR_SUP,"Stash viewer only works with ASCII viewer not %s",((PetscObject)v)->type_name);
-  CHKERRQ(PetscViewerASCIIUseTabs(viewer,PETSC_FALSE));
-  CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)v),&rank));
+  PetscCall(PetscViewerASCIIUseTabs(viewer,PETSC_FALSE));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)v),&rank));
   s = &v->bstash;
 
   /* print block stash */
-  CHKERRQ(PetscViewerASCIIPushSynchronized(viewer));
-  CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer,"[%d]Vector Block stash size %" PetscInt_FMT " block size %" PetscInt_FMT "\n",rank,s->n,s->bs));
+  PetscCall(PetscViewerASCIIPushSynchronized(viewer));
+  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"[%d]Vector Block stash size %" PetscInt_FMT " block size %" PetscInt_FMT "\n",rank,s->n,s->bs));
   for (i=0; i<s->n; i++) {
-    CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Element %" PetscInt_FMT " ",rank,s->idx[i]));
+    PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Element %" PetscInt_FMT " ",rank,s->idx[i]));
     for (j=0; j<s->bs; j++) {
       val = s->array[i*s->bs+j];
 #if defined(PETSC_USE_COMPLEX)
-      CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer,"(%18.16e %18.16e) ",(double)PetscRealPart(val),(double)PetscImaginaryPart(val)));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"(%18.16e %18.16e) ",(double)PetscRealPart(val),(double)PetscImaginaryPart(val)));
 #else
-      CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer,"%18.16e ",(double)val));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"%18.16e ",(double)val));
 #endif
     }
-    CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer,"\n"));
+    PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"\n"));
   }
-  CHKERRQ(PetscViewerFlush(viewer));
+  PetscCall(PetscViewerFlush(viewer));
 
   s = &v->stash;
 
   /* print basic stash */
-  CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer,"[%d]Vector stash size %" PetscInt_FMT "\n",rank,s->n));
+  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"[%d]Vector stash size %" PetscInt_FMT "\n",rank,s->n));
   for (i=0; i<s->n; i++) {
     val = s->array[i];
 #if defined(PETSC_USE_COMPLEX)
-    CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Element %" PetscInt_FMT " (%18.16e %18.16e) ",rank,s->idx[i],(double)PetscRealPart(val),(double)PetscImaginaryPart(val)));
+    PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Element %" PetscInt_FMT " (%18.16e %18.16e) ",rank,s->idx[i],(double)PetscRealPart(val),(double)PetscImaginaryPart(val)));
 #else
-    CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Element %" PetscInt_FMT " %18.16e\n",rank,s->idx[i],(double)val));
+    PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Element %" PetscInt_FMT " %18.16e\n",rank,s->idx[i],(double)val));
 #endif
   }
-  CHKERRQ(PetscViewerFlush(viewer));
-  CHKERRQ(PetscViewerASCIIPopSynchronized(viewer));
-  CHKERRQ(PetscViewerASCIIUseTabs(viewer,PETSC_TRUE));
+  PetscCall(PetscViewerFlush(viewer));
+  PetscCall(PetscViewerASCIIPopSynchronized(viewer));
+  PetscCall(PetscViewerASCIIUseTabs(viewer,PETSC_TRUE));
   PetscFunctionReturn(0);
 }
 
@@ -1735,16 +1735,16 @@ PetscErrorCode PetscOptionsGetVec(PetscOptions options,const char prefix[],const
   PetscBool      iset;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetOwnershipRange(v,&rstart,&rend));
-  CHKERRQ(VecGetSize(v,&N));
-  CHKERRQ(PetscCalloc1(N,&xreal));
-  CHKERRQ(PetscOptionsGetRealArray(options,prefix,key,xreal,&N,&iset));
+  PetscCall(VecGetOwnershipRange(v,&rstart,&rend));
+  PetscCall(VecGetSize(v,&N));
+  PetscCall(PetscCalloc1(N,&xreal));
+  PetscCall(PetscOptionsGetRealArray(options,prefix,key,xreal,&N,&iset));
   if (iset) {
-    CHKERRQ(VecGetArray(v,&xx));
+    PetscCall(VecGetArray(v,&xx));
     for (i=rstart; i<rend; i++) xx[i-rstart] = xreal[i];
-    CHKERRQ(VecRestoreArray(v,&xx));
+    PetscCall(VecRestoreArray(v,&xx));
   }
-  CHKERRQ(PetscFree(xreal));
+  PetscCall(PetscFree(xreal));
   if (set) *set = iset;
   PetscFunctionReturn(0);
 }
@@ -1793,7 +1793,7 @@ PetscErrorCode VecSetLayout(Vec x,PetscLayout map)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
-  CHKERRQ(PetscLayoutReference(map,&x->map));
+  PetscCall(PetscLayoutReference(map,&x->map));
   PetscFunctionReturn(0);
 }
 
@@ -1805,11 +1805,11 @@ PetscErrorCode VecSetInf(Vec xin)
 
   PetscFunctionBegin;
   if (xin->ops->set) { /* can be called by a subset of processes, do not use collective routines */
-    CHKERRQ((*xin->ops->set)(xin,inf));
+    PetscCall((*xin->ops->set)(xin,inf));
   } else {
-    CHKERRQ(VecGetArrayWrite(xin,&xx));
+    PetscCall(VecGetArrayWrite(xin,&xx));
     for (i=0; i<n; i++) xx[i] = inf;
-    CHKERRQ(VecRestoreArrayWrite(xin,&xx));
+    PetscCall(VecRestoreArrayWrite(xin,&xx));
   }
   PetscFunctionReturn(0);
 }
@@ -1834,7 +1834,7 @@ PetscErrorCode VecBindToCPU(Vec v,PetscBool flg)
   if (v->boundtocpu == flg) PetscFunctionReturn(0);
   v->boundtocpu = flg;
   if (v->ops->bindtocpu) {
-    CHKERRQ((*v->ops->bindtocpu)(v,flg));
+    PetscCall((*v->ops->bindtocpu)(v,flg));
   }
 #endif
   PetscFunctionReturn(0);

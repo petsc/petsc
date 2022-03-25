@@ -405,16 +405,16 @@
       ione = 1
       itwo = 2
       ierr = 0
-      call SNESGetApplicationContext(mysnes,solver,ierr);CHKERRQ(ierr)
-      call DMCompositeGetAccessArray(solver%da,Xnest,itwo,PETSC_NULL_INTEGER,Xsub,ierr);CHKERRQ(ierr)
+      call SNESGetApplicationContext(mysnes,solver,ierr);PetscCall(ierr)
+      call DMCompositeGetAccessArray(solver%da,Xnest,itwo,PETSC_NULL_INTEGER,Xsub,ierr);PetscCall(ierr)
 
-      call InitialGuessLocal(solver,Xsub(1),ierr);CHKERRQ(ierr)
-      call VecAssemblyBegin(Xsub(1),ierr);CHKERRQ(ierr)
-      call VecAssemblyEnd(Xsub(1),ierr);CHKERRQ(ierr)
+      call InitialGuessLocal(solver,Xsub(1),ierr);PetscCall(ierr)
+      call VecAssemblyBegin(Xsub(1),ierr);PetscCall(ierr)
+      call VecAssemblyEnd(Xsub(1),ierr);PetscCall(ierr)
 
 !     zero out lambda
-      call VecZeroEntries(Xsub(2),ierr);CHKERRQ(ierr)
-      call DMCompositeRestoreAccessArray(solver%da,Xnest,itwo,PETSC_NULL_INTEGER,Xsub,ierr);CHKERRQ(ierr)
+      call VecZeroEntries(Xsub(2),ierr);PetscCall(ierr)
+      call DMCompositeRestoreAccessArray(solver%da,Xnest,itwo,PETSC_NULL_INTEGER,Xsub,ierr);PetscCall(ierr)
 
       return
       end subroutine FormInitialGuess
@@ -457,7 +457,7 @@
       hy     = one/(solver%my-1)
       temp1  = solver%lambda/(solver%lambda + one) + one
 
-      call VecGetOwnershipRange(X1,low,high,ierr);CHKERRQ(ierr)
+      call VecGetOwnershipRange(X1,low,high,ierr);PetscCall(ierr)
 
       do 20 row=low,high-1
          j = row/solver%mx
@@ -468,7 +468,7 @@
          else
             v = temp1 * sqrt(min(min(i,solver%mx-i+1)*hx,temp))
          endif
-         call VecSetValues(X1,ione,row,v,INSERT_VALUES,ierr);CHKERRQ(ierr)
+         call VecSetValues(X1,ione,row,v,INSERT_VALUES,ierr);PetscCall(ierr)
  20   continue
 
       return
@@ -507,26 +507,26 @@
 
       ione = 1
 
-      call DMCompositeGetAccessArray(solver%da,X,ione,PETSC_NULL_INTEGER,Xsub,ierr);CHKERRQ(ierr)
+      call DMCompositeGetAccessArray(solver%da,X,ione,PETSC_NULL_INTEGER,Xsub,ierr);PetscCall(ierr)
 
 !     Compute entries for the locally owned part of the Jacobian preconditioner.
-      call MatCreateSubMatrix(jac_prec,solver%isPhi,solver%isPhi,MAT_INITIAL_MATRIX,Amat,ierr);CHKERRQ(ierr)
+      call MatCreateSubMatrix(jac_prec,solver%isPhi,solver%isPhi,MAT_INITIAL_MATRIX,Amat,ierr);PetscCall(ierr)
 
-      call FormJacobianLocal(Xsub(1),Amat,solver,.true.,ierr);CHKERRQ(ierr)
-      call MatDestroy(Amat,ierr);CHKERRQ(ierr) ! discard our reference
-      call DMCompositeRestoreAccessArray(solver%da,X,ione,PETSC_NULL_INTEGER,Xsub,ierr);CHKERRQ(ierr)
+      call FormJacobianLocal(Xsub(1),Amat,solver,.true.,ierr);PetscCall(ierr)
+      call MatDestroy(Amat,ierr);PetscCall(ierr) ! discard our reference
+      call DMCompositeRestoreAccessArray(solver%da,X,ione,PETSC_NULL_INTEGER,Xsub,ierr);PetscCall(ierr)
 
       ! the rest of the matrix is not touched
-      call MatAssemblyBegin(jac_prec,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
-      call MatAssemblyEnd(jac_prec,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
+      call MatAssemblyBegin(jac_prec,MAT_FINAL_ASSEMBLY,ierr);PetscCall(ierr)
+      call MatAssemblyEnd(jac_prec,MAT_FINAL_ASSEMBLY,ierr);PetscCall(ierr)
       if (jac .ne. jac_prec) then
-         call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
-         call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
+         call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr);PetscCall(ierr)
+         call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr);PetscCall(ierr)
       end if
 
 !     Tell the matrix we will never add a new nonzero location to the
 !     matrix. If we do it will generate an error.
-      call MatSetOption(jac_prec,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE,ierr);CHKERRQ(ierr)
+      call MatSetOption(jac_prec,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE,ierr);PetscCall(ierr)
 
       return
       end subroutine FormJacobian
@@ -576,8 +576,8 @@
       hx2inv = one/(hx*hx)
       hy2inv = one/(hy*hy)
 
-      call VecGetOwnershipRange(X1,low,high,ierr);CHKERRQ(ierr)
-      call VecGetArrayReadF90(X1,lx_v,ierr);CHKERRQ(ierr)
+      call VecGetOwnershipRange(X1,low,high,ierr);PetscCall(ierr)
+      call VecGetArrayReadF90(X1,lx_v,ierr);PetscCall(ierr)
 
       ii = 0
       do 20 irow=low,high-1
@@ -589,7 +589,7 @@
             col(1) = irow
             row(1) = irow
             v(1)   = one
-            call MatSetValues(jac,ione,row,ione,col,v,INSERT_VALUES,ierr);CHKERRQ(ierr)
+            call MatSetValues(jac,ione,row,ione,col,v,INSERT_VALUES,ierr);PetscCall(ierr)
 !     interior grid points
          else
             v(1) = -hy2inv
@@ -608,11 +608,11 @@
             col(4) = irow + 1
             col(5) = irow + solver%mx
             row(1) = irow
-            call MatSetValues(jac,ione,row,ifive,col,v,INSERT_VALUES,ierr);CHKERRQ(ierr)
+            call MatSetValues(jac,ione,row,ifive,col,v,INSERT_VALUES,ierr);PetscCall(ierr)
          endif
  20   continue
 
-      call VecRestoreArrayReadF90(X1,lx_v,ierr);CHKERRQ(ierr)
+      call VecRestoreArrayReadF90(X1,lx_v,ierr);PetscCall(ierr)
 
       return
       end subroutine FormJacobianLocal
@@ -651,19 +651,19 @@
 !  be done while messages are in transition.
 
       itwo = 2
-      call DMCompositeGetAccessArray(solver%da,X,itwo,PETSC_NULL_INTEGER,Xsub,ierr);CHKERRQ(ierr)
-      call DMCompositeGetAccessArray(solver%da,F,itwo,PETSC_NULL_INTEGER,Fsub,ierr);CHKERRQ(ierr)
+      call DMCompositeGetAccessArray(solver%da,X,itwo,PETSC_NULL_INTEGER,Xsub,ierr);PetscCall(ierr)
+      call DMCompositeGetAccessArray(solver%da,F,itwo,PETSC_NULL_INTEGER,Fsub,ierr);PetscCall(ierr)
 
-      call FormFunctionNLTerm( Xsub(1), Fsub(1), solver, ierr);CHKERRQ(ierr)
-      call MatMultAdd( solver%AmatLin, Xsub(1), Fsub(1), Fsub(1), ierr);CHKERRQ(ierr)
+      call FormFunctionNLTerm( Xsub(1), Fsub(1), solver, ierr);PetscCall(ierr)
+      call MatMultAdd( solver%AmatLin, Xsub(1), Fsub(1), Fsub(1), ierr);PetscCall(ierr)
 
 !     do rest of operator (linear)
-      call MatMult(    solver%Cmat, Xsub(1),      Fsub(2), ierr);CHKERRQ(ierr)
-      call MatMultAdd( solver%Bmat, Xsub(2), Fsub(1), Fsub(1), ierr);CHKERRQ(ierr)
-      call MatMultAdd( solver%Dmat, Xsub(2), Fsub(2), Fsub(2), ierr);CHKERRQ(ierr)
+      call MatMult(    solver%Cmat, Xsub(1),      Fsub(2), ierr);PetscCall(ierr)
+      call MatMultAdd( solver%Bmat, Xsub(2), Fsub(1), Fsub(1), ierr);PetscCall(ierr)
+      call MatMultAdd( solver%Dmat, Xsub(2), Fsub(2), Fsub(2), ierr);PetscCall(ierr)
 
-      call DMCompositeRestoreAccessArray(solver%da,X,itwo,PETSC_NULL_INTEGER,Xsub,ierr);CHKERRQ(ierr)
-      call DMCompositeRestoreAccessArray(solver%da,F,itwo,PETSC_NULL_INTEGER,Fsub,ierr);CHKERRQ(ierr)
+      call DMCompositeRestoreAccessArray(solver%da,X,itwo,PETSC_NULL_INTEGER,Xsub,ierr);PetscCall(ierr)
+      call DMCompositeRestoreAccessArray(solver%da,F,itwo,PETSC_NULL_INTEGER,Fsub,ierr);PetscCall(ierr)
       return
       end subroutine formfunction
 
@@ -700,8 +700,8 @@
       sc     = solver%lambda
       ione   = 1
 
-      call VecGetArrayReadF90(X1,lx_v,ierr);CHKERRQ(ierr)
-      call VecGetOwnershipRange(X1,low,high,ierr);CHKERRQ(ierr)
+      call VecGetArrayReadF90(X1,lx_v,ierr);PetscCall(ierr)
+      call VecGetOwnershipRange(X1,low,high,ierr);PetscCall(ierr)
 
 !     Compute function over the locally owned part of the grid
       ii = 0
@@ -716,13 +716,13 @@
             u = lx_v(ii)
             v(1) = -sc*exp(u)
          endif
-         call VecSetValues(F1,ione,row,v,INSERT_VALUES,ierr);CHKERRQ(ierr)
+         call VecSetValues(F1,ione,row,v,INSERT_VALUES,ierr);PetscCall(ierr)
  20   continue
 
-      call VecRestoreArrayReadF90(X1,lx_v,ierr);CHKERRQ(ierr)
+      call VecRestoreArrayReadF90(X1,lx_v,ierr);PetscCall(ierr)
 
-      call VecAssemblyBegin(F1,ierr);CHKERRQ(ierr)
-      call VecAssemblyEnd(F1,ierr);CHKERRQ(ierr)
+      call VecAssemblyBegin(F1,ierr);PetscCall(ierr)
+      call VecAssemblyEnd(F1,ierr);PetscCall(ierr)
 
       ierr = 0
       return

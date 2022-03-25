@@ -33,10 +33,10 @@ PetscErrorCode PetscEventRegLogCreate(PetscEventRegLog *eventLog)
   PetscEventRegLog l;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNew(&l));
+  PetscCall(PetscNew(&l));
   l->numEvents = 0;
   l->maxEvents = 100;
-  CHKERRQ(PetscMalloc1(l->maxEvents,&l->eventInfo));
+  PetscCall(PetscMalloc1(l->maxEvents,&l->eventInfo));
   *eventLog    = l;
   PetscFunctionReturn(0);
 }
@@ -59,10 +59,10 @@ PetscErrorCode PetscEventRegLogDestroy(PetscEventRegLog eventLog)
 
   PetscFunctionBegin;
   for (e = 0; e < eventLog->numEvents; e++) {
-    CHKERRQ(PetscFree(eventLog->eventInfo[e].name));
+    PetscCall(PetscFree(eventLog->eventInfo[e].name));
   }
-  CHKERRQ(PetscFree(eventLog->eventInfo));
-  CHKERRQ(PetscFree(eventLog));
+  PetscCall(PetscFree(eventLog->eventInfo));
+  PetscCall(PetscFree(eventLog));
   PetscFunctionReturn(0);
 }
 
@@ -83,10 +83,10 @@ PetscErrorCode PetscEventPerfLogCreate(PetscEventPerfLog *eventLog)
   PetscEventPerfLog l;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNew(&l));
+  PetscCall(PetscNew(&l));
   l->numEvents = 0;
   l->maxEvents = 100;
-  CHKERRQ(PetscCalloc1(l->maxEvents,&l->eventInfo));
+  PetscCall(PetscCalloc1(l->maxEvents,&l->eventInfo));
   *eventLog    = l;
   PetscFunctionReturn(0);
 }
@@ -106,8 +106,8 @@ PetscErrorCode PetscEventPerfLogCreate(PetscEventPerfLog *eventLog)
 PetscErrorCode PetscEventPerfLogDestroy(PetscEventPerfLog eventLog)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscFree(eventLog->eventInfo));
-  CHKERRQ(PetscFree(eventLog));
+  PetscCall(PetscFree(eventLog->eventInfo));
+  PetscCall(PetscFree(eventLog));
   PetscFunctionReturn(0);
 }
 
@@ -212,14 +212,14 @@ PetscErrorCode PetscEventPerfLogEnsureSize(PetscEventPerfLog eventLog,int size)
 
   PetscFunctionBegin;
   while (size > eventLog->maxEvents) {
-    CHKERRQ(PetscCalloc1(eventLog->maxEvents*2,&eventInfo));
-    CHKERRQ(PetscArraycpy(eventInfo,eventLog->eventInfo,eventLog->maxEvents));
-    CHKERRQ(PetscFree(eventLog->eventInfo));
+    PetscCall(PetscCalloc1(eventLog->maxEvents*2,&eventInfo));
+    PetscCall(PetscArraycpy(eventInfo,eventLog->eventInfo,eventLog->maxEvents));
+    PetscCall(PetscFree(eventLog->eventInfo));
     eventLog->eventInfo  = eventInfo;
     eventLog->maxEvents *= 2;
   }
   while (eventLog->numEvents < size) {
-    CHKERRQ(PetscEventPerfInfoClear(&eventLog->eventInfo[eventLog->numEvents++]));
+    PetscCall(PetscEventPerfInfoClear(&eventLog->eventInfo[eventLog->numEvents++]));
   }
   PetscFunctionReturn(0);
 }
@@ -232,7 +232,7 @@ PetscErrorCode PetscLogEventBeginMPE(PetscLogEvent event,int t,PetscObject o1,Pe
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  CHKERRQ(MPE_Log_event(petsc_stageLog->eventLog->eventInfo[event].mpe_id_begin,0,NULL));
+  PetscCall(MPE_Log_event(petsc_stageLog->eventLog->eventInfo[event].mpe_id_begin,0,NULL));
   PetscFunctionReturn(0);
 }
 
@@ -241,7 +241,7 @@ PetscErrorCode PetscLogEventEndMPE(PetscLogEvent event,int t,PetscObject o1,Pets
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  CHKERRQ(MPE_Log_event(petsc_stageLog->eventLog->eventInfo[event].mpe_id_end,0,NULL));
+  PetscCall(MPE_Log_event(petsc_stageLog->eventLog->eventInfo[event].mpe_id_end,0,NULL));
   PetscFunctionReturn(0);
 }
 #endif
@@ -297,13 +297,13 @@ PetscErrorCode PetscEventRegLogRegister(PetscEventRegLog eventLog,const char ena
   /* Should check classid I think */
   e = eventLog->numEvents++;
   if (eventLog->numEvents > eventLog->maxEvents) {
-    CHKERRQ(PetscCalloc1(eventLog->maxEvents*2,&eventInfo));
-    CHKERRQ(PetscArraycpy(eventInfo,eventLog->eventInfo,eventLog->maxEvents));
-    CHKERRQ(PetscFree(eventLog->eventInfo));
+    PetscCall(PetscCalloc1(eventLog->maxEvents*2,&eventInfo));
+    PetscCall(PetscArraycpy(eventInfo,eventLog->eventInfo,eventLog->maxEvents));
+    PetscCall(PetscFree(eventLog->eventInfo));
     eventLog->eventInfo  = eventInfo;
     eventLog->maxEvents *= 2;
   }
-  CHKERRQ(PetscStrallocpy(ename,&str));
+  PetscCall(PetscStrallocpy(ename,&str));
 
   eventLog->eventInfo[e].name       = str;
   eventLog->eventInfo[e].classid    = classid;
@@ -320,9 +320,9 @@ PetscErrorCode PetscEventRegLogRegister(PetscEventRegLog eventLog,const char ena
     eventLog->eventInfo[e].mpe_id_begin = beginID;
     eventLog->eventInfo[e].mpe_id_end   = endID;
 
-    CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+    PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
     if (rank == 0) {
-      CHKERRQ(PetscLogMPEGetRGBColor(&color));
+      PetscCall(PetscLogMPEGetRGBColor(&color));
       MPE_Describe_state(beginID,endID,str,(char*)color);
     }
   }
@@ -539,7 +539,7 @@ PetscErrorCode  PetscEventRegLogGetEvent(PetscEventRegLog eventLog,const char na
   PetscValidIntPointer(event,3);
   *event = -1;
   for (e = 0; e < eventLog->numEvents; e++) {
-    CHKERRQ(PetscStrcasecmp(eventLog->eventInfo[e].name,name,&match));
+    PetscCall(PetscStrcasecmp(eventLog->eventInfo[e].name,name,&match));
     if (match) {
       *event = e;
       break;
@@ -621,9 +621,9 @@ PetscErrorCode PetscLogEventGetPerfInfo(int stage,PetscLogEvent event,PetscEvent
   PetscFunctionBegin;
   PetscValidPointer(info,3);
   PetscCheck(PetscLogPLB,PETSC_COMM_SELF,PETSC_ERR_SUP,"Must use -log_view or PetscLogDefaultBegin() before calling this routine");
-  CHKERRQ(PetscLogGetStageLog(&stageLog));
-  if (stage < 0) CHKERRQ(PetscStageLogGetCurrent(stageLog,&stage));
-  CHKERRQ(PetscStageLogGetEventPerfLog(stageLog,stage,&eventLog));
+  PetscCall(PetscLogGetStageLog(&stageLog));
+  if (stage < 0) PetscCall(PetscStageLogGetCurrent(stageLog,&stage));
+  PetscCall(PetscStageLogGetEventPerfLog(stageLog,stage,&eventLog));
   *info = eventLog->eventInfo[event];
   PetscFunctionReturn(0);
 }
@@ -636,9 +636,9 @@ PetscErrorCode PetscLogEventGetFlops(PetscLogEvent event,PetscLogDouble *flops)
 
   PetscFunctionBegin;
   PetscCheck(PetscLogPLB,PETSC_COMM_SELF,PETSC_ERR_SUP,"Must use -log_view or PetscLogDefaultBegin() before calling this routine");
-  CHKERRQ(PetscLogGetStageLog(&stageLog));
-  CHKERRQ(PetscStageLogGetCurrent(stageLog,&stage));
-  CHKERRQ(PetscStageLogGetEventPerfLog(stageLog,stage,&eventLog));
+  PetscCall(PetscLogGetStageLog(&stageLog));
+  PetscCall(PetscStageLogGetCurrent(stageLog,&stage));
+  PetscCall(PetscStageLogGetEventPerfLog(stageLog,stage,&eventLog));
   *flops = eventLog->eventInfo[event].flops;
   PetscFunctionReturn(0);
 }
@@ -650,9 +650,9 @@ PetscErrorCode PetscLogEventZeroFlops(PetscLogEvent event)
   int               stage;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscLogGetStageLog(&stageLog));
-  CHKERRQ(PetscStageLogGetCurrent(stageLog,&stage));
-  CHKERRQ(PetscStageLogGetEventPerfLog(stageLog,stage,&eventLog));
+  PetscCall(PetscLogGetStageLog(&stageLog));
+  PetscCall(PetscStageLogGetCurrent(stageLog,&stage));
+  PetscCall(PetscStageLogGetEventPerfLog(stageLog,stage,&eventLog));
 
   eventLog->eventInfo[event].flops    = 0.0;
   eventLog->eventInfo[event].flops2   = 0.0;
@@ -670,15 +670,15 @@ PetscErrorCode PetscLogEventSynchronize(PetscLogEvent event,MPI_Comm comm)
 
   PetscFunctionBegin;
   if (!PetscLogSyncOn || comm == MPI_COMM_NULL) PetscFunctionReturn(0);
-  CHKERRQ(PetscLogGetStageLog(&stageLog));
-  CHKERRQ(PetscStageLogGetEventRegLog(stageLog,&eventRegLog));
+  PetscCall(PetscLogGetStageLog(&stageLog));
+  PetscCall(PetscStageLogGetEventRegLog(stageLog,&eventRegLog));
   if (!eventRegLog->eventInfo[event].collective) PetscFunctionReturn(0);
-  CHKERRQ(PetscStageLogGetCurrent(stageLog,&stage));
-  CHKERRQ(PetscStageLogGetEventPerfLog(stageLog,stage,&eventLog));
+  PetscCall(PetscStageLogGetCurrent(stageLog,&stage));
+  PetscCall(PetscStageLogGetEventPerfLog(stageLog,stage,&eventLog));
   if (eventLog->eventInfo[event].depth > 0) PetscFunctionReturn(0);
 
   PetscTimeSubtract(&time);
-  CHKERRMPI(MPI_Barrier(comm));
+  PetscCallMPI(MPI_Barrier(comm));
   PetscTimeAdd(&time);
   eventLog->eventInfo[event].syncTime += time;
   PetscFunctionReturn(0);
@@ -691,11 +691,11 @@ PetscErrorCode PetscLogEventBeginDefault(PetscLogEvent event,int t,PetscObject o
   int               stage;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscLogGetStageLog(&stageLog));
-  CHKERRQ(PetscStageLogGetCurrent(stageLog,&stage));
-  CHKERRQ(PetscStageLogGetEventPerfLog(stageLog,stage,&eventLog));
+  PetscCall(PetscLogGetStageLog(&stageLog));
+  PetscCall(PetscStageLogGetCurrent(stageLog,&stage));
+  PetscCall(PetscStageLogGetEventPerfLog(stageLog,stage,&eventLog));
   /* Synchronization */
-  CHKERRQ(PetscLogEventSynchronize(event,PetscObjectComm(o1)));
+  PetscCall(PetscLogEventSynchronize(event,PetscObjectComm(o1)));
   /* Check for double counting */
   eventLog->eventInfo[event].depth++;
   if (eventLog->eventInfo[event].depth > 1) PetscFunctionReturn(0);
@@ -709,13 +709,13 @@ PetscErrorCode PetscLogEventBeginDefault(PetscLogEvent event,int t,PetscObject o
   eventLog->eventInfo[event].numReductions -= petsc_allreduce_ct + petsc_gather_ct + petsc_scatter_ct;
   if (PetscLogMemory) {
     PetscLogDouble usage;
-    CHKERRQ(PetscMemoryGetCurrentUsage(&usage));
+    PetscCall(PetscMemoryGetCurrentUsage(&usage));
     eventLog->eventInfo[event].memIncrease -= usage;
-    CHKERRQ(PetscMallocGetCurrentUsage(&usage));
+    PetscCall(PetscMallocGetCurrentUsage(&usage));
     eventLog->eventInfo[event].mallocSpace -= usage;
-    CHKERRQ(PetscMallocGetMaximumUsage(&usage));
+    PetscCall(PetscMallocGetMaximumUsage(&usage));
     eventLog->eventInfo[event].mallocIncrease -= usage;
-    CHKERRQ(PetscMallocPushMaximumUsage((int)event));
+    PetscCall(PetscMallocPushMaximumUsage((int)event));
   }
   #if defined(PETSC_HAVE_DEVICE)
   eventLog->eventInfo[event].CpuToGpuCount -= petsc_ctog_ct;
@@ -735,9 +735,9 @@ PetscErrorCode PetscLogEventEndDefault(PetscLogEvent event,int t,PetscObject o1,
   int               stage;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscLogGetStageLog(&stageLog));
-  CHKERRQ(PetscStageLogGetCurrent(stageLog,&stage));
-  CHKERRQ(PetscStageLogGetEventPerfLog(stageLog,stage,&eventLog));
+  PetscCall(PetscLogGetStageLog(&stageLog));
+  PetscCall(PetscStageLogGetCurrent(stageLog,&stage));
+  PetscCall(PetscStageLogGetEventPerfLog(stageLog,stage,&eventLog));
   /* Check for double counting */
   eventLog->eventInfo[event].depth--;
   if (eventLog->eventInfo[event].depth > 0) PetscFunctionReturn(0);
@@ -754,13 +754,13 @@ PetscErrorCode PetscLogEventEndDefault(PetscLogEvent event,int t,PetscObject o1,
   eventLog->eventInfo[event].numReductions += petsc_allreduce_ct + petsc_gather_ct + petsc_scatter_ct;
   if (PetscLogMemory) {
     PetscLogDouble usage,musage;
-    CHKERRQ(PetscMemoryGetCurrentUsage(&usage));
+    PetscCall(PetscMemoryGetCurrentUsage(&usage));
     eventLog->eventInfo[event].memIncrease += usage;
-    CHKERRQ(PetscMallocGetCurrentUsage(&usage));
+    PetscCall(PetscMallocGetCurrentUsage(&usage));
     eventLog->eventInfo[event].mallocSpace += usage;
-    CHKERRQ(PetscMallocPopMaximumUsage((int)event,&musage));
+    PetscCall(PetscMallocPopMaximumUsage((int)event,&musage));
     eventLog->eventInfo[event].mallocIncreaseEvent = PetscMax(musage-usage,eventLog->eventInfo[event].mallocIncreaseEvent);
-    CHKERRQ(PetscMallocGetMaximumUsage(&usage));
+    PetscCall(PetscMallocGetMaximumUsage(&usage));
     eventLog->eventInfo[event].mallocIncrease += usage;
   }
   #if defined(PETSC_HAVE_DEVICE)
@@ -788,9 +788,9 @@ PetscErrorCode PetscLogEventBeginComplete(PetscLogEvent event,int t,PetscObject 
   /* Dynamically enlarge logging structures */
   if (petsc_numActions >= petsc_maxActions) {
     PetscTime(&start);
-    CHKERRQ(PetscCalloc1(petsc_maxActions*2,&tmpAction));
-    CHKERRQ(PetscArraycpy(tmpAction,petsc_actions,petsc_maxActions));
-    CHKERRQ(PetscFree(petsc_actions));
+    PetscCall(PetscCalloc1(petsc_maxActions*2,&tmpAction));
+    PetscCall(PetscArraycpy(tmpAction,petsc_actions,petsc_maxActions));
+    PetscCall(PetscFree(petsc_actions));
 
     petsc_actions     = tmpAction;
     petsc_maxActions *= 2;
@@ -798,10 +798,10 @@ PetscErrorCode PetscLogEventBeginComplete(PetscLogEvent event,int t,PetscObject 
     petsc_BaseTime += (end - start);
   }
   /* Record the event */
-  CHKERRQ(PetscLogGetStageLog(&stageLog));
-  CHKERRQ(PetscStageLogGetCurrent(stageLog,&stage));
-  CHKERRQ(PetscStageLogGetEventRegLog(stageLog,&eventRegLog));
-  CHKERRQ(PetscStageLogGetEventPerfLog(stageLog,stage,&eventPerfLog));
+  PetscCall(PetscLogGetStageLog(&stageLog));
+  PetscCall(PetscStageLogGetCurrent(stageLog,&stage));
+  PetscCall(PetscStageLogGetEventRegLog(stageLog,&eventRegLog));
+  PetscCall(PetscStageLogGetEventPerfLog(stageLog,stage,&eventPerfLog));
   PetscTime(&curTime);
   if (petsc_logActions) {
     petsc_actions[petsc_numActions].time    = curTime - petsc_BaseTime;
@@ -816,8 +816,8 @@ PetscErrorCode PetscLogEventBeginComplete(PetscLogEvent event,int t,PetscObject 
     else petsc_actions[petsc_numActions].id3 = -1;
     petsc_actions[petsc_numActions].flops = petsc_TotalFlops;
 
-    CHKERRQ(PetscMallocGetCurrentUsage(&petsc_actions[petsc_numActions].mem));
-    CHKERRQ(PetscMallocGetMaximumUsage(&petsc_actions[petsc_numActions].maxmem));
+    PetscCall(PetscMallocGetCurrentUsage(&petsc_actions[petsc_numActions].mem));
+    PetscCall(PetscMallocGetMaximumUsage(&petsc_actions[petsc_numActions].maxmem));
     petsc_numActions++;
   }
   /* Check for double counting */
@@ -847,9 +847,9 @@ PetscErrorCode PetscLogEventEndComplete(PetscLogEvent event,int t,PetscObject o1
   /* Dynamically enlarge logging structures */
   if (petsc_numActions >= petsc_maxActions) {
     PetscTime(&start);
-    CHKERRQ(PetscCalloc1(petsc_maxActions*2,&tmpAction));
-    CHKERRQ(PetscArraycpy(tmpAction,petsc_actions,petsc_maxActions));
-    CHKERRQ(PetscFree(petsc_actions));
+    PetscCall(PetscCalloc1(petsc_maxActions*2,&tmpAction));
+    PetscCall(PetscArraycpy(tmpAction,petsc_actions,petsc_maxActions));
+    PetscCall(PetscFree(petsc_actions));
 
     petsc_actions     = tmpAction;
     petsc_maxActions *= 2;
@@ -857,10 +857,10 @@ PetscErrorCode PetscLogEventEndComplete(PetscLogEvent event,int t,PetscObject o1
     petsc_BaseTime += (end - start);
   }
   /* Record the event */
-  CHKERRQ(PetscLogGetStageLog(&stageLog));
-  CHKERRQ(PetscStageLogGetCurrent(stageLog,&stage));
-  CHKERRQ(PetscStageLogGetEventRegLog(stageLog,&eventRegLog));
-  CHKERRQ(PetscStageLogGetEventPerfLog(stageLog,stage,&eventPerfLog));
+  PetscCall(PetscLogGetStageLog(&stageLog));
+  PetscCall(PetscStageLogGetCurrent(stageLog,&stage));
+  PetscCall(PetscStageLogGetEventRegLog(stageLog,&eventRegLog));
+  PetscCall(PetscStageLogGetEventPerfLog(stageLog,stage,&eventPerfLog));
   PetscTime(&curTime);
   if (petsc_logActions) {
     petsc_actions[petsc_numActions].time    = curTime - petsc_BaseTime;
@@ -875,8 +875,8 @@ PetscErrorCode PetscLogEventEndComplete(PetscLogEvent event,int t,PetscObject o1
     else petsc_actions[petsc_numActions].id3 = -1;
     petsc_actions[petsc_numActions].flops = petsc_TotalFlops;
 
-    CHKERRQ(PetscMallocGetCurrentUsage(&petsc_actions[petsc_numActions].mem));
-    CHKERRQ(PetscMallocGetMaximumUsage(&petsc_actions[petsc_numActions].maxmem));
+    PetscCall(PetscMallocGetCurrentUsage(&petsc_actions[petsc_numActions].mem));
+    PetscCall(PetscMallocGetMaximumUsage(&petsc_actions[petsc_numActions].maxmem));
     petsc_numActions++;
   }
   /* Check for double counting */
@@ -906,18 +906,18 @@ PetscErrorCode PetscLogEventBeginTrace(PetscLogEvent event,int t,PetscObject o1,
   if (!petsc_tracetime) PetscTime(&petsc_tracetime);
 
   petsc_tracelevel++;
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  CHKERRQ(PetscLogGetStageLog(&stageLog));
-  CHKERRQ(PetscStageLogGetCurrent(stageLog,&stage));
-  CHKERRQ(PetscStageLogGetEventRegLog(stageLog,&eventRegLog));
-  CHKERRQ(PetscStageLogGetEventPerfLog(stageLog,stage,&eventPerfLog));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscLogGetStageLog(&stageLog));
+  PetscCall(PetscStageLogGetCurrent(stageLog,&stage));
+  PetscCall(PetscStageLogGetEventRegLog(stageLog,&eventRegLog));
+  PetscCall(PetscStageLogGetEventPerfLog(stageLog,stage,&eventPerfLog));
   /* Check for double counting */
   eventPerfLog->eventInfo[event].depth++;
   if (eventPerfLog->eventInfo[event].depth > 1) PetscFunctionReturn(0);
   /* Log performance info */
   PetscTime(&cur_time);
-  CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,petsc_tracefile,"%s[%d] %g Event begin: %s\n",petsc_tracespace,rank,cur_time-petsc_tracetime,eventRegLog->eventInfo[event].name));
-  CHKERRQ(PetscStrncpy(petsc_tracespace,petsc_traceblanks,2*petsc_tracelevel));
+  PetscCall(PetscFPrintf(PETSC_COMM_SELF,petsc_tracefile,"%s[%d] %g Event begin: %s\n",petsc_tracespace,rank,cur_time-petsc_tracetime,eventRegLog->eventInfo[event].name));
+  PetscCall(PetscStrncpy(petsc_tracespace,petsc_traceblanks,2*petsc_tracelevel));
 
   petsc_tracespace[2*petsc_tracelevel] = 0;
 
@@ -937,11 +937,11 @@ PetscErrorCode PetscLogEventEndTrace(PetscLogEvent event,int t,PetscObject o1,Pe
 
   PetscFunctionBegin;
   petsc_tracelevel--;
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  CHKERRQ(PetscLogGetStageLog(&stageLog));
-  CHKERRQ(PetscStageLogGetCurrent(stageLog,&stage));
-  CHKERRQ(PetscStageLogGetEventRegLog(stageLog,&eventRegLog));
-  CHKERRQ(PetscStageLogGetEventPerfLog(stageLog,stage,&eventPerfLog));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscLogGetStageLog(&stageLog));
+  PetscCall(PetscStageLogGetCurrent(stageLog,&stage));
+  PetscCall(PetscStageLogGetEventRegLog(stageLog,&eventRegLog));
+  PetscCall(PetscStageLogGetEventPerfLog(stageLog,stage,&eventPerfLog));
   /* Check for double counting */
   eventPerfLog->eventInfo[event].depth--;
   if (eventPerfLog->eventInfo[event].depth > 0) PetscFunctionReturn(0);
@@ -949,11 +949,11 @@ PetscErrorCode PetscLogEventEndTrace(PetscLogEvent event,int t,PetscObject o1,Pe
 
   /* Log performance info */
   if (petsc_tracelevel) {
-    CHKERRQ(PetscStrncpy(petsc_tracespace,petsc_traceblanks,2*petsc_tracelevel));
+    PetscCall(PetscStrncpy(petsc_tracespace,petsc_traceblanks,2*petsc_tracelevel));
   }
   petsc_tracespace[2*petsc_tracelevel] = 0;
   PetscTime(&cur_time);
-  CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,petsc_tracefile,"%s[%d] %g Event end: %s\n",petsc_tracespace,rank,cur_time-petsc_tracetime,eventRegLog->eventInfo[event].name));
+  PetscCall(PetscFPrintf(PETSC_COMM_SELF,petsc_tracefile,"%s[%d] %g Event end: %s\n",petsc_tracespace,rank,cur_time-petsc_tracetime,eventRegLog->eventInfo[event].name));
   err  = fflush(petsc_tracefile);
   PetscCheck(!err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
   PetscFunctionReturn(0);
@@ -986,9 +986,9 @@ PetscErrorCode PetscLogEventSetDof(PetscLogEvent event, PetscInt n, PetscLogDoub
 
   PetscFunctionBegin;
   PetscCheckFalse((n < 0) || (n > 7),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Error index %" PetscInt_FMT " is not in [0, 8)", n);
-  CHKERRQ(PetscLogGetStageLog(&stageLog));
-  CHKERRQ(PetscStageLogGetCurrent(stageLog,&stage));
-  CHKERRQ(PetscStageLogGetEventPerfLog(stageLog,stage,&eventLog));
+  PetscCall(PetscLogGetStageLog(&stageLog));
+  PetscCall(PetscStageLogGetCurrent(stageLog,&stage));
+  PetscCall(PetscStageLogGetEventPerfLog(stageLog,stage,&eventLog));
   eventLog->eventInfo[event].dof[n] = dof;
   PetscFunctionReturn(0);
 }
@@ -1021,9 +1021,9 @@ PetscErrorCode PetscLogEventSetError(PetscLogEvent event, PetscInt n, PetscLogDo
 
   PetscFunctionBegin;
   PetscCheckFalse((n < 0) || (n > 7),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Error index %" PetscInt_FMT " is not in [0, 8)", n);
-  CHKERRQ(PetscLogGetStageLog(&stageLog));
-  CHKERRQ(PetscStageLogGetCurrent(stageLog,&stage));
-  CHKERRQ(PetscStageLogGetEventPerfLog(stageLog,stage,&eventLog));
+  PetscCall(PetscLogGetStageLog(&stageLog));
+  PetscCall(PetscStageLogGetCurrent(stageLog,&stage));
+  PetscCall(PetscStageLogGetEventPerfLog(stageLog,stage,&eventLog));
   eventLog->eventInfo[event].errors[n] = error;
   PetscFunctionReturn(0);
 }

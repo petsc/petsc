@@ -15,39 +15,39 @@ int main(int argc,char **argv)
   MatStencil      idx[2],idy[2];
   PetscScalar     *values;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-P",&P,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-p",&p,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-s",&s,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-w",&w,NULL));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-star",&flg,NULL));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-P",&P,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-p",&p,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-s",&s,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-w",&w,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-star",&flg,NULL));
   if (flg) stencil_type =  DMDA_STENCIL_STAR;
 
   /* Create distributed array and get vectors */
-  CHKERRQ(DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,stencil_type,M,N,P,m,n,p,w,s,0,0,0,&da));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
-  CHKERRQ(DMSetMatType(da,MATMPIBAIJ));
-  CHKERRQ(DMCreateMatrix(da,&mat));
+  PetscCall(DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,stencil_type,M,N,P,m,n,p,w,s,0,0,0,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMSetMatType(da,MATMPIBAIJ));
+  PetscCall(DMCreateMatrix(da,&mat));
 
   idx[0].i = 1;   idx[0].j = 1; idx[0].k = 0;
   idx[1].i = 2;   idx[1].j = 1; idx[1].k = 0;
   idy[0].i = 1;   idy[0].j = 2; idy[0].k = 0;
   idy[1].i = 2;   idy[1].j = 2; idy[1].k = 0;
-  CHKERRQ(PetscMalloc1(2*2*w*w,&values));
+  PetscCall(PetscMalloc1(2*2*w*w,&values));
   for (i=0; i<2*2*w*w; i++) values[i] = i;
-  CHKERRQ(MatSetValuesBlockedStencil(mat,2,idx,2,idy,values,INSERT_VALUES));
-  CHKERRQ(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatSetValuesBlockedStencil(mat,2,idx,2,idy,values,INSERT_VALUES));
+  PetscCall(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
 
   /* Free memory */
-  CHKERRQ(PetscFree(values));
-  CHKERRQ(MatDestroy(&mat));
-  CHKERRQ(DMDestroy(&da));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFree(values));
+  PetscCall(MatDestroy(&mat));
+  PetscCall(DMDestroy(&da));
+  PetscCall(PetscFinalize());
   return 0;
 }

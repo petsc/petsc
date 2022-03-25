@@ -8,17 +8,17 @@ int main(int argc, char **args)
   PetscInt        N = 32;
   MPI_Comm        comm;
 
-  CHKERRQ(PetscInitialize(&argc, &args, (char*) 0, help));
+  PetscCall(PetscInitialize(&argc, &args, (char*) 0, help));
   comm = PETSC_COMM_WORLD;
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL, "-N", &N, NULL));
-  CHKERRQ(MatCreate(comm, &A));
-  CHKERRQ(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, N, N));
-  CHKERRQ(MatSetFromOptions(A));
-  CHKERRQ(MatSeqAIJSetPreallocation(A, 3, NULL));
-  CHKERRQ(MatMPIAIJSetPreallocation(A, 3, NULL, 2, NULL));
-  CHKERRQ(MatZeroEntries(A));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscOptionsGetInt(NULL,NULL, "-N", &N, NULL));
+  PetscCall(MatCreate(comm, &A));
+  PetscCall(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, N, N));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSeqAIJSetPreallocation(A, 3, NULL));
+  PetscCall(MatMPIAIJSetPreallocation(A, 3, NULL, 2, NULL));
+  PetscCall(MatZeroEntries(A));
+  PetscCall(MatDestroy(&A));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

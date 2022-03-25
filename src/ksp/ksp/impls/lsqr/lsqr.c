@@ -28,10 +28,10 @@ static PetscErrorCode  VecSquare(Vec v)
   PetscInt       i, n;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetLocalSize(v, &n));
-  CHKERRQ(VecGetArray(v, &x));
+  PetscCall(VecGetLocalSize(v, &n));
+  PetscCall(VecGetArray(v, &x));
   for (i = 0; i < n; i++) x[i] *= PetscConj(x[i]);
-  CHKERRQ(VecRestoreArray(v, &x));
+  PetscCall(VecRestoreArray(v, &x));
   PetscFunctionReturn(0);
 }
 
@@ -41,26 +41,26 @@ static PetscErrorCode KSPSetUp_LSQR(KSP ksp)
   PetscBool      nopreconditioner;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)ksp->pc,PCNONE,&nopreconditioner));
+  PetscCall(PetscObjectTypeCompare((PetscObject)ksp->pc,PCNONE,&nopreconditioner));
 
   if (lsqr->vwork_m) {
-    CHKERRQ(VecDestroyVecs(lsqr->nwork_m,&lsqr->vwork_m));
+    PetscCall(VecDestroyVecs(lsqr->nwork_m,&lsqr->vwork_m));
   }
 
   if (lsqr->vwork_n) {
-    CHKERRQ(VecDestroyVecs(lsqr->nwork_n,&lsqr->vwork_n));
+    PetscCall(VecDestroyVecs(lsqr->nwork_n,&lsqr->vwork_n));
   }
 
   lsqr->nwork_m = 2;
   if (nopreconditioner) lsqr->nwork_n = 4;
   else lsqr->nwork_n = 5;
-  CHKERRQ(KSPCreateVecs(ksp,lsqr->nwork_n,&lsqr->vwork_n,lsqr->nwork_m,&lsqr->vwork_m));
+  PetscCall(KSPCreateVecs(ksp,lsqr->nwork_n,&lsqr->vwork_n,lsqr->nwork_m,&lsqr->vwork_m));
 
   if (lsqr->se_flg && !lsqr->se) {
-    CHKERRQ(VecDuplicate(lsqr->vwork_n[0],&lsqr->se));
-    CHKERRQ(VecSet(lsqr->se,PETSC_INFINITY));
+    PetscCall(VecDuplicate(lsqr->vwork_n[0],&lsqr->se));
+    PetscCall(VecSet(lsqr->se,PETSC_INFINITY));
   } else if (!lsqr->se_flg) {
-    CHKERRQ(VecDestroy(&lsqr->se));
+    PetscCall(VecDestroy(&lsqr->se));
   }
   PetscFunctionReturn(0);
 }
@@ -76,11 +76,11 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   PetscBool      diagonalscale,nopreconditioner;
 
   PetscFunctionBegin;
-  CHKERRQ(PCGetDiagonalScale(ksp->pc,&diagonalscale));
+  PetscCall(PCGetDiagonalScale(ksp->pc,&diagonalscale));
   PetscCheck(!diagonalscale,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
-  CHKERRQ(PCGetOperators(ksp->pc,&Amat,&Pmat));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)ksp->pc,PCNONE,&nopreconditioner));
+  PetscCall(PCGetOperators(ksp->pc,&Amat,&Pmat));
+  PetscCall(PetscObjectTypeCompare((PetscObject)ksp->pc,PCNONE,&nopreconditioner));
 
   /* vectors of length m, where system size is mxn */
   B  = ksp->vec_rhs;
@@ -97,56 +97,56 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
 
   /* standard error vector */
   if (lsqr->se) {
-    CHKERRQ(VecSet(lsqr->se,0.0));
+    PetscCall(VecSet(lsqr->se,0.0));
   }
 
   /* Compute initial residual, temporarily use work vector u */
   if (!ksp->guess_zero) {
-    CHKERRQ(KSP_MatMult(ksp,Amat,X,U));       /*   u <- b - Ax     */
-    CHKERRQ(VecAYPX(U,-1.0,B));
+    PetscCall(KSP_MatMult(ksp,Amat,X,U));       /*   u <- b - Ax     */
+    PetscCall(VecAYPX(U,-1.0,B));
   } else {
-    CHKERRQ(VecCopy(B,U));            /*   u <- b (x is 0) */
+    PetscCall(VecCopy(B,U));            /*   u <- b (x is 0) */
   }
 
   /* Test for nothing to do */
-  CHKERRQ(VecNorm(U,NORM_2,&rnorm));
+  PetscCall(VecNorm(U,NORM_2,&rnorm));
   KSPCheckNorm(ksp,rnorm);
-  CHKERRQ(PetscObjectSAWsTakeAccess((PetscObject)ksp));
+  PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
   ksp->its   = 0;
   ksp->rnorm = rnorm;
-  CHKERRQ(PetscObjectSAWsGrantAccess((PetscObject)ksp));
-  CHKERRQ(KSPLogResidualHistory(ksp,rnorm));
-  CHKERRQ(KSPMonitor(ksp,0,rnorm));
-  CHKERRQ((*ksp->converged)(ksp,0,rnorm,&ksp->reason,ksp->cnvP));
+  PetscCall(PetscObjectSAWsGrantAccess((PetscObject)ksp));
+  PetscCall(KSPLogResidualHistory(ksp,rnorm));
+  PetscCall(KSPMonitor(ksp,0,rnorm));
+  PetscCall((*ksp->converged)(ksp,0,rnorm,&ksp->reason,ksp->cnvP));
   if (ksp->reason) PetscFunctionReturn(0);
 
   beta = rnorm;
-  CHKERRQ(VecScale(U,1.0/beta));
-  CHKERRQ(KSP_MatMultHermitianTranspose(ksp,Amat,U,V));
+  PetscCall(VecScale(U,1.0/beta));
+  PetscCall(KSP_MatMultHermitianTranspose(ksp,Amat,U,V));
   if (nopreconditioner) {
-    CHKERRQ(VecNorm(V,NORM_2,&alpha));
+    PetscCall(VecNorm(V,NORM_2,&alpha));
     KSPCheckNorm(ksp,rnorm);
   } else {
     /* this is an application of the preconditioner for the normal equations; not the operator, see the manual page */
-    CHKERRQ(PCApply(ksp->pc,V,Z));
-    CHKERRQ(VecDotRealPart(V,Z,&alpha));
+    PetscCall(PCApply(ksp->pc,V,Z));
+    PetscCall(VecDotRealPart(V,Z,&alpha));
     if (alpha <= 0.0) {
       ksp->reason = KSP_DIVERGED_BREAKDOWN;
       PetscFunctionReturn(0);
     }
     alpha = PetscSqrtReal(alpha);
-    CHKERRQ(VecScale(Z,1.0/alpha));
+    PetscCall(VecScale(Z,1.0/alpha));
   }
-  CHKERRQ(VecScale(V,1.0/alpha));
+  PetscCall(VecScale(V,1.0/alpha));
 
   if (nopreconditioner) {
-    CHKERRQ(VecCopy(V,W));
+    PetscCall(VecCopy(V,W));
   } else {
-    CHKERRQ(VecCopy(Z,W));
+    PetscCall(VecCopy(Z,W));
   }
 
   if (lsqr->exact_norm) {
-    CHKERRQ(MatNorm(Amat,NORM_FROBENIUS,&lsqr->anorm));
+    PetscCall(MatNorm(Amat,NORM_FROBENIUS,&lsqr->anorm));
   } else lsqr->anorm = 0.0;
 
   lsqr->arnorm = alpha * beta;
@@ -155,36 +155,36 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   i            = 0;
   do {
     if (nopreconditioner) {
-      CHKERRQ(KSP_MatMult(ksp,Amat,V,U1));
+      PetscCall(KSP_MatMult(ksp,Amat,V,U1));
     } else {
-      CHKERRQ(KSP_MatMult(ksp,Amat,Z,U1));
+      PetscCall(KSP_MatMult(ksp,Amat,Z,U1));
     }
-    CHKERRQ(VecAXPY(U1,-alpha,U));
-    CHKERRQ(VecNorm(U1,NORM_2,&beta));
+    PetscCall(VecAXPY(U1,-alpha,U));
+    PetscCall(VecNorm(U1,NORM_2,&beta));
     KSPCheckNorm(ksp,beta);
     if (beta > 0.0) {
-      CHKERRQ(VecScale(U1,1.0/beta)); /* beta*U1 = Amat*V - alpha*U */
+      PetscCall(VecScale(U1,1.0/beta)); /* beta*U1 = Amat*V - alpha*U */
       if (!lsqr->exact_norm) {
         lsqr->anorm = PetscSqrtReal(PetscSqr(lsqr->anorm) + PetscSqr(alpha) + PetscSqr(beta));
       }
     }
 
-    CHKERRQ(KSP_MatMultHermitianTranspose(ksp,Amat,U1,V1));
-    CHKERRQ(VecAXPY(V1,-beta,V));
+    PetscCall(KSP_MatMultHermitianTranspose(ksp,Amat,U1,V1));
+    PetscCall(VecAXPY(V1,-beta,V));
     if (nopreconditioner) {
-      CHKERRQ(VecNorm(V1,NORM_2,&alpha));
+      PetscCall(VecNorm(V1,NORM_2,&alpha));
       KSPCheckNorm(ksp,alpha);
     } else {
-      CHKERRQ(PCApply(ksp->pc,V1,Z));
-      CHKERRQ(VecDotRealPart(V1,Z,&alpha));
+      PetscCall(PCApply(ksp->pc,V1,Z));
+      PetscCall(VecDotRealPart(V1,Z,&alpha));
       if (alpha <= 0.0) {
         ksp->reason = KSP_DIVERGED_BREAKDOWN;
         break;
       }
       alpha = PetscSqrtReal(alpha);
-      CHKERRQ(VecScale(Z,1.0/alpha));
+      PetscCall(VecScale(Z,1.0/alpha));
     }
-    CHKERRQ(VecScale(V1,1.0/alpha)); /* alpha*V1 = Amat^T*U1 - beta*V */
+    PetscCall(VecScale(V1,1.0/alpha)); /* alpha*V1 = Amat^T*U1 - beta*V */
     rho    = PetscSqrtScalar(rhobar*rhobar + beta*beta);
     c      = rhobar / rho;
     s      = beta / rho;
@@ -194,30 +194,30 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
     phibar = s * phibar;
     tau    = s * phi;
 
-    CHKERRQ(VecAXPY(X,phi/rho,W));  /*    x <- x + (phi/rho) w   */
+    PetscCall(VecAXPY(X,phi/rho,W));  /*    x <- x + (phi/rho) w   */
 
     if (lsqr->se) {
-      CHKERRQ(VecCopy(W,W2));
-      CHKERRQ(VecSquare(W2));
-      CHKERRQ(VecScale(W2,1.0/(rho*rho)));
-      CHKERRQ(VecAXPY(lsqr->se, 1.0, W2)); /* lsqr->se <- lsqr->se + (w^2/rho^2) */
+      PetscCall(VecCopy(W,W2));
+      PetscCall(VecSquare(W2));
+      PetscCall(VecScale(W2,1.0/(rho*rho)));
+      PetscCall(VecAXPY(lsqr->se, 1.0, W2)); /* lsqr->se <- lsqr->se + (w^2/rho^2) */
     }
     if (nopreconditioner) {
-      CHKERRQ(VecAYPX(W,-theta/rho,V1));  /* w <- v - (theta/rho) w */
+      PetscCall(VecAYPX(W,-theta/rho,V1));  /* w <- v - (theta/rho) w */
     } else {
-      CHKERRQ(VecAYPX(W,-theta/rho,Z));   /* w <- z - (theta/rho) w */
+      PetscCall(VecAYPX(W,-theta/rho,Z));   /* w <- z - (theta/rho) w */
     }
 
     lsqr->arnorm = alpha*PetscAbsScalar(tau);
     rnorm        = PetscRealPart(phibar);
 
-    CHKERRQ(PetscObjectSAWsTakeAccess((PetscObject)ksp));
+    PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
     ksp->its++;
     ksp->rnorm = rnorm;
-    CHKERRQ(PetscObjectSAWsGrantAccess((PetscObject)ksp));
-    CHKERRQ(KSPLogResidualHistory(ksp,rnorm));
-    CHKERRQ(KSPMonitor(ksp,i+1,rnorm));
-    CHKERRQ((*ksp->converged)(ksp,i+1,rnorm,&ksp->reason,ksp->cnvP));
+    PetscCall(PetscObjectSAWsGrantAccess((PetscObject)ksp));
+    PetscCall(KSPLogResidualHistory(ksp,rnorm));
+    PetscCall(KSPMonitor(ksp,i+1,rnorm));
+    PetscCall((*ksp->converged)(ksp,i+1,rnorm,&ksp->reason,ksp->cnvP));
     if (ksp->reason) break;
     SWAP(U1,U,TMP);
     SWAP(V1,V,TMP);
@@ -229,11 +229,11 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   /* Finish off the standard error estimates */
   if (lsqr->se) {
     tmp  = 1.0;
-    CHKERRQ(MatGetSize(Amat,&size1,&size2));
+    PetscCall(MatGetSize(Amat,&size1,&size2));
     if (size1 > size2) tmp = size1 - size2;
     tmp  = rnorm / PetscSqrtScalar(tmp);
-    CHKERRQ(VecSqrtAbs(lsqr->se));
-    CHKERRQ(VecScale(lsqr->se,tmp));
+    PetscCall(VecSqrtAbs(lsqr->se));
+    PetscCall(VecScale(lsqr->se,tmp));
   }
   PetscFunctionReturn(0);
 }
@@ -245,18 +245,18 @@ PetscErrorCode KSPDestroy_LSQR(KSP ksp)
   PetscFunctionBegin;
   /* Free work vectors */
   if (lsqr->vwork_n) {
-    CHKERRQ(VecDestroyVecs(lsqr->nwork_n,&lsqr->vwork_n));
+    PetscCall(VecDestroyVecs(lsqr->nwork_n,&lsqr->vwork_n));
   }
   if (lsqr->vwork_m) {
-    CHKERRQ(VecDestroyVecs(lsqr->nwork_m,&lsqr->vwork_m));
+    PetscCall(VecDestroyVecs(lsqr->nwork_m,&lsqr->vwork_m));
   }
-  CHKERRQ(VecDestroy(&lsqr->se));
+  PetscCall(VecDestroy(&lsqr->se));
   /* Revert convergence test */
-  CHKERRQ(KSPSetConvergenceTest(ksp,lsqr->converged,lsqr->cnvP,lsqr->convergeddestroy));
+  PetscCall(KSPSetConvergenceTest(ksp,lsqr->converged,lsqr->cnvP,lsqr->convergeddestroy));
   /* Free the KSP_LSQR context */
-  CHKERRQ(PetscFree(ksp->data));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ksp,"KSPLSQRMonitorResidual_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ksp,"KSPLSQRMonitorResidualDrawLG_C",NULL));
+  PetscCall(PetscFree(ksp->data));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPLSQRMonitorResidual_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPLSQRMonitorResidualDrawLG_C",NULL));
   PetscFunctionReturn(0);
 }
 
@@ -386,20 +386,20 @@ PetscErrorCode KSPLSQRMonitorResidual_LSQR(KSP ksp, PetscInt n, PetscReal rnorm,
   const char        *prefix;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectGetTabLevel((PetscObject) ksp, &tablevel));
-  CHKERRQ(PetscObjectGetOptionsPrefix((PetscObject) ksp, &prefix));
-  CHKERRQ(PetscStrncpy(normtype, KSPNormTypes[ksp->normtype], sizeof(normtype)));
-  CHKERRQ(PetscStrtolower(normtype));
-  CHKERRQ(PetscViewerPushFormat(viewer, format));
-  CHKERRQ(PetscViewerASCIIAddTab(viewer, tablevel));
-  if (n == 0 && prefix) CHKERRQ(PetscViewerASCIIPrintf(viewer, "  Residual norm, norm of normal equations, and matrix norm for %s solve.\n", prefix));
+  PetscCall(PetscObjectGetTabLevel((PetscObject) ksp, &tablevel));
+  PetscCall(PetscObjectGetOptionsPrefix((PetscObject) ksp, &prefix));
+  PetscCall(PetscStrncpy(normtype, KSPNormTypes[ksp->normtype], sizeof(normtype)));
+  PetscCall(PetscStrtolower(normtype));
+  PetscCall(PetscViewerPushFormat(viewer, format));
+  PetscCall(PetscViewerASCIIAddTab(viewer, tablevel));
+  if (n == 0 && prefix) PetscCall(PetscViewerASCIIPrintf(viewer, "  Residual norm, norm of normal equations, and matrix norm for %s solve.\n", prefix));
   if (!n) {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"%3D KSP resid norm %14.12e\n",n,(double)rnorm));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"%3D KSP resid norm %14.12e\n",n,(double)rnorm));
   } else {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"%3D KSP resid norm %14.12e normal eq resid norm %14.12e matrix norm %14.12e\n",n,(double)rnorm,(double)lsqr->arnorm,(double)lsqr->anorm));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"%3D KSP resid norm %14.12e normal eq resid norm %14.12e matrix norm %14.12e\n",n,(double)rnorm,(double)lsqr->arnorm,(double)lsqr->anorm));
   }
-  CHKERRQ(PetscViewerASCIISubtractTab(viewer, tablevel));
-  CHKERRQ(PetscViewerPopFormat(viewer));
+  PetscCall(PetscViewerASCIISubtractTab(viewer, tablevel));
+  PetscCall(PetscViewerPopFormat(viewer));
   PetscFunctionReturn(0);
 }
 
@@ -427,7 +427,7 @@ PetscErrorCode KSPLSQRMonitorResidual(KSP ksp, PetscInt n, PetscReal rnorm, Pets
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidPointer(vf, 4);
   PetscValidHeaderSpecific(vf->viewer, PETSC_VIEWER_CLASSID, 4);
-  CHKERRQ(PetscTryMethod(ksp, "KSPLSQRMonitorResidual_C", (KSP,PetscInt,PetscReal,PetscViewerAndFormat*), (ksp,n,rnorm,vf)));
+  PetscCall(PetscTryMethod(ksp, "KSPLSQRMonitorResidual_C", (KSP,PetscInt,PetscReal,PetscViewerAndFormat*), (ksp,n,rnorm,vf)));
   PetscFunctionReturn(0);
 }
 
@@ -441,21 +441,21 @@ PetscErrorCode KSPLSQRMonitorResidualDrawLG_LSQR(KSP ksp, PetscInt n, PetscReal 
   PetscReal          x[2], y[2];
 
   PetscFunctionBegin;
-  CHKERRQ(PetscViewerPushFormat(viewer, format));
-  if (!n) CHKERRQ(PetscDrawLGReset(lg));
+  PetscCall(PetscViewerPushFormat(viewer, format));
+  if (!n) PetscCall(PetscDrawLGReset(lg));
   x[0] = (PetscReal) n;
   if (rnorm > 0.0) y[0] = PetscLog10Real(rnorm);
   else y[0] = -15.0;
   x[1] = (PetscReal) n;
   if (lsqr->arnorm > 0.0) y[1] = PetscLog10Real(lsqr->arnorm);
   else y[1] = -15.0;
-  CHKERRQ(PetscDrawLGAddPoint(lg, x, y));
-  CHKERRQ(KSPGetConvergedReason(ksp, &reason));
+  PetscCall(PetscDrawLGAddPoint(lg, x, y));
+  PetscCall(KSPGetConvergedReason(ksp, &reason));
   if (n <= 20 || !(n % 5) || reason) {
-    CHKERRQ(PetscDrawLGDraw(lg));
-    CHKERRQ(PetscDrawLGSave(lg));
+    PetscCall(PetscDrawLGDraw(lg));
+    PetscCall(PetscDrawLGSave(lg));
   }
-  CHKERRQ(PetscViewerPopFormat(viewer));
+  PetscCall(PetscViewerPopFormat(viewer));
   PetscFunctionReturn(0);
 }
 
@@ -484,7 +484,7 @@ PetscErrorCode KSPLSQRMonitorResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm
   PetscValidPointer(vf, 4);
   PetscValidHeaderSpecific(vf->viewer, PETSC_VIEWER_CLASSID, 4);
   PetscValidHeaderSpecific(vf->lg, PETSC_DRAWLG_CLASSID, 4);
-  CHKERRQ(PetscTryMethod(ksp, "KSPLSQRMonitorResidualDrawLG_C", (KSP,PetscInt,PetscReal,PetscViewerAndFormat*), (ksp,n,rnorm,vf)));
+  PetscCall(PetscTryMethod(ksp, "KSPLSQRMonitorResidualDrawLG_C", (KSP,PetscInt,PetscReal,PetscViewerAndFormat*), (ksp,n,rnorm,vf)));
   PetscFunctionReturn(0);
 }
 
@@ -510,9 +510,9 @@ PetscErrorCode KSPLSQRMonitorResidualDrawLGCreate(PetscViewer viewer, PetscViewe
   const char    *names[] = {"residual", "normal eqn residual"};
 
   PetscFunctionBegin;
-  CHKERRQ(PetscViewerAndFormatCreate(viewer, format, vf));
+  PetscCall(PetscViewerAndFormatCreate(viewer, format, vf));
   (*vf)->data = ctx;
-  CHKERRQ(KSPMonitorLGCreate(PetscObjectComm((PetscObject) viewer), NULL, NULL, "Log Residual Norm", 2, names, PETSC_DECIDE, PETSC_DECIDE, 400, 300, &(*vf)->lg));
+  PetscCall(KSPMonitorLGCreate(PetscObjectComm((PetscObject) viewer), NULL, NULL, "Log Residual Norm", 2, names, PETSC_DECIDE, PETSC_DECIDE, 400, 300, &(*vf)->lg));
   PetscFunctionReturn(0);
 }
 
@@ -521,11 +521,11 @@ PetscErrorCode KSPSetFromOptions_LSQR(PetscOptionItems *PetscOptionsObject,KSP k
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"KSP LSQR Options"));
-  CHKERRQ(PetscOptionsBool("-ksp_lsqr_compute_standard_error","Set Standard Error Estimates of Solution","KSPLSQRSetComputeStandardErrorVec",lsqr->se_flg,&lsqr->se_flg,NULL));
-  CHKERRQ(PetscOptionsBool("-ksp_lsqr_exact_mat_norm","Compute exact matrix norm instead of iteratively refined estimate","KSPLSQRSetExactMatNorm",lsqr->exact_norm,&lsqr->exact_norm,NULL));
-  CHKERRQ(KSPMonitorSetFromOptions(ksp, "-ksp_lsqr_monitor", "lsqr_residual", NULL));
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"KSP LSQR Options"));
+  PetscCall(PetscOptionsBool("-ksp_lsqr_compute_standard_error","Set Standard Error Estimates of Solution","KSPLSQRSetComputeStandardErrorVec",lsqr->se_flg,&lsqr->se_flg,NULL));
+  PetscCall(PetscOptionsBool("-ksp_lsqr_exact_mat_norm","Compute exact matrix norm instead of iteratively refined estimate","KSPLSQRSetExactMatNorm",lsqr->exact_norm,&lsqr->exact_norm,NULL));
+  PetscCall(KSPMonitorSetFromOptions(ksp, "-ksp_lsqr_monitor", "lsqr_residual", NULL));
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -535,19 +535,19 @@ PetscErrorCode KSPView_LSQR(KSP ksp,PetscViewer viewer)
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
     if (lsqr->se) {
       PetscReal rnorm;
-      CHKERRQ(VecNorm(lsqr->se,NORM_2,&rnorm));
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"  norm of standard error %g, iterations %d\n",(double)rnorm,ksp->its));
+      PetscCall(VecNorm(lsqr->se,NORM_2,&rnorm));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  norm of standard error %g, iterations %d\n",(double)rnorm,ksp->its));
     } else {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"  standard error not computed\n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  standard error not computed\n"));
     }
     if (lsqr->exact_norm) {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"  using exact matrix norm\n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  using exact matrix norm\n"));
     } else {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"  using inexact matrix norm\n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  using inexact matrix norm\n"));
     }
   }
   PetscFunctionReturn(0);
@@ -588,15 +588,15 @@ PetscErrorCode  KSPLSQRConvergedDefault(KSP ksp,PetscInt n,PetscReal rnorm,KSPCo
 
   PetscFunctionBegin;
   /* check for convergence in A*x=b */
-  CHKERRQ(KSPConvergedDefault(ksp,n,rnorm,reason,ctx));
+  PetscCall(KSPConvergedDefault(ksp,n,rnorm,reason,ctx));
   if (!n || *reason) PetscFunctionReturn(0);
 
   /* check for convergence in min{|b-A*x|} */
   if (lsqr->arnorm < ksp->abstol) {
-    CHKERRQ(PetscInfo(ksp,"LSQR solver has converged. Normal equation residual %14.12e is less than absolute tolerance %14.12e at iteration %D\n",(double)lsqr->arnorm,(double)ksp->abstol,n));
+    PetscCall(PetscInfo(ksp,"LSQR solver has converged. Normal equation residual %14.12e is less than absolute tolerance %14.12e at iteration %D\n",(double)lsqr->arnorm,(double)ksp->abstol,n));
     *reason = KSP_CONVERGED_ATOL_NORMAL;
   } else if (lsqr->arnorm < ksp->rtol * lsqr->anorm * rnorm) {
-    CHKERRQ(PetscInfo(ksp,"LSQR solver has converged. Normal equation residual %14.12e is less than rel. tol. %14.12e times %s Frobenius norm of matrix %14.12e times residual %14.12e at iteration %D\n",(double)lsqr->arnorm,(double)ksp->rtol,lsqr->exact_norm?"exact":"approx.",(double)lsqr->anorm,(double)rnorm,n));
+    PetscCall(PetscInfo(ksp,"LSQR solver has converged. Normal equation residual %14.12e is less than rel. tol. %14.12e times %s Frobenius norm of matrix %14.12e times residual %14.12e at iteration %D\n",(double)lsqr->arnorm,(double)ksp->rtol,lsqr->exact_norm?"exact":"approx.",(double)lsqr->anorm,(double)rnorm,n));
     *reason = KSP_CONVERGED_RTOL_NORMAL;
   }
   PetscFunctionReturn(0);
@@ -645,14 +645,14 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LSQR(KSP ksp)
   void           *ctx;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNewLog(ksp,&lsqr));
+  PetscCall(PetscNewLog(ksp,&lsqr));
   lsqr->se     = NULL;
   lsqr->se_flg = PETSC_FALSE;
   lsqr->exact_norm = PETSC_FALSE;
   lsqr->anorm  = -1.0;
   lsqr->arnorm = -1.0;
   ksp->data    = (void*)lsqr;
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,3));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,3));
 
   ksp->ops->setup          = KSPSetUp_LSQR;
   ksp->ops->solve          = KSPSolve_LSQR;
@@ -661,11 +661,11 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LSQR(KSP ksp)
   ksp->ops->view           = KSPView_LSQR;
 
   /* Backup current convergence test; remove destroy routine from KSP to prevent destroying the convergence context in KSPSetConvergenceTest() */
-  CHKERRQ(KSPGetAndClearConvergenceTest(ksp,&lsqr->converged,&lsqr->cnvP,&lsqr->convergeddestroy));
+  PetscCall(KSPGetAndClearConvergenceTest(ksp,&lsqr->converged,&lsqr->cnvP,&lsqr->convergeddestroy));
   /* Override current convergence test */
-  CHKERRQ(KSPConvergedDefaultCreate(&ctx));
-  CHKERRQ(KSPSetConvergenceTest(ksp,KSPLSQRConvergedDefault,ctx,KSPConvergedDefaultDestroy));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ksp,"KSPLSQRMonitorResidual_C",KSPLSQRMonitorResidual_LSQR));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ksp,"KSPLSQRMonitorResidualDrawLG_C",KSPLSQRMonitorResidualDrawLG_LSQR));
+  PetscCall(KSPConvergedDefaultCreate(&ctx));
+  PetscCall(KSPSetConvergenceTest(ksp,KSPLSQRConvergedDefault,ctx,KSPConvergedDefaultDestroy));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPLSQRMonitorResidual_C",KSPLSQRMonitorResidual_LSQR));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPLSQRMonitorResidualDrawLG_C",KSPLSQRMonitorResidualDrawLG_LSQR));
   PetscFunctionReturn(0);
 }

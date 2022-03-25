@@ -47,7 +47,7 @@ PetscErrorCode PCDeflationSetInitOnly(PC pc,PetscBool flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveBool(pc,flg,2);
-  CHKERRQ(PetscTryMethod(pc,"PCDeflationSetInitOnly_C",(PC,PetscBool),(pc,flg)));
+  PetscCall(PetscTryMethod(pc,"PCDeflationSetInitOnly_C",(PC,PetscBool),(pc,flg)));
   PetscFunctionReturn(0);
 }
 
@@ -82,7 +82,7 @@ PetscErrorCode PCDeflationSetLevels(PC pc,PetscInt max)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveInt(pc,max,2);
-  CHKERRQ(PetscTryMethod(pc,"PCDeflationSetLevels_C",(PC,PetscInt,PetscInt),(pc,0,max)));
+  PetscCall(PetscTryMethod(pc,"PCDeflationSetLevels_C",(PC,PetscInt,PetscInt),(pc,0,max)));
   PetscFunctionReturn(0);
 }
 
@@ -119,7 +119,7 @@ PetscErrorCode PCDeflationSetReductionFactor(PC pc,PetscInt red)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveInt(pc,red,2);
-  CHKERRQ(PetscTryMethod(pc,"PCDeflationSetReductionFactor_C",(PC,PetscInt),(pc,red)));
+  PetscCall(PetscTryMethod(pc,"PCDeflationSetReductionFactor_C",(PC,PetscInt),(pc,red)));
   PetscFunctionReturn(0);
 }
 
@@ -163,7 +163,7 @@ PetscErrorCode PCDeflationSetCorrectionFactor(PC pc,PetscScalar fact)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveScalar(pc,fact,2);
-  CHKERRQ(PetscTryMethod(pc,"PCDeflationSetCorrectionFactor_C",(PC,PetscScalar),(pc,fact)));
+  PetscCall(PetscTryMethod(pc,"PCDeflationSetCorrectionFactor_C",(PC,PetscScalar),(pc,fact)));
   PetscFunctionReturn(0);
 }
 
@@ -206,7 +206,7 @@ PetscErrorCode PCDeflationSetSpaceToCompute(PC pc,PCDeflationSpaceType type,Pets
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (type) PetscValidLogicalCollectiveEnum(pc,type,2);
   if (size > 0) PetscValidLogicalCollectiveInt(pc,size,3);
-  CHKERRQ(PetscTryMethod(pc,"PCDeflationSetSpaceToCompute_C",(PC,PCDeflationSpaceType,PetscInt),(pc,type,size)));
+  PetscCall(PetscTryMethod(pc,"PCDeflationSetSpaceToCompute_C",(PC,PCDeflationSpaceType,PetscInt),(pc,type,size)));
   PetscFunctionReturn(0);
 }
 
@@ -216,12 +216,12 @@ static PetscErrorCode PCDeflationSetSpace_Deflation(PC pc,Mat W,PetscBool transp
 
   PetscFunctionBegin;
   /* possibly allows W' = Wt (which is valid but not tested) */
-  CHKERRQ(PetscObjectReference((PetscObject)W));
+  PetscCall(PetscObjectReference((PetscObject)W));
   if (transpose) {
-    CHKERRQ(MatDestroy(&def->Wt));
+    PetscCall(MatDestroy(&def->Wt));
     def->Wt = W;
   } else {
-    CHKERRQ(MatDestroy(&def->W));
+    PetscCall(MatDestroy(&def->W));
     def->W = W;
   }
   PetscFunctionReturn(0);
@@ -256,7 +256,7 @@ PetscErrorCode PCDeflationSetSpace(PC pc,Mat W,PetscBool transpose)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(W,MAT_CLASSID,2);
   PetscValidLogicalCollectiveBool(pc,transpose,3);
-  CHKERRQ(PetscTryMethod(pc,"PCDeflationSetSpace_C",(PC,Mat,PetscBool),(pc,W,transpose)));
+  PetscCall(PetscTryMethod(pc,"PCDeflationSetSpace_C",(PC,Mat,PetscBool),(pc,W,transpose)));
   PetscFunctionReturn(0);
 }
 
@@ -265,10 +265,10 @@ static PetscErrorCode PCDeflationSetProjectionNullSpaceMat_Deflation(PC pc,Mat m
   PC_Deflation     *def = (PC_Deflation*)pc->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectReference((PetscObject)mat));
-  CHKERRQ(MatDestroy(&def->WtA));
+  PetscCall(PetscObjectReference((PetscObject)mat));
+  PetscCall(MatDestroy(&def->WtA));
   def->WtA = mat;
-  CHKERRQ(PetscLogObjectParent((PetscObject)pc,(PetscObject)def->WtA));
+  PetscCall(PetscLogObjectParent((PetscObject)pc,(PetscObject)def->WtA));
   PetscFunctionReturn(0);
 }
 
@@ -290,7 +290,7 @@ PetscErrorCode  PCDeflationSetProjectionNullSpaceMat(PC pc,Mat mat)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(mat,MAT_CLASSID,2);
-  CHKERRQ(PetscTryMethod(pc,"PCDeflationSetProjectionNullSpaceMat_C",(PC,Mat),(pc,mat)));
+  PetscCall(PetscTryMethod(pc,"PCDeflationSetProjectionNullSpaceMat_C",(PC,Mat),(pc,mat)));
   PetscFunctionReturn(0);
 }
 
@@ -299,10 +299,10 @@ static PetscErrorCode PCDeflationSetCoarseMat_Deflation(PC pc,Mat mat)
   PC_Deflation     *def = (PC_Deflation*)pc->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectReference((PetscObject)mat));
-  CHKERRQ(MatDestroy(&def->WtAW));
+  PetscCall(PetscObjectReference((PetscObject)mat));
+  PetscCall(MatDestroy(&def->WtAW));
   def->WtAW = mat;
-  CHKERRQ(PetscLogObjectParent((PetscObject)pc,(PetscObject)def->WtAW));
+  PetscCall(PetscLogObjectParent((PetscObject)pc,(PetscObject)def->WtAW));
   PetscFunctionReturn(0);
 }
 
@@ -324,7 +324,7 @@ PetscErrorCode  PCDeflationSetCoarseMat(PC pc,Mat mat)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(mat,MAT_CLASSID,2);
-  CHKERRQ(PetscTryMethod(pc,"PCDeflationSetCoarseMat_C",(PC,Mat),(pc,mat)));
+  PetscCall(PetscTryMethod(pc,"PCDeflationSetCoarseMat_C",(PC,Mat),(pc,mat)));
   PetscFunctionReturn(0);
 }
 
@@ -357,7 +357,7 @@ PetscErrorCode  PCDeflationGetCoarseKSP(PC pc,KSP *ksp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(ksp,2);
-  CHKERRQ(PetscTryMethod(pc,"PCDeflationGetCoarseKSP_C",(PC,KSP*),(pc,ksp)));
+  PetscCall(PetscTryMethod(pc,"PCDeflationGetCoarseKSP_C",(PC,KSP*),(pc,ksp)));
   PetscFunctionReturn(0);
 }
 
@@ -390,7 +390,7 @@ PetscErrorCode PCDeflationGetPC(PC pc,PC *apc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(pc,1);
-  CHKERRQ(PetscTryMethod(pc,"PCDeflationGetPC_C",(PC,PC*),(pc,apc)));
+  PetscCall(PetscTryMethod(pc,"PCDeflationGetPC_C",(PC,PC*),(pc,apc)));
   PetscFunctionReturn(0);
 }
 
@@ -408,25 +408,25 @@ static PetscErrorCode PCPreSolve_Deflation(PC pc,KSP ksp,Vec b, Vec x)
   w1 = def->workcoarse[0];
   w2 = def->workcoarse[1];
   r  = def->work;
-  CHKERRQ(PCGetOperators(pc,NULL,&A));
+  PetscCall(PCGetOperators(pc,NULL,&A));
 
-  CHKERRQ(KSPGetInitialGuessNonzero(ksp,&nonzero));
-  CHKERRQ(KSPSetInitialGuessNonzero(ksp,PETSC_TRUE));
+  PetscCall(KSPGetInitialGuessNonzero(ksp,&nonzero));
+  PetscCall(KSPSetInitialGuessNonzero(ksp,PETSC_TRUE));
   if (nonzero) {
-    CHKERRQ(MatMult(A,x,r));                          /*    r  <- b - Ax              */
-    CHKERRQ(VecAYPX(r,-1.0,b));
+    PetscCall(MatMult(A,x,r));                          /*    r  <- b - Ax              */
+    PetscCall(VecAYPX(r,-1.0,b));
   } else {
-    CHKERRQ(VecCopy(b,r));                            /*    r  <- b (x is 0)          */
+    PetscCall(VecCopy(b,r));                            /*    r  <- b (x is 0)          */
   }
 
   if (def->Wt) {
-    CHKERRQ(MatMult(def->Wt,r,w1));                   /*    w1 <- W'*r                */
+    PetscCall(MatMult(def->Wt,r,w1));                   /*    w1 <- W'*r                */
   } else {
-    CHKERRQ(MatMultHermitianTranspose(def->W,r,w1));  /*    w1 <- W'*r                */
+    PetscCall(MatMultHermitianTranspose(def->W,r,w1));  /*    w1 <- W'*r                */
   }
-  CHKERRQ(KSPSolve(def->WtAWinv,w1,w2));              /*    w2 <- (W'*A*W)^{-1}*w1    */
-  CHKERRQ(MatMult(def->W,w2,r));                      /*    r  <- W*w2                */
-  CHKERRQ(VecAYPX(x,1.0,r));
+  PetscCall(KSPSolve(def->WtAWinv,w1,w2));              /*    w2 <- (W'*A*W)^{-1}*w1    */
+  PetscCall(MatMult(def->W,w2,r));                      /*    r  <- W*w2                */
+  PetscCall(VecAYPX(x,1.0,r));
   PetscFunctionReturn(0);
 }
 
@@ -447,22 +447,22 @@ static PetscErrorCode PCApply_Deflation(PC pc,Vec r,Vec z)
   w1 = def->workcoarse[0];
   w2 = def->workcoarse[1];
   u  = def->work;
-  CHKERRQ(PCGetOperators(pc,NULL,&A));
+  PetscCall(PCGetOperators(pc,NULL,&A));
 
-  CHKERRQ(PCApply(def->pc,r,z));                          /*    z <- M^{-1}*r             */
+  PetscCall(PCApply(def->pc,r,z));                          /*    z <- M^{-1}*r             */
   if (!def->init) {
-    CHKERRQ(MatMult(def->WtA,z,w1));                      /*    w1 <- W'*A*z              */
+    PetscCall(MatMult(def->WtA,z,w1));                      /*    w1 <- W'*A*z              */
     if (def->correct) {
       if (def->Wt) {
-        CHKERRQ(MatMult(def->Wt,r,w2));                   /*    w2 <- W'*r                */
+        PetscCall(MatMult(def->Wt,r,w2));                   /*    w2 <- W'*r                */
       } else {
-        CHKERRQ(MatMultHermitianTranspose(def->W,r,w2));  /*    w2 <- W'*r                */
+        PetscCall(MatMultHermitianTranspose(def->W,r,w2));  /*    w2 <- W'*r                */
       }
-      CHKERRQ(VecAXPY(w1,-1.0*def->correctfact,w2));      /*    w1 <- w1 - l*w2           */
+      PetscCall(VecAXPY(w1,-1.0*def->correctfact,w2));      /*    w1 <- w1 - l*w2           */
     }
-    CHKERRQ(KSPSolve(def->WtAWinv,w1,w2));                /*    w2 <- (W'*A*W)^{-1}*w1    */
-    CHKERRQ(MatMult(def->W,w2,u));                        /*    u  <- W*w2                */
-    CHKERRQ(VecAXPY(z,-1.0,u));                           /*    z  <- z - u               */
+    PetscCall(KSPSolve(def->WtAWinv,w1,w2));                /*    w2 <- (W'*A*W)^{-1}*w1    */
+    PetscCall(MatMult(def->W,w2,u));                        /*    u  <- W*w2                */
+    PetscCall(VecAXPY(z,-1.0,u));                           /*    z  <- z - u               */
   }
   PetscFunctionReturn(0);
 }
@@ -482,132 +482,132 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
 
   PetscFunctionBegin;
   if (pc->setupcalled) PetscFunctionReturn(0);
-  CHKERRQ(PetscObjectGetComm((PetscObject)pc,&comm));
-  CHKERRQ(PCGetOperators(pc,NULL,&Amat));
+  PetscCall(PetscObjectGetComm((PetscObject)pc,&comm));
+  PetscCall(PCGetOperators(pc,NULL,&Amat));
   if (!def->lvl && !def->prefix) {
-    CHKERRQ(PCGetOptionsPrefix(pc,&def->prefix));
+    PetscCall(PCGetOptionsPrefix(pc,&def->prefix));
   }
   if (def->lvl) {
-    CHKERRQ(PetscSNPrintf(prefix,sizeof(prefix),"%d_",(int)def->lvl));
+    PetscCall(PetscSNPrintf(prefix,sizeof(prefix),"%d_",(int)def->lvl));
   }
 
   /* compute a deflation space */
   if (def->W || def->Wt) {
     def->spacetype = PC_DEFLATION_SPACE_USER;
   } else {
-    CHKERRQ(PCDeflationComputeSpace(pc));
+    PetscCall(PCDeflationComputeSpace(pc));
   }
 
   /* nested deflation */
   if (def->W) {
-    CHKERRQ(PetscObjectTypeCompare((PetscObject)def->W,MATCOMPOSITE,&match));
+    PetscCall(PetscObjectTypeCompare((PetscObject)def->W,MATCOMPOSITE,&match));
     if (match) {
-      CHKERRQ(MatCompositeGetType(def->W,&ctype));
-      CHKERRQ(MatCompositeGetNumberMat(def->W,&size));
+      PetscCall(MatCompositeGetType(def->W,&ctype));
+      PetscCall(MatCompositeGetNumberMat(def->W,&size));
     }
   } else {
-    CHKERRQ(MatCreateHermitianTranspose(def->Wt,&def->W));
-    CHKERRQ(PetscObjectTypeCompare((PetscObject)def->Wt,MATCOMPOSITE,&match));
+    PetscCall(MatCreateHermitianTranspose(def->Wt,&def->W));
+    PetscCall(PetscObjectTypeCompare((PetscObject)def->Wt,MATCOMPOSITE,&match));
     if (match) {
-      CHKERRQ(MatCompositeGetType(def->Wt,&ctype));
-      CHKERRQ(MatCompositeGetNumberMat(def->Wt,&size));
+      PetscCall(MatCompositeGetType(def->Wt,&ctype));
+      PetscCall(MatCompositeGetNumberMat(def->Wt,&size));
     }
     transp = PETSC_TRUE;
   }
   if (match && ctype == MAT_COMPOSITE_MULTIPLICATIVE) {
     if (!transp) {
       if (def->lvl < def->maxlvl) {
-        CHKERRQ(PetscMalloc1(size,&mats));
+        PetscCall(PetscMalloc1(size,&mats));
         for (i=0; i<size; i++) {
-          CHKERRQ(MatCompositeGetMat(def->W,i,&mats[i]));
+          PetscCall(MatCompositeGetMat(def->W,i,&mats[i]));
         }
         size -= 1;
-        CHKERRQ(MatDestroy(&def->W));
+        PetscCall(MatDestroy(&def->W));
         def->W = mats[size];
-        CHKERRQ(PetscObjectReference((PetscObject)mats[size]));
+        PetscCall(PetscObjectReference((PetscObject)mats[size]));
         if (size > 1) {
-          CHKERRQ(MatCreateComposite(comm,size,mats,&nextDef));
-          CHKERRQ(MatCompositeSetType(nextDef,MAT_COMPOSITE_MULTIPLICATIVE));
+          PetscCall(MatCreateComposite(comm,size,mats,&nextDef));
+          PetscCall(MatCompositeSetType(nextDef,MAT_COMPOSITE_MULTIPLICATIVE));
         } else {
           nextDef = mats[0];
-          CHKERRQ(PetscObjectReference((PetscObject)mats[0]));
+          PetscCall(PetscObjectReference((PetscObject)mats[0]));
         }
-        CHKERRQ(PetscFree(mats));
+        PetscCall(PetscFree(mats));
       } else {
         /* TODO test merge side performance */
-        /* CHKERRQ(MatCompositeSetMergeType(def->W,MAT_COMPOSITE_MERGE_LEFT)); */
-        CHKERRQ(MatCompositeMerge(def->W));
+        /* PetscCall(MatCompositeSetMergeType(def->W,MAT_COMPOSITE_MERGE_LEFT)); */
+        PetscCall(MatCompositeMerge(def->W));
       }
     } else {
       if (def->lvl < def->maxlvl) {
-        CHKERRQ(PetscMalloc1(size,&mats));
+        PetscCall(PetscMalloc1(size,&mats));
         for (i=0; i<size; i++) {
-          CHKERRQ(MatCompositeGetMat(def->Wt,i,&mats[i]));
+          PetscCall(MatCompositeGetMat(def->Wt,i,&mats[i]));
         }
         size -= 1;
-        CHKERRQ(MatDestroy(&def->Wt));
+        PetscCall(MatDestroy(&def->Wt));
         def->Wt = mats[0];
-        CHKERRQ(PetscObjectReference((PetscObject)mats[0]));
+        PetscCall(PetscObjectReference((PetscObject)mats[0]));
         if (size > 1) {
-          CHKERRQ(MatCreateComposite(comm,size,&mats[1],&nextDef));
-          CHKERRQ(MatCompositeSetType(nextDef,MAT_COMPOSITE_MULTIPLICATIVE));
+          PetscCall(MatCreateComposite(comm,size,&mats[1],&nextDef));
+          PetscCall(MatCompositeSetType(nextDef,MAT_COMPOSITE_MULTIPLICATIVE));
         } else {
           nextDef = mats[1];
-          CHKERRQ(PetscObjectReference((PetscObject)mats[1]));
+          PetscCall(PetscObjectReference((PetscObject)mats[1]));
         }
-        CHKERRQ(PetscFree(mats));
+        PetscCall(PetscFree(mats));
       } else {
-        /* CHKERRQ(MatCompositeSetMergeType(def->W,MAT_COMPOSITE_MERGE_LEFT)); */
-        CHKERRQ(MatCompositeMerge(def->Wt));
+        /* PetscCall(MatCompositeSetMergeType(def->W,MAT_COMPOSITE_MERGE_LEFT)); */
+        PetscCall(MatCompositeMerge(def->Wt));
       }
     }
   }
 
   if (transp) {
-    CHKERRQ(MatDestroy(&def->W));
-    CHKERRQ(MatHermitianTranspose(def->Wt,MAT_INITIAL_MATRIX,&def->W));
+    PetscCall(MatDestroy(&def->W));
+    PetscCall(MatHermitianTranspose(def->Wt,MAT_INITIAL_MATRIX,&def->W));
   }
 
   /* assemble WtA */
   if (!def->WtA) {
     if (def->Wt) {
-      CHKERRQ(MatMatMult(def->Wt,Amat,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&def->WtA));
+      PetscCall(MatMatMult(def->Wt,Amat,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&def->WtA));
     } else {
 #if defined(PETSC_USE_COMPLEX)
-      CHKERRQ(MatHermitianTranspose(def->W,MAT_INITIAL_MATRIX,&def->Wt));
-      CHKERRQ(MatMatMult(def->Wt,Amat,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&def->WtA));
+      PetscCall(MatHermitianTranspose(def->W,MAT_INITIAL_MATRIX,&def->Wt));
+      PetscCall(MatMatMult(def->Wt,Amat,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&def->WtA));
 #else
-      CHKERRQ(MatTransposeMatMult(def->W,Amat,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&def->WtA));
+      PetscCall(MatTransposeMatMult(def->W,Amat,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&def->WtA));
 #endif
     }
   }
   /* setup coarse problem */
   if (!def->WtAWinv) {
-    CHKERRQ(MatGetSize(def->W,NULL,&m));
+    PetscCall(MatGetSize(def->W,NULL,&m));
     if (!def->WtAW) {
-      CHKERRQ(MatMatMult(def->WtA,def->W,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&def->WtAW));
+      PetscCall(MatMatMult(def->WtA,def->W,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&def->WtAW));
       /* TODO create MatInheritOption(Mat,MatOption) */
-      CHKERRQ(MatGetOption(Amat,MAT_SPD,&flgspd));
-      CHKERRQ(MatSetOption(def->WtAW,MAT_SPD,flgspd));
+      PetscCall(MatGetOption(Amat,MAT_SPD,&flgspd));
+      PetscCall(MatSetOption(def->WtAW,MAT_SPD,flgspd));
       if (PetscDefined(USE_DEBUG)) {
         /* Check columns of W are not in kernel of A */
         PetscReal *norms;
-        CHKERRQ(PetscMalloc1(m,&norms));
-        CHKERRQ(MatGetColumnNorms(def->WtAW,NORM_INFINITY,norms));
+        PetscCall(PetscMalloc1(m,&norms));
+        PetscCall(MatGetColumnNorms(def->WtAW,NORM_INFINITY,norms));
         for (i=0; i<m; i++) {
           if (norms[i] < 100*PETSC_MACHINE_EPSILON) {
             SETERRQ(comm,PETSC_ERR_SUP,"Column %D of W is in kernel of A.",i);
           }
         }
-        CHKERRQ(PetscFree(norms));
+        PetscCall(PetscFree(norms));
       }
     } else {
-      CHKERRQ(MatGetOption(def->WtAW,MAT_SPD,&flgspd));
+      PetscCall(MatGetOption(def->WtAW,MAT_SPD,&flgspd));
     }
     /* TODO use MATINV ? */
-    CHKERRQ(KSPCreate(comm,&def->WtAWinv));
-    CHKERRQ(KSPSetOperators(def->WtAWinv,def->WtAW,def->WtAW));
-    CHKERRQ(KSPGetPC(def->WtAWinv,&pcinner));
+    PetscCall(KSPCreate(comm,&def->WtAWinv));
+    PetscCall(KSPSetOperators(def->WtAWinv,def->WtAW,def->WtAW));
+    PetscCall(KSPGetPC(def->WtAWinv,&pcinner));
     /* Setup KSP and PC */
     if (nextDef) { /* next level for multilevel deflation */
       innerksp = def->WtAWinv;
@@ -618,10 +618,10 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
           def->ksptype = KSPFCG;
         }
       }
-      CHKERRQ(KSPSetType(innerksp,def->ksptype)); /* TODO iherit from KSP + tolerances */
-      CHKERRQ(PCSetType(pcinner,PCDEFLATION)); /* TODO create coarse preconditinoner M_c = WtMW ? */
-      CHKERRQ(PCDeflationSetSpace(pcinner,nextDef,transp));
-      CHKERRQ(PCDeflationSetLevels_Deflation(pcinner,def->lvl+1,def->maxlvl));
+      PetscCall(KSPSetType(innerksp,def->ksptype)); /* TODO iherit from KSP + tolerances */
+      PetscCall(PCSetType(pcinner,PCDEFLATION)); /* TODO create coarse preconditinoner M_c = WtMW ? */
+      PetscCall(PCDeflationSetSpace(pcinner,nextDef,transp));
+      PetscCall(PCDeflationSetLevels_Deflation(pcinner,def->lvl+1,def->maxlvl));
       /* inherit options */
       if (def->prefix) ((PC_Deflation*)(pcinner->data))->prefix = def->prefix;
       ((PC_Deflation*)(pcinner->data))->init          = def->init;
@@ -629,43 +629,43 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
       ((PC_Deflation*)(pcinner->data))->correct       = def->correct;
       ((PC_Deflation*)(pcinner->data))->correctfact   = def->correctfact;
       ((PC_Deflation*)(pcinner->data))->reductionfact = def->reductionfact;
-      CHKERRQ(MatDestroy(&nextDef));
+      PetscCall(MatDestroy(&nextDef));
     } else { /* the last level */
-      CHKERRQ(KSPSetType(def->WtAWinv,KSPPREONLY));
-      CHKERRQ(PCSetType(pcinner,PCTELESCOPE));
+      PetscCall(KSPSetType(def->WtAWinv,KSPPREONLY));
+      PetscCall(PCSetType(pcinner,PCTELESCOPE));
       /* do not overwrite PCTELESCOPE */
       if (def->prefix) {
-        CHKERRQ(KSPSetOptionsPrefix(def->WtAWinv,def->prefix));
+        PetscCall(KSPSetOptionsPrefix(def->WtAWinv,def->prefix));
       }
-      CHKERRQ(KSPAppendOptionsPrefix(def->WtAWinv,"deflation_tel_"));
-      CHKERRQ(PCSetFromOptions(pcinner));
-      CHKERRQ(PetscObjectTypeCompare((PetscObject)pcinner,PCTELESCOPE,&match));
+      PetscCall(KSPAppendOptionsPrefix(def->WtAWinv,"deflation_tel_"));
+      PetscCall(PCSetFromOptions(pcinner));
+      PetscCall(PetscObjectTypeCompare((PetscObject)pcinner,PCTELESCOPE,&match));
       PetscCheck(match,comm,PETSC_ERR_SUP,"User can not owerwrite PCTELESCOPE on bottom level, use reduction factor = 1 instead.");
       /* Reduction factor choice */
       red = def->reductionfact;
       if (red < 0) {
-        CHKERRMPI(MPI_Comm_size(comm,&commsize));
+        PetscCallMPI(MPI_Comm_size(comm,&commsize));
         red  = PetscCeilInt(commsize,PetscCeilInt(m,commsize));
-        CHKERRQ(PetscObjectTypeCompareAny((PetscObject)(def->WtAW),&match,MATSEQDENSE,MATMPIDENSE,MATDENSE,""));
+        PetscCall(PetscObjectTypeCompareAny((PetscObject)(def->WtAW),&match,MATSEQDENSE,MATMPIDENSE,MATDENSE,""));
         if (match) red = commsize;
-        CHKERRQ(PetscInfo(pc,"Auto choosing reduction factor %D\n",red));
+        PetscCall(PetscInfo(pc,"Auto choosing reduction factor %D\n",red));
       }
-      CHKERRQ(PCTelescopeSetReductionFactor(pcinner,red));
-      CHKERRQ(PCSetUp(pcinner));
-      CHKERRQ(PCTelescopeGetKSP(pcinner,&innerksp));
+      PetscCall(PCTelescopeSetReductionFactor(pcinner,red));
+      PetscCall(PCSetUp(pcinner));
+      PetscCall(PCTelescopeGetKSP(pcinner,&innerksp));
       if (innerksp) {
-        CHKERRQ(KSPGetPC(innerksp,&pcinner));
-        CHKERRQ(PCSetType(pcinner,PCLU));
+        PetscCall(KSPGetPC(innerksp,&pcinner));
+        PetscCall(PCSetType(pcinner,PCLU));
 #if defined(PETSC_HAVE_SUPERLU)
-        CHKERRQ(MatGetFactorAvailable(def->WtAW,MATSOLVERSUPERLU,MAT_FACTOR_LU,&match));
+        PetscCall(MatGetFactorAvailable(def->WtAW,MATSOLVERSUPERLU,MAT_FACTOR_LU,&match));
         if (match) {
-          CHKERRQ(PCFactorSetMatSolverType(pcinner,MATSOLVERSUPERLU));
+          PetscCall(PCFactorSetMatSolverType(pcinner,MATSOLVERSUPERLU));
         }
 #endif
 #if defined(PETSC_HAVE_SUPERLU_DIST)
-        CHKERRQ(MatGetFactorAvailable(def->WtAW,MATSOLVERSUPERLU_DIST,MAT_FACTOR_LU,&match));
+        PetscCall(MatGetFactorAvailable(def->WtAW,MATSOLVERSUPERLU_DIST,MAT_FACTOR_LU,&match));
         if (match) {
-          CHKERRQ(PCFactorSetMatSolverType(pcinner,MATSOLVERSUPERLU_DIST));
+          PetscCall(PCFactorSetMatSolverType(pcinner,MATSOLVERSUPERLU_DIST));
         }
 #endif
       }
@@ -673,37 +673,37 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
 
     if (innerksp) {
       if (def->prefix) {
-        CHKERRQ(KSPSetOptionsPrefix(innerksp,def->prefix));
-        CHKERRQ(KSPAppendOptionsPrefix(innerksp,"deflation_"));
+        PetscCall(KSPSetOptionsPrefix(innerksp,def->prefix));
+        PetscCall(KSPAppendOptionsPrefix(innerksp,"deflation_"));
       } else {
-        CHKERRQ(KSPSetOptionsPrefix(innerksp,"deflation_"));
+        PetscCall(KSPSetOptionsPrefix(innerksp,"deflation_"));
       }
-      CHKERRQ(KSPAppendOptionsPrefix(innerksp,prefix));
-      CHKERRQ(KSPSetFromOptions(innerksp));
-      CHKERRQ(KSPSetUp(innerksp));
+      PetscCall(KSPAppendOptionsPrefix(innerksp,prefix));
+      PetscCall(KSPSetFromOptions(innerksp));
+      PetscCall(KSPSetUp(innerksp));
     }
   }
-  CHKERRQ(KSPSetFromOptions(def->WtAWinv));
-  CHKERRQ(KSPSetUp(def->WtAWinv));
+  PetscCall(KSPSetFromOptions(def->WtAWinv));
+  PetscCall(KSPSetUp(def->WtAWinv));
 
   /* create preconditioner */
   if (!def->pc) {
-    CHKERRQ(PCCreate(comm,&def->pc));
-    CHKERRQ(PCSetOperators(def->pc,Amat,Amat));
-    CHKERRQ(PCSetType(def->pc,PCNONE));
+    PetscCall(PCCreate(comm,&def->pc));
+    PetscCall(PCSetOperators(def->pc,Amat,Amat));
+    PetscCall(PCSetType(def->pc,PCNONE));
     if (def->prefix) {
-      CHKERRQ(PCSetOptionsPrefix(def->pc,def->prefix));
+      PetscCall(PCSetOptionsPrefix(def->pc,def->prefix));
     }
-    CHKERRQ(PCAppendOptionsPrefix(def->pc,"deflation_"));
-    CHKERRQ(PCAppendOptionsPrefix(def->pc,prefix));
-    CHKERRQ(PCAppendOptionsPrefix(def->pc,"pc_"));
-    CHKERRQ(PCSetFromOptions(def->pc));
-    CHKERRQ(PCSetUp(def->pc));
+    PetscCall(PCAppendOptionsPrefix(def->pc,"deflation_"));
+    PetscCall(PCAppendOptionsPrefix(def->pc,prefix));
+    PetscCall(PCAppendOptionsPrefix(def->pc,"pc_"));
+    PetscCall(PCSetFromOptions(def->pc));
+    PetscCall(PCSetUp(def->pc));
   }
 
   /* create work vecs */
-  CHKERRQ(MatCreateVecs(Amat,NULL,&def->work));
-  CHKERRQ(KSPCreateVecs(def->WtAWinv,2,&def->workcoarse,0,NULL));
+  PetscCall(MatCreateVecs(Amat,NULL,&def->work));
+  PetscCall(KSPCreateVecs(def->WtAWinv,2,&def->workcoarse,0,NULL));
   PetscFunctionReturn(0);
 }
 
@@ -712,22 +712,22 @@ static PetscErrorCode PCReset_Deflation(PC pc)
   PC_Deflation      *def = (PC_Deflation*)pc->data;
 
   PetscFunctionBegin;
-  CHKERRQ(VecDestroy(&def->work));
-  CHKERRQ(VecDestroyVecs(2,&def->workcoarse));
-  CHKERRQ(MatDestroy(&def->W));
-  CHKERRQ(MatDestroy(&def->Wt));
-  CHKERRQ(MatDestroy(&def->WtA));
-  CHKERRQ(MatDestroy(&def->WtAW));
-  CHKERRQ(KSPDestroy(&def->WtAWinv));
-  CHKERRQ(PCDestroy(&def->pc));
+  PetscCall(VecDestroy(&def->work));
+  PetscCall(VecDestroyVecs(2,&def->workcoarse));
+  PetscCall(MatDestroy(&def->W));
+  PetscCall(MatDestroy(&def->Wt));
+  PetscCall(MatDestroy(&def->WtA));
+  PetscCall(MatDestroy(&def->WtAW));
+  PetscCall(KSPDestroy(&def->WtAWinv));
+  PetscCall(PCDestroy(&def->pc));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCDestroy_Deflation(PC pc)
 {
   PetscFunctionBegin;
-  CHKERRQ(PCReset_Deflation(pc));
-  CHKERRQ(PetscFree(pc->data));
+  PetscCall(PCReset_Deflation(pc));
+  PetscCall(PetscFree(pc->data));
   PetscFunctionReturn(0);
 }
 
@@ -739,28 +739,28 @@ static PetscErrorCode PCView_Deflation(PC pc,PetscViewer viewer)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
     if (def->correct) {
       ierr = PetscViewerASCIIPrintf(viewer,"using CP correction, factor = %g+%gi\n",
                                     (double)PetscRealPart(def->correctfact),
-                                    (double)PetscImaginaryPart(def->correctfact));CHKERRQ(ierr);
+                                    (double)PetscImaginaryPart(def->correctfact));PetscCall(ierr);
     }
     if (!def->lvl) {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"deflation space type: %s\n",PCDeflationSpaceTypes[def->spacetype]));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"deflation space type: %s\n",PCDeflationSpaceTypes[def->spacetype]));
     }
 
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"--- Additional PC:\n"));
-    CHKERRQ(PetscViewerASCIIPushTab(viewer));
-    CHKERRQ(PCView(def->pc,viewer));
-    CHKERRQ(PetscViewerASCIIPopTab(viewer));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"--- Additional PC:\n"));
+    PetscCall(PetscViewerASCIIPushTab(viewer));
+    PetscCall(PCView(def->pc,viewer));
+    PetscCall(PetscViewerASCIIPopTab(viewer));
 
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"--- Coarse problem solver:\n"));
-    CHKERRQ(PetscViewerASCIIPushTab(viewer));
-    CHKERRQ(KSPGetTotalIterations(def->WtAWinv,&its));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"total number of iterations: %D\n",its));
-    CHKERRQ(KSPView(def->WtAWinv,viewer));
-    CHKERRQ(PetscViewerASCIIPopTab(viewer));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"--- Coarse problem solver:\n"));
+    PetscCall(PetscViewerASCIIPushTab(viewer));
+    PetscCall(KSPGetTotalIterations(def->WtAWinv,&its));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"total number of iterations: %D\n",its));
+    PetscCall(KSPView(def->WtAWinv,viewer));
+    PetscCall(PetscViewerASCIIPopTab(viewer));
   }
   PetscFunctionReturn(0);
 }
@@ -770,16 +770,16 @@ static PetscErrorCode PCSetFromOptions_Deflation(PetscOptionItems *PetscOptionsO
   PC_Deflation      *def = (PC_Deflation*)pc->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"Deflation options"));
-  CHKERRQ(PetscOptionsBool("-pc_deflation_init_only","Use only initialization step - Initdef","PCDeflationSetInitOnly",def->init,&def->init,NULL));
-  CHKERRQ(PetscOptionsInt("-pc_deflation_levels","Maximum of deflation levels","PCDeflationSetLevels",def->maxlvl,&def->maxlvl,NULL));
-  CHKERRQ(PetscOptionsInt("-pc_deflation_reduction_factor","Reduction factor for coarse problem solution using PCTELESCOPE","PCDeflationSetReductionFactor",def->reductionfact,&def->reductionfact,NULL));
-  CHKERRQ(PetscOptionsBool("-pc_deflation_correction","Add coarse problem correction Q to P","PCDeflationSetCorrectionFactor",def->correct,&def->correct,NULL));
-  CHKERRQ(PetscOptionsScalar("-pc_deflation_correction_factor","Set multiple of Q to use as coarse problem correction","PCDeflationSetCorrectionFactor",def->correctfact,&def->correctfact,NULL));
-  CHKERRQ(PetscOptionsEnum("-pc_deflation_compute_space","Compute deflation space","PCDeflationSetSpace",PCDeflationSpaceTypes,(PetscEnum)def->spacetype,(PetscEnum*)&def->spacetype,NULL));
-  CHKERRQ(PetscOptionsInt("-pc_deflation_compute_space_size","Set size of the deflation space to compute","PCDeflationSetSpace",def->spacesize,&def->spacesize,NULL));
-  CHKERRQ(PetscOptionsBool("-pc_deflation_space_extend","Extend deflation space instead of truncating (wavelets)","PCDeflation",def->extendsp,&def->extendsp,NULL));
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"Deflation options"));
+  PetscCall(PetscOptionsBool("-pc_deflation_init_only","Use only initialization step - Initdef","PCDeflationSetInitOnly",def->init,&def->init,NULL));
+  PetscCall(PetscOptionsInt("-pc_deflation_levels","Maximum of deflation levels","PCDeflationSetLevels",def->maxlvl,&def->maxlvl,NULL));
+  PetscCall(PetscOptionsInt("-pc_deflation_reduction_factor","Reduction factor for coarse problem solution using PCTELESCOPE","PCDeflationSetReductionFactor",def->reductionfact,&def->reductionfact,NULL));
+  PetscCall(PetscOptionsBool("-pc_deflation_correction","Add coarse problem correction Q to P","PCDeflationSetCorrectionFactor",def->correct,&def->correct,NULL));
+  PetscCall(PetscOptionsScalar("-pc_deflation_correction_factor","Set multiple of Q to use as coarse problem correction","PCDeflationSetCorrectionFactor",def->correctfact,&def->correctfact,NULL));
+  PetscCall(PetscOptionsEnum("-pc_deflation_compute_space","Compute deflation space","PCDeflationSetSpace",PCDeflationSpaceTypes,(PetscEnum)def->spacetype,(PetscEnum*)&def->spacetype,NULL));
+  PetscCall(PetscOptionsInt("-pc_deflation_compute_space_size","Set size of the deflation space to compute","PCDeflationSetSpace",def->spacesize,&def->spacesize,NULL));
+  PetscCall(PetscOptionsBool("-pc_deflation_space_extend","Extend deflation space instead of truncating (wavelets)","PCDeflation",def->extendsp,&def->extendsp,NULL));
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -869,7 +869,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Deflation(PC pc)
   PC_Deflation   *def;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNewLog(pc,&def));
+  PetscCall(PetscNewLog(pc,&def));
   pc->data = (void*)def;
 
   def->init          = PETSC_FALSE;
@@ -892,15 +892,15 @@ PETSC_EXTERN PetscErrorCode PCCreate_Deflation(PC pc)
   pc->ops->setfromoptions = PCSetFromOptions_Deflation;
   pc->ops->view           = PCView_Deflation;
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetInitOnly_C",PCDeflationSetInitOnly_Deflation));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetLevels_C",PCDeflationSetLevels_Deflation));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetReductionFactor_C",PCDeflationSetReductionFactor_Deflation));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetCorrectionFactor_C",PCDeflationSetCorrectionFactor_Deflation));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetSpaceToCompute_C",PCDeflationSetSpaceToCompute_Deflation));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetSpace_C",PCDeflationSetSpace_Deflation));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetProjectionNullSpaceMat_C",PCDeflationSetProjectionNullSpaceMat_Deflation));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetCoarseMat_C",PCDeflationSetCoarseMat_Deflation));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCDeflationGetCoarseKSP_C",PCDeflationGetCoarseKSP_Deflation));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCDeflationGetPC_C",PCDeflationGetPC_Deflation));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetInitOnly_C",PCDeflationSetInitOnly_Deflation));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetLevels_C",PCDeflationSetLevels_Deflation));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetReductionFactor_C",PCDeflationSetReductionFactor_Deflation));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetCorrectionFactor_C",PCDeflationSetCorrectionFactor_Deflation));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetSpaceToCompute_C",PCDeflationSetSpaceToCompute_Deflation));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetSpace_C",PCDeflationSetSpace_Deflation));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetProjectionNullSpaceMat_C",PCDeflationSetProjectionNullSpaceMat_Deflation));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetCoarseMat_C",PCDeflationSetCoarseMat_Deflation));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCDeflationGetCoarseKSP_C",PCDeflationGetCoarseKSP_Deflation));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCDeflationGetPC_C",PCDeflationGetPC_Deflation));
   PetscFunctionReturn(0);
 }

@@ -20,44 +20,44 @@ int main(int argc,char **args)
   PetscInt        indices[] = {0,1,2};
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 3,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This example only works for 3 processes");
 
-  CHKERRQ(PetscCommDuplicate(PETSC_COMM_WORLD,&comm,NULL));
-  CHKERRQ(PetscCommSharedGet(comm,&scomm));
+  PetscCall(PetscCommDuplicate(PETSC_COMM_WORLD,&comm,NULL));
+  PetscCall(PetscCommSharedGet(comm,&scomm));
 
   for (i=0; i<size; i++) {
-    CHKERRQ(PetscCommSharedGlobalToLocal(scomm,i,&lrank));
-    CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Global rank %d shared memory comm rank %d\n",rank,i,lrank));
+    PetscCall(PetscCommSharedGlobalToLocal(scomm,i,&lrank));
+    PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Global rank %d shared memory comm rank %d\n",rank,i,lrank));
   }
-  CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,stdout));
-  CHKERRQ(PetscCommDestroy(&comm));
+  PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,stdout));
+  PetscCall(PetscCommDestroy(&comm));
 
-  CHKERRQ(VecCreateMPI(PETSC_COMM_WORLD,2,PETSC_DETERMINE,&x));
-  CHKERRQ(VecSetBlockSize(x,2));
-  CHKERRQ(VecSetValue(x,2*rank,(PetscScalar)(2*rank+10),INSERT_VALUES));
-  CHKERRQ(VecSetValue(x,2*rank+1,(PetscScalar)(2*rank+1+10),INSERT_VALUES));
-  CHKERRQ(VecAssemblyBegin(x));
-  CHKERRQ(VecAssemblyEnd(x));
-  CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecCreateMPI(PETSC_COMM_WORLD,2,PETSC_DETERMINE,&x));
+  PetscCall(VecSetBlockSize(x,2));
+  PetscCall(VecSetValue(x,2*rank,(PetscScalar)(2*rank+10),INSERT_VALUES));
+  PetscCall(VecSetValue(x,2*rank+1,(PetscScalar)(2*rank+1+10),INSERT_VALUES));
+  PetscCall(VecAssemblyBegin(x));
+  PetscCall(VecAssemblyEnd(x));
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
 
-  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,6,&y));
-  CHKERRQ(VecSetBlockSize(y,2));
-  CHKERRQ(ISCreateStride(PETSC_COMM_SELF,6,0,1,&isstride));
-  CHKERRQ(ISCreateBlock(PETSC_COMM_SELF,2,3,indices,PETSC_COPY_VALUES,&isblock));
-  CHKERRQ(VecScatterCreate(x,isblock,y,isstride,&vscat));
-  CHKERRQ(VecScatterBegin(vscat,x,y,INSERT_VALUES,SCATTER_FORWARD));
-  CHKERRQ(VecScatterEnd(vscat,x,y,INSERT_VALUES,SCATTER_FORWARD));
-  CHKERRQ(VecScatterDestroy(&vscat));
-  CHKERRQ(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&singleton));
-  CHKERRQ(VecView(y,singleton));
-  CHKERRQ(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&singleton));
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,6,&y));
+  PetscCall(VecSetBlockSize(y,2));
+  PetscCall(ISCreateStride(PETSC_COMM_SELF,6,0,1,&isstride));
+  PetscCall(ISCreateBlock(PETSC_COMM_SELF,2,3,indices,PETSC_COPY_VALUES,&isblock));
+  PetscCall(VecScatterCreate(x,isblock,y,isstride,&vscat));
+  PetscCall(VecScatterBegin(vscat,x,y,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(vscat,x,y,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterDestroy(&vscat));
+  PetscCall(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&singleton));
+  PetscCall(VecView(y,singleton));
+  PetscCall(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&singleton));
 
-  CHKERRQ(ISDestroy(&isstride));
-  CHKERRQ(ISDestroy(&isblock));
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&y));
+  PetscCall(ISDestroy(&isstride));
+  PetscCall(ISDestroy(&isblock));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&y));
   PetscFinalize();
   return 0;
 }

@@ -18,55 +18,55 @@ int main(int argc,char **args)
   PetscLogEvent  VECTOR_GENERATE,VECTOR_READ;
 #endif
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
 
   /* PART 1:  Generate vector, then write it in binary format */
 
-  CHKERRQ(PetscLogEventRegister("Generate Vector",VEC_CLASSID,&VECTOR_GENERATE));
-  CHKERRQ(PetscLogEventBegin(VECTOR_GENERATE,0,0,0,0));
+  PetscCall(PetscLogEventRegister("Generate Vector",VEC_CLASSID,&VECTOR_GENERATE));
+  PetscCall(PetscLogEventBegin(VECTOR_GENERATE,0,0,0,0));
   /* Generate vector */
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&u));
-  CHKERRQ(VecSetSizes(u,PETSC_DECIDE,m));
-  CHKERRQ(VecSetFromOptions(u));
-  CHKERRQ(VecGetOwnershipRange(u,&low,&high));
-  CHKERRQ(VecGetLocalSize(u,&ldim));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&u));
+  PetscCall(VecSetSizes(u,PETSC_DECIDE,m));
+  PetscCall(VecSetFromOptions(u));
+  PetscCall(VecGetOwnershipRange(u,&low,&high));
+  PetscCall(VecGetLocalSize(u,&ldim));
   for (i=0; i<ldim; i++) {
     iglobal = i + low;
     v       = (PetscScalar)(i + 100*rank);
-    CHKERRQ(VecSetValues(u,1,&iglobal,&v,INSERT_VALUES));
+    PetscCall(VecSetValues(u,1,&iglobal,&v,INSERT_VALUES));
   }
-  CHKERRQ(VecAssemblyBegin(u));
-  CHKERRQ(VecAssemblyEnd(u));
-  CHKERRQ(VecView(u,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecAssemblyBegin(u));
+  PetscCall(VecAssemblyEnd(u));
+  PetscCall(VecView(u,PETSC_VIEWER_STDOUT_WORLD));
 
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"writing vector in binary to vector.dat ...\n"));
-  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_WRITE,&viewer));
-  CHKERRQ(VecView(u,viewer));
-  CHKERRQ(PetscViewerDestroy(&viewer));
-  CHKERRQ(VecDestroy(&u));
-  CHKERRQ(PetscOptionsSetValue(NULL,"-viewer_binary_mpiio",""));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"writing vector in binary to vector.dat ...\n"));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_WRITE,&viewer));
+  PetscCall(VecView(u,viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
+  PetscCall(VecDestroy(&u));
+  PetscCall(PetscOptionsSetValue(NULL,"-viewer_binary_mpiio",""));
 
-  CHKERRQ(PetscLogEventEnd(VECTOR_GENERATE,0,0,0,0));
+  PetscCall(PetscLogEventEnd(VECTOR_GENERATE,0,0,0,0));
 
   /* PART 2:  Read in vector in binary format */
 
   /* Read new vector in binary format */
-  CHKERRQ(PetscLogEventRegister("Read Vector",VEC_CLASSID,&VECTOR_READ));
-  CHKERRQ(PetscLogEventBegin(VECTOR_READ,0,0,0,0));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"reading vector in binary from vector.dat ...\n"));
-  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_READ,&viewer));
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&u));
-  CHKERRQ(VecLoad(u,viewer));
-  CHKERRQ(PetscViewerDestroy(&viewer));
-  CHKERRQ(PetscLogEventEnd(VECTOR_READ,0,0,0,0));
-  CHKERRQ(VecView(u,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscLogEventRegister("Read Vector",VEC_CLASSID,&VECTOR_READ));
+  PetscCall(PetscLogEventBegin(VECTOR_READ,0,0,0,0));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"reading vector in binary from vector.dat ...\n"));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_READ,&viewer));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&u));
+  PetscCall(VecLoad(u,viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
+  PetscCall(PetscLogEventEnd(VECTOR_READ,0,0,0,0));
+  PetscCall(VecView(u,PETSC_VIEWER_STDOUT_WORLD));
 
   /* Free data structures */
-  CHKERRQ(VecDestroy(&u));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&u));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

@@ -20,7 +20,7 @@ PetscErrorCode DMDAGetNatural_Private(DM da,PetscInt *outNlocal,IS *isnatural)
   if (dim > 1) Nlocal *= (dd->ye-dd->ys);
   if (dim > 2) Nlocal *= (dd->ze-dd->zs);
 
-  CHKERRQ(PetscMalloc1(Nlocal,&lidx));
+  PetscCall(PetscMalloc1(Nlocal,&lidx));
 
   if (dim == 1) {
     for (i=dd->xs; i<dd->xe; i++) {
@@ -44,7 +44,7 @@ PetscErrorCode DMDAGetNatural_Private(DM da,PetscInt *outNlocal,IS *isnatural)
     }
   }
   *outNlocal = Nlocal;
-  CHKERRQ(ISCreateGeneral(PetscObjectComm((PetscObject)da),Nlocal,lidx,PETSC_OWN_POINTER,isnatural));
+  PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)da),Nlocal,lidx,PETSC_OWN_POINTER,isnatural));
   PetscFunctionReturn(0);
 }
 
@@ -75,18 +75,18 @@ PetscErrorCode  DMDASetAOType(DM da,AOType aotype)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)da,DMDA,&isdmda));
+  PetscCall(PetscObjectTypeCompare((PetscObject)da,DMDA,&isdmda));
   PetscCheck(isdmda,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Requires a DMDA as input");
   /* now we can safely dereference */
   dd = (DM_DA*)da->data;
   if (dd->ao) { /* check if the already computed AO has the same type as requested */
     PetscBool match;
-    CHKERRQ(PetscObjectTypeCompare((PetscObject)dd->ao,aotype,&match));
+    PetscCall(PetscObjectTypeCompare((PetscObject)dd->ao,aotype,&match));
     PetscCheck(match,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Cannot change AO type");
     PetscFunctionReturn(0);
   }
-  CHKERRQ(PetscFree(dd->aotype));
-  CHKERRQ(PetscStrallocpy(aotype,(char**)&dd->aotype));
+  PetscCall(PetscFree(dd->aotype));
+  PetscCall(PetscStrallocpy(aotype,(char**)&dd->aotype));
   PetscFunctionReturn(0);
 }
 
@@ -124,7 +124,7 @@ PetscErrorCode  DMDAGetAO(DM da,AO *ao)
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidPointer(ao,2);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)da,DMDA,&isdmda));
+  PetscCall(PetscObjectTypeCompare((PetscObject)da,DMDA,&isdmda));
   PetscCheck(isdmda,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Requires a DMDA as input");
   /* now we can safely dereference */
   dd = (DM_DA*)da->data;
@@ -136,14 +136,14 @@ PetscErrorCode  DMDAGetAO(DM da,AO *ao)
     IS             ispetsc,isnatural;
     PetscInt       Nlocal;
 
-    CHKERRQ(DMDAGetNatural_Private(da,&Nlocal,&isnatural));
-    CHKERRQ(ISCreateStride(PetscObjectComm((PetscObject)da),Nlocal,dd->base,1,&ispetsc));
-    CHKERRQ(AOCreate(PetscObjectComm((PetscObject)da),&dd->ao));
-    CHKERRQ(AOSetIS(dd->ao,isnatural,ispetsc));
-    CHKERRQ(AOSetType(dd->ao,dd->aotype));
-    CHKERRQ(PetscLogObjectParent((PetscObject)da,(PetscObject)dd->ao));
-    CHKERRQ(ISDestroy(&ispetsc));
-    CHKERRQ(ISDestroy(&isnatural));
+    PetscCall(DMDAGetNatural_Private(da,&Nlocal,&isnatural));
+    PetscCall(ISCreateStride(PetscObjectComm((PetscObject)da),Nlocal,dd->base,1,&ispetsc));
+    PetscCall(AOCreate(PetscObjectComm((PetscObject)da),&dd->ao));
+    PetscCall(AOSetIS(dd->ao,isnatural,ispetsc));
+    PetscCall(AOSetType(dd->ao,dd->aotype));
+    PetscCall(PetscLogObjectParent((PetscObject)da,(PetscObject)dd->ao));
+    PetscCall(ISDestroy(&ispetsc));
+    PetscCall(ISDestroy(&isnatural));
   }
   *ao = dd->ao;
   PetscFunctionReturn(0);

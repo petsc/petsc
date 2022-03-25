@@ -20,51 +20,51 @@ int main(int argc,char **argv)
   PetscLogEvent  event;
 #endif
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-view_randomvalues",&view_rank,NULL));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-view_randomvalues",&view_rank,NULL));
 
-  CHKERRQ(PetscRandomCreate(PETSC_COMM_WORLD,&rnd));
+  PetscCall(PetscRandomCreate(PETSC_COMM_WORLD,&rnd));
   /* force imaginary part of random number to always be zero; thus obtain reproducible results with real and complex numbers */
-  CHKERRQ(PetscRandomSetInterval(rnd,0.0,1.0));
-  CHKERRQ(PetscRandomSetFromOptions(rnd));
+  PetscCall(PetscRandomSetInterval(rnd,0.0,1.0));
+  PetscCall(PetscRandomSetFromOptions(rnd));
 
-  CHKERRQ(PetscMalloc1(n,&values));
+  PetscCall(PetscMalloc1(n,&values));
   for (i=0; i<n; i++) {
-    CHKERRQ(PetscRandomGetValue(rnd,&value));
+    PetscCall(PetscRandomGetValue(rnd,&value));
     avg += value;
     if (view_rank == (PetscInt)rank) {
-      CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"[%d] value[%" PetscInt_FMT "] = %6.4e\n",rank,i,(double)PetscRealPart(value)));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,"[%d] value[%" PetscInt_FMT "] = %6.4e\n",rank,i,(double)PetscRealPart(value)));
     }
     values[i] = (PetscInt)(n*PetscRealPart(value) + 2.0);
   }
   avg = avg/((PetscReal)n);
   if (view_rank == (PetscInt)rank) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"[%d] Average value %6.4e\n",rank,(double)PetscRealPart(avg)));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"[%d] Average value %6.4e\n",rank,(double)PetscRealPart(avg)));
   }
 
-  CHKERRQ(PetscSortInt(n,values));
+  PetscCall(PetscSortInt(n,values));
 
-  CHKERRQ(PetscLogEventRegister("Sort",0,&event));
-  CHKERRQ(PetscLogEventBegin(event,0,0,0,0));
+  PetscCall(PetscLogEventRegister("Sort",0,&event));
+  PetscCall(PetscLogEventBegin(event,0,0,0,0));
 
-  CHKERRQ(PetscRandomSeed(rnd));
+  PetscCall(PetscRandomSeed(rnd));
   for (i=0; i<n; i++) {
-    CHKERRQ(PetscRandomGetValue(rnd,&value));
+    PetscCall(PetscRandomGetValue(rnd,&value));
     values[i] = (PetscInt)(n*PetscRealPart(value) + 2.0);
     /* printf("value[%d] = %g\n",i,value); */
   }
-  CHKERRQ(PetscSortInt(n,values));
-  CHKERRQ(PetscLogEventEnd(event,0,0,0,0));
+  PetscCall(PetscSortInt(n,values));
+  PetscCall(PetscLogEventEnd(event,0,0,0,0));
 
   for (i=1; i<n; i++) {
     PetscCheckFalse(values[i] < values[i-1],PETSC_COMM_SELF,PETSC_ERR_PLIB,"Values not sorted");
   }
-  CHKERRQ(PetscFree(values));
-  CHKERRQ(PetscRandomDestroy(&rnd));
+  PetscCall(PetscFree(values));
+  PetscCall(PetscRandomDestroy(&rnd));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

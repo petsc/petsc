@@ -130,8 +130,8 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
 #define PetscKernel_A_gets_A_times_B(bs,A,B,W) do {                                            \
     PetscBLASInt _bbs;                                                                         \
     PetscScalar  _one = 1.0,_zero = 0.0;                                                       \
-    CHKERRQ(PetscBLASIntCast(bs,&_bbs));                                                       \
-    CHKERRQ(PetscArraycpy((W),(A),(bs)*(bs)));                                                 \
+    PetscCall(PetscBLASIntCast(bs,&_bbs));                                                       \
+    PetscCall(PetscArraycpy((W),(A),(bs)*(bs)));                                                 \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A,2)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(B,3)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(W,4)); \
@@ -147,7 +147,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
 #define PetscKernel_A_gets_A_minus_B_times_C(bs,A,B,C) do {                                    \
     PetscScalar    _mone = -1.0,_one = 1.0;                                                    \
     PetscBLASInt   _bbs;                                                                       \
-    CHKERRQ(PetscBLASIntCast(bs,&_bbs));                                                       \
+    PetscCall(PetscBLASIntCast(bs,&_bbs));                                                       \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A,2)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(B,3)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(C,4)); \
@@ -163,7 +163,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
 #define PetscKernel_A_gets_A_plus_Btranspose_times_C(bs,A,B,C) do {                            \
     PetscScalar    _one = 1.0;                                                                 \
     PetscBLASInt   _bbs;                                                                       \
-    CHKERRQ(PetscBLASIntCast(bs,&_bbs));                                                       \
+    PetscCall(PetscBLASIntCast(bs,&_bbs));                                                       \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A,2)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(B,3)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(C,4)); \
@@ -180,7 +180,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
 #define  PetscKernel_v_gets_v_plus_Atranspose_times_w(bs,v,A,w) do {                           \
     PetscScalar    _one  = 1.0;                                                                \
     PetscBLASInt   _ione = 1, _bbs;                                                            \
-    CHKERRQ(PetscBLASIntCast(bs,&_bbs));                                                       \
+    PetscCall(PetscBLASIntCast(bs,&_bbs));                                                       \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v,2)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A,3)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w,4)); \
@@ -197,7 +197,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
 #define  PetscKernel_v_gets_v_minus_A_times_w(bs,v,A,w) do {                                   \
     PetscScalar    _mone = -1.0,_one = 1.0;                                                    \
     PetscBLASInt   _ione = 1,_bbs;                                                             \
-    CHKERRQ(PetscBLASIntCast(bs,&_bbs));                                                       \
+    PetscCall(PetscBLASIntCast(bs,&_bbs));                                                       \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v,2)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A,3)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w,4)); \
@@ -214,7 +214,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
 #define  PetscKernel_v_gets_v_minus_transA_times_w(bs,v,A,w) do {                              \
     PetscScalar    _mone = -1.0,_one = 1.0;                                                    \
     PetscBLASInt   _ione = 1,_bbs;                                                             \
-    CHKERRQ(PetscBLASIntCast(bs,&_bbs));                                                       \
+    PetscCall(PetscBLASIntCast(bs,&_bbs));                                                       \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v,2)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A,3)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w,4)); \
@@ -231,7 +231,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
 #define  PetscKernel_v_gets_v_plus_A_times_w(bs,v,A,w) do {                                    \
     PetscScalar    _one  = 1.0;                                                                \
     PetscBLASInt   _ione = 1,_bbs;                                                             \
-    CHKERRQ(PetscBLASIntCast(bs,&_bbs));                                                       \
+    PetscCall(PetscBLASIntCast(bs,&_bbs));                                                       \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v,2)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A,3)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w,4)); \
@@ -248,8 +248,8 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
 #define  PetscKernel_w_gets_w_plus_Ar_times_v(bs,ncols,v,A,w) do {                             \
     PetscScalar    _one  = 1.0;                                                                \
     PetscBLASInt   _ione = 1,_bbs,_bncols;                                                     \
-    CHKERRQ(PetscBLASIntCast(bs,&_bbs));                                                       \
-    CHKERRQ(PetscBLASIntCast(ncols,&_bncols));                                                 \
+    PetscCall(PetscBLASIntCast(bs,&_bbs));                                                       \
+    PetscCall(PetscBLASIntCast(ncols,&_bncols));                                                 \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v,3)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A,4)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w,5)); \
@@ -266,8 +266,8 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
 #define  PetscKernel_w_gets_w_minus_Ar_times_v(bs,ncols,w,A,v) do {                            \
     PetscScalar    _one  = 1.0,_mone = -1.0;                                                   \
     PetscBLASInt   _ione = 1,_bbs,_bncols;                                                     \
-    CHKERRQ(PetscBLASIntCast(bs,&_bbs));                                                       \
-CHKERRQ(PetscBLASIntCast(ncols,&_bncols));                                                     \
+    PetscCall(PetscBLASIntCast(bs,&_bbs));                                                       \
+PetscCall(PetscBLASIntCast(ncols,&_bncols));                                                     \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w,3)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A,4)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v,5)); \
@@ -284,7 +284,7 @@ CHKERRQ(PetscBLASIntCast(ncols,&_bncols));                                      
 #define PetscKernel_w_gets_A_times_v(bs,v,A,w) do {                                            \
     PetscScalar    _zero = 0.0,_one = 1.0;                                                     \
     PetscBLASInt   _ione = 1,_bbs;                                                             \
-    CHKERRQ(PetscBLASIntCast(bs,&_bbs));                                                       \
+    PetscCall(PetscBLASIntCast(bs,&_bbs));                                                       \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v,2)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A,3)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w,4)); \
@@ -301,7 +301,7 @@ CHKERRQ(PetscBLASIntCast(ncols,&_bncols));                                      
 #define PetscKernel_w_gets_transA_times_v(bs,v,A,w) do {                                       \
     PetscScalar    _zero = 0.0,_one = 1.0;                                                     \
     PetscBLASInt   _ione = 1,_bbs;                                                             \
-    CHKERRQ(PetscBLASIntCast(bs,&_bbs));                                                       \
+    PetscCall(PetscBLASIntCast(bs,&_bbs));                                                       \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v,2)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A,3)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w,4)); \
@@ -314,8 +314,8 @@ CHKERRQ(PetscBLASIntCast(ncols,&_bncols));                                      
 #define PetscKernel_w_gets_Ar_times_v(bs,ncols,x,A,z) do {                                     \
     PetscScalar    _one  = 1.0,_zero = 0.0;                                                    \
     PetscBLASInt   _ione = 1,_bbs,_bncols;                                                     \
-    CHKERRQ(PetscBLASIntCast(bs,&_bbs));                                                       \
-    CHKERRQ(PetscBLASIntCast(ncols,&_bncols));                                                 \
+    PetscCall(PetscBLASIntCast(bs,&_bbs));                                                       \
+    PetscCall(PetscBLASIntCast(ncols,&_bncols));                                                 \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(x,3)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A,4)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(z,5)); \
@@ -328,8 +328,8 @@ CHKERRQ(PetscBLASIntCast(ncols,&_bncols));                                      
 #define PetscKernel_w_gets_w_plus_trans_Ar_times_v(bs,ncols,x,A,z) do {                        \
     PetscScalar    _one  = 1.0;                                                                \
     PetscBLASInt   _ione = 1,_bbs,_bncols;                                                     \
-    CHKERRQ(PetscBLASIntCast(bs,&_bbs));                                                       \
-    CHKERRQ(PetscBLASIntCast(ncols,&_bncols));                                                 \
+    PetscCall(PetscBLASIntCast(bs,&_bbs));                                                       \
+    PetscCall(PetscBLASIntCast(ncols,&_bncols));                                                 \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(x,3)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A,4)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(z,5)); \
@@ -381,7 +381,7 @@ PETSC_EXTERN void msgemm_(PetscInt*,MatScalar*,MatScalar*,MatScalar*);
 
 */
 #define PetscKernel_A_gets_A_times_B(bs,A,B,W) do {                     \
-    CHKERRQ(PetscArraycpy((W),(A),(bs)*(bs)));                          \
+    PetscCall(PetscArraycpy((W),(A),(bs)*(bs)));                          \
     msgemmi_(&bs,A,B,W);                                                \
   } while (0)
 

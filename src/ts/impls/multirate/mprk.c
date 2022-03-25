@@ -241,8 +241,8 @@ PetscErrorCode TSMPRKRegisterAll(void)
       Asb[4][4] = {{0}},Af[4][4] = {{0}},bsb[4] = {0},bf[4] = {0};
     PetscInt
       rsb[4] = {0,0,1,2};
-    CHKERRQ(TSMPRKGenerateTableau2(2,2,&Abase[0][0],bbase,&Asb[0][0],bsb,&Af[0][0],bf));
-    CHKERRQ(TSMPRKRegister(TSMPRK2A22,2,2,2,1,&Asb[0][0],bsb,NULL,rsb,NULL,NULL,NULL,NULL,&Af[0][0],bf,NULL));
+    PetscCall(TSMPRKGenerateTableau2(2,2,&Abase[0][0],bbase,&Asb[0][0],bsb,&Af[0][0],bf));
+    PetscCall(TSMPRKRegister(TSMPRK2A22,2,2,2,1,&Asb[0][0],bsb,NULL,rsb,NULL,NULL,NULL,NULL,&Af[0][0],bf,NULL));
   }
   {
     const PetscReal
@@ -253,8 +253,8 @@ PetscErrorCode TSMPRKRegisterAll(void)
       Asb[8][8] = {{0}},Amb[8][8] = {{0}},Af[8][8] = {{0}},bsb[8] ={0},bmb[8] = {0},bf[8] = {0};
     PetscInt
       rsb[8] = {0,0,1,2,1,2,1,2},rmb[8] = {0,0,1,2,0,0,5,6};
-    CHKERRQ(TSMPRKGenerateTableau3(2,2,&Abase[0][0],bbase,&Asb[0][0],bsb,&Amb[0][0],bmb,&Af[0][0],bf));
-    CHKERRQ(TSMPRKRegister(TSMPRK2A23,2,2,2,2,&Asb[0][0],bsb,NULL,rsb,&Amb[0][0],bmb,NULL,rmb,&Af[0][0],bf,NULL));
+    PetscCall(TSMPRKGenerateTableau3(2,2,&Abase[0][0],bbase,&Asb[0][0],bsb,&Amb[0][0],bmb,&Af[0][0],bf));
+    PetscCall(TSMPRKRegister(TSMPRK2A23,2,2,2,2,&Asb[0][0],bsb,NULL,rsb,&Amb[0][0],bmb,NULL,rmb,&Af[0][0],bf,NULL));
   }
   {
     const PetscReal
@@ -265,8 +265,8 @@ PetscErrorCode TSMPRKRegisterAll(void)
       Asb[6][6] = {{0}},Af[6][6] = {{0}},bsb[6] = {0},bf[6] = {0};
     PetscInt
       rsb[6] = {0,0,1,2,1,2};
-    CHKERRQ(TSMPRKGenerateTableau2(3,2,&Abase[0][0],bbase,&Asb[0][0],bsb,&Af[0][0],bf));
-    CHKERRQ(TSMPRKRegister(TSMPRK2A32,2,2,3,1,&Asb[0][0],bsb,NULL,rsb,NULL,NULL,NULL,NULL,&Af[0][0],bf,NULL));
+    PetscCall(TSMPRKGenerateTableau2(3,2,&Abase[0][0],bbase,&Asb[0][0],bsb,&Af[0][0],bf));
+    PetscCall(TSMPRKRegister(TSMPRK2A32,2,2,3,1,&Asb[0][0],bsb,NULL,rsb,NULL,NULL,NULL,NULL,&Af[0][0],bf,NULL));
   }
   {
     const PetscReal
@@ -277,8 +277,8 @@ PetscErrorCode TSMPRKRegisterAll(void)
       Asb[18][18] = {{0}},Amb[18][18] = {{0}},Af[18][18] = {{0}},bsb[18] ={0},bmb[18] = {0},bf[18] = {0};
     PetscInt
       rsb[18] = {0,0,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2},rmb[18] = {0,0,1,2,1,2,0,0,7,8,7,8,0,0,13,14,13,14};
-    CHKERRQ(TSMPRKGenerateTableau3(3,2,&Abase[0][0],bbase,&Asb[0][0],bsb,&Amb[0][0],bmb,&Af[0][0],bf));
-    CHKERRQ(TSMPRKRegister(TSMPRK2A33,2,2,3,3,&Asb[0][0],bsb,NULL,rsb,&Amb[0][0],bmb,NULL,rmb,&Af[0][0],bf,NULL));
+    PetscCall(TSMPRKGenerateTableau3(3,2,&Abase[0][0],bbase,&Asb[0][0],bsb,&Amb[0][0],bmb,&Af[0][0],bf));
+    PetscCall(TSMPRKRegister(TSMPRK2A33,2,2,3,3,&Asb[0][0],bsb,NULL,rsb,&Amb[0][0],bmb,NULL,rmb,&Af[0][0],bf,NULL));
   }
 /*
     PetscReal
@@ -330,7 +330,7 @@ PetscErrorCode TSMPRKRegisterAll(void)
                     {RC(1.0)/RC(12.0),RC(1.0)/RC(6.0),RC(1.0)/RC(6.0),RC(1.0)/RC(12.0),RC(1.0)/RC(6.0),RC(-1.0)/RC(6.0),RC(1.0)/RC(2.0),0}},
           bs[8] = {RC(1.0)/RC(12.0),RC(1.0)/RC(6.0),RC(1.0)/RC(6.0),RC(1.0)/RC(12.0),RC(1.0)/RC(12.0),RC(1.0)/RC(6.0),RC(1.0)/RC(6.0),RC(1.0)/RC(12.0)},
            b[8] = {RC(1.0)/RC(12.0),RC(1.0)/RC(6.0),RC(1.0)/RC(6.0),RC(1.0)/RC(12.0),RC(1.0)/RC(12.0),RC(1.0)/RC(6.0),RC(1.0)/RC(6.0),RC(1.0)/RC(12.0)};
-           CHKERRQ(TSMPRKRegister(TSMPRKPM3,3,8,&As[0][0],bs,NULL,&A[0][0],b,NULL));
+           PetscCall(TSMPRKRegister(TSMPRKPM3,3,8,&As[0][0],bs,NULL,&A[0][0],b,NULL));
   }*/
 
   {
@@ -349,7 +349,7 @@ PetscErrorCode TSMPRKRegisterAll(void)
       bf[5]     = {RC(1.0)/RC(4.0),RC(1.0)/RC(4.0),RC(1.0)/RC(4.0),RC(1.0)/RC(4.0),0};
     const PetscInt
       rsb[5]    = {0,0,2,0,4};
-    CHKERRQ(TSMPRKRegister(TSMPRKP2,2,5,1,1,&Asb[0][0],bsb,NULL,rsb,NULL,NULL,NULL,NULL,&Af[0][0],bf,NULL));
+    PetscCall(TSMPRKRegister(TSMPRKP2,2,5,1,1,&Asb[0][0],bsb,NULL,rsb,NULL,NULL,NULL,NULL,&Af[0][0],bf,NULL));
   }
 
   {
@@ -378,7 +378,7 @@ PetscErrorCode TSMPRKRegisterAll(void)
       bf[10]      = {RC(1.0)/RC(12.0),RC(1.0)/RC(6.0),RC(1.0)/RC(6.0),RC(1.0)/RC(12.0),0,RC(1.0)/RC(12.0),RC(1.0)/RC(6.0),RC(1.0)/RC(6.0),RC(1.0)/RC(12.0),0};
     const PetscInt
       rsb[10]     = {0,0,2,0,4,0,0,7,0,9};
-    CHKERRQ(TSMPRKRegister(TSMPRKP3,3,5,2,1,&Asb[0][0],bsb,NULL,rsb,NULL,NULL,NULL,NULL,&Af[0][0],bf,NULL));
+    PetscCall(TSMPRKRegister(TSMPRKP3,3,5,2,1,&Asb[0][0],bsb,NULL,rsb,NULL,NULL,NULL,NULL,&Af[0][0],bf,NULL));
   }
 #undef RC
   PetscFunctionReturn(0);
@@ -401,13 +401,13 @@ PetscErrorCode TSMPRKRegisterDestroy(void)
   while ((link = MPRKTableauList)) {
     MPRKTableau t = &link->tab;
     MPRKTableauList = link->next;
-    CHKERRQ(PetscFree3(t->Asb,t->bsb,t->csb));
-    CHKERRQ(PetscFree3(t->Amb,t->bmb,t->cmb));
-    CHKERRQ(PetscFree3(t->Af,t->bf,t->cf));
-    CHKERRQ(PetscFree(t->rsb));
-    CHKERRQ(PetscFree(t->rmb));
-    CHKERRQ(PetscFree(t->name));
-    CHKERRQ(PetscFree(link));
+    PetscCall(PetscFree3(t->Asb,t->bsb,t->csb));
+    PetscCall(PetscFree3(t->Amb,t->bmb,t->cmb));
+    PetscCall(PetscFree3(t->Af,t->bf,t->cf));
+    PetscCall(PetscFree(t->rsb));
+    PetscCall(PetscFree(t->rmb));
+    PetscCall(PetscFree(t->name));
+    PetscCall(PetscFree(link));
   }
   TSMPRKRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -427,8 +427,8 @@ PetscErrorCode TSMPRKInitializePackage(void)
   PetscFunctionBegin;
   if (TSMPRKPackageInitialized) PetscFunctionReturn(0);
   TSMPRKPackageInitialized = PETSC_TRUE;
-  CHKERRQ(TSMPRKRegisterAll());
-  CHKERRQ(PetscRegisterFinalize(TSMPRKFinalizePackage));
+  PetscCall(TSMPRKRegisterAll());
+  PetscCall(PetscRegisterFinalize(TSMPRKFinalizePackage));
   PetscFunctionReturn(0);
 }
 
@@ -444,7 +444,7 @@ PetscErrorCode TSMPRKFinalizePackage(void)
 {
   PetscFunctionBegin;
   TSMPRKPackageInitialized = PETSC_FALSE;
-  CHKERRQ(TSMPRKRegisterDestroy());
+  PetscCall(TSMPRKRegisterDestroy());
   PetscFunctionReturn(0);
 }
 
@@ -497,24 +497,24 @@ PetscErrorCode TSMPRKRegister(TSMPRKType name,PetscInt order,
   if (bf) PetscValidRealPointer(bf,15);
   if (cf) PetscValidRealPointer(cf,16);
 
-  CHKERRQ(PetscNew(&link));
+  PetscCall(PetscNew(&link));
   t = &link->tab;
 
-  CHKERRQ(PetscStrallocpy(name,&t->name));
+  PetscCall(PetscStrallocpy(name,&t->name));
   s = sbase*ratio1*ratio2; /*  this is the dimension of the matrices below */
   t->order = order;
   t->sbase = sbase;
   t->s  = s;
   t->np = 2;
 
-  CHKERRQ(PetscMalloc3(s*s,&t->Af,s,&t->bf,s,&t->cf));
-  CHKERRQ(PetscArraycpy(t->Af,Af,s*s));
+  PetscCall(PetscMalloc3(s*s,&t->Af,s,&t->bf,s,&t->cf));
+  PetscCall(PetscArraycpy(t->Af,Af,s*s));
   if (bf) {
-    CHKERRQ(PetscArraycpy(t->bf,bf,s));
+    PetscCall(PetscArraycpy(t->bf,bf,s));
   } else
     for (i=0; i<s; i++) t->bf[i] = Af[(s-1)*s+i];
   if (cf) {
-    CHKERRQ(PetscArraycpy(t->cf,cf,s));
+    PetscCall(PetscArraycpy(t->cf,cf,s));
   } else {
     for (i=0; i<s; i++)
       for (j=0,t->cf[i]=0; j<s; j++)
@@ -523,46 +523,46 @@ PetscErrorCode TSMPRKRegister(TSMPRKType name,PetscInt order,
 
   if (Amb) {
     t->np = 3;
-    CHKERRQ(PetscMalloc3(s*s,&t->Amb,s,&t->bmb,s,&t->cmb));
-    CHKERRQ(PetscArraycpy(t->Amb,Amb,s*s));
+    PetscCall(PetscMalloc3(s*s,&t->Amb,s,&t->bmb,s,&t->cmb));
+    PetscCall(PetscArraycpy(t->Amb,Amb,s*s));
     if (bmb) {
-      CHKERRQ(PetscArraycpy(t->bmb,bmb,s));
+      PetscCall(PetscArraycpy(t->bmb,bmb,s));
     } else {
       for (i=0; i<s; i++) t->bmb[i] = Amb[(s-1)*s+i];
     }
     if (cmb) {
-      CHKERRQ(PetscArraycpy(t->cmb,cmb,s));
+      PetscCall(PetscArraycpy(t->cmb,cmb,s));
     } else {
       for (i=0; i<s; i++)
         for (j=0,t->cmb[i]=0; j<s; j++)
           t->cmb[i] += Amb[i*s+j];
     }
     if (rmb) {
-      CHKERRQ(PetscMalloc1(s,&t->rmb));
-      CHKERRQ(PetscArraycpy(t->rmb,rmb,s));
+      PetscCall(PetscMalloc1(s,&t->rmb));
+      PetscCall(PetscArraycpy(t->rmb,rmb,s));
     } else {
-      CHKERRQ(PetscCalloc1(s,&t->rmb));
+      PetscCall(PetscCalloc1(s,&t->rmb));
     }
   }
 
-  CHKERRQ(PetscMalloc3(s*s,&t->Asb,s,&t->bsb,s,&t->csb));
-  CHKERRQ(PetscArraycpy(t->Asb,Asb,s*s));
+  PetscCall(PetscMalloc3(s*s,&t->Asb,s,&t->bsb,s,&t->csb));
+  PetscCall(PetscArraycpy(t->Asb,Asb,s*s));
   if (bsb) {
-    CHKERRQ(PetscArraycpy(t->bsb,bsb,s));
+    PetscCall(PetscArraycpy(t->bsb,bsb,s));
   } else
     for (i=0; i<s; i++) t->bsb[i] = Asb[(s-1)*s+i];
   if (csb) {
-    CHKERRQ(PetscArraycpy(t->csb,csb,s));
+    PetscCall(PetscArraycpy(t->csb,csb,s));
   } else {
     for (i=0; i<s; i++)
       for (j=0,t->csb[i]=0; j<s; j++)
         t->csb[i] += Asb[i*s+j];
   }
   if (rsb) {
-    CHKERRQ(PetscMalloc1(s,&t->rsb));
-    CHKERRQ(PetscArraycpy(t->rsb,rsb,s));
+    PetscCall(PetscMalloc1(s,&t->rsb));
+    PetscCall(PetscArraycpy(t->rsb,rsb,s));
   } else {
-    CHKERRQ(PetscCalloc1(s,&t->rsb));
+    PetscCall(PetscCalloc1(s,&t->rsb));
   }
   link->next = MPRKTableauList;
   MPRKTableauList = link;
@@ -576,61 +576,61 @@ static PetscErrorCode TSMPRKSetSplits(TS ts)
   DM             dm,subdm,newdm;
 
   PetscFunctionBegin;
-  CHKERRQ(TSRHSSplitGetSubTS(ts,"slow",&mprk->subts_slow));
-  CHKERRQ(TSRHSSplitGetSubTS(ts,"fast",&mprk->subts_fast));
+  PetscCall(TSRHSSplitGetSubTS(ts,"slow",&mprk->subts_slow));
+  PetscCall(TSRHSSplitGetSubTS(ts,"fast",&mprk->subts_fast));
   PetscCheck(mprk->subts_slow && mprk->subts_fast,PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set up the RHSFunctions for 'slow' and 'fast' components using TSRHSSplitSetRHSFunction() or calling TSSetRHSFunction() for each sub-TS");
 
   /* Only copy the DM */
-  CHKERRQ(TSGetDM(ts,&dm));
+  PetscCall(TSGetDM(ts,&dm));
 
-  CHKERRQ(TSRHSSplitGetSubTS(ts,"slowbuffer",&mprk->subts_slowbuffer));
+  PetscCall(TSRHSSplitGetSubTS(ts,"slowbuffer",&mprk->subts_slowbuffer));
   if (!mprk->subts_slowbuffer) {
     mprk->subts_slowbuffer = mprk->subts_slow;
     mprk->subts_slow       = NULL;
   }
   if (mprk->subts_slow) {
-    CHKERRQ(DMClone(dm,&newdm));
-    CHKERRQ(TSGetDM(mprk->subts_slow,&subdm));
-    CHKERRQ(DMCopyDMTS(subdm,newdm));
-    CHKERRQ(DMCopyDMSNES(subdm,newdm));
-    CHKERRQ(TSSetDM(mprk->subts_slow,newdm));
-    CHKERRQ(DMDestroy(&newdm));
+    PetscCall(DMClone(dm,&newdm));
+    PetscCall(TSGetDM(mprk->subts_slow,&subdm));
+    PetscCall(DMCopyDMTS(subdm,newdm));
+    PetscCall(DMCopyDMSNES(subdm,newdm));
+    PetscCall(TSSetDM(mprk->subts_slow,newdm));
+    PetscCall(DMDestroy(&newdm));
   }
-  CHKERRQ(DMClone(dm,&newdm));
-  CHKERRQ(TSGetDM(mprk->subts_slowbuffer,&subdm));
-  CHKERRQ(DMCopyDMTS(subdm,newdm));
-  CHKERRQ(DMCopyDMSNES(subdm,newdm));
-  CHKERRQ(TSSetDM(mprk->subts_slowbuffer,newdm));
-  CHKERRQ(DMDestroy(&newdm));
+  PetscCall(DMClone(dm,&newdm));
+  PetscCall(TSGetDM(mprk->subts_slowbuffer,&subdm));
+  PetscCall(DMCopyDMTS(subdm,newdm));
+  PetscCall(DMCopyDMSNES(subdm,newdm));
+  PetscCall(TSSetDM(mprk->subts_slowbuffer,newdm));
+  PetscCall(DMDestroy(&newdm));
 
-  CHKERRQ(DMClone(dm,&newdm));
-  CHKERRQ(TSGetDM(mprk->subts_fast,&subdm));
-  CHKERRQ(DMCopyDMTS(subdm,newdm));
-  CHKERRQ(DMCopyDMSNES(subdm,newdm));
-  CHKERRQ(TSSetDM(mprk->subts_fast,newdm));
-  CHKERRQ(DMDestroy(&newdm));
+  PetscCall(DMClone(dm,&newdm));
+  PetscCall(TSGetDM(mprk->subts_fast,&subdm));
+  PetscCall(DMCopyDMTS(subdm,newdm));
+  PetscCall(DMCopyDMSNES(subdm,newdm));
+  PetscCall(TSSetDM(mprk->subts_fast,newdm));
+  PetscCall(DMDestroy(&newdm));
 
   if (tab->np == 3) {
-    CHKERRQ(TSRHSSplitGetSubTS(ts,"medium",&mprk->subts_medium));
-    CHKERRQ(TSRHSSplitGetSubTS(ts,"mediumbuffer",&mprk->subts_mediumbuffer));
+    PetscCall(TSRHSSplitGetSubTS(ts,"medium",&mprk->subts_medium));
+    PetscCall(TSRHSSplitGetSubTS(ts,"mediumbuffer",&mprk->subts_mediumbuffer));
     if (mprk->subts_medium && !mprk->subts_mediumbuffer) {
       mprk->subts_mediumbuffer = mprk->subts_medium;
       mprk->subts_medium       = NULL;
     }
     if (mprk->subts_medium) {
-      CHKERRQ(DMClone(dm,&newdm));
-      CHKERRQ(TSGetDM(mprk->subts_medium,&subdm));
-      CHKERRQ(DMCopyDMTS(subdm,newdm));
-      CHKERRQ(DMCopyDMSNES(subdm,newdm));
-      CHKERRQ(TSSetDM(mprk->subts_medium,newdm));
-      CHKERRQ(DMDestroy(&newdm));
+      PetscCall(DMClone(dm,&newdm));
+      PetscCall(TSGetDM(mprk->subts_medium,&subdm));
+      PetscCall(DMCopyDMTS(subdm,newdm));
+      PetscCall(DMCopyDMSNES(subdm,newdm));
+      PetscCall(TSSetDM(mprk->subts_medium,newdm));
+      PetscCall(DMDestroy(&newdm));
     }
-    CHKERRQ(DMClone(dm,&newdm));
-    CHKERRQ(TSGetDM(mprk->subts_mediumbuffer,&subdm));
-    CHKERRQ(DMCopyDMTS(subdm,newdm));
-    CHKERRQ(DMCopyDMSNES(subdm,newdm));
-    CHKERRQ(TSSetDM(mprk->subts_mediumbuffer,newdm));
-    CHKERRQ(DMDestroy(&newdm));
+    PetscCall(DMClone(dm,&newdm));
+    PetscCall(TSGetDM(mprk->subts_mediumbuffer,&subdm));
+    PetscCall(DMCopyDMTS(subdm,newdm));
+    PetscCall(DMCopyDMSNES(subdm,newdm));
+    PetscCall(TSSetDM(mprk->subts_mediumbuffer,newdm));
+    PetscCall(DMDestroy(&newdm));
   }
   PetscFunctionReturn(0);
 }
@@ -652,8 +652,8 @@ static PetscErrorCode TSEvaluateStep_MPRK(TS ts,PetscInt order,Vec X,PetscBool *
 
   PetscFunctionBegin;
   for (j=0; j<s; j++) wf[j] = h*tab->bf[j];
-  CHKERRQ(VecCopy(ts->vec_sol,X));
-  CHKERRQ(VecMAXPY(X,s,wf,mprk->YdotRHS));
+  PetscCall(VecCopy(ts->vec_sol,X));
+  PetscCall(VecMAXPY(X,s,wf,mprk->YdotRHS));
   PetscFunctionReturn(0);
 }
 
@@ -672,43 +672,43 @@ static PetscErrorCode TSStep_MPRK(TS ts)
   PetscFunctionBegin;
   for (i=0; i<s; i++) {
     mprk->stage_time = t + h*cf[i];
-    CHKERRQ(TSPreStage(ts,mprk->stage_time));
-    CHKERRQ(VecCopy(ts->vec_sol,Y[i]));
+    PetscCall(TSPreStage(ts,mprk->stage_time));
+    PetscCall(VecCopy(ts->vec_sol,Y[i]));
 
     /* slow buffer region */
     for (j=0; j<i; j++) wsb[j] = h*Asb[i*s+j];
     for (j=0; j<i; j++) {
-      CHKERRQ(VecGetSubVector(YdotRHS[j],mprk->is_slowbuffer,&YdotRHS_slowbuffer[j]));
+      PetscCall(VecGetSubVector(YdotRHS[j],mprk->is_slowbuffer,&YdotRHS_slowbuffer[j]));
     }
-    CHKERRQ(VecGetSubVector(Y[i],mprk->is_slowbuffer,&Yslowbuffer));
-    CHKERRQ(VecMAXPY(Yslowbuffer,i,wsb,mprk->YdotRHS_slowbuffer));
-    CHKERRQ(VecRestoreSubVector(Y[i],mprk->is_slowbuffer,&Yslowbuffer));
+    PetscCall(VecGetSubVector(Y[i],mprk->is_slowbuffer,&Yslowbuffer));
+    PetscCall(VecMAXPY(Yslowbuffer,i,wsb,mprk->YdotRHS_slowbuffer));
+    PetscCall(VecRestoreSubVector(Y[i],mprk->is_slowbuffer,&Yslowbuffer));
     for (j=0; j<i; j++) {
-      CHKERRQ(VecRestoreSubVector(YdotRHS[j],mprk->is_slowbuffer,&YdotRHS_slowbuffer[j]));
+      PetscCall(VecRestoreSubVector(YdotRHS[j],mprk->is_slowbuffer,&YdotRHS_slowbuffer[j]));
     }
     /* slow region */
     if (mprk->is_slow) {
       for (j=0; j<i; j++) {
-        CHKERRQ(VecGetSubVector(YdotRHS[j],mprk->is_slow,&YdotRHS_slow[j]));
+        PetscCall(VecGetSubVector(YdotRHS[j],mprk->is_slow,&YdotRHS_slow[j]));
       }
-      CHKERRQ(VecGetSubVector(Y[i],mprk->is_slow,&Yslow));
-      CHKERRQ(VecMAXPY(Yslow,i,wsb,mprk->YdotRHS_slow));
-      CHKERRQ(VecRestoreSubVector(Y[i],mprk->is_slow,&Yslow));
+      PetscCall(VecGetSubVector(Y[i],mprk->is_slow,&Yslow));
+      PetscCall(VecMAXPY(Yslow,i,wsb,mprk->YdotRHS_slow));
+      PetscCall(VecRestoreSubVector(Y[i],mprk->is_slow,&Yslow));
       for (j=0; j<i; j++) {
-        CHKERRQ(VecRestoreSubVector(YdotRHS[j],mprk->is_slow,&YdotRHS_slow[j]));
+        PetscCall(VecRestoreSubVector(YdotRHS[j],mprk->is_slow,&YdotRHS_slow[j]));
       }
     }
 
     /* fast region */
     for (j=0; j<i; j++) wf[j] = h*Af[i*s+j];
     for (j=0; j<i; j++) {
-      CHKERRQ(VecGetSubVector(YdotRHS[j],mprk->is_fast,&YdotRHS_fast[j]));
+      PetscCall(VecGetSubVector(YdotRHS[j],mprk->is_fast,&YdotRHS_fast[j]));
     }
-    CHKERRQ(VecGetSubVector(Y[i],mprk->is_fast,&Yfast));
-    CHKERRQ(VecMAXPY(Yfast,i,wf,mprk->YdotRHS_fast));
-    CHKERRQ(VecRestoreSubVector(Y[i],mprk->is_fast,&Yfast));
+    PetscCall(VecGetSubVector(Y[i],mprk->is_fast,&Yfast));
+    PetscCall(VecMAXPY(Yfast,i,wf,mprk->YdotRHS_fast));
+    PetscCall(VecRestoreSubVector(Y[i],mprk->is_fast,&Yfast));
     for (j=0; j<i; j++) {
-      CHKERRQ(VecRestoreSubVector(YdotRHS[j],mprk->is_fast,&YdotRHS_fast[j]));
+      PetscCall(VecRestoreSubVector(YdotRHS[j],mprk->is_fast,&YdotRHS_fast[j]));
     }
     if (tab->np == 3) {
       Vec         *YdotRHS_medium = mprk->YdotRHS_medium,*YdotRHS_mediumbuffer = mprk->YdotRHS_mediumbuffer;
@@ -719,31 +719,31 @@ static PetscErrorCode TSStep_MPRK(TS ts)
       /* medium region */
       if (mprk->is_medium) {
         for (j=0; j<i; j++) {
-          CHKERRQ(VecGetSubVector(YdotRHS[j],mprk->is_medium,&YdotRHS_medium[j]));
+          PetscCall(VecGetSubVector(YdotRHS[j],mprk->is_medium,&YdotRHS_medium[j]));
         }
-        CHKERRQ(VecGetSubVector(Y[i],mprk->is_medium,&Ymedium));
-        CHKERRQ(VecMAXPY(Ymedium,i,wmb,mprk->YdotRHS_medium));
-        CHKERRQ(VecRestoreSubVector(Y[i],mprk->is_medium,&Ymedium));
+        PetscCall(VecGetSubVector(Y[i],mprk->is_medium,&Ymedium));
+        PetscCall(VecMAXPY(Ymedium,i,wmb,mprk->YdotRHS_medium));
+        PetscCall(VecRestoreSubVector(Y[i],mprk->is_medium,&Ymedium));
         for (j=0; j<i; j++) {
-          CHKERRQ(VecRestoreSubVector(YdotRHS[j],mprk->is_medium,&YdotRHS_medium[j]));
+          PetscCall(VecRestoreSubVector(YdotRHS[j],mprk->is_medium,&YdotRHS_medium[j]));
         }
       }
       /* medium buffer region */
       for (j=0; j<i; j++) {
-        CHKERRQ(VecGetSubVector(YdotRHS[j],mprk->is_mediumbuffer,&YdotRHS_mediumbuffer[j]));
+        PetscCall(VecGetSubVector(YdotRHS[j],mprk->is_mediumbuffer,&YdotRHS_mediumbuffer[j]));
       }
-      CHKERRQ(VecGetSubVector(Y[i],mprk->is_mediumbuffer,&Ymediumbuffer));
-      CHKERRQ(VecMAXPY(Ymediumbuffer,i,wmb,mprk->YdotRHS_mediumbuffer));
-      CHKERRQ(VecRestoreSubVector(Y[i],mprk->is_mediumbuffer,&Ymediumbuffer));
+      PetscCall(VecGetSubVector(Y[i],mprk->is_mediumbuffer,&Ymediumbuffer));
+      PetscCall(VecMAXPY(Ymediumbuffer,i,wmb,mprk->YdotRHS_mediumbuffer));
+      PetscCall(VecRestoreSubVector(Y[i],mprk->is_mediumbuffer,&Ymediumbuffer));
       for (j=0; j<i; j++) {
-        CHKERRQ(VecRestoreSubVector(YdotRHS[j],mprk->is_mediumbuffer,&YdotRHS_mediumbuffer[j]));
+        PetscCall(VecRestoreSubVector(YdotRHS[j],mprk->is_mediumbuffer,&YdotRHS_mediumbuffer[j]));
       }
     }
-    CHKERRQ(TSPostStage(ts,mprk->stage_time,i,Y));
+    PetscCall(TSPostStage(ts,mprk->stage_time,i,Y));
     /* compute the stage RHS by fast and slow tableau respectively */
-    CHKERRQ(TSComputeRHSFunction(ts,t+h*csb[i],Y[i],YdotRHS[i]));
+    PetscCall(TSComputeRHSFunction(ts,t+h*csb[i],Y[i],YdotRHS[i]));
   }
-  CHKERRQ(TSEvaluateStep(ts,tab->order,ts->vec_sol,NULL));
+  PetscCall(TSEvaluateStep(ts,tab->order,ts->vec_sol,NULL));
   ts->ptime += ts->time_step;
   ts->time_step = next_time_step;
   PetscFunctionReturn(0);
@@ -764,7 +764,7 @@ static PetscErrorCode TSEvaluateStep_MPRKSPLIT(TS ts,PetscInt order,Vec X,PetscB
   PetscInt       s = tab->s,j,computedstages;
 
   PetscFunctionBegin;
-  CHKERRQ(VecCopy(ts->vec_sol,X));
+  PetscCall(VecCopy(ts->vec_sol,X));
 
   /* slow region */
   if (mprk->is_slow) {
@@ -773,9 +773,9 @@ static PetscErrorCode TSEvaluateStep_MPRKSPLIT(TS ts,PetscInt order,Vec X,PetscB
       if (tab->rsb[j]) ws[tab->rsb[j]-1] += h*tab->bsb[j];
       else ws[computedstages++] = h*tab->bsb[j];
     }
-    CHKERRQ(VecGetSubVector(X,mprk->is_slow,&Xslow));
-    CHKERRQ(VecMAXPY(Xslow,computedstages,ws,mprk->YdotRHS_slow));
-    CHKERRQ(VecRestoreSubVector(X,mprk->is_slow,&Xslow));
+    PetscCall(VecGetSubVector(X,mprk->is_slow,&Xslow));
+    PetscCall(VecMAXPY(Xslow,computedstages,ws,mprk->YdotRHS_slow));
+    PetscCall(VecRestoreSubVector(X,mprk->is_slow,&Xslow));
   }
 
   if (tab->np == 3 && mprk->is_medium) {
@@ -784,15 +784,15 @@ static PetscErrorCode TSEvaluateStep_MPRKSPLIT(TS ts,PetscInt order,Vec X,PetscB
       if (tab->rmb[j]) wsb[computedstages-tab->sbase+(tab->rmb[j]-1)%tab->sbase] += h*tab->bsb[j];
       else wsb[computedstages++] = h*tab->bsb[j];
     }
-    CHKERRQ(VecGetSubVector(X,mprk->is_slowbuffer,&Xslowbuffer));
-    CHKERRQ(VecMAXPY(Xslowbuffer,computedstages,wsb,mprk->YdotRHS_slowbuffer));
-    CHKERRQ(VecRestoreSubVector(X,mprk->is_slowbuffer,&Xslowbuffer));
+    PetscCall(VecGetSubVector(X,mprk->is_slowbuffer,&Xslowbuffer));
+    PetscCall(VecMAXPY(Xslowbuffer,computedstages,wsb,mprk->YdotRHS_slowbuffer));
+    PetscCall(VecRestoreSubVector(X,mprk->is_slowbuffer,&Xslowbuffer));
   } else {
     /* slow buffer region */
     for (j=0; j<s; j++) wsb[j] = h*tab->bsb[j];
-    CHKERRQ(VecGetSubVector(X,mprk->is_slowbuffer,&Xslowbuffer));
-    CHKERRQ(VecMAXPY(Xslowbuffer,s,wsb,mprk->YdotRHS_slowbuffer));
-    CHKERRQ(VecRestoreSubVector(X,mprk->is_slowbuffer,&Xslowbuffer));
+    PetscCall(VecGetSubVector(X,mprk->is_slowbuffer,&Xslowbuffer));
+    PetscCall(VecMAXPY(Xslowbuffer,s,wsb,mprk->YdotRHS_slowbuffer));
+    PetscCall(VecRestoreSubVector(X,mprk->is_slowbuffer,&Xslowbuffer));
   }
   if (tab->np == 3) {
     Vec         Xmedium,Xmediumbuffer;
@@ -804,21 +804,21 @@ static PetscErrorCode TSEvaluateStep_MPRKSPLIT(TS ts,PetscInt order,Vec X,PetscB
         if (tab->rmb[j]) wm[computedstages-tab->sbase+(tab->rmb[j]-1)%tab->sbase] += h*tab->bmb[j];
         else wm[computedstages++] = h*tab->bmb[j];
       }
-      CHKERRQ(VecGetSubVector(X,mprk->is_medium,&Xmedium));
-      CHKERRQ(VecMAXPY(Xmedium,computedstages,wm,mprk->YdotRHS_medium));
-      CHKERRQ(VecRestoreSubVector(X,mprk->is_medium,&Xmedium));
+      PetscCall(VecGetSubVector(X,mprk->is_medium,&Xmedium));
+      PetscCall(VecMAXPY(Xmedium,computedstages,wm,mprk->YdotRHS_medium));
+      PetscCall(VecRestoreSubVector(X,mprk->is_medium,&Xmedium));
     }
     /* medium buffer region */
     for (j=0; j<s; j++) wmb[j] = h*tab->bmb[j];
-    CHKERRQ(VecGetSubVector(X,mprk->is_mediumbuffer,&Xmediumbuffer));
-    CHKERRQ(VecMAXPY(Xmediumbuffer,s,wmb,mprk->YdotRHS_mediumbuffer));
-    CHKERRQ(VecRestoreSubVector(X,mprk->is_mediumbuffer,&Xmediumbuffer));
+    PetscCall(VecGetSubVector(X,mprk->is_mediumbuffer,&Xmediumbuffer));
+    PetscCall(VecMAXPY(Xmediumbuffer,s,wmb,mprk->YdotRHS_mediumbuffer));
+    PetscCall(VecRestoreSubVector(X,mprk->is_mediumbuffer,&Xmediumbuffer));
   }
   /* fast region */
   for (j=0; j<s; j++) wf[j] = h*tab->bf[j];
-  CHKERRQ(VecGetSubVector(X,mprk->is_fast,&Xfast));
-  CHKERRQ(VecMAXPY(Xfast,s,wf,mprk->YdotRHS_fast));
-  CHKERRQ(VecRestoreSubVector(X,mprk->is_fast,&Xfast));
+  PetscCall(VecGetSubVector(X,mprk->is_fast,&Xfast));
+  PetscCall(VecMAXPY(Xfast,s,wf,mprk->YdotRHS_fast));
+  PetscCall(VecRestoreSubVector(X,mprk->is_fast,&Xfast));
   PetscFunctionReturn(0);
 }
 
@@ -837,17 +837,17 @@ static PetscErrorCode TSStep_MPRKSPLIT(TS ts)
   PetscFunctionBegin;
   for (i=0; i<s; i++) {
     mprk->stage_time = t + h*cf[i];
-    CHKERRQ(TSPreStage(ts,mprk->stage_time));
+    PetscCall(TSPreStage(ts,mprk->stage_time));
     /* calculate the stage value for fast and slow components respectively */
-    CHKERRQ(VecCopy(ts->vec_sol,Y[i]));
+    PetscCall(VecCopy(ts->vec_sol,Y[i]));
     for (j=0; j<i; j++) wsb[j] = h*Asb[i*s+j];
 
     /* slow buffer region */
     if (tab->np == 3 && mprk->is_medium) {
       if (tab->rmb[i]) {
-        CHKERRQ(VecGetSubVector(Y[i],mprk->is_slowbuffer,&Yslowbuffer));
-        CHKERRQ(VecISCopy(Y[tab->rmb[i]-1],mprk->is_slowbuffer,SCATTER_REVERSE,Yslowbuffer));
-        CHKERRQ(VecRestoreSubVector(Y[i],mprk->is_slowbuffer,&Yslowbuffer));
+        PetscCall(VecGetSubVector(Y[i],mprk->is_slowbuffer,&Yslowbuffer));
+        PetscCall(VecISCopy(Y[tab->rmb[i]-1],mprk->is_slowbuffer,SCATTER_REVERSE,Yslowbuffer));
+        PetscCall(VecRestoreSubVector(Y[i],mprk->is_slowbuffer,&Yslowbuffer));
       } else {
         PetscScalar *wm = mprk->work_medium;
         computedstages = 0;
@@ -855,41 +855,41 @@ static PetscErrorCode TSStep_MPRKSPLIT(TS ts)
           if (tab->rmb[j]) wm[computedstages-tab->sbase+(tab->rmb[j]-1)%tab->sbase] += wsb[j];
           else wm[computedstages++] = wsb[j];
         }
-        CHKERRQ(VecGetSubVector(Y[i],mprk->is_slowbuffer,&Yslowbuffer));
-        CHKERRQ(VecMAXPY(Yslowbuffer,computedstages,wm,YdotRHS_slowbuffer));
-        CHKERRQ(VecRestoreSubVector(Y[i],mprk->is_slowbuffer,&Yslowbuffer));
+        PetscCall(VecGetSubVector(Y[i],mprk->is_slowbuffer,&Yslowbuffer));
+        PetscCall(VecMAXPY(Yslowbuffer,computedstages,wm,YdotRHS_slowbuffer));
+        PetscCall(VecRestoreSubVector(Y[i],mprk->is_slowbuffer,&Yslowbuffer));
       }
     } else {
-      CHKERRQ(VecGetSubVector(Y[i],mprk->is_slowbuffer,&Yslowbuffer));
-      CHKERRQ(VecMAXPY(Yslowbuffer,i,wsb,YdotRHS_slowbuffer));
-      CHKERRQ(VecRestoreSubVector(Y[i],mprk->is_slowbuffer,&Yslowbuffer));
+      PetscCall(VecGetSubVector(Y[i],mprk->is_slowbuffer,&Yslowbuffer));
+      PetscCall(VecMAXPY(Yslowbuffer,i,wsb,YdotRHS_slowbuffer));
+      PetscCall(VecRestoreSubVector(Y[i],mprk->is_slowbuffer,&Yslowbuffer));
     }
 
     /* slow region */
     if (mprk->is_slow) {
       if (tab->rsb[i]) { /* repeat previous stage */
-        CHKERRQ(VecGetSubVector(Y[i],mprk->is_slow,&Yslow));
-        CHKERRQ(VecISCopy(Y[tab->rsb[i]-1],mprk->is_slow,SCATTER_REVERSE,Yslow));
-        CHKERRQ(VecRestoreSubVector(Y[i],mprk->is_slow,&Yslow));
+        PetscCall(VecGetSubVector(Y[i],mprk->is_slow,&Yslow));
+        PetscCall(VecISCopy(Y[tab->rsb[i]-1],mprk->is_slow,SCATTER_REVERSE,Yslow));
+        PetscCall(VecRestoreSubVector(Y[i],mprk->is_slow,&Yslow));
       } else {
         computedstages = 0;
         for (j=0; j<i; j++) {
           if (tab->rsb[j]) ws[tab->rsb[j]-1] += wsb[j];
           else ws[computedstages++] = wsb[j];
         }
-        CHKERRQ(VecGetSubVector(Y[i],mprk->is_slow,&Yslow));
-        CHKERRQ(VecMAXPY(Yslow,computedstages,ws,YdotRHS_slow));
-        CHKERRQ(VecRestoreSubVector(Y[i],mprk->is_slow,&Yslow));
+        PetscCall(VecGetSubVector(Y[i],mprk->is_slow,&Yslow));
+        PetscCall(VecMAXPY(Yslow,computedstages,ws,YdotRHS_slow));
+        PetscCall(VecRestoreSubVector(Y[i],mprk->is_slow,&Yslow));
         /* only depends on the slow buffer region */
-        CHKERRQ(TSComputeRHSFunction(mprk->subts_slow,t+h*csb[i],Y[i],YdotRHS_slow[computedstages]));
+        PetscCall(TSComputeRHSFunction(mprk->subts_slow,t+h*csb[i],Y[i],YdotRHS_slow[computedstages]));
       }
     }
 
     /* fast region */
     for (j=0; j<i; j++) wf[j] = h*Af[i*s+j];
-    CHKERRQ(VecGetSubVector(Y[i],mprk->is_fast,&Yfast));
-    CHKERRQ(VecMAXPY(Yfast,i,wf,YdotRHS_fast));
-    CHKERRQ(VecRestoreSubVector(Y[i],mprk->is_fast,&Yfast));
+    PetscCall(VecGetSubVector(Y[i],mprk->is_fast,&Yfast));
+    PetscCall(VecMAXPY(Yfast,i,wf,YdotRHS_fast));
+    PetscCall(VecRestoreSubVector(Y[i],mprk->is_fast,&Yfast));
 
     if (tab->np == 3) {
       Vec *YdotRHS_medium = mprk->YdotRHS_medium,*YdotRHS_mediumbuffer = mprk->YdotRHS_mediumbuffer;
@@ -899,15 +899,15 @@ static PetscErrorCode TSStep_MPRKSPLIT(TS ts)
 
       for (j=0; j<i; j++) wmb[j] = h*Amb[i*s+j];
       /* medium buffer region */
-      CHKERRQ(VecGetSubVector(Y[i],mprk->is_mediumbuffer,&Ymediumbuffer));
-      CHKERRQ(VecMAXPY(Ymediumbuffer,i,wmb,YdotRHS_mediumbuffer));
-      CHKERRQ(VecRestoreSubVector(Y[i],mprk->is_mediumbuffer,&Ymediumbuffer));
+      PetscCall(VecGetSubVector(Y[i],mprk->is_mediumbuffer,&Ymediumbuffer));
+      PetscCall(VecMAXPY(Ymediumbuffer,i,wmb,YdotRHS_mediumbuffer));
+      PetscCall(VecRestoreSubVector(Y[i],mprk->is_mediumbuffer,&Ymediumbuffer));
       /* medium region */
       if (mprk->is_medium) {
         if (tab->rmb[i]) { /* repeat previous stage */
-          CHKERRQ(VecGetSubVector(Y[i],mprk->is_medium,&Ymedium));
-          CHKERRQ(VecISCopy(Y[tab->rmb[i]-1],mprk->is_medium,SCATTER_REVERSE,Ymedium));
-          CHKERRQ(VecRestoreSubVector(Y[i],mprk->is_medium,&Ymedium));
+          PetscCall(VecGetSubVector(Y[i],mprk->is_medium,&Ymedium));
+          PetscCall(VecISCopy(Y[tab->rmb[i]-1],mprk->is_medium,SCATTER_REVERSE,Ymedium));
+          PetscCall(VecRestoreSubVector(Y[i],mprk->is_medium,&Ymedium));
         } else {
           computedstages = 0;
           for (j=0; j<i; j++) {
@@ -915,25 +915,25 @@ static PetscErrorCode TSStep_MPRKSPLIT(TS ts)
             else wm[computedstages++] = wmb[j];
 
           }
-          CHKERRQ(VecGetSubVector(Y[i],mprk->is_medium,&Ymedium));
-          CHKERRQ(VecMAXPY(Ymedium,computedstages,wm,YdotRHS_medium));
-          CHKERRQ(VecRestoreSubVector(Y[i],mprk->is_medium,&Ymedium));
+          PetscCall(VecGetSubVector(Y[i],mprk->is_medium,&Ymedium));
+          PetscCall(VecMAXPY(Ymedium,computedstages,wm,YdotRHS_medium));
+          PetscCall(VecRestoreSubVector(Y[i],mprk->is_medium,&Ymedium));
           /* only depends on the medium buffer region */
-          CHKERRQ(TSComputeRHSFunction(mprk->subts_medium,t+h*cmb[i],Y[i],YdotRHS_medium[computedstages]));
+          PetscCall(TSComputeRHSFunction(mprk->subts_medium,t+h*cmb[i],Y[i],YdotRHS_medium[computedstages]));
           /* must be computed after all regions are updated in Y */
-          CHKERRQ(TSComputeRHSFunction(mprk->subts_slowbuffer,t+h*csb[i],Y[i],YdotRHS_slowbuffer[computedstages]));
+          PetscCall(TSComputeRHSFunction(mprk->subts_slowbuffer,t+h*csb[i],Y[i],YdotRHS_slowbuffer[computedstages]));
         }
       }
       /* must be computed after fast region and slow region are updated in Y */
-      CHKERRQ(TSComputeRHSFunction(mprk->subts_mediumbuffer,t+h*cmb[i],Y[i],YdotRHS_mediumbuffer[i]));
+      PetscCall(TSComputeRHSFunction(mprk->subts_mediumbuffer,t+h*cmb[i],Y[i],YdotRHS_mediumbuffer[i]));
     }
     if (!(tab->np == 3 && mprk->is_medium)) {
-      CHKERRQ(TSComputeRHSFunction(mprk->subts_slowbuffer,t+h*csb[i],Y[i],YdotRHS_slowbuffer[i]));
+      PetscCall(TSComputeRHSFunction(mprk->subts_slowbuffer,t+h*csb[i],Y[i],YdotRHS_slowbuffer[i]));
     }
-    CHKERRQ(TSComputeRHSFunction(mprk->subts_fast,t+h*cf[i],Y[i],YdotRHS_fast[i]));
+    PetscCall(TSComputeRHSFunction(mprk->subts_fast,t+h*cf[i],Y[i],YdotRHS_fast[i]));
   }
 
-  CHKERRQ(TSEvaluateStep(ts,tab->order,ts->vec_sol,NULL));
+  PetscCall(TSEvaluateStep(ts,tab->order,ts->vec_sol,NULL));
   ts->ptime += ts->time_step;
   ts->time_step = next_time_step;
   PetscFunctionReturn(0);
@@ -946,31 +946,31 @@ static PetscErrorCode TSMPRKTableauReset(TS ts)
 
   PetscFunctionBegin;
   if (!tab) PetscFunctionReturn(0);
-  CHKERRQ(PetscFree(mprk->work_fast));
-  CHKERRQ(PetscFree(mprk->work_slow));
-  CHKERRQ(PetscFree(mprk->work_slowbuffer));
-  CHKERRQ(PetscFree(mprk->work_medium));
-  CHKERRQ(PetscFree(mprk->work_mediumbuffer));
-  CHKERRQ(VecDestroyVecs(tab->s,&mprk->Y));
+  PetscCall(PetscFree(mprk->work_fast));
+  PetscCall(PetscFree(mprk->work_slow));
+  PetscCall(PetscFree(mprk->work_slowbuffer));
+  PetscCall(PetscFree(mprk->work_medium));
+  PetscCall(PetscFree(mprk->work_mediumbuffer));
+  PetscCall(VecDestroyVecs(tab->s,&mprk->Y));
   if (ts->use_splitrhsfunction) {
-    CHKERRQ(VecDestroyVecs(tab->s,&mprk->YdotRHS_fast));
-    CHKERRQ(VecDestroyVecs(tab->s,&mprk->YdotRHS_slow));
-    CHKERRQ(VecDestroyVecs(tab->s,&mprk->YdotRHS_slowbuffer));
-    CHKERRQ(VecDestroyVecs(tab->s,&mprk->YdotRHS_medium));
-    CHKERRQ(VecDestroyVecs(tab->s,&mprk->YdotRHS_mediumbuffer));
+    PetscCall(VecDestroyVecs(tab->s,&mprk->YdotRHS_fast));
+    PetscCall(VecDestroyVecs(tab->s,&mprk->YdotRHS_slow));
+    PetscCall(VecDestroyVecs(tab->s,&mprk->YdotRHS_slowbuffer));
+    PetscCall(VecDestroyVecs(tab->s,&mprk->YdotRHS_medium));
+    PetscCall(VecDestroyVecs(tab->s,&mprk->YdotRHS_mediumbuffer));
   } else {
-    CHKERRQ(VecDestroyVecs(tab->s,&mprk->YdotRHS));
+    PetscCall(VecDestroyVecs(tab->s,&mprk->YdotRHS));
     if (mprk->is_slow) {
-      CHKERRQ(PetscFree(mprk->YdotRHS_slow));
+      PetscCall(PetscFree(mprk->YdotRHS_slow));
     }
-    CHKERRQ(PetscFree(mprk->YdotRHS_slowbuffer));
+    PetscCall(PetscFree(mprk->YdotRHS_slowbuffer));
     if (tab->np == 3) {
       if (mprk->is_medium) {
-        CHKERRQ(PetscFree(mprk->YdotRHS_medium));
+        PetscCall(PetscFree(mprk->YdotRHS_medium));
       }
-      CHKERRQ(PetscFree(mprk->YdotRHS_mediumbuffer));
+      PetscCall(PetscFree(mprk->YdotRHS_mediumbuffer));
     }
-    CHKERRQ(PetscFree(mprk->YdotRHS_fast));
+    PetscCall(PetscFree(mprk->YdotRHS_fast));
   }
   PetscFunctionReturn(0);
 }
@@ -978,7 +978,7 @@ static PetscErrorCode TSMPRKTableauReset(TS ts)
 static PetscErrorCode TSReset_MPRK(TS ts)
 {
   PetscFunctionBegin;
-  CHKERRQ(TSMPRKTableauReset(ts));
+  PetscCall(TSMPRKTableauReset(ts));
   PetscFunctionReturn(0);
 }
 
@@ -1013,54 +1013,54 @@ static PetscErrorCode TSMPRKTableauSetUp(TS ts)
   Vec            YdotRHS_slow,YdotRHS_slowbuffer,YdotRHS_medium,YdotRHS_mediumbuffer,YdotRHS_fast;
 
   PetscFunctionBegin;
-  CHKERRQ(VecDuplicateVecs(ts->vec_sol,tab->s,&mprk->Y));
+  PetscCall(VecDuplicateVecs(ts->vec_sol,tab->s,&mprk->Y));
   if (mprk->is_slow) {
-    CHKERRQ(PetscMalloc1(tab->s,&mprk->work_slow));
+    PetscCall(PetscMalloc1(tab->s,&mprk->work_slow));
   }
-  CHKERRQ(PetscMalloc1(tab->s,&mprk->work_slowbuffer));
+  PetscCall(PetscMalloc1(tab->s,&mprk->work_slowbuffer));
   if (tab->np == 3) {
     if (mprk->is_medium) {
-      CHKERRQ(PetscMalloc1(tab->s,&mprk->work_medium));
+      PetscCall(PetscMalloc1(tab->s,&mprk->work_medium));
     }
-    CHKERRQ(PetscMalloc1(tab->s,&mprk->work_mediumbuffer));
+    PetscCall(PetscMalloc1(tab->s,&mprk->work_mediumbuffer));
   }
-  CHKERRQ(PetscMalloc1(tab->s,&mprk->work_fast));
+  PetscCall(PetscMalloc1(tab->s,&mprk->work_fast));
 
   if (ts->use_splitrhsfunction) {
     if (mprk->is_slow) {
-      CHKERRQ(VecGetSubVector(ts->vec_sol,mprk->is_slow,&YdotRHS_slow));
-      CHKERRQ(VecDuplicateVecs(YdotRHS_slow,tab->s,&mprk->YdotRHS_slow));
-      CHKERRQ(VecRestoreSubVector(ts->vec_sol,mprk->is_slow,&YdotRHS_slow));
+      PetscCall(VecGetSubVector(ts->vec_sol,mprk->is_slow,&YdotRHS_slow));
+      PetscCall(VecDuplicateVecs(YdotRHS_slow,tab->s,&mprk->YdotRHS_slow));
+      PetscCall(VecRestoreSubVector(ts->vec_sol,mprk->is_slow,&YdotRHS_slow));
     }
-    CHKERRQ(VecGetSubVector(ts->vec_sol,mprk->is_slowbuffer,&YdotRHS_slowbuffer));
-    CHKERRQ(VecDuplicateVecs(YdotRHS_slowbuffer,tab->s,&mprk->YdotRHS_slowbuffer));
-    CHKERRQ(VecRestoreSubVector(ts->vec_sol,mprk->is_slowbuffer,&YdotRHS_slowbuffer));
+    PetscCall(VecGetSubVector(ts->vec_sol,mprk->is_slowbuffer,&YdotRHS_slowbuffer));
+    PetscCall(VecDuplicateVecs(YdotRHS_slowbuffer,tab->s,&mprk->YdotRHS_slowbuffer));
+    PetscCall(VecRestoreSubVector(ts->vec_sol,mprk->is_slowbuffer,&YdotRHS_slowbuffer));
     if (tab->np == 3) {
       if (mprk->is_medium) {
-        CHKERRQ(VecGetSubVector(ts->vec_sol,mprk->is_medium,&YdotRHS_medium));
-        CHKERRQ(VecDuplicateVecs(YdotRHS_medium,tab->s,&mprk->YdotRHS_medium));
-        CHKERRQ(VecRestoreSubVector(ts->vec_sol,mprk->is_medium,&YdotRHS_medium));
+        PetscCall(VecGetSubVector(ts->vec_sol,mprk->is_medium,&YdotRHS_medium));
+        PetscCall(VecDuplicateVecs(YdotRHS_medium,tab->s,&mprk->YdotRHS_medium));
+        PetscCall(VecRestoreSubVector(ts->vec_sol,mprk->is_medium,&YdotRHS_medium));
       }
-      CHKERRQ(VecGetSubVector(ts->vec_sol,mprk->is_mediumbuffer,&YdotRHS_mediumbuffer));
-      CHKERRQ(VecDuplicateVecs(YdotRHS_mediumbuffer,tab->s,&mprk->YdotRHS_mediumbuffer));
-      CHKERRQ(VecRestoreSubVector(ts->vec_sol,mprk->is_mediumbuffer,&YdotRHS_mediumbuffer));
+      PetscCall(VecGetSubVector(ts->vec_sol,mprk->is_mediumbuffer,&YdotRHS_mediumbuffer));
+      PetscCall(VecDuplicateVecs(YdotRHS_mediumbuffer,tab->s,&mprk->YdotRHS_mediumbuffer));
+      PetscCall(VecRestoreSubVector(ts->vec_sol,mprk->is_mediumbuffer,&YdotRHS_mediumbuffer));
     }
-    CHKERRQ(VecGetSubVector(ts->vec_sol,mprk->is_fast,&YdotRHS_fast));
-    CHKERRQ(VecDuplicateVecs(YdotRHS_fast,tab->s,&mprk->YdotRHS_fast));
-    CHKERRQ(VecRestoreSubVector(ts->vec_sol,mprk->is_fast,&YdotRHS_fast));
+    PetscCall(VecGetSubVector(ts->vec_sol,mprk->is_fast,&YdotRHS_fast));
+    PetscCall(VecDuplicateVecs(YdotRHS_fast,tab->s,&mprk->YdotRHS_fast));
+    PetscCall(VecRestoreSubVector(ts->vec_sol,mprk->is_fast,&YdotRHS_fast));
   } else {
-    CHKERRQ(VecDuplicateVecs(ts->vec_sol,tab->s,&mprk->YdotRHS));
+    PetscCall(VecDuplicateVecs(ts->vec_sol,tab->s,&mprk->YdotRHS));
     if (mprk->is_slow) {
-      CHKERRQ(PetscMalloc1(tab->s,&mprk->YdotRHS_slow));
+      PetscCall(PetscMalloc1(tab->s,&mprk->YdotRHS_slow));
     }
-    CHKERRQ(PetscMalloc1(tab->s,&mprk->YdotRHS_slowbuffer));
+    PetscCall(PetscMalloc1(tab->s,&mprk->YdotRHS_slowbuffer));
     if (tab->np == 3) {
       if (mprk->is_medium) {
-        CHKERRQ(PetscMalloc1(tab->s,&mprk->YdotRHS_medium));
+        PetscCall(PetscMalloc1(tab->s,&mprk->YdotRHS_medium));
       }
-      CHKERRQ(PetscMalloc1(tab->s,&mprk->YdotRHS_mediumbuffer));
+      PetscCall(PetscMalloc1(tab->s,&mprk->YdotRHS_mediumbuffer));
     }
-    CHKERRQ(PetscMalloc1(tab->s,&mprk->YdotRHS_fast));
+    PetscCall(PetscMalloc1(tab->s,&mprk->YdotRHS_fast));
   }
   PetscFunctionReturn(0);
 }
@@ -1072,14 +1072,14 @@ static PetscErrorCode TSSetUp_MPRK(TS ts)
   DM             dm;
 
   PetscFunctionBegin;
-  CHKERRQ(TSRHSSplitGetIS(ts,"slow",&mprk->is_slow));
-  CHKERRQ(TSRHSSplitGetIS(ts,"fast",&mprk->is_fast));
+  PetscCall(TSRHSSplitGetIS(ts,"slow",&mprk->is_slow));
+  PetscCall(TSRHSSplitGetIS(ts,"fast",&mprk->is_fast));
   PetscCheck(mprk->is_slow && mprk->is_fast,PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set up RHSSplits with TSRHSSplitSetIS() using split names 'slow' and 'fast' respectively in order to use the method '%s'",tab->name);
 
   if (tab->np == 3) {
-    CHKERRQ(TSRHSSplitGetIS(ts,"medium",&mprk->is_medium));
+    PetscCall(TSRHSSplitGetIS(ts,"medium",&mprk->is_medium));
     PetscCheck(mprk->is_medium,PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set up RHSSplits with TSRHSSplitSetIS() using split names 'slow' and 'medium' and 'fast' respectively in order to use the method '%s'",tab->name);
-    CHKERRQ(TSRHSSplitGetIS(ts,"mediumbuffer",&mprk->is_mediumbuffer));
+    PetscCall(TSRHSSplitGetIS(ts,"mediumbuffer",&mprk->is_mediumbuffer));
     if (!mprk->is_mediumbuffer) { /* let medium buffer cover whole medium region */
       mprk->is_mediumbuffer = mprk->is_medium;
       mprk->is_medium = NULL;
@@ -1087,20 +1087,20 @@ static PetscErrorCode TSSetUp_MPRK(TS ts)
   }
 
   /* If users do not provide buffer region settings, the solver will do them automatically, but with a performance penalty */
-  CHKERRQ(TSRHSSplitGetIS(ts,"slowbuffer",&mprk->is_slowbuffer));
+  PetscCall(TSRHSSplitGetIS(ts,"slowbuffer",&mprk->is_slowbuffer));
   if (!mprk->is_slowbuffer) { /* let slow buffer cover whole slow region */
     mprk->is_slowbuffer = mprk->is_slow;
     mprk->is_slow = NULL;
   }
-  CHKERRQ(TSCheckImplicitTerm(ts));
-  CHKERRQ(TSMPRKTableauSetUp(ts));
-  CHKERRQ(TSGetDM(ts,&dm));
-  CHKERRQ(DMCoarsenHookAdd(dm,DMCoarsenHook_TSMPRK,DMRestrictHook_TSMPRK,ts));
-  CHKERRQ(DMSubDomainHookAdd(dm,DMSubDomainHook_TSMPRK,DMSubDomainRestrictHook_TSMPRK,ts));
+  PetscCall(TSCheckImplicitTerm(ts));
+  PetscCall(TSMPRKTableauSetUp(ts));
+  PetscCall(TSGetDM(ts,&dm));
+  PetscCall(DMCoarsenHookAdd(dm,DMCoarsenHook_TSMPRK,DMRestrictHook_TSMPRK,ts));
+  PetscCall(DMSubDomainHookAdd(dm,DMSubDomainHook_TSMPRK,DMSubDomainRestrictHook_TSMPRK,ts));
   if (ts->use_splitrhsfunction) {
     ts->ops->step         = TSStep_MPRKSPLIT;
     ts->ops->evaluatestep = TSEvaluateStep_MPRKSPLIT;
-    CHKERRQ(TSMPRKSetSplits(ts));
+    PetscCall(TSMPRKSetSplits(ts));
   } else {
     ts->ops->step         = TSStep_MPRK;
     ts->ops->evaluatestep = TSEvaluateStep_MPRK;
@@ -1113,20 +1113,20 @@ static PetscErrorCode TSSetFromOptions_MPRK(PetscOptionItems *PetscOptionsObject
   TS_MPRK        *mprk = (TS_MPRK*)ts->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"PRK ODE solver options"));
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"PRK ODE solver options"));
   {
     MPRKTableauLink link;
     PetscInt        count,choice;
     PetscBool       flg;
     const char      **namelist;
     for (link=MPRKTableauList,count=0; link; link=link->next,count++) ;
-    CHKERRQ(PetscMalloc1(count,(char***)&namelist));
+    PetscCall(PetscMalloc1(count,(char***)&namelist));
     for (link=MPRKTableauList,count=0; link; link=link->next,count++) namelist[count] = link->tab.name;
-    CHKERRQ(PetscOptionsEList("-ts_mprk_type","Family of MPRK method","TSMPRKSetType",(const char*const*)namelist,count,mprk->tableau->name,&choice,&flg));
-    if (flg) CHKERRQ(TSMPRKSetType(ts,namelist[choice]));
-    CHKERRQ(PetscFree(namelist));
+    PetscCall(PetscOptionsEList("-ts_mprk_type","Family of MPRK method","TSMPRKSetType",(const char*const*)namelist,count,mprk->tableau->name,&choice,&flg));
+    if (flg) PetscCall(TSMPRKSetType(ts,namelist[choice]));
+    PetscCall(PetscFree(namelist));
   }
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -1136,48 +1136,48 @@ static PetscErrorCode TSView_MPRK(TS ts,PetscViewer viewer)
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
     MPRKTableau tab  = mprk->tableau;
     TSMPRKType  mprktype;
     char        fbuf[512];
     char        sbuf[512];
     PetscInt    i;
-    CHKERRQ(TSMPRKGetType(ts,&mprktype));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  MPRK type %s\n",mprktype));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Order: %D\n",tab->order));
+    PetscCall(TSMPRKGetType(ts,&mprktype));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  MPRK type %s\n",mprktype));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Order: %D\n",tab->order));
 
-    CHKERRQ(PetscFormatRealArray(fbuf,sizeof(fbuf),"% 8.6f",tab->s,tab->cf));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Abscissa cf = %s\n",fbuf));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Af = \n"));
+    PetscCall(PetscFormatRealArray(fbuf,sizeof(fbuf),"% 8.6f",tab->s,tab->cf));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Abscissa cf = %s\n",fbuf));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Af = \n"));
     for (i=0; i<tab->s; i++) {
-      CHKERRQ(PetscFormatRealArray(fbuf,sizeof(fbuf),"% 8.6f",tab->s,&tab->Af[i*tab->s]));
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"    %s\n",fbuf));
+      PetscCall(PetscFormatRealArray(fbuf,sizeof(fbuf),"% 8.6f",tab->s,&tab->Af[i*tab->s]));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"    %s\n",fbuf));
     }
-    CHKERRQ(PetscFormatRealArray(fbuf,sizeof(fbuf),"% 8.6f",tab->s,tab->bf));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  bf = %s\n",fbuf));
+    PetscCall(PetscFormatRealArray(fbuf,sizeof(fbuf),"% 8.6f",tab->s,tab->bf));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  bf = %s\n",fbuf));
 
-    CHKERRQ(PetscFormatRealArray(sbuf,sizeof(sbuf),"% 8.6f",tab->s,tab->csb));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Abscissa csb = %s\n",sbuf));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Asb = \n"));
+    PetscCall(PetscFormatRealArray(sbuf,sizeof(sbuf),"% 8.6f",tab->s,tab->csb));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Abscissa csb = %s\n",sbuf));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Asb = \n"));
     for (i=0; i<tab->s; i++) {
-      CHKERRQ(PetscFormatRealArray(sbuf,sizeof(sbuf),"% 8.6f",tab->s,&tab->Asb[i*tab->s]));
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"    %s\n",sbuf));
+      PetscCall(PetscFormatRealArray(sbuf,sizeof(sbuf),"% 8.6f",tab->s,&tab->Asb[i*tab->s]));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"    %s\n",sbuf));
     }
-    CHKERRQ(PetscFormatRealArray(sbuf,sizeof(sbuf),"% 8.6f",tab->s,tab->bsb));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  bsb = %s\n",sbuf));
+    PetscCall(PetscFormatRealArray(sbuf,sizeof(sbuf),"% 8.6f",tab->s,tab->bsb));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  bsb = %s\n",sbuf));
 
     if (tab->np == 3) {
       char mbuf[512];
-      CHKERRQ(PetscFormatRealArray(mbuf,sizeof(mbuf),"% 8.6f",tab->s,tab->cmb));
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Abscissa cmb = %s\n",mbuf));
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Amb = \n"));
+      PetscCall(PetscFormatRealArray(mbuf,sizeof(mbuf),"% 8.6f",tab->s,tab->cmb));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  Abscissa cmb = %s\n",mbuf));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  Amb = \n"));
       for (i=0; i<tab->s; i++) {
-        CHKERRQ(PetscFormatRealArray(mbuf,sizeof(mbuf),"% 8.6f",tab->s,&tab->Amb[i*tab->s]));
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"    %s\n",mbuf));
+        PetscCall(PetscFormatRealArray(mbuf,sizeof(mbuf),"% 8.6f",tab->s,&tab->Amb[i*tab->s]));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"    %s\n",mbuf));
       }
-      CHKERRQ(PetscFormatRealArray(mbuf,sizeof(mbuf),"% 8.6f",tab->s,tab->bmb));
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"  bmb = %s\n",mbuf));
+      PetscCall(PetscFormatRealArray(mbuf,sizeof(mbuf),"% 8.6f",tab->s,tab->bmb));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  bmb = %s\n",mbuf));
     }
   }
   PetscFunctionReturn(0);
@@ -1188,8 +1188,8 @@ static PetscErrorCode TSLoad_MPRK(TS ts,PetscViewer viewer)
   TSAdapt        adapt;
 
   PetscFunctionBegin;
-  CHKERRQ(TSGetAdapt(ts,&adapt));
-  CHKERRQ(TSAdaptLoad(adapt,viewer));
+  PetscCall(TSGetAdapt(ts,&adapt));
+  PetscCall(TSAdaptLoad(adapt,viewer));
   PetscFunctionReturn(0);
 }
 
@@ -1214,7 +1214,7 @@ PetscErrorCode TSMPRKSetType(TS ts,TSMPRKType mprktype)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidCharPointer(mprktype,2);
-  CHKERRQ(PetscTryMethod(ts,"TSMPRKSetType_C",(TS,TSMPRKType),(ts,mprktype)));
+  PetscCall(PetscTryMethod(ts,"TSMPRKSetType_C",(TS,TSMPRKType),(ts,mprktype)));
   PetscFunctionReturn(0);
 }
 
@@ -1237,7 +1237,7 @@ PetscErrorCode TSMPRKGetType(TS ts,TSMPRKType *mprktype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  CHKERRQ(PetscUseMethod(ts,"TSMPRKGetType_C",(TS,TSMPRKType*),(ts,mprktype)));
+  PetscCall(PetscUseMethod(ts,"TSMPRKGetType_C",(TS,TSMPRKType*),(ts,mprktype)));
   PetscFunctionReturn(0);
 }
 
@@ -1258,15 +1258,15 @@ static PetscErrorCode TSMPRKSetType_MPRK(TS ts,TSMPRKType mprktype)
 
   PetscFunctionBegin;
   if (mprk->tableau) {
-    CHKERRQ(PetscStrcmp(mprk->tableau->name,mprktype,&match));
+    PetscCall(PetscStrcmp(mprk->tableau->name,mprktype,&match));
     if (match) PetscFunctionReturn(0);
   }
   for (link = MPRKTableauList; link; link=link->next) {
-    CHKERRQ(PetscStrcmp(link->tab.name,mprktype,&match));
+    PetscCall(PetscStrcmp(link->tab.name,mprktype,&match));
     if (match) {
-      if (ts->setupcalled) CHKERRQ(TSMPRKTableauReset(ts));
+      if (ts->setupcalled) PetscCall(TSMPRKTableauReset(ts));
       mprk->tableau = &link->tab;
-      if (ts->setupcalled) CHKERRQ(TSMPRKTableauSetUp(ts));
+      if (ts->setupcalled) PetscCall(TSMPRKTableauSetUp(ts));
       PetscFunctionReturn(0);
     }
   }
@@ -1286,14 +1286,14 @@ static PetscErrorCode TSGetStages_MPRK(TS ts,PetscInt *ns,Vec **Y)
 static PetscErrorCode TSDestroy_MPRK(TS ts)
 {
   PetscFunctionBegin;
-  CHKERRQ(TSReset_MPRK(ts));
+  PetscCall(TSReset_MPRK(ts));
   if (ts->dm) {
-    CHKERRQ(DMCoarsenHookRemove(ts->dm,DMCoarsenHook_TSMPRK,DMRestrictHook_TSMPRK,ts));
-    CHKERRQ(DMSubDomainHookRemove(ts->dm,DMSubDomainHook_TSMPRK,DMSubDomainRestrictHook_TSMPRK,ts));
+    PetscCall(DMCoarsenHookRemove(ts->dm,DMCoarsenHook_TSMPRK,DMRestrictHook_TSMPRK,ts));
+    PetscCall(DMSubDomainHookRemove(ts->dm,DMSubDomainHook_TSMPRK,DMSubDomainRestrictHook_TSMPRK,ts));
   }
-  CHKERRQ(PetscFree(ts->data));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSMPRKGetType_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSMPRKSetType_C",NULL));
+  PetscCall(PetscFree(ts->data));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSMPRKGetType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSMPRKSetType_C",NULL));
   PetscFunctionReturn(0);
 }
 
@@ -1317,7 +1317,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_MPRK(TS ts)
   TS_MPRK        *mprk;
 
   PetscFunctionBegin;
-  CHKERRQ(TSMPRKInitializePackage());
+  PetscCall(TSMPRKInitializePackage());
 
   ts->ops->reset          = TSReset_MPRK;
   ts->ops->destroy        = TSDestroy_MPRK;
@@ -1329,12 +1329,12 @@ PETSC_EXTERN PetscErrorCode TSCreate_MPRK(TS ts)
   ts->ops->setfromoptions = TSSetFromOptions_MPRK;
   ts->ops->getstages      = TSGetStages_MPRK;
 
-  CHKERRQ(PetscNewLog(ts,&mprk));
+  PetscCall(PetscNewLog(ts,&mprk));
   ts->data = (void*)mprk;
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSMPRKGetType_C",TSMPRKGetType_MPRK));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSMPRKSetType_C",TSMPRKSetType_MPRK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSMPRKGetType_C",TSMPRKGetType_MPRK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSMPRKSetType_C",TSMPRKSetType_MPRK));
 
-  CHKERRQ(TSMPRKSetType(ts,TSMPRKDefault));
+  PetscCall(TSMPRKSetType(ts,TSMPRKDefault));
   PetscFunctionReturn(0);
 }

@@ -15,15 +15,15 @@ static PetscErrorCode constructTabulationAndMass(PetscInt dim, PetscInt deg, Pet
   PetscReal     *p_trimmed;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscDTBinomialInt(dim, PetscAbsInt(form), &Nf));
-  CHKERRQ(PetscDTPTrimmedSize(dim, deg, form, &Nbpt));
-  CHKERRQ(PetscDTBinomialInt(dim + jetDegree, dim, &Nk));
-  CHKERRQ(PetscMalloc1(Nbpt * Nf * Nk * npoints, &p_trimmed));
-  CHKERRQ(PetscDTPTrimmedEvalJet(dim, npoints, points, deg, form, jetDegree, p_trimmed));
+  PetscCall(PetscDTBinomialInt(dim, PetscAbsInt(form), &Nf));
+  PetscCall(PetscDTPTrimmedSize(dim, deg, form, &Nbpt));
+  PetscCall(PetscDTBinomialInt(dim + jetDegree, dim, &Nk));
+  PetscCall(PetscMalloc1(Nbpt * Nf * Nk * npoints, &p_trimmed));
+  PetscCall(PetscDTPTrimmedEvalJet(dim, npoints, points, deg, form, jetDegree, p_trimmed));
 
   // compute the direct mass matrix
   PetscScalar *M_trimmed;
-  CHKERRQ(PetscCalloc1(Nbpt * Nbpt, &M_trimmed));
+  PetscCall(PetscCalloc1(Nbpt * Nbpt, &M_trimmed));
   for (PetscInt i = 0; i < Nbpt; i++) {
     for (PetscInt j = 0; j < Nbpt; j++) {
       PetscReal v = 0.;
@@ -73,16 +73,16 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
 
   PetscFunctionBegin;
   // Construct an appropriate quadrature
-  CHKERRQ(PetscDTStroudConicalQuadrature(dim, 1, deg + 2, -1., 1., &q));
-  CHKERRQ(PetscQuadratureGetData(q, NULL, NULL, &npoints, &points, &weights));
+  PetscCall(PetscDTStroudConicalQuadrature(dim, 1, deg + 2, -1., 1., &q));
+  PetscCall(PetscQuadratureGetData(q, NULL, NULL, &npoints, &points, &weights));
 
-  CHKERRQ(constructTabulationAndMass(dim, deg, form, jetDegree, npoints, points, weights, &Nbpt, &Nf, &Nk, &p_trimmed, &M_trimmed));
+  PetscCall(constructTabulationAndMass(dim, deg, form, jetDegree, npoints, points, weights, &Nbpt, &Nf, &Nk, &p_trimmed, &M_trimmed));
 
-  CHKERRQ(PetscDTBinomialInt(dim + deg, dim, &Nbp));
-  CHKERRQ(PetscMalloc1(Nbp * Nk * npoints, &p_scalar));
-  CHKERRQ(PetscDTPKDEvalJet(dim, npoints, points, deg, jetDegree, p_scalar));
+  PetscCall(PetscDTBinomialInt(dim + deg, dim, &Nbp));
+  PetscCall(PetscMalloc1(Nbp * Nk * npoints, &p_scalar));
+  PetscCall(PetscDTPKDEvalJet(dim, npoints, points, deg, jetDegree, p_scalar));
 
-  CHKERRQ(PetscMalloc1(Nbpt * Nbpt, &Mcopy));
+  PetscCall(PetscMalloc1(Nbpt * Nbpt, &Mcopy));
   // Print the condition numbers (useful for testing out different bases internally in PetscDTPTrimmedEvalJet())
 #if !defined(PETSC_USE_COMPLEX)
   if (cond) {
@@ -92,20 +92,20 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
     PetscBLASInt lwork = 5 * Nbpt;
     PetscBLASInt lierr;
 
-    CHKERRQ(PetscMalloc1(Nbpt, &S));
-    CHKERRQ(PetscMalloc1(5*Nbpt, &work));
-    CHKERRQ(PetscArraycpy(Mcopy, M_trimmed, Nbpt * Nbpt));
+    PetscCall(PetscMalloc1(Nbpt, &S));
+    PetscCall(PetscMalloc1(5*Nbpt, &work));
+    PetscCall(PetscArraycpy(Mcopy, M_trimmed, Nbpt * Nbpt));
 
     PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("N","N",&n,&n,Mcopy,&n,S,NULL,&n,NULL,&n,work,&lwork,&lierr));
     PetscReal cond = S[0] / S[Nbpt - 1];
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "dimension %D, degree %D, form %D: condition number %g\n", dim, deg, form, (double) cond));
-    CHKERRQ(PetscFree(work));
-    CHKERRQ(PetscFree(S));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "dimension %D, degree %D, form %D: condition number %g\n", dim, deg, form, (double) cond));
+    PetscCall(PetscFree(work));
+    PetscCall(PetscFree(S));
   }
 #endif
 
   // compute the moments with the orthonormal polynomials
-  CHKERRQ(PetscCalloc1(Nbpt * Nbp * Nf, &M_moments));
+  PetscCall(PetscCalloc1(Nbpt * Nbp * Nf, &M_moments));
   for (PetscInt i = 0; i < Nbp; i++) {
     for (PetscInt j = 0; j < Nbpt; j++) {
       for (PetscInt f = 0; f < Nf; f++) {
@@ -123,7 +123,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
 
   // subtract M_moments^T * M_moments from M_trimmed: because the trimmed polynomials should be contained in
   // the full polynomials, the result should be zero
-  CHKERRQ(PetscArraycpy(Mcopy, M_trimmed, Nbpt * Nbpt));
+  PetscCall(PetscArraycpy(Mcopy, M_trimmed, Nbpt * Nbpt));
   {
     PetscBLASInt m = Nbpt;
     PetscBLASInt n = Nbpt;
@@ -143,21 +143,21 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
   }
 
   // P trimmed is also supposed to contain the polynomials of one degree less: construction M_moment[0:sub,:] * M_trimmed^{-1} * M_moments[0:sub,:]^T should be the identity matrix
-  CHKERRQ(MatCreateSeqDense(PETSC_COMM_SELF, Nbpt, Nbpt, M_trimmed, &mat_trimmed));
-  CHKERRQ(PetscDTBinomialInt(dim + deg - 1, dim, &Nbm1));
-  CHKERRQ(MatCreateSeqDense(PETSC_COMM_SELF, Nbpt, Nbm1 * Nf, M_moments, &mat_moments_T));
-  CHKERRQ(MatDuplicate(mat_moments_T, MAT_DO_NOT_COPY_VALUES, &AinvB));
-  CHKERRQ(MatLUFactor(mat_trimmed, NULL, NULL, NULL));
-  CHKERRQ(MatMatSolve(mat_trimmed, mat_moments_T, AinvB));
-  CHKERRQ(MatTransposeMatMult(mat_moments_T, AinvB, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Mm1));
-  CHKERRQ(MatShift(Mm1, -1.));
-  CHKERRQ(MatNorm(Mm1, NORM_FROBENIUS, &frob_err));
+  PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, Nbpt, Nbpt, M_trimmed, &mat_trimmed));
+  PetscCall(PetscDTBinomialInt(dim + deg - 1, dim, &Nbm1));
+  PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, Nbpt, Nbm1 * Nf, M_moments, &mat_moments_T));
+  PetscCall(MatDuplicate(mat_moments_T, MAT_DO_NOT_COPY_VALUES, &AinvB));
+  PetscCall(MatLUFactor(mat_trimmed, NULL, NULL, NULL));
+  PetscCall(MatMatSolve(mat_trimmed, mat_moments_T, AinvB));
+  PetscCall(MatTransposeMatMult(mat_moments_T, AinvB, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Mm1));
+  PetscCall(MatShift(Mm1, -1.));
+  PetscCall(MatNorm(Mm1, NORM_FROBENIUS, &frob_err));
   if (frob_err > PETSC_SMALL) {
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %D, degree %D, form %D: trimmed reverse projection error %g", dim, deg, form, (double) frob_err);
   }
-  CHKERRQ(MatDestroy(&Mm1));
-  CHKERRQ(MatDestroy(&AinvB));
-  CHKERRQ(MatDestroy(&mat_moments_T));
+  PetscCall(MatDestroy(&Mm1));
+  PetscCall(MatDestroy(&AinvB));
+  PetscCall(MatDestroy(&mat_moments_T));
 
   // The Koszul differential applied to P trimmed (Lambda k+1) should be contained in P trimmed (Lambda k)
   if (PetscAbsInt(form) < dim) {
@@ -173,14 +173,14 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
     Mat          AinvB;
     Mat          prod;
 
-    CHKERRQ(constructTabulationAndMass(dim, deg, form < 0 ? form - 1 : form + 1, 0, npoints, points, weights, &Nbpt1, &Nf1, &Nk1,
+    PetscCall(constructTabulationAndMass(dim, deg, form < 0 ? form - 1 : form + 1, 0, npoints, points, weights, &Nbpt1, &Nf1, &Nk1,
                                        &p_trimmed1, &M_trimmed1));
 
-    CHKERRQ(PetscMalloc1(Nf1 * (PetscAbsInt(form) + 1), &pattern));
-    CHKERRQ(PetscDTAltVInteriorPattern(dim, PetscAbsInt(form) + 1, pattern));
+    PetscCall(PetscMalloc1(Nf1 * (PetscAbsInt(form) + 1), &pattern));
+    PetscCall(PetscDTAltVInteriorPattern(dim, PetscAbsInt(form) + 1, pattern));
 
     // apply the Koszul operator
-    CHKERRQ(PetscCalloc1(Nbpt1 * Nf * npoints, &p_koszul));
+    PetscCall(PetscCalloc1(Nbpt1 * Nf * npoints, &p_koszul));
     for (PetscInt b = 0; b < Nbpt1; b++) {
       for (PetscInt a = 0; a < Nf1 * (PetscAbsInt(form) + 1); a++) {
         PetscInt         i,j,k;
@@ -211,7 +211,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
     }
 
     // mass matrix of the result
-    CHKERRQ(PetscMalloc1(Nbpt1 * Nbpt1, &M_koszul));
+    PetscCall(PetscMalloc1(Nbpt1 * Nbpt1, &M_koszul));
     for (PetscInt i = 0; i < Nbpt1; i++) {
       for (PetscInt j = 0; j < Nbpt1; j++) {
         PetscReal val = 0.;
@@ -229,7 +229,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
     }
 
     // moment matrix between the result and P trimmed
-    CHKERRQ(PetscMalloc1(Nbpt * Nbpt1, &M_k_moment));
+    PetscCall(PetscMalloc1(Nbpt * Nbpt1, &M_k_moment));
     for (PetscInt i = 0; i < Nbpt1; i++) {
       for (PetscInt j = 0; j < Nbpt; j++) {
         PetscReal val = 0.;
@@ -247,35 +247,35 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
     }
 
     // M_k_moment M_trimmed^{-1} M_k_moment^T == M_koszul
-    CHKERRQ(MatCreateSeqDense(PETSC_COMM_SELF, Nbpt1, Nbpt1, M_koszul, &mat_koszul));
-    CHKERRQ(MatCreateSeqDense(PETSC_COMM_SELF, Nbpt, Nbpt1, M_k_moment, &mat_k_moment_T));
-    CHKERRQ(MatDuplicate(mat_k_moment_T, MAT_DO_NOT_COPY_VALUES, &AinvB));
-    CHKERRQ(MatMatSolve(mat_trimmed, mat_k_moment_T, AinvB));
-    CHKERRQ(MatTransposeMatMult(mat_k_moment_T, AinvB, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &prod));
-    CHKERRQ(MatAXPY(prod, -1., mat_koszul, SAME_NONZERO_PATTERN));
-    CHKERRQ(MatNorm(prod, NORM_FROBENIUS, &frob_err));
+    PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, Nbpt1, Nbpt1, M_koszul, &mat_koszul));
+    PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, Nbpt, Nbpt1, M_k_moment, &mat_k_moment_T));
+    PetscCall(MatDuplicate(mat_k_moment_T, MAT_DO_NOT_COPY_VALUES, &AinvB));
+    PetscCall(MatMatSolve(mat_trimmed, mat_k_moment_T, AinvB));
+    PetscCall(MatTransposeMatMult(mat_k_moment_T, AinvB, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &prod));
+    PetscCall(MatAXPY(prod, -1., mat_koszul, SAME_NONZERO_PATTERN));
+    PetscCall(MatNorm(prod, NORM_FROBENIUS, &frob_err));
     if (frob_err > PETSC_SMALL) {
       SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %D, degree %D, forms (%D, %D): koszul projection error %g", dim, deg, form, form < 0 ? (form-1):(form+1), (double) frob_err);
     }
 
-    CHKERRQ(MatDestroy(&prod));
-    CHKERRQ(MatDestroy(&AinvB));
-    CHKERRQ(MatDestroy(&mat_k_moment_T));
-    CHKERRQ(MatDestroy(&mat_koszul));
-    CHKERRQ(PetscFree(M_k_moment));
-    CHKERRQ(PetscFree(M_koszul));
-    CHKERRQ(PetscFree(p_koszul));
-    CHKERRQ(PetscFree(pattern));
-    CHKERRQ(PetscFree(p_trimmed1));
-    CHKERRQ(PetscFree(M_trimmed1));
+    PetscCall(MatDestroy(&prod));
+    PetscCall(MatDestroy(&AinvB));
+    PetscCall(MatDestroy(&mat_k_moment_T));
+    PetscCall(MatDestroy(&mat_koszul));
+    PetscCall(PetscFree(M_k_moment));
+    PetscCall(PetscFree(M_koszul));
+    PetscCall(PetscFree(p_koszul));
+    PetscCall(PetscFree(pattern));
+    PetscCall(PetscFree(p_trimmed1));
+    PetscCall(PetscFree(M_trimmed1));
   }
 
   // M_moments has shape [Nbp][Nf][Nbpt]
   // p_scalar has shape [Nbp][Nk][npoints]
   // contracting on [Nbp] should be the same shape as
   // p_trimmed, which is [Nbpt][Nf][Nk][npoints]
-  CHKERRQ(PetscCalloc1(Nbpt * Nf * Nk * npoints, &p_trimmed_copy));
-  CHKERRQ(PetscMalloc1(Nbp * Nf * Nbpt, &M_moment_real));
+  PetscCall(PetscCalloc1(Nbpt * Nf * Nk * npoints, &p_trimmed_copy));
+  PetscCall(PetscMalloc1(Nbp * Nf * Nbpt, &M_moment_real));
   for (PetscInt i = 0; i < Nbp * Nf * Nbpt; i++) {
     M_moment_real[i] = PetscRealPart(M_moments[i]);
   }
@@ -301,15 +301,15 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %D, degree %D, form %D: jet error %g", dim, deg, form, (double) frob_err);
   }
 
-  CHKERRQ(PetscFree(M_moment_real));
-  CHKERRQ(PetscFree(p_trimmed_copy));
-  CHKERRQ(MatDestroy(&mat_trimmed));
-  CHKERRQ(PetscFree(Mcopy));
-  CHKERRQ(PetscFree(M_moments));
-  CHKERRQ(PetscFree(M_trimmed));
-  CHKERRQ(PetscFree(p_trimmed));
-  CHKERRQ(PetscFree(p_scalar));
-  CHKERRQ(PetscQuadratureDestroy(&q));
+  PetscCall(PetscFree(M_moment_real));
+  PetscCall(PetscFree(p_trimmed_copy));
+  PetscCall(MatDestroy(&mat_trimmed));
+  PetscCall(PetscFree(Mcopy));
+  PetscCall(PetscFree(M_moments));
+  PetscCall(PetscFree(M_trimmed));
+  PetscCall(PetscFree(p_trimmed));
+  PetscCall(PetscFree(p_scalar));
+  PetscCall(PetscQuadratureDestroy(&q));
   PetscFunctionReturn(0);
 }
 
@@ -321,21 +321,21 @@ int main(int argc, char **argv)
   PetscBool      cond    = PETSC_FALSE;
   PetscErrorCode ierr;
 
-  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","Options for PetscDTPTrimmedEvalJet() tests","none");CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsInt("-max_dim", "Maximum dimension of the simplex",__FILE__,max_dim,&max_dim,NULL));
-  CHKERRQ(PetscOptionsInt("-max_degree", "Maximum degree of the trimmed polynomial space",__FILE__,max_deg,&max_deg,NULL));
-  CHKERRQ(PetscOptionsInt("-max_jet", "The number of derivatives to test",__FILE__,k,&k,NULL));
-  CHKERRQ(PetscOptionsBool("-cond", "Compute the condition numbers of the mass matrices of the bases",__FILE__,cond,&cond,NULL));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","Options for PetscDTPTrimmedEvalJet() tests","none");PetscCall(ierr);
+  PetscCall(PetscOptionsInt("-max_dim", "Maximum dimension of the simplex",__FILE__,max_dim,&max_dim,NULL));
+  PetscCall(PetscOptionsInt("-max_degree", "Maximum degree of the trimmed polynomial space",__FILE__,max_deg,&max_deg,NULL));
+  PetscCall(PetscOptionsInt("-max_jet", "The number of derivatives to test",__FILE__,k,&k,NULL));
+  PetscCall(PetscOptionsBool("-cond", "Compute the condition numbers of the mass matrices of the bases",__FILE__,cond,&cond,NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
   for (PetscInt dim = 2; dim <= max_dim; dim++) {
     for (PetscInt deg = 1; deg <= max_deg; deg++) {
       for (PetscInt form = -dim+1; form <= dim; form++) {
-        CHKERRQ(test(dim, deg, form, PetscMax(1, k), cond));
+        PetscCall(test(dim, deg, form, PetscMax(1, k), cond));
       }
     }
   }
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

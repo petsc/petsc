@@ -13,24 +13,24 @@ int main(int argc,char **argv)
   PetscMemType    memtype;
   PetscScalar    *array;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-iter",&iter,NULL));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-iter",&iter,NULL));
 
   for (i=0; i<iter; i++) {
-    CHKERRQ(PetscTime(&v0));
-    CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
-    CHKERRQ(VecSetSizes(x,PETSC_DECIDE,n));
-    CHKERRQ(VecSetFromOptions(x));
+    PetscCall(PetscTime(&v0));
+    PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+    PetscCall(VecSetSizes(x,PETSC_DECIDE,n));
+    PetscCall(VecSetFromOptions(x));
     /* make sure the vector's array exists */
-    CHKERRQ(VecGetArrayAndMemType(x,&array,&memtype));
-    CHKERRQ(VecRestoreArrayAndMemType(x,&array));
-    CHKERRQ(WaitForCUDA());
-    CHKERRQ(PetscTime(&v1));
-    CHKERRQ(VecDestroy(&x));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Iteration %" PetscInt_FMT ": Time= %g\n",i,(double)(v1-v0)));
+    PetscCall(VecGetArrayAndMemType(x,&array,&memtype));
+    PetscCall(VecRestoreArrayAndMemType(x,&array));
+    PetscCall(WaitForCUDA());
+    PetscCall(PetscTime(&v1));
+    PetscCall(VecDestroy(&x));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Iteration %" PetscInt_FMT ": Time= %g\n",i,(double)(v1-v0)));
   }
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 /*TEST

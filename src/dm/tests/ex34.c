@@ -11,33 +11,33 @@ int main(int argc,char *argv[])
   const PetscInt *lx,*ly,*lz;
   PetscMPIInt    rank;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,0,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,0,"-dim",&dim,0));
+  PetscCall(PetscInitialize(&argc,&argv,0,help));
+  PetscCall(PetscOptionsGetInt(NULL,0,"-dim",&dim,0));
   switch (dim) {
   case 2:
-    CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR, 3,5,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,&da));
+    PetscCall(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR, 3,5,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,&da));
     break;
   case 3:
-    CHKERRQ(DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR, 3,5,7,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,NULL,&da));
+    PetscCall(DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR, 3,5,7,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,NULL,&da));
     break;
   default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"No support for %D dimensions",dim);
   }
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
-  CHKERRQ(DMDAGetInfo(da, 0, 0,0,0, &m,&n,&p, 0,0, 0,0,0,0));
-  CHKERRQ(DMDAGetOwnershipRanges(da,&lx,&ly,&lz));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMDAGetInfo(da, 0, 0,0,0, &m,&n,&p, 0,0, 0,0,0,0));
+  PetscCall(DMDAGetOwnershipRanges(da,&lx,&ly,&lz));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
-  CHKERRQ(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&vw));
-  CHKERRQ(PetscViewerASCIIPrintf(vw,"[%d] lx ly%s\n",rank,dim>2 ? " lz" : ""));
-  CHKERRQ(PetscIntView(m,lx,vw));
-  CHKERRQ(PetscIntView(n,ly,vw));
-  if (dim > 2) CHKERRQ(PetscIntView(n,lz,vw));
-  CHKERRQ(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&vw));
-  CHKERRQ(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&vw));
+  PetscCall(PetscViewerASCIIPrintf(vw,"[%d] lx ly%s\n",rank,dim>2 ? " lz" : ""));
+  PetscCall(PetscIntView(m,lx,vw));
+  PetscCall(PetscIntView(n,ly,vw));
+  if (dim > 2) PetscCall(PetscIntView(n,lz,vw));
+  PetscCall(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&vw));
+  PetscCall(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
 
-  CHKERRQ(DMDestroy(&da));
-  CHKERRQ(PetscFinalize());
+  PetscCall(DMDestroy(&da));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

@@ -52,7 +52,7 @@ static_assert(
 
 #define PETSC_DEVICE_CASE(IMPLS,func,...)                                     \
   case PetscConcat_(PETSC_DEVICE_,IMPLS): {                                   \
-    CHKERRQ(PetscConcat_(IMPLS,Device).func(__VA_ARGS__));                    \
+    PetscCall(PetscConcat_(IMPLS,Device).func(__VA_ARGS__));                    \
   } break
 
 /*
@@ -65,7 +65,7 @@ static_assert(
   switch(PetscDeviceType) {
   #if PetscDefined(HAVE_CUDA)
   case PETSC_DEVICE_CUDA: {
-    CHKERRQ(CUDADevice.myFunction(arg1,arg2));
+    PetscCall(CUDADevice.myFunction(arg1,arg2));
   } break;
   #endif
   }
@@ -77,7 +77,7 @@ static_assert(
   will expand to the following case statement:
 
   case PETSC_DEVICE_CUDA: {
-    CHKERRQ(CUDADevice.myFunction(arg1,arg2));
+    PetscCall(CUDADevice.myFunction(arg1,arg2));
   } break
 
   if PetscDefined(HAVE_CUDA) evaluates to 1, and expand to nothing otherwise
@@ -116,8 +116,8 @@ PetscErrorCode PetscDeviceCreate(PetscDeviceType type, PetscInt devid, PetscDevi
   PetscFunctionBegin;
   PetscValidDeviceType(type,1);
   PetscValidPointer(device,3);
-  CHKERRQ(PetscDeviceInitializePackage());
-  CHKERRQ(PetscNew(&dev));
+  PetscCall(PetscDeviceInitializePackage());
+  PetscCall(PetscNew(&dev));
   dev->id     = PetscDeviceCounter++;
   dev->type   = type;
   dev->refcnt = 1;
@@ -155,13 +155,13 @@ PetscErrorCode PetscDeviceDestroy(PetscDevice *device)
   PetscFunctionBegin;
   if (!*device) PetscFunctionReturn(0);
   PetscValidDevice(*device,1);
-  CHKERRQ(PetscDeviceDereference_Internal(*device));
+  PetscCall(PetscDeviceDereference_Internal(*device));
   if ((*device)->refcnt) {
     *device = PETSC_NULLPTR;
     PetscFunctionReturn(0);
   }
-  CHKERRQ(PetscFree((*device)->data));
-  CHKERRQ(PetscFree(*device));
+  PetscCall(PetscFree((*device)->data));
+  PetscCall(PetscFree(*device));
   PetscFunctionReturn(0);
 }
 
@@ -197,7 +197,7 @@ PetscErrorCode PetscDeviceConfigure(PetscDevice device)
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PETSc was seemingly configured for PetscDeviceType %s but we've fallen through all cases in a switch",PetscDeviceTypes[device->type]);
     }
   }
-  CHKERRQ((*device->ops->configure)(device));
+  PetscCall((*device->ops->configure)(device));
   PetscFunctionReturn(0);
 }
 
@@ -218,9 +218,9 @@ PetscErrorCode PetscDeviceView(PetscDevice device, PetscViewer viewer)
 {
   PetscFunctionBegin;
   PetscValidDevice(device,1);
-  if (!viewer) CHKERRQ(PetscViewerASCIIGetStdout(PETSC_COMM_WORLD,&viewer));
+  if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PETSC_COMM_WORLD,&viewer));
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
-  CHKERRQ((*device->ops->view)(device,viewer));
+  PetscCall((*device->ops->view)(device,viewer));
   PetscFunctionReturn(0);
 }
 
@@ -271,7 +271,7 @@ PetscErrorCode PetscDeviceInitialize(PetscDeviceType type)
 {
   PetscFunctionBegin;
   PetscValidDeviceType(type,1);
-  CHKERRQ(PetscDeviceInitializeDefaultDevice_Internal(type,PETSC_DECIDE));
+  PetscCall(PetscDeviceInitializeDefaultDevice_Internal(type,PETSC_DECIDE));
   PetscFunctionReturn(0);
 }
 
@@ -310,8 +310,8 @@ PetscErrorCode PetscDeviceInitializeDefaultDevice_Internal(PetscDeviceType type,
   PetscValidDeviceType(type,1);
   if (PetscLikely(PetscDeviceInitialized(type))) PetscFunctionReturn(0);
   PetscAssert(!defaultDevices[type],PETSC_COMM_SELF,PETSC_ERR_MEM,"Trying to overwrite existing default device of type %s",PetscDeviceTypes[type]);
-  CHKERRQ(PetscDeviceCreate(type,defaultDeviceId,&defaultDevices[type]));
-  CHKERRQ(PetscDeviceConfigure(defaultDevices[type]));
+  PetscCall(PetscDeviceCreate(type,defaultDeviceId,&defaultDevices[type]));
+  PetscCall(PetscDeviceConfigure(defaultDevices[type]));
   initializedDevice[type] = true;
   PetscFunctionReturn(0);
 }
@@ -326,11 +326,11 @@ static PetscErrorCode PetscDeviceInitializeTypeFromOptions_Private(MPI_Comm comm
 {
   PetscFunctionBegin;
   if (!PetscDeviceConfiguredFor_Internal(type)) {
-    CHKERRQ(PetscInfo(PETSC_NULLPTR,"PetscDeviceType %s not supported\n",PetscDeviceTypes[type]));
+    PetscCall(PetscInfo(PETSC_NULLPTR,"PetscDeviceType %s not supported\n",PetscDeviceTypes[type]));
     defaultDevices[type] = PETSC_NULLPTR;
     PetscFunctionReturn(0);
   }
-  CHKERRQ(PetscInfo(PETSC_NULLPTR,"PetscDeviceType %s supported, initializing\n",PetscDeviceTypes[type]));
+  PetscCall(PetscInfo(PETSC_NULLPTR,"PetscDeviceType %s supported, initializing\n",PetscDeviceTypes[type]));
   /* ugly switch needed to pick the right global variable... could maybe do this as a union? */
   switch (type) {
     PETSC_DEVICE_CASE_IF_PETSC_DEFINED(CUDA,initialize,comm,&defaultDeviceId,defaultInitType);
@@ -344,14 +344,14 @@ static PetscErrorCode PetscDeviceInitializeTypeFromOptions_Private(MPI_Comm comm
     initialize as
   */
   if (*defaultInitType == PETSC_DEVICE_INIT_EAGER) {
-    CHKERRQ(PetscInfo(PETSC_NULLPTR,"Eagerly initializing %s PetscDevice\n",PetscDeviceTypes[type]));
-    CHKERRQ(PetscDeviceInitializeDefaultDevice_Internal(type,defaultDeviceId));
+    PetscCall(PetscInfo(PETSC_NULLPTR,"Eagerly initializing %s PetscDevice\n",PetscDeviceTypes[type]));
+    PetscCall(PetscDeviceInitializeDefaultDevice_Internal(type,defaultDeviceId));
     if (defaultView) {
       PetscViewer vwr;
 
-      CHKERRQ(PetscLogInitialize());
-      CHKERRQ(PetscViewerASCIIGetStdout(comm,&vwr));
-      CHKERRQ(PetscDeviceView(defaultDevices[type],vwr));
+      PetscCall(PetscLogInitialize());
+      PetscCall(PetscViewerASCIIGetStdout(comm,&vwr));
+      PetscCall(PetscDeviceView(defaultDevices[type],vwr));
     }
   }
   PetscFunctionReturn(0);
@@ -384,10 +384,10 @@ static PetscErrorCode PetscDeviceFinalize_Private(void)
          required, which actually destroys the held device.
       3. Our newly added finalizer runs and checks that all is well.
     */
-    CHKERRQ(PetscRegisterFinalize(PetscDeviceCheckAllDestroyedAfterFinalize));
+    PetscCall(PetscRegisterFinalize(PetscDeviceCheckAllDestroyedAfterFinalize));
   }
-  for (auto &&device : defaultDevices) CHKERRQ(PetscDeviceDestroy(&device));
-  CHKERRCXX(initializedDevice.fill(false));
+  for (auto &&device : defaultDevices) PetscCall(PetscDeviceDestroy(&device));
+  PetscCallCXX(initializedDevice.fill(false));
   PetscFunctionReturn(0);
 }
 
@@ -421,29 +421,29 @@ PetscErrorCode PetscDeviceInitializeFromOptions_Internal(MPI_Comm comm)
   if (PetscDefined(USE_DEBUG)) {
     int result;
 
-    CHKERRMPI(MPI_Comm_compare(comm,PETSC_COMM_WORLD,&result));
+    PetscCallMPI(MPI_Comm_compare(comm,PETSC_COMM_WORLD,&result));
     /* in order to accurately assign ranks to gpus we need to get the MPI_Comm_rank of the
      * global space */
     if (PetscUnlikely(result != MPI_IDENT)) {
       char name[MPI_MAX_OBJECT_NAME] = {};
       int  len; /* unused */
 
-      CHKERRMPI(MPI_Comm_get_name(comm,name,&len));
+      PetscCallMPI(MPI_Comm_get_name(comm,name,&len));
       SETERRQ(comm,PETSC_ERR_MPI,"Default devices being initialized on MPI_Comm '%s' not PETSC_COMM_WORLD",name);
     }
   }
   comm = PETSC_COMM_WORLD; /* from this point on we assume we're on PETSC_COMM_WORLD */
-  CHKERRQ(PetscRegisterFinalize(PetscDeviceFinalize_Private));
-  CHKERRQ(PetscOptionsHasName(PETSC_NULLPTR,PETSC_NULLPTR,"-log_view",&flg));
-  if (!flg) CHKERRQ(PetscOptionsHasName(PETSC_NULLPTR,PETSC_NULLPTR,"-log_summary",&flg));
+  PetscCall(PetscRegisterFinalize(PetscDeviceFinalize_Private));
+  PetscCall(PetscOptionsHasName(PETSC_NULLPTR,PETSC_NULLPTR,"-log_view",&flg));
+  if (!flg) PetscCall(PetscOptionsHasName(PETSC_NULLPTR,PETSC_NULLPTR,"-log_summary",&flg));
   {
     PetscInt initIdx = flg ? PETSC_DEVICE_INIT_EAGER : PETSC_DEVICE_INIT_LAZY;
 
-    ierr = PetscOptionsBegin(comm,PETSC_NULLPTR,"PetscDevice Options","Sys");CHKERRQ(ierr);
-    CHKERRQ(PetscOptionsEList("-device_enable","How (or whether) to initialize PetscDevices","PetscDeviceInitializeFromOptions_Internal()",PetscDeviceInitTypes,3,PetscDeviceInitTypes[initIdx],&initIdx,PETSC_NULLPTR));
-    CHKERRQ(PetscOptionsRangeInt("-device_select","Which device to use. Pass " PetscStringize(PETSC_DECIDE) " to have PETSc decide or (given they exist) [0-NUM_DEVICE) for a specific device","PetscDeviceCreate()",defaultDevice,&defaultDevice,PETSC_NULLPTR,PETSC_DECIDE,std::numeric_limits<int>::max()));
-    CHKERRQ(PetscOptionsBool("-device_view","Display device information and assignments (forces eager initialization)",PETSC_NULLPTR,defaultView,&defaultView,&flg));
-    ierr = PetscOptionsEnd();CHKERRQ(ierr);
+    ierr = PetscOptionsBegin(comm,PETSC_NULLPTR,"PetscDevice Options","Sys");PetscCall(ierr);
+    PetscCall(PetscOptionsEList("-device_enable","How (or whether) to initialize PetscDevices","PetscDeviceInitializeFromOptions_Internal()",PetscDeviceInitTypes,3,PetscDeviceInitTypes[initIdx],&initIdx,PETSC_NULLPTR));
+    PetscCall(PetscOptionsRangeInt("-device_select","Which device to use. Pass " PetscStringize(PETSC_DECIDE) " to have PETSc decide or (given they exist) [0-NUM_DEVICE) for a specific device","PetscDeviceCreate()",defaultDevice,&defaultDevice,PETSC_NULLPTR,PETSC_DECIDE,std::numeric_limits<int>::max()));
+    PetscCall(PetscOptionsBool("-device_view","Display device information and assignments (forces eager initialization)",PETSC_NULLPTR,defaultView,&defaultView,&flg));
+    ierr = PetscOptionsEnd();PetscCall(ierr);
     if (initIdx == PETSC_DEVICE_INIT_NONE) {
       /* disabled all device initialization if devices are globally disabled */
       PetscCheck(defaultDevice == PETSC_DECIDE,comm,PETSC_ERR_USER_INPUT,"You have disabled devices but also specified a particular device to use, these options are mutually exlusive");
@@ -459,7 +459,7 @@ PetscErrorCode PetscDeviceInitializeFromOptions_Internal(MPI_Comm comm)
     const auto deviceType = static_cast<PetscDeviceType>(i);
     auto initType         = defaultInitType;
 
-    CHKERRQ(PetscDeviceInitializeTypeFromOptions_Private(comm,deviceType,defaultDevice,defaultView,&initType));
+    PetscCall(PetscDeviceInitializeTypeFromOptions_Private(comm,deviceType,defaultDevice,defaultView,&initType));
     if (PetscDeviceConfiguredFor_Internal(deviceType) && (initType == PETSC_DEVICE_INIT_EAGER)) {
       initializeDeviceContextEagerly = PETSC_TRUE;
       deviceContextInitDevice        = deviceType;
@@ -472,11 +472,11 @@ PetscErrorCode PetscDeviceInitializeFromOptions_Internal(MPI_Comm comm)
       somewhat inefficient here as the device context is potentially fully set up twice (once
       when retrieved then the second time if setfromoptions makes changes)
     */
-    CHKERRQ(PetscInfo(PETSC_NULLPTR,"Eagerly initializing PetscDeviceContext with %s device\n",PetscDeviceTypes[deviceContextInitDevice]));
-    CHKERRQ(PetscDeviceContextSetRootDeviceType_Internal(deviceContextInitDevice));
-    CHKERRQ(PetscDeviceContextGetCurrentContext(&dctx));
-    CHKERRQ(PetscDeviceContextSetFromOptions(comm,"root_",dctx));
-    CHKERRQ(PetscDeviceContextSetUp(dctx));
+    PetscCall(PetscInfo(PETSC_NULLPTR,"Eagerly initializing PetscDeviceContext with %s device\n",PetscDeviceTypes[deviceContextInitDevice]));
+    PetscCall(PetscDeviceContextSetRootDeviceType_Internal(deviceContextInitDevice));
+    PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
+    PetscCall(PetscDeviceContextSetFromOptions(comm,"root_",dctx));
+    PetscCall(PetscDeviceContextSetUp(dctx));
   }
   PetscFunctionReturn(0);
 }
@@ -486,7 +486,7 @@ PetscErrorCode PetscDeviceGetDefaultForType_Internal(PetscDeviceType type, Petsc
 {
   PetscFunctionBegin;
   PetscValidPointer(device,2);
-  CHKERRQ(PetscDeviceInitialize(type));
+  PetscCall(PetscDeviceInitialize(type));
   *device = defaultDevices[type];
   PetscFunctionReturn(0);
 }

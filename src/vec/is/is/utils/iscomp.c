@@ -48,42 +48,42 @@ PetscErrorCode  ISEqual(IS is1,IS is2,PetscBool  *flg)
     PetscFunctionReturn(0);
   }
 
-  CHKERRMPI(MPI_Comm_compare(PetscObjectComm((PetscObject)is1),PetscObjectComm((PetscObject)is2),&mflg));
+  PetscCallMPI(MPI_Comm_compare(PetscObjectComm((PetscObject)is1),PetscObjectComm((PetscObject)is2),&mflg));
   if (mflg != MPI_CONGRUENT && mflg != MPI_IDENT) {
     *flg = PETSC_FALSE;
     PetscFunctionReturn(0);
   }
 
-  CHKERRQ(ISGetSize(is1,&sz1));
-  CHKERRQ(ISGetSize(is2,&sz2));
+  PetscCall(ISGetSize(is1,&sz1));
+  PetscCall(ISGetSize(is2,&sz2));
   if (sz1 != sz2) *flg = PETSC_FALSE;
   else {
-    CHKERRQ(ISGetLocalSize(is1,&sz1));
-    CHKERRQ(ISGetLocalSize(is2,&sz2));
+    PetscCall(ISGetLocalSize(is1,&sz1));
+    PetscCall(ISGetLocalSize(is2,&sz2));
 
     if (sz1 != sz2) flag = PETSC_FALSE;
     else {
-      CHKERRQ(ISGetIndices(is1,&ptr1));
-      CHKERRQ(ISGetIndices(is2,&ptr2));
+      PetscCall(ISGetIndices(is1,&ptr1));
+      PetscCall(ISGetIndices(is2,&ptr2));
 
-      CHKERRQ(PetscMalloc1(sz1,&a1));
-      CHKERRQ(PetscMalloc1(sz2,&a2));
+      PetscCall(PetscMalloc1(sz1,&a1));
+      PetscCall(PetscMalloc1(sz2,&a2));
 
-      CHKERRQ(PetscArraycpy(a1,ptr1,sz1));
-      CHKERRQ(PetscArraycpy(a2,ptr2,sz2));
+      PetscCall(PetscArraycpy(a1,ptr1,sz1));
+      PetscCall(PetscArraycpy(a2,ptr2,sz2));
 
-      CHKERRQ(PetscIntSortSemiOrdered(sz1,a1));
-      CHKERRQ(PetscIntSortSemiOrdered(sz2,a2));
-      CHKERRQ(PetscArraycmp(a1,a2,sz1,&flag));
+      PetscCall(PetscIntSortSemiOrdered(sz1,a1));
+      PetscCall(PetscIntSortSemiOrdered(sz2,a2));
+      PetscCall(PetscArraycmp(a1,a2,sz1,&flag));
 
-      CHKERRQ(ISRestoreIndices(is1,&ptr1));
-      CHKERRQ(ISRestoreIndices(is2,&ptr2));
+      PetscCall(ISRestoreIndices(is1,&ptr1));
+      PetscCall(ISRestoreIndices(is2,&ptr2));
 
-      CHKERRQ(PetscFree(a1));
-      CHKERRQ(PetscFree(a2));
+      PetscCall(PetscFree(a1));
+      PetscCall(PetscFree(a2));
     }
-    CHKERRQ(PetscObjectGetComm((PetscObject)is1,&comm));
-    CHKERRMPI(MPIU_Allreduce(&flag,flg,1,MPIU_BOOL,MPI_MIN,comm));
+    PetscCall(PetscObjectGetComm((PetscObject)is1,&comm));
+    PetscCallMPI(MPIU_Allreduce(&flag,flg,1,MPIU_BOOL,MPI_MIN,comm));
   }
   PetscFunctionReturn(0);
 }
@@ -127,31 +127,31 @@ PetscErrorCode  ISEqualUnsorted(IS is1,IS is2,PetscBool  *flg)
     PetscFunctionReturn(0);
   }
 
-  CHKERRMPI(MPI_Comm_compare(PetscObjectComm((PetscObject)is1),PetscObjectComm((PetscObject)is2),&mflg));
+  PetscCallMPI(MPI_Comm_compare(PetscObjectComm((PetscObject)is1),PetscObjectComm((PetscObject)is2),&mflg));
   if (mflg != MPI_CONGRUENT && mflg != MPI_IDENT) {
     *flg = PETSC_FALSE;
     PetscFunctionReturn(0);
   }
 
-  CHKERRQ(ISGetSize(is1,&sz1));
-  CHKERRQ(ISGetSize(is2,&sz2));
+  PetscCall(ISGetSize(is1,&sz1));
+  PetscCall(ISGetSize(is2,&sz2));
   if (sz1 != sz2) *flg = PETSC_FALSE;
   else {
-    CHKERRQ(ISGetLocalSize(is1,&sz1));
-    CHKERRQ(ISGetLocalSize(is2,&sz2));
+    PetscCall(ISGetLocalSize(is1,&sz1));
+    PetscCall(ISGetLocalSize(is2,&sz2));
 
     if (sz1 != sz2) flag = PETSC_FALSE;
     else {
-      CHKERRQ(ISGetIndices(is1,&ptr1));
-      CHKERRQ(ISGetIndices(is2,&ptr2));
+      PetscCall(ISGetIndices(is1,&ptr1));
+      PetscCall(ISGetIndices(is2,&ptr2));
 
-      CHKERRQ(PetscArraycmp(ptr1,ptr2,sz1,&flag));
+      PetscCall(PetscArraycmp(ptr1,ptr2,sz1,&flag));
 
-      CHKERRQ(ISRestoreIndices(is1,&ptr1));
-      CHKERRQ(ISRestoreIndices(is2,&ptr2));
+      PetscCall(ISRestoreIndices(is1,&ptr1));
+      PetscCall(ISRestoreIndices(is2,&ptr2));
     }
-    CHKERRQ(PetscObjectGetComm((PetscObject)is1,&comm));
-    CHKERRMPI(MPIU_Allreduce(&flag,flg,1,MPIU_BOOL,MPI_MIN,comm));
+    PetscCall(PetscObjectGetComm((PetscObject)is1,&comm));
+    PetscCallMPI(MPIU_Allreduce(&flag,flg,1,MPIU_BOOL,MPI_MIN,comm));
   }
   PetscFunctionReturn(0);
 }

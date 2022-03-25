@@ -61,9 +61,9 @@ PetscErrorCode  PetscGetCPUTime(PetscLogDouble *t)
     ...
     PetscLogDouble t1, t2;
 
-    CHKERRQ(PetscGetCPUTime(&t1));
+    PetscCall(PetscGetCPUTime(&t1));
     ... code to time ...
-    CHKERRQ(PetscGetCPUTime(&t2));
+    PetscCall(PetscGetCPUTime(&t2));
     printf("Code took %f CPU seconds\n", t2-t1);
 .ve
 

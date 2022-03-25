@@ -97,12 +97,12 @@ static PetscErrorCode MatDestroy_UMFPACK(Mat A)
   if (lu->CleanUpUMFPACK) {
     umfpack_UMF_free_symbolic(&lu->Symbolic);
     umfpack_UMF_free_numeric(&lu->Numeric);
-    CHKERRQ(PetscFree(lu->Wi));
-    CHKERRQ(PetscFree(lu->W));
-    CHKERRQ(PetscFree(lu->perm_c));
+    PetscCall(PetscFree(lu->Wi));
+    PetscCall(PetscFree(lu->W));
+    PetscCall(PetscFree(lu->perm_c));
   }
-  CHKERRQ(MatDestroy(&lu->A));
-  CHKERRQ(PetscFree(A->data));
+  PetscCall(MatDestroy(&lu->A));
+  PetscCall(PetscFree(A->data));
   PetscFunctionReturn(0);
 }
 
@@ -117,17 +117,17 @@ static PetscErrorCode MatSolve_UMFPACK_Private(Mat A,Vec b,Vec x,int uflag)
 
   PetscFunctionBegin;
   if (!A->rmap->n) PetscFunctionReturn(0);
-  CHKERRQ(PetscCitationsRegister("@article{davis2004algorithm,\n  title={Algorithm 832: {UMFPACK} V4.3---An Unsymmetric-Pattern Multifrontal Method},\n  author={Davis, Timothy A},\n  journal={ACM Transactions on Mathematical Software (TOMS)},\n  volume={30},\n  number={2},\n  pages={196--199},\n  year={2004},\n  publisher={ACM}\n}\n",&cite));
+  PetscCall(PetscCitationsRegister("@article{davis2004algorithm,\n  title={Algorithm 832: {UMFPACK} V4.3---An Unsymmetric-Pattern Multifrontal Method},\n  author={Davis, Timothy A},\n  journal={ACM Transactions on Mathematical Software (TOMS)},\n  volume={30},\n  number={2},\n  pages={196--199},\n  year={2004},\n  publisher={ACM}\n}\n",&cite));
   /* solve Ax = b by umfpack_*_wsolve */
   /* ----------------------------------*/
 
   if (!lu->Wi) {  /* first time, allocate working space for wsolve */
-    CHKERRQ(PetscMalloc1(A->rmap->n,&lu->Wi));
-    CHKERRQ(PetscMalloc1(5*A->rmap->n,&lu->W));
+    PetscCall(PetscMalloc1(A->rmap->n,&lu->Wi));
+    PetscCall(PetscMalloc1(5*A->rmap->n,&lu->W));
   }
 
-  CHKERRQ(VecGetArrayRead(b,&ba));
-  CHKERRQ(VecGetArray(x,&xa));
+  PetscCall(VecGetArrayRead(b,&ba));
+  PetscCall(VecGetArray(x,&xa));
 #if defined(PETSC_USE_COMPLEX)
   status = umfpack_UMF_wsolve(uflag,ai,aj,(PetscReal*)av,NULL,(PetscReal*)xa,NULL,(PetscReal*)ba,NULL,lu->Numeric,lu->Control,lu->Info,lu->Wi,lu->W);
 #else
@@ -139,8 +139,8 @@ static PetscErrorCode MatSolve_UMFPACK_Private(Mat A,Vec b,Vec x,int uflag)
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"umfpack_UMF_wsolve failed");
   }
 
-  CHKERRQ(VecRestoreArrayRead(b,&ba));
-  CHKERRQ(VecRestoreArray(x,&xa));
+  PetscCall(VecRestoreArrayRead(b,&ba));
+  PetscCall(VecRestoreArray(x,&xa));
   PetscFunctionReturn(0);
 }
 
@@ -148,7 +148,7 @@ static PetscErrorCode MatSolve_UMFPACK(Mat A,Vec b,Vec x)
 {
   PetscFunctionBegin;
   /* We gave UMFPACK the algebraic transpose (because it assumes column alignment) */
-  CHKERRQ(MatSolve_UMFPACK_Private(A,b,x,UMFPACK_Aat));
+  PetscCall(MatSolve_UMFPACK_Private(A,b,x,UMFPACK_Aat));
   PetscFunctionReturn(0);
 }
 
@@ -156,7 +156,7 @@ static PetscErrorCode MatSolveTranspose_UMFPACK(Mat A,Vec b,Vec x)
 {
   PetscFunctionBegin;
   /* We gave UMFPACK the algebraic transpose (because it assumes column alignment) */
-  CHKERRQ(MatSolve_UMFPACK_Private(A,b,x,UMFPACK_A));
+  PetscCall(MatSolve_UMFPACK_Private(A,b,x,UMFPACK_A));
   PetscFunctionReturn(0);
 }
 
@@ -187,8 +187,8 @@ static PetscErrorCode MatLUFactorNumeric_UMFPACK(Mat F,Mat A,const MatFactorInfo
   /* report numeric factorization of A' when Control[PRL] > 3 */
   (void) umfpack_UMF_report_numeric(lu->Numeric, lu->Control);
 
-  CHKERRQ(PetscObjectReference((PetscObject)A));
-  CHKERRQ(MatDestroy(&lu->A));
+  PetscCall(PetscObjectReference((PetscObject)A));
+  PetscCall(MatDestroy(&lu->A));
 
   lu->A                  = A;
   lu->flg                = SAME_NONZERO_PATTERN;
@@ -213,11 +213,11 @@ static PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat F,Mat A,IS r,IS c,const Ma
   (F)->ops->lufactornumeric = MatLUFactorNumeric_UMFPACK;
   if (!n) PetscFunctionReturn(0);
   if (r) {
-    CHKERRQ(ISGetIndices(r,&ra));
-    CHKERRQ(PetscMalloc1(m,&lu->perm_c));
+    PetscCall(ISGetIndices(r,&ra));
+    PetscCall(PetscMalloc1(m,&lu->perm_c));
     /* we cannot simply memcpy on 64 bit archs */
     for (i = 0; i < m; i++) lu->perm_c[i] = ra[i];
-    CHKERRQ(ISRestoreIndices(r,&ra));
+    PetscCall(ISRestoreIndices(r,&ra));
   }
 
   /* print the control parameters */
@@ -259,32 +259,32 @@ static PetscErrorCode MatView_Info_UMFPACK(Mat A,PetscViewer viewer)
   /* check if matrix is UMFPACK type */
   if (A->ops->solve != MatSolve_UMFPACK) PetscFunctionReturn(0);
 
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"UMFPACK run parameters:\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"UMFPACK run parameters:\n"));
   /* Control parameters used by reporting routiones */
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_PRL]: %g\n",lu->Control[UMFPACK_PRL]));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_PRL]: %g\n",lu->Control[UMFPACK_PRL]));
 
   /* Control parameters used by symbolic factorization */
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_STRATEGY]: %g\n",lu->Control[UMFPACK_STRATEGY]));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_DENSE_COL]: %g\n",lu->Control[UMFPACK_DENSE_COL]));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_DENSE_ROW]: %g\n",lu->Control[UMFPACK_DENSE_ROW]));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_AMD_DENSE]: %g\n",lu->Control[UMFPACK_AMD_DENSE]));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_BLOCK_SIZE]: %g\n",lu->Control[UMFPACK_BLOCK_SIZE]));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_FIXQ]: %g\n",lu->Control[UMFPACK_FIXQ]));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_AGGRESSIVE]: %g\n",lu->Control[UMFPACK_AGGRESSIVE]));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_STRATEGY]: %g\n",lu->Control[UMFPACK_STRATEGY]));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_DENSE_COL]: %g\n",lu->Control[UMFPACK_DENSE_COL]));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_DENSE_ROW]: %g\n",lu->Control[UMFPACK_DENSE_ROW]));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_AMD_DENSE]: %g\n",lu->Control[UMFPACK_AMD_DENSE]));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_BLOCK_SIZE]: %g\n",lu->Control[UMFPACK_BLOCK_SIZE]));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_FIXQ]: %g\n",lu->Control[UMFPACK_FIXQ]));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_AGGRESSIVE]: %g\n",lu->Control[UMFPACK_AGGRESSIVE]));
 
   /* Control parameters used by numeric factorization */
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_PIVOT_TOLERANCE]: %g\n",lu->Control[UMFPACK_PIVOT_TOLERANCE]));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_SYM_PIVOT_TOLERANCE]: %g\n",lu->Control[UMFPACK_SYM_PIVOT_TOLERANCE]));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_SCALE]: %g\n",lu->Control[UMFPACK_SCALE]));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_ALLOC_INIT]: %g\n",lu->Control[UMFPACK_ALLOC_INIT]));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_DROPTOL]: %g\n",lu->Control[UMFPACK_DROPTOL]));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_PIVOT_TOLERANCE]: %g\n",lu->Control[UMFPACK_PIVOT_TOLERANCE]));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_SYM_PIVOT_TOLERANCE]: %g\n",lu->Control[UMFPACK_SYM_PIVOT_TOLERANCE]));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_SCALE]: %g\n",lu->Control[UMFPACK_SCALE]));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_ALLOC_INIT]: %g\n",lu->Control[UMFPACK_ALLOC_INIT]));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_DROPTOL]: %g\n",lu->Control[UMFPACK_DROPTOL]));
 
   /* Control parameters used by solve */
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_IRSTEP]: %g\n",lu->Control[UMFPACK_IRSTEP]));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_IRSTEP]: %g\n",lu->Control[UMFPACK_IRSTEP]));
 
   /* mat ordering */
   if (!lu->perm_c) {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_ORDERING]: %s (not using the PETSc ordering)\n",UmfpackOrderingTypes[(int)lu->Control[UMFPACK_ORDERING]]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_ORDERING]: %s (not using the PETSc ordering)\n",UmfpackOrderingTypes[(int)lu->Control[UMFPACK_ORDERING]]));
   }
   PetscFunctionReturn(0);
 }
@@ -295,11 +295,11 @@ static PetscErrorCode MatView_UMFPACK(Mat A,PetscViewer viewer)
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    CHKERRQ(PetscViewerGetFormat(viewer,&format));
+    PetscCall(PetscViewerGetFormat(viewer,&format));
     if (format == PETSC_VIEWER_ASCII_INFO) {
-      CHKERRQ(MatView_Info_UMFPACK(A,viewer));
+      PetscCall(MatView_Info_UMFPACK(A,viewer));
     }
   }
   PetscFunctionReturn(0);
@@ -360,12 +360,12 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftyp
 
   PetscFunctionBegin;
   /* Create the factorization matrix F */
-  CHKERRQ(MatCreate(PetscObjectComm((PetscObject)A),&B));
-  CHKERRQ(MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,m,n));
-  CHKERRQ(PetscStrallocpy("umfpack",&((PetscObject)B)->type_name));
-  CHKERRQ(MatSetUp(B));
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)A),&B));
+  PetscCall(MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,m,n));
+  PetscCall(PetscStrallocpy("umfpack",&((PetscObject)B)->type_name));
+  PetscCall(MatSetUp(B));
 
-  CHKERRQ(PetscNewLog(B,&lu));
+  PetscCall(PetscNewLog(B,&lu));
 
   B->data                   = lu;
   B->ops->getinfo          = MatGetInfo_External;
@@ -374,16 +374,16 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftyp
   B->ops->view             = MatView_UMFPACK;
   B->ops->matsolve         = NULL;
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_seqaij_umfpack));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_seqaij_umfpack));
 
   B->factortype   = MAT_FACTOR_LU;
   B->assembled    = PETSC_TRUE;           /* required by -ksp_view */
   B->preallocated = PETSC_TRUE;
 
-  CHKERRQ(PetscFree(B->solvertype));
-  CHKERRQ(PetscStrallocpy(MATSOLVERUMFPACK,&B->solvertype));
+  PetscCall(PetscFree(B->solvertype));
+  PetscCall(PetscStrallocpy(MATSOLVERUMFPACK,&B->solvertype));
   B->canuseordering = PETSC_TRUE;
-  CHKERRQ(PetscStrallocpy(MATORDERINGEXTERNAL,(char**)&B->preferredordering[MAT_FACTOR_LU]));
+  PetscCall(PetscStrallocpy(MATORDERINGEXTERNAL,(char**)&B->preferredordering[MAT_FACTOR_LU]));
 
   /* initializations */
   /* ------------------------------------------------*/
@@ -392,12 +392,12 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftyp
   lu->perm_c                  = NULL; /* use defaul UMFPACK col permutation */
   lu->Control[UMFPACK_IRSTEP] = 0;          /* max num of iterative refinement steps to attempt */
 
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"UMFPACK Options","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"UMFPACK Options","Mat");PetscCall(ierr);
   /* Control parameters used by reporting routiones */
-  CHKERRQ(PetscOptionsReal("-mat_umfpack_prl","Control[UMFPACK_PRL]","None",lu->Control[UMFPACK_PRL],&lu->Control[UMFPACK_PRL],NULL));
+  PetscCall(PetscOptionsReal("-mat_umfpack_prl","Control[UMFPACK_PRL]","None",lu->Control[UMFPACK_PRL],&lu->Control[UMFPACK_PRL],NULL));
 
   /* Control parameters for symbolic factorization */
-  CHKERRQ(PetscOptionsEList("-mat_umfpack_strategy","ordering and pivoting strategy","None",strategy,3,strategy[0],&idx,&flg));
+  PetscCall(PetscOptionsEList("-mat_umfpack_strategy","ordering and pivoting strategy","None",strategy,3,strategy[0],&idx,&flg));
   if (flg) {
     switch (idx) {
     case 0: lu->Control[UMFPACK_STRATEGY] = UMFPACK_STRATEGY_AUTO; break;
@@ -405,19 +405,19 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftyp
     case 2: lu->Control[UMFPACK_STRATEGY] = UMFPACK_STRATEGY_SYMMETRIC; break;
     }
   }
-  CHKERRQ(PetscOptionsEList("-mat_umfpack_ordering","Internal ordering method","None",UmfpackOrderingTypes,sizeof(UmfpackOrderingTypes)/sizeof(UmfpackOrderingTypes[0]),UmfpackOrderingTypes[(int)lu->Control[UMFPACK_ORDERING]],&idx,&flg));
+  PetscCall(PetscOptionsEList("-mat_umfpack_ordering","Internal ordering method","None",UmfpackOrderingTypes,sizeof(UmfpackOrderingTypes)/sizeof(UmfpackOrderingTypes[0]),UmfpackOrderingTypes[(int)lu->Control[UMFPACK_ORDERING]],&idx,&flg));
   if (flg) lu->Control[UMFPACK_ORDERING] = (int)idx;
-  CHKERRQ(PetscOptionsReal("-mat_umfpack_dense_col","Control[UMFPACK_DENSE_COL]","None",lu->Control[UMFPACK_DENSE_COL],&lu->Control[UMFPACK_DENSE_COL],NULL));
-  CHKERRQ(PetscOptionsReal("-mat_umfpack_dense_row","Control[UMFPACK_DENSE_ROW]","None",lu->Control[UMFPACK_DENSE_ROW],&lu->Control[UMFPACK_DENSE_ROW],NULL));
-  CHKERRQ(PetscOptionsReal("-mat_umfpack_amd_dense","Control[UMFPACK_AMD_DENSE]","None",lu->Control[UMFPACK_AMD_DENSE],&lu->Control[UMFPACK_AMD_DENSE],NULL));
-  CHKERRQ(PetscOptionsReal("-mat_umfpack_block_size","Control[UMFPACK_BLOCK_SIZE]","None",lu->Control[UMFPACK_BLOCK_SIZE],&lu->Control[UMFPACK_BLOCK_SIZE],NULL));
-  CHKERRQ(PetscOptionsReal("-mat_umfpack_fixq","Control[UMFPACK_FIXQ]","None",lu->Control[UMFPACK_FIXQ],&lu->Control[UMFPACK_FIXQ],NULL));
-  CHKERRQ(PetscOptionsReal("-mat_umfpack_aggressive","Control[UMFPACK_AGGRESSIVE]","None",lu->Control[UMFPACK_AGGRESSIVE],&lu->Control[UMFPACK_AGGRESSIVE],NULL));
+  PetscCall(PetscOptionsReal("-mat_umfpack_dense_col","Control[UMFPACK_DENSE_COL]","None",lu->Control[UMFPACK_DENSE_COL],&lu->Control[UMFPACK_DENSE_COL],NULL));
+  PetscCall(PetscOptionsReal("-mat_umfpack_dense_row","Control[UMFPACK_DENSE_ROW]","None",lu->Control[UMFPACK_DENSE_ROW],&lu->Control[UMFPACK_DENSE_ROW],NULL));
+  PetscCall(PetscOptionsReal("-mat_umfpack_amd_dense","Control[UMFPACK_AMD_DENSE]","None",lu->Control[UMFPACK_AMD_DENSE],&lu->Control[UMFPACK_AMD_DENSE],NULL));
+  PetscCall(PetscOptionsReal("-mat_umfpack_block_size","Control[UMFPACK_BLOCK_SIZE]","None",lu->Control[UMFPACK_BLOCK_SIZE],&lu->Control[UMFPACK_BLOCK_SIZE],NULL));
+  PetscCall(PetscOptionsReal("-mat_umfpack_fixq","Control[UMFPACK_FIXQ]","None",lu->Control[UMFPACK_FIXQ],&lu->Control[UMFPACK_FIXQ],NULL));
+  PetscCall(PetscOptionsReal("-mat_umfpack_aggressive","Control[UMFPACK_AGGRESSIVE]","None",lu->Control[UMFPACK_AGGRESSIVE],&lu->Control[UMFPACK_AGGRESSIVE],NULL));
 
   /* Control parameters used by numeric factorization */
-  CHKERRQ(PetscOptionsReal("-mat_umfpack_pivot_tolerance","Control[UMFPACK_PIVOT_TOLERANCE]","None",lu->Control[UMFPACK_PIVOT_TOLERANCE],&lu->Control[UMFPACK_PIVOT_TOLERANCE],NULL));
-  CHKERRQ(PetscOptionsReal("-mat_umfpack_sym_pivot_tolerance","Control[UMFPACK_SYM_PIVOT_TOLERANCE]","None",lu->Control[UMFPACK_SYM_PIVOT_TOLERANCE],&lu->Control[UMFPACK_SYM_PIVOT_TOLERANCE],NULL));
-  CHKERRQ(PetscOptionsEList("-mat_umfpack_scale","Control[UMFPACK_SCALE]","None",scale,3,scale[0],&idx,&flg));
+  PetscCall(PetscOptionsReal("-mat_umfpack_pivot_tolerance","Control[UMFPACK_PIVOT_TOLERANCE]","None",lu->Control[UMFPACK_PIVOT_TOLERANCE],&lu->Control[UMFPACK_PIVOT_TOLERANCE],NULL));
+  PetscCall(PetscOptionsReal("-mat_umfpack_sym_pivot_tolerance","Control[UMFPACK_SYM_PIVOT_TOLERANCE]","None",lu->Control[UMFPACK_SYM_PIVOT_TOLERANCE],&lu->Control[UMFPACK_SYM_PIVOT_TOLERANCE],NULL));
+  PetscCall(PetscOptionsEList("-mat_umfpack_scale","Control[UMFPACK_SCALE]","None",scale,3,scale[0],&idx,&flg));
   if (flg) {
     switch (idx) {
     case 0: lu->Control[UMFPACK_SCALE] = UMFPACK_SCALE_NONE; break;
@@ -425,13 +425,13 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftyp
     case 2: lu->Control[UMFPACK_SCALE] = UMFPACK_SCALE_MAX; break;
     }
   }
-  CHKERRQ(PetscOptionsReal("-mat_umfpack_alloc_init","Control[UMFPACK_ALLOC_INIT]","None",lu->Control[UMFPACK_ALLOC_INIT],&lu->Control[UMFPACK_ALLOC_INIT],NULL));
-  CHKERRQ(PetscOptionsReal("-mat_umfpack_front_alloc_init","Control[UMFPACK_FRONT_ALLOC_INIT]","None",lu->Control[UMFPACK_FRONT_ALLOC_INIT],&lu->Control[UMFPACK_ALLOC_INIT],NULL));
-  CHKERRQ(PetscOptionsReal("-mat_umfpack_droptol","Control[UMFPACK_DROPTOL]","None",lu->Control[UMFPACK_DROPTOL],&lu->Control[UMFPACK_DROPTOL],NULL));
+  PetscCall(PetscOptionsReal("-mat_umfpack_alloc_init","Control[UMFPACK_ALLOC_INIT]","None",lu->Control[UMFPACK_ALLOC_INIT],&lu->Control[UMFPACK_ALLOC_INIT],NULL));
+  PetscCall(PetscOptionsReal("-mat_umfpack_front_alloc_init","Control[UMFPACK_FRONT_ALLOC_INIT]","None",lu->Control[UMFPACK_FRONT_ALLOC_INIT],&lu->Control[UMFPACK_ALLOC_INIT],NULL));
+  PetscCall(PetscOptionsReal("-mat_umfpack_droptol","Control[UMFPACK_DROPTOL]","None",lu->Control[UMFPACK_DROPTOL],&lu->Control[UMFPACK_DROPTOL],NULL));
 
   /* Control parameters used by solve */
-  CHKERRQ(PetscOptionsReal("-mat_umfpack_irstep","Control[UMFPACK_IRSTEP]","None",lu->Control[UMFPACK_IRSTEP],&lu->Control[UMFPACK_IRSTEP],NULL));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(PetscOptionsReal("-mat_umfpack_irstep","Control[UMFPACK_IRSTEP]","None",lu->Control[UMFPACK_IRSTEP],&lu->Control[UMFPACK_IRSTEP],NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
   *F = B;
   PetscFunctionReturn(0);
 }
@@ -444,14 +444,14 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_spqr(Mat,MatFactorType,Mat*);
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SuiteSparse(void)
 {
   PetscFunctionBegin;
-  CHKERRQ(MatSolverTypeRegister(MATSOLVERUMFPACK,MATSEQAIJ,  MAT_FACTOR_LU,MatGetFactor_seqaij_umfpack));
-  CHKERRQ(MatSolverTypeRegister(MATSOLVERCHOLMOD,MATSEQAIJ,  MAT_FACTOR_CHOLESKY,MatGetFactor_seqaij_cholmod));
-  CHKERRQ(MatSolverTypeRegister(MATSOLVERCHOLMOD,MATSEQSBAIJ,MAT_FACTOR_CHOLESKY,MatGetFactor_seqsbaij_cholmod));
-  CHKERRQ(MatSolverTypeRegister(MATSOLVERKLU,MATSEQAIJ,      MAT_FACTOR_LU,MatGetFactor_seqaij_klu));
-  CHKERRQ(MatSolverTypeRegister(MATSOLVERSPQR,MATSEQAIJ,     MAT_FACTOR_QR,MatGetFactor_seqaij_spqr));
+  PetscCall(MatSolverTypeRegister(MATSOLVERUMFPACK,MATSEQAIJ,  MAT_FACTOR_LU,MatGetFactor_seqaij_umfpack));
+  PetscCall(MatSolverTypeRegister(MATSOLVERCHOLMOD,MATSEQAIJ,  MAT_FACTOR_CHOLESKY,MatGetFactor_seqaij_cholmod));
+  PetscCall(MatSolverTypeRegister(MATSOLVERCHOLMOD,MATSEQSBAIJ,MAT_FACTOR_CHOLESKY,MatGetFactor_seqsbaij_cholmod));
+  PetscCall(MatSolverTypeRegister(MATSOLVERKLU,MATSEQAIJ,      MAT_FACTOR_LU,MatGetFactor_seqaij_klu));
+  PetscCall(MatSolverTypeRegister(MATSOLVERSPQR,MATSEQAIJ,     MAT_FACTOR_QR,MatGetFactor_seqaij_spqr));
   if (!PetscDefined(USE_COMPLEX)) {
-    CHKERRQ(MatSolverTypeRegister(MATSOLVERSPQR,MATNORMAL,   MAT_FACTOR_QR,MatGetFactor_seqaij_spqr));
+    PetscCall(MatSolverTypeRegister(MATSOLVERSPQR,MATNORMAL,   MAT_FACTOR_QR,MatGetFactor_seqaij_spqr));
   }
-  CHKERRQ(MatSolverTypeRegister(MATSOLVERSPQR,MATNORMALHERMITIAN, MAT_FACTOR_QR,MatGetFactor_seqaij_spqr));
+  PetscCall(MatSolverTypeRegister(MATSOLVERSPQR,MATNORMALHERMITIAN, MAT_FACTOR_QR,MatGetFactor_seqaij_spqr));
   PetscFunctionReturn(0);
 }

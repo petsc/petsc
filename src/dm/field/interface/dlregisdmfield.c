@@ -21,9 +21,9 @@ PetscErrorCode DMFieldInitializePackage(void)
   if (DMFieldPackageInitialized) PetscFunctionReturn(0);
   DMFieldPackageInitialized = PETSC_TRUE;
 
-  CHKERRQ(PetscClassIdRegister("Field over DM",&DMFIELD_CLASSID));
-  CHKERRQ(DMFieldRegisterAll());
-  CHKERRQ(PetscRegisterFinalize(DMFieldFinalizePackage));
+  PetscCall(PetscClassIdRegister("Field over DM",&DMFIELD_CLASSID));
+  PetscCall(DMFieldRegisterAll());
+  PetscCall(PetscRegisterFinalize(DMFieldFinalizePackage));
   PetscFunctionReturn(0);
 }
 
@@ -39,7 +39,7 @@ PetscErrorCode DMFieldInitializePackage(void)
 PetscErrorCode DMFieldFinalizePackage(void)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscFunctionListDestroy(&DMFieldList));
+  PetscCall(PetscFunctionListDestroy(&DMFieldList));
   DMFieldPackageInitialized = PETSC_FALSE;
   DMFieldRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);

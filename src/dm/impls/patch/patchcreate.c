@@ -7,10 +7,10 @@ PetscErrorCode DMSetFromOptions_Patch(PetscOptionItems *PetscOptionsObject,DM dm
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"DMPatch Options"));
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"DMPatch Options"));
   /* Handle associated vectors */
   /* Handle viewing */
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -55,7 +55,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Patch(DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  CHKERRQ(PetscNewLog(dm,&mesh));
+  PetscCall(PetscNewLog(dm,&mesh));
   dm->data = mesh;
 
   mesh->refct       = 1;
@@ -65,7 +65,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Patch(DM dm)
   mesh->patchSize.k = 0;
   mesh->patchSize.c = 0;
 
-  CHKERRQ(DMInitialize_Patch(dm));
+  PetscCall(DMInitialize_Patch(dm));
   PetscFunctionReturn(0);
 }
 
@@ -93,8 +93,8 @@ PetscErrorCode DMPatchCreate(MPI_Comm comm, DM *mesh)
 {
   PetscFunctionBegin;
   PetscValidPointer(mesh,2);
-  CHKERRQ(DMCreate(comm, mesh));
-  CHKERRQ(DMSetType(*mesh, DMPATCH));
+  PetscCall(DMCreate(comm, mesh));
+  PetscCall(DMSetType(*mesh, DMPATCH));
   PetscFunctionReturn(0);
 }
 
@@ -105,7 +105,7 @@ PetscErrorCode DMPatchCreateGrid(MPI_Comm comm, PetscInt dim, MatStencil patchSi
   PetscInt       dof = 1, width = 1;
 
   PetscFunctionBegin;
-  CHKERRQ(DMPatchCreate(comm, dm));
+  PetscCall(DMPatchCreate(comm, dm));
   mesh = (DM_Patch*) (*dm)->data;
   if (dim < 2) {
     gridSize.j  = 1;
@@ -115,18 +115,18 @@ PetscErrorCode DMPatchCreateGrid(MPI_Comm comm, PetscInt dim, MatStencil patchSi
     gridSize.k  = 1;
     patchSize.k = 1;
   }
-  CHKERRQ(DMCreate(comm, &da));
-  CHKERRQ(DMSetType(da, DMDA));
-  CHKERRQ(DMSetDimension(da, dim));
-  CHKERRQ(DMDASetSizes(da, gridSize.i, gridSize.j, gridSize.k));
-  CHKERRQ(DMDASetBoundaryType(da, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE));
-  CHKERRQ(DMDASetDof(da, dof));
-  CHKERRQ(DMDASetStencilType(da, DMDA_STENCIL_BOX));
-  CHKERRQ(DMDASetStencilWidth(da, width));
+  PetscCall(DMCreate(comm, &da));
+  PetscCall(DMSetType(da, DMDA));
+  PetscCall(DMSetDimension(da, dim));
+  PetscCall(DMDASetSizes(da, gridSize.i, gridSize.j, gridSize.k));
+  PetscCall(DMDASetBoundaryType(da, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE));
+  PetscCall(DMDASetDof(da, dof));
+  PetscCall(DMDASetStencilType(da, DMDA_STENCIL_BOX));
+  PetscCall(DMDASetStencilWidth(da, width));
 
   mesh->dmCoarse = da;
 
-  CHKERRQ(DMPatchSetPatchSize(*dm, patchSize));
-  CHKERRQ(DMPatchSetCommSize(*dm, commSize));
+  PetscCall(DMPatchSetPatchSize(*dm, patchSize));
+  PetscCall(DMPatchSetCommSize(*dm, commSize));
   PetscFunctionReturn(0);
 }

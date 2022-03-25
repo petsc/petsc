@@ -11,45 +11,45 @@ int main(int argc,char **argv)
   PetscReal      fill = 1.0;
   PetscInt       nza,am,an;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
-  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-fill",&fill,NULL));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-fill",&fill,NULL));
 
-  CHKERRQ(PetscRandomCreate(PETSC_COMM_WORLD,&r));
-  CHKERRQ(PetscRandomSetFromOptions(r));
+  PetscCall(PetscRandomCreate(PETSC_COMM_WORLD,&r));
+  PetscCall(PetscRandomSetFromOptions(r));
 
   /* create a aij matrix A */
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,M));
-  CHKERRQ(MatSetType(A,MATAIJ));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,M));
+  PetscCall(MatSetType(A,MATAIJ));
   nza  = (PetscInt)(.3*M); /* num of nozeros in each row of A */
-  CHKERRQ(MatSeqAIJSetPreallocation(A,nza,NULL));
-  CHKERRQ(MatMPIAIJSetPreallocation(A,nza,NULL,nza,NULL));
-  CHKERRQ(MatSetRandom(A,r));
+  PetscCall(MatSeqAIJSetPreallocation(A,nza,NULL));
+  PetscCall(MatMPIAIJSetPreallocation(A,nza,NULL,nza,NULL));
+  PetscCall(MatSetRandom(A,r));
 
   /* create a dense matrix B */
-  CHKERRQ(MatGetLocalSize(A,&am,&an));
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&B));
-  CHKERRQ(MatSetSizes(B,PETSC_DECIDE,am,N,PETSC_DECIDE));
-  CHKERRQ(MatSetType(B,MATDENSE));
-  CHKERRQ(MatSeqDenseSetPreallocation(B,NULL));
-  CHKERRQ(MatMPIDenseSetPreallocation(B,NULL));
-  CHKERRQ(MatSetRandom(B,r));
-  CHKERRQ(PetscRandomDestroy(&r));
-  CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatGetLocalSize(A,&am,&an));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&B));
+  PetscCall(MatSetSizes(B,PETSC_DECIDE,am,N,PETSC_DECIDE));
+  PetscCall(MatSetType(B,MATDENSE));
+  PetscCall(MatSeqDenseSetPreallocation(B,NULL));
+  PetscCall(MatMPIDenseSetPreallocation(B,NULL));
+  PetscCall(MatSetRandom(B,r));
+  PetscCall(PetscRandomDestroy(&r));
+  PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
 
   /* Test MatMatMult() */
-  CHKERRQ(MatMatMult(B,A,MAT_INITIAL_MATRIX,fill,&C));
-  CHKERRQ(MatMatMult(B,A,MAT_REUSE_MATRIX,fill,&C));
-  CHKERRQ(MatMatMultEqual(B,A,C,10,&equal));
+  PetscCall(MatMatMult(B,A,MAT_INITIAL_MATRIX,fill,&C));
+  PetscCall(MatMatMult(B,A,MAT_REUSE_MATRIX,fill,&C));
+  PetscCall(MatMatMultEqual(B,A,C,10,&equal));
   PetscCheck(equal,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"C != B*A");
 
-  CHKERRQ(MatDestroy(&C));
-  CHKERRQ(MatDestroy(&B));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatDestroy(&C));
+  PetscCall(MatDestroy(&B));
+  PetscCall(MatDestroy(&A));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

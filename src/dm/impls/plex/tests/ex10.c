@@ -23,24 +23,24 @@ PetscErrorCode ProcessOptions(AppCtx *options)
   options->numDof        = NULL;
   options->numGroups     = 0;
 
-  ierr = PetscOptionsBegin(PETSC_COMM_SELF, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsBoundedInt("-num_fields", "The number of section fields", "ex10.c", options->numFields, &options->numFields, NULL,1));
+  ierr = PetscOptionsBegin(PETSC_COMM_SELF, "", "Meshing Problem Options", "DMPLEX");PetscCall(ierr);
+  PetscCall(PetscOptionsBoundedInt("-num_fields", "The number of section fields", "ex10.c", options->numFields, &options->numFields, NULL,1));
   if (options->numFields) {
     len  = options->numFields;
-    CHKERRQ(PetscCalloc1(len, &options->numComponents));
-    CHKERRQ(PetscOptionsIntArray("-num_components", "The number of components per field", "ex10.c", options->numComponents, &len, &flg));
+    PetscCall(PetscCalloc1(len, &options->numComponents));
+    PetscCall(PetscOptionsIntArray("-num_components", "The number of components per field", "ex10.c", options->numComponents, &len, &flg));
     PetscCheckFalse(flg && (len != options->numFields),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of components array is %D should be %D", len, options->numFields);
   }
-  CHKERRQ(PetscOptionsBoundedInt("-num_groups", "Group permutation by this many label values", "ex10.c", options->numGroups, &options->numGroups, NULL,0));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(PetscOptionsBoundedInt("-num_groups", "Group permutation by this many label values", "ex10.c", options->numGroups, &options->numGroups, NULL,0));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode CleanupContext(AppCtx *user)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscFree(user->numComponents));
-  CHKERRQ(PetscFree(user->numDof));
+  PetscCall(PetscFree(user->numComponents));
+  PetscCall(PetscFree(user->numDof));
   PetscFunctionReturn(0);
 }
 
@@ -54,7 +54,7 @@ PetscErrorCode CreateTestMesh(MPI_Comm comm, DM *dm, AppCtx *options)
                                     1,  0,  1,  1,  0,  0,  1,  2,  0, 2};
 
   PetscFunctionBegin;
-  CHKERRQ(DMPlexCreateFromCellListPetsc(comm, 2, 16, 15, 3, PETSC_FALSE, cells, 2, coords, dm));
+  PetscCall(DMPlexCreateFromCellListPetsc(comm, 2, 16, 15, 3, PETSC_FALSE, cells, 2, coords, dm));
   PetscFunctionReturn(0);
 }
 
@@ -67,26 +67,26 @@ PetscErrorCode TestReordering(DM dm, AppCtx *user)
   MatOrderingType order = MATORDERINGRCM;
 
   PetscFunctionBegin;
-  CHKERRQ(DMPlexGetOrdering(dm, order, NULL, &perm));
-  CHKERRQ(DMPlexPermute(dm, perm, &pdm));
-  CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) pdm, "perm_"));
-  CHKERRQ(DMSetFromOptions(pdm));
-  CHKERRQ(ISDestroy(&perm));
-  CHKERRQ(DMViewFromOptions(dm,  NULL, "-orig_dm_view"));
-  CHKERRQ(DMViewFromOptions(pdm, NULL, "-dm_view"));
-  CHKERRQ(DMCreateMatrix(dm, &A));
-  CHKERRQ(DMCreateMatrix(pdm, &pA));
-  CHKERRQ(MatComputeBandwidth(A, 0.0, &bw));
-  CHKERRQ(MatComputeBandwidth(pA, 0.0, &pbw));
-  CHKERRQ(MatViewFromOptions(A,  NULL, "-orig_mat_view"));
-  CHKERRQ(MatViewFromOptions(pA, NULL, "-perm_mat_view"));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(MatDestroy(&pA));
-  CHKERRQ(DMDestroy(&pdm));
+  PetscCall(DMPlexGetOrdering(dm, order, NULL, &perm));
+  PetscCall(DMPlexPermute(dm, perm, &pdm));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject) pdm, "perm_"));
+  PetscCall(DMSetFromOptions(pdm));
+  PetscCall(ISDestroy(&perm));
+  PetscCall(DMViewFromOptions(dm,  NULL, "-orig_dm_view"));
+  PetscCall(DMViewFromOptions(pdm, NULL, "-dm_view"));
+  PetscCall(DMCreateMatrix(dm, &A));
+  PetscCall(DMCreateMatrix(pdm, &pA));
+  PetscCall(MatComputeBandwidth(A, 0.0, &bw));
+  PetscCall(MatComputeBandwidth(pA, 0.0, &pbw));
+  PetscCall(MatViewFromOptions(A,  NULL, "-orig_mat_view"));
+  PetscCall(MatViewFromOptions(pA, NULL, "-perm_mat_view"));
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&pA));
+  PetscCall(DMDestroy(&pdm));
   if (pbw > bw) {
-    CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject) dm), "Ordering method %s increased bandwidth from %D to %D\n", order, bw, pbw));
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject) dm), "Ordering method %s increased bandwidth from %D to %D\n", order, bw, pbw));
   } else {
-    CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject) dm), "Ordering method %s reduced bandwidth from %D to %D\n", order, bw, pbw));
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject) dm), "Ordering method %s reduced bandwidth from %D to %D\n", order, bw, pbw));
   }
   PetscFunctionReturn(0);
 }
@@ -100,9 +100,9 @@ PetscErrorCode CreateGroupLabel(DM dm, PetscInt numGroups, DMLabel *label, AppCt
   PetscFunctionBegin;
   if (numGroups < 2) {*label = NULL; PetscFunctionReturn(0);}
   PetscCheckFalse(numGroups != 2,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Test only coded for 2 groups, not %D", numGroups);
-  CHKERRQ(DMLabelCreate(PETSC_COMM_SELF, "groups", label));
-  for (c = 0; c < 10; ++c) CHKERRQ(DMLabelSetValue(*label, groupA[c], 101));
-  for (c = 0; c < 6;  ++c) CHKERRQ(DMLabelSetValue(*label, groupB[c], 1001));
+  PetscCall(DMLabelCreate(PETSC_COMM_SELF, "groups", label));
+  for (c = 0; c < 10; ++c) PetscCall(DMLabelSetValue(*label, groupA[c], 101));
+  for (c = 0; c < 6;  ++c) PetscCall(DMLabelSetValue(*label, groupB[c], 1001));
   PetscFunctionReturn(0);
 }
 
@@ -115,22 +115,22 @@ PetscErrorCode TestReorderingByGroup(DM dm, AppCtx *user)
   IS              perm;
 
   PetscFunctionBegin;
-  CHKERRQ(CreateGroupLabel(dm, user->numGroups, &label, user));
-  CHKERRQ(DMPlexGetOrdering(dm, order, label, &perm));
-  CHKERRQ(DMLabelDestroy(&label));
-  CHKERRQ(DMPlexPermute(dm, perm, &pdm));
-  CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) pdm, "perm_"));
-  CHKERRQ(DMSetFromOptions(pdm));
-  CHKERRQ(DMViewFromOptions(dm,  NULL, "-orig_dm_view"));
-  CHKERRQ(DMViewFromOptions(pdm, NULL, "-perm_dm_view"));
-  CHKERRQ(ISDestroy(&perm));
-  CHKERRQ(DMCreateMatrix(dm, &A));
-  CHKERRQ(DMCreateMatrix(pdm, &pA));
-  CHKERRQ(MatViewFromOptions(A,  NULL, "-orig_mat_view"));
-  CHKERRQ(MatViewFromOptions(pA, NULL, "-perm_mat_view"));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(MatDestroy(&pA));
-  CHKERRQ(DMDestroy(&pdm));
+  PetscCall(CreateGroupLabel(dm, user->numGroups, &label, user));
+  PetscCall(DMPlexGetOrdering(dm, order, label, &perm));
+  PetscCall(DMLabelDestroy(&label));
+  PetscCall(DMPlexPermute(dm, perm, &pdm));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject) pdm, "perm_"));
+  PetscCall(DMSetFromOptions(pdm));
+  PetscCall(DMViewFromOptions(dm,  NULL, "-orig_dm_view"));
+  PetscCall(DMViewFromOptions(pdm, NULL, "-perm_dm_view"));
+  PetscCall(ISDestroy(&perm));
+  PetscCall(DMCreateMatrix(dm, &A));
+  PetscCall(DMCreateMatrix(pdm, &pA));
+  PetscCall(MatViewFromOptions(A,  NULL, "-orig_mat_view"));
+  PetscCall(MatViewFromOptions(pA, NULL, "-perm_mat_view"));
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&pA));
+  PetscCall(DMDestroy(&pdm));
   PetscFunctionReturn(0);
 }
 
@@ -142,45 +142,45 @@ int main(int argc, char **argv)
   PetscInt       dim;
   PetscErrorCode ierr;
 
-  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
-  CHKERRQ(ProcessOptions(&user));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(ProcessOptions(&user));
   if (user.numGroups < 1) {
-    CHKERRQ(DMCreate(PETSC_COMM_WORLD, &dm));
-    CHKERRQ(DMSetType(dm, DMPLEX));
+    PetscCall(DMCreate(PETSC_COMM_WORLD, &dm));
+    PetscCall(DMSetType(dm, DMPLEX));
   } else {
-    CHKERRQ(CreateTestMesh(PETSC_COMM_WORLD, &dm, &user));
+    PetscCall(CreateTestMesh(PETSC_COMM_WORLD, &dm, &user));
   }
-  CHKERRQ(DMSetFromOptions(dm));
-  CHKERRQ(DMViewFromOptions(dm, NULL, "-dm_view"));
-  CHKERRQ(DMGetDimension(dm, &dim));
+  PetscCall(DMSetFromOptions(dm));
+  PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
+  PetscCall(DMGetDimension(dm, &dim));
   {
     PetscInt  len = (dim+1) * PetscMax(1, user.numFields);
     PetscBool flg;
 
-    CHKERRQ(PetscCalloc1(len, &user.numDof));
-    ierr = PetscOptionsBegin(PETSC_COMM_SELF, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
-    CHKERRQ(PetscOptionsIntArray("-num_dof", "The dof signature for the section", "ex10.c", user.numDof, &len, &flg));
+    PetscCall(PetscCalloc1(len, &user.numDof));
+    ierr = PetscOptionsBegin(PETSC_COMM_SELF, "", "Meshing Problem Options", "DMPLEX");PetscCall(ierr);
+    PetscCall(PetscOptionsIntArray("-num_dof", "The dof signature for the section", "ex10.c", user.numDof, &len, &flg));
     PetscCheckFalse(flg && (len != (dim+1) * PetscMax(1, user.numFields)),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of dof array is %D should be %D", len, (dim+1) * PetscMax(1, user.numFields));
-    ierr = PetscOptionsEnd();CHKERRQ(ierr);
+    ierr = PetscOptionsEnd();PetscCall(ierr);
   }
   if (user.numGroups < 1) {
-    CHKERRQ(DMSetNumFields(dm, user.numFields));
-    CHKERRQ(DMCreateDS(dm));
-    CHKERRQ(DMPlexCreateSection(dm, NULL, user.numComponents, user.numDof, 0, NULL, NULL, NULL, NULL, &s));
-    CHKERRQ(DMSetLocalSection(dm, s));
-    CHKERRQ(PetscSectionDestroy(&s));
-    CHKERRQ(TestReordering(dm, &user));
+    PetscCall(DMSetNumFields(dm, user.numFields));
+    PetscCall(DMCreateDS(dm));
+    PetscCall(DMPlexCreateSection(dm, NULL, user.numComponents, user.numDof, 0, NULL, NULL, NULL, NULL, &s));
+    PetscCall(DMSetLocalSection(dm, s));
+    PetscCall(PetscSectionDestroy(&s));
+    PetscCall(TestReordering(dm, &user));
   } else {
-    CHKERRQ(DMSetNumFields(dm, user.numFields));
-    CHKERRQ(DMCreateDS(dm));
-    CHKERRQ(DMPlexCreateSection(dm, NULL, user.numComponents, user.numDof, 0, NULL, NULL, NULL, NULL, &s));
-    CHKERRQ(DMSetLocalSection(dm, s));
-    CHKERRQ(PetscSectionDestroy(&s));
-    CHKERRQ(TestReorderingByGroup(dm, &user));
+    PetscCall(DMSetNumFields(dm, user.numFields));
+    PetscCall(DMCreateDS(dm));
+    PetscCall(DMPlexCreateSection(dm, NULL, user.numComponents, user.numDof, 0, NULL, NULL, NULL, NULL, &s));
+    PetscCall(DMSetLocalSection(dm, s));
+    PetscCall(PetscSectionDestroy(&s));
+    PetscCall(TestReorderingByGroup(dm, &user));
   }
-  CHKERRQ(DMDestroy(&dm));
-  CHKERRQ(CleanupContext(&user));
-  CHKERRQ(PetscFinalize());
+  PetscCall(DMDestroy(&dm));
+  PetscCall(CleanupContext(&user));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

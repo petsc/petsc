@@ -55,10 +55,10 @@ static PetscErrorCode SNESCompositeApply_Multiplicative(SNES snes,Vec X,Vec B,Ve
   PetscFunctionBegin;
   PetscCheck(next,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"No composite SNESes supplied via SNESCompositeAddSNES() or -snes_composite_sneses");
   if (snes->normschedule == SNES_NORM_ALWAYS) {
-    CHKERRQ(SNESSetInitialFunction(next->snes,F));
+    PetscCall(SNESSetInitialFunction(next->snes,F));
   }
-  CHKERRQ(SNESSolve(next->snes,B,X));
-  CHKERRQ(SNESGetConvergedReason(next->snes,&reason));
+  PetscCall(SNESSolve(next->snes,B,X));
+  PetscCall(SNESGetConvergedReason(next->snes,&reason));
   if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
     jac->innerFailures++;
     if (jac->innerFailures >= snes->maxFailures) {
@@ -70,14 +70,14 @@ static PetscErrorCode SNESCompositeApply_Multiplicative(SNES snes,Vec X,Vec B,Ve
   while (next->next) {
     /* only copy the function over in the case where the functions correspond */
     if (next->snes->npcside== PC_RIGHT && next->snes->normschedule != SNES_NORM_NONE) {
-      CHKERRQ(SNESGetFunction(next->snes,&FSub,NULL,NULL));
+      PetscCall(SNESGetFunction(next->snes,&FSub,NULL,NULL));
       next = next->next;
-      CHKERRQ(SNESSetInitialFunction(next->snes,FSub));
+      PetscCall(SNESSetInitialFunction(next->snes,FSub));
     } else {
       next = next->next;
     }
-    CHKERRQ(SNESSolve(next->snes,B,X));
-    CHKERRQ(SNESGetConvergedReason(next->snes,&reason));
+    PetscCall(SNESSolve(next->snes,B,X));
+    PetscCall(SNESGetConvergedReason(next->snes,&reason));
     if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
       jac->innerFailures++;
       if (jac->innerFailures >= snes->maxFailures) {
@@ -87,23 +87,23 @@ static PetscErrorCode SNESCompositeApply_Multiplicative(SNES snes,Vec X,Vec B,Ve
     }
   }
   if (next->snes->npcside== PC_RIGHT) {
-    CHKERRQ(SNESGetFunction(next->snes,&FSub,NULL,NULL));
-    CHKERRQ(VecCopy(FSub,F));
+    PetscCall(SNESGetFunction(next->snes,&FSub,NULL,NULL));
+    PetscCall(VecCopy(FSub,F));
     if (fnorm) {
       if (snes->xl && snes->xu) {
-        CHKERRQ(SNESVIComputeInactiveSetFnorm(snes, F, X, fnorm));
+        PetscCall(SNESVIComputeInactiveSetFnorm(snes, F, X, fnorm));
       } else {
-        CHKERRQ(VecNorm(F, NORM_2, fnorm));
+        PetscCall(VecNorm(F, NORM_2, fnorm));
       }
       SNESCheckFunctionNorm(snes,*fnorm);
     }
   } else if (snes->normschedule == SNES_NORM_ALWAYS) {
-    CHKERRQ(SNESComputeFunction(snes,X,F));
+    PetscCall(SNESComputeFunction(snes,X,F));
     if (fnorm) {
       if (snes->xl && snes->xu) {
-        CHKERRQ(SNESVIComputeInactiveSetFnorm(snes, F, X, fnorm));
+        PetscCall(SNESVIComputeInactiveSetFnorm(snes, F, X, fnorm));
       } else {
-        CHKERRQ(VecNorm(F, NORM_2, fnorm));
+        PetscCall(VecNorm(F, NORM_2, fnorm));
       }
       SNESCheckFunctionNorm(snes,*fnorm);
     }
@@ -120,21 +120,21 @@ static PetscErrorCode SNESCompositeApply_Additive(SNES snes,Vec X,Vec B,Vec F,Pe
 
   PetscFunctionBegin;
   Y = snes->vec_sol_update;
-  if (!jac->Xorig) CHKERRQ(VecDuplicate(X,&jac->Xorig));
+  if (!jac->Xorig) PetscCall(VecDuplicate(X,&jac->Xorig));
   Xorig = jac->Xorig;
-  CHKERRQ(VecCopy(X,Xorig));
+  PetscCall(VecCopy(X,Xorig));
   PetscCheck(next,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"No composite SNESes supplied via SNESCompositeAddSNES() or -snes_composite_sneses");
   if (snes->normschedule == SNES_NORM_ALWAYS) {
-    CHKERRQ(SNESSetInitialFunction(next->snes,F));
+    PetscCall(SNESSetInitialFunction(next->snes,F));
     while (next->next) {
       next = next->next;
-      CHKERRQ(SNESSetInitialFunction(next->snes,F));
+      PetscCall(SNESSetInitialFunction(next->snes,F));
     }
   }
   next = jac->head;
-  CHKERRQ(VecCopy(Xorig,Y));
-  CHKERRQ(SNESSolve(next->snes,B,Y));
-  CHKERRQ(SNESGetConvergedReason(next->snes,&reason));
+  PetscCall(VecCopy(Xorig,Y));
+  PetscCall(SNESSolve(next->snes,B,Y));
+  PetscCall(SNESGetConvergedReason(next->snes,&reason));
   if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
     jac->innerFailures++;
     if (jac->innerFailures >= snes->maxFailures) {
@@ -142,13 +142,13 @@ static PetscErrorCode SNESCompositeApply_Additive(SNES snes,Vec X,Vec B,Vec F,Pe
       PetscFunctionReturn(0);
     }
   }
-  CHKERRQ(VecAXPY(Y,-1.0,Xorig));
-  CHKERRQ(VecAXPY(X,next->dmp,Y));
+  PetscCall(VecAXPY(Y,-1.0,Xorig));
+  PetscCall(VecAXPY(X,next->dmp,Y));
   while (next->next) {
     next = next->next;
-    CHKERRQ(VecCopy(Xorig,Y));
-    CHKERRQ(SNESSolve(next->snes,B,Y));
-    CHKERRQ(SNESGetConvergedReason(next->snes,&reason));
+    PetscCall(VecCopy(Xorig,Y));
+    PetscCall(SNESSolve(next->snes,B,Y));
+    PetscCall(SNESGetConvergedReason(next->snes,&reason));
     if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
       jac->innerFailures++;
       if (jac->innerFailures >= snes->maxFailures) {
@@ -156,16 +156,16 @@ static PetscErrorCode SNESCompositeApply_Additive(SNES snes,Vec X,Vec B,Vec F,Pe
         PetscFunctionReturn(0);
       }
     }
-    CHKERRQ(VecAXPY(Y,-1.0,Xorig));
-    CHKERRQ(VecAXPY(X,next->dmp,Y));
+    PetscCall(VecAXPY(Y,-1.0,Xorig));
+    PetscCall(VecAXPY(X,next->dmp,Y));
   }
   if (snes->normschedule == SNES_NORM_ALWAYS) {
-    CHKERRQ(SNESComputeFunction(snes,X,F));
+    PetscCall(SNESComputeFunction(snes,X,F));
     if (fnorm) {
       if (snes->xl && snes->xu) {
-        CHKERRQ(SNESVIComputeInactiveSetFnorm(snes, F, X, fnorm));
+        PetscCall(SNESVIComputeInactiveSetFnorm(snes, F, X, fnorm));
       } else {
-        CHKERRQ(VecNorm(F, NORM_2, fnorm));
+        PetscCall(VecNorm(F, NORM_2, fnorm));
       }
       SNESCheckFunctionNorm(snes,*fnorm);
     }
@@ -200,18 +200,18 @@ static PetscErrorCode SNESCompositeApply_AdditiveOptimal(SNES snes,Vec X,Vec B,V
 
   if (snes->normschedule == SNES_NORM_ALWAYS) {
     next = jac->head;
-    CHKERRQ(SNESSetInitialFunction(next->snes,F));
+    PetscCall(SNESSetInitialFunction(next->snes,F));
     while (next->next) {
       next = next->next;
-      CHKERRQ(SNESSetInitialFunction(next->snes,F));
+      PetscCall(SNESSetInitialFunction(next->snes,F));
     }
   }
 
   next = jac->head;
   i = 0;
-  CHKERRQ(VecCopy(X,Xes[i]));
-  CHKERRQ(SNESSolve(next->snes,B,Xes[i]));
-  CHKERRQ(SNESGetConvergedReason(next->snes,&reason));
+  PetscCall(VecCopy(X,Xes[i]));
+  PetscCall(SNESSolve(next->snes,B,Xes[i]));
+  PetscCall(SNESGetConvergedReason(next->snes,&reason));
   if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
     jac->innerFailures++;
     if (jac->innerFailures >= snes->maxFailures) {
@@ -222,9 +222,9 @@ static PetscErrorCode SNESCompositeApply_AdditiveOptimal(SNES snes,Vec X,Vec B,V
   while (next->next) {
     i++;
     next = next->next;
-    CHKERRQ(VecCopy(X,Xes[i]));
-    CHKERRQ(SNESSolve(next->snes,B,Xes[i]));
-    CHKERRQ(SNESGetConvergedReason(next->snes,&reason));
+    PetscCall(VecCopy(X,Xes[i]));
+    PetscCall(SNESSolve(next->snes,B,Xes[i]));
+    PetscCall(SNESGetConvergedReason(next->snes,&reason));
     if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
       jac->innerFailures++;
       if (jac->innerFailures >= snes->maxFailures) {
@@ -237,17 +237,17 @@ static PetscErrorCode SNESCompositeApply_AdditiveOptimal(SNES snes,Vec X,Vec B,V
   /* all the solutions are collected; combine optimally */
   for (i=0;i<jac->n;i++) {
     for (j=0;j<i+1;j++) {
-      CHKERRQ(VecDotBegin(Fes[i],Fes[j],&jac->h[i + j*jac->n]));
+      PetscCall(VecDotBegin(Fes[i],Fes[j],&jac->h[i + j*jac->n]));
     }
-    CHKERRQ(VecDotBegin(Fes[i],F,&jac->g[i]));
+    PetscCall(VecDotBegin(Fes[i],F,&jac->g[i]));
   }
 
   for (i=0;i<jac->n;i++) {
     for (j=0;j<i+1;j++) {
-      CHKERRQ(VecDotEnd(Fes[i],Fes[j],&jac->h[i + j*jac->n]));
+      PetscCall(VecDotEnd(Fes[i],Fes[j],&jac->h[i + j*jac->n]));
       if (i == j) jac->fnorms[i] = PetscSqrtReal(PetscRealPart(jac->h[i + j*jac->n]));
     }
-    CHKERRQ(VecDotEnd(Fes[i],F,&jac->g[i]));
+    PetscCall(VecDotEnd(Fes[i],F,&jac->g[i]));
   }
 
   ftf = (*fnorm)*(*fnorm);
@@ -267,31 +267,31 @@ static PetscErrorCode SNESCompositeApply_AdditiveOptimal(SNES snes,Vec X,Vec B,V
 
   jac->info  = 0;
   jac->rcond = -1.;
-  CHKERRQ(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
+  PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
 #if defined(PETSC_USE_COMPLEX)
   PetscStackCallBLAS("LAPACKgelss",LAPACKgelss_(&jac->n,&jac->n,&jac->nrhs,jac->h,&jac->lda,jac->beta,&jac->lda,jac->s,&jac->rcond,&jac->rank,jac->work,&jac->lwork,jac->rwork,&jac->info));
 #else
   PetscStackCallBLAS("LAPACKgelss",LAPACKgelss_(&jac->n,&jac->n,&jac->nrhs,jac->h,&jac->lda,jac->beta,&jac->lda,jac->s,&jac->rcond,&jac->rank,jac->work,&jac->lwork,&jac->info));
 #endif
-  CHKERRQ(PetscFPTrapPop());
+  PetscCall(PetscFPTrapPop());
   PetscCheckFalse(jac->info < 0,PetscObjectComm((PetscObject)snes),PETSC_ERR_LIB,"Bad argument to GELSS");
   PetscCheckFalse(jac->info > 0,PetscObjectComm((PetscObject)snes),PETSC_ERR_LIB,"SVD failed to converge");
   tot = 0.;
   total = 0.;
   for (i=0; i<jac->n; i++) {
     PetscCheckFalse(snes->errorifnotconverged && PetscIsInfOrNanScalar(jac->beta[i]),PetscObjectComm((PetscObject)snes),PETSC_ERR_LIB,"SVD generated inconsistent output");
-    CHKERRQ(PetscInfo(snes,"%D: %g\n",i,(double)PetscRealPart(jac->beta[i])));
+    PetscCall(PetscInfo(snes,"%D: %g\n",i,(double)PetscRealPart(jac->beta[i])));
     tot += jac->beta[i];
     total += PetscAbsScalar(jac->beta[i]);
   }
-  CHKERRQ(VecScale(X,(1. - tot)));
-  CHKERRQ(VecMAXPY(X,jac->n,jac->beta,Xes));
-  CHKERRQ(SNESComputeFunction(snes,X,F));
+  PetscCall(VecScale(X,(1. - tot)));
+  PetscCall(VecMAXPY(X,jac->n,jac->beta,Xes));
+  PetscCall(SNESComputeFunction(snes,X,F));
 
   if (snes->xl && snes->xu) {
-    CHKERRQ(SNESVIComputeInactiveSetFnorm(snes, F, X, fnorm));
+    PetscCall(SNESVIComputeInactiveSetFnorm(snes, F, X, fnorm));
   } else {
-    CHKERRQ(VecNorm(F, NORM_2, fnorm));
+    PetscCall(VecNorm(F, NORM_2, fnorm));
   }
 
   /* take the minimum-normed candidate if it beats the combination by a factor of rtol or the combination has stagnated */
@@ -306,8 +306,8 @@ static PetscErrorCode SNESCompositeApply_AdditiveOptimal(SNES snes,Vec X,Vec B,V
 
   /* stagnation or divergence restart to the solution of the solver that failed the least */
   if (PetscRealPart(total) < jac->stol || min_fnorm*jac->rtol < *fnorm) {
-    CHKERRQ(VecCopy(jac->Xes[min_i],X));
-    CHKERRQ(VecCopy(jac->Fes[min_i],F));
+    PetscCall(VecCopy(jac->Xes[min_i],X));
+    PetscCall(VecCopy(jac->Fes[min_i],F));
     *fnorm = min_fnorm;
   }
   PetscFunctionReturn(0);
@@ -322,41 +322,41 @@ static PetscErrorCode SNESSetUp_Composite(SNES snes)
   Vec                F;
 
   PetscFunctionBegin;
-  CHKERRQ(SNESGetDM(snes,&dm));
+  PetscCall(SNESGetDM(snes,&dm));
 
   if (snes->ops->computevariablebounds) {
     /* SNESVI only ever calls computevariablebounds once, so calling it once here is justified */
-    if (!snes->xl) CHKERRQ(VecDuplicate(snes->vec_sol,&snes->xl));
-    if (!snes->xu) CHKERRQ(VecDuplicate(snes->vec_sol,&snes->xu));
-    CHKERRQ((*snes->ops->computevariablebounds)(snes,snes->xl,snes->xu));
+    if (!snes->xl) PetscCall(VecDuplicate(snes->vec_sol,&snes->xl));
+    if (!snes->xu) PetscCall(VecDuplicate(snes->vec_sol,&snes->xu));
+    PetscCall((*snes->ops->computevariablebounds)(snes,snes->xl,snes->xu));
   }
 
   while (next) {
     n++;
-    CHKERRQ(SNESSetDM(next->snes,dm));
-    CHKERRQ(SNESSetApplicationContext(next->snes, snes->user));
+    PetscCall(SNESSetDM(next->snes,dm));
+    PetscCall(SNESSetApplicationContext(next->snes, snes->user));
     if (snes->xl && snes->xu) {
       if (snes->ops->computevariablebounds) {
-        CHKERRQ(SNESVISetComputeVariableBounds(next->snes, snes->ops->computevariablebounds));
+        PetscCall(SNESVISetComputeVariableBounds(next->snes, snes->ops->computevariablebounds));
       } else {
-        CHKERRQ(SNESVISetVariableBounds(next->snes,snes->xl,snes->xu));
+        PetscCall(SNESVISetVariableBounds(next->snes,snes->xl,snes->xu));
       }
     }
 
     next = next->next;
   }
   jac->nsnes = n;
-  CHKERRQ(SNESGetFunction(snes,&F,NULL,NULL));
+  PetscCall(SNESGetFunction(snes,&F,NULL,NULL));
   if (jac->type == SNES_COMPOSITE_ADDITIVEOPTIMAL) {
-    CHKERRQ(VecDuplicateVecs(F,jac->nsnes,&jac->Xes));
-    CHKERRQ(PetscMalloc1(n,&jac->Fes));
-    CHKERRQ(PetscMalloc1(n,&jac->fnorms));
+    PetscCall(VecDuplicateVecs(F,jac->nsnes,&jac->Xes));
+    PetscCall(PetscMalloc1(n,&jac->Fes));
+    PetscCall(PetscMalloc1(n,&jac->fnorms));
     next = jac->head;
     i = 0;
     while (next) {
-      CHKERRQ(SNESGetFunction(next->snes,&F,NULL,NULL));
+      PetscCall(SNESGetFunction(next->snes,&F,NULL,NULL));
       jac->Fes[i] = F;
-      CHKERRQ(PetscObjectReference((PetscObject)F));
+      PetscCall(PetscObjectReference((PetscObject)F));
       next = next->next;
       i++;
     }
@@ -366,15 +366,15 @@ static PetscErrorCode SNESSetUp_Composite(SNES snes)
     jac->ldb   = jac->nsnes;
     jac->n     = jac->nsnes;
 
-    CHKERRQ(PetscMalloc1(jac->n*jac->n,&jac->h));
-    CHKERRQ(PetscMalloc1(jac->n,&jac->beta));
-    CHKERRQ(PetscMalloc1(jac->n,&jac->s));
-    CHKERRQ(PetscMalloc1(jac->n,&jac->g));
+    PetscCall(PetscMalloc1(jac->n*jac->n,&jac->h));
+    PetscCall(PetscMalloc1(jac->n,&jac->beta));
+    PetscCall(PetscMalloc1(jac->n,&jac->s));
+    PetscCall(PetscMalloc1(jac->n,&jac->g));
     jac->lwork = 12*jac->n;
 #if defined(PETSC_USE_COMPLEX)
-    CHKERRQ(PetscMalloc1(jac->lwork,&jac->rwork));
+    PetscCall(PetscMalloc1(jac->lwork,&jac->rwork));
 #endif
-    CHKERRQ(PetscMalloc1(jac->lwork,&jac->work));
+    PetscCall(PetscMalloc1(jac->lwork,&jac->work));
   }
 
   PetscFunctionReturn(0);
@@ -387,19 +387,19 @@ static PetscErrorCode SNESReset_Composite(SNES snes)
 
   PetscFunctionBegin;
   while (next) {
-    CHKERRQ(SNESReset(next->snes));
+    PetscCall(SNESReset(next->snes));
     next = next->next;
   }
-  CHKERRQ(VecDestroy(&jac->Xorig));
-  if (jac->Xes) CHKERRQ(VecDestroyVecs(jac->nsnes,&jac->Xes));
-  if (jac->Fes) CHKERRQ(VecDestroyVecs(jac->nsnes,&jac->Fes));
-  CHKERRQ(PetscFree(jac->fnorms));
-  CHKERRQ(PetscFree(jac->h));
-  CHKERRQ(PetscFree(jac->s));
-  CHKERRQ(PetscFree(jac->g));
-  CHKERRQ(PetscFree(jac->beta));
-  CHKERRQ(PetscFree(jac->work));
-  CHKERRQ(PetscFree(jac->rwork));
+  PetscCall(VecDestroy(&jac->Xorig));
+  if (jac->Xes) PetscCall(VecDestroyVecs(jac->nsnes,&jac->Xes));
+  if (jac->Fes) PetscCall(VecDestroyVecs(jac->nsnes,&jac->Fes));
+  PetscCall(PetscFree(jac->fnorms));
+  PetscCall(PetscFree(jac->h));
+  PetscCall(PetscFree(jac->s));
+  PetscCall(PetscFree(jac->g));
+  PetscCall(PetscFree(jac->beta));
+  PetscCall(PetscFree(jac->work));
+  PetscCall(PetscFree(jac->rwork));
   PetscFunctionReturn(0);
 }
 
@@ -409,14 +409,14 @@ static PetscErrorCode SNESDestroy_Composite(SNES snes)
   SNES_CompositeLink next = jac->head,next_tmp;
 
   PetscFunctionBegin;
-  CHKERRQ(SNESReset_Composite(snes));
+  PetscCall(SNESReset_Composite(snes));
   while (next) {
-    CHKERRQ(SNESDestroy(&next->snes));
+    PetscCall(SNESDestroy(&next->snes));
     next_tmp = next;
     next     = next->next;
-    CHKERRQ(PetscFree(next_tmp));
+    PetscCall(PetscFree(next_tmp));
   }
-  CHKERRQ(PetscFree(snes->data));
+  PetscCall(PetscFree(snes->data));
   PetscFunctionReturn(0);
 }
 
@@ -430,31 +430,31 @@ static PetscErrorCode SNESSetFromOptions_Composite(PetscOptionItems *PetscOption
   PetscBool          flg;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"Composite preconditioner options"));
-  CHKERRQ(PetscOptionsEnum("-snes_composite_type","Type of composition","SNESCompositeSetType",SNESCompositeTypes,(PetscEnum)jac->type,(PetscEnum*)&jac->type,&flg));
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"Composite preconditioner options"));
+  PetscCall(PetscOptionsEnum("-snes_composite_type","Type of composition","SNESCompositeSetType",SNESCompositeTypes,(PetscEnum)jac->type,(PetscEnum*)&jac->type,&flg));
   if (flg) {
-    CHKERRQ(SNESCompositeSetType(snes,jac->type));
+    PetscCall(SNESCompositeSetType(snes,jac->type));
   }
-  CHKERRQ(PetscOptionsStringArray("-snes_composite_sneses","List of composite solvers","SNESCompositeAddSNES",sneses,&nmax,&flg));
-  if (flg) {
-    for (i=0; i<nmax; i++) {
-      CHKERRQ(SNESCompositeAddSNES(snes,sneses[i]));
-      CHKERRQ(PetscFree(sneses[i]));   /* deallocate string sneses[i], which is allocated in PetscOptionsStringArray() */
-    }
-  }
-  CHKERRQ(PetscOptionsRealArray("-snes_composite_damping","Damping of the additive composite solvers","SNESCompositeSetDamping",dmps,&nmax,&flg));
+  PetscCall(PetscOptionsStringArray("-snes_composite_sneses","List of composite solvers","SNESCompositeAddSNES",sneses,&nmax,&flg));
   if (flg) {
     for (i=0; i<nmax; i++) {
-      CHKERRQ(SNESCompositeSetDamping(snes,i,dmps[i]));
+      PetscCall(SNESCompositeAddSNES(snes,sneses[i]));
+      PetscCall(PetscFree(sneses[i]));   /* deallocate string sneses[i], which is allocated in PetscOptionsStringArray() */
     }
   }
-  CHKERRQ(PetscOptionsReal("-snes_composite_stol","Step tolerance for restart on the additive composite solvers","",jac->stol,&jac->stol,NULL));
-  CHKERRQ(PetscOptionsReal("-snes_composite_rtol","Residual tolerance for the additive composite solvers","",jac->rtol,&jac->rtol,NULL));
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(PetscOptionsRealArray("-snes_composite_damping","Damping of the additive composite solvers","SNESCompositeSetDamping",dmps,&nmax,&flg));
+  if (flg) {
+    for (i=0; i<nmax; i++) {
+      PetscCall(SNESCompositeSetDamping(snes,i,dmps[i]));
+    }
+  }
+  PetscCall(PetscOptionsReal("-snes_composite_stol","Step tolerance for restart on the additive composite solvers","",jac->stol,&jac->stol,NULL));
+  PetscCall(PetscOptionsReal("-snes_composite_rtol","Residual tolerance for the additive composite solvers","",jac->rtol,&jac->rtol,NULL));
+  PetscCall(PetscOptionsTail());
 
   next = jac->head;
   while (next) {
-    CHKERRQ(SNESSetFromOptions(next->snes));
+    PetscCall(SNESSetFromOptions(next->snes));
     next = next->next;
   }
   PetscFunctionReturn(0);
@@ -467,22 +467,22 @@ static PetscErrorCode SNESView_Composite(SNES snes,PetscViewer viewer)
   PetscBool          iascii;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  type - %s\n",SNESCompositeTypes[jac->type]));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  SNESes on composite preconditioner follow\n"));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  ---------------------------------\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  type - %s\n",SNESCompositeTypes[jac->type]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  SNESes on composite preconditioner follow\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  ---------------------------------\n"));
   }
   if (iascii) {
-    CHKERRQ(PetscViewerASCIIPushTab(viewer));
+    PetscCall(PetscViewerASCIIPushTab(viewer));
   }
   while (next) {
-    CHKERRQ(SNESView(next->snes,viewer));
+    PetscCall(SNESView(next->snes,viewer));
     next = next->next;
   }
   if (iascii) {
-    CHKERRQ(PetscViewerASCIIPopTab(viewer));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  ---------------------------------\n"));
+    PetscCall(PetscViewerASCIIPopTab(viewer));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  ---------------------------------\n"));
   }
   PetscFunctionReturn(0);
 }
@@ -508,14 +508,14 @@ static PetscErrorCode  SNESCompositeAddSNES_Composite(SNES snes,SNESType type)
   DM                 dm;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNewLog(snes,&ilink));
+  PetscCall(PetscNewLog(snes,&ilink));
   ilink->next = NULL;
-  CHKERRQ(SNESCreate(PetscObjectComm((PetscObject)snes),&ilink->snes));
-  CHKERRQ(PetscLogObjectParent((PetscObject)snes,(PetscObject)ilink->snes));
-  CHKERRQ(SNESGetDM(snes,&dm));
-  CHKERRQ(SNESSetDM(ilink->snes,dm));
-  CHKERRQ(SNESSetTolerances(ilink->snes,snes->abstol,snes->rtol,snes->stol,1,snes->max_funcs));
-  CHKERRQ(PetscObjectCopyFortranFunctionPointers((PetscObject)snes,(PetscObject)ilink->snes));
+  PetscCall(SNESCreate(PetscObjectComm((PetscObject)snes),&ilink->snes));
+  PetscCall(PetscLogObjectParent((PetscObject)snes,(PetscObject)ilink->snes));
+  PetscCall(SNESGetDM(snes,&dm));
+  PetscCall(SNESSetDM(ilink->snes,dm));
+  PetscCall(SNESSetTolerances(ilink->snes,snes->abstol,snes->rtol,snes->stol,1,snes->max_funcs));
+  PetscCall(PetscObjectCopyFortranFunctionPointers((PetscObject)snes,(PetscObject)ilink->snes));
   jac  = (SNES_Composite*)snes->data;
   next = jac->head;
   if (!next) {
@@ -530,13 +530,13 @@ static PetscErrorCode  SNESCompositeAddSNES_Composite(SNES snes,SNESType type)
     next->next      = ilink;
     ilink->previous = next;
   }
-  CHKERRQ(SNESGetOptionsPrefix(snes,&prefix));
-  CHKERRQ(SNESSetOptionsPrefix(ilink->snes,prefix));
-  CHKERRQ(PetscSNPrintf(newprefix,sizeof(newprefix),"sub_%d_",(int)cnt));
-  CHKERRQ(SNESAppendOptionsPrefix(ilink->snes,newprefix));
-  CHKERRQ(PetscObjectIncrementTabLevel((PetscObject)ilink->snes,(PetscObject)snes,1));
-  CHKERRQ(SNESSetType(ilink->snes,type));
-  CHKERRQ(SNESSetNormSchedule(ilink->snes, SNES_NORM_FINAL_ONLY));
+  PetscCall(SNESGetOptionsPrefix(snes,&prefix));
+  PetscCall(SNESSetOptionsPrefix(ilink->snes,prefix));
+  PetscCall(PetscSNPrintf(newprefix,sizeof(newprefix),"sub_%d_",(int)cnt));
+  PetscCall(SNESAppendOptionsPrefix(ilink->snes,newprefix));
+  PetscCall(PetscObjectIncrementTabLevel((PetscObject)ilink->snes,(PetscObject)snes,1));
+  PetscCall(SNESSetType(ilink->snes,type));
+  PetscCall(SNESSetNormSchedule(ilink->snes, SNES_NORM_FINAL_ONLY));
 
   ilink->dmp = 1.0;
   jac->nsnes++;
@@ -581,7 +581,7 @@ PetscErrorCode  SNESCompositeSetType(SNES snes,SNESCompositeType type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidLogicalCollectiveEnum(snes,type,2);
-  CHKERRQ(PetscTryMethod(snes,"SNESCompositeSetType_C",(SNES,SNESCompositeType),(snes,type)));
+  PetscCall(PetscTryMethod(snes,"SNESCompositeSetType_C",(SNES,SNESCompositeType),(snes,type)));
   PetscFunctionReturn(0);
 }
 
@@ -601,7 +601,7 @@ PetscErrorCode  SNESCompositeAddSNES(SNES snes,SNESType type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  CHKERRQ(PetscTryMethod(snes,"SNESCompositeAddSNES_C",(SNES,SNESType),(snes,type)));
+  PetscCall(PetscTryMethod(snes,"SNESCompositeAddSNES_C",(SNES,SNESType),(snes,type)));
   PetscFunctionReturn(0);
 }
 
@@ -626,7 +626,7 @@ PetscErrorCode  SNESCompositeGetSNES(SNES snes,PetscInt n,SNES *subsnes)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidPointer(subsnes,3);
-  CHKERRQ(PetscUseMethod(snes,"SNESCompositeGetSNES_C",(SNES,PetscInt,SNES*),(snes,n,subsnes)));
+  PetscCall(PetscUseMethod(snes,"SNESCompositeGetSNES_C",(SNES,PetscInt,SNES*),(snes,n,subsnes)));
   PetscFunctionReturn(0);
 }
 
@@ -696,7 +696,7 @@ PetscErrorCode  SNESCompositeSetDamping(SNES snes,PetscInt n,PetscReal dmp)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  CHKERRQ(PetscUseMethod(snes,"SNESCompositeSetDamping_C",(SNES,PetscInt,PetscReal),(snes,n,dmp)));
+  PetscCall(PetscUseMethod(snes,"SNESCompositeSetDamping_C",(SNES,PetscInt,PetscReal),(snes,n,dmp)));
   PetscFunctionReturn(0);
 }
 
@@ -714,103 +714,103 @@ static PetscErrorCode SNESSolve_Composite(SNES snes)
   B = snes->vec_rhs;
   Y = snes->vec_sol_update;
 
-  CHKERRQ(PetscObjectSAWsTakeAccess((PetscObject)snes));
+  PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
   snes->iter   = 0;
   snes->norm   = 0.;
   comp->innerFailures = 0;
-  CHKERRQ(PetscObjectSAWsGrantAccess((PetscObject)snes));
+  PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
   snes->reason = SNES_CONVERGED_ITERATING;
-  CHKERRQ(SNESGetNormSchedule(snes, &normtype));
+  PetscCall(SNESGetNormSchedule(snes, &normtype));
   if (normtype == SNES_NORM_ALWAYS || normtype == SNES_NORM_INITIAL_ONLY || normtype == SNES_NORM_INITIAL_FINAL_ONLY) {
     if (!snes->vec_func_init_set) {
-      CHKERRQ(SNESComputeFunction(snes,X,F));
+      PetscCall(SNESComputeFunction(snes,X,F));
     } else snes->vec_func_init_set = PETSC_FALSE;
 
     if (snes->xl && snes->xu) {
-      CHKERRQ(SNESVIComputeInactiveSetFnorm(snes, F, X, &fnorm));
+      PetscCall(SNESVIComputeInactiveSetFnorm(snes, F, X, &fnorm));
     } else {
-      CHKERRQ(VecNorm(F, NORM_2, &fnorm)); /* fnorm <- ||F||  */
+      PetscCall(VecNorm(F, NORM_2, &fnorm)); /* fnorm <- ||F||  */
     }
     SNESCheckFunctionNorm(snes,fnorm);
-    CHKERRQ(PetscObjectSAWsTakeAccess((PetscObject)snes));
+    PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
     snes->iter = 0;
     snes->norm = fnorm;
-    CHKERRQ(PetscObjectSAWsGrantAccess((PetscObject)snes));
-    CHKERRQ(SNESLogConvergenceHistory(snes,snes->norm,0));
-    CHKERRQ(SNESMonitor(snes,0,snes->norm));
+    PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
+    PetscCall(SNESLogConvergenceHistory(snes,snes->norm,0));
+    PetscCall(SNESMonitor(snes,0,snes->norm));
 
     /* test convergence */
-    CHKERRQ((*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP));
+    PetscCall((*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP));
     if (snes->reason) PetscFunctionReturn(0);
   } else {
-    CHKERRQ(PetscObjectSAWsGrantAccess((PetscObject)snes));
-    CHKERRQ(SNESLogConvergenceHistory(snes,snes->norm,0));
-    CHKERRQ(SNESMonitor(snes,0,snes->norm));
+    PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
+    PetscCall(SNESLogConvergenceHistory(snes,snes->norm,0));
+    PetscCall(SNESMonitor(snes,0,snes->norm));
   }
 
   for (i = 0; i < snes->max_its; i++) {
     /* Call general purpose update function */
     if (snes->ops->update) {
-      CHKERRQ((*snes->ops->update)(snes, snes->iter));
+      PetscCall((*snes->ops->update)(snes, snes->iter));
     }
 
     /* Copy the state before modification by application of the composite solver;
        we will subtract the new state after application */
-    CHKERRQ(VecCopy(X, Y));
+    PetscCall(VecCopy(X, Y));
 
     if (comp->type == SNES_COMPOSITE_ADDITIVE) {
-      CHKERRQ(SNESCompositeApply_Additive(snes,X,B,F,&fnorm));
+      PetscCall(SNESCompositeApply_Additive(snes,X,B,F,&fnorm));
     } else if (comp->type == SNES_COMPOSITE_MULTIPLICATIVE) {
-      CHKERRQ(SNESCompositeApply_Multiplicative(snes,X,B,F,&fnorm));
+      PetscCall(SNESCompositeApply_Multiplicative(snes,X,B,F,&fnorm));
     } else if (comp->type == SNES_COMPOSITE_ADDITIVEOPTIMAL) {
-      CHKERRQ(SNESCompositeApply_AdditiveOptimal(snes,X,B,F,&fnorm));
+      PetscCall(SNESCompositeApply_AdditiveOptimal(snes,X,B,F,&fnorm));
     } else SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Unsupported SNESComposite type");
     if (snes->reason < 0) break;
 
     /* Compute the solution update for convergence testing */
-    CHKERRQ(VecAYPX(Y, -1.0, X));
+    PetscCall(VecAYPX(Y, -1.0, X));
 
     if ((i == snes->max_its - 1) && (normtype == SNES_NORM_INITIAL_FINAL_ONLY || normtype == SNES_NORM_FINAL_ONLY)) {
-      CHKERRQ(SNESComputeFunction(snes,X,F));
+      PetscCall(SNESComputeFunction(snes,X,F));
 
       if (snes->xl && snes->xu) {
-        CHKERRQ(VecNormBegin(X, NORM_2, &xnorm));
-        CHKERRQ(VecNormBegin(Y, NORM_2, &snorm));
-        CHKERRQ(SNESVIComputeInactiveSetFnorm(snes, F, X, &fnorm));
-        CHKERRQ(VecNormEnd(X, NORM_2, &xnorm));
-        CHKERRQ(VecNormEnd(Y, NORM_2, &snorm));
+        PetscCall(VecNormBegin(X, NORM_2, &xnorm));
+        PetscCall(VecNormBegin(Y, NORM_2, &snorm));
+        PetscCall(SNESVIComputeInactiveSetFnorm(snes, F, X, &fnorm));
+        PetscCall(VecNormEnd(X, NORM_2, &xnorm));
+        PetscCall(VecNormEnd(Y, NORM_2, &snorm));
       } else {
-        CHKERRQ(VecNormBegin(F, NORM_2, &fnorm));
-        CHKERRQ(VecNormBegin(X, NORM_2, &xnorm));
-        CHKERRQ(VecNormBegin(Y, NORM_2, &snorm));
+        PetscCall(VecNormBegin(F, NORM_2, &fnorm));
+        PetscCall(VecNormBegin(X, NORM_2, &xnorm));
+        PetscCall(VecNormBegin(Y, NORM_2, &snorm));
 
-        CHKERRQ(VecNormEnd(F, NORM_2, &fnorm));
-        CHKERRQ(VecNormEnd(X, NORM_2, &xnorm));
-        CHKERRQ(VecNormEnd(Y, NORM_2, &snorm));
+        PetscCall(VecNormEnd(F, NORM_2, &fnorm));
+        PetscCall(VecNormEnd(X, NORM_2, &xnorm));
+        PetscCall(VecNormEnd(Y, NORM_2, &snorm));
       }
       SNESCheckFunctionNorm(snes,fnorm);
     } else if (normtype == SNES_NORM_ALWAYS) {
-      CHKERRQ(VecNormBegin(X, NORM_2, &xnorm));
-      CHKERRQ(VecNormBegin(Y, NORM_2, &snorm));
-      CHKERRQ(VecNormEnd(X, NORM_2, &xnorm));
-      CHKERRQ(VecNormEnd(Y, NORM_2, &snorm));
+      PetscCall(VecNormBegin(X, NORM_2, &xnorm));
+      PetscCall(VecNormBegin(Y, NORM_2, &snorm));
+      PetscCall(VecNormEnd(X, NORM_2, &xnorm));
+      PetscCall(VecNormEnd(Y, NORM_2, &snorm));
     }
     /* Monitor convergence */
-    CHKERRQ(PetscObjectSAWsTakeAccess((PetscObject)snes));
+    PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
     snes->iter = i+1;
     snes->norm = fnorm;
     snes->xnorm = xnorm;
     snes->ynorm = snorm;
-    CHKERRQ(PetscObjectSAWsGrantAccess((PetscObject)snes));
-    CHKERRQ(SNESLogConvergenceHistory(snes,snes->norm,0));
-    CHKERRQ(SNESMonitor(snes,snes->iter,snes->norm));
+    PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
+    PetscCall(SNESLogConvergenceHistory(snes,snes->norm,0));
+    PetscCall(SNESMonitor(snes,snes->iter,snes->norm));
     /* Test for convergence */
-    if (normtype == SNES_NORM_ALWAYS) CHKERRQ((*snes->ops->converged)(snes,snes->iter,xnorm,snorm,fnorm,&snes->reason,snes->cnvP));
+    if (normtype == SNES_NORM_ALWAYS) PetscCall((*snes->ops->converged)(snes,snes->iter,xnorm,snorm,fnorm,&snes->reason,snes->cnvP));
     if (snes->reason) break;
   }
   if (normtype == SNES_NORM_ALWAYS) {
     if (i == snes->max_its) {
-      CHKERRQ(PetscInfo(snes,"Maximum number of iterations has been reached: %D\n",snes->max_its));
+      PetscCall(PetscInfo(snes,"Maximum number of iterations has been reached: %D\n",snes->max_its));
       if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
     }
   } else if (!snes->reason) snes->reason = SNES_CONVERGED_ITS;
@@ -843,7 +843,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Composite(SNES snes)
   SNES_Composite *jac;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNewLog(snes,&jac));
+  PetscCall(PetscNewLog(snes,&jac));
 
   snes->ops->solve           = SNESSolve_Composite;
   snes->ops->setup           = SNESSetUp_Composite;
@@ -872,9 +872,9 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Composite(SNES snes)
   jac->work  = NULL;
   jac->rwork = NULL;
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)snes,"SNESCompositeSetType_C",SNESCompositeSetType_Composite));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)snes,"SNESCompositeAddSNES_C",SNESCompositeAddSNES_Composite));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)snes,"SNESCompositeGetSNES_C",SNESCompositeGetSNES_Composite));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)snes,"SNESCompositeSetDamping_C",SNESCompositeSetDamping_Composite));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes,"SNESCompositeSetType_C",SNESCompositeSetType_Composite));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes,"SNESCompositeAddSNES_C",SNESCompositeAddSNES_Composite));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes,"SNESCompositeGetSNES_C",SNESCompositeGetSNES_Composite));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes,"SNESCompositeSetDamping_C",SNESCompositeSetDamping_Composite));
   PetscFunctionReturn(0);
 }

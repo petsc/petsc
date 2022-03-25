@@ -23,55 +23,55 @@ static PetscErrorCode PCView_ASM(PC pc,PetscViewer viewer)
   const char        *prefix;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring));
   if (iascii) {
     char overlaps[256] = "user-defined overlap",blocks[256] = "total subdomain blocks not yet set";
-    if (osm->overlap >= 0) CHKERRQ(PetscSNPrintf(overlaps,sizeof(overlaps),"amount of overlap = %D",osm->overlap));
-    if (osm->n > 0) CHKERRQ(PetscSNPrintf(blocks,sizeof(blocks),"total subdomain blocks = %D",osm->n));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  %s, %s\n",blocks,overlaps));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  restriction/interpolation type - %s\n",PCASMTypes[osm->type]));
-    if (osm->dm_subdomains) CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Additive Schwarz: using DM to define subdomains\n"));
-    if (osm->loctype != PC_COMPOSITE_ADDITIVE) CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Additive Schwarz: local solve composition type - %s\n",PCCompositeTypes[osm->loctype]));
-    CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank));
-    CHKERRQ(PetscViewerGetFormat(viewer,&format));
+    if (osm->overlap >= 0) PetscCall(PetscSNPrintf(overlaps,sizeof(overlaps),"amount of overlap = %D",osm->overlap));
+    if (osm->n > 0) PetscCall(PetscSNPrintf(blocks,sizeof(blocks),"total subdomain blocks = %D",osm->n));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  %s, %s\n",blocks,overlaps));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  restriction/interpolation type - %s\n",PCASMTypes[osm->type]));
+    if (osm->dm_subdomains) PetscCall(PetscViewerASCIIPrintf(viewer,"  Additive Schwarz: using DM to define subdomains\n"));
+    if (osm->loctype != PC_COMPOSITE_ADDITIVE) PetscCall(PetscViewerASCIIPrintf(viewer,"  Additive Schwarz: local solve composition type - %s\n",PCCompositeTypes[osm->loctype]));
+    PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank));
+    PetscCall(PetscViewerGetFormat(viewer,&format));
     if (format != PETSC_VIEWER_ASCII_INFO_DETAIL) {
       if (osm->ksp) {
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Local solver information for first block is in the following KSP and PC objects on rank 0:\n"));
-        CHKERRQ(PCGetOptionsPrefix(pc,&prefix));
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Use -%sksp_view ::ascii_info_detail to display information for all blocks\n",prefix?prefix:""));
-        CHKERRQ(PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"  Local solver information for first block is in the following KSP and PC objects on rank 0:\n"));
+        PetscCall(PCGetOptionsPrefix(pc,&prefix));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"  Use -%sksp_view ::ascii_info_detail to display information for all blocks\n",prefix?prefix:""));
+        PetscCall(PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer));
         if (rank == 0) {
-          CHKERRQ(PetscViewerASCIIPushTab(viewer));
-          CHKERRQ(KSPView(osm->ksp[0],sviewer));
-          CHKERRQ(PetscViewerASCIIPopTab(viewer));
+          PetscCall(PetscViewerASCIIPushTab(viewer));
+          PetscCall(KSPView(osm->ksp[0],sviewer));
+          PetscCall(PetscViewerASCIIPopTab(viewer));
         }
-        CHKERRQ(PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer));
+        PetscCall(PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer));
       }
     } else {
-      CHKERRQ(PetscViewerASCIIPushSynchronized(viewer));
-      CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer,"  [%d] number of local blocks = %D\n",(int)rank,osm->n_local_true));
-      CHKERRQ(PetscViewerFlush(viewer));
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Local solver information for each block is in the following KSP and PC objects:\n"));
-      CHKERRQ(PetscViewerASCIIPushTab(viewer));
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"- - - - - - - - - - - - - - - - - -\n"));
-      CHKERRQ(PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer));
+      PetscCall(PetscViewerASCIIPushSynchronized(viewer));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"  [%d] number of local blocks = %D\n",(int)rank,osm->n_local_true));
+      PetscCall(PetscViewerFlush(viewer));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  Local solver information for each block is in the following KSP and PC objects:\n"));
+      PetscCall(PetscViewerASCIIPushTab(viewer));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"- - - - - - - - - - - - - - - - - -\n"));
+      PetscCall(PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer));
       for (i=0; i<osm->n_local_true; i++) {
-        CHKERRQ(ISGetLocalSize(osm->is[i],&bsz));
-        CHKERRQ(PetscViewerASCIISynchronizedPrintf(sviewer,"[%d] local block number %D, size = %D\n",(int)rank,i,bsz));
-        CHKERRQ(KSPView(osm->ksp[i],sviewer));
-        CHKERRQ(PetscViewerASCIISynchronizedPrintf(sviewer,"- - - - - - - - - - - - - - - - - -\n"));
+        PetscCall(ISGetLocalSize(osm->is[i],&bsz));
+        PetscCall(PetscViewerASCIISynchronizedPrintf(sviewer,"[%d] local block number %D, size = %D\n",(int)rank,i,bsz));
+        PetscCall(KSPView(osm->ksp[i],sviewer));
+        PetscCall(PetscViewerASCIISynchronizedPrintf(sviewer,"- - - - - - - - - - - - - - - - - -\n"));
       }
-      CHKERRQ(PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer));
-      CHKERRQ(PetscViewerASCIIPopTab(viewer));
-      CHKERRQ(PetscViewerFlush(viewer));
-      CHKERRQ(PetscViewerASCIIPopSynchronized(viewer));
+      PetscCall(PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer));
+      PetscCall(PetscViewerASCIIPopTab(viewer));
+      PetscCall(PetscViewerFlush(viewer));
+      PetscCall(PetscViewerASCIIPopSynchronized(viewer));
     }
   } else if (isstring) {
-    CHKERRQ(PetscViewerStringSPrintf(viewer," blocks=%D, overlap=%D, type=%s",osm->n,osm->overlap,PCASMTypes[osm->type]));
-    CHKERRQ(PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer));
-    if (osm->ksp) CHKERRQ(KSPView(osm->ksp[0],sviewer));
-    CHKERRQ(PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer));
+    PetscCall(PetscViewerStringSPrintf(viewer," blocks=%D, overlap=%D, type=%s",osm->n,osm->overlap,PCASMTypes[osm->type]));
+    PetscCall(PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer));
+    if (osm->ksp) PetscCall(KSPView(osm->ksp[0],sviewer));
+    PetscCall(PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer));
   }
   PetscFunctionReturn(0);
 }
@@ -88,69 +88,69 @@ static PetscErrorCode PCASMPrintSubdomains(PC pc)
   PetscMPIInt    rank, size;
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)pc), &size));
-  CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)pc), &rank));
-  CHKERRQ(PCGetOptionsPrefix(pc,&prefix));
-  CHKERRQ(PetscOptionsGetString(NULL,prefix,"-pc_asm_print_subdomains",fname,sizeof(fname),NULL));
-  if (fname[0] == 0) CHKERRQ(PetscStrcpy(fname,"stdout"));
-  CHKERRQ(PetscViewerASCIIOpen(PetscObjectComm((PetscObject)pc),fname,&viewer));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)pc), &size));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)pc), &rank));
+  PetscCall(PCGetOptionsPrefix(pc,&prefix));
+  PetscCall(PetscOptionsGetString(NULL,prefix,"-pc_asm_print_subdomains",fname,sizeof(fname),NULL));
+  if (fname[0] == 0) PetscCall(PetscStrcpy(fname,"stdout"));
+  PetscCall(PetscViewerASCIIOpen(PetscObjectComm((PetscObject)pc),fname,&viewer));
   for (i=0; i<osm->n_local; i++) {
     if (i < osm->n_local_true) {
-      CHKERRQ(ISGetLocalSize(osm->is[i],&nidx));
-      CHKERRQ(ISGetIndices(osm->is[i],&idx));
+      PetscCall(ISGetLocalSize(osm->is[i],&nidx));
+      PetscCall(ISGetIndices(osm->is[i],&idx));
       /* Print to a string viewer; no more than 15 characters per index plus 512 char for the header.*/
 #define len  16*(nidx+1)+512
-      CHKERRQ(PetscMalloc1(len,&s));
-      CHKERRQ(PetscViewerStringOpen(PETSC_COMM_SELF, s, len, &sviewer));
+      PetscCall(PetscMalloc1(len,&s));
+      PetscCall(PetscViewerStringOpen(PETSC_COMM_SELF, s, len, &sviewer));
 #undef len
-      CHKERRQ(PetscViewerStringSPrintf(sviewer, "[%D:%D] Subdomain %D with overlap:\n", rank, size, i));
+      PetscCall(PetscViewerStringSPrintf(sviewer, "[%D:%D] Subdomain %D with overlap:\n", rank, size, i));
       for (j=0; j<nidx; j++) {
-        CHKERRQ(PetscViewerStringSPrintf(sviewer,"%D ",idx[j]));
+        PetscCall(PetscViewerStringSPrintf(sviewer,"%D ",idx[j]));
       }
-      CHKERRQ(ISRestoreIndices(osm->is[i],&idx));
-      CHKERRQ(PetscViewerStringSPrintf(sviewer,"\n"));
-      CHKERRQ(PetscViewerDestroy(&sviewer));
-      CHKERRQ(PetscViewerASCIIPushSynchronized(viewer));
-      CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer, s));
-      CHKERRQ(PetscViewerFlush(viewer));
-      CHKERRQ(PetscViewerASCIIPopSynchronized(viewer));
-      CHKERRQ(PetscFree(s));
+      PetscCall(ISRestoreIndices(osm->is[i],&idx));
+      PetscCall(PetscViewerStringSPrintf(sviewer,"\n"));
+      PetscCall(PetscViewerDestroy(&sviewer));
+      PetscCall(PetscViewerASCIIPushSynchronized(viewer));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, s));
+      PetscCall(PetscViewerFlush(viewer));
+      PetscCall(PetscViewerASCIIPopSynchronized(viewer));
+      PetscCall(PetscFree(s));
       if (osm->is_local) {
         /* Print to a string viewer; no more than 15 characters per index plus 512 char for the header.*/
 #define len  16*(nidx+1)+512
-        CHKERRQ(PetscMalloc1(len, &s));
-        CHKERRQ(PetscViewerStringOpen(PETSC_COMM_SELF, s, len, &sviewer));
+        PetscCall(PetscMalloc1(len, &s));
+        PetscCall(PetscViewerStringOpen(PETSC_COMM_SELF, s, len, &sviewer));
 #undef len
-        CHKERRQ(PetscViewerStringSPrintf(sviewer, "[%D:%D] Subdomain %D without overlap:\n", rank, size, i));
-        CHKERRQ(ISGetLocalSize(osm->is_local[i],&nidx));
-        CHKERRQ(ISGetIndices(osm->is_local[i],&idx));
+        PetscCall(PetscViewerStringSPrintf(sviewer, "[%D:%D] Subdomain %D without overlap:\n", rank, size, i));
+        PetscCall(ISGetLocalSize(osm->is_local[i],&nidx));
+        PetscCall(ISGetIndices(osm->is_local[i],&idx));
         for (j=0; j<nidx; j++) {
-          CHKERRQ(PetscViewerStringSPrintf(sviewer,"%D ",idx[j]));
+          PetscCall(PetscViewerStringSPrintf(sviewer,"%D ",idx[j]));
         }
-        CHKERRQ(ISRestoreIndices(osm->is_local[i],&idx));
-        CHKERRQ(PetscViewerStringSPrintf(sviewer,"\n"));
-        CHKERRQ(PetscViewerDestroy(&sviewer));
-        CHKERRQ(PetscViewerASCIIPushSynchronized(viewer));
-        CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer, s));
-        CHKERRQ(PetscViewerFlush(viewer));
-        CHKERRQ(PetscViewerASCIIPopSynchronized(viewer));
-        CHKERRQ(PetscFree(s));
+        PetscCall(ISRestoreIndices(osm->is_local[i],&idx));
+        PetscCall(PetscViewerStringSPrintf(sviewer,"\n"));
+        PetscCall(PetscViewerDestroy(&sviewer));
+        PetscCall(PetscViewerASCIIPushSynchronized(viewer));
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, s));
+        PetscCall(PetscViewerFlush(viewer));
+        PetscCall(PetscViewerASCIIPopSynchronized(viewer));
+        PetscCall(PetscFree(s));
       }
     } else {
       /* Participate in collective viewer calls. */
-      CHKERRQ(PetscViewerASCIIPushSynchronized(viewer));
-      CHKERRQ(PetscViewerFlush(viewer));
-      CHKERRQ(PetscViewerASCIIPopSynchronized(viewer));
+      PetscCall(PetscViewerASCIIPushSynchronized(viewer));
+      PetscCall(PetscViewerFlush(viewer));
+      PetscCall(PetscViewerASCIIPopSynchronized(viewer));
       /* Assume either all ranks have is_local or none do. */
       if (osm->is_local) {
-        CHKERRQ(PetscViewerASCIIPushSynchronized(viewer));
-        CHKERRQ(PetscViewerFlush(viewer));
-        CHKERRQ(PetscViewerASCIIPopSynchronized(viewer));
+        PetscCall(PetscViewerASCIIPushSynchronized(viewer));
+        PetscCall(PetscViewerFlush(viewer));
+        PetscCall(PetscViewerASCIIPopSynchronized(viewer));
       }
     }
   }
-  CHKERRQ(PetscViewerFlush(viewer));
-  CHKERRQ(PetscViewerDestroy(&viewer));
+  PetscCall(PetscViewerFlush(viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
   PetscFunctionReturn(0);
 }
 
@@ -179,22 +179,22 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
         PetscInt  num_domains, d;
         char      **domain_names;
         IS        *inner_domain_is, *outer_domain_is;
-        CHKERRQ(DMCreateDomainDecomposition(pc->dm, &num_domains, &domain_names, &inner_domain_is, &outer_domain_is, &domain_dm));
+        PetscCall(DMCreateDomainDecomposition(pc->dm, &num_domains, &domain_names, &inner_domain_is, &outer_domain_is, &domain_dm));
         osm->overlap = -1; /* We do not want to increase the overlap of the IS.
                               A future improvement of this code might allow one to use
                               DM-defined subdomains and also increase the overlap,
                               but that is not currently supported */
         if (num_domains) {
-          CHKERRQ(PCASMSetLocalSubdomains(pc, num_domains, outer_domain_is, inner_domain_is));
+          PetscCall(PCASMSetLocalSubdomains(pc, num_domains, outer_domain_is, inner_domain_is));
         }
         for (d = 0; d < num_domains; ++d) {
-          if (domain_names)    CHKERRQ(PetscFree(domain_names[d]));
-          if (inner_domain_is) CHKERRQ(ISDestroy(&inner_domain_is[d]));
-          if (outer_domain_is) CHKERRQ(ISDestroy(&outer_domain_is[d]));
+          if (domain_names)    PetscCall(PetscFree(domain_names[d]));
+          if (inner_domain_is) PetscCall(ISDestroy(&inner_domain_is[d]));
+          if (outer_domain_is) PetscCall(ISDestroy(&outer_domain_is[d]));
         }
-        CHKERRQ(PetscFree(domain_names));
-        CHKERRQ(PetscFree(inner_domain_is));
-        CHKERRQ(PetscFree(outer_domain_is));
+        PetscCall(PetscFree(domain_names));
+        PetscCall(PetscFree(inner_domain_is));
+        PetscCall(PetscFree(outer_domain_is));
       }
       if (osm->n_local_true == PETSC_DECIDE) {
         /* still no subdomains; use one subdomain per processor */
@@ -207,80 +207,80 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
 
       inwork.max   = osm->n_local_true;
       inwork.sum   = osm->n_local_true;
-      CHKERRMPI(MPIU_Allreduce(&inwork,&outwork,1,MPIU_2INT,MPIU_MAXSUM_OP,PetscObjectComm((PetscObject)pc)));
+      PetscCallMPI(MPIU_Allreduce(&inwork,&outwork,1,MPIU_2INT,MPIU_MAXSUM_OP,PetscObjectComm((PetscObject)pc)));
       osm->n_local = outwork.max;
       osm->n       = outwork.sum;
 
-      CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size));
+      PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size));
       if (outwork.max == 1 && outwork.sum == size) {
         /* osm->n_local_true = 1 on all processes, set this option may enable use of optimized MatCreateSubMatrices() implementation */
-        CHKERRQ(MatSetOption(pc->pmat,MAT_SUBMAT_SINGLEIS,PETSC_TRUE));
+        PetscCall(MatSetOption(pc->pmat,MAT_SUBMAT_SINGLEIS,PETSC_TRUE));
       }
     }
     if (!osm->is) { /* create the index sets */
-      CHKERRQ(PCASMCreateSubdomains(pc->pmat,osm->n_local_true,&osm->is));
+      PetscCall(PCASMCreateSubdomains(pc->pmat,osm->n_local_true,&osm->is));
     }
     if (osm->n_local_true > 1 && !osm->is_local) {
-      CHKERRQ(PetscMalloc1(osm->n_local_true,&osm->is_local));
+      PetscCall(PetscMalloc1(osm->n_local_true,&osm->is_local));
       for (i=0; i<osm->n_local_true; i++) {
         if (osm->overlap > 0) { /* With positive overlap, osm->is[i] will be modified */
-          CHKERRQ(ISDuplicate(osm->is[i],&osm->is_local[i]));
-          CHKERRQ(ISCopy(osm->is[i],osm->is_local[i]));
+          PetscCall(ISDuplicate(osm->is[i],&osm->is_local[i]));
+          PetscCall(ISCopy(osm->is[i],osm->is_local[i]));
         } else {
-          CHKERRQ(PetscObjectReference((PetscObject)osm->is[i]));
+          PetscCall(PetscObjectReference((PetscObject)osm->is[i]));
           osm->is_local[i] = osm->is[i];
         }
       }
     }
-    CHKERRQ(PCGetOptionsPrefix(pc,&prefix));
+    PetscCall(PCGetOptionsPrefix(pc,&prefix));
     flg  = PETSC_FALSE;
-    CHKERRQ(PetscOptionsHasName(NULL,prefix,"-pc_asm_print_subdomains",&flg));
-    if (flg) CHKERRQ(PCASMPrintSubdomains(pc));
+    PetscCall(PetscOptionsHasName(NULL,prefix,"-pc_asm_print_subdomains",&flg));
+    if (flg) PetscCall(PCASMPrintSubdomains(pc));
 
     if (osm->overlap > 0) {
       /* Extend the "overlapping" regions by a number of steps */
-      CHKERRQ(MatIncreaseOverlap(pc->pmat,osm->n_local_true,osm->is,osm->overlap));
+      PetscCall(MatIncreaseOverlap(pc->pmat,osm->n_local_true,osm->is,osm->overlap));
     }
     if (osm->sort_indices) {
       for (i=0; i<osm->n_local_true; i++) {
-        CHKERRQ(ISSort(osm->is[i]));
+        PetscCall(ISSort(osm->is[i]));
         if (osm->is_local) {
-          CHKERRQ(ISSort(osm->is_local[i]));
+          PetscCall(ISSort(osm->is_local[i]));
         }
       }
     }
 
     if (!osm->ksp) {
       /* Create the local solvers */
-      CHKERRQ(PetscMalloc1(osm->n_local_true,&osm->ksp));
+      PetscCall(PetscMalloc1(osm->n_local_true,&osm->ksp));
       if (domain_dm) {
-        CHKERRQ(PetscInfo(pc,"Setting up ASM subproblems using the embedded DM\n"));
+        PetscCall(PetscInfo(pc,"Setting up ASM subproblems using the embedded DM\n"));
       }
       for (i=0; i<osm->n_local_true; i++) {
-        CHKERRQ(KSPCreate(PETSC_COMM_SELF,&ksp));
-        CHKERRQ(KSPSetErrorIfNotConverged(ksp,pc->erroriffailure));
-        CHKERRQ(PetscLogObjectParent((PetscObject)pc,(PetscObject)ksp));
-        CHKERRQ(PetscObjectIncrementTabLevel((PetscObject)ksp,(PetscObject)pc,1));
-        CHKERRQ(KSPSetType(ksp,KSPPREONLY));
-        CHKERRQ(KSPGetPC(ksp,&subpc));
-        CHKERRQ(PCGetOptionsPrefix(pc,&prefix));
-        CHKERRQ(KSPSetOptionsPrefix(ksp,prefix));
-        CHKERRQ(KSPAppendOptionsPrefix(ksp,"sub_"));
+        PetscCall(KSPCreate(PETSC_COMM_SELF,&ksp));
+        PetscCall(KSPSetErrorIfNotConverged(ksp,pc->erroriffailure));
+        PetscCall(PetscLogObjectParent((PetscObject)pc,(PetscObject)ksp));
+        PetscCall(PetscObjectIncrementTabLevel((PetscObject)ksp,(PetscObject)pc,1));
+        PetscCall(KSPSetType(ksp,KSPPREONLY));
+        PetscCall(KSPGetPC(ksp,&subpc));
+        PetscCall(PCGetOptionsPrefix(pc,&prefix));
+        PetscCall(KSPSetOptionsPrefix(ksp,prefix));
+        PetscCall(KSPAppendOptionsPrefix(ksp,"sub_"));
         if (domain_dm) {
-          CHKERRQ(KSPSetDM(ksp, domain_dm[i]));
-          CHKERRQ(KSPSetDMActive(ksp, PETSC_FALSE));
-          CHKERRQ(DMDestroy(&domain_dm[i]));
+          PetscCall(KSPSetDM(ksp, domain_dm[i]));
+          PetscCall(KSPSetDMActive(ksp, PETSC_FALSE));
+          PetscCall(DMDestroy(&domain_dm[i]));
         }
         osm->ksp[i] = ksp;
       }
       if (domain_dm) {
-        CHKERRQ(PetscFree(domain_dm));
+        PetscCall(PetscFree(domain_dm));
       }
     }
 
-    CHKERRQ(ISConcatenate(PETSC_COMM_SELF, osm->n_local_true, osm->is, &osm->lis));
-    CHKERRQ(ISSortRemoveDups(osm->lis));
-    CHKERRQ(ISGetLocalSize(osm->lis, &m));
+    PetscCall(ISConcatenate(PETSC_COMM_SELF, osm->n_local_true, osm->is, &osm->lis));
+    PetscCall(ISSortRemoveDups(osm->lis));
+    PetscCall(ISGetLocalSize(osm->lis, &m));
 
     scall = MAT_INITIAL_MATRIX;
   } else {
@@ -288,7 +288,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
        Destroy the blocks from the previous iteration
     */
     if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
-      CHKERRQ(MatDestroyMatrices(osm->n_local_true,&osm->pmat));
+      PetscCall(MatDestroyMatrices(osm->n_local_true,&osm->pmat));
       scall = MAT_INITIAL_MATRIX;
     }
   }
@@ -296,7 +296,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
   /* Destroy previous submatrices of a different type than pc->pmat since MAT_REUSE_MATRIX won't work in that case */
   if ((scall == MAT_REUSE_MATRIX) && osm->sub_mat_type) {
     if (osm->n_local_true > 0) {
-      CHKERRQ(MatDestroySubMatrices(osm->n_local_true,&osm->pmat));
+      PetscCall(MatDestroySubMatrices(osm->n_local_true,&osm->pmat));
     }
     scall = MAT_INITIAL_MATRIX;
   }
@@ -304,19 +304,19 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
   /*
      Extract out the submatrices
   */
-  CHKERRQ(MatCreateSubMatrices(pc->pmat,osm->n_local_true,osm->is,osm->is,scall,&osm->pmat));
+  PetscCall(MatCreateSubMatrices(pc->pmat,osm->n_local_true,osm->is,osm->is,scall,&osm->pmat));
   if (scall == MAT_INITIAL_MATRIX) {
-    CHKERRQ(PetscObjectGetOptionsPrefix((PetscObject)pc->pmat,&pprefix));
+    PetscCall(PetscObjectGetOptionsPrefix((PetscObject)pc->pmat,&pprefix));
     for (i=0; i<osm->n_local_true; i++) {
-      CHKERRQ(PetscLogObjectParent((PetscObject)pc,(PetscObject)osm->pmat[i]));
-      CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject)osm->pmat[i],pprefix));
+      PetscCall(PetscLogObjectParent((PetscObject)pc,(PetscObject)osm->pmat[i]));
+      PetscCall(PetscObjectSetOptionsPrefix((PetscObject)osm->pmat[i],pprefix));
     }
   }
 
   /* Convert the types of the submatrices (if needbe) */
   if (osm->sub_mat_type) {
     for (i=0; i<osm->n_local_true; i++) {
-      CHKERRQ(MatConvert(osm->pmat[i],osm->sub_mat_type,MAT_INPLACE_MATRIX,&(osm->pmat[i])));
+      PetscCall(MatConvert(osm->pmat[i],osm->sub_mat_type,MAT_INPLACE_MATRIX,&(osm->pmat[i])));
     }
   }
 
@@ -324,25 +324,25 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
     VecType vtype;
 
     /* Create the local work vectors (from the local matrices) and scatter contexts */
-    CHKERRQ(MatCreateVecs(pc->pmat,&vec,NULL));
+    PetscCall(MatCreateVecs(pc->pmat,&vec,NULL));
 
     PetscCheckFalse(osm->is_local && (osm->type == PC_ASM_INTERPOLATE || osm->type == PC_ASM_NONE),PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot use interpolate or none PCASMType if is_local was provided to PCASMSetLocalSubdomains()");
     if (osm->is_local && osm->type == PC_ASM_RESTRICT && osm->loctype == PC_COMPOSITE_ADDITIVE) {
-      CHKERRQ(PetscMalloc1(osm->n_local_true,&osm->lprolongation));
+      PetscCall(PetscMalloc1(osm->n_local_true,&osm->lprolongation));
     }
-    CHKERRQ(PetscMalloc1(osm->n_local_true,&osm->lrestriction));
-    CHKERRQ(PetscMalloc1(osm->n_local_true,&osm->x));
-    CHKERRQ(PetscMalloc1(osm->n_local_true,&osm->y));
+    PetscCall(PetscMalloc1(osm->n_local_true,&osm->lrestriction));
+    PetscCall(PetscMalloc1(osm->n_local_true,&osm->x));
+    PetscCall(PetscMalloc1(osm->n_local_true,&osm->y));
 
-    CHKERRQ(ISGetLocalSize(osm->lis,&m));
-    CHKERRQ(ISCreateStride(PETSC_COMM_SELF,m,0,1,&isl));
-    CHKERRQ(MatGetVecType(osm->pmat[0],&vtype));
-    CHKERRQ(VecCreate(PETSC_COMM_SELF,&osm->lx));
-    CHKERRQ(VecSetSizes(osm->lx,m,m));
-    CHKERRQ(VecSetType(osm->lx,vtype));
-    CHKERRQ(VecDuplicate(osm->lx, &osm->ly));
-    CHKERRQ(VecScatterCreate(vec,osm->lis,osm->lx,isl,&osm->restriction));
-    CHKERRQ(ISDestroy(&isl));
+    PetscCall(ISGetLocalSize(osm->lis,&m));
+    PetscCall(ISCreateStride(PETSC_COMM_SELF,m,0,1,&isl));
+    PetscCall(MatGetVecType(osm->pmat[0],&vtype));
+    PetscCall(VecCreate(PETSC_COMM_SELF,&osm->lx));
+    PetscCall(VecSetSizes(osm->lx,m,m));
+    PetscCall(VecSetType(osm->lx,vtype));
+    PetscCall(VecDuplicate(osm->lx, &osm->ly));
+    PetscCall(VecScatterCreate(vec,osm->lis,osm->lx,isl,&osm->restriction));
+    PetscCall(ISDestroy(&isl));
 
     for (i=0; i<osm->n_local_true; ++i) {
       ISLocalToGlobalMapping ltog;
@@ -350,80 +350,80 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
       const PetscInt         *idx_is;
       PetscInt               *idx_lis,nout;
 
-      CHKERRQ(ISGetLocalSize(osm->is[i],&m));
-      CHKERRQ(MatCreateVecs(osm->pmat[i],&osm->x[i],NULL));
-      CHKERRQ(VecDuplicate(osm->x[i],&osm->y[i]));
+      PetscCall(ISGetLocalSize(osm->is[i],&m));
+      PetscCall(MatCreateVecs(osm->pmat[i],&osm->x[i],NULL));
+      PetscCall(VecDuplicate(osm->x[i],&osm->y[i]));
 
       /* generate a scatter from ly to y[i] picking all the overlapping is[i] entries */
-      CHKERRQ(ISLocalToGlobalMappingCreateIS(osm->lis,&ltog));
-      CHKERRQ(ISGetLocalSize(osm->is[i],&m));
-      CHKERRQ(ISGetIndices(osm->is[i], &idx_is));
-      CHKERRQ(PetscMalloc1(m,&idx_lis));
-      CHKERRQ(ISGlobalToLocalMappingApply(ltog,IS_GTOLM_DROP,m,idx_is,&nout,idx_lis));
+      PetscCall(ISLocalToGlobalMappingCreateIS(osm->lis,&ltog));
+      PetscCall(ISGetLocalSize(osm->is[i],&m));
+      PetscCall(ISGetIndices(osm->is[i], &idx_is));
+      PetscCall(PetscMalloc1(m,&idx_lis));
+      PetscCall(ISGlobalToLocalMappingApply(ltog,IS_GTOLM_DROP,m,idx_is,&nout,idx_lis));
       PetscCheckFalse(nout != m,PETSC_COMM_SELF,PETSC_ERR_PLIB,"is not a subset of lis");
-      CHKERRQ(ISRestoreIndices(osm->is[i], &idx_is));
-      CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,m,idx_lis,PETSC_OWN_POINTER,&isll));
-      CHKERRQ(ISLocalToGlobalMappingDestroy(&ltog));
-      CHKERRQ(ISCreateStride(PETSC_COMM_SELF,m,0,1,&isl));
-      CHKERRQ(VecScatterCreate(osm->ly,isll,osm->y[i],isl,&osm->lrestriction[i]));
-      CHKERRQ(ISDestroy(&isll));
-      CHKERRQ(ISDestroy(&isl));
+      PetscCall(ISRestoreIndices(osm->is[i], &idx_is));
+      PetscCall(ISCreateGeneral(PETSC_COMM_SELF,m,idx_lis,PETSC_OWN_POINTER,&isll));
+      PetscCall(ISLocalToGlobalMappingDestroy(&ltog));
+      PetscCall(ISCreateStride(PETSC_COMM_SELF,m,0,1,&isl));
+      PetscCall(VecScatterCreate(osm->ly,isll,osm->y[i],isl,&osm->lrestriction[i]));
+      PetscCall(ISDestroy(&isll));
+      PetscCall(ISDestroy(&isl));
       if (osm->lprolongation) { /* generate a scatter from y[i] to ly picking only the the non-overlapping is_local[i] entries */
         ISLocalToGlobalMapping ltog;
         IS                     isll,isll_local;
         const PetscInt         *idx_local;
         PetscInt               *idx1, *idx2, nout;
 
-        CHKERRQ(ISGetLocalSize(osm->is_local[i],&m_local));
-        CHKERRQ(ISGetIndices(osm->is_local[i], &idx_local));
+        PetscCall(ISGetLocalSize(osm->is_local[i],&m_local));
+        PetscCall(ISGetIndices(osm->is_local[i], &idx_local));
 
-        CHKERRQ(ISLocalToGlobalMappingCreateIS(osm->is[i],&ltog));
-        CHKERRQ(PetscMalloc1(m_local,&idx1));
-        CHKERRQ(ISGlobalToLocalMappingApply(ltog,IS_GTOLM_DROP,m_local,idx_local,&nout,idx1));
-        CHKERRQ(ISLocalToGlobalMappingDestroy(&ltog));
+        PetscCall(ISLocalToGlobalMappingCreateIS(osm->is[i],&ltog));
+        PetscCall(PetscMalloc1(m_local,&idx1));
+        PetscCall(ISGlobalToLocalMappingApply(ltog,IS_GTOLM_DROP,m_local,idx_local,&nout,idx1));
+        PetscCall(ISLocalToGlobalMappingDestroy(&ltog));
         PetscCheckFalse(nout != m_local,PETSC_COMM_SELF,PETSC_ERR_PLIB,"is_local not a subset of is");
-        CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,m_local,idx1,PETSC_OWN_POINTER,&isll));
+        PetscCall(ISCreateGeneral(PETSC_COMM_SELF,m_local,idx1,PETSC_OWN_POINTER,&isll));
 
-        CHKERRQ(ISLocalToGlobalMappingCreateIS(osm->lis,&ltog));
-        CHKERRQ(PetscMalloc1(m_local,&idx2));
-        CHKERRQ(ISGlobalToLocalMappingApply(ltog,IS_GTOLM_DROP,m_local,idx_local,&nout,idx2));
-        CHKERRQ(ISLocalToGlobalMappingDestroy(&ltog));
+        PetscCall(ISLocalToGlobalMappingCreateIS(osm->lis,&ltog));
+        PetscCall(PetscMalloc1(m_local,&idx2));
+        PetscCall(ISGlobalToLocalMappingApply(ltog,IS_GTOLM_DROP,m_local,idx_local,&nout,idx2));
+        PetscCall(ISLocalToGlobalMappingDestroy(&ltog));
         PetscCheckFalse(nout != m_local,PETSC_COMM_SELF,PETSC_ERR_PLIB,"is_local not a subset of lis");
-        CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,m_local,idx2,PETSC_OWN_POINTER,&isll_local));
+        PetscCall(ISCreateGeneral(PETSC_COMM_SELF,m_local,idx2,PETSC_OWN_POINTER,&isll_local));
 
-        CHKERRQ(ISRestoreIndices(osm->is_local[i], &idx_local));
-        CHKERRQ(VecScatterCreate(osm->y[i],isll,osm->ly,isll_local,&osm->lprolongation[i]));
+        PetscCall(ISRestoreIndices(osm->is_local[i], &idx_local));
+        PetscCall(VecScatterCreate(osm->y[i],isll,osm->ly,isll_local,&osm->lprolongation[i]));
 
-        CHKERRQ(ISDestroy(&isll));
-        CHKERRQ(ISDestroy(&isll_local));
+        PetscCall(ISDestroy(&isll));
+        PetscCall(ISDestroy(&isll_local));
       }
     }
-    CHKERRQ(VecDestroy(&vec));
+    PetscCall(VecDestroy(&vec));
   }
 
   if (osm->loctype == PC_COMPOSITE_MULTIPLICATIVE) {
     IS      *cis;
     PetscInt c;
 
-    CHKERRQ(PetscMalloc1(osm->n_local_true, &cis));
+    PetscCall(PetscMalloc1(osm->n_local_true, &cis));
     for (c = 0; c < osm->n_local_true; ++c) cis[c] = osm->lis;
-    CHKERRQ(MatCreateSubMatrices(pc->pmat, osm->n_local_true, osm->is, cis, scall, &osm->lmats));
-    CHKERRQ(PetscFree(cis));
+    PetscCall(MatCreateSubMatrices(pc->pmat, osm->n_local_true, osm->is, cis, scall, &osm->lmats));
+    PetscCall(PetscFree(cis));
   }
 
   /* Return control to the user so that the submatrices can be modified (e.g., to apply
      different boundary conditions for the submatrices than for the global problem) */
-  CHKERRQ(PCModifySubMatrices(pc,osm->n_local_true,osm->is,osm->is,osm->pmat,pc->modifysubmatricesP));
+  PetscCall(PCModifySubMatrices(pc,osm->n_local_true,osm->is,osm->is,osm->pmat,pc->modifysubmatricesP));
 
   /*
      Loop over subdomains putting them into local ksp
   */
-  CHKERRQ(KSPGetOptionsPrefix(osm->ksp[0],&prefix));
+  PetscCall(KSPGetOptionsPrefix(osm->ksp[0],&prefix));
   for (i=0; i<osm->n_local_true; i++) {
-    CHKERRQ(KSPSetOperators(osm->ksp[i],osm->pmat[i],osm->pmat[i]));
-    CHKERRQ(MatSetOptionsPrefix(osm->pmat[i],prefix));
+    PetscCall(KSPSetOperators(osm->ksp[i],osm->pmat[i],osm->pmat[i]));
+    PetscCall(MatSetOptionsPrefix(osm->pmat[i],prefix));
     if (!pc->setupcalled) {
-      CHKERRQ(KSPSetFromOptions(osm->ksp[i]));
+      PetscCall(KSPSetFromOptions(osm->ksp[i]));
     }
   }
   PetscFunctionReturn(0);
@@ -437,8 +437,8 @@ static PetscErrorCode PCSetUpOnBlocks_ASM(PC pc)
 
   PetscFunctionBegin;
   for (i=0; i<osm->n_local_true; i++) {
-    CHKERRQ(KSPSetUp(osm->ksp[i]));
-    CHKERRQ(KSPGetConvergedReason(osm->ksp[i],&reason));
+    PetscCall(KSPSetUp(osm->ksp[i]));
+    PetscCall(KSPGetConvergedReason(osm->ksp[i],&reason));
     if (reason == KSP_DIVERGED_PC_FAILED) {
       pc->failedreason = PC_SUBPC_ERROR;
     }
@@ -460,7 +460,7 @@ static PetscErrorCode PCApply_ASM(PC pc,Vec x,Vec y)
   if (!(osm->type & PC_ASM_RESTRICT)) {
     forward = SCATTER_FORWARD_LOCAL;
     /* have to zero the work RHS since scatter may leave some slots empty */
-    CHKERRQ(VecSet(osm->lx, 0.0));
+    PetscCall(VecSet(osm->lx, 0.0));
   }
   if (!(osm->type & PC_ASM_INTERPOLATE)) {
     reverse = SCATTER_REVERSE_LOCAL;
@@ -468,49 +468,49 @@ static PetscErrorCode PCApply_ASM(PC pc,Vec x,Vec y)
 
   if (osm->loctype == PC_COMPOSITE_MULTIPLICATIVE || osm->loctype == PC_COMPOSITE_ADDITIVE) {
     /* zero the global and the local solutions */
-    CHKERRQ(VecSet(y, 0.0));
-    CHKERRQ(VecSet(osm->ly, 0.0));
+    PetscCall(VecSet(y, 0.0));
+    PetscCall(VecSet(osm->ly, 0.0));
 
     /* copy the global RHS to local RHS including the ghost nodes */
-    CHKERRQ(VecScatterBegin(osm->restriction, x, osm->lx, INSERT_VALUES, forward));
-    CHKERRQ(VecScatterEnd(osm->restriction, x, osm->lx, INSERT_VALUES, forward));
+    PetscCall(VecScatterBegin(osm->restriction, x, osm->lx, INSERT_VALUES, forward));
+    PetscCall(VecScatterEnd(osm->restriction, x, osm->lx, INSERT_VALUES, forward));
 
     /* restrict local RHS to the overlapping 0-block RHS */
-    CHKERRQ(VecScatterBegin(osm->lrestriction[0], osm->lx, osm->x[0], INSERT_VALUES, forward));
-    CHKERRQ(VecScatterEnd(osm->lrestriction[0], osm->lx, osm->x[0], INSERT_VALUES, forward));
+    PetscCall(VecScatterBegin(osm->lrestriction[0], osm->lx, osm->x[0], INSERT_VALUES, forward));
+    PetscCall(VecScatterEnd(osm->lrestriction[0], osm->lx, osm->x[0], INSERT_VALUES, forward));
 
     /* do the local solves */
     for (i = 0; i < n_local_true; ++i) {
 
       /* solve the overlapping i-block */
-      CHKERRQ(PetscLogEventBegin(PC_ApplyOnBlocks, osm->ksp[i], osm->x[i], osm->y[i],0));
-      CHKERRQ(KSPSolve(osm->ksp[i], osm->x[i], osm->y[i]));
-      CHKERRQ(KSPCheckSolve(osm->ksp[i], pc, osm->y[i]));
-      CHKERRQ(PetscLogEventEnd(PC_ApplyOnBlocks, osm->ksp[i], osm->x[i], osm->y[i], 0));
+      PetscCall(PetscLogEventBegin(PC_ApplyOnBlocks, osm->ksp[i], osm->x[i], osm->y[i],0));
+      PetscCall(KSPSolve(osm->ksp[i], osm->x[i], osm->y[i]));
+      PetscCall(KSPCheckSolve(osm->ksp[i], pc, osm->y[i]));
+      PetscCall(PetscLogEventEnd(PC_ApplyOnBlocks, osm->ksp[i], osm->x[i], osm->y[i], 0));
 
       if (osm->lprolongation) { /* interpolate the non-overlapping i-block solution to the local solution (only for restrictive additive) */
-        CHKERRQ(VecScatterBegin(osm->lprolongation[i], osm->y[i], osm->ly, ADD_VALUES, forward));
-        CHKERRQ(VecScatterEnd(osm->lprolongation[i], osm->y[i], osm->ly, ADD_VALUES, forward));
+        PetscCall(VecScatterBegin(osm->lprolongation[i], osm->y[i], osm->ly, ADD_VALUES, forward));
+        PetscCall(VecScatterEnd(osm->lprolongation[i], osm->y[i], osm->ly, ADD_VALUES, forward));
       } else { /* interpolate the overlapping i-block solution to the local solution */
-        CHKERRQ(VecScatterBegin(osm->lrestriction[i], osm->y[i], osm->ly, ADD_VALUES, reverse));
-        CHKERRQ(VecScatterEnd(osm->lrestriction[i], osm->y[i], osm->ly, ADD_VALUES, reverse));
+        PetscCall(VecScatterBegin(osm->lrestriction[i], osm->y[i], osm->ly, ADD_VALUES, reverse));
+        PetscCall(VecScatterEnd(osm->lrestriction[i], osm->y[i], osm->ly, ADD_VALUES, reverse));
       }
 
       if (i < n_local_true-1) {
         /* restrict local RHS to the overlapping (i+1)-block RHS */
-        CHKERRQ(VecScatterBegin(osm->lrestriction[i+1], osm->lx, osm->x[i+1], INSERT_VALUES, forward));
-        CHKERRQ(VecScatterEnd(osm->lrestriction[i+1], osm->lx, osm->x[i+1], INSERT_VALUES, forward));
+        PetscCall(VecScatterBegin(osm->lrestriction[i+1], osm->lx, osm->x[i+1], INSERT_VALUES, forward));
+        PetscCall(VecScatterEnd(osm->lrestriction[i+1], osm->lx, osm->x[i+1], INSERT_VALUES, forward));
 
         if (osm->loctype == PC_COMPOSITE_MULTIPLICATIVE) {
           /* update the overlapping (i+1)-block RHS using the current local solution */
-          CHKERRQ(MatMult(osm->lmats[i+1], osm->ly, osm->y[i+1]));
-          CHKERRQ(VecAXPBY(osm->x[i+1],-1.,1., osm->y[i+1]));
+          PetscCall(MatMult(osm->lmats[i+1], osm->ly, osm->y[i+1]));
+          PetscCall(VecAXPBY(osm->x[i+1],-1.,1., osm->y[i+1]));
         }
       }
     }
     /* add the local solution to the global solution including the ghost nodes */
-    CHKERRQ(VecScatterBegin(osm->restriction, osm->ly, y, ADD_VALUES, reverse));
-    CHKERRQ(VecScatterEnd(osm->restriction, osm->ly, y, ADD_VALUES, reverse));
+    PetscCall(VecScatterBegin(osm->restriction, osm->ly, y, ADD_VALUES, reverse));
+    PetscCall(VecScatterEnd(osm->restriction, osm->ly, y, ADD_VALUES, reverse));
   } else SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Invalid local composition type: %s", PCCompositeTypes[osm->loctype]);
   PetscFunctionReturn(0);
 }
@@ -532,59 +532,59 @@ static PetscErrorCode PCMatApply_ASM(PC pc,Mat X,Mat Y)
   if (!(osm->type & PC_ASM_RESTRICT)) {
     forward = SCATTER_FORWARD_LOCAL;
     /* have to zero the work RHS since scatter may leave some slots empty */
-    CHKERRQ(VecSet(osm->lx, 0.0));
+    PetscCall(VecSet(osm->lx, 0.0));
   }
   if (!(osm->type & PC_ASM_INTERPOLATE)) {
     reverse = SCATTER_REVERSE_LOCAL;
   }
-  CHKERRQ(VecGetLocalSize(osm->x[0], &m));
-  CHKERRQ(MatGetSize(X, NULL, &N));
-  CHKERRQ(MatCreateSeqDense(PETSC_COMM_SELF, m, N, NULL, &Z));
+  PetscCall(VecGetLocalSize(osm->x[0], &m));
+  PetscCall(MatGetSize(X, NULL, &N));
+  PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, m, N, NULL, &Z));
   if (osm->loctype == PC_COMPOSITE_MULTIPLICATIVE || osm->loctype == PC_COMPOSITE_ADDITIVE) {
     /* zero the global and the local solutions */
-    CHKERRQ(MatZeroEntries(Y));
-    CHKERRQ(VecSet(osm->ly, 0.0));
+    PetscCall(MatZeroEntries(Y));
+    PetscCall(VecSet(osm->ly, 0.0));
 
     for (i = 0; i < N; ++i) {
-      CHKERRQ(MatDenseGetColumnVecRead(X, i, &x));
+      PetscCall(MatDenseGetColumnVecRead(X, i, &x));
       /* copy the global RHS to local RHS including the ghost nodes */
-      CHKERRQ(VecScatterBegin(osm->restriction, x, osm->lx, INSERT_VALUES, forward));
-      CHKERRQ(VecScatterEnd(osm->restriction, x, osm->lx, INSERT_VALUES, forward));
-      CHKERRQ(MatDenseRestoreColumnVecRead(X, i, &x));
+      PetscCall(VecScatterBegin(osm->restriction, x, osm->lx, INSERT_VALUES, forward));
+      PetscCall(VecScatterEnd(osm->restriction, x, osm->lx, INSERT_VALUES, forward));
+      PetscCall(MatDenseRestoreColumnVecRead(X, i, &x));
 
-      CHKERRQ(MatDenseGetColumnVecWrite(Z, i, &x));
+      PetscCall(MatDenseGetColumnVecWrite(Z, i, &x));
       /* restrict local RHS to the overlapping 0-block RHS */
-      CHKERRQ(VecScatterBegin(osm->lrestriction[0], osm->lx, x, INSERT_VALUES, forward));
-      CHKERRQ(VecScatterEnd(osm->lrestriction[0], osm->lx, x, INSERT_VALUES, forward));
-      CHKERRQ(MatDenseRestoreColumnVecWrite(Z, i, &x));
+      PetscCall(VecScatterBegin(osm->lrestriction[0], osm->lx, x, INSERT_VALUES, forward));
+      PetscCall(VecScatterEnd(osm->lrestriction[0], osm->lx, x, INSERT_VALUES, forward));
+      PetscCall(MatDenseRestoreColumnVecWrite(Z, i, &x));
     }
-    CHKERRQ(MatCreateSeqDense(PETSC_COMM_SELF, m, N, NULL, &W));
+    PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, m, N, NULL, &W));
     /* solve the overlapping 0-block */
-    CHKERRQ(PetscLogEventBegin(PC_ApplyOnBlocks, osm->ksp[0], Z, W, 0));
-    CHKERRQ(KSPMatSolve(osm->ksp[0], Z, W));
-    CHKERRQ(KSPCheckSolve(osm->ksp[0], pc, NULL));
-    CHKERRQ(PetscLogEventEnd(PC_ApplyOnBlocks, osm->ksp[0], Z, W,0));
-    CHKERRQ(MatDestroy(&Z));
+    PetscCall(PetscLogEventBegin(PC_ApplyOnBlocks, osm->ksp[0], Z, W, 0));
+    PetscCall(KSPMatSolve(osm->ksp[0], Z, W));
+    PetscCall(KSPCheckSolve(osm->ksp[0], pc, NULL));
+    PetscCall(PetscLogEventEnd(PC_ApplyOnBlocks, osm->ksp[0], Z, W,0));
+    PetscCall(MatDestroy(&Z));
 
     for (i = 0; i < N; ++i) {
-      CHKERRQ(VecSet(osm->ly, 0.0));
-      CHKERRQ(MatDenseGetColumnVecRead(W, i, &x));
+      PetscCall(VecSet(osm->ly, 0.0));
+      PetscCall(MatDenseGetColumnVecRead(W, i, &x));
       if (osm->lprolongation) { /* interpolate the non-overlapping 0-block solution to the local solution (only for restrictive additive) */
-        CHKERRQ(VecScatterBegin(osm->lprolongation[0], x, osm->ly, ADD_VALUES, forward));
-        CHKERRQ(VecScatterEnd(osm->lprolongation[0], x, osm->ly, ADD_VALUES, forward));
+        PetscCall(VecScatterBegin(osm->lprolongation[0], x, osm->ly, ADD_VALUES, forward));
+        PetscCall(VecScatterEnd(osm->lprolongation[0], x, osm->ly, ADD_VALUES, forward));
       } else { /* interpolate the overlapping 0-block solution to the local solution */
-        CHKERRQ(VecScatterBegin(osm->lrestriction[0], x, osm->ly, ADD_VALUES, reverse));
-        CHKERRQ(VecScatterEnd(osm->lrestriction[0], x, osm->ly, ADD_VALUES, reverse));
+        PetscCall(VecScatterBegin(osm->lrestriction[0], x, osm->ly, ADD_VALUES, reverse));
+        PetscCall(VecScatterEnd(osm->lrestriction[0], x, osm->ly, ADD_VALUES, reverse));
       }
-      CHKERRQ(MatDenseRestoreColumnVecRead(W, i, &x));
+      PetscCall(MatDenseRestoreColumnVecRead(W, i, &x));
 
-      CHKERRQ(MatDenseGetColumnVecWrite(Y, i, &x));
+      PetscCall(MatDenseGetColumnVecWrite(Y, i, &x));
       /* add the local solution to the global solution including the ghost nodes */
-      CHKERRQ(VecScatterBegin(osm->restriction, osm->ly, x, ADD_VALUES, reverse));
-      CHKERRQ(VecScatterEnd(osm->restriction, osm->ly, x, ADD_VALUES, reverse));
-      CHKERRQ(MatDenseRestoreColumnVecWrite(Y, i, &x));
+      PetscCall(VecScatterBegin(osm->restriction, osm->ly, x, ADD_VALUES, reverse));
+      PetscCall(VecScatterEnd(osm->restriction, osm->ly, x, ADD_VALUES, reverse));
+      PetscCall(MatDenseRestoreColumnVecWrite(Y, i, &x));
     }
-    CHKERRQ(MatDestroy(&W));
+    PetscCall(MatDestroy(&W));
   } else SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Invalid local composition type: %s", PCCompositeTypes[osm->loctype]);
   PetscFunctionReturn(0);
 }
@@ -607,48 +607,48 @@ static PetscErrorCode PCApplyTranspose_ASM(PC pc,Vec x,Vec y)
   if (!(osm->type & PC_ASM_INTERPOLATE)) {
     forward = SCATTER_FORWARD_LOCAL;
     /* have to zero the work RHS since scatter may leave some slots empty */
-    CHKERRQ(VecSet(osm->lx, 0.0));
+    PetscCall(VecSet(osm->lx, 0.0));
   }
   if (!(osm->type & PC_ASM_RESTRICT)) reverse = SCATTER_REVERSE_LOCAL;
 
   /* zero the global and the local solutions */
-  CHKERRQ(VecSet(y, 0.0));
-  CHKERRQ(VecSet(osm->ly, 0.0));
+  PetscCall(VecSet(y, 0.0));
+  PetscCall(VecSet(osm->ly, 0.0));
 
   /* Copy the global RHS to local RHS including the ghost nodes */
-  CHKERRQ(VecScatterBegin(osm->restriction, x, osm->lx, INSERT_VALUES, forward));
-  CHKERRQ(VecScatterEnd(osm->restriction, x, osm->lx, INSERT_VALUES, forward));
+  PetscCall(VecScatterBegin(osm->restriction, x, osm->lx, INSERT_VALUES, forward));
+  PetscCall(VecScatterEnd(osm->restriction, x, osm->lx, INSERT_VALUES, forward));
 
   /* Restrict local RHS to the overlapping 0-block RHS */
-  CHKERRQ(VecScatterBegin(osm->lrestriction[0], osm->lx, osm->x[0], INSERT_VALUES, forward));
-  CHKERRQ(VecScatterEnd(osm->lrestriction[0], osm->lx, osm->x[0], INSERT_VALUES, forward));
+  PetscCall(VecScatterBegin(osm->lrestriction[0], osm->lx, osm->x[0], INSERT_VALUES, forward));
+  PetscCall(VecScatterEnd(osm->lrestriction[0], osm->lx, osm->x[0], INSERT_VALUES, forward));
 
   /* do the local solves */
   for (i = 0; i < n_local_true; ++i) {
 
     /* solve the overlapping i-block */
-    CHKERRQ(PetscLogEventBegin(PC_ApplyOnBlocks,osm->ksp[i],osm->x[i],osm->y[i],0));
-    CHKERRQ(KSPSolveTranspose(osm->ksp[i], osm->x[i], osm->y[i]));
-    CHKERRQ(KSPCheckSolve(osm->ksp[i],pc,osm->y[i]));
-    CHKERRQ(PetscLogEventEnd(PC_ApplyOnBlocks,osm->ksp[i],osm->x[i],osm->y[i],0));
+    PetscCall(PetscLogEventBegin(PC_ApplyOnBlocks,osm->ksp[i],osm->x[i],osm->y[i],0));
+    PetscCall(KSPSolveTranspose(osm->ksp[i], osm->x[i], osm->y[i]));
+    PetscCall(KSPCheckSolve(osm->ksp[i],pc,osm->y[i]));
+    PetscCall(PetscLogEventEnd(PC_ApplyOnBlocks,osm->ksp[i],osm->x[i],osm->y[i],0));
 
     if (osm->lprolongation) { /* interpolate the non-overlapping i-block solution to the local solution */
-      CHKERRQ(VecScatterBegin(osm->lprolongation[i], osm->y[i], osm->ly, ADD_VALUES, forward));
-      CHKERRQ(VecScatterEnd(osm->lprolongation[i], osm->y[i], osm->ly, ADD_VALUES, forward));
+      PetscCall(VecScatterBegin(osm->lprolongation[i], osm->y[i], osm->ly, ADD_VALUES, forward));
+      PetscCall(VecScatterEnd(osm->lprolongation[i], osm->y[i], osm->ly, ADD_VALUES, forward));
     } else { /* interpolate the overlapping i-block solution to the local solution */
-      CHKERRQ(VecScatterBegin(osm->lrestriction[i], osm->y[i], osm->ly, ADD_VALUES, reverse));
-      CHKERRQ(VecScatterEnd(osm->lrestriction[i], osm->y[i], osm->ly, ADD_VALUES, reverse));
+      PetscCall(VecScatterBegin(osm->lrestriction[i], osm->y[i], osm->ly, ADD_VALUES, reverse));
+      PetscCall(VecScatterEnd(osm->lrestriction[i], osm->y[i], osm->ly, ADD_VALUES, reverse));
     }
 
     if (i < n_local_true-1) {
       /* Restrict local RHS to the overlapping (i+1)-block RHS */
-      CHKERRQ(VecScatterBegin(osm->lrestriction[i+1], osm->lx, osm->x[i+1], INSERT_VALUES, forward));
-      CHKERRQ(VecScatterEnd(osm->lrestriction[i+1], osm->lx, osm->x[i+1], INSERT_VALUES, forward));
+      PetscCall(VecScatterBegin(osm->lrestriction[i+1], osm->lx, osm->x[i+1], INSERT_VALUES, forward));
+      PetscCall(VecScatterEnd(osm->lrestriction[i+1], osm->lx, osm->x[i+1], INSERT_VALUES, forward));
     }
   }
   /* Add the local solution to the global solution including the ghost nodes */
-  CHKERRQ(VecScatterBegin(osm->restriction, osm->ly, y, ADD_VALUES, reverse));
-  CHKERRQ(VecScatterEnd(osm->restriction, osm->ly, y, ADD_VALUES, reverse));
+  PetscCall(VecScatterBegin(osm->restriction, osm->ly, y, ADD_VALUES, reverse));
+  PetscCall(VecScatterEnd(osm->restriction, osm->ly, y, ADD_VALUES, reverse));
 
   PetscFunctionReturn(0);
 
@@ -662,37 +662,37 @@ static PetscErrorCode PCReset_ASM(PC pc)
   PetscFunctionBegin;
   if (osm->ksp) {
     for (i=0; i<osm->n_local_true; i++) {
-      CHKERRQ(KSPReset(osm->ksp[i]));
+      PetscCall(KSPReset(osm->ksp[i]));
     }
   }
   if (osm->pmat) {
     if (osm->n_local_true > 0) {
-      CHKERRQ(MatDestroySubMatrices(osm->n_local_true,&osm->pmat));
+      PetscCall(MatDestroySubMatrices(osm->n_local_true,&osm->pmat));
     }
   }
   if (osm->lrestriction) {
-    CHKERRQ(VecScatterDestroy(&osm->restriction));
+    PetscCall(VecScatterDestroy(&osm->restriction));
     for (i=0; i<osm->n_local_true; i++) {
-      CHKERRQ(VecScatterDestroy(&osm->lrestriction[i]));
-      if (osm->lprolongation) CHKERRQ(VecScatterDestroy(&osm->lprolongation[i]));
-      CHKERRQ(VecDestroy(&osm->x[i]));
-      CHKERRQ(VecDestroy(&osm->y[i]));
+      PetscCall(VecScatterDestroy(&osm->lrestriction[i]));
+      if (osm->lprolongation) PetscCall(VecScatterDestroy(&osm->lprolongation[i]));
+      PetscCall(VecDestroy(&osm->x[i]));
+      PetscCall(VecDestroy(&osm->y[i]));
     }
-    CHKERRQ(PetscFree(osm->lrestriction));
-    if (osm->lprolongation) CHKERRQ(PetscFree(osm->lprolongation));
-    CHKERRQ(PetscFree(osm->x));
-    CHKERRQ(PetscFree(osm->y));
+    PetscCall(PetscFree(osm->lrestriction));
+    if (osm->lprolongation) PetscCall(PetscFree(osm->lprolongation));
+    PetscCall(PetscFree(osm->x));
+    PetscCall(PetscFree(osm->y));
 
   }
-  CHKERRQ(PCASMDestroySubdomains(osm->n_local_true,osm->is,osm->is_local));
-  CHKERRQ(ISDestroy(&osm->lis));
-  CHKERRQ(VecDestroy(&osm->lx));
-  CHKERRQ(VecDestroy(&osm->ly));
+  PetscCall(PCASMDestroySubdomains(osm->n_local_true,osm->is,osm->is_local));
+  PetscCall(ISDestroy(&osm->lis));
+  PetscCall(VecDestroy(&osm->lx));
+  PetscCall(VecDestroy(&osm->ly));
   if (osm->loctype == PC_COMPOSITE_MULTIPLICATIVE) {
-    CHKERRQ(MatDestroyMatrices(osm->n_local_true, &osm->lmats));
+    PetscCall(MatDestroyMatrices(osm->n_local_true, &osm->lmats));
   }
 
-  CHKERRQ(PetscFree(osm->sub_mat_type));
+  PetscCall(PetscFree(osm->sub_mat_type));
 
   osm->is       = NULL;
   osm->is_local = NULL;
@@ -705,26 +705,26 @@ static PetscErrorCode PCDestroy_ASM(PC pc)
   PetscInt       i;
 
   PetscFunctionBegin;
-  CHKERRQ(PCReset_ASM(pc));
+  PetscCall(PCReset_ASM(pc));
   if (osm->ksp) {
     for (i=0; i<osm->n_local_true; i++) {
-      CHKERRQ(KSPDestroy(&osm->ksp[i]));
+      PetscCall(KSPDestroy(&osm->ksp[i]));
     }
-    CHKERRQ(PetscFree(osm->ksp));
+    PetscCall(PetscFree(osm->ksp));
   }
-  CHKERRQ(PetscFree(pc->data));
+  PetscCall(PetscFree(pc->data));
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCASMSetLocalSubdomains_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCASMSetTotalSubdomains_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCASMSetOverlap_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCASMSetType_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCASMGetType_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCASMSetLocalType_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCASMGetLocalType_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCASMSetSortIndices_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCASMGetSubKSP_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCASMGetSubMatType_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCASMSetSubMatType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCASMSetLocalSubdomains_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCASMSetTotalSubdomains_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCASMSetOverlap_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCASMSetType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCASMGetType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCASMSetLocalType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCASMGetLocalType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCASMSetSortIndices_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCASMGetSubKSP_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCASMGetSubMatType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCASMSetSubMatType_C",NULL));
   PetscFunctionReturn(0);
 }
 
@@ -738,34 +738,34 @@ static PetscErrorCode PCSetFromOptions_ASM(PetscOptionItems *PetscOptionsObject,
   char           sub_mat_type[256];
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"Additive Schwarz options"));
-  CHKERRQ(PetscOptionsBool("-pc_asm_dm_subdomains","Use DMCreateDomainDecomposition() to define subdomains","PCASMSetDMSubdomains",osm->dm_subdomains,&osm->dm_subdomains,&flg));
-  CHKERRQ(PetscOptionsInt("-pc_asm_blocks","Number of subdomains","PCASMSetTotalSubdomains",osm->n,&blocks,&flg));
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"Additive Schwarz options"));
+  PetscCall(PetscOptionsBool("-pc_asm_dm_subdomains","Use DMCreateDomainDecomposition() to define subdomains","PCASMSetDMSubdomains",osm->dm_subdomains,&osm->dm_subdomains,&flg));
+  PetscCall(PetscOptionsInt("-pc_asm_blocks","Number of subdomains","PCASMSetTotalSubdomains",osm->n,&blocks,&flg));
   if (flg) {
-    CHKERRQ(PCASMSetTotalSubdomains(pc,blocks,NULL,NULL));
+    PetscCall(PCASMSetTotalSubdomains(pc,blocks,NULL,NULL));
     osm->dm_subdomains = PETSC_FALSE;
   }
-  CHKERRQ(PetscOptionsInt("-pc_asm_local_blocks","Number of local subdomains","PCASMSetLocalSubdomains",osm->n_local_true,&blocks,&flg));
+  PetscCall(PetscOptionsInt("-pc_asm_local_blocks","Number of local subdomains","PCASMSetLocalSubdomains",osm->n_local_true,&blocks,&flg));
   if (flg) {
-    CHKERRQ(PCASMSetLocalSubdomains(pc,blocks,NULL,NULL));
+    PetscCall(PCASMSetLocalSubdomains(pc,blocks,NULL,NULL));
     osm->dm_subdomains = PETSC_FALSE;
   }
-  CHKERRQ(PetscOptionsInt("-pc_asm_overlap","Number of grid points overlap","PCASMSetOverlap",osm->overlap,&ovl,&flg));
+  PetscCall(PetscOptionsInt("-pc_asm_overlap","Number of grid points overlap","PCASMSetOverlap",osm->overlap,&ovl,&flg));
   if (flg) {
-    CHKERRQ(PCASMSetOverlap(pc,ovl));
+    PetscCall(PCASMSetOverlap(pc,ovl));
     osm->dm_subdomains = PETSC_FALSE;
   }
   flg  = PETSC_FALSE;
-  CHKERRQ(PetscOptionsEnum("-pc_asm_type","Type of restriction/extension","PCASMSetType",PCASMTypes,(PetscEnum)osm->type,(PetscEnum*)&asmtype,&flg));
-  if (flg) CHKERRQ(PCASMSetType(pc,asmtype));
+  PetscCall(PetscOptionsEnum("-pc_asm_type","Type of restriction/extension","PCASMSetType",PCASMTypes,(PetscEnum)osm->type,(PetscEnum*)&asmtype,&flg));
+  if (flg) PetscCall(PCASMSetType(pc,asmtype));
   flg  = PETSC_FALSE;
-  CHKERRQ(PetscOptionsEnum("-pc_asm_local_type","Type of local solver composition","PCASMSetLocalType",PCCompositeTypes,(PetscEnum)osm->loctype,(PetscEnum*)&loctype,&flg));
-  if (flg) CHKERRQ(PCASMSetLocalType(pc,loctype));
-  CHKERRQ(PetscOptionsFList("-pc_asm_sub_mat_type","Subsolve Matrix Type","PCASMSetSubMatType",MatList,NULL,sub_mat_type,256,&flg));
+  PetscCall(PetscOptionsEnum("-pc_asm_local_type","Type of local solver composition","PCASMSetLocalType",PCCompositeTypes,(PetscEnum)osm->loctype,(PetscEnum*)&loctype,&flg));
+  if (flg) PetscCall(PCASMSetLocalType(pc,loctype));
+  PetscCall(PetscOptionsFList("-pc_asm_sub_mat_type","Subsolve Matrix Type","PCASMSetSubMatType",MatList,NULL,sub_mat_type,256,&flg));
   if (flg) {
-    CHKERRQ(PCASMSetSubMatType(pc,sub_mat_type));
+    PetscCall(PCASMSetSubMatType(pc,sub_mat_type));
   }
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -782,33 +782,33 @@ static PetscErrorCode  PCASMSetLocalSubdomains_ASM(PC pc,PetscInt n,IS is[],IS i
 
   if (!pc->setupcalled) {
     if (is) {
-      for (i=0; i<n; i++) CHKERRQ(PetscObjectReference((PetscObject)is[i]));
+      for (i=0; i<n; i++) PetscCall(PetscObjectReference((PetscObject)is[i]));
     }
     if (is_local) {
-      for (i=0; i<n; i++) CHKERRQ(PetscObjectReference((PetscObject)is_local[i]));
+      for (i=0; i<n; i++) PetscCall(PetscObjectReference((PetscObject)is_local[i]));
     }
-    CHKERRQ(PCASMDestroySubdomains(osm->n_local_true,osm->is,osm->is_local));
+    PetscCall(PCASMDestroySubdomains(osm->n_local_true,osm->is,osm->is_local));
 
     osm->n_local_true = n;
     osm->is           = NULL;
     osm->is_local     = NULL;
     if (is) {
-      CHKERRQ(PetscMalloc1(n,&osm->is));
+      PetscCall(PetscMalloc1(n,&osm->is));
       for (i=0; i<n; i++) osm->is[i] = is[i];
       /* Flag indicating that the user has set overlapping subdomains so PCASM should not increase their size. */
       osm->overlap = -1;
     }
     if (is_local) {
-      CHKERRQ(PetscMalloc1(n,&osm->is_local));
+      PetscCall(PetscMalloc1(n,&osm->is_local));
       for (i=0; i<n; i++) osm->is_local[i] = is_local[i];
       if (!is) {
-        CHKERRQ(PetscMalloc1(osm->n_local_true,&osm->is));
+        PetscCall(PetscMalloc1(osm->n_local_true,&osm->is));
         for (i=0; i<osm->n_local_true; i++) {
           if (osm->overlap > 0) { /* With positive overlap, osm->is[i] will be modified */
-            CHKERRQ(ISDuplicate(osm->is_local[i],&osm->is[i]));
-            CHKERRQ(ISCopy(osm->is_local[i],osm->is[i]));
+            PetscCall(ISDuplicate(osm->is_local[i],&osm->is[i]));
+            PetscCall(ISCopy(osm->is_local[i],osm->is[i]));
           } else {
-            CHKERRQ(PetscObjectReference((PetscObject)osm->is_local[i]));
+            PetscCall(PetscObjectReference((PetscObject)osm->is_local[i]));
             osm->is[i] = osm->is_local[i];
           }
         }
@@ -831,13 +831,13 @@ static PetscErrorCode  PCASMSetTotalSubdomains_ASM(PC pc,PetscInt N,IS *is,IS *i
   /*
      Split the subdomains equally among all processors
   */
-  CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank));
-  CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size));
   n    = N/size + ((N % size) > rank);
   PetscCheck(n,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Process %d must have at least one block: total processors %d total blocks %D",(int)rank,(int)size,N);
   PetscCheckFalse(pc->setupcalled && n != osm->n_local_true,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"PCASMSetTotalSubdomains() should be called before PCSetUp().");
   if (!pc->setupcalled) {
-    CHKERRQ(PCASMDestroySubdomains(osm->n_local_true,osm->is,osm->is_local));
+    PetscCall(PCASMDestroySubdomains(osm->n_local_true,osm->is,osm->is_local));
 
     osm->n_local_true = n;
     osm->is           = NULL;
@@ -913,7 +913,7 @@ static PetscErrorCode  PCASMGetSubKSP_ASM(PC pc,PetscInt *n_local,PetscInt *firs
 
   if (n_local) *n_local = osm->n_local_true;
   if (first_local) {
-    CHKERRMPI(MPI_Scan(&osm->n_local_true,first_local,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)pc)));
+    PetscCallMPI(MPI_Scan(&osm->n_local_true,first_local,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)pc)));
     *first_local -= osm->n_local_true;
   }
   if (ksp) *ksp   = osm->ksp;
@@ -937,8 +937,8 @@ static PetscErrorCode PCASMSetSubMatType_ASM(PC pc,MatType sub_mat_type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  CHKERRQ(PetscFree(osm->sub_mat_type));
-  CHKERRQ(PetscStrallocpy(sub_mat_type,(char**)&osm->sub_mat_type));
+  PetscCall(PetscFree(osm->sub_mat_type));
+  PetscCall(PetscStrallocpy(sub_mat_type,(char**)&osm->sub_mat_type));
   PetscFunctionReturn(0);
 }
 
@@ -982,7 +982,7 @@ PetscErrorCode  PCASMSetLocalSubdomains(PC pc,PetscInt n,IS is[],IS is_local[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  CHKERRQ(PetscTryMethod(pc,"PCASMSetLocalSubdomains_C",(PC,PetscInt,IS[],IS[]),(pc,n,is,is_local)));
+  PetscCall(PetscTryMethod(pc,"PCASMSetLocalSubdomains_C",(PC,PetscInt,IS[],IS[]),(pc,n,is,is_local)));
   PetscFunctionReturn(0);
 }
 
@@ -1027,7 +1027,7 @@ PetscErrorCode  PCASMSetTotalSubdomains(PC pc,PetscInt N,IS is[],IS is_local[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  CHKERRQ(PetscTryMethod(pc,"PCASMSetTotalSubdomains_C",(PC,PetscInt,IS[],IS[]),(pc,N,is,is_local)));
+  PetscCall(PetscTryMethod(pc,"PCASMSetTotalSubdomains_C",(PC,PetscInt,IS[],IS[]),(pc,N,is,is_local)));
   PetscFunctionReturn(0);
 }
 
@@ -1076,7 +1076,7 @@ PetscErrorCode  PCASMSetOverlap(PC pc,PetscInt ovl)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveInt(pc,ovl,2);
-  CHKERRQ(PetscTryMethod(pc,"PCASMSetOverlap_C",(PC,PetscInt),(pc,ovl)));
+  PetscCall(PetscTryMethod(pc,"PCASMSetOverlap_C",(PC,PetscInt),(pc,ovl)));
   PetscFunctionReturn(0);
 }
 
@@ -1113,7 +1113,7 @@ PetscErrorCode  PCASMSetType(PC pc,PCASMType type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveEnum(pc,type,2);
-  CHKERRQ(PetscTryMethod(pc,"PCASMSetType_C",(PC,PCASMType),(pc,type)));
+  PetscCall(PetscTryMethod(pc,"PCASMSetType_C",(PC,PCASMType),(pc,type)));
   PetscFunctionReturn(0);
 }
 
@@ -1148,7 +1148,7 @@ PetscErrorCode  PCASMGetType(PC pc,PCASMType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  CHKERRQ(PetscUseMethod(pc,"PCASMGetType_C",(PC,PCASMType*),(pc,type)));
+  PetscCall(PetscUseMethod(pc,"PCASMGetType_C",(PC,PCASMType*),(pc,type)));
   PetscFunctionReturn(0);
 }
 
@@ -1177,7 +1177,7 @@ PetscErrorCode PCASMSetLocalType(PC pc, PCCompositeType type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(pc, type, 2);
-  CHKERRQ(PetscTryMethod(pc, "PCASMSetLocalType_C", (PC, PCCompositeType), (pc, type)));
+  PetscCall(PetscTryMethod(pc, "PCASMSetLocalType_C", (PC, PCCompositeType), (pc, type)));
   PetscFunctionReturn(0);
 }
 
@@ -1208,7 +1208,7 @@ PetscErrorCode PCASMGetLocalType(PC pc, PCCompositeType *type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidPointer(type, 2);
-  CHKERRQ(PetscUseMethod(pc, "PCASMGetLocalType_C", (PC, PCCompositeType *), (pc, type)));
+  PetscCall(PetscUseMethod(pc, "PCASMGetLocalType_C", (PC, PCCompositeType *), (pc, type)));
   PetscFunctionReturn(0);
 }
 
@@ -1231,7 +1231,7 @@ PetscErrorCode  PCASMSetSortIndices(PC pc,PetscBool doSort)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveBool(pc,doSort,2);
-  CHKERRQ(PetscTryMethod(pc,"PCASMSetSortIndices_C",(PC,PetscBool),(pc,doSort)));
+  PetscCall(PetscTryMethod(pc,"PCASMSetSortIndices_C",(PC,PetscBool),(pc,doSort)));
   PetscFunctionReturn(0);
 }
 
@@ -1267,7 +1267,7 @@ PetscErrorCode  PCASMGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local,KSP
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  CHKERRQ(PetscUseMethod(pc,"PCASMGetSubKSP_C",(PC,PetscInt*,PetscInt*,KSP **),(pc,n_local,first_local,ksp)));
+  PetscCall(PetscUseMethod(pc,"PCASMGetSubKSP_C",(PC,PetscInt*,PetscInt*,KSP **),(pc,n_local,first_local,ksp)));
   PetscFunctionReturn(0);
 }
 
@@ -1316,7 +1316,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_ASM(PC pc)
   PC_ASM         *osm;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNewLog(pc,&osm));
+  PetscCall(PetscNewLog(pc,&osm));
 
   osm->n                 = PETSC_DECIDE;
   osm->n_local           = 0;
@@ -1350,17 +1350,17 @@ PETSC_EXTERN PetscErrorCode PCCreate_ASM(PC pc)
   pc->ops->view            = PCView_ASM;
   pc->ops->applyrichardson = NULL;
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCASMSetLocalSubdomains_C",PCASMSetLocalSubdomains_ASM));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCASMSetTotalSubdomains_C",PCASMSetTotalSubdomains_ASM));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCASMSetOverlap_C",PCASMSetOverlap_ASM));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCASMSetType_C",PCASMSetType_ASM));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCASMGetType_C",PCASMGetType_ASM));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCASMSetLocalType_C",PCASMSetLocalType_ASM));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCASMGetLocalType_C",PCASMGetLocalType_ASM));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCASMSetSortIndices_C",PCASMSetSortIndices_ASM));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCASMGetSubKSP_C",PCASMGetSubKSP_ASM));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCASMGetSubMatType_C",PCASMGetSubMatType_ASM));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCASMSetSubMatType_C",PCASMSetSubMatType_ASM));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCASMSetLocalSubdomains_C",PCASMSetLocalSubdomains_ASM));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCASMSetTotalSubdomains_C",PCASMSetTotalSubdomains_ASM));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCASMSetOverlap_C",PCASMSetOverlap_ASM));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCASMSetType_C",PCASMSetType_ASM));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCASMGetType_C",PCASMGetType_ASM));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCASMSetLocalType_C",PCASMSetLocalType_ASM));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCASMGetLocalType_C",PCASMGetLocalType_ASM));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCASMSetSortIndices_C",PCASMSetSortIndices_ASM));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCASMGetSubKSP_C",PCASMGetSubKSP_ASM));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCASMGetSubMatType_C",PCASMGetSubMatType_ASM));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCASMSetSubMatType_C",PCASMSetSubMatType_ASM));
   PetscFunctionReturn(0);
 }
 
@@ -1401,34 +1401,34 @@ PetscErrorCode  PCASMCreateSubdomains(Mat A, PetscInt n, IS* outis[])
   PetscCheckFalse(n < 1,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"number of local blocks must be > 0, n = %D",n);
 
   /* Get prefix, row distribution, and block size */
-  CHKERRQ(MatGetOptionsPrefix(A,&prefix));
-  CHKERRQ(MatGetOwnershipRange(A,&rstart,&rend));
-  CHKERRQ(MatGetBlockSize(A,&bs));
+  PetscCall(MatGetOptionsPrefix(A,&prefix));
+  PetscCall(MatGetOwnershipRange(A,&rstart,&rend));
+  PetscCall(MatGetBlockSize(A,&bs));
   PetscCheckFalse(rstart/bs*bs != rstart || rend/bs*bs != rend,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"bad row distribution [%D,%D) for matrix block size %D",rstart,rend,bs);
 
   /* Get diagonal block from matrix if possible */
-  CHKERRQ(MatHasOperation(A,MATOP_GET_DIAGONAL_BLOCK,&hasop));
+  PetscCall(MatHasOperation(A,MATOP_GET_DIAGONAL_BLOCK,&hasop));
   if (hasop) {
-    CHKERRQ(MatGetDiagonalBlock(A,&Ad));
+    PetscCall(MatGetDiagonalBlock(A,&Ad));
   }
   if (Ad) {
-    CHKERRQ(PetscObjectBaseTypeCompare((PetscObject)Ad,MATSEQBAIJ,&isbaij));
-    if (!isbaij) CHKERRQ(PetscObjectBaseTypeCompare((PetscObject)Ad,MATSEQSBAIJ,&isbaij));
+    PetscCall(PetscObjectBaseTypeCompare((PetscObject)Ad,MATSEQBAIJ,&isbaij));
+    if (!isbaij) PetscCall(PetscObjectBaseTypeCompare((PetscObject)Ad,MATSEQSBAIJ,&isbaij));
   }
   if (Ad && n > 1) {
     PetscBool match,done;
     /* Try to setup a good matrix partitioning if available */
-    CHKERRQ(MatPartitioningCreate(PETSC_COMM_SELF,&mpart));
-    CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject)mpart,prefix));
-    CHKERRQ(MatPartitioningSetFromOptions(mpart));
-    CHKERRQ(PetscObjectTypeCompare((PetscObject)mpart,MATPARTITIONINGCURRENT,&match));
+    PetscCall(MatPartitioningCreate(PETSC_COMM_SELF,&mpart));
+    PetscCall(PetscObjectSetOptionsPrefix((PetscObject)mpart,prefix));
+    PetscCall(MatPartitioningSetFromOptions(mpart));
+    PetscCall(PetscObjectTypeCompare((PetscObject)mpart,MATPARTITIONINGCURRENT,&match));
     if (!match) {
-      CHKERRQ(PetscObjectTypeCompare((PetscObject)mpart,MATPARTITIONINGSQUARE,&match));
+      PetscCall(PetscObjectTypeCompare((PetscObject)mpart,MATPARTITIONINGSQUARE,&match));
     }
     if (!match) { /* assume a "good" partitioner is available */
       PetscInt       na;
       const PetscInt *ia,*ja;
-      CHKERRQ(MatGetRowIJ(Ad,0,PETSC_TRUE,isbaij,&na,&ia,&ja,&done));
+      PetscCall(MatGetRowIJ(Ad,0,PETSC_TRUE,isbaij,&na,&ia,&ja,&done));
       if (done) {
         /* Build adjacency matrix by hand. Unfortunately a call to
            MatConvert(Ad,MATMPIADJ,MAT_INITIAL_MATRIX,&adj) will
@@ -1447,8 +1447,8 @@ PetscErrorCode  PCASMCreateSubdomains(Mat A, PetscInt n, IS* outis[])
           }
           nnz += len;
         }
-        CHKERRQ(PetscMalloc1(na+1,&iia));
-        CHKERRQ(PetscMalloc1(nnz,&jja));
+        PetscCall(PetscMalloc1(na+1,&iia));
+        PetscCall(PetscMalloc1(nnz,&jja));
         nnz    = 0;
         iia[0] = 0;
         for (i=0; i<na; i++) { /* fill adjacency */
@@ -1464,20 +1464,20 @@ PetscErrorCode  PCASMCreateSubdomains(Mat A, PetscInt n, IS* outis[])
           iia[i+1] = nnz;
         }
         /* Partitioning of the adjacency matrix */
-        CHKERRQ(MatCreateMPIAdj(PETSC_COMM_SELF,na,na,iia,jja,NULL,&adj));
-        CHKERRQ(MatPartitioningSetAdjacency(mpart,adj));
-        CHKERRQ(MatPartitioningSetNParts(mpart,n));
-        CHKERRQ(MatPartitioningApply(mpart,&ispart));
-        CHKERRQ(ISPartitioningToNumbering(ispart,&isnumb));
-        CHKERRQ(MatDestroy(&adj));
+        PetscCall(MatCreateMPIAdj(PETSC_COMM_SELF,na,na,iia,jja,NULL,&adj));
+        PetscCall(MatPartitioningSetAdjacency(mpart,adj));
+        PetscCall(MatPartitioningSetNParts(mpart,n));
+        PetscCall(MatPartitioningApply(mpart,&ispart));
+        PetscCall(ISPartitioningToNumbering(ispart,&isnumb));
+        PetscCall(MatDestroy(&adj));
         foundpart = PETSC_TRUE;
       }
-      CHKERRQ(MatRestoreRowIJ(Ad,0,PETSC_TRUE,isbaij,&na,&ia,&ja,&done));
+      PetscCall(MatRestoreRowIJ(Ad,0,PETSC_TRUE,isbaij,&na,&ia,&ja,&done));
     }
-    CHKERRQ(MatPartitioningDestroy(&mpart));
+    PetscCall(MatPartitioningDestroy(&mpart));
   }
 
-  CHKERRQ(PetscMalloc1(n,&is));
+  PetscCall(PetscMalloc1(n,&is));
   *outis = is;
 
   if (!foundpart) {
@@ -1488,7 +1488,7 @@ PetscErrorCode  PCASMCreateSubdomains(Mat A, PetscInt n, IS* outis[])
     PetscInt start = rstart;
     for (i=0; i<n; i++) {
       PetscInt count = (mbs/n + ((mbs % n) > i)) * bs;
-      CHKERRQ(ISCreateStride(PETSC_COMM_SELF,count,start,1,&is[i]));
+      PetscCall(ISCreateStride(PETSC_COMM_SELF,count,start,1,&is[i]));
       start += count;
     }
 
@@ -1499,24 +1499,24 @@ PetscErrorCode  PCASMCreateSubdomains(Mat A, PetscInt n, IS* outis[])
     const PetscInt *numbering;
     PetscInt       *count,nidx,*indices,*newidx,start=0;
     /* Get node count in each partition */
-    CHKERRQ(PetscMalloc1(n,&count));
-    CHKERRQ(ISPartitioningCount(ispart,n,count));
+    PetscCall(PetscMalloc1(n,&count));
+    PetscCall(ISPartitioningCount(ispart,n,count));
     if (isbaij && bs > 1) { /* adjust for the block-aij case */
       for (i=0; i<n; i++) count[i] *= bs;
     }
     /* Build indices from node numbering */
-    CHKERRQ(ISGetLocalSize(isnumb,&nidx));
-    CHKERRQ(PetscMalloc1(nidx,&indices));
+    PetscCall(ISGetLocalSize(isnumb,&nidx));
+    PetscCall(PetscMalloc1(nidx,&indices));
     for (i=0; i<nidx; i++) indices[i] = i; /* needs to be initialized */
-    CHKERRQ(ISGetIndices(isnumb,&numbering));
-    CHKERRQ(PetscSortIntWithPermutation(nidx,numbering,indices));
-    CHKERRQ(ISRestoreIndices(isnumb,&numbering));
+    PetscCall(ISGetIndices(isnumb,&numbering));
+    PetscCall(PetscSortIntWithPermutation(nidx,numbering,indices));
+    PetscCall(ISRestoreIndices(isnumb,&numbering));
     if (isbaij && bs > 1) { /* adjust for the block-aij case */
-      CHKERRQ(PetscMalloc1(nidx*bs,&newidx));
+      PetscCall(PetscMalloc1(nidx*bs,&newidx));
       for (i=0; i<nidx; i++) {
         for (j=0; j<bs; j++) newidx[i*bs+j] = indices[i]*bs + j;
       }
-      CHKERRQ(PetscFree(indices));
+      PetscCall(PetscFree(indices));
       nidx   *= bs;
       indices = newidx;
     }
@@ -1525,15 +1525,15 @@ PetscErrorCode  PCASMCreateSubdomains(Mat A, PetscInt n, IS* outis[])
 
     /* Build the index sets for each block */
     for (i=0; i<n; i++) {
-      CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,count[i],&indices[start],PETSC_COPY_VALUES,&is[i]));
-      CHKERRQ(ISSort(is[i]));
+      PetscCall(ISCreateGeneral(PETSC_COMM_SELF,count[i],&indices[start],PETSC_COPY_VALUES,&is[i]));
+      PetscCall(ISSort(is[i]));
       start += count[i];
     }
 
-    CHKERRQ(PetscFree(count));
-    CHKERRQ(PetscFree(indices));
-    CHKERRQ(ISDestroy(&isnumb));
-    CHKERRQ(ISDestroy(&ispart));
+    PetscCall(PetscFree(count));
+    PetscCall(PetscFree(indices));
+    PetscCall(ISDestroy(&isnumb));
+    PetscCall(ISDestroy(&ispart));
 
   }
   PetscFunctionReturn(0);
@@ -1563,13 +1563,13 @@ PetscErrorCode  PCASMDestroySubdomains(PetscInt n, IS is[], IS is_local[])
   if (n <= 0) PetscFunctionReturn(0);
   if (is) {
     PetscValidPointer(is,2);
-    for (i=0; i<n; i++) CHKERRQ(ISDestroy(&is[i]));
-    CHKERRQ(PetscFree(is));
+    for (i=0; i<n; i++) PetscCall(ISDestroy(&is[i]));
+    PetscCall(PetscFree(is));
   }
   if (is_local) {
     PetscValidPointer(is_local,3);
-    for (i=0; i<n; i++) CHKERRQ(ISDestroy(&is_local[i]));
-    CHKERRQ(PetscFree(is_local));
+    for (i=0; i<n; i++) PetscCall(ISDestroy(&is_local[i]));
+    PetscCall(PetscFree(is_local));
   }
   PetscFunctionReturn(0);
 }
@@ -1612,8 +1612,8 @@ PetscErrorCode  PCASMCreateSubdomains2D(PetscInt m,PetscInt n,PetscInt M,PetscIn
   PetscCheckFalse(dof != 1,PETSC_COMM_SELF,PETSC_ERR_SUP," ");
 
   *Nsub     = N*M;
-  CHKERRQ(PetscMalloc1(*Nsub,is));
-  CHKERRQ(PetscMalloc1(*Nsub,is_local));
+  PetscCall(PetscMalloc1(*Nsub,is));
+  PetscCall(PetscMalloc1(*Nsub,is_local));
   ystart    = 0;
   loc_outer = 0;
   for (i=0; i<N; i++) {
@@ -1628,15 +1628,15 @@ PetscErrorCode  PCASMCreateSubdomains2D(PetscInt m,PetscInt n,PetscInt M,PetscIn
       xleft  = xstart - overlap; if (xleft < 0) xleft = 0;
       xright = xstart + width + overlap; if (xright > m) xright = m;
       nidx   = (xright - xleft)*(yright - yleft);
-      CHKERRQ(PetscMalloc1(nidx,&idx));
+      PetscCall(PetscMalloc1(nidx,&idx));
       loc    = 0;
       for (ii=yleft; ii<yright; ii++) {
         count = m*ii + xleft;
         for (jj=xleft; jj<xright; jj++) idx[loc++] = count++;
       }
-      CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,nidx,idx,PETSC_COPY_VALUES,(*is)+loc_outer));
+      PetscCall(ISCreateGeneral(PETSC_COMM_SELF,nidx,idx,PETSC_COPY_VALUES,(*is)+loc_outer));
       if (overlap == 0) {
-        CHKERRQ(PetscObjectReference((PetscObject)(*is)[loc_outer]));
+        PetscCall(PetscObjectReference((PetscObject)(*is)[loc_outer]));
 
         (*is_local)[loc_outer] = (*is)[loc_outer];
       } else {
@@ -1645,15 +1645,15 @@ PetscErrorCode  PCASMCreateSubdomains2D(PetscInt m,PetscInt n,PetscInt M,PetscIn
             idx[loc++] = m*ii + jj;
           }
         }
-        CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,loc,idx,PETSC_COPY_VALUES,*is_local+loc_outer));
+        PetscCall(ISCreateGeneral(PETSC_COMM_SELF,loc,idx,PETSC_COPY_VALUES,*is_local+loc_outer));
       }
-      CHKERRQ(PetscFree(idx));
+      PetscCall(PetscFree(idx));
       xstart += width;
       loc_outer++;
     }
     ystart += height;
   }
-  for (i=0; i<*Nsub; i++) CHKERRQ(ISSort((*is)[i]));
+  for (i=0; i<*Nsub; i++) PetscCall(ISSort((*is)[i]));
   PetscFunctionReturn(0);
 }
 
@@ -1689,7 +1689,7 @@ PetscErrorCode  PCASMGetLocalSubdomains(PC pc,PetscInt *n,IS *is[],IS *is_local[
   if (n) PetscValidIntPointer(n,2);
   if (is) PetscValidPointer(is,3);
   if (is_local) PetscValidPointer(is_local,4);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)pc,PCASM,&match));
+  PetscCall(PetscObjectTypeCompare((PetscObject)pc,PCASM,&match));
   PetscCheck(match,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"PC is not a PCASM");
   if (n) *n = osm->n_local_true;
   if (is) *is = osm->is;
@@ -1730,7 +1730,7 @@ PetscErrorCode  PCASMGetLocalSubmatrices(PC pc,PetscInt *n,Mat *mat[])
   if (n) PetscValidIntPointer(n,2);
   if (mat) PetscValidPointer(mat,3);
   PetscCheck(pc->setupcalled,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must call after KSPSetUp() or PCSetUp().");
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)pc,PCASM,&match));
+  PetscCall(PetscObjectTypeCompare((PetscObject)pc,PCASM,&match));
   if (!match) {
     if (n) *n = 0;
     if (mat) *mat = NULL;
@@ -1772,7 +1772,7 @@ PetscErrorCode  PCASMSetDMSubdomains(PC pc,PetscBool flg)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveBool(pc,flg,2);
   PetscCheck(!pc->setupcalled,((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for a setup PC.");
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)pc,PCASM,&match));
+  PetscCall(PetscObjectTypeCompare((PetscObject)pc,PCASM,&match));
   if (match) {
     osm->dm_subdomains = flg;
   }
@@ -1802,7 +1802,7 @@ PetscErrorCode  PCASMGetDMSubdomains(PC pc,PetscBool* flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidBoolPointer(flg,2);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)pc,PCASM,&match));
+  PetscCall(PetscObjectTypeCompare((PetscObject)pc,PCASM,&match));
   if (match) *flg = osm->dm_subdomains;
   else *flg = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -1827,7 +1827,7 @@ PetscErrorCode  PCASMGetSubMatType(PC pc,MatType *sub_mat_type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  CHKERRQ(PetscTryMethod(pc,"PCASMGetSubMatType_C",(PC,MatType*),(pc,sub_mat_type)));
+  PetscCall(PetscTryMethod(pc,"PCASMGetSubMatType_C",(PC,MatType*),(pc,sub_mat_type)));
   PetscFunctionReturn(0);
 }
 
@@ -1854,6 +1854,6 @@ PetscErrorCode PCASMSetSubMatType(PC pc,MatType sub_mat_type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  CHKERRQ(PetscTryMethod(pc,"PCASMSetSubMatType_C",(PC,MatType),(pc,sub_mat_type)));
+  PetscCall(PetscTryMethod(pc,"PCASMSetSubMatType_C",(PC,MatType),(pc,sub_mat_type)));
   PetscFunctionReturn(0);
 }

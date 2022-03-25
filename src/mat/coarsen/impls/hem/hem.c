@@ -13,14 +13,14 @@ PetscErrorCode PetscCDCreate(PetscInt a_size, PetscCoarsenData **a_out)
 
   PetscFunctionBegin;
   /* alocate pool, partially */
-  CHKERRQ(PetscNew(&ail));
+  PetscCall(PetscNew(&ail));
   *a_out               = ail;
   ail->pool_list.next  = NULL;
   ail->pool_list.array = NULL;
   ail->chk_sz          = 0;
   /* allocate array */
   ail->size            = a_size;
-  CHKERRQ(PetscCalloc1(a_size, &ail->array));
+  PetscCall(PetscCalloc1(a_size, &ail->array));
   ail->extra_nodes     = NULL;
   ail->mat             = NULL;
   PetscFunctionReturn(0);
@@ -37,14 +37,14 @@ PetscErrorCode PetscCDDestroy(PetscCoarsenData *ail)
   while (n) {
     PetscCDArrNd *lstn = n;
     n    = n->next;
-    CHKERRQ(PetscFree(lstn));
+    PetscCall(PetscFree(lstn));
   }
   if (ail->pool_list.array) {
-    CHKERRQ(PetscFree(ail->pool_list.array));
+    PetscCall(PetscFree(ail->pool_list.array));
   }
-  CHKERRQ(PetscFree(ail->array));
+  PetscCall(PetscFree(ail->array));
   /* delete this (+agg+pool array) */
-  CHKERRQ(PetscFree(ail));
+  PetscCall(PetscFree(ail));
   PetscFunctionReturn(0);
 }
 
@@ -72,13 +72,13 @@ PetscErrorCode PetscCDGetNewNode(PetscCoarsenData *ail, PetscCDIntNd **a_out, Pe
   } else {
     if (!ail->pool_list.array) {
       if (!ail->chk_sz) ail->chk_sz = 10; /* use a chuck size of ail->size? */
-      CHKERRQ(PetscMalloc1(ail->chk_sz, &ail->pool_list.array));
+      PetscCall(PetscMalloc1(ail->chk_sz, &ail->pool_list.array));
       ail->new_node       = ail->pool_list.array;
       ail->new_left       = ail->chk_sz;
       ail->new_node->next = NULL;
     } else if (!ail->new_left) {
       PetscCDArrNd *node;
-      CHKERRQ(PetscMalloc(ail->chk_sz*sizeof(PetscCDIntNd) + sizeof(PetscCDArrNd), &node));
+      PetscCall(PetscMalloc(ail->chk_sz*sizeof(PetscCDIntNd) + sizeof(PetscCDArrNd), &node));
       node->array         = (PetscCDIntNd*)(node + 1);
       node->next          = ail->pool_list.next;
       ail->pool_list.next = node;
@@ -137,7 +137,7 @@ PetscErrorCode PetscCDAppendID(PetscCoarsenData *ail, PetscInt a_idx, PetscInt a
   PetscCDIntNd   *n,*n2;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscCDGetNewNode(ail, &n, a_id));
+  PetscCall(PetscCDGetNewNode(ail, &n, a_id));
   PetscCheckFalse(a_idx>=ail->size,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Index %" PetscInt_FMT " out of range.",a_idx);
   if (!(n2=ail->array[a_idx])) ail->array[a_idx] = n;
   else {
@@ -202,13 +202,13 @@ PetscErrorCode PetscCDPrint(const PetscCoarsenData *ail, MPI_Comm comm)
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_rank(comm, &rank));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
   for (ii=0; ii<ail->size; ii++) {
     kk = 0;
     n  = ail->array[ii];
-    if (n) CHKERRQ(PetscPrintf(comm,"[%d]%s list %d:\n",rank,PETSC_FUNCTION_NAME,ii));
+    if (n) PetscCall(PetscPrintf(comm,"[%d]%s list %d:\n",rank,PETSC_FUNCTION_NAME,ii));
     while (n) {
-      CHKERRQ(PetscPrintf(comm,"\t[%d] %" PetscInt_FMT ") id %" PetscInt_FMT "\n",rank,++kk,n->gid));
+      PetscCall(PetscPrintf(comm,"\t[%d] %" PetscInt_FMT ") id %" PetscInt_FMT "\n",rank,++kk,n->gid));
       n = n->next;
     }
   }
@@ -299,12 +299,12 @@ PetscErrorCode PetscCDGetMIS(PetscCoarsenData *ail, IS *a_mis)
     n = ail->array[ii];
     if (n) kk++;
   }
-  CHKERRQ(PetscMalloc1(kk, &permute));
+  PetscCall(PetscMalloc1(kk, &permute));
   for (ii=kk=0; ii<ail->size; ii++) {
     n = ail->array[ii];
     if (n) permute[kk++] = ii;
   }
-  CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF, kk, permute, PETSC_OWN_POINTER, a_mis));
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF, kk, permute, PETSC_OWN_POINTER, a_mis));
   PetscFunctionReturn(0);
 }
 
@@ -339,38 +339,38 @@ PetscErrorCode PetscCDGetASMBlocks(const PetscCoarsenData *ail, const PetscInt a
     if (ail->array[ii]) kk++;
   }
   /* count BCs */
-  CHKERRQ(MatGetOwnershipRange(mat, &s, &e));
+  PetscCall(MatGetOwnershipRange(mat, &s, &e));
   for (gid=s,lsz=0; gid<e; gid++) {
-    CHKERRQ(MatGetRow(mat,gid,&jj,NULL,NULL));
+    PetscCall(MatGetRow(mat,gid,&jj,NULL,NULL));
     if (jj<2) lsz++;
-    CHKERRQ(MatRestoreRow(mat,gid,&jj,NULL,NULL));
+    PetscCall(MatRestoreRow(mat,gid,&jj,NULL,NULL));
   }
   if (lsz) {
-    CHKERRQ(PetscMalloc1(a_bs*lsz, &idxs));
+    PetscCall(PetscMalloc1(a_bs*lsz, &idxs));
     for (gid=s,lsz=0; gid<e; gid++) {
-      CHKERRQ(MatGetRow(mat,gid,&jj,NULL,NULL));
+      PetscCall(MatGetRow(mat,gid,&jj,NULL,NULL));
       if (jj<2) {
         for (jj=0; jj<a_bs; lsz++,jj++) idxs[lsz] = a_bs*gid + jj;
       }
-      CHKERRQ(MatRestoreRow(mat,gid,&jj,NULL,NULL));
+      PetscCall(MatRestoreRow(mat,gid,&jj,NULL,NULL));
     }
-    CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF, lsz, idxs, PETSC_OWN_POINTER, &is_bcs));
+    PetscCall(ISCreateGeneral(PETSC_COMM_SELF, lsz, idxs, PETSC_OWN_POINTER, &is_bcs));
     *a_sz = kk + 1; /* out */
   } else {
     is_bcs=NULL;
     *a_sz = kk; /* out */
   }
-  CHKERRQ(PetscMalloc1(*a_sz, &is_loc));
+  PetscCall(PetscMalloc1(*a_sz, &is_loc));
 
   for (ii=kk=0; ii<ail->size; ii++) {
     for (lsz=0, n=ail->array[ii]; n; lsz++, n=n->next) /* void */;
     if (lsz) {
-      CHKERRQ(PetscMalloc1(a_bs*lsz, &idxs));
+      PetscCall(PetscMalloc1(a_bs*lsz, &idxs));
       for (lsz = 0, n=ail->array[ii]; n; n = n->next) {
-        CHKERRQ(PetscCDIntNdGetID(n, &gid));
+        PetscCall(PetscCDIntNdGetID(n, &gid));
         for (jj=0; jj<a_bs; lsz++,jj++) idxs[lsz] = a_bs*gid + jj;
       }
-      CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF, lsz, idxs, PETSC_OWN_POINTER, &is_loc[kk++]));
+      PetscCall(ISCreateGeneral(PETSC_COMM_SELF, lsz, idxs, PETSC_OWN_POINTER, &is_loc[kk++]));
     }
   }
   if (is_bcs) {
@@ -424,31 +424,31 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
   PetscMPIInt      tag1,tag2;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectGetComm((PetscObject)a_Gmat,&comm));
-  CHKERRMPI(MPI_Comm_rank(comm, &rank));
-  CHKERRMPI(MPI_Comm_size(comm, &size));
-  CHKERRQ(MatGetOwnershipRange(a_Gmat, &my0, &Iend));
-  CHKERRQ(PetscCommGetNewTag(comm, &tag1));
-  CHKERRQ(PetscCommGetNewTag(comm, &tag2));
+  PetscCall(PetscObjectGetComm((PetscObject)a_Gmat,&comm));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCall(MatGetOwnershipRange(a_Gmat, &my0, &Iend));
+  PetscCall(PetscCommGetNewTag(comm, &tag1));
+  PetscCall(PetscCommGetNewTag(comm, &tag2));
 
-  CHKERRQ(PetscMalloc1(nloc, &lid_gid)); /* explicit array needed */
-  CHKERRQ(PetscMalloc1(nloc, &lid_cprowID));
-  CHKERRQ(PetscMalloc1(nloc, &lid_matched));
+  PetscCall(PetscMalloc1(nloc, &lid_gid)); /* explicit array needed */
+  PetscCall(PetscMalloc1(nloc, &lid_cprowID));
+  PetscCall(PetscMalloc1(nloc, &lid_matched));
 
-  CHKERRQ(PetscCDCreate(nloc, &agg_llists));
-  /* CHKERRQ(PetscCDSetChuckSize(agg_llists, nloc+1)); */
+  PetscCall(PetscCDCreate(nloc, &agg_llists));
+  /* PetscCall(PetscCDSetChuckSize(agg_llists, nloc+1)); */
   *a_locals_llist = agg_llists;
-  CHKERRQ(PetscCDCreate(size, &deleted_list));
-  CHKERRQ(PetscCDSetChuckSize(deleted_list, 100));
+  PetscCall(PetscCDCreate(size, &deleted_list));
+  PetscCall(PetscCDSetChuckSize(deleted_list, 100));
   /* setup 'lid_gid' for scatters and add self to all lists */
   for (kk=0; kk<nloc; kk++) {
     lid_gid[kk] = kk + my0;
-    CHKERRQ(PetscCDAppendID(agg_llists, kk, my0+kk));
+    PetscCall(PetscCDAppendID(agg_llists, kk, my0+kk));
   }
 
   /* make a copy of the graph, this gets destroyed in iterates */
-  CHKERRQ(MatDuplicate(a_Gmat,MAT_COPY_VALUES,&cMat));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)a_Gmat, MATMPIAIJ, &isMPI));
+  PetscCall(MatDuplicate(a_Gmat,MAT_COPY_VALUES,&cMat));
+  PetscCall(PetscObjectTypeCompare((PetscObject)a_Gmat, MATMPIAIJ, &isMPI));
   iter = 0;
   while (iter++ < n_iter) {
     PetscScalar    *cpcol_gid,*cpcol_max_ew,*cpcol_max_pe,*lid_max_ew;
@@ -467,52 +467,52 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
       matB   = (Mat_SeqAIJ*)mpimat->B->data;
       if (!matB->compressedrow.use) {
         /* force construction of compressed row data structure since code below requires it */
-        CHKERRQ(MatCheckCompressedRow(mpimat->B,matB->nonzerorowcnt,&matB->compressedrow,matB->i,mpimat->B->rmap->n,-1.0));
+        PetscCall(MatCheckCompressedRow(mpimat->B,matB->nonzerorowcnt,&matB->compressedrow,matB->i,mpimat->B->rmap->n,-1.0));
       }
     } else {
       matA = (Mat_SeqAIJ*)cMat->data;
     }
 
     /* set max edge on nodes */
-    CHKERRQ(MatCreateVecs(cMat, &locMaxEdge, NULL));
-    CHKERRQ(MatCreateVecs(cMat, &locMaxPE, NULL));
+    PetscCall(MatCreateVecs(cMat, &locMaxEdge, NULL));
+    PetscCall(MatCreateVecs(cMat, &locMaxPE, NULL));
 
     /* get 'cpcol_pe' & 'cpcol_gid' & init. 'cpcol_matched' using 'mpimat->lvec' */
     if (mpimat) {
       Vec         vec;
       PetscScalar vval;
 
-      CHKERRQ(MatCreateVecs(cMat, &vec, NULL));
+      PetscCall(MatCreateVecs(cMat, &vec, NULL));
       /* cpcol_pe */
       vval = (PetscScalar)(rank);
       for (kk=0,gid=my0; kk<nloc; kk++,gid++) {
-        CHKERRQ(VecSetValues(vec, 1, &gid, &vval, INSERT_VALUES)); /* set with GID */
+        PetscCall(VecSetValues(vec, 1, &gid, &vval, INSERT_VALUES)); /* set with GID */
       }
-      CHKERRQ(VecAssemblyBegin(vec));
-      CHKERRQ(VecAssemblyEnd(vec));
-      CHKERRQ(VecScatterBegin(mpimat->Mvctx,vec,mpimat->lvec,INSERT_VALUES,SCATTER_FORWARD));
-      CHKERRQ(VecScatterEnd(mpimat->Mvctx,vec,mpimat->lvec,INSERT_VALUES,SCATTER_FORWARD));
-      CHKERRQ(VecGetArray(mpimat->lvec, &cpcol_gid)); /* get proc ID in 'cpcol_gid' */
-      CHKERRQ(VecGetLocalSize(mpimat->lvec, &n));
-      CHKERRQ(PetscMalloc1(n, &cpcol_pe));
+      PetscCall(VecAssemblyBegin(vec));
+      PetscCall(VecAssemblyEnd(vec));
+      PetscCall(VecScatterBegin(mpimat->Mvctx,vec,mpimat->lvec,INSERT_VALUES,SCATTER_FORWARD));
+      PetscCall(VecScatterEnd(mpimat->Mvctx,vec,mpimat->lvec,INSERT_VALUES,SCATTER_FORWARD));
+      PetscCall(VecGetArray(mpimat->lvec, &cpcol_gid)); /* get proc ID in 'cpcol_gid' */
+      PetscCall(VecGetLocalSize(mpimat->lvec, &n));
+      PetscCall(PetscMalloc1(n, &cpcol_pe));
       for (kk=0; kk<n; kk++) cpcol_pe[kk] = (PetscMPIInt)PetscRealPart(cpcol_gid[kk]);
-      CHKERRQ(VecRestoreArray(mpimat->lvec, &cpcol_gid));
+      PetscCall(VecRestoreArray(mpimat->lvec, &cpcol_gid));
 
       /* cpcol_gid */
       for (kk=0,gid=my0; kk<nloc; kk++,gid++) {
         vval = (PetscScalar)(gid);
-        CHKERRQ(VecSetValues(vec, 1, &gid, &vval, INSERT_VALUES)); /* set with GID */
+        PetscCall(VecSetValues(vec, 1, &gid, &vval, INSERT_VALUES)); /* set with GID */
       }
-      CHKERRQ(VecAssemblyBegin(vec));
-      CHKERRQ(VecAssemblyEnd(vec));
-      CHKERRQ(VecScatterBegin(mpimat->Mvctx,vec,mpimat->lvec,INSERT_VALUES,SCATTER_FORWARD));
-      CHKERRQ(VecScatterEnd(mpimat->Mvctx,vec,mpimat->lvec,INSERT_VALUES,SCATTER_FORWARD));
-      CHKERRQ(VecDestroy(&vec));
-      CHKERRQ(VecGetArray(mpimat->lvec, &cpcol_gid)); /* get proc ID in 'cpcol_gid' */
+      PetscCall(VecAssemblyBegin(vec));
+      PetscCall(VecAssemblyEnd(vec));
+      PetscCall(VecScatterBegin(mpimat->Mvctx,vec,mpimat->lvec,INSERT_VALUES,SCATTER_FORWARD));
+      PetscCall(VecScatterEnd(mpimat->Mvctx,vec,mpimat->lvec,INSERT_VALUES,SCATTER_FORWARD));
+      PetscCall(VecDestroy(&vec));
+      PetscCall(VecGetArray(mpimat->lvec, &cpcol_gid)); /* get proc ID in 'cpcol_gid' */
 
       /* cpcol_matched */
-      CHKERRQ(VecGetLocalSize(mpimat->lvec, &n));
-      CHKERRQ(PetscMalloc1(n, &cpcol_matched));
+      PetscCall(VecGetLocalSize(mpimat->lvec, &n));
+      PetscCall(PetscMalloc1(n, &cpcol_matched));
       for (kk=0; kk<n; kk++) cpcol_matched[kk] = PETSC_FALSE;
     }
 
@@ -550,32 +550,32 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
         }
       }
       vval = max_e;
-      CHKERRQ(VecSetValues(locMaxEdge, 1, &gid, &vval, INSERT_VALUES));
+      PetscCall(VecSetValues(locMaxEdge, 1, &gid, &vval, INSERT_VALUES));
 
       vval = (PetscScalar)max_pe;
-      CHKERRQ(VecSetValues(locMaxPE, 1, &gid, &vval, INSERT_VALUES));
+      PetscCall(VecSetValues(locMaxPE, 1, &gid, &vval, INSERT_VALUES));
     }
-    CHKERRQ(VecAssemblyBegin(locMaxEdge));
-    CHKERRQ(VecAssemblyEnd(locMaxEdge));
-    CHKERRQ(VecAssemblyBegin(locMaxPE));
-    CHKERRQ(VecAssemblyEnd(locMaxPE));
+    PetscCall(VecAssemblyBegin(locMaxEdge));
+    PetscCall(VecAssemblyEnd(locMaxEdge));
+    PetscCall(VecAssemblyBegin(locMaxPE));
+    PetscCall(VecAssemblyEnd(locMaxPE));
 
     /* get 'cpcol_max_ew' & 'cpcol_max_pe' */
     if (mpimat) {
-      CHKERRQ(VecDuplicate(mpimat->lvec, &ghostMaxEdge));
-      CHKERRQ(VecScatterBegin(mpimat->Mvctx,locMaxEdge,ghostMaxEdge,INSERT_VALUES,SCATTER_FORWARD));
-      CHKERRQ(VecScatterEnd(mpimat->Mvctx,locMaxEdge,ghostMaxEdge,INSERT_VALUES,SCATTER_FORWARD));
-      CHKERRQ(VecGetArray(ghostMaxEdge, &cpcol_max_ew));
+      PetscCall(VecDuplicate(mpimat->lvec, &ghostMaxEdge));
+      PetscCall(VecScatterBegin(mpimat->Mvctx,locMaxEdge,ghostMaxEdge,INSERT_VALUES,SCATTER_FORWARD));
+      PetscCall(VecScatterEnd(mpimat->Mvctx,locMaxEdge,ghostMaxEdge,INSERT_VALUES,SCATTER_FORWARD));
+      PetscCall(VecGetArray(ghostMaxEdge, &cpcol_max_ew));
 
-      CHKERRQ(VecDuplicate(mpimat->lvec, &ghostMaxPE));
-      CHKERRQ(VecScatterBegin(mpimat->Mvctx,locMaxPE,ghostMaxPE,INSERT_VALUES,SCATTER_FORWARD));
-      CHKERRQ(VecScatterEnd(mpimat->Mvctx,locMaxPE,ghostMaxPE,INSERT_VALUES,SCATTER_FORWARD));
-      CHKERRQ(VecGetArray(ghostMaxPE, &cpcol_max_pe));
+      PetscCall(VecDuplicate(mpimat->lvec, &ghostMaxPE));
+      PetscCall(VecScatterBegin(mpimat->Mvctx,locMaxPE,ghostMaxPE,INSERT_VALUES,SCATTER_FORWARD));
+      PetscCall(VecScatterEnd(mpimat->Mvctx,locMaxPE,ghostMaxPE,INSERT_VALUES,SCATTER_FORWARD));
+      PetscCall(VecGetArray(ghostMaxPE, &cpcol_max_pe));
     }
 
     /* setup sorted list of edges */
-    CHKERRQ(PetscMalloc1(nEdges, &Edges));
-    CHKERRQ(ISGetIndices(perm, &perm_ix));
+    PetscCall(PetscMalloc1(nEdges, &Edges));
+    PetscCall(ISGetIndices(perm, &perm_ix));
     for (nEdges=n_nz_row=kk=0; kk<nloc; kk++) {
       PetscInt nn, lid = perm_ix[kk];
       ii = matA->i; nn = n = ii[lid+1] - ii[lid]; idx = matA->j + ii[lid];
@@ -606,15 +606,15 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
       if (nn > 1) n_nz_row++;
       else if (iter == 1) {
         /* should select this because it is technically in the MIS but lets not */
-        CHKERRQ(PetscCDRemoveAll(agg_llists, lid));
+        PetscCall(PetscCDRemoveAll(agg_llists, lid));
       }
     }
-    CHKERRQ(ISRestoreIndices(perm,&perm_ix));
+    PetscCall(ISRestoreIndices(perm,&perm_ix));
 
     qsort(Edges, nEdges, sizeof(Edge), gamg_hem_compare);
 
     /* projection matrix */
-    CHKERRQ(MatCreateAIJ(comm, nloc, nloc, PETSC_DETERMINE, PETSC_DETERMINE, 1, NULL, 1, NULL, &P));
+    PetscCall(MatCreateAIJ(comm, nloc, nloc, PETSC_DETERMINE, PETSC_DETERMINE, 1, NULL, 1, NULL, &P));
 
     /* clear matched flags */
     for (kk=0; kk<nloc; kk++) lid_matched[kk] = PETSC_FALSE;
@@ -622,7 +622,7 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
     for (sub_it=0; sub_it<n_sub_its; sub_it++) {
       PetscInt nactive_edges;
 
-      CHKERRQ(VecGetArray(locMaxEdge, &lid_max_ew));
+      PetscCall(VecGetArray(locMaxEdge, &lid_max_ew));
       for (kk=nactive_edges=0; kk<nEdges; kk++) {
         /* HEM */
         const Edge     *e   = &Edges[kk];
@@ -692,21 +692,21 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
         if (isOK) {
           if (cpid1 == -1) {
             lid_matched[lid1] = PETSC_TRUE;  /* keep track of what we've done this round */
-            CHKERRQ(PetscCDAppendRemove(agg_llists, lid0, lid1));
+            PetscCall(PetscCDAppendRemove(agg_llists, lid0, lid1));
           } else if (sub_it != n_sub_its-1) {
             /* add gid1 to list of ghost deleted by me -- I need their children */
             proc = cpcol_pe[cpid1];
 
             cpcol_matched[cpid1] = PETSC_TRUE; /* messing with VecGetArray array -- needed??? */
 
-            CHKERRQ(PetscCDAppendID(deleted_list, proc, cpid1)); /* cache to send messages */
-            CHKERRQ(PetscCDAppendID(deleted_list, proc, lid0));
+            PetscCall(PetscCDAppendID(deleted_list, proc, cpid1)); /* cache to send messages */
+            PetscCall(PetscCDAppendID(deleted_list, proc, lid0));
           } else continue;
 
           lid_matched[lid0] = PETSC_TRUE; /* keep track of what we've done this round */
           /* set projection */
-          CHKERRQ(MatSetValues(P,1,&gid0,1,&gid0,&one,INSERT_VALUES));
-          CHKERRQ(MatSetValues(P,1,&gid1,1,&gid0,&one,INSERT_VALUES));
+          PetscCall(MatSetValues(P,1,&gid0,1,&gid0,&one,INSERT_VALUES));
+          PetscCall(MatSetValues(P,1,&gid1,1,&gid0,&one,INSERT_VALUES));
         } /* matched */
       } /* edge loop */
 
@@ -721,50 +721,50 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
 
         /* send request */
         for (proc=0,nSend1=0; proc<size; proc++) {
-          CHKERRQ(PetscCDEmptyAt(deleted_list,proc,&ise));
+          PetscCall(PetscCDEmptyAt(deleted_list,proc,&ise));
           if (!ise) nSend1++;
         }
-        CHKERRQ(PetscMalloc1(nSend1, &sbuffs1));
+        PetscCall(PetscMalloc1(nSend1, &sbuffs1));
         for (proc=0,nSend1=0; proc<size; proc++) {
           /* count ghosts */
-          CHKERRQ(PetscCDSizeAt(deleted_list,proc,&n));
+          PetscCall(PetscCDSizeAt(deleted_list,proc,&n));
           if (n>0) {
 #define CHUNCK_SIZE 100
             PetscInt    *sbuff,*pt;
             MPI_Request *request;
             n   /= 2;
-            CHKERRQ(PetscMalloc1(2 + 2*n + n*CHUNCK_SIZE + 2, &sbuff));
+            PetscCall(PetscMalloc1(2 + 2*n + n*CHUNCK_SIZE + 2, &sbuff));
             /* save requests */
             sbuffs1[nSend1] = sbuff;
             request         = (MPI_Request*)sbuff;
             sbuff           = pt = (PetscInt*)(request+1);
             *pt++           = n; *pt++ = rank;
 
-            CHKERRQ(PetscCDGetHeadPos(deleted_list,proc,&pos));
+            PetscCall(PetscCDGetHeadPos(deleted_list,proc,&pos));
             while (pos) {
               PetscInt lid0, cpid, gid;
-              CHKERRQ(PetscCDIntNdGetID(pos, &cpid));
+              PetscCall(PetscCDIntNdGetID(pos, &cpid));
               gid   = (PetscInt)PetscRealPart(cpcol_gid[cpid]);
-              CHKERRQ(PetscCDGetNextPos(deleted_list,proc,&pos));
-              CHKERRQ(PetscCDIntNdGetID(pos, &lid0));
-              CHKERRQ(PetscCDGetNextPos(deleted_list,proc,&pos));
+              PetscCall(PetscCDGetNextPos(deleted_list,proc,&pos));
+              PetscCall(PetscCDIntNdGetID(pos, &lid0));
+              PetscCall(PetscCDGetNextPos(deleted_list,proc,&pos));
               *pt++ = gid; *pt++ = lid0;
             }
             /* send request tag1 [n, proc, n*[gid1,lid0] ] */
-            CHKERRMPI(MPI_Isend(sbuff, 2*n+2, MPIU_INT, proc, tag1, comm, request));
+            PetscCallMPI(MPI_Isend(sbuff, 2*n+2, MPIU_INT, proc, tag1, comm, request));
             /* post receive */
             request        = (MPI_Request*)pt;
             rreqs2[nSend1] = request; /* cache recv request */
             pt             = (PetscInt*)(request+1);
-            CHKERRMPI(MPI_Irecv(pt, n*CHUNCK_SIZE, MPIU_INT, proc, tag2, comm, request));
+            PetscCallMPI(MPI_Irecv(pt, n*CHUNCK_SIZE, MPIU_INT, proc, tag2, comm, request));
             /* clear list */
-            CHKERRQ(PetscCDRemoveAll(deleted_list, proc));
+            PetscCall(PetscCDRemoveAll(deleted_list, proc));
             nSend1++;
           }
         }
         /* receive requests, send response, clear lists */
         kk     = nactive_edges;
-        CHKERRMPI(MPIU_Allreduce(&kk,&nactive_edges,1,MPIU_INT,MPI_SUM,comm)); /* not correct syncronization and global */
+        PetscCallMPI(MPIU_Allreduce(&kk,&nactive_edges,1,MPIU_INT,MPI_SUM,comm)); /* not correct syncronization and global */
         nSend2 = 0;
         while (1) {
 #define BF_SZ 10000
@@ -772,13 +772,13 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
           PetscInt    rbuff[BF_SZ],*pt,*pt2,*pt3,count2,*sbuff,count3;
           MPI_Request *request;
 
-          CHKERRMPI(MPI_Iprobe(MPI_ANY_SOURCE, tag1, comm, &flag, &status));
+          PetscCallMPI(MPI_Iprobe(MPI_ANY_SOURCE, tag1, comm, &flag, &status));
           if (!flag) break;
-          CHKERRMPI(MPI_Get_count(&status, MPIU_INT, &count));
+          PetscCallMPI(MPI_Get_count(&status, MPIU_INT, &count));
           PetscCheckFalse(count > BF_SZ,PETSC_COMM_SELF,PETSC_ERR_SUP,"buffer too small for receive: %d",count);
           proc = status.MPI_SOURCE;
           /* receive request tag1 [n, proc, n*[gid1,lid0] ] */
-          CHKERRMPI(MPI_Recv(rbuff, count, MPIU_INT, proc, tag1, comm, &status));
+          PetscCallMPI(MPI_Recv(rbuff, count, MPIU_INT, proc, tag1, comm, &status));
           /* count sends */
           pt = rbuff; count3 = count2 = 0;
           n  = *pt++; kk = *pt++;
@@ -786,13 +786,13 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
             PetscInt gid1=*pt++, lid1=gid1-my0; kk=*pt++;
             PetscCheckFalse(lid_matched[lid1],PETSC_COMM_SELF,PETSC_ERR_PLIB,"Recieved deleted gid %" PetscInt_FMT ", deleted by (lid) %" PetscInt_FMT " from proc %" PetscInt_FMT,sub_it,gid1,kk);
             lid_matched[lid1] = PETSC_TRUE; /* keep track of what we've done this round */
-            CHKERRQ(PetscCDSizeAt(agg_llists, lid1, &kk));
+            PetscCall(PetscCDSizeAt(agg_llists, lid1, &kk));
             count2           += kk + 2;
             count3++; /* number of verts requested (n) */
           }
           PetscCheckFalse(count2 > count3*CHUNCK_SIZE,PETSC_COMM_SELF,PETSC_ERR_SUP,"Irecv will be too small: %" PetscInt_FMT,count2);
           /* send tag2 *[lid0, n, n*[gid] ] */
-          CHKERRQ(PetscMalloc(count2*sizeof(PetscInt) + sizeof(MPI_Request), &sbuff));
+          PetscCall(PetscMalloc(count2*sizeof(PetscInt) + sizeof(MPI_Request), &sbuff));
           request          = (MPI_Request*)sbuff;
           sreqs2[nSend2++] = request; /* cache request */
           PetscCheckFalse(nSend2==REQ_BF_SIZE,PETSC_COMM_SELF,PETSC_ERR_SUP,"buffer too small for requests: %" PetscInt_FMT,nSend2);
@@ -805,19 +805,19 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
             /* write [lid0, n, n*[gid] ] */
             *pt2++ = lid0;
             pt3    = pt2++; /* save pointer for later */
-            CHKERRQ(PetscCDGetHeadPos(agg_llists,lid1,&pos));
+            PetscCall(PetscCDGetHeadPos(agg_llists,lid1,&pos));
             while (pos) {
               PetscInt gid;
-              CHKERRQ(PetscCDIntNdGetID(pos, &gid));
-              CHKERRQ(PetscCDGetNextPos(agg_llists,lid1,&pos));
+              PetscCall(PetscCDIntNdGetID(pos, &gid));
+              PetscCall(PetscCDGetNextPos(agg_llists,lid1,&pos));
               *pt2++ = gid;
             }
             *pt3 = (pt2-pt3)-1;
             /* clear list */
-            CHKERRQ(PetscCDRemoveAll(agg_llists, lid1));
+            PetscCall(PetscCDRemoveAll(agg_llists, lid1));
           }
           /* send requested data tag2 *[lid0, n, n*[gid1] ] */
-          CHKERRMPI(MPI_Isend(sbuff, count2, MPIU_INT, proc, tag2, comm, request));
+          PetscCallMPI(MPI_Isend(sbuff, count2, MPIU_INT, proc, tag2, comm, request));
         }
 
         /* receive tag2 *[lid0, n, n*[gid] ] */
@@ -827,14 +827,14 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
           PetscInt    *pt, *pt2;
 
           request = rreqs2[kk]; /* no need to free -- buffer is in 'sbuffs1' */
-          CHKERRMPI(MPI_Wait(request, &status));
-          CHKERRMPI(MPI_Get_count(&status, MPIU_INT, &count));
+          PetscCallMPI(MPI_Wait(request, &status));
+          PetscCallMPI(MPI_Get_count(&status, MPIU_INT, &count));
           pt      = pt2 = (PetscInt*)(request+1);
           while (pt-pt2 < count) {
             PetscInt lid0 = *pt++, n = *pt++;
             while (n--) {
               PetscInt gid1 = *pt++;
-              CHKERRQ(PetscCDAppendID(agg_llists, lid0, gid1));
+              PetscCall(PetscCDAppendID(agg_llists, lid0, gid1));
             }
           }
         }
@@ -843,40 +843,40 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
         while (nSend1--) {
           MPI_Request *request;
           request = (MPI_Request*)sbuffs1[nSend1];
-          CHKERRMPI(MPI_Wait(request, &status));
-          CHKERRQ(PetscFree(request));
+          PetscCallMPI(MPI_Wait(request, &status));
+          PetscCall(PetscFree(request));
         }
-        CHKERRQ(PetscFree(sbuffs1));
+        PetscCall(PetscFree(sbuffs1));
 
         /* wait for tag2 isends */
         while (nSend2--) {
           MPI_Request *request = sreqs2[nSend2];
-          CHKERRMPI(MPI_Wait(request, &status));
-          CHKERRQ(PetscFree(request));
+          PetscCallMPI(MPI_Wait(request, &status));
+          PetscCall(PetscFree(request));
         }
 
-        CHKERRQ(VecRestoreArray(ghostMaxEdge, &cpcol_max_ew));
-        CHKERRQ(VecRestoreArray(ghostMaxPE, &cpcol_max_pe));
+        PetscCall(VecRestoreArray(ghostMaxEdge, &cpcol_max_ew));
+        PetscCall(VecRestoreArray(ghostMaxPE, &cpcol_max_pe));
 
         /* get 'cpcol_matched' - use locMaxPE, ghostMaxEdge, cpcol_max_ew */
         for (kk=0,gid=my0; kk<nloc; kk++,gid++) {
           PetscScalar vval = lid_matched[kk] ? 1.0 : 0.0;
-          CHKERRQ(VecSetValues(locMaxPE, 1, &gid, &vval, INSERT_VALUES)); /* set with GID */
+          PetscCall(VecSetValues(locMaxPE, 1, &gid, &vval, INSERT_VALUES)); /* set with GID */
         }
-        CHKERRQ(VecAssemblyBegin(locMaxPE));
-        CHKERRQ(VecAssemblyEnd(locMaxPE));
-        CHKERRQ(VecScatterBegin(mpimat->Mvctx,locMaxPE,ghostMaxEdge,INSERT_VALUES,SCATTER_FORWARD));
-        CHKERRQ(VecScatterEnd(mpimat->Mvctx,locMaxPE,ghostMaxEdge,INSERT_VALUES,SCATTER_FORWARD));
-        CHKERRQ(VecGetArray(ghostMaxEdge, &cpcol_max_ew));
-        CHKERRQ(VecGetLocalSize(mpimat->lvec, &n));
+        PetscCall(VecAssemblyBegin(locMaxPE));
+        PetscCall(VecAssemblyEnd(locMaxPE));
+        PetscCall(VecScatterBegin(mpimat->Mvctx,locMaxPE,ghostMaxEdge,INSERT_VALUES,SCATTER_FORWARD));
+        PetscCall(VecScatterEnd(mpimat->Mvctx,locMaxPE,ghostMaxEdge,INSERT_VALUES,SCATTER_FORWARD));
+        PetscCall(VecGetArray(ghostMaxEdge, &cpcol_max_ew));
+        PetscCall(VecGetLocalSize(mpimat->lvec, &n));
         for (kk=0; kk<n; kk++) {
           cpcol_matched[kk] = (PetscBool)(PetscRealPart(cpcol_max_ew[kk]) != 0.0);
         }
-        CHKERRQ(VecRestoreArray(ghostMaxEdge, &cpcol_max_ew));
+        PetscCall(VecRestoreArray(ghostMaxEdge, &cpcol_max_ew));
       } /* size > 1 */
 
       /* compute 'locMaxEdge' */
-      CHKERRQ(VecRestoreArray(locMaxEdge, &lid_max_ew));
+      PetscCall(VecRestoreArray(locMaxEdge, &lid_max_ew));
       for (kk=0,gid=my0; kk<nloc; kk++,gid++) {
         PetscReal max_e = 0.,tt;
         PetscScalar vval;
@@ -903,17 +903,17 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
           }
         }
         vval = (PetscScalar)max_e;
-        CHKERRQ(VecSetValues(locMaxEdge, 1, &gid, &vval, INSERT_VALUES)); /* set with GID */
+        PetscCall(VecSetValues(locMaxEdge, 1, &gid, &vval, INSERT_VALUES)); /* set with GID */
       }
-      CHKERRQ(VecAssemblyBegin(locMaxEdge));
-      CHKERRQ(VecAssemblyEnd(locMaxEdge));
+      PetscCall(VecAssemblyBegin(locMaxEdge));
+      PetscCall(VecAssemblyEnd(locMaxEdge));
 
       if (size>1 && sub_it != n_sub_its-1) {
         /* compute 'cpcol_max_ew' */
-        CHKERRQ(VecScatterBegin(mpimat->Mvctx,locMaxEdge,ghostMaxEdge,INSERT_VALUES,SCATTER_FORWARD));
-        CHKERRQ(VecScatterEnd(mpimat->Mvctx,locMaxEdge,ghostMaxEdge,INSERT_VALUES,SCATTER_FORWARD));
-        CHKERRQ(VecGetArray(ghostMaxEdge, &cpcol_max_ew));
-        CHKERRQ(VecGetArray(locMaxEdge, &lid_max_ew));
+        PetscCall(VecScatterBegin(mpimat->Mvctx,locMaxEdge,ghostMaxEdge,INSERT_VALUES,SCATTER_FORWARD));
+        PetscCall(VecScatterEnd(mpimat->Mvctx,locMaxEdge,ghostMaxEdge,INSERT_VALUES,SCATTER_FORWARD));
+        PetscCall(VecGetArray(ghostMaxEdge, &cpcol_max_ew));
+        PetscCall(VecGetArray(locMaxEdge, &lid_max_ew));
 
         /* compute 'cpcol_max_pe' */
         for (kk=0,gid=my0; kk<nloc; kk++,gid++) {
@@ -936,42 +936,42 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
             }
             vval = (PetscScalar)max_pe;
           }
-          CHKERRQ(VecSetValues(locMaxPE, 1, &gid, &vval, INSERT_VALUES));
+          PetscCall(VecSetValues(locMaxPE, 1, &gid, &vval, INSERT_VALUES));
         }
-        CHKERRQ(VecAssemblyBegin(locMaxPE));
-        CHKERRQ(VecAssemblyEnd(locMaxPE));
+        PetscCall(VecAssemblyBegin(locMaxPE));
+        PetscCall(VecAssemblyEnd(locMaxPE));
 
-        CHKERRQ(VecScatterBegin(mpimat->Mvctx,locMaxPE,ghostMaxPE,INSERT_VALUES,SCATTER_FORWARD));
-        CHKERRQ(VecScatterEnd(mpimat->Mvctx,locMaxPE,ghostMaxPE,INSERT_VALUES,SCATTER_FORWARD));
-        CHKERRQ(VecGetArray(ghostMaxPE, &cpcol_max_pe));
-        CHKERRQ(VecRestoreArray(locMaxEdge, &lid_max_ew));
+        PetscCall(VecScatterBegin(mpimat->Mvctx,locMaxPE,ghostMaxPE,INSERT_VALUES,SCATTER_FORWARD));
+        PetscCall(VecScatterEnd(mpimat->Mvctx,locMaxPE,ghostMaxPE,INSERT_VALUES,SCATTER_FORWARD));
+        PetscCall(VecGetArray(ghostMaxPE, &cpcol_max_pe));
+        PetscCall(VecRestoreArray(locMaxEdge, &lid_max_ew));
       } /* deal with deleted ghost */
-      CHKERRQ(PetscInfo(a_Gmat,"\t %" PetscInt_FMT ".%" PetscInt_FMT ": %" PetscInt_FMT " active edges.\n",iter,sub_it,nactive_edges));
+      PetscCall(PetscInfo(a_Gmat,"\t %" PetscInt_FMT ".%" PetscInt_FMT ": %" PetscInt_FMT " active edges.\n",iter,sub_it,nactive_edges));
       if (!nactive_edges) break;
     } /* sub_it loop */
 
     /* clean up iteration */
-    CHKERRQ(PetscFree(Edges));
+    PetscCall(PetscFree(Edges));
     if (mpimat) {
-      CHKERRQ(VecRestoreArray(ghostMaxEdge, &cpcol_max_ew));
-      CHKERRQ(VecDestroy(&ghostMaxEdge));
-      CHKERRQ(VecRestoreArray(ghostMaxPE, &cpcol_max_pe));
-      CHKERRQ(VecDestroy(&ghostMaxPE));
-      CHKERRQ(PetscFree(cpcol_pe));
-      CHKERRQ(PetscFree(cpcol_matched));
+      PetscCall(VecRestoreArray(ghostMaxEdge, &cpcol_max_ew));
+      PetscCall(VecDestroy(&ghostMaxEdge));
+      PetscCall(VecRestoreArray(ghostMaxPE, &cpcol_max_pe));
+      PetscCall(VecDestroy(&ghostMaxPE));
+      PetscCall(PetscFree(cpcol_pe));
+      PetscCall(PetscFree(cpcol_matched));
     }
 
-    CHKERRQ(VecDestroy(&locMaxEdge));
-    CHKERRQ(VecDestroy(&locMaxPE));
+    PetscCall(VecDestroy(&locMaxEdge));
+    PetscCall(VecDestroy(&locMaxPE));
 
     if (mpimat) {
-      CHKERRQ(VecRestoreArray(mpimat->lvec, &cpcol_gid));
+      PetscCall(VecRestoreArray(mpimat->lvec, &cpcol_gid));
     }
 
     /* create next G if needed */
     if (iter == n_iter) { /* hard wired test - need to look at full surrounded nodes or something */
-      CHKERRQ(MatDestroy(&P));
-      CHKERRQ(MatDestroy(&cMat));
+      PetscCall(MatDestroy(&P));
+      PetscCall(MatDestroy(&cMat));
       break;
     } else {
       Vec diag;
@@ -979,27 +979,27 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
       for (kk=0,gid=my0; kk<nloc; kk++,gid++) {
         if (!lid_matched[kk]) {
           gid  = kk+my0;
-          CHKERRQ(MatGetRow(cMat,gid,&n,NULL,NULL));
+          PetscCall(MatGetRow(cMat,gid,&n,NULL,NULL));
           if (n>1) {
-            CHKERRQ(MatSetValues(P,1,&gid,1,&gid,&one,INSERT_VALUES));
+            PetscCall(MatSetValues(P,1,&gid,1,&gid,&one,INSERT_VALUES));
           }
-          CHKERRQ(MatRestoreRow(cMat,gid,&n,NULL,NULL));
+          PetscCall(MatRestoreRow(cMat,gid,&n,NULL,NULL));
         }
       }
-      CHKERRQ(MatAssemblyBegin(P,MAT_FINAL_ASSEMBLY));
-      CHKERRQ(MatAssemblyEnd(P,MAT_FINAL_ASSEMBLY));
+      PetscCall(MatAssemblyBegin(P,MAT_FINAL_ASSEMBLY));
+      PetscCall(MatAssemblyEnd(P,MAT_FINAL_ASSEMBLY));
 
       /* project to make new graph with colapsed edges */
-      CHKERRQ(MatPtAP(cMat,P,MAT_INITIAL_MATRIX,1.0,&tMat));
-      CHKERRQ(MatDestroy(&P));
-      CHKERRQ(MatDestroy(&cMat));
+      PetscCall(MatPtAP(cMat,P,MAT_INITIAL_MATRIX,1.0,&tMat));
+      PetscCall(MatDestroy(&P));
+      PetscCall(MatDestroy(&cMat));
       cMat = tMat;
-      CHKERRQ(MatCreateVecs(cMat, &diag, NULL));
-      CHKERRQ(MatGetDiagonal(cMat, diag)); /* effectively PCJACOBI */
-      CHKERRQ(VecReciprocal(diag));
-      CHKERRQ(VecSqrtAbs(diag));
-      CHKERRQ(MatDiagonalScale(cMat, diag, diag));
-      CHKERRQ(VecDestroy(&diag));
+      PetscCall(MatCreateVecs(cMat, &diag, NULL));
+      PetscCall(MatGetDiagonal(cMat, diag)); /* effectively PCJACOBI */
+      PetscCall(VecReciprocal(diag));
+      PetscCall(VecSqrtAbs(diag));
+      PetscCall(MatDiagonalScale(cMat, diag, diag));
+      PetscCall(VecDestroy(&diag));
     }
   } /* coarsen iterator */
 
@@ -1010,36 +1010,36 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
     PetscInt     gid, NN, MM, jj = 0, mxsz = 0;
 
     for (kk=0; kk<nloc; kk++) {
-      CHKERRQ(PetscCDSizeAt(agg_llists, kk, &jj));
+      PetscCall(PetscCDSizeAt(agg_llists, kk, &jj));
       if (jj > mxsz) mxsz = jj;
     }
-    CHKERRQ(MatGetSize(a_Gmat, &MM, &NN));
+    PetscCall(MatGetSize(a_Gmat, &MM, &NN));
     if (mxsz > MM-nloc) mxsz = MM-nloc;
 
-    CHKERRQ(MatCreateAIJ(comm, nloc, nloc,PETSC_DETERMINE, PETSC_DETERMINE,0, NULL, mxsz, NULL, &mat));
+    PetscCall(MatCreateAIJ(comm, nloc, nloc,PETSC_DETERMINE, PETSC_DETERMINE,0, NULL, mxsz, NULL, &mat));
 
     for (kk=0,gid=my0; kk<nloc; kk++,gid++) {
       /* for (pos=PetscCDGetHeadPos(agg_llists,kk) ; pos ; pos=PetscCDGetNextPos(agg_llists,kk,pos)) { */
-      CHKERRQ(PetscCDGetHeadPos(agg_llists,kk,&pos));
+      PetscCall(PetscCDGetHeadPos(agg_llists,kk,&pos));
       while (pos) {
         PetscInt gid1;
-        CHKERRQ(PetscCDIntNdGetID(pos, &gid1));
-        CHKERRQ(PetscCDGetNextPos(agg_llists,kk,&pos));
+        PetscCall(PetscCDIntNdGetID(pos, &gid1));
+        PetscCall(PetscCDGetNextPos(agg_llists,kk,&pos));
 
         if (gid1 < my0 || gid1 >= my0+nloc) {
-          CHKERRQ(MatSetValues(mat,1,&gid,1,&gid1,&one,ADD_VALUES));
+          PetscCall(MatSetValues(mat,1,&gid,1,&gid1,&one,ADD_VALUES));
         }
       }
     }
-    CHKERRQ(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(PetscCDSetMat(agg_llists, mat));
+    PetscCall(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
+    PetscCall(PetscCDSetMat(agg_llists, mat));
   }
 
-  CHKERRQ(PetscFree(lid_cprowID));
-  CHKERRQ(PetscFree(lid_gid));
-  CHKERRQ(PetscFree(lid_matched));
-  CHKERRQ(PetscCDDestroy(deleted_list));
+  PetscCall(PetscFree(lid_cprowID));
+  PetscCall(PetscFree(lid_gid));
+  PetscCall(PetscFree(lid_matched));
+  PetscCall(PetscCDDestroy(deleted_list));
   PetscFunctionReturn(0);
 }
 
@@ -1055,12 +1055,12 @@ static PetscErrorCode MatCoarsenApply_HEM(MatCoarsen coarse)
     IS       perm;
     PetscInt n,m;
 
-    CHKERRQ(MatGetLocalSize(mat, &m, &n));
-    CHKERRQ(ISCreateStride(PetscObjectComm((PetscObject)mat), m, 0, 1, &perm));
-    CHKERRQ(heavyEdgeMatchAgg(perm, mat, &coarse->agg_lists));
-    CHKERRQ(ISDestroy(&perm));
+    PetscCall(MatGetLocalSize(mat, &m, &n));
+    PetscCall(ISCreateStride(PetscObjectComm((PetscObject)mat), m, 0, 1, &perm));
+    PetscCall(heavyEdgeMatchAgg(perm, mat, &coarse->agg_lists));
+    PetscCall(ISDestroy(&perm));
   } else {
-    CHKERRQ(heavyEdgeMatchAgg(coarse->perm, mat, &coarse->agg_lists));
+    PetscCall(heavyEdgeMatchAgg(coarse->perm, mat, &coarse->agg_lists));
   }
   PetscFunctionReturn(0);
 }
@@ -1071,13 +1071,13 @@ static PetscErrorCode MatCoarsenView_HEM(MatCoarsen coarse,PetscViewer viewer)
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)coarse),&rank));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)coarse),&rank));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    CHKERRQ(PetscViewerASCIIPushSynchronized(viewer));
-    CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer,"  [%d] HEM aggregator\n",rank));
-    CHKERRQ(PetscViewerFlush(viewer));
-    CHKERRQ(PetscViewerASCIIPopSynchronized(viewer));
+    PetscCall(PetscViewerASCIIPushSynchronized(viewer));
+    PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"  [%d] HEM aggregator\n",rank));
+    PetscCall(PetscViewerFlush(viewer));
+    PetscCall(PetscViewerASCIIPopSynchronized(viewer));
   }
   PetscFunctionReturn(0);
 }

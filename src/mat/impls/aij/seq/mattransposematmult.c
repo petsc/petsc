@@ -13,10 +13,10 @@ PetscErrorCode MatDestroy_SeqDense_MatTransMatMult(void *data)
   Mat_MatTransMatMult *atb = (Mat_MatTransMatMult *)data;
 
   PetscFunctionBegin;
-  CHKERRQ(MatDestroy(&atb->mA));
-  CHKERRQ(VecDestroy(&atb->bt));
-  CHKERRQ(VecDestroy(&atb->ct));
-  CHKERRQ(PetscFree(atb));
+  PetscCall(MatDestroy(&atb->mA));
+  PetscCall(VecDestroy(&atb->bt));
+  PetscCall(VecDestroy(&atb->ct));
+  PetscCall(PetscFree(atb));
   PetscFunctionReturn(0);
 }
 
@@ -35,22 +35,22 @@ PETSC_INTERN PetscErrorCode MatTMatTMultSymbolic_SeqAIJ_SeqDense(Mat A,Mat B,Pet
 
   /* create output dense matrix C */
   if (C->product->type == MATPRODUCT_AtB) {
-    CHKERRQ(MatSetSizes(C,A->cmap->n,B->cmap->N,A->cmap->n,B->cmap->N));
+    PetscCall(MatSetSizes(C,A->cmap->n,B->cmap->N,A->cmap->n,B->cmap->N));
     dofm = B->cmap->n;
   } else {
-    CHKERRQ(MatSetSizes(C,A->rmap->n,B->rmap->N,A->rmap->n,B->rmap->N));
+    PetscCall(MatSetSizes(C,A->rmap->n,B->rmap->N,A->rmap->n,B->rmap->N));
     dofm = B->rmap->n;
   }
-  CHKERRQ(PetscObjectTypeCompareAny((PetscObject)C,&cisdense,MATSEQDENSE,MATSEQDENSECUDA,""));
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)C,&cisdense,MATSEQDENSE,MATSEQDENSECUDA,""));
   if (!cisdense) {
-    CHKERRQ(MatSetType(C,((PetscObject)B)->type_name));
+    PetscCall(MatSetType(C,((PetscObject)B)->type_name));
   }
-  CHKERRQ(MatSetUp(C));
+  PetscCall(MatSetUp(C));
 
   /* create additional data structure for the product */
-  CHKERRQ(PetscNew(&atb));
-  CHKERRQ(MatCreateMAIJ(A,dofm,&atb->mA));
-  CHKERRQ(MatCreateVecs(atb->mA,&atb->ct,&atb->bt));
+  PetscCall(PetscNew(&atb));
+  PetscCall(MatCreateMAIJ(A,dofm,&atb->mA));
+  PetscCall(MatCreateVecs(atb->mA,&atb->ct,&atb->bt));
   C->product->data    = atb;
   C->product->destroy = MatDestroy_SeqDense_MatTransMatMult;
 
@@ -79,57 +79,57 @@ PetscErrorCode MatTMatTMultNumeric_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
   bt = atb->bt;
   ct = atb->ct;
 
-  CHKERRQ(MatDenseGetArrayRead(B,&Barray));
-  CHKERRQ(MatDenseGetLDA(B,&blda));
-  CHKERRQ(MatDenseGetArrayWrite(C,&Carray));
-  CHKERRQ(MatDenseGetLDA(C,&clda));
+  PetscCall(MatDenseGetArrayRead(B,&Barray));
+  PetscCall(MatDenseGetLDA(B,&blda));
+  PetscCall(MatDenseGetArrayWrite(C,&Carray));
+  PetscCall(MatDenseGetLDA(C,&clda));
   if (C->product->type == MATPRODUCT_AtB) { /* transpose local array of B, then copy it to vector bt */
     const PetscScalar *ctarray;
     PetscScalar       *btarray;
 
-    CHKERRQ(VecGetArrayWrite(bt,&btarray));
+    PetscCall(VecGetArrayWrite(bt,&btarray));
     for (j=0; j<mdof; j++) {
       for (i=0; i<m; i++) btarray[i*mdof + j] = Barray[j*blda + i];
     }
-    CHKERRQ(VecRestoreArrayWrite(bt,&btarray));
+    PetscCall(VecRestoreArrayWrite(bt,&btarray));
 
     /* compute ct = mA^T * cb */
-    CHKERRQ(MatMultTranspose(atb->mA,bt,ct));
+    PetscCall(MatMultTranspose(atb->mA,bt,ct));
 
     /* transpose local array of ct to matrix C */
-    CHKERRQ(VecGetArrayRead(ct,&ctarray));
+    PetscCall(VecGetArrayRead(ct,&ctarray));
     for (j=0; j<mdof; j++) {
       for (i=0; i<n; i++) Carray[j*clda + i] = ctarray[i*mdof + j];
     }
-    CHKERRQ(VecRestoreArrayRead(ct,&ctarray));
+    PetscCall(VecRestoreArrayRead(ct,&ctarray));
   } else {
     const PetscScalar *btarray;
     PetscScalar       *ctarray;
 
     if (blda == B->rmap->n) {
-      CHKERRQ(VecPlaceArray(ct,Barray));
+      PetscCall(VecPlaceArray(ct,Barray));
     } else {
       PetscInt bn = B->cmap->n;
       PetscInt bm = B->rmap->n;
 
-      CHKERRQ(VecGetArrayWrite(ct,&ctarray));
+      PetscCall(VecGetArrayWrite(ct,&ctarray));
       for (j=0; j<bn; j++) {
         for (i=0; i<bm; i++) ctarray[j*bm + i] = Barray[j*blda + i];
       }
-      CHKERRQ(VecRestoreArrayWrite(ct,&ctarray));
+      PetscCall(VecRestoreArrayWrite(ct,&ctarray));
     }
 
-    CHKERRQ(MatMult(atb->mA,ct,bt));
+    PetscCall(MatMult(atb->mA,ct,bt));
     if (blda == B->rmap->n) {
-      CHKERRQ(VecResetArray(ct));
+      PetscCall(VecResetArray(ct));
     }
-    CHKERRQ(VecGetArrayRead(bt,&btarray));
+    PetscCall(VecGetArrayRead(bt,&btarray));
     for (j=0; j<mdof; j++) {
       for (i=0; i<m; i++) Carray[j*clda + i] = btarray[i*mdof + j];
     }
-    CHKERRQ(VecRestoreArrayRead(bt,&btarray));
+    PetscCall(VecRestoreArrayRead(bt,&btarray));
   }
-  CHKERRQ(MatDenseRestoreArrayRead(B,&Barray));
-  CHKERRQ(MatDenseRestoreArray(C,&Carray));
+  PetscCall(MatDenseRestoreArrayRead(B,&Barray));
+  PetscCall(MatDenseRestoreArray(C,&Carray));
   PetscFunctionReturn(0);
 }

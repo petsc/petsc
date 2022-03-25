@@ -32,10 +32,10 @@ static PetscErrorCode Update1(DM da,const PetscScalar ***__restrict__ x1, PetscS
   PetscInt       xm,ym,zm,xs,ys,zs,gxm,gym,gzm,gxs,gys,gzs;
 
   PetscFunctionBegin;
-  CHKERRQ(DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm));
-  CHKERRQ(DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm));
+  PetscCall(DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm));
+  PetscCall(DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm));
   for (it=0; it<nwarm+nloop; it++) {
-    if (it == nwarm) CHKERRQ(PetscTime(&tstart));
+    if (it == nwarm) PetscCall(PetscTime(&tstart));
     for (k=zs; k<zs+zm; k++) {
       for (j=ys; j<ys+ym; j++) {
         for (i=xs; i<xs+xm; i++) {
@@ -45,7 +45,7 @@ static PetscErrorCode Update1(DM da,const PetscScalar ***__restrict__ x1, PetscS
       }
     }
   }
-  CHKERRQ(PetscTime(&tend));
+  PetscCall(PetscTime(&tend));
   *avgTime = (tend - tstart)/nloop;
   PetscFunctionReturn(0);
 }
@@ -58,12 +58,12 @@ static PetscErrorCode Update2(DM da,const PetscScalar *__restrict__ x2, PetscSca
   PetscInt       xm,ym,zm,xs,ys,zs,gxm,gym,gzm,gxs,gys,gzs;
 
   PetscFunctionBegin;
-  CHKERRQ(DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm));
-  CHKERRQ(DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm));
+  PetscCall(DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm));
+  PetscCall(DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm));
 #define X2(k,j,i) x2[(k-gzs)*gym*gxm+(j-gys)*gxm+(i-gxs)]
 #define Y2(k,j,i) y2[(k-zs)*ym*xm+(j-ys)*xm+(i-xs)]
   for (it=0; it<nwarm+nloop; it++) {
-    if (it == nwarm) CHKERRQ(PetscTime(&tstart));
+    if (it == nwarm) PetscCall(PetscTime(&tstart));
     for (k=zs; k<zs+zm; k++) {
       for (j=ys; j<ys+ym; j++) {
         for (i=xs; i<xs+xm; i++) {
@@ -73,7 +73,7 @@ static PetscErrorCode Update2(DM da,const PetscScalar *__restrict__ x2, PetscSca
       }
     }
   }
-  CHKERRQ(PetscTime(&tend));
+  PetscCall(PetscTime(&tend));
   *avgTime = (tend - tstart)/nloop;
 #undef X2
 #undef Y2
@@ -99,68 +99,68 @@ int main(int argc,char **argv)
   PetscInt                             nwarm = 2, nloop = 10;
   PetscInt                             min = 32, max = 32*8; /* min and max sizes of the grids to sample */
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(PetscRandomCreate(PETSC_COMM_WORLD,&rctx));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-min",&min,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-max",&max,NULL));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscRandomCreate(PETSC_COMM_WORLD,&rctx));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-min",&min,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-max",&max,NULL));
 
   for (PetscInt len=min; len<=max; len=len*2) {
-    CHKERRQ(DMDACreate3d(PETSC_COMM_WORLD,bx,by,bz,st,len,len,len,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,sw,0,0,0,&da));
-    CHKERRQ(DMSetFromOptions(da));
-    CHKERRQ(DMSetUp(da));
+    PetscCall(DMDACreate3d(PETSC_COMM_WORLD,bx,by,bz,st,len,len,len,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,sw,0,0,0,&da));
+    PetscCall(DMSetFromOptions(da));
+    PetscCall(DMSetUp(da));
 
-    CHKERRQ(DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm));
-    CHKERRQ(DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm));
-    CHKERRQ(DMCreateLocalVector(da,&x)); /* Create local x and global y */
-    CHKERRQ(DMCreateGlobalVector(da,&y));
+    PetscCall(DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm));
+    PetscCall(DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm));
+    PetscCall(DMCreateLocalVector(da,&x)); /* Create local x and global y */
+    PetscCall(DMCreateGlobalVector(da,&y));
 
     /* Access with petsc multi-dimensional arrays */
-    CHKERRQ(VecSetRandom(x,rctx));
-    CHKERRQ(VecSet(y,0.0));
-    CHKERRQ(DMDAVecGetArrayRead(da,x,&x1));
-    CHKERRQ(DMDAVecGetArray(da,y,&y1));
-    CHKERRQ(Update1(da,x1,y1,nwarm,nloop,&avgTime));
-    CHKERRQ(DMDAVecRestoreArrayRead(da,x,&x1));
-    CHKERRQ(DMDAVecRestoreArray(da,y,&y1));
-    CHKERRQ(PetscTime(&tend));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"%4d^3 -- PETSc average time  = %e\n",len,avgTime));
+    PetscCall(VecSetRandom(x,rctx));
+    PetscCall(VecSet(y,0.0));
+    PetscCall(DMDAVecGetArrayRead(da,x,&x1));
+    PetscCall(DMDAVecGetArray(da,y,&y1));
+    PetscCall(Update1(da,x1,y1,nwarm,nloop,&avgTime));
+    PetscCall(DMDAVecRestoreArrayRead(da,x,&x1));
+    PetscCall(DMDAVecRestoreArray(da,y,&y1));
+    PetscCall(PetscTime(&tend));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%4d^3 -- PETSc average time  = %e\n",len,avgTime));
 
     /* Access with C multi-dimensional arrays */
-    CHKERRQ(VecSetRandom(x,rctx));
-    CHKERRQ(VecSet(y,0.0));
-    CHKERRQ(VecGetArrayRead(x,&x2));
-    CHKERRQ(VecGetArray(y,&y2));
-    CHKERRQ(Update2(da,x2,y2,nwarm,nloop,&avgTime));
-    CHKERRQ(VecRestoreArrayRead(x,&x2));
-    CHKERRQ(VecRestoreArray(y,&y2));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"%4d^3 -- C average time      = %e\n",len,avgTime));
+    PetscCall(VecSetRandom(x,rctx));
+    PetscCall(VecSet(y,0.0));
+    PetscCall(VecGetArrayRead(x,&x2));
+    PetscCall(VecGetArray(y,&y2));
+    PetscCall(Update2(da,x2,y2,nwarm,nloop,&avgTime));
+    PetscCall(VecRestoreArrayRead(x,&x2));
+    PetscCall(VecRestoreArray(y,&y2));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%4d^3 -- C average time      = %e\n",len,avgTime));
 
     /* Access with Kokkos multi-dimensional OffsetViews */
-    CHKERRQ(VecSet(y,0.0));
-    CHKERRQ(VecSetRandom(x,rctx));
-    CHKERRQ(DMDAVecGetKokkosOffsetView(da,x,&x3));
-    CHKERRQ(DMDAVecGetKokkosOffsetView(da,y,&y3));
+    PetscCall(VecSet(y,0.0));
+    PetscCall(VecSetRandom(x,rctx));
+    PetscCall(DMDAVecGetKokkosOffsetView(da,x,&x3));
+    PetscCall(DMDAVecGetKokkosOffsetView(da,y,&y3));
 
     for (PetscInt it=0; it<nwarm+nloop; it++) {
-      if (it == nwarm) CHKERRQ(PetscTime(&tstart));
+      if (it == nwarm) PetscCall(PetscTime(&tstart));
       Kokkos::parallel_for("stencil",MDRangePolicy<Kokkos::DefaultHostExecutionSpace,Rank<3,Iterate::Right,Iterate::Right>>({zs,ys,xs},{zs+zm,ys+ym,xs+xm}),
         KOKKOS_LAMBDA(PetscInt k,PetscInt j,PetscInt i) {
         y3(k,j,i) = 6*x3(k,j,i) - x3(k-1,j,i) - x3(k,j-1,i) - x3(k,j,i-1)
                                 - x3(k+1,j,i) - x3(k,j+1,i) - x3(k,j,i+1);
       });
     }
-    CHKERRQ(PetscTime(&tend));
-    CHKERRQ(DMDAVecRestoreKokkosOffsetView(da,x,&x3));
-    CHKERRQ(DMDAVecRestoreKokkosOffsetView(da,y,&y3));
+    PetscCall(PetscTime(&tend));
+    PetscCall(DMDAVecRestoreKokkosOffsetView(da,x,&x3));
+    PetscCall(DMDAVecRestoreKokkosOffsetView(da,y,&y3));
     avgTime = (tend - tstart)/nloop;
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"%4d^3 -- Kokkos average time = %e\n",len,avgTime));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%4d^3 -- Kokkos average time = %e\n",len,avgTime));
 
-    CHKERRQ(VecDestroy(&x));
-    CHKERRQ(VecDestroy(&y));
-    CHKERRQ(DMDestroy(&da));
+    PetscCall(VecDestroy(&x));
+    PetscCall(VecDestroy(&y));
+    PetscCall(DMDestroy(&da));
   }
-  CHKERRQ(PetscRandomDestroy(&rctx));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscRandomDestroy(&rctx));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

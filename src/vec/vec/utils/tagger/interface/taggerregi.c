@@ -22,11 +22,11 @@ PetscErrorCode  VecTaggerRegisterAll(void)
   PetscFunctionBegin;
   if (VecTaggerRegisterAllCalled) PetscFunctionReturn(0);
   VecTaggerRegisterAllCalled = PETSC_TRUE;
-  CHKERRQ(VecTaggerRegister(VECTAGGERABSOLUTE, VecTaggerCreate_Absolute));
-  CHKERRQ(VecTaggerRegister(VECTAGGERRELATIVE, VecTaggerCreate_Relative));
-  CHKERRQ(VecTaggerRegister(VECTAGGERCDF,      VecTaggerCreate_CDF));
-  CHKERRQ(VecTaggerRegister(VECTAGGEROR,       VecTaggerCreate_Or));
-  CHKERRQ(VecTaggerRegister(VECTAGGERAND,      VecTaggerCreate_And));
+  PetscCall(VecTaggerRegister(VECTAGGERABSOLUTE, VecTaggerCreate_Absolute));
+  PetscCall(VecTaggerRegister(VECTAGGERRELATIVE, VecTaggerCreate_Relative));
+  PetscCall(VecTaggerRegister(VECTAGGERCDF,      VecTaggerCreate_CDF));
+  PetscCall(VecTaggerRegister(VECTAGGEROR,       VecTaggerCreate_Or));
+  PetscCall(VecTaggerRegister(VECTAGGERAND,      VecTaggerCreate_And));
   PetscFunctionReturn(0);
 }
 
@@ -59,6 +59,6 @@ $     -snes_type my_solver
 PetscErrorCode  VecTaggerRegister(const char sname[],PetscErrorCode (*function)(VecTagger))
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscFunctionListAdd(&VecTaggerList,sname,function));
+  PetscCall(PetscFunctionListAdd(&VecTaggerList,sname,function));
   PetscFunctionReturn(0);
 }

@@ -53,11 +53,11 @@ PetscErrorCode PetscFPTrapPush(PetscFPTrap trap)
   struct PetscFPTrapLink *link;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNew(&link));
+  PetscCall(PetscNew(&link));
   link->trapmode = _trapmode;
   link->next     = _trapstack;
   _trapstack     = link;
-  if (trap != _trapmode) CHKERRQ(PetscSetFPTrap(trap));
+  if (trap != _trapmode) PetscCall(PetscSetFPTrap(trap));
   PetscFunctionReturn(0);
 }
 
@@ -75,10 +75,10 @@ PetscErrorCode PetscFPTrapPop(void)
   struct PetscFPTrapLink *link;
 
   PetscFunctionBegin;
-  if (_trapstack->trapmode != _trapmode) CHKERRQ(PetscSetFPTrap(_trapstack->trapmode));
+  if (_trapstack->trapmode != _trapmode) PetscCall(PetscSetFPTrap(_trapstack->trapmode));
   link       = _trapstack;
   _trapstack = _trapstack->next;
-  CHKERRQ(PetscFree(link));
+  PetscCall(PetscFree(link));
   PetscFunctionReturn(0);
 }
 
@@ -187,7 +187,7 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
 PetscErrorCode  PetscDetermineInitialFPTrap(void)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscInfo(NULL,"Unable to determine initial floating point trapping. Assuming it is off\n"));
+  PetscCall(PetscInfo(NULL,"Unable to determine initial floating point trapping. Assuming it is off\n"));
   PetscFunctionReturn(0);
 }
 
@@ -243,7 +243,7 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
 PetscErrorCode  PetscDetermineInitialFPTrap(void)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscInfo(NULL,"Unable to determine initial floating point trapping. Assuming it is off\n"));
+  PetscCall(PetscInfo(NULL,"Unable to determine initial floating point trapping. Assuming it is off\n"));
   PetscFunctionReturn(0);
 }
 
@@ -284,7 +284,7 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
 PetscErrorCode  PetscDetermineInitialFPTrap(void)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscInfo(NULL,"Unable to determine initial floating point trapping. Assuming it is off\n"));
+  PetscCall(PetscInfo(NULL,"Unable to determine initial floating point trapping. Assuming it is off\n"));
   PetscFunctionReturn(0);
 }
 
@@ -341,7 +341,7 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
 PetscErrorCode  PetscDetermineInitialFPTrap(void)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscInfo(NULL,"Unable to determine initial floating point trapping. Assuming it is off\n"));
+  PetscCall(PetscInfo(NULL,"Unable to determine initial floating point trapping. Assuming it is off\n"));
   PetscFunctionReturn(0);
 }
 
@@ -422,7 +422,7 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap on)
 PetscErrorCode  PetscDetermineInitialFPTrap(void)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscInfo(NULL,"Unable to determine initial floating point trapping. Assuming it is off\n"));
+  PetscCall(PetscInfo(NULL,"Unable to determine initial floating point trapping. Assuming it is off\n"));
   PetscFunctionReturn(0);
 }
 
@@ -457,7 +457,7 @@ PetscErrorCode  PetscSetFPTrap(PetscFPTrap on)
 PetscErrorCode  PetscDetermineInitialFPTrap(void)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscInfo(NULL,"Unable to determine initial floating point trapping. Assuming it is off\n"));
+  PetscCall(PetscInfo(NULL,"Unable to determine initial floating point trapping. Assuming it is off\n"));
   PetscFunctionReturn(0);
 }
 
@@ -565,15 +565,15 @@ PetscErrorCode  PetscDetermineInitialFPTrap(void)
   flags = _MM_GET_EXCEPTION_MASK();
   if (!(flags & _MM_MASK_DIV_ZERO)) {
 #else
-  CHKERRQ(PetscInfo(NULL,"Floating point trapping unknown, assuming off\n"));
+  PetscCall(PetscInfo(NULL,"Floating point trapping unknown, assuming off\n"));
   PetscFunctionReturn(0);
 #endif
 #if defined(FE_NOMASK_ENV) || defined PETSC_HAVE_XMMINTRIN_H
     _trapmode = PETSC_FP_TRAP_ON;
-    CHKERRQ(PetscInfo(NULL,"Floating point trapping is on by default %d\n",flags));
+    PetscCall(PetscInfo(NULL,"Floating point trapping is on by default %d\n",flags));
   } else {
     _trapmode = PETSC_FP_TRAP_OFF;
-    CHKERRQ(PetscInfo(NULL,"Floating point trapping is off by default %d\n",flags));
+    PetscCall(PetscInfo(NULL,"Floating point trapping is off by default %d\n",flags));
   }
   PetscFunctionReturn(0);
 #endif
@@ -617,7 +617,7 @@ PetscErrorCode  PetscSetFPTrap(PetscFPTrap on)
 PetscErrorCode  PetscDetermineInitialFPTrap(void)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscInfo(NULL,"Unable to determine initial floating point trapping. Assuming it is off\n"));
+  PetscCall(PetscInfo(NULL,"Unable to determine initial floating point trapping. Assuming it is off\n"));
   PetscFunctionReturn(0);
 }
 
@@ -646,7 +646,7 @@ PetscErrorCode  PetscSetFPTrap(PetscFPTrap on)
 PetscErrorCode  PetscDetermineInitialFPTrap(void)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscInfo(NULL,"Unable to determine initial floating point trapping. Assuming it is off\n"));
+  PetscCall(PetscInfo(NULL,"Unable to determine initial floating point trapping. Assuming it is off\n"));
   PetscFunctionReturn(0);
 }
 #endif

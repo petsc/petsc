@@ -28,12 +28,12 @@ PETSC_EXTERN PetscErrorCode VecCreate_Seq(Vec V)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)V),&size));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)V),&size));
   PetscCheckFalse(size > 1,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQ on more than one process");
 #if !defined(PETSC_USE_MIXED_PRECISION)
-  CHKERRQ(PetscCalloc1(n,&array));
-  CHKERRQ(PetscLogObjectMemory((PetscObject)V, n*sizeof(PetscScalar)));
-  CHKERRQ(VecCreate_Seq_Private(V,array));
+  PetscCall(PetscCalloc1(n,&array));
+  PetscCall(PetscLogObjectMemory((PetscObject)V, n*sizeof(PetscScalar)));
+  PetscCall(VecCreate_Seq_Private(V,array));
 
   s                  = (Vec_Seq*)V->data;
   s->array_allocated = array;
@@ -42,9 +42,9 @@ PETSC_EXTERN PetscErrorCode VecCreate_Seq(Vec V)
   case PETSC_PRECISION_SINGLE: {
     float *aarray;
 
-    CHKERRQ(PetscCalloc1(n,&aarray));
-    CHKERRQ(PetscLogObjectMemory((PetscObject)V, n*sizeof(float)));
-    CHKERRQ(VecCreate_Seq_Private(V,aarray));
+    PetscCall(PetscCalloc1(n,&aarray));
+    PetscCall(PetscLogObjectMemory((PetscObject)V, n*sizeof(float)));
+    PetscCall(VecCreate_Seq_Private(V,aarray));
 
     s                  = (Vec_Seq*)V->data;
     s->array_allocated = (PetscScalar*)aarray;
@@ -52,9 +52,9 @@ PETSC_EXTERN PetscErrorCode VecCreate_Seq(Vec V)
   case PETSC_PRECISION_DOUBLE: {
     double *aarray;
 
-    CHKERRQ(PetscCalloc1(n,&aarray));
-    CHKERRQ(PetscLogObjectMemory((PetscObject)V, n*sizeof(double)));
-    CHKERRQ(VecCreate_Seq_Private(V,aarray));
+    PetscCall(PetscCalloc1(n,&aarray));
+    PetscCall(PetscLogObjectMemory((PetscObject)V, n*sizeof(double)));
+    PetscCall(VecCreate_Seq_Private(V,aarray));
 
     s                  = (Vec_Seq*)V->data;
     s->array_allocated = (PetscScalar*)aarray;

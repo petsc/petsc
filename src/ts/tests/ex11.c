@@ -158,41 +158,41 @@ int main(int argc,char **argv)
 {
   PetscReal      A[1],Gamma[1] = {1.0},b[1],c[1],d[1];
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   /* TaoLineSearchRegister() also has the same memory leak */
   /* TaoRegister() also has the same memory leak */
-  CHKERRQ(TSGLLEAdaptRegister("dummy",TSGLLEAdaptCreate_Dummy));
-  CHKERRQ(TSGLLERegister("dummy",TSGLLECreate_Dummy));
-  CHKERRQ(TSRKRegister("dummy",0,0,A,0,0,0,0,0));
-  CHKERRQ(TSGLEERegister("dummy",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0));
-  CHKERRQ(TSARKIMEXRegister("dummy",0,0,0,0,0,0,0,0,0,0,0,0,0));
-  CHKERRQ(TSRosWRegister("dummy",0,1,A,Gamma,b,0,0,0));
-  CHKERRQ(TSBasicSymplecticRegister("dummy",0,0,c,d));
-  CHKERRQ(TSAdaptRegister("dummy",TSAdaptCreate_Dummy));
-  CHKERRQ(TSRegister("dummy",TSCreate_Dummy));
+  PetscCall(TSGLLEAdaptRegister("dummy",TSGLLEAdaptCreate_Dummy));
+  PetscCall(TSGLLERegister("dummy",TSGLLECreate_Dummy));
+  PetscCall(TSRKRegister("dummy",0,0,A,0,0,0,0,0));
+  PetscCall(TSGLEERegister("dummy",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0));
+  PetscCall(TSARKIMEXRegister("dummy",0,0,0,0,0,0,0,0,0,0,0,0,0));
+  PetscCall(TSRosWRegister("dummy",0,1,A,Gamma,b,0,0,0));
+  PetscCall(TSBasicSymplecticRegister("dummy",0,0,c,d));
+  PetscCall(TSAdaptRegister("dummy",TSAdaptCreate_Dummy));
+  PetscCall(TSRegister("dummy",TSCreate_Dummy));
 #if !defined(PETSC_USE_COMPLEX)
-  CHKERRQ(CharacteristicRegister("dummy",CharacteristicCreate_Dummy));
+  PetscCall(CharacteristicRegister("dummy",CharacteristicCreate_Dummy));
 #endif
-  CHKERRQ(SNESLineSearchRegister("dummy",SNESLineSearchCreate_Dummy));
-  CHKERRQ(SNESRegister("dummy",SNESCreate_Dummy));
-  CHKERRQ(KSPGuessRegister("dummy",KSPGuessCreate_Dummy));
-  CHKERRQ(KSPRegister("dummy",KSPCreate_Dummy));
-  CHKERRQ(PCRegister("dummy",PCCreate_Dummy));
-  CHKERRQ(DMRegister("dummy",DMCreate_Dummy));
-  CHKERRQ(MatOrderingRegister("dummy",MatOrderingCreate_Dummy));
-  CHKERRQ(MatPartitioningRegister("dummy",MatPartitioningCreate_Dummy));
-  CHKERRQ(MatRegister("dummy",MatCreate_Dummy));
-  CHKERRQ(PFRegister("dummy",PFCreate_Dummy));
-  CHKERRQ(VecScatterRegister("dummy",VecScatterCreate_Dummy));
-  CHKERRQ(VecRegister("dummy",VecCreate_Dummy));
-  CHKERRQ(PetscSFRegister("dummy",PetscSFCreate_Dummy));
-  CHKERRQ(ISLocalToGlobalMappingRegister("dummy",ISLocalToGlobalMappingCreate_Dummy));
-  CHKERRQ(ISRegister("dummy",ISCreate_Dummy));
-  CHKERRQ(AORegister("dummy",AOCreate_Dummy));
-  CHKERRQ(PetscDrawRegister("dummy",PetscDrawCreate_Dummy));
-  CHKERRQ(PetscViewerRegister("dummy",PetscViewerCreate_Dummy));
-  CHKERRQ(PetscRandomRegister("dummy",PetscRandomCreate_Dummy));
-  CHKERRQ(PetscFinalize());
+  PetscCall(SNESLineSearchRegister("dummy",SNESLineSearchCreate_Dummy));
+  PetscCall(SNESRegister("dummy",SNESCreate_Dummy));
+  PetscCall(KSPGuessRegister("dummy",KSPGuessCreate_Dummy));
+  PetscCall(KSPRegister("dummy",KSPCreate_Dummy));
+  PetscCall(PCRegister("dummy",PCCreate_Dummy));
+  PetscCall(DMRegister("dummy",DMCreate_Dummy));
+  PetscCall(MatOrderingRegister("dummy",MatOrderingCreate_Dummy));
+  PetscCall(MatPartitioningRegister("dummy",MatPartitioningCreate_Dummy));
+  PetscCall(MatRegister("dummy",MatCreate_Dummy));
+  PetscCall(PFRegister("dummy",PFCreate_Dummy));
+  PetscCall(VecScatterRegister("dummy",VecScatterCreate_Dummy));
+  PetscCall(VecRegister("dummy",VecCreate_Dummy));
+  PetscCall(PetscSFRegister("dummy",PetscSFCreate_Dummy));
+  PetscCall(ISLocalToGlobalMappingRegister("dummy",ISLocalToGlobalMappingCreate_Dummy));
+  PetscCall(ISRegister("dummy",ISCreate_Dummy));
+  PetscCall(AORegister("dummy",AOCreate_Dummy));
+  PetscCall(PetscDrawRegister("dummy",PetscDrawCreate_Dummy));
+  PetscCall(PetscViewerRegister("dummy",PetscViewerCreate_Dummy));
+  PetscCall(PetscRandomRegister("dummy",PetscRandomCreate_Dummy));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

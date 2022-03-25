@@ -19,8 +19,8 @@ PetscErrorCode PetscViewerHDF5CheckTimestepping_Internal(PetscViewer viewer, con
   const char       *group;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscViewerHDF5GetGroup(viewer, &group));
-  CHKERRQ(PetscViewerHDF5ReadAttribute(viewer,name,"timestepping",PETSC_BOOL,&timestepping,&timestepping));
+  PetscCall(PetscViewerHDF5GetGroup(viewer, &group));
+  PetscCall(PetscViewerHDF5ReadAttribute(viewer,name,"timestepping",PETSC_BOOL,&timestepping,&timestepping));
   PetscCheckFalse(timestepping != hdf5->timestepping,PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_UNEXPECTED,"Dataset %s/%s stored with timesteps? %s Timestepping pushed? %s", group, name, PetscBools[timestepping], PetscBools[hdf5->timestepping]);
   PetscFunctionReturn(0);
 }
@@ -31,15 +31,15 @@ static PetscErrorCode PetscViewerHDF5ReadInitialize_Private(PetscViewer viewer, 
   HDF5ReadCtx      h=NULL;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscViewerHDF5CheckTimestepping_Internal(viewer, name));
-  CHKERRQ(PetscNew(&h));
-  CHKERRQ(PetscViewerHDF5OpenGroup(viewer, &h->file, &h->group));
+  PetscCall(PetscViewerHDF5CheckTimestepping_Internal(viewer, name));
+  PetscCall(PetscNew(&h));
+  PetscCall(PetscViewerHDF5OpenGroup(viewer, &h->file, &h->group));
   PetscStackCallHDF5Return(h->dataset,H5Dopen2,(h->group, name, H5P_DEFAULT));
   PetscStackCallHDF5Return(h->dataspace,H5Dget_space,(h->dataset));
-  CHKERRQ(PetscViewerHDF5ReadAttribute(viewer,name,"complex",PETSC_BOOL,&h->complexVal,&h->complexVal));
+  PetscCall(PetscViewerHDF5ReadAttribute(viewer,name,"complex",PETSC_BOOL,&h->complexVal,&h->complexVal));
   if (!hdf5->horizontal) {
     /* MATLAB stores column vectors horizontally */
-    CHKERRQ(PetscViewerHDF5HasAttribute(viewer,name,"MATLAB_class",&hdf5->horizontal));
+    PetscCall(PetscViewerHDF5HasAttribute(viewer,name,"MATLAB_class",&hdf5->horizontal));
   }
   *ctx = h;
   PetscFunctionReturn(0);
@@ -54,8 +54,8 @@ static PetscErrorCode PetscViewerHDF5ReadFinalize_Private(PetscViewer viewer, HD
   PetscStackCallHDF5(H5Gclose,(h->group));
   PetscStackCallHDF5(H5Sclose,(h->dataspace));
   PetscStackCallHDF5(H5Dclose,(h->dataset));
-  CHKERRQ(PetscFree((*ctx)->dims));
-  CHKERRQ(PetscFree(*ctx));
+  PetscCall(PetscFree((*ctx)->dims));
+  PetscCall(PetscFree(*ctx));
   PetscFunctionReturn(0);
 }
 
@@ -67,13 +67,13 @@ static PetscErrorCode PetscViewerHDF5ReadSizes_Private(PetscViewer viewer, HDF5R
 
   PetscFunctionBegin;
   if (!(*map_)) {
-    CHKERRQ(PetscLayoutCreate(PetscObjectComm((PetscObject)viewer),map_));
+    PetscCall(PetscLayoutCreate(PetscObjectComm((PetscObject)viewer),map_));
   }
   map = *map_;
 
   /* Get actual number of dimensions in dataset */
   PetscStackCallHDF5Return(ctx->rdim,H5Sget_simple_extent_dims,(ctx->dataspace, NULL, NULL));
-  CHKERRQ(PetscMalloc1(ctx->rdim, &ctx->dims));
+  PetscCall(PetscMalloc1(ctx->rdim, &ctx->dims));
   PetscStackCallHDF5Return(ctx->rdim,H5Sget_simple_extent_dims,(ctx->dataspace, ctx->dims, NULL));
 
   /*
@@ -123,12 +123,12 @@ static PetscErrorCode PetscViewerHDF5ReadSizes_Private(PetscViewer viewer, HDF5R
 
   /* Set global size, blocksize and type if not yet set */
   if (map->bs < 0) {
-    CHKERRQ(PetscLayoutSetBlockSize(map, bs));
+    PetscCall(PetscLayoutSetBlockSize(map, bs));
   } else PetscCheckFalse(map->bs != bs,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Block size of array in file is %" PetscInt_FMT ", not %" PetscInt_FMT " as expected",bs,map->bs);
   if (map->N < 0) {
-    CHKERRQ(PetscLayoutSetSize(map, N));
+    PetscCall(PetscLayoutSetSize(map, N));
   } else PetscCheckFalse(map->N != N,PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_UNEXPECTED, "Global size of array in file is %" PetscInt_FMT ", not %" PetscInt_FMT " as expected",N,map->N);
-  if (setup) CHKERRQ(PetscLayoutSetUp(map));
+  if (setup) PetscCall(PetscLayoutSetUp(map));
   PetscFunctionReturn(0);
 }
 
@@ -141,13 +141,13 @@ static PetscErrorCode PetscViewerHDF5ReadSelectHyperslab_Private(PetscViewer vie
 
   PetscFunctionBegin;
   /* Compute local size and ownership range */
-  CHKERRQ(PetscLayoutSetUp(map));
-  CHKERRQ(PetscLayoutGetBlockSize(map, &bs));
-  CHKERRQ(PetscLayoutGetLocalSize(map, &n));
-  CHKERRQ(PetscLayoutGetRange(map, &low, NULL));
+  PetscCall(PetscLayoutSetUp(map));
+  PetscCall(PetscLayoutGetBlockSize(map, &bs));
+  PetscCall(PetscLayoutGetLocalSize(map, &n));
+  PetscCall(PetscLayoutGetRange(map, &low, NULL));
 
   /* Each process defines a dataset and reads it from the hyperslab in the file */
-  CHKERRQ(PetscMalloc2(ctx->rdim, &count, ctx->rdim, &offset));
+  PetscCall(PetscMalloc2(ctx->rdim, &count, ctx->rdim, &offset));
   for (i=0; i<ctx->rdim; i++) {
     /* By default, select all entries with no offset */
     offset[i] = 0;
@@ -158,12 +158,12 @@ static PetscErrorCode PetscViewerHDF5ReadSelectHyperslab_Private(PetscViewer vie
     offset[0] = hdf5->timestep;
   }
   {
-    CHKERRQ(PetscHDF5IntCast(n/bs, &count[ctx->lenInd]));
-    CHKERRQ(PetscHDF5IntCast(low/bs, &offset[ctx->lenInd]));
+    PetscCall(PetscHDF5IntCast(n/bs, &count[ctx->lenInd]));
+    PetscCall(PetscHDF5IntCast(low/bs, &offset[ctx->lenInd]));
   }
   PetscStackCallHDF5Return(*memspace,H5Screate_simple,(ctx->rdim, count, NULL));
   PetscStackCallHDF5(H5Sselect_hyperslab,(ctx->dataspace, H5S_SELECT_SET, offset, NULL, count, NULL));
-  CHKERRQ(PetscFree2(count, offset));
+  PetscCall(PetscFree2(count, offset));
   PetscFunctionReturn(0);
 }
 
@@ -213,10 +213,10 @@ PetscErrorCode PetscViewerHDF5Load(PetscViewer viewer, const char *name, PetscLa
   void            *arr;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscViewerHDF5GetGroup(viewer, &group));
-  CHKERRQ(PetscViewerHDF5HasDataset(viewer, name, &has));
+  PetscCall(PetscViewerHDF5GetGroup(viewer, &group));
+  PetscCall(PetscViewerHDF5HasDataset(viewer, name, &has));
   PetscCheck(has,PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Object (dataset) \"%s\" not stored in group %s", name, group ? group : "/");
-  CHKERRQ(PetscViewerHDF5ReadInitialize_Private(viewer, name, &h));
+  PetscCall(PetscViewerHDF5ReadInitialize_Private(viewer, name, &h));
 #if defined(PETSC_USE_COMPLEX)
   if (!h->complexVal) {
     H5T_class_t clazz = H5Tget_class(datatype);
@@ -226,18 +226,18 @@ PetscErrorCode PetscViewerHDF5Load(PetscViewer viewer, const char *name, PetscLa
   PetscCheck(!h->complexVal,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Dataset %s/%s is marked as complex but PETSc is configured for real scalars. Configure with --with-scalar-type=complex to read this dataset", group ? group : "",name);
 #endif
 
-  CHKERRQ(PetscViewerHDF5ReadSizes_Private(viewer, h, PETSC_TRUE, &map));
-  CHKERRQ(PetscViewerHDF5ReadSelectHyperslab_Private(viewer, h, map, &memspace));
+  PetscCall(PetscViewerHDF5ReadSizes_Private(viewer, h, PETSC_TRUE, &map));
+  PetscCall(PetscViewerHDF5ReadSelectHyperslab_Private(viewer, h, map, &memspace));
 
   unitsize = H5Tget_size(datatype);
   if (h->complexVal) unitsize *= 2;
   /* unitsize is size_t i.e. always unsigned, so the negative check is pointless? */
   PetscCheck(unitsize > 0 && unitsize <= PetscMax(sizeof(PetscInt),sizeof(PetscScalar)),PETSC_COMM_SELF,PETSC_ERR_LIB,"Sanity check failed: HDF5 function H5Tget_size(datatype) returned suspicious value %zu",unitsize);
-  CHKERRQ(PetscMalloc(map->n*unitsize, &arr));
+  PetscCall(PetscMalloc(map->n*unitsize, &arr));
 
-  CHKERRQ(PetscViewerHDF5ReadArray_Private(viewer, h, datatype, memspace, arr));
+  PetscCall(PetscViewerHDF5ReadArray_Private(viewer, h, datatype, memspace, arr));
   PetscStackCallHDF5(H5Sclose,(memspace));
-  CHKERRQ(PetscViewerHDF5ReadFinalize_Private(viewer, &h));
+  PetscCall(PetscViewerHDF5ReadFinalize_Private(viewer, &h));
   *newarr = arr;
   PetscFunctionReturn(0);
 }
@@ -270,12 +270,12 @@ PetscErrorCode PetscViewerHDF5ReadSizes(PetscViewer viewer, const char name[], P
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  CHKERRQ(PetscViewerHDF5ReadInitialize_Private(viewer, name, &h));
-  CHKERRQ(PetscViewerHDF5ReadSizes_Private(viewer, h, PETSC_FALSE, &map));
-  CHKERRQ(PetscViewerHDF5ReadFinalize_Private(viewer, &h));
+  PetscCall(PetscViewerHDF5ReadInitialize_Private(viewer, name, &h));
+  PetscCall(PetscViewerHDF5ReadSizes_Private(viewer, h, PETSC_FALSE, &map));
+  PetscCall(PetscViewerHDF5ReadFinalize_Private(viewer, &h));
   if (bs) *bs = map->bs;
   if (N) *N = map->N;
-  CHKERRQ(PetscLayoutDestroy(&map));
+  PetscCall(PetscLayoutDestroy(&map));
   PetscFunctionReturn(0);
 }
 

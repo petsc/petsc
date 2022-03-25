@@ -10,16 +10,16 @@ int main(int argc, char **argv)
     char                filename[PETSC_MAX_PATH_LEN];
     PetscBool           flg;
 
-    CHKERRQ(PetscInitialize(&argc, &argv, (char*)0, help));
-    CHKERRQ(PetscOptionsGetString(NULL, NULL, "-f", filename, sizeof(filename), &flg));
+    PetscCall(PetscInitialize(&argc, &argv, (char*)0, help));
+    PetscCall(PetscOptionsGetString(NULL, NULL, "-f", filename, sizeof(filename), &flg));
     PetscCheck(flg,PETSC_COMM_WORLD, PETSC_ERR_USER_INPUT, "Must indicate a filename for input with the -f option");
 
-    CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD, filename, FILE_MODE_READ, &viewer));
-    CHKERRQ(MatCreateDense(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, 36, 36, NULL, &A));
-    CHKERRQ(MatLoad(A, viewer));
-    CHKERRQ(PetscViewerDestroy(&viewer));
-    CHKERRQ(MatDestroy(&A));
-    CHKERRQ(PetscFinalize());
+    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, filename, FILE_MODE_READ, &viewer));
+    PetscCall(MatCreateDense(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, 36, 36, NULL, &A));
+    PetscCall(MatLoad(A, viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
+    PetscCall(MatDestroy(&A));
+    PetscCall(PetscFinalize());
     return 0;
 }
 

@@ -45,7 +45,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJMKL_SeqBAIJ(Mat A,MatType type,Mat
   Mat_SeqBAIJMKL *baijmkl = (Mat_SeqBAIJMKL*)A->spptr;
 
   PetscFunctionBegin;
-  if (reuse == MAT_INITIAL_MATRIX) CHKERRQ(MatDuplicate(A,MAT_COPY_VALUES,&B));
+  if (reuse == MAT_INITIAL_MATRIX) PetscCall(MatDuplicate(A,MAT_COPY_VALUES,&B));
 
   /* Reset the original function pointers. */
   B->ops->duplicate        = MatDuplicate_SeqBAIJ;
@@ -99,7 +99,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJMKL_SeqBAIJ(Mat A,MatType type,Mat
       B->ops->multadd = MatMultAdd_SeqBAIJ_N;
       break;
   }
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqbaijmkl_seqbaij_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqbaijmkl_seqbaij_C",NULL));
 
   /* Free everything in the Mat_SeqBAIJMKL data structure. Currently, this
    * simply involves destroying the MKL sparse matrix handle and then freeing
@@ -107,11 +107,11 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJMKL_SeqBAIJ(Mat A,MatType type,Mat
   if (reuse == MAT_INITIAL_MATRIX) baijmkl = (Mat_SeqBAIJMKL*)B->spptr;
 
   if (baijmkl->sparse_optimized) PetscStackCallStandard(mkl_sparse_destroy,baijmkl->bsrA);
-  CHKERRQ(PetscFree2(baijmkl->ai1,baijmkl->aj1));
-  CHKERRQ(PetscFree(B->spptr));
+  PetscCall(PetscFree2(baijmkl->ai1,baijmkl->aj1));
+  PetscCall(PetscFree(B->spptr));
 
   /* Change the type of B to MATSEQBAIJ. */
-  CHKERRQ(PetscObjectChangeTypeName((PetscObject)B, MATSEQBAIJ));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATSEQBAIJ));
 
   *newmat = B;
   PetscFunctionReturn(0);
@@ -125,14 +125,14 @@ static PetscErrorCode MatDestroy_SeqBAIJMKL(Mat A)
   if (baijmkl) {
     /* Clean up everything in the Mat_SeqBAIJMKL data structure, then free A->spptr. */
     if (baijmkl->sparse_optimized) PetscStackCallStandard(mkl_sparse_destroy,baijmkl->bsrA);
-    CHKERRQ(PetscFree2(baijmkl->ai1,baijmkl->aj1));
-    CHKERRQ(PetscFree(A->spptr));
+    PetscCall(PetscFree2(baijmkl->ai1,baijmkl->aj1));
+    PetscCall(PetscFree(A->spptr));
   }
 
   /* Change the type of A back to SEQBAIJ and use MatDestroy_SeqBAIJ()
    * to destroy everything that remains. */
-  CHKERRQ(PetscObjectChangeTypeName((PetscObject)A, MATSEQBAIJ));
-  CHKERRQ(MatDestroy_SeqBAIJ(A));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)A, MATSEQBAIJ));
+  PetscCall(MatDestroy_SeqBAIJ(A));
   PetscFunctionReturn(0);
 }
 
@@ -149,8 +149,8 @@ static PetscErrorCode MatSeqBAIJMKL_create_mkl_handle(Mat A)
   if (baijmkl->sparse_optimized) {
     /* Matrix has been previously assembled and optimized. Must destroy old
      * matrix handle before running the optimization step again. */
-    CHKERRQ(PetscFree2(baijmkl->ai1,baijmkl->aj1));
-    CHKERRMKL(mkl_sparse_destroy(baijmkl->bsrA));
+    PetscCall(PetscFree2(baijmkl->ai1,baijmkl->aj1));
+    PetscCallMKL(mkl_sparse_destroy(baijmkl->bsrA));
   }
   baijmkl->sparse_optimized = PETSC_FALSE;
 
@@ -170,19 +170,19 @@ static PetscErrorCode MatSeqBAIJMKL_create_mkl_handle(Mat A)
     if (PetscSeqBAIJSupportsZeroBased()) {
       aj   = a->j;
       ai   = a->i;
-      CHKERRMKL(mkl_sparse_x_create_bsr(&(baijmkl->bsrA),SPARSE_INDEX_BASE_ZERO,SPARSE_LAYOUT_COLUMN_MAJOR,mbs,nbs,bs,ai,ai+1,aj,aa));
+      PetscCallMKL(mkl_sparse_x_create_bsr(&(baijmkl->bsrA),SPARSE_INDEX_BASE_ZERO,SPARSE_LAYOUT_COLUMN_MAJOR,mbs,nbs,bs,ai,ai+1,aj,aa));
     } else {
-      CHKERRQ(PetscMalloc2(mbs+1,&ai,nz,&aj));
+      PetscCall(PetscMalloc2(mbs+1,&ai,nz,&aj));
       for (i=0;i<mbs+1;i++) ai[i] = a->i[i]+1;
       for (i=0;i<nz;i++) aj[i] = a->j[i]+1;
       aa   = a->a;
-      CHKERRMKL(mkl_sparse_x_create_bsr(&baijmkl->bsrA,SPARSE_INDEX_BASE_ONE,SPARSE_LAYOUT_COLUMN_MAJOR,mbs,nbs,bs,ai,ai+1,aj,aa));
+      PetscCallMKL(mkl_sparse_x_create_bsr(&baijmkl->bsrA,SPARSE_INDEX_BASE_ONE,SPARSE_LAYOUT_COLUMN_MAJOR,mbs,nbs,bs,ai,ai+1,aj,aa));
       baijmkl->ai1 = ai;
       baijmkl->aj1 = aj;
     }
-    CHKERRMKL(mkl_sparse_set_mv_hint(baijmkl->bsrA,SPARSE_OPERATION_NON_TRANSPOSE,baijmkl->descr,1000));
-    CHKERRMKL(mkl_sparse_set_memory_hint(baijmkl->bsrA,SPARSE_MEMORY_AGGRESSIVE));
-    CHKERRMKL(mkl_sparse_optimize(baijmkl->bsrA));
+    PetscCallMKL(mkl_sparse_set_mv_hint(baijmkl->bsrA,SPARSE_OPERATION_NON_TRANSPOSE,baijmkl->descr,1000));
+    PetscCallMKL(mkl_sparse_set_memory_hint(baijmkl->bsrA,SPARSE_MEMORY_AGGRESSIVE));
+    PetscCallMKL(mkl_sparse_optimize(baijmkl->bsrA));
     baijmkl->sparse_optimized = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
@@ -194,13 +194,13 @@ static PetscErrorCode MatDuplicate_SeqBAIJMKL(Mat A, MatDuplicateOption op, Mat 
   Mat_SeqBAIJMKL *baijmkl_dest;
 
   PetscFunctionBegin;
-  CHKERRQ(MatDuplicate_SeqBAIJ(A,op,M));
+  PetscCall(MatDuplicate_SeqBAIJ(A,op,M));
   baijmkl = (Mat_SeqBAIJMKL*) A->spptr;
-  CHKERRQ(PetscNewLog((*M),&baijmkl_dest));
+  PetscCall(PetscNewLog((*M),&baijmkl_dest));
   (*M)->spptr = (void*)baijmkl_dest;
-  CHKERRQ(PetscMemcpy(baijmkl_dest,baijmkl,sizeof(Mat_SeqBAIJMKL)));
+  PetscCall(PetscMemcpy(baijmkl_dest,baijmkl,sizeof(Mat_SeqBAIJMKL)));
   baijmkl_dest->sparse_optimized = PETSC_FALSE;
-  CHKERRQ(MatSeqBAIJMKL_create_mkl_handle(A));
+  PetscCall(MatSeqBAIJMKL_create_mkl_handle(A));
   PetscFunctionReturn(0);
 }
 
@@ -214,26 +214,26 @@ static PetscErrorCode MatMult_SeqBAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
   PetscFunctionBegin;
   /* If there are no nonzero entries, zero yy and return immediately. */
   if (!a->nz) {
-    CHKERRQ(VecSet(yy,0.0));
+    PetscCall(VecSet(yy,0.0));
     PetscFunctionReturn(0);
   }
 
-  CHKERRQ(VecGetArrayRead(xx,&x));
-  CHKERRQ(VecGetArray(yy,&y));
+  PetscCall(VecGetArrayRead(xx,&x));
+  PetscCall(VecGetArray(yy,&y));
 
   /* In some cases, we get to this point without mkl_sparse_optimize() having been called, so we check and then call
    * it if needed. Eventually, when everything in PETSc is properly updating the matrix state, we should probably
    * take a "lazy" approach to creation/updating of the MKL matrix handle and plan to always do it here (when needed). */
   if (!baijmkl->sparse_optimized) {
-    CHKERRQ(MatSeqBAIJMKL_create_mkl_handle(A));
+    PetscCall(MatSeqBAIJMKL_create_mkl_handle(A));
   }
 
   /* Call MKL SpMV2 executor routine to do the MatMult. */
-  CHKERRMKL(mkl_sparse_x_mv(SPARSE_OPERATION_NON_TRANSPOSE,1.0,baijmkl->bsrA,baijmkl->descr,x,0.0,y));
+  PetscCallMKL(mkl_sparse_x_mv(SPARSE_OPERATION_NON_TRANSPOSE,1.0,baijmkl->bsrA,baijmkl->descr,x,0.0,y));
 
-  CHKERRQ(PetscLogFlops(2.0*a->bs2*a->nz - a->nonzerorowcnt*A->rmap->bs));
-  CHKERRQ(VecRestoreArrayRead(xx,&x));
-  CHKERRQ(VecRestoreArray(yy,&y));
+  PetscCall(PetscLogFlops(2.0*a->bs2*a->nz - a->nonzerorowcnt*A->rmap->bs));
+  PetscCall(VecRestoreArrayRead(xx,&x));
+  PetscCall(VecRestoreArray(yy,&y));
   PetscFunctionReturn(0);
 }
 
@@ -247,26 +247,26 @@ static PetscErrorCode MatMultTranspose_SeqBAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
   PetscFunctionBegin;
   /* If there are no nonzero entries, zero yy and return immediately. */
   if (!a->nz) {
-    CHKERRQ(VecSet(yy,0.0));
+    PetscCall(VecSet(yy,0.0));
     PetscFunctionReturn(0);
   }
 
-  CHKERRQ(VecGetArrayRead(xx,&x));
-  CHKERRQ(VecGetArray(yy,&y));
+  PetscCall(VecGetArrayRead(xx,&x));
+  PetscCall(VecGetArray(yy,&y));
 
   /* In some cases, we get to this point without mkl_sparse_optimize() having been called, so we check and then call
    * it if needed. Eventually, when everything in PETSc is properly updating the matrix state, we should probably
    * take a "lazy" approach to creation/updating of the MKL matrix handle and plan to always do it here (when needed). */
   if (!baijmkl->sparse_optimized) {
-    CHKERRQ(MatSeqBAIJMKL_create_mkl_handle(A));
+    PetscCall(MatSeqBAIJMKL_create_mkl_handle(A));
   }
 
   /* Call MKL SpMV2 executor routine to do the MatMultTranspose. */
-  CHKERRMKL(mkl_sparse_x_mv(SPARSE_OPERATION_TRANSPOSE,1.0,baijmkl->bsrA,baijmkl->descr,x,0.0,y));
+  PetscCallMKL(mkl_sparse_x_mv(SPARSE_OPERATION_TRANSPOSE,1.0,baijmkl->bsrA,baijmkl->descr,x,0.0,y));
 
-  CHKERRQ(PetscLogFlops(2.0*a->bs2*a->nz - a->nonzerorowcnt*A->rmap->bs));
-  CHKERRQ(VecRestoreArrayRead(xx,&x));
-  CHKERRQ(VecRestoreArray(yy,&y));
+  PetscCall(PetscLogFlops(2.0*a->bs2*a->nz - a->nonzerorowcnt*A->rmap->bs));
+  PetscCall(VecRestoreArrayRead(xx,&x));
+  PetscCall(VecRestoreArray(yy,&y));
   PetscFunctionReturn(0);
 }
 
@@ -282,37 +282,37 @@ static PetscErrorCode MatMultAdd_SeqBAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionBegin;
   /* If there are no nonzero entries, set zz = yy and return immediately. */
   if (!a->nz) {
-    CHKERRQ(VecCopy(yy,zz));
+    PetscCall(VecCopy(yy,zz));
     PetscFunctionReturn(0);
   }
 
-  CHKERRQ(VecGetArrayRead(xx,&x));
-  CHKERRQ(VecGetArrayPair(yy,zz,&y,&z));
+  PetscCall(VecGetArrayRead(xx,&x));
+  PetscCall(VecGetArrayPair(yy,zz,&y,&z));
 
   /* In some cases, we get to this point without mkl_sparse_optimize() having been called, so we check and then call
    * it if needed. Eventually, when everything in PETSc is properly updating the matrix state, we should probably
    * take a "lazy" approach to creation/updating of the MKL matrix handle and plan to always do it here (when needed). */
   if (!baijmkl->sparse_optimized) {
-    CHKERRQ(MatSeqBAIJMKL_create_mkl_handle(A));
+    PetscCall(MatSeqBAIJMKL_create_mkl_handle(A));
   }
 
   /* Call MKL sparse BLAS routine to do the MatMult. */
   if (zz == yy) {
     /* If zz and yy are the same vector, we can use mkl_sparse_x_mv, which calculates y = alpha*A*x + beta*y,
      * with alpha and beta both set to 1.0. */
-    CHKERRMKL(mkl_sparse_x_mv(SPARSE_OPERATION_NON_TRANSPOSE,1.0,baijmkl->bsrA,baijmkl->descr,x,1.0,z));
+    PetscCallMKL(mkl_sparse_x_mv(SPARSE_OPERATION_NON_TRANSPOSE,1.0,baijmkl->bsrA,baijmkl->descr,x,1.0,z));
   } else {
     /* zz and yy are different vectors, so we call mkl_sparse_x_mv with alpha=1.0 and beta=0.0, and then
      * we add the contents of vector yy to the result; MKL sparse BLAS does not have a MatMultAdd equivalent. */
-    CHKERRMKL(mkl_sparse_x_mv(SPARSE_OPERATION_NON_TRANSPOSE,1.0,baijmkl->bsrA,baijmkl->descr,x,0.0,z));
+    PetscCallMKL(mkl_sparse_x_mv(SPARSE_OPERATION_NON_TRANSPOSE,1.0,baijmkl->bsrA,baijmkl->descr,x,0.0,z));
     for (i=0; i<m; i++) {
       z[i] += y[i];
     }
   }
 
-  CHKERRQ(PetscLogFlops(2.0*a->bs2*a->nz));
-  CHKERRQ(VecRestoreArrayRead(xx,&x));
-  CHKERRQ(VecRestoreArrayPair(yy,zz,&y,&z));
+  PetscCall(PetscLogFlops(2.0*a->bs2*a->nz));
+  PetscCall(VecRestoreArrayRead(xx,&x));
+  PetscCall(VecRestoreArrayPair(yy,zz,&y,&z));
   PetscFunctionReturn(0);
 }
 
@@ -329,63 +329,63 @@ static PetscErrorCode MatMultTransposeAdd_SeqBAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,V
   PetscFunctionBegin;
   /* If there are no nonzero entries, set zz = yy and return immediately. */
   if (!a->nz) {
-    CHKERRQ(VecCopy(yy,zz));
+    PetscCall(VecCopy(yy,zz));
     PetscFunctionReturn(0);
   }
 
-  CHKERRQ(VecGetArrayRead(xx,&x));
-  CHKERRQ(VecGetArrayPair(yy,zz,&y,&z));
+  PetscCall(VecGetArrayRead(xx,&x));
+  PetscCall(VecGetArrayPair(yy,zz,&y,&z));
 
   /* In some cases, we get to this point without mkl_sparse_optimize() having been called, so we check and then call
    * it if needed. Eventually, when everything in PETSc is properly updating the matrix state, we should probably
    * take a "lazy" approach to creation/updating of the MKL matrix handle and plan to always do it here (when needed). */
   if (!baijmkl->sparse_optimized) {
-    CHKERRQ(MatSeqBAIJMKL_create_mkl_handle(A));
+    PetscCall(MatSeqBAIJMKL_create_mkl_handle(A));
   }
 
   /* Call MKL sparse BLAS routine to do the MatMult. */
   if (zz == yy) {
     /* If zz and yy are the same vector, we can use mkl_sparse_x_mv, which calculates y = alpha*A*x + beta*y,
      * with alpha and beta both set to 1.0. */
-    CHKERRMKL(mkl_sparse_x_mv(SPARSE_OPERATION_TRANSPOSE,1.0,baijmkl->bsrA,baijmkl->descr,x,1.0,z));
+    PetscCallMKL(mkl_sparse_x_mv(SPARSE_OPERATION_TRANSPOSE,1.0,baijmkl->bsrA,baijmkl->descr,x,1.0,z));
   } else {
     /* zz and yy are different vectors, so we call mkl_sparse_x_mv with alpha=1.0 and beta=0.0, and then
      * we add the contents of vector yy to the result; MKL sparse BLAS does not have a MatMultAdd equivalent. */
-    CHKERRMKL(mkl_sparse_x_mv(SPARSE_OPERATION_TRANSPOSE,1.0,baijmkl->bsrA,baijmkl->descr,x,0.0,z));
+    PetscCallMKL(mkl_sparse_x_mv(SPARSE_OPERATION_TRANSPOSE,1.0,baijmkl->bsrA,baijmkl->descr,x,0.0,z));
     for (i=0; i<n; i++) {
       z[i] += y[i];
     }
   }
 
-  CHKERRQ(PetscLogFlops(2.0*a->bs2*a->nz));
-  CHKERRQ(VecRestoreArrayRead(xx,&x));
-  CHKERRQ(VecRestoreArrayPair(yy,zz,&y,&z));
+  PetscCall(PetscLogFlops(2.0*a->bs2*a->nz));
+  PetscCall(VecRestoreArrayRead(xx,&x));
+  PetscCall(VecRestoreArrayPair(yy,zz,&y,&z));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatScale_SeqBAIJMKL(Mat inA,PetscScalar alpha)
 {
   PetscFunctionBegin;
-  CHKERRQ(MatScale_SeqBAIJ(inA,alpha));
-  CHKERRQ(MatSeqBAIJMKL_create_mkl_handle(inA));
+  PetscCall(MatScale_SeqBAIJ(inA,alpha));
+  PetscCall(MatSeqBAIJMKL_create_mkl_handle(inA));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatDiagonalScale_SeqBAIJMKL(Mat A,Vec ll,Vec rr)
 {
   PetscFunctionBegin;
-  CHKERRQ(MatDiagonalScale_SeqBAIJ(A,ll,rr));
-  CHKERRQ(MatSeqBAIJMKL_create_mkl_handle(A));
+  PetscCall(MatDiagonalScale_SeqBAIJ(A,ll,rr));
+  PetscCall(MatSeqBAIJMKL_create_mkl_handle(A));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatAXPY_SeqBAIJMKL(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
   PetscFunctionBegin;
-  CHKERRQ(MatAXPY_SeqBAIJ(Y,a,X,str));
+  PetscCall(MatAXPY_SeqBAIJ(Y,a,X,str));
   if (str == SAME_NONZERO_PATTERN) {
     /* MatAssemblyEnd() is not called if SAME_NONZERO_PATTERN, so we need to force update of the MKL matrix handle. */
-    CHKERRQ(MatSeqBAIJMKL_create_mkl_handle(Y));
+    PetscCall(MatSeqBAIJMKL_create_mkl_handle(Y));
   }
   PetscFunctionReturn(0);
 }
@@ -400,12 +400,12 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqBAIJMKL(Mat A,MatType type,Mat
   PetscBool      sametype;
 
   PetscFunctionBegin;
-  if (reuse == MAT_INITIAL_MATRIX) CHKERRQ(MatDuplicate(A,MAT_COPY_VALUES,&B));
+  if (reuse == MAT_INITIAL_MATRIX) PetscCall(MatDuplicate(A,MAT_COPY_VALUES,&B));
 
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)A,type,&sametype));
+  PetscCall(PetscObjectTypeCompare((PetscObject)A,type,&sametype));
   if (sametype) PetscFunctionReturn(0);
 
-  CHKERRQ(PetscNewLog(B,&baijmkl));
+  PetscCall(PetscNewLog(B,&baijmkl));
   B->spptr = (void*)baijmkl;
 
   /* Set function pointers for methods that we inherit from BAIJ but override.
@@ -414,10 +414,10 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqBAIJMKL(Mat A,MatType type,Mat
 
   baijmkl->sparse_optimized = PETSC_FALSE;
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)B,"MatScale_SeqBAIJMKL_C",MatScale_SeqBAIJMKL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqbaijmkl_seqbaij_C",MatConvert_SeqBAIJMKL_SeqBAIJ));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatScale_SeqBAIJMKL_C",MatScale_SeqBAIJMKL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqbaijmkl_seqbaij_C",MatConvert_SeqBAIJMKL_SeqBAIJ));
 
-  CHKERRQ(PetscObjectChangeTypeName((PetscObject)B,MATSEQBAIJMKL));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)B,MATSEQBAIJMKL));
   *newmat = B;
   PetscFunctionReturn(0);
 }
@@ -426,8 +426,8 @@ static PetscErrorCode MatAssemblyEnd_SeqBAIJMKL(Mat A, MatAssemblyType mode)
 {
   PetscFunctionBegin;
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
-  CHKERRQ(MatAssemblyEnd_SeqBAIJ(A, mode));
-  CHKERRQ(MatSeqBAIJMKL_create_mkl_handle(A));
+  PetscCall(MatAssemblyEnd_SeqBAIJ(A, mode));
+  PetscCall(MatSeqBAIJMKL_create_mkl_handle(A));
   A->ops->destroy          = MatDestroy_SeqBAIJMKL;
   A->ops->mult             = MatMult_SeqBAIJMKL_SpMV2;
   A->ops->multtranspose    = MatMultTranspose_SeqBAIJMKL_SpMV2;
@@ -496,17 +496,17 @@ static PetscErrorCode MatAssemblyEnd_SeqBAIJMKL(Mat A, MatAssemblyType mode)
 PetscErrorCode  MatCreateSeqBAIJMKL(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt nz,const PetscInt nnz[],Mat *A)
 {
   PetscFunctionBegin;
-  CHKERRQ(MatCreate(comm,A));
-  CHKERRQ(MatSetSizes(*A,m,n,m,n));
-  CHKERRQ(MatSetType(*A,MATSEQBAIJMKL));
-  CHKERRQ(MatSeqBAIJSetPreallocation_SeqBAIJ(*A,bs,nz,(PetscInt*)nnz));
+  PetscCall(MatCreate(comm,A));
+  PetscCall(MatSetSizes(*A,m,n,m,n));
+  PetscCall(MatSetType(*A,MATSEQBAIJMKL));
+  PetscCall(MatSeqBAIJSetPreallocation_SeqBAIJ(*A,bs,nz,(PetscInt*)nnz));
   PetscFunctionReturn(0);
 }
 
 PETSC_EXTERN PetscErrorCode MatCreate_SeqBAIJMKL(Mat A)
 {
   PetscFunctionBegin;
-  CHKERRQ(MatSetType(A,MATSEQBAIJ));
-  CHKERRQ(MatConvert_SeqBAIJ_SeqBAIJMKL(A,MATSEQBAIJMKL,MAT_INPLACE_MATRIX,&A));
+  PetscCall(MatSetType(A,MATSEQBAIJ));
+  PetscCall(MatConvert_SeqBAIJ_SeqBAIJMKL(A,MATSEQBAIJMKL,MAT_INPLACE_MATRIX,&A));
   PetscFunctionReturn(0);
 }

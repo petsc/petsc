@@ -8,9 +8,9 @@ PetscErrorCode PetscDeviceContextCreate_CUDA(PetscDeviceContext dctx)
   PetscDeviceContext_(CUDA) *dci;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNew(&dci));
+  PetscCall(PetscNew(&dci));
   dctx->data = static_cast<decltype(dctx->data)>(dci);
-  CHKERRQ(PetscMemcpy(dctx->ops,&contextCuda.ops,sizeof(contextCuda.ops)));
+  PetscCall(PetscMemcpy(dctx->ops,&contextCuda.ops,sizeof(contextCuda.ops)));
   PetscFunctionReturn(0);
 }
 
@@ -21,8 +21,8 @@ PetscErrorCode PetscCUBLASGetHandle(cublasHandle_t *handle)
 
   PetscFunctionBegin;
   PetscValidPointer(handle,1);
-  CHKERRQ(PetscDeviceContextGetCurrentContextAssertType_Internal(&dctx,PETSC_DEVICE_CUDA));
-  CHKERRQ(PetscDeviceContextGetBLASHandle_Internal(dctx,handle));
+  PetscCall(PetscDeviceContextGetCurrentContextAssertType_Internal(&dctx,PETSC_DEVICE_CUDA));
+  PetscCall(PetscDeviceContextGetBLASHandle_Internal(dctx,handle));
   PetscFunctionReturn(0);
 }
 
@@ -32,7 +32,7 @@ PetscErrorCode PetscCUSOLVERDnGetHandle(cusolverDnHandle_t *handle)
 
   PetscFunctionBegin;
   PetscValidPointer(handle,1);
-  CHKERRQ(PetscDeviceContextGetCurrentContextAssertType_Internal(&dctx,PETSC_DEVICE_CUDA));
-  CHKERRQ(PetscDeviceContextGetSOLVERHandle_Internal(dctx,handle));
+  PetscCall(PetscDeviceContextGetCurrentContextAssertType_Internal(&dctx,PETSC_DEVICE_CUDA));
+  PetscCall(PetscDeviceContextGetSOLVERHandle_Internal(dctx,handle));
   PetscFunctionReturn(0);
 }

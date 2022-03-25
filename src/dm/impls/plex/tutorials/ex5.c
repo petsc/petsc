@@ -27,17 +27,17 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->redistribute  = PETSC_TRUE;
   options->heterogeneous = PETSC_FALSE;
   options->ntimes        = 2;
-  ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsString("-infile", "The input mesh file", EX, options->infile, options->infile, sizeof(options->infile), &flg));
+  ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");PetscCall(ierr);
+  PetscCall(PetscOptionsString("-infile", "The input mesh file", EX, options->infile, options->infile, sizeof(options->infile), &flg));
   PetscCheck(flg,comm, PETSC_ERR_USER_INPUT, "-infile needs to be specified");
-  CHKERRQ(PetscOptionsString("-outfile", "The output mesh file (by default it's the same as infile)", EX, options->outfile, options->outfile, sizeof(options->outfile), &flg));
+  PetscCall(PetscOptionsString("-outfile", "The output mesh file (by default it's the same as infile)", EX, options->outfile, options->outfile, sizeof(options->outfile), &flg));
   PetscCheck(flg,comm, PETSC_ERR_USER_INPUT, "-outfile needs to be specified");
-  CHKERRQ(PetscOptionsEnum("-informat", "Input mesh format", EX, PetscViewerFormats, (PetscEnum)options->informat, (PetscEnum*)&options->informat, NULL));
-  CHKERRQ(PetscOptionsEnum("-outformat", "Dump/reload mesh format", EX, PetscViewerFormats, (PetscEnum)options->outformat, (PetscEnum*)&options->outformat, NULL));
-  CHKERRQ(PetscOptionsBool("-redistribute", "Redistribute the mesh", EX, options->redistribute, &options->redistribute, NULL));
-  CHKERRQ(PetscOptionsBool("-heterogeneous", "Test save on N / load on M", EX, options->heterogeneous, &options->heterogeneous, NULL));
-  CHKERRQ(PetscOptionsInt("-ntimes", "How many times do the cycle", EX, options->ntimes, &options->ntimes, NULL));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(PetscOptionsEnum("-informat", "Input mesh format", EX, PetscViewerFormats, (PetscEnum)options->informat, (PetscEnum*)&options->informat, NULL));
+  PetscCall(PetscOptionsEnum("-outformat", "Dump/reload mesh format", EX, PetscViewerFormats, (PetscEnum)options->outformat, (PetscEnum*)&options->outformat, NULL));
+  PetscCall(PetscOptionsBool("-redistribute", "Redistribute the mesh", EX, options->redistribute, &options->redistribute, NULL));
+  PetscCall(PetscOptionsBool("-heterogeneous", "Test save on N / load on M", EX, options->heterogeneous, &options->heterogeneous, NULL));
+  PetscCall(PetscOptionsInt("-ntimes", "How many times do the cycle", EX, options->ntimes, &options->ntimes, NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
   PetscFunctionReturn(0);
 };
 
@@ -53,10 +53,10 @@ int main(int argc, char **argv)
   const char        *infilename;
   PetscViewerFormat informat;
 
-  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
-  CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&gsize));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&grank));
+  PetscCall(PetscInitialize(&argc, &argv, NULL,help));
+  PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&gsize));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&grank));
 
   for (i=0; i<user.ntimes; i++) {
     if (i==0) {
@@ -75,7 +75,7 @@ int main(int argc, char **argv)
       mycolor = (PetscMPIInt)0;
       /* comm = PETSC_COMM_WORLD; */
     }
-    CHKERRMPI(MPI_Comm_split(PETSC_COMM_WORLD,mycolor,grank,&comm));
+    PetscCallMPI(MPI_Comm_split(PETSC_COMM_WORLD,mycolor,grank,&comm));
 
     if (mycolor == 0) {
       /* Load/Save only on processes with mycolor == 0 */
@@ -83,29 +83,29 @@ int main(int argc, char **argv)
       PetscPartitioner  part;
       PetscViewer       v;
 
-      CHKERRQ(PetscPrintf(comm, "Begin cycle %D\n",i));
+      PetscCall(PetscPrintf(comm, "Begin cycle %D\n",i));
 
       /* Load data from XDMF into dm in parallel */
       /* We could also use
-          CHKERRQ(DMPlexCreateFromFile(PETSC_COMM_WORLD, user.filename, "ex5_plex", PETSC_TRUE, &dm));
+          PetscCall(DMPlexCreateFromFile(PETSC_COMM_WORLD, user.filename, "ex5_plex", PETSC_TRUE, &dm));
         This currently support a few more formats than DMLoad().
       */
-      CHKERRQ(PetscViewerHDF5Open(comm, infilename, FILE_MODE_READ, &v));
-      CHKERRQ(PetscViewerPushFormat(v, informat));
-      CHKERRQ(DMCreate(comm, &dm));
-      CHKERRQ(DMSetType(dm, DMPLEX));
-      CHKERRQ(PetscObjectSetName((PetscObject) dm, exampleDMPlexName));
-      CHKERRQ(DMSetOptionsPrefix(dm,"loaded_"));
-      CHKERRQ(DMLoad(dm, v));
-      CHKERRQ(DMPlexDistributeSetDefault(dm, PETSC_FALSE));
-      CHKERRQ(DMSetFromOptions(dm));
-      CHKERRQ(DMViewFromOptions(dm, NULL, "-dm_view"));
-      CHKERRQ(PetscViewerPopFormat(v));
-      CHKERRQ(PetscViewerDestroy(&v));
+      PetscCall(PetscViewerHDF5Open(comm, infilename, FILE_MODE_READ, &v));
+      PetscCall(PetscViewerPushFormat(v, informat));
+      PetscCall(DMCreate(comm, &dm));
+      PetscCall(DMSetType(dm, DMPLEX));
+      PetscCall(PetscObjectSetName((PetscObject) dm, exampleDMPlexName));
+      PetscCall(DMSetOptionsPrefix(dm,"loaded_"));
+      PetscCall(DMLoad(dm, v));
+      PetscCall(DMPlexDistributeSetDefault(dm, PETSC_FALSE));
+      PetscCall(DMSetFromOptions(dm));
+      PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
+      PetscCall(PetscViewerPopFormat(v));
+      PetscCall(PetscViewerDestroy(&v));
 
       /* We just test/demonstrate DM is indeed distributed - unneeded in the application code */
-      CHKERRQ(DMPlexIsDistributed(dm, &flg));
-      CHKERRQ(PetscPrintf(comm, "Loaded mesh distributed? %s\n", PetscBools[flg]));
+      PetscCall(DMPlexIsDistributed(dm, &flg));
+      PetscCall(PetscPrintf(comm, "Loaded mesh distributed? %s\n", PetscBools[flg]));
 
       /* Interpolate */
       //TODO we want to be able to do this from options in DMSetFromOptions() probably
@@ -113,12 +113,12 @@ int main(int argc, char **argv)
       {
         DM idm;
 
-        CHKERRQ(DMPlexInterpolate(dm, &idm));
-        CHKERRQ(DMDestroy(&dm));
+        PetscCall(DMPlexInterpolate(dm, &idm));
+        PetscCall(DMDestroy(&dm));
         dm   = idm;
-          CHKERRQ(DMSetOptionsPrefix(dm,"interpolated_"));
-          CHKERRQ(DMSetFromOptions(dm));
-          CHKERRQ(DMViewFromOptions(dm, NULL, "-dm_view"));
+          PetscCall(DMSetOptionsPrefix(dm,"interpolated_"));
+          PetscCall(DMSetFromOptions(dm));
+          PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
       }
 
       /* Redistribute */
@@ -126,36 +126,36 @@ int main(int argc, char **argv)
       if (user.redistribute) {
         DM dmdist;
 
-        CHKERRQ(DMPlexGetPartitioner(dm, &part));
-        CHKERRQ(PetscPartitionerSetFromOptions(part));
-        CHKERRQ(DMPlexDistribute(dm, 0, NULL, &dmdist));
+        PetscCall(DMPlexGetPartitioner(dm, &part));
+        PetscCall(PetscPartitionerSetFromOptions(part));
+        PetscCall(DMPlexDistribute(dm, 0, NULL, &dmdist));
         //TODO we want to be able to do this in-place
         if (dmdist) {
-          CHKERRQ(DMDestroy(&dm));
+          PetscCall(DMDestroy(&dm));
           dm   = dmdist;
-          CHKERRQ(DMSetOptionsPrefix(dm,"redistributed_"));
-          CHKERRQ(DMSetFromOptions(dm));
-          CHKERRQ(DMViewFromOptions(dm, NULL, "-dm_view"));
+          PetscCall(DMSetOptionsPrefix(dm,"redistributed_"));
+          PetscCall(DMSetFromOptions(dm));
+          PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
         }
       }
 
       /* Save redistributed dm to XDMF in parallel and destroy it */
-      CHKERRQ(PetscViewerHDF5Open(comm, user.outfile, FILE_MODE_WRITE, &v));
-      CHKERRQ(PetscViewerPushFormat(v, user.outformat));
-      CHKERRQ(PetscObjectSetName((PetscObject) dm, exampleDMPlexName));
-      CHKERRQ(DMView(dm, v));
-      CHKERRQ(PetscViewerPopFormat(v));
-      CHKERRQ(PetscViewerDestroy(&v));
-      CHKERRQ(DMDestroy(&dm));
+      PetscCall(PetscViewerHDF5Open(comm, user.outfile, FILE_MODE_WRITE, &v));
+      PetscCall(PetscViewerPushFormat(v, user.outformat));
+      PetscCall(PetscObjectSetName((PetscObject) dm, exampleDMPlexName));
+      PetscCall(DMView(dm, v));
+      PetscCall(PetscViewerPopFormat(v));
+      PetscCall(PetscViewerDestroy(&v));
+      PetscCall(DMDestroy(&dm));
 
-      CHKERRQ(PetscPrintf(comm, "End   cycle %D\n--------\n",i));
+      PetscCall(PetscPrintf(comm, "End   cycle %D\n--------\n",i));
     }
-    CHKERRMPI(MPI_Comm_free(&comm));
-    CHKERRMPI(MPI_Barrier(PETSC_COMM_WORLD));
+    PetscCallMPI(MPI_Comm_free(&comm));
+    PetscCallMPI(MPI_Barrier(PETSC_COMM_WORLD));
   }
 
   /* Final clean-up */
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

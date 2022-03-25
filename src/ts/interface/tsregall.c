@@ -41,31 +41,31 @@ PetscErrorCode  TSRegisterAll(void)
   if (TSRegisterAllCalled) PetscFunctionReturn(0);
   TSRegisterAllCalled = PETSC_TRUE;
 
-  CHKERRQ(TSRegister(TSEULER,          TSCreate_Euler));
-  CHKERRQ(TSRegister(TSBEULER,         TSCreate_BEuler));
-  CHKERRQ(TSRegister(TSCN,             TSCreate_CN));
-  CHKERRQ(TSRegister(TSPSEUDO,         TSCreate_Pseudo));
-  CHKERRQ(TSRegister(TSGLLE,           TSCreate_GLLE));
-  CHKERRQ(TSRegister(TSSSP,            TSCreate_SSP));
-  CHKERRQ(TSRegister(TSTHETA,          TSCreate_Theta));
-  CHKERRQ(TSRegister(TSALPHA,          TSCreate_Alpha));
-  CHKERRQ(TSRegister(TSALPHA2,         TSCreate_Alpha2));
+  PetscCall(TSRegister(TSEULER,          TSCreate_Euler));
+  PetscCall(TSRegister(TSBEULER,         TSCreate_BEuler));
+  PetscCall(TSRegister(TSCN,             TSCreate_CN));
+  PetscCall(TSRegister(TSPSEUDO,         TSCreate_Pseudo));
+  PetscCall(TSRegister(TSGLLE,           TSCreate_GLLE));
+  PetscCall(TSRegister(TSSSP,            TSCreate_SSP));
+  PetscCall(TSRegister(TSTHETA,          TSCreate_Theta));
+  PetscCall(TSRegister(TSALPHA,          TSCreate_Alpha));
+  PetscCall(TSRegister(TSALPHA2,         TSCreate_Alpha2));
 #if defined(PETSC_HAVE_SUNDIALS2)
-  CHKERRQ(TSRegister(TSSUNDIALS,       TSCreate_Sundials));
+  PetscCall(TSRegister(TSSUNDIALS,       TSCreate_Sundials));
 #endif
 #if defined(PETSC_HAVE_RADAU5)
-  CHKERRQ(TSRegister(TSRADAU5,         TSCreate_Radau5));
+  PetscCall(TSRegister(TSRADAU5,         TSCreate_Radau5));
 #endif
-  CHKERRQ(TSRegister(TSRK,             TSCreate_RK));
-  CHKERRQ(TSRegister(TSGLEE,           TSCreate_GLEE));
-  CHKERRQ(TSRegister(TSARKIMEX,        TSCreate_ARKIMEX));
-  CHKERRQ(TSRegister(TSROSW,           TSCreate_RosW));
-  CHKERRQ(TSRegister(TSEIMEX,          TSCreate_EIMEX));
-  CHKERRQ(TSRegister(TSMIMEX,          TSCreate_Mimex));
-  CHKERRQ(TSRegister(TSBDF,            TSCreate_BDF));
-  CHKERRQ(TSRegister(TSBASICSYMPLECTIC,TSCreate_BasicSymplectic));
-  CHKERRQ(TSRegister(TSMPRK,           TSCreate_MPRK));
-  CHKERRQ(TSRegister(TSDISCGRAD,       TSCreate_DiscGrad));
-  CHKERRQ(TSRegister(TSIRK,            TSCreate_IRK));
+  PetscCall(TSRegister(TSRK,             TSCreate_RK));
+  PetscCall(TSRegister(TSGLEE,           TSCreate_GLEE));
+  PetscCall(TSRegister(TSARKIMEX,        TSCreate_ARKIMEX));
+  PetscCall(TSRegister(TSROSW,           TSCreate_RosW));
+  PetscCall(TSRegister(TSEIMEX,          TSCreate_EIMEX));
+  PetscCall(TSRegister(TSMIMEX,          TSCreate_Mimex));
+  PetscCall(TSRegister(TSBDF,            TSCreate_BDF));
+  PetscCall(TSRegister(TSBASICSYMPLECTIC,TSCreate_BasicSymplectic));
+  PetscCall(TSRegister(TSMPRK,           TSCreate_MPRK));
+  PetscCall(TSRegister(TSDISCGRAD,       TSCreate_DiscGrad));
+  PetscCall(TSRegister(TSIRK,            TSCreate_IRK));
   PetscFunctionReturn(0);
 }

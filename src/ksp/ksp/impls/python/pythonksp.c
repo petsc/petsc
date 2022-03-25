@@ -21,6 +21,6 @@ PetscErrorCode  KSPPythonSetType(KSP ksp,const char pyname[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidCharPointer(pyname,2);
-  CHKERRQ(PetscTryMethod(ksp,"KSPPythonSetType_C",(KSP, const char[]),(ksp,pyname)));
+  PetscCall(PetscTryMethod(ksp,"KSPPythonSetType_C",(KSP, const char[]),(ksp,pyname)));
   PetscFunctionReturn(0);
 }

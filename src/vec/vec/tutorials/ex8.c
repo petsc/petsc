@@ -21,8 +21,8 @@ int main(int argc,char **argv)
   PetscScalar    one = 1.0;
   Vec            x;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   /*
      Create a parallel vector.
@@ -31,10 +31,10 @@ int main(int argc,char **argv)
         PETSc could determine the vector's distribution if we specify
         just the global size.
   */
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
-  CHKERRQ(VecSetSizes(x,rank+1,PETSC_DECIDE));
-  CHKERRQ(VecSetFromOptions(x));
-  CHKERRQ(VecSet(x,one));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+  PetscCall(VecSetSizes(x,rank+1,PETSC_DECIDE));
+  PetscCall(VecSetFromOptions(x));
+  PetscCall(VecSet(x,one));
 
   /*
      Set the local to global ordering for the vector. Each processor
@@ -44,10 +44,10 @@ int main(int argc,char **argv)
      have one ghost point on each end of the blocks owned by each processor.
   */
 
-  CHKERRQ(VecGetSize(x,&M));
-  CHKERRQ(VecGetOwnershipRange(x,&rstart,&rend));
+  PetscCall(VecGetSize(x,&M));
+  PetscCall(VecGetOwnershipRange(x,&rstart,&rend));
   ng   = rend - rstart + 2;
-  CHKERRQ(PetscMalloc1(ng,&gindices));
+  PetscCall(PetscMalloc1(ng,&gindices));
   gindices[0] = rstart - 1;
   for (i=0; i<ng-1; i++) gindices[i+1] = gindices[i] + 1;
   /* map the first and last point as periodic */
@@ -55,11 +55,11 @@ int main(int argc,char **argv)
   if (gindices[ng-1] == M)  gindices[ng-1] = 0;
   {
     ISLocalToGlobalMapping ltog;
-    CHKERRQ(ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,1,ng,gindices,PETSC_COPY_VALUES,&ltog));
-    CHKERRQ(VecSetLocalToGlobalMapping(x,ltog));
-    CHKERRQ(ISLocalToGlobalMappingDestroy(&ltog));
+    PetscCall(ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,1,ng,gindices,PETSC_COPY_VALUES,&ltog));
+    PetscCall(VecSetLocalToGlobalMapping(x,ltog));
+    PetscCall(ISLocalToGlobalMappingDestroy(&ltog));
   }
-  CHKERRQ(PetscFree(gindices));
+  PetscCall(PetscFree(gindices));
 
   /*
      Set the vector elements.
@@ -72,7 +72,7 @@ int main(int argc,char **argv)
         contributions will be added together.
   */
   for (i=0; i<ng; i++) {
-    CHKERRQ(VecSetValuesLocal(x,1,&i,&one,ADD_VALUES));
+    PetscCall(VecSetValuesLocal(x,1,&i,&one,ADD_VALUES));
   }
 
   /*
@@ -81,16 +81,16 @@ int main(int argc,char **argv)
      Computations can be done while messages are in transition
      by placing code between these two statements.
   */
-  CHKERRQ(VecAssemblyBegin(x));
-  CHKERRQ(VecAssemblyEnd(x));
+  PetscCall(VecAssemblyBegin(x));
+  PetscCall(VecAssemblyEnd(x));
 
   /*
       View the vector; then destroy it.
   */
-  CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(VecDestroy(&x));
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecDestroy(&x));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

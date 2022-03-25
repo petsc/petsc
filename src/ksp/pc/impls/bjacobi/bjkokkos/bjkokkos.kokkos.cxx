@@ -44,16 +44,16 @@ static PetscErrorCode  PCBJKOKKOSCreateKSP_BJKOKKOS(PC pc)
   DM             dm;
 
   PetscFunctionBegin;
-  CHKERRQ(KSPCreate(PetscObjectComm((PetscObject)pc),&jac->ksp));
-  CHKERRQ(KSPSetErrorIfNotConverged(jac->ksp,pc->erroriffailure));
-  CHKERRQ(PetscObjectIncrementTabLevel((PetscObject)jac->ksp,(PetscObject)pc,1));
-  CHKERRQ(PCGetOptionsPrefix(pc,&prefix));
-  CHKERRQ(KSPSetOptionsPrefix(jac->ksp,prefix));
-  CHKERRQ(KSPAppendOptionsPrefix(jac->ksp,"pc_bjkokkos_"));
-  CHKERRQ(PCGetDM(pc,&dm));
+  PetscCall(KSPCreate(PetscObjectComm((PetscObject)pc),&jac->ksp));
+  PetscCall(KSPSetErrorIfNotConverged(jac->ksp,pc->erroriffailure));
+  PetscCall(PetscObjectIncrementTabLevel((PetscObject)jac->ksp,(PetscObject)pc,1));
+  PetscCall(PCGetOptionsPrefix(pc,&prefix));
+  PetscCall(KSPSetOptionsPrefix(jac->ksp,prefix));
+  PetscCall(KSPAppendOptionsPrefix(jac->ksp,"pc_bjkokkos_"));
+  PetscCall(PCGetDM(pc,&dm));
   if (dm) {
-    CHKERRQ(KSPSetDM(jac->ksp, dm));
-    CHKERRQ(KSPSetDMActive(jac->ksp, PETSC_FALSE));
+    PetscCall(KSPSetDM(jac->ksp, dm));
+    PetscCall(KSPSetDMActive(jac->ksp, PETSC_FALSE));
   }
   jac->reason       = PETSC_FALSE;
   jac->monitor      = PETSC_FALSE;
@@ -271,7 +271,7 @@ KOKKOS_INLINE_FUNCTION PetscErrorCode BJSolve_BICG(const team_member team, const
   /*     r <- b (x is 0) */
   parallel_for(Kokkos::TeamVectorRange(team, start, end), [=] (int rowb) {
       int rowa = ic[rowb];
-      //CHKERRQ(VecCopy(Rr,Rl));
+      //PetscCall(VecCopy(Rr,Rl));
       Rl[rowb-start] = Rr[rowb-start] = glb_b[rowa];
       XX[rowb-start] = 0;
     });
@@ -396,29 +396,29 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc,Vec bin,Vec xout)
     PetscBool         monitor = jac->monitor; // captured
     PetscInt          view_bid = jac->batch_target;
     // get field major is to map plex IO to/from block/field major
-    CHKERRQ(PetscObjectQuery((PetscObject) A, "plex_batch_is", (PetscObject *) &container));
-    CHKERRQ(VecDuplicate(bin,&bvec));
+    PetscCall(PetscObjectQuery((PetscObject) A, "plex_batch_is", (PetscObject *) &container));
+    PetscCall(VecDuplicate(bin,&bvec));
     if (container) {
-      CHKERRQ(PetscContainerGetPointer(container, (void **) &plex_batch));
-      CHKERRQ(VecScatterBegin(plex_batch,bin,bvec,INSERT_VALUES,SCATTER_FORWARD));
-      CHKERRQ(VecScatterEnd(plex_batch,bin,bvec,INSERT_VALUES,SCATTER_FORWARD));
+      PetscCall(PetscContainerGetPointer(container, (void **) &plex_batch));
+      PetscCall(VecScatterBegin(plex_batch,bin,bvec,INSERT_VALUES,SCATTER_FORWARD));
+      PetscCall(VecScatterEnd(plex_batch,bin,bvec,INSERT_VALUES,SCATTER_FORWARD));
     } else {
-      CHKERRQ(VecCopy(bin, bvec));
+      PetscCall(VecCopy(bin, bvec));
     }
     // get x
-    CHKERRQ(VecGetArrayAndMemType(xout,&glb_xdata,&mtype));
+    PetscCall(VecGetArrayAndMemType(xout,&glb_xdata,&mtype));
 #if defined(PETSC_HAVE_CUDA)
     PetscCheck(PetscMemTypeDevice(mtype),PetscObjectComm((PetscObject) pc),PETSC_ERR_ARG_WRONG,"No GPU data for x %" PetscInt_FMT " != %" PetscInt_FMT "",mtype,PETSC_MEMTYPE_DEVICE);
 #endif
-    CHKERRQ(VecGetArrayReadAndMemType(bvec,&glb_bdata,&mtype));
+    PetscCall(VecGetArrayReadAndMemType(bvec,&glb_bdata,&mtype));
 #if defined(PETSC_HAVE_CUDA)
     PetscCheck(PetscMemTypeDevice(mtype),PetscObjectComm((PetscObject) pc),PETSC_ERR_ARG_WRONG,"No GPU data for b");
 #endif
     // get batch size
-    CHKERRQ(PetscObjectQuery((PetscObject) A, "batch size", (PetscObject *) &container));
+    PetscCall(PetscObjectQuery((PetscObject) A, "batch size", (PetscObject *) &container));
     if (container) {
       PetscInt *pNf=NULL;
-      CHKERRQ(PetscContainerGetPointer(container, (void **) &pNf));
+      PetscCall(PetscContainerGetPointer(container, (void **) &pNf));
       batch_sz = *pNf;
     } else batch_sz = 1;
     PetscCheck(nBlk%batch_sz == 0,PetscObjectComm((PetscObject) pc),PETSC_ERR_ARG_WRONG,"batch_sz = %" PetscInt_FMT ", nBlk = %" PetscInt_FMT,batch_sz,nBlk);
@@ -471,55 +471,55 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc,Vec bin,Vec xout)
     Kokkos::deep_copy (h_metadata, d_metadata);
 #if PCBJKOKKOS_VERBOSE_LEVEL >= 3
 #if PCBJKOKKOS_VERBOSE_LEVEL >= 4
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Iterations\n"));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Iterations\n"));
 #endif
     // assume species major
 #if PCBJKOKKOS_VERBOSE_LEVEL < 4
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"max iterations per species (%s) :",ksp_type_idx==BATCH_KSP_BICG_IDX ? "bicg" : "tfqmr"));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"max iterations per species (%s) :",ksp_type_idx==BATCH_KSP_BICG_IDX ? "bicg" : "tfqmr"));
 #endif
     for (PetscInt dmIdx=0, s=0, head=0 ; dmIdx < jac->num_dms; dmIdx += batch_sz) {
       for (PetscInt f=0, idx=head ; f < jac->dm_Nf[dmIdx] ; f++,s++,idx++) {
 #if PCBJKOKKOS_VERBOSE_LEVEL >= 4
-        CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"%2D:", s));
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%2D:", s));
         for (int bid=0 ; bid<batch_sz ; bid++) {
-         CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"%3D ", h_metadata[idx + bid*jac->dm_Nf[dmIdx]].its));
+         PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%3D ", h_metadata[idx + bid*jac->dm_Nf[dmIdx]].its));
         }
-        CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\n"));
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n"));
 #else
         PetscInt count=0;
         for (int bid=0 ; bid<batch_sz ; bid++) {
           if (h_metadata[idx + bid*jac->dm_Nf[dmIdx]].its > count) count = h_metadata[idx + bid*jac->dm_Nf[dmIdx]].its;
         }
-        CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"%3D ", count));
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%3D ", count));
 #endif
       }
       head += batch_sz*jac->dm_Nf[dmIdx];
     }
 #if PCBJKOKKOS_VERBOSE_LEVEL < 4
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\n"));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n"));
 #endif
 #endif
     PetscInt count=0, mbid=0;
     for (int blkID=0;blkID<nBlk;blkID++) {
-      CHKERRQ(PetscLogGpuFlops((PetscLogDouble)h_metadata[blkID].flops));
+      PetscCall(PetscLogGpuFlops((PetscLogDouble)h_metadata[blkID].flops));
       if (jac->reason) {
         if (jac->batch_target==blkID) {
-          CHKERRQ(PetscPrintf(PETSC_COMM_SELF,  "    Linear solve converged due to %s iterations %d, batch %" PetscInt_FMT ", species %" PetscInt_FMT "\n", KSPConvergedReasons[h_metadata[blkID].reason], h_metadata[blkID].its, blkID%batch_sz, blkID/batch_sz));
+          PetscCall(PetscPrintf(PETSC_COMM_SELF,  "    Linear solve converged due to %s iterations %d, batch %" PetscInt_FMT ", species %" PetscInt_FMT "\n", KSPConvergedReasons[h_metadata[blkID].reason], h_metadata[blkID].its, blkID%batch_sz, blkID/batch_sz));
         } else if (jac->batch_target==-1 && h_metadata[blkID].its > count) {
           count = h_metadata[blkID].its;
           mbid = blkID;
         }
         if (h_metadata[blkID].reason < 0) {
-          CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "ERROR reason=%s, its=%" PetscInt_FMT ". species %" PetscInt_FMT ", batch %" PetscInt_FMT "\n",
+          PetscCall(PetscPrintf(PETSC_COMM_SELF, "ERROR reason=%s, its=%" PetscInt_FMT ". species %" PetscInt_FMT ", batch %" PetscInt_FMT "\n",
                               KSPConvergedReasons[h_metadata[blkID].reason],h_metadata[blkID].its,blkID/batch_sz,blkID%batch_sz));
         }
       }
     }
     if (jac->batch_target==-1 && jac->reason) {
-      CHKERRQ(PetscPrintf(PETSC_COMM_SELF,  "    Linear solve converged due to %s iterations %d, batch %" PetscInt_FMT ", specie %" PetscInt_FMT "\n", KSPConvergedReasons[h_metadata[mbid].reason], h_metadata[mbid].its,mbid%batch_sz,mbid/batch_sz));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,  "    Linear solve converged due to %s iterations %d, batch %" PetscInt_FMT ", specie %" PetscInt_FMT "\n", KSPConvergedReasons[h_metadata[mbid].reason], h_metadata[mbid].its,mbid%batch_sz,mbid/batch_sz));
     }
-    CHKERRQ(VecRestoreArrayAndMemType(xout,&glb_xdata));
-    CHKERRQ(VecRestoreArrayReadAndMemType(bvec,&glb_bdata));
+    PetscCall(VecRestoreArrayAndMemType(xout,&glb_xdata));
+    PetscCall(VecRestoreArrayReadAndMemType(bvec,&glb_bdata));
     {
       int errsum;
       Kokkos::parallel_reduce(nBlk, KOKKOS_LAMBDA (const int idx, int& lsum) {
@@ -527,14 +527,14 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc,Vec bin,Vec xout)
         }, errsum);
       pcreason = errsum ? PC_SUBPC_ERROR : PC_NOERROR;
     }
-    CHKERRQ(PCSetFailedReason(pc,pcreason));
+    PetscCall(PCSetFailedReason(pc,pcreason));
     // map back to Plex space
     if (plex_batch) {
-      CHKERRQ(VecCopy(xout, bvec));
-      CHKERRQ(VecScatterBegin(plex_batch,bvec,xout,INSERT_VALUES,SCATTER_REVERSE));
-      CHKERRQ(VecScatterEnd(plex_batch,bvec,xout,INSERT_VALUES,SCATTER_REVERSE));
+      PetscCall(VecCopy(xout, bvec));
+      PetscCall(VecScatterBegin(plex_batch,bvec,xout,INSERT_VALUES,SCATTER_REVERSE));
+      PetscCall(VecScatterEnd(plex_batch,bvec,xout,INSERT_VALUES,SCATTER_REVERSE));
     }
-    CHKERRQ(VecDestroy(&bvec));
+    PetscCall(VecDestroy(&bvec));
   }
   PetscFunctionReturn(0);
 }
@@ -549,7 +549,7 @@ static PetscErrorCode PCSetUp_BJKOKKOS(PC pc)
   PetscFunctionBegin;
   PetscCheck(!pc->useAmat,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"No support for using 'use_amat'");
   PetscCheck(A,PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"No matrix - A is used above");
-  CHKERRQ(PetscObjectTypeCompareAny((PetscObject)A,&flg,MATSEQAIJKOKKOS,MATMPIAIJKOKKOS,MATAIJKOKKOS,""));
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)A,&flg,MATSEQAIJKOKKOS,MATMPIAIJKOKKOS,MATAIJKOKKOS,""));
   PetscCheck(flg,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"must use '-dm_mat_type aijkokkos -dm_vec_type kokkos' for -pc_type bjkokkos");
   if (!(aijkok = static_cast<Mat_SeqAIJKokkos*>(A->spptr))) {
     SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"No aijkok");
@@ -559,7 +559,7 @@ static PetscErrorCode PCSetUp_BJKOKKOS(PC pc)
       DM                pack,*subDM;
       PetscInt          nDMs, n;
       PetscContainer    container;
-      CHKERRQ(PetscObjectQuery((PetscObject) A, "plex_batch_is", (PetscObject *) &container));
+      PetscCall(PetscObjectQuery((PetscObject) A, "plex_batch_is", (PetscObject *) &container));
       { // Permute the matrix to get a block diagonal system: d_isrow_k, d_isicol_k
         MatOrderingType   rtype;
         IS                isrow,isicol;
@@ -568,43 +568,43 @@ static PetscErrorCode PCSetUp_BJKOKKOS(PC pc)
         if (container) rtype = MATORDERINGNATURAL; // if we have a vecscatter then don't reorder here (all the reorder stuff goes away in future)
         else rtype = MATORDERINGRCM;
         // get permutation. Not what I expect so inverted here
-        CHKERRQ(MatGetOrdering(A,rtype,&isrow,&isicol));
-        CHKERRQ(ISDestroy(&isrow));
-        CHKERRQ(ISInvertPermutation(isicol,PETSC_DECIDE,&isrow));
-        CHKERRQ(ISGetIndices(isrow,&rowindices));
-        CHKERRQ(ISGetIndices(isicol,&icolindices));
+        PetscCall(MatGetOrdering(A,rtype,&isrow,&isicol));
+        PetscCall(ISDestroy(&isrow));
+        PetscCall(ISInvertPermutation(isicol,PETSC_DECIDE,&isrow));
+        PetscCall(ISGetIndices(isrow,&rowindices));
+        PetscCall(ISGetIndices(isicol,&icolindices));
         const Kokkos::View<PetscInt*, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged> > h_isrow_k((PetscInt*)rowindices,A->rmap->n);
         const Kokkos::View<PetscInt*, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged> > h_isicol_k ((PetscInt*)icolindices,A->rmap->n);
         jac->d_isrow_k = new Kokkos::View<PetscInt*>(Kokkos::create_mirror(DefaultMemorySpace(),h_isrow_k));
         jac->d_isicol_k = new Kokkos::View<PetscInt*>(Kokkos::create_mirror(DefaultMemorySpace(),h_isicol_k));
         Kokkos::deep_copy (*jac->d_isrow_k, h_isrow_k);
         Kokkos::deep_copy (*jac->d_isicol_k, h_isicol_k);
-        CHKERRQ(ISRestoreIndices(isrow,&rowindices));
-        CHKERRQ(ISRestoreIndices(isicol,&icolindices));
-        CHKERRQ(ISDestroy(&isrow));
-        CHKERRQ(ISDestroy(&isicol));
+        PetscCall(ISRestoreIndices(isrow,&rowindices));
+        PetscCall(ISRestoreIndices(isicol,&icolindices));
+        PetscCall(ISDestroy(&isrow));
+        PetscCall(ISDestroy(&isicol));
       }
       // get block sizes
-      CHKERRQ(PCGetDM(pc, &pack));
+      PetscCall(PCGetDM(pc, &pack));
       PetscCheck(pack,PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"no DM. Requires a composite DM");
-      CHKERRQ(PetscObjectTypeCompare((PetscObject)pack,DMCOMPOSITE,&flg));
+      PetscCall(PetscObjectTypeCompare((PetscObject)pack,DMCOMPOSITE,&flg));
       PetscCheck(flg,PetscObjectComm((PetscObject)pack),PETSC_ERR_USER,"Not for type %s",((PetscObject)pack)->type_name);
-      CHKERRQ(DMCompositeGetNumberDM(pack,&nDMs));
+      PetscCall(DMCompositeGetNumberDM(pack,&nDMs));
       jac->num_dms = nDMs;
-      CHKERRQ(DMCreateGlobalVector(pack, &jac->vec_diag));
-      CHKERRQ(VecGetLocalSize(jac->vec_diag,&n));
+      PetscCall(DMCreateGlobalVector(pack, &jac->vec_diag));
+      PetscCall(VecGetLocalSize(jac->vec_diag,&n));
       jac->n = n;
       jac->d_idiag_k = new Kokkos::View<PetscScalar*, Kokkos::LayoutRight>("idiag", n);
       // options
-      CHKERRQ(PCBJKOKKOSCreateKSP_BJKOKKOS(pc));
-      CHKERRQ(KSPSetFromOptions(jac->ksp));
-      CHKERRQ(PetscObjectTypeCompareAny((PetscObject)jac->ksp,&flg,KSPBICG,""));
+      PetscCall(PCBJKOKKOSCreateKSP_BJKOKKOS(pc));
+      PetscCall(KSPSetFromOptions(jac->ksp));
+      PetscCall(PetscObjectTypeCompareAny((PetscObject)jac->ksp,&flg,KSPBICG,""));
       if (flg) {jac->ksp_type_idx = BATCH_KSP_BICG_IDX; jac->nwork = 7;}
       else {
-        CHKERRQ(PetscObjectTypeCompareAny((PetscObject)jac->ksp,&flg,KSPTFQMR,""));
+        PetscCall(PetscObjectTypeCompareAny((PetscObject)jac->ksp,&flg,KSPTFQMR,""));
         if (flg) {jac->ksp_type_idx = BATCH_KSP_TFQMR_IDX; jac->nwork = 10;}
         else {
-          CHKERRQ(PetscObjectTypeCompareAny((PetscObject)jac->ksp,&flg,KSPGMRES,""));
+          PetscCall(PetscObjectTypeCompareAny((PetscObject)jac->ksp,&flg,KSPGMRES,""));
           if (flg) {jac->ksp_type_idx = BATCH_KSP_GMRES_IDX; jac->nwork = 0;}
           SETERRQ(PetscObjectComm((PetscObject)jac->ksp),PETSC_ERR_ARG_WRONG,"unsupported type %s", ((PetscObject)jac->ksp)->type_name);
         }
@@ -613,61 +613,61 @@ static PetscErrorCode PCSetUp_BJKOKKOS(PC pc)
         PetscViewer       viewer;
         PetscBool         flg;
         PetscViewerFormat format;
-        CHKERRQ(PetscOptionsGetViewer(PetscObjectComm((PetscObject)jac->ksp),((PetscObject)jac->ksp)->options,((PetscObject)jac->ksp)->prefix,"-ksp_converged_reason",&viewer,&format,&flg));
+        PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)jac->ksp),((PetscObject)jac->ksp)->options,((PetscObject)jac->ksp)->prefix,"-ksp_converged_reason",&viewer,&format,&flg));
         jac->reason = flg;
-        CHKERRQ(PetscViewerDestroy(&viewer));
-        CHKERRQ(PetscOptionsGetViewer(PetscObjectComm((PetscObject)jac->ksp),((PetscObject)jac->ksp)->options,((PetscObject)jac->ksp)->prefix,"-ksp_monitor",&viewer,&format,&flg));
+        PetscCall(PetscViewerDestroy(&viewer));
+        PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)jac->ksp),((PetscObject)jac->ksp)->options,((PetscObject)jac->ksp)->prefix,"-ksp_monitor",&viewer,&format,&flg));
         jac->monitor = flg;
-        CHKERRQ(PetscViewerDestroy(&viewer));
-        CHKERRQ(PetscOptionsGetInt(((PetscObject)jac->ksp)->options,((PetscObject)jac->ksp)->prefix,"-ksp_batch_target",&jac->batch_target,&flg));
+        PetscCall(PetscViewerDestroy(&viewer));
+        PetscCall(PetscOptionsGetInt(((PetscObject)jac->ksp)->options,((PetscObject)jac->ksp)->prefix,"-ksp_batch_target",&jac->batch_target,&flg));
         PetscCheck(jac->batch_target < jac->num_dms,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"-ksp_batch_target (%" PetscInt_FMT ") >= number of DMs (%" PetscInt_FMT ")",jac->batch_target,jac->num_dms);
         if (!jac->monitor && !flg) jac->batch_target = -1; // turn it off
       }
       // get blocks - jac->d_bid_eqOffset_k
-      CHKERRQ(PetscMalloc(sizeof(*subX)*nDMs, &subX));
-      CHKERRQ(PetscMalloc(sizeof(*subDM)*nDMs, &subDM));
-      CHKERRQ(PetscMalloc(sizeof(*jac->dm_Nf)*nDMs, &jac->dm_Nf));
-      CHKERRQ(PetscInfo(pc, "Have %" PetscInt_FMT " DMs, n=%" PetscInt_FMT " rtol=%g type = %s\n", nDMs, n, jac->ksp->rtol, ((PetscObject)jac->ksp)->type_name));
-      CHKERRQ(DMCompositeGetEntriesArray(pack,subDM));
+      PetscCall(PetscMalloc(sizeof(*subX)*nDMs, &subX));
+      PetscCall(PetscMalloc(sizeof(*subDM)*nDMs, &subDM));
+      PetscCall(PetscMalloc(sizeof(*jac->dm_Nf)*nDMs, &jac->dm_Nf));
+      PetscCall(PetscInfo(pc, "Have %" PetscInt_FMT " DMs, n=%" PetscInt_FMT " rtol=%g type = %s\n", nDMs, n, jac->ksp->rtol, ((PetscObject)jac->ksp)->type_name));
+      PetscCall(DMCompositeGetEntriesArray(pack,subDM));
       jac->nBlocks = 0;
       for (PetscInt ii=0;ii<nDMs;ii++) {
         PetscSection section;
         PetscInt Nf;
         DM dm = subDM[ii];
-        CHKERRQ(DMGetLocalSection(dm, &section));
-        CHKERRQ(PetscSectionGetNumFields(section, &Nf));
+        PetscCall(DMGetLocalSection(dm, &section));
+        PetscCall(PetscSectionGetNumFields(section, &Nf));
         jac->nBlocks += Nf;
 #if PCBJKOKKOS_VERBOSE_LEVEL <= 2
-        if (ii==0) CHKERRQ(PetscInfo(pc,"%" PetscInt_FMT ") %" PetscInt_FMT " blocks (%" PetscInt_FMT " total)\n",ii,Nf,jac->nBlocks));
+        if (ii==0) PetscCall(PetscInfo(pc,"%" PetscInt_FMT ") %" PetscInt_FMT " blocks (%" PetscInt_FMT " total)\n",ii,Nf,jac->nBlocks));
 #else
-        CHKERRQ(PetscInfo(pc,"%" PetscInt_FMT ") %" PetscInt_FMT " blocks (%" PetscInt_FMT " total)\n",ii,Nf,jac->nBlocks));
+        PetscCall(PetscInfo(pc,"%" PetscInt_FMT ") %" PetscInt_FMT " blocks (%" PetscInt_FMT " total)\n",ii,Nf,jac->nBlocks));
 #endif
         jac->dm_Nf[ii] = Nf;
       }
       { // d_bid_eqOffset_k
         Kokkos::View<PetscInt*, Kokkos::LayoutRight, Kokkos::HostSpace> h_block_offsets("block_offsets", jac->nBlocks+1);
-        CHKERRQ(DMCompositeGetAccessArray(pack, jac->vec_diag, nDMs, NULL, subX));
+        PetscCall(DMCompositeGetAccessArray(pack, jac->vec_diag, nDMs, NULL, subX));
         h_block_offsets[0] = 0;
         jac->const_block_size = -1;
         for (PetscInt ii=0, idx = 0;ii<nDMs;ii++) {
           PetscInt nloc,nblk;
-          CHKERRQ(VecGetSize(subX[ii],&nloc));
+          PetscCall(VecGetSize(subX[ii],&nloc));
           nblk = nloc/jac->dm_Nf[ii];
           PetscCheck(nloc%jac->dm_Nf[ii] == 0,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"nloc%jac->dm_Nf[ii] DMs",nloc,jac->dm_Nf[ii]);
           for (PetscInt jj=0;jj<jac->dm_Nf[ii];jj++, idx++) {
             h_block_offsets[idx+1] = h_block_offsets[idx] + nblk;
 #if PCBJKOKKOS_VERBOSE_LEVEL <= 2
-            if (idx==0) CHKERRQ(PetscInfo(pc,"\t%" PetscInt_FMT ") Add block with %" PetscInt_FMT " equations of %" PetscInt_FMT "\n",idx+1,nblk,jac->nBlocks));
+            if (idx==0) PetscCall(PetscInfo(pc,"\t%" PetscInt_FMT ") Add block with %" PetscInt_FMT " equations of %" PetscInt_FMT "\n",idx+1,nblk,jac->nBlocks));
 #else
-            CHKERRQ(PetscInfo(pc,"\t%" PetscInt_FMT ") Add block with %" PetscInt_FMT " equations of %" PetscInt_FMT "\n",idx+1,nblk,jac->nBlocks));
+            PetscCall(PetscInfo(pc,"\t%" PetscInt_FMT ") Add block with %" PetscInt_FMT " equations of %" PetscInt_FMT "\n",idx+1,nblk,jac->nBlocks));
 #endif
             if (jac->const_block_size == -1) jac->const_block_size = nblk;
             else if (jac->const_block_size > 0 && jac->const_block_size != nblk) jac->const_block_size = 0;
           }
         }
-        CHKERRQ(DMCompositeRestoreAccessArray(pack, jac->vec_diag, jac->nBlocks, NULL, subX));
-        CHKERRQ(PetscFree(subX));
-        CHKERRQ(PetscFree(subDM));
+        PetscCall(DMCompositeRestoreAccessArray(pack, jac->vec_diag, jac->nBlocks, NULL, subX));
+        PetscCall(PetscFree(subX));
+        PetscCall(PetscFree(subDM));
         jac->d_bid_eqOffset_k = new Kokkos::View<PetscInt*, Kokkos::LayoutRight>(Kokkos::create_mirror(Kokkos::DefaultExecutionSpace::memory_space(),h_block_offsets));
         Kokkos::deep_copy (*jac->d_bid_eqOffset_k, h_block_offsets);
       }
@@ -711,8 +711,8 @@ static PetscErrorCode PCReset_BJKOKKOS(PC pc)
   PC_PCBJKOKKOS *jac = (PC_PCBJKOKKOS*)pc->data;
 
   PetscFunctionBegin;
-  CHKERRQ(KSPDestroy(&jac->ksp));
-  CHKERRQ(VecDestroy(&jac->vec_diag));
+  PetscCall(KSPDestroy(&jac->ksp));
+  PetscCall(VecDestroy(&jac->vec_diag));
   if (jac->d_bid_eqOffset_k) delete jac->d_bid_eqOffset_k;
   if (jac->d_idiag_k) delete jac->d_idiag_k;
   if (jac->d_isrow_k) delete jac->d_isrow_k;
@@ -721,9 +721,9 @@ static PetscErrorCode PCReset_BJKOKKOS(PC pc)
   jac->d_idiag_k = NULL;
   jac->d_isrow_k = NULL;
   jac->d_isicol_k = NULL;
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCBJKOKKOSGetKSP_C",NULL)); // not published now (causes configure errors)
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCBJKOKKOSSetKSP_C",NULL));
-  CHKERRQ(PetscFree(jac->dm_Nf));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCBJKOKKOSGetKSP_C",NULL)); // not published now (causes configure errors)
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCBJKOKKOSSetKSP_C",NULL));
+  PetscCall(PetscFree(jac->dm_Nf));
   jac->dm_Nf = NULL;
   PetscFunctionReturn(0);
 }
@@ -731,8 +731,8 @@ static PetscErrorCode PCReset_BJKOKKOS(PC pc)
 static PetscErrorCode PCDestroy_BJKOKKOS(PC pc)
 {
   PetscFunctionBegin;
-  CHKERRQ(PCReset_BJKOKKOS(pc));
-  CHKERRQ(PetscFree(pc->data));
+  PetscCall(PCReset_BJKOKKOS(pc));
+  PetscCall(PetscFree(pc->data));
   PetscFunctionReturn(0);
 }
 
@@ -742,11 +742,11 @@ static PetscErrorCode PCView_BJKOKKOS(PC pc,PetscViewer viewer)
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  if (!jac->ksp) CHKERRQ(PCBJKOKKOSCreateKSP_BJKOKKOS(pc));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  if (!jac->ksp) PetscCall(PCBJKOKKOSCreateKSP_BJKOKKOS(pc));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Batched device linear solver: Krylov (KSP) method with Jacobi preconditioning\n"));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"\t\tnwork = %" PetscInt_FMT ", rel tol = %e, abs tol = %e, div tol = %e, max it =%" PetscInt_FMT ", type = %s\n",jac->nwork,jac->ksp->rtol,
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Batched device linear solver: Krylov (KSP) method with Jacobi preconditioning\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"\t\tnwork = %" PetscInt_FMT ", rel tol = %e, abs tol = %e, div tol = %e, max it =%" PetscInt_FMT ", type = %s\n",jac->nwork,jac->ksp->rtol,
                                    jac->ksp->abstol, jac->ksp->divtol, jac->ksp->max_it,
                                    ((PetscObject)jac->ksp)->type_name));
   }
@@ -756,8 +756,8 @@ static PetscErrorCode PCView_BJKOKKOS(PC pc,PetscViewer viewer)
 static PetscErrorCode PCSetFromOptions_BJKOKKOS(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"PC BJKOKKOS options"));
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"PC BJKOKKOS options"));
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -766,8 +766,8 @@ static PetscErrorCode  PCBJKOKKOSSetKSP_BJKOKKOS(PC pc,KSP ksp)
   PC_PCBJKOKKOS *jac = (PC_PCBJKOKKOS*)pc->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectReference((PetscObject)ksp));
-  CHKERRQ(KSPDestroy(&jac->ksp));
+  PetscCall(PetscObjectReference((PetscObject)ksp));
+  PetscCall(KSPDestroy(&jac->ksp));
   jac->ksp = ksp;
   PetscFunctionReturn(0);
 }
@@ -793,7 +793,7 @@ PetscErrorCode  PCBJKOKKOSSetKSP(PC pc,KSP ksp)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,2);
   PetscCheckSameComm(pc,1,ksp,2);
-  CHKERRQ(PetscTryMethod(pc,"PCBJKOKKOSSetKSP_C",(PC,KSP),(pc,ksp)));
+  PetscCall(PetscTryMethod(pc,"PCBJKOKKOSSetKSP_C",(PC,KSP),(pc,ksp)));
   PetscFunctionReturn(0);
 }
 
@@ -802,7 +802,7 @@ static PetscErrorCode  PCBJKOKKOSGetKSP_BJKOKKOS(PC pc,KSP *ksp)
   PC_PCBJKOKKOS *jac = (PC_PCBJKOKKOS*)pc->data;
 
   PetscFunctionBegin;
-  if (!jac->ksp) CHKERRQ(PCBJKOKKOSCreateKSP_BJKOKKOS(pc));
+  if (!jac->ksp) PetscCall(PCBJKOKKOSCreateKSP_BJKOKKOS(pc));
   *ksp = jac->ksp;
   PetscFunctionReturn(0);
 }
@@ -831,7 +831,7 @@ PetscErrorCode  PCBJKOKKOSGetKSP(PC pc,KSP *ksp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(ksp,2);
-  CHKERRQ(PetscUseMethod(pc,"PCBJKOKKOSGetKSP_C",(PC,KSP*),(pc,ksp)));
+  PetscCall(PetscUseMethod(pc,"PCBJKOKKOSGetKSP_C",(PC,KSP*),(pc,ksp)));
   PetscFunctionReturn(0);
 }
 
@@ -860,7 +860,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BJKOKKOS(PC pc)
   PC_PCBJKOKKOS *jac;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNewLog(pc,&jac));
+  PetscCall(PetscNewLog(pc,&jac));
   pc->data = (void*)jac;
 
   jac->ksp              = NULL;
@@ -871,7 +871,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BJKOKKOS(PC pc)
   jac->d_isicol_k       = NULL;
   jac->nBlocks          = 1;
 
-  CHKERRQ(PetscMemzero(pc->ops,sizeof(struct _PCOps)));
+  PetscCall(PetscMemzero(pc->ops,sizeof(struct _PCOps)));
   pc->ops->apply           = PCApply_BJKOKKOS;
   pc->ops->applytranspose  = NULL;
   pc->ops->setup           = PCSetUp_BJKOKKOS;
@@ -880,7 +880,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BJKOKKOS(PC pc)
   pc->ops->setfromoptions  = PCSetFromOptions_BJKOKKOS;
   pc->ops->view            = PCView_BJKOKKOS;
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCBJKOKKOSGetKSP_C",PCBJKOKKOSGetKSP_BJKOKKOS));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCBJKOKKOSSetKSP_C",PCBJKOKKOSSetKSP_BJKOKKOS));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCBJKOKKOSGetKSP_C",PCBJKOKKOSGetKSP_BJKOKKOS));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCBJKOKKOSSetKSP_C",PCBJKOKKOSSetKSP_BJKOKKOS));
   PetscFunctionReturn(0);
 }

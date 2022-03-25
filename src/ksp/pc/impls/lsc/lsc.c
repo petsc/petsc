@@ -16,17 +16,17 @@ static PetscErrorCode PCLSCAllocate_Private(PC pc)
 
   PetscFunctionBegin;
   if (lsc->allocated) PetscFunctionReturn(0);
-  CHKERRQ(KSPCreate(PetscObjectComm((PetscObject)pc),&lsc->kspL));
-  CHKERRQ(KSPSetErrorIfNotConverged(lsc->kspL,pc->erroriffailure));
-  CHKERRQ(PetscObjectIncrementTabLevel((PetscObject)lsc->kspL,(PetscObject)pc,1));
-  CHKERRQ(KSPSetType(lsc->kspL,KSPPREONLY));
-  CHKERRQ(KSPSetOptionsPrefix(lsc->kspL,((PetscObject)pc)->prefix));
-  CHKERRQ(KSPAppendOptionsPrefix(lsc->kspL,"lsc_"));
-  CHKERRQ(MatSchurComplementGetSubMatrices(pc->mat,&A,NULL,NULL,NULL,NULL));
-  CHKERRQ(MatCreateVecs(A,&lsc->x0,&lsc->y0));
-  CHKERRQ(MatCreateVecs(pc->pmat,&lsc->x1,NULL));
+  PetscCall(KSPCreate(PetscObjectComm((PetscObject)pc),&lsc->kspL));
+  PetscCall(KSPSetErrorIfNotConverged(lsc->kspL,pc->erroriffailure));
+  PetscCall(PetscObjectIncrementTabLevel((PetscObject)lsc->kspL,(PetscObject)pc,1));
+  PetscCall(KSPSetType(lsc->kspL,KSPPREONLY));
+  PetscCall(KSPSetOptionsPrefix(lsc->kspL,((PetscObject)pc)->prefix));
+  PetscCall(KSPAppendOptionsPrefix(lsc->kspL,"lsc_"));
+  PetscCall(MatSchurComplementGetSubMatrices(pc->mat,&A,NULL,NULL,NULL,NULL));
+  PetscCall(MatCreateVecs(A,&lsc->x0,&lsc->y0));
+  PetscCall(MatCreateVecs(pc->pmat,&lsc->x1,NULL));
   if (lsc->scalediag) {
-    CHKERRQ(VecDuplicate(lsc->x0,&lsc->scale));
+    PetscCall(VecDuplicate(lsc->x0,&lsc->scale));
   }
   lsc->allocated = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -38,28 +38,28 @@ static PetscErrorCode PCSetUp_LSC(PC pc)
   Mat            L,Lp,B,C;
 
   PetscFunctionBegin;
-  CHKERRQ(PCLSCAllocate_Private(pc));
-  CHKERRQ(PetscObjectQuery((PetscObject)pc->mat,"LSC_L",(PetscObject*)&L));
-  if (!L) CHKERRQ(PetscObjectQuery((PetscObject)pc->pmat,"LSC_L",(PetscObject*)&L));
-  CHKERRQ(PetscObjectQuery((PetscObject)pc->pmat,"LSC_Lp",(PetscObject*)&Lp));
-  if (!Lp) CHKERRQ(PetscObjectQuery((PetscObject)pc->mat,"LSC_Lp",(PetscObject*)&Lp));
+  PetscCall(PCLSCAllocate_Private(pc));
+  PetscCall(PetscObjectQuery((PetscObject)pc->mat,"LSC_L",(PetscObject*)&L));
+  if (!L) PetscCall(PetscObjectQuery((PetscObject)pc->pmat,"LSC_L",(PetscObject*)&L));
+  PetscCall(PetscObjectQuery((PetscObject)pc->pmat,"LSC_Lp",(PetscObject*)&Lp));
+  if (!Lp) PetscCall(PetscObjectQuery((PetscObject)pc->mat,"LSC_Lp",(PetscObject*)&Lp));
   if (!L) {
-    CHKERRQ(MatSchurComplementGetSubMatrices(pc->mat,NULL,NULL,&B,&C,NULL));
+    PetscCall(MatSchurComplementGetSubMatrices(pc->mat,NULL,NULL,&B,&C,NULL));
     if (!lsc->L) {
-      CHKERRQ(MatMatMult(C,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&lsc->L));
+      PetscCall(MatMatMult(C,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&lsc->L));
     } else {
-      CHKERRQ(MatMatMult(C,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&lsc->L));
+      PetscCall(MatMatMult(C,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&lsc->L));
     }
     Lp = L = lsc->L;
   }
   if (lsc->scale) {
     Mat Ap;
-    CHKERRQ(MatSchurComplementGetSubMatrices(pc->mat,NULL,&Ap,NULL,NULL,NULL));
-    CHKERRQ(MatGetDiagonal(Ap,lsc->scale)); /* Should be the mass matrix, but we don't have plumbing for that yet */
-    CHKERRQ(VecReciprocal(lsc->scale));
+    PetscCall(MatSchurComplementGetSubMatrices(pc->mat,NULL,&Ap,NULL,NULL,NULL));
+    PetscCall(MatGetDiagonal(Ap,lsc->scale)); /* Should be the mass matrix, but we don't have plumbing for that yet */
+    PetscCall(VecReciprocal(lsc->scale));
   }
-  CHKERRQ(KSPSetOperators(lsc->kspL,L,Lp));
-  CHKERRQ(KSPSetFromOptions(lsc->kspL));
+  PetscCall(KSPSetOperators(lsc->kspL,L,Lp));
+  PetscCall(KSPSetFromOptions(lsc->kspL));
   PetscFunctionReturn(0);
 }
 
@@ -69,20 +69,20 @@ static PetscErrorCode PCApply_LSC(PC pc,Vec x,Vec y)
   Mat            A,B,C;
 
   PetscFunctionBegin;
-  CHKERRQ(MatSchurComplementGetSubMatrices(pc->mat,&A,NULL,&B,&C,NULL));
-  CHKERRQ(KSPSolve(lsc->kspL,x,lsc->x1));
-  CHKERRQ(KSPCheckSolve(lsc->kspL,pc,lsc->x1));
-  CHKERRQ(MatMult(B,lsc->x1,lsc->x0));
+  PetscCall(MatSchurComplementGetSubMatrices(pc->mat,&A,NULL,&B,&C,NULL));
+  PetscCall(KSPSolve(lsc->kspL,x,lsc->x1));
+  PetscCall(KSPCheckSolve(lsc->kspL,pc,lsc->x1));
+  PetscCall(MatMult(B,lsc->x1,lsc->x0));
   if (lsc->scale) {
-    CHKERRQ(VecPointwiseMult(lsc->x0,lsc->x0,lsc->scale));
+    PetscCall(VecPointwiseMult(lsc->x0,lsc->x0,lsc->scale));
   }
-  CHKERRQ(MatMult(A,lsc->x0,lsc->y0));
+  PetscCall(MatMult(A,lsc->x0,lsc->y0));
   if (lsc->scale) {
-    CHKERRQ(VecPointwiseMult(lsc->y0,lsc->y0,lsc->scale));
+    PetscCall(VecPointwiseMult(lsc->y0,lsc->y0,lsc->scale));
   }
-  CHKERRQ(MatMult(C,lsc->y0,lsc->x1));
-  CHKERRQ(KSPSolve(lsc->kspL,lsc->x1,y));
-  CHKERRQ(KSPCheckSolve(lsc->kspL,pc,y));
+  PetscCall(MatMult(C,lsc->y0,lsc->x1));
+  PetscCall(KSPSolve(lsc->kspL,lsc->x1,y));
+  PetscCall(KSPCheckSolve(lsc->kspL,pc,y));
   PetscFunctionReturn(0);
 }
 
@@ -91,20 +91,20 @@ static PetscErrorCode PCReset_LSC(PC pc)
   PC_LSC         *lsc = (PC_LSC*)pc->data;
 
   PetscFunctionBegin;
-  CHKERRQ(VecDestroy(&lsc->x0));
-  CHKERRQ(VecDestroy(&lsc->y0));
-  CHKERRQ(VecDestroy(&lsc->x1));
-  CHKERRQ(VecDestroy(&lsc->scale));
-  CHKERRQ(KSPDestroy(&lsc->kspL));
-  CHKERRQ(MatDestroy(&lsc->L));
+  PetscCall(VecDestroy(&lsc->x0));
+  PetscCall(VecDestroy(&lsc->y0));
+  PetscCall(VecDestroy(&lsc->x1));
+  PetscCall(VecDestroy(&lsc->scale));
+  PetscCall(KSPDestroy(&lsc->kspL));
+  PetscCall(MatDestroy(&lsc->L));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCDestroy_LSC(PC pc)
 {
   PetscFunctionBegin;
-  CHKERRQ(PCReset_LSC(pc));
-  CHKERRQ(PetscFree(pc->data));
+  PetscCall(PCReset_LSC(pc));
+  PetscCall(PetscFree(pc->data));
   PetscFunctionReturn(0);
 }
 
@@ -113,11 +113,11 @@ static PetscErrorCode PCSetFromOptions_LSC(PetscOptionItems *PetscOptionsObject,
   PC_LSC         *lsc = (PC_LSC*)pc->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"LSC options"));
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"LSC options"));
   {
-    CHKERRQ(PetscOptionsBool("-pc_lsc_scale_diag","Use diagonal of velocity block (A) for scaling","None",lsc->scalediag,&lsc->scalediag,NULL));
+    PetscCall(PetscOptionsBool("-pc_lsc_scale_diag","Use diagonal of velocity block (A) for scaling","None",lsc->scalediag,&lsc->scalediag,NULL));
   }
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -127,15 +127,15 @@ static PetscErrorCode PCView_LSC(PC pc,PetscViewer viewer)
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    CHKERRQ(PetscViewerASCIIPushTab(viewer));
+    PetscCall(PetscViewerASCIIPushTab(viewer));
     if (jac->kspL) {
-      CHKERRQ(KSPView(jac->kspL,viewer));
+      PetscCall(KSPView(jac->kspL,viewer));
     } else {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"PCLSC KSP object not yet created, hence cannot display"));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"PCLSC KSP object not yet created, hence cannot display"));
     }
-    CHKERRQ(PetscViewerASCIIPopTab(viewer));
+    PetscCall(PetscViewerASCIIPopTab(viewer));
   }
   PetscFunctionReturn(0);
 }
@@ -207,7 +207,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_LSC(PC pc)
   PC_LSC         *lsc;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNewLog(pc,&lsc));
+  PetscCall(PetscNewLog(pc,&lsc));
   pc->data = (void*)lsc;
 
   pc->ops->apply           = PCApply_LSC;

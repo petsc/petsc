@@ -21,50 +21,50 @@ int main(int argc,char **argv)
   PetscInt       n   = 20;
   PetscScalar    one = 1.0;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
   /*
       Create multi-component vector with 2 components
   */
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&v));
-  CHKERRQ(VecSetSizes(v,PETSC_DECIDE,n));
-  CHKERRQ(VecSetBlockSize(v,2));
-  CHKERRQ(VecSetFromOptions(v));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&v));
+  PetscCall(VecSetSizes(v,PETSC_DECIDE,n));
+  PetscCall(VecSetBlockSize(v,2));
+  PetscCall(VecSetFromOptions(v));
 
   /*
       Create single-component vector
   */
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&s));
-  CHKERRQ(VecSetSizes(s,PETSC_DECIDE,n/2));
-  CHKERRQ(VecSetFromOptions(s));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&s));
+  PetscCall(VecSetSizes(s,PETSC_DECIDE,n/2));
+  PetscCall(VecSetFromOptions(s));
 
   /*
      Set the vectors to entries to a constant value.
   */
-  CHKERRQ(VecSet(v,one));
+  PetscCall(VecSet(v,one));
 
   /*
      Get the first component from the multi-component vector to the single vector
   */
-  CHKERRQ(VecStrideGather(v,0,s,INSERT_VALUES));
+  PetscCall(VecStrideGather(v,0,s,INSERT_VALUES));
 
-  CHKERRQ(VecView(s,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecView(s,PETSC_VIEWER_STDOUT_WORLD));
 
   /*
      Put the values back into the second component
   */
-  CHKERRQ(VecStrideScatter(s,1,v,ADD_VALUES));
+  PetscCall(VecStrideScatter(s,1,v,ADD_VALUES));
 
-  CHKERRQ(VecView(v,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecView(v,PETSC_VIEWER_STDOUT_WORLD));
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  CHKERRQ(VecDestroy(&v));
-  CHKERRQ(VecDestroy(&s));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&v));
+  PetscCall(VecDestroy(&s));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

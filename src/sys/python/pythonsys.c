@@ -12,10 +12,10 @@ static PetscErrorCode PetscPythonFindExecutable(char pythonexe[],size_t len)
 
   PetscFunctionBegin;
   /* get the path for the Python interpreter executable */
-  CHKERRQ(PetscStrncpy(pythonexe,PETSC_PYTHON_EXE,len));
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-python",pythonexe,len,&flag));
+  PetscCall(PetscStrncpy(pythonexe,PETSC_PYTHON_EXE,len));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-python",pythonexe,len,&flag));
   if (!flag || pythonexe[0]==0) {
-    CHKERRQ(PetscStrncpy(pythonexe,PETSC_PYTHON_EXE,len));
+    PetscCall(PetscStrncpy(pythonexe,PETSC_PYTHON_EXE,len));
   }
   PetscFunctionReturn(0);
 }
@@ -31,20 +31,20 @@ static PetscErrorCode PetscPythonFindLibraryName(const char pythonexe[],const ch
 
   PetscFunctionBegin;
   /* call Python to find out the name of the Python dynamic library */
-  CHKERRQ(PetscStrncpy(command,pythonexe,sizeof(command)));
-  CHKERRQ(PetscStrlcat(command," ",sizeof(command)));
-  CHKERRQ(PetscStrlcat(command,attempt,sizeof(command)));
+  PetscCall(PetscStrncpy(command,pythonexe,sizeof(command)));
+  PetscCall(PetscStrlcat(command," ",sizeof(command)));
+  PetscCall(PetscStrlcat(command,attempt,sizeof(command)));
 #if defined(PETSC_HAVE_POPEN)
-  CHKERRQ(PetscPOpen(PETSC_COMM_SELF,NULL,command,"r",&fp));
+  PetscCall(PetscPOpen(PETSC_COMM_SELF,NULL,command,"r",&fp));
   PetscCheckFalse(!fgets(pythonlib,pl,fp),PETSC_COMM_SELF,PETSC_ERR_PLIB,"Python: bad output from executable: %s\nRunning: %s",pythonexe,command);
-  CHKERRQ(PetscPClose(PETSC_COMM_SELF,fp));
+  PetscCall(PetscPClose(PETSC_COMM_SELF,fp));
 #else
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Python: Aborted due to missing popen()");
 #endif
   /* remove newlines */
-  CHKERRQ(PetscStrchr(pythonlib,'\n',&eol));
+  PetscCall(PetscStrchr(pythonlib,'\n',&eol));
   if (eol) eol[0] = 0;
-  CHKERRQ(PetscTestFile(pythonlib,'r',found));
+  PetscCall(PetscTestFile(pythonlib,'r',found));
   PetscFunctionReturn(0);
 }
 
@@ -60,24 +60,24 @@ static PetscErrorCode PetscPythonFindLibrary(const char pythonexe[],char pythonl
 
   PetscFunctionBegin;
 #if defined(PETSC_PYTHON_LIB)
-  CHKERRQ(PetscStrncpy(pythonlib,PETSC_PYTHON_LIB,pl));
+  PetscCall(PetscStrncpy(pythonlib,PETSC_PYTHON_LIB,pl));
   PetscFunctionReturn(0);
 #endif
 
-  CHKERRQ(PetscPythonFindLibraryName(pythonexe,cmdline1,pythonlib,pl,&found));
+  PetscCall(PetscPythonFindLibraryName(pythonexe,cmdline1,pythonlib,pl,&found));
   if (!found) {
-    CHKERRQ(PetscPythonFindLibraryName(pythonexe,cmdline2,pythonlib,pl,&found));
+    PetscCall(PetscPythonFindLibraryName(pythonexe,cmdline2,pythonlib,pl,&found));
   }
   if (!found) {
-    CHKERRQ(PetscPythonFindLibraryName(pythonexe,cmdline3,pythonlib,pl,&found));
+    PetscCall(PetscPythonFindLibraryName(pythonexe,cmdline3,pythonlib,pl,&found));
   }
   if (!found) {
-    CHKERRQ(PetscPythonFindLibraryName(pythonexe,cmdline4,pythonlib,pl,&found));
+    PetscCall(PetscPythonFindLibraryName(pythonexe,cmdline4,pythonlib,pl,&found));
   }
   if (!found) {
-    CHKERRQ(PetscPythonFindLibraryName(pythonexe,cmdline5,pythonlib,pl,&found));
+    PetscCall(PetscPythonFindLibraryName(pythonexe,cmdline5,pythonlib,pl,&found));
   }
-  CHKERRQ(PetscInfo(NULL,"Python library  %s found %d\n",pythonlib,found));
+  PetscCall(PetscInfo(NULL,"Python library  %s found %d\n",pythonlib,found));
   PetscFunctionReturn(0);
 }
 
@@ -119,33 +119,33 @@ static PetscErrorCode PetscPythonLoadLibrary(const char pythonlib[])
 {
   PetscFunctionBegin;
   /* open the Python dynamic library */
-  CHKERRQ(PetscDLPyLibOpen(pythonlib));
-  CHKERRQ(PetscInfo(NULL,"Python: loaded dynamic library %s\n", pythonlib));
+  PetscCall(PetscDLPyLibOpen(pythonlib));
+  PetscCall(PetscInfo(NULL,"Python: loaded dynamic library %s\n", pythonlib));
   /* look required symbols from the Python C-API */
-  CHKERRQ(PetscDLPyLibSym("_Py_NoneStruct"        , &Py_None));
-  CHKERRQ(PetscDLPyLibSym("Py_GetVersion"         , &Py_GetVersion));
-  CHKERRQ(PetscDLPyLibSym("Py_IsInitialized"      , &Py_IsInitialized));
-  CHKERRQ(PetscDLPyLibSym("Py_InitializeEx"       , &Py_InitializeEx));
-  CHKERRQ(PetscDLPyLibSym("Py_Finalize"           , &Py_Finalize));
-  CHKERRQ(PetscDLPyLibSym("PySys_GetObject"       , &PySys_GetObject));
-  CHKERRQ(PetscDLPyLibSym("PySys_SetArgv"         , &PySys_SetArgv));
-  CHKERRQ(PetscDLPyLibSym("PyObject_CallMethod"   , &PyObject_CallMethod));
-  CHKERRQ(PetscDLPyLibSym("PyImport_ImportModule" , &PyImport_ImportModule));
-  CHKERRQ(PetscDLPyLibSym("Py_IncRef"             , &Py_IncRef));
-  CHKERRQ(PetscDLPyLibSym("Py_DecRef"             , &Py_DecRef));
-  CHKERRQ(PetscDLPyLibSym("PyErr_Clear"           , &PyErr_Clear));
-  CHKERRQ(PetscDLPyLibSym("PyErr_Occurred"        , &PyErr_Occurred));
-  CHKERRQ(PetscDLPyLibSym("PyErr_Fetch"             , &PyErr_Fetch));
-  CHKERRQ(PetscDLPyLibSym("PyErr_NormalizeException", &PyErr_NormalizeException));
-  CHKERRQ(PetscDLPyLibSym("PyErr_Display",            &PyErr_Display));
-  CHKERRQ(PetscDLPyLibSym("PyErr_Restore",            &PyErr_Restore));
+  PetscCall(PetscDLPyLibSym("_Py_NoneStruct"        , &Py_None));
+  PetscCall(PetscDLPyLibSym("Py_GetVersion"         , &Py_GetVersion));
+  PetscCall(PetscDLPyLibSym("Py_IsInitialized"      , &Py_IsInitialized));
+  PetscCall(PetscDLPyLibSym("Py_InitializeEx"       , &Py_InitializeEx));
+  PetscCall(PetscDLPyLibSym("Py_Finalize"           , &Py_Finalize));
+  PetscCall(PetscDLPyLibSym("PySys_GetObject"       , &PySys_GetObject));
+  PetscCall(PetscDLPyLibSym("PySys_SetArgv"         , &PySys_SetArgv));
+  PetscCall(PetscDLPyLibSym("PyObject_CallMethod"   , &PyObject_CallMethod));
+  PetscCall(PetscDLPyLibSym("PyImport_ImportModule" , &PyImport_ImportModule));
+  PetscCall(PetscDLPyLibSym("Py_IncRef"             , &Py_IncRef));
+  PetscCall(PetscDLPyLibSym("Py_DecRef"             , &Py_DecRef));
+  PetscCall(PetscDLPyLibSym("PyErr_Clear"           , &PyErr_Clear));
+  PetscCall(PetscDLPyLibSym("PyErr_Occurred"        , &PyErr_Occurred));
+  PetscCall(PetscDLPyLibSym("PyErr_Fetch"             , &PyErr_Fetch));
+  PetscCall(PetscDLPyLibSym("PyErr_NormalizeException", &PyErr_NormalizeException));
+  PetscCall(PetscDLPyLibSym("PyErr_Display",            &PyErr_Display));
+  PetscCall(PetscDLPyLibSym("PyErr_Restore",            &PyErr_Restore));
   /* XXX TODO: check that ALL symbols were there !!! */
   PetscCheck(Py_None,PETSC_COMM_SELF,PETSC_ERR_LIB,"Python: failed to load symbols from Python dynamic library %s",pythonlib);
   PetscCheck(Py_GetVersion,PETSC_COMM_SELF,PETSC_ERR_LIB,"Python: failed to load symbols from Python dynamic library %s",pythonlib);
   PetscCheck(Py_IsInitialized,PETSC_COMM_SELF,PETSC_ERR_LIB,"Python: failed to load symbols from Python dynamic library %s",pythonlib);
   PetscCheck(Py_InitializeEx,PETSC_COMM_SELF,PETSC_ERR_LIB,"Python: failed to load symbols from Python dynamic library %s",pythonlib);
   PetscCheck(Py_Finalize,PETSC_COMM_SELF,PETSC_ERR_LIB,"Python: failed to load symbols from Python dynamic library %s",pythonlib);
-  CHKERRQ(PetscInfo(NULL,"Python: all required symbols loaded from Python dynamic library %s\n",pythonlib));
+  PetscCall(PetscInfo(NULL,"Python: all required symbols loaded from Python dynamic library %s\n",pythonlib));
   PetscFunctionReturn(0);
 }
 
@@ -187,18 +187,18 @@ PetscErrorCode  PetscPythonInitialize(const char pyexe[],const char pylib[])
   if (PetscBeganPython) PetscFunctionReturn(0);
   /* Python executable */
   if (pyexe && pyexe[0] != 0) {
-    CHKERRQ(PetscStrncpy(PetscPythonExe,pyexe,sizeof(PetscPythonExe)));
+    PetscCall(PetscStrncpy(PetscPythonExe,pyexe,sizeof(PetscPythonExe)));
   } else {
-    CHKERRQ(PetscPythonFindExecutable(PetscPythonExe,sizeof(PetscPythonExe)));
+    PetscCall(PetscPythonFindExecutable(PetscPythonExe,sizeof(PetscPythonExe)));
   }
   /* Python dynamic library */
   if (pylib && pylib[0] != 0) {
-    CHKERRQ(PetscStrncpy(PetscPythonLib,pylib,sizeof(PetscPythonLib)));
+    PetscCall(PetscStrncpy(PetscPythonLib,pylib,sizeof(PetscPythonLib)));
   } else {
-    CHKERRQ(PetscPythonFindLibrary(PetscPythonExe,PetscPythonLib,sizeof(PetscPythonLib)));
+    PetscCall(PetscPythonFindLibrary(PetscPythonExe,PetscPythonLib,sizeof(PetscPythonLib)));
   }
   /* dynamically load Python library */
-  CHKERRQ(PetscPythonLoadLibrary(PetscPythonLib));
+  PetscCall(PetscPythonLoadLibrary(PetscPythonLib));
   /* initialize Python */
   PetscBeganPython = PETSC_FALSE;
   if (!Py_IsInitialized()) {
@@ -222,20 +222,20 @@ PetscErrorCode  PetscPythonInitialize(const char pyexe[],const char pylib[])
     /* add PETSC_LIB_DIR in front of 'sys.path' */
     sys_path = PySys_GetObject("path");
     if (sys_path) {
-      CHKERRQ(PetscStrreplace(PETSC_COMM_SELF,"${PETSC_LIB_DIR}",path,sizeof(path)));
+      PetscCall(PetscStrreplace(PETSC_COMM_SELF,"${PETSC_LIB_DIR}",path,sizeof(path)));
       Py_DecRef(PyObject_CallMethod(sys_path,"insert","is",(int)0,(char*)path));
 #if defined(PETSC_PETSC4PY_INSTALL_PATH)
       {
         char *rpath;
-        CHKERRQ(PetscStrallocpy(PETSC_PETSC4PY_INSTALL_PATH,&rpath));
+        PetscCall(PetscStrallocpy(PETSC_PETSC4PY_INSTALL_PATH,&rpath));
         Py_DecRef(PyObject_CallMethod(sys_path,"insert","is",(int)0,rpath));
-        CHKERRQ(PetscFree(rpath));
+        PetscCall(PetscFree(rpath));
       }
 #endif
     }
     /* register finalizer */
     if (!registered) {
-      CHKERRQ(PetscRegisterFinalize(PetscPythonFinalize));
+      PetscCall(PetscRegisterFinalize(PetscPythonFinalize));
       registered = PETSC_TRUE;
     }
     PetscBeganPython = PETSC_TRUE;
@@ -243,7 +243,7 @@ PetscErrorCode  PetscPythonInitialize(const char pyexe[],const char pylib[])
   /* import 'petsc4py.PETSc' module */
   module = PyImport_ImportModule("petsc4py.PETSc");
   if (module) {
-    CHKERRQ(PetscInfo(NULL,"Python: successfully imported  module 'petsc4py.PETSc'\n"));
+    PetscCall(PetscInfo(NULL,"Python: successfully imported  module 'petsc4py.PETSc'\n"));
 
     Py_DecRef(module); module = NULL;
   } else {
@@ -290,10 +290,10 @@ PetscErrorCode PetscPythonMonitorSet(PetscObject obj, const char url[])
   PetscValidHeader(obj,1);
   PetscValidCharPointer(url,2);
   if (!PetscPythonMonitorSet_C) {
-    CHKERRQ(PetscPythonInitialize(NULL,NULL));
+    PetscCall(PetscPythonInitialize(NULL,NULL));
     PetscCheck(PetscPythonMonitorSet_C,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Couldn't initialize Python support for monitors");
   }
-  CHKERRQ(PetscPythonMonitorSet_C(obj,url));
+  PetscCall(PetscPythonMonitorSet_C(obj,url));
   PetscFunctionReturn(0);
 }
 

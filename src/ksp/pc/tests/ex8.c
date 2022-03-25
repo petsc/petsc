@@ -9,22 +9,22 @@ int main(int argc,char **args)
   Mat            A;
   PC             pc;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(MatSetSizes(A,1,1,1,1));
-  CHKERRQ(MatSetFromOptions(A));
-  CHKERRQ(MatSetUp(A));
-  CHKERRQ(MatSetValue(A,0,0,1,INSERT_VALUES));
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(PCCreate(PETSC_COMM_WORLD,&pc));
-  CHKERRQ(PCSetOperators(pc,A,A));
-  CHKERRQ(PCSetType(pc,PCLU));
-  CHKERRQ(PCView(pc,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(PCDestroy(&pc));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A,1,1,1,1));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSetUp(A));
+  PetscCall(MatSetValue(A,0,0,1,INSERT_VALUES));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PCCreate(PETSC_COMM_WORLD,&pc));
+  PetscCall(PCSetOperators(pc,A,A));
+  PetscCall(PCSetType(pc,PCLU));
+  PetscCall(PCView(pc,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PCDestroy(&pc));
+  PetscCall(MatDestroy(&A));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

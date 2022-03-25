@@ -16,12 +16,12 @@ PETSC_INTERN PetscErrorCode MatFDColoringDegreeSequence_Minpack(PetscInt m,const
   PetscInt       *work;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscMalloc1(m,&work));
-  CHKERRQ(PetscMalloc1(m,seq));
+  PetscCall(PetscMalloc1(m,&work));
+  PetscCall(PetscMalloc1(m,seq));
 
   MINPACKdegr(&m,cja,cia,rja,ria,*seq,work);
 
-  CHKERRQ(PetscFree(work));
+  PetscCall(PetscFree(work));
   PetscFunctionReturn(0);
 }
 
@@ -58,36 +58,36 @@ static PetscErrorCode MatColoringApply_SL(MatColoring mc,ISColoring *iscoloring)
   PetscFunctionBegin;
   PetscCheckFalse(mc->dist != 2,PETSC_COMM_SELF,PETSC_ERR_SUP,"SL may only do distance 2 coloring");
   /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1 */
-  CHKERRQ(PetscObjectBaseTypeCompare((PetscObject)mat,MATSEQBAIJ,&flg1));
-  CHKERRQ(PetscObjectBaseTypeCompare((PetscObject)mat,MATMPIBAIJ,&flg2));
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)mat,MATSEQBAIJ,&flg1));
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)mat,MATMPIBAIJ,&flg2));
   if (flg1 || flg2) {
-    CHKERRQ(MatGetBlockSize(mat,&bs));
+    PetscCall(MatGetBlockSize(mat,&bs));
   }
 
-  CHKERRQ(PetscObjectGetComm((PetscObject)mat,&comm));
-  CHKERRMPI(MPI_Comm_size(comm,&size));
+  PetscCall(PetscObjectGetComm((PetscObject)mat,&comm));
+  PetscCallMPI(MPI_Comm_size(comm,&size));
   if (size > 1) {
     /* create a sequential iscoloring on all processors */
-    CHKERRQ(MatGetSeqNonzeroStructure(mat,&mat_seq));
+    PetscCall(MatGetSeqNonzeroStructure(mat,&mat_seq));
   }
 
-  CHKERRQ(MatGetRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&ria,&rja,&done));
-  CHKERRQ(MatGetColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&cia,&cja,&done));
+  PetscCall(MatGetRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&ria,&rja,&done));
+  PetscCall(MatGetColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&cia,&cja,&done));
   PetscCheck(done,PETSC_COMM_SELF,PETSC_ERR_SUP,"Ordering requires IJ");
 
-  CHKERRQ(MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq));
+  PetscCall(MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq));
 
-  CHKERRQ(PetscMalloc2(n,&list,4*n,&work));
+  PetscCall(PetscMalloc2(n,&list,4*n,&work));
 
   MINPACKslo(&n,cja,cia,rja,ria,seq,list,&clique,work,work+n,work+2*n,work+3*n);
 
-  CHKERRQ(PetscMalloc1(n,&coloring));
+  PetscCall(PetscMalloc1(n,&coloring));
   MINPACKseq(&n,cja,cia,rja,ria,list,coloring,&ncolors,work);
 
-  CHKERRQ(PetscFree2(list,work));
-  CHKERRQ(PetscFree(seq));
-  CHKERRQ(MatRestoreRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,NULL,&ria,&rja,&done));
-  CHKERRQ(MatRestoreColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,NULL,&cia,&cja,&done));
+  PetscCall(PetscFree2(list,work));
+  PetscCall(PetscFree(seq));
+  PetscCall(MatRestoreRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,NULL,&ria,&rja,&done));
+  PetscCall(MatRestoreColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,NULL,&cia,&cja,&done));
 
   /* shift coloring numbers to start at zero and shorten */
   PetscCheckFalse(ncolors > IS_COLORING_MAX-1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Maximum color size exceeded");
@@ -96,11 +96,11 @@ static PetscErrorCode MatColoringApply_SL(MatColoring mc,ISColoring *iscoloring)
     for (i=0; i<n; i++) {
       s[i] = (ISColoringValue) (coloring[i]-1);
     }
-    CHKERRQ(MatColoringPatch(mat_seq,ncolors,n,s,iscoloring));
+    PetscCall(MatColoringPatch(mat_seq,ncolors,n,s,iscoloring));
   }
 
   if (size > 1) {
-    CHKERRQ(MatDestroySeqNonzeroStructure(&mat_seq));
+    PetscCall(MatDestroySeqNonzeroStructure(&mat_seq));
 
     /* convert iscoloring_seq to a parallel iscoloring */
     iscoloring_seq = *iscoloring;
@@ -109,14 +109,14 @@ static PetscErrorCode MatColoringApply_SL(MatColoring mc,ISColoring *iscoloring)
     N_loc          = rend - rstart; /* number of local nodes */
 
     /* get local colors for each local node */
-    CHKERRQ(PetscMalloc1(N_loc+1,&colors_loc));
+    PetscCall(PetscMalloc1(N_loc+1,&colors_loc));
     for (i=rstart; i<rend; i++) {
       colors_loc[i-rstart] = iscoloring_seq->colors[i];
     }
     /* create a parallel iscoloring */
     nc   = iscoloring_seq->n;
-    CHKERRQ(ISColoringCreate(comm,nc,N_loc,colors_loc,PETSC_OWN_POINTER,iscoloring));
-    CHKERRQ(ISColoringDestroy(&iscoloring_seq));
+    PetscCall(ISColoringCreate(comm,nc,N_loc,colors_loc,PETSC_OWN_POINTER,iscoloring));
+    PetscCall(ISColoringDestroy(&iscoloring_seq));
   }
   PetscFunctionReturn(0);
 }
@@ -168,49 +168,49 @@ static PetscErrorCode MatColoringApply_LF(MatColoring mc,ISColoring *iscoloring)
   PetscFunctionBegin;
   PetscCheckFalse(mc->dist != 2,PETSC_COMM_SELF,PETSC_ERR_SUP,"LF may only do distance 2 coloring");
   /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1 */
-  CHKERRQ(PetscObjectBaseTypeCompare((PetscObject)mat,MATSEQBAIJ,&flg1));
-  CHKERRQ(PetscObjectBaseTypeCompare((PetscObject)mat,MATMPIBAIJ,&flg2));
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)mat,MATSEQBAIJ,&flg1));
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)mat,MATMPIBAIJ,&flg2));
   if (flg1 || flg2) {
-    CHKERRQ(MatGetBlockSize(mat,&bs));
+    PetscCall(MatGetBlockSize(mat,&bs));
   }
 
-  CHKERRQ(PetscObjectGetComm((PetscObject)mat,&comm));
-  CHKERRMPI(MPI_Comm_size(comm,&size));
+  PetscCall(PetscObjectGetComm((PetscObject)mat,&comm));
+  PetscCallMPI(MPI_Comm_size(comm,&size));
   if (size > 1) {
     /* create a sequential iscoloring on all processors */
-    CHKERRQ(MatGetSeqNonzeroStructure(mat,&mat_seq));
+    PetscCall(MatGetSeqNonzeroStructure(mat,&mat_seq));
   }
 
-  CHKERRQ(MatGetRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&ria,&rja,&done));
-  CHKERRQ(MatGetColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&cia,&cja,&done));
+  PetscCall(MatGetRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&ria,&rja,&done));
+  PetscCall(MatGetColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&cia,&cja,&done));
   PetscCheck(done,PETSC_COMM_SELF,PETSC_ERR_SUP,"Ordering requires IJ");
 
-  CHKERRQ(MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq));
+  PetscCall(MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq));
 
-  CHKERRQ(PetscMalloc2(n,&list,4*n,&work));
+  PetscCall(PetscMalloc2(n,&list,4*n,&work));
 
   n1   = n - 1;
   none = -1;
   MINPACKnumsrt(&n,&n1,seq,&none,list,work+2*n,work+n);
-  CHKERRQ(PetscMalloc1(n,&coloring));
+  PetscCall(PetscMalloc1(n,&coloring));
   MINPACKseq(&n,cja,cia,rja,ria,list,coloring,&ncolors,work);
 
-  CHKERRQ(PetscFree2(list,work));
-  CHKERRQ(PetscFree(seq));
+  PetscCall(PetscFree2(list,work));
+  PetscCall(PetscFree(seq));
 
-  CHKERRQ(MatRestoreRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,NULL,&ria,&rja,&done));
-  CHKERRQ(MatRestoreColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,NULL,&cia,&cja,&done));
+  PetscCall(MatRestoreRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,NULL,&ria,&rja,&done));
+  PetscCall(MatRestoreColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,NULL,&cia,&cja,&done));
 
   /* shift coloring numbers to start at zero and shorten */
   PetscCheckFalse(ncolors > IS_COLORING_MAX-1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Maximum color size exceeded");
   {
     ISColoringValue *s = (ISColoringValue*) coloring;
     for (i=0; i<n; i++) s[i] = (ISColoringValue) (coloring[i]-1);
-    CHKERRQ(MatColoringPatch(mat_seq,ncolors,n,s,iscoloring));
+    PetscCall(MatColoringPatch(mat_seq,ncolors,n,s,iscoloring));
   }
 
   if (size > 1) {
-    CHKERRQ(MatDestroySeqNonzeroStructure(&mat_seq));
+    PetscCall(MatDestroySeqNonzeroStructure(&mat_seq));
 
     /* convert iscoloring_seq to a parallel iscoloring */
     iscoloring_seq = *iscoloring;
@@ -219,13 +219,13 @@ static PetscErrorCode MatColoringApply_LF(MatColoring mc,ISColoring *iscoloring)
     N_loc          = rend - rstart; /* number of local nodes */
 
     /* get local colors for each local node */
-    CHKERRQ(PetscMalloc1(N_loc+1,&colors_loc));
+    PetscCall(PetscMalloc1(N_loc+1,&colors_loc));
     for (i=rstart; i<rend; i++) colors_loc[i-rstart] = iscoloring_seq->colors[i];
 
     /* create a parallel iscoloring */
     nc   = iscoloring_seq->n;
-    CHKERRQ(ISColoringCreate(comm,nc,N_loc,colors_loc,PETSC_OWN_POINTER,iscoloring));
-    CHKERRQ(ISColoringDestroy(&iscoloring_seq));
+    PetscCall(ISColoringCreate(comm,nc,N_loc,colors_loc,PETSC_OWN_POINTER,iscoloring));
+    PetscCall(ISColoringDestroy(&iscoloring_seq));
   }
   PetscFunctionReturn(0);
 }
@@ -277,37 +277,37 @@ static PetscErrorCode MatColoringApply_ID(MatColoring mc,ISColoring *iscoloring)
   PetscFunctionBegin;
   PetscCheckFalse(mc->dist != 2,PETSC_COMM_SELF,PETSC_ERR_SUP,"IDO may only do distance 2 coloring");
   /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1 */
-  CHKERRQ(PetscObjectBaseTypeCompare((PetscObject)mat,MATSEQBAIJ,&flg1));
-  CHKERRQ(PetscObjectBaseTypeCompare((PetscObject)mat,MATMPIBAIJ,&flg2));
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)mat,MATSEQBAIJ,&flg1));
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)mat,MATMPIBAIJ,&flg2));
   if (flg1 || flg2) {
-    CHKERRQ(MatGetBlockSize(mat,&bs));
+    PetscCall(MatGetBlockSize(mat,&bs));
   }
 
-  CHKERRQ(PetscObjectGetComm((PetscObject)mat,&comm));
-  CHKERRMPI(MPI_Comm_size(comm,&size));
+  PetscCall(PetscObjectGetComm((PetscObject)mat,&comm));
+  PetscCallMPI(MPI_Comm_size(comm,&size));
   if (size > 1) {
     /* create a sequential iscoloring on all processors */
-    CHKERRQ(MatGetSeqNonzeroStructure(mat,&mat_seq));
+    PetscCall(MatGetSeqNonzeroStructure(mat,&mat_seq));
   }
 
-  CHKERRQ(MatGetRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&ria,&rja,&done));
-  CHKERRQ(MatGetColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&cia,&cja,&done));
+  PetscCall(MatGetRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&ria,&rja,&done));
+  PetscCall(MatGetColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&cia,&cja,&done));
   PetscCheck(done,PETSC_COMM_SELF,PETSC_ERR_SUP,"Ordering requires IJ");
 
-  CHKERRQ(MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq));
+  PetscCall(MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq));
 
-  CHKERRQ(PetscMalloc2(n,&list,4*n,&work));
+  PetscCall(PetscMalloc2(n,&list,4*n,&work));
 
   MINPACKido(&n,&n,cja,cia,rja,ria,seq,list,&clique,work,work+n,work+2*n,work+3*n);
 
-  CHKERRQ(PetscMalloc1(n,&coloring));
+  PetscCall(PetscMalloc1(n,&coloring));
   MINPACKseq(&n,cja,cia,rja,ria,list,coloring,&ncolors,work);
 
-  CHKERRQ(PetscFree2(list,work));
-  CHKERRQ(PetscFree(seq));
+  PetscCall(PetscFree2(list,work));
+  PetscCall(PetscFree(seq));
 
-  CHKERRQ(MatRestoreRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,NULL,&ria,&rja,&done));
-  CHKERRQ(MatRestoreColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,NULL,&cia,&cja,&done));
+  PetscCall(MatRestoreRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,NULL,&ria,&rja,&done));
+  PetscCall(MatRestoreColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,NULL,&cia,&cja,&done));
 
   /* shift coloring numbers to start at zero and shorten */
   PetscCheckFalse(ncolors > IS_COLORING_MAX-1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Maximum color size exceeded");
@@ -316,11 +316,11 @@ static PetscErrorCode MatColoringApply_ID(MatColoring mc,ISColoring *iscoloring)
     for (i=0; i<n; i++) {
       s[i] = (ISColoringValue) (coloring[i]-1);
     }
-    CHKERRQ(MatColoringPatch(mat_seq,ncolors,n,s,iscoloring));
+    PetscCall(MatColoringPatch(mat_seq,ncolors,n,s,iscoloring));
   }
 
   if (size > 1) {
-    CHKERRQ(MatDestroySeqNonzeroStructure(&mat_seq));
+    PetscCall(MatDestroySeqNonzeroStructure(&mat_seq));
 
     /* convert iscoloring_seq to a parallel iscoloring */
     iscoloring_seq = *iscoloring;
@@ -329,14 +329,14 @@ static PetscErrorCode MatColoringApply_ID(MatColoring mc,ISColoring *iscoloring)
     N_loc          = rend - rstart; /* number of local nodes */
 
     /* get local colors for each local node */
-    CHKERRQ(PetscMalloc1(N_loc+1,&colors_loc));
+    PetscCall(PetscMalloc1(N_loc+1,&colors_loc));
     for (i=rstart; i<rend; i++) {
       colors_loc[i-rstart] = iscoloring_seq->colors[i];
     }
     /* create a parallel iscoloring */
     nc   = iscoloring_seq->n;
-    CHKERRQ(ISColoringCreate(comm,nc,N_loc,colors_loc,PETSC_OWN_POINTER,iscoloring));
-    CHKERRQ(ISColoringDestroy(&iscoloring_seq));
+    PetscCall(ISColoringCreate(comm,nc,N_loc,colors_loc,PETSC_OWN_POINTER,iscoloring));
+    PetscCall(ISColoringDestroy(&iscoloring_seq));
   }
   PetscFunctionReturn(0);
 }

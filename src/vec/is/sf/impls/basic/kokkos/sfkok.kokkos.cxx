@@ -214,7 +214,7 @@ static PetscErrorCode ScatterAndInsert(PetscSFLink link,PetscInt count,PetscInt 
     deviceConstBuffer_t sbuf(reinterpret_cast<const char*>(src+srcStart*link->bs),sz);
     Kokkos::deep_copy(exec,dbuf,sbuf);
   } else {
-    CHKERRQ(ScatterAndOp<Type,Insert<Type>,BS,EQ>(link,count,srcStart,srcOpt,srcIdx,src,dstStart,dstOpt,dstIdx,dst));
+    PetscCall(ScatterAndOp<Type,Insert<Type>,BS,EQ>(link,count,srcStart,srcOpt,srcIdx,src,dstStart,dstOpt,dstIdx,dst));
   }
   PetscFunctionReturn(0);
 }
@@ -421,18 +421,18 @@ static PetscErrorCode PetscSFLinkMemcpy_Kokkos(PetscSFLink PETSC_UNUSED link,Pet
   PetscFunctionBegin;
   if (!n) PetscFunctionReturn(0);
   if (PetscMemTypeHost(dstmtype) && PetscMemTypeHost(srcmtype)) {
-    CHKERRQ(PetscMemcpy(dst,src,n));
+    PetscCall(PetscMemcpy(dst,src,n));
   } else {
     if (PetscMemTypeDevice(dstmtype) && PetscMemTypeHost(srcmtype)) {
       deviceBuffer_t       dbuf(static_cast<char*>(dst),n);
       HostConstBuffer_t    sbuf(static_cast<const char*>(src),n);
       Kokkos::deep_copy(exec,dbuf,sbuf);
-      CHKERRQ(PetscLogCpuToGpu(n));
+      PetscCall(PetscLogCpuToGpu(n));
     } else if (PetscMemTypeHost(dstmtype) && PetscMemTypeDevice(srcmtype)) {
       HostBuffer_t         dbuf(static_cast<char*>(dst),n);
       deviceConstBuffer_t  sbuf(static_cast<const char*>(src),n);
       Kokkos::deep_copy(exec,dbuf,sbuf);
-      CHKERRQ(PetscLogGpuToCpu(n));
+      PetscCall(PetscLogGpuToCpu(n));
     } else if (PetscMemTypeDevice(dstmtype) && PetscMemTypeDevice(srcmtype)) {
       deviceBuffer_t       dbuf(static_cast<char*>(dst),n);
       deviceConstBuffer_t  sbuf(static_cast<const char*>(src),n);
@@ -445,9 +445,9 @@ static PetscErrorCode PetscSFLinkMemcpy_Kokkos(PetscSFLink PETSC_UNUSED link,Pet
 PetscErrorCode PetscSFMalloc_Kokkos(PetscMemType mtype,size_t size,void** ptr)
 {
   PetscFunctionBegin;
-  if (PetscMemTypeHost(mtype)) CHKERRQ(PetscMalloc(size,ptr));
+  if (PetscMemTypeHost(mtype)) PetscCall(PetscMalloc(size,ptr));
   else if (PetscMemTypeDevice(mtype)) {
-    if (!PetscKokkosInitialized) CHKERRQ(PetscKokkosInitializeCheck());
+    if (!PetscKokkosInitialized) PetscCall(PetscKokkosInitializeCheck());
     *ptr = Kokkos::kokkos_malloc<DeviceMemorySpace>(size);
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong PetscMemType %d", (int)mtype);
   PetscFunctionReturn(0);
@@ -456,7 +456,7 @@ PetscErrorCode PetscSFMalloc_Kokkos(PetscMemType mtype,size_t size,void** ptr)
 PetscErrorCode PetscSFFree_Kokkos(PetscMemType mtype,void* ptr)
 {
   PetscFunctionBegin;
-  if (PetscMemTypeHost(mtype)) CHKERRQ(PetscFree(ptr));
+  if (PetscMemTypeHost(mtype)) PetscCall(PetscFree(ptr));
   else if (PetscMemTypeDevice(mtype)) {Kokkos::kokkos_free<DeviceMemorySpace>(ptr);}
   else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong PetscMemType %d",(int)mtype);
   PetscFunctionReturn(0);
@@ -467,8 +467,8 @@ static PetscErrorCode PetscSFLinkDestroy_Kokkos(PetscSF sf,PetscSFLink link)
 {
   PetscFunctionBegin;
   for (int i=PETSCSF_LOCAL; i<=PETSCSF_REMOTE; i++) {
-    CHKERRQ(PetscSFFree(sf,PETSC_MEMTYPE_DEVICE,link->rootbuf_alloc[i][PETSC_MEMTYPE_DEVICE]));
-    CHKERRQ(PetscSFFree(sf,PETSC_MEMTYPE_DEVICE,link->leafbuf_alloc[i][PETSC_MEMTYPE_DEVICE]));
+    PetscCall(PetscSFFree(sf,PETSC_MEMTYPE_DEVICE,link->rootbuf_alloc[i][PETSC_MEMTYPE_DEVICE]));
+    PetscCall(PetscSFFree(sf,PETSC_MEMTYPE_DEVICE,link->leafbuf_alloc[i][PETSC_MEMTYPE_DEVICE]));
   }
   PetscFunctionReturn(0);
 }
@@ -484,18 +484,18 @@ PetscErrorCode PetscSFLinkSetUp_Kokkos(PetscSF PETSC_UNUSED sf,PetscSFLink link,
 
   PetscFunctionBegin;
   if (link->deviceinited) PetscFunctionReturn(0);
-  CHKERRQ(PetscKokkosInitializeCheck());
-  CHKERRQ(MPIPetsc_Type_compare_contig(unit,MPI_SIGNED_CHAR,  &nSignedChar));
-  CHKERRQ(MPIPetsc_Type_compare_contig(unit,MPI_UNSIGNED_CHAR,&nUnsignedChar));
+  PetscCall(PetscKokkosInitializeCheck());
+  PetscCall(MPIPetsc_Type_compare_contig(unit,MPI_SIGNED_CHAR,  &nSignedChar));
+  PetscCall(MPIPetsc_Type_compare_contig(unit,MPI_UNSIGNED_CHAR,&nUnsignedChar));
   /* MPI_CHAR is treated below as a dumb type that does not support reduction according to MPI standard */
-  CHKERRQ(MPIPetsc_Type_compare_contig(unit,MPI_INT,  &nInt));
-  CHKERRQ(MPIPetsc_Type_compare_contig(unit,MPIU_INT, &nPetscInt));
-  CHKERRQ(MPIPetsc_Type_compare_contig(unit,MPIU_REAL,&nPetscReal));
+  PetscCall(MPIPetsc_Type_compare_contig(unit,MPI_INT,  &nInt));
+  PetscCall(MPIPetsc_Type_compare_contig(unit,MPIU_INT, &nPetscInt));
+  PetscCall(MPIPetsc_Type_compare_contig(unit,MPIU_REAL,&nPetscReal));
 #if defined(PETSC_HAVE_COMPLEX)
-  CHKERRQ(MPIPetsc_Type_compare_contig(unit,MPIU_COMPLEX,&nPetscComplex));
+  PetscCall(MPIPetsc_Type_compare_contig(unit,MPIU_COMPLEX,&nPetscComplex));
 #endif
-  CHKERRQ(MPIPetsc_Type_compare(unit,MPI_2INT,&is2Int));
-  CHKERRQ(MPIPetsc_Type_compare(unit,MPIU_2INT,&is2PetscInt));
+  PetscCall(MPIPetsc_Type_compare(unit,MPI_2INT,&is2Int));
+  PetscCall(MPIPetsc_Type_compare(unit,MPIU_2INT,&is2PetscInt));
 
   if (is2Int) {
     PackInit_PairType<Kokkos::pair<int,int>>(link);
@@ -553,7 +553,7 @@ PetscErrorCode PetscSFLinkSetUp_Kokkos(PetscSF PETSC_UNUSED sf,PetscSFLink link,
 #endif
   } else {
     MPI_Aint lb,nbyte;
-    CHKERRMPI(MPI_Type_get_extent(unit,&lb,&nbyte));
+    PetscCallMPI(MPI_Type_get_extent(unit,&lb,&nbyte));
     PetscCheckFalse(lb != 0,PETSC_COMM_SELF,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld",(long)lb);
     if (nbyte % sizeof(int)) { /* If the type size is not multiple of int */
      #if !defined(PETSC_HAVE_DEVICE)

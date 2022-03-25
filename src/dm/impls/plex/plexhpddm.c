@@ -38,78 +38,78 @@ PetscErrorCode DMCreateNeumannOverlap_Plex(DM dm, IS *ovl, Mat *J, PetscErrorCod
 
   /* Overlapped mesh
      overlap is a little more generous, since it is not computed starting from the owned (Dirichlet) points, but from the locally owned cells */
-  CHKERRQ(DMPlexDistributeOverlap(dm, 1, &sf, &odm));
+  PetscCall(DMPlexDistributeOverlap(dm, 1, &sf, &odm));
   if (!odm) {
-    CHKERRQ(PetscSFDestroy(&sf));
+    PetscCall(PetscSFDestroy(&sf));
     PetscFunctionReturn(0);
   }
 
   /* share discretization */
-  CHKERRQ(DMGetLocalSection(dm, &sec));
-  CHKERRQ(PetscSectionCreate(PetscObjectComm((PetscObject)sec), &osec));
-  CHKERRQ(PetscSFDistributeSection(sf, sec, NULL, osec));
+  PetscCall(DMGetLocalSection(dm, &sec));
+  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)sec), &osec));
+  PetscCall(PetscSFDistributeSection(sf, sec, NULL, osec));
   /* what to do here? using both is fine? */
-  CHKERRQ(DMSetLocalSection(odm, osec));
-  CHKERRQ(DMCopyDisc(dm, odm));
-  CHKERRQ(DMPlexGetMaxProjectionHeight(dm, &mh));
-  CHKERRQ(DMPlexSetMaxProjectionHeight(odm, mh));
-  CHKERRQ(PetscSectionDestroy(&osec));
+  PetscCall(DMSetLocalSection(odm, osec));
+  PetscCall(DMCopyDisc(dm, odm));
+  PetscCall(DMPlexGetMaxProjectionHeight(dm, &mh));
+  PetscCall(DMPlexSetMaxProjectionHeight(odm, mh));
+  PetscCall(PetscSectionDestroy(&osec));
 
   /* material parameters */
   {
     Vec A;
 
-    CHKERRQ(DMGetAuxiliaryVec(dm, NULL, 0, 0, &A));
+    PetscCall(DMGetAuxiliaryVec(dm, NULL, 0, 0, &A));
     if (A) {
       DM dmAux, ocdm, odmAux;
       Vec oA;
 
-      CHKERRQ(VecGetDM(A, &dmAux));
-      CHKERRQ(DMClone(odm, &odmAux));
-      CHKERRQ(DMGetCoordinateDM(odm, &ocdm));
-      CHKERRQ(DMSetCoordinateDM(odmAux, ocdm));
-      CHKERRQ(DMCopyDisc(dmAux, odmAux));
+      PetscCall(VecGetDM(A, &dmAux));
+      PetscCall(DMClone(odm, &odmAux));
+      PetscCall(DMGetCoordinateDM(odm, &ocdm));
+      PetscCall(DMSetCoordinateDM(odmAux, ocdm));
+      PetscCall(DMCopyDisc(dmAux, odmAux));
 
-      CHKERRQ(DMGetLocalSection(dmAux, &sec));
-      CHKERRQ(PetscSectionCreate(PetscObjectComm((PetscObject)sec), &osec));
-      CHKERRQ(VecCreate(PetscObjectComm((PetscObject)A), &oA));
-      CHKERRQ(VecSetDM(oA, odmAux));
+      PetscCall(DMGetLocalSection(dmAux, &sec));
+      PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)sec), &osec));
+      PetscCall(VecCreate(PetscObjectComm((PetscObject)A), &oA));
+      PetscCall(VecSetDM(oA, odmAux));
       /* TODO: what if these values changes? */
-      CHKERRQ(DMPlexDistributeField(dmAux, sf, sec, A, osec, oA));
-      CHKERRQ(DMSetLocalSection(odmAux, osec));
-      CHKERRQ(PetscSectionDestroy(&osec));
-      CHKERRQ(DMSetAuxiliaryVec(odm, NULL, 0, 0, oA));
-      CHKERRQ(VecDestroy(&oA));
-      CHKERRQ(DMDestroy(&odmAux));
+      PetscCall(DMPlexDistributeField(dmAux, sf, sec, A, osec, oA));
+      PetscCall(DMSetLocalSection(odmAux, osec));
+      PetscCall(PetscSectionDestroy(&osec));
+      PetscCall(DMSetAuxiliaryVec(odm, NULL, 0, 0, oA));
+      PetscCall(VecDestroy(&oA));
+      PetscCall(DMDestroy(&odmAux));
     }
   }
-  CHKERRQ(PetscSFDestroy(&sf));
+  PetscCall(PetscSFDestroy(&sf));
 
-  CHKERRQ(DMViewFromOptions(dm, NULL, "-dm_plex_view_neumann_original"));
-  CHKERRQ(PetscObjectSetName((PetscObject)odm, "OVL"));
-  CHKERRQ(DMViewFromOptions(odm, NULL, "-dm_plex_view_neumann_overlap"));
+  PetscCall(DMViewFromOptions(dm, NULL, "-dm_plex_view_neumann_original"));
+  PetscCall(PetscObjectSetName((PetscObject)odm, "OVL"));
+  PetscCall(DMViewFromOptions(odm, NULL, "-dm_plex_view_neumann_overlap"));
 
   /* MATIS for the overlap region
      the HPDDM interface wants local matrices,
      we attach the global MATIS to the overlap IS,
      since we need it to do assembly */
-  CHKERRQ(DMSetMatType(odm, MATIS));
-  CHKERRQ(DMCreateMatrix(odm, &pJ));
-  CHKERRQ(MatISGetLocalMat(pJ, J));
-  CHKERRQ(PetscObjectReference((PetscObject)*J));
+  PetscCall(DMSetMatType(odm, MATIS));
+  PetscCall(DMCreateMatrix(odm, &pJ));
+  PetscCall(MatISGetLocalMat(pJ, J));
+  PetscCall(PetscObjectReference((PetscObject)*J));
 
   /* overlap IS */
-  CHKERRQ(MatISGetLocalToGlobalMapping(pJ, &l2g, NULL));
-  CHKERRQ(ISLocalToGlobalMappingGetSize(l2g, &n));
-  CHKERRQ(ISLocalToGlobalMappingGetIndices(l2g, &idxs));
-  CHKERRQ(ISCreateGeneral(PetscObjectComm((PetscObject)odm), n, idxs, PETSC_COPY_VALUES, ovl));
-  CHKERRQ(ISLocalToGlobalMappingRestoreIndices(l2g, &idxs));
-  CHKERRQ(PetscObjectCompose((PetscObject)*ovl, "_DM_Overlap_HPDDM_MATIS", (PetscObject)pJ));
-  CHKERRQ(DMDestroy(&odm));
-  CHKERRQ(MatDestroy(&pJ));
+  PetscCall(MatISGetLocalToGlobalMapping(pJ, &l2g, NULL));
+  PetscCall(ISLocalToGlobalMappingGetSize(l2g, &n));
+  PetscCall(ISLocalToGlobalMappingGetIndices(l2g, &idxs));
+  PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)odm), n, idxs, PETSC_COPY_VALUES, ovl));
+  PetscCall(ISLocalToGlobalMappingRestoreIndices(l2g, &idxs));
+  PetscCall(PetscObjectCompose((PetscObject)*ovl, "_DM_Overlap_HPDDM_MATIS", (PetscObject)pJ));
+  PetscCall(DMDestroy(&odm));
+  PetscCall(MatDestroy(&pJ));
 
   /* special purpose setup function (composed in DMPlexSetSNESLocalFEM) */
-  CHKERRQ(PetscObjectQueryFunction((PetscObject)dm, "MatComputeNeumannOverlap_C", setup));
-  if (*setup) CHKERRQ(PetscObjectCompose((PetscObject)*ovl, "_DM_Original_HPDDM", (PetscObject)dm));
+  PetscCall(PetscObjectQueryFunction((PetscObject)dm, "MatComputeNeumannOverlap_C", setup));
+  if (*setup) PetscCall(PetscObjectCompose((PetscObject)*ovl, "_DM_Original_HPDDM", (PetscObject)dm));
   PetscFunctionReturn(0);
 }

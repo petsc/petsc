@@ -11,7 +11,7 @@ static PetscErrorCode KSPSetUp_PIPECGRR(KSP ksp)
 {
   PetscFunctionBegin;
   /* get work vectors needed by PIPECGRR */
-  CHKERRQ(KSPSetWorkVecs(ksp,9));
+  PetscCall(KSPSetWorkVecs(ksp,9));
   PetscFunctionReturn(0);
 }
 
@@ -29,7 +29,7 @@ static PetscErrorCode  KSPSolve_PIPECGRR(KSP ksp)
   PetscBool      diagonalscale;
 
   PetscFunctionBegin;
-  CHKERRQ(PCGetDiagonalScale(ksp->pc,&diagonalscale));
+  PetscCall(PCGetDiagonalScale(ksp->pc,&diagonalscale));
   PetscCheck(!diagonalscale,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
   X = ksp->vec_sol;
@@ -44,59 +44,59 @@ static PetscErrorCode  KSPSolve_PIPECGRR(KSP ksp)
   R = ksp->work[7];
   S = ksp->work[8];
 
-  CHKERRQ(PCGetOperators(ksp->pc,&Amat,&Pmat));
+  PetscCall(PCGetOperators(ksp->pc,&Amat,&Pmat));
 
   ksp->its = 0;
   if (!ksp->guess_zero) {
-    CHKERRQ(KSP_MatMult(ksp,Amat,X,R));  /*  r <- b - Ax  */
-    CHKERRQ(VecAYPX(R,-1.0,B));
+    PetscCall(KSP_MatMult(ksp,Amat,X,R));  /*  r <- b - Ax  */
+    PetscCall(VecAYPX(R,-1.0,B));
   } else {
-    CHKERRQ(VecCopy(B,R));               /*  r <- b (x is 0)  */
+    PetscCall(VecCopy(B,R));               /*  r <- b (x is 0)  */
   }
 
-  CHKERRQ(KSP_PCApply(ksp,R,U));         /*  u <- Br  */
+  PetscCall(KSP_PCApply(ksp,R,U));         /*  u <- Br  */
 
   switch (ksp->normtype) {
   case KSP_NORM_PRECONDITIONED:
-    CHKERRQ(VecNormBegin(U,NORM_2,&dp)); /*  dp <- u'*u = e'*A'*B'*B*A'*e'  */
-    CHKERRQ(VecNormBegin(B,NORM_2,&db));
-    CHKERRQ(PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)U)));
-    CHKERRQ(KSP_MatMult(ksp,Amat,U,W));  /*  w <- Au  */
-    CHKERRQ(VecNormEnd(U,NORM_2,&dp));
-    CHKERRQ(VecNormEnd(B,NORM_2,&db));
+    PetscCall(VecNormBegin(U,NORM_2,&dp)); /*  dp <- u'*u = e'*A'*B'*B*A'*e'  */
+    PetscCall(VecNormBegin(B,NORM_2,&db));
+    PetscCall(PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)U)));
+    PetscCall(KSP_MatMult(ksp,Amat,U,W));  /*  w <- Au  */
+    PetscCall(VecNormEnd(U,NORM_2,&dp));
+    PetscCall(VecNormEnd(B,NORM_2,&db));
     break;
   case KSP_NORM_UNPRECONDITIONED:
-    CHKERRQ(VecNormBegin(R,NORM_2,&dp)); /*  dp <- r'*r = e'*A'*A*e  */
-    CHKERRQ(VecNormBegin(B,NORM_2,&db));
-    CHKERRQ(PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)R)));
-    CHKERRQ(KSP_MatMult(ksp,Amat,U,W));  /*  w <- Au  */
-    CHKERRQ(VecNormEnd(R,NORM_2,&dp));
-    CHKERRQ(VecNormEnd(B,NORM_2,&db));
+    PetscCall(VecNormBegin(R,NORM_2,&dp)); /*  dp <- r'*r = e'*A'*A*e  */
+    PetscCall(VecNormBegin(B,NORM_2,&db));
+    PetscCall(PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)R)));
+    PetscCall(KSP_MatMult(ksp,Amat,U,W));  /*  w <- Au  */
+    PetscCall(VecNormEnd(R,NORM_2,&dp));
+    PetscCall(VecNormEnd(B,NORM_2,&db));
     break;
   case KSP_NORM_NATURAL:
-    CHKERRQ(VecDotBegin(R,U,&gamma));    /*  gamma <- u'*r  */
-    CHKERRQ(VecNormBegin(B,NORM_2,&db));
-    CHKERRQ(PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)R)));
-    CHKERRQ(KSP_MatMult(ksp,Amat,U,W));  /*  w <- Au  */
-    CHKERRQ(VecDotEnd(R,U,&gamma));
-    CHKERRQ(VecNormEnd(B,NORM_2,&db));
+    PetscCall(VecDotBegin(R,U,&gamma));    /*  gamma <- u'*r  */
+    PetscCall(VecNormBegin(B,NORM_2,&db));
+    PetscCall(PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)R)));
+    PetscCall(KSP_MatMult(ksp,Amat,U,W));  /*  w <- Au  */
+    PetscCall(VecDotEnd(R,U,&gamma));
+    PetscCall(VecNormEnd(B,NORM_2,&db));
     KSPCheckDot(ksp,gamma);
     dp = PetscSqrtReal(PetscAbsScalar(gamma));       /*  dp <- r'*u = r'*B*r = e'*A'*B*A*e  */
     break;
   case KSP_NORM_NONE:
-    CHKERRQ(KSP_MatMult(ksp,Amat,U,W));
+    PetscCall(KSP_MatMult(ksp,Amat,U,W));
     dp   = 0.0;
     break;
   default: SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"%s",KSPNormTypes[ksp->normtype]);
   }
-  CHKERRQ(KSPLogResidualHistory(ksp,dp));
-  CHKERRQ(KSPMonitor(ksp,0,dp));
+  PetscCall(KSPLogResidualHistory(ksp,dp));
+  PetscCall(KSPMonitor(ksp,0,dp));
   ksp->rnorm = dp;
-  CHKERRQ((*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP)); /*  test for convergence  */
+  PetscCall((*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP)); /*  test for convergence  */
   if (ksp->reason) PetscFunctionReturn(0);
 
-  CHKERRQ(MatNorm(Amat,NORM_INFINITY,&Anorm));
-  CHKERRQ(VecGetSize(B,&nsize));
+  PetscCall(MatNorm(Amat,NORM_INFINITY,&Anorm));
+  PetscCall(VecGetSize(B,&nsize));
   nsi = (PetscReal) nsize;
   sqn = PetscSqrtReal(nsi);
 
@@ -117,80 +117,80 @@ static PetscErrorCode  KSPSolve_PIPECGRR(KSP ksp)
     }
 
     if (i > 0 && ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
-      CHKERRQ(VecNormBegin(R,NORM_2,&dp));
+      PetscCall(VecNormBegin(R,NORM_2,&dp));
     } else if (i > 0 && ksp->normtype == KSP_NORM_PRECONDITIONED) {
-      CHKERRQ(VecNormBegin(U,NORM_2,&dp));
+      PetscCall(VecNormBegin(U,NORM_2,&dp));
     }
     if (!(i == 0 && ksp->normtype == KSP_NORM_NATURAL)) {
-      CHKERRQ(VecDotBegin(R,U,&gamma));
+      PetscCall(VecDotBegin(R,U,&gamma));
     }
-    CHKERRQ(VecDotBegin(W,U,&delta));
+    PetscCall(VecDotBegin(W,U,&delta));
 
     if (i > 0) {
-      CHKERRQ(VecNormBegin(S,NORM_2,&ds));
-      CHKERRQ(VecNormBegin(Z,NORM_2,&dz));
-      CHKERRQ(VecNormBegin(P,NORM_2,&dpp));
-      CHKERRQ(VecNormBegin(Q,NORM_2,&dq));
-      CHKERRQ(VecNormBegin(M,NORM_2,&dm));
+      PetscCall(VecNormBegin(S,NORM_2,&ds));
+      PetscCall(VecNormBegin(Z,NORM_2,&dz));
+      PetscCall(VecNormBegin(P,NORM_2,&dpp));
+      PetscCall(VecNormBegin(Q,NORM_2,&dq));
+      PetscCall(VecNormBegin(M,NORM_2,&dm));
     }
-    CHKERRQ(VecNormBegin(X,NORM_2,&dx));
-    CHKERRQ(VecNormBegin(U,NORM_2,&du));
-    CHKERRQ(VecNormBegin(W,NORM_2,&dw));
+    PetscCall(VecNormBegin(X,NORM_2,&dx));
+    PetscCall(VecNormBegin(U,NORM_2,&du));
+    PetscCall(VecNormBegin(W,NORM_2,&dw));
 
-    CHKERRQ(PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)R)));
-    CHKERRQ(KSP_PCApply(ksp,W,M));           /*   m <- Bw       */
-    CHKERRQ(KSP_MatMult(ksp,Amat,M,N));      /*   n <- Am       */
+    PetscCall(PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)R)));
+    PetscCall(KSP_PCApply(ksp,W,M));           /*   m <- Bw       */
+    PetscCall(KSP_MatMult(ksp,Amat,M,N));      /*   n <- Am       */
 
     if (i > 0 && ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
-      CHKERRQ(VecNormEnd(R,NORM_2,&dp));
+      PetscCall(VecNormEnd(R,NORM_2,&dp));
     } else if (i > 0 && ksp->normtype == KSP_NORM_PRECONDITIONED) {
-      CHKERRQ(VecNormEnd(U,NORM_2,&dp));
+      PetscCall(VecNormEnd(U,NORM_2,&dp));
     }
     if (!(i == 0 && ksp->normtype == KSP_NORM_NATURAL)) {
-      CHKERRQ(VecDotEnd(R,U,&gamma));
+      PetscCall(VecDotEnd(R,U,&gamma));
     }
-    CHKERRQ(VecDotEnd(W,U,&delta));
+    PetscCall(VecDotEnd(W,U,&delta));
 
     if (i > 0) {
-      CHKERRQ(VecNormEnd(S,NORM_2,&ds));
-      CHKERRQ(VecNormEnd(Z,NORM_2,&dz));
-      CHKERRQ(VecNormEnd(P,NORM_2,&dpp));
-      CHKERRQ(VecNormEnd(Q,NORM_2,&dq));
-      CHKERRQ(VecNormEnd(M,NORM_2,&dm));
+      PetscCall(VecNormEnd(S,NORM_2,&ds));
+      PetscCall(VecNormEnd(Z,NORM_2,&dz));
+      PetscCall(VecNormEnd(P,NORM_2,&dpp));
+      PetscCall(VecNormEnd(Q,NORM_2,&dq));
+      PetscCall(VecNormEnd(M,NORM_2,&dm));
     }
-    CHKERRQ(VecNormEnd(X,NORM_2,&dx));
-    CHKERRQ(VecNormEnd(U,NORM_2,&du));
-    CHKERRQ(VecNormEnd(W,NORM_2,&dw));
+    PetscCall(VecNormEnd(X,NORM_2,&dx));
+    PetscCall(VecNormEnd(U,NORM_2,&du));
+    PetscCall(VecNormEnd(W,NORM_2,&dw));
 
     if (i > 0) {
       if (ksp->normtype == KSP_NORM_NATURAL) dp = PetscSqrtReal(PetscAbsScalar(gamma));
       else if (ksp->normtype == KSP_NORM_NONE) dp = 0.0;
 
       ksp->rnorm = dp;
-      CHKERRQ(KSPLogResidualHistory(ksp,dp));
-      CHKERRQ(KSPMonitor(ksp,i,dp));
-      CHKERRQ((*ksp->converged)(ksp,i,dp,&ksp->reason,ksp->cnvP));
+      PetscCall(KSPLogResidualHistory(ksp,dp));
+      PetscCall(KSPMonitor(ksp,i,dp));
+      PetscCall((*ksp->converged)(ksp,i,dp,&ksp->reason,ksp->cnvP));
       if (ksp->reason) PetscFunctionReturn(0);
     }
 
     if (i == 0) {
       alpha = gamma / delta;
-      CHKERRQ(VecCopy(N,Z));          /*  z <- n  */
-      CHKERRQ(VecCopy(M,Q));          /*  q <- m  */
-      CHKERRQ(VecCopy(U,P));          /*  p <- u  */
-      CHKERRQ(VecCopy(W,S));          /*  s <- w  */
+      PetscCall(VecCopy(N,Z));          /*  z <- n  */
+      PetscCall(VecCopy(M,Q));          /*  q <- m  */
+      PetscCall(VecCopy(U,P));          /*  p <- u  */
+      PetscCall(VecCopy(W,S));          /*  s <- w  */
     } else {
       beta = gamma / gammaold;
       alpha = gamma / (delta - beta / alpha * gamma);
-      CHKERRQ(VecAYPX(Z,beta,N));     /*  z <- n + beta * z  */
-      CHKERRQ(VecAYPX(Q,beta,M));     /*  q <- m + beta * q  */
-      CHKERRQ(VecAYPX(P,beta,U));     /*  p <- u + beta * p  */
-      CHKERRQ(VecAYPX(S,beta,W));     /*  s <- w + beta * s  */
+      PetscCall(VecAYPX(Z,beta,N));     /*  z <- n + beta * z  */
+      PetscCall(VecAYPX(Q,beta,M));     /*  q <- m + beta * q  */
+      PetscCall(VecAYPX(P,beta,U));     /*  p <- u + beta * p  */
+      PetscCall(VecAYPX(S,beta,W));     /*  s <- w + beta * s  */
     }
-    CHKERRQ(VecAXPY(X, alpha,P));     /*  x <- x + alpha * p  */
-    CHKERRQ(VecAXPY(U,-alpha,Q));     /*  u <- u - alpha * q  */
-    CHKERRQ(VecAXPY(W,-alpha,Z));     /*  w <- w - alpha * z  */
-    CHKERRQ(VecAXPY(R,-alpha,S));     /*  r <- r - alpha * s  */
+    PetscCall(VecAXPY(X, alpha,P));     /*  x <- x + alpha * p  */
+    PetscCall(VecAXPY(U,-alpha,Q));     /*  u <- u - alpha * q  */
+    PetscCall(VecAXPY(W,-alpha,Z));     /*  w <- w - alpha * z  */
+    PetscCall(VecAXPY(R,-alpha,S));     /*  r <- r - alpha * s  */
     gammaold = gamma;
 
     if (i > 0) {
@@ -223,13 +223,13 @@ static PetscErrorCode  KSPSolve_PIPECGRR(KSP ksp)
         errz = PetscAbsScalar(betap)*errz+errncz;
       }
       if (i > 1 && errrprev <= (tol * rnp) && errr > (tol * dp)) {
-        CHKERRQ(KSP_MatMult(ksp,Amat,X,R));        /*  r <- Ax - b  */
-        CHKERRQ(VecAYPX(R,-1.0,B));
-        CHKERRQ(KSP_PCApply(ksp,R,U));             /*  u <- Br  */
-        CHKERRQ(KSP_MatMult(ksp,Amat,U,W));        /*  w <- Au  */
-        CHKERRQ(KSP_MatMult(ksp,Amat,P,S));        /*  s <- Ap  */
-        CHKERRQ(KSP_PCApply(ksp,S,Q));             /*  q <- Bs  */
-        CHKERRQ(KSP_MatMult(ksp,Amat,Q,Z));        /*  z <- Aq  */
+        PetscCall(KSP_MatMult(ksp,Amat,X,R));        /*  r <- Ax - b  */
+        PetscCall(VecAYPX(R,-1.0,B));
+        PetscCall(KSP_PCApply(ksp,R,U));             /*  u <- Br  */
+        PetscCall(KSP_MatMult(ksp,Amat,U,W));        /*  w <- Au  */
+        PetscCall(KSP_MatMult(ksp,Amat,P,S));        /*  s <- Ap  */
+        PetscCall(KSP_PCApply(ksp,S,Q));             /*  q <- Bs  */
+        PetscCall(KSP_MatMult(ksp,Amat,Q,Z));        /*  z <- Aq  */
         replace = 1;
         totreplaces++;
       }
@@ -276,10 +276,10 @@ M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPECGRR(KSP ksp)
 {
   PetscFunctionBegin;
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2));
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2));
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2));
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1));
 
   ksp->ops->setup          = KSPSetUp_PIPECGRR;
   ksp->ops->solve          = KSPSolve_PIPECGRR;

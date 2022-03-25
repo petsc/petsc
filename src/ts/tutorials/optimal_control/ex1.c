@@ -29,17 +29,17 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec U,Vec F,void *ctx)
   PetscInt          step;
 
   PetscFunctionBeginUser;
-  CHKERRQ(TSGetStepNumber(ts,&step));
-  CHKERRQ(VecGetArrayRead(U,&u));
-  CHKERRQ(VecGetArrayRead(actx->V,&v));
-  CHKERRQ(VecGetArrayRead(actx->W,&w));
-  CHKERRQ(VecGetArray(F,&f));
+  PetscCall(TSGetStepNumber(ts,&step));
+  PetscCall(VecGetArrayRead(U,&u));
+  PetscCall(VecGetArrayRead(actx->V,&v));
+  PetscCall(VecGetArrayRead(actx->W,&w));
+  PetscCall(VecGetArray(F,&f));
   f[0] = v[step]*PetscCosReal(w[step]);
   f[1] = v[step]*PetscSinReal(w[step]);
-  CHKERRQ(VecRestoreArrayRead(U,&u));
-  CHKERRQ(VecRestoreArrayRead(actx->V,&v));
-  CHKERRQ(VecRestoreArrayRead(actx->W,&w));
-  CHKERRQ(VecRestoreArray(F,&f));
+  PetscCall(VecRestoreArrayRead(U,&u));
+  PetscCall(VecRestoreArrayRead(actx->V,&v));
+  PetscCall(VecRestoreArrayRead(actx->W,&w));
+  PetscCall(VecRestoreArray(F,&f));
   PetscFunctionReturn(0);
 }
 
@@ -51,27 +51,27 @@ static PetscErrorCode RHSJacobianP(TS ts,PetscReal t,Vec U,Mat A,void *ctx)
   PetscScalar       Jp[2][2];
 
   PetscFunctionBeginUser;
-  CHKERRQ(MatZeroEntries(A));
-  CHKERRQ(TSGetStepNumber(ts,&step));
-  CHKERRQ(VecGetArrayRead(U,&u));
-  CHKERRQ(VecGetArrayRead(actx->V,&v));
-  CHKERRQ(VecGetArrayRead(actx->W,&w));
+  PetscCall(MatZeroEntries(A));
+  PetscCall(TSGetStepNumber(ts,&step));
+  PetscCall(VecGetArrayRead(U,&u));
+  PetscCall(VecGetArrayRead(actx->V,&v));
+  PetscCall(VecGetArrayRead(actx->W,&w));
 
   Jp[0][0] = PetscCosReal(w[step]);
   Jp[0][1] = -v[step]*PetscSinReal(w[step]);
   Jp[1][0] = PetscSinReal(w[step]);
   Jp[1][1] = v[step]*PetscCosReal(w[step]);
 
-  CHKERRQ(VecRestoreArrayRead(U,&u));
-  CHKERRQ(VecRestoreArrayRead(actx->V,&v));
-  CHKERRQ(VecRestoreArrayRead(actx->W,&w));
+  PetscCall(VecRestoreArrayRead(U,&u));
+  PetscCall(VecRestoreArrayRead(actx->V,&v));
+  PetscCall(VecRestoreArrayRead(actx->W,&w));
 
   rowcol[0] = 2*step;
   rowcol[1] = 2*step+1;
-  CHKERRQ(MatSetValues(A,2,rows,2,rowcol,&Jp[0][0],INSERT_VALUES));
+  PetscCall(MatSetValues(A,2,rows,2,rowcol,&Jp[0][0],INSERT_VALUES));
 
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
@@ -102,14 +102,14 @@ static PetscErrorCode RHSHessianProductPP(TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr
   PetscInt          step,i,j,k;
 
   PetscFunctionBeginUser;
-  CHKERRQ(TSGetStepNumber(ts,&step));
-  CHKERRQ(VecGetArrayRead(U,&u));
-  CHKERRQ(VecGetArrayRead(actx->V,&v));
-  CHKERRQ(VecGetArrayRead(actx->W,&w));
-  CHKERRQ(VecGetArrayRead(Vl[0],&vl));
-  CHKERRQ(VecGetArrayRead(Vr,&vr));
-  CHKERRQ(VecSet(VHV[0],0.0));
-  CHKERRQ(VecGetArray(VHV[0],&vhv));
+  PetscCall(TSGetStepNumber(ts,&step));
+  PetscCall(VecGetArrayRead(U,&u));
+  PetscCall(VecGetArrayRead(actx->V,&v));
+  PetscCall(VecGetArrayRead(actx->W,&w));
+  PetscCall(VecGetArrayRead(Vl[0],&vl));
+  PetscCall(VecGetArrayRead(Vr,&vr));
+  PetscCall(VecSet(VHV[0],0.0));
+  PetscCall(VecGetArray(VHV[0],&vhv));
 
   dJpdP[0][0][1] = -PetscSinReal(w[step]);
   dJpdP[0][1][0] = -PetscSinReal(w[step]);
@@ -124,10 +124,10 @@ static PetscErrorCode RHSHessianProductPP(TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr
       for (i=0; i<2; i++)
         vhv[2*step+j] += vl[i]*dJpdP[i][j][k]*vr[2*step+k];
   }
-  CHKERRQ(VecRestoreArrayRead(U,&u));
-  CHKERRQ(VecRestoreArrayRead(Vl[0],&vl));
-  CHKERRQ(VecRestoreArrayRead(Vr,&vr));
-  CHKERRQ(VecRestoreArray(VHV[0],&vhv));
+  PetscCall(VecRestoreArrayRead(U,&u));
+  PetscCall(VecRestoreArrayRead(Vl[0],&vl));
+  PetscCall(VecRestoreArrayRead(Vr,&vr));
+  PetscCall(VecRestoreArray(VHV[0],&vhv));
   PetscFunctionReturn(0);
 }
 
@@ -141,12 +141,12 @@ static PetscErrorCode IntegrandHessianProductUU(TS ts,PetscReal t,Vec U,Vec *Vl,
   PetscInt          step,j,k;
 
   PetscFunctionBeginUser;
-  CHKERRQ(TSGetStepNumber(ts,&step));
-  CHKERRQ(VecGetArrayRead(U,&u));
-  CHKERRQ(VecGetArrayRead(actx->V,&v));
-  CHKERRQ(VecGetArrayRead(actx->W,&w));
-  CHKERRQ(VecGetArrayRead(Vr,&vr));
-  CHKERRQ(VecGetArray(VHV[0],&vhv));
+  PetscCall(TSGetStepNumber(ts,&step));
+  PetscCall(VecGetArrayRead(U,&u));
+  PetscCall(VecGetArrayRead(actx->V,&v));
+  PetscCall(VecGetArrayRead(actx->W,&w));
+  PetscCall(VecGetArrayRead(Vr,&vr));
+  PetscCall(VecGetArray(VHV[0],&vhv));
 
   dRudU[0][0] = 2.0;
   dRudU[1][1] = 2.0;
@@ -156,9 +156,9 @@ static PetscErrorCode IntegrandHessianProductUU(TS ts,PetscReal t,Vec U,Vec *Vl,
     for (k=0; k<2; k++)
         vhv[j] += dRudU[j][k]*vr[k];
   }
-  CHKERRQ(VecRestoreArrayRead(U,&u));
-  CHKERRQ(VecRestoreArrayRead(Vr,&vr));
-  CHKERRQ(VecRestoreArray(VHV[0],&vhv));
+  PetscCall(VecRestoreArrayRead(U,&u));
+  PetscCall(VecRestoreArrayRead(Vr,&vr));
+  PetscCall(VecRestoreArray(VHV[0],&vhv));
   PetscFunctionReturn(0);
 }
 
@@ -188,13 +188,13 @@ static PetscErrorCode CostIntegrand(TS ts,PetscReal t,Vec U,Vec R,void *ctx)
   const PetscScalar *u;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(U,&u));
-  CHKERRQ(VecGetArray(R,&r));
+  PetscCall(VecGetArrayRead(U,&u));
+  PetscCall(VecGetArray(R,&r));
   dx   = u[0] - actx->lv*t*PetscCosReal(actx->lw);
   dy   = u[1] - actx->lv*t*PetscSinReal(actx->lw);
   r[0] = dx*dx+dy*dy;
-  CHKERRQ(VecRestoreArray(R,&r));
-  CHKERRQ(VecRestoreArrayRead(U,&u));
+  PetscCall(VecRestoreArray(R,&r));
+  PetscCall(VecRestoreArrayRead(U,&u));
   PetscFunctionReturn(0);
 }
 
@@ -207,24 +207,24 @@ static PetscErrorCode DRDUJacobianTranspose(TS ts,PetscReal t,Vec U,Mat DRDU,Mat
   PetscInt          row[] = {0,1},col[] = {0};
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(U,&u));
+  PetscCall(VecGetArrayRead(U,&u));
   dx      = u[0] - actx->lv*t*PetscCosReal(actx->lw);
   dy      = u[1] - actx->lv*t*PetscSinReal(actx->lw);
   drdu[0][0] = 2.*dx;
   drdu[1][0] = 2.*dy;
-  CHKERRQ(MatSetValues(DRDU,2,row,1,col,&drdu[0][0],INSERT_VALUES));
-  CHKERRQ(VecRestoreArrayRead(U,&u));
-  CHKERRQ(MatAssemblyBegin(DRDU,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(DRDU,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatSetValues(DRDU,2,row,1,col,&drdu[0][0],INSERT_VALUES));
+  PetscCall(VecRestoreArrayRead(U,&u));
+  PetscCall(MatAssemblyBegin(DRDU,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(DRDU,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode DRDPJacobianTranspose(TS ts,PetscReal t,Vec U,Mat DRDP,void *ctx)
 {
   PetscFunctionBegin;
-  CHKERRQ(MatZeroEntries(DRDP));
-  CHKERRQ(MatAssemblyBegin(DRDP,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(DRDP,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatZeroEntries(DRDP));
+  PetscCall(MatAssemblyBegin(DRDP,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(DRDP,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
@@ -240,8 +240,8 @@ int main(int argc,char **argv)
   PetscInt           i;
 
   /* Initialize program */
-  CHKERRQ(PetscInitialize(&argc,&argv,NULL,NULL));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&argv,NULL,NULL));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
 
   /* Parameter settings */
@@ -250,174 +250,174 @@ int main(int argc,char **argv)
   aircraft.lv = 2.0; /* leader speed in kmph */
   aircraft.lw = PETSC_PI/4.; /* leader heading angle */
 
-  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-ftime",&aircraft.ftime,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-nsteps",&aircraft.nsteps,NULL));
-  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-matrixfree",&aircraft.mf));
-  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-exacthessian",&aircraft.eh));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-ftime",&aircraft.ftime,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-nsteps",&aircraft.nsteps,NULL));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-matrixfree",&aircraft.mf));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-exacthessian",&aircraft.eh));
 
   /* Create TAO solver and set desired solution method */
-  CHKERRQ(TaoCreate(PETSC_COMM_WORLD,&tao));
-  CHKERRQ(TaoSetType(tao,TAOBQNLS));
+  PetscCall(TaoCreate(PETSC_COMM_WORLD,&tao));
+  PetscCall(TaoSetType(tao,TAOBQNLS));
 
   /* Create necessary matrix and vectors, solve same ODE on every process */
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&aircraft.A));
-  CHKERRQ(MatSetSizes(aircraft.A,PETSC_DECIDE,PETSC_DECIDE,2,2));
-  CHKERRQ(MatSetFromOptions(aircraft.A));
-  CHKERRQ(MatSetUp(aircraft.A));
-  CHKERRQ(MatAssemblyBegin(aircraft.A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(aircraft.A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatShift(aircraft.A,1));
-  CHKERRQ(MatShift(aircraft.A,-1));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&aircraft.A));
+  PetscCall(MatSetSizes(aircraft.A,PETSC_DECIDE,PETSC_DECIDE,2,2));
+  PetscCall(MatSetFromOptions(aircraft.A));
+  PetscCall(MatSetUp(aircraft.A));
+  PetscCall(MatAssemblyBegin(aircraft.A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(aircraft.A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatShift(aircraft.A,1));
+  PetscCall(MatShift(aircraft.A,-1));
 
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&aircraft.Jacp));
-  CHKERRQ(MatSetSizes(aircraft.Jacp,PETSC_DECIDE,PETSC_DECIDE,2,2*aircraft.nsteps));
-  CHKERRQ(MatSetFromOptions(aircraft.Jacp));
-  CHKERRQ(MatSetUp(aircraft.Jacp));
-  CHKERRQ(MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,2*aircraft.nsteps,1,NULL,&aircraft.DRDP));
-  CHKERRQ(MatSetUp(aircraft.DRDP));
-  CHKERRQ(MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,&aircraft.DRDU));
-  CHKERRQ(MatSetUp(aircraft.DRDU));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&aircraft.Jacp));
+  PetscCall(MatSetSizes(aircraft.Jacp,PETSC_DECIDE,PETSC_DECIDE,2,2*aircraft.nsteps));
+  PetscCall(MatSetFromOptions(aircraft.Jacp));
+  PetscCall(MatSetUp(aircraft.Jacp));
+  PetscCall(MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,2*aircraft.nsteps,1,NULL,&aircraft.DRDP));
+  PetscCall(MatSetUp(aircraft.DRDP));
+  PetscCall(MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,&aircraft.DRDU));
+  PetscCall(MatSetUp(aircraft.DRDU));
 
   /* Create timestepping solver context */
-  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&aircraft.ts));
-  CHKERRQ(TSSetType(aircraft.ts,TSRK));
-  CHKERRQ(TSSetRHSFunction(aircraft.ts,NULL,RHSFunction,&aircraft));
-  CHKERRQ(TSSetRHSJacobian(aircraft.ts,aircraft.A,aircraft.A,TSComputeRHSJacobianConstant,&aircraft));
-  CHKERRQ(TSSetRHSJacobianP(aircraft.ts,aircraft.Jacp,RHSJacobianP,&aircraft));
-  CHKERRQ(TSSetExactFinalTime(aircraft.ts,TS_EXACTFINALTIME_MATCHSTEP));
-  CHKERRQ(TSSetEquationType(aircraft.ts,TS_EQ_ODE_EXPLICIT)); /* less Jacobian evaluations when adjoint BEuler is used, otherwise no effect */
+  PetscCall(TSCreate(PETSC_COMM_WORLD,&aircraft.ts));
+  PetscCall(TSSetType(aircraft.ts,TSRK));
+  PetscCall(TSSetRHSFunction(aircraft.ts,NULL,RHSFunction,&aircraft));
+  PetscCall(TSSetRHSJacobian(aircraft.ts,aircraft.A,aircraft.A,TSComputeRHSJacobianConstant,&aircraft));
+  PetscCall(TSSetRHSJacobianP(aircraft.ts,aircraft.Jacp,RHSJacobianP,&aircraft));
+  PetscCall(TSSetExactFinalTime(aircraft.ts,TS_EXACTFINALTIME_MATCHSTEP));
+  PetscCall(TSSetEquationType(aircraft.ts,TS_EQ_ODE_EXPLICIT)); /* less Jacobian evaluations when adjoint BEuler is used, otherwise no effect */
 
   /* Set initial conditions */
-  CHKERRQ(MatCreateVecs(aircraft.A,&aircraft.U,NULL));
-  CHKERRQ(TSSetSolution(aircraft.ts,aircraft.U));
-  CHKERRQ(VecGetArray(aircraft.U,&u));
+  PetscCall(MatCreateVecs(aircraft.A,&aircraft.U,NULL));
+  PetscCall(TSSetSolution(aircraft.ts,aircraft.U));
+  PetscCall(VecGetArray(aircraft.U,&u));
   u[0] = 1.5;
   u[1] = 0;
-  CHKERRQ(VecRestoreArray(aircraft.U,&u));
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&aircraft.V));
-  CHKERRQ(VecSetSizes(aircraft.V,PETSC_DECIDE,aircraft.nsteps));
-  CHKERRQ(VecSetUp(aircraft.V));
-  CHKERRQ(VecDuplicate(aircraft.V,&aircraft.W));
-  CHKERRQ(VecSet(aircraft.V,1.));
-  CHKERRQ(VecSet(aircraft.W,PETSC_PI/4.));
+  PetscCall(VecRestoreArray(aircraft.U,&u));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&aircraft.V));
+  PetscCall(VecSetSizes(aircraft.V,PETSC_DECIDE,aircraft.nsteps));
+  PetscCall(VecSetUp(aircraft.V));
+  PetscCall(VecDuplicate(aircraft.V,&aircraft.W));
+  PetscCall(VecSet(aircraft.V,1.));
+  PetscCall(VecSet(aircraft.W,PETSC_PI/4.));
 
   /* Save trajectory of solution so that TSAdjointSolve() may be used */
-  CHKERRQ(TSSetSaveTrajectory(aircraft.ts));
+  PetscCall(TSSetSaveTrajectory(aircraft.ts));
 
   /* Set sensitivity context */
-  CHKERRQ(TSCreateQuadratureTS(aircraft.ts,PETSC_FALSE,&aircraft.quadts));
-  CHKERRQ(TSSetRHSFunction(aircraft.quadts,NULL,(TSRHSFunction)CostIntegrand,&aircraft));
-  CHKERRQ(TSSetRHSJacobian(aircraft.quadts,aircraft.DRDU,aircraft.DRDU,(TSRHSJacobian)DRDUJacobianTranspose,&aircraft));
-  CHKERRQ(TSSetRHSJacobianP(aircraft.quadts,aircraft.DRDP,(TSRHSJacobianP)DRDPJacobianTranspose,&aircraft));
-  CHKERRQ(MatCreateVecs(aircraft.A,&aircraft.Lambda[0],NULL));
-  CHKERRQ(MatCreateVecs(aircraft.Jacp,&aircraft.Mup[0],NULL));
+  PetscCall(TSCreateQuadratureTS(aircraft.ts,PETSC_FALSE,&aircraft.quadts));
+  PetscCall(TSSetRHSFunction(aircraft.quadts,NULL,(TSRHSFunction)CostIntegrand,&aircraft));
+  PetscCall(TSSetRHSJacobian(aircraft.quadts,aircraft.DRDU,aircraft.DRDU,(TSRHSJacobian)DRDUJacobianTranspose,&aircraft));
+  PetscCall(TSSetRHSJacobianP(aircraft.quadts,aircraft.DRDP,(TSRHSJacobianP)DRDPJacobianTranspose,&aircraft));
+  PetscCall(MatCreateVecs(aircraft.A,&aircraft.Lambda[0],NULL));
+  PetscCall(MatCreateVecs(aircraft.Jacp,&aircraft.Mup[0],NULL));
   if (aircraft.eh) {
-    CHKERRQ(MatCreateVecs(aircraft.A,&aircraft.rhshp1[0],NULL));
-    CHKERRQ(MatCreateVecs(aircraft.A,&aircraft.rhshp2[0],NULL));
-    CHKERRQ(MatCreateVecs(aircraft.Jacp,&aircraft.rhshp3[0],NULL));
-    CHKERRQ(MatCreateVecs(aircraft.Jacp,&aircraft.rhshp4[0],NULL));
-    CHKERRQ(MatCreateVecs(aircraft.DRDU,&aircraft.inthp1[0],NULL));
-    CHKERRQ(MatCreateVecs(aircraft.DRDU,&aircraft.inthp2[0],NULL));
-    CHKERRQ(MatCreateVecs(aircraft.DRDP,&aircraft.inthp3[0],NULL));
-    CHKERRQ(MatCreateVecs(aircraft.DRDP,&aircraft.inthp4[0],NULL));
-    CHKERRQ(MatCreateVecs(aircraft.Jacp,&aircraft.Dir,NULL));
-    CHKERRQ(TSSetRHSHessianProduct(aircraft.ts,aircraft.rhshp1,RHSHessianProductUU,aircraft.rhshp2,RHSHessianProductUP,aircraft.rhshp3,RHSHessianProductPU,aircraft.rhshp4,RHSHessianProductPP,&aircraft));
-    CHKERRQ(TSSetRHSHessianProduct(aircraft.quadts,aircraft.inthp1,IntegrandHessianProductUU,aircraft.inthp2,IntegrandHessianProductUP,aircraft.inthp3,IntegrandHessianProductPU,aircraft.inthp4,IntegrandHessianProductPP,&aircraft));
-    CHKERRQ(MatCreateVecs(aircraft.A,&aircraft.Lambda2[0],NULL));
-    CHKERRQ(MatCreateVecs(aircraft.Jacp,&aircraft.Mup2[0],NULL));
+    PetscCall(MatCreateVecs(aircraft.A,&aircraft.rhshp1[0],NULL));
+    PetscCall(MatCreateVecs(aircraft.A,&aircraft.rhshp2[0],NULL));
+    PetscCall(MatCreateVecs(aircraft.Jacp,&aircraft.rhshp3[0],NULL));
+    PetscCall(MatCreateVecs(aircraft.Jacp,&aircraft.rhshp4[0],NULL));
+    PetscCall(MatCreateVecs(aircraft.DRDU,&aircraft.inthp1[0],NULL));
+    PetscCall(MatCreateVecs(aircraft.DRDU,&aircraft.inthp2[0],NULL));
+    PetscCall(MatCreateVecs(aircraft.DRDP,&aircraft.inthp3[0],NULL));
+    PetscCall(MatCreateVecs(aircraft.DRDP,&aircraft.inthp4[0],NULL));
+    PetscCall(MatCreateVecs(aircraft.Jacp,&aircraft.Dir,NULL));
+    PetscCall(TSSetRHSHessianProduct(aircraft.ts,aircraft.rhshp1,RHSHessianProductUU,aircraft.rhshp2,RHSHessianProductUP,aircraft.rhshp3,RHSHessianProductPU,aircraft.rhshp4,RHSHessianProductPP,&aircraft));
+    PetscCall(TSSetRHSHessianProduct(aircraft.quadts,aircraft.inthp1,IntegrandHessianProductUU,aircraft.inthp2,IntegrandHessianProductUP,aircraft.inthp3,IntegrandHessianProductPU,aircraft.inthp4,IntegrandHessianProductPP,&aircraft));
+    PetscCall(MatCreateVecs(aircraft.A,&aircraft.Lambda2[0],NULL));
+    PetscCall(MatCreateVecs(aircraft.Jacp,&aircraft.Mup2[0],NULL));
   }
-  CHKERRQ(TSSetFromOptions(aircraft.ts));
-  CHKERRQ(TSSetMaxTime(aircraft.ts,aircraft.ftime));
-  CHKERRQ(TSSetTimeStep(aircraft.ts,aircraft.ftime/aircraft.nsteps));
+  PetscCall(TSSetFromOptions(aircraft.ts));
+  PetscCall(TSSetMaxTime(aircraft.ts,aircraft.ftime));
+  PetscCall(TSSetTimeStep(aircraft.ts,aircraft.ftime/aircraft.nsteps));
 
   /* Set initial solution guess */
-  CHKERRQ(MatCreateVecs(aircraft.Jacp,&P,NULL));
-  CHKERRQ(VecGetArray(P,&p));
+  PetscCall(MatCreateVecs(aircraft.Jacp,&P,NULL));
+  PetscCall(VecGetArray(P,&p));
   for (i=0; i<aircraft.nsteps; i++) {
     p[2*i] = 2.0;
     p[2*i+1] = PETSC_PI/2.0;
   }
-  CHKERRQ(VecRestoreArray(P,&p));
-  CHKERRQ(VecDuplicate(P,&PU));
-  CHKERRQ(VecDuplicate(P,&PL));
-  CHKERRQ(VecGetArray(PU,&p));
+  PetscCall(VecRestoreArray(P,&p));
+  PetscCall(VecDuplicate(P,&PU));
+  PetscCall(VecDuplicate(P,&PL));
+  PetscCall(VecGetArray(PU,&p));
   for (i=0; i<aircraft.nsteps; i++) {
     p[2*i] = 2.0;
     p[2*i+1] = PETSC_PI;
   }
-  CHKERRQ(VecRestoreArray(PU,&p));
-  CHKERRQ(VecGetArray(PL,&p));
+  PetscCall(VecRestoreArray(PU,&p));
+  PetscCall(VecGetArray(PL,&p));
   for (i=0; i<aircraft.nsteps; i++) {
     p[2*i] = 0.0;
     p[2*i+1] = -PETSC_PI;
   }
-  CHKERRQ(VecRestoreArray(PL,&p));
+  PetscCall(VecRestoreArray(PL,&p));
 
-  CHKERRQ(TaoSetSolution(tao,P));
-  CHKERRQ(TaoSetVariableBounds(tao,PL,PU));
+  PetscCall(TaoSetSolution(tao,P));
+  PetscCall(TaoSetVariableBounds(tao,PL,PU));
   /* Set routine for function and gradient evaluation */
-  CHKERRQ(TaoSetObjectiveAndGradient(tao,NULL,FormObjFunctionGradient,(void *)&aircraft));
+  PetscCall(TaoSetObjectiveAndGradient(tao,NULL,FormObjFunctionGradient,(void *)&aircraft));
 
   if (aircraft.eh) {
     if (aircraft.mf) {
-      CHKERRQ(MatCreateShell(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,2*aircraft.nsteps,2*aircraft.nsteps,(void*)&aircraft,&aircraft.H));
-      CHKERRQ(MatShellSetOperation(aircraft.H,MATOP_MULT,(void(*)(void))MyMatMult));
-      CHKERRQ(MatSetOption(aircraft.H,MAT_SYMMETRIC,PETSC_TRUE));
-      CHKERRQ(TaoSetHessian(tao,aircraft.H,aircraft.H,MatrixFreeObjHessian,(void*)&aircraft));
+      PetscCall(MatCreateShell(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,2*aircraft.nsteps,2*aircraft.nsteps,(void*)&aircraft,&aircraft.H));
+      PetscCall(MatShellSetOperation(aircraft.H,MATOP_MULT,(void(*)(void))MyMatMult));
+      PetscCall(MatSetOption(aircraft.H,MAT_SYMMETRIC,PETSC_TRUE));
+      PetscCall(TaoSetHessian(tao,aircraft.H,aircraft.H,MatrixFreeObjHessian,(void*)&aircraft));
     } else {
-      CHKERRQ(MatCreateDense(MPI_COMM_WORLD,PETSC_DETERMINE,PETSC_DETERMINE,2*aircraft.nsteps,2*aircraft.nsteps,NULL,&(aircraft.H)));
-      CHKERRQ(MatSetOption(aircraft.H,MAT_SYMMETRIC,PETSC_TRUE));
-      CHKERRQ(TaoSetHessian(tao,aircraft.H,aircraft.H,FormObjHessian,(void *)&aircraft));
+      PetscCall(MatCreateDense(MPI_COMM_WORLD,PETSC_DETERMINE,PETSC_DETERMINE,2*aircraft.nsteps,2*aircraft.nsteps,NULL,&(aircraft.H)));
+      PetscCall(MatSetOption(aircraft.H,MAT_SYMMETRIC,PETSC_TRUE));
+      PetscCall(TaoSetHessian(tao,aircraft.H,aircraft.H,FormObjHessian,(void *)&aircraft));
     }
   }
 
   /* Check for any TAO command line options */
-  CHKERRQ(TaoGetKSP(tao,&ksp));
+  PetscCall(TaoGetKSP(tao,&ksp));
   if (ksp) {
-    CHKERRQ(KSPGetPC(ksp,&pc));
-    CHKERRQ(PCSetType(pc,PCNONE));
+    PetscCall(KSPGetPC(ksp,&pc));
+    PetscCall(PCSetType(pc,PCNONE));
   }
-  CHKERRQ(TaoSetFromOptions(tao));
+  PetscCall(TaoSetFromOptions(tao));
 
-  CHKERRQ(TaoSolve(tao));
-  CHKERRQ(VecView(P,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(TaoSolve(tao));
+  PetscCall(VecView(P,PETSC_VIEWER_STDOUT_WORLD));
 
   /* Free TAO data structures */
-  CHKERRQ(TaoDestroy(&tao));
+  PetscCall(TaoDestroy(&tao));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSDestroy(&aircraft.ts));
-  CHKERRQ(MatDestroy(&aircraft.A));
-  CHKERRQ(VecDestroy(&aircraft.U));
-  CHKERRQ(VecDestroy(&aircraft.V));
-  CHKERRQ(VecDestroy(&aircraft.W));
-  CHKERRQ(VecDestroy(&P));
-  CHKERRQ(VecDestroy(&PU));
-  CHKERRQ(VecDestroy(&PL));
-  CHKERRQ(MatDestroy(&aircraft.Jacp));
-  CHKERRQ(MatDestroy(&aircraft.DRDU));
-  CHKERRQ(MatDestroy(&aircraft.DRDP));
-  CHKERRQ(VecDestroy(&aircraft.Lambda[0]));
-  CHKERRQ(VecDestroy(&aircraft.Mup[0]));
-  CHKERRQ(VecDestroy(&P));
+  PetscCall(TSDestroy(&aircraft.ts));
+  PetscCall(MatDestroy(&aircraft.A));
+  PetscCall(VecDestroy(&aircraft.U));
+  PetscCall(VecDestroy(&aircraft.V));
+  PetscCall(VecDestroy(&aircraft.W));
+  PetscCall(VecDestroy(&P));
+  PetscCall(VecDestroy(&PU));
+  PetscCall(VecDestroy(&PL));
+  PetscCall(MatDestroy(&aircraft.Jacp));
+  PetscCall(MatDestroy(&aircraft.DRDU));
+  PetscCall(MatDestroy(&aircraft.DRDP));
+  PetscCall(VecDestroy(&aircraft.Lambda[0]));
+  PetscCall(VecDestroy(&aircraft.Mup[0]));
+  PetscCall(VecDestroy(&P));
   if (aircraft.eh) {
-    CHKERRQ(VecDestroy(&aircraft.Lambda2[0]));
-    CHKERRQ(VecDestroy(&aircraft.Mup2[0]));
-    CHKERRQ(VecDestroy(&aircraft.Dir));
-    CHKERRQ(VecDestroy(&aircraft.rhshp1[0]));
-    CHKERRQ(VecDestroy(&aircraft.rhshp2[0]));
-    CHKERRQ(VecDestroy(&aircraft.rhshp3[0]));
-    CHKERRQ(VecDestroy(&aircraft.rhshp4[0]));
-    CHKERRQ(VecDestroy(&aircraft.inthp1[0]));
-    CHKERRQ(VecDestroy(&aircraft.inthp2[0]));
-    CHKERRQ(VecDestroy(&aircraft.inthp3[0]));
-    CHKERRQ(VecDestroy(&aircraft.inthp4[0]));
-    CHKERRQ(MatDestroy(&aircraft.H));
+    PetscCall(VecDestroy(&aircraft.Lambda2[0]));
+    PetscCall(VecDestroy(&aircraft.Mup2[0]));
+    PetscCall(VecDestroy(&aircraft.Dir));
+    PetscCall(VecDestroy(&aircraft.rhshp1[0]));
+    PetscCall(VecDestroy(&aircraft.rhshp2[0]));
+    PetscCall(VecDestroy(&aircraft.rhshp3[0]));
+    PetscCall(VecDestroy(&aircraft.rhshp4[0]));
+    PetscCall(VecDestroy(&aircraft.inthp1[0]));
+    PetscCall(VecDestroy(&aircraft.inthp2[0]));
+    PetscCall(VecDestroy(&aircraft.inthp3[0]));
+    PetscCall(VecDestroy(&aircraft.inthp4[0]));
+    PetscCall(MatDestroy(&aircraft.H));
   }
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -443,45 +443,45 @@ PetscErrorCode FormObjFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ct
   PetscInt          i;
 
   PetscFunctionBeginUser;
-  CHKERRQ(VecGetArrayRead(P,&p));
-  CHKERRQ(VecGetArray(actx->V,&v));
-  CHKERRQ(VecGetArray(actx->W,&w));
+  PetscCall(VecGetArrayRead(P,&p));
+  PetscCall(VecGetArray(actx->V,&v));
+  PetscCall(VecGetArray(actx->W,&w));
   for (i=0; i<actx->nsteps; i++) {
     v[i] = p[2*i];
     w[i] = p[2*i+1];
   }
-  CHKERRQ(VecRestoreArrayRead(P,&p));
-  CHKERRQ(VecRestoreArray(actx->V,&v));
-  CHKERRQ(VecRestoreArray(actx->W,&w));
+  PetscCall(VecRestoreArrayRead(P,&p));
+  PetscCall(VecRestoreArray(actx->V,&v));
+  PetscCall(VecRestoreArray(actx->W,&w));
 
-  CHKERRQ(TSSetTime(ts,0.0));
-  CHKERRQ(TSSetStepNumber(ts,0));
-  CHKERRQ(TSSetFromOptions(ts));
-  CHKERRQ(TSSetTimeStep(ts,actx->ftime/actx->nsteps));
+  PetscCall(TSSetTime(ts,0.0));
+  PetscCall(TSSetStepNumber(ts,0));
+  PetscCall(TSSetFromOptions(ts));
+  PetscCall(TSSetTimeStep(ts,actx->ftime/actx->nsteps));
 
   /* reinitialize system state */
-  CHKERRQ(VecGetArray(actx->U,&u));
+  PetscCall(VecGetArray(actx->U,&u));
   u[0] = 2.0;
   u[1] = 0;
-  CHKERRQ(VecRestoreArray(actx->U,&u));
+  PetscCall(VecRestoreArray(actx->U,&u));
 
   /* reinitialize the integral value */
-  CHKERRQ(TSGetCostIntegral(ts,&Q));
-  CHKERRQ(VecSet(Q,0.0));
+  PetscCall(TSGetCostIntegral(ts,&Q));
+  PetscCall(VecSet(Q,0.0));
 
-  CHKERRQ(TSSolve(ts,actx->U));
+  PetscCall(TSSolve(ts,actx->U));
 
   /* Reset initial conditions for the adjoint integration */
-  CHKERRQ(VecSet(actx->Lambda[0],0.0));
-  CHKERRQ(VecSet(actx->Mup[0],0.0));
-  CHKERRQ(TSSetCostGradients(ts,1,actx->Lambda,actx->Mup));
+  PetscCall(VecSet(actx->Lambda[0],0.0));
+  PetscCall(VecSet(actx->Mup[0],0.0));
+  PetscCall(TSSetCostGradients(ts,1,actx->Lambda,actx->Mup));
 
-  CHKERRQ(TSAdjointSolve(ts));
-  CHKERRQ(VecCopy(actx->Mup[0],G));
-  CHKERRQ(TSGetCostIntegral(ts,&Q));
-  CHKERRQ(VecGetArrayRead(Q,&q));
+  PetscCall(TSAdjointSolve(ts));
+  PetscCall(VecCopy(actx->Mup[0],G));
+  PetscCall(TSGetCostIntegral(ts,&Q));
+  PetscCall(VecGetArrayRead(Q,&q));
   *f   = q[0];
-  CHKERRQ(VecRestoreArrayRead(Q,&q));
+  PetscCall(VecRestoreArrayRead(Q,&q));
   PetscFunctionReturn(0);
 }
 
@@ -496,39 +496,39 @@ PetscErrorCode FormObjHessian(Tao tao,Vec P,Mat H,Mat Hpre,void *ctx)
 
   PetscFunctionBeginUser;
   /* set up control parameters */
-  CHKERRQ(VecGetArrayRead(P,&p));
-  CHKERRQ(VecGetArray(actx->V,&v));
-  CHKERRQ(VecGetArray(actx->W,&w));
+  PetscCall(VecGetArrayRead(P,&p));
+  PetscCall(VecGetArray(actx->V,&v));
+  PetscCall(VecGetArray(actx->W,&w));
   for (i=0; i<actx->nsteps; i++) {
     v[i] = p[2*i];
     w[i] = p[2*i+1];
   }
-  CHKERRQ(VecRestoreArrayRead(P,&p));
-  CHKERRQ(VecRestoreArray(actx->V,&v));
-  CHKERRQ(VecRestoreArray(actx->W,&w));
+  PetscCall(VecRestoreArrayRead(P,&p));
+  PetscCall(VecRestoreArray(actx->V,&v));
+  PetscCall(VecRestoreArray(actx->W,&w));
 
-  CHKERRQ(PetscMalloc1(2*actx->nsteps,&harr));
-  CHKERRQ(PetscMalloc1(2*actx->nsteps,&cols));
+  PetscCall(PetscMalloc1(2*actx->nsteps,&harr));
+  PetscCall(PetscMalloc1(2*actx->nsteps,&cols));
   for (i=0; i<2*actx->nsteps; i++) cols[i] = i;
-  CHKERRQ(VecDuplicate(P,&Dir));
+  PetscCall(VecDuplicate(P,&Dir));
   for (i=0; i<2*actx->nsteps; i++) {
     ind[0] = i;
-    CHKERRQ(VecSet(Dir,0.0));
-    CHKERRQ(VecSetValues(Dir,1,ind,&one,INSERT_VALUES));
-    CHKERRQ(VecAssemblyBegin(Dir));
-    CHKERRQ(VecAssemblyEnd(Dir));
-    CHKERRQ(ComputeObjHessianWithSOA(Dir,harr,actx));
-    CHKERRQ(MatSetValues(H,1,ind,2*actx->nsteps,cols,harr,INSERT_VALUES));
-    CHKERRQ(MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY));
+    PetscCall(VecSet(Dir,0.0));
+    PetscCall(VecSetValues(Dir,1,ind,&one,INSERT_VALUES));
+    PetscCall(VecAssemblyBegin(Dir));
+    PetscCall(VecAssemblyEnd(Dir));
+    PetscCall(ComputeObjHessianWithSOA(Dir,harr,actx));
+    PetscCall(MatSetValues(H,1,ind,2*actx->nsteps,cols,harr,INSERT_VALUES));
+    PetscCall(MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY));
     if (H != Hpre) {
-      CHKERRQ(MatAssemblyBegin(Hpre,MAT_FINAL_ASSEMBLY));
-      CHKERRQ(MatAssemblyEnd(Hpre,MAT_FINAL_ASSEMBLY));
+      PetscCall(MatAssemblyBegin(Hpre,MAT_FINAL_ASSEMBLY));
+      PetscCall(MatAssemblyEnd(Hpre,MAT_FINAL_ASSEMBLY));
     }
   }
-  CHKERRQ(PetscFree(cols));
-  CHKERRQ(PetscFree(harr));
-  CHKERRQ(VecDestroy(&Dir));
+  PetscCall(PetscFree(cols));
+  PetscCall(PetscFree(harr));
+  PetscCall(VecDestroy(&Dir));
   PetscFunctionReturn(0);
 }
 
@@ -540,16 +540,16 @@ PetscErrorCode MatrixFreeObjHessian(Tao tao, Vec P, Mat H, Mat Hpre, void *ctx)
   PetscInt          i;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(P,&p));
-  CHKERRQ(VecGetArray(actx->V,&v));
-  CHKERRQ(VecGetArray(actx->W,&w));
+  PetscCall(VecGetArrayRead(P,&p));
+  PetscCall(VecGetArray(actx->V,&v));
+  PetscCall(VecGetArray(actx->W,&w));
   for (i=0; i<actx->nsteps; i++) {
     v[i] = p[2*i];
     w[i] = p[2*i+1];
   }
-  CHKERRQ(VecRestoreArrayRead(P,&p));
-  CHKERRQ(VecRestoreArray(actx->V,&v));
-  CHKERRQ(VecRestoreArray(actx->W,&w));
+  PetscCall(VecRestoreArrayRead(P,&p));
+  PetscCall(VecRestoreArray(actx->V,&v));
+  PetscCall(VecRestoreArray(actx->W,&w));
   PetscFunctionReturn(0);
 }
 
@@ -559,10 +559,10 @@ PetscErrorCode MyMatMult(Mat H_shell, Vec X, Vec Y)
   void           *ptr;
 
   PetscFunctionBegin;
-  CHKERRQ(MatShellGetContext(H_shell,&ptr));
-  CHKERRQ(VecGetArray(Y,&y));
-  CHKERRQ(ComputeObjHessianWithSOA(X,y,(Aircraft)ptr));
-  CHKERRQ(VecRestoreArray(Y,&y));
+  PetscCall(MatShellGetContext(H_shell,&ptr));
+  PetscCall(VecGetArray(Y,&y));
+  PetscCall(ComputeObjHessianWithSOA(X,y,(Aircraft)ptr));
+  PetscCall(VecRestoreArray(Y,&y));
   PetscFunctionReturn(0);
 }
 
@@ -576,52 +576,52 @@ PetscErrorCode ComputeObjHessianWithSOA(Vec Dir,PetscScalar arr[],Aircraft actx)
 
   PetscFunctionBeginUser;
   /* Reset TSAdjoint so that AdjointSetUp will be called again */
-  CHKERRQ(TSAdjointReset(ts));
+  PetscCall(TSAdjointReset(ts));
 
-  CHKERRQ(TSSetTime(ts,0.0));
-  CHKERRQ(TSSetStepNumber(ts,0));
-  CHKERRQ(TSSetFromOptions(ts));
-  CHKERRQ(TSSetTimeStep(ts,actx->ftime/actx->nsteps));
-  CHKERRQ(TSSetCostHessianProducts(actx->ts,1,actx->Lambda2,actx->Mup2,Dir));
+  PetscCall(TSSetTime(ts,0.0));
+  PetscCall(TSSetStepNumber(ts,0));
+  PetscCall(TSSetFromOptions(ts));
+  PetscCall(TSSetTimeStep(ts,actx->ftime/actx->nsteps));
+  PetscCall(TSSetCostHessianProducts(actx->ts,1,actx->Lambda2,actx->Mup2,Dir));
 
   /* reinitialize system state */
-  CHKERRQ(VecGetArray(actx->U,&u));
+  PetscCall(VecGetArray(actx->U,&u));
   u[0] = 2.0;
   u[1] = 0;
-  CHKERRQ(VecRestoreArray(actx->U,&u));
+  PetscCall(VecRestoreArray(actx->U,&u));
 
   /* reinitialize the integral value */
-  CHKERRQ(TSGetCostIntegral(ts,&Q));
-  CHKERRQ(VecSet(Q,0.0));
+  PetscCall(TSGetCostIntegral(ts,&Q));
+  PetscCall(VecSet(Q,0.0));
 
   /* initialize tlm variable */
-  CHKERRQ(MatZeroEntries(actx->Jacp));
-  CHKERRQ(MatAssemblyBegin(actx->Jacp,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(actx->Jacp,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(TSAdjointSetForward(ts,actx->Jacp));
+  PetscCall(MatZeroEntries(actx->Jacp));
+  PetscCall(MatAssemblyBegin(actx->Jacp,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(actx->Jacp,MAT_FINAL_ASSEMBLY));
+  PetscCall(TSAdjointSetForward(ts,actx->Jacp));
 
-  CHKERRQ(TSSolve(ts,actx->U));
+  PetscCall(TSSolve(ts,actx->U));
 
   /* Set terminal conditions for first- and second-order adjonts */
-  CHKERRQ(VecSet(actx->Lambda[0],0.0));
-  CHKERRQ(VecSet(actx->Mup[0],0.0));
-  CHKERRQ(VecSet(actx->Lambda2[0],0.0));
-  CHKERRQ(VecSet(actx->Mup2[0],0.0));
-  CHKERRQ(TSSetCostGradients(ts,1,actx->Lambda,actx->Mup));
+  PetscCall(VecSet(actx->Lambda[0],0.0));
+  PetscCall(VecSet(actx->Mup[0],0.0));
+  PetscCall(VecSet(actx->Lambda2[0],0.0));
+  PetscCall(VecSet(actx->Mup2[0],0.0));
+  PetscCall(TSSetCostGradients(ts,1,actx->Lambda,actx->Mup));
 
-  CHKERRQ(TSGetCostIntegral(ts,&Q));
+  PetscCall(TSGetCostIntegral(ts,&Q));
 
   /* Reset initial conditions for the adjoint integration */
-  CHKERRQ(TSAdjointSolve(ts));
+  PetscCall(TSAdjointSolve(ts));
 
   /* initial condition does not depend on p, so that lambda is not needed to assemble G */
-  CHKERRQ(VecGetArrayRead(actx->Mup2[0],&z_ptr));
+  PetscCall(VecGetArrayRead(actx->Mup2[0],&z_ptr));
   for (i=0; i<2*actx->nsteps; i++) arr[i] = z_ptr[i];
-  CHKERRQ(VecRestoreArrayRead(actx->Mup2[0],&z_ptr));
+  PetscCall(VecRestoreArrayRead(actx->Mup2[0],&z_ptr));
 
   /* Disable second-order adjoint mode */
-  CHKERRQ(TSAdjointReset(ts));
-  CHKERRQ(TSAdjointResetForward(ts));
+  PetscCall(TSAdjointReset(ts));
+  PetscCall(TSAdjointResetForward(ts));
   PetscFunctionReturn(0);
 }
 

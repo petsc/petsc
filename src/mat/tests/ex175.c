@@ -9,34 +9,34 @@ int main(int argc,char **args)
   PetscInt    i,j,m = 10,n = 10;
   PetscScalar v;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   /* Create a complex non-hermitian matrix */
-  CHKERRQ(MatCreate(PETSC_COMM_SELF,&C));
-  CHKERRQ(MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,m,n));
-  CHKERRQ(MatSetFromOptions(C));
-  CHKERRQ(MatSetUp(C));
+  PetscCall(MatCreate(PETSC_COMM_SELF,&C));
+  PetscCall(MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,m,n));
+  PetscCall(MatSetFromOptions(C));
+  PetscCall(MatSetUp(C));
   for (i=0; i<m; i++) {
     for (j=0; j<n; j++) {
       v = 0.0 - 1.0*PETSC_i;
-      if (i>j && i-j<2)   CHKERRQ(MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES));
+      if (i>j && i-j<2)   PetscCall(MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES));
     }
   }
-  CHKERRQ(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
 
-  CHKERRQ(MatCreateHermitianTranspose(C, &C_htransposed));
+  PetscCall(MatCreateHermitianTranspose(C, &C_htransposed));
 
-  CHKERRQ(MatView(C,PETSC_VIEWER_STDOUT_SELF));
-  CHKERRQ(MatDuplicate(C_htransposed,MAT_COPY_VALUES,&Cht));
-  CHKERRQ(MatView(Cht,PETSC_VIEWER_STDOUT_SELF));
-  CHKERRQ(MatDuplicate(C_htransposed,MAT_DO_NOT_COPY_VALUES,&C_empty));
-  CHKERRQ(MatView(C_empty,PETSC_VIEWER_STDOUT_SELF));
+  PetscCall(MatView(C,PETSC_VIEWER_STDOUT_SELF));
+  PetscCall(MatDuplicate(C_htransposed,MAT_COPY_VALUES,&Cht));
+  PetscCall(MatView(Cht,PETSC_VIEWER_STDOUT_SELF));
+  PetscCall(MatDuplicate(C_htransposed,MAT_DO_NOT_COPY_VALUES,&C_empty));
+  PetscCall(MatView(C_empty,PETSC_VIEWER_STDOUT_SELF));
 
-  CHKERRQ(MatDestroy(&C));
-  CHKERRQ(MatDestroy(&C_htransposed));
-  CHKERRQ(MatDestroy(&Cht));
-  CHKERRQ(MatDestroy(&C_empty));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatDestroy(&C));
+  PetscCall(MatDestroy(&C_htransposed));
+  PetscCall(MatDestroy(&Cht));
+  PetscCall(MatDestroy(&C_empty));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

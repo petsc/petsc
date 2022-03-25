@@ -139,8 +139,8 @@
       ierr = 0
 
 !     Get pointers to vector data
-      call VecGetArrayF90(x,x_v,ierr);CHKERRQ(ierr)
-      call VecGetArrayF90(f,f_v,ierr);CHKERRQ(ierr)
+      call VecGetArrayF90(x,x_v,ierr);PetscCall(ierr)
+      call VecGetArrayF90(f,f_v,ierr);PetscCall(ierr)
 
 !     Compute F(X)
       do i=0,m-1
@@ -148,8 +148,8 @@
       enddo
 
 !     Restore vectors
-      call VecRestoreArrayF90(X,x_v,ierr);CHKERRQ(ierr)
-      call VecRestoreArrayF90(F,f_v,ierr);CHKERRQ(ierr)
+      call VecRestoreArrayF90(X,x_v,ierr);PetscCall(ierr)
+      call VecRestoreArrayF90(F,f_v,ierr);PetscCall(ierr)
 
       return
       end

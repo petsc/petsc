@@ -45,19 +45,19 @@ PetscErrorCode CreateGraph(MPI_Comm comm, PetscInt testnum, Mat *A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  CHKERRQ(MatCreate(comm, &G));
+  PetscCall(MatCreate(comm, &G));
   /* The identity matrix */
   switch (testnum) {
   case 0:
   {
     Vec D;
 
-    CHKERRQ(MatSetSizes(G, PETSC_DETERMINE, PETSC_DETERMINE, 5, 5));
-    CHKERRQ(MatSetUp(G));
-    CHKERRQ(MatCreateVecs(G, &D, NULL));
-    CHKERRQ(VecSet(D, 1.0));
-    CHKERRQ(MatDiagonalSet(G, D, INSERT_VALUES));
-    CHKERRQ(VecDestroy(&D));
+    PetscCall(MatSetSizes(G, PETSC_DETERMINE, PETSC_DETERMINE, 5, 5));
+    PetscCall(MatSetUp(G));
+    PetscCall(MatCreateVecs(G, &D, NULL));
+    PetscCall(VecSet(D, 1.0));
+    PetscCall(MatDiagonalSet(G, D, INSERT_VALUES));
+    PetscCall(VecDestroy(&D));
   }
   break;
   case 1:
@@ -66,28 +66,28 @@ PetscErrorCode CreateGraph(MPI_Comm comm, PetscInt testnum, Mat *A)
     PetscInt    cols[3];
     PetscInt    rStart, rEnd, row;
 
-    CHKERRQ(MatSetSizes(G, PETSC_DETERMINE, PETSC_DETERMINE, 5, 5));
-    CHKERRQ(MatSetFromOptions(G));
-    CHKERRQ(MatSeqAIJSetPreallocation(G, 2, NULL));
-    CHKERRQ(MatSetUp(G));
-    CHKERRQ(MatGetOwnershipRange(G, &rStart, &rEnd));
+    PetscCall(MatSetSizes(G, PETSC_DETERMINE, PETSC_DETERMINE, 5, 5));
+    PetscCall(MatSetFromOptions(G));
+    PetscCall(MatSeqAIJSetPreallocation(G, 2, NULL));
+    PetscCall(MatSetUp(G));
+    PetscCall(MatGetOwnershipRange(G, &rStart, &rEnd));
     row  = 0;
     cols[0] = 0; cols[1] = 1;
-    if ((row >= rStart) && (row < rEnd)) CHKERRQ(MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES));
+    if ((row >= rStart) && (row < rEnd)) PetscCall(MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES));
     row  = 1;
     cols[0] = 0; cols[1] = 1;
-    if ((row >= rStart) && (row < rEnd)) CHKERRQ(MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES));
+    if ((row >= rStart) && (row < rEnd)) PetscCall(MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES));
     row  = 2;
     cols[0] = 2; cols[1] = 3;
-    if ((row >= rStart) && (row < rEnd)) CHKERRQ(MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES));
+    if ((row >= rStart) && (row < rEnd)) PetscCall(MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES));
     row  = 3;
     cols[0] = 3; cols[1] = 4;
-    if ((row >= rStart) && (row < rEnd)) CHKERRQ(MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES));
+    if ((row >= rStart) && (row < rEnd)) PetscCall(MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES));
     row  = 4;
     cols[0] = 4; cols[1] = 2;
-    if ((row >= rStart) && (row < rEnd)) CHKERRQ(MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES));
-    CHKERRQ(MatAssemblyBegin(G, MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(G, MAT_FINAL_ASSEMBLY));
+    if ((row >= rStart) && (row < rEnd)) PetscCall(MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES));
+    PetscCall(MatAssemblyBegin(G, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(G, MAT_FINAL_ASSEMBLY));
   }
   break;
   case 2:
@@ -96,28 +96,28 @@ PetscErrorCode CreateGraph(MPI_Comm comm, PetscInt testnum, Mat *A)
     PetscInt    cols[3];
     PetscInt    rStart, rEnd, row;
 
-    CHKERRQ(MatSetSizes(G, PETSC_DETERMINE, PETSC_DETERMINE, 5, 5));
-    CHKERRQ(MatSetFromOptions(G));
-    CHKERRQ(MatSeqAIJSetPreallocation(G, 2, NULL));
-    CHKERRQ(MatSetUp(G));
-    CHKERRQ(MatGetOwnershipRange(G, &rStart, &rEnd));
+    PetscCall(MatSetSizes(G, PETSC_DETERMINE, PETSC_DETERMINE, 5, 5));
+    PetscCall(MatSetFromOptions(G));
+    PetscCall(MatSeqAIJSetPreallocation(G, 2, NULL));
+    PetscCall(MatSetUp(G));
+    PetscCall(MatGetOwnershipRange(G, &rStart, &rEnd));
     row  = 0;
     cols[0] = 0; cols[1] = 4;
-    if ((row >= rStart) && (row < rEnd)) CHKERRQ(MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES));
+    if ((row >= rStart) && (row < rEnd)) PetscCall(MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES));
     row  = 1;
     cols[0] = 1; cols[1] = 2;
-    if ((row >= rStart) && (row < rEnd)) CHKERRQ(MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES));
+    if ((row >= rStart) && (row < rEnd)) PetscCall(MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES));
     row  = 2;
     cols[0] = 2; cols[1] = 3;
-    if ((row >= rStart) && (row < rEnd)) CHKERRQ(MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES));
+    if ((row >= rStart) && (row < rEnd)) PetscCall(MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES));
     row  = 3;
     cols[0] = 3; cols[1] = 1;
-    if ((row >= rStart) && (row < rEnd)) CHKERRQ(MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES));
+    if ((row >= rStart) && (row < rEnd)) PetscCall(MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES));
     row  = 4;
     cols[0] = 0; cols[1] = 4;
-    if ((row >= rStart) && (row < rEnd)) CHKERRQ(MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES));
-    CHKERRQ(MatAssemblyBegin(G, MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(G, MAT_FINAL_ASSEMBLY));
+    if ((row >= rStart) && (row < rEnd)) PetscCall(MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES));
+    PetscCall(MatAssemblyBegin(G, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(G, MAT_FINAL_ASSEMBLY));
   }
   break;
   default:
@@ -139,51 +139,51 @@ int main(int argc, char **argv)
   PetscMPIInt    size;
   PetscErrorCode ierr;
 
-  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   comm = PETSC_COMM_WORLD;
-  CHKERRMPI(MPI_Comm_size(comm, &size));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
   /* Use matrix to encode a graph */
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL, "-testnum", &testnum, NULL));
-  CHKERRQ(CreateGraph(comm, testnum, &A));
-  CHKERRQ(MatGetSize(A, &V, NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL, "-testnum", &testnum, NULL));
+  PetscCall(CreateGraph(comm, testnum, &A));
+  PetscCall(MatGetSize(A, &V, NULL));
   /* Replace matrix-vector multiplication with one that calculates the minimum rather than the sum */
   if (size == 1) {
-    CHKERRQ(MatShellSetOperation(A, MATOP_MULT, (void (*)) MatMultMax_SeqAIJ));
+    PetscCall(MatShellSetOperation(A, MATOP_MULT, (void (*)) MatMultMax_SeqAIJ));
   } else {
     Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
 
-    CHKERRQ(MatShellSetOperation(a->A, MATOP_MULT, (void (*)) MatMultMax_SeqAIJ));
-    CHKERRQ(MatShellSetOperation(a->B, MATOP_MULT, (void (*)) MatMultMax_SeqAIJ));
-    CHKERRQ(MatShellSetOperation(a->B, MATOP_MULT_ADD, (void (*)) MatMultAddMax_SeqAIJ));
+    PetscCall(MatShellSetOperation(a->A, MATOP_MULT, (void (*)) MatMultMax_SeqAIJ));
+    PetscCall(MatShellSetOperation(a->B, MATOP_MULT, (void (*)) MatMultMax_SeqAIJ));
+    PetscCall(MatShellSetOperation(a->B, MATOP_MULT_ADD, (void (*)) MatMultAddMax_SeqAIJ));
   }
   /* Initialize each vertex as a separate component */
-  CHKERRQ(MatCreateVecs(A, &c, NULL));
-  CHKERRQ(MatGetOwnershipRange(A, &vStart, &vEnd));
-  CHKERRQ(VecGetArray(c, &carray));
+  PetscCall(MatCreateVecs(A, &c, NULL));
+  PetscCall(MatGetOwnershipRange(A, &vStart, &vEnd));
+  PetscCall(VecGetArray(c, &carray));
   for (v = vStart; v < vEnd; ++v) {
     carray[v-vStart] = v;
   }
-  CHKERRQ(VecRestoreArray(c, &carray));
+  PetscCall(VecRestoreArray(c, &carray));
   /* Preprocess in parallel to find local components */
   /* Multiply until c does not change */
-  CHKERRQ(VecDuplicate(c, &cold));
+  PetscCall(VecDuplicate(c, &cold));
   for (v = 0; v < V; ++v) {
     Vec       cnew = cold;
     PetscBool stop;
 
-    CHKERRQ(MatMult(A, c, cnew));
-    CHKERRQ(VecEqual(c, cnew, &stop));
+    PetscCall(MatMult(A, c, cnew));
+    PetscCall(VecEqual(c, cnew, &stop));
     if (stop) break;
     cold = c;
     c    = cnew;
   }
   /* Report */
-  CHKERRQ(VecUniqueEntries(c, &n, NULL));
-  CHKERRQ(PetscPrintf(comm, "Components: %d Iterations: %d\n", n, v));
-  CHKERRQ(VecView(c, PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecUniqueEntries(c, &n, NULL));
+  PetscCall(PetscPrintf(comm, "Components: %d Iterations: %d\n", n, v));
+  PetscCall(VecView(c, PETSC_VIEWER_STDOUT_WORLD));
   /* Cleanup */
-  CHKERRQ(VecDestroy(&c));
-  CHKERRQ(VecDestroy(&cold));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&c));
+  PetscCall(VecDestroy(&cold));
+  PetscCall(PetscFinalize());
   return 0;
 }

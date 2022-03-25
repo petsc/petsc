@@ -18,7 +18,7 @@ static PetscErrorCode PetscSFGetGraph_Alltoall(PetscSF sf,PetscInt *nroots,Petsc
   if (ilocal)  *ilocal  = NULL; /* Contiguous local indices */
   if (iremote) {
     if (!sf->remote) {
-      CHKERRQ(PetscMalloc1(sf->nleaves,&sf->remote));
+      PetscCall(PetscMalloc1(sf->nleaves,&sf->remote));
       sf->remote_alloc = sf->remote;
       for (i=0; i<sf->nleaves; i++) {
         sf->remote[i].rank  = i;
@@ -38,13 +38,13 @@ static PetscErrorCode PetscSFBcastBegin_Alltoall(PetscSF sf,MPI_Datatype unit,Pe
   MPI_Request          *req;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscSFLinkCreate(sf,unit,rootmtype,rootdata,leafmtype,leafdata,op,PETSCSF_BCAST,&link));
-  CHKERRQ(PetscSFLinkPackRootData(sf,link,PETSCSF_REMOTE,rootdata));
-  CHKERRQ(PetscSFLinkCopyRootBufferInCaseNotUseGpuAwareMPI(sf,link,PETSC_TRUE/* device2host before sending */));
-  CHKERRQ(PetscObjectGetComm((PetscObject)sf,&comm));
-  CHKERRQ(PetscSFLinkGetMPIBuffersAndRequests(sf,link,PETSCSF_ROOT2LEAF,&rootbuf,&leafbuf,&req,NULL));
-  CHKERRQ(PetscSFLinkSyncStreamBeforeCallMPI(sf,link,PETSCSF_ROOT2LEAF));
-  CHKERRMPI(MPIU_Ialltoall(rootbuf,1,unit,leafbuf,1,unit,comm,req));
+  PetscCall(PetscSFLinkCreate(sf,unit,rootmtype,rootdata,leafmtype,leafdata,op,PETSCSF_BCAST,&link));
+  PetscCall(PetscSFLinkPackRootData(sf,link,PETSCSF_REMOTE,rootdata));
+  PetscCall(PetscSFLinkCopyRootBufferInCaseNotUseGpuAwareMPI(sf,link,PETSC_TRUE/* device2host before sending */));
+  PetscCall(PetscObjectGetComm((PetscObject)sf,&comm));
+  PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf,link,PETSCSF_ROOT2LEAF,&rootbuf,&leafbuf,&req,NULL));
+  PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf,link,PETSCSF_ROOT2LEAF));
+  PetscCallMPI(MPIU_Ialltoall(rootbuf,1,unit,leafbuf,1,unit,comm,req));
   PetscFunctionReturn(0);
 }
 
@@ -56,13 +56,13 @@ static PetscErrorCode PetscSFReduceBegin_Alltoall(PetscSF sf,MPI_Datatype unit,P
   MPI_Request          *req;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscSFLinkCreate(sf,unit,rootmtype,rootdata,leafmtype,leafdata,op,PETSCSF_REDUCE,&link));
-  CHKERRQ(PetscSFLinkPackLeafData(sf,link,PETSCSF_REMOTE,leafdata));
-  CHKERRQ(PetscSFLinkCopyLeafBufferInCaseNotUseGpuAwareMPI(sf,link,PETSC_TRUE/* device2host before sending */));
-  CHKERRQ(PetscObjectGetComm((PetscObject)sf,&comm));
-  CHKERRQ(PetscSFLinkGetMPIBuffersAndRequests(sf,link,PETSCSF_LEAF2ROOT,&rootbuf,&leafbuf,&req,NULL));
-  CHKERRQ(PetscSFLinkSyncStreamBeforeCallMPI(sf,link,PETSCSF_LEAF2ROOT));
-  CHKERRMPI(MPIU_Ialltoall(leafbuf,1,unit,rootbuf,1,unit,comm,req));
+  PetscCall(PetscSFLinkCreate(sf,unit,rootmtype,rootdata,leafmtype,leafdata,op,PETSCSF_REDUCE,&link));
+  PetscCall(PetscSFLinkPackLeafData(sf,link,PETSCSF_REMOTE,leafdata));
+  PetscCall(PetscSFLinkCopyLeafBufferInCaseNotUseGpuAwareMPI(sf,link,PETSC_TRUE/* device2host before sending */));
+  PetscCall(PetscObjectGetComm((PetscObject)sf,&comm));
+  PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf,link,PETSCSF_LEAF2ROOT,&rootbuf,&leafbuf,&req,NULL));
+  PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf,link,PETSCSF_LEAF2ROOT));
+  PetscCallMPI(MPIU_Ialltoall(leafbuf,1,unit,rootbuf,1,unit,comm,req));
   PetscFunctionReturn(0);
 }
 
@@ -76,16 +76,16 @@ static PetscErrorCode PetscSFCreateLocalSF_Alltoall(PetscSF sf,PetscSF *out)
   PetscFunctionBegin;
   nroots  = 1;
   nleaves = 1;
-  CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank));
-  CHKERRQ(PetscMalloc1(nleaves,&ilocal));
-  CHKERRQ(PetscMalloc1(nleaves,&iremote));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank));
+  PetscCall(PetscMalloc1(nleaves,&ilocal));
+  PetscCall(PetscMalloc1(nleaves,&iremote));
   ilocal[0]        = rank;
   iremote[0].rank  = 0;    /* rank in PETSC_COMM_SELF */
   iremote[0].index = rank; /* LocalSF is an embedded SF. Indices are not remapped */
 
-  CHKERRQ(PetscSFCreate(PETSC_COMM_SELF,&lsf));
-  CHKERRQ(PetscSFSetGraph(lsf,nroots,nleaves,NULL/*contiguous leaves*/,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER));
-  CHKERRQ(PetscSFSetUp(lsf));
+  PetscCall(PetscSFCreate(PETSC_COMM_SELF,&lsf));
+  PetscCall(PetscSFSetGraph(lsf,nroots,nleaves,NULL/*contiguous leaves*/,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER));
+  PetscCall(PetscSFSetUp(lsf));
   *out = lsf;
   PetscFunctionReturn(0);
 }
@@ -100,44 +100,44 @@ static PetscErrorCode PetscSFCreateEmbeddedRootSF_Alltoall(PetscSF sf,PetscInt n
   PetscSF        esf;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectGetComm((PetscObject)sf,&comm));
-  CHKERRMPI(MPI_Comm_rank(comm,&rank));
+  PetscCall(PetscObjectGetComm((PetscObject)sf,&comm));
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
 
   /* Uniq selected[] and store the result in roots[] */
-  CHKERRQ(PetscMalloc1(nselected,&tmproots));
-  CHKERRQ(PetscArraycpy(tmproots,selected,nselected));
-  CHKERRQ(PetscSortRemoveDupsInt(&nselected,tmproots)); /* nselected might be changed */
+  PetscCall(PetscMalloc1(nselected,&tmproots));
+  PetscCall(PetscArraycpy(tmproots,selected,nselected));
+  PetscCall(PetscSortRemoveDupsInt(&nselected,tmproots)); /* nselected might be changed */
   PetscCheckFalse(tmproots[0] < 0 || tmproots[nselected-1] >= sf->nroots,comm,PETSC_ERR_ARG_OUTOFRANGE,"Min/Max root indices %" PetscInt_FMT "/%" PetscInt_FMT " are not in [0,%" PetscInt_FMT ")",tmproots[0],tmproots[nselected-1],sf->nroots);
   nroots = nselected;   /* For Alltoall, we know root indices will not overflow MPI_INT */
-  CHKERRQ(PetscMalloc1(nselected,&roots));
+  PetscCall(PetscMalloc1(nselected,&roots));
   for (i=0; i<nselected; i++) roots[i] = tmproots[i];
-  CHKERRQ(PetscFree(tmproots));
+  PetscCall(PetscFree(tmproots));
 
   /* Find out which leaves are still connected to roots in the embedded sf. Expect PetscCommBuildTwoSided is more scalable than MPI_Alltoall */
-  CHKERRQ(PetscCommBuildTwoSided(comm,0/*empty msg*/,MPI_INT/*fake*/,nroots,roots,NULL/*todata*/,&nleaves,&leaves,NULL/*fromdata*/));
+  PetscCall(PetscCommBuildTwoSided(comm,0/*empty msg*/,MPI_INT/*fake*/,nroots,roots,NULL/*todata*/,&nleaves,&leaves,NULL/*fromdata*/));
 
   /* Move myself ahead if rank is in leaves[], since I am a distinguished rank */
   ndranks = 0;
   for (i=0; i<nleaves; i++) {
     if (leaves[i] == rank) {leaves[i] = -rank; ndranks = 1; break;}
   }
-  CHKERRQ(PetscSortMPIInt(nleaves,leaves));
+  PetscCall(PetscSortMPIInt(nleaves,leaves));
   if (nleaves && leaves[0] < 0) leaves[0] = rank;
 
   /* Build esf and fill its fields manually (without calling PetscSFSetUp) */
-  CHKERRQ(PetscMalloc1(nleaves,&ilocal));
-  CHKERRQ(PetscMalloc1(nleaves,&iremote));
+  PetscCall(PetscMalloc1(nleaves,&ilocal));
+  PetscCall(PetscMalloc1(nleaves,&iremote));
   for (i=0; i<nleaves; i++) { /* 1:1 map from roots to leaves */
     ilocal[i]        = leaves[i];
     iremote[i].rank  = leaves[i];
     iremote[i].index = leaves[i];
   }
-  CHKERRQ(PetscSFCreate(comm,&esf));
-  CHKERRQ(PetscSFSetType(esf,PETSCSFBASIC)); /* This optimized routine can only create a basic sf */
-  CHKERRQ(PetscSFSetGraph(esf,sf->nleaves,nleaves,ilocal,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER));
+  PetscCall(PetscSFCreate(comm,&esf));
+  PetscCall(PetscSFSetType(esf,PETSCSFBASIC)); /* This optimized routine can only create a basic sf */
+  PetscCall(PetscSFSetGraph(esf,sf->nleaves,nleaves,ilocal,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER));
 
   /* As if we are calling PetscSFSetUpRanks(esf,self's group) */
-  CHKERRQ(PetscMalloc4(nleaves,&esf->ranks,nleaves+1,&esf->roffset,nleaves,&esf->rmine,nleaves,&esf->rremote));
+  PetscCall(PetscMalloc4(nleaves,&esf->ranks,nleaves+1,&esf->roffset,nleaves,&esf->rmine,nleaves,&esf->rremote));
   esf->nranks     = nleaves;
   esf->ndranks    = ndranks;
   esf->roffset[0] = 0;
@@ -150,14 +150,14 @@ static PetscErrorCode PetscSFCreateEmbeddedRootSF_Alltoall(PetscSF sf,PetscInt n
 
   /* Set up esf->data, the incoming communication (i.e., recv info), which is usually done by PetscSFSetUp_Basic */
   bas  = (PetscSF_Basic*)esf->data;
-  CHKERRQ(PetscMalloc2(nroots,&bas->iranks,nroots+1,&bas->ioffset));
-  CHKERRQ(PetscMalloc1(nroots,&bas->irootloc));
+  PetscCall(PetscMalloc2(nroots,&bas->iranks,nroots+1,&bas->ioffset));
+  PetscCall(PetscMalloc1(nroots,&bas->irootloc));
   /* Move myself ahead if rank is in roots[], since I am a distinguished irank */
   ndiranks = 0;
   for (i=0; i<nroots; i++) {
     if (roots[i] == rank) {roots[i] = -rank; ndiranks = 1; break;}
   }
-  CHKERRQ(PetscSortMPIInt(nroots,roots));
+  PetscCall(PetscSortMPIInt(nroots,roots));
   if (nroots && roots[0] < 0) roots[0] = rank;
 
   bas->niranks    = nroots;
@@ -175,7 +175,7 @@ static PetscErrorCode PetscSFCreateEmbeddedRootSF_Alltoall(PetscSF sf,PetscInt n
   bas->nrootreqs  = bas->niranks - bas->ndiranks;
   esf->persistent = PETSC_TRUE;
   /* Setup packing related fields */
-  CHKERRQ(PetscSFSetUpPackFields(esf));
+  PetscCall(PetscSFSetUpPackFields(esf));
 
   esf->setupcalled = PETSC_TRUE; /* We have done setup ourselves! */
   *newsf = esf;
@@ -210,7 +210,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Alltoall(PetscSF sf)
   sf->ops->CreateLocalSF        = PetscSFCreateLocalSF_Alltoall;
   sf->ops->CreateEmbeddedRootSF = PetscSFCreateEmbeddedRootSF_Alltoall;
 
-  CHKERRQ(PetscNewLog(sf,&dat));
+  PetscCall(PetscNewLog(sf,&dat));
   sf->data = (void*)dat;
   PetscFunctionReturn(0);
 }

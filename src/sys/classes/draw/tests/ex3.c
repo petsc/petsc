@@ -23,49 +23,49 @@ int main(int argc,char **argv)
 
   toplabel = "Top Label"; xlabel = "X-axis Label"; ylabel = "Y-axis Label"; legend = "Legend";
 
-  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-x",&x,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-y",&y,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-width",&width,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-height",&height,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-nports",&nports,&useports));
-  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-nolegend",&flg));
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-x",&x,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-y",&y,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-width",&width,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-height",&height,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-nports",&nports,&useports));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-nolegend",&flg));
   if (flg) legend = NULL;
-  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-notoplabel",&flg));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-notoplabel",&flg));
   if (flg) toplabel = NULL;
-  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-noxlabel",&flg));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-noxlabel",&flg));
   if (flg) xlabel = NULL;
-  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-noylabel",&flg));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-noylabel",&flg));
   if (flg) ylabel = NULL;
-  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-nolabels",&flg));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-nolabels",&flg));
   if (flg) {toplabel = NULL; xlabel = NULL; ylabel = NULL;}
 
-  CHKERRQ(PetscDrawCreate(PETSC_COMM_WORLD,0,"Title",x,y,width,height,&draw));
-  CHKERRQ(PetscDrawSetFromOptions(draw));
+  PetscCall(PetscDrawCreate(PETSC_COMM_WORLD,0,"Title",x,y,width,height,&draw));
+  PetscCall(PetscDrawSetFromOptions(draw));
   if (useports) {
-    CHKERRQ(PetscDrawViewPortsCreate(draw,nports,&ports));
-    CHKERRQ(PetscDrawViewPortsSet(ports,0));
+    PetscCall(PetscDrawViewPortsCreate(draw,nports,&ports));
+    PetscCall(PetscDrawViewPortsSet(ports,0));
   }
-  CHKERRQ(PetscDrawLGCreate(draw,1,&lg));
-  CHKERRQ(PetscDrawLGSetUseMarkers(lg,PETSC_TRUE));
-  CHKERRQ(PetscDrawLGGetAxis(lg,&axis));
-  CHKERRQ(PetscDrawAxisSetColors(axis,PETSC_DRAW_BLACK,PETSC_DRAW_RED,PETSC_DRAW_BLUE));
-  CHKERRQ(PetscDrawAxisSetLabels(axis,toplabel,xlabel,ylabel));
-  CHKERRQ(PetscDrawLGSetLegend(lg,&legend));
-  CHKERRQ(PetscDrawLGSetFromOptions(lg));
+  PetscCall(PetscDrawLGCreate(draw,1,&lg));
+  PetscCall(PetscDrawLGSetUseMarkers(lg,PETSC_TRUE));
+  PetscCall(PetscDrawLGGetAxis(lg,&axis));
+  PetscCall(PetscDrawAxisSetColors(axis,PETSC_DRAW_BLACK,PETSC_DRAW_RED,PETSC_DRAW_BLUE));
+  PetscCall(PetscDrawAxisSetLabels(axis,toplabel,xlabel,ylabel));
+  PetscCall(PetscDrawLGSetLegend(lg,&legend));
+  PetscCall(PetscDrawLGSetFromOptions(lg));
 
   for (i=0; i<=n; i++) {
     xd   = (PetscReal)(i - 5); yd = xd*xd;
-    CHKERRQ(PetscDrawLGAddPoint(lg,&xd,&yd));
+    PetscCall(PetscDrawLGAddPoint(lg,&xd,&yd));
   }
-  CHKERRQ(PetscDrawLGDraw(lg));
-  CHKERRQ(PetscDrawLGSave(lg));
+  PetscCall(PetscDrawLGDraw(lg));
+  PetscCall(PetscDrawLGSave(lg));
 
-  CHKERRQ(PetscDrawViewPortsDestroy(ports));
-  CHKERRQ(PetscDrawLGDestroy(&lg));
-  CHKERRQ(PetscDrawDestroy(&draw));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscDrawViewPortsDestroy(ports));
+  PetscCall(PetscDrawLGDestroy(&lg));
+  PetscCall(PetscDrawDestroy(&draw));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

@@ -29,7 +29,7 @@ PETSC_EXTERN PetscErrorCode MatCheckCompressedRow(Mat A,PetscInt nrows,Mat_Compr
 
   PetscFunctionBegin;
   /* in case this is being reused, delete old space */
-  CHKERRQ(PetscFree2(compressedrow->i,compressedrow->rindex));
+  PetscCall(PetscFree2(compressedrow->i,compressedrow->rindex));
 
   /* compute number of zero rows */
   nrows = mbs - nrows;
@@ -38,15 +38,15 @@ PETSC_EXTERN PetscErrorCode MatCheckCompressedRow(Mat A,PetscInt nrows,Mat_Compr
   if (nrows < ratio*mbs) {
     compressedrow->use = PETSC_FALSE;
 
-    CHKERRQ(PetscInfo(A,"Found the ratio (num_zerorows %d)/(num_localrows %d) < %g. Do not use CompressedRow routines.\n",nrows,mbs,(double)ratio));
+    PetscCall(PetscInfo(A,"Found the ratio (num_zerorows %d)/(num_localrows %d) < %g. Do not use CompressedRow routines.\n",nrows,mbs,(double)ratio));
   } else {
     compressedrow->use = PETSC_TRUE;
 
-    CHKERRQ(PetscInfo(A,"Found the ratio (num_zerorows %d)/(num_localrows %d) > %g. Use CompressedRow routines.\n",nrows,mbs,(double)ratio));
+    PetscCall(PetscInfo(A,"Found the ratio (num_zerorows %d)/(num_localrows %d) > %g. Use CompressedRow routines.\n",nrows,mbs,(double)ratio));
 
     /* set compressed row format */
     nrows  = mbs - nrows; /* num of non-zero rows */
-    CHKERRQ(PetscMalloc2(nrows+1,&cpi,nrows,&ridx));
+    PetscCall(PetscMalloc2(nrows+1,&cpi,nrows,&ridx));
     row    = 0;
     cpi[0] = 0;
     for (i=0; i<mbs; i++) {

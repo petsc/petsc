@@ -13,15 +13,15 @@ PetscErrorCode VecDot_Seq(Vec xin,Vec yin,PetscScalar *z)
   PetscBLASInt      one = 1,bn = 0;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscBLASIntCast(xin->map->n,&bn));
-  CHKERRQ(VecGetArrayRead(xin,&xa));
-  CHKERRQ(VecGetArrayRead(yin,&ya));
+  PetscCall(PetscBLASIntCast(xin->map->n,&bn));
+  PetscCall(VecGetArrayRead(xin,&xa));
+  PetscCall(VecGetArrayRead(yin,&ya));
   /* arguments ya, xa are reversed because BLAS complex conjugates the first argument, PETSc the second */
   PetscStackCallBLAS("BLASdot",*z   = BLASdot_(&bn,ya,&one,xa,&one));
-  CHKERRQ(VecRestoreArrayRead(xin,&xa));
-  CHKERRQ(VecRestoreArrayRead(yin,&ya));
+  PetscCall(VecRestoreArrayRead(xin,&xa));
+  PetscCall(VecRestoreArrayRead(yin,&ya));
   if (xin->map->n > 0) {
-    CHKERRQ(PetscLogFlops(2.0*xin->map->n-1));
+    PetscCall(PetscLogFlops(2.0*xin->map->n-1));
   }
   PetscFunctionReturn(0);
 }
@@ -32,14 +32,14 @@ PetscErrorCode VecTDot_Seq(Vec xin,Vec yin,PetscScalar *z)
   PetscBLASInt      one = 1,bn = 0;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscBLASIntCast(xin->map->n,&bn));
-  CHKERRQ(VecGetArrayRead(xin,&xa));
-  CHKERRQ(VecGetArrayRead(yin,&ya));
+  PetscCall(PetscBLASIntCast(xin->map->n,&bn));
+  PetscCall(VecGetArrayRead(xin,&xa));
+  PetscCall(VecGetArrayRead(yin,&ya));
   PetscStackCallBLAS("BLASdot",*z   = BLASdotu_(&bn,xa,&one,ya,&one));
-  CHKERRQ(VecRestoreArrayRead(xin,&xa));
-  CHKERRQ(VecRestoreArrayRead(yin,&ya));
+  PetscCall(VecRestoreArrayRead(xin,&xa));
+  PetscCall(VecRestoreArrayRead(yin,&ya));
   if (xin->map->n > 0) {
-    CHKERRQ(PetscLogFlops(2.0*xin->map->n-1));
+    PetscCall(PetscLogFlops(2.0*xin->map->n-1));
   }
   PetscFunctionReturn(0);
 }
@@ -49,16 +49,16 @@ PetscErrorCode VecScale_Seq(Vec xin, PetscScalar alpha)
   PetscBLASInt   one = 1,bn;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscBLASIntCast(xin->map->n,&bn));
+  PetscCall(PetscBLASIntCast(xin->map->n,&bn));
   if (alpha == (PetscScalar)0.0) {
-    CHKERRQ(VecSet_Seq(xin,alpha));
+    PetscCall(VecSet_Seq(xin,alpha));
   } else if (alpha != (PetscScalar)1.0) {
     PetscScalar a = alpha,*xarray;
-    CHKERRQ(VecGetArray(xin,&xarray));
+    PetscCall(VecGetArray(xin,&xarray));
     PetscStackCallBLAS("BLASscal",BLASscal_(&bn,&a,xarray,&one));
-    CHKERRQ(VecRestoreArray(xin,&xarray));
+    PetscCall(VecRestoreArray(xin,&xarray));
   }
-  CHKERRQ(PetscLogFlops(xin->map->n));
+  PetscCall(PetscLogFlops(xin->map->n));
   PetscFunctionReturn(0);
 }
 
@@ -69,15 +69,15 @@ PetscErrorCode VecAXPY_Seq(Vec yin,PetscScalar alpha,Vec xin)
   PetscBLASInt      one = 1,bn;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscBLASIntCast(yin->map->n,&bn));
+  PetscCall(PetscBLASIntCast(yin->map->n,&bn));
   /* assume that the BLAS handles alpha == 1.0 efficiently since we have no fast code for it */
   if (alpha != (PetscScalar)0.0) {
-    CHKERRQ(VecGetArrayRead(xin,&xarray));
-    CHKERRQ(VecGetArray(yin,&yarray));
+    PetscCall(VecGetArrayRead(xin,&xarray));
+    PetscCall(VecGetArray(yin,&yarray));
     PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&bn,&alpha,xarray,&one,yarray,&one));
-    CHKERRQ(VecRestoreArrayRead(xin,&xarray));
-    CHKERRQ(VecRestoreArray(yin,&yarray));
-    CHKERRQ(PetscLogFlops(2.0*yin->map->n));
+    PetscCall(VecRestoreArrayRead(xin,&xarray));
+    PetscCall(VecRestoreArray(yin,&yarray));
+    PetscCall(PetscLogFlops(2.0*yin->map->n));
   }
   PetscFunctionReturn(0);
 }
@@ -90,25 +90,25 @@ PetscErrorCode VecAXPBY_Seq(Vec yin,PetscScalar a,PetscScalar b,Vec xin)
 
   PetscFunctionBegin;
   if (a == (PetscScalar)0.0) {
-    CHKERRQ(VecScale_Seq(yin,b));
+    PetscCall(VecScale_Seq(yin,b));
   } else if (b == (PetscScalar)1.0) {
-    CHKERRQ(VecAXPY_Seq(yin,a,xin));
+    PetscCall(VecAXPY_Seq(yin,a,xin));
   } else if (a == (PetscScalar)1.0) {
-    CHKERRQ(VecAYPX_Seq(yin,b,xin));
+    PetscCall(VecAYPX_Seq(yin,b,xin));
   } else if (b == (PetscScalar)0.0) {
-    CHKERRQ(VecGetArrayRead(xin,&xx));
-    CHKERRQ(VecGetArray(yin,(PetscScalar**)&yy));
+    PetscCall(VecGetArrayRead(xin,&xx));
+    PetscCall(VecGetArray(yin,(PetscScalar**)&yy));
     for (i=0; i<n; i++) yy[i] = a*xx[i];
-    CHKERRQ(VecRestoreArrayRead(xin,&xx));
-    CHKERRQ(VecRestoreArray(yin,(PetscScalar**)&yy));
-    CHKERRQ(PetscLogFlops(xin->map->n));
+    PetscCall(VecRestoreArrayRead(xin,&xx));
+    PetscCall(VecRestoreArray(yin,(PetscScalar**)&yy));
+    PetscCall(PetscLogFlops(xin->map->n));
   } else {
-    CHKERRQ(VecGetArrayRead(xin,&xx));
-    CHKERRQ(VecGetArray(yin,(PetscScalar**)&yy));
+    PetscCall(VecGetArrayRead(xin,&xx));
+    PetscCall(VecGetArray(yin,(PetscScalar**)&yy));
     for (i=0; i<n; i++) yy[i] = a*xx[i] + b*yy[i];
-    CHKERRQ(VecRestoreArrayRead(xin,&xx));
-    CHKERRQ(VecRestoreArray(yin,(PetscScalar**)&yy));
-    CHKERRQ(PetscLogFlops(3.0*xin->map->n));
+    PetscCall(VecRestoreArrayRead(xin,&xx));
+    PetscCall(VecRestoreArray(yin,(PetscScalar**)&yy));
+    PetscCall(PetscLogFlops(3.0*xin->map->n));
   }
   PetscFunctionReturn(0);
 }
@@ -120,24 +120,24 @@ PetscErrorCode VecAXPBYPCZ_Seq(Vec zin,PetscScalar alpha,PetscScalar beta,PetscS
   PetscScalar       *zz;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(xin,&xx));
-  CHKERRQ(VecGetArrayRead(yin,&yy));
-  CHKERRQ(VecGetArray(zin,&zz));
+  PetscCall(VecGetArrayRead(xin,&xx));
+  PetscCall(VecGetArrayRead(yin,&yy));
+  PetscCall(VecGetArray(zin,&zz));
   if (alpha == (PetscScalar)1.0) {
     for (i=0; i<n; i++) zz[i] = xx[i] + beta*yy[i] + gamma*zz[i];
-    CHKERRQ(PetscLogFlops(4.0*n));
+    PetscCall(PetscLogFlops(4.0*n));
   } else if (gamma == (PetscScalar)1.0) {
     for (i=0; i<n; i++) zz[i] = alpha*xx[i] + beta*yy[i] + zz[i];
-    CHKERRQ(PetscLogFlops(4.0*n));
+    PetscCall(PetscLogFlops(4.0*n));
   } else if (gamma == (PetscScalar)0.0) {
     for (i=0; i<n; i++) zz[i] = alpha*xx[i] + beta*yy[i];
-    CHKERRQ(PetscLogFlops(3.0*n));
+    PetscCall(PetscLogFlops(3.0*n));
   } else {
     for (i=0; i<n; i++) zz[i] = alpha*xx[i] + beta*yy[i] + gamma*zz[i];
-    CHKERRQ(PetscLogFlops(5.0*n));
+    PetscCall(PetscLogFlops(5.0*n));
   }
-  CHKERRQ(VecRestoreArrayRead(xin,&xx));
-  CHKERRQ(VecRestoreArrayRead(yin,&yy));
-  CHKERRQ(VecRestoreArray(zin,&zz));
+  PetscCall(VecRestoreArrayRead(xin,&xx));
+  PetscCall(VecRestoreArrayRead(yin,&yy));
+  PetscCall(VecRestoreArray(zin,&zz));
   PetscFunctionReturn(0);
 }

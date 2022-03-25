@@ -28,10 +28,10 @@ PetscErrorCode  PetscViewersDestroy(PetscViewers *v)
   PetscFunctionBegin;
   if (!*v) PetscFunctionReturn(0);
   for (i=0; i<(*v)->n; i++) {
-    CHKERRQ(PetscViewerDestroy(&(*v)->viewer[i]));
+    PetscCall(PetscViewerDestroy(&(*v)->viewer[i]));
   }
-  CHKERRQ(PetscFree((*v)->viewer));
-  CHKERRQ(PetscFree(*v));
+  PetscCall(PetscFree((*v)->viewer));
+  PetscCall(PetscFree(*v));
   PetscFunctionReturn(0);
 }
 
@@ -55,11 +55,11 @@ PetscErrorCode  PetscViewersCreate(MPI_Comm comm,PetscViewers *v)
 {
   PetscFunctionBegin;
   PetscValidPointer(v,2);
-  CHKERRQ(PetscNew(v));
+  PetscCall(PetscNew(v));
   (*v)->n    = 64;
   (*v)->comm = comm;
 
-  CHKERRQ(PetscCalloc1(64,&(*v)->viewer));
+  PetscCall(PetscCalloc1(64,&(*v)->viewer));
   PetscFunctionReturn(0);
 }
 
@@ -90,14 +90,14 @@ PetscErrorCode  PetscViewersGetViewer(PetscViewers viewers,PetscInt n,PetscViewe
     PetscViewer *v;
     int         newn = n + 64; /* add 64 new ones at a time */
 
-    CHKERRQ(PetscCalloc1(newn,&v));
-    CHKERRQ(PetscArraycpy(v,viewers->viewer,viewers->n));
-    CHKERRQ(PetscFree(viewers->viewer));
+    PetscCall(PetscCalloc1(newn,&v));
+    PetscCall(PetscArraycpy(v,viewers->viewer,viewers->n));
+    PetscCall(PetscFree(viewers->viewer));
 
     viewers->viewer = v;
   }
   if (!viewers->viewer[n]) {
-    CHKERRQ(PetscViewerCreate(viewers->comm,&viewers->viewer[n]));
+    PetscCall(PetscViewerCreate(viewers->comm,&viewers->viewer[n]));
   }
   *viewer = viewers->viewer[n];
   PetscFunctionReturn(0);
@@ -136,7 +136,7 @@ PetscErrorCode PetscMonitorCompare(PetscErrorCode (*nmon)(void), void *nmctx, Pe
     }
     if (*identical) {
       if (mdestroy) {
-        CHKERRQ((*mdestroy)(&nmctx));
+        PetscCall((*mdestroy)(&nmctx));
       }
     }
   }

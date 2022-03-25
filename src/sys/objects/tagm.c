@@ -30,7 +30,7 @@
 PetscErrorCode  PetscObjectGetNewTag(PetscObject obj,PetscMPIInt *tag)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscCommGetNewTag(obj->comm,tag));
+  PetscCall(PetscCommGetNewTag(obj->comm,tag));
   PetscFunctionReturn(0);
 }
 
@@ -60,13 +60,13 @@ PetscErrorCode  PetscCommGetNewTag(MPI_Comm comm,PetscMPIInt *tag)
   PetscFunctionBegin;
   PetscValidIntPointer(tag,2);
 
-  CHKERRMPI(MPI_Comm_get_attr(comm,Petsc_Counter_keyval,&counter,&flg));
+  PetscCallMPI(MPI_Comm_get_attr(comm,Petsc_Counter_keyval,&counter,&flg));
   PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Bad MPI communicator supplied; must be a PETSc communicator");
 
   if (counter->tag < 1) {
 
-    CHKERRQ(PetscInfo(NULL,"Out of tags for object, starting to recycle. Comm reference count %" PetscInt_FMT "\n",counter->refcount));
-    CHKERRMPI(MPI_Comm_get_attr(MPI_COMM_WORLD,MPI_TAG_UB,&maxval,&flg));
+    PetscCall(PetscInfo(NULL,"Out of tags for object, starting to recycle. Comm reference count %" PetscInt_FMT "\n",counter->refcount));
+    PetscCallMPI(MPI_Comm_get_attr(MPI_COMM_WORLD,MPI_TAG_UB,&maxval,&flg));
     PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_LIB,"MPI error: MPI_Comm_get_attr() is not returning a MPI_TAG_UB");
     counter->tag = *maxval - 128; /* hope that any still active tags were issued right at the beginning of the run */
   }
@@ -76,7 +76,7 @@ PetscErrorCode  PetscCommGetNewTag(MPI_Comm comm,PetscMPIInt *tag)
     /*
      Hanging here means that some processes have called PetscCommGetNewTag() and others have not.
      */
-    CHKERRMPI(MPI_Barrier(comm));
+    PetscCallMPI(MPI_Barrier(comm));
   }
   PetscFunctionReturn(0);
 }
@@ -109,8 +109,8 @@ PetscErrorCode  PetscCommGetComm(MPI_Comm comm_in,MPI_Comm *comm_out)
   PetscMPIInt      flg;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscSpinlockLock(&PetscCommSpinLock));
-  CHKERRMPI(MPI_Comm_get_attr(comm_in,Petsc_Counter_keyval,&counter,&flg));
+  PetscCall(PetscSpinlockLock(&PetscCommSpinLock));
+  PetscCallMPI(MPI_Comm_get_attr(comm_in,Petsc_Counter_keyval,&counter,&flg));
   PetscCheck(flg,comm_in,PETSC_ERR_ARG_WRONGSTATE,"Requires a PETSc communicator as input, do not use something like MPI_COMM_WORLD");
 
   if (counter->comms) {
@@ -118,12 +118,12 @@ PetscErrorCode  PetscCommGetComm(MPI_Comm comm_in,MPI_Comm *comm_out)
 
     *comm_out = pcomms->comm;
     counter->comms = pcomms->next;
-    CHKERRQ(PetscFree(pcomms));
-    CHKERRQ(PetscInfo(NULL,"Reusing a communicator %ld %ld\n",(long)comm_in,(long)*comm_out));
+    PetscCall(PetscFree(pcomms));
+    PetscCall(PetscInfo(NULL,"Reusing a communicator %ld %ld\n",(long)comm_in,(long)*comm_out));
   } else {
-    CHKERRMPI(MPI_Comm_dup(comm_in,comm_out));
+    PetscCallMPI(MPI_Comm_dup(comm_in,comm_out));
   }
-  CHKERRQ(PetscSpinlockUnlock(&PetscCommSpinLock));
+  PetscCall(PetscSpinlockUnlock(&PetscCommSpinLock));
   PetscFunctionReturn(0);
 }
 
@@ -147,11 +147,11 @@ PetscErrorCode PetscCommRestoreComm(MPI_Comm comm_in,MPI_Comm *comm_out)
   struct PetscCommStash *pcomms,*ncomm;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscSpinlockLock(&PetscCommSpinLock));
-  CHKERRMPI(MPI_Comm_get_attr(comm_in,Petsc_Counter_keyval,&counter,&flg));
+  PetscCall(PetscSpinlockLock(&PetscCommSpinLock));
+  PetscCallMPI(MPI_Comm_get_attr(comm_in,Petsc_Counter_keyval,&counter,&flg));
   PetscCheck(flg,comm_in,PETSC_ERR_ARG_WRONGSTATE,"Requires a PETSc communicator as input, do not use something like MPI_COMM_WORLD");
 
-  CHKERRQ(PetscMalloc(sizeof(struct PetscCommStash),&ncomm));
+  PetscCall(PetscMalloc(sizeof(struct PetscCommStash),&ncomm));
   ncomm->comm = *comm_out;
   ncomm->next = NULL;
   pcomms = counter->comms;
@@ -162,7 +162,7 @@ PetscErrorCode PetscCommRestoreComm(MPI_Comm comm_in,MPI_Comm *comm_out)
     counter->comms = ncomm;
   }
   *comm_out = 0;
-  CHKERRQ(PetscSpinlockUnlock(&PetscCommSpinLock));
+  PetscCall(PetscSpinlockUnlock(&PetscCommSpinLock));
   PetscFunctionReturn(0);
 }
 
@@ -195,34 +195,34 @@ PetscErrorCode  PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPII
   PetscMPIInt      *maxval,flg;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscSpinlockLock(&PetscCommSpinLock));
-  CHKERRMPI(MPI_Comm_get_attr(comm_in,Petsc_Counter_keyval,&counter,&flg));
+  PetscCall(PetscSpinlockLock(&PetscCommSpinLock));
+  PetscCallMPI(MPI_Comm_get_attr(comm_in,Petsc_Counter_keyval,&counter,&flg));
 
   if (!flg) {  /* this is NOT a PETSc comm */
     union {MPI_Comm comm; void *ptr;} ucomm;
     /* check if this communicator has a PETSc communicator imbedded in it */
-    CHKERRMPI(MPI_Comm_get_attr(comm_in,Petsc_InnerComm_keyval,&ucomm,&flg));
+    PetscCallMPI(MPI_Comm_get_attr(comm_in,Petsc_InnerComm_keyval,&ucomm,&flg));
     if (!flg) {
       /* This communicator is not yet known to this system, so we duplicate it and make an internal communicator */
-      CHKERRMPI(MPI_Comm_dup(comm_in,comm_out));
-      CHKERRMPI(MPI_Comm_get_attr(MPI_COMM_WORLD,MPI_TAG_UB,&maxval,&flg));
+      PetscCallMPI(MPI_Comm_dup(comm_in,comm_out));
+      PetscCallMPI(MPI_Comm_get_attr(MPI_COMM_WORLD,MPI_TAG_UB,&maxval,&flg));
       PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_LIB,"MPI error: MPI_Comm_get_attr() is not returning a MPI_TAG_UB");
-      CHKERRQ(PetscNew(&counter)); /* all fields of counter are zero'ed */
+      PetscCall(PetscNew(&counter)); /* all fields of counter are zero'ed */
       counter->tag = *maxval;
-      CHKERRMPI(MPI_Comm_set_attr(*comm_out,Petsc_Counter_keyval,counter));
-      CHKERRQ(PetscInfo(NULL,"Duplicating a communicator %ld %ld max tags = %d\n",(long)comm_in,(long)*comm_out,*maxval));
+      PetscCallMPI(MPI_Comm_set_attr(*comm_out,Petsc_Counter_keyval,counter));
+      PetscCall(PetscInfo(NULL,"Duplicating a communicator %ld %ld max tags = %d\n",(long)comm_in,(long)*comm_out,*maxval));
 
       /* save PETSc communicator inside user communicator, so we can get it next time */
       ucomm.comm = *comm_out;   /* ONLY the comm part of the union is significant. */
-      CHKERRMPI(MPI_Comm_set_attr(comm_in,Petsc_InnerComm_keyval,ucomm.ptr));
+      PetscCallMPI(MPI_Comm_set_attr(comm_in,Petsc_InnerComm_keyval,ucomm.ptr));
       ucomm.comm = comm_in;
-      CHKERRMPI(MPI_Comm_set_attr(*comm_out,Petsc_OuterComm_keyval,ucomm.ptr));
+      PetscCallMPI(MPI_Comm_set_attr(*comm_out,Petsc_OuterComm_keyval,ucomm.ptr));
     } else {
       *comm_out = ucomm.comm;
       /* pull out the inner MPI_Comm and hand it back to the caller */
-      CHKERRMPI(MPI_Comm_get_attr(*comm_out,Petsc_Counter_keyval,&counter,&flg));
+      PetscCallMPI(MPI_Comm_get_attr(*comm_out,Petsc_Counter_keyval,&counter,&flg));
       PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inner PETSc communicator does not have its tag/name counter attribute set");
-      CHKERRQ(PetscInfo(NULL,"Using internal PETSc communicator %ld %ld\n",(long)comm_in,(long)*comm_out));
+      PetscCall(PetscInfo(NULL,"Using internal PETSc communicator %ld %ld\n",(long)comm_in,(long)*comm_out));
     }
   } else *comm_out = comm_in;
 
@@ -232,12 +232,12 @@ PetscErrorCode  PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPII
      This likley means that a subset of processes in a MPI_Comm have attempted to create a PetscObject!
      ALL processes that share a communicator MUST shared objects created from that communicator.
      */
-    CHKERRMPI(MPI_Barrier(comm_in));
+    PetscCallMPI(MPI_Barrier(comm_in));
   }
 
   if (counter->tag < 1) {
-    CHKERRQ(PetscInfo(NULL,"Out of tags for object, starting to recycle. Comm reference count %" PetscInt_FMT "\n",counter->refcount));
-    CHKERRMPI(MPI_Comm_get_attr(MPI_COMM_WORLD,MPI_TAG_UB,&maxval,&flg));
+    PetscCall(PetscInfo(NULL,"Out of tags for object, starting to recycle. Comm reference count %" PetscInt_FMT "\n",counter->refcount));
+    PetscCallMPI(MPI_Comm_get_attr(MPI_COMM_WORLD,MPI_TAG_UB,&maxval,&flg));
     PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_LIB,"MPI error: MPI_Comm_get_attr() is not returning a MPI_TAG_UB");
     counter->tag = *maxval - 128; /* hope that any still active tags were issued right at the beginning of the run */
   }
@@ -245,7 +245,7 @@ PetscErrorCode  PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPII
   if (first_tag) *first_tag = counter->tag--;
 
   counter->refcount++; /* number of references to this comm */
-  CHKERRQ(PetscSpinlockUnlock(&PetscCommSpinLock));
+  PetscCall(PetscSpinlockUnlock(&PetscCommSpinLock));
   PetscFunctionReturn(0);
 }
 
@@ -270,13 +270,13 @@ PetscErrorCode  PetscCommDestroy(MPI_Comm *comm)
 
   PetscFunctionBegin;
   if (*comm == MPI_COMM_NULL) PetscFunctionReturn(0);
-  CHKERRQ(PetscSpinlockLock(&PetscCommSpinLock));
-  CHKERRMPI(MPI_Comm_get_attr(icomm,Petsc_Counter_keyval,&counter,&flg));
+  PetscCall(PetscSpinlockLock(&PetscCommSpinLock));
+  PetscCallMPI(MPI_Comm_get_attr(icomm,Petsc_Counter_keyval,&counter,&flg));
   if (!flg) { /* not a PETSc comm, check if it has an inner comm */
-    CHKERRMPI(MPI_Comm_get_attr(icomm,Petsc_InnerComm_keyval,&ucomm,&flg));
+    PetscCallMPI(MPI_Comm_get_attr(icomm,Petsc_InnerComm_keyval,&ucomm,&flg));
     PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"MPI_Comm does not have tag/name counter nor does it have inner MPI_Comm");
     icomm = ucomm.comm;
-    CHKERRMPI(MPI_Comm_get_attr(icomm,Petsc_Counter_keyval,&counter,&flg));
+    PetscCallMPI(MPI_Comm_get_attr(icomm,Petsc_Counter_keyval,&counter,&flg));
     PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Inner MPI_Comm does not have expected tag/name counter, problem with corrupted memory");
   }
 
@@ -284,20 +284,20 @@ PetscErrorCode  PetscCommDestroy(MPI_Comm *comm)
 
   if (!counter->refcount) {
     /* if MPI_Comm has outer comm then remove reference to inner MPI_Comm from outer MPI_Comm */
-    CHKERRMPI(MPI_Comm_get_attr(icomm,Petsc_OuterComm_keyval,&ucomm,&flg));
+    PetscCallMPI(MPI_Comm_get_attr(icomm,Petsc_OuterComm_keyval,&ucomm,&flg));
     if (flg) {
       ocomm = ucomm.comm;
-      CHKERRMPI(MPI_Comm_get_attr(ocomm,Petsc_InnerComm_keyval,&ucomm,&flg));
+      PetscCallMPI(MPI_Comm_get_attr(ocomm,Petsc_InnerComm_keyval,&ucomm,&flg));
       if (flg) {
-        CHKERRMPI(MPI_Comm_delete_attr(ocomm,Petsc_InnerComm_keyval));
+        PetscCallMPI(MPI_Comm_delete_attr(ocomm,Petsc_InnerComm_keyval));
       } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Outer MPI_Comm %ld does not have expected reference to inner comm %ld, problem with corrupted memory",(long int)ocomm,(long int)icomm);
     }
 
-    CHKERRQ(PetscInfo(NULL,"Deleting PETSc MPI_Comm %ld\n",(long)icomm));
-    CHKERRMPI(MPI_Comm_free(&icomm));
+    PetscCall(PetscInfo(NULL,"Deleting PETSc MPI_Comm %ld\n",(long)icomm));
+    PetscCallMPI(MPI_Comm_free(&icomm));
   }
   *comm = MPI_COMM_NULL;
-  CHKERRQ(PetscSpinlockUnlock(&PetscCommSpinLock));
+  PetscCall(PetscSpinlockUnlock(&PetscCommSpinLock));
   PetscFunctionReturn(0);
 }
 
@@ -329,18 +329,18 @@ PetscErrorCode  PetscObjectsListGetGlobalNumbering(MPI_Comm comm, PetscInt len, 
   PetscValidPointer(objlist,3);
   if (!count && !numbering) PetscFunctionReturn(0);
 
-  CHKERRMPI(MPI_Comm_size(comm, &size));
-  CHKERRMPI(MPI_Comm_rank(comm, &rank));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
   roots = 0;
   for (i = 0; i < len; ++i) {
     PetscMPIInt srank;
-    CHKERRMPI(MPI_Comm_rank(objlist[i]->comm, &srank));
+    PetscCallMPI(MPI_Comm_rank(objlist[i]->comm, &srank));
     /* Am I the root of the i-th subcomm? */
     if (!srank) ++roots;
   }
   if (count) {
     /* Obtain the sum of all roots -- the global number of distinct subcomms. */
-    CHKERRMPI(MPIU_Allreduce(&roots,count,1,MPIU_INT,MPI_SUM,comm));
+    PetscCallMPI(MPIU_Allreduce(&roots,count,1,MPIU_INT,MPI_SUM,comm));
   }
   if (numbering) {
     /* Introduce a global numbering for subcomms, initially known only by subcomm roots. */
@@ -349,7 +349,7 @@ PetscErrorCode  PetscObjectsListGetGlobalNumbering(MPI_Comm comm, PetscInt len, 
       and make it global by calculating the shift among all of the roots.
       The roots are ordered using the comm ordering.
     */
-    CHKERRMPI(MPI_Scan(&roots,&offset,1,MPIU_INT,MPI_SUM,comm));
+    PetscCallMPI(MPI_Scan(&roots,&offset,1,MPIU_INT,MPI_SUM,comm));
     offset -= roots;
     /* Now we are ready to broadcast global subcomm numbers within each subcomm.*/
     /*
@@ -361,8 +361,8 @@ PetscErrorCode  PetscObjectsListGetGlobalNumbering(MPI_Comm comm, PetscInt len, 
       PetscMPIInt srank;
       numbering[i] = offset + roots; /* only meaningful if !srank. */
 
-      CHKERRMPI(MPI_Comm_rank(objlist[i]->comm, &srank));
-      CHKERRMPI(MPI_Bcast(numbering+i,1,MPIU_INT,0,objlist[i]->comm));
+      PetscCallMPI(MPI_Comm_rank(objlist[i]->comm, &srank));
+      PetscCallMPI(MPI_Bcast(numbering+i,1,MPIU_INT,0,objlist[i]->comm));
       if (!srank) ++roots;
     }
   }

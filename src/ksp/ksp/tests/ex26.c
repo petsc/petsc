@@ -51,96 +51,96 @@ int main(int argc,char **argv)
   KSP            ksp;
   PetscBool      Brand = PETSC_FALSE,flg;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   /* set up discretization matrix for fine grid */
   fine_ctx.mx = 9;
   fine_ctx.my = 9;
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-mx",&fine_ctx.mx,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-my",&fine_ctx.my,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-nrhs",&nrhs,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-Nx",&Nx,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-Ny",&Ny,NULL));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-rand",&Brand,NULL));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Fine grid size %D by %D\n",fine_ctx.mx,fine_ctx.my));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-mx",&fine_ctx.mx,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-my",&fine_ctx.my,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-nrhs",&nrhs,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-Nx",&Nx,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-Ny",&Ny,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-rand",&Brand,NULL));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Fine grid size %D by %D\n",fine_ctx.mx,fine_ctx.my));
 
   /* Set up distributed array for fine grid */
-  CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,fine_ctx.mx,fine_ctx.my,Nx,Ny,1,1,NULL,NULL,&fine_ctx.da));
-  CHKERRQ(DMSetFromOptions(fine_ctx.da));
-  CHKERRQ(DMSetUp(fine_ctx.da));
-  CHKERRQ(DMCreateGlobalVector(fine_ctx.da,&fine_ctx.x));
-  CHKERRQ(VecDuplicate(fine_ctx.x,&fine_ctx.b));
-  CHKERRQ(VecGetLocalSize(fine_ctx.x,&nlocal));
-  CHKERRQ(DMCreateLocalVector(fine_ctx.da,&fine_ctx.localX));
-  CHKERRQ(VecDuplicate(fine_ctx.localX,&fine_ctx.localF));
-  CHKERRQ(DMCreateMatrix(fine_ctx.da,&A));
-  CHKERRQ(FormJacobian_Grid(&fine_ctx,A));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,fine_ctx.mx,fine_ctx.my,Nx,Ny,1,1,NULL,NULL,&fine_ctx.da));
+  PetscCall(DMSetFromOptions(fine_ctx.da));
+  PetscCall(DMSetUp(fine_ctx.da));
+  PetscCall(DMCreateGlobalVector(fine_ctx.da,&fine_ctx.x));
+  PetscCall(VecDuplicate(fine_ctx.x,&fine_ctx.b));
+  PetscCall(VecGetLocalSize(fine_ctx.x,&nlocal));
+  PetscCall(DMCreateLocalVector(fine_ctx.da,&fine_ctx.localX));
+  PetscCall(VecDuplicate(fine_ctx.localX,&fine_ctx.localF));
+  PetscCall(DMCreateMatrix(fine_ctx.da,&A));
+  PetscCall(FormJacobian_Grid(&fine_ctx,A));
 
   /* create linear solver */
-  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
-  CHKERRQ(KSPSetDM(ksp,fine_ctx.da));
-  CHKERRQ(KSPSetDMActive(ksp,PETSC_FALSE));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPSetDM(ksp,fine_ctx.da));
+  PetscCall(KSPSetDMActive(ksp,PETSC_FALSE));
 
   /* set values for rhs vector */
-  CHKERRQ(VecSet(fine_ctx.b,one));
+  PetscCall(VecSet(fine_ctx.b,one));
 
   /* set options, then solve system */
-  CHKERRQ(KSPSetFromOptions(ksp)); /* calls PCSetFromOptions_ML if 'pc_type=ml' */
-  CHKERRQ(KSPSetOperators(ksp,A,A));
-  CHKERRQ(KSPSolve(ksp,fine_ctx.b,fine_ctx.x));
-  CHKERRQ(VecViewFromOptions(fine_ctx.x,NULL,"-debug"));
-  CHKERRQ(KSPGetIterationNumber(ksp,&its));
-  CHKERRQ(KSPGetIterationNumber(ksp,&its));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %D\n",its));
+  PetscCall(KSPSetFromOptions(ksp)); /* calls PCSetFromOptions_ML if 'pc_type=ml' */
+  PetscCall(KSPSetOperators(ksp,A,A));
+  PetscCall(KSPSolve(ksp,fine_ctx.b,fine_ctx.x));
+  PetscCall(VecViewFromOptions(fine_ctx.x,NULL,"-debug"));
+  PetscCall(KSPGetIterationNumber(ksp,&its));
+  PetscCall(KSPGetIterationNumber(ksp,&its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %D\n",its));
 
   /* test multiple right-hand side */
-  CHKERRQ(MatCreateDense(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,fine_ctx.mx*fine_ctx.my,nrhs,NULL,&B));
-  CHKERRQ(MatSetOptionsPrefix(B,"rhs_"));
-  CHKERRQ(MatSetFromOptions(B));
-  CHKERRQ(MatDuplicate(B,MAT_DO_NOT_COPY_VALUES,&X));
+  PetscCall(MatCreateDense(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,fine_ctx.mx*fine_ctx.my,nrhs,NULL,&B));
+  PetscCall(MatSetOptionsPrefix(B,"rhs_"));
+  PetscCall(MatSetFromOptions(B));
+  PetscCall(MatDuplicate(B,MAT_DO_NOT_COPY_VALUES,&X));
   if (Brand) {
-    CHKERRQ(MatSetRandom(B,NULL));
+    PetscCall(MatSetRandom(B,NULL));
   } else {
     PetscScalar *b;
 
-    CHKERRQ(MatDenseGetArrayWrite(B,&b));
+    PetscCall(MatDenseGetArrayWrite(B,&b));
     for (i=0;i<nlocal*nrhs;i++) b[i] = 1.0;
-    CHKERRQ(MatDenseRestoreArrayWrite(B,&b));
-    CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatDenseRestoreArrayWrite(B,&b));
+    PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
   }
-  CHKERRQ(KSPMatSolve(ksp,B,X));
-  CHKERRQ(MatViewFromOptions(X,NULL,"-debug"));
+  PetscCall(KSPMatSolve(ksp,B,X));
+  PetscCall(MatViewFromOptions(X,NULL,"-debug"));
 
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)ksp,KSPPREONLY,&flg));
+  PetscCall(PetscObjectTypeCompare((PetscObject)ksp,KSPPREONLY,&flg));
   if ((flg || nrhs == 1) && !Brand) {
     PetscInt          n;
     const PetscScalar *xx,*XX;
 
-    CHKERRQ(VecGetArrayRead(fine_ctx.x,&xx));
-    CHKERRQ(MatDenseGetArrayRead(X,&XX));
+    PetscCall(VecGetArrayRead(fine_ctx.x,&xx));
+    PetscCall(MatDenseGetArrayRead(X,&XX));
     for (n=0;n<nrhs;n++) {
       for (i=0;i<nlocal;i++) {
         if (PetscAbsScalar(xx[i] - XX[nlocal*n + i]) > PETSC_SMALL) {
-          CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"[%d] Error local solve %D, entry %D -> %g + i %g != %g + i %g\n",PetscGlobalRank,n,i,(double)PetscRealPart(xx[i]),(double)PetscImaginaryPart(xx[i]),(double)PetscRealPart(XX[i]),(double)PetscImaginaryPart(XX[i])));
+          PetscCall(PetscPrintf(PETSC_COMM_SELF,"[%d] Error local solve %D, entry %D -> %g + i %g != %g + i %g\n",PetscGlobalRank,n,i,(double)PetscRealPart(xx[i]),(double)PetscImaginaryPart(xx[i]),(double)PetscRealPart(XX[i]),(double)PetscImaginaryPart(XX[i])));
         }
       }
     }
-    CHKERRQ(MatDenseRestoreArrayRead(X,&XX));
-    CHKERRQ(VecRestoreArrayRead(fine_ctx.x,&xx));
+    PetscCall(MatDenseRestoreArrayRead(X,&XX));
+    PetscCall(VecRestoreArrayRead(fine_ctx.x,&xx));
   }
 
   /* free data structures */
-  CHKERRQ(VecDestroy(&fine_ctx.x));
-  CHKERRQ(VecDestroy(&fine_ctx.b));
-  CHKERRQ(DMDestroy(&fine_ctx.da));
-  CHKERRQ(VecDestroy(&fine_ctx.localX));
-  CHKERRQ(VecDestroy(&fine_ctx.localF));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(MatDestroy(&B));
-  CHKERRQ(MatDestroy(&X));
-  CHKERRQ(KSPDestroy(&ksp));
+  PetscCall(VecDestroy(&fine_ctx.x));
+  PetscCall(VecDestroy(&fine_ctx.b));
+  PetscCall(DMDestroy(&fine_ctx.da));
+  PetscCall(VecDestroy(&fine_ctx.localX));
+  PetscCall(VecDestroy(&fine_ctx.localF));
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&B));
+  PetscCall(MatDestroy(&X));
+  PetscCall(KSPDestroy(&ksp));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -158,10 +158,10 @@ PetscErrorCode FormJacobian_Grid(GridCtx *grid,Mat jac)
   hxdhy = hx/hy;            hydhx = hy/hx;
 
   /* Get ghost points */
-  CHKERRQ(DMDAGetCorners(grid->da,&xs,&ys,0,&xm,&ym,0));
-  CHKERRQ(DMDAGetGhostCorners(grid->da,&Xs,&Ys,0,&Xm,&Ym,0));
-  CHKERRQ(DMGetLocalToGlobalMapping(grid->da,&ltogm));
-  CHKERRQ(ISLocalToGlobalMappingGetIndices(ltogm,&ltog));
+  PetscCall(DMDAGetCorners(grid->da,&xs,&ys,0,&xm,&ym,0));
+  PetscCall(DMDAGetGhostCorners(grid->da,&Xs,&Ys,0,&Xm,&Ym,0));
+  PetscCall(DMGetLocalToGlobalMapping(grid->da,&ltogm));
+  PetscCall(ISLocalToGlobalMappingGetIndices(ltogm,&ltog));
 
   /* Evaluate Jacobian of function */
   for (j=ys; j<ys+ym; j++) {
@@ -175,19 +175,19 @@ PetscErrorCode FormJacobian_Grid(GridCtx *grid,Mat jac)
         v[2] = two*(hydhx + hxdhy); col[2] = grow;
         v[3] = -hydhx; col[3] = ltog[row + 1];
         v[4] = -hxdhy; col[4] = ltog[row + Xm];
-        CHKERRQ(MatSetValues(jac,1,&grow,5,col,v,INSERT_VALUES));
+        PetscCall(MatSetValues(jac,1,&grow,5,col,v,INSERT_VALUES));
       } else if ((i > 0 && i < mx-1) || (j > 0 && j < my-1)) {
         value = .5*two*(hydhx + hxdhy);
-        CHKERRQ(MatSetValues(jac,1,&grow,1,&grow,&value,INSERT_VALUES));
+        PetscCall(MatSetValues(jac,1,&grow,1,&grow,&value,INSERT_VALUES));
       } else {
         value = .25*two*(hydhx + hxdhy);
-        CHKERRQ(MatSetValues(jac,1,&grow,1,&grow,&value,INSERT_VALUES));
+        PetscCall(MatSetValues(jac,1,&grow,1,&grow,&value,INSERT_VALUES));
       }
     }
   }
-  CHKERRQ(ISLocalToGlobalMappingRestoreIndices(ltogm,&ltog));
-  CHKERRQ(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
+  PetscCall(ISLocalToGlobalMappingRestoreIndices(ltogm,&ltog));
+  PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 

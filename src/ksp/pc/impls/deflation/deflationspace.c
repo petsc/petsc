@@ -45,37 +45,37 @@ static PetscErrorCode PCDeflationCreateSpaceWave(MPI_Comm comm,PetscInt m,PetscI
   PetscInt       i,j,k,ilo,ihi,*Iidx;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscMalloc1(ncoeffs,&Iidx));
+  PetscCall(PetscMalloc1(ncoeffs,&Iidx));
 
-  CHKERRQ(MatCreate(comm,&defl));
-  CHKERRQ(MatSetSizes(defl,m,n,M,N));
-  CHKERRQ(MatSetUp(defl));
-  CHKERRQ(MatSeqAIJSetPreallocation(defl,ncoeffs,NULL));
-  CHKERRQ(MatMPIAIJSetPreallocation(defl,ncoeffs,NULL,ncoeffs,NULL));
-  CHKERRQ(MatSetOption(defl,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE));
-  CHKERRQ(MatSetOption(defl,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE));
+  PetscCall(MatCreate(comm,&defl));
+  PetscCall(MatSetSizes(defl,m,n,M,N));
+  PetscCall(MatSetUp(defl));
+  PetscCall(MatSeqAIJSetPreallocation(defl,ncoeffs,NULL));
+  PetscCall(MatMPIAIJSetPreallocation(defl,ncoeffs,NULL,ncoeffs,NULL));
+  PetscCall(MatSetOption(defl,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE));
+  PetscCall(MatSetOption(defl,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE));
 
   /* Alg 735 Taswell: fvecmat */
   k = ncoeffs -2;
   if (trunc) k = k/2;
 
-  CHKERRQ(MatGetOwnershipRange(defl,&ilo,&ihi));
+  PetscCall(MatGetOwnershipRange(defl,&ilo,&ihi));
   for (i=0; i<ncoeffs; i++) {
     Iidx[i] = i+ilo*2 -k;
     if (Iidx[i] >= N) Iidx[i] = PETSC_MIN_INT;
   }
   for (i=ilo; i<ihi; i++) {
-    CHKERRQ(MatSetValues(defl,1,&i,ncoeffs,Iidx,coeffs,INSERT_VALUES));
+    PetscCall(MatSetValues(defl,1,&i,ncoeffs,Iidx,coeffs,INSERT_VALUES));
     for (j=0; j<ncoeffs; j++) {
       Iidx[j] += 2;
       if (Iidx[j] >= N) Iidx[j] = PETSC_MIN_INT;
     }
   }
 
-  CHKERRQ(MatAssemblyBegin(defl,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(defl,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(defl,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(defl,MAT_FINAL_ASSEMBLY));
 
-  CHKERRQ(PetscFree(Iidx));
+  PetscCall(PetscFree(Iidx));
   *H = defl;
   PetscFunctionReturn(0);
 }
@@ -89,38 +89,38 @@ PetscErrorCode PCDeflationGetSpaceHaar(PC pc,Mat *W,PetscInt size)
   PetscFunctionBegin;
   /* Haar basis wavelet, level=size */
   len = pow(2,size);
-  CHKERRQ(PetscMalloc2(len,&col,len,&Iidx));
+  PetscCall(PetscMalloc2(len,&col,len,&Iidx));
   val = 1./pow(2,size/2.);
   for (i=0; i<len; i++) col[i] = val;
 
-  CHKERRQ(PCGetOperators(pc,NULL,&A));
-  CHKERRQ(MatGetLocalSize(A,&m,NULL));
-  CHKERRQ(MatGetSize(A,&M,NULL));
-  CHKERRQ(MatCreate(PetscObjectComm((PetscObject)A),&defl));
-  CHKERRQ(MatSetSizes(defl,m,PETSC_DECIDE,M,PetscCeilInt(M,len)));
-  CHKERRQ(MatSetUp(defl));
-  CHKERRQ(MatSeqAIJSetPreallocation(defl,size,NULL));
-  CHKERRQ(MatMPIAIJSetPreallocation(defl,size,NULL,size,NULL));
-  CHKERRQ(MatSetOption(defl,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE));
+  PetscCall(PCGetOperators(pc,NULL,&A));
+  PetscCall(MatGetLocalSize(A,&m,NULL));
+  PetscCall(MatGetSize(A,&M,NULL));
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)A),&defl));
+  PetscCall(MatSetSizes(defl,m,PETSC_DECIDE,M,PetscCeilInt(M,len)));
+  PetscCall(MatSetUp(defl));
+  PetscCall(MatSeqAIJSetPreallocation(defl,size,NULL));
+  PetscCall(MatMPIAIJSetPreallocation(defl,size,NULL,size,NULL));
+  PetscCall(MatSetOption(defl,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE));
 
-  CHKERRQ(MatGetOwnershipRangeColumn(defl,&ilo,&ihi));
+  PetscCall(MatGetOwnershipRangeColumn(defl,&ilo,&ihi));
   for (i=0; i<len; i++) Iidx[i] = i+ilo*len;
   if (M%len && ihi == PetscCeilInt(M,len)) ihi -= 1;
   for (i=ilo; i<ihi; i++) {
-    CHKERRQ(MatSetValues(defl,len,Iidx,1,&i,col,INSERT_VALUES));
+    PetscCall(MatSetValues(defl,len,Iidx,1,&i,col,INSERT_VALUES));
     for (j=0; j<len; j++) Iidx[j] += len;
   }
   if (M%len && ihi+1 == PetscCeilInt(M,len)) {
     len = M%len;
     val = 1./pow(pow(2,len),0.5);
     for (i=0; i<len; i++) col[i] = val;
-    CHKERRQ(MatSetValues(defl,len,Iidx,1,&ihi,col,INSERT_VALUES));
+    PetscCall(MatSetValues(defl,len,Iidx,1,&ihi,col,INSERT_VALUES));
   }
 
-  CHKERRQ(MatAssemblyBegin(defl,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(defl,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(defl,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(defl,MAT_FINAL_ASSEMBLY));
 
-  CHKERRQ(PetscFree2(col,Iidx));
+  PetscCall(PetscFree2(col,Iidx));
   *W = defl;
   PetscFunctionReturn(0);
 }
@@ -132,11 +132,11 @@ PetscErrorCode PCDeflationGetSpaceWave(PC pc,Mat *W,PetscInt size,PetscInt ncoef
   MPI_Comm       comm;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectGetComm((PetscObject)pc,&comm));
-  CHKERRQ(PetscMalloc1(size,&H));
-  CHKERRQ(PCGetOperators(pc,&A,NULL));
-  CHKERRQ(MatGetLocalSize(A,&m,NULL));
-  CHKERRQ(MatGetSize(A,&M,NULL));
+  PetscCall(PetscObjectGetComm((PetscObject)pc,&comm));
+  PetscCall(PetscMalloc1(size,&H));
+  PetscCall(PCGetOperators(pc,&A,NULL));
+  PetscCall(MatGetLocalSize(A,&m,NULL));
+  PetscCall(MatGetSize(A,&M,NULL));
   Mdefl = M;
   Ndefl = M;
   for (i=0; i<size; i++) {
@@ -144,18 +144,18 @@ PetscErrorCode PCDeflationGetSpaceWave(PC pc,Mat *W,PetscInt size,PetscInt ncoef
       if (trunc) Mdefl = (PetscInt)PetscCeilReal(Mdefl/2.);
       else       Mdefl = (PetscInt)PetscFloorReal((ncoeffs+Mdefl-1)/2.);
     } else       Mdefl = Mdefl/2;
-    CHKERRQ(PCDeflationCreateSpaceWave(comm,PETSC_DECIDE,m,Mdefl,Ndefl,ncoeffs,coeffs,trunc,&H[i]));
-    CHKERRQ(MatGetLocalSize(H[i],&m,NULL));
+    PetscCall(PCDeflationCreateSpaceWave(comm,PETSC_DECIDE,m,Mdefl,Ndefl,ncoeffs,coeffs,trunc,&H[i]));
+    PetscCall(MatGetLocalSize(H[i],&m,NULL));
     Ndefl = Mdefl;
   }
-  CHKERRQ(MatCreateComposite(comm,size,H,&defl));
-  CHKERRQ(MatCompositeSetType(defl,MAT_COMPOSITE_MULTIPLICATIVE));
+  PetscCall(MatCreateComposite(comm,size,H,&defl));
+  PetscCall(MatCompositeSetType(defl,MAT_COMPOSITE_MULTIPLICATIVE));
   *W = defl;
 
   for (i=0; i<size; i++) {
-    CHKERRQ(MatDestroy(&H[i]));
+    PetscCall(MatDestroy(&H[i]));
   }
-  CHKERRQ(PetscFree(H));
+  PetscCall(PetscFree(H));
   PetscFunctionReturn(0);
 }
 
@@ -168,32 +168,32 @@ PetscErrorCode PCDeflationGetSpaceAggregation(PC pc,Mat *W)
   MPI_Comm       comm;
 
   PetscFunctionBegin;
-  CHKERRQ(PCGetOperators(pc,&A,NULL));
-  CHKERRQ(MatGetOwnershipRangeColumn(A,&ilo,&ihi));
-  CHKERRQ(MatGetSize(A,&M,NULL));
-  CHKERRQ(PetscObjectGetComm((PetscObject)A,&comm));
-  CHKERRMPI(MPI_Comm_size(comm,&m));
-  CHKERRQ(MatCreate(comm,&defl));
-  CHKERRQ(MatSetSizes(defl,ihi-ilo,1,M,m));
-  CHKERRQ(MatSetUp(defl));
-  CHKERRQ(MatSeqAIJSetPreallocation(defl,1,NULL));
-  CHKERRQ(MatMPIAIJSetPreallocation(defl,1,NULL,0,NULL));
-  CHKERRQ(MatSetOption(defl,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE));
-  CHKERRQ(MatSetOption(defl,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE));
+  PetscCall(PCGetOperators(pc,&A,NULL));
+  PetscCall(MatGetOwnershipRangeColumn(A,&ilo,&ihi));
+  PetscCall(MatGetSize(A,&M,NULL));
+  PetscCall(PetscObjectGetComm((PetscObject)A,&comm));
+  PetscCallMPI(MPI_Comm_size(comm,&m));
+  PetscCall(MatCreate(comm,&defl));
+  PetscCall(MatSetSizes(defl,ihi-ilo,1,M,m));
+  PetscCall(MatSetUp(defl));
+  PetscCall(MatSeqAIJSetPreallocation(defl,1,NULL));
+  PetscCall(MatMPIAIJSetPreallocation(defl,1,NULL,0,NULL));
+  PetscCall(MatSetOption(defl,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE));
+  PetscCall(MatSetOption(defl,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE));
 
-  CHKERRQ(PetscMalloc2(ihi-ilo,&col,ihi-ilo,&Iidx));
+  PetscCall(PetscMalloc2(ihi-ilo,&col,ihi-ilo,&Iidx));
   for (i=ilo; i<ihi; i++) {
     Iidx[i-ilo] = i;
     col[i-ilo] = 1;
   }
-  CHKERRMPI(MPI_Comm_rank(comm,&m));
+  PetscCallMPI(MPI_Comm_rank(comm,&m));
   i = m;
-  CHKERRQ(MatSetValues(defl,ihi-ilo,Iidx,1,&i,col,INSERT_VALUES));
+  PetscCall(MatSetValues(defl,ihi-ilo,Iidx,1,&i,col,INSERT_VALUES));
 
-  CHKERRQ(MatAssemblyBegin(defl,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(defl,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(defl,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(defl,MAT_FINAL_ASSEMBLY));
 
-  CHKERRQ(PetscFree2(col,Iidx));
+  PetscCall(PetscFree2(col,Iidx));
   *W = defl;
   PetscFunctionReturn(0);
 }
@@ -210,26 +210,26 @@ PetscErrorCode PCDeflationComputeSpace(PC pc)
   switch (def->spacetype) {
     case PC_DEFLATION_SPACE_HAAR:
       transp = PETSC_FALSE;
-      CHKERRQ(PCDeflationGetSpaceHaar(pc,&defl,def->spacesize));break;
+      PetscCall(PCDeflationGetSpaceHaar(pc,&defl,def->spacesize));break;
     case PC_DEFLATION_SPACE_DB2:
-      CHKERRQ(PCDeflationGetSpaceWave(pc,&defl,def->spacesize,2,db2,PetscNot(def->extendsp)));break;
+      PetscCall(PCDeflationGetSpaceWave(pc,&defl,def->spacesize,2,db2,PetscNot(def->extendsp)));break;
     case PC_DEFLATION_SPACE_DB4:
-      CHKERRQ(PCDeflationGetSpaceWave(pc,&defl,def->spacesize,4,db4,PetscNot(def->extendsp)));break;
+      PetscCall(PCDeflationGetSpaceWave(pc,&defl,def->spacesize,4,db4,PetscNot(def->extendsp)));break;
     case PC_DEFLATION_SPACE_DB8:
-      CHKERRQ(PCDeflationGetSpaceWave(pc,&defl,def->spacesize,8,db8,PetscNot(def->extendsp)));break;
+      PetscCall(PCDeflationGetSpaceWave(pc,&defl,def->spacesize,8,db8,PetscNot(def->extendsp)));break;
     case PC_DEFLATION_SPACE_DB16:
-      CHKERRQ(PCDeflationGetSpaceWave(pc,&defl,def->spacesize,16,db16,PetscNot(def->extendsp)));break;
+      PetscCall(PCDeflationGetSpaceWave(pc,&defl,def->spacesize,16,db16,PetscNot(def->extendsp)));break;
     case PC_DEFLATION_SPACE_BIORTH22:
-      CHKERRQ(PCDeflationGetSpaceWave(pc,&defl,def->spacesize,6,biorth22,PetscNot(def->extendsp)));break;
+      PetscCall(PCDeflationGetSpaceWave(pc,&defl,def->spacesize,6,biorth22,PetscNot(def->extendsp)));break;
     case PC_DEFLATION_SPACE_MEYER:
-      CHKERRQ(PCDeflationGetSpaceWave(pc,&defl,def->spacesize,62,meyer,PetscNot(def->extendsp)));break;
+      PetscCall(PCDeflationGetSpaceWave(pc,&defl,def->spacesize,62,meyer,PetscNot(def->extendsp)));break;
     case PC_DEFLATION_SPACE_AGGREGATION:
       transp = PETSC_FALSE;
-      CHKERRQ(PCDeflationGetSpaceAggregation(pc,&defl));break;
+      PetscCall(PCDeflationGetSpaceAggregation(pc,&defl));break;
     default: SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Wrong PCDeflationSpaceType specified");
   }
 
-  CHKERRQ(PCDeflationSetSpace(pc,defl,transp));
-  CHKERRQ(MatDestroy(&defl));
+  PetscCall(PCDeflationSetSpace(pc,defl,transp));
+  PetscCall(MatDestroy(&defl));
   PetscFunctionReturn(0);
 }

@@ -10,41 +10,41 @@ int main(int argc,char **args)
   Vec            x;
   Mat            A;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n));
-  CHKERRQ(MatSetFromOptions(A));
-  CHKERRQ(MatSetUp(A));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSetUp(A));
 
   for (i=0; i<m; i++) {
     for (j=0; j<n; j++) {
       v = -1.0;  II = j + n*i;
-      if (i>0)   {J = II - n; CHKERRQ(MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES));}
-      if (i<m-1) {J = II + n; CHKERRQ(MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES));}
-      if (j>0)   {J = II - 1; CHKERRQ(MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES));}
-      if (j<n-1) {J = II + 1; CHKERRQ(MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES));}
-      v = 4.0; CHKERRQ(MatSetValues(A,1,&II,1,&II,&v,INSERT_VALUES));
+      if (i>0)   {J = II - n; PetscCall(MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES));}
+      if (i<m-1) {J = II + n; PetscCall(MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES));}
+      if (j>0)   {J = II - 1; PetscCall(MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES));}
+      if (j<n-1) {J = II + 1; PetscCall(MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES));}
+      v = 4.0; PetscCall(MatSetValues(A,1,&II,1,&II,&v,INSERT_VALUES));
     }
   }
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 #if defined(PETSC_USE_SOCKET_VIEWER)
-  CHKERRQ(MatView(A,PETSC_VIEWER_SOCKET_WORLD));
+  PetscCall(MatView(A,PETSC_VIEWER_SOCKET_WORLD));
 #endif
-  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,m,&x));
-  CHKERRQ(VecSet(x,one));
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,m,&x));
+  PetscCall(VecSet(x,one));
 #if defined(PETSC_USE_SOCKET_VIEWER)
-  CHKERRQ(VecView(x,PETSC_VIEWER_SOCKET_WORLD));
+  PetscCall(VecView(x,PETSC_VIEWER_SOCKET_WORLD));
 #endif
 
-  CHKERRQ(PetscSleep(30));
+  PetscCall(PetscSleep(30));
 
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&x));
+  PetscCall(MatDestroy(&A));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

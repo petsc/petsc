@@ -16,14 +16,14 @@ static PetscErrorCode PCSetUp_QR(PC pc)
   pc->failedreason = PC_NOERROR;
   if (dir->hdr.reusefill && pc->setupcalled) ((PC_Factor*)dir)->info.fill = dir->hdr.actualfill;
 
-  CHKERRQ(MatSetErrorIfFailure(pc->pmat,pc->erroriffailure));
+  PetscCall(MatSetErrorIfFailure(pc->pmat,pc->erroriffailure));
   if (dir->hdr.inplace) {
     MatFactorType ftype;
 
-    CHKERRQ(MatGetFactorType(pc->pmat, &ftype));
+    PetscCall(MatGetFactorType(pc->pmat, &ftype));
     if (ftype == MAT_FACTOR_NONE) {
-      CHKERRQ(MatQRFactor(pc->pmat,dir->col,&((PC_Factor*)dir)->info));
-      CHKERRQ(MatFactorGetError(pc->pmat,&err));
+      PetscCall(MatQRFactor(pc->pmat,dir->col,&((PC_Factor*)dir)->info));
+      PetscCall(MatFactorGetError(pc->pmat,&err));
       if (err) { /* Factor() fails */
         pc->failedreason = (PCFailedReason)err;
         PetscFunctionReturn(0);
@@ -35,37 +35,37 @@ static PetscErrorCode PCSetUp_QR(PC pc)
 
     if (!pc->setupcalled) {
       if (!((PC_Factor*)dir)->fact) {
-        CHKERRQ(MatGetFactor(pc->pmat,((PC_Factor*)dir)->solvertype,MAT_FACTOR_QR,&((PC_Factor*)dir)->fact));
-        CHKERRQ(PetscLogObjectParent((PetscObject)pc,(PetscObject)((PC_Factor*)dir)->fact));
+        PetscCall(MatGetFactor(pc->pmat,((PC_Factor*)dir)->solvertype,MAT_FACTOR_QR,&((PC_Factor*)dir)->fact));
+        PetscCall(PetscLogObjectParent((PetscObject)pc,(PetscObject)((PC_Factor*)dir)->fact));
       }
-      CHKERRQ(MatQRFactorSymbolic(((PC_Factor*)dir)->fact,pc->pmat,dir->col,&((PC_Factor*)dir)->info));
-      CHKERRQ(MatGetInfo(((PC_Factor*)dir)->fact,MAT_LOCAL,&info));
+      PetscCall(MatQRFactorSymbolic(((PC_Factor*)dir)->fact,pc->pmat,dir->col,&((PC_Factor*)dir)->info));
+      PetscCall(MatGetInfo(((PC_Factor*)dir)->fact,MAT_LOCAL,&info));
       dir->hdr.actualfill = info.fill_ratio_needed;
     } else if (pc->flag != SAME_NONZERO_PATTERN) {
-      CHKERRQ(MatQRFactorSymbolic(((PC_Factor*)dir)->fact,pc->pmat,dir->col,&((PC_Factor*)dir)->info));
-      CHKERRQ(MatGetInfo(((PC_Factor*)dir)->fact,MAT_LOCAL,&info));
+      PetscCall(MatQRFactorSymbolic(((PC_Factor*)dir)->fact,pc->pmat,dir->col,&((PC_Factor*)dir)->info));
+      PetscCall(MatGetInfo(((PC_Factor*)dir)->fact,MAT_LOCAL,&info));
       dir->hdr.actualfill = info.fill_ratio_needed;
     } else {
-      CHKERRQ(MatFactorGetError(((PC_Factor*)dir)->fact,&err));
+      PetscCall(MatFactorGetError(((PC_Factor*)dir)->fact,&err));
     }
-    CHKERRQ(MatFactorGetError(((PC_Factor*)dir)->fact,&err));
+    PetscCall(MatFactorGetError(((PC_Factor*)dir)->fact,&err));
     if (err) { /* FactorSymbolic() fails */
       pc->failedreason = (PCFailedReason)err;
       PetscFunctionReturn(0);
     }
 
-    CHKERRQ(MatQRFactorNumeric(((PC_Factor*)dir)->fact,pc->pmat,&((PC_Factor*)dir)->info));
-    CHKERRQ(MatFactorGetError(((PC_Factor*)dir)->fact,&err));
+    PetscCall(MatQRFactorNumeric(((PC_Factor*)dir)->fact,pc->pmat,&((PC_Factor*)dir)->info));
+    PetscCall(MatFactorGetError(((PC_Factor*)dir)->fact,&err));
     if (err) { /* FactorNumeric() fails */
       pc->failedreason = (PCFailedReason)err;
     }
   }
 
-  CHKERRQ(PCFactorGetMatSolverType(pc,&stype));
+  PetscCall(PCFactorGetMatSolverType(pc,&stype));
   if (!stype) {
     MatSolverType solverpackage;
-    CHKERRQ(MatFactorGetSolverType(((PC_Factor*)dir)->fact,&solverpackage));
-    CHKERRQ(PCFactorSetMatSolverType(pc,solverpackage));
+    PetscCall(MatFactorGetSolverType(((PC_Factor*)dir)->fact,&solverpackage));
+    PetscCall(PCFactorSetMatSolverType(pc,solverpackage));
   }
   PetscFunctionReturn(0);
 }
@@ -75,8 +75,8 @@ static PetscErrorCode PCReset_QR(PC pc)
   PC_QR          *dir = (PC_QR*)pc->data;
 
   PetscFunctionBegin;
-  if (!dir->hdr.inplace && ((PC_Factor*)dir)->fact) CHKERRQ(MatDestroy(&((PC_Factor*)dir)->fact));
-  CHKERRQ(ISDestroy(&dir->col));
+  if (!dir->hdr.inplace && ((PC_Factor*)dir)->fact) PetscCall(MatDestroy(&((PC_Factor*)dir)->fact));
+  PetscCall(ISDestroy(&dir->col));
   PetscFunctionReturn(0);
 }
 
@@ -85,10 +85,10 @@ static PetscErrorCode PCDestroy_QR(PC pc)
   PC_QR          *dir = (PC_QR*)pc->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PCReset_QR(pc));
-  CHKERRQ(PetscFree(((PC_Factor*)dir)->ordering));
-  CHKERRQ(PetscFree(((PC_Factor*)dir)->solvertype));
-  CHKERRQ(PetscFree(pc->data));
+  PetscCall(PCReset_QR(pc));
+  PetscCall(PetscFree(((PC_Factor*)dir)->ordering));
+  PetscCall(PetscFree(((PC_Factor*)dir)->solvertype));
+  PetscCall(PetscFree(pc->data));
   PetscFunctionReturn(0);
 }
 
@@ -99,7 +99,7 @@ static PetscErrorCode PCApply_QR(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
   fact = dir->hdr.inplace ? pc->pmat : ((PC_Factor*)dir)->fact;
-  CHKERRQ(MatSolve(fact,x,y));
+  PetscCall(MatSolve(fact,x,y));
   PetscFunctionReturn(0);
 }
 
@@ -110,7 +110,7 @@ static PetscErrorCode PCMatApply_QR(PC pc,Mat X,Mat Y)
 
   PetscFunctionBegin;
   fact = dir->hdr.inplace ? pc->pmat : ((PC_Factor*)dir)->fact;
-  CHKERRQ(MatMatSolve(fact,X,Y));
+  PetscCall(MatMatSolve(fact,X,Y));
   PetscFunctionReturn(0);
 }
 
@@ -121,7 +121,7 @@ static PetscErrorCode PCApplyTranspose_QR(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
   fact = dir->hdr.inplace ? pc->pmat : ((PC_Factor*)dir)->fact;
-  CHKERRQ(MatSolveTranspose(fact,x,y));
+  PetscCall(MatSolveTranspose(fact,x,y));
   PetscFunctionReturn(0);
 }
 
@@ -149,9 +149,9 @@ PETSC_EXTERN PetscErrorCode PCCreate_QR(PC pc)
   PC_QR          *dir;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNewLog(pc,&dir));
+  PetscCall(PetscNewLog(pc,&dir));
   pc->data = (void*)dir;
-  CHKERRQ(PCFactorInitialize(pc, MAT_FACTOR_QR));
+  PetscCall(PCFactorInitialize(pc, MAT_FACTOR_QR));
 
   dir->col                   = NULL;
   pc->ops->reset             = PCReset_QR;

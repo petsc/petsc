@@ -21,43 +21,43 @@ int main(int argc,char **args)
   IS             isrow,iscol;
   PetscBool      flg;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-fin",fin,sizeof(fin),&flg));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-fin",fin,sizeof(fin),&flg));
   PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -fin option");
-  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_SELF,fin,FILE_MODE_READ,&fdin));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_SELF,fin,FILE_MODE_READ,&fdin));
 
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-fout",fout,sizeof(fout),&flg));
-  if (!flg) CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Writing submatrix to file : %s\n",fout));
-  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_SELF,fout,FILE_MODE_WRITE,&fdout));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-fout",fout,sizeof(fout),&flg));
+  if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Writing submatrix to file : %s\n",fout));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_SELF,fout,FILE_MODE_WRITE,&fdout));
 
-  CHKERRQ(MatCreate(PETSC_COMM_SELF,&A));
-  CHKERRQ(MatSetType(A,mtype));
-  CHKERRQ(MatLoad(A,fdin));
-  CHKERRQ(PetscViewerDestroy(&fdin));
+  PetscCall(MatCreate(PETSC_COMM_SELF,&A));
+  PetscCall(MatSetType(A,mtype));
+  PetscCall(MatLoad(A,fdin));
+  PetscCall(PetscViewerDestroy(&fdin));
 
-  CHKERRQ(MatGetSize(A,&m,&m));
+  PetscCall(MatGetSize(A,&m,&m));
   m /= 2;
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-start",&start,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-start",&start,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
 
-  CHKERRQ(ISCreateStride(PETSC_COMM_SELF,m,start,1,&isrow));
-  CHKERRQ(ISCreateStride(PETSC_COMM_SELF,m,start,1,&iscol));
-  CHKERRQ(MatCreateSubMatrices(A,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&B));
-  CHKERRQ(MatView(B[0],fdout));
+  PetscCall(ISCreateStride(PETSC_COMM_SELF,m,start,1,&isrow));
+  PetscCall(ISCreateStride(PETSC_COMM_SELF,m,start,1,&iscol));
+  PetscCall(MatCreateSubMatrices(A,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&B));
+  PetscCall(MatView(B[0],fdout));
 
-  CHKERRQ(VecCreate(PETSC_COMM_SELF,&b));
-  CHKERRQ(VecSetSizes(b,PETSC_DECIDE,m));
-  CHKERRQ(VecSetFromOptions(b));
-  CHKERRQ(MatView(B[0],fdout));
-  CHKERRQ(PetscViewerDestroy(&fdout));
+  PetscCall(VecCreate(PETSC_COMM_SELF,&b));
+  PetscCall(VecSetSizes(b,PETSC_DECIDE,m));
+  PetscCall(VecSetFromOptions(b));
+  PetscCall(MatView(B[0],fdout));
+  PetscCall(PetscViewerDestroy(&fdout));
 
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(MatDestroy(&B[0]));
-  CHKERRQ(VecDestroy(&b));
-  CHKERRQ(PetscFree(B));
-  CHKERRQ(ISDestroy(&iscol));
-  CHKERRQ(ISDestroy(&isrow));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&B[0]));
+  PetscCall(VecDestroy(&b));
+  PetscCall(PetscFree(B));
+  PetscCall(ISDestroy(&iscol));
+  PetscCall(ISDestroy(&isrow));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

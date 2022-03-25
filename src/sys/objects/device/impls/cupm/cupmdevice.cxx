@@ -67,11 +67,11 @@ PetscErrorCode Device<T>::DeviceInternal::initialize() noexcept
   if (cupmSetDeviceFlags(cupmDeviceMapHost) == cupmErrorSetOnActiveProcess) {
     // reset the error if it was cupmErrorSetOnActiveProcess
     const auto PETSC_UNUSED unused = cupmGetLastError();
-  } else {CHKERRCUPM(cupmGetLastError());}
+  } else {PetscCallCUPM(cupmGetLastError());}
   // cuda 5.0+ will create a context when cupmSetDevice is called
-  if (cupmSetDevice(id_) != cupmErrorDeviceAlreadyInUse) CHKERRCUPM(cupmGetLastError());
+  if (cupmSetDevice(id_) != cupmErrorDeviceAlreadyInUse) PetscCallCUPM(cupmGetLastError());
   // forces cuda < 5.0 to initialize a context
-  CHKERRCUPM(cupmFree(nullptr));
+  PetscCallCUPM(cupmFree(nullptr));
   // where is this variable defined and when is it set? who knows! but it is defined and set
   // at this point. either way, each device must make this check since I guess MPI might not be
   // aware of all of them?
@@ -103,10 +103,10 @@ PetscErrorCode Device<T>::DeviceInternal::configure() noexcept
   // why on EARTH nvidia insists on making otherwise informational states into
   // fully-fledged error codes is beyond me. Why couldn't a pointer to bool argument have
   // sufficed?!?!?!
-  if (cupmSetDevice(id_) != cupmErrorDeviceAlreadyInUse) CHKERRCUPM(cupmGetLastError());
+  if (cupmSetDevice(id_) != cupmErrorDeviceAlreadyInUse) PetscCallCUPM(cupmGetLastError());
   // need to update the device properties
-  CHKERRCUPM(cupmGetDeviceProperties(&dprop_,id_));
-  CHKERRQ(PetscInfo(nullptr,"Configured device %d\n",id_));
+  PetscCallCUPM(cupmGetDeviceProperties(&dprop_,id_));
+  PetscCall(PetscInfo(nullptr,"Configured device %d\n",id_));
   PetscFunctionReturn(0);
 }
 
@@ -117,36 +117,36 @@ PetscErrorCode Device<T>::DeviceInternal::view(PetscViewer viewer) const noexcep
 
   PetscFunctionBegin;
   PetscAssert(devInitialized_,PETSC_COMM_SELF,PETSC_ERR_COR,"Device %d being viewed before it was initialized or configured",id_);
-  CHKERRQ(PetscObjectTypeCompare(PetscObjectCast(viewer),PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare(PetscObjectCast(viewer),PETSCVIEWERASCII,&iascii));
   if (iascii) {
     MPI_Comm    comm;
     PetscMPIInt rank;
     PetscViewer sviewer;
 
-    CHKERRQ(PetscObjectGetComm(PetscObjectCast(viewer),&comm));
-    CHKERRMPI(MPI_Comm_rank(comm,&rank));
-    CHKERRQ(PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer));
-    CHKERRQ(PetscViewerASCIIPrintf(sviewer,"[%d] device %d: %s\n",rank,id_,dprop_.name));
-    CHKERRQ(PetscViewerASCIIPushTab(sviewer));
-    CHKERRQ(PetscViewerASCIIPrintf(sviewer,"Compute capability: %d.%d\n",dprop_.major,dprop_.minor));
-    CHKERRQ(PetscViewerASCIIPrintf(sviewer,"Multiprocessor Count: %d\n",dprop_.multiProcessorCount));
-    CHKERRQ(PetscViewerASCIIPrintf(sviewer,"Maximum Grid Dimensions: %d x %d x %d\n",dprop_.maxGridSize[0],dprop_.maxGridSize[1],dprop_.maxGridSize[2]));
-    CHKERRQ(PetscViewerASCIIPrintf(sviewer,"Maximum Block Dimensions: %d x %d x %d\n",dprop_.maxThreadsDim[0],dprop_.maxThreadsDim[1],dprop_.maxThreadsDim[2]));
-    CHKERRQ(PetscViewerASCIIPrintf(sviewer,"Maximum Threads Per Block: %d\n",dprop_.maxThreadsPerBlock));
-    CHKERRQ(PetscViewerASCIIPrintf(sviewer,"Warp Size: %d\n",dprop_.warpSize));
-    CHKERRQ(PetscViewerASCIIPrintf(sviewer,"Total Global Memory (bytes): %zu\n",dprop_.totalGlobalMem));
-    CHKERRQ(PetscViewerASCIIPrintf(sviewer,"Total Constant Memory (bytes): %zu\n",dprop_.totalConstMem));
-    CHKERRQ(PetscViewerASCIIPrintf(sviewer,"Shared Memory Per Block (bytes): %zu\n",dprop_.sharedMemPerBlock));
-    CHKERRQ(PetscViewerASCIIPrintf(sviewer,"Multiprocessor Clock Rate (KHz): %d\n",dprop_.clockRate));
-    CHKERRQ(PetscViewerASCIIPrintf(sviewer,"Memory Clock Rate (KHz): %d\n",dprop_.memoryClockRate));
-    CHKERRQ(PetscViewerASCIIPrintf(sviewer,"Memory Bus Width (bits): %d\n",dprop_.memoryBusWidth));
-    CHKERRQ(PetscViewerASCIIPrintf(sviewer,"Peak Memory Bandwidth (GB/s): %f\n",2.0*dprop_.memoryClockRate*(dprop_.memoryBusWidth/8)/1.0e6));
-    CHKERRQ(PetscViewerASCIIPrintf(sviewer,"Can map host memory: %s\n",dprop_.canMapHostMemory ? "PETSC_TRUE" : "PETSC_FALSE"));
-    CHKERRQ(PetscViewerASCIIPrintf(sviewer,"Can execute multiple kernels concurrently: %s\n",dprop_.concurrentKernels ? "PETSC_TRUE" : "PETSC_FALSE"));
-    CHKERRQ(PetscViewerASCIIPopTab(sviewer));
-    CHKERRQ(PetscViewerFlush(sviewer));
-    CHKERRQ(PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer));
-    CHKERRQ(PetscViewerFlush(viewer));
+    PetscCall(PetscObjectGetComm(PetscObjectCast(viewer),&comm));
+    PetscCallMPI(MPI_Comm_rank(comm,&rank));
+    PetscCall(PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer));
+    PetscCall(PetscViewerASCIIPrintf(sviewer,"[%d] device %d: %s\n",rank,id_,dprop_.name));
+    PetscCall(PetscViewerASCIIPushTab(sviewer));
+    PetscCall(PetscViewerASCIIPrintf(sviewer,"Compute capability: %d.%d\n",dprop_.major,dprop_.minor));
+    PetscCall(PetscViewerASCIIPrintf(sviewer,"Multiprocessor Count: %d\n",dprop_.multiProcessorCount));
+    PetscCall(PetscViewerASCIIPrintf(sviewer,"Maximum Grid Dimensions: %d x %d x %d\n",dprop_.maxGridSize[0],dprop_.maxGridSize[1],dprop_.maxGridSize[2]));
+    PetscCall(PetscViewerASCIIPrintf(sviewer,"Maximum Block Dimensions: %d x %d x %d\n",dprop_.maxThreadsDim[0],dprop_.maxThreadsDim[1],dprop_.maxThreadsDim[2]));
+    PetscCall(PetscViewerASCIIPrintf(sviewer,"Maximum Threads Per Block: %d\n",dprop_.maxThreadsPerBlock));
+    PetscCall(PetscViewerASCIIPrintf(sviewer,"Warp Size: %d\n",dprop_.warpSize));
+    PetscCall(PetscViewerASCIIPrintf(sviewer,"Total Global Memory (bytes): %zu\n",dprop_.totalGlobalMem));
+    PetscCall(PetscViewerASCIIPrintf(sviewer,"Total Constant Memory (bytes): %zu\n",dprop_.totalConstMem));
+    PetscCall(PetscViewerASCIIPrintf(sviewer,"Shared Memory Per Block (bytes): %zu\n",dprop_.sharedMemPerBlock));
+    PetscCall(PetscViewerASCIIPrintf(sviewer,"Multiprocessor Clock Rate (KHz): %d\n",dprop_.clockRate));
+    PetscCall(PetscViewerASCIIPrintf(sviewer,"Memory Clock Rate (KHz): %d\n",dprop_.memoryClockRate));
+    PetscCall(PetscViewerASCIIPrintf(sviewer,"Memory Bus Width (bits): %d\n",dprop_.memoryBusWidth));
+    PetscCall(PetscViewerASCIIPrintf(sviewer,"Peak Memory Bandwidth (GB/s): %f\n",2.0*dprop_.memoryClockRate*(dprop_.memoryBusWidth/8)/1.0e6));
+    PetscCall(PetscViewerASCIIPrintf(sviewer,"Can map host memory: %s\n",dprop_.canMapHostMemory ? "PETSC_TRUE" : "PETSC_FALSE"));
+    PetscCall(PetscViewerASCIIPrintf(sviewer,"Can execute multiple kernels concurrently: %s\n",dprop_.concurrentKernels ? "PETSC_TRUE" : "PETSC_FALSE"));
+    PetscCall(PetscViewerASCIIPopTab(sviewer));
+    PetscCall(PetscViewerFlush(sviewer));
+    PetscCall(PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer));
+    PetscCall(PetscViewerFlush(viewer));
   }
   PetscFunctionReturn(0);
 }
@@ -182,7 +182,7 @@ PETSC_CXX_COMPAT_DEFN(bool Device<T>::DeviceInternal::CUPMAwareMPI_())
   PetscFunctionBegin;
   CHKCUPMAWARE(cupmMalloc(reinterpret_cast<void**>(&dbuf),bytes));
   CHKCUPMAWARE(cupmMemcpy(dbuf,hbuf,bytes,cupmMemcpyHostToDevice));
-  CHKERRABORT(PETSC_COMM_SELF,PetscPushSignalHandler(cupmSignalHandler,nullptr));
+  PetscCallAbort(PETSC_COMM_SELF,PetscPushSignalHandler(cupmSignalHandler,nullptr));
   cupmMPIAwareJumpBufferSet = true;
   if (setjmp(cupmMPIAwareJumpBuffer)) {
     // if a segv was triggered in the MPI_Allreduce below, it is very likely due to MPI not
@@ -208,7 +208,7 @@ PETSC_CXX_COMPAT_DEFN(bool Device<T>::DeviceInternal::CUPMAwareMPI_())
     PetscStackPop;
   } else if (!MPI_Allreduce(dbuf,dbuf+1,1,MPI_INT,MPI_SUM,PETSC_COMM_SELF)) awareness = true;
   cupmMPIAwareJumpBufferSet = false;
-  CHKERRABORT(PETSC_COMM_SELF,PetscPopSignalHandler());
+  PetscCallAbort(PETSC_COMM_SELF,PetscPopSignalHandler());
   CHKCUPMAWARE(cupmFree(dbuf));
   PetscFunctionReturn(awareness);
 }
@@ -230,7 +230,7 @@ PetscErrorCode Device<T>::finalize_() noexcept
   if (!initialized_) PetscFunctionReturn(0);
   for (auto&& device : devices_) {
     if (device) {
-      CHKERRQ(device->finalize());
+      PetscCall(device->finalize());
       device.reset();
     }
   }
@@ -307,17 +307,17 @@ PetscErrorCode Device<T>::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, P
   PetscFunctionBegin;
   if (initialized_) PetscFunctionReturn(0);
   initialized_ = true;
-  CHKERRQ(PetscRegisterFinalize(finalize_));
+  PetscCall(PetscRegisterFinalize(finalize_));
 
   {
     PetscErrorCode ierr;
 
     // the functions to populate the command line strings are named after the string they return
-    ierr = PetscOptionsBegin(comm,nullptr,PetscDevice_CUPMTYPE_Options<T>(),"Sys");CHKERRQ(ierr);
-    CHKERRQ(PetscOptionsEList(device_enable_cupmtype<T>(),"How (or whether) to initialize a device","CUPMDevice<CUPMDeviceType>::initialize()",PetscDeviceInitTypes,3,PetscDeviceInitTypes[initTypeCUPM],&initTypeCUPM,nullptr));
-    CHKERRQ(PetscOptionsRangeInt(device_select_cupmtype<T>(),"Which device to use. Pass " PetscStringize(PETSC_DECIDE) " to have PETSc decide or (given they exist) [0-NUM_DEVICE) for a specific device","PetscDeviceCreate",id,&id,nullptr,PETSC_DECIDE,std::numeric_limits<decltype(defaultDevice_)>::max()));
-    CHKERRQ(PetscOptionsBool(device_view_cupmtype<T>(),"Display device information and assignments (forces eager initialization)",nullptr,view,&view,&flg));
-    ierr = PetscOptionsEnd();CHKERRQ(ierr);
+    ierr = PetscOptionsBegin(comm,nullptr,PetscDevice_CUPMTYPE_Options<T>(),"Sys");PetscCall(ierr);
+    PetscCall(PetscOptionsEList(device_enable_cupmtype<T>(),"How (or whether) to initialize a device","CUPMDevice<CUPMDeviceType>::initialize()",PetscDeviceInitTypes,3,PetscDeviceInitTypes[initTypeCUPM],&initTypeCUPM,nullptr));
+    PetscCall(PetscOptionsRangeInt(device_select_cupmtype<T>(),"Which device to use. Pass " PetscStringize(PETSC_DECIDE) " to have PETSc decide or (given they exist) [0-NUM_DEVICE) for a specific device","PetscDeviceCreate",id,&id,nullptr,PETSC_DECIDE,std::numeric_limits<decltype(defaultDevice_)>::max()));
+    PetscCall(PetscOptionsBool(device_view_cupmtype<T>(),"Display device information and assignments (forces eager initialization)",nullptr,view,&view,&flg));
+    ierr = PetscOptionsEnd();PetscCall(ierr);
   }
 
   cerr = cupmGetDeviceCount(&ndev);
@@ -327,11 +327,11 @@ PetscErrorCode Device<T>::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, P
     PetscBool ignoreCupmError = PETSC_FALSE;
     char      buf[16];
 
-    CHKERRQ(PetscOptionsGetenv(comm,CUPM_VISIBLE_DEVICES<T>(),buf,sizeof(buf),&found));
+    PetscCall(PetscOptionsGetenv(comm,CUPM_VISIBLE_DEVICES<T>(),buf,sizeof(buf),&found));
     if (found) {
       size_t len;
 
-      CHKERRQ(PetscStrlen(buf,&len));
+      PetscCall(PetscStrlen(buf,&len));
       if (!len || buf[0] == '-') ignoreCupmError = PETSC_TRUE;
     }
     id = PETSC_CUPM_DEVICE_NONE; // there are no devices anyway
@@ -354,19 +354,19 @@ PetscErrorCode Device<T>::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, P
     {auto PETSC_UNUSED ignored = cupmGetLastError();}
     break;
   default:
-    CHKERRCUPM(cerr);
+    PetscCallCUPM(cerr);
     break;
   }
 
   if (initTypeCUPM == PETSC_DEVICE_INIT_NONE) {
     if ((id > 0) || (id == PETSC_DECIDE)) id = PETSC_CUPM_DEVICE_NONE;
   } else {
-    CHKERRQ(PetscDeviceCheckDeviceCount_Internal(ndev));
+    PetscCall(PetscDeviceCheckDeviceCount_Internal(ndev));
     if (id == PETSC_DECIDE) {
       if (ndev) {
         PetscMPIInt rank;
 
-        CHKERRMPI(MPI_Comm_rank(comm,&rank));
+        PetscCallMPI(MPI_Comm_rank(comm,&rank));
         id   = rank % ndev;
       } else id = 0;
     }
@@ -376,17 +376,17 @@ PetscErrorCode Device<T>::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, P
 
   static_assert(std::is_same<PetscMPIInt,decltype(defaultDevice_)>::value,"");
   // id is PetscInt, _defaultDevice is int
-  CHKERRQ(PetscMPIIntCast(id,&defaultDevice_));
+  PetscCall(PetscMPIIntCast(id,&defaultDevice_));
   if (initTypeCUPM == PETSC_DEVICE_INIT_EAGER) {
     devices_[defaultDevice_] = DeviceInternal::makeDevice(defaultDevice_);
-    CHKERRQ(devices_[defaultDevice_]->initialize());
-    CHKERRQ(devices_[defaultDevice_]->configure());
+    PetscCall(devices_[defaultDevice_]->initialize());
+    PetscCall(devices_[defaultDevice_]->configure());
     if (view) {
       PetscViewer vwr;
 
-      CHKERRQ(PetscLogInitialize());
-      CHKERRQ(PetscViewerASCIIGetStdout(comm,&vwr));
-      CHKERRQ(devices_[defaultDevice_]->view(vwr));
+      PetscCall(PetscLogInitialize());
+      PetscCall(PetscViewerASCIIGetStdout(comm,&vwr));
+      PetscCall(devices_[defaultDevice_]->view(vwr));
     }
   }
 
@@ -409,7 +409,7 @@ PetscErrorCode Device<T>::getDevice(PetscDevice device, PetscInt id) const noexc
   if (devices_[id]) {
     PetscAssert(id == devices_[id]->id(),PETSC_COMM_SELF,PETSC_ERR_PLIB,"Entry %" PetscInt_FMT " contains device with mismatching id %d",id,devices_[id]->id());
   } else devices_[id] = DeviceInternal::makeDevice(id);
-  CHKERRQ(devices_[id]->initialize());
+  PetscCall(devices_[id]->initialize());
   device->deviceId           = devices_[id]->id(); // technically id = _devices[id]->_id here
   device->ops->createcontext = create_;
   device->ops->configure     = this->configureDevice;
@@ -421,7 +421,7 @@ template <DeviceType T>
 PetscErrorCode Device<T>::configureDevice(PetscDevice device) noexcept
 {
   PetscFunctionBegin;
-  CHKERRQ(devices_[device->deviceId]->configure());
+  PetscCall(devices_[device->deviceId]->configure());
   PetscFunctionReturn(0);
 }
 
@@ -431,8 +431,8 @@ PetscErrorCode Device<T>::viewDevice(PetscDevice device, PetscViewer viewer) noe
   PetscFunctionBegin;
   // now this __shouldn't__ reconfigure the device, but there is a petscinfo call to indicate
   // it is being reconfigured
-  CHKERRQ(devices_[device->deviceId]->configure());
-  CHKERRQ(devices_[device->deviceId]->view(viewer));
+  PetscCall(devices_[device->deviceId]->configure());
+  PetscCall(devices_[device->deviceId]->view(viewer));
   PetscFunctionReturn(0);
 }
 

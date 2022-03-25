@@ -16,8 +16,8 @@ PetscErrorCode MatSolve_SeqBAIJ_1_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
   PetscInt          jdx,idt,idx,nz,i;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(bb,&b));
-  CHKERRQ(VecGetArray(xx,&x));
+  PetscCall(VecGetArrayRead(bb,&b));
+  PetscCall(VecGetArray(xx,&x));
 
   /* forward solve the lower triangular */
   idx  = 0;
@@ -52,9 +52,9 @@ PetscErrorCode MatSolve_SeqBAIJ_1_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
     v      = aa +  diag[i];
     x[idt] = v[0]*s1;
   }
-  CHKERRQ(VecRestoreArrayRead(bb,&b));
-  CHKERRQ(VecRestoreArray(xx,&x));
-  CHKERRQ(PetscLogFlops(2.0*(a->nz) - A->cmap->n));
+  PetscCall(VecRestoreArrayRead(bb,&b));
+  PetscCall(VecRestoreArray(xx,&x));
+  PetscCall(PetscLogFlops(2.0*(a->nz) - A->cmap->n));
   PetscFunctionReturn(0);
 }
 
@@ -70,8 +70,8 @@ PetscErrorCode MatForwardSolve_SeqBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
   PetscFunctionBegin;
   if (!n) PetscFunctionReturn(0);
 
-  CHKERRQ(VecGetArrayRead(bb,&b));
-  CHKERRQ(VecGetArray(xx,&x));
+  PetscCall(VecGetArrayRead(bb,&b));
+  PetscCall(VecGetArray(xx,&x));
 
   /* forward solve the lower triangular */
   x[0] = b[0];
@@ -85,9 +85,9 @@ PetscErrorCode MatForwardSolve_SeqBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
     vi  += nz;
     x[i] = sum;
   }
-  CHKERRQ(PetscLogFlops(a->nz - A->cmap->n));
-  CHKERRQ(VecRestoreArrayRead(bb,&b));
-  CHKERRQ(VecRestoreArray(xx,&x));
+  PetscCall(PetscLogFlops(a->nz - A->cmap->n));
+  PetscCall(VecRestoreArrayRead(bb,&b));
+  PetscCall(VecRestoreArray(xx,&x));
   PetscFunctionReturn(0);
 }
 
@@ -103,8 +103,8 @@ PetscErrorCode MatBackwardSolve_SeqBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
   PetscFunctionBegin;
   if (!n) PetscFunctionReturn(0);
 
-  CHKERRQ(VecGetArrayRead(bb,&b));
-  CHKERRQ(VecGetArray(xx,&x));
+  PetscCall(VecGetArrayRead(bb,&b));
+  PetscCall(VecGetArray(xx,&x));
 
   /* backward solve the upper triangular */
   for (i=n-1; i>=0; i--) {
@@ -116,9 +116,9 @@ PetscErrorCode MatBackwardSolve_SeqBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
     x[i] = sum*v[nz]; /* x[i]=aa[adiag[i]]*sum; v++; */
   }
 
-  CHKERRQ(PetscLogFlops(2.0*a->nz - A->cmap->n));
-  CHKERRQ(VecRestoreArrayRead(bb,&b));
-  CHKERRQ(VecRestoreArray(xx,&x));
+  PetscCall(PetscLogFlops(2.0*a->nz - A->cmap->n));
+  PetscCall(VecRestoreArrayRead(bb,&b));
+  PetscCall(VecRestoreArray(xx,&x));
   PetscFunctionReturn(0);
 }
 
@@ -134,8 +134,8 @@ PetscErrorCode MatSolve_SeqBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
   PetscFunctionBegin;
   if (!n) PetscFunctionReturn(0);
 
-  CHKERRQ(VecGetArrayRead(bb,&b));
-  CHKERRQ(VecGetArray(xx,&x));
+  PetscCall(VecGetArrayRead(bb,&b));
+  PetscCall(VecGetArray(xx,&x));
 
   /* forward solve the lower triangular */
   x[0] = b[0];
@@ -160,8 +160,8 @@ PetscErrorCode MatSolve_SeqBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
     x[i] = sum*v[nz]; /* x[i]=aa[adiag[i]]*sum; v++; */
   }
 
-  CHKERRQ(PetscLogFlops(2.0*a->nz - A->cmap->n));
-  CHKERRQ(VecRestoreArrayRead(bb,&b));
-  CHKERRQ(VecRestoreArray(xx,&x));
+  PetscCall(PetscLogFlops(2.0*a->nz - A->cmap->n));
+  PetscCall(VecRestoreArrayRead(bb,&b));
+  PetscCall(VecRestoreArray(xx,&x));
   PetscFunctionReturn(0);
 }

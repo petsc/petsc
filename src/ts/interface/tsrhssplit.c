@@ -8,7 +8,7 @@ static PetscErrorCode TSRHSSplitGetRHSSplit(TS ts,const char splitname[],TS_RHSS
   *isplit = ts->tsrhssplit;
   /* look up the split */
   while (*isplit) {
-    CHKERRQ(PetscStrcmp((*isplit)->splitname,splitname,&found));
+    PetscCall(PetscStrcmp((*isplit)->splitname,splitname,&found));
     if (found) break;
     *isplit = (*isplit)->next;
   }
@@ -39,21 +39,21 @@ PetscErrorCode TSRHSSplitSetIS(TS ts,const char splitname[],IS is)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(is,IS_CLASSID,3);
 
-  CHKERRQ(PetscNew(&newsplit));
+  PetscCall(PetscNew(&newsplit));
   if (splitname) {
-    CHKERRQ(PetscStrallocpy(splitname,&newsplit->splitname));
+    PetscCall(PetscStrallocpy(splitname,&newsplit->splitname));
   } else {
-    CHKERRQ(PetscMalloc1(8,&newsplit->splitname));
-    CHKERRQ(PetscSNPrintf(newsplit->splitname,7,"%D",ts->num_rhs_splits));
+    PetscCall(PetscMalloc1(8,&newsplit->splitname));
+    PetscCall(PetscSNPrintf(newsplit->splitname,7,"%D",ts->num_rhs_splits));
   }
-  CHKERRQ(PetscObjectReference((PetscObject)is));
+  PetscCall(PetscObjectReference((PetscObject)is));
   newsplit->is = is;
-  CHKERRQ(TSCreate(PetscObjectComm((PetscObject)ts),&newsplit->ts));
+  PetscCall(TSCreate(PetscObjectComm((PetscObject)ts),&newsplit->ts));
 
-  CHKERRQ(PetscObjectIncrementTabLevel((PetscObject)newsplit->ts,(PetscObject)ts,1));
-  CHKERRQ(PetscLogObjectParent((PetscObject)ts,(PetscObject)newsplit->ts));
-  CHKERRQ(PetscSNPrintf(prefix,sizeof(prefix),"%srhsplit_%s_",((PetscObject)ts)->prefix ? ((PetscObject)ts)->prefix : "",newsplit->splitname));
-  CHKERRQ(TSSetOptionsPrefix(newsplit->ts,prefix));
+  PetscCall(PetscObjectIncrementTabLevel((PetscObject)newsplit->ts,(PetscObject)ts,1));
+  PetscCall(PetscLogObjectParent((PetscObject)ts,(PetscObject)newsplit->ts));
+  PetscCall(PetscSNPrintf(prefix,sizeof(prefix),"%srhsplit_%s_",((PetscObject)ts)->prefix ? ((PetscObject)ts)->prefix : "",newsplit->splitname));
+  PetscCall(TSSetOptionsPrefix(newsplit->ts,prefix));
   if (!next) ts->tsrhssplit = newsplit;
   else {
     while (next->next) next = next->next;
@@ -88,7 +88,7 @@ PetscErrorCode TSRHSSplitGetIS(TS ts,const char splitname[],IS *is)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   *is = NULL;
   /* look up the split */
-  CHKERRQ(TSRHSSplitGetRHSSplit(ts,splitname,&isplit));
+  PetscCall(TSRHSSplitGetRHSSplit(ts,splitname,&isplit));
   if (isplit) *is = isplit->is;
   PetscFunctionReturn(0);
 }
@@ -127,29 +127,29 @@ PetscErrorCode TSRHSSplitSetRHSFunction(TS ts,const char splitname[],Vec r,TSRHS
   if (r) PetscValidHeaderSpecific(r,VEC_CLASSID,3);
 
   /* look up the split */
-  CHKERRQ(TSRHSSplitGetRHSSplit(ts,splitname,&isplit));
+  PetscCall(TSRHSSplitGetRHSSplit(ts,splitname,&isplit));
   PetscCheck(isplit,PETSC_COMM_SELF,PETSC_ERR_USER,"The split %s is not created, check the split name or call TSRHSSplitSetIS() to create one",splitname);
 
   if (!r && ts->vec_sol) {
-    CHKERRQ(VecGetSubVector(ts->vec_sol,isplit->is,&subvec));
-    CHKERRQ(VecDuplicate(subvec,&ralloc));
+    PetscCall(VecGetSubVector(ts->vec_sol,isplit->is,&subvec));
+    PetscCall(VecDuplicate(subvec,&ralloc));
     r    = ralloc;
-    CHKERRQ(VecRestoreSubVector(ts->vec_sol,isplit->is,&subvec));
+    PetscCall(VecRestoreSubVector(ts->vec_sol,isplit->is,&subvec));
   }
 
   if (ts->dm) {
     PetscInt dim;
 
-    CHKERRQ(DMGetDimension(ts->dm, &dim));
+    PetscCall(DMGetDimension(ts->dm, &dim));
     if (dim != -1) {
-      CHKERRQ(DMClone(ts->dm, &dmc));
-      CHKERRQ(TSSetDM(isplit->ts, dmc));
-      CHKERRQ(DMDestroy(&dmc));
+      PetscCall(DMClone(ts->dm, &dmc));
+      PetscCall(TSSetDM(isplit->ts, dmc));
+      PetscCall(DMDestroy(&dmc));
     }
   }
 
-  CHKERRQ(TSSetRHSFunction(isplit->ts,r,rhsfunc,ctx));
-  CHKERRQ(VecDestroy(&ralloc));
+  PetscCall(TSSetRHSFunction(isplit->ts,r,rhsfunc,ctx));
+  PetscCall(VecDestroy(&ralloc));
   PetscFunctionReturn(0);
 }
 
@@ -178,7 +178,7 @@ PetscErrorCode TSRHSSplitGetSubTS(TS ts,const char splitname[],TS *subts)
   PetscValidPointer(subts,3);
   *subts = NULL;
   /* look up the split */
-  CHKERRQ(TSRHSSplitGetRHSSplit(ts,splitname,&isplit));
+  PetscCall(TSRHSSplitGetRHSSplit(ts,splitname,&isplit));
   if (isplit) *subts = isplit->ts;
   PetscFunctionReturn(0);
 }
@@ -211,7 +211,7 @@ PetscErrorCode TSRHSSplitGetSubTSs(TS ts,PetscInt *n,TS *subts[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (subts) {
-    CHKERRQ(PetscMalloc1(ts->num_rhs_splits,subts));
+    PetscCall(PetscMalloc1(ts->num_rhs_splits,subts));
     while (ilink) {
       (*subts)[i++] = ilink->ts;
       ilink = ilink->next;

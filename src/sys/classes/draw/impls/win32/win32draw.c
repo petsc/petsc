@@ -687,10 +687,10 @@ static PetscErrorCode PetscDrawGetPopup_Win32(PetscDraw draw,PetscDraw *popup)
   PetscBool       flg  = PETSC_TRUE;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsGetBool(((PetscObject)draw)->options,((PetscObject)draw)->prefix,"-draw_popup",&flg,NULL));
+  PetscCall(PetscOptionsGetBool(((PetscObject)draw)->options,((PetscObject)draw)->prefix,"-draw_popup",&flg,NULL));
   if (flg) {
-    CHKERRQ(PetscDrawCreate(PetscObjectComm((PetscObject)draw),NULL,NULL,win->x,win->y+win->h+36,220,220,popup));
-    CHKERRQ(PetscDrawSetType(*popup,PETSC_DRAW_WIN32));
+    PetscCall(PetscDrawCreate(PetscObjectComm((PetscObject)draw),NULL,NULL,win->x,win->y+win->h+36,220,220,popup));
+    PetscCall(PetscDrawSetType(*popup,PETSC_DRAW_WIN32));
     draw->popup = *popup;
   } else {
     *popup = NULL;
@@ -704,12 +704,12 @@ PETSC_EXTERN PetscErrorCode  PetscDrawCreate_Win32(PetscDraw draw)
   WindowNode      newnode;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNew(&windraw));
+  PetscCall(PetscNew(&windraw));
   draw->data = windraw;
 
   /* the following is temporary fix for initializing a global datastructure */
   if (!g_hWindowListMutex) g_hWindowListMutex = CreateMutex(NULL,FALSE,NULL);
-  CHKERRQ(PetscMemcpy(draw->ops,&DvOps,sizeof(DvOps)));
+  PetscCall(PetscMemcpy(draw->ops,&DvOps,sizeof(DvOps)));
 
   windraw->hReadyEvent = CreateEvent(NULL,TRUE,FALSE,NULL);
   /* makes call to MessageLoopThread to creat window and attach a thread */
@@ -719,7 +719,7 @@ PETSC_EXTERN PetscErrorCode  PetscDrawCreate_Win32(PetscDraw draw)
   CloseHandle(windraw->hReadyEvent);
   WaitForSingleObject(g_hWindowListMutex,INFINITE);
 
-  CHKERRQ(PetscNew(&newnode));
+  PetscCall(PetscNew(&newnode));
   newnode->MouseListHead = NULL;
   newnode->MouseListTail = NULL;
   newnode->wnext         = WindowListHead;
@@ -838,7 +838,7 @@ static PetscErrorCode MouseRecord_Win32(HWND hWnd,PetscDrawButton button)
     while (current) {
       if (current->hWnd == hWnd) {
 
-        CHKERRQ(PetscNew(&newnode));
+        PetscCall(PetscNew(&newnode));
         newnode->Button = button;
         GetCursorPos(&mousepos);
         newnode->user.x = mousepos.x;

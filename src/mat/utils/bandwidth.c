@@ -26,19 +26,19 @@ PetscErrorCode MatComputeBandwidth(Mat A, PetscReal fraction, PetscInt *bw)
   PetscValidLogicalCollectiveReal(A,fraction,2);
   PetscValidIntPointer(bw, 3);
   PetscCheckFalse((fraction > 0.0) && (fraction < 1.0),PetscObjectComm((PetscObject) A), PETSC_ERR_SUP, "We do not yet support a fractional bandwidth");
-  CHKERRQ(MatGetOwnershipRange(A, &rStart, &rEnd));
+  PetscCall(MatGetOwnershipRange(A, &rStart, &rEnd));
   for (r = rStart; r < rEnd; ++r) {
     const PetscInt *cols;
     PetscInt        ncols;
 
-    CHKERRQ(MatGetRow(A, r, &ncols, &cols, NULL));
+    PetscCall(MatGetRow(A, r, &ncols, &cols, NULL));
     if (ncols) {
       lbw[0] = PetscMax(lbw[0], r - cols[0]);
       lbw[1] = PetscMax(lbw[1], cols[ncols-1] - r);
     }
-    CHKERRQ(MatRestoreRow(A, r, &ncols, &cols, NULL));
+    PetscCall(MatRestoreRow(A, r, &ncols, &cols, NULL));
   }
-  CHKERRMPI(MPIU_Allreduce(lbw, gbw, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject) A)));
+  PetscCallMPI(MPIU_Allreduce(lbw, gbw, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject) A)));
   *bw = 2*PetscMax(gbw[0], gbw[1]) + 1;
   PetscFunctionReturn(0);
 }

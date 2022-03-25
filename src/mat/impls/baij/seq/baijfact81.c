@@ -27,8 +27,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_9_NaturalOrdering(Mat B,Mat A,const Ma
   allowzeropivot = PetscNot(A->erroriffailure);
 
   /* generate work space needed by the factorization */
-  CHKERRQ(PetscMalloc2(bs2*n,&rtmp,bs2,&mwork));
-  CHKERRQ(PetscArrayzero(rtmp,bs2*n));
+  PetscCall(PetscMalloc2(bs2*n,&rtmp,bs2,&mwork));
+  PetscCall(PetscArrayzero(rtmp,bs2*n));
 
   for (i=0; i<n; i++) {
     /* zero rtmp */
@@ -36,14 +36,14 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_9_NaturalOrdering(Mat B,Mat A,const Ma
     nz    = bi[i+1] - bi[i];
     bjtmp = bj + bi[i];
     for  (j=0; j<nz; j++) {
-      CHKERRQ(PetscArrayzero(rtmp+bs2*bjtmp[j],bs2));
+      PetscCall(PetscArrayzero(rtmp+bs2*bjtmp[j],bs2));
     }
 
     /* U part */
     nz    = bdiag[i] - bdiag[i+1];
     bjtmp = bj + bdiag[i+1]+1;
     for  (j=0; j<nz; j++) {
-      CHKERRQ(PetscArrayzero(rtmp+bs2*bjtmp[j],bs2));
+      PetscCall(PetscArrayzero(rtmp+bs2*bjtmp[j],bs2));
     }
 
     /* load in initial (unfactored row) */
@@ -51,7 +51,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_9_NaturalOrdering(Mat B,Mat A,const Ma
     ajtmp = aj + ai[i];
     v     = aa + bs2*ai[i];
     for (j=0; j<nz; j++) {
-      CHKERRQ(PetscArraycpy(rtmp+bs2*ajtmp[j],v+bs2*j,bs2));
+      PetscCall(PetscArraycpy(rtmp+bs2*ajtmp[j],v+bs2*j,bs2));
     }
 
     /* elimination */
@@ -69,7 +69,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_9_NaturalOrdering(Mat B,Mat A,const Ma
       if (flg) {
         pv = b->a + bs2*bdiag[row];
         /* PetscKernel_A_gets_A_times_B(bs,pc,pv,mwork); *pc = *pc * (*pv); */
-        CHKERRQ(PetscKernel_A_gets_A_times_B_9(pc,pv,mwork));
+        PetscCall(PetscKernel_A_gets_A_times_B_9(pc,pv,mwork));
 
         pj = b->j + bdiag[row+1]+1; /* beginning of U(row,:) */
         pv = b->a + bs2*(bdiag[row+1]+1);
@@ -78,10 +78,10 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_9_NaturalOrdering(Mat B,Mat A,const Ma
           /* PetscKernel_A_gets_A_minus_B_times_C(bs,rtmp+bs2*pj[j],pc,pv+bs2*j); */
           /* rtmp+bs2*pj[j] = rtmp+bs2*pj[j] - (*pc)*(pv+bs2*j) */
           v    = rtmp + bs2*pj[j];
-          CHKERRQ(PetscKernel_A_gets_A_minus_B_times_C_9(v,pc,pv+81*j));
+          PetscCall(PetscKernel_A_gets_A_minus_B_times_C_9(v,pc,pv+81*j));
           /* pv incremented in PetscKernel_A_gets_A_minus_B_times_C_9 */
         }
-        CHKERRQ(PetscLogFlops(1458*nz+1377)); /* flops = 2*bs^3*nz + 2*bs^3 - bs2) */
+        PetscCall(PetscLogFlops(1458*nz+1377)); /* flops = 2*bs^3*nz + 2*bs^3 - bs2) */
       }
     }
 
@@ -91,14 +91,14 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_9_NaturalOrdering(Mat B,Mat A,const Ma
     pj = b->j + bi[i];
     nz = bi[i+1] - bi[i];
     for (j=0; j<nz; j++) {
-      CHKERRQ(PetscArraycpy(pv+bs2*j,rtmp+bs2*pj[j],bs2));
+      PetscCall(PetscArraycpy(pv+bs2*j,rtmp+bs2*pj[j],bs2));
     }
 
     /* Mark diagonal and invert diagonal for simpler triangular solves */
     pv   = b->a + bs2*bdiag[i];
     pj   = b->j + bdiag[i];
-    CHKERRQ(PetscArraycpy(pv,rtmp+bs2*pj[0],bs2));
-    CHKERRQ(PetscKernel_A_gets_inverse_A_9(pv,shift,allowzeropivot,&zeropivotdetected));
+    PetscCall(PetscArraycpy(pv,rtmp+bs2*pj[0],bs2));
+    PetscCall(PetscKernel_A_gets_inverse_A_9(pv,shift,allowzeropivot,&zeropivotdetected));
     if (zeropivotdetected) C->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
 
     /* U part */
@@ -106,16 +106,16 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_9_NaturalOrdering(Mat B,Mat A,const Ma
     pj = b->j + bdiag[i+1]+1;
     nz = bdiag[i] - bdiag[i+1] - 1;
     for (j=0; j<nz; j++) {
-      CHKERRQ(PetscArraycpy(pv+bs2*j,rtmp+bs2*pj[j],bs2));
+      PetscCall(PetscArraycpy(pv+bs2*j,rtmp+bs2*pj[j],bs2));
     }
   }
-  CHKERRQ(PetscFree2(rtmp,mwork));
+  PetscCall(PetscFree2(rtmp,mwork));
 
   C->ops->solve          = MatSolve_SeqBAIJ_9_NaturalOrdering;
   C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_N;
   C->assembled           = PETSC_TRUE;
 
-  CHKERRQ(PetscLogFlops(1.333333333333*9*9*9*n)); /* from inverting diagonal blocks */
+  PetscCall(PetscLogFlops(1.333333333333*9*9*9*n)); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
 }
 
@@ -131,19 +131,19 @@ PetscErrorCode MatSolve_SeqBAIJ_9_NaturalOrdering(Mat A,Vec bb,Vec xx)
   __m256d a0,a1,a2,a3,a4,a5,w0,w1,w2,w3,s0,s1,s2,v0,v1,v2,v3;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(bb,&b));
-  CHKERRQ(VecGetArray(xx,&x));
+  PetscCall(VecGetArrayRead(bb,&b));
+  PetscCall(VecGetArray(xx,&x));
   t    = a->solve_work;
 
   /* forward solve the lower triangular */
-  CHKERRQ(PetscArraycpy(t,b,bs)); /* copy 1st block of b to t */
+  PetscCall(PetscArraycpy(t,b,bs)); /* copy 1st block of b to t */
 
   for (i=1; i<n; i++) {
     v    = aa + bs2*ai[i];
     vi   = aj + ai[i];
     nz   = ai[i+1] - ai[i];
     s    = t + bs*i;
-    CHKERRQ(PetscArraycpy(s,b+bs*i,bs)); /* copy i_th block of b to t */
+    PetscCall(PetscArraycpy(s,b+bs*i,bs)); /* copy i_th block of b to t */
 
     __m256d s0,s1,s2;
     s0 = _mm256_loadu_pd(s+0);
@@ -210,7 +210,7 @@ PetscErrorCode MatSolve_SeqBAIJ_9_NaturalOrdering(Mat A,Vec bb,Vec xx)
     v    = aa + bs2*(adiag[i+1]+1);
     vi   = aj + adiag[i+1]+1;
     nz   = adiag[i] - adiag[i+1]-1;
-    CHKERRQ(PetscArraycpy(ls,t+i*bs,bs));
+    PetscCall(PetscArraycpy(ls,t+i*bs,bs));
 
     s0 = _mm256_loadu_pd(ls+0);
     s1 = _mm256_loadu_pd(ls+4);
@@ -335,12 +335,12 @@ PetscErrorCode MatSolve_SeqBAIJ_9_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
     _mm256_storeu_pd(&(t+i*bs)[0], w0); _mm256_storeu_pd(&(t+i*bs)[4], w1); _mm256_maskstore_pd(&(t+i*bs)[8], _mm256_set_epi64x(0LL, 0LL, 0LL, 1LL<<63), w2);
 
-    CHKERRQ(PetscArraycpy(x+i*bs,t+i*bs,bs));
+    PetscCall(PetscArraycpy(x+i*bs,t+i*bs,bs));
   }
 
-  CHKERRQ(VecRestoreArrayRead(bb,&b));
-  CHKERRQ(VecRestoreArray(xx,&x));
-  CHKERRQ(PetscLogFlops(2.0*(a->bs2)*(a->nz) - A->rmap->bs*A->cmap->n));
+  PetscCall(VecRestoreArrayRead(bb,&b));
+  PetscCall(VecRestoreArray(xx,&x));
+  PetscCall(PetscLogFlops(2.0*(a->bs2)*(a->nz) - A->rmap->bs*A->cmap->n));
   PetscFunctionReturn(0);
 }
 #endif

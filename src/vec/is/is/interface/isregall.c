@@ -19,8 +19,8 @@ PetscErrorCode  ISRegisterAll(void)
   if (ISRegisterAllCalled) PetscFunctionReturn(0);
   ISRegisterAllCalled = PETSC_TRUE;
 
-  CHKERRQ(ISRegister(ISGENERAL, ISCreate_General));
-  CHKERRQ(ISRegister(ISSTRIDE,  ISCreate_Stride));
-  CHKERRQ(ISRegister(ISBLOCK,   ISCreate_Block));
+  PetscCall(ISRegister(ISGENERAL, ISCreate_General));
+  PetscCall(ISRegister(ISSTRIDE,  ISCreate_Stride));
+  PetscCall(ISRegister(ISBLOCK,   ISCreate_Block));
   PetscFunctionReturn(0);
 }

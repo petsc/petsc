@@ -45,24 +45,24 @@ static PetscErrorCode MatSolve_LMVMSR1(Mat B, Vec F, Vec dX)
   if (lsr1->needQ) {
     /* Pre-compute (Q[i] = S[i] - (B_i)^{-1} * Y[i]) and (Y[i]^T Q[i]) */
     for (i = 0; i <= lmvm->k; ++i) {
-      CHKERRQ(MatLMVMApplyJ0Inv(B, lmvm->Y[i], lsr1->Q[i]));
-      CHKERRQ(VecAYPX(lsr1->Q[i], -1.0, lmvm->S[i]));
+      PetscCall(MatLMVMApplyJ0Inv(B, lmvm->Y[i], lsr1->Q[i]));
+      PetscCall(VecAYPX(lsr1->Q[i], -1.0, lmvm->S[i]));
       for (j = 0; j <= i-1; ++j) {
-        CHKERRQ(VecDot(lsr1->Q[j], lmvm->Y[i], &qjtyi));
-        CHKERRQ(VecAXPY(lsr1->Q[i], -PetscRealPart(qjtyi)/lsr1->ytq[j], lsr1->Q[j]));
+        PetscCall(VecDot(lsr1->Q[j], lmvm->Y[i], &qjtyi));
+        PetscCall(VecAXPY(lsr1->Q[i], -PetscRealPart(qjtyi)/lsr1->ytq[j], lsr1->Q[j]));
       }
-      CHKERRQ(VecDot(lmvm->Y[i], lsr1->Q[i], &ytq));
+      PetscCall(VecDot(lmvm->Y[i], lsr1->Q[i], &ytq));
       lsr1->ytq[i] = PetscRealPart(ytq);
     }
     lsr1->needQ = PETSC_FALSE;
   }
 
   /* Invert the initial Jacobian onto F (or apply scaling) */
-  CHKERRQ(MatLMVMApplyJ0Inv(B, F, dX));
+  PetscCall(MatLMVMApplyJ0Inv(B, F, dX));
   /* Start outer loop */
   for (i = 0; i <= lmvm->k; ++i) {
-    CHKERRQ(VecDot(lsr1->Q[i], F, &qtf));
-    CHKERRQ(VecAXPY(dX, PetscRealPart(qtf)/lsr1->ytq[i], lsr1->Q[i]));
+    PetscCall(VecDot(lsr1->Q[i], F, &qtf));
+    PetscCall(VecAXPY(dX, PetscRealPart(qtf)/lsr1->ytq[i], lsr1->Q[i]));
   }
   PetscFunctionReturn(0);
 }
@@ -103,22 +103,22 @@ static PetscErrorCode MatMult_LMVMSR1(Mat B, Vec X, Vec Z)
   if (lsr1->needP) {
     /* Pre-compute (P[i] = Y[i] - (B_i) * S[i]) and (S[i]^T P[i]) */
     for (i = 0; i <= lmvm->k; ++i) {
-      CHKERRQ(MatLMVMApplyJ0Fwd(B, lmvm->S[i], lsr1->P[i]));
-      CHKERRQ(VecAYPX(lsr1->P[i], -1.0, lmvm->Y[i]));
+      PetscCall(MatLMVMApplyJ0Fwd(B, lmvm->S[i], lsr1->P[i]));
+      PetscCall(VecAYPX(lsr1->P[i], -1.0, lmvm->Y[i]));
       for (j = 0; j <= i-1; ++j) {
-        CHKERRQ(VecDot(lsr1->P[j], lmvm->S[i], &pjtsi));
-        CHKERRQ(VecAXPY(lsr1->P[i], -PetscRealPart(pjtsi)/lsr1->stp[j], lsr1->P[j]));
+        PetscCall(VecDot(lsr1->P[j], lmvm->S[i], &pjtsi));
+        PetscCall(VecAXPY(lsr1->P[i], -PetscRealPart(pjtsi)/lsr1->stp[j], lsr1->P[j]));
       }
-      CHKERRQ(VecDot(lmvm->S[i], lsr1->P[i], &stp));
+      PetscCall(VecDot(lmvm->S[i], lsr1->P[i], &stp));
       lsr1->stp[i] = PetscRealPart(stp);
     }
     lsr1->needP = PETSC_FALSE;
   }
 
-  CHKERRQ(MatLMVMApplyJ0Fwd(B, X, Z));
+  PetscCall(MatLMVMApplyJ0Fwd(B, X, Z));
   for (i = 0; i <= lmvm->k; ++i) {
-    CHKERRQ(VecDot(lsr1->P[i], X, &ptx));
-    CHKERRQ(VecAXPY(Z, PetscRealPart(ptx)/lsr1->stp[i], lsr1->P[i]));
+    PetscCall(VecDot(lsr1->P[i], X, &ptx));
+    PetscCall(VecAXPY(Z, PetscRealPart(ptx)/lsr1->stp[i], lsr1->P[i]));
   }
   PetscFunctionReturn(0);
 }
@@ -136,27 +136,27 @@ static PetscErrorCode MatUpdate_LMVMSR1(Mat B, Vec X, Vec F)
   if (!lmvm->m) PetscFunctionReturn(0);
   if (lmvm->prev_set) {
     /* Compute the new (S = X - Xprev) and (Y = F - Fprev) vectors */
-    CHKERRQ(VecAYPX(lmvm->Xprev, -1.0, X));
-    CHKERRQ(VecAYPX(lmvm->Fprev, -1.0, F));
+    PetscCall(VecAYPX(lmvm->Xprev, -1.0, X));
+    PetscCall(VecAYPX(lmvm->Fprev, -1.0, F));
     /* See if the updates can be accepted
        NOTE: This tests abs(S[k]^T (Y[k] - B_k*S[k])) >= eps * norm(S[k]) * norm(Y[k] - B_k*S[k]) */
-    CHKERRQ(MatMult(B, lmvm->Xprev, lsr1->work));
-    CHKERRQ(VecAYPX(lsr1->work, -1.0, lmvm->Fprev));
-    CHKERRQ(VecDot(lmvm->Xprev, lsr1->work, &sktw));
-    CHKERRQ(VecNorm(lmvm->Xprev, NORM_2, &snorm));
-    CHKERRQ(VecNorm(lsr1->work, NORM_2, &pnorm));
+    PetscCall(MatMult(B, lmvm->Xprev, lsr1->work));
+    PetscCall(VecAYPX(lsr1->work, -1.0, lmvm->Fprev));
+    PetscCall(VecDot(lmvm->Xprev, lsr1->work, &sktw));
+    PetscCall(VecNorm(lmvm->Xprev, NORM_2, &snorm));
+    PetscCall(VecNorm(lsr1->work, NORM_2, &pnorm));
     if (PetscAbsReal(PetscRealPart(sktw)) >= lmvm->eps * snorm * pnorm) {
       /* Update is good, accept it */
       lsr1->needP = lsr1->needQ = PETSC_TRUE;
-      CHKERRQ(MatUpdateKernel_LMVM(B, lmvm->Xprev, lmvm->Fprev));
+      PetscCall(MatUpdateKernel_LMVM(B, lmvm->Xprev, lmvm->Fprev));
     } else {
       /* Update is bad, skip it */
       ++lmvm->nrejects;
     }
   }
   /* Save the solution and function to be used in the next update */
-  CHKERRQ(VecCopy(X, lmvm->Xprev));
-  CHKERRQ(VecCopy(F, lmvm->Fprev));
+  PetscCall(VecCopy(X, lmvm->Xprev));
+  PetscCall(VecCopy(F, lmvm->Fprev));
   lmvm->prev_set = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -177,8 +177,8 @@ static PetscErrorCode MatCopy_LMVMSR1(Mat B, Mat M, MatStructure str)
   for (i=0; i<=bdata->k; ++i) {
     mctx->stp[i] = bctx->stp[i];
     mctx->ytq[i] = bctx->ytq[i];
-    CHKERRQ(VecCopy(bctx->P[i], mctx->P[i]));
-    CHKERRQ(VecCopy(bctx->Q[i], mctx->Q[i]));
+    PetscCall(VecCopy(bctx->P[i], mctx->P[i]));
+    PetscCall(VecCopy(bctx->Q[i], mctx->Q[i]));
   }
   PetscFunctionReturn(0);
 }
@@ -193,13 +193,13 @@ static PetscErrorCode MatReset_LMVMSR1(Mat B, PetscBool destructive)
   PetscFunctionBegin;
   lsr1->needP = lsr1->needQ = PETSC_TRUE;
   if (destructive && lsr1->allocated) {
-    CHKERRQ(VecDestroy(&lsr1->work));
-    CHKERRQ(PetscFree2(lsr1->stp, lsr1->ytq));
-    CHKERRQ(VecDestroyVecs(lmvm->m, &lsr1->P));
-    CHKERRQ(VecDestroyVecs(lmvm->m, &lsr1->Q));
+    PetscCall(VecDestroy(&lsr1->work));
+    PetscCall(PetscFree2(lsr1->stp, lsr1->ytq));
+    PetscCall(VecDestroyVecs(lmvm->m, &lsr1->P));
+    PetscCall(VecDestroyVecs(lmvm->m, &lsr1->Q));
     lsr1->allocated = PETSC_FALSE;
   }
-  CHKERRQ(MatReset_LMVM(B, destructive));
+  PetscCall(MatReset_LMVM(B, destructive));
   PetscFunctionReturn(0);
 }
 
@@ -211,13 +211,13 @@ static PetscErrorCode MatAllocate_LMVMSR1(Mat B, Vec X, Vec F)
   Mat_LSR1          *lsr1 = (Mat_LSR1*)lmvm->ctx;
 
   PetscFunctionBegin;
-  CHKERRQ(MatAllocate_LMVM(B, X, F));
+  PetscCall(MatAllocate_LMVM(B, X, F));
   if (!lsr1->allocated) {
-    CHKERRQ(VecDuplicate(X, &lsr1->work));
-    CHKERRQ(PetscMalloc2(lmvm->m, &lsr1->stp, lmvm->m, &lsr1->ytq));
+    PetscCall(VecDuplicate(X, &lsr1->work));
+    PetscCall(PetscMalloc2(lmvm->m, &lsr1->stp, lmvm->m, &lsr1->ytq));
     if (lmvm->m > 0) {
-      CHKERRQ(VecDuplicateVecs(X, lmvm->m, &lsr1->P));
-      CHKERRQ(VecDuplicateVecs(X, lmvm->m, &lsr1->Q));
+      PetscCall(VecDuplicateVecs(X, lmvm->m, &lsr1->P));
+      PetscCall(VecDuplicateVecs(X, lmvm->m, &lsr1->Q));
     }
     lsr1->allocated = PETSC_TRUE;
   }
@@ -233,14 +233,14 @@ static PetscErrorCode MatDestroy_LMVMSR1(Mat B)
 
   PetscFunctionBegin;
   if (lsr1->allocated) {
-    CHKERRQ(VecDestroy(&lsr1->work));
-    CHKERRQ(PetscFree2(lsr1->stp, lsr1->ytq));
-    CHKERRQ(VecDestroyVecs(lmvm->m, &lsr1->P));
-    CHKERRQ(VecDestroyVecs(lmvm->m, &lsr1->Q));
+    PetscCall(VecDestroy(&lsr1->work));
+    PetscCall(PetscFree2(lsr1->stp, lsr1->ytq));
+    PetscCall(VecDestroyVecs(lmvm->m, &lsr1->P));
+    PetscCall(VecDestroyVecs(lmvm->m, &lsr1->Q));
     lsr1->allocated = PETSC_FALSE;
   }
-  CHKERRQ(PetscFree(lmvm->ctx));
-  CHKERRQ(MatDestroy_LMVM(B));
+  PetscCall(PetscFree(lmvm->ctx));
+  PetscCall(MatDestroy_LMVM(B));
   PetscFunctionReturn(0);
 }
 
@@ -252,13 +252,13 @@ static PetscErrorCode MatSetUp_LMVMSR1(Mat B)
   Mat_LSR1          *lsr1 = (Mat_LSR1*)lmvm->ctx;
 
   PetscFunctionBegin;
-  CHKERRQ(MatSetUp_LMVM(B));
+  PetscCall(MatSetUp_LMVM(B));
   if (!lsr1->allocated && lmvm->m > 0) {
-    CHKERRQ(VecDuplicate(lmvm->Xprev, &lsr1->work));
-    CHKERRQ(PetscMalloc2(lmvm->m, &lsr1->stp, lmvm->m, &lsr1->ytq));
+    PetscCall(VecDuplicate(lmvm->Xprev, &lsr1->work));
+    PetscCall(PetscMalloc2(lmvm->m, &lsr1->stp, lmvm->m, &lsr1->ytq));
     if (lmvm->m > 0) {
-      CHKERRQ(VecDuplicateVecs(lmvm->Xprev, lmvm->m, &lsr1->P));
-      CHKERRQ(VecDuplicateVecs(lmvm->Xprev, lmvm->m, &lsr1->Q));
+      PetscCall(VecDuplicateVecs(lmvm->Xprev, lmvm->m, &lsr1->P));
+      PetscCall(VecDuplicateVecs(lmvm->Xprev, lmvm->m, &lsr1->Q));
     }
     lsr1->allocated = PETSC_TRUE;
   }
@@ -273,9 +273,9 @@ PetscErrorCode MatCreate_LMVMSR1(Mat B)
   Mat_LSR1          *lsr1;
 
   PetscFunctionBegin;
-  CHKERRQ(MatCreate_LMVM(B));
-  CHKERRQ(PetscObjectChangeTypeName((PetscObject)B, MATLMVMSR1));
-  CHKERRQ(MatSetOption(B, MAT_SYMMETRIC, PETSC_TRUE));
+  PetscCall(MatCreate_LMVM(B));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATLMVMSR1));
+  PetscCall(MatSetOption(B, MAT_SYMMETRIC, PETSC_TRUE));
   B->ops->setup = MatSetUp_LMVMSR1;
   B->ops->destroy = MatDestroy_LMVMSR1;
   B->ops->solve = MatSolve_LMVMSR1;
@@ -288,7 +288,7 @@ PetscErrorCode MatCreate_LMVMSR1(Mat B)
   lmvm->ops->mult = MatMult_LMVMSR1;
   lmvm->ops->copy = MatCopy_LMVMSR1;
 
-  CHKERRQ(PetscNewLog(B, &lsr1));
+  PetscCall(PetscNewLog(B, &lsr1));
   lmvm->ctx = (void*)lsr1;
   lsr1->allocated = PETSC_FALSE;
   lsr1->needP = lsr1->needQ = PETSC_TRUE;
@@ -334,9 +334,9 @@ PetscErrorCode MatCreate_LMVMSR1(Mat B)
 PetscErrorCode MatCreateLMVMSR1(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)
 {
   PetscFunctionBegin;
-  CHKERRQ(MatCreate(comm, B));
-  CHKERRQ(MatSetSizes(*B, n, n, N, N));
-  CHKERRQ(MatSetType(*B, MATLMVMSR1));
-  CHKERRQ(MatSetUp(*B));
+  PetscCall(MatCreate(comm, B));
+  PetscCall(MatSetSizes(*B, n, n, N, N));
+  PetscCall(MatSetType(*B, MATLMVMSR1));
+  PetscCall(MatSetUp(*B));
   PetscFunctionReturn(0);
 }

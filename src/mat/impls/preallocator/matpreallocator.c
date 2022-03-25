@@ -14,12 +14,12 @@ PetscErrorCode MatDestroy_Preallocator(Mat A)
   Mat_Preallocator *p = (Mat_Preallocator *) A->data;
 
   PetscFunctionBegin;
-  CHKERRQ(MatStashDestroy_Private(&A->stash));
-  CHKERRQ(PetscHSetIJDestroy(&p->ht));
-  CHKERRQ(PetscFree4(p->dnz, p->onz, p->dnzu, p->onzu));
-  CHKERRQ(PetscFree(A->data));
-  CHKERRQ(PetscObjectChangeTypeName((PetscObject) A, NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject) A, "MatPreallocatorPreallocate_C", NULL));
+  PetscCall(MatStashDestroy_Private(&A->stash));
+  PetscCall(PetscHSetIJDestroy(&p->ht));
+  PetscCall(PetscFree4(p->dnz, p->onz, p->dnzu, p->onzu));
+  PetscCall(PetscFree(A->data));
+  PetscCall(PetscObjectChangeTypeName((PetscObject) A, NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject) A, "MatPreallocatorPreallocate_C", NULL));
   PetscFunctionReturn(0);
 }
 
@@ -29,16 +29,16 @@ PetscErrorCode MatSetUp_Preallocator(Mat A)
   PetscInt          m, bs, mbs;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscLayoutSetUp(A->rmap));
-  CHKERRQ(PetscLayoutSetUp(A->cmap));
-  CHKERRQ(MatGetLocalSize(A, &m, NULL));
-  CHKERRQ(PetscHSetIJCreate(&p->ht));
-  CHKERRQ(MatGetBlockSize(A, &bs));
+  PetscCall(PetscLayoutSetUp(A->rmap));
+  PetscCall(PetscLayoutSetUp(A->cmap));
+  PetscCall(MatGetLocalSize(A, &m, NULL));
+  PetscCall(PetscHSetIJCreate(&p->ht));
+  PetscCall(MatGetBlockSize(A, &bs));
   /* Do not bother bstash since MatPreallocator does not implement MatSetValuesBlocked */
-  CHKERRQ(MatStashCreate_Private(PetscObjectComm((PetscObject) A), 1, &A->stash));
+  PetscCall(MatStashCreate_Private(PetscObjectComm((PetscObject) A), 1, &A->stash));
   /* arrays are for blocked rows/cols */
   mbs  = m/bs;
-  CHKERRQ(PetscCalloc4(mbs, &p->dnz, mbs, &p->onz, mbs, &p->dnzu, mbs, &p->onzu));
+  PetscCall(PetscCalloc4(mbs, &p->dnz, mbs, &p->onz, mbs, &p->dnzu, mbs, &p->onzu));
   PetscFunctionReturn(0);
 }
 
@@ -48,9 +48,9 @@ PetscErrorCode MatSetValues_Preallocator(Mat A, PetscInt m, const PetscInt *rows
   PetscInt          rStart, rEnd, r, cStart, cEnd, c, bs;
 
   PetscFunctionBegin;
-  CHKERRQ(MatGetBlockSize(A, &bs));
-  CHKERRQ(MatGetOwnershipRange(A, &rStart, &rEnd));
-  CHKERRQ(MatGetOwnershipRangeColumn(A, &cStart, &cEnd));
+  PetscCall(MatGetBlockSize(A, &bs));
+  PetscCall(MatGetOwnershipRange(A, &rStart, &rEnd));
+  PetscCall(MatGetOwnershipRangeColumn(A, &cStart, &cEnd));
   for (r = 0; r < m; ++r) {
     PetscHashIJKey key;
     PetscBool      missing;
@@ -58,13 +58,13 @@ PetscErrorCode MatSetValues_Preallocator(Mat A, PetscInt m, const PetscInt *rows
     key.i = rows[r];
     if (key.i < 0) continue;
     if ((key.i < rStart) || (key.i >= rEnd)) {
-      CHKERRQ(MatStashValuesRow_Private(&A->stash, key.i, n, cols, values, PETSC_FALSE));
+      PetscCall(MatStashValuesRow_Private(&A->stash, key.i, n, cols, values, PETSC_FALSE));
     } else { /* Hash table is for blocked rows/cols */
       key.i = rows[r]/bs;
       for (c = 0; c < n; ++c) {
         key.j = cols[c]/bs;
         if (key.j < 0) continue;
-        CHKERRQ(PetscHSetIJQueryAdd(p->ht, key, &missing));
+        PetscCall(PetscHSetIJQueryAdd(p->ht, key, &missing));
         if (missing) {
           if ((key.j >= cStart/bs) && (key.j < cEnd/bs)) {
             ++p->dnz[key.i-rStart/bs];
@@ -85,9 +85,9 @@ PetscErrorCode MatAssemblyBegin_Preallocator(Mat A, MatAssemblyType type)
   PetscInt       nstash, reallocs;
 
   PetscFunctionBegin;
-  CHKERRQ(MatStashScatterBegin_Private(A, &A->stash, A->rmap->range));
-  CHKERRQ(MatStashGetInfo_Private(&A->stash, &nstash, &reallocs));
-  CHKERRQ(PetscInfo(A, "Stash has %" PetscInt_FMT " entries, uses %" PetscInt_FMT " mallocs.\n", nstash, reallocs));
+  PetscCall(MatStashScatterBegin_Private(A, &A->stash, A->rmap->range));
+  PetscCall(MatStashGetInfo_Private(&A->stash, &nstash, &reallocs));
+  PetscCall(PetscInfo(A, "Stash has %" PetscInt_FMT " entries, uses %" PetscInt_FMT " mallocs.\n", nstash, reallocs));
   PetscFunctionReturn(0);
 }
 
@@ -102,7 +102,7 @@ PetscErrorCode MatAssemblyEnd_Preallocator(Mat A, MatAssemblyType type)
   PetscFunctionBegin;
   p->nooffproc = PETSC_TRUE;
   while (1) {
-    CHKERRQ(MatStashScatterGetMesg_Private(&A->stash, &n, &row, &col, &val, &flg));
+    PetscCall(MatStashScatterGetMesg_Private(&A->stash, &n, &row, &col, &val, &flg));
     if (flg) p->nooffproc = PETSC_FALSE;
     if (!flg) break;
 
@@ -114,12 +114,12 @@ PetscErrorCode MatAssemblyEnd_Preallocator(Mat A, MatAssemblyType type)
       if (j < n) ncols = j-i;
       else       ncols = n-i;
       /* Now assemble all these values with a single function call */
-      CHKERRQ(MatSetValues_Preallocator(A, 1, row+i, ncols, col+i, val+i, INSERT_VALUES));
+      PetscCall(MatSetValues_Preallocator(A, 1, row+i, ncols, col+i, val+i, INSERT_VALUES));
       i = j;
     }
   }
-  CHKERRQ(MatStashScatterEnd_Private(&A->stash));
-  CHKERRMPI(MPIU_Allreduce(MPI_IN_PLACE,&p->nooffproc,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)A)));
+  PetscCall(MatStashScatterEnd_Private(&A->stash));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE,&p->nooffproc,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)A)));
   PetscFunctionReturn(0);
 }
 
@@ -143,24 +143,24 @@ PetscErrorCode MatPreallocatorPreallocate_Preallocator(Mat mat, PetscBool fill, 
   PetscFunctionBegin;
   PetscCheck(!p->used,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"MatPreallocatorPreallocate() can only be used once for a give MatPreallocator object. Consider using MatDuplicate() after preallocation.");
   p->used = PETSC_TRUE;
-  if (!fill) CHKERRQ(PetscHSetIJDestroy(&p->ht));
-  CHKERRQ(MatGetBlockSize(mat, &bs));
-  CHKERRQ(MatXAIJSetPreallocation(A, bs, p->dnz, p->onz, p->dnzu, p->onzu));
-  CHKERRQ(MatSetUp(A));
-  CHKERRQ(MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE));
-  CHKERRQ(MatSetOption(A, MAT_NO_OFF_PROC_ENTRIES, p->nooffproc));
+  if (!fill) PetscCall(PetscHSetIJDestroy(&p->ht));
+  PetscCall(MatGetBlockSize(mat, &bs));
+  PetscCall(MatXAIJSetPreallocation(A, bs, p->dnz, p->onz, p->dnzu, p->onzu));
+  PetscCall(MatSetUp(A));
+  PetscCall(MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE));
+  PetscCall(MatSetOption(A, MAT_NO_OFF_PROC_ENTRIES, p->nooffproc));
   if (fill) {
     PetscHashIter  hi;
     PetscHashIJKey key;
     PetscScalar    *zeros;
     PetscInt       n,maxrow=1,*cols,rStart,rEnd,*rowstarts;
 
-    CHKERRQ(MatGetOwnershipRange(A, &rStart, &rEnd));
+    PetscCall(MatGetOwnershipRange(A, &rStart, &rEnd));
     // Ownership range is in terms of scalar entries, but we deal with blocks
     rStart /= bs;
     rEnd /= bs;
-    CHKERRQ(PetscHSetIJGetSize(p->ht,&n));
-    CHKERRQ(PetscMalloc2(n,&cols,rEnd-rStart+1,&rowstarts));
+    PetscCall(PetscHSetIJGetSize(p->ht,&n));
+    PetscCall(PetscMalloc2(n,&cols,rEnd-rStart+1,&rowstarts));
     rowstarts[0] = 0;
     for (PetscInt i=0; i<rEnd-rStart; i++) {
       rowstarts[i+1] = rowstarts[i] + p->dnz[i] + p->onz[i];
@@ -176,20 +176,20 @@ PetscErrorCode MatPreallocatorPreallocate_Preallocator(Mat mat, PetscBool fill, 
       rowstarts[lrow]++;
       PetscHashIterNext(p->ht,hi);
     }
-    CHKERRQ(PetscHSetIJDestroy(&p->ht));
+    PetscCall(PetscHSetIJDestroy(&p->ht));
 
-    CHKERRQ(PetscCalloc1(maxrow*bs*bs,&zeros));
+    PetscCall(PetscCalloc1(maxrow*bs*bs,&zeros));
     for (PetscInt i=0; i<rEnd-rStart; i++) {
       PetscInt grow = rStart + i;
       PetscInt end = rowstarts[i], start = end - p->dnz[i] - p->onz[i];
-      CHKERRQ(PetscSortInt(end-start,&cols[start]));
-      CHKERRQ(MatSetValuesBlocked(A, 1, &grow, end-start, &cols[start], zeros, INSERT_VALUES));
+      PetscCall(PetscSortInt(end-start,&cols[start]));
+      PetscCall(MatSetValuesBlocked(A, 1, &grow, end-start, &cols[start], zeros, INSERT_VALUES));
     }
-    CHKERRQ(PetscFree(zeros));
-    CHKERRQ(PetscFree2(cols,rowstarts));
+    PetscCall(PetscFree(zeros));
+    PetscCall(PetscFree2(cols,rowstarts));
 
-    CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   }
   PetscFunctionReturn(0);
 }
@@ -231,7 +231,7 @@ PetscErrorCode MatPreallocatorPreallocate(Mat mat, PetscBool fill, Mat A)
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidLogicalCollectiveBool(mat,fill,2);
   PetscValidHeaderSpecific(A,MAT_CLASSID,3);
-  CHKERRQ(PetscUseMethod(mat,"MatPreallocatorPreallocate_C",(Mat,PetscBool,Mat),(mat,fill,A)));
+  PetscCall(PetscUseMethod(mat,"MatPreallocatorPreallocate_C",(Mat,PetscBool,Mat),(mat,fill,A)));
   PetscFunctionReturn(0);
 }
 
@@ -257,7 +257,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Preallocator(Mat A)
   Mat_Preallocator *p;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNewLog(A, &p));
+  PetscCall(PetscNewLog(A, &p));
   A->data = (void *) p;
 
   p->ht   = NULL;
@@ -268,7 +268,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Preallocator(Mat A)
   p->used = PETSC_FALSE;
 
   /* matrix ops */
-  CHKERRQ(PetscMemzero(A->ops, sizeof(struct _MatOps)));
+  PetscCall(PetscMemzero(A->ops, sizeof(struct _MatOps)));
 
   A->ops->destroy       = MatDestroy_Preallocator;
   A->ops->setup         = MatSetUp_Preallocator;
@@ -280,7 +280,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Preallocator(Mat A)
   A->ops->setblocksizes = MatSetBlockSizes_Default; /* once set, user is not allowed to change the block sizes */
 
   /* special MATPREALLOCATOR functions */
-  CHKERRQ(PetscObjectComposeFunction((PetscObject) A, "MatPreallocatorPreallocate_C", MatPreallocatorPreallocate_Preallocator));
-  CHKERRQ(PetscObjectChangeTypeName((PetscObject) A, MATPREALLOCATOR));
+  PetscCall(PetscObjectComposeFunction((PetscObject) A, "MatPreallocatorPreallocate_C", MatPreallocatorPreallocate_Preallocator));
+  PetscCall(PetscObjectChangeTypeName((PetscObject) A, MATPREALLOCATOR));
   PetscFunctionReturn(0);
 }

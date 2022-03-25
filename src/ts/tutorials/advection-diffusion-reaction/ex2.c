@@ -46,16 +46,16 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *c
   const PetscScalar *u,*udot;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(U,&u));
-  CHKERRQ(VecGetArrayRead(Udot,&udot));
-  CHKERRQ(VecGetArrayWrite(F,&f));
+  PetscCall(VecGetArrayRead(U,&u));
+  PetscCall(VecGetArrayRead(Udot,&udot));
+  PetscCall(VecGetArrayWrite(F,&f));
   f[0] = udot[0] - k1(ctx,t)*u[2] + ctx->k2*u[0];
   f[1] = udot[1] - k1(ctx,t)*u[2] + ctx->k3*u[1]*u[3] - ctx->sigma2;
   f[2] = udot[2] - ctx->k3*u[1]*u[3] + k1(ctx,t)*u[2];
   f[3] = udot[3] - ctx->k2*u[0] + ctx->k3*u[1]*u[3];
-  CHKERRQ(VecRestoreArrayRead(U,&u));
-  CHKERRQ(VecRestoreArrayRead(Udot,&udot));
-  CHKERRQ(VecRestoreArrayWrite(F,&f));
+  PetscCall(VecRestoreArrayRead(U,&u));
+  PetscCall(VecRestoreArrayRead(Udot,&udot));
+  PetscCall(VecRestoreArrayWrite(F,&f));
   PetscFunctionReturn(0);
 }
 
@@ -66,21 +66,21 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat
   const PetscScalar *u,*udot;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(U,&u));
-  CHKERRQ(VecGetArrayRead(Udot,&udot));
+  PetscCall(VecGetArrayRead(U,&u));
+  PetscCall(VecGetArrayRead(Udot,&udot));
   J[0][0] = a + ctx->k2;   J[0][1] = 0.0;                J[0][2] = -k1(ctx,t);       J[0][3] = 0.0;
   J[1][0] = 0.0;           J[1][1] = a + ctx->k3*u[3];   J[1][2] = -k1(ctx,t);       J[1][3] = ctx->k3*u[1];
   J[2][0] = 0.0;           J[2][1] = -ctx->k3*u[3];      J[2][2] = a + k1(ctx,t);    J[2][3] =  -ctx->k3*u[1];
   J[3][0] =  -ctx->k2;     J[3][1] = ctx->k3*u[3];       J[3][2] = 0.0;              J[3][3] = a + ctx->k3*u[1];
-  CHKERRQ(MatSetValues(B,4,rowcol,4,rowcol,&J[0][0],INSERT_VALUES));
-  CHKERRQ(VecRestoreArrayRead(U,&u));
-  CHKERRQ(VecRestoreArrayRead(Udot,&udot));
+  PetscCall(MatSetValues(B,4,rowcol,4,rowcol,&J[0][0],INSERT_VALUES));
+  PetscCall(VecRestoreArrayRead(U,&u));
+  PetscCall(VecRestoreArrayRead(Udot,&udot));
 
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   if (A != B) {
-    CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
   }
   PetscFunctionReturn(0);
 }
@@ -88,7 +88,7 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat
 static PetscErrorCode Solution(TS ts,PetscReal t,Vec U,AppCtx *ctx)
 {
   PetscFunctionBegin;
-  CHKERRQ(VecCopy(ctx->initialsolution,U));
+  PetscCall(VecCopy(ctx->initialsolution,U));
   PetscCheck(t <= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Solution not given");
   PetscFunctionReturn(0);
 }
@@ -106,74 +106,74 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Only for sequential runs");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create necessary matrix and vectors
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(MatSetSizes(A,n,n,PETSC_DETERMINE,PETSC_DETERMINE));
-  CHKERRQ(MatSetFromOptions(A));
-  CHKERRQ(MatSetUp(A));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A,n,n,PETSC_DETERMINE,PETSC_DETERMINE));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSetUp(A));
 
-  CHKERRQ(MatCreateVecs(A,&U,NULL));
+  PetscCall(MatCreateVecs(A,&U,NULL));
 
   ctx.k1     = 1.0e-5;
   ctx.k2     = 1.0e5;
   ctx.k3     = 1.0e-16;
   ctx.sigma2 = 1.0e6;
 
-  CHKERRQ(VecDuplicate(U,&ctx.initialsolution));
-  CHKERRQ(VecGetArrayWrite(ctx.initialsolution,&u));
+  PetscCall(VecDuplicate(U,&ctx.initialsolution));
+  PetscCall(VecGetArrayWrite(ctx.initialsolution,&u));
   u[0] = 0.0;
   u[1] = 1.3e8;
   u[2] = 5.0e11;
   u[3] = 8.0e11;
-  CHKERRQ(VecRestoreArrayWrite(ctx.initialsolution,&u));
+  PetscCall(VecRestoreArrayWrite(ctx.initialsolution,&u));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
-  CHKERRQ(TSSetProblemType(ts,TS_NONLINEAR));
-  CHKERRQ(TSSetType(ts,TSROSW));
-  CHKERRQ(TSSetIFunction(ts,NULL,(TSIFunction) IFunction,&ctx));
-  CHKERRQ(TSSetIJacobian(ts,A,A,(TSIJacobian)IJacobian,&ctx));
+  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
+  PetscCall(TSSetProblemType(ts,TS_NONLINEAR));
+  PetscCall(TSSetType(ts,TSROSW));
+  PetscCall(TSSetIFunction(ts,NULL,(TSIFunction) IFunction,&ctx));
+  PetscCall(TSSetIJacobian(ts,A,A,(TSIJacobian)IJacobian,&ctx));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(Solution(ts,0,U,&ctx));
-  CHKERRQ(TSSetTime(ts,4.0*3600));
-  CHKERRQ(TSSetTimeStep(ts,1.0));
-  CHKERRQ(TSSetSolution(ts,U));
+  PetscCall(Solution(ts,0,U,&ctx));
+  PetscCall(TSSetTime(ts,4.0*3600));
+  PetscCall(TSSetTimeStep(ts,1.0));
+  PetscCall(TSSetSolution(ts,U));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSSetMaxTime(ts,518400.0));
-  CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
-  CHKERRQ(TSSetMaxStepRejections(ts,100));
-  CHKERRQ(TSSetMaxSNESFailures(ts,-1)); /* unlimited */
-  CHKERRQ(TSSetFromOptions(ts));
+  PetscCall(TSSetMaxTime(ts,518400.0));
+  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
+  PetscCall(TSSetMaxStepRejections(ts,100));
+  PetscCall(TSSetMaxSNESFailures(ts,-1)); /* unlimited */
+  PetscCall(TSSetFromOptions(ts));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSSolve(ts,U));
+  PetscCall(TSSolve(ts,U));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(VecDestroy(&ctx.initialsolution));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(VecDestroy(&U));
-  CHKERRQ(TSDestroy(&ts));
+  PetscCall(VecDestroy(&ctx.initialsolution));
+  PetscCall(MatDestroy(&A));
+  PetscCall(VecDestroy(&U));
+  PetscCall(TSDestroy(&ts));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

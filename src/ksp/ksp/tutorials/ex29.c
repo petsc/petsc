@@ -52,55 +52,55 @@ int main(int argc,char **argv)
   Vec            b,x;
   PetscBool      testsolver = PETSC_FALSE;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
-  CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,3,3,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
-  CHKERRQ(DMDASetUniformCoordinates(da,0,1,0,1,0,0));
-  CHKERRQ(DMDASetFieldName(da,0,"Pressure"));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,3,3,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMDASetUniformCoordinates(da,0,1,0,1,0,0));
+  PetscCall(DMDASetFieldName(da,0,"Pressure"));
 
-  ierr        = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "DMqq");CHKERRQ(ierr);
+  ierr        = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "DMqq");PetscCall(ierr);
   user.rho    = 1.0;
-  CHKERRQ(PetscOptionsReal("-rho", "The conductivity", "ex29.c", user.rho, &user.rho, NULL));
+  PetscCall(PetscOptionsReal("-rho", "The conductivity", "ex29.c", user.rho, &user.rho, NULL));
   user.nu     = 0.1;
-  CHKERRQ(PetscOptionsReal("-nu", "The width of the Gaussian source", "ex29.c", user.nu, &user.nu, NULL));
+  PetscCall(PetscOptionsReal("-nu", "The width of the Gaussian source", "ex29.c", user.nu, &user.nu, NULL));
   bc          = (PetscInt)DIRICHLET;
-  CHKERRQ(PetscOptionsEList("-bc_type","Type of boundary condition","ex29.c",bcTypes,2,bcTypes[0],&bc,NULL));
+  PetscCall(PetscOptionsEList("-bc_type","Type of boundary condition","ex29.c",bcTypes,2,bcTypes[0],&bc,NULL));
   user.bcType = (BCType)bc;
-  CHKERRQ(PetscOptionsBool("-testsolver", "Run solver multiple times, useful for performance studies of solver", "ex29.c", testsolver, &testsolver, NULL));
-  ierr        = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(PetscOptionsBool("-testsolver", "Run solver multiple times, useful for performance studies of solver", "ex29.c", testsolver, &testsolver, NULL));
+  ierr        = PetscOptionsEnd();PetscCall(ierr);
 
-  CHKERRQ(KSPSetComputeRHS(ksp,ComputeRHS,&user));
-  CHKERRQ(KSPSetComputeOperators(ksp,ComputeMatrix,&user));
-  CHKERRQ(KSPSetDM(ksp,da));
-  CHKERRQ(KSPSetFromOptions(ksp));
-  CHKERRQ(KSPSetUp(ksp));
-  CHKERRQ(KSPSolve(ksp,NULL,NULL));
+  PetscCall(KSPSetComputeRHS(ksp,ComputeRHS,&user));
+  PetscCall(KSPSetComputeOperators(ksp,ComputeMatrix,&user));
+  PetscCall(KSPSetDM(ksp,da));
+  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(KSPSetUp(ksp));
+  PetscCall(KSPSolve(ksp,NULL,NULL));
 
   if (testsolver) {
-    CHKERRQ(KSPGetSolution(ksp,&x));
-    CHKERRQ(KSPGetRhs(ksp,&b));
+    PetscCall(KSPGetSolution(ksp,&x));
+    PetscCall(KSPGetRhs(ksp,&b));
     KSPSetDMActive(ksp,PETSC_FALSE);
-    CHKERRQ(KSPSolve(ksp,b,x));
+    PetscCall(KSPSolve(ksp,b,x));
     {
 #if defined(PETSC_USE_LOG)
       PetscLogStage stage;
 #endif
       PetscInt      i,n = 20;
 
-      CHKERRQ(PetscLogStageRegister("Solve only",&stage));
-      CHKERRQ(PetscLogStagePush(stage));
+      PetscCall(PetscLogStageRegister("Solve only",&stage));
+      PetscCall(PetscLogStagePush(stage));
       for (i=0; i<n; i++) {
-        CHKERRQ(KSPSolve(ksp,b,x));
+        PetscCall(KSPSolve(ksp,b,x));
       }
-      CHKERRQ(PetscLogStagePop());
+      PetscCall(PetscLogStagePop());
     }
   }
 
-  CHKERRQ(DMDestroy(&da));
-  CHKERRQ(KSPDestroy(&ksp));
-  CHKERRQ(PetscFinalize());
+  PetscCall(DMDestroy(&da));
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -113,29 +113,29 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
   DM             da;
 
   PetscFunctionBeginUser;
-  CHKERRQ(KSPGetDM(ksp,&da));
-  CHKERRQ(DMDAGetInfo(da, 0, &mx, &my, 0,0,0,0,0,0,0,0,0,0));
+  PetscCall(KSPGetDM(ksp,&da));
+  PetscCall(DMDAGetInfo(da, 0, &mx, &my, 0,0,0,0,0,0,0,0,0,0));
   Hx   = 1.0 / (PetscReal)(mx-1);
   Hy   = 1.0 / (PetscReal)(my-1);
-  CHKERRQ(DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0));
-  CHKERRQ(DMDAVecGetArray(da, b, &array));
+  PetscCall(DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0));
+  PetscCall(DMDAVecGetArray(da, b, &array));
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {
       array[j][i] = PetscExpScalar(-((PetscReal)i*Hx)*((PetscReal)i*Hx)/user->nu)*PetscExpScalar(-((PetscReal)j*Hy)*((PetscReal)j*Hy)/user->nu)*Hx*Hy;
     }
   }
-  CHKERRQ(DMDAVecRestoreArray(da, b, &array));
-  CHKERRQ(VecAssemblyBegin(b));
-  CHKERRQ(VecAssemblyEnd(b));
+  PetscCall(DMDAVecRestoreArray(da, b, &array));
+  PetscCall(VecAssemblyBegin(b));
+  PetscCall(VecAssemblyEnd(b));
 
   /* force right hand side to be consistent for singular matrix */
   /* note this is really a hack, normally the model would provide you with a consistent right handside */
   if (user->bcType == NEUMANN) {
     MatNullSpace nullspace;
 
-    CHKERRQ(MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace));
-    CHKERRQ(MatNullSpaceRemove(nullspace,b));
-    CHKERRQ(MatNullSpaceDestroy(&nullspace));
+    PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace));
+    PetscCall(MatNullSpaceRemove(nullspace,b));
+    PetscCall(MatNullSpaceDestroy(&nullspace));
   }
   PetscFunctionReturn(0);
 }
@@ -163,22 +163,22 @@ PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,void *ctx)
   PetscBool      check_matis = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  CHKERRQ(KSPGetDM(ksp,&da));
+  PetscCall(KSPGetDM(ksp,&da));
   centerRho = user->rho;
-  CHKERRQ(DMDAGetInfo(da,0,&mx,&my,0,0,0,0,0,0,0,0,0,0));
+  PetscCall(DMDAGetInfo(da,0,&mx,&my,0,0,0,0,0,0,0,0,0,0));
   Hx        = 1.0 / (PetscReal)(mx-1);
   Hy        = 1.0 / (PetscReal)(my-1);
   HxdHy     = Hx/Hy;
   HydHx     = Hy/Hx;
-  CHKERRQ(DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0));
+  PetscCall(DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0));
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {
       row.i = i; row.j = j;
-      CHKERRQ(ComputeRho(i, j, mx, my, centerRho, &rho));
+      PetscCall(ComputeRho(i, j, mx, my, centerRho, &rho));
       if (i==0 || j==0 || i==mx-1 || j==my-1) {
         if (user->bcType == DIRICHLET) {
           v[0] = 2.0*rho*(HxdHy + HydHx);
-          CHKERRQ(MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES));
+          PetscCall(MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES));
         } else if (user->bcType == NEUMANN) {
           PetscInt numx = 0, numy = 0, num = 0;
           if (j!=0) {
@@ -199,7 +199,7 @@ PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,void *ctx)
           }
           v[num] = numx*rho*HydHx + numy*rho*HxdHy; col[num].i = i;   col[num].j = j;
           num++;
-          CHKERRQ(MatSetValuesStencil(jac,1,&row,num,col,v,INSERT_VALUES));
+          PetscCall(MatSetValuesStencil(jac,1,&row,num,col,v,INSERT_VALUES));
         }
       } else {
         v[0] = -rho*HxdHy;              col[0].i = i;   col[0].j = j-1;
@@ -207,40 +207,40 @@ PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,void *ctx)
         v[2] = 2.0*rho*(HxdHy + HydHx); col[2].i = i;   col[2].j = j;
         v[3] = -rho*HydHx;              col[3].i = i+1; col[3].j = j;
         v[4] = -rho*HxdHy;              col[4].i = i;   col[4].j = j+1;
-        CHKERRQ(MatSetValuesStencil(jac,1,&row,5,col,v,INSERT_VALUES));
+        PetscCall(MatSetValuesStencil(jac,1,&row,5,col,v,INSERT_VALUES));
       }
     }
   }
-  CHKERRQ(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatViewFromOptions(jac,NULL,"-view_mat"));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-check_matis",&check_matis,NULL));
+  PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatViewFromOptions(jac,NULL,"-view_mat"));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-check_matis",&check_matis,NULL));
   if (check_matis) {
     void      (*f)(void);
     Mat       J2;
     MatType   jtype;
     PetscReal nrm;
 
-    CHKERRQ(MatGetType(jac,&jtype));
-    CHKERRQ(MatConvert(jac,MATIS,MAT_INITIAL_MATRIX,&J2));
-    CHKERRQ(MatViewFromOptions(J2,NULL,"-view_conv"));
-    CHKERRQ(MatConvert(J2,jtype,MAT_INPLACE_MATRIX,&J2));
-    CHKERRQ(MatGetOperation(jac,MATOP_VIEW,&f));
-    CHKERRQ(MatSetOperation(J2,MATOP_VIEW,f));
-    CHKERRQ(MatSetDM(J2,da));
-    CHKERRQ(MatViewFromOptions(J2,NULL,"-view_conv_assembled"));
-    CHKERRQ(MatAXPY(J2,-1.,jac,DIFFERENT_NONZERO_PATTERN));
-    CHKERRQ(MatNorm(J2,NORM_FROBENIUS,&nrm));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Error MATIS %g\n",(double)nrm));
-    CHKERRQ(MatViewFromOptions(J2,NULL,"-view_conv_err"));
-    CHKERRQ(MatDestroy(&J2));
+    PetscCall(MatGetType(jac,&jtype));
+    PetscCall(MatConvert(jac,MATIS,MAT_INITIAL_MATRIX,&J2));
+    PetscCall(MatViewFromOptions(J2,NULL,"-view_conv"));
+    PetscCall(MatConvert(J2,jtype,MAT_INPLACE_MATRIX,&J2));
+    PetscCall(MatGetOperation(jac,MATOP_VIEW,&f));
+    PetscCall(MatSetOperation(J2,MATOP_VIEW,f));
+    PetscCall(MatSetDM(J2,da));
+    PetscCall(MatViewFromOptions(J2,NULL,"-view_conv_assembled"));
+    PetscCall(MatAXPY(J2,-1.,jac,DIFFERENT_NONZERO_PATTERN));
+    PetscCall(MatNorm(J2,NORM_FROBENIUS,&nrm));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error MATIS %g\n",(double)nrm));
+    PetscCall(MatViewFromOptions(J2,NULL,"-view_conv_err"));
+    PetscCall(MatDestroy(&J2));
   }
   if (user->bcType == NEUMANN) {
     MatNullSpace nullspace;
 
-    CHKERRQ(MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace));
-    CHKERRQ(MatSetNullSpace(J,nullspace));
-    CHKERRQ(MatNullSpaceDestroy(&nullspace));
+    PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace));
+    PetscCall(MatSetNullSpace(J,nullspace));
+    PetscCall(MatNullSpaceDestroy(&nullspace));
   }
   PetscFunctionReturn(0);
 }

@@ -10,17 +10,17 @@ static PetscErrorCode TestGeneral(void)
   IS             is;
 
   PetscFunctionBegin;
-  CHKERRQ(ISCreateGeneral(comm,n,idx,PETSC_COPY_VALUES,&is));
-  CHKERRQ(ISLocate(is,key,&location));
+  PetscCall(ISCreateGeneral(comm,n,idx,PETSC_COPY_VALUES,&is));
+  PetscCall(ISLocate(is,key,&location));
   PetscCheckFalse(location != keylocation,comm,PETSC_ERR_PLIB,"Key %" PetscInt_FMT " not at %" PetscInt_FMT ": %" PetscInt_FMT,key,keylocation,location);
-  CHKERRQ(ISLocate(is,nonkey,&location));
+  PetscCall(ISLocate(is,nonkey,&location));
   PetscCheckFalse(location >= 0,comm,PETSC_ERR_PLIB,"Nonkey %" PetscInt_FMT " found at %" PetscInt_FMT,nonkey,location);
-  CHKERRQ(ISSort(is));
-  CHKERRQ(ISLocate(is,key,&location));
+  PetscCall(ISSort(is));
+  PetscCall(ISLocate(is,key,&location));
   PetscCheckFalse(location != sortedlocation,comm,PETSC_ERR_PLIB,"Key %" PetscInt_FMT " not at %" PetscInt_FMT ": %" PetscInt_FMT,key,sortedlocation,location);
-  CHKERRQ(ISLocate(is,nonkey,&location));
+  PetscCall(ISLocate(is,nonkey,&location));
   PetscCheckFalse(location >= 0,comm,PETSC_ERR_PLIB,"Nonkey %" PetscInt_FMT " found at %" PetscInt_FMT,nonkey,location);
-  CHKERRQ(ISDestroy(&is));
+  PetscCall(ISDestroy(&is));
   PetscFunctionReturn(0);
 }
 
@@ -32,17 +32,17 @@ static PetscErrorCode TestBlock(void)
   IS             is;
 
   PetscFunctionBegin;
-  CHKERRQ(ISCreateBlock(comm,bs,n,idx,PETSC_COPY_VALUES,&is));
-  CHKERRQ(ISLocate(is,key,&location));
+  PetscCall(ISCreateBlock(comm,bs,n,idx,PETSC_COPY_VALUES,&is));
+  PetscCall(ISLocate(is,key,&location));
   PetscCheckFalse(location != keylocation,comm,PETSC_ERR_PLIB,"Key %" PetscInt_FMT " not at %" PetscInt_FMT ": %" PetscInt_FMT,key,keylocation,location);
-  CHKERRQ(ISLocate(is,nonkey,&location));
+  PetscCall(ISLocate(is,nonkey,&location));
   PetscCheckFalse(location >= 0,comm,PETSC_ERR_PLIB,"Nonkey %" PetscInt_FMT " found at %" PetscInt_FMT,nonkey,location);
-  CHKERRQ(ISSort(is));
-  CHKERRQ(ISLocate(is,key,&location));
+  PetscCall(ISSort(is));
+  PetscCall(ISLocate(is,key,&location));
   PetscCheckFalse(location != sortedlocation,comm,PETSC_ERR_PLIB,"Key %" PetscInt_FMT " not at %" PetscInt_FMT ": %" PetscInt_FMT,key,sortedlocation,location);
-  CHKERRQ(ISLocate(is,nonkey,&location));
+  PetscCall(ISLocate(is,nonkey,&location));
   PetscCheckFalse(location >= 0,comm,PETSC_ERR_PLIB,"Nonkey %" PetscInt_FMT " found at %" PetscInt_FMT,nonkey,location);
-  CHKERRQ(ISDestroy(&is));
+  PetscCall(ISDestroy(&is));
   PetscFunctionReturn(0);
 }
 
@@ -54,25 +54,25 @@ static PetscErrorCode TestStride(void)
   IS             is;
 
   PetscFunctionBegin;
-  CHKERRQ(ISCreateStride(comm,n,first,stride,&is));
-  CHKERRQ(ISLocate(is,key,&location));
+  PetscCall(ISCreateStride(comm,n,first,stride,&is));
+  PetscCall(ISLocate(is,key,&location));
   PetscCheckFalse(location != keylocation,comm,PETSC_ERR_PLIB,"Key %" PetscInt_FMT " not at %" PetscInt_FMT ": %" PetscInt_FMT,key,keylocation,location);
   for (i = 0; i < 2; i++) {
-    CHKERRQ(ISLocate(is,nonkey[i],&location));
+    PetscCall(ISLocate(is,nonkey[i],&location));
     PetscCheckFalse(location >= 0,comm,PETSC_ERR_PLIB,"Nonkey %" PetscInt_FMT " found at %" PetscInt_FMT,nonkey[i],location);
   }
-  CHKERRQ(ISDestroy(&is));
+  PetscCall(ISDestroy(&is));
   PetscFunctionReturn(0);
 }
 
 int main(int argc,char **argv)
 {
 
-  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
-  CHKERRQ(TestGeneral());
-  CHKERRQ(TestBlock());
-  CHKERRQ(TestStride());
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(TestGeneral());
+  PetscCall(TestBlock());
+  PetscCall(TestStride());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

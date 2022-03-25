@@ -15,47 +15,47 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
   PetscFunctionBegin;
 
   if (tao->XL || tao->XU || tao->ops->computebounds) {
-    CHKERRQ(PetscInfo(tao,"WARNING: Variable bounds have been set but will be ignored by lmvm algorithm\n"));
+    PetscCall(PetscInfo(tao,"WARNING: Variable bounds have been set but will be ignored by lmvm algorithm\n"));
   }
 
   /*  Check convergence criteria */
-  CHKERRQ(TaoComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient));
-  CHKERRQ(TaoGradientNorm(tao, tao->gradient,NORM_2,&gnorm));
+  PetscCall(TaoComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient));
+  PetscCall(TaoGradientNorm(tao, tao->gradient,NORM_2,&gnorm));
 
   PetscCheck(!PetscIsInfOrNanReal(f) && !PetscIsInfOrNanReal(gnorm),PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
 
   tao->reason = TAO_CONTINUE_ITERATING;
-  CHKERRQ(TaoLogConvergenceHistory(tao,f,gnorm,0.0,tao->ksp_its));
-  CHKERRQ(TaoMonitor(tao,tao->niter,f,gnorm,0.0,step));
-  CHKERRQ((*tao->ops->convergencetest)(tao,tao->cnvP));
+  PetscCall(TaoLogConvergenceHistory(tao,f,gnorm,0.0,tao->ksp_its));
+  PetscCall(TaoMonitor(tao,tao->niter,f,gnorm,0.0,step));
+  PetscCall((*tao->ops->convergencetest)(tao,tao->cnvP));
   if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
 
   /*  Set counter for gradient/reset steps */
   if (!lmP->recycle) {
     lmP->bfgs = 0;
     lmP->grad = 0;
-    CHKERRQ(MatLMVMReset(lmP->M, PETSC_FALSE));
+    PetscCall(MatLMVMReset(lmP->M, PETSC_FALSE));
   }
 
   /*  Have not converged; continue with Newton method */
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     /* Call general purpose update function */
     if (tao->ops->update) {
-      CHKERRQ((*tao->ops->update)(tao, tao->niter, tao->user_update));
+      PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
     }
 
     /*  Compute direction */
     if (lmP->H0) {
-      CHKERRQ(MatLMVMSetJ0(lmP->M, lmP->H0));
+      PetscCall(MatLMVMSetJ0(lmP->M, lmP->H0));
       stepType = LMVM_STEP_BFGS;
     }
-    CHKERRQ(MatLMVMUpdate(lmP->M,tao->solution,tao->gradient));
-    CHKERRQ(MatSolve(lmP->M, tao->gradient, lmP->D));
-    CHKERRQ(MatLMVMGetUpdateCount(lmP->M, &nupdates));
+    PetscCall(MatLMVMUpdate(lmP->M,tao->solution,tao->gradient));
+    PetscCall(MatSolve(lmP->M, tao->gradient, lmP->D));
+    PetscCall(MatLMVMGetUpdateCount(lmP->M, &nupdates));
     if (nupdates > 0) stepType = LMVM_STEP_BFGS;
 
     /*  Check for success (descent direction) */
-    CHKERRQ(VecDot(lmP->D, tao->gradient, &gdx));
+    PetscCall(VecDot(lmP->D, tao->gradient, &gdx));
     if ((gdx <= 0.0) || PetscIsInfOrNanReal(gdx)) {
       /* Step is not descent or direction produced not a number
          We can assert bfgsUpdates > 1 in this case because
@@ -65,54 +65,54 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
          Use steepest descent direction (scaled)
       */
 
-      CHKERRQ(MatLMVMReset(lmP->M, PETSC_FALSE));
-      CHKERRQ(MatLMVMClearJ0(lmP->M));
-      CHKERRQ(MatLMVMUpdate(lmP->M, tao->solution, tao->gradient));
-      CHKERRQ(MatSolve(lmP->M,tao->gradient, lmP->D));
+      PetscCall(MatLMVMReset(lmP->M, PETSC_FALSE));
+      PetscCall(MatLMVMClearJ0(lmP->M));
+      PetscCall(MatLMVMUpdate(lmP->M, tao->solution, tao->gradient));
+      PetscCall(MatSolve(lmP->M,tao->gradient, lmP->D));
 
       /* On a reset, the direction cannot be not a number; it is a
          scaled gradient step.  No need to check for this condition. */
       stepType = LMVM_STEP_GRAD;
     }
-    CHKERRQ(VecScale(lmP->D, -1.0));
+    PetscCall(VecScale(lmP->D, -1.0));
 
     /*  Perform the linesearch */
     fold = f;
-    CHKERRQ(VecCopy(tao->solution, lmP->Xold));
-    CHKERRQ(VecCopy(tao->gradient, lmP->Gold));
+    PetscCall(VecCopy(tao->solution, lmP->Xold));
+    PetscCall(VecCopy(tao->gradient, lmP->Gold));
 
-    CHKERRQ(TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, lmP->D, &step,&ls_status));
-    CHKERRQ(TaoAddLineSearchCounts(tao));
+    PetscCall(TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, lmP->D, &step,&ls_status));
+    PetscCall(TaoAddLineSearchCounts(tao));
 
     if (ls_status != TAOLINESEARCH_SUCCESS && ls_status != TAOLINESEARCH_SUCCESS_USER && (stepType != LMVM_STEP_GRAD)) {
       /*  Reset factors and use scaled gradient step */
       f = fold;
-      CHKERRQ(VecCopy(lmP->Xold, tao->solution));
-      CHKERRQ(VecCopy(lmP->Gold, tao->gradient));
+      PetscCall(VecCopy(lmP->Xold, tao->solution));
+      PetscCall(VecCopy(lmP->Gold, tao->gradient));
 
       /*  Failed to obtain acceptable iterate with BFGS step */
       /*  Attempt to use the scaled gradient direction */
 
-      CHKERRQ(MatLMVMReset(lmP->M, PETSC_FALSE));
-      CHKERRQ(MatLMVMClearJ0(lmP->M));
-      CHKERRQ(MatLMVMUpdate(lmP->M, tao->solution, tao->gradient));
-      CHKERRQ(MatSolve(lmP->M, tao->solution, tao->gradient));
+      PetscCall(MatLMVMReset(lmP->M, PETSC_FALSE));
+      PetscCall(MatLMVMClearJ0(lmP->M));
+      PetscCall(MatLMVMUpdate(lmP->M, tao->solution, tao->gradient));
+      PetscCall(MatSolve(lmP->M, tao->solution, tao->gradient));
 
       /* On a reset, the direction cannot be not a number; it is a
           scaled gradient step.  No need to check for this condition. */
       stepType = LMVM_STEP_GRAD;
-      CHKERRQ(VecScale(lmP->D, -1.0));
+      PetscCall(VecScale(lmP->D, -1.0));
 
       /*  Perform the linesearch */
-      CHKERRQ(TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, lmP->D, &step, &ls_status));
-      CHKERRQ(TaoAddLineSearchCounts(tao));
+      PetscCall(TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, lmP->D, &step, &ls_status));
+      PetscCall(TaoAddLineSearchCounts(tao));
     }
 
     if (ls_status != TAOLINESEARCH_SUCCESS && ls_status != TAOLINESEARCH_SUCCESS_USER) {
       /*  Failed to find an improving point */
       f = fold;
-      CHKERRQ(VecCopy(lmP->Xold, tao->solution));
-      CHKERRQ(VecCopy(lmP->Gold, tao->gradient));
+      PetscCall(VecCopy(lmP->Xold, tao->solution));
+      PetscCall(VecCopy(lmP->Gold, tao->gradient));
       step = 0.0;
       tao->reason = TAO_DIVERGED_LS_FAILURE;
     } else {
@@ -128,14 +128,14 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
         break;
       }
       /*  Compute new gradient norm */
-      CHKERRQ(TaoGradientNorm(tao, tao->gradient,NORM_2,&gnorm));
+      PetscCall(TaoGradientNorm(tao, tao->gradient,NORM_2,&gnorm));
     }
 
     /* Check convergence */
     tao->niter++;
-    CHKERRQ(TaoLogConvergenceHistory(tao,f,gnorm,0.0,tao->ksp_its));
-    CHKERRQ(TaoMonitor(tao,tao->niter,f,gnorm,0.0,step));
-    CHKERRQ((*tao->ops->convergencetest)(tao,tao->cnvP));
+    PetscCall(TaoLogConvergenceHistory(tao,f,gnorm,0.0,tao->ksp_its));
+    PetscCall(TaoMonitor(tao,tao->niter,f,gnorm,0.0,step));
+    PetscCall((*tao->ops->convergencetest)(tao,tao->cnvP));
   }
   PetscFunctionReturn(0);
 }
@@ -148,23 +148,23 @@ static PetscErrorCode TaoSetUp_LMVM(Tao tao)
 
   PetscFunctionBegin;
   /* Existence of tao->solution checked in TaoSetUp() */
-  if (!tao->gradient) CHKERRQ(VecDuplicate(tao->solution,&tao->gradient));
-  if (!tao->stepdirection) CHKERRQ(VecDuplicate(tao->solution,&tao->stepdirection));
-  if (!lmP->D) CHKERRQ(VecDuplicate(tao->solution,&lmP->D));
-  if (!lmP->Xold) CHKERRQ(VecDuplicate(tao->solution,&lmP->Xold));
-  if (!lmP->Gold) CHKERRQ(VecDuplicate(tao->solution,&lmP->Gold));
+  if (!tao->gradient) PetscCall(VecDuplicate(tao->solution,&tao->gradient));
+  if (!tao->stepdirection) PetscCall(VecDuplicate(tao->solution,&tao->stepdirection));
+  if (!lmP->D) PetscCall(VecDuplicate(tao->solution,&lmP->D));
+  if (!lmP->Xold) PetscCall(VecDuplicate(tao->solution,&lmP->Xold));
+  if (!lmP->Gold) PetscCall(VecDuplicate(tao->solution,&lmP->Gold));
 
   /*  Create matrix for the limited memory approximation */
-  CHKERRQ(VecGetLocalSize(tao->solution,&n));
-  CHKERRQ(VecGetSize(tao->solution,&N));
-  CHKERRQ(MatSetSizes(lmP->M, n, n, N, N));
-  CHKERRQ(MatLMVMAllocate(lmP->M,tao->solution,tao->gradient));
-  CHKERRQ(MatGetOption(lmP->M, MAT_SPD, &is_spd));
+  PetscCall(VecGetLocalSize(tao->solution,&n));
+  PetscCall(VecGetSize(tao->solution,&N));
+  PetscCall(MatSetSizes(lmP->M, n, n, N, N));
+  PetscCall(MatLMVMAllocate(lmP->M,tao->solution,tao->gradient));
+  PetscCall(MatGetOption(lmP->M, MAT_SPD, &is_spd));
   PetscCheck(is_spd,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix is not symmetric positive-definite.");
 
   /* If the user has set a matrix to solve as the initial H0, set the options prefix here, and set up the KSP */
   if (lmP->H0) {
-    CHKERRQ(MatLMVMSetJ0(lmP->M, lmP->H0));
+    PetscCall(MatLMVMSetJ0(lmP->M, lmP->H0));
   }
 
   PetscFunctionReturn(0);
@@ -177,15 +177,15 @@ static PetscErrorCode TaoDestroy_LMVM(Tao tao)
 
   PetscFunctionBegin;
   if (tao->setupcalled) {
-    CHKERRQ(VecDestroy(&lmP->Xold));
-    CHKERRQ(VecDestroy(&lmP->Gold));
-    CHKERRQ(VecDestroy(&lmP->D));
+    PetscCall(VecDestroy(&lmP->Xold));
+    PetscCall(VecDestroy(&lmP->Gold));
+    PetscCall(VecDestroy(&lmP->D));
   }
-  CHKERRQ(MatDestroy(&lmP->M));
+  PetscCall(MatDestroy(&lmP->M));
   if (lmP->H0) {
-    CHKERRQ(PetscObjectDereference((PetscObject)lmP->H0));
+    PetscCall(PetscObjectDereference((PetscObject)lmP->H0));
   }
-  CHKERRQ(PetscFree(tao->data));
+  PetscCall(PetscFree(tao->data));
 
   PetscFunctionReturn(0);
 }
@@ -196,11 +196,11 @@ static PetscErrorCode TaoSetFromOptions_LMVM(PetscOptionItems *PetscOptionsObjec
   TAO_LMVM       *lm = (TAO_LMVM *)tao->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"Limited-memory variable-metric method for unconstrained optimization"));
-  CHKERRQ(PetscOptionsBool("-tao_lmvm_recycle","enable recycling of the BFGS matrix between subsequent TaoSolve() calls","",lm->recycle,&lm->recycle,NULL));
-  CHKERRQ(TaoLineSearchSetFromOptions(tao->linesearch));
-  CHKERRQ(MatSetFromOptions(lm->M));
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"Limited-memory variable-metric method for unconstrained optimization"));
+  PetscCall(PetscOptionsBool("-tao_lmvm_recycle","enable recycling of the BFGS matrix between subsequent TaoSolve() calls","",lm->recycle,&lm->recycle,NULL));
+  PetscCall(TaoLineSearchSetFromOptions(tao->linesearch));
+  PetscCall(MatSetFromOptions(lm->M));
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -212,13 +212,13 @@ static PetscErrorCode TaoView_LMVM(Tao tao, PetscViewer viewer)
   PetscInt       recycled_its;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   if (isascii) {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer, "  Gradient steps: %D\n", lm->grad));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  Gradient steps: %D\n", lm->grad));
     if (lm->recycle) {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer, "  Recycle: on\n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "  Recycle: on\n"));
       recycled_its = lm->bfgs + lm->grad;
-      CHKERRQ(PetscViewerASCIIPrintf(viewer, "  Total recycled iterations: %D\n", recycled_its));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "  Total recycled iterations: %D\n", recycled_its));
     }
   }
   PetscFunctionReturn(0);
@@ -255,7 +255,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_LMVM(Tao tao)
   tao->ops->setfromoptions = TaoSetFromOptions_LMVM;
   tao->ops->destroy = TaoDestroy_LMVM;
 
-  CHKERRQ(PetscNewLog(tao,&lmP));
+  PetscCall(PetscNewLog(tao,&lmP));
   lmP->D = NULL;
   lmP->M = NULL;
   lmP->Xold = NULL;
@@ -268,16 +268,16 @@ PETSC_EXTERN PetscErrorCode TaoCreate_LMVM(Tao tao)
   if (!tao->max_it_changed) tao->max_it = 2000;
   if (!tao->max_funcs_changed) tao->max_funcs = 4000;
 
-  CHKERRQ(TaoLineSearchCreate(((PetscObject)tao)->comm,&tao->linesearch));
-  CHKERRQ(PetscObjectIncrementTabLevel((PetscObject)tao->linesearch, (PetscObject)tao, 1));
-  CHKERRQ(TaoLineSearchSetType(tao->linesearch,morethuente_type));
-  CHKERRQ(TaoLineSearchUseTaoRoutines(tao->linesearch,tao));
-  CHKERRQ(TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix));
+  PetscCall(TaoLineSearchCreate(((PetscObject)tao)->comm,&tao->linesearch));
+  PetscCall(PetscObjectIncrementTabLevel((PetscObject)tao->linesearch, (PetscObject)tao, 1));
+  PetscCall(TaoLineSearchSetType(tao->linesearch,morethuente_type));
+  PetscCall(TaoLineSearchUseTaoRoutines(tao->linesearch,tao));
+  PetscCall(TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix));
 
-  CHKERRQ(KSPInitializePackage());
-  CHKERRQ(MatCreate(((PetscObject)tao)->comm, &lmP->M));
-  CHKERRQ(PetscObjectIncrementTabLevel((PetscObject)lmP->M, (PetscObject)tao, 1));
-  CHKERRQ(MatSetType(lmP->M, MATLMVMBFGS));
-  CHKERRQ(MatSetOptionsPrefix(lmP->M, "tao_lmvm_"));
+  PetscCall(KSPInitializePackage());
+  PetscCall(MatCreate(((PetscObject)tao)->comm, &lmP->M));
+  PetscCall(PetscObjectIncrementTabLevel((PetscObject)lmP->M, (PetscObject)tao, 1));
+  PetscCall(MatSetType(lmP->M, MATLMVMBFGS));
+  PetscCall(MatSetOptionsPrefix(lmP->M, "tao_lmvm_"));
   PetscFunctionReturn(0);
 }

@@ -101,9 +101,9 @@ static PetscErrorCode MatDestroy_KLU(Mat A)
   if (lu->CleanUpKLU) {
     klu_K_free_symbolic(&lu->Symbolic,&lu->Common);
     klu_K_free_numeric(&lu->Numeric,&lu->Common);
-    CHKERRQ(PetscFree2(lu->perm_r,lu->perm_c));
+    PetscCall(PetscFree2(lu->perm_r,lu->perm_c));
   }
-  CHKERRQ(PetscFree(A->data));
+  PetscCall(PetscFree(A->data));
   PetscFunctionReturn(0);
 }
 
@@ -116,11 +116,11 @@ static PetscErrorCode MatSolveTranspose_KLU(Mat A,Vec b,Vec x)
   PetscFunctionBegin;
   /* KLU uses a column major format, solve Ax = b by klu_*_solve */
   /* ----------------------------------*/
-  CHKERRQ(VecCopy(b,x)); /* klu_solve stores the solution in rhs */
-  CHKERRQ(VecGetArray(x,&xa));
+  PetscCall(VecCopy(b,x)); /* klu_solve stores the solution in rhs */
+  PetscCall(VecGetArray(x,&xa));
   status = klu_K_solve(lu->Symbolic,lu->Numeric,A->rmap->n,1,(PetscReal*)xa,&lu->Common);
   PetscCheck(status == 1,PETSC_COMM_SELF,PETSC_ERR_LIB,"KLU Solve failed");
-  CHKERRQ(VecRestoreArray(x,&xa));
+  PetscCall(VecRestoreArray(x,&xa));
   PetscFunctionReturn(0);
 }
 
@@ -133,8 +133,8 @@ static PetscErrorCode MatSolve_KLU(Mat A,Vec b,Vec x)
   PetscFunctionBegin;
   /* KLU uses a column major format, solve A^Tx = b by klu_*_tsolve */
   /* ----------------------------------*/
-  CHKERRQ(VecCopy(b,x)); /* klu_solve stores the solution in rhs */
-  CHKERRQ(VecGetArray(x,&xa));
+  PetscCall(VecCopy(b,x)); /* klu_solve stores the solution in rhs */
+  PetscCall(VecGetArray(x,&xa));
 #if defined(PETSC_USE_COMPLEX)
   PetscInt conj_solve=1;
   status = klu_K_tsolve(lu->Symbolic,lu->Numeric,A->rmap->n,1,(PetscReal*)xa,conj_solve,&lu->Common); /* conjugate solve */
@@ -142,7 +142,7 @@ static PetscErrorCode MatSolve_KLU(Mat A,Vec b,Vec x)
   status = klu_K_tsolve(lu->Symbolic,lu->Numeric,A->rmap->n,1,xa,&lu->Common);
 #endif
   PetscCheck(status == 1,PETSC_COMM_SELF,PETSC_ERR_LIB,"KLU Solve failed");
-  CHKERRQ(VecRestoreArray(x,&xa));
+  PetscCall(VecRestoreArray(x,&xa));
   PetscFunctionReturn(0);
 }
 
@@ -179,14 +179,14 @@ static PetscErrorCode MatLUFactorSymbolic_KLU(Mat F,Mat A,IS r,IS c,const MatFac
 
   PetscFunctionBegin;
   if (lu->PetscMatOrdering) {
-    CHKERRQ(ISGetIndices(r,&ra));
-    CHKERRQ(ISGetIndices(c,&ca));
-    CHKERRQ(PetscMalloc2(m,&lu->perm_r,n,&lu->perm_c));
+    PetscCall(ISGetIndices(r,&ra));
+    PetscCall(ISGetIndices(c,&ca));
+    PetscCall(PetscMalloc2(m,&lu->perm_r,n,&lu->perm_c));
     /* we cannot simply memcpy on 64 bit archs */
     for (i = 0; i < m; i++) lu->perm_r[i] = ra[i];
     for (i = 0; i < n; i++) lu->perm_c[i] = ca[i];
-    CHKERRQ(ISRestoreIndices(r,&ra));
-    CHKERRQ(ISRestoreIndices(c,&ca));
+    PetscCall(ISRestoreIndices(r,&ra));
+    PetscCall(ISRestoreIndices(c,&ca));
   }
 
   /* symbolic factorization of A' */
@@ -211,20 +211,20 @@ static PetscErrorCode MatView_Info_KLU(Mat A,PetscViewer viewer)
   klu_K_numeric *Numeric=(klu_K_numeric*)lu->Numeric;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"KLU stats:\n"));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Number of diagonal blocks: %" PetscInt_FMT "\n",(PetscInt)(Numeric->nblocks)));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Total nonzeros=%" PetscInt_FMT "\n",(PetscInt)(Numeric->lnz+Numeric->unz)));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"KLU runtime parameters:\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"KLU stats:\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  Number of diagonal blocks: %" PetscInt_FMT "\n",(PetscInt)(Numeric->nblocks)));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  Total nonzeros=%" PetscInt_FMT "\n",(PetscInt)(Numeric->lnz+Numeric->unz)));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"KLU runtime parameters:\n"));
   /* Control parameters used by numeric factorization */
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Partial pivoting tolerance: %g\n",lu->Common.tol));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  Partial pivoting tolerance: %g\n",lu->Common.tol));
   /* BTF preordering */
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  BTF preordering enabled: %" PetscInt_FMT "\n",(PetscInt)(lu->Common.btf)));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"  BTF preordering enabled: %" PetscInt_FMT "\n",(PetscInt)(lu->Common.btf)));
   /* mat ordering */
   if (!lu->PetscMatOrdering) {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Ordering: %s (not using the PETSc ordering)\n",KluOrderingTypes[(int)lu->Common.ordering]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Ordering: %s (not using the PETSc ordering)\n",KluOrderingTypes[(int)lu->Common.ordering]));
   }
   /* matrix row scaling */
-  CHKERRQ(PetscViewerASCIIPrintf(viewer, "  Matrix row scaling: %s\n",scale[(int)lu->Common.scale]));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "  Matrix row scaling: %s\n",scale[(int)lu->Common.scale]));
   PetscFunctionReturn(0);
 }
 
@@ -234,11 +234,11 @@ static PetscErrorCode MatView_KLU(Mat A,PetscViewer viewer)
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    CHKERRQ(PetscViewerGetFormat(viewer,&format));
+    PetscCall(PetscViewerGetFormat(viewer,&format));
     if (format == PETSC_VIEWER_ASCII_INFO) {
-      CHKERRQ(MatView_Info_KLU(A,viewer));
+      PetscCall(MatView_Info_KLU(A,viewer));
     }
   }
   PetscFunctionReturn(0);
@@ -284,12 +284,12 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_klu(Mat A,MatFactorType ftype,Ma
 
   PetscFunctionBegin;
   /* Create the factorization matrix F */
-  CHKERRQ(MatCreate(PetscObjectComm((PetscObject)A),&B));
-  CHKERRQ(MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,m,n));
-  CHKERRQ(PetscStrallocpy("klu",&((PetscObject)B)->type_name));
-  CHKERRQ(MatSetUp(B));
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)A),&B));
+  PetscCall(MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,m,n));
+  PetscCall(PetscStrallocpy("klu",&((PetscObject)B)->type_name));
+  PetscCall(MatSetUp(B));
 
-  CHKERRQ(PetscNewLog(B,&lu));
+  PetscCall(PetscNewLog(B,&lu));
 
   B->data                  = lu;
   B->ops->getinfo          = MatGetInfo_External;
@@ -297,16 +297,16 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_klu(Mat A,MatFactorType ftype,Ma
   B->ops->destroy          = MatDestroy_KLU;
   B->ops->view             = MatView_KLU;
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_seqaij_klu));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_seqaij_klu));
 
   B->factortype   = MAT_FACTOR_LU;
   B->assembled    = PETSC_TRUE;           /* required by -ksp_view */
   B->preallocated = PETSC_TRUE;
 
-  CHKERRQ(PetscFree(B->solvertype));
-  CHKERRQ(PetscStrallocpy(MATSOLVERKLU,&B->solvertype));
+  PetscCall(PetscFree(B->solvertype));
+  PetscCall(PetscStrallocpy(MATSOLVERKLU,&B->solvertype));
   B->canuseordering = PETSC_TRUE;
-  CHKERRQ(PetscStrallocpy(MATORDERINGEXTERNAL,(char**)&B->preferredordering[MAT_FACTOR_LU]));
+  PetscCall(PetscStrallocpy(MATORDERINGEXTERNAL,(char**)&B->preferredordering[MAT_FACTOR_LU]));
 
   /* initializations */
   /* ------------------------------------------------*/
@@ -316,17 +316,17 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_klu(Mat A,MatFactorType ftype,Ma
 
   lu->Common.scale = 0; /* No row scaling */
 
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"KLU Options","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"KLU Options","Mat");PetscCall(ierr);
   /* Partial pivoting tolerance */
-  CHKERRQ(PetscOptionsReal("-mat_klu_pivot_tol","Partial pivoting tolerance","None",lu->Common.tol,&lu->Common.tol,NULL));
+  PetscCall(PetscOptionsReal("-mat_klu_pivot_tol","Partial pivoting tolerance","None",lu->Common.tol,&lu->Common.tol,NULL));
   /* BTF pre-ordering */
-  CHKERRQ(PetscOptionsInt("-mat_klu_use_btf","Enable BTF preordering","None",(PetscInt)lu->Common.btf,(PetscInt*)&lu->Common.btf,NULL));
+  PetscCall(PetscOptionsInt("-mat_klu_use_btf","Enable BTF preordering","None",(PetscInt)lu->Common.btf,(PetscInt*)&lu->Common.btf,NULL));
   /* Matrix reordering */
-  CHKERRQ(PetscOptionsEList("-mat_klu_ordering","Internal ordering method","None",KluOrderingTypes,sizeof(KluOrderingTypes)/sizeof(KluOrderingTypes[0]),KluOrderingTypes[0],&idx,&flg));
+  PetscCall(PetscOptionsEList("-mat_klu_ordering","Internal ordering method","None",KluOrderingTypes,sizeof(KluOrderingTypes)/sizeof(KluOrderingTypes[0]),KluOrderingTypes[0],&idx,&flg));
   lu->Common.ordering = (int)idx;
   /* Matrix row scaling */
-  CHKERRQ(PetscOptionsEList("-mat_klu_row_scale","Matrix row scaling","None",scale,3,scale[0],&idx,&flg));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(PetscOptionsEList("-mat_klu_row_scale","Matrix row scaling","None",scale,3,scale[0],&idx,&flg));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
   *F = B;
   PetscFunctionReturn(0);
 }

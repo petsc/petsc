@@ -25,24 +25,24 @@ int main(int argc,char **argv)
   PetscInt        iu,ip;
   PetscScalar     **arrSol,**arrRHS;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(DMStagCreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_GHOSTED,3,1,1,DMSTAG_STENCIL_BOX,1,NULL,&dmSol));
-  CHKERRQ(DMSetFromOptions(dmSol));
-  CHKERRQ(DMSetUp(dmSol));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(DMStagCreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_GHOSTED,3,1,1,DMSTAG_STENCIL_BOX,1,NULL,&dmSol));
+  PetscCall(DMSetFromOptions(dmSol));
+  PetscCall(DMSetUp(dmSol));
 
   /* Compute reference solution on the grid, using direct array access */
-  CHKERRQ(DMCreateGlobalVector(dmSol,&rhs));
-  CHKERRQ(DMCreateGlobalVector(dmSol,&solRef));
-  CHKERRQ(DMGetLocalVector(dmSol,&solRefLocal));
-  CHKERRQ(DMGetLocalVector(dmSol,&rhsLocal));
-  CHKERRQ(DMStagVecGetArray(dmSol,solRefLocal,&arrSol));
+  PetscCall(DMCreateGlobalVector(dmSol,&rhs));
+  PetscCall(DMCreateGlobalVector(dmSol,&solRef));
+  PetscCall(DMGetLocalVector(dmSol,&solRefLocal));
+  PetscCall(DMGetLocalVector(dmSol,&rhsLocal));
+  PetscCall(DMStagVecGetArray(dmSol,solRefLocal,&arrSol));
 
-  CHKERRQ(DMStagGetCorners(dmSol,&start,NULL,NULL,&n,NULL,NULL,&nExtra,NULL,NULL));
-  CHKERRQ(DMStagVecGetArray(dmSol,rhsLocal,&arrRHS));
+  PetscCall(DMStagGetCorners(dmSol,&start,NULL,NULL,&n,NULL,NULL,&nExtra,NULL,NULL));
+  PetscCall(DMStagVecGetArray(dmSol,rhsLocal,&arrRHS));
 
   /* Get the correct entries for each of our variables in local element-wise storage */
-  CHKERRQ(DMStagGetLocationSlot(dmSol,LEFT,0,&iu));
-  CHKERRQ(DMStagGetLocationSlot(dmSol,ELEMENT,0,&ip));
+  PetscCall(DMStagGetLocationSlot(dmSol,LEFT,0,&iu));
+  PetscCall(DMStagGetLocationSlot(dmSol,ELEMENT,0,&ip));
   for (e=start; e<start+n+nExtra; ++e) {
     {
       arrSol[e][iu] = 2*PRESSURE_CONST;
@@ -53,54 +53,54 @@ int main(int argc,char **argv)
       arrRHS[e][ip] = PRESSURE_CONST;
     }
   }
-  CHKERRQ(DMStagVecRestoreArray(dmSol,rhsLocal,&arrRHS));
-  CHKERRQ(DMLocalToGlobalBegin(dmSol,rhsLocal,INSERT_VALUES,rhs));
-  CHKERRQ(DMLocalToGlobalEnd(dmSol,rhsLocal,INSERT_VALUES,rhs));
-  CHKERRQ(DMStagVecRestoreArray(dmSol,solRefLocal,&arrSol));
-  CHKERRQ(DMLocalToGlobalBegin(dmSol,solRefLocal,INSERT_VALUES,solRef));
-  CHKERRQ(DMLocalToGlobalEnd(dmSol,solRefLocal,INSERT_VALUES,solRef));
-  CHKERRQ(DMRestoreLocalVector(dmSol,&solRefLocal));
-  CHKERRQ(DMRestoreLocalVector(dmSol,&rhsLocal));
+  PetscCall(DMStagVecRestoreArray(dmSol,rhsLocal,&arrRHS));
+  PetscCall(DMLocalToGlobalBegin(dmSol,rhsLocal,INSERT_VALUES,rhs));
+  PetscCall(DMLocalToGlobalEnd(dmSol,rhsLocal,INSERT_VALUES,rhs));
+  PetscCall(DMStagVecRestoreArray(dmSol,solRefLocal,&arrSol));
+  PetscCall(DMLocalToGlobalBegin(dmSol,solRefLocal,INSERT_VALUES,solRef));
+  PetscCall(DMLocalToGlobalEnd(dmSol,solRefLocal,INSERT_VALUES,solRef));
+  PetscCall(DMRestoreLocalVector(dmSol,&solRefLocal));
+  PetscCall(DMRestoreLocalVector(dmSol,&rhsLocal));
 
   /* Matrix-free Operator */
-  CHKERRQ(DMSetMatType(dmSol,MATSHELL));
-  CHKERRQ(DMCreateMatrix(dmSol,&A));
-  CHKERRQ(MatShellSetOperation(A,MATOP_MULT,(void(*) (void)) ApplyOperator));
+  PetscCall(DMSetMatType(dmSol,MATSHELL));
+  PetscCall(DMCreateMatrix(dmSol,&A));
+  PetscCall(MatShellSetOperation(A,MATOP_MULT,(void(*) (void)) ApplyOperator));
 
   /* Solve */
-  CHKERRQ(DMCreateGlobalVector(dmSol,&sol));
-  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
-  CHKERRQ(KSPSetOperators(ksp,A,A));
-  CHKERRQ(KSPGetPC(ksp,&pc));
-  CHKERRQ(PCSetType(pc,PCNONE));
-  CHKERRQ(KSPSetFromOptions(ksp));
-  CHKERRQ(KSPSolve(ksp,rhs,sol));
+  PetscCall(DMCreateGlobalVector(dmSol,&sol));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPSetOperators(ksp,A,A));
+  PetscCall(KSPGetPC(ksp,&pc));
+  PetscCall(PCSetType(pc,PCNONE));
+  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(KSPSolve(ksp,rhs,sol));
 
   /* Check Solution */
   {
     Vec       diff;
     PetscReal normsolRef,errAbs,errRel;
 
-    CHKERRQ(VecDuplicate(sol,&diff));
-    CHKERRQ(VecCopy(sol,diff));
-    CHKERRQ(VecAXPY(diff,-1.0,solRef));
-    CHKERRQ(VecNorm(diff,NORM_2,&errAbs));
-    CHKERRQ(VecNorm(solRef,NORM_2,&normsolRef));
+    PetscCall(VecDuplicate(sol,&diff));
+    PetscCall(VecCopy(sol,diff));
+    PetscCall(VecAXPY(diff,-1.0,solRef));
+    PetscCall(VecNorm(diff,NORM_2,&errAbs));
+    PetscCall(VecNorm(solRef,NORM_2,&normsolRef));
     errRel = errAbs/normsolRef;
     if (errAbs > 1e14 || errRel > 1e14) {
-      CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject)dmSol),"Error (abs): %g\nError (rel): %g\n",(double)errAbs,(double)errRel));
-      CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject)dmSol),"Non-zero error. Probable failure.\n"));
+      PetscCall(PetscPrintf(PetscObjectComm((PetscObject)dmSol),"Error (abs): %g\nError (rel): %g\n",(double)errAbs,(double)errRel));
+      PetscCall(PetscPrintf(PetscObjectComm((PetscObject)dmSol),"Non-zero error. Probable failure.\n"));
     }
-    CHKERRQ(VecDestroy(&diff));
+    PetscCall(VecDestroy(&diff));
   }
 
-  CHKERRQ(KSPDestroy(&ksp));
-  CHKERRQ(VecDestroy(&sol));
-  CHKERRQ(VecDestroy(&solRef));
-  CHKERRQ(VecDestroy(&rhs));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(DMDestroy(&dmSol));
-  CHKERRQ(PetscFinalize());
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(VecDestroy(&sol));
+  PetscCall(VecDestroy(&solRef));
+  PetscCall(VecDestroy(&rhs));
+  PetscCall(MatDestroy(&A));
+  PetscCall(DMDestroy(&dmSol));
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -115,21 +115,21 @@ PetscErrorCode ApplyOperator(Mat A,Vec in,Vec out)
   PetscBool         isFirst,isLast;
 
   PetscFunctionBeginUser;
-  CHKERRQ(MatGetDM(A,&dm));
-  CHKERRQ(DMStagGetBoundaryTypes(dm,&boundaryType,NULL,NULL));
+  PetscCall(MatGetDM(A,&dm));
+  PetscCall(DMStagGetBoundaryTypes(dm,&boundaryType,NULL,NULL));
   PetscCheckFalse(boundaryType != DM_BOUNDARY_GHOSTED,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_INCOMP,"Ghosted boundaries required");
-  CHKERRQ(DMGetLocalVector(dm,&inLocal));
-  CHKERRQ(DMGetLocalVector(dm,&outLocal));
-  CHKERRQ(DMGlobalToLocalBegin(dm,in,INSERT_VALUES,inLocal));
-  CHKERRQ(DMGlobalToLocalEnd(dm,in,INSERT_VALUES,inLocal));
-  CHKERRQ(DMStagGetCorners(dm,&start,NULL,NULL,&n,NULL,NULL,&nExtra,NULL,NULL));
-  CHKERRQ(DMStagGetGhostCorners(dm,&startGhost,NULL,NULL,&nGhost,NULL,NULL));
-  CHKERRQ(DMStagVecGetArrayRead(dm,inLocal,&arrIn));
-  CHKERRQ(DMStagVecGetArray(dm,outLocal,&arrOut));
-  CHKERRQ(DMStagGetLocationSlot(dm,LEFT,0,&idxU));
-  CHKERRQ(DMStagGetLocationSlot(dm,ELEMENT,0,&idxP));
-  CHKERRQ(DMStagGetIsFirstRank(dm,&isFirst,NULL,NULL));
-  CHKERRQ(DMStagGetIsLastRank(dm,&isLast,NULL,NULL));
+  PetscCall(DMGetLocalVector(dm,&inLocal));
+  PetscCall(DMGetLocalVector(dm,&outLocal));
+  PetscCall(DMGlobalToLocalBegin(dm,in,INSERT_VALUES,inLocal));
+  PetscCall(DMGlobalToLocalEnd(dm,in,INSERT_VALUES,inLocal));
+  PetscCall(DMStagGetCorners(dm,&start,NULL,NULL,&n,NULL,NULL,&nExtra,NULL,NULL));
+  PetscCall(DMStagGetGhostCorners(dm,&startGhost,NULL,NULL,&nGhost,NULL,NULL));
+  PetscCall(DMStagVecGetArrayRead(dm,inLocal,&arrIn));
+  PetscCall(DMStagVecGetArray(dm,outLocal,&arrOut));
+  PetscCall(DMStagGetLocationSlot(dm,LEFT,0,&idxU));
+  PetscCall(DMStagGetLocationSlot(dm,ELEMENT,0,&idxP));
+  PetscCall(DMStagGetIsFirstRank(dm,&isFirst,NULL,NULL));
+  PetscCall(DMStagGetIsLastRank(dm,&isLast,NULL,NULL));
 
   /* Set "pressures" on ghost boundaries by copying neighboring values*/
   if (isFirst) {
@@ -146,12 +146,12 @@ PetscErrorCode ApplyOperator(Mat A,Vec in,Vec out)
     }
     arrOut[ex][idxU] = arrIn[ex][idxP] + arrIn[ex-1][idxP] - arrIn[ex][idxU];
   }
-  CHKERRQ(DMStagVecRestoreArrayRead(dm,inLocal,&arrIn));
-  CHKERRQ(DMStagVecRestoreArray(dm,outLocal,&arrOut));
-  CHKERRQ(DMLocalToGlobalBegin(dm,outLocal,INSERT_VALUES,out));
-  CHKERRQ(DMLocalToGlobalEnd(dm,outLocal,INSERT_VALUES,out));
-  CHKERRQ(DMRestoreLocalVector(dm,&inLocal));
-  CHKERRQ(DMRestoreLocalVector(dm,&outLocal));
+  PetscCall(DMStagVecRestoreArrayRead(dm,inLocal,&arrIn));
+  PetscCall(DMStagVecRestoreArray(dm,outLocal,&arrOut));
+  PetscCall(DMLocalToGlobalBegin(dm,outLocal,INSERT_VALUES,out));
+  PetscCall(DMLocalToGlobalEnd(dm,outLocal,INSERT_VALUES,out));
+  PetscCall(DMRestoreLocalVector(dm,&inLocal));
+  PetscCall(DMRestoreLocalVector(dm,&outLocal));
   PetscFunctionReturn(0);
 }
 

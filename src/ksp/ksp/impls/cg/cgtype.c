@@ -31,7 +31,7 @@ PetscErrorCode  KSPCGSetType(KSP ksp,KSPCGType type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  CHKERRQ(PetscTryMethod(ksp,"KSPCGSetType_C",(KSP,KSPCGType),(ksp,type)));
+  PetscCall(PetscTryMethod(ksp,"KSPCGSetType_C",(KSP,KSPCGType),(ksp,type)));
   PetscFunctionReturn(0);
 }
 
@@ -64,7 +64,7 @@ PetscErrorCode  KSPCGUseSingleReduction(KSP ksp,PetscBool flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidLogicalCollectiveBool(ksp,flg,2);
-  CHKERRQ(PetscTryMethod(ksp,"KSPCGUseSingleReduction_C",(KSP,PetscBool),(ksp,flg)));
+  PetscCall(PetscTryMethod(ksp,"KSPCGUseSingleReduction_C",(KSP,PetscBool),(ksp,flg)));
   PetscFunctionReturn(0);
 }
 
@@ -86,7 +86,7 @@ PetscErrorCode  KSPCGSetRadius(KSP ksp, PetscReal radius)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidLogicalCollectiveReal(ksp,radius,2);
-  CHKERRQ(PetscTryMethod(ksp,"KSPCGSetRadius_C",(KSP,PetscReal),(ksp,radius)));
+  PetscCall(PetscTryMethod(ksp,"KSPCGSetRadius_C",(KSP,PetscReal),(ksp,radius)));
   PetscFunctionReturn(0);
 }
 
@@ -107,7 +107,7 @@ PetscErrorCode  KSPCGGetNormD(KSP ksp, PetscReal *norm_d)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  CHKERRQ(PetscUseMethod(ksp,"KSPCGGetNormD_C",(KSP,PetscReal*),(ksp,norm_d)));
+  PetscCall(PetscUseMethod(ksp,"KSPCGGetNormD_C",(KSP,PetscReal*),(ksp,norm_d)));
   PetscFunctionReturn(0);
 }
 
@@ -128,6 +128,6 @@ PetscErrorCode  KSPCGGetObjFcn(KSP ksp, PetscReal *o_fcn)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  CHKERRQ(PetscUseMethod(ksp,"KSPCGGetObjFcn_C",(KSP,PetscReal*),(ksp,o_fcn)));
+  PetscCall(PetscUseMethod(ksp,"KSPCGGetObjFcn_C",(KSP,PetscReal*),(ksp,o_fcn)));
   PetscFunctionReturn(0);
 }

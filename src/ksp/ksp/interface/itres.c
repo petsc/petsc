@@ -41,35 +41,35 @@ PetscErrorCode  KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Ve
   PetscValidHeaderSpecific(vsoln,VEC_CLASSID,2);
   PetscValidHeaderSpecific(vres,VEC_CLASSID,5);
   PetscValidHeaderSpecific(vb,VEC_CLASSID,6);
-  if (!ksp->pc) CHKERRQ(KSPGetPC(ksp,&ksp->pc));
-  CHKERRQ(PCGetOperators(ksp->pc,&Amat,&Pmat));
+  if (!ksp->pc) PetscCall(KSPGetPC(ksp,&ksp->pc));
+  PetscCall(PCGetOperators(ksp->pc,&Amat,&Pmat));
   if (!ksp->guess_zero) {
     /* skip right scaling since current guess already has it */
-    CHKERRQ(KSP_MatMult(ksp,Amat,vsoln,vt1));
-    CHKERRQ(VecCopy(vb,vt2));
-    CHKERRQ(VecAXPY(vt2,-1.0,vt1));
+    PetscCall(KSP_MatMult(ksp,Amat,vsoln,vt1));
+    PetscCall(VecCopy(vb,vt2));
+    PetscCall(VecAXPY(vt2,-1.0,vt1));
     if (ksp->pc_side == PC_RIGHT) {
-      CHKERRQ(PCDiagonalScaleLeft(ksp->pc,vt2,vres));
+      PetscCall(PCDiagonalScaleLeft(ksp->pc,vt2,vres));
     } else if (ksp->pc_side == PC_LEFT) {
-      CHKERRQ(KSP_PCApply(ksp,vt2,vres));
-      CHKERRQ(PCDiagonalScaleLeft(ksp->pc,vres,vres));
+      PetscCall(KSP_PCApply(ksp,vt2,vres));
+      PetscCall(PCDiagonalScaleLeft(ksp->pc,vres,vres));
     } else if (ksp->pc_side == PC_SYMMETRIC) {
-      CHKERRQ(PCApplySymmetricLeft(ksp->pc,vt2,vres));
+      PetscCall(PCApplySymmetricLeft(ksp->pc,vt2,vres));
     } else SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP, "Invalid preconditioning side %d", (int)ksp->pc_side);
   } else {
-    CHKERRQ(VecCopy(vb,vt2));
+    PetscCall(VecCopy(vb,vt2));
     if (ksp->pc_side == PC_RIGHT) {
-      CHKERRQ(PCDiagonalScaleLeft(ksp->pc,vb,vres));
+      PetscCall(PCDiagonalScaleLeft(ksp->pc,vb,vres));
     } else if (ksp->pc_side == PC_LEFT) {
-      CHKERRQ(KSP_PCApply(ksp,vb,vres));
-      CHKERRQ(PCDiagonalScaleLeft(ksp->pc,vres,vres));
+      PetscCall(KSP_PCApply(ksp,vb,vres));
+      PetscCall(PCDiagonalScaleLeft(ksp->pc,vres,vres));
     } else if (ksp->pc_side == PC_SYMMETRIC) {
-      CHKERRQ(PCApplySymmetricLeft(ksp->pc, vb, vres));
+      PetscCall(PCApplySymmetricLeft(ksp->pc, vb, vres));
     } else SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP, "Invalid preconditioning side %d", (int)ksp->pc_side);
   }
   /* This may be true only on a subset of MPI ranks; setting it here so it will be detected by the first norm computaion in the Krylov method */
   if (ksp->reason == KSP_DIVERGED_PC_FAILED) {
-    CHKERRQ(VecSetInf(vres));
+    PetscCall(VecSetInf(vres));
   }
   PetscFunctionReturn(0);
 }
@@ -103,15 +103,15 @@ PetscErrorCode  KSPUnwindPreconditioner(KSP ksp,Vec vsoln,Vec vt1)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidHeaderSpecific(vsoln,VEC_CLASSID,2);
-  if (!ksp->pc) CHKERRQ(KSPGetPC(ksp,&ksp->pc));
+  if (!ksp->pc) PetscCall(KSPGetPC(ksp,&ksp->pc));
   if (ksp->pc_side == PC_RIGHT) {
-    CHKERRQ(KSP_PCApply(ksp,vsoln,vt1));
-    CHKERRQ(PCDiagonalScaleRight(ksp->pc,vt1,vsoln));
+    PetscCall(KSP_PCApply(ksp,vsoln,vt1));
+    PetscCall(PCDiagonalScaleRight(ksp->pc,vt1,vsoln));
   } else if (ksp->pc_side == PC_SYMMETRIC) {
-    CHKERRQ(PCApplySymmetricRight(ksp->pc,vsoln,vt1));
-    CHKERRQ(VecCopy(vt1,vsoln));
+    PetscCall(PCApplySymmetricRight(ksp->pc,vsoln,vt1));
+    PetscCall(VecCopy(vt1,vsoln));
   } else {
-    CHKERRQ(PCDiagonalScaleRight(ksp->pc,vsoln,vsoln));
+    PetscCall(PCDiagonalScaleRight(ksp->pc,vsoln,vsoln));
   }
   PetscFunctionReturn(0);
 }

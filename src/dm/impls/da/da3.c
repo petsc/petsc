@@ -17,62 +17,62 @@ static PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
 #endif
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)da),&rank));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)da),&rank));
 
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERGLVIS,&isglvis));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERGLVIS,&isglvis));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary));
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERMATLAB,&ismatlab));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERMATLAB,&ismatlab));
 #endif
   if (iascii) {
     PetscViewerFormat format;
 
-    CHKERRQ(PetscViewerASCIIPushSynchronized(viewer));
-    CHKERRQ(PetscViewerGetFormat(viewer, &format));
+    PetscCall(PetscViewerASCIIPushSynchronized(viewer));
+    PetscCall(PetscViewerGetFormat(viewer, &format));
     if (format == PETSC_VIEWER_LOAD_BALANCE) {
       PetscInt      i,nmax = 0,nmin = PETSC_MAX_INT,navg = 0,*nz,nzlocal;
       DMDALocalInfo info;
       PetscMPIInt   size;
-      CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)da),&size));
-      CHKERRQ(DMDAGetLocalInfo(da,&info));
+      PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)da),&size));
+      PetscCall(DMDAGetLocalInfo(da,&info));
       nzlocal = info.xm*info.ym*info.zm;
-      CHKERRQ(PetscMalloc1(size,&nz));
-      CHKERRMPI(MPI_Allgather(&nzlocal,1,MPIU_INT,nz,1,MPIU_INT,PetscObjectComm((PetscObject)da)));
+      PetscCall(PetscMalloc1(size,&nz));
+      PetscCallMPI(MPI_Allgather(&nzlocal,1,MPIU_INT,nz,1,MPIU_INT,PetscObjectComm((PetscObject)da)));
       for (i=0; i<(PetscInt)size; i++) {
         nmax = PetscMax(nmax,nz[i]);
         nmin = PetscMin(nmin,nz[i]);
         navg += nz[i];
       }
-      CHKERRQ(PetscFree(nz));
+      PetscCall(PetscFree(nz));
       navg = navg/size;
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Load Balance - Grid Points: Min %D  avg %D  max %D\n",nmin,navg,nmax));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  Load Balance - Grid Points: Min %D  avg %D  max %D\n",nmin,navg,nmax));
       PetscFunctionReturn(0);
     }
     if (format != PETSC_VIEWER_ASCII_VTK_DEPRECATED && format != PETSC_VIEWER_ASCII_VTK_CELL_DEPRECATED && format != PETSC_VIEWER_ASCII_GLVIS) {
       DMDALocalInfo info;
-      CHKERRQ(DMDAGetLocalInfo(da,&info));
-      CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer,"Processor [%d] M %D N %D P %D m %D n %D p %D w %D s %D\n",rank,dd->M,dd->N,dd->P,dd->m,dd->n,dd->p,dd->w,dd->s));
-      CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer,"X range of indices: %D %D, Y range of indices: %D %D, Z range of indices: %D %D\n",
+      PetscCall(DMDAGetLocalInfo(da,&info));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"Processor [%d] M %D N %D P %D m %D n %D p %D w %D s %D\n",rank,dd->M,dd->N,dd->P,dd->m,dd->n,dd->p,dd->w,dd->s));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"X range of indices: %D %D, Y range of indices: %D %D, Z range of indices: %D %D\n",
                                                  info.xs,info.xs+info.xm,info.ys,info.ys+info.ym,info.zs,info.zs+info.zm));
 #if !defined(PETSC_USE_COMPLEX)
       if (da->coordinates) {
         PetscInt        last;
         const PetscReal *coors;
-        CHKERRQ(VecGetArrayRead(da->coordinates,&coors));
-        CHKERRQ(VecGetLocalSize(da->coordinates,&last));
+        PetscCall(VecGetArrayRead(da->coordinates,&coors));
+        PetscCall(VecGetLocalSize(da->coordinates,&last));
         last = last - 3;
-        CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer,"Lower left corner %g %g %g : Upper right %g %g %g\n",(double)coors[0],(double)coors[1],(double)coors[2],(double)coors[last],(double)coors[last+1],(double)coors[last+2]));
-        CHKERRQ(VecRestoreArrayRead(da->coordinates,&coors));
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"Lower left corner %g %g %g : Upper right %g %g %g\n",(double)coors[0],(double)coors[1],(double)coors[2],(double)coors[last],(double)coors[last+1],(double)coors[last+2]));
+        PetscCall(VecRestoreArrayRead(da->coordinates,&coors));
       }
 #endif
-      CHKERRQ(PetscViewerFlush(viewer));
-      CHKERRQ(PetscViewerASCIIPopSynchronized(viewer));
+      PetscCall(PetscViewerFlush(viewer));
+      PetscCall(PetscViewerASCIIPopSynchronized(viewer));
     } else if (format == PETSC_VIEWER_ASCII_GLVIS) {
-      CHKERRQ(DMView_DA_GLVis(da,viewer));
+      PetscCall(DMView_DA_GLVis(da,viewer));
     } else {
-      CHKERRQ(DMView_DA_VTK(da,viewer));
+      PetscCall(DMView_DA_VTK(da,viewer));
     }
   } else if (isdraw) {
     PetscDraw      draw;
@@ -84,33 +84,33 @@ static PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
     PetscBool      isnull;
     PetscErrorCode ierr;
 
-    CHKERRQ(PetscViewerDrawGetDraw(viewer,0,&draw));
-    CHKERRQ(PetscDrawIsNull(draw,&isnull));
+    PetscCall(PetscViewerDrawGetDraw(viewer,0,&draw));
+    PetscCall(PetscDrawIsNull(draw,&isnull));
     if (isnull) PetscFunctionReturn(0);
 
-    CHKERRQ(PetscDrawCheckResizedWindow(draw));
-    CHKERRQ(PetscDrawClear(draw));
-    CHKERRQ(PetscDrawSetCoordinates(draw,xmin,ymin,xmax,ymax));
+    PetscCall(PetscDrawCheckResizedWindow(draw));
+    PetscCall(PetscDrawClear(draw));
+    PetscCall(PetscDrawSetCoordinates(draw,xmin,ymin,xmax,ymax));
 
-    ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
+    ierr = PetscDrawCollectiveBegin(draw);PetscCall(ierr);
     /* first processor draw all node lines */
     if (rank == 0) {
       for (k=0; k<dd->P; k++) {
         ymin = 0.0; ymax = (PetscReal)(dd->N - 1);
         for (xmin=(PetscReal)(k*(dd->M+1)); xmin<(PetscReal)(dd->M+(k*(dd->M+1))); xmin++) {
-          CHKERRQ(PetscDrawLine(draw,xmin,ymin,xmin,ymax,PETSC_DRAW_BLACK));
+          PetscCall(PetscDrawLine(draw,xmin,ymin,xmin,ymax,PETSC_DRAW_BLACK));
         }
         xmin = (PetscReal)(k*(dd->M+1)); xmax = xmin + (PetscReal)(dd->M - 1);
         for (ymin=0; ymin<(PetscReal)dd->N; ymin++) {
-          CHKERRQ(PetscDrawLine(draw,xmin,ymin,xmax,ymin,PETSC_DRAW_BLACK));
+          PetscCall(PetscDrawLine(draw,xmin,ymin,xmax,ymin,PETSC_DRAW_BLACK));
         }
       }
     }
-    ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
-    CHKERRQ(PetscDrawFlush(draw));
-    CHKERRQ(PetscDrawPause(draw));
+    ierr = PetscDrawCollectiveEnd(draw);PetscCall(ierr);
+    PetscCall(PetscDrawFlush(draw));
+    PetscCall(PetscDrawPause(draw));
 
-    ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
+    ierr = PetscDrawCollectiveBegin(draw);PetscCall(ierr);
     /*Go through and draw for each plane*/
     for (k=0; k<dd->P; k++) {
       if ((k >= dd->zs) && (k < dd->ze)) {
@@ -120,39 +120,39 @@ static PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
         xmin = dd->xs/dd->w    + (dd->M+1)*k;
         xmax =(dd->xe-1)/dd->w + (dd->M+1)*k;
 
-        CHKERRQ(PetscDrawLine(draw,xmin,ymin,xmax,ymin,PETSC_DRAW_RED));
-        CHKERRQ(PetscDrawLine(draw,xmin,ymin,xmin,ymax,PETSC_DRAW_RED));
-        CHKERRQ(PetscDrawLine(draw,xmin,ymax,xmax,ymax,PETSC_DRAW_RED));
-        CHKERRQ(PetscDrawLine(draw,xmax,ymin,xmax,ymax,PETSC_DRAW_RED));
+        PetscCall(PetscDrawLine(draw,xmin,ymin,xmax,ymin,PETSC_DRAW_RED));
+        PetscCall(PetscDrawLine(draw,xmin,ymin,xmin,ymax,PETSC_DRAW_RED));
+        PetscCall(PetscDrawLine(draw,xmin,ymax,xmax,ymax,PETSC_DRAW_RED));
+        PetscCall(PetscDrawLine(draw,xmax,ymin,xmax,ymax,PETSC_DRAW_RED));
 
         xmin = dd->xs/dd->w;
         xmax =(dd->xe-1)/dd->w;
 
         /* identify which processor owns the box */
-        CHKERRQ(PetscSNPrintf(node,sizeof(node),"%d",(int)rank));
-        CHKERRQ(PetscDrawString(draw,xmin+(dd->M+1)*k+.2,ymin+.3,PETSC_DRAW_RED,node));
+        PetscCall(PetscSNPrintf(node,sizeof(node),"%d",(int)rank));
+        PetscCall(PetscDrawString(draw,xmin+(dd->M+1)*k+.2,ymin+.3,PETSC_DRAW_RED,node));
         /* put in numbers*/
         base = (dd->base+(dd->xe-dd->xs)*(dd->ye-dd->ys)*(k-dd->zs))/dd->w;
         for (y=ymin; y<=ymax; y++) {
           for (x=xmin+(dd->M+1)*k; x<=xmax+(dd->M+1)*k; x++) {
-            CHKERRQ(PetscSNPrintf(node,sizeof(node),"%d",(int)base++));
-            CHKERRQ(PetscDrawString(draw,x,y,PETSC_DRAW_BLACK,node));
+            PetscCall(PetscSNPrintf(node,sizeof(node),"%d",(int)base++));
+            PetscCall(PetscDrawString(draw,x,y,PETSC_DRAW_BLACK,node));
           }
         }
 
       }
     }
-    ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
-    CHKERRQ(PetscDrawFlush(draw));
-    CHKERRQ(PetscDrawPause(draw));
+    ierr = PetscDrawCollectiveEnd(draw);PetscCall(ierr);
+    PetscCall(PetscDrawFlush(draw));
+    PetscCall(PetscDrawPause(draw));
 
-    ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
+    ierr = PetscDrawCollectiveBegin(draw);PetscCall(ierr);
     for (k=0-dd->s; k<dd->P+dd->s; k++) {
       /* Go through and draw for each plane */
       if ((k >= dd->Zs) && (k < dd->Ze)) {
         /* overlay ghost numbers, useful for error checking */
         base = (dd->Xe-dd->Xs)*(dd->Ye-dd->Ys)*(k-dd->Zs)/dd->w;
-        CHKERRQ(ISLocalToGlobalMappingGetBlockIndices(da->ltogmap,&idx));
+        PetscCall(ISLocalToGlobalMappingGetBlockIndices(da->ltogmap,&idx));
         plane=k;
         /* Keep z wrap around points on the drawing */
         if (k<0) plane=dd->P+k;
@@ -170,24 +170,24 @@ static PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
             xcoord = x;   /* Keep x wrap points on drawing */
             if (x<xmin) xcoord = xmax - (xmin-x);
             if (x>=xmax) xcoord = xmin + (x-xmax);
-            CHKERRQ(PetscDrawString(draw,xcoord/dd->w,ycoord,PETSC_DRAW_BLUE,node));
+            PetscCall(PetscDrawString(draw,xcoord/dd->w,ycoord,PETSC_DRAW_BLUE,node));
             base++;
           }
         }
-        CHKERRQ(ISLocalToGlobalMappingRestoreBlockIndices(da->ltogmap,&idx));
+        PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(da->ltogmap,&idx));
       }
     }
-    ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
-    CHKERRQ(PetscDrawFlush(draw));
-    CHKERRQ(PetscDrawPause(draw));
-    CHKERRQ(PetscDrawSave(draw));
+    ierr = PetscDrawCollectiveEnd(draw);PetscCall(ierr);
+    PetscCall(PetscDrawFlush(draw));
+    PetscCall(PetscDrawPause(draw));
+    PetscCall(PetscDrawSave(draw));
   } else if (isglvis) {
-    CHKERRQ(DMView_DA_GLVis(da,viewer));
+    PetscCall(DMView_DA_GLVis(da,viewer));
   } else if (isbinary) {
-    CHKERRQ(DMView_DA_Binary(da,viewer));
+    PetscCall(DMView_DA_Binary(da,viewer));
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   } else if (ismatlab) {
-    CHKERRQ(DMView_DA_Matlab(da,viewer));
+    PetscCall(DMView_DA_Matlab(da,viewer));
 #endif
   }
   PetscFunctionReturn(0);
@@ -229,13 +229,13 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
 
   PetscFunctionBegin;
   PetscCheck(stencil_type != DMDA_STENCIL_BOX || (bx != DM_BOUNDARY_MIRROR && by != DM_BOUNDARY_MIRROR && bz != DM_BOUNDARY_MIRROR),PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Mirror boundary and box stencil");
-  CHKERRQ(PetscObjectGetComm((PetscObject) da, &comm));
+  PetscCall(PetscObjectGetComm((PetscObject) da, &comm));
 #if !defined(PETSC_USE_64BIT_INDICES)
   PetscCheck(((PetscInt64) M)*((PetscInt64) N)*((PetscInt64) P)*((PetscInt64) dof) <= (PetscInt64) PETSC_MPI_INT_MAX,comm,PETSC_ERR_INT_OVERFLOW,"Mesh of %D by %D by %D by %D (dof) is too large for 32 bit indices",M,N,P,dof);
 #endif
 
-  CHKERRMPI(MPI_Comm_size(comm,&size));
-  CHKERRMPI(MPI_Comm_rank(comm,&rank));
+  PetscCallMPI(MPI_Comm_size(comm,&size));
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
 
   if (m != PETSC_DECIDE) {
     PetscCheckFalse(m < 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in X direction: %D",m);
@@ -322,7 +322,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   */
 
   if (!lx) {
-    CHKERRQ(PetscMalloc1(m, &dd->lx));
+    PetscCall(PetscMalloc1(m, &dd->lx));
     lx   = dd->lx;
     for (i=0; i<m; i++) lx[i] = M/m + ((M % m) > (i % m));
   }
@@ -332,7 +332,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   PetscCheckFalse((x < s) && ((m > 1) || (bx == DM_BOUNDARY_PERIODIC)),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local x-width of domain x %D is smaller than stencil width s %D",x,s);
 
   if (!ly) {
-    CHKERRQ(PetscMalloc1(n, &dd->ly));
+    PetscCall(PetscMalloc1(n, &dd->ly));
     ly   = dd->ly;
     for (i=0; i<n; i++) ly[i] = N/n + ((N % n) > (i % n));
   }
@@ -343,7 +343,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   for (i=0; i<(rank % (m*n))/m; i++) ys += ly[i];
 
   if (!lz) {
-    CHKERRQ(PetscMalloc1(p, &dd->lz));
+    PetscCall(PetscMalloc1(p, &dd->lz));
     lz = dd->lz;
     for (i=0; i<p; i++) lz[i] = P/p + ((P % p) > (i % p));
   }
@@ -436,8 +436,8 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
 
   /* determine starting point of each processor */
   nn       = x*y*z;
-  CHKERRQ(PetscMalloc2(size+1,&bases,size,&ldims));
-  CHKERRMPI(MPI_Allgather(&nn,1,MPIU_INT,ldims,1,MPIU_INT,comm));
+  PetscCall(PetscMalloc2(size+1,&bases,size,&ldims));
+  PetscCallMPI(MPI_Allgather(&nn,1,MPIU_INT,ldims,1,MPIU_INT,comm));
   bases[0] = 0;
   for (i=1; i<=size; i++) bases[i] = ldims[i-1];
   for (i=1; i<=size; i++) bases[i] += bases[i-1];
@@ -445,15 +445,15 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
 
   /* allocate the base parallel and sequential vectors */
   dd->Nlocal = x*y*z*dof;
-  CHKERRQ(VecCreateMPIWithArray(comm,dof,dd->Nlocal,PETSC_DECIDE,NULL,&global));
+  PetscCall(VecCreateMPIWithArray(comm,dof,dd->Nlocal,PETSC_DECIDE,NULL,&global));
   dd->nlocal = (Xe-Xs)*(Ye-Ys)*(Ze-Zs)*dof;
-  CHKERRQ(VecCreateSeqWithArray(PETSC_COMM_SELF,dof,dd->nlocal,NULL,&local));
+  PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,dof,dd->nlocal,NULL,&local));
 
   /* generate global to local vector scatter and local to global mapping*/
 
   /* global to local must include ghost points within the domain,
      but not ghost points outside the domain that aren't periodic */
-  CHKERRQ(PetscMalloc1((IXe-IXs)*(IYe-IYs)*(IZe-IZs),&idx));
+  PetscCall(PetscMalloc1((IXe-IXs)*(IYe-IYs)*(IZe-IZs),&idx));
   if (stencil_type == DMDA_STENCIL_BOX) {
     left   = IXs - Xs; right = left + (IXe-IXs);
     bottom = IYs - Ys; top = bottom + (IYe-IYs);
@@ -466,7 +466,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
         }
       }
     }
-    CHKERRQ(ISCreateBlock(comm,dof,count,idx,PETSC_OWN_POINTER,&to));
+    PetscCall(ISCreateBlock(comm,dof,count,idx,PETSC_OWN_POINTER,&to));
   } else {
     /* This is way ugly! We need to list the funny cross type region */
     left   = xs - Xs; right = left + x;
@@ -500,7 +500,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
         for (k=left; k<right; k++) idx[count++] = (i*(Ye-Ys) + j)*(Xe-Xs) + k;
       }
     }
-    CHKERRQ(ISCreateBlock(comm,dof,count,idx,PETSC_OWN_POINTER,&to));
+    PetscCall(ISCreateBlock(comm,dof,count,idx,PETSC_OWN_POINTER,&to));
   }
 
   /* determine who lies on each side of use stored in    n24 n25 n26
@@ -723,7 +723,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
     if (ze==P) n18 = n19 = n20 = n21 = n22 = n23 = n24 = n25 = n26 = -2;
   }
 
-  CHKERRQ(PetscMalloc1(27,&dd->neighbors));
+  PetscCall(PetscMalloc1(27,&dd->neighbors));
 
   dd->neighbors[0]  = n0;
   dd->neighbors[1]  = n1;
@@ -763,7 +763,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
     n0 = n1 = n2 = n3 = n5 = n6 = n7 = n8 = n9 = n11 = n15 = n17 = n18 = n19 = n20 = n21 = n23 = n24 = n25 = n26 = -1;
   }
 
-  CHKERRQ(PetscMalloc1((Xe-Xs)*(Ye-Ys)*(Ze-Zs),&idx));
+  PetscCall(PetscMalloc1((Xe-Xs)*(Ye-Ys)*(Ze-Zs),&idx));
 
   nn = 0;
   /* Bottom Level */
@@ -1023,11 +1023,11 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
     }
   }
 
-  CHKERRQ(ISCreateBlock(comm,dof,nn,idx,PETSC_USE_POINTER,&from));
-  CHKERRQ(VecScatterCreate(global,from,local,to,&gtol));
-  CHKERRQ(PetscLogObjectParent((PetscObject)da,(PetscObject)gtol));
-  CHKERRQ(ISDestroy(&to));
-  CHKERRQ(ISDestroy(&from));
+  PetscCall(ISCreateBlock(comm,dof,nn,idx,PETSC_USE_POINTER,&from));
+  PetscCall(VecScatterCreate(global,from,local,to,&gtol));
+  PetscCall(PetscLogObjectParent((PetscObject)da,(PetscObject)gtol));
+  PetscCall(ISDestroy(&to));
+  PetscCall(ISDestroy(&from));
 
   if (stencil_type == DMDA_STENCIL_STAR) {
     n0  = sn0;  n1  = sn1;  n2  = sn2;  n3  = sn3;  n5  = sn5;  n6  = sn6; n7 = sn7;
@@ -1349,17 +1349,17 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
      Set the local to global ordering in the global vector, this allows use
      of VecSetValuesLocal().
   */
-  CHKERRQ(ISLocalToGlobalMappingCreate(comm,dof,nn,idx,PETSC_OWN_POINTER,&da->ltogmap));
-  CHKERRQ(PetscLogObjectParent((PetscObject)da,(PetscObject)da->ltogmap));
+  PetscCall(ISLocalToGlobalMappingCreate(comm,dof,nn,idx,PETSC_OWN_POINTER,&da->ltogmap));
+  PetscCall(PetscLogObjectParent((PetscObject)da,(PetscObject)da->ltogmap));
 
-  CHKERRQ(PetscFree2(bases,ldims));
+  PetscCall(PetscFree2(bases,ldims));
   dd->m = m;  dd->n  = n;  dd->p  = p;
   /* note petsc expects xs/xe/Xs/Xe to be multiplied by #dofs in many places */
   dd->xs = xs*dof; dd->xe = xe*dof; dd->ys = ys; dd->ye = ye; dd->zs = zs; dd->ze = ze;
   dd->Xs = Xs*dof; dd->Xe = Xe*dof; dd->Ys = Ys; dd->Ye = Ye; dd->Zs = Zs; dd->Ze = Ze;
 
-  CHKERRQ(VecDestroy(&local));
-  CHKERRQ(VecDestroy(&global));
+  PetscCall(VecDestroy(&local));
+  PetscCall(VecDestroy(&global));
 
   dd->gtol      = gtol;
   dd->base      = base;
@@ -1433,14 +1433,14 @@ PetscErrorCode  DMDACreate3d(MPI_Comm comm,DMBoundaryType bx,DMBoundaryType by,D
                PetscInt N,PetscInt P,PetscInt m,PetscInt n,PetscInt p,PetscInt dof,PetscInt s,const PetscInt lx[],const PetscInt ly[],const PetscInt lz[],DM *da)
 {
   PetscFunctionBegin;
-  CHKERRQ(DMDACreate(comm, da));
-  CHKERRQ(DMSetDimension(*da, 3));
-  CHKERRQ(DMDASetSizes(*da, M, N, P));
-  CHKERRQ(DMDASetNumProcs(*da, m, n, p));
-  CHKERRQ(DMDASetBoundaryType(*da, bx, by, bz));
-  CHKERRQ(DMDASetDof(*da, dof));
-  CHKERRQ(DMDASetStencilType(*da, stencil_type));
-  CHKERRQ(DMDASetStencilWidth(*da, s));
-  CHKERRQ(DMDASetOwnershipRanges(*da, lx, ly, lz));
+  PetscCall(DMDACreate(comm, da));
+  PetscCall(DMSetDimension(*da, 3));
+  PetscCall(DMDASetSizes(*da, M, N, P));
+  PetscCall(DMDASetNumProcs(*da, m, n, p));
+  PetscCall(DMDASetBoundaryType(*da, bx, by, bz));
+  PetscCall(DMDASetDof(*da, dof));
+  PetscCall(DMDASetStencilType(*da, stencil_type));
+  PetscCall(DMDASetStencilWidth(*da, s));
+  PetscCall(DMDASetOwnershipRanges(*da, lx, ly, lz));
   PetscFunctionReturn(0);
 }

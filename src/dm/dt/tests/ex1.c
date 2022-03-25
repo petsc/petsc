@@ -11,9 +11,9 @@ static PetscErrorCode CheckPoints(const char *name,PetscInt npoints,const PetscR
   PetscInt       i,j;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscMalloc3(npoints*ndegrees,&B,npoints*ndegrees,&D,npoints*ndegrees,&D2));
-  CHKERRQ(PetscDTLegendreEval(npoints,points,ndegrees,degrees,B,D,D2));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"%s\n",name));
+  PetscCall(PetscMalloc3(npoints*ndegrees,&B,npoints*ndegrees,&D,npoints*ndegrees,&D2));
+  PetscCall(PetscDTLegendreEval(npoints,points,ndegrees,degrees,B,D,D2));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%s\n",name));
   for (i=0; i<npoints; i++) {
     for (j=0; j<ndegrees; j++) {
       PetscReal b,d,d2;
@@ -23,10 +23,10 @@ static PetscErrorCode CheckPoints(const char *name,PetscInt npoints,const PetscR
       if (PetscAbsReal(b) < PETSC_SMALL) b   = 0;
       if (PetscAbsReal(d) < PETSC_SMALL) d   = 0;
       if (PetscAbsReal(d2) < PETSC_SMALL) d2 = 0;
-      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"degree %D at %12.4g: B=%12.4g  D=%12.4g  D2=%12.4g\n",degrees[j],(double)points[i],(double)b,(double)d,(double)d2));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"degree %D at %12.4g: B=%12.4g  D=%12.4g  D2=%12.4g\n",degrees[j],(double)points[i],(double)b,(double)d,(double)d2));
     }
   }
-  CHKERRQ(PetscFree3(B,D,D2));
+  PetscCall(PetscFree3(B,D,D2));
   PetscFunctionReturn(0);
 }
 
@@ -54,14 +54,14 @@ static PetscErrorCode CheckQuadrature(PetscInt npoints, PetscReal alpha, PetscRe
 
   PetscFunctionBegin;
   eps = PETSC_SMALL;
-  CHKERRQ(PetscMalloc2(npoints, &Pi, npoints, &Pj));
+  PetscCall(PetscMalloc2(npoints, &Pi, npoints, &Pj));
   for (i = 0; i <= nexact; i++) {
-    CHKERRQ(PetscDTJacobiEval(npoints, alpha, beta, x, 1, &i, Pi, NULL, NULL));
+    PetscCall(PetscDTJacobiEval(npoints, alpha, beta, x, 1, &i, Pi, NULL, NULL));
     for (j = i; j <= nexact - i; j++) {
       PetscReal I_quad = 0.;
       PetscReal I_exact = 0.;
       PetscReal err, tol;
-      CHKERRQ(PetscDTJacobiEval(npoints, alpha, beta, x, 1, &j, Pj, NULL, NULL));
+      PetscCall(PetscDTJacobiEval(npoints, alpha, beta, x, 1, &j, Pj, NULL, NULL));
 
       tol = eps;
       if (i == j) {
@@ -79,7 +79,7 @@ static PetscErrorCode CheckQuadrature(PetscInt npoints, PetscReal alpha, PetscRe
         }
 #endif
 
-        CHKERRQ(PetscDTJacobiNorm(alpha, beta, i, &norm));
+        PetscCall(PetscDTJacobiNorm(alpha, beta, i, &norm));
         norm2diff = PetscAbsReal(norm*norm - I_exact);
         PetscCheckFalse(norm2diff > eps * I_exact,PETSC_COMM_SELF,PETSC_ERR_PLIB, "Jacobi norm error %g", (double) norm2diff);
 
@@ -87,11 +87,11 @@ static PetscErrorCode CheckQuadrature(PetscInt npoints, PetscReal alpha, PetscRe
       }
       for (k = 0; k < npoints; k++) I_quad += w[k] * (Pi[k] * Pj[k]);
       err = PetscAbsReal(I_exact - I_quad);
-      CHKERRQ(PetscInfo(NULL,"npoints %D, alpha %g, beta %g, i %D, j %D, exact %g, err %g\n", npoints, (double) alpha, (double) beta, i, j, (double) I_exact, (double) err));
+      PetscCall(PetscInfo(NULL,"npoints %D, alpha %g, beta %g, i %D, j %D, exact %g, err %g\n", npoints, (double) alpha, (double) beta, i, j, (double) I_exact, (double) err));
       PetscCheckFalse(err > tol,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Incorrectly integrated P_%D * P_%D using %D point rule with alpha = %g, beta = %g: exact %g, err %g", i, j, npoints, (double) alpha, (double) beta, (double) I_exact, (double) err);
     }
   }
-  CHKERRQ(PetscFree2(Pi, Pj));
+  PetscCall(PetscFree2(Pi, Pj));
   PetscFunctionReturn(0);
 }
 
@@ -100,10 +100,10 @@ static PetscErrorCode CheckJacobiQuadrature(PetscInt npoints, PetscReal alpha, P
   PetscReal *x, *w;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscMalloc2(npoints, &x, npoints, &w));
-  CHKERRQ((*func)(npoints, -1., 1., alpha, beta, x, w));
-  CHKERRQ(CheckQuadrature_Basics(npoints, alpha, beta, x, w));
-  CHKERRQ(CheckQuadrature(npoints, alpha, beta, x, w, nexact));
+  PetscCall(PetscMalloc2(npoints, &x, npoints, &w));
+  PetscCall((*func)(npoints, -1., 1., alpha, beta, x, w));
+  PetscCall(CheckQuadrature_Basics(npoints, alpha, beta, x, w));
+  PetscCall(CheckQuadrature(npoints, alpha, beta, x, w, nexact));
 #if defined(PETSCDTGAUSSIANQUADRATURE_EIG)
   /* compare methods of computing quadrature */
   PetscDTGaussQuadratureNewton_Internal = (PetscBool) !PetscDTGaussQuadratureNewton_Internal;
@@ -113,10 +113,10 @@ static PetscErrorCode CheckJacobiQuadrature(PetscInt npoints, PetscReal alpha, P
     PetscInt i;
 
     eps = PETSC_SMALL;
-    CHKERRQ(PetscMalloc2(npoints, &x2, npoints, &w2));
-    CHKERRQ((*func)(npoints, -1., 1., alpha, beta, x2, w2));
-    CHKERRQ(CheckQuadrature_Basics(npoints, alpha, beta, x2, w2));
-    CHKERRQ(CheckQuadrature(npoints, alpha, beta, x2, w2, nexact));
+    PetscCall(PetscMalloc2(npoints, &x2, npoints, &w2));
+    PetscCall((*func)(npoints, -1., 1., alpha, beta, x2, w2));
+    PetscCall(CheckQuadrature_Basics(npoints, alpha, beta, x2, w2));
+    PetscCall(CheckQuadrature(npoints, alpha, beta, x2, w2, nexact));
     for (i = 0; i < npoints; i++) {
       PetscReal xdiff, xtol, wdiff, wtol;
 
@@ -124,16 +124,16 @@ static PetscErrorCode CheckJacobiQuadrature(PetscInt npoints, PetscReal alpha, P
       wdiff = PetscAbsReal(w[i] - w2[i]);
       xtol = eps * (1. + PetscMin(PetscAbsReal(x[i]),1. - PetscAbsReal(x[i])));
       wtol = eps * (1. + w[i]);
-      CHKERRQ(PetscInfo(NULL,"npoints %D, alpha %g, beta %g, i %D, xdiff/xtol %g, wdiff/wtol %g\n", npoints, (double) alpha, (double) beta, i, (double) xdiff/xtol, (double) wdiff/wtol));
+      PetscCall(PetscInfo(NULL,"npoints %D, alpha %g, beta %g, i %D, xdiff/xtol %g, wdiff/wtol %g\n", npoints, (double) alpha, (double) beta, i, (double) xdiff/xtol, (double) wdiff/wtol));
       PetscCheckFalse(xdiff > xtol,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatch quadrature point: %D points, alpha = %g, beta = %g, i = %D, xdiff = %g", npoints, (double) alpha, (double) beta, i, (double) xdiff);
       PetscCheckFalse(wdiff > wtol,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatch quadrature weight: %D points, alpha = %g, beta = %g, i = %D, wdiff = %g", npoints, (double) alpha, (double) beta, i, (double) wdiff);
     }
-    CHKERRQ(PetscFree2(x2, w2));
+    PetscCall(PetscFree2(x2, w2));
   }
   /* restore */
   PetscDTGaussQuadratureNewton_Internal = (PetscBool) !PetscDTGaussQuadratureNewton_Internal;
 #endif
-  CHKERRQ(PetscFree2(x, w));
+  PetscCall(PetscFree2(x, w));
   PetscFunctionReturn(0);
 }
 
@@ -145,44 +145,44 @@ int main(int argc,char **argv)
   PetscInt       minpoints, maxpoints;
   PetscBool      flg;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Discretization tools test options",NULL);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Discretization tools test options",NULL);PetscCall(ierr);
   {
     ndegrees   = 1000;
     degrees[0] = 0;
     degrees[1] = 1;
     degrees[2] = 2;
-    CHKERRQ(PetscOptionsIntArray("-degrees","list of degrees to evaluate","",degrees,&ndegrees,&flg));
+    PetscCall(PetscOptionsIntArray("-degrees","list of degrees to evaluate","",degrees,&ndegrees,&flg));
 
     if (!flg) ndegrees = 3;
     npoints   = 1000;
     points[0] = 0.0;
     points[1] = -0.5;
     points[2] = 1.0;
-    CHKERRQ(PetscOptionsRealArray("-points","list of points at which to evaluate","",points,&npoints,&flg));
+    PetscCall(PetscOptionsRealArray("-points","list of points at which to evaluate","",points,&npoints,&flg));
 
     if (!flg) npoints = 3;
     two         = 2;
     interval[0] = -1.;
     interval[1] = 1.;
-    CHKERRQ(PetscOptionsRealArray("-interval","interval on which to construct quadrature","",interval,&two,NULL));
+    PetscCall(PetscOptionsRealArray("-interval","interval on which to construct quadrature","",interval,&two,NULL));
 
     minpoints = 1;
-    CHKERRQ(PetscOptionsInt("-minpoints","minimum points for thorough Gauss-Jacobi quadrature tests","",minpoints,&minpoints,NULL));
+    PetscCall(PetscOptionsInt("-minpoints","minimum points for thorough Gauss-Jacobi quadrature tests","",minpoints,&minpoints,NULL));
     maxpoints = 30;
 #if defined(PETSC_USE_REAL_SINGLE)
     maxpoints = 5;
 #elif defined(PETSC_USE_REAL___FLOAT128)
     maxpoints = 20; /* just to make test faster */
 #endif
-    CHKERRQ(PetscOptionsInt("-maxpoints","maximum points for thorough Gauss-Jacobi quadrature tests","",maxpoints,&maxpoints,NULL));
+    PetscCall(PetscOptionsInt("-maxpoints","maximum points for thorough Gauss-Jacobi quadrature tests","",maxpoints,&maxpoints,NULL));
   }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  CHKERRQ(CheckPoints("User-provided points",npoints,points,ndegrees,degrees));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscCall(CheckPoints("User-provided points",npoints,points,ndegrees,degrees));
 
-  CHKERRQ(PetscDTGaussQuadrature(npoints,interval[0],interval[1],points,weights));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Quadrature weights\n"));
-  CHKERRQ(PetscRealView(npoints,weights,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscDTGaussQuadrature(npoints,interval[0],interval[1],points,weights));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Quadrature weights\n"));
+  PetscCall(PetscRealView(npoints,weights,PETSC_VIEWER_STDOUT_WORLD));
   {
     PetscReal a = interval[0],b = interval[1],zeroth,first,second;
     PetscInt  i;
@@ -197,9 +197,9 @@ int main(int argc,char **argv)
     if (PetscAbs(zeroth) < 1e-10) zeroth = 0.;
     if (PetscAbs(first)  < 1e-10) first  = 0.;
     if (PetscAbs(second) < 1e-10) second = 0.;
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Moment error: zeroth=%g, first=%g, second=%g\n",(double)(-zeroth),(double)(-first),(double)(-second)));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Moment error: zeroth=%g, first=%g, second=%g\n",(double)(-zeroth),(double)(-first),(double)(-second)));
   }
-  CHKERRQ(CheckPoints("Gauss points",npoints,points,ndegrees,degrees));
+  PetscCall(CheckPoints("Gauss points",npoints,points,ndegrees,degrees));
   {
     PetscInt  i;
 
@@ -217,17 +217,17 @@ int main(int argc,char **argv)
       a2 = 2.;
       b2 = 0.;
 #endif
-      CHKERRQ(CheckJacobiQuadrature(i, 0., 0., PetscDTGaussJacobiQuadrature, 2*i-1));
-      CHKERRQ(CheckJacobiQuadrature(i, a1, b1, PetscDTGaussJacobiQuadrature, 2*i-1));
-      CHKERRQ(CheckJacobiQuadrature(i, a2, b2, PetscDTGaussJacobiQuadrature, 2*i-1));
+      PetscCall(CheckJacobiQuadrature(i, 0., 0., PetscDTGaussJacobiQuadrature, 2*i-1));
+      PetscCall(CheckJacobiQuadrature(i, a1, b1, PetscDTGaussJacobiQuadrature, 2*i-1));
+      PetscCall(CheckJacobiQuadrature(i, a2, b2, PetscDTGaussJacobiQuadrature, 2*i-1));
       if (i >= 2) {
-        CHKERRQ(CheckJacobiQuadrature(i, 0., 0., PetscDTGaussLobattoJacobiQuadrature, 2*i-3));
-        CHKERRQ(CheckJacobiQuadrature(i, a1, b1, PetscDTGaussLobattoJacobiQuadrature, 2*i-3));
-        CHKERRQ(CheckJacobiQuadrature(i, a2, b2, PetscDTGaussLobattoJacobiQuadrature, 2*i-3));
+        PetscCall(CheckJacobiQuadrature(i, 0., 0., PetscDTGaussLobattoJacobiQuadrature, 2*i-3));
+        PetscCall(CheckJacobiQuadrature(i, a1, b1, PetscDTGaussLobattoJacobiQuadrature, 2*i-3));
+        PetscCall(CheckJacobiQuadrature(i, a2, b2, PetscDTGaussLobattoJacobiQuadrature, 2*i-3));
       }
     }
   }
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

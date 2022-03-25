@@ -21,57 +21,57 @@ int main(int argc,char **argv)
   PetscInt       i,start,end,n = 20;
   PetscScalar    value;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
   /*
       Create multi-component vector with 2 components
   */
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&v));
-  CHKERRQ(VecSetSizes(v,PETSC_DECIDE,n));
-  CHKERRQ(VecSetBlockSize(v,4));
-  CHKERRQ(VecSetFromOptions(v));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&v));
+  PetscCall(VecSetSizes(v,PETSC_DECIDE,n));
+  PetscCall(VecSetBlockSize(v,4));
+  PetscCall(VecSetFromOptions(v));
 
   /*
       Create double-component vectors
   */
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&s));
-  CHKERRQ(VecSetSizes(s,PETSC_DECIDE,n/2));
-  CHKERRQ(VecSetBlockSize(s,2));
-  CHKERRQ(VecSetFromOptions(s));
-  CHKERRQ(VecDuplicate(s,&r));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&s));
+  PetscCall(VecSetSizes(s,PETSC_DECIDE,n/2));
+  PetscCall(VecSetBlockSize(s,2));
+  PetscCall(VecSetFromOptions(s));
+  PetscCall(VecDuplicate(s,&r));
 
   vecs[0] = s;
   vecs[1] = r;
   /*
      Set the vector values
   */
-  CHKERRQ(VecGetOwnershipRange(v,&start,&end));
+  PetscCall(VecGetOwnershipRange(v,&start,&end));
   for (i=start; i<end; i++) {
     value = i;
-    CHKERRQ(VecSetValues(v,1,&i,&value,INSERT_VALUES));
+    PetscCall(VecSetValues(v,1,&i,&value,INSERT_VALUES));
   }
 
   /*
      Get the components from the multi-component vector to the other vectors
   */
-  CHKERRQ(VecStrideGatherAll(v,vecs,INSERT_VALUES));
+  PetscCall(VecStrideGatherAll(v,vecs,INSERT_VALUES));
 
-  CHKERRQ(VecView(s,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(VecView(r,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecView(s,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecView(r,PETSC_VIEWER_STDOUT_WORLD));
 
-  CHKERRQ(VecStrideScatterAll(vecs,v,ADD_VALUES));
+  PetscCall(VecStrideScatterAll(vecs,v,ADD_VALUES));
 
-  CHKERRQ(VecView(v,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecView(v,PETSC_VIEWER_STDOUT_WORLD));
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  CHKERRQ(VecDestroy(&v));
-  CHKERRQ(VecDestroy(&s));
-  CHKERRQ(VecDestroy(&r));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&v));
+  PetscCall(VecDestroy(&s));
+  PetscCall(VecDestroy(&r));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

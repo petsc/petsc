@@ -28,97 +28,97 @@ int main(int argc,char ** argv)
   SNES             snes;
   SNESConvergedReason reason;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,"wateroptions",help));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&crank));
+  PetscCall(PetscInitialize(&argc,&argv,"wateroptions",help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&crank));
 
   /* Create an empty network object */
-  CHKERRQ(DMNetworkCreate(PETSC_COMM_WORLD,&networkdm));
+  PetscCall(DMNetworkCreate(PETSC_COMM_WORLD,&networkdm));
 
   /* Register the components in the network */
-  CHKERRQ(DMNetworkRegisterComponent(networkdm,"edgestruct",sizeof(struct _p_EDGE_Water),&appctx.compkey_edge));
-  CHKERRQ(DMNetworkRegisterComponent(networkdm,"busstruct",sizeof(struct _p_VERTEX_Water),&appctx.compkey_vtx));
+  PetscCall(DMNetworkRegisterComponent(networkdm,"edgestruct",sizeof(struct _p_EDGE_Water),&appctx.compkey_edge));
+  PetscCall(DMNetworkRegisterComponent(networkdm,"busstruct",sizeof(struct _p_VERTEX_Water),&appctx.compkey_vtx));
 
-  CHKERRQ(PetscLogStageRegister("Read Data",&stage1));
-  CHKERRQ(PetscLogStagePush(stage1));
-  CHKERRQ(PetscNew(&waterdata));
+  PetscCall(PetscLogStageRegister("Read Data",&stage1));
+  PetscCall(PetscLogStagePush(stage1));
+  PetscCall(PetscNew(&waterdata));
 
   /* READ THE DATA */
   if (!crank) {
     /* READ DATA. Only rank 0 reads the data */
-    CHKERRQ(PetscOptionsGetString(NULL,NULL,"-waterdata",waterdata_file,sizeof(waterdata_file),NULL));
-    CHKERRQ(WaterReadData(waterdata,waterdata_file));
+    PetscCall(PetscOptionsGetString(NULL,NULL,"-waterdata",waterdata_file,sizeof(waterdata_file),NULL));
+    PetscCall(WaterReadData(waterdata,waterdata_file));
 
-    CHKERRQ(PetscCalloc1(2*waterdata->nedge,&edgelist));
-    CHKERRQ(GetListofEdges_Water(waterdata,edgelist));
+    PetscCall(PetscCalloc1(2*waterdata->nedge,&edgelist));
+    PetscCall(GetListofEdges_Water(waterdata,edgelist));
   }
-  CHKERRQ(PetscLogStagePop());
+  PetscCall(PetscLogStagePop());
 
-  CHKERRQ(PetscLogStageRegister("Create network",&stage2));
-  CHKERRQ(PetscLogStagePush(stage2));
+  PetscCall(PetscLogStageRegister("Create network",&stage2));
+  PetscCall(PetscLogStagePush(stage2));
 
   /* Set numbers of nodes and edges */
-  CHKERRQ(DMNetworkSetNumSubNetworks(networkdm,PETSC_DECIDE,1));
-  CHKERRQ(DMNetworkAddSubnetwork(networkdm,"",waterdata->nedge,edgelist,NULL));
+  PetscCall(DMNetworkSetNumSubNetworks(networkdm,PETSC_DECIDE,1));
+  PetscCall(DMNetworkAddSubnetwork(networkdm,"",waterdata->nedge,edgelist,NULL));
   if (!crank) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"water nvertices %D, nedges %D\n",waterdata->nvertex,waterdata->nedge));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"water nvertices %D, nedges %D\n",waterdata->nvertex,waterdata->nedge));
   }
 
   /* Set up the network layout */
-  CHKERRQ(DMNetworkLayoutSetUp(networkdm));
+  PetscCall(DMNetworkLayoutSetUp(networkdm));
 
   if (!crank) {
-    CHKERRQ(PetscFree(edgelist));
+    PetscCall(PetscFree(edgelist));
   }
 
   /* ADD VARIABLES AND COMPONENTS FOR THE NETWORK */
-  CHKERRQ(DMNetworkGetSubnetwork(networkdm,0,&nv,&ne,&vtx,&edges));
+  PetscCall(DMNetworkGetSubnetwork(networkdm,0,&nv,&ne,&vtx,&edges));
 
   for (i = 0; i < ne; i++) {
-    CHKERRQ(DMNetworkAddComponent(networkdm,edges[i],appctx.compkey_edge,&waterdata->edge[i],0));
+    PetscCall(DMNetworkAddComponent(networkdm,edges[i],appctx.compkey_edge,&waterdata->edge[i],0));
   }
 
   for (i = 0; i < nv; i++) {
-    CHKERRQ(DMNetworkAddComponent(networkdm,vtx[i],appctx.compkey_vtx,&waterdata->vertex[i],1));
+    PetscCall(DMNetworkAddComponent(networkdm,vtx[i],appctx.compkey_vtx,&waterdata->vertex[i],1));
   }
 
   /* Set up DM for use */
-  CHKERRQ(DMSetUp(networkdm));
+  PetscCall(DMSetUp(networkdm));
 
   if (!crank) {
-    CHKERRQ(PetscFree(waterdata->vertex));
-    CHKERRQ(PetscFree(waterdata->edge));
+    PetscCall(PetscFree(waterdata->vertex));
+    PetscCall(PetscFree(waterdata->edge));
   }
-  CHKERRQ(PetscFree(waterdata));
+  PetscCall(PetscFree(waterdata));
 
   /* Distribute networkdm to multiple processes */
-  CHKERRQ(DMNetworkDistribute(&networkdm,0));
+  PetscCall(DMNetworkDistribute(&networkdm,0));
 
-  CHKERRQ(PetscLogStagePop());
+  PetscCall(PetscLogStagePop());
 
-  CHKERRQ(DMCreateGlobalVector(networkdm,&X));
-  CHKERRQ(VecDuplicate(X,&F));
+  PetscCall(DMCreateGlobalVector(networkdm,&X));
+  PetscCall(VecDuplicate(X,&F));
 
   /* HOOK UP SOLVER */
-  CHKERRQ(SNESCreate(PETSC_COMM_WORLD,&snes));
-  CHKERRQ(SNESSetDM(snes,networkdm));
-  CHKERRQ(SNESSetOptionsPrefix(snes,"water_"));
-  CHKERRQ(SNESSetFunction(snes,F,WaterFormFunction,NULL));
-  CHKERRQ(SNESSetFromOptions(snes));
+  PetscCall(SNESCreate(PETSC_COMM_WORLD,&snes));
+  PetscCall(SNESSetDM(snes,networkdm));
+  PetscCall(SNESSetOptionsPrefix(snes,"water_"));
+  PetscCall(SNESSetFunction(snes,F,WaterFormFunction,NULL));
+  PetscCall(SNESSetFromOptions(snes));
 
-  CHKERRQ(WaterSetInitialGuess(networkdm,X));
-  /* CHKERRQ(VecView(X,PETSC_VIEWER_STDOUT_WORLD)); */
+  PetscCall(WaterSetInitialGuess(networkdm,X));
+  /* PetscCall(VecView(X,PETSC_VIEWER_STDOUT_WORLD)); */
 
-  CHKERRQ(SNESSolve(snes,NULL,X));
-  CHKERRQ(SNESGetConvergedReason(snes,&reason));
+  PetscCall(SNESSolve(snes,NULL,X));
+  PetscCall(SNESGetConvergedReason(snes,&reason));
 
   PetscCheckFalse(reason < 0,PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"No solution found for the water network");
-  /* CHKERRQ(VecView(X,PETSC_VIEWER_STDOUT_WORLD)); */
+  /* PetscCall(VecView(X,PETSC_VIEWER_STDOUT_WORLD)); */
 
-  CHKERRQ(VecDestroy(&X));
-  CHKERRQ(VecDestroy(&F));
-  CHKERRQ(SNESDestroy(&snes));
-  CHKERRQ(DMDestroy(&networkdm));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&X));
+  PetscCall(VecDestroy(&F));
+  PetscCall(SNESDestroy(&snes));
+  PetscCall(DMDestroy(&networkdm));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

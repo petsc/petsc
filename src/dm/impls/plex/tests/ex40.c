@@ -12,13 +12,13 @@ static PetscErrorCode LabelPoints(DM dm)
   PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsGetBool(NULL, NULL, "-label_mesh", &flg, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-label_mesh", &flg, NULL));
   if (!flg) PetscFunctionReturn(0);
-  CHKERRQ(DMCreateLabel(dm, "test"));
-  CHKERRQ(DMGetLabel(dm, "test", &label));
-  CHKERRQ(DMPlexGetChart(dm, &pStart, &pEnd));
+  PetscCall(DMCreateLabel(dm, "test"));
+  PetscCall(DMGetLabel(dm, "test", &label));
+  PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
   for (p = pStart; p < pEnd; ++p) {
-    CHKERRQ(DMLabelSetValue(label, p, p));
+    PetscCall(DMLabelSetValue(label, p, p));
   }
   PetscFunctionReturn(0);
 }
@@ -26,14 +26,14 @@ static PetscErrorCode LabelPoints(DM dm)
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
 {
   PetscFunctionBegin;
-  CHKERRQ(DMCreate(comm, dm));
-  CHKERRQ(DMSetType(*dm, DMPLEX));
-  CHKERRQ(DMSetFromOptions(*dm));
-  CHKERRQ(LabelPoints(*dm));
-  CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) *dm, "post_label_"));
-  CHKERRQ(DMSetFromOptions(*dm));
-  CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) *dm, NULL));
-  CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
+  PetscCall(DMCreate(comm, dm));
+  PetscCall(DMSetType(*dm, DMPLEX));
+  PetscCall(DMSetFromOptions(*dm));
+  PetscCall(LabelPoints(*dm));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject) *dm, "post_label_"));
+  PetscCall(DMSetFromOptions(*dm));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject) *dm, NULL));
+  PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   PetscFunctionReturn(0);
 }
 
@@ -41,10 +41,10 @@ int main(int argc, char **argv)
 {
   DM             dm;
 
-  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
-  CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &dm));
-  CHKERRQ(DMDestroy(&dm));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(CreateMesh(PETSC_COMM_WORLD, &dm));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

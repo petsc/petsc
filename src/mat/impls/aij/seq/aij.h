@@ -148,11 +148,11 @@ static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscInt **j
 {
   Mat_SeqAIJ     *A = (Mat_SeqAIJ*) AA->data;
   if (A->singlemalloc) {
-    CHKERRQ(PetscFree3(*a,*j,*i));
+    PetscCall(PetscFree3(*a,*j,*i));
   } else {
-    if (A->free_a)  CHKERRQ(PetscFree(*a));
-    if (A->free_ij) CHKERRQ(PetscFree(*j));
-    if (A->free_ij) CHKERRQ(PetscFree(*i));
+    if (A->free_a)  PetscCall(PetscFree(*a));
+    if (A->free_ij) PetscCall(PetscFree(*j));
+    if (A->free_ij) PetscCall(PetscFree(*i));
   }
   return 0;
 }
@@ -169,19 +169,19 @@ static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscInt **j
  \
     PetscCheckFalse(NONEW == -2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"New nonzero at (%" PetscInt_FMT ",%" PetscInt_FMT ") caused a malloc\nUse MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check",ROW,COL); \
     /* malloc new storage space */ \
-    CHKERRQ(PetscMalloc3(BS2*new_nz,&new_a,new_nz,&new_j,AM+1,&new_i)); \
+    PetscCall(PetscMalloc3(BS2*new_nz,&new_a,new_nz,&new_j,AM+1,&new_i)); \
  \
     /* copy over old data into new slots */ \
     for (ii=0; ii<ROW+1; ii++) {new_i[ii] = AI[ii];} \
     for (ii=ROW+1; ii<AM+1; ii++) {new_i[ii] = AI[ii]+CHUNKSIZE;} \
-    CHKERRQ(PetscArraycpy(new_j,AJ,AI[ROW]+NROW)); \
+    PetscCall(PetscArraycpy(new_j,AJ,AI[ROW]+NROW)); \
     len  = (new_nz - CHUNKSIZE - AI[ROW] - NROW); \
-    CHKERRQ(PetscArraycpy(new_j+AI[ROW]+NROW+CHUNKSIZE,AJ+AI[ROW]+NROW,len)); \
-    CHKERRQ(PetscArraycpy(new_a,AA,BS2*(AI[ROW]+NROW)));    \
-    CHKERRQ(PetscArrayzero(new_a+BS2*(AI[ROW]+NROW),BS2*CHUNKSIZE)); \
-    CHKERRQ(PetscArraycpy(new_a+BS2*(AI[ROW]+NROW+CHUNKSIZE),AA+BS2*(AI[ROW]+NROW),BS2*len));  \
+    PetscCall(PetscArraycpy(new_j+AI[ROW]+NROW+CHUNKSIZE,AJ+AI[ROW]+NROW,len)); \
+    PetscCall(PetscArraycpy(new_a,AA,BS2*(AI[ROW]+NROW)));    \
+    PetscCall(PetscArrayzero(new_a+BS2*(AI[ROW]+NROW),BS2*CHUNKSIZE)); \
+    PetscCall(PetscArraycpy(new_a+BS2*(AI[ROW]+NROW+CHUNKSIZE),AA+BS2*(AI[ROW]+NROW),BS2*len));  \
     /* free up old matrix storage */ \
-    CHKERRQ(MatSeqXAIJFreeAIJ(A,&Ain->a,&Ain->j,&Ain->i)); \
+    PetscCall(MatSeqXAIJFreeAIJ(A,&Ain->a,&Ain->j,&Ain->i)); \
     AA                = new_a; \
     Ain->a            = (MatScalar*) new_a;                   \
     AI                = Ain->i = new_i; AJ = Ain->j = new_j;  \
@@ -201,18 +201,18 @@ static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscInt **j
  \
     PetscCheckFalse(NONEW == -2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"New nonzero at (%" PetscInt_FMT ",%" PetscInt_FMT ") caused a malloc\nUse MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check",ROW,COL); \
     /* malloc new storage space */ \
-    CHKERRQ(PetscMalloc1(new_nz,&new_j)); \
-    CHKERRQ(PetscMalloc1(AM+1,&new_i));\
+    PetscCall(PetscMalloc1(new_nz,&new_j)); \
+    PetscCall(PetscMalloc1(AM+1,&new_i));\
  \
     /* copy over old data into new slots */ \
     for (ii=0; ii<ROW+1; ii++) {new_i[ii] = AI[ii];} \
     for (ii=ROW+1; ii<AM+1; ii++) {new_i[ii] = AI[ii]+CHUNKSIZE;} \
-    CHKERRQ(PetscArraycpy(new_j,AJ,AI[ROW]+NROW)); \
+    PetscCall(PetscArraycpy(new_j,AJ,AI[ROW]+NROW)); \
     len  = (new_nz - CHUNKSIZE - AI[ROW] - NROW); \
-    CHKERRQ(PetscArraycpy(new_j+AI[ROW]+NROW+CHUNKSIZE,AJ+AI[ROW]+NROW,len)); \
+    PetscCall(PetscArraycpy(new_j+AI[ROW]+NROW+CHUNKSIZE,AJ+AI[ROW]+NROW,len)); \
  \
     /* free up old matrix storage */ \
-    CHKERRQ(MatSeqXAIJFreeAIJ(A,&Ain->a,&Ain->j,&Ain->i)); \
+    PetscCall(MatSeqXAIJFreeAIJ(A,&Ain->a,&Ain->j,&Ain->i)); \
     Ain->a            = NULL;                   \
     AI                = Ain->i = new_i; AJ = Ain->j = new_j;  \
     Ain->singlemalloc = PETSC_FALSE; \

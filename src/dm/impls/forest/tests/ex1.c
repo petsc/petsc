@@ -16,53 +16,53 @@ int main (int argc, char **argv)
   PetscInt       min_refine = 2, overlap = 0;
   PetscInt       vStart, vEnd, v;
 
-  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
-  CHKERRQ(DMCreate(PETSC_COMM_WORLD, &base));
-  CHKERRQ(DMSetType(base, DMPLEX));
-  CHKERRQ(DMSetFromOptions(base));
+  PetscCall(DMCreate(PETSC_COMM_WORLD, &base));
+  PetscCall(DMSetType(base, DMPLEX));
+  PetscCall(DMSetFromOptions(base));
 
-  CHKERRQ(DMCreate(PETSC_COMM_WORLD, &forest));
-  CHKERRQ(DMSetType(forest, DMP4EST));
-  CHKERRQ(DMForestSetBaseDM(forest, base));
-  CHKERRQ(DMForestSetInitialRefinement(forest, min_refine));
-  CHKERRQ(DMForestSetPartitionOverlap(forest, overlap));
-  CHKERRQ(DMSetUp(forest));
-  CHKERRQ(DMDestroy(&base));
-  CHKERRQ(DMViewFromOptions(forest, NULL, "-dm_view"));
+  PetscCall(DMCreate(PETSC_COMM_WORLD, &forest));
+  PetscCall(DMSetType(forest, DMP4EST));
+  PetscCall(DMForestSetBaseDM(forest, base));
+  PetscCall(DMForestSetInitialRefinement(forest, min_refine));
+  PetscCall(DMForestSetPartitionOverlap(forest, overlap));
+  PetscCall(DMSetUp(forest));
+  PetscCall(DMDestroy(&base));
+  PetscCall(DMViewFromOptions(forest, NULL, "-dm_view"));
 
-  CHKERRQ(DMConvert(forest, DMPLEX, &plex));
-  CHKERRQ(DMPlexGetDepthStratum(plex, 0, &vStart, &vEnd));
-  CHKERRQ(DMDestroy(&plex));
-  CHKERRQ(PetscSectionCreate(PetscObjectComm((PetscObject) forest), &s));
-  CHKERRQ(PetscSectionSetChart(s, vStart, vEnd));
-  for (v = vStart; v < vEnd; ++v) CHKERRQ(PetscSectionSetDof(s, v, 1));
-  CHKERRQ(PetscSectionSetUp(s));
-  CHKERRQ(DMSetLocalSection(forest, s));
-  CHKERRQ(PetscSectionDestroy(&s));
+  PetscCall(DMConvert(forest, DMPLEX, &plex));
+  PetscCall(DMPlexGetDepthStratum(plex, 0, &vStart, &vEnd));
+  PetscCall(DMDestroy(&plex));
+  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject) forest), &s));
+  PetscCall(PetscSectionSetChart(s, vStart, vEnd));
+  for (v = vStart; v < vEnd; ++v) PetscCall(PetscSectionSetDof(s, v, 1));
+  PetscCall(PetscSectionSetUp(s));
+  PetscCall(DMSetLocalSection(forest, s));
+  PetscCall(PetscSectionDestroy(&s));
 
-  CHKERRQ(DMCreateGlobalVector(forest, &g));
-  CHKERRQ(PetscObjectSetName((PetscObject) g, "g"));
-  CHKERRQ(VecSet(g, 1.0));
-  CHKERRQ(PetscViewerHDF5Open(PETSC_COMM_WORLD, "forest.h5", FILE_MODE_WRITE, &viewer));
-  CHKERRQ(VecView(g, viewer));
-  CHKERRQ(PetscViewerDestroy(&viewer));
+  PetscCall(DMCreateGlobalVector(forest, &g));
+  PetscCall(PetscObjectSetName((PetscObject) g, "g"));
+  PetscCall(VecSet(g, 1.0));
+  PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD, "forest.h5", FILE_MODE_WRITE, &viewer));
+  PetscCall(VecView(g, viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
 
-  CHKERRQ(DMCreateGlobalVector(forest, &g2));
-  CHKERRQ(PetscObjectSetName((PetscObject) g2, "g"));
-  CHKERRQ(PetscViewerHDF5Open(PETSC_COMM_WORLD, "forest.h5", FILE_MODE_READ, &viewer));
-  CHKERRQ(VecLoad(g2, viewer));
-  CHKERRQ(PetscViewerDestroy(&viewer));
+  PetscCall(DMCreateGlobalVector(forest, &g2));
+  PetscCall(PetscObjectSetName((PetscObject) g2, "g"));
+  PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD, "forest.h5", FILE_MODE_READ, &viewer));
+  PetscCall(VecLoad(g2, viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
 
   /*  Check if the data is the same*/
-  CHKERRQ(VecAXPY(g2, -1.0, g));
-  CHKERRQ(VecNorm(g2, NORM_INFINITY, &diff));
-  if (diff > PETSC_MACHINE_EPSILON) CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Check failed: %g\n", (double) diff));
+  PetscCall(VecAXPY(g2, -1.0, g));
+  PetscCall(VecNorm(g2, NORM_INFINITY, &diff));
+  if (diff > PETSC_MACHINE_EPSILON) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Check failed: %g\n", (double) diff));
 
-  CHKERRQ(VecDestroy(&g));
-  CHKERRQ(VecDestroy(&g2));
-  CHKERRQ(DMDestroy(&forest));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&g));
+  PetscCall(VecDestroy(&g2));
+  PetscCall(DMDestroy(&forest));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

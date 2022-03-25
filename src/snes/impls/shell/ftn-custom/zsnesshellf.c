@@ -10,9 +10,9 @@
 static PetscErrorCode oursnesshellsolve(SNES snes,Vec x)
 {
   void (*func)(SNES*,Vec*,PetscErrorCode*);
-  CHKERRQ(PetscObjectQueryFunction((PetscObject)snes,"SNESShellSolve_C",&func));
+  PetscCall(PetscObjectQueryFunction((PetscObject)snes,"SNESShellSolve_C",&func));
   PetscCheck(func,PetscObjectComm((PetscObject)snes),PETSC_ERR_USER,"SNESShellSetSolve() must be called before SNESSolve()");
-  CHKERR_FORTRAN_VOID_FUNCTION(func(&snes,&x,&ierr));
+  PetscCallFortranVoidFunction(func(&snes,&x,&ierr));
   return 0;
 }
 

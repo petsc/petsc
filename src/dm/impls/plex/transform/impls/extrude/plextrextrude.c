@@ -8,14 +8,14 @@ static PetscErrorCode DMPlexTransformView_Extrude(DMPlexTransform tr, PetscViewe
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii));
   if (isascii) {
     const char *name;
 
-    CHKERRQ(PetscObjectGetName((PetscObject) tr, &name));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer, "Extrusion transformation %s\n", name ? name : ""));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer, "  number of layers: %D\n", ex->layers));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer, "  create tensor cells: %s\n", ex->useTensor ? "YES" : "NO"));
+    PetscCall(PetscObjectGetName((PetscObject) tr, &name));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Extrusion transformation %s\n", name ? name : ""));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  number of layers: %D\n", ex->layers));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  create tensor cells: %s\n", ex->useTensor ? "YES" : "NO"));
   } else {
     SETERRQ(PetscObjectComm((PetscObject) tr), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMPlexTransform writing", ((PetscObject) viewer)->type_name);
   }
@@ -31,30 +31,30 @@ static PetscErrorCode DMPlexTransformSetFromOptions_Extrude(PetscOptionItems *Pe
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 2);
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject, "DMPlexTransform Extrusion Options"));
-  CHKERRQ(PetscOptionsBoundedInt("-dm_plex_transform_extrude_layers", "Number of layers to extrude", "", ex->layers, &nl, &flg, 1));
-  if (flg) CHKERRQ(DMPlexTransformExtrudeSetLayers(tr, nl));
-  CHKERRQ(PetscOptionsReal("-dm_plex_transform_extrude_thickness", "Total thickness of extruded layers", "", ex->thickness, &th, &flg));
-  if (flg) CHKERRQ(DMPlexTransformExtrudeSetThickness(tr, th));
-  CHKERRQ(PetscOptionsBool("-dm_plex_transform_extrude_use_tensor", "Create tensor cells", "", ex->useTensor, &tensor, &flg));
-  if (flg) CHKERRQ(DMPlexTransformExtrudeSetTensor(tr, tensor));
-  CHKERRQ(PetscOptionsBool("-dm_plex_transform_extrude_symmetric", "Extrude layers symmetrically about the surface", "", ex->symmetric, &sym, &flg));
-  if (flg) CHKERRQ(DMPlexTransformExtrudeSetSymmetric(tr, sym));
+  PetscCall(PetscOptionsHead(PetscOptionsObject, "DMPlexTransform Extrusion Options"));
+  PetscCall(PetscOptionsBoundedInt("-dm_plex_transform_extrude_layers", "Number of layers to extrude", "", ex->layers, &nl, &flg, 1));
+  if (flg) PetscCall(DMPlexTransformExtrudeSetLayers(tr, nl));
+  PetscCall(PetscOptionsReal("-dm_plex_transform_extrude_thickness", "Total thickness of extruded layers", "", ex->thickness, &th, &flg));
+  if (flg) PetscCall(DMPlexTransformExtrudeSetThickness(tr, th));
+  PetscCall(PetscOptionsBool("-dm_plex_transform_extrude_use_tensor", "Create tensor cells", "", ex->useTensor, &tensor, &flg));
+  if (flg) PetscCall(DMPlexTransformExtrudeSetTensor(tr, tensor));
+  PetscCall(PetscOptionsBool("-dm_plex_transform_extrude_symmetric", "Extrude layers symmetrically about the surface", "", ex->symmetric, &sym, &flg));
+  if (flg) PetscCall(DMPlexTransformExtrudeSetSymmetric(tr, sym));
   Nc = 3;
-  CHKERRQ(PetscOptionsRealArray("-dm_plex_transform_extrude_normal", "Input normal vector for extrusion", "", normal, &Nc, &flg));
+  PetscCall(PetscOptionsRealArray("-dm_plex_transform_extrude_normal", "Input normal vector for extrusion", "", normal, &Nc, &flg));
   if (flg) {
     PetscCheckFalse(Nc != ex->cdimEx,PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_SIZ, "Input normal has size %D != %D extruded coordinate dimension", Nc, ex->cdimEx);
-    CHKERRQ(DMPlexTransformExtrudeSetNormal(tr, normal));
+    PetscCall(DMPlexTransformExtrudeSetNormal(tr, normal));
   }
   nl   = ex->layers;
-  CHKERRQ(PetscMalloc1(nl, &thicknesses));
-  CHKERRQ(PetscOptionsRealArray("-dm_plex_transform_extrude_thicknesses", "Thickness of each individual extruded layer", "", thicknesses, &nl, &flg));
+  PetscCall(PetscMalloc1(nl, &thicknesses));
+  PetscCall(PetscOptionsRealArray("-dm_plex_transform_extrude_thicknesses", "Thickness of each individual extruded layer", "", thicknesses, &nl, &flg));
   if (flg) {
     PetscCheck(nl,PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_OUTOFRANGE, "Must give at least one thickness for -dm_plex_transform_extrude_thicknesses");
-    CHKERRQ(DMPlexTransformExtrudeSetThicknesses(tr, nl, thicknesses));
+    PetscCall(DMPlexTransformExtrudeSetThicknesses(tr, nl, thicknesses));
   }
-  CHKERRQ(PetscFree(thicknesses));
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(PetscFree(thicknesses));
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -64,9 +64,9 @@ static PetscErrorCode DMPlexTransformSetDimensions_Extrude(DMPlexTransform tr, D
   PetscInt                 dim;
 
   PetscFunctionBegin;
-  CHKERRQ(DMGetDimension(dm, &dim));
-  CHKERRQ(DMSetDimension(tdm, dim+1));
-  CHKERRQ(DMSetCoordinateDim(tdm, ex->cdimEx));
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMSetDimension(tdm, dim+1));
+  PetscCall(DMSetCoordinateDim(tdm, ex->cdimEx));
   PetscFunctionReturn(0);
 }
 
@@ -78,8 +78,8 @@ static PetscErrorCode DMPlexTransformSetUp_Extrude(DMPlexTransform tr)
   PetscInt                 Nl = ex->layers, l, i, ict, Nc, No, coff, ooff;
 
   PetscFunctionBegin;
-  CHKERRQ(DMPlexTransformGetDM(tr, &dm));
-  CHKERRQ(PetscMalloc5(DM_NUM_POLYTOPES, &ex->Nt, DM_NUM_POLYTOPES, &ex->target, DM_NUM_POLYTOPES, &ex->size, DM_NUM_POLYTOPES, &ex->cone, DM_NUM_POLYTOPES, &ex->ornt));
+  PetscCall(DMPlexTransformGetDM(tr, &dm));
+  PetscCall(PetscMalloc5(DM_NUM_POLYTOPES, &ex->Nt, DM_NUM_POLYTOPES, &ex->target, DM_NUM_POLYTOPES, &ex->size, DM_NUM_POLYTOPES, &ex->cone, DM_NUM_POLYTOPES, &ex->ornt));
   for (ict = 0; ict < DM_NUM_POLYTOPES; ++ict) {
     ex->Nt[ict]     = -1;
     ex->target[ict] = NULL;
@@ -92,7 +92,7 @@ static PetscErrorCode DMPlexTransformSetUp_Extrude(DMPlexTransform tr)
   ex->Nt[ct] = 2;
   Nc = 6*Nl;
   No = 2*Nl;
-  CHKERRQ(PetscMalloc4(ex->Nt[ct], &ex->target[ct], ex->Nt[ct], &ex->size[ct], Nc, &ex->cone[ct], No, &ex->ornt[ct]));
+  PetscCall(PetscMalloc4(ex->Nt[ct], &ex->target[ct], ex->Nt[ct], &ex->size[ct], Nc, &ex->cone[ct], No, &ex->ornt[ct]));
   ex->target[ct][0] = DM_POLYTOPE_POINT;
   ex->target[ct][1] = ex->useTensor ? DM_POLYTOPE_POINT_PRISM_TENSOR : DM_POLYTOPE_SEGMENT;
   ex->size[ct][0]   = Nl+1;
@@ -112,7 +112,7 @@ static PetscErrorCode DMPlexTransformSetUp_Extrude(DMPlexTransform tr)
   ex->Nt[ct] = 2;
   Nc = 8*(Nl+1) + 14*Nl;
   No = 2*(Nl+1) + 4*Nl;
-  CHKERRQ(PetscMalloc4(ex->Nt[ct], &ex->target[ct], ex->Nt[ct], &ex->size[ct], Nc, &ex->cone[ct], No, &ex->ornt[ct]));
+  PetscCall(PetscMalloc4(ex->Nt[ct], &ex->target[ct], ex->Nt[ct], &ex->size[ct], Nc, &ex->cone[ct], No, &ex->ornt[ct]));
   ex->target[ct][0] = DM_POLYTOPE_SEGMENT;
   ex->target[ct][1] = ex->useTensor ? DM_POLYTOPE_SEG_PRISM_TENSOR : DM_POLYTOPE_QUADRILATERAL;
   ex->size[ct][0]   = Nl+1;
@@ -178,7 +178,7 @@ static PetscErrorCode DMPlexTransformSetUp_Extrude(DMPlexTransform tr)
   ex->Nt[ct] = 2;
   Nc = 12*(Nl+1) + 18*Nl;
   No =  3*(Nl+1) +  5*Nl;
-  CHKERRQ(PetscMalloc4(ex->Nt[ct], &ex->target[ct], ex->Nt[ct], &ex->size[ct], Nc, &ex->cone[ct], No, &ex->ornt[ct]));
+  PetscCall(PetscMalloc4(ex->Nt[ct], &ex->target[ct], ex->Nt[ct], &ex->size[ct], Nc, &ex->cone[ct], No, &ex->ornt[ct]));
   ex->target[ct][0] = DM_POLYTOPE_TRIANGLE;
   ex->target[ct][1] = ex->useTensor ? DM_POLYTOPE_TRI_PRISM_TENSOR : DM_POLYTOPE_TRI_PRISM;
   ex->size[ct][0]   = Nl+1;
@@ -258,7 +258,7 @@ static PetscErrorCode DMPlexTransformSetUp_Extrude(DMPlexTransform tr)
   ex->Nt[ct] = 2;
   Nc = 16*(Nl+1) + 22*Nl;
   No =  4*(Nl+1) +  6*Nl;
-  CHKERRQ(PetscMalloc4(ex->Nt[ct], &ex->target[ct], ex->Nt[ct], &ex->size[ct], Nc, &ex->cone[ct], No, &ex->ornt[ct]));
+  PetscCall(PetscMalloc4(ex->Nt[ct], &ex->target[ct], ex->Nt[ct], &ex->size[ct], Nc, &ex->cone[ct], No, &ex->ornt[ct]));
   ex->target[ct][0] = DM_POLYTOPE_QUADRILATERAL;
   ex->target[ct][1] = ex->useTensor ? DM_POLYTOPE_QUAD_PRISM_TENSOR : DM_POLYTOPE_HEXAHEDRON;
   ex->size[ct][0]   = Nl+1;
@@ -371,11 +371,11 @@ static PetscErrorCode DMPlexTransformDestroy_Extrude(DMPlexTransform tr)
 
   PetscFunctionBegin;
   for (ct = 0; ct < DM_NUM_POLYTOPES; ++ct) {
-    CHKERRQ(PetscFree4(ex->target[ct], ex->size[ct], ex->cone[ct], ex->ornt[ct]));
+    PetscCall(PetscFree4(ex->target[ct], ex->size[ct], ex->cone[ct], ex->ornt[ct]));
   }
-  CHKERRQ(PetscFree5(ex->Nt, ex->target, ex->size, ex->cone, ex->ornt));
-  CHKERRQ(PetscFree(ex->layerPos));
-  CHKERRQ(PetscFree(ex));
+  PetscCall(PetscFree5(ex->Nt, ex->target, ex->size, ex->cone, ex->ornt));
+  PetscCall(PetscFree(ex->layerPos));
+  PetscCall(PetscFree(ex));
   PetscFunctionReturn(0);
 }
 
@@ -458,24 +458,24 @@ static PetscErrorCode DMPlexTransformMapCoordinates_Extrude(DMPlexTransform tr, 
   PetscCheckFalse(Nv != 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Vertices should be produced from a single vertex, not %D",Nv);
   PetscCheckFalse(dE != ex->cdim,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Coordinate dim %D != %D original dimension", dE, ex->cdim);
 
-  CHKERRQ(DMPlexTransformGetDM(tr, &dm));
-  CHKERRQ(DMGetDimension(dm, &dim));
+  PetscCall(DMPlexTransformGetDM(tr, &dm));
+  PetscCall(DMGetDimension(dm, &dim));
   computeNormal = dim != ex->cdim && !ex->useNormal ? PETSC_TRUE : PETSC_FALSE;
   if (computeNormal) {
     PetscInt *closure = NULL;
     PetscInt  closureSize, cl;
 
-    CHKERRQ(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
-    CHKERRQ(DMPlexGetTransitiveClosure(dm, p, PETSC_FALSE, &closureSize, &closure));
+    PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
+    PetscCall(DMPlexGetTransitiveClosure(dm, p, PETSC_FALSE, &closureSize, &closure));
     for (cl = 0; cl < closureSize*2; cl += 2) {
       if ((closure[cl] >= cStart) && (closure[cl] < cEnd)) {
         PetscReal cnormal[3] = {0, 0, 0};
 
-        CHKERRQ(DMPlexComputeCellGeometryFVM(dm, closure[cl], NULL, NULL, cnormal));
+        PetscCall(DMPlexComputeCellGeometryFVM(dm, closure[cl], NULL, NULL, cnormal));
         for (d = 0; d < dEx; ++d) normal[d] += cnormal[d];
       }
     }
-    CHKERRQ(DMPlexRestoreTransitiveClosure(dm, p, PETSC_FALSE, &closureSize, &closure));
+    PetscCall(DMPlexRestoreTransitiveClosure(dm, p, PETSC_FALSE, &closureSize, &closure));
   } else if (ex->useNormal) {
     for (d = 0; d < dEx; ++d) normal[d] = ex->normal[d];
   } else if (ex->cdimEx == 2) {
@@ -513,19 +513,19 @@ PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_Extrude(DMPlexTransform tr)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
-  CHKERRQ(PetscNewLog(tr, &ex));
+  PetscCall(PetscNewLog(tr, &ex));
   tr->data        = ex;
   ex->thickness   = 1.;
   ex->useTensor   = PETSC_TRUE;
   ex->symmetric   = PETSC_FALSE;
   ex->useNormal   = PETSC_FALSE;
   ex->layerPos    = NULL;
-  CHKERRQ(DMPlexTransformGetDM(tr, &dm));
-  CHKERRQ(DMGetDimension(dm, &dim));
-  CHKERRQ(DMGetCoordinateDim(dm, &ex->cdim));
+  PetscCall(DMPlexTransformGetDM(tr, &dm));
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMGetCoordinateDim(dm, &ex->cdim));
   ex->cdimEx = ex->cdim == dim ? ex->cdim+1 : ex->cdim;
-  CHKERRQ(DMPlexTransformExtrudeSetLayers(tr, 1));
-  CHKERRQ(DMPlexTransformInitialize_Extrude(tr));
+  PetscCall(DMPlexTransformExtrudeSetLayers(tr, 1));
+  PetscCall(DMPlexTransformInitialize_Extrude(tr));
   PetscFunctionReturn(0);
 }
 
@@ -575,8 +575,8 @@ PetscErrorCode DMPlexTransformExtrudeSetLayers(DMPlexTransform tr, PetscInt laye
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   ex->layers = layers;
-  CHKERRQ(PetscFree(ex->layerPos));
-  CHKERRQ(PetscCalloc1(ex->layers+1, &ex->layerPos));
+  PetscCall(PetscFree(ex->layerPos));
+  PetscCall(PetscCalloc1(ex->layers+1, &ex->layerPos));
   PetscFunctionReturn(0);
 }
 
@@ -693,8 +693,8 @@ PetscErrorCode DMPlexTransformExtrudeSetThicknesses(DMPlexTransform tr, PetscInt
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   PetscCheckFalse(Nth <= 0,PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_OUTOFRANGE, "Number of thicknesses %D must be positive", Nth);
   ex->Nth = PetscMin(Nth, ex->layers);
-  CHKERRQ(PetscFree(ex->thicknesses));
-  CHKERRQ(PetscMalloc1(ex->Nth, &ex->thicknesses));
+  PetscCall(PetscFree(ex->thicknesses));
+  PetscCall(PetscMalloc1(ex->Nth, &ex->thicknesses));
   for (t = 0; t < ex->Nth; ++t) {
     PetscCheckFalse(thicknesses[t] <= 0.,PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_OUTOFRANGE, "Thickness %g of layer %D must be positive", (double) thicknesses[t], t);
     ex->thicknesses[t] = thicknesses[t];

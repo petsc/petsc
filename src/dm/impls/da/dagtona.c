@@ -37,20 +37,20 @@ PetscErrorCode  DMDAGlobalToNaturalAllCreate(DM da,VecScatter *scatter)
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidPointer(scatter,2);
-  CHKERRQ(DMDAGetAO(da,&ao));
+  PetscCall(DMDAGetAO(da,&ao));
 
   /* create the scatter context */
-  CHKERRQ(VecCreateMPIWithArray(PetscObjectComm((PetscObject)da),dd->w,dd->Nlocal,PETSC_DETERMINE,NULL,&global));
-  CHKERRQ(VecGetSize(global,&N));
-  CHKERRQ(ISCreateStride(PetscObjectComm((PetscObject)da),N,0,1,&to));
-  CHKERRQ(AOPetscToApplicationIS(ao,to));
-  CHKERRQ(ISCreateStride(PetscObjectComm((PetscObject)da),N,0,1,&from));
-  CHKERRQ(VecCreateSeqWithArray(PETSC_COMM_SELF,dd->w,N,NULL,&tmplocal));
-  CHKERRQ(VecScatterCreate(global,from,tmplocal,to,scatter));
-  CHKERRQ(VecDestroy(&tmplocal));
-  CHKERRQ(VecDestroy(&global));
-  CHKERRQ(ISDestroy(&from));
-  CHKERRQ(ISDestroy(&to));
+  PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)da),dd->w,dd->Nlocal,PETSC_DETERMINE,NULL,&global));
+  PetscCall(VecGetSize(global,&N));
+  PetscCall(ISCreateStride(PetscObjectComm((PetscObject)da),N,0,1,&to));
+  PetscCall(AOPetscToApplicationIS(ao,to));
+  PetscCall(ISCreateStride(PetscObjectComm((PetscObject)da),N,0,1,&from));
+  PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,dd->w,N,NULL,&tmplocal));
+  PetscCall(VecScatterCreate(global,from,tmplocal,to,scatter));
+  PetscCall(VecDestroy(&tmplocal));
+  PetscCall(VecDestroy(&global));
+  PetscCall(ISDestroy(&from));
+  PetscCall(ISDestroy(&to));
   PetscFunctionReturn(0);
 }
 
@@ -82,20 +82,20 @@ PetscErrorCode  DMDANaturalAllToGlobalCreate(DM da,VecScatter *scatter)
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidPointer(scatter,2);
-  CHKERRQ(DMDAGetAO(da,&ao));
+  PetscCall(DMDAGetAO(da,&ao));
 
   /* create the scatter context */
-  CHKERRMPI(MPIU_Allreduce(&m,&M,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)da)));
-  CHKERRQ(VecCreateMPIWithArray(PetscObjectComm((PetscObject)da),dd->w,m,PETSC_DETERMINE,NULL,&global));
-  CHKERRQ(VecGetOwnershipRange(global,&start,NULL));
-  CHKERRQ(ISCreateStride(PetscObjectComm((PetscObject)da),m,start,1,&from));
-  CHKERRQ(AOPetscToApplicationIS(ao,from));
-  CHKERRQ(ISCreateStride(PetscObjectComm((PetscObject)da),m,start,1,&to));
-  CHKERRQ(VecCreateSeqWithArray(PETSC_COMM_SELF,dd->w,M,NULL,&tmplocal));
-  CHKERRQ(VecScatterCreate(tmplocal,from,global,to,scatter));
-  CHKERRQ(VecDestroy(&tmplocal));
-  CHKERRQ(VecDestroy(&global));
-  CHKERRQ(ISDestroy(&from));
-  CHKERRQ(ISDestroy(&to));
+  PetscCallMPI(MPIU_Allreduce(&m,&M,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)da)));
+  PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)da),dd->w,m,PETSC_DETERMINE,NULL,&global));
+  PetscCall(VecGetOwnershipRange(global,&start,NULL));
+  PetscCall(ISCreateStride(PetscObjectComm((PetscObject)da),m,start,1,&from));
+  PetscCall(AOPetscToApplicationIS(ao,from));
+  PetscCall(ISCreateStride(PetscObjectComm((PetscObject)da),m,start,1,&to));
+  PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,dd->w,M,NULL,&tmplocal));
+  PetscCall(VecScatterCreate(tmplocal,from,global,to,scatter));
+  PetscCall(VecDestroy(&tmplocal));
+  PetscCall(VecDestroy(&global));
+  PetscCall(ISDestroy(&from));
+  PetscCall(ISDestroy(&to));
   PetscFunctionReturn(0);
 }

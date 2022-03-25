@@ -60,28 +60,28 @@ PetscErrorCode  PCSetType(PC pc,PCType type)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidCharPointer(type,2);
 
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)pc,type,&match));
+  PetscCall(PetscObjectTypeCompare((PetscObject)pc,type,&match));
   if (match) PetscFunctionReturn(0);
 
-  CHKERRQ(PetscFunctionListFind(PCList,type,&r));
+  PetscCall(PetscFunctionListFind(PCList,type,&r));
   PetscCheck(r,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PC type %s",type);
   /* Destroy the previous private PC context */
   if (pc->ops->destroy) {
-    CHKERRQ((*pc->ops->destroy)(pc));
+    PetscCall((*pc->ops->destroy)(pc));
     pc->ops->destroy = NULL;
     pc->data         = NULL;
   }
-  CHKERRQ(PetscFunctionListDestroy(&((PetscObject)pc)->qlist));
+  PetscCall(PetscFunctionListDestroy(&((PetscObject)pc)->qlist));
   /* Reinitialize function pointers in PCOps structure */
-  CHKERRQ(PetscMemzero(pc->ops,sizeof(struct _PCOps)));
+  PetscCall(PetscMemzero(pc->ops,sizeof(struct _PCOps)));
   /* XXX Is this OK?? */
   pc->modifysubmatrices  = NULL;
   pc->modifysubmatricesP = NULL;
   /* Call the PCCreate_XXX routine for this particular preconditioner */
   pc->setupcalled = 0;
 
-  CHKERRQ(PetscObjectChangeTypeName((PetscObject)pc,type));
-  CHKERRQ((*r)(pc));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)pc,type));
+  PetscCall((*r)(pc));
   PetscFunctionReturn(0);
 }
 
@@ -141,34 +141,34 @@ PetscErrorCode  PCSetFromOptions(PC pc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
 
-  CHKERRQ(PCRegisterAll());
-  ierr = PetscObjectOptionsBegin((PetscObject)pc);CHKERRQ(ierr);
+  PetscCall(PCRegisterAll());
+  ierr = PetscObjectOptionsBegin((PetscObject)pc);PetscCall(ierr);
   if (!((PetscObject)pc)->type_name) {
-    CHKERRQ(PCGetDefaultType_Private(pc,&def));
+    PetscCall(PCGetDefaultType_Private(pc,&def));
   } else {
     def = ((PetscObject)pc)->type_name;
   }
 
-  CHKERRQ(PetscOptionsFList("-pc_type","Preconditioner","PCSetType",PCList,def,type,256,&flg));
+  PetscCall(PetscOptionsFList("-pc_type","Preconditioner","PCSetType",PCList,def,type,256,&flg));
   if (flg) {
-    CHKERRQ(PCSetType(pc,type));
+    PetscCall(PCSetType(pc,type));
   } else if (!((PetscObject)pc)->type_name) {
-    CHKERRQ(PCSetType(pc,def));
+    PetscCall(PCSetType(pc,def));
   }
 
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)pc,PCNONE,&flg));
+  PetscCall(PetscObjectTypeCompare((PetscObject)pc,PCNONE,&flg));
   if (flg) goto skipoptions;
 
-  CHKERRQ(PetscOptionsBool("-pc_use_amat","use Amat (instead of Pmat) to define preconditioner in nested inner solves","PCSetUseAmat",pc->useAmat,&pc->useAmat,NULL));
+  PetscCall(PetscOptionsBool("-pc_use_amat","use Amat (instead of Pmat) to define preconditioner in nested inner solves","PCSetUseAmat",pc->useAmat,&pc->useAmat,NULL));
 
   if (pc->ops->setfromoptions) {
-    CHKERRQ((*pc->ops->setfromoptions)(PetscOptionsObject,pc));
+    PetscCall((*pc->ops->setfromoptions)(PetscOptionsObject,pc));
   }
 
   skipoptions:
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  CHKERRQ(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)pc));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)pc));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
   pc->setfromoptionscalled++;
   PetscFunctionReturn(0);
 }
@@ -194,8 +194,8 @@ PetscErrorCode  PCSetDM(PC pc,DM dm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  if (dm) CHKERRQ(PetscObjectReference((PetscObject)dm));
-  CHKERRQ(DMDestroy(&pc->dm));
+  if (dm) PetscCall(PetscObjectReference((PetscObject)dm));
+  PetscCall(DMDestroy(&pc->dm));
   pc->dm = dm;
   PetscFunctionReturn(0);
 }

@@ -90,11 +90,11 @@ static PetscErrorCode glvis_extract_eta(PetscObject oV,PetscInt nf, PetscObject 
   PetscScalar            *array;
 
   PetscFunctionBeginUser;
-  CHKERRQ(VecGetDM(Vf[0],&stokes_da));
-  CHKERRQ(DMDAVecGetArrayRead(properties_da,V,&props));
-  CHKERRQ(DMDAGetElementsCorners(stokes_da,&sex,&sey,NULL));
-  CHKERRQ(DMDAGetElementsSizes(stokes_da,&mx,&my,NULL));
-  CHKERRQ(VecGetArray(Vf[0],&array));
+  PetscCall(VecGetDM(Vf[0],&stokes_da));
+  PetscCall(DMDAVecGetArrayRead(properties_da,V,&props));
+  PetscCall(DMDAGetElementsCorners(stokes_da,&sex,&sey,NULL));
+  PetscCall(DMDAGetElementsSizes(stokes_da,&mx,&my,NULL));
+  PetscCall(VecGetArray(Vf[0],&array));
   cum  = 0;
   for (ej = sey; ej < sey+my; ej++) {
     for (ei = sex; ei < sex+mx; ei++) {
@@ -103,8 +103,8 @@ static PetscErrorCode glvis_extract_eta(PetscObject oV,PetscInt nf, PetscObject 
       }
     }
   }
-  CHKERRQ(VecRestoreArray(Vf[0],&array));
-  CHKERRQ(DMDAVecRestoreArrayRead(properties_da,V,&props));
+  PetscCall(VecRestoreArray(Vf[0],&array));
+  PetscCall(DMDAVecRestoreArrayRead(properties_da,V,&props));
   PetscFunctionReturn(0);
 }
 
@@ -232,53 +232,53 @@ static PetscErrorCode DMDAGetElementOwnershipRanges2d(DM da,PetscInt **_lx,Petsc
   VecScatter     ctx;
 
   PetscFunctionBeginUser;
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
-  CHKERRQ(DMDAGetInfo(da,0,0,0,0,&cpu_x,&cpu_y,0,0,0,0,0,0,0));
+  PetscCall(DMDAGetInfo(da,0,0,0,0,&cpu_x,&cpu_y,0,0,0,0,0,0,0));
 
   proc_J = rank/cpu_x;
   proc_I = rank-cpu_x*proc_J;
 
-  CHKERRQ(PetscMalloc1(cpu_x,&LX));
-  CHKERRQ(PetscMalloc1(cpu_y,&LY));
+  PetscCall(PetscMalloc1(cpu_x,&LX));
+  PetscCall(PetscMalloc1(cpu_y,&LY));
 
-  CHKERRQ(DMDAGetElementsSizes(da,&local_mx,&local_my,NULL));
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&vlx));
-  CHKERRQ(VecSetSizes(vlx,PETSC_DECIDE,cpu_x));
-  CHKERRQ(VecSetFromOptions(vlx));
+  PetscCall(DMDAGetElementsSizes(da,&local_mx,&local_my,NULL));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&vlx));
+  PetscCall(VecSetSizes(vlx,PETSC_DECIDE,cpu_x));
+  PetscCall(VecSetFromOptions(vlx));
 
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&vly));
-  CHKERRQ(VecSetSizes(vly,PETSC_DECIDE,cpu_y));
-  CHKERRQ(VecSetFromOptions(vly));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&vly));
+  PetscCall(VecSetSizes(vly,PETSC_DECIDE,cpu_y));
+  PetscCall(VecSetFromOptions(vly));
 
-  CHKERRQ(VecSetValue(vlx,proc_I,(PetscScalar)(local_mx+1.0e-9),INSERT_VALUES));
-  CHKERRQ(VecSetValue(vly,proc_J,(PetscScalar)(local_my+1.0e-9),INSERT_VALUES));
-  CHKERRQ(VecAssemblyBegin(vlx);VecAssemblyEnd(vlx));
-  CHKERRQ(VecAssemblyBegin(vly);VecAssemblyEnd(vly));
+  PetscCall(VecSetValue(vlx,proc_I,(PetscScalar)(local_mx+1.0e-9),INSERT_VALUES));
+  PetscCall(VecSetValue(vly,proc_J,(PetscScalar)(local_my+1.0e-9),INSERT_VALUES));
+  PetscCall(VecAssemblyBegin(vlx);VecAssemblyEnd(vlx));
+  PetscCall(VecAssemblyBegin(vly);VecAssemblyEnd(vly));
 
-  CHKERRQ(VecScatterCreateToAll(vlx,&ctx,&V_SEQ));
-  CHKERRQ(VecScatterBegin(ctx,vlx,V_SEQ,INSERT_VALUES,SCATTER_FORWARD));
-  CHKERRQ(VecScatterEnd(ctx,vlx,V_SEQ,INSERT_VALUES,SCATTER_FORWARD));
-  CHKERRQ(VecGetArray(V_SEQ,&_a));
+  PetscCall(VecScatterCreateToAll(vlx,&ctx,&V_SEQ));
+  PetscCall(VecScatterBegin(ctx,vlx,V_SEQ,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(ctx,vlx,V_SEQ,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecGetArray(V_SEQ,&_a));
   for (i = 0; i < cpu_x; i++) LX[i] = (PetscInt)PetscRealPart(_a[i]);
-  CHKERRQ(VecRestoreArray(V_SEQ,&_a));
-  CHKERRQ(VecScatterDestroy(&ctx));
-  CHKERRQ(VecDestroy(&V_SEQ));
+  PetscCall(VecRestoreArray(V_SEQ,&_a));
+  PetscCall(VecScatterDestroy(&ctx));
+  PetscCall(VecDestroy(&V_SEQ));
 
-  CHKERRQ(VecScatterCreateToAll(vly,&ctx,&V_SEQ));
-  CHKERRQ(VecScatterBegin(ctx,vly,V_SEQ,INSERT_VALUES,SCATTER_FORWARD));
-  CHKERRQ(VecScatterEnd(ctx,vly,V_SEQ,INSERT_VALUES,SCATTER_FORWARD));
-  CHKERRQ(VecGetArray(V_SEQ,&_a));
+  PetscCall(VecScatterCreateToAll(vly,&ctx,&V_SEQ));
+  PetscCall(VecScatterBegin(ctx,vly,V_SEQ,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(ctx,vly,V_SEQ,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecGetArray(V_SEQ,&_a));
   for (i = 0; i < cpu_y; i++) LY[i] = (PetscInt)PetscRealPart(_a[i]);
-  CHKERRQ(VecRestoreArray(V_SEQ,&_a));
-  CHKERRQ(VecScatterDestroy(&ctx));
-  CHKERRQ(VecDestroy(&V_SEQ));
+  PetscCall(VecRestoreArray(V_SEQ,&_a));
+  PetscCall(VecScatterDestroy(&ctx));
+  PetscCall(VecDestroy(&V_SEQ));
 
   *_lx = LX;
   *_ly = LY;
 
-  CHKERRQ(VecDestroy(&vlx));
-  CHKERRQ(VecDestroy(&vly));
+  PetscCall(VecDestroy(&vlx));
+  PetscCall(VecDestroy(&vly));
   PetscFunctionReturn(0);
 }
 
@@ -293,29 +293,29 @@ static PetscErrorCode DMDACoordViewGnuplot2d(DM da,const char prefix[])
   PetscMPIInt    rank;
 
   PetscFunctionBeginUser;
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  CHKERRQ(PetscSNPrintf(fname,sizeof(fname),"%s-p%1.4d.dat",prefix,rank));
-  CHKERRQ(PetscFOpen(PETSC_COMM_SELF,fname,"w",&fp));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscSNPrintf(fname,sizeof(fname),"%s-p%1.4d.dat",prefix,rank));
+  PetscCall(PetscFOpen(PETSC_COMM_SELF,fname,"w",&fp));
   PetscCheck(fp,PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file");
 
-  CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,fp,"### Element geometry for processor %1.4d ### \n",rank));
+  PetscCall(PetscFPrintf(PETSC_COMM_SELF,fp,"### Element geometry for processor %1.4d ### \n",rank));
 
-  CHKERRQ(DMGetCoordinateDM(da,&cda));
-  CHKERRQ(DMGetCoordinatesLocal(da,&coords));
-  CHKERRQ(DMDAVecGetArrayRead(cda,coords,&_coords));
-  CHKERRQ(DMDAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0));
+  PetscCall(DMGetCoordinateDM(da,&cda));
+  PetscCall(DMGetCoordinatesLocal(da,&coords));
+  PetscCall(DMDAVecGetArrayRead(cda,coords,&_coords));
+  PetscCall(DMDAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0));
   for (j = sj; j < sj+ny-1; j++) {
     for (i = si; i < si+nx-1; i++) {
-      CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e \n",(double)PetscRealPart(_coords[j][i].x),(double)PetscRealPart(_coords[j][i].y)));
-      CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e \n",(double)PetscRealPart(_coords[j+1][i].x),(double)PetscRealPart(_coords[j+1][i].y)));
-      CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e \n",(double)PetscRealPart(_coords[j+1][i+1].x),(double)PetscRealPart(_coords[j+1][i+1].y)));
-      CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e \n",(double)PetscRealPart(_coords[j][i+1].x),(double)PetscRealPart(_coords[j][i+1].y)));
-      CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e \n\n",(double)PetscRealPart(_coords[j][i].x),(double)PetscRealPart(_coords[j][i].y)));
+      PetscCall(PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e \n",(double)PetscRealPart(_coords[j][i].x),(double)PetscRealPart(_coords[j][i].y)));
+      PetscCall(PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e \n",(double)PetscRealPart(_coords[j+1][i].x),(double)PetscRealPart(_coords[j+1][i].y)));
+      PetscCall(PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e \n",(double)PetscRealPart(_coords[j+1][i+1].x),(double)PetscRealPart(_coords[j+1][i+1].y)));
+      PetscCall(PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e \n",(double)PetscRealPart(_coords[j][i+1].x),(double)PetscRealPart(_coords[j][i+1].y)));
+      PetscCall(PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e \n\n",(double)PetscRealPart(_coords[j][i].x),(double)PetscRealPart(_coords[j][i].y)));
     }
   }
-  CHKERRQ(DMDAVecRestoreArrayRead(cda,coords,&_coords));
+  PetscCall(DMDAVecRestoreArrayRead(cda,coords,&_coords));
 
-  CHKERRQ(PetscFClose(PETSC_COMM_SELF,fp));
+  PetscCall(PetscFClose(PETSC_COMM_SELF,fp));
   PetscFunctionReturn(0);
 }
 
@@ -332,30 +332,30 @@ static PetscErrorCode DMDAViewGnuplot2d(DM da,Vec fields,const char comment[],co
   PetscScalar    *_fields;
 
   PetscFunctionBeginUser;
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  CHKERRQ(PetscSNPrintf(fname,sizeof(fname),"%s-p%1.4d.dat",prefix,rank));
-  CHKERRQ(PetscFOpen(PETSC_COMM_SELF,fname,"w",&fp));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscSNPrintf(fname,sizeof(fname),"%s-p%1.4d.dat",prefix,rank));
+  PetscCall(PetscFOpen(PETSC_COMM_SELF,fname,"w",&fp));
   PetscCheck(fp,PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file");
 
-  CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,fp,"### %s (processor %1.4d) ### \n",comment,rank));
-  CHKERRQ(DMDAGetInfo(da,0,0,0,0,0,0,0,&n_dofs,0,0,0,0,0));
-  CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,fp,"### x y "));
+  PetscCall(PetscFPrintf(PETSC_COMM_SELF,fp,"### %s (processor %1.4d) ### \n",comment,rank));
+  PetscCall(DMDAGetInfo(da,0,0,0,0,0,0,0,&n_dofs,0,0,0,0,0));
+  PetscCall(PetscFPrintf(PETSC_COMM_SELF,fp,"### x y "));
   for (d = 0; d < n_dofs; d++) {
     const char *field_name;
-    CHKERRQ(DMDAGetFieldName(da,d,&field_name));
-    CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,fp,"%s ",field_name));
+    PetscCall(DMDAGetFieldName(da,d,&field_name));
+    PetscCall(PetscFPrintf(PETSC_COMM_SELF,fp,"%s ",field_name));
   }
-  CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,fp,"###\n"));
+  PetscCall(PetscFPrintf(PETSC_COMM_SELF,fp,"###\n"));
 
-  CHKERRQ(DMGetCoordinateDM(da,&cda));
-  CHKERRQ(DMGetCoordinatesLocal(da,&coords));
-  CHKERRQ(DMDAVecGetArray(cda,coords,&_coords));
-  CHKERRQ(DMDAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0));
+  PetscCall(DMGetCoordinateDM(da,&cda));
+  PetscCall(DMGetCoordinatesLocal(da,&coords));
+  PetscCall(DMDAVecGetArray(cda,coords,&_coords));
+  PetscCall(DMDAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0));
 
-  CHKERRQ(DMCreateLocalVector(da,&local_fields));
-  CHKERRQ(DMGlobalToLocalBegin(da,fields,INSERT_VALUES,local_fields));
-  CHKERRQ(DMGlobalToLocalEnd(da,fields,INSERT_VALUES,local_fields));
-  CHKERRQ(VecGetArray(local_fields,&_fields));
+  PetscCall(DMCreateLocalVector(da,&local_fields));
+  PetscCall(DMGlobalToLocalBegin(da,fields,INSERT_VALUES,local_fields));
+  PetscCall(DMGlobalToLocalEnd(da,fields,INSERT_VALUES,local_fields));
+  PetscCall(VecGetArray(local_fields,&_fields));
 
   for (j = sj; j < sj+ny; j++) {
     for (i = si; i < si+nx; i++) {
@@ -365,20 +365,20 @@ static PetscErrorCode DMDAViewGnuplot2d(DM da,Vec fields,const char comment[],co
       coord_x = _coords[j][i].x;
       coord_y = _coords[j][i].y;
 
-      CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e ",(double)PetscRealPart(coord_x),(double)PetscRealPart(coord_y)));
+      PetscCall(PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e ",(double)PetscRealPart(coord_x),(double)PetscRealPart(coord_y)));
       for (d = 0; d < n_dofs; d++) {
         field_d = _fields[n_dofs*((i-si)+(j-sj)*(nx))+d];
-        CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e ",(double)PetscRealPart(field_d)));
+        PetscCall(PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e ",(double)PetscRealPart(field_d)));
       }
-      CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,fp,"\n"));
+      PetscCall(PetscFPrintf(PETSC_COMM_SELF,fp,"\n"));
     }
   }
-  CHKERRQ(VecRestoreArray(local_fields,&_fields));
-  CHKERRQ(VecDestroy(&local_fields));
+  PetscCall(VecRestoreArray(local_fields,&_fields));
+  PetscCall(VecDestroy(&local_fields));
 
-  CHKERRQ(DMDAVecRestoreArray(cda,coords,&_coords));
+  PetscCall(DMDAVecRestoreArray(cda,coords,&_coords));
 
-  CHKERRQ(PetscFClose(PETSC_COMM_SELF,fp));
+  PetscCall(PetscFClose(PETSC_COMM_SELF,fp));
   PetscFunctionReturn(0);
 }
 
@@ -394,28 +394,28 @@ static PetscErrorCode DMDAViewCoefficientsGnuplot2d(DM da,Vec fields,const char 
   GaussPointCoefficients **_coefficients;
 
   PetscFunctionBeginUser;
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  CHKERRQ(PetscSNPrintf(fname,sizeof(fname),"%s-p%1.4d.dat",prefix,rank));
-  CHKERRQ(PetscFOpen(PETSC_COMM_SELF,fname,"w",&fp));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscSNPrintf(fname,sizeof(fname),"%s-p%1.4d.dat",prefix,rank));
+  PetscCall(PetscFOpen(PETSC_COMM_SELF,fname,"w",&fp));
   PetscCheck(fp,PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file");
 
-  CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,fp,"### %s (processor %1.4d) ### \n",comment,rank));
-  CHKERRQ(DMDAGetInfo(da,0,0,0,0,0,0,0,&n_dofs,0,0,0,0,0));
-  CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,fp,"### x y "));
+  PetscCall(PetscFPrintf(PETSC_COMM_SELF,fp,"### %s (processor %1.4d) ### \n",comment,rank));
+  PetscCall(DMDAGetInfo(da,0,0,0,0,0,0,0,&n_dofs,0,0,0,0,0));
+  PetscCall(PetscFPrintf(PETSC_COMM_SELF,fp,"### x y "));
   for (d = 0; d < n_dofs; d++) {
     const char *field_name;
-    CHKERRQ(DMDAGetFieldName(da,d,&field_name));
-    CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,fp,"%s ",field_name));
+    PetscCall(DMDAGetFieldName(da,d,&field_name));
+    PetscCall(PetscFPrintf(PETSC_COMM_SELF,fp,"%s ",field_name));
   }
-  CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,fp,"###\n"));
+  PetscCall(PetscFPrintf(PETSC_COMM_SELF,fp,"###\n"));
 
-  CHKERRQ(DMGetCoordinateDM(da,&cda));
-  CHKERRQ(DMDAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0));
+  PetscCall(DMGetCoordinateDM(da,&cda));
+  PetscCall(DMDAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0));
 
-  CHKERRQ(DMCreateLocalVector(da,&local_fields));
-  CHKERRQ(DMGlobalToLocalBegin(da,fields,INSERT_VALUES,local_fields));
-  CHKERRQ(DMGlobalToLocalEnd(da,fields,INSERT_VALUES,local_fields));
-  CHKERRQ(DMDAVecGetArray(da,local_fields,&_coefficients));
+  PetscCall(DMCreateLocalVector(da,&local_fields));
+  PetscCall(DMGlobalToLocalBegin(da,fields,INSERT_VALUES,local_fields));
+  PetscCall(DMGlobalToLocalEnd(da,fields,INSERT_VALUES,local_fields));
+  PetscCall(DMDAVecGetArray(da,local_fields,&_coefficients));
 
   for (j = sj; j < sj+ny; j++) {
     for (i = si; i < si+nx; i++) {
@@ -425,17 +425,17 @@ static PetscErrorCode DMDAViewCoefficientsGnuplot2d(DM da,Vec fields,const char 
         coord_x = _coefficients[j][i].gp_coords[2*p];
         coord_y = _coefficients[j][i].gp_coords[2*p+1];
 
-        CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e ",(double)PetscRealPart(coord_x),(double)PetscRealPart(coord_y)));
+        PetscCall(PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e ",(double)PetscRealPart(coord_x),(double)PetscRealPart(coord_y)));
 
-        CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e %1.6e",(double)PetscRealPart(_coefficients[j][i].eta[p]),(double)PetscRealPart(_coefficients[j][i].fx[p]),(double)PetscRealPart(_coefficients[j][i].fy[p])));
-        CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,fp,"\n"));
+        PetscCall(PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e %1.6e",(double)PetscRealPart(_coefficients[j][i].eta[p]),(double)PetscRealPart(_coefficients[j][i].fx[p]),(double)PetscRealPart(_coefficients[j][i].fy[p])));
+        PetscCall(PetscFPrintf(PETSC_COMM_SELF,fp,"\n"));
       }
     }
   }
-  CHKERRQ(DMDAVecRestoreArray(da,local_fields,&_coefficients));
-  CHKERRQ(VecDestroy(&local_fields));
+  PetscCall(DMDAVecRestoreArray(da,local_fields,&_coefficients));
+  PetscCall(VecDestroy(&local_fields));
 
-  CHKERRQ(PetscFClose(PETSC_COMM_SELF,fp));
+  PetscCall(PetscFClose(PETSC_COMM_SELF,fp));
   PetscFunctionReturn(0);
 }
 
@@ -695,18 +695,18 @@ static PetscErrorCode AssembleA_Stokes(Mat A,DM stokes_da,DM properties_da,Vec p
 
   PetscFunctionBeginUser;
   /* setup for coords */
-  CHKERRQ(DMGetCoordinateDM(stokes_da,&cda));
-  CHKERRQ(DMGetCoordinatesLocal(stokes_da,&coords));
-  CHKERRQ(DMDAVecGetArray(cda,coords,&_coords));
+  PetscCall(DMGetCoordinateDM(stokes_da,&cda));
+  PetscCall(DMGetCoordinatesLocal(stokes_da,&coords));
+  PetscCall(DMDAVecGetArray(cda,coords,&_coords));
 
   /* setup for coefficients */
-  CHKERRQ(DMCreateLocalVector(properties_da,&local_properties));
-  CHKERRQ(DMGlobalToLocalBegin(properties_da,properties,INSERT_VALUES,local_properties));
-  CHKERRQ(DMGlobalToLocalEnd(properties_da,properties,INSERT_VALUES,local_properties));
-  CHKERRQ(DMDAVecGetArray(properties_da,local_properties,&props));
+  PetscCall(DMCreateLocalVector(properties_da,&local_properties));
+  PetscCall(DMGlobalToLocalBegin(properties_da,properties,INSERT_VALUES,local_properties));
+  PetscCall(DMGlobalToLocalEnd(properties_da,properties,INSERT_VALUES,local_properties));
+  PetscCall(DMDAVecGetArray(properties_da,local_properties,&props));
 
-  CHKERRQ(DMDAGetElementsCorners(stokes_da,&sex,&sey,NULL));
-  CHKERRQ(DMDAGetElementsSizes(stokes_da,&mx,&my,NULL));
+  PetscCall(DMDAGetElementsCorners(stokes_da,&sex,&sey,NULL));
+  PetscCall(DMDAGetElementsSizes(stokes_da,&mx,&my,NULL));
   for (ej = sey; ej < sey+my; ej++) {
     for (ei = sex; ei < sex+mx; ei++) {
       /* get coords for the element */
@@ -716,10 +716,10 @@ static PetscErrorCode AssembleA_Stokes(Mat A,DM stokes_da,DM properties_da,Vec p
       prop_eta = props[ej][ei].eta;
 
       /* initialise element stiffness matrix */
-      CHKERRQ(PetscMemzero(Ae,sizeof(Ae)));
-      CHKERRQ(PetscMemzero(Ge,sizeof(Ge)));
-      CHKERRQ(PetscMemzero(De,sizeof(De)));
-      CHKERRQ(PetscMemzero(Ce,sizeof(Ce)));
+      PetscCall(PetscMemzero(Ae,sizeof(Ae)));
+      PetscCall(PetscMemzero(Ge,sizeof(Ge)));
+      PetscCall(PetscMemzero(De,sizeof(De)));
+      PetscCall(PetscMemzero(Ce,sizeof(Ce)));
 
       /* form element stiffness matrix */
       FormStressOperatorQ1(Ae,el_coords,prop_eta);
@@ -728,20 +728,20 @@ static PetscErrorCode AssembleA_Stokes(Mat A,DM stokes_da,DM properties_da,Vec p
       FormStabilisationOperatorQ1(Ce,el_coords,prop_eta);
 
       /* insert element matrix into global matrix */
-      CHKERRQ(DMDAGetElementEqnums_up(u_eqn,p_eqn,ei,ej));
-      CHKERRQ(MatSetValuesStencil(A,NODES_PER_EL*U_DOFS,u_eqn,NODES_PER_EL*U_DOFS,u_eqn,Ae,ADD_VALUES));
-      CHKERRQ(MatSetValuesStencil(A,NODES_PER_EL*U_DOFS,u_eqn,NODES_PER_EL*P_DOFS,p_eqn,Ge,ADD_VALUES));
-      CHKERRQ(MatSetValuesStencil(A,NODES_PER_EL*P_DOFS,p_eqn,NODES_PER_EL*U_DOFS,u_eqn,De,ADD_VALUES));
-      CHKERRQ(MatSetValuesStencil(A,NODES_PER_EL*P_DOFS,p_eqn,NODES_PER_EL*P_DOFS,p_eqn,Ce,ADD_VALUES));
+      PetscCall(DMDAGetElementEqnums_up(u_eqn,p_eqn,ei,ej));
+      PetscCall(MatSetValuesStencil(A,NODES_PER_EL*U_DOFS,u_eqn,NODES_PER_EL*U_DOFS,u_eqn,Ae,ADD_VALUES));
+      PetscCall(MatSetValuesStencil(A,NODES_PER_EL*U_DOFS,u_eqn,NODES_PER_EL*P_DOFS,p_eqn,Ge,ADD_VALUES));
+      PetscCall(MatSetValuesStencil(A,NODES_PER_EL*P_DOFS,p_eqn,NODES_PER_EL*U_DOFS,u_eqn,De,ADD_VALUES));
+      PetscCall(MatSetValuesStencil(A,NODES_PER_EL*P_DOFS,p_eqn,NODES_PER_EL*P_DOFS,p_eqn,Ce,ADD_VALUES));
     }
   }
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
-  CHKERRQ(DMDAVecRestoreArray(cda,coords,&_coords));
+  PetscCall(DMDAVecRestoreArray(cda,coords,&_coords));
 
-  CHKERRQ(DMDAVecRestoreArray(properties_da,local_properties,&props));
-  CHKERRQ(VecDestroy(&local_properties));
+  PetscCall(DMDAVecRestoreArray(properties_da,local_properties,&props));
+  PetscCall(VecDestroy(&local_properties));
   PetscFunctionReturn(0);
 }
 
@@ -765,18 +765,18 @@ static PetscErrorCode AssembleA_PCStokes(Mat A,DM stokes_da,DM properties_da,Vec
 
   PetscFunctionBeginUser;
   /* setup for coords */
-  CHKERRQ(DMGetCoordinateDM(stokes_da,&cda));
-  CHKERRQ(DMGetCoordinatesLocal(stokes_da,&coords));
-  CHKERRQ(DMDAVecGetArray(cda,coords,&_coords));
+  PetscCall(DMGetCoordinateDM(stokes_da,&cda));
+  PetscCall(DMGetCoordinatesLocal(stokes_da,&coords));
+  PetscCall(DMDAVecGetArray(cda,coords,&_coords));
 
   /* setup for coefficients */
-  CHKERRQ(DMCreateLocalVector(properties_da,&local_properties));
-  CHKERRQ(DMGlobalToLocalBegin(properties_da,properties,INSERT_VALUES,local_properties));
-  CHKERRQ(DMGlobalToLocalEnd(properties_da,properties,INSERT_VALUES,local_properties));
-  CHKERRQ(DMDAVecGetArray(properties_da,local_properties,&props));
+  PetscCall(DMCreateLocalVector(properties_da,&local_properties));
+  PetscCall(DMGlobalToLocalBegin(properties_da,properties,INSERT_VALUES,local_properties));
+  PetscCall(DMGlobalToLocalEnd(properties_da,properties,INSERT_VALUES,local_properties));
+  PetscCall(DMDAVecGetArray(properties_da,local_properties,&props));
 
-  CHKERRQ(DMDAGetElementsCorners(stokes_da,&sex,&sey,NULL));
-  CHKERRQ(DMDAGetElementsSizes(stokes_da,&mx,&my,NULL));
+  PetscCall(DMDAGetElementsCorners(stokes_da,&sex,&sey,NULL));
+  PetscCall(DMDAGetElementsSizes(stokes_da,&mx,&my,NULL));
   for (ej = sey; ej < sey+my; ej++) {
     for (ei = sex; ei < sex+mx; ei++) {
       /* get coords for the element */
@@ -786,10 +786,10 @@ static PetscErrorCode AssembleA_PCStokes(Mat A,DM stokes_da,DM properties_da,Vec
       prop_eta = props[ej][ei].eta;
 
       /* initialise element stiffness matrix */
-      CHKERRQ(PetscMemzero(Ae,sizeof(Ae)));
-      CHKERRQ(PetscMemzero(Ge,sizeof(Ge)));
-      CHKERRQ(PetscMemzero(De,sizeof(De)));
-      CHKERRQ(PetscMemzero(Ce,sizeof(Ce)));
+      PetscCall(PetscMemzero(Ae,sizeof(Ae)));
+      PetscCall(PetscMemzero(Ge,sizeof(Ge)));
+      PetscCall(PetscMemzero(De,sizeof(De)));
+      PetscCall(PetscMemzero(Ce,sizeof(Ce)));
 
       /* form element stiffness matrix */
       FormStressOperatorQ1(Ae,el_coords,prop_eta);
@@ -797,19 +797,19 @@ static PetscErrorCode AssembleA_PCStokes(Mat A,DM stokes_da,DM properties_da,Vec
       FormScaledMassMatrixOperatorQ1(Ce,el_coords,prop_eta);
 
       /* insert element matrix into global matrix */
-      CHKERRQ(DMDAGetElementEqnums_up(u_eqn,p_eqn,ei,ej));
-      CHKERRQ(MatSetValuesStencil(A,NODES_PER_EL*U_DOFS,u_eqn,NODES_PER_EL*U_DOFS,u_eqn,Ae,ADD_VALUES));
-      CHKERRQ(MatSetValuesStencil(A,NODES_PER_EL*U_DOFS,u_eqn,NODES_PER_EL*P_DOFS,p_eqn,Ge,ADD_VALUES));
-      CHKERRQ(MatSetValuesStencil(A,NODES_PER_EL*P_DOFS,p_eqn,NODES_PER_EL*P_DOFS,p_eqn,Ce,ADD_VALUES));
+      PetscCall(DMDAGetElementEqnums_up(u_eqn,p_eqn,ei,ej));
+      PetscCall(MatSetValuesStencil(A,NODES_PER_EL*U_DOFS,u_eqn,NODES_PER_EL*U_DOFS,u_eqn,Ae,ADD_VALUES));
+      PetscCall(MatSetValuesStencil(A,NODES_PER_EL*U_DOFS,u_eqn,NODES_PER_EL*P_DOFS,p_eqn,Ge,ADD_VALUES));
+      PetscCall(MatSetValuesStencil(A,NODES_PER_EL*P_DOFS,p_eqn,NODES_PER_EL*P_DOFS,p_eqn,Ce,ADD_VALUES));
     }
   }
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
-  CHKERRQ(DMDAVecRestoreArray(cda,coords,&_coords));
+  PetscCall(DMDAVecRestoreArray(cda,coords,&_coords));
 
-  CHKERRQ(DMDAVecRestoreArray(properties_da,local_properties,&props));
-  CHKERRQ(VecDestroy(&local_properties));
+  PetscCall(DMDAVecRestoreArray(properties_da,local_properties,&props));
+  PetscCall(VecDestroy(&local_properties));
   PetscFunctionReturn(0);
 }
 
@@ -846,23 +846,23 @@ static PetscErrorCode AssembleF_Stokes(Vec F,DM stokes_da,DM properties_da,Vec p
 
   PetscFunctionBeginUser;
   /* setup for coords */
-  CHKERRQ(DMGetCoordinateDM(stokes_da,&cda));
-  CHKERRQ(DMGetCoordinatesLocal(stokes_da,&coords));
-  CHKERRQ(DMDAVecGetArray(cda,coords,&_coords));
+  PetscCall(DMGetCoordinateDM(stokes_da,&cda));
+  PetscCall(DMGetCoordinatesLocal(stokes_da,&coords));
+  PetscCall(DMDAVecGetArray(cda,coords,&_coords));
 
   /* setup for coefficients */
-  CHKERRQ(DMGetLocalVector(properties_da,&local_properties));
-  CHKERRQ(DMGlobalToLocalBegin(properties_da,properties,INSERT_VALUES,local_properties));
-  CHKERRQ(DMGlobalToLocalEnd(properties_da,properties,INSERT_VALUES,local_properties));
-  CHKERRQ(DMDAVecGetArray(properties_da,local_properties,&props));
+  PetscCall(DMGetLocalVector(properties_da,&local_properties));
+  PetscCall(DMGlobalToLocalBegin(properties_da,properties,INSERT_VALUES,local_properties));
+  PetscCall(DMGlobalToLocalEnd(properties_da,properties,INSERT_VALUES,local_properties));
+  PetscCall(DMDAVecGetArray(properties_da,local_properties,&props));
 
   /* get access to the vector */
-  CHKERRQ(DMGetLocalVector(stokes_da,&local_F));
-  CHKERRQ(VecZeroEntries(local_F));
-  CHKERRQ(DMDAVecGetArray(stokes_da,local_F,&ff));
+  PetscCall(DMGetLocalVector(stokes_da,&local_F));
+  PetscCall(VecZeroEntries(local_F));
+  PetscCall(DMDAVecGetArray(stokes_da,local_F,&ff));
 
-  CHKERRQ(DMDAGetElementsCorners(stokes_da,&sex,&sey,NULL));
-  CHKERRQ(DMDAGetElementsSizes(stokes_da,&mx,&my,NULL));
+  PetscCall(DMDAGetElementsCorners(stokes_da,&sex,&sey,NULL));
+  PetscCall(DMDAGetElementsSizes(stokes_da,&mx,&my,NULL));
   for (ej = sey; ej < sey+my; ej++) {
     for (ei = sex; ei < sex+mx; ei++) {
       /* get coords for the element */
@@ -873,28 +873,28 @@ static PetscErrorCode AssembleF_Stokes(Vec F,DM stokes_da,DM properties_da,Vec p
       prop_fy = props[ej][ei].fy;
 
       /* initialise element stiffness matrix */
-      CHKERRQ(PetscMemzero(Fe,sizeof(Fe)));
-      CHKERRQ(PetscMemzero(He,sizeof(He)));
+      PetscCall(PetscMemzero(Fe,sizeof(Fe)));
+      PetscCall(PetscMemzero(He,sizeof(He)));
 
       /* form element stiffness matrix */
       FormMomentumRhsQ1(Fe,el_coords,prop_fx,prop_fy);
 
       /* insert element matrix into global matrix */
-      CHKERRQ(DMDAGetElementEqnums_up(u_eqn,p_eqn,ei,ej));
+      PetscCall(DMDAGetElementEqnums_up(u_eqn,p_eqn,ei,ej));
 
-      CHKERRQ(DMDASetValuesLocalStencil_ADD_VALUES(ff,u_eqn,p_eqn,Fe,He));
+      PetscCall(DMDASetValuesLocalStencil_ADD_VALUES(ff,u_eqn,p_eqn,Fe,He));
     }
   }
 
-  CHKERRQ(DMDAVecRestoreArray(stokes_da,local_F,&ff));
-  CHKERRQ(DMLocalToGlobalBegin(stokes_da,local_F,ADD_VALUES,F));
-  CHKERRQ(DMLocalToGlobalEnd(stokes_da,local_F,ADD_VALUES,F));
-  CHKERRQ(DMRestoreLocalVector(stokes_da,&local_F));
+  PetscCall(DMDAVecRestoreArray(stokes_da,local_F,&ff));
+  PetscCall(DMLocalToGlobalBegin(stokes_da,local_F,ADD_VALUES,F));
+  PetscCall(DMLocalToGlobalEnd(stokes_da,local_F,ADD_VALUES,F));
+  PetscCall(DMRestoreLocalVector(stokes_da,&local_F));
 
-  CHKERRQ(DMDAVecRestoreArray(cda,coords,&_coords));
+  PetscCall(DMDAVecRestoreArray(cda,coords,&_coords));
 
-  CHKERRQ(DMDAVecRestoreArray(properties_da,local_properties,&props));
-  CHKERRQ(DMRestoreLocalVector(properties_da,&local_properties));
+  PetscCall(DMDAVecRestoreArray(properties_da,local_properties,&props));
+  PetscCall(DMRestoreLocalVector(properties_da,&local_properties));
   PetscFunctionReturn(0);
 }
 
@@ -908,23 +908,23 @@ static PetscErrorCode DMDACreateSolCx(PetscReal eta0,PetscReal eta1,PetscReal xc
   PetscInt       si,sj,ei,ej,i,j;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,mx+1,my+1,PETSC_DECIDE,PETSC_DECIDE,3,1,NULL,NULL,&da));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
-  CHKERRQ(DMDASetFieldName(da,0,"anlytic_Vx"));
-  CHKERRQ(DMDASetFieldName(da,1,"anlytic_Vy"));
-  CHKERRQ(DMDASetFieldName(da,2,"analytic_P"));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,mx+1,my+1,PETSC_DECIDE,PETSC_DECIDE,3,1,NULL,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMDASetFieldName(da,0,"anlytic_Vx"));
+  PetscCall(DMDASetFieldName(da,1,"anlytic_Vy"));
+  PetscCall(DMDASetFieldName(da,2,"analytic_P"));
 
-  CHKERRQ(DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.,0.));
+  PetscCall(DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.,0.));
 
-  CHKERRQ(DMGetCoordinatesLocal(da,&coords));
-  CHKERRQ(DMGetCoordinateDM(da,&cda));
-  CHKERRQ(DMDAVecGetArray(cda,coords,&_coords));
+  PetscCall(DMGetCoordinatesLocal(da,&coords));
+  PetscCall(DMGetCoordinateDM(da,&cda));
+  PetscCall(DMDAVecGetArray(cda,coords,&_coords));
 
-  CHKERRQ(DMCreateGlobalVector(da,&X));
-  CHKERRQ(DMDAVecGetArray(da,X,&_stokes));
+  PetscCall(DMCreateGlobalVector(da,&X));
+  PetscCall(DMDAVecGetArray(da,X,&_stokes));
 
-  CHKERRQ(DMDAGetCorners(da,&si,&sj,0,&ei,&ej,0));
+  PetscCall(DMDAGetCorners(da,&si,&sj,0,&ei,&ej,0));
   for (j = sj; j < sj+ej; j++) {
     for (i = si; i < si+ei; i++) {
       PetscReal pos[2],pressure,vel[2],total_stress[3],strain_rate[3];
@@ -939,8 +939,8 @@ static PetscErrorCode DMDACreateSolCx(PetscReal eta0,PetscReal eta1,PetscReal xc
       _stokes[j][i].p_dof = pressure;
     }
   }
-  CHKERRQ(DMDAVecRestoreArray(da,X,&_stokes));
-  CHKERRQ(DMDAVecRestoreArray(cda,coords,&_coords));
+  PetscCall(DMDAVecRestoreArray(da,X,&_stokes));
+  PetscCall(DMDAVecRestoreArray(cda,coords,&_coords));
 
   *_da = da;
   *_X  = X;
@@ -985,37 +985,37 @@ static PetscErrorCode DMDAIntegrateErrors(DM stokes_da,Vec X,Vec X_analytic)
   ConstructGaussQuadrature(&ngp,gp_xi,gp_weight);
 
   /* setup for coords */
-  CHKERRQ(DMGetCoordinateDM(stokes_da,&cda));
-  CHKERRQ(DMGetCoordinatesLocal(stokes_da,&coords));
-  CHKERRQ(DMDAVecGetArray(cda,coords,&_coords));
+  PetscCall(DMGetCoordinateDM(stokes_da,&cda));
+  PetscCall(DMGetCoordinatesLocal(stokes_da,&coords));
+  PetscCall(DMDAVecGetArray(cda,coords,&_coords));
 
   /* setup for analytic */
-  CHKERRQ(DMCreateLocalVector(stokes_da,&X_analytic_local));
-  CHKERRQ(DMGlobalToLocalBegin(stokes_da,X_analytic,INSERT_VALUES,X_analytic_local));
-  CHKERRQ(DMGlobalToLocalEnd(stokes_da,X_analytic,INSERT_VALUES,X_analytic_local));
-  CHKERRQ(DMDAVecGetArray(stokes_da,X_analytic_local,&stokes_analytic));
+  PetscCall(DMCreateLocalVector(stokes_da,&X_analytic_local));
+  PetscCall(DMGlobalToLocalBegin(stokes_da,X_analytic,INSERT_VALUES,X_analytic_local));
+  PetscCall(DMGlobalToLocalEnd(stokes_da,X_analytic,INSERT_VALUES,X_analytic_local));
+  PetscCall(DMDAVecGetArray(stokes_da,X_analytic_local,&stokes_analytic));
 
   /* setup for solution */
-  CHKERRQ(DMCreateLocalVector(stokes_da,&X_local));
-  CHKERRQ(DMGlobalToLocalBegin(stokes_da,X,INSERT_VALUES,X_local));
-  CHKERRQ(DMGlobalToLocalEnd(stokes_da,X,INSERT_VALUES,X_local));
-  CHKERRQ(DMDAVecGetArray(stokes_da,X_local,&stokes));
+  PetscCall(DMCreateLocalVector(stokes_da,&X_local));
+  PetscCall(DMGlobalToLocalBegin(stokes_da,X,INSERT_VALUES,X_local));
+  PetscCall(DMGlobalToLocalEnd(stokes_da,X,INSERT_VALUES,X_local));
+  PetscCall(DMDAVecGetArray(stokes_da,X_local,&stokes));
 
-  CHKERRQ(DMDAGetInfo(stokes_da,0,&M,0,0,0,0,0,0,0,0,0,0,0));
-  CHKERRQ(DMGetBoundingBox(stokes_da,xymin,xymax));
+  PetscCall(DMDAGetInfo(stokes_da,0,&M,0,0,0,0,0,0,0,0,0,0,0));
+  PetscCall(DMGetBoundingBox(stokes_da,xymin,xymax));
 
   h = (xymax[0]-xymin[0])/((PetscReal)M);
 
   tp_L2 = tu_L2 = tu_H1 = 0.0;
 
-  CHKERRQ(DMDAGetElementsCorners(stokes_da,&sex,&sey,NULL));
-  CHKERRQ(DMDAGetElementsSizes(stokes_da,&mx,&my,NULL));
+  PetscCall(DMDAGetElementsCorners(stokes_da,&sex,&sey,NULL));
+  PetscCall(DMDAGetElementsSizes(stokes_da,&mx,&my,NULL));
   for (ej = sey; ej < sey+my; ej++) {
     for (ei = sex; ei < sex+mx; ei++) {
       /* get coords for the element */
-      CHKERRQ(GetElementCoords(_coords,ei,ej,el_coords));
-      CHKERRQ(StokesDAGetNodalFields(stokes,ei,ej,stokes_e));
-      CHKERRQ(StokesDAGetNodalFields(stokes_analytic,ei,ej,stokes_analytic_e));
+      PetscCall(GetElementCoords(_coords,ei,ej,el_coords));
+      PetscCall(StokesDAGetNodalFields(stokes,ei,ej,stokes_e));
+      PetscCall(StokesDAGetNodalFields(stokes_analytic,ei,ej,stokes_analytic_e));
 
       /* evaluate integral */
       p_e_L2 = 0.0;
@@ -1048,21 +1048,21 @@ static PetscErrorCode DMDAIntegrateErrors(DM stokes_da,Vec X,Vec X_analytic)
       tu_H1 += u_e_H1;
     }
   }
-  CHKERRMPI(MPI_Allreduce(&tp_L2,&p_L2,1,MPIU_SCALAR,MPIU_SUM,PETSC_COMM_WORLD));
-  CHKERRMPI(MPI_Allreduce(&tu_L2,&u_L2,1,MPIU_SCALAR,MPIU_SUM,PETSC_COMM_WORLD));
-  CHKERRMPI(MPI_Allreduce(&tu_H1,&u_H1,1,MPIU_SCALAR,MPIU_SUM,PETSC_COMM_WORLD));
+  PetscCallMPI(MPI_Allreduce(&tp_L2,&p_L2,1,MPIU_SCALAR,MPIU_SUM,PETSC_COMM_WORLD));
+  PetscCallMPI(MPI_Allreduce(&tu_L2,&u_L2,1,MPIU_SCALAR,MPIU_SUM,PETSC_COMM_WORLD));
+  PetscCallMPI(MPI_Allreduce(&tu_H1,&u_H1,1,MPIU_SCALAR,MPIU_SUM,PETSC_COMM_WORLD));
   p_L2 = PetscSqrtScalar(p_L2);
   u_L2 = PetscSqrtScalar(u_L2);
   u_H1 = PetscSqrtScalar(u_H1);
 
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"%1.4e   %1.4e   %1.4e   %1.4e\n",(double)PetscRealPart(h),(double)PetscRealPart(p_L2),(double)PetscRealPart(u_L2),(double)PetscRealPart(u_H1)));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%1.4e   %1.4e   %1.4e   %1.4e\n",(double)PetscRealPart(h),(double)PetscRealPart(p_L2),(double)PetscRealPart(u_L2),(double)PetscRealPart(u_H1)));
 
-  CHKERRQ(DMDAVecRestoreArray(cda,coords,&_coords));
+  PetscCall(DMDAVecRestoreArray(cda,coords,&_coords));
 
-  CHKERRQ(DMDAVecRestoreArray(stokes_da,X_analytic_local,&stokes_analytic));
-  CHKERRQ(VecDestroy(&X_analytic_local));
-  CHKERRQ(DMDAVecRestoreArray(stokes_da,X_local,&stokes));
-  CHKERRQ(VecDestroy(&X_local));
+  PetscCall(DMDAVecRestoreArray(stokes_da,X_analytic_local,&stokes_analytic));
+  PetscCall(VecDestroy(&X_analytic_local));
+  PetscCall(DMDAVecRestoreArray(stokes_da,X_local,&stokes));
+  PetscCall(VecDestroy(&X_local));
   PetscFunctionReturn(0);
 }
 
@@ -1090,9 +1090,9 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
 
   PetscFunctionBeginUser;
 
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-gnuplot",&output_gnuplot,NULL));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-glvis",&glvis,NULL));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-change",&change,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-gnuplot",&output_gnuplot,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-glvis",&glvis,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-change",&change,NULL));
 
   /* Generate the da for velocity and pressure */
   /*
@@ -1104,54 +1104,54 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
   p_dof         = P_DOFS; /* p - pressure */
   dof           = u_dof+p_dof;
   stencil_width = 1;
-  CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,mx+1,my+1,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,NULL,NULL,&da_Stokes));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,mx+1,my+1,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,NULL,NULL,&da_Stokes));
 
-  CHKERRQ(DMSetMatType(da_Stokes,MATAIJ));
-  CHKERRQ(DMSetFromOptions(da_Stokes));
-  CHKERRQ(DMSetUp(da_Stokes));
-  CHKERRQ(DMDASetFieldName(da_Stokes,0,"Vx"));
-  CHKERRQ(DMDASetFieldName(da_Stokes,1,"Vy"));
-  CHKERRQ(DMDASetFieldName(da_Stokes,2,"P"));
+  PetscCall(DMSetMatType(da_Stokes,MATAIJ));
+  PetscCall(DMSetFromOptions(da_Stokes));
+  PetscCall(DMSetUp(da_Stokes));
+  PetscCall(DMDASetFieldName(da_Stokes,0,"Vx"));
+  PetscCall(DMDASetFieldName(da_Stokes,1,"Vy"));
+  PetscCall(DMDASetFieldName(da_Stokes,2,"P"));
 
   /* unit box [0,1] x [0,1] */
-  CHKERRQ(DMDASetUniformCoordinates(da_Stokes,0.0,1.0,0.0,1.0,0.,0.));
+  PetscCall(DMDASetUniformCoordinates(da_Stokes,0.0,1.0,0.0,1.0,0.,0.));
 
   /* Generate element properties, we will assume all material properties are constant over the element */
   /* !!! IN PARALLEL WE MUST MAKE SURE THE TWO DMDA's ALIGN !!!  */
-  CHKERRQ(DMDAGetInfo(da_Stokes,0,0,0,0,&cpu_x,&cpu_y,0,0,0,0,0,0,0));
-  CHKERRQ(DMDAGetElementOwnershipRanges2d(da_Stokes,&lx,&ly));
+  PetscCall(DMDAGetInfo(da_Stokes,0,0,0,0,&cpu_x,&cpu_y,0,0,0,0,0,0,0));
+  PetscCall(DMDAGetElementOwnershipRanges2d(da_Stokes,&lx,&ly));
 
   prop_dof           = (int)(sizeof(GaussPointCoefficients)/sizeof(PetscScalar)); /* gauss point setup */
   prop_stencil_width = 0;
-  CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,mx,my,cpu_x,cpu_y,prop_dof,prop_stencil_width,lx,ly,&da_prop));
-  CHKERRQ(DMSetFromOptions(da_prop));
-  CHKERRQ(DMSetUp(da_prop));
-  CHKERRQ(PetscFree(lx));
-  CHKERRQ(PetscFree(ly));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,mx,my,cpu_x,cpu_y,prop_dof,prop_stencil_width,lx,ly,&da_prop));
+  PetscCall(DMSetFromOptions(da_prop));
+  PetscCall(DMSetUp(da_prop));
+  PetscCall(PetscFree(lx));
+  PetscCall(PetscFree(ly));
 
   /* define centroid positions */
-  CHKERRQ(DMDAGetInfo(da_prop,0,&M,&N,0,0,0,0,0,0,0,0,0,0));
+  PetscCall(DMDAGetInfo(da_prop,0,&M,&N,0,0,0,0,0,0,0,0,0,0));
   dx   = 1.0/((PetscReal)(M));
   dy   = 1.0/((PetscReal)(N));
 
-  CHKERRQ(DMDASetUniformCoordinates(da_prop,0.0+0.5*dx,1.0-0.5*dx,0.0+0.5*dy,1.0-0.5*dy,0.,0));
+  PetscCall(DMDASetUniformCoordinates(da_prop,0.0+0.5*dx,1.0-0.5*dx,0.0+0.5*dy,1.0-0.5*dy,0.,0));
 
   /* define coefficients */
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-c_str",&coefficient_structure,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-c_str",&coefficient_structure,NULL));
 
-  CHKERRQ(DMCreateGlobalVector(da_prop,&properties));
-  CHKERRQ(DMCreateLocalVector(da_prop,&l_properties));
-  CHKERRQ(DMDAVecGetArray(da_prop,l_properties,&element_props));
+  PetscCall(DMCreateGlobalVector(da_prop,&properties));
+  PetscCall(DMCreateLocalVector(da_prop,&l_properties));
+  PetscCall(DMDAVecGetArray(da_prop,l_properties,&element_props));
 
-  CHKERRQ(DMGetCoordinateDM(da_prop,&prop_cda));
-  CHKERRQ(DMGetCoordinatesLocal(da_prop,&prop_coords));
-  CHKERRQ(DMDAVecGetArray(prop_cda,prop_coords,&_prop_coords));
+  PetscCall(DMGetCoordinateDM(da_prop,&prop_cda));
+  PetscCall(DMGetCoordinatesLocal(da_prop,&prop_coords));
+  PetscCall(DMDAVecGetArray(prop_cda,prop_coords,&_prop_coords));
 
-  CHKERRQ(DMDAGetGhostCorners(prop_cda,&si,&sj,0,&nx,&ny,0));
+  PetscCall(DMDAGetGhostCorners(prop_cda,&si,&sj,0,&nx,&ny,0));
 
-  CHKERRQ(DMGetCoordinateDM(da_Stokes,&vel_cda));
-  CHKERRQ(DMGetCoordinatesLocal(da_Stokes,&vel_coords));
-  CHKERRQ(DMDAVecGetArray(vel_cda,vel_coords,&_vel_coords));
+  PetscCall(DMGetCoordinateDM(da_Stokes,&vel_cda));
+  PetscCall(DMGetCoordinatesLocal(da_Stokes,&vel_coords));
+  PetscCall(DMDAVecGetArray(vel_cda,vel_coords,&_vel_coords));
 
   /* interpolate the coordinates */
   for (j = sj; j < sj+ny; j++) {
@@ -1160,7 +1160,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
       PetscScalar gp_xi[GAUSS_POINTS][2],gp_weight[GAUSS_POINTS];
       PetscScalar el_coords[8];
 
-      CHKERRQ(GetElementCoords(_vel_coords,i,j,el_coords));
+      PetscCall(GetElementCoords(_vel_coords,i,j,el_coords));
       ConstructGaussQuadrature(&ngp,gp_xi,gp_weight);
 
       for (p = 0; p < GAUSS_POINTS; p++) {
@@ -1185,7 +1185,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
   }
 
   /* define the coefficients */
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-use_gp_coords",&use_gp_coords,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-use_gp_coords",&use_gp_coords,NULL));
 
   for (j = sj; j < sj+ny; j++) {
     for (i = si; i < si+nx; i++) {
@@ -1202,10 +1202,10 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
         opts_xc   = 0.5;
         opts_nz   = 1;
 
-        CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-solcx_eta0",&opts_eta0,NULL));
-        CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-solcx_eta1",&opts_eta1,NULL));
-        CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-solcx_xc",&opts_xc,NULL));
-        CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-solcx_nz",&opts_nz,NULL));
+        PetscCall(PetscOptionsGetReal(NULL,NULL,"-solcx_eta0",&opts_eta0,NULL));
+        PetscCall(PetscOptionsGetReal(NULL,NULL,"-solcx_eta1",&opts_eta1,NULL));
+        PetscCall(PetscOptionsGetReal(NULL,NULL,"-solcx_xc",&opts_xc,NULL));
+        PetscCall(PetscOptionsGetInt(NULL,NULL,"-solcx_nz",&opts_nz,NULL));
 
         for (p = 0; p < GAUSS_POINTS; p++) {
           coord_x = centroid_x;
@@ -1229,10 +1229,10 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
         opts_dx   = 0.50;
         opts_dy   = 0.50;
 
-        CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-sinker_eta0",&opts_eta0,NULL));
-        CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-sinker_eta1",&opts_eta1,NULL));
-        CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-sinker_dx",&opts_dx,NULL));
-        CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-sinker_dy",&opts_dy,NULL));
+        PetscCall(PetscOptionsGetReal(NULL,NULL,"-sinker_eta0",&opts_eta0,NULL));
+        PetscCall(PetscOptionsGetReal(NULL,NULL,"-sinker_eta1",&opts_eta1,NULL));
+        PetscCall(PetscOptionsGetReal(NULL,NULL,"-sinker_dx",&opts_dx,NULL));
+        PetscCall(PetscOptionsGetReal(NULL,NULL,"-sinker_dy",&opts_dy,NULL));
 
         for (p = 0; p < GAUSS_POINTS; p++) {
           coord_x = centroid_x;
@@ -1261,9 +1261,9 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
         opts_eta1 = 1.0;
         opts_r    = 0.25;
 
-        CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-sinker_eta0",&opts_eta0,NULL));
-        CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-sinker_eta1",&opts_eta1,NULL));
-        CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-sinker_r",&opts_r,NULL));
+        PetscCall(PetscOptionsGetReal(NULL,NULL,"-sinker_eta0",&opts_eta0,NULL));
+        PetscCall(PetscOptionsGetReal(NULL,NULL,"-sinker_eta1",&opts_eta1,NULL));
+        PetscCall(PetscOptionsGetReal(NULL,NULL,"-sinker_r",&opts_r,NULL));
 
         for (p = 0; p < GAUSS_POINTS; p++) {
           coord_x = centroid_x;
@@ -1298,16 +1298,16 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
         opts_dy   = 0.25;
         opts_phi  = 25;
 
-        CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-sinker_eta0",&opts_eta0,NULL));
-        CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-sinker_eta1",&opts_eta1,NULL));
-        CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-sinker_r",&opts_r,NULL));
-        CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-sinker_c0x",&opts_c0x,NULL));
-        CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-sinker_c0y",&opts_c0y,NULL));
-        CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-sinker_s0x",&opts_s0x,NULL));
-        CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-sinker_s0y",&opts_s0y,NULL));
-        CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-sinker_dx",&opts_dx,NULL));
-        CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-sinker_dy",&opts_dy,NULL));
-        CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-sinker_phi",&opts_phi,NULL));
+        PetscCall(PetscOptionsGetReal(NULL,NULL,"-sinker_eta0",&opts_eta0,NULL));
+        PetscCall(PetscOptionsGetReal(NULL,NULL,"-sinker_eta1",&opts_eta1,NULL));
+        PetscCall(PetscOptionsGetReal(NULL,NULL,"-sinker_r",&opts_r,NULL));
+        PetscCall(PetscOptionsGetReal(NULL,NULL,"-sinker_c0x",&opts_c0x,NULL));
+        PetscCall(PetscOptionsGetReal(NULL,NULL,"-sinker_c0y",&opts_c0y,NULL));
+        PetscCall(PetscOptionsGetReal(NULL,NULL,"-sinker_s0x",&opts_s0x,NULL));
+        PetscCall(PetscOptionsGetReal(NULL,NULL,"-sinker_s0y",&opts_s0y,NULL));
+        PetscCall(PetscOptionsGetReal(NULL,NULL,"-sinker_dx",&opts_dx,NULL));
+        PetscCall(PetscOptionsGetReal(NULL,NULL,"-sinker_dy",&opts_dy,NULL));
+        PetscCall(PetscOptionsGetReal(NULL,NULL,"-sinker_phi",&opts_phi,NULL));
         opts_phi *= PETSC_PI / 180;
 
         for (p = 0; p < GAUSS_POINTS; p++) {
@@ -1340,10 +1340,10 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
         opts_eta0 = 1.0;
         opts_nz   = 1;
 
-        CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-jump_eta0",&opts_eta0,NULL));
-        CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-jump_magnitude",&opts_mag,NULL));
-        CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-jump_nz",&opts_nz,NULL));
-        CHKERRQ(DMDAGetInfo(da_Stokes,NULL,NULL,NULL,NULL,&px,&py,NULL,NULL,NULL,NULL,NULL,NULL,NULL));
+        PetscCall(PetscOptionsGetReal(NULL,NULL,"-jump_eta0",&opts_eta0,NULL));
+        PetscCall(PetscOptionsGetReal(NULL,NULL,"-jump_magnitude",&opts_mag,NULL));
+        PetscCall(PetscOptionsGetInt(NULL,NULL,"-jump_nz",&opts_nz,NULL));
+        PetscCall(DMDAGetInfo(da_Stokes,NULL,NULL,NULL,NULL,&px,&py,NULL,NULL,NULL,NULL,NULL,NULL,NULL));
         if (px%2) {
           jump = (PetscBool)(PetscGlobalRank%2);
         } else {
@@ -1364,17 +1364,17 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
       } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Unknown coefficient_structure");
     }
   }
-  CHKERRQ(DMDAVecRestoreArray(prop_cda,prop_coords,&_prop_coords));
+  PetscCall(DMDAVecRestoreArray(prop_cda,prop_coords,&_prop_coords));
 
-  CHKERRQ(DMDAVecRestoreArray(vel_cda,vel_coords,&_vel_coords));
+  PetscCall(DMDAVecRestoreArray(vel_cda,vel_coords,&_vel_coords));
 
-  CHKERRQ(DMDAVecRestoreArray(da_prop,l_properties,&element_props));
-  CHKERRQ(DMLocalToGlobalBegin(da_prop,l_properties,ADD_VALUES,properties));
-  CHKERRQ(DMLocalToGlobalEnd(da_prop,l_properties,ADD_VALUES,properties));
+  PetscCall(DMDAVecRestoreArray(da_prop,l_properties,&element_props));
+  PetscCall(DMLocalToGlobalBegin(da_prop,l_properties,ADD_VALUES,properties));
+  PetscCall(DMLocalToGlobalEnd(da_prop,l_properties,ADD_VALUES,properties));
 
   if (output_gnuplot) {
-    CHKERRQ(DMDACoordViewGnuplot2d(da_Stokes,"mesh"));
-    CHKERRQ(DMDAViewCoefficientsGnuplot2d(da_prop,properties,"Coefficients for Stokes eqn.","properties"));
+    PetscCall(DMDACoordViewGnuplot2d(da_Stokes,"mesh"));
+    PetscCall(DMDAViewCoefficientsGnuplot2d(da_prop,properties,"Coefficients for Stokes eqn.","properties"));
   }
 
   if (glvis) {
@@ -1383,82 +1383,82 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
     PetscInt    dim;
     const char  *fec = {"FiniteElementCollection: L2_2D_P1"};
 
-    CHKERRQ(DMGetDimension(da_Stokes,&dim));
-    CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,GAUSS_POINTS*mx*mx,&etaf));
-    CHKERRQ(PetscObjectSetName((PetscObject)etaf,"viscosity"));
-    CHKERRQ(PetscViewerGLVisOpen(PETSC_COMM_WORLD,PETSC_VIEWER_GLVIS_SOCKET,NULL,PETSC_DECIDE,&view));
-    CHKERRQ(PetscViewerGLVisSetFields(view,1,&fec,&dim,glvis_extract_eta,(PetscObject*)&etaf,da_prop,NULL));
-    CHKERRQ(DMGetLocalVector(da_prop,&glv_prop));
-    CHKERRQ(DMGlobalToLocalBegin(da_prop,properties,INSERT_VALUES,glv_prop));
-    CHKERRQ(DMGlobalToLocalEnd(da_prop,properties,INSERT_VALUES,glv_prop));
-    CHKERRQ(VecSetDM(etaf,da_Stokes));
-    CHKERRQ(VecView(glv_prop,view));
-    CHKERRQ(PetscViewerDestroy(&view));
-    CHKERRQ(DMRestoreLocalVector(da_prop,&glv_prop));
-    CHKERRQ(VecDestroy(&etaf));
+    PetscCall(DMGetDimension(da_Stokes,&dim));
+    PetscCall(VecCreateSeq(PETSC_COMM_SELF,GAUSS_POINTS*mx*mx,&etaf));
+    PetscCall(PetscObjectSetName((PetscObject)etaf,"viscosity"));
+    PetscCall(PetscViewerGLVisOpen(PETSC_COMM_WORLD,PETSC_VIEWER_GLVIS_SOCKET,NULL,PETSC_DECIDE,&view));
+    PetscCall(PetscViewerGLVisSetFields(view,1,&fec,&dim,glvis_extract_eta,(PetscObject*)&etaf,da_prop,NULL));
+    PetscCall(DMGetLocalVector(da_prop,&glv_prop));
+    PetscCall(DMGlobalToLocalBegin(da_prop,properties,INSERT_VALUES,glv_prop));
+    PetscCall(DMGlobalToLocalEnd(da_prop,properties,INSERT_VALUES,glv_prop));
+    PetscCall(VecSetDM(etaf,da_Stokes));
+    PetscCall(VecView(glv_prop,view));
+    PetscCall(PetscViewerDestroy(&view));
+    PetscCall(DMRestoreLocalVector(da_prop,&glv_prop));
+    PetscCall(VecDestroy(&etaf));
   }
 
   /* Generate a matrix with the correct non-zero pattern of type AIJ. This will work in parallel and serial */
-  CHKERRQ(DMCreateMatrix(da_Stokes,&A));
-  CHKERRQ(DMCreateMatrix(da_Stokes,&B));
-  CHKERRQ(DMCreateGlobalVector(da_Stokes,&f));
-  CHKERRQ(DMCreateGlobalVector(da_Stokes,&X));
+  PetscCall(DMCreateMatrix(da_Stokes,&A));
+  PetscCall(DMCreateMatrix(da_Stokes,&B));
+  PetscCall(DMCreateGlobalVector(da_Stokes,&f));
+  PetscCall(DMCreateGlobalVector(da_Stokes,&X));
 
   /* assemble A11 */
-  CHKERRQ(MatZeroEntries(A));
-  CHKERRQ(MatZeroEntries(B));
-  CHKERRQ(VecZeroEntries(f));
+  PetscCall(MatZeroEntries(A));
+  PetscCall(MatZeroEntries(B));
+  PetscCall(VecZeroEntries(f));
 
-  CHKERRQ(AssembleA_Stokes(A,da_Stokes,da_prop,properties));
-  CHKERRQ(AssembleA_PCStokes(B,da_Stokes,da_prop,properties));
+  PetscCall(AssembleA_Stokes(A,da_Stokes,da_prop,properties));
+  PetscCall(AssembleA_PCStokes(B,da_Stokes,da_prop,properties));
   /* build force vector */
-  CHKERRQ(AssembleF_Stokes(f,da_Stokes,da_prop,properties));
+  PetscCall(AssembleF_Stokes(f,da_Stokes,da_prop,properties));
 
-  CHKERRQ(DMDABCApplyFreeSlip(da_Stokes,A,f));
-  CHKERRQ(DMDABCApplyFreeSlip(da_Stokes,B,NULL));
+  PetscCall(DMDABCApplyFreeSlip(da_Stokes,A,f));
+  PetscCall(DMDABCApplyFreeSlip(da_Stokes,B,NULL));
 
   /* SOLVE */
-  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp_S));
-  CHKERRQ(KSPSetOptionsPrefix(ksp_S,"stokes_"));
-  CHKERRQ(KSPSetDM(ksp_S,da_Stokes));
-  CHKERRQ(KSPSetDMActive(ksp_S,PETSC_FALSE));
-  CHKERRQ(KSPSetOperators(ksp_S,A,B));
-  CHKERRQ(KSPSetFromOptions(ksp_S));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp_S));
+  PetscCall(KSPSetOptionsPrefix(ksp_S,"stokes_"));
+  PetscCall(KSPSetDM(ksp_S,da_Stokes));
+  PetscCall(KSPSetDMActive(ksp_S,PETSC_FALSE));
+  PetscCall(KSPSetOperators(ksp_S,A,B));
+  PetscCall(KSPSetFromOptions(ksp_S));
   {
     PC             pc;
     const PetscInt ufields[] = {0,1},pfields[1] = {2};
 
-    CHKERRQ(KSPGetPC(ksp_S,&pc));
-    CHKERRQ(PCFieldSplitSetBlockSize(pc,3));
-    CHKERRQ(PCFieldSplitSetFields(pc,"u",2,ufields,ufields));
-    CHKERRQ(PCFieldSplitSetFields(pc,"p",1,pfields,pfields));
+    PetscCall(KSPGetPC(ksp_S,&pc));
+    PetscCall(PCFieldSplitSetBlockSize(pc,3));
+    PetscCall(PCFieldSplitSetFields(pc,"u",2,ufields,ufields));
+    PetscCall(PCFieldSplitSetFields(pc,"p",1,pfields,pfields));
   }
 
   {
     PC        pc;
     PetscBool same = PETSC_FALSE;
-    CHKERRQ(KSPGetPC(ksp_S,&pc));
-    CHKERRQ(PetscObjectTypeCompare((PetscObject)pc,PCBDDC,&same));
+    PetscCall(KSPGetPC(ksp_S,&pc));
+    PetscCall(PetscObjectTypeCompare((PetscObject)pc,PCBDDC,&same));
     if (same) {
       PetscBool usedivmat = PETSC_FALSE;
-      CHKERRQ(KSPSetOperators(ksp_S,A,A));
+      PetscCall(KSPSetOperators(ksp_S,A,A));
 
-      CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-stokes_pc_bddc_use_divergence",&usedivmat,NULL));
+      PetscCall(PetscOptionsGetBool(NULL,NULL,"-stokes_pc_bddc_use_divergence",&usedivmat,NULL));
       if (usedivmat) {
         IS       *fields,vel;
         PetscInt i,nf;
 
-        CHKERRQ(DMCreateFieldDecomposition(da_Stokes,&nf,NULL,&fields,NULL));
-        CHKERRQ(ISConcatenate(PETSC_COMM_WORLD,2,fields,&vel));
-        CHKERRQ(MatZeroRowsIS(B,fields[2],1.0,NULL,NULL)); /* we put 1.0 on the diagonal to pick the pressure average too */
-        CHKERRQ(MatTranspose(B,MAT_INPLACE_MATRIX,&B));
-        CHKERRQ(MatZeroRowsIS(B,vel,0.0,NULL,NULL));
-        CHKERRQ(ISDestroy(&vel));
-        CHKERRQ(PCBDDCSetDivergenceMat(pc,B,PETSC_FALSE,NULL));
+        PetscCall(DMCreateFieldDecomposition(da_Stokes,&nf,NULL,&fields,NULL));
+        PetscCall(ISConcatenate(PETSC_COMM_WORLD,2,fields,&vel));
+        PetscCall(MatZeroRowsIS(B,fields[2],1.0,NULL,NULL)); /* we put 1.0 on the diagonal to pick the pressure average too */
+        PetscCall(MatTranspose(B,MAT_INPLACE_MATRIX,&B));
+        PetscCall(MatZeroRowsIS(B,vel,0.0,NULL,NULL));
+        PetscCall(ISDestroy(&vel));
+        PetscCall(PCBDDCSetDivergenceMat(pc,B,PETSC_FALSE,NULL));
         for (i=0;i<nf;i++) {
-          CHKERRQ(ISDestroy(&fields[i]));
+          PetscCall(ISDestroy(&fields[i]));
         }
-        CHKERRQ(PetscFree(fields));
+        PetscCall(PetscFree(fields));
       }
     }
   }
@@ -1470,67 +1470,67 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
     DM        da_U;
     PetscBool is_pcfs;
 
-    CHKERRQ(KSPSetUp(ksp_S));
-    CHKERRQ(KSPGetPC(ksp_S,&pc_S));
+    PetscCall(KSPSetUp(ksp_S));
+    PetscCall(KSPGetPC(ksp_S,&pc_S));
 
     is_pcfs = PETSC_FALSE;
-    CHKERRQ(PetscObjectTypeCompare((PetscObject)pc_S,PCFIELDSPLIT,&is_pcfs));
+    PetscCall(PetscObjectTypeCompare((PetscObject)pc_S,PCFIELDSPLIT,&is_pcfs));
 
     if (is_pcfs) {
-      CHKERRQ(PCFieldSplitGetSubKSP(pc_S,&nsplits,&sub_ksp));
+      PetscCall(PCFieldSplitGetSubKSP(pc_S,&nsplits,&sub_ksp));
       ksp_U = sub_ksp[0];
-      CHKERRQ(PetscFree(sub_ksp));
+      PetscCall(PetscFree(sub_ksp));
 
       if (nsplits == 2) {
-        CHKERRQ(DMDACreateCompatibleDMDA(da_Stokes,2,&da_U));
+        PetscCall(DMDACreateCompatibleDMDA(da_Stokes,2,&da_U));
 
-        CHKERRQ(KSPSetDM(ksp_U,da_U));
-        CHKERRQ(KSPSetDMActive(ksp_U,PETSC_FALSE));
-        CHKERRQ(DMDestroy(&da_U));
+        PetscCall(KSPSetDM(ksp_U,da_U));
+        PetscCall(KSPSetDMActive(ksp_U,PETSC_FALSE));
+        PetscCall(DMDestroy(&da_U));
         if (change) {
           const char opt[] = "-stokes_fieldsplit_u_pc_factor_mat_solver_type mumps";
-          CHKERRQ(PetscOptionsInsertString(NULL,opt));
-          CHKERRQ(KSPSetFromOptions(ksp_U));
+          PetscCall(PetscOptionsInsertString(NULL,opt));
+          PetscCall(KSPSetFromOptions(ksp_U));
         }
-        CHKERRQ(KSPSetUp(ksp_U));
+        PetscCall(KSPSetUp(ksp_U));
       }
     }
   }
 
-  CHKERRQ(KSPSolve(ksp_S,f,X));
+  PetscCall(KSPSolve(ksp_S,f,X));
 
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-o",filename,sizeof(filename),&set));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-o",filename,sizeof(filename),&set));
   if (set) {
     char        *ext;
     PetscViewer viewer;
     PetscBool   flg;
-    CHKERRQ(PetscViewerCreate(PETSC_COMM_WORLD,&viewer));
-    CHKERRQ(PetscStrrchr(filename,'.',&ext));
-    CHKERRQ(PetscStrcmp("vts",ext,&flg));
+    PetscCall(PetscViewerCreate(PETSC_COMM_WORLD,&viewer));
+    PetscCall(PetscStrrchr(filename,'.',&ext));
+    PetscCall(PetscStrcmp("vts",ext,&flg));
     if (flg) {
-      CHKERRQ(PetscViewerSetType(viewer,PETSCVIEWERVTK));
+      PetscCall(PetscViewerSetType(viewer,PETSCVIEWERVTK));
     } else {
-      CHKERRQ(PetscViewerSetType(viewer,PETSCVIEWERBINARY));
+      PetscCall(PetscViewerSetType(viewer,PETSCVIEWERBINARY));
     }
-    CHKERRQ(PetscViewerFileSetMode(viewer,FILE_MODE_WRITE));
-    CHKERRQ(PetscViewerFileSetName(viewer,filename));
-    CHKERRQ(VecView(X,viewer));
-    CHKERRQ(PetscViewerDestroy(&viewer));
+    PetscCall(PetscViewerFileSetMode(viewer,FILE_MODE_WRITE));
+    PetscCall(PetscViewerFileSetName(viewer,filename));
+    PetscCall(VecView(X,viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
   }
   if (output_gnuplot) {
-    CHKERRQ(DMDAViewGnuplot2d(da_Stokes,X,"Velocity solution for Stokes eqn.","X"));
+    PetscCall(DMDAViewGnuplot2d(da_Stokes,X,"Velocity solution for Stokes eqn.","X"));
   }
 
   if (glvis) {
     PetscViewer view;
 
-    CHKERRQ(PetscViewerCreate(PETSC_COMM_WORLD,&view));
-    CHKERRQ(PetscViewerSetType(view,PETSCVIEWERGLVIS));
-    CHKERRQ(VecView(X,view));
-    CHKERRQ(PetscViewerDestroy(&view));
+    PetscCall(PetscViewerCreate(PETSC_COMM_WORLD,&view));
+    PetscCall(PetscViewerSetType(view,PETSCVIEWERGLVIS));
+    PetscCall(VecView(X,view));
+    PetscCall(PetscViewerDestroy(&view));
   }
 
-  CHKERRQ(KSPGetIterationNumber(ksp_S,&its));
+  PetscCall(KSPGetIterationNumber(ksp_S,&its));
 
   if (coefficient_structure == 0) {
     PetscReal opts_eta0,opts_eta1,opts_xc;
@@ -1544,48 +1544,48 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
     opts_xc   = 0.5;
     opts_nz   = 1;
 
-    CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-solcx_eta0",&opts_eta0,NULL));
-    CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-solcx_eta1",&opts_eta1,NULL));
-    CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-solcx_xc",&opts_xc,NULL));
-    CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-solcx_nz",&opts_nz,NULL));
+    PetscCall(PetscOptionsGetReal(NULL,NULL,"-solcx_eta0",&opts_eta0,NULL));
+    PetscCall(PetscOptionsGetReal(NULL,NULL,"-solcx_eta1",&opts_eta1,NULL));
+    PetscCall(PetscOptionsGetReal(NULL,NULL,"-solcx_xc",&opts_xc,NULL));
+    PetscCall(PetscOptionsGetInt(NULL,NULL,"-solcx_nz",&opts_nz,NULL));
 
-    CHKERRQ(DMDACreateSolCx(opts_eta0,opts_eta1,opts_xc,opts_nz,mx,my,&da_Stokes_analytic,&X_analytic));
+    PetscCall(DMDACreateSolCx(opts_eta0,opts_eta1,opts_xc,opts_nz,mx,my,&da_Stokes_analytic,&X_analytic));
     if (output_gnuplot) {
-      CHKERRQ(DMDAViewGnuplot2d(da_Stokes_analytic,X_analytic,"Analytic solution for Stokes eqn.","X_analytic"));
+      PetscCall(DMDAViewGnuplot2d(da_Stokes_analytic,X_analytic,"Analytic solution for Stokes eqn.","X_analytic"));
     }
-    CHKERRQ(DMDAIntegrateErrors(da_Stokes_analytic,X,X_analytic));
+    PetscCall(DMDAIntegrateErrors(da_Stokes_analytic,X,X_analytic));
 
-    CHKERRQ(VecAXPY(X_analytic,-1.0,X));
-    CHKERRQ(VecGetSize(X_analytic,&N));
+    PetscCall(VecAXPY(X_analytic,-1.0,X));
+    PetscCall(VecGetSize(X_analytic,&N));
     N    = N/3;
 
-    CHKERRQ(VecStrideNorm(X_analytic,0,NORM_1,&nrm1[0]));
-    CHKERRQ(VecStrideNorm(X_analytic,0,NORM_2,&nrm2[0]));
-    CHKERRQ(VecStrideNorm(X_analytic,0,NORM_INFINITY,&nrmI[0]));
+    PetscCall(VecStrideNorm(X_analytic,0,NORM_1,&nrm1[0]));
+    PetscCall(VecStrideNorm(X_analytic,0,NORM_2,&nrm2[0]));
+    PetscCall(VecStrideNorm(X_analytic,0,NORM_INFINITY,&nrmI[0]));
 
-    CHKERRQ(VecStrideNorm(X_analytic,1,NORM_1,&nrm1[1]));
-    CHKERRQ(VecStrideNorm(X_analytic,1,NORM_2,&nrm2[1]));
-    CHKERRQ(VecStrideNorm(X_analytic,1,NORM_INFINITY,&nrmI[1]));
+    PetscCall(VecStrideNorm(X_analytic,1,NORM_1,&nrm1[1]));
+    PetscCall(VecStrideNorm(X_analytic,1,NORM_2,&nrm2[1]));
+    PetscCall(VecStrideNorm(X_analytic,1,NORM_INFINITY,&nrmI[1]));
 
-    CHKERRQ(VecStrideNorm(X_analytic,2,NORM_1,&nrm1[2]));
-    CHKERRQ(VecStrideNorm(X_analytic,2,NORM_2,&nrm2[2]));
-    CHKERRQ(VecStrideNorm(X_analytic,2,NORM_INFINITY,&nrmI[2]));
+    PetscCall(VecStrideNorm(X_analytic,2,NORM_1,&nrm1[2]));
+    PetscCall(VecStrideNorm(X_analytic,2,NORM_2,&nrm2[2]));
+    PetscCall(VecStrideNorm(X_analytic,2,NORM_INFINITY,&nrmI[2]));
 
-    CHKERRQ(DMDestroy(&da_Stokes_analytic));
-    CHKERRQ(VecDestroy(&X_analytic));
+    PetscCall(DMDestroy(&da_Stokes_analytic));
+    PetscCall(VecDestroy(&X_analytic));
   }
 
-  CHKERRQ(KSPDestroy(&ksp_S));
-  CHKERRQ(VecDestroy(&X));
-  CHKERRQ(VecDestroy(&f));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(MatDestroy(&B));
+  PetscCall(KSPDestroy(&ksp_S));
+  PetscCall(VecDestroy(&X));
+  PetscCall(VecDestroy(&f));
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&B));
 
-  CHKERRQ(DMDestroy(&da_Stokes));
-  CHKERRQ(DMDestroy(&da_prop));
+  PetscCall(DMDestroy(&da_Stokes));
+  PetscCall(DMDestroy(&da_prop));
 
-  CHKERRQ(VecDestroy(&properties));
-  CHKERRQ(VecDestroy(&l_properties));
+  PetscCall(VecDestroy(&properties));
+  PetscCall(VecDestroy(&l_properties));
   PetscFunctionReturn(0);
 }
 
@@ -1593,12 +1593,12 @@ int main(int argc,char **args)
 {
   PetscInt       mx,my;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   mx   = my = 10;
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-mx",&mx,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-my",&my,NULL));
-  CHKERRQ(solve_stokes_2d_coupled(mx,my));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-mx",&mx,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-my",&my,NULL));
+  PetscCall(solve_stokes_2d_coupled(mx,my));
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -1618,17 +1618,17 @@ static PetscErrorCode BCApplyZero_EAST(DM da,PetscInt d_idx,Mat A,Vec b)
   ISLocalToGlobalMapping ltogm;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetLocalToGlobalMapping(da,&ltogm));
-  CHKERRQ(ISLocalToGlobalMappingGetIndices(ltogm,&g_idx));
+  PetscCall(DMGetLocalToGlobalMapping(da,&ltogm));
+  PetscCall(ISLocalToGlobalMappingGetIndices(ltogm,&g_idx));
 
-  CHKERRQ(DMGetCoordinateDM(da,&cda));
-  CHKERRQ(DMGetCoordinatesLocal(da,&coords));
-  CHKERRQ(DMDAVecGetArray(cda,coords,&_coords));
-  CHKERRQ(DMDAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0));
-  CHKERRQ(DMDAGetInfo(da,0,&M,&N,0,0,0,0,&n_dofs,0,0,0,0,0));
+  PetscCall(DMGetCoordinateDM(da,&cda));
+  PetscCall(DMGetCoordinatesLocal(da,&coords));
+  PetscCall(DMDAVecGetArray(cda,coords,&_coords));
+  PetscCall(DMDAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0));
+  PetscCall(DMDAGetInfo(da,0,&M,&N,0,0,0,0,&n_dofs,0,0,0,0,0));
 
-  CHKERRQ(PetscMalloc1(ny*n_dofs,&bc_global_ids));
-  CHKERRQ(PetscMalloc1(ny*n_dofs,&bc_vals));
+  PetscCall(PetscMalloc1(ny*n_dofs,&bc_global_ids));
+  PetscCall(PetscMalloc1(ny*n_dofs,&bc_vals));
 
   /* init the entries to -1 so VecSetValues will ignore them */
   for (i = 0; i < ny*n_dofs; i++) bc_global_ids[i] = -1;
@@ -1643,23 +1643,23 @@ static PetscErrorCode BCApplyZero_EAST(DM da,PetscInt d_idx,Mat A,Vec b)
 
     bc_vals[j] =  0.0;
   }
-  CHKERRQ(ISLocalToGlobalMappingRestoreIndices(ltogm,&g_idx));
+  PetscCall(ISLocalToGlobalMappingRestoreIndices(ltogm,&g_idx));
   nbcs = 0;
   if ((si+nx) == (M)) nbcs = ny;
 
   if (b) {
-    CHKERRQ(VecSetValues(b,nbcs,bc_global_ids,bc_vals,INSERT_VALUES));
-    CHKERRQ(VecAssemblyBegin(b));
-    CHKERRQ(VecAssemblyEnd(b));
+    PetscCall(VecSetValues(b,nbcs,bc_global_ids,bc_vals,INSERT_VALUES));
+    PetscCall(VecAssemblyBegin(b));
+    PetscCall(VecAssemblyEnd(b));
   }
   if (A) {
-    CHKERRQ(MatZeroRowsColumns(A,nbcs,bc_global_ids,1.0,0,0));
+    PetscCall(MatZeroRowsColumns(A,nbcs,bc_global_ids,1.0,0,0));
   }
 
-  CHKERRQ(PetscFree(bc_vals));
-  CHKERRQ(PetscFree(bc_global_ids));
+  PetscCall(PetscFree(bc_vals));
+  PetscCall(PetscFree(bc_global_ids));
 
-  CHKERRQ(DMDAVecRestoreArray(cda,coords,&_coords));
+  PetscCall(DMDAVecRestoreArray(cda,coords,&_coords));
   PetscFunctionReturn(0);
 }
 
@@ -1678,17 +1678,17 @@ static PetscErrorCode BCApplyZero_WEST(DM da,PetscInt d_idx,Mat A,Vec b)
   ISLocalToGlobalMapping ltogm;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetLocalToGlobalMapping(da,&ltogm));
-  CHKERRQ(ISLocalToGlobalMappingGetIndices(ltogm,&g_idx));
+  PetscCall(DMGetLocalToGlobalMapping(da,&ltogm));
+  PetscCall(ISLocalToGlobalMappingGetIndices(ltogm,&g_idx));
 
-  CHKERRQ(DMGetCoordinateDM(da,&cda));
-  CHKERRQ(DMGetCoordinatesLocal(da,&coords));
-  CHKERRQ(DMDAVecGetArray(cda,coords,&_coords));
-  CHKERRQ(DMDAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0));
-  CHKERRQ(DMDAGetInfo(da,0,&M,&N,0,0,0,0,&n_dofs,0,0,0,0,0));
+  PetscCall(DMGetCoordinateDM(da,&cda));
+  PetscCall(DMGetCoordinatesLocal(da,&coords));
+  PetscCall(DMDAVecGetArray(cda,coords,&_coords));
+  PetscCall(DMDAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0));
+  PetscCall(DMDAGetInfo(da,0,&M,&N,0,0,0,0,&n_dofs,0,0,0,0,0));
 
-  CHKERRQ(PetscMalloc1(ny*n_dofs,&bc_global_ids));
-  CHKERRQ(PetscMalloc1(ny*n_dofs,&bc_vals));
+  PetscCall(PetscMalloc1(ny*n_dofs,&bc_global_ids));
+  PetscCall(PetscMalloc1(ny*n_dofs,&bc_vals));
 
   /* init the entries to -1 so VecSetValues will ignore them */
   for (i = 0; i < ny*n_dofs; i++) bc_global_ids[i] = -1;
@@ -1703,24 +1703,24 @@ static PetscErrorCode BCApplyZero_WEST(DM da,PetscInt d_idx,Mat A,Vec b)
 
     bc_vals[j] =  0.0;
   }
-  CHKERRQ(ISLocalToGlobalMappingRestoreIndices(ltogm,&g_idx));
+  PetscCall(ISLocalToGlobalMappingRestoreIndices(ltogm,&g_idx));
   nbcs = 0;
   if (si == 0) nbcs = ny;
 
   if (b) {
-    CHKERRQ(VecSetValues(b,nbcs,bc_global_ids,bc_vals,INSERT_VALUES));
-    CHKERRQ(VecAssemblyBegin(b));
-    CHKERRQ(VecAssemblyEnd(b));
+    PetscCall(VecSetValues(b,nbcs,bc_global_ids,bc_vals,INSERT_VALUES));
+    PetscCall(VecAssemblyBegin(b));
+    PetscCall(VecAssemblyEnd(b));
   }
 
   if (A) {
-    CHKERRQ(MatZeroRowsColumns(A,nbcs,bc_global_ids,1.0,0,0));
+    PetscCall(MatZeroRowsColumns(A,nbcs,bc_global_ids,1.0,0,0));
   }
 
-  CHKERRQ(PetscFree(bc_vals));
-  CHKERRQ(PetscFree(bc_global_ids));
+  PetscCall(PetscFree(bc_vals));
+  PetscCall(PetscFree(bc_global_ids));
 
-  CHKERRQ(DMDAVecRestoreArray(cda,coords,&_coords));
+  PetscCall(DMDAVecRestoreArray(cda,coords,&_coords));
   PetscFunctionReturn(0);
 }
 
@@ -1739,17 +1739,17 @@ static PetscErrorCode BCApplyZero_NORTH(DM da,PetscInt d_idx,Mat A,Vec b)
   ISLocalToGlobalMapping ltogm;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetLocalToGlobalMapping(da,&ltogm));
-  CHKERRQ(ISLocalToGlobalMappingGetIndices(ltogm,&g_idx));
+  PetscCall(DMGetLocalToGlobalMapping(da,&ltogm));
+  PetscCall(ISLocalToGlobalMappingGetIndices(ltogm,&g_idx));
 
-  CHKERRQ(DMGetCoordinateDM(da,&cda));
-  CHKERRQ(DMGetCoordinatesLocal(da,&coords));
-  CHKERRQ(DMDAVecGetArray(cda,coords,&_coords));
-  CHKERRQ(DMDAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0));
-  CHKERRQ(DMDAGetInfo(da,0,&M,&N,0,0,0,0,&n_dofs,0,0,0,0,0));
+  PetscCall(DMGetCoordinateDM(da,&cda));
+  PetscCall(DMGetCoordinatesLocal(da,&coords));
+  PetscCall(DMDAVecGetArray(cda,coords,&_coords));
+  PetscCall(DMDAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0));
+  PetscCall(DMDAGetInfo(da,0,&M,&N,0,0,0,0,&n_dofs,0,0,0,0,0));
 
-  CHKERRQ(PetscMalloc1(nx,&bc_global_ids));
-  CHKERRQ(PetscMalloc1(nx,&bc_vals));
+  PetscCall(PetscMalloc1(nx,&bc_global_ids));
+  PetscCall(PetscMalloc1(nx,&bc_vals));
 
   /* init the entries to -1 so VecSetValues will ignore them */
   for (i = 0; i < nx; i++) bc_global_ids[i] = -1;
@@ -1764,23 +1764,23 @@ static PetscErrorCode BCApplyZero_NORTH(DM da,PetscInt d_idx,Mat A,Vec b)
 
     bc_vals[i] =  0.0;
   }
-  CHKERRQ(ISLocalToGlobalMappingRestoreIndices(ltogm,&g_idx));
+  PetscCall(ISLocalToGlobalMappingRestoreIndices(ltogm,&g_idx));
   nbcs = 0;
   if ((sj+ny) == (N)) nbcs = nx;
 
   if (b) {
-    CHKERRQ(VecSetValues(b,nbcs,bc_global_ids,bc_vals,INSERT_VALUES));
-    CHKERRQ(VecAssemblyBegin(b));
-    CHKERRQ(VecAssemblyEnd(b));
+    PetscCall(VecSetValues(b,nbcs,bc_global_ids,bc_vals,INSERT_VALUES));
+    PetscCall(VecAssemblyBegin(b));
+    PetscCall(VecAssemblyEnd(b));
   }
   if (A) {
-    CHKERRQ(MatZeroRowsColumns(A,nbcs,bc_global_ids,1.0,0,0));
+    PetscCall(MatZeroRowsColumns(A,nbcs,bc_global_ids,1.0,0,0));
   }
 
-  CHKERRQ(PetscFree(bc_vals));
-  CHKERRQ(PetscFree(bc_global_ids));
+  PetscCall(PetscFree(bc_vals));
+  PetscCall(PetscFree(bc_global_ids));
 
-  CHKERRQ(DMDAVecRestoreArray(cda,coords,&_coords));
+  PetscCall(DMDAVecRestoreArray(cda,coords,&_coords));
   PetscFunctionReturn(0);
 }
 
@@ -1799,17 +1799,17 @@ static PetscErrorCode BCApplyZero_SOUTH(DM da,PetscInt d_idx,Mat A,Vec b)
   ISLocalToGlobalMapping ltogm;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetLocalToGlobalMapping(da,&ltogm));
-  CHKERRQ(ISLocalToGlobalMappingGetIndices(ltogm,&g_idx));
+  PetscCall(DMGetLocalToGlobalMapping(da,&ltogm));
+  PetscCall(ISLocalToGlobalMappingGetIndices(ltogm,&g_idx));
 
-  CHKERRQ(DMGetCoordinateDM(da,&cda));
-  CHKERRQ(DMGetCoordinatesLocal(da,&coords));
-  CHKERRQ(DMDAVecGetArray(cda,coords,&_coords));
-  CHKERRQ(DMDAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0));
-  CHKERRQ(DMDAGetInfo(da,0,&M,&N,0,0,0,0,&n_dofs,0,0,0,0,0));
+  PetscCall(DMGetCoordinateDM(da,&cda));
+  PetscCall(DMGetCoordinatesLocal(da,&coords));
+  PetscCall(DMDAVecGetArray(cda,coords,&_coords));
+  PetscCall(DMDAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0));
+  PetscCall(DMDAGetInfo(da,0,&M,&N,0,0,0,0,&n_dofs,0,0,0,0,0));
 
-  CHKERRQ(PetscMalloc1(nx,&bc_global_ids));
-  CHKERRQ(PetscMalloc1(nx,&bc_vals));
+  PetscCall(PetscMalloc1(nx,&bc_global_ids));
+  PetscCall(PetscMalloc1(nx,&bc_vals));
 
   /* init the entries to -1 so VecSetValues will ignore them */
   for (i = 0; i < nx; i++) bc_global_ids[i] = -1;
@@ -1824,23 +1824,23 @@ static PetscErrorCode BCApplyZero_SOUTH(DM da,PetscInt d_idx,Mat A,Vec b)
 
     bc_vals[i] =  0.0;
   }
-  CHKERRQ(ISLocalToGlobalMappingRestoreIndices(ltogm,&g_idx));
+  PetscCall(ISLocalToGlobalMappingRestoreIndices(ltogm,&g_idx));
   nbcs = 0;
   if (sj == 0) nbcs = nx;
 
   if (b) {
-    CHKERRQ(VecSetValues(b,nbcs,bc_global_ids,bc_vals,INSERT_VALUES));
-    CHKERRQ(VecAssemblyBegin(b));
-    CHKERRQ(VecAssemblyEnd(b));
+    PetscCall(VecSetValues(b,nbcs,bc_global_ids,bc_vals,INSERT_VALUES));
+    PetscCall(VecAssemblyBegin(b));
+    PetscCall(VecAssemblyEnd(b));
   }
   if (A) {
-    CHKERRQ(MatZeroRowsColumns(A,nbcs,bc_global_ids,1.0,0,0));
+    PetscCall(MatZeroRowsColumns(A,nbcs,bc_global_ids,1.0,0,0));
   }
 
-  CHKERRQ(PetscFree(bc_vals));
-  CHKERRQ(PetscFree(bc_global_ids));
+  PetscCall(PetscFree(bc_vals));
+  PetscCall(PetscFree(bc_global_ids));
 
-  CHKERRQ(DMDAVecRestoreArray(cda,coords,&_coords));
+  PetscCall(DMDAVecRestoreArray(cda,coords,&_coords));
   PetscFunctionReturn(0);
 }
 
@@ -1848,10 +1848,10 @@ static PetscErrorCode BCApplyZero_SOUTH(DM da,PetscInt d_idx,Mat A,Vec b)
 static PetscErrorCode DMDABCApplyFreeSlip(DM da_Stokes,Mat A,Vec f)
 {
   PetscFunctionBeginUser;
-  CHKERRQ(BCApplyZero_NORTH(da_Stokes,1,A,f));
-  CHKERRQ(BCApplyZero_EAST(da_Stokes,0,A,f));
-  CHKERRQ(BCApplyZero_SOUTH(da_Stokes,1,A,f));
-  CHKERRQ(BCApplyZero_WEST(da_Stokes,0,A,f));
+  PetscCall(BCApplyZero_NORTH(da_Stokes,1,A,f));
+  PetscCall(BCApplyZero_EAST(da_Stokes,0,A,f));
+  PetscCall(BCApplyZero_SOUTH(da_Stokes,1,A,f));
+  PetscCall(BCApplyZero_WEST(da_Stokes,0,A,f));
   PetscFunctionReturn(0);
 }
 

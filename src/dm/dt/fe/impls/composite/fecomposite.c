@@ -8,8 +8,8 @@ static PetscErrorCode PetscFEDestroy_Composite(PetscFE fem)
   PetscFE_Composite *cmp = (PetscFE_Composite *) fem->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscFree(cmp->embedding));
-  CHKERRQ(PetscFree(cmp));
+  PetscCall(PetscFree(cmp->embedding));
+  PetscCall(PetscFree(cmp));
   PetscFunctionReturn(0);
 }
 
@@ -28,42 +28,42 @@ static PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
 
   PetscFunctionBegin;
   /* Get affine mapping from reference cell to each subcell */
-  CHKERRQ(PetscDualSpaceGetDM(fem->dualSpace, &K));
-  CHKERRQ(DMGetDimension(K, &dim));
-  CHKERRQ(DMPlexGetCellType(K, 0, &ct));
-  CHKERRQ(DMPlexTransformCreate(PETSC_COMM_SELF, &tr));
-  CHKERRQ(DMPlexTransformSetType(tr, DMPLEXREFINEREGULAR));
-  CHKERRQ(DMPlexRefineRegularGetAffineTransforms(tr, ct, &cmp->numSubelements, &cmp->v0, &cmp->jac, &cmp->invjac));
-  CHKERRQ(DMPlexTransformDestroy(&tr));
+  PetscCall(PetscDualSpaceGetDM(fem->dualSpace, &K));
+  PetscCall(DMGetDimension(K, &dim));
+  PetscCall(DMPlexGetCellType(K, 0, &ct));
+  PetscCall(DMPlexTransformCreate(PETSC_COMM_SELF, &tr));
+  PetscCall(DMPlexTransformSetType(tr, DMPLEXREFINEREGULAR));
+  PetscCall(DMPlexRefineRegularGetAffineTransforms(tr, ct, &cmp->numSubelements, &cmp->v0, &cmp->jac, &cmp->invjac));
+  PetscCall(DMPlexTransformDestroy(&tr));
   /* Determine dof embedding into subelements */
-  CHKERRQ(PetscDualSpaceGetDimension(fem->dualSpace, &pdim));
-  CHKERRQ(PetscSpaceGetDimension(fem->basisSpace, &spdim));
-  CHKERRQ(PetscMalloc1(cmp->numSubelements*spdim,&cmp->embedding));
-  CHKERRQ(DMGetWorkArray(K, dim, MPIU_REAL, &subpoint));
-  CHKERRQ(PetscDualSpaceGetSection(fem->dualSpace, &section));
+  PetscCall(PetscDualSpaceGetDimension(fem->dualSpace, &pdim));
+  PetscCall(PetscSpaceGetDimension(fem->basisSpace, &spdim));
+  PetscCall(PetscMalloc1(cmp->numSubelements*spdim,&cmp->embedding));
+  PetscCall(DMGetWorkArray(K, dim, MPIU_REAL, &subpoint));
+  PetscCall(PetscDualSpaceGetSection(fem->dualSpace, &section));
   for (s = 0; s < cmp->numSubelements; ++s) {
     PetscInt sd = 0;
     PetscInt closureSize;
     PetscInt *closure = NULL;
 
-    CHKERRQ(DMPlexGetTransitiveClosure(K, s, PETSC_TRUE, &closureSize, &closure));
+    PetscCall(DMPlexGetTransitiveClosure(K, s, PETSC_TRUE, &closureSize, &closure));
     for (j = 0; j < closureSize; j++) {
       PetscInt point = closure[2*j];
       PetscInt dof, off, k;
 
-      CHKERRQ(PetscSectionGetDof(section, point, &dof));
-      CHKERRQ(PetscSectionGetOffset(section, point, &off));
+      PetscCall(PetscSectionGetDof(section, point, &dof));
+      PetscCall(PetscSectionGetOffset(section, point, &off));
       for (k = 0; k < dof; k++) cmp->embedding[s*spdim+sd++] = off + k;
     }
-    CHKERRQ(DMPlexRestoreTransitiveClosure(K, s, PETSC_TRUE, &closureSize, &closure));
+    PetscCall(DMPlexRestoreTransitiveClosure(K, s, PETSC_TRUE, &closureSize, &closure));
     PetscCheckFalse(sd != spdim,PetscObjectComm((PetscObject) fem), PETSC_ERR_PLIB, "Subelement %d has %d dual basis vectors != %d", s, sd, spdim);
   }
-  CHKERRQ(DMRestoreWorkArray(K, dim, MPIU_REAL, &subpoint));
+  PetscCall(DMRestoreWorkArray(K, dim, MPIU_REAL, &subpoint));
   /* Construct the change of basis from prime basis to nodal basis for each subelement */
-  CHKERRQ(PetscMalloc1(cmp->numSubelements*spdim*spdim,&fem->invV));
-  CHKERRQ(PetscMalloc2(spdim,&pivots,spdim,&work));
+  PetscCall(PetscMalloc1(cmp->numSubelements*spdim*spdim,&fem->invV));
+  PetscCall(PetscMalloc2(spdim,&pivots,spdim,&work));
 #if defined(PETSC_USE_COMPLEX)
-  CHKERRQ(PetscMalloc1(cmp->numSubelements*spdim*spdim,&invVscalar));
+  PetscCall(PetscMalloc1(cmp->numSubelements*spdim*spdim,&invVscalar));
 #else
   invVscalar = fem->invV;
 #endif
@@ -74,10 +74,10 @@ static PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
       const PetscReal *points, *weights;
       PetscInt         Nc, Nq, q, k;
 
-      CHKERRQ(PetscDualSpaceGetFunctional(fem->dualSpace, cmp->embedding[s*spdim+j], &f));
-      CHKERRQ(PetscQuadratureGetData(f, NULL, &Nc, &Nq, &points, &weights));
-      CHKERRQ(PetscMalloc1(f->numPoints*spdim*Nc,&Bf));
-      CHKERRQ(PetscSpaceEvaluate(fem->basisSpace, Nq, points, Bf, NULL, NULL));
+      PetscCall(PetscDualSpaceGetFunctional(fem->dualSpace, cmp->embedding[s*spdim+j], &f));
+      PetscCall(PetscQuadratureGetData(f, NULL, &Nc, &Nq, &points, &weights));
+      PetscCall(PetscMalloc1(f->numPoints*spdim*Nc,&Bf));
+      PetscCall(PetscSpaceEvaluate(fem->basisSpace, Nq, points, Bf, NULL, NULL));
       for (k = 0; k < spdim; ++k) {
         /* n_j \cdot \phi_k */
         invVscalar[(s*spdim + j)*spdim+k] = 0.0;
@@ -85,7 +85,7 @@ static PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
           invVscalar[(s*spdim + j)*spdim+k] += Bf[q*spdim+k]*weights[q];
         }
       }
-      CHKERRQ(PetscFree(Bf));
+      PetscCall(PetscFree(Bf));
     }
     n = spdim;
     PetscStackCallBLAS("LAPACKgetrf", LAPACKgetrf_(&n, &n, &invVscalar[s*spdim*spdim], &n, pivots, &info));
@@ -93,9 +93,9 @@ static PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
   }
 #if defined(PETSC_USE_COMPLEX)
   for (s = 0; s <cmp->numSubelements*spdim*spdim; s++) fem->invV[s] = PetscRealPart(invVscalar[s]);
-  CHKERRQ(PetscFree(invVscalar));
+  PetscCall(PetscFree(invVscalar));
 #endif
-  CHKERRQ(PetscFree2(pivots,work));
+  PetscCall(PetscFree2(pivots,work));
   PetscFunctionReturn(0);
 }
 
@@ -116,15 +116,15 @@ static PetscErrorCode PetscFECreateTabulation_Composite(PetscFE fem, PetscInt np
   PetscInt           p, s, d, e, j, k;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscDualSpaceGetDM(fem->dualSpace, &dm));
-  CHKERRQ(DMGetDimension(dm, &dim));
-  CHKERRQ(DMPlexGetCellType(dm, 0, &ct));
-  CHKERRQ(PetscSpaceGetDimension(fem->basisSpace, &spdim));
-  CHKERRQ(PetscDualSpaceGetDimension(fem->dualSpace, &pdim));
-  CHKERRQ(PetscFEGetNumComponents(fem, &comp));
+  PetscCall(PetscDualSpaceGetDM(fem->dualSpace, &dm));
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMPlexGetCellType(dm, 0, &ct));
+  PetscCall(PetscSpaceGetDimension(fem->basisSpace, &spdim));
+  PetscCall(PetscDualSpaceGetDimension(fem->dualSpace, &pdim));
+  PetscCall(PetscFEGetNumComponents(fem, &comp));
   /* Divide points into subelements */
-  CHKERRQ(DMGetWorkArray(dm, npoints, MPIU_INT, &subpoints));
-  CHKERRQ(DMGetWorkArray(dm, dim, MPIU_REAL, &subpoint));
+  PetscCall(DMGetWorkArray(dm, npoints, MPIU_INT, &subpoints));
+  PetscCall(DMGetWorkArray(dm, dim, MPIU_REAL, &subpoint));
   for (p = 0; p < npoints; ++p) {
     for (s = 0; s < cmp->numSubelements; ++s) {
       PetscBool inside;
@@ -134,21 +134,21 @@ static PetscErrorCode PetscFECreateTabulation_Composite(PetscFE fem, PetscInt np
         subpoint[d] = -1.0;
         for (e = 0; e < dim; ++e) subpoint[d] += cmp->invjac[(s*dim + d)*dim+e]*(points[p*dim+e] - cmp->v0[s*dim+e]);
       }
-      CHKERRQ(DMPolytopeInCellTest(ct, subpoint, &inside));
+      PetscCall(DMPolytopeInCellTest(ct, subpoint, &inside));
       if (inside) {subpoints[p] = s; break;}
     }
     PetscCheckFalse(s >= cmp->numSubelements,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %d was not found in any subelement", p);
   }
-  CHKERRQ(DMRestoreWorkArray(dm, dim, MPIU_REAL, &subpoint));
+  PetscCall(DMRestoreWorkArray(dm, dim, MPIU_REAL, &subpoint));
   /* Evaluate the prime basis functions at all points */
-  if (K >= 0) CHKERRQ(DMGetWorkArray(dm, npoints*spdim, MPIU_REAL, &tmpB));
-  if (K >= 1) CHKERRQ(DMGetWorkArray(dm, npoints*spdim*dim, MPIU_REAL, &tmpD));
-  if (K >= 2) CHKERRQ(DMGetWorkArray(dm, npoints*spdim*dim*dim, MPIU_REAL, &tmpH));
-  CHKERRQ(PetscSpaceEvaluate(fem->basisSpace, npoints, points, tmpB, tmpD, tmpH));
+  if (K >= 0) PetscCall(DMGetWorkArray(dm, npoints*spdim, MPIU_REAL, &tmpB));
+  if (K >= 1) PetscCall(DMGetWorkArray(dm, npoints*spdim*dim, MPIU_REAL, &tmpD));
+  if (K >= 2) PetscCall(DMGetWorkArray(dm, npoints*spdim*dim*dim, MPIU_REAL, &tmpH));
+  PetscCall(PetscSpaceEvaluate(fem->basisSpace, npoints, points, tmpB, tmpD, tmpH));
   /* Translate to the nodal basis */
-  if (K >= 0) CHKERRQ(PetscArrayzero(B, npoints*pdim*comp));
-  if (K >= 1) CHKERRQ(PetscArrayzero(D, npoints*pdim*comp*dim));
-  if (K >= 2) CHKERRQ(PetscArrayzero(H, npoints*pdim*comp*dim*dim));
+  if (K >= 0) PetscCall(PetscArrayzero(B, npoints*pdim*comp));
+  if (K >= 1) PetscCall(PetscArrayzero(D, npoints*pdim*comp*dim));
+  if (K >= 2) PetscCall(PetscArrayzero(H, npoints*pdim*comp*dim*dim));
   for (p = 0; p < npoints; ++p) {
     const PetscInt s = subpoints[p];
 
@@ -190,10 +190,10 @@ static PetscErrorCode PetscFECreateTabulation_Composite(PetscFE fem, PetscInt np
       }
     }
   }
-  CHKERRQ(DMRestoreWorkArray(dm, npoints, MPIU_INT, &subpoints));
-  if (K >= 0) CHKERRQ(DMRestoreWorkArray(dm, npoints*spdim, MPIU_REAL, &tmpB));
-  if (K >= 1) CHKERRQ(DMRestoreWorkArray(dm, npoints*spdim*dim, MPIU_REAL, &tmpD));
-  if (K >= 2) CHKERRQ(DMRestoreWorkArray(dm, npoints*spdim*dim*dim, MPIU_REAL, &tmpH));
+  PetscCall(DMRestoreWorkArray(dm, npoints, MPIU_INT, &subpoints));
+  if (K >= 0) PetscCall(DMRestoreWorkArray(dm, npoints*spdim, MPIU_REAL, &tmpB));
+  if (K >= 1) PetscCall(DMRestoreWorkArray(dm, npoints*spdim*dim, MPIU_REAL, &tmpD));
+  if (K >= 2) PetscCall(DMRestoreWorkArray(dm, npoints*spdim*dim*dim, MPIU_REAL, &tmpH));
   PetscFunctionReturn(0);
 }
 
@@ -226,14 +226,14 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_Composite(PetscFE fem)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
-  CHKERRQ(PetscNewLog(fem, &cmp));
+  PetscCall(PetscNewLog(fem, &cmp));
   fem->data = cmp;
 
   cmp->numSubelements = -1;
   cmp->v0             = NULL;
   cmp->jac            = NULL;
 
-  CHKERRQ(PetscFEInitialize_Composite(fem));
+  PetscCall(PetscFEInitialize_Composite(fem));
   PetscFunctionReturn(0);
 }
 

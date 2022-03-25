@@ -100,10 +100,10 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionBegin;
   options->fname[0] = '\0';
   options->includes_constraints = PETSC_TRUE;
-  ierr = PetscOptionsBegin(comm, "", "PetscSectionView()/Load() in HDF5 Test Options", "DMPLEX");CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsString("-fname", "The output file", "ex5.c", options->fname, options->fname, sizeof(options->fname), NULL));
-  CHKERRQ(PetscOptionsBool("-includes_constraints", "Flag for if global section is to include constrained DoFs or not", "ex5.c", options->includes_constraints, &options->includes_constraints, NULL));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm, "", "PetscSectionView()/Load() in HDF5 Test Options", "DMPLEX");PetscCall(ierr);
+  PetscCall(PetscOptionsString("-fname", "The output file", "ex5.c", options->fname, options->fname, sizeof(options->fname), NULL));
+  PetscCall(PetscOptionsBool("-includes_constraints", "Flag for if global section is to include constrained DoFs or not", "ex5.c", options->includes_constraints, &options->includes_constraints, NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -113,15 +113,15 @@ int main(int argc, char **argv)
   PetscMPIInt     size, rank, mycolor;
   AppCtx          user;
 
-  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
-  CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   PetscCheckFalse(size < 3,PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "Example only works with three or more processes");
 
   /* Save */
   mycolor = (PetscMPIInt)(rank >= 2);
-  CHKERRMPI(MPI_Comm_split(PETSC_COMM_WORLD, mycolor, rank, &comm));
+  PetscCallMPI(MPI_Comm_split(PETSC_COMM_WORLD, mycolor, rank, &comm));
   if (mycolor == 0) {
     PetscSection  section, gsection;
     PetscSF       sf;
@@ -130,50 +130,50 @@ int main(int argc, char **argv)
     PetscViewer   viewer;
 
     /* Create section */
-    CHKERRQ(PetscSectionCreate(comm, &section));
-    CHKERRQ(PetscSectionSetNumFields(section, 2));
+    PetscCall(PetscSectionCreate(comm, &section));
+    PetscCall(PetscSectionSetNumFields(section, 2));
     switch (rank) {
     case 0:
-      CHKERRQ(PetscSectionSetChart(section, 0, 4));
-      CHKERRQ(PetscSectionSetDof(section, 0, 3));
-      CHKERRQ(PetscSectionSetDof(section, 1, 3));
-      CHKERRQ(PetscSectionSetDof(section, 2, 5));
-      CHKERRQ(PetscSectionSetDof(section, 3, 7));
-      CHKERRQ(PetscSectionSetFieldDof(section, 0, 0, 2));
-      CHKERRQ(PetscSectionSetFieldDof(section, 1, 0, 3));
-      CHKERRQ(PetscSectionSetFieldDof(section, 2, 0, 5));
-      CHKERRQ(PetscSectionSetFieldDof(section, 3, 0, 7));
-      CHKERRQ(PetscSectionSetFieldDof(section, 0, 1, 1));
+      PetscCall(PetscSectionSetChart(section, 0, 4));
+      PetscCall(PetscSectionSetDof(section, 0, 3));
+      PetscCall(PetscSectionSetDof(section, 1, 3));
+      PetscCall(PetscSectionSetDof(section, 2, 5));
+      PetscCall(PetscSectionSetDof(section, 3, 7));
+      PetscCall(PetscSectionSetFieldDof(section, 0, 0, 2));
+      PetscCall(PetscSectionSetFieldDof(section, 1, 0, 3));
+      PetscCall(PetscSectionSetFieldDof(section, 2, 0, 5));
+      PetscCall(PetscSectionSetFieldDof(section, 3, 0, 7));
+      PetscCall(PetscSectionSetFieldDof(section, 0, 1, 1));
       break;
     case 1:
-      CHKERRQ(PetscSectionSetChart(section, 0, 3));
-      CHKERRQ(PetscSectionSetDof(section, 0, 7));
-      CHKERRQ(PetscSectionSetDof(section, 1, 5));
-      CHKERRQ(PetscSectionSetDof(section, 2, 13));
-      CHKERRQ(PetscSectionSetConstraintDof(section, 2, 1));
-      CHKERRQ(PetscSectionSetFieldDof(section, 0, 0, 7));
-      CHKERRQ(PetscSectionSetFieldDof(section, 1, 0, 5));
-      CHKERRQ(PetscSectionSetFieldDof(section, 2, 0, 11));
-      CHKERRQ(PetscSectionSetFieldDof(section, 2, 1, 2));
-      CHKERRQ(PetscSectionSetFieldConstraintDof(section, 2, 0, 1));
+      PetscCall(PetscSectionSetChart(section, 0, 3));
+      PetscCall(PetscSectionSetDof(section, 0, 7));
+      PetscCall(PetscSectionSetDof(section, 1, 5));
+      PetscCall(PetscSectionSetDof(section, 2, 13));
+      PetscCall(PetscSectionSetConstraintDof(section, 2, 1));
+      PetscCall(PetscSectionSetFieldDof(section, 0, 0, 7));
+      PetscCall(PetscSectionSetFieldDof(section, 1, 0, 5));
+      PetscCall(PetscSectionSetFieldDof(section, 2, 0, 11));
+      PetscCall(PetscSectionSetFieldDof(section, 2, 1, 2));
+      PetscCall(PetscSectionSetFieldConstraintDof(section, 2, 0, 1));
       break;
     }
-    CHKERRQ(PetscSectionSetUp(section));
+    PetscCall(PetscSectionSetUp(section));
     if (rank == 1)
     {
       const PetscInt indices[] = {7};
       const PetscInt indices0[] = {7};
 
-      CHKERRQ(PetscSectionSetConstraintIndices(section, 2, indices));
-      CHKERRQ(PetscSectionSetFieldConstraintIndices(section, 2, 0, indices0));
+      PetscCall(PetscSectionSetConstraintIndices(section, 2, indices));
+      PetscCall(PetscSectionSetFieldConstraintIndices(section, 2, 0, indices0));
     }
     /* Create sf */
     switch (rank) {
     case 0:
       nroots = 4;
       nleaves = 1;
-      CHKERRQ(PetscMalloc1(nleaves, &ilocal));
-      CHKERRQ(PetscMalloc1(nleaves, &iremote));
+      PetscCall(PetscMalloc1(nleaves, &ilocal));
+      PetscCall(PetscMalloc1(nleaves, &iremote));
       ilocal[0] = 3;
       iremote[0].rank = 1;
       iremote[0].index = 0;
@@ -181,40 +181,40 @@ int main(int argc, char **argv)
     case 1:
       nroots = 3;
       nleaves = 1;
-      CHKERRQ(PetscMalloc1(nleaves, &ilocal));
-      CHKERRQ(PetscMalloc1(nleaves, &iremote));
+      PetscCall(PetscMalloc1(nleaves, &ilocal));
+      PetscCall(PetscMalloc1(nleaves, &iremote));
       ilocal[0] = 1;
       iremote[0].rank = 0;
       iremote[0].index = 2;
       break;
     }
-    CHKERRQ(PetscSFCreate(comm, &sf));
-    CHKERRQ(PetscSFSetGraph(sf, nroots, nleaves, ilocal, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER));
+    PetscCall(PetscSFCreate(comm, &sf));
+    PetscCall(PetscSFSetGraph(sf, nroots, nleaves, ilocal, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER));
     /* Create global section*/
-    CHKERRQ(PetscSectionCreateGlobalSection(section, sf, user.includes_constraints, PETSC_FALSE, &gsection));
-    CHKERRQ(PetscSFDestroy(&sf));
+    PetscCall(PetscSectionCreateGlobalSection(section, sf, user.includes_constraints, PETSC_FALSE, &gsection));
+    PetscCall(PetscSFDestroy(&sf));
     /* View */
-    CHKERRQ(PetscViewerHDF5Open(comm, user.fname, FILE_MODE_WRITE, &viewer));
-    CHKERRQ(PetscSectionView(gsection, viewer));
-    CHKERRQ(PetscViewerDestroy(&viewer));
-    CHKERRQ(PetscObjectSetName((PetscObject)section, "Save: local section"));
-    CHKERRQ(PetscSectionView(section, PETSC_VIEWER_STDOUT_(comm)));
-    CHKERRQ(PetscObjectSetName((PetscObject)gsection, "Save: global section"));
-    CHKERRQ(PetscSectionView(gsection, PETSC_VIEWER_STDOUT_(comm)));
-    CHKERRQ(PetscSectionDestroy(&gsection));
-    CHKERRQ(PetscSectionDestroy(&section));
+    PetscCall(PetscViewerHDF5Open(comm, user.fname, FILE_MODE_WRITE, &viewer));
+    PetscCall(PetscSectionView(gsection, viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
+    PetscCall(PetscObjectSetName((PetscObject)section, "Save: local section"));
+    PetscCall(PetscSectionView(section, PETSC_VIEWER_STDOUT_(comm)));
+    PetscCall(PetscObjectSetName((PetscObject)gsection, "Save: global section"));
+    PetscCall(PetscSectionView(gsection, PETSC_VIEWER_STDOUT_(comm)));
+    PetscCall(PetscSectionDestroy(&gsection));
+    PetscCall(PetscSectionDestroy(&section));
   }
-  CHKERRMPI(MPI_Comm_free(&comm));
+  PetscCallMPI(MPI_Comm_free(&comm));
 
   /* Load */
   mycolor = (PetscMPIInt)(rank >= 3);
-  CHKERRMPI(MPI_Comm_split(PETSC_COMM_WORLD, mycolor, rank, &comm));
+  PetscCallMPI(MPI_Comm_split(PETSC_COMM_WORLD, mycolor, rank, &comm));
   if (mycolor == 0) {
     PetscSection  section;
     PetscInt      chartSize = -1;
     PetscViewer   viewer;
 
-    CHKERRQ(PetscSectionCreate(comm, &section));
+    PetscCall(PetscSectionCreate(comm, &section));
     switch (rank) {
     case 0:
       chartSize = 4;
@@ -226,18 +226,18 @@ int main(int argc, char **argv)
       chartSize = 1;
       break;
     }
-    CHKERRQ(PetscSectionSetChart(section, 0, chartSize));
-    CHKERRQ(PetscViewerHDF5Open(comm, user.fname, FILE_MODE_READ, &viewer));
-    CHKERRQ(PetscSectionLoad(section, viewer));
-    CHKERRQ(PetscViewerDestroy(&viewer));
-    CHKERRQ(PetscObjectSetName((PetscObject)section, "Load: section"));
-    CHKERRQ(PetscSectionView(section, PETSC_VIEWER_STDOUT_(comm)));
-    CHKERRQ(PetscSectionDestroy(&section));
+    PetscCall(PetscSectionSetChart(section, 0, chartSize));
+    PetscCall(PetscViewerHDF5Open(comm, user.fname, FILE_MODE_READ, &viewer));
+    PetscCall(PetscSectionLoad(section, viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
+    PetscCall(PetscObjectSetName((PetscObject)section, "Load: section"));
+    PetscCall(PetscSectionView(section, PETSC_VIEWER_STDOUT_(comm)));
+    PetscCall(PetscSectionDestroy(&section));
   }
-  CHKERRMPI(MPI_Comm_free(&comm));
+  PetscCallMPI(MPI_Comm_free(&comm));
 
   /* Finalize */
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

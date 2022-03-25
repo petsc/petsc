@@ -9,19 +9,19 @@ int main(int argc,char **args)
   PetscInt       n = 5;
   Mat            mat;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRQ(PCCreate(PETSC_COMM_WORLD,&pc));
-  CHKERRQ(PCSetType(pc,PCNONE));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PCCreate(PETSC_COMM_WORLD,&pc));
+  PetscCall(PCSetType(pc,PCNONE));
 
   /* Vector and matrix must be set before calling PCSetUp */
-  CHKERRQ(MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,NULL,&mat));
-  CHKERRQ(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(PCSetOperators(pc,mat,mat));
-  CHKERRQ(PCSetUp(pc));
-  CHKERRQ(MatDestroy(&mat));
-  CHKERRQ(PCDestroy(&pc));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,NULL,&mat));
+  PetscCall(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(PCSetOperators(pc,mat,mat));
+  PetscCall(PCSetUp(pc));
+  PetscCall(MatDestroy(&mat));
+  PetscCall(PCDestroy(&pc));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

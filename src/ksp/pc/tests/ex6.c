@@ -28,57 +28,57 @@ int main(int argc,char **args)
   IS             *is1,*is2,*islocal1,*islocal2;
   PetscBool      flg;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   N    = (m+1)*(m+1); /* dimension of matrix */
   M    = m*m; /* number of elements */
   h    = 1.0/m;    /* mesh width */
   x1   = (m+1)/2;
   x2   = x1;
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-x1",&x1,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-x2",&x2,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-x1",&x1,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-x2",&x2,NULL));
   /* create stiffness matrix */
-  CHKERRQ(MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,9,NULL,&C));
+  PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,9,NULL,&C));
 
   /* forms the element stiffness for the Laplacian */
-  CHKERRQ(FormElementStiffness(h*h,Ke));
+  PetscCall(FormElementStiffness(h*h,Ke));
   for (i=0; i<M; i++) {
     /* node numbers for the four corners of element */
     idx[0] = (m+1)*(i/m) + (i % m);
     idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
-    CHKERRQ(MatSetValues(C,4,idx,4,idx,Ke,ADD_VALUES));
+    PetscCall(MatSetValues(C,4,idx,4,idx,Ke,ADD_VALUES));
   }
-  CHKERRQ(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
 
   for (ol=0; ol<m+2; ++ol) {
 
-    CHKERRQ(PCASMCreateSubdomains2D(m+1,m+1,x1,x2,1,0,&Nsub1,&is1,&islocal1));
-    CHKERRQ(MatIncreaseOverlap(C,Nsub1,is1,ol));
-    CHKERRQ(PCASMCreateSubdomains2D(m+1,m+1,x1,x2,1,ol,&Nsub2,&is2,&islocal2));
+    PetscCall(PCASMCreateSubdomains2D(m+1,m+1,x1,x2,1,0,&Nsub1,&is1,&islocal1));
+    PetscCall(MatIncreaseOverlap(C,Nsub1,is1,ol));
+    PetscCall(PCASMCreateSubdomains2D(m+1,m+1,x1,x2,1,ol,&Nsub2,&is2,&islocal2));
 
-    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"flg == 1 => both index sets are same\n"));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"flg == 1 => both index sets are same\n"));
     if (Nsub1 != Nsub2) {
-      CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Error: No of indes sets don't match\n"));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,"Error: No of indes sets don't match\n"));
     }
 
     for (i=0; i<Nsub1; ++i) {
-      CHKERRQ(ISEqual(is1[i],is2[i],&flg));
-      CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"i =  %D,flg = %d \n",i,(int)flg));
+      PetscCall(ISEqual(is1[i],is2[i],&flg));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,"i =  %D,flg = %d \n",i,(int)flg));
 
     }
-    for (i=0; i<Nsub1; ++i) CHKERRQ(ISDestroy(&is1[i]));
-    for (i=0; i<Nsub2; ++i) CHKERRQ(ISDestroy(&is2[i]));
-    for (i=0; i<Nsub1; ++i) CHKERRQ(ISDestroy(&islocal1[i]));
-    for (i=0; i<Nsub2; ++i) CHKERRQ(ISDestroy(&islocal2[i]));
+    for (i=0; i<Nsub1; ++i) PetscCall(ISDestroy(&is1[i]));
+    for (i=0; i<Nsub2; ++i) PetscCall(ISDestroy(&is2[i]));
+    for (i=0; i<Nsub1; ++i) PetscCall(ISDestroy(&islocal1[i]));
+    for (i=0; i<Nsub2; ++i) PetscCall(ISDestroy(&islocal2[i]));
 
-    CHKERRQ(PetscFree(is1));
-    CHKERRQ(PetscFree(is2));
-    CHKERRQ(PetscFree(islocal1));
-    CHKERRQ(PetscFree(islocal2));
+    PetscCall(PetscFree(is1));
+    PetscCall(PetscFree(is2));
+    PetscCall(PetscFree(islocal1));
+    PetscCall(PetscFree(islocal2));
   }
-  CHKERRQ(MatDestroy(&C));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatDestroy(&C));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

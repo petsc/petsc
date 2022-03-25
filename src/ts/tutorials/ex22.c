@@ -50,86 +50,86 @@ int main(int argc,char **argv)
   struct _User      user;       /* user-defined work context */
   TSConvergedReason reason;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,11,2,2,NULL,&da));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
+  PetscCall(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,11,2,2,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Extract global vectors from DMDA;
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(DMCreateGlobalVector(da,&X));
+  PetscCall(DMCreateGlobalVector(da,&X));
 
   /* Initialize user application context */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Advection-reaction options","");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Advection-reaction options","");PetscCall(ierr);
   {
-    user.a[0] = 1;           CHKERRQ(PetscOptionsReal("-a0","Advection rate 0","",user.a[0],&user.a[0],NULL));
-    user.a[1] = 0;           CHKERRQ(PetscOptionsReal("-a1","Advection rate 1","",user.a[1],&user.a[1],NULL));
-    user.k[0] = 1e6;         CHKERRQ(PetscOptionsReal("-k0","Reaction rate 0","",user.k[0],&user.k[0],NULL));
-    user.k[1] = 2*user.k[0]; CHKERRQ(PetscOptionsReal("-k1","Reaction rate 1","",user.k[1],&user.k[1],NULL));
-    user.s[0] = 0;           CHKERRQ(PetscOptionsReal("-s0","Source 0","",user.s[0],&user.s[0],NULL));
-    user.s[1] = 1;           CHKERRQ(PetscOptionsReal("-s1","Source 1","",user.s[1],&user.s[1],NULL));
+    user.a[0] = 1;           PetscCall(PetscOptionsReal("-a0","Advection rate 0","",user.a[0],&user.a[0],NULL));
+    user.a[1] = 0;           PetscCall(PetscOptionsReal("-a1","Advection rate 1","",user.a[1],&user.a[1],NULL));
+    user.k[0] = 1e6;         PetscCall(PetscOptionsReal("-k0","Reaction rate 0","",user.k[0],&user.k[0],NULL));
+    user.k[1] = 2*user.k[0]; PetscCall(PetscOptionsReal("-k1","Reaction rate 1","",user.k[1],&user.k[1],NULL));
+    user.s[0] = 0;           PetscCall(PetscOptionsReal("-s0","Source 0","",user.s[0],&user.s[0],NULL));
+    user.s[1] = 1;           PetscCall(PetscOptionsReal("-s1","Source 1","",user.s[1],&user.s[1],NULL));
   }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
-  CHKERRQ(TSSetDM(ts,da));
-  CHKERRQ(TSSetType(ts,TSARKIMEX));
-  CHKERRQ(TSSetRHSFunction(ts,NULL,FormRHSFunction,&user));
-  CHKERRQ(TSSetIFunction(ts,NULL,FormIFunction,&user));
-  CHKERRQ(DMSetMatType(da,MATAIJ));
-  CHKERRQ(DMCreateMatrix(da,&J));
-  CHKERRQ(TSSetIJacobian(ts,J,J,FormIJacobian,&user));
+  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
+  PetscCall(TSSetDM(ts,da));
+  PetscCall(TSSetType(ts,TSARKIMEX));
+  PetscCall(TSSetRHSFunction(ts,NULL,FormRHSFunction,&user));
+  PetscCall(TSSetIFunction(ts,NULL,FormIFunction,&user));
+  PetscCall(DMSetMatType(da,MATAIJ));
+  PetscCall(DMCreateMatrix(da,&J));
+  PetscCall(TSSetIJacobian(ts,J,J,FormIJacobian,&user));
 
   /* A line search in the nonlinear solve can fail due to ill-conditioning unless an absolute tolerance is set. Since
    * this problem is linear, we deactivate the line search. For a linear problem, it is usually recommended to also use
    * SNESSetType(snes,SNESKSPONLY). */
-  CHKERRQ(TSGetSNES(ts,&snes));
-  CHKERRQ(SNESGetLineSearch(snes,&linesearch));
-  CHKERRQ(SNESLineSearchSetType(linesearch,SNESLINESEARCHBASIC));
+  PetscCall(TSGetSNES(ts,&snes));
+  PetscCall(SNESGetLineSearch(snes,&linesearch));
+  PetscCall(SNESLineSearchSetType(linesearch,SNESLINESEARCHBASIC));
 
   ftime = .1;
-  CHKERRQ(TSSetMaxTime(ts,ftime));
-  CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
+  PetscCall(TSSetMaxTime(ts,ftime));
+  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(FormInitialSolution(ts,X,&user));
-  CHKERRQ(TSSetSolution(ts,X));
-  CHKERRQ(VecGetSize(X,&mx));
+  PetscCall(FormInitialSolution(ts,X,&user));
+  PetscCall(TSSetSolution(ts,X));
+  PetscCall(VecGetSize(X,&mx));
   dt   = .1 * PetscMax(user.a[0],user.a[1]) / mx; /* Advective CFL, I don't know why it needs so much safety factor. */
-  CHKERRQ(TSSetTimeStep(ts,dt));
+  PetscCall(TSSetTimeStep(ts,dt));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSSetFromOptions(ts));
+  PetscCall(TSSetFromOptions(ts));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSSolve(ts,X));
-  CHKERRQ(TSGetSolveTime(ts,&ftime));
-  CHKERRQ(TSGetStepNumber(ts,&steps));
-  CHKERRQ(TSGetConvergedReason(ts,&reason));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after %D steps\n",TSConvergedReasons[reason],(double)ftime,steps));
+  PetscCall(TSSolve(ts,X));
+  PetscCall(TSGetSolveTime(ts,&ftime));
+  PetscCall(TSGetStepNumber(ts,&steps));
+  PetscCall(TSGetConvergedReason(ts,&reason));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after %D steps\n",TSConvergedReasons[reason],(double)ftime,steps));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(MatDestroy(&J));
-  CHKERRQ(VecDestroy(&X));
-  CHKERRQ(TSDestroy(&ts));
-  CHKERRQ(DMDestroy(&da));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatDestroy(&J));
+  PetscCall(VecDestroy(&X));
+  PetscCall(TSDestroy(&ts));
+  PetscCall(DMDestroy(&da));
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -143,13 +143,13 @@ static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
   const Field    *x,*xdot;
 
   PetscFunctionBeginUser;
-  CHKERRQ(TSGetDM(ts,&da));
-  CHKERRQ(DMDAGetLocalInfo(da,&info));
+  PetscCall(TSGetDM(ts,&da));
+  PetscCall(DMDAGetLocalInfo(da,&info));
 
   /* Get pointers to vector data */
-  CHKERRQ(DMDAVecGetArrayRead(da,X,(void*)&x));
-  CHKERRQ(DMDAVecGetArrayRead(da,Xdot,(void*)&xdot));
-  CHKERRQ(DMDAVecGetArray(da,F,&f));
+  PetscCall(DMDAVecGetArrayRead(da,X,(void*)&x));
+  PetscCall(DMDAVecGetArrayRead(da,Xdot,(void*)&xdot));
+  PetscCall(DMDAVecGetArray(da,F,&f));
 
   /* Compute function over the locally owned part of the grid */
   for (i=info.xs; i<info.xs+info.xm; i++) {
@@ -158,9 +158,9 @@ static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
   }
 
   /* Restore vectors */
-  CHKERRQ(DMDAVecRestoreArrayRead(da,X,(void*)&x));
-  CHKERRQ(DMDAVecRestoreArrayRead(da,Xdot,(void*)&xdot));
-  CHKERRQ(DMDAVecRestoreArray(da,F,&f));
+  PetscCall(DMDAVecRestoreArrayRead(da,X,(void*)&x));
+  PetscCall(DMDAVecRestoreArrayRead(da,Xdot,(void*)&xdot));
+  PetscCall(DMDAVecRestoreArray(da,F,&f));
   PetscFunctionReturn(0);
 }
 
@@ -176,8 +176,8 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
   const Field    *x;
 
   PetscFunctionBeginUser;
-  CHKERRQ(TSGetDM(ts,&da));
-  CHKERRQ(DMDAGetLocalInfo(da,&info));
+  PetscCall(TSGetDM(ts,&da));
+  PetscCall(DMDAGetLocalInfo(da,&info));
   hx   = 1.0/(PetscReal)info.mx;
 
   /*
@@ -186,13 +186,13 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
      By placing code between these two statements, computations can be
      done while messages are in transition.
   */
-  CHKERRQ(DMGetLocalVector(da,&Xloc));
-  CHKERRQ(DMGlobalToLocalBegin(da,X,INSERT_VALUES,Xloc));
-  CHKERRQ(DMGlobalToLocalEnd(da,X,INSERT_VALUES,Xloc));
+  PetscCall(DMGetLocalVector(da,&Xloc));
+  PetscCall(DMGlobalToLocalBegin(da,X,INSERT_VALUES,Xloc));
+  PetscCall(DMGlobalToLocalEnd(da,X,INSERT_VALUES,Xloc));
 
   /* Get pointers to vector data */
-  CHKERRQ(DMDAVecGetArrayRead(da,Xloc,(void*)&x));
-  CHKERRQ(DMDAVecGetArray(da,F,&f));
+  PetscCall(DMDAVecGetArrayRead(da,Xloc,(void*)&x));
+  PetscCall(DMDAVecGetArray(da,F,&f));
 
   /* Compute function over the locally owned part of the grid */
   for (i=info.xs; i<info.xs+info.xm; i++) {
@@ -210,9 +210,9 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
   }
 
   /* Restore vectors */
-  CHKERRQ(DMDAVecRestoreArrayRead(da,Xloc,(void*)&x));
-  CHKERRQ(DMDAVecRestoreArray(da,F,&f));
-  CHKERRQ(DMRestoreLocalVector(da,&Xloc));
+  PetscCall(DMDAVecRestoreArrayRead(da,Xloc,(void*)&x));
+  PetscCall(DMDAVecRestoreArray(da,F,&f));
+  PetscCall(DMRestoreLocalVector(da,&Xloc));
   PetscFunctionReturn(0);
 }
 
@@ -229,12 +229,12 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat J,
   const Field    *x,*xdot;
 
   PetscFunctionBeginUser;
-  CHKERRQ(TSGetDM(ts,&da));
-  CHKERRQ(DMDAGetLocalInfo(da,&info));
+  PetscCall(TSGetDM(ts,&da));
+  PetscCall(DMDAGetLocalInfo(da,&info));
 
   /* Get pointers to vector data */
-  CHKERRQ(DMDAVecGetArrayRead(da,X,(void*)&x));
-  CHKERRQ(DMDAVecGetArrayRead(da,Xdot,(void*)&xdot));
+  PetscCall(DMDAVecGetArrayRead(da,X,(void*)&x));
+  PetscCall(DMDAVecGetArrayRead(da,Xdot,(void*)&xdot));
 
   /* Compute function over the locally owned part of the grid */
   for (i=info.xs; i<info.xs+info.xm; i++) {
@@ -243,18 +243,18 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat J,
 
     v[0][0] = a + k[0]; v[0][1] =  -k[1];
     v[1][0] =    -k[0]; v[1][1] = a+k[1];
-    CHKERRQ(MatSetValuesBlocked(Jpre,1,&i,1,&i,&v[0][0],INSERT_VALUES));
+    PetscCall(MatSetValuesBlocked(Jpre,1,&i,1,&i,&v[0][0],INSERT_VALUES));
   }
 
   /* Restore vectors */
-  CHKERRQ(DMDAVecRestoreArrayRead(da,X,(void*)&x));
-  CHKERRQ(DMDAVecRestoreArrayRead(da,Xdot,(void*)&xdot));
+  PetscCall(DMDAVecRestoreArrayRead(da,X,(void*)&x));
+  PetscCall(DMDAVecRestoreArrayRead(da,Xdot,(void*)&xdot));
 
-  CHKERRQ(MatAssemblyBegin(Jpre,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(Jpre,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(Jpre,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(Jpre,MAT_FINAL_ASSEMBLY));
   if (J != Jpre) {
-    CHKERRQ(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY));
   }
   PetscFunctionReturn(0);
 }
@@ -269,12 +269,12 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
   PetscReal      hx;
 
   PetscFunctionBeginUser;
-  CHKERRQ(TSGetDM(ts,&da));
-  CHKERRQ(DMDAGetLocalInfo(da,&info));
+  PetscCall(TSGetDM(ts,&da));
+  PetscCall(DMDAGetLocalInfo(da,&info));
   hx   = 1.0/(PetscReal)info.mx;
 
   /* Get pointers to vector data */
-  CHKERRQ(DMDAVecGetArray(da,X,&x));
+  PetscCall(DMDAVecGetArray(da,X,&x));
 
   /* Compute function over the locally owned part of the grid */
   for (i=info.xs; i<info.xs+info.xm; i++) {
@@ -282,7 +282,7 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
     x[i][0] = 1 + user->s[1]*r;
     x[i][1] = user->k[0]*ik*x[i][0] + user->s[1]*ik;
   }
-  CHKERRQ(DMDAVecRestoreArray(da,X,&x));
+  PetscCall(DMDAVecRestoreArray(da,X,&x));
   PetscFunctionReturn(0);
 }
 

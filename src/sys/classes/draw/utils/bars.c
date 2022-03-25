@@ -41,10 +41,10 @@ PetscErrorCode  PetscDrawBarCreate(PetscDraw draw,PetscDrawBar *bar)
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscValidPointer(bar,2);
 
-  CHKERRQ(PetscHeaderCreate(h,PETSC_DRAWBAR_CLASSID,"DrawBar","Bar Graph","Draw",PetscObjectComm((PetscObject)draw),PetscDrawBarDestroy,NULL));
-  CHKERRQ(PetscLogObjectParent((PetscObject)draw,(PetscObject)h));
+  PetscCall(PetscHeaderCreate(h,PETSC_DRAWBAR_CLASSID,"DrawBar","Bar Graph","Draw",PetscObjectComm((PetscObject)draw),PetscDrawBarDestroy,NULL));
+  PetscCall(PetscLogObjectParent((PetscObject)draw,(PetscObject)h));
 
-  CHKERRQ(PetscObjectReference((PetscObject)draw));
+  PetscCall(PetscObjectReference((PetscObject)draw));
   h->win = draw;
 
   h->view        = NULL;
@@ -54,7 +54,7 @@ PetscErrorCode  PetscDrawBarCreate(PetscDraw draw,PetscDrawBar *bar)
   h->ymax        = 0.;
   h->numBins     = 0;
 
-  CHKERRQ(PetscDrawAxisCreate(draw,&h->axis));
+  PetscCall(PetscDrawAxisCreate(draw,&h->axis));
   h->axis->xticks = NULL;
 
   *bar = h;
@@ -86,14 +86,14 @@ PetscErrorCode  PetscDrawBarSetData(PetscDrawBar bar,PetscInt bins,const PetscRe
   PetscValidHeaderSpecific(bar,PETSC_DRAWBAR_CLASSID,1);
 
   if (bar->numBins != bins) {
-    CHKERRQ(PetscFree(bar->values));
-    CHKERRQ(PetscMalloc1(bins, &bar->values));
+    PetscCall(PetscFree(bar->values));
+    PetscCall(PetscMalloc1(bins, &bar->values));
     bar->numBins = bins;
   }
-  CHKERRQ(PetscArraycpy(bar->values,data,bins));
+  PetscCall(PetscArraycpy(bar->values,data,bins));
   bar->numBins = bins;
   if (labels) {
-    CHKERRQ(PetscStrArrayallocpy(labels,&bar->labels));
+    PetscCall(PetscStrArrayallocpy(labels,&bar->labels));
   }
   PetscFunctionReturn(0);
 }
@@ -117,11 +117,11 @@ PetscErrorCode  PetscDrawBarDestroy(PetscDrawBar *bar)
   PetscValidHeaderSpecific(*bar,PETSC_DRAWBAR_CLASSID,1);
   if (--((PetscObject)(*bar))->refct > 0) PetscFunctionReturn(0);
 
-  CHKERRQ(PetscFree((*bar)->values));
-  CHKERRQ(PetscStrArrayDestroy(&(*bar)->labels));
-  CHKERRQ(PetscDrawAxisDestroy(&(*bar)->axis));
-  CHKERRQ(PetscDrawDestroy(&(*bar)->win));
-  CHKERRQ(PetscHeaderDestroy(bar));
+  PetscCall(PetscFree((*bar)->values));
+  PetscCall(PetscStrArrayDestroy(&(*bar)->labels));
+  PetscCall(PetscDrawAxisDestroy(&(*bar)->axis));
+  PetscCall(PetscDrawDestroy(&(*bar)->win));
+  PetscCall(PetscHeaderDestroy(bar));
   PetscFunctionReturn(0);
 }
 
@@ -150,9 +150,9 @@ PetscErrorCode  PetscDrawBarDraw(PetscDrawBar bar)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(bar,PETSC_DRAWBAR_CLASSID,1);
-  CHKERRQ(PetscDrawIsNull(bar->win,&isnull));
+  PetscCall(PetscDrawIsNull(bar->win,&isnull));
   if (isnull) PetscFunctionReturn(0);
-  CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)bar),&rank));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)bar),&rank));
 
   if (bar->numBins < 1) PetscFunctionReturn(0);
 
@@ -180,9 +180,9 @@ PetscErrorCode  PetscDrawBarDraw(PetscDrawBar bar)
   labels = bar->labels;
 
   if (bar->sort) {
-    CHKERRQ(PetscMalloc1(numValues,&perm));
+    PetscCall(PetscMalloc1(numValues,&perm));
     for (i=0; i<numValues;i++) perm[i] = i;
-    CHKERRQ(PetscSortRealWithPermutation(numValues,values,perm));
+    PetscCall(PetscSortRealWithPermutation(numValues,values,perm));
     if (bar->sorttolerance) {
       for (i=0; i<numValues;i++) {
         if (values[perm[numValues - i - 1]] < bar->sorttolerance) {
@@ -194,36 +194,36 @@ PetscErrorCode  PetscDrawBarDraw(PetscDrawBar bar)
   }
 
   draw = bar->win;
-  CHKERRQ(PetscDrawCheckResizedWindow(draw));
-  CHKERRQ(PetscDrawClear(draw));
+  PetscCall(PetscDrawCheckResizedWindow(draw));
+  PetscCall(PetscDrawClear(draw));
 
-  CHKERRQ(PetscDrawAxisSetLimits(bar->axis,xmin,xmax,ymin,ymax));
-  CHKERRQ(PetscDrawAxisDraw(bar->axis));
+  PetscCall(PetscDrawAxisSetLimits(bar->axis,xmin,xmax,ymin,ymax));
+  PetscCall(PetscDrawAxisDraw(bar->axis));
 
-  ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
+  ierr = PetscDrawCollectiveBegin(draw);PetscCall(ierr);
   if (rank == 0) { /* Draw bins */
     for (i=0; i<nplot; i++) {
       idx = (bar->sort ? perm[numValues - i - 1] : i);
       binLeft  = xmin + i;
       binRight = xmin + i + 1;
-      CHKERRQ(PetscDrawRectangle(draw,binLeft,ymin,binRight,values[idx],bcolor,bcolor,bcolor,bcolor));
-      CHKERRQ(PetscDrawLine(draw,binLeft,ymin,binLeft,values[idx],PETSC_DRAW_BLACK));
-      CHKERRQ(PetscDrawLine(draw,binRight,ymin,binRight,values[idx],PETSC_DRAW_BLACK));
-      CHKERRQ(PetscDrawLine(draw,binLeft,values[idx],binRight,values[idx],PETSC_DRAW_BLACK));
+      PetscCall(PetscDrawRectangle(draw,binLeft,ymin,binRight,values[idx],bcolor,bcolor,bcolor,bcolor));
+      PetscCall(PetscDrawLine(draw,binLeft,ymin,binLeft,values[idx],PETSC_DRAW_BLACK));
+      PetscCall(PetscDrawLine(draw,binRight,ymin,binRight,values[idx],PETSC_DRAW_BLACK));
+      PetscCall(PetscDrawLine(draw,binLeft,values[idx],binRight,values[idx],PETSC_DRAW_BLACK));
       if (labels) {
         PetscReal h;
-        CHKERRQ(PetscDrawStringGetSize(draw,NULL,&h));
-        CHKERRQ(PetscDrawStringCentered(draw,.5*(binLeft+binRight),ymin - 1.5*h,bcolor,labels[idx]));
+        PetscCall(PetscDrawStringGetSize(draw,NULL,&h));
+        PetscCall(PetscDrawStringCentered(draw,.5*(binLeft+binRight),ymin - 1.5*h,bcolor,labels[idx]));
       }
       if (color == PETSC_DRAW_ROTATE) bcolor++;
       if (bcolor > PETSC_DRAW_BASIC_COLORS-1) bcolor = PETSC_DRAW_BLACK+1;
     }
   }
-  ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
-  if (bar->sort) CHKERRQ(PetscFree(perm));
+  ierr = PetscDrawCollectiveEnd(draw);PetscCall(ierr);
+  if (bar->sort) PetscCall(PetscFree(perm));
 
-  CHKERRQ(PetscDrawFlush(draw));
-  CHKERRQ(PetscDrawPause(draw));
+  PetscCall(PetscDrawFlush(draw));
+  PetscCall(PetscDrawPause(draw));
   PetscFunctionReturn(0);
 }
 
@@ -243,7 +243,7 @@ PetscErrorCode  PetscDrawBarSave(PetscDrawBar bar)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(bar,PETSC_DRAWBAR_CLASSID,1);
-  CHKERRQ(PetscDrawSave(bar->win));
+  PetscCall(PetscDrawSave(bar->win));
   PetscFunctionReturn(0);
 }
 
@@ -387,11 +387,11 @@ PetscErrorCode  PetscDrawBarSetFromOptions(PetscDrawBar bar)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(bar,PETSC_DRAWBAR_CLASSID,1);
 
-  CHKERRQ(PetscOptionsHasName(((PetscObject)bar)->options,((PetscObject)bar)->prefix,"-bar_sort",&set));
+  PetscCall(PetscOptionsHasName(((PetscObject)bar)->options,((PetscObject)bar)->prefix,"-bar_sort",&set));
   if (set) {
     PetscReal tol = bar->sorttolerance;
-    CHKERRQ(PetscOptionsGetReal(((PetscObject)bar)->options,((PetscObject)bar)->prefix,"-bar_sort",&tol,NULL));
-    CHKERRQ(PetscDrawBarSort(bar,PETSC_TRUE,tol));
+    PetscCall(PetscOptionsGetReal(((PetscObject)bar)->options,((PetscObject)bar)->prefix,"-bar_sort",&tol,NULL));
+    PetscCall(PetscDrawBarSort(bar,PETSC_TRUE,tol));
   }
   PetscFunctionReturn(0);
 }

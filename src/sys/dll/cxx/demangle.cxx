@@ -17,14 +17,14 @@ PetscErrorCode PetscDemangleSymbol(const char mangledName[], char **name)
     PetscCheckFalse(status == -1,PETSC_COMM_SELF, PETSC_ERR_MEM, "Failed to allocate memory for symbol %s", mangledName);
     else if (status == -2) {
       /* Mangled name is not a valid name under the C++ ABI mangling rules */
-      CHKERRQ(PetscStrallocpy(mangledName, name));
+      PetscCall(PetscStrallocpy(mangledName, name));
       PetscFunctionReturn(0);
     } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Demangling failed for symbol %s", mangledName);
   }
-  CHKERRQ(PetscStrallocpy(newname, name));
+  PetscCall(PetscStrallocpy(newname, name));
   free(newname);
 #else
-  CHKERRQ(PetscStrallocpy(mangledName, name));
+  PetscCall(PetscStrallocpy(mangledName, name));
 #endif
   PetscFunctionReturn(0);
 }

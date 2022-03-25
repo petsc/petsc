@@ -11,7 +11,7 @@ PetscErrorCode  MatFDColoringSetF(MatFDColoring fd,Vec F)
 {
   PetscFunctionBegin;
   if (F) {
-    CHKERRQ(VecCopy(F,fd->w1));
+    PetscCall(VecCopy(F,fd->w1));
     fd->fset = PETSC_TRUE;
   } else {
     fd->fset = PETSC_FALSE;
@@ -35,7 +35,7 @@ static PetscErrorCode MatFDColoringView_Draw_Zoom(PetscDraw draw,void *Aa)
       row = Jentry[nz].row;
       y   = fd->M - row - fd->rstart;
       x   = (PetscReal)Jentry[nz++].col;
-      CHKERRQ(PetscDrawRectangle(draw,x,y,x+1,y+1,i+1,i+1,i+1,i+1));
+      PetscCall(PetscDrawRectangle(draw,x,y,x+1,y+1,i+1,i+1,i+1,i+1));
     }
   }
   PetscFunctionReturn(0);
@@ -48,17 +48,17 @@ static PetscErrorCode MatFDColoringView_Draw(MatFDColoring fd,PetscViewer viewer
   PetscReal      xr,yr,xl,yl,h,w;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscViewerDrawGetDraw(viewer,0,&draw));
-  CHKERRQ(PetscDrawIsNull(draw,&isnull));
+  PetscCall(PetscViewerDrawGetDraw(viewer,0,&draw));
+  PetscCall(PetscDrawIsNull(draw,&isnull));
   if (isnull) PetscFunctionReturn(0);
 
   xr   = fd->N; yr  = fd->M; h = yr/10.0; w = xr/10.0;
   xr  += w;     yr += h;    xl = -w;     yl = -h;
-  CHKERRQ(PetscDrawSetCoordinates(draw,xl,yl,xr,yr));
-  CHKERRQ(PetscObjectCompose((PetscObject)fd,"Zoomviewer",(PetscObject)viewer));
-  CHKERRQ(PetscDrawZoom(draw,MatFDColoringView_Draw_Zoom,fd));
-  CHKERRQ(PetscObjectCompose((PetscObject)fd,"Zoomviewer",NULL));
-  CHKERRQ(PetscDrawSave(draw));
+  PetscCall(PetscDrawSetCoordinates(draw,xl,yl,xr,yr));
+  PetscCall(PetscObjectCompose((PetscObject)fd,"Zoomviewer",(PetscObject)viewer));
+  PetscCall(PetscDrawZoom(draw,MatFDColoringView_Draw_Zoom,fd));
+  PetscCall(PetscObjectCompose((PetscObject)fd,"Zoomviewer",NULL));
+  PetscCall(PetscDrawSave(draw));
   PetscFunctionReturn(0);
 }
 
@@ -99,42 +99,42 @@ PetscErrorCode  MatFDColoringView(MatFDColoring c,PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(c,MAT_FDCOLORING_CLASSID,1);
   if (!viewer) {
-    CHKERRQ(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)c),&viewer));
+    PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)c),&viewer));
   }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(c,1,viewer,2);
 
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (isdraw) {
-    CHKERRQ(MatFDColoringView_Draw(c,viewer));
+    PetscCall(MatFDColoringView_Draw(c,viewer));
   } else if (iascii) {
-    CHKERRQ(PetscObjectPrintClassNamePrefixType((PetscObject)c,viewer));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Error tolerance=%g\n",(double)c->error_rel));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Umin=%g\n",(double)c->umin));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Number of colors=%" PetscInt_FMT "\n",c->ncolors));
+    PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)c,viewer));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Error tolerance=%g\n",(double)c->error_rel));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Umin=%g\n",(double)c->umin));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Number of colors=%" PetscInt_FMT "\n",c->ncolors));
 
-    CHKERRQ(PetscViewerGetFormat(viewer,&format));
+    PetscCall(PetscViewerGetFormat(viewer,&format));
     if (format != PETSC_VIEWER_ASCII_INFO) {
       PetscInt row,col,nz;
       nz = 0;
       for (i=0; i<c->ncolors; i++) {
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Information for color %" PetscInt_FMT "\n",i));
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"    Number of columns %" PetscInt_FMT "\n",c->ncolumns[i]));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"  Information for color %" PetscInt_FMT "\n",i));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"    Number of columns %" PetscInt_FMT "\n",c->ncolumns[i]));
         for (j=0; j<c->ncolumns[i]; j++) {
-          CHKERRQ(PetscViewerASCIIPrintf(viewer,"      %" PetscInt_FMT "\n",c->columns[i][j]));
+          PetscCall(PetscViewerASCIIPrintf(viewer,"      %" PetscInt_FMT "\n",c->columns[i][j]));
         }
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"    Number of rows %" PetscInt_FMT "\n",c->nrows[i]));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"    Number of rows %" PetscInt_FMT "\n",c->nrows[i]));
         if (c->matentry) {
           for (j=0; j<c->nrows[i]; j++) {
             row  = c->matentry[nz].row;
             col  = c->matentry[nz++].col;
-            CHKERRQ(PetscViewerASCIIPrintf(viewer,"      %" PetscInt_FMT " %" PetscInt_FMT " \n",row,col));
+            PetscCall(PetscViewerASCIIPrintf(viewer,"      %" PetscInt_FMT " %" PetscInt_FMT " \n",row,col));
           }
         }
       }
     }
-    CHKERRQ(PetscViewerFlush(viewer));
+    PetscCall(PetscViewerFlush(viewer));
   }
   PetscFunctionReturn(0);
 }
@@ -228,16 +228,16 @@ PetscErrorCode MatFDColoringSetUp(Mat mat,ISColoring iscoloring,MatFDColoring co
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidHeaderSpecific(color,MAT_FDCOLORING_CLASSID,3);
   if (color->setupcalled) PetscFunctionReturn(0);
-  CHKERRQ(PetscObjectCompareId((PetscObject)mat,color->matid,&eq));
+  PetscCall(PetscObjectCompareId((PetscObject)mat,color->matid,&eq));
   PetscCheck(eq,PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONG,"Matrix used with MatFDColoringSetUp() must be that used with MatFDColoringCreate()");
 
-  CHKERRQ(PetscLogEventBegin(MAT_FDColoringSetUp,mat,0,0,0));
+  PetscCall(PetscLogEventBegin(MAT_FDColoringSetUp,mat,0,0,0));
   if (mat->ops->fdcoloringsetup) {
-    CHKERRQ((*mat->ops->fdcoloringsetup)(mat,iscoloring,color));
+    PetscCall((*mat->ops->fdcoloringsetup)(mat,iscoloring,color));
   } else SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Code not yet written for matrix type %s",((PetscObject)mat)->type_name);
 
   color->setupcalled = PETSC_TRUE;
-   CHKERRQ(PetscLogEventEnd(MAT_FDColoringSetUp,mat,0,0,0));
+   PetscCall(PetscLogEventEnd(MAT_FDColoringSetUp,mat,0,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -343,25 +343,25 @@ PetscErrorCode  MatFDColoringSetFromOptions(MatFDColoring matfd)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_CLASSID,1);
 
-  ierr = PetscObjectOptionsBegin((PetscObject)matfd);CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsReal("-mat_fd_coloring_err","Square root of relative error in function","MatFDColoringSetParameters",matfd->error_rel,&matfd->error_rel,NULL));
-  CHKERRQ(PetscOptionsReal("-mat_fd_coloring_umin","Minimum allowable u magnitude","MatFDColoringSetParameters",matfd->umin,&matfd->umin,NULL));
-  CHKERRQ(PetscOptionsString("-mat_fd_type","Algorithm to compute h, wp or ds","MatFDColoringCreate",matfd->htype,value,sizeof(value),&flg));
+  ierr = PetscObjectOptionsBegin((PetscObject)matfd);PetscCall(ierr);
+  PetscCall(PetscOptionsReal("-mat_fd_coloring_err","Square root of relative error in function","MatFDColoringSetParameters",matfd->error_rel,&matfd->error_rel,NULL));
+  PetscCall(PetscOptionsReal("-mat_fd_coloring_umin","Minimum allowable u magnitude","MatFDColoringSetParameters",matfd->umin,&matfd->umin,NULL));
+  PetscCall(PetscOptionsString("-mat_fd_type","Algorithm to compute h, wp or ds","MatFDColoringCreate",matfd->htype,value,sizeof(value),&flg));
   if (flg) {
     if (value[0] == 'w' && value[1] == 'p') matfd->htype = "wp";
     else if (value[0] == 'd' && value[1] == 's') matfd->htype = "ds";
     else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown finite differencing type %s",value);
   }
-  CHKERRQ(PetscOptionsInt("-mat_fd_coloring_brows","Number of block rows","MatFDColoringSetBlockSize",matfd->brows,&matfd->brows,NULL));
-  CHKERRQ(PetscOptionsInt("-mat_fd_coloring_bcols","Number of block columns","MatFDColoringSetBlockSize",matfd->bcols,&matfd->bcols,&flg));
+  PetscCall(PetscOptionsInt("-mat_fd_coloring_brows","Number of block rows","MatFDColoringSetBlockSize",matfd->brows,&matfd->brows,NULL));
+  PetscCall(PetscOptionsInt("-mat_fd_coloring_bcols","Number of block columns","MatFDColoringSetBlockSize",matfd->bcols,&matfd->bcols,&flg));
   if (flg && matfd->bcols > matfd->ncolors) {
     /* input bcols cannot be > matfd->ncolors, thus set it as ncolors */
     matfd->bcols = matfd->ncolors;
   }
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  CHKERRQ(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)matfd));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)matfd));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -408,15 +408,15 @@ PetscErrorCode MatFDColoringViewFromOptions(MatFDColoring fd,const char prefix[]
 
   PetscFunctionBegin;
   if (prefix) {
-    CHKERRQ(PetscOptionsGetViewer(PetscObjectComm((PetscObject)fd),((PetscObject)fd)->options,prefix,optionname,&viewer,&format,&flg));
+    PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)fd),((PetscObject)fd)->options,prefix,optionname,&viewer,&format,&flg));
   } else {
-    CHKERRQ(PetscOptionsGetViewer(PetscObjectComm((PetscObject)fd),((PetscObject)fd)->options,((PetscObject)fd)->prefix,optionname,&viewer,&format,&flg));
+    PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)fd),((PetscObject)fd)->options,((PetscObject)fd)->prefix,optionname,&viewer,&format,&flg));
   }
   if (flg) {
-    CHKERRQ(PetscViewerPushFormat(viewer,format));
-    CHKERRQ(MatFDColoringView(fd,viewer));
-    CHKERRQ(PetscViewerPopFormat(viewer));
-    CHKERRQ(PetscViewerDestroy(&viewer));
+    PetscCall(PetscViewerPushFormat(viewer,format));
+    PetscCall(MatFDColoringView(fd,viewer));
+    PetscCall(PetscViewerPopFormat(viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
   }
   PetscFunctionReturn(0);
 }
@@ -449,27 +449,27 @@ PetscErrorCode  MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscCheck(mat->assembled,PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Matrix must be assembled by calls to MatAssemblyBegin/End();");
-  CHKERRQ(PetscLogEventBegin(MAT_FDColoringCreate,mat,0,0,0));
-  CHKERRQ(MatGetSize(mat,&M,&N));
+  PetscCall(PetscLogEventBegin(MAT_FDColoringCreate,mat,0,0,0));
+  PetscCall(MatGetSize(mat,&M,&N));
   PetscCheckFalse(M != N,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Only for square matrices");
-  CHKERRQ(PetscObjectGetComm((PetscObject)mat,&comm));
-  CHKERRQ(PetscHeaderCreate(c,MAT_FDCOLORING_CLASSID,"MatFDColoring","Jacobian computation via finite differences with coloring","Mat",comm,MatFDColoringDestroy,MatFDColoringView));
+  PetscCall(PetscObjectGetComm((PetscObject)mat,&comm));
+  PetscCall(PetscHeaderCreate(c,MAT_FDCOLORING_CLASSID,"MatFDColoring","Jacobian computation via finite differences with coloring","Mat",comm,MatFDColoringDestroy,MatFDColoringView));
 
   c->ctype = iscoloring->ctype;
-  CHKERRQ(PetscObjectGetId((PetscObject)mat,&c->matid));
+  PetscCall(PetscObjectGetId((PetscObject)mat,&c->matid));
 
   if (mat->ops->fdcoloringcreate) {
-    CHKERRQ((*mat->ops->fdcoloringcreate)(mat,iscoloring,c));
+    PetscCall((*mat->ops->fdcoloringcreate)(mat,iscoloring,c));
   } else SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Code not yet written for matrix type %s",((PetscObject)mat)->type_name);
 
-  CHKERRQ(MatCreateVecs(mat,NULL,&c->w1));
+  PetscCall(MatCreateVecs(mat,NULL,&c->w1));
   /* Vec is used intensively in particular piece of scalar CPU code; won't benefit from bouncing back and forth to the GPU */
-  CHKERRQ(VecBindToCPU(c->w1,PETSC_TRUE));
-  CHKERRQ(PetscLogObjectParent((PetscObject)c,(PetscObject)c->w1));
-  CHKERRQ(VecDuplicate(c->w1,&c->w2));
+  PetscCall(VecBindToCPU(c->w1,PETSC_TRUE));
+  PetscCall(PetscLogObjectParent((PetscObject)c,(PetscObject)c->w1));
+  PetscCall(VecDuplicate(c->w1,&c->w2));
   /* Vec is used intensively in particular piece of scalar CPU code; won't benefit from bouncing back and forth to the GPU */
-  CHKERRQ(VecBindToCPU(c->w2,PETSC_TRUE));
-  CHKERRQ(PetscLogObjectParent((PetscObject)c,(PetscObject)c->w2));
+  PetscCall(VecBindToCPU(c->w2,PETSC_TRUE));
+  PetscCall(PetscLogObjectParent((PetscObject)c,(PetscObject)c->w2));
 
   c->error_rel    = PETSC_SQRT_MACHINE_EPSILON;
   c->umin         = 100.0*PETSC_SQRT_MACHINE_EPSILON;
@@ -479,8 +479,8 @@ PetscErrorCode  MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring 
   c->setupcalled  = PETSC_FALSE;
 
   *color = c;
-  CHKERRQ(PetscObjectCompose((PetscObject)mat,"SNESMatFDColoring",(PetscObject)c));
-  CHKERRQ(PetscLogEventEnd(MAT_FDColoringCreate,mat,0,0,0));
+  PetscCall(PetscObjectCompose((PetscObject)mat,"SNESMatFDColoring",(PetscObject)c));
+  PetscCall(PetscLogEventEnd(MAT_FDColoringCreate,mat,0,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -508,22 +508,22 @@ PetscErrorCode  MatFDColoringDestroy(MatFDColoring *c)
 
   /* we do not free the column arrays since their entries are owned by the ISs in color->isa */
   for (i=0; i<color->ncolors; i++) {
-    CHKERRQ(ISDestroy(&color->isa[i]));
+    PetscCall(ISDestroy(&color->isa[i]));
   }
-  CHKERRQ(PetscFree(color->isa));
-  CHKERRQ(PetscFree2(color->ncolumns,color->columns));
-  CHKERRQ(PetscFree(color->nrows));
+  PetscCall(PetscFree(color->isa));
+  PetscCall(PetscFree2(color->ncolumns,color->columns));
+  PetscCall(PetscFree(color->nrows));
   if (color->htype[0] == 'w') {
-    CHKERRQ(PetscFree(color->matentry2));
+    PetscCall(PetscFree(color->matentry2));
   } else {
-    CHKERRQ(PetscFree(color->matentry));
+    PetscCall(PetscFree(color->matentry));
   }
-  CHKERRQ(PetscFree(color->dy));
-  if (color->vscale) CHKERRQ(VecDestroy(&color->vscale));
-  CHKERRQ(VecDestroy(&color->w1));
-  CHKERRQ(VecDestroy(&color->w2));
-  CHKERRQ(VecDestroy(&color->w3));
-  CHKERRQ(PetscHeaderDestroy(c));
+  PetscCall(PetscFree(color->dy));
+  if (color->vscale) PetscCall(VecDestroy(&color->vscale));
+  PetscCall(VecDestroy(&color->w1));
+  PetscCall(VecDestroy(&color->w2));
+  PetscCall(VecDestroy(&color->w3));
+  PetscCall(PetscHeaderDestroy(c));
   PetscFunctionReturn(0);
 }
 
@@ -601,18 +601,18 @@ PetscErrorCode  MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,void *sct
   PetscValidHeaderSpecific(J,MAT_CLASSID,1);
   PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_CLASSID,2);
   PetscValidHeaderSpecific(x1,VEC_CLASSID,3);
-  CHKERRQ(PetscObjectCompareId((PetscObject)J,coloring->matid,&eq));
+  PetscCall(PetscObjectCompareId((PetscObject)J,coloring->matid,&eq));
   PetscCheck(eq,PetscObjectComm((PetscObject)J),PETSC_ERR_ARG_WRONG,"Matrix used with MatFDColoringApply() must be that used with MatFDColoringCreate()");
   PetscCheck(coloring->f,PetscObjectComm((PetscObject)J),PETSC_ERR_ARG_WRONGSTATE,"Must call MatFDColoringSetFunction()");
   PetscCheck(J->ops->fdcoloringapply,PETSC_COMM_SELF,PETSC_ERR_SUP,"Not supported for this matrix type %s",((PetscObject)J)->type_name);
   PetscCheck(coloring->setupcalled,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call MatFDColoringSetUp()");
 
-  CHKERRQ(MatSetUnfactored(J));
-  CHKERRQ(PetscLogEventBegin(MAT_FDColoringApply,coloring,J,x1,0));
-  CHKERRQ((*J->ops->fdcoloringapply)(J,coloring,x1,sctx));
-  CHKERRQ(PetscLogEventEnd(MAT_FDColoringApply,coloring,J,x1,0));
+  PetscCall(MatSetUnfactored(J));
+  PetscCall(PetscLogEventBegin(MAT_FDColoringApply,coloring,J,x1,0));
+  PetscCall((*J->ops->fdcoloringapply)(J,coloring,x1,sctx));
+  PetscCall(PetscLogEventEnd(MAT_FDColoringApply,coloring,J,x1,0));
   if (!coloring->viewed) {
-    CHKERRQ(MatFDColoringViewFromOptions(coloring,NULL,"-mat_fd_coloring_view"));
+    PetscCall(MatFDColoringViewFromOptions(coloring,NULL,"-mat_fd_coloring_view"));
     coloring->viewed = PETSC_TRUE;
   }
   PetscFunctionReturn(0);

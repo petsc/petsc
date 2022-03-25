@@ -35,14 +35,14 @@ PetscErrorCode PetscSFSetGraphLayout(PetscSF sf,PetscLayout layout,PetscInt nlea
   PetscSFNode    *remote;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscLayoutGetLocalSize(layout,&nroots));
-  CHKERRQ(PetscLayoutGetRanges(layout,&range));
-  CHKERRQ(PetscMalloc1(nleaves,&remote));
+  PetscCall(PetscLayoutGetLocalSize(layout,&nroots));
+  PetscCall(PetscLayoutGetRanges(layout,&range));
+  PetscCall(PetscMalloc1(nleaves,&remote));
   if (nleaves) { ls = iremote[0] + 1; }
   for (i=0; i<nleaves; i++) {
     const PetscInt idx = iremote[i] - ls;
     if (idx < 0 || idx >= ln) { /* short-circuit the search */
-      CHKERRQ(PetscLayoutFindOwnerIndex(layout,iremote[i],&lr,&remote[i].index));
+      PetscCall(PetscLayoutFindOwnerIndex(layout,iremote[i],&lr,&remote[i].index));
       remote[i].rank = lr;
       ls = range[lr];
       ln = range[lr+1] - ls;
@@ -51,7 +51,7 @@ PetscErrorCode PetscSFSetGraphLayout(PetscSF sf,PetscLayout layout,PetscInt nlea
       remote[i].index = idx;
     }
   }
-  CHKERRQ(PetscSFSetGraph(sf,nroots,nleaves,ilocal,localmode,remote,PETSC_OWN_POINTER));
+  PetscCall(PetscSFSetGraph(sf,nroots,nleaves,ilocal,localmode,remote,PETSC_OWN_POINTER));
   PetscFunctionReturn(0);
 }
 
@@ -83,37 +83,37 @@ PetscErrorCode PetscSFSetGraphSection(PetscSF sf, PetscSection localSection, Pet
   PetscValidHeaderSpecific(localSection, PETSC_SECTION_CLASSID, 2);
   PetscValidHeaderSpecific(globalSection, PETSC_SECTION_CLASSID, 3);
 
-  CHKERRQ(PetscObjectGetComm((PetscObject)sf,&comm));
-  CHKERRMPI(MPI_Comm_size(comm, &size));
-  CHKERRMPI(MPI_Comm_rank(comm, &rank));
-  CHKERRQ(PetscSectionGetChart(globalSection, &pStart, &pEnd));
-  CHKERRQ(PetscSectionGetConstrainedStorageSize(globalSection, &nroots));
-  CHKERRQ(PetscLayoutCreate(comm, &layout));
-  CHKERRQ(PetscLayoutSetBlockSize(layout, 1));
-  CHKERRQ(PetscLayoutSetLocalSize(layout, nroots));
-  CHKERRQ(PetscLayoutSetUp(layout));
-  CHKERRQ(PetscLayoutGetRanges(layout, &ranges));
+  PetscCall(PetscObjectGetComm((PetscObject)sf,&comm));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  PetscCall(PetscSectionGetChart(globalSection, &pStart, &pEnd));
+  PetscCall(PetscSectionGetConstrainedStorageSize(globalSection, &nroots));
+  PetscCall(PetscLayoutCreate(comm, &layout));
+  PetscCall(PetscLayoutSetBlockSize(layout, 1));
+  PetscCall(PetscLayoutSetLocalSize(layout, nroots));
+  PetscCall(PetscLayoutSetUp(layout));
+  PetscCall(PetscLayoutGetRanges(layout, &ranges));
   for (p = pStart; p < pEnd; ++p) {
     PetscInt gdof, gcdof;
 
-    CHKERRQ(PetscSectionGetDof(globalSection, p, &gdof));
-    CHKERRQ(PetscSectionGetConstraintDof(globalSection, p, &gcdof));
+    PetscCall(PetscSectionGetDof(globalSection, p, &gdof));
+    PetscCall(PetscSectionGetConstraintDof(globalSection, p, &gcdof));
     PetscCheckFalse(gcdof > (gdof < 0 ? -(gdof+1) : gdof),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %" PetscInt_FMT " has %" PetscInt_FMT " constraints > %" PetscInt_FMT " dof", p, gcdof, (gdof < 0 ? -(gdof+1) : gdof));
     nleaves += gdof < 0 ? -(gdof+1)-gcdof : gdof-gcdof;
   }
-  CHKERRQ(PetscMalloc1(nleaves, &local));
-  CHKERRQ(PetscMalloc1(nleaves, &remote));
+  PetscCall(PetscMalloc1(nleaves, &local));
+  PetscCall(PetscMalloc1(nleaves, &remote));
   for (p = pStart, l = 0; p < pEnd; ++p) {
     const PetscInt *cind;
     PetscInt       dof, cdof, off, gdof, gcdof, goff, gsize, d, c;
 
-    CHKERRQ(PetscSectionGetDof(localSection, p, &dof));
-    CHKERRQ(PetscSectionGetOffset(localSection, p, &off));
-    CHKERRQ(PetscSectionGetConstraintDof(localSection, p, &cdof));
-    CHKERRQ(PetscSectionGetConstraintIndices(localSection, p, &cind));
-    CHKERRQ(PetscSectionGetDof(globalSection, p, &gdof));
-    CHKERRQ(PetscSectionGetConstraintDof(globalSection, p, &gcdof));
-    CHKERRQ(PetscSectionGetOffset(globalSection, p, &goff));
+    PetscCall(PetscSectionGetDof(localSection, p, &dof));
+    PetscCall(PetscSectionGetOffset(localSection, p, &off));
+    PetscCall(PetscSectionGetConstraintDof(localSection, p, &cdof));
+    PetscCall(PetscSectionGetConstraintIndices(localSection, p, &cind));
+    PetscCall(PetscSectionGetDof(globalSection, p, &gdof));
+    PetscCall(PetscSectionGetConstraintDof(globalSection, p, &gcdof));
+    PetscCall(PetscSectionGetOffset(globalSection, p, &goff));
     if (!gdof) continue; /* Censored point */
     gsize = gdof < 0 ? -(gdof+1)-gcdof : gdof-gcdof;
     if (gsize != dof-cdof) {
@@ -129,7 +129,7 @@ PetscErrorCode PetscSFSetGraphSection(PetscSF sf, PetscSection localSection, Pet
       for (d = 0; d < gsize; ++d, ++l) {
         PetscInt offset = -(goff+1) + d, r;
 
-        CHKERRQ(PetscFindInt(offset,size+1,ranges,&r));
+        PetscCall(PetscFindInt(offset,size+1,ranges,&r));
         if (r < 0) r = -(r+2);
         PetscCheckFalse((r < 0) || (r >= size),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %" PetscInt_FMT " mapped to invalid process %" PetscInt_FMT " (%" PetscInt_FMT ", %" PetscInt_FMT ")", p, r, gdof, goff);
         remote[l].rank  = r;
@@ -143,8 +143,8 @@ PetscErrorCode PetscSFSetGraphSection(PetscSF sf, PetscSection localSection, Pet
     }
   }
   PetscCheckFalse(l != nleaves,comm, PETSC_ERR_PLIB, "Iteration error, l %" PetscInt_FMT " != nleaves %" PetscInt_FMT, l, nleaves);
-  CHKERRQ(PetscLayoutDestroy(&layout));
-  CHKERRQ(PetscSFSetGraph(sf, nroots, nleaves, local, PETSC_OWN_POINTER, remote, PETSC_OWN_POINTER));
+  PetscCall(PetscLayoutDestroy(&layout));
+  PetscCall(PetscSFSetGraph(sf, nroots, nleaves, local, PETSC_OWN_POINTER, remote, PETSC_OWN_POINTER));
   PetscFunctionReturn(0);
 }
 
@@ -152,8 +152,8 @@ static PetscErrorCode PetscSectionCheckConstraints_Static(PetscSection s)
 {
   PetscFunctionBegin;
   if (!s->bc) {
-    CHKERRQ(PetscSectionCreate(PETSC_COMM_SELF, &s->bc));
-    CHKERRQ(PetscSectionSetChart(s->bc, s->pStart, s->pEnd));
+    PetscCall(PetscSectionCreate(PETSC_COMM_SELF, &s->bc));
+    PetscCall(PetscSectionSetChart(s->bc, s->pStart, s->pEnd));
   }
   PetscFunctionReturn(0);
 }
@@ -184,8 +184,8 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
   PetscBool      *sub, hasc;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscLogEventBegin(PETSCSF_DistSect,sf,0,0,0));
-  CHKERRQ(PetscSectionGetNumFields(rootSection, &numFields));
+  PetscCall(PetscLogEventBegin(PETSCSF_DistSect,sf,0,0,0));
+  PetscCall(PetscSectionGetNumFields(rootSection, &numFields));
   if (numFields) {
     IS perm;
 
@@ -193,13 +193,13 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
        leafSection->perm. To keep this permutation set by the user, we grab
        the reference before calling PetscSectionSetNumFields() and set it
        back after. */
-    CHKERRQ(PetscSectionGetPermutation(leafSection, &perm));
-    CHKERRQ(PetscObjectReference((PetscObject)perm));
-    CHKERRQ(PetscSectionSetNumFields(leafSection, numFields));
-    CHKERRQ(PetscSectionSetPermutation(leafSection, perm));
-    CHKERRQ(ISDestroy(&perm));
+    PetscCall(PetscSectionGetPermutation(leafSection, &perm));
+    PetscCall(PetscObjectReference((PetscObject)perm));
+    PetscCall(PetscSectionSetNumFields(leafSection, numFields));
+    PetscCall(PetscSectionSetPermutation(leafSection, perm));
+    PetscCall(ISDestroy(&perm));
   }
-  CHKERRQ(PetscMalloc1(numFields+2, &sub));
+  PetscCall(PetscMalloc1(numFields+2, &sub));
   sub[1] = rootSection->bc ? PETSC_TRUE : PETSC_FALSE;
   for (f = 0; f < numFields; ++f) {
     PetscSectionSym sym, dsym = NULL;
@@ -207,98 +207,98 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
     PetscInt        numComp = 0;
 
     sub[2 + f] = rootSection->field[f]->bc ? PETSC_TRUE : PETSC_FALSE;
-    CHKERRQ(PetscSectionGetFieldComponents(rootSection, f, &numComp));
-    CHKERRQ(PetscSectionGetFieldName(rootSection, f, &name));
-    CHKERRQ(PetscSectionGetFieldSym(rootSection, f, &sym));
-    if (sym) CHKERRQ(PetscSectionSymDistribute(sym, sf, &dsym));
-    CHKERRQ(PetscSectionSetFieldComponents(leafSection, f, numComp));
-    CHKERRQ(PetscSectionSetFieldName(leafSection, f, name));
-    CHKERRQ(PetscSectionSetFieldSym(leafSection, f, dsym));
-    CHKERRQ(PetscSectionSymDestroy(&dsym));
+    PetscCall(PetscSectionGetFieldComponents(rootSection, f, &numComp));
+    PetscCall(PetscSectionGetFieldName(rootSection, f, &name));
+    PetscCall(PetscSectionGetFieldSym(rootSection, f, &sym));
+    if (sym) PetscCall(PetscSectionSymDistribute(sym, sf, &dsym));
+    PetscCall(PetscSectionSetFieldComponents(leafSection, f, numComp));
+    PetscCall(PetscSectionSetFieldName(leafSection, f, name));
+    PetscCall(PetscSectionSetFieldSym(leafSection, f, dsym));
+    PetscCall(PetscSectionSymDestroy(&dsym));
     for (c = 0; c < rootSection->numFieldComponents[f]; ++c) {
-      CHKERRQ(PetscSectionGetComponentName(rootSection, f, c, &name));
-      CHKERRQ(PetscSectionSetComponentName(leafSection, f, c, name));
+      PetscCall(PetscSectionGetComponentName(rootSection, f, c, &name));
+      PetscCall(PetscSectionSetComponentName(leafSection, f, c, name));
     }
   }
-  CHKERRQ(PetscSectionGetChart(rootSection, &rpStart, &rpEnd));
-  CHKERRQ(PetscSFGetGraph(sf,&nroots,NULL,NULL,NULL));
+  PetscCall(PetscSectionGetChart(rootSection, &rpStart, &rpEnd));
+  PetscCall(PetscSFGetGraph(sf,&nroots,NULL,NULL,NULL));
   rpEnd = PetscMin(rpEnd,nroots);
   rpEnd = PetscMax(rpStart,rpEnd);
   /* see if we can avoid creating the embedded SF, since it can cost more than an allreduce */
   sub[0] = (PetscBool)(nroots != rpEnd - rpStart);
-  CHKERRMPI(MPIU_Allreduce(MPI_IN_PLACE, sub, 2+numFields, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)sf)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, sub, 2+numFields, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)sf)));
   if (sub[0]) {
-    CHKERRQ(ISCreateStride(PETSC_COMM_SELF, rpEnd - rpStart, rpStart, 1, &selected));
-    CHKERRQ(ISGetIndices(selected, &indices));
-    CHKERRQ(PetscSFCreateEmbeddedRootSF(sf, rpEnd - rpStart, indices, &embedSF));
-    CHKERRQ(ISRestoreIndices(selected, &indices));
-    CHKERRQ(ISDestroy(&selected));
+    PetscCall(ISCreateStride(PETSC_COMM_SELF, rpEnd - rpStart, rpStart, 1, &selected));
+    PetscCall(ISGetIndices(selected, &indices));
+    PetscCall(PetscSFCreateEmbeddedRootSF(sf, rpEnd - rpStart, indices, &embedSF));
+    PetscCall(ISRestoreIndices(selected, &indices));
+    PetscCall(ISDestroy(&selected));
   } else {
-    CHKERRQ(PetscObjectReference((PetscObject)sf));
+    PetscCall(PetscObjectReference((PetscObject)sf));
     embedSF = sf;
   }
-  CHKERRQ(PetscSFGetLeafRange(embedSF, &lpStart, &lpEnd));
+  PetscCall(PetscSFGetLeafRange(embedSF, &lpStart, &lpEnd));
   lpEnd++;
 
-  CHKERRQ(PetscSectionSetChart(leafSection, lpStart, lpEnd));
+  PetscCall(PetscSectionSetChart(leafSection, lpStart, lpEnd));
 
   /* Constrained dof section */
   hasc = sub[1];
   for (f = 0; f < numFields; ++f) hasc = (PetscBool)(hasc || sub[2+f]);
 
   /* Could fuse these at the cost of copies and extra allocation */
-  CHKERRQ(PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->atlasDof[-rpStart], &leafSection->atlasDof[-lpStart],MPI_REPLACE));
-  CHKERRQ(PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->atlasDof[-rpStart], &leafSection->atlasDof[-lpStart],MPI_REPLACE));
+  PetscCall(PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->atlasDof[-rpStart], &leafSection->atlasDof[-lpStart],MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->atlasDof[-rpStart], &leafSection->atlasDof[-lpStart],MPI_REPLACE));
   if (sub[1]) {
-    CHKERRQ(PetscSectionCheckConstraints_Static(rootSection));
-    CHKERRQ(PetscSectionCheckConstraints_Static(leafSection));
-    CHKERRQ(PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->bc->atlasDof[-rpStart], &leafSection->bc->atlasDof[-lpStart],MPI_REPLACE));
-    CHKERRQ(PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->bc->atlasDof[-rpStart], &leafSection->bc->atlasDof[-lpStart],MPI_REPLACE));
+    PetscCall(PetscSectionCheckConstraints_Static(rootSection));
+    PetscCall(PetscSectionCheckConstraints_Static(leafSection));
+    PetscCall(PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->bc->atlasDof[-rpStart], &leafSection->bc->atlasDof[-lpStart],MPI_REPLACE));
+    PetscCall(PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->bc->atlasDof[-rpStart], &leafSection->bc->atlasDof[-lpStart],MPI_REPLACE));
   }
   for (f = 0; f < numFields; ++f) {
-    CHKERRQ(PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->field[f]->atlasDof[-rpStart], &leafSection->field[f]->atlasDof[-lpStart],MPI_REPLACE));
-    CHKERRQ(PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->field[f]->atlasDof[-rpStart], &leafSection->field[f]->atlasDof[-lpStart],MPI_REPLACE));
+    PetscCall(PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->field[f]->atlasDof[-rpStart], &leafSection->field[f]->atlasDof[-lpStart],MPI_REPLACE));
+    PetscCall(PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->field[f]->atlasDof[-rpStart], &leafSection->field[f]->atlasDof[-lpStart],MPI_REPLACE));
     if (sub[2+f]) {
-      CHKERRQ(PetscSectionCheckConstraints_Static(rootSection->field[f]));
-      CHKERRQ(PetscSectionCheckConstraints_Static(leafSection->field[f]));
-      CHKERRQ(PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->field[f]->bc->atlasDof[-rpStart], &leafSection->field[f]->bc->atlasDof[-lpStart],MPI_REPLACE));
-      CHKERRQ(PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->field[f]->bc->atlasDof[-rpStart], &leafSection->field[f]->bc->atlasDof[-lpStart],MPI_REPLACE));
+      PetscCall(PetscSectionCheckConstraints_Static(rootSection->field[f]));
+      PetscCall(PetscSectionCheckConstraints_Static(leafSection->field[f]));
+      PetscCall(PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->field[f]->bc->atlasDof[-rpStart], &leafSection->field[f]->bc->atlasDof[-lpStart],MPI_REPLACE));
+      PetscCall(PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->field[f]->bc->atlasDof[-rpStart], &leafSection->field[f]->bc->atlasDof[-lpStart],MPI_REPLACE));
     }
   }
   if (remoteOffsets) {
-    CHKERRQ(PetscMalloc1(lpEnd - lpStart, remoteOffsets));
-    CHKERRQ(PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &(*remoteOffsets)[-lpStart],MPI_REPLACE));
-    CHKERRQ(PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &(*remoteOffsets)[-lpStart],MPI_REPLACE));
+    PetscCall(PetscMalloc1(lpEnd - lpStart, remoteOffsets));
+    PetscCall(PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &(*remoteOffsets)[-lpStart],MPI_REPLACE));
+    PetscCall(PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &(*remoteOffsets)[-lpStart],MPI_REPLACE));
   }
-  CHKERRQ(PetscSectionSetUp(leafSection));
+  PetscCall(PetscSectionSetUp(leafSection));
   if (hasc) { /* need to communicate bcIndices */
     PetscSF  bcSF;
     PetscInt *rOffBc;
 
-    CHKERRQ(PetscMalloc1(lpEnd - lpStart, &rOffBc));
+    PetscCall(PetscMalloc1(lpEnd - lpStart, &rOffBc));
     if (sub[1]) {
-      CHKERRQ(PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->bc->atlasOff[-rpStart], &rOffBc[-lpStart],MPI_REPLACE));
-      CHKERRQ(PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->bc->atlasOff[-rpStart], &rOffBc[-lpStart],MPI_REPLACE));
-      CHKERRQ(PetscSFCreateSectionSF(embedSF, rootSection->bc, rOffBc, leafSection->bc, &bcSF));
-      CHKERRQ(PetscSFBcastBegin(bcSF, MPIU_INT, rootSection->bcIndices, leafSection->bcIndices,MPI_REPLACE));
-      CHKERRQ(PetscSFBcastEnd(bcSF, MPIU_INT, rootSection->bcIndices, leafSection->bcIndices,MPI_REPLACE));
-      CHKERRQ(PetscSFDestroy(&bcSF));
+      PetscCall(PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->bc->atlasOff[-rpStart], &rOffBc[-lpStart],MPI_REPLACE));
+      PetscCall(PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->bc->atlasOff[-rpStart], &rOffBc[-lpStart],MPI_REPLACE));
+      PetscCall(PetscSFCreateSectionSF(embedSF, rootSection->bc, rOffBc, leafSection->bc, &bcSF));
+      PetscCall(PetscSFBcastBegin(bcSF, MPIU_INT, rootSection->bcIndices, leafSection->bcIndices,MPI_REPLACE));
+      PetscCall(PetscSFBcastEnd(bcSF, MPIU_INT, rootSection->bcIndices, leafSection->bcIndices,MPI_REPLACE));
+      PetscCall(PetscSFDestroy(&bcSF));
     }
     for (f = 0; f < numFields; ++f) {
       if (sub[2+f]) {
-        CHKERRQ(PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->field[f]->bc->atlasOff[-rpStart], &rOffBc[-lpStart],MPI_REPLACE));
-        CHKERRQ(PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->field[f]->bc->atlasOff[-rpStart], &rOffBc[-lpStart],MPI_REPLACE));
-        CHKERRQ(PetscSFCreateSectionSF(embedSF, rootSection->field[f]->bc, rOffBc, leafSection->field[f]->bc, &bcSF));
-        CHKERRQ(PetscSFBcastBegin(bcSF, MPIU_INT, rootSection->field[f]->bcIndices, leafSection->field[f]->bcIndices,MPI_REPLACE));
-        CHKERRQ(PetscSFBcastEnd(bcSF, MPIU_INT, rootSection->field[f]->bcIndices, leafSection->field[f]->bcIndices,MPI_REPLACE));
-        CHKERRQ(PetscSFDestroy(&bcSF));
+        PetscCall(PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->field[f]->bc->atlasOff[-rpStart], &rOffBc[-lpStart],MPI_REPLACE));
+        PetscCall(PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->field[f]->bc->atlasOff[-rpStart], &rOffBc[-lpStart],MPI_REPLACE));
+        PetscCall(PetscSFCreateSectionSF(embedSF, rootSection->field[f]->bc, rOffBc, leafSection->field[f]->bc, &bcSF));
+        PetscCall(PetscSFBcastBegin(bcSF, MPIU_INT, rootSection->field[f]->bcIndices, leafSection->field[f]->bcIndices,MPI_REPLACE));
+        PetscCall(PetscSFBcastEnd(bcSF, MPIU_INT, rootSection->field[f]->bcIndices, leafSection->field[f]->bcIndices,MPI_REPLACE));
+        PetscCall(PetscSFDestroy(&bcSF));
       }
     }
-    CHKERRQ(PetscFree(rOffBc));
+    PetscCall(PetscFree(rOffBc));
   }
-  CHKERRQ(PetscSFDestroy(&embedSF));
-  CHKERRQ(PetscFree(sub));
-  CHKERRQ(PetscLogEventEnd(PETSCSF_DistSect,sf,0,0,0));
+  PetscCall(PetscSFDestroy(&embedSF));
+  PetscCall(PetscFree(sub));
+  PetscCall(PetscLogEventEnd(PETSCSF_DistSect,sf,0,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -328,21 +328,21 @@ PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF sf, PetscSection rootSection, 
 
   PetscFunctionBegin;
   *remoteOffsets = NULL;
-  CHKERRQ(PetscSFGetGraph(sf, &numRoots, NULL, NULL, NULL));
+  PetscCall(PetscSFGetGraph(sf, &numRoots, NULL, NULL, NULL));
   if (numRoots < 0) PetscFunctionReturn(0);
-  CHKERRQ(PetscLogEventBegin(PETSCSF_RemoteOff,sf,0,0,0));
-  CHKERRQ(PetscSectionGetChart(rootSection, &rpStart, &rpEnd));
-  CHKERRQ(PetscSectionGetChart(leafSection, &lpStart, &lpEnd));
-  CHKERRQ(ISCreateStride(PETSC_COMM_SELF, rpEnd - rpStart, rpStart, 1, &selected));
-  CHKERRQ(ISGetIndices(selected, &indices));
-  CHKERRQ(PetscSFCreateEmbeddedRootSF(sf, rpEnd - rpStart, indices, &embedSF));
-  CHKERRQ(ISRestoreIndices(selected, &indices));
-  CHKERRQ(ISDestroy(&selected));
-  CHKERRQ(PetscCalloc1(lpEnd - lpStart, remoteOffsets));
-  CHKERRQ(PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &(*remoteOffsets)[-lpStart],MPI_REPLACE));
-  CHKERRQ(PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &(*remoteOffsets)[-lpStart],MPI_REPLACE));
-  CHKERRQ(PetscSFDestroy(&embedSF));
-  CHKERRQ(PetscLogEventEnd(PETSCSF_RemoteOff,sf,0,0,0));
+  PetscCall(PetscLogEventBegin(PETSCSF_RemoteOff,sf,0,0,0));
+  PetscCall(PetscSectionGetChart(rootSection, &rpStart, &rpEnd));
+  PetscCall(PetscSectionGetChart(leafSection, &lpStart, &lpEnd));
+  PetscCall(ISCreateStride(PETSC_COMM_SELF, rpEnd - rpStart, rpStart, 1, &selected));
+  PetscCall(ISGetIndices(selected, &indices));
+  PetscCall(PetscSFCreateEmbeddedRootSF(sf, rpEnd - rpStart, indices, &embedSF));
+  PetscCall(ISRestoreIndices(selected, &indices));
+  PetscCall(ISDestroy(&selected));
+  PetscCall(PetscCalloc1(lpEnd - lpStart, remoteOffsets));
+  PetscCall(PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &(*remoteOffsets)[-lpStart],MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &(*remoteOffsets)[-lpStart],MPI_REPLACE));
+  PetscCall(PetscSFDestroy(&embedSF));
+  PetscCall(PetscLogEventEnd(PETSCSF_RemoteOff,sf,0,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -383,24 +383,24 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
   /* Cannot check PetscValidIntPointer(remoteOffsets,3) because it can be NULL if sf does not reference any points in leafSection */
   PetscValidPointer(leafSection,4);
   PetscValidPointer(sectionSF,5);
-  CHKERRQ(PetscObjectGetComm((PetscObject)sf,&comm));
-  CHKERRQ(PetscSFCreate(comm, sectionSF));
-  CHKERRQ(PetscSectionGetChart(leafSection, &lpStart, &lpEnd));
-  CHKERRQ(PetscSectionGetStorageSize(rootSection, &numSectionRoots));
-  CHKERRQ(PetscSFGetGraph(sf, &numRoots, &numPoints, &localPoints, &remotePoints));
+  PetscCall(PetscObjectGetComm((PetscObject)sf,&comm));
+  PetscCall(PetscSFCreate(comm, sectionSF));
+  PetscCall(PetscSectionGetChart(leafSection, &lpStart, &lpEnd));
+  PetscCall(PetscSectionGetStorageSize(rootSection, &numSectionRoots));
+  PetscCall(PetscSFGetGraph(sf, &numRoots, &numPoints, &localPoints, &remotePoints));
   if (numRoots < 0) PetscFunctionReturn(0);
-  CHKERRQ(PetscLogEventBegin(PETSCSF_SectSF,sf,0,0,0));
+  PetscCall(PetscLogEventBegin(PETSCSF_SectSF,sf,0,0,0));
   for (i = 0; i < numPoints; ++i) {
     PetscInt localPoint = localPoints ? localPoints[i] : i;
     PetscInt dof;
 
     if ((localPoint >= lpStart) && (localPoint < lpEnd)) {
-      CHKERRQ(PetscSectionGetDof(leafSection, localPoint, &dof));
+      PetscCall(PetscSectionGetDof(leafSection, localPoint, &dof));
       numIndices += dof;
     }
   }
-  CHKERRQ(PetscMalloc1(numIndices, &localIndices));
-  CHKERRQ(PetscMalloc1(numIndices, &remoteIndices));
+  PetscCall(PetscMalloc1(numIndices, &localIndices));
+  PetscCall(PetscMalloc1(numIndices, &remoteIndices));
   /* Create new index graph */
   for (i = 0, ind = 0; i < numPoints; ++i) {
     PetscInt localPoint = localPoints ? localPoints[i] : i;
@@ -410,8 +410,8 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
       PetscInt remoteOffset = remoteOffsets[localPoint-lpStart];
       PetscInt loff, dof, d;
 
-      CHKERRQ(PetscSectionGetOffset(leafSection, localPoint, &loff));
-      CHKERRQ(PetscSectionGetDof(leafSection, localPoint, &dof));
+      PetscCall(PetscSectionGetOffset(leafSection, localPoint, &loff));
+      PetscCall(PetscSectionGetDof(leafSection, localPoint, &dof));
       for (d = 0; d < dof; ++d, ++ind) {
         localIndices[ind]        = loff+d;
         remoteIndices[ind].rank  = rank;
@@ -420,9 +420,9 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
     }
   }
   PetscCheckFalse(numIndices != ind,comm, PETSC_ERR_PLIB, "Inconsistency in indices, %" PetscInt_FMT " should be %" PetscInt_FMT, ind, numIndices);
-  CHKERRQ(PetscSFSetGraph(*sectionSF, numSectionRoots, numIndices, localIndices, PETSC_OWN_POINTER, remoteIndices, PETSC_OWN_POINTER));
-  CHKERRQ(PetscSFSetUp(*sectionSF));
-  CHKERRQ(PetscLogEventEnd(PETSCSF_SectSF,sf,0,0,0));
+  PetscCall(PetscSFSetGraph(*sectionSF, numSectionRoots, numIndices, localIndices, PETSC_OWN_POINTER, remoteIndices, PETSC_OWN_POINTER));
+  PetscCall(PetscSFSetUp(*sectionSF));
+  PetscCall(PetscLogEventEnd(PETSCSF_SectSF,sf,0,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -456,23 +456,23 @@ PetscErrorCode PetscSFCreateFromLayouts(PetscLayout rmap, PetscLayout lmap, Pets
   PetscValidPointer(sf,3);
   PetscCheck(rmap->setupcalled,rcomm,PETSC_ERR_ARG_WRONGSTATE,"Root layout not setup");
   PetscCheck(lmap->setupcalled,lcomm,PETSC_ERR_ARG_WRONGSTATE,"Leaf layout not setup");
-  CHKERRMPI(MPI_Comm_compare(rcomm,lcomm,&flg));
+  PetscCallMPI(MPI_Comm_compare(rcomm,lcomm,&flg));
   PetscCheckFalse(flg != MPI_CONGRUENT && flg != MPI_IDENT,rcomm,PETSC_ERR_SUP,"cannot map two layouts with non-matching communicators");
-  CHKERRQ(PetscSFCreate(rcomm,sf));
-  CHKERRQ(PetscLayoutGetLocalSize(rmap,&nroots));
-  CHKERRQ(PetscLayoutGetSize(rmap,&rN));
-  CHKERRQ(PetscLayoutGetRange(lmap,&lst,&len));
-  CHKERRQ(PetscMalloc1(len-lst,&remote));
+  PetscCall(PetscSFCreate(rcomm,sf));
+  PetscCall(PetscLayoutGetLocalSize(rmap,&nroots));
+  PetscCall(PetscLayoutGetSize(rmap,&rN));
+  PetscCall(PetscLayoutGetRange(lmap,&lst,&len));
+  PetscCall(PetscMalloc1(len-lst,&remote));
   for (i = lst; i < len && i < rN; i++) {
     if (owner < -1 || i >= rmap->range[owner+1]) {
-      CHKERRQ(PetscLayoutFindOwner(rmap,i,&owner));
+      PetscCall(PetscLayoutFindOwner(rmap,i,&owner));
     }
     remote[nleaves].rank  = owner;
     remote[nleaves].index = i - rmap->range[owner];
     nleaves++;
   }
-  CHKERRQ(PetscSFSetGraph(*sf,nroots,nleaves,NULL,PETSC_OWN_POINTER,remote,PETSC_COPY_VALUES));
-  CHKERRQ(PetscFree(remote));
+  PetscCall(PetscSFSetGraph(*sf,nroots,nleaves,NULL,PETSC_OWN_POINTER,remote,PETSC_COPY_VALUES));
+  PetscCall(PetscFree(remote));
   PetscFunctionReturn(0);
 }
 
@@ -490,38 +490,38 @@ PetscErrorCode PetscLayoutMapLocal(PetscLayout map,PetscInt N,const PetscInt idx
   PetscFunctionBegin;
   if (on) *on = 0;              /* squelch -Wmaybe-uninitialized */
   /* Create SF where leaves are input idxs and roots are owned idxs */
-  CHKERRMPI(MPI_Comm_rank(map->comm,&rank));
-  CHKERRQ(PetscMalloc1(n,&lidxs));
+  PetscCallMPI(MPI_Comm_rank(map->comm,&rank));
+  PetscCall(PetscMalloc1(n,&lidxs));
   for (r = 0; r < n; ++r) lidxs[r] = -1;
-  CHKERRQ(PetscMalloc1(N,&ridxs));
+  PetscCall(PetscMalloc1(N,&ridxs));
   for (r = 0; r < N; ++r) {
     const PetscInt idx = idxs[r];
     PetscCheckFalse(idx < 0 || map->N <= idx,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index %" PetscInt_FMT " out of range [0,%" PetscInt_FMT ")",idx,map->N);
     if (idx < owners[p] || owners[p+1] <= idx) { /* short-circuit the search if the last p owns this idx too */
-      CHKERRQ(PetscLayoutFindOwner(map,idx,&p));
+      PetscCall(PetscLayoutFindOwner(map,idx,&p));
     }
     ridxs[r].rank = p;
     ridxs[r].index = idxs[r] - owners[p];
   }
-  CHKERRQ(PetscSFCreate(map->comm,&sf));
-  CHKERRQ(PetscSFSetGraph(sf,n,N,NULL,PETSC_OWN_POINTER,ridxs,PETSC_OWN_POINTER));
-  CHKERRQ(PetscSFReduceBegin(sf,MPIU_INT,(PetscInt*)idxs,lidxs,MPI_LOR));
-  CHKERRQ(PetscSFReduceEnd(sf,MPIU_INT,(PetscInt*)idxs,lidxs,MPI_LOR));
+  PetscCall(PetscSFCreate(map->comm,&sf));
+  PetscCall(PetscSFSetGraph(sf,n,N,NULL,PETSC_OWN_POINTER,ridxs,PETSC_OWN_POINTER));
+  PetscCall(PetscSFReduceBegin(sf,MPIU_INT,(PetscInt*)idxs,lidxs,MPI_LOR));
+  PetscCall(PetscSFReduceEnd(sf,MPIU_INT,(PetscInt*)idxs,lidxs,MPI_LOR));
   if (ogidxs) { /* communicate global idxs */
     PetscInt cum = 0,start,*work2;
 
-    CHKERRQ(PetscMalloc1(n,&work));
-    CHKERRQ(PetscCalloc1(N,&work2));
+    PetscCall(PetscMalloc1(n,&work));
+    PetscCall(PetscCalloc1(N,&work2));
     for (r = 0; r < N; ++r) if (idxs[r] >=0) cum++;
-    CHKERRMPI(MPI_Scan(&cum,&start,1,MPIU_INT,MPI_SUM,map->comm));
+    PetscCallMPI(MPI_Scan(&cum,&start,1,MPIU_INT,MPI_SUM,map->comm));
     start -= cum;
     cum = 0;
     for (r = 0; r < N; ++r) if (idxs[r] >=0) work2[r] = start+cum++;
-    CHKERRQ(PetscSFReduceBegin(sf,MPIU_INT,work2,work,MPI_REPLACE));
-    CHKERRQ(PetscSFReduceEnd(sf,MPIU_INT,work2,work,MPI_REPLACE));
-    CHKERRQ(PetscFree(work2));
+    PetscCall(PetscSFReduceBegin(sf,MPIU_INT,work2,work,MPI_REPLACE));
+    PetscCall(PetscSFReduceEnd(sf,MPIU_INT,work2,work,MPI_REPLACE));
+    PetscCall(PetscFree(work2));
   }
-  CHKERRQ(PetscSFDestroy(&sf));
+  PetscCall(PetscSFDestroy(&sf));
   /* Compress and put in indices */
   for (r = 0; r < n; ++r)
     if (lidxs[r] >= 0) {
@@ -652,32 +652,32 @@ PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout layout, PetscInt numRo
   PetscValidPointer(sf,11);
   PetscCheckFalse(numRootIndices < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "numRootIndices (%" PetscInt_FMT ") must be non-negative", numRootIndices);
   PetscCheckFalse(numLeafIndices < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "numLeafIndices (%" PetscInt_FMT ") must be non-negative", numLeafIndices);
-  CHKERRMPI(MPI_Comm_size(comm, &size));
-  CHKERRMPI(MPI_Comm_rank(comm, &rank));
-  CHKERRQ(PetscLayoutSetUp(layout));
-  CHKERRQ(PetscLayoutGetSize(layout, &N));
-  CHKERRQ(PetscLayoutGetLocalSize(layout, &n));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  PetscCall(PetscLayoutSetUp(layout));
+  PetscCall(PetscLayoutGetSize(layout, &N));
+  PetscCall(PetscLayoutGetLocalSize(layout, &n));
   flag = (PetscBool)(leafIndices == rootIndices);
-  CHKERRMPI(MPIU_Allreduce(MPI_IN_PLACE, &flag, 1, MPIU_BOOL, MPI_LAND, comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &flag, 1, MPIU_BOOL, MPI_LAND, comm));
   PetscCheckFalse(flag && numLeafIndices != numRootIndices,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "leafIndices == rootIndices, but numLeafIndices (%" PetscInt_FMT ") != numRootIndices(%" PetscInt_FMT ")", numLeafIndices, numRootIndices);
 #if defined(PETSC_USE_DEBUG)
   N1 = PETSC_MIN_INT;
   for (i = 0; i < numRootIndices; i++) if (rootIndices[i] > N1) N1 = rootIndices[i];
-  CHKERRMPI(MPI_Allreduce(MPI_IN_PLACE, &N1, 1, MPIU_INT, MPI_MAX, comm));
+  PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &N1, 1, MPIU_INT, MPI_MAX, comm));
   PetscCheckFalse(N1 >= N,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Max. root index (%" PetscInt_FMT ") out of layout range [0,%" PetscInt_FMT ")", N1, N);
   if (!flag) {
     N1 = PETSC_MIN_INT;
     for (i = 0; i < numLeafIndices; i++) if (leafIndices[i] > N1) N1 = leafIndices[i];
-    CHKERRMPI(MPI_Allreduce(MPI_IN_PLACE, &N1, 1, MPIU_INT, MPI_MAX, comm));
+    PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &N1, 1, MPIU_INT, MPI_MAX, comm));
     PetscCheckFalse(N1 >= N,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Max. leaf index (%" PetscInt_FMT ") out of layout range [0,%" PetscInt_FMT ")", N1, N);
   }
 #endif
   /* Reduce: owners -> buffer */
-  CHKERRQ(PetscMalloc1(n, &buffer));
-  CHKERRQ(PetscSFCreate(comm, &sf1));
-  CHKERRQ(PetscSFSetFromOptions(sf1));
-  CHKERRQ(PetscSFSetGraphLayout(sf1, layout, numRootIndices, NULL, PETSC_OWN_POINTER, rootIndices));
-  CHKERRQ(PetscMalloc1(numRootIndices, &owners));
+  PetscCall(PetscMalloc1(n, &buffer));
+  PetscCall(PetscSFCreate(comm, &sf1));
+  PetscCall(PetscSFSetFromOptions(sf1));
+  PetscCall(PetscSFSetGraphLayout(sf1, layout, numRootIndices, NULL, PETSC_OWN_POINTER, rootIndices));
+  PetscCall(PetscMalloc1(numRootIndices, &owners));
   for (i = 0; i < numRootIndices; ++i) {
     owners[i].rank = rank;
     owners[i].index = rootLocalOffset + (rootLocalIndices ? rootLocalIndices[i] : i);
@@ -686,27 +686,27 @@ PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout layout, PetscInt numRo
     buffer[i].index = -1;
     buffer[i].rank = -1;
   }
-  CHKERRQ(PetscSFReduceBegin(sf1, MPIU_2INT, owners, buffer, MPI_MAXLOC));
-  CHKERRQ(PetscSFReduceEnd(sf1, MPIU_2INT, owners, buffer, MPI_MAXLOC));
+  PetscCall(PetscSFReduceBegin(sf1, MPIU_2INT, owners, buffer, MPI_MAXLOC));
+  PetscCall(PetscSFReduceEnd(sf1, MPIU_2INT, owners, buffer, MPI_MAXLOC));
   /* Bcast: buffer -> owners */
   if (!flag) {
     /* leafIndices is different from rootIndices */
-    CHKERRQ(PetscFree(owners));
-    CHKERRQ(PetscSFSetGraphLayout(sf1, layout, numLeafIndices, NULL, PETSC_OWN_POINTER, leafIndices));
-    CHKERRQ(PetscMalloc1(numLeafIndices, &owners));
+    PetscCall(PetscFree(owners));
+    PetscCall(PetscSFSetGraphLayout(sf1, layout, numLeafIndices, NULL, PETSC_OWN_POINTER, leafIndices));
+    PetscCall(PetscMalloc1(numLeafIndices, &owners));
   }
-  CHKERRQ(PetscSFBcastBegin(sf1, MPIU_2INT, buffer, owners, MPI_REPLACE));
-  CHKERRQ(PetscSFBcastEnd(sf1, MPIU_2INT, buffer, owners, MPI_REPLACE));
+  PetscCall(PetscSFBcastBegin(sf1, MPIU_2INT, buffer, owners, MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(sf1, MPIU_2INT, buffer, owners, MPI_REPLACE));
   for (i = 0; i < numLeafIndices; ++i) PetscCheckFalse(owners[i].rank < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Global point %" PetscInt_FMT " was unclaimed", leafIndices[i]);
-  CHKERRQ(PetscFree(buffer));
+  PetscCall(PetscFree(buffer));
   if (sfA) {*sfA = sf1;}
-  else     CHKERRQ(PetscSFDestroy(&sf1));
+  else     PetscCall(PetscSFDestroy(&sf1));
   /* Create sf */
   if (flag && rootLocalIndices == leafLocalIndices && leafLocalOffset == rootLocalOffset) {
     /* leaf space == root space */
     for (i = 0, nleaves = 0; i < numLeafIndices; ++i) if (owners[i].rank != rank) ++nleaves;
-    CHKERRQ(PetscMalloc1(nleaves, &ilocal));
-    CHKERRQ(PetscMalloc1(nleaves, &iremote));
+    PetscCall(PetscMalloc1(nleaves, &ilocal));
+    PetscCall(PetscMalloc1(nleaves, &iremote));
     for (i = 0, nleaves = 0; i < numLeafIndices; ++i) {
       if (owners[i].rank != rank) {
         ilocal[nleaves]        = leafLocalOffset + i;
@@ -715,15 +715,15 @@ PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout layout, PetscInt numRo
         ++nleaves;
       }
     }
-    CHKERRQ(PetscFree(owners));
+    PetscCall(PetscFree(owners));
   } else {
     nleaves = numLeafIndices;
-    CHKERRQ(PetscMalloc1(nleaves, &ilocal));
+    PetscCall(PetscMalloc1(nleaves, &ilocal));
     for (i = 0; i < nleaves; ++i) {ilocal[i] = leafLocalOffset + (leafLocalIndices ? leafLocalIndices[i] : i);}
     iremote = owners;
   }
-  CHKERRQ(PetscSFCreate(comm, sf));
-  CHKERRQ(PetscSFSetFromOptions(*sf));
-  CHKERRQ(PetscSFSetGraph(*sf, rootLocalOffset + numRootIndices, nleaves, ilocal, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER));
+  PetscCall(PetscSFCreate(comm, sf));
+  PetscCall(PetscSFSetFromOptions(*sf));
+  PetscCall(PetscSFSetGraph(*sf, rootLocalOffset + numRootIndices, nleaves, ilocal, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER));
   PetscFunctionReturn(0);
 }

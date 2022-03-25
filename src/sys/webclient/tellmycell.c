@@ -40,11 +40,11 @@ PetscErrorCode PetscTellMyCell(MPI_Comm comm,const char number[],const char mess
   char           Username[64],Password[64];
 
   PetscFunctionBegin;
-  CHKERRQ(PetscStrlen(number,&nlen));
+  PetscCall(PetscStrlen(number,&nlen));
   PetscCheckFalse(nlen != 10,comm,PETSC_ERR_ARG_WRONG,"Number %s is not ten digits",number);
-  CHKERRQ(PetscStrlen(message,&mlen));
+  PetscCall(PetscStrlen(message,&mlen));
   PetscCheckFalse(mlen > 100,comm,PETSC_ERR_ARG_WRONG,"Message  %s is too long",message);
-  CHKERRMPI(MPI_Comm_rank(comm,&rank));
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
   if (rank == 0) {
     int       sock;
     char      buff[1000],*body;
@@ -53,33 +53,33 @@ PetscErrorCode PetscTellMyCell(MPI_Comm comm,const char number[],const char mess
     SSL       *ssl;
     PetscBool set;
 
-    CHKERRQ(PetscOptionsGetString(NULL,NULL,"-tellmycell_user",Username,sizeof(Username),&set));
+    PetscCall(PetscOptionsGetString(NULL,NULL,"-tellmycell_user",Username,sizeof(Username),&set));
     PetscCheck(set,PETSC_COMM_SELF,PETSC_ERR_USER,"You must pass in a tellmycell user name with -tellmycell_user <Username>");
-    CHKERRQ(PetscOptionsGetString(NULL,NULL,"-tellmycell_password",Password,sizeof(Password),&set));
+    PetscCall(PetscOptionsGetString(NULL,NULL,"-tellmycell_password",Password,sizeof(Password),&set));
     PetscCheck(set,PETSC_COMM_SELF,PETSC_ERR_USER,"You must pass in a tellmycell password with -tellmycell_password <Password>");
-    CHKERRQ(PetscMalloc1(mlen+nlen+100,&body));
-    CHKERRQ(PetscStrcpy(body,"User="));
-    CHKERRQ(PetscStrcat(body,Username));
-    CHKERRQ(PetscStrcat(body,"&Password="));
-    CHKERRQ(PetscStrcat(body,Password));
-    CHKERRQ(PetscStrcat(body,"&PhoneNumbers[]="));
-    CHKERRQ(PetscStrcat(body,number));
-    CHKERRQ(PetscStrcat(body,"&"));
-    CHKERRQ(PetscStrcat(body,"Message="));
-    CHKERRQ(PetscStrcat(body,message));
-    CHKERRQ(PetscStrlen(body,&blen));
+    PetscCall(PetscMalloc1(mlen+nlen+100,&body));
+    PetscCall(PetscStrcpy(body,"User="));
+    PetscCall(PetscStrcat(body,Username));
+    PetscCall(PetscStrcat(body,"&Password="));
+    PetscCall(PetscStrcat(body,Password));
+    PetscCall(PetscStrcat(body,"&PhoneNumbers[]="));
+    PetscCall(PetscStrcat(body,number));
+    PetscCall(PetscStrcat(body,"&"));
+    PetscCall(PetscStrcat(body,"Message="));
+    PetscCall(PetscStrcat(body,message));
+    PetscCall(PetscStrlen(body,&blen));
     for (i=0; i<(int)blen; i++) {
       if (body[i] == ' ') body[i] = '+';
     }
-    CHKERRQ(PetscSSLInitializeContext(&ctx));
-    CHKERRQ(PetscHTTPSConnect("app.tellmycell.com",443,ctx,&sock,&ssl));
-    CHKERRQ(PetscHTTPSRequest("POST","app.tellmycell.com/sending/messages?format=json",NULL,"application/x-www-form-urlencoded",body,ssl,buff,sizeof(buff)));
-    CHKERRQ(PetscSSLDestroyContext(ctx));
+    PetscCall(PetscSSLInitializeContext(&ctx));
+    PetscCall(PetscHTTPSConnect("app.tellmycell.com",443,ctx,&sock,&ssl));
+    PetscCall(PetscHTTPSRequest("POST","app.tellmycell.com/sending/messages?format=json",NULL,"application/x-www-form-urlencoded",body,ssl,buff,sizeof(buff)));
+    PetscCall(PetscSSLDestroyContext(ctx));
     close(sock);
-    CHKERRQ(PetscFree(body));
+    PetscCall(PetscFree(body));
     if (flg) {
       char *found;
-      CHKERRQ(PetscStrstr(buff,"\"success\":tr",&found));
+      PetscCall(PetscStrstr(buff,"\"success\":tr",&found));
       *flg = found ? PETSC_TRUE : PETSC_FALSE;
     }
   }

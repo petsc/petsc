@@ -195,26 +195,26 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  CHKERRQ(PetscInitialize(&argc,&argv,NULL,NULL));
-  CHKERRQ(PetscOptionsSetValue(NULL,"-options_left","false"));
+  PetscCall(PetscInitialize(&argc,&argv,NULL,NULL));
+  PetscCall(PetscOptionsSetValue(NULL,"-options_left","false"));
   KSP ksp;
-  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
   Mat Apetsc;
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&Apetsc));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&Apetsc));
   PetscViewer viewer;
-  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"${PETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int32-float64",FILE_MODE_READ,&viewer));
-  CHKERRQ(MatLoad(Apetsc,viewer));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"${PETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int32-float64",FILE_MODE_READ,&viewer));
+  PetscCall(MatLoad(Apetsc,viewer));
   Vec x,b;
-  CHKERRQ(MatCreateVecs(Apetsc,&x,&b));
-  CHKERRQ(PetscViewerDestroy(&viewer));
-  CHKERRQ(KSPSetOperators(ksp,Apetsc,Apetsc));
-  CHKERRQ(KSPSetFromOptions(ksp));
-  CHKERRQ(KSPSolve(ksp,x,b));
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&b));
-  CHKERRQ(MatDestroy(&Apetsc));
-  CHKERRQ(KSPDestroy(&ksp));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatCreateVecs(Apetsc,&x,&b));
+  PetscCall(PetscViewerDestroy(&viewer));
+  PetscCall(KSPSetOperators(ksp,Apetsc,Apetsc));
+  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(KSPSolve(ksp,x,b));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&b));
+  PetscCall(MatDestroy(&Apetsc));
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

@@ -41,12 +41,12 @@ PetscErrorCode PetscDrawXiClose(PetscDraw_X *XiWin)
 {
   PetscFunctionBegin;
   if (!XiWin) PetscFunctionReturn(0);
-  CHKERRQ(PetscFree(XiWin->font));
+  PetscCall(PetscFree(XiWin->font));
   if (XiWin->disp) {
 #if defined(PETSC_HAVE_SETJMP_H)
     jmp_buf              jmpbuf;
     PetscXIOErrorHandler xioerrhdl;
-    CHKERRQ(PetscMemcpy(&jmpbuf,&PetscXIOErrorHandlerJumpBuf,sizeof(jmpbuf)));
+    PetscCall(PetscMemcpy(&jmpbuf,&PetscXIOErrorHandlerJumpBuf,sizeof(jmpbuf)));
     xioerrhdl = PetscSetXIOErrorHandler(PetscXIOErrorHandlerJump);
     if (!setjmp(PetscXIOErrorHandlerJumpBuf))
 #endif
@@ -57,7 +57,7 @@ PetscErrorCode PetscDrawXiClose(PetscDraw_X *XiWin)
     XiWin->disp = NULL;
 #if defined(PETSC_HAVE_SETJMP_H)
     (void)PetscSetXIOErrorHandler(xioerrhdl);
-    CHKERRQ(PetscMemcpy(&PetscXIOErrorHandlerJumpBuf,&jmpbuf,sizeof(jmpbuf)));
+    PetscCall(PetscMemcpy(&PetscXIOErrorHandlerJumpBuf,&jmpbuf,sizeof(jmpbuf)));
 #endif
   }
   PetscFunctionReturn(0);
@@ -88,9 +88,9 @@ static PetscErrorCode PetscDrawXiCreateGC(PetscDraw_X *XiWin,PetscDrawXiPixVal f
 PetscErrorCode PetscDrawXiInit(PetscDraw_X *XiWin,const char display[])
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscDrawXiOpenDisplay(XiWin,display));
-  CHKERRQ(PetscDrawXiCreateGC(XiWin,XiWin->foreground));
-  CHKERRQ(PetscDrawXiFontFixed(XiWin,6,10,&XiWin->font));
+  PetscCall(PetscDrawXiOpenDisplay(XiWin,display));
+  PetscCall(PetscDrawXiCreateGC(XiWin,XiWin->foreground));
+  PetscCall(PetscDrawXiFontFixed(XiWin,6,10,&XiWin->font));
   PetscFunctionReturn(0);
 }
 
@@ -225,8 +225,8 @@ static PetscErrorCode PetscDrawXiDisplayWindow(PetscDraw_X *XiWin,char *label,in
 PetscErrorCode PetscDrawXiQuickWindow(PetscDraw_X *XiWin,char *name,int x,int y,int nx,int ny)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscDrawSetColormap_X(XiWin,(Colormap)0));
-  CHKERRQ(PetscDrawXiDisplayWindow(XiWin,name,x,y,nx,ny));
+  PetscCall(PetscDrawSetColormap_X(XiWin,(Colormap)0));
+  PetscCall(PetscDrawXiDisplayWindow(XiWin,name,x,y,nx,ny));
   XSetWindowBackground(XiWin->disp,XiWin->win,XiWin->background);
   XClearWindow(XiWin->disp,XiWin->win);
   PetscFunctionReturn(0);
@@ -242,7 +242,7 @@ PetscErrorCode PetscDrawXiQuickWindowFromWindow(PetscDraw_X *XiWin,Window win)
   PetscFunctionBegin;
   XiWin->win = win;
   XGetWindowAttributes(XiWin->disp,XiWin->win,&attributes);
-  CHKERRQ(PetscDrawSetColormap_X(XiWin,attributes.colormap));
+  PetscCall(PetscDrawSetColormap_X(XiWin,attributes.colormap));
   PetscFunctionReturn(0);
 }
 

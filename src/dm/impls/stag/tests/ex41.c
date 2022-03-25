@@ -12,9 +12,9 @@ int main(int argc, char **argv)
   DMStagStencil  row,col;
   PetscScalar    value;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   dim = 1;
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));
 
   switch (dim) {
     case 1:
@@ -26,14 +26,14 @@ int main(int argc, char **argv)
           DMSTAG_STENCIL_BOX,
           1,
           NULL,
-          &dm);CHKERRQ(ierr);
+          &dm);PetscCall(ierr);
       break;
     default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unsupported dimension %" PetscInt_FMT,dim);
   }
-  CHKERRQ(DMSetFromOptions(dm));
-  CHKERRQ(DMSetUp(dm));
+  PetscCall(DMSetFromOptions(dm));
+  PetscCall(DMSetUp(dm));
 
-  CHKERRQ(DMCreateMatrix(dm,&A));
+  PetscCall(DMCreateMatrix(dm,&A));
 
   row.c = 0;
   row.i = 0;
@@ -45,15 +45,15 @@ int main(int argc, char **argv)
 
   value = 1.234;
 
-  CHKERRQ(DMStagMatSetValuesStencil(dm,A,1,&row,1,&col,&value,INSERT_VALUES));
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(DMStagMatSetValuesStencil(dm,A,1,&row,1,&col,&value,INSERT_VALUES));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
-  CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
 
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(DMDestroy(&dm));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatDestroy(&A));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

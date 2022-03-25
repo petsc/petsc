@@ -40,22 +40,22 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->h         = -1.0;
   options->epsilon   = -1.0;
 
-  ierr = PetscOptionsBegin(comm, "", "Collision Options", "DMPLEX");CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsInt("-N", "Number of particles per spatial cell", "ex27.c", options->N, &options->N, NULL));
-  CHKERRQ(PetscOptionsReal("-L", "Velocity-space extent", "ex27.c", options->L, &options->L, NULL));
-  CHKERRQ(PetscOptionsReal("-h", "Velocity-space resolution", "ex27.c", options->h, &options->h, NULL));
-  CHKERRQ(PetscOptionsReal("-epsilon", "Mollifier regularization parameter", "ex27.c", options->epsilon, &options->epsilon, NULL));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm, "", "Collision Options", "DMPLEX");PetscCall(ierr);
+  PetscCall(PetscOptionsInt("-N", "Number of particles per spatial cell", "ex27.c", options->N, &options->N, NULL));
+  PetscCall(PetscOptionsReal("-L", "Velocity-space extent", "ex27.c", options->L, &options->L, NULL));
+  PetscCall(PetscOptionsReal("-h", "Velocity-space resolution", "ex27.c", options->h, &options->h, NULL));
+  PetscCall(PetscOptionsReal("-epsilon", "Mollifier regularization parameter", "ex27.c", options->epsilon, &options->epsilon, NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user)
 {
   PetscFunctionBeginUser;
-  CHKERRQ(DMCreate(comm, dm));
-  CHKERRQ(DMSetType(*dm, DMPLEX));
-  CHKERRQ(DMSetFromOptions(*dm));
-  CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
+  PetscCall(DMCreate(comm, dm));
+  PetscCall(DMSetType(*dm, DMPLEX));
+  PetscCall(DMSetFromOptions(*dm));
+  PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   PetscFunctionReturn(0);
 }
 
@@ -71,44 +71,44 @@ static PetscErrorCode SetInitialCoordinates(DM sw)
 
   PetscFunctionBeginUser;
   /* Randomization for coordinates */
-  CHKERRQ(PetscRandomCreate(PetscObjectComm((PetscObject) sw), &rnd));
-  CHKERRQ(PetscRandomSetInterval(rnd, -1.0, 1.0));
-  CHKERRQ(PetscRandomSetFromOptions(rnd));
-  CHKERRQ(PetscRandomCreate(PetscObjectComm((PetscObject) sw), &rndv));
-  CHKERRQ(PetscRandomSetInterval(rndv, -1., 1.));
-  CHKERRQ(PetscRandomSetFromOptions(rndv));
-  CHKERRQ(DMGetApplicationContext(sw, &user));
+  PetscCall(PetscRandomCreate(PetscObjectComm((PetscObject) sw), &rnd));
+  PetscCall(PetscRandomSetInterval(rnd, -1.0, 1.0));
+  PetscCall(PetscRandomSetFromOptions(rnd));
+  PetscCall(PetscRandomCreate(PetscObjectComm((PetscObject) sw), &rndv));
+  PetscCall(PetscRandomSetInterval(rndv, -1., 1.));
+  PetscCall(PetscRandomSetFromOptions(rndv));
+  PetscCall(DMGetApplicationContext(sw, &user));
   Np   = user->N;
-  CHKERRQ(DMGetDimension(sw, &dim));
-  CHKERRQ(DMSwarmGetCellDM(sw, &dm));
-  CHKERRQ(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
-  CHKERRQ(DMPlexGetCellType(dm, cStart, &ct));
+  PetscCall(DMGetDimension(sw, &dim));
+  PetscCall(DMSwarmGetCellDM(sw, &dm));
+  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+  PetscCall(DMPlexGetCellType(dm, cStart, &ct));
   simplex = DMPolytopeTypeGetNumVertices(ct) == DMPolytopeTypeGetDim(ct)+1 ? PETSC_TRUE : PETSC_FALSE;
-  CHKERRQ(PetscMalloc5(dim, &centroid, dim, &xi0, dim, &v0, dim*dim, &J, dim*dim, &invJ));
+  PetscCall(PetscMalloc5(dim, &centroid, dim, &xi0, dim, &v0, dim*dim, &J, dim*dim, &invJ));
   for (d = 0; d < dim; ++d) xi0[d] = -1.0;
-  CHKERRQ(DMSwarmGetField(sw, DMSwarmPICField_coor, NULL, NULL, (void **) &coords));
-  CHKERRQ(DMSwarmGetField(sw, "velocity", NULL, NULL, (void **) &velocity));
-  CHKERRQ(DMSwarmGetField(sw, "w_q", NULL, NULL, (void **) &vals));
+  PetscCall(DMSwarmGetField(sw, DMSwarmPICField_coor, NULL, NULL, (void **) &coords));
+  PetscCall(DMSwarmGetField(sw, "velocity", NULL, NULL, (void **) &velocity));
+  PetscCall(DMSwarmGetField(sw, "w_q", NULL, NULL, (void **) &vals));
   for (c = cStart; c < cEnd; ++c) {
     if (Np == 1) {
-      CHKERRQ(DMPlexComputeCellGeometryFVM(dm, c, NULL, centroid, NULL));
+      PetscCall(DMPlexComputeCellGeometryFVM(dm, c, NULL, centroid, NULL));
       for (d = 0; d < dim; ++d) {
         coords[c*dim+d] = centroid[d];
       }
       vals[c] = 1.0;
     } else {
-      CHKERRQ(DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, invJ, &detJ)); /* affine */
+      PetscCall(DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, invJ, &detJ)); /* affine */
       for (p = 0; p < Np; ++p) {
         const PetscInt n   = c*Np + p;
         PetscReal      sum = 0.0, refcoords[3];
 
         for (d = 0; d < dim; ++d) {
-          CHKERRQ(PetscRandomGetValueReal(rnd, &refcoords[d]));
+          PetscCall(PetscRandomGetValueReal(rnd, &refcoords[d]));
           sum += refcoords[d];
         }
         if (simplex && sum > 0.0) for (d = 0; d < dim; ++d) refcoords[d] -= PetscSqrtReal(dim)*sum;
         vals[n] = 1.0;
-        CHKERRQ(DMPlexReferenceToCoordinates(dm, c, 1, refcoords, &coords[n*dim]));
+        PetscCall(DMPlexReferenceToCoordinates(dm, c, 1, refcoords, &coords[n*dim]));
       }
     }
   }
@@ -118,17 +118,17 @@ static PetscErrorCode SetInitialCoordinates(DM sw)
       for (d = 0; d < dim; ++d) {
         PetscReal v_val;
 
-        CHKERRQ(PetscRandomGetValueReal(rndv, &v_val));
+        PetscCall(PetscRandomGetValueReal(rndv, &v_val));
         velocity[p*dim+d] = v_val;
       }
     }
   }
-  CHKERRQ(DMSwarmRestoreField(sw, DMSwarmPICField_coor, NULL, NULL, (void **) &coords));
-  CHKERRQ(DMSwarmRestoreField(sw, "velocity", NULL, NULL, (void **) &velocity));
-  CHKERRQ(DMSwarmRestoreField(sw, "w_q", NULL, NULL, (void **) &vals));
-  CHKERRQ(PetscFree5(centroid, xi0, v0, J, invJ));
-  CHKERRQ(PetscRandomDestroy(&rnd));
-  CHKERRQ(PetscRandomDestroy(&rndv));
+  PetscCall(DMSwarmRestoreField(sw, DMSwarmPICField_coor, NULL, NULL, (void **) &coords));
+  PetscCall(DMSwarmRestoreField(sw, "velocity", NULL, NULL, (void **) &velocity));
+  PetscCall(DMSwarmRestoreField(sw, "w_q", NULL, NULL, (void **) &vals));
+  PetscCall(PetscFree5(centroid, xi0, v0, J, invJ));
+  PetscCall(PetscRandomDestroy(&rnd));
+  PetscCall(PetscRandomDestroy(&rndv));
   PetscFunctionReturn(0);
 }
 
@@ -142,14 +142,14 @@ static PetscErrorCode SetInitialConditions(DM dmSw, Vec u)
   PetscInt       dim, d, cStart, cEnd, c, Np, p, n;
 
   PetscFunctionBeginUser;
-  CHKERRQ(VecGetLocalSize(u, &n));
-  CHKERRQ(DMGetApplicationContext(dmSw, &user));
+  PetscCall(VecGetLocalSize(u, &n));
+  PetscCall(DMGetApplicationContext(dmSw, &user));
   Np   = user->N;
-  CHKERRQ(DMSwarmGetCellDM(dmSw, &dm));
-  CHKERRQ(DMGetDimension(dm, &dim));
-  CHKERRQ(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
-  CHKERRQ(DMSwarmGetField(dmSw, "velocity", NULL, NULL, (void **) &velocity));
-  CHKERRQ(VecGetArray(u, &initialConditions));
+  PetscCall(DMSwarmGetCellDM(dmSw, &dm));
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+  PetscCall(DMSwarmGetField(dmSw, "velocity", NULL, NULL, (void **) &velocity));
+  PetscCall(VecGetArray(u, &initialConditions));
   for (c = cStart; c < cEnd; ++c) {
     for (p = 0; p < Np; ++p) {
       const PetscInt n = c*Np + p;
@@ -158,8 +158,8 @@ static PetscErrorCode SetInitialConditions(DM dmSw, Vec u)
       }
     }
   }
-  CHKERRQ(VecRestoreArray(u, &initialConditions));
-  CHKERRQ(DMSwarmRestoreField(dmSw, "velocity", NULL, NULL, (void **) &velocity));
+  PetscCall(VecRestoreArray(u, &initialConditions));
+  PetscCall(DMSwarmRestoreField(dmSw, "velocity", NULL, NULL, (void **) &velocity));
   PetscFunctionReturn(0);
 }
 
@@ -170,36 +170,36 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
   PetscBool      view = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetDimension(dm, &dim));
-  CHKERRQ(DMCreate(PetscObjectComm((PetscObject) dm), sw));
-  CHKERRQ(DMSetType(*sw, DMSWARM));
-  CHKERRQ(DMSetDimension(*sw, dim));
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMCreate(PetscObjectComm((PetscObject) dm), sw));
+  PetscCall(DMSetType(*sw, DMSWARM));
+  PetscCall(DMSetDimension(*sw, dim));
   /* h = 2L/n and N = n^d */
   if (user->h < 0.) user->h = 2.*user->L / PetscPowReal(user->N, 1./dim);
   /* From Section 4 in [1], \epsilon = 0.64 h^.98 */
   if (user->epsilon < 0.) user->epsilon = 0.64*pow(user->h, 1.98);
-  CHKERRQ(PetscOptionsGetBool(NULL, NULL, "-param_view", &view, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-param_view", &view, NULL));
   if (view) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "N: %D L: %g h: %g eps: %g\n", user->N, user->L, user->h, user->epsilon));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF, "N: %D L: %g h: %g eps: %g\n", user->N, user->L, user->h, user->epsilon));
   }
-  CHKERRQ(DMSwarmSetType(*sw, DMSWARM_PIC));
-  CHKERRQ(DMSwarmSetCellDM(*sw, dm));
-  CHKERRQ(DMSwarmRegisterPetscDatatypeField(*sw, "velocity", dim, PETSC_REAL));
-  CHKERRQ(DMSwarmRegisterPetscDatatypeField(*sw, "w_q", 1, PETSC_SCALAR));
-  CHKERRQ(DMSwarmFinalizeFieldRegister(*sw));
-  CHKERRQ(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
-  CHKERRQ(DMSwarmSetLocalSizes(*sw, (cEnd - cStart) * Np, 0));
-  CHKERRQ(DMSetFromOptions(*sw));
-  CHKERRQ(DMSwarmGetField(*sw, DMSwarmPICField_cellid, NULL, NULL, (void **) &cellid));
+  PetscCall(DMSwarmSetType(*sw, DMSWARM_PIC));
+  PetscCall(DMSwarmSetCellDM(*sw, dm));
+  PetscCall(DMSwarmRegisterPetscDatatypeField(*sw, "velocity", dim, PETSC_REAL));
+  PetscCall(DMSwarmRegisterPetscDatatypeField(*sw, "w_q", 1, PETSC_SCALAR));
+  PetscCall(DMSwarmFinalizeFieldRegister(*sw));
+  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+  PetscCall(DMSwarmSetLocalSizes(*sw, (cEnd - cStart) * Np, 0));
+  PetscCall(DMSetFromOptions(*sw));
+  PetscCall(DMSwarmGetField(*sw, DMSwarmPICField_cellid, NULL, NULL, (void **) &cellid));
   for (c = cStart; c < cEnd; ++c) {
     for (p = 0; p < Np; ++p) {
       const PetscInt n = c*Np + p;
       cellid[n] = c;
     }
   }
-  CHKERRQ(DMSwarmRestoreField(*sw, DMSwarmPICField_cellid, NULL, NULL, (void **) &cellid));
-  CHKERRQ(PetscObjectSetName((PetscObject) *sw, "Particles"));
-  CHKERRQ(DMViewFromOptions(*sw, NULL, "-sw_view"));
+  PetscCall(DMSwarmRestoreField(*sw, DMSwarmPICField_cellid, NULL, NULL, (void **) &cellid));
+  PetscCall(PetscObjectSetName((PetscObject) *sw, "Particles"));
+  PetscCall(DMViewFromOptions(*sw, NULL, "-sw_view"));
   PetscFunctionReturn(0);
 }
 
@@ -298,7 +298,7 @@ static PetscErrorCode ComputeGradS(PetscInt dim, PetscInt Np, const PetscReal vp
       for (i = 0, vc_l[0] = init; i < nx; ++i, vc_l[0] += h) {
         PetscReal sum = 0.0;
 
-        if (dbg) CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "(%D %D) vc_l: %g %g\n", i, j, vc_l[0], vc_l[1]));
+        if (dbg) PetscCall(PetscPrintf(PETSC_COMM_SELF, "(%D %D) vc_l: %g %g\n", i, j, vc_l[0], vc_l[1]));
         /* \log \sum_k \psi(v - v_k)  */
         for (q = 0; q < Np; ++q) sum += Gaussian(dim, &velocity[q*dim], epsilon, vc_l);
         sum = PetscLogReal(sum);
@@ -341,39 +341,39 @@ static PetscErrorCode RHSFunctionParticles(TS ts, PetscReal t, Vec U, Vec R, voi
   PetscInt           dim, Np, p, q;
 
   PetscFunctionBeginUser;
-  CHKERRQ(VecZeroEntries(R));
-  CHKERRQ(TSGetDM(ts, &sw));
-  CHKERRQ(DMGetDimension(sw, &dim));
-  CHKERRQ(VecGetLocalSize(U, &Np));
-  CHKERRQ(TSGetSolution(ts, &sol));
-  CHKERRQ(VecGetArray(sol, &velocity));
-  CHKERRQ(VecGetArray(R, &r));
-  CHKERRQ(VecGetArrayRead(U, &u));
+  PetscCall(VecZeroEntries(R));
+  PetscCall(TSGetDM(ts, &sw));
+  PetscCall(DMGetDimension(sw, &dim));
+  PetscCall(VecGetLocalSize(U, &Np));
+  PetscCall(TSGetSolution(ts, &sol));
+  PetscCall(VecGetArray(sol, &velocity));
+  PetscCall(VecGetArray(R, &r));
+  PetscCall(VecGetArrayRead(U, &u));
   Np  /= dim;
-  if (dbg) CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Part  ppr     x        y\n"));
+  if (dbg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Part  ppr     x        y\n"));
   for (p = 0; p < Np; ++p) {
     PetscReal gradS_p[3] = {0., 0., 0.};
 
-    CHKERRQ(ComputeGradS(dim, Np, &velocity[p*dim], velocity, gradS_p, user));
+    PetscCall(ComputeGradS(dim, Np, &velocity[p*dim], velocity, gradS_p, user));
     for (q = 0; q < Np; ++q) {
       PetscReal gradS_q[3] = {0., 0., 0.}, GammaS[3] = {0., 0., 0.}, Q[9];
 
       if (q == p) continue;
-      CHKERRQ(ComputeGradS(dim, Np, &velocity[q*dim], velocity, gradS_q, user));
+      PetscCall(ComputeGradS(dim, Np, &velocity[q*dim], velocity, gradS_q, user));
       DMPlex_WaxpyD_Internal(dim, -1.0, gradS_q, gradS_p, GammaS);
-      CHKERRQ(QCompute(dim, &u[p*dim], &u[q*dim], Q));
+      PetscCall(QCompute(dim, &u[p*dim], &u[q*dim], Q));
       switch (dim) {
         case 2: DMPlex_MultAdd2DReal_Internal(Q, 1, GammaS, &r[p*dim]);break;
         case 3: DMPlex_MultAdd3DReal_Internal(Q, 1, GammaS, &r[p*dim]);break;
         default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Do not support dimension %D", dim);
       }
     }
-    if (dbg) CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Final %4D %10.8lf %10.8lf\n", p, r[p*dim+0], r[p*dim+1]));
+    if (dbg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Final %4D %10.8lf %10.8lf\n", p, r[p*dim+0], r[p*dim+1]));
   }
-  CHKERRQ(VecRestoreArrayRead(U, &u));
-  CHKERRQ(VecRestoreArray(R, &r));
-  CHKERRQ(VecRestoreArray(sol, &velocity));
-  CHKERRQ(VecViewFromOptions(R, NULL, "-residual_view"));
+  PetscCall(VecRestoreArrayRead(U, &u));
+  PetscCall(VecRestoreArray(R, &r));
+  PetscCall(VecRestoreArray(sol, &velocity));
+  PetscCall(VecViewFromOptions(R, NULL, "-residual_view"));
   PetscFunctionReturn(0);
 }
 
@@ -391,14 +391,14 @@ static PetscErrorCode UpdateSwarm(TS ts)
   Vec sol;
 
   PetscFunctionBeginUser;
-  CHKERRQ(TSGetDM(ts, &sw));
-  CHKERRQ(DMSwarmGetField(sw, "velocity", NULL, NULL, (void **) &velocity));
-  CHKERRQ(TSGetSolution(ts, &sol));
-  CHKERRQ(VecGetArrayRead(sol, &u));
-  CHKERRQ(VecGetLocalSize(sol, &n));
+  PetscCall(TSGetDM(ts, &sw));
+  PetscCall(DMSwarmGetField(sw, "velocity", NULL, NULL, (void **) &velocity));
+  PetscCall(TSGetSolution(ts, &sol));
+  PetscCall(VecGetArrayRead(sol, &u));
+  PetscCall(VecGetLocalSize(sol, &n));
   for (idx = 0; idx < n; ++idx) velocity[idx] = u[idx];
-  CHKERRQ(VecRestoreArrayRead(sol, &u));
-  CHKERRQ(DMSwarmRestoreField(sw, "velocity", NULL, NULL, (void **) &velocity));
+  PetscCall(VecRestoreArrayRead(sol, &u));
+  PetscCall(DMSwarmRestoreField(sw, "velocity", NULL, NULL, (void **) &velocity));
   PetscFunctionReturn(0);
 }
 
@@ -408,10 +408,10 @@ static PetscErrorCode InitializeSolve(TS ts, Vec u)
   AppCtx        *user;
 
   PetscFunctionBeginUser;
-  CHKERRQ(TSGetDM(ts, &dm));
-  CHKERRQ(DMGetApplicationContext(dm, &user));
-  CHKERRQ(SetInitialCoordinates(dm));
-  CHKERRQ(SetInitialConditions(dm, u));
+  PetscCall(TSGetDM(ts, &dm));
+  PetscCall(DMGetApplicationContext(dm, &user));
+  PetscCall(SetInitialCoordinates(dm));
+  PetscCall(SetInitialConditions(dm, u));
   PetscFunctionReturn(0);
 }
 
@@ -423,34 +423,34 @@ int main(int argc,char **argv)
   MPI_Comm       comm;
   AppCtx         user;
 
-  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
-  CHKERRQ(ProcessOptions(comm, &user));
+  PetscCall(ProcessOptions(comm, &user));
   /* Initialize objects and set initial conditions */
-  CHKERRQ(CreateMesh(comm, &dm, &user));
-  CHKERRQ(CreateParticles(dm, &sw, &user));
-  CHKERRQ(DMSetApplicationContext(sw, &user));
-  CHKERRQ(DMSwarmVectorDefineField(sw, "velocity"));
-  CHKERRQ(TSCreate(comm, &ts));
-  CHKERRQ(TSSetDM(ts, sw));
-  CHKERRQ(TSSetMaxTime(ts, 10.0));
-  CHKERRQ(TSSetTimeStep(ts, 0.1));
-  CHKERRQ(TSSetMaxSteps(ts, 1));
-  CHKERRQ(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_MATCHSTEP));
-  CHKERRQ(TSSetRHSFunction(ts, NULL, RHSFunctionParticles, &user));
-  CHKERRQ(TSSetFromOptions(ts));
-  CHKERRQ(TSSetComputeInitialCondition(ts, InitializeSolve));
-  CHKERRQ(DMSwarmCreateGlobalVectorFromField(sw, "velocity", &v));
-  CHKERRQ(VecDuplicate(v, &u));
-  CHKERRQ(DMSwarmDestroyGlobalVectorFromField(sw, "velocity", &v));
-  CHKERRQ(TSComputeInitialCondition(ts, u));
-  CHKERRQ(TSSetPostStep(ts, UpdateSwarm));
-  CHKERRQ(TSSolve(ts, u));
-  CHKERRQ(VecDestroy(&u));
-  CHKERRQ(TSDestroy(&ts));
-  CHKERRQ(DMDestroy(&sw));
-  CHKERRQ(DMDestroy(&dm));
-  CHKERRQ(PetscFinalize());
+  PetscCall(CreateMesh(comm, &dm, &user));
+  PetscCall(CreateParticles(dm, &sw, &user));
+  PetscCall(DMSetApplicationContext(sw, &user));
+  PetscCall(DMSwarmVectorDefineField(sw, "velocity"));
+  PetscCall(TSCreate(comm, &ts));
+  PetscCall(TSSetDM(ts, sw));
+  PetscCall(TSSetMaxTime(ts, 10.0));
+  PetscCall(TSSetTimeStep(ts, 0.1));
+  PetscCall(TSSetMaxSteps(ts, 1));
+  PetscCall(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_MATCHSTEP));
+  PetscCall(TSSetRHSFunction(ts, NULL, RHSFunctionParticles, &user));
+  PetscCall(TSSetFromOptions(ts));
+  PetscCall(TSSetComputeInitialCondition(ts, InitializeSolve));
+  PetscCall(DMSwarmCreateGlobalVectorFromField(sw, "velocity", &v));
+  PetscCall(VecDuplicate(v, &u));
+  PetscCall(DMSwarmDestroyGlobalVectorFromField(sw, "velocity", &v));
+  PetscCall(TSComputeInitialCondition(ts, u));
+  PetscCall(TSSetPostStep(ts, UpdateSwarm));
+  PetscCall(TSSolve(ts, u));
+  PetscCall(VecDestroy(&u));
+  PetscCall(TSDestroy(&ts));
+  PetscCall(DMDestroy(&sw));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

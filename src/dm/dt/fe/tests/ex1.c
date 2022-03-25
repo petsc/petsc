@@ -21,12 +21,12 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->its     = 1;
   options->cbs     = 8;
 
-  ierr = PetscOptionsBegin(comm, "", "FE Integration Performance Options", "PETSCFE");CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsInt("-dim", "The topological dimension", "ex1.c", options->dim, &options->dim, NULL));
-  CHKERRQ(PetscOptionsBool("-simplex", "Simplex or hex cells", "ex1.c", options->simplex, &options->simplex, NULL));
-  CHKERRQ(PetscOptionsInt("-its", "The number of replications for timing", "ex1.c", options->its, &options->its, NULL));
-  CHKERRQ(PetscOptionsInt("-cbs", "The number of cells in an integration block", "ex1.c", options->cbs, &options->cbs, NULL));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm, "", "FE Integration Performance Options", "PETSCFE");PetscCall(ierr);
+  PetscCall(PetscOptionsInt("-dim", "The topological dimension", "ex1.c", options->dim, &options->dim, NULL));
+  PetscCall(PetscOptionsBool("-simplex", "Simplex or hex cells", "ex1.c", options->simplex, &options->simplex, NULL));
+  PetscCall(PetscOptionsInt("-its", "The number of replications for timing", "ex1.c", options->its, &options->its, NULL));
+  PetscCall(PetscOptionsInt("-cbs", "The number of cells in an integration block", "ex1.c", options->cbs, &options->cbs, NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -72,12 +72,12 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
   const PetscInt id = 1;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetDS(dm, &prob));
-  CHKERRQ(PetscDSSetResidual(prob, 0, f0_trig_u, f1_u));
-  CHKERRQ(PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu));
-  CHKERRQ(PetscDSSetExactSolution(prob, 0, trig_u, user));
-  CHKERRQ(DMGetLabel(dm, "marker", &label));
-  CHKERRQ(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) trig_u, NULL, user, NULL));
+  PetscCall(DMGetDS(dm, &prob));
+  PetscCall(PetscDSSetResidual(prob, 0, f0_trig_u, f1_u));
+  PetscCall(PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu));
+  PetscCall(PetscDSSetExactSolution(prob, 0, trig_u, user));
+  PetscCall(DMGetLabel(dm, "marker", &label));
+  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) trig_u, NULL, user, NULL));
   PetscFunctionReturn(0);
 }
 
@@ -89,19 +89,19 @@ static PetscErrorCode SetupDiscretization(DM dm, const char name[], PetscErrorCo
 
   PetscFunctionBeginUser;
   /* Create finite element */
-  CHKERRQ(PetscSNPrintf(prefix, PETSC_MAX_PATH_LEN, "%s_", name));
-  CHKERRQ(PetscFECreateDefault(PetscObjectComm((PetscObject) dm), user->dim, 1, user->simplex, name ? prefix : NULL, -1, &fe));
-  CHKERRQ(PetscObjectSetName((PetscObject) fe, name));
+  PetscCall(PetscSNPrintf(prefix, PETSC_MAX_PATH_LEN, "%s_", name));
+  PetscCall(PetscFECreateDefault(PetscObjectComm((PetscObject) dm), user->dim, 1, user->simplex, name ? prefix : NULL, -1, &fe));
+  PetscCall(PetscObjectSetName((PetscObject) fe, name));
   /* Set discretization and boundary conditions for each mesh */
-  CHKERRQ(DMSetField(dm, 0, NULL, (PetscObject) fe));
-  CHKERRQ(DMCreateDS(dm));
-  CHKERRQ((*setup)(dm, user));
+  PetscCall(DMSetField(dm, 0, NULL, (PetscObject) fe));
+  PetscCall(DMCreateDS(dm));
+  PetscCall((*setup)(dm, user));
   while (cdm) {
-    CHKERRQ(DMCopyDisc(dm,cdm));
+    PetscCall(DMCopyDisc(dm,cdm));
     /* TODO: Check whether the boundary of coarse meshes is marked */
-    CHKERRQ(DMGetCoarseDM(cdm, &cdm));
+    PetscCall(DMGetCoarseDM(cdm, &cdm));
   }
-  CHKERRQ(PetscFEDestroy(&fe));
+  PetscCall(PetscFEDestroy(&fe));
   PetscFunctionReturn(0);
 }
 
@@ -110,7 +110,7 @@ static PetscErrorCode PetscContainerUserDestroy_PetscFEGeom(void *ctx)
   PetscFEGeom   *geom = (PetscFEGeom *) ctx;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscFEGeomDestroy(&geom));
+  PetscCall(PetscFEGeomDestroy(&geom));
   PetscFunctionReturn(0);
 }
 
@@ -121,18 +121,18 @@ PetscErrorCode CellRangeGetFEGeom(IS cellIS, DMField coordField, PetscQuadrature
   PetscContainer  container;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectGetId((PetscObject) quad, &id));
-  CHKERRQ(PetscSNPrintf(composeStr, 32, "CellRangeGetFEGeom_%x\n", id));
-  CHKERRQ(PetscObjectQuery((PetscObject) cellIS, composeStr, (PetscObject *) &container));
+  PetscCall(PetscObjectGetId((PetscObject) quad, &id));
+  PetscCall(PetscSNPrintf(composeStr, 32, "CellRangeGetFEGeom_%x\n", id));
+  PetscCall(PetscObjectQuery((PetscObject) cellIS, composeStr, (PetscObject *) &container));
   if (container) {
-    CHKERRQ(PetscContainerGetPointer(container, (void **) geom));
+    PetscCall(PetscContainerGetPointer(container, (void **) geom));
   } else {
-    CHKERRQ(DMFieldCreateFEGeom(coordField, cellIS, quad, faceData, geom));
-    CHKERRQ(PetscContainerCreate(PETSC_COMM_SELF, &container));
-    CHKERRQ(PetscContainerSetPointer(container, (void *) *geom));
-    CHKERRQ(PetscContainerSetUserDestroy(container, PetscContainerUserDestroy_PetscFEGeom));
-    CHKERRQ(PetscObjectCompose((PetscObject) cellIS, composeStr, (PetscObject) container));
-    CHKERRQ(PetscContainerDestroy(&container));
+    PetscCall(DMFieldCreateFEGeom(coordField, cellIS, quad, faceData, geom));
+    PetscCall(PetscContainerCreate(PETSC_COMM_SELF, &container));
+    PetscCall(PetscContainerSetPointer(container, (void *) *geom));
+    PetscCall(PetscContainerSetUserDestroy(container, PetscContainerUserDestroy_PetscFEGeom));
+    PetscCall(PetscObjectCompose((PetscObject) cellIS, composeStr, (PetscObject) container));
+    PetscCall(PetscContainerDestroy(&container));
   }
   PetscFunctionReturn(0);
 }
@@ -154,21 +154,21 @@ static PetscErrorCode CreateFEGeometry(DM dm, PetscDS ds, IS cellIS, PetscQuadra
   *affineGeom = NULL;
   *quads      = NULL;
   *geoms      = NULL;
-  CHKERRQ(PetscDSGetNumFields(ds, &Nf));
-  CHKERRQ(DMGetCoordinateField(dm, &coordField));
-  CHKERRQ(DMFieldGetDegree(coordField, cellIS, NULL, &maxDegree));
+  PetscCall(PetscDSGetNumFields(ds, &Nf));
+  PetscCall(DMGetCoordinateField(dm, &coordField));
+  PetscCall(DMFieldGetDegree(coordField, cellIS, NULL, &maxDegree));
   if (maxDegree <= 1) {
-    CHKERRQ(DMFieldCreateDefaultQuadrature(coordField, cellIS, affineQuad));
-    if (*affineQuad) CHKERRQ(CellRangeGetFEGeom(cellIS, coordField, *affineQuad, PETSC_FALSE, affineGeom));
+    PetscCall(DMFieldCreateDefaultQuadrature(coordField, cellIS, affineQuad));
+    if (*affineQuad) PetscCall(CellRangeGetFEGeom(cellIS, coordField, *affineQuad, PETSC_FALSE, affineGeom));
   } else {
-    CHKERRQ(PetscCalloc2(Nf, quads, Nf, geoms));
+    PetscCall(PetscCalloc2(Nf, quads, Nf, geoms));
     for (f = 0; f < Nf; ++f) {
       PetscFE fe;
 
-      CHKERRQ(PetscDSGetDiscretization(ds, f, (PetscObject *) &fe));
-      CHKERRQ(PetscFEGetQuadrature(fe, &(*quads)[f]));
-      CHKERRQ(PetscObjectReference((PetscObject) (*quads)[f]));
-      CHKERRQ(CellRangeGetFEGeom(cellIS, coordField, (*quads)[f], PETSC_FALSE, &(*geoms)[f]));
+      PetscCall(PetscDSGetDiscretization(ds, f, (PetscObject *) &fe));
+      PetscCall(PetscFEGetQuadrature(fe, &(*quads)[f]));
+      PetscCall(PetscObjectReference((PetscObject) (*quads)[f]));
+      PetscCall(CellRangeGetFEGeom(cellIS, coordField, (*quads)[f], PETSC_FALSE, &(*geoms)[f]));
     }
   }
   PetscFunctionReturn(0);
@@ -180,17 +180,17 @@ static PetscErrorCode DestroyFEGeometry(DM dm, PetscDS ds, IS cellIS, PetscQuadr
   PetscInt       Nf, f;
 
   PetscFunctionBeginUser;
-  CHKERRQ(PetscDSGetNumFields(ds, &Nf));
-  CHKERRQ(DMGetCoordinateField(dm, &coordField));
+  PetscCall(PetscDSGetNumFields(ds, &Nf));
+  PetscCall(DMGetCoordinateField(dm, &coordField));
   if (*affineQuad) {
-    CHKERRQ(CellRangeRestoreFEGeom(cellIS, coordField, *affineQuad, PETSC_FALSE, affineGeom));
-    CHKERRQ(PetscQuadratureDestroy(affineQuad));
+    PetscCall(CellRangeRestoreFEGeom(cellIS, coordField, *affineQuad, PETSC_FALSE, affineGeom));
+    PetscCall(PetscQuadratureDestroy(affineQuad));
   } else {
     for (f = 0; f < Nf; ++f) {
-      CHKERRQ(CellRangeRestoreFEGeom(cellIS, coordField, (*quads)[f], PETSC_FALSE, &(*geoms)[f]));
-      CHKERRQ(PetscQuadratureDestroy(&(*quads)[f]));
+      PetscCall(CellRangeRestoreFEGeom(cellIS, coordField, (*quads)[f], PETSC_FALSE, &(*geoms)[f]));
+      PetscCall(PetscQuadratureDestroy(&(*quads)[f]));
     }
-    CHKERRQ(PetscFree2(*quads, *geoms));
+    PetscCall(PetscFree2(*quads, *geoms));
   }
   PetscFunctionReturn(0);
 }
@@ -210,17 +210,17 @@ static PetscErrorCode TestIntegration(DM dm, PetscInt cbs, PetscInt its)
 #endif
 
   PetscFunctionBeginUser;
-  CHKERRQ(PetscLogStageRegister("PetscFE Residual Integration Test", &stage));
-  CHKERRQ(PetscLogEventRegister("FEIntegRes", PETSCFE_CLASSID, &event));
-  CHKERRQ(PetscLogStagePush(stage));
-  CHKERRQ(DMPlexGetDepth(dm, &depth));
-  CHKERRQ(DMGetStratumIS(dm, "depth", depth, &cellIS));
-  CHKERRQ(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
-  CHKERRQ(DMGetCellDS(dm, cStart, &ds));
-  CHKERRQ(PetscDSGetNumFields(ds, &Nf));
-  CHKERRQ(PetscDSGetTotalDimension(ds, &totDim));
-  CHKERRQ(CreateFEGeometry(dm, ds, cellIS, &affineQuad, &affineGeom, &quads, &geoms));
-  CHKERRQ(PetscMalloc2(chunkSize*totDim, &u, chunkSize*totDim, &elemVec));
+  PetscCall(PetscLogStageRegister("PetscFE Residual Integration Test", &stage));
+  PetscCall(PetscLogEventRegister("FEIntegRes", PETSCFE_CLASSID, &event));
+  PetscCall(PetscLogStagePush(stage));
+  PetscCall(DMPlexGetDepth(dm, &depth));
+  PetscCall(DMGetStratumIS(dm, "depth", depth, &cellIS));
+  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+  PetscCall(DMGetCellDS(dm, cStart, &ds));
+  PetscCall(PetscDSGetNumFields(ds, &Nf));
+  PetscCall(PetscDSGetTotalDimension(ds, &totDim));
+  PetscCall(CreateFEGeometry(dm, ds, cellIS, &affineQuad, &affineGeom, &quads, &geoms));
+  PetscCall(PetscMalloc2(chunkSize*totDim, &u, chunkSize*totDim, &elemVec));
   /* Assumptions:
     - Single field
     - No input data
@@ -231,7 +231,7 @@ static PetscErrorCode TestIntegration(DM dm, PetscInt cbs, PetscInt its)
     for (cell = cStart; cell < cEnd; cell += chunkSize, ++Nch) {
       const PetscInt cS = cell, cE = PetscMin(cS + chunkSize, cEnd), Ne = cE - cS;
 
-      CHKERRQ(PetscArrayzero(elemVec, chunkSize*totDim));
+      PetscCall(PetscArrayzero(elemVec, chunkSize*totDim));
       /* TODO Replace with DMPlexGetCellFields() */
       for (k = 0; k < chunkSize*totDim; ++k) u[k] = 1.0;
       for (f = 0; f < Nf; ++f) {
@@ -240,18 +240,18 @@ static PetscErrorCode TestIntegration(DM dm, PetscInt cbs, PetscInt its)
         /* PetscQuadrature quad = affineQuad ? affineQuad : quads[f]; */
 
         key.label = NULL; key.value = 0; key.field = f;
-        CHKERRQ(PetscFEGeomGetChunk(geom, cS, cE, &chunkGeom));
-        CHKERRQ(PetscLogEventBegin(event,0,0,0,0));
-        CHKERRQ(PetscFEIntegrateResidual(ds, key, Ne, chunkGeom, u, NULL, NULL, NULL, 0.0, elemVec));
-        CHKERRQ(PetscLogEventEnd(event,0,0,0,0));
+        PetscCall(PetscFEGeomGetChunk(geom, cS, cE, &chunkGeom));
+        PetscCall(PetscLogEventBegin(event,0,0,0,0));
+        PetscCall(PetscFEIntegrateResidual(ds, key, Ne, chunkGeom, u, NULL, NULL, NULL, 0.0, elemVec));
+        PetscCall(PetscLogEventEnd(event,0,0,0,0));
       }
     }
   }
-  CHKERRQ(PetscFEGeomRestoreChunk(affineGeom, cStart, cEnd, &chunkGeom));
-  CHKERRQ(DestroyFEGeometry(dm, ds, cellIS, &affineQuad, &affineGeom, &quads, &geoms));
-  CHKERRQ(ISDestroy(&cellIS));
-  CHKERRQ(PetscFree2(u, elemVec));
-  CHKERRQ(PetscLogStagePop());
+  PetscCall(PetscFEGeomRestoreChunk(affineGeom, cStart, cEnd, &chunkGeom));
+  PetscCall(DestroyFEGeometry(dm, ds, cellIS, &affineQuad, &affineGeom, &quads, &geoms));
+  PetscCall(ISDestroy(&cellIS));
+  PetscCall(PetscFree2(u, elemVec));
+  PetscCall(PetscLogStagePop());
 #if defined(PETSC_USE_LOG)
   {
     const char        *title = "Petsc FE Residual Integration";
@@ -259,10 +259,10 @@ static PetscErrorCode TestIntegration(DM dm, PetscInt cbs, PetscInt its)
     PetscInt           N = (cEnd - cStart)*Nf*its;
     PetscReal          flopRate, cellRate;
 
-    CHKERRQ(PetscLogEventGetPerfInfo(stage, event, &eventInfo));
+    PetscCall(PetscLogEventGetPerfInfo(stage, event, &eventInfo));
     flopRate = eventInfo.time != 0.0 ? eventInfo.flops/eventInfo.time : 0.0;
     cellRate = eventInfo.time != 0.0 ? N/eventInfo.time : 0.0;
-    CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject) dm), "%s: %D integrals %D chunks %D reps\n  Cell rate: %.2f/s flop rate: %.2f MF/s\n", title, N, Nch, its, (double)cellRate, (double)(flopRate/1.e6)));
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject) dm), "%s: %D integrals %D chunks %D reps\n  Cell rate: %.2f/s flop rate: %.2f MF/s\n", title, N, Nch, its, (double)cellRate, (double)(flopRate/1.e6)));
   }
 #endif
   PetscFunctionReturn(0);
@@ -277,16 +277,16 @@ static PetscErrorCode TestIntegration2(DM dm, PetscInt cbs, PetscInt its)
   PetscInt        i;
 
   PetscFunctionBeginUser;
-  CHKERRQ(PetscLogStageRegister("DMPlex Residual Integration Test", &stage));
-  CHKERRQ(PetscLogStagePush(stage));
-  CHKERRQ(DMGetLocalVector(dm, &X));
-  CHKERRQ(DMGetLocalVector(dm, &F));
+  PetscCall(PetscLogStageRegister("DMPlex Residual Integration Test", &stage));
+  PetscCall(PetscLogStagePush(stage));
+  PetscCall(DMGetLocalVector(dm, &X));
+  PetscCall(DMGetLocalVector(dm, &F));
   for (i = 0; i < its; ++i) {
-    CHKERRQ(DMPlexSNESComputeResidualFEM(dm, X, F, NULL));
+    PetscCall(DMPlexSNESComputeResidualFEM(dm, X, F, NULL));
   }
-  CHKERRQ(DMRestoreLocalVector(dm, &X));
-  CHKERRQ(DMRestoreLocalVector(dm, &F));
-  CHKERRQ(PetscLogStagePop());
+  PetscCall(DMRestoreLocalVector(dm, &X));
+  PetscCall(DMRestoreLocalVector(dm, &F));
+  PetscCall(PetscLogStagePop());
 #if defined(PETSC_USE_LOG)
   {
     const char         *title = "DMPlex Residual Integration";
@@ -295,14 +295,14 @@ static PetscErrorCode TestIntegration2(DM dm, PetscInt cbs, PetscInt its)
     PetscInt           cStart, cEnd, Nf, N;
     PetscLogEvent      event;
 
-    CHKERRQ(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
-    CHKERRQ(DMGetNumFields(dm, &Nf));
-    CHKERRQ(PetscLogEventGetId("DMPlexResidualFE", &event));
-    CHKERRQ(PetscLogEventGetPerfInfo(stage, event, &eventInfo));
+    PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+    PetscCall(DMGetNumFields(dm, &Nf));
+    PetscCall(PetscLogEventGetId("DMPlexResidualFE", &event));
+    PetscCall(PetscLogEventGetPerfInfo(stage, event, &eventInfo));
     N        = (cEnd - cStart)*Nf*eventInfo.count;
     flopRate = eventInfo.time != 0.0 ? eventInfo.flops/eventInfo.time : 0.0;
     cellRate = eventInfo.time != 0.0 ? N/eventInfo.time : 0.0;
-    CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject) dm), "%s: %D integrals %D reps\n  Cell rate: %.2f/s flop rate: %.2f MF/s\n", title, N, eventInfo.count, (double)cellRate, (double)(flopRate/1.e6)));
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject) dm), "%s: %D integrals %D reps\n  Cell rate: %.2f/s flop rate: %.2f MF/s\n", title, N, eventInfo.count, (double)cellRate, (double)(flopRate/1.e6)));
   }
 #endif
   PetscFunctionReturn(0);
@@ -314,21 +314,21 @@ int main(int argc, char **argv)
   AppCtx         ctx;
   PetscMPIInt    size;
 
-  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheckFalse(size > 1,PETSC_COMM_WORLD, PETSC_ERR_SUP, "This is a uniprocessor example only.");
-  CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &ctx));
-  CHKERRQ(PetscLogDefaultBegin());
-  CHKERRQ(DMCreate(PETSC_COMM_WORLD, &dm));
-  CHKERRQ(DMSetType(dm, DMPLEX));
-  CHKERRQ(DMSetFromOptions(dm));
-  CHKERRQ(PetscObjectSetName((PetscObject) dm, "Mesh"));
-  CHKERRQ(PetscObjectViewFromOptions((PetscObject) dm, NULL, "-dm_view"));
-  CHKERRQ(SetupDiscretization(dm, "potential", SetupPrimalProblem, &ctx));
-  CHKERRQ(TestIntegration(dm, ctx.cbs, ctx.its));
-  CHKERRQ(TestIntegration2(dm, ctx.cbs, ctx.its));
-  CHKERRQ(DMDestroy(&dm));
-  CHKERRQ(PetscFinalize());
+  PetscCall(ProcessOptions(PETSC_COMM_WORLD, &ctx));
+  PetscCall(PetscLogDefaultBegin());
+  PetscCall(DMCreate(PETSC_COMM_WORLD, &dm));
+  PetscCall(DMSetType(dm, DMPLEX));
+  PetscCall(DMSetFromOptions(dm));
+  PetscCall(PetscObjectSetName((PetscObject) dm, "Mesh"));
+  PetscCall(PetscObjectViewFromOptions((PetscObject) dm, NULL, "-dm_view"));
+  PetscCall(SetupDiscretization(dm, "potential", SetupPrimalProblem, &ctx));
+  PetscCall(TestIntegration(dm, ctx.cbs, ctx.its));
+  PetscCall(TestIntegration2(dm, ctx.cbs, ctx.its));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

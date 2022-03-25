@@ -25,9 +25,9 @@ static PetscErrorCode PCApply_VPBJacobi(PC pc,Vec x,Vec y)
   const PetscInt    *bsizes;
 
   PetscFunctionBegin;
-  CHKERRQ(MatGetVariableBlockSizes(pc->pmat,&nblocks,&bsizes));
-  CHKERRQ(VecGetArrayRead(x,&xx));
-  CHKERRQ(VecGetArray(y,&yy));
+  PetscCall(MatGetVariableBlockSizes(pc->pmat,&nblocks,&bsizes));
+  PetscCall(VecGetArrayRead(x,&xx));
+  PetscCall(VecGetArray(y,&yy));
   for (i=0; i<nblocks; i++) {
     bs = bsizes[i];
     switch (bs) {
@@ -91,8 +91,8 @@ static PetscErrorCode PCApply_VPBJacobi(PC pc,Vec x,Vec y)
     ncnt += bsizes[i];
     diag += bsizes[i]*bsizes[i];
   }
-  CHKERRQ(VecRestoreArrayRead(x,&xx));
-  CHKERRQ(VecRestoreArray(y,&yy));
+  PetscCall(VecRestoreArrayRead(x,&xx));
+  PetscCall(VecRestoreArray(y,&yy));
   PetscFunctionReturn(0);
 }
 
@@ -107,15 +107,15 @@ static PetscErrorCode PCSetUp_VPBJacobi(PC pc)
   const PetscInt *bsizes;
 
   PetscFunctionBegin;
-  CHKERRQ(MatGetVariableBlockSizes(pc->pmat,&nblocks,&bsizes));
-  CHKERRQ(MatGetLocalSize(pc->pmat,&nlocal,NULL));
+  PetscCall(MatGetVariableBlockSizes(pc->pmat,&nblocks,&bsizes));
+  PetscCall(MatGetLocalSize(pc->pmat,&nlocal,NULL));
   PetscCheckFalse(nlocal && !nblocks,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call MatSetVariableBlockSizes() before using PCVPBJACOBI");
   if (!jac->diag) {
     for (i=0; i<nblocks; i++) nsize += bsizes[i]*bsizes[i];
-    CHKERRQ(PetscMalloc1(nsize,&jac->diag));
+    PetscCall(PetscMalloc1(nsize,&jac->diag));
   }
-  CHKERRQ(MatInvertVariableBlockDiagonal(A,nblocks,bsizes,jac->diag));
-  CHKERRQ(MatFactorGetError(A,&err));
+  PetscCall(MatInvertVariableBlockDiagonal(A,nblocks,bsizes,jac->diag));
+  PetscCall(MatFactorGetError(A,&err));
   if (err) pc->failedreason = (PCFailedReason)err;
   pc->ops->apply = PCApply_VPBJacobi;
   PetscFunctionReturn(0);
@@ -129,8 +129,8 @@ static PetscErrorCode PCDestroy_VPBJacobi(PC pc)
   /*
       Free the private data structure that was hanging off the PC
   */
-  CHKERRQ(PetscFree(jac->diag));
-  CHKERRQ(PetscFree(pc->data));
+  PetscCall(PetscFree(jac->diag));
+  PetscCall(PetscFree(pc->data));
   PetscFunctionReturn(0);
 }
 
@@ -172,7 +172,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_VPBJacobi(PC pc)
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  CHKERRQ(PetscNewLog(pc,&jac));
+  PetscCall(PetscNewLog(pc,&jac));
   pc->data = (void*)jac;
 
   /*

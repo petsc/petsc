@@ -14,68 +14,68 @@ PetscErrorCode  DMSetFromOptions_DA(PetscOptionItems *PetscOptionsObject,DM da)
   PetscCheckFalse(dd->N < 0,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Dimension must be non-negative, call DMSetFromOptions() if you want to change the value at runtime");
   PetscCheckFalse(dd->P < 0,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Dimension must be non-negative, call DMSetFromOptions() if you want to change the value at runtime");
 
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"DMDA Options"));
-  CHKERRQ(PetscOptionsBoundedInt("-da_grid_x","Number of grid points in x direction","DMDASetSizes",dd->M,&dd->M,NULL,1));
-  if (dim > 1) CHKERRQ(PetscOptionsBoundedInt("-da_grid_y","Number of grid points in y direction","DMDASetSizes",dd->N,&dd->N,NULL,1));
-  if (dim > 2) CHKERRQ(PetscOptionsBoundedInt("-da_grid_z","Number of grid points in z direction","DMDASetSizes",dd->P,&dd->P,NULL,1));
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"DMDA Options"));
+  PetscCall(PetscOptionsBoundedInt("-da_grid_x","Number of grid points in x direction","DMDASetSizes",dd->M,&dd->M,NULL,1));
+  if (dim > 1) PetscCall(PetscOptionsBoundedInt("-da_grid_y","Number of grid points in y direction","DMDASetSizes",dd->N,&dd->N,NULL,1));
+  if (dim > 2) PetscCall(PetscOptionsBoundedInt("-da_grid_z","Number of grid points in z direction","DMDASetSizes",dd->P,&dd->P,NULL,1));
 
-  CHKERRQ(PetscOptionsBoundedInt("-da_overlap","Decomposition overlap in all directions","DMDASetOverlap",dd->xol,&dd->xol,&flg,0));
-  if (flg) CHKERRQ(DMDASetOverlap(da,dd->xol,dd->xol,dd->xol));
-  CHKERRQ(PetscOptionsBoundedInt("-da_overlap_x","Decomposition overlap in x direction","DMDASetOverlap",dd->xol,&dd->xol,NULL,0));
-  if (dim > 1) CHKERRQ(PetscOptionsBoundedInt("-da_overlap_y","Decomposition overlap in y direction","DMDASetOverlap",dd->yol,&dd->yol,NULL,0));
-  if (dim > 2) CHKERRQ(PetscOptionsBoundedInt("-da_overlap_z","Decomposition overlap in z direction","DMDASetOverlap",dd->zol,&dd->zol,NULL,0));
+  PetscCall(PetscOptionsBoundedInt("-da_overlap","Decomposition overlap in all directions","DMDASetOverlap",dd->xol,&dd->xol,&flg,0));
+  if (flg) PetscCall(DMDASetOverlap(da,dd->xol,dd->xol,dd->xol));
+  PetscCall(PetscOptionsBoundedInt("-da_overlap_x","Decomposition overlap in x direction","DMDASetOverlap",dd->xol,&dd->xol,NULL,0));
+  if (dim > 1) PetscCall(PetscOptionsBoundedInt("-da_overlap_y","Decomposition overlap in y direction","DMDASetOverlap",dd->yol,&dd->yol,NULL,0));
+  if (dim > 2) PetscCall(PetscOptionsBoundedInt("-da_overlap_z","Decomposition overlap in z direction","DMDASetOverlap",dd->zol,&dd->zol,NULL,0));
 
-  CHKERRQ(PetscOptionsBoundedInt("-da_local_subdomains","","DMDASetNumLocalSubdomains",dd->Nsub,&dd->Nsub,&flg,PETSC_DECIDE));
-  if (flg) CHKERRQ(DMDASetNumLocalSubDomains(da,dd->Nsub));
+  PetscCall(PetscOptionsBoundedInt("-da_local_subdomains","","DMDASetNumLocalSubdomains",dd->Nsub,&dd->Nsub,&flg,PETSC_DECIDE));
+  if (flg) PetscCall(DMDASetNumLocalSubDomains(da,dd->Nsub));
 
   /* Handle DMDA parallel distribution */
-  CHKERRQ(PetscOptionsBoundedInt("-da_processors_x","Number of processors in x direction","DMDASetNumProcs",dd->m,&dd->m,NULL,PETSC_DECIDE));
-  if (dim > 1) CHKERRQ(PetscOptionsBoundedInt("-da_processors_y","Number of processors in y direction","DMDASetNumProcs",dd->n,&dd->n,NULL,PETSC_DECIDE));
-  if (dim > 2) CHKERRQ(PetscOptionsBoundedInt("-da_processors_z","Number of processors in z direction","DMDASetNumProcs",dd->p,&dd->p,NULL,PETSC_DECIDE));
+  PetscCall(PetscOptionsBoundedInt("-da_processors_x","Number of processors in x direction","DMDASetNumProcs",dd->m,&dd->m,NULL,PETSC_DECIDE));
+  if (dim > 1) PetscCall(PetscOptionsBoundedInt("-da_processors_y","Number of processors in y direction","DMDASetNumProcs",dd->n,&dd->n,NULL,PETSC_DECIDE));
+  if (dim > 2) PetscCall(PetscOptionsBoundedInt("-da_processors_z","Number of processors in z direction","DMDASetNumProcs",dd->p,&dd->p,NULL,PETSC_DECIDE));
   /* Handle DMDA refinement */
-  CHKERRQ(PetscOptionsBoundedInt("-da_refine_x","Refinement ratio in x direction","DMDASetRefinementFactor",dd->refine_x,&dd->refine_x,NULL,1));
-  if (dim > 1) CHKERRQ(PetscOptionsBoundedInt("-da_refine_y","Refinement ratio in y direction","DMDASetRefinementFactor",dd->refine_y,&dd->refine_y,NULL,1));
-  if (dim > 2) CHKERRQ(PetscOptionsBoundedInt("-da_refine_z","Refinement ratio in z direction","DMDASetRefinementFactor",dd->refine_z,&dd->refine_z,NULL,1));
+  PetscCall(PetscOptionsBoundedInt("-da_refine_x","Refinement ratio in x direction","DMDASetRefinementFactor",dd->refine_x,&dd->refine_x,NULL,1));
+  if (dim > 1) PetscCall(PetscOptionsBoundedInt("-da_refine_y","Refinement ratio in y direction","DMDASetRefinementFactor",dd->refine_y,&dd->refine_y,NULL,1));
+  if (dim > 2) PetscCall(PetscOptionsBoundedInt("-da_refine_z","Refinement ratio in z direction","DMDASetRefinementFactor",dd->refine_z,&dd->refine_z,NULL,1));
   dd->coarsen_x = dd->refine_x; dd->coarsen_y = dd->refine_y; dd->coarsen_z = dd->refine_z;
 
   /* Get refinement factors, defaults taken from the coarse DMDA */
-  CHKERRQ(DMDAGetRefinementFactor(da,&refx[0],&refy[0],&refz[0]));
+  PetscCall(DMDAGetRefinementFactor(da,&refx[0],&refy[0],&refz[0]));
   for (i=1; i<maxnlevels; i++) {
     refx[i] = refx[0];
     refy[i] = refy[0];
     refz[i] = refz[0];
   }
   n    = maxnlevels;
-  CHKERRQ(PetscOptionsIntArray("-da_refine_hierarchy_x","Refinement factor for each level","None",refx,&n,&flg));
+  PetscCall(PetscOptionsIntArray("-da_refine_hierarchy_x","Refinement factor for each level","None",refx,&n,&flg));
   if (flg) {
     dd->refine_x = refx[0];
     dd->refine_x_hier_n = n;
-    CHKERRQ(PetscMalloc1(n,&dd->refine_x_hier));
-    CHKERRQ(PetscArraycpy(dd->refine_x_hier,refx,n));
+    PetscCall(PetscMalloc1(n,&dd->refine_x_hier));
+    PetscCall(PetscArraycpy(dd->refine_x_hier,refx,n));
   }
   if (dim > 1) {
     n    = maxnlevels;
-    CHKERRQ(PetscOptionsIntArray("-da_refine_hierarchy_y","Refinement factor for each level","None",refy,&n,&flg));
+    PetscCall(PetscOptionsIntArray("-da_refine_hierarchy_y","Refinement factor for each level","None",refy,&n,&flg));
     if (flg) {
       dd->refine_y = refy[0];
       dd->refine_y_hier_n = n;
-      CHKERRQ(PetscMalloc1(n,&dd->refine_y_hier));
-      CHKERRQ(PetscArraycpy(dd->refine_y_hier,refy,n));
+      PetscCall(PetscMalloc1(n,&dd->refine_y_hier));
+      PetscCall(PetscArraycpy(dd->refine_y_hier,refy,n));
     }
   }
   if (dim > 2) {
     n    = maxnlevels;
-    CHKERRQ(PetscOptionsIntArray("-da_refine_hierarchy_z","Refinement factor for each level","None",refz,&n,&flg));
+    PetscCall(PetscOptionsIntArray("-da_refine_hierarchy_z","Refinement factor for each level","None",refz,&n,&flg));
     if (flg) {
       dd->refine_z = refz[0];
       dd->refine_z_hier_n = n;
-      CHKERRQ(PetscMalloc1(n,&dd->refine_z_hier));
-      CHKERRQ(PetscArraycpy(dd->refine_z_hier,refz,n));
+      PetscCall(PetscMalloc1(n,&dd->refine_z_hier));
+      PetscCall(PetscArraycpy(dd->refine_z_hier,refz,n));
     }
   }
 
-  CHKERRQ(PetscOptionsBoundedInt("-da_refine","Uniformly refine DA one or more times","None",refine,&refine,NULL,0));
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(PetscOptionsBoundedInt("-da_refine","Uniformly refine DA one or more times","None",refine,&refine,NULL,0));
+  PetscCall(PetscOptionsTail());
 
   while (refine--) {
     if (dd->bx == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0) {
@@ -142,31 +142,31 @@ PetscErrorCode DMLoad_DA(DM da,PetscViewer viewer)
   Vec              c;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscViewerBinaryRead(viewer,&dim,1,NULL,PETSC_INT));
-  CHKERRQ(PetscViewerBinaryRead(viewer,&m,1,NULL,PETSC_INT));
-  CHKERRQ(PetscViewerBinaryRead(viewer,&n,1,NULL,PETSC_INT));
-  CHKERRQ(PetscViewerBinaryRead(viewer,&p,1,NULL,PETSC_INT));
-  CHKERRQ(PetscViewerBinaryRead(viewer,&dof,1,NULL,PETSC_INT));
-  CHKERRQ(PetscViewerBinaryRead(viewer,&swidth,1,NULL,PETSC_INT));
-  CHKERRQ(PetscViewerBinaryRead(viewer,&bx,1,NULL,PETSC_ENUM));
-  CHKERRQ(PetscViewerBinaryRead(viewer,&by,1,NULL,PETSC_ENUM));
-  CHKERRQ(PetscViewerBinaryRead(viewer,&bz,1,NULL,PETSC_ENUM));
-  CHKERRQ(PetscViewerBinaryRead(viewer,&stencil,1,NULL,PETSC_ENUM));
+  PetscCall(PetscViewerBinaryRead(viewer,&dim,1,NULL,PETSC_INT));
+  PetscCall(PetscViewerBinaryRead(viewer,&m,1,NULL,PETSC_INT));
+  PetscCall(PetscViewerBinaryRead(viewer,&n,1,NULL,PETSC_INT));
+  PetscCall(PetscViewerBinaryRead(viewer,&p,1,NULL,PETSC_INT));
+  PetscCall(PetscViewerBinaryRead(viewer,&dof,1,NULL,PETSC_INT));
+  PetscCall(PetscViewerBinaryRead(viewer,&swidth,1,NULL,PETSC_INT));
+  PetscCall(PetscViewerBinaryRead(viewer,&bx,1,NULL,PETSC_ENUM));
+  PetscCall(PetscViewerBinaryRead(viewer,&by,1,NULL,PETSC_ENUM));
+  PetscCall(PetscViewerBinaryRead(viewer,&bz,1,NULL,PETSC_ENUM));
+  PetscCall(PetscViewerBinaryRead(viewer,&stencil,1,NULL,PETSC_ENUM));
 
-  CHKERRQ(DMSetDimension(da, dim));
-  CHKERRQ(DMDASetSizes(da, m,n,p));
-  CHKERRQ(DMDASetBoundaryType(da, bx, by, bz));
-  CHKERRQ(DMDASetDof(da, dof));
-  CHKERRQ(DMDASetStencilType(da, stencil));
-  CHKERRQ(DMDASetStencilWidth(da, swidth));
-  CHKERRQ(DMSetUp(da));
-  CHKERRQ(PetscViewerBinaryRead(viewer,&coors,1,NULL,PETSC_ENUM));
+  PetscCall(DMSetDimension(da, dim));
+  PetscCall(DMDASetSizes(da, m,n,p));
+  PetscCall(DMDASetBoundaryType(da, bx, by, bz));
+  PetscCall(DMDASetDof(da, dof));
+  PetscCall(DMDASetStencilType(da, stencil));
+  PetscCall(DMDASetStencilWidth(da, swidth));
+  PetscCall(DMSetUp(da));
+  PetscCall(PetscViewerBinaryRead(viewer,&coors,1,NULL,PETSC_ENUM));
   if (coors) {
-    CHKERRQ(DMGetCoordinateDM(da,&dac));
-    CHKERRQ(DMCreateGlobalVector(dac,&c));
-    CHKERRQ(VecLoad(c,viewer));
-    CHKERRQ(DMSetCoordinates(da,c));
-    CHKERRQ(VecDestroy(&c));
+    PetscCall(DMGetCoordinateDM(da,&dac));
+    PetscCall(DMCreateGlobalVector(dac,&c));
+    PetscCall(VecLoad(c,viewer));
+    PetscCall(DMSetCoordinates(da,c));
+    PetscCall(VecDestroy(&c));
   }
   PetscFunctionReturn(0);
 }
@@ -181,41 +181,41 @@ PetscErrorCode DMCreateSubDM_DA(DM dm, PetscInt numFields, const PetscInt fields
     Vec     coords;
     void   *ctx;
     /* Cannot use DMClone since the dof stuff is mixed in. Ugh
-    CHKERRQ(DMClone(dm, subdm)); */
-    CHKERRQ(DMCreate(PetscObjectComm((PetscObject)dm), subdm));
-    CHKERRQ(DMGetPointSF(dm, &sf));
-    CHKERRQ(DMSetPointSF(*subdm, sf));
-    CHKERRQ(DMGetApplicationContext(dm, &ctx));
-    CHKERRQ(DMSetApplicationContext(*subdm, ctx));
-    CHKERRQ(DMGetCoordinatesLocal(dm, &coords));
+    PetscCall(DMClone(dm, subdm)); */
+    PetscCall(DMCreate(PetscObjectComm((PetscObject)dm), subdm));
+    PetscCall(DMGetPointSF(dm, &sf));
+    PetscCall(DMSetPointSF(*subdm, sf));
+    PetscCall(DMGetApplicationContext(dm, &ctx));
+    PetscCall(DMSetApplicationContext(*subdm, ctx));
+    PetscCall(DMGetCoordinatesLocal(dm, &coords));
     if (coords) {
-      CHKERRQ(DMSetCoordinatesLocal(*subdm, coords));
+      PetscCall(DMSetCoordinatesLocal(*subdm, coords));
     } else {
-      CHKERRQ(DMGetCoordinates(dm, &coords));
-      if (coords) CHKERRQ(DMSetCoordinates(*subdm, coords));
+      PetscCall(DMGetCoordinates(dm, &coords));
+      if (coords) PetscCall(DMSetCoordinates(*subdm, coords));
     }
 
-    CHKERRQ(DMSetType(*subdm, DMDA));
-    CHKERRQ(DMSetDimension(*subdm, dm->dim));
-    CHKERRQ(DMDASetSizes(*subdm, da->M, da->N, da->P));
-    CHKERRQ(DMDASetNumProcs(*subdm, da->m, da->n, da->p));
-    CHKERRQ(DMDASetBoundaryType(*subdm, da->bx, da->by, da->bz));
-    CHKERRQ(DMDASetDof(*subdm, numFields));
-    CHKERRQ(DMDASetStencilType(*subdm, da->stencil_type));
-    CHKERRQ(DMDASetStencilWidth(*subdm, da->s));
-    CHKERRQ(DMDASetOwnershipRanges(*subdm, da->lx, da->ly, da->lz));
+    PetscCall(DMSetType(*subdm, DMDA));
+    PetscCall(DMSetDimension(*subdm, dm->dim));
+    PetscCall(DMDASetSizes(*subdm, da->M, da->N, da->P));
+    PetscCall(DMDASetNumProcs(*subdm, da->m, da->n, da->p));
+    PetscCall(DMDASetBoundaryType(*subdm, da->bx, da->by, da->bz));
+    PetscCall(DMDASetDof(*subdm, numFields));
+    PetscCall(DMDASetStencilType(*subdm, da->stencil_type));
+    PetscCall(DMDASetStencilWidth(*subdm, da->s));
+    PetscCall(DMDASetOwnershipRanges(*subdm, da->lx, da->ly, da->lz));
   }
   if (is) {
     PetscInt *indices, cnt = 0, dof = da->w, i, j;
 
-    CHKERRQ(PetscMalloc1(da->Nlocal*numFields/dof, &indices));
+    PetscCall(PetscMalloc1(da->Nlocal*numFields/dof, &indices));
     for (i = da->base/dof; i < (da->base+da->Nlocal)/dof; ++i) {
       for (j = 0; j < numFields; ++j) {
         indices[cnt++] = dof*i + fields[j];
       }
     }
     PetscCheckFalse(cnt != da->Nlocal*numFields/dof,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Count %D does not equal expected value %D", cnt, da->Nlocal*numFields/dof);
-    CHKERRQ(ISCreateGeneral(PetscObjectComm((PetscObject) dm), cnt, indices, PETSC_OWN_POINTER, is));
+    PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject) dm), cnt, indices, PETSC_OWN_POINTER, is));
   }
   PetscFunctionReturn(0);
 }
@@ -232,37 +232,37 @@ PetscErrorCode DMCreateFieldDecomposition_DA(DM dm, PetscInt *len,char ***nameli
     Vec      v;
     PetscInt rstart,n;
 
-    CHKERRQ(DMGetGlobalVector(dm,&v));
-    CHKERRQ(VecGetOwnershipRange(v,&rstart,NULL));
-    CHKERRQ(VecGetLocalSize(v,&n));
-    CHKERRQ(DMRestoreGlobalVector(dm,&v));
-    CHKERRQ(PetscMalloc1(dof,islist));
+    PetscCall(DMGetGlobalVector(dm,&v));
+    PetscCall(VecGetOwnershipRange(v,&rstart,NULL));
+    PetscCall(VecGetLocalSize(v,&n));
+    PetscCall(DMRestoreGlobalVector(dm,&v));
+    PetscCall(PetscMalloc1(dof,islist));
     for (i=0; i<dof; i++) {
-      CHKERRQ(ISCreateStride(PetscObjectComm((PetscObject)dm),n/dof,rstart+i,dof,&(*islist)[i]));
+      PetscCall(ISCreateStride(PetscObjectComm((PetscObject)dm),n/dof,rstart+i,dof,&(*islist)[i]));
     }
   }
   if (namelist) {
-    CHKERRQ(PetscMalloc1(dof, namelist));
+    PetscCall(PetscMalloc1(dof, namelist));
     if (dd->fieldname) {
       for (i=0; i<dof; i++) {
-        CHKERRQ(PetscStrallocpy(dd->fieldname[i],&(*namelist)[i]));
+        PetscCall(PetscStrallocpy(dd->fieldname[i],&(*namelist)[i]));
       }
     } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Currently DMDA must have fieldnames");
   }
   if (dmlist) {
     DM da;
 
-    CHKERRQ(DMDACreate(PetscObjectComm((PetscObject)dm), &da));
-    CHKERRQ(DMSetDimension(da, dm->dim));
-    CHKERRQ(DMDASetSizes(da, dd->M, dd->N, dd->P));
-    CHKERRQ(DMDASetNumProcs(da, dd->m, dd->n, dd->p));
-    CHKERRQ(DMDASetBoundaryType(da, dd->bx, dd->by, dd->bz));
-    CHKERRQ(DMDASetDof(da, 1));
-    CHKERRQ(DMDASetStencilType(da, dd->stencil_type));
-    CHKERRQ(DMDASetStencilWidth(da, dd->s));
-    CHKERRQ(DMSetUp(da));
-    CHKERRQ(PetscMalloc1(dof,dmlist));
-    for (i=0; i<dof-1; i++) CHKERRQ(PetscObjectReference((PetscObject)da));
+    PetscCall(DMDACreate(PetscObjectComm((PetscObject)dm), &da));
+    PetscCall(DMSetDimension(da, dm->dim));
+    PetscCall(DMDASetSizes(da, dd->M, dd->N, dd->P));
+    PetscCall(DMDASetNumProcs(da, dd->m, dd->n, dd->p));
+    PetscCall(DMDASetBoundaryType(da, dd->bx, dd->by, dd->bz));
+    PetscCall(DMDASetDof(da, 1));
+    PetscCall(DMDASetStencilType(da, dd->stencil_type));
+    PetscCall(DMDASetStencilWidth(da, dd->s));
+    PetscCall(DMSetUp(da));
+    PetscCall(PetscMalloc1(dof,dmlist));
+    for (i=0; i<dof-1; i++) PetscCall(PetscObjectReference((PetscObject)da));
     for (i=0; i<dof; i++) (*dmlist)[i] = da;
   }
   PetscFunctionReturn(0);
@@ -273,16 +273,16 @@ PetscErrorCode DMClone_DA(DM dm, DM *newdm)
   DM_DA         *da = (DM_DA *) dm->data;
 
   PetscFunctionBegin;
-  CHKERRQ(DMSetType(*newdm, DMDA));
-  CHKERRQ(DMSetDimension(*newdm, dm->dim));
-  CHKERRQ(DMDASetSizes(*newdm, da->M, da->N, da->P));
-  CHKERRQ(DMDASetNumProcs(*newdm, da->m, da->n, da->p));
-  CHKERRQ(DMDASetBoundaryType(*newdm, da->bx, da->by, da->bz));
-  CHKERRQ(DMDASetDof(*newdm, da->w));
-  CHKERRQ(DMDASetStencilType(*newdm, da->stencil_type));
-  CHKERRQ(DMDASetStencilWidth(*newdm, da->s));
-  CHKERRQ(DMDASetOwnershipRanges(*newdm, da->lx, da->ly, da->lz));
-  CHKERRQ(DMSetUp(*newdm));
+  PetscCall(DMSetType(*newdm, DMDA));
+  PetscCall(DMSetDimension(*newdm, dm->dim));
+  PetscCall(DMDASetSizes(*newdm, da->M, da->N, da->P));
+  PetscCall(DMDASetNumProcs(*newdm, da->m, da->n, da->p));
+  PetscCall(DMDASetBoundaryType(*newdm, da->bx, da->by, da->bz));
+  PetscCall(DMDASetDof(*newdm, da->w));
+  PetscCall(DMDASetStencilType(*newdm, da->stencil_type));
+  PetscCall(DMDASetStencilWidth(*newdm, da->s));
+  PetscCall(DMDASetOwnershipRanges(*newdm, da->lx, da->ly, da->lz));
+  PetscCall(DMSetUp(*newdm));
   PetscFunctionReturn(0);
 }
 
@@ -300,7 +300,7 @@ static PetscErrorCode DMHasCreateInjection_DA(DM dm, PetscBool *flg)
 static PetscErrorCode DMGetDimPoints_DA(DM dm, PetscInt dim, PetscInt *pStart, PetscInt *pEnd)
 {
   PetscFunctionBegin;
-  CHKERRQ(DMDAGetDepthStratum(dm, dim, pStart, pEnd));
+  PetscCall(DMDAGetDepthStratum(dm, dim, pStart, pEnd));
   PetscFunctionReturn(0);
 }
 
@@ -310,8 +310,8 @@ static PetscErrorCode DMGetNeighbors_DA(DM dm, PetscInt *nranks, const PetscMPII
   DMDAStencilType st;
 
   PetscFunctionBegin;
-  CHKERRQ(DMDAGetNeighbors(dm,ranks));
-  CHKERRQ(DMDAGetInfo(dm,&dim,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&st));
+  PetscCall(DMDAGetNeighbors(dm,ranks));
+  PetscCall(DMDAGetInfo(dm,&dim,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&st));
 
   switch (dim) {
     case 1:
@@ -354,7 +354,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
 
   PetscFunctionBegin;
   PetscValidPointer(da,1);
-  CHKERRQ(PetscNewLog(da,&dd));
+  PetscCall(PetscNewLog(da,&dd));
   da->data = dd;
 
   da->dim        = -1;
@@ -439,7 +439,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
   da->ops->getneighbors                = DMGetNeighbors_DA;
   da->ops->locatepoints                = DMLocatePoints_DA_Regular;
   da->ops->getcompatibility            = DMGetCompatibility_DA;
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)da,"DMSetUpGLVisViewer_C",DMSetUpGLVisViewer_DMDA));
+  PetscCall(PetscObjectComposeFunction((PetscObject)da,"DMSetUpGLVisViewer_C",DMSetUpGLVisViewer_DMDA));
   PetscFunctionReturn(0);
 }
 
@@ -465,7 +465,7 @@ PetscErrorCode  DMDACreate(MPI_Comm comm, DM *da)
 {
   PetscFunctionBegin;
   PetscValidPointer(da,2);
-  CHKERRQ(DMCreate(comm,da));
-  CHKERRQ(DMSetType(*da,DMDA));
+  PetscCall(DMCreate(comm,da));
+  PetscCall(DMSetType(*da,DMDA));
   PetscFunctionReturn(0);
 }

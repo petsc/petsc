@@ -13,121 +13,121 @@ int main(int argc,char **args)
   PetscBool      mat_nonsymmetric = PETSC_FALSE,flg;
   MatInfo        info;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   n    = 2*size;
 
   /* Set flag if we are doing a nonsymmetric problem; the default is symmetric. */
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-mat_nonsym",&mat_nonsymmetric,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-mat_nonsym",&mat_nonsymmetric,NULL));
 
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&C));
-  CHKERRQ(MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n));
-  CHKERRQ(MatSetFromOptions(C));
-  CHKERRQ(MatSeqAIJSetPreallocation(C,5,NULL));
-  CHKERRQ(MatMPIAIJSetPreallocation(C,5,NULL,5,NULL));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&C));
+  PetscCall(MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n));
+  PetscCall(MatSetFromOptions(C));
+  PetscCall(MatSeqAIJSetPreallocation(C,5,NULL));
+  PetscCall(MatMPIAIJSetPreallocation(C,5,NULL,5,NULL));
 
-  CHKERRQ(MatGetOwnershipRange(C,&Istart,&Iend));
+  PetscCall(MatGetOwnershipRange(C,&Istart,&Iend));
   for (Ii=Istart; Ii<Iend; Ii++) {
     v = -1.0; i = Ii/n; j = Ii - i*n;
-    if (i>0)   {J = Ii - n; CHKERRQ(MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES));}
-    if (i<m-1) {J = Ii + n; CHKERRQ(MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES));}
-    if (j>0)   {J = Ii - 1; CHKERRQ(MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES));}
-    if (j<n-1) {J = Ii + 1; CHKERRQ(MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES));}
-    v = 4.0; CHKERRQ(MatSetValues(C,1,&Ii,1,&Ii,&v,ADD_VALUES));
+    if (i>0)   {J = Ii - n; PetscCall(MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES));}
+    if (i<m-1) {J = Ii + n; PetscCall(MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES));}
+    if (j>0)   {J = Ii - 1; PetscCall(MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES));}
+    if (j<n-1) {J = Ii + 1; PetscCall(MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES));}
+    v = 4.0; PetscCall(MatSetValues(C,1,&Ii,1,&Ii,&v,ADD_VALUES));
   }
 
   /* Make the matrix nonsymmetric if desired */
   if (mat_nonsymmetric) {
     for (Ii=Istart; Ii<Iend; Ii++) {
       v = -1.5; i = Ii/n;
-      if (i>1) {J = Ii-n-1; CHKERRQ(MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES));}
+      if (i>1) {J = Ii-n-1; PetscCall(MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES));}
     }
   } else {
-    CHKERRQ(MatSetOption(C,MAT_SYMMETRIC,PETSC_TRUE));
-    CHKERRQ(MatSetOption(C,MAT_SYMMETRY_ETERNAL,PETSC_TRUE));
+    PetscCall(MatSetOption(C,MAT_SYMMETRIC,PETSC_TRUE));
+    PetscCall(MatSetOption(C,MAT_SYMMETRY_ETERNAL,PETSC_TRUE));
   }
-  CHKERRQ(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(PetscObjectSetName((PetscObject)C,"C"));
-  CHKERRQ(MatViewFromOptions(C,NULL,"-view"));
+  PetscCall(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
+  PetscCall(PetscObjectSetName((PetscObject)C,"C"));
+  PetscCall(MatViewFromOptions(C,NULL,"-view"));
 
   /* C1 = 2.0*C1 + C, C1 is anti-diagonal and has different non-zeros than C */
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&C1));
-  CHKERRQ(MatSetSizes(C1,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n));
-  CHKERRQ(MatSetFromOptions(C1));
-  CHKERRQ(MatSeqAIJSetPreallocation(C1,1,NULL));
-  CHKERRQ(MatMPIAIJSetPreallocation(C1,1,NULL,1,NULL));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&C1));
+  PetscCall(MatSetSizes(C1,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n));
+  PetscCall(MatSetFromOptions(C1));
+  PetscCall(MatSeqAIJSetPreallocation(C1,1,NULL));
+  PetscCall(MatMPIAIJSetPreallocation(C1,1,NULL,1,NULL));
   for (Ii=Istart; Ii<Iend; Ii++) {
     v = 1.0;
     i = m*n - Ii -1;
     j = Ii;
-    CHKERRQ(MatSetValues(C1,1,&i,1,&j,&v,ADD_VALUES));
+    PetscCall(MatSetValues(C1,1,&i,1,&j,&v,ADD_VALUES));
   }
-  CHKERRQ(MatAssemblyBegin(C1,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(C1,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(PetscObjectSetName((PetscObject)C1,"C1"));
-  CHKERRQ(MatViewFromOptions(C1,NULL,"-view"));
-  CHKERRQ(MatDuplicate(C1,MAT_COPY_VALUES,&CU));
+  PetscCall(MatAssemblyBegin(C1,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(C1,MAT_FINAL_ASSEMBLY));
+  PetscCall(PetscObjectSetName((PetscObject)C1,"C1"));
+  PetscCall(MatViewFromOptions(C1,NULL,"-view"));
+  PetscCall(MatDuplicate(C1,MAT_COPY_VALUES,&CU));
 
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD," MatAXPY(C1,2.0,C,DIFFERENT_NONZERO_PATTERN)...\n"));
-  CHKERRQ(MatAXPY(C1,2.0,C,DIFFERENT_NONZERO_PATTERN));
-  CHKERRQ(MatAXPY(CU,2.0,C,UNKNOWN_NONZERO_PATTERN));
-  CHKERRQ(MatGetInfo(C1,MAT_GLOBAL_SUM,&info));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD," C1: nz_allocated = %g; nz_used = %g; nz_unneeded = %g\n",info.nz_allocated,info.nz_used, info.nz_unneeded));
-  CHKERRQ(MatViewFromOptions(C1,NULL,"-view"));
-  CHKERRQ(MatMultEqual(CU,C1,10,&flg));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD," MatAXPY(C1,2.0,C,DIFFERENT_NONZERO_PATTERN)...\n"));
+  PetscCall(MatAXPY(C1,2.0,C,DIFFERENT_NONZERO_PATTERN));
+  PetscCall(MatAXPY(CU,2.0,C,UNKNOWN_NONZERO_PATTERN));
+  PetscCall(MatGetInfo(C1,MAT_GLOBAL_SUM,&info));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD," C1: nz_allocated = %g; nz_used = %g; nz_unneeded = %g\n",info.nz_allocated,info.nz_used, info.nz_unneeded));
+  PetscCall(MatViewFromOptions(C1,NULL,"-view"));
+  PetscCall(MatMultEqual(CU,C1,10,&flg));
   if (!flg) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Error UNKNOWN_NONZERO_PATTERN (supposedly DIFFERENT_NONZERO_PATTERN)\n"));
-    CHKERRQ(MatViewFromOptions(CU,NULL,"-view"));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error UNKNOWN_NONZERO_PATTERN (supposedly DIFFERENT_NONZERO_PATTERN)\n"));
+    PetscCall(MatViewFromOptions(CU,NULL,"-view"));
   }
-  CHKERRQ(MatDestroy(&CU));
+  PetscCall(MatDestroy(&CU));
 
   /* Secondly, compute C1 = 2.0*C2 + C1, C2 has non-zero pattern of C */
-  CHKERRQ(MatDuplicate(C,MAT_DO_NOT_COPY_VALUES,&C2));
-  CHKERRQ(MatDuplicate(C1,MAT_COPY_VALUES,&CU));
+  PetscCall(MatDuplicate(C,MAT_DO_NOT_COPY_VALUES,&C2));
+  PetscCall(MatDuplicate(C1,MAT_COPY_VALUES,&CU));
 
   for (Ii=Istart; Ii<Iend; Ii++) {
     v    = 1.0;
-    CHKERRQ(MatSetValues(C2,1,&Ii,1,&Ii,&v,ADD_VALUES));
+    PetscCall(MatSetValues(C2,1,&Ii,1,&Ii,&v,ADD_VALUES));
   }
-  CHKERRQ(MatAssemblyBegin(C2,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(C2,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(PetscObjectSetName((PetscObject)C2,"C2"));
-  CHKERRQ(MatViewFromOptions(C2,NULL,"-view"));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD," MatAXPY(C1,2.0,C2,SUBSET_NONZERO_PATTERN)...\n"));
-  CHKERRQ(MatAXPY(C1,2.0,C2,SUBSET_NONZERO_PATTERN));
-  CHKERRQ(MatAXPY(CU,2.0,C2,UNKNOWN_NONZERO_PATTERN));
-  CHKERRQ(MatGetInfo(C1,MAT_GLOBAL_SUM,&info));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD," C1: nz_allocated = %g; nz_used = %g; nz_unneeded = %g\n",info.nz_allocated,info.nz_used, info.nz_unneeded));
-  CHKERRQ(MatViewFromOptions(C1,NULL,"-view"));
-  CHKERRQ(MatMultEqual(CU,C1,10,&flg));
+  PetscCall(MatAssemblyBegin(C2,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(C2,MAT_FINAL_ASSEMBLY));
+  PetscCall(PetscObjectSetName((PetscObject)C2,"C2"));
+  PetscCall(MatViewFromOptions(C2,NULL,"-view"));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD," MatAXPY(C1,2.0,C2,SUBSET_NONZERO_PATTERN)...\n"));
+  PetscCall(MatAXPY(C1,2.0,C2,SUBSET_NONZERO_PATTERN));
+  PetscCall(MatAXPY(CU,2.0,C2,UNKNOWN_NONZERO_PATTERN));
+  PetscCall(MatGetInfo(C1,MAT_GLOBAL_SUM,&info));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD," C1: nz_allocated = %g; nz_used = %g; nz_unneeded = %g\n",info.nz_allocated,info.nz_used, info.nz_unneeded));
+  PetscCall(MatViewFromOptions(C1,NULL,"-view"));
+  PetscCall(MatMultEqual(CU,C1,10,&flg));
   if (!flg) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Error UNKNOWN_NONZERO_PATTERN (supposedly SUBSET_NONZERO_PATTERN)\n"));
-    CHKERRQ(MatViewFromOptions(CU,NULL,"-view"));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error UNKNOWN_NONZERO_PATTERN (supposedly SUBSET_NONZERO_PATTERN)\n"));
+    PetscCall(MatViewFromOptions(CU,NULL,"-view"));
   }
-  CHKERRQ(MatDestroy(&CU));
+  PetscCall(MatDestroy(&CU));
 
   /* Test SAME_NONZERO_PATTERN computing C2 = C2 + 2.0 * C */
-  CHKERRQ(MatDuplicate(C2,MAT_COPY_VALUES,&CU));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD," MatAXPY(C2,2.0,C,SAME_NONZERO_PATTERN)...\n"));
-  CHKERRQ(MatAXPY(C2,2.0,C,SAME_NONZERO_PATTERN));
-  CHKERRQ(MatAXPY(CU,2.0,C,UNKNOWN_NONZERO_PATTERN));
-  CHKERRQ(MatGetInfo(C2,MAT_GLOBAL_SUM,&info));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD," C2: nz_allocated = %g; nz_used = %g; nz_unneeded = %g\n",info.nz_allocated,info.nz_used, info.nz_unneeded));
-  CHKERRQ(MatViewFromOptions(C2,NULL,"-view"));
-  CHKERRQ(MatMultEqual(CU,C2,10,&flg));
+  PetscCall(MatDuplicate(C2,MAT_COPY_VALUES,&CU));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD," MatAXPY(C2,2.0,C,SAME_NONZERO_PATTERN)...\n"));
+  PetscCall(MatAXPY(C2,2.0,C,SAME_NONZERO_PATTERN));
+  PetscCall(MatAXPY(CU,2.0,C,UNKNOWN_NONZERO_PATTERN));
+  PetscCall(MatGetInfo(C2,MAT_GLOBAL_SUM,&info));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD," C2: nz_allocated = %g; nz_used = %g; nz_unneeded = %g\n",info.nz_allocated,info.nz_used, info.nz_unneeded));
+  PetscCall(MatViewFromOptions(C2,NULL,"-view"));
+  PetscCall(MatMultEqual(CU,C2,10,&flg));
   if (!flg) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Error UNKNOWN_NONZERO_PATTERN (supposedly SUBSET_NONZERO_PATTERN)\n"));
-    CHKERRQ(MatViewFromOptions(CU,NULL,"-view"));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error UNKNOWN_NONZERO_PATTERN (supposedly SUBSET_NONZERO_PATTERN)\n"));
+    PetscCall(MatViewFromOptions(CU,NULL,"-view"));
   }
-  CHKERRQ(MatDestroy(&CU));
+  PetscCall(MatDestroy(&CU));
 
-  CHKERRQ(MatDestroy(&C1));
-  CHKERRQ(MatDestroy(&C2));
-  CHKERRQ(MatDestroy(&C));
+  PetscCall(MatDestroy(&C1));
+  PetscCall(MatDestroy(&C2));
+  PetscCall(MatDestroy(&C));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

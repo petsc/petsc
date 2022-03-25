@@ -19,75 +19,75 @@ int main(int argc,char **argv)
   const PetscScalar *x,*y;
   PetscScalar       *f;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* create vectors X,Y and F and set values in it*/
-  CHKERRQ(VecCreate(PETSC_COMM_SELF,&X));
-  CHKERRQ(VecSetSizes(X,N,N));
-  CHKERRQ(VecSetFromOptions(X));
-  CHKERRQ(VecDuplicate(X,&Y));
-  CHKERRQ(VecDuplicate(X,&F));
-  CHKERRQ(PetscObjectSetName((PetscObject)F,"F"));
+  PetscCall(VecCreate(PETSC_COMM_SELF,&X));
+  PetscCall(VecSetSizes(X,N,N));
+  PetscCall(VecSetFromOptions(X));
+  PetscCall(VecDuplicate(X,&Y));
+  PetscCall(VecDuplicate(X,&F));
+  PetscCall(PetscObjectSetName((PetscObject)F,"F"));
   for (i=0; i < N; i++) {
     value = i;
-    CHKERRQ(VecSetValues(X,1,&i,&value,INSERT_VALUES));
+    PetscCall(VecSetValues(X,1,&i,&value,INSERT_VALUES));
     value = 100 + i;
-    CHKERRQ(VecSetValues(Y,1,&i,&value,INSERT_VALUES));
+    PetscCall(VecSetValues(Y,1,&i,&value,INSERT_VALUES));
   }
-  CHKERRQ(VecSet(F,zero));
+  PetscCall(VecSet(F,zero));
 
   /* Create subvectors X1,X2,Y1,Y2,F1,F2 */
-  CHKERRQ(VecCreate(PETSC_COMM_SELF,&X1));
-  CHKERRQ(VecSetSizes(X1,N/2,N/2));
-  CHKERRQ(VecSetFromOptions(X1));
-  CHKERRQ(VecDuplicate(X1,&X2));
-  CHKERRQ(VecDuplicate(X1,&Y1));
-  CHKERRQ(VecDuplicate(X1,&Y2));
-  CHKERRQ(VecDuplicate(X1,&F1));
-  CHKERRQ(VecDuplicate(X1,&F2));
+  PetscCall(VecCreate(PETSC_COMM_SELF,&X1));
+  PetscCall(VecSetSizes(X1,N/2,N/2));
+  PetscCall(VecSetFromOptions(X1));
+  PetscCall(VecDuplicate(X1,&X2));
+  PetscCall(VecDuplicate(X1,&Y1));
+  PetscCall(VecDuplicate(X1,&Y2));
+  PetscCall(VecDuplicate(X1,&F1));
+  PetscCall(VecDuplicate(X1,&F2));
 
   /* Get array pointers for X,Y,F */
-  CHKERRQ(VecGetArrayRead(X,&x));
-  CHKERRQ(VecGetArrayRead(Y,&y));
-  CHKERRQ(VecGetArray(F,&f));
+  PetscCall(VecGetArrayRead(X,&x));
+  PetscCall(VecGetArrayRead(Y,&y));
+  PetscCall(VecGetArray(F,&f));
   /* Share X,Y,F array pointers with subvectors */
-  CHKERRQ(VecPlaceArray(X1,x));
-  CHKERRQ(VecPlaceArray(X2,x+N/2));
-  CHKERRQ(VecPlaceArray(Y1,y));
-  CHKERRQ(VecPlaceArray(Y2,y+N/2));
-  CHKERRQ(VecPlaceArray(F1,f));
-  CHKERRQ(VecPlaceArray(F2,f+N/2));
+  PetscCall(VecPlaceArray(X1,x));
+  PetscCall(VecPlaceArray(X2,x+N/2));
+  PetscCall(VecPlaceArray(Y1,y));
+  PetscCall(VecPlaceArray(Y2,y+N/2));
+  PetscCall(VecPlaceArray(F1,f));
+  PetscCall(VecPlaceArray(F2,f+N/2));
 
   /* Do subvector addition */
-  CHKERRQ(VecWAXPY(F1,1.0,X1,Y1));
-  CHKERRQ(VecWAXPY(F2,1.0,X2,Y2));
+  PetscCall(VecWAXPY(F1,1.0,X1,Y1));
+  PetscCall(VecWAXPY(F2,1.0,X2,Y2));
 
   /* Reset subvectors */
-  CHKERRQ(VecResetArray(X1));
-  CHKERRQ(VecResetArray(X2));
-  CHKERRQ(VecResetArray(Y1));
-  CHKERRQ(VecResetArray(Y2));
-  CHKERRQ(VecResetArray(F1));
-  CHKERRQ(VecResetArray(F2));
+  PetscCall(VecResetArray(X1));
+  PetscCall(VecResetArray(X2));
+  PetscCall(VecResetArray(Y1));
+  PetscCall(VecResetArray(Y2));
+  PetscCall(VecResetArray(F1));
+  PetscCall(VecResetArray(F2));
 
   /* Restore X,Y,and F */
-  CHKERRQ(VecRestoreArrayRead(X,&x));
-  CHKERRQ(VecRestoreArrayRead(Y,&y));
-  CHKERRQ(VecRestoreArray(F,&f));
+  PetscCall(VecRestoreArrayRead(X,&x));
+  PetscCall(VecRestoreArrayRead(Y,&y));
+  PetscCall(VecRestoreArray(F,&f));
 
-  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"F = X + Y\n"));
-  CHKERRQ(VecView(F,0));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"F = X + Y\n"));
+  PetscCall(VecView(F,0));
   /* Destroy vectors */
-  CHKERRQ(VecDestroy(&X));
-  CHKERRQ(VecDestroy(&Y));
-  CHKERRQ(VecDestroy(&F));
-  CHKERRQ(VecDestroy(&X1));
-  CHKERRQ(VecDestroy(&Y1));
-  CHKERRQ(VecDestroy(&F1));
-  CHKERRQ(VecDestroy(&X2));
-  CHKERRQ(VecDestroy(&Y2));
-  CHKERRQ(VecDestroy(&F2));
+  PetscCall(VecDestroy(&X));
+  PetscCall(VecDestroy(&Y));
+  PetscCall(VecDestroy(&F));
+  PetscCall(VecDestroy(&X1));
+  PetscCall(VecDestroy(&Y1));
+  PetscCall(VecDestroy(&F1));
+  PetscCall(VecDestroy(&X2));
+  PetscCall(VecDestroy(&Y2));
+  PetscCall(VecDestroy(&F2));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }

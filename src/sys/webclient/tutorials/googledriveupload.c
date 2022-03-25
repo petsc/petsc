@@ -9,10 +9,10 @@ int main(int argc,char **argv)
 {
   char           access_token[512];
 
-  CHKERRQ(PetscInitialize(&argc,&argv,NULL,NULL));
-  CHKERRQ(PetscGoogleDriveRefresh(PETSC_COMM_WORLD,NULL,access_token,sizeof(access_token)));
-  CHKERRQ(PetscGoogleDriveUpload(PETSC_COMM_WORLD,access_token,"googledriveupload.c"));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscInitialize(&argc,&argv,NULL,NULL));
+  PetscCall(PetscGoogleDriveRefresh(PETSC_COMM_WORLD,NULL,access_token,sizeof(access_token)));
+  PetscCall(PetscGoogleDriveUpload(PETSC_COMM_WORLD,access_token,"googledriveupload.c"));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

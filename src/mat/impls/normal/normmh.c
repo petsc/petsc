@@ -23,18 +23,18 @@ PetscErrorCode MatDiagonalScaleHermitian_Normal(Mat inA,Vec left,Vec right)
   PetscFunctionBegin;
   if (left) {
     if (!a->left) {
-      CHKERRQ(VecDuplicate(left,&a->left));
-      CHKERRQ(VecCopy(left,a->left));
+      PetscCall(VecDuplicate(left,&a->left));
+      PetscCall(VecCopy(left,a->left));
     } else {
-      CHKERRQ(VecPointwiseMult(a->left,left,a->left));
+      PetscCall(VecPointwiseMult(a->left,left,a->left));
     }
   }
   if (right) {
     if (!a->right) {
-      CHKERRQ(VecDuplicate(right,&a->right));
-      CHKERRQ(VecCopy(right,a->right));
+      PetscCall(VecDuplicate(right,&a->right));
+      PetscCall(VecCopy(right,a->right));
     } else {
-      CHKERRQ(VecPointwiseMult(a->right,right,a->right));
+      PetscCall(VecPointwiseMult(a->right,right,a->right));
     }
   }
   PetscFunctionReturn(0);
@@ -49,17 +49,17 @@ PetscErrorCode MatMultHermitian_Normal(Mat N,Vec x,Vec y)
   in = x;
   if (Na->right) {
     if (!Na->rightwork) {
-      CHKERRQ(VecDuplicate(Na->right,&Na->rightwork));
+      PetscCall(VecDuplicate(Na->right,&Na->rightwork));
     }
-    CHKERRQ(VecPointwiseMult(Na->rightwork,Na->right,in));
+    PetscCall(VecPointwiseMult(Na->rightwork,Na->right,in));
     in   = Na->rightwork;
   }
-  CHKERRQ(MatMult(Na->A,in,Na->w));
-  CHKERRQ(MatMultHermitianTranspose(Na->A,Na->w,y));
+  PetscCall(MatMult(Na->A,in,Na->w));
+  PetscCall(MatMultHermitianTranspose(Na->A,Na->w,y));
   if (Na->left) {
-    CHKERRQ(VecPointwiseMult(y,Na->left,y));
+    PetscCall(VecPointwiseMult(y,Na->left,y));
   }
-  CHKERRQ(VecScale(y,Na->scale));
+  PetscCall(VecScale(y,Na->scale));
   PetscFunctionReturn(0);
 }
 
@@ -72,19 +72,19 @@ PetscErrorCode MatMultHermitianAdd_Normal(Mat N,Vec v1,Vec v2,Vec v3)
   in = v1;
   if (Na->right) {
     if (!Na->rightwork) {
-      CHKERRQ(VecDuplicate(Na->right,&Na->rightwork));
+      PetscCall(VecDuplicate(Na->right,&Na->rightwork));
     }
-    CHKERRQ(VecPointwiseMult(Na->rightwork,Na->right,in));
+    PetscCall(VecPointwiseMult(Na->rightwork,Na->right,in));
     in   = Na->rightwork;
   }
-  CHKERRQ(MatMult(Na->A,in,Na->w));
-  CHKERRQ(VecScale(Na->w,Na->scale));
+  PetscCall(MatMult(Na->A,in,Na->w));
+  PetscCall(VecScale(Na->w,Na->scale));
   if (Na->left) {
-    CHKERRQ(MatMultHermitianTranspose(Na->A,Na->w,v3));
-    CHKERRQ(VecPointwiseMult(v3,Na->left,v3));
-    CHKERRQ(VecAXPY(v3,1.0,v2));
+    PetscCall(MatMultHermitianTranspose(Na->A,Na->w,v3));
+    PetscCall(VecPointwiseMult(v3,Na->left,v3));
+    PetscCall(VecAXPY(v3,1.0,v2));
   } else {
-    CHKERRQ(MatMultHermitianTransposeAdd(Na->A,Na->w,v2,v3));
+    PetscCall(MatMultHermitianTransposeAdd(Na->A,Na->w,v2,v3));
   }
   PetscFunctionReturn(0);
 }
@@ -98,17 +98,17 @@ PetscErrorCode MatMultHermitianTranspose_Normal(Mat N,Vec x,Vec y)
   in = x;
   if (Na->left) {
     if (!Na->leftwork) {
-      CHKERRQ(VecDuplicate(Na->left,&Na->leftwork));
+      PetscCall(VecDuplicate(Na->left,&Na->leftwork));
     }
-    CHKERRQ(VecPointwiseMult(Na->leftwork,Na->left,in));
+    PetscCall(VecPointwiseMult(Na->leftwork,Na->left,in));
     in   = Na->leftwork;
   }
-  CHKERRQ(MatMult(Na->A,in,Na->w));
-  CHKERRQ(MatMultHermitianTranspose(Na->A,Na->w,y));
+  PetscCall(MatMult(Na->A,in,Na->w));
+  PetscCall(MatMultHermitianTranspose(Na->A,Na->w,y));
   if (Na->right) {
-    CHKERRQ(VecPointwiseMult(y,Na->right,y));
+    PetscCall(VecPointwiseMult(y,Na->right,y));
   }
-  CHKERRQ(VecScale(y,Na->scale));
+  PetscCall(VecScale(y,Na->scale));
   PetscFunctionReturn(0);
 }
 
@@ -121,19 +121,19 @@ PetscErrorCode MatMultHermitianTransposeAdd_Normal(Mat N,Vec v1,Vec v2,Vec v3)
   in = v1;
   if (Na->left) {
     if (!Na->leftwork) {
-      CHKERRQ(VecDuplicate(Na->left,&Na->leftwork));
+      PetscCall(VecDuplicate(Na->left,&Na->leftwork));
     }
-    CHKERRQ(VecPointwiseMult(Na->leftwork,Na->left,in));
+    PetscCall(VecPointwiseMult(Na->leftwork,Na->left,in));
     in   = Na->leftwork;
   }
-  CHKERRQ(MatMult(Na->A,in,Na->w));
-  CHKERRQ(VecScale(Na->w,Na->scale));
+  PetscCall(MatMult(Na->A,in,Na->w));
+  PetscCall(VecScale(Na->w,Na->scale));
   if (Na->right) {
-    CHKERRQ(MatMultHermitianTranspose(Na->A,Na->w,v3));
-    CHKERRQ(VecPointwiseMult(v3,Na->right,v3));
-    CHKERRQ(VecAXPY(v3,1.0,v2));
+    PetscCall(MatMultHermitianTranspose(Na->A,Na->w,v3));
+    PetscCall(VecPointwiseMult(v3,Na->right,v3));
+    PetscCall(VecAXPY(v3,1.0,v2));
   } else {
-    CHKERRQ(MatMultHermitianTransposeAdd(Na->A,Na->w,v2,v3));
+    PetscCall(MatMultHermitianTransposeAdd(Na->A,Na->w,v2,v3));
   }
   PetscFunctionReturn(0);
 }
@@ -143,14 +143,14 @@ PetscErrorCode MatDestroyHermitian_Normal(Mat N)
   Mat_Normal     *Na = (Mat_Normal*)N->data;
 
   PetscFunctionBegin;
-  CHKERRQ(MatDestroy(&Na->A));
-  CHKERRQ(VecDestroy(&Na->w));
-  CHKERRQ(VecDestroy(&Na->left));
-  CHKERRQ(VecDestroy(&Na->right));
-  CHKERRQ(VecDestroy(&Na->leftwork));
-  CHKERRQ(VecDestroy(&Na->rightwork));
-  CHKERRQ(PetscFree(N->data));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)N,"MatNormalGetMatHermitian_C",NULL));
+  PetscCall(MatDestroy(&Na->A));
+  PetscCall(VecDestroy(&Na->w));
+  PetscCall(VecDestroy(&Na->left));
+  PetscCall(VecDestroy(&Na->right));
+  PetscCall(VecDestroy(&Na->leftwork));
+  PetscCall(VecDestroy(&Na->rightwork));
+  PetscCall(PetscFree(N->data));
+  PetscCall(PetscObjectComposeFunction((PetscObject)N,"MatNormalGetMatHermitian_C",NULL));
   PetscFunctionReturn(0);
 }
 
@@ -167,24 +167,24 @@ PetscErrorCode MatGetDiagonalHermitian_Normal(Mat N,Vec v)
   const PetscScalar *mvalues;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscMalloc2(A->cmap->N,&diag,A->cmap->N,&work));
-  CHKERRQ(PetscArrayzero(work,A->cmap->N));
-  CHKERRQ(MatGetOwnershipRange(A,&rstart,&rend));
+  PetscCall(PetscMalloc2(A->cmap->N,&diag,A->cmap->N,&work));
+  PetscCall(PetscArrayzero(work,A->cmap->N));
+  PetscCall(MatGetOwnershipRange(A,&rstart,&rend));
   for (i=rstart; i<rend; i++) {
-    CHKERRQ(MatGetRow(A,i,&nnz,&cols,&mvalues));
+    PetscCall(MatGetRow(A,i,&nnz,&cols,&mvalues));
     for (j=0; j<nnz; j++) {
       work[cols[j]] += mvalues[j]*PetscConj(mvalues[j]);
     }
-    CHKERRQ(MatRestoreRow(A,i,&nnz,&cols,&mvalues));
+    PetscCall(MatRestoreRow(A,i,&nnz,&cols,&mvalues));
   }
-  CHKERRMPI(MPIU_Allreduce(work,diag,A->cmap->N,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)N)));
+  PetscCallMPI(MPIU_Allreduce(work,diag,A->cmap->N,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)N)));
   rstart = N->cmap->rstart;
   rend   = N->cmap->rend;
-  CHKERRQ(VecGetArray(v,&values));
-  CHKERRQ(PetscArraycpy(values,diag+rstart,rend-rstart));
-  CHKERRQ(VecRestoreArray(v,&values));
-  CHKERRQ(PetscFree2(diag,work));
-  CHKERRQ(VecScale(v,Na->scale));
+  PetscCall(VecGetArray(v,&values));
+  PetscCall(PetscArraycpy(values,diag+rstart,rend-rstart));
+  PetscCall(VecRestoreArray(v,&values));
+  PetscCall(PetscFree2(diag,work));
+  PetscCall(VecScale(v,Na->scale));
   PetscFunctionReturn(0);
 }
 
@@ -219,7 +219,7 @@ PetscErrorCode MatNormalHermitianGetMat(Mat A,Mat *M)
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
   PetscValidPointer(M,2);
-  CHKERRQ(PetscUseMethod(A,"MatNormalGetMatHermitian_C",(Mat,Mat*),(A,M)));
+  PetscCall(PetscUseMethod(A,"MatNormalGetMatHermitian_C",(Mat,Mat*),(A,M)));
   PetscFunctionReturn(0);
 }
 
@@ -248,20 +248,20 @@ PetscErrorCode  MatCreateNormalHermitian(Mat A,Mat *N)
   VecType        vtype;
 
   PetscFunctionBegin;
-  CHKERRQ(MatGetLocalSize(A,&m,&n));
-  CHKERRQ(MatCreate(PetscObjectComm((PetscObject)A),N));
-  CHKERRQ(MatSetSizes(*N,n,n,PETSC_DECIDE,PETSC_DECIDE));
-  CHKERRQ(PetscObjectChangeTypeName((PetscObject)*N,MATNORMALHERMITIAN));
-  CHKERRQ(PetscLayoutReference(A->cmap,&(*N)->rmap));
-  CHKERRQ(PetscLayoutReference(A->cmap,&(*N)->cmap));
+  PetscCall(MatGetLocalSize(A,&m,&n));
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)A),N));
+  PetscCall(MatSetSizes(*N,n,n,PETSC_DECIDE,PETSC_DECIDE));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)*N,MATNORMALHERMITIAN));
+  PetscCall(PetscLayoutReference(A->cmap,&(*N)->rmap));
+  PetscCall(PetscLayoutReference(A->cmap,&(*N)->cmap));
 
-  CHKERRQ(PetscNewLog(*N,&Na));
+  PetscCall(PetscNewLog(*N,&Na));
   (*N)->data = (void*) Na;
-  CHKERRQ(PetscObjectReference((PetscObject)A));
+  PetscCall(PetscObjectReference((PetscObject)A));
   Na->A      = A;
   Na->scale  = 1.0;
 
-  CHKERRQ(MatCreateVecs(A,NULL,&Na->w));
+  PetscCall(MatCreateVecs(A,NULL,&Na->w));
 
   (*N)->ops->destroy          = MatDestroyHermitian_Normal;
   (*N)->ops->mult             = MatMultHermitian_Normal;
@@ -274,12 +274,12 @@ PetscErrorCode  MatCreateNormalHermitian(Mat A,Mat *N)
   (*N)->assembled             = PETSC_TRUE;
   (*N)->preallocated          = PETSC_TRUE;
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)(*N),"MatNormalGetMatHermitian_C",MatNormalGetMatHermitian_Normal));
-  CHKERRQ(MatSetOption(*N,MAT_HERMITIAN,PETSC_TRUE));
-  CHKERRQ(MatGetVecType(A,&vtype));
-  CHKERRQ(MatSetVecType(*N,vtype));
+  PetscCall(PetscObjectComposeFunction((PetscObject)(*N),"MatNormalGetMatHermitian_C",MatNormalGetMatHermitian_Normal));
+  PetscCall(MatSetOption(*N,MAT_HERMITIAN,PETSC_TRUE));
+  PetscCall(MatGetVecType(A,&vtype));
+  PetscCall(MatSetVecType(*N,vtype));
 #if defined(PETSC_HAVE_DEVICE)
-  CHKERRQ(MatBindToCPU(*N,A->boundtocpu));
+  PetscCall(MatBindToCPU(*N,A->boundtocpu));
 #endif
   PetscFunctionReturn(0);
 }

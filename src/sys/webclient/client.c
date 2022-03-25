@@ -67,13 +67,13 @@ PetscErrorCode PetscSSLInitializeContext(SSL_CTX **octx)
 
 #if defined(PETSC_USE_SSL_CERTIFICATE)
     /* Locate keyfile */
-    CHKERRQ(PetscStrcpy(keyfile,"sslclient.pem"));
-    CHKERRQ(PetscTestFile(keyfile,'r',&exists));
+    PetscCall(PetscStrcpy(keyfile,"sslclient.pem"));
+    PetscCall(PetscTestFile(keyfile,'r',&exists));
     if (!exists) {
-      CHKERRQ(PetscGetHomeDirectory(keyfile,PETSC_MAX_PATH_LEN));
-      CHKERRQ(PetscStrcat(keyfile,"/"));
-      CHKERRQ(PetscStrcat(keyfile,"sslclient.pem"));
-      CHKERRQ(PetscTestFile(keyfile,'r',&exists));
+      PetscCall(PetscGetHomeDirectory(keyfile,PETSC_MAX_PATH_LEN));
+      PetscCall(PetscStrcat(keyfile,"/"));
+      PetscCall(PetscStrcat(keyfile,"sslclient.pem"));
+      PetscCall(PetscTestFile(keyfile,'r',&exists));
       PetscCheck(exists,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate sslclient.pem file in current directory or home directory");
     }
 
@@ -114,48 +114,48 @@ static PetscErrorCode PetscHTTPBuildRequest(const char type[],const char url[],c
   PetscBool      flg;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscStrallocpy(url,&host));
-  CHKERRQ(PetscStrchr(host,'/',&path));
+  PetscCall(PetscStrallocpy(url,&host));
+  PetscCall(PetscStrchr(host,'/',&path));
   PetscCheck(path,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"url must contain / it is %s",url);
   *path = 0;
-  CHKERRQ(PetscStrlen(host,&hostlen));
+  PetscCall(PetscStrlen(host,&hostlen));
 
-  CHKERRQ(PetscStrchr(url,'/',&path));
-  CHKERRQ(PetscStrlen(path,&pathlen));
+  PetscCall(PetscStrchr(url,'/',&path));
+  PetscCall(PetscStrlen(path,&pathlen));
 
   if (header) {
-    CHKERRQ(PetscStrendswith(header,"\r\n",&flg));
+    PetscCall(PetscStrendswith(header,"\r\n",&flg));
     PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"header must end with \\r\");
   }
 
-  CHKERRQ(PetscStrlen(type,&typelen));
+  PetscCall(PetscStrlen(type,&typelen));
   if (ctype) {
-    CHKERRQ(PetscSNPrintf(contenttype,80,"Content-Type: %s\r\n",ctype));
-    CHKERRQ(PetscStrlen(contenttype,&contenttypelen));
+    PetscCall(PetscSNPrintf(contenttype,80,"Content-Type: %s\r\n",ctype));
+    PetscCall(PetscStrlen(contenttype,&contenttypelen));
   }
-  CHKERRQ(PetscStrlen(header,&headlen));
-  CHKERRQ(PetscStrlen(body,&bodylen));
-  CHKERRQ(PetscSNPrintf(contentlength,40,"Content-Length: %d\r\n\r\n",(int)bodylen));
-  CHKERRQ(PetscStrlen(contentlength,&contentlen));
+  PetscCall(PetscStrlen(header,&headlen));
+  PetscCall(PetscStrlen(body,&bodylen));
+  PetscCall(PetscSNPrintf(contentlength,40,"Content-Length: %d\r\n\r\n",(int)bodylen));
+  PetscCall(PetscStrlen(contentlength,&contentlen));
 
   /* Now construct our HTTP request */
   request_len = typelen + 1 + pathlen + hostlen + 100 + headlen + contenttypelen + contentlen + bodylen + 1;
-  CHKERRQ(PetscMalloc1(request_len,&request));
-  CHKERRQ(PetscStrcpy(request,type));
-  CHKERRQ(PetscStrcat(request," "));
-  CHKERRQ(PetscStrcat(request,path));
-  CHKERRQ(PetscStrcat(request," HTTP/1.1\r\nHost: "));
-  CHKERRQ(PetscStrcat(request,host));
-  CHKERRQ(PetscFree(host));
-  CHKERRQ(PetscStrcat(request,"\r\nUser-Agent:PETScClient\r\n"));
-  CHKERRQ(PetscStrcat(request,header));
+  PetscCall(PetscMalloc1(request_len,&request));
+  PetscCall(PetscStrcpy(request,type));
+  PetscCall(PetscStrcat(request," "));
+  PetscCall(PetscStrcat(request,path));
+  PetscCall(PetscStrcat(request," HTTP/1.1\r\nHost: "));
+  PetscCall(PetscStrcat(request,host));
+  PetscCall(PetscFree(host));
+  PetscCall(PetscStrcat(request,"\r\nUser-Agent:PETScClient\r\n"));
+  PetscCall(PetscStrcat(request,header));
   if (ctype) {
-    CHKERRQ(PetscStrcat(request,contenttype));
+    PetscCall(PetscStrcat(request,contenttype));
   }
-  CHKERRQ(PetscStrcat(request,contentlength));
-  CHKERRQ(PetscStrcat(request,body));
-  CHKERRQ(PetscStrlen(request,&request_len));
-  CHKERRQ(PetscInfo(NULL,"HTTPS request follows: \n%s\n",request));
+  PetscCall(PetscStrcat(request,contentlength));
+  PetscCall(PetscStrcat(request,body));
+  PetscCall(PetscStrlen(request,&request_len));
+  PetscCall(PetscInfo(NULL,"HTTPS request follows: \n%s\n",request));
 
   *outrequest = request;
   PetscFunctionReturn(0);
@@ -190,8 +190,8 @@ PetscErrorCode PetscHTTPSRequest(const char type[],const char url[],const char h
   PetscBool      foundbody = PETSC_FALSE;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscHTTPBuildRequest(type,url,header,ctype,body,&request));
-  CHKERRQ(PetscStrlen(request,&request_len));
+  PetscCall(PetscHTTPBuildRequest(type,url,header,ctype,body,&request));
+  PetscCall(PetscStrlen(request,&request_len));
 
   r = SSL_write(ssl,request,(int)request_len);
   switch (SSL_get_error(ssl,r)) {
@@ -203,7 +203,7 @@ PetscErrorCode PetscHTTPSRequest(const char type[],const char url[],const char h
   }
 
   /* Now read the server's response, globus sends it in two chunks hence must read a second time if needed */
-  CHKERRQ(PetscArrayzero(buff,buffsize));
+  PetscCall(PetscArrayzero(buff,buffsize));
   len       = 0;
   foundbody = PETSC_FALSE;
   do {
@@ -227,15 +227,15 @@ PetscErrorCode PetscHTTPSRequest(const char type[],const char url[],const char h
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"SSL read problem");
     }
 
-    CHKERRQ(PetscStrstr(buff,"Content-Length: ",&clen));
+    PetscCall(PetscStrstr(buff,"Content-Length: ",&clen));
     if (clen) {
       clen += 15;
       sscanf(clen,"%d",&cl);
       if (!cl) foundbody = PETSC_TRUE;
       else {
-        CHKERRQ(PetscStrstr(buff,"\r\n\r\n",&clen));
+        PetscCall(PetscStrstr(buff,"\r\n\r\n",&clen));
         if (clen) {
-          CHKERRQ(PetscStrlen(clen,&nlen));
+          PetscCall(PetscStrlen(clen,&nlen));
           if (nlen-4 == (size_t) cl) foundbody = PETSC_TRUE;
         }
       }
@@ -244,10 +244,10 @@ PetscErrorCode PetscHTTPSRequest(const char type[],const char url[],const char h
       foundbody = PETSC_TRUE;
     }
   } while (!foundbody);
-  CHKERRQ(PetscInfo(NULL,"HTTPS result follows: \n%s\n",buff));
+  PetscCall(PetscInfo(NULL,"HTTPS result follows: \n%s\n",buff));
 
   SSL_free(ssl);
-  CHKERRQ(PetscFree(request));
+  PetscCall(PetscFree(request));
   PetscFunctionReturn(0);
 }
 
@@ -277,14 +277,14 @@ PetscErrorCode PetscHTTPRequest(const char type[],const char url[],const char he
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscHTTPBuildRequest(type,url,header,ctype,body,&request));
-  CHKERRQ(PetscStrlen(request,&request_len));
+  PetscCall(PetscHTTPBuildRequest(type,url,header,ctype,body,&request));
+  PetscCall(PetscStrlen(request,&request_len));
 
-  CHKERRQ(PetscBinaryWrite(sock,request,request_len,PETSC_CHAR));
-  CHKERRQ(PetscFree(request));
+  PetscCall(PetscBinaryWrite(sock,request,request_len,PETSC_CHAR));
+  PetscCall(PetscFree(request));
   PetscBinaryRead(sock,buff,buffsize,NULL,PETSC_CHAR);
   buff[buffsize-1] = 0;
-  CHKERRQ(PetscInfo(NULL,"HTTP result follows: \n%s\n",buff));
+  PetscCall(PetscInfo(NULL,"HTTP result follows: \n%s\n",buff));
   PetscFunctionReturn(0);
 }
 
@@ -311,7 +311,7 @@ PetscErrorCode PetscHTTPSConnect(const char host[],int port,SSL_CTX *ctx,int *so
 
   PetscFunctionBegin;
   /* Connect the TCP socket*/
-  CHKERRQ(PetscOpenSocket(host,port,sock));
+  PetscCall(PetscOpenSocket(host,port,sock));
 
   /* Connect the SSL socket */
   *ssl = SSL_new(ctx);
@@ -344,35 +344,35 @@ PetscErrorCode PetscPullJSONValue(const char buff[],const char key[],char value[
   size_t         len;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscStrcpy(work,"\""));
-  CHKERRQ(PetscStrlcat(work,key,sizeof(work)));
-  CHKERRQ(PetscStrcat(work,"\":"));
-  CHKERRQ(PetscStrstr(buff,work,&v));
-  CHKERRQ(PetscStrlen(work,&len));
+  PetscCall(PetscStrcpy(work,"\""));
+  PetscCall(PetscStrlcat(work,key,sizeof(work)));
+  PetscCall(PetscStrcat(work,"\":"));
+  PetscCall(PetscStrstr(buff,work,&v));
+  PetscCall(PetscStrlen(work,&len));
   if (v) {
     v += len;
   } else {
     work[len++-1] = 0;
-    CHKERRQ(PetscStrcat(work," :"));
-    CHKERRQ(PetscStrstr(buff,work,&v));
+    PetscCall(PetscStrcat(work," :"));
+    PetscCall(PetscStrstr(buff,work,&v));
     if (!v) {
       *found = PETSC_FALSE;
       PetscFunctionReturn(0);
     }
     v += len;
   }
-  CHKERRQ(PetscStrchr(v,'\"',&v));
+  PetscCall(PetscStrchr(v,'\"',&v));
   if (!v) {
     *found = PETSC_FALSE;
     PetscFunctionReturn(0);
   }
-  CHKERRQ(PetscStrchr(v+1,'\"',&w));
+  PetscCall(PetscStrchr(v+1,'\"',&w));
   if (!w) {
     *found = PETSC_FALSE;
     PetscFunctionReturn(0);
   }
   *found = PETSC_TRUE;
-  CHKERRQ(PetscStrncpy(value,v+1,PetscMin((size_t)(w-v),valuelen)));
+  PetscCall(PetscStrncpy(value,v+1,PetscMin((size_t)(w-v),valuelen)));
   PetscFunctionReturn(0);
 }
 
@@ -399,17 +399,17 @@ PetscErrorCode PetscPushJSONValue(char buff[],const char key[],const char value[
   PetscBool      special;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscStrcmp(value,"null",&special));
+  PetscCall(PetscStrcmp(value,"null",&special));
   if (!special) {
-    CHKERRQ(PetscStrcmp(value,"true",&special));
+    PetscCall(PetscStrcmp(value,"true",&special));
   }
   if (!special) {
-    CHKERRQ(PetscStrcmp(value,"false",&special));
+    PetscCall(PetscStrcmp(value,"false",&special));
   }
   if (!special) {
     PetscInt i;
 
-    CHKERRQ(PetscStrlen(value,&len));
+    PetscCall(PetscStrlen(value,&len));
     special = PETSC_TRUE;
     for (i=0; i<(int)len; i++) {
       if (!isdigit(value[i])) {
@@ -419,15 +419,15 @@ PetscErrorCode PetscPushJSONValue(char buff[],const char key[],const char value[
     }
   }
 
-  CHKERRQ(PetscStrcat(buff,"\""));
-  CHKERRQ(PetscStrcat(buff,key));
-  CHKERRQ(PetscStrcat(buff,"\":"));
+  PetscCall(PetscStrcat(buff,"\""));
+  PetscCall(PetscStrcat(buff,key));
+  PetscCall(PetscStrcat(buff,"\":"));
   if (!special) {
-    CHKERRQ(PetscStrcat(buff,"\""));
+    PetscCall(PetscStrcat(buff,"\""));
   }
-  CHKERRQ(PetscStrcat(buff,value));
+  PetscCall(PetscStrcat(buff,value));
   if (!special) {
-    CHKERRQ(PetscStrcat(buff,"\""));
+    PetscCall(PetscStrcat(buff,"\""));
   }
   PetscFunctionReturn(0);
 }

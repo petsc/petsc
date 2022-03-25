@@ -118,10 +118,10 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
   ijob  = 2;
   wantQ = 1;
   wantZ = 1;
-  CHKERRQ(PetscBLASIntCast(PetscMax(8*N+16,4*neig*(N-neig)),&lwork));
-  CHKERRQ(PetscBLASIntCast(2*N*neig,&liwork));
+  PetscCall(PetscBLASIntCast(PetscMax(8*N+16,4*neig*(N-neig)),&lwork));
+  PetscCall(PetscBLASIntCast(2*N*neig,&liwork));
   ilo   = 1;
-  CHKERRQ(PetscBLASIntCast(KspSize,&ihi));
+  PetscCall(PetscBLASIntCast(KspSize,&ihi));
 
   /* Compute the Schur form */
   if (IsReduced) {                /* The eigenvalue problem is already in reduced form, meaning that A is upper Hessenberg and B is triangular */
@@ -141,7 +141,7 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
   }
 
   /* Sort the eigenvalues to extract the smallest ones */
-  CHKERRQ(KSPAGMRESQuickSort(wr, wi, KspSize, perm));
+  PetscCall(KSPAGMRESQuickSort(wr, wi, KspSize, perm));
 
   /* Count the number of extracted eigenvalues (with complex conjugates) */
   r = 0;
@@ -150,7 +150,7 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
     else r += 1;
   }
   /* Reorder the Schur decomposition so that the cluster of smallest/largest eigenvalues appears in the leading diagonal blocks of A (and B)*/
-  CHKERRQ(PetscArrayzero(select, N));
+  PetscCall(PetscArrayzero(select, N));
   if (!agmres->GreatestEig) {
     for (j = 0; j < r; j++) select[perm[j]] = 1;
   } else {
@@ -159,7 +159,7 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
   PetscStackCallBLAS("LAPACKtgsen",LAPACKtgsen_(&ijob, &wantQ, &wantZ, select, &KspSize, A, &ldA, B, &ldB, wr, wi, beta, Q, &N, Z, &N, &r, NULL, NULL, &(Dif[0]), work, &lwork, iwork, &liwork, &info));
   PetscCheckFalse(info == 1,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB, "UNABLE TO REORDER THE EIGENVALUES WITH THE LAPACK ROUTINE : ILL-CONDITIONED PROBLEM");
   /* Extract the Schur vectors associated to the r smallest eigenvalues */
-  CHKERRQ(PetscArrayzero(Sr,(N+1)*r));
+  PetscCall(PetscArrayzero(Sr,(N+1)*r));
   for (j = 0; j < r; j++) {
     for (i = 0; i < KspSize; i++) {
       Sr[j*(N+1)+i] = Z[j*N+i];
@@ -168,10 +168,10 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
 
   /* Broadcast Sr to all other processes to have consistent data;
    * FIXME should investigate how to get unique Schur vectors (unique QR factorization, probably the sign of rotations) */
-  CHKERRMPI(MPI_Bcast(Sr, (N+1)*r, MPIU_SCALAR, agmres->First, PetscObjectComm((PetscObject)ksp)));
+  PetscCallMPI(MPI_Bcast(Sr, (N+1)*r, MPIU_SCALAR, agmres->First, PetscObjectComm((PetscObject)ksp)));
   /* Update the Shift values for the Newton basis. This is surely necessary when applying the DeflationPrecond */
   if (agmres->DeflPrecond) {
-    CHKERRQ(KSPAGMRESLejaOrdering(wr, wi, agmres->Rshift, agmres->Ishift, max_k));
+    PetscCall(KSPAGMRESLejaOrdering(wr, wi, agmres->Rshift, agmres->Ishift, max_k));
   }
   *CurNeig = r; /* Number of extracted eigenvalues */
   PetscFunctionReturn(0);
@@ -202,27 +202,27 @@ PetscErrorCode KSPAGMRESComputeDeflationData(KSP ksp)
   PetscInt       PrevNeig = agmres->r;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscLogEventBegin(KSP_AGMRESComputeDeflationData, ksp, 0,0,0));
+  PetscCall(PetscLogEventBegin(KSP_AGMRESComputeDeflationData, ksp, 0,0,0));
   if (agmres->neig <= 1) PetscFunctionReturn(0);
   /* Explicitly form MatEigL = H^T*H, It can also be formed as H^T+h_{N+1,N}H^-1e^T */
   alpha = 1.0;
   beta  = 0.0;
-  CHKERRQ(PetscBLASIntCast(KspSize,&bKspSize));
-  CHKERRQ(PetscBLASIntCast(lC,&blC));
-  CHKERRQ(PetscBLASIntCast(N,&bN));
+  PetscCall(PetscBLASIntCast(KspSize,&bKspSize));
+  PetscCall(PetscBLASIntCast(lC,&blC));
+  PetscCall(PetscBLASIntCast(N,&bN));
   PetscStackCallBLAS("BLASgemm",BLASgemm_("T", "N", &bKspSize, &bKspSize, &blC, &alpha, agmres->hes_origin, &blC, agmres->hes_origin, &blC, &beta, MatEigL, &bN));
   if (!agmres->ritz) {
     /* Form TmpU = V*H where V is the Newton basis orthogonalized  with roddec*/
     for (j = 0; j < KspSize; j++) {
       /* Apply the elementary reflectors (stored in Qloc) on H */
-      CHKERRQ(KSPAGMRESRodvec(ksp, KspSize+1, &agmres->hes_origin[j*lC], TmpU[j]));
+      PetscCall(KSPAGMRESRodvec(ksp, KspSize+1, &agmres->hes_origin[j*lC], TmpU[j]));
     }
     /* Now form MatEigR = TmpU^T*W where W is [VEC_V(1:max_k); U] */
     for (j = 0; j < max_k; j++) {
-      CHKERRQ(VecMDot(VEC_V(j), KspSize, TmpU, &MatEigR[j*N]));
+      PetscCall(VecMDot(VEC_V(j), KspSize, TmpU, &MatEigR[j*N]));
     }
     for (j = max_k; j < KspSize; j++) {
-      CHKERRQ(VecMDot(U[j-max_k], KspSize, TmpU, &MatEigR[j*N]));
+      PetscCall(VecMDot(U[j-max_k], KspSize, TmpU, &MatEigR[j*N]));
     }
   } else { /* Form H^T */
     for (j = 0; j < N; j++) {
@@ -233,27 +233,27 @@ PetscErrorCode KSPAGMRESComputeDeflationData(KSP ksp)
   }
   /* Obtain the Schur form of  the generalized eigenvalue problem MatEigL*y = \lambda*MatEigR*y */
   if (agmres->DeflPrecond) {
-    CHKERRQ(KSPAGMRESSchurForm(ksp, KspSize, agmres->hes_origin, lC, agmres->Rloc, lC, PETSC_TRUE, Sr, &CurNeig));
+    PetscCall(KSPAGMRESSchurForm(ksp, KspSize, agmres->hes_origin, lC, agmres->Rloc, lC, PETSC_TRUE, Sr, &CurNeig));
   } else {
-    CHKERRQ(KSPAGMRESSchurForm(ksp, KspSize, MatEigL, N, MatEigR, N, PETSC_FALSE, Sr, &CurNeig));
+    PetscCall(KSPAGMRESSchurForm(ksp, KspSize, MatEigL, N, MatEigR, N, PETSC_FALSE, Sr, &CurNeig));
   }
 
   if (agmres->DeflPrecond) { /* Switch to DGMRES to improve the basis of the invariant subspace associated to the deflation */
     agmres->HasSchur = PETSC_TRUE;
-    CHKERRQ(KSPDGMRESComputeDeflationData(ksp, &CurNeig));
+    PetscCall(KSPDGMRESComputeDeflationData(ksp, &CurNeig));
     PetscFunctionReturn(0);
   }
   /* Form the Schur vectors in the entire subspace: U = W * Sr where W = [VEC_V(1:max_k); U]*/
   for (j = 0; j < PrevNeig; j++) { /* First, copy U to a temporary place */
-    CHKERRQ(VecCopy(U[j], TmpU[j]));
+    PetscCall(VecCopy(U[j], TmpU[j]));
   }
 
   for (j = 0; j < CurNeig; j++) {
-    CHKERRQ(VecZeroEntries(U[j]));
-    CHKERRQ(VecMAXPY(U[j], max_k, &Sr[j*(N+1)], &VEC_V(0)));
-    CHKERRQ(VecMAXPY(U[j], PrevNeig, &Sr[j*(N+1)+max_k], TmpU));
+    PetscCall(VecZeroEntries(U[j]));
+    PetscCall(VecMAXPY(U[j], max_k, &Sr[j*(N+1)], &VEC_V(0)));
+    PetscCall(VecMAXPY(U[j], PrevNeig, &Sr[j*(N+1)+max_k], TmpU));
   }
   agmres->r = CurNeig;
-  CHKERRQ(PetscLogEventEnd(KSP_AGMRESComputeDeflationData, ksp, 0,0,0));
+  PetscCall(PetscLogEventEnd(KSP_AGMRESComputeDeflationData, ksp, 0,0,0));
   PetscFunctionReturn(0);
 }

@@ -17,18 +17,18 @@ int main(int argc,char **argv)
   TS             ts;                 /* timestepping context */
   PetscViewer    viewer;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
-  CHKERRQ(PetscDLLibraryAppend(PETSC_COMM_WORLD,&PetscDLLibrariesLoaded,"advection-diffusion-reaction/ex1"));
-  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
-  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"advection-diffusion-reaction/binaryoutput",FILE_MODE_READ,&viewer));
-  CHKERRQ(TSLoad(ts,viewer));
-  CHKERRQ(PetscViewerDestroy(&viewer));
-  /* CHKERRQ(PetscFPTView(0)); */
-  CHKERRQ(TSSetFromOptions(ts));
-  CHKERRQ(TSSetUp(ts));
-  CHKERRQ(TSView(ts,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(TSSolve(ts,NULL));
-  CHKERRQ(TSDestroy(&ts));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscDLLibraryAppend(PETSC_COMM_WORLD,&PetscDLLibrariesLoaded,"advection-diffusion-reaction/ex1"));
+  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"advection-diffusion-reaction/binaryoutput",FILE_MODE_READ,&viewer));
+  PetscCall(TSLoad(ts,viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
+  /* PetscCall(PetscFPTView(0)); */
+  PetscCall(TSSetFromOptions(ts));
+  PetscCall(TSSetUp(ts));
+  PetscCall(TSView(ts,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(TSSolve(ts,NULL));
+  PetscCall(TSDestroy(&ts));
+  PetscCall(PetscFinalize());
   return 0;
 }

@@ -44,29 +44,29 @@ PetscErrorCode VecRegisterAll(void)
   if (VecRegisterAllCalled) PetscFunctionReturn(0);
   VecRegisterAllCalled = PETSC_TRUE;
 
-  CHKERRQ(VecRegister(VECSEQ,        VecCreate_Seq));
-  CHKERRQ(VecRegister(VECMPI,        VecCreate_MPI));
-  CHKERRQ(VecRegister(VECSTANDARD,   VecCreate_Standard));
-  CHKERRQ(VecRegister(VECSHARED,     VecCreate_Shared));
+  PetscCall(VecRegister(VECSEQ,        VecCreate_Seq));
+  PetscCall(VecRegister(VECMPI,        VecCreate_MPI));
+  PetscCall(VecRegister(VECSTANDARD,   VecCreate_Standard));
+  PetscCall(VecRegister(VECSHARED,     VecCreate_Shared));
 #if defined PETSC_HAVE_VIENNACL
-  CHKERRQ(VecRegister(VECSEQVIENNACL,    VecCreate_SeqViennaCL));
-  CHKERRQ(VecRegister(VECMPIVIENNACL,    VecCreate_MPIViennaCL));
-  CHKERRQ(VecRegister(VECVIENNACL,       VecCreate_ViennaCL));
+  PetscCall(VecRegister(VECSEQVIENNACL,    VecCreate_SeqViennaCL));
+  PetscCall(VecRegister(VECMPIVIENNACL,    VecCreate_MPIViennaCL));
+  PetscCall(VecRegister(VECVIENNACL,       VecCreate_ViennaCL));
 #endif
 #if defined(PETSC_HAVE_CUDA)
-  CHKERRQ(VecRegister(VECSEQCUDA,    VecCreate_SeqCUDA));
-  CHKERRQ(VecRegister(VECMPICUDA,    VecCreate_MPICUDA));
-  CHKERRQ(VecRegister(VECCUDA,       VecCreate_CUDA));
+  PetscCall(VecRegister(VECSEQCUDA,    VecCreate_SeqCUDA));
+  PetscCall(VecRegister(VECMPICUDA,    VecCreate_MPICUDA));
+  PetscCall(VecRegister(VECCUDA,       VecCreate_CUDA));
 #endif
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
-  CHKERRQ(VecRegister(VECSEQKOKKOS,  VecCreate_SeqKokkos));
-  CHKERRQ(VecRegister(VECMPIKOKKOS,  VecCreate_MPIKokkos));
-  CHKERRQ(VecRegister(VECKOKKOS,     VecCreate_Kokkos));
+  PetscCall(VecRegister(VECSEQKOKKOS,  VecCreate_SeqKokkos));
+  PetscCall(VecRegister(VECMPIKOKKOS,  VecCreate_MPIKokkos));
+  PetscCall(VecRegister(VECKOKKOS,     VecCreate_Kokkos));
 #endif
 #if defined(PETSC_HAVE_HIP)
-  CHKERRQ(VecRegister(VECSEQHIP,    VecCreate_SeqHIP));
-  CHKERRQ(VecRegister(VECMPIHIP,    VecCreate_MPIHIP));
-  CHKERRQ(VecRegister(VECHIP,       VecCreate_HIP));
+  PetscCall(VecRegister(VECSEQHIP,    VecCreate_SeqHIP));
+  PetscCall(VecRegister(VECMPIHIP,    VecCreate_MPIHIP));
+  PetscCall(VecRegister(VECHIP,       VecCreate_HIP));
 #endif
   PetscFunctionReturn(0);
 }

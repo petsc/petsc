@@ -10,57 +10,57 @@ static PetscErrorCode  SNESLineSearchApply_Basic(SNESLineSearch linesearch)
   PetscBool      domainerror;
 
   PetscFunctionBegin;
-  CHKERRQ(SNESLineSearchGetVecs(linesearch, &X, &F, &Y, &W, NULL));
-  CHKERRQ(SNESLineSearchGetNorms(linesearch, &xnorm, &gnorm, &ynorm));
-  CHKERRQ(SNESLineSearchGetLambda(linesearch, &lambda));
-  CHKERRQ(SNESLineSearchGetSNES(linesearch, &snes));
-  CHKERRQ(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_SUCCEEDED));
+  PetscCall(SNESLineSearchGetVecs(linesearch, &X, &F, &Y, &W, NULL));
+  PetscCall(SNESLineSearchGetNorms(linesearch, &xnorm, &gnorm, &ynorm));
+  PetscCall(SNESLineSearchGetLambda(linesearch, &lambda));
+  PetscCall(SNESLineSearchGetSNES(linesearch, &snes));
+  PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_SUCCEEDED));
 
   /* precheck */
-  CHKERRQ(SNESLineSearchPreCheck(linesearch,X,Y,&changed_y));
+  PetscCall(SNESLineSearchPreCheck(linesearch,X,Y,&changed_y));
 
   /* update */
-  CHKERRQ(VecWAXPY(W,-lambda,Y,X));
+  PetscCall(VecWAXPY(W,-lambda,Y,X));
   if (linesearch->ops->viproject) {
-    CHKERRQ((*linesearch->ops->viproject)(snes, W));
+    PetscCall((*linesearch->ops->viproject)(snes, W));
   }
 
   /* postcheck */
-  CHKERRQ(SNESLineSearchPostCheck(linesearch,X,Y,W,&changed_y,&changed_w));
+  PetscCall(SNESLineSearchPostCheck(linesearch,X,Y,W,&changed_y,&changed_w));
   if (changed_y) {
-    CHKERRQ(VecWAXPY(W,-lambda,Y,X));
+    PetscCall(VecWAXPY(W,-lambda,Y,X));
     if (linesearch->ops->viproject) {
-      CHKERRQ((*linesearch->ops->viproject)(snes, W));
+      PetscCall((*linesearch->ops->viproject)(snes, W));
     }
   }
   if (linesearch->norms || snes->iter < snes->max_its-1) {
-    CHKERRQ((*linesearch->ops->snesfunc)(snes,W,F));
-    CHKERRQ(SNESGetFunctionDomainError(snes, &domainerror));
+    PetscCall((*linesearch->ops->snesfunc)(snes,W,F));
+    PetscCall(SNESGetFunctionDomainError(snes, &domainerror));
     if (domainerror) {
-      CHKERRQ(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_DOMAIN));
+      PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_DOMAIN));
       PetscFunctionReturn(0);
     }
   }
 
   if (linesearch->norms) {
-    if (!linesearch->ops->vinorm) CHKERRQ(VecNormBegin(F, NORM_2, &linesearch->fnorm));
-    CHKERRQ(VecNormBegin(Y, NORM_2, &linesearch->ynorm));
-    CHKERRQ(VecNormBegin(W, NORM_2, &linesearch->xnorm));
-    if (!linesearch->ops->vinorm) CHKERRQ(VecNormEnd(F, NORM_2, &linesearch->fnorm));
-    CHKERRQ(VecNormEnd(Y, NORM_2, &linesearch->ynorm));
-    CHKERRQ(VecNormEnd(W, NORM_2, &linesearch->xnorm));
+    if (!linesearch->ops->vinorm) PetscCall(VecNormBegin(F, NORM_2, &linesearch->fnorm));
+    PetscCall(VecNormBegin(Y, NORM_2, &linesearch->ynorm));
+    PetscCall(VecNormBegin(W, NORM_2, &linesearch->xnorm));
+    if (!linesearch->ops->vinorm) PetscCall(VecNormEnd(F, NORM_2, &linesearch->fnorm));
+    PetscCall(VecNormEnd(Y, NORM_2, &linesearch->ynorm));
+    PetscCall(VecNormEnd(W, NORM_2, &linesearch->xnorm));
 
     if (linesearch->ops->vinorm) {
       linesearch->fnorm = gnorm;
 
-      CHKERRQ((*linesearch->ops->vinorm)(snes, F, W, &linesearch->fnorm));
+      PetscCall((*linesearch->ops->vinorm)(snes, F, W, &linesearch->fnorm));
     } else {
-      CHKERRQ(VecNorm(F,NORM_2,&linesearch->fnorm));
+      PetscCall(VecNorm(F,NORM_2,&linesearch->fnorm));
     }
   }
 
   /* copy the solution over */
-  CHKERRQ(VecCopy(W, X));
+  PetscCall(VecCopy(W, X));
   PetscFunctionReturn(0);
 }
 

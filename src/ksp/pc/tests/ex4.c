@@ -12,48 +12,48 @@ int main(int argc,char **args)
   PetscInt       n = 5,i,col[3];
   PetscScalar    value[3];
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   /* Create vectors */
-  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,n,&b));
-  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,n,&u));
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,n,&b));
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,n,&u));
 
   /* Create and assemble matrix */
-  CHKERRQ(MatCreateSeqDense(PETSC_COMM_SELF,n,n,NULL,&mat));
+  PetscCall(MatCreateSeqDense(PETSC_COMM_SELF,n,n,NULL,&mat));
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
   for (i=1; i<n-1; i++) {
     col[0] = i-1; col[1] = i; col[2] = i+1;
-    CHKERRQ(MatSetValues(mat,1,&i,3,col,value,INSERT_VALUES));
+    PetscCall(MatSetValues(mat,1,&i,3,col,value,INSERT_VALUES));
   }
   i    = n - 1; col[0] = n - 2; col[1] = n - 1;
-  CHKERRQ(MatSetValues(mat,1,&i,2,col,value,INSERT_VALUES));
+  PetscCall(MatSetValues(mat,1,&i,2,col,value,INSERT_VALUES));
   i    = 0; col[0] = 0; col[1] = 1; value[0] = 2.0; value[1] = -1.0;
-  CHKERRQ(MatSetValues(mat,1,&i,2,col,value,INSERT_VALUES));
-  CHKERRQ(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatSetValues(mat,1,&i,2,col,value,INSERT_VALUES));
+  PetscCall(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
 
   /* Create PC context and set up data structures */
-  CHKERRQ(PCCreate(PETSC_COMM_WORLD,&pc));
-  CHKERRQ(PCSetType(pc,PCSOR));
-  CHKERRQ(PCSetFromOptions(pc));
-  CHKERRQ(PCSetOperators(pc,mat,mat));
-  CHKERRQ(PCSetUp(pc));
+  PetscCall(PCCreate(PETSC_COMM_WORLD,&pc));
+  PetscCall(PCSetType(pc,PCSOR));
+  PetscCall(PCSetFromOptions(pc));
+  PetscCall(PCSetOperators(pc,mat,mat));
+  PetscCall(PCSetUp(pc));
 
   value[0] = 1.0;
   for (i=0; i<n; i++) {
-    CHKERRQ(VecSet(u,0.0));
-    CHKERRQ(VecSetValues(u,1,&i,value,INSERT_VALUES));
-    CHKERRQ(VecAssemblyBegin(u));
-    CHKERRQ(VecAssemblyEnd(u));
-    CHKERRQ(PCApply(pc,u,b));
-    CHKERRQ(VecView(b,PETSC_VIEWER_STDOUT_SELF));
+    PetscCall(VecSet(u,0.0));
+    PetscCall(VecSetValues(u,1,&i,value,INSERT_VALUES));
+    PetscCall(VecAssemblyBegin(u));
+    PetscCall(VecAssemblyEnd(u));
+    PetscCall(PCApply(pc,u,b));
+    PetscCall(VecView(b,PETSC_VIEWER_STDOUT_SELF));
   }
 
   /* Free data structures */
-  CHKERRQ(MatDestroy(&mat));
-  CHKERRQ(PCDestroy(&pc));
-  CHKERRQ(VecDestroy(&u));
-  CHKERRQ(VecDestroy(&b));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatDestroy(&mat));
+  PetscCall(PCDestroy(&pc));
+  PetscCall(VecDestroy(&u));
+  PetscCall(VecDestroy(&b));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

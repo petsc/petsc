@@ -51,24 +51,24 @@ PetscErrorCode TSTrajectoryReconstruct_Private(TSTrajectory tj,TS ts,PetscReal t
   PetscInt        id, cnt, i, tshn;
 
   PetscFunctionBegin;
-  CHKERRQ(TSHistoryGetLocFromTime(tsh,t,&id));
-  CHKERRQ(TSHistoryGetHistory(tsh,&tshn,&tshhist,&tshhist_id,NULL));
+  PetscCall(TSHistoryGetLocFromTime(tsh,t,&id));
+  PetscCall(TSHistoryGetHistory(tsh,&tshn,&tshhist,&tshhist_id,NULL));
   if (id == -1 || id == -tshn - 1) {
     PetscReal t0 = tshn ? tshhist[0]      : 0.0;
     PetscReal tf = tshn ? tshhist[tshn-1] : 0.0;
     SETERRQ(PetscObjectComm((PetscObject)tj),PETSC_ERR_PLIB,"Requested time %g is outside the history interval [%g, %g] (%d)",(double)t,(double)t0,(double)tf,tshn);
   }
   if (tj->monitor) {
-    CHKERRQ(PetscViewerASCIIPrintf(tj->monitor,"Reconstructing at time %g, order %D\n",(double)t,tj->lag.order));
+    PetscCall(PetscViewerASCIIPrintf(tj->monitor,"Reconstructing at time %g, order %D\n",(double)t,tj->lag.order));
   }
   if (!tj->lag.T) {
     PetscInt o = tj->lag.order+1;
-    CHKERRQ(PetscMalloc5(o,&tj->lag.L,o,&tj->lag.T,o,&tj->lag.WW,2*o,&tj->lag.TT,o,&tj->lag.TW));
+    PetscCall(PetscMalloc5(o,&tj->lag.L,o,&tj->lag.T,o,&tj->lag.WW,2*o,&tj->lag.TT,o,&tj->lag.TW));
     for (i = 0; i < o; i++) tj->lag.T[i] = PETSC_MAX_REAL;
-    CHKERRQ(VecDuplicateVecs(U ? U : Udot,o,&tj->lag.W));
+    PetscCall(VecDuplicateVecs(U ? U : Udot,o,&tj->lag.W));
   }
   cnt = 0;
-  CHKERRQ(PetscArrayzero(tj->lag.TT,2*(tj->lag.order+1)));
+  PetscCall(PetscArrayzero(tj->lag.TT,2*(tj->lag.order+1)));
   if (id < 0 || Udot) { /* populate snapshots for interpolation */
     PetscInt s,nid = id < 0 ? -(id+1) : id;
 
@@ -76,7 +76,7 @@ PetscErrorCode TSTrajectoryReconstruct_Private(TSTrajectory tj,TS ts,PetscReal t
     PetscInt low = PetscMax(up-tj->lag.order-1,0);
     up = PetscMin(PetscMax(low + tj->lag.order + 1,up),tshn);
     if (tj->monitor) {
-      CHKERRQ(PetscViewerASCIIPushTab(tj->monitor));
+      PetscCall(PetscViewerASCIIPushTab(tj->monitor));
     }
 
     /* first see if we can reuse any */
@@ -85,7 +85,7 @@ PetscErrorCode TSTrajectoryReconstruct_Private(TSTrajectory tj,TS ts,PetscReal t
       PetscInt tid = LagrangeGetId(t,tj->lag.order+1,tj->lag.T,tj->lag.TT);
       if (tid < 0) continue;
       if (tj->monitor) {
-        CHKERRQ(PetscViewerASCIIPrintf(tj->monitor,"Reusing snapshot %D, step %D, time %g\n",tid,tshhist_id[s],(double)t));
+        PetscCall(PetscViewerASCIIPrintf(tj->monitor,"Reusing snapshot %D, step %D, time %g\n",tid,tshhist_id[s],(double)t));
       }
       tj->lag.TT[tid] = PETSC_TRUE;
       tj->lag.WW[cnt] = tj->lag.W[tid];
@@ -105,16 +105,16 @@ PetscErrorCode TSTrajectoryReconstruct_Private(TSTrajectory tj,TS ts,PetscReal t
       tid = -tid-1;
       if (tj->monitor) {
         if (tj->lag.T[tid] < PETSC_MAX_REAL) {
-          CHKERRQ(PetscViewerASCIIPrintf(tj->monitor,"Discarding snapshot %D at time %g\n",tid,(double)tj->lag.T[tid]));
+          PetscCall(PetscViewerASCIIPrintf(tj->monitor,"Discarding snapshot %D at time %g\n",tid,(double)tj->lag.T[tid]));
         } else {
-          CHKERRQ(PetscViewerASCIIPrintf(tj->monitor,"New snapshot %D\n",tid));
+          PetscCall(PetscViewerASCIIPrintf(tj->monitor,"New snapshot %D\n",tid));
         }
-        CHKERRQ(PetscViewerASCIIPushTab(tj->monitor));
+        PetscCall(PetscViewerASCIIPushTab(tj->monitor));
       }
-      CHKERRQ(TSTrajectoryGetVecs(tj,ts,tshhist_id[s],&t,tj->lag.W[tid],NULL));
+      PetscCall(TSTrajectoryGetVecs(tj,ts,tshhist_id[s],&t,tj->lag.W[tid],NULL));
       tj->lag.T[tid] = t;
       if (tj->monitor) {
-        CHKERRQ(PetscViewerASCIIPopTab(tj->monitor));
+        PetscCall(PetscViewerASCIIPopTab(tj->monitor));
       }
       tj->lag.TT[tid] = PETSC_TRUE;
       tj->lag.WW[cnt] = tj->lag.W[tid];
@@ -123,64 +123,64 @@ PetscErrorCode TSTrajectoryReconstruct_Private(TSTrajectory tj,TS ts,PetscReal t
       cnt++;
     }
     if (tj->monitor) {
-      CHKERRQ(PetscViewerASCIIPopTab(tj->monitor));
+      PetscCall(PetscViewerASCIIPopTab(tj->monitor));
     }
   }
-  CHKERRQ(PetscArrayzero(tj->lag.TT,tj->lag.order+1));
+  PetscCall(PetscArrayzero(tj->lag.TT,tj->lag.order+1));
   if (id >=0 && U) { /* requested time match */
     PetscInt tid = LagrangeGetId(t,tj->lag.order+1,tj->lag.T,tj->lag.TT);
     if (tj->monitor) {
-      CHKERRQ(PetscViewerASCIIPrintf(tj->monitor,"Retrieving solution from exact step\n"));
-      CHKERRQ(PetscViewerASCIIPushTab(tj->monitor));
+      PetscCall(PetscViewerASCIIPrintf(tj->monitor,"Retrieving solution from exact step\n"));
+      PetscCall(PetscViewerASCIIPushTab(tj->monitor));
     }
     if (tid < 0) {
       tid = -tid-1;
       if (tj->monitor) {
         if (tj->lag.T[tid] < PETSC_MAX_REAL) {
-          CHKERRQ(PetscViewerASCIIPrintf(tj->monitor,"Discarding snapshot %D at time %g\n",tid,(double)tj->lag.T[tid]));
+          PetscCall(PetscViewerASCIIPrintf(tj->monitor,"Discarding snapshot %D at time %g\n",tid,(double)tj->lag.T[tid]));
         } else {
-          CHKERRQ(PetscViewerASCIIPrintf(tj->monitor,"New snapshot %D\n",tid));
+          PetscCall(PetscViewerASCIIPrintf(tj->monitor,"New snapshot %D\n",tid));
         }
-        CHKERRQ(PetscViewerASCIIPushTab(tj->monitor));
+        PetscCall(PetscViewerASCIIPushTab(tj->monitor));
       }
-      CHKERRQ(TSTrajectoryGetVecs(tj,ts,tshhist_id[id],&t,tj->lag.W[tid],NULL));
+      PetscCall(TSTrajectoryGetVecs(tj,ts,tshhist_id[id],&t,tj->lag.W[tid],NULL));
       if (tj->monitor) {
-        CHKERRQ(PetscViewerASCIIPopTab(tj->monitor));
+        PetscCall(PetscViewerASCIIPopTab(tj->monitor));
       }
       tj->lag.T[tid] = t;
     } else if (tj->monitor) {
-      CHKERRQ(PetscViewerASCIIPrintf(tj->monitor,"Reusing snapshot %D step %D, time %g\n",tid,tshhist_id[id],(double)t));
+      PetscCall(PetscViewerASCIIPrintf(tj->monitor,"Reusing snapshot %D step %D, time %g\n",tid,tshhist_id[id],(double)t));
     }
-    CHKERRQ(VecCopy(tj->lag.W[tid],U));
-    CHKERRQ(PetscObjectStateGet((PetscObject)U,&tj->lag.Ucached.state));
-    CHKERRQ(PetscObjectGetId((PetscObject)U,&tj->lag.Ucached.id));
+    PetscCall(VecCopy(tj->lag.W[tid],U));
+    PetscCall(PetscObjectStateGet((PetscObject)U,&tj->lag.Ucached.state));
+    PetscCall(PetscObjectGetId((PetscObject)U,&tj->lag.Ucached.id));
     tj->lag.Ucached.time = t;
     tj->lag.Ucached.step = tshhist_id[id];
     if (tj->monitor) {
-      CHKERRQ(PetscViewerASCIIPopTab(tj->monitor));
+      PetscCall(PetscViewerASCIIPopTab(tj->monitor));
     }
   }
   if (id < 0 && U) {
     if (tj->monitor) {
-      CHKERRQ(PetscViewerASCIIPrintf(tj->monitor,"Interpolating solution with %D snapshots\n",cnt));
+      PetscCall(PetscViewerASCIIPrintf(tj->monitor,"Interpolating solution with %D snapshots\n",cnt));
     }
     LagrangeBasisVals(cnt,t,tj->lag.TW,tj->lag.L);
-    CHKERRQ(VecZeroEntries(U));
-    CHKERRQ(VecMAXPY(U,cnt,tj->lag.L,tj->lag.WW));
-    CHKERRQ(PetscObjectStateGet((PetscObject)U,&tj->lag.Ucached.state));
-    CHKERRQ(PetscObjectGetId((PetscObject)U,&tj->lag.Ucached.id));
+    PetscCall(VecZeroEntries(U));
+    PetscCall(VecMAXPY(U,cnt,tj->lag.L,tj->lag.WW));
+    PetscCall(PetscObjectStateGet((PetscObject)U,&tj->lag.Ucached.state));
+    PetscCall(PetscObjectGetId((PetscObject)U,&tj->lag.Ucached.id));
     tj->lag.Ucached.time = t;
     tj->lag.Ucached.step = PETSC_MIN_INT;
   }
   if (Udot) {
     if (tj->monitor) {
-      CHKERRQ(PetscViewerASCIIPrintf(tj->monitor,"Interpolating derivative with %D snapshots\n",cnt));
+      PetscCall(PetscViewerASCIIPrintf(tj->monitor,"Interpolating derivative with %D snapshots\n",cnt));
     }
     LagrangeBasisDers(cnt,t,tj->lag.TW,tj->lag.L);
-    CHKERRQ(VecZeroEntries(Udot));
-    CHKERRQ(VecMAXPY(Udot,cnt,tj->lag.L,tj->lag.WW));
-    CHKERRQ(PetscObjectStateGet((PetscObject)Udot,&tj->lag.Udotcached.state));
-    CHKERRQ(PetscObjectGetId((PetscObject)Udot,&tj->lag.Udotcached.id));
+    PetscCall(VecZeroEntries(Udot));
+    PetscCall(VecMAXPY(Udot,cnt,tj->lag.L,tj->lag.WW));
+    PetscCall(PetscObjectStateGet((PetscObject)Udot,&tj->lag.Udotcached.state));
+    PetscCall(PetscObjectGetId((PetscObject)Udot,&tj->lag.Udotcached.id));
     tj->lag.Udotcached.time = t;
     tj->lag.Udotcached.step = PETSC_MIN_INT;
   }

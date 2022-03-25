@@ -15,7 +15,7 @@ static PetscErrorCode CheckGraphNotSet(PetscSF sf)
 
   PetscFunctionBegin;
   PetscCheck(!sf->graphset,PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF graph is set");
-  CHKERRQ(PetscSFGetGraph(sf,&nroots,&nleaves,&ilocal,&iremote));
+  PetscCall(PetscSFGetGraph(sf,&nroots,&nleaves,&ilocal,&iremote));
   PetscCheckFalse(nroots  >= 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF graph is set");
   PetscCheckFalse(nleaves >= 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF graph is set");
   PetscCheck(!ilocal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF graph is set");
@@ -33,12 +33,12 @@ static PetscErrorCode CheckGraphEmpty(PetscSF sf)
   PetscInt          minleaf,maxleaf;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscSFGetGraph(sf,&nroots,&nleaves,&ilocal,&iremote));
+  PetscCall(PetscSFGetGraph(sf,&nroots,&nleaves,&ilocal,&iremote));
   PetscCheck(!nroots,PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF graph is not empty");
   PetscCheck(!nleaves,PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF graph is not empty");
   PetscCheck(!ilocal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF graph is not empty");
   PetscCheck(!iremote,PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF graph is not empty");
-  CHKERRQ(PetscSFGetLeafRange(sf,&minleaf,&maxleaf));
+  PetscCall(PetscSFGetLeafRange(sf,&minleaf,&maxleaf));
   PetscCheckFalse(minleaf !=  0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF minimum leaf is not 0");
   PetscCheckFalse(maxleaf != -1,PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF maximum leaf is not -1");
   PetscFunctionReturn(0);
@@ -65,192 +65,192 @@ int main(int argc,char **argv)
   const PetscInt *degree;
   char           sftype[64] = PETSCSFBASIC;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-user_sf_type",sftype,sizeof(sftype),NULL));
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-user_sf_type",sftype,sizeof(sftype),NULL));
 
-  CHKERRQ(PetscSFCreate(PETSC_COMM_WORLD,&sf));
-  CHKERRQ(CheckGraphNotSet(sf));
-  CHKERRQ(PetscSFDestroy(&sf));
+  PetscCall(PetscSFCreate(PETSC_COMM_WORLD,&sf));
+  PetscCall(CheckGraphNotSet(sf));
+  PetscCall(PetscSFDestroy(&sf));
 
-  CHKERRQ(PetscSFCreate(PETSC_COMM_WORLD,&sf));
-  CHKERRQ(CheckGraphNotSet(sf));
-  CHKERRQ(PetscSFReset(sf));
-  CHKERRQ(CheckGraphNotSet(sf));
-  CHKERRQ(PetscSFDestroy(&sf));
+  PetscCall(PetscSFCreate(PETSC_COMM_WORLD,&sf));
+  PetscCall(CheckGraphNotSet(sf));
+  PetscCall(PetscSFReset(sf));
+  PetscCall(CheckGraphNotSet(sf));
+  PetscCall(PetscSFDestroy(&sf));
 
-  CHKERRQ(PetscSFCreate(PETSC_COMM_WORLD,&sf));
-  CHKERRQ(CheckGraphNotSet(sf));
-  CHKERRQ(PetscSFSetType(sf,sftype));
-  CHKERRQ(CheckGraphNotSet(sf));
-  CHKERRQ(PetscSFDestroy(&sf));
+  PetscCall(PetscSFCreate(PETSC_COMM_WORLD,&sf));
+  PetscCall(CheckGraphNotSet(sf));
+  PetscCall(PetscSFSetType(sf,sftype));
+  PetscCall(CheckGraphNotSet(sf));
+  PetscCall(PetscSFDestroy(&sf));
 
-  CHKERRQ(PetscSFCreate(PETSC_COMM_WORLD,&sf));
-  CHKERRQ(CheckGraphNotSet(sf));
-  CHKERRQ(PetscSFSetType(sf,sftype));
-  CHKERRQ(CheckGraphNotSet(sf));
-  CHKERRQ(PetscSFReset(sf));
-  CHKERRQ(CheckGraphNotSet(sf));
-  CHKERRQ(PetscSFDestroy(&sf));
+  PetscCall(PetscSFCreate(PETSC_COMM_WORLD,&sf));
+  PetscCall(CheckGraphNotSet(sf));
+  PetscCall(PetscSFSetType(sf,sftype));
+  PetscCall(CheckGraphNotSet(sf));
+  PetscCall(PetscSFReset(sf));
+  PetscCall(CheckGraphNotSet(sf));
+  PetscCall(PetscSFDestroy(&sf));
 
-  CHKERRQ(PetscSFCreate(PETSC_COMM_WORLD,&sf));
-  CHKERRQ(PetscSFSetGraph(sf,0,0,NULL,PETSC_COPY_VALUES,NULL,PETSC_COPY_VALUES));
-  CHKERRQ(CheckGraphEmpty(sf));
-  CHKERRQ(PetscSFReset(sf));
-  CHKERRQ(CheckGraphNotSet(sf));
-  CHKERRQ(PetscSFDestroy(&sf));
+  PetscCall(PetscSFCreate(PETSC_COMM_WORLD,&sf));
+  PetscCall(PetscSFSetGraph(sf,0,0,NULL,PETSC_COPY_VALUES,NULL,PETSC_COPY_VALUES));
+  PetscCall(CheckGraphEmpty(sf));
+  PetscCall(PetscSFReset(sf));
+  PetscCall(CheckGraphNotSet(sf));
+  PetscCall(PetscSFDestroy(&sf));
 
-  CHKERRQ(PetscSFCreate(PETSC_COMM_WORLD,&sf));
-  CHKERRQ(PetscSFSetType(sf,sftype));
-  CHKERRQ(PetscSFSetGraph(sf,0,0,NULL,PETSC_COPY_VALUES,NULL,PETSC_COPY_VALUES));
-  CHKERRQ(CheckGraphEmpty(sf));
-  CHKERRQ(PetscSFReset(sf));
-  CHKERRQ(CheckGraphNotSet(sf));
-  CHKERRQ(PetscSFDestroy(&sf));
+  PetscCall(PetscSFCreate(PETSC_COMM_WORLD,&sf));
+  PetscCall(PetscSFSetType(sf,sftype));
+  PetscCall(PetscSFSetGraph(sf,0,0,NULL,PETSC_COPY_VALUES,NULL,PETSC_COPY_VALUES));
+  PetscCall(CheckGraphEmpty(sf));
+  PetscCall(PetscSFReset(sf));
+  PetscCall(CheckGraphNotSet(sf));
+  PetscCall(PetscSFDestroy(&sf));
 
   /* Test setup */
-  CHKERRQ(PetscSFCreate(PETSC_COMM_WORLD,&sf));
-  CHKERRQ(CheckRanksNotSet(sf));
-  CHKERRQ(PetscSFSetGraph(sf,0,0,NULL,PETSC_COPY_VALUES,NULL,PETSC_COPY_VALUES));
-  CHKERRQ(CheckRanksNotSet(sf));
-  CHKERRQ(PetscSFSetUp(sf));
-  CHKERRQ(CheckRanksEmpty(sf));
-  CHKERRQ(PetscSFDestroy(&sf));
+  PetscCall(PetscSFCreate(PETSC_COMM_WORLD,&sf));
+  PetscCall(CheckRanksNotSet(sf));
+  PetscCall(PetscSFSetGraph(sf,0,0,NULL,PETSC_COPY_VALUES,NULL,PETSC_COPY_VALUES));
+  PetscCall(CheckRanksNotSet(sf));
+  PetscCall(PetscSFSetUp(sf));
+  PetscCall(CheckRanksEmpty(sf));
+  PetscCall(PetscSFDestroy(&sf));
 
   /* Test setup then reset */
-  CHKERRQ(PetscSFCreate(PETSC_COMM_WORLD,&sf));
-  CHKERRQ(PetscSFSetGraph(sf,0,0,NULL,PETSC_COPY_VALUES,NULL,PETSC_COPY_VALUES));
-  CHKERRQ(PetscSFSetUp(sf));
-  CHKERRQ(PetscSFReset(sf));
-  CHKERRQ(CheckRanksNotSet(sf));
-  CHKERRQ(PetscSFDestroy(&sf));
+  PetscCall(PetscSFCreate(PETSC_COMM_WORLD,&sf));
+  PetscCall(PetscSFSetGraph(sf,0,0,NULL,PETSC_COPY_VALUES,NULL,PETSC_COPY_VALUES));
+  PetscCall(PetscSFSetUp(sf));
+  PetscCall(PetscSFReset(sf));
+  PetscCall(CheckRanksNotSet(sf));
+  PetscCall(PetscSFDestroy(&sf));
 
   /* Test view (no graph set, no type set) */
-  CHKERRQ(PetscSFCreate(PETSC_COMM_WORLD,&sf));
-  CHKERRQ(PetscSFView(sf,NULL));
-  CHKERRQ(PetscSFDestroy(&sf));
+  PetscCall(PetscSFCreate(PETSC_COMM_WORLD,&sf));
+  PetscCall(PetscSFView(sf,NULL));
+  PetscCall(PetscSFDestroy(&sf));
 
   /* Test set graph then view (no type set) */
-  CHKERRQ(PetscSFCreate(PETSC_COMM_WORLD,&sf));
-  CHKERRQ(PetscSFSetGraph(sf,0,0,NULL,PETSC_COPY_VALUES,NULL,PETSC_COPY_VALUES));
-  CHKERRQ(PetscSFView(sf,NULL));
-  CHKERRQ(PetscSFDestroy(&sf));
+  PetscCall(PetscSFCreate(PETSC_COMM_WORLD,&sf));
+  PetscCall(PetscSFSetGraph(sf,0,0,NULL,PETSC_COPY_VALUES,NULL,PETSC_COPY_VALUES));
+  PetscCall(PetscSFView(sf,NULL));
+  PetscCall(PetscSFDestroy(&sf));
 
   /* Test set type then view (no graph set) */
-  CHKERRQ(PetscSFCreate(PETSC_COMM_WORLD,&sf));
-  CHKERRQ(PetscSFSetType(sf,sftype));
-  CHKERRQ(PetscSFView(sf,NULL));
-  CHKERRQ(PetscSFDestroy(&sf));
+  PetscCall(PetscSFCreate(PETSC_COMM_WORLD,&sf));
+  PetscCall(PetscSFSetType(sf,sftype));
+  PetscCall(PetscSFView(sf,NULL));
+  PetscCall(PetscSFDestroy(&sf));
 
   /* Test set type then graph then view */
-  CHKERRQ(PetscSFCreate(PETSC_COMM_WORLD,&sf));
-  CHKERRQ(PetscSFSetType(sf,sftype));
-  CHKERRQ(PetscSFSetGraph(sf,0,0,NULL,PETSC_COPY_VALUES,NULL,PETSC_COPY_VALUES));
-  CHKERRQ(PetscSFView(sf,NULL));
-  CHKERRQ(PetscSFDestroy(&sf));
+  PetscCall(PetscSFCreate(PETSC_COMM_WORLD,&sf));
+  PetscCall(PetscSFSetType(sf,sftype));
+  PetscCall(PetscSFSetGraph(sf,0,0,NULL,PETSC_COPY_VALUES,NULL,PETSC_COPY_VALUES));
+  PetscCall(PetscSFView(sf,NULL));
+  PetscCall(PetscSFDestroy(&sf));
 
   /* Test set graph then type */
-  CHKERRQ(PetscSFCreate(PETSC_COMM_WORLD,&sf));
-  CHKERRQ(PetscSFSetGraph(sf,0,0,NULL,PETSC_COPY_VALUES,NULL,PETSC_COPY_VALUES));
-  CHKERRQ(PetscSFSetType(sf,sftype));
-  CHKERRQ(CheckGraphEmpty(sf));
-  CHKERRQ(PetscSFReset(sf));
-  CHKERRQ(CheckGraphNotSet(sf));
-  CHKERRQ(PetscSFDestroy(&sf));
+  PetscCall(PetscSFCreate(PETSC_COMM_WORLD,&sf));
+  PetscCall(PetscSFSetGraph(sf,0,0,NULL,PETSC_COPY_VALUES,NULL,PETSC_COPY_VALUES));
+  PetscCall(PetscSFSetType(sf,sftype));
+  PetscCall(CheckGraphEmpty(sf));
+  PetscCall(PetscSFReset(sf));
+  PetscCall(CheckGraphNotSet(sf));
+  PetscCall(PetscSFDestroy(&sf));
 
   /* Test Bcast (we call setfromoptions) */
-  CHKERRQ(PetscSFCreate(PETSC_COMM_WORLD,&sf));
-  CHKERRQ(PetscSFSetType(sf,sftype));
-  CHKERRQ(PetscSFSetFromOptions(sf));
-  CHKERRQ(PetscSFSetGraph(sf,0,0,NULL,PETSC_COPY_VALUES,NULL,PETSC_COPY_VALUES));
-  CHKERRQ(PetscSFBcastBegin(sf,MPI_INT,NULL,NULL,MPI_REPLACE));
-  CHKERRQ(PetscSFBcastEnd  (sf,MPI_INT,NULL,NULL,MPI_REPLACE));
-  CHKERRQ(PetscSFDestroy(&sf));
+  PetscCall(PetscSFCreate(PETSC_COMM_WORLD,&sf));
+  PetscCall(PetscSFSetType(sf,sftype));
+  PetscCall(PetscSFSetFromOptions(sf));
+  PetscCall(PetscSFSetGraph(sf,0,0,NULL,PETSC_COPY_VALUES,NULL,PETSC_COPY_VALUES));
+  PetscCall(PetscSFBcastBegin(sf,MPI_INT,NULL,NULL,MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd  (sf,MPI_INT,NULL,NULL,MPI_REPLACE));
+  PetscCall(PetscSFDestroy(&sf));
 
   /* From now on we also call SetFromOptions */
 
   /* Test Reduce */
-  CHKERRQ(PetscSFCreate(PETSC_COMM_WORLD,&sf));
-  CHKERRQ(PetscSFSetType(sf,sftype));
-  CHKERRQ(PetscSFSetGraph(sf,0,0,NULL,PETSC_COPY_VALUES,NULL,PETSC_COPY_VALUES));
-  CHKERRQ(PetscSFSetFromOptions(sf));
-  CHKERRQ(PetscSFReduceBegin(sf,MPI_INT,NULL,NULL,MPI_REPLACE));
-  CHKERRQ(PetscSFReduceEnd  (sf,MPI_INT,NULL,NULL,MPI_REPLACE));
-  CHKERRQ(PetscSFReduceBegin(sf,MPI_INT,NULL,NULL,MPI_SUM));
-  CHKERRQ(PetscSFReduceEnd  (sf,MPI_INT,NULL,NULL,MPI_SUM));
-  CHKERRQ(PetscSFDestroy(&sf));
+  PetscCall(PetscSFCreate(PETSC_COMM_WORLD,&sf));
+  PetscCall(PetscSFSetType(sf,sftype));
+  PetscCall(PetscSFSetGraph(sf,0,0,NULL,PETSC_COPY_VALUES,NULL,PETSC_COPY_VALUES));
+  PetscCall(PetscSFSetFromOptions(sf));
+  PetscCall(PetscSFReduceBegin(sf,MPI_INT,NULL,NULL,MPI_REPLACE));
+  PetscCall(PetscSFReduceEnd  (sf,MPI_INT,NULL,NULL,MPI_REPLACE));
+  PetscCall(PetscSFReduceBegin(sf,MPI_INT,NULL,NULL,MPI_SUM));
+  PetscCall(PetscSFReduceEnd  (sf,MPI_INT,NULL,NULL,MPI_SUM));
+  PetscCall(PetscSFDestroy(&sf));
 
   /* Test FetchAndOp */
-  CHKERRQ(PetscSFCreate(PETSC_COMM_WORLD,&sf));
-  CHKERRQ(PetscSFSetType(sf,sftype));
-  CHKERRQ(PetscSFSetGraph(sf,0,0,NULL,PETSC_COPY_VALUES,NULL,PETSC_COPY_VALUES));
-  CHKERRQ(PetscSFSetFromOptions(sf));
-  CHKERRQ(PetscSFFetchAndOpBegin(sf,MPI_INT,NULL,NULL,NULL,MPI_SUM));
-  CHKERRQ(PetscSFFetchAndOpEnd  (sf,MPI_INT,NULL,NULL,NULL,MPI_SUM));
-  CHKERRQ(PetscSFDestroy(&sf));
+  PetscCall(PetscSFCreate(PETSC_COMM_WORLD,&sf));
+  PetscCall(PetscSFSetType(sf,sftype));
+  PetscCall(PetscSFSetGraph(sf,0,0,NULL,PETSC_COPY_VALUES,NULL,PETSC_COPY_VALUES));
+  PetscCall(PetscSFSetFromOptions(sf));
+  PetscCall(PetscSFFetchAndOpBegin(sf,MPI_INT,NULL,NULL,NULL,MPI_SUM));
+  PetscCall(PetscSFFetchAndOpEnd  (sf,MPI_INT,NULL,NULL,NULL,MPI_SUM));
+  PetscCall(PetscSFDestroy(&sf));
 
   /* Test ComputeDegree */
-  CHKERRQ(PetscSFCreate(PETSC_COMM_WORLD,&sf));
-  CHKERRQ(PetscSFSetType(sf,sftype));
-  CHKERRQ(PetscSFSetGraph(sf,0,0,NULL,PETSC_COPY_VALUES,NULL,PETSC_COPY_VALUES));
-  CHKERRQ(PetscSFSetFromOptions(sf));
-  CHKERRQ(PetscSFComputeDegreeBegin(sf,&degree));
-  CHKERRQ(PetscSFComputeDegreeEnd(sf,&degree));
-  CHKERRQ(PetscSFDestroy(&sf));
+  PetscCall(PetscSFCreate(PETSC_COMM_WORLD,&sf));
+  PetscCall(PetscSFSetType(sf,sftype));
+  PetscCall(PetscSFSetGraph(sf,0,0,NULL,PETSC_COPY_VALUES,NULL,PETSC_COPY_VALUES));
+  PetscCall(PetscSFSetFromOptions(sf));
+  PetscCall(PetscSFComputeDegreeBegin(sf,&degree));
+  PetscCall(PetscSFComputeDegreeEnd(sf,&degree));
+  PetscCall(PetscSFDestroy(&sf));
 
   /* Test PetscSFDuplicate() */
-  CHKERRQ(PetscSFCreate(PETSC_COMM_WORLD,&sf));
-  CHKERRQ(PetscSFSetType(sf,sftype));
-  CHKERRQ(PetscSFSetGraph(sf,0,0,NULL,PETSC_USE_POINTER,NULL,PETSC_USE_POINTER));
-  CHKERRQ(PetscSFSetFromOptions(sf));
-  CHKERRQ(PetscSFDuplicate(sf,PETSCSF_DUPLICATE_GRAPH,&sfDup));
-  CHKERRQ(CheckGraphEmpty(sfDup));
-  CHKERRQ(PetscSFDestroy(&sfDup));
-  CHKERRQ(PetscSFDestroy(&sf));
+  PetscCall(PetscSFCreate(PETSC_COMM_WORLD,&sf));
+  PetscCall(PetscSFSetType(sf,sftype));
+  PetscCall(PetscSFSetGraph(sf,0,0,NULL,PETSC_USE_POINTER,NULL,PETSC_USE_POINTER));
+  PetscCall(PetscSFSetFromOptions(sf));
+  PetscCall(PetscSFDuplicate(sf,PETSCSF_DUPLICATE_GRAPH,&sfDup));
+  PetscCall(CheckGraphEmpty(sfDup));
+  PetscCall(PetscSFDestroy(&sfDup));
+  PetscCall(PetscSFDestroy(&sf));
 
   /* Test PetscSFCreateInverseSF() */
-  CHKERRQ(PetscSFCreate(PETSC_COMM_WORLD,&sf));
-  CHKERRQ(PetscSFSetType(sf,sftype));
-  CHKERRQ(PetscSFSetGraph(sf,0,0,NULL,PETSC_USE_POINTER,NULL,PETSC_USE_POINTER));
-  CHKERRQ(PetscSFSetFromOptions(sf));
-  CHKERRQ(PetscSFCreateInverseSF(sf,&sfInv));
-  CHKERRQ(CheckGraphEmpty(sfInv));
-  CHKERRQ(PetscSFDestroy(&sfInv));
-  CHKERRQ(PetscSFDestroy(&sf));
+  PetscCall(PetscSFCreate(PETSC_COMM_WORLD,&sf));
+  PetscCall(PetscSFSetType(sf,sftype));
+  PetscCall(PetscSFSetGraph(sf,0,0,NULL,PETSC_USE_POINTER,NULL,PETSC_USE_POINTER));
+  PetscCall(PetscSFSetFromOptions(sf));
+  PetscCall(PetscSFCreateInverseSF(sf,&sfInv));
+  PetscCall(CheckGraphEmpty(sfInv));
+  PetscCall(PetscSFDestroy(&sfInv));
+  PetscCall(PetscSFDestroy(&sf));
 
   /* Test PetscSFCreateEmbeddedRootSF() */
-  CHKERRQ(PetscSFCreate(PETSC_COMM_WORLD,&sf));
-  CHKERRQ(PetscSFSetType(sf,sftype));
-  CHKERRQ(PetscSFSetGraph(sf,0,0,NULL,PETSC_USE_POINTER,NULL,PETSC_USE_POINTER));
-  CHKERRQ(PetscSFSetFromOptions(sf));
-  CHKERRQ(PetscSFCreateEmbeddedRootSF(sf,0,NULL,&sfEmbed));
-  CHKERRQ(CheckGraphEmpty(sfEmbed));
-  CHKERRQ(PetscSFDestroy(&sfEmbed));
-  CHKERRQ(PetscSFDestroy(&sf));
+  PetscCall(PetscSFCreate(PETSC_COMM_WORLD,&sf));
+  PetscCall(PetscSFSetType(sf,sftype));
+  PetscCall(PetscSFSetGraph(sf,0,0,NULL,PETSC_USE_POINTER,NULL,PETSC_USE_POINTER));
+  PetscCall(PetscSFSetFromOptions(sf));
+  PetscCall(PetscSFCreateEmbeddedRootSF(sf,0,NULL,&sfEmbed));
+  PetscCall(CheckGraphEmpty(sfEmbed));
+  PetscCall(PetscSFDestroy(&sfEmbed));
+  PetscCall(PetscSFDestroy(&sf));
 
   /* Test PetscSFCreateEmbeddedLeafSF() */
-  CHKERRQ(PetscSFCreate(PETSC_COMM_WORLD,&sf));
-  CHKERRQ(PetscSFSetType(sf,sftype));
-  CHKERRQ(PetscSFSetGraph(sf,0,0,NULL,PETSC_USE_POINTER,NULL,PETSC_USE_POINTER));
-  CHKERRQ(PetscSFSetFromOptions(sf));
-  CHKERRQ(PetscSFCreateEmbeddedLeafSF(sf,0,NULL,&sfEmbed));
-  CHKERRQ(CheckGraphEmpty(sfEmbed));
-  CHKERRQ(PetscSFDestroy(&sfEmbed));
-  CHKERRQ(PetscSFDestroy(&sf));
+  PetscCall(PetscSFCreate(PETSC_COMM_WORLD,&sf));
+  PetscCall(PetscSFSetType(sf,sftype));
+  PetscCall(PetscSFSetGraph(sf,0,0,NULL,PETSC_USE_POINTER,NULL,PETSC_USE_POINTER));
+  PetscCall(PetscSFSetFromOptions(sf));
+  PetscCall(PetscSFCreateEmbeddedLeafSF(sf,0,NULL,&sfEmbed));
+  PetscCall(CheckGraphEmpty(sfEmbed));
+  PetscCall(PetscSFDestroy(&sfEmbed));
+  PetscCall(PetscSFDestroy(&sf));
 
   /* Test PetscSFCompose() */
-  CHKERRQ(PetscSFCreate(PETSC_COMM_WORLD,&sfA));
-  CHKERRQ(PetscSFSetType(sfA,sftype));
-  CHKERRQ(PetscSFSetGraph(sfA,0,0,NULL,PETSC_USE_POINTER,NULL,PETSC_USE_POINTER));
-  CHKERRQ(PetscSFCreate(PETSC_COMM_WORLD,&sfB));
-  CHKERRQ(PetscSFSetType(sfB,sftype));
-  CHKERRQ(PetscSFSetGraph(sfB,0,0,NULL,PETSC_USE_POINTER,NULL,PETSC_USE_POINTER));
-  CHKERRQ(PetscSFCompose(sfA,sfB,&sfBA));
-  CHKERRQ(CheckGraphEmpty(sfBA));
-  CHKERRQ(PetscSFDestroy(&sfBA));
-  CHKERRQ(PetscSFDestroy(&sfA));
-  CHKERRQ(PetscSFDestroy(&sfB));
+  PetscCall(PetscSFCreate(PETSC_COMM_WORLD,&sfA));
+  PetscCall(PetscSFSetType(sfA,sftype));
+  PetscCall(PetscSFSetGraph(sfA,0,0,NULL,PETSC_USE_POINTER,NULL,PETSC_USE_POINTER));
+  PetscCall(PetscSFCreate(PETSC_COMM_WORLD,&sfB));
+  PetscCall(PetscSFSetType(sfB,sftype));
+  PetscCall(PetscSFSetGraph(sfB,0,0,NULL,PETSC_USE_POINTER,NULL,PETSC_USE_POINTER));
+  PetscCall(PetscSFCompose(sfA,sfB,&sfBA));
+  PetscCall(CheckGraphEmpty(sfBA));
+  PetscCall(PetscSFDestroy(&sfBA));
+  PetscCall(PetscSFDestroy(&sfA));
+  PetscCall(PetscSFDestroy(&sfB));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

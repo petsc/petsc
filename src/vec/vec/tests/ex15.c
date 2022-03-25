@@ -10,48 +10,48 @@ int main(int argc,char **argv)
   PetscScalar    values[6];
   Vec            x;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must be run with one processor");
 
   /* create vector */
-  CHKERRQ(VecCreate(PETSC_COMM_SELF,&x));
-  CHKERRQ(VecSetSizes(x,n,n));
-  CHKERRQ(VecSetBlockSize(x,bs));
-  CHKERRQ(VecSetType(x,VECSEQ));
+  PetscCall(VecCreate(PETSC_COMM_SELF,&x));
+  PetscCall(VecSetSizes(x,n,n));
+  PetscCall(VecSetBlockSize(x,bs));
+  PetscCall(VecSetType(x,VECSEQ));
 
   for (i=0; i<6; i++) values[i] = 4.0*i;
   indices[0] = 0;
   indices[1] = 2;
 
-  CHKERRQ(VecSetValuesBlocked(x,2,indices,values,INSERT_VALUES));
-  CHKERRQ(VecAssemblyBegin(x));
-  CHKERRQ(VecAssemblyEnd(x));
+  PetscCall(VecSetValuesBlocked(x,2,indices,values,INSERT_VALUES));
+  PetscCall(VecAssemblyBegin(x));
+  PetscCall(VecAssemblyEnd(x));
 
   /*
       Resulting vector should be 0 4 8  0 0 0 12 16 20
   */
-  CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
 
   /* test insertion with negative indices */
-  CHKERRQ(VecSetOption(x,VEC_IGNORE_NEGATIVE_INDICES,PETSC_TRUE));
+  PetscCall(VecSetOption(x,VEC_IGNORE_NEGATIVE_INDICES,PETSC_TRUE));
   for (i=0; i<6; i++) values[i] = -4.0*i;
   indices[0] = -1;
   indices[1] = 2;
 
-  CHKERRQ(VecSetValuesBlocked(x,2,indices,values,ADD_VALUES));
-  CHKERRQ(VecAssemblyBegin(x));
-  CHKERRQ(VecAssemblyEnd(x));
+  PetscCall(VecSetValuesBlocked(x,2,indices,values,ADD_VALUES));
+  PetscCall(VecAssemblyBegin(x));
+  PetscCall(VecAssemblyEnd(x));
 
   /*
       Resulting vector should be 0 4 8  0 0 0 0 0 0
   */
-  CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
 
-  CHKERRQ(VecDestroy(&x));
+  PetscCall(VecDestroy(&x));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

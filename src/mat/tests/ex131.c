@@ -11,42 +11,42 @@ int main(int argc,char **args)
   char           file[PETSC_MAX_PATH_LEN]; /* input file name */
   PetscBool      flg;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   /* Determine file from which we read the matrix A */
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
   PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
 
   /* Load matrix A */
-  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(MatLoad(A,fd));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatLoad(A,fd));
   flg  = PETSC_FALSE;
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-vec",file,sizeof(file),&flg));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-vec",file,sizeof(file),&flg));
   if (flg) {
     if (file[0] == '0') {
       PetscInt    m;
       PetscScalar one = 1.0;
-      CHKERRQ(PetscInfo(0,"Using vector of ones for RHS\n"));
-      CHKERRQ(MatGetLocalSize(A,&m,NULL));
-      CHKERRQ(VecSetSizes(x,m,PETSC_DECIDE));
-      CHKERRQ(VecSetFromOptions(x));
-      CHKERRQ(VecSet(x,one));
+      PetscCall(PetscInfo(0,"Using vector of ones for RHS\n"));
+      PetscCall(MatGetLocalSize(A,&m,NULL));
+      PetscCall(VecSetSizes(x,m,PETSC_DECIDE));
+      PetscCall(VecSetFromOptions(x));
+      PetscCall(VecSet(x,one));
     }
   } else {
-    CHKERRQ(VecLoad(x,fd));
-    CHKERRQ(PetscViewerDestroy(&fd));
+    PetscCall(VecLoad(x,fd));
+    PetscCall(PetscViewerDestroy(&fd));
   }
-  CHKERRQ(VecDuplicate(x,&b));
-  CHKERRQ(MatMult(A,x,b));
+  PetscCall(VecDuplicate(x,&b));
+  PetscCall(MatMult(A,x,b));
 
   /* Print (for testing only) */
-  CHKERRQ(MatView(A,0));
-  CHKERRQ(VecView(b,0));
+  PetscCall(MatView(A,0));
+  PetscCall(VecView(b,0));
   /* Free data structures */
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&b));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatDestroy(&A));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&b));
+  PetscCall(PetscFinalize());
   return 0;
 }

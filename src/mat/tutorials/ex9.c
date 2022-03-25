@@ -27,64 +27,64 @@ int main(int argc,char **args)
   MatCompositeType type;
   PetscScalar      scalings[5]={2,3,4,5,6};
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-nmat",&nmat,NULL));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-nmat",&nmat,NULL));
 
   /*
      Create random matrices
   */
-  CHKERRQ(PetscMalloc1(nmat+3,&A));
-  CHKERRQ(PetscRandomCreate(PETSC_COMM_WORLD,&rctx));
-  CHKERRQ(MatCreateAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n/2,3,NULL,3,NULL,&A[0]));
+  PetscCall(PetscMalloc1(nmat+3,&A));
+  PetscCall(PetscRandomCreate(PETSC_COMM_WORLD,&rctx));
+  PetscCall(MatCreateAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n/2,3,NULL,3,NULL,&A[0]));
   for (i = 1; i < nmat+1; i++) {
-    CHKERRQ(MatCreateAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n,3,NULL,3,NULL,&A[i]));
+    PetscCall(MatCreateAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n,3,NULL,3,NULL,&A[i]));
   }
-  CHKERRQ(MatCreateAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n/2,n,3,NULL,3,NULL,&A[nmat+1]));
+  PetscCall(MatCreateAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n/2,n,3,NULL,3,NULL,&A[nmat+1]));
   for (i = 0; i < nmat+2; i++) {
-    CHKERRQ(MatSetRandom(A[i],rctx));
+    PetscCall(MatSetRandom(A[i],rctx));
   }
 
-  CHKERRQ(MatCreateVecs(A[1],&x,&y));
-  CHKERRQ(VecDuplicate(y,&z));
-  CHKERRQ(VecDuplicate(z,&z2));
-  CHKERRQ(MatCreateVecs(A[0],&v,NULL));
-  CHKERRQ(VecDuplicate(v,&v2));
+  PetscCall(MatCreateVecs(A[1],&x,&y));
+  PetscCall(VecDuplicate(y,&z));
+  PetscCall(VecDuplicate(z,&z2));
+  PetscCall(MatCreateVecs(A[0],&v,NULL));
+  PetscCall(VecDuplicate(v,&v2));
 
   /* Test MatMult of an ADDITIVE MatComposite B made up of A[1],A[2],A[3] with separate scalings */
 
   /* Do MatMult with A[1],A[2],A[3] by hand and store the result in z */
-  CHKERRQ(VecSet(x,1.0));
-  CHKERRQ(MatMult(A[1],x,z));
-  CHKERRQ(VecScale(z,scalings[1]));
+  PetscCall(VecSet(x,1.0));
+  PetscCall(MatMult(A[1],x,z));
+  PetscCall(VecScale(z,scalings[1]));
   for (i = 2; i < nmat+1; i++) {
-    CHKERRQ(MatMult(A[i],x,z2));
-    CHKERRQ(VecAXPY(z,scalings[i],z2));
+    PetscCall(MatMult(A[i],x,z2));
+    PetscCall(VecAXPY(z,scalings[i],z2));
   }
 
   /* Do MatMult using MatComposite and store the result in y */
-  CHKERRQ(VecSet(y,0.0));
-  CHKERRQ(MatCreateComposite(PETSC_COMM_WORLD,nmat,A+1,&B));
-  CHKERRQ(MatSetFromOptions(B));
-  CHKERRQ(MatCompositeSetScalings(B,&scalings[1]));
-  CHKERRQ(MatMultAdd(B,x,y,y));
+  PetscCall(VecSet(y,0.0));
+  PetscCall(MatCreateComposite(PETSC_COMM_WORLD,nmat,A+1,&B));
+  PetscCall(MatSetFromOptions(B));
+  PetscCall(MatCompositeSetScalings(B,&scalings[1]));
+  PetscCall(MatMultAdd(B,x,y,y));
 
   /* Diff y and z */
-  CHKERRQ(VecAXPY(y,-1.0,z));
-  CHKERRQ(VecNorm(y,NORM_2,&rnorm));
+  PetscCall(VecAXPY(y,-1.0,z));
+  PetscCall(VecNorm(y,NORM_2,&rnorm));
   if (rnorm > 10000.0*PETSC_MACHINE_EPSILON) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Error with composite add %g\n",(double)rnorm));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error with composite add %g\n",(double)rnorm));
   }
 
   /* Test MatCompositeMerge on ADDITIVE MatComposite */
-  CHKERRQ(MatCompositeSetMatStructure(B,DIFFERENT_NONZERO_PATTERN)); /* default */
-  CHKERRQ(MatCompositeMerge(B));
-  CHKERRQ(MatMult(B,x,y));
-  CHKERRQ(MatDestroy(&B));
-  CHKERRQ(VecAXPY(y,-1.0,z));
-  CHKERRQ(VecNorm(y,NORM_2,&rnorm));
+  PetscCall(MatCompositeSetMatStructure(B,DIFFERENT_NONZERO_PATTERN)); /* default */
+  PetscCall(MatCompositeMerge(B));
+  PetscCall(MatMult(B,x,y));
+  PetscCall(MatDestroy(&B));
+  PetscCall(VecAXPY(y,-1.0,z));
+  PetscCall(VecNorm(y,NORM_2,&rnorm));
   if (rnorm > 10000.0*PETSC_MACHINE_EPSILON) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Error with composite add after merge %g\n",(double)rnorm));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error with composite add after merge %g\n",(double)rnorm));
   }
 
   /*
@@ -92,93 +92,93 @@ int main(int argc,char **args)
   */
 
   /* Do MatMult with A[0],A[1],A[2] by hand and store the result in z */
-  CHKERRQ(VecSet(v,1.0));
-  CHKERRQ(MatMult(A[0],v,z));
-  CHKERRQ(VecScale(z,scalings[0]));
+  PetscCall(VecSet(v,1.0));
+  PetscCall(MatMult(A[0],v,z));
+  PetscCall(VecScale(z,scalings[0]));
   for (i = 1; i < nmat; i++) {
-    CHKERRQ(MatMult(A[i],z,y));
-    CHKERRQ(VecScale(y,scalings[i]));
-    CHKERRQ(VecCopy(y,z));
+    PetscCall(MatMult(A[i],z,y));
+    PetscCall(VecScale(y,scalings[i]));
+    PetscCall(VecCopy(y,z));
   }
 
   /* Do MatMult using MatComposite and store the result in y */
-  CHKERRQ(MatCreateComposite(PETSC_COMM_WORLD,nmat,A,&B));
-  CHKERRQ(MatCompositeSetType(B,MAT_COMPOSITE_MULTIPLICATIVE));
-  CHKERRQ(MatCompositeSetMergeType(B,MAT_COMPOSITE_MERGE_LEFT));
-  CHKERRQ(MatSetFromOptions(B));
-  CHKERRQ(MatCompositeSetScalings(B,&scalings[0]));
-  CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY)); /* do MatCompositeMerge() if -mat_composite_merge 1 */
-  CHKERRQ(MatMult(B,v,y));
-  CHKERRQ(MatDestroy(&B));
+  PetscCall(MatCreateComposite(PETSC_COMM_WORLD,nmat,A,&B));
+  PetscCall(MatCompositeSetType(B,MAT_COMPOSITE_MULTIPLICATIVE));
+  PetscCall(MatCompositeSetMergeType(B,MAT_COMPOSITE_MERGE_LEFT));
+  PetscCall(MatSetFromOptions(B));
+  PetscCall(MatCompositeSetScalings(B,&scalings[0]));
+  PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY)); /* do MatCompositeMerge() if -mat_composite_merge 1 */
+  PetscCall(MatMult(B,v,y));
+  PetscCall(MatDestroy(&B));
 
   /* Diff y and z */
-  CHKERRQ(VecAXPY(y,-1.0,z));
-  CHKERRQ(VecNorm(y,NORM_2,&rnorm));
+  PetscCall(VecAXPY(y,-1.0,z));
+  PetscCall(VecNorm(y,NORM_2,&rnorm));
   if (rnorm > 10000.0*PETSC_MACHINE_EPSILON) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Error with composite multiplicative %g\n",(double)rnorm));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error with composite multiplicative %g\n",(double)rnorm));
   }
 
   /*
      Test n/2 x n multiplicative composite B made up of A[2], A[3], A[4] without separate scalings
   */
-  CHKERRQ(VecSet(x,1.0));
-  CHKERRQ(MatMult(A[2],x,z));
+  PetscCall(VecSet(x,1.0));
+  PetscCall(MatMult(A[2],x,z));
   for (i = 3; i < nmat+1; i++) {
-    CHKERRQ(MatMult(A[i],z,y));
-    CHKERRQ(VecCopy(y,z));
+    PetscCall(MatMult(A[i],z,y));
+    PetscCall(VecCopy(y,z));
   }
-  CHKERRQ(MatMult(A[nmat+1],z,v));
+  PetscCall(MatMult(A[nmat+1],z,v));
 
-  CHKERRQ(MatCreateComposite(PETSC_COMM_WORLD,nmat,A+2,&B));
-  CHKERRQ(MatCompositeSetType(B,MAT_COMPOSITE_MULTIPLICATIVE));
-  CHKERRQ(MatSetFromOptions(B));
-  CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY)); /* do MatCompositeMerge() if -mat_composite_merge 1 */
-  CHKERRQ(MatMult(B,x,v2));
-  CHKERRQ(MatDestroy(&B));
+  PetscCall(MatCreateComposite(PETSC_COMM_WORLD,nmat,A+2,&B));
+  PetscCall(MatCompositeSetType(B,MAT_COMPOSITE_MULTIPLICATIVE));
+  PetscCall(MatSetFromOptions(B));
+  PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY)); /* do MatCompositeMerge() if -mat_composite_merge 1 */
+  PetscCall(MatMult(B,x,v2));
+  PetscCall(MatDestroy(&B));
 
-  CHKERRQ(VecAXPY(v2,-1.0,v));
-  CHKERRQ(VecNorm(v2,NORM_2,&rnorm));
+  PetscCall(VecAXPY(v2,-1.0,v));
+  PetscCall(VecNorm(v2,NORM_2,&rnorm));
   if (rnorm > 10000.0*PETSC_MACHINE_EPSILON) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Error with composite multiplicative %g\n",(double)rnorm));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error with composite multiplicative %g\n",(double)rnorm));
   }
 
   /*
      Test get functions
   */
-  CHKERRQ(MatCreateComposite(PETSC_COMM_WORLD,nmat,A,&B));
-  CHKERRQ(MatCompositeGetNumberMat(B,&n));
+  PetscCall(MatCreateComposite(PETSC_COMM_WORLD,nmat,A,&B));
+  PetscCall(MatCompositeGetNumberMat(B,&n));
   if (nmat != n) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Error with GetNumberMat %" PetscInt_FMT " != %" PetscInt_FMT "\n",nmat,n));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error with GetNumberMat %" PetscInt_FMT " != %" PetscInt_FMT "\n",nmat,n));
   }
-  CHKERRQ(MatCompositeGetMat(B,0,&A[nmat+2]));
+  PetscCall(MatCompositeGetMat(B,0,&A[nmat+2]));
   if (A[0] != A[nmat+2]) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Error with GetMat\n"));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error with GetMat\n"));
   }
-  CHKERRQ(MatCompositeGetType(B,&type));
+  PetscCall(MatCompositeGetType(B,&type));
   if (type != MAT_COMPOSITE_ADDITIVE) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Error with GetType\n"));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error with GetType\n"));
   }
-  CHKERRQ(MatDestroy(&B));
+  PetscCall(MatDestroy(&B));
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&y));
-  CHKERRQ(VecDestroy(&v));
-  CHKERRQ(VecDestroy(&v2));
-  CHKERRQ(VecDestroy(&z));
-  CHKERRQ(VecDestroy(&z2));
-  CHKERRQ(PetscRandomDestroy(&rctx));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&y));
+  PetscCall(VecDestroy(&v));
+  PetscCall(VecDestroy(&v2));
+  PetscCall(VecDestroy(&z));
+  PetscCall(VecDestroy(&z2));
+  PetscCall(PetscRandomDestroy(&rctx));
   for (i = 0; i < nmat+2; i++) {
-    CHKERRQ(MatDestroy(&A[i]));
+    PetscCall(MatDestroy(&A[i]));
   }
-  CHKERRQ(PetscFree(A));
+  PetscCall(PetscFree(A));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

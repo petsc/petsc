@@ -28,11 +28,11 @@ PetscErrorCode  PetscDrawLGAddCommonPoint(PetscDrawLG lg,const PetscReal x,const
 
   if (lg->loc+lg->dim >= lg->len) { /* allocate more space */
     PetscReal *tmpx,*tmpy;
-    CHKERRQ(PetscMalloc2(lg->len+lg->dim*PETSC_DRAW_LG_CHUNK_SIZE,&tmpx,lg->len+lg->dim*PETSC_DRAW_LG_CHUNK_SIZE,&tmpy));
-    CHKERRQ(PetscLogObjectMemory((PetscObject)lg,2*lg->dim*PETSC_DRAW_LG_CHUNK_SIZE*sizeof(PetscReal)));
-    CHKERRQ(PetscArraycpy(tmpx,lg->x,lg->len));
-    CHKERRQ(PetscArraycpy(tmpy,lg->y,lg->len));
-    CHKERRQ(PetscFree2(lg->x,lg->y));
+    PetscCall(PetscMalloc2(lg->len+lg->dim*PETSC_DRAW_LG_CHUNK_SIZE,&tmpx,lg->len+lg->dim*PETSC_DRAW_LG_CHUNK_SIZE,&tmpy));
+    PetscCall(PetscLogObjectMemory((PetscObject)lg,2*lg->dim*PETSC_DRAW_LG_CHUNK_SIZE*sizeof(PetscReal)));
+    PetscCall(PetscArraycpy(tmpx,lg->x,lg->len));
+    PetscCall(PetscArraycpy(tmpy,lg->y,lg->len));
+    PetscCall(PetscFree2(lg->x,lg->y));
     lg->x    = tmpx;
     lg->y    = tmpy;
     lg->len += lg->dim*PETSC_DRAW_LG_CHUNK_SIZE;
@@ -78,11 +78,11 @@ PetscErrorCode  PetscDrawLGAddPoint(PetscDrawLG lg,const PetscReal *x,const Pets
 
   if (lg->loc+lg->dim >= lg->len) { /* allocate more space */
     PetscReal *tmpx,*tmpy;
-    CHKERRQ(PetscMalloc2(lg->len+lg->dim*PETSC_DRAW_LG_CHUNK_SIZE,&tmpx,lg->len+lg->dim*PETSC_DRAW_LG_CHUNK_SIZE,&tmpy));
-    CHKERRQ(PetscLogObjectMemory((PetscObject)lg,2*lg->dim*PETSC_DRAW_LG_CHUNK_SIZE*sizeof(PetscReal)));
-    CHKERRQ(PetscArraycpy(tmpx,lg->x,lg->len));
-    CHKERRQ(PetscArraycpy(tmpy,lg->y,lg->len));
-    CHKERRQ(PetscFree2(lg->x,lg->y));
+    PetscCall(PetscMalloc2(lg->len+lg->dim*PETSC_DRAW_LG_CHUNK_SIZE,&tmpx,lg->len+lg->dim*PETSC_DRAW_LG_CHUNK_SIZE,&tmpy));
+    PetscCall(PetscLogObjectMemory((PetscObject)lg,2*lg->dim*PETSC_DRAW_LG_CHUNK_SIZE*sizeof(PetscReal)));
+    PetscCall(PetscArraycpy(tmpx,lg->x,lg->len));
+    PetscCall(PetscArraycpy(tmpy,lg->y,lg->len));
+    PetscCall(PetscFree2(lg->x,lg->y));
     lg->x    = tmpx;
     lg->y    = tmpy;
     lg->len += lg->dim*PETSC_DRAW_LG_CHUNK_SIZE;
@@ -137,11 +137,11 @@ PetscErrorCode  PetscDrawLGAddPoints(PetscDrawLG lg,PetscInt n,PetscReal **xx,Pe
     PetscInt  chunk = PETSC_DRAW_LG_CHUNK_SIZE;
 
     if (n > chunk) chunk = n;
-    CHKERRQ(PetscMalloc2(lg->len+lg->dim*chunk,&tmpx,lg->len+lg->dim*chunk,&tmpy));
-    CHKERRQ(PetscLogObjectMemory((PetscObject)lg,2*lg->dim*chunk*sizeof(PetscReal)));
-    CHKERRQ(PetscArraycpy(tmpx,lg->x,lg->len));
-    CHKERRQ(PetscArraycpy(tmpy,lg->y,lg->len));
-    CHKERRQ(PetscFree2(lg->x,lg->y));
+    PetscCall(PetscMalloc2(lg->len+lg->dim*chunk,&tmpx,lg->len+lg->dim*chunk,&tmpy));
+    PetscCall(PetscLogObjectMemory((PetscObject)lg,2*lg->dim*chunk*sizeof(PetscReal)));
+    PetscCall(PetscArraycpy(tmpx,lg->x,lg->len));
+    PetscCall(PetscArraycpy(tmpy,lg->y,lg->len));
+    PetscCall(PetscFree2(lg->x,lg->y));
     lg->x    = tmpx;
     lg->y    = tmpy;
     lg->len += lg->dim*chunk;

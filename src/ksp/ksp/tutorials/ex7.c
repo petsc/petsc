@@ -42,10 +42,10 @@ int main(int argc,char **args)
   PetscScalar    v,one = 1.0,none = -1.0;
   PetscBool      isbjacobi;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   n    = m+2;
 
   /* -------------------------------------------------------------------
@@ -56,46 +56,46 @@ int main(int argc,char **args)
   /*
      Create and assemble parallel matrix
   */
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n));
-  CHKERRQ(MatSetFromOptions(A));
-  CHKERRQ(MatMPIAIJSetPreallocation(A,5,NULL,5,NULL));
-  CHKERRQ(MatSeqAIJSetPreallocation(A,5,NULL));
-  CHKERRQ(MatGetOwnershipRange(A,&Istart,&Iend));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatMPIAIJSetPreallocation(A,5,NULL,5,NULL));
+  PetscCall(MatSeqAIJSetPreallocation(A,5,NULL));
+  PetscCall(MatGetOwnershipRange(A,&Istart,&Iend));
   for (Ii=Istart; Ii<Iend; Ii++) {
     v = -1.0; i = Ii/n; j = Ii - i*n;
-    if (i>0)   {J = Ii - n; CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES));}
-    if (i<m-1) {J = Ii + n; CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES));}
-    if (j>0)   {J = Ii - 1; CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES));}
-    if (j<n-1) {J = Ii + 1; CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES));}
-    v = 4.0; CHKERRQ(MatSetValues(A,1,&Ii,1,&Ii,&v,ADD_VALUES));
+    if (i>0)   {J = Ii - n; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES));}
+    if (i<m-1) {J = Ii + n; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES));}
+    if (j>0)   {J = Ii - 1; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES));}
+    if (j<n-1) {J = Ii + 1; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES));}
+    v = 4.0; PetscCall(MatSetValues(A,1,&Ii,1,&Ii,&v,ADD_VALUES));
   }
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE));
 
   /*
      Create parallel vectors
   */
-  CHKERRQ(MatCreateVecs(A,&u,&b));
-  CHKERRQ(VecDuplicate(u,&x));
+  PetscCall(MatCreateVecs(A,&u,&b));
+  PetscCall(VecDuplicate(u,&x));
 
   /*
      Set exact solution; then compute right-hand-side vector.
   */
-  CHKERRQ(VecSet(u,one));
-  CHKERRQ(MatMult(A,u,b));
+  PetscCall(VecSet(u,one));
+  PetscCall(MatMult(A,u,b));
 
   /*
      Create linear solver context
   */
-  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
 
   /*
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
-  CHKERRQ(KSPSetOperators(ksp,A,A));
+  PetscCall(KSPSetOperators(ksp,A,A));
 
   /*
      Set default preconditioner for this program to be block Jacobi.
@@ -110,8 +110,8 @@ int main(int argc,char **args)
      iterations on the inner solves is left at the default (which is 10,000)
      and the tolerance on the inner solves is set to be a tight value of around 10^-6.
   */
-  CHKERRQ(KSPGetPC(ksp,&pc));
-  CHKERRQ(PCSetType(pc,PCBJACOBI));
+  PetscCall(KSPGetPC(ksp,&pc));
+  PetscCall(PCSetType(pc,PCBJACOBI));
 
   /* -------------------------------------------------------------------
                    Define the problem decomposition
@@ -127,15 +127,15 @@ int main(int argc,char **args)
 
       Note: The default decomposition is 1 block per processor.
   */
-  CHKERRQ(PetscMalloc1(m,&blks));
+  PetscCall(PetscMalloc1(m,&blks));
   for (i=0; i<m; i++) blks[i] = n;
-  CHKERRQ(PCBJacobiSetTotalBlocks(pc,m,blks));
-  CHKERRQ(PetscFree(blks));
+  PetscCall(PCBJacobiSetTotalBlocks(pc,m,blks));
+  PetscCall(PetscFree(blks));
 
   /*
     Set runtime options
   */
-  CHKERRQ(KSPSetFromOptions(ksp));
+  PetscCall(KSPSetFromOptions(ksp));
 
   /* -------------------------------------------------------------------
                Set the linear solvers for the subblocks
@@ -162,7 +162,7 @@ int main(int argc,char **args)
      the individual blocks.  These choices are obviously not recommended
      for solving this particular problem.
   */
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)pc,PCBJACOBI,&isbjacobi));
+  PetscCall(PetscObjectTypeCompare((PetscObject)pc,PCBJACOBI,&isbjacobi));
   if (isbjacobi) {
     /*
        Call KSPSetUp() to set the block Jacobi data structures (including
@@ -170,31 +170,31 @@ int main(int argc,char **args)
 
        Note: KSPSetUp() MUST be called before PCBJacobiGetSubKSP().
     */
-    CHKERRQ(KSPSetUp(ksp));
+    PetscCall(KSPSetUp(ksp));
 
     /*
        Extract the array of KSP contexts for the local blocks
     */
-    CHKERRQ(PCBJacobiGetSubKSP(pc,&nlocal,&first,&subksp));
+    PetscCall(PCBJacobiGetSubKSP(pc,&nlocal,&first,&subksp));
 
     /*
        Loop over the local blocks, setting various KSP options
        for each block.
     */
     for (i=0; i<nlocal; i++) {
-      CHKERRQ(KSPGetPC(subksp[i],&subpc));
+      PetscCall(KSPGetPC(subksp[i],&subpc));
       if (rank == 0) {
         if (i%2) {
-          CHKERRQ(PCSetType(subpc,PCILU));
+          PetscCall(PCSetType(subpc,PCILU));
         } else {
-          CHKERRQ(PCSetType(subpc,PCNONE));
-          CHKERRQ(KSPSetType(subksp[i],KSPBCGS));
-          CHKERRQ(KSPSetTolerances(subksp[i],1.e-6,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT));
+          PetscCall(PCSetType(subpc,PCNONE));
+          PetscCall(KSPSetType(subksp[i],KSPBCGS));
+          PetscCall(KSPSetTolerances(subksp[i],1.e-6,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT));
         }
       } else {
-        CHKERRQ(PCSetType(subpc,PCJACOBI));
-        CHKERRQ(KSPSetType(subksp[i],KSPGMRES));
-        CHKERRQ(KSPSetTolerances(subksp[i],1.e-6,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT));
+        PetscCall(PCSetType(subpc,PCJACOBI));
+        PetscCall(KSPSetType(subksp[i],KSPGMRES));
+        PetscCall(KSPSetTolerances(subksp[i],1.e-6,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT));
       }
     }
   }
@@ -206,7 +206,7 @@ int main(int argc,char **args)
   /*
      Solve the linear system
   */
-  CHKERRQ(KSPSolve(ksp,b,x));
+  PetscCall(KSPSolve(ksp,b,x));
 
   /* -------------------------------------------------------------------
                       Check solution and clean up
@@ -215,19 +215,19 @@ int main(int argc,char **args)
   /*
      Check the error
   */
-  CHKERRQ(VecAXPY(x,none,u));
-  CHKERRQ(VecNorm(x,NORM_2,&norm));
-  CHKERRQ(KSPGetIterationNumber(ksp,&its));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %D\n",(double)norm,its));
+  PetscCall(VecAXPY(x,none,u));
+  PetscCall(VecNorm(x,NORM_2,&norm));
+  PetscCall(KSPGetIterationNumber(ksp,&its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %D\n",(double)norm,its));
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  CHKERRQ(KSPDestroy(&ksp));
-  CHKERRQ(VecDestroy(&u));  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&b));  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(PetscFinalize());
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(VecDestroy(&u));  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&b));  PetscCall(MatDestroy(&A));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

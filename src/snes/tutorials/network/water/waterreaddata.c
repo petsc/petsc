@@ -11,8 +11,8 @@ PetscErrorCode PumpHeadCurveResidual(SNES snes,Vec X, Vec F,void *ctx)
   PetscInt i;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(X,&x));
-  CHKERRQ(VecGetArray(F,&f));
+  PetscCall(VecGetArrayRead(X,&x));
+  PetscCall(VecGetArray(F,&f));
 
   f[0] = f[1] = f[2] = 0;
   for (i=0; i < pump->headcurve.npt;i++) {
@@ -21,8 +21,8 @@ PetscErrorCode PumpHeadCurveResidual(SNES snes,Vec X, Vec F,void *ctx)
     f[2] +=  (x[0] - x[1]*PetscPowScalar(flow[i],x[2]) - head[i])*-1*x[1]*x[2]*PetscPowScalar(flow[i],x[2]-1); /*Partial w.r.t x[2] */
   }
 
-  CHKERRQ(VecRestoreArrayRead(X,&x));
-  CHKERRQ(VecRestoreArray(F,&f));
+  PetscCall(VecRestoreArrayRead(X,&x));
+  PetscCall(VecRestoreArray(F,&f));
 
   PetscFunctionReturn(0);
 }
@@ -46,37 +46,37 @@ PetscErrorCode SetPumpHeadCurveParams(Pump *pump)
     pump->headcurve.npt += 2;
   }
 
-  CHKERRQ(SNESCreate(PETSC_COMM_SELF,&snes));
+  PetscCall(SNESCreate(PETSC_COMM_SELF,&snes));
 
-  CHKERRQ(VecCreate(PETSC_COMM_SELF,&X));
-  CHKERRQ(VecSetSizes(X,3,3));
-  CHKERRQ(VecSetFromOptions(X));
-  CHKERRQ(VecDuplicate(X,&F));
+  PetscCall(VecCreate(PETSC_COMM_SELF,&X));
+  PetscCall(VecSetSizes(X,3,3));
+  PetscCall(VecSetFromOptions(X));
+  PetscCall(VecDuplicate(X,&F));
 
-  CHKERRQ(SNESSetFunction(snes,F,PumpHeadCurveResidual,(void*)pump));
-  CHKERRQ(SNESSetJacobian(snes,NULL,NULL,SNESComputeJacobianDefault,NULL));
-  CHKERRQ(SNESSetFromOptions(snes));
+  PetscCall(SNESSetFunction(snes,F,PumpHeadCurveResidual,(void*)pump));
+  PetscCall(SNESSetJacobian(snes,NULL,NULL,SNESComputeJacobianDefault,NULL));
+  PetscCall(SNESSetFromOptions(snes));
 
-  CHKERRQ(VecGetArray(X,&x));
+  PetscCall(VecGetArray(X,&x));
   x[0] = head[1]; x[1] = 10; x[2] = 3;
-  CHKERRQ(VecRestoreArray(X,&x));
+  PetscCall(VecRestoreArray(X,&x));
 
-  CHKERRQ(SNESSolve(snes,NULL,X));
+  PetscCall(SNESSolve(snes,NULL,X));
 
-  CHKERRQ(SNESGetConvergedReason(snes,&reason));
+  PetscCall(SNESGetConvergedReason(snes,&reason));
   if (reason < 0) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"Pump head curve did not converge");
   }
 
-  CHKERRQ(VecGetArray(X,&x));
+  PetscCall(VecGetArray(X,&x));
   pump->h0 = x[0];
   pump->r  = x[1];
   pump->n  = x[2];
-  CHKERRQ(VecRestoreArray(X,&x));
+  PetscCall(VecRestoreArray(X,&x));
 
-  CHKERRQ(VecDestroy(&X));
-  CHKERRQ(VecDestroy(&F));
-  CHKERRQ(SNESDestroy(&snes));
+  PetscCall(VecDestroy(&X));
+  PetscCall(VecDestroy(&F));
+  PetscCall(SNESDestroy(&snes));
   PetscFunctionReturn(0);
 }
 
@@ -195,8 +195,8 @@ PetscErrorCode WaterReadData(WATERDATA *water,char *filename)
   }
 
   /* Allocate vertex and edge data structs */
-  CHKERRQ(PetscCalloc1(water->nvertex,&water->vertex));
-  CHKERRQ(PetscCalloc1(water->nedge,&water->edge));
+  PetscCall(PetscCalloc1(water->nvertex,&water->vertex));
+  PetscCall(PetscCalloc1(water->nedge,&water->edge));
   vert = water->vertex;
   edge = water->edge;
 
@@ -326,7 +326,7 @@ PetscErrorCode WaterReadData(WATERDATA *water,char *filename)
     pump = &water->edge[j].pump;
     if (strcmp(pump->param,"HEAD") == 0) {
       /* Head-flow curve */
-      CHKERRQ(SetPumpHeadCurveParams(pump));
+      PetscCall(SetPumpHeadCurveParams(pump));
     }
   }
   PetscFunctionReturn(0);

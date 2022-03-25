@@ -229,7 +229,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
   do {   \
     PetscBool _7_same; \
     PetscValidHeaderSpecific(h,ck,arg); \
-    CHKERRQ(PetscObjectTypeCompare((PetscObject)(h),t,&_7_same)); \
+    PetscCall(PetscObjectTypeCompare((PetscObject)(h),t,&_7_same)); \
     PetscCheck(_7_same,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong subtype object:Parameter # %d must have implementation %s it is %s",arg,t,((PetscObject)(h))->type_name); \
   } while (0)
 
@@ -332,14 +332,14 @@ void PetscValidRealPointer(T*,int);
 #define PetscCheckTypeName(a,type)                                                             \
   do {                                                                                         \
     PetscBool _7_match;                                                                        \
-    CHKERRQ(PetscObjectTypeCompare(((PetscObject)(a)),(type),&_7_match));                      \
+    PetscCall(PetscObjectTypeCompare(((PetscObject)(a)),(type),&_7_match));                      \
     PetscCheck(_7_match,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Object (%s) is not %s",(char*)(((PetscObject)(a))->type_name),type); \
   } while (0)
 
 #define PetscCheckTypeNames(a,type1,type2)                                                     \
   do {                                                                                         \
     PetscBool _7_match;                                                                        \
-    CHKERRQ(PetscObjectTypeCompareAny(((PetscObject)(a)),&_7_match,(type1),(type2),""));       \
+    PetscCall(PetscObjectTypeCompareAny(((PetscObject)(a)),&_7_match,(type1),(type2),""));       \
     PetscCheck(_7_match,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Object (%s) is not %s or %s",(char*)(((PetscObject)(a))->type_name),type1,type2); \
   } while (0)
 /*
@@ -356,7 +356,7 @@ void PetscValidRealPointer(T*,int);
 #define PetscCheckSameComm(a,arga,b,argb)                               \
   do {                                                                  \
     PetscMPIInt    _7_flag;                                             \
-    CHKERRMPI(MPI_Comm_compare(PetscObjectComm((PetscObject)(a)),PetscObjectComm((PetscObject)(b)),&_7_flag)); \
+    PetscCallMPI(MPI_Comm_compare(PetscObjectComm((PetscObject)(a)),PetscObjectComm((PetscObject)(b)),&_7_flag)); \
     PetscCheck(_7_flag == MPI_CONGRUENT || _7_flag == MPI_IDENT,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"Different communicators in the two objects: Argument # %d and %d flag %d",arga,argb,_7_flag); \
   } while (0)
 
@@ -372,7 +372,7 @@ void PetscValidRealPointer(T*,int);
     PetscReal b1[5],b2[5];                                              \
     if (PetscIsNanScalar(b0)) {b1[4] = 1;} else {b1[4] = 0;};           \
     b1[0] = -PetscRealPart(b0); b1[1] = PetscRealPart(b0); b1[2] = -PetscImaginaryPart(b0); b1[3] = PetscImaginaryPart(b0); \
-    CHKERRMPI(MPIU_Allreduce(b1,b2,5,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)(a))));\
+    PetscCallMPI(MPIU_Allreduce(b1,b2,5,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)(a))));\
     PetscCheck(b2[4] > 0 || (PetscEqualReal(-b2[0],b2[1]) && PetscEqualReal(-b2[2],b2[3])),PetscObjectComm((PetscObject)(a)),PETSC_ERR_ARG_WRONG,"Scalar value must be same on all processes, argument # %d",arg); \
   } while (0)
 
@@ -381,7 +381,7 @@ void PetscValidRealPointer(T*,int);
     PetscReal b0=(b),b1[3],b2[3];                                       \
     if (PetscIsNanReal(b0)) {b1[2] = 1;} else {b1[2] = 0;};             \
     b1[0] = -b0; b1[1] = b0;                                            \
-    CHKERRMPI(MPIU_Allreduce(b1,b2,3,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)(a))));\
+    PetscCallMPI(MPIU_Allreduce(b1,b2,3,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)(a))));\
     PetscCheck(b2[2] > 0 || PetscEqualReal(-b2[0],b2[1]),PetscObjectComm((PetscObject)(a)),PETSC_ERR_ARG_WRONG,"Real value must be same on all processes, argument # %d",arg); \
   } while (0)
 
@@ -389,7 +389,7 @@ void PetscValidRealPointer(T*,int);
   do {                                                                  \
     PetscInt b0=(b),b1[2],b2[2];                                        \
     b1[0] = -b0; b1[1] = b0;                                            \
-    CHKERRMPI(MPIU_Allreduce(b1,b2,2,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)(a))));\
+    PetscCallMPI(MPIU_Allreduce(b1,b2,2,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)(a))));\
     PetscCheck(-b2[0] == b2[1],PetscObjectComm((PetscObject)(a)),PETSC_ERR_ARG_WRONG,"Int value must be same on all processes, argument # %d",arg); \
   } while (0)
 
@@ -397,7 +397,7 @@ void PetscValidRealPointer(T*,int);
   do {                                                                  \
     PetscMPIInt b0=(b),b1[2],b2[2];                                     \
     b1[0] = -b0; b1[1] = b0;                                            \
-    CHKERRMPI(MPIU_Allreduce(b1,b2,2,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)(a))));\
+    PetscCallMPI(MPIU_Allreduce(b1,b2,2,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)(a))));\
     PetscCheck(-b2[0] == b2[1],PetscObjectComm((PetscObject)(a)),PETSC_ERR_ARG_WRONG,"PetscMPIInt value must be same on all processes, argument # %d",arg); \
   } while (0)
 
@@ -405,7 +405,7 @@ void PetscValidRealPointer(T*,int);
   do {                                                                  \
     PetscMPIInt b0=(PetscMPIInt)(b),b1[2],b2[2];                        \
     b1[0] = -b0; b1[1] = b0;                                            \
-    CHKERRMPI(MPIU_Allreduce(b1,b2,2,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)(a))));\
+    PetscCallMPI(MPIU_Allreduce(b1,b2,2,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)(a))));\
     PetscCheck(-b2[0] == b2[1],PetscObjectComm((PetscObject)(a)),PETSC_ERR_ARG_WRONG,"Bool value must be same on all processes, argument # %d",arg); \
   } while (0)
 
@@ -413,7 +413,7 @@ void PetscValidRealPointer(T*,int);
   do {                                                                  \
     PetscMPIInt b0=(PetscMPIInt)(b),b1[2],b2[2];                        \
     b1[0] = -b0; b1[1] = b0;                                            \
-    CHKERRMPI(MPIU_Allreduce(b1,b2,2,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)(a))));\
+    PetscCallMPI(MPIU_Allreduce(b1,b2,2,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)(a))));\
     PetscCheck(-b2[0] == b2[1],PetscObjectComm((PetscObject)(a)),PETSC_ERR_ARG_WRONG,"Enum value must be same on all processes, argument # %d",arg); \
   } while (0)
 
@@ -461,8 +461,8 @@ void PetscValidLogicalCollectiveEnum(Ta,Tb,int);
 */
 #define PetscTryMethod(obj,A,B,C) PetscMacroReturnStandard(        \
     PetscErrorCode (*_7_f)B;                                       \
-    CHKERRQ(PetscObjectQueryFunction((PetscObject)(obj),A,&_7_f)); \
-    if (_7_f) CHKERRQ((*_7_f)C);                                   \
+    PetscCall(PetscObjectQueryFunction((PetscObject)(obj),A,&_7_f)); \
+    if (_7_f) PetscCall((*_7_f)C);                                   \
   )
 
 /*
@@ -475,9 +475,9 @@ void PetscValidLogicalCollectiveEnum(Ta,Tb,int);
 */
 #define PetscUseMethod(obj,A,B,C) PetscMacroReturnStandard(                                    \
     PetscErrorCode (*_7_f)B;                                                                   \
-    CHKERRQ(PetscObjectQueryFunction((PetscObject)(obj),A,&_7_f));                             \
+    PetscCall(PetscObjectQueryFunction((PetscObject)(obj),A,&_7_f));                             \
     PetscCheck(_7_f,PetscObjectComm((PetscObject)(obj)),PETSC_ERR_SUP,"Cannot locate function %s in object",A); \
-    CHKERRQ((*_7_f)C);                                                                         \
+    PetscCall((*_7_f)C);                                                                         \
   )
 
 /*MC

@@ -39,11 +39,11 @@ PetscErrorCode FormPermeability(DM da, Vec Kappa, AppCtx *user)
   PetscInt       xs, xm, i;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetCoordinateDM(da, &cda));
-  CHKERRQ(DMGetCoordinates(da, &c));
-  CHKERRQ(DMDAGetCorners(da, &xs,NULL,NULL, &xm,NULL,NULL));
-  CHKERRQ(DMDAVecGetArray(da, Kappa, &K));
-  CHKERRQ(DMDAVecGetArray(cda, c, &coords));
+  PetscCall(DMGetCoordinateDM(da, &cda));
+  PetscCall(DMGetCoordinates(da, &c));
+  PetscCall(DMDAGetCorners(da, &xs,NULL,NULL, &xm,NULL,NULL));
+  PetscCall(DMDAVecGetArray(da, Kappa, &K));
+  PetscCall(DMDAVecGetArray(cda, c, &coords));
   for (i = xs; i < xs+xm; ++i) {
 #if 1
     K[i] = 1.0;
@@ -53,8 +53,8 @@ PetscErrorCode FormPermeability(DM da, Vec Kappa, AppCtx *user)
     else K[i] = 1.0;
 #endif
   }
-  CHKERRQ(DMDAVecRestoreArray(da, Kappa, &K));
-  CHKERRQ(DMDAVecRestoreArray(cda, c, &coords));
+  PetscCall(DMDAVecRestoreArray(da, Kappa, &K));
+  PetscCall(DMDAVecRestoreArray(cda, c, &coords));
   PetscFunctionReturn(0);
 }
 
@@ -76,10 +76,10 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field *u, Field *f, AppCtx
   PetscInt       i;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetGlobalVector(user->cda, &L));
+  PetscCall(DMGetGlobalVector(user->cda, &L));
 
-  CHKERRQ(DMDAVecGetArray(info->da, user->uold,  &uold));
-  CHKERRQ(DMDAVecGetArray(user->cda, user->Kappa, &Kappa));
+  PetscCall(DMDAVecGetArray(info->da, user->uold,  &uold));
+  PetscCall(DMDAVecGetArray(user->cda, user->Kappa, &Kappa));
   /* Compute residual over the locally owned part of the grid */
   for (i = info->xs; i < info->xs+info->xm; ++i) {
     if (i == 0) {
@@ -101,11 +101,11 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field *u, Field *f, AppCtx
       f[i].p = u[i].v - u[i-1].v;
     }
   }
-  CHKERRQ(DMDAVecRestoreArray(info->da, user->uold, &uold));
-  CHKERRQ(DMDAVecRestoreArray(user->cda, user->Kappa, &Kappa));
-  /* CHKERRQ(PetscLogFlops(11.0*info->ym*info->xm)); */
+  PetscCall(DMDAVecRestoreArray(info->da, user->uold, &uold));
+  PetscCall(DMDAVecRestoreArray(user->cda, user->Kappa, &Kappa));
+  /* PetscCall(PetscLogFlops(11.0*info->ym*info->xm)); */
 
-  CHKERRQ(DMRestoreGlobalVector(user->cda, &L));
+  PetscCall(DMRestoreGlobalVector(user->cda, &L));
   PetscFunctionReturn(0);
 }
 
@@ -118,26 +118,26 @@ int main(int argc, char **argv)
   PetscReal      t = 0.0;/* time */
   PetscInt       n;
 
-  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   /* Create solver */
-  CHKERRQ(SNESCreate(PETSC_COMM_WORLD, &snes));
+  PetscCall(SNESCreate(PETSC_COMM_WORLD, &snes));
   /* Create mesh */
-  CHKERRQ(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,4,3,1,NULL,&da));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
-  CHKERRQ(DMSetApplicationContext(da, &user));
-  CHKERRQ(SNESSetDM(snes, da));
+  PetscCall(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,4,3,1,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMSetApplicationContext(da, &user));
+  PetscCall(SNESSetDM(snes, da));
   /* Create coefficient */
-  CHKERRQ(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,4,1,1,NULL,&user.cda));
-  CHKERRQ(DMSetFromOptions(user.cda));
-  CHKERRQ(DMSetUp(user.cda));
-  CHKERRQ(DMDASetUniformCoordinates(user.cda, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0));
-  CHKERRQ(DMGetGlobalVector(user.cda, &user.Kappa));
-  CHKERRQ(FormPermeability(user.cda, user.Kappa, &user));
+  PetscCall(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,4,1,1,NULL,&user.cda));
+  PetscCall(DMSetFromOptions(user.cda));
+  PetscCall(DMSetUp(user.cda));
+  PetscCall(DMDASetUniformCoordinates(user.cda, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0));
+  PetscCall(DMGetGlobalVector(user.cda, &user.Kappa));
+  PetscCall(FormPermeability(user.cda, user.Kappa, &user));
   /* Setup Problem */
-  CHKERRQ(DMDASNESSetFunctionLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))FormFunctionLocal,&user));
-  CHKERRQ(DMGetGlobalVector(da, &u));
-  CHKERRQ(DMGetGlobalVector(da, &user.uold));
+  PetscCall(DMDASNESSetFunctionLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))FormFunctionLocal,&user));
+  PetscCall(DMGetGlobalVector(da, &u));
+  PetscCall(DMGetGlobalVector(da, &user.uold));
 
   user.sl  = 1.0;
   user.vl  = 0.1;
@@ -150,24 +150,24 @@ int main(int argc, char **argv)
   /* Time Loop */
   user.dt = 0.1;
   for (n = 0; n < 100; ++n, t += user.dt) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Starting time %g\n", (double)t));
-    CHKERRQ(VecView(u, PETSC_VIEWER_DRAW_WORLD));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Starting time %g\n", (double)t));
+    PetscCall(VecView(u, PETSC_VIEWER_DRAW_WORLD));
     /* Solve */
-    CHKERRQ(SNESSetFromOptions(snes));
-    CHKERRQ(SNESSolve(snes, NULL, u));
+    PetscCall(SNESSetFromOptions(snes));
+    PetscCall(SNESSolve(snes, NULL, u));
     /* Update */
-    CHKERRQ(VecCopy(u, user.uold));
+    PetscCall(VecCopy(u, user.uold));
 
-    CHKERRQ(VecView(u, PETSC_VIEWER_DRAW_WORLD));
+    PetscCall(VecView(u, PETSC_VIEWER_DRAW_WORLD));
   }
   /* Cleanup */
-  CHKERRQ(DMRestoreGlobalVector(da, &u));
-  CHKERRQ(DMRestoreGlobalVector(da, &user.uold));
-  CHKERRQ(DMRestoreGlobalVector(user.cda, &user.Kappa));
-  CHKERRQ(DMDestroy(&user.cda));
-  CHKERRQ(DMDestroy(&da));
-  CHKERRQ(SNESDestroy(&snes));
-  CHKERRQ(PetscFinalize());
+  PetscCall(DMRestoreGlobalVector(da, &u));
+  PetscCall(DMRestoreGlobalVector(da, &user.uold));
+  PetscCall(DMRestoreGlobalVector(user.cda, &user.Kappa));
+  PetscCall(DMDestroy(&user.cda));
+  PetscCall(DMDestroy(&da));
+  PetscCall(SNESDestroy(&snes));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

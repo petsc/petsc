@@ -13,67 +13,67 @@ int main(int argc, char *argv[])
   IS             is0,is1,is2;
   PetscBool      iscuda;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,0,help));
+  PetscCall(PetscInitialize(&argc,&argv,0,help));
   comm   = PETSC_COMM_WORLD;
   viewer = PETSC_VIEWER_STDOUT_WORLD;
-  CHKERRMPI(MPI_Comm_size(comm,&size));
-  CHKERRMPI(MPI_Comm_rank(comm,&rank));
+  PetscCallMPI(MPI_Comm_size(comm,&size));
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
 
-  CHKERRQ(VecCreate(comm,&X));
-  CHKERRQ(VecSetSizes(X,10,PETSC_DETERMINE));
-  CHKERRQ(VecSetFromOptions(X));
-  CHKERRQ(VecGetOwnershipRange(X,&rstart,&rend));
+  PetscCall(VecCreate(comm,&X));
+  PetscCall(VecSetSizes(X,10,PETSC_DETERMINE));
+  PetscCall(VecSetFromOptions(X));
+  PetscCall(VecGetOwnershipRange(X,&rstart,&rend));
 
-  CHKERRQ(VecGetArray(X,&x));
+  PetscCall(VecGetArray(X,&x));
   for (i=0; i<rend-rstart; i++) x[i] = rstart+i;
-  CHKERRQ(VecRestoreArray(X,&x));
-  CHKERRQ(PetscObjectTypeCompareAny((PetscObject)X,&iscuda,VECSEQCUDA,VECMPICUDA,""));
+  PetscCall(VecRestoreArray(X,&x));
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)X,&iscuda,VECSEQCUDA,VECMPICUDA,""));
   if (iscuda) { /* trigger a copy of the data on the GPU */
     const PetscScalar *xx;
 
-    CHKERRQ(VecCUDAGetArrayRead(X,&xx));
-    CHKERRQ(VecCUDARestoreArrayRead(X,&xx));
+    PetscCall(VecCUDAGetArrayRead(X,&xx));
+    PetscCall(VecCUDARestoreArrayRead(X,&xx));
   }
 
-  CHKERRQ(VecView(X,viewer));
+  PetscCall(VecView(X,viewer));
 
   idxs[0] = (size - rank - 1)*10 + 5;
   idxs[1] = (size - rank - 1)*10 + 2;
   idxs[2] = (size - rank - 1)*10 + 3;
 
-  CHKERRQ(ISCreateStride(comm,(rend-rstart)/3+3*(rank>size/2),rstart,1,&is0));
-  CHKERRQ(ISComplement(is0,rstart,rend,&is1));
-  CHKERRQ(ISCreateGeneral(comm,3,idxs,PETSC_USE_POINTER,&is2));
+  PetscCall(ISCreateStride(comm,(rend-rstart)/3+3*(rank>size/2),rstart,1,&is0));
+  PetscCall(ISComplement(is0,rstart,rend,&is1));
+  PetscCall(ISCreateGeneral(comm,3,idxs,PETSC_USE_POINTER,&is2));
 
-  CHKERRQ(ISView(is0,viewer));
-  CHKERRQ(ISView(is1,viewer));
-  CHKERRQ(ISView(is2,viewer));
+  PetscCall(ISView(is0,viewer));
+  PetscCall(ISView(is1,viewer));
+  PetscCall(ISView(is2,viewer));
 
-  CHKERRQ(VecGetSubVector(X,is0,&Y));
-  CHKERRQ(VecGetSubVector(X,is1,&Z));
-  CHKERRQ(VecGetSubVector(X,is2,&W));
-  CHKERRQ(VecView(Y,viewer));
-  CHKERRQ(VecView(Z,viewer));
-  CHKERRQ(VecView(W,viewer));
-  CHKERRQ(VecGetArray(Y,&y));
+  PetscCall(VecGetSubVector(X,is0,&Y));
+  PetscCall(VecGetSubVector(X,is1,&Z));
+  PetscCall(VecGetSubVector(X,is2,&W));
+  PetscCall(VecView(Y,viewer));
+  PetscCall(VecView(Z,viewer));
+  PetscCall(VecView(W,viewer));
+  PetscCall(VecGetArray(Y,&y));
   y[0] = 1000*(rank+1);
-  CHKERRQ(VecRestoreArray(Y,&y));
-  CHKERRQ(VecGetArray(Z,&z));
+  PetscCall(VecRestoreArray(Y,&y));
+  PetscCall(VecGetArray(Z,&z));
   z[0] = -1000*(rank+1);
-  CHKERRQ(VecRestoreArray(Z,&z));
-  CHKERRQ(VecGetArray(W,&w));
+  PetscCall(VecRestoreArray(Z,&z));
+  PetscCall(VecGetArray(W,&w));
   w[0] = -10*(rank+1);
-  CHKERRQ(VecRestoreArray(W,&w));
-  CHKERRQ(VecRestoreSubVector(X,is0,&Y));
-  CHKERRQ(VecRestoreSubVector(X,is1,&Z));
-  CHKERRQ(VecRestoreSubVector(X,is2,&W));
-  CHKERRQ(VecView(X,viewer));
+  PetscCall(VecRestoreArray(W,&w));
+  PetscCall(VecRestoreSubVector(X,is0,&Y));
+  PetscCall(VecRestoreSubVector(X,is1,&Z));
+  PetscCall(VecRestoreSubVector(X,is2,&W));
+  PetscCall(VecView(X,viewer));
 
-  CHKERRQ(ISDestroy(&is0));
-  CHKERRQ(ISDestroy(&is1));
-  CHKERRQ(ISDestroy(&is2));
-  CHKERRQ(VecDestroy(&X));
-  CHKERRQ(PetscFinalize());
+  PetscCall(ISDestroy(&is0));
+  PetscCall(ISDestroy(&is1));
+  PetscCall(ISDestroy(&is2));
+  PetscCall(VecDestroy(&X));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

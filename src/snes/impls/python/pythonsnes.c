@@ -21,6 +21,6 @@ PetscErrorCode  SNESPythonSetType(SNES snes,const char pyname[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidCharPointer(pyname,2);
-  CHKERRQ(PetscTryMethod(snes,"SNESPythonSetType_C",(SNES, const char[]),(snes,pyname)));
+  PetscCall(PetscTryMethod(snes,"SNESPythonSetType_C",(SNES, const char[]),(snes,pyname)));
   PetscFunctionReturn(0);
 }

@@ -56,50 +56,50 @@ int main(int argc, char **argv)
   Mat            J;
   PetscViewer    viewer;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,"petscopt_ex6", help));
+  PetscCall(PetscInitialize(&argc,&argv,"petscopt_ex6", help));
   /* Get physics and time parameters */
-  CHKERRQ(Parameter_settings(&user));
+  PetscCall(Parameter_settings(&user));
   /* Create a 2D DA with dof = 1 */
-  CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,4,4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&user.da));
-  CHKERRQ(DMSetFromOptions(user.da));
-  CHKERRQ(DMSetUp(user.da));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,4,4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&user.da));
+  PetscCall(DMSetFromOptions(user.da));
+  PetscCall(DMSetUp(user.da));
   /* Set x and y coordinates */
-  CHKERRQ(DMDASetUniformCoordinates(user.da,user.xmin,user.xmax,user.ymin,user.ymax,0.0,1.0));
+  PetscCall(DMDASetUniformCoordinates(user.da,user.xmin,user.xmax,user.ymin,user.ymax,0.0,1.0));
 
   /* Get global vector x from DM  */
-  CHKERRQ(DMCreateGlobalVector(user.da,&x));
+  PetscCall(DMCreateGlobalVector(user.da,&x));
 
-  CHKERRQ(ini_bou(x,&user));
-  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"ini_x",FILE_MODE_WRITE,&viewer));
-  CHKERRQ(VecView(x,viewer));
-  CHKERRQ(PetscViewerDestroy(&viewer));
+  PetscCall(ini_bou(x,&user));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"ini_x",FILE_MODE_WRITE,&viewer));
+  PetscCall(VecView(x,viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
 
   /* Get Jacobian matrix structure from the da */
-  CHKERRQ(DMSetMatType(user.da,MATAIJ));
-  CHKERRQ(DMCreateMatrix(user.da,&J));
+  PetscCall(DMSetMatType(user.da,MATAIJ));
+  PetscCall(DMCreateMatrix(user.da,&J));
 
-  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
-  CHKERRQ(TSSetProblemType(ts,TS_NONLINEAR));
-  CHKERRQ(TSSetIFunction(ts,NULL,IFunction,&user));
-  CHKERRQ(TSSetIJacobian(ts,J,J,IJacobian,&user));
-  CHKERRQ(TSSetApplicationContext(ts,&user));
-  CHKERRQ(TSSetMaxTime(ts,user.tmax));
-  CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP));
-  CHKERRQ(TSSetTime(ts,user.t0));
-  CHKERRQ(TSSetTimeStep(ts,.005));
-  CHKERRQ(TSSetFromOptions(ts));
-  CHKERRQ(TSSetPostStep(ts,PostStep));
-  CHKERRQ(TSSolve(ts,x));
+  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
+  PetscCall(TSSetProblemType(ts,TS_NONLINEAR));
+  PetscCall(TSSetIFunction(ts,NULL,IFunction,&user));
+  PetscCall(TSSetIJacobian(ts,J,J,IJacobian,&user));
+  PetscCall(TSSetApplicationContext(ts,&user));
+  PetscCall(TSSetMaxTime(ts,user.tmax));
+  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP));
+  PetscCall(TSSetTime(ts,user.t0));
+  PetscCall(TSSetTimeStep(ts,.005));
+  PetscCall(TSSetFromOptions(ts));
+  PetscCall(TSSetPostStep(ts,PostStep));
+  PetscCall(TSSolve(ts,x));
 
-  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"fin_x",FILE_MODE_WRITE,&viewer));
-  CHKERRQ(VecView(x,viewer));
-  CHKERRQ(PetscViewerDestroy(&viewer));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"fin_x",FILE_MODE_WRITE,&viewer));
+  PetscCall(VecView(x,viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
 
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(MatDestroy(&J));
-  CHKERRQ(DMDestroy(&user.da));
-  CHKERRQ(TSDestroy(&ts));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&x));
+  PetscCall(MatDestroy(&J));
+  PetscCall(DMDestroy(&user.da));
+  PetscCall(TSDestroy(&ts));
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -111,11 +111,11 @@ PetscErrorCode PostStep(TS ts)
   PetscReal      t;
 
   PetscFunctionBegin;
-  CHKERRQ(TSGetApplicationContext(ts,&user));
-  CHKERRQ(TSGetTime(ts,&t));
-  CHKERRQ(TSGetSolution(ts,&X));
-  CHKERRQ(VecSum(X,&sum));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"sum(p)*dw*dtheta at t = %3.2f = %3.6f\n",(double)t,(double)sum*user->dx*user->dy));
+  PetscCall(TSGetApplicationContext(ts,&user));
+  PetscCall(TSGetTime(ts,&t));
+  PetscCall(TSGetSolution(ts,&X));
+  PetscCall(VecSum(X,&sum));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"sum(p)*dw*dtheta at t = %3.2f = %3.6f\n",(double)t,(double)sum*user->dx*user->dy));
   PetscFunctionReturn(0);
 }
 
@@ -134,14 +134,14 @@ PetscErrorCode ini_bou(Vec X,AppCtx* user)
   PetscMPIInt    rank;
 
   PetscFunctionBeginUser;
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  CHKERRQ(DMDAGetInfo(user->da,NULL,&M,&N,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(DMDAGetInfo(user->da,NULL,&M,&N,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL));
   user->dx = (user->xmax - user->xmin)/(M-1); user->dy = (user->ymax - user->ymin)/(N-1);
-  CHKERRQ(DMGetCoordinateDM(user->da,&cda));
-  CHKERRQ(DMGetCoordinates(user->da,&gc));
-  CHKERRQ(DMDAVecGetArray(cda,gc,&coors));
-  CHKERRQ(DMDAVecGetArray(user->da,X,&p));
-  CHKERRQ(DMDAGetCorners(cda,&xs,&ys,0,&xm,&ym,0));
+  PetscCall(DMGetCoordinateDM(user->da,&cda));
+  PetscCall(DMGetCoordinates(user->da,&gc));
+  PetscCall(DMDAVecGetArray(cda,gc,&coors));
+  PetscCall(DMDAVecGetArray(user->da,X,&p));
+  PetscCall(DMDAGetCorners(cda,&xs,&ys,0,&xm,&ym,0));
   for (i=xs; i < xs+xm; i++) {
     for (j=ys; j < ys+ym; j++) {
       xi = coors[j][i].x; yi = coors[j][i].y;
@@ -151,8 +151,8 @@ PetscErrorCode ini_bou(Vec X,AppCtx* user)
   }
   /*  p[N/2+N%2][M/2+M%2] = 1/(user->dx*user->dy); */
 
-  CHKERRQ(DMDAVecRestoreArray(cda,gc,&coors));
-  CHKERRQ(DMDAVecRestoreArray(user->da,X,&p));
+  PetscCall(DMDAVecRestoreArray(cda,gc,&coors));
+  PetscCall(DMDAVecRestoreArray(user->da,X,&p));
   PetscFunctionReturn(0);
 }
 
@@ -257,44 +257,44 @@ PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
   PetscScalar    p_adv1,p_adv2,p_diff;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMDAGetInfo(user->da,NULL,&M,&N,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL));
-  CHKERRQ(DMGetCoordinateDM(user->da,&cda));
-  CHKERRQ(DMDAGetCorners(cda,&xs,&ys,0,&xm,&ym,0));
+  PetscCall(DMDAGetInfo(user->da,NULL,&M,&N,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(DMGetCoordinateDM(user->da,&cda));
+  PetscCall(DMDAGetCorners(cda,&xs,&ys,0,&xm,&ym,0));
 
-  CHKERRQ(DMGetLocalVector(user->da,&localX));
-  CHKERRQ(DMGetLocalVector(user->da,&localXdot));
+  PetscCall(DMGetLocalVector(user->da,&localX));
+  PetscCall(DMGetLocalVector(user->da,&localXdot));
 
-  CHKERRQ(DMGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX));
-  CHKERRQ(DMGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX));
-  CHKERRQ(DMGlobalToLocalBegin(user->da,Xdot,INSERT_VALUES,localXdot));
-  CHKERRQ(DMGlobalToLocalEnd(user->da,Xdot,INSERT_VALUES,localXdot));
+  PetscCall(DMGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX));
+  PetscCall(DMGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX));
+  PetscCall(DMGlobalToLocalBegin(user->da,Xdot,INSERT_VALUES,localXdot));
+  PetscCall(DMGlobalToLocalEnd(user->da,Xdot,INSERT_VALUES,localXdot));
 
-  CHKERRQ(DMGetCoordinatesLocal(user->da,&gc));
+  PetscCall(DMGetCoordinatesLocal(user->da,&gc));
 
-  CHKERRQ(DMDAVecGetArrayRead(cda,gc,&coors));
-  CHKERRQ(DMDAVecGetArrayRead(user->da,localX,&p));
-  CHKERRQ(DMDAVecGetArrayRead(user->da,localXdot,&pdot));
-  CHKERRQ(DMDAVecGetArray(user->da,F,&f));
+  PetscCall(DMDAVecGetArrayRead(cda,gc,&coors));
+  PetscCall(DMDAVecGetArrayRead(user->da,localX,&p));
+  PetscCall(DMDAVecGetArrayRead(user->da,localXdot,&pdot));
+  PetscCall(DMDAVecGetArray(user->da,F,&f));
 
   user->disper_coe = PetscPowScalar((user->lambda*user->ws)/(2*user->H),2)*user->q*(1.0-PetscExpScalar(-t/user->lambda));
   for (i=xs; i < xs+xm; i++) {
     for (j=ys; j < ys+ym; j++) {
       if (i == 0 || j == 0 || i == M-1 || j == N-1) {
-        CHKERRQ(BoundaryConditions(p,coors,i,j,M,N,f,user));
+        PetscCall(BoundaryConditions(p,coors,i,j,M,N,f,user));
       } else {
-        CHKERRQ(adv1(p,coors[j][i].y,i,j,M,&p_adv1,user));
-        CHKERRQ(adv2(p,coors[j][i].x,i,j,N,&p_adv2,user));
-        CHKERRQ(diffuse(p,i,j,t,&p_diff,user));
+        PetscCall(adv1(p,coors[j][i].y,i,j,M,&p_adv1,user));
+        PetscCall(adv2(p,coors[j][i].x,i,j,N,&p_adv2,user));
+        PetscCall(diffuse(p,i,j,t,&p_diff,user));
         f[j][i] = -p_adv1 - p_adv2 + p_diff - pdot[j][i];
       }
     }
   }
-  CHKERRQ(DMDAVecRestoreArrayRead(user->da,localX,&p));
-  CHKERRQ(DMDAVecRestoreArrayRead(user->da,localX,&pdot));
-  CHKERRQ(DMRestoreLocalVector(user->da,&localX));
-  CHKERRQ(DMRestoreLocalVector(user->da,&localXdot));
-  CHKERRQ(DMDAVecRestoreArray(user->da,F,&f));
-  CHKERRQ(DMDAVecRestoreArrayRead(cda,gc,&coors));
+  PetscCall(DMDAVecRestoreArrayRead(user->da,localX,&p));
+  PetscCall(DMDAVecRestoreArrayRead(user->da,localX,&pdot));
+  PetscCall(DMRestoreLocalVector(user->da,&localX));
+  PetscCall(DMRestoreLocalVector(user->da,&localXdot));
+  PetscCall(DMDAVecRestoreArray(user->da,F,&f));
+  PetscCall(DMDAVecRestoreArrayRead(cda,gc,&coors));
 
   PetscFunctionReturn(0);
 }
@@ -312,12 +312,12 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat J,Mat 
   PetscScalar    c1,c3,c5;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMDAGetInfo(user->da,NULL,&M,&N,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL));
-  CHKERRQ(DMGetCoordinateDM(user->da,&cda));
-  CHKERRQ(DMDAGetCorners(cda,&xs,&ys,0,&xm,&ym,0));
+  PetscCall(DMDAGetInfo(user->da,NULL,&M,&N,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(DMGetCoordinateDM(user->da,&cda));
+  PetscCall(DMDAGetCorners(cda,&xs,&ys,0,&xm,&ym,0));
 
-  CHKERRQ(DMGetCoordinatesLocal(user->da,&gc));
-  CHKERRQ(DMDAVecGetArrayRead(cda,gc,&coors));
+  PetscCall(DMGetCoordinatesLocal(user->da,&gc));
+  PetscCall(DMDAVecGetArrayRead(cda,gc,&coors));
   for (i=xs; i < xs+xm; i++) {
     for (j=ys; j < ys+ym; j++) {
       PetscInt nc = 0;
@@ -378,16 +378,16 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat J,Mat 
         col[nc].i = i;   col[nc].j = j+1; val[nc++] = -c3 + c5;
         col[nc].i = i;   col[nc].j = j;   val[nc++] = -2*c5 -a;
       }
-      CHKERRQ(MatSetValuesStencil(Jpre,1,&row,nc,col,val,INSERT_VALUES));
+      PetscCall(MatSetValuesStencil(Jpre,1,&row,nc,col,val,INSERT_VALUES));
     }
   }
-  CHKERRQ(DMDAVecRestoreArrayRead(cda,gc,&coors));
+  PetscCall(DMDAVecRestoreArrayRead(cda,gc,&coors));
 
-  CHKERRQ(MatAssemblyBegin(Jpre,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(Jpre,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(Jpre,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(Jpre,MAT_FINAL_ASSEMBLY));
   if (J != Jpre) {
-    CHKERRQ(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY));
   }
   PetscFunctionReturn(0);
 }
@@ -410,24 +410,24 @@ PetscErrorCode Parameter_settings(AppCtx *user)
   user->ymin   = -1.0; user->ymax = 10.0;
   user->bc     = 0;
 
-  CHKERRQ(PetscOptionsGetScalar(NULL,NULL,"-ws",&user->ws,&flg));
-  CHKERRQ(PetscOptionsGetScalar(NULL,NULL,"-Inertia",&user->H,&flg));
-  CHKERRQ(PetscOptionsGetScalar(NULL,NULL,"-Pmax",&user->Pmax,&flg));
-  CHKERRQ(PetscOptionsGetScalar(NULL,NULL,"-PM_min",&user->PM_min,&flg));
-  CHKERRQ(PetscOptionsGetScalar(NULL,NULL,"-lambda",&user->lambda,&flg));
-  CHKERRQ(PetscOptionsGetScalar(NULL,NULL,"-q",&user->q,&flg));
-  CHKERRQ(PetscOptionsGetScalar(NULL,NULL,"-mux",&user->mux,&flg));
-  CHKERRQ(PetscOptionsGetScalar(NULL,NULL,"-sigmax",&user->sigmax,&flg));
-  CHKERRQ(PetscOptionsGetScalar(NULL,NULL,"-muy",&user->muy,&flg));
-  CHKERRQ(PetscOptionsGetScalar(NULL,NULL,"-sigmay",&user->sigmay,&flg));
-  CHKERRQ(PetscOptionsGetScalar(NULL,NULL,"-rho",&user->rho,&flg));
-  CHKERRQ(PetscOptionsGetScalar(NULL,NULL,"-t0",&user->t0,&flg));
-  CHKERRQ(PetscOptionsGetScalar(NULL,NULL,"-tmax",&user->tmax,&flg));
-  CHKERRQ(PetscOptionsGetScalar(NULL,NULL,"-xmin",&user->xmin,&flg));
-  CHKERRQ(PetscOptionsGetScalar(NULL,NULL,"-xmax",&user->xmax,&flg));
-  CHKERRQ(PetscOptionsGetScalar(NULL,NULL,"-ymin",&user->ymin,&flg));
-  CHKERRQ(PetscOptionsGetScalar(NULL,NULL,"-ymax",&user->ymax,&flg));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-bc_type",&user->bc,&flg));
+  PetscCall(PetscOptionsGetScalar(NULL,NULL,"-ws",&user->ws,&flg));
+  PetscCall(PetscOptionsGetScalar(NULL,NULL,"-Inertia",&user->H,&flg));
+  PetscCall(PetscOptionsGetScalar(NULL,NULL,"-Pmax",&user->Pmax,&flg));
+  PetscCall(PetscOptionsGetScalar(NULL,NULL,"-PM_min",&user->PM_min,&flg));
+  PetscCall(PetscOptionsGetScalar(NULL,NULL,"-lambda",&user->lambda,&flg));
+  PetscCall(PetscOptionsGetScalar(NULL,NULL,"-q",&user->q,&flg));
+  PetscCall(PetscOptionsGetScalar(NULL,NULL,"-mux",&user->mux,&flg));
+  PetscCall(PetscOptionsGetScalar(NULL,NULL,"-sigmax",&user->sigmax,&flg));
+  PetscCall(PetscOptionsGetScalar(NULL,NULL,"-muy",&user->muy,&flg));
+  PetscCall(PetscOptionsGetScalar(NULL,NULL,"-sigmay",&user->sigmay,&flg));
+  PetscCall(PetscOptionsGetScalar(NULL,NULL,"-rho",&user->rho,&flg));
+  PetscCall(PetscOptionsGetScalar(NULL,NULL,"-t0",&user->t0,&flg));
+  PetscCall(PetscOptionsGetScalar(NULL,NULL,"-tmax",&user->tmax,&flg));
+  PetscCall(PetscOptionsGetScalar(NULL,NULL,"-xmin",&user->xmin,&flg));
+  PetscCall(PetscOptionsGetScalar(NULL,NULL,"-xmax",&user->xmax,&flg));
+  PetscCall(PetscOptionsGetScalar(NULL,NULL,"-ymin",&user->ymin,&flg));
+  PetscCall(PetscOptionsGetScalar(NULL,NULL,"-ymax",&user->ymax,&flg));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-bc_type",&user->bc,&flg));
   user->muy = user->ws;
   PetscFunctionReturn(0);
 }

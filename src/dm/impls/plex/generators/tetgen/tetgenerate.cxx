@@ -37,12 +37,12 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
   PetscMPIInt            rank;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectGetComm((PetscObject)boundary,&comm));
-  CHKERRMPI(MPI_Comm_rank(comm, &rank));
-  CHKERRQ(DMPlexIsInterpolatedCollective(boundary, &isInterpolated));
-  CHKERRQ(DMUniversalLabelCreate(boundary, &universal));
+  PetscCall(PetscObjectGetComm((PetscObject)boundary,&comm));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  PetscCall(DMPlexIsInterpolatedCollective(boundary, &isInterpolated));
+  PetscCall(DMUniversalLabelCreate(boundary, &universal));
 
-  CHKERRQ(DMPlexGetDepthStratum(boundary, 0, &vStart, &vEnd));
+  PetscCall(DMPlexGetDepthStratum(boundary, 0, &vStart, &vEnd));
   in.numberofpoints = vEnd - vStart;
   if (in.numberofpoints > 0) {
     PetscSection       coordSection;
@@ -52,22 +52,22 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
     in.pointlist       = new double[in.numberofpoints*dim];
     in.pointmarkerlist = new int[in.numberofpoints];
 
-    CHKERRQ(DMGetCoordinatesLocal(boundary, &coordinates));
-    CHKERRQ(DMGetCoordinateSection(boundary, &coordSection));
-    CHKERRQ(VecGetArrayRead(coordinates, &array));
+    PetscCall(DMGetCoordinatesLocal(boundary, &coordinates));
+    PetscCall(DMGetCoordinateSection(boundary, &coordSection));
+    PetscCall(VecGetArrayRead(coordinates, &array));
     for (v = vStart; v < vEnd; ++v) {
       const PetscInt idx = v - vStart;
       PetscInt       off, d, val;
 
-      CHKERRQ(PetscSectionGetOffset(coordSection, v, &off));
+      PetscCall(PetscSectionGetOffset(coordSection, v, &off));
       for (d = 0; d < dim; ++d) in.pointlist[idx*dim + d] = PetscRealPart(array[off+d]);
-      CHKERRQ(DMLabelGetValue(universal->label, v, &val));
+      PetscCall(DMLabelGetValue(universal->label, v, &val));
       in.pointmarkerlist[idx] = (int) val;
     }
-    CHKERRQ(VecRestoreArrayRead(coordinates, &array));
+    PetscCall(VecRestoreArrayRead(coordinates, &array));
   }
 
-  CHKERRQ(DMPlexGetHeightStratum(boundary, 1, &eStart, &eEnd));
+  PetscCall(DMPlexGetHeightStratum(boundary, 1, &eStart, &eEnd));
   in.numberofedges = eEnd - eStart;
   if (isInterpolated == DMPLEX_INTERPOLATED_FULL && in.numberofedges > 0) {
     in.edgelist       = new int[in.numberofedges * 2];
@@ -77,17 +77,17 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
       const PetscInt *cone;
       PetscInt        coneSize, val;
 
-      CHKERRQ(DMPlexGetConeSize(boundary, e, &coneSize));
-      CHKERRQ(DMPlexGetCone(boundary, e, &cone));
+      PetscCall(DMPlexGetConeSize(boundary, e, &coneSize));
+      PetscCall(DMPlexGetCone(boundary, e, &cone));
       in.edgelist[idx*2]     = cone[0] - vStart;
       in.edgelist[idx*2 + 1] = cone[1] - vStart;
 
-      CHKERRQ(DMLabelGetValue(universal->label, e, &val));
+      PetscCall(DMLabelGetValue(universal->label, e, &val));
       in.edgemarkerlist[idx] = (int) val;
     }
   }
 
-  CHKERRQ(DMPlexGetHeightStratum(boundary, 0, &fStart, &fEnd));
+  PetscCall(DMPlexGetHeightStratum(boundary, 0, &fStart, &fEnd));
   in.numberoffacets = fEnd - fStart;
   if (in.numberoffacets > 0) {
     in.facetlist       = new tetgenio::facet[in.numberoffacets];
@@ -101,7 +101,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
       in.facetlist[idx].numberofholes    = 0;
       in.facetlist[idx].holelist         = NULL;
 
-      CHKERRQ(DMPlexGetTransitiveClosure(boundary, f, PETSC_TRUE, &numPoints, &points));
+      PetscCall(DMPlexGetTransitiveClosure(boundary, f, PETSC_TRUE, &numPoints, &points));
       for (p = 0; p < numPoints*2; p += 2) {
         const PetscInt point = points[p];
         if ((point >= vStart) && (point < vEnd)) points[numVertices++] = point;
@@ -114,9 +114,9 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
         const PetscInt vIdx = points[v] - vStart;
         poly->vertexlist[v] = vIdx;
       }
-      CHKERRQ(DMLabelGetValue(universal->label, f, &val));
+      PetscCall(DMLabelGetValue(universal->label, f, &val));
       in.facetmarkerlist[idx] = (int) val;
-      CHKERRQ(DMPlexRestoreTransitiveClosure(boundary, f, PETSC_TRUE, &numPoints, &points));
+      PetscCall(DMPlexRestoreTransitiveClosure(boundary, f, PETSC_TRUE, &numPoints, &points));
     }
   }
   if (rank == 0) {
@@ -125,9 +125,9 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
 
     /* Take away 'Q' for verbose output */
 #ifdef PETSC_HAVE_EGADS
-    CHKERRQ(PetscStrcpy(args, "pqezQY"));
+    PetscCall(PetscStrcpy(args, "pqezQY"));
 #else
-    CHKERRQ(PetscStrcpy(args, "pqezQ"));
+    PetscCall(PetscStrcpy(args, "pqezQ"));
 #endif
     if (mesh->tetgenOpts) {::tetrahedralize(mesh->tetgenOpts, &in, &out);}
     else                  {::tetrahedralize(args, &in, &out);}
@@ -156,14 +156,14 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
       for (i = 0; i < numCells * numCorners; i++) cells[i] = (PetscInt) out.tetrahedronlist[i];
     }
 
-    CHKERRQ(DMPlexInvertCells_Tetgen(numCells, numCorners, cells));
-    CHKERRQ(DMPlexCreateFromCellListPetsc(comm, dim, numCells, numVertices, numCorners, interpolate, cells, dim, meshCoords, dm));
+    PetscCall(DMPlexInvertCells_Tetgen(numCells, numCorners, cells));
+    PetscCall(DMPlexCreateFromCellListPetsc(comm, dim, numCells, numVertices, numCorners, interpolate, cells, dim, meshCoords, dm));
 
     /* Set labels */
-    CHKERRQ(DMUniversalLabelCreateLabels(universal, PETSC_TRUE, *dm));
+    PetscCall(DMUniversalLabelCreateLabels(universal, PETSC_TRUE, *dm));
     for (v = 0; v < numVertices; ++v) {
       if (out.pointmarkerlist[v]) {
-        CHKERRQ(DMUniversalLabelSetLabelValue(universal, *dm, PETSC_TRUE, v+numCells, out.pointmarkerlist[v]));
+        PetscCall(DMUniversalLabelSetLabelValue(universal, *dm, PETSC_TRUE, v+numCells, out.pointmarkerlist[v]));
       }
     }
     if (interpolate) {
@@ -175,10 +175,10 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
           const PetscInt *edges;
           PetscInt        numEdges;
 
-          CHKERRQ(DMPlexGetJoin(*dm, 2, vertices, &numEdges, &edges));
+          PetscCall(DMPlexGetJoin(*dm, 2, vertices, &numEdges, &edges));
           PetscCheckFalse(numEdges != 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Two vertices must cover only one edge, not %D", numEdges);
-          CHKERRQ(DMUniversalLabelSetLabelValue(universal, *dm, PETSC_TRUE, edges[0], out.edgemarkerlist[e]));
-          CHKERRQ(DMPlexRestoreJoin(*dm, 2, vertices, &numEdges, &edges));
+          PetscCall(DMUniversalLabelSetLabelValue(universal, *dm, PETSC_TRUE, edges[0], out.edgemarkerlist[e]));
+          PetscCall(DMPlexRestoreJoin(*dm, 2, vertices, &numEdges, &edges));
         }
       }
       for (f = 0; f < out.numberoftrifaces; f++) {
@@ -187,15 +187,15 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
           const PetscInt *faces;
           PetscInt        numFaces;
 
-          CHKERRQ(DMPlexGetFullJoin(*dm, 3, vertices, &numFaces, &faces));
+          PetscCall(DMPlexGetFullJoin(*dm, 3, vertices, &numFaces, &faces));
           PetscCheckFalse(numFaces != 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Three vertices must cover only one face, not %D", numFaces);
-          CHKERRQ(DMUniversalLabelSetLabelValue(universal, *dm, PETSC_TRUE, faces[0], out.trifacemarkerlist[f]));
-          CHKERRQ(DMPlexRestoreJoin(*dm, 3, vertices, &numFaces, &faces));
+          PetscCall(DMUniversalLabelSetLabelValue(universal, *dm, PETSC_TRUE, faces[0], out.trifacemarkerlist[f]));
+          PetscCall(DMPlexRestoreJoin(*dm, 3, vertices, &numFaces, &faces));
         }
       }
     }
 
-    CHKERRQ(PetscObjectQuery((PetscObject) boundary, "EGADS Model", (PetscObject *) &modelObj));
+    PetscCall(PetscObjectQuery((PetscObject) boundary, "EGADS Model", (PetscObject *) &modelObj));
     if (modelObj) {
 #ifdef PETSC_HAVE_EGADS
       DMLabel        bodyLabel;
@@ -206,29 +206,29 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
       int            Nb, oclass, mtype, *senses;
 
       /* Get Attached EGADS Model from Original DMPlex */
-      CHKERRQ(PetscObjectQuery((PetscObject) boundary, "EGADS Model", (PetscObject *) &modelObj));
+      PetscCall(PetscObjectQuery((PetscObject) boundary, "EGADS Model", (PetscObject *) &modelObj));
       if (modelObj) {
-        CHKERRQ(PetscContainerGetPointer(modelObj, (void **) &model));
-        CHKERRQ(EG_getTopology(model, &geom, &oclass, &mtype, NULL, &Nb, &bodies, &senses));
+        PetscCall(PetscContainerGetPointer(modelObj, (void **) &model));
+        PetscCall(EG_getTopology(model, &geom, &oclass, &mtype, NULL, &Nb, &bodies, &senses));
         /* Transfer EGADS Model to Volumetric Mesh */
-        CHKERRQ(PetscObjectCompose((PetscObject) *dm, "EGADS Model", (PetscObject) modelObj));
+        PetscCall(PetscObjectCompose((PetscObject) *dm, "EGADS Model", (PetscObject) modelObj));
       } else {
-        CHKERRQ(PetscObjectQuery((PetscObject) boundary, "EGADSLite Model", (PetscObject *) &modelObj));
+        PetscCall(PetscObjectQuery((PetscObject) boundary, "EGADSLite Model", (PetscObject *) &modelObj));
         if (modelObj) {
-          CHKERRQ(PetscContainerGetPointer(modelObj, (void **) &model));
-          CHKERRQ(EGlite_getTopology(model, &geom, &oclass, &mtype, NULL, &Nb, &bodies, &senses));
+          PetscCall(PetscContainerGetPointer(modelObj, (void **) &model));
+          PetscCall(EGlite_getTopology(model, &geom, &oclass, &mtype, NULL, &Nb, &bodies, &senses));
           /* Transfer EGADS Model to Volumetric Mesh */
-          CHKERRQ(PetscObjectCompose((PetscObject) *dm, "EGADSLite Model", (PetscObject) modelObj));
+          PetscCall(PetscObjectCompose((PetscObject) *dm, "EGADSLite Model", (PetscObject) modelObj));
           islite = PETSC_TRUE;
         }
       }
       if (!modelObj) goto skip_egads;
 
       /* Set Cell Labels */
-      CHKERRQ(DMGetLabel(*dm, "EGADS Body ID", &bodyLabel));
-      CHKERRQ(DMPlexGetHeightStratum(*dm, 0, &cStart, &cEnd));
-      CHKERRQ(DMPlexGetHeightStratum(*dm, 1, &fStart, &fEnd));
-      CHKERRQ(DMPlexGetDepthStratum(*dm, 1, &eStart, &eEnd));
+      PetscCall(DMGetLabel(*dm, "EGADS Body ID", &bodyLabel));
+      PetscCall(DMPlexGetHeightStratum(*dm, 0, &cStart, &cEnd));
+      PetscCall(DMPlexGetHeightStratum(*dm, 1, &fStart, &fEnd));
+      PetscCall(DMPlexGetDepthStratum(*dm, 1, &eStart, &eEnd));
 
       for (c = cStart; c < cEnd; ++c) {
         PetscReal centroid[3] = {0., 0., 0.};
@@ -241,13 +241,13 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
           PetscScalar   *coords = NULL;
           PetscInt       coordSize, s, d;
 
-          CHKERRQ(DMGetCoordinatesLocal(*dm, &coordinates));
-          CHKERRQ(DMGetCoordinateSection(*dm, &coordSection));
-          CHKERRQ(DMPlexVecGetClosure(*dm, coordSection, coordinates, c, &coordSize, &coords));
+          PetscCall(DMGetCoordinatesLocal(*dm, &coordinates));
+          PetscCall(DMGetCoordinateSection(*dm, &coordSection));
+          PetscCall(DMPlexVecGetClosure(*dm, coordSection, coordinates, c, &coordSize, &coords));
           for (s = 0; s < coordSize; ++s) for (d = 0; d < dim; ++d) centroid[d] += coords[s*dim+d];
-          CHKERRQ(DMPlexVecRestoreClosure(*dm, coordSection, coordinates, c, &coordSize, &coords));
+          PetscCall(DMPlexVecRestoreClosure(*dm, coordSection, coordinates, c, &coordSize, &coords));
         } else {
-          CHKERRQ(DMPlexComputeCellGeometryFVM(*dm, c, NULL, centroid, NULL));
+          PetscCall(DMPlexComputeCellGeometryFVM(*dm, c, NULL, centroid, NULL));
         }
         for (b = 0; b < Nb; ++b) {
           if (islite) {if (EGlite_inTopology(bodies[b], centroid) == EGADS_SUCCESS) break;}
@@ -257,29 +257,29 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
           PetscInt   cval = b, eVal, fVal;
           PetscInt *closure = NULL, Ncl, cl;
 
-          CHKERRQ(DMLabelSetValue(bodyLabel, c, cval));
-          CHKERRQ(DMPlexGetTransitiveClosure(*dm, c, PETSC_TRUE, &Ncl, &closure));
+          PetscCall(DMLabelSetValue(bodyLabel, c, cval));
+          PetscCall(DMPlexGetTransitiveClosure(*dm, c, PETSC_TRUE, &Ncl, &closure));
           for (cl = 0; cl < Ncl; cl += 2) {
             const PetscInt p = closure[cl];
 
             if (p >= eStart && p < eEnd) {
-              CHKERRQ(DMLabelGetValue(bodyLabel, p, &eVal));
-              if (eVal < 0) CHKERRQ(DMLabelSetValue(bodyLabel, p, cval));
+              PetscCall(DMLabelGetValue(bodyLabel, p, &eVal));
+              if (eVal < 0) PetscCall(DMLabelSetValue(bodyLabel, p, cval));
             }
             if (p >= fStart && p < fEnd) {
-              CHKERRQ(DMLabelGetValue(bodyLabel, p, &fVal));
-              if (fVal < 0) CHKERRQ(DMLabelSetValue(bodyLabel, p, cval));
+              PetscCall(DMLabelGetValue(bodyLabel, p, &fVal));
+              if (fVal < 0) PetscCall(DMLabelSetValue(bodyLabel, p, cval));
             }
           }
-          CHKERRQ(DMPlexRestoreTransitiveClosure(*dm, c, PETSC_TRUE, &Ncl, &closure));
+          PetscCall(DMPlexRestoreTransitiveClosure(*dm, c, PETSC_TRUE, &Ncl, &closure));
         }
       }
 skip_egads: ;
 #endif
     }
-    CHKERRQ(DMPlexSetRefinementUniform(*dm, PETSC_FALSE));
+    PetscCall(DMPlexSetRefinementUniform(*dm, PETSC_FALSE));
   }
-  CHKERRQ(DMUniversalLabelDestroy(&universal));
+  PetscCall(DMUniversalLabelDestroy(&universal));
   PetscFunctionReturn(0);
 }
 
@@ -296,12 +296,12 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
   PetscMPIInt            rank;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectGetComm((PetscObject)dm,&comm));
-  CHKERRMPI(MPI_Comm_rank(comm, &rank));
-  CHKERRQ(DMPlexIsInterpolatedCollective(dm, &isInterpolated));
-  CHKERRQ(DMUniversalLabelCreate(dm, &universal));
+  PetscCall(PetscObjectGetComm((PetscObject)dm,&comm));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  PetscCall(DMPlexIsInterpolatedCollective(dm, &isInterpolated));
+  PetscCall(DMUniversalLabelCreate(dm, &universal));
 
-  CHKERRQ(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
+  PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
   in.numberofpoints = vEnd - vStart;
   if (in.numberofpoints > 0) {
     PetscSection coordSection;
@@ -311,22 +311,22 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
     in.pointlist       = new double[in.numberofpoints*dim];
     in.pointmarkerlist = new int[in.numberofpoints];
 
-    CHKERRQ(DMGetCoordinatesLocal(dm, &coordinates));
-    CHKERRQ(DMGetCoordinateSection(dm, &coordSection));
-    CHKERRQ(VecGetArray(coordinates, &array));
+    PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
+    PetscCall(DMGetCoordinateSection(dm, &coordSection));
+    PetscCall(VecGetArray(coordinates, &array));
     for (v = vStart; v < vEnd; ++v) {
       const PetscInt idx = v - vStart;
       PetscInt       off, d, val;
 
-      CHKERRQ(PetscSectionGetOffset(coordSection, v, &off));
+      PetscCall(PetscSectionGetOffset(coordSection, v, &off));
       for (d = 0; d < dim; ++d) in.pointlist[idx*dim + d] = PetscRealPart(array[off+d]);
-      CHKERRQ(DMLabelGetValue(universal->label, v, &val));
+      PetscCall(DMLabelGetValue(universal->label, v, &val));
       in.pointmarkerlist[idx] = (int) val;
     }
-    CHKERRQ(VecRestoreArray(coordinates, &array));
+    PetscCall(VecRestoreArray(coordinates, &array));
   }
 
-  CHKERRQ(DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd));
+  PetscCall(DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd));
   in.numberofedges = eEnd - eStart;
   if (isInterpolated == DMPLEX_INTERPOLATED_FULL && in.numberofedges > 0) {
     in.edgelist       = new int[in.numberofedges * 2];
@@ -336,17 +336,17 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
       const PetscInt *cone;
       PetscInt        coneSize, val;
 
-      CHKERRQ(DMPlexGetConeSize(dm, e, &coneSize));
-      CHKERRQ(DMPlexGetCone(dm, e, &cone));
+      PetscCall(DMPlexGetConeSize(dm, e, &coneSize));
+      PetscCall(DMPlexGetCone(dm, e, &cone));
       in.edgelist[idx*2]     = cone[0] - vStart;
       in.edgelist[idx*2 + 1] = cone[1] - vStart;
 
-      CHKERRQ(DMLabelGetValue(universal->label, e, &val));
+      PetscCall(DMLabelGetValue(universal->label, e, &val));
       in.edgemarkerlist[idx] = (int) val;
     }
   }
 
-  CHKERRQ(DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd));
+  PetscCall(DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd));
   in.numberoffacets = fEnd - fStart;
   if (isInterpolated == DMPLEX_INTERPOLATED_FULL && in.numberoffacets > 0) {
     in.facetlist       = new tetgenio::facet[in.numberoffacets];
@@ -360,7 +360,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
       in.facetlist[idx].numberofholes    = 0;
       in.facetlist[idx].holelist         = NULL;
 
-      CHKERRQ(DMPlexGetTransitiveClosure(dm, f, PETSC_TRUE, &numPoints, &points));
+      PetscCall(DMPlexGetTransitiveClosure(dm, f, PETSC_TRUE, &numPoints, &points));
       for (p = 0; p < numPoints*2; p += 2) {
         const PetscInt point = points[p];
         if ((point >= vStart) && (point < vEnd)) points[numVertices++] = point;
@@ -374,14 +374,14 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
         poly->vertexlist[v] = vIdx;
       }
 
-      CHKERRQ(DMLabelGetValue(universal->label, f, &val));
+      PetscCall(DMLabelGetValue(universal->label, f, &val));
       in.facetmarkerlist[idx] = (int) val;
 
-      CHKERRQ(DMPlexRestoreTransitiveClosure(dm, f, PETSC_TRUE, &numPoints, &points));
+      PetscCall(DMPlexRestoreTransitiveClosure(dm, f, PETSC_TRUE, &numPoints, &points));
     }
   }
 
-  CHKERRQ(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   in.numberofcorners       = 4;
   in.numberoftetrahedra    = cEnd - cStart;
   in.tetrahedronvolumelist = (double *) maxVolumes;
@@ -392,10 +392,10 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
       PetscInt      *closure = NULL;
       PetscInt       closureSize;
 
-      CHKERRQ(DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure));
+      PetscCall(DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure));
       PetscCheckFalse((closureSize != 5) && (closureSize != 15),comm, PETSC_ERR_ARG_WRONG, "Mesh has cell which is not a tetrahedron, %D vertices in closure", closureSize);
       for (v = 0; v < 4; ++v) in.tetrahedronlist[idx*in.numberofcorners + v] = closure[(v+closureSize-4)*2] - vStart;
-      CHKERRQ(DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure));
+      PetscCall(DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure));
     }
   }
 
@@ -403,7 +403,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
     char args[32];
 
     /* Take away 'Q' for verbose output */
-    CHKERRQ(PetscStrcpy(args, "qezQra"));
+    PetscCall(PetscStrcpy(args, "qezQra"));
     ::tetrahedralize(args, &in, &out);
   }
 
@@ -433,16 +433,16 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
       for (i = 0; i < numCells * numCorners; ++i)cells[i] = (PetscInt) out.tetrahedronlist[i];
     }
 
-    CHKERRQ(DMPlexInvertCells_Tetgen(numCells, numCorners, cells));
-    CHKERRQ(DMPlexCreateFromCellListPetsc(comm, dim, numCells, numVertices, numCorners, interpolate, cells, dim, meshCoords, dmRefined));
+    PetscCall(DMPlexInvertCells_Tetgen(numCells, numCorners, cells));
+    PetscCall(DMPlexCreateFromCellListPetsc(comm, dim, numCells, numVertices, numCorners, interpolate, cells, dim, meshCoords, dmRefined));
     if (sizeof (PetscReal) != sizeof (out.pointlist[0])) {delete [] meshCoords;}
     if (sizeof (PetscInt) != sizeof (out.tetrahedronlist[0])) {delete [] cells;}
 
     /* Set labels */
-    CHKERRQ(DMUniversalLabelCreateLabels(universal, PETSC_TRUE, *dmRefined));
+    PetscCall(DMUniversalLabelCreateLabels(universal, PETSC_TRUE, *dmRefined));
     for (v = 0; v < numVertices; ++v) {
       if (out.pointmarkerlist[v]) {
-        CHKERRQ(DMUniversalLabelSetLabelValue(universal, *dmRefined, PETSC_TRUE, v+numCells, out.pointmarkerlist[v]));
+        PetscCall(DMUniversalLabelSetLabelValue(universal, *dmRefined, PETSC_TRUE, v+numCells, out.pointmarkerlist[v]));
       }
     }
     if (interpolate) {
@@ -454,10 +454,10 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
           const PetscInt *edges;
           PetscInt        numEdges;
 
-          CHKERRQ(DMPlexGetJoin(*dmRefined, 2, vertices, &numEdges, &edges));
+          PetscCall(DMPlexGetJoin(*dmRefined, 2, vertices, &numEdges, &edges));
           PetscCheckFalse(numEdges != 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Two vertices must cover only one edge, not %D", numEdges);
-          CHKERRQ(DMUniversalLabelSetLabelValue(universal, *dmRefined, PETSC_TRUE, edges[0], out.edgemarkerlist[e]));
-          CHKERRQ(DMPlexRestoreJoin(*dmRefined, 2, vertices, &numEdges, &edges));
+          PetscCall(DMUniversalLabelSetLabelValue(universal, *dmRefined, PETSC_TRUE, edges[0], out.edgemarkerlist[e]));
+          PetscCall(DMPlexRestoreJoin(*dmRefined, 2, vertices, &numEdges, &edges));
         }
       }
       for (f = 0; f < out.numberoftrifaces; ++f) {
@@ -466,15 +466,15 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
           const PetscInt *faces;
           PetscInt        numFaces;
 
-          CHKERRQ(DMPlexGetFullJoin(*dmRefined, 3, vertices, &numFaces, &faces));
+          PetscCall(DMPlexGetFullJoin(*dmRefined, 3, vertices, &numFaces, &faces));
           PetscCheckFalse(numFaces != 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Three vertices must cover only one face, not %D", numFaces);
-          CHKERRQ(DMUniversalLabelSetLabelValue(universal, *dmRefined, PETSC_TRUE, faces[0], out.trifacemarkerlist[f]));
-          CHKERRQ(DMPlexRestoreJoin(*dmRefined, 3, vertices, &numFaces, &faces));
+          PetscCall(DMUniversalLabelSetLabelValue(universal, *dmRefined, PETSC_TRUE, faces[0], out.trifacemarkerlist[f]));
+          PetscCall(DMPlexRestoreJoin(*dmRefined, 3, vertices, &numFaces, &faces));
         }
       }
     }
 
-    CHKERRQ(PetscObjectQuery((PetscObject) dm, "EGADS Model", (PetscObject *) &modelObj));
+    PetscCall(PetscObjectQuery((PetscObject) dm, "EGADS Model", (PetscObject *) &modelObj));
     if (modelObj) {
 #ifdef PETSC_HAVE_EGADS
       DMLabel        bodyLabel;
@@ -485,29 +485,29 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
       int            Nb, oclass, mtype, *senses;
 
       /* Get Attached EGADS Model from Original DMPlex */
-      CHKERRQ(PetscObjectQuery((PetscObject) dm, "EGADS Model", (PetscObject *) &modelObj));
+      PetscCall(PetscObjectQuery((PetscObject) dm, "EGADS Model", (PetscObject *) &modelObj));
       if (modelObj) {
-        CHKERRQ(PetscContainerGetPointer(modelObj, (void **) &model));
-        CHKERRQ(EG_getTopology(model, &geom, &oclass, &mtype, NULL, &Nb, &bodies, &senses));
+        PetscCall(PetscContainerGetPointer(modelObj, (void **) &model));
+        PetscCall(EG_getTopology(model, &geom, &oclass, &mtype, NULL, &Nb, &bodies, &senses));
         /* Transfer EGADS Model to Volumetric Mesh */
-        CHKERRQ(PetscObjectCompose((PetscObject) *dmRefined, "EGADS Model", (PetscObject) modelObj));
+        PetscCall(PetscObjectCompose((PetscObject) *dmRefined, "EGADS Model", (PetscObject) modelObj));
       } else {
-        CHKERRQ(PetscObjectQuery((PetscObject) dm, "EGADSLite Model", (PetscObject *) &modelObj));
+        PetscCall(PetscObjectQuery((PetscObject) dm, "EGADSLite Model", (PetscObject *) &modelObj));
         if (modelObj) {
-          CHKERRQ(PetscContainerGetPointer(modelObj, (void **) &model));
-          CHKERRQ(EGlite_getTopology(model, &geom, &oclass, &mtype, NULL, &Nb, &bodies, &senses));
+          PetscCall(PetscContainerGetPointer(modelObj, (void **) &model));
+          PetscCall(EGlite_getTopology(model, &geom, &oclass, &mtype, NULL, &Nb, &bodies, &senses));
           /* Transfer EGADS Model to Volumetric Mesh */
-          CHKERRQ(PetscObjectCompose((PetscObject) *dmRefined, "EGADSLite Model", (PetscObject) modelObj));
+          PetscCall(PetscObjectCompose((PetscObject) *dmRefined, "EGADSLite Model", (PetscObject) modelObj));
           islite = PETSC_TRUE;
         }
       }
       if (!modelObj) goto skip_egads;
 
       /* Set Cell Labels */
-      CHKERRQ(DMGetLabel(*dmRefined, "EGADS Body ID", &bodyLabel));
-      CHKERRQ(DMPlexGetHeightStratum(*dmRefined, 0, &cStart, &cEnd));
-      CHKERRQ(DMPlexGetHeightStratum(*dmRefined, 1, &fStart, &fEnd));
-      CHKERRQ(DMPlexGetDepthStratum(*dmRefined, 1, &eStart, &eEnd));
+      PetscCall(DMGetLabel(*dmRefined, "EGADS Body ID", &bodyLabel));
+      PetscCall(DMPlexGetHeightStratum(*dmRefined, 0, &cStart, &cEnd));
+      PetscCall(DMPlexGetHeightStratum(*dmRefined, 1, &fStart, &fEnd));
+      PetscCall(DMPlexGetDepthStratum(*dmRefined, 1, &eStart, &eEnd));
 
       for (c = cStart; c < cEnd; ++c) {
         PetscReal centroid[3] = {0., 0., 0.};
@@ -520,13 +520,13 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
           PetscScalar   *coords = NULL;
           PetscInt       coordSize, s, d;
 
-          CHKERRQ(DMGetCoordinatesLocal(*dmRefined, &coordinates));
-          CHKERRQ(DMGetCoordinateSection(*dmRefined, &coordSection));
-          CHKERRQ(DMPlexVecGetClosure(*dmRefined, coordSection, coordinates, c, &coordSize, &coords));
+          PetscCall(DMGetCoordinatesLocal(*dmRefined, &coordinates));
+          PetscCall(DMGetCoordinateSection(*dmRefined, &coordSection));
+          PetscCall(DMPlexVecGetClosure(*dmRefined, coordSection, coordinates, c, &coordSize, &coords));
           for (s = 0; s < coordSize; ++s) for (d = 0; d < dim; ++d) centroid[d] += coords[s*dim+d];
-          CHKERRQ(DMPlexVecRestoreClosure(*dmRefined, coordSection, coordinates, c, &coordSize, &coords));
+          PetscCall(DMPlexVecRestoreClosure(*dmRefined, coordSection, coordinates, c, &coordSize, &coords));
         } else {
-          CHKERRQ(DMPlexComputeCellGeometryFVM(*dmRefined, c, NULL, centroid, NULL));
+          PetscCall(DMPlexComputeCellGeometryFVM(*dmRefined, c, NULL, centroid, NULL));
         }
         for (b = 0; b < Nb; ++b) {
           if (islite) {if (EGlite_inTopology(bodies[b], centroid) == EGADS_SUCCESS) break;}
@@ -536,27 +536,27 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
           PetscInt   cval = b, eVal, fVal;
           PetscInt *closure = NULL, Ncl, cl;
 
-          CHKERRQ(DMLabelSetValue(bodyLabel, c, cval));
-          CHKERRQ(DMPlexGetTransitiveClosure(*dmRefined, c, PETSC_TRUE, &Ncl, &closure));
+          PetscCall(DMLabelSetValue(bodyLabel, c, cval));
+          PetscCall(DMPlexGetTransitiveClosure(*dmRefined, c, PETSC_TRUE, &Ncl, &closure));
           for (cl = 0; cl < Ncl; cl += 2) {
             const PetscInt p = closure[cl];
 
             if (p >= eStart && p < eEnd) {
-              CHKERRQ(DMLabelGetValue(bodyLabel, p, &eVal));
-              if (eVal < 0) CHKERRQ(DMLabelSetValue(bodyLabel, p, cval));
+              PetscCall(DMLabelGetValue(bodyLabel, p, &eVal));
+              if (eVal < 0) PetscCall(DMLabelSetValue(bodyLabel, p, cval));
             }
             if (p >= fStart && p < fEnd) {
-              CHKERRQ(DMLabelGetValue(bodyLabel, p, &fVal));
-              if (fVal < 0) CHKERRQ(DMLabelSetValue(bodyLabel, p, cval));
+              PetscCall(DMLabelGetValue(bodyLabel, p, &fVal));
+              if (fVal < 0) PetscCall(DMLabelSetValue(bodyLabel, p, cval));
             }
           }
-          CHKERRQ(DMPlexRestoreTransitiveClosure(*dmRefined, c, PETSC_TRUE, &Ncl, &closure));
+          PetscCall(DMPlexRestoreTransitiveClosure(*dmRefined, c, PETSC_TRUE, &Ncl, &closure));
         }
       }
 skip_egads: ;
 #endif
     }
-    CHKERRQ(DMPlexSetRefinementUniform(*dmRefined, PETSC_FALSE));
+    PetscCall(DMPlexSetRefinementUniform(*dmRefined, PETSC_FALSE));
   }
   PetscFunctionReturn(0);
 }

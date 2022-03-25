@@ -52,30 +52,30 @@ PetscErrorCode DMPlexExtrude(DM dm, PetscInt layers, PetscReal thickness, PetscB
   PetscOptions    options;
 
   PetscFunctionBegin;
-  CHKERRQ(DMPlexTransformCreate(PetscObjectComm((PetscObject) dm), &tr));
-  CHKERRQ(DMPlexTransformSetDM(tr, dm));
-  CHKERRQ(DMPlexTransformSetType(tr, DMPLEXEXTRUDE));
-  CHKERRQ(PetscObjectGetOptionsPrefix((PetscObject) dm, &prefix));
-  CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) tr,  prefix));
-  CHKERRQ(PetscObjectGetOptions((PetscObject) dm, &options));
-  CHKERRQ(PetscObjectSetOptions((PetscObject) tr, options));
-  CHKERRQ(DMPlexTransformExtrudeSetLayers(tr, layers));
-  if (thickness > 0.) CHKERRQ(DMPlexTransformExtrudeSetThickness(tr, thickness));
-  CHKERRQ(DMPlexTransformExtrudeSetTensor(tr, tensor));
-  CHKERRQ(DMPlexTransformExtrudeSetSymmetric(tr, symmetric));
-  if (normal) CHKERRQ(DMPlexTransformExtrudeSetNormal(tr, normal));
-  if (thicknesses) CHKERRQ(DMPlexTransformExtrudeSetThicknesses(tr, layers, thicknesses));
-  CHKERRQ(DMPlexTransformSetFromOptions(tr));
-  CHKERRQ(PetscObjectSetOptions((PetscObject) tr, NULL));
-  CHKERRQ(DMPlexTransformSetUp(tr));
-  CHKERRQ(PetscObjectViewFromOptions((PetscObject) tr, NULL, "-dm_plex_transform_view"));
-  CHKERRQ(DMPlexTransformApply(tr, dm, edm));
-  CHKERRQ(DMCopyDisc(dm, *edm));
-  CHKERRQ(DMGetCoordinateDM(dm, &cdm));
-  CHKERRQ(DMGetCoordinateDM(*edm, &ecdm));
-  CHKERRQ(DMCopyDisc(cdm, ecdm));
-  CHKERRQ(DMPlexTransformCreateDiscLabels(tr, *edm));
-  CHKERRQ(DMPlexTransformDestroy(&tr));
+  PetscCall(DMPlexTransformCreate(PetscObjectComm((PetscObject) dm), &tr));
+  PetscCall(DMPlexTransformSetDM(tr, dm));
+  PetscCall(DMPlexTransformSetType(tr, DMPLEXEXTRUDE));
+  PetscCall(PetscObjectGetOptionsPrefix((PetscObject) dm, &prefix));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject) tr,  prefix));
+  PetscCall(PetscObjectGetOptions((PetscObject) dm, &options));
+  PetscCall(PetscObjectSetOptions((PetscObject) tr, options));
+  PetscCall(DMPlexTransformExtrudeSetLayers(tr, layers));
+  if (thickness > 0.) PetscCall(DMPlexTransformExtrudeSetThickness(tr, thickness));
+  PetscCall(DMPlexTransformExtrudeSetTensor(tr, tensor));
+  PetscCall(DMPlexTransformExtrudeSetSymmetric(tr, symmetric));
+  if (normal) PetscCall(DMPlexTransformExtrudeSetNormal(tr, normal));
+  if (thicknesses) PetscCall(DMPlexTransformExtrudeSetThicknesses(tr, layers, thicknesses));
+  PetscCall(DMPlexTransformSetFromOptions(tr));
+  PetscCall(PetscObjectSetOptions((PetscObject) tr, NULL));
+  PetscCall(DMPlexTransformSetUp(tr));
+  PetscCall(PetscObjectViewFromOptions((PetscObject) tr, NULL, "-dm_plex_transform_view"));
+  PetscCall(DMPlexTransformApply(tr, dm, edm));
+  PetscCall(DMCopyDisc(dm, *edm));
+  PetscCall(DMGetCoordinateDM(dm, &cdm));
+  PetscCall(DMGetCoordinateDM(*edm, &ecdm));
+  PetscCall(DMCopyDisc(cdm, ecdm));
+  PetscCall(DMPlexTransformCreateDiscLabels(tr, *edm));
+  PetscCall(DMPlexTransformDestroy(&tr));
   if (*edm) {
     ((DM_Plex *) (*edm)->data)->printFEM = ((DM_Plex *) dm->data)->printFEM;
     ((DM_Plex *) (*edm)->data)->printL2  = ((DM_Plex *) dm->data)->printL2;
@@ -86,7 +86,7 @@ PetscErrorCode DMPlexExtrude(DM dm, PetscInt layers, PetscReal thickness, PetscB
 PetscErrorCode DMExtrude_Plex(DM dm, PetscInt layers, DM *edm)
 {
   PetscFunctionBegin;
-  CHKERRQ(DMPlexExtrude(dm, layers, PETSC_DETERMINE, PETSC_TRUE, PETSC_FALSE, NULL, NULL, edm));
-  CHKERRQ(DMViewFromOptions(*edm, NULL, "-check_extrude"));
+  PetscCall(DMPlexExtrude(dm, layers, PETSC_DETERMINE, PETSC_TRUE, PETSC_FALSE, NULL, NULL, edm));
+  PetscCall(DMViewFromOptions(*edm, NULL, "-check_extrude"));
   PetscFunctionReturn(0);
 }

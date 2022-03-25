@@ -15,32 +15,32 @@ int main(int argc,char **argv)
   PetscInt       parentId[] = {-1,         2,         0,         -1,         2,         1,         0};
   PetscInt       Nlevels,*Level,*Levelcnt,*Idbylevel,*Column;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
-  CHKERRQ(PetscProcessTree(n,mask,parentId,&Nlevels,&Level,&Levelcnt,&Idbylevel,&Column));
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscProcessTree(n,mask,parentId,&Nlevels,&Level,&Levelcnt,&Idbylevel,&Column));
   for (i=0; i<n; i++) {
     if (!mask[i]) {
-      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD," %" PetscInt_FMT " ",Level[i]));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD," %" PetscInt_FMT " ",Level[i]));
     }
   }
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\nNumber of levels %" PetscInt_FMT "\n",Nlevels));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\nNumber of levels %" PetscInt_FMT "\n",Nlevels));
   for (i=0; i<Nlevels; i++) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\nLevel %" PetscInt_FMT " ",i));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\nLevel %" PetscInt_FMT " ",i));
     for (j=0; j<Levelcnt[i]; j++) {
-      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT " ",Idbylevel[cnt++]));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT " ",Idbylevel[cnt++]));
     }
   }
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\nColumn of each node"));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\nColumn of each node"));
   for (i=0; i<n; i++) {
     if (!mask[i]) {
-      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD," %" PetscInt_FMT " ",Column[i]));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD," %" PetscInt_FMT " ",Column[i]));
     }
   }
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\n"));
-  CHKERRQ(PetscFree(Level));
-  CHKERRQ(PetscFree(Levelcnt));
-  CHKERRQ(PetscFree(Idbylevel));
-  CHKERRQ(PetscFree(Column));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n"));
+  PetscCall(PetscFree(Level));
+  PetscCall(PetscFree(Levelcnt));
+  PetscCall(PetscFree(Idbylevel));
+  PetscCall(PetscFree(Column));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

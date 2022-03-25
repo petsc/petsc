@@ -8,8 +8,8 @@
 static PetscErrorCode PetscBagRegister_Private(PetscBag bag,PetscBagItem item,const char *name,const char *help)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscStrncpy(item->name,name,PETSC_BAG_NAME_LENGTH-1));
-  CHKERRQ(PetscStrncpy(item->help,help,PETSC_BAG_HELP_LENGTH-1));
+  PetscCall(PetscStrncpy(item->name,name,PETSC_BAG_NAME_LENGTH-1));
+  PetscCall(PetscStrncpy(item->help,help,PETSC_BAG_HELP_LENGTH-1));
   if (bag->bagitems) {
     PetscBagItem nitem = bag->bagitems;
 
@@ -54,25 +54,25 @@ PetscErrorCode PetscBagRegisterEnum(PetscBag bag,void *addr,const char *const *l
   PetscValidCharPointer(help,6);
   nname[0] = '-';
   nname[1] = 0;
-  CHKERRQ(PetscStrlcat(nname,name,PETSC_BAG_NAME_LENGTH));
-  CHKERRQ(PetscOptionsHasHelp(NULL,&printhelp));
+  PetscCall(PetscStrlcat(nname,name,PETSC_BAG_NAME_LENGTH));
+  PetscCall(PetscOptionsHasHelp(NULL,&printhelp));
   if (printhelp) {
     while (list[i++]) ;
-    CHKERRQ((*PetscHelpPrintf)(bag->bagcomm,"  -%s%s <%s>: (%s) %s (choose one of) ",bag->bagprefix ? bag->bagprefix : "",name,list[mdefault],list[i-3],help));
-    for (i=0; list[i+2]; i++) CHKERRQ((*PetscHelpPrintf)(bag->bagcomm," %s",list[i]));
-    CHKERRQ((*PetscHelpPrintf)(bag->bagcomm,"\n"));
+    PetscCall((*PetscHelpPrintf)(bag->bagcomm,"  -%s%s <%s>: (%s) %s (choose one of) ",bag->bagprefix ? bag->bagprefix : "",name,list[mdefault],list[i-3],help));
+    for (i=0; list[i+2]; i++) PetscCall((*PetscHelpPrintf)(bag->bagcomm," %s",list[i]));
+    PetscCall((*PetscHelpPrintf)(bag->bagcomm,"\n"));
   }
-  CHKERRQ(PetscOptionsGetEnum(NULL,bag->bagprefix,nname,list,&mdefault,NULL));
+  PetscCall(PetscOptionsGetEnum(NULL,bag->bagprefix,nname,list,&mdefault,NULL));
 
-  CHKERRQ(PetscNew(&item));
+  PetscCall(PetscNew(&item));
   item->dtype  = PETSC_ENUM;
   item->offset = ((char*)addr) - ((char*)bag);
   PetscCheck(item->offset <= bag->bagsize,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
   item->next  = NULL;
   item->msize = 1;
-  CHKERRQ(PetscStrArrayallocpy(list,(char***)&item->list));
+  PetscCall(PetscStrArrayallocpy(list,(char***)&item->list));
   *(PetscEnum*)addr = mdefault;
-  CHKERRQ(PetscBagRegister_Private(bag,item,name,help));
+  PetscCall(PetscBagRegister_Private(bag,item,name,help));
   PetscFunctionReturn(0);
 }
 
@@ -109,24 +109,24 @@ PetscErrorCode PetscBagRegisterIntArray(PetscBag bag,void *addr,PetscInt msize, 
   PetscValidCharPointer(help,5);
   nname[0] = '-';
   nname[1] = 0;
-  CHKERRQ(PetscStrlcat(nname,name,PETSC_BAG_NAME_LENGTH));
-  CHKERRQ(PetscOptionsHasHelp(NULL,&printhelp));
+  PetscCall(PetscStrlcat(nname,name,PETSC_BAG_NAME_LENGTH));
+  PetscCall(PetscOptionsHasHelp(NULL,&printhelp));
   if (printhelp) {
-    CHKERRQ((*PetscHelpPrintf)(bag->bagcomm,"  -%s%s <",bag->bagprefix ? bag->bagprefix : "",name));
+    PetscCall((*PetscHelpPrintf)(bag->bagcomm,"  -%s%s <",bag->bagprefix ? bag->bagprefix : "",name));
     for (i=0; i<msize; i++) {
-      CHKERRQ((*PetscHelpPrintf)(bag->bagcomm,"%" PetscInt_FMT " ",*((PetscInt*)addr)+i));
+      PetscCall((*PetscHelpPrintf)(bag->bagcomm,"%" PetscInt_FMT " ",*((PetscInt*)addr)+i));
     }
-    CHKERRQ((*PetscHelpPrintf)(bag->bagcomm,">: %s \n",help));
+    PetscCall((*PetscHelpPrintf)(bag->bagcomm,">: %s \n",help));
   }
-  CHKERRQ(PetscOptionsGetIntArray(NULL,bag->bagprefix,nname,(PetscInt*)addr,&tmp,NULL));
+  PetscCall(PetscOptionsGetIntArray(NULL,bag->bagprefix,nname,(PetscInt*)addr,&tmp,NULL));
 
-  CHKERRQ(PetscNew(&item));
+  PetscCall(PetscNew(&item));
   item->dtype  = PETSC_INT;
   item->offset = ((char*)addr) - ((char*)bag);
   PetscCheck(item->offset <= bag->bagsize,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
   item->next  = NULL;
   item->msize = msize;
-  CHKERRQ(PetscBagRegister_Private(bag,item,name,help));
+  PetscCall(PetscBagRegister_Private(bag,item,name,help));
   PetscFunctionReturn(0);
 }
 
@@ -163,24 +163,24 @@ PetscErrorCode PetscBagRegisterRealArray(PetscBag bag,void *addr,PetscInt msize,
   PetscValidCharPointer(help,5);
   nname[0] = '-';
   nname[1] = 0;
-  CHKERRQ(PetscStrlcat(nname,name,PETSC_BAG_NAME_LENGTH));
-  CHKERRQ(PetscOptionsHasHelp(NULL,&printhelp));
+  PetscCall(PetscStrlcat(nname,name,PETSC_BAG_NAME_LENGTH));
+  PetscCall(PetscOptionsHasHelp(NULL,&printhelp));
   if (printhelp) {
-    CHKERRQ((*PetscHelpPrintf)(bag->bagcomm,"  -%s%s <",bag->bagprefix ? bag->bagprefix : "",name));
+    PetscCall((*PetscHelpPrintf)(bag->bagcomm,"  -%s%s <",bag->bagprefix ? bag->bagprefix : "",name));
     for (i=0; i<msize; i++) {
-      CHKERRQ((*PetscHelpPrintf)(bag->bagcomm,"%g ",(double)*((PetscReal*)addr)+i));
+      PetscCall((*PetscHelpPrintf)(bag->bagcomm,"%g ",(double)*((PetscReal*)addr)+i));
     }
-    CHKERRQ((*PetscHelpPrintf)(bag->bagcomm,">: %s \n",help));
+    PetscCall((*PetscHelpPrintf)(bag->bagcomm,">: %s \n",help));
   }
-  CHKERRQ(PetscOptionsGetRealArray(NULL,bag->bagprefix,nname,(PetscReal*)addr,&tmp,NULL));
+  PetscCall(PetscOptionsGetRealArray(NULL,bag->bagprefix,nname,(PetscReal*)addr,&tmp,NULL));
 
-  CHKERRQ(PetscNew(&item));
+  PetscCall(PetscNew(&item));
   item->dtype  = PETSC_REAL;
   item->offset = ((char*)addr) - ((char*)bag);
   PetscCheck(item->offset <= bag->bagsize,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
   item->next  = NULL;
   item->msize = msize;
-  CHKERRQ(PetscBagRegister_Private(bag,item,name,help));
+  PetscCall(PetscBagRegister_Private(bag,item,name,help));
   PetscFunctionReturn(0);
 }
 
@@ -216,21 +216,21 @@ PetscErrorCode PetscBagRegisterInt(PetscBag bag,void *addr,PetscInt mdefault,con
   PetscValidCharPointer(help,5);
   nname[0] = '-';
   nname[1] = 0;
-  CHKERRQ(PetscStrlcat(nname,name,PETSC_BAG_NAME_LENGTH));
-  CHKERRQ(PetscOptionsHasHelp(NULL,&printhelp));
+  PetscCall(PetscStrlcat(nname,name,PETSC_BAG_NAME_LENGTH));
+  PetscCall(PetscOptionsHasHelp(NULL,&printhelp));
   if (printhelp) {
-    CHKERRQ((*PetscHelpPrintf)(bag->bagcomm,"  -%s%s <%" PetscInt_FMT ">: %s \n",bag->bagprefix ? bag->bagprefix : "",name,mdefault,help));
+    PetscCall((*PetscHelpPrintf)(bag->bagcomm,"  -%s%s <%" PetscInt_FMT ">: %s \n",bag->bagprefix ? bag->bagprefix : "",name,mdefault,help));
   }
-  CHKERRQ(PetscOptionsGetInt(NULL,bag->bagprefix,nname,&mdefault,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,bag->bagprefix,nname,&mdefault,NULL));
 
-  CHKERRQ(PetscNew(&item));
+  PetscCall(PetscNew(&item));
   item->dtype  = PETSC_INT;
   item->offset = ((char*)addr) - ((char*)bag);
   PetscCheck(item->offset <= bag->bagsize,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
   item->next       = NULL;
   item->msize      = 1;
   *(PetscInt*)addr = mdefault;
-  CHKERRQ(PetscBagRegister_Private(bag,item,name,help));
+  PetscCall(PetscBagRegister_Private(bag,item,name,help));
   PetscFunctionReturn(0);
 }
 
@@ -264,22 +264,22 @@ PetscErrorCode PetscBagRegisterInt64(PetscBag bag,void *addr,PetscInt64 mdefault
   PetscFunctionBegin;
   nname[0] = '-';
   nname[1] = 0;
-  CHKERRQ(PetscStrlcat(nname,name,PETSC_BAG_NAME_LENGTH));
-  CHKERRQ(PetscOptionsHasHelp(NULL,&printhelp));
+  PetscCall(PetscStrlcat(nname,name,PETSC_BAG_NAME_LENGTH));
+  PetscCall(PetscOptionsHasHelp(NULL,&printhelp));
   if (printhelp) {
-    CHKERRQ((*PetscHelpPrintf)(bag->bagcomm,"  -%s%s <%" PetscInt_FMT ">: %s \n",bag->bagprefix ? bag->bagprefix : "",name,odefault,help));
+    PetscCall((*PetscHelpPrintf)(bag->bagcomm,"  -%s%s <%" PetscInt_FMT ">: %s \n",bag->bagprefix ? bag->bagprefix : "",name,odefault,help));
   }
-  CHKERRQ(PetscOptionsGetInt(NULL,bag->bagprefix,nname,&odefault,&flg));
+  PetscCall(PetscOptionsGetInt(NULL,bag->bagprefix,nname,&odefault,&flg));
   if (flg) mdefault = (PetscInt64)odefault;
 
-  CHKERRQ(PetscNew(&item));
+  PetscCall(PetscNew(&item));
   item->dtype  = PETSC_INT;
   item->offset = ((char*)addr) - ((char*)bag);
   PetscCheck(item->offset <= bag->bagsize,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
   item->next       = NULL;
   item->msize      = 1;
   *(PetscInt64*)addr = mdefault;
-  CHKERRQ(PetscBagRegister_Private(bag,item,name,help));
+  PetscCall(PetscBagRegister_Private(bag,item,name,help));
   PetscFunctionReturn(0);
 }
 
@@ -316,24 +316,24 @@ PetscErrorCode PetscBagRegisterBoolArray(PetscBag bag,void *addr,PetscInt msize,
   PetscValidCharPointer(help,5);
   nname[0] = '-';
   nname[1] = 0;
-  CHKERRQ(PetscStrlcat(nname,name,PETSC_BAG_NAME_LENGTH));
-  CHKERRQ(PetscOptionsHasHelp(NULL,&printhelp));
+  PetscCall(PetscStrlcat(nname,name,PETSC_BAG_NAME_LENGTH));
+  PetscCall(PetscOptionsHasHelp(NULL,&printhelp));
   if (printhelp) {
-    CHKERRQ((*PetscHelpPrintf)(bag->bagcomm,"  -%s%s <",bag->bagprefix?bag->bagprefix:"",name));
+    PetscCall((*PetscHelpPrintf)(bag->bagcomm,"  -%s%s <",bag->bagprefix?bag->bagprefix:"",name));
     for (i=0; i<msize; i++) {
-      CHKERRQ((*PetscHelpPrintf)(bag->bagcomm,"%" PetscInt_FMT " ",*((PetscInt*)addr)+i));
+      PetscCall((*PetscHelpPrintf)(bag->bagcomm,"%" PetscInt_FMT " ",*((PetscInt*)addr)+i));
     }
-    CHKERRQ((*PetscHelpPrintf)(bag->bagcomm,">: %s \n",help));
+    PetscCall((*PetscHelpPrintf)(bag->bagcomm,">: %s \n",help));
   }
-  CHKERRQ(PetscOptionsGetBoolArray(NULL,bag->bagprefix,nname,(PetscBool*)addr,&tmp,NULL));
+  PetscCall(PetscOptionsGetBoolArray(NULL,bag->bagprefix,nname,(PetscBool*)addr,&tmp,NULL));
 
-  CHKERRQ(PetscNew(&item));
+  PetscCall(PetscNew(&item));
   item->dtype  = PETSC_BOOL;
   item->offset = ((char*)addr) - ((char*)bag);
   PetscCheck(item->offset <= bag->bagsize,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
   item->next   = NULL;
   item->msize  = msize;
-  CHKERRQ(PetscBagRegister_Private(bag,item,name,help));
+  PetscCall(PetscBagRegister_Private(bag,item,name,help));
   PetscFunctionReturn(0);
 }
 
@@ -373,23 +373,23 @@ PetscErrorCode PetscBagRegisterString(PetscBag bag,void *addr,PetscInt msize,con
   PetscValidCharPointer(help,6);
   nname[0] = '-';
   nname[1] = 0;
-  CHKERRQ(PetscStrlcat(nname,name,PETSC_BAG_NAME_LENGTH));
-  CHKERRQ(PetscOptionsHasHelp(NULL,&printhelp));
+  PetscCall(PetscStrlcat(nname,name,PETSC_BAG_NAME_LENGTH));
+  PetscCall(PetscOptionsHasHelp(NULL,&printhelp));
   if (printhelp) {
-    CHKERRQ((*PetscHelpPrintf)(bag->bagcomm,"  -%s%s <%s>: %s \n",bag->bagprefix ? bag->bagprefix : "",name,mdefault,help));
+    PetscCall((*PetscHelpPrintf)(bag->bagcomm,"  -%s%s <%s>: %s \n",bag->bagprefix ? bag->bagprefix : "",name,mdefault,help));
   }
 
-  CHKERRQ(PetscNew(&item));
+  PetscCall(PetscNew(&item));
   item->dtype  = PETSC_CHAR;
   item->offset = ((char*)addr) - ((char*)bag);
   PetscCheck(item->offset <= bag->bagsize,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
   item->next  = NULL;
   item->msize = msize;
   if (mdefault != (char*)addr) {
-    CHKERRQ(PetscStrncpy((char*)addr,mdefault,msize-1));
+    PetscCall(PetscStrncpy((char*)addr,mdefault,msize-1));
   }
-  CHKERRQ(PetscOptionsGetString(NULL,bag->bagprefix,nname,(char*)addr,msize,NULL));
-  CHKERRQ(PetscBagRegister_Private(bag,item,name,help));
+  PetscCall(PetscOptionsGetString(NULL,bag->bagprefix,nname,(char*)addr,msize,NULL));
+  PetscCall(PetscBagRegister_Private(bag,item,name,help));
   PetscFunctionReturn(0);
 }
 
@@ -425,21 +425,21 @@ PetscErrorCode PetscBagRegisterReal(PetscBag bag,void *addr,PetscReal mdefault, 
   PetscValidCharPointer(help,5);
   nname[0] = '-';
   nname[1] = 0;
-  CHKERRQ(PetscStrlcat(nname,name,PETSC_BAG_NAME_LENGTH));
-  CHKERRQ(PetscOptionsHasHelp(NULL,&printhelp));
+  PetscCall(PetscStrlcat(nname,name,PETSC_BAG_NAME_LENGTH));
+  PetscCall(PetscOptionsHasHelp(NULL,&printhelp));
   if (printhelp) {
-    CHKERRQ((*PetscHelpPrintf)(bag->bagcomm,"  -%s%s <%g>: %s \n",bag->bagprefix ? bag->bagprefix : "",name,(double)mdefault,help));
+    PetscCall((*PetscHelpPrintf)(bag->bagcomm,"  -%s%s <%g>: %s \n",bag->bagprefix ? bag->bagprefix : "",name,(double)mdefault,help));
   }
-  CHKERRQ(PetscOptionsGetReal(NULL,bag->bagprefix,nname,&mdefault,NULL));
+  PetscCall(PetscOptionsGetReal(NULL,bag->bagprefix,nname,&mdefault,NULL));
 
-  CHKERRQ(PetscNew(&item));
+  PetscCall(PetscNew(&item));
   item->dtype  = PETSC_REAL;
   item->offset = ((char*)addr) - ((char*)bag);
   PetscCheck(item->offset <= bag->bagsize,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
   item->next        = NULL;
   item->msize       = 1;
   *(PetscReal*)addr = mdefault;
-  CHKERRQ(PetscBagRegister_Private(bag,item,name,help));
+  PetscCall(PetscBagRegister_Private(bag,item,name,help));
   PetscFunctionReturn(0);
 }
 
@@ -475,21 +475,21 @@ PetscErrorCode PetscBagRegisterScalar(PetscBag bag,void *addr,PetscScalar mdefau
   PetscValidCharPointer(help,5);
   nname[0] = '-';
   nname[1] = 0;
-  CHKERRQ(PetscStrlcat(nname,name,PETSC_BAG_NAME_LENGTH));
-  CHKERRQ(PetscOptionsHasHelp(NULL,&printhelp));
+  PetscCall(PetscStrlcat(nname,name,PETSC_BAG_NAME_LENGTH));
+  PetscCall(PetscOptionsHasHelp(NULL,&printhelp));
   if (printhelp) {
-    CHKERRQ((*PetscHelpPrintf)(bag->bagcomm,"  -%s%s <%g + %gi>: %s \n",bag->bagprefix ? bag->bagprefix : "",name,(double)PetscRealPart(mdefault),(double)PetscImaginaryPart(mdefault),help));
+    PetscCall((*PetscHelpPrintf)(bag->bagcomm,"  -%s%s <%g + %gi>: %s \n",bag->bagprefix ? bag->bagprefix : "",name,(double)PetscRealPart(mdefault),(double)PetscImaginaryPart(mdefault),help));
   }
-  CHKERRQ(PetscOptionsGetScalar(NULL,bag->bagprefix,nname,&mdefault,NULL));
+  PetscCall(PetscOptionsGetScalar(NULL,bag->bagprefix,nname,&mdefault,NULL));
 
-  CHKERRQ(PetscNew(&item));
+  PetscCall(PetscNew(&item));
   item->dtype  = PETSC_SCALAR;
   item->offset = ((char*)addr) - ((char*)bag);
   PetscCheck(item->offset <= bag->bagsize,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
   item->next          = NULL;
   item->msize         = 1;
   *(PetscScalar*)addr = mdefault;
-  CHKERRQ(PetscBagRegister_Private(bag,item,name,help));
+  PetscCall(PetscBagRegister_Private(bag,item,name,help));
   PetscFunctionReturn(0);
 }
 
@@ -527,21 +527,21 @@ PetscErrorCode PetscBagRegisterBool(PetscBag bag,void *addr,PetscBool mdefault,c
   PetscCheck(mdefault == PETSC_FALSE || mdefault == PETSC_TRUE,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Boolean %s %s must be boolean; integer value %d",name,help,(int)mdefault);
   nname[0] = '-';
   nname[1] = 0;
-  CHKERRQ(PetscStrlcat(nname,name,PETSC_BAG_NAME_LENGTH));
-  CHKERRQ(PetscOptionsHasHelp(NULL,&printhelp));
+  PetscCall(PetscStrlcat(nname,name,PETSC_BAG_NAME_LENGTH));
+  PetscCall(PetscOptionsHasHelp(NULL,&printhelp));
   if (printhelp) {
-    CHKERRQ((*PetscHelpPrintf)(bag->bagcomm,"  -%s%s <%s>: %s \n",bag->bagprefix ? bag->bagprefix : "",name,PetscBools[mdefault],help));
+    PetscCall((*PetscHelpPrintf)(bag->bagcomm,"  -%s%s <%s>: %s \n",bag->bagprefix ? bag->bagprefix : "",name,PetscBools[mdefault],help));
   }
-  CHKERRQ(PetscOptionsGetBool(NULL,bag->bagprefix,nname,&mdefault,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,bag->bagprefix,nname,&mdefault,NULL));
 
-  CHKERRQ(PetscNew(&item));
+  PetscCall(PetscNew(&item));
   item->dtype  = PETSC_BOOL;
   item->offset = ((char*)addr) - ((char*)bag);
   PetscCheck(item->offset <= bag->bagsize,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
   item->next        = NULL;
   item->msize       = 1;
   *(PetscBool*)addr = mdefault;
-  CHKERRQ(PetscBagRegister_Private(bag,item,name,help));
+  PetscCall(PetscBagRegister_Private(bag,item,name,help));
   PetscFunctionReturn(0);
 }
 
@@ -571,12 +571,12 @@ PetscErrorCode  PetscBagDestroy(PetscBag *bag)
   while (nitem) {
     PetscBagItem item = nitem->next;
 
-    if (nitem->list) CHKERRQ(PetscStrArrayDestroy(&nitem->list));
-    CHKERRQ(PetscFree(nitem));
+    if (nitem->list) PetscCall(PetscStrArrayDestroy(&nitem->list));
+    PetscCall(PetscFree(nitem));
     nitem = item;
   }
-  if ((*bag)->bagprefix) CHKERRQ(PetscFree((*bag)->bagprefix));
-  CHKERRQ(PetscFree(*bag));
+  if ((*bag)->bagprefix) PetscCall(PetscFree((*bag)->bagprefix));
+  PetscCall(PetscFree(*bag));
   PetscFunctionReturn(0);
 }
 
@@ -604,53 +604,53 @@ PetscErrorCode  PetscBagSetFromOptions(PetscBag bag)
 
   PetscFunctionBegin;
   PetscValidPointer(bag,1);
-  CHKERRQ(PetscStrncpy(helpname,bag->bagname,sizeof(helpname)));
-  CHKERRQ(PetscStrlcat(helpname," ",sizeof(helpname)));
-  CHKERRQ(PetscStrlcat(helpname,bag->baghelp,sizeof(helpname)));
-  ierr = PetscOptionsBegin(bag->bagcomm,bag->bagprefix,helpname,NULL);CHKERRQ(ierr);
+  PetscCall(PetscStrncpy(helpname,bag->bagname,sizeof(helpname)));
+  PetscCall(PetscStrlcat(helpname," ",sizeof(helpname)));
+  PetscCall(PetscStrlcat(helpname,bag->baghelp,sizeof(helpname)));
+  ierr = PetscOptionsBegin(bag->bagcomm,bag->bagprefix,helpname,NULL);PetscCall(ierr);
   while (nitem) {
     name[0] = '-';
     name[1] = 0;
-    CHKERRQ(PetscStrlcat(name,nitem->name,sizeof(name)));
+    PetscCall(PetscStrlcat(name,nitem->name,sizeof(name)));
     if (nitem->dtype == PETSC_CHAR) {   /* special handling for fortran required? [due to space padding vs null termination] */
       char *value = (char*)(((char*)bag) + nitem->offset);
-      CHKERRQ(PetscOptionsString(name,nitem->help,"",value,value,nitem->msize,NULL));
+      PetscCall(PetscOptionsString(name,nitem->help,"",value,value,nitem->msize,NULL));
     } else if (nitem->dtype == PETSC_REAL) {
       PetscReal *value = (PetscReal*)(((char*)bag) + nitem->offset);
       if (nitem->msize == 1) {
-        CHKERRQ(PetscOptionsReal(name,nitem->help,"",*value,value,NULL));
+        PetscCall(PetscOptionsReal(name,nitem->help,"",*value,value,NULL));
       } else {
         n    = nitem->msize;
-        CHKERRQ(PetscOptionsRealArray(name,nitem->help,"",value,&n,NULL));
+        PetscCall(PetscOptionsRealArray(name,nitem->help,"",value,&n,NULL));
       }
     } else if (nitem->dtype == PETSC_SCALAR) {
       PetscScalar *value = (PetscScalar*)(((char*)bag) + nitem->offset);
-      CHKERRQ(PetscOptionsScalar(name,nitem->help,"",*value,value,NULL));
+      PetscCall(PetscOptionsScalar(name,nitem->help,"",*value,value,NULL));
     } else if (nitem->dtype == PETSC_INT) {
       PetscInt *value = (PetscInt*)(((char*)bag) + nitem->offset);
       if (nitem->msize == 1) {
-        CHKERRQ(PetscOptionsInt(name,nitem->help,"",*value,value,NULL));
+        PetscCall(PetscOptionsInt(name,nitem->help,"",*value,value,NULL));
       } else {
         n    = nitem->msize;
-        CHKERRQ(PetscOptionsIntArray(name,nitem->help,"",value,&n,NULL));
+        PetscCall(PetscOptionsIntArray(name,nitem->help,"",value,&n,NULL));
       }
     } else if (nitem->dtype == PETSC_ENUM) {
       PetscEnum *value = (PetscEnum*)(((char*)bag) + nitem->offset);
       PetscInt  i      = 0;
       while (nitem->list[i++]) ;
-      CHKERRQ(PetscOptionsEnum(name,nitem->help,nitem->list[i-3],(const char*const*)nitem->list,*value,value,NULL));
+      PetscCall(PetscOptionsEnum(name,nitem->help,nitem->list[i-3],(const char*const*)nitem->list,*value,value,NULL));
     } else if (nitem->dtype == PETSC_BOOL) {
       PetscBool *value = (PetscBool*)(((char*)bag) + nitem->offset);
       if (nitem->msize == 1) {
-        CHKERRQ(PetscOptionsBool(name,nitem->help,"",*value,value,NULL));
+        PetscCall(PetscOptionsBool(name,nitem->help,"",*value,value,NULL));
       } else {
         n = nitem->msize;
-        CHKERRQ(PetscOptionsBoolArray(name,nitem->help,"",value,&n,NULL));
+        PetscCall(PetscOptionsBoolArray(name,nitem->help,"",value,&n,NULL));
       }
     }
     nitem = nitem->next;
   }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();PetscCall(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -682,64 +682,64 @@ PetscErrorCode  PetscBagView(PetscBag bag,PetscViewer view)
   PetscFunctionBegin;
   PetscValidPointer(bag,1);
   PetscValidHeaderSpecific(view,PETSC_VIEWER_CLASSID,2);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)view,PETSCVIEWERASCII,&isascii));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)view,PETSCVIEWERBINARY,&isbinary));
+  PetscCall(PetscObjectTypeCompare((PetscObject)view,PETSCVIEWERASCII,&isascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)view,PETSCVIEWERBINARY,&isbinary));
   if (isascii) {
     if (bag->bagprefix) {
-      CHKERRQ(PetscViewerASCIIPrintf(view,"PetscBag Object:  %s (%s) %s\n",bag->bagname,bag->bagprefix,bag->baghelp));
+      PetscCall(PetscViewerASCIIPrintf(view,"PetscBag Object:  %s (%s) %s\n",bag->bagname,bag->bagprefix,bag->baghelp));
     } else {
-      CHKERRQ(PetscViewerASCIIPrintf(view,"PetscBag Object:  %s %s\n",bag->bagname,bag->baghelp));
+      PetscCall(PetscViewerASCIIPrintf(view,"PetscBag Object:  %s %s\n",bag->bagname,bag->baghelp));
     }
     while (nitem) {
       if (nitem->dtype == PETSC_CHAR) {
         char *value = (char*)(((char*)bag) + nitem->offset);
         char tmp    = value[nitem->msize-1]; /* special handling for fortran chars wihout null terminator */
         value[nitem->msize-1] =0;
-        CHKERRQ(PetscViewerASCIIPrintf(view,"  %s = %s; %s\n",nitem->name,value,nitem->help));
+        PetscCall(PetscViewerASCIIPrintf(view,"  %s = %s; %s\n",nitem->name,value,nitem->help));
         value[nitem->msize-1] = tmp;
       } else if (nitem->dtype == PETSC_REAL) {
         PetscReal *value = (PetscReal*)(((char*)bag) + nitem->offset);
         PetscInt  i;
-        CHKERRQ(PetscViewerASCIIPrintf(view,"  %s = ",nitem->name));
+        PetscCall(PetscViewerASCIIPrintf(view,"  %s = ",nitem->name));
         for (i=0; i<nitem->msize; i++) {
-          CHKERRQ(PetscViewerASCIIPrintf(view,"%g ",(double)value[i]));
+          PetscCall(PetscViewerASCIIPrintf(view,"%g ",(double)value[i]));
         }
-        CHKERRQ(PetscViewerASCIIPrintf(view,"; %s\n",nitem->help));
+        PetscCall(PetscViewerASCIIPrintf(view,"; %s\n",nitem->help));
       } else if (nitem->dtype == PETSC_SCALAR) {
         PetscScalar value = *(PetscScalar*)(((char*)bag) + nitem->offset);
 #if defined(PETSC_USE_COMPLEX)
         if ((double)PetscImaginaryPart(value)) {
-          CHKERRQ(PetscViewerASCIIPrintf(view,"  %s = %g + %gi; %s\n",nitem->name,(double)PetscRealPart(value),(double)PetscImaginaryPart(value),nitem->help));
+          PetscCall(PetscViewerASCIIPrintf(view,"  %s = %g + %gi; %s\n",nitem->name,(double)PetscRealPart(value),(double)PetscImaginaryPart(value),nitem->help));
         } else {
-          CHKERRQ(PetscViewerASCIIPrintf(view,"  %s = %g; %s\n",nitem->name,(double)PetscRealPart(value),nitem->help));
+          PetscCall(PetscViewerASCIIPrintf(view,"  %s = %g; %s\n",nitem->name,(double)PetscRealPart(value),nitem->help));
         }
 #else
-        CHKERRQ(PetscViewerASCIIPrintf(view,"  %s = %g; %s\n",nitem->name,(double)value,nitem->help));
+        PetscCall(PetscViewerASCIIPrintf(view,"  %s = %g; %s\n",nitem->name,(double)value,nitem->help));
 #endif
       } else if (nitem->dtype == PETSC_INT) {
         PetscInt i,*value = (PetscInt*)(((char*)bag) + nitem->offset);
-        CHKERRQ(PetscViewerASCIIPrintf(view,"  %s = ",nitem->name));
+        PetscCall(PetscViewerASCIIPrintf(view,"  %s = ",nitem->name));
         for (i=0; i<nitem->msize; i++) {
-          CHKERRQ(PetscViewerASCIIPrintf(view,"%" PetscInt_FMT " ",value[i]));
+          PetscCall(PetscViewerASCIIPrintf(view,"%" PetscInt_FMT " ",value[i]));
         }
-        CHKERRQ(PetscViewerASCIIPrintf(view,"; %s\n",nitem->help));
+        PetscCall(PetscViewerASCIIPrintf(view,"; %s\n",nitem->help));
       } else if (nitem->dtype == PETSC_BOOL) {
         PetscBool  *value = (PetscBool*)(((char*)bag) + nitem->offset);
         PetscInt  i;
          /* some Fortran compilers use -1 as boolean */
-        CHKERRQ(PetscViewerASCIIPrintf(view,"  %s = ",nitem->name));
+        PetscCall(PetscViewerASCIIPrintf(view,"  %s = ",nitem->name));
         for (i=0; i<nitem->msize; i++) {
           if (((int) value[i]) == -1) value[i] = PETSC_TRUE;
           /* the checks here with != PETSC_FALSE and PETSC_TRUE is a special case; here we truly demand that the value be 0 or 1 */
           PetscCheck(value[i] == PETSC_FALSE || value[i] == PETSC_TRUE,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Boolean value for %s %s is corrupt; integer value %" PetscInt_FMT,nitem->name,nitem->help,(PetscInt)(value[i]));
-          CHKERRQ(PetscViewerASCIIPrintf(view," %s",PetscBools[value[i]]));
+          PetscCall(PetscViewerASCIIPrintf(view," %s",PetscBools[value[i]]));
         }
-        CHKERRQ(PetscViewerASCIIPrintf(view,"; %s\n",nitem->help));
+        PetscCall(PetscViewerASCIIPrintf(view,"; %s\n",nitem->help));
       } else if (nitem->dtype == PETSC_ENUM) {
         PetscEnum value = *(PetscEnum*)(((char*)bag) + nitem->offset);
         PetscInt  i     = 0;
         while (nitem->list[i++]) ;
-        CHKERRQ(PetscViewerASCIIPrintf(view,"  %s = %s; (%s) %s\n",nitem->name,nitem->list[value],nitem->list[i-3],nitem->help));
+        PetscCall(PetscViewerASCIIPrintf(view,"  %s = %s; (%s) %s\n",nitem->name,nitem->list[value],nitem->list[i-3],nitem->help));
       }
       nitem = nitem->next;
     }
@@ -747,36 +747,36 @@ PetscErrorCode  PetscBagView(PetscBag bag,PetscViewer view)
     PetscInt          classid           = PETSC_BAG_FILE_CLASSID, dtype;
     PetscInt          deprecatedbagsize = 0;
     PetscViewerFormat format;
-    CHKERRQ(PetscViewerBinaryWrite(view,&classid,1,PETSC_INT));
-    CHKERRQ(PetscViewerBinaryWrite(view,&deprecatedbagsize,1,PETSC_INT));
-    CHKERRQ(PetscViewerBinaryWrite(view,&bag->count,1,PETSC_INT));
-    CHKERRQ(PetscViewerBinaryWrite(view,bag->bagname,PETSC_BAG_NAME_LENGTH,PETSC_CHAR));
-    CHKERRQ(PetscViewerBinaryWrite(view,bag->baghelp,PETSC_BAG_HELP_LENGTH,PETSC_CHAR));
+    PetscCall(PetscViewerBinaryWrite(view,&classid,1,PETSC_INT));
+    PetscCall(PetscViewerBinaryWrite(view,&deprecatedbagsize,1,PETSC_INT));
+    PetscCall(PetscViewerBinaryWrite(view,&bag->count,1,PETSC_INT));
+    PetscCall(PetscViewerBinaryWrite(view,bag->bagname,PETSC_BAG_NAME_LENGTH,PETSC_CHAR));
+    PetscCall(PetscViewerBinaryWrite(view,bag->baghelp,PETSC_BAG_HELP_LENGTH,PETSC_CHAR));
     while (nitem) {
-      CHKERRQ(PetscViewerBinaryWrite(view,&nitem->offset,1,PETSC_INT));
+      PetscCall(PetscViewerBinaryWrite(view,&nitem->offset,1,PETSC_INT));
       dtype = (PetscInt)nitem->dtype;
-      CHKERRQ(PetscViewerBinaryWrite(view,&dtype,1,PETSC_INT));
-      CHKERRQ(PetscViewerBinaryWrite(view,nitem->name,PETSC_BAG_NAME_LENGTH,PETSC_CHAR));
-      CHKERRQ(PetscViewerBinaryWrite(view,nitem->help,PETSC_BAG_HELP_LENGTH,PETSC_CHAR));
-      CHKERRQ(PetscViewerBinaryWrite(view,&nitem->msize,1,PETSC_INT));
+      PetscCall(PetscViewerBinaryWrite(view,&dtype,1,PETSC_INT));
+      PetscCall(PetscViewerBinaryWrite(view,nitem->name,PETSC_BAG_NAME_LENGTH,PETSC_CHAR));
+      PetscCall(PetscViewerBinaryWrite(view,nitem->help,PETSC_BAG_HELP_LENGTH,PETSC_CHAR));
+      PetscCall(PetscViewerBinaryWrite(view,&nitem->msize,1,PETSC_INT));
       /* some Fortran compilers use -1 as boolean */
       if (dtype == PETSC_BOOL && ((*(int*) (((char*)bag) + nitem->offset) == -1))) *(int*) (((char*)bag) + nitem->offset) = PETSC_TRUE;
 
-      CHKERRQ(PetscViewerBinaryWrite(view,(((char*)bag) + nitem->offset),nitem->msize,nitem->dtype));
+      PetscCall(PetscViewerBinaryWrite(view,(((char*)bag) + nitem->offset),nitem->msize,nitem->dtype));
       if (dtype == PETSC_ENUM) {
-        CHKERRQ(PetscViewerBinaryWriteStringArray(view,(const char* const*)nitem->list));
+        PetscCall(PetscViewerBinaryWriteStringArray(view,(const char* const*)nitem->list));
       }
       nitem = nitem->next;
     }
-    CHKERRQ(PetscViewerGetFormat(view,&format));
+    PetscCall(PetscViewerGetFormat(view,&format));
     if (format == PETSC_VIEWER_BINARY_MATLAB) {
       MPI_Comm comm;
       FILE     *info;
-      CHKERRQ(PetscObjectGetComm((PetscObject)view,&comm));
-      CHKERRQ(PetscViewerBinaryGetInfoPointer(view,&info));
-      CHKERRQ(PetscFPrintf(comm,info,"#--- begin code written by PetscViewerBinary for MATLAB format ---#\n"));
-      CHKERRQ(PetscFPrintf(comm,info,"#$$ Set.%s = PetscBinaryRead(fd);\n",bag->bagname));
-      CHKERRQ(PetscFPrintf(comm,info,"#--- end code written by PetscViewerBinary for MATLAB format ---#\n\n"));
+      PetscCall(PetscObjectGetComm((PetscObject)view,&comm));
+      PetscCall(PetscViewerBinaryGetInfoPointer(view,&info));
+      PetscCall(PetscFPrintf(comm,info,"#--- begin code written by PetscViewerBinary for MATLAB format ---#\n"));
+      PetscCall(PetscFPrintf(comm,info,"#$$ Set.%s = PetscBinaryRead(fd);\n",bag->bagname));
+      PetscCall(PetscFPrintf(comm,info,"#--- end code written by PetscViewerBinary for MATLAB format ---#\n\n"));
     }
   }
   PetscFunctionReturn(0);
@@ -808,15 +808,15 @@ PetscErrorCode PetscBagViewFromOptions(PetscBag bag, PetscObject bobj, const cha
   if (incall) PetscFunctionReturn(0);
   incall = PETSC_TRUE;
   PetscValidPointer(bag,1);
-  if (bobj) CHKERRQ(PetscObjectGetOptionsPrefix(bobj, &bprefix));
+  if (bobj) PetscCall(PetscObjectGetOptionsPrefix(bobj, &bprefix));
   prefix = bobj ? bprefix : bag->bagprefix;
-  CHKERRQ(PetscOptionsGetViewer(bag->bagcomm, NULL, prefix, optionname, &viewer, &format, &flg));
+  PetscCall(PetscOptionsGetViewer(bag->bagcomm, NULL, prefix, optionname, &viewer, &format, &flg));
   if (flg) {
-    CHKERRQ(PetscViewerPushFormat(viewer, format));
-    CHKERRQ(PetscBagView(bag, viewer));
-    CHKERRQ(PetscViewerFlush(viewer));
-    CHKERRQ(PetscViewerPopFormat(viewer));
-    CHKERRQ(PetscViewerDestroy(&viewer));
+    PetscCall(PetscViewerPushFormat(viewer, format));
+    PetscCall(PetscBagView(bag, viewer));
+    PetscCall(PetscViewerFlush(viewer));
+    PetscCall(PetscViewerPopFormat(viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
   }
   incall = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -854,44 +854,44 @@ PetscErrorCode  PetscBagLoad(PetscViewer view,PetscBag bag)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(view,PETSC_VIEWER_CLASSID,1);
   PetscValidPointer(bag,2);
-  CHKERRQ(PetscObjectGetComm((PetscObject)view,&comm));
-  CHKERRMPI(MPI_Comm_compare(comm,bag->bagcomm,&flag));
+  PetscCall(PetscObjectGetComm((PetscObject)view,&comm));
+  PetscCallMPI(MPI_Comm_compare(comm,bag->bagcomm,&flag));
   PetscCheck(flag == MPI_CONGRUENT || flag == MPI_IDENT,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"Different communicators in the viewer and bag");
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)view,PETSCVIEWERBINARY,&isbinary));
+  PetscCall(PetscObjectTypeCompare((PetscObject)view,PETSCVIEWERBINARY,&isbinary));
   PetscCheck(isbinary,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for this viewer type");
 
-  CHKERRQ(PetscViewerBinaryRead(view,&classid,1,NULL,PETSC_INT));
+  PetscCall(PetscViewerBinaryRead(view,&classid,1,NULL,PETSC_INT));
   PetscCheck(classid == PETSC_BAG_FILE_CLASSID,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not PetscBag next in binary file");
-  CHKERRQ(PetscViewerBinaryRead(view,&deprecatedbagsize,1,NULL,PETSC_INT));
-  CHKERRQ(PetscViewerBinaryRead(view,&bagcount,1,NULL,PETSC_INT));
+  PetscCall(PetscViewerBinaryRead(view,&deprecatedbagsize,1,NULL,PETSC_INT));
+  PetscCall(PetscViewerBinaryRead(view,&bagcount,1,NULL,PETSC_INT));
   PetscCheck(bagcount == bag->count,comm,PETSC_ERR_ARG_INCOMP,"Bag in file has different number of entries %d then passed in bag %d",(int)bagcount,(int)bag->count);
-  CHKERRQ(PetscViewerBinaryRead(view,bag->bagname,PETSC_BAG_NAME_LENGTH,NULL,PETSC_CHAR));
-  CHKERRQ(PetscViewerBinaryRead(view,bag->baghelp,PETSC_BAG_HELP_LENGTH,NULL,PETSC_CHAR));
+  PetscCall(PetscViewerBinaryRead(view,bag->bagname,PETSC_BAG_NAME_LENGTH,NULL,PETSC_CHAR));
+  PetscCall(PetscViewerBinaryRead(view,bag->baghelp,PETSC_BAG_HELP_LENGTH,NULL,PETSC_CHAR));
 
   nitem = bag->bagitems;
   for (PetscInt i=0; i<bagcount; i++) {
-    CHKERRQ(PetscViewerBinaryRead(view,&offset,1,NULL,PETSC_INT));
+    PetscCall(PetscViewerBinaryRead(view,&offset,1,NULL,PETSC_INT));
     /* ignore the offset in the file */
-    CHKERRQ(PetscViewerBinaryRead(view,&dtype,1,NULL,PETSC_INT));
-    CHKERRQ(PetscViewerBinaryRead(view,name,PETSC_BAG_NAME_LENGTH,NULL,PETSC_CHAR));
-    CHKERRQ(PetscViewerBinaryRead(view,help,PETSC_BAG_HELP_LENGTH,NULL,PETSC_CHAR));
-    CHKERRQ(PetscViewerBinaryRead(view,&msize,1,NULL,PETSC_INT));
+    PetscCall(PetscViewerBinaryRead(view,&dtype,1,NULL,PETSC_INT));
+    PetscCall(PetscViewerBinaryRead(view,name,PETSC_BAG_NAME_LENGTH,NULL,PETSC_CHAR));
+    PetscCall(PetscViewerBinaryRead(view,help,PETSC_BAG_HELP_LENGTH,NULL,PETSC_CHAR));
+    PetscCall(PetscViewerBinaryRead(view,&msize,1,NULL,PETSC_INT));
 
     if (dtype == (PetscInt) PETSC_CHAR) {
-      CHKERRQ(PetscViewerBinaryRead(view,((char*)bag)+nitem->offset,msize,NULL,PETSC_CHAR));
+      PetscCall(PetscViewerBinaryRead(view,((char*)bag)+nitem->offset,msize,NULL,PETSC_CHAR));
     } else if (dtype == (PetscInt) PETSC_REAL) {
-      CHKERRQ(PetscViewerBinaryRead(view,((char*)bag)+nitem->offset,msize,NULL,PETSC_REAL));
+      PetscCall(PetscViewerBinaryRead(view,((char*)bag)+nitem->offset,msize,NULL,PETSC_REAL));
     } else if (dtype == (PetscInt) PETSC_SCALAR) {
-      CHKERRQ(PetscViewerBinaryRead(view,((char*)bag)+nitem->offset,1,NULL,PETSC_SCALAR));
+      PetscCall(PetscViewerBinaryRead(view,((char*)bag)+nitem->offset,1,NULL,PETSC_SCALAR));
     } else if (dtype == (PetscInt) PETSC_INT) {
-      CHKERRQ(PetscViewerBinaryRead(view,((char*)bag)+nitem->offset,msize,NULL,PETSC_INT));
+      PetscCall(PetscViewerBinaryRead(view,((char*)bag)+nitem->offset,msize,NULL,PETSC_INT));
     } else if (dtype == (PetscInt) PETSC_BOOL) {
-      CHKERRQ(PetscViewerBinaryRead(view,((char*)bag)+nitem->offset,msize,NULL,PETSC_BOOL));
+      PetscCall(PetscViewerBinaryRead(view,((char*)bag)+nitem->offset,msize,NULL,PETSC_BOOL));
     } else if (dtype == (PetscInt) PETSC_ENUM) {
-      CHKERRQ(PetscViewerBinaryRead(view,((char*)bag)+nitem->offset,1,NULL,PETSC_ENUM));
-      CHKERRQ(PetscViewerBinaryReadStringArray(view,&list));
+      PetscCall(PetscViewerBinaryRead(view,((char*)bag)+nitem->offset,1,NULL,PETSC_ENUM));
+      PetscCall(PetscViewerBinaryReadStringArray(view,&list));
       /* don't need to save list because it is already registered in the bag */
-      CHKERRQ(PetscFree(list));
+      PetscCall(PetscFree(list));
     }
     nitem = nitem->next;
   }
@@ -927,8 +927,8 @@ PetscErrorCode PetscBagCreate(MPI_Comm comm, size_t bagsize, PetscBag *bag)
 
   PetscFunctionBegin;
   PetscValidPointer(bag,3);
-  CHKERRQ(PetscInfo(NULL,"Creating Bag with total size %d\n",(int)totalsize));
-  CHKERRQ(PetscCalloc(totalsize,bag));
+  PetscCall(PetscInfo(NULL,"Creating Bag with total size %d\n",(int)totalsize));
+  PetscCall(PetscCalloc(totalsize,bag));
 
   (*bag)->bagsize        = totalsize;
   (*bag)->bagcomm        = comm;
@@ -960,8 +960,8 @@ PetscErrorCode PetscBagSetName(PetscBag bag, const char *name, const char *help)
   PetscValidPointer(bag,1);
   PetscValidCharPointer(name,2);
   PetscValidCharPointer(help,3);
-  CHKERRQ(PetscStrncpy(bag->bagname,name,PETSC_BAG_NAME_LENGTH-1));
-  CHKERRQ(PetscStrncpy(bag->baghelp,help,PETSC_BAG_HELP_LENGTH-1));
+  PetscCall(PetscStrncpy(bag->bagname,name,PETSC_BAG_NAME_LENGTH-1));
+  PetscCall(PetscStrncpy(bag->baghelp,help,PETSC_BAG_HELP_LENGTH-1));
   PetscFunctionReturn(0);
 }
 
@@ -1043,9 +1043,9 @@ PetscErrorCode PetscBagSetOptionsPrefix(PetscBag bag, const char pre[])
   if (pre) {
     PetscValidCharPointer(pre,2);
     PetscCheck(pre[0] != '-',PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Options prefix should not begin with a hyphen");
-    CHKERRQ(PetscFree(bag->bagprefix));
-    CHKERRQ(PetscStrallocpy(pre,&(bag->bagprefix)));
-  } else CHKERRQ(PetscFree(bag->bagprefix));
+    PetscCall(PetscFree(bag->bagprefix));
+    PetscCall(PetscStrallocpy(pre,&(bag->bagprefix)));
+  } else PetscCall(PetscFree(bag->bagprefix));
   PetscFunctionReturn(0);
 }
 

@@ -59,7 +59,7 @@
 PetscErrorCode  PetscDrawOpenX(MPI_Comm comm,const char display[],const char title[],int x,int y,int w,int h,PetscDraw *draw)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscDrawCreate(comm,display,title,x,y,w,h,draw));
-  CHKERRQ(PetscDrawSetType(*draw,PETSC_DRAW_X));
+  PetscCall(PetscDrawCreate(comm,display,title,x,y,w,h,draw));
+  PetscCall(PetscDrawSetType(*draw,PETSC_DRAW_X));
   PetscFunctionReturn(0);
 }

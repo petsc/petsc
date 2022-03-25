@@ -56,10 +56,10 @@ static inline PetscErrorCode MatSeqXSELLFreeSELL(Mat AA,MatScalar **val,PetscInt
 {
   Mat_SeqSELL    *A = (Mat_SeqSELL*) AA->data;
   if (A->singlemalloc) {
-    CHKERRQ(PetscFree2(*val,*colidx));
+    PetscCall(PetscFree2(*val,*colidx));
   } else {
-    if (A->free_val) CHKERRQ(PetscFree(*val));
-    if (A->free_colidx) CHKERRQ(PetscFree(*colidx));
+    if (A->free_val) PetscCall(PetscFree(*val));
+    if (A->free_colidx) PetscCall(PetscFree(*colidx));
   }
   return 0;
 }
@@ -73,20 +73,20 @@ datatype *new_val; \
 \
 PetscCheckFalse(NONEW == -2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"New nonzero at (%" PetscInt_FMT ",%" PetscInt_FMT ") caused a malloc\nUse MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check",ROW,COL); \
 /* malloc new storage space */ \
-CHKERRQ(PetscMalloc2(BS2*new_size,&new_val,BS2*new_size,&new_colidx)); \
+PetscCall(PetscMalloc2(BS2*new_size,&new_val,BS2*new_size,&new_colidx)); \
 \
 /* copy over old data into new slots by two steps: one step for data before the current slice and the other for the rest */ \
-CHKERRQ(PetscArraycpy(new_val,VAL,SIDX[SID+1])); \
-CHKERRQ(PetscArraycpy(new_colidx,COLIDX,SIDX[SID+1])); \
-CHKERRQ(PetscArraycpy(new_val+SIDX[SID+1]+8,VAL+SIDX[SID+1],SIDX[AM>>3]-SIDX[SID+1])); \
-CHKERRQ(PetscArraycpy(new_colidx+SIDX[SID+1]+8,COLIDX+SIDX[SID+1],SIDX[AM>>3]-SIDX[SID+1])); \
+PetscCall(PetscArraycpy(new_val,VAL,SIDX[SID+1])); \
+PetscCall(PetscArraycpy(new_colidx,COLIDX,SIDX[SID+1])); \
+PetscCall(PetscArraycpy(new_val+SIDX[SID+1]+8,VAL+SIDX[SID+1],SIDX[AM>>3]-SIDX[SID+1])); \
+PetscCall(PetscArraycpy(new_colidx+SIDX[SID+1]+8,COLIDX+SIDX[SID+1],SIDX[AM>>3]-SIDX[SID+1])); \
 /* update slice_idx */ \
 for (ii=SID+1;ii<=AM>>3;ii++) { SIDX[ii] += 8; } \
 /* update pointers. Notice that they point to the FIRST postion of the row */ \
 CP = new_colidx+SIDX[SID]+(ROW & 0x07); \
 VP = new_val+SIDX[SID]+(ROW & 0x07); \
 /* free up old matrix storage */ \
-CHKERRQ(MatSeqXSELLFreeSELL(A,&Ain->val,&Ain->colidx)); \
+PetscCall(MatSeqXSELLFreeSELL(A,&Ain->val,&Ain->colidx)); \
 Ain->val          = (MatScalar*) new_val; \
 Ain->colidx       = new_colidx; \
 Ain->singlemalloc = PETSC_TRUE; \
@@ -127,17 +127,17 @@ if (WIDTH>=Ain->rlenmax) Ain->rlenmax++; \
         MatScalar *new_val; \
         PetscCheckFalse(a->nonew == -2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"New nonzero at (%" PetscInt_FMT ",%" PetscInt_FMT ") caused a malloc\nUse MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check",orow,ocol); \
         /* malloc new storage space */ \
-        CHKERRQ(PetscMalloc2(new_size,&new_val,new_size,&new_colidx)); \
+        PetscCall(PetscMalloc2(new_size,&new_val,new_size,&new_colidx)); \
         /* copy over old data into new slots by two steps: one step for data before the current slice and the other for the rest */ \
-        CHKERRQ(PetscArraycpy(new_val,a->val,a->sliidx[row/8+1])); \
-        CHKERRQ(PetscArraycpy(new_colidx,a->colidx,a->sliidx[row/8+1])); \
-        CHKERRQ(PetscArraycpy(new_val+a->sliidx[row/8+1]+8,a->val+a->sliidx[row/8+1],a->sliidx[a->totalslices]-a->sliidx[row/8+1]));  \
-        CHKERRQ(PetscArraycpy(new_colidx+a->sliidx[row/8+1]+8,a->colidx+a->sliidx[row/8+1],a->sliidx[a->totalslices]-a->sliidx[row/8+1])); \
+        PetscCall(PetscArraycpy(new_val,a->val,a->sliidx[row/8+1])); \
+        PetscCall(PetscArraycpy(new_colidx,a->colidx,a->sliidx[row/8+1])); \
+        PetscCall(PetscArraycpy(new_val+a->sliidx[row/8+1]+8,a->val+a->sliidx[row/8+1],a->sliidx[a->totalslices]-a->sliidx[row/8+1]));  \
+        PetscCall(PetscArraycpy(new_colidx+a->sliidx[row/8+1]+8,a->colidx+a->sliidx[row/8+1],a->sliidx[a->totalslices]-a->sliidx[row/8+1])); \
         /* update pointers. Notice that they point to the FIRST postion of the row */ \
         cp = new_colidx+a->sliidx[row/8]+(row & 0x07); \
         vp = new_val+a->sliidx[row/8]+(row & 0x07); \
         /* free up old matrix storage */ \
-        CHKERRQ(MatSeqXSELLFreeSELL(A,&a->val,&a->colidx)); \
+        PetscCall(MatSeqXSELLFreeSELL(A,&a->val,&a->colidx)); \
         a->val          = (MatScalar*)new_val; \
         a->colidx       = new_colidx; \
         a->singlemalloc = PETSC_TRUE; \
@@ -145,8 +145,8 @@ if (WIDTH>=Ain->rlenmax) Ain->rlenmax++; \
         a->reallocs++; \
       } else { \
         /* no need to reallocate, just shift the following slices to create space for the added slice column */ \
-        CHKERRQ(PetscArraymove(a->val+a->sliidx[row/8+1]+8,a->val+a->sliidx[row/8+1],a->sliidx[a->totalslices]-a->sliidx[row/8+1]));  \
-        CHKERRQ(PetscArraymove(a->colidx+a->sliidx[row/8+1]+8,a->colidx+a->sliidx[row/8+1],a->sliidx[a->totalslices]-a->sliidx[row/8+1])); \
+        PetscCall(PetscArraymove(a->val+a->sliidx[row/8+1]+8,a->val+a->sliidx[row/8+1],a->sliidx[a->totalslices]-a->sliidx[row/8+1]));  \
+        PetscCall(PetscArraymove(a->colidx+a->sliidx[row/8+1]+8,a->colidx+a->sliidx[row/8+1],a->sliidx[a->totalslices]-a->sliidx[row/8+1])); \
       } \
       /* update slice_idx */ \
       for (ii=row/8+1;ii<=a->totalslices;ii++) a->sliidx[ii] += 8; \

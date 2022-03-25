@@ -26,9 +26,9 @@
 #define SWAP2Data(a,b,c,d,t1,t2,siz)                                             \
   do {                                                                           \
     t1=a; a=b; b=t1;                                                             \
-    CHKERRQ(PetscMemcpy(t2,c,siz));                                              \
-    CHKERRQ(PetscMemcpy(c,d,siz));                                               \
-    CHKERRQ(PetscMemcpy(d,t2,siz));                                              \
+    PetscCall(PetscMemcpy(t2,c,siz));                                              \
+    PetscCall(PetscMemcpy(c,d,siz));                                               \
+    PetscCall(PetscMemcpy(d,t2,siz));                                              \
   } while (0)
 
 /*
@@ -137,8 +137,8 @@
       p     = MEDIAN(X,hi);                                                      \
       pivot = X[p];                                                              \
       TwoWayPartition1(X,pivot,t1,0,hi,l,r);                                     \
-      CHKERRQ(FuncName(l,X));                                                    \
-      CHKERRQ(FuncName(hi-r+1,X+r));                                             \
+      PetscCall(FuncName(l,X));                                                    \
+      PetscCall(FuncName(hi-r+1,X+r));                                             \
     }                                                                            \
   } while (0)
 
@@ -160,8 +160,8 @@
       p     = MEDIAN(X,hi);                                                      \
       pivot = X[p];                                                              \
       TwoWayPartitionReverse1(X,pivot,t1,0,hi,l,r);                              \
-      CHKERRQ(FuncName(l,X));                                                    \
-      CHKERRQ(FuncName(hi-r+1,X+r));                                             \
+      PetscCall(FuncName(l,X));                                                    \
+      PetscCall(FuncName(hi-r+1,X+r));                                             \
     }                                                                            \
   } while (0)
 
@@ -182,8 +182,8 @@
       p     = MEDIAN(X,hi);                                                      \
       pivot = X[p];                                                              \
       TwoWayPartition2(X,Y,pivot,t1,t2,0,hi,l,r);                                \
-      CHKERRQ(FuncName(l,X,Y));                                                  \
-      CHKERRQ(FuncName(hi-r+1,X+r,Y+r));                                         \
+      PetscCall(FuncName(l,X,Y));                                                  \
+      PetscCall(FuncName(hi-r+1,X+r,Y+r));                                         \
     }                                                                            \
   } while (0)
 
@@ -204,8 +204,8 @@
       p     = MEDIAN(X,hi);                                                      \
       pivot = X[p];                                                              \
       TwoWayPartition3(X,Y,Z,pivot,t1,t2,t3,0,hi,l,r);                           \
-      CHKERRQ(FuncName(l,X,Y,Z));                                                \
-      CHKERRQ(FuncName(hi-r+1,X+r,Y+r,Z+r));                                     \
+      PetscCall(FuncName(l,X,Y,Z));                                                \
+      PetscCall(FuncName(hi-r+1,X+r,Y+r,Z+r));                                     \
     }                                                                            \
   } while (0)
 
@@ -369,8 +369,8 @@ PetscErrorCode  PetscSortRemoveDupsInt(PetscInt *n,PetscInt X[])
 {
   PetscFunctionBegin;
   PetscValidIntPointer(n,1);
-  CHKERRQ(PetscSortInt(*n,X));
-  CHKERRQ(PetscSortedRemoveDupsInt(n,X));
+  PetscCall(PetscSortInt(*n,X));
+  PetscCall(PetscSortedRemoveDupsInt(n,X));
   PetscFunctionReturn(0);
 }
 
@@ -436,13 +436,13 @@ PetscErrorCode PetscCheckDupsInt(PetscInt n,const PetscInt X[],PetscBool *dups)
   PetscValidBoolPointer(dups,3);
   *dups = PETSC_FALSE;
   if (n > 1) {
-    CHKERRQ(PetscHSetICreate(&ht));
-    CHKERRQ(PetscHSetIResize(ht,n));
+    PetscCall(PetscHSetICreate(&ht));
+    PetscCall(PetscHSetIResize(ht,n));
     for (i=0; i<n; i++) {
-      CHKERRQ(PetscHSetIQueryAdd(ht,X[i],&missing));
+      PetscCall(PetscHSetIQueryAdd(ht,X[i],&missing));
       if (!missing) {*dups = PETSC_TRUE; break;}
     }
-    CHKERRQ(PetscHSetIDestroy(&ht));
+    PetscCall(PetscHSetIDestroy(&ht));
   }
   PetscFunctionReturn(0);
 }
@@ -656,7 +656,7 @@ PetscErrorCode  PetscSortRemoveDupsMPIInt(PetscInt *n,PetscMPIInt X[])
   PetscInt s = 0,N = *n,b = 0;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscSortMPIInt(N,X));
+  PetscCall(PetscSortMPIInt(N,X));
   for (PetscInt i=0; i<N-1; i++) {
     if (X[b+s+1] != X[b]) {
       X[b+1] = X[b+s+1]; b++;
@@ -789,8 +789,8 @@ PetscErrorCode  PetscSortIntWithDataArray(PetscInt n,PetscInt X[],void *Y,size_t
       l++;
       r--;
     }
-    CHKERRQ(PetscSortIntWithDataArray(l,X,Y,size,t2));
-    CHKERRQ(PetscSortIntWithDataArray(hi-r+1,X+r,YY+size*r,size,t2));
+    PetscCall(PetscSortIntWithDataArray(l,X,Y,size,t2));
+    PetscCall(PetscSortIntWithDataArray(hi-r+1,X+r,YY+size*r,size,t2));
   }
   PetscFunctionReturn(0);
 }
@@ -820,7 +820,7 @@ PetscErrorCode  PetscMergeIntArray(PetscInt an,const PetscInt aI[], PetscInt bn,
 
   PetscFunctionBegin;
   if (!L_) {
-    CHKERRQ(PetscMalloc1(an+bn, L));
+    PetscCall(PetscMalloc1(an+bn, L));
     L_   = *L;
   }
   k = ak = bk = 0;
@@ -841,11 +841,11 @@ PetscErrorCode  PetscMergeIntArray(PetscInt an,const PetscInt aI[], PetscInt bn,
     }
   }
   if (ak < an) {
-    CHKERRQ(PetscArraycpy(L_+k,aI+ak,an-ak));
+    PetscCall(PetscArraycpy(L_+k,aI+ak,an-ak));
     k   += (an-ak);
   }
   if (bk < bn) {
-    CHKERRQ(PetscArraycpy(L_+k,bI+bk,bn-bk));
+    PetscCall(PetscArraycpy(L_+k,bI+bk,bn-bk));
     k   += (bn-bk);
   }
   *n = k;
@@ -888,11 +888,11 @@ PetscErrorCode  PetscMergeIntArrayPair(PetscInt an,const PetscInt aI[], const Pe
   n_ = an + bn;
   *n = n_;
   if (!*L) {
-    CHKERRQ(PetscMalloc1(n_, L));
+    PetscCall(PetscMalloc1(n_, L));
   }
   L_ = *L;
   if (!*J) {
-    CHKERRQ(PetscMalloc1(n_, J));
+    PetscCall(PetscMalloc1(n_, J));
   }
   J_   = *J;
   k = ak = bk = 0;
@@ -910,13 +910,13 @@ PetscErrorCode  PetscMergeIntArrayPair(PetscInt an,const PetscInt aI[], const Pe
     }
   }
   if (ak < an) {
-    CHKERRQ(PetscArraycpy(L_+k,aI+ak,an-ak));
-    CHKERRQ(PetscArraycpy(J_+k,aJ+ak,an-ak));
+    PetscCall(PetscArraycpy(L_+k,aI+ak,an-ak));
+    PetscCall(PetscArraycpy(J_+k,aJ+ak,an-ak));
     k   += (an-ak);
   }
   if (bk < bn) {
-    CHKERRQ(PetscArraycpy(L_+k,bI+bk,bn-bk));
-    CHKERRQ(PetscArraycpy(J_+k,bJ+bk,bn-bk));
+    PetscCall(PetscArraycpy(L_+k,bI+bk,bn-bk));
+    PetscCall(PetscArraycpy(J_+k,bJ+bk,bn-bk));
   }
   PetscFunctionReturn(0);
 }
@@ -945,7 +945,7 @@ PetscErrorCode PetscMergeMPIIntArray(PetscInt an,const PetscMPIInt aI[],PetscInt
   PetscInt       ai,bi,k;
 
   PetscFunctionBegin;
-  if (!*L) CHKERRQ(PetscMalloc1((an+bn),L));
+  if (!*L) PetscCall(PetscMalloc1((an+bn),L));
   for (ai=0,bi=0,k=0; ai<an || bi<bn;) {
     PetscInt t = -1;
     for (; ai<an && (!bn || aI[ai] <= bI[bi]); ai++) (*L)[k++] = t = aI[ai];
@@ -999,7 +999,7 @@ PetscErrorCode  PetscProcessTree(PetscInt n,const PetscBool mask[],const PetscIn
   }
 
   /* determine the level in the tree of each node */
-  CHKERRQ(PetscCalloc1(n,&level));
+  PetscCall(PetscCalloc1(n,&level));
 
   level[0] = 1;
   while (!done) {
@@ -1016,7 +1016,7 @@ PetscErrorCode  PetscProcessTree(PetscInt n,const PetscBool mask[],const PetscIn
   }
 
   /* count the number of nodes on each level and its max */
-  CHKERRQ(PetscCalloc1(nlevels,&levelcnt));
+  PetscCall(PetscCalloc1(nlevels,&levelcnt));
   for (i=0; i<n; i++) {
     if (mask[i]) continue;
     levelcnt[level[i]-1]++;
@@ -1024,8 +1024,8 @@ PetscErrorCode  PetscProcessTree(PetscInt n,const PetscBool mask[],const PetscIn
   for (i=0; i<nlevels;i++) levelmax = PetscMax(levelmax,levelcnt[i]);
 
   /* for each level sort the ids by the parent id */
-  CHKERRQ(PetscMalloc2(levelmax,&workid,levelmax,&workparentid));
-  CHKERRQ(PetscMalloc1(nmask,&idbylevel));
+  PetscCall(PetscMalloc2(levelmax,&workid,levelmax,&workparentid));
+  PetscCall(PetscMalloc1(nmask,&idbylevel));
   for (j=1; j<=nlevels;j++) {
     cnt = 0;
     for (i=0; i<n; i++) {
@@ -1036,17 +1036,17 @@ PetscErrorCode  PetscProcessTree(PetscInt n,const PetscBool mask[],const PetscIn
     }
     /*  PetscIntView(cnt,workparentid,0);
     PetscIntView(cnt,workid,0);
-    CHKERRQ(PetscSortIntWithArray(cnt,workparentid,workid));
+    PetscCall(PetscSortIntWithArray(cnt,workparentid,workid));
     PetscIntView(cnt,workparentid,0);
     PetscIntView(cnt,workid,0);*/
-    CHKERRQ(PetscArraycpy(idbylevel+tcnt,workid,cnt));
+    PetscCall(PetscArraycpy(idbylevel+tcnt,workid,cnt));
     tcnt += cnt;
   }
   PetscCheckFalse(tcnt != nmask,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inconsistent count of unmasked nodes");
-  CHKERRQ(PetscFree2(workid,workparentid));
+  PetscCall(PetscFree2(workid,workparentid));
 
   /* for each node list its column */
-  CHKERRQ(PetscMalloc1(n,&column));
+  PetscCall(PetscMalloc1(n,&column));
   cnt = 0;
   for (j=0; j<nlevels; j++) {
     for (i=0; i<levelcnt[j]; i++) {
@@ -1100,10 +1100,10 @@ PetscErrorCode PetscParallelSortedInt(MPI_Comm comm, PetscInt n, const PetscInt 
   }
   if (i < n) sorted = PETSC_FALSE;
   prevmax = PETSC_MIN_INT;
-  CHKERRMPI(MPI_Exscan(&max, &prevmax, 1, MPIU_INT, MPI_MAX, comm));
-  CHKERRMPI(MPI_Comm_rank(comm, &rank));
+  PetscCallMPI(MPI_Exscan(&max, &prevmax, 1, MPIU_INT, MPI_MAX, comm));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
   if (rank == 0) prevmax = PETSC_MIN_INT;
   if (prevmax > min) sorted = PETSC_FALSE;
-  CHKERRMPI(MPI_Allreduce(&sorted, is_sorted, 1, MPIU_BOOL, MPI_LAND, comm));
+  PetscCallMPI(MPI_Allreduce(&sorted, is_sorted, 1, MPIU_BOOL, MPI_LAND, comm));
   PetscFunctionReturn(0);
 }

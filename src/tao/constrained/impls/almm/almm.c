@@ -20,23 +20,23 @@ static PetscErrorCode TaoSolve_ALMM(Tao tao)
   /* reset initial multiplier/slack guess */
   if (!tao->recycle) {
     if (tao->ineq_constrained) {
-      CHKERRQ(VecZeroEntries(auglag->Ps));
-      CHKERRQ(TaoALMMCombinePrimal_Private(tao, auglag->Px, auglag->Ps, auglag->P));
-      CHKERRQ(VecZeroEntries(auglag->Yi));
+      PetscCall(VecZeroEntries(auglag->Ps));
+      PetscCall(TaoALMMCombinePrimal_Private(tao, auglag->Px, auglag->Ps, auglag->P));
+      PetscCall(VecZeroEntries(auglag->Yi));
     }
     if (tao->eq_constrained) {
-      CHKERRQ(VecZeroEntries(auglag->Ye));
+      PetscCall(VecZeroEntries(auglag->Ye));
     }
   }
 
   /* compute initial nonlinear Lagrangian and its derivatives */
-  CHKERRQ((*auglag->sub_obj)(tao));
-  CHKERRQ(TaoALMMComputeOptimalityNorms_Private(tao));
+  PetscCall((*auglag->sub_obj)(tao));
+  PetscCall(TaoALMMComputeOptimalityNorms_Private(tao));
   /* print initial step and check convergence */
-  CHKERRQ(PetscInfo(tao,"Solving with %s formulation\n",TaoALMMTypes[auglag->type]));
-  CHKERRQ(TaoLogConvergenceHistory(tao, auglag->Lval, auglag->gnorm, auglag->cnorm, tao->ksp_its));
-  CHKERRQ(TaoMonitor(tao, tao->niter, auglag->fval, auglag->gnorm, auglag->cnorm, 0.0));
-  CHKERRQ((*tao->ops->convergencetest)(tao, tao->cnvP));
+  PetscCall(PetscInfo(tao,"Solving with %s formulation\n",TaoALMMTypes[auglag->type]));
+  PetscCall(TaoLogConvergenceHistory(tao, auglag->Lval, auglag->gnorm, auglag->cnorm, tao->ksp_its));
+  PetscCall(TaoMonitor(tao, tao->niter, auglag->fval, auglag->gnorm, auglag->cnorm, 0.0));
+  PetscCall((*tao->ops->convergencetest)(tao, tao->cnvP));
   /* set initial penalty factor and inner solver tolerance */
   switch (auglag->type) {
     case TAO_ALMM_CLASSIC:
@@ -45,14 +45,14 @@ static PetscErrorCode TaoSolve_ALMM(Tao tao)
     case TAO_ALMM_PHR:
       auglag->cenorm = 0.0;
       if (tao->eq_constrained) {
-        CHKERRQ(VecDot(auglag->Ce, auglag->Ce, &auglag->cenorm));
+        PetscCall(VecDot(auglag->Ce, auglag->Ce, &auglag->cenorm));
       }
       auglag->cinorm = 0.0;
       if (tao->ineq_constrained) {
-        CHKERRQ(VecCopy(auglag->Ci, auglag->Ciwork));
-        CHKERRQ(VecScale(auglag->Ciwork, -1.0));
-        CHKERRQ(VecPointwiseMax(auglag->Ciwork, auglag->Cizero, auglag->Ciwork));
-        CHKERRQ(VecDot(auglag->Ciwork, auglag->Ciwork, &auglag->cinorm));
+        PetscCall(VecCopy(auglag->Ci, auglag->Ciwork));
+        PetscCall(VecScale(auglag->Ciwork, -1.0));
+        PetscCall(VecPointwiseMax(auglag->Ciwork, auglag->Cizero, auglag->Ciwork));
+        PetscCall(VecDot(auglag->Ciwork, auglag->Ciwork, &auglag->cinorm));
       }
       /* determine initial penalty factor based on the balance of constraint violation and objective function value */
       auglag->mu = PetscMax(1.e-6, PetscMin(10.0, 2.0*PetscAbsReal(auglag->fval)/(auglag->cenorm + auglag->cinorm)));
@@ -61,42 +61,42 @@ static PetscErrorCode TaoSolve_ALMM(Tao tao)
       break;
   }
   auglag->gtol = auglag->gtol0;
-  CHKERRQ(PetscInfo(tao,"Initial penalty: %.2f\n",auglag->mu));
+  PetscCall(PetscInfo(tao,"Initial penalty: %.2f\n",auglag->mu));
 
   /* start aug-lag outer loop */
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     ++tao->niter;
     /* update subsolver tolerance */
-    CHKERRQ(PetscInfo(tao,"Subsolver tolerance: ||G|| <= %e\n",auglag->gtol));
-    CHKERRQ(TaoSetTolerances(auglag->subsolver, auglag->gtol, 0.0, 0.0));
+    PetscCall(PetscInfo(tao,"Subsolver tolerance: ||G|| <= %e\n",auglag->gtol));
+    PetscCall(TaoSetTolerances(auglag->subsolver, auglag->gtol, 0.0, 0.0));
     /* solve the bound-constrained or unconstrained subproblem */
-    CHKERRQ(TaoSolve(auglag->subsolver));
-    CHKERRQ(TaoGetConvergedReason(auglag->subsolver, &reason));
+    PetscCall(TaoSolve(auglag->subsolver));
+    PetscCall(TaoGetConvergedReason(auglag->subsolver, &reason));
     tao->ksp_its += auglag->subsolver->ksp_its;
     if (reason != TAO_CONVERGED_GATOL) {
-      CHKERRQ(PetscInfo(tao,"Subsolver failed to converge, reason: %s\n",TaoConvergedReasons[reason]));
+      PetscCall(PetscInfo(tao,"Subsolver failed to converge, reason: %s\n",TaoConvergedReasons[reason]));
     }
     /* evaluate solution and test convergence */
-    CHKERRQ((*auglag->sub_obj)(tao));
-    CHKERRQ(TaoALMMComputeOptimalityNorms_Private(tao));
+    PetscCall((*auglag->sub_obj)(tao));
+    PetscCall(TaoALMMComputeOptimalityNorms_Private(tao));
     /* decide whether to update multipliers or not */
     updated = 0.0;
     if (auglag->cnorm <= auglag->ytol) {
-      CHKERRQ(PetscInfo(tao,"Multipliers updated: ||C|| <= %e\n",auglag->ytol));
+      PetscCall(PetscInfo(tao,"Multipliers updated: ||C|| <= %e\n",auglag->ytol));
       /* constraints are good, update multipliers and convergence tolerances */
       if (tao->eq_constrained) {
-        CHKERRQ(VecAXPY(auglag->Ye, auglag->mu, auglag->Ce));
-        CHKERRQ(VecSet(auglag->Cework, auglag->ye_max));
-        CHKERRQ(VecPointwiseMin(auglag->Ye, auglag->Cework, auglag->Ye));
-        CHKERRQ(VecSet(auglag->Cework, auglag->ye_min));
-        CHKERRQ(VecPointwiseMax(auglag->Ye, auglag->Cework, auglag->Ye));
+        PetscCall(VecAXPY(auglag->Ye, auglag->mu, auglag->Ce));
+        PetscCall(VecSet(auglag->Cework, auglag->ye_max));
+        PetscCall(VecPointwiseMin(auglag->Ye, auglag->Cework, auglag->Ye));
+        PetscCall(VecSet(auglag->Cework, auglag->ye_min));
+        PetscCall(VecPointwiseMax(auglag->Ye, auglag->Cework, auglag->Ye));
       }
       if (tao->ineq_constrained) {
-        CHKERRQ(VecAXPY(auglag->Yi, auglag->mu, auglag->Ci));
-        CHKERRQ(VecSet(auglag->Ciwork, auglag->yi_max));
-        CHKERRQ(VecPointwiseMin(auglag->Yi, auglag->Ciwork, auglag->Yi));
-        CHKERRQ(VecSet(auglag->Ciwork, auglag->yi_min));
-        CHKERRQ(VecPointwiseMax(auglag->Yi, auglag->Ciwork, auglag->Yi));
+        PetscCall(VecAXPY(auglag->Yi, auglag->mu, auglag->Ci));
+        PetscCall(VecSet(auglag->Ciwork, auglag->yi_max));
+        PetscCall(VecPointwiseMin(auglag->Yi, auglag->Ciwork, auglag->Yi));
+        PetscCall(VecSet(auglag->Ciwork, auglag->yi_min));
+        PetscCall(VecPointwiseMax(auglag->Yi, auglag->Ciwork, auglag->Yi));
       }
       /* tolerances are updated only for non-PHR methods */
       if (auglag->type != TAO_ALMM_PHR) {
@@ -112,11 +112,11 @@ static PetscErrorCode TaoSolve_ALMM(Tao tao)
         auglag->ytol = PetscMax(tao->catol, 0.1/PetscPowReal(auglag->mu, auglag->mu_pow_bad));
         auglag->gtol = PetscMax(tao->gatol, 1.0/auglag->mu);
       }
-      CHKERRQ(PetscInfo(tao,"Penalty increased: mu = %.2f\n",auglag->mu));
+      PetscCall(PetscInfo(tao,"Penalty increased: mu = %.2f\n",auglag->mu));
     }
-    CHKERRQ(TaoLogConvergenceHistory(tao, auglag->fval, auglag->gnorm, auglag->cnorm, tao->ksp_its));
-    CHKERRQ(TaoMonitor(tao, tao->niter, auglag->fval, auglag->gnorm, auglag->cnorm, updated));
-    CHKERRQ((*tao->ops->convergencetest)(tao, tao->cnvP));
+    PetscCall(TaoLogConvergenceHistory(tao, auglag->fval, auglag->gnorm, auglag->cnorm, tao->ksp_its));
+    PetscCall(TaoMonitor(tao, tao->niter, auglag->fval, auglag->gnorm, auglag->cnorm, updated));
+    PetscCall((*tao->ops->convergencetest)(tao, tao->cnvP));
   }
 
   PetscFunctionReturn(0);
@@ -128,14 +128,14 @@ static PetscErrorCode TaoView_ALMM(Tao tao,PetscViewer viewer)
   PetscBool      isascii;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscViewerASCIIPushTab(viewer));
-  CHKERRQ(TaoView(auglag->subsolver,viewer));
-  CHKERRQ(PetscViewerASCIIPopTab(viewer));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  PetscCall(PetscViewerASCIIPushTab(viewer));
+  PetscCall(TaoView(auglag->subsolver,viewer));
+  PetscCall(PetscViewerASCIIPopTab(viewer));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   if (isascii) {
-    CHKERRQ(PetscViewerASCIIPushTab(viewer));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer, "ALMM Formulation Type: %s\n", TaoALMMTypes[auglag->type]));
-    CHKERRQ(PetscViewerASCIIPopTab(viewer));
+    PetscCall(PetscViewerASCIIPushTab(viewer));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "ALMM Formulation Type: %s\n", TaoALMMTypes[auglag->type]));
+    PetscCall(PetscViewerASCIIPopTab(viewer));
   }
   PetscFunctionReturn(0);
 }
@@ -150,67 +150,67 @@ static PetscErrorCode TaoSetUp_ALMM(Tao tao)
   PetscFunctionBegin;
   PetscCheck(!tao->ineq_doublesided,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_WRONGSTATE, "TAOALMM does not support double-sided inequality constraint definition. Please restructure your inequality constrainst to fit the form c(x) >= 0.");
   PetscCheck(tao->eq_constrained || tao->ineq_constrained,PetscObjectComm((PetscObject)tao), PETSC_ERR_ORDER, "Equality and/or inequality constraints must be defined before solver setup.");
-  CHKERRQ(TaoComputeVariableBounds(tao));
+  PetscCall(TaoComputeVariableBounds(tao));
   /* alias base vectors and create extras */
-  CHKERRQ(VecGetType(tao->solution, &vec_type));
+  PetscCall(VecGetType(tao->solution, &vec_type));
   auglag->Px = tao->solution;
   if (!tao->gradient) { /* base gradient */
-    CHKERRQ(VecDuplicate(tao->solution, &tao->gradient));
+    PetscCall(VecDuplicate(tao->solution, &tao->gradient));
   }
   auglag->LgradX = tao->gradient;
   if (!auglag->Xwork) { /* opt var work vector */
-    CHKERRQ(VecDuplicate(tao->solution, &auglag->Xwork));
+    PetscCall(VecDuplicate(tao->solution, &auglag->Xwork));
   }
   if (tao->eq_constrained) {
     auglag->Ce = tao->constraints_equality;
     auglag->Ae = tao->jacobian_equality;
     if (!auglag->Ye) { /* equality multipliers */
-      CHKERRQ(VecDuplicate(auglag->Ce, &auglag->Ye));
+      PetscCall(VecDuplicate(auglag->Ce, &auglag->Ye));
     }
     if (!auglag->Cework) {
-      CHKERRQ(VecDuplicate(auglag->Ce, &auglag->Cework));
+      PetscCall(VecDuplicate(auglag->Ce, &auglag->Cework));
     }
   }
   if (tao->ineq_constrained) {
     auglag->Ci = tao->constraints_inequality;
     auglag->Ai = tao->jacobian_inequality;
     if (!auglag->Yi) { /* inequality multipliers */
-      CHKERRQ(VecDuplicate(auglag->Ci, &auglag->Yi));
+      PetscCall(VecDuplicate(auglag->Ci, &auglag->Yi));
     }
     if (!auglag->Ciwork) {
-      CHKERRQ(VecDuplicate(auglag->Ci, &auglag->Ciwork));
+      PetscCall(VecDuplicate(auglag->Ci, &auglag->Ciwork));
     }
     if (!auglag->Cizero) {
-      CHKERRQ(VecDuplicate(auglag->Ci, &auglag->Cizero));
-      CHKERRQ(VecZeroEntries(auglag->Cizero));
+      PetscCall(VecDuplicate(auglag->Ci, &auglag->Cizero));
+      PetscCall(VecZeroEntries(auglag->Cizero));
     }
     if (!auglag->Ps) { /* slack vars */
-      CHKERRQ(VecDuplicate(auglag->Ci, &auglag->Ps));
+      PetscCall(VecDuplicate(auglag->Ci, &auglag->Ps));
     }
     if (!auglag->LgradS) { /* slack component of Lagrangian gradient */
-      CHKERRQ(VecDuplicate(auglag->Ci, &auglag->LgradS));
+      PetscCall(VecDuplicate(auglag->Ci, &auglag->LgradS));
     }
     /* create vector for combined primal space and the associated communication objects */
     if (!auglag->P) {
-      CHKERRQ(PetscMalloc1(2, &auglag->Parr));
+      PetscCall(PetscMalloc1(2, &auglag->Parr));
       auglag->Parr[0] = auglag->Px; auglag->Parr[1] = auglag->Ps;
-      CHKERRQ(VecConcatenate(2, auglag->Parr, &auglag->P, &auglag->Pis));
-      CHKERRQ(PetscMalloc1(2, &auglag->Pscatter));
-      CHKERRQ(VecScatterCreate(auglag->P, auglag->Pis[0], auglag->Px, NULL, &auglag->Pscatter[0]));
-      CHKERRQ(VecScatterCreate(auglag->P, auglag->Pis[1], auglag->Ps, NULL, &auglag->Pscatter[1]));
+      PetscCall(VecConcatenate(2, auglag->Parr, &auglag->P, &auglag->Pis));
+      PetscCall(PetscMalloc1(2, &auglag->Pscatter));
+      PetscCall(VecScatterCreate(auglag->P, auglag->Pis[0], auglag->Px, NULL, &auglag->Pscatter[0]));
+      PetscCall(VecScatterCreate(auglag->P, auglag->Pis[1], auglag->Ps, NULL, &auglag->Pscatter[1]));
     }
     if (tao->eq_constrained) {
       /* create vector for combined dual space and the associated communication objects */
       if (!auglag->Y) {
-        CHKERRQ(PetscMalloc1(2, &auglag->Yarr));
+        PetscCall(PetscMalloc1(2, &auglag->Yarr));
         auglag->Yarr[0] = auglag->Ye; auglag->Yarr[1] = auglag->Yi;
-        CHKERRQ(VecConcatenate(2, auglag->Yarr, &auglag->Y, &auglag->Yis));
-        CHKERRQ(PetscMalloc1(2, &auglag->Yscatter));
-        CHKERRQ(VecScatterCreate(auglag->Y, auglag->Yis[0], auglag->Ye, NULL, &auglag->Yscatter[0]));
-        CHKERRQ(VecScatterCreate(auglag->Y, auglag->Yis[1], auglag->Yi, NULL, &auglag->Yscatter[1]));
+        PetscCall(VecConcatenate(2, auglag->Yarr, &auglag->Y, &auglag->Yis));
+        PetscCall(PetscMalloc1(2, &auglag->Yscatter));
+        PetscCall(VecScatterCreate(auglag->Y, auglag->Yis[0], auglag->Ye, NULL, &auglag->Yscatter[0]));
+        PetscCall(VecScatterCreate(auglag->Y, auglag->Yis[1], auglag->Yi, NULL, &auglag->Yscatter[1]));
       }
       if (!auglag->C) {
-        CHKERRQ(VecDuplicate(auglag->Y, &auglag->C));
+        PetscCall(VecDuplicate(auglag->Y, &auglag->C));
       }
     } else {
       if (!auglag->C) {
@@ -241,7 +241,7 @@ static PetscErrorCode TaoSetUp_ALMM(Tao tao)
     auglag->ytol0 = 0.5;
     auglag->gtol0 = tao->gatol;
     if (tao->gatol_changed && tao->catol_changed) {
-      CHKERRQ(PetscInfo(tao,"TAOALMM with PHR: different gradient and constraint tolerances are not supported, setting catol = gatol\n"));
+      PetscCall(PetscInfo(tao,"TAOALMM with PHR: different gradient and constraint tolerances are not supported, setting catol = gatol\n"));
       tao->catol = tao->gatol;
     }
   }
@@ -257,48 +257,48 @@ static PetscErrorCode TaoSetUp_ALMM(Tao tao)
       break;
   }
   /* set up the subsolver */
-  CHKERRQ(TaoSetSolution(auglag->subsolver, auglag->P));
-  CHKERRQ(TaoSetObjective(auglag->subsolver, TaoALMMSubsolverObjective_Private, (void*)auglag));
-  CHKERRQ(TaoSetObjectiveAndGradient(auglag->subsolver, NULL, TaoALMMSubsolverObjectiveAndGradient_Private, (void*)auglag));
+  PetscCall(TaoSetSolution(auglag->subsolver, auglag->P));
+  PetscCall(TaoSetObjective(auglag->subsolver, TaoALMMSubsolverObjective_Private, (void*)auglag));
+  PetscCall(TaoSetObjectiveAndGradient(auglag->subsolver, NULL, TaoALMMSubsolverObjectiveAndGradient_Private, (void*)auglag));
   if (tao->bounded) {
     /* make sure that the subsolver is a bound-constrained method */
-    CHKERRQ(PetscObjectTypeCompare((PetscObject)auglag->subsolver, TAOCG, &is_cg));
-    CHKERRQ(PetscObjectTypeCompare((PetscObject)auglag->subsolver, TAOLMVM, &is_lmvm));
+    PetscCall(PetscObjectTypeCompare((PetscObject)auglag->subsolver, TAOCG, &is_cg));
+    PetscCall(PetscObjectTypeCompare((PetscObject)auglag->subsolver, TAOLMVM, &is_lmvm));
     if (is_cg) {
-      CHKERRQ(TaoSetType(auglag->subsolver, TAOBNCG));
-      CHKERRQ(PetscInfo(tao,"TAOCG detected for bound-constrained problem, switching to TAOBNCG instead."));
+      PetscCall(TaoSetType(auglag->subsolver, TAOBNCG));
+      PetscCall(PetscInfo(tao,"TAOCG detected for bound-constrained problem, switching to TAOBNCG instead."));
     }
     if (is_lmvm) {
-      CHKERRQ(TaoSetType(auglag->subsolver, TAOBQNLS));
-      CHKERRQ(PetscInfo(tao,"TAOLMVM detected for bound-constrained problem, switching to TAOBQNLS instead."));
+      PetscCall(TaoSetType(auglag->subsolver, TAOBQNLS));
+      PetscCall(PetscInfo(tao,"TAOLMVM detected for bound-constrained problem, switching to TAOBQNLS instead."));
     }
     /* create lower and upper bound clone vectors for subsolver */
     if (!auglag->PL) {
-      CHKERRQ(VecDuplicate(auglag->P, &auglag->PL));
+      PetscCall(VecDuplicate(auglag->P, &auglag->PL));
     }
     if (!auglag->PU) {
-      CHKERRQ(VecDuplicate(auglag->P, &auglag->PU));
+      PetscCall(VecDuplicate(auglag->P, &auglag->PU));
     }
     if (tao->ineq_constrained) {
       /* create lower and upper bounds for slack, set lower to 0 */
-      CHKERRQ(VecDuplicate(auglag->Ci, &SL));
-      CHKERRQ(VecSet(SL, 0.0));
-      CHKERRQ(VecDuplicate(auglag->Ci, &SU));
-      CHKERRQ(VecSet(SU, PETSC_INFINITY));
+      PetscCall(VecDuplicate(auglag->Ci, &SL));
+      PetscCall(VecSet(SL, 0.0));
+      PetscCall(VecDuplicate(auglag->Ci, &SU));
+      PetscCall(VecSet(SU, PETSC_INFINITY));
       /* combine opt var bounds with slack bounds */
-      CHKERRQ(TaoALMMCombinePrimal_Private(tao, tao->XL, SL, auglag->PL));
-      CHKERRQ(TaoALMMCombinePrimal_Private(tao, tao->XU, SU, auglag->PU));
+      PetscCall(TaoALMMCombinePrimal_Private(tao, tao->XL, SL, auglag->PL));
+      PetscCall(TaoALMMCombinePrimal_Private(tao, tao->XU, SU, auglag->PU));
       /* destroy work vectors */
-      CHKERRQ(VecDestroy(&SL));
-      CHKERRQ(VecDestroy(&SU));
+      PetscCall(VecDestroy(&SL));
+      PetscCall(VecDestroy(&SU));
     } else {
       /* no inequality constraints, just copy bounds into the subsolver */
-      CHKERRQ(VecCopy(tao->XL, auglag->PL));
-      CHKERRQ(VecCopy(tao->XU, auglag->PU));
+      PetscCall(VecCopy(tao->XL, auglag->PL));
+      PetscCall(VecCopy(tao->XU, auglag->PU));
     }
-    CHKERRQ(TaoSetVariableBounds(auglag->subsolver, auglag->PL, auglag->PU));
+    PetscCall(TaoSetVariableBounds(auglag->subsolver, auglag->PL, auglag->PU));
   }
-  CHKERRQ(TaoSetUp(auglag->subsolver));
+  PetscCall(TaoSetUp(auglag->subsolver));
   auglag->G = auglag->subsolver->gradient;
 
   PetscFunctionReturn(0);
@@ -309,46 +309,46 @@ static PetscErrorCode TaoDestroy_ALMM(Tao tao)
   TAO_ALMM       *auglag = (TAO_ALMM*)tao->data;
 
   PetscFunctionBegin;
-  CHKERRQ(TaoDestroy(&auglag->subsolver));
+  PetscCall(TaoDestroy(&auglag->subsolver));
   if (tao->setupcalled) {
-    CHKERRQ(VecDestroy(&auglag->Xwork));              /* opt work */
+    PetscCall(VecDestroy(&auglag->Xwork));              /* opt work */
     if (tao->eq_constrained) {
-      CHKERRQ(VecDestroy(&auglag->Ye));               /* equality multipliers */
-      CHKERRQ(VecDestroy(&auglag->Cework));           /* equality work vector */
+      PetscCall(VecDestroy(&auglag->Ye));               /* equality multipliers */
+      PetscCall(VecDestroy(&auglag->Cework));           /* equality work vector */
     }
     if (tao->ineq_constrained) {
-      CHKERRQ(VecDestroy(&auglag->Ps));               /* slack vars */
+      PetscCall(VecDestroy(&auglag->Ps));               /* slack vars */
       auglag->Parr[0] = NULL;                                     /* clear pointer to tao->solution, will be destroyed by TaoDestroy() shell */
-      CHKERRQ(PetscFree(auglag->Parr));               /* array of primal vectors */
-      CHKERRQ(VecDestroy(&auglag->LgradS));           /* slack grad */
-      CHKERRQ(VecDestroy(&auglag->Cizero));           /* zero vector for pointwise max */
-      CHKERRQ(VecDestroy(&auglag->Yi));               /* inequality multipliers */
-      CHKERRQ(VecDestroy(&auglag->Ciwork));           /* inequality work vector */
-      CHKERRQ(VecDestroy(&auglag->P));                /* combo primal */
-      CHKERRQ(ISDestroy(&auglag->Pis[0]));            /* index set for X inside P */
-      CHKERRQ(ISDestroy(&auglag->Pis[1]));            /* index set for S inside P */
-      CHKERRQ(PetscFree(auglag->Pis));                /* array of P index sets */
-      CHKERRQ(VecScatterDestroy(&auglag->Pscatter[0]));
-      CHKERRQ(VecScatterDestroy(&auglag->Pscatter[1]));
-      CHKERRQ(PetscFree(auglag->Pscatter));
+      PetscCall(PetscFree(auglag->Parr));               /* array of primal vectors */
+      PetscCall(VecDestroy(&auglag->LgradS));           /* slack grad */
+      PetscCall(VecDestroy(&auglag->Cizero));           /* zero vector for pointwise max */
+      PetscCall(VecDestroy(&auglag->Yi));               /* inequality multipliers */
+      PetscCall(VecDestroy(&auglag->Ciwork));           /* inequality work vector */
+      PetscCall(VecDestroy(&auglag->P));                /* combo primal */
+      PetscCall(ISDestroy(&auglag->Pis[0]));            /* index set for X inside P */
+      PetscCall(ISDestroy(&auglag->Pis[1]));            /* index set for S inside P */
+      PetscCall(PetscFree(auglag->Pis));                /* array of P index sets */
+      PetscCall(VecScatterDestroy(&auglag->Pscatter[0]));
+      PetscCall(VecScatterDestroy(&auglag->Pscatter[1]));
+      PetscCall(PetscFree(auglag->Pscatter));
       if (tao->eq_constrained) {
-        CHKERRQ(VecDestroy(&auglag->Y));              /* combo multipliers */
-        CHKERRQ(PetscFree(auglag->Yarr));             /* array of dual vectors */
-        CHKERRQ(VecDestroy(&auglag->C));              /* combo constraints */
-        CHKERRQ(ISDestroy(&auglag->Yis[0]));          /* index set for Ye inside Y */
-        CHKERRQ(ISDestroy(&auglag->Yis[1]));          /* index set for Yi inside Y */
-        CHKERRQ(PetscFree(auglag->Yis));
-        CHKERRQ(VecScatterDestroy(&auglag->Yscatter[0]));
-        CHKERRQ(VecScatterDestroy(&auglag->Yscatter[1]));
-        CHKERRQ(PetscFree(auglag->Yscatter));
+        PetscCall(VecDestroy(&auglag->Y));              /* combo multipliers */
+        PetscCall(PetscFree(auglag->Yarr));             /* array of dual vectors */
+        PetscCall(VecDestroy(&auglag->C));              /* combo constraints */
+        PetscCall(ISDestroy(&auglag->Yis[0]));          /* index set for Ye inside Y */
+        PetscCall(ISDestroy(&auglag->Yis[1]));          /* index set for Yi inside Y */
+        PetscCall(PetscFree(auglag->Yis));
+        PetscCall(VecScatterDestroy(&auglag->Yscatter[0]));
+        PetscCall(VecScatterDestroy(&auglag->Yscatter[1]));
+        PetscCall(PetscFree(auglag->Yscatter));
       }
     }
     if (tao->bounded) {
-      CHKERRQ(VecDestroy(&auglag->PL));                /* lower bounds for subsolver */
-      CHKERRQ(VecDestroy(&auglag->PU));                /* upper bounds for subsolver */
+      PetscCall(VecDestroy(&auglag->PL));                /* lower bounds for subsolver */
+      PetscCall(VecDestroy(&auglag->PU));                /* upper bounds for subsolver */
     }
   }
-  CHKERRQ(PetscFree(tao->data));
+  PetscCall(PetscFree(tao->data));
   PetscFunctionReturn(0);
 }
 
@@ -358,24 +358,24 @@ static PetscErrorCode TaoSetFromOptions_ALMM(PetscOptionItems *PetscOptionsObjec
   PetscInt       i;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"Augmented Lagrangian multipler method solves problems with general constraints by converting them into a sequence of unconstrained problems."));
-  CHKERRQ(PetscOptionsReal("-tao_almm_mu_init","initial penalty parameter","",auglag->mu0,&auglag->mu0,NULL));
-  CHKERRQ(PetscOptionsReal("-tao_almm_mu_factor","increase factor for the penalty parameter","",auglag->mu_fac,&auglag->mu_fac,NULL));
-  CHKERRQ(PetscOptionsReal("-tao_almm_mu_power_good","exponential for penalty parameter when multiplier update is accepted","",auglag->mu_pow_good,&auglag->mu_pow_good,NULL));
-  CHKERRQ(PetscOptionsReal("-tao_almm_mu_power_bad","exponential for penalty parameter when multiplier update is rejected","",auglag->mu_pow_bad,&auglag->mu_pow_bad,NULL));
-  CHKERRQ(PetscOptionsReal("-tao_almm_mu_max","maximum safeguard for penalty parameter updates","",auglag->mu_max,&auglag->mu_max,NULL));
-  CHKERRQ(PetscOptionsReal("-tao_almm_ye_min","minimum safeguard for equality multiplier updates","",auglag->ye_min,&auglag->ye_min,NULL));
-  CHKERRQ(PetscOptionsReal("-tao_almm_ye_max","maximum safeguard for equality multipliers updates","",auglag->ye_max,&auglag->ye_max,NULL));
-  CHKERRQ(PetscOptionsReal("-tao_almm_yi_min","minimum safeguard for inequality multipliers updates","",auglag->yi_min,&auglag->yi_min,NULL));
-  CHKERRQ(PetscOptionsReal("-tao_almm_yi_max","maximum safeguard for inequality multipliers updates","",auglag->yi_max,&auglag->yi_max,NULL));
-  CHKERRQ(PetscOptionsEnum("-tao_almm_type","augmented Lagrangian formulation type for the subproblem","TaoALMMType",TaoALMMTypes,(PetscEnum)auglag->type,(PetscEnum*)&auglag->type,NULL));
-  CHKERRQ(PetscOptionsTail());
-  CHKERRQ(TaoSetOptionsPrefix(auglag->subsolver,((PetscObject)tao)->prefix));
-  CHKERRQ(TaoAppendOptionsPrefix(auglag->subsolver,"tao_almm_subsolver_"));
-  CHKERRQ(TaoSetFromOptions(auglag->subsolver));
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"Augmented Lagrangian multipler method solves problems with general constraints by converting them into a sequence of unconstrained problems."));
+  PetscCall(PetscOptionsReal("-tao_almm_mu_init","initial penalty parameter","",auglag->mu0,&auglag->mu0,NULL));
+  PetscCall(PetscOptionsReal("-tao_almm_mu_factor","increase factor for the penalty parameter","",auglag->mu_fac,&auglag->mu_fac,NULL));
+  PetscCall(PetscOptionsReal("-tao_almm_mu_power_good","exponential for penalty parameter when multiplier update is accepted","",auglag->mu_pow_good,&auglag->mu_pow_good,NULL));
+  PetscCall(PetscOptionsReal("-tao_almm_mu_power_bad","exponential for penalty parameter when multiplier update is rejected","",auglag->mu_pow_bad,&auglag->mu_pow_bad,NULL));
+  PetscCall(PetscOptionsReal("-tao_almm_mu_max","maximum safeguard for penalty parameter updates","",auglag->mu_max,&auglag->mu_max,NULL));
+  PetscCall(PetscOptionsReal("-tao_almm_ye_min","minimum safeguard for equality multiplier updates","",auglag->ye_min,&auglag->ye_min,NULL));
+  PetscCall(PetscOptionsReal("-tao_almm_ye_max","maximum safeguard for equality multipliers updates","",auglag->ye_max,&auglag->ye_max,NULL));
+  PetscCall(PetscOptionsReal("-tao_almm_yi_min","minimum safeguard for inequality multipliers updates","",auglag->yi_min,&auglag->yi_min,NULL));
+  PetscCall(PetscOptionsReal("-tao_almm_yi_max","maximum safeguard for inequality multipliers updates","",auglag->yi_max,&auglag->yi_max,NULL));
+  PetscCall(PetscOptionsEnum("-tao_almm_type","augmented Lagrangian formulation type for the subproblem","TaoALMMType",TaoALMMTypes,(PetscEnum)auglag->type,(PetscEnum*)&auglag->type,NULL));
+  PetscCall(PetscOptionsTail());
+  PetscCall(TaoSetOptionsPrefix(auglag->subsolver,((PetscObject)tao)->prefix));
+  PetscCall(TaoAppendOptionsPrefix(auglag->subsolver,"tao_almm_subsolver_"));
+  PetscCall(TaoSetFromOptions(auglag->subsolver));
   for (i=0; i<tao->numbermonitors; i++) {
-    CHKERRQ(PetscObjectReference((PetscObject)tao->monitorcontext[i]));
-    CHKERRQ(TaoSetMonitor(auglag->subsolver, tao->monitor[i], tao->monitorcontext[i], tao->monitordestroy[i]));
+    PetscCall(PetscObjectReference((PetscObject)tao->monitorcontext[i]));
+    PetscCall(TaoSetMonitor(auglag->subsolver, tao->monitor[i], tao->monitorcontext[i], tao->monitordestroy[i]));
     if (tao->monitor[i] == TaoMonitorDefault || tao->monitor[i] == TaoDefaultCMonitor || tao->monitor[i] == TaoDefaultGMonitor || tao->monitor[i] == TaoDefaultSMonitor) {
       auglag->info = PETSC_TRUE;
     }
@@ -443,7 +443,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_ALMM(Tao tao)
   TAO_ALMM       *auglag;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNewLog(tao, &auglag));
+  PetscCall(PetscNewLog(tao, &auglag));
 
   tao->ops->destroy        = TaoDestroy_ALMM;
   tao->ops->setup          = TaoSetUp_ALMM;
@@ -478,22 +478,22 @@ PETSC_EXTERN PetscErrorCode TaoCreate_ALMM(Tao tao)
   auglag->type        = TAO_ALMM_CLASSIC;
   auglag->info        = PETSC_FALSE;
 
-  CHKERRQ(TaoCreate(PetscObjectComm((PetscObject)tao),&auglag->subsolver));
-  CHKERRQ(TaoSetType(auglag->subsolver, TAOBQNKTR));
-  CHKERRQ(TaoSetTolerances(auglag->subsolver, auglag->gtol, 0.0, 0.0));
-  CHKERRQ(TaoSetMaximumIterations(auglag->subsolver, 1000));
-  CHKERRQ(TaoSetMaximumFunctionEvaluations(auglag->subsolver, 10000));
-  CHKERRQ(TaoSetFunctionLowerBound(auglag->subsolver, PETSC_NINFINITY));
-  CHKERRQ(PetscObjectIncrementTabLevel((PetscObject)auglag->subsolver,(PetscObject)tao,1));
+  PetscCall(TaoCreate(PetscObjectComm((PetscObject)tao),&auglag->subsolver));
+  PetscCall(TaoSetType(auglag->subsolver, TAOBQNKTR));
+  PetscCall(TaoSetTolerances(auglag->subsolver, auglag->gtol, 0.0, 0.0));
+  PetscCall(TaoSetMaximumIterations(auglag->subsolver, 1000));
+  PetscCall(TaoSetMaximumFunctionEvaluations(auglag->subsolver, 10000));
+  PetscCall(TaoSetFunctionLowerBound(auglag->subsolver, PETSC_NINFINITY));
+  PetscCall(PetscObjectIncrementTabLevel((PetscObject)auglag->subsolver,(PetscObject)tao,1));
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)tao, "TaoALMMGetType_C", TaoALMMGetType_Private));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)tao, "TaoALMMSetType_C", TaoALMMSetType_Private));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)tao, "TaoALMMGetSubsolver_C", TaoALMMGetSubsolver_Private));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)tao, "TaoALMMSetSubsolver_C", TaoALMMSetSubsolver_Private));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)tao, "TaoALMMGetMultipliers_C", TaoALMMGetMultipliers_Private));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)tao, "TaoALMMSetMultipliers_C", TaoALMMSetMultipliers_Private));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)tao, "TaoALMMGetPrimalIS_C", TaoALMMGetPrimalIS_Private));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)tao, "TaoALMMGetDualIS_C", TaoALMMGetDualIS_Private));
+  PetscCall(PetscObjectComposeFunction((PetscObject)tao, "TaoALMMGetType_C", TaoALMMGetType_Private));
+  PetscCall(PetscObjectComposeFunction((PetscObject)tao, "TaoALMMSetType_C", TaoALMMSetType_Private));
+  PetscCall(PetscObjectComposeFunction((PetscObject)tao, "TaoALMMGetSubsolver_C", TaoALMMGetSubsolver_Private));
+  PetscCall(PetscObjectComposeFunction((PetscObject)tao, "TaoALMMSetSubsolver_C", TaoALMMSetSubsolver_Private));
+  PetscCall(PetscObjectComposeFunction((PetscObject)tao, "TaoALMMGetMultipliers_C", TaoALMMGetMultipliers_Private));
+  PetscCall(PetscObjectComposeFunction((PetscObject)tao, "TaoALMMSetMultipliers_C", TaoALMMSetMultipliers_Private));
+  PetscCall(PetscObjectComposeFunction((PetscObject)tao, "TaoALMMGetPrimalIS_C", TaoALMMGetPrimalIS_Private));
+  PetscCall(PetscObjectComposeFunction((PetscObject)tao, "TaoALMMGetDualIS_C", TaoALMMGetDualIS_Private));
   PetscFunctionReturn(0);
 }
 
@@ -503,12 +503,12 @@ static PetscErrorCode TaoALMMCombinePrimal_Private(Tao tao, Vec X, Vec S, Vec P)
 
   PetscFunctionBegin;
   if (tao->ineq_constrained) {
-    CHKERRQ(VecScatterBegin(auglag->Pscatter[0], X, P, INSERT_VALUES, SCATTER_REVERSE));
-    CHKERRQ(VecScatterEnd(auglag->Pscatter[0], X, P, INSERT_VALUES, SCATTER_REVERSE));
-    CHKERRQ(VecScatterBegin(auglag->Pscatter[1], S, P, INSERT_VALUES, SCATTER_REVERSE));
-    CHKERRQ(VecScatterEnd(auglag->Pscatter[1], S, P, INSERT_VALUES, SCATTER_REVERSE));
+    PetscCall(VecScatterBegin(auglag->Pscatter[0], X, P, INSERT_VALUES, SCATTER_REVERSE));
+    PetscCall(VecScatterEnd(auglag->Pscatter[0], X, P, INSERT_VALUES, SCATTER_REVERSE));
+    PetscCall(VecScatterBegin(auglag->Pscatter[1], S, P, INSERT_VALUES, SCATTER_REVERSE));
+    PetscCall(VecScatterEnd(auglag->Pscatter[1], S, P, INSERT_VALUES, SCATTER_REVERSE));
   } else {
-    CHKERRQ(VecCopy(X, P));
+    PetscCall(VecCopy(X, P));
   }
   PetscFunctionReturn(0);
 }
@@ -520,15 +520,15 @@ static PetscErrorCode TaoALMMCombineDual_Private(Tao tao, Vec EQ, Vec IN, Vec Y)
   PetscFunctionBegin;
   if (tao->eq_constrained) {
     if (tao->ineq_constrained) {
-      CHKERRQ(VecScatterBegin(auglag->Yscatter[0], EQ, Y, INSERT_VALUES, SCATTER_REVERSE));
-      CHKERRQ(VecScatterEnd(auglag->Yscatter[0], EQ, Y, INSERT_VALUES, SCATTER_REVERSE));
-      CHKERRQ(VecScatterBegin(auglag->Yscatter[1], IN, Y, INSERT_VALUES, SCATTER_REVERSE));
-      CHKERRQ(VecScatterEnd(auglag->Yscatter[1], IN, Y, INSERT_VALUES, SCATTER_REVERSE));
+      PetscCall(VecScatterBegin(auglag->Yscatter[0], EQ, Y, INSERT_VALUES, SCATTER_REVERSE));
+      PetscCall(VecScatterEnd(auglag->Yscatter[0], EQ, Y, INSERT_VALUES, SCATTER_REVERSE));
+      PetscCall(VecScatterBegin(auglag->Yscatter[1], IN, Y, INSERT_VALUES, SCATTER_REVERSE));
+      PetscCall(VecScatterEnd(auglag->Yscatter[1], IN, Y, INSERT_VALUES, SCATTER_REVERSE));
     } else {
-      CHKERRQ(VecCopy(EQ, Y));
+      PetscCall(VecCopy(EQ, Y));
     }
   } else {
-    CHKERRQ(VecCopy(IN, Y));
+    PetscCall(VecCopy(IN, Y));
   }
   PetscFunctionReturn(0);
 }
@@ -539,12 +539,12 @@ static PetscErrorCode TaoALMMSplitPrimal_Private(Tao tao, Vec P, Vec X, Vec S)
 
   PetscFunctionBegin;
   if (tao->ineq_constrained) {
-    CHKERRQ(VecScatterBegin(auglag->Pscatter[0], P, X, INSERT_VALUES, SCATTER_FORWARD));
-    CHKERRQ(VecScatterEnd(auglag->Pscatter[0], P, X, INSERT_VALUES, SCATTER_FORWARD));
-    CHKERRQ(VecScatterBegin(auglag->Pscatter[1], P, S, INSERT_VALUES, SCATTER_FORWARD));
-    CHKERRQ(VecScatterEnd(auglag->Pscatter[1], P, S, INSERT_VALUES, SCATTER_FORWARD));
+    PetscCall(VecScatterBegin(auglag->Pscatter[0], P, X, INSERT_VALUES, SCATTER_FORWARD));
+    PetscCall(VecScatterEnd(auglag->Pscatter[0], P, X, INSERT_VALUES, SCATTER_FORWARD));
+    PetscCall(VecScatterBegin(auglag->Pscatter[1], P, S, INSERT_VALUES, SCATTER_FORWARD));
+    PetscCall(VecScatterEnd(auglag->Pscatter[1], P, S, INSERT_VALUES, SCATTER_FORWARD));
   } else {
-    CHKERRQ(VecCopy(P, X));
+    PetscCall(VecCopy(P, X));
   }
   PetscFunctionReturn(0);
 }
@@ -557,27 +557,27 @@ static PetscErrorCode TaoALMMComputeOptimalityNorms_Private(Tao tao)
   PetscFunctionBegin;
   /* if bounded, project the gradient */
   if (tao->bounded) {
-    CHKERRQ(VecBoundGradientProjection(auglag->LgradX, auglag->Px, tao->XL, tao->XU, auglag->LgradX));
+    PetscCall(VecBoundGradientProjection(auglag->LgradX, auglag->Px, tao->XL, tao->XU, auglag->LgradX));
   }
   if (auglag->type == TAO_ALMM_PHR) {
-    CHKERRQ(VecNorm(auglag->LgradX, NORM_INFINITY, &auglag->gnorm));
+    PetscCall(VecNorm(auglag->LgradX, NORM_INFINITY, &auglag->gnorm));
     auglag->cenorm = 0.0;
     if (tao->eq_constrained) {
-      CHKERRQ(VecNorm(auglag->Ce, NORM_INFINITY, &auglag->cenorm));
+      PetscCall(VecNorm(auglag->Ce, NORM_INFINITY, &auglag->cenorm));
     }
     auglag->cinorm = 0.0;
     if (tao->ineq_constrained) {
-      CHKERRQ(VecCopy(auglag->Yi, auglag->Ciwork));
-      CHKERRQ(VecScale(auglag->Ciwork, -1.0/auglag->mu));
-      CHKERRQ(VecPointwiseMax(auglag->Ciwork, auglag->Ci, auglag->Ciwork));
-      CHKERRQ(VecNorm(auglag->Ciwork, NORM_INFINITY, &auglag->cinorm));
+      PetscCall(VecCopy(auglag->Yi, auglag->Ciwork));
+      PetscCall(VecScale(auglag->Ciwork, -1.0/auglag->mu));
+      PetscCall(VecPointwiseMax(auglag->Ciwork, auglag->Ci, auglag->Ciwork));
+      PetscCall(VecNorm(auglag->Ciwork, NORM_INFINITY, &auglag->cinorm));
     }
     auglag->cnorm_old = auglag->cnorm;
     auglag->cnorm = PetscMax(auglag->cenorm, auglag->cinorm);
     auglag->ytol = auglag->ytol0 * auglag->cnorm_old;
   } else {
-    CHKERRQ(VecNorm(auglag->LgradX, NORM_2, &auglag->gnorm));
-    CHKERRQ(VecNorm(auglag->C, NORM_2, &auglag->cnorm));
+    PetscCall(VecNorm(auglag->LgradX, NORM_2, &auglag->gnorm));
+    PetscCall(VecNorm(auglag->C, NORM_2, &auglag->cnorm));
   }
   PetscFunctionReturn(0);
 }
@@ -588,33 +588,33 @@ static PetscErrorCode TaoALMMEvaluateIterate_Private(Tao tao, Vec P)
 
   PetscFunctionBegin;
   /* split solution into primal and slack components */
-  CHKERRQ(TaoALMMSplitPrimal_Private(tao, auglag->P, auglag->Px, auglag->Ps));
+  PetscCall(TaoALMMSplitPrimal_Private(tao, auglag->P, auglag->Px, auglag->Ps));
 
   /* compute f, df/dx and the constraints */
-  CHKERRQ(TaoComputeObjectiveAndGradient(tao, auglag->Px, &auglag->fval, auglag->LgradX));
+  PetscCall(TaoComputeObjectiveAndGradient(tao, auglag->Px, &auglag->fval, auglag->LgradX));
   if (tao->eq_constrained) {
-    CHKERRQ(TaoComputeEqualityConstraints(tao, auglag->Px, auglag->Ce));
-    CHKERRQ(TaoComputeJacobianEquality(tao, auglag->Px, auglag->Ae, auglag->Ae));
+    PetscCall(TaoComputeEqualityConstraints(tao, auglag->Px, auglag->Ce));
+    PetscCall(TaoComputeJacobianEquality(tao, auglag->Px, auglag->Ae, auglag->Ae));
   }
   if (tao->ineq_constrained) {
-    CHKERRQ(TaoComputeInequalityConstraints(tao, auglag->Px, auglag->Ci));
-    CHKERRQ(TaoComputeJacobianInequality(tao, auglag->Px, auglag->Ai, auglag->Ai));
+    PetscCall(TaoComputeInequalityConstraints(tao, auglag->Px, auglag->Ci));
+    PetscCall(TaoComputeJacobianInequality(tao, auglag->Px, auglag->Ai, auglag->Ai));
     switch (auglag->type) {
       case TAO_ALMM_CLASSIC:
         /* classic formulation converts inequality to equality constraints via slack variables */
-        CHKERRQ(VecAXPY(auglag->Ci, -1.0, auglag->Ps));
+        PetscCall(VecAXPY(auglag->Ci, -1.0, auglag->Ps));
         break;
       case TAO_ALMM_PHR:
         /* PHR is based on Ci <= 0 while TAO defines Ci >= 0 so we hit it with a negative sign */
-        CHKERRQ(VecScale(auglag->Ci, -1.0));
-        CHKERRQ(MatScale(auglag->Ai, -1.0));
+        PetscCall(VecScale(auglag->Ci, -1.0));
+        PetscCall(MatScale(auglag->Ai, -1.0));
         break;
       default:
         break;
     }
   }
   /* combine constraints into one vector */
-  CHKERRQ(TaoALMMCombineDual_Private(tao, auglag->Ce, auglag->Ci, auglag->C));
+  PetscCall(TaoALMMCombineDual_Private(tao, auglag->Ce, auglag->Ci, auglag->C));
   PetscFunctionReturn(0);
 }
 
@@ -631,28 +631,28 @@ static PetscErrorCode TaoALMMComputePHRLagAndGradient_Private(Tao tao)
   PetscReal      eq_norm=0.0, ineq_norm=0.0;
 
   PetscFunctionBegin;
-  CHKERRQ(TaoALMMEvaluateIterate_Private(tao, auglag->P));
+  PetscCall(TaoALMMEvaluateIterate_Private(tao, auglag->P));
   if (tao->eq_constrained) {
     /* Ce_work = mu*(Ce + Ye/mu) */
-    CHKERRQ(VecWAXPY(auglag->Cework, 1.0/auglag->mu, auglag->Ye, auglag->Ce));
-    CHKERRQ(VecDot(auglag->Cework, auglag->Cework, &eq_norm)); /* contribution to scalar Lagrangian */
-    CHKERRQ(VecScale(auglag->Cework, auglag->mu));
+    PetscCall(VecWAXPY(auglag->Cework, 1.0/auglag->mu, auglag->Ye, auglag->Ce));
+    PetscCall(VecDot(auglag->Cework, auglag->Cework, &eq_norm)); /* contribution to scalar Lagrangian */
+    PetscCall(VecScale(auglag->Cework, auglag->mu));
     /* dL/dX += mu*(Ce + Ye/mu)^T Ae */
-    CHKERRQ(MatMultTransposeAdd(auglag->Ae, auglag->Cework, auglag->LgradX, auglag->LgradX));
+    PetscCall(MatMultTransposeAdd(auglag->Ae, auglag->Cework, auglag->LgradX, auglag->LgradX));
   }
   if (tao->ineq_constrained) {
     /* Ci_work = mu * pmax(0, Ci + Yi/mu) where pmax() is pointwise max() */
-    CHKERRQ(VecWAXPY(auglag->Ciwork, 1.0/auglag->mu, auglag->Yi, auglag->Ci));
-    CHKERRQ(VecPointwiseMax(auglag->Ciwork, auglag->Cizero, auglag->Ciwork));
-    CHKERRQ(VecDot(auglag->Ciwork, auglag->Ciwork, &ineq_norm)); /* contribution to scalar Lagrangian */
+    PetscCall(VecWAXPY(auglag->Ciwork, 1.0/auglag->mu, auglag->Yi, auglag->Ci));
+    PetscCall(VecPointwiseMax(auglag->Ciwork, auglag->Cizero, auglag->Ciwork));
+    PetscCall(VecDot(auglag->Ciwork, auglag->Ciwork, &ineq_norm)); /* contribution to scalar Lagrangian */
     /* dL/dX += mu * pmax(0, Ci + Yi/mu)^T Ai */
-    CHKERRQ(VecScale(auglag->Ciwork, auglag->mu));
-    CHKERRQ(MatMultTransposeAdd(auglag->Ai, auglag->Ciwork, auglag->LgradX, auglag->LgradX));
+    PetscCall(VecScale(auglag->Ciwork, auglag->mu));
+    PetscCall(MatMultTransposeAdd(auglag->Ai, auglag->Ciwork, auglag->LgradX, auglag->LgradX));
     /* dL/dS = 0 because there are no slacks in PHR */
-    CHKERRQ(VecZeroEntries(auglag->LgradS));
+    PetscCall(VecZeroEntries(auglag->LgradS));
   }
   /* combine gradient together */
-  CHKERRQ(TaoALMMCombinePrimal_Private(tao, auglag->LgradX, auglag->LgradS, auglag->G));
+  PetscCall(TaoALMMCombinePrimal_Private(tao, auglag->LgradX, auglag->LgradS, auglag->G));
   /* compute L = f + 0.5 * mu * [(Ce + Ye/mu)^T (Ce + Ye/mu) + pmax(0, Ci + Yi/mu)^T pmax(0, Ci + Yi/mu)] */
   auglag->Lval = auglag->fval + 0.5*auglag->mu*(eq_norm + ineq_norm);
   PetscFunctionReturn(0);
@@ -671,32 +671,32 @@ static PetscErrorCode TaoALMMComputeAugLagAndGradient_Private(Tao tao)
   PetscReal      yeTce=0.0, yiTcims=0.0, ceTce=0.0, cimsTcims=0.0;
 
   PetscFunctionBegin;
-  CHKERRQ(TaoALMMEvaluateIterate_Private(tao, auglag->P));
+  PetscCall(TaoALMMEvaluateIterate_Private(tao, auglag->P));
   if (tao->eq_constrained) {
     /* compute scalar contributions */
-    CHKERRQ(VecDot(auglag->Ye, auglag->Ce, &yeTce));
-    CHKERRQ(VecDot(auglag->Ce, auglag->Ce, &ceTce));
+    PetscCall(VecDot(auglag->Ye, auglag->Ce, &yeTce));
+    PetscCall(VecDot(auglag->Ce, auglag->Ce, &ceTce));
     /* dL/dX += ye^T Ae */
-    CHKERRQ(MatMultTransposeAdd(auglag->Ae, auglag->Ye, auglag->LgradX, auglag->LgradX));
+    PetscCall(MatMultTransposeAdd(auglag->Ae, auglag->Ye, auglag->LgradX, auglag->LgradX));
     /* dL/dX += mu * ce^T Ae */
-    CHKERRQ(MatMultTranspose(auglag->Ae, auglag->Ce, auglag->Xwork));
-    CHKERRQ(VecAXPY(auglag->LgradX, auglag->mu, auglag->Xwork));
+    PetscCall(MatMultTranspose(auglag->Ae, auglag->Ce, auglag->Xwork));
+    PetscCall(VecAXPY(auglag->LgradX, auglag->mu, auglag->Xwork));
   }
   if (tao->ineq_constrained) {
     /* compute scalar contributions */
-    CHKERRQ(VecDot(auglag->Yi, auglag->Ci, &yiTcims));
-    CHKERRQ(VecDot(auglag->Ci, auglag->Ci, &cimsTcims));
+    PetscCall(VecDot(auglag->Yi, auglag->Ci, &yiTcims));
+    PetscCall(VecDot(auglag->Ci, auglag->Ci, &cimsTcims));
     /* dL/dX += yi^T Ai */
-    CHKERRQ(MatMultTransposeAdd(auglag->Ai, auglag->Yi, auglag->LgradX, auglag->LgradX));
+    PetscCall(MatMultTransposeAdd(auglag->Ai, auglag->Yi, auglag->LgradX, auglag->LgradX));
     /* dL/dX += mu * (ci - s)^T Ai */
-    CHKERRQ(MatMultTranspose(auglag->Ai, auglag->Ci, auglag->Xwork));
-    CHKERRQ(VecAXPY(auglag->LgradX, auglag->mu, auglag->Xwork));
+    PetscCall(MatMultTranspose(auglag->Ai, auglag->Ci, auglag->Xwork));
+    PetscCall(VecAXPY(auglag->LgradX, auglag->mu, auglag->Xwork));
     /* dL/dS = -[yi + mu*(ci - s)] */
-    CHKERRQ(VecWAXPY(auglag->LgradS, auglag->mu, auglag->Ci, auglag->Yi));
-    CHKERRQ(VecScale(auglag->LgradS, -1.0));
+    PetscCall(VecWAXPY(auglag->LgradS, auglag->mu, auglag->Ci, auglag->Yi));
+    PetscCall(VecScale(auglag->LgradS, -1.0));
   }
   /* combine gradient together */
-  CHKERRQ(TaoALMMCombinePrimal_Private(tao, auglag->LgradX, auglag->LgradS, auglag->G));
+  PetscCall(TaoALMMCombinePrimal_Private(tao, auglag->LgradX, auglag->LgradS, auglag->G));
   /* compute L = f + ye^T ce + yi^T (ci - s) + 0.5*mu*||ce||^2 + 0.5*mu*||ci - s||^2 */
   auglag->Lval = auglag->fval + yeTce + yiTcims + 0.5*auglag->mu*(ceTce + cimsTcims);
   PetscFunctionReturn(0);
@@ -707,8 +707,8 @@ PetscErrorCode TaoALMMSubsolverObjective_Private(Tao tao, Vec P, PetscReal *Lval
   TAO_ALMM       *auglag = (TAO_ALMM*)ctx;
 
   PetscFunctionBegin;
-  CHKERRQ(VecCopy(P, auglag->P));
-  CHKERRQ((*auglag->sub_obj)(auglag->parent));
+  PetscCall(VecCopy(P, auglag->P));
+  PetscCall((*auglag->sub_obj)(auglag->parent));
   *Lval = auglag->Lval;
   PetscFunctionReturn(0);
 }
@@ -718,9 +718,9 @@ PetscErrorCode TaoALMMSubsolverObjectiveAndGradient_Private(Tao tao, Vec P, Pets
   TAO_ALMM       *auglag = (TAO_ALMM*)ctx;
 
   PetscFunctionBegin;
-  CHKERRQ(VecCopy(P, auglag->P));
-  CHKERRQ((*auglag->sub_obj)(auglag->parent));
-  CHKERRQ(VecCopy(auglag->G, G));
+  PetscCall(VecCopy(P, auglag->P));
+  PetscCall((*auglag->sub_obj)(auglag->parent));
+  PetscCall(VecCopy(auglag->G, G));
   *Lval = auglag->Lval;
   PetscFunctionReturn(0);
 }

@@ -356,30 +356,30 @@ static PetscErrorCode AssembleStokes_A(Mat A,DM stokes_da,DM quadrature)
   PetscScalar            *q_eta,*prop_eta;
 
   PetscFunctionBeginUser;
-  CHKERRQ(MatZeroEntries(A));
+  PetscCall(MatZeroEntries(A));
   /* setup for coords */
-  CHKERRQ(DMGetCoordinateDM(stokes_da,&cda));
-  CHKERRQ(DMGetCoordinatesLocal(stokes_da,&coords));
-  CHKERRQ(VecGetArrayRead(coords,&_coords));
+  PetscCall(DMGetCoordinateDM(stokes_da,&cda));
+  PetscCall(DMGetCoordinatesLocal(stokes_da,&coords));
+  PetscCall(VecGetArrayRead(coords,&_coords));
 
   /* setup for coefficients */
-  CHKERRQ(DMSwarmGetField(quadrature,"eta_q",NULL,NULL,(void**)&q_eta));
+  PetscCall(DMSwarmGetField(quadrature,"eta_q",NULL,NULL,(void**)&q_eta));
 
-  CHKERRQ(DMDAGetElements(stokes_da,&nel,&npe,&element_list));
+  PetscCall(DMDAGetElements(stokes_da,&nel,&npe,&element_list));
   for (eidx = 0; eidx < nel; eidx++) {
     const PetscInt *element = &element_list[npe*eidx];
 
     /* get coords for the element */
-    CHKERRQ(GetElementCoords(_coords,element,el_coords));
+    PetscCall(GetElementCoords(_coords,element,el_coords));
 
     /* get coefficients for the element */
     prop_eta = &q_eta[GAUSS_POINTS * eidx];
 
     /* initialise element stiffness matrix */
-    CHKERRQ(PetscMemzero(Ae,sizeof(Ae)));
-    CHKERRQ(PetscMemzero(Ge,sizeof(Ge)));
-    CHKERRQ(PetscMemzero(De,sizeof(De)));
-    CHKERRQ(PetscMemzero(Ce,sizeof(Ce)));
+    PetscCall(PetscMemzero(Ae,sizeof(Ae)));
+    PetscCall(PetscMemzero(Ge,sizeof(Ge)));
+    PetscCall(PetscMemzero(De,sizeof(De)));
+    PetscCall(PetscMemzero(Ce,sizeof(Ce)));
 
     /* form element stiffness matrix */
     BForm_DivT(Ae,el_coords,prop_eta);
@@ -388,17 +388,17 @@ static PetscErrorCode AssembleStokes_A(Mat A,DM stokes_da,DM quadrature)
     BForm_Stabilisation(Ce,el_coords,prop_eta);
 
     /* insert element matrix into global matrix */
-    CHKERRQ(DMDAGetElementEqnums_up(element,u_eqn,p_eqn));
-    CHKERRQ(MatSetValuesLocal(A,NODES_PER_EL*U_DOFS,u_eqn,NODES_PER_EL*U_DOFS,u_eqn,Ae,ADD_VALUES));
-    CHKERRQ(MatSetValuesLocal(A,NODES_PER_EL*U_DOFS,u_eqn,NODES_PER_EL*P_DOFS,p_eqn,Ge,ADD_VALUES));
-    CHKERRQ(MatSetValuesLocal(A,NODES_PER_EL*P_DOFS,p_eqn,NODES_PER_EL*U_DOFS,u_eqn,De,ADD_VALUES));
-    CHKERRQ(MatSetValuesLocal(A,NODES_PER_EL*P_DOFS,p_eqn,NODES_PER_EL*P_DOFS,p_eqn,Ce,ADD_VALUES));
+    PetscCall(DMDAGetElementEqnums_up(element,u_eqn,p_eqn));
+    PetscCall(MatSetValuesLocal(A,NODES_PER_EL*U_DOFS,u_eqn,NODES_PER_EL*U_DOFS,u_eqn,Ae,ADD_VALUES));
+    PetscCall(MatSetValuesLocal(A,NODES_PER_EL*U_DOFS,u_eqn,NODES_PER_EL*P_DOFS,p_eqn,Ge,ADD_VALUES));
+    PetscCall(MatSetValuesLocal(A,NODES_PER_EL*P_DOFS,p_eqn,NODES_PER_EL*U_DOFS,u_eqn,De,ADD_VALUES));
+    PetscCall(MatSetValuesLocal(A,NODES_PER_EL*P_DOFS,p_eqn,NODES_PER_EL*P_DOFS,p_eqn,Ce,ADD_VALUES));
   }
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
-  CHKERRQ(DMSwarmRestoreField(quadrature,"eta_q",NULL,NULL,(void**)&q_eta));
-  CHKERRQ(VecRestoreArrayRead(coords,&_coords));
+  PetscCall(DMSwarmRestoreField(quadrature,"eta_q",NULL,NULL,(void**)&q_eta));
+  PetscCall(VecRestoreArrayRead(coords,&_coords));
   PetscFunctionReturn(0);
 }
 
@@ -419,30 +419,30 @@ static PetscErrorCode AssembleStokes_PC(Mat A,DM stokes_da,DM quadrature)
   PetscScalar            *q_eta,*prop_eta;
 
   PetscFunctionBeginUser;
-  CHKERRQ(MatZeroEntries(A));
+  PetscCall(MatZeroEntries(A));
   /* setup for coords */
-  CHKERRQ(DMGetCoordinateDM(stokes_da,&cda));
-  CHKERRQ(DMGetCoordinatesLocal(stokes_da,&coords));
-  CHKERRQ(VecGetArrayRead(coords,&_coords));
+  PetscCall(DMGetCoordinateDM(stokes_da,&cda));
+  PetscCall(DMGetCoordinatesLocal(stokes_da,&coords));
+  PetscCall(VecGetArrayRead(coords,&_coords));
 
   /* setup for coefficients */
-  CHKERRQ(DMSwarmGetField(quadrature,"eta_q",NULL,NULL,(void**)&q_eta));
+  PetscCall(DMSwarmGetField(quadrature,"eta_q",NULL,NULL,(void**)&q_eta));
 
-  CHKERRQ(DMDAGetElements(stokes_da,&nel,&npe,&element_list));
+  PetscCall(DMDAGetElements(stokes_da,&nel,&npe,&element_list));
   for (eidx = 0; eidx < nel; eidx++) {
     const PetscInt *element = &element_list[npe*eidx];
 
     /* get coords for the element */
-    CHKERRQ(GetElementCoords(_coords,element,el_coords));
+    PetscCall(GetElementCoords(_coords,element,el_coords));
 
     /* get coefficients for the element */
     prop_eta = &q_eta[GAUSS_POINTS * eidx];
 
     /* initialise element stiffness matrix */
-    CHKERRQ(PetscMemzero(Ae,sizeof(Ae)));
-    CHKERRQ(PetscMemzero(Ge,sizeof(Ge)));
-    CHKERRQ(PetscMemzero(De,sizeof(De)));
-    CHKERRQ(PetscMemzero(Ce,sizeof(Ce)));
+    PetscCall(PetscMemzero(Ae,sizeof(Ae)));
+    PetscCall(PetscMemzero(Ge,sizeof(Ge)));
+    PetscCall(PetscMemzero(De,sizeof(De)));
+    PetscCall(PetscMemzero(Ce,sizeof(Ce)));
 
     /* form element stiffness matrix */
     BForm_DivT(Ae,el_coords,prop_eta);
@@ -450,17 +450,17 @@ static PetscErrorCode AssembleStokes_PC(Mat A,DM stokes_da,DM quadrature)
     BForm_ScaledMassMatrix(Ce,el_coords,prop_eta);
 
     /* insert element matrix into global matrix */
-    CHKERRQ(DMDAGetElementEqnums_up(element,u_eqn,p_eqn));
-    CHKERRQ(MatSetValuesLocal(A,NODES_PER_EL*U_DOFS,u_eqn,NODES_PER_EL*U_DOFS,u_eqn,Ae,ADD_VALUES));
-    CHKERRQ(MatSetValuesLocal(A,NODES_PER_EL*U_DOFS,u_eqn,NODES_PER_EL*P_DOFS,p_eqn,Ge,ADD_VALUES));
-    CHKERRQ(MatSetValuesLocal(A,NODES_PER_EL*P_DOFS,p_eqn,NODES_PER_EL*U_DOFS,u_eqn,De,ADD_VALUES));
-    CHKERRQ(MatSetValuesLocal(A,NODES_PER_EL*P_DOFS,p_eqn,NODES_PER_EL*P_DOFS,p_eqn,Ce,ADD_VALUES));
+    PetscCall(DMDAGetElementEqnums_up(element,u_eqn,p_eqn));
+    PetscCall(MatSetValuesLocal(A,NODES_PER_EL*U_DOFS,u_eqn,NODES_PER_EL*U_DOFS,u_eqn,Ae,ADD_VALUES));
+    PetscCall(MatSetValuesLocal(A,NODES_PER_EL*U_DOFS,u_eqn,NODES_PER_EL*P_DOFS,p_eqn,Ge,ADD_VALUES));
+    PetscCall(MatSetValuesLocal(A,NODES_PER_EL*P_DOFS,p_eqn,NODES_PER_EL*U_DOFS,u_eqn,De,ADD_VALUES));
+    PetscCall(MatSetValuesLocal(A,NODES_PER_EL*P_DOFS,p_eqn,NODES_PER_EL*P_DOFS,p_eqn,Ce,ADD_VALUES));
   }
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
-  CHKERRQ(DMSwarmRestoreField(quadrature,"eta_q",NULL,NULL,(void**)&q_eta));
-  CHKERRQ(VecRestoreArrayRead(coords,&_coords));
+  PetscCall(DMSwarmRestoreField(quadrature,"eta_q",NULL,NULL,(void**)&q_eta));
+  PetscCall(VecRestoreArrayRead(coords,&_coords));
 
   PetscFunctionReturn(0);
 }
@@ -482,51 +482,51 @@ static PetscErrorCode AssembleStokes_RHS(Vec F,DM stokes_da,DM quadrature)
   PetscScalar            *LA_F;
 
   PetscFunctionBeginUser;
-  CHKERRQ(VecZeroEntries(F));
+  PetscCall(VecZeroEntries(F));
   /* setup for coords */
-  CHKERRQ(DMGetCoordinateDM(stokes_da,&cda));
-  CHKERRQ(DMGetCoordinatesLocal(stokes_da,&coords));
-  CHKERRQ(VecGetArrayRead(coords,&_coords));
+  PetscCall(DMGetCoordinateDM(stokes_da,&cda));
+  PetscCall(DMGetCoordinatesLocal(stokes_da,&coords));
+  PetscCall(VecGetArrayRead(coords,&_coords));
 
   /* setup for coefficients */
-  CHKERRQ(DMSwarmGetField(quadrature,"rho_q",NULL,NULL,(void**)&q_rhs));
+  PetscCall(DMSwarmGetField(quadrature,"rho_q",NULL,NULL,(void**)&q_rhs));
 
   /* get access to the vector */
-  CHKERRQ(DMGetLocalVector(stokes_da,&local_F));
-  CHKERRQ(VecZeroEntries(local_F));
-  CHKERRQ(VecGetArray(local_F,&LA_F));
+  PetscCall(DMGetLocalVector(stokes_da,&local_F));
+  PetscCall(VecZeroEntries(local_F));
+  PetscCall(VecGetArray(local_F,&LA_F));
 
-  CHKERRQ(DMDAGetElements(stokes_da,&nel,&npe,&element_list));
+  PetscCall(DMDAGetElements(stokes_da,&nel,&npe,&element_list));
   for (eidx = 0; eidx < nel; eidx++) {
     const PetscInt *element = &element_list[npe*eidx];
 
     /* get coords for the element */
-    CHKERRQ(GetElementCoords(_coords,element,el_coords));
+    PetscCall(GetElementCoords(_coords,element,el_coords));
 
     /* get coefficients for the element */
     prop_fy = &q_rhs[GAUSS_POINTS * eidx];
 
     /* initialise element stiffness matrix */
-    CHKERRQ(PetscMemzero(Fe,sizeof(Fe)));
-    CHKERRQ(PetscMemzero(He,sizeof(He)));
+    PetscCall(PetscMemzero(Fe,sizeof(Fe)));
+    PetscCall(PetscMemzero(He,sizeof(He)));
 
     /* form element stiffness matrix */
     LForm_MomentumRHS(Fe,el_coords,NULL,prop_fy);
 
     /* insert element matrix into global matrix */
-    CHKERRQ(DMDAGetElementEqnums_up(element,u_eqn,p_eqn));
+    PetscCall(DMDAGetElementEqnums_up(element,u_eqn,p_eqn));
 
     for (i=0; i<NODES_PER_EL*U_DOFS; i++) {
       LA_F[ u_eqn[i] ] += Fe[i];
     }
   }
-  CHKERRQ(DMSwarmRestoreField(quadrature,"rho_q",NULL,NULL,(void**)&q_rhs));
-  CHKERRQ(VecRestoreArrayRead(coords,&_coords));
+  PetscCall(DMSwarmRestoreField(quadrature,"rho_q",NULL,NULL,(void**)&q_rhs));
+  PetscCall(VecRestoreArrayRead(coords,&_coords));
 
-  CHKERRQ(VecRestoreArray(local_F,&LA_F));
-  CHKERRQ(DMLocalToGlobalBegin(stokes_da,local_F,ADD_VALUES,F));
-  CHKERRQ(DMLocalToGlobalEnd(stokes_da,local_F,ADD_VALUES,F));
-  CHKERRQ(DMRestoreLocalVector(stokes_da,&local_F));
+  PetscCall(VecRestoreArray(local_F,&LA_F));
+  PetscCall(DMLocalToGlobalBegin(stokes_da,local_F,ADD_VALUES,F));
+  PetscCall(DMLocalToGlobalEnd(stokes_da,local_F,ADD_VALUES,F));
+  PetscCall(DMRestoreLocalVector(stokes_da,&local_F));
 
   PetscFunctionReturn(0);
 }
@@ -542,14 +542,14 @@ PetscErrorCode DMSwarmPICInsertPointsCellwise(DM dm,DM dmc,PetscInt e,PetscInt n
   PetscInt          *swarm_cellid;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetDimension(dm,&dim));
-  CHKERRQ(DMDAGetElements(dmc,&nel,&npe,&element_list));
+  PetscCall(DMGetDimension(dm,&dim));
+  PetscCall(DMDAGetElements(dmc,&nel,&npe,&element_list));
 
-  CHKERRQ(PetscMalloc1(dim*npoints,&xp));
-  CHKERRQ(PetscMalloc1(dim*npe,&elcoor));
-  CHKERRQ(PetscMalloc1(npoints,&basis));
+  PetscCall(PetscMalloc1(dim*npoints,&xp));
+  PetscCall(PetscMalloc1(dim*npe,&elcoor));
+  PetscCall(PetscMalloc1(npoints,&basis));
   for (q=0; q<npoints; q++) {
-    CHKERRQ(PetscMalloc1(npe,&basis[q]));
+    PetscCall(PetscMalloc1(npe,&basis[q]));
 
     switch (dim) {
       case 1:
@@ -576,8 +576,8 @@ PetscErrorCode DMSwarmPICInsertPointsCellwise(DM dm,DM dmc,PetscInt e,PetscInt n
     }
   }
 
-  CHKERRQ(DMGetCoordinatesLocal(dmc,&coor));
-  CHKERRQ(VecGetArrayRead(coor,&_coor));
+  PetscCall(DMGetCoordinatesLocal(dmc,&coor));
+  PetscCall(VecGetArrayRead(coor,&_coor));
   /* compute and store the coordinates for the new points */
   {
     const PetscInt *element = &element_list[npe*e];
@@ -598,23 +598,23 @@ PetscErrorCode DMSwarmPICInsertPointsCellwise(DM dm,DM dmc,PetscInt e,PetscInt n
       }
     }
   }
-  CHKERRQ(VecRestoreArrayRead(coor,&_coor));
-  CHKERRQ(DMDARestoreElements(dmc,&nel,&npe,&element_list));
+  PetscCall(VecRestoreArrayRead(coor,&_coor));
+  PetscCall(DMDARestoreElements(dmc,&nel,&npe,&element_list));
 
-  CHKERRQ(DMSwarmGetLocalSize(dm,&ncurr));
-  CHKERRQ(DMSwarmAddNPoints(dm,npoints));
+  PetscCall(DMSwarmGetLocalSize(dm,&ncurr));
+  PetscCall(DMSwarmAddNPoints(dm,npoints));
 
   if (proximity_initialization) {
     PetscInt  *nnlist;
     PetscReal *coor_q,*coor_qn;
     PetscInt  npoints_e,*plist_e;
 
-    CHKERRQ(DMSwarmSortGetPointsPerCell(dm,e,&npoints_e,&plist_e));
+    PetscCall(DMSwarmSortGetPointsPerCell(dm,e,&npoints_e,&plist_e));
 
-    CHKERRQ(PetscMalloc1(npoints,&nnlist));
+    PetscCall(PetscMalloc1(npoints,&nnlist));
     /* find nearest neighour points in this cell */
-    CHKERRQ(DMSwarmGetField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor));
-    CHKERRQ(DMSwarmGetField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid));
+    PetscCall(DMSwarmGetField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor));
+    PetscCall(DMSwarmGetField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid));
     for (q=0; q<npoints; q++) {
       PetscInt  qn,nearest_neighour = -1;
       PetscReal sep,min_sep = PETSC_MAX_REAL;
@@ -634,15 +634,15 @@ PetscErrorCode DMSwarmPICInsertPointsCellwise(DM dm,DM dmc,PetscInt e,PetscInt n
       PetscCheckFalse(nearest_neighour == -1,PETSC_COMM_SELF,PETSC_ERR_USER,"Cell %D is empty - cannot initialize using nearest neighbours",e);
       nnlist[q] = nearest_neighour;
     }
-    CHKERRQ(DMSwarmRestoreField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid));
-    CHKERRQ(DMSwarmRestoreField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor));
+    PetscCall(DMSwarmRestoreField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid));
+    PetscCall(DMSwarmRestoreField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor));
 
     /* copies the nearest neighbour (nnlist[q]) into the new slot (ncurr+q) */
     for (q=0; q<npoints; q++) {
-      CHKERRQ(DMSwarmCopyPoint(dm,nnlist[q],ncurr+q));
+      PetscCall(DMSwarmCopyPoint(dm,nnlist[q],ncurr+q));
     }
-    CHKERRQ(DMSwarmGetField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor));
-    CHKERRQ(DMSwarmGetField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid));
+    PetscCall(DMSwarmGetField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor));
+    PetscCall(DMSwarmGetField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid));
     for (q=0; q<npoints; q++) {
       /* set the coordinates */
       for (d=0; d<dim; d++) {
@@ -651,14 +651,14 @@ PetscErrorCode DMSwarmPICInsertPointsCellwise(DM dm,DM dmc,PetscInt e,PetscInt n
       /* set the cell index */
       swarm_cellid[ncurr+q] = e;
     }
-    CHKERRQ(DMSwarmRestoreField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid));
-    CHKERRQ(DMSwarmRestoreField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor));
+    PetscCall(DMSwarmRestoreField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid));
+    PetscCall(DMSwarmRestoreField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor));
 
-    CHKERRQ(PetscFree(plist_e));
-    CHKERRQ(PetscFree(nnlist));
+    PetscCall(PetscFree(plist_e));
+    PetscCall(PetscFree(nnlist));
   } else {
-    CHKERRQ(DMSwarmGetField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor));
-    CHKERRQ(DMSwarmGetField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid));
+    PetscCall(DMSwarmGetField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor));
+    PetscCall(DMSwarmGetField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid));
     for (q=0; q<npoints; q++) {
       /* set the coordinates */
       for (d=0; d<dim; d++) {
@@ -667,16 +667,16 @@ PetscErrorCode DMSwarmPICInsertPointsCellwise(DM dm,DM dmc,PetscInt e,PetscInt n
       /* set the cell index */
       swarm_cellid[ncurr+q] = e;
     }
-    CHKERRQ(DMSwarmRestoreField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid));
-    CHKERRQ(DMSwarmRestoreField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor));
+    PetscCall(DMSwarmRestoreField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid));
+    PetscCall(DMSwarmRestoreField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor));
   }
 
-  CHKERRQ(PetscFree(xp));
-  CHKERRQ(PetscFree(elcoor));
+  PetscCall(PetscFree(xp));
+  PetscCall(PetscFree(elcoor));
   for (q=0; q<npoints; q++) {
-    CHKERRQ(PetscFree(basis[q]));
+    PetscCall(PetscFree(basis[q]));
   }
-  CHKERRQ(PetscFree(basis));
+  PetscCall(PetscFree(basis));
   PetscFunctionReturn(0);
 }
 
@@ -690,34 +690,34 @@ PetscErrorCode MaterialPoint_PopulateCell(DM dm_vp,DM dm_mpoint)
   PetscInt        npoints_q,cnt,cnt_g;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMDAGetElements(dm_vp,&_nel,&_npe,&element));
+  PetscCall(DMDAGetElements(dm_vp,&_nel,&_npe,&element));
   nel = _nel;
-  CHKERRQ(DMDARestoreElements(dm_vp,&_nel,&_npe,&element));
+  PetscCall(DMDARestoreElements(dm_vp,&_nel,&_npe,&element));
 
-  CHKERRQ(PetscDTGaussTensorQuadrature(2,1,4,-1.0,1.0,&quadrature));
-  CHKERRQ(PetscQuadratureGetData(quadrature,NULL,NULL,&npoints_q,&xi,NULL));
-  CHKERRQ(DMSwarmGetCellDM(dm_mpoint,&dmc));
+  PetscCall(PetscDTGaussTensorQuadrature(2,1,4,-1.0,1.0,&quadrature));
+  PetscCall(PetscQuadratureGetData(quadrature,NULL,NULL,&npoints_q,&xi,NULL));
+  PetscCall(DMSwarmGetCellDM(dm_mpoint,&dmc));
 
-  CHKERRQ(DMSwarmSortGetAccess(dm_mpoint));
+  PetscCall(DMSwarmSortGetAccess(dm_mpoint));
 
   cnt = 0;
   for (e=0; e<nel; e++) {
     PetscInt npoints_per_cell;
 
-    CHKERRQ(DMSwarmSortGetNumberOfPointsPerCell(dm_mpoint,e,&npoints_per_cell));
+    PetscCall(DMSwarmSortGetNumberOfPointsPerCell(dm_mpoint,e,&npoints_per_cell));
 
     if (npoints_per_cell < 12) {
-      CHKERRQ(DMSwarmPICInsertPointsCellwise(dm_mpoint,dm_vp,e,npoints_q,(PetscReal*)xi,PETSC_TRUE));
+      PetscCall(DMSwarmPICInsertPointsCellwise(dm_mpoint,dm_vp,e,npoints_q,(PetscReal*)xi,PETSC_TRUE));
       cnt++;
     }
   }
-  CHKERRMPI(MPI_Allreduce(&cnt,&cnt_g,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD));
+  PetscCallMPI(MPI_Allreduce(&cnt,&cnt_g,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD));
   if (cnt_g > 0) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,".... ....pop cont: adjusted %D cells\n",cnt_g));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,".... ....pop cont: adjusted %D cells\n",cnt_g));
   }
 
-  CHKERRQ(DMSwarmSortRestoreAccess(dm_mpoint));
-  CHKERRQ(PetscQuadratureDestroy(&quadrature));
+  PetscCall(DMSwarmSortRestoreAccess(dm_mpoint));
+  PetscCall(PetscQuadratureDestroy(&quadrature));
   PetscFunctionReturn(0);
 }
 
@@ -735,18 +735,18 @@ PetscErrorCode MaterialPoint_AdvectRK1(DM dm_vp,Vec vp,PetscReal dt,DM dm_mpoint
   PetscScalar       dx[NSD];
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetCoordinatesLocal(dm_vp,&coor_l));
-  CHKERRQ(VecGetArrayRead(coor_l,&LA_coor));
+  PetscCall(DMGetCoordinatesLocal(dm_vp,&coor_l));
+  PetscCall(VecGetArrayRead(coor_l,&LA_coor));
 
-  CHKERRQ(DMGetLocalVector(dm_vp,&vp_l));
-  CHKERRQ(DMGlobalToLocalBegin(dm_vp,vp,INSERT_VALUES,vp_l));
-  CHKERRQ(DMGlobalToLocalEnd(dm_vp,vp,INSERT_VALUES,vp_l));
-  CHKERRQ(VecGetArrayRead(vp_l,&LA_vp));
+  PetscCall(DMGetLocalVector(dm_vp,&vp_l));
+  PetscCall(DMGlobalToLocalBegin(dm_vp,vp,INSERT_VALUES,vp_l));
+  PetscCall(DMGlobalToLocalEnd(dm_vp,vp,INSERT_VALUES,vp_l));
+  PetscCall(VecGetArrayRead(vp_l,&LA_vp));
 
-  CHKERRQ(DMDAGetElements(dm_vp,&nel,&npe,&element_list));
-  CHKERRQ(DMSwarmGetLocalSize(dm_mpoint,&npoints));
-  CHKERRQ(DMSwarmGetField(dm_mpoint,DMSwarmPICField_coor,NULL,NULL,(void**)&mpfield_coor));
-  CHKERRQ(DMSwarmGetField(dm_mpoint,DMSwarmPICField_cellid,NULL,NULL,(void**)&mpfield_cell));
+  PetscCall(DMDAGetElements(dm_vp,&nel,&npe,&element_list));
+  PetscCall(DMSwarmGetLocalSize(dm_mpoint,&npoints));
+  PetscCall(DMSwarmGetField(dm_mpoint,DMSwarmPICField_coor,NULL,NULL,(void**)&mpfield_coor));
+  PetscCall(DMSwarmGetField(dm_mpoint,DMSwarmPICField_cellid,NULL,NULL,(void**)&mpfield_cell));
   for (p=0; p<npoints; p++) {
     PetscReal         *coor_p;
     PetscScalar       vel_n[NSD*NODES_PER_EL],vel_p[NSD];
@@ -794,12 +794,12 @@ PetscErrorCode MaterialPoint_AdvectRK1(DM dm_vp,Vec vp,PetscReal dt,DM dm_mpoint
     coor_p[1] += dt * PetscRealPart(vel_p[1]);
   }
 
-  CHKERRQ(DMSwarmRestoreField(dm_mpoint,DMSwarmPICField_cellid,NULL,NULL,(void**)&mpfield_cell));
-  CHKERRQ(DMSwarmRestoreField(dm_mpoint,DMSwarmPICField_coor,NULL,NULL,(void**)&mpfield_coor));
-  CHKERRQ(DMDARestoreElements(dm_vp,&nel,&npe,&element_list));
-  CHKERRQ(VecRestoreArrayRead(vp_l,&LA_vp));
-  CHKERRQ(DMRestoreLocalVector(dm_vp,&vp_l));
-  CHKERRQ(VecRestoreArrayRead(coor_l,&LA_coor));
+  PetscCall(DMSwarmRestoreField(dm_mpoint,DMSwarmPICField_cellid,NULL,NULL,(void**)&mpfield_cell));
+  PetscCall(DMSwarmRestoreField(dm_mpoint,DMSwarmPICField_coor,NULL,NULL,(void**)&mpfield_coor));
+  PetscCall(DMDARestoreElements(dm_vp,&nel,&npe,&element_list));
+  PetscCall(VecRestoreArrayRead(vp_l,&LA_vp));
+  PetscCall(DMRestoreLocalVector(dm_vp,&vp_l));
+  PetscCall(VecRestoreArrayRead(coor_l,&LA_coor));
   PetscFunctionReturn(0);
 }
 
@@ -822,21 +822,21 @@ PetscErrorCode MaterialPoint_Interpolate(DM dm,Vec eta_v,Vec rho_v,DM dm_quadrat
     EvaluateBasis_Q1(qp_xi[q],Ni[q]);
   }
 
-  CHKERRQ(DMGetLocalVector(dm,&eta_l));
-  CHKERRQ(DMGetLocalVector(dm,&rho_l));
+  PetscCall(DMGetLocalVector(dm,&eta_l));
+  PetscCall(DMGetLocalVector(dm,&rho_l));
 
-  CHKERRQ(DMGlobalToLocalBegin(dm,eta_v,INSERT_VALUES,eta_l));
-  CHKERRQ(DMGlobalToLocalEnd(dm,eta_v,INSERT_VALUES,eta_l));
-  CHKERRQ(DMGlobalToLocalBegin(dm,rho_v,INSERT_VALUES,rho_l));
-  CHKERRQ(DMGlobalToLocalEnd(dm,rho_v,INSERT_VALUES,rho_l));
+  PetscCall(DMGlobalToLocalBegin(dm,eta_v,INSERT_VALUES,eta_l));
+  PetscCall(DMGlobalToLocalEnd(dm,eta_v,INSERT_VALUES,eta_l));
+  PetscCall(DMGlobalToLocalBegin(dm,rho_v,INSERT_VALUES,rho_l));
+  PetscCall(DMGlobalToLocalEnd(dm,rho_v,INSERT_VALUES,rho_l));
 
-  CHKERRQ(VecGetArray(eta_l,&_eta_l));
-  CHKERRQ(VecGetArray(rho_l,&_rho_l));
+  PetscCall(VecGetArray(eta_l,&_eta_l));
+  PetscCall(VecGetArray(rho_l,&_rho_l));
 
-  CHKERRQ(DMSwarmGetField(dm_quadrature,"eta_q",NULL,NULL,(void**)&q_eta));
-  CHKERRQ(DMSwarmGetField(dm_quadrature,"rho_q",NULL,NULL,(void**)&q_rhs));
+  PetscCall(DMSwarmGetField(dm_quadrature,"eta_q",NULL,NULL,(void**)&q_eta));
+  PetscCall(DMSwarmGetField(dm_quadrature,"rho_q",NULL,NULL,(void**)&q_rhs));
 
-  CHKERRQ(DMDAGetElements(dm,&nel,&npe,&element_list));
+  PetscCall(DMDAGetElements(dm,&nel,&npe,&element_list));
   for (e=0; e<nel; e++) {
     PetscScalar    eta_field_e[NODES_PER_EL];
     PetscScalar    rho_field_e[NODES_PER_EL];
@@ -860,15 +860,15 @@ PetscErrorCode MaterialPoint_Interpolate(DM dm,Vec eta_v,Vec rho_v,DM dm_quadrat
       q_rhs[nqp*e+q] = PetscRealPart(rho_q);
     }
   }
-  CHKERRQ(DMDARestoreElements(dm,&nel,&npe,&element_list));
+  PetscCall(DMDARestoreElements(dm,&nel,&npe,&element_list));
 
-  CHKERRQ(DMSwarmRestoreField(dm_quadrature,"rho_q",NULL,NULL,(void**)&q_rhs));
-  CHKERRQ(DMSwarmRestoreField(dm_quadrature,"eta_q",NULL,NULL,(void**)&q_eta));
+  PetscCall(DMSwarmRestoreField(dm_quadrature,"rho_q",NULL,NULL,(void**)&q_rhs));
+  PetscCall(DMSwarmRestoreField(dm_quadrature,"eta_q",NULL,NULL,(void**)&q_eta));
 
-  CHKERRQ(VecRestoreArray(rho_l,&_rho_l));
-  CHKERRQ(VecRestoreArray(eta_l,&_eta_l));
-  CHKERRQ(DMRestoreLocalVector(dm,&rho_l));
-  CHKERRQ(DMRestoreLocalVector(dm,&eta_l));
+  PetscCall(VecRestoreArray(rho_l,&_rho_l));
+  PetscCall(VecRestoreArray(eta_l,&_eta_l));
+  PetscCall(DMRestoreLocalVector(dm,&rho_l));
+  PetscCall(DMRestoreLocalVector(dm,&eta_l));
   PetscFunctionReturn(0);
 }
 
@@ -909,63 +909,63 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
   p_dof         = P_DOFS; /* p - pressure */
   dof           = u_dof + p_dof;
   stencil_width = 1;
-  CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,mx+1,my+1,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,NULL,NULL,&dm_stokes));
-  CHKERRQ(DMDASetElementType(dm_stokes,DMDA_ELEMENT_Q1));
-  CHKERRQ(DMSetMatType(dm_stokes,MATAIJ));
-  CHKERRQ(DMSetFromOptions(dm_stokes));
-  CHKERRQ(DMSetUp(dm_stokes));
-  CHKERRQ(DMDASetFieldName(dm_stokes,0,"ux"));
-  CHKERRQ(DMDASetFieldName(dm_stokes,1,"uy"));
-  CHKERRQ(DMDASetFieldName(dm_stokes,2,"p"));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,mx+1,my+1,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,NULL,NULL,&dm_stokes));
+  PetscCall(DMDASetElementType(dm_stokes,DMDA_ELEMENT_Q1));
+  PetscCall(DMSetMatType(dm_stokes,MATAIJ));
+  PetscCall(DMSetFromOptions(dm_stokes));
+  PetscCall(DMSetUp(dm_stokes));
+  PetscCall(DMDASetFieldName(dm_stokes,0,"ux"));
+  PetscCall(DMDASetFieldName(dm_stokes,1,"uy"));
+  PetscCall(DMDASetFieldName(dm_stokes,2,"p"));
 
   /* unit box [0,0.9142] x [0,1] */
-  CHKERRQ(DMDASetUniformCoordinates(dm_stokes,0.0,0.9142,0.0,1.0,0.,0.));
+  PetscCall(DMDASetUniformCoordinates(dm_stokes,0.0,0.9142,0.0,1.0,0.,0.));
   dh = 1.0/((PetscReal)(mx));
 
   /* Get local number of elements */
   {
-    CHKERRQ(DMDAGetElements(dm_stokes,&nel,&npe,&element_list));
+    PetscCall(DMDAGetElements(dm_stokes,&nel,&npe,&element_list));
 
     nel_local = nel;
 
-    CHKERRQ(DMDARestoreElements(dm_stokes,&nel,&npe,&element_list));
+    PetscCall(DMDARestoreElements(dm_stokes,&nel,&npe,&element_list));
   }
 
   /* Create DMDA for representing scalar fields */
-  CHKERRQ(DMDACreateCompatibleDMDA(dm_stokes,1,&dm_coeff));
+  PetscCall(DMDACreateCompatibleDMDA(dm_stokes,1,&dm_coeff));
 
   /* Create the swarm for storing quadrature point values */
-  CHKERRQ(DMCreate(PETSC_COMM_WORLD,&dms_quadrature));
-  CHKERRQ(DMSetType(dms_quadrature,DMSWARM));
-  CHKERRQ(DMSetDimension(dms_quadrature,2));
+  PetscCall(DMCreate(PETSC_COMM_WORLD,&dms_quadrature));
+  PetscCall(DMSetType(dms_quadrature,DMSWARM));
+  PetscCall(DMSetDimension(dms_quadrature,2));
 
   /* Register fields for viscosity and density on the quadrature points */
-  CHKERRQ(DMSwarmRegisterPetscDatatypeField(dms_quadrature,"eta_q",1,PETSC_REAL));
-  CHKERRQ(DMSwarmRegisterPetscDatatypeField(dms_quadrature,"rho_q",1,PETSC_REAL));
-  CHKERRQ(DMSwarmFinalizeFieldRegister(dms_quadrature));
-  CHKERRQ(DMSwarmSetLocalSizes(dms_quadrature,nel_local * GAUSS_POINTS,0));
+  PetscCall(DMSwarmRegisterPetscDatatypeField(dms_quadrature,"eta_q",1,PETSC_REAL));
+  PetscCall(DMSwarmRegisterPetscDatatypeField(dms_quadrature,"rho_q",1,PETSC_REAL));
+  PetscCall(DMSwarmFinalizeFieldRegister(dms_quadrature));
+  PetscCall(DMSwarmSetLocalSizes(dms_quadrature,nel_local * GAUSS_POINTS,0));
 
   /* Create the material point swarm */
-  CHKERRQ(DMCreate(PETSC_COMM_WORLD,&dms_mpoint));
-  CHKERRQ(DMSetType(dms_mpoint,DMSWARM));
-  CHKERRQ(DMSetDimension(dms_mpoint,2));
+  PetscCall(DMCreate(PETSC_COMM_WORLD,&dms_mpoint));
+  PetscCall(DMSetType(dms_mpoint,DMSWARM));
+  PetscCall(DMSetDimension(dms_mpoint,2));
 
   /* Configure the material point swarm to be of type Particle-In-Cell */
-  CHKERRQ(DMSwarmSetType(dms_mpoint,DMSWARM_PIC));
+  PetscCall(DMSwarmSetType(dms_mpoint,DMSWARM_PIC));
 
   /*
      Specify the DM to use for point location and projections
      within the context of a PIC scheme
   */
-  CHKERRQ(DMSwarmSetCellDM(dms_mpoint,dm_coeff));
+  PetscCall(DMSwarmSetCellDM(dms_mpoint,dm_coeff));
 
   /* Register fields for viscosity and density */
-  CHKERRQ(DMSwarmRegisterPetscDatatypeField(dms_mpoint,"eta",1,PETSC_REAL));
-  CHKERRQ(DMSwarmRegisterPetscDatatypeField(dms_mpoint,"rho",1,PETSC_REAL));
-  CHKERRQ(DMSwarmFinalizeFieldRegister(dms_mpoint));
+  PetscCall(DMSwarmRegisterPetscDatatypeField(dms_mpoint,"eta",1,PETSC_REAL));
+  PetscCall(DMSwarmRegisterPetscDatatypeField(dms_mpoint,"rho",1,PETSC_REAL));
+  PetscCall(DMSwarmFinalizeFieldRegister(dms_mpoint));
 
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-ppcell",&ppcell,NULL));
-  CHKERRQ(DMSwarmSetLocalSizes(dms_mpoint,nel_local * ppcell,100));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-ppcell",&ppcell,NULL));
+  PetscCall(DMSwarmSetLocalSizes(dms_mpoint,nel_local * ppcell,100));
 
   /*
     Layout the material points in space using the cell DM.
@@ -980,7 +980,7 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
                                     of each quadralateral obtained by sub-dividing
                                     the reference element cell ppcell times.
   */
-  CHKERRQ(DMSwarmInsertPointsUsingCellDM(dms_mpoint,DMSWARMPIC_LAYOUT_SUBDIVISION,ppcell));
+  PetscCall(DMSwarmInsertPointsUsingCellDM(dms_mpoint,DMSWARMPIC_LAYOUT_SUBDIVISION,ppcell));
 
   /*
     Defne a high resolution layer of material points across the material interface
@@ -993,7 +993,7 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
     npoints_dir_x[1] = (PetscInt)((0.25-0.15)/(0.05*dh));
     min[0] = 0.0;  max[0] = 0.9142;
     min[1] = 0.05; max[1] = 0.35;
-    CHKERRQ(DMSwarmSetPointsUniformCoordinates(dms_mpoint,min,max,npoints_dir_x,ADD_VALUES));
+    PetscCall(DMSwarmSetPointsUniformCoordinates(dms_mpoint,min,max,npoints_dir_x,ADD_VALUES));
   }
 
   /*
@@ -1009,15 +1009,15 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
     npoints_dir_x[1] = (PetscInt)(3.0*dh/(0.25*dh));
     min[0] = 0.0;          max[0] = 0.9142;
     min[1] = 1.0 - 3.0*dh; max[1] = 1.0-0.0001;
-    CHKERRQ(DMSwarmSetPointsUniformCoordinates(dms_mpoint,min,max,npoints_dir_x,ADD_VALUES));
+    PetscCall(DMSwarmSetPointsUniformCoordinates(dms_mpoint,min,max,npoints_dir_x,ADD_VALUES));
   }
 
-  CHKERRQ(DMView(dms_mpoint,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(DMView(dms_mpoint,PETSC_VIEWER_STDOUT_WORLD));
 
   /* Define initial material properties on each particle in the material point swarm */
-  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-delta_eta",&delta_eta,NULL));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-randomize_coords",&randomize_coords,NULL));
-  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-randomize_fac",&randomize_fac,NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-delta_eta",&delta_eta,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-randomize_coords",&randomize_coords,NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-randomize_fac",&randomize_fac,NULL));
   PetscCheckFalse(randomize_fac > 1.0,PETSC_COMM_WORLD,PETSC_ERR_USER,"The value of -randomize_fac should be <= 1.0");
   {
     PetscReal   *array_x,*array_e,*array_r;
@@ -1025,14 +1025,14 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
     PetscRandom r;
     PetscMPIInt rank;
 
-    CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+    PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
-    CHKERRQ(PetscRandomCreate(PETSC_COMM_SELF,&r));
-    CHKERRQ(PetscRandomSetInterval(r,-randomize_fac*dh,randomize_fac*dh));
-    CHKERRQ(PetscRandomSetSeed(r,(unsigned long)rank));
-    CHKERRQ(PetscRandomSeed(r));
+    PetscCall(PetscRandomCreate(PETSC_COMM_SELF,&r));
+    PetscCall(PetscRandomSetInterval(r,-randomize_fac*dh,randomize_fac*dh));
+    PetscCall(PetscRandomSetSeed(r,(unsigned long)rank));
+    PetscCall(PetscRandomSeed(r));
 
-    CHKERRQ(DMDAGetElements(dm_stokes,&nel,&npe,&element_list));
+    PetscCall(DMDAGetElements(dm_stokes,&nel,&npe,&element_list));
 
     /*
        Fetch the registered data from the material point DMSwarm.
@@ -1043,17 +1043,17 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
        was called. The returned array defines the coordinates of each
        material point in the point swarm.
     */
-    CHKERRQ(DMSwarmGetField(dms_mpoint,DMSwarmPICField_coor,NULL,NULL,(void**)&array_x));
-    CHKERRQ(DMSwarmGetField(dms_mpoint,"eta",               NULL,NULL,(void**)&array_e));
-    CHKERRQ(DMSwarmGetField(dms_mpoint,"rho",               NULL,NULL,(void**)&array_r));
+    PetscCall(DMSwarmGetField(dms_mpoint,DMSwarmPICField_coor,NULL,NULL,(void**)&array_x));
+    PetscCall(DMSwarmGetField(dms_mpoint,"eta",               NULL,NULL,(void**)&array_e));
+    PetscCall(DMSwarmGetField(dms_mpoint,"rho",               NULL,NULL,(void**)&array_r));
 
-    CHKERRQ(DMSwarmGetLocalSize(dms_mpoint,&npoints));
+    PetscCall(DMSwarmGetLocalSize(dms_mpoint,&npoints));
     for (p = 0; p < npoints; p++) {
       PetscReal x_p[2],rr[2];
 
       if (randomize_coords) {
-        CHKERRQ(PetscRandomGetValueReal(r,&rr[0]));
-        CHKERRQ(PetscRandomGetValueReal(r,&rr[1]));
+        PetscCall(PetscRandomGetValueReal(r,&rr[0]));
+        PetscCall(PetscRandomGetValueReal(r,&rr[1]));
         array_x[2*p + 0] += rr[0];
         array_x[2*p + 1] += rr[1];
       }
@@ -1078,12 +1078,12 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
        Calling the Restore function invalidates the points array_r, array_e, array_x
        by setting them to NULL.
     */
-    CHKERRQ(DMSwarmRestoreField(dms_mpoint,"rho",NULL,NULL,(void**)&array_r));
-    CHKERRQ(DMSwarmRestoreField(dms_mpoint,"eta",NULL,NULL,(void**)&array_e));
-    CHKERRQ(DMSwarmRestoreField(dms_mpoint,DMSwarmPICField_coor,NULL,NULL,(void**)&array_x));
+    PetscCall(DMSwarmRestoreField(dms_mpoint,"rho",NULL,NULL,(void**)&array_r));
+    PetscCall(DMSwarmRestoreField(dms_mpoint,"eta",NULL,NULL,(void**)&array_e));
+    PetscCall(DMSwarmRestoreField(dms_mpoint,DMSwarmPICField_coor,NULL,NULL,(void**)&array_x));
 
-    CHKERRQ(DMDARestoreElements(dm_stokes,&nel,&npe,&element_list));
-    CHKERRQ(PetscRandomDestroy(&r));
+    PetscCall(DMDARestoreElements(dm_stokes,&nel,&npe,&element_list));
+    PetscCall(PetscRandomDestroy(&r));
   }
 
   /*
@@ -1091,57 +1091,57 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
      element, or into another sub-domain. To account for this we call the Migrate function.
   */
   if (randomize_coords) {
-    CHKERRQ(DMSwarmMigrate(dms_mpoint,PETSC_TRUE));
+    PetscCall(DMSwarmMigrate(dms_mpoint,PETSC_TRUE));
   }
 
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-no_view",&no_view,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-no_view",&no_view,NULL));
   if (!no_view) {
-    CHKERRQ(DMSwarmViewXDMF(dms_mpoint,"ic_coeff_dms.xmf"));
+    PetscCall(DMSwarmViewXDMF(dms_mpoint,"ic_coeff_dms.xmf"));
   }
 
   /* project the swarm properties */
-  CHKERRQ(DMSwarmProjectFields(dms_mpoint,2,fieldnames,&pfields,PETSC_FALSE));
+  PetscCall(DMSwarmProjectFields(dms_mpoint,2,fieldnames,&pfields,PETSC_FALSE));
   eta_v = pfields[0];
   rho_v = pfields[1];
-  CHKERRQ(PetscObjectSetName((PetscObject)eta_v,"eta"));
-  CHKERRQ(PetscObjectSetName((PetscObject)rho_v,"rho"));
-  CHKERRQ(MaterialPoint_Interpolate(dm_coeff,eta_v,rho_v,dms_quadrature));
+  PetscCall(PetscObjectSetName((PetscObject)eta_v,"eta"));
+  PetscCall(PetscObjectSetName((PetscObject)rho_v,"rho"));
+  PetscCall(MaterialPoint_Interpolate(dm_coeff,eta_v,rho_v,dms_quadrature));
 
   /* view projected coefficients eta and rho */
   if (!no_view) {
     PetscViewer viewer;
 
-    CHKERRQ(PetscViewerCreate(PETSC_COMM_WORLD,&viewer));
-    CHKERRQ(PetscViewerSetType(viewer,PETSCVIEWERVTK));
-    CHKERRQ(PetscViewerFileSetMode(viewer,FILE_MODE_WRITE));
-    CHKERRQ(PetscViewerFileSetName(viewer,"ic_coeff_dmda.vts"));
-    CHKERRQ(VecView(eta_v,viewer));
-    CHKERRQ(VecView(rho_v,viewer));
-    CHKERRQ(PetscViewerDestroy(&viewer));
+    PetscCall(PetscViewerCreate(PETSC_COMM_WORLD,&viewer));
+    PetscCall(PetscViewerSetType(viewer,PETSCVIEWERVTK));
+    PetscCall(PetscViewerFileSetMode(viewer,FILE_MODE_WRITE));
+    PetscCall(PetscViewerFileSetName(viewer,"ic_coeff_dmda.vts"));
+    PetscCall(VecView(eta_v,viewer));
+    PetscCall(VecView(rho_v,viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
   }
 
-  CHKERRQ(DMCreateMatrix(dm_stokes,&A));
-  CHKERRQ(DMCreateMatrix(dm_stokes,&B));
-  CHKERRQ(DMCreateGlobalVector(dm_stokes,&f));
-  CHKERRQ(DMCreateGlobalVector(dm_stokes,&X));
+  PetscCall(DMCreateMatrix(dm_stokes,&A));
+  PetscCall(DMCreateMatrix(dm_stokes,&B));
+  PetscCall(DMCreateGlobalVector(dm_stokes,&f));
+  PetscCall(DMCreateGlobalVector(dm_stokes,&X));
 
-  CHKERRQ(AssembleStokes_A(A,dm_stokes,dms_quadrature));
-  CHKERRQ(AssembleStokes_PC(B,dm_stokes,dms_quadrature));
-  CHKERRQ(AssembleStokes_RHS(f,dm_stokes,dms_quadrature));
+  PetscCall(AssembleStokes_A(A,dm_stokes,dms_quadrature));
+  PetscCall(AssembleStokes_PC(B,dm_stokes,dms_quadrature));
+  PetscCall(AssembleStokes_RHS(f,dm_stokes,dms_quadrature));
 
-  CHKERRQ(DMDAApplyBoundaryConditions(dm_stokes,A,f));
-  CHKERRQ(DMDAApplyBoundaryConditions(dm_stokes,B,NULL));
+  PetscCall(DMDAApplyBoundaryConditions(dm_stokes,A,f));
+  PetscCall(DMDAApplyBoundaryConditions(dm_stokes,B,NULL));
 
-  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
-  CHKERRQ(KSPSetOptionsPrefix(ksp,"stokes_"));
-  CHKERRQ(KSPSetDM(ksp,dm_stokes));
-  CHKERRQ(KSPSetDMActive(ksp,PETSC_FALSE));
-  CHKERRQ(KSPSetOperators(ksp,A,B));
-  CHKERRQ(KSPSetFromOptions(ksp));
-  CHKERRQ(KSPGetPC(ksp,&pc));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)pc,PCBDDC,&isbddc));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPSetOptionsPrefix(ksp,"stokes_"));
+  PetscCall(KSPSetDM(ksp,dm_stokes));
+  PetscCall(KSPSetDMActive(ksp,PETSC_FALSE));
+  PetscCall(KSPSetOperators(ksp,A,B));
+  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(KSPGetPC(ksp,&pc));
+  PetscCall(PetscObjectTypeCompare((PetscObject)pc,PCBDDC,&isbddc));
   if (isbddc) {
-    CHKERRQ(KSPSetOperators(ksp,A,A));
+    PetscCall(KSPSetOperators(ksp,A,A));
   }
 
   /* Define u-v-p indices for fieldsplit */
@@ -1149,10 +1149,10 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
     PC             pc;
     const PetscInt ufields[] = {0,1},pfields[1] = {2};
 
-    CHKERRQ(KSPGetPC(ksp,&pc));
-    CHKERRQ(PCFieldSplitSetBlockSize(pc,3));
-    CHKERRQ(PCFieldSplitSetFields(pc,"u",2,ufields,ufields));
-    CHKERRQ(PCFieldSplitSetFields(pc,"p",1,pfields,pfields));
+    PetscCall(KSPGetPC(ksp,&pc));
+    PetscCall(PCFieldSplitSetBlockSize(pc,3));
+    PetscCall(PCFieldSplitSetFields(pc,"u",2,ufields,ufields));
+    PetscCall(PCFieldSplitSetFields(pc,"p",1,pfields,pfields));
   }
 
   /* If using a fieldsplit preconditioner, attach a DMDA to the velocity split so that geometric multigrid can be used */
@@ -1163,56 +1163,56 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
     DM        dm_u;
     PetscBool is_pcfs;
 
-    CHKERRQ(KSPGetPC(ksp,&pc));
+    PetscCall(KSPGetPC(ksp,&pc));
 
     is_pcfs = PETSC_FALSE;
-    CHKERRQ(PetscObjectTypeCompare((PetscObject)pc,PCFIELDSPLIT,&is_pcfs));
+    PetscCall(PetscObjectTypeCompare((PetscObject)pc,PCFIELDSPLIT,&is_pcfs));
 
     if (is_pcfs) {
-      CHKERRQ(KSPSetUp(ksp));
-      CHKERRQ(KSPGetPC(ksp,&pc));
-      CHKERRQ(PCFieldSplitGetSubKSP(pc,&nsplits,&sub_ksp));
+      PetscCall(KSPSetUp(ksp));
+      PetscCall(KSPGetPC(ksp,&pc));
+      PetscCall(PCFieldSplitGetSubKSP(pc,&nsplits,&sub_ksp));
       ksp_u = sub_ksp[0];
-      CHKERRQ(PetscFree(sub_ksp));
+      PetscCall(PetscFree(sub_ksp));
 
       if (nsplits == 2) {
-        CHKERRQ(DMDACreateCompatibleDMDA(dm_stokes,2,&dm_u));
+        PetscCall(DMDACreateCompatibleDMDA(dm_stokes,2,&dm_u));
 
-        CHKERRQ(KSPSetDM(ksp_u,dm_u));
-        CHKERRQ(KSPSetDMActive(ksp_u,PETSC_FALSE));
-        CHKERRQ(DMDestroy(&dm_u));
+        PetscCall(KSPSetDM(ksp_u,dm_u));
+        PetscCall(KSPSetDMActive(ksp_u,PETSC_FALSE));
+        PetscCall(DMDestroy(&dm_u));
 
         /* enforce galerkin coarse grids be used */
-        CHKERRQ(KSPGetPC(ksp_u,&pc_u));
-        CHKERRQ(PCMGSetGalerkin(pc_u,PC_MG_GALERKIN_PMAT));
+        PetscCall(KSPGetPC(ksp_u,&pc_u));
+        PetscCall(PCMGSetGalerkin(pc_u,PC_MG_GALERKIN_PMAT));
       }
     }
   }
 
   dump_freq = 10;
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dump_freq",&dump_freq,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-dump_freq",&dump_freq,NULL));
   nt = 10;
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-nt",&nt,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-nt",&nt,NULL));
   time = 0.0;
   for (tk=1; tk<=nt; tk++) {
 
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,".... assemble\n"));
-    CHKERRQ(AssembleStokes_A(A,dm_stokes,dms_quadrature));
-    CHKERRQ(AssembleStokes_PC(B,dm_stokes,dms_quadrature));
-    CHKERRQ(AssembleStokes_RHS(f,dm_stokes,dms_quadrature));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,".... assemble\n"));
+    PetscCall(AssembleStokes_A(A,dm_stokes,dms_quadrature));
+    PetscCall(AssembleStokes_PC(B,dm_stokes,dms_quadrature));
+    PetscCall(AssembleStokes_RHS(f,dm_stokes,dms_quadrature));
 
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,".... bc imposition\n"));
-    CHKERRQ(DMDAApplyBoundaryConditions(dm_stokes,A,f));
-    CHKERRQ(DMDAApplyBoundaryConditions(dm_stokes,B,NULL));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,".... bc imposition\n"));
+    PetscCall(DMDAApplyBoundaryConditions(dm_stokes,A,f));
+    PetscCall(DMDAApplyBoundaryConditions(dm_stokes,B,NULL));
 
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,".... solve\n"));
-    CHKERRQ(KSPSetOperators(ksp,A, isbddc ? A : B));
-    CHKERRQ(KSPSolve(ksp,f,X));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,".... solve\n"));
+    PetscCall(KSPSetOperators(ksp,A, isbddc ? A : B));
+    PetscCall(KSPSolve(ksp,f,X));
 
-    CHKERRQ(VecStrideMax(X,0,NULL,&vx[1]));
-    CHKERRQ(VecStrideMax(X,1,NULL,&vy[1]));
-    CHKERRQ(VecStrideMin(X,0,NULL,&vx[0]));
-    CHKERRQ(VecStrideMin(X,1,NULL,&vy[0]));
+    PetscCall(VecStrideMax(X,0,NULL,&vx[1]));
+    PetscCall(VecStrideMax(X,1,NULL,&vy[1]));
+    PetscCall(VecStrideMin(X,0,NULL,&vx[0]));
+    PetscCall(VecStrideMin(X,1,NULL,&vy[0]));
 
     max_v_step = PetscMax(vx[0],vx[1]);
     max_v_step = PetscMax(max_v_step,vy[0]);
@@ -1221,61 +1221,61 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
 
     dt_max = 2.0;
     dt = 0.5 * (dh / max_v_step);
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,".... max v %1.4e , dt %1.4e : [total] max v %1.4e , dt_max %1.4e\n",(double)max_v_step,(double)dt,(double)max_v,(double)dt_max));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,".... max v %1.4e , dt %1.4e : [total] max v %1.4e , dt_max %1.4e\n",(double)max_v_step,(double)dt,(double)max_v,(double)dt_max));
     dt = PetscMin(dt_max,dt);
 
     /* advect */
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,".... advect\n"));
-    CHKERRQ(MaterialPoint_AdvectRK1(dm_stokes,X,dt,dms_mpoint));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,".... advect\n"));
+    PetscCall(MaterialPoint_AdvectRK1(dm_stokes,X,dt,dms_mpoint));
 
     /* migrate */
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,".... migrate\n"));
-    CHKERRQ(DMSwarmMigrate(dms_mpoint,PETSC_TRUE));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,".... migrate\n"));
+    PetscCall(DMSwarmMigrate(dms_mpoint,PETSC_TRUE));
 
     /* update cell population */
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,".... populate cells\n"));
-    CHKERRQ(MaterialPoint_PopulateCell(dm_stokes,dms_mpoint));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,".... populate cells\n"));
+    PetscCall(MaterialPoint_PopulateCell(dm_stokes,dms_mpoint));
 
     /* update coefficients on quadrature points */
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,".... project\n"));
-    CHKERRQ(DMSwarmProjectFields(dms_mpoint,2,fieldnames,&pfields,PETSC_TRUE));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,".... project\n"));
+    PetscCall(DMSwarmProjectFields(dms_mpoint,2,fieldnames,&pfields,PETSC_TRUE));
     eta_v = pfields[0];
     rho_v = pfields[1];
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,".... interp\n"));
-    CHKERRQ(MaterialPoint_Interpolate(dm_coeff,eta_v,rho_v,dms_quadrature));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,".... interp\n"));
+    PetscCall(MaterialPoint_Interpolate(dm_coeff,eta_v,rho_v,dms_quadrature));
 
     if (tk%dump_freq == 0) {
       PetscViewer viewer;
 
-      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,".... write XDMF, VTS\n"));
-      CHKERRQ(PetscSNPrintf(filename,PETSC_MAX_PATH_LEN-1,"step%.4D_coeff_dms.xmf",tk));
-      CHKERRQ(DMSwarmViewXDMF(dms_mpoint,filename));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,".... write XDMF, VTS\n"));
+      PetscCall(PetscSNPrintf(filename,PETSC_MAX_PATH_LEN-1,"step%.4D_coeff_dms.xmf",tk));
+      PetscCall(DMSwarmViewXDMF(dms_mpoint,filename));
 
-      CHKERRQ(PetscSNPrintf(filename,PETSC_MAX_PATH_LEN-1,"step%.4D_vp_dm.vts",tk));
-      CHKERRQ(PetscViewerCreate(PETSC_COMM_WORLD,&viewer));
-      CHKERRQ(PetscViewerSetType(viewer,PETSCVIEWERVTK));
-      CHKERRQ(PetscViewerFileSetMode(viewer,FILE_MODE_WRITE));
-      CHKERRQ(PetscViewerFileSetName(viewer,filename));
-      CHKERRQ(VecView(X,viewer));
-      CHKERRQ(PetscViewerDestroy(&viewer));
+      PetscCall(PetscSNPrintf(filename,PETSC_MAX_PATH_LEN-1,"step%.4D_vp_dm.vts",tk));
+      PetscCall(PetscViewerCreate(PETSC_COMM_WORLD,&viewer));
+      PetscCall(PetscViewerSetType(viewer,PETSCVIEWERVTK));
+      PetscCall(PetscViewerFileSetMode(viewer,FILE_MODE_WRITE));
+      PetscCall(PetscViewerFileSetName(viewer,filename));
+      PetscCall(VecView(X,viewer));
+      PetscCall(PetscViewerDestroy(&viewer));
     }
     time += dt;
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"step %D : time %1.2e \n",tk,(double)time));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"step %D : time %1.2e \n",tk,(double)time));
   }
 
-  CHKERRQ(KSPDestroy(&ksp));
-  CHKERRQ(VecDestroy(&X));
-  CHKERRQ(VecDestroy(&f));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(MatDestroy(&B));
-  CHKERRQ(VecDestroy(&eta_v));
-  CHKERRQ(VecDestroy(&rho_v));
-  CHKERRQ(PetscFree(pfields));
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(VecDestroy(&X));
+  PetscCall(VecDestroy(&f));
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&B));
+  PetscCall(VecDestroy(&eta_v));
+  PetscCall(VecDestroy(&rho_v));
+  PetscCall(PetscFree(pfields));
 
-  CHKERRQ(DMDestroy(&dms_mpoint));
-  CHKERRQ(DMDestroy(&dms_quadrature));
-  CHKERRQ(DMDestroy(&dm_coeff));
-  CHKERRQ(DMDestroy(&dm_stokes));
+  PetscCall(DMDestroy(&dms_mpoint));
+  PetscCall(DMDestroy(&dms_quadrature));
+  PetscCall(DMDestroy(&dm_coeff));
+  PetscCall(DMDestroy(&dm_stokes));
   PetscFunctionReturn(0);
 }
 
@@ -1288,16 +1288,16 @@ int main(int argc,char **args)
   PetscInt       mx,my;
   PetscBool      set = PETSC_FALSE;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   mx = my = 10;
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-mx",&mx,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-my",&my,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-mxy",&mx,&set));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-mx",&mx,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-my",&my,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-mxy",&mx,&set));
   if (set) {
     my = mx;
   }
-  CHKERRQ(SolveTimeDepStokes(mx,my));
-  CHKERRQ(PetscFinalize());
+  PetscCall(SolveTimeDepStokes(mx,my));
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -1317,17 +1317,17 @@ static PetscErrorCode BCApplyZero_EAST(DM da,PetscInt d_idx,Mat A,Vec b)
   ISLocalToGlobalMapping ltogm;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetLocalToGlobalMapping(da,&ltogm));
-  CHKERRQ(ISLocalToGlobalMappingGetIndices(ltogm,&g_idx));
+  PetscCall(DMGetLocalToGlobalMapping(da,&ltogm));
+  PetscCall(ISLocalToGlobalMappingGetIndices(ltogm,&g_idx));
 
-  CHKERRQ(DMGetCoordinateDM(da,&cda));
-  CHKERRQ(DMGetCoordinatesLocal(da,&coords));
-  CHKERRQ(DMDAVecGetArray(cda,coords,&_coords));
-  CHKERRQ(DMDAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0));
-  CHKERRQ(DMDAGetInfo(da,0,&M,&N,0,0,0,0,&n_dofs,0,0,0,0,0));
+  PetscCall(DMGetCoordinateDM(da,&cda));
+  PetscCall(DMGetCoordinatesLocal(da,&coords));
+  PetscCall(DMDAVecGetArray(cda,coords,&_coords));
+  PetscCall(DMDAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0));
+  PetscCall(DMDAGetInfo(da,0,&M,&N,0,0,0,0,&n_dofs,0,0,0,0,0));
 
-  CHKERRQ(PetscMalloc1(ny*n_dofs,&bc_global_ids));
-  CHKERRQ(PetscMalloc1(ny*n_dofs,&bc_vals));
+  PetscCall(PetscMalloc1(ny*n_dofs,&bc_global_ids));
+  PetscCall(PetscMalloc1(ny*n_dofs,&bc_vals));
 
   /* init the entries to -1 so VecSetValues will ignore them */
   for (i = 0; i < ny*n_dofs; i++) bc_global_ids[i] = -1;
@@ -1342,23 +1342,23 @@ static PetscErrorCode BCApplyZero_EAST(DM da,PetscInt d_idx,Mat A,Vec b)
 
     bc_vals[j] =  0.0;
   }
-  CHKERRQ(ISLocalToGlobalMappingRestoreIndices(ltogm,&g_idx));
+  PetscCall(ISLocalToGlobalMappingRestoreIndices(ltogm,&g_idx));
   nbcs = 0;
   if ((si+nx) == (M)) nbcs = ny;
 
   if (b) {
-    CHKERRQ(VecSetValues(b,nbcs,bc_global_ids,bc_vals,INSERT_VALUES));
-    CHKERRQ(VecAssemblyBegin(b));
-    CHKERRQ(VecAssemblyEnd(b));
+    PetscCall(VecSetValues(b,nbcs,bc_global_ids,bc_vals,INSERT_VALUES));
+    PetscCall(VecAssemblyBegin(b));
+    PetscCall(VecAssemblyEnd(b));
   }
   if (A) {
-    CHKERRQ(MatZeroRowsColumns(A,nbcs,bc_global_ids,1.0,0,0));
+    PetscCall(MatZeroRowsColumns(A,nbcs,bc_global_ids,1.0,0,0));
   }
 
-  CHKERRQ(PetscFree(bc_vals));
-  CHKERRQ(PetscFree(bc_global_ids));
+  PetscCall(PetscFree(bc_vals));
+  PetscCall(PetscFree(bc_global_ids));
 
-  CHKERRQ(DMDAVecRestoreArray(cda,coords,&_coords));
+  PetscCall(DMDAVecRestoreArray(cda,coords,&_coords));
   PetscFunctionReturn(0);
 }
 
@@ -1377,17 +1377,17 @@ static PetscErrorCode BCApplyZero_WEST(DM da,PetscInt d_idx,Mat A,Vec b)
   ISLocalToGlobalMapping ltogm;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetLocalToGlobalMapping(da,&ltogm));
-  CHKERRQ(ISLocalToGlobalMappingGetIndices(ltogm,&g_idx));
+  PetscCall(DMGetLocalToGlobalMapping(da,&ltogm));
+  PetscCall(ISLocalToGlobalMappingGetIndices(ltogm,&g_idx));
 
-  CHKERRQ(DMGetCoordinateDM(da,&cda));
-  CHKERRQ(DMGetCoordinatesLocal(da,&coords));
-  CHKERRQ(DMDAVecGetArray(cda,coords,&_coords));
-  CHKERRQ(DMDAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0));
-  CHKERRQ(DMDAGetInfo(da,0,&M,&N,0,0,0,0,&n_dofs,0,0,0,0,0));
+  PetscCall(DMGetCoordinateDM(da,&cda));
+  PetscCall(DMGetCoordinatesLocal(da,&coords));
+  PetscCall(DMDAVecGetArray(cda,coords,&_coords));
+  PetscCall(DMDAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0));
+  PetscCall(DMDAGetInfo(da,0,&M,&N,0,0,0,0,&n_dofs,0,0,0,0,0));
 
-  CHKERRQ(PetscMalloc1(ny*n_dofs,&bc_global_ids));
-  CHKERRQ(PetscMalloc1(ny*n_dofs,&bc_vals));
+  PetscCall(PetscMalloc1(ny*n_dofs,&bc_global_ids));
+  PetscCall(PetscMalloc1(ny*n_dofs,&bc_vals));
 
   /* init the entries to -1 so VecSetValues will ignore them */
   for (i = 0; i < ny*n_dofs; i++) bc_global_ids[i] = -1;
@@ -1402,24 +1402,24 @@ static PetscErrorCode BCApplyZero_WEST(DM da,PetscInt d_idx,Mat A,Vec b)
 
     bc_vals[j] =  0.0;
   }
-  CHKERRQ(ISLocalToGlobalMappingRestoreIndices(ltogm,&g_idx));
+  PetscCall(ISLocalToGlobalMappingRestoreIndices(ltogm,&g_idx));
   nbcs = 0;
   if (si == 0) nbcs = ny;
 
   if (b) {
-    CHKERRQ(VecSetValues(b,nbcs,bc_global_ids,bc_vals,INSERT_VALUES));
-    CHKERRQ(VecAssemblyBegin(b));
-    CHKERRQ(VecAssemblyEnd(b));
+    PetscCall(VecSetValues(b,nbcs,bc_global_ids,bc_vals,INSERT_VALUES));
+    PetscCall(VecAssemblyBegin(b));
+    PetscCall(VecAssemblyEnd(b));
   }
 
   if (A) {
-    CHKERRQ(MatZeroRowsColumns(A,nbcs,bc_global_ids,1.0,0,0));
+    PetscCall(MatZeroRowsColumns(A,nbcs,bc_global_ids,1.0,0,0));
   }
 
-  CHKERRQ(PetscFree(bc_vals));
-  CHKERRQ(PetscFree(bc_global_ids));
+  PetscCall(PetscFree(bc_vals));
+  PetscCall(PetscFree(bc_global_ids));
 
-  CHKERRQ(DMDAVecRestoreArray(cda,coords,&_coords));
+  PetscCall(DMDAVecRestoreArray(cda,coords,&_coords));
   PetscFunctionReturn(0);
 }
 
@@ -1438,17 +1438,17 @@ static PetscErrorCode BCApplyZero_NORTH(DM da,PetscInt d_idx,Mat A,Vec b)
   ISLocalToGlobalMapping ltogm;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetLocalToGlobalMapping(da,&ltogm));
-  CHKERRQ(ISLocalToGlobalMappingGetIndices(ltogm,&g_idx));
+  PetscCall(DMGetLocalToGlobalMapping(da,&ltogm));
+  PetscCall(ISLocalToGlobalMappingGetIndices(ltogm,&g_idx));
 
-  CHKERRQ(DMGetCoordinateDM(da,&cda));
-  CHKERRQ(DMGetCoordinatesLocal(da,&coords));
-  CHKERRQ(DMDAVecGetArray(cda,coords,&_coords));
-  CHKERRQ(DMDAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0));
-  CHKERRQ(DMDAGetInfo(da,0,&M,&N,0,0,0,0,&n_dofs,0,0,0,0,0));
+  PetscCall(DMGetCoordinateDM(da,&cda));
+  PetscCall(DMGetCoordinatesLocal(da,&coords));
+  PetscCall(DMDAVecGetArray(cda,coords,&_coords));
+  PetscCall(DMDAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0));
+  PetscCall(DMDAGetInfo(da,0,&M,&N,0,0,0,0,&n_dofs,0,0,0,0,0));
 
-  CHKERRQ(PetscMalloc1(nx,&bc_global_ids));
-  CHKERRQ(PetscMalloc1(nx,&bc_vals));
+  PetscCall(PetscMalloc1(nx,&bc_global_ids));
+  PetscCall(PetscMalloc1(nx,&bc_vals));
 
   /* init the entries to -1 so VecSetValues will ignore them */
   for (i = 0; i < nx; i++) bc_global_ids[i] = -1;
@@ -1463,23 +1463,23 @@ static PetscErrorCode BCApplyZero_NORTH(DM da,PetscInt d_idx,Mat A,Vec b)
 
     bc_vals[i] =  0.0;
   }
-  CHKERRQ(ISLocalToGlobalMappingRestoreIndices(ltogm,&g_idx));
+  PetscCall(ISLocalToGlobalMappingRestoreIndices(ltogm,&g_idx));
   nbcs = 0;
   if ((sj+ny) == (N)) nbcs = nx;
 
   if (b) {
-    CHKERRQ(VecSetValues(b,nbcs,bc_global_ids,bc_vals,INSERT_VALUES));
-    CHKERRQ(VecAssemblyBegin(b));
-    CHKERRQ(VecAssemblyEnd(b));
+    PetscCall(VecSetValues(b,nbcs,bc_global_ids,bc_vals,INSERT_VALUES));
+    PetscCall(VecAssemblyBegin(b));
+    PetscCall(VecAssemblyEnd(b));
   }
   if (A) {
-    CHKERRQ(MatZeroRowsColumns(A,nbcs,bc_global_ids,1.0,NULL,NULL));
+    PetscCall(MatZeroRowsColumns(A,nbcs,bc_global_ids,1.0,NULL,NULL));
   }
 
-  CHKERRQ(PetscFree(bc_vals));
-  CHKERRQ(PetscFree(bc_global_ids));
+  PetscCall(PetscFree(bc_vals));
+  PetscCall(PetscFree(bc_global_ids));
 
-  CHKERRQ(DMDAVecRestoreArray(cda,coords,&_coords));
+  PetscCall(DMDAVecRestoreArray(cda,coords,&_coords));
   PetscFunctionReturn(0);
 }
 
@@ -1498,17 +1498,17 @@ static PetscErrorCode BCApplyZero_SOUTH(DM da,PetscInt d_idx,Mat A,Vec b)
   ISLocalToGlobalMapping ltogm;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetLocalToGlobalMapping(da,&ltogm));
-  CHKERRQ(ISLocalToGlobalMappingGetIndices(ltogm,&g_idx));
+  PetscCall(DMGetLocalToGlobalMapping(da,&ltogm));
+  PetscCall(ISLocalToGlobalMappingGetIndices(ltogm,&g_idx));
 
-  CHKERRQ(DMGetCoordinateDM(da,&cda));
-  CHKERRQ(DMGetCoordinatesLocal(da,&coords));
-  CHKERRQ(DMDAVecGetArray(cda,coords,&_coords));
-  CHKERRQ(DMDAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0));
-  CHKERRQ(DMDAGetInfo(da,0,&M,&N,0,0,0,0,&n_dofs,0,0,0,0,0));
+  PetscCall(DMGetCoordinateDM(da,&cda));
+  PetscCall(DMGetCoordinatesLocal(da,&coords));
+  PetscCall(DMDAVecGetArray(cda,coords,&_coords));
+  PetscCall(DMDAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0));
+  PetscCall(DMDAGetInfo(da,0,&M,&N,0,0,0,0,&n_dofs,0,0,0,0,0));
 
-  CHKERRQ(PetscMalloc1(nx,&bc_global_ids));
-  CHKERRQ(PetscMalloc1(nx,&bc_vals));
+  PetscCall(PetscMalloc1(nx,&bc_global_ids));
+  PetscCall(PetscMalloc1(nx,&bc_vals));
 
   /* init the entries to -1 so VecSetValues will ignore them */
   for (i = 0; i < nx; i++) bc_global_ids[i] = -1;
@@ -1523,23 +1523,23 @@ static PetscErrorCode BCApplyZero_SOUTH(DM da,PetscInt d_idx,Mat A,Vec b)
 
     bc_vals[i] =  0.0;
   }
-  CHKERRQ(ISLocalToGlobalMappingRestoreIndices(ltogm,&g_idx));
+  PetscCall(ISLocalToGlobalMappingRestoreIndices(ltogm,&g_idx));
   nbcs = 0;
   if (sj == 0) nbcs = nx;
 
   if (b) {
-    CHKERRQ(VecSetValues(b,nbcs,bc_global_ids,bc_vals,INSERT_VALUES));
-    CHKERRQ(VecAssemblyBegin(b));
-    CHKERRQ(VecAssemblyEnd(b));
+    PetscCall(VecSetValues(b,nbcs,bc_global_ids,bc_vals,INSERT_VALUES));
+    PetscCall(VecAssemblyBegin(b));
+    PetscCall(VecAssemblyEnd(b));
   }
   if (A) {
-    CHKERRQ(MatZeroRowsColumns(A,nbcs,bc_global_ids,1.0,0,0));
+    PetscCall(MatZeroRowsColumns(A,nbcs,bc_global_ids,1.0,0,0));
   }
 
-  CHKERRQ(PetscFree(bc_vals));
-  CHKERRQ(PetscFree(bc_global_ids));
+  PetscCall(PetscFree(bc_vals));
+  PetscCall(PetscFree(bc_global_ids));
 
-  CHKERRQ(DMDAVecRestoreArray(cda,coords,&_coords));
+  PetscCall(DMDAVecRestoreArray(cda,coords,&_coords));
   PetscFunctionReturn(0);
 }
 
@@ -1550,12 +1550,12 @@ static PetscErrorCode BCApplyZero_SOUTH(DM da,PetscInt d_idx,Mat A,Vec b)
 static PetscErrorCode DMDAApplyBoundaryConditions(DM dm_stokes,Mat A,Vec f)
 {
   PetscFunctionBeginUser;
-  CHKERRQ(BCApplyZero_NORTH(dm_stokes,0,A,f));
-  CHKERRQ(BCApplyZero_NORTH(dm_stokes,1,A,f));
-  CHKERRQ(BCApplyZero_EAST(dm_stokes,0,A,f));
-  CHKERRQ(BCApplyZero_SOUTH(dm_stokes,0,A,f));
-  CHKERRQ(BCApplyZero_SOUTH(dm_stokes,1,A,f));
-  CHKERRQ(BCApplyZero_WEST(dm_stokes,0,A,f));
+  PetscCall(BCApplyZero_NORTH(dm_stokes,0,A,f));
+  PetscCall(BCApplyZero_NORTH(dm_stokes,1,A,f));
+  PetscCall(BCApplyZero_EAST(dm_stokes,0,A,f));
+  PetscCall(BCApplyZero_SOUTH(dm_stokes,0,A,f));
+  PetscCall(BCApplyZero_SOUTH(dm_stokes,1,A,f));
+  PetscCall(BCApplyZero_WEST(dm_stokes,0,A,f));
   PetscFunctionReturn(0);
 }
 

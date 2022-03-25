@@ -7,9 +7,9 @@ static PetscErrorCode DMDestroy_Product(DM dm)
 
   PetscFunctionBeginUser;
   for (d=0; d<DMPRODUCT_MAX_DIM; ++d) {
-    CHKERRQ(DMDestroy(&product->dm[d]));
+    PetscCall(DMDestroy(&product->dm[d]));
   }
-  CHKERRQ(PetscFree(product));
+  PetscCall(PetscFree(product));
   PetscFunctionReturn(0);
 }
 
@@ -32,7 +32,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Product(DM dm)
 
   PetscFunctionBegin;
   PetscValidPointer(dm,1);
-  CHKERRQ(PetscNewLog(dm,&product));
+  PetscCall(PetscNewLog(dm,&product));
   dm->data = product;
 
   for (d=0; d<DMPRODUCT_MAX_DIM; ++d) product->dm[d]  = NULL;

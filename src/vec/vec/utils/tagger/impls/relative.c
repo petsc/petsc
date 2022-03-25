@@ -10,10 +10,10 @@ static PetscErrorCode VecTaggerComputeBoxes_Relative(VecTagger tagger,Vec vec,Pe
   const PetscScalar *vArray;
 
   PetscFunctionBegin;
-  CHKERRQ(VecTaggerGetBlockSize(tagger,&bs));
+  PetscCall(VecTaggerGetBlockSize(tagger,&bs));
   *numBoxes = 1;
-  CHKERRQ(PetscMalloc1(bs,&bxs));
-  CHKERRQ(VecGetLocalSize(vec,&n));
+  PetscCall(PetscMalloc1(bs,&bxs));
+  PetscCall(VecGetLocalSize(vec,&n));
   n /= bs;
   for (i = 0; i < bs; i++) {
 #if !defined(PETSC_USE_COMPLEX)
@@ -24,7 +24,7 @@ static PetscErrorCode VecTaggerComputeBoxes_Relative(VecTagger tagger,Vec vec,Pe
     bxs[i].max = PetscCMPLX(PETSC_MIN_REAL,PETSC_MIN_REAL);
 #endif
   }
-  CHKERRQ(VecGetArrayRead(vec, &vArray));
+  PetscCall(VecGetArrayRead(vec, &vArray));
   for (i = 0, k = 0; i < n; i++) {
     for (j = 0; j < bs; j++, k++) {
 #if !defined(PETSC_USE_COMPLEX)
@@ -37,8 +37,8 @@ static PetscErrorCode VecTaggerComputeBoxes_Relative(VecTagger tagger,Vec vec,Pe
     }
   }
   for (i = 0; i < bs; i++) bxs[i].max = -bxs[i].max;
-  CHKERRQ(VecRestoreArrayRead(vec, &vArray));
-  CHKERRMPI(MPIU_Allreduce(MPI_IN_PLACE,(PetscReal *) bxs,2*(sizeof(PetscScalar)/sizeof(PetscReal))*bs,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)tagger)));
+  PetscCall(VecRestoreArrayRead(vec, &vArray));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE,(PetscReal *) bxs,2*(sizeof(PetscScalar)/sizeof(PetscReal))*bs,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)tagger)));
   for (i = 0; i < bs; i++) {
     PetscScalar mins = bxs[i].min;
     PetscScalar difs = -bxs[i].max - mins;
@@ -71,7 +71,7 @@ static PetscErrorCode VecTaggerComputeBoxes_Relative(VecTagger tagger,Vec vec,Pe
 PetscErrorCode VecTaggerRelativeSetBox(VecTagger tagger,VecTaggerBox *box)
 {
   PetscFunctionBegin;
-  CHKERRQ(VecTaggerSetBox_Simple(tagger,box));
+  PetscCall(VecTaggerSetBox_Simple(tagger,box));
   PetscFunctionReturn(0);
 }
 
@@ -93,14 +93,14 @@ PetscErrorCode VecTaggerRelativeSetBox(VecTagger tagger,VecTaggerBox *box)
 PetscErrorCode VecTaggerRelativeGetBox(VecTagger tagger,const VecTaggerBox **box)
 {
   PetscFunctionBegin;
-  CHKERRQ(VecTaggerGetBox_Simple(tagger,box));
+  PetscCall(VecTaggerGetBox_Simple(tagger,box));
   PetscFunctionReturn(0);
 }
 
 PETSC_INTERN PetscErrorCode VecTaggerCreate_Relative(VecTagger tagger)
 {
   PetscFunctionBegin;
-  CHKERRQ(VecTaggerCreate_Simple(tagger));
+  PetscCall(VecTaggerCreate_Simple(tagger));
   tagger->ops->computeboxes = VecTaggerComputeBoxes_Relative;
   PetscFunctionReturn(0);
 }

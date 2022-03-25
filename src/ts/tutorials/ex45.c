@@ -235,22 +235,22 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->expTS    = PETSC_FALSE;
   options->lumped   = PETSC_TRUE;
 
-  ierr = PetscOptionsBegin(comm, "", "Heat Equation Options", "DMPLEX");CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsEList("-sol_type", "Type of exact solution", "ex45.c", solutionTypes, NUM_SOLUTION_TYPES, solutionTypes[options->solType], &sol, NULL));
+  ierr = PetscOptionsBegin(comm, "", "Heat Equation Options", "DMPLEX");PetscCall(ierr);
+  PetscCall(PetscOptionsEList("-sol_type", "Type of exact solution", "ex45.c", solutionTypes, NUM_SOLUTION_TYPES, solutionTypes[options->solType], &sol, NULL));
   options->solType = (SolutionType) sol;
-  CHKERRQ(PetscOptionsBool("-explicit", "Use explicit timestepping", "ex45.c", options->expTS, &options->expTS, NULL));
-  CHKERRQ(PetscOptionsBool("-lumped", "Lump the mass matrix", "ex45.c", options->lumped, &options->lumped, NULL));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(PetscOptionsBool("-explicit", "Use explicit timestepping", "ex45.c", options->expTS, &options->expTS, NULL));
+  PetscCall(PetscOptionsBool("-lumped", "Lump the mass matrix", "ex45.c", options->lumped, &options->lumped, NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *ctx)
 {
   PetscFunctionBeginUser;
-  CHKERRQ(DMCreate(comm, dm));
-  CHKERRQ(DMSetType(*dm, DMPLEX));
-  CHKERRQ(DMSetFromOptions(*dm));
-  CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
+  PetscCall(DMCreate(comm, dm));
+  PetscCall(DMSetType(*dm, DMPLEX));
+  PetscCall(DMSetFromOptions(*dm));
+  PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   PetscFunctionReturn(0);
 }
 
@@ -261,35 +261,35 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx)
   const PetscInt id = 1;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetLabel(dm, "marker", &label));
-  CHKERRQ(DMGetDS(dm, &ds));
-  CHKERRQ(PetscDSSetJacobian(ds, 0, 0, g0_temp, NULL, NULL, g3_temp));
+  PetscCall(DMGetLabel(dm, "marker", &label));
+  PetscCall(DMGetDS(dm, &ds));
+  PetscCall(PetscDSSetJacobian(ds, 0, 0, g0_temp, NULL, NULL, g3_temp));
   switch (ctx->solType) {
     case SOL_QUADRATIC_LINEAR:
-      CHKERRQ(PetscDSSetResidual(ds, 0, f0_quad_lin,  f1_temp));
-      CHKERRQ(PetscDSSetRHSResidual(ds, 0, f0_quad_lin_exp, f1_temp_exp));
-      CHKERRQ(PetscDSSetExactSolution(ds, 0, mms_quad_lin, ctx));
-      CHKERRQ(PetscDSSetExactSolutionTimeDerivative(ds, 0, mms_quad_lin_t, ctx));
-      CHKERRQ(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) mms_quad_lin, (void (*)(void)) mms_quad_lin_t, ctx, NULL));
+      PetscCall(PetscDSSetResidual(ds, 0, f0_quad_lin,  f1_temp));
+      PetscCall(PetscDSSetRHSResidual(ds, 0, f0_quad_lin_exp, f1_temp_exp));
+      PetscCall(PetscDSSetExactSolution(ds, 0, mms_quad_lin, ctx));
+      PetscCall(PetscDSSetExactSolutionTimeDerivative(ds, 0, mms_quad_lin_t, ctx));
+      PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) mms_quad_lin, (void (*)(void)) mms_quad_lin_t, ctx, NULL));
       break;
     case SOL_QUADRATIC_TRIG:
-      CHKERRQ(PetscDSSetResidual(ds, 0, f0_quad_trig, f1_temp));
-      CHKERRQ(PetscDSSetRHSResidual(ds, 0, f0_quad_trig_exp, f1_temp_exp));
-      CHKERRQ(PetscDSSetExactSolution(ds, 0, mms_quad_trig, ctx));
-      CHKERRQ(PetscDSSetExactSolutionTimeDerivative(ds, 0, mms_quad_trig_t, ctx));
-      CHKERRQ(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) mms_quad_trig, (void (*)(void)) mms_quad_trig_t, ctx, NULL));
+      PetscCall(PetscDSSetResidual(ds, 0, f0_quad_trig, f1_temp));
+      PetscCall(PetscDSSetRHSResidual(ds, 0, f0_quad_trig_exp, f1_temp_exp));
+      PetscCall(PetscDSSetExactSolution(ds, 0, mms_quad_trig, ctx));
+      PetscCall(PetscDSSetExactSolutionTimeDerivative(ds, 0, mms_quad_trig_t, ctx));
+      PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) mms_quad_trig, (void (*)(void)) mms_quad_trig_t, ctx, NULL));
       break;
     case SOL_TRIG_LINEAR:
-      CHKERRQ(PetscDSSetResidual(ds, 0, f0_trig_lin,  f1_temp));
-      CHKERRQ(PetscDSSetExactSolution(ds, 0, mms_trig_lin, ctx));
-      CHKERRQ(PetscDSSetExactSolutionTimeDerivative(ds, 0, mms_trig_lin_t, ctx));
-      CHKERRQ(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) mms_trig_lin, (void (*)(void)) mms_trig_lin_t, ctx, NULL));
+      PetscCall(PetscDSSetResidual(ds, 0, f0_trig_lin,  f1_temp));
+      PetscCall(PetscDSSetExactSolution(ds, 0, mms_trig_lin, ctx));
+      PetscCall(PetscDSSetExactSolutionTimeDerivative(ds, 0, mms_trig_lin_t, ctx));
+      PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) mms_trig_lin, (void (*)(void)) mms_trig_lin_t, ctx, NULL));
       break;
     case SOL_TRIG_TRIG:
-      CHKERRQ(PetscDSSetResidual(ds, 0, f0_trig_trig, f1_temp));
-      CHKERRQ(PetscDSSetRHSResidual(ds, 0, f0_trig_trig_exp, f1_temp_exp));
-      CHKERRQ(PetscDSSetExactSolution(ds, 0, mms_trig_trig, ctx));
-      CHKERRQ(PetscDSSetExactSolutionTimeDerivative(ds, 0, mms_trig_trig_t, ctx));
+      PetscCall(PetscDSSetResidual(ds, 0, f0_trig_trig, f1_temp));
+      PetscCall(PetscDSSetRHSResidual(ds, 0, f0_trig_trig_exp, f1_temp_exp));
+      PetscCall(PetscDSSetExactSolution(ds, 0, mms_trig_trig, ctx));
+      PetscCall(PetscDSSetExactSolutionTimeDerivative(ds, 0, mms_trig_trig_t, ctx));
       break;
     default: SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Invalid solution type: %s (%D)", solutionTypes[PetscMin(ctx->solType, NUM_SOLUTION_TYPES)], ctx->solType);
   }
@@ -305,28 +305,28 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx* ctx)
   PetscInt       dim, cStart;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetDimension(dm, &dim));
-  CHKERRQ(DMPlexGetHeightStratum(dm, 0, &cStart, NULL));
-  CHKERRQ(DMPlexGetCellType(dm, cStart, &ct));
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, NULL));
+  PetscCall(DMPlexGetCellType(dm, cStart, &ct));
   simplex = DMPolytopeTypeGetNumVertices(ct) == DMPolytopeTypeGetDim(ct)+1 ? PETSC_TRUE : PETSC_FALSE;
   /* Create finite element */
-  CHKERRQ(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, "temp_", -1, &fe));
-  CHKERRQ(PetscObjectSetName((PetscObject) fe, "temperature"));
+  PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, "temp_", -1, &fe));
+  PetscCall(PetscObjectSetName((PetscObject) fe, "temperature"));
   /* Set discretization and boundary conditions for each mesh */
-  CHKERRQ(DMSetField(dm, 0, NULL, (PetscObject) fe));
-  CHKERRQ(DMCreateDS(dm));
+  PetscCall(DMSetField(dm, 0, NULL, (PetscObject) fe));
+  PetscCall(DMCreateDS(dm));
   if (ctx->expTS) {
     PetscDS ds;
 
-    CHKERRQ(DMGetDS(dm, &ds));
-    CHKERRQ(PetscDSSetImplicit(ds, 0, PETSC_FALSE));
+    PetscCall(DMGetDS(dm, &ds));
+    PetscCall(PetscDSSetImplicit(ds, 0, PETSC_FALSE));
   }
-  CHKERRQ(SetupProblem(dm, ctx));
+  PetscCall(SetupProblem(dm, ctx));
   while (cdm) {
-    CHKERRQ(DMCopyDisc(dm, cdm));
-    CHKERRQ(DMGetCoarseDM(cdm, &cdm));
+    PetscCall(DMCopyDisc(dm, cdm));
+    PetscCall(DMGetCoarseDM(cdm, &cdm));
   }
-  CHKERRQ(PetscFEDestroy(&fe));
+  PetscCall(PetscFEDestroy(&fe));
   PetscFunctionReturn(0);
 }
 
@@ -336,9 +336,9 @@ static PetscErrorCode SetInitialConditions(TS ts, Vec u)
   PetscReal      t;
 
   PetscFunctionBegin;
-  CHKERRQ(TSGetDM(ts, &dm));
-  CHKERRQ(TSGetTime(ts, &t));
-  CHKERRQ(DMComputeExactSolution(dm, t, u, NULL));
+  PetscCall(TSGetDM(ts, &dm));
+  PetscCall(TSGetTime(ts, &t));
+  PetscCall(DMComputeExactSolution(dm, t, u, NULL));
   PetscFunctionReturn(0);
 }
 
@@ -349,39 +349,39 @@ int main(int argc, char **argv)
   Vec            u;
   AppCtx         ctx;
 
-  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
-  CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &ctx));
-  CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &dm, &ctx));
-  CHKERRQ(DMSetApplicationContext(dm, &ctx));
-  CHKERRQ(SetupDiscretization(dm, &ctx));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(ProcessOptions(PETSC_COMM_WORLD, &ctx));
+  PetscCall(CreateMesh(PETSC_COMM_WORLD, &dm, &ctx));
+  PetscCall(DMSetApplicationContext(dm, &ctx));
+  PetscCall(SetupDiscretization(dm, &ctx));
 
-  CHKERRQ(TSCreate(PETSC_COMM_WORLD, &ts));
-  CHKERRQ(TSSetDM(ts, dm));
-  CHKERRQ(DMTSSetBoundaryLocal(dm, DMPlexTSComputeBoundary, &ctx));
+  PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
+  PetscCall(TSSetDM(ts, dm));
+  PetscCall(DMTSSetBoundaryLocal(dm, DMPlexTSComputeBoundary, &ctx));
   if (ctx.expTS) {
-    CHKERRQ(DMTSSetRHSFunctionLocal(dm, DMPlexTSComputeRHSFunctionFEM, &ctx));
-    if (ctx.lumped) CHKERRQ(DMTSCreateRHSMassMatrixLumped(dm));
-    else            CHKERRQ(DMTSCreateRHSMassMatrix(dm));
+    PetscCall(DMTSSetRHSFunctionLocal(dm, DMPlexTSComputeRHSFunctionFEM, &ctx));
+    if (ctx.lumped) PetscCall(DMTSCreateRHSMassMatrixLumped(dm));
+    else            PetscCall(DMTSCreateRHSMassMatrix(dm));
   } else {
-    CHKERRQ(DMTSSetIFunctionLocal(dm, DMPlexTSComputeIFunctionFEM, &ctx));
-    CHKERRQ(DMTSSetIJacobianLocal(dm, DMPlexTSComputeIJacobianFEM, &ctx));
+    PetscCall(DMTSSetIFunctionLocal(dm, DMPlexTSComputeIFunctionFEM, &ctx));
+    PetscCall(DMTSSetIJacobianLocal(dm, DMPlexTSComputeIJacobianFEM, &ctx));
   }
-  CHKERRQ(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_MATCHSTEP));
-  CHKERRQ(TSSetFromOptions(ts));
-  CHKERRQ(TSSetComputeInitialCondition(ts, SetInitialConditions));
+  PetscCall(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_MATCHSTEP));
+  PetscCall(TSSetFromOptions(ts));
+  PetscCall(TSSetComputeInitialCondition(ts, SetInitialConditions));
 
-  CHKERRQ(DMCreateGlobalVector(dm, &u));
-  CHKERRQ(DMTSCheckFromOptions(ts, u));
-  CHKERRQ(SetInitialConditions(ts, u));
-  CHKERRQ(PetscObjectSetName((PetscObject) u, "temperature"));
-  CHKERRQ(TSSolve(ts, u));
-  CHKERRQ(DMTSCheckFromOptions(ts, u));
-  if (ctx.expTS) CHKERRQ(DMTSDestroyRHSMassMatrix(dm));
+  PetscCall(DMCreateGlobalVector(dm, &u));
+  PetscCall(DMTSCheckFromOptions(ts, u));
+  PetscCall(SetInitialConditions(ts, u));
+  PetscCall(PetscObjectSetName((PetscObject) u, "temperature"));
+  PetscCall(TSSolve(ts, u));
+  PetscCall(DMTSCheckFromOptions(ts, u));
+  if (ctx.expTS) PetscCall(DMTSDestroyRHSMassMatrix(dm));
 
-  CHKERRQ(VecDestroy(&u));
-  CHKERRQ(TSDestroy(&ts));
-  CHKERRQ(DMDestroy(&dm));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&u));
+  PetscCall(TSDestroy(&ts));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

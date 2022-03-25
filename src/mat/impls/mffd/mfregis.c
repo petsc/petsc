@@ -20,7 +20,7 @@ PetscErrorCode  MatMFFDRegisterAll(void)
   if (MatMFFDRegisterAllCalled) PetscFunctionReturn(0);
   MatMFFDRegisterAllCalled = PETSC_TRUE;
 
-  CHKERRQ(MatMFFDRegister(MATMFFD_DS,MatCreateMFFD_DS));
-  CHKERRQ(MatMFFDRegister(MATMFFD_WP,MatCreateMFFD_WP));
+  PetscCall(MatMFFDRegister(MATMFFD_DS,MatCreateMFFD_DS));
+  PetscCall(MatMFFDRegister(MATMFFD_WP,MatCreateMFFD_WP));
   PetscFunctionReturn(0);
 }

@@ -30,34 +30,34 @@ int main(int argc,char **argv)
   PetscInt         check_step_alive = -1, check_step_dead = -1;
   PetscBool        has_glider, has_blinker;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Conway's Game of Life","");CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Conway's Game of Life","");PetscCall(ierr);
   {
-    CHKERRQ(PetscOptionsIntArray("-glider","Coordinate at which to center a glider",NULL,glider_loc,(two=2,&two),&has_glider));
-    CHKERRQ(PetscOptionsIntArray("-blinker","Coordinate at which to center a blinker",NULL,blinker_loc,(two=2,&two),&has_blinker));
-    CHKERRQ(PetscOptionsInt("-steps","Number of steps to take",NULL,steps,&steps,NULL));
-    CHKERRQ(PetscOptionsInt("-viz_interval","Vizualization interval",NULL,viz_interval,&viz_interval,NULL));
-    CHKERRQ(PetscOptionsInt("-check_step_alive","Step on which to check that the simulation is alive",NULL,check_step_alive,&check_step_alive,NULL));
-    CHKERRQ(PetscOptionsInt("-check_step_dead","Step on which to check that the simulation is dead",NULL,check_step_dead,&check_step_dead,NULL));
+    PetscCall(PetscOptionsIntArray("-glider","Coordinate at which to center a glider",NULL,glider_loc,(two=2,&two),&has_glider));
+    PetscCall(PetscOptionsIntArray("-blinker","Coordinate at which to center a blinker",NULL,blinker_loc,(two=2,&two),&has_blinker));
+    PetscCall(PetscOptionsInt("-steps","Number of steps to take",NULL,steps,&steps,NULL));
+    PetscCall(PetscOptionsInt("-viz_interval","Vizualization interval",NULL,viz_interval,&viz_interval,NULL));
+    PetscCall(PetscOptionsInt("-check_step_alive","Step on which to check that the simulation is alive",NULL,check_step_alive,&check_step_alive,NULL));
+    PetscCall(PetscOptionsInt("-check_step_dead","Step on which to check that the simulation is dead",NULL,check_step_dead,&check_step_dead,NULL));
   }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
-  CHKERRQ(PetscViewerDrawOpen(PETSC_COMM_WORLD,NULL,"Life",PETSC_DECIDE,PETSC_DECIDE,1000,1000,&viewer));
+  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD,NULL,"Life",PETSC_DECIDE,PETSC_DECIDE,1000,1000,&viewer));
 
   /* Create distributed array and get vectors */
-  CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX,30,30,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
-  CHKERRQ(DMCreateLocalVector(da,&Xlocal));
-  CHKERRQ(DMCreateGlobalVector(da,&Xglobal));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX,30,30,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMCreateLocalVector(da,&Xlocal));
+  PetscCall(DMCreateGlobalVector(da,&Xglobal));
 
   {  /* Initialize */
     DMDALocalInfo info;
     PetscScalar   **x;
     PetscInt      i,j;
 
-    CHKERRQ(DMDAGetLocalInfo(da,&info));
-    CHKERRQ(DMDAVecGetArray(da, Xlocal, &x));
+    PetscCall(DMDAGetLocalInfo(da,&info));
+    PetscCall(DMDAVecGetArray(da, Xlocal, &x));
     for (j=info.ys; j<info.ys+info.ym; j++) {
       for (i=info.xs; i<info.xs+info.xm; i++) {
         if (has_glider && i == glider_loc[0] && j == glider_loc[1]) {
@@ -73,12 +73,12 @@ int main(int argc,char **argv)
         }
       }
     }
-    CHKERRQ(DMDAVecRestoreArray(da, Xlocal, &x));
-    CHKERRQ(DMLocalToGlobal(da, Xlocal, ADD_VALUES, Xglobal));
+    PetscCall(DMDAVecRestoreArray(da, Xlocal, &x));
+    PetscCall(DMLocalToGlobal(da, Xlocal, ADD_VALUES, Xglobal));
   }
 
   /* View the initial condition */
-  CHKERRQ(VecView(Xglobal, viewer));
+  PetscCall(VecView(Xglobal, viewer));
 
   {                             /* Play */
     PetscInt step;
@@ -89,10 +89,10 @@ int main(int argc,char **argv)
       DMDALocalInfo     info;
       PetscInt          i,j;
 
-      CHKERRQ(DMGlobalToLocal(da, Xglobal, INSERT_VALUES, Xlocal));
-      CHKERRQ(DMDAGetLocalInfo(da,&info));
-      CHKERRQ(DMDAVecGetArrayRead(da, Xlocal, &x));
-      CHKERRQ(DMDAVecGetArrayWrite(da, Xglobal, &y));
+      PetscCall(DMGlobalToLocal(da, Xglobal, INSERT_VALUES, Xlocal));
+      PetscCall(DMDAGetLocalInfo(da,&info));
+      PetscCall(DMDAVecGetArrayRead(da, Xlocal, &x));
+      PetscCall(DMDAVecGetArrayWrite(da, Xglobal, &y));
       for (j=info.ys; j<info.ys+info.ym; j++) {
         for (i=info.xs; i<info.xs+info.xm; i++) {
           PetscInt live_neighbors = 0;
@@ -119,30 +119,30 @@ int main(int argc,char **argv)
           }
         }
       }
-      CHKERRQ(DMDAVecRestoreArrayRead(da, Xlocal, &x));
-      CHKERRQ(DMDAVecRestoreArrayWrite(da, Xglobal, &y));
+      PetscCall(DMDAVecRestoreArrayRead(da, Xlocal, &x));
+      PetscCall(DMDAVecRestoreArrayWrite(da, Xglobal, &y));
       if (step == check_step_alive || step == check_step_dead) {
         PetscScalar sum;
-        CHKERRQ(VecSum(Xglobal, &sum));
+        PetscCall(VecSum(Xglobal, &sum));
         if (PetscAbsScalar(sum) > 0.1) {
           if (step == check_step_dead) {
-            CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Simulation alive at step %D\n",step));
+            PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Simulation alive at step %D\n",step));
           }
         } else if (step == check_step_alive) {
-          CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Simulation dead at step %D\n",step));
+          PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Simulation dead at step %D\n",step));
         }
       }
       if (step % viz_interval == 0) {
-        CHKERRQ(VecView(Xglobal, viewer));
+        PetscCall(VecView(Xglobal, viewer));
       }
     }
   }
 
-  CHKERRQ(PetscViewerDestroy(&viewer));
-  CHKERRQ(VecDestroy(&Xglobal));
-  CHKERRQ(VecDestroy(&Xlocal));
-  CHKERRQ(DMDestroy(&da));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscViewerDestroy(&viewer));
+  PetscCall(VecDestroy(&Xglobal));
+  PetscCall(VecDestroy(&Xlocal));
+  PetscCall(DMDestroy(&da));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

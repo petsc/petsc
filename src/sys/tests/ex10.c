@@ -7,19 +7,19 @@ int main(int argc,char **argv)
 {
   PetscInt       i,*a,*b;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
-  CHKERRQ(PetscMalloc1(10,&a));
-  CHKERRQ(PetscMalloc1(20,&b));
+  PetscCall(PetscMalloc1(10,&a));
+  PetscCall(PetscMalloc1(20,&b));
 
   /*
       Nonoverlapping regions
   */
   for (i=0; i<20; i++) b[i] = i;
-  CHKERRQ(PetscArraymove(a,b,10));
-  CHKERRQ(PetscIntView(10,a,NULL));
+  PetscCall(PetscArraymove(a,b,10));
+  PetscCall(PetscIntView(10,a,NULL));
 
-  CHKERRQ(PetscFree(a));
+  PetscCall(PetscFree(a));
 
   /*
      |        |                |       |
@@ -27,23 +27,23 @@ int main(int argc,char **argv)
                               a+10    a+15
   */
   a    = b + 5;
-  CHKERRQ(PetscArraymove(a,b,15));
-  CHKERRQ(PetscIntView(15,a,NULL));
-  CHKERRQ(PetscFree(b));
+  PetscCall(PetscArraymove(a,b,15));
+  PetscCall(PetscIntView(15,a,NULL));
+  PetscCall(PetscFree(b));
 
   /*
      |       |                    |       |
      a       b                   a+20   a+25
                                         b+20
   */
-  CHKERRQ(PetscMalloc1(25,&a));
+  PetscCall(PetscMalloc1(25,&a));
   b    = a + 5;
   for (i=0; i<20; i++) b[i] = i;
-  CHKERRQ(PetscArraymove(a,b,20));
-  CHKERRQ(PetscIntView(20,a,NULL));
-  CHKERRQ(PetscFree(a));
+  PetscCall(PetscArraymove(a,b,20));
+  PetscCall(PetscIntView(20,a,NULL));
+  PetscCall(PetscFree(a));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

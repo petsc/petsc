@@ -50,7 +50,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   appctx.epsilon = 1.0e-3;
   appctx.delta   = 1.0;
@@ -63,61 +63,61 @@ int main(int argc,char **argv)
   appctx.cstar   = .2;
   appctx.upwind  = PETSC_TRUE;
 
-  CHKERRQ(PetscOptionsGetScalar(NULL,NULL,"-delta",&appctx.delta,NULL));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-upwind",&appctx.upwind,NULL));
+  PetscCall(PetscOptionsGetScalar(NULL,NULL,"-delta",&appctx.delta,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-upwind",&appctx.upwind,NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE,8,2,1,NULL,&da));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
-  CHKERRQ(DMDASetFieldName(da,0,"rho"));
-  CHKERRQ(DMDASetFieldName(da,1,"c"));
+  PetscCall(DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE,8,2,1,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMDASetFieldName(da,0,"rho"));
+  PetscCall(DMDASetFieldName(da,1,"c"));
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Extract global vectors from DMDA; then duplicate for remaining
      vectors that are the same types
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(DMCreateGlobalVector(da,&U));
+  PetscCall(DMCreateGlobalVector(da,&U));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
-  CHKERRQ(TSSetType(ts,TSROSW));
-  CHKERRQ(TSSetDM(ts,da));
-  CHKERRQ(TSSetProblemType(ts,TS_NONLINEAR));
-  CHKERRQ(TSSetIFunction(ts,NULL,IFunction,&appctx));
+  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
+  PetscCall(TSSetType(ts,TSROSW));
+  PetscCall(TSSetDM(ts,da));
+  PetscCall(TSSetProblemType(ts,TS_NONLINEAR));
+  PetscCall(TSSetIFunction(ts,NULL,IFunction,&appctx));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(InitialConditions(da,U));
-  CHKERRQ(TSSetSolution(ts,U));
+  PetscCall(InitialConditions(da,U));
+  PetscCall(TSSetSolution(ts,U));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSSetTimeStep(ts,.0001));
-  CHKERRQ(TSSetMaxTime(ts,1.0));
-  CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
-  CHKERRQ(TSSetFromOptions(ts));
+  PetscCall(TSSetTimeStep(ts,.0001));
+  PetscCall(TSSetMaxTime(ts,1.0));
+  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
+  PetscCall(TSSetFromOptions(ts));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSSolve(ts,U));
+  PetscCall(TSSolve(ts,U));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(VecDestroy(&U));
-  CHKERRQ(TSDestroy(&ts));
-  CHKERRQ(DMDestroy(&da));
+  PetscCall(VecDestroy(&U));
+  PetscCall(TSDestroy(&ts));
+  PetscCall(DMDestroy(&da));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 /* ------------------------------------------------------------------- */
@@ -143,9 +143,9 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
   Vec            localU;
 
   PetscFunctionBegin;
-  CHKERRQ(TSGetDM(ts,&da));
-  CHKERRQ(DMGetLocalVector(da,&localU));
-  CHKERRQ(DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
+  PetscCall(TSGetDM(ts,&da));
+  PetscCall(DMGetLocalVector(da,&localU));
+  PetscCall(DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
 
   hx = 1.0/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
 
@@ -155,20 +155,20 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
      By placing code between these two statements, computations can be
      done while messages are in transition.
   */
-  CHKERRQ(DMGlobalToLocalBegin(da,U,INSERT_VALUES,localU));
-  CHKERRQ(DMGlobalToLocalEnd(da,U,INSERT_VALUES,localU));
+  PetscCall(DMGlobalToLocalBegin(da,U,INSERT_VALUES,localU));
+  PetscCall(DMGlobalToLocalEnd(da,U,INSERT_VALUES,localU));
 
   /*
      Get pointers to vector data
   */
-  CHKERRQ(DMDAVecGetArrayRead(da,localU,&u));
-  CHKERRQ(DMDAVecGetArrayRead(da,Udot,&udot));
-  CHKERRQ(DMDAVecGetArrayWrite(da,F,&f));
+  PetscCall(DMDAVecGetArrayRead(da,localU,&u));
+  PetscCall(DMDAVecGetArrayRead(da,Udot,&udot));
+  PetscCall(DMDAVecGetArrayWrite(da,F,&f));
 
   /*
      Get local grid boundaries
   */
-  CHKERRQ(DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL));
+  PetscCall(DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL));
 
   if (!xs) {
     f[0].rho = udot[0].rho; /* u[0].rho - 0.0; */
@@ -206,10 +206,10 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
   /*
      Restore vectors
   */
-  CHKERRQ(DMDAVecRestoreArrayRead(da,localU,&u));
-  CHKERRQ(DMDAVecRestoreArrayRead(da,Udot,&udot));
-  CHKERRQ(DMDAVecRestoreArrayWrite(da,F,&f));
-  CHKERRQ(DMRestoreLocalVector(da,&localU));
+  PetscCall(DMDAVecRestoreArrayRead(da,localU,&u));
+  PetscCall(DMDAVecRestoreArrayRead(da,Udot,&udot));
+  PetscCall(DMDAVecRestoreArrayWrite(da,F,&f));
+  PetscCall(DMRestoreLocalVector(da,&localU));
   PetscFunctionReturn(0);
 }
 
@@ -221,19 +221,19 @@ PetscErrorCode InitialConditions(DM da,Vec U)
   PetscReal      hx,x;
 
   PetscFunctionBegin;
-  CHKERRQ(DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
+  PetscCall(DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
 
   hx = 1.0/(PetscReal)(Mx-1);
 
   /*
      Get pointers to vector data
   */
-  CHKERRQ(DMDAVecGetArrayWrite(da,U,&u));
+  PetscCall(DMDAVecGetArrayWrite(da,U,&u));
 
   /*
      Get local grid boundaries
   */
-  CHKERRQ(DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL));
+  PetscCall(DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL));
 
   /*
      Compute function over the locally owned part of the grid
@@ -248,7 +248,7 @@ PetscErrorCode InitialConditions(DM da,Vec U)
   /*
      Restore vectors
   */
-  CHKERRQ(DMDAVecRestoreArrayWrite(da,U,&u));
+  PetscCall(DMDAVecRestoreArrayWrite(da,U,&u));
   PetscFunctionReturn(0);
 }
 

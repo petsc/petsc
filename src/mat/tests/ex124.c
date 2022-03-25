@@ -14,44 +14,44 @@ int main(int argc,char **args)
   PetscMPIInt    size;
   PetscInt       ma,na,mb,nb;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
   /* read the two matrices, A and B */
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-fA",file[0],sizeof(file[0]),&flg));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-fA",file[0],sizeof(file[0]),&flg));
   PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -fA options");
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-fB",file[1],sizeof(file[1]),&flg));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-fB",file[1],sizeof(file[1]),&flg));
   PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -fP options");
 
   /* Load matrices */
-  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[0],FILE_MODE_READ,&fd));
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(MatLoad(A,fd));
-  CHKERRQ(PetscViewerDestroy(&fd));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[0],FILE_MODE_READ,&fd));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatLoad(A,fd));
+  PetscCall(PetscViewerDestroy(&fd));
   printf("\n A:\n");
   printf("----------------------\n");
-  CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(MatGetSize(A,&ma,&na));
+  PetscCall(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatGetSize(A,&ma,&na));
 
-  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[1],FILE_MODE_READ,&fd));
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&B));
-  CHKERRQ(MatLoad(B,fd));
-  CHKERRQ(PetscViewerDestroy(&fd));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[1],FILE_MODE_READ,&fd));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&B));
+  PetscCall(MatLoad(B,fd));
+  PetscCall(PetscViewerDestroy(&fd));
   printf("\n B:\n");
   printf("----------------------\n");
-  CHKERRQ(MatView(B,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(MatGetSize(B,&mb,&nb));
+  PetscCall(MatView(B,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatGetSize(B,&mb,&nb));
 
   /* Compute B = -A + B */
   PetscCheckFalse(ma != mb || na != nb,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"nonconforming matrix size");
-  CHKERRQ(MatAXPY(B,-1.0,A,DIFFERENT_NONZERO_PATTERN));
+  PetscCall(MatAXPY(B,-1.0,A,DIFFERENT_NONZERO_PATTERN));
   printf("\n B - A:\n");
   printf("----------------------\n");
-  CHKERRQ(MatView(B,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatView(B,PETSC_VIEWER_STDOUT_WORLD));
 
-  CHKERRQ(MatDestroy(&B));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatDestroy(&B));
+  PetscCall(MatDestroy(&A));
+  PetscCall(PetscFinalize());
   return 0;
 }

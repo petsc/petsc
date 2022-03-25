@@ -13,46 +13,46 @@ int main(int argc, char **argv)
   PetscLogDouble t_has = 0;
   PetscLogDouble t_del = 0;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
-  CHKERRQ(PetscHSetICreate(&table));
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
+  PetscCall(PetscHSetICreate(&table));
 
   /* The following line silences warnings from Clang Static Analyzer */
-  CHKERRQ(PetscHSetIResize(table,0));
+  PetscCall(PetscHSetIResize(table,0));
 
-  CHKERRQ(PetscTimeSubtract(&t_add));
+  PetscCall(PetscTimeSubtract(&t_add));
   for (i = 0; i < N; ++i) {
     for (j = 0; j < N; ++j) {
       PetscInt key = i+j*N;
-      CHKERRQ(PetscHSetIQueryAdd(table, key, &flag));
+      PetscCall(PetscHSetIQueryAdd(table, key, &flag));
     }
   }
-  CHKERRQ(PetscTimeAdd(&t_add));
+  PetscCall(PetscTimeAdd(&t_add));
 
-  CHKERRQ(PetscHSetIGetSize(table,&n));
+  PetscCall(PetscHSetIGetSize(table,&n));
 
-  CHKERRQ(PetscTimeSubtract(&t_has));
+  PetscCall(PetscTimeSubtract(&t_has));
   for (i = 0; i < N; ++i) {
     for (j = 0; j < N; ++j) {
       PetscInt key = i+j*N;
-      CHKERRQ(PetscHSetIHas(table, key, &flag));
+      PetscCall(PetscHSetIHas(table, key, &flag));
     }
   }
-  CHKERRQ(PetscTimeAdd(&t_has));
+  PetscCall(PetscTimeAdd(&t_has));
 
-  CHKERRQ(PetscTimeSubtract(&t_del));
+  PetscCall(PetscTimeSubtract(&t_del));
   for (i = 0; i < N; ++i) {
     for (j = 0; j < N; ++j) {
       PetscInt key = i+j*N;
-      CHKERRQ(PetscHSetIQueryDel(table, key, &flag));
+      PetscCall(PetscHSetIQueryDel(table, key, &flag));
     }
   }
-  CHKERRQ(PetscTimeAdd(&t_del));
+  PetscCall(PetscTimeAdd(&t_del));
 
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"N = %" PetscInt_FMT " - table size: %" PetscInt_FMT ", add: %g, has: %g, del: %g\n",N,n,t_add,t_has,t_del));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"N = %" PetscInt_FMT " - table size: %" PetscInt_FMT ", add: %g, has: %g, del: %g\n",N,n,t_add,t_has,t_del));
 
-  CHKERRQ(PetscHSetIDestroy(&table));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscHSetIDestroy(&table));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

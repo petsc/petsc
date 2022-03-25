@@ -12,8 +12,8 @@ static PetscErrorCode TSAdaptChoose_History(TSAdapt adapt,TS ts,PetscReal h,Pets
 
   PetscFunctionBegin;
   PetscCheck(thadapt->hist,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ORDER,"Need to call TSAdaptHistorySetHistory() first");
-  CHKERRQ(TSGetStepNumber(ts,&step));
-  CHKERRQ(TSHistoryGetTimeStep(thadapt->hist,thadapt->bw,step+1,next_h));
+  PetscCall(TSGetStepNumber(ts,&step));
+  PetscCall(TSHistoryGetTimeStep(thadapt->hist,thadapt->bw,step+1,next_h));
   *accept  = PETSC_TRUE;
   *next_sc = 0;
   *wlte    = -1;
@@ -27,15 +27,15 @@ static PetscErrorCode TSAdaptReset_History(TSAdapt adapt)
   TSAdapt_History *thadapt = (TSAdapt_History*)adapt->data;
 
   PetscFunctionBegin;
-  CHKERRQ(TSHistoryDestroy(&thadapt->hist));
+  PetscCall(TSHistoryDestroy(&thadapt->hist));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode TSAdaptDestroy_History(TSAdapt adapt)
 {
   PetscFunctionBegin;
-  CHKERRQ(TSAdaptReset_History(adapt));
-  CHKERRQ(PetscFree(adapt->data));
+  PetscCall(TSAdaptReset_History(adapt));
+  PetscCall(PetscFree(adapt->data));
   PetscFunctionReturn(0);
 }
 
@@ -49,10 +49,10 @@ PetscErrorCode TSAdaptHistorySetTSHistory(TSAdapt adapt, TSHistory hist, PetscBo
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
   PetscValidLogicalCollectiveBool(adapt,backward,3);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)adapt,TSADAPTHISTORY,&flg));
+  PetscCall(PetscObjectTypeCompare((PetscObject)adapt,TSADAPTHISTORY,&flg));
   if (!flg) PetscFunctionReturn(0);
-  CHKERRQ(TSHistoryGetHistory(hist,&n,(const PetscReal**)&hist_t,NULL,NULL));
-  CHKERRQ(TSAdaptHistorySetHistory(adapt,n,hist_t,backward));
+  PetscCall(TSHistoryGetHistory(hist,&n,(const PetscReal**)&hist_t,NULL,NULL));
+  PetscCall(TSAdaptHistorySetHistory(adapt,n,hist_t,backward));
   PetscFunctionReturn(0);
 }
 
@@ -83,11 +83,11 @@ PetscErrorCode TSAdaptHistoryGetStep(TSAdapt adapt, PetscInt step, PetscReal *t,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
   PetscValidLogicalCollectiveInt(adapt,step,2);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)adapt,TSADAPTHISTORY,&flg));
+  PetscCall(PetscObjectTypeCompare((PetscObject)adapt,TSADAPTHISTORY,&flg));
   PetscCheck(flg,PetscObjectComm((PetscObject)adapt),PETSC_ERR_SUP,"Not for type %s",((PetscObject)adapt)->type_name);
   thadapt = (TSAdapt_History*)adapt->data;
-  CHKERRQ(TSHistoryGetTimeStep(thadapt->hist,thadapt->bw,step,dt));
-  CHKERRQ(TSHistoryGetTime(thadapt->hist,thadapt->bw,step,t));
+  PetscCall(TSHistoryGetTimeStep(thadapt->hist,thadapt->bw,step,dt));
+  PetscCall(TSHistoryGetTime(thadapt->hist,thadapt->bw,step,t));
   PetscFunctionReturn(0);
 }
 
@@ -118,12 +118,12 @@ PetscErrorCode TSAdaptHistorySetHistory(TSAdapt adapt, PetscInt n, PetscReal his
   PetscValidLogicalCollectiveInt(adapt,n,2);
   PetscValidRealPointer(hist,3);
   PetscValidLogicalCollectiveBool(adapt,backward,4);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)adapt,TSADAPTHISTORY,&flg));
+  PetscCall(PetscObjectTypeCompare((PetscObject)adapt,TSADAPTHISTORY,&flg));
   if (!flg) PetscFunctionReturn(0);
   thadapt = (TSAdapt_History*)adapt->data;
-  CHKERRQ(TSHistoryDestroy(&thadapt->hist));
-  CHKERRQ(TSHistoryCreate(PetscObjectComm((PetscObject)adapt),&thadapt->hist));
-  CHKERRQ(TSHistorySetHistory(thadapt->hist,n,hist,NULL,PETSC_FALSE));
+  PetscCall(TSHistoryDestroy(&thadapt->hist));
+  PetscCall(TSHistoryCreate(PetscObjectComm((PetscObject)adapt),&thadapt->hist));
+  PetscCall(TSHistorySetHistory(thadapt->hist,n,hist,NULL,PETSC_FALSE));
   thadapt->bw = backward;
   PetscFunctionReturn(0);
 }
@@ -152,9 +152,9 @@ PetscErrorCode TSAdaptHistorySetTrajectory(TSAdapt adapt, TSTrajectory tj, Petsc
   PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
   PetscValidHeaderSpecific(tj,TSTRAJECTORY_CLASSID,2);
   PetscValidLogicalCollectiveBool(adapt,backward,3);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)adapt,TSADAPTHISTORY,&flg));
+  PetscCall(PetscObjectTypeCompare((PetscObject)adapt,TSADAPTHISTORY,&flg));
   if (!flg) PetscFunctionReturn(0);
-  CHKERRQ(TSAdaptHistorySetTSHistory(adapt,tj->tsh,backward));
+  PetscCall(TSAdaptHistorySetTSHistory(adapt,tj->tsh,backward));
   PetscFunctionReturn(0);
 }
 
@@ -170,7 +170,7 @@ PETSC_EXTERN PetscErrorCode TSAdaptCreate_History(TSAdapt adapt)
   TSAdapt_History *thadapt;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNew(&thadapt));
+  PetscCall(PetscNew(&thadapt));
   adapt->matchstepfac[0] = PETSC_SMALL; /* prevent from accumulation errors */
   adapt->matchstepfac[1] = 0.0;         /* we will always match the final step, prevent TSAdaptChoose to mess with it */
   adapt->data            = thadapt;

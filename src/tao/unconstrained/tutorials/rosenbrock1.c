@@ -53,77 +53,77 @@ int main(int argc,char **argv)
   PetscReal          mult_solve_dist;
 
   /* Initialize TAO and PETSc */
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Incorrect number of processors");
 
   /* Initialize problem parameters */
   user.n = 2; user.alpha = 99.0; user.chained = PETSC_FALSE;
   /* Check for command line arguments to override defaults */
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&user.n,&flg));
-  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-alpha",&user.alpha,&flg));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-chained",&user.chained,&flg));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-test_lmvm",&test_lmvm,&flg));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&user.n,&flg));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-alpha",&user.alpha,&flg));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-chained",&user.chained,&flg));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-test_lmvm",&test_lmvm,&flg));
 
   /* Allocate vectors for the solution and gradient */
-  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,user.n,&x));
-  CHKERRQ(MatCreateSeqBAIJ(PETSC_COMM_SELF,2,user.n,user.n,1,NULL,&H));
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,user.n,&x));
+  PetscCall(MatCreateSeqBAIJ(PETSC_COMM_SELF,2,user.n,user.n,1,NULL,&H));
 
   /* The TAO code begins here */
 
   /* Create TAO solver with desired solution method */
-  CHKERRQ(TaoCreate(PETSC_COMM_SELF,&tao));
-  CHKERRQ(TaoSetType(tao,TAOLMVM));
+  PetscCall(TaoCreate(PETSC_COMM_SELF,&tao));
+  PetscCall(TaoSetType(tao,TAOLMVM));
 
   /* Set solution vec and an initial guess */
-  CHKERRQ(VecSet(x, zero));
-  CHKERRQ(TaoSetSolution(tao,x));
+  PetscCall(VecSet(x, zero));
+  PetscCall(TaoSetSolution(tao,x));
 
   /* Set routines for function, gradient, hessian evaluation */
-  CHKERRQ(TaoSetObjectiveAndGradient(tao,NULL,FormFunctionGradient,&user));
-  CHKERRQ(TaoSetHessian(tao,H,H,FormHessian,&user));
+  PetscCall(TaoSetObjectiveAndGradient(tao,NULL,FormFunctionGradient,&user));
+  PetscCall(TaoSetHessian(tao,H,H,FormHessian,&user));
 
   /* Test the LMVM matrix */
   if (test_lmvm) {
-    CHKERRQ(PetscOptionsSetValue(NULL, "-tao_type", "bqnktr"));
+    PetscCall(PetscOptionsSetValue(NULL, "-tao_type", "bqnktr"));
   }
 
   /* Check for TAO command line options */
-  CHKERRQ(TaoSetFromOptions(tao));
+  PetscCall(TaoSetFromOptions(tao));
 
   /* SOLVE THE APPLICATION */
-  CHKERRQ(TaoSolve(tao));
+  PetscCall(TaoSolve(tao));
 
   /* Test the LMVM matrix */
   if (test_lmvm) {
-    CHKERRQ(TaoGetKSP(tao, &ksp));
-    CHKERRQ(KSPGetPC(ksp, &pc));
-    CHKERRQ(PCLMVMGetMatLMVM(pc, &M));
-    CHKERRQ(VecDuplicate(x, &in));
-    CHKERRQ(VecDuplicate(x, &out));
-    CHKERRQ(VecDuplicate(x, &out2));
-    CHKERRQ(VecSet(in, 1.0));
-    CHKERRQ(MatMult(M, in, out));
-    CHKERRQ(MatSolve(M, out, out2));
-    CHKERRQ(VecAXPY(out2, -1.0, in));
-    CHKERRQ(VecNorm(out2, NORM_2, &mult_solve_dist));
+    PetscCall(TaoGetKSP(tao, &ksp));
+    PetscCall(KSPGetPC(ksp, &pc));
+    PetscCall(PCLMVMGetMatLMVM(pc, &M));
+    PetscCall(VecDuplicate(x, &in));
+    PetscCall(VecDuplicate(x, &out));
+    PetscCall(VecDuplicate(x, &out2));
+    PetscCall(VecSet(in, 1.0));
+    PetscCall(MatMult(M, in, out));
+    PetscCall(MatSolve(M, out, out2));
+    PetscCall(VecAXPY(out2, -1.0, in));
+    PetscCall(VecNorm(out2, NORM_2, &mult_solve_dist));
     if (mult_solve_dist < 1.e-11) {
-      CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject)tao), "error between LMVM MatMult and MatSolve: < 1.e-11\n"));
+      PetscCall(PetscPrintf(PetscObjectComm((PetscObject)tao), "error between LMVM MatMult and MatSolve: < 1.e-11\n"));
     } else if (mult_solve_dist < 1.e-6) {
-      CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject)tao), "error between LMVM MatMult and MatSolve: < 1.e-6\n"));
+      PetscCall(PetscPrintf(PetscObjectComm((PetscObject)tao), "error between LMVM MatMult and MatSolve: < 1.e-6\n"));
     } else {
-      CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject)tao), "error between LMVM MatMult and MatSolve: %e\n", (double)mult_solve_dist));
+      PetscCall(PetscPrintf(PetscObjectComm((PetscObject)tao), "error between LMVM MatMult and MatSolve: %e\n", (double)mult_solve_dist));
     }
-    CHKERRQ(VecDestroy(&in));
-    CHKERRQ(VecDestroy(&out));
-    CHKERRQ(VecDestroy(&out2));
+    PetscCall(VecDestroy(&in));
+    PetscCall(VecDestroy(&out));
+    PetscCall(VecDestroy(&out2));
   }
 
-  CHKERRQ(TaoDestroy(&tao));
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(MatDestroy(&H));
+  PetscCall(TaoDestroy(&tao));
+  PetscCall(VecDestroy(&x));
+  PetscCall(MatDestroy(&H));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -155,8 +155,8 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *f, Vec G,void *ptr)
 
   PetscFunctionBeginUser;
   /* Get pointers to vector data */
-  CHKERRQ(VecGetArrayRead(X,&x));
-  CHKERRQ(VecGetArray(G,&g));
+  PetscCall(VecGetArrayRead(X,&x));
+  PetscCall(VecGetArray(G,&g));
 
   /* Compute G(X) */
   if (user->chained) {
@@ -177,11 +177,11 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *f, Vec G,void *ptr)
   }
 
   /* Restore vectors */
-  CHKERRQ(VecRestoreArrayRead(X,&x));
-  CHKERRQ(VecRestoreArray(G,&g));
+  PetscCall(VecRestoreArrayRead(X,&x));
+  PetscCall(VecRestoreArray(G,&g));
   *f   = ff;
 
-  CHKERRQ(PetscLogFlops(15.0*nn));
+  PetscCall(PetscLogFlops(15.0*nn));
   PetscFunctionReturn(0);
 }
 
@@ -211,15 +211,15 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, void *ptr)
 
   PetscFunctionBeginUser;
   /* Zero existing matrix entries */
-  CHKERRQ(MatAssembled(H,&assembled));
-  if (assembled) CHKERRQ(MatZeroEntries(H));
+  PetscCall(MatAssembled(H,&assembled));
+  if (assembled) PetscCall(MatZeroEntries(H));
 
   /* Get a pointer to vector data */
-  CHKERRQ(VecGetArrayRead(X,&x));
+  PetscCall(VecGetArrayRead(X,&x));
 
   /* Compute H(X) entries */
   if (user->chained) {
-    CHKERRQ(MatZeroEntries(H));
+    PetscCall(MatZeroEntries(H));
     for (i=0; i<user->n-1; i++) {
       PetscScalar t1 = x[i+1] - x[i]*x[i];
       v[0][0] = 2 + 2*alpha*(t1*(-2) - 2*x[i]);
@@ -227,7 +227,7 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, void *ptr)
       v[1][0] = 2*alpha*(-2*x[i]);
       v[1][1] = 2*alpha*t1;
       ind[0] = i; ind[1] = i+1;
-      CHKERRQ(MatSetValues(H,2,ind,2,ind,v[0],ADD_VALUES));
+      PetscCall(MatSetValues(H,2,ind,2,ind,v[0],ADD_VALUES));
     }
   } else {
     for (i=0; i<user->n/2; i++) {
@@ -235,15 +235,15 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, void *ptr)
       v[0][0] = -4*alpha*(x[2*i+1]-3*x[2*i]*x[2*i]) + 2;
       v[1][0] = v[0][1] = -4.0*alpha*x[2*i];
       ind[0]=2*i; ind[1]=2*i+1;
-      CHKERRQ(MatSetValues(H,2,ind,2,ind,v[0],INSERT_VALUES));
+      PetscCall(MatSetValues(H,2,ind,2,ind,v[0],INSERT_VALUES));
     }
   }
-  CHKERRQ(VecRestoreArrayRead(X,&x));
+  PetscCall(VecRestoreArrayRead(X,&x));
 
   /* Assemble matrix */
-  CHKERRQ(MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(PetscLogFlops(9.0*user->n/2.0));
+  PetscCall(MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY));
+  PetscCall(PetscLogFlops(9.0*user->n/2.0));
   PetscFunctionReturn(0);
 }
 

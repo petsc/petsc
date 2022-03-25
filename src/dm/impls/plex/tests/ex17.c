@@ -6,10 +6,10 @@ static char help[] = "Tests for point location\n\n";
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
 {
   PetscFunctionBeginUser;
-  CHKERRQ(DMCreate(comm, dm));
-  CHKERRQ(DMSetType(*dm, DMPLEX));
-  CHKERRQ(DMSetFromOptions(*dm));
-  CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
+  PetscCall(DMCreate(comm, dm));
+  PetscCall(DMSetType(*dm, DMPLEX));
+  PetscCall(DMSetFromOptions(*dm));
+  PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   PetscFunctionReturn(0);
 }
 
@@ -23,33 +23,33 @@ static PetscErrorCode TestLocation(DM dm)
   PetscInt           cStart, cEnd, c;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetCoordinateDim(dm, &cdim));
-  CHKERRQ(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+  PetscCall(DMGetCoordinateDim(dm, &cdim));
+  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   /* Locate all centroids */
-  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF, (cEnd - cStart)*cdim, &points));
-  CHKERRQ(VecSetBlockSize(points, cdim));
-  CHKERRQ(VecGetArray(points, &a));
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF, (cEnd - cStart)*cdim, &points));
+  PetscCall(VecSetBlockSize(points, cdim));
+  PetscCall(VecGetArray(points, &a));
   for (c = cStart; c < cEnd; ++c) {
     PetscReal          centroid[3];
     PetscInt           off = (c - cStart)*cdim, d;
 
-    CHKERRQ(DMPlexComputeCellGeometryFVM(dm, c, NULL, centroid, NULL));
+    PetscCall(DMPlexComputeCellGeometryFVM(dm, c, NULL, centroid, NULL));
     for (d = 0; d < cdim; ++d) a[off+d] = centroid[d];
   }
-  CHKERRQ(VecRestoreArray(points, &a));
-  CHKERRQ(DMLocatePoints(dm, points, DM_POINTLOCATION_NONE, &cellSF));
-  CHKERRQ(VecDestroy(&points));
-  CHKERRQ(PetscSFGetGraph(cellSF, NULL, &n, NULL, &cells));
+  PetscCall(VecRestoreArray(points, &a));
+  PetscCall(DMLocatePoints(dm, points, DM_POINTLOCATION_NONE, &cellSF));
+  PetscCall(VecDestroy(&points));
+  PetscCall(PetscSFGetGraph(cellSF, NULL, &n, NULL, &cells));
   if (n != (cEnd - cStart)) {
     for (c = 0; c < n; ++c) {
-      if (cells[c].index != c+cStart) CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "Could not locate centroid of cell %D, error %D\n", c+cStart, cells[c].index));
+      if (cells[c].index != c+cStart) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Could not locate centroid of cell %D, error %D\n", c+cStart, cells[c].index));
     }
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Located %D points instead of %D", n, cEnd - cStart);
   }
   for (c = cStart; c < cEnd; ++c) {
     PetscCheckFalse(cells[c - cStart].index != c,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not locate centroid of cell %D, instead found %D", c, cells[c - cStart].index);
   }
-  CHKERRQ(PetscSFDestroy(&cellSF));
+  PetscCall(PetscSFDestroy(&cellSF));
   PetscFunctionReturn(0);
 }
 
@@ -57,11 +57,11 @@ int main(int argc, char **argv)
 {
   DM             dm;
 
-  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
-  CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &dm));
-  CHKERRQ(TestLocation(dm));
-  CHKERRQ(DMDestroy(&dm));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(CreateMesh(PETSC_COMM_WORLD, &dm));
+  PetscCall(TestLocation(dm));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

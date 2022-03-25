@@ -9,23 +9,23 @@ int main(int argc,char *argv[])
   Vec            x,y;
   DM             da,daf;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,0,help));
-  CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,4,5,PETSC_DECIDE,PETSC_DECIDE,41,1,0,0,&da));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
-  CHKERRQ(DMRefine(da,PETSC_COMM_WORLD,&daf));
-  CHKERRQ(DMCreateInterpolation(da,daf,&M,NULL));
-  CHKERRQ(DMCreateGlobalVector(da,&x));
-  CHKERRQ(DMCreateGlobalVector(daf,&y));
+  PetscCall(PetscInitialize(&argc,&argv,0,help));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,4,5,PETSC_DECIDE,PETSC_DECIDE,41,1,0,0,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMRefine(da,PETSC_COMM_WORLD,&daf));
+  PetscCall(DMCreateInterpolation(da,daf,&M,NULL));
+  PetscCall(DMCreateGlobalVector(da,&x));
+  PetscCall(DMCreateGlobalVector(daf,&y));
 
-  CHKERRQ(MatMult(M,x,y));
-  CHKERRQ(MatMultTranspose(M,y,x));
-  CHKERRQ(DMDestroy(&da));
-  CHKERRQ(DMDestroy(&daf));
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&y));
-  CHKERRQ(MatDestroy(&M));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatMult(M,x,y));
+  PetscCall(MatMultTranspose(M,y,x));
+  PetscCall(DMDestroy(&da));
+  PetscCall(DMDestroy(&daf));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&y));
+  PetscCall(MatDestroy(&M));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

@@ -32,7 +32,7 @@ PetscErrorCode DMMoabGenerateHierarchy(DM dm, PetscInt nlevels, PetscInt *ldegre
   dmmoab = (DM_Moab*)(dm)->data;
 
   if (!ldegrees) {
-    CHKERRQ(PetscMalloc1(nlevels, &pdegrees));
+    PetscCall(PetscMalloc1(nlevels, &pdegrees));
     for (ilevel = 0; ilevel < nlevels; ilevel++) pdegrees[ilevel] = 2; /* default = Degree 2 refinement */
   }
   else pdegrees = ldegrees;
@@ -47,7 +47,7 @@ PetscErrorCode DMMoabGenerateHierarchy(DM dm, PetscInt nlevels, PetscInt *ldegre
   dmmoab->hierarchy = new moab::NestedRefine(dynamic_cast<moab::Core*>(dmmoab->mbiface), NULL, dmmoab->fileset);
 #endif
 
-  CHKERRQ(PetscMalloc1(nlevels + 1, &dmmoab->hsets));
+  PetscCall(PetscMalloc1(nlevels + 1, &dmmoab->hsets));
 
   /* generate the mesh hierarchy */
   merr = dmmoab->hierarchy->generate_mesh_hierarchy(nlevels, pdegrees, hsets, false);MBERRNM(merr);
@@ -74,7 +74,7 @@ PetscErrorCode DMMoabGenerateHierarchy(DM dm, PetscInt nlevels, PetscInt *ldegre
 
   hsets.clear();
   if (!ldegrees) {
-    CHKERRQ(PetscFree(pdegrees));
+    PetscCall(PetscFree(pdegrees));
   }
   PetscFunctionReturn(0);
 }
@@ -101,9 +101,9 @@ PETSC_EXTERN PetscErrorCode  DMRefineHierarchy_Moab(DM dm, PetscInt nlevels, DM 
 
   PetscFunctionBegin;
 
-  CHKERRQ(DMRefine(dm, PetscObjectComm((PetscObject)dm), &dmf[0]));
+  PetscCall(DMRefine(dm, PetscObjectComm((PetscObject)dm), &dmf[0]));
   for (i = 1; i < nlevels; i++) {
-    CHKERRQ(DMRefine(dmf[i - 1], PetscObjectComm((PetscObject)dm), &dmf[i]));
+    PetscCall(DMRefine(dmf[i - 1], PetscObjectComm((PetscObject)dm), &dmf[i]));
   }
   PetscFunctionReturn(0);
 }
@@ -130,9 +130,9 @@ PETSC_EXTERN PetscErrorCode DMCoarsenHierarchy_Moab(DM dm, PetscInt nlevels, DM 
 
   PetscFunctionBegin;
 
-  CHKERRQ(DMCoarsen(dm, PetscObjectComm((PetscObject)dm), &dmc[0]));
+  PetscCall(DMCoarsen(dm, PetscObjectComm((PetscObject)dm), &dmc[0]));
   for (i = 1; i < nlevels; i++) {
-    CHKERRQ(DMCoarsen(dmc[i - 1], PetscObjectComm((PetscObject)dm), &dmc[i]));
+    PetscCall(DMCoarsen(dmc[i - 1], PetscObjectComm((PetscObject)dm), &dmc[i]));
   }
   PetscFunctionReturn(0);
 }
@@ -183,10 +183,10 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat* inte
   // Size: nlsizc * nlghsizp
   PetscInfo(NULL, "Creating interpolation matrix %D X %D to apply transformation between levels %D -> %D.\n", ngsizc, nlghsizp, dmbp->hlevel, dmbc->hlevel);
 
-  CHKERRQ(DMGetDimension(dmp, &dim));
+  PetscCall(DMGetDimension(dmp, &dim));
 
   /* allocate the nnz, onz arrays based on block size and local nodes */
-  CHKERRQ(PetscCalloc2(nlsizc, &nnz, nlsizc, &onz));
+  PetscCall(PetscCalloc2(nlsizc, &nnz, nlsizc, &onz));
 
   /* Loop through the local elements and compute the relation between the current parent and the refined_level. */
   for (moab::Range::iterator iter = dmbc->vowned->begin(); iter != dmbc->vowned->end(); iter++) {
@@ -246,19 +246,19 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat* inte
   }
 
   /* create interpolation matrix */
-  CHKERRQ(MatCreate(PetscObjectComm((PetscObject)dmc), interpl));
-  CHKERRQ(MatSetSizes(*interpl, nlsizc, nlsizp, ngsizc, ngsizp));
-  CHKERRQ(MatSetType(*interpl, MATAIJ));
-  CHKERRQ(MatSetFromOptions(*interpl));
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)dmc), interpl));
+  PetscCall(MatSetSizes(*interpl, nlsizc, nlsizp, ngsizc, ngsizp));
+  PetscCall(MatSetType(*interpl, MATAIJ));
+  PetscCall(MatSetFromOptions(*interpl));
 
-  CHKERRQ(MatSeqAIJSetPreallocation(*interpl, innz, nnz));
-  CHKERRQ(MatMPIAIJSetPreallocation(*interpl, innz, nnz, ionz, onz));
+  PetscCall(MatSeqAIJSetPreallocation(*interpl, innz, nnz));
+  PetscCall(MatMPIAIJSetPreallocation(*interpl, innz, nnz, ionz, onz));
 
   /* clean up temporary memory */
-  CHKERRQ(PetscFree2(nnz, onz));
+  PetscCall(PetscFree2(nnz, onz));
 
   /* set up internal matrix data-structures */
-  CHKERRQ(MatSetUp(*interpl));
+  PetscCall(MatSetUp(*interpl));
 
   /* Define variables for assembly */
   std::vector<moab::EntityHandle> children;
@@ -287,7 +287,7 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat* inte
       const PetscInt offset = tc * 3;
 
       /* Scale ccoords relative to pcoords */
-      CHKERRQ(DMMoabPToRMapping(dim, connp.size(), &pcoords[0], &ccoords[offset], &natparam[offset], &values_phi[connp.size()*tc]));
+      PetscCall(DMMoabPToRMapping(dim, connp.size(), &pcoords[0], &ccoords[offset], &natparam[offset], &values_phi[connp.size()*tc]));
     }
   }
   else {
@@ -295,7 +295,7 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat* inte
   }
 
   /* TODO: Decipher the correct non-zero pattern. There is still some issue with onz allocation */
-  CHKERRQ(MatSetOption(*interpl, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
+  PetscCall(MatSetOption(*interpl, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
 
   /* Loop through the remaining vertices. These vertices appear only on the current refined_level. */
   for (moab::Range::iterator iter = dmbp->elocal->begin(); iter != dmbp->elocal->end(); iter++) {
@@ -319,8 +319,8 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat* inte
 
     std::vector<int> dofsp(connp.size()), dofsc(connc.size());
     /* TODO: specific to scalar system - use GetDofs */
-    CHKERRQ(DMMoabGetDofsBlocked(dmp, connp.size(), &connp[0], &dofsp[0]));
-    CHKERRQ(DMMoabGetDofsBlocked(dmc, connc.size(), &connc[0], &dofsc[0]));
+    PetscCall(DMMoabGetDofsBlocked(dmp, connp.size(), &connp[0], &dofsp[0]));
+    PetscCall(DMMoabGetDofsBlocked(dmc, connc.size(), &connc[0], &dofsc[0]));
 
     /* Compute the actual interpolation weights when projecting solution/residual between levels */
     if (use_consistent_bases) {
@@ -335,7 +335,7 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat* inte
       /* Set values: For each DOF in coarse grid cell, set the contribution or PHI evaluated at each fine grid DOF point */
       for (unsigned tc = 0; tc < connc.size(); tc++) {
         /* TODO: Check if we should be using INSERT_VALUES instead */
-        CHKERRQ(MatSetValues(*interpl, 1, &dofsc[tc], connp.size(), &dofsp[0], &values_phi[connp.size()*tc], ADD_VALUES));
+        PetscCall(MatSetValues(*interpl, 1, &dofsc[tc], connp.size(), &dofsp[0], &values_phi[connp.size()*tc], ADD_VALUES));
       }
     }
     else {
@@ -370,13 +370,13 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat* inte
           else
             values_phi[tp] = factor * values_phi[tp] * 0.5 / (connp.size() * normsum);
         }
-        CHKERRQ(MatSetValues(*interpl, 1, &dofsc[tc], connp.size(), &dofsp[0], &values_phi[0], ADD_VALUES));
+        PetscCall(MatSetValues(*interpl, 1, &dofsc[tc], connp.size(), &dofsp[0], &values_phi[0], ADD_VALUES));
       }
     }
   }
   if (vec) *vec = NULL;
-  CHKERRQ(MatAssemblyBegin(*interpl, MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(*interpl, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(*interpl, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(*interpl, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
@@ -428,7 +428,7 @@ static PetscErrorCode DMMoab_UMR_Private(DM dm, MPI_Comm comm, PetscBool refine,
     PetscFunctionReturn(0);
   }
 
-  CHKERRQ(DMMoabCreate(PetscObjectComm((PetscObject)dm), &dm2));
+  PetscCall(DMMoabCreate(PetscObjectComm((PetscObject)dm), &dm2));
   dd2 = (DM_Moab*)dm2->data;
 
   dd2->mbiface = dmb->mbiface;
@@ -449,7 +449,7 @@ static PetscErrorCode DMMoab_UMR_Private(DM dm, MPI_Comm comm, PetscBool refine,
   /* Copy the multilevel hierarchy pointers in MOAB */
   dd2->hierarchy = dmb->hierarchy;
   dd2->nhlevels = dmb->nhlevels;
-  CHKERRQ(PetscMalloc1(dd2->nhlevels + 1, &dd2->hsets));
+  PetscCall(PetscMalloc1(dd2->nhlevels + 1, &dd2->hsets));
   for (i = 0; i <= dd2->nhlevels; i++) {
     dd2->hsets[i] = dmb->hsets[i];
   }
@@ -460,38 +460,38 @@ static PetscErrorCode DMMoab_UMR_Private(DM dm, MPI_Comm comm, PetscBool refine,
   dd2->numFields = dmb->numFields;
   dd2->rw_dbglevel = dmb->rw_dbglevel;
   dd2->partition_by_rank = dmb->partition_by_rank;
-  CHKERRQ(PetscStrcpy(dd2->extra_read_options, dmb->extra_read_options));
-  CHKERRQ(PetscStrcpy(dd2->extra_write_options, dmb->extra_write_options));
+  PetscCall(PetscStrcpy(dd2->extra_read_options, dmb->extra_read_options));
+  PetscCall(PetscStrcpy(dd2->extra_write_options, dmb->extra_write_options));
   dd2->read_mode = dmb->read_mode;
   dd2->write_mode = dmb->write_mode;
 
   /* set global ID tag handle */
-  CHKERRQ(DMMoabSetLocalToGlobalTag(dm2, dmb->ltog_tag));
+  PetscCall(DMMoabSetLocalToGlobalTag(dm2, dmb->ltog_tag));
 
   merr = dd2->mbiface->tag_get_handle(MATERIAL_SET_TAG_NAME, dd2->material_tag);MBERRNM(merr);
 
-  CHKERRQ(DMSetOptionsPrefix(dm2, ((PetscObject)dm)->prefix));
-  CHKERRQ(DMGetDimension(dm, &dim));
-  CHKERRQ(DMSetDimension(dm2, dim));
+  PetscCall(DMSetOptionsPrefix(dm2, ((PetscObject)dm)->prefix));
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMSetDimension(dm2, dim));
 
   /* allow overloaded (user replaced) operations to be inherited by refinement clones */
   dm2->ops->creatematrix = dm->ops->creatematrix;
 
   /* copy fill information if given */
-  CHKERRQ(DMMoabSetBlockFills(dm2, dmb->dfill, dmb->ofill));
+  PetscCall(DMMoabSetBlockFills(dm2, dmb->dfill, dmb->ofill));
 
   /* copy vector type information */
-  CHKERRQ(DMSetMatType(dm2, dm->mattype));
-  CHKERRQ(DMSetVecType(dm2, dm->vectype));
+  PetscCall(DMSetMatType(dm2, dm->mattype));
+  PetscCall(DMSetVecType(dm2, dm->vectype));
   dd2->numFields = dmb->numFields;
   if (dmb->numFields) {
-    CHKERRQ(DMMoabSetFieldNames(dm2, dmb->numFields, dmb->fieldNames));
+    PetscCall(DMMoabSetFieldNames(dm2, dmb->numFields, dmb->fieldNames));
   }
 
-  CHKERRQ(DMSetFromOptions(dm2));
+  PetscCall(DMSetFromOptions(dm2));
 
   /* recreate Dof numbering for the refined DM and make sure the distribution is correctly populated */
-  CHKERRQ(DMSetUp(dm2));
+  PetscCall(DMSetUp(dm2));
 
   *dmref = dm2;
   PetscFunctionReturn(0);
@@ -521,7 +521,7 @@ PETSC_EXTERN PetscErrorCode DMRefine_Moab(DM dm, MPI_Comm comm, DM* dmf)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
 
-  CHKERRQ(DMMoab_UMR_Private(dm, comm, PETSC_TRUE, dmf));
+  PetscCall(DMMoab_UMR_Private(dm, comm, PETSC_TRUE, dmf));
   PetscFunctionReturn(0);
 }
 
@@ -548,6 +548,6 @@ PETSC_EXTERN PetscErrorCode DMCoarsen_Moab(DM dm, MPI_Comm comm, DM* dmc)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  CHKERRQ(DMMoab_UMR_Private(dm, comm, PETSC_FALSE, dmc));
+  PetscCall(DMMoab_UMR_Private(dm, comm, PETSC_FALSE, dmc));
   PetscFunctionReturn(0);
 }

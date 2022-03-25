@@ -107,13 +107,13 @@ static PetscErrorCode ProcessOptions(DM dm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  CHKERRQ(PetscObjectGetComm((PetscObject) dm, &comm));
-  CHKERRQ(DMGetDimension(dm, &dim));
+  PetscCall(PetscObjectGetComm((PetscObject) dm, &comm));
+  PetscCall(DMGetDimension(dm, &dim));
   options->trig = PETSC_FALSE;
 
-  ierr = PetscOptionsBegin(comm, "", "Helmholtz Problem Options", "DMPLEX");CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsBool("-exact_trig", "Use trigonometric exact solution (better for more complex finite elements)", "ex26.c", options->trig, &options->trig, NULL));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm, "", "Helmholtz Problem Options", "DMPLEX");PetscCall(ierr);
+  PetscCall(PetscOptionsBool("-exact_trig", "Use trigonometric exact solution (better for more complex finite elements)", "ex26.c", options->trig, &options->trig, NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -121,13 +121,13 @@ static PetscErrorCode ProcessOptions(DM dm, AppCtx *options)
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscFunctionBeginUser;
-  CHKERRQ(DMCreate(comm, dm));
-  CHKERRQ(DMSetType(*dm, DMPLEX));
-  CHKERRQ(DMSetFromOptions(*dm));
+  PetscCall(DMCreate(comm, dm));
+  PetscCall(DMSetType(*dm, DMPLEX));
+  PetscCall(DMSetFromOptions(*dm));
 
-  CHKERRQ(PetscObjectSetName((PetscObject) *dm, "Mesh"));
-  CHKERRQ(DMSetApplicationContext(*dm, user));
-  CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
+  PetscCall(PetscObjectSetName((PetscObject) *dm, "Mesh"));
+  PetscCall(DMSetApplicationContext(*dm, user));
+  PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
 
   PetscFunctionReturn(0);
 }
@@ -139,19 +139,19 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
   const PetscInt id = 1;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetDS(dm, &ds));
-  CHKERRQ(DMGetLabel(dm, "marker", &label));
+  PetscCall(DMGetDS(dm, &ds));
+  PetscCall(DMGetLabel(dm, "marker", &label));
   if (user->trig) {
-    CHKERRQ(PetscDSSetResidual(ds, 0, f0_trig_u, f1_u));
-    CHKERRQ(PetscDSSetJacobian(ds, 0, 0, g0_uu, NULL, NULL, g3_uu));
-    CHKERRQ(PetscDSSetExactSolution(ds, 0, trig_u, user));
-    CHKERRQ(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) trig_u, NULL, user, NULL));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Trig Exact Solution\n"));
+    PetscCall(PetscDSSetResidual(ds, 0, f0_trig_u, f1_u));
+    PetscCall(PetscDSSetJacobian(ds, 0, 0, g0_uu, NULL, NULL, g3_uu));
+    PetscCall(PetscDSSetExactSolution(ds, 0, trig_u, user));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) trig_u, NULL, user, NULL));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Trig Exact Solution\n"));
   } else {
-    CHKERRQ(PetscDSSetResidual(ds, 0, f0_quad_u, f1_u));
-    CHKERRQ(PetscDSSetJacobian(ds, 0, 0, g0_uu, NULL, NULL, g3_uu));
-    CHKERRQ(PetscDSSetExactSolution(ds, 0, quad_u, user));
-    CHKERRQ(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) quad_u, NULL, user, NULL));
+    PetscCall(PetscDSSetResidual(ds, 0, f0_quad_u, f1_u));
+    PetscCall(PetscDSSetJacobian(ds, 0, 0, g0_uu, NULL, NULL, g3_uu));
+    PetscCall(PetscDSSetExactSolution(ds, 0, quad_u, user));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) quad_u, NULL, user, NULL));
   }
   PetscFunctionReturn(0);
 }
@@ -166,24 +166,24 @@ static PetscErrorCode SetupDiscretization(DM dm, const char name[], PetscErrorCo
   char           prefix[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetDimension(dm, &dim));
+  PetscCall(DMGetDimension(dm, &dim));
 
-  CHKERRQ(DMPlexGetHeightStratum(dm, 0, &cStart, NULL));
-  CHKERRQ(DMPlexGetCellType(dm, cStart, &ct));
+  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, NULL));
+  PetscCall(DMPlexGetCellType(dm, cStart, &ct));
   simplex = DMPolytopeTypeGetNumVertices(ct) == DMPolytopeTypeGetDim(ct)+1 ? PETSC_TRUE : PETSC_FALSE;
   /* Create finite element */
-  CHKERRQ(PetscSNPrintf(prefix, PETSC_MAX_PATH_LEN, "%s_", name));
-  CHKERRQ(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, name ? prefix : NULL, -1, &fe));
-  CHKERRQ(PetscObjectSetName((PetscObject) fe, name));
+  PetscCall(PetscSNPrintf(prefix, PETSC_MAX_PATH_LEN, "%s_", name));
+  PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, name ? prefix : NULL, -1, &fe));
+  PetscCall(PetscObjectSetName((PetscObject) fe, name));
   /* Set discretization and boundary conditions for each mesh */
-  CHKERRQ(DMSetField(dm, 0, NULL, (PetscObject) fe));
-  CHKERRQ(DMCreateDS(dm));
-  CHKERRQ((*setup)(dm, user));
+  PetscCall(DMSetField(dm, 0, NULL, (PetscObject) fe));
+  PetscCall(DMCreateDS(dm));
+  PetscCall((*setup)(dm, user));
   while (cdm) {
-    CHKERRQ(DMCopyDisc(dm,cdm));
-    CHKERRQ(DMGetCoarseDM(cdm, &cdm));
+    PetscCall(DMCopyDisc(dm,cdm));
+    PetscCall(DMGetCoarseDM(cdm, &cdm));
   }
-  CHKERRQ(PetscFEDestroy(&fe));
+  PetscCall(PetscFEDestroy(&fe));
   PetscFunctionReturn(0);
 }
 
@@ -195,33 +195,33 @@ int main(int argc, char **argv)
     Vec            u;    /* Solutions */
     AppCtx         user; /* User-defined work context */
 
-    CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
+    PetscCall(PetscInitialize(&argc, &argv, NULL, help));
     /* Primal system */
-    CHKERRQ(SNESCreate(PETSC_COMM_WORLD, &snes));
-    CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
-    CHKERRQ(ProcessOptions(dm, &user));
-    CHKERRQ(SNESSetDM(snes, dm));
-    CHKERRQ(SetupDiscretization(dm, "potential", SetupPrimalProblem, &user));
-    CHKERRQ(DMCreateGlobalVector(dm, &u));
-    CHKERRQ(VecSet(u, 0.0));
-    CHKERRQ(PetscObjectSetName((PetscObject) u, "potential"));
-    CHKERRQ(DMPlexSetSNESLocalFEM(dm, &user, &user, &user));
-    CHKERRQ(SNESSetFromOptions(snes));
-    CHKERRQ(DMSNESCheckFromOptions(snes, u));
+    PetscCall(SNESCreate(PETSC_COMM_WORLD, &snes));
+    PetscCall(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
+    PetscCall(ProcessOptions(dm, &user));
+    PetscCall(SNESSetDM(snes, dm));
+    PetscCall(SetupDiscretization(dm, "potential", SetupPrimalProblem, &user));
+    PetscCall(DMCreateGlobalVector(dm, &u));
+    PetscCall(VecSet(u, 0.0));
+    PetscCall(PetscObjectSetName((PetscObject) u, "potential"));
+    PetscCall(DMPlexSetSNESLocalFEM(dm, &user, &user, &user));
+    PetscCall(SNESSetFromOptions(snes));
+    PetscCall(DMSNESCheckFromOptions(snes, u));
 
     /*Looking for field error*/
     PetscInt Nfields;
-    CHKERRQ(DMGetDS(dm, &ds));
-    CHKERRQ(PetscDSGetNumFields(ds, &Nfields));
-    CHKERRQ(SNESSolve(snes, NULL, u));
-    CHKERRQ(SNESGetSolution(snes, &u));
-    CHKERRQ(VecViewFromOptions(u, NULL, "-potential_view"));
+    PetscCall(DMGetDS(dm, &ds));
+    PetscCall(PetscDSGetNumFields(ds, &Nfields));
+    PetscCall(SNESSolve(snes, NULL, u));
+    PetscCall(SNESGetSolution(snes, &u));
+    PetscCall(VecViewFromOptions(u, NULL, "-potential_view"));
 
     /* Cleanup */
-    CHKERRQ(VecDestroy(&u));
-    CHKERRQ(SNESDestroy(&snes));
-    CHKERRQ(DMDestroy(&dm));
-    CHKERRQ(PetscFinalize());
+    PetscCall(VecDestroy(&u));
+    PetscCall(SNESDestroy(&snes));
+    PetscCall(DMDestroy(&dm));
+    PetscCall(PetscFinalize());
     return 0;
 }
 

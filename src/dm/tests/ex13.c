@@ -14,23 +14,23 @@ int main(int argc,char **argv)
   Vec            global;
   PetscViewer    bviewer;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
 
-  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"daoutput",FILE_MODE_READ,&bviewer));
-  CHKERRQ(DMCreate(PETSC_COMM_WORLD,&da));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"daoutput",FILE_MODE_READ,&bviewer));
+  PetscCall(DMCreate(PETSC_COMM_WORLD,&da));
 
-  CHKERRQ(DMLoad(da,bviewer));
-  CHKERRQ(DMCreateGlobalVector(da,&global));
-  CHKERRQ(VecLoad(global,bviewer));
-  CHKERRQ(PetscViewerDestroy(&bviewer));
+  PetscCall(DMLoad(da,bviewer));
+  PetscCall(DMCreateGlobalVector(da,&global));
+  PetscCall(VecLoad(global,bviewer));
+  PetscCall(PetscViewerDestroy(&bviewer));
 
-  CHKERRQ(VecView(global,PETSC_VIEWER_DRAW_WORLD));
+  PetscCall(VecView(global,PETSC_VIEWER_DRAW_WORLD));
 
   /* Free memory */
-  CHKERRQ(VecDestroy(&global));
-  CHKERRQ(DMDestroy(&da));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&global));
+  PetscCall(DMDestroy(&da));
+  PetscCall(PetscFinalize());
   return 0;
 }

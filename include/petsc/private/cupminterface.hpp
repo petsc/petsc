@@ -52,20 +52,12 @@ static constexpr std::array<const char*const,5> DeviceTypes = {
 namespace Impl
 {
 
-// A backend agnostic CHKERRCUPM() function, this will only work inside the member
-// functions of a class inheriting from CUPM::Interface. Can use it in the usual trailing
-// CHKERRQ() form:
+// A backend agnostic PetscCallCUPM() function, this will only work inside the member
+// functions of a class inheriting from CUPM::Interface. Thanks to __VA_ARGS__ templated
+// functions can also be wrapped inline:
 //
-// CHKERRCUPM(foo());
-//
-// or wrap it around the function:
-//
-// CHKERRCUPOBM(foo());
-//
-// thanks to __VA_ARGS__ templated functions can also be wrapped inline:
-//
-// CHKERRCUPM(foo<int,char,bool>());
-#define CHKERRCUPM(...) do {                                            \
+// PetscCallCUPM(foo<int,char,bool>());
+#define PetscCallCUPM(...) do {                                         \
     const cupmError_t cerr_p_ = __VA_ARGS__;                            \
     if (PetscUnlikely(cerr_p_ != cupmSuccess)) {                        \
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU,"%s error %d (%s) : %s",    \

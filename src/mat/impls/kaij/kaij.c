@@ -49,8 +49,8 @@ PetscErrorCode  MatKAIJGetAIJ(Mat A,Mat *B)
   PetscBool      ismpikaij,isseqkaij;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)A,MATMPIKAIJ,&ismpikaij));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)A,MATSEQKAIJ,&isseqkaij));
+  PetscCall(PetscObjectTypeCompare((PetscObject)A,MATMPIKAIJ,&ismpikaij));
+  PetscCall(PetscObjectTypeCompare((PetscObject)A,MATSEQKAIJ,&isseqkaij));
   if (ismpikaij) {
     Mat_MPIKAIJ *b = (Mat_MPIKAIJ*)A->data;
 
@@ -142,7 +142,7 @@ PetscErrorCode MatKAIJRestoreS(Mat A,PetscScalar **S)
 {
   PetscFunctionBegin;
   if (S) *S = NULL;
-  CHKERRQ(PetscObjectStateIncrease((PetscObject)A));
+  PetscCall(PetscObjectStateIncrease((PetscObject)A));
   PetscFunctionReturn(0);
 }
 
@@ -249,7 +249,7 @@ PetscErrorCode MatKAIJRestoreT(Mat A,PetscScalar **T)
 {
   PetscFunctionBegin;
   if (T) *T = NULL;
-  CHKERRQ(PetscObjectStateIncrease((PetscObject)A));
+  PetscCall(PetscObjectStateIncrease((PetscObject)A));
   PetscFunctionReturn(0);
 }
 
@@ -300,9 +300,9 @@ PetscErrorCode MatKAIJSetAIJ(Mat A,Mat B)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A),&size));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A),&size));
   if (size == 1) {
-    CHKERRQ(PetscObjectTypeCompare((PetscObject)B,MATSEQAIJ,&flg));
+    PetscCall(PetscObjectTypeCompare((PetscObject)B,MATSEQAIJ,&flg));
     PetscCheck(flg,PetscObjectComm((PetscObject)B),PETSC_ERR_SUP,"MatKAIJSetAIJ() with MATSEQKAIJ does not support %s as the AIJ mat",((PetscObject)B)->type_name);
     Mat_SeqKAIJ *a = (Mat_SeqKAIJ*)A->data;
     a->AIJ = B;
@@ -310,7 +310,7 @@ PetscErrorCode MatKAIJSetAIJ(Mat A,Mat B)
     Mat_MPIKAIJ *a = (Mat_MPIKAIJ*)A->data;
     a->A = B;
   }
-  CHKERRQ(PetscObjectReference((PetscObject)B));
+  PetscCall(PetscObjectReference((PetscObject)B));
   PetscFunctionReturn(0);
 }
 
@@ -337,10 +337,10 @@ PetscErrorCode MatKAIJSetS(Mat A,PetscInt p,PetscInt q,const PetscScalar S[])
   Mat_SeqKAIJ    *a = (Mat_SeqKAIJ*)A->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscFree(a->S));
+  PetscCall(PetscFree(a->S));
   if (S) {
-    CHKERRQ(PetscMalloc1(p*q,&a->S));
-    CHKERRQ(PetscMemcpy(a->S,S,p*q*sizeof(PetscScalar)));
+    PetscCall(PetscMalloc1(p*q,&a->S));
+    PetscCall(PetscMemcpy(a->S,S,p*q*sizeof(PetscScalar)));
   } else  a->S = NULL;
 
   a->p = p;
@@ -431,10 +431,10 @@ PetscErrorCode MatKAIJSetT(Mat A,PetscInt p,PetscInt q,const PetscScalar T[])
   }
   a->isTI = isTI;
 
-  CHKERRQ(PetscFree(a->T));
+  PetscCall(PetscFree(a->T));
   if (T && (!isTI)) {
-    CHKERRQ(PetscMalloc1(p*q,&a->T));
-    CHKERRQ(PetscMemcpy(a->T,T,p*q*sizeof(PetscScalar)));
+    PetscCall(PetscMalloc1(p*q,&a->T));
+    PetscCall(PetscMemcpy(a->T,T,p*q*sizeof(PetscScalar)));
   } else a->T = NULL;
 
   a->p = p;
@@ -447,13 +447,13 @@ PetscErrorCode MatDestroy_SeqKAIJ(Mat A)
   Mat_SeqKAIJ    *b = (Mat_SeqKAIJ*)A->data;
 
   PetscFunctionBegin;
-  CHKERRQ(MatDestroy(&b->AIJ));
-  CHKERRQ(PetscFree(b->S));
-  CHKERRQ(PetscFree(b->T));
-  CHKERRQ(PetscFree(b->ibdiag));
-  CHKERRQ(PetscFree5(b->sor.w,b->sor.y,b->sor.work,b->sor.t,b->sor.arr));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqkaij_seqaij_C",NULL));
-  CHKERRQ(PetscFree(A->data));
+  PetscCall(MatDestroy(&b->AIJ));
+  PetscCall(PetscFree(b->S));
+  PetscCall(PetscFree(b->T));
+  PetscCall(PetscFree(b->ibdiag));
+  PetscCall(PetscFree5(b->sor.w,b->sor.y,b->sor.work,b->sor.t,b->sor.arr));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqkaij_seqaij_C",NULL));
+  PetscCall(PetscFree(A->data));
   PetscFunctionReturn(0);
 }
 
@@ -469,19 +469,19 @@ PETSC_INTERN PetscErrorCode MatKAIJ_build_AIJ_OAIJ(Mat A)
   a = (Mat_MPIKAIJ*)A->data;
   mpiaij = (Mat_MPIAIJ*)a->A->data;
 
-  CHKERRQ(PetscObjectStateGet((PetscObject)a->A,&state));
+  PetscCall(PetscObjectStateGet((PetscObject)a->A,&state));
   if (state == a->state) {
     /* The existing AIJ and KAIJ members are up-to-date, so simply exit. */
     PetscFunctionReturn(0);
   } else {
-    CHKERRQ(MatDestroy(&a->AIJ));
-    CHKERRQ(MatDestroy(&a->OAIJ));
+    PetscCall(MatDestroy(&a->AIJ));
+    PetscCall(MatDestroy(&a->OAIJ));
     if (a->isTI) {
       /* If the transformation matrix associated with the parallel matrix A is the identity matrix, then a->T will be NULL.
        * In this case, if we pass a->T directly to the MatCreateKAIJ() calls to create the sequential submatrices, the routine will
        * not be able to tell that transformation matrix should be set to the identity; thus we create a temporary identity matrix
        * to pass in. */
-      CHKERRQ(PetscMalloc1(a->p*a->q,&T));
+      PetscCall(PetscMalloc1(a->p*a->q,&T));
       for (i=0; i<a->p; i++) {
         for (j=0; j<a->q; j++) {
           if (i==j) T[i+j*a->p] = 1.0;
@@ -489,10 +489,10 @@ PETSC_INTERN PetscErrorCode MatKAIJ_build_AIJ_OAIJ(Mat A)
         }
       }
     } else T = a->T;
-    CHKERRQ(MatCreateKAIJ(mpiaij->A,a->p,a->q,a->S,T,&a->AIJ));
-    CHKERRQ(MatCreateKAIJ(mpiaij->B,a->p,a->q,NULL,T,&a->OAIJ));
+    PetscCall(MatCreateKAIJ(mpiaij->A,a->p,a->q,a->S,T,&a->AIJ));
+    PetscCall(MatCreateKAIJ(mpiaij->B,a->p,a->q,NULL,T,&a->OAIJ));
     if (a->isTI) {
-      CHKERRQ(PetscFree(T));
+      PetscCall(PetscFree(T));
     }
     a->state = state;
   }
@@ -507,13 +507,13 @@ PetscErrorCode MatSetUp_KAIJ(Mat A)
   Mat_SeqKAIJ    *seqkaij = (Mat_SeqKAIJ*)A->data;
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A),&size));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A),&size));
   if (size == 1) {
-    CHKERRQ(MatSetSizes(A,seqkaij->p*seqkaij->AIJ->rmap->n,seqkaij->q*seqkaij->AIJ->cmap->n,seqkaij->p*seqkaij->AIJ->rmap->N,seqkaij->q*seqkaij->AIJ->cmap->N));
-    CHKERRQ(PetscLayoutSetBlockSize(A->rmap,seqkaij->p));
-    CHKERRQ(PetscLayoutSetBlockSize(A->cmap,seqkaij->q));
-    CHKERRQ(PetscLayoutSetUp(A->rmap));
-    CHKERRQ(PetscLayoutSetUp(A->cmap));
+    PetscCall(MatSetSizes(A,seqkaij->p*seqkaij->AIJ->rmap->n,seqkaij->q*seqkaij->AIJ->cmap->n,seqkaij->p*seqkaij->AIJ->rmap->N,seqkaij->q*seqkaij->AIJ->cmap->N));
+    PetscCall(PetscLayoutSetBlockSize(A->rmap,seqkaij->p));
+    PetscCall(PetscLayoutSetBlockSize(A->cmap,seqkaij->q));
+    PetscCall(PetscLayoutSetUp(A->rmap));
+    PetscCall(PetscLayoutSetUp(A->cmap));
   } else {
     Mat_MPIKAIJ *a;
     Mat_MPIAIJ  *mpiaij;
@@ -522,33 +522,33 @@ PetscErrorCode MatSetUp_KAIJ(Mat A)
 
     a = (Mat_MPIKAIJ*)A->data;
     mpiaij = (Mat_MPIAIJ*)a->A->data;
-    CHKERRQ(MatSetSizes(A,a->p*a->A->rmap->n,a->q*a->A->cmap->n,a->p*a->A->rmap->N,a->q*a->A->cmap->N));
-    CHKERRQ(PetscLayoutSetBlockSize(A->rmap,seqkaij->p));
-    CHKERRQ(PetscLayoutSetBlockSize(A->cmap,seqkaij->q));
-    CHKERRQ(PetscLayoutSetUp(A->rmap));
-    CHKERRQ(PetscLayoutSetUp(A->cmap));
+    PetscCall(MatSetSizes(A,a->p*a->A->rmap->n,a->q*a->A->cmap->n,a->p*a->A->rmap->N,a->q*a->A->cmap->N));
+    PetscCall(PetscLayoutSetBlockSize(A->rmap,seqkaij->p));
+    PetscCall(PetscLayoutSetBlockSize(A->cmap,seqkaij->q));
+    PetscCall(PetscLayoutSetUp(A->rmap));
+    PetscCall(PetscLayoutSetUp(A->cmap));
 
-    CHKERRQ(MatKAIJ_build_AIJ_OAIJ(A));
+    PetscCall(MatKAIJ_build_AIJ_OAIJ(A));
 
-    CHKERRQ(VecGetSize(mpiaij->lvec,&n));
-    CHKERRQ(VecCreate(PETSC_COMM_SELF,&a->w));
-    CHKERRQ(VecSetSizes(a->w,n*a->q,n*a->q));
-    CHKERRQ(VecSetBlockSize(a->w,a->q));
-    CHKERRQ(VecSetType(a->w,VECSEQ));
+    PetscCall(VecGetSize(mpiaij->lvec,&n));
+    PetscCall(VecCreate(PETSC_COMM_SELF,&a->w));
+    PetscCall(VecSetSizes(a->w,n*a->q,n*a->q));
+    PetscCall(VecSetBlockSize(a->w,a->q));
+    PetscCall(VecSetType(a->w,VECSEQ));
 
     /* create two temporary Index sets for build scatter gather */
-    CHKERRQ(ISCreateBlock(PetscObjectComm((PetscObject)a->A),a->q,n,mpiaij->garray,PETSC_COPY_VALUES,&from));
-    CHKERRQ(ISCreateStride(PETSC_COMM_SELF,n*a->q,0,1,&to));
+    PetscCall(ISCreateBlock(PetscObjectComm((PetscObject)a->A),a->q,n,mpiaij->garray,PETSC_COPY_VALUES,&from));
+    PetscCall(ISCreateStride(PETSC_COMM_SELF,n*a->q,0,1,&to));
 
     /* create temporary global vector to generate scatter context */
-    CHKERRQ(VecCreateMPIWithArray(PetscObjectComm((PetscObject)a->A),a->q,a->q*a->A->cmap->n,a->q*a->A->cmap->N,NULL,&gvec));
+    PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)a->A),a->q,a->q*a->A->cmap->n,a->q*a->A->cmap->N,NULL,&gvec));
 
     /* generate the scatter context */
-    CHKERRQ(VecScatterCreate(gvec,from,a->w,to,&a->ctx));
+    PetscCall(VecScatterCreate(gvec,from,a->w,to,&a->ctx));
 
-    CHKERRQ(ISDestroy(&from));
-    CHKERRQ(ISDestroy(&to));
-    CHKERRQ(VecDestroy(&gvec));
+    PetscCall(ISDestroy(&from));
+    PetscCall(ISDestroy(&to));
+    PetscCall(VecDestroy(&gvec));
   }
 
   A->assembled = PETSC_TRUE;
@@ -564,57 +564,57 @@ PetscErrorCode MatView_KAIJ(Mat A,PetscViewer viewer)
   PetscBool         ismpikaij;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)A,MATMPIKAIJ,&ismpikaij));
-  CHKERRQ(PetscViewerGetFormat(viewer,&format));
+  PetscCall(PetscObjectTypeCompare((PetscObject)A,MATMPIKAIJ,&ismpikaij));
+  PetscCall(PetscViewerGetFormat(viewer,&format));
   if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL || format == PETSC_VIEWER_ASCII_IMPL) {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"S and T have %" PetscInt_FMT " rows and %" PetscInt_FMT " columns\n",a->p,a->q));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"S and T have %" PetscInt_FMT " rows and %" PetscInt_FMT " columns\n",a->p,a->q));
 
     /* Print appropriate details for S. */
     if (!a->S) {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"S is NULL\n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"S is NULL\n"));
     } else if (format == PETSC_VIEWER_ASCII_IMPL) {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"Entries of S are "));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"Entries of S are "));
       for (i=0; i<(a->p * a->q); i++) {
 #if defined(PETSC_USE_COMPLEX)
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"%18.16e %18.16e ",(double)PetscRealPart(a->S[i]),(double)PetscImaginaryPart(a->S[i])));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"%18.16e %18.16e ",(double)PetscRealPart(a->S[i]),(double)PetscImaginaryPart(a->S[i])));
 #else
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"%18.16e ",(double)PetscRealPart(a->S[i])));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"%18.16e ",(double)PetscRealPart(a->S[i])));
 #endif
       }
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"\n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"\n"));
     }
 
     /* Print appropriate details for T. */
     if (a->isTI) {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"T is the identity matrix\n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"T is the identity matrix\n"));
     } else if (!a->T) {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"T is NULL\n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"T is NULL\n"));
     } else if (format == PETSC_VIEWER_ASCII_IMPL) {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"Entries of T are "));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"Entries of T are "));
       for (i=0; i<(a->p * a->q); i++) {
 #if defined(PETSC_USE_COMPLEX)
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"%18.16e %18.16e ",(double)PetscRealPart(a->T[i]),(double)PetscImaginaryPart(a->T[i])));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"%18.16e %18.16e ",(double)PetscRealPart(a->T[i]),(double)PetscImaginaryPart(a->T[i])));
 #else
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"%18.16e ",(double)PetscRealPart(a->T[i])));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"%18.16e ",(double)PetscRealPart(a->T[i])));
 #endif
       }
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"\n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"\n"));
     }
 
     /* Now print details for the AIJ matrix, using the AIJ viewer. */
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"Now viewing the associated AIJ matrix:\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"Now viewing the associated AIJ matrix:\n"));
     if (ismpikaij) {
       Mat_MPIKAIJ *b = (Mat_MPIKAIJ*)A->data;
-      CHKERRQ(MatView(b->A,viewer));
+      PetscCall(MatView(b->A,viewer));
     } else {
-      CHKERRQ(MatView(a->AIJ,viewer));
+      PetscCall(MatView(a->AIJ,viewer));
     }
 
   } else {
     /* For all other matrix viewer output formats, simply convert to an AIJ matrix and call MatView() on that. */
-    CHKERRQ(MatConvert(A,MATAIJ,MAT_INITIAL_MATRIX,&B));
-    CHKERRQ(MatView(B,viewer));
-    CHKERRQ(MatDestroy(&B));
+    PetscCall(MatConvert(A,MATAIJ,MAT_INITIAL_MATRIX,&B));
+    PetscCall(MatView(B,viewer));
+    PetscCall(MatDestroy(&B));
   }
   PetscFunctionReturn(0);
 }
@@ -624,17 +624,17 @@ PetscErrorCode MatDestroy_MPIKAIJ(Mat A)
   Mat_MPIKAIJ    *b = (Mat_MPIKAIJ*)A->data;
 
   PetscFunctionBegin;
-  CHKERRQ(MatDestroy(&b->AIJ));
-  CHKERRQ(MatDestroy(&b->OAIJ));
-  CHKERRQ(MatDestroy(&b->A));
-  CHKERRQ(VecScatterDestroy(&b->ctx));
-  CHKERRQ(VecDestroy(&b->w));
-  CHKERRQ(PetscFree(b->S));
-  CHKERRQ(PetscFree(b->T));
-  CHKERRQ(PetscFree(b->ibdiag));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)A,"MatGetDiagonalBlock_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)A,"MatConvert_mpikaij_mpiaij_C",NULL));
-  CHKERRQ(PetscFree(A->data));
+  PetscCall(MatDestroy(&b->AIJ));
+  PetscCall(MatDestroy(&b->OAIJ));
+  PetscCall(MatDestroy(&b->A));
+  PetscCall(VecScatterDestroy(&b->ctx));
+  PetscCall(VecDestroy(&b->w));
+  PetscCall(PetscFree(b->S));
+  PetscCall(PetscFree(b->T));
+  PetscCall(PetscFree(b->ibdiag));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatGetDiagonalBlock_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatConvert_mpikaij_mpiaij_C",NULL));
+  PetscCall(PetscFree(A->data));
   PetscFunctionReturn(0);
 }
 
@@ -653,14 +653,14 @@ PetscErrorCode MatMultAdd_SeqKAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 
   PetscFunctionBegin;
   if (!yy) {
-    CHKERRQ(VecSet(zz,0.0));
+    PetscCall(VecSet(zz,0.0));
   } else {
-    CHKERRQ(VecCopy(yy,zz));
+    PetscCall(VecCopy(yy,zz));
   }
   if ((!s) && (!t) && (!b->isTI)) PetscFunctionReturn(0);
 
-  CHKERRQ(VecGetArrayRead(xx,&x));
-  CHKERRQ(VecGetArray(zz,&y));
+  PetscCall(VecGetArrayRead(xx,&x));
+  PetscCall(VecGetArray(zz,&y));
   idx  = a->j;
   v    = a->a;
   ii   = a->i;
@@ -676,7 +676,7 @@ PetscErrorCode MatMultAdd_SeqKAIJ(Mat A,Vec xx,Vec yy,Vec zz)
         }
       }
     }
-    CHKERRQ(PetscLogFlops(3.0*(a->nz)*p));
+    PetscCall(PetscLogFlops(3.0*(a->nz)*p));
   } else if (t) {
     for (i=0; i<m; i++) {
       jrow = ii[i];
@@ -694,7 +694,7 @@ PetscErrorCode MatMultAdd_SeqKAIJ(Mat A,Vec xx,Vec yy,Vec zz)
      * and also that T part is hoisted outside this loop (in exchange for temporary storage) as (A \otimes I) (I \otimes T),
      * so that this multiply doesn't have to be redone for each matrix entry, but just once per column. The latter
      * transformation is much less likely to be applied, but we nonetheless count the minimum flops required. */
-    CHKERRQ(PetscLogFlops((2.0*p*q-p)*m+2.0*p*a->nz));
+    PetscCall(PetscLogFlops((2.0*p*q-p)*m+2.0*p*a->nz));
   }
   if (s) {
     for (i=0; i<m; i++) {
@@ -708,18 +708,18 @@ PetscErrorCode MatMultAdd_SeqKAIJ(Mat A,Vec xx,Vec yy,Vec zz)
         }
       }
     }
-    CHKERRQ(PetscLogFlops(2.0*m*p*q));
+    PetscCall(PetscLogFlops(2.0*m*p*q));
   }
 
-  CHKERRQ(VecRestoreArrayRead(xx,&x));
-  CHKERRQ(VecRestoreArray(zz,&y));
+  PetscCall(VecRestoreArrayRead(xx,&x));
+  PetscCall(VecRestoreArray(zz,&y));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatMult_SeqKAIJ(Mat A,Vec xx,Vec yy)
 {
   PetscFunctionBegin;
-  CHKERRQ(MatMultAdd_SeqKAIJ(A,xx,PETSC_NULL,yy));
+  PetscCall(MatMultAdd_SeqKAIJ(A,xx,PETSC_NULL,yy));
   PetscFunctionReturn(0);
 }
 
@@ -748,18 +748,18 @@ PetscErrorCode MatInvertBlockDiagonal_SeqKAIJ(Mat A,const PetscScalar **values)
     PetscFunctionReturn(0);
   }
   if (!b->ibdiag) {
-    CHKERRQ(PetscMalloc1(dof2*m,&b->ibdiag));
-    CHKERRQ(PetscLogObjectMemory((PetscObject)A,dof2*m*sizeof(PetscScalar)));
+    PetscCall(PetscMalloc1(dof2*m,&b->ibdiag));
+    PetscCall(PetscLogObjectMemory((PetscObject)A,dof2*m*sizeof(PetscScalar)));
   }
   if (values) *values = b->ibdiag;
   diag = b->ibdiag;
 
-  CHKERRQ(PetscMalloc2(dof,&v_work,dof,&v_pivots));
+  PetscCall(PetscMalloc2(dof,&v_work,dof,&v_pivots));
   for (i=0; i<m; i++) {
     if (S) {
-      CHKERRQ(PetscMemcpy(diag,S,dof2*sizeof(PetscScalar)));
+      PetscCall(PetscMemcpy(diag,S,dof2*sizeof(PetscScalar)));
     } else {
-      CHKERRQ(PetscMemzero(diag,dof2*sizeof(PetscScalar)));
+      PetscCall(PetscMemzero(diag,dof2*sizeof(PetscScalar)));
     }
     if (b->isTI) {
       aval = 0;
@@ -770,10 +770,10 @@ PetscErrorCode MatInvertBlockDiagonal_SeqKAIJ(Mat A,const PetscScalar **values)
       for (j=ii[i]; j<ii[i+1]; j++) if (idx[j] == i) aval = v[j];
       for (j=0; j<dof2; j++) diag[j] += aval*T[j];
     }
-    CHKERRQ(PetscKernel_A_gets_inverse_A(dof,diag,v_pivots,v_work,PETSC_FALSE,NULL));
+    PetscCall(PetscKernel_A_gets_inverse_A(dof,diag,v_pivots,v_work,PETSC_FALSE,NULL));
     diag += dof2;
   }
-  CHKERRQ(PetscFree2(v_work,v_pivots));
+  PetscCall(PetscFree2(v_work,v_pivots));
 
   b->ibdiagvalid = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -798,7 +798,7 @@ static PetscErrorCode MatConvert_KAIJ_AIJ(Mat A,MatType newtype,MatReuse reuse,M
 
   PetscFunctionBegin;
   if (reuse != MAT_REUSE_MATRIX) {
-    CHKERRQ(PetscObjectTypeCompare((PetscObject)A,MATMPIKAIJ,&ismpikaij));
+    PetscCall(PetscObjectTypeCompare((PetscObject)A,MATMPIKAIJ,&ismpikaij));
     if (ismpikaij) {
       Mat_MPIKAIJ *b = (Mat_MPIKAIJ*)A->data;
       AIJ = ((Mat_SeqKAIJ*)b->AIJ->data)->AIJ;
@@ -807,35 +807,35 @@ static PetscErrorCode MatConvert_KAIJ_AIJ(Mat A,MatType newtype,MatReuse reuse,M
       AIJ = a->AIJ;
       OAIJ = NULL;
     }
-    CHKERRQ(MatCreate(PetscObjectComm((PetscObject)A),&B));
-    CHKERRQ(MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N));
-    CHKERRQ(MatSetType(B,MATAIJ));
-    CHKERRQ(MatGetSize(AIJ,&m,NULL));
-    CHKERRQ(MatMissingDiagonal(AIJ,&missing,&d)); /* assumption that all successive rows will have a missing diagonal */
+    PetscCall(MatCreate(PetscObjectComm((PetscObject)A),&B));
+    PetscCall(MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N));
+    PetscCall(MatSetType(B,MATAIJ));
+    PetscCall(MatGetSize(AIJ,&m,NULL));
+    PetscCall(MatMissingDiagonal(AIJ,&missing,&d)); /* assumption that all successive rows will have a missing diagonal */
     if (!missing || !a->S) d = m;
-    CHKERRQ(PetscMalloc1(m*p,&d_nnz));
+    PetscCall(PetscMalloc1(m*p,&d_nnz));
     for (i = 0; i < m; ++i) {
-      CHKERRQ(MatGetRow_SeqAIJ(AIJ,i,&nz,NULL,NULL));
+      PetscCall(MatGetRow_SeqAIJ(AIJ,i,&nz,NULL,NULL));
       for (j = 0; j < p; ++j) d_nnz[i*p + j] = nz*q + (i >= d)*q;
-      CHKERRQ(MatRestoreRow_SeqAIJ(AIJ,i,&nz,NULL,NULL));
+      PetscCall(MatRestoreRow_SeqAIJ(AIJ,i,&nz,NULL,NULL));
     }
     if (OAIJ) {
-      CHKERRQ(PetscMalloc1(m*p,&o_nnz));
+      PetscCall(PetscMalloc1(m*p,&o_nnz));
       for (i = 0; i < m; ++i) {
-        CHKERRQ(MatGetRow_SeqAIJ(OAIJ,i,&nz,NULL,NULL));
+        PetscCall(MatGetRow_SeqAIJ(OAIJ,i,&nz,NULL,NULL));
         for (j = 0; j < p; ++j) o_nnz[i*p + j] = nz*q;
-        CHKERRQ(MatRestoreRow_SeqAIJ(OAIJ,i,&nz,NULL,NULL));
+        PetscCall(MatRestoreRow_SeqAIJ(OAIJ,i,&nz,NULL,NULL));
       }
-      CHKERRQ(MatMPIAIJSetPreallocation(B,0,d_nnz,0,o_nnz));
+      PetscCall(MatMPIAIJSetPreallocation(B,0,d_nnz,0,o_nnz));
     } else {
-      CHKERRQ(MatSeqAIJSetPreallocation(B,0,d_nnz));
+      PetscCall(MatSeqAIJSetPreallocation(B,0,d_nnz));
     }
-    CHKERRQ(PetscFree(d_nnz));
-    CHKERRQ(PetscFree(o_nnz));
+    PetscCall(PetscFree(d_nnz));
+    PetscCall(PetscFree(o_nnz));
   } else B = *newmat;
-  CHKERRQ(MatConvert_Basic(A,newtype,MAT_REUSE_MATRIX,&B));
+  PetscCall(MatConvert_Basic(A,newtype,MAT_REUSE_MATRIX,&B));
   if (reuse == MAT_INPLACE_MATRIX) {
-    CHKERRQ(MatHeaderReplace(A,&B));
+    PetscCall(MatHeaderReplace(A,&B));
   } else *newmat = B;
   PetscFunctionReturn(0);
 }
@@ -862,12 +862,12 @@ PetscErrorCode MatSOR_SeqKAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
 
   if (!m) PetscFunctionReturn(0);
 
-  if (!kaij->ibdiagvalid) CHKERRQ(MatInvertBlockDiagonal_SeqKAIJ(A,NULL));
+  if (!kaij->ibdiagvalid) PetscCall(MatInvertBlockDiagonal_SeqKAIJ(A,NULL));
   idiag = kaij->ibdiag;
   diag  = a->diag;
 
   if (!kaij->sor.setup) {
-    CHKERRQ(PetscMalloc5(bs,&kaij->sor.w,bs,&kaij->sor.y,m*bs,&kaij->sor.work,m*bs,&kaij->sor.t,m*bs2,&kaij->sor.arr));
+    PetscCall(PetscMalloc5(bs,&kaij->sor.w,bs,&kaij->sor.y,m*bs,&kaij->sor.work,m*bs,&kaij->sor.t,m*bs2,&kaij->sor.arr));
     kaij->sor.setup = PETSC_TRUE;
   }
   y     = kaij->sor.y;
@@ -876,13 +876,13 @@ PetscErrorCode MatSOR_SeqKAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
   t     = kaij->sor.t;
   arr   = kaij->sor.arr;
 
-  ierr = VecGetArray(xx,&x);    CHKERRQ(ierr);
-  CHKERRQ(VecGetArrayRead(bb,&b));
+  ierr = VecGetArray(xx,&x);    PetscCall(ierr);
+  PetscCall(VecGetArrayRead(bb,&b));
 
   if (flag & SOR_ZERO_INITIAL_GUESS) {
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) {
       PetscKernel_w_gets_Ar_times_v(bs,bs,b,idiag,x);                            /* x[0:bs] <- D^{-1} b[0:bs] */
-      CHKERRQ(PetscMemcpy(t,b,bs*sizeof(PetscScalar)));
+      PetscCall(PetscMemcpy(t,b,bs*sizeof(PetscScalar)));
       i2     =  bs;
       idiag  += bs2;
       for (i=1; i<m; i++) {
@@ -891,19 +891,19 @@ PetscErrorCode MatSOR_SeqKAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
         nz = diag[i] - ai[i];
 
         if (T) {                /* b - T (Arow * x) */
-          CHKERRQ(PetscMemzero(w,bs*sizeof(PetscScalar)));
+          PetscCall(PetscMemzero(w,bs*sizeof(PetscScalar)));
           for (j=0; j<nz; j++) {
             for (k=0; k<bs; k++) w[k] -= v[j] * x[vi[j]*bs+k];
           }
           PetscKernel_w_gets_w_minus_Ar_times_v(bs,bs,w,T,&t[i2]);
           for (k=0; k<bs; k++) t[i2+k] += b[i2+k];
         } else if (kaij->isTI) {
-          CHKERRQ(PetscMemcpy(t+i2,b+i2,bs*sizeof(PetscScalar)));
+          PetscCall(PetscMemcpy(t+i2,b+i2,bs*sizeof(PetscScalar)));
           for (j=0; j<nz; j++) {
             for (k=0; k<bs; k++) t[i2+k] -= v[j] * x[vi[j]*bs+k];
           }
         } else {
-          CHKERRQ(PetscMemcpy(t+i2,b+i2,bs*sizeof(PetscScalar)));
+          PetscCall(PetscMemcpy(t+i2,b+i2,bs*sizeof(PetscScalar)));
         }
 
         PetscKernel_w_gets_Ar_times_v(bs,bs,t+i2,idiag,y);
@@ -913,13 +913,13 @@ PetscErrorCode MatSOR_SeqKAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
         i2    += bs;
       }
       /* for logging purposes assume number of nonzero in lower half is 1/2 of total */
-      CHKERRQ(PetscLogFlops(1.0*bs2*a->nz));
+      PetscCall(PetscLogFlops(1.0*bs2*a->nz));
       xb = t;
     } else xb = b;
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
       idiag = kaij->ibdiag+bs2*(m-1);
       i2    = bs * (m-1);
-      CHKERRQ(PetscMemcpy(w,xb+i2,bs*sizeof(PetscScalar)));
+      PetscCall(PetscMemcpy(w,xb+i2,bs*sizeof(PetscScalar)));
       PetscKernel_w_gets_Ar_times_v(bs,bs,w,idiag,x+i2);
       i2    -= bs;
       idiag -= bs2;
@@ -929,22 +929,22 @@ PetscErrorCode MatSOR_SeqKAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
         nz = ai[i+1] - diag[i] - 1;
 
         if (T) {                /* FIXME: This branch untested */
-          CHKERRQ(PetscMemcpy(w,xb+i2,bs*sizeof(PetscScalar)));
+          PetscCall(PetscMemcpy(w,xb+i2,bs*sizeof(PetscScalar)));
           /* copy all rows of x that are needed into contiguous space */
           workt = work;
           for (j=0; j<nz; j++) {
-            CHKERRQ(PetscMemcpy(workt,x + bs*(*vi++),bs*sizeof(PetscScalar)));
+            PetscCall(PetscMemcpy(workt,x + bs*(*vi++),bs*sizeof(PetscScalar)));
             workt += bs;
           }
           arrt = arr;
           for (j=0; j<nz; j++) {
-            CHKERRQ(PetscMemcpy(arrt,T,bs2*sizeof(PetscScalar)));
+            PetscCall(PetscMemcpy(arrt,T,bs2*sizeof(PetscScalar)));
             for (k=0; k<bs2; k++) arrt[k] *= v[j];
             arrt += bs2;
           }
           PetscKernel_w_gets_w_minus_Ar_times_v(bs,bs*nz,w,arr,work);
         } else if (kaij->isTI) {
-          CHKERRQ(PetscMemcpy(w,t+i2,bs*sizeof(PetscScalar)));
+          PetscCall(PetscMemcpy(w,t+i2,bs*sizeof(PetscScalar)));
           for (j=0; j<nz; j++) {
             for (k=0; k<bs; k++) w[k] -= v[j] * x[vi[j]*bs+k];
           }
@@ -956,7 +956,7 @@ PetscErrorCode MatSOR_SeqKAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
         idiag -= bs2;
         i2    -= bs;
       }
-      CHKERRQ(PetscLogFlops(1.0*bs2*(a->nz)));
+      PetscCall(PetscLogFlops(1.0*bs2*(a->nz)));
     }
     its--;
   }
@@ -965,53 +965,53 @@ PetscErrorCode MatSOR_SeqKAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
       i2     =  0;
       idiag  = kaij->ibdiag;
       for (i=0; i<m; i++) {
-        CHKERRQ(PetscMemcpy(w,b+i2,bs*sizeof(PetscScalar)));
+        PetscCall(PetscMemcpy(w,b+i2,bs*sizeof(PetscScalar)));
 
         v  = aa + ai[i];
         vi = aj + ai[i];
         nz = diag[i] - ai[i];
         workt = work;
         for (j=0; j<nz; j++) {
-          CHKERRQ(PetscMemcpy(workt,x + bs*(*vi++),bs*sizeof(PetscScalar)));
+          PetscCall(PetscMemcpy(workt,x + bs*(*vi++),bs*sizeof(PetscScalar)));
           workt += bs;
         }
         arrt = arr;
         if (T) {
           for (j=0; j<nz; j++) {
-            CHKERRQ(PetscMemcpy(arrt,T,bs2*sizeof(PetscScalar)));
+            PetscCall(PetscMemcpy(arrt,T,bs2*sizeof(PetscScalar)));
             for (k=0; k<bs2; k++) arrt[k] *= v[j];
             arrt += bs2;
           }
           PetscKernel_w_gets_w_minus_Ar_times_v(bs,bs*nz,w,arr,work);
         } else if (kaij->isTI) {
           for (j=0; j<nz; j++) {
-            CHKERRQ(PetscMemzero(arrt,bs2*sizeof(PetscScalar)));
+            PetscCall(PetscMemzero(arrt,bs2*sizeof(PetscScalar)));
             for (k=0; k<bs; k++) arrt[k+bs*k] = v[j];
             arrt += bs2;
           }
           PetscKernel_w_gets_w_minus_Ar_times_v(bs,bs*nz,w,arr,work);
         }
-        CHKERRQ(PetscMemcpy(t+i2,w,bs*sizeof(PetscScalar)));
+        PetscCall(PetscMemcpy(t+i2,w,bs*sizeof(PetscScalar)));
 
         v  = aa + diag[i] + 1;
         vi = aj + diag[i] + 1;
         nz = ai[i+1] - diag[i] - 1;
         workt = work;
         for (j=0; j<nz; j++) {
-          CHKERRQ(PetscMemcpy(workt,x + bs*(*vi++),bs*sizeof(PetscScalar)));
+          PetscCall(PetscMemcpy(workt,x + bs*(*vi++),bs*sizeof(PetscScalar)));
           workt += bs;
         }
         arrt = arr;
         if (T) {
           for (j=0; j<nz; j++) {
-            CHKERRQ(PetscMemcpy(arrt,T,bs2*sizeof(PetscScalar)));
+            PetscCall(PetscMemcpy(arrt,T,bs2*sizeof(PetscScalar)));
             for (k=0; k<bs2; k++) arrt[k] *= v[j];
             arrt += bs2;
           }
           PetscKernel_w_gets_w_minus_Ar_times_v(bs,bs*nz,w,arr,work);
         } else if (kaij->isTI) {
           for (j=0; j<nz; j++) {
-            CHKERRQ(PetscMemzero(arrt,bs2*sizeof(PetscScalar)));
+            PetscCall(PetscMemzero(arrt,bs2*sizeof(PetscScalar)));
             for (k=0; k<bs; k++) arrt[k+bs*k] = v[j];
             arrt += bs2;
           }
@@ -1032,27 +1032,27 @@ PetscErrorCode MatSOR_SeqKAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
       i2    = bs * (m-1);
       if (xb == b) {
         for (i=m-1; i>=0; i--) {
-          CHKERRQ(PetscMemcpy(w,b+i2,bs*sizeof(PetscScalar)));
+          PetscCall(PetscMemcpy(w,b+i2,bs*sizeof(PetscScalar)));
 
           v  = aa + ai[i];
           vi = aj + ai[i];
           nz = diag[i] - ai[i];
           workt = work;
           for (j=0; j<nz; j++) {
-            CHKERRQ(PetscMemcpy(workt,x + bs*(*vi++),bs*sizeof(PetscScalar)));
+            PetscCall(PetscMemcpy(workt,x + bs*(*vi++),bs*sizeof(PetscScalar)));
             workt += bs;
           }
           arrt = arr;
           if (T) {
             for (j=0; j<nz; j++) {
-              CHKERRQ(PetscMemcpy(arrt,T,bs2*sizeof(PetscScalar)));
+              PetscCall(PetscMemcpy(arrt,T,bs2*sizeof(PetscScalar)));
               for (k=0; k<bs2; k++) arrt[k] *= v[j];
               arrt += bs2;
             }
             PetscKernel_w_gets_w_minus_Ar_times_v(bs,bs*nz,w,arr,work);
           } else if (kaij->isTI) {
             for (j=0; j<nz; j++) {
-              CHKERRQ(PetscMemzero(arrt,bs2*sizeof(PetscScalar)));
+              PetscCall(PetscMemzero(arrt,bs2*sizeof(PetscScalar)));
               for (k=0; k<bs; k++) arrt[k+bs*k] = v[j];
               arrt += bs2;
             }
@@ -1064,20 +1064,20 @@ PetscErrorCode MatSOR_SeqKAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
           nz = ai[i+1] - diag[i] - 1;
           workt = work;
           for (j=0; j<nz; j++) {
-            CHKERRQ(PetscMemcpy(workt,x + bs*(*vi++),bs*sizeof(PetscScalar)));
+            PetscCall(PetscMemcpy(workt,x + bs*(*vi++),bs*sizeof(PetscScalar)));
             workt += bs;
           }
           arrt = arr;
           if (T) {
             for (j=0; j<nz; j++) {
-              CHKERRQ(PetscMemcpy(arrt,T,bs2*sizeof(PetscScalar)));
+              PetscCall(PetscMemcpy(arrt,T,bs2*sizeof(PetscScalar)));
               for (k=0; k<bs2; k++) arrt[k] *= v[j];
               arrt += bs2;
             }
             PetscKernel_w_gets_w_minus_Ar_times_v(bs,bs*nz,w,arr,work);
           } else if (kaij->isTI) {
             for (j=0; j<nz; j++) {
-              CHKERRQ(PetscMemzero(arrt,bs2*sizeof(PetscScalar)));
+              PetscCall(PetscMemzero(arrt,bs2*sizeof(PetscScalar)));
               for (k=0; k<bs; k++) arrt[k+bs*k] = v[j];
               arrt += bs2;
             }
@@ -1089,26 +1089,26 @@ PetscErrorCode MatSOR_SeqKAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
         }
       } else {
         for (i=m-1; i>=0; i--) {
-          CHKERRQ(PetscMemcpy(w,xb+i2,bs*sizeof(PetscScalar)));
+          PetscCall(PetscMemcpy(w,xb+i2,bs*sizeof(PetscScalar)));
           v  = aa + diag[i] + 1;
           vi = aj + diag[i] + 1;
           nz = ai[i+1] - diag[i] - 1;
           workt = work;
           for (j=0; j<nz; j++) {
-            CHKERRQ(PetscMemcpy(workt,x + bs*(*vi++),bs*sizeof(PetscScalar)));
+            PetscCall(PetscMemcpy(workt,x + bs*(*vi++),bs*sizeof(PetscScalar)));
             workt += bs;
           }
           arrt = arr;
           if (T) {
             for (j=0; j<nz; j++) {
-              CHKERRQ(PetscMemcpy(arrt,T,bs2*sizeof(PetscScalar)));
+              PetscCall(PetscMemcpy(arrt,T,bs2*sizeof(PetscScalar)));
               for (k=0; k<bs2; k++) arrt[k] *= v[j];
               arrt += bs2;
             }
             PetscKernel_w_gets_w_minus_Ar_times_v(bs,bs*nz,w,arr,work);
           } else if (kaij->isTI) {
             for (j=0; j<nz; j++) {
-              CHKERRQ(PetscMemzero(arrt,bs2*sizeof(PetscScalar)));
+              PetscCall(PetscMemzero(arrt,bs2*sizeof(PetscScalar)));
               for (k=0; k<bs; k++) arrt[k+bs*k] = v[j];
               arrt += bs2;
             }
@@ -1118,12 +1118,12 @@ PetscErrorCode MatSOR_SeqKAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
           for (j=0; j<bs; j++) *(x+i2+j) = (1.0-omega) * *(x+i2+j) + omega * *(y+j);
         }
       }
-      CHKERRQ(PetscLogFlops(1.0*bs2*(a->nz)));
+      PetscCall(PetscLogFlops(1.0*bs2*(a->nz)));
     }
   }
 
-  ierr = VecRestoreArray(xx,&x);    CHKERRQ(ierr);
-  CHKERRQ(VecRestoreArrayRead(bb,&b));
+  ierr = VecRestoreArray(xx,&x);    PetscCall(ierr);
+  PetscCall(VecRestoreArrayRead(bb,&b));
   PetscFunctionReturn(0);
 }
 
@@ -1135,23 +1135,23 @@ PetscErrorCode MatMultAdd_MPIKAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 
   PetscFunctionBegin;
   if (!yy) {
-    CHKERRQ(VecSet(zz,0.0));
+    PetscCall(VecSet(zz,0.0));
   } else {
-    CHKERRQ(VecCopy(yy,zz));
+    PetscCall(VecCopy(yy,zz));
   }
-  CHKERRQ(MatKAIJ_build_AIJ_OAIJ(A)); /* Ensure b->AIJ and b->OAIJ are up to date. */
+  PetscCall(MatKAIJ_build_AIJ_OAIJ(A)); /* Ensure b->AIJ and b->OAIJ are up to date. */
   /* start the scatter */
-  CHKERRQ(VecScatterBegin(b->ctx,xx,b->w,INSERT_VALUES,SCATTER_FORWARD));
-  CHKERRQ((*b->AIJ->ops->multadd)(b->AIJ,xx,zz,zz));
-  CHKERRQ(VecScatterEnd(b->ctx,xx,b->w,INSERT_VALUES,SCATTER_FORWARD));
-  CHKERRQ((*b->OAIJ->ops->multadd)(b->OAIJ,b->w,zz,zz));
+  PetscCall(VecScatterBegin(b->ctx,xx,b->w,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall((*b->AIJ->ops->multadd)(b->AIJ,xx,zz,zz));
+  PetscCall(VecScatterEnd(b->ctx,xx,b->w,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall((*b->OAIJ->ops->multadd)(b->OAIJ,b->w,zz,zz));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatMult_MPIKAIJ(Mat A,Vec xx,Vec yy)
 {
   PetscFunctionBegin;
-  CHKERRQ(MatMultAdd_MPIKAIJ(A,xx,PETSC_NULL,yy));
+  PetscCall(MatMultAdd_MPIKAIJ(A,xx,PETSC_NULL,yy));
   PetscFunctionReturn(0);
 }
 
@@ -1160,8 +1160,8 @@ PetscErrorCode MatInvertBlockDiagonal_MPIKAIJ(Mat A,const PetscScalar **values)
   Mat_MPIKAIJ     *b = (Mat_MPIKAIJ*)A->data;
 
   PetscFunctionBegin;
-  CHKERRQ(MatKAIJ_build_AIJ_OAIJ(A)); /* Ensure b->AIJ is up to date. */
-  CHKERRQ((*b->AIJ->ops->invertblockdiagonal)(b->AIJ,values));
+  PetscCall(MatKAIJ_build_AIJ_OAIJ(A)); /* Ensure b->AIJ is up to date. */
+  PetscCall((*b->AIJ->ops->invertblockdiagonal)(b->AIJ,values));
   PetscFunctionReturn(0);
 }
 
@@ -1187,7 +1187,7 @@ PetscErrorCode MatGetRow_SeqKAIJ(Mat A,PetscInt row,PetscInt *ncols,PetscInt **c
   }
 
   if (T || b->isTI) {
-    CHKERRQ(MatGetRow_SeqAIJ(b->AIJ,r,&nzaij,&colsaij,&vaij));
+    PetscCall(MatGetRow_SeqAIJ(b->AIJ,r,&nzaij,&colsaij,&vaij));
     c     = nzaij;
     for (i=0; i<nzaij; i++) {
       /* check if this row contains a diagonal entry */
@@ -1204,7 +1204,7 @@ PetscErrorCode MatGetRow_SeqKAIJ(Mat A,PetscInt row,PetscInt *ncols,PetscInt **c
   if (T || b->isTI) nz += (diag && S ? (nzaij-1)*q : nzaij*q);
 
   if (cols || values) {
-    CHKERRQ(PetscMalloc2(nz,&idx,nz,&v));
+    PetscCall(PetscMalloc2(nz,&idx,nz,&v));
     for (i=0; i<q; i++) {
       /* We need to initialize the v[i] to zero to handle the case in which T is NULL (not the identity matrix). */
       v[i] = 0.0;
@@ -1242,7 +1242,7 @@ PetscErrorCode MatRestoreRow_SeqKAIJ(Mat A,PetscInt row,PetscInt *nz,PetscInt **
 {
   PetscFunctionBegin;
   if (nz) *nz = 0;
-  CHKERRQ(PetscFree2(*idx,*v));
+  PetscCall(PetscFree2(*idx,*v));
   ((Mat_SeqKAIJ*)A->data)->getrowactive = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -1258,7 +1258,7 @@ PetscErrorCode MatGetRow_MPIKAIJ(Mat A,PetscInt row,PetscInt *ncols,PetscInt **c
   PetscScalar     *v,*vals,*ovals,*S=b->S,*T=b->T;
 
   PetscFunctionBegin;
-  CHKERRQ(MatKAIJ_build_AIJ_OAIJ(A)); /* Ensure b->AIJ and b->OAIJ are up to date. */
+  PetscCall(MatKAIJ_build_AIJ_OAIJ(A)); /* Ensure b->AIJ and b->OAIJ are up to date. */
   MatAIJ  = ((Mat_SeqKAIJ*)b->AIJ->data)->AIJ;
   MatOAIJ = ((Mat_SeqKAIJ*)b->OAIJ->data)->AIJ;
   PetscCheck(!b->getrowactive,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Already active");
@@ -1277,9 +1277,9 @@ PetscErrorCode MatGetRow_MPIKAIJ(Mat A,PetscInt row,PetscInt *ncols,PetscInt **c
   s = lrow%p;
 
   if (T || b->isTI) {
-    CHKERRQ(MatMPIAIJGetSeqAIJ(AIJ,NULL,NULL,&garray));
-    CHKERRQ(MatGetRow_SeqAIJ(MatAIJ,lrow/p,&ncolsaij,&colsaij,&vals));
-    CHKERRQ(MatGetRow_SeqAIJ(MatOAIJ,lrow/p,&ncolsoaij,&colsoaij,&ovals));
+    PetscCall(MatMPIAIJGetSeqAIJ(AIJ,NULL,NULL,&garray));
+    PetscCall(MatGetRow_SeqAIJ(MatAIJ,lrow/p,&ncolsaij,&colsaij,&vals));
+    PetscCall(MatGetRow_SeqAIJ(MatOAIJ,lrow/p,&ncolsoaij,&colsoaij,&ovals));
 
     c     = ncolsaij + ncolsoaij;
     for (i=0; i<ncolsaij; i++) {
@@ -1297,7 +1297,7 @@ PetscErrorCode MatGetRow_MPIKAIJ(Mat A,PetscInt row,PetscInt *ncols,PetscInt **c
   if (T || b->isTI) nz += (diag && S ? (ncolsaij+ncolsoaij-1)*q : (ncolsaij+ncolsoaij)*q);
 
   if (cols || values) {
-    CHKERRQ(PetscMalloc2(nz,&idx,nz,&v));
+    PetscCall(PetscMalloc2(nz,&idx,nz,&v));
     for (i=0; i<q; i++) {
       /* We need to initialize the v[i] to zero to handle the case in which T is NULL (not the identity matrix). */
       v[i] = 0.0;
@@ -1346,7 +1346,7 @@ PetscErrorCode MatGetRow_MPIKAIJ(Mat A,PetscInt row,PetscInt *ncols,PetscInt **c
 PetscErrorCode MatRestoreRow_MPIKAIJ(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,PetscScalar **v)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscFree2(*idx,*v));
+  PetscCall(PetscFree2(*idx,*v));
   ((Mat_SeqKAIJ*)A->data)->getrowactive = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -1356,9 +1356,9 @@ PetscErrorCode  MatCreateSubMatrix_KAIJ(Mat mat,IS isrow,IS iscol,MatReuse cll,M
   Mat            A;
 
   PetscFunctionBegin;
-  CHKERRQ(MatConvert(mat,MATAIJ,MAT_INITIAL_MATRIX,&A));
-  CHKERRQ(MatCreateSubMatrix(A,isrow,iscol,cll,newmat));
-  CHKERRQ(MatDestroy(&A));
+  PetscCall(MatConvert(mat,MATAIJ,MAT_INITIAL_MATRIX,&A));
+  PetscCall(MatCreateSubMatrix(A,isrow,iscol,cll,newmat));
+  PetscCall(MatDestroy(&A));
   PetscFunctionReturn(0);
 }
 
@@ -1406,12 +1406,12 @@ PetscErrorCode  MatCreateSubMatrix_KAIJ(Mat mat,IS isrow,IS iscol,MatReuse cll,M
 PetscErrorCode  MatCreateKAIJ(Mat A,PetscInt p,PetscInt q,const PetscScalar S[],const PetscScalar T[],Mat *kaij)
 {
   PetscFunctionBegin;
-  CHKERRQ(MatCreate(PetscObjectComm((PetscObject)A),kaij));
-  CHKERRQ(MatSetType(*kaij,MATKAIJ));
-  CHKERRQ(MatKAIJSetAIJ(*kaij,A));
-  CHKERRQ(MatKAIJSetS(*kaij,p,q,S));
-  CHKERRQ(MatKAIJSetT(*kaij,p,q,T));
-  CHKERRQ(MatSetUp(*kaij));
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)A),kaij));
+  PetscCall(MatSetType(*kaij,MATKAIJ));
+  PetscCall(MatKAIJSetAIJ(*kaij,A));
+  PetscCall(MatKAIJSetS(*kaij,p,q,S));
+  PetscCall(MatKAIJSetT(*kaij,p,q,T));
+  PetscCall(MatSetUp(*kaij));
   PetscFunctionReturn(0);
 }
 
@@ -1442,15 +1442,15 @@ PETSC_EXTERN PetscErrorCode MatCreate_KAIJ(Mat A)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNewLog(A,&b));
+  PetscCall(PetscNewLog(A,&b));
   A->data  = (void*)b;
 
-  CHKERRQ(PetscMemzero(A->ops,sizeof(struct _MatOps)));
+  PetscCall(PetscMemzero(A->ops,sizeof(struct _MatOps)));
 
   b->w    = NULL;
-  CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A),&size));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A),&size));
   if (size == 1) {
-    CHKERRQ(PetscObjectChangeTypeName((PetscObject)A,MATSEQKAIJ));
+    PetscCall(PetscObjectChangeTypeName((PetscObject)A,MATSEQKAIJ));
     A->ops->destroy             = MatDestroy_SeqKAIJ;
     A->ops->mult                = MatMult_SeqKAIJ;
     A->ops->multadd             = MatMultAdd_SeqKAIJ;
@@ -1458,17 +1458,17 @@ PETSC_EXTERN PetscErrorCode MatCreate_KAIJ(Mat A)
     A->ops->getrow              = MatGetRow_SeqKAIJ;
     A->ops->restorerow          = MatRestoreRow_SeqKAIJ;
     A->ops->sor                 = MatSOR_SeqKAIJ;
-    CHKERRQ(PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqkaij_seqaij_C",MatConvert_KAIJ_AIJ));
+    PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqkaij_seqaij_C",MatConvert_KAIJ_AIJ));
   } else {
-    CHKERRQ(PetscObjectChangeTypeName((PetscObject)A,MATMPIKAIJ));
+    PetscCall(PetscObjectChangeTypeName((PetscObject)A,MATMPIKAIJ));
     A->ops->destroy             = MatDestroy_MPIKAIJ;
     A->ops->mult                = MatMult_MPIKAIJ;
     A->ops->multadd             = MatMultAdd_MPIKAIJ;
     A->ops->invertblockdiagonal = MatInvertBlockDiagonal_MPIKAIJ;
     A->ops->getrow              = MatGetRow_MPIKAIJ;
     A->ops->restorerow          = MatRestoreRow_MPIKAIJ;
-    CHKERRQ(PetscObjectComposeFunction((PetscObject)A,"MatGetDiagonalBlock_C",MatGetDiagonalBlock_MPIKAIJ));
-    CHKERRQ(PetscObjectComposeFunction((PetscObject)A,"MatConvert_mpikaij_mpiaij_C",MatConvert_KAIJ_AIJ));
+    PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatGetDiagonalBlock_C",MatGetDiagonalBlock_MPIKAIJ));
+    PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatConvert_mpikaij_mpiaij_C",MatConvert_KAIJ_AIJ));
   }
   A->ops->setup           = MatSetUp_KAIJ;
   A->ops->view            = MatView_KAIJ;

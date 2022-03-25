@@ -43,10 +43,10 @@ PetscErrorCode  PetscDrawSPCreate(PetscDraw draw,int dim,PetscDrawSP *drawsp)
   PetscValidLogicalCollectiveInt(draw,dim,2);
   PetscValidPointer(drawsp,3);
 
-  CHKERRQ(PetscHeaderCreate(sp,PETSC_DRAWSP_CLASSID,"DrawSP","Scatter Plot","Draw",PetscObjectComm((PetscObject)draw),PetscDrawSPDestroy,NULL));
-  CHKERRQ(PetscLogObjectParent((PetscObject)draw,(PetscObject)sp));
+  PetscCall(PetscHeaderCreate(sp,PETSC_DRAWSP_CLASSID,"DrawSP","Scatter Plot","Draw",PetscObjectComm((PetscObject)draw),PetscDrawSPDestroy,NULL));
+  PetscCall(PetscLogObjectParent((PetscObject)draw,(PetscObject)sp));
 
-  CHKERRQ(PetscObjectReference((PetscObject)draw));
+  PetscCall(PetscObjectReference((PetscObject)draw));
   sp->win = draw;
 
   sp->view      = NULL;
@@ -61,14 +61,14 @@ PetscErrorCode  PetscDrawSPCreate(PetscDraw draw,int dim,PetscDrawSP *drawsp)
   sp->zmin      = 1.e20;
   sp->colorized = PETSC_FALSE;
 
-  CHKERRQ(PetscMalloc3(dim*PETSC_DRAW_SP_CHUNK_SIZE,&sp->x,dim*PETSC_DRAW_SP_CHUNK_SIZE,&sp->y,dim*PETSC_DRAW_SP_CHUNK_SIZE,&sp->z));
-  CHKERRQ(PetscLogObjectMemory((PetscObject)sp,2*dim*PETSC_DRAW_SP_CHUNK_SIZE*sizeof(PetscReal)));
+  PetscCall(PetscMalloc3(dim*PETSC_DRAW_SP_CHUNK_SIZE,&sp->x,dim*PETSC_DRAW_SP_CHUNK_SIZE,&sp->y,dim*PETSC_DRAW_SP_CHUNK_SIZE,&sp->z));
+  PetscCall(PetscLogObjectMemory((PetscObject)sp,2*dim*PETSC_DRAW_SP_CHUNK_SIZE*sizeof(PetscReal)));
 
   sp->len     = dim*PETSC_DRAW_SP_CHUNK_SIZE;
   sp->loc     = 0;
 
-  CHKERRQ(PetscDrawAxisCreate(draw,&sp->axis));
-  CHKERRQ(PetscLogObjectParent((PetscObject)sp,(PetscObject)sp->axis));
+  PetscCall(PetscDrawAxisCreate(draw,&sp->axis));
+  PetscCall(PetscLogObjectParent((PetscObject)sp,(PetscObject)sp->axis));
 
   *drawsp = sp;
   PetscFunctionReturn(0);
@@ -95,10 +95,10 @@ PetscErrorCode  PetscDrawSPSetDimension(PetscDrawSP sp,int dim)
   PetscValidLogicalCollectiveInt(sp,dim,2);
   if (sp->dim == dim) PetscFunctionReturn(0);
 
-  CHKERRQ(PetscFree2(sp->x,sp->y));
+  PetscCall(PetscFree2(sp->x,sp->y));
   sp->dim = dim;
-  CHKERRQ(PetscMalloc2(dim*PETSC_DRAW_SP_CHUNK_SIZE,&sp->x,dim*PETSC_DRAW_SP_CHUNK_SIZE,&sp->y));
-  CHKERRQ(PetscLogObjectMemory((PetscObject)sp,2*dim*PETSC_DRAW_SP_CHUNK_SIZE*sizeof(PetscReal)));
+  PetscCall(PetscMalloc2(dim*PETSC_DRAW_SP_CHUNK_SIZE,&sp->x,dim*PETSC_DRAW_SP_CHUNK_SIZE,&sp->y));
+  PetscCall(PetscLogObjectMemory((PetscObject)sp,2*dim*PETSC_DRAW_SP_CHUNK_SIZE*sizeof(PetscReal)));
   sp->len = dim*PETSC_DRAW_SP_CHUNK_SIZE;
   PetscFunctionReturn(0);
 }
@@ -150,10 +150,10 @@ PetscErrorCode  PetscDrawSPDestroy(PetscDrawSP *sp)
   PetscValidHeaderSpecific(*sp,PETSC_DRAWSP_CLASSID,1);
   if (--((PetscObject)(*sp))->refct > 0) {*sp = NULL; PetscFunctionReturn(0);}
 
-  CHKERRQ(PetscFree3((*sp)->x,(*sp)->y,(*sp)->z));
-  CHKERRQ(PetscDrawAxisDestroy(&(*sp)->axis));
-  CHKERRQ(PetscDrawDestroy(&(*sp)->win));
-  CHKERRQ(PetscHeaderDestroy(sp));
+  PetscCall(PetscFree3((*sp)->x,(*sp)->y,(*sp)->z));
+  PetscCall(PetscDrawAxisDestroy(&(*sp)->axis));
+  PetscCall(PetscDrawDestroy(&(*sp)->win));
+  PetscCall(PetscHeaderDestroy(sp));
   PetscFunctionReturn(0);
 }
 
@@ -183,11 +183,11 @@ PetscErrorCode  PetscDrawSPAddPoint(PetscDrawSP sp,PetscReal *x,PetscReal *y)
 
   if (sp->loc+sp->dim >= sp->len) { /* allocate more space */
     PetscReal *tmpx,*tmpy;
-    CHKERRQ(PetscMalloc2(sp->len+sp->dim*PETSC_DRAW_SP_CHUNK_SIZE,&tmpx,sp->len+sp->dim*PETSC_DRAW_SP_CHUNK_SIZE,&tmpy));
-    CHKERRQ(PetscLogObjectMemory((PetscObject)sp,2*sp->dim*PETSC_DRAW_SP_CHUNK_SIZE*sizeof(PetscReal)));
-    CHKERRQ(PetscArraycpy(tmpx,sp->x,sp->len));
-    CHKERRQ(PetscArraycpy(tmpy,sp->y,sp->len));
-    CHKERRQ(PetscFree2(sp->x,sp->y));
+    PetscCall(PetscMalloc2(sp->len+sp->dim*PETSC_DRAW_SP_CHUNK_SIZE,&tmpx,sp->len+sp->dim*PETSC_DRAW_SP_CHUNK_SIZE,&tmpy));
+    PetscCall(PetscLogObjectMemory((PetscObject)sp,2*sp->dim*PETSC_DRAW_SP_CHUNK_SIZE*sizeof(PetscReal)));
+    PetscCall(PetscArraycpy(tmpx,sp->x,sp->len));
+    PetscCall(PetscArraycpy(tmpy,sp->y,sp->len));
+    PetscCall(PetscFree2(sp->x,sp->y));
     sp->x    = tmpx;
     sp->y    = tmpy;
     sp->len += sp->dim*PETSC_DRAW_SP_CHUNK_SIZE;
@@ -235,11 +235,11 @@ PetscErrorCode  PetscDrawSPAddPoints(PetscDrawSP sp,int n,PetscReal **xx,PetscRe
     PetscReal *tmpx,*tmpy;
     PetscInt  chunk = PETSC_DRAW_SP_CHUNK_SIZE;
     if (n > chunk) chunk = n;
-    CHKERRQ(PetscMalloc2(sp->len+sp->dim*chunk,&tmpx,sp->len+sp->dim*chunk,&tmpy));
-    CHKERRQ(PetscLogObjectMemory((PetscObject)sp,2*sp->dim*PETSC_DRAW_SP_CHUNK_SIZE*sizeof(PetscReal)));
-    CHKERRQ(PetscArraycpy(tmpx,sp->x,sp->len));
-    CHKERRQ(PetscArraycpy(tmpy,sp->y,sp->len));
-    CHKERRQ(PetscFree2(sp->x,sp->y));
+    PetscCall(PetscMalloc2(sp->len+sp->dim*chunk,&tmpx,sp->len+sp->dim*chunk,&tmpy));
+    PetscCall(PetscLogObjectMemory((PetscObject)sp,2*sp->dim*PETSC_DRAW_SP_CHUNK_SIZE*sizeof(PetscReal)));
+    PetscCall(PetscArraycpy(tmpx,sp->x,sp->len));
+    PetscCall(PetscArraycpy(tmpy,sp->y,sp->len));
+    PetscCall(PetscFree2(sp->x,sp->y));
 
     sp->x    = tmpx;
     sp->y    = tmpy;
@@ -291,12 +291,12 @@ PetscErrorCode  PetscDrawSPAddPointColorized(PetscDrawSP sp,PetscReal *x,PetscRe
   sp->colorized = PETSC_TRUE;
   if (sp->loc+sp->dim >= sp->len) { /* allocate more space */
     PetscReal *tmpx,*tmpy,*tmpz;
-    CHKERRQ(PetscMalloc3(sp->len+sp->dim*PETSC_DRAW_SP_CHUNK_SIZE,&tmpx,sp->len+sp->dim*PETSC_DRAW_SP_CHUNK_SIZE,&tmpy,sp->len+sp->dim*PETSC_DRAW_SP_CHUNK_SIZE,&tmpz));
-    CHKERRQ(PetscLogObjectMemory((PetscObject)sp,2*sp->dim*PETSC_DRAW_SP_CHUNK_SIZE*sizeof(PetscReal)));
-    CHKERRQ(PetscArraycpy(tmpx,sp->x,sp->len));
-    CHKERRQ(PetscArraycpy(tmpy,sp->y,sp->len));
-    CHKERRQ(PetscArraycpy(tmpz,sp->z,sp->len));
-    CHKERRQ(PetscFree3(sp->x,sp->y,sp->z));
+    PetscCall(PetscMalloc3(sp->len+sp->dim*PETSC_DRAW_SP_CHUNK_SIZE,&tmpx,sp->len+sp->dim*PETSC_DRAW_SP_CHUNK_SIZE,&tmpy,sp->len+sp->dim*PETSC_DRAW_SP_CHUNK_SIZE,&tmpz));
+    PetscCall(PetscLogObjectMemory((PetscObject)sp,2*sp->dim*PETSC_DRAW_SP_CHUNK_SIZE*sizeof(PetscReal)));
+    PetscCall(PetscArraycpy(tmpx,sp->x,sp->len));
+    PetscCall(PetscArraycpy(tmpy,sp->y,sp->len));
+    PetscCall(PetscArraycpy(tmpz,sp->z,sp->len));
+    PetscCall(PetscFree3(sp->x,sp->y,sp->z));
     sp->x    = tmpx;
     sp->y    = tmpy;
     sp->z    = tmpz;
@@ -344,41 +344,41 @@ PetscErrorCode  PetscDrawSPDraw(PetscDrawSP sp, PetscBool clear)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,1);
-  CHKERRQ(PetscDrawIsNull(sp->win,&isnull));
+  PetscCall(PetscDrawIsNull(sp->win,&isnull));
   if (isnull) PetscFunctionReturn(0);
-  CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)sp),&rank));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)sp),&rank));
 
   if (sp->xmin > sp->xmax || sp->ymin > sp->ymax) PetscFunctionReturn(0);
   if (sp->nopts < 1) PetscFunctionReturn(0);
 
   draw = sp->win;
   if (clear) {
-    CHKERRQ(PetscDrawCheckResizedWindow(draw));
-    CHKERRQ(PetscDrawClear(draw));
+    PetscCall(PetscDrawCheckResizedWindow(draw));
+    PetscCall(PetscDrawClear(draw));
   }
 
   xmin = sp->xmin; xmax = sp->xmax; ymin = sp->ymin; ymax = sp->ymax;
-  CHKERRQ(PetscDrawAxisSetLimits(sp->axis,xmin,xmax,ymin,ymax));
-  CHKERRQ(PetscDrawAxisDraw(sp->axis));
+  PetscCall(PetscDrawAxisSetLimits(sp->axis,xmin,xmax,ymin,ymax));
+  PetscCall(PetscDrawAxisDraw(sp->axis));
 
-  ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
+  ierr = PetscDrawCollectiveBegin(draw);PetscCall(ierr);
   if (rank == 0) {
     int i,j,dim=sp->dim,nopts=sp->nopts;
     for (i=0; i<dim; i++) {
       for (j=0; j<nopts; j++) {
         if (sp->colorized) {
           color = PetscDrawRealToColor(sp->z[j*dim],sp->zmin,sp->zmax);
-          CHKERRQ(PetscDrawPoint(draw,sp->x[j*dim+i],sp->y[j*dim+i],color));
+          PetscCall(PetscDrawPoint(draw,sp->x[j*dim+i],sp->y[j*dim+i],color));
         } else {
-          CHKERRQ(PetscDrawPoint(draw,sp->x[j*dim+i],sp->y[j*dim+i],PETSC_DRAW_RED));
+          PetscCall(PetscDrawPoint(draw,sp->x[j*dim+i],sp->y[j*dim+i],PETSC_DRAW_RED));
         }
       }
     }
   }
-  ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
+  ierr = PetscDrawCollectiveEnd(draw);PetscCall(ierr);
 
-  CHKERRQ(PetscDrawFlush(draw));
-  CHKERRQ(PetscDrawPause(draw));
+  PetscCall(PetscDrawFlush(draw));
+  PetscCall(PetscDrawPause(draw));
   PetscFunctionReturn(0);
 }
 
@@ -398,7 +398,7 @@ PetscErrorCode  PetscDrawSPSave(PetscDrawSP sp)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,1);
-  CHKERRQ(PetscDrawSave(sp->win));
+  PetscCall(PetscDrawSave(sp->win));
   PetscFunctionReturn(0);
 }
 

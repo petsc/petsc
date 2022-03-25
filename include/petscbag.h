@@ -19,10 +19,10 @@ $
 $      PetscBag     bag;
 $      MyParameters *params;
 $
-$      CHKERRQ(PetscBagCreate(PETSC_COMM_WORLD,sizeof(MyParameters),&bag));
-$      CHKERRQ(PetscBagGetData(bag,(void **)&params));
-$      CHKERRQ(PetscBagSetName(bag,"MyParameters"));
-$      CHKERRQ(PetscBagRegisterInt(bag,&params.height,22,"height","Height of the water tower"));
+$      PetscCall(PetscBagCreate(PETSC_COMM_WORLD,sizeof(MyParameters),&bag));
+$      PetscCall(PetscBagGetData(bag,(void **)&params));
+$      PetscCall(PetscBagSetName(bag,"MyParameters"));
+$      PetscCall(PetscBagRegisterInt(bag,&params.height,22,"height","Height of the water tower"));
 $
 
 .seealso:  PetscBagSetName(), PetscBagGetName(), PetscBagView(), PetscBagLoad(), PetscBagGetData()

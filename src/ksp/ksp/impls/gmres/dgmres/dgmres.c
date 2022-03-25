@@ -15,50 +15,50 @@ static PetscErrorCode    KSPDGMRESBuildSoln(PetscScalar*,Vec,Vec,KSP,PetscInt);
 PetscErrorCode  KSPDGMRESSetEigen(KSP ksp,PetscInt nb_eig)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscTryMethod((ksp),"KSPDGMRESSetEigen_C",(KSP,PetscInt),(ksp,nb_eig)));
+  PetscCall(PetscTryMethod((ksp),"KSPDGMRESSetEigen_C",(KSP,PetscInt),(ksp,nb_eig)));
   PetscFunctionReturn(0);
 }
 PetscErrorCode  KSPDGMRESSetMaxEigen(KSP ksp,PetscInt max_neig)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscTryMethod((ksp),"KSPDGMRESSetMaxEigen_C",(KSP,PetscInt),(ksp,max_neig)));
+  PetscCall(PetscTryMethod((ksp),"KSPDGMRESSetMaxEigen_C",(KSP,PetscInt),(ksp,max_neig)));
   PetscFunctionReturn(0);
 }
 PetscErrorCode  KSPDGMRESForce(KSP ksp,PetscBool force)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscTryMethod((ksp),"KSPDGMRESForce_C",(KSP,PetscBool),(ksp,force)));
+  PetscCall(PetscTryMethod((ksp),"KSPDGMRESForce_C",(KSP,PetscBool),(ksp,force)));
   PetscFunctionReturn(0);
 }
 PetscErrorCode  KSPDGMRESSetRatio(KSP ksp,PetscReal ratio)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscTryMethod((ksp),"KSPDGMRESSetRatio_C",(KSP,PetscReal),(ksp,ratio)));
+  PetscCall(PetscTryMethod((ksp),"KSPDGMRESSetRatio_C",(KSP,PetscReal),(ksp,ratio)));
   PetscFunctionReturn(0);
 }
 PetscErrorCode  KSPDGMRESComputeSchurForm(KSP ksp,PetscInt *neig)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscUseMethod((ksp),"KSPDGMRESComputeSchurForm_C",(KSP, PetscInt*),(ksp, neig)));
+  PetscCall(PetscUseMethod((ksp),"KSPDGMRESComputeSchurForm_C",(KSP, PetscInt*),(ksp, neig)));
   PetscFunctionReturn(0);
 }
 PetscErrorCode  KSPDGMRESComputeDeflationData(KSP ksp,PetscInt *curneigh)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscUseMethod((ksp),"KSPDGMRESComputeDeflationData_C",(KSP,PetscInt*),(ksp,curneigh)));
+  PetscCall(PetscUseMethod((ksp),"KSPDGMRESComputeDeflationData_C",(KSP,PetscInt*),(ksp,curneigh)));
   PetscFunctionReturn(0);
 }
 PetscErrorCode  KSPDGMRESApplyDeflation(KSP ksp, Vec x, Vec y)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscUseMethod((ksp),"KSPDGMRESApplyDeflation_C",(KSP, Vec, Vec),(ksp, x, y)));
+  PetscCall(PetscUseMethod((ksp),"KSPDGMRESApplyDeflation_C",(KSP, Vec, Vec),(ksp, x, y)));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode  KSPDGMRESImproveEig(KSP ksp, PetscInt neig)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscUseMethod((ksp), "KSPDGMRESImproveEig_C",(KSP, PetscInt),(ksp, neig)));
+  PetscCall(PetscUseMethod((ksp), "KSPDGMRESImproveEig_C",(KSP, PetscInt),(ksp, neig)));
   PetscFunctionReturn(0);
 }
 
@@ -69,11 +69,11 @@ PetscErrorCode  KSPSetUp_DGMRES(KSP ksp)
   PetscInt       max_k   = dgmres->max_k+1;
 
   PetscFunctionBegin;
-  CHKERRQ(KSPSetUp_GMRES(ksp));
+  PetscCall(KSPSetUp_GMRES(ksp));
   if (!dgmres->neig) PetscFunctionReturn(0);
 
   /* Allocate workspace for the Schur vectors*/
-  CHKERRQ(PetscMalloc1(neig*max_k, &SR));
+  PetscCall(PetscMalloc1(neig*max_k, &SR));
   dgmres->wr    = NULL;
   dgmres->wi    = NULL;
   dgmres->perm  = NULL;
@@ -126,57 +126,57 @@ PetscErrorCode KSPDGMRESCycle(PetscInt *itcount,KSP ksp)
   PetscInt       test = 0;
 
   PetscFunctionBegin;
-  CHKERRQ(VecNormalize(VEC_VV(0),&res_norm));
+  PetscCall(VecNormalize(VEC_VV(0),&res_norm));
   KSPCheckNorm(ksp,res_norm);
   res     = res_norm;
   *GRS(0) = res_norm;
 
   /* check for the convergence */
-  CHKERRQ(PetscObjectSAWsTakeAccess((PetscObject)ksp));
+  PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
   if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = res;
   else ksp->rnorm = 0.0;
-  CHKERRQ(PetscObjectSAWsGrantAccess((PetscObject)ksp));
+  PetscCall(PetscObjectSAWsGrantAccess((PetscObject)ksp));
   dgmres->it = (it - 1);
-  CHKERRQ(KSPLogResidualHistory(ksp,ksp->rnorm));
-  CHKERRQ(KSPMonitor(ksp,ksp->its,ksp->rnorm));
+  PetscCall(KSPLogResidualHistory(ksp,ksp->rnorm));
+  PetscCall(KSPMonitor(ksp,ksp->its,ksp->rnorm));
   if (!res) {
     if (itcount) *itcount = 0;
     ksp->reason = KSP_CONVERGED_ATOL;
-    CHKERRQ(PetscInfo(ksp,"Converged due to zero residual norm on entry\n"));
+    PetscCall(PetscInfo(ksp,"Converged due to zero residual norm on entry\n"));
     PetscFunctionReturn(0);
   }
   /* record the residual norm to test if deflation is needed */
   res_old = res;
 
-  CHKERRQ((*ksp->converged)(ksp,ksp->its,ksp->rnorm,&ksp->reason,ksp->cnvP));
+  PetscCall((*ksp->converged)(ksp,ksp->its,ksp->rnorm,&ksp->reason,ksp->cnvP));
   while (!ksp->reason && it < max_k && ksp->its < ksp->max_it) {
     if (it) {
-      CHKERRQ(KSPLogResidualHistory(ksp,ksp->rnorm));
-      CHKERRQ(KSPMonitor(ksp,ksp->its,ksp->rnorm));
+      PetscCall(KSPLogResidualHistory(ksp,ksp->rnorm));
+      PetscCall(KSPMonitor(ksp,ksp->its,ksp->rnorm));
     }
     dgmres->it = (it - 1);
     if (dgmres->vv_allocated <= it + VEC_OFFSET + 1) {
-      CHKERRQ(KSPDGMRESGetNewVectors(ksp,it+1));
+      PetscCall(KSPDGMRESGetNewVectors(ksp,it+1));
     }
     if (dgmres->r > 0) {
       if (ksp->pc_side == PC_LEFT) {
         /* Apply the first preconditioner */
-        CHKERRQ(KSP_PCApplyBAorAB(ksp,VEC_VV(it), VEC_TEMP,VEC_TEMP_MATOP));
+        PetscCall(KSP_PCApplyBAorAB(ksp,VEC_VV(it), VEC_TEMP,VEC_TEMP_MATOP));
         /* Then apply Deflation as a preconditioner */
-        CHKERRQ(KSPDGMRESApplyDeflation(ksp, VEC_TEMP, VEC_VV(1+it)));
+        PetscCall(KSPDGMRESApplyDeflation(ksp, VEC_TEMP, VEC_VV(1+it)));
       } else if (ksp->pc_side == PC_RIGHT) {
-        CHKERRQ(KSPDGMRESApplyDeflation(ksp, VEC_VV(it), VEC_TEMP));
-        CHKERRQ(KSP_PCApplyBAorAB(ksp, VEC_TEMP, VEC_VV(1+it), VEC_TEMP_MATOP));
+        PetscCall(KSPDGMRESApplyDeflation(ksp, VEC_VV(it), VEC_TEMP));
+        PetscCall(KSP_PCApplyBAorAB(ksp, VEC_TEMP, VEC_VV(1+it), VEC_TEMP_MATOP));
       }
     } else {
-      CHKERRQ(KSP_PCApplyBAorAB(ksp,VEC_VV(it),VEC_VV(1+it),VEC_TEMP_MATOP));
+      PetscCall(KSP_PCApplyBAorAB(ksp,VEC_VV(it),VEC_VV(1+it),VEC_TEMP_MATOP));
     }
     dgmres->matvecs += 1;
     /* update hessenberg matrix and do Gram-Schmidt */
-    CHKERRQ((*dgmres->orthog)(ksp,it));
+    PetscCall((*dgmres->orthog)(ksp,it));
 
     /* vv(i+1) . vv(i+1) */
-    CHKERRQ(VecNormalize(VEC_VV(it+1),&tt));
+    PetscCall(VecNormalize(VEC_VV(it+1),&tt));
     /* save the magnitude */
     *HH(it+1,it)  = tt;
     *HES(it+1,it) = tt;
@@ -185,10 +185,10 @@ PetscErrorCode KSPDGMRESCycle(PetscInt *itcount,KSP ksp)
     hapbnd = PetscAbsScalar(tt / *GRS(it));
     if (hapbnd > dgmres->haptol) hapbnd = dgmres->haptol;
     if (tt < hapbnd) {
-      CHKERRQ(PetscInfo(ksp,"Detected happy breakdown, current hapbnd = %g tt = %g\n",(double)hapbnd,(double)tt));
+      PetscCall(PetscInfo(ksp,"Detected happy breakdown, current hapbnd = %g tt = %g\n",(double)hapbnd,(double)tt));
       hapend = PETSC_TRUE;
     }
-    CHKERRQ(KSPDGMRESUpdateHessenberg(ksp,it,hapend,&res));
+    PetscCall(KSPDGMRESUpdateHessenberg(ksp,it,hapend,&res));
 
     it++;
     dgmres->it = (it-1);     /* For converged */
@@ -197,7 +197,7 @@ PetscErrorCode KSPDGMRESCycle(PetscInt *itcount,KSP ksp)
     else ksp->rnorm = 0.0;
     if (ksp->reason) break;
 
-    CHKERRQ((*ksp->converged)(ksp,ksp->its,ksp->rnorm,&ksp->reason,ksp->cnvP));
+    PetscCall((*ksp->converged)(ksp,ksp->its,ksp->rnorm,&ksp->reason,ksp->cnvP));
 
     /* Catch error in happy breakdown and signal convergence and break from loop */
     if (hapend) {
@@ -213,8 +213,8 @@ PetscErrorCode KSPDGMRESCycle(PetscInt *itcount,KSP ksp)
 
   /* Monitor if we know that we will not return for a restart */
   if (it && (ksp->reason || ksp->its >= ksp->max_it)) {
-    CHKERRQ(KSPLogResidualHistory(ksp,ksp->rnorm));
-    CHKERRQ(KSPMonitor(ksp,ksp->its,ksp->rnorm));
+    PetscCall(KSPLogResidualHistory(ksp,ksp->rnorm));
+    PetscCall(KSPMonitor(ksp,ksp->its,ksp->rnorm));
   }
   if (itcount) *itcount = it;
 
@@ -224,14 +224,14 @@ PetscErrorCode KSPDGMRESCycle(PetscInt *itcount,KSP ksp)
    preconditioning from the solution
    */
   /* Form the solution (or the solution so far) */
-  CHKERRQ(KSPDGMRESBuildSoln(GRS(0),ksp->vec_sol,ksp->vec_sol,ksp,it-1));
+  PetscCall(KSPDGMRESBuildSoln(GRS(0),ksp->vec_sol,ksp->vec_sol,ksp,it-1));
 
   /* Compute data for the deflation to be used during the next restart */
   if (!ksp->reason && ksp->its < ksp->max_it) {
     test = max_k *PetscLogReal(ksp->rtol/res) /PetscLogReal(res/res_old);
     /* Compute data for the deflation if the residual rtol will not be reached in the remaining number of steps allowed  */
     if ((test > dgmres->smv*(ksp->max_it-ksp->its)) || dgmres->force) {
-      CHKERRQ(KSPDGMRESComputeDeflationData(ksp,NULL));
+      PetscCall(KSPDGMRESComputeDeflationData(ksp,NULL));
     }
   }
   PetscFunctionReturn(0);
@@ -246,23 +246,23 @@ PetscErrorCode KSPSolve_DGMRES(KSP ksp)
   PetscFunctionBegin;
   PetscCheckFalse(ksp->calc_sings && !dgmres->Rsvd,PetscObjectComm((PetscObject)ksp), PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
 
-  CHKERRQ(PetscObjectSAWsTakeAccess((PetscObject)ksp));
+  PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
   ksp->its        = 0;
   dgmres->matvecs = 0;
-  CHKERRQ(PetscObjectSAWsGrantAccess((PetscObject)ksp));
+  PetscCall(PetscObjectSAWsGrantAccess((PetscObject)ksp));
 
   itcount     = 0;
   while (!ksp->reason) {
-    CHKERRQ(KSPInitialResidual(ksp,ksp->vec_sol,VEC_TEMP,VEC_TEMP_MATOP,VEC_VV(0),ksp->vec_rhs));
+    PetscCall(KSPInitialResidual(ksp,ksp->vec_sol,VEC_TEMP,VEC_TEMP_MATOP,VEC_VV(0),ksp->vec_rhs));
     if (ksp->pc_side == PC_LEFT) {
       dgmres->matvecs += 1;
       if (dgmres->r > 0) {
-        CHKERRQ(KSPDGMRESApplyDeflation(ksp, VEC_VV(0), VEC_TEMP));
-        CHKERRQ(VecCopy(VEC_TEMP, VEC_VV(0)));
+        PetscCall(KSPDGMRESApplyDeflation(ksp, VEC_VV(0), VEC_TEMP));
+        PetscCall(VecCopy(VEC_TEMP, VEC_VV(0)));
       }
     }
 
-    CHKERRQ(KSPDGMRESCycle(&its,ksp));
+    PetscCall(KSPDGMRESCycle(&its,ksp));
     itcount += its;
     if (itcount >= ksp->max_it) {
       if (!ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
@@ -273,7 +273,7 @@ PetscErrorCode KSPSolve_DGMRES(KSP ksp)
   ksp->guess_zero = guess_zero; /* restore if user provided nonzero initial guess */
 
   for (i = 0; i < dgmres->r; i++) {
-    CHKERRQ(VecViewFromOptions(UU[i],(PetscObject)ksp,"-ksp_dgmres_view_deflation_vecs"));
+    PetscCall(VecViewFromOptions(UU[i],(PetscObject)ksp,"-ksp_dgmres_view_deflation_vecs"));
   }
   PetscFunctionReturn(0);
 }
@@ -286,33 +286,33 @@ PetscErrorCode KSPDestroy_DGMRES(KSP ksp)
 
   PetscFunctionBegin;
   if (dgmres->r) {
-    CHKERRQ(VecDestroyVecs(max_neig, &UU));
-    CHKERRQ(VecDestroyVecs(max_neig, &MU));
+    PetscCall(VecDestroyVecs(max_neig, &UU));
+    PetscCall(VecDestroyVecs(max_neig, &MU));
     if (XX) {
-      CHKERRQ(VecDestroyVecs(neig1, &XX));
-      CHKERRQ(VecDestroyVecs(neig1, &MX));
+      PetscCall(VecDestroyVecs(neig1, &XX));
+      PetscCall(VecDestroyVecs(neig1, &MX));
     }
-    CHKERRQ(PetscFree(TT));
-    CHKERRQ(PetscFree(TTF));
-    CHKERRQ(PetscFree(INVP));
-    CHKERRQ(PetscFree(XMX));
-    CHKERRQ(PetscFree(UMX));
-    CHKERRQ(PetscFree(XMU));
-    CHKERRQ(PetscFree(X1));
-    CHKERRQ(PetscFree(X2));
-    CHKERRQ(PetscFree(dgmres->work));
-    CHKERRQ(PetscFree(dgmres->iwork));
-    CHKERRQ(PetscFree(dgmres->wr));
-    CHKERRQ(PetscFree(dgmres->wi));
-    CHKERRQ(PetscFree(dgmres->modul));
-    CHKERRQ(PetscFree(dgmres->Q));
-    CHKERRQ(PetscFree(ORTH));
-    CHKERRQ(PetscFree(AUAU));
-    CHKERRQ(PetscFree(AUU));
-    CHKERRQ(PetscFree(SR2));
+    PetscCall(PetscFree(TT));
+    PetscCall(PetscFree(TTF));
+    PetscCall(PetscFree(INVP));
+    PetscCall(PetscFree(XMX));
+    PetscCall(PetscFree(UMX));
+    PetscCall(PetscFree(XMU));
+    PetscCall(PetscFree(X1));
+    PetscCall(PetscFree(X2));
+    PetscCall(PetscFree(dgmres->work));
+    PetscCall(PetscFree(dgmres->iwork));
+    PetscCall(PetscFree(dgmres->wr));
+    PetscCall(PetscFree(dgmres->wi));
+    PetscCall(PetscFree(dgmres->modul));
+    PetscCall(PetscFree(dgmres->Q));
+    PetscCall(PetscFree(ORTH));
+    PetscCall(PetscFree(AUAU));
+    PetscCall(PetscFree(AUU));
+    PetscCall(PetscFree(SR2));
   }
-  CHKERRQ(PetscFree(SR));
-  CHKERRQ(KSPDestroy_GMRES(ksp));
+  PetscCall(PetscFree(SR));
+  PetscCall(KSPDestroy_GMRES(ksp));
   PetscFunctionReturn(0);
 }
 
@@ -339,7 +339,7 @@ static PetscErrorCode KSPDGMRESBuildSoln(PetscScalar *nrs,Vec vs,Vec vdest,KSP k
   PetscFunctionBegin;
   /* If it is < 0, no gmres steps have been performed */
   if (it < 0) {
-    CHKERRQ(VecCopy(vs,vdest));     /* VecCopy() is smart, exists immediately if vguess == vdest */
+    PetscCall(VecCopy(vs,vdest));     /* VecCopy() is smart, exists immediately if vguess == vdest */
     PetscFunctionReturn(0);
   }
   PetscCheckFalse(*HH(it,it) == 0.0,PetscObjectComm((PetscObject)ksp), PETSC_ERR_CONV_FAILED,"Likely your matrix is the zero operator. HH(it,it) is identically zero; it = %D GRS(it) = %g",it,(double)PetscAbsScalar(*GRS(it)));
@@ -355,21 +355,21 @@ static PetscErrorCode KSPDGMRESBuildSoln(PetscScalar *nrs,Vec vs,Vec vdest,KSP k
   }
 
   /* Accumulate the correction to the solution of the preconditioned problem in TEMP */
-  CHKERRQ(VecSet(VEC_TEMP,0.0));
-  CHKERRQ(VecMAXPY(VEC_TEMP,it+1,nrs,&VEC_VV(0)));
+  PetscCall(VecSet(VEC_TEMP,0.0));
+  PetscCall(VecMAXPY(VEC_TEMP,it+1,nrs,&VEC_VV(0)));
 
   /* Apply deflation */
   if (ksp->pc_side==PC_RIGHT && dgmres->r > 0) {
-    CHKERRQ(KSPDGMRESApplyDeflation(ksp, VEC_TEMP, VEC_TEMP_MATOP));
-    CHKERRQ(VecCopy(VEC_TEMP_MATOP, VEC_TEMP));
+    PetscCall(KSPDGMRESApplyDeflation(ksp, VEC_TEMP, VEC_TEMP_MATOP));
+    PetscCall(VecCopy(VEC_TEMP_MATOP, VEC_TEMP));
   }
-  CHKERRQ(KSPUnwindPreconditioner(ksp,VEC_TEMP,VEC_TEMP_MATOP));
+  PetscCall(KSPUnwindPreconditioner(ksp,VEC_TEMP,VEC_TEMP_MATOP));
 
   /* add solution to previous solution */
   if (vdest != vs) {
-    CHKERRQ(VecCopy(vs,vdest));
+    PetscCall(VecCopy(vs,vdest));
   }
-  CHKERRQ(VecAXPY(vdest,1.0,VEC_TEMP));
+  PetscCall(VecAXPY(vdest,1.0,VEC_TEMP));
   PetscFunctionReturn(0);
 }
 
@@ -446,8 +446,8 @@ static PetscErrorCode KSPDGMRESGetNewVectors(KSP ksp,PetscInt it)
 
   dgmres->vv_allocated += nalloc;
 
-  CHKERRQ(KSPCreateVecs(ksp,nalloc,&dgmres->user_work[nwork],0,NULL));
-  CHKERRQ(PetscLogObjectParents(ksp,nalloc,dgmres->user_work[nwork]));
+  PetscCall(KSPCreateVecs(ksp,nalloc,&dgmres->user_work[nwork],0,NULL));
+  PetscCall(PetscLogObjectParents(ksp,nalloc,dgmres->user_work[nwork]));
 
   dgmres->mwork_alloc[nwork] = nalloc;
   for (k=0; k<nalloc; k++) {
@@ -464,17 +464,17 @@ PetscErrorCode KSPBuildSolution_DGMRES(KSP ksp,Vec ptr,Vec *result)
   PetscFunctionBegin;
   if (!ptr) {
     if (!dgmres->sol_temp) {
-      CHKERRQ(VecDuplicate(ksp->vec_sol,&dgmres->sol_temp));
-      CHKERRQ(PetscLogObjectParent((PetscObject)ksp,(PetscObject)dgmres->sol_temp));
+      PetscCall(VecDuplicate(ksp->vec_sol,&dgmres->sol_temp));
+      PetscCall(PetscLogObjectParent((PetscObject)ksp,(PetscObject)dgmres->sol_temp));
     }
     ptr = dgmres->sol_temp;
   }
   if (!dgmres->nrs) {
     /* allocate the work area */
-    CHKERRQ(PetscMalloc1(dgmres->max_k,&dgmres->nrs));
-    CHKERRQ(PetscLogObjectMemory((PetscObject)ksp,dgmres->max_k*sizeof(PetscScalar)));
+    PetscCall(PetscMalloc1(dgmres->max_k,&dgmres->nrs));
+    PetscCall(PetscLogObjectMemory((PetscObject)ksp,dgmres->max_k*sizeof(PetscScalar)));
   }
-  CHKERRQ(KSPDGMRESBuildSoln(dgmres->nrs,ksp->vec_sol,ptr,ksp,dgmres->it));
+  PetscCall(KSPDGMRESBuildSoln(dgmres->nrs,ksp->vec_sol,ptr,ksp,dgmres->it));
   if (result) *result = ptr;
   PetscFunctionReturn(0);
 }
@@ -485,21 +485,21 @@ PetscErrorCode KSPView_DGMRES(KSP ksp,PetscViewer viewer)
   PetscBool      iascii,isharmonic;
 
   PetscFunctionBegin;
-  CHKERRQ(KSPView_GMRES(ksp,viewer));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject) viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(KSPView_GMRES(ksp,viewer));
+  PetscCall(PetscObjectTypeCompare((PetscObject) viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
     if (dgmres->force) PetscViewerASCIIPrintf(viewer, "    Adaptive strategy is used: FALSE\n");
     else PetscViewerASCIIPrintf(viewer, "    Adaptive strategy is used: TRUE\n");
-    CHKERRQ(PetscOptionsHasName(((PetscObject)ksp)->options,((PetscObject)ksp)->prefix, "-ksp_dgmres_harmonic_ritz", &isharmonic));
+    PetscCall(PetscOptionsHasName(((PetscObject)ksp)->options,((PetscObject)ksp)->prefix, "-ksp_dgmres_harmonic_ritz", &isharmonic));
     if (isharmonic) {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer, "   Frequency of extracted eigenvalues = %D using Harmonic Ritz values \n", dgmres->neig));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "   Frequency of extracted eigenvalues = %D using Harmonic Ritz values \n", dgmres->neig));
     } else {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer, "   Frequency of extracted eigenvalues = %D using Ritz values \n", dgmres->neig));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "   Frequency of extracted eigenvalues = %D using Ritz values \n", dgmres->neig));
     }
-    CHKERRQ(PetscViewerASCIIPrintf(viewer, "   Total number of extracted eigenvalues = %D\n", dgmres->r));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer, "   Maximum number of eigenvalues set to be extracted = %D\n", dgmres->max_neig));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer, "   relaxation parameter for the adaptive strategy(smv)  = %g\n", dgmres->smv));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer, "   Number of matvecs : %D\n", dgmres->matvecs));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "   Total number of extracted eigenvalues = %D\n", dgmres->r));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "   Maximum number of eigenvalues set to be extracted = %D\n", dgmres->max_neig));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "   relaxation parameter for the adaptive strategy(smv)  = %g\n", dgmres->smv));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "   Number of matvecs : %D\n", dgmres->matvecs));
   }
   PetscFunctionReturn(0);
 }
@@ -551,20 +551,20 @@ PetscErrorCode KSPSetFromOptions_DGMRES(PetscOptionItems *PetscOptionsObject,KSP
   PetscBool      flg;
 
   PetscFunctionBegin;
-  CHKERRQ(KSPSetFromOptions_GMRES(PetscOptionsObject,ksp));
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"KSP DGMRES Options"));
-  CHKERRQ(PetscOptionsInt("-ksp_dgmres_eigen","Number of smallest eigenvalues to extract at each restart","KSPDGMRESSetEigen",dgmres->neig, &neig, &flg));
+  PetscCall(KSPSetFromOptions_GMRES(PetscOptionsObject,ksp));
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"KSP DGMRES Options"));
+  PetscCall(PetscOptionsInt("-ksp_dgmres_eigen","Number of smallest eigenvalues to extract at each restart","KSPDGMRESSetEigen",dgmres->neig, &neig, &flg));
   if (flg) {
-    CHKERRQ(KSPDGMRESSetEigen(ksp, neig));
+    PetscCall(KSPDGMRESSetEigen(ksp, neig));
   }
-  CHKERRQ(PetscOptionsInt("-ksp_dgmres_max_eigen","Maximum Number of smallest eigenvalues to extract ","KSPDGMRESSetMaxEigen",dgmres->max_neig, &max_neig, &flg));
+  PetscCall(PetscOptionsInt("-ksp_dgmres_max_eigen","Maximum Number of smallest eigenvalues to extract ","KSPDGMRESSetMaxEigen",dgmres->max_neig, &max_neig, &flg));
   if (flg) {
-    CHKERRQ(KSPDGMRESSetMaxEigen(ksp, max_neig));
+    PetscCall(KSPDGMRESSetMaxEigen(ksp, max_neig));
   }
-  CHKERRQ(PetscOptionsReal("-ksp_dgmres_ratio","Relaxation parameter for the smaller number of matrix-vectors product allowed","KSPDGMRESSetRatio",dgmres->smv,&dgmres->smv,NULL));
-  CHKERRQ(PetscOptionsBool("-ksp_dgmres_improve","Improve the computation of eigenvalues by solving a new generalized eigenvalue problem (experimental - not stable at this time)",NULL,dgmres->improve,&dgmres->improve,NULL));
-  CHKERRQ(PetscOptionsBool("-ksp_dgmres_force","Sets DGMRES always at restart active, i.e do not use the adaptive strategy","KSPDGMRESForce",dgmres->force,&dgmres->force,NULL));
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(PetscOptionsReal("-ksp_dgmres_ratio","Relaxation parameter for the smaller number of matrix-vectors product allowed","KSPDGMRESSetRatio",dgmres->smv,&dgmres->smv,NULL));
+  PetscCall(PetscOptionsBool("-ksp_dgmres_improve","Improve the computation of eigenvalues by solving a new generalized eigenvalue problem (experimental - not stable at this time)",NULL,dgmres->improve,&dgmres->improve,NULL));
+  PetscCall(PetscOptionsBool("-ksp_dgmres_force","Sets DGMRES always at restart active, i.e do not use the adaptive strategy","KSPDGMRESForce",dgmres->force,&dgmres->force,NULL));
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -582,110 +582,110 @@ PetscErrorCode  KSPDGMRESComputeDeflationData_DGMRES(KSP ksp, PetscInt *ExtrNeig
   PetscReal      alpha;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscLogEventBegin(KSP_DGMRESComputeDeflationData, ksp, 0,0,0));
+  PetscCall(PetscLogEventBegin(KSP_DGMRESComputeDeflationData, ksp, 0,0,0));
   if (dgmres->neig == 0 || (max_neig < (r+neig1) && !dgmres->improve)) {
-    CHKERRQ(PetscLogEventEnd(KSP_DGMRESComputeDeflationData, ksp, 0,0,0));
+    PetscCall(PetscLogEventEnd(KSP_DGMRESComputeDeflationData, ksp, 0,0,0));
     PetscFunctionReturn(0);
   }
 
-  CHKERRQ(KSPDGMRESComputeSchurForm(ksp, &neig));
+  PetscCall(KSPDGMRESComputeSchurForm(ksp, &neig));
   /* Form the extended Schur vectors X=VV*Sr */
   if (!XX) {
-    CHKERRQ(VecDuplicateVecs(VEC_VV(0), neig1, &XX));
+    PetscCall(VecDuplicateVecs(VEC_VV(0), neig1, &XX));
   }
   for (j = 0; j<neig; j++) {
-    CHKERRQ(VecZeroEntries(XX[j]));
-    CHKERRQ(VecMAXPY(XX[j], n, &SR[j*N], &VEC_VV(0)));
+    PetscCall(VecZeroEntries(XX[j]));
+    PetscCall(VecMAXPY(XX[j], n, &SR[j*N], &VEC_VV(0)));
   }
 
   /* Orthogonalize X against U */
   if (!ORTH) {
-    CHKERRQ(PetscMalloc1(max_neig, &ORTH));
+    PetscCall(PetscMalloc1(max_neig, &ORTH));
   }
   if (r > 0) {
     /* modified Gram-Schmidt */
     for (j = 0; j<neig; j++) {
       for (i=0; i<r; i++) {
         /* First, compute U'*X[j] */
-        CHKERRQ(VecDot(XX[j], UU[i], &alpha));
+        PetscCall(VecDot(XX[j], UU[i], &alpha));
         /* Then, compute X(j)=X(j)-U*U'*X(j) */
-        CHKERRQ(VecAXPY(XX[j], -alpha, UU[i]));
+        PetscCall(VecAXPY(XX[j], -alpha, UU[i]));
       }
     }
   }
   /* Compute MX = M^{-1}*A*X */
   if (!MX) {
-    CHKERRQ(VecDuplicateVecs(VEC_VV(0), neig1, &MX));
+    PetscCall(VecDuplicateVecs(VEC_VV(0), neig1, &MX));
   }
   for (j = 0; j<neig; j++) {
-    CHKERRQ(KSP_PCApplyBAorAB(ksp, XX[j], MX[j], VEC_TEMP_MATOP));
+    PetscCall(KSP_PCApplyBAorAB(ksp, XX[j], MX[j], VEC_TEMP_MATOP));
   }
   dgmres->matvecs += neig;
 
   if ((r+neig1) > max_neig && dgmres->improve) {    /* Improve the approximate eigenvectors in X by solving a new generalized eigenvalue -- Quite expensive to do this actually */
-    CHKERRQ(KSPDGMRESImproveEig(ksp, neig));
-    CHKERRQ(PetscLogEventEnd(KSP_DGMRESComputeDeflationData, ksp, 0,0,0));
+    PetscCall(KSPDGMRESImproveEig(ksp, neig));
+    PetscCall(PetscLogEventEnd(KSP_DGMRESComputeDeflationData, ksp, 0,0,0));
     PetscFunctionReturn(0);   /* We return here since data for M have been improved in  KSPDGMRESImproveEig()*/
   }
 
   /* Compute XMX = X'*M^{-1}*A*X -- size (neig, neig) */
   if (!XMX) {
-    CHKERRQ(PetscMalloc1(neig1*neig1, &XMX));
+    PetscCall(PetscMalloc1(neig1*neig1, &XMX));
   }
   for (j = 0; j < neig; j++) {
-    CHKERRQ(VecMDot(MX[j], neig, XX, &(XMX[j*neig1])));
+    PetscCall(VecMDot(MX[j], neig, XX, &(XMX[j*neig1])));
   }
 
   if (r > 0) {
     /* Compute UMX = U'*M^{-1}*A*X -- size (r, neig) */
     if (!UMX) {
-      CHKERRQ(PetscMalloc1(max_neig*neig1, &UMX));
+      PetscCall(PetscMalloc1(max_neig*neig1, &UMX));
     }
     for (j = 0; j < neig; j++) {
-      CHKERRQ(VecMDot(MX[j], r, UU, &(UMX[j*max_neig])));
+      PetscCall(VecMDot(MX[j], r, UU, &(UMX[j*max_neig])));
     }
     /* Compute XMU = X'*M^{-1}*A*U -- size(neig, r) */
     if (!XMU) {
-      CHKERRQ(PetscMalloc1(max_neig*neig1, &XMU));
+      PetscCall(PetscMalloc1(max_neig*neig1, &XMU));
     }
     for (j = 0; j<r; j++) {
-      CHKERRQ(VecMDot(MU[j], neig, XX, &(XMU[j*neig1])));
+      PetscCall(VecMDot(MU[j], neig, XX, &(XMU[j*neig1])));
     }
   }
 
   /* Form the new matrix T = [T UMX; XMU XMX]; */
   if (!TT) {
-    CHKERRQ(PetscMalloc1(max_neig*max_neig, &TT));
+    PetscCall(PetscMalloc1(max_neig*max_neig, &TT));
   }
   if (r > 0) {
     /* Add XMU to T */
     for (j = 0; j < r; j++) {
-      CHKERRQ(PetscArraycpy(&(TT[max_neig*j+r]), &(XMU[neig1*j]), neig));
+      PetscCall(PetscArraycpy(&(TT[max_neig*j+r]), &(XMU[neig1*j]), neig));
     }
     /* Add [UMX; XMX] to T */
     for (j = 0; j < neig; j++) {
       k = r+j;
-      CHKERRQ(PetscArraycpy(&(TT[max_neig*k]), &(UMX[max_neig*j]), r));
-      CHKERRQ(PetscArraycpy(&(TT[max_neig*k + r]), &(XMX[neig1*j]), neig));
+      PetscCall(PetscArraycpy(&(TT[max_neig*k]), &(UMX[max_neig*j]), r));
+      PetscCall(PetscArraycpy(&(TT[max_neig*k + r]), &(XMX[neig1*j]), neig));
     }
   } else { /* Add XMX to T */
     for (j = 0; j < neig; j++) {
-      CHKERRQ(PetscArraycpy(&(TT[max_neig*j]), &(XMX[neig1*j]), neig));
+      PetscCall(PetscArraycpy(&(TT[max_neig*j]), &(XMX[neig1*j]), neig));
     }
   }
 
   dgmres->r += neig;
   r          = dgmres->r;
-  CHKERRQ(PetscBLASIntCast(r,&nr));
+  PetscCall(PetscBLASIntCast(r,&nr));
   /*LU Factorize T with Lapack xgetrf routine */
 
-  CHKERRQ(PetscBLASIntCast(max_neig,&bmax));
+  PetscCall(PetscBLASIntCast(max_neig,&bmax));
   if (!TTF) {
-    CHKERRQ(PetscMalloc1(bmax*bmax, &TTF));
+    PetscCall(PetscMalloc1(bmax*bmax, &TTF));
   }
-  CHKERRQ(PetscArraycpy(TTF, TT, bmax*r));
+  PetscCall(PetscArraycpy(TTF, TT, bmax*r));
   if (!INVP) {
-    CHKERRQ(PetscMalloc1(bmax, &INVP));
+    PetscCall(PetscMalloc1(bmax, &INVP));
   }
   {
     PetscBLASInt info;
@@ -695,14 +695,14 @@ PetscErrorCode  KSPDGMRESComputeDeflationData_DGMRES(KSP ksp, PetscInt *ExtrNeig
 
   /* Save X in U and MX in MU for the next cycles and increase the size of the invariant subspace */
   if (!UU) {
-    CHKERRQ(VecDuplicateVecs(VEC_VV(0), max_neig, &UU));
-    CHKERRQ(VecDuplicateVecs(VEC_VV(0), max_neig, &MU));
+    PetscCall(VecDuplicateVecs(VEC_VV(0), max_neig, &UU));
+    PetscCall(VecDuplicateVecs(VEC_VV(0), max_neig, &MU));
   }
   for (j=0; j<neig; j++) {
-    CHKERRQ(VecCopy(XX[j], UU[r-neig+j]));
-    CHKERRQ(VecCopy(MX[j], MU[r-neig+j]));
+    PetscCall(VecCopy(XX[j], UU[r-neig+j]));
+    PetscCall(VecCopy(MX[j], MU[r-neig+j]));
   }
-  CHKERRQ(PetscLogEventEnd(KSP_DGMRESComputeDeflationData, ksp, 0,0,0));
+  PetscCall(PetscLogEventEnd(KSP_DGMRESComputeDeflationData, ksp, 0,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -731,33 +731,33 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
   PetscBool      flag;             /* determine whether to use Ritz vectors or harmonic Ritz vectors */
 
   PetscFunctionBegin;
-  CHKERRQ(PetscBLASIntCast(n,&bn));
-  CHKERRQ(PetscBLASIntCast(N,&ldA));
+  PetscCall(PetscBLASIntCast(n,&bn));
+  PetscCall(PetscBLASIntCast(N,&ldA));
   ihi  = ldQ = bn;
-  CHKERRQ(PetscBLASIntCast(5*N,&lwork));
+  PetscCall(PetscBLASIntCast(5*N,&lwork));
 
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "No support for complex numbers.");
 #endif
 
-  CHKERRQ(PetscMalloc1(ldA*ldA, &A));
-  CHKERRQ(PetscMalloc1(ldQ*n, &Q));
-  CHKERRQ(PetscMalloc1(lwork, &work));
+  PetscCall(PetscMalloc1(ldA*ldA, &A));
+  PetscCall(PetscMalloc1(ldQ*n, &Q));
+  PetscCall(PetscMalloc1(lwork, &work));
   if (!dgmres->wr) {
-    CHKERRQ(PetscMalloc1(n, &dgmres->wr));
-    CHKERRQ(PetscMalloc1(n, &dgmres->wi));
+    PetscCall(PetscMalloc1(n, &dgmres->wr));
+    PetscCall(PetscMalloc1(n, &dgmres->wi));
   }
   wr   = dgmres->wr;
   wi   = dgmres->wi;
-  CHKERRQ(PetscMalloc1(n,&modul));
-  CHKERRQ(PetscMalloc1(n,&perm));
+  PetscCall(PetscMalloc1(n,&modul));
+  PetscCall(PetscMalloc1(n,&perm));
   /* copy the Hessenberg matrix to work space */
-  CHKERRQ(PetscArraycpy(A, dgmres->hes_origin, ldA*ldA));
-  CHKERRQ(PetscOptionsHasName(((PetscObject)ksp)->options,((PetscObject)ksp)->prefix, "-ksp_dgmres_harmonic_ritz", &flag));
+  PetscCall(PetscArraycpy(A, dgmres->hes_origin, ldA*ldA));
+  PetscCall(PetscOptionsHasName(((PetscObject)ksp)->options,((PetscObject)ksp)->prefix, "-ksp_dgmres_harmonic_ritz", &flag));
   if (flag) {
     /* Compute the matrix H + H^{-T}*h^2_{m+1,m}e_m*e_m^T */
     /* Transpose the Hessenberg matrix */
-    CHKERRQ(PetscMalloc1(bn*bn, &Ht));
+    PetscCall(PetscMalloc1(bn*bn, &Ht));
     for (i = 0; i < bn; i++) {
       for (j = 0; j < bn; j++) {
         Ht[i * bn + j] = dgmres->hes_origin[j * ldA + i];
@@ -765,9 +765,9 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
     }
 
     /* Solve the system H^T*t = h_{m+1,m}e_m */
-    CHKERRQ(PetscCalloc1(bn, &t));
+    PetscCall(PetscCalloc1(bn, &t));
     t[bn-1] = dgmres->hes_origin[(bn -1) * ldA + bn]; /* Pick the last element H(m+1,m) */
-    CHKERRQ(PetscMalloc1(bn, &ipiv));
+    PetscCall(PetscMalloc1(bn, &ipiv));
     /* Call the LAPACK routine dgesv to solve the system Ht^-1 * t */
     {
       PetscBLASInt info;
@@ -777,8 +777,8 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
     }
     /* Now form H + H^{-T}*h^2_{m+1,m}e_m*e_m^T */
     for (i = 0; i < bn; i++) A[(bn-1)*bn+i] += t[i];
-    CHKERRQ(PetscFree(t));
-    CHKERRQ(PetscFree(Ht));
+    PetscCall(PetscFree(t));
+    PetscCall(PetscFree(Ht));
   }
   /* Compute eigenvalues with the Schur form */
   {
@@ -787,13 +787,13 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
     PetscStackCallBLAS("LAPACKhseqr",LAPACKhseqr_("S", "I", &bn, &ilo, &ihi, A, &ldA, wr, wi, Q, &ldQ, work, &lwork, &info));
     PetscCheck(!info,PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB,"Error in LAPACK routine XHSEQR %d",(int) info);
   }
-  CHKERRQ(PetscFree(work));
+  PetscCall(PetscFree(work));
 
   /* sort the eigenvalues */
   for (i=0; i<n; i++) modul[i] = PetscSqrtReal(wr[i]*wr[i]+wi[i]*wi[i]);
   for (i=0; i<n; i++) perm[i] = i;
 
-  CHKERRQ(PetscSortRealWithPermutation(n, modul, perm));
+  PetscCall(PetscSortRealWithPermutation(n, modul, perm));
   /* save the complex modulus of the largest eigenvalue in magnitude */
   if (dgmres->lambdaN < modul[perm[n-1]]) dgmres->lambdaN=modul[perm[n-1]];
   /* count the number of extracted eigenvalues (with complex conjugates) */
@@ -804,7 +804,7 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
   }
   /* Reorder the Schur decomposition so that the cluster of smallest eigenvalues appears in the leading diagonal blocks of A */
 
-  CHKERRQ(PetscCalloc1(n, &select));
+  PetscCall(PetscCalloc1(n, &select));
 
   if (!dgmres->GreatestEig) {
     for (j = 0; j < NbrEig; j++) select[perm[j]] = 1;
@@ -814,8 +814,8 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
   /* call Lapack dtrsen */
   lwork  =  PetscMax(1, 4 * NbrEig *(bn-NbrEig));
   liwork = PetscMax(1, 2 * NbrEig *(bn-NbrEig));
-  CHKERRQ(PetscMalloc1(lwork, &work));
-  CHKERRQ(PetscMalloc1(liwork, &iwork));
+  PetscCall(PetscMalloc1(lwork, &work));
+  PetscCall(PetscMalloc1(liwork, &iwork));
   {
     PetscBLASInt info=0;
     PetscReal    CondEig;         /* lower bound on the reciprocal condition number for the selected cluster of eigenvalues */
@@ -823,20 +823,20 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
     PetscStackCallBLAS("LAPACKtrsen",LAPACKtrsen_("B", "V", select, &bn, A, &ldA, Q, &ldQ, wr, wi, &NbrEig, &CondEig, &CondSub, work, &lwork, iwork, &liwork, &info));
     PetscCheckFalse(info == 1,PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB, "UNABLE TO REORDER THE EIGENVALUES WITH THE LAPACK ROUTINE : ILL-CONDITIONED PROBLEM");
   }
-  CHKERRQ(PetscFree(select));
+  PetscCall(PetscFree(select));
 
   /* Extract the Schur vectors */
   for (j = 0; j < NbrEig; j++) {
-    CHKERRQ(PetscArraycpy(&SR[j*N], &(Q[j*ldQ]), n));
+    PetscCall(PetscArraycpy(&SR[j*N], &(Q[j*ldQ]), n));
   }
   *neig = NbrEig;
-  CHKERRQ(PetscFree(A));
-  CHKERRQ(PetscFree(work));
-  CHKERRQ(PetscFree(perm));
-  CHKERRQ(PetscFree(work));
-  CHKERRQ(PetscFree(iwork));
-  CHKERRQ(PetscFree(modul));
-  CHKERRQ(PetscFree(Q));
+  PetscCall(PetscFree(A));
+  PetscCall(PetscFree(work));
+  PetscCall(PetscFree(perm));
+  PetscCall(PetscFree(work));
+  PetscCall(PetscFree(iwork));
+  PetscCall(PetscFree(modul));
+  PetscCall(PetscFree(Q));
   PetscFunctionReturn(0);
 }
 
@@ -850,22 +850,22 @@ PetscErrorCode  KSPDGMRESApplyDeflation_DGMRES(KSP ksp, Vec x, Vec y)
   PetscReal      lambda = dgmres->lambdaN;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscBLASIntCast(r,&br));
-  CHKERRQ(PetscBLASIntCast(max_neig,&bmax));
-  CHKERRQ(PetscLogEventBegin(KSP_DGMRESApplyDeflation, ksp, 0, 0, 0));
+  PetscCall(PetscBLASIntCast(r,&br));
+  PetscCall(PetscBLASIntCast(max_neig,&bmax));
+  PetscCall(PetscLogEventBegin(KSP_DGMRESApplyDeflation, ksp, 0, 0, 0));
   if (!r) {
-    CHKERRQ(VecCopy(x,y));
+    PetscCall(VecCopy(x,y));
     PetscFunctionReturn(0);
   }
   /* Compute U'*x */
   if (!X1) {
-    CHKERRQ(PetscMalloc1(bmax, &X1));
-    CHKERRQ(PetscMalloc1(bmax, &X2));
+    PetscCall(PetscMalloc1(bmax, &X1));
+    PetscCall(PetscMalloc1(bmax, &X2));
   }
-  CHKERRQ(VecMDot(x, r, UU, X1));
+  PetscCall(VecMDot(x, r, UU, X1));
 
   /* Solve T*X1=X2 for X1*/
-  CHKERRQ(PetscArraycpy(X2, X1, br));
+  PetscCall(PetscArraycpy(X2, X1, br));
   {
     PetscBLASInt info;
     PetscBLASInt nrhs = 1;
@@ -874,8 +874,8 @@ PetscErrorCode  KSPDGMRESApplyDeflation_DGMRES(KSP ksp, Vec x, Vec y)
   }
   /* Iterative refinement -- is it really necessary ?? */
   if (!WORK) {
-    CHKERRQ(PetscMalloc1(3*bmax, &WORK));
-    CHKERRQ(PetscMalloc1(bmax, &IWORK));
+    PetscCall(PetscMalloc1(3*bmax, &WORK));
+    PetscCall(PetscMalloc1(bmax, &IWORK));
   }
   {
     PetscBLASInt info;
@@ -888,11 +888,11 @@ PetscErrorCode  KSPDGMRESApplyDeflation_DGMRES(KSP ksp, Vec x, Vec y)
   for (i = 0; i < r; i++) X2[i] =  X1[i]/lambda - X2[i];
 
   /* Compute X2=U*X2 */
-  CHKERRQ(VecZeroEntries(y));
-  CHKERRQ(VecMAXPY(y, r, X2, UU));
-  CHKERRQ(VecAXPY(y, alpha, x));
+  PetscCall(VecZeroEntries(y));
+  PetscCall(VecMAXPY(y, r, X2, UU));
+  PetscCall(VecAXPY(y, alpha, x));
 
-  CHKERRQ(PetscLogEventEnd(KSP_DGMRESApplyDeflation, ksp, 0, 0, 0));
+  PetscCall(PetscLogEventEnd(KSP_DGMRESApplyDeflation, ksp, 0, 0, 0));
   PetscFunctionReturn(0);
 }
 
@@ -920,58 +920,58 @@ static PetscErrorCode  KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
   PetscFunctionBegin;
   /* Block construction of the matrices AUU=(AU)'*U and (AU)'*AU*/
   if (!AUU) {
-    CHKERRQ(PetscMalloc1(aug1*aug1, &AUU));
-    CHKERRQ(PetscMalloc1(aug1*aug1, &AUAU));
+    PetscCall(PetscMalloc1(aug1*aug1, &AUU));
+    PetscCall(PetscMalloc1(aug1*aug1, &AUAU));
   }
   /* AUU = (AU)'*U = [(MU)'*U (MU)'*X; (MX)'*U (MX)'*X]
    * Note that MU and MX have been computed previously either in ComputeDataDeflation() or down here in a previous call to this function */
   /* (MU)'*U size (r x r) -- store in the <r> first columns of AUU*/
   for (j=0; j < r; j++) {
-    CHKERRQ(VecMDot(UU[j], r, MU, &AUU[j*aug1]));
+    PetscCall(VecMDot(UU[j], r, MU, &AUU[j*aug1]));
   }
   /* (MU)'*X size (r x neig) -- store in AUU from the column <r>*/
   for (j = 0; j < neig; j++) {
-    CHKERRQ(VecMDot(XX[j], r, MU, &AUU[(r+j) *aug1]));
+    PetscCall(VecMDot(XX[j], r, MU, &AUU[(r+j) *aug1]));
   }
   /* (MX)'*U size (neig x r) -- store in the <r> first columns of AUU from the row <r>*/
   for (j = 0; j < r; j++) {
-    CHKERRQ(VecMDot(UU[j], neig, MX, &AUU[j*aug1+r]));
+    PetscCall(VecMDot(UU[j], neig, MX, &AUU[j*aug1+r]));
   }
   /* (MX)'*X size (neig neig) --  store in AUU from the column <r> and the row <r>*/
   for (j = 0; j < neig; j++) {
-    CHKERRQ(VecMDot(XX[j], neig, MX, &AUU[(r+j) *aug1 + r]));
+    PetscCall(VecMDot(XX[j], neig, MX, &AUU[(r+j) *aug1 + r]));
   }
 
   /* AUAU = (AU)'*AU = [(MU)'*MU (MU)'*MX; (MX)'*MU (MX)'*MX] */
   /* (MU)'*MU size (r x r) -- store in the <r> first columns of AUAU*/
   for (j=0; j < r; j++) {
-    CHKERRQ(VecMDot(MU[j], r, MU, &AUAU[j*aug1]));
+    PetscCall(VecMDot(MU[j], r, MU, &AUAU[j*aug1]));
   }
   /* (MU)'*MX size (r x neig) -- store in AUAU from the column <r>*/
   for (j = 0; j < neig; j++) {
-    CHKERRQ(VecMDot(MX[j], r, MU, &AUAU[(r+j) *aug1]));
+    PetscCall(VecMDot(MX[j], r, MU, &AUAU[(r+j) *aug1]));
   }
   /* (MX)'*MU size (neig x r) -- store in the <r> first columns of AUAU from the row <r>*/
   for (j = 0; j < r; j++) {
-    CHKERRQ(VecMDot(MU[j], neig, MX, &AUAU[j*aug1+r]));
+    PetscCall(VecMDot(MU[j], neig, MX, &AUAU[j*aug1+r]));
   }
   /* (MX)'*MX size (neig neig) --  store in AUAU from the column <r> and the row <r>*/
   for (j = 0; j < neig; j++) {
-    CHKERRQ(VecMDot(MX[j], neig, MX, &AUAU[(r+j) *aug1 + r]));
+    PetscCall(VecMDot(MX[j], neig, MX, &AUAU[(r+j) *aug1 + r]));
   }
 
   /* Computation of the eigenvectors */
-  CHKERRQ(PetscBLASIntCast(aug1,&ldA));
-  CHKERRQ(PetscBLASIntCast(aug,&N));
+  PetscCall(PetscBLASIntCast(aug1,&ldA));
+  PetscCall(PetscBLASIntCast(aug,&N));
   lwork = 8 * N + 20; /* sizeof the working space */
-  CHKERRQ(PetscMalloc1(N, &wr));
-  CHKERRQ(PetscMalloc1(N, &wi));
-  CHKERRQ(PetscMalloc1(N, &beta));
-  CHKERRQ(PetscMalloc1(N, &modul));
-  CHKERRQ(PetscMalloc1(N, &perm));
-  CHKERRQ(PetscMalloc1(N*N, &Q));
-  CHKERRQ(PetscMalloc1(N*N, &Z));
-  CHKERRQ(PetscMalloc1(lwork, &work));
+  PetscCall(PetscMalloc1(N, &wr));
+  PetscCall(PetscMalloc1(N, &wi));
+  PetscCall(PetscMalloc1(N, &beta));
+  PetscCall(PetscMalloc1(N, &modul));
+  PetscCall(PetscMalloc1(N, &perm));
+  PetscCall(PetscMalloc1(N*N, &Q));
+  PetscCall(PetscMalloc1(N*N, &Z));
+  PetscCall(PetscMalloc1(lwork, &work));
   {
     PetscBLASInt info=0;
     PetscStackCallBLAS("LAPACKgges",LAPACKgges_("V", "V", "N", NULL, &N, AUAU, &ldA, AUU, &ldA, &i, wr, wi, beta, Q, &N, Z, &N, work, &lwork, NULL, &info));
@@ -986,12 +986,12 @@ static PetscErrorCode  KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
   /* sort the eigenvalues */
   for (i=0; i<N; i++) modul[i]=PetscSqrtReal(wr[i]*wr[i]+wi[i]*wi[i]);
   for (i=0; i<N; i++) perm[i] = i;
-  CHKERRQ(PetscSortRealWithPermutation(N, modul, perm));
+  PetscCall(PetscSortRealWithPermutation(N, modul, perm));
   /* Save the norm of the largest eigenvalue */
   if (dgmres->lambdaN < modul[perm[N-1]]) dgmres->lambdaN = modul[perm[N-1]];
   /* Allocate space to extract the first r schur vectors   */
   if (!SR2) {
-    CHKERRQ(PetscMalloc1(aug1*bmax, &SR2));
+    PetscCall(PetscMalloc1(aug1*bmax, &SR2));
   }
   /* count the number of extracted eigenvalues (complex conjugates count as 2) */
   while (NbrEig < bmax) {
@@ -1003,7 +1003,7 @@ static PetscErrorCode  KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
   dgmres->r = r = NbrEig;
 
   /* Select the eigenvalues to reorder */
-  CHKERRQ(PetscCalloc1(N, &select));
+  PetscCall(PetscCalloc1(N, &select));
   if (!dgmres->GreatestEig) {
     for (j = 0; j < NbrEig; j++) select[perm[j]] = 1;
   } else {
@@ -1012,9 +1012,9 @@ static PetscErrorCode  KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
   /* Reorder and extract the new <r> schur vectors */
   lwork  = PetscMax(4 * N + 16,  2 * NbrEig *(N - NbrEig));
   liwork = PetscMax(N + 6,  2 * NbrEig *(N - NbrEig));
-  CHKERRQ(PetscFree(work));
-  CHKERRQ(PetscMalloc1(lwork, &work));
-  CHKERRQ(PetscMalloc1(liwork, &iwork));
+  PetscCall(PetscFree(work));
+  PetscCall(PetscMalloc1(lwork, &work));
+  PetscCall(PetscMalloc1(liwork, &iwork));
   {
     PetscBLASInt info=0;
     PetscReal    Dif[2];
@@ -1023,47 +1023,47 @@ static PetscErrorCode  KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
     PetscStackCallBLAS("LAPACKtgsen",LAPACKtgsen_(&ijob, &wantQ, &wantZ, select, &N, AUAU, &ldA, AUU, &ldA, wr, wi, beta, Q, &N, Z, &N, &NbrEig, NULL, NULL, &(Dif[0]), work, &lwork, iwork, &liwork, &info));
     PetscCheckFalse(info == 1,PetscObjectComm((PetscObject)ksp),PETSC_ERR_LIB, "Unable to reorder the eigenvalues with the LAPACK routine: ill-conditioned problem.");
   }
-  CHKERRQ(PetscFree(select));
+  PetscCall(PetscFree(select));
 
   for (j=0; j<r; j++) {
-    CHKERRQ(PetscArraycpy(&SR2[j*aug1], &(Z[j*N]), N));
+    PetscCall(PetscArraycpy(&SR2[j*aug1], &(Z[j*N]), N));
   }
 
   /* Multiply the Schur vectors SR2 by U (and X)  to get a new U
    -- save it temporarily in MU */
   for (j = 0; j < r; j++) {
-    CHKERRQ(VecZeroEntries(MU[j]));
-    CHKERRQ(VecMAXPY(MU[j], r_old, &SR2[j*aug1], UU));
-    CHKERRQ(VecMAXPY(MU[j], neig, &SR2[j*aug1+r_old], XX));
+    PetscCall(VecZeroEntries(MU[j]));
+    PetscCall(VecMAXPY(MU[j], r_old, &SR2[j*aug1], UU));
+    PetscCall(VecMAXPY(MU[j], neig, &SR2[j*aug1+r_old], XX));
   }
   /* Form T = U'*MU*U */
   for (j = 0; j < r; j++) {
-    CHKERRQ(VecCopy(MU[j], UU[j]));
-    CHKERRQ(KSP_PCApplyBAorAB(ksp, UU[j], MU[j], VEC_TEMP_MATOP));
+    PetscCall(VecCopy(MU[j], UU[j]));
+    PetscCall(KSP_PCApplyBAorAB(ksp, UU[j], MU[j], VEC_TEMP_MATOP));
   }
   dgmres->matvecs += r;
   for (j = 0; j < r; j++) {
-    CHKERRQ(VecMDot(MU[j], r, UU, &TT[j*bmax]));
+    PetscCall(VecMDot(MU[j], r, UU, &TT[j*bmax]));
   }
   /* Factorize T */
-  CHKERRQ(PetscArraycpy(TTF, TT, bmax*r));
-  CHKERRQ(PetscBLASIntCast(r,&nr));
-  CHKERRQ(PetscBLASIntCast(bmax,&bm));
+  PetscCall(PetscArraycpy(TTF, TT, bmax*r));
+  PetscCall(PetscBLASIntCast(r,&nr));
+  PetscCall(PetscBLASIntCast(bmax,&bm));
   {
     PetscBLASInt info;
     PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&nr, &nr, TTF, &bm, INVP, &info));
     PetscCheck(!info,PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB,"Error in LAPACK routine XGETRF INFO=%d",(int) info);
   }
   /* Free Memory */
-  CHKERRQ(PetscFree(wr));
-  CHKERRQ(PetscFree(wi));
-  CHKERRQ(PetscFree(beta));
-  CHKERRQ(PetscFree(modul));
-  CHKERRQ(PetscFree(perm));
-  CHKERRQ(PetscFree(Q));
-  CHKERRQ(PetscFree(Z));
-  CHKERRQ(PetscFree(work));
-  CHKERRQ(PetscFree(iwork));
+  PetscCall(PetscFree(wr));
+  PetscCall(PetscFree(wi));
+  PetscCall(PetscFree(beta));
+  PetscCall(PetscFree(modul));
+  PetscCall(PetscFree(perm));
+  PetscCall(PetscFree(Q));
+  PetscCall(PetscFree(Z));
+  PetscCall(PetscFree(work));
+  PetscCall(PetscFree(iwork));
   PetscFunctionReturn(0);
 }
 
@@ -1123,12 +1123,12 @@ PETSC_EXTERN PetscErrorCode KSPCreate_DGMRES(KSP ksp)
   KSP_DGMRES     *dgmres;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNewLog(ksp,&dgmres));
+  PetscCall(PetscNewLog(ksp,&dgmres));
   ksp->data = (void*) dgmres;
 
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3));
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2));
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1));
 
   ksp->ops->buildsolution                = KSPBuildSolution_DGMRES;
   ksp->ops->setup                        = KSPSetUp_DGMRES;
@@ -1139,23 +1139,23 @@ PETSC_EXTERN PetscErrorCode KSPCreate_DGMRES(KSP ksp)
   ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_GMRES;
   ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_GMRES;
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C",KSPGMRESSetPreAllocateVectors_GMRES));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C",KSPGMRESSetOrthogonalization_GMRES));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetRestart_C",KSPGMRESSetRestart_GMRES));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetHapTol_C",KSPGMRESSetHapTol_GMRES));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetCGSRefinementType_C",KSPGMRESSetCGSRefinementType_GMRES));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C",KSPGMRESSetPreAllocateVectors_GMRES));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C",KSPGMRESSetOrthogonalization_GMRES));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetRestart_C",KSPGMRESSetRestart_GMRES));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetHapTol_C",KSPGMRESSetHapTol_GMRES));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetCGSRefinementType_C",KSPGMRESSetCGSRefinementType_GMRES));
   /* -- New functions defined in DGMRES -- */
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ksp, "KSPDGMRESSetEigen_C",KSPDGMRESSetEigen_DGMRES));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ksp, "KSPDGMRESSetMaxEigen_C",KSPDGMRESSetMaxEigen_DGMRES));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ksp, "KSPDGMRESSetRatio_C",KSPDGMRESSetRatio_DGMRES));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ksp, "KSPDGMRESForce_C",KSPDGMRESForce_DGMRES));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ksp, "KSPDGMRESComputeSchurForm_C",KSPDGMRESComputeSchurForm_DGMRES));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ksp, "KSPDGMRESComputeDeflationData_C",KSPDGMRESComputeDeflationData_DGMRES));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ksp, "KSPDGMRESApplyDeflation_C",KSPDGMRESApplyDeflation_DGMRES));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ksp, "KSPDGMRESImproveEig_C", KSPDGMRESImproveEig_DGMRES));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPDGMRESSetEigen_C",KSPDGMRESSetEigen_DGMRES));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPDGMRESSetMaxEigen_C",KSPDGMRESSetMaxEigen_DGMRES));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPDGMRESSetRatio_C",KSPDGMRESSetRatio_DGMRES));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPDGMRESForce_C",KSPDGMRESForce_DGMRES));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPDGMRESComputeSchurForm_C",KSPDGMRESComputeSchurForm_DGMRES));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPDGMRESComputeDeflationData_C",KSPDGMRESComputeDeflationData_DGMRES));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPDGMRESApplyDeflation_C",KSPDGMRESApplyDeflation_DGMRES));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPDGMRESImproveEig_C", KSPDGMRESImproveEig_DGMRES));
 
-  CHKERRQ(PetscLogEventRegister("DGMRESCompDefl",  KSP_CLASSID, &KSP_DGMRESComputeDeflationData));
-  CHKERRQ(PetscLogEventRegister("DGMRESApplyDefl", KSP_CLASSID, &KSP_DGMRESApplyDeflation));
+  PetscCall(PetscLogEventRegister("DGMRESCompDefl",  KSP_CLASSID, &KSP_DGMRESComputeDeflationData));
+  PetscCall(PetscLogEventRegister("DGMRESApplyDefl", KSP_CLASSID, &KSP_DGMRESApplyDeflation));
 
   dgmres->haptol         = 1.0e-30;
   dgmres->q_preallocate  = 0;

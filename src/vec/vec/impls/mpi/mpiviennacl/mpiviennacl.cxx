@@ -28,7 +28,7 @@ PetscErrorCode VecDestroy_MPIViennaCL(Vec v)
   } catch(std::exception const & ex) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
   }
-  CHKERRQ(VecDestroy_MPI(v));
+  PetscCall(VecDestroy_MPI(v));
   PetscFunctionReturn(0);
 }
 
@@ -38,26 +38,26 @@ PetscErrorCode VecNorm_MPIViennaCL(Vec xin,NormType type,PetscReal *z)
 
   PetscFunctionBegin;
   if (type == NORM_2 || type == NORM_FROBENIUS) {
-    CHKERRQ(VecNorm_SeqViennaCL(xin,NORM_2,&work));
+    PetscCall(VecNorm_SeqViennaCL(xin,NORM_2,&work));
     work *= work;
-    CHKERRMPI(MPIU_Allreduce(&work,&sum,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)xin)));
+    PetscCallMPI(MPIU_Allreduce(&work,&sum,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)xin)));
     *z    = PetscSqrtReal(sum);
   } else if (type == NORM_1) {
     /* Find the local part */
-    CHKERRQ(VecNorm_SeqViennaCL(xin,NORM_1,&work));
+    PetscCall(VecNorm_SeqViennaCL(xin,NORM_1,&work));
     /* Find the global max */
-    CHKERRMPI(MPIU_Allreduce(&work,z,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)xin)));
+    PetscCallMPI(MPIU_Allreduce(&work,z,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)xin)));
   } else if (type == NORM_INFINITY) {
     /* Find the local max */
-    CHKERRQ(VecNorm_SeqViennaCL(xin,NORM_INFINITY,&work));
+    PetscCall(VecNorm_SeqViennaCL(xin,NORM_INFINITY,&work));
     /* Find the global max */
-    CHKERRMPI(MPIU_Allreduce(&work,z,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)xin)));
+    PetscCallMPI(MPIU_Allreduce(&work,z,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)xin)));
   } else if (type == NORM_1_AND_2) {
     PetscReal temp[2];
-    CHKERRQ(VecNorm_SeqViennaCL(xin,NORM_1,temp));
-    CHKERRQ(VecNorm_SeqViennaCL(xin,NORM_2,temp+1));
+    PetscCall(VecNorm_SeqViennaCL(xin,NORM_1,temp));
+    PetscCall(VecNorm_SeqViennaCL(xin,NORM_2,temp+1));
     temp[1] = temp[1]*temp[1];
-    CHKERRMPI(MPIU_Allreduce(temp,z,2,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)xin)));
+    PetscCallMPI(MPIU_Allreduce(temp,z,2,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)xin)));
     z[1] = PetscSqrtReal(z[1]);
   }
   PetscFunctionReturn(0);
@@ -68,8 +68,8 @@ PetscErrorCode VecDot_MPIViennaCL(Vec xin,Vec yin,PetscScalar *z)
   PetscScalar    sum,work;
 
   PetscFunctionBegin;
-  CHKERRQ(VecDot_SeqViennaCL(xin,yin,&work));
-  CHKERRMPI(MPIU_Allreduce(&work,&sum,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)xin)));
+  PetscCall(VecDot_SeqViennaCL(xin,yin,&work));
+  PetscCallMPI(MPIU_Allreduce(&work,&sum,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)xin)));
   *z   = sum;
   PetscFunctionReturn(0);
 }
@@ -79,8 +79,8 @@ PetscErrorCode VecTDot_MPIViennaCL(Vec xin,Vec yin,PetscScalar *z)
   PetscScalar    sum,work;
 
   PetscFunctionBegin;
-  CHKERRQ(VecTDot_SeqViennaCL(xin,yin,&work));
-  CHKERRMPI(MPIU_Allreduce(&work,&sum,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)xin)));
+  PetscCall(VecTDot_SeqViennaCL(xin,yin,&work));
+  PetscCallMPI(MPIU_Allreduce(&work,&sum,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)xin)));
   *z   = sum;
   PetscFunctionReturn(0);
 }
@@ -91,12 +91,12 @@ PetscErrorCode VecMDot_MPIViennaCL(Vec xin,PetscInt nv,const Vec y[],PetscScalar
 
   PetscFunctionBegin;
   if (nv > 128) {
-    CHKERRQ(PetscMalloc1(nv,&work));
+    PetscCall(PetscMalloc1(nv,&work));
   }
-  CHKERRQ(VecMDot_SeqViennaCL(xin,nv,y,work));
-  CHKERRMPI(MPIU_Allreduce(work,z,nv,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)xin)));
+  PetscCall(VecMDot_SeqViennaCL(xin,nv,y,work));
+  PetscCallMPI(MPIU_Allreduce(work,z,nv,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)xin)));
   if (nv > 128) {
-    CHKERRQ(PetscFree(work));
+    PetscCall(PetscFree(work));
   }
   PetscFunctionReturn(0);
 }
@@ -118,23 +118,23 @@ PetscErrorCode VecDuplicate_MPIViennaCL(Vec win,Vec *v)
   PetscScalar    *array;
 
   PetscFunctionBegin;
-  CHKERRQ(VecCreate(PetscObjectComm((PetscObject)win),v));
-  CHKERRQ(PetscLayoutReference(win->map,&(*v)->map));
+  PetscCall(VecCreate(PetscObjectComm((PetscObject)win),v));
+  PetscCall(PetscLayoutReference(win->map,&(*v)->map));
 
-  CHKERRQ(VecCreate_MPI_Private(*v,PETSC_FALSE,w->nghost,0));
+  PetscCall(VecCreate_MPI_Private(*v,PETSC_FALSE,w->nghost,0));
   vw   = (Vec_MPI*)(*v)->data;
-  CHKERRQ(PetscMemcpy((*v)->ops,win->ops,sizeof(struct _VecOps)));
+  PetscCall(PetscMemcpy((*v)->ops,win->ops,sizeof(struct _VecOps)));
 
   /* save local representation of the parallel vector (and scatter) if it exists */
   if (w->localrep) {
-    CHKERRQ(VecGetArray(*v,&array));
-    CHKERRQ(VecCreateSeqWithArray(PETSC_COMM_SELF,1,win->map->n+w->nghost,array,&vw->localrep));
-    CHKERRQ(PetscMemcpy(vw->localrep->ops,w->localrep->ops,sizeof(struct _VecOps)));
-    CHKERRQ(VecRestoreArray(*v,&array));
-    CHKERRQ(PetscLogObjectParent((PetscObject)*v,(PetscObject)vw->localrep));
+    PetscCall(VecGetArray(*v,&array));
+    PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,1,win->map->n+w->nghost,array,&vw->localrep));
+    PetscCall(PetscMemcpy(vw->localrep->ops,w->localrep->ops,sizeof(struct _VecOps)));
+    PetscCall(VecRestoreArray(*v,&array));
+    PetscCall(PetscLogObjectParent((PetscObject)*v,(PetscObject)vw->localrep));
     vw->localupdate = w->localupdate;
     if (vw->localupdate) {
-      CHKERRQ(PetscObjectReference((PetscObject)vw->localupdate));
+      PetscCall(PetscObjectReference((PetscObject)vw->localupdate));
     }
   }
 
@@ -143,10 +143,10 @@ PetscErrorCode VecDuplicate_MPIViennaCL(Vec win,Vec *v)
   (*v)->stash.ignorenegidx = win->stash.ignorenegidx;
 
   /* change type_name appropriately */
-  CHKERRQ(PetscObjectChangeTypeName((PetscObject)(*v),VECMPIVIENNACL));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)(*v),VECMPIVIENNACL));
 
-  CHKERRQ(PetscObjectListDuplicate(((PetscObject)win)->olist,&((PetscObject)(*v))->olist));
-  CHKERRQ(PetscFunctionListDuplicate(((PetscObject)win)->qlist,&((PetscObject)(*v))->qlist));
+  PetscCall(PetscObjectListDuplicate(((PetscObject)win)->olist,&((PetscObject)(*v))->olist));
+  PetscCall(PetscFunctionListDuplicate(((PetscObject)win)->qlist,&((PetscObject)(*v))->qlist));
   (*v)->map->bs   = PetscAbs(win->map->bs);
   (*v)->bstash.bs = win->bstash.bs;
   PetscFunctionReturn(0);
@@ -157,8 +157,8 @@ PetscErrorCode VecDotNorm2_MPIViennaCL(Vec s,Vec t,PetscScalar *dp,PetscScalar *
   PetscScalar    work[2],sum[2];
 
   PetscFunctionBegin;
-  CHKERRQ(VecDotNorm2_SeqViennaCL(s,t,work,work+1));
-  CHKERRMPI(MPIU_Allreduce((void*)&work,(void*)&sum,2,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)s)));
+  PetscCall(VecDotNorm2_SeqViennaCL(s,t,work,work+1));
+  PetscCallMPI(MPIU_Allreduce((void*)&work,(void*)&sum,2,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)s)));
   *dp  = sum[0];
   *nm  = sum[1];
   PetscFunctionReturn(0);
@@ -170,7 +170,7 @@ PetscErrorCode VecBindToCPU_MPIViennaCL(Vec vv, PetscBool bind)
   vv->boundtocpu = bind;
 
   if (bind) {
-    CHKERRQ(VecViennaCLCopyFromGPU(vv));
+    PetscCall(VecViennaCLCopyFromGPU(vv));
     vv->offloadmask = PETSC_OFFLOAD_CPU; /* since the CPU code will likely change values in the vector */
     vv->ops->dotnorm2               = NULL;
     vv->ops->waxpy                  = VecWAXPY_Seq;
@@ -240,12 +240,12 @@ PetscErrorCode VecBindToCPU_MPIViennaCL(Vec vv, PetscBool bind)
 PETSC_EXTERN PetscErrorCode VecCreate_MPIViennaCL(Vec vv)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscLayoutSetUp(vv->map));
-  CHKERRQ(VecViennaCLAllocateCheck(vv));
-  CHKERRQ(VecCreate_MPIViennaCL_Private(vv,PETSC_FALSE,0,((Vec_ViennaCL*)(vv->spptr))->GPUarray));
-  CHKERRQ(VecViennaCLAllocateCheckHost(vv));
-  CHKERRQ(VecSet(vv,0.0));
-  CHKERRQ(VecSet_Seq(vv,0.0));
+  PetscCall(PetscLayoutSetUp(vv->map));
+  PetscCall(VecViennaCLAllocateCheck(vv));
+  PetscCall(VecCreate_MPIViennaCL_Private(vv,PETSC_FALSE,0,((Vec_ViennaCL*)(vv->spptr))->GPUarray));
+  PetscCall(VecViennaCLAllocateCheckHost(vv));
+  PetscCall(VecSet(vv,0.0));
+  PetscCall(VecSet_Seq(vv,0.0));
   vv->offloadmask = PETSC_OFFLOAD_BOTH;
   PetscFunctionReturn(0);
 }
@@ -255,11 +255,11 @@ PETSC_EXTERN PetscErrorCode VecCreate_ViennaCL(Vec v)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)v),&size));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)v),&size));
   if (size == 1) {
-    CHKERRQ(VecSetType(v,VECSEQVIENNACL));
+    PetscCall(VecSetType(v,VECSEQVIENNACL));
   } else {
-    CHKERRQ(VecSetType(v,VECMPIVIENNACL));
+    PetscCall(VecSetType(v,VECMPIVIENNACL));
   }
   PetscFunctionReturn(0);
 }
@@ -300,11 +300,11 @@ PetscErrorCode  VecCreateMPIViennaCLWithArray(MPI_Comm comm,PetscInt bs,PetscInt
 {
   PetscFunctionBegin;
   PetscCheck(n != PETSC_DECIDE,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must set local size of vector");
-  CHKERRQ(PetscSplitOwnership(comm,&n,&N));
-  CHKERRQ(VecCreate(comm,vv));
-  CHKERRQ(VecSetSizes(*vv,n,N));
-  CHKERRQ(VecSetBlockSize(*vv,bs));
-  CHKERRQ(VecCreate_MPIViennaCL_Private(*vv,PETSC_FALSE,0,array));
+  PetscCall(PetscSplitOwnership(comm,&n,&N));
+  PetscCall(VecCreate(comm,vv));
+  PetscCall(VecSetSizes(*vv,n,N));
+  PetscCall(VecSetBlockSize(*vv,bs));
+  PetscCall(VecCreate_MPIViennaCL_Private(*vv,PETSC_FALSE,0,array));
   PetscFunctionReturn(0);
 }
 
@@ -347,7 +347,7 @@ PetscErrorCode  VecCreateMPIViennaCLWithArray(MPI_Comm comm,PetscInt bs,PetscInt
 PetscErrorCode  VecCreateMPIViennaCLWithArrays(MPI_Comm comm,PetscInt bs,PetscInt n,PetscInt N,const PetscScalar cpuarray[],const ViennaCLVector *viennaclvec,Vec *vv)
 {
   PetscFunctionBegin;
-  CHKERRQ(VecCreateMPIViennaCLWithArray(comm,bs,n,N,viennaclvec,vv));
+  PetscCall(VecCreateMPIViennaCLWithArray(comm,bs,n,N,viennaclvec,vv));
   if (cpuarray && viennaclvec) {
     Vec_MPI *s         = (Vec_MPI*)((*vv)->data);
     s->array           = (PetscScalar*)cpuarray;
@@ -369,17 +369,17 @@ PetscErrorCode VecCreate_MPIViennaCL_Private(Vec vv,PetscBool alloc,PetscInt ngh
   Vec_ViennaCL   *vecviennacl;
 
   PetscFunctionBegin;
-  CHKERRQ(VecCreate_MPI_Private(vv,PETSC_FALSE,0,0));
-  CHKERRQ(PetscObjectChangeTypeName((PetscObject)vv,VECMPIVIENNACL));
+  PetscCall(VecCreate_MPI_Private(vv,PETSC_FALSE,0,0));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)vv,VECMPIVIENNACL));
 
-  CHKERRQ(VecBindToCPU_MPIViennaCL(vv,PETSC_FALSE));
+  PetscCall(VecBindToCPU_MPIViennaCL(vv,PETSC_FALSE));
   vv->ops->bindtocpu = VecBindToCPU_MPIViennaCL;
 
   if (alloc && !array) {
-    CHKERRQ(VecViennaCLAllocateCheck(vv));
-    CHKERRQ(VecViennaCLAllocateCheckHost(vv));
-    CHKERRQ(VecSet(vv,0.0));
-    CHKERRQ(VecSet_Seq(vv,0.0));
+    PetscCall(VecViennaCLAllocateCheck(vv));
+    PetscCall(VecViennaCLAllocateCheckHost(vv));
+    PetscCall(VecSet(vv,0.0));
+    PetscCall(VecSet_Seq(vv,0.0));
     vv->offloadmask = PETSC_OFFLOAD_BOTH;
   }
   if (array) {

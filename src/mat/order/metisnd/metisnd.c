@@ -17,34 +17,34 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_METISND(Mat mat,MatOrderingType type,
   PetscBool      done;
 
   PetscFunctionBegin;
-  CHKERRQ(MatGetRowIJ(mat,0,PETSC_TRUE,PETSC_TRUE,&nrow,&ia,&ja,&done));
+  PetscCall(MatGetRowIJ(mat,0,PETSC_TRUE,PETSC_TRUE,&nrow,&ia,&ja,&done));
   if (!done) {
-    CHKERRQ(MatConvert(mat,MATSEQAIJ,MAT_INITIAL_MATRIX,&B));
-    CHKERRQ(MatGetRowIJ(B,0,PETSC_TRUE,PETSC_TRUE,&nrow,&ia,&ja,&done));
+    PetscCall(MatConvert(mat,MATSEQAIJ,MAT_INITIAL_MATRIX,&B));
+    PetscCall(MatGetRowIJ(B,0,PETSC_TRUE,PETSC_TRUE,&nrow,&ia,&ja,&done));
   }
   METIS_SetDefaultOptions(options);
   options[METIS_OPTION_NUMBERING] = 0;
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"METISND Options","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"METISND Options","Mat");PetscCall(ierr);
 
   ival = (PetscInt)options[METIS_OPTION_NSEPS];
-  CHKERRQ(PetscOptionsInt("-mat_ordering_metisnd_nseps","number of different separators per level","None",ival,&ival,NULL));
+  PetscCall(PetscOptionsInt("-mat_ordering_metisnd_nseps","number of different separators per level","None",ival,&ival,NULL));
   options[METIS_OPTION_NSEPS] = (idx_t)ival;
 
   ival = (PetscInt)options[METIS_OPTION_NITER];
-  CHKERRQ(PetscOptionsInt("-mat_ordering_metisnd_niter","number of refinement iterations","None",ival,&ival,NULL));
+  PetscCall(PetscOptionsInt("-mat_ordering_metisnd_niter","number of refinement iterations","None",ival,&ival,NULL));
   options[METIS_OPTION_NITER] = (idx_t)ival;
 
   ival = (PetscInt)options[METIS_OPTION_UFACTOR];
-  CHKERRQ(PetscOptionsInt("-mat_ordering_metisnd_ufactor","maximum allowed imbalance","None",ival,&ival,NULL));
+  PetscCall(PetscOptionsInt("-mat_ordering_metisnd_ufactor","maximum allowed imbalance","None",ival,&ival,NULL));
   options[METIS_OPTION_UFACTOR] = (idx_t)ival;
 
   ival = (PetscInt)options[METIS_OPTION_PFACTOR];
-  CHKERRQ(PetscOptionsInt("-mat_ordering_metisnd_pfactor","minimum degree of vertices that will be ordered last","None",ival,&ival,NULL));
+  PetscCall(PetscOptionsInt("-mat_ordering_metisnd_pfactor","minimum degree of vertices that will be ordered last","None",ival,&ival,NULL));
   options[METIS_OPTION_PFACTOR] = (idx_t)ival;
 
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
-  CHKERRQ(PetscMalloc4(nrow+1,&xadj,ia[nrow],&adjncy,nrow,&perm,nrow,&iperm));
+  PetscCall(PetscMalloc4(nrow+1,&xadj,ia[nrow],&adjncy,nrow,&perm,nrow,&iperm));
   /* The adjacency list of a vertex should not contain the vertex itself.
   */
   iptr = 0;
@@ -71,14 +71,14 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_METISND(Mat mat,MatOrderingType type,
   }
 
   if (B) {
-    CHKERRQ(MatRestoreRowIJ(B,0,PETSC_TRUE,PETSC_TRUE,NULL,&ia,&ja,&done));
-    CHKERRQ(MatDestroy(&B));
+    PetscCall(MatRestoreRowIJ(B,0,PETSC_TRUE,PETSC_TRUE,NULL,&ia,&ja,&done));
+    PetscCall(MatDestroy(&B));
   } else {
-    CHKERRQ(MatRestoreRowIJ(mat,0,PETSC_TRUE,PETSC_TRUE,NULL,&ia,&ja,&done));
+    PetscCall(MatRestoreRowIJ(mat,0,PETSC_TRUE,PETSC_TRUE,NULL,&ia,&ja,&done));
   }
 
-  CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,PETSC_COPY_VALUES,row));
-  CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,PETSC_COPY_VALUES,col));
-  CHKERRQ(PetscFree4(xadj,adjncy,perm,iperm));
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,PETSC_COPY_VALUES,row));
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,PETSC_COPY_VALUES,col));
+  PetscCall(PetscFree4(xadj,adjncy,perm,iperm));
   PetscFunctionReturn(0);
 }

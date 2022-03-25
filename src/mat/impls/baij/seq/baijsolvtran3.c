@@ -13,12 +13,12 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_3_inplace(Mat A,Vec bb,Vec xx)
   const PetscScalar *b;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(bb,&b));
-  CHKERRQ(VecGetArray(xx,&x));
+  PetscCall(VecGetArrayRead(bb,&b));
+  PetscCall(VecGetArray(xx,&x));
   t    = a->solve_work;
 
-  CHKERRQ(ISGetIndices(isrow,&rout)); r = rout;
-  CHKERRQ(ISGetIndices(iscol,&cout)); c = cout;
+  PetscCall(ISGetIndices(isrow,&rout)); r = rout;
+  PetscCall(ISGetIndices(iscol,&cout)); c = cout;
 
   /* copy the b into temp work space according to permutation */
   ii = 0;
@@ -80,11 +80,11 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_3_inplace(Mat A,Vec bb,Vec xx)
     ii     += 3;
   }
 
-  CHKERRQ(ISRestoreIndices(isrow,&rout));
-  CHKERRQ(ISRestoreIndices(iscol,&cout));
-  CHKERRQ(VecRestoreArrayRead(bb,&b));
-  CHKERRQ(VecRestoreArray(xx,&x));
-  CHKERRQ(PetscLogFlops(2.0*9*(a->nz) - 3.0*A->cmap->n));
+  PetscCall(ISRestoreIndices(isrow,&rout));
+  PetscCall(ISRestoreIndices(iscol,&cout));
+  PetscCall(VecRestoreArrayRead(bb,&b));
+  PetscCall(VecRestoreArray(xx,&x));
+  PetscCall(PetscLogFlops(2.0*9*(a->nz) - 3.0*A->cmap->n));
   PetscFunctionReturn(0);
 }
 
@@ -101,12 +101,12 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_3(Mat A,Vec bb,Vec xx)
   const PetscScalar *b;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(bb,&b));
-  CHKERRQ(VecGetArray(xx,&x));
+  PetscCall(VecGetArrayRead(bb,&b));
+  PetscCall(VecGetArray(xx,&x));
   t    = a->solve_work;
 
-  CHKERRQ(ISGetIndices(isrow,&rout)); r = rout;
-  CHKERRQ(ISGetIndices(iscol,&cout)); c = cout;
+  PetscCall(ISGetIndices(isrow,&rout)); r = rout;
+  PetscCall(ISGetIndices(iscol,&cout)); c = cout;
 
   /* copy b into temp work space according to permutation */
   for (i=0; i<n; i++) {
@@ -159,10 +159,10 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_3(Mat A,Vec bb,Vec xx)
     x[ir] = t[ii];  x[ir+1] = t[ii+1]; x[ir+2] = t[ii+2];
   }
 
-  CHKERRQ(ISRestoreIndices(isrow,&rout));
-  CHKERRQ(ISRestoreIndices(iscol,&cout));
-  CHKERRQ(VecRestoreArrayRead(bb,&b));
-  CHKERRQ(VecRestoreArray(xx,&x));
-  CHKERRQ(PetscLogFlops(2.0*bs2*(a->nz) - bs*A->cmap->n));
+  PetscCall(ISRestoreIndices(isrow,&rout));
+  PetscCall(ISRestoreIndices(iscol,&cout));
+  PetscCall(VecRestoreArrayRead(bb,&b));
+  PetscCall(VecRestoreArray(xx,&x));
+  PetscCall(PetscLogFlops(2.0*bs2*(a->nz) - bs*A->cmap->n));
   PetscFunctionReturn(0);
 }

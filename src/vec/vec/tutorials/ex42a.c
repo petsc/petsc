@@ -9,18 +9,18 @@ int main(int argc,char **args)
   PetscViewer    fd;
   PetscInt       i;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   /* server indicates we WAIT for someone to connect to our socket */
-  CHKERRQ(PetscViewerSocketOpen(PETSC_COMM_WORLD,"server",PETSC_DEFAULT,&fd));
+  PetscCall(PetscViewerSocketOpen(PETSC_COMM_WORLD,"server",PETSC_DEFAULT,&fd));
 
-  CHKERRQ(VecCreateMPI(PETSC_COMM_WORLD,10000,PETSC_DECIDE,&b));
+  PetscCall(VecCreateMPI(PETSC_COMM_WORLD,10000,PETSC_DECIDE,&b));
   for (i=0; i<1000; i++) {
-    CHKERRQ(VecView(b,fd));
-    CHKERRQ(VecDestroy(&b));
-    CHKERRQ(VecCreate(PETSC_COMM_WORLD,&b));
-    CHKERRQ(VecLoad(b,fd));
+    PetscCall(VecView(b,fd));
+    PetscCall(VecDestroy(&b));
+    PetscCall(VecCreate(PETSC_COMM_WORLD,&b));
+    PetscCall(VecLoad(b,fd));
   }
-  CHKERRQ(VecDestroy(&b));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&b));
+  PetscCall(PetscFinalize());
   return 0;
 }

@@ -16,19 +16,19 @@ PetscErrorCode PipeComputeSteadyState(Pipe pipe,PetscScalar Q0,PetscScalar H0)
   PetscScalar    *coords,c=pipe->R/(GRAV*pipe->A);
 
   PetscFunctionBegin;
-  CHKERRQ(DMGetCoordinateDM(pipe->da, &cda));
-  CHKERRQ(DMGetCoordinatesLocal(pipe->da, &local));
-  CHKERRQ(DMDAVecGetArray(pipe->da, pipe->x, &x));
-  CHKERRQ(DMDAVecGetArrayRead(cda, local, &coords));
-  CHKERRQ(DMDAGetCorners(pipe->da, &start, 0, 0, &n, 0, 0));
+  PetscCall(DMGetCoordinateDM(pipe->da, &cda));
+  PetscCall(DMGetCoordinatesLocal(pipe->da, &local));
+  PetscCall(DMDAVecGetArray(pipe->da, pipe->x, &x));
+  PetscCall(DMDAVecGetArrayRead(cda, local, &coords));
+  PetscCall(DMDAGetCorners(pipe->da, &start, 0, 0, &n, 0, 0));
 
   for (i = start; i < start + n; i++) {
     x[i].q = Q0;
     x[i].h = H0 - c * Q0 * PetscAbsScalar(Q0) * coords[i];
   }
 
-  CHKERRQ(DMDAVecRestoreArray(pipe->da, pipe->x, &x));
-  CHKERRQ(DMDAVecRestoreArrayRead(cda, local, &coords));
+  PetscCall(DMDAVecRestoreArray(pipe->da, pipe->x, &x));
+  PetscCall(DMDAVecRestoreArrayRead(cda, local, &coords));
   PetscFunctionReturn(0);
 }
 
@@ -66,7 +66,7 @@ PetscErrorCode PipeIFunctionLocal_Lax(DMDALocalInfo *info,PetscReal ptime,PipeFi
   PipeField      *xold=pipe->xold;
 
   PetscFunctionBegin;
-  CHKERRQ(DMDAGetCorners(pipe->da, &start, 0, 0, &n, 0, 0));
+  PetscCall(DMDAGetCorners(pipe->da, &start, 0, 0, &n, 0, 0));
 
   /* interior and boundary */
   ilast = start + n - 1;

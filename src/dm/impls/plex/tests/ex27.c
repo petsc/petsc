@@ -6,10 +6,10 @@ static char help[] = "Test section ordering for FEM discretizations\n\n";
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
 {
   PetscFunctionBegin;
-  CHKERRQ(DMCreate(comm, dm));
-  CHKERRQ(DMSetType(*dm, DMPLEX));
-  CHKERRQ(DMSetFromOptions(*dm));
-  CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
+  PetscCall(DMCreate(comm, dm));
+  PetscCall(DMSetType(*dm, DMPLEX));
+  PetscCall(DMSetFromOptions(*dm));
+  PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   PetscFunctionReturn(0);
 }
 
@@ -21,21 +21,21 @@ static PetscErrorCode TestLocalDofOrder(DM dm)
   PetscInt       dim, Nf, f;
 
   PetscFunctionBegin;
-  CHKERRQ(DMGetDimension(dm, &dim));
-  CHKERRQ(DMPlexIsSimplex(dm, &simplex));
-  CHKERRQ(PetscFECreateDefault(PETSC_COMM_SELF, dim, dim, simplex, "field0_", -1, &fe[0]));
-  CHKERRQ(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1,   simplex, "field1_", -1, &fe[1]));
-  CHKERRQ(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1,   simplex, "field2_", -1, &fe[2]));
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMPlexIsSimplex(dm, &simplex));
+  PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, dim, simplex, "field0_", -1, &fe[0]));
+  PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1,   simplex, "field1_", -1, &fe[1]));
+  PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1,   simplex, "field2_", -1, &fe[2]));
 
-  CHKERRQ(DMSetField(dm, 0, NULL, (PetscObject) fe[0]));
-  CHKERRQ(DMSetField(dm, 1, NULL, (PetscObject) fe[1]));
-  CHKERRQ(DMSetField(dm, 2, NULL, (PetscObject) fe[2]));
-  CHKERRQ(DMCreateDS(dm));
-  CHKERRQ(DMGetLocalSection(dm, &s));
-  CHKERRQ(PetscObjectViewFromOptions((PetscObject) s, NULL, "-dof_view"));
+  PetscCall(DMSetField(dm, 0, NULL, (PetscObject) fe[0]));
+  PetscCall(DMSetField(dm, 1, NULL, (PetscObject) fe[1]));
+  PetscCall(DMSetField(dm, 2, NULL, (PetscObject) fe[2]));
+  PetscCall(DMCreateDS(dm));
+  PetscCall(DMGetLocalSection(dm, &s));
+  PetscCall(PetscObjectViewFromOptions((PetscObject) s, NULL, "-dof_view"));
 
-  CHKERRQ(DMGetNumFields(dm, &Nf));
-  for (f = 0; f < Nf; ++f) CHKERRQ(PetscFEDestroy(&fe[f]));
+  PetscCall(DMGetNumFields(dm, &Nf));
+  for (f = 0; f < Nf; ++f) PetscCall(PetscFEDestroy(&fe[f]));
   PetscFunctionReturn(0);
 }
 
@@ -43,11 +43,11 @@ int main(int argc, char **argv)
 {
   DM             dm;
 
-  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
-  CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &dm));
-  CHKERRQ(TestLocalDofOrder(dm));
-  CHKERRQ(DMDestroy(&dm));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(CreateMesh(PETSC_COMM_WORLD, &dm));
+  PetscCall(TestLocalDofOrder(dm));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

@@ -9,37 +9,37 @@ int main(int argc,char **argv)
   PetscInt       n = 3,i;
   PetscReal      *la_nodes,*la_weights,*n_nodes,*n_weights;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
-  CHKERRQ(PetscMalloc1(n,&la_nodes));
-  CHKERRQ(PetscMalloc1(n,&la_weights));
-  CHKERRQ(PetscMalloc1(n,&n_nodes));
-  CHKERRQ(PetscMalloc1(n,&n_weights));
-  CHKERRQ(PetscDTGaussLobattoLegendreQuadrature(n,PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA,la_nodes,la_weights));
+  PetscCall(PetscMalloc1(n,&la_nodes));
+  PetscCall(PetscMalloc1(n,&la_weights));
+  PetscCall(PetscMalloc1(n,&n_nodes));
+  PetscCall(PetscMalloc1(n,&n_weights));
+  PetscCall(PetscDTGaussLobattoLegendreQuadrature(n,PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA,la_nodes,la_weights));
 
-  CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"Gauss-Lobatto-Legendre nodes and weights computed via linear algebra: \n"));
-  CHKERRQ(PetscRealView(n,la_nodes,PETSC_VIEWER_STDOUT_SELF));
-  CHKERRQ(PetscRealView(n,la_weights,PETSC_VIEWER_STDOUT_SELF));
-  CHKERRQ(PetscDTGaussLobattoLegendreQuadrature(n,PETSCGAUSSLOBATTOLEGENDRE_VIA_NEWTON,n_nodes,n_weights));
-  CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"Gauss-Lobatto-Legendre nodes and weights computed via Newton: \n"));
-  CHKERRQ(PetscRealView(n,n_nodes,PETSC_VIEWER_STDOUT_SELF));
-  CHKERRQ(PetscRealView(n,n_weights,PETSC_VIEWER_STDOUT_SELF));
+  PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"Gauss-Lobatto-Legendre nodes and weights computed via linear algebra: \n"));
+  PetscCall(PetscRealView(n,la_nodes,PETSC_VIEWER_STDOUT_SELF));
+  PetscCall(PetscRealView(n,la_weights,PETSC_VIEWER_STDOUT_SELF));
+  PetscCall(PetscDTGaussLobattoLegendreQuadrature(n,PETSCGAUSSLOBATTOLEGENDRE_VIA_NEWTON,n_nodes,n_weights));
+  PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"Gauss-Lobatto-Legendre nodes and weights computed via Newton: \n"));
+  PetscCall(PetscRealView(n,n_nodes,PETSC_VIEWER_STDOUT_SELF));
+  PetscCall(PetscRealView(n,n_weights,PETSC_VIEWER_STDOUT_SELF));
 
   for (i=0; i<n; i++) {
     la_nodes[i]   -= n_nodes[i];
     la_weights[i] -= n_weights[i];
   }
-  CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"Difference: \n"));
-  CHKERRQ(PetscRealView(n,la_nodes,PETSC_VIEWER_STDOUT_SELF));
-  CHKERRQ(PetscRealView(n,la_weights,PETSC_VIEWER_STDOUT_SELF));
+  PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"Difference: \n"));
+  PetscCall(PetscRealView(n,la_nodes,PETSC_VIEWER_STDOUT_SELF));
+  PetscCall(PetscRealView(n,la_weights,PETSC_VIEWER_STDOUT_SELF));
 
-  CHKERRQ(PetscFree(la_nodes));
-  CHKERRQ(PetscFree(la_weights));
-  CHKERRQ(PetscFree(n_nodes));
-  CHKERRQ(PetscFree(n_weights));
+  PetscCall(PetscFree(la_nodes));
+  PetscCall(PetscFree(la_weights));
+  PetscCall(PetscFree(n_nodes));
+  PetscCall(PetscFree(n_weights));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

@@ -45,8 +45,8 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec X, Vec DXDT, void* ptr)
   mu_h     = user->mu_h;
   D_h      = user->D_h;
 
-  CHKERRQ(VecGetArrayRead(X, &x));
-  CHKERRQ(VecGetArray(DXDT, &dxdt));
+  PetscCall(VecGetArrayRead(X, &x));
+  PetscCall(VecGetArray(DXDT, &dxdt));
 
   for (i = 0 ; i < nb_cells ; i++) {
     a = x[2*i];
@@ -67,8 +67,8 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec X, Vec DXDT, void* ptr)
     dxdt[2*i] = da + D_a*d2a;
     dxdt[2*i+1] = dh + D_h*d2h;
   }
-  CHKERRQ(VecRestoreArray(DXDT, &dxdt));
-  CHKERRQ(VecRestoreArrayRead(X, &x));
+  PetscCall(VecRestoreArray(DXDT, &dxdt));
+  PetscCall(VecRestoreArrayRead(X, &x));
   PetscFunctionReturn(0);
 }
 
@@ -93,7 +93,7 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec X, Mat J, Mat B, void *ptr)
   mu_h     = user->mu_h;
   D_h      = user->D_h;
 
-  CHKERRQ(VecGetArrayRead(X, &x));
+  PetscCall(VecGetArrayRead(X, &x));
   for (i = 0; i < nb_cells ; ++i) {
     rowa = 2*i;
     rowh = 2*i+1;
@@ -124,15 +124,15 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec X, Mat J, Mat B, void *ptr)
       vh[0] -= D_h;
       idx++;
     }
-    CHKERRQ(MatSetValues(B, 1, &rowa, idx, ca, va, INSERT_VALUES));
-    CHKERRQ(MatSetValues(B, 1, &rowh, idx, ch, vh, INSERT_VALUES));
+    PetscCall(MatSetValues(B, 1, &rowa, idx, ca, va, INSERT_VALUES));
+    PetscCall(MatSetValues(B, 1, &rowh, idx, ch, vh, INSERT_VALUES));
   }
-  CHKERRQ(VecRestoreArrayRead(X, &x));
-  CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(VecRestoreArrayRead(X, &x));
+  PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
   if (J != B) {
-    CHKERRQ(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY));
   }
   PetscFunctionReturn(0);
 }
@@ -145,18 +145,18 @@ PetscErrorCode DomainErrorFunction(TS ts, PetscReal t, Vec Y, PetscBool *accept)
   PetscInt          nb_cells, i;
 
   PetscFunctionBegin;
-  CHKERRQ(TSGetApplicationContext(ts, &user));
+  PetscCall(TSGetApplicationContext(ts, &user));
   nb_cells = user->nb_cells;
-  CHKERRQ(VecGetArrayRead(Y, &x));
+  PetscCall(VecGetArrayRead(Y, &x));
   for (i = 0 ; i < 2*nb_cells ; ++i) {
     if (PetscRealPart(x[i]) < 0) {
-      CHKERRQ(TSGetTimeStep(ts, &dt));
-      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, " ** Domain Error at time %g\n", (double)t));
+      PetscCall(TSGetTimeStep(ts, &dt));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, " ** Domain Error at time %g\n", (double)t));
       *accept = PETSC_FALSE;
       break;
     }
   }
-  CHKERRQ(VecRestoreArrayRead(Y, &x));
+  PetscCall(VecRestoreArrayRead(Y, &x));
   PetscFunctionReturn(0);
 }
 
@@ -165,15 +165,15 @@ PetscErrorCode FormInitialState(Vec X, AppCtx* user)
   PetscRandom    R;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscRandomCreate(PETSC_COMM_WORLD, &R));
-  CHKERRQ(PetscRandomSetFromOptions(R));
-  CHKERRQ(PetscRandomSetInterval(R, 0., 10.));
+  PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &R));
+  PetscCall(PetscRandomSetFromOptions(R));
+  PetscCall(PetscRandomSetInterval(R, 0., 10.));
 
   /*
    * Initialize the state vector
    */
-  CHKERRQ(VecSetRandom(X, R));
-  CHKERRQ(PetscRandomDestroy(&R));
+  PetscCall(VecSetRandom(X, R));
+  PetscCall(PetscRandomDestroy(&R));
   PetscFunctionReturn(0);
 }
 
@@ -184,12 +184,12 @@ PetscErrorCode PrintSolution(Vec X, AppCtx *user)
   PetscInt          nb_cells = user->nb_cells;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(X, &x));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Activator,Inhibitor\n"));
+  PetscCall(VecGetArrayRead(X, &x));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Activator,Inhibitor\n"));
   for (i = 0 ; i < nb_cells ; i++) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "%5.6e,%5.6e\n", (double)x[2*i], (double)x[2*i+1]));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%5.6e,%5.6e\n", (double)x[2*i], (double)x[2*i+1]));
   }
-  CHKERRQ(VecRestoreArrayRead(X, &x));
+  PetscCall(VecRestoreArrayRead(X, &x));
   PetscFunctionReturn(0);
 }
 
@@ -204,8 +204,8 @@ int main(int argc, char **argv)
   PetscInt       its;
   PetscMPIInt    size;
 
-  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheck(size == 1,PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "This is a uniprocessor example only");
 
   /*
@@ -222,128 +222,128 @@ int main(int argc, char **argv)
   user.D_a = 0.;
   user.D_h = 30.;
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Problem settings", "PROBLEM");CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsInt("-nb_cells", "Number of cells", "ex42.c",user.nb_cells, &user.nb_cells,NULL));
-  CHKERRQ(PetscOptionsReal("-alpha", "Autocatalysis factor", "ex42.c",user.alpha, &user.alpha,NULL));
-  CHKERRQ(PetscOptionsReal("-beta", "Inhibition factor", "ex42.c",user.beta, &user.beta,NULL));
-  CHKERRQ(PetscOptionsReal("-rho_a", "Default production of the activator", "ex42.c",user.rho_a, &user.rho_a,NULL));
-  CHKERRQ(PetscOptionsReal("-mu_a", "Degradation rate of the activator", "ex42.c",user.mu_a, &user.mu_a,NULL));
-  CHKERRQ(PetscOptionsReal("-D_a", "Diffusion rate of the activator", "ex42.c",user.D_a, &user.D_a,NULL));
-  CHKERRQ(PetscOptionsReal("-rho_h", "Default production of the inhibitor", "ex42.c",user.rho_h, &user.rho_h,NULL));
-  CHKERRQ(PetscOptionsReal("-mu_h", "Degradation rate of the inhibitor", "ex42.c",user.mu_h, &user.mu_h,NULL));
-  CHKERRQ(PetscOptionsReal("-D_h", "Diffusion rate of the inhibitor", "ex42.c",user.D_h, &user.D_h,NULL));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Problem settings", "PROBLEM");PetscCall(ierr);
+  PetscCall(PetscOptionsInt("-nb_cells", "Number of cells", "ex42.c",user.nb_cells, &user.nb_cells,NULL));
+  PetscCall(PetscOptionsReal("-alpha", "Autocatalysis factor", "ex42.c",user.alpha, &user.alpha,NULL));
+  PetscCall(PetscOptionsReal("-beta", "Inhibition factor", "ex42.c",user.beta, &user.beta,NULL));
+  PetscCall(PetscOptionsReal("-rho_a", "Default production of the activator", "ex42.c",user.rho_a, &user.rho_a,NULL));
+  PetscCall(PetscOptionsReal("-mu_a", "Degradation rate of the activator", "ex42.c",user.mu_a, &user.mu_a,NULL));
+  PetscCall(PetscOptionsReal("-D_a", "Diffusion rate of the activator", "ex42.c",user.D_a, &user.D_a,NULL));
+  PetscCall(PetscOptionsReal("-rho_h", "Default production of the inhibitor", "ex42.c",user.rho_h, &user.rho_h,NULL));
+  PetscCall(PetscOptionsReal("-mu_h", "Degradation rate of the inhibitor", "ex42.c",user.mu_h, &user.mu_h,NULL));
+  PetscCall(PetscOptionsReal("-D_h", "Diffusion rate of the inhibitor", "ex42.c",user.D_h, &user.D_h,NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "nb_cells: %D\n", user.nb_cells));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "alpha: %5.5g\n", (double)user.alpha));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "beta:  %5.5g\n", (double)user.beta));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "rho_a: %5.5g\n", (double)user.rho_a));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "mu_a:  %5.5g\n", (double)user.mu_a));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "D_a:   %5.5g\n", (double)user.D_a));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "rho_h: %5.5g\n", (double)user.rho_h));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "mu_h:  %5.5g\n", (double)user.mu_h));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "D_h:   %5.5g\n", (double)user.D_h));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "nb_cells: %D\n", user.nb_cells));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "alpha: %5.5g\n", (double)user.alpha));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "beta:  %5.5g\n", (double)user.beta));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "rho_a: %5.5g\n", (double)user.rho_a));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "mu_a:  %5.5g\n", (double)user.mu_a));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "D_a:   %5.5g\n", (double)user.D_a));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "rho_h: %5.5g\n", (double)user.rho_h));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "mu_h:  %5.5g\n", (double)user.mu_h));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "D_h:   %5.5g\n", (double)user.D_h));
 
   /*
    * Create vector to hold the solution
    */
-  CHKERRQ(VecCreateSeq(PETSC_COMM_WORLD, 2*user.nb_cells, &x));
+  PetscCall(VecCreateSeq(PETSC_COMM_WORLD, 2*user.nb_cells, &x));
 
   /*
    * Create time-stepper context
    */
-  CHKERRQ(TSCreate(PETSC_COMM_WORLD, &ts));
-  CHKERRQ(TSSetProblemType(ts, TS_NONLINEAR));
+  PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
+  PetscCall(TSSetProblemType(ts, TS_NONLINEAR));
 
   /*
    * Tell the time-stepper context where to compute the solution
    */
-  CHKERRQ(TSSetSolution(ts, x));
+  PetscCall(TSSetSolution(ts, x));
 
   /*
    * Allocate the jacobian matrix
    */
-  CHKERRQ(MatCreateSeqAIJ(PETSC_COMM_WORLD, 2*user.nb_cells, 2*user.nb_cells, 4, 0, &J));
+  PetscCall(MatCreateSeqAIJ(PETSC_COMM_WORLD, 2*user.nb_cells, 2*user.nb_cells, 4, 0, &J));
 
   /*
    * Provide the call-back for the non-linear function we are evaluating.
    */
-  CHKERRQ(TSSetRHSFunction(ts, NULL, RHSFunction, &user));
+  PetscCall(TSSetRHSFunction(ts, NULL, RHSFunction, &user));
 
   /*
    * Set the Jacobian matrix and the function user to compute Jacobians
    */
-  CHKERRQ(TSSetRHSJacobian(ts, J, J, RHSJacobian, &user));
+  PetscCall(TSSetRHSJacobian(ts, J, J, RHSJacobian, &user));
 
   /*
    * Set the function checking the domain
    */
-  CHKERRQ(TSSetFunctionDomainError(ts, &DomainErrorFunction));
+  PetscCall(TSSetFunctionDomainError(ts, &DomainErrorFunction));
 
   /*
    * Initialize the problem with random values
    */
-  CHKERRQ(FormInitialState(x, &user));
+  PetscCall(FormInitialState(x, &user));
 
   /*
    * Read the solver type from options
    */
-  CHKERRQ(TSSetType(ts, TSPSEUDO));
+  PetscCall(TSSetType(ts, TSPSEUDO));
 
   /*
    * Set a large number of timesteps and final duration time to insure
    * convergenge to steady state
    */
-  CHKERRQ(TSSetMaxSteps(ts, 2147483647));
-  CHKERRQ(TSSetMaxTime(ts, 1.e12));
-  CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
+  PetscCall(TSSetMaxSteps(ts, 2147483647));
+  PetscCall(TSSetMaxTime(ts, 1.e12));
+  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
 
   /*
    * Set a larger number of potential errors
    */
-  CHKERRQ(TSSetMaxStepRejections(ts, 50));
+  PetscCall(TSSetMaxStepRejections(ts, 50));
 
   /*
    * Also start with a very small dt
    */
-  CHKERRQ(TSSetTimeStep(ts, 0.05));
+  PetscCall(TSSetTimeStep(ts, 0.05));
 
   /*
    * Set a larger time step increment
    */
-  CHKERRQ(TSPseudoSetTimeStepIncrement(ts, 1.5));
+  PetscCall(TSPseudoSetTimeStepIncrement(ts, 1.5));
 
   /*
    * Let the user personalise TS
    */
-  CHKERRQ(TSSetFromOptions(ts));
+  PetscCall(TSSetFromOptions(ts));
 
   /*
    * Set the context for the time stepper
    */
-  CHKERRQ(TSSetApplicationContext(ts, &user));
+  PetscCall(TSSetApplicationContext(ts, &user));
 
   /*
    * Setup the time stepper, ready for evaluation
    */
-  CHKERRQ(TSSetUp(ts));
+  PetscCall(TSSetUp(ts));
 
   /*
    * Perform the solve.
    */
-  CHKERRQ(TSSolve(ts, x));
-  CHKERRQ(TSGetSolveTime(ts, &ftime));
-  CHKERRQ(TSGetStepNumber(ts,&its));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Number of time steps = %D, final time: %4.2e\nResult:\n\n", its, (double)ftime));
-  CHKERRQ(PrintSolution(x, &user));
+  PetscCall(TSSolve(ts, x));
+  PetscCall(TSGetSolveTime(ts, &ftime));
+  PetscCall(TSGetStepNumber(ts,&its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Number of time steps = %D, final time: %4.2e\nResult:\n\n", its, (double)ftime));
+  PetscCall(PrintSolution(x, &user));
 
   /*
    * Free the data structures
    */
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(MatDestroy(&J));
-  CHKERRQ(TSDestroy(&ts));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&x));
+  PetscCall(MatDestroy(&J));
+  PetscCall(TSDestroy(&ts));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

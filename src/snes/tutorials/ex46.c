@@ -40,60 +40,60 @@ int main(int argc,char **argv)
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize problem parameters
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr   = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Surface Process Problem Options", "SNES");CHKERRQ(ierr);
+  ierr   = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Surface Process Problem Options", "SNES");PetscCall(ierr);
   user.D = 1.0;
-  CHKERRQ(PetscOptionsReal("-D", "The diffusion coefficient D", __FILE__, user.D, &user.D, NULL));
+  PetscCall(PetscOptionsReal("-D", "The diffusion coefficient D", __FILE__, user.D, &user.D, NULL));
   user.K = 1.0;
-  CHKERRQ(PetscOptionsReal("-K", "The advection coefficient K", __FILE__, user.K, &user.K, NULL));
+  PetscCall(PetscOptionsReal("-K", "The advection coefficient K", __FILE__, user.K, &user.K, NULL));
   user.m = 1;
-  CHKERRQ(PetscOptionsInt("-m", "The exponent for A", __FILE__, user.m, &user.m, NULL));
-  ierr   = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-m", "The exponent for A", __FILE__, user.m, &user.m, NULL));
+  ierr   = PetscOptionsEnd();PetscCall(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,4,4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
-  CHKERRQ(DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0));
-  CHKERRQ(DMSetApplicationContext(da,&user));
-  CHKERRQ(SNESCreate(PETSC_COMM_WORLD, &snes));
-  CHKERRQ(SNESSetDM(snes, da));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,4,4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0));
+  PetscCall(DMSetApplicationContext(da,&user));
+  PetscCall(SNESCreate(PETSC_COMM_WORLD, &snes));
+  PetscCall(SNESSetDM(snes, da));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set local function evaluation routine
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(DMDASNESSetFunctionLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))FormFunctionLocal,&user));
+  PetscCall(DMDASNESSetFunctionLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))FormFunctionLocal,&user));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize solver; set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(SNESSetFromOptions(snes));
+  PetscCall(SNESSetFromOptions(snes));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(SNESSolve(snes,0,0));
-  CHKERRQ(SNESGetIterationNumber(snes,&its));
+  PetscCall(SNESSolve(snes,0,0));
+  PetscCall(SNESGetIterationNumber(snes,&its));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n",its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n",its));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  CHKERRQ(SNESDestroy(&snes));
-  CHKERRQ(DMDestroy(&da));
+  PetscCall(SNESDestroy(&snes));
+  PetscCall(DMDestroy(&da));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -142,9 +142,9 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
   /*
      Compute function over the locally owned part of the grid
   */
-  CHKERRQ(DMGetCoordinateDM(info->da, &coordDA));
-  CHKERRQ(DMGetCoordinates(info->da, &coordinates));
-  CHKERRQ(DMDAVecGetArray(coordDA, coordinates, &coords));
+  PetscCall(DMGetCoordinateDM(info->da, &coordDA));
+  PetscCall(DMGetCoordinates(info->da, &coordinates));
+  PetscCall(DMDAVecGetArray(coordDA, coordinates, &coords));
   for (j=info->ys; j<info->ys+info->ym; j++) {
     for (i=info->xs; i<info->xs+info->xm; i++) {
       if (i == 0 || j == 0 || i == info->mx-1 || j == info->my-1) f[j][i] = x[j][i];
@@ -159,8 +159,8 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
       }
     }
   }
-  CHKERRQ(DMDAVecRestoreArray(coordDA, coordinates, &coords));
-  CHKERRQ(PetscLogFlops(11.0*info->ym*info->xm));
+  PetscCall(DMDAVecRestoreArray(coordDA, coordinates, &coords));
+  PetscCall(PetscLogFlops(11.0*info->ym*info->xm));
   PetscFunctionReturn(0);
 }
 
@@ -199,7 +199,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,App
       if (i == 0 || j == 0 || i == info->mx-1 || j == info->my-1) {
         /* boundary points */
         v[0] = 1.0;
-        CHKERRQ(MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES));
+        PetscCall(MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES));
       } else {
         /* interior grid points */
         ux        = (x[j][i+1] - x[j][i])/hx;
@@ -216,7 +216,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,App
         for (k = 0; k < 5; ++k) {
           PetscCheckFalse(PetscIsInfOrNanScalar(v[k]),PETSC_COMM_SELF,PETSC_ERR_FP, "Invalid residual: %g", (double)PetscRealPart(v[k]));
         }
-        CHKERRQ(MatSetValuesStencil(jac,1,&row,5,col,v,INSERT_VALUES));
+        PetscCall(MatSetValuesStencil(jac,1,&row,5,col,v,INSERT_VALUES));
       }
     }
   }
@@ -225,13 +225,13 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,App
      Assemble matrix, using the 2-step process:
        MatAssemblyBegin(), MatAssemblyEnd().
   */
-  CHKERRQ(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
   /*
      Tell the matrix we will never add a new nonzero location to the
      matrix. If we do, it will generate an error.
   */
-  CHKERRQ(MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE));
+  PetscCall(MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE));
   PetscFunctionReturn(0);
 }
 

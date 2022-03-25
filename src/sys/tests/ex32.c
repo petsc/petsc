@@ -6,12 +6,12 @@ static char help[] = "Tests deletion of mixed case options";
 int main(int argc,char **argv)
 {
 
-  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
-  CHKERRQ(PetscOptionsSetValue(NULL,"-abc",NULL));
-  CHKERRQ(PetscOptionsSetValue(NULL,"-FOO",NULL));
-  CHKERRQ(PetscOptionsClearValue(NULL,"-FOO"));
-  CHKERRQ(PetscOptionsView(NULL,NULL));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscOptionsSetValue(NULL,"-abc",NULL));
+  PetscCall(PetscOptionsSetValue(NULL,"-FOO",NULL));
+  PetscCall(PetscOptionsClearValue(NULL,"-FOO"));
+  PetscCall(PetscOptionsView(NULL,NULL));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

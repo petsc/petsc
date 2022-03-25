@@ -24,13 +24,13 @@ static PetscErrorCode GetOptions(MPI_Comm comm, AppCtx *ctx)
   ctx->remotemode = PETSC_OWN_POINTER;
   ctx->ilocal = NULL;
   ctx->iremote = NULL;
-  CHKERRQ(PetscOptionsGetInt(NULL, NULL, "-n_leaves_per_rank", &ctx->nLeavesPerRank, NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL, NULL, "-leave_step", &ctx->leaveStep, NULL));
-  CHKERRQ(PetscOptionsGetEnum(NULL, NULL, "-localmode", PetscCopyModes, (PetscEnum*) &ctx->localmode, NULL));
-  CHKERRQ(PetscOptionsGetEnum(NULL, NULL, "-remotemode", PetscCopyModes, (PetscEnum*) &ctx->remotemode, NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-n_leaves_per_rank", &ctx->nLeavesPerRank, NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-leave_step", &ctx->leaveStep, NULL));
+  PetscCall(PetscOptionsGetEnum(NULL, NULL, "-localmode", PetscCopyModes, (PetscEnum*) &ctx->localmode, NULL));
+  PetscCall(PetscOptionsGetEnum(NULL, NULL, "-remotemode", PetscCopyModes, (PetscEnum*) &ctx->remotemode, NULL));
   ctx->contiguousLeaves = (PetscBool) (ctx->leaveStep == 1);
-  CHKERRMPI(MPI_Comm_size(comm, &ctx->size));
-  CHKERRMPI(MPI_Comm_rank(comm, &ctx->rank));
+  PetscCallMPI(MPI_Comm_size(comm, &ctx->size));
+  PetscCallMPI(MPI_Comm_rank(comm, &ctx->rank));
   PetscFunctionReturn(0);
 }
 
@@ -42,44 +42,44 @@ static PetscErrorCode PetscSFCheckEqual_Private(PetscSF sf0, PetscSF sf1)
   PetscBool         flg;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectGetComm((PetscObject)sf0, &comm));
-  CHKERRQ(PetscSFGetGraph(sf0, &nRoot, NULL, NULL, NULL));
-  CHKERRQ(PetscSFGetLeafRange(sf0, NULL, &nLeave));
+  PetscCall(PetscObjectGetComm((PetscObject)sf0, &comm));
+  PetscCall(PetscSFGetGraph(sf0, &nRoot, NULL, NULL, NULL));
+  PetscCall(PetscSFGetLeafRange(sf0, NULL, &nLeave));
   nLeave++;
-  CHKERRQ(VecCreateMPI(comm, nRoot, PETSC_DECIDE, &vecRoot0));
-  CHKERRQ(VecCreateMPI(comm, nLeave, PETSC_DECIDE, &vecLeave0));
-  CHKERRQ(VecDuplicate(vecRoot0, &vecRoot1));
-  CHKERRQ(VecDuplicate(vecLeave0, &vecLeave1));
+  PetscCall(VecCreateMPI(comm, nRoot, PETSC_DECIDE, &vecRoot0));
+  PetscCall(VecCreateMPI(comm, nLeave, PETSC_DECIDE, &vecLeave0));
+  PetscCall(VecDuplicate(vecRoot0, &vecRoot1));
+  PetscCall(VecDuplicate(vecLeave0, &vecLeave1));
   {
     PetscRandom       rand;
 
-    CHKERRQ(PetscRandomCreate(comm, &rand));
-    CHKERRQ(PetscRandomSetFromOptions(rand));
-    CHKERRQ(VecSetRandom(vecRoot0, rand));
-    CHKERRQ(VecSetRandom(vecLeave0, rand));
-    CHKERRQ(VecCopy(vecRoot0, vecRoot1));
-    CHKERRQ(VecCopy(vecLeave0, vecLeave1));
-    CHKERRQ(PetscRandomDestroy(&rand));
+    PetscCall(PetscRandomCreate(comm, &rand));
+    PetscCall(PetscRandomSetFromOptions(rand));
+    PetscCall(VecSetRandom(vecRoot0, rand));
+    PetscCall(VecSetRandom(vecLeave0, rand));
+    PetscCall(VecCopy(vecRoot0, vecRoot1));
+    PetscCall(VecCopy(vecLeave0, vecLeave1));
+    PetscCall(PetscRandomDestroy(&rand));
   }
 
-  CHKERRQ(VecScatterBegin(sf0, vecRoot0, vecLeave0, ADD_VALUES, SCATTER_FORWARD));
-  CHKERRQ(VecScatterEnd(  sf0, vecRoot0, vecLeave0, ADD_VALUES, SCATTER_FORWARD));
-  CHKERRQ(VecScatterBegin(sf1, vecRoot1, vecLeave1, ADD_VALUES, SCATTER_FORWARD));
-  CHKERRQ(VecScatterEnd(  sf1, vecRoot1, vecLeave1, ADD_VALUES, SCATTER_FORWARD));
-  CHKERRQ(VecEqual(vecLeave0, vecLeave1, &flg));
+  PetscCall(VecScatterBegin(sf0, vecRoot0, vecLeave0, ADD_VALUES, SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(  sf0, vecRoot0, vecLeave0, ADD_VALUES, SCATTER_FORWARD));
+  PetscCall(VecScatterBegin(sf1, vecRoot1, vecLeave1, ADD_VALUES, SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(  sf1, vecRoot1, vecLeave1, ADD_VALUES, SCATTER_FORWARD));
+  PetscCall(VecEqual(vecLeave0, vecLeave1, &flg));
   PetscCheck(flg, comm, PETSC_ERR_PLIB, "leave vectors differ");
 
-  CHKERRQ(VecScatterBegin(sf0, vecLeave0, vecRoot0, ADD_VALUES, SCATTER_REVERSE));
-  CHKERRQ(VecScatterEnd(  sf0, vecLeave0, vecRoot0, ADD_VALUES, SCATTER_REVERSE));
-  CHKERRQ(VecScatterBegin(sf1, vecLeave1, vecRoot1, ADD_VALUES, SCATTER_REVERSE));
-  CHKERRQ(VecScatterEnd(  sf1, vecLeave1, vecRoot1, ADD_VALUES, SCATTER_REVERSE));
-  CHKERRQ(VecEqual(vecRoot0, vecRoot1, &flg));
+  PetscCall(VecScatterBegin(sf0, vecLeave0, vecRoot0, ADD_VALUES, SCATTER_REVERSE));
+  PetscCall(VecScatterEnd(  sf0, vecLeave0, vecRoot0, ADD_VALUES, SCATTER_REVERSE));
+  PetscCall(VecScatterBegin(sf1, vecLeave1, vecRoot1, ADD_VALUES, SCATTER_REVERSE));
+  PetscCall(VecScatterEnd(  sf1, vecLeave1, vecRoot1, ADD_VALUES, SCATTER_REVERSE));
+  PetscCall(VecEqual(vecRoot0, vecRoot1, &flg));
   PetscCheck(flg, comm, PETSC_ERR_PLIB, "root vectors differ");
 
-  CHKERRQ(VecDestroy(&vecRoot0));
-  CHKERRQ(VecDestroy(&vecRoot1));
-  CHKERRQ(VecDestroy(&vecLeave0));
-  CHKERRQ(VecDestroy(&vecLeave1));
+  PetscCall(VecDestroy(&vecRoot0));
+  PetscCall(VecDestroy(&vecRoot1));
+  PetscCall(VecDestroy(&vecLeave0));
+  PetscCall(VecDestroy(&vecLeave1));
   PetscFunctionReturn(0);
 }
 
@@ -93,12 +93,12 @@ PetscErrorCode CreateSF0(AppCtx *ctx, PetscSF *sf0)
   PetscSFNode      *iremote;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscMalloc1(nLeaves+1, &ctx->ilocal));
-  CHKERRQ(PetscMalloc1(nLeaves, &ctx->iremote));
+  PetscCall(PetscMalloc1(nLeaves+1, &ctx->ilocal));
+  PetscCall(PetscMalloc1(nLeaves, &ctx->iremote));
   ilocal = ctx->ilocal;
   iremote = ctx->iremote;
   ilocal[nLeaves] = -ctx->leaveStep;
-  CHKERRQ(PetscSFCreate(ctx->comm, &sf));
+  PetscCall(PetscSFCreate(ctx->comm, &sf));
   for (r=0, j=nLeaves-1; r<ctx->size; r++) {
     for (k=0; k<ctx->nLeavesPerRank; k++, j--) {
       ilocal[j] = ilocal[j+1] + ctx->leaveStep;
@@ -106,15 +106,15 @@ PetscErrorCode CreateSF0(AppCtx *ctx, PetscSF *sf0)
       iremote[j].index = k;
     }
   }
-  CHKERRQ(PetscSFSetGraph(sf, nroots, nLeaves, ilocal, ctx->localmode, iremote, ctx->remotemode));
+  PetscCall(PetscSFSetGraph(sf, nroots, nLeaves, ilocal, ctx->localmode, iremote, ctx->remotemode));
   {
     const PetscInt *tlocal;
     PetscBool       sorted;
 
-    CHKERRQ(PetscSFGetGraph(sf, NULL, NULL, &tlocal, NULL));
+    PetscCall(PetscSFGetGraph(sf, NULL, NULL, &tlocal, NULL));
     PetscCheckFalse(ctx->contiguousLeaves && tlocal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ilocal=NULL expected for contiguous case");
     if (tlocal) {
-      CHKERRQ(PetscSortedInt(nLeaves, tlocal, &sorted));
+      PetscCall(PetscSortedInt(nLeaves, tlocal, &sorted));
       PetscCheck(sorted,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ilocal expected to be sorted");
     }
   }
@@ -134,10 +134,10 @@ PetscErrorCode CreateSF1(AppCtx *ctx, PetscSF *sf1)
   PetscFunctionBegin;
   ilocal = NULL;
   if (!ctx->contiguousLeaves) {
-    CHKERRQ(PetscCalloc1(nLeaves+1, &ilocal));
+    PetscCall(PetscCalloc1(nLeaves+1, &ilocal));
   }
-  CHKERRQ(PetscMalloc1(nLeaves, &iremote));
-  CHKERRQ(PetscSFCreate(ctx->comm, &sf));
+  PetscCall(PetscMalloc1(nLeaves, &iremote));
+  PetscCall(PetscSFCreate(ctx->comm, &sf));
   for (r=0, j=0; r<ctx->size; r++) {
     for (k=0; k<ctx->nLeavesPerRank; k++, j++) {
       if (!ctx->contiguousLeaves) {
@@ -148,11 +148,11 @@ PetscErrorCode CreateSF1(AppCtx *ctx, PetscSF *sf1)
     }
   }
   PetscCheck(j == nLeaves,PETSC_COMM_SELF,PETSC_ERR_PLIB,"j != nLeaves");
-  CHKERRQ(PetscSFSetGraph(sf, nroots, nLeaves, ilocal, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER));
+  PetscCall(PetscSFSetGraph(sf, nroots, nLeaves, ilocal, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER));
   if (ctx->contiguousLeaves) {
     const PetscInt *tlocal;
 
-    CHKERRQ(PetscSFGetGraph(sf, NULL, NULL, &tlocal, NULL));
+    PetscCall(PetscSFGetGraph(sf, NULL, NULL, &tlocal, NULL));
     PetscCheckFalse(tlocal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ilocal=NULL expected for contiguous case");
   }
   *sf1 = sf;
@@ -165,21 +165,21 @@ int main(int argc, char **argv)
   PetscSF  sf0, sf1;
   MPI_Comm comm;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   comm = PETSC_COMM_WORLD;
-  CHKERRQ(GetOptions(comm, &ctx));
+  PetscCall(GetOptions(comm, &ctx));
 
-  CHKERRQ(CreateSF0(&ctx, &sf0));
-  CHKERRQ(CreateSF1(&ctx, &sf1));
-  CHKERRQ(PetscSFViewFromOptions(sf0, NULL, "-sf0_view"));
-  CHKERRQ(PetscSFViewFromOptions(sf1, NULL, "-sf1_view"));
-  CHKERRQ(PetscSFCheckEqual_Private(sf0, sf1));
+  PetscCall(CreateSF0(&ctx, &sf0));
+  PetscCall(CreateSF1(&ctx, &sf1));
+  PetscCall(PetscSFViewFromOptions(sf0, NULL, "-sf0_view"));
+  PetscCall(PetscSFViewFromOptions(sf1, NULL, "-sf1_view"));
+  PetscCall(PetscSFCheckEqual_Private(sf0, sf1));
 
-  if (ctx.localmode != PETSC_OWN_POINTER)  CHKERRQ(PetscFree(ctx.ilocal));
-  if (ctx.remotemode != PETSC_OWN_POINTER) CHKERRQ(PetscFree(ctx.iremote));
-  CHKERRQ(PetscSFDestroy(&sf0));
-  CHKERRQ(PetscSFDestroy(&sf1));
-  CHKERRQ(PetscFinalize());
+  if (ctx.localmode != PETSC_OWN_POINTER)  PetscCall(PetscFree(ctx.ilocal));
+  if (ctx.remotemode != PETSC_OWN_POINTER) PetscCall(PetscFree(ctx.iremote));
+  PetscCall(PetscSFDestroy(&sf0));
+  PetscCall(PetscSFDestroy(&sf1));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

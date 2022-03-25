@@ -59,7 +59,7 @@ static PetscErrorCode ComputeMassConservation(Vec,PetscReal*,void*);
 static PetscErrorCode MonitorMassConservation(TS,PetscInt,PetscReal,Vec,void*);
 static PetscErrorCode MonitorTempature(TS,PetscInt,PetscReal,Vec,void*);
 
-#define CHKERRTC(ierr) do {PetscCheck(!ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in TChem library, return code %d",ierr);} while (0)
+#define PetscCallTC(ierr) do {PetscCheck(!ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in TChem library, return code %d",ierr);} while (0)
 
 int main(int argc,char **argv)
 {
@@ -79,149 +79,149 @@ int main(int argc,char **argv)
   TSTrajectory      tj;
   PetscBool         flg = PETSC_FALSE,tflg = PETSC_FALSE,found;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Chemistry solver options","");CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsString("-chem","CHEMKIN input file","",chemfile,chemfile,sizeof(chemfile),NULL));
-  CHKERRQ(PetscFileRetrieve(PETSC_COMM_WORLD,chemfile,lchemfile,PETSC_MAX_PATH_LEN,&found));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Chemistry solver options","");PetscCall(ierr);
+  PetscCall(PetscOptionsString("-chem","CHEMKIN input file","",chemfile,chemfile,sizeof(chemfile),NULL));
+  PetscCall(PetscFileRetrieve(PETSC_COMM_WORLD,chemfile,lchemfile,PETSC_MAX_PATH_LEN,&found));
   PetscCheck(found,PETSC_COMM_WORLD,PETSC_ERR_FILE_OPEN,"Cannot download %s and no local version %s",chemfile,lchemfile);
-  CHKERRQ(PetscOptionsString("-thermo","NASA thermo input file","",thermofile,thermofile,sizeof(thermofile),NULL));
-  CHKERRQ(PetscFileRetrieve(PETSC_COMM_WORLD,thermofile,lthermofile,PETSC_MAX_PATH_LEN,&found));
+  PetscCall(PetscOptionsString("-thermo","NASA thermo input file","",thermofile,thermofile,sizeof(thermofile),NULL));
+  PetscCall(PetscFileRetrieve(PETSC_COMM_WORLD,thermofile,lthermofile,PETSC_MAX_PATH_LEN,&found));
   PetscCheck(found,PETSC_COMM_WORLD,PETSC_ERR_FILE_OPEN,"Cannot download %s and no local version %s",thermofile,lthermofile);
   user.pressure = 1.01325e5;    /* Pascal */
-  CHKERRQ(PetscOptionsReal("-pressure","Pressure of reaction [Pa]","",user.pressure,&user.pressure,NULL));
+  PetscCall(PetscOptionsReal("-pressure","Pressure of reaction [Pa]","",user.pressure,&user.pressure,NULL));
   user.Tini = 1000;             /* Kelvin */
-  CHKERRQ(PetscOptionsReal("-Tini","Initial temperature [K]","",user.Tini,&user.Tini,NULL));
-  CHKERRQ(PetscOptionsBool("-monitor_mass","Monitor the total mass at each timestep","",flg,&flg,NULL));
-  CHKERRQ(PetscOptionsBool("-monitor_temp","Monitor the temperature each timestep","",tflg,&tflg,NULL));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(PetscOptionsReal("-Tini","Initial temperature [K]","",user.Tini,&user.Tini,NULL));
+  PetscCall(PetscOptionsBool("-monitor_mass","Monitor the total mass at each timestep","",flg,&flg,NULL));
+  PetscCall(PetscOptionsBool("-monitor_temp","Monitor the temperature each timestep","",tflg,&tflg,NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
   /* tchem requires periodic table in current directory */
-  CHKERRQ(PetscFileRetrieve(PETSC_COMM_WORLD,periodic,lperiodic,PETSC_MAX_PATH_LEN,&found));
+  PetscCall(PetscFileRetrieve(PETSC_COMM_WORLD,periodic,lperiodic,PETSC_MAX_PATH_LEN,&found));
   PetscCheck(found,PETSC_COMM_WORLD,PETSC_ERR_FILE_OPEN,"Cannot located required periodic table %s or local version %s",periodic,lperiodic);
 
-  CHKERRTC(TC_initChem(lchemfile, lthermofile, 0, 1.0));
+  PetscCallTC(TC_initChem(lchemfile, lthermofile, 0, 1.0));
   TC_setThermoPres(user.pressure);
   user.Nspec = TC_getNspec();
   user.Nreac = TC_getNreac();
   /*
       Get names of all species in easy to use array
   */
-  CHKERRQ(PetscMalloc1((user.Nspec+1)*LENGTHOFSPECNAME,&names));
-  CHKERRQ(PetscStrcpy(names,"Temp"));
+  PetscCall(PetscMalloc1((user.Nspec+1)*LENGTHOFSPECNAME,&names));
+  PetscCall(PetscStrcpy(names,"Temp"));
   TC_getSnames(user.Nspec,names+LENGTHOFSPECNAME);
-  CHKERRQ(PetscMalloc1((user.Nspec+2),&snames));
+  PetscCall(PetscMalloc1((user.Nspec+2),&snames));
   for (i=0; i<user.Nspec+1; i++) snames[i] = names+i*LENGTHOFSPECNAME;
   snames[user.Nspec+1] = NULL;
-  CHKERRQ(PetscStrArrayallocpy((const char *const *)snames,&user.snames));
-  CHKERRQ(PetscFree(snames));
-  CHKERRQ(PetscFree(names));
+  PetscCall(PetscStrArrayallocpy((const char *const *)snames,&user.snames));
+  PetscCall(PetscFree(snames));
+  PetscCall(PetscFree(names));
 
-  CHKERRQ(PetscMalloc3(user.Nspec+1,&user.tchemwork,PetscSqr(user.Nspec+1),&user.Jdense,user.Nspec+1,&user.rows));
-  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,user.Nspec+1,&X));
+  PetscCall(PetscMalloc3(user.Nspec+1,&user.tchemwork,PetscSqr(user.Nspec+1),&user.Jdense,user.Nspec+1,&user.rows));
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,user.Nspec+1,&X));
 
-  /* CHKERRQ(MatCreateSeqAIJ(PETSC_COMM_SELF,user.Nspec+1,user.Nspec+1,PETSC_DECIDE,NULL,&J)); */
-  CHKERRQ(MatCreateSeqDense(PETSC_COMM_SELF,user.Nspec+1,user.Nspec+1,NULL,&J));
-  CHKERRQ(MatSetFromOptions(J));
+  /* PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF,user.Nspec+1,user.Nspec+1,PETSC_DECIDE,NULL,&J)); */
+  PetscCall(MatCreateSeqDense(PETSC_COMM_SELF,user.Nspec+1,user.Nspec+1,NULL,&J));
+  PetscCall(MatSetFromOptions(J));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
-  CHKERRQ(TSSetType(ts,TSARKIMEX));
-  CHKERRQ(TSARKIMEXSetFullyImplicit(ts,PETSC_TRUE));
-  CHKERRQ(TSARKIMEXSetType(ts,TSARKIMEX4));
-  CHKERRQ(TSSetRHSFunction(ts,NULL,FormRHSFunction,&user));
-  CHKERRQ(TSSetRHSJacobian(ts,J,J,FormRHSJacobian,&user));
+  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
+  PetscCall(TSSetType(ts,TSARKIMEX));
+  PetscCall(TSARKIMEXSetFullyImplicit(ts,PETSC_TRUE));
+  PetscCall(TSARKIMEXSetType(ts,TSARKIMEX4));
+  PetscCall(TSSetRHSFunction(ts,NULL,FormRHSFunction,&user));
+  PetscCall(TSSetRHSJacobian(ts,J,J,FormRHSJacobian,&user));
 
   if (flg) {
-    CHKERRQ(TSMonitorSet(ts,MonitorMassConservation,NULL,NULL));
+    PetscCall(TSMonitorSet(ts,MonitorMassConservation,NULL,NULL));
   }
   if (tflg) {
-    CHKERRQ(TSMonitorSet(ts,MonitorTempature,&user,NULL));
+    PetscCall(TSMonitorSet(ts,MonitorTempature,&user,NULL));
   }
 
   ftime = 1.0;
-  CHKERRQ(TSSetMaxTime(ts,ftime));
-  CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
+  PetscCall(TSSetMaxTime(ts,ftime));
+  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(FormInitialSolution(ts,X,&user));
-  CHKERRQ(TSSetSolution(ts,X));
+  PetscCall(FormInitialSolution(ts,X,&user));
+  PetscCall(TSSetSolution(ts,X));
   dt   = 1e-10;                 /* Initial time step */
-  CHKERRQ(TSSetTimeStep(ts,dt));
-  CHKERRQ(TSGetAdapt(ts,&adapt));
-  CHKERRQ(TSAdaptSetStepLimits(adapt,1e-12,1e-4)); /* Also available with -ts_adapt_dt_min/-ts_adapt_dt_max */
-  CHKERRQ(TSSetMaxSNESFailures(ts,-1));            /* Retry step an unlimited number of times */
+  PetscCall(TSSetTimeStep(ts,dt));
+  PetscCall(TSGetAdapt(ts,&adapt));
+  PetscCall(TSAdaptSetStepLimits(adapt,1e-12,1e-4)); /* Also available with -ts_adapt_dt_min/-ts_adapt_dt_max */
+  PetscCall(TSSetMaxSNESFailures(ts,-1));            /* Retry step an unlimited number of times */
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSSetFromOptions(ts));
+  PetscCall(TSSetFromOptions(ts));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set final conditions for sensitivities
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(VecDuplicate(X,&lambda));
-  CHKERRQ(TSSetCostGradients(ts,1,&lambda,NULL));
-  CHKERRQ(VecSetValue(lambda,0,1.0,INSERT_VALUES));
-  CHKERRQ(VecAssemblyBegin(lambda));
-  CHKERRQ(VecAssemblyEnd(lambda));
+  PetscCall(VecDuplicate(X,&lambda));
+  PetscCall(TSSetCostGradients(ts,1,&lambda,NULL));
+  PetscCall(VecSetValue(lambda,0,1.0,INSERT_VALUES));
+  PetscCall(VecAssemblyBegin(lambda));
+  PetscCall(VecAssemblyEnd(lambda));
 
-  CHKERRQ(TSGetTrajectory(ts,&tj));
+  PetscCall(TSGetTrajectory(ts,&tj));
   if (tj) {
-    CHKERRQ(TSTrajectorySetVariableNames(tj,(const char * const *)user.snames));
-    CHKERRQ(TSTrajectorySetTransform(tj,(PetscErrorCode (*)(void*,Vec,Vec*))MassFractionToMoleFraction,NULL,&user));
+    PetscCall(TSTrajectorySetVariableNames(tj,(const char * const *)user.snames));
+    PetscCall(TSTrajectorySetTransform(tj,(PetscErrorCode (*)(void*,Vec,Vec*))MassFractionToMoleFraction,NULL,&user));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Pass information to graphical monitoring routine
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSMonitorLGSetVariableNames(ts,(const char * const *)user.snames));
-  CHKERRQ(TSMonitorLGSetTransform(ts,(PetscErrorCode (*)(void*,Vec,Vec*))MassFractionToMoleFraction,NULL,&user));
+  PetscCall(TSMonitorLGSetVariableNames(ts,(const char * const *)user.snames));
+  PetscCall(TSMonitorLGSetTransform(ts,(PetscErrorCode (*)(void*,Vec,Vec*))MassFractionToMoleFraction,NULL,&user));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve ODE
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSSolve(ts,X));
-  CHKERRQ(TSGetSolveTime(ts,&ftime));
-  CHKERRQ(TSGetStepNumber(ts,&steps));
-  CHKERRQ(TSGetConvergedReason(ts,&reason));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after %D steps\n",TSConvergedReasons[reason],(double)ftime,steps));
+  PetscCall(TSSolve(ts,X));
+  PetscCall(TSGetSolveTime(ts,&ftime));
+  PetscCall(TSGetStepNumber(ts,&steps));
+  PetscCall(TSGetConvergedReason(ts,&reason));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after %D steps\n",TSConvergedReasons[reason],(double)ftime,steps));
 
   /* {
     Vec                max;
     PetscInt           i;
     const PetscReal    *bmax;
 
-    CHKERRQ(TSMonitorEnvelopeGetBounds(ts,&max,NULL));
+    PetscCall(TSMonitorEnvelopeGetBounds(ts,&max,NULL));
     if (max) {
-      CHKERRQ(VecGetArrayRead(max,&bmax));
-      CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Species - maximum mass fraction\n"));
+      PetscCall(VecGetArrayRead(max,&bmax));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,"Species - maximum mass fraction\n"));
       for (i=1; i<user.Nspec; i++) {
-        if (bmax[i] > .01) CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"%s %g\n",user.snames[i],(double)bmax[i]));
+        if (bmax[i] > .01) PetscCall(PetscPrintf(PETSC_COMM_SELF,"%s %g\n",user.snames[i],(double)bmax[i]));
       }
-      CHKERRQ(VecRestoreArrayRead(max,&bmax));
+      PetscCall(VecRestoreArrayRead(max,&bmax));
     }
   }
 
   Vec y;
-  CHKERRQ(MassFractionToMoleFraction(&user,X,&y));
-  CHKERRQ(PrintSpecies(&user,y));
-  CHKERRQ(VecDestroy(&y)); */
+  PetscCall(MassFractionToMoleFraction(&user,X,&y));
+  PetscCall(PrintSpecies(&user,y));
+  PetscCall(VecDestroy(&y)); */
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   TC_reset();
-  CHKERRQ(PetscStrArrayDestroy(&user.snames));
-  CHKERRQ(MatDestroy(&J));
-  CHKERRQ(VecDestroy(&X));
-  CHKERRQ(VecDestroy(&lambda));
-  CHKERRQ(TSDestroy(&ts));
-  CHKERRQ(PetscFree3(user.tchemwork,user.Jdense,user.rows));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscStrArrayDestroy(&user.snames));
+  PetscCall(MatDestroy(&J));
+  PetscCall(VecDestroy(&X));
+  PetscCall(VecDestroy(&lambda));
+  PetscCall(TSDestroy(&ts));
+  PetscCall(PetscFree3(user.tchemwork,user.Jdense,user.rows));
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -233,16 +233,16 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
   const PetscScalar *x;
 
   PetscFunctionBeginUser;
-  CHKERRQ(VecGetArrayRead(X,&x));
-  CHKERRQ(VecGetArray(F,&f));
+  PetscCall(VecGetArrayRead(X,&x));
+  PetscCall(VecGetArray(F,&f));
 
-  CHKERRQ(PetscArraycpy(user->tchemwork,x,user->Nspec+1));
+  PetscCall(PetscArraycpy(user->tchemwork,x,user->Nspec+1));
   user->tchemwork[0] *= user->Tini; /* Dimensionalize */
-  CHKERRTC(TC_getSrc(user->tchemwork,user->Nspec+1,f));
+  PetscCallTC(TC_getSrc(user->tchemwork,user->Nspec+1,f));
   f[0] /= user->Tini;           /* Non-dimensionalize */
 
-  CHKERRQ(VecRestoreArrayRead(X,&x));
-  CHKERRQ(VecRestoreArray(F,&f));
+  PetscCall(VecRestoreArrayRead(X,&x));
+  PetscCall(VecRestoreArray(F,&f));
   PetscFunctionReturn(0);
 }
 
@@ -254,25 +254,25 @@ static PetscErrorCode FormRHSJacobian(TS ts,PetscReal t,Vec X,Mat Amat,Mat Pmat,
   PetscInt          M = user->Nspec+1,i;
 
   PetscFunctionBeginUser;
-  CHKERRQ(VecGetArrayRead(X,&x));
-  CHKERRQ(PetscArraycpy(user->tchemwork,x,user->Nspec+1));
-  CHKERRQ(VecRestoreArrayRead(X,&x));
+  PetscCall(VecGetArrayRead(X,&x));
+  PetscCall(PetscArraycpy(user->tchemwork,x,user->Nspec+1));
+  PetscCall(VecRestoreArrayRead(X,&x));
   user->tchemwork[0] *= user->Tini;  /* Dimensionalize temperature (first row) because that is what Tchem wants */
-  CHKERRQ(TC_getJacTYN(user->tchemwork,user->Nspec,user->Jdense,1));
+  PetscCall(TC_getJacTYN(user->tchemwork,user->Nspec,user->Jdense,1));
 
   for (i=0; i<M; i++) user->Jdense[i + 0*M] /= user->Tini; /* Non-dimensionalize first column */
   for (i=0; i<M; i++) user->Jdense[0 + i*M] /= user->Tini; /* Non-dimensionalize first row */
   for (i=0; i<M; i++) user->rows[i] = i;
-  CHKERRQ(MatSetOption(Pmat,MAT_ROW_ORIENTED,PETSC_FALSE));
-  CHKERRQ(MatSetOption(Pmat,MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE));
-  CHKERRQ(MatZeroEntries(Pmat));
-  CHKERRQ(MatSetValues(Pmat,M,user->rows,M,user->rows,user->Jdense,INSERT_VALUES));
+  PetscCall(MatSetOption(Pmat,MAT_ROW_ORIENTED,PETSC_FALSE));
+  PetscCall(MatSetOption(Pmat,MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE));
+  PetscCall(MatZeroEntries(Pmat));
+  PetscCall(MatSetValues(Pmat,M,user->rows,M,user->rows,user->Jdense,INSERT_VALUES));
 
-  CHKERRQ(MatAssemblyBegin(Pmat,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(Pmat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(Pmat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(Pmat,MAT_FINAL_ASSEMBLY));
   if (Amat != Pmat) {
-    CHKERRQ(MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY));
   }
   PetscFunctionReturn(0);
 }
@@ -290,13 +290,13 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
   PetscBool      flg;
 
   PetscFunctionBeginUser;
-  CHKERRQ(VecZeroEntries(X));
-  CHKERRQ(VecGetArray(X,&x));
+  PetscCall(VecZeroEntries(X));
+  PetscCall(VecGetArray(X,&x));
   x[0] = 1.0;  /* Non-dimensionalized by user->Tini */
 
-  CHKERRQ(PetscOptionsGetStringArray(NULL,NULL,"-initial_species",names,&smax,&flg));
+  PetscCall(PetscOptionsGetStringArray(NULL,NULL,"-initial_species",names,&smax,&flg));
   PetscCheck(smax >= 2,PETSC_COMM_SELF,PETSC_ERR_USER,"Must provide at least two initial species");
-  CHKERRQ(PetscOptionsGetRealArray(NULL,NULL,"-initial_mole",molefracs,&mmax,&flg));
+  PetscCall(PetscOptionsGetRealArray(NULL,NULL,"-initial_mole",molefracs,&mmax,&flg));
   PetscCheck(smax == mmax,PETSC_COMM_SELF,PETSC_ERR_USER,"Must provide same number of initial species %D as initial moles %D",smax,mmax);
   sum = 0;
   for (i=0; i<smax; i++) sum += molefracs[i];
@@ -304,17 +304,17 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
   for (i=0; i<smax; i++) {
     int ispec = TC_getSpos(names[i], strlen(names[i]));
     PetscCheck(ispec >= 0,PETSC_COMM_SELF,PETSC_ERR_USER,"Could not find species %s",names[i]);
-    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Species %d: %s %g\n",i,names[i],molefracs[i]));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"Species %d: %s %g\n",i,names[i],molefracs[i]));
     x[1+ispec] = molefracs[i];
   }
   for (i=0; i<smax; i++) {
-    CHKERRQ(PetscFree(names[i]));
+    PetscCall(PetscFree(names[i]));
   }
-  CHKERRQ(VecRestoreArray(X,&x));
-  /* CHKERRQ(PrintSpecies((User)ctx,X)); */
-  CHKERRQ(MoleFractionToMassFraction((User)ctx,X,&y));
-  CHKERRQ(VecCopy(y,X));
-  CHKERRQ(VecDestroy(&y));
+  PetscCall(VecRestoreArray(X,&x));
+  /* PetscCall(PrintSpecies((User)ctx,X)); */
+  PetscCall(MoleFractionToMassFraction((User)ctx,X,&y));
+  PetscCall(VecCopy(y,X));
+  PetscCall(VecDestroy(&y));
   PetscFunctionReturn(0);
 }
 
@@ -328,13 +328,13 @@ PetscErrorCode MassFractionToMoleFraction(User user,Vec massf,Vec *molef)
   const PetscScalar *maf;
 
   PetscFunctionBegin;
-  CHKERRQ(VecDuplicate(massf,molef));
-  CHKERRQ(VecGetArrayRead(massf,&maf));
-  CHKERRQ(VecGetArray(*molef,&mof));
+  PetscCall(VecDuplicate(massf,molef));
+  PetscCall(VecGetArrayRead(massf,&maf));
+  PetscCall(VecGetArray(*molef,&mof));
   mof[0] = maf[0]; /* copy over temperature */
   TC_getMs2Ml((double*)maf+1,user->Nspec,mof+1);
-  CHKERRQ(VecRestoreArray(*molef,&mof));
-  CHKERRQ(VecRestoreArrayRead(massf,&maf));
+  PetscCall(VecRestoreArray(*molef,&mof));
+  PetscCall(VecRestoreArrayRead(massf,&maf));
   PetscFunctionReturn(0);
 }
 
@@ -348,13 +348,13 @@ PetscErrorCode MoleFractionToMassFraction(User user,Vec molef,Vec *massf)
   PetscScalar       *maf;
 
   PetscFunctionBegin;
-  CHKERRQ(VecDuplicate(molef,massf));
-  CHKERRQ(VecGetArrayRead(molef,&mof));
-  CHKERRQ(VecGetArray(*massf,&maf));
+  PetscCall(VecDuplicate(molef,massf));
+  PetscCall(VecGetArrayRead(molef,&mof));
+  PetscCall(VecGetArray(*massf,&maf));
   maf[0] = mof[0]; /* copy over temperature */
   TC_getMl2Ms((double*)mof+1,user->Nspec,maf+1);
-  CHKERRQ(VecRestoreArrayRead(molef,&mof));
-  CHKERRQ(VecRestoreArray(*massf,&maf));
+  PetscCall(VecRestoreArrayRead(molef,&mof));
+  PetscCall(VecRestoreArray(*massf,&maf));
   PetscFunctionReturn(0);
 }
 
@@ -363,7 +363,7 @@ PetscErrorCode ComputeMassConservation(Vec x,PetscReal *mass,void* ctx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  CHKERRQ(VecSum(x,mass));
+  PetscCall(VecSum(x,mass));
   PetscFunctionReturn(0);
 }
 
@@ -374,11 +374,11 @@ PetscErrorCode MonitorMassConservation(TS ts,PetscInt step,PetscReal time,Vec x,
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  CHKERRQ(ComputeMassConservation(x,&mass,ctx));
-  CHKERRQ(VecGetArrayRead(x,&T));
+  PetscCall(ComputeMassConservation(x,&mass,ctx));
+  PetscCall(VecGetArrayRead(x,&T));
   mass -= PetscAbsScalar(T[0]);
-  CHKERRQ(VecRestoreArrayRead(x,&T));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Timestep %D time %g percent mass lost or gained %g\n",step,(double)time,(double)100.*(1.0 - mass)));
+  PetscCall(VecRestoreArrayRead(x,&T));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Timestep %D time %g percent mass lost or gained %g\n",step,(double)time,(double)100.*(1.0 - mass)));
   PetscFunctionReturn(0);
 }
 
@@ -389,9 +389,9 @@ PetscErrorCode MonitorTempature(TS ts,PetscInt step,PetscReal time,Vec x,void* c
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(x,&T));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Timestep %D time %g temperature %g\n",step,(double)time,(double)T[0]*user->Tini));
-  CHKERRQ(VecRestoreArrayRead(x,&T));
+  PetscCall(VecGetArrayRead(x,&T));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Timestep %D time %g temperature %g\n",step,(double)time,(double)T[0]*user->Tini));
+  PetscCall(VecRestoreArrayRead(x,&T));
   PetscFunctionReturn(0);
 }
 
@@ -405,15 +405,15 @@ PETSC_UNUSED PetscErrorCode PrintSpecies(User user,Vec molef)
   PetscInt          i,*idx,n = user->Nspec+1;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscMalloc1(n,&idx));
+  PetscCall(PetscMalloc1(n,&idx));
   for (i=0; i<n;i++) idx[i] = i;
-  CHKERRQ(VecGetArrayRead(molef,&mof));
-  CHKERRQ(PetscSortRealWithPermutation(n,mof,idx));
+  PetscCall(VecGetArrayRead(molef,&mof));
+  PetscCall(PetscSortRealWithPermutation(n,mof,idx));
   for (i=0; i<n; i++) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"%6s %g\n",user->snames[idx[n-i-1]],mof[idx[n-i-1]]));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"%6s %g\n",user->snames[idx[n-i-1]],mof[idx[n-i-1]]));
   }
-  CHKERRQ(PetscFree(idx));
-  CHKERRQ(VecRestoreArrayRead(molef,&mof));
+  PetscCall(PetscFree(idx));
+  PetscCall(VecRestoreArrayRead(molef,&mof));
   PetscFunctionReturn(0);
 }
 

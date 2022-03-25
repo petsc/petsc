@@ -12,29 +12,29 @@ int main(int argc, char **argv)
   PetscBool      conv = PETSC_FALSE;
   PetscErrorCode ierr;
 
-  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
-  CHKERRQ(DMCreate(PETSC_COMM_WORLD, &dm));
-  CHKERRQ(PetscStrncpy(typeString,DMFOREST,256));
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"DM Forest example options",NULL);CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsString("-dm_type","The type of the dm",NULL,DMFOREST,typeString,sizeof(typeString),NULL));
-  CHKERRQ(PetscOptionsBool("-test_convert","Test conversion to DMPLEX",NULL,conv,&conv,NULL));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  CHKERRQ(DMSetType(dm,(DMType) typeString));
-  CHKERRQ(DMSetFromOptions(dm));
-  CHKERRQ(DMSetUp(dm));
-  CHKERRQ(DMViewFromOptions(dm,NULL,"-dm_view"));
-  CHKERRQ(PetscViewerDestroy(&viewer));
+  PetscCall(PetscInitialize(&argc, &argv, NULL,help));
+  PetscCall(DMCreate(PETSC_COMM_WORLD, &dm));
+  PetscCall(PetscStrncpy(typeString,DMFOREST,256));
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"DM Forest example options",NULL);PetscCall(ierr);
+  PetscCall(PetscOptionsString("-dm_type","The type of the dm",NULL,DMFOREST,typeString,sizeof(typeString),NULL));
+  PetscCall(PetscOptionsBool("-test_convert","Test conversion to DMPLEX",NULL,conv,&conv,NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscCall(DMSetType(dm,(DMType) typeString));
+  PetscCall(DMSetFromOptions(dm));
+  PetscCall(DMSetUp(dm));
+  PetscCall(DMViewFromOptions(dm,NULL,"-dm_view"));
+  PetscCall(PetscViewerDestroy(&viewer));
   if (conv) {
     DM dmConv;
 
-    CHKERRQ(DMConvert(dm,DMPLEX,&dmConv));
-    CHKERRQ(DMLocalizeCoordinates(dmConv));
-    CHKERRQ(DMViewFromOptions(dmConv,NULL,"-dm_conv_view"));
-    CHKERRQ(DMPlexCheckCellShape(dmConv,PETSC_FALSE,PETSC_DETERMINE));
-    CHKERRQ(DMDestroy(&dmConv));
+    PetscCall(DMConvert(dm,DMPLEX,&dmConv));
+    PetscCall(DMLocalizeCoordinates(dmConv));
+    PetscCall(DMViewFromOptions(dmConv,NULL,"-dm_conv_view"));
+    PetscCall(DMPlexCheckCellShape(dmConv,PETSC_FALSE,PETSC_DETERMINE));
+    PetscCall(DMDestroy(&dmConv));
   }
-  CHKERRQ(DMDestroy(&dm));
-  CHKERRQ(PetscFinalize());
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

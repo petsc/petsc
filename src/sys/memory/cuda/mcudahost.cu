@@ -1,15 +1,15 @@
 #include <petscsys.h>             /*I   "petscsys.h"   I*/
-#include <petscdevice.h>          /* Needed to provide CHKERRCUDA() */
+#include <petscdevice.h>          /* Needed to provide PetscCallCUDA() */
 
 static PetscErrorCode PetscCUDAHostMalloc(size_t a,PetscBool clear,int lineno,const char function[],const char filename[],void **result)
 {
-  CHKERRCUDA(cudaMallocHost(result,a));
+  PetscCallCUDA(cudaMallocHost(result,a));
   return 0;
 }
 
 static PetscErrorCode PetscCUDAHostFree(void *aa,int lineno,const char function[],const char filename[])
 {
-  CHKERRCUDA(cudaFreeHost(aa));
+  PetscCallCUDA(cudaFreeHost(aa));
   return 0;
 }
 

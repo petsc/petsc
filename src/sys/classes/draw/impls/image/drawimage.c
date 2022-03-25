@@ -228,14 +228,14 @@ static PetscErrorCode PetscDrawString_Image(PetscDraw draw,PetscReal x,PetscReal
   {
     int xx = XTRANS(draw,img,x);
     int yy = YTRANS(draw,img,y);
-    CHKERRQ(PetscTokenCreate(text,'\n',&token));
-    CHKERRQ(PetscTokenFind(token,&subtext));
+    PetscCall(PetscTokenCreate(text,'\n',&token));
+    PetscCall(PetscTokenFind(token,&subtext));
     while (subtext) {
       PetscImageDrawText(img,xx,yy,c,subtext);
       yy += PetscImageFontHeight;
-      CHKERRQ(PetscTokenFind(token,&subtext));
+      PetscCall(PetscTokenFind(token,&subtext));
     }
-    CHKERRQ(PetscTokenDestroy(&token));
+    PetscCall(PetscTokenDestroy(&token));
   }
   PetscFunctionReturn(0);
 }
@@ -299,12 +299,12 @@ static PetscErrorCode PetscDrawGetPopup_Image(PetscDraw draw,PetscDraw *popup)
   PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsGetBool(((PetscObject)draw)->options,((PetscObject)draw)->prefix,"-draw_popup",&flg,NULL));
+  PetscCall(PetscOptionsGetBool(((PetscObject)draw)->options,((PetscObject)draw)->prefix,"-draw_popup",&flg,NULL));
   if (!flg) {*popup = NULL; PetscFunctionReturn(0);}
-  CHKERRQ(PetscDrawCreate(PetscObjectComm((PetscObject)draw),NULL,NULL,0,0,220,220,popup));
-  CHKERRQ(PetscDrawSetType(*popup,PETSC_DRAW_IMAGE));
-  CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject)*popup,"popup_"));
-  CHKERRQ(PetscObjectAppendOptionsPrefix((PetscObject)*popup,((PetscObject)draw)->prefix));
+  PetscCall(PetscDrawCreate(PetscObjectComm((PetscObject)draw),NULL,NULL,0,0,220,220,popup));
+  PetscCall(PetscDrawSetType(*popup,PETSC_DRAW_IMAGE));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)*popup,"popup_"));
+  PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)*popup,((PetscObject)draw)->prefix));
   draw->popup = *popup;
   PetscFunctionReturn(0);
 }
@@ -331,11 +331,11 @@ static PetscErrorCode PetscDrawResizeWindow_Image(PetscDraw draw,int w,int h)
 
   PetscFunctionBegin;
   if (w == img->w && h == img->h) PetscFunctionReturn(0);
-  CHKERRQ(PetscFree(img->buffer));
+  PetscCall(PetscFree(img->buffer));
 
   img->w = w; img->h = h;
-  CHKERRQ(PetscCalloc1((size_t)(img->w*img->h),&img->buffer));
-  CHKERRQ(PetscDrawSetViewport_Image(draw,draw->port_xl,draw->port_yl,draw->port_xr,draw->port_yr));
+  PetscCall(PetscCalloc1((size_t)(img->w*img->h),&img->buffer));
+  PetscCall(PetscDrawSetViewport_Image(draw,draw->port_xl,draw->port_yl,draw->port_xr,draw->port_yr));
   PetscFunctionReturn(0);
 }
 
@@ -344,9 +344,9 @@ static PetscErrorCode PetscDrawDestroy_Image(PetscDraw draw)
   PetscImage     img = (PetscImage)draw->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscDrawDestroy(&draw->popup));
-  CHKERRQ(PetscFree(img->buffer));
-  CHKERRQ(PetscFree(draw->data));
+  PetscCall(PetscDrawDestroy(&draw->popup));
+  PetscCall(PetscFree(img->buffer));
+  PetscCall(PetscFree(draw->data));
   PetscFunctionReturn(0);
 }
 
@@ -401,11 +401,11 @@ static PetscErrorCode PetscDrawGetSingleton_Image(PetscDraw draw,PetscDraw *sdra
   PetscImage     simg;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscDrawCreate(PETSC_COMM_SELF,NULL,NULL,0,0,draw->w,draw->h,sdraw));
-  CHKERRQ(PetscDrawSetType(*sdraw,PETSC_DRAW_IMAGE));
+  PetscCall(PetscDrawCreate(PETSC_COMM_SELF,NULL,NULL,0,0,draw->w,draw->h,sdraw));
+  PetscCall(PetscDrawSetType(*sdraw,PETSC_DRAW_IMAGE));
   (*sdraw)->ops->resizewindow = NULL;
   simg = (PetscImage)(*sdraw)->data;
-  CHKERRQ(PetscArraycpy(simg->buffer,pimg->buffer,pimg->w*pimg->h));
+  PetscCall(PetscArraycpy(simg->buffer,pimg->buffer,pimg->w*pimg->h));
   PetscFunctionReturn(0);
 }
 
@@ -415,8 +415,8 @@ static PetscErrorCode PetscDrawRestoreSingleton_Image(PetscDraw draw,PetscDraw *
   PetscImage     simg = (PetscImage)(*sdraw)->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscArraycpy(pimg->buffer,simg->buffer,pimg->w*pimg->h));
-  CHKERRQ(PetscDrawDestroy(sdraw));
+  PetscCall(PetscArraycpy(pimg->buffer,simg->buffer,pimg->w*pimg->h));
+  PetscCall(PetscDrawDestroy(sdraw));
   PetscFunctionReturn(0);
 }
 
@@ -438,17 +438,17 @@ static PetscErrorCode PetscDrawGetImage_Image(PetscDraw draw,unsigned char palet
   if (w) *w = (unsigned int)img->w;
   if (h) *h = (unsigned int)img->h;
   if (pixels) *pixels = NULL;
-  CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank));
   if (rank == 0) {
-    CHKERRQ(PetscMemcpy(palette,img->palette,sizeof(img->palette)));
-    CHKERRQ(PetscMalloc1((size_t)(img->w*img->h),&buffer));
+    PetscCall(PetscMemcpy(palette,img->palette,sizeof(img->palette)));
+    PetscCall(PetscMalloc1((size_t)(img->w*img->h),&buffer));
     if (pixels) *pixels = buffer;
   }
-  CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)draw),&size));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)draw),&size));
   if (size == 1) {
-    CHKERRQ(PetscArraycpy(buffer,img->buffer,img->w*img->h));
+    PetscCall(PetscArraycpy(buffer,img->buffer,img->w*img->h));
   } else {
-    CHKERRMPI(MPI_Reduce(img->buffer,buffer,img->w*img->h,MPI_UNSIGNED_CHAR,MPI_MAX,0,PetscObjectComm((PetscObject)draw)));
+    PetscCallMPI(MPI_Reduce(img->buffer,buffer,img->w*img->h,MPI_UNSIGNED_CHAR,MPI_MAX,0,PetscObjectComm((PetscObject)draw)));
   }
   PetscFunctionReturn(0);
 }
@@ -556,26 +556,26 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_Image(PetscDraw draw)
 
   size[0] = w; if (size[0] < 1) size[0] = 300;
   size[1] = h; if (size[1] < 1) size[1] = size[0];
-  CHKERRQ(PetscOptionsGetIntArray(((PetscObject)draw)->options,((PetscObject)draw)->prefix,"-draw_size",size,&nsize,&set));
+  PetscCall(PetscOptionsGetIntArray(((PetscObject)draw)->options,((PetscObject)draw)->prefix,"-draw_size",size,&nsize,&set));
   if (set && nsize == 1) size[1] = size[0];
   if (size[0] < 1) size[0] = 300;
   if (size[1] < 1) size[1] = size[0];
   draw->w = w = size[0]; draw->x = 0;
   draw->h = h = size[1]; draw->x = 0;
 
-  CHKERRQ(PetscNewLog(draw,&img));
-  CHKERRQ(PetscMemcpy(draw->ops,&DvOps,sizeof(DvOps)));
+  PetscCall(PetscNewLog(draw,&img));
+  PetscCall(PetscMemcpy(draw->ops,&DvOps,sizeof(DvOps)));
   draw->data = (void*)img;
 
   img->w = w; img->h = h;
-  CHKERRQ(PetscCalloc1((size_t)(img->w*img->h),&img->buffer));
+  PetscCall(PetscCalloc1((size_t)(img->w*img->h),&img->buffer));
   PetscImageSetClip(img,0,0,img->w,img->h);
   {
     int i,k,ncolors = 256-PETSC_DRAW_BASIC_COLORS;
     unsigned char R[256-PETSC_DRAW_BASIC_COLORS];
     unsigned char G[256-PETSC_DRAW_BASIC_COLORS];
     unsigned char B[256-PETSC_DRAW_BASIC_COLORS];
-    CHKERRQ(PetscDrawUtilitySetCmap(NULL,ncolors,R,G,B));
+    PetscCall(PetscDrawUtilitySetCmap(NULL,ncolors,R,G,B));
     for (k=0; k<PETSC_DRAW_BASIC_COLORS; k++) {
       img->palette[k][0] = BasicColors[k][0];
       img->palette[k][1] = BasicColors[k][1];
@@ -588,7 +588,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_Image(PetscDraw draw)
     }
   }
 
-  if (!draw->savefilename) CHKERRQ(PetscDrawSetSave(draw,draw->title));
+  if (!draw->savefilename) PetscCall(PetscDrawSetSave(draw,draw->title));
   PetscFunctionReturn(0);
 }
 
@@ -612,8 +612,8 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_Image(PetscDraw draw)
 PetscErrorCode PetscDrawOpenImage(MPI_Comm comm,const char filename[],int w,int h,PetscDraw *draw)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscDrawCreate(comm,NULL,NULL,0,0,w,h,draw));
-  CHKERRQ(PetscDrawSetType(*draw,PETSC_DRAW_IMAGE));
-  CHKERRQ(PetscDrawSetSave(*draw,filename));
+  PetscCall(PetscDrawCreate(comm,NULL,NULL,0,0,w,h,draw));
+  PetscCall(PetscDrawSetType(*draw,PETSC_DRAW_IMAGE));
+  PetscCall(PetscDrawSetSave(*draw,filename));
   PetscFunctionReturn(0);
 }

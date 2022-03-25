@@ -40,7 +40,7 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],Pe
     if (forwardsolve) user->Pmax = user->Pmax_ini; /* Remove the fault  - this is done by setting Pmax = Pmax_ini */
     else user->Pmax = 0.0; /* Going backward, reversal of event */
   }
-  CHKERRQ(TSRestartStep(ts)); /* Must set restart flag to ture, otherwise methods with FSAL will fail */
+  PetscCall(TSRestartStep(ts)); /* Must set restart flag to ture, otherwise methods with FSAL will fail */
   PetscFunctionReturn(0);
 }
 
@@ -54,14 +54,14 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec U,Vec F,AppCtx *ctx)
 
   PetscFunctionBegin;
   /*  The next three lines allow us to access the entries of the vectors directly */
-  CHKERRQ(VecGetArrayRead(U,&u));
-  CHKERRQ(VecGetArray(F,&f));
+  PetscCall(VecGetArrayRead(U,&u));
+  PetscCall(VecGetArray(F,&f));
   Pmax = ctx->Pmax;
   f[0] = ctx->omega_b*(u[1] - ctx->omega_s);
   f[1] = ctx->omega_s/(2.0*ctx->H)*(ctx->Pm - Pmax*PetscSinScalar(u[0]) - ctx->D*(u[1] - ctx->omega_s));
 
-  CHKERRQ(VecRestoreArrayRead(U,&u));
-  CHKERRQ(VecRestoreArray(F,&f));
+  PetscCall(VecRestoreArrayRead(U,&u));
+  PetscCall(VecRestoreArray(F,&f));
   PetscFunctionReturn(0);
 }
 
@@ -75,20 +75,20 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B,AppCtx *ctx)
   const PetscScalar *u;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(U,&u));
+  PetscCall(VecGetArrayRead(U,&u));
   Pmax    = ctx->Pmax;
   J[0][0] = 0;
   J[0][1] = ctx->omega_b;
   J[1][0] = -ctx->omega_s/(2.0*ctx->H)*Pmax*PetscCosScalar(u[0]);
   J[1][1] = -ctx->omega_s/(2.0*ctx->H)*ctx->D;
-  CHKERRQ(MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES));
-  CHKERRQ(VecRestoreArrayRead(U,&u));
+  PetscCall(MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES));
+  PetscCall(VecRestoreArrayRead(U,&u));
 
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   if (A != B) {
-    CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
   }
   PetscFunctionReturn(0);
 }
@@ -103,16 +103,16 @@ PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *ctx)
 
   PetscFunctionBegin;
   /*  The next three lines allow us to access the entries of the vectors directly */
-  CHKERRQ(VecGetArrayRead(U,&u));
-  CHKERRQ(VecGetArrayRead(Udot,&udot));
-  CHKERRQ(VecGetArray(F,&f));
+  PetscCall(VecGetArrayRead(U,&u));
+  PetscCall(VecGetArrayRead(Udot,&udot));
+  PetscCall(VecGetArray(F,&f));
   Pmax = ctx->Pmax;
   f[0] = udot[0] - ctx->omega_b*(u[1] - ctx->omega_s);
   f[1] = 2.0*ctx->H/ctx->omega_s*udot[1] +  Pmax*PetscSinScalar(u[0]) + ctx->D*(u[1] - ctx->omega_s)- ctx->Pm;
 
-  CHKERRQ(VecRestoreArrayRead(U,&u));
-  CHKERRQ(VecRestoreArrayRead(Udot,&udot));
-  CHKERRQ(VecRestoreArray(F,&f));
+  PetscCall(VecRestoreArrayRead(U,&u));
+  PetscCall(VecRestoreArrayRead(Udot,&udot));
+  PetscCall(VecRestoreArray(F,&f));
   PetscFunctionReturn(0);
 }
 
@@ -126,21 +126,21 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat 
   const PetscScalar *u,*udot;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(U,&u));
-  CHKERRQ(VecGetArrayRead(Udot,&udot));
+  PetscCall(VecGetArrayRead(U,&u));
+  PetscCall(VecGetArrayRead(Udot,&udot));
   Pmax = ctx->Pmax;
   J[0][0] = a;                       J[0][1] = -ctx->omega_b;
   J[1][1] = 2.0*ctx->H/ctx->omega_s*a + ctx->D;   J[1][0] = Pmax*PetscCosScalar(u[0]);
 
-  CHKERRQ(MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES));
-  CHKERRQ(VecRestoreArrayRead(U,&u));
-  CHKERRQ(VecRestoreArrayRead(Udot,&udot));
+  PetscCall(MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES));
+  PetscCall(VecRestoreArrayRead(U,&u));
+  PetscCall(VecRestoreArrayRead(Udot,&udot));
 
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   if (A != B) {
-    CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
   }
   PetscFunctionReturn(0);
 }
@@ -152,13 +152,13 @@ PetscErrorCode RHSJacobianP(TS ts,PetscReal t,Vec X,Mat A,void *ctx0)
   AppCtx         *ctx = (AppCtx*)ctx0;
 
   PetscFunctionBeginUser;
-  CHKERRQ(VecGetArray(X,&x));
+  PetscCall(VecGetArray(X,&x));
   J[0][0] = 0;
   J[1][0] = ctx->omega_s/(2.0*ctx->H);
-  CHKERRQ(MatSetValues(A,2,row,1,col,&J[0][0],INSERT_VALUES));
+  PetscCall(MatSetValues(A,2,row,1,col,&J[0][0],INSERT_VALUES));
 
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
@@ -168,11 +168,11 @@ PetscErrorCode CostIntegrand(TS ts,PetscReal t,Vec U,Vec R,AppCtx *ctx)
   const PetscScalar *u;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(U,&u));
-  CHKERRQ(VecGetArray(R,&r));
+  PetscCall(VecGetArrayRead(U,&u));
+  PetscCall(VecGetArray(R,&r));
   r[0] = ctx->c*PetscPowScalarInt(PetscMax(0.,u[0]-ctx->u_s),ctx->beta);
-  CHKERRQ(VecRestoreArray(R,&r));
-  CHKERRQ(VecRestoreArrayRead(U,&u));
+  PetscCall(VecRestoreArray(R,&r));
+  PetscCall(VecRestoreArrayRead(U,&u));
   PetscFunctionReturn(0);
 }
 
@@ -184,22 +184,22 @@ PetscErrorCode DRDUJacobianTranspose(TS ts,PetscReal t,Vec U,Mat DRDU,Mat B,AppC
   const PetscScalar *u;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(U,&u));
+  PetscCall(VecGetArrayRead(U,&u));
   ru[0] = ctx->c*ctx->beta*PetscPowScalarInt(PetscMax(0.,u[0]-ctx->u_s),ctx->beta-1);
   ru[1] = 0;
-  CHKERRQ(MatSetValues(DRDU,2,row,1,col,ru,INSERT_VALUES));
-  CHKERRQ(VecRestoreArrayRead(U,&u));
-  CHKERRQ(MatAssemblyBegin(DRDU,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(DRDU,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatSetValues(DRDU,2,row,1,col,ru,INSERT_VALUES));
+  PetscCall(VecRestoreArrayRead(U,&u));
+  PetscCall(MatAssemblyBegin(DRDU,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(DRDU,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode DRDPJacobianTranspose(TS ts,PetscReal t,Vec U,Mat DRDP,void *ctx)
 {
   PetscFunctionBegin;
-  CHKERRQ(MatZeroEntries(DRDP));
-  CHKERRQ(MatAssemblyBegin(DRDP,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(DRDP,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatZeroEntries(DRDP));
+  PetscCall(MatAssemblyBegin(DRDP,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(DRDP,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
@@ -209,11 +209,11 @@ PetscErrorCode ComputeSensiP(Vec lambda,Vec mu,AppCtx *ctx)
   const PetscScalar *x;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(lambda,&x));
-  CHKERRQ(VecGetArray(mu,&y));
+  PetscCall(VecGetArrayRead(lambda,&x));
+  PetscCall(VecGetArray(mu,&y));
   sensip = 1./PetscSqrtScalar(1.-(ctx->Pm/ctx->Pmax)*(ctx->Pm/ctx->Pmax))/ctx->Pmax*x[0]+y[0];
   y[0] = sensip;
-  CHKERRQ(VecRestoreArray(mu,&y));
-  CHKERRQ(VecRestoreArrayRead(lambda,&x));
+  PetscCall(VecRestoreArray(mu,&y));
+  PetscCall(VecRestoreArrayRead(lambda,&x));
   PetscFunctionReturn(0);
 }

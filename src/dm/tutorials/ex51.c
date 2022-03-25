@@ -16,50 +16,50 @@ int main(int argc, char *argv[])
   PetscInt       dof   = 2*(p+1)*numGP;
   PetscMPIInt    rank, subsize, subrank;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,0,help));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
+  PetscCall(PetscInitialize(&argc,&argv,0,help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   /* Create 2D DMDA */
-  CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
   /* Create 1D DMDAs along two directions. */
-  CHKERRQ(DMDAGetOwnershipRanges(da, &lx, &ly, NULL));
-  CHKERRQ(DMDAGetLocalInfo(da, &info));
+  PetscCall(DMDAGetOwnershipRanges(da, &lx, &ly, NULL));
+  PetscCall(DMDAGetLocalInfo(da, &info));
   /* Partitioning in the X direction makes a subcomm extending in the Y direction and vice-versa. */
-  CHKERRQ(DMDAGetProcessorSubsets(da, DM_X, &commY));
-  CHKERRQ(DMDAGetProcessorSubsets(da, DM_Y, &commX));
-  CHKERRMPI(MPI_Comm_size(commX, &subsize));
-  CHKERRMPI(MPI_Comm_rank(commX, &subrank));
-  CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]X subrank: %d subsize: %d\n", rank, subrank, subsize));
-  CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
-  CHKERRMPI(MPI_Comm_size(commY, &subsize));
-  CHKERRMPI(MPI_Comm_rank(commY, &subrank));
-  CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]Y subrank: %d subsize: %d\n", rank, subrank, subsize));
-  CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
-  CHKERRQ(DMDACreate1d(commX, DM_BOUNDARY_NONE, info.mx, dof, 1, lx, &daX));
-  CHKERRQ(DMSetUp(daX));
-  CHKERRQ(DMDACreate1d(commY, DM_BOUNDARY_NONE, info.my, dof, 1, ly, &daY));
-  CHKERRQ(DMSetUp(daY));
+  PetscCall(DMDAGetProcessorSubsets(da, DM_X, &commY));
+  PetscCall(DMDAGetProcessorSubsets(da, DM_Y, &commX));
+  PetscCallMPI(MPI_Comm_size(commX, &subsize));
+  PetscCallMPI(MPI_Comm_rank(commX, &subrank));
+  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]X subrank: %d subsize: %d\n", rank, subrank, subsize));
+  PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
+  PetscCallMPI(MPI_Comm_size(commY, &subsize));
+  PetscCallMPI(MPI_Comm_rank(commY, &subrank));
+  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]Y subrank: %d subsize: %d\n", rank, subrank, subsize));
+  PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
+  PetscCall(DMDACreate1d(commX, DM_BOUNDARY_NONE, info.mx, dof, 1, lx, &daX));
+  PetscCall(DMSetUp(daX));
+  PetscCall(DMDACreate1d(commY, DM_BOUNDARY_NONE, info.my, dof, 1, ly, &daY));
+  PetscCall(DMSetUp(daY));
   /* Create 1D vectors for basis functions */
-  CHKERRQ(DMGetGlobalVector(daX, &basisX));
-  CHKERRQ(DMGetGlobalVector(daY, &basisY));
+  PetscCall(DMGetGlobalVector(daX, &basisX));
+  PetscCall(DMGetGlobalVector(daY, &basisY));
   /* Extract basis functions */
-  CHKERRQ(DMDAVecGetArrayDOF(daX, basisX, &arrayX));
-  CHKERRQ(DMDAVecGetArrayDOF(daY, basisY, &arrayY));
+  PetscCall(DMDAVecGetArrayDOF(daX, basisX, &arrayX));
+  PetscCall(DMDAVecGetArrayDOF(daY, basisY, &arrayY));
   /*arrayX[i][ndof]; */
   /*arrayY[j][ndof]; */
-  CHKERRQ(DMDAVecRestoreArrayDOF(daX, basisX, &arrayX));
-  CHKERRQ(DMDAVecRestoreArrayDOF(daY, basisY, &arrayY));
+  PetscCall(DMDAVecRestoreArrayDOF(daX, basisX, &arrayX));
+  PetscCall(DMDAVecRestoreArrayDOF(daY, basisY, &arrayY));
   /* Return basis vectors */
-  CHKERRQ(DMRestoreGlobalVector(daX, &basisX));
-  CHKERRQ(DMRestoreGlobalVector(daY, &basisY));
+  PetscCall(DMRestoreGlobalVector(daX, &basisX));
+  PetscCall(DMRestoreGlobalVector(daY, &basisY));
   /* Cleanup */
-  CHKERRMPI(MPI_Comm_free(&commX));
-  CHKERRMPI(MPI_Comm_free(&commY));
-  CHKERRQ(DMDestroy(&daX));
-  CHKERRQ(DMDestroy(&daY));
-  CHKERRQ(DMDestroy(&da));
-  CHKERRQ(PetscFinalize());
+  PetscCallMPI(MPI_Comm_free(&commX));
+  PetscCallMPI(MPI_Comm_free(&commY));
+  PetscCall(DMDestroy(&daX));
+  PetscCall(DMDestroy(&daY));
+  PetscCall(DMDestroy(&da));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

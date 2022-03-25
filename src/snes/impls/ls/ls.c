@@ -15,30 +15,30 @@ static PetscErrorCode SNESNEWTONLSCheckLocalMin_Private(SNES snes,Mat A,Vec F,Pe
 
   PetscFunctionBegin;
   *ismin = PETSC_FALSE;
-  CHKERRQ(MatHasOperation(A,MATOP_MULT_TRANSPOSE,&hastranspose));
-  CHKERRQ(VecDuplicate(F,&W));
+  PetscCall(MatHasOperation(A,MATOP_MULT_TRANSPOSE,&hastranspose));
+  PetscCall(VecDuplicate(F,&W));
   if (hastranspose) {
     /* Compute || J^T F|| */
-    CHKERRQ(MatMultTranspose(A,F,W));
-    CHKERRQ(VecNorm(W,NORM_2,&a1));
-    CHKERRQ(PetscInfo(snes,"|| J^T F|| %14.12e near zero implies found a local minimum\n",(double)(a1/fnorm)));
+    PetscCall(MatMultTranspose(A,F,W));
+    PetscCall(VecNorm(W,NORM_2,&a1));
+    PetscCall(PetscInfo(snes,"|| J^T F|| %14.12e near zero implies found a local minimum\n",(double)(a1/fnorm)));
     if (a1/fnorm < 1.e-4) *ismin = PETSC_TRUE;
   } else {
     Vec         work;
     PetscScalar result;
     PetscReal   wnorm;
 
-    CHKERRQ(VecSetRandom(W,NULL));
-    CHKERRQ(VecNorm(W,NORM_2,&wnorm));
-    CHKERRQ(VecDuplicate(W,&work));
-    CHKERRQ(MatMult(A,W,work));
-    CHKERRQ(VecDot(F,work,&result));
-    CHKERRQ(VecDestroy(&work));
+    PetscCall(VecSetRandom(W,NULL));
+    PetscCall(VecNorm(W,NORM_2,&wnorm));
+    PetscCall(VecDuplicate(W,&work));
+    PetscCall(MatMult(A,W,work));
+    PetscCall(VecDot(F,work,&result));
+    PetscCall(VecDestroy(&work));
     a1   = PetscAbsScalar(result)/(fnorm*wnorm);
-    CHKERRQ(PetscInfo(snes,"(F^T J random)/(|| F ||*||random|| %14.12e near zero implies found a local minimum\n",(double)a1));
+    PetscCall(PetscInfo(snes,"(F^T J random)/(|| F ||*||random|| %14.12e near zero implies found a local minimum\n",(double)a1));
     if (a1 < 1.e-4) *ismin = PETSC_TRUE;
   }
-  CHKERRQ(VecDestroy(&W));
+  PetscCall(VecDestroy(&W));
   PetscFunctionReturn(0);
 }
 
@@ -51,24 +51,24 @@ static PetscErrorCode SNESNEWTONLSCheckResidual_Private(SNES snes,Mat A,Vec F,Ve
   PetscBool      hastranspose;
 
   PetscFunctionBegin;
-  CHKERRQ(MatHasOperation(A,MATOP_MULT_TRANSPOSE,&hastranspose));
+  PetscCall(MatHasOperation(A,MATOP_MULT_TRANSPOSE,&hastranspose));
   if (hastranspose) {
     Vec   W1,W2;
 
-    CHKERRQ(VecDuplicate(F,&W1));
-    CHKERRQ(VecDuplicate(F,&W2));
-    CHKERRQ(MatMult(A,X,W1));
-    CHKERRQ(VecAXPY(W1,-1.0,F));
+    PetscCall(VecDuplicate(F,&W1));
+    PetscCall(VecDuplicate(F,&W2));
+    PetscCall(MatMult(A,X,W1));
+    PetscCall(VecAXPY(W1,-1.0,F));
 
     /* Compute || J^T W|| */
-    CHKERRQ(MatMultTranspose(A,W1,W2));
-    CHKERRQ(VecNorm(W1,NORM_2,&a1));
-    CHKERRQ(VecNorm(W2,NORM_2,&a2));
+    PetscCall(MatMultTranspose(A,W1,W2));
+    PetscCall(VecNorm(W1,NORM_2,&a1));
+    PetscCall(VecNorm(W2,NORM_2,&a2));
     if (a1 != 0.0) {
-      CHKERRQ(PetscInfo(snes,"||J^T(F-Ax)||/||F-AX|| %14.12e near zero implies inconsistent rhs\n",(double)(a2/a1)));
+      PetscCall(PetscInfo(snes,"||J^T(F-Ax)||/||F-AX|| %14.12e near zero implies inconsistent rhs\n",(double)(a2/a1)));
     }
-    CHKERRQ(VecDestroy(&W1));
-    CHKERRQ(VecDestroy(&W2));
+    PetscCall(VecDestroy(&W1));
+    PetscCall(VecDestroy(&W2));
   }
   PetscFunctionReturn(0);
 }
@@ -150,64 +150,64 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
   F      = snes->vec_func;              /* residual vector */
   Y      = snes->vec_sol_update;        /* newton step */
 
-  CHKERRQ(PetscObjectSAWsTakeAccess((PetscObject)snes));
+  PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
   snes->iter = 0;
   snes->norm = 0.0;
-  CHKERRQ(PetscObjectSAWsGrantAccess((PetscObject)snes));
-  CHKERRQ(SNESGetLineSearch(snes, &linesearch));
+  PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
+  PetscCall(SNESGetLineSearch(snes, &linesearch));
 
   /* compute the preconditioned function first in the case of left preconditioning with preconditioned function */
   if (snes->npc && snes->npcside== PC_LEFT && snes->functype == SNES_FUNCTION_PRECONDITIONED) {
-    CHKERRQ(SNESApplyNPC(snes,X,NULL,F));
-    CHKERRQ(SNESGetConvergedReason(snes->npc,&reason));
+    PetscCall(SNESApplyNPC(snes,X,NULL,F));
+    PetscCall(SNESGetConvergedReason(snes->npc,&reason));
     if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
       snes->reason = SNES_DIVERGED_INNER;
       PetscFunctionReturn(0);
     }
 
-    CHKERRQ(VecNormBegin(F,NORM_2,&fnorm));
-    CHKERRQ(VecNormEnd(F,NORM_2,&fnorm));
+    PetscCall(VecNormBegin(F,NORM_2,&fnorm));
+    PetscCall(VecNormEnd(F,NORM_2,&fnorm));
   } else {
     if (!snes->vec_func_init_set) {
-      CHKERRQ(SNESComputeFunction(snes,X,F));
+      PetscCall(SNESComputeFunction(snes,X,F));
     } else snes->vec_func_init_set = PETSC_FALSE;
   }
 
-  CHKERRQ(VecNorm(F,NORM_2,&fnorm));        /* fnorm <- ||F||  */
+  PetscCall(VecNorm(F,NORM_2,&fnorm));        /* fnorm <- ||F||  */
   SNESCheckFunctionNorm(snes,fnorm);
-  CHKERRQ(PetscObjectSAWsTakeAccess((PetscObject)snes));
+  PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
   snes->norm = fnorm;
-  CHKERRQ(PetscObjectSAWsGrantAccess((PetscObject)snes));
-  CHKERRQ(SNESLogConvergenceHistory(snes,fnorm,0));
-  CHKERRQ(SNESMonitor(snes,0,fnorm));
+  PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
+  PetscCall(SNESLogConvergenceHistory(snes,fnorm,0));
+  PetscCall(SNESMonitor(snes,0,fnorm));
 
   /* test convergence */
-  CHKERRQ((*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP));
+  PetscCall((*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP));
   if (snes->reason) PetscFunctionReturn(0);
 
   for (i=0; i<maxits; i++) {
 
     /* Call general purpose update function */
     if (snes->ops->update) {
-      CHKERRQ((*snes->ops->update)(snes, snes->iter));
+      PetscCall((*snes->ops->update)(snes, snes->iter));
     }
 
     /* apply the nonlinear preconditioner */
     if (snes->npc) {
       if (snes->npcside== PC_RIGHT) {
-        CHKERRQ(SNESSetInitialFunction(snes->npc, F));
-        CHKERRQ(PetscLogEventBegin(SNES_NPCSolve,snes->npc,X,snes->vec_rhs,0));
-        CHKERRQ(SNESSolve(snes->npc, snes->vec_rhs, X));
-        CHKERRQ(PetscLogEventEnd(SNES_NPCSolve,snes->npc,X,snes->vec_rhs,0));
-        CHKERRQ(SNESGetConvergedReason(snes->npc,&reason));
+        PetscCall(SNESSetInitialFunction(snes->npc, F));
+        PetscCall(PetscLogEventBegin(SNES_NPCSolve,snes->npc,X,snes->vec_rhs,0));
+        PetscCall(SNESSolve(snes->npc, snes->vec_rhs, X));
+        PetscCall(PetscLogEventEnd(SNES_NPCSolve,snes->npc,X,snes->vec_rhs,0));
+        PetscCall(SNESGetConvergedReason(snes->npc,&reason));
         if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
           snes->reason = SNES_DIVERGED_INNER;
           PetscFunctionReturn(0);
         }
-        CHKERRQ(SNESGetNPCFunction(snes,F,&fnorm));
+        PetscCall(SNESGetNPCFunction(snes,F,&fnorm));
       } else if (snes->npcside== PC_LEFT && snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
-        CHKERRQ(SNESApplyNPC(snes,X,F,F));
-        CHKERRQ(SNESGetConvergedReason(snes->npc,&reason));
+        PetscCall(SNESApplyNPC(snes,X,F,F));
+        PetscCall(SNESGetConvergedReason(snes->npc,&reason));
         if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
           snes->reason = SNES_DIVERGED_INNER;
           PetscFunctionReturn(0);
@@ -216,16 +216,16 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
     }
 
     /* Solve J Y = F, where J is Jacobian matrix */
-    CHKERRQ(SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre));
+    PetscCall(SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre));
     SNESCheckJacobianDomainerror(snes);
-    CHKERRQ(KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre));
-    CHKERRQ(KSPSolve(snes->ksp,F,Y));
+    PetscCall(KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre));
+    PetscCall(KSPSolve(snes->ksp,F,Y));
     SNESCheckKSPSolve(snes);
-    CHKERRQ(KSPGetIterationNumber(snes->ksp,&lits));
-    CHKERRQ(PetscInfo(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits));
+    PetscCall(KSPGetIterationNumber(snes->ksp,&lits));
+    PetscCall(PetscInfo(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits));
 
     if (PetscLogPrintInfo) {
-      CHKERRQ(SNESNEWTONLSCheckResidual_Private(snes,snes->jacobian,F,Y));
+      PetscCall(SNESNEWTONLSCheckResidual_Private(snes,snes->jacobian,F,Y));
     }
 
     /* Compute a (scaled) negative update in the line search routine:
@@ -233,10 +233,10 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
        and evaluate F = function(X) (depends on the line search).
     */
     gnorm = fnorm;
-    CHKERRQ(SNESLineSearchApply(linesearch, X, F, &fnorm, Y));
-    CHKERRQ(SNESLineSearchGetReason(linesearch, &lssucceed));
-    CHKERRQ(SNESLineSearchGetNorms(linesearch, &xnorm, &fnorm, &ynorm));
-    CHKERRQ(PetscInfo(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n",(double)gnorm,(double)fnorm,(double)ynorm,(int)lssucceed));
+    PetscCall(SNESLineSearchApply(linesearch, X, F, &fnorm, Y));
+    PetscCall(SNESLineSearchGetReason(linesearch, &lssucceed));
+    PetscCall(SNESLineSearchGetNorms(linesearch, &xnorm, &fnorm, &ynorm));
+    PetscCall(PetscInfo(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n",(double)gnorm,(double)fnorm,(double)ynorm,(int)lssucceed));
     if (snes->reason) break;
     SNESCheckFunctionNorm(snes,fnorm);
     if (lssucceed) {
@@ -247,11 +247,11 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
       if (++snes->numFailures >= snes->maxFailures) {
         PetscBool ismin;
         snes->reason = SNES_DIVERGED_LINE_SEARCH;
-        CHKERRQ(SNESNEWTONLSCheckLocalMin_Private(snes,snes->jacobian,F,fnorm,&ismin));
+        PetscCall(SNESNEWTONLSCheckLocalMin_Private(snes,snes->jacobian,F,fnorm,&ismin));
         if (ismin) snes->reason = SNES_DIVERGED_LOCAL_MIN;
         if (snes->errorifnotconverged && snes->reason) {
           PetscViewer monitor;
-          CHKERRQ(SNESLineSearchGetDefaultMonitor(linesearch,&monitor));
+          PetscCall(SNESLineSearchGetDefaultMonitor(linesearch,&monitor));
           PetscCheck(monitor,PetscObjectComm((PetscObject)snes),PETSC_ERR_NOT_CONVERGED,"SNESSolve has not converged due to %s. Suggest running with -snes_linesearch_monitor",SNESConvergedReasons[snes->reason]);
           else SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_NOT_CONVERGED,"SNESSolve has not converged due %s.",SNESConvergedReasons[snes->reason]);
         }
@@ -259,20 +259,20 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
       }
     }
     /* Monitor convergence */
-    CHKERRQ(PetscObjectSAWsTakeAccess((PetscObject)snes));
+    PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
     snes->iter = i+1;
     snes->norm = fnorm;
     snes->ynorm = ynorm;
     snes->xnorm = xnorm;
-    CHKERRQ(PetscObjectSAWsGrantAccess((PetscObject)snes));
-    CHKERRQ(SNESLogConvergenceHistory(snes,snes->norm,lits));
-    CHKERRQ(SNESMonitor(snes,snes->iter,snes->norm));
+    PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
+    PetscCall(SNESLogConvergenceHistory(snes,snes->norm,lits));
+    PetscCall(SNESMonitor(snes,snes->iter,snes->norm));
     /* Test for convergence */
-    CHKERRQ((*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP));
+    PetscCall((*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP));
     if (snes->reason) break;
   }
   if (i == maxits) {
-    CHKERRQ(PetscInfo(snes,"Maximum number of iterations has been reached: %D\n",maxits));
+    PetscCall(PetscInfo(snes,"Maximum number of iterations has been reached: %D\n",maxits));
     if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
   }
   PetscFunctionReturn(0);
@@ -296,7 +296,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
 PetscErrorCode SNESSetUp_NEWTONLS(SNES snes)
 {
   PetscFunctionBegin;
-  CHKERRQ(SNESSetUpMatrices(snes));
+  PetscCall(SNESSetUpMatrices(snes));
   if (snes->npcside== PC_LEFT && snes->functype == SNES_FUNCTION_DEFAULT) snes->functype = SNES_FUNCTION_PRECONDITIONED;
   PetscFunctionReturn(0);
 }
@@ -320,8 +320,8 @@ PetscErrorCode SNESReset_NEWTONLS(SNES snes)
 PetscErrorCode SNESDestroy_NEWTONLS(SNES snes)
 {
   PetscFunctionBegin;
-  CHKERRQ(SNESReset_NEWTONLS(snes));
-  CHKERRQ(PetscFree(snes->data));
+  PetscCall(SNESReset_NEWTONLS(snes));
+  PetscCall(PetscFree(snes->data));
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
@@ -340,7 +340,7 @@ static PetscErrorCode SNESView_NEWTONLS(SNES snes,PetscViewer viewer)
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
   }
   PetscFunctionReturn(0);
@@ -401,14 +401,14 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONLS(SNES snes)
   snes->usesksp = PETSC_TRUE;
   snes->usesnpc = PETSC_TRUE;
 
-  CHKERRQ(SNESGetLineSearch(snes, &linesearch));
+  PetscCall(SNESGetLineSearch(snes, &linesearch));
   if (!((PetscObject)linesearch)->type_name) {
-    CHKERRQ(SNESLineSearchSetType(linesearch, SNESLINESEARCHBT));
+    PetscCall(SNESLineSearchSetType(linesearch, SNESLINESEARCHBT));
   }
 
   snes->alwayscomputesfinalresidual = PETSC_TRUE;
 
-  CHKERRQ(PetscNewLog(snes,&neP));
+  PetscCall(PetscNewLog(snes,&neP));
   snes->data    = (void*)neP;
   PetscFunctionReturn(0);
 }

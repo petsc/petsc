@@ -18,13 +18,13 @@ PetscErrorCode ComputeSolution(PetscInt n,PetscReal *nodes,PetscReal *weights,Ve
   PetscReal      xd;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetSize(x,&m));
-  CHKERRQ(VecGetArray(x,&xx));
+  PetscCall(VecGetSize(x,&m));
+  PetscCall(VecGetArray(x,&xx));
   for (i=0; i<m; i++) {
     xd    = nodes[i];
     xx[i] = (xd*xd - 1.0)*PetscCosReal(5.*PETSC_PI*xd);
   }
-  CHKERRQ(VecRestoreArray(x,&xx));
+  PetscCall(VecRestoreArray(x,&xx));
   PetscFunctionReturn(0);
 }
 
@@ -40,13 +40,13 @@ PetscErrorCode ComputeRhs(PetscInt n,PetscReal *nodes,PetscReal *weights,Vec b)
   PetscReal      xd;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetSize(b,&m));
-  CHKERRQ(VecGetArray(b,&bb));
+  PetscCall(VecGetSize(b,&m));
+  PetscCall(VecGetArray(b,&bb));
   for (i=0; i<m; i++) {
     xd    = nodes[i];
     bb[i] = -weights[i]*(-20.*PETSC_PI*xd*PetscSinReal(5.*PETSC_PI*xd) + (2. - (5.*PETSC_PI)*(5.*PETSC_PI)*(xd*xd - 1.))*PetscCosReal(5.*PETSC_PI*xd));
   }
-  CHKERRQ(VecRestoreArray(b,&bb));
+  PetscCall(VecRestoreArray(b,&bb));
   PetscFunctionReturn(0);
 }
 
@@ -68,68 +68,68 @@ int main(int argc,char **args)
   PetscDrawLG    lg;
   PetscDrawAxis  axis;
 
-  CHKERRQ(PetscInitialize(&argc,&args,NULL,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
+  PetscCall(PetscInitialize(&argc,&args,NULL,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
 
-  CHKERRQ(PetscDrawCreate(PETSC_COMM_SELF,NULL,"Log(Error norm) vs Number of GLL points",0,0,500,500,&draw));
-  CHKERRQ(PetscDrawSetFromOptions(draw));
-  CHKERRQ(PetscDrawLGCreate(draw,1,&lg));
-  CHKERRQ(PetscDrawLGSetUseMarkers(lg,PETSC_TRUE));
-  CHKERRQ(PetscDrawLGGetAxis(lg,&axis));
-  CHKERRQ(PetscDrawAxisSetLabels(axis,NULL,"Number of GLL points","Log(Error Norm)"));
+  PetscCall(PetscDrawCreate(PETSC_COMM_SELF,NULL,"Log(Error norm) vs Number of GLL points",0,0,500,500,&draw));
+  PetscCall(PetscDrawSetFromOptions(draw));
+  PetscCall(PetscDrawLGCreate(draw,1,&lg));
+  PetscCall(PetscDrawLGSetUseMarkers(lg,PETSC_TRUE));
+  PetscCall(PetscDrawLGGetAxis(lg,&axis));
+  PetscCall(PetscDrawAxisSetLabels(axis,NULL,"Number of GLL points","Log(Error Norm)"));
 
   for (n=4; n<N; n+=2) {
     /*
        compute GLL node and weight values
     */
-    CHKERRQ(PetscMalloc2(n,&nodes,n,&weights));
-    CHKERRQ(PetscDTGaussLobattoLegendreQuadrature(n,PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA,nodes,weights));
+    PetscCall(PetscMalloc2(n,&nodes,n,&weights));
+    PetscCall(PetscDTGaussLobattoLegendreQuadrature(n,PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA,nodes,weights));
     /*
        Creates the element stiffness matrix for the given gll
     */
-    CHKERRQ(PetscGaussLobattoLegendreElementLaplacianCreate(n,nodes,weights,&A));
-    CHKERRQ(MatCreateSeqDense(PETSC_COMM_SELF,n,n,&A[0][0],&K));
+    PetscCall(PetscGaussLobattoLegendreElementLaplacianCreate(n,nodes,weights,&A));
+    PetscCall(MatCreateSeqDense(PETSC_COMM_SELF,n,n,&A[0][0],&K));
     rows[0] = 0;
     rows[1] = n-1;
-    CHKERRQ(KSPCreate(PETSC_COMM_SELF,&ksp));
-    CHKERRQ(MatCreateVecs(K,&x,&b));
-    CHKERRQ(ComputeRhs(n,nodes,weights,b));
+    PetscCall(KSPCreate(PETSC_COMM_SELF,&ksp));
+    PetscCall(MatCreateVecs(K,&x,&b));
+    PetscCall(ComputeRhs(n,nodes,weights,b));
     /*
         Replace the first and last rows/columns of the matrix with the identity to obtain the zero Dirichlet boundary conditions
     */
-    CHKERRQ(MatZeroRowsColumns(K,2,rows,1.0,x,b));
-    CHKERRQ(KSPSetOperators(ksp,K,K));
-    CHKERRQ(KSPGetPC(ksp,&pc));
-    CHKERRQ(PCSetType(pc,PCLU));
-    CHKERRQ(KSPSetFromOptions(ksp));
-    CHKERRQ(KSPSolve(ksp,b,x));
+    PetscCall(MatZeroRowsColumns(K,2,rows,1.0,x,b));
+    PetscCall(KSPSetOperators(ksp,K,K));
+    PetscCall(KSPGetPC(ksp,&pc));
+    PetscCall(PCSetType(pc,PCLU));
+    PetscCall(KSPSetFromOptions(ksp));
+    PetscCall(KSPSolve(ksp,b,x));
 
     /* compute the error to the continium problem */
-    CHKERRQ(ComputeSolution(n,nodes,weights,b));
-    CHKERRQ(VecAXPY(x,-1.0,b));
+    PetscCall(ComputeSolution(n,nodes,weights,b));
+    PetscCall(VecAXPY(x,-1.0,b));
 
     /* compute the L^2 norm of the error */
-    CHKERRQ(VecGetArray(x,&f));
-    CHKERRQ(PetscGaussLobattoLegendreIntegrate(n,nodes,weights,f,&norm));
-    CHKERRQ(VecRestoreArray(x,&f));
+    PetscCall(VecGetArray(x,&f));
+    PetscCall(PetscGaussLobattoLegendreIntegrate(n,nodes,weights,f,&norm));
+    PetscCall(VecRestoreArray(x,&f));
     norm = PetscSqrtReal(norm);
-    CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"L^2 norm of the error %D %g\n",n,(double)norm));
+    PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"L^2 norm of the error %D %g\n",n,(double)norm));
     xc   = (PetscReal)n;
     yc   = PetscLog10Real(norm);
-    CHKERRQ(PetscDrawLGAddPoint(lg,&xc,&yc));
-    CHKERRQ(PetscDrawLGDraw(lg));
+    PetscCall(PetscDrawLGAddPoint(lg,&xc,&yc));
+    PetscCall(PetscDrawLGDraw(lg));
 
-    CHKERRQ(VecDestroy(&b));
-    CHKERRQ(VecDestroy(&x));
-    CHKERRQ(KSPDestroy(&ksp));
-    CHKERRQ(MatDestroy(&K));
-    CHKERRQ(PetscGaussLobattoLegendreElementLaplacianDestroy(n,nodes,weights,&A));
-    CHKERRQ(PetscFree2(nodes,weights));
+    PetscCall(VecDestroy(&b));
+    PetscCall(VecDestroy(&x));
+    PetscCall(KSPDestroy(&ksp));
+    PetscCall(MatDestroy(&K));
+    PetscCall(PetscGaussLobattoLegendreElementLaplacianDestroy(n,nodes,weights,&A));
+    PetscCall(PetscFree2(nodes,weights));
   }
-  CHKERRQ(PetscDrawSetPause(draw,-2));
-  CHKERRQ(PetscDrawLGDestroy(&lg));
-  CHKERRQ(PetscDrawDestroy(&draw));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscDrawSetPause(draw,-2));
+  PetscCall(PetscDrawLGDestroy(&lg));
+  PetscCall(PetscDrawDestroy(&draw));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

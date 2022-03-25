@@ -10,7 +10,7 @@ static PetscErrorCode VecAssemblyBegin_Nest(Vec v)
   PetscFunctionBegin;
   for (i=0; i<vs->nb; i++) {
     PetscCheckFalse(!vs->v[i],PetscObjectComm((PetscObject)v),PETSC_ERR_SUP,"Nest  vector cannot contain NULL blocks");
-    CHKERRQ(VecAssemblyBegin(vs->v[i]));
+    PetscCall(VecAssemblyBegin(vs->v[i]));
   }
   PetscFunctionReturn(0);
 }
@@ -22,7 +22,7 @@ static PetscErrorCode VecAssemblyEnd_Nest(Vec v)
 
   PetscFunctionBegin;
   for (i=0; i<vs->nb; i++) {
-    CHKERRQ(VecAssemblyEnd(vs->v[i]));
+    PetscCall(VecAssemblyEnd(vs->v[i]));
   }
   PetscFunctionReturn(0);
 }
@@ -35,21 +35,21 @@ static PetscErrorCode VecDestroy_Nest(Vec v)
   PetscFunctionBegin;
   if (vs->v) {
     for (i=0; i<vs->nb; i++) {
-      CHKERRQ(VecDestroy(&vs->v[i]));
+      PetscCall(VecDestroy(&vs->v[i]));
     }
-    CHKERRQ(PetscFree(vs->v));
+    PetscCall(PetscFree(vs->v));
   }
   for (i=0; i<vs->nb; i++) {
-    CHKERRQ(ISDestroy(&vs->is[i]));
+    PetscCall(ISDestroy(&vs->is[i]));
   }
-  CHKERRQ(PetscFree(vs->is));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)v,"",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)v,"",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)v,"",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)v,"",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)v,"",NULL));
+  PetscCall(PetscFree(vs->is));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"",NULL));
 
-  CHKERRQ(PetscFree(vs));
+  PetscCall(PetscFree(vs));
   PetscFunctionReturn(0);
 }
 
@@ -64,7 +64,7 @@ static PetscErrorCode VecCopy_Nest(Vec x,Vec y)
   PetscCheckTypeName(y,VECNEST);
   VecNestCheckCompatible2(x,1,y,2);
   for (i=0; i<bx->nb; i++) {
-    CHKERRQ(VecCopy(bx->v[i],by->v[i]));
+    PetscCall(VecCopy(bx->v[i],by->v[i]));
   }
   PetscFunctionReturn(0);
 }
@@ -78,15 +78,15 @@ static PetscErrorCode VecDuplicate_Nest(Vec x,Vec *y)
   PetscInt       i;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscMalloc1(bx->nb,&sub));
+  PetscCall(PetscMalloc1(bx->nb,&sub));
   for (i=0; i<bx->nb; i++) {
-    CHKERRQ(VecDuplicate(bx->v[i],&sub[i]));
+    PetscCall(VecDuplicate(bx->v[i],&sub[i]));
   }
-  CHKERRQ(VecCreateNest(PetscObjectComm((PetscObject)x),bx->nb,bx->is,sub,&Y));
+  PetscCall(VecCreateNest(PetscObjectComm((PetscObject)x),bx->nb,bx->is,sub,&Y));
   for (i=0; i<bx->nb; i++) {
-    CHKERRQ(VecDestroy(&sub[i]));
+    PetscCall(VecDestroy(&sub[i]));
   }
-  CHKERRQ(PetscFree(sub));
+  PetscCall(PetscFree(sub));
   *y   = Y;
   PetscFunctionReturn(0);
 }
@@ -103,7 +103,7 @@ static PetscErrorCode VecDot_Nest(Vec x,Vec y,PetscScalar *val)
   nr   = bx->nb;
   _val = 0.0;
   for (i=0; i<nr; i++) {
-    CHKERRQ(VecDot(bx->v[i],by->v[i],&x_dot_y));
+    PetscCall(VecDot(bx->v[i],by->v[i],&x_dot_y));
     _val = _val + x_dot_y;
   }
   *val = _val;
@@ -122,7 +122,7 @@ static PetscErrorCode VecTDot_Nest(Vec x,Vec y,PetscScalar *val)
   nr   = bx->nb;
   _val = 0.0;
   for (i=0; i<nr; i++) {
-    CHKERRQ(VecTDot(bx->v[i],by->v[i],&x_dot_y));
+    PetscCall(VecTDot(bx->v[i],by->v[i],&x_dot_y));
     _val = _val + x_dot_y;
   }
   *val = _val;
@@ -142,7 +142,7 @@ static PetscErrorCode VecDotNorm2_Nest(Vec x,Vec y,PetscScalar *dp, PetscScalar 
   _dp = 0.0;
   _nm = 0.0;
   for (i=0; i<nr; i++) {
-    CHKERRQ(VecDotNorm2(bx->v[i],by->v[i],&x_dot_y,&norm2_y));
+    PetscCall(VecDotNorm2(bx->v[i],by->v[i],&x_dot_y,&norm2_y));
     _dp += x_dot_y;
     _nm += norm2_y;
   }
@@ -160,7 +160,7 @@ static PetscErrorCode VecAXPY_Nest(Vec y,PetscScalar alpha,Vec x)
   PetscFunctionBegin;
   nr = bx->nb;
   for (i=0; i<nr; i++) {
-    CHKERRQ(VecAXPY(by->v[i],alpha,bx->v[i]));
+    PetscCall(VecAXPY(by->v[i],alpha,bx->v[i]));
   }
   PetscFunctionReturn(0);
 }
@@ -174,7 +174,7 @@ static PetscErrorCode VecAYPX_Nest(Vec y,PetscScalar alpha,Vec x)
   PetscFunctionBegin;
   nr = bx->nb;
   for (i=0; i<nr; i++) {
-    CHKERRQ(VecAYPX(by->v[i],alpha,bx->v[i]));
+    PetscCall(VecAYPX(by->v[i],alpha,bx->v[i]));
   }
   PetscFunctionReturn(0);
 }
@@ -188,7 +188,7 @@ static PetscErrorCode VecAXPBY_Nest(Vec y,PetscScalar alpha,PetscScalar beta,Vec
   PetscFunctionBegin;
   nr = bx->nb;
   for (i=0; i<nr; i++) {
-    CHKERRQ(VecAXPBY(by->v[i],alpha,beta,bx->v[i]));
+    PetscCall(VecAXPBY(by->v[i],alpha,beta,bx->v[i]));
   }
   PetscFunctionReturn(0);
 }
@@ -203,7 +203,7 @@ static PetscErrorCode VecAXPBYPCZ_Nest(Vec z,PetscScalar alpha,PetscScalar beta,
   PetscFunctionBegin;
   nr = bx->nb;
   for (i=0; i<nr; i++) {
-    CHKERRQ(VecAXPBYPCZ(bz->v[i],alpha,beta,gamma,bx->v[i],by->v[i]));
+    PetscCall(VecAXPBYPCZ(bz->v[i],alpha,beta,gamma,bx->v[i],by->v[i]));
   }
   PetscFunctionReturn(0);
 }
@@ -216,7 +216,7 @@ static PetscErrorCode VecScale_Nest(Vec x,PetscScalar alpha)
   PetscFunctionBegin;
   nr = bx->nb;
   for (i=0; i<nr; i++) {
-    CHKERRQ(VecScale(bx->v[i],alpha));
+    PetscCall(VecScale(bx->v[i],alpha));
   }
   PetscFunctionReturn(0);
 }
@@ -232,7 +232,7 @@ static PetscErrorCode VecPointwiseMult_Nest(Vec w,Vec x,Vec y)
   VecNestCheckCompatible3(w,1,x,2,y,3);
   nr = bx->nb;
   for (i=0; i<nr; i++) {
-    CHKERRQ(VecPointwiseMult(bw->v[i],bx->v[i],by->v[i]));
+    PetscCall(VecPointwiseMult(bw->v[i],bx->v[i],by->v[i]));
   }
   PetscFunctionReturn(0);
 }
@@ -249,7 +249,7 @@ static PetscErrorCode VecPointwiseDivide_Nest(Vec w,Vec x,Vec y)
 
   nr = bx->nb;
   for (i=0; i<nr; i++) {
-    CHKERRQ(VecPointwiseDivide(bw->v[i],bx->v[i],by->v[i]));
+    PetscCall(VecPointwiseDivide(bw->v[i],bx->v[i],by->v[i]));
   }
   PetscFunctionReturn(0);
 }
@@ -262,7 +262,7 @@ static PetscErrorCode VecReciprocal_Nest(Vec x)
   PetscFunctionBegin;
   nr = bx->nb;
   for (i=0; i<nr; i++) {
-    CHKERRQ(VecReciprocal(bx->v[i]));
+    PetscCall(VecReciprocal(bx->v[i]));
   }
   PetscFunctionReturn(0);
 }
@@ -280,16 +280,16 @@ static PetscErrorCode VecNorm_Nest(Vec xin,NormType type,PetscReal *z)
 
   if (type == NORM_2) {
     PetscScalar dot;
-    CHKERRQ(VecDot(xin,xin,&dot));
+    PetscCall(VecDot(xin,xin,&dot));
     _z = PetscAbsScalar(PetscSqrtScalar(dot));
   } else if (type == NORM_1) {
     for (i=0; i<nr; i++) {
-      CHKERRQ(VecNorm(bx->v[i],type,&z_i));
+      PetscCall(VecNorm(bx->v[i],type,&z_i));
       _z = _z + z_i;
     }
   } else if (type == NORM_INFINITY) {
     for (i=0; i<nr; i++) {
-      CHKERRQ(VecNorm(bx->v[i],type,&z_i));
+      PetscCall(VecNorm(bx->v[i],type,&z_i));
       if (z_i > _z) _z = z_i;
     }
   }
@@ -305,7 +305,7 @@ static PetscErrorCode VecMAXPY_Nest(Vec y,PetscInt nv,const PetscScalar alpha[],
   PetscFunctionBegin;
   for (v=0; v<nv; v++) {
     /* Do axpy on each vector,v */
-    CHKERRQ(VecAXPY(y,alpha[v],x[v]));
+    PetscCall(VecAXPY(y,alpha[v],x[v]));
   }
   PetscFunctionReturn(0);
 }
@@ -316,7 +316,7 @@ static PetscErrorCode VecMDot_Nest(Vec x,PetscInt nv,const Vec y[],PetscScalar *
 
   PetscFunctionBegin;
   for (j=0; j<nv; j++) {
-    CHKERRQ(VecDot(x,y[j],&val[j]));
+    PetscCall(VecDot(x,y[j],&val[j]));
   }
   PetscFunctionReturn(0);
 }
@@ -327,7 +327,7 @@ static PetscErrorCode VecMTDot_Nest(Vec x,PetscInt nv,const Vec y[],PetscScalar 
 
   PetscFunctionBegin;
   for (j=0; j<nv; j++) {
-    CHKERRQ(VecTDot(x,y[j],&val[j]));
+    PetscCall(VecTDot(x,y[j],&val[j]));
   }
   PetscFunctionReturn(0);
 }
@@ -340,7 +340,7 @@ static PetscErrorCode VecSet_Nest(Vec x,PetscScalar alpha)
   PetscFunctionBegin;
   nr = bx->nb;
   for (i=0; i<nr; i++) {
-    CHKERRQ(VecSet(bx->v[i],alpha));
+    PetscCall(VecSet(bx->v[i],alpha));
   }
   PetscFunctionReturn(0);
 }
@@ -353,7 +353,7 @@ static PetscErrorCode VecConjugate_Nest(Vec x)
   PetscFunctionBegin;
   nr = bx->nb;
   for (j=0; j<nr; j++) {
-    CHKERRQ(VecConjugate(bx->v[j]));
+    PetscCall(VecConjugate(bx->v[j]));
   }
   PetscFunctionReturn(0);
 }
@@ -368,7 +368,7 @@ static PetscErrorCode VecSwap_Nest(Vec x,Vec y)
   VecNestCheckCompatible2(x,1,y,2);
   nr = bx->nb;
   for (i=0; i<nr; i++) {
-    CHKERRQ(VecSwap(bx->v[i],by->v[i]));
+    PetscCall(VecSwap(bx->v[i],by->v[i]));
   }
   PetscFunctionReturn(0);
 }
@@ -385,7 +385,7 @@ static PetscErrorCode VecWAXPY_Nest(Vec w,PetscScalar alpha,Vec x,Vec y)
 
   nr = bx->nb;
   for (i=0; i<nr; i++) {
-    CHKERRQ(VecWAXPY(bw->v[i],alpha,bx->v[i],by->v[i]));
+    PetscCall(VecWAXPY(bw->v[i],alpha,bx->v[i],by->v[i]));
   }
   PetscFunctionReturn(0);
 }
@@ -400,15 +400,15 @@ static PetscErrorCode VecMax_Nest_Recursive(Vec x,PetscInt *cnt,PetscInt *p,Pets
   PetscReal      _entry_val;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)x,VECNEST,&isnest));
+  PetscCall(PetscObjectTypeCompare((PetscObject)x,VECNEST,&isnest));
   if (!isnest) {
     /* Not nest */
-    CHKERRQ(VecMax(x,&_entry_loc,&_entry_val));
+    PetscCall(VecMax(x,&_entry_loc,&_entry_val));
     if (_entry_val > *max) {
       *max = _entry_val;
       if (p) *p = _entry_loc + *cnt;
     }
-    CHKERRQ(VecGetSize(x,&L));
+    PetscCall(VecGetSize(x,&L));
     *cnt = *cnt + L;
     PetscFunctionReturn(0);
   }
@@ -419,7 +419,7 @@ static PetscErrorCode VecMax_Nest_Recursive(Vec x,PetscInt *cnt,PetscInt *p,Pets
 
   /* now descend recursively */
   for (i=0; i<nr; i++) {
-    CHKERRQ(VecMax_Nest_Recursive(bx->v[i],cnt,p,max));
+    PetscCall(VecMax_Nest_Recursive(bx->v[i],cnt,p,max));
   }
   PetscFunctionReturn(0);
 }
@@ -433,7 +433,7 @@ static PetscErrorCode VecMax_Nest(Vec x,PetscInt *p,PetscReal *max)
   cnt  = 0;
   if (p) *p = 0;
   *max = PETSC_MIN_REAL;
-  CHKERRQ(VecMax_Nest_Recursive(x,&cnt,p,max));
+  PetscCall(VecMax_Nest_Recursive(x,&cnt,p,max));
   PetscFunctionReturn(0);
 }
 
@@ -445,15 +445,15 @@ static PetscErrorCode VecMin_Nest_Recursive(Vec x,PetscInt *cnt,PetscInt *p,Pets
   PetscReal      _entry_val;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)x,VECNEST,&isnest));
+  PetscCall(PetscObjectTypeCompare((PetscObject)x,VECNEST,&isnest));
   if (!isnest) {
     /* Not nest */
-    CHKERRQ(VecMin(x,&_entry_loc,&_entry_val));
+    PetscCall(VecMin(x,&_entry_loc,&_entry_val));
     if (_entry_val < *min) {
       *min = _entry_val;
       if (p) *p = _entry_loc + *cnt;
     }
-    CHKERRQ(VecGetSize(x,&L));
+    PetscCall(VecGetSize(x,&L));
     *cnt = *cnt + L;
     PetscFunctionReturn(0);
   }
@@ -463,7 +463,7 @@ static PetscErrorCode VecMin_Nest_Recursive(Vec x,PetscInt *cnt,PetscInt *p,Pets
 
   /* now descend recursively */
   for (i=0; i<nr; i++) {
-    CHKERRQ(VecMin_Nest_Recursive(bx->v[i],cnt,p,min));
+    PetscCall(VecMin_Nest_Recursive(bx->v[i],cnt,p,min));
   }
   PetscFunctionReturn(0);
 }
@@ -476,7 +476,7 @@ static PetscErrorCode VecMin_Nest(Vec x,PetscInt *p,PetscReal *min)
   cnt  = 0;
   if (p) *p = 0;
   *min = PETSC_MAX_REAL;
-  CHKERRQ(VecMin_Nest_Recursive(x,&cnt,p,min));
+  PetscCall(VecMin_Nest_Recursive(x,&cnt,p,min));
   PetscFunctionReturn(0);
 }
 
@@ -488,27 +488,27 @@ static PetscErrorCode VecView_Nest(Vec x,PetscViewer viewer)
   PetscInt       i;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii));
   if (isascii) {
-    CHKERRQ(PetscViewerASCIIPushTab(viewer));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"VecNest, rows=%" PetscInt_FMT ",  structure: \n",bx->nb));
+    PetscCall(PetscViewerASCIIPushTab(viewer));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"VecNest, rows=%" PetscInt_FMT ",  structure: \n",bx->nb));
     for (i=0; i<bx->nb; i++) {
       VecType  type;
       char     name[256] = "",prefix[256] = "";
       PetscInt NR;
 
-      CHKERRQ(VecGetSize(bx->v[i],&NR));
-      CHKERRQ(VecGetType(bx->v[i],&type));
-      if (((PetscObject)bx->v[i])->name) CHKERRQ(PetscSNPrintf(name,sizeof(name),"name=\"%s\", ",((PetscObject)bx->v[i])->name));
-      if (((PetscObject)bx->v[i])->prefix) CHKERRQ(PetscSNPrintf(prefix,sizeof(prefix),"prefix=\"%s\", ",((PetscObject)bx->v[i])->prefix));
+      PetscCall(VecGetSize(bx->v[i],&NR));
+      PetscCall(VecGetType(bx->v[i],&type));
+      if (((PetscObject)bx->v[i])->name) PetscCall(PetscSNPrintf(name,sizeof(name),"name=\"%s\", ",((PetscObject)bx->v[i])->name));
+      if (((PetscObject)bx->v[i])->prefix) PetscCall(PetscSNPrintf(prefix,sizeof(prefix),"prefix=\"%s\", ",((PetscObject)bx->v[i])->prefix));
 
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"(%" PetscInt_FMT ") : %s%stype=%s, rows=%" PetscInt_FMT " \n",i,name,prefix,type,NR));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"(%" PetscInt_FMT ") : %s%stype=%s, rows=%" PetscInt_FMT " \n",i,name,prefix,type,NR));
 
-      CHKERRQ(PetscViewerASCIIPushTab(viewer));             /* push1 */
-      CHKERRQ(VecView(bx->v[i],viewer));
-      CHKERRQ(PetscViewerASCIIPopTab(viewer));              /* pop1 */
+      PetscCall(PetscViewerASCIIPushTab(viewer));             /* push1 */
+      PetscCall(VecView(bx->v[i],viewer));
+      PetscCall(PetscViewerASCIIPopTab(viewer));              /* pop1 */
     }
-    CHKERRQ(PetscViewerASCIIPopTab(viewer));                /* pop0 */
+    PetscCall(PetscViewerASCIIPopTab(viewer));                /* pop0 */
   }
   PetscFunctionReturn(0);
 }
@@ -520,11 +520,11 @@ static PetscErrorCode VecSize_Nest_Recursive(Vec x,PetscBool globalsize,PetscInt
   PetscBool      isnest;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)x,VECNEST,&isnest));
+  PetscCall(PetscObjectTypeCompare((PetscObject)x,VECNEST,&isnest));
   if (!isnest) {
     /* Not nest */
-    if (globalsize) CHKERRQ(VecGetSize(x,&size));
-    else CHKERRQ(VecGetLocalSize(x,&size));
+    if (globalsize) PetscCall(VecGetSize(x,&size));
+    else PetscCall(VecGetLocalSize(x,&size));
     *L = *L + size;
     PetscFunctionReturn(0);
   }
@@ -535,7 +535,7 @@ static PetscErrorCode VecSize_Nest_Recursive(Vec x,PetscBool globalsize,PetscInt
 
   /* now descend recursively */
   for (i=0; i<nr; i++) {
-    CHKERRQ(VecSize_Nest_Recursive(bx->v[i],globalsize,L));
+    PetscCall(VecSize_Nest_Recursive(bx->v[i],globalsize,L));
   }
   PetscFunctionReturn(0);
 }
@@ -568,7 +568,7 @@ static PetscErrorCode VecMaxPointwiseDivide_Nest(Vec x,Vec y,PetscReal *max)
   nr = bx->nb;
   m  = 0.0;
   for (i=0; i<nr; i++) {
-    CHKERRQ(VecMaxPointwiseDivide(bx->v[i],by->v[i],&local_max));
+    PetscCall(VecMaxPointwiseDivide(bx->v[i],by->v[i],&local_max));
     if (local_max > m) m = local_max;
   }
   *max = m;
@@ -584,10 +584,10 @@ static PetscErrorCode  VecGetSubVector_Nest(Vec X,IS is,Vec *x)
   *x = NULL;
   for (i=0; i<bx->nb; i++) {
     PetscBool issame = PETSC_FALSE;
-    CHKERRQ(ISEqual(is,bx->is[i],&issame));
+    PetscCall(ISEqual(is,bx->is[i],&issame));
     if (issame) {
       *x   = bx->v[i];
-      CHKERRQ(PetscObjectReference((PetscObject)(*x)));
+      PetscCall(PetscObjectReference((PetscObject)(*x)));
       break;
     }
   }
@@ -598,7 +598,7 @@ static PetscErrorCode  VecGetSubVector_Nest(Vec X,IS is,Vec *x)
 static PetscErrorCode  VecRestoreSubVector_Nest(Vec X,IS is,Vec *x)
 {
   PetscFunctionBegin;
-  CHKERRQ(VecDestroy(x));
+  PetscCall(VecDestroy(x));
   PetscFunctionReturn(0);
 }
 
@@ -608,25 +608,25 @@ static PetscErrorCode VecGetArray_Nest(Vec X,PetscScalar **x)
   PetscInt       i,m,rstart,rend;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetOwnershipRange(X,&rstart,&rend));
-  CHKERRQ(VecGetLocalSize(X,&m));
-  CHKERRQ(PetscMalloc1(m,x));
+  PetscCall(VecGetOwnershipRange(X,&rstart,&rend));
+  PetscCall(VecGetLocalSize(X,&m));
+  PetscCall(PetscMalloc1(m,x));
   for (i=0; i<bx->nb; i++) {
     Vec               subvec = bx->v[i];
     IS                isy    = bx->is[i];
     PetscInt          j,sm;
     const PetscInt    *ixy;
     const PetscScalar *y;
-    CHKERRQ(VecGetLocalSize(subvec,&sm));
-    CHKERRQ(VecGetArrayRead(subvec,&y));
-    CHKERRQ(ISGetIndices(isy,&ixy));
+    PetscCall(VecGetLocalSize(subvec,&sm));
+    PetscCall(VecGetArrayRead(subvec,&y));
+    PetscCall(ISGetIndices(isy,&ixy));
     for (j=0; j<sm; j++) {
       PetscInt ix = ixy[j];
       PetscCheckFalse(ix < rstart || rend <= ix,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for getting array from nonlocal subvec");
       (*x)[ix-rstart] = y[j];
     }
-    CHKERRQ(ISRestoreIndices(isy,&ixy));
-    CHKERRQ(VecRestoreArrayRead(subvec,&y));
+    PetscCall(ISRestoreIndices(isy,&ixy));
+    PetscCall(VecRestoreArrayRead(subvec,&y));
   }
   PetscFunctionReturn(0);
 }
@@ -637,33 +637,33 @@ static PetscErrorCode VecRestoreArray_Nest(Vec X,PetscScalar **x)
   PetscInt       i,m,rstart,rend;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetOwnershipRange(X,&rstart,&rend));
-  CHKERRQ(VecGetLocalSize(X,&m));
+  PetscCall(VecGetOwnershipRange(X,&rstart,&rend));
+  PetscCall(VecGetLocalSize(X,&m));
   for (i=0; i<bx->nb; i++) {
     Vec            subvec = bx->v[i];
     IS             isy    = bx->is[i];
     PetscInt       j,sm;
     const PetscInt *ixy;
     PetscScalar    *y;
-    CHKERRQ(VecGetLocalSize(subvec,&sm));
-    CHKERRQ(VecGetArray(subvec,&y));
-    CHKERRQ(ISGetIndices(isy,&ixy));
+    PetscCall(VecGetLocalSize(subvec,&sm));
+    PetscCall(VecGetArray(subvec,&y));
+    PetscCall(ISGetIndices(isy,&ixy));
     for (j=0; j<sm; j++) {
       PetscInt ix = ixy[j];
       PetscCheckFalse(ix < rstart || rend <= ix,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for getting array from nonlocal subvec");
       y[j] = (*x)[ix-rstart];
     }
-    CHKERRQ(ISRestoreIndices(isy,&ixy));
-    CHKERRQ(VecRestoreArray(subvec,&y));
+    PetscCall(ISRestoreIndices(isy,&ixy));
+    PetscCall(VecRestoreArray(subvec,&y));
   }
-  CHKERRQ(PetscFree(*x));
+  PetscCall(PetscFree(*x));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode VecRestoreArrayRead_Nest(Vec X,const PetscScalar **x)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscFree(*x));
+  PetscCall(PetscFree(*x));
   PetscFunctionReturn(0);
 }
 
@@ -766,7 +766,7 @@ static PetscErrorCode VecNestGetSubVecs_Private(Vec x,PetscInt m,const PetscInt 
 PetscErrorCode  VecNestGetSubVec_Nest(Vec X,PetscInt idxm,Vec *sx)
 {
   PetscFunctionBegin;
-  CHKERRQ(VecNestGetSubVecs_Private(X,1,&idxm,sx));
+  PetscCall(VecNestGetSubVecs_Private(X,1,&idxm,sx));
   PetscFunctionReturn(0);
 }
 
@@ -791,7 +791,7 @@ PetscErrorCode  VecNestGetSubVec_Nest(Vec X,PetscInt idxm,Vec *sx)
 PetscErrorCode  VecNestGetSubVec(Vec X,PetscInt idxm,Vec *sx)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscUseMethod(X,"VecNestGetSubVec_C",(Vec,PetscInt,Vec*),(X,idxm,sx)));
+  PetscCall(PetscUseMethod(X,"VecNestGetSubVec_C",(Vec,PetscInt,Vec*),(X,idxm,sx)));
   PetscFunctionReturn(0);
 }
 
@@ -830,7 +830,7 @@ PetscErrorCode  VecNestGetSubVecs_Nest(Vec X,PetscInt *N,Vec **sx)
 PetscErrorCode  VecNestGetSubVecs(Vec X,PetscInt *N,Vec **sx)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscUseMethod(X,"VecNestGetSubVecs_C",(Vec,PetscInt*,Vec**),(X,N,sx)));
+  PetscCall(PetscUseMethod(X,"VecNestGetSubVecs_C",(Vec,PetscInt*,Vec**),(X,N,sx)));
   PetscFunctionReturn(0);
 }
 
@@ -846,66 +846,66 @@ static PetscErrorCode  VecNestSetSubVec_Private(Vec X,PetscInt idxm,Vec x)
   PetscCheckFalse(idxm >= bx->nb,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %" PetscInt_FMT " maximum %" PetscInt_FMT,idxm,bx->nb);
 
   PetscFunctionBegin;
-  CHKERRQ(VecDestroy(&bx->v[idxm]));       /* destroy the existing vector */
-  CHKERRQ(VecDuplicate(x,&bx->v[idxm]));   /* duplicate the layout of given vector */
-  CHKERRQ(VecCopy(x,bx->v[idxm]));         /* copy the contents of the given vector */
+  PetscCall(VecDestroy(&bx->v[idxm]));       /* destroy the existing vector */
+  PetscCall(VecDuplicate(x,&bx->v[idxm]));   /* duplicate the layout of given vector */
+  PetscCall(VecCopy(x,bx->v[idxm]));         /* copy the contents of the given vector */
 
   /* check if we need to update the IS for the block */
   offset = X->map->rstart;
   for (i=0; i<idxm; i++) {
     n=0;
-    CHKERRQ(VecGetLocalSize(bx->v[i],&n));
+    PetscCall(VecGetLocalSize(bx->v[i],&n));
     offset += n;
   }
 
   /* get the local size and block size */
-  CHKERRQ(VecGetLocalSize(x,&n));
-  CHKERRQ(VecGetBlockSize(x,&bs));
+  PetscCall(VecGetLocalSize(x,&n));
+  PetscCall(VecGetBlockSize(x,&bs));
 
   /* create the new IS */
-  CHKERRQ(ISCreateStride(PetscObjectComm((PetscObject)x),n,offset,1,&is));
-  CHKERRQ(ISSetBlockSize(is,bs));
+  PetscCall(ISCreateStride(PetscObjectComm((PetscObject)x),n,offset,1,&is));
+  PetscCall(ISSetBlockSize(is,bs));
 
   /* check if they are equal */
-  CHKERRQ(ISEqual(is,bx->is[idxm],&issame));
+  PetscCall(ISEqual(is,bx->is[idxm],&issame));
 
   if (!issame) {
     /* The IS of given vector has a different layout compared to the existing block vector.
      Destroy the existing reference and update the IS. */
-    CHKERRQ(ISDestroy(&bx->is[idxm]));
-    CHKERRQ(ISDuplicate(is,&bx->is[idxm]));
-    CHKERRQ(ISCopy(is,bx->is[idxm]));
+    PetscCall(ISDestroy(&bx->is[idxm]));
+    PetscCall(ISDuplicate(is,&bx->is[idxm]));
+    PetscCall(ISCopy(is,bx->is[idxm]));
 
     offset += n;
     /* Since the current IS[idxm] changed, we need to update all the subsequent IS */
     for (i=idxm+1; i<bx->nb; i++) {
       /* get the local size and block size */
-      CHKERRQ(VecGetLocalSize(bx->v[i],&n));
-      CHKERRQ(VecGetBlockSize(bx->v[i],&bs));
+      PetscCall(VecGetLocalSize(bx->v[i],&n));
+      PetscCall(VecGetBlockSize(bx->v[i],&bs));
 
       /* destroy the old and create the new IS */
-      CHKERRQ(ISDestroy(&bx->is[i]));
-      CHKERRQ(ISCreateStride(((PetscObject)bx->v[i])->comm,n,offset,1,&bx->is[i]));
-      CHKERRQ(ISSetBlockSize(bx->is[i],bs));
+      PetscCall(ISDestroy(&bx->is[i]));
+      PetscCall(ISCreateStride(((PetscObject)bx->v[i])->comm,n,offset,1,&bx->is[i]));
+      PetscCall(ISSetBlockSize(bx->is[i],bs));
 
       offset += n;
     }
 
     n=0;
-    CHKERRQ(VecSize_Nest_Recursive(X,PETSC_TRUE,&N));
-    CHKERRQ(VecSize_Nest_Recursive(X,PETSC_FALSE,&n));
-    CHKERRQ(PetscLayoutSetSize(X->map,N));
-    CHKERRQ(PetscLayoutSetLocalSize(X->map,n));
+    PetscCall(VecSize_Nest_Recursive(X,PETSC_TRUE,&N));
+    PetscCall(VecSize_Nest_Recursive(X,PETSC_FALSE,&n));
+    PetscCall(PetscLayoutSetSize(X->map,N));
+    PetscCall(PetscLayoutSetLocalSize(X->map,n));
   }
 
-  CHKERRQ(ISDestroy(&is));
+  PetscCall(ISDestroy(&is));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode  VecNestSetSubVec_Nest(Vec X,PetscInt idxm,Vec sx)
 {
   PetscFunctionBegin;
-  CHKERRQ(VecNestSetSubVec_Private(X,idxm,sx));
+  PetscCall(VecNestSetSubVec_Private(X,idxm,sx));
   PetscFunctionReturn(0);
 }
 
@@ -929,7 +929,7 @@ PetscErrorCode  VecNestSetSubVec_Nest(Vec X,PetscInt idxm,Vec sx)
 PetscErrorCode  VecNestSetSubVec(Vec X,PetscInt idxm,Vec sx)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscUseMethod(X,"VecNestSetSubVec_C",(Vec,PetscInt,Vec),(X,idxm,sx)));
+  PetscCall(PetscUseMethod(X,"VecNestSetSubVec_C",(Vec,PetscInt,Vec),(X,idxm,sx)));
   PetscFunctionReturn(0);
 }
 
@@ -939,7 +939,7 @@ PetscErrorCode  VecNestSetSubVecs_Nest(Vec X,PetscInt N,PetscInt *idxm,Vec *sx)
 
   PetscFunctionBegin;
   for (i=0; i<N; i++) {
-    CHKERRQ(VecNestSetSubVec_Private(X,idxm[i],sx[i]));
+    PetscCall(VecNestSetSubVec_Private(X,idxm[i],sx[i]));
   }
   PetscFunctionReturn(0);
 }
@@ -966,7 +966,7 @@ PetscErrorCode  VecNestSetSubVecs_Nest(Vec X,PetscInt N,PetscInt *idxm,Vec *sx)
 PetscErrorCode  VecNestSetSubVecs(Vec X,PetscInt N,PetscInt *idxm,Vec *sx)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscUseMethod(X,"VecNestSetSubVecs_C",(Vec,PetscInt,PetscInt*,Vec*),(X,N,idxm,sx)));
+  PetscCall(PetscUseMethod(X,"VecNestSetSubVecs_C",(Vec,PetscInt,PetscInt*,Vec*),(X,N,idxm,sx)));
   PetscFunctionReturn(0);
 }
 
@@ -1001,7 +1001,7 @@ PetscErrorCode  VecNestGetSize(Vec X,PetscInt *N)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(X,VEC_CLASSID,1);
   PetscValidIntPointer(N,2);
-  CHKERRQ(PetscUseMethod(X,"VecNestGetSize_C",(Vec,PetscInt*),(X,N)));
+  PetscCall(PetscUseMethod(X,"VecNestGetSize_C",(Vec,PetscInt*),(X,N)));
   PetscFunctionReturn(0);
 }
 
@@ -1017,14 +1017,14 @@ static PetscErrorCode VecSetUp_Nest_Private(Vec V,PetscInt nb,Vec x[])
   PetscCheckFalse(ctx->nb < 0,PetscObjectComm((PetscObject)V),PETSC_ERR_ARG_WRONG,"Cannot create VECNEST with < 0 blocks.");
 
   /* Create space */
-  CHKERRQ(PetscMalloc1(ctx->nb,&ctx->v));
+  PetscCall(PetscMalloc1(ctx->nb,&ctx->v));
   for (i=0; i<ctx->nb; i++) {
     ctx->v[i] = x[i];
-    CHKERRQ(PetscObjectReference((PetscObject)x[i]));
+    PetscCall(PetscObjectReference((PetscObject)x[i]));
     /* Do not allocate memory for internal sub blocks */
   }
 
-  CHKERRQ(PetscMalloc1(ctx->nb,&ctx->is));
+  PetscCall(PetscMalloc1(ctx->nb,&ctx->is));
 
   ctx->setup_called = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -1039,20 +1039,20 @@ static PetscErrorCode VecSetUp_NestIS_Private(Vec V,PetscInt nb,IS is[])
   if (is) {                     /* Do some consistency checks and reference the is */
     offset = V->map->rstart;
     for (i=0; i<ctx->nb; i++) {
-      CHKERRQ(ISGetSize(is[i],&M));
-      CHKERRQ(VecGetSize(ctx->v[i],&N));
+      PetscCall(ISGetSize(is[i],&M));
+      PetscCall(VecGetSize(ctx->v[i],&N));
       PetscCheckFalse(M != N,PetscObjectComm((PetscObject)V),PETSC_ERR_ARG_INCOMP,"In slot %" PetscInt_FMT ", IS of size %" PetscInt_FMT " is not compatible with Vec of size %" PetscInt_FMT,i,M,N);
-      CHKERRQ(ISGetLocalSize(is[i],&m));
-      CHKERRQ(VecGetLocalSize(ctx->v[i],&n));
+      PetscCall(ISGetLocalSize(is[i],&m));
+      PetscCall(VecGetLocalSize(ctx->v[i],&n));
       PetscCheckFalse(m != n,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"In slot %" PetscInt_FMT ", IS of local size %" PetscInt_FMT " is not compatible with Vec of local size %" PetscInt_FMT,i,m,n);
       if (PetscDefined(USE_DEBUG)) { /* This test can be expensive */
         PetscInt  start;
         PetscBool contiguous;
-        CHKERRQ(ISContiguousLocal(is[i],offset,offset+n,&start,&contiguous));
+        PetscCall(ISContiguousLocal(is[i],offset,offset+n,&start,&contiguous));
         PetscCheck(contiguous,PetscObjectComm((PetscObject)V),PETSC_ERR_SUP,"Index set %" PetscInt_FMT " is not contiguous with layout of matching vector",i);
         PetscCheckFalse(start != 0,PetscObjectComm((PetscObject)V),PETSC_ERR_SUP,"Index set %" PetscInt_FMT " introduces overlap or a hole",i);
       }
-      CHKERRQ(PetscObjectReference((PetscObject)is[i]));
+      PetscCall(PetscObjectReference((PetscObject)is[i]));
       ctx->is[i] = is[i];
       offset += n;
     }
@@ -1060,10 +1060,10 @@ static PetscErrorCode VecSetUp_NestIS_Private(Vec V,PetscInt nb,IS is[])
     offset = V->map->rstart;
     for (i=0; i<ctx->nb; i++) {
       PetscInt bs;
-      CHKERRQ(VecGetLocalSize(ctx->v[i],&n));
-      CHKERRQ(VecGetBlockSize(ctx->v[i],&bs));
-      CHKERRQ(ISCreateStride(((PetscObject)ctx->v[i])->comm,n,offset,1,&ctx->is[i]));
-      CHKERRQ(ISSetBlockSize(ctx->is[i],bs));
+      PetscCall(VecGetLocalSize(ctx->v[i],&n));
+      PetscCall(VecGetBlockSize(ctx->v[i],&bs));
+      PetscCall(ISCreateStride(((PetscObject)ctx->v[i])->comm,n,offset,1,&ctx->is[i]));
+      PetscCall(ISSetBlockSize(ctx->is[i],bs));
       offset += n;
     }
   }
@@ -1095,37 +1095,37 @@ PetscErrorCode  VecCreateNest(MPI_Comm comm,PetscInt nb,IS is[],Vec x[],Vec *Y)
   PetscInt       n,N;
 
   PetscFunctionBegin;
-  CHKERRQ(VecCreate(comm,&V));
-  CHKERRQ(PetscObjectChangeTypeName((PetscObject)V,VECNEST));
+  PetscCall(VecCreate(comm,&V));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)V,VECNEST));
 
   /* allocate and set pointer for implememtation data */
-  CHKERRQ(PetscNew(&s));
+  PetscCall(PetscNew(&s));
   V->data          = (void*)s;
   s->setup_called  = PETSC_FALSE;
   s->nb            = -1;
   s->v             = NULL;
 
-  CHKERRQ(VecSetUp_Nest_Private(V,nb,x));
+  PetscCall(VecSetUp_Nest_Private(V,nb,x));
 
   n = N = 0;
-  CHKERRQ(VecSize_Nest_Recursive(V,PETSC_TRUE,&N));
-  CHKERRQ(VecSize_Nest_Recursive(V,PETSC_FALSE,&n));
-  CHKERRQ(PetscLayoutSetSize(V->map,N));
-  CHKERRQ(PetscLayoutSetLocalSize(V->map,n));
-  CHKERRQ(PetscLayoutSetBlockSize(V->map,1));
-  CHKERRQ(PetscLayoutSetUp(V->map));
+  PetscCall(VecSize_Nest_Recursive(V,PETSC_TRUE,&N));
+  PetscCall(VecSize_Nest_Recursive(V,PETSC_FALSE,&n));
+  PetscCall(PetscLayoutSetSize(V->map,N));
+  PetscCall(PetscLayoutSetLocalSize(V->map,n));
+  PetscCall(PetscLayoutSetBlockSize(V->map,1));
+  PetscCall(PetscLayoutSetUp(V->map));
 
-  CHKERRQ(VecSetUp_NestIS_Private(V,nb,is));
+  PetscCall(VecSetUp_NestIS_Private(V,nb,is));
 
-  CHKERRQ(VecNestSetOps_Private(V->ops));
+  PetscCall(VecNestSetOps_Private(V->ops));
   V->petscnative = PETSC_FALSE;
 
   /* expose block api's */
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)V,"VecNestGetSubVec_C",VecNestGetSubVec_Nest));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)V,"VecNestGetSubVecs_C",VecNestGetSubVecs_Nest));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)V,"VecNestSetSubVec_C",VecNestSetSubVec_Nest));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)V,"VecNestSetSubVecs_C",VecNestSetSubVecs_Nest));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)V,"VecNestGetSize_C",VecNestGetSize_Nest));
+  PetscCall(PetscObjectComposeFunction((PetscObject)V,"VecNestGetSubVec_C",VecNestGetSubVec_Nest));
+  PetscCall(PetscObjectComposeFunction((PetscObject)V,"VecNestGetSubVecs_C",VecNestGetSubVecs_Nest));
+  PetscCall(PetscObjectComposeFunction((PetscObject)V,"VecNestSetSubVec_C",VecNestSetSubVec_Nest));
+  PetscCall(PetscObjectComposeFunction((PetscObject)V,"VecNestSetSubVecs_C",VecNestSetSubVecs_Nest));
+  PetscCall(PetscObjectComposeFunction((PetscObject)V,"VecNestGetSize_C",VecNestGetSize_Nest));
 
   *Y = V;
   PetscFunctionReturn(0);

@@ -43,21 +43,21 @@ PetscErrorCode  MatPartitioningRegisterAll(void)
   if (MatPartitioningRegisterAllCalled) PetscFunctionReturn(0);
   MatPartitioningRegisterAllCalled = PETSC_TRUE;
 
-  CHKERRQ(MatPartitioningRegister(MATPARTITIONINGCURRENT, MatPartitioningCreate_Current));
-  CHKERRQ(MatPartitioningRegister(MATPARTITIONINGAVERAGE, MatPartitioningCreate_Average));
-  CHKERRQ(MatPartitioningRegister(MATPARTITIONINGSQUARE,  MatPartitioningCreate_Square));
-  CHKERRQ(MatPartitioningRegister(MATPARTITIONINGHIERARCH,MatPartitioningCreate_Hierarchical));
+  PetscCall(MatPartitioningRegister(MATPARTITIONINGCURRENT, MatPartitioningCreate_Current));
+  PetscCall(MatPartitioningRegister(MATPARTITIONINGAVERAGE, MatPartitioningCreate_Average));
+  PetscCall(MatPartitioningRegister(MATPARTITIONINGSQUARE,  MatPartitioningCreate_Square));
+  PetscCall(MatPartitioningRegister(MATPARTITIONINGHIERARCH,MatPartitioningCreate_Hierarchical));
 #if defined(PETSC_HAVE_PARMETIS)
-  CHKERRQ(MatPartitioningRegister(MATPARTITIONINGPARMETIS,MatPartitioningCreate_Parmetis));
+  PetscCall(MatPartitioningRegister(MATPARTITIONINGPARMETIS,MatPartitioningCreate_Parmetis));
 #endif
 #if defined(PETSC_HAVE_CHACO)
-  CHKERRQ(MatPartitioningRegister(MATPARTITIONINGCHACO,   MatPartitioningCreate_Chaco));
+  PetscCall(MatPartitioningRegister(MATPARTITIONINGCHACO,   MatPartitioningCreate_Chaco));
 #endif
 #if defined(PETSC_HAVE_PARTY)
-  CHKERRQ(MatPartitioningRegister(MATPARTITIONINGPARTY,   MatPartitioningCreate_Party));
+  PetscCall(MatPartitioningRegister(MATPARTITIONINGPARTY,   MatPartitioningCreate_Party));
 #endif
 #if defined(PETSC_HAVE_PTSCOTCH)
-  CHKERRQ(MatPartitioningRegister(MATPARTITIONINGPTSCOTCH,MatPartitioningCreate_PTScotch));
+  PetscCall(MatPartitioningRegister(MATPARTITIONINGPTSCOTCH,MatPartitioningCreate_PTScotch));
 #endif
   PetscFunctionReturn(0);
 }

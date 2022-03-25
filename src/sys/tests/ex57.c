@@ -9,23 +9,23 @@ int main(int argc,char **argv)
   PetscInt       i;
   PetscRandom    rand;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(PetscRandomCreate(PETSC_COMM_WORLD,&rand));
-  CHKERRQ(PetscObjectGetComm((PetscObject)rand,&comm));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscRandomCreate(PETSC_COMM_WORLD,&rand));
+  PetscCall(PetscObjectGetComm((PetscObject)rand,&comm));
   for (i=0; i<10; i++) {
-    CHKERRQ(PetscCommGetComm(comm,&comms[i]));
+    PetscCall(PetscCommGetComm(comm,&comms[i]));
   }
   for (i=0; i<5; i++) {
-    CHKERRQ(PetscCommRestoreComm(comm,&comms[i]));
+    PetscCall(PetscCommRestoreComm(comm,&comms[i]));
   }
   for (i=0; i<5; i++) {
-    CHKERRQ(PetscCommGetComm(comm,&comms[i]));
+    PetscCall(PetscCommGetComm(comm,&comms[i]));
   }
   for (i=0; i<10; i++) {
-    CHKERRQ(PetscCommRestoreComm(comm,&comms[i]));
+    PetscCall(PetscCommRestoreComm(comm,&comms[i]));
   }
-  CHKERRQ(PetscRandomDestroy(&rand));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscRandomDestroy(&rand));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

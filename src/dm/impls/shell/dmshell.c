@@ -34,7 +34,7 @@ PetscErrorCode DMGlobalToLocalBeginDefaultShell(DM dm,Vec g,InsertMode mode,Vec 
 
   PetscFunctionBegin;
   PetscCheck(shell->gtol,((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Cannot be used without first setting the scatter context via DMShellSetGlobalToLocalVecScatter()");
-  CHKERRQ(VecScatterBegin(shell->gtol,g,l,mode,SCATTER_FORWARD));
+  PetscCall(VecScatterBegin(shell->gtol,g,l,mode,SCATTER_FORWARD));
   PetscFunctionReturn(0);
 }
 
@@ -58,7 +58,7 @@ PetscErrorCode DMGlobalToLocalEndDefaultShell(DM dm,Vec g,InsertMode mode,Vec l)
 
   PetscFunctionBegin;
    PetscCheck(shell->gtol,((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Cannot be used without first setting the scatter context via DMShellSetGlobalToLocalVecScatter()");
-  CHKERRQ(VecScatterEnd(shell->gtol,g,l,mode,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(shell->gtol,g,l,mode,SCATTER_FORWARD));
   PetscFunctionReturn(0);
 }
 
@@ -84,7 +84,7 @@ PetscErrorCode DMLocalToGlobalBeginDefaultShell(DM dm,Vec l,InsertMode mode,Vec 
 
   PetscFunctionBegin;
   PetscCheck(shell->ltog,((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Cannot be used without first setting the scatter context via DMShellSetLocalToGlobalVecScatter()");
-  CHKERRQ(VecScatterBegin(shell->ltog,l,g,mode,SCATTER_FORWARD));
+  PetscCall(VecScatterBegin(shell->ltog,l,g,mode,SCATTER_FORWARD));
   PetscFunctionReturn(0);
 }
 
@@ -108,7 +108,7 @@ PetscErrorCode DMLocalToGlobalEndDefaultShell(DM dm,Vec l,InsertMode mode,Vec g)
 
   PetscFunctionBegin;
    PetscCheck(shell->ltog,((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Cannot be used without first setting the scatter context via DMShellSetLocalToGlobalVecScatter()");
-  CHKERRQ(VecScatterEnd(shell->ltog,l,g,mode,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(shell->ltog,l,g,mode,SCATTER_FORWARD));
   PetscFunctionReturn(0);
 }
 
@@ -136,7 +136,7 @@ PetscErrorCode DMLocalToLocalBeginDefaultShell(DM dm,Vec g,InsertMode mode,Vec l
 
   PetscFunctionBegin;
   PetscCheck(shell->ltol,((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Cannot be used without first setting the scatter context via DMShellSetLocalToLocalVecScatter()");
-  CHKERRQ(VecScatterBegin(shell->ltol,g,l,mode,SCATTER_FORWARD));
+  PetscCall(VecScatterBegin(shell->ltol,g,l,mode,SCATTER_FORWARD));
   PetscFunctionReturn(0);
 }
 
@@ -162,7 +162,7 @@ PetscErrorCode DMLocalToLocalEndDefaultShell(DM dm,Vec g,InsertMode mode,Vec l)
 
   PetscFunctionBegin;
    PetscCheck(shell->ltol,((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Cannot be used without first setting the scatter context via DMShellSetGlobalToLocalVecScatter()");
-  CHKERRQ(VecScatterEnd(shell->ltol,g,l,mode,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(shell->ltol,g,l,mode,SCATTER_FORWARD));
   PetscFunctionReturn(0);
 }
 
@@ -177,18 +177,18 @@ static PetscErrorCode DMCreateMatrix_Shell(DM dm,Mat *J)
   if (!shell->A) {
     if (shell->Xglobal) {
       PetscInt m,M;
-      CHKERRQ(PetscInfo(dm,"Naively creating matrix using global vector distribution without preallocation\n"));
-      CHKERRQ(VecGetSize(shell->Xglobal,&M));
-      CHKERRQ(VecGetLocalSize(shell->Xglobal,&m));
-      CHKERRQ(MatCreate(PetscObjectComm((PetscObject)dm),&shell->A));
-      CHKERRQ(MatSetSizes(shell->A,m,m,M,M));
-      CHKERRQ(MatSetType(shell->A,dm->mattype));
-      CHKERRQ(MatSetUp(shell->A));
+      PetscCall(PetscInfo(dm,"Naively creating matrix using global vector distribution without preallocation\n"));
+      PetscCall(VecGetSize(shell->Xglobal,&M));
+      PetscCall(VecGetLocalSize(shell->Xglobal,&m));
+      PetscCall(MatCreate(PetscObjectComm((PetscObject)dm),&shell->A));
+      PetscCall(MatSetSizes(shell->A,m,m,M,M));
+      PetscCall(MatSetType(shell->A,dm->mattype));
+      PetscCall(MatSetUp(shell->A));
     } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Must call DMShellSetMatrix(), DMShellSetCreateMatrix(), or provide a vector");
   }
   A = shell->A;
-  CHKERRQ(MatDuplicate(A,MAT_SHARE_NONZERO_PATTERN,J));
-  CHKERRQ(MatSetDM(*J,dm));
+  PetscCall(MatDuplicate(A,MAT_SHARE_NONZERO_PATTERN,J));
+  PetscCall(MatSetDM(*J,dm));
   PetscFunctionReturn(0);
 }
 
@@ -204,9 +204,9 @@ PetscErrorCode DMCreateGlobalVector_Shell(DM dm,Vec *gvec)
   X     = shell->Xglobal;
   PetscCheck(X,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Must call DMShellSetGlobalVector() or DMShellSetCreateGlobalVector()");
   /* Need to create a copy in order to attach the DM to the vector */
-  CHKERRQ(VecDuplicate(X,gvec));
-  CHKERRQ(VecZeroEntries(*gvec));
-  CHKERRQ(VecSetDM(*gvec,dm));
+  PetscCall(VecDuplicate(X,gvec));
+  PetscCall(VecZeroEntries(*gvec));
+  PetscCall(VecSetDM(*gvec,dm));
   PetscFunctionReturn(0);
 }
 
@@ -222,9 +222,9 @@ PetscErrorCode DMCreateLocalVector_Shell(DM dm,Vec *gvec)
   X     = shell->Xlocal;
   PetscCheck(X,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Must call DMShellSetLocalVector() or DMShellSetCreateLocalVector()");
   /* Need to create a copy in order to attach the DM to the vector */
-  CHKERRQ(VecDuplicate(X,gvec));
-  CHKERRQ(VecZeroEntries(*gvec));
-  CHKERRQ(VecSetDM(*gvec,dm));
+  PetscCall(VecDuplicate(X,gvec));
+  PetscCall(VecZeroEntries(*gvec));
+  PetscCall(VecSetDM(*gvec,dm));
   PetscFunctionReturn(0);
 }
 
@@ -248,7 +248,7 @@ PetscErrorCode DMShellSetContext(DM dm,void *ctx)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
+  PetscCall(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
   if (!isshell) PetscFunctionReturn(0);
   shell->ctx = ctx;
   PetscFunctionReturn(0);
@@ -276,7 +276,7 @@ PetscErrorCode DMShellGetContext(DM dm,void *ctx)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
+  PetscCall(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
   PetscCheck(isshell,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Can only use with DMSHELL type DMs");
   *(void**)ctx = shell->ctx;
   PetscFunctionReturn(0);
@@ -307,15 +307,15 @@ PetscErrorCode DMShellSetMatrix(DM dm,Mat J)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(J,MAT_CLASSID,2);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
+  PetscCall(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
   if (!isshell) PetscFunctionReturn(0);
   if (J == shell->A) PetscFunctionReturn(0);
-  CHKERRQ(MatGetDM(J,&mdm));
-  CHKERRQ(PetscObjectReference((PetscObject)J));
-  CHKERRQ(MatDestroy(&shell->A));
+  PetscCall(MatGetDM(J,&mdm));
+  PetscCall(PetscObjectReference((PetscObject)J));
+  PetscCall(MatDestroy(&shell->A));
   if (mdm == dm) {
-    CHKERRQ(MatDuplicate(J,MAT_SHARE_NONZERO_PATTERN,&shell->A));
-    CHKERRQ(MatSetDM(shell->A,NULL));
+    PetscCall(MatDuplicate(J,MAT_SHARE_NONZERO_PATTERN,&shell->A));
+    PetscCall(MatSetDM(shell->A,NULL));
   } else shell->A = J;
   PetscFunctionReturn(0);
 }
@@ -363,9 +363,9 @@ PetscErrorCode DMShellSetGlobalVector(DM dm,Vec X)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(X,VEC_CLASSID,2);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
+  PetscCall(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
   if (!isshell) PetscFunctionReturn(0);
-  CHKERRQ(VecGetDM(X,&vdm));
+  PetscCall(VecGetDM(X,&vdm));
   /*
       if the vector proposed as the new base global vector for the DM is a DM vector associated
       with the same DM then the current base global vector for the DM is ok and if we replace it with the new one
@@ -377,8 +377,8 @@ PetscErrorCode DMShellSetGlobalVector(DM dm,Vec X)
       for pointing out the problem.
    */
   if (vdm == dm) PetscFunctionReturn(0);
-  CHKERRQ(PetscObjectReference((PetscObject)X));
-  CHKERRQ(VecDestroy(&shell->Xglobal));
+  PetscCall(PetscObjectReference((PetscObject)X));
+  PetscCall(VecDestroy(&shell->Xglobal));
   shell->Xglobal = X;
   PetscFunctionReturn(0);
 }
@@ -404,7 +404,7 @@ PetscErrorCode DMShellGetGlobalVector(DM dm, Vec *X)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(X,2);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
+  PetscCall(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
   if (!isshell) PetscFunctionReturn(0);
   *X = shell->Xglobal;
   PetscFunctionReturn(0);
@@ -453,9 +453,9 @@ PetscErrorCode DMShellSetLocalVector(DM dm,Vec X)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(X,VEC_CLASSID,2);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
+  PetscCall(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
   if (!isshell) PetscFunctionReturn(0);
-  CHKERRQ(VecGetDM(X,&vdm));
+  PetscCall(VecGetDM(X,&vdm));
   /*
       if the vector proposed as the new base global vector for the DM is a DM vector associated
       with the same DM then the current base global vector for the DM is ok and if we replace it with the new one
@@ -467,8 +467,8 @@ PetscErrorCode DMShellSetLocalVector(DM dm,Vec X)
       for pointing out the problem.
    */
   if (vdm == dm) PetscFunctionReturn(0);
-  CHKERRQ(PetscObjectReference((PetscObject)X));
-  CHKERRQ(VecDestroy(&shell->Xlocal));
+  PetscCall(PetscObjectReference((PetscObject)X));
+  PetscCall(VecDestroy(&shell->Xlocal));
   shell->Xlocal = X;
   PetscFunctionReturn(0);
 }
@@ -595,8 +595,8 @@ PetscErrorCode DMShellSetGlobalToLocalVecScatter(DM dm, VecScatter gtol)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(gtol,PETSCSF_CLASSID,2);
-  CHKERRQ(PetscObjectReference((PetscObject)gtol));
-  CHKERRQ(VecScatterDestroy(&shell->gtol));
+  PetscCall(PetscObjectReference((PetscObject)gtol));
+  PetscCall(VecScatterDestroy(&shell->gtol));
   shell->gtol = gtol;
   PetscFunctionReturn(0);
 }
@@ -621,8 +621,8 @@ PetscErrorCode DMShellSetLocalToGlobalVecScatter(DM dm, VecScatter ltog)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(ltog,PETSCSF_CLASSID,2);
-  CHKERRQ(PetscObjectReference((PetscObject)ltog));
-  CHKERRQ(VecScatterDestroy(&shell->ltog));
+  PetscCall(PetscObjectReference((PetscObject)ltog));
+  PetscCall(VecScatterDestroy(&shell->ltog));
   shell->ltog = ltog;
   PetscFunctionReturn(0);
 }
@@ -647,8 +647,8 @@ PetscErrorCode DMShellSetLocalToLocalVecScatter(DM dm, VecScatter ltol)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(ltol,PETSCSF_CLASSID,2);
-  CHKERRQ(PetscObjectReference((PetscObject)ltol));
-  CHKERRQ(VecScatterDestroy(&shell->ltol));
+  PetscCall(PetscObjectReference((PetscObject)ltol));
+  PetscCall(VecScatterDestroy(&shell->ltol));
   shell->ltol = ltol;
   PetscFunctionReturn(0);
 }
@@ -672,7 +672,7 @@ PetscErrorCode DMShellSetCoarsen(DM dm, PetscErrorCode (*coarsen)(DM,MPI_Comm,DM
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
+  PetscCall(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
   if (!isshell) PetscFunctionReturn(0);
   dm->ops->coarsen = coarsen;
   PetscFunctionReturn(0);
@@ -699,7 +699,7 @@ PetscErrorCode DMShellGetCoarsen(DM dm, PetscErrorCode (**coarsen)(DM,MPI_Comm,D
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
+  PetscCall(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
   PetscCheck(isshell,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Can only use with DMSHELL type DMs");
   *coarsen = dm->ops->coarsen;
   PetscFunctionReturn(0);
@@ -724,7 +724,7 @@ PetscErrorCode DMShellSetRefine(DM dm, PetscErrorCode (*refine)(DM,MPI_Comm,DM*)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
+  PetscCall(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
   if (!isshell) PetscFunctionReturn(0);
   dm->ops->refine = refine;
   PetscFunctionReturn(0);
@@ -751,7 +751,7 @@ PetscErrorCode DMShellGetRefine(DM dm, PetscErrorCode (**refine)(DM,MPI_Comm,DM*
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
+  PetscCall(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
   PetscCheck(isshell,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Can only use with DMSHELL type DMs");
   *refine = dm->ops->refine;
   PetscFunctionReturn(0);
@@ -776,7 +776,7 @@ PetscErrorCode DMShellSetCreateInterpolation(DM dm, PetscErrorCode (*interp)(DM,
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
+  PetscCall(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
   if (!isshell) PetscFunctionReturn(0);
   dm->ops->createinterpolation = interp;
   PetscFunctionReturn(0);
@@ -803,7 +803,7 @@ PetscErrorCode DMShellGetCreateInterpolation(DM dm, PetscErrorCode (**interp)(DM
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
+  PetscCall(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
   PetscCheck(isshell,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Can only use with DMSHELL type DMs");
   *interp = dm->ops->createinterpolation;
   PetscFunctionReturn(0);
@@ -828,7 +828,7 @@ PetscErrorCode DMShellSetCreateRestriction(DM dm, PetscErrorCode (*restriction)(
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
+  PetscCall(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
   if (!isshell) PetscFunctionReturn(0);
   dm->ops->createrestriction = restriction;
   PetscFunctionReturn(0);
@@ -855,7 +855,7 @@ PetscErrorCode DMShellGetCreateRestriction(DM dm, PetscErrorCode (**restriction)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
+  PetscCall(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
   PetscCheck(isshell,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Can only use with DMSHELL type DMs");
   *restriction = dm->ops->createrestriction;
   PetscFunctionReturn(0);
@@ -880,7 +880,7 @@ PetscErrorCode DMShellSetCreateInjection(DM dm, PetscErrorCode (*inject)(DM,DM,M
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
+  PetscCall(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
   if (!isshell) PetscFunctionReturn(0);
   dm->ops->createinjection = inject;
   PetscFunctionReturn(0);
@@ -907,7 +907,7 @@ PetscErrorCode DMShellGetCreateInjection(DM dm, PetscErrorCode (**inject)(DM,DM,
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
+  PetscCall(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
   PetscCheck(isshell,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Can only use with DMSHELL type DMs");
   *inject = dm->ops->createinjection;
   PetscFunctionReturn(0);
@@ -932,7 +932,7 @@ PetscErrorCode DMShellSetCreateFieldDecomposition(DM dm, PetscErrorCode (*decomp
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
+  PetscCall(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
   if (!isshell) PetscFunctionReturn(0);
   dm->ops->createfielddecomposition = decomp;
   PetscFunctionReturn(0);
@@ -957,7 +957,7 @@ PetscErrorCode DMShellSetCreateDomainDecomposition(DM dm, PetscErrorCode (*decom
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
+  PetscCall(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
   if (!isshell) PetscFunctionReturn(0);
   dm->ops->createdomaindecomposition = decomp;
   PetscFunctionReturn(0);
@@ -982,7 +982,7 @@ PetscErrorCode DMShellSetCreateDomainDecompositionScatters(DM dm, PetscErrorCode
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
+  PetscCall(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
   if (!isshell) PetscFunctionReturn(0);
   dm->ops->createddscatters = scatter;
   PetscFunctionReturn(0);
@@ -1007,7 +1007,7 @@ PetscErrorCode DMShellSetCreateSubDM(DM dm, PetscErrorCode (*subdm)(DM,PetscInt,
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
+  PetscCall(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
   if (!isshell) PetscFunctionReturn(0);
   dm->ops->createsubdm = subdm;
   PetscFunctionReturn(0);
@@ -1034,7 +1034,7 @@ PetscErrorCode DMShellGetCreateSubDM(DM dm, PetscErrorCode (**subdm)(DM,PetscInt
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
+  PetscCall(PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell));
   PetscCheck(isshell,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Can only use with DMSHELL type DMs");
   *subdm = dm->ops->createsubdm;
   PetscFunctionReturn(0);
@@ -1045,14 +1045,14 @@ static PetscErrorCode DMDestroy_Shell(DM dm)
   DM_Shell       *shell = (DM_Shell*)dm->data;
 
   PetscFunctionBegin;
-  CHKERRQ(MatDestroy(&shell->A));
-  CHKERRQ(VecDestroy(&shell->Xglobal));
-  CHKERRQ(VecDestroy(&shell->Xlocal));
-  CHKERRQ(VecScatterDestroy(&shell->gtol));
-  CHKERRQ(VecScatterDestroy(&shell->ltog));
-  CHKERRQ(VecScatterDestroy(&shell->ltol));
+  PetscCall(MatDestroy(&shell->A));
+  PetscCall(VecDestroy(&shell->Xglobal));
+  PetscCall(VecDestroy(&shell->Xlocal));
+  PetscCall(VecScatterDestroy(&shell->gtol));
+  PetscCall(VecScatterDestroy(&shell->ltog));
+  PetscCall(VecScatterDestroy(&shell->ltol));
   /* This was originally freed in DMDestroy(), but that prevents reference counting of backend objects */
-  CHKERRQ(PetscFree(shell));
+  PetscCall(PetscFree(shell));
   PetscFunctionReturn(0);
 }
 
@@ -1061,7 +1061,7 @@ static PetscErrorCode DMView_Shell(DM dm,PetscViewer v)
   DM_Shell       *shell = (DM_Shell*)dm->data;
 
   PetscFunctionBegin;
-  CHKERRQ(VecView(shell->Xglobal,v));
+  PetscCall(VecView(shell->Xglobal,v));
   PetscFunctionReturn(0);
 }
 
@@ -1070,16 +1070,16 @@ static PetscErrorCode DMLoad_Shell(DM dm,PetscViewer v)
   DM_Shell       *shell = (DM_Shell*)dm->data;
 
   PetscFunctionBegin;
-  CHKERRQ(VecCreate(PetscObjectComm((PetscObject)dm),&shell->Xglobal));
-  CHKERRQ(VecLoad(shell->Xglobal,v));
+  PetscCall(VecCreate(PetscObjectComm((PetscObject)dm),&shell->Xglobal));
+  PetscCall(VecLoad(shell->Xglobal,v));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode DMCreateSubDM_Shell(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm)
 {
   PetscFunctionBegin;
-  if (subdm) CHKERRQ(DMShellCreate(PetscObjectComm((PetscObject) dm), subdm));
-  CHKERRQ(DMCreateSectionSubDM(dm, numFields, fields, is, subdm));
+  if (subdm) PetscCall(DMShellCreate(PetscObjectComm((PetscObject) dm), subdm));
+  PetscCall(DMCreateSectionSubDM(dm, numFields, fields, is, subdm));
   PetscFunctionReturn(0);
 }
 
@@ -1088,7 +1088,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Shell(DM dm)
   DM_Shell       *shell;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNewLog(dm,&shell));
+  PetscCall(PetscNewLog(dm,&shell));
   dm->data = shell;
 
   dm->ops->destroy            = DMDestroy_Shell;
@@ -1104,7 +1104,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Shell(DM dm)
   dm->ops->localtolocalbegin  = DMLocalToLocalBeginDefaultShell;
   dm->ops->localtolocalend    = DMLocalToLocalEndDefaultShell;
   dm->ops->createsubdm        = DMCreateSubDM_Shell;
-  CHKERRQ(DMSetMatType(dm,MATDENSE));
+  PetscCall(DMSetMatType(dm,MATDENSE));
   PetscFunctionReturn(0);
 }
 
@@ -1127,8 +1127,8 @@ PetscErrorCode  DMShellCreate(MPI_Comm comm,DM *dm)
 {
   PetscFunctionBegin;
   PetscValidPointer(dm,2);
-  CHKERRQ(DMCreate(comm,dm));
-  CHKERRQ(DMSetType(*dm,DMSHELL));
-  CHKERRQ(DMSetUp(*dm));
+  PetscCall(DMCreate(comm,dm));
+  PetscCall(DMSetType(*dm,DMSHELL));
+  PetscCall(DMSetUp(*dm));
   PetscFunctionReturn(0);
 }

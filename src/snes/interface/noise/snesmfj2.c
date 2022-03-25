@@ -32,11 +32,11 @@ PetscErrorCode SNESMatrixFreeDestroy2_Private(Mat mat)
   MFCtx_Private  *ctx;
 
   PetscFunctionBegin;
-  CHKERRQ(MatShellGetContext(mat,&ctx));
-  CHKERRQ(VecDestroy(&ctx->w));
-  CHKERRQ(MatNullSpaceDestroy(&ctx->sp));
-  if (ctx->jorge || ctx->compute_err) CHKERRQ(SNESDiffParameterDestroy_More(ctx->data));
-  CHKERRQ(PetscFree(ctx));
+  PetscCall(MatShellGetContext(mat,&ctx));
+  PetscCall(VecDestroy(&ctx->w));
+  PetscCall(MatNullSpaceDestroy(&ctx->sp));
+  if (ctx->jorge || ctx->compute_err) PetscCall(SNESDiffParameterDestroy_More(ctx->data));
+  PetscCall(PetscFree(ctx));
   PetscFunctionReturn(0);
 }
 
@@ -49,17 +49,17 @@ PetscErrorCode SNESMatrixFreeView2_Private(Mat J,PetscViewer viewer)
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  CHKERRQ(MatShellGetContext(J,&ctx));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(MatShellGetContext(J,&ctx));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  SNES matrix-free approximation:\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  SNES matrix-free approximation:\n"));
     if (ctx->jorge) {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"    using Jorge's method of determining differencing parameter\n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"    using Jorge's method of determining differencing parameter\n"));
     }
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"    err=%g (relative error in function evaluation)\n",(double)ctx->error_rel));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"    umin=%g (minimum iterate parameter)\n",(double)ctx->umin));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    err=%g (relative error in function evaluation)\n",(double)ctx->error_rel));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    umin=%g (minimum iterate parameter)\n",(double)ctx->umin));
     if (ctx->compute_err) {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"    freq_err=%D (frequency for computing err)\n",ctx->compute_err_freq));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"    freq_err=%D (frequency for computing err)\n",ctx->compute_err_freq));
     }
   }
   PetscFunctionReturn(0);
@@ -89,47 +89,47 @@ PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
      separate the performance monitoring from the cases that use conventional
      storage.  We may eventually modify event logging to associate events
      with particular objects, hence alleviating the more general problem. */
-  CHKERRQ(PetscLogEventBegin(MATMFFD_Mult,a,y,0,0));
+  PetscCall(PetscLogEventBegin(MATMFFD_Mult,a,y,0,0));
 
-  CHKERRQ(PetscObjectGetComm((PetscObject)mat,&comm));
-  CHKERRQ(MatShellGetContext(mat,&ctx));
+  PetscCall(PetscObjectGetComm((PetscObject)mat,&comm));
+  PetscCall(MatShellGetContext(mat,&ctx));
   snes = ctx->snes;
   w    = ctx->w;
   umin = ctx->umin;
 
-  CHKERRQ(SNESGetSolution(snes,&U));
+  PetscCall(SNESGetSolution(snes,&U));
   eval_fct = SNESComputeFunction;
-  CHKERRQ(SNESGetFunction(snes,&F,NULL,NULL));
+  PetscCall(SNESGetFunction(snes,&F,NULL,NULL));
 
   /* Determine a "good" step size, h */
   if (ctx->need_h) {
 
     /* Use Jorge's method to compute h */
     if (ctx->jorge) {
-      CHKERRQ(SNESDiffParameterCompute_More(snes,ctx->data,U,a,&noise,&h));
+      PetscCall(SNESDiffParameterCompute_More(snes,ctx->data,U,a,&noise,&h));
 
       /* Use the Brown/Saad method to compute h */
     } else {
       /* Compute error if desired */
-      CHKERRQ(SNESGetIterationNumber(snes,&iter));
+      PetscCall(SNESGetIterationNumber(snes,&iter));
       if ((ctx->need_err) || ((ctx->compute_err_freq) && (ctx->compute_err_iter != iter) && (!((iter-1)%ctx->compute_err_freq)))) {
         /* Use Jorge's method to compute noise */
-        CHKERRQ(SNESDiffParameterCompute_More(snes,ctx->data,U,a,&noise,&h));
+        PetscCall(SNESDiffParameterCompute_More(snes,ctx->data,U,a,&noise,&h));
 
         ctx->error_rel = PetscSqrtReal(noise);
 
-        CHKERRQ(PetscInfo(snes,"Using Jorge's noise: noise=%g, sqrt(noise)=%g, h_more=%g\n",(double)noise,(double)ctx->error_rel,(double)h));
+        PetscCall(PetscInfo(snes,"Using Jorge's noise: noise=%g, sqrt(noise)=%g, h_more=%g\n",(double)noise,(double)ctx->error_rel,(double)h));
 
         ctx->compute_err_iter = iter;
         ctx->need_err         = PETSC_FALSE;
       }
 
-      CHKERRQ(VecDotBegin(U,a,&dot));
-      CHKERRQ(VecNormBegin(a,NORM_1,&sum));
-      CHKERRQ(VecNormBegin(a,NORM_2,&norm));
-      CHKERRQ(VecDotEnd(U,a,&dot));
-      CHKERRQ(VecNormEnd(a,NORM_1,&sum));
-      CHKERRQ(VecNormEnd(a,NORM_2,&norm));
+      PetscCall(VecDotBegin(U,a,&dot));
+      PetscCall(VecNormBegin(a,NORM_1,&sum));
+      PetscCall(VecNormBegin(a,NORM_2,&norm));
+      PetscCall(VecDotEnd(U,a,&dot));
+      PetscCall(VecNormEnd(a,NORM_1,&sum));
+      PetscCall(VecNormEnd(a,NORM_2,&norm));
 
       /* Safeguard for step sizes too small */
       if (sum == 0.0) {
@@ -141,17 +141,17 @@ PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
     }
   } else h = ctx->h;
 
-  if (!ctx->jorge || !ctx->need_h) CHKERRQ(PetscInfo(snes,"h = %g\n",(double)h));
+  if (!ctx->jorge || !ctx->need_h) PetscCall(PetscInfo(snes,"h = %g\n",(double)h));
 
   /* Evaluate function at F(u + ha) */
   hs   = h;
-  CHKERRQ(VecWAXPY(w,hs,a,U));
-  CHKERRQ(eval_fct(snes,w,y));
-  CHKERRQ(VecAXPY(y,-1.0,F));
-  CHKERRQ(VecScale(y,1.0/hs));
-  if (mat->nullsp) CHKERRQ(MatNullSpaceRemove(mat->nullsp,y));
+  PetscCall(VecWAXPY(w,hs,a,U));
+  PetscCall(eval_fct(snes,w,y));
+  PetscCall(VecAXPY(y,-1.0,F));
+  PetscCall(VecScale(y,1.0/hs));
+  if (mat->nullsp) PetscCall(MatNullSpaceRemove(mat->nullsp,y));
 
-  CHKERRQ(PetscLogEventEnd(MATMFFD_Mult,a,y,0,0));
+  PetscCall(PetscLogEventEnd(MATMFFD_Mult,a,y,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -210,7 +210,7 @@ PetscErrorCode  SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
   char           p[64];
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNewLog(snes,&mfctx));
+  PetscCall(PetscNewLog(snes,&mfctx));
   mfctx->sp               = NULL;
   mfctx->snes             = snes;
   mfctx->error_rel        = PETSC_SQRT_MACHINE_EPSILON;
@@ -224,47 +224,47 @@ PetscErrorCode  SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
   mfctx->compute_err      = PETSC_FALSE;
   mfctx->jorge            = PETSC_FALSE;
 
-  CHKERRQ(PetscOptionsGetReal(((PetscObject)snes)->options,((PetscObject)snes)->prefix,"-snes_mf_err",&mfctx->error_rel,NULL));
-  CHKERRQ(PetscOptionsGetReal(((PetscObject)snes)->options,((PetscObject)snes)->prefix,"-snes_mf_umin",&mfctx->umin,NULL));
-  CHKERRQ(PetscOptionsGetBool(((PetscObject)snes)->options,((PetscObject)snes)->prefix,"-snes_mf_jorge",&mfctx->jorge,NULL));
-  CHKERRQ(PetscOptionsGetBool(((PetscObject)snes)->options,((PetscObject)snes)->prefix,"-snes_mf_compute_err",&mfctx->compute_err,NULL));
-  CHKERRQ(PetscOptionsGetInt(((PetscObject)snes)->options,((PetscObject)snes)->prefix,"-snes_mf_freq_err",&mfctx->compute_err_freq,&flg));
+  PetscCall(PetscOptionsGetReal(((PetscObject)snes)->options,((PetscObject)snes)->prefix,"-snes_mf_err",&mfctx->error_rel,NULL));
+  PetscCall(PetscOptionsGetReal(((PetscObject)snes)->options,((PetscObject)snes)->prefix,"-snes_mf_umin",&mfctx->umin,NULL));
+  PetscCall(PetscOptionsGetBool(((PetscObject)snes)->options,((PetscObject)snes)->prefix,"-snes_mf_jorge",&mfctx->jorge,NULL));
+  PetscCall(PetscOptionsGetBool(((PetscObject)snes)->options,((PetscObject)snes)->prefix,"-snes_mf_compute_err",&mfctx->compute_err,NULL));
+  PetscCall(PetscOptionsGetInt(((PetscObject)snes)->options,((PetscObject)snes)->prefix,"-snes_mf_freq_err",&mfctx->compute_err_freq,&flg));
   if (flg) {
     if (mfctx->compute_err_freq < 0) mfctx->compute_err_freq = 0;
     mfctx->compute_err = PETSC_TRUE;
   }
   if (mfctx->compute_err) mfctx->need_err = PETSC_TRUE;
   if (mfctx->jorge || mfctx->compute_err) {
-    CHKERRQ(SNESDiffParameterCreate_More(snes,x,&mfctx->data));
+    PetscCall(SNESDiffParameterCreate_More(snes,x,&mfctx->data));
   } else mfctx->data = NULL;
 
-  CHKERRQ(PetscOptionsHasHelp(((PetscObject)snes)->options,&flg));
-  CHKERRQ(PetscStrncpy(p,"-",sizeof(p)));
-  if (((PetscObject)snes)->prefix) CHKERRQ(PetscStrlcat(p,((PetscObject)snes)->prefix,sizeof(p)));
+  PetscCall(PetscOptionsHasHelp(((PetscObject)snes)->options,&flg));
+  PetscCall(PetscStrncpy(p,"-",sizeof(p)));
+  if (((PetscObject)snes)->prefix) PetscCall(PetscStrlcat(p,((PetscObject)snes)->prefix,sizeof(p)));
   if (flg) {
-    CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject)snes)," Matrix-free Options (via SNES):\n"));
-    CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject)snes),"   %ssnes_mf_err <err>: set sqrt of relative error in function (default %g)\n",p,(double)mfctx->error_rel));
-    CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject)snes),"   %ssnes_mf_umin <umin>: see users manual (default %g)\n",p,(double)mfctx->umin));
-    CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject)snes),"   %ssnes_mf_jorge: use Jorge More's method\n",p));
-    CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject)snes),"   %ssnes_mf_compute_err: compute sqrt or relative error in function\n",p));
-    CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject)snes),"   %ssnes_mf_freq_err <freq>: frequency to recompute this (default only once)\n",p));
-    CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject)snes),"   %ssnes_mf_noise_file <file>: set file for printing noise info\n",p));
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject)snes)," Matrix-free Options (via SNES):\n"));
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject)snes),"   %ssnes_mf_err <err>: set sqrt of relative error in function (default %g)\n",p,(double)mfctx->error_rel));
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject)snes),"   %ssnes_mf_umin <umin>: see users manual (default %g)\n",p,(double)mfctx->umin));
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject)snes),"   %ssnes_mf_jorge: use Jorge More's method\n",p));
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject)snes),"   %ssnes_mf_compute_err: compute sqrt or relative error in function\n",p));
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject)snes),"   %ssnes_mf_freq_err <freq>: frequency to recompute this (default only once)\n",p));
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject)snes),"   %ssnes_mf_noise_file <file>: set file for printing noise info\n",p));
   }
-  CHKERRQ(VecDuplicate(x,&mfctx->w));
-  CHKERRQ(PetscObjectGetComm((PetscObject)x,&comm));
-  CHKERRQ(VecGetSize(x,&n));
-  CHKERRQ(VecGetLocalSize(x,&nloc));
-  CHKERRQ(MatCreate(comm,J));
-  CHKERRQ(MatSetSizes(*J,nloc,n,n,n));
-  CHKERRQ(MatSetType(*J,MATSHELL));
-  CHKERRQ(MatShellSetContext(*J,mfctx));
-  CHKERRQ(MatShellSetOperation(*J,MATOP_MULT,(void (*)(void))SNESMatrixFreeMult2_Private));
-  CHKERRQ(MatShellSetOperation(*J,MATOP_DESTROY,(void (*)(void))SNESMatrixFreeDestroy2_Private));
-  CHKERRQ(MatShellSetOperation(*J,MATOP_VIEW,(void (*)(void))SNESMatrixFreeView2_Private));
-  CHKERRQ(MatSetUp(*J));
+  PetscCall(VecDuplicate(x,&mfctx->w));
+  PetscCall(PetscObjectGetComm((PetscObject)x,&comm));
+  PetscCall(VecGetSize(x,&n));
+  PetscCall(VecGetLocalSize(x,&nloc));
+  PetscCall(MatCreate(comm,J));
+  PetscCall(MatSetSizes(*J,nloc,n,n,n));
+  PetscCall(MatSetType(*J,MATSHELL));
+  PetscCall(MatShellSetContext(*J,mfctx));
+  PetscCall(MatShellSetOperation(*J,MATOP_MULT,(void (*)(void))SNESMatrixFreeMult2_Private));
+  PetscCall(MatShellSetOperation(*J,MATOP_DESTROY,(void (*)(void))SNESMatrixFreeDestroy2_Private));
+  PetscCall(MatShellSetOperation(*J,MATOP_VIEW,(void (*)(void))SNESMatrixFreeView2_Private));
+  PetscCall(MatSetUp(*J));
 
-  CHKERRQ(PetscLogObjectParent((PetscObject)*J,(PetscObject)mfctx->w));
-  CHKERRQ(PetscLogObjectParent((PetscObject)snes,(PetscObject)*J));
+  PetscCall(PetscLogObjectParent((PetscObject)*J,(PetscObject)mfctx->w));
+  PetscCall(PetscLogObjectParent((PetscObject)snes,(PetscObject)*J));
   PetscFunctionReturn(0);
 }
 
@@ -300,7 +300,7 @@ PetscErrorCode  SNESDefaultMatrixFreeSetParameters2(Mat mat,PetscReal error,Pets
   MFCtx_Private  *ctx;
 
   PetscFunctionBegin;
-  CHKERRQ(MatShellGetContext(mat,&ctx));
+  PetscCall(MatShellGetContext(mat,&ctx));
   if (ctx) {
     if (error != PETSC_DEFAULT) ctx->error_rel = error;
     if (umin  != PETSC_DEFAULT) ctx->umin = umin;
@@ -318,8 +318,8 @@ PetscErrorCode  SNESUnSetMatrixFreeParameter(SNES snes)
   Mat            mat;
 
   PetscFunctionBegin;
-  CHKERRQ(SNESGetJacobian(snes,&mat,NULL,NULL,NULL));
-  CHKERRQ(MatShellGetContext(mat,&ctx));
+  PetscCall(SNESGetJacobian(snes,&mat,NULL,NULL,NULL));
+  PetscCall(MatShellGetContext(mat,&ctx));
   if (ctx) ctx->need_h = PETSC_TRUE;
   PetscFunctionReturn(0);
 }

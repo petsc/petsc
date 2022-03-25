@@ -26,44 +26,44 @@ int main(int argc,char **argv)
                  runtime.  The user can use the "help" variable place
                  additional help messages in this printout.
   */
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   comm = PETSC_COMM_WORLD;
-  CHKERRMPI(MPI_Comm_size(comm,&size));
+  PetscCallMPI(MPI_Comm_size(comm,&size));
   PetscCheckFalse(size < 4,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Must run with at least 4 MPI processes");
-  CHKERRQ(PetscOptionsGetViewer(comm,NULL,NULL,"-viewer",&viewer,&format,&flg));
+  PetscCall(PetscOptionsGetViewer(comm,NULL,NULL,"-viewer",&viewer,&format,&flg));
   PetscCheck(viewer,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Must use -viewer option");
 
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"Print called on original full viewer %d\n",PetscGlobalRank));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"Print called on original full viewer %d\n",PetscGlobalRank));
 
-  CHKERRQ(PetscSubcommCreate(comm,&psubcomm));
-  CHKERRQ(PetscSubcommSetNumber(psubcomm,2));
-  CHKERRQ(PetscSubcommSetType(psubcomm,PETSC_SUBCOMM_CONTIGUOUS));
+  PetscCall(PetscSubcommCreate(comm,&psubcomm));
+  PetscCall(PetscSubcommSetNumber(psubcomm,2));
+  PetscCall(PetscSubcommSetType(psubcomm,PETSC_SUBCOMM_CONTIGUOUS));
   /* enable runtime switch of psubcomm type, e.g., '-psubcomm_type interlaced */
-  CHKERRQ(PetscSubcommSetFromOptions(psubcomm));
+  PetscCall(PetscSubcommSetFromOptions(psubcomm));
   subcomm = PetscSubcommChild(psubcomm);
 
-  CHKERRQ(PetscViewerGetSubViewer(viewer,subcomm,&subviewer));
+  PetscCall(PetscViewerGetSubViewer(viewer,subcomm,&subviewer));
 
-  CHKERRQ(PetscViewerASCIIPrintf(subviewer,"  Print called on sub viewers %d\n",PetscGlobalRank));
+  PetscCall(PetscViewerASCIIPrintf(subviewer,"  Print called on sub viewers %d\n",PetscGlobalRank));
 
-  CHKERRQ(PetscSubcommCreate(subcomm,&psubsubcomm));
-  CHKERRQ(PetscSubcommSetNumber(psubsubcomm,2));
-  CHKERRQ(PetscSubcommSetType(psubsubcomm,PETSC_SUBCOMM_CONTIGUOUS));
+  PetscCall(PetscSubcommCreate(subcomm,&psubsubcomm));
+  PetscCall(PetscSubcommSetNumber(psubsubcomm,2));
+  PetscCall(PetscSubcommSetType(psubsubcomm,PETSC_SUBCOMM_CONTIGUOUS));
   /* enable runtime switch of psubcomm type, e.g., '-psubcomm_type interlaced */
-  CHKERRQ(PetscSubcommSetFromOptions(psubsubcomm));
+  PetscCall(PetscSubcommSetFromOptions(psubsubcomm));
   subsubcomm = PetscSubcommChild(psubsubcomm);
 
-  CHKERRQ(PetscViewerGetSubViewer(subviewer,subsubcomm,&subsubviewer));
+  PetscCall(PetscViewerGetSubViewer(subviewer,subsubcomm,&subsubviewer));
 
-  CHKERRQ(PetscViewerASCIIPrintf(subsubviewer,"  Print called on sub sub viewers %d\n",PetscGlobalRank));
+  PetscCall(PetscViewerASCIIPrintf(subsubviewer,"  Print called on sub sub viewers %d\n",PetscGlobalRank));
 
-  CHKERRQ(PetscViewerRestoreSubViewer(subviewer,subsubcomm,&subsubviewer));
-  CHKERRQ(PetscViewerRestoreSubViewer(viewer,subcomm,&subviewer));
+  PetscCall(PetscViewerRestoreSubViewer(subviewer,subsubcomm,&subsubviewer));
+  PetscCall(PetscViewerRestoreSubViewer(viewer,subcomm,&subviewer));
 
-  CHKERRQ(PetscSubcommDestroy(&psubsubcomm));
-  CHKERRQ(PetscSubcommDestroy(&psubcomm));
-  CHKERRQ(PetscViewerDestroy(&viewer));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscSubcommDestroy(&psubsubcomm));
+  PetscCall(PetscSubcommDestroy(&psubcomm));
+  PetscCall(PetscViewerDestroy(&viewer));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

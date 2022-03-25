@@ -79,56 +79,56 @@ int main(int argc,char **argv)
   DM             packer;
   PetscBool      use_monitor = PETSC_FALSE;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
   /* Hardwire several options; can be changed at command line */
-  CHKERRQ(PetscOptionsInsertString(NULL,common_options));
-  CHKERRQ(PetscOptionsInsertString(NULL,matrix_free_options));
-  CHKERRQ(PetscOptionsInsert(NULL,&argc,&argv,NULL));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-use_monitor",&use_monitor,PETSC_IGNORE));
+  PetscCall(PetscOptionsInsertString(NULL,common_options));
+  PetscCall(PetscOptionsInsertString(NULL,matrix_free_options));
+  PetscCall(PetscOptionsInsert(NULL,&argc,&argv,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-use_monitor",&use_monitor,PETSC_IGNORE));
 
   /* Create a global vector that includes a single redundant array and two da arrays */
-  CHKERRQ(DMCompositeCreate(PETSC_COMM_WORLD,&packer));
-  CHKERRQ(DMRedundantCreate(PETSC_COMM_WORLD,0,1,&red));
-  CHKERRQ(DMSetOptionsPrefix(red,"red_"));
-  CHKERRQ(DMCompositeAddDM(packer,red));
-  CHKERRQ(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,5,2,1,NULL,&da));
-  CHKERRQ(DMSetOptionsPrefix(red,"da_"));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
-  CHKERRQ(DMDASetFieldName(da,0,"u"));
-  CHKERRQ(DMDASetFieldName(da,1,"lambda"));
-  CHKERRQ(DMCompositeAddDM(packer,(DM)da));
-  CHKERRQ(DMSetApplicationContext(packer,&user));
+  PetscCall(DMCompositeCreate(PETSC_COMM_WORLD,&packer));
+  PetscCall(DMRedundantCreate(PETSC_COMM_WORLD,0,1,&red));
+  PetscCall(DMSetOptionsPrefix(red,"red_"));
+  PetscCall(DMCompositeAddDM(packer,red));
+  PetscCall(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,5,2,1,NULL,&da));
+  PetscCall(DMSetOptionsPrefix(red,"da_"));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMDASetFieldName(da,0,"u"));
+  PetscCall(DMDASetFieldName(da,1,"lambda"));
+  PetscCall(DMCompositeAddDM(packer,(DM)da));
+  PetscCall(DMSetApplicationContext(packer,&user));
 
   packer->ops->creatematrix = DMCreateMatrix_MF;
 
   /* create nonlinear multi-level solver */
-  CHKERRQ(SNESCreate(PETSC_COMM_WORLD,&snes));
-  CHKERRQ(SNESSetDM(snes,packer));
-  CHKERRQ(SNESSetFunction(snes,NULL,ComputeFunction,NULL));
-  CHKERRQ(SNESSetJacobian(snes,NULL, NULL,ComputeJacobian_MF,NULL));
+  PetscCall(SNESCreate(PETSC_COMM_WORLD,&snes));
+  PetscCall(SNESSetDM(snes,packer));
+  PetscCall(SNESSetFunction(snes,NULL,ComputeFunction,NULL));
+  PetscCall(SNESSetJacobian(snes,NULL, NULL,ComputeJacobian_MF,NULL));
 
-  CHKERRQ(SNESSetFromOptions(snes));
+  PetscCall(SNESSetFromOptions(snes));
 
   if (use_monitor) {
     /* create graphics windows */
-    CHKERRQ(PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"u_lambda - state variables and Lagrange multipliers",-1,-1,-1,-1,&user.u_lambda_viewer));
-    CHKERRQ(PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"fu_lambda - derivate w.r.t. state variables and Lagrange multipliers",-1,-1,-1,-1,&user.fu_lambda_viewer));
-    CHKERRQ(SNESMonitorSet(snes,Monitor,0,0));
+    PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"u_lambda - state variables and Lagrange multipliers",-1,-1,-1,-1,&user.u_lambda_viewer));
+    PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"fu_lambda - derivate w.r.t. state variables and Lagrange multipliers",-1,-1,-1,-1,&user.fu_lambda_viewer));
+    PetscCall(SNESMonitorSet(snes,Monitor,0,0));
   }
 
-  CHKERRQ(SNESSolve(snes,NULL,NULL));
-  CHKERRQ(SNESDestroy(&snes));
+  PetscCall(SNESSolve(snes,NULL,NULL));
+  PetscCall(SNESDestroy(&snes));
 
-  CHKERRQ(DMDestroy(&red));
-  CHKERRQ(DMDestroy(&da));
-  CHKERRQ(DMDestroy(&packer));
+  PetscCall(DMDestroy(&red));
+  PetscCall(DMDestroy(&da));
+  PetscCall(DMDestroy(&packer));
   if (use_monitor) {
-    CHKERRQ(PetscViewerDestroy(&user.u_lambda_viewer));
-    CHKERRQ(PetscViewerDestroy(&user.fu_lambda_viewer));
+    PetscCall(PetscViewerDestroy(&user.u_lambda_viewer));
+    PetscCall(PetscViewerDestroy(&user.fu_lambda_viewer));
   }
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -153,18 +153,18 @@ PetscErrorCode ComputeFunction(SNES snes,Vec U,Vec FU,void *ctx)
   DM             packer,red,da;
 
   PetscFunctionBeginUser;
-  CHKERRQ(VecGetDM(U, &packer));
-  CHKERRQ(DMCompositeGetEntries(packer,&red,&da));
-  CHKERRQ(DMCompositeGetLocalVectors(packer,&vw,&vu_lambda));
-  CHKERRQ(DMCompositeScatter(packer,U,vw,vu_lambda));
-  CHKERRQ(DMCompositeGetAccess(packer,FU,&vfw,&vfu_lambda));
+  PetscCall(VecGetDM(U, &packer));
+  PetscCall(DMCompositeGetEntries(packer,&red,&da));
+  PetscCall(DMCompositeGetLocalVectors(packer,&vw,&vu_lambda));
+  PetscCall(DMCompositeScatter(packer,U,vw,vu_lambda));
+  PetscCall(DMCompositeGetAccess(packer,FU,&vfw,&vfu_lambda));
 
-  CHKERRQ(DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL));
-  CHKERRQ(DMDAGetInfo(da,0,&N,0,0,0,0,0,0,0,0,0,0,0));
-  CHKERRQ(VecGetArray(vw,&w));
-  CHKERRQ(VecGetArray(vfw,&fw));
-  CHKERRQ(DMDAVecGetArray(da,vu_lambda,&u_lambda));
-  CHKERRQ(DMDAVecGetArray(da,vfu_lambda,&fu_lambda));
+  PetscCall(DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL));
+  PetscCall(DMDAGetInfo(da,0,&N,0,0,0,0,0,0,0,0,0,0,0));
+  PetscCall(VecGetArray(vw,&w));
+  PetscCall(VecGetArray(vfw,&fw));
+  PetscCall(DMDAVecGetArray(da,vu_lambda,&u_lambda));
+  PetscCall(DMDAVecGetArray(da,vfu_lambda,&fu_lambda));
   d    = N-1.0;
   h    = 1.0/d;
 
@@ -189,13 +189,13 @@ PetscErrorCode ComputeFunction(SNES snes,Vec U,Vec FU,void *ctx)
     else               fu_lambda[i].u   = -(d*(u_lambda[i+1].u - 2.0*u_lambda[i].u + u_lambda[i-1].u) - 2.0*h);
   }
 
-  CHKERRQ(VecRestoreArray(vw,&w));
-  CHKERRQ(VecRestoreArray(vfw,&fw));
-  CHKERRQ(DMDAVecRestoreArray(da,vu_lambda,&u_lambda));
-  CHKERRQ(DMDAVecRestoreArray(da,vfu_lambda,&fu_lambda));
-  CHKERRQ(DMCompositeRestoreLocalVectors(packer,&vw,&vu_lambda));
-  CHKERRQ(DMCompositeRestoreAccess(packer,FU,&vfw,&vfu_lambda));
-  CHKERRQ(PetscLogFlops(13.0*N));
+  PetscCall(VecRestoreArray(vw,&w));
+  PetscCall(VecRestoreArray(vfw,&fw));
+  PetscCall(DMDAVecRestoreArray(da,vu_lambda,&u_lambda));
+  PetscCall(DMDAVecRestoreArray(da,vfu_lambda,&fu_lambda));
+  PetscCall(DMCompositeRestoreLocalVectors(packer,&vw,&vu_lambda));
+  PetscCall(DMCompositeRestoreAccess(packer,FU,&vfw,&vfu_lambda));
+  PetscCall(PetscLogFlops(13.0*N));
   PetscFunctionReturn(0);
 }
 
@@ -220,21 +220,21 @@ PetscErrorCode ExactSolution(DM packer,Vec U)
   PetscInt       m;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMCompositeGetEntries(packer,&m,&da));
+  PetscCall(DMCompositeGetEntries(packer,&m,&da));
 
-  CHKERRQ(PFCreate(PETSC_COMM_WORLD,1,2,&pf));
+  PetscCall(PFCreate(PETSC_COMM_WORLD,1,2,&pf));
   /* The cast through PETSC_UINTPTR_T is so that compilers will warn about casting to void * from void(*)(void) */
-  CHKERRQ(PFSetType(pf,PFQUICK,(void*)(PETSC_UINTPTR_T)u_solution));
-  CHKERRQ(DMGetCoordinates(da,&x));
+  PetscCall(PFSetType(pf,PFQUICK,(void*)(PETSC_UINTPTR_T)u_solution));
+  PetscCall(DMGetCoordinates(da,&x));
   if (!x) {
-    CHKERRQ(DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,1.0));
-    CHKERRQ(DMGetCoordinates(da,&x));
+    PetscCall(DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,1.0));
+    PetscCall(DMGetCoordinates(da,&x));
   }
-  CHKERRQ(DMCompositeGetAccess(packer,U,&w,&u_global,0));
+  PetscCall(DMCompositeGetAccess(packer,U,&w,&u_global,0));
   if (w) w[0] = .25;
-  CHKERRQ(PFApplyVec(pf,x,u_global));
-  CHKERRQ(PFDestroy(&pf));
-  CHKERRQ(DMCompositeRestoreAccess(packer,U,&w,&u_global,0));
+  PetscCall(PFApplyVec(pf,x,u_global));
+  PetscCall(PFDestroy(&pf));
+  PetscCall(DMCompositeRestoreAccess(packer,U,&w,&u_global,0));
   PetscFunctionReturn(0);
 }
 
@@ -249,30 +249,30 @@ PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal rnorm,void *dummy)
   DM             da;
 
   PetscFunctionBeginUser;
-  CHKERRQ(SNESGetDM(snes,&packer));
-  CHKERRQ(DMGetApplicationContext(packer,&user));
-  CHKERRQ(SNESGetSolution(snes,&U));
-  CHKERRQ(DMCompositeGetAccess(packer,U,&w,&u_lambda));
-  CHKERRQ(VecView(u_lambda,user->u_lambda_viewer));
-  CHKERRQ(DMCompositeRestoreAccess(packer,U,&w,&u_lambda));
+  PetscCall(SNESGetDM(snes,&packer));
+  PetscCall(DMGetApplicationContext(packer,&user));
+  PetscCall(SNESGetSolution(snes,&U));
+  PetscCall(DMCompositeGetAccess(packer,U,&w,&u_lambda));
+  PetscCall(VecView(u_lambda,user->u_lambda_viewer));
+  PetscCall(DMCompositeRestoreAccess(packer,U,&w,&u_lambda));
 
-  CHKERRQ(SNESGetFunction(snes,&F,0,0));
-  CHKERRQ(DMCompositeGetAccess(packer,F,&w,&u_lambda));
+  PetscCall(SNESGetFunction(snes,&F,0,0));
+  PetscCall(DMCompositeGetAccess(packer,F,&w,&u_lambda));
   /* ierr = VecView(u_lambda,user->fu_lambda_viewer); */
-  CHKERRQ(DMCompositeRestoreAccess(packer,U,&w,&u_lambda));
+  PetscCall(DMCompositeRestoreAccess(packer,U,&w,&u_lambda));
 
-  CHKERRQ(DMCompositeGetEntries(packer,&m,&da));
-  CHKERRQ(DMDAGetInfo(da,0,&N,0,0,0,0,0,0,0,0,0,0,0));
-  CHKERRQ(VecDuplicate(U,&Uexact));
-  CHKERRQ(ExactSolution(packer,Uexact));
-  CHKERRQ(VecAXPY(Uexact,-1.0,U));
-  CHKERRQ(DMCompositeGetAccess(packer,Uexact,&dw,&u_lambda));
-  CHKERRQ(VecStrideNorm(u_lambda,0,NORM_2,&norm));
+  PetscCall(DMCompositeGetEntries(packer,&m,&da));
+  PetscCall(DMDAGetInfo(da,0,&N,0,0,0,0,0,0,0,0,0,0,0));
+  PetscCall(VecDuplicate(U,&Uexact));
+  PetscCall(ExactSolution(packer,Uexact));
+  PetscCall(VecAXPY(Uexact,-1.0,U));
+  PetscCall(DMCompositeGetAccess(packer,Uexact,&dw,&u_lambda));
+  PetscCall(VecStrideNorm(u_lambda,0,NORM_2,&norm));
   norm = norm/PetscSqrtReal((PetscReal)N-1.);
-  if (dw) CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g Error at x = 0 %g\n",(double)norm,(double)PetscRealPart(dw[0])));
-  CHKERRQ(VecView(u_lambda,user->fu_lambda_viewer));
-  CHKERRQ(DMCompositeRestoreAccess(packer,Uexact,&dw,&u_lambda));
-  CHKERRQ(VecDestroy(&Uexact));
+  if (dw) PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g Error at x = 0 %g\n",(double)norm,(double)PetscRealPart(dw[0])));
+  PetscCall(VecView(u_lambda,user->fu_lambda_viewer));
+  PetscCall(DMCompositeRestoreAccess(packer,Uexact,&dw,&u_lambda));
+  PetscCall(VecDestroy(&Uexact));
   PetscFunctionReturn(0);
 }
 
@@ -282,20 +282,20 @@ PetscErrorCode DMCreateMatrix_MF(DM packer,Mat *A)
   PetscInt       m;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetGlobalVector(packer,&t));
-  CHKERRQ(VecGetLocalSize(t,&m));
-  CHKERRQ(DMRestoreGlobalVector(packer,&t));
-  CHKERRQ(MatCreateMFFD(PETSC_COMM_WORLD,m,m,PETSC_DETERMINE,PETSC_DETERMINE,A));
-  CHKERRQ(MatSetUp(*A));
-  CHKERRQ(MatSetDM(*A,packer));
+  PetscCall(DMGetGlobalVector(packer,&t));
+  PetscCall(VecGetLocalSize(t,&m));
+  PetscCall(DMRestoreGlobalVector(packer,&t));
+  PetscCall(MatCreateMFFD(PETSC_COMM_WORLD,m,m,PETSC_DETERMINE,PETSC_DETERMINE,A));
+  PetscCall(MatSetUp(*A));
+  PetscCall(MatSetDM(*A,packer));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode ComputeJacobian_MF(SNES snes,Vec x,Mat A,Mat B,void *ctx)
 {
   PetscFunctionBeginUser;
-  CHKERRQ(MatMFFDSetFunction(A,(PetscErrorCode (*)(void*,Vec,Vec))SNESComputeFunction,snes));
-  CHKERRQ(MatMFFDSetBase(A,x,NULL));
+  PetscCall(MatMFFDSetFunction(A,(PetscErrorCode (*)(void*,Vec,Vec))SNESComputeFunction,snes));
+  PetscCall(MatMFFDSetBase(A,x,NULL));
   PetscFunctionReturn(0);
 }
 

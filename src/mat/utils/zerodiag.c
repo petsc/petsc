@@ -50,7 +50,7 @@
 PetscErrorCode  MatReorderForNonzeroDiagonal(Mat mat,PetscReal abstol,IS ris,IS cis)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscTryMethod(mat,"MatReorderForNonzeroDiagonal_C",(Mat,PetscReal,IS,IS),(mat,abstol,ris,cis)));
+  PetscCall(PetscTryMethod(mat,"MatReorderForNonzeroDiagonal_C",(Mat,PetscReal,IS,IS),(mat,abstol,ris,cis)));
   PetscFunctionReturn(0);
 }
 
@@ -70,12 +70,12 @@ PETSC_INTERN PetscErrorCode  MatReorderForNonzeroDiagonal_SeqAIJ(Mat mat,PetscRe
   /* access the indices of the IS directly, because it changes them */
   row  = ((IS_General*)ris->data)->idx;
   col  = ((IS_General*)cis->data)->idx;
-  CHKERRQ(ISInvertPermutation(cis,PETSC_DECIDE,&icis));
+  PetscCall(ISInvertPermutation(cis,PETSC_DECIDE,&icis));
   icol = ((IS_General*)icis->data)->idx;
-  CHKERRQ(MatGetSize(mat,&m,&n));
+  PetscCall(MatGetSize(mat,&m,&n));
 
   for (prow=0; prow<n; prow++) {
-    CHKERRQ(MatGetRow_SeqAIJ(mat,row[prow],&nz,&j,&v));
+    PetscCall(MatGetRow_SeqAIJ(mat,row[prow],&nz,&j,&v));
     for (k=0; k<nz; k++) {
       if (icol[j[k]] == prow) break;
     }
@@ -103,16 +103,16 @@ PETSC_INTERN PetscErrorCode  MatReorderForNonzeroDiagonal_SeqAIJ(Mat mat,PetscRe
         if (icol[j[k]] < prow && PetscAbsScalar(v[k]) > repla) {
           /* See if this one will work */
           repl = icol[j[k]];
-          CHKERRQ(MatGetRow_SeqAIJ(mat,row[repl],&nnz,&jj,&vv));
+          PetscCall(MatGetRow_SeqAIJ(mat,row[repl],&nnz,&jj,&vv));
           for (kk=0; kk<nnz; kk++) {
             if (icol[jj[kk]] == prow && PetscAbsScalar(vv[kk]) > abstol) {
-              CHKERRQ(MatRestoreRow_SeqAIJ(mat,row[repl],&nnz,&jj,&vv));
+              PetscCall(MatRestoreRow_SeqAIJ(mat,row[repl],&nnz,&jj,&vv));
               SWAP(icol[col[prow]],icol[col[repl]]);
               SWAP(col[prow],col[repl]);
               goto found;
             }
           }
-          CHKERRQ(MatRestoreRow_SeqAIJ(mat,row[repl],&nnz,&jj,&vv));
+          PetscCall(MatRestoreRow_SeqAIJ(mat,row[repl],&nnz,&jj,&vv));
         }
       }
       /*
@@ -120,7 +120,7 @@ PETSC_INTERN PetscErrorCode  MatReorderForNonzeroDiagonal_SeqAIJ(Mat mat,PetscRe
           Note: this will be very slow
       */
       for (k=prow+1; k<n; k++) {
-        CHKERRQ(MatGetRow_SeqAIJ(mat,row[k],&nnz,&jj,&vv));
+        PetscCall(MatGetRow_SeqAIJ(mat,row[k],&nnz,&jj,&vv));
         for (kk=0; kk<nnz; kk++) {
           if (icol[jj[kk]] == prow && PetscAbsScalar(vv[kk]) > abstol) {
             /* found a row */
@@ -128,13 +128,13 @@ PETSC_INTERN PetscErrorCode  MatReorderForNonzeroDiagonal_SeqAIJ(Mat mat,PetscRe
             goto found;
           }
         }
-        CHKERRQ(MatRestoreRow_SeqAIJ(mat,row[k],&nnz,&jj,&vv));
+        PetscCall(MatRestoreRow_SeqAIJ(mat,row[k],&nnz,&jj,&vv));
       }
 
 found:;
     }
-    CHKERRQ(MatRestoreRow_SeqAIJ(mat,row[prow],&nz,&j,&v));
+    PetscCall(MatRestoreRow_SeqAIJ(mat,row[prow],&nz,&j,&v));
   }
-  CHKERRQ(ISDestroy(&icis));
+  PetscCall(ISDestroy(&icis));
   PetscFunctionReturn(0);
 }

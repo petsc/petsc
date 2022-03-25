@@ -19,16 +19,16 @@ static PetscErrorCode PCApply_Galerkin(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
   if (jac->R) {
-    CHKERRQ(MatRestrict(jac->R,x,jac->b));
+    PetscCall(MatRestrict(jac->R,x,jac->b));
   } else {
-    CHKERRQ(MatRestrict(jac->P,x,jac->b));
+    PetscCall(MatRestrict(jac->P,x,jac->b));
   }
-  CHKERRQ(KSPSolve(jac->ksp,jac->b,jac->x));
-  CHKERRQ(KSPCheckSolve(jac->ksp,pc,jac->x));
+  PetscCall(KSPSolve(jac->ksp,jac->b,jac->x));
+  PetscCall(KSPCheckSolve(jac->ksp,pc,jac->x));
   if (jac->P) {
-    CHKERRQ(MatInterpolate(jac->P,jac->x,y));
+    PetscCall(MatInterpolate(jac->P,jac->x,y));
   } else {
-    CHKERRQ(MatInterpolate(jac->R,jac->x,y));
+    PetscCall(MatInterpolate(jac->R,jac->x,y));
   }
   PetscFunctionReturn(0);
 }
@@ -43,23 +43,23 @@ static PetscErrorCode PCSetUp_Galerkin(PC pc)
   if (jac->computeasub) {
     Mat Ap;
     if (!pc->setupcalled) {
-      CHKERRQ((*jac->computeasub)(pc,pc->pmat,NULL,&Ap,jac->computeasub_ctx));
-      CHKERRQ(KSPSetOperators(jac->ksp,Ap,Ap));
-      CHKERRQ(MatDestroy(&Ap));
+      PetscCall((*jac->computeasub)(pc,pc->pmat,NULL,&Ap,jac->computeasub_ctx));
+      PetscCall(KSPSetOperators(jac->ksp,Ap,Ap));
+      PetscCall(MatDestroy(&Ap));
     } else {
-      CHKERRQ(KSPGetOperators(jac->ksp,NULL,&Ap));
-      CHKERRQ((*jac->computeasub)(pc,pc->pmat,Ap,NULL,jac->computeasub_ctx));
+      PetscCall(KSPGetOperators(jac->ksp,NULL,&Ap));
+      PetscCall((*jac->computeasub)(pc,pc->pmat,Ap,NULL,jac->computeasub_ctx));
     }
   }
 
   if (!jac->x) {
-    CHKERRQ(KSPGetOperatorsSet(jac->ksp,&a,NULL));
+    PetscCall(KSPGetOperatorsSet(jac->ksp,&a,NULL));
     PetscCheck(a,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set operator of PCGALERKIN KSP with PCGalerkinGetKSP()/KSPSetOperators()");
-    CHKERRQ(KSPCreateVecs(jac->ksp,1,&xx,1,&yy));
+    PetscCall(KSPCreateVecs(jac->ksp,1,&xx,1,&yy));
     jac->x = *xx;
     jac->b = *yy;
-    CHKERRQ(PetscFree(xx));
-    CHKERRQ(PetscFree(yy));
+    PetscCall(PetscFree(xx));
+    PetscCall(PetscFree(yy));
   }
   PetscCheckFalse(!jac->R && !jac->P,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set restriction or interpolation of PCGALERKIN with PCGalerkinSetRestriction()/Interpolation()");
   /* should check here that sizes of R/P match size of a */
@@ -72,11 +72,11 @@ static PetscErrorCode PCReset_Galerkin(PC pc)
   PC_Galerkin    *jac = (PC_Galerkin*)pc->data;
 
   PetscFunctionBegin;
-  CHKERRQ(MatDestroy(&jac->R));
-  CHKERRQ(MatDestroy(&jac->P));
-  CHKERRQ(VecDestroy(&jac->x));
-  CHKERRQ(VecDestroy(&jac->b));
-  CHKERRQ(KSPReset(jac->ksp));
+  PetscCall(MatDestroy(&jac->R));
+  PetscCall(MatDestroy(&jac->P));
+  PetscCall(VecDestroy(&jac->x));
+  PetscCall(VecDestroy(&jac->b));
+  PetscCall(KSPReset(jac->ksp));
   PetscFunctionReturn(0);
 }
 
@@ -85,9 +85,9 @@ static PetscErrorCode PCDestroy_Galerkin(PC pc)
   PC_Galerkin    *jac = (PC_Galerkin*)pc->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PCReset_Galerkin(pc));
-  CHKERRQ(KSPDestroy(&jac->ksp));
-  CHKERRQ(PetscFree(pc->data));
+  PetscCall(PCReset_Galerkin(pc));
+  PetscCall(KSPDestroy(&jac->ksp));
+  PetscCall(PetscFree(pc->data));
   PetscFunctionReturn(0);
 }
 
@@ -97,12 +97,12 @@ static PetscErrorCode PCView_Galerkin(PC pc,PetscViewer viewer)
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  KSP on Galerkin follow\n"));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  ---------------------------------\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  KSP on Galerkin follow\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  ---------------------------------\n"));
   }
-  CHKERRQ(KSPView(jac->ksp,viewer));
+  PetscCall(KSPView(jac->ksp,viewer));
   PetscFunctionReturn(0);
 }
 
@@ -120,8 +120,8 @@ static PetscErrorCode  PCGalerkinSetRestriction_Galerkin(PC pc,Mat R)
   PC_Galerkin    *jac = (PC_Galerkin*)pc->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectReference((PetscObject)R));
-  CHKERRQ(MatDestroy(&jac->R));
+  PetscCall(PetscObjectReference((PetscObject)R));
+  PetscCall(MatDestroy(&jac->R));
   jac->R = R;
   PetscFunctionReturn(0);
 }
@@ -131,8 +131,8 @@ static PetscErrorCode  PCGalerkinSetInterpolation_Galerkin(PC pc,Mat P)
   PC_Galerkin    *jac = (PC_Galerkin*)pc->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectReference((PetscObject)P));
-  CHKERRQ(MatDestroy(&jac->P));
+  PetscCall(PetscObjectReference((PetscObject)P));
+  PetscCall(MatDestroy(&jac->P));
   jac->P = P;
   PetscFunctionReturn(0);
 }
@@ -170,7 +170,7 @@ PetscErrorCode  PCGalerkinSetRestriction(PC pc,Mat R)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  CHKERRQ(PetscTryMethod(pc,"PCGalerkinSetRestriction_C",(PC,Mat),(pc,R)));
+  PetscCall(PetscTryMethod(pc,"PCGalerkinSetRestriction_C",(PC,Mat),(pc,R)));
   PetscFunctionReturn(0);
 }
 
@@ -196,7 +196,7 @@ PetscErrorCode  PCGalerkinSetInterpolation(PC pc,Mat P)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  CHKERRQ(PetscTryMethod(pc,"PCGalerkinSetInterpolation_C",(PC,Mat),(pc,P)));
+  PetscCall(PetscTryMethod(pc,"PCGalerkinSetInterpolation_C",(PC,Mat),(pc,P)));
   PetscFunctionReturn(0);
 }
 
@@ -240,7 +240,7 @@ PetscErrorCode  PCGalerkinSetComputeSubmatrix(PC pc,PetscErrorCode (*computeAsub
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  CHKERRQ(PetscTryMethod(pc,"PCGalerkinSetComputeSubmatrix_C",(PC,PetscErrorCode (*)(PC,Mat,Mat,Mat*,void*),void*),(pc,computeAsub,ctx)));
+  PetscCall(PetscTryMethod(pc,"PCGalerkinSetComputeSubmatrix_C",(PC,PetscErrorCode (*)(PC,Mat,Mat,Mat*,void*),void*),(pc,computeAsub,ctx)));
   PetscFunctionReturn(0);
 }
 
@@ -270,7 +270,7 @@ PetscErrorCode  PCGalerkinGetKSP(PC pc,KSP *ksp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(ksp,2);
-  CHKERRQ(PetscUseMethod(pc,"PCGalerkinGetKSP_C",(PC,KSP*),(pc,ksp)));
+  PetscCall(PetscUseMethod(pc,"PCGalerkinGetKSP_C",(PC,KSP*),(pc,ksp)));
   PetscFunctionReturn(0);
 }
 
@@ -281,19 +281,19 @@ static PetscErrorCode PCSetFromOptions_Galerkin(PetscOptionItems *PetscOptionsOb
   PetscBool      flg;
 
   PetscFunctionBegin;
-  CHKERRQ(KSPGetOptionsPrefix(jac->ksp,&prefix));
-  CHKERRQ(PetscStrendswith(prefix,"galerkin_",&flg));
+  PetscCall(KSPGetOptionsPrefix(jac->ksp,&prefix));
+  PetscCall(PetscStrendswith(prefix,"galerkin_",&flg));
   if (!flg) {
-    CHKERRQ(PCGetOptionsPrefix(pc,&prefix));
-    CHKERRQ(KSPSetOptionsPrefix(jac->ksp,prefix));
-    CHKERRQ(KSPAppendOptionsPrefix(jac->ksp,"galerkin_"));
+    PetscCall(PCGetOptionsPrefix(pc,&prefix));
+    PetscCall(KSPSetOptionsPrefix(jac->ksp,prefix));
+    PetscCall(KSPAppendOptionsPrefix(jac->ksp,"galerkin_"));
   }
 
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"Galerkin options"));
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"Galerkin options"));
   if (jac->ksp) {
-    CHKERRQ(KSPSetFromOptions(jac->ksp));
+    PetscCall(KSPSetFromOptions(jac->ksp));
   }
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -322,7 +322,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Galerkin(PC pc)
   PC_Galerkin    *jac;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNewLog(pc,&jac));
+  PetscCall(PetscNewLog(pc,&jac));
 
   pc->ops->apply           = PCApply_Galerkin;
   pc->ops->setup           = PCSetUp_Galerkin;
@@ -332,15 +332,15 @@ PETSC_EXTERN PetscErrorCode PCCreate_Galerkin(PC pc)
   pc->ops->setfromoptions  = PCSetFromOptions_Galerkin;
   pc->ops->applyrichardson = NULL;
 
-  CHKERRQ(KSPCreate(PetscObjectComm((PetscObject)pc),&jac->ksp));
-  CHKERRQ(KSPSetErrorIfNotConverged(jac->ksp,pc->erroriffailure));
-  CHKERRQ(PetscObjectIncrementTabLevel((PetscObject)jac->ksp,(PetscObject)pc,1));
+  PetscCall(KSPCreate(PetscObjectComm((PetscObject)pc),&jac->ksp));
+  PetscCall(KSPSetErrorIfNotConverged(jac->ksp,pc->erroriffailure));
+  PetscCall(PetscObjectIncrementTabLevel((PetscObject)jac->ksp,(PetscObject)pc,1));
 
   pc->data = (void*)jac;
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCGalerkinSetRestriction_C",PCGalerkinSetRestriction_Galerkin));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCGalerkinSetInterpolation_C",PCGalerkinSetInterpolation_Galerkin));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCGalerkinGetKSP_C",PCGalerkinGetKSP_Galerkin));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCGalerkinSetComputeSubmatrix_C",PCGalerkinSetComputeSubmatrix_Galerkin));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGalerkinSetRestriction_C",PCGalerkinSetRestriction_Galerkin));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGalerkinSetInterpolation_C",PCGalerkinSetInterpolation_Galerkin));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGalerkinGetKSP_C",PCGalerkinGetKSP_Galerkin));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGalerkinSetComputeSubmatrix_C",PCGalerkinSetComputeSubmatrix_Galerkin));
   PetscFunctionReturn(0);
 }

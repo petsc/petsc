@@ -30,17 +30,17 @@ PetscErrorCode  PetscSFRegisterAll(void)
   PetscFunctionBegin;
   if (PetscSFRegisterAllCalled) PetscFunctionReturn(0);
   PetscSFRegisterAllCalled = PETSC_TRUE;
-  CHKERRQ(PetscSFRegister(PETSCSFBASIC,  PetscSFCreate_Basic));
+  PetscCall(PetscSFRegister(PETSCSFBASIC,  PetscSFCreate_Basic));
 #if defined(PETSC_HAVE_MPI_WIN_CREATE)
-  CHKERRQ(PetscSFRegister(PETSCSFWINDOW, PetscSFCreate_Window));
+  PetscCall(PetscSFRegister(PETSCSFWINDOW, PetscSFCreate_Window));
 #endif
-  CHKERRQ(PetscSFRegister(PETSCSFALLGATHERV,PetscSFCreate_Allgatherv));
-  CHKERRQ(PetscSFRegister(PETSCSFALLGATHER, PetscSFCreate_Allgather));
-  CHKERRQ(PetscSFRegister(PETSCSFGATHERV,   PetscSFCreate_Gatherv));
-  CHKERRQ(PetscSFRegister(PETSCSFGATHER,    PetscSFCreate_Gather));
-  CHKERRQ(PetscSFRegister(PETSCSFALLTOALL,  PetscSFCreate_Alltoall));
+  PetscCall(PetscSFRegister(PETSCSFALLGATHERV,PetscSFCreate_Allgatherv));
+  PetscCall(PetscSFRegister(PETSCSFALLGATHER, PetscSFCreate_Allgather));
+  PetscCall(PetscSFRegister(PETSCSFGATHERV,   PetscSFCreate_Gatherv));
+  PetscCall(PetscSFRegister(PETSCSFGATHER,    PetscSFCreate_Gather));
+  PetscCall(PetscSFRegister(PETSCSFALLTOALL,  PetscSFCreate_Alltoall));
 #if defined(PETSC_HAVE_MPI_NEIGHBORHOOD_COLLECTIVES)
-  CHKERRQ(PetscSFRegister(PETSCSFNEIGHBOR,  PetscSFCreate_Neighbor));
+  PetscCall(PetscSFRegister(PETSCSFNEIGHBOR,  PetscSFCreate_Neighbor));
 #endif
   PetscFunctionReturn(0);
 }
@@ -74,7 +74,7 @@ $     -sf_type my_impl
 PetscErrorCode  PetscSFRegister(const char name[],PetscErrorCode (*create)(PetscSF))
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscSFInitializePackage());
-  CHKERRQ(PetscFunctionListAdd(&PetscSFList,name,create));
+  PetscCall(PetscSFInitializePackage());
+  PetscCall(PetscFunctionListAdd(&PetscSFList,name,create));
   PetscFunctionReturn(0);
 }

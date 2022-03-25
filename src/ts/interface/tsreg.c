@@ -47,22 +47,22 @@ PetscErrorCode  TSSetType(TS ts,TSType type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
   PetscValidCharPointer(type,2);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject) ts, type, &match));
+  PetscCall(PetscObjectTypeCompare((PetscObject) ts, type, &match));
   if (match) PetscFunctionReturn(0);
 
-  CHKERRQ(PetscFunctionListFind(TSList,type,&r));
+  PetscCall(PetscFunctionListFind(TSList,type,&r));
   PetscCheck(r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown TS type: %s", type);
   if (ts->ops->destroy) {
-    CHKERRQ((*(ts)->ops->destroy)(ts));
+    PetscCall((*(ts)->ops->destroy)(ts));
   }
-  CHKERRQ(PetscMemzero(ts->ops,sizeof(*ts->ops)));
+  PetscCall(PetscMemzero(ts->ops,sizeof(*ts->ops)));
   ts->usessnes           = PETSC_FALSE;
   ts->default_adapt_type = TSADAPTNONE;
 
   ts->setupcalled = PETSC_FALSE;
 
-  CHKERRQ(PetscObjectChangeTypeName((PetscObject)ts, type));
-  CHKERRQ((*r)(ts));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)ts, type));
+  PetscCall((*r)(ts));
   PetscFunctionReturn(0);
 }
 
@@ -127,7 +127,7 @@ PetscErrorCode  TSGetType(TS ts, TSType *type)
 PetscErrorCode  TSRegister(const char sname[], PetscErrorCode (*function)(TS))
 {
   PetscFunctionBegin;
-  CHKERRQ(TSInitializePackage());
-  CHKERRQ(PetscFunctionListAdd(&TSList,sname,function));
+  PetscCall(TSInitializePackage());
+  PetscCall(PetscFunctionListAdd(&TSList,sname,function));
   PetscFunctionReturn(0);
 }

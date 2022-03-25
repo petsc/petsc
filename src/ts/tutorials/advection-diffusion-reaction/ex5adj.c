@@ -23,18 +23,18 @@ PetscErrorCode InitializeLambda(DM da,Vec lambda,PetscReal x,PetscReal y)
    Field **l;
    PetscFunctionBegin;
 
-   CHKERRQ(DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
+   PetscCall(DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
    /* locate the global i index for x and j index for y */
    i = (PetscInt)(x*(Mx-1));
    j = (PetscInt)(y*(My-1));
-   CHKERRQ(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
+   PetscCall(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
 
    if (xs <= i && i < xs+xm && ys <= j && j < ys+ym) {
      /* the i,j vertex is on this process */
-     CHKERRQ(DMDAVecGetArray(da,lambda,&l));
+     PetscCall(DMDAVecGetArray(da,lambda,&l));
      l[j][i].u = 1.0;
      l[j][i].v = 1.0;
-     CHKERRQ(DMDAVecRestoreArray(da,lambda,&l));
+     PetscCall(DMDAVecRestoreArray(da,lambda,&l));
    }
    PetscFunctionReturn(0);
 }
@@ -48,11 +48,11 @@ int main(int argc,char **argv)
   Vec       lambda[1];
   PetscBool forwardonly = PETSC_FALSE,implicitform=PETSC_TRUE;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-forwardonly",&forwardonly,NULL));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-implicitform",&implicitform,NULL));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-forwardonly",&forwardonly,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-implicitform",&implicitform,NULL));
   appctx.aijpc = PETSC_FALSE;
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-aijpc",&appctx.aijpc,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-aijpc",&appctx.aijpc,NULL));
 
   appctx.D1    = 8.0e-5;
   appctx.D2    = 4.0e-5;
@@ -62,89 +62,89 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DMDA_STENCIL_STAR,64,64,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,&da));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
-  CHKERRQ(DMDASetFieldName(da,0,"u"));
-  CHKERRQ(DMDASetFieldName(da,1,"v"));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DMDA_STENCIL_STAR,64,64,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMDASetFieldName(da,0,"u"));
+  PetscCall(DMDASetFieldName(da,1,"v"));
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Extract global vectors from DMDA; then duplicate for remaining
      vectors that are the same types
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(DMCreateGlobalVector(da,&x));
+  PetscCall(DMCreateGlobalVector(da,&x));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
-  CHKERRQ(TSSetDM(ts,da));
-  CHKERRQ(TSSetProblemType(ts,TS_NONLINEAR));
-  CHKERRQ(TSSetEquationType(ts,TS_EQ_ODE_EXPLICIT)); /* less Jacobian evaluations when adjoint BEuler is used, otherwise no effect */
+  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
+  PetscCall(TSSetDM(ts,da));
+  PetscCall(TSSetProblemType(ts,TS_NONLINEAR));
+  PetscCall(TSSetEquationType(ts,TS_EQ_ODE_EXPLICIT)); /* less Jacobian evaluations when adjoint BEuler is used, otherwise no effect */
   if (!implicitform) {
-    CHKERRQ(TSSetType(ts,TSRK));
-    CHKERRQ(TSSetRHSFunction(ts,NULL,RHSFunction,&appctx));
-    CHKERRQ(TSSetRHSJacobian(ts,NULL,NULL,RHSJacobian,&appctx));
+    PetscCall(TSSetType(ts,TSRK));
+    PetscCall(TSSetRHSFunction(ts,NULL,RHSFunction,&appctx));
+    PetscCall(TSSetRHSJacobian(ts,NULL,NULL,RHSJacobian,&appctx));
   } else {
-    CHKERRQ(TSSetType(ts,TSCN));
-    CHKERRQ(TSSetIFunction(ts,NULL,IFunction,&appctx));
+    PetscCall(TSSetType(ts,TSCN));
+    PetscCall(TSSetIFunction(ts,NULL,IFunction,&appctx));
     if (appctx.aijpc) {
       Mat                    A,B;
 
-      CHKERRQ(DMSetMatType(da,MATSELL));
-      CHKERRQ(DMCreateMatrix(da,&A));
-      CHKERRQ(MatConvert(A,MATAIJ,MAT_INITIAL_MATRIX,&B));
+      PetscCall(DMSetMatType(da,MATSELL));
+      PetscCall(DMCreateMatrix(da,&A));
+      PetscCall(MatConvert(A,MATAIJ,MAT_INITIAL_MATRIX,&B));
       /* FIXME do we need to change viewer to display matrix in natural ordering as DMCreateMatrix_DA does? */
-      CHKERRQ(TSSetIJacobian(ts,A,B,IJacobian,&appctx));
-      CHKERRQ(MatDestroy(&A));
-      CHKERRQ(MatDestroy(&B));
+      PetscCall(TSSetIJacobian(ts,A,B,IJacobian,&appctx));
+      PetscCall(MatDestroy(&A));
+      PetscCall(MatDestroy(&B));
     } else {
-      CHKERRQ(TSSetIJacobian(ts,NULL,NULL,IJacobian,&appctx));
+      PetscCall(TSSetIJacobian(ts,NULL,NULL,IJacobian,&appctx));
     }
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(InitialConditions(da,x));
-  CHKERRQ(TSSetSolution(ts,x));
+  PetscCall(InitialConditions(da,x));
+  PetscCall(TSSetSolution(ts,x));
 
   /*
     Have the TS save its trajectory so that TSAdjointSolve() may be used
   */
-  if (!forwardonly) CHKERRQ(TSSetSaveTrajectory(ts));
+  if (!forwardonly) PetscCall(TSSetSaveTrajectory(ts));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSSetMaxTime(ts,200.0));
-  CHKERRQ(TSSetTimeStep(ts,0.5));
-  CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP));
-  CHKERRQ(TSSetFromOptions(ts));
+  PetscCall(TSSetMaxTime(ts,200.0));
+  PetscCall(TSSetTimeStep(ts,0.5));
+  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP));
+  PetscCall(TSSetFromOptions(ts));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve ODE system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSSolve(ts,x));
+  PetscCall(TSSolve(ts,x));
   if (!forwardonly) {
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Start the Adjoint model
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-    CHKERRQ(VecDuplicate(x,&lambda[0]));
+    PetscCall(VecDuplicate(x,&lambda[0]));
     /*   Reset initial conditions for the adjoint integration */
-    CHKERRQ(InitializeLambda(da,lambda[0],0.5,0.5));
-    CHKERRQ(TSSetCostGradients(ts,1,lambda,NULL));
-    CHKERRQ(TSAdjointSolve(ts));
-    CHKERRQ(VecDestroy(&lambda[0]));
+    PetscCall(InitializeLambda(da,lambda[0],0.5,0.5));
+    PetscCall(TSSetCostGradients(ts,1,lambda,NULL));
+    PetscCall(TSAdjointSolve(ts));
+    PetscCall(VecDestroy(&lambda[0]));
   }
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(TSDestroy(&ts));
-  CHKERRQ(DMDestroy(&da));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&x));
+  PetscCall(TSDestroy(&ts));
+  PetscCall(DMDestroy(&da));
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -156,7 +156,7 @@ PetscErrorCode InitialConditions(DM da,Vec U)
   PetscReal      hx,hy,x,y;
 
   PetscFunctionBegin;
-  CHKERRQ(DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
+  PetscCall(DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
 
   hx = 2.5/(PetscReal)Mx;
   hy = 2.5/(PetscReal)My;
@@ -164,12 +164,12 @@ PetscErrorCode InitialConditions(DM da,Vec U)
   /*
      Get pointers to vector data
   */
-  CHKERRQ(DMDAVecGetArray(da,U,&u));
+  PetscCall(DMDAVecGetArray(da,U,&u));
 
   /*
      Get local grid boundaries
   */
-  CHKERRQ(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
+  PetscCall(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
 
   /*
      Compute function over the locally owned part of the grid
@@ -188,7 +188,7 @@ PetscErrorCode InitialConditions(DM da,Vec U)
   /*
      Restore vectors
   */
-  CHKERRQ(DMDAVecRestoreArray(da,U,&u));
+  PetscCall(DMDAVecRestoreArray(da,U,&u));
   PetscFunctionReturn(0);
 }
 

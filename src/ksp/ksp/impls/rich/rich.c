@@ -10,9 +10,9 @@ PetscErrorCode KSPSetUp_Richardson(KSP ksp)
 
   PetscFunctionBegin;
   if (richardsonP->selfscale) {
-    CHKERRQ(KSPSetWorkVecs(ksp,4));
+    PetscCall(KSPSetWorkVecs(ksp,4));
   } else {
-    CHKERRQ(KSPSetWorkVecs(ksp,2));
+    PetscCall(KSPSetWorkVecs(ksp,2));
   }
   PetscFunctionReturn(0);
 }
@@ -30,21 +30,21 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
   MatNullSpace   nullsp;
 
   PetscFunctionBegin;
-  CHKERRQ(PCGetDiagonalScale(ksp->pc,&diagonalscale));
+  PetscCall(PCGetDiagonalScale(ksp->pc,&diagonalscale));
   PetscCheck(!diagonalscale,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
   ksp->its = 0;
 
-  CHKERRQ(PCGetOperators(ksp->pc,&Amat,&Pmat));
+  PetscCall(PCGetOperators(ksp->pc,&Amat,&Pmat));
   x    = ksp->vec_sol;
   b    = ksp->vec_rhs;
-  CHKERRQ(VecGetSize(x,&xs));
-  CHKERRQ(VecGetSize(ksp->work[0],&ws));
+  PetscCall(VecGetSize(x,&xs));
+  PetscCall(VecGetSize(ksp->work[0],&ws));
   if (xs != ws) {
     if (richardsonP->selfscale) {
-      CHKERRQ(KSPSetWorkVecs(ksp,4));
+      PetscCall(KSPSetWorkVecs(ksp,4));
     } else {
-      CHKERRQ(KSPSetWorkVecs(ksp,2));
+      PetscCall(KSPSetWorkVecs(ksp,2));
     }
   }
   r = ksp->work[0];
@@ -56,92 +56,92 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
   maxit = ksp->max_it;
 
   /* if user has provided fast Richardson code use that */
-  CHKERRQ(PCApplyRichardsonExists(ksp->pc,&exists));
-  CHKERRQ(MatGetNullSpace(Pmat,&nullsp));
+  PetscCall(PCApplyRichardsonExists(ksp->pc,&exists));
+  PetscCall(MatGetNullSpace(Pmat,&nullsp));
   if (exists && maxit > 0 && richardsonP->scale == 1.0 && (ksp->converged == KSPConvergedDefault || ksp->converged == KSPConvergedSkip) && !ksp->numbermonitors && !ksp->transpose_solve && !nullsp) {
     PCRichardsonConvergedReason reason;
-    CHKERRQ(PCApplyRichardson(ksp->pc,b,x,r,ksp->rtol,ksp->abstol,ksp->divtol,maxit,ksp->guess_zero,&ksp->its,&reason));
+    PetscCall(PCApplyRichardson(ksp->pc,b,x,r,ksp->rtol,ksp->abstol,ksp->divtol,maxit,ksp->guess_zero,&ksp->its,&reason));
     ksp->reason = (KSPConvergedReason)reason;
     PetscFunctionReturn(0);
   } else {
-    CHKERRQ(PetscInfo(ksp,"KSPSolve_Richardson: Warning, skipping optimized PCApplyRichardson()\n"));
+    PetscCall(PetscInfo(ksp,"KSPSolve_Richardson: Warning, skipping optimized PCApplyRichardson()\n"));
   }
 
   if (!ksp->guess_zero) {                          /*   r <- b - A x     */
-    CHKERRQ(KSP_MatMult(ksp,Amat,x,r));
-    CHKERRQ(VecAYPX(r,-1.0,b));
+    PetscCall(KSP_MatMult(ksp,Amat,x,r));
+    PetscCall(VecAYPX(r,-1.0,b));
   } else {
-    CHKERRQ(VecCopy(b,r));
+    PetscCall(VecCopy(b,r));
   }
 
   ksp->its = 0;
   if (richardsonP->selfscale) {
-    CHKERRQ(KSP_PCApply(ksp,r,z));         /*   z <- B r          */
+    PetscCall(KSP_PCApply(ksp,r,z));         /*   z <- B r          */
     for (i=0; i<maxit; i++) {
 
       if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
-        CHKERRQ(VecNorm(r,NORM_2,&rnorm)); /*   rnorm <- r'*r     */
+        PetscCall(VecNorm(r,NORM_2,&rnorm)); /*   rnorm <- r'*r     */
       } else if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
-        CHKERRQ(VecNorm(z,NORM_2,&rnorm)); /*   rnorm <- z'*z     */
+        PetscCall(VecNorm(z,NORM_2,&rnorm)); /*   rnorm <- z'*z     */
       } else rnorm = 0.0;
 
       KSPCheckNorm(ksp,rnorm);
       ksp->rnorm = rnorm;
-      CHKERRQ(KSPMonitor(ksp,i,rnorm));
-      CHKERRQ(KSPLogResidualHistory(ksp,rnorm));
-      CHKERRQ((*ksp->converged)(ksp,i,rnorm,&ksp->reason,ksp->cnvP));
+      PetscCall(KSPMonitor(ksp,i,rnorm));
+      PetscCall(KSPLogResidualHistory(ksp,rnorm));
+      PetscCall((*ksp->converged)(ksp,i,rnorm,&ksp->reason,ksp->cnvP));
       if (ksp->reason) break;
-      CHKERRQ(KSP_PCApplyBAorAB(ksp,z,y,w)); /* y = BAz = BABr */
-      CHKERRQ(VecDotNorm2(z,y,&rdot,&abr));   /*   rdot = (Br)^T(BABR); abr = (BABr)^T (BABr) */
+      PetscCall(KSP_PCApplyBAorAB(ksp,z,y,w)); /* y = BAz = BABr */
+      PetscCall(VecDotNorm2(z,y,&rdot,&abr));   /*   rdot = (Br)^T(BABR); abr = (BABr)^T (BABr) */
       scale = rdot/abr;
-      CHKERRQ(PetscInfo(ksp,"Self-scale factor %g\n",(double)PetscRealPart(scale)));
-      CHKERRQ(VecAXPY(x,scale,z));   /*   x  <- x + scale z */
-      CHKERRQ(VecAXPY(r,-scale,w));  /*  r <- r - scale*Az */
-      CHKERRQ(VecAXPY(z,-scale,y));  /*  z <- z - scale*y */
+      PetscCall(PetscInfo(ksp,"Self-scale factor %g\n",(double)PetscRealPart(scale)));
+      PetscCall(VecAXPY(x,scale,z));   /*   x  <- x + scale z */
+      PetscCall(VecAXPY(r,-scale,w));  /*  r <- r - scale*Az */
+      PetscCall(VecAXPY(z,-scale,y));  /*  z <- z - scale*y */
       ksp->its++;
     }
   } else {
     for (i=0; i<maxit; i++) {
 
       if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
-        CHKERRQ(VecNorm(r,NORM_2,&rnorm)); /*   rnorm <- r'*r     */
+        PetscCall(VecNorm(r,NORM_2,&rnorm)); /*   rnorm <- r'*r     */
       } else if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
-        CHKERRQ(KSP_PCApply(ksp,r,z));    /*   z <- B r          */
-        CHKERRQ(VecNorm(z,NORM_2,&rnorm)); /*   rnorm <- z'*z     */
+        PetscCall(KSP_PCApply(ksp,r,z));    /*   z <- B r          */
+        PetscCall(VecNorm(z,NORM_2,&rnorm)); /*   rnorm <- z'*z     */
       } else rnorm = 0.0;
       ksp->rnorm = rnorm;
-      CHKERRQ(KSPMonitor(ksp,i,rnorm));
-      CHKERRQ(KSPLogResidualHistory(ksp,rnorm));
-      CHKERRQ((*ksp->converged)(ksp,i,rnorm,&ksp->reason,ksp->cnvP));
+      PetscCall(KSPMonitor(ksp,i,rnorm));
+      PetscCall(KSPLogResidualHistory(ksp,rnorm));
+      PetscCall((*ksp->converged)(ksp,i,rnorm,&ksp->reason,ksp->cnvP));
       if (ksp->reason) break;
       if (ksp->normtype != KSP_NORM_PRECONDITIONED) {
-        CHKERRQ(KSP_PCApply(ksp,r,z));    /*   z <- B r          */
+        PetscCall(KSP_PCApply(ksp,r,z));    /*   z <- B r          */
       }
 
-      CHKERRQ(VecAXPY(x,richardsonP->scale,z));    /*   x  <- x + scale z */
+      PetscCall(VecAXPY(x,richardsonP->scale,z));    /*   x  <- x + scale z */
       ksp->its++;
 
       if (i+1 < maxit || ksp->normtype != KSP_NORM_NONE) {
-        CHKERRQ(KSP_MatMult(ksp,Amat,x,r));      /*   r  <- b - Ax      */
-        CHKERRQ(VecAYPX(r,-1.0,b));
+        PetscCall(KSP_MatMult(ksp,Amat,x,r));      /*   r  <- b - Ax      */
+        PetscCall(VecAYPX(r,-1.0,b));
       }
     }
   }
   if (!ksp->reason) {
     if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
-      CHKERRQ(VecNorm(r,NORM_2,&rnorm));     /*   rnorm <- r'*r     */
+      PetscCall(VecNorm(r,NORM_2,&rnorm));     /*   rnorm <- r'*r     */
     } else if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
-      CHKERRQ(KSP_PCApply(ksp,r,z));   /*   z <- B r          */
-      CHKERRQ(VecNorm(z,NORM_2,&rnorm));     /*   rnorm <- z'*z     */
+      PetscCall(KSP_PCApply(ksp,r,z));   /*   z <- B r          */
+      PetscCall(VecNorm(z,NORM_2,&rnorm));     /*   rnorm <- z'*z     */
     } else rnorm = 0.0;
 
     KSPCheckNorm(ksp,rnorm);
     ksp->rnorm = rnorm;
-    CHKERRQ(KSPLogResidualHistory(ksp,rnorm));
-    CHKERRQ(KSPMonitor(ksp,i,rnorm));
+    PetscCall(KSPLogResidualHistory(ksp,rnorm));
+    PetscCall(KSPMonitor(ksp,i,rnorm));
     if (ksp->its >= ksp->max_it) {
       if (ksp->normtype != KSP_NORM_NONE) {
-        CHKERRQ((*ksp->converged)(ksp,i,rnorm,&ksp->reason,ksp->cnvP));
+        PetscCall((*ksp->converged)(ksp,i,rnorm,&ksp->reason,ksp->cnvP));
         if (!ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
       } else {
         ksp->reason = KSP_CONVERGED_ITS;
@@ -157,12 +157,12 @@ PetscErrorCode KSPView_Richardson(KSP ksp,PetscViewer viewer)
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
     if (richardsonP->selfscale) {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"  using self-scale best computed damping factor\n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  using self-scale best computed damping factor\n"));
     } else {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"  damping factor=%g\n",(double)richardsonP->scale));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  damping factor=%g\n",(double)richardsonP->scale));
     }
   }
   PetscFunctionReturn(0);
@@ -175,20 +175,20 @@ PetscErrorCode KSPSetFromOptions_Richardson(PetscOptionItems *PetscOptionsObject
   PetscBool      flg,flg2;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"KSP Richardson Options"));
-  CHKERRQ(PetscOptionsReal("-ksp_richardson_scale","damping factor","KSPRichardsonSetScale",rich->scale,&tmp,&flg));
-  if (flg) CHKERRQ(KSPRichardsonSetScale(ksp,tmp));
-  CHKERRQ(PetscOptionsBool("-ksp_richardson_self_scale","dynamically determine optimal damping factor","KSPRichardsonSetSelfScale",rich->selfscale,&flg2,&flg));
-  if (flg) CHKERRQ(KSPRichardsonSetSelfScale(ksp,flg2));
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"KSP Richardson Options"));
+  PetscCall(PetscOptionsReal("-ksp_richardson_scale","damping factor","KSPRichardsonSetScale",rich->scale,&tmp,&flg));
+  if (flg) PetscCall(KSPRichardsonSetScale(ksp,tmp));
+  PetscCall(PetscOptionsBool("-ksp_richardson_self_scale","dynamically determine optimal damping factor","KSPRichardsonSetSelfScale",rich->selfscale,&flg2,&flg));
+  if (flg) PetscCall(KSPRichardsonSetSelfScale(ksp,flg2));
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode KSPDestroy_Richardson(KSP ksp)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ksp,"KSPRichardsonSetScale_C",NULL));
-  CHKERRQ(KSPDestroyDefault(ksp));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPRichardsonSetScale_C",NULL));
+  PetscCall(KSPDestroyDefault(ksp));
   PetscFunctionReturn(0);
 }
 
@@ -216,9 +216,9 @@ static PetscErrorCode KSPBuildResidual_Richardson(KSP ksp,Vec t,Vec v,Vec *V)
 {
   PetscFunctionBegin;
   if (ksp->normtype == KSP_NORM_NONE) {
-    CHKERRQ(KSPBuildResidualDefault(ksp,t,v,V));
+    PetscCall(KSPBuildResidualDefault(ksp,t,v,V));
   } else {
-    CHKERRQ(VecCopy(ksp->work[0],v));
+    PetscCall(VecCopy(ksp->work[0],v));
     *V   = v;
   }
   PetscFunctionReturn(0);
@@ -271,12 +271,12 @@ PETSC_EXTERN PetscErrorCode KSPCreate_Richardson(KSP ksp)
   KSP_Richardson *richardsonP;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNewLog(ksp,&richardsonP));
+  PetscCall(PetscNewLog(ksp,&richardsonP));
   ksp->data = (void*)richardsonP;
 
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3));
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2));
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1));
 
   ksp->ops->setup          = KSPSetUp_Richardson;
   ksp->ops->solve          = KSPSolve_Richardson;
@@ -286,8 +286,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_Richardson(KSP ksp)
   ksp->ops->view           = KSPView_Richardson;
   ksp->ops->setfromoptions = KSPSetFromOptions_Richardson;
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ksp,"KSPRichardsonSetScale_C",KSPRichardsonSetScale_Richardson));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ksp,"KSPRichardsonSetSelfScale_C",KSPRichardsonSetSelfScale_Richardson));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPRichardsonSetScale_C",KSPRichardsonSetScale_Richardson));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPRichardsonSetSelfScale_C",KSPRichardsonSetSelfScale_Richardson));
 
   richardsonP->scale = 1.0;
   PetscFunctionReturn(0);

@@ -10,20 +10,20 @@ int main(int argc,char **argv)
   PetscMPIInt size,rank;
   int         x = 0,y = 0,width = 256,height = 256,i;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
-  CHKERRQ(PetscDrawCreate(PETSC_COMM_WORLD,0,"Title",x,y,width,height,&draw));
-  CHKERRQ(PetscDrawSetFromOptions(draw));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscDrawCreate(PETSC_COMM_WORLD,0,"Title",x,y,width,height,&draw));
+  PetscCall(PetscDrawSetFromOptions(draw));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   for (i=rank; i<height; i+=size) {
     PetscReal y = ((PetscReal)i)/(height-1);
-    CHKERRQ(PetscDrawLine(draw,0.0,y,1.0,y,i%256));
+    PetscCall(PetscDrawLine(draw,0.0,y,1.0,y,i%256));
   }
-  CHKERRQ(PetscDrawFlush(draw));
-  CHKERRQ(PetscDrawPause(draw));
-  CHKERRQ(PetscDrawSave(draw));
-  CHKERRQ(PetscDrawDestroy(&draw));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscDrawFlush(draw));
+  PetscCall(PetscDrawPause(draw));
+  PetscCall(PetscDrawSave(draw));
+  PetscCall(PetscDrawDestroy(&draw));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

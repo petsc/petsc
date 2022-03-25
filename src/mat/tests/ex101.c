@@ -13,74 +13,74 @@ int main(int argc,char **argv)
   PetscMPIInt    size;
   PetscBool      flg;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
   /* Create MAIJ matrix, P */
-  CHKERRQ(MatCreate(PETSC_COMM_SELF,&pA));
-  CHKERRQ(MatSetSizes(pA,3,3,3,3));
-  CHKERRQ(MatSetType(pA,MATSEQAIJ));
-  CHKERRQ(MatSetUp(pA));
-  CHKERRQ(MatSetOption(pA,MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE));
-  CHKERRQ(MatSetValues(pA,3,pij,3,pij,pa,ADD_VALUES));
-  CHKERRQ(MatAssemblyBegin(pA,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(pA,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatCreateMAIJ(pA,3,&P));
-  CHKERRQ(MatDestroy(&pA));
+  PetscCall(MatCreate(PETSC_COMM_SELF,&pA));
+  PetscCall(MatSetSizes(pA,3,3,3,3));
+  PetscCall(MatSetType(pA,MATSEQAIJ));
+  PetscCall(MatSetUp(pA));
+  PetscCall(MatSetOption(pA,MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE));
+  PetscCall(MatSetValues(pA,3,pij,3,pij,pa,ADD_VALUES));
+  PetscCall(MatAssemblyBegin(pA,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(pA,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatCreateMAIJ(pA,3,&P));
+  PetscCall(MatDestroy(&pA));
 
   /* Create AIJ equivalent matrix, aijP, for comparison testing */
-  CHKERRQ(MatConvert(P,MATSEQAIJ,MAT_INITIAL_MATRIX,&aijP));
+  PetscCall(MatConvert(P,MATSEQAIJ,MAT_INITIAL_MATRIX,&aijP));
 
   /* Create AIJ matrix A */
-  CHKERRQ(MatCreate(PETSC_COMM_SELF,&A));
-  CHKERRQ(MatSetSizes(A,9,9,9,9));
-  CHKERRQ(MatSetType(A,MATSEQAIJ));
-  CHKERRQ(MatSetUp(A));
-  CHKERRQ(MatSetOption(A,MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE));
-  CHKERRQ(MatSetValues(A,3,aij[0],3,aij[0],pa,ADD_VALUES));
-  CHKERRQ(MatSetValues(A,3,aij[1],3,aij[1],pa,ADD_VALUES));
-  CHKERRQ(MatSetValues(A,3,aij[2],3,aij[2],pa,ADD_VALUES));
+  PetscCall(MatCreate(PETSC_COMM_SELF,&A));
+  PetscCall(MatSetSizes(A,9,9,9,9));
+  PetscCall(MatSetType(A,MATSEQAIJ));
+  PetscCall(MatSetUp(A));
+  PetscCall(MatSetOption(A,MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE));
+  PetscCall(MatSetValues(A,3,aij[0],3,aij[0],pa,ADD_VALUES));
+  PetscCall(MatSetValues(A,3,aij[1],3,aij[1],pa,ADD_VALUES));
+  PetscCall(MatSetValues(A,3,aij[2],3,aij[2],pa,ADD_VALUES));
   for (i=0; i<9; i++) {
-    CHKERRQ(MatSetValue(A,i,i,one,ADD_VALUES));
+    PetscCall(MatSetValue(A,i,i,one,ADD_VALUES));
   }
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
   /* Perform PtAP_SeqAIJ_SeqAIJ for comparison testing */
-  CHKERRQ(MatPtAP(A,aijP,MAT_INITIAL_MATRIX,1.,&C));
+  PetscCall(MatPtAP(A,aijP,MAT_INITIAL_MATRIX,1.,&C));
 
   /* Perform PtAP_SeqAIJ_SeqMAIJ */
   /* Developer API */
-  CHKERRQ(MatProductCreate(A,P,NULL,&mC));
-  CHKERRQ(MatProductSetType(mC,MATPRODUCT_PtAP));
-  CHKERRQ(MatProductSetAlgorithm(mC,"default"));
-  CHKERRQ(MatProductSetFill(mC,PETSC_DEFAULT));
-  CHKERRQ(MatProductSetFromOptions(mC));
-  CHKERRQ(MatProductSymbolic(mC));
-  CHKERRQ(MatProductNumeric(mC));
-  CHKERRQ(MatProductNumeric(mC));
+  PetscCall(MatProductCreate(A,P,NULL,&mC));
+  PetscCall(MatProductSetType(mC,MATPRODUCT_PtAP));
+  PetscCall(MatProductSetAlgorithm(mC,"default"));
+  PetscCall(MatProductSetFill(mC,PETSC_DEFAULT));
+  PetscCall(MatProductSetFromOptions(mC));
+  PetscCall(MatProductSymbolic(mC));
+  PetscCall(MatProductNumeric(mC));
+  PetscCall(MatProductNumeric(mC));
 
   /* Check mC = C */
-  CHKERRQ(MatEqual(C,mC,&flg));
+  PetscCall(MatEqual(C,mC,&flg));
   PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"MatProduct C != mC");
-  CHKERRQ(MatDestroy(&mC));
+  PetscCall(MatDestroy(&mC));
 
   /* User API */
-  CHKERRQ(MatPtAP(A,P,MAT_INITIAL_MATRIX,1.,&mC));
-  CHKERRQ(MatPtAP(A,P,MAT_REUSE_MATRIX,1.,&mC));
+  PetscCall(MatPtAP(A,P,MAT_INITIAL_MATRIX,1.,&mC));
+  PetscCall(MatPtAP(A,P,MAT_REUSE_MATRIX,1.,&mC));
 
   /* Check mC = C */
-  CHKERRQ(MatEqual(C,mC,&flg));
+  PetscCall(MatEqual(C,mC,&flg));
   PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"MatPtAP C != mC");
-  CHKERRQ(MatDestroy(&mC));
+  PetscCall(MatDestroy(&mC));
 
   /* Cleanup */
-  CHKERRQ(MatDestroy(&P));
-  CHKERRQ(MatDestroy(&aijP));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(MatDestroy(&C));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatDestroy(&P));
+  PetscCall(MatDestroy(&aijP));
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&C));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

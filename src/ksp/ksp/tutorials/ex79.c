@@ -5,7 +5,7 @@ static char help[] = "Solves a linear system with a block of right-hand sides, a
 PetscErrorCode MatApply(PC pc, Mat X, Mat Y)
 {
   PetscFunctionBeginUser;
-  CHKERRQ(MatCopy(X,Y,SAME_NONZERO_PATTERN));
+  PetscCall(MatCopy(X,Y,SAME_NONZERO_PATTERN));
   PetscFunctionReturn(0);
 }
 
@@ -21,34 +21,34 @@ int main(int argc,char **args)
 #endif
   PetscEventPerfInfo info;
 
-  CHKERRQ(PetscInitialize(&argc,&args,NULL,help));
-  CHKERRQ(PetscLogDefaultBegin());
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
-  CHKERRQ(MatCreateAIJ(PETSC_COMM_WORLD,m,m,PETSC_DECIDE,PETSC_DECIDE,m,NULL,m,NULL,&A));
-  CHKERRQ(MatCreateDense(PETSC_COMM_WORLD,m,PETSC_DECIDE,PETSC_DECIDE,m,NULL,&B));
-  CHKERRQ(MatCreateDense(PETSC_COMM_WORLD,m,PETSC_DECIDE,PETSC_DECIDE,m,NULL,&X));
-  CHKERRQ(MatSetRandom(A,NULL));
-  CHKERRQ(MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE));
-  CHKERRQ(MatShift(A,10.0));
-  CHKERRQ(MatSetRandom(B,NULL));
-  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
-  CHKERRQ(KSPSetOperators(ksp,A,A));
-  CHKERRQ(KSPSetFromOptions(ksp));
-  CHKERRQ(KSPGetPC(ksp,&pc));
-  CHKERRQ(PCShellSetMatApply(pc,MatApply));
-  CHKERRQ(KSPMatSolve(ksp,B,X));
-  CHKERRQ(PCMatApply(pc,B,X));
-  CHKERRQ(MatDestroy(&X));
-  CHKERRQ(MatDestroy(&B));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(KSPDestroy(&ksp));
-  CHKERRQ(PetscLogEventRegister("PCApply",PC_CLASSID,&event));
-  CHKERRQ(PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info));
+  PetscCall(PetscInitialize(&argc,&args,NULL,help));
+  PetscCall(PetscLogDefaultBegin());
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
+  PetscCall(MatCreateAIJ(PETSC_COMM_WORLD,m,m,PETSC_DECIDE,PETSC_DECIDE,m,NULL,m,NULL,&A));
+  PetscCall(MatCreateDense(PETSC_COMM_WORLD,m,PETSC_DECIDE,PETSC_DECIDE,m,NULL,&B));
+  PetscCall(MatCreateDense(PETSC_COMM_WORLD,m,PETSC_DECIDE,PETSC_DECIDE,m,NULL,&X));
+  PetscCall(MatSetRandom(A,NULL));
+  PetscCall(MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE));
+  PetscCall(MatShift(A,10.0));
+  PetscCall(MatSetRandom(B,NULL));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPSetOperators(ksp,A,A));
+  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(KSPGetPC(ksp,&pc));
+  PetscCall(PCShellSetMatApply(pc,MatApply));
+  PetscCall(KSPMatSolve(ksp,B,X));
+  PetscCall(PCMatApply(pc,B,X));
+  PetscCall(MatDestroy(&X));
+  PetscCall(MatDestroy(&B));
+  PetscCall(MatDestroy(&A));
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(PetscLogEventRegister("PCApply",PC_CLASSID,&event));
+  PetscCall(PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info));
   PetscCheckFalse(PetscDefined(USE_LOG) && m > 1 && info.count,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"PCApply() called %d times",info.count);
-  CHKERRQ(PetscLogEventRegister("PCMatApply",PC_CLASSID,&event));
-  CHKERRQ(PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info));
+  PetscCall(PetscLogEventRegister("PCMatApply",PC_CLASSID,&event));
+  PetscCall(PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info));
   PetscCheckFalse(PetscDefined(USE_LOG) && m > 1 && !info.count,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"PCMatApply() never called");
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

@@ -8,23 +8,23 @@ int main(int argc,char **argv)
   PetscScalar    one = 1.0,two = 2.0;
   Vec            x,y;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* create vector */
-  CHKERRQ(VecCreate(PETSC_COMM_SELF,&x));
-  CHKERRQ(VecSetSizes(x,n,PETSC_DECIDE));
-  CHKERRQ(VecSetType(x,"mpi"));
-  CHKERRQ(VecSetType(x,"seq"));
-  CHKERRQ(VecDuplicate(x,&y));
-  CHKERRQ(VecSetType(x,"mpi"));
+  PetscCall(VecCreate(PETSC_COMM_SELF,&x));
+  PetscCall(VecSetSizes(x,n,PETSC_DECIDE));
+  PetscCall(VecSetType(x,"mpi"));
+  PetscCall(VecSetType(x,"seq"));
+  PetscCall(VecDuplicate(x,&y));
+  PetscCall(VecSetType(x,"mpi"));
 
-  CHKERRQ(VecSet(x,one));
-  CHKERRQ(VecSet(y,two));
+  PetscCall(VecSet(x,one));
+  PetscCall(VecSet(y,two));
 
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&y));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&y));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

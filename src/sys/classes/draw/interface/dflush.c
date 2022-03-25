@@ -20,8 +20,8 @@ PetscErrorCode  PetscDrawFlush(PetscDraw draw)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   if (draw->ops->flush) {
-    CHKERRQ((*draw->ops->flush)(draw));
+    PetscCall((*draw->ops->flush)(draw));
   }
-  if (draw->saveonflush) CHKERRQ(PetscDrawSave(draw));
+  if (draw->saveonflush) PetscCall(PetscDrawSave(draw));
   PetscFunctionReturn(0);
 }

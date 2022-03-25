@@ -35,9 +35,9 @@ PetscErrorCode RHSFunction(TS ts,PetscReal ftime,Vec U,Vec F,void *ptr)
   Vec            localU;
 
   PetscFunctionBegin;
-  CHKERRQ(TSGetDM(ts,&da));
-  CHKERRQ(DMGetLocalVector(da,&localU));
-  CHKERRQ(DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
+  PetscCall(TSGetDM(ts,&da));
+  PetscCall(DMGetLocalVector(da,&localU));
+  PetscCall(DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
   hx = 2.50/(PetscReal)Mx; sx = 1.0/(hx*hx);
   hy = 2.50/(PetscReal)My; sy = 1.0/(hy*hy);
 
@@ -47,19 +47,19 @@ PetscErrorCode RHSFunction(TS ts,PetscReal ftime,Vec U,Vec F,void *ptr)
      By placing code between these two statements, computations can be
      done while messages are in transition.
   */
-  CHKERRQ(DMGlobalToLocalBegin(da,U,INSERT_VALUES,localU));
-  CHKERRQ(DMGlobalToLocalEnd(da,U,INSERT_VALUES,localU));
+  PetscCall(DMGlobalToLocalBegin(da,U,INSERT_VALUES,localU));
+  PetscCall(DMGlobalToLocalEnd(da,U,INSERT_VALUES,localU));
 
   /*
      Get pointers to vector data
   */
-  CHKERRQ(DMDAVecGetArrayRead(da,localU,&u));
-  CHKERRQ(DMDAVecGetArray(da,F,&f));
+  PetscCall(DMDAVecGetArrayRead(da,localU,&u));
+  PetscCall(DMDAVecGetArray(da,F,&f));
 
   /*
      Get local grid boundaries
   */
-  CHKERRQ(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
+  PetscCall(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
 
   /*
      Compute function over the locally owned part of the grid
@@ -76,14 +76,14 @@ PetscErrorCode RHSFunction(TS ts,PetscReal ftime,Vec U,Vec F,void *ptr)
       f[j][i].v = appctx->D2*(vxx + vyy) + uc*vc*vc - (appctx->gamma + appctx->kappa)*vc;
     }
   }
-  CHKERRQ(PetscLogFlops(16.0*xm*ym));
+  PetscCall(PetscLogFlops(16.0*xm*ym));
 
   /*
      Restore vectors
   */
-  CHKERRQ(DMDAVecRestoreArrayRead(da,localU,&u));
-  CHKERRQ(DMDAVecRestoreArray(da,F,&f));
-  CHKERRQ(DMRestoreLocalVector(da,&localU));
+  PetscCall(DMDAVecRestoreArrayRead(da,localU,&u));
+  PetscCall(DMDAVecRestoreArray(da,F,&f));
+  PetscCall(DMRestoreLocalVector(da,&localU));
   PetscFunctionReturn(0);
 }
 
@@ -100,9 +100,9 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat BB,void *ctx)
   PetscScalar    entries[6];
 
   PetscFunctionBegin;
-  CHKERRQ(TSGetDM(ts,&da));
-  CHKERRQ(DMGetLocalVector(da,&localU));
-  CHKERRQ(DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
+  PetscCall(TSGetDM(ts,&da));
+  PetscCall(DMGetLocalVector(da,&localU));
+  PetscCall(DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
 
   hx = 2.50/(PetscReal)Mx; sx = 1.0/(hx*hx);
   hy = 2.50/(PetscReal)My; sy = 1.0/(hy*hy);
@@ -113,18 +113,18 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat BB,void *ctx)
      By placing code between these two statements, computations can be
      done while messages are in transition.
   */
-  CHKERRQ(DMGlobalToLocalBegin(da,U,INSERT_VALUES,localU));
-  CHKERRQ(DMGlobalToLocalEnd(da,U,INSERT_VALUES,localU));
+  PetscCall(DMGlobalToLocalBegin(da,U,INSERT_VALUES,localU));
+  PetscCall(DMGlobalToLocalEnd(da,U,INSERT_VALUES,localU));
 
   /*
      Get pointers to vector data
   */
-  CHKERRQ(DMDAVecGetArrayRead(da,localU,&u));
+  PetscCall(DMDAVecGetArrayRead(da,localU,&u));
 
   /*
      Get local grid boundaries
   */
-  CHKERRQ(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
+  PetscCall(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
 
   stencil[0].k = 0;
   stencil[1].k = 0;
@@ -163,9 +163,9 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat BB,void *ctx)
       stencil[5].i = i; stencil[5].c = 1; entries[5] = -2.0*uc*vc;
       rowstencil.i = i; rowstencil.c = 0;
 
-      CHKERRQ(MatSetValuesStencil(A,1,&rowstencil,6,stencil,entries,INSERT_VALUES));
+      PetscCall(MatSetValuesStencil(A,1,&rowstencil,6,stencil,entries,INSERT_VALUES));
       if (appctx->aijpc) {
-        CHKERRQ(MatSetValuesStencil(BB,1,&rowstencil,6,stencil,entries,INSERT_VALUES));
+        PetscCall(MatSetValuesStencil(BB,1,&rowstencil,6,stencil,entries,INSERT_VALUES));
       }
       stencil[0].c = 1; entries[0] = appctx->D2*sy;
       stencil[1].c = 1; entries[1] = appctx->D2*sy;
@@ -175,9 +175,9 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat BB,void *ctx)
       stencil[5].c = 0; entries[5] = vc*vc;
       rowstencil.c = 1;
 
-      CHKERRQ(MatSetValuesStencil(A,1,&rowstencil,6,stencil,entries,INSERT_VALUES));
+      PetscCall(MatSetValuesStencil(A,1,&rowstencil,6,stencil,entries,INSERT_VALUES));
       if (appctx->aijpc) {
-        CHKERRQ(MatSetValuesStencil(BB,1,&rowstencil,6,stencil,entries,INSERT_VALUES));
+        PetscCall(MatSetValuesStencil(BB,1,&rowstencil,6,stencil,entries,INSERT_VALUES));
       }
       /* f[j][i].v = appctx->D2*(vxx + vyy) + uc*vc*vc - (appctx->gamma + appctx->kappa)*vc; */
     }
@@ -186,16 +186,16 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat BB,void *ctx)
   /*
      Restore vectors
   */
-  CHKERRQ(PetscLogFlops(19.0*xm*ym));
-  CHKERRQ(DMDAVecRestoreArrayRead(da,localU,&u));
-  CHKERRQ(DMRestoreLocalVector(da,&localU));
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE));
+  PetscCall(PetscLogFlops(19.0*xm*ym));
+  PetscCall(DMDAVecRestoreArrayRead(da,localU,&u));
+  PetscCall(DMRestoreLocalVector(da,&localU));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE));
   if (appctx->aijpc) {
-    CHKERRQ(MatAssemblyBegin(BB,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(BB,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatSetOption(BB,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE));
+    PetscCall(MatAssemblyBegin(BB,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(BB,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatSetOption(BB,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE));
   }
   PetscFunctionReturn(0);
 }
@@ -223,9 +223,9 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
   Vec            localU;
 
   PetscFunctionBegin;
-  CHKERRQ(TSGetDM(ts,&da));
-  CHKERRQ(DMGetLocalVector(da,&localU));
-  CHKERRQ(DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
+  PetscCall(TSGetDM(ts,&da));
+  PetscCall(DMGetLocalVector(da,&localU));
+  PetscCall(DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
   hx = 2.50/(PetscReal)Mx; sx = 1.0/(hx*hx);
   hy = 2.50/(PetscReal)My; sy = 1.0/(hy*hy);
 
@@ -235,20 +235,20 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
      By placing code between these two statements, computations can be
      done while messages are in transition.
   */
-  CHKERRQ(DMGlobalToLocalBegin(da,U,INSERT_VALUES,localU));
-  CHKERRQ(DMGlobalToLocalEnd(da,U,INSERT_VALUES,localU));
+  PetscCall(DMGlobalToLocalBegin(da,U,INSERT_VALUES,localU));
+  PetscCall(DMGlobalToLocalEnd(da,U,INSERT_VALUES,localU));
 
   /*
      Get pointers to vector data
   */
-  CHKERRQ(DMDAVecGetArrayRead(da,localU,&u));
-  CHKERRQ(DMDAVecGetArray(da,F,&f));
-  CHKERRQ(DMDAVecGetArrayRead(da,Udot,&udot));
+  PetscCall(DMDAVecGetArrayRead(da,localU,&u));
+  PetscCall(DMDAVecGetArray(da,F,&f));
+  PetscCall(DMDAVecGetArrayRead(da,Udot,&udot));
 
   /*
      Get local grid boundaries
   */
-  CHKERRQ(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
+  PetscCall(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
 
   /*
      Compute function over the locally owned part of the grid
@@ -265,15 +265,15 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
       f[j][i].v = udot[j][i].v - ( appctx->D2*(vxx + vyy) + uc*vc*vc - (appctx->gamma + appctx->kappa)*vc);
     }
   }
-  CHKERRQ(PetscLogFlops(16.0*xm*ym));
+  PetscCall(PetscLogFlops(16.0*xm*ym));
 
   /*
      Restore vectors
   */
-  CHKERRQ(DMDAVecRestoreArrayRead(da,localU,&u));
-  CHKERRQ(DMDAVecRestoreArray(da,F,&f));
-  CHKERRQ(DMDAVecRestoreArrayRead(da,Udot,&udot));
-  CHKERRQ(DMRestoreLocalVector(da,&localU));
+  PetscCall(DMDAVecRestoreArrayRead(da,localU,&u));
+  PetscCall(DMDAVecRestoreArray(da,F,&f));
+  PetscCall(DMDAVecRestoreArrayRead(da,Udot,&udot));
+  PetscCall(DMRestoreLocalVector(da,&localU));
   PetscFunctionReturn(0);
 }
 
@@ -290,9 +290,9 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat 
   PetscScalar    entries[6];
 
   PetscFunctionBegin;
-  CHKERRQ(TSGetDM(ts,&da));
-  CHKERRQ(DMGetLocalVector(da,&localU));
-  CHKERRQ(DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
+  PetscCall(TSGetDM(ts,&da));
+  PetscCall(DMGetLocalVector(da,&localU));
+  PetscCall(DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
 
   hx = 2.50/(PetscReal)Mx; sx = 1.0/(hx*hx);
   hy = 2.50/(PetscReal)My; sy = 1.0/(hy*hy);
@@ -303,18 +303,18 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat 
      By placing code between these two statements, computations can be
      done while messages are in transition.
   */
-  CHKERRQ(DMGlobalToLocalBegin(da,U,INSERT_VALUES,localU));
-  CHKERRQ(DMGlobalToLocalEnd(da,U,INSERT_VALUES,localU));
+  PetscCall(DMGlobalToLocalBegin(da,U,INSERT_VALUES,localU));
+  PetscCall(DMGlobalToLocalEnd(da,U,INSERT_VALUES,localU));
 
   /*
      Get pointers to vector data
   */
-  CHKERRQ(DMDAVecGetArrayRead(da,localU,&u));
+  PetscCall(DMDAVecGetArrayRead(da,localU,&u));
 
   /*
      Get local grid boundaries
   */
-  CHKERRQ(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
+  PetscCall(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
 
   stencil[0].k = 0;
   stencil[1].k = 0;
@@ -354,9 +354,9 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat 
       stencil[5].i = i; stencil[5].c = 1; entries[5] = 2.0*uc*vc;
       rowstencil.i = i; rowstencil.c = 0;
 
-      CHKERRQ(MatSetValuesStencil(A,1,&rowstencil,6,stencil,entries,INSERT_VALUES));
+      PetscCall(MatSetValuesStencil(A,1,&rowstencil,6,stencil,entries,INSERT_VALUES));
       if (appctx->aijpc) {
-        CHKERRQ(MatSetValuesStencil(BB,1,&rowstencil,6,stencil,entries,INSERT_VALUES));
+        PetscCall(MatSetValuesStencil(BB,1,&rowstencil,6,stencil,entries,INSERT_VALUES));
       }
       stencil[0].c = 1; entries[0] = -appctx->D2*sy;
       stencil[1].c = 1; entries[1] = -appctx->D2*sy;
@@ -366,9 +366,9 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat 
       stencil[5].c = 0; entries[5] = -vc*vc;
       rowstencil.c = 1;
 
-      CHKERRQ(MatSetValuesStencil(A,1,&rowstencil,6,stencil,entries,INSERT_VALUES));
+      PetscCall(MatSetValuesStencil(A,1,&rowstencil,6,stencil,entries,INSERT_VALUES));
       if (appctx->aijpc) {
-        CHKERRQ(MatSetValuesStencil(BB,1,&rowstencil,6,stencil,entries,INSERT_VALUES));
+        PetscCall(MatSetValuesStencil(BB,1,&rowstencil,6,stencil,entries,INSERT_VALUES));
       }
       /* f[j][i].v = appctx->D2*(vxx + vyy) + uc*vc*vc - (appctx->gamma + appctx->kappa)*vc; */
     }
@@ -377,16 +377,16 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat 
   /*
      Restore vectors
   */
-  CHKERRQ(PetscLogFlops(19.0*xm*ym));
-  CHKERRQ(DMDAVecRestoreArrayRead(da,localU,&u));
-  CHKERRQ(DMRestoreLocalVector(da,&localU));
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE));
+  PetscCall(PetscLogFlops(19.0*xm*ym));
+  PetscCall(DMDAVecRestoreArrayRead(da,localU,&u));
+  PetscCall(DMRestoreLocalVector(da,&localU));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE));
   if (appctx->aijpc) {
-    CHKERRQ(MatAssemblyBegin(BB,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(BB,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatSetOption(BB,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE));
+    PetscCall(MatAssemblyBegin(BB,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(BB,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatSetOption(BB,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE));
   }
   PetscFunctionReturn(0);
 }

@@ -17,23 +17,23 @@ static PetscErrorCode MatDestroy_STRUMPACK(Mat A)
   PetscFunctionBegin;
   /* Deallocate STRUMPACK storage */
   PetscStackCall("STRUMPACK_destroy",STRUMPACK_destroy(S));
-  CHKERRQ(PetscFree(A->spptr));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&flg));
+  PetscCall(PetscFree(A->spptr));
+  PetscCall(PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&flg));
   if (flg) {
-    CHKERRQ(MatDestroy_SeqAIJ(A));
+    PetscCall(MatDestroy_SeqAIJ(A));
   } else {
-    CHKERRQ(MatDestroy_MPIAIJ(A));
+    PetscCall(MatDestroy_MPIAIJ(A));
   }
 
   /* clear composed functions */
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverType_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)A,"MatSTRUMPACKSetReordering_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)A,"MatSTRUMPACKSetColPerm_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)A,"MatSTRUMPACKSetHSSRelTol_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)A,"MatSTRUMPACKSetHSSAbsTol_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)A,"MatSTRUMPACKSetHSSMaxRank_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)A,"MatSTRUMPACKSetHSSLeafSize_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)A,"MatSTRUMPACKSetHSSMinSepSize_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatSTRUMPACKSetReordering_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatSTRUMPACKSetColPerm_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatSTRUMPACKSetHSSRelTol_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatSTRUMPACKSetHSSAbsTol_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatSTRUMPACKSetHSSMaxRank_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatSTRUMPACKSetHSSLeafSize_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatSTRUMPACKSetHSSMinSepSize_C",NULL));
 
   PetscFunctionReturn(0);
 }
@@ -70,7 +70,7 @@ PetscErrorCode MatSTRUMPACKSetReordering(Mat F,MatSTRUMPACKReordering reordering
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F,MAT_CLASSID,1);
   PetscValidLogicalCollectiveEnum(F,reordering,2);
-  CHKERRQ(PetscTryMethod(F,"MatSTRUMPACKSetReordering_C",(Mat,MatSTRUMPACKReordering),(F,reordering)));
+  PetscCall(PetscTryMethod(F,"MatSTRUMPACKSetReordering_C",(Mat,MatSTRUMPACKReordering),(F,reordering)));
   PetscFunctionReturn(0);
 }
 
@@ -107,7 +107,7 @@ PetscErrorCode MatSTRUMPACKSetColPerm(Mat F,PetscBool cperm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F,MAT_CLASSID,1);
   PetscValidLogicalCollectiveBool(F,cperm,2);
-  CHKERRQ(PetscTryMethod(F,"MatSTRUMPACKSetColPerm_C",(Mat,PetscBool),(F,cperm)));
+  PetscCall(PetscTryMethod(F,"MatSTRUMPACKSetColPerm_C",(Mat,PetscBool),(F,cperm)));
   PetscFunctionReturn(0);
 }
 
@@ -144,7 +144,7 @@ PetscErrorCode MatSTRUMPACKSetHSSRelTol(Mat F,PetscReal rtol)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F,MAT_CLASSID,1);
   PetscValidLogicalCollectiveReal(F,rtol,2);
-  CHKERRQ(PetscTryMethod(F,"MatSTRUMPACKSetHSSRelTol_C",(Mat,PetscReal),(F,rtol)));
+  PetscCall(PetscTryMethod(F,"MatSTRUMPACKSetHSSRelTol_C",(Mat,PetscReal),(F,rtol)));
   PetscFunctionReturn(0);
 }
 
@@ -181,7 +181,7 @@ PetscErrorCode MatSTRUMPACKSetHSSAbsTol(Mat F,PetscReal atol)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F,MAT_CLASSID,1);
   PetscValidLogicalCollectiveReal(F,atol,2);
-  CHKERRQ(PetscTryMethod(F,"MatSTRUMPACKSetHSSAbsTol_C",(Mat,PetscReal),(F,atol)));
+  PetscCall(PetscTryMethod(F,"MatSTRUMPACKSetHSSAbsTol_C",(Mat,PetscReal),(F,atol)));
   PetscFunctionReturn(0);
 }
 
@@ -218,7 +218,7 @@ PetscErrorCode MatSTRUMPACKSetHSSMaxRank(Mat F,PetscInt hssmaxrank)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F,MAT_CLASSID,1);
   PetscValidLogicalCollectiveInt(F,hssmaxrank,2);
-  CHKERRQ(PetscTryMethod(F,"MatSTRUMPACKSetHSSMaxRank_C",(Mat,PetscInt),(F,hssmaxrank)));
+  PetscCall(PetscTryMethod(F,"MatSTRUMPACKSetHSSMaxRank_C",(Mat,PetscInt),(F,hssmaxrank)));
   PetscFunctionReturn(0);
 }
 
@@ -255,7 +255,7 @@ PetscErrorCode MatSTRUMPACKSetHSSLeafSize(Mat F,PetscInt leaf_size)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F,MAT_CLASSID,1);
   PetscValidLogicalCollectiveInt(F,leaf_size,2);
-  CHKERRQ(PetscTryMethod(F,"MatSTRUMPACKSetHSSLeafSize_C",(Mat,PetscInt),(F,leaf_size)));
+  PetscCall(PetscTryMethod(F,"MatSTRUMPACKSetHSSLeafSize_C",(Mat,PetscInt),(F,leaf_size)));
   PetscFunctionReturn(0);
 }
 
@@ -292,7 +292,7 @@ PetscErrorCode MatSTRUMPACKSetHSSMinSepSize(Mat F,PetscInt hssminsize)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F,MAT_CLASSID,1);
   PetscValidLogicalCollectiveInt(F,hssminsize,2);
-  CHKERRQ(PetscTryMethod(F,"MatSTRUMPACKSetHSSMinSepSize_C",(Mat,PetscInt),(F,hssminsize)));
+  PetscCall(PetscTryMethod(F,"MatSTRUMPACKSetHSSMinSepSize_C",(Mat,PetscInt),(F,hssminsize)));
   PetscFunctionReturn(0);
 }
 
@@ -304,8 +304,8 @@ static PetscErrorCode MatSolve_STRUMPACK(Mat A,Vec b_mpi,Vec x)
   PetscScalar            *xptr;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArray(x,&xptr));
-  CHKERRQ(VecGetArrayRead(b_mpi,&bptr));
+  PetscCall(VecGetArray(x,&xptr));
+  PetscCall(VecGetArrayRead(b_mpi,&bptr));
 
   PetscStackCall("STRUMPACK_solve",sp_err = STRUMPACK_solve(*S,(PetscScalar*)bptr,xptr,0));
   switch (sp_err) {
@@ -314,8 +314,8 @@ static PetscErrorCode MatSolve_STRUMPACK(Mat A,Vec b_mpi,Vec x)
   case STRUMPACK_REORDERING_ERROR: { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"STRUMPACK error: matrix reordering failed"); break; }
   default:                           SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"STRUMPACK error: solve failed");
   }
-  CHKERRQ(VecRestoreArray(x,&xptr));
-  CHKERRQ(VecRestoreArrayRead(b_mpi,&bptr));
+  PetscCall(VecRestoreArray(x,&xptr));
+  PetscCall(VecRestoreArrayRead(b_mpi,&bptr));
   PetscFunctionReturn(0);
 }
 
@@ -324,9 +324,9 @@ static PetscErrorCode MatMatSolve_STRUMPACK(Mat A,Mat B_mpi,Mat X)
   PetscBool flg;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompareAny((PetscObject)B_mpi,&flg,MATSEQDENSE,MATMPIDENSE,NULL));
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)B_mpi,&flg,MATSEQDENSE,MATMPIDENSE,NULL));
   PetscCheck(flg,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix B must be MATDENSE matrix");
-  CHKERRQ(PetscObjectTypeCompareAny((PetscObject)X,&flg,MATSEQDENSE,MATMPIDENSE,NULL));
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)X,&flg,MATSEQDENSE,MATMPIDENSE,NULL));
   PetscCheck(flg,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix X must be MATDENSE matrix");
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatMatSolve_STRUMPACK() is not implemented yet");
   PetscFunctionReturn(0);
@@ -337,7 +337,7 @@ static PetscErrorCode MatView_Info_STRUMPACK(Mat A,PetscViewer viewer)
   PetscFunctionBegin;
   /* check if matrix is strumpack type */
   if (A->ops->solve != MatSolve_STRUMPACK) PetscFunctionReturn(0);
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"STRUMPACK sparse solver!\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"STRUMPACK sparse solver!\n"));
   PetscFunctionReturn(0);
 }
 
@@ -347,10 +347,10 @@ static PetscErrorCode MatView_STRUMPACK(Mat A,PetscViewer viewer)
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    CHKERRQ(PetscViewerGetFormat(viewer,&format));
-    if (format == PETSC_VIEWER_ASCII_INFO) CHKERRQ(MatView_Info_STRUMPACK(A,viewer));
+    PetscCall(PetscViewerGetFormat(viewer,&format));
+    if (format == PETSC_VIEWER_ASCII_INFO) PetscCall(MatView_Info_STRUMPACK(A,viewer));
   }
   PetscFunctionReturn(0);
 }
@@ -365,7 +365,7 @@ static PetscErrorCode MatLUFactorNumeric_STRUMPACK(Mat F,Mat A,const MatFactorIn
   PetscBool              flg;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&flg));
+  PetscCall(PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&flg));
   if (flg) { /* A is MATMPIAIJ */
     mat = (Mat_MPIAIJ*)A->data;
     A_d = (Mat_SeqAIJ*)(mat->A)->data;
@@ -463,11 +463,11 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A,MatFactorType ftype,Mat *
 
   PetscFunctionBegin;
   /* Create the factorization matrix */
-  CHKERRQ(MatCreate(PetscObjectComm((PetscObject)A),&B));
-  CHKERRQ(MatSetSizes(B,A->rmap->n,A->cmap->n,M,N));
-  CHKERRQ(MatSetType(B,((PetscObject)A)->type_name));
-  CHKERRQ(MatSeqAIJSetPreallocation(B,0,NULL));
-  CHKERRQ(MatMPIAIJSetPreallocation(B,0,NULL,0,NULL));
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)A),&B));
+  PetscCall(MatSetSizes(B,A->rmap->n,A->cmap->n,M,N));
+  PetscCall(MatSetType(B,((PetscObject)A)->type_name));
+  PetscCall(MatSeqAIJSetPreallocation(B,0,NULL));
+  PetscCall(MatMPIAIJSetPreallocation(B,0,NULL,0,NULL));
   B->trivialsymbolic = PETSC_TRUE;
   if (ftype == MAT_FACTOR_LU || ftype == MAT_FACTOR_ILU) {
     B->ops->lufactorsymbolic  = MatLUFactorSymbolic_STRUMPACK;
@@ -476,54 +476,54 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A,MatFactorType ftype,Mat *
   B->ops->view        = MatView_STRUMPACK;
   B->ops->destroy     = MatDestroy_STRUMPACK;
   B->ops->getdiagonal = MatGetDiagonal_STRUMPACK;
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_aij_strumpack));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)B,"MatSTRUMPACKSetReordering_C",MatSTRUMPACKSetReordering_STRUMPACK));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)B,"MatSTRUMPACKSetColPerm_C",MatSTRUMPACKSetColPerm_STRUMPACK));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)B,"MatSTRUMPACKSetHSSRelTol_C",MatSTRUMPACKSetHSSRelTol_STRUMPACK));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)B,"MatSTRUMPACKSetHSSAbsTol_C",MatSTRUMPACKSetHSSAbsTol_STRUMPACK));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)B,"MatSTRUMPACKSetHSSMaxRank_C",MatSTRUMPACKSetHSSMaxRank_STRUMPACK));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)B,"MatSTRUMPACKSetHSSLeafSize_C",MatSTRUMPACKSetHSSLeafSize_STRUMPACK));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)B,"MatSTRUMPACKSetHSSMinSepSize_C",MatSTRUMPACKSetHSSMinSepSize_STRUMPACK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_aij_strumpack));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatSTRUMPACKSetReordering_C",MatSTRUMPACKSetReordering_STRUMPACK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatSTRUMPACKSetColPerm_C",MatSTRUMPACKSetColPerm_STRUMPACK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatSTRUMPACKSetHSSRelTol_C",MatSTRUMPACKSetHSSRelTol_STRUMPACK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatSTRUMPACKSetHSSAbsTol_C",MatSTRUMPACKSetHSSAbsTol_STRUMPACK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatSTRUMPACKSetHSSMaxRank_C",MatSTRUMPACKSetHSSMaxRank_STRUMPACK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatSTRUMPACKSetHSSLeafSize_C",MatSTRUMPACKSetHSSLeafSize_STRUMPACK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatSTRUMPACKSetHSSMinSepSize_C",MatSTRUMPACKSetHSSMinSepSize_STRUMPACK));
   B->factortype = ftype;
-  CHKERRQ(PetscNewLog(B,&S));
+  PetscCall(PetscNewLog(B,&S));
   B->spptr = S;
 
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&flg));
+  PetscCall(PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&flg));
   iface = flg ? STRUMPACK_MT : STRUMPACK_MPI_DIST;
 
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"STRUMPACK Options","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"STRUMPACK Options","Mat");PetscCall(ierr);
 
   verb = PetscLogPrintInfo ? PETSC_TRUE : PETSC_FALSE;
-  CHKERRQ(PetscOptionsBool("-mat_strumpack_verbose","Print STRUMPACK information","None",verb,&verb,NULL));
+  PetscCall(PetscOptionsBool("-mat_strumpack_verbose","Print STRUMPACK information","None",verb,&verb,NULL));
 
   PetscStackCall("STRUMPACK_init",STRUMPACK_init(S,PetscObjectComm((PetscObject)A),prec,iface,0,NULL,verb));
 
   PetscStackCall("STRUMPACK_HSS_rel_tol",ctol = (PetscReal)STRUMPACK_HSS_rel_tol(*S));
-  CHKERRQ(PetscOptionsReal("-mat_strumpack_hss_rel_tol","Relative compression tolerance","None",ctol,&ctol,&set));
+  PetscCall(PetscOptionsReal("-mat_strumpack_hss_rel_tol","Relative compression tolerance","None",ctol,&ctol,&set));
   if (set) PetscStackCall("STRUMPACK_set_HSS_rel_tol",STRUMPACK_set_HSS_rel_tol(*S,(double)ctol));
 
   PetscStackCall("STRUMPACK_HSS_abs_tol",ctol = (PetscReal)STRUMPACK_HSS_abs_tol(*S));
-  CHKERRQ(PetscOptionsReal("-mat_strumpack_hss_abs_tol","Absolute compression tolerance","None",ctol,&ctol,&set));
+  PetscCall(PetscOptionsReal("-mat_strumpack_hss_abs_tol","Absolute compression tolerance","None",ctol,&ctol,&set));
   if (set) PetscStackCall("STRUMPACK_set_HSS_abs_tol",STRUMPACK_set_HSS_abs_tol(*S,(double)ctol));
 
   PetscStackCall("STRUMPACK_mc64job",flg = (STRUMPACK_mc64job(*S) == 0) ? PETSC_FALSE : PETSC_TRUE);
-  CHKERRQ(PetscOptionsBool("-mat_strumpack_colperm","Find a col perm to get nonzero diagonal","None",flg,&flg,&set));
+  PetscCall(PetscOptionsBool("-mat_strumpack_colperm","Find a col perm to get nonzero diagonal","None",flg,&flg,&set));
   if (set) PetscStackCall("STRUMPACK_set_mc64job",STRUMPACK_set_mc64job(*S,flg ? 5 : 0));
 
   PetscStackCall("STRUMPACK_HSS_min_sep_size",hssminsize = (PetscInt)STRUMPACK_HSS_min_sep_size(*S));
-  CHKERRQ(PetscOptionsInt("-mat_strumpack_hss_min_sep_size","Minimum size of separator for HSS compression","None",hssminsize,&hssminsize,&set));
+  PetscCall(PetscOptionsInt("-mat_strumpack_hss_min_sep_size","Minimum size of separator for HSS compression","None",hssminsize,&hssminsize,&set));
   if (set) PetscStackCall("STRUMPACK_set_HSS_min_sep_size",STRUMPACK_set_HSS_min_sep_size(*S,(int)hssminsize));
 
   PetscStackCall("STRUMPACK_HSS_max_rank",max_rank = (PetscInt)STRUMPACK_HSS_max_rank(*S));
-  CHKERRQ(PetscOptionsInt("-mat_strumpack_max_rank","Maximum rank in HSS approximation","None",max_rank,&max_rank,&set));
+  PetscCall(PetscOptionsInt("-mat_strumpack_max_rank","Maximum rank in HSS approximation","None",max_rank,&max_rank,&set));
   if (set) PetscStackCall("STRUMPACK_set_HSS_max_rank",STRUMPACK_set_HSS_max_rank(*S,(int)max_rank));
 
   PetscStackCall("STRUMPACK_HSS_leaf_size",leaf_size = (PetscInt)STRUMPACK_HSS_leaf_size(*S));
-  CHKERRQ(PetscOptionsInt("-mat_strumpack_leaf_size","Size of diagonal blocks in HSS approximation","None",leaf_size,&leaf_size,&set));
+  PetscCall(PetscOptionsInt("-mat_strumpack_leaf_size","Size of diagonal blocks in HSS approximation","None",leaf_size,&leaf_size,&set));
   if (set) PetscStackCall("STRUMPACK_set_HSS_leaf_size",STRUMPACK_set_HSS_leaf_size(*S,(int)leaf_size));
 
   PetscStackCall("STRUMPACK_reordering_method",ndcurrent = STRUMPACK_reordering_method(*S));
-  CHKERRQ(PetscOptionsEnum("-mat_strumpack_reordering","Sparsity reducing matrix reordering","None",STRUMPACKNDTypes,(PetscEnum)ndcurrent,(PetscEnum*)&ndvalue,&set));
+  PetscCall(PetscOptionsEnum("-mat_strumpack_reordering","Sparsity reducing matrix reordering","None",STRUMPACKNDTypes,(PetscEnum)ndcurrent,(PetscEnum*)&ndvalue,&set));
   if (set) PetscStackCall("STRUMPACK_set_reordering_method",STRUMPACK_set_reordering_method(*S,ndvalue));
 
   if (ftype == MAT_FACTOR_ILU) {
@@ -540,10 +540,10 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A,MatFactorType ftype,Mat *
   PetscStackCall("STRUMPACK_set_Krylov_solver", STRUMPACK_set_Krylov_solver(*S, STRUMPACK_DIRECT));
 
   PetscStackCall("STRUMPACK_Krylov_solver",itcurrent = STRUMPACK_Krylov_solver(*S));
-  CHKERRQ(PetscOptionsEnum("-mat_strumpack_iterative_solver","Select iterative solver from STRUMPACK","None",SolverTypes,(PetscEnum)itcurrent,(PetscEnum*)&itsolver,&set));
+  PetscCall(PetscOptionsEnum("-mat_strumpack_iterative_solver","Select iterative solver from STRUMPACK","None",SolverTypes,(PetscEnum)itcurrent,(PetscEnum*)&itsolver,&set));
   if (set) PetscStackCall("STRUMPACK_set_Krylov_solver",STRUMPACK_set_Krylov_solver(*S,itsolver));
 
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
   *F = B;
   PetscFunctionReturn(0);
@@ -552,9 +552,9 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A,MatFactorType ftype,Mat *
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_STRUMPACK(void)
 {
   PetscFunctionBegin;
-  CHKERRQ(MatSolverTypeRegister(MATSOLVERSTRUMPACK,MATMPIAIJ,MAT_FACTOR_LU,MatGetFactor_aij_strumpack));
-  CHKERRQ(MatSolverTypeRegister(MATSOLVERSTRUMPACK,MATSEQAIJ,MAT_FACTOR_LU,MatGetFactor_aij_strumpack));
-  CHKERRQ(MatSolverTypeRegister(MATSOLVERSTRUMPACK,MATMPIAIJ,MAT_FACTOR_ILU,MatGetFactor_aij_strumpack));
-  CHKERRQ(MatSolverTypeRegister(MATSOLVERSTRUMPACK,MATSEQAIJ,MAT_FACTOR_ILU,MatGetFactor_aij_strumpack));
+  PetscCall(MatSolverTypeRegister(MATSOLVERSTRUMPACK,MATMPIAIJ,MAT_FACTOR_LU,MatGetFactor_aij_strumpack));
+  PetscCall(MatSolverTypeRegister(MATSOLVERSTRUMPACK,MATSEQAIJ,MAT_FACTOR_LU,MatGetFactor_aij_strumpack));
+  PetscCall(MatSolverTypeRegister(MATSOLVERSTRUMPACK,MATMPIAIJ,MAT_FACTOR_ILU,MatGetFactor_aij_strumpack));
+  PetscCall(MatSolverTypeRegister(MATSOLVERSTRUMPACK,MATSEQAIJ,MAT_FACTOR_ILU,MatGetFactor_aij_strumpack));
   PetscFunctionReturn(0);
 }

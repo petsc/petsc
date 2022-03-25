@@ -12,23 +12,23 @@ int main(int argc,char **argv)
   PetscBool      setSizes;
 
   /* Initialize PETSc and process command line arguments */
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   dim = 2;
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));
   setSizes = PETSC_FALSE;
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-setsizes",&setSizes,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-setsizes",&setSizes,NULL));
 
   /* Creation (normal) */
   if (!setSizes) {
     switch (dim) {
       case 1:
-        CHKERRQ(DMStagCreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,3,1,1,DMSTAG_STENCIL_BOX,1,NULL,&dmstag));
+        PetscCall(DMStagCreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,3,1,1,DMSTAG_STENCIL_BOX,1,NULL,&dmstag));
         break;
       case 2:
-        CHKERRQ(DMStagCreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,3,2,PETSC_DECIDE,PETSC_DECIDE,1,1,1,DMSTAG_STENCIL_BOX,1,NULL,NULL,&dmstag));
+        PetscCall(DMStagCreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,3,2,PETSC_DECIDE,PETSC_DECIDE,1,1,1,DMSTAG_STENCIL_BOX,1,NULL,NULL,&dmstag));
         break;
       case 3:
-        CHKERRQ(DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,3,2,4,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,1,1,DMSTAG_STENCIL_BOX,1,NULL,NULL,NULL,&dmstag));
+        PetscCall(DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,3,2,4,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,1,1,DMSTAG_STENCIL_BOX,1,NULL,NULL,NULL,&dmstag));
         break;
       default:
         SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"No support for dimension %D",dim);
@@ -40,19 +40,19 @@ int main(int argc,char **argv)
     PetscInt ly[3] = {4,5},   ranksy = 2, my = 9;
     PetscInt lz[2] = {6,7},   ranksz = 2, mz = 13;
 
-    CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+    PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
     switch (dim) {
       case 1:
         PetscCheckFalse(size != ranksx,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Must run on %D ranks with -dim 1 -setSizes",ranksx);
-        CHKERRQ(DMStagCreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,mx,1,1,DMSTAG_STENCIL_BOX,1,lx,&dmstag));
+        PetscCall(DMStagCreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,mx,1,1,DMSTAG_STENCIL_BOX,1,lx,&dmstag));
         break;
       case 2:
         PetscCheckFalse(size != ranksx * ranksy,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Must run on %D ranks with -dim 2 -setSizes",ranksx * ranksy);
-        CHKERRQ(DMStagCreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,mx,my,ranksx,ranksy,1,1,1,DMSTAG_STENCIL_BOX,1,lx,ly,&dmstag));
+        PetscCall(DMStagCreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,mx,my,ranksx,ranksy,1,1,1,DMSTAG_STENCIL_BOX,1,lx,ly,&dmstag));
         break;
       case 3:
         PetscCheckFalse(size != ranksx * ranksy * ranksz,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Must run on %D ranks with -dim 3 -setSizes", ranksx * ranksy * ranksz);
-        CHKERRQ(DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,mx,my,mz,ranksx,ranksy,ranksz,1,1,1,1,DMSTAG_STENCIL_BOX,1,lx,ly,lz,&dmstag));
+        PetscCall(DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,mx,my,mz,ranksx,ranksy,ranksz,1,1,1,1,DMSTAG_STENCIL_BOX,1,lx,ly,lz,&dmstag));
         break;
       default:
         SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"No support for dimension %D",dim);
@@ -60,15 +60,15 @@ int main(int argc,char **argv)
   }
 
   /* Setup */
-  CHKERRQ(DMSetFromOptions(dmstag));
-  CHKERRQ(DMSetUp(dmstag));
+  PetscCall(DMSetFromOptions(dmstag));
+  PetscCall(DMSetUp(dmstag));
 
   /* Field Creation */
-  CHKERRQ(TestFields(dmstag));
+  PetscCall(TestFields(dmstag));
 
   /* Clean up and finalize PETSc */
-  CHKERRQ(DMDestroy(&dmstag));
-  CHKERRQ(PetscFinalize());
+  PetscCall(DMDestroy(&dmstag));
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -78,18 +78,18 @@ static PetscErrorCode TestFields(DM dmstag)
   PetscReal      norm2;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMCreateLocalVector(dmstag,&vecLocal));
-  CHKERRQ(DMCreateGlobalVector(dmstag,&vecGlobal));
-  CHKERRQ(VecSet(vecLocal,1.0));
-  CHKERRQ(DMLocalToGlobalBegin(dmstag,vecLocal,INSERT_VALUES,vecGlobal));
-  CHKERRQ(DMLocalToGlobalEnd  (dmstag,vecLocal,INSERT_VALUES,vecGlobal));
-  CHKERRQ(VecSet(vecGlobal,2.0));
-  CHKERRQ(DMGlobalToLocalBegin(dmstag,vecGlobal,INSERT_VALUES,vecLocal));
-  CHKERRQ(DMGlobalToLocalEnd  (dmstag,vecGlobal,INSERT_VALUES,vecLocal));
-  CHKERRQ(VecNorm(vecGlobal,NORM_2,&norm2));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"2 Norm of test vector: %g\n",(double)norm2));
-  CHKERRQ(VecDestroy(&vecLocal));
-  CHKERRQ(VecDestroy(&vecGlobal));
+  PetscCall(DMCreateLocalVector(dmstag,&vecLocal));
+  PetscCall(DMCreateGlobalVector(dmstag,&vecGlobal));
+  PetscCall(VecSet(vecLocal,1.0));
+  PetscCall(DMLocalToGlobalBegin(dmstag,vecLocal,INSERT_VALUES,vecGlobal));
+  PetscCall(DMLocalToGlobalEnd  (dmstag,vecLocal,INSERT_VALUES,vecGlobal));
+  PetscCall(VecSet(vecGlobal,2.0));
+  PetscCall(DMGlobalToLocalBegin(dmstag,vecGlobal,INSERT_VALUES,vecLocal));
+  PetscCall(DMGlobalToLocalEnd  (dmstag,vecGlobal,INSERT_VALUES,vecLocal));
+  PetscCall(VecNorm(vecGlobal,NORM_2,&norm2));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"2 Norm of test vector: %g\n",(double)norm2));
+  PetscCall(VecDestroy(&vecLocal));
+  PetscCall(VecDestroy(&vecGlobal));
   PetscFunctionReturn(0);
 }
 

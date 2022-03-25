@@ -44,25 +44,25 @@ PetscErrorCode DMGenerateRegisterAll(void)
   if (DMGenerateRegisterAllCalled) PetscFunctionReturn(0);
   DMGenerateRegisterAllCalled = PETSC_TRUE;
 #if defined(PETSC_HAVE_TRIANGLE)
-  CHKERRQ(DMGenerateRegister("triangle",DMPlexGenerate_Triangle,DMPlexRefine_Triangle,NULL,1));
+  PetscCall(DMGenerateRegister("triangle",DMPlexGenerate_Triangle,DMPlexRefine_Triangle,NULL,1));
 #endif
 #if defined(PETSC_HAVE_CTETGEN)
-  CHKERRQ(DMGenerateRegister("ctetgen",DMPlexGenerate_CTetgen,DMPlexRefine_CTetgen,NULL,2));
+  PetscCall(DMGenerateRegister("ctetgen",DMPlexGenerate_CTetgen,DMPlexRefine_CTetgen,NULL,2));
 #endif
 #if defined(PETSC_HAVE_TETGEN)
-  CHKERRQ(DMGenerateRegister("tetgen",DMPlexGenerate_Tetgen,DMPlexRefine_Tetgen,NULL,2));
+  PetscCall(DMGenerateRegister("tetgen",DMPlexGenerate_Tetgen,DMPlexRefine_Tetgen,NULL,2));
 #endif
 #if defined(PETSC_HAVE_PRAGMATIC)
-  CHKERRQ(DMGenerateRegister("pragmatic",NULL,NULL,DMAdaptMetric_Pragmatic_Plex,-1));
+  PetscCall(DMGenerateRegister("pragmatic",NULL,NULL,DMAdaptMetric_Pragmatic_Plex,-1));
 #endif
 #if defined(PETSC_HAVE_MMG)
-  CHKERRQ(DMGenerateRegister("mmg",NULL,NULL,DMAdaptMetric_Mmg_Plex,-1));
+  PetscCall(DMGenerateRegister("mmg",NULL,NULL,DMAdaptMetric_Mmg_Plex,-1));
 #endif
 #if defined(PETSC_HAVE_PARMMG)
-  CHKERRQ(DMGenerateRegister("parmmg",NULL,NULL,DMAdaptMetric_ParMmg_Plex,-1));
+  PetscCall(DMGenerateRegister("parmmg",NULL,NULL,DMAdaptMetric_ParMmg_Plex,-1));
 #endif
-  CHKERRQ(DMGenerateRegister("cellrefiner",NULL,NULL,DMPlexTransformAdaptLabel,-1));
-  CHKERRQ(DMGenerateRegister("forest",NULL,NULL,DMAdaptLabel_Forest,-1));
+  PetscCall(DMGenerateRegister("cellrefiner",NULL,NULL,DMPlexTransformAdaptLabel,-1));
+  PetscCall(DMGenerateRegister("forest",NULL,NULL,DMAdaptLabel_Forest,-1));
   PetscFunctionReturn(0);
 }
 
@@ -101,8 +101,8 @@ PetscErrorCode DMGenerateRegister(const char sname[], PetscErrorCode (*fnc)(DM, 
   DMGeneratorFunctionList entry;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNew(&entry));
-  CHKERRQ(PetscStrallocpy(sname,&entry->name));
+  PetscCall(PetscNew(&entry));
+  PetscCall(PetscStrallocpy(sname,&entry->name));
   entry->generate = fnc;
   entry->refine   = rfnc;
   entry->adapt    = alfnc;
@@ -127,8 +127,8 @@ PetscErrorCode DMGenerateRegisterDestroy(void)
   next = fl = DMGenerateList;
   while (next) {
     next = fl ? fl->next : NULL;
-    if (fl) CHKERRQ(PetscFree(fl->name));
-    CHKERRQ(PetscFree(fl));
+    if (fl) PetscCall(PetscFree(fl->name));
+    PetscCall(PetscFree(fl));
     fl = next;
   }
   DMGenerateList              = NULL;
@@ -166,17 +166,17 @@ PetscErrorCode DMAdaptLabel(DM dm, DMLabel label, DM *dmAdapt)
   if (label) PetscValidPointer(label, 2);
   PetscValidPointer(dmAdapt, 3);
   *dmAdapt = NULL;
-  CHKERRQ(DMGetDimension(dm, &dim));
-  CHKERRQ(DMIsForest(dm, &isForest));
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMIsForest(dm, &isForest));
   name = isForest ? "forest" : "cellrefiner";
-  CHKERRQ(PetscOptionsGetString(((PetscObject) dm)->options, ((PetscObject) dm)->prefix, "-dm_adaptor", adaptname, sizeof(adaptname), &flg));
+  PetscCall(PetscOptionsGetString(((PetscObject) dm)->options, ((PetscObject) dm)->prefix, "-dm_adaptor", adaptname, sizeof(adaptname), &flg));
   if (flg) name = adaptname;
 
   fl = DMGenerateList;
   while (fl) {
-    CHKERRQ(PetscStrcmp(fl->name, name, &flg));
+    PetscCall(PetscStrcmp(fl->name, name, &flg));
     if (flg) {
-      CHKERRQ((*fl->adapt)(dm, NULL, label, NULL, dmAdapt));
+      PetscCall((*fl->adapt)(dm, NULL, label, NULL, dmAdapt));
       found = PETSC_TRUE;
     }
     fl = fl->next;
@@ -184,10 +184,10 @@ PetscErrorCode DMAdaptLabel(DM dm, DMLabel label, DM *dmAdapt)
   PetscCheck(found,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Grid adaptor %s not registered; you may need to add --download-%s to your ./configure options", name, name);
   if (*dmAdapt) {
     (*dmAdapt)->prealloc_only = dm->prealloc_only;  /* maybe this should go .... */
-    CHKERRQ(PetscFree((*dmAdapt)->vectype));
-    CHKERRQ(PetscStrallocpy(dm->vectype,(char**)&(*dmAdapt)->vectype));
-    CHKERRQ(PetscFree((*dmAdapt)->mattype));
-    CHKERRQ(PetscStrallocpy(dm->mattype,(char**)&(*dmAdapt)->mattype));
+    PetscCall(PetscFree((*dmAdapt)->vectype));
+    PetscCall(PetscStrallocpy(dm->vectype,(char**)&(*dmAdapt)->vectype));
+    PetscCall(PetscFree((*dmAdapt)->mattype));
+    PetscCall(PetscStrallocpy(dm->mattype,(char**)&(*dmAdapt)->mattype));
   }
   PetscFunctionReturn(0);
 }
@@ -226,8 +226,8 @@ PetscErrorCode DMAdaptMetric(DM dm, Vec metric, DMLabel bdLabel, DMLabel rgLabel
   if (rgLabel) PetscValidPointer(rgLabel, 4);
   PetscValidPointer(dmAdapt, 5);
   *dmAdapt = NULL;
-  CHKERRQ(DMGetDimension(dm, &dim));
-  CHKERRQ(PetscOptionsGetString(((PetscObject) dm)->options, ((PetscObject) dm)->prefix, "-dm_adaptor", adaptname, sizeof(adaptname), &flg));
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(PetscOptionsGetString(((PetscObject) dm)->options, ((PetscObject) dm)->prefix, "-dm_adaptor", adaptname, sizeof(adaptname), &flg));
 
   /* Default to Mmg in serial and ParMmg in parallel */
   if (flg) name = adaptname;
@@ -235,17 +235,17 @@ PetscErrorCode DMAdaptMetric(DM dm, Vec metric, DMLabel bdLabel, DMLabel rgLabel
     MPI_Comm                comm;
     PetscMPIInt             size;
 
-    CHKERRQ(PetscObjectGetComm((PetscObject)dm, &comm));
-    CHKERRMPI(MPI_Comm_size(comm, &size));
+    PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
+    PetscCallMPI(MPI_Comm_size(comm, &size));
     if (size == 1) name = adaptors[1];
     else           name = adaptors[2];
   }
 
   fl = DMGenerateList;
   while (fl) {
-    CHKERRQ(PetscStrcmp(fl->name, name, &flg));
+    PetscCall(PetscStrcmp(fl->name, name, &flg));
     if (flg) {
-      CHKERRQ((*fl->adapt)(dm, metric, bdLabel, rgLabel, dmAdapt));
+      PetscCall((*fl->adapt)(dm, metric, bdLabel, rgLabel, dmAdapt));
       found = PETSC_TRUE;
     }
     fl = fl->next;
@@ -253,10 +253,10 @@ PetscErrorCode DMAdaptMetric(DM dm, Vec metric, DMLabel bdLabel, DMLabel rgLabel
   PetscCheck(found,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Grid adaptor %s not registered; you may need to add --download-%s to your ./configure options", name, name);
   if (*dmAdapt) {
     (*dmAdapt)->prealloc_only = dm->prealloc_only;  /* maybe this should go .... */
-    CHKERRQ(PetscFree((*dmAdapt)->vectype));
-    CHKERRQ(PetscStrallocpy(dm->vectype,(char**)&(*dmAdapt)->vectype));
-    CHKERRQ(PetscFree((*dmAdapt)->mattype));
-    CHKERRQ(PetscStrallocpy(dm->mattype,(char**)&(*dmAdapt)->mattype));
+    PetscCall(PetscFree((*dmAdapt)->vectype));
+    PetscCall(PetscStrallocpy(dm->vectype,(char**)&(*dmAdapt)->vectype));
+    PetscCall(PetscFree((*dmAdapt)->mattype));
+    PetscCall(PetscStrallocpy(dm->mattype,(char**)&(*dmAdapt)->mattype));
   }
   PetscFunctionReturn(0);
 }

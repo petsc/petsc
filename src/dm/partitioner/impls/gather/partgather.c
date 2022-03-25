@@ -7,7 +7,7 @@ typedef struct {
 static PetscErrorCode PetscPartitionerDestroy_Gather(PetscPartitioner part)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscFree(part->data));
+  PetscCall(PetscFree(part->data));
   PetscFunctionReturn(0);
 }
 
@@ -24,8 +24,8 @@ static PetscErrorCode PetscPartitionerView_Gather(PetscPartitioner part, PetscVi
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) CHKERRQ(PetscPartitionerView_Gather_ASCII(part, viewer));
+  PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii));
+  if (iascii) PetscCall(PetscPartitionerView_Gather_ASCII(part, viewer));
   PetscFunctionReturn(0);
 }
 
@@ -34,9 +34,9 @@ static PetscErrorCode PetscPartitionerPartition_Gather(PetscPartitioner part, Pe
   PetscInt       np;
 
   PetscFunctionBegin;
-  CHKERRQ(ISCreateStride(PETSC_COMM_SELF, numVertices, 0, 1, partition));
-  CHKERRQ(PetscSectionSetDof(partSection,0,numVertices));
-  for (np = 1; np < nparts; ++np) CHKERRQ(PetscSectionSetDof(partSection, np, 0));
+  PetscCall(ISCreateStride(PETSC_COMM_SELF, numVertices, 0, 1, partition));
+  PetscCall(PetscSectionSetDof(partSection,0,numVertices));
+  for (np = 1; np < nparts; ++np) PetscCall(PetscSectionSetDof(partSection, np, 0));
   PetscFunctionReturn(0);
 }
 
@@ -64,9 +64,9 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Gather(PetscPartitioner part)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
-  CHKERRQ(PetscNewLog(part, &p));
+  PetscCall(PetscNewLog(part, &p));
   part->data = p;
 
-  CHKERRQ(PetscPartitionerInitialize_Gather(part));
+  PetscCall(PetscPartitionerInitialize_Gather(part));
   PetscFunctionReturn(0);
 }

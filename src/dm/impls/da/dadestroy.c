@@ -13,51 +13,51 @@ PetscErrorCode  DMDestroy_DA(DM da)
   PetscFunctionBegin;
   /* destroy the external/common part */
   for (i=0; i<DMDA_MAX_WORK_ARRAYS; i++) {
-    CHKERRQ(PetscFree(dd->startghostedout[i]));
-    CHKERRQ(PetscFree(dd->startghostedin[i]));
-    CHKERRQ(PetscFree(dd->startout[i]));
-    CHKERRQ(PetscFree(dd->startin[i]));
+    PetscCall(PetscFree(dd->startghostedout[i]));
+    PetscCall(PetscFree(dd->startghostedin[i]));
+    PetscCall(PetscFree(dd->startout[i]));
+    PetscCall(PetscFree(dd->startin[i]));
   }
 
-  CHKERRQ(VecScatterDestroy(&dd->gtol));
-  CHKERRQ(VecScatterDestroy(&dd->ltol));
-  CHKERRQ(VecDestroy(&dd->natural));
-  CHKERRQ(VecScatterDestroy(&dd->gton));
-  CHKERRQ(AODestroy(&dd->ao));
-  CHKERRQ(PetscFree(dd->aotype));
+  PetscCall(VecScatterDestroy(&dd->gtol));
+  PetscCall(VecScatterDestroy(&dd->ltol));
+  PetscCall(VecDestroy(&dd->natural));
+  PetscCall(VecScatterDestroy(&dd->gton));
+  PetscCall(AODestroy(&dd->ao));
+  PetscCall(PetscFree(dd->aotype));
 
-  CHKERRQ(PetscFree(dd->lx));
-  CHKERRQ(PetscFree(dd->ly));
-  CHKERRQ(PetscFree(dd->lz));
+  PetscCall(PetscFree(dd->lx));
+  PetscCall(PetscFree(dd->ly));
+  PetscCall(PetscFree(dd->lz));
 
-  CHKERRQ(PetscFree(dd->refine_x_hier));
-  CHKERRQ(PetscFree(dd->refine_y_hier));
-  CHKERRQ(PetscFree(dd->refine_z_hier));
+  PetscCall(PetscFree(dd->refine_x_hier));
+  PetscCall(PetscFree(dd->refine_y_hier));
+  PetscCall(PetscFree(dd->refine_z_hier));
 
   if (dd->fieldname) {
     for (i=0; i<dd->w; i++) {
-      CHKERRQ(PetscFree(dd->fieldname[i]));
+      PetscCall(PetscFree(dd->fieldname[i]));
     }
-    CHKERRQ(PetscFree(dd->fieldname));
+    PetscCall(PetscFree(dd->fieldname));
   }
   if (dd->coordinatename) {
     for (i=0; i<da->dim; i++) {
-      CHKERRQ(PetscFree(dd->coordinatename[i]));
+      PetscCall(PetscFree(dd->coordinatename[i]));
     }
-    CHKERRQ(PetscFree(dd->coordinatename));
+    PetscCall(PetscFree(dd->coordinatename));
   }
-  CHKERRQ(ISColoringDestroy(&dd->localcoloring));
-  CHKERRQ(ISColoringDestroy(&dd->ghostedcoloring));
+  PetscCall(ISColoringDestroy(&dd->localcoloring));
+  PetscCall(ISColoringDestroy(&dd->ghostedcoloring));
 
-  CHKERRQ(PetscFree(dd->neighbors));
-  CHKERRQ(PetscFree(dd->dfill));
-  CHKERRQ(PetscFree(dd->ofill));
-  CHKERRQ(PetscFree(dd->ofillcols));
-  CHKERRQ(PetscFree(dd->e));
-  CHKERRQ(ISDestroy(&dd->ecorners));
+  PetscCall(PetscFree(dd->neighbors));
+  PetscCall(PetscFree(dd->dfill));
+  PetscCall(PetscFree(dd->ofill));
+  PetscCall(PetscFree(dd->ofillcols));
+  PetscCall(PetscFree(dd->e));
+  PetscCall(ISDestroy(&dd->ecorners));
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)da,"DMSetUpGLVisViewer_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)da,"DMSetUpGLVisViewer_C",NULL));
 
-  CHKERRQ(PetscFree(dd));
+  PetscCall(PetscFree(dd));
   PetscFunctionReturn(0);
 }

@@ -44,16 +44,16 @@ PetscErrorCode private_DMDALocatePointsIS_2D_Regular(DM dmregular,Vec pos,IS *is
   const PetscScalar *_coor;
 
   PetscFunctionBegin;
-  CHKERRQ(DMDAGetCorners(dmregular,&xs,&ys,NULL,&xe,&ye,NULL));
-  CHKERRQ(DMDAGetGhostCorners(dmregular,&Xs,&Ys,NULL,&Xe,&Ye,NULL));
+  PetscCall(DMDAGetCorners(dmregular,&xs,&ys,NULL,&xe,&ye,NULL));
+  PetscCall(DMDAGetGhostCorners(dmregular,&Xs,&Ys,NULL,&Xe,&Ye,NULL));
   xe += xs; Xe += Xs; if (xs != Xs) xs -= 1;
   ye += ys; Ye += Ys; if (ys != Ys) ys -= 1;
 
   mxlocal = xe - xs - 1;
   mylocal = ye - ys - 1;
 
-  CHKERRQ(DMGetCoordinatesLocal(dmregular,&coor));
-  CHKERRQ(VecGetArrayRead(coor,&_coor));
+  PetscCall(DMGetCoordinatesLocal(dmregular,&coor));
+  PetscCall(VecGetArrayRead(coor,&_coor));
   c0 = (xs-Xs) + (ys-Ys)*(Xe-Xs);
   c1 = (xe-2-Xs+1) + (ye-2-Ys+1)*(Xe-Xs);
 
@@ -66,16 +66,16 @@ PetscErrorCode private_DMDALocatePointsIS_2D_Regular(DM dmregular,Vec pos,IS *is
   dx[0] = (gmax_l[0]-gmin_l[0])/((PetscReal)mxlocal);
   dx[1] = (gmax_l[1]-gmin_l[1])/((PetscReal)mylocal);
 
-  CHKERRQ(VecRestoreArrayRead(coor,&_coor));
+  PetscCall(VecRestoreArrayRead(coor,&_coor));
 
-  CHKERRQ(DMGetBoundingBox(dmregular,gmin,gmax));
+  PetscCall(DMGetBoundingBox(dmregular,gmin,gmax));
 
-  CHKERRQ(VecGetLocalSize(pos,&n));
-  CHKERRQ(VecGetBlockSize(pos,&bs));
+  PetscCall(VecGetLocalSize(pos,&n));
+  PetscCall(VecGetBlockSize(pos,&bs));
   npoints = n/bs;
 
-  CHKERRQ(PetscMalloc1(npoints,&cellidx));
-  CHKERRQ(VecGetArrayRead(pos,&_coor));
+  PetscCall(PetscMalloc1(npoints,&cellidx));
+  PetscCall(VecGetArrayRead(pos,&_coor));
   for (p=0; p<npoints; p++) {
     PetscReal coor_p[2];
     PetscInt  mi[2];
@@ -104,8 +104,8 @@ PetscErrorCode private_DMDALocatePointsIS_2D_Regular(DM dmregular,Vec pos,IS *is
 
     cellidx[p] = (mi[0]-xs) + (mi[1]-ys) * mxlocal;
   }
-  CHKERRQ(VecRestoreArrayRead(pos,&_coor));
-  CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,npoints,cellidx,PETSC_OWN_POINTER,iscell));
+  PetscCall(VecRestoreArrayRead(pos,&_coor));
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF,npoints,cellidx,PETSC_OWN_POINTER,iscell));
   PetscFunctionReturn(0);
 }
 
@@ -123,8 +123,8 @@ PetscErrorCode private_DMDALocatePointsIS_3D_Regular(DM dmregular,Vec pos,IS *is
   const PetscScalar *_coor;
 
   PetscFunctionBegin;
-  CHKERRQ(DMDAGetCorners(dmregular,&xs,&ys,&zs,&xe,&ye,&ze));
-  CHKERRQ(DMDAGetGhostCorners(dmregular,&Xs,&Ys,&Zs,&Xe,&Ye,&Ze));
+  PetscCall(DMDAGetCorners(dmregular,&xs,&ys,&zs,&xe,&ye,&ze));
+  PetscCall(DMDAGetGhostCorners(dmregular,&Xs,&Ys,&Zs,&Xe,&Ye,&Ze));
   xe += xs; Xe += Xs; if (xs != Xs) xs -= 1;
   ye += ys; Ye += Ys; if (ys != Ys) ys -= 1;
   ze += zs; Ze += Zs; if (zs != Zs) zs -= 1;
@@ -133,8 +133,8 @@ PetscErrorCode private_DMDALocatePointsIS_3D_Regular(DM dmregular,Vec pos,IS *is
   mylocal = ye - ys - 1;
   mzlocal = ze - zs - 1;
 
-  CHKERRQ(DMGetCoordinatesLocal(dmregular,&coor));
-  CHKERRQ(VecGetArrayRead(coor,&_coor));
+  PetscCall(DMGetCoordinatesLocal(dmregular,&coor));
+  PetscCall(VecGetArrayRead(coor,&_coor));
   c0 = (xs-Xs)     + (ys-Ys)    *(Xe-Xs) + (zs-Zs)    *(Xe-Xs)*(Ye-Ys);
   c1 = (xe-2-Xs+1) + (ye-2-Ys+1)*(Xe-Xs) + (ze-2-Zs+1)*(Xe-Xs)*(Ye-Ys);
 
@@ -150,16 +150,16 @@ PetscErrorCode private_DMDALocatePointsIS_3D_Regular(DM dmregular,Vec pos,IS *is
   dx[1] = (gmax_l[1]-gmin_l[1])/((PetscReal)mylocal);
   dx[2] = (gmax_l[2]-gmin_l[2])/((PetscReal)mzlocal);
 
-  CHKERRQ(VecRestoreArrayRead(coor,&_coor));
+  PetscCall(VecRestoreArrayRead(coor,&_coor));
 
-  CHKERRQ(DMGetBoundingBox(dmregular,gmin,gmax));
+  PetscCall(DMGetBoundingBox(dmregular,gmin,gmax));
 
-  CHKERRQ(VecGetLocalSize(pos,&n));
-  CHKERRQ(VecGetBlockSize(pos,&bs));
+  PetscCall(VecGetLocalSize(pos,&n));
+  PetscCall(VecGetBlockSize(pos,&bs));
   npoints = n/bs;
 
-  CHKERRQ(PetscMalloc1(npoints,&cellidx));
-  CHKERRQ(VecGetArrayRead(pos,&_coor));
+  PetscCall(PetscMalloc1(npoints,&cellidx));
+  PetscCall(VecGetArrayRead(pos,&_coor));
   for (p=0; p<npoints; p++) {
     PetscReal coor_p[3];
     PetscInt  mi[3];
@@ -194,8 +194,8 @@ PetscErrorCode private_DMDALocatePointsIS_3D_Regular(DM dmregular,Vec pos,IS *is
 
     cellidx[p] = (mi[0]-xs) + (mi[1]-ys) * mxlocal + (mi[2]-zs) * mxlocal * mylocal;
   }
-  CHKERRQ(VecRestoreArrayRead(pos,&_coor));
-  CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,npoints,cellidx,PETSC_OWN_POINTER,iscell));
+  PetscCall(VecRestoreArrayRead(pos,&_coor));
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF,npoints,cellidx,PETSC_OWN_POINTER,iscell));
   PetscFunctionReturn(0);
 }
 
@@ -207,35 +207,35 @@ PetscErrorCode DMLocatePoints_DA_Regular(DM dm,Vec pos,DMPointLocationType ltype
   const PetscInt *boxCells;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetBlockSize(pos,&dim));
+  PetscCall(VecGetBlockSize(pos,&dim));
   switch (dim) {
     case 1:
       SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Support not provided for 1D");
     case 2:
-      CHKERRQ(private_DMDALocatePointsIS_2D_Regular(dm,pos,&iscell));
+      PetscCall(private_DMDALocatePointsIS_2D_Regular(dm,pos,&iscell));
       break;
     case 3:
-      CHKERRQ(private_DMDALocatePointsIS_3D_Regular(dm,pos,&iscell));
+      PetscCall(private_DMDALocatePointsIS_3D_Regular(dm,pos,&iscell));
       break;
     default:
       SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupport spatial dimension");
   }
 
-  CHKERRQ(VecGetLocalSize(pos,&npoints));
-  CHKERRQ(VecGetBlockSize(pos,&bs));
+  PetscCall(VecGetLocalSize(pos,&npoints));
+  PetscCall(VecGetBlockSize(pos,&bs));
   npoints = npoints / bs;
 
-  CHKERRQ(PetscMalloc1(npoints, &cells));
-  CHKERRQ(ISGetIndices(iscell, &boxCells));
+  PetscCall(PetscMalloc1(npoints, &cells));
+  PetscCall(ISGetIndices(iscell, &boxCells));
 
   for (p=0; p<npoints; p++) {
     cells[p].rank  = 0;
     cells[p].index = boxCells[p];
   }
-  CHKERRQ(ISRestoreIndices(iscell, &boxCells));
+  PetscCall(ISRestoreIndices(iscell, &boxCells));
 
   nfound = npoints;
-  CHKERRQ(PetscSFSetGraph(cellSF, npoints, nfound, NULL, PETSC_OWN_POINTER, cells, PETSC_OWN_POINTER));
-  CHKERRQ(ISDestroy(&iscell));
+  PetscCall(PetscSFSetGraph(cellSF, npoints, nfound, NULL, PETSC_OWN_POINTER, cells, PETSC_OWN_POINTER));
+  PetscCall(ISDestroy(&iscell));
   PetscFunctionReturn(0);
 }

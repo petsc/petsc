@@ -20,7 +20,7 @@ static int setupConnection(MLENV *env, MLINK *link, const char *linkhost, LinkMo
   /* Link host */
   argv[2] = "-linkhost";
   if (!linkhost) {
-    CHKERRQ(PetscGetHostName(hostname, sizeof(hostname)));
+    PetscCall(PetscGetHostName(hostname, sizeof(hostname)));
     argv[3] = hostname;
   } else argv[3] = (char*) linkhost;
 
@@ -60,7 +60,7 @@ static int processPacket(MLINK link, int indent)
   int        ierr;
 
   PetscFunctionBegin;
-  CHKERRQ(printIndent(indent));
+  PetscCall(printIndent(indent));
   switch (tokenType) {
   case MLTKFUNC:
   {
@@ -78,7 +78,7 @@ static int processPacket(MLINK link, int indent)
     /* Process arguments */
     printf("  Arguments:\n");
     for (arg = 0; arg < numArguments; arg++) {
-      CHKERRQ(processPacket(link, indent+4));
+      PetscCall(processPacket(link, indent+4));
     }
   }
     break;
@@ -236,10 +236,10 @@ int main(int argc, char *argv[])
   MLINK link;
   int   ierr;
 
-  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
-  CHKERRQ(setupConnection(&env, &link, "192.168.119.1", MATHEMATICA_LINK_CONNECT));
-  CHKERRQ(processPackets(link));
-  CHKERRQ(cleanupConnection(env, link));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(setupConnection(&env, &link, "192.168.119.1", MATHEMATICA_LINK_CONNECT));
+  PetscCall(processPackets(link));
+  PetscCall(cleanupConnection(env, link));
+  PetscCall(PetscFinalize());
   return(ierr);
 }

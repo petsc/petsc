@@ -11,30 +11,30 @@ int main(int argc,char **argv)
   Vec            x;
   PetscScalar    one = 1.0;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
   /* create vector */
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
-  CHKERRQ(VecSetSizes(x,PETSC_DECIDE,n));
-  CHKERRQ(VecSetFromOptions(x));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+  PetscCall(VecSetSizes(x,PETSC_DECIDE,n));
+  PetscCall(VecSetFromOptions(x));
 
-  CHKERRQ(VecSet(x,one));
-  CHKERRQ(VecSetValue(x,0,0.0,INSERT_VALUES));
-  CHKERRQ(VecSetValue(x,n-1,2.0,INSERT_VALUES));
-  CHKERRQ(VecAssemblyBegin(x));
-  CHKERRQ(VecAssemblyEnd(x));
-  CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(VecMax(x,&idx,&value));
-  CHKERRQ(VecMax(x,NULL,&value2));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Maximum value %g index %" PetscInt_FMT " (no index %g)\n",(double)value,idx,(double)value2));
-  CHKERRQ(VecMin(x,&idx,&value));
-  CHKERRQ(VecMin(x,NULL,&value2));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Minimum value %g index %" PetscInt_FMT " (no index %g)\n",(double)value,idx,(double)value2));
+  PetscCall(VecSet(x,one));
+  PetscCall(VecSetValue(x,0,0.0,INSERT_VALUES));
+  PetscCall(VecSetValue(x,n-1,2.0,INSERT_VALUES));
+  PetscCall(VecAssemblyBegin(x));
+  PetscCall(VecAssemblyEnd(x));
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecMax(x,&idx,&value));
+  PetscCall(VecMax(x,NULL,&value2));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Maximum value %g index %" PetscInt_FMT " (no index %g)\n",(double)value,idx,(double)value2));
+  PetscCall(VecMin(x,&idx,&value));
+  PetscCall(VecMin(x,NULL,&value2));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Minimum value %g index %" PetscInt_FMT " (no index %g)\n",(double)value,idx,(double)value2));
 
-  CHKERRQ(VecDestroy(&x));
+  PetscCall(VecDestroy(&x));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

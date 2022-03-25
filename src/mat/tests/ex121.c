@@ -24,76 +24,76 @@ int main(int argc,char **args)
   PetscBool      view     = PETSC_FALSE;
   PetscErrorCode ierr;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP, "This is a uniprocessor example only!");
-  ierr     = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "FFTW Options", "ex112");CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsEList("-function", "Function type", "ex121", funcNames, NUM_FUNCS, funcNames[function], &func, NULL));
-  CHKERRQ(PetscOptionsBool("-vec_view draw", "View the functions", "ex112", view, &view, NULL));
+  ierr     = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "FFTW Options", "ex112");PetscCall(ierr);
+  PetscCall(PetscOptionsEList("-function", "Function type", "ex121", funcNames, NUM_FUNCS, funcNames[function], &func, NULL));
+  PetscCall(PetscOptionsBool("-vec_view draw", "View the functions", "ex112", view, &view, NULL));
   function = (FuncType) func;
-  ierr     = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr     = PetscOptionsEnd();PetscCall(ierr);
 
   for (DIM = 0; DIM < ndim; DIM++) {
     dim[DIM] = n;  /* size of transformation in DIM-dimension */
   }
-  CHKERRQ(PetscRandomCreate(PETSC_COMM_SELF, &rdm));
-  CHKERRQ(PetscRandomSetFromOptions(rdm));
+  PetscCall(PetscRandomCreate(PETSC_COMM_SELF, &rdm));
+  PetscCall(PetscRandomSetFromOptions(rdm));
 
   for (DIM = 1; DIM < 5; DIM++) {
     /* create vectors of length N=n^DIM */
     for (i = 0, N = 1; i < DIM; i++) N *= dim[i];
-    CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "\n %d-D: FFTW on vector of size %d \n",DIM,N));
-    CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,N,&x));
-    CHKERRQ(PetscObjectSetName((PetscObject) x, "Real space vector"));
-    CHKERRQ(VecDuplicate(x,&w));
-    CHKERRQ(PetscObjectSetName((PetscObject) w, "Window vector"));
-    CHKERRQ(VecDuplicate(x,&y1));
-    CHKERRQ(PetscObjectSetName((PetscObject) y1, "Frequency space vector"));
-    CHKERRQ(VecDuplicate(x,&y2));
-    CHKERRQ(PetscObjectSetName((PetscObject) y2, "Frequency space window vector"));
-    CHKERRQ(VecDuplicate(x,&z1));
-    CHKERRQ(PetscObjectSetName((PetscObject) z1, "Reconstructed convolution"));
-    CHKERRQ(VecDuplicate(x,&z2));
-    CHKERRQ(PetscObjectSetName((PetscObject) z2, "Real space convolution"));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n %d-D: FFTW on vector of size %d \n",DIM,N));
+    PetscCall(VecCreateSeq(PETSC_COMM_SELF,N,&x));
+    PetscCall(PetscObjectSetName((PetscObject) x, "Real space vector"));
+    PetscCall(VecDuplicate(x,&w));
+    PetscCall(PetscObjectSetName((PetscObject) w, "Window vector"));
+    PetscCall(VecDuplicate(x,&y1));
+    PetscCall(PetscObjectSetName((PetscObject) y1, "Frequency space vector"));
+    PetscCall(VecDuplicate(x,&y2));
+    PetscCall(PetscObjectSetName((PetscObject) y2, "Frequency space window vector"));
+    PetscCall(VecDuplicate(x,&z1));
+    PetscCall(PetscObjectSetName((PetscObject) z1, "Reconstructed convolution"));
+    PetscCall(VecDuplicate(x,&z2));
+    PetscCall(PetscObjectSetName((PetscObject) z2, "Real space convolution"));
 
     if (function == RANDOM) {
-      CHKERRQ(VecSetRandom(x, rdm));
+      PetscCall(VecSetRandom(x, rdm));
     } else if (function == CONSTANT) {
-      CHKERRQ(VecSet(x, 1.0));
+      PetscCall(VecSet(x, 1.0));
     } else if (function == TANH) {
-      CHKERRQ(VecGetArray(x, &a));
+      PetscCall(VecGetArray(x, &a));
       for (i = 0; i < N; ++i) {
         a[i] = tanh((i - N/2.0)*(10.0/N));
       }
-      CHKERRQ(VecRestoreArray(x, &a));
+      PetscCall(VecRestoreArray(x, &a));
     }
-    if (view) CHKERRQ(VecView(x, PETSC_VIEWER_DRAW_WORLD));
+    if (view) PetscCall(VecView(x, PETSC_VIEWER_DRAW_WORLD));
 
     /* Create window function */
-    CHKERRQ(VecGetArray(w, &a));
+    PetscCall(VecGetArray(w, &a));
     for (i = 0; i < N; ++i) {
       /* Step Function */
       a[i] = (i > N/4 && i < 3*N/4) ? 1.0 : 0.0;
       /* Delta Function */
       /*a[i] = (i == N/2)? 1.0: 0.0; */
     }
-    CHKERRQ(VecRestoreArray(w, &a));
-    if (view) CHKERRQ(VecView(w, PETSC_VIEWER_DRAW_WORLD));
+    PetscCall(VecRestoreArray(w, &a));
+    if (view) PetscCall(VecView(w, PETSC_VIEWER_DRAW_WORLD));
 
     /* create FFTW object */
-    CHKERRQ(MatCreateFFT(PETSC_COMM_SELF,DIM,dim,MATFFTW,&A));
+    PetscCall(MatCreateFFT(PETSC_COMM_SELF,DIM,dim,MATFFTW,&A));
 
     /* Convolve x with w*/
-    CHKERRQ(MatMult(A,x,y1));
-    CHKERRQ(MatMult(A,w,y2));
-    CHKERRQ(VecPointwiseMult(y1, y1, y2));
-    if (view && i == 0) CHKERRQ(VecView(y1, PETSC_VIEWER_DRAW_WORLD));
-    CHKERRQ(MatMultTranspose(A,y1,z1));
+    PetscCall(MatMult(A,x,y1));
+    PetscCall(MatMult(A,w,y2));
+    PetscCall(VecPointwiseMult(y1, y1, y2));
+    if (view && i == 0) PetscCall(VecView(y1, PETSC_VIEWER_DRAW_WORLD));
+    PetscCall(MatMultTranspose(A,y1,z1));
 
     /* Compute the real space convolution */
-    CHKERRQ(VecGetArray(x, &a));
-    CHKERRQ(VecGetArray(w, &a2));
-    CHKERRQ(VecGetArray(z2, &a3));
+    PetscCall(VecGetArray(x, &a));
+    PetscCall(VecGetArray(w, &a2));
+    PetscCall(VecGetArray(z2, &a3));
     for (i = 0; i < N; ++i) {
       /* PetscInt checkInd = (i > N/2-1)? i-N/2: i+N/2;*/
 
@@ -105,32 +105,32 @@ int main(int argc,char **args)
         a3[i] += a[xpInd]*a2[diffInd];
       }
     }
-    CHKERRQ(VecRestoreArray(x, &a));
-    CHKERRQ(VecRestoreArray(w, &a2));
-    CHKERRQ(VecRestoreArray(z2, &a3));
+    PetscCall(VecRestoreArray(x, &a));
+    PetscCall(VecRestoreArray(w, &a2));
+    PetscCall(VecRestoreArray(z2, &a3));
 
     /* compare z1 and z2. FFTW computes an unnormalized DFT, thus z1 = N*z2 */
     s    = 1.0/(PetscReal)N;
-    CHKERRQ(VecScale(z1,s));
-    if (view) CHKERRQ(VecView(z1, PETSC_VIEWER_DRAW_WORLD));
-    if (view) CHKERRQ(VecView(z2, PETSC_VIEWER_DRAW_WORLD));
-    CHKERRQ(VecAXPY(z1,-1.0,z2));
-    CHKERRQ(VecNorm(z1,NORM_1,&enorm));
+    PetscCall(VecScale(z1,s));
+    if (view) PetscCall(VecView(z1, PETSC_VIEWER_DRAW_WORLD));
+    if (view) PetscCall(VecView(z2, PETSC_VIEWER_DRAW_WORLD));
+    PetscCall(VecAXPY(z1,-1.0,z2));
+    PetscCall(VecNorm(z1,NORM_1,&enorm));
     if (enorm > 1.e-11) {
-      CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"  Error norm of |z1 - z2| %g\n",(double)enorm));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,"  Error norm of |z1 - z2| %g\n",(double)enorm));
     }
 
     /* free spaces */
-    CHKERRQ(VecDestroy(&x));
-    CHKERRQ(VecDestroy(&y1));
-    CHKERRQ(VecDestroy(&y2));
-    CHKERRQ(VecDestroy(&z1));
-    CHKERRQ(VecDestroy(&z2));
-    CHKERRQ(VecDestroy(&w));
-    CHKERRQ(MatDestroy(&A));
+    PetscCall(VecDestroy(&x));
+    PetscCall(VecDestroy(&y1));
+    PetscCall(VecDestroy(&y2));
+    PetscCall(VecDestroy(&z1));
+    PetscCall(VecDestroy(&z2));
+    PetscCall(VecDestroy(&w));
+    PetscCall(MatDestroy(&A));
   }
-  CHKERRQ(PetscRandomDestroy(&rdm));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscRandomDestroy(&rdm));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

@@ -333,12 +333,12 @@ static PetscErrorCode DMPlexTransformView_Regular(DMPlexTransform tr, PetscViewe
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii));
   if (isascii) {
     const char *name;
 
-    CHKERRQ(PetscObjectGetName((PetscObject) tr, &name));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer, "Regular refinement %s\n", name ? name : ""));
+    PetscCall(PetscObjectGetName((PetscObject) tr, &name));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Regular refinement %s\n", name ? name : ""));
   } else {
     SETERRQ(PetscObjectComm((PetscObject) tr), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMPlexTransform writing", ((PetscObject) viewer)->type_name);
   }
@@ -356,7 +356,7 @@ static PetscErrorCode DMPlexTransformDestroy_Regular(DMPlexTransform tr)
   DMPlexRefine_Regular *f = (DMPlexRefine_Regular *) tr->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscFree(f));
+  PetscCall(PetscFree(f));
   PetscFunctionReturn(0);
 }
 
@@ -1335,9 +1335,9 @@ PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_Regular(DMPlexTransform tr)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
-  CHKERRQ(PetscNewLog(tr, &f));
+  PetscCall(PetscNewLog(tr, &f));
   tr->data = f;
 
-  CHKERRQ(DMPlexTransformInitialize_Regular(tr));
+  PetscCall(DMPlexTransformInitialize_Regular(tr));
   PetscFunctionReturn(0);
 }

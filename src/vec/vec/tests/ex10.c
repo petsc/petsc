@@ -13,64 +13,64 @@ int main(int argc,char **argv)
   IS             isx,isy;
   VecScatter     ctx = 0,newctx;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   PetscCheckFalse(size != 2,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must run with 2 processors");
 
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL));
   n    = bs*n;
 
   /* create two vectors */
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
-  CHKERRQ(VecSetSizes(x,PETSC_DECIDE,size*n));
-  CHKERRQ(VecSetFromOptions(x));
-  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,n,&y));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+  PetscCall(VecSetSizes(x,PETSC_DECIDE,size*n));
+  PetscCall(VecSetFromOptions(x));
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,n,&y));
 
   /* create two index sets */
   if (rank == 0) {
-    CHKERRQ(ISCreateBlock(PETSC_COMM_SELF,bs,3,ix0,PETSC_COPY_VALUES,&isx));
-    CHKERRQ(ISCreateBlock(PETSC_COMM_SELF,bs,3,iy0,PETSC_COPY_VALUES,&isy));
+    PetscCall(ISCreateBlock(PETSC_COMM_SELF,bs,3,ix0,PETSC_COPY_VALUES,&isx));
+    PetscCall(ISCreateBlock(PETSC_COMM_SELF,bs,3,iy0,PETSC_COPY_VALUES,&isy));
   } else {
-    CHKERRQ(ISCreateBlock(PETSC_COMM_SELF,bs,3,ix1,PETSC_COPY_VALUES,&isx));
-    CHKERRQ(ISCreateBlock(PETSC_COMM_SELF,bs,3,iy1,PETSC_COPY_VALUES,&isy));
+    PetscCall(ISCreateBlock(PETSC_COMM_SELF,bs,3,ix1,PETSC_COPY_VALUES,&isx));
+    PetscCall(ISCreateBlock(PETSC_COMM_SELF,bs,3,iy1,PETSC_COPY_VALUES,&isy));
   }
 
   /* fill local part of parallel vector */
   for (i=n*rank; i<n*(rank+1); i++) {
     value = (PetscScalar) i;
-    CHKERRQ(VecSetValues(x,1,&i,&value,INSERT_VALUES));
+    PetscCall(VecSetValues(x,1,&i,&value,INSERT_VALUES));
   }
-  CHKERRQ(VecAssemblyBegin(x));
-  CHKERRQ(VecAssemblyEnd(x));
+  PetscCall(VecAssemblyBegin(x));
+  PetscCall(VecAssemblyEnd(x));
 
-  CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
 
   /* fill local part of parallel vector */
   for (i=0; i<n; i++) {
     value = -(PetscScalar) (i + 100*rank);
-    CHKERRQ(VecSetValues(y,1,&i,&value,INSERT_VALUES));
+    PetscCall(VecSetValues(y,1,&i,&value,INSERT_VALUES));
   }
-  CHKERRQ(VecAssemblyBegin(y));
-  CHKERRQ(VecAssemblyEnd(y));
+  PetscCall(VecAssemblyBegin(y));
+  PetscCall(VecAssemblyEnd(y));
 
-  CHKERRQ(VecScatterCreate(x,isx,y,isy,&ctx));
-  CHKERRQ(VecScatterCopy(ctx,&newctx));
-  CHKERRQ(VecScatterDestroy(&ctx));
+  PetscCall(VecScatterCreate(x,isx,y,isy,&ctx));
+  PetscCall(VecScatterCopy(ctx,&newctx));
+  PetscCall(VecScatterDestroy(&ctx));
 
-  CHKERRQ(VecScatterBegin(newctx,y,x,INSERT_VALUES,SCATTER_REVERSE));
-  CHKERRQ(VecScatterEnd(newctx,y,x,INSERT_VALUES,SCATTER_REVERSE));
-  CHKERRQ(VecScatterDestroy(&newctx));
+  PetscCall(VecScatterBegin(newctx,y,x,INSERT_VALUES,SCATTER_REVERSE));
+  PetscCall(VecScatterEnd(newctx,y,x,INSERT_VALUES,SCATTER_REVERSE));
+  PetscCall(VecScatterDestroy(&newctx));
 
-  CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
 
-  CHKERRQ(ISDestroy(&isx));
-  CHKERRQ(ISDestroy(&isy));
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&y));
+  PetscCall(ISDestroy(&isx));
+  PetscCall(ISDestroy(&isy));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&y));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

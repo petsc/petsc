@@ -45,15 +45,15 @@ static PetscErrorCode KSPSetUp_PIPELCG(KSP ksp)
   PetscCheckFalse(l < 1,comm,PETSC_ERR_ARG_OUTOFRANGE,"%s: pipel argument must be positive.",((PetscObject)ksp)->type_name);
   PetscCheckFalse(l > max_it,comm,PETSC_ERR_ARG_OUTOFRANGE,"%s: pipel argument must be less than max_it.",((PetscObject)ksp)->type_name);
 
-  CHKERRQ(KSPSetWorkVecs(ksp,1)); /* get work vectors needed by PIPELCG */
+  PetscCall(KSPSetWorkVecs(ksp,1)); /* get work vectors needed by PIPELCG */
   plcg->p = ksp->work[0];
 
-  CHKERRQ(VecDuplicateVecs(plcg->p,PetscMax(3,l+1),&plcg->Z));
-  CHKERRQ(VecDuplicateVecs(plcg->p,3,&plcg->U));
-  CHKERRQ(VecDuplicateVecs(plcg->p,3,&plcg->V));
-  CHKERRQ(VecDuplicateVecs(plcg->p,3*(l-1)+1,&plcg->Q));
-  CHKERRQ(PetscCalloc1(2,&plcg->alpha));
-  CHKERRQ(PetscCalloc1(l,&plcg->sigma));
+  PetscCall(VecDuplicateVecs(plcg->p,PetscMax(3,l+1),&plcg->Z));
+  PetscCall(VecDuplicateVecs(plcg->p,3,&plcg->U));
+  PetscCall(VecDuplicateVecs(plcg->p,3,&plcg->V));
+  PetscCall(VecDuplicateVecs(plcg->p,3*(l-1)+1,&plcg->Q));
+  PetscCall(PetscCalloc1(2,&plcg->alpha));
+  PetscCall(PetscCalloc1(l,&plcg->sigma));
 
   PetscFunctionReturn(0);
 }
@@ -64,20 +64,20 @@ static PetscErrorCode KSPReset_PIPELCG(KSP ksp)
   PetscInt       l=plcg->l;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscFree(plcg->sigma));
-  CHKERRQ(PetscFree(plcg->alpha));
-  CHKERRQ(VecDestroyVecs(PetscMax(3,l+1),&plcg->Z));
-  CHKERRQ(VecDestroyVecs(3,&plcg->U));
-  CHKERRQ(VecDestroyVecs(3,&plcg->V));
-  CHKERRQ(VecDestroyVecs(3*(l-1)+1,&plcg->Q));
+  PetscCall(PetscFree(plcg->sigma));
+  PetscCall(PetscFree(plcg->alpha));
+  PetscCall(VecDestroyVecs(PetscMax(3,l+1),&plcg->Z));
+  PetscCall(VecDestroyVecs(3,&plcg->U));
+  PetscCall(VecDestroyVecs(3,&plcg->V));
+  PetscCall(VecDestroyVecs(3*(l-1)+1,&plcg->Q));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode KSPDestroy_PIPELCG(KSP ksp)
 {
   PetscFunctionBegin;
-  CHKERRQ(KSPReset_PIPELCG(ksp));
-  CHKERRQ(KSPDestroyDefault(ksp));
+  PetscCall(KSPReset_PIPELCG(ksp));
+  PetscCall(KSPDestroyDefault(ksp));
   PetscFunctionReturn(0);
 }
 
@@ -87,16 +87,16 @@ static PetscErrorCode KSPSetFromOptions_PIPELCG(PetscOptionItems *PetscOptionsOb
   PetscBool      flag=PETSC_FALSE;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"KSP PIPELCG options"));
-  CHKERRQ(PetscOptionsInt("-ksp_pipelcg_pipel","Pipeline length","",plcg->l,&plcg->l,&flag));
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"KSP PIPELCG options"));
+  PetscCall(PetscOptionsInt("-ksp_pipelcg_pipel","Pipeline length","",plcg->l,&plcg->l,&flag));
   if (!flag) plcg->l = 1;
-  CHKERRQ(PetscOptionsReal("-ksp_pipelcg_lmin","Estimate for smallest eigenvalue","",plcg->lmin,&plcg->lmin,&flag));
+  PetscCall(PetscOptionsReal("-ksp_pipelcg_lmin","Estimate for smallest eigenvalue","",plcg->lmin,&plcg->lmin,&flag));
   if (!flag) plcg->lmin = 0.0;
-  CHKERRQ(PetscOptionsReal("-ksp_pipelcg_lmax","Estimate for largest eigenvalue","",plcg->lmax,&plcg->lmax,&flag));
+  PetscCall(PetscOptionsReal("-ksp_pipelcg_lmax","Estimate for largest eigenvalue","",plcg->lmax,&plcg->lmax,&flag));
   if (!flag) plcg->lmax = 0.0;
-  CHKERRQ(PetscOptionsBool("-ksp_pipelcg_monitor","Output information on restarts when they occur? (default: 0)","",plcg->show_rstrt,&plcg->show_rstrt,&flag));
+  PetscCall(PetscOptionsBool("-ksp_pipelcg_monitor","Output information on restarts when they occur? (default: 0)","",plcg->show_rstrt,&plcg->show_rstrt,&flag));
   if (!flag) plcg->show_rstrt = PETSC_FALSE;
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -104,9 +104,9 @@ static PetscErrorCode MPIPetsc_Iallreduce(void *sendbuf,void *recvbuf,PetscMPIIn
 {
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
-  CHKERRMPI(MPI_Iallreduce(sendbuf,recvbuf,count,datatype,op,comm,request));
+  PetscCallMPI(MPI_Iallreduce(sendbuf,recvbuf,count,datatype,op,comm,request));
 #else
-  CHKERRMPI(MPIU_Allreduce(sendbuf,recvbuf,count,datatype,op,comm));
+  PetscCallMPI(MPIU_Allreduce(sendbuf,recvbuf,count,datatype,op,comm));
   *request = MPI_REQUEST_NULL;
 #endif
   PetscFunctionReturn(0);
@@ -118,16 +118,16 @@ static PetscErrorCode KSPView_PIPELCG(KSP ksp,PetscViewer viewer)
   PetscBool      iascii=PETSC_FALSE,isstring=PETSC_FALSE;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring));
   if (iascii) {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Pipeline depth: %D\n", plcg->l));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Minimal eigenvalue estimate %g\n",plcg->lmin));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Maximal eigenvalue estimate %g\n",plcg->lmax));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Pipeline depth: %D\n", plcg->l));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Minimal eigenvalue estimate %g\n",plcg->lmin));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Maximal eigenvalue estimate %g\n",plcg->lmax));
   } else if (isstring) {
-    CHKERRQ(PetscViewerStringSPrintf(viewer,"  Pipeline depth: %D\n", plcg->l));
-    CHKERRQ(PetscViewerStringSPrintf(viewer,"  Minimal eigenvalue estimate %g\n",plcg->lmin));
-    CHKERRQ(PetscViewerStringSPrintf(viewer,"  Maximal eigenvalue estimate %g\n",plcg->lmax));
+    PetscCall(PetscViewerStringSPrintf(viewer,"  Pipeline depth: %D\n", plcg->l));
+    PetscCall(PetscViewerStringSPrintf(viewer,"  Minimal eigenvalue estimate %g\n",plcg->lmin));
+    PetscCall(PetscViewerStringSPrintf(viewer,"  Maximal eigenvalue estimate %g\n",plcg->lmax));
   }
   PetscFunctionReturn(0);
 }
@@ -149,7 +149,7 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
   p   = plcg->p;
 
   comm = PetscObjectComm((PetscObject)ksp);
-  CHKERRQ(PCGetOperators(ksp->pc,&A,&Pmat));
+  PetscCall(PCGetOperators(ksp->pc,&A,&Pmat));
 
   for (it = 0; it < max_it+l; ++it) {
     /* ----------------------------------- */
@@ -163,11 +163,11 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
     U[0] = temp;
     if (it < l) {
       /* SpMV and Sigma-shift and Prec */
-      CHKERRQ(MatMult(A,Z[l-it],U[0]));
-      CHKERRQ(VecAXPY(U[0],-sigma(it),U[1]));
-      CHKERRQ(KSP_PCApply(ksp,U[0],Z[l-it-1]));
+      PetscCall(MatMult(A,Z[l-it],U[0]));
+      PetscCall(VecAXPY(U[0],-sigma(it),U[1]));
+      PetscCall(KSP_PCApply(ksp,U[0],Z[l-it-1]));
       if (it < l-1) {
-        CHKERRQ(VecCopy(Z[l-it-1],Q[3*it]));
+        PetscCall(VecCopy(Z[l-it-1],Q[3*it]));
       }
     } else {
       /* Shift the Z vector pointers */
@@ -177,8 +177,8 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
       }
       Z[0] = temp;
       /* SpMV and Prec */
-      CHKERRQ(MatMult(A,Z[1],U[0]));
-      CHKERRQ(KSP_PCApply(ksp,U[0],Z[0]));
+      PetscCall(MatMult(A,Z[1],U[0]));
+      PetscCall(KSP_PCApply(ksp,U[0],Z[0]));
     }
 
     /* ----------------------------------- */
@@ -187,23 +187,23 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
     if (it >= l) {
       if (it == l) {
         /* MPI_Wait for G(0,0),scale V0 and Z and U and Q vectors with 1/beta */
-        CHKERRMPI(MPI_Wait(&req(0),MPI_STATUS_IGNORE));
+        PetscCallMPI(MPI_Wait(&req(0),MPI_STATUS_IGNORE));
         beta = PetscSqrtReal(PetscRealPart(G(0,0)));
         G(0,0) = 1.0;
-        CHKERRQ(VecAXPY(V[0],1.0/beta,p)); /* this assumes V[0] to be zero initially */
+        PetscCall(VecAXPY(V[0],1.0/beta,p)); /* this assumes V[0] to be zero initially */
         for (j = 0; j <= PetscMax(l,2); ++j) {
-          CHKERRQ(VecScale(Z[j],1.0/beta));
+          PetscCall(VecScale(Z[j],1.0/beta));
         }
         for (j = 0; j <= 2; ++j) {
-          CHKERRQ(VecScale(U[j],1.0/beta));
+          PetscCall(VecScale(U[j],1.0/beta));
         }
         for (j = 0; j < l-1; ++j) {
-          CHKERRQ(VecScale(Q[3*j],1.0/beta));
+          PetscCall(VecScale(Q[3*j],1.0/beta));
         }
       }
 
       /* MPI_Wait until the dot products,started l iterations ago,are completed */
-      CHKERRMPI(MPI_Wait(&req(it-l+1),MPI_STATUS_IGNORE));
+      PetscCallMPI(MPI_Wait(&req(it-l+1),MPI_STATUS_IGNORE));
       if (it >= 2*l) {
         for (j = PetscMax(0,it-3*l+1); j <= it-2*l; j++) {
           G(j,it-l+1) = G(it-2*l+1,j+l); /* exploit symmetry in G matrix */
@@ -235,13 +235,13 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
       /* Breakdown check */
       if (tmp < 0) {
         if (plcg->show_rstrt) {
-          CHKERRQ(PetscPrintf(comm,"Sqrt breakdown in iteration %D: sqrt argument is %e. Iteration was restarted.\n",ksp->its+1,(double)tmp));
+          PetscCall(PetscPrintf(comm,"Sqrt breakdown in iteration %D: sqrt argument is %e. Iteration was restarted.\n",ksp->its+1,(double)tmp));
         }
         /* End hanging dot-products in the pipeline before exiting for-loop */
         start = it-l+2;
         end = PetscMin(it+1,max_it+1);  /* !warning! 'it' can actually be greater than 'max_it' */
         for (i = start; i < end; ++i) {
-          CHKERRMPI(MPI_Wait(&req(i),MPI_STATUS_IGNORE));
+          PetscCallMPI(MPI_Wait(&req(i),MPI_STATUS_IGNORE));
         }
         break;
       }
@@ -274,18 +274,18 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
 
       /* Recurrence V vectors */
       if (l == 1) {
-        CHKERRQ(VecCopy(Z[1],V[0]));
+        PetscCall(VecCopy(Z[1],V[0]));
       } else {
-        CHKERRQ(VecCopy(Q[0],V[0]));
+        PetscCall(VecCopy(Q[0],V[0]));
       }
       if (it == l) {
-        CHKERRQ(VecAXPY(V[0],sigma(0)-gamma(it-l),V[1]));
+        PetscCall(VecAXPY(V[0],sigma(0)-gamma(it-l),V[1]));
       } else {
         alpha(0) = sigma(0)-gamma(it-l);
         alpha(1) = -delta(it-l-1);
-        CHKERRQ(VecMAXPY(V[0],2,&alpha(0),&V[1]));
+        PetscCall(VecMAXPY(V[0],2,&alpha(0),&V[1]));
       }
-      CHKERRQ(VecScale(V[0],1.0/delta(it-l)));
+      PetscCall(VecScale(V[0],1.0/delta(it-l)));
 
       /* Recurrence Q vectors */
       for (j = 0; j < l-1; ++j) {
@@ -297,32 +297,32 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
         Q[3*j] = temp;
 
         if (j < l-2) {
-          CHKERRQ(VecCopy(Q[3*(j+1)],Q[3*j]));
+          PetscCall(VecCopy(Q[3*(j+1)],Q[3*j]));
         } else {
-          CHKERRQ(VecCopy(Z[1],Q[3*j]));
+          PetscCall(VecCopy(Z[1],Q[3*j]));
         }
         if (it == l) {
-          CHKERRQ(VecAXPY(Q[3*j],sigma(j+1)-gamma(it-l),Q[3*j+1]));
+          PetscCall(VecAXPY(Q[3*j],sigma(j+1)-gamma(it-l),Q[3*j+1]));
         } else {
           alpha(0) = sigma(j+1)-gamma(it-l);
           alpha(1) = -delta(it-l-1);
-          CHKERRQ(VecMAXPY(Q[3*j],2,&alpha(0),&Q[3*j+1]));
+          PetscCall(VecMAXPY(Q[3*j],2,&alpha(0),&Q[3*j+1]));
         }
-        CHKERRQ(VecScale(Q[3*j],1.0/delta(it-l)));
+        PetscCall(VecScale(Q[3*j],1.0/delta(it-l)));
       }
 
       /* Recurrence Z and U vectors */
       if (it == l) {
-        CHKERRQ(VecAXPY(Z[0],-gamma(it-l),Z[1]));
-        CHKERRQ(VecAXPY(U[0],-gamma(it-l),U[1]));
+        PetscCall(VecAXPY(Z[0],-gamma(it-l),Z[1]));
+        PetscCall(VecAXPY(U[0],-gamma(it-l),U[1]));
       } else {
         alpha(0) = -gamma(it-l);
         alpha(1) = -delta(it-l-1);
-        CHKERRQ(VecMAXPY(Z[0],2,&alpha(0),&Z[1]));
-        CHKERRQ(VecMAXPY(U[0],2,&alpha(0),&U[1]));
+        PetscCall(VecMAXPY(Z[0],2,&alpha(0),&Z[1]));
+        PetscCall(VecMAXPY(U[0],2,&alpha(0),&U[1]));
       }
-      CHKERRQ(VecScale(Z[0],1.0/delta(it-l)));
-      CHKERRQ(VecScale(U[0],1.0/delta(it-l)));
+      PetscCall(VecScale(Z[0],1.0/delta(it-l)));
+      PetscCall(VecScale(U[0],1.0/delta(it-l)));
     }
 
     /* ---------------------------------------- */
@@ -330,17 +330,17 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
     /* ---------------------------------------- */
     if (it < l) {
       for (j = 0; j < it+2; ++j) {
-        CHKERRQ((*U[0]->ops->dot_local)(U[0],Z[l-j],&G(j,it+1))); /* dot-products (U[0],Z[j]) */
+        PetscCall((*U[0]->ops->dot_local)(U[0],Z[l-j],&G(j,it+1))); /* dot-products (U[0],Z[j]) */
       }
-      CHKERRQ(MPIPetsc_Iallreduce(MPI_IN_PLACE,&G(0,it+1),it+2,MPIU_SCALAR,MPIU_SUM,comm,&req(it+1)));
+      PetscCall(MPIPetsc_Iallreduce(MPI_IN_PLACE,&G(0,it+1),it+2,MPIU_SCALAR,MPIU_SUM,comm,&req(it+1)));
     } else if ((it >= l) && (it < max_it)) {
       middle = it-l+2;
       end = it+2;
-      CHKERRQ((*U[0]->ops->dot_local)(U[0],V[0],&G(it-l+1,it+1))); /* dot-product (U[0],V[0]) */
+      PetscCall((*U[0]->ops->dot_local)(U[0],V[0],&G(it-l+1,it+1))); /* dot-product (U[0],V[0]) */
       for (j = middle; j < end; ++j) {
-        CHKERRQ((*U[0]->ops->dot_local)(U[0],plcg->Z[it+1-j],&G(j,it+1))); /* dot-products (U[0],Z[j]) */
+        PetscCall((*U[0]->ops->dot_local)(U[0],plcg->Z[it+1-j],&G(j,it+1))); /* dot-products (U[0],Z[j]) */
       }
-      CHKERRQ(MPIPetsc_Iallreduce(MPI_IN_PLACE,&G(it-l+1,it+1),l+1,MPIU_SCALAR,MPIU_SUM,comm,&req(it+1)));
+      PetscCall(MPIPetsc_Iallreduce(MPI_IN_PLACE,&G(it-l+1,it+1),l+1,MPIU_SCALAR,MPIU_SUM,comm,&req(it+1)));
     }
 
     /* ----------------------------------------- */
@@ -353,9 +353,9 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
         }
         eta  = gamma(0);
         zeta = beta;
-        CHKERRQ(VecCopy(V[1],p));
-        CHKERRQ(VecScale(p,1.0/eta));
-        CHKERRQ(VecAXPY(x,zeta,p));
+        PetscCall(VecCopy(V[1],p));
+        PetscCall(VecScale(p,1.0/eta));
+        PetscCall(VecAXPY(x,zeta,p));
         dp   = beta;
       } else if (it > l) {
         k = it-l;
@@ -363,15 +363,15 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
         lambda = delta(k-1)/eta;
         eta  = gamma(k) - lambda * delta(k-1);
         zeta = -lambda * zeta;
-        CHKERRQ(VecScale(p,-delta(k-1)/eta));
-        CHKERRQ(VecAXPY(p,1.0/eta,V[1]));
-        CHKERRQ(VecAXPY(x,zeta,p));
+        PetscCall(VecScale(p,-delta(k-1)/eta));
+        PetscCall(VecAXPY(p,1.0/eta,V[1]));
+        PetscCall(VecAXPY(x,zeta,p));
         dp   = PetscAbsScalar(zeta);
       }
       ksp->rnorm = dp;
-      CHKERRQ(KSPLogResidualHistory(ksp,dp));
-      CHKERRQ(KSPMonitor(ksp,ksp->its,dp));
-      CHKERRQ((*ksp->converged)(ksp,ksp->its,dp,&ksp->reason,ksp->cnvP));
+      PetscCall(KSPLogResidualHistory(ksp,dp));
+      PetscCall(KSPMonitor(ksp,ksp->its,dp));
+      PetscCall((*ksp->converged)(ksp,ksp->its,dp,&ksp->reason,ksp->cnvP));
 
       if (ksp->its >= max_it && !ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
       if (ksp->reason) {
@@ -379,7 +379,7 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
         start = it-l+2;
         end = PetscMin(it+2,max_it+1); /* !warning! 'it' can actually be greater than 'max_it' */
         for (i = start; i < end; ++i) {
-          CHKERRMPI(MPI_Wait(&req(i),MPI_STATUS_IGNORE));
+          PetscCallMPI(MPI_Wait(&req(i),MPI_STATUS_IGNORE));
         }
         break;
       }
@@ -395,16 +395,16 @@ static PetscErrorCode KSPSolve_ReInitData_PIPELCG(KSP ksp)
 
   PetscFunctionBegin;
   for (i = 0; i < PetscMax(3,l+1); ++i) {
-    CHKERRQ(VecSet(plcg->Z[i],0.0));
+    PetscCall(VecSet(plcg->Z[i],0.0));
   }
   for (i = 1; i < 3; ++i) {
-    CHKERRQ(VecSet(plcg->U[i],0.0));
+    PetscCall(VecSet(plcg->U[i],0.0));
   }
   for (i = 0; i < 3; ++i) {
-    CHKERRQ(VecSet(plcg->V[i],0.0));
+    PetscCall(VecSet(plcg->V[i],0.0));
   }
   for (i = 0; i < 3*(l-1)+1; ++i) {
-    CHKERRQ(VecSet(plcg->Q[i],0.0));
+    PetscCall(VecSet(plcg->Q[i],0.0));
   }
   for (j = 0; j < (max_it+1); ++j) {
     gamma(j) = 0.0;
@@ -432,7 +432,7 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
 
   PetscFunctionBegin;
   comm = PetscObjectComm((PetscObject)ksp);
-  CHKERRQ(PCGetDiagonalScale(ksp->pc,&diagonalscale));
+  PetscCall(PCGetDiagonalScale(ksp->pc,&diagonalscale));
   if (diagonalscale) {
     SETERRQ(comm,PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
   }
@@ -441,12 +441,12 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
   b = ksp->vec_rhs;
   p = plcg->p;
 
-  CHKERRQ(PetscCalloc1((max_it+1)*(2*l+1),&plcg->G));
-  CHKERRQ(PetscCalloc1(max_it+1,&plcg->gamma));
-  CHKERRQ(PetscCalloc1(max_it+1,&plcg->delta));
-  CHKERRQ(PetscCalloc1(max_it+1,&plcg->req));
+  PetscCall(PetscCalloc1((max_it+1)*(2*l+1),&plcg->G));
+  PetscCall(PetscCalloc1(max_it+1,&plcg->gamma));
+  PetscCall(PetscCalloc1(max_it+1,&plcg->delta));
+  PetscCall(PetscCalloc1(max_it+1,&plcg->req));
 
-  CHKERRQ(PCGetOperators(ksp->pc,&A,&Pmat));
+  PetscCall(PCGetOperators(ksp->pc,&A,&Pmat));
 
   for (i = 0; i < l; ++i) {
     sigma(i) = (0.5*(lmin+lmax) + (0.5*(lmax-lmin) * PetscCosReal(PETSC_PI*(2.0*i+1.0)/(2.0*l))));
@@ -459,23 +459,23 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
   while (ksp->its < max_it) { /* OUTER LOOP (gmres-like restart to handle breakdowns) */
     /* RESTART LOOP */
     if (!curr_guess_zero) {
-      CHKERRQ(KSP_MatMult(ksp,A,x,plcg->U[0]));  /* u <- b - Ax */
-      CHKERRQ(VecAYPX(plcg->U[0],-1.0,b));
+      PetscCall(KSP_MatMult(ksp,A,x,plcg->U[0]));  /* u <- b - Ax */
+      PetscCall(VecAYPX(plcg->U[0],-1.0,b));
     } else {
-      CHKERRQ(VecCopy(b,plcg->U[0]));            /* u <- b (x is 0) */
+      PetscCall(VecCopy(b,plcg->U[0]));            /* u <- b (x is 0) */
     }
-    CHKERRQ(KSP_PCApply(ksp,plcg->U[0],p));      /* p <- Bu */
+    PetscCall(KSP_PCApply(ksp,plcg->U[0],p));      /* p <- Bu */
 
     if (outer_it > 0) {
       /* Re-initialize Z,U,V,Q,gamma,delta,G after restart occurred */
-      CHKERRQ(KSPSolve_ReInitData_PIPELCG(ksp));
+      PetscCall(KSPSolve_ReInitData_PIPELCG(ksp));
     }
 
-    CHKERRQ((*plcg->U[0]->ops->dot_local)(plcg->U[0],p,&G(0,0)));
-    CHKERRQ(MPIPetsc_Iallreduce(MPI_IN_PLACE,&G(0,0),1,MPIU_SCALAR,MPIU_SUM,comm,&req(0)));
-    CHKERRQ(VecCopy(p,plcg->Z[l]));
+    PetscCall((*plcg->U[0]->ops->dot_local)(plcg->U[0],p,&G(0,0)));
+    PetscCall(MPIPetsc_Iallreduce(MPI_IN_PLACE,&G(0,0),1,MPIU_SCALAR,MPIU_SUM,comm,&req(0)));
+    PetscCall(VecCopy(p,plcg->Z[l]));
 
-    CHKERRQ(KSPSolve_InnerLoop_PIPELCG(ksp));
+    PetscCall(KSPSolve_InnerLoop_PIPELCG(ksp));
 
     if (ksp->reason) break; /* convergence or divergence */
     ++ outer_it;
@@ -483,10 +483,10 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
   }
 
   if (!ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
-  CHKERRQ(PetscFree(plcg->G));
-  CHKERRQ(PetscFree(plcg->gamma));
-  CHKERRQ(PetscFree(plcg->delta));
-  CHKERRQ(PetscFree(plcg->req));
+  PetscCall(PetscFree(plcg->G));
+  PetscCall(PetscFree(plcg->gamma));
+  PetscCall(PetscFree(plcg->delta));
+  PetscCall(PetscFree(plcg->req));
   PetscFunctionReturn(0);
 }
 
@@ -539,11 +539,11 @@ PetscErrorCode KSPCreate_PIPELCG(KSP ksp)
   KSP_CG_PIPE_L  *plcg = NULL;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNewLog(ksp,&plcg));
+  PetscCall(PetscNewLog(ksp,&plcg));
   ksp->data = (void*)plcg;
 
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1));
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2));
 
   ksp->ops->setup          = KSPSetUp_PIPELCG;
   ksp->ops->solve          = KSPSolve_PIPELCG;

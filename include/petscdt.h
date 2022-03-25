@@ -359,7 +359,7 @@ static inline PetscErrorCode PetscDTEnumSubset(PetscInt n, PetscInt k, PetscInt 
   PetscInt Nk;
 
   PetscFunctionBeginHot;
-  CHKERRQ(PetscDTBinomialInt(n, k, &Nk));
+  PetscCall(PetscDTBinomialInt(n, k, &Nk));
   for (PetscInt i = 0, l = 0; i < n && l < k; i++) {
     PetscInt Nminuskminus = (Nk * (k - l)) / (n - i);
     PetscInt Nminusk = Nk - Nminuskminus;
@@ -398,7 +398,7 @@ static inline PetscErrorCode PetscDTSubsetIndex(PetscInt n, PetscInt k, const Pe
 
   PetscFunctionBegin;
   *index = -1;
-  CHKERRQ(PetscDTBinomialInt(n, k, &Nk));
+  PetscCall(PetscDTBinomialInt(n, k, &Nk));
   for (PetscInt i = 0, l = 0; i < n && l < k; i++) {
     PetscInt Nminuskminus = (Nk * (k - l)) / (n - i);
     PetscInt Nminusk = Nk - Nminuskminus;
@@ -440,7 +440,7 @@ static inline PetscErrorCode PetscDTEnumSplit(PetscInt n, PetscInt k, PetscInt j
 
   PetscFunctionBegin;
   if (isOdd) *isOdd = PETSC_FALSE;
-  CHKERRQ(PetscDTBinomialInt(n, k, &Nk));
+  PetscCall(PetscDTBinomialInt(n, k, &Nk));
   for (i = 0, l = 0, m = 0; i < n && l < k; i++) {
     PetscInt Nminuskminus = (Nk * (k - l)) / (n - i);
     PetscInt Nminusk = Nk - Nminuskminus;

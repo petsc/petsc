@@ -12,16 +12,16 @@ PetscErrorCode VecHYPRE_IJVectorCreate(PetscLayout map,VecHYPRE_IJVector *ij)
   VecHYPRE_IJVector nij;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNew(&nij));
-  CHKERRQ(PetscLayoutSetUp(map));
-  CHKERRQ(HYPRE_IJVectorCreate(map->comm,map->rstart,map->rend-1,&nij->ij));
-  CHKERRQ(HYPRE_IJVectorSetObjectType(nij->ij,HYPRE_PARCSR));
+  PetscCall(PetscNew(&nij));
+  PetscCall(PetscLayoutSetUp(map));
+  PetscCall(HYPRE_IJVectorCreate(map->comm,map->rstart,map->rend-1,&nij->ij));
+  PetscCall(HYPRE_IJVectorSetObjectType(nij->ij,HYPRE_PARCSR));
 #if defined(PETSC_HAVE_HYPRE_DEVICE)
-  CHKERRQ(HYPRE_IJVectorInitialize_v2(nij->ij,HYPRE_MEMORY_DEVICE));
+  PetscCall(HYPRE_IJVectorInitialize_v2(nij->ij,HYPRE_MEMORY_DEVICE));
 #else
-  CHKERRQ(HYPRE_IJVectorInitialize(nij->ij));
+  PetscCall(HYPRE_IJVectorInitialize(nij->ij));
 #endif
-  CHKERRQ(HYPRE_IJVectorAssemble(nij->ij));
+  PetscCall(HYPRE_IJVectorAssemble(nij->ij));
   *ij  = nij;
   PetscFunctionReturn(0);
 }
@@ -32,7 +32,7 @@ PetscErrorCode VecHYPRE_IJVectorDestroy(VecHYPRE_IJVector *ij)
   if (!*ij) PetscFunctionReturn(0);
   PetscCheckFalse((*ij)->pvec,PetscObjectComm((PetscObject)((*ij)->pvec)),PETSC_ERR_ORDER,"Forgot to call VecHYPRE_IJVectorPopVec()");
   PetscStackCallStandard(HYPRE_IJVectorDestroy,(*ij)->ij);
-  CHKERRQ(PetscFree(*ij));
+  PetscCall(PetscFree(*ij));
   PetscFunctionReturn(0);
 }
 
@@ -42,14 +42,14 @@ PetscErrorCode VecHYPRE_IJVectorCopy(Vec v,VecHYPRE_IJVector ij)
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_HYPRE_DEVICE)
-  CHKERRQ(HYPRE_IJVectorInitialize_v2(ij->ij,HYPRE_MEMORY_DEVICE));
+  PetscCall(HYPRE_IJVectorInitialize_v2(ij->ij,HYPRE_MEMORY_DEVICE));
 #else
-  CHKERRQ(HYPRE_IJVectorInitialize(ij->ij));
+  PetscCall(HYPRE_IJVectorInitialize(ij->ij));
 #endif
-  CHKERRQ(VecGetArrayRead(v,&array));
-  CHKERRQ(HYPRE_IJVectorSetValues(ij->ij,v->map->n,NULL,(HYPRE_Complex*)array));
-  CHKERRQ(VecRestoreArrayRead(v,&array));
-  CHKERRQ(HYPRE_IJVectorAssemble(ij->ij));
+  PetscCall(VecGetArrayRead(v,&array));
+  PetscCall(HYPRE_IJVectorSetValues(ij->ij,v->map->n,NULL,(HYPRE_Complex*)array));
+  PetscCall(VecRestoreArrayRead(v,&array));
+  PetscCall(HYPRE_IJVectorAssemble(ij->ij));
   PetscFunctionReturn(0);
 }
 
@@ -83,34 +83,34 @@ static inline PetscErrorCode VecGetArrayForHYPRE(Vec v, int rw, HYPRE_MemoryLoca
 #endif
   *ptr = NULL;
   *res = NULL;
-  CHKERRQ(PetscObjectGetComm((PetscObject)v,&comm));
+  PetscCall(PetscObjectGetComm((PetscObject)v,&comm));
   switch (rw) {
   case 0: /* read */
     if (hmem == HYPRE_MEMORY_HOST) {
-      CHKERRQ(VecGetArrayRead(v,(const PetscScalar**)ptr));
+      PetscCall(VecGetArrayRead(v,(const PetscScalar**)ptr));
       *res = (PetscErrorCode(*)(Vec,PetscScalar**))VecRestoreArrayRead;
     } else {
-      CHKERRQ(VecGetArrayReadAndMemType(v,(const PetscScalar**)ptr,&mtype));
+      PetscCall(VecGetArrayReadAndMemType(v,(const PetscScalar**)ptr,&mtype));
       PetscCheck(PetscMemTypeDevice(mtype),comm,PETSC_ERR_ARG_WRONG,"HYPRE_MEMORY_DEVICE expects a device vector. You need to enable PETSc device support, for example, in some cases, -vec_type cuda");
       *res = (PetscErrorCode(*)(Vec,PetscScalar**))VecRestoreArrayReadAndMemType;
     }
     break;
   case 1: /* write */
     if (hmem == HYPRE_MEMORY_HOST) {
-      CHKERRQ(VecGetArrayWrite(v,ptr));
+      PetscCall(VecGetArrayWrite(v,ptr));
       *res = VecRestoreArrayWrite;
     } else {
-      CHKERRQ(VecGetArrayWriteAndMemType(v,(PetscScalar**)ptr,&mtype));
+      PetscCall(VecGetArrayWriteAndMemType(v,(PetscScalar**)ptr,&mtype));
       PetscCheck(PetscMemTypeDevice(mtype),comm,PETSC_ERR_ARG_WRONG,"HYPRE_MEMORY_DEVICE expects a device vector. You need to enable PETSc device support, for example, in some cases, -vec_type cuda");
       *res = VecRestoreArrayWriteAndMemType;
     }
     break;
   case 2: /* read/write */
     if (hmem == HYPRE_MEMORY_HOST) {
-      CHKERRQ(VecGetArray(v,ptr));
+      PetscCall(VecGetArray(v,ptr));
       *res = VecRestoreArray;
     } else {
-      CHKERRQ(VecGetArrayAndMemType(v,(PetscScalar**)ptr,&mtype));
+      PetscCall(VecGetArrayAndMemType(v,(PetscScalar**)ptr,&mtype));
       PetscCheck(PetscMemTypeDevice(mtype),comm,PETSC_ERR_ARG_WRONG,"HYPRE_MEMORY_DEVICE expects a device vector. You need to enable PETSc device support, for example, in some cases, -vec_type cuda");
       *res = VecRestoreArrayAndMemType;
     }
@@ -134,7 +134,7 @@ PetscErrorCode VecHYPRE_IJVectorPushVecRead(VecHYPRE_IJVector ij, Vec v)
   PetscValidHeaderSpecific(v,VEC_CLASSID,2);
   PetscCheck(!ij->pvec,PetscObjectComm((PetscObject)v),PETSC_ERR_ORDER,"Forgot to call VecHYPRE_IJVectorPopVec()");
   PetscCheck(!ij->hv,PetscObjectComm((PetscObject)v),PETSC_ERR_ORDER,"Forgot to call VecHYPRE_IJVectorPopVec()");
-  CHKERRQ(VecGetArrayForHYPRE(v,0,VecHYPRE_IJVectorMemoryLocation(ij->ij),(PetscScalar**)&pv,&ij->restore));
+  PetscCall(VecGetArrayForHYPRE(v,0,VecHYPRE_IJVectorMemoryLocation(ij->ij),(PetscScalar**)&pv,&ij->restore));
   VecHYPRE_ParVectorReplacePointer(ij->ij,pv,ij->hv);
   ij->pvec = v;
   PetscFunctionReturn(0);
@@ -151,7 +151,7 @@ PetscErrorCode VecHYPRE_IJVectorPushVecWrite(VecHYPRE_IJVector ij, Vec v)
   PetscValidHeaderSpecific(v,VEC_CLASSID,2);
   PetscCheck(!ij->pvec,PetscObjectComm((PetscObject)v),PETSC_ERR_ORDER,"Forgot to call VecHYPRE_IJVectorPopVec()");
   PetscCheck(!ij->hv,PetscObjectComm((PetscObject)v),PETSC_ERR_ORDER,"Forgot to call VecHYPRE_IJVectorPopVec()");
-  CHKERRQ(VecGetArrayForHYPRE(v,1,VecHYPRE_IJVectorMemoryLocation(ij->ij),(PetscScalar**)&pv,&ij->restore));
+  PetscCall(VecGetArrayForHYPRE(v,1,VecHYPRE_IJVectorMemoryLocation(ij->ij),(PetscScalar**)&pv,&ij->restore));
   VecHYPRE_ParVectorReplacePointer(ij->ij,pv,ij->hv);
   ij->pvec = v;
   PetscFunctionReturn(0);
@@ -168,7 +168,7 @@ PetscErrorCode VecHYPRE_IJVectorPushVec(VecHYPRE_IJVector ij, Vec v)
   PetscValidHeaderSpecific(v,VEC_CLASSID,2);
   PetscCheck(!ij->pvec,PetscObjectComm((PetscObject)v),PETSC_ERR_ORDER,"Forgot to call VecHYPRE_IJVectorPopVec()");
   PetscCheck(!ij->hv,PetscObjectComm((PetscObject)v),PETSC_ERR_ORDER,"Forgot to call VecHYPRE_IJVectorPopVec()");
-  CHKERRQ(VecGetArrayForHYPRE(v,2,VecHYPRE_IJVectorMemoryLocation(ij->ij),(PetscScalar**)&pv,&ij->restore));
+  PetscCall(VecGetArrayForHYPRE(v,2,VecHYPRE_IJVectorMemoryLocation(ij->ij),(PetscScalar**)&pv,&ij->restore));
   VecHYPRE_ParVectorReplacePointer(ij->ij,pv,ij->hv);
   ij->pvec = v;
   PetscFunctionReturn(0);
@@ -183,7 +183,7 @@ PetscErrorCode VecHYPRE_IJVectorPopVec(VecHYPRE_IJVector ij)
   PetscCheck(ij->pvec,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Forgot to call VecHYPRE_IJVectorPushVec()");
   PetscCheck(ij->restore,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Forgot to call VecHYPRE_IJVectorPushVec()");
   VecHYPRE_ParVectorReplacePointer(ij->ij,ij->hv,pv);
-  CHKERRQ((*ij->restore)(ij->pvec,(PetscScalar**)&pv));
+  PetscCall((*ij->restore)(ij->pvec,(PetscScalar**)&pv));
   ij->hv = NULL;
   ij->pvec = NULL;
   ij->restore = NULL;

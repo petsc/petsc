@@ -34,16 +34,16 @@ PetscErrorCode  PetscViewerMatlabPutArray(PetscViewer mfile,int m,int n,const Pe
   PetscCheck(mfile,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null argument: probably PETSC_VIEWER_MATLAB_() failed");
   ml = (PetscViewer_Matlab*)mfile->data;
   if (!ml->rank) {
-    CHKERRQ(PetscInfo(mfile,"Putting MATLAB array %s\n",name));
+    PetscCall(PetscInfo(mfile,"Putting MATLAB array %s\n",name));
 #if !defined(PETSC_USE_COMPLEX)
     mat  = mxCreateDoubleMatrix(m,n,mxREAL);
 #else
     mat  = mxCreateDoubleMatrix(m,n,mxCOMPLEX);
 #endif
-    CHKERRQ(PetscArraycpy(mxGetPr(mat),array,m*n));
+    PetscCall(PetscArraycpy(mxGetPr(mat),array,m*n));
     matPutVariable(ml->ep,name,mat);
 
-    CHKERRQ(PetscInfo(mfile,"Put MATLAB array %s\n",name));
+    PetscCall(PetscInfo(mfile,"Put MATLAB array %s\n",name));
   }
   PetscFunctionReturn(0);
 }
@@ -83,11 +83,11 @@ PetscErrorCode  PetscViewerMatlabGetArray(PetscViewer mfile,int m,int n,PetscSca
   PetscCheck(mfile,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null argument: probably PETSC_VIEWER_MATLAB_() failed");
   ml = (PetscViewer_Matlab*)mfile->data;
   if (!ml->rank) {
-    CHKERRQ(PetscInfo(mfile,"Getting MATLAB array %s\n",name));
+    PetscCall(PetscInfo(mfile,"Getting MATLAB array %s\n",name));
     mat  = matGetVariable(ml->ep,name);
     PetscCheck(mat,PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to get array %s from matlab",name);
-    CHKERRQ(PetscArraycpy(array,mxGetPr(mat),m*n));
-    CHKERRQ(PetscInfo(mfile,"Got MATLAB array %s\n",name));
+    PetscCall(PetscArraycpy(array,mxGetPr(mat),m*n));
+    PetscCall(PetscInfo(mfile,"Got MATLAB array %s\n",name));
   }
   PetscFunctionReturn(0);
 }
@@ -129,7 +129,7 @@ PetscErrorCode PetscViewerDestroy_Matlab(PetscViewer v)
 
   PetscFunctionBegin;
   if (vf->ep) matClose(vf->ep);
-  CHKERRQ(PetscFree(vf));
+  PetscCall(PetscFree(vf));
   PetscFunctionReturn(0);
 }
 
@@ -172,13 +172,13 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Matlab(PetscViewer viewer)
   PetscViewer_Matlab *e;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNewLog(viewer,&e));
-  CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&e->rank));
+  PetscCall(PetscNewLog(viewer,&e));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&e->rank));
   e->btype     = FILE_MODE_UNDEFINED;
   viewer->data = (void*) e;
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetName_C",PetscViewerFileSetName_Matlab));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetMode_C",PetscViewerFileSetMode_Matlab));
+  PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetName_C",PetscViewerFileSetName_Matlab));
+  PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetMode_C",PetscViewerFileSetMode_Matlab));
 
   viewer->ops->destroy = PetscViewerDestroy_Matlab;
   PetscFunctionReturn(0);
@@ -215,10 +215,10 @@ $    FILE_MODE_WRITE - open existing file for MATLAB output
 PetscErrorCode  PetscViewerMatlabOpen(MPI_Comm comm,const char name[],PetscFileMode type,PetscViewer *binv)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscViewerCreate(comm,binv));
-  CHKERRQ(PetscViewerSetType(*binv,PETSCVIEWERMATLAB));
-  CHKERRQ(PetscViewerFileSetMode(*binv,type));
-  CHKERRQ(PetscViewerFileSetName(*binv,name));
+  PetscCall(PetscViewerCreate(comm,binv));
+  PetscCall(PetscViewerSetType(*binv,PETSCVIEWERMATLAB));
+  PetscCall(PetscViewerFileSetMode(*binv,type));
+  PetscCall(PetscViewerFileSetName(*binv,name));
   PetscFunctionReturn(0);
 }
 

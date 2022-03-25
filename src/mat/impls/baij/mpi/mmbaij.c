@@ -24,47 +24,47 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
   PetscFunctionBegin;
 #if defined(PETSC_USE_CTABLE)
   /* use a table - Mark Adams */
-  CHKERRQ(PetscTableCreate(B->mbs,baij->Nbs+1,&gid1_lid1));
+  PetscCall(PetscTableCreate(B->mbs,baij->Nbs+1,&gid1_lid1));
   for (i=0; i<B->mbs; i++) {
     for (j=0; j<B->ilen[i]; j++) {
       PetscInt data,gid1 = aj[B->i[i]+j] + 1;
-      CHKERRQ(PetscTableFind(gid1_lid1,gid1,&data));
+      PetscCall(PetscTableFind(gid1_lid1,gid1,&data));
       if (!data) {
         /* one based table */
-        CHKERRQ(PetscTableAdd(gid1_lid1,gid1,++ec,INSERT_VALUES));
+        PetscCall(PetscTableAdd(gid1_lid1,gid1,++ec,INSERT_VALUES));
       }
     }
   }
   /* form array of columns we need */
-  CHKERRQ(PetscMalloc1(ec,&garray));
-  CHKERRQ(PetscTableGetHeadPosition(gid1_lid1,&tpos));
+  PetscCall(PetscMalloc1(ec,&garray));
+  PetscCall(PetscTableGetHeadPosition(gid1_lid1,&tpos));
   while (tpos) {
-    CHKERRQ(PetscTableGetNext(gid1_lid1,&tpos,&gid,&lid));
+    PetscCall(PetscTableGetNext(gid1_lid1,&tpos,&gid,&lid));
     gid--; lid--;
     garray[lid] = gid;
   }
-  CHKERRQ(PetscSortInt(ec,garray));
-  CHKERRQ(PetscTableRemoveAll(gid1_lid1));
+  PetscCall(PetscSortInt(ec,garray));
+  PetscCall(PetscTableRemoveAll(gid1_lid1));
   for (i=0; i<ec; i++) {
-    CHKERRQ(PetscTableAdd(gid1_lid1,garray[i]+1,i+1,INSERT_VALUES));
+    PetscCall(PetscTableAdd(gid1_lid1,garray[i]+1,i+1,INSERT_VALUES));
   }
   /* compact out the extra columns in B */
   for (i=0; i<B->mbs; i++) {
     for (j=0; j<B->ilen[i]; j++) {
       PetscInt gid1 = aj[B->i[i] + j] + 1;
-      CHKERRQ(PetscTableFind(gid1_lid1,gid1,&lid));
+      PetscCall(PetscTableFind(gid1_lid1,gid1,&lid));
       lid--;
       aj[B->i[i]+j] = lid;
     }
   }
   B->nbs           = ec;
-  CHKERRQ(PetscLayoutDestroy(&baij->B->cmap));
-  CHKERRQ(PetscLayoutCreateFromSizes(PetscObjectComm((PetscObject)baij->B),ec*mat->rmap->bs,ec*mat->rmap->bs,mat->rmap->bs,&baij->B->cmap));
-  CHKERRQ(PetscTableDestroy(&gid1_lid1));
+  PetscCall(PetscLayoutDestroy(&baij->B->cmap));
+  PetscCall(PetscLayoutCreateFromSizes(PetscObjectComm((PetscObject)baij->B),ec*mat->rmap->bs,ec*mat->rmap->bs,mat->rmap->bs,&baij->B->cmap));
+  PetscCall(PetscTableDestroy(&gid1_lid1));
 #else
   /* Make an array as long as the number of columns */
   /* mark those columns that are in baij->B */
-  CHKERRQ(PetscCalloc1(Nbs,&indices));
+  PetscCall(PetscCalloc1(Nbs,&indices));
   for (i=0; i<B->mbs; i++) {
     for (j=0; j<B->ilen[i]; j++) {
       if (!indices[aj[B->i[i] + j]]) ec++;
@@ -73,7 +73,7 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
   }
 
   /* form array of columns we need */
-  CHKERRQ(PetscMalloc1(ec,&garray));
+  PetscCall(PetscMalloc1(ec,&garray));
   ec   = 0;
   for (i=0; i<Nbs; i++) {
     if (indices[i]) {
@@ -93,38 +93,38 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
     }
   }
   B->nbs           = ec;
-  CHKERRQ(PetscLayoutDestroy(&baij->B->cmap));
-  CHKERRQ(PetscLayoutCreateFromSizes(PetscObjectComm((PetscObject)baij->B),ec*mat->rmap->bs,ec*mat->rmap->bs,mat->rmap->bs,&baij->B->cmap));
-  CHKERRQ(PetscFree(indices));
+  PetscCall(PetscLayoutDestroy(&baij->B->cmap));
+  PetscCall(PetscLayoutCreateFromSizes(PetscObjectComm((PetscObject)baij->B),ec*mat->rmap->bs,ec*mat->rmap->bs,mat->rmap->bs,&baij->B->cmap));
+  PetscCall(PetscFree(indices));
 #endif
 
   /* create local vector that is used to scatter into */
-  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,ec*bs,&baij->lvec));
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,ec*bs,&baij->lvec));
 
   /* create two temporary index sets for building scatter-gather */
-  CHKERRQ(ISCreateBlock(PETSC_COMM_SELF,bs,ec,garray,PETSC_COPY_VALUES,&from));
+  PetscCall(ISCreateBlock(PETSC_COMM_SELF,bs,ec,garray,PETSC_COPY_VALUES,&from));
 
-  CHKERRQ(PetscMalloc1(ec,&stmp));
+  PetscCall(PetscMalloc1(ec,&stmp));
   for (i=0; i<ec; i++) stmp[i] = i;
-  CHKERRQ(ISCreateBlock(PETSC_COMM_SELF,bs,ec,stmp,PETSC_OWN_POINTER,&to));
+  PetscCall(ISCreateBlock(PETSC_COMM_SELF,bs,ec,stmp,PETSC_OWN_POINTER,&to));
 
   /* create temporary global vector to generate scatter context */
-  CHKERRQ(VecCreateMPIWithArray(PetscObjectComm((PetscObject)mat),1,mat->cmap->n,mat->cmap->N,NULL,&gvec));
+  PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)mat),1,mat->cmap->n,mat->cmap->N,NULL,&gvec));
 
-  CHKERRQ(VecScatterCreate(gvec,from,baij->lvec,to,&baij->Mvctx));
-  CHKERRQ(VecScatterViewFromOptions(baij->Mvctx,(PetscObject)mat,"-matmult_vecscatter_view"));
+  PetscCall(VecScatterCreate(gvec,from,baij->lvec,to,&baij->Mvctx));
+  PetscCall(VecScatterViewFromOptions(baij->Mvctx,(PetscObject)mat,"-matmult_vecscatter_view"));
 
-  CHKERRQ(PetscLogObjectParent((PetscObject)mat,(PetscObject)baij->Mvctx));
-  CHKERRQ(PetscLogObjectParent((PetscObject)mat,(PetscObject)baij->lvec));
-  CHKERRQ(PetscLogObjectParent((PetscObject)mat,(PetscObject)from));
-  CHKERRQ(PetscLogObjectParent((PetscObject)mat,(PetscObject)to));
+  PetscCall(PetscLogObjectParent((PetscObject)mat,(PetscObject)baij->Mvctx));
+  PetscCall(PetscLogObjectParent((PetscObject)mat,(PetscObject)baij->lvec));
+  PetscCall(PetscLogObjectParent((PetscObject)mat,(PetscObject)from));
+  PetscCall(PetscLogObjectParent((PetscObject)mat,(PetscObject)to));
 
   baij->garray = garray;
 
-  CHKERRQ(PetscLogObjectMemory((PetscObject)mat,ec*sizeof(PetscInt)));
-  CHKERRQ(ISDestroy(&from));
-  CHKERRQ(ISDestroy(&to));
-  CHKERRQ(VecDestroy(&gvec));
+  PetscCall(PetscLogObjectMemory((PetscObject)mat,ec*sizeof(PetscInt)));
+  PetscCall(ISDestroy(&from));
+  PetscCall(ISDestroy(&to));
+  PetscCall(VecDestroy(&gvec));
   PetscFunctionReturn(0);
 }
 
@@ -149,36 +149,36 @@ PetscErrorCode MatDisAssemble_MPIBAIJ(Mat A)
 
   PetscFunctionBegin;
   /* free stuff related to matrix-vec multiply */
-  CHKERRQ(VecGetSize(baij->lvec,&ec)); /* needed for PetscLogObjectMemory below */
-  CHKERRQ(VecDestroy(&baij->lvec)); baij->lvec = NULL;
-  CHKERRQ(VecScatterDestroy(&baij->Mvctx)); baij->Mvctx = NULL;
+  PetscCall(VecGetSize(baij->lvec,&ec)); /* needed for PetscLogObjectMemory below */
+  PetscCall(VecDestroy(&baij->lvec)); baij->lvec = NULL;
+  PetscCall(VecScatterDestroy(&baij->Mvctx)); baij->Mvctx = NULL;
   if (baij->colmap) {
 #if defined(PETSC_USE_CTABLE)
-    CHKERRQ(PetscTableDestroy(&baij->colmap));
+    PetscCall(PetscTableDestroy(&baij->colmap));
 #else
-    CHKERRQ(PetscFree(baij->colmap));
-    CHKERRQ(PetscLogObjectMemory((PetscObject)A,-Bbaij->nbs*sizeof(PetscInt)));
+    PetscCall(PetscFree(baij->colmap));
+    PetscCall(PetscLogObjectMemory((PetscObject)A,-Bbaij->nbs*sizeof(PetscInt)));
 #endif
   }
 
   /* make sure that B is assembled so we can access its values */
-  CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
 
   /* invent new B and copy stuff over */
-  CHKERRQ(PetscMalloc1(mbs,&nz));
+  PetscCall(PetscMalloc1(mbs,&nz));
   for (i=0; i<mbs; i++) {
     nz[i] = Bbaij->i[i+1]-Bbaij->i[i];
   }
-  CHKERRQ(MatCreate(PetscObjectComm((PetscObject)B),&Bnew));
-  CHKERRQ(MatSetSizes(Bnew,m,n,m,n));
-  CHKERRQ(MatSetType(Bnew,((PetscObject)B)->type_name));
-  CHKERRQ(MatSeqBAIJSetPreallocation(Bnew,B->rmap->bs,0,nz));
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)B),&Bnew));
+  PetscCall(MatSetSizes(Bnew,m,n,m,n));
+  PetscCall(MatSetType(Bnew,((PetscObject)B)->type_name));
+  PetscCall(MatSeqBAIJSetPreallocation(Bnew,B->rmap->bs,0,nz));
   if (Bbaij->nonew >= 0) { /* Inherit insertion error options (if positive). */
     ((Mat_SeqBAIJ*)Bnew->data)->nonew = Bbaij->nonew;
   }
 
-  CHKERRQ(MatSetOption(Bnew,MAT_ROW_ORIENTED,PETSC_FALSE));
+  PetscCall(MatSetOption(Bnew,MAT_ROW_ORIENTED,PETSC_FALSE));
   /*
    Ensure that B's nonzerostate is monotonically increasing.
    Or should this follow the MatSetValuesBlocked() loop to preserve B's nonzerstate across a MatDisAssemble() call?
@@ -189,16 +189,16 @@ PetscErrorCode MatDisAssemble_MPIBAIJ(Mat A)
     for (j=Bbaij->i[i]; j<Bbaij->i[i+1]; j++) {
       col  = garray[Bbaij->j[j]];
       atmp = a + j*bs2;
-      CHKERRQ(MatSetValuesBlocked_SeqBAIJ(Bnew,1,&i,1,&col,atmp,B->insertmode));
+      PetscCall(MatSetValuesBlocked_SeqBAIJ(Bnew,1,&i,1,&col,atmp,B->insertmode));
     }
   }
-  CHKERRQ(MatSetOption(Bnew,MAT_ROW_ORIENTED,PETSC_TRUE));
+  PetscCall(MatSetOption(Bnew,MAT_ROW_ORIENTED,PETSC_TRUE));
 
-  CHKERRQ(PetscFree(nz));
-  CHKERRQ(PetscFree(baij->garray));
-  CHKERRQ(PetscLogObjectMemory((PetscObject)A,-ec*sizeof(PetscInt)));
-  CHKERRQ(MatDestroy(&B));
-  CHKERRQ(PetscLogObjectParent((PetscObject)A,(PetscObject)Bnew));
+  PetscCall(PetscFree(nz));
+  PetscCall(PetscFree(baij->garray));
+  PetscCall(PetscLogObjectMemory((PetscObject)A,-ec*sizeof(PetscInt)));
+  PetscCall(MatDestroy(&B));
+  PetscCall(PetscLogObjectParent((PetscObject)A,(PetscObject)Bnew));
 
   baij->B          = Bnew;
   A->was_assembled = PETSC_FALSE;
@@ -219,9 +219,9 @@ PetscErrorCode MatMPIBAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
   PetscInt       *r_rmapd,*r_rmapo;
 
   PetscFunctionBegin;
-  CHKERRQ(MatGetOwnershipRange(inA,&cstart,&cend));
-  CHKERRQ(MatGetSize(ina->A,NULL,&n));
-  CHKERRQ(PetscCalloc1(inA->rmap->mapping->n+1,&r_rmapd));
+  PetscCall(MatGetOwnershipRange(inA,&cstart,&cend));
+  PetscCall(MatGetSize(ina->A,NULL,&n));
+  PetscCall(PetscCalloc1(inA->rmap->mapping->n+1,&r_rmapd));
   nt   = 0;
   for (i=0; i<inA->rmap->mapping->n; i++) {
     if (inA->rmap->mapping->indices[i]*bs >= cstart && inA->rmap->mapping->indices[i]*bs < cend) {
@@ -230,7 +230,7 @@ PetscErrorCode MatMPIBAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
     }
   }
   PetscCheckFalse(nt*bs != n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Hmm nt*bs %" PetscInt_FMT " n %" PetscInt_FMT,nt*bs,n);
-  CHKERRQ(PetscMalloc1(n+1,&uglyrmapd));
+  PetscCall(PetscMalloc1(n+1,&uglyrmapd));
   for (i=0; i<inA->rmap->mapping->n; i++) {
     if (r_rmapd[i]) {
       for (j=0; j<bs; j++) {
@@ -238,15 +238,15 @@ PetscErrorCode MatMPIBAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
       }
     }
   }
-  CHKERRQ(PetscFree(r_rmapd));
-  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,n,&uglydd));
+  PetscCall(PetscFree(r_rmapd));
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,n,&uglydd));
 
-  CHKERRQ(PetscCalloc1(ina->Nbs+1,&lindices));
+  PetscCall(PetscCalloc1(ina->Nbs+1,&lindices));
   for (i=0; i<B->nbs; i++) {
     lindices[garray[i]] = i+1;
   }
   no   = inA->rmap->mapping->n - nt;
-  CHKERRQ(PetscCalloc1(inA->rmap->mapping->n+1,&r_rmapo));
+  PetscCall(PetscCalloc1(inA->rmap->mapping->n+1,&r_rmapo));
   nt   = 0;
   for (i=0; i<inA->rmap->mapping->n; i++) {
     if (lindices[inA->rmap->mapping->indices[i]]) {
@@ -255,8 +255,8 @@ PetscErrorCode MatMPIBAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
     }
   }
   PetscCheckFalse(nt > no,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Hmm nt %" PetscInt_FMT " no %" PetscInt_FMT,nt,n);
-  CHKERRQ(PetscFree(lindices));
-  CHKERRQ(PetscMalloc1(nt*bs+1,&uglyrmapo));
+  PetscCall(PetscFree(lindices));
+  PetscCall(PetscMalloc1(nt*bs+1,&uglyrmapo));
   for (i=0; i<inA->rmap->mapping->n; i++) {
     if (r_rmapo[i]) {
       for (j=0; j<bs; j++) {
@@ -264,8 +264,8 @@ PetscErrorCode MatMPIBAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
       }
     }
   }
-  CHKERRQ(PetscFree(r_rmapo));
-  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,nt*bs,&uglyoo));
+  PetscCall(PetscFree(r_rmapo));
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,nt*bs,&uglyoo));
   PetscFunctionReturn(0);
 }
 
@@ -274,7 +274,7 @@ PetscErrorCode  MatMPIBAIJDiagonalScaleLocal(Mat A,Vec scale)
   /* This routine should really be abandoned as it duplicates MatDiagonalScaleLocal */
 
   PetscFunctionBegin;
-  CHKERRQ(PetscTryMethod(A,"MatDiagonalScaleLocal_C",(Mat,Vec),(A,scale)));
+  PetscCall(PetscTryMethod(A,"MatDiagonalScaleLocal_C",(Mat,Vec),(A,scale)));
   PetscFunctionReturn(0);
 }
 
@@ -287,28 +287,28 @@ PetscErrorCode  MatDiagonalScaleLocal_MPIBAIJ(Mat A,Vec scale)
 
   PetscFunctionBegin;
   if (!uglyrmapd) {
-    CHKERRQ(MatMPIBAIJDiagonalScaleLocalSetUp(A,scale));
+    PetscCall(MatMPIBAIJDiagonalScaleLocalSetUp(A,scale));
   }
 
-  CHKERRQ(VecGetArrayRead(scale,&s));
+  PetscCall(VecGetArrayRead(scale,&s));
 
-  CHKERRQ(VecGetLocalSize(uglydd,&n));
-  CHKERRQ(VecGetArray(uglydd,&d));
+  PetscCall(VecGetLocalSize(uglydd,&n));
+  PetscCall(VecGetArray(uglydd,&d));
   for (i=0; i<n; i++) {
     d[i] = s[uglyrmapd[i]]; /* copy "diagonal" (true local) portion of scale into dd vector */
   }
-  CHKERRQ(VecRestoreArray(uglydd,&d));
+  PetscCall(VecRestoreArray(uglydd,&d));
   /* column scale "diagonal" portion of local matrix */
-  CHKERRQ(MatDiagonalScale(a->A,NULL,uglydd));
+  PetscCall(MatDiagonalScale(a->A,NULL,uglydd));
 
-  CHKERRQ(VecGetLocalSize(uglyoo,&n));
-  CHKERRQ(VecGetArray(uglyoo,&o));
+  PetscCall(VecGetLocalSize(uglyoo,&n));
+  PetscCall(VecGetArray(uglyoo,&o));
   for (i=0; i<n; i++) {
     o[i] = s[uglyrmapo[i]]; /* copy "off-diagonal" portion of scale into oo vector */
   }
-  CHKERRQ(VecRestoreArrayRead(scale,&s));
-  CHKERRQ(VecRestoreArray(uglyoo,&o));
+  PetscCall(VecRestoreArrayRead(scale,&s));
+  PetscCall(VecRestoreArray(uglyoo,&o));
   /* column scale "off-diagonal" portion of local matrix */
-  CHKERRQ(MatDiagonalScale(a->B,NULL,uglyoo));
+  PetscCall(MatDiagonalScale(a->B,NULL,uglyoo));
   PetscFunctionReturn(0);
 }

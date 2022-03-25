@@ -8,16 +8,16 @@ int main(int argc,char **argv)
   PetscInt       step = 2;
   IS             is;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-step",&step,NULL));
-  CHKERRQ(ISCreateStride(PETSC_COMM_SELF,10,0,step,&is));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-step",&step,NULL));
+  PetscCall(ISCreateStride(PETSC_COMM_SELF,10,0,step,&is));
 
-  CHKERRQ(ISToGeneral(is));
+  PetscCall(ISToGeneral(is));
 
-  CHKERRQ(ISDestroy(&is));
+  PetscCall(ISDestroy(&is));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

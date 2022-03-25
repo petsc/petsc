@@ -20,9 +20,9 @@ PetscErrorCode FillMatrixCUDACOO(FEStruct *fe,Mat A)
   PetscScalar *v;
 
   PetscFunctionBeginUser;
-  CHKERRCUDA(cudaMalloc((void**)&v,3*3*fe->Ne*sizeof(PetscScalar)));
+  PetscCallCUDA(cudaMalloc((void**)&v,3*3*fe->Ne*sizeof(PetscScalar)));
   FillValues<<<(fe->Ne+255)/256,256>>>(fe->Ne,v);
-  CHKERRQ(MatSetValuesCOO(A,v,INSERT_VALUES));
-  CHKERRCUDA(cudaFree(v));
+  PetscCall(MatSetValuesCOO(A,v,INSERT_VALUES));
+  PetscCallCUDA(cudaFree(v));
   PetscFunctionReturn(0);
 }

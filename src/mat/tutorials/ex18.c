@@ -21,7 +21,7 @@ static PetscErrorCode CreateFEStruct(FEStruct *fe)
   PetscFunctionBeginUser;
   fe->Nv = 5;
   fe->Ne = 3;
-  CHKERRQ(PetscMalloc1(3*fe->Ne,&fe->vertices));
+  PetscCall(PetscMalloc1(3*fe->Ne,&fe->vertices));
   /* the three vertices associated with each element in order of element */
   fe->vertices[0 + 0] = 0;
   fe->vertices[0 + 1] = 1;
@@ -39,8 +39,8 @@ static PetscErrorCode CreateFEStruct(FEStruct *fe)
 static PetscErrorCode DestroyFEStruct(FEStruct *fe)
 {
   PetscFunctionBeginUser;
-  CHKERRQ(PetscFree(fe->vertices));
-  CHKERRQ(PetscFree(fe->coo));
+  PetscCall(PetscFree(fe->vertices));
+  PetscCall(PetscFree(fe->coo));
   PetscFunctionReturn(0);
 }
 
@@ -49,13 +49,13 @@ static PetscErrorCode CreateMatrix(FEStruct *fe,Mat *A)
   PetscInt *oor,*ooc,cnt = 0;
 
   PetscFunctionBeginUser;
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,A));
-  CHKERRQ(MatSetSizes(*A,fe->n,fe->n,PETSC_DECIDE,PETSC_DECIDE));
-  CHKERRQ(MatSetFromOptions(*A));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,A));
+  PetscCall(MatSetSizes(*A,fe->n,fe->n,PETSC_DECIDE,PETSC_DECIDE));
+  PetscCall(MatSetFromOptions(*A));
 
   /* determine for each entry in each element stiffness matrix the global row and colum */
   /* since the element is triangular with piecewise linear basis functions there are three degrees of freedom per element, one for each vertex */
-  CHKERRQ(PetscMalloc2(3*3*fe->Ne,&oor,3*3*fe->Ne,&ooc));
+  PetscCall(PetscMalloc2(3*3*fe->Ne,&oor,3*3*fe->Ne,&ooc));
   for (PetscInt e=0; e<fe->Ne; e++) {
     for (PetscInt vi=0; vi<3; vi++) {
       for (PetscInt vj=0; vj<3; vj++) {
@@ -64,12 +64,12 @@ static PetscErrorCode CreateMatrix(FEStruct *fe,Mat *A)
       }
     }
   }
-  CHKERRQ(MatSetPreallocationCOO(*A,3*3*fe->Ne,oor,ooc));
-  CHKERRQ(PetscFree2(oor,ooc));
+  PetscCall(MatSetPreallocationCOO(*A,3*3*fe->Ne,oor,ooc));
+  PetscCall(PetscFree2(oor,ooc));
 
   /* determine the offset into the COO value array the offset of each element stiffness; there are 9 = 3*3 entries for each element stiffness */
   /* for lists of elements with different numbers of degrees of freedom assocated with each element the offsets will not be uniform */
-  CHKERRQ(PetscMalloc1(fe->Ne,&fe->coo));
+  PetscCall(PetscMalloc1(fe->Ne,&fe->coo));
   fe->coo[0] = 0;
   for (PetscInt e=1; e<fe->Ne; e++) {
     fe->coo[e] = fe->coo[e-1] + 3*3;
@@ -89,10 +89,10 @@ static PetscErrorCode FillMatrixCPU(FEStruct *fe,Mat A)
         s[3*vi+vj] = vi+2*vj;
       }
     }
-    CHKERRQ(MatSetValues(A,3,fe->vertices + 3*e,3, fe->vertices + 3*e,s,ADD_VALUES));
+    PetscCall(MatSetValues(A,3,fe->vertices + 3*e,3, fe->vertices + 3*e,s,ADD_VALUES));
   }
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
@@ -106,7 +106,7 @@ static PetscErrorCode FillMatrixCPUCOO(FEStruct *fe,Mat A)
 
   PetscFunctionBeginUser;
   /* simulation of CPU based finite assembly process with COO */
-  CHKERRQ(PetscMalloc1(3*3*fe->Ne,&v));
+  PetscCall(PetscMalloc1(3*3*fe->Ne,&v));
   for (PetscInt e=0; e<fe->Ne; e++) {
     s = v + fe->coo[e]; /* point to location in COO of current element stiffness */
     for (PetscInt vi=0; vi<3; vi++) {
@@ -115,8 +115,8 @@ static PetscErrorCode FillMatrixCPUCOO(FEStruct *fe,Mat A)
       }
     }
   }
-  CHKERRQ(MatSetValuesCOO(A,v,ADD_VALUES));
-  CHKERRQ(PetscFree(v));
+  PetscCall(MatSetValuesCOO(A,v,ADD_VALUES));
+  PetscCall(PetscFree(v));
   PetscFunctionReturn(0);
 }
 
@@ -130,7 +130,7 @@ static PetscErrorCode FillMatrixCPUCOO3d(FEStruct *fe,Mat A)
 
   PetscFunctionBeginUser;
   /* simulation of CPU based finite assembly process with COO */
-  CHKERRQ(PetscMalloc1(fe->Ne,&s));
+  PetscCall(PetscMalloc1(fe->Ne,&s));
   for (PetscInt e=0; e<fe->Ne; e++) {
     for (PetscInt vi=0; vi<3; vi++) {
       for (PetscInt vj=0; vj<3; vj++) {
@@ -138,8 +138,8 @@ static PetscErrorCode FillMatrixCPUCOO3d(FEStruct *fe,Mat A)
       }
     }
   }
-  CHKERRQ(MatSetValuesCOO(A,(PetscScalar*)s,INSERT_VALUES));
-  CHKERRQ(PetscFree(s));
+  PetscCall(MatSetValuesCOO(A,(PetscScalar*)s,INSERT_VALUES));
+  PetscCall(PetscFree(s));
   PetscFunctionReturn(0);
 }
 
@@ -150,38 +150,38 @@ int main(int argc, char **args)
   PetscMPIInt     size;
   PetscBool       is_kokkos,is_cuda;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size <= 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Demonstration is only for sequential runs");
 
-  CHKERRQ(CreateFEStruct(&fe));
-  CHKERRQ(CreateMatrix(&fe,&A));
+  PetscCall(CreateFEStruct(&fe));
+  PetscCall(CreateMatrix(&fe,&A));
 
-  CHKERRQ(FillMatrixCPU(&fe,A));
-  CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(FillMatrixCPU(&fe,A));
+  PetscCall(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
 
-  CHKERRQ(MatZeroEntries(A));
-  CHKERRQ(FillMatrixCPUCOO(&fe,A));
-  CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatZeroEntries(A));
+  PetscCall(FillMatrixCPUCOO(&fe,A));
+  PetscCall(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
 
-  CHKERRQ(MatZeroEntries(A));
-  CHKERRQ(FillMatrixCPUCOO3d(&fe,A));
-  CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatZeroEntries(A));
+  PetscCall(FillMatrixCPUCOO3d(&fe,A));
+  PetscCall(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
 
-  CHKERRQ(MatZeroEntries(A));
-  CHKERRQ(PetscObjectBaseTypeCompare((PetscObject)A,MATSEQAIJKOKKOS,&is_kokkos));
-  CHKERRQ(PetscObjectBaseTypeCompare((PetscObject)A,MATSEQAIJCUSPARSE,&is_cuda));
+  PetscCall(MatZeroEntries(A));
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)A,MATSEQAIJKOKKOS,&is_kokkos));
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)A,MATSEQAIJCUSPARSE,&is_cuda));
  #if defined(PETSC_HAVE_KOKKOS)
-  if (is_kokkos) CHKERRQ(FillMatrixKokkosCOO(&fe,A));
+  if (is_kokkos) PetscCall(FillMatrixKokkosCOO(&fe,A));
  #endif
  #if defined(PETSC_HAVE_CUDA)
-  if (is_cuda) CHKERRQ(FillMatrixCUDACOO(&fe,A));
+  if (is_cuda) PetscCall(FillMatrixCUDACOO(&fe,A));
  #endif
-  CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
 
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(DestroyFEStruct(&fe));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatDestroy(&A));
+  PetscCall(DestroyFEStruct(&fe));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

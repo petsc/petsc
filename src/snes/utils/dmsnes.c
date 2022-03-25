@@ -7,16 +7,16 @@ static PetscErrorCode DMSNESDestroy(DMSNES *kdm)
   if (!*kdm) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*kdm),DMSNES_CLASSID,1);
   if (--((PetscObject)(*kdm))->refct > 0) {*kdm = NULL; PetscFunctionReturn(0);}
-  if ((*kdm)->ops->destroy) CHKERRQ(((*kdm)->ops->destroy)(*kdm));
-  CHKERRQ(PetscHeaderDestroy(kdm));
+  if ((*kdm)->ops->destroy) PetscCall(((*kdm)->ops->destroy)(*kdm));
+  PetscCall(PetscHeaderDestroy(kdm));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode DMSNESLoad(DMSNES kdm,PetscViewer viewer)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscViewerBinaryRead(viewer,&kdm->ops->computefunction,1,NULL,PETSC_FUNCTION));
-  CHKERRQ(PetscViewerBinaryRead(viewer,&kdm->ops->computejacobian,1,NULL,PETSC_FUNCTION));
+  PetscCall(PetscViewerBinaryRead(viewer,&kdm->ops->computefunction,1,NULL,PETSC_FUNCTION));
+  PetscCall(PetscViewerBinaryRead(viewer,&kdm->ops->computejacobian,1,NULL,PETSC_FUNCTION));
   PetscFunctionReturn(0);
 }
 
@@ -25,19 +25,19 @@ PetscErrorCode DMSNESView(DMSNES kdm,PetscViewer viewer)
   PetscBool      isascii,isbinary;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary));
   if (isascii) {
 #if defined(PETSC_SERIALIZE_FUNCTIONS) && defined(PETSC_SERIALIZE_FUNCTIONS_VIEW)
     const char *fname;
 
-    CHKERRQ(PetscFPTFind(kdm->ops->computefunction,&fname));
+    PetscCall(PetscFPTFind(kdm->ops->computefunction,&fname));
     if (fname) {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"Function used by SNES: %s\n",fname));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"Function used by SNES: %s\n",fname));
     }
-    CHKERRQ(PetscFPTFind(kdm->ops->computejacobian,&fname));
+    PetscCall(PetscFPTFind(kdm->ops->computejacobian,&fname));
     if (fname) {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"Jacobian function used by SNES: %s\n",fname));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"Jacobian function used by SNES: %s\n",fname));
     }
 #endif
   } else if (isbinary) {
@@ -49,8 +49,8 @@ PetscErrorCode DMSNESView(DMSNES kdm,PetscViewer viewer)
     } jacstruct;
     funcstruct.func = kdm->ops->computefunction;
     jacstruct.jac   = kdm->ops->computejacobian;
-    CHKERRQ(PetscViewerBinaryWrite(viewer,&funcstruct,1,PETSC_FUNCTION));
-    CHKERRQ(PetscViewerBinaryWrite(viewer,&jacstruct,1,PETSC_FUNCTION));
+    PetscCall(PetscViewerBinaryWrite(viewer,&funcstruct,1,PETSC_FUNCTION));
+    PetscCall(PetscViewerBinaryWrite(viewer,&jacstruct,1,PETSC_FUNCTION));
   }
   PetscFunctionReturn(0);
 }
@@ -58,8 +58,8 @@ PetscErrorCode DMSNESView(DMSNES kdm,PetscViewer viewer)
 static PetscErrorCode DMSNESCreate(MPI_Comm comm,DMSNES *kdm)
 {
   PetscFunctionBegin;
-  CHKERRQ(SNESInitializePackage());
-  CHKERRQ(PetscHeaderCreate(*kdm, DMSNES_CLASSID,  "DMSNES", "DMSNES", "DMSNES", comm, DMSNESDestroy, DMSNESView));
+  PetscCall(SNESInitializePackage());
+  PetscCall(PetscHeaderCreate(*kdm, DMSNES_CLASSID,  "DMSNES", "DMSNES", "DMSNES", comm, DMSNESDestroy, DMSNESView));
   PetscFunctionReturn(0);
 }
 
@@ -69,7 +69,7 @@ static PetscErrorCode DMSNESCreate(MPI_Comm comm,DMSNES *kdm)
 static PetscErrorCode DMCoarsenHook_DMSNES(DM dm,DM dmc,void *ctx)
 {
   PetscFunctionBegin;
-  CHKERRQ(DMCopyDMSNES(dm,dmc));
+  PetscCall(DMCopyDMSNES(dm,dmc));
   PetscFunctionReturn(0);
 }
 
@@ -85,7 +85,7 @@ static PetscErrorCode DMRestrictHook_DMSNES(DM dm,Mat Restrict,Vec rscale,Mat In
 static PetscErrorCode DMSubDomainHook_DMSNES(DM dm,DM subdm,void *ctx)
 {
   PetscFunctionBegin;
-  CHKERRQ(DMCopyDMSNES(dm,subdm));
+  PetscCall(DMCopyDMSNES(dm,subdm));
   PetscFunctionReturn(0);
 }
 
@@ -100,7 +100,7 @@ static PetscErrorCode DMSubDomainRestrictHook_DMSNES(DM dm,VecScatter gscat,VecS
 static PetscErrorCode DMRefineHook_DMSNES(DM dm,DM dmf,void *ctx)
 {
   PetscFunctionBegin;
-  CHKERRQ(DMCopyDMSNES(dm,dmf));
+  PetscCall(DMCopyDMSNES(dm,dmf));
   PetscFunctionReturn(0);
 }
 
@@ -153,7 +153,7 @@ PetscErrorCode DMSNESCopy(DMSNES kdm,DMSNES nkdm)
   */
 
   /* implementation specific copy hooks */
-  if (kdm->ops->duplicate) CHKERRQ((*kdm->ops->duplicate)(kdm,nkdm));
+  if (kdm->ops->duplicate) PetscCall((*kdm->ops->duplicate)(kdm,nkdm));
   PetscFunctionReturn(0);
 }
 
@@ -181,14 +181,14 @@ PetscErrorCode DMGetDMSNES(DM dm,DMSNES *snesdm)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   *snesdm = (DMSNES) dm->dmsnes;
   if (!*snesdm) {
-    CHKERRQ(PetscInfo(dm,"Creating new DMSNES\n"));
-    CHKERRQ(DMSNESCreate(PetscObjectComm((PetscObject)dm),snesdm));
+    PetscCall(PetscInfo(dm,"Creating new DMSNES\n"));
+    PetscCall(DMSNESCreate(PetscObjectComm((PetscObject)dm),snesdm));
 
     dm->dmsnes            = (PetscObject) *snesdm;
     (*snesdm)->originaldm = dm;
-    CHKERRQ(DMCoarsenHookAdd(dm,DMCoarsenHook_DMSNES,DMRestrictHook_DMSNES,NULL));
-    CHKERRQ(DMRefineHookAdd(dm,DMRefineHook_DMSNES,DMInterpolateHook_DMSNES,NULL));
-    CHKERRQ(DMSubDomainHookAdd(dm,DMSubDomainHook_DMSNES,DMSubDomainRestrictHook_DMSNES,NULL));
+    PetscCall(DMCoarsenHookAdd(dm,DMCoarsenHook_DMSNES,DMRestrictHook_DMSNES,NULL));
+    PetscCall(DMRefineHookAdd(dm,DMRefineHook_DMSNES,DMInterpolateHook_DMSNES,NULL));
+    PetscCall(DMSubDomainHookAdd(dm,DMSubDomainHook_DMSNES,DMSubDomainRestrictHook_DMSNES,NULL));
   }
   PetscFunctionReturn(0);
 }
@@ -214,14 +214,14 @@ PetscErrorCode DMGetDMSNESWrite(DM dm,DMSNES *snesdm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  CHKERRQ(DMGetDMSNES(dm,&sdm));
+  PetscCall(DMGetDMSNES(dm,&sdm));
   PetscCheck(sdm->originaldm,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"DMSNES has a NULL originaldm");
   if (sdm->originaldm != dm) {  /* Copy on write */
     DMSNES oldsdm = sdm;
-    CHKERRQ(PetscInfo(dm,"Copying DMSNES due to write\n"));
-    CHKERRQ(DMSNESCreate(PetscObjectComm((PetscObject)dm),&sdm));
-    CHKERRQ(DMSNESCopy(oldsdm,sdm));
-    CHKERRQ(DMSNESDestroy((DMSNES*)&dm->dmsnes));
+    PetscCall(PetscInfo(dm,"Copying DMSNES due to write\n"));
+    PetscCall(DMSNESCreate(PetscObjectComm((PetscObject)dm),&sdm));
+    PetscCall(DMSNESCopy(oldsdm,sdm));
+    PetscCall(DMSNESDestroy((DMSNES*)&dm->dmsnes));
     dm->dmsnes = (PetscObject)sdm;
     sdm->originaldm = dm;
   }
@@ -250,11 +250,11 @@ PetscErrorCode DMCopyDMSNES(DM dmsrc,DM dmdest)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dmsrc,DM_CLASSID,1);
   PetscValidHeaderSpecific(dmdest,DM_CLASSID,2);
-  if (!dmdest->dmsnes) CHKERRQ(DMSNESCreate(PetscObjectComm((PetscObject) dmdest), (DMSNES *) &dmdest->dmsnes));
-  CHKERRQ(DMSNESCopy((DMSNES) dmsrc->dmsnes, (DMSNES) dmdest->dmsnes));
-  CHKERRQ(DMCoarsenHookAdd(dmdest,DMCoarsenHook_DMSNES,NULL,NULL));
-  CHKERRQ(DMRefineHookAdd(dmdest,DMRefineHook_DMSNES,NULL,NULL));
-  CHKERRQ(DMSubDomainHookAdd(dmdest,DMSubDomainHook_DMSNES,DMSubDomainRestrictHook_DMSNES,NULL));
+  if (!dmdest->dmsnes) PetscCall(DMSNESCreate(PetscObjectComm((PetscObject) dmdest), (DMSNES *) &dmdest->dmsnes));
+  PetscCall(DMSNESCopy((DMSNES) dmsrc->dmsnes, (DMSNES) dmdest->dmsnes));
+  PetscCall(DMCoarsenHookAdd(dmdest,DMCoarsenHook_DMSNES,NULL,NULL));
+  PetscCall(DMRefineHookAdd(dmdest,DMRefineHook_DMSNES,NULL,NULL));
+  PetscCall(DMSubDomainHookAdd(dmdest,DMSubDomainHook_DMSNES,DMSubDomainRestrictHook_DMSNES,NULL));
   PetscFunctionReturn(0);
 }
 
@@ -284,7 +284,7 @@ PetscErrorCode DMSNESSetFunction(DM dm,PetscErrorCode (*f)(SNES,Vec,Vec,void*),v
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   if (f || ctx) {
-    CHKERRQ(DMGetDMSNESWrite(dm,&sdm));
+    PetscCall(DMGetDMSNESWrite(dm,&sdm));
   }
   if (f) sdm->ops->computefunction = f;
   if (ctx) sdm->functionctx = ctx;
@@ -311,7 +311,7 @@ PetscErrorCode DMSNESSetMFFunction(DM dm,PetscErrorCode (*f)(SNES,Vec,Vec,void*)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   if (f || ctx) {
-    CHKERRQ(DMGetDMSNESWrite(dm,&sdm));
+    PetscCall(DMGetDMSNESWrite(dm,&sdm));
   }
   if (f) sdm->ops->computemffunction = f;
   if (ctx) sdm->mffunctionctx = ctx;
@@ -344,7 +344,7 @@ PetscErrorCode DMSNESGetFunction(DM dm,PetscErrorCode (**f)(SNES,Vec,Vec,void*),
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  CHKERRQ(DMGetDMSNES(dm,&sdm));
+  PetscCall(DMGetDMSNES(dm,&sdm));
   if (f) *f = sdm->ops->computefunction;
   if (ctx) *ctx = sdm->functionctx;
   PetscFunctionReturn(0);
@@ -371,7 +371,7 @@ PetscErrorCode DMSNESSetObjective(DM dm,PetscErrorCode (*obj)(SNES,Vec,PetscReal
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   if (obj || ctx) {
-    CHKERRQ(DMGetDMSNESWrite(dm,&sdm));
+    PetscCall(DMGetDMSNESWrite(dm,&sdm));
   }
   if (obj) sdm->ops->computeobjective = obj;
   if (ctx) sdm->objectivectx = ctx;
@@ -404,7 +404,7 @@ PetscErrorCode DMSNESGetObjective(DM dm,PetscErrorCode (**obj)(SNES,Vec,PetscRea
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  CHKERRQ(DMGetDMSNES(dm,&sdm));
+  PetscCall(DMGetDMSNES(dm,&sdm));
   if (obj) *obj = sdm->ops->computeobjective;
   if (ctx) *ctx = sdm->objectivectx;
   PetscFunctionReturn(0);
@@ -436,7 +436,7 @@ PetscErrorCode DMSNESSetNGS(DM dm,PetscErrorCode (*f)(SNES,Vec,Vec,void*),void *
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   if (f || ctx) {
-    CHKERRQ(DMGetDMSNESWrite(dm,&sdm));
+    PetscCall(DMGetDMSNESWrite(dm,&sdm));
   }
   if (f) sdm->ops->computegs = f;
   if (ctx) sdm->gsctx = ctx;
@@ -470,7 +470,7 @@ PetscErrorCode DMSNESGetNGS(DM dm,PetscErrorCode (**f)(SNES,Vec,Vec,void*),void 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  CHKERRQ(DMGetDMSNES(dm,&sdm));
+  PetscCall(DMGetDMSNES(dm,&sdm));
   if (f) *f = sdm->ops->computegs;
   if (ctx) *ctx = sdm->gsctx;
   PetscFunctionReturn(0);
@@ -502,7 +502,7 @@ PetscErrorCode DMSNESSetJacobian(DM dm,PetscErrorCode (*J)(SNES,Vec,Mat,Mat,void
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   if (J || ctx) {
-    CHKERRQ(DMGetDMSNESWrite(dm,&sdm));
+    PetscCall(DMGetDMSNESWrite(dm,&sdm));
   }
   if (J) sdm->ops->computejacobian = J;
   if (ctx) sdm->jacobianctx = ctx;
@@ -536,7 +536,7 @@ PetscErrorCode DMSNESGetJacobian(DM dm,PetscErrorCode (**J)(SNES,Vec,Mat,Mat,voi
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  CHKERRQ(DMGetDMSNES(dm,&sdm));
+  PetscCall(DMGetDMSNES(dm,&sdm));
   if (J) *J = sdm->ops->computejacobian;
   if (ctx) *ctx = sdm->jacobianctx;
   PetscFunctionReturn(0);
@@ -563,7 +563,7 @@ PetscErrorCode DMSNESSetPicard(DM dm,PetscErrorCode (*b)(SNES,Vec,Vec,void*),Pet
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  CHKERRQ(DMGetDMSNES(dm,&sdm));
+  PetscCall(DMGetDMSNES(dm,&sdm));
   if (b) sdm->ops->computepfunction = b;
   if (J) sdm->ops->computepjacobian = J;
   if (ctx) sdm->pctx = ctx;
@@ -593,7 +593,7 @@ PetscErrorCode DMSNESGetPicard(DM dm,PetscErrorCode (**b)(SNES,Vec,Vec,void*),Pe
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  CHKERRQ(DMGetDMSNES(dm,&sdm));
+  PetscCall(DMGetDMSNES(dm,&sdm));
   if (b) *b = sdm->ops->computepfunction;
   if (J) *J = sdm->ops->computepjacobian;
   if (ctx) *ctx = sdm->pctx;

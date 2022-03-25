@@ -13,49 +13,49 @@ int main(int argc,char **args)
   PetscInt       i,j,k,l,n = 27,its,bs = 2,Ii,J;
   PetscScalar    v;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(MatSetSizes(A,n*bs,n*bs,PETSC_DETERMINE,PETSC_DETERMINE));
-  CHKERRQ(MatSetBlockSize(A,bs));
-  CHKERRQ(MatSetType(A,MATSEQBAIJ));
-  CHKERRQ(MatSetFromOptions(A));
-  CHKERRQ(MatSetUp(A));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A,n*bs,n*bs,PETSC_DETERMINE,PETSC_DETERMINE));
+  PetscCall(MatSetBlockSize(A,bs));
+  PetscCall(MatSetType(A,MATSEQBAIJ));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSetUp(A));
 
   /*
      Don't bother to preallocate matrix
   */
-  CHKERRQ(PetscRandomCreate(PETSC_COMM_SELF,&rctx));
+  PetscCall(PetscRandomCreate(PETSC_COMM_SELF,&rctx));
   for (i=0; i<n; i++) {
     for (j=0; j<n; j++) {
-      CHKERRQ(PetscRandomGetValue(rctx,&v));
+      PetscCall(PetscRandomGetValue(rctx,&v));
       if (PetscRealPart(v) < .25 || i == j) {
         for (k=0; k<bs; k++) {
           for (l=0; l<bs; l++) {
-            CHKERRQ(PetscRandomGetValue(rctx,&v));
+            PetscCall(PetscRandomGetValue(rctx,&v));
             Ii = i*bs + k;
             J = j*bs + l;
             if (Ii == J) v += 10.;
-            CHKERRQ(MatSetValue(A,Ii,J,v,INSERT_VALUES));
+            PetscCall(MatSetValue(A,Ii,J,v,INSERT_VALUES));
           }
         }
       }
     }
   }
 
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&u));
-  CHKERRQ(VecSetSizes(u,PETSC_DECIDE,n*bs));
-  CHKERRQ(VecSetFromOptions(u));
-  CHKERRQ(VecDuplicate(u,&b));
-  CHKERRQ(VecDuplicate(b,&x));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&u));
+  PetscCall(VecSetSizes(u,PETSC_DECIDE,n*bs));
+  PetscCall(VecSetFromOptions(u));
+  PetscCall(VecDuplicate(u,&b));
+  PetscCall(VecDuplicate(b,&x));
 
-  CHKERRQ(VecSet(u,1.0));
-  CHKERRQ(MatMult(A,u,b));
+  PetscCall(VecSet(u,1.0));
+  PetscCall(MatMult(A,u,b));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 Create the linear solver and set various options
@@ -64,21 +64,21 @@ int main(int argc,char **args)
   /*
      Create linear solver context
   */
-  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
 
   /*
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
-  CHKERRQ(KSPSetOperators(ksp,A,A));
+  PetscCall(KSPSetOperators(ksp,A,A));
 
-  CHKERRQ(KSPSetFromOptions(ksp));
+  PetscCall(KSPSetFromOptions(ksp));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  CHKERRQ(KSPSolve(ksp,b,x));
+  PetscCall(KSPSolve(ksp,b,x));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Check solution and clean up
@@ -87,9 +87,9 @@ int main(int argc,char **args)
   /*
      Check the error
   */
-  CHKERRQ(VecAXPY(x,-1.0,u));
-  CHKERRQ(VecNorm(x,NORM_2,&norm));
-  CHKERRQ(KSPGetIterationNumber(ksp,&its));
+  PetscCall(VecAXPY(x,-1.0,u));
+  PetscCall(VecNorm(x,NORM_2,&norm));
+  PetscCall(KSPGetIterationNumber(ksp,&its));
 
   /*
      Print convergence information.  PetscPrintf() produces a single
@@ -97,19 +97,19 @@ int main(int argc,char **args)
      An alternative is PetscFPrintf(), which prints to a file.
   */
   if (norm > .1) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Norm of residual %g iterations %D bs %D\n",(double)norm,its,bs));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of residual %g iterations %D bs %D\n",(double)norm,its,bs));
   }
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  CHKERRQ(KSPDestroy(&ksp));
-  CHKERRQ(VecDestroy(&u));
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&b));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(PetscRandomDestroy(&rctx));
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(VecDestroy(&u));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&b));
+  PetscCall(MatDestroy(&A));
+  PetscCall(PetscRandomDestroy(&rctx));
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine
@@ -117,7 +117,7 @@ int main(int argc,char **args)
        - provides summary and diagnostic information if certain runtime
          options are chosen (e.g., -log_view).
   */
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

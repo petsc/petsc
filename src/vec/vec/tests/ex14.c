@@ -13,38 +13,38 @@ int main(int argc,char **argv)
   IS             is1,is2;
   VecScatter     ctx = 0;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   /* create two vectors */
   N    = size*n;
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&y));
-  CHKERRQ(VecSetSizes(y,PETSC_DECIDE,N));
-  CHKERRQ(VecSetFromOptions(y));
-  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,N,&x));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&y));
+  PetscCall(VecSetSizes(y,PETSC_DECIDE,N));
+  PetscCall(VecSetFromOptions(y));
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,N,&x));
 
   /* create two index sets */
-  CHKERRQ(ISCreateStride(PETSC_COMM_SELF,n,0,1,&is1));
-  CHKERRQ(ISCreateStride(PETSC_COMM_SELF,n,rank,1,&is2));
+  PetscCall(ISCreateStride(PETSC_COMM_SELF,n,0,1,&is1));
+  PetscCall(ISCreateStride(PETSC_COMM_SELF,n,rank,1,&is2));
 
   value = rank+1;
-  CHKERRQ(VecSet(x,value));
-  CHKERRQ(VecSet(y,zero));
+  PetscCall(VecSet(x,value));
+  PetscCall(VecSet(y,zero));
 
-  CHKERRQ(VecScatterCreate(x,is1,y,is2,&ctx));
-  CHKERRQ(VecScatterBegin(ctx,x,y,ADD_VALUES,SCATTER_FORWARD));
-  CHKERRQ(VecScatterEnd(ctx,x,y,ADD_VALUES,SCATTER_FORWARD));
-  CHKERRQ(VecScatterDestroy(&ctx));
+  PetscCall(VecScatterCreate(x,is1,y,is2,&ctx));
+  PetscCall(VecScatterBegin(ctx,x,y,ADD_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(ctx,x,y,ADD_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterDestroy(&ctx));
 
-  CHKERRQ(VecView(y,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecView(y,PETSC_VIEWER_STDOUT_WORLD));
 
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&y));
-  CHKERRQ(ISDestroy(&is1));
-  CHKERRQ(ISDestroy(&is2));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&y));
+  PetscCall(ISDestroy(&is1));
+  PetscCall(ISDestroy(&is2));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

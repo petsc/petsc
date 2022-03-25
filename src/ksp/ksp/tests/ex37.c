@@ -26,38 +26,38 @@ int main(int argc,char **args)
   PetscScalar    *barray,*xarray,*uarray,*array,one=1.0;
   PetscInt       type=1;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   /* Load the matrix */
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
   PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Must indicate binary file with the -f option");
-  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
 
   /* Load the matrix; then destroy the viewer.*/
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(MatLoad(A,fd));
-  CHKERRQ(PetscViewerDestroy(&fd));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatLoad(A,fd));
+  PetscCall(PetscViewerDestroy(&fd));
 
-  CHKERRQ(PetscObjectGetComm((PetscObject)A,&comm));
-  CHKERRMPI(MPI_Comm_size(comm,&size));
-  CHKERRMPI(MPI_Comm_rank(comm,&rank));
+  PetscCall(PetscObjectGetComm((PetscObject)A,&comm));
+  PetscCallMPI(MPI_Comm_size(comm,&size));
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
 
   /* Create rhs vector b */
-  CHKERRQ(MatGetLocalSize(A,&m,NULL));
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&b));
-  CHKERRQ(VecSetSizes(b,m,PETSC_DECIDE));
-  CHKERRQ(VecSetFromOptions(b));
-  CHKERRQ(VecSet(b,one));
+  PetscCall(MatGetLocalSize(A,&m,NULL));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&b));
+  PetscCall(VecSetSizes(b,m,PETSC_DECIDE));
+  PetscCall(VecSetFromOptions(b));
+  PetscCall(VecSet(b,one));
 
-  CHKERRQ(VecDuplicate(b,&x));
-  CHKERRQ(VecDuplicate(b,&u));
-  CHKERRQ(VecSet(x,0.0));
+  PetscCall(VecDuplicate(b,&x));
+  PetscCall(VecDuplicate(b,&u));
+  PetscCall(VecSet(x,0.0));
 
   /* Test MatGetMultiProcBlock() */
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-nsubcomm",&nsubcomm,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-subcomm_type",&type,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-nsubcomm",&nsubcomm,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-subcomm_type",&type,NULL));
 
-  CHKERRQ(PetscSubcommCreate(comm,&psubcomm));
-  CHKERRQ(PetscSubcommSetNumber(psubcomm,nsubcomm));
+  PetscCall(PetscSubcommCreate(comm,&psubcomm));
+  PetscCall(PetscSubcommSetNumber(psubcomm,nsubcomm));
   if (type == PETSC_SUBCOMM_GENERAL) { /* user provides color, subrank and duprank */
     PetscMPIInt color,subrank,duprank,subsize;
     duprank = size-1 - rank;
@@ -65,13 +65,13 @@ int main(int argc,char **args)
     PetscCheckFalse(subsize*nsubcomm != size,comm,PETSC_ERR_SUP,"This example requires nsubcomm %D divides size %D",nsubcomm,size);
     color   = duprank/subsize;
     subrank = duprank - color*subsize;
-    CHKERRQ(PetscSubcommSetTypeGeneral(psubcomm,color,subrank));
+    PetscCall(PetscSubcommSetTypeGeneral(psubcomm,color,subrank));
   } else if (type == PETSC_SUBCOMM_CONTIGUOUS) {
-    CHKERRQ(PetscSubcommSetType(psubcomm,PETSC_SUBCOMM_CONTIGUOUS));
+    PetscCall(PetscSubcommSetType(psubcomm,PETSC_SUBCOMM_CONTIGUOUS));
   } else if (type == PETSC_SUBCOMM_INTERLACED) {
-    CHKERRQ(PetscSubcommSetType(psubcomm,PETSC_SUBCOMM_INTERLACED));
+    PetscCall(PetscSubcommSetType(psubcomm,PETSC_SUBCOMM_INTERLACED));
   } else SETERRQ(psubcomm->parent,PETSC_ERR_SUP,"PetscSubcommType %D is not supported yet",type);
-  CHKERRQ(PetscSubcommSetFromOptions(psubcomm));
+  PetscCall(PetscSubcommSetFromOptions(psubcomm));
   subcomm = PetscSubcommChild(psubcomm);
 
   /* Test MatCreateRedundantMatrix() */
@@ -88,94 +88,94 @@ int main(int argc,char **args)
       color = 1; subrank = 0;
     }
 
-    CHKERRQ(PetscCommDuplicate(PETSC_COMM_WORLD,&dcomm,NULL));
-    CHKERRMPI(MPI_Comm_split(dcomm,color,subrank,&subcomm));
+    PetscCall(PetscCommDuplicate(PETSC_COMM_WORLD,&dcomm,NULL));
+    PetscCallMPI(MPI_Comm_split(dcomm,color,subrank,&subcomm));
 
-    CHKERRQ(MatCreate(subcomm,&subA));
-    CHKERRQ(MatSetSizes(subA,PETSC_DECIDE,PETSC_DECIDE,10,10));
-    CHKERRQ(MatSetFromOptions(subA));
-    CHKERRQ(MatSetUp(subA));
-    CHKERRQ(MatAssemblyBegin(subA,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(subA,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatZeroEntries(subA));
+    PetscCall(MatCreate(subcomm,&subA));
+    PetscCall(MatSetSizes(subA,PETSC_DECIDE,PETSC_DECIDE,10,10));
+    PetscCall(MatSetFromOptions(subA));
+    PetscCall(MatSetUp(subA));
+    PetscCall(MatAssemblyBegin(subA,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(subA,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatZeroEntries(subA));
 
     /* Test MatMult() */
-    CHKERRQ(MatCreateVecs(subA,&subx,&subb));
-    CHKERRQ(VecSet(subx,1.0));
-    CHKERRQ(MatMult(subA,subx,subb));
+    PetscCall(MatCreateVecs(subA,&subx,&subb));
+    PetscCall(VecSet(subx,1.0));
+    PetscCall(MatMult(subA,subx,subb));
 
-    CHKERRQ(VecDestroy(&subx));
-    CHKERRQ(VecDestroy(&subb));
-    CHKERRQ(MatDestroy(&subA));
-    CHKERRQ(PetscCommDestroy(&dcomm));
+    PetscCall(VecDestroy(&subx));
+    PetscCall(VecDestroy(&subb));
+    PetscCall(MatDestroy(&subA));
+    PetscCall(PetscCommDestroy(&dcomm));
   }
 
   /* Create subA */
-  CHKERRQ(MatGetMultiProcBlock(A,subcomm,MAT_INITIAL_MATRIX,&subA));
-  CHKERRQ(MatGetMultiProcBlock(A,subcomm,MAT_REUSE_MATRIX,&subA));
+  PetscCall(MatGetMultiProcBlock(A,subcomm,MAT_INITIAL_MATRIX,&subA));
+  PetscCall(MatGetMultiProcBlock(A,subcomm,MAT_REUSE_MATRIX,&subA));
 
   /* Create sub vectors without arrays. Place b's and x's local arrays into subb and subx */
-  CHKERRQ(MatGetLocalSize(subA,&m,&n));
-  CHKERRQ(VecCreateMPIWithArray(subcomm,1,m,PETSC_DECIDE,NULL,&subb));
-  CHKERRQ(VecCreateMPIWithArray(subcomm,1,n,PETSC_DECIDE,NULL,&subx));
-  CHKERRQ(VecCreateMPIWithArray(subcomm,1,n,PETSC_DECIDE,NULL,&subu));
+  PetscCall(MatGetLocalSize(subA,&m,&n));
+  PetscCall(VecCreateMPIWithArray(subcomm,1,m,PETSC_DECIDE,NULL,&subb));
+  PetscCall(VecCreateMPIWithArray(subcomm,1,n,PETSC_DECIDE,NULL,&subx));
+  PetscCall(VecCreateMPIWithArray(subcomm,1,n,PETSC_DECIDE,NULL,&subu));
 
-  CHKERRQ(VecGetArray(b,&barray));
-  CHKERRQ(VecGetArray(x,&xarray));
-  CHKERRQ(VecGetArray(u,&uarray));
-  CHKERRQ(VecPlaceArray(subb,barray));
-  CHKERRQ(VecPlaceArray(subx,xarray));
-  CHKERRQ(VecPlaceArray(subu,uarray));
+  PetscCall(VecGetArray(b,&barray));
+  PetscCall(VecGetArray(x,&xarray));
+  PetscCall(VecGetArray(u,&uarray));
+  PetscCall(VecPlaceArray(subb,barray));
+  PetscCall(VecPlaceArray(subx,xarray));
+  PetscCall(VecPlaceArray(subu,uarray));
 
   /* Create linear solvers associated with subA */
-  CHKERRQ(KSPCreate(subcomm,&subksp));
-  CHKERRQ(KSPSetOperators(subksp,subA,subA));
-  CHKERRQ(KSPSetFromOptions(subksp));
+  PetscCall(KSPCreate(subcomm,&subksp));
+  PetscCall(KSPSetOperators(subksp,subA,subA));
+  PetscCall(KSPSetFromOptions(subksp));
 
   /* Solve sub systems */
-  CHKERRQ(KSPSolve(subksp,subb,subx));
-  CHKERRQ(KSPGetIterationNumber(subksp,&its));
+  PetscCall(KSPSolve(subksp,subb,subx));
+  PetscCall(KSPGetIterationNumber(subksp,&its));
 
   /* check residual */
-  CHKERRQ(MatMult(subA,subx,subu));
-  CHKERRQ(VecAXPY(subu,-1.0,subb));
-  CHKERRQ(VecNorm(u,NORM_2,&norm));
+  PetscCall(MatMult(subA,subx,subu));
+  PetscCall(VecAXPY(subu,-1.0,subb));
+  PetscCall(VecNorm(u,NORM_2,&norm));
   if (norm > 1.e-4 && rank == 0) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"[%D]  Number of iterations = %3D\n",rank,its));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Error: Residual norm of each block |subb - subA*subx |= %g\n",(double)norm));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"[%D]  Number of iterations = %3D\n",rank,its));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error: Residual norm of each block |subb - subA*subx |= %g\n",(double)norm));
   }
-  CHKERRQ(VecResetArray(subb));
-  CHKERRQ(VecResetArray(subx));
-  CHKERRQ(VecResetArray(subu));
+  PetscCall(VecResetArray(subb));
+  PetscCall(VecResetArray(subx));
+  PetscCall(VecResetArray(subu));
 
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-subvec_view",&id,&flg));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-subvec_view",&id,&flg));
   if (flg && rank == id) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"[%D] subb:\n", rank));
-    CHKERRQ(VecGetArray(subb,&array));
-    for (i=0; i<m; i++) CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"%g\n",(double)PetscRealPart(array[i])));
-    CHKERRQ(VecRestoreArray(subb,&array));
-    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"[%D] subx:\n", rank));
-    CHKERRQ(VecGetArray(subx,&array));
-    for (i=0; i<m; i++) CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"%g\n",(double)PetscRealPart(array[i])));
-    CHKERRQ(VecRestoreArray(subx,&array));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"[%D] subb:\n", rank));
+    PetscCall(VecGetArray(subb,&array));
+    for (i=0; i<m; i++) PetscCall(PetscPrintf(PETSC_COMM_SELF,"%g\n",(double)PetscRealPart(array[i])));
+    PetscCall(VecRestoreArray(subb,&array));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"[%D] subx:\n", rank));
+    PetscCall(VecGetArray(subx,&array));
+    for (i=0; i<m; i++) PetscCall(PetscPrintf(PETSC_COMM_SELF,"%g\n",(double)PetscRealPart(array[i])));
+    PetscCall(VecRestoreArray(subx,&array));
   }
 
-  CHKERRQ(VecRestoreArray(x,&xarray));
-  CHKERRQ(VecRestoreArray(b,&barray));
-  CHKERRQ(VecRestoreArray(u,&uarray));
-  CHKERRQ(MatDestroy(&subA));
-  CHKERRQ(VecDestroy(&subb));
-  CHKERRQ(VecDestroy(&subx));
-  CHKERRQ(VecDestroy(&subu));
-  CHKERRQ(KSPDestroy(&subksp));
-  CHKERRQ(PetscSubcommDestroy(&psubcomm));
+  PetscCall(VecRestoreArray(x,&xarray));
+  PetscCall(VecRestoreArray(b,&barray));
+  PetscCall(VecRestoreArray(u,&uarray));
+  PetscCall(MatDestroy(&subA));
+  PetscCall(VecDestroy(&subb));
+  PetscCall(VecDestroy(&subx));
+  PetscCall(VecDestroy(&subu));
+  PetscCall(KSPDestroy(&subksp));
+  PetscCall(PetscSubcommDestroy(&psubcomm));
   if (size > 1) {
-    CHKERRMPI(MPI_Comm_free(&subcomm));
+    PetscCallMPI(MPI_Comm_free(&subcomm));
   }
-  CHKERRQ(MatDestroy(&A)); CHKERRQ(VecDestroy(&b));
-  CHKERRQ(VecDestroy(&u)); CHKERRQ(VecDestroy(&x));
+  PetscCall(MatDestroy(&A)); PetscCall(VecDestroy(&b));
+  PetscCall(VecDestroy(&u)); PetscCall(VecDestroy(&x));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

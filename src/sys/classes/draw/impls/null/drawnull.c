@@ -94,14 +94,14 @@ static PetscErrorCode PetscDrawStringBoxed_Null(PetscDraw draw,PetscReal sxl,Pet
 static PetscErrorCode PetscDrawGetSingleton_Null(PetscDraw draw,PetscDraw *sdraw)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscDrawOpenNull(PETSC_COMM_SELF,sdraw));
+  PetscCall(PetscDrawOpenNull(PETSC_COMM_SELF,sdraw));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscDrawRestoreSingleton_Null(PetscDraw draw,PetscDraw *sdraw)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscDrawDestroy(sdraw));
+  PetscCall(PetscDrawDestroy(sdraw));
   PetscFunctionReturn(0);
 }
 
@@ -159,9 +159,9 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_Null(PetscDraw draw)
   draw->coor_yl = 0; draw->coor_yr = 1;
   draw->port_xl = 0; draw->port_xr = 1;
   draw->port_yl = 0; draw->port_yr = 1;
-  CHKERRQ(PetscDrawDestroy(&draw->popup));
+  PetscCall(PetscDrawDestroy(&draw->popup));
 
-  CHKERRQ(PetscMemcpy(draw->ops,&DvOps,sizeof(DvOps)));
+  PetscCall(PetscMemcpy(draw->ops,&DvOps,sizeof(DvOps)));
   draw->data = NULL;
   PetscFunctionReturn(0);
 }
@@ -181,8 +181,8 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_Null(PetscDraw draw)
 PetscErrorCode  PetscDrawOpenNull(MPI_Comm comm,PetscDraw *win)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscDrawCreate(comm,NULL,NULL,0,0,1,1,win));
-  CHKERRQ(PetscDrawSetType(*win,PETSC_DRAW_NULL));
+  PetscCall(PetscDrawCreate(comm,NULL,NULL,0,0,1,1,win));
+  PetscCall(PetscDrawSetType(*win,PETSC_DRAW_NULL));
   PetscFunctionReturn(0);
 }
 
@@ -204,6 +204,6 @@ PetscErrorCode  PetscDrawIsNull(PetscDraw draw,PetscBool *yes)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscValidBoolPointer(yes,2);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,yes));
+  PetscCall(PetscObjectTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,yes));
   PetscFunctionReturn(0);
 }

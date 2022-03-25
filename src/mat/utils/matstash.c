@@ -35,16 +35,16 @@ PetscErrorCode MatStashCreate_Private(MPI_Comm comm,PetscInt bs,MatStash *stash)
   /* Require 2 tags,get the second using PetscCommGetNewTag() */
   stash->comm = comm;
 
-  CHKERRQ(PetscCommGetNewTag(stash->comm,&stash->tag1));
-  CHKERRQ(PetscCommGetNewTag(stash->comm,&stash->tag2));
-  CHKERRMPI(MPI_Comm_size(stash->comm,&stash->size));
-  CHKERRMPI(MPI_Comm_rank(stash->comm,&stash->rank));
-  CHKERRQ(PetscMalloc1(2*stash->size,&stash->flg_v));
+  PetscCall(PetscCommGetNewTag(stash->comm,&stash->tag1));
+  PetscCall(PetscCommGetNewTag(stash->comm,&stash->tag2));
+  PetscCallMPI(MPI_Comm_size(stash->comm,&stash->size));
+  PetscCallMPI(MPI_Comm_rank(stash->comm,&stash->rank));
+  PetscCall(PetscMalloc1(2*stash->size,&stash->flg_v));
   for (i=0; i<2*stash->size; i++) stash->flg_v[i] = -1;
 
   nopt = stash->size;
-  CHKERRQ(PetscMalloc1(nopt,&opt));
-  CHKERRQ(PetscOptionsGetIntArray(NULL,NULL,"-matstash_initial_size",opt,&nopt,&flg));
+  PetscCall(PetscMalloc1(nopt,&opt));
+  PetscCall(PetscOptionsGetIntArray(NULL,NULL,"-matstash_initial_size",opt,&nopt,&flg));
   if (flg) {
     if (nopt == 1)                max = opt[0];
     else if (nopt == stash->size) max = opt[stash->rank];
@@ -54,7 +54,7 @@ PetscErrorCode MatStashCreate_Private(MPI_Comm comm,PetscInt bs,MatStash *stash)
   } else {
     stash->umax = 0;
   }
-  CHKERRQ(PetscFree(opt));
+  PetscCall(PetscFree(opt));
   if (bs <= 0) bs = 1;
 
   stash->bs         = bs;
@@ -77,10 +77,10 @@ PetscErrorCode MatStashCreate_Private(MPI_Comm comm,PetscInt bs,MatStash *stash)
   stash->reproduce   = PETSC_FALSE;
   stash->blocktype   = MPI_DATATYPE_NULL;
 
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-matstash_reproduce",&stash->reproduce,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-matstash_reproduce",&stash->reproduce,NULL));
 #if !defined(PETSC_HAVE_MPIUNI)
   flg  = PETSC_FALSE;
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-matstash_legacy",&flg,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-matstash_legacy",&flg,NULL));
   if (!flg) {
     stash->ScatterBegin   = MatStashScatterBegin_BTS;
     stash->ScatterGetMesg = MatStashScatterGetMesg_BTS;
@@ -104,12 +104,12 @@ PetscErrorCode MatStashCreate_Private(MPI_Comm comm,PetscInt bs,MatStash *stash)
 PetscErrorCode MatStashDestroy_Private(MatStash *stash)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscMatStashSpaceDestroy(&stash->space_head));
-  if (stash->ScatterDestroy) CHKERRQ((*stash->ScatterDestroy)(stash));
+  PetscCall(PetscMatStashSpaceDestroy(&stash->space_head));
+  if (stash->ScatterDestroy) PetscCall((*stash->ScatterDestroy)(stash));
 
   stash->space = NULL;
 
-  CHKERRQ(PetscFree(stash->flg_v));
+  PetscCall(PetscFree(stash->flg_v));
   PetscFunctionReturn(0);
 }
 
@@ -124,7 +124,7 @@ PetscErrorCode MatStashDestroy_Private(MatStash *stash)
 PetscErrorCode MatStashScatterEnd_Private(MatStash *stash)
 {
   PetscFunctionBegin;
-  CHKERRQ((*stash->ScatterEnd)(stash));
+  PetscCall((*stash->ScatterEnd)(stash));
   PetscFunctionReturn(0);
 }
 
@@ -137,9 +137,9 @@ PETSC_INTERN PetscErrorCode MatStashScatterEnd_Ref(MatStash *stash)
   for (i=0; i<2*stash->size; i++) stash->flg_v[i] = -1;
   /* wait on sends */
   if (nsends) {
-    CHKERRQ(PetscMalloc1(2*nsends,&send_status));
-    CHKERRMPI(MPI_Waitall(2*nsends,stash->send_waits,send_status));
-    CHKERRQ(PetscFree(send_status));
+    PetscCall(PetscMalloc1(2*nsends,&send_status));
+    PetscCallMPI(MPI_Waitall(2*nsends,stash->send_waits,send_status));
+    PetscCall(PetscFree(send_status));
   }
 
   /* Now update nmaxold to be app 10% more than max n used, this way the
@@ -156,17 +156,17 @@ PETSC_INTERN PetscErrorCode MatStashScatterEnd_Ref(MatStash *stash)
   stash->reallocs   = -1;
   stash->nprocessed = 0;
 
-  CHKERRQ(PetscMatStashSpaceDestroy(&stash->space_head));
+  PetscCall(PetscMatStashSpaceDestroy(&stash->space_head));
 
   stash->space = NULL;
 
-  CHKERRQ(PetscFree(stash->send_waits));
-  CHKERRQ(PetscFree(stash->recv_waits));
-  CHKERRQ(PetscFree2(stash->svalues,stash->sindices));
-  CHKERRQ(PetscFree(stash->rvalues[0]));
-  CHKERRQ(PetscFree(stash->rvalues));
-  CHKERRQ(PetscFree(stash->rindices[0]));
-  CHKERRQ(PetscFree(stash->rindices));
+  PetscCall(PetscFree(stash->send_waits));
+  PetscCall(PetscFree(stash->recv_waits));
+  PetscCall(PetscFree2(stash->svalues,stash->sindices));
+  PetscCall(PetscFree(stash->rvalues[0]));
+  PetscCall(PetscFree(stash->rvalues));
+  PetscCall(PetscFree(stash->rindices[0]));
+  PetscCall(PetscFree(stash->rindices));
   PetscFunctionReturn(0);
 }
 
@@ -234,7 +234,7 @@ static PetscErrorCode MatStashExpand_Private(MatStash *stash,PetscInt incr)
   if (newnmax  < (stash->nmax + incr)) newnmax += 2*incr;
 
   /* Get a MatStashSpace and attach it to stash */
-  CHKERRQ(PetscMatStashSpaceGet(bs2,newnmax,&stash->space));
+  PetscCall(PetscMatStashSpaceGet(bs2,newnmax,&stash->space));
   if (!stash->space_head) { /* new stash or resuing stash->oldnmax */
     stash->space_head = stash->space;
   }
@@ -263,7 +263,7 @@ PetscErrorCode MatStashValuesRow_Private(MatStash *stash,PetscInt row,PetscInt n
   PetscFunctionBegin;
   /* Check and see if we have sufficient memory */
   if (!space || space->local_remaining < n) {
-    CHKERRQ(MatStashExpand_Private(stash,n));
+    PetscCall(MatStashExpand_Private(stash,n));
   }
   space = stash->space;
   k     = space->local_used;
@@ -303,7 +303,7 @@ PetscErrorCode MatStashValuesCol_Private(MatStash *stash,PetscInt row,PetscInt n
   PetscFunctionBegin;
   /* Check and see if we have sufficient memory */
   if (!space || space->local_remaining < n) {
-    CHKERRQ(MatStashExpand_Private(stash,n));
+    PetscCall(MatStashExpand_Private(stash,n));
   }
   space = stash->space;
   k     = space->local_used;
@@ -348,7 +348,7 @@ PetscErrorCode MatStashValuesRowBlocked_Private(MatStash *stash,PetscInt row,Pet
 
   PetscFunctionBegin;
   if (!space || space->local_remaining < n) {
-    CHKERRQ(MatStashExpand_Private(stash,n));
+    PetscCall(MatStashExpand_Private(stash,n));
   }
   space = stash->space;
   l     = space->local_used;
@@ -401,7 +401,7 @@ PetscErrorCode MatStashValuesColBlocked_Private(MatStash *stash,PetscInt row,Pet
 
   PetscFunctionBegin;
   if (!space || space->local_remaining < n) {
-    CHKERRQ(MatStashExpand_Private(stash,n));
+    PetscCall(MatStashExpand_Private(stash,n));
   }
   space = stash->space;
   l     = space->local_used;
@@ -445,7 +445,7 @@ PetscErrorCode MatStashValuesColBlocked_Private(MatStash *stash,PetscInt row,Pet
 PetscErrorCode MatStashScatterBegin_Private(Mat mat,MatStash *stash,PetscInt *owners)
 {
   PetscFunctionBegin;
-  CHKERRQ((*stash->ScatterBegin)(mat,stash,owners));
+  PetscCall((*stash->ScatterBegin)(mat,stash,owners));
   PetscFunctionReturn(0);
 }
 
@@ -465,7 +465,7 @@ static PetscErrorCode MatStashScatterBegin_Ref(Mat mat,MatStash *stash,PetscInt 
   PetscFunctionBegin;
   {                             /* make sure all processors are either in INSERTMODE or ADDMODE */
     InsertMode addv;
-    CHKERRMPI(MPIU_Allreduce((PetscEnum*)&mat->insertmode,(PetscEnum*)&addv,1,MPIU_ENUM,MPI_BOR,PetscObjectComm((PetscObject)mat)));
+    PetscCallMPI(MPIU_Allreduce((PetscEnum*)&mat->insertmode,(PetscEnum*)&addv,1,MPIU_ENUM,MPI_BOR,PetscObjectComm((PetscObject)mat)));
     PetscCheckFalse(addv == (ADD_VALUES|INSERT_VALUES),PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Some processors inserted others added");
     mat->insertmode = addv; /* in case this processor had no cache */
   }
@@ -473,8 +473,8 @@ static PetscErrorCode MatStashScatterBegin_Ref(Mat mat,MatStash *stash,PetscInt 
   bs2 = stash->bs*stash->bs;
 
   /*  first count number of contributors to each processor */
-  CHKERRQ(PetscCalloc1(size,&nlengths));
-  CHKERRQ(PetscMalloc1(stash->n+1,&owner));
+  PetscCall(PetscCalloc1(size,&nlengths));
+  PetscCall(PetscMalloc1(stash->n+1,&owner));
 
   i       = j    = 0;
   lastidx = -1;
@@ -497,7 +497,7 @@ static PetscErrorCode MatStashScatterBegin_Ref(Mat mat,MatStash *stash,PetscInt 
   }
 
   /* Now check what procs get messages - and compute nsends. */
-  CHKERRQ(PetscCalloc1(size,&sizes));
+  PetscCall(PetscCalloc1(size,&sizes));
   for (i=0, nsends=0; i<size; i++) {
     if (nlengths[i]) {
       sizes[i] = 1; nsends++;
@@ -506,24 +506,24 @@ static PetscErrorCode MatStashScatterBegin_Ref(Mat mat,MatStash *stash,PetscInt 
 
   {PetscMPIInt *onodes,*olengths;
    /* Determine the number of messages to expect, their lengths, from from-ids */
-   CHKERRQ(PetscGatherNumberOfMessages(comm,sizes,nlengths,&nreceives));
-   CHKERRQ(PetscGatherMessageLengths(comm,nsends,nreceives,nlengths,&onodes,&olengths));
+   PetscCall(PetscGatherNumberOfMessages(comm,sizes,nlengths,&nreceives));
+   PetscCall(PetscGatherMessageLengths(comm,nsends,nreceives,nlengths,&onodes,&olengths));
    /* since clubbing row,col - lengths are multiplied by 2 */
    for (i=0; i<nreceives; i++) olengths[i] *=2;
-   CHKERRQ(PetscPostIrecvInt(comm,tag1,nreceives,onodes,olengths,&rindices,&recv_waits1));
+   PetscCall(PetscPostIrecvInt(comm,tag1,nreceives,onodes,olengths,&rindices,&recv_waits1));
    /* values are size 'bs2' lengths (and remove earlier factor 2 */
    for (i=0; i<nreceives; i++) olengths[i] = olengths[i]*bs2/2;
-   CHKERRQ(PetscPostIrecvScalar(comm,tag2,nreceives,onodes,olengths,&rvalues,&recv_waits2));
-   CHKERRQ(PetscFree(onodes));
-   CHKERRQ(PetscFree(olengths));}
+   PetscCall(PetscPostIrecvScalar(comm,tag2,nreceives,onodes,olengths,&rvalues,&recv_waits2));
+   PetscCall(PetscFree(onodes));
+   PetscCall(PetscFree(olengths));}
 
   /* do sends:
       1) starts[i] gives the starting index in svalues for stuff going to
          the ith processor
   */
-  CHKERRQ(PetscMalloc2(bs2*stash->n,&svalues,2*(stash->n+1),&sindices));
-  CHKERRQ(PetscMalloc1(2*nsends,&send_waits));
-  CHKERRQ(PetscMalloc2(size,&startv,size,&starti));
+  PetscCall(PetscMalloc2(bs2*stash->n,&svalues,2*(stash->n+1),&sindices));
+  PetscCall(PetscMalloc1(2*nsends,&send_waits));
+  PetscCall(PetscMalloc2(size,&startv,size,&starti));
   /* use 2 sends the first with all_a, the next with all_i and all_j */
   startv[0] = 0; starti[0] = 0;
   for (i=1; i<size; i++) {
@@ -562,25 +562,25 @@ static PetscErrorCode MatStashScatterBegin_Ref(Mat mat,MatStash *stash,PetscInt 
 
   for (i=0,count=0; i<size; i++) {
     if (sizes[i]) {
-      CHKERRMPI(MPI_Isend(sindices+2*startv[i],2*nlengths[i],MPIU_INT,i,tag1,comm,send_waits+count++));
-      CHKERRMPI(MPI_Isend(svalues+bs2*startv[i],bs2*nlengths[i],MPIU_SCALAR,i,tag2,comm,send_waits+count++));
+      PetscCallMPI(MPI_Isend(sindices+2*startv[i],2*nlengths[i],MPIU_INT,i,tag1,comm,send_waits+count++));
+      PetscCallMPI(MPI_Isend(svalues+bs2*startv[i],bs2*nlengths[i],MPIU_SCALAR,i,tag2,comm,send_waits+count++));
     }
   }
 #if defined(PETSC_USE_INFO)
-  CHKERRQ(PetscInfo(NULL,"No of messages: %" PetscInt_FMT " \n",nsends));
+  PetscCall(PetscInfo(NULL,"No of messages: %" PetscInt_FMT " \n",nsends));
   for (i=0; i<size; i++) {
     if (sizes[i]) {
-      CHKERRQ(PetscInfo(NULL,"Mesg_to: %" PetscInt_FMT ": size: %zu bytes\n",i,(size_t)(nlengths[i]*(bs2*sizeof(PetscScalar)+2*sizeof(PetscInt)))));
+      PetscCall(PetscInfo(NULL,"Mesg_to: %" PetscInt_FMT ": size: %zu bytes\n",i,(size_t)(nlengths[i]*(bs2*sizeof(PetscScalar)+2*sizeof(PetscInt)))));
     }
   }
 #endif
-  CHKERRQ(PetscFree(nlengths));
-  CHKERRQ(PetscFree(owner));
-  CHKERRQ(PetscFree2(startv,starti));
-  CHKERRQ(PetscFree(sizes));
+  PetscCall(PetscFree(nlengths));
+  PetscCall(PetscFree(owner));
+  PetscCall(PetscFree2(startv,starti));
+  PetscCall(PetscFree(sizes));
 
   /* recv_waits need to be contiguous for MatStashScatterGetMesg_Private() */
-  CHKERRQ(PetscMalloc1(2*nreceives,&recv_waits));
+  PetscCall(PetscMalloc1(2*nreceives,&recv_waits));
 
   for (i=0; i<nreceives; i++) {
     recv_waits[2*i]   = recv_waits1[i];
@@ -588,8 +588,8 @@ static PetscErrorCode MatStashScatterBegin_Ref(Mat mat,MatStash *stash,PetscInt 
   }
   stash->recv_waits = recv_waits;
 
-  CHKERRQ(PetscFree(recv_waits1));
-  CHKERRQ(PetscFree(recv_waits2));
+  PetscCall(PetscFree(recv_waits1));
+  PetscCall(PetscFree(recv_waits2));
 
   stash->svalues         = svalues;
   stash->sindices        = sindices;
@@ -623,7 +623,7 @@ static PetscErrorCode MatStashScatterBegin_Ref(Mat mat,MatStash *stash,PetscInt 
 PetscErrorCode MatStashScatterGetMesg_Private(MatStash *stash,PetscMPIInt *nvals,PetscInt **rows,PetscInt **cols,PetscScalar **vals,PetscInt *flg)
 {
   PetscFunctionBegin;
-  CHKERRQ((*stash->ScatterGetMesg)(stash,nvals,rows,cols,vals,flg));
+  PetscCall((*stash->ScatterGetMesg)(stash,nvals,rows,cols,vals,flg));
   PetscFunctionReturn(0);
 }
 
@@ -645,21 +645,21 @@ PETSC_INTERN PetscErrorCode MatStashScatterGetMesg_Ref(MatStash *stash,PetscMPII
   while (!match_found) {
     if (stash->reproduce) {
       i    = stash->reproduce_count++;
-      CHKERRMPI(MPI_Wait(stash->recv_waits+i,&recv_status));
+      PetscCallMPI(MPI_Wait(stash->recv_waits+i,&recv_status));
     } else {
-      CHKERRMPI(MPI_Waitany(2*stash->nrecvs,stash->recv_waits,&i,&recv_status));
+      PetscCallMPI(MPI_Waitany(2*stash->nrecvs,stash->recv_waits,&i,&recv_status));
     }
     PetscCheckFalse(recv_status.MPI_SOURCE < 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Negative MPI source!");
 
     /* Now pack the received message into a structure which is usable by others */
     if (i % 2) {
-      CHKERRMPI(MPI_Get_count(&recv_status,MPIU_SCALAR,nvals));
+      PetscCallMPI(MPI_Get_count(&recv_status,MPIU_SCALAR,nvals));
 
       flg_v[2*recv_status.MPI_SOURCE] = i/2;
 
       *nvals = *nvals/bs2;
     } else {
-      CHKERRMPI(MPI_Get_count(&recv_status,MPIU_INT,nvals));
+      PetscCallMPI(MPI_Get_count(&recv_status,MPIU_INT,nvals));
 
       flg_v[2*recv_status.MPI_SOURCE+1] = i/2;
 
@@ -695,7 +695,7 @@ static PetscErrorCode MatStashSortCompress_Private(MatStash *stash,InsertMode in
   PetscScalar **valptr;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscMalloc4(n,&row,n,&col,n,&valptr,n,&perm));
+  PetscCall(PetscMalloc4(n,&row,n,&col,n,&valptr,n,&perm));
   for (space=stash->space_head,cnt=0; space; space=space->next) {
     for (i=0; i<space->local_used; i++) {
       row[cnt] = space->idx[i];
@@ -706,24 +706,24 @@ static PetscErrorCode MatStashSortCompress_Private(MatStash *stash,InsertMode in
     }
   }
   PetscCheckFalse(cnt != n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatStash n %" PetscInt_FMT ", but counted %" PetscInt_FMT " entries",n,cnt);
-  CHKERRQ(PetscSortIntWithArrayPair(n,row,col,perm));
+  PetscCall(PetscSortIntWithArrayPair(n,row,col,perm));
   /* Scan through the rows, sorting each one, combining duplicates, and packing send buffers */
   for (rowstart=0,cnt=0,i=1; i<=n; i++) {
     if (i == n || row[i] != row[rowstart]) {         /* Sort the last row. */
       PetscInt colstart;
-      CHKERRQ(PetscSortIntWithArray(i-rowstart,&col[rowstart],&perm[rowstart]));
+      PetscCall(PetscSortIntWithArray(i-rowstart,&col[rowstart],&perm[rowstart]));
       for (colstart=rowstart; colstart<i;) { /* Compress multiple insertions to the same location */
         PetscInt j,l;
         MatStashBlock *block;
-        CHKERRQ(PetscSegBufferGet(stash->segsendblocks,1,&block));
+        PetscCall(PetscSegBufferGet(stash->segsendblocks,1,&block));
         block->row = row[rowstart];
         block->col = col[colstart];
-        CHKERRQ(PetscArraycpy(block->vals,valptr[perm[colstart]],bs2));
+        PetscCall(PetscArraycpy(block->vals,valptr[perm[colstart]],bs2));
         for (j=colstart+1; j<i && col[j] == col[colstart]; j++) { /* Add any extra stashed blocks at the same (row,col) */
           if (insertmode == ADD_VALUES) {
             for (l=0; l<bs2; l++) block->vals[l] += valptr[perm[j]][l];
           } else {
-            CHKERRQ(PetscArraycpy(block->vals,valptr[perm[j]],bs2));
+            PetscCall(PetscArraycpy(block->vals,valptr[perm[j]],bs2));
           }
         }
         colstart = j;
@@ -731,7 +731,7 @@ static PetscErrorCode MatStashSortCompress_Private(MatStash *stash,InsertMode in
       rowstart = i;
     }
   }
-  CHKERRQ(PetscFree4(row,col,valptr,perm));
+  PetscCall(PetscFree4(row,col,valptr,perm));
   PetscFunctionReturn(0);
 }
 
@@ -765,20 +765,20 @@ static PetscErrorCode MatStashBlockTypeSetUp(MatStash *stash)
     if (stash->blocktype_size % sizeof(PetscInt)) { /* Implies that PetscInt is larger and does not satisfy alignment without padding */
       stash->blocktype_size += sizeof(PetscInt) - stash->blocktype_size % sizeof(PetscInt);
     }
-    CHKERRQ(PetscSegBufferCreate(stash->blocktype_size,1,&stash->segsendblocks));
-    CHKERRQ(PetscSegBufferCreate(stash->blocktype_size,1,&stash->segrecvblocks));
-    CHKERRQ(PetscSegBufferCreate(sizeof(MatStashFrame),1,&stash->segrecvframe));
+    PetscCall(PetscSegBufferCreate(stash->blocktype_size,1,&stash->segsendblocks));
+    PetscCall(PetscSegBufferCreate(stash->blocktype_size,1,&stash->segrecvblocks));
+    PetscCall(PetscSegBufferCreate(sizeof(MatStashFrame),1,&stash->segrecvframe));
     blocklens[0] = 2;
     blocklens[1] = bs2;
     displs[0] = offsetof(struct DummyBlock,row);
     displs[1] = offsetof(struct DummyBlock,vals);
     types[0] = MPIU_INT;
     types[1] = MPIU_SCALAR;
-    CHKERRMPI(MPI_Type_create_struct(2,blocklens,displs,types,&stype));
-    CHKERRMPI(MPI_Type_commit(&stype));
-    CHKERRMPI(MPI_Type_create_resized(stype,0,stash->blocktype_size,&stash->blocktype));
-    CHKERRMPI(MPI_Type_commit(&stash->blocktype));
-    CHKERRMPI(MPI_Type_free(&stype));
+    PetscCallMPI(MPI_Type_create_struct(2,blocklens,displs,types,&stype));
+    PetscCallMPI(MPI_Type_commit(&stype));
+    PetscCallMPI(MPI_Type_create_resized(stype,0,stash->blocktype_size,&stash->blocktype));
+    PetscCallMPI(MPI_Type_commit(&stash->blocktype));
+    PetscCallMPI(MPI_Type_free(&stype));
   }
   PetscFunctionReturn(0);
 }
@@ -793,7 +793,7 @@ static PetscErrorCode MatStashBTSSend_Private(MPI_Comm comm,const PetscMPIInt ta
 
   PetscFunctionBegin;
   PetscCheckFalse(rank != stash->sendranks[rankid],comm,PETSC_ERR_PLIB,"BTS Send rank %d does not match sendranks[%d] %d",rank,rankid,stash->sendranks[rankid]);
-  CHKERRMPI(MPI_Isend(stash->sendframes[rankid].buffer,hdr->count,stash->blocktype,rank,tag[0],comm,&req[0]));
+  PetscCallMPI(MPI_Isend(stash->sendframes[rankid].buffer,hdr->count,stash->blocktype,rank,tag[0],comm,&req[0]));
   stash->sendframes[rankid].count = hdr->count;
   stash->sendframes[rankid].pending = 1;
   PetscFunctionReturn(0);
@@ -809,9 +809,9 @@ static PetscErrorCode MatStashBTSRecv_Private(MPI_Comm comm,const PetscMPIInt ta
   MatStashFrame *frame;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscSegBufferGet(stash->segrecvframe,1,&frame));
-  CHKERRQ(PetscSegBufferGet(stash->segrecvblocks,hdr->count,&frame->buffer));
-  CHKERRMPI(MPI_Irecv(frame->buffer,hdr->count,stash->blocktype,rank,tag[0],comm,&req[0]));
+  PetscCall(PetscSegBufferGet(stash->segrecvframe,1,&frame));
+  PetscCall(PetscSegBufferGet(stash->segrecvblocks,hdr->count,&frame->buffer));
+  PetscCallMPI(MPI_Irecv(frame->buffer,hdr->count,stash->blocktype,rank,tag[0],comm,&req[0]));
   frame->count = hdr->count;
   frame->pending = 1;
   PetscFunctionReturn(0);
@@ -829,14 +829,14 @@ static PetscErrorCode MatStashScatterBegin_BTS(Mat mat,MatStash *stash,PetscInt 
   PetscFunctionBegin;
   if (PetscDefined(USE_DEBUG)) { /* make sure all processors are either in INSERTMODE or ADDMODE */
     InsertMode addv;
-    CHKERRMPI(MPIU_Allreduce((PetscEnum*)&mat->insertmode,(PetscEnum*)&addv,1,MPIU_ENUM,MPI_BOR,PetscObjectComm((PetscObject)mat)));
+    PetscCallMPI(MPIU_Allreduce((PetscEnum*)&mat->insertmode,(PetscEnum*)&addv,1,MPIU_ENUM,MPI_BOR,PetscObjectComm((PetscObject)mat)));
     PetscCheckFalse(addv == (ADD_VALUES|INSERT_VALUES),PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Some processors inserted others added");
   }
 
-  CHKERRQ(MatStashBlockTypeSetUp(stash));
-  CHKERRQ(MatStashSortCompress_Private(stash,mat->insertmode));
-  CHKERRQ(PetscSegBufferGetSize(stash->segsendblocks,&nblocks));
-  CHKERRQ(PetscSegBufferExtractInPlace(stash->segsendblocks,&sendblocks));
+  PetscCall(MatStashBlockTypeSetUp(stash));
+  PetscCall(MatStashSortCompress_Private(stash,mat->insertmode));
+  PetscCall(PetscSegBufferGetSize(stash->segsendblocks,&nblocks));
+  PetscCall(PetscSegBufferExtractInPlace(stash->segsendblocks,&sendblocks));
   if (stash->first_assembly_done) { /* Set up sendhdrs and sendframes for each rank that we sent before */
     PetscInt i;
     size_t b;
@@ -860,7 +860,7 @@ static PetscErrorCode MatStashScatterBegin_BTS(Mat mat,MatStash *stash,PetscInt 
     for (rowstart=0; rowstart<nblocks;) {
       PetscInt owner;
       MatStashBlock *sendblock_rowstart = (MatStashBlock*)&sendblocks[rowstart*stash->blocktype_size];
-      CHKERRQ(PetscFindInt(sendblock_rowstart->row,stash->size+1,owners,&owner));
+      PetscCall(PetscFindInt(sendblock_rowstart->row,stash->size+1,owners,&owner));
       if (owner < 0) owner = -(owner+2);
       for (i=rowstart+1; i<nblocks; i++) { /* Move forward through a run of blocks with the same owner */
         MatStashBlock *sendblock_i = (MatStashBlock*)&sendblocks[i*stash->blocktype_size];
@@ -869,14 +869,14 @@ static PetscErrorCode MatStashScatterBegin_BTS(Mat mat,MatStash *stash,PetscInt 
       stash->nsendranks++;
       rowstart = i;
     }
-    CHKERRQ(PetscMalloc3(stash->nsendranks,&stash->sendranks,stash->nsendranks,&stash->sendhdr,stash->nsendranks,&stash->sendframes));
+    PetscCall(PetscMalloc3(stash->nsendranks,&stash->sendranks,stash->nsendranks,&stash->sendhdr,stash->nsendranks,&stash->sendframes));
 
     /* Set up sendhdrs and sendframes */
     sendno = 0;
     for (rowstart=0; rowstart<nblocks;) {
       PetscInt owner;
       MatStashBlock *sendblock_rowstart = (MatStashBlock*)&sendblocks[rowstart*stash->blocktype_size];
-      CHKERRQ(PetscFindInt(sendblock_rowstart->row,stash->size+1,owners,&owner));
+      PetscCall(PetscFindInt(sendblock_rowstart->row,stash->size+1,owners,&owner));
       if (owner < 0) owner = -(owner+2);
       stash->sendranks[sendno] = owner;
       for (i=rowstart+1; i<nblocks; i++) { /* Move forward through a run of blocks with the same owner */
@@ -904,23 +904,23 @@ static PetscErrorCode MatStashScatterBegin_BTS(Mat mat,MatStash *stash,PetscInt 
 
   if (stash->first_assembly_done) {
     PetscMPIInt i,tag;
-    CHKERRQ(PetscCommGetNewTag(stash->comm,&tag));
+    PetscCall(PetscCommGetNewTag(stash->comm,&tag));
     for (i=0; i<stash->nrecvranks; i++) {
-      CHKERRQ(MatStashBTSRecv_Private(stash->comm,&tag,stash->recvranks[i],&stash->recvhdr[i],&stash->recvreqs[i],stash));
+      PetscCall(MatStashBTSRecv_Private(stash->comm,&tag,stash->recvranks[i],&stash->recvhdr[i],&stash->recvreqs[i],stash));
     }
     for (i=0; i<stash->nsendranks; i++) {
-      CHKERRQ(MatStashBTSSend_Private(stash->comm,&tag,i,stash->sendranks[i],&stash->sendhdr[i],&stash->sendreqs[i],stash));
+      PetscCall(MatStashBTSSend_Private(stash->comm,&tag,i,stash->sendranks[i],&stash->sendhdr[i],&stash->sendreqs[i],stash));
     }
     stash->use_status = PETSC_TRUE; /* Use count from message status. */
   } else {
     ierr = PetscCommBuildTwoSidedFReq(stash->comm,1,MPIU_INT,stash->nsendranks,stash->sendranks,(PetscInt*)stash->sendhdr,
                                       &stash->nrecvranks,&stash->recvranks,(PetscInt*)&stash->recvhdr,1,&stash->sendreqs,&stash->recvreqs,
-                                      MatStashBTSSend_Private,MatStashBTSRecv_Private,stash);CHKERRQ(ierr);
-    CHKERRQ(PetscMalloc2(stash->nrecvranks,&stash->some_indices,stash->nrecvranks,&stash->some_statuses));
+                                      MatStashBTSSend_Private,MatStashBTSRecv_Private,stash);PetscCall(ierr);
+    PetscCall(PetscMalloc2(stash->nrecvranks,&stash->some_indices,stash->nrecvranks,&stash->some_statuses));
     stash->use_status = PETSC_FALSE; /* Use count from header instead of from message. */
   }
 
-  CHKERRQ(PetscSegBufferExtractInPlace(stash->segrecvframe,&stash->recvframes));
+  PetscCall(PetscSegBufferExtractInPlace(stash->segrecvframe,&stash->recvframes));
   stash->recvframe_active     = NULL;
   stash->recvframe_i          = 0;
   stash->some_i               = 0;
@@ -940,13 +940,13 @@ static PetscErrorCode MatStashScatterGetMesg_BTS(MatStash *stash,PetscMPIInt *n,
   while (!stash->recvframe_active || stash->recvframe_i == stash->recvframe_count) {
     if (stash->some_i == stash->some_count) {
       if (stash->recvcount == stash->nrecvranks) PetscFunctionReturn(0); /* Done */
-      CHKERRMPI(MPI_Waitsome(stash->nrecvranks,stash->recvreqs,&stash->some_count,stash->some_indices,stash->use_status?stash->some_statuses:MPI_STATUSES_IGNORE));
+      PetscCallMPI(MPI_Waitsome(stash->nrecvranks,stash->recvreqs,&stash->some_count,stash->some_indices,stash->use_status?stash->some_statuses:MPI_STATUSES_IGNORE));
       stash->some_i = 0;
     }
     stash->recvframe_active = &stash->recvframes[stash->some_indices[stash->some_i]];
     stash->recvframe_count = stash->recvframe_active->count; /* From header; maximum count */
     if (stash->use_status) { /* Count what was actually sent */
-      CHKERRMPI(MPI_Get_count(&stash->some_statuses[stash->some_i],stash->blocktype,&stash->recvframe_count));
+      PetscCallMPI(MPI_Get_count(&stash->some_statuses[stash->some_i],stash->blocktype,&stash->recvframe_count));
     }
     if (stash->recvframe_count > 0) { /* Check for InsertMode consistency */
       block = (MatStashBlock*)&((char*)stash->recvframe_active->buffer)[0];
@@ -972,12 +972,12 @@ static PetscErrorCode MatStashScatterGetMesg_BTS(MatStash *stash,PetscMPIInt *n,
 static PetscErrorCode MatStashScatterEnd_BTS(MatStash *stash)
 {
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Waitall(stash->nsendranks,stash->sendreqs,MPI_STATUSES_IGNORE));
+  PetscCallMPI(MPI_Waitall(stash->nsendranks,stash->sendreqs,MPI_STATUSES_IGNORE));
   if (stash->first_assembly_done) { /* Reuse the communication contexts, so consolidate and reset segrecvblocks  */
     void *dummy;
-    CHKERRQ(PetscSegBufferExtractInPlace(stash->segrecvblocks,&dummy));
+    PetscCall(PetscSegBufferExtractInPlace(stash->segrecvblocks,&dummy));
   } else {                      /* No reuse, so collect everything. */
-    CHKERRQ(MatStashScatterDestroy_BTS(stash));
+    PetscCall(MatStashScatterDestroy_BTS(stash));
   }
 
   /* Now update nmaxold to be app 10% more than max n used, this way the
@@ -994,7 +994,7 @@ static PetscErrorCode MatStashScatterEnd_BTS(MatStash *stash)
   stash->reallocs   = -1;
   stash->nprocessed = 0;
 
-  CHKERRQ(PetscMatStashSpaceDestroy(&stash->space_head));
+  PetscCall(PetscMatStashSpaceDestroy(&stash->space_head));
 
   stash->space = NULL;
 
@@ -1004,21 +1004,21 @@ static PetscErrorCode MatStashScatterEnd_BTS(MatStash *stash)
 PetscErrorCode MatStashScatterDestroy_BTS(MatStash *stash)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscSegBufferDestroy(&stash->segsendblocks));
-  CHKERRQ(PetscSegBufferDestroy(&stash->segrecvframe));
+  PetscCall(PetscSegBufferDestroy(&stash->segsendblocks));
+  PetscCall(PetscSegBufferDestroy(&stash->segrecvframe));
   stash->recvframes = NULL;
-  CHKERRQ(PetscSegBufferDestroy(&stash->segrecvblocks));
+  PetscCall(PetscSegBufferDestroy(&stash->segrecvblocks));
   if (stash->blocktype != MPI_DATATYPE_NULL) {
-    CHKERRMPI(MPI_Type_free(&stash->blocktype));
+    PetscCallMPI(MPI_Type_free(&stash->blocktype));
   }
   stash->nsendranks = 0;
   stash->nrecvranks = 0;
-  CHKERRQ(PetscFree3(stash->sendranks,stash->sendhdr,stash->sendframes));
-  CHKERRQ(PetscFree(stash->sendreqs));
-  CHKERRQ(PetscFree(stash->recvreqs));
-  CHKERRQ(PetscFree(stash->recvranks));
-  CHKERRQ(PetscFree(stash->recvhdr));
-  CHKERRQ(PetscFree2(stash->some_indices,stash->some_statuses));
+  PetscCall(PetscFree3(stash->sendranks,stash->sendhdr,stash->sendframes));
+  PetscCall(PetscFree(stash->sendreqs));
+  PetscCall(PetscFree(stash->recvreqs));
+  PetscCall(PetscFree(stash->recvranks));
+  PetscCall(PetscFree(stash->recvhdr));
+  PetscCall(PetscFree2(stash->some_indices,stash->some_statuses));
   PetscFunctionReturn(0);
 }
 #endif

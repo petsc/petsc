@@ -18,7 +18,7 @@ PetscErrorCode  AORegisterAll(void)
   if (AORegisterAllCalled) PetscFunctionReturn(0);
   AORegisterAllCalled = PETSC_TRUE;
 
-  CHKERRQ(AORegister(AOBASIC,          AOCreate_Basic));
-  CHKERRQ(AORegister(AOMEMORYSCALABLE, AOCreate_MemoryScalable));
+  PetscCall(AORegister(AOBASIC,          AOCreate_Basic));
+  PetscCall(AORegister(AOMEMORYSCALABLE, AOCreate_MemoryScalable));
   PetscFunctionReturn(0);
 }

@@ -104,17 +104,17 @@ PetscErrorCode SetFromOptions(AppCtx * ctx)
   stoich(0, 2) = 1.;
 
   PetscInt as = N_SPECIES;
-  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-length_x",&ctx->length[0],NULL));
-  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-length_y",&ctx->length[1],NULL));
-  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-porosity",&ctx->porosity,NULL));
-  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-saturation",&ctx->saturation,NULL));
-  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-dispersivity",&ctx->dispersivity,NULL));
-  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-gradq_inflow",&ctx->gradq_inflow,NULL));
-  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-rate_constant",&ctx->rate_constant[0],NULL));
-  CHKERRQ(PetscOptionsGetRealArray(NULL,NULL,"-sp_inflow",ctx->x_inflow.sp,&as,NULL));
-  CHKERRQ(PetscOptionsGetRealArray(NULL,NULL,"-sp_0",ctx->x_0.sp,&as,NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-length_x",&ctx->length[0],NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-length_y",&ctx->length[1],NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-porosity",&ctx->porosity,NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-saturation",&ctx->saturation,NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-dispersivity",&ctx->dispersivity,NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-gradq_inflow",&ctx->gradq_inflow,NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-rate_constant",&ctx->rate_constant[0],NULL));
+  PetscCall(PetscOptionsGetRealArray(NULL,NULL,"-sp_inflow",ctx->x_inflow.sp,&as,NULL));
+  PetscCall(PetscOptionsGetRealArray(NULL,NULL,"-sp_0",ctx->x_0.sp,&as,NULL));
   as   = N_SPECIES;
-  CHKERRQ(PetscOptionsGetRealArray(NULL,NULL,"-stoich",ctx->stoichiometry,&as,NULL));
+  PetscCall(PetscOptionsGetRealArray(NULL,NULL,"-stoich",ctx->stoichiometry,&as,NULL));
   PetscFunctionReturn(0);
 }
 
@@ -128,40 +128,40 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   DM             da;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(SetFromOptions(&ctx));
-  CHKERRQ(TSCreate(PETSC_COMM_WORLD, &ts));
-  CHKERRQ(TSSetType(ts,TSCN));
-  CHKERRQ(TSSetProblemType(ts,TS_NONLINEAR));
-  CHKERRQ(TSSetIFunction(ts, NULL, FormIFunction, &ctx));
-  CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,N_SPECIES,1,NULL,NULL,&da));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
-  CHKERRQ(DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0));
-  CHKERRQ(DMDASetFieldName(da,0,"species A"));
-  CHKERRQ(DMDASetFieldName(da,1,"species B"));
-  CHKERRQ(DMDASetFieldName(da,2,"species C"));
-  CHKERRQ(DMSetApplicationContext(da,&ctx));
-  CHKERRQ(DMCreateGlobalVector(da,&x));
-  CHKERRQ(FormInitialGuess(da, &ctx, x));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(SetFromOptions(&ctx));
+  PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
+  PetscCall(TSSetType(ts,TSCN));
+  PetscCall(TSSetProblemType(ts,TS_NONLINEAR));
+  PetscCall(TSSetIFunction(ts, NULL, FormIFunction, &ctx));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,N_SPECIES,1,NULL,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0));
+  PetscCall(DMDASetFieldName(da,0,"species A"));
+  PetscCall(DMDASetFieldName(da,1,"species B"));
+  PetscCall(DMDASetFieldName(da,2,"species C"));
+  PetscCall(DMSetApplicationContext(da,&ctx));
+  PetscCall(DMCreateGlobalVector(da,&x));
+  PetscCall(FormInitialGuess(da, &ctx, x));
 
-  CHKERRQ(TSSetDM(ts, da));
-  CHKERRQ(TSSetMaxTime(ts,1000.0));
-  CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
-  CHKERRQ(TSSetTimeStep(ts,1.0));
-  CHKERRQ(TSSetSolution(ts,x));
-  CHKERRQ(TSSetFromOptions(ts));
+  PetscCall(TSSetDM(ts, da));
+  PetscCall(TSSetMaxTime(ts,1000.0));
+  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
+  PetscCall(TSSetTimeStep(ts,1.0));
+  PetscCall(TSSetSolution(ts,x));
+  PetscCall(TSSetFromOptions(ts));
 
-  CHKERRQ(TSGetSNES(ts,&snes));
-  CHKERRQ(SNESGetLineSearch(snes,&linesearch));
-  CHKERRQ(SNESLineSearchSetPostCheck(linesearch, ReactingFlowPostCheck, (void*)&ctx));
-  CHKERRQ(SNESSetFromOptions(snes));
-  CHKERRQ(TSSolve(ts,x));
+  PetscCall(TSGetSNES(ts,&snes));
+  PetscCall(SNESGetLineSearch(snes,&linesearch));
+  PetscCall(SNESLineSearchSetPostCheck(linesearch, ReactingFlowPostCheck, (void*)&ctx));
+  PetscCall(SNESSetFromOptions(snes));
+  PetscCall(TSSolve(ts,x));
 
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(TSDestroy(&ts));
-  CHKERRQ(DMDestroy(&da));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&x));
+  PetscCall(TSDestroy(&ts));
+  PetscCall(DMDestroy(&da));
+  PetscCall(PetscFinalize());
   PetscFunctionReturn(0);
 }
 
@@ -177,8 +177,8 @@ PetscErrorCode FormInitialGuess(DM da,AppCtx *ctx,Vec X)
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                      PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
-  CHKERRQ(DMDAVecGetArray(da,X,&x));
-  CHKERRQ(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
+  PetscCall(DMDAVecGetArray(da,X,&x));
+  PetscCall(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
 
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {
@@ -191,7 +191,7 @@ PetscErrorCode FormInitialGuess(DM da,AppCtx *ctx,Vec X)
       }
     }
   }
-  CHKERRQ(DMDAVecRestoreArray(da,X,&x));
+  PetscCall(DMDAVecRestoreArray(da,X,&x));
   PetscFunctionReturn(0);
 
 }
@@ -289,7 +289,7 @@ PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info,PetscScalar ptime,Field **
       }
     }
   }
-  CHKERRQ(PetscLogFlops((N_SPECIES*(28.0 + 13.0*N_REACTIONS))*info->ym*info->xm));
+  PetscCall(PetscLogFlops((N_SPECIES*(28.0 + 13.0*N_REACTIONS))*info->ym*info->xm));
   PetscFunctionReturn(0);
 }
 
@@ -304,16 +304,16 @@ PetscErrorCode ReactingFlowPostCheck(SNESLineSearch linesearch, Vec X, Vec Y, Ve
 
   PetscFunctionBeginUser;
    *changed_w = PETSC_FALSE;
-  CHKERRQ(VecMin(X,NULL,&min));
+  PetscCall(VecMin(X,NULL,&min));
   if (min >= 0.) PetscFunctionReturn(0);
 
   *changed_w = PETSC_TRUE;
-  CHKERRQ(SNESLineSearchGetSNES(linesearch, &snes));
-  CHKERRQ(SNESGetDM(snes,&da));
+  PetscCall(SNESLineSearchGetSNES(linesearch, &snes));
+  PetscCall(SNESGetDM(snes,&da));
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                      PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
-  CHKERRQ(DMDAVecGetArray(da,W,&x));
-  CHKERRQ(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
+  PetscCall(DMDAVecGetArray(da,W,&x));
+  PetscCall(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {
       for (l = 0; l < N_SPECIES; l++) {
@@ -321,7 +321,7 @@ PetscErrorCode ReactingFlowPostCheck(SNESLineSearch linesearch, Vec X, Vec Y, Ve
       }
     }
   }
-  CHKERRQ(DMDAVecRestoreArray(da,W,&x));
+  PetscCall(DMDAVecRestoreArray(da,W,&x));
   PetscFunctionReturn(0);
 }
 
@@ -334,18 +334,18 @@ PetscErrorCode FormIFunction(TS ts,PetscReal ptime,Vec X,Vec Xdot,Vec F,void *us
   DM             da;
 
   PetscFunctionBeginUser;
-  CHKERRQ(TSGetDM(ts,(DM*)&da));
-  CHKERRQ(DMGetLocalVector(da,&localX));
-  CHKERRQ(DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX));
-  CHKERRQ(DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX));
-  CHKERRQ(DMDAGetLocalInfo(da,&info));
-  CHKERRQ(DMDAVecGetArrayRead(da,localX,&u));
-  CHKERRQ(DMDAVecGetArrayRead(da,Xdot,&udot));
-  CHKERRQ(DMDAVecGetArray(da,F,&fu));
-  CHKERRQ(FormIFunctionLocal(&info,ptime,u,udot,fu,(AppCtx*)user));
-  CHKERRQ(DMDAVecRestoreArrayRead(da,localX,&u));
-  CHKERRQ(DMDAVecRestoreArrayRead(da,Xdot,&udot));
-  CHKERRQ(DMDAVecRestoreArray(da,F,&fu));
-  CHKERRQ(DMRestoreLocalVector(da,&localX));
+  PetscCall(TSGetDM(ts,(DM*)&da));
+  PetscCall(DMGetLocalVector(da,&localX));
+  PetscCall(DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX));
+  PetscCall(DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX));
+  PetscCall(DMDAGetLocalInfo(da,&info));
+  PetscCall(DMDAVecGetArrayRead(da,localX,&u));
+  PetscCall(DMDAVecGetArrayRead(da,Xdot,&udot));
+  PetscCall(DMDAVecGetArray(da,F,&fu));
+  PetscCall(FormIFunctionLocal(&info,ptime,u,udot,fu,(AppCtx*)user));
+  PetscCall(DMDAVecRestoreArrayRead(da,localX,&u));
+  PetscCall(DMDAVecRestoreArrayRead(da,Xdot,&udot));
+  PetscCall(DMDAVecRestoreArray(da,F,&fu));
+  PetscCall(DMRestoreLocalVector(da,&localX));
   PetscFunctionReturn(0);
 }

@@ -18,63 +18,63 @@ int main(int argc,char **argv)
   PetscBool              flg = PETSC_FALSE;
   ISLocalToGlobalMapping is;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",280,480,600,200,&viewer));
-  CHKERRQ(PetscViewerDrawGetDraw(viewer,0,&draw));
-  CHKERRQ(PetscDrawSetDoubleBuffer(draw));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",280,480,600,200,&viewer));
+  PetscCall(PetscViewerDrawGetDraw(viewer,0,&draw));
+  PetscCall(PetscDrawSetDoubleBuffer(draw));
 
   /* Readoptions */
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
-  CHKERRQ(PetscOptionsGetEnum(NULL,NULL,"-wrap",DMBoundaryTypes,(PetscEnum*)&bx,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-s",&s,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
+  PetscCall(PetscOptionsGetEnum(NULL,NULL,"-wrap",DMBoundaryTypes,(PetscEnum*)&bx,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-s",&s,NULL));
 
   /* Create distributed array and get vectors */
-  CHKERRQ(DMDACreate1d(PETSC_COMM_WORLD,bx,M,dof,s,NULL,&da));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
-  CHKERRQ(DMView(da,viewer));
-  CHKERRQ(DMCreateGlobalVector(da,&global));
-  CHKERRQ(DMCreateLocalVector(da,&local));
+  PetscCall(DMDACreate1d(PETSC_COMM_WORLD,bx,M,dof,s,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMView(da,viewer));
+  PetscCall(DMCreateGlobalVector(da,&global));
+  PetscCall(DMCreateLocalVector(da,&local));
 
   value = 1;
-  CHKERRQ(VecSet(global,value));
+  PetscCall(VecSet(global,value));
 
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   value = rank+1;
-  CHKERRQ(VecScale(global,value));
+  PetscCall(VecScale(global,value));
 
-  CHKERRQ(VecView(global,viewer));
-  CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"\nGlobal Vector:\n"));
-  CHKERRQ(VecView(global,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"\n"));
+  PetscCall(VecView(global,viewer));
+  PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"\nGlobal Vector:\n"));
+  PetscCall(VecView(global,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"\n"));
 
   /* Send ghost points to local vectors */
-  CHKERRQ(DMGlobalToLocalBegin(da,global,INSERT_VALUES,local));
-  CHKERRQ(DMGlobalToLocalEnd(da,global,INSERT_VALUES,local));
+  PetscCall(DMGlobalToLocalBegin(da,global,INSERT_VALUES,local));
+  PetscCall(DMGlobalToLocalEnd(da,global,INSERT_VALUES,local));
 
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-local_print",&flg,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-local_print",&flg,NULL));
   if (flg) {
     PetscViewer            sviewer;
 
-    CHKERRQ(PetscViewerASCIIPushSynchronized(PETSC_VIEWER_STDOUT_WORLD));
-    CHKERRQ(PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"\nLocal Vector: processor %d\n",rank));
-    CHKERRQ(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer));
-    CHKERRQ(VecView(local,sviewer));
-    CHKERRQ(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer));
-    CHKERRQ(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
-    CHKERRQ(PetscViewerASCIIPopSynchronized(PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(PetscViewerASCIIPushSynchronized(PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"\nLocal Vector: processor %d\n",rank));
+    PetscCall(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer));
+    PetscCall(VecView(local,sviewer));
+    PetscCall(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer));
+    PetscCall(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(PetscViewerASCIIPopSynchronized(PETSC_VIEWER_STDOUT_WORLD));
   }
-  CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"\nLocal to global mapping\n"));
-  CHKERRQ(DMGetLocalToGlobalMapping(da,&is));
-  CHKERRQ(ISLocalToGlobalMappingView(is,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"\nLocal to global mapping\n"));
+  PetscCall(DMGetLocalToGlobalMapping(da,&is));
+  PetscCall(ISLocalToGlobalMappingView(is,PETSC_VIEWER_STDOUT_WORLD));
 
   /* Free memory */
-  CHKERRQ(PetscViewerDestroy(&viewer));
-  CHKERRQ(VecDestroy(&global));
-  CHKERRQ(VecDestroy(&local));
-  CHKERRQ(DMDestroy(&da));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscViewerDestroy(&viewer));
+  PetscCall(VecDestroy(&global));
+  PetscCall(VecDestroy(&local));
+  PetscCall(DMDestroy(&da));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

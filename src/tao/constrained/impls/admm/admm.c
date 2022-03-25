@@ -37,25 +37,25 @@ static PetscErrorCode TaoADMMToleranceUpdate(Tao tao)
   tempJR = am->workJacobianRight;
   tempL  = am->workLeft;
   /* ATy */
-  CHKERRQ(TaoComputeJacobianEquality(mis, am->y, mis->jacobian_equality, mis->jacobian_equality_pre));
-  CHKERRQ(MatMultTranspose(mis->jacobian_equality,am->y,tempJR));
-  CHKERRQ(VecNorm(tempJR,NORM_2,&ATynorm));
+  PetscCall(TaoComputeJacobianEquality(mis, am->y, mis->jacobian_equality, mis->jacobian_equality_pre));
+  PetscCall(MatMultTranspose(mis->jacobian_equality,am->y,tempJR));
+  PetscCall(VecNorm(tempJR,NORM_2,&ATynorm));
   /* dualres = mu * ||AT(Bz-Bzold)||_2 */
-  CHKERRQ(VecWAXPY(tempJR,-1.,am->Bzold,am->Bz));
-  CHKERRQ(MatMultTranspose(mis->jacobian_equality,tempJR,tempL));
-  CHKERRQ(VecNorm(tempL,NORM_2,&am->dualres));
+  PetscCall(VecWAXPY(tempJR,-1.,am->Bzold,am->Bz));
+  PetscCall(MatMultTranspose(mis->jacobian_equality,tempJR,tempL));
+  PetscCall(VecNorm(tempL,NORM_2,&am->dualres));
   am->dualres *= am->mu;
 
   /* ||Ax||_2, ||Bz||_2 */
-  CHKERRQ(VecNorm(am->Ax,NORM_2,&Axnorm));
-  CHKERRQ(VecNorm(am->Bz,NORM_2,&Bznorm));
+  PetscCall(VecNorm(am->Ax,NORM_2,&Axnorm));
+  PetscCall(VecNorm(am->Bz,NORM_2,&Bznorm));
 
   /* Set catol to be catol_admm *  max{||Ax||,||Bz||,||c||} *
    * Set gatol to be gatol_admm *  ||A^Ty|| *
    * while cnorm is ||r_k||_2, and gnorm is ||d_k||_2 */
   temp = am->catol_admm * PetscMax(Axnorm, (!am->const_norm) ? Bznorm : PetscMax(Bznorm,am->const_norm));
-  CHKERRQ(TaoSetConstraintTolerances(tao,temp,PETSC_DEFAULT));
-  CHKERRQ(TaoSetTolerances(tao, am->gatol_admm*ATynorm, PETSC_DEFAULT,PETSC_DEFAULT));
+  PetscCall(TaoSetConstraintTolerances(tao,temp,PETSC_DEFAULT));
+  PetscCall(TaoSetTolerances(tao, am->gatol_admm*ATynorm, PETSC_DEFAULT,PETSC_DEFAULT));
   PetscFunctionReturn(0);
 }
 
@@ -75,17 +75,17 @@ static PetscErrorCode AdaptiveADMMPenaltyUpdate(Tao tao)
   a_k     = -1;
   b_k     = -1;
 
-  CHKERRQ(VecWAXPY(tempJR,-1.,am->Axold,am->Ax));
-  CHKERRQ(VecWAXPY(tempJR2,-1.,am->yhatold,am->yhat));
-  CHKERRQ(VecNorm(tempJR,NORM_2,&Axdiff_norm));
-  CHKERRQ(VecNorm(tempJR2,NORM_2,&yhatdiff_norm));
-  CHKERRQ(VecDot(tempJR,tempJR2,&Axyhat));
+  PetscCall(VecWAXPY(tempJR,-1.,am->Axold,am->Ax));
+  PetscCall(VecWAXPY(tempJR2,-1.,am->yhatold,am->yhat));
+  PetscCall(VecNorm(tempJR,NORM_2,&Axdiff_norm));
+  PetscCall(VecNorm(tempJR2,NORM_2,&yhatdiff_norm));
+  PetscCall(VecDot(tempJR,tempJR2,&Axyhat));
 
-  CHKERRQ(VecWAXPY(tempJR,-1.,am->Bz0,am->Bz));
-  CHKERRQ(VecWAXPY(tempJR2,-1.,am->y,am->y0));
-  CHKERRQ(VecNorm(tempJR,NORM_2,&Bzdiff_norm));
-  CHKERRQ(VecNorm(tempJR2,NORM_2,&ydiff_norm));
-  CHKERRQ(VecDot(tempJR,tempJR2,&Bzy));
+  PetscCall(VecWAXPY(tempJR,-1.,am->Bz0,am->Bz));
+  PetscCall(VecWAXPY(tempJR2,-1.,am->y,am->y0));
+  PetscCall(VecNorm(tempJR,NORM_2,&Bzdiff_norm));
+  PetscCall(VecNorm(tempJR2,NORM_2,&ydiff_norm));
+  PetscCall(VecDot(tempJR,tempJR2,&Bzy));
 
   if (Axyhat > am->orthval*Axdiff_norm*yhatdiff_norm + am->mueps) {
     hflag = PETSC_TRUE;
@@ -162,14 +162,14 @@ static PetscErrorCode ADMMUpdateConstraintResidualVector(Tao tao, Vec x, Vec z, 
   PetscFunctionBegin;
   mis  = am->subsolverX;
   reg  = am->subsolverZ;
-  CHKERRQ(TaoComputeJacobianEquality(mis, x, mis->jacobian_equality, mis->jacobian_equality_pre));
-  CHKERRQ(MatMult(mis->jacobian_equality,x,Ax));
-  CHKERRQ(TaoComputeJacobianEquality(reg, z, reg->jacobian_equality, reg->jacobian_equality_pre));
-  CHKERRQ(MatMult(reg->jacobian_equality,z,Bz));
+  PetscCall(TaoComputeJacobianEquality(mis, x, mis->jacobian_equality, mis->jacobian_equality_pre));
+  PetscCall(MatMult(mis->jacobian_equality,x,Ax));
+  PetscCall(TaoComputeJacobianEquality(reg, z, reg->jacobian_equality, reg->jacobian_equality_pre));
+  PetscCall(MatMult(reg->jacobian_equality,z,Bz));
 
-  CHKERRQ(VecWAXPY(residual,1.,Bz,Ax));
+  PetscCall(VecWAXPY(residual,1.,Bz,Ax));
   if (am->constraint != NULL) {
-    CHKERRQ(VecAXPY(residual,-1.,am->constraint));
+    PetscCall(VecAXPY(residual,-1.,am->constraint));
   }
   PetscFunctionReturn(0);
 }
@@ -186,20 +186,20 @@ static PetscErrorCode SubObjGradUpdate(Tao tao, Vec x, PetscReal *f, Vec g, void
 
   PetscFunctionBegin;
   tempJR = am->workJacobianRight;
-  CHKERRQ(ADMMUpdateConstraintResidualVector(parent, x, am->subsolverZ->solution, am->Ax, am->Bz, am->residual));
-  CHKERRQ((*am->ops->misfitobjgrad)(am->subsolverX,x,f,g,am->misfitobjgradP));
+  PetscCall(ADMMUpdateConstraintResidualVector(parent, x, am->subsolverZ->solution, am->Ax, am->Bz, am->residual));
+  PetscCall((*am->ops->misfitobjgrad)(am->subsolverX,x,f,g,am->misfitobjgradP));
 
   am->last_misfit_val = *f;
   /* Objective  Add + yT(Ax+Bz-c) + mu/2*||Ax+Bz-c||_2^2 */
-  CHKERRQ(VecTDot(am->residual,am->y,&temp));
-  CHKERRQ(VecTDot(am->residual,am->residual,&temp2));
+  PetscCall(VecTDot(am->residual,am->y,&temp));
+  PetscCall(VecTDot(am->residual,am->residual,&temp2));
   *f   += temp + (am->mu/2)*temp2;
 
   /* Gradient. Add + mu*AT(Ax+Bz-c) + yTA*/
-  CHKERRQ(MatMultTranspose(tao->jacobian_equality,am->residual,tempJR));
-  CHKERRQ(VecAXPY(g,am->mu,tempJR));
-  CHKERRQ(MatMultTranspose(tao->jacobian_equality,am->y,tempJR));
-  CHKERRQ(VecAXPY(g,1.,tempJR));
+  PetscCall(MatMultTranspose(tao->jacobian_equality,am->residual,tempJR));
+  PetscCall(VecAXPY(g,am->mu,tempJR));
+  PetscCall(MatMultTranspose(tao->jacobian_equality,am->y,tempJR));
+  PetscCall(VecAXPY(g,1.,tempJR));
   PetscFunctionReturn(0);
 }
 
@@ -215,19 +215,19 @@ static PetscErrorCode RegObjGradUpdate(Tao tao, Vec z, PetscReal *f, Vec g, void
 
   PetscFunctionBegin;
   tempJR = am->workJacobianRight;
-  CHKERRQ(ADMMUpdateConstraintResidualVector(parent, am->subsolverX->solution, z, am->Ax, am->Bz, am->residual));
-  CHKERRQ((*am->ops->regobjgrad)(am->subsolverZ,z,f,g,am->regobjgradP));
+  PetscCall(ADMMUpdateConstraintResidualVector(parent, am->subsolverX->solution, z, am->Ax, am->Bz, am->residual));
+  PetscCall((*am->ops->regobjgrad)(am->subsolverZ,z,f,g,am->regobjgradP));
   am->last_reg_val= *f;
   /* Objective  Add  + yT(Ax+Bz-c) + mu/2*||Ax+Bz-c||_2^2 */
-  CHKERRQ(VecTDot(am->residual,am->y,&temp));
-  CHKERRQ(VecTDot(am->residual,am->residual,&temp2));
+  PetscCall(VecTDot(am->residual,am->y,&temp));
+  PetscCall(VecTDot(am->residual,am->residual,&temp2));
   *f   += temp + (am->mu/2)*temp2;
 
   /* Gradient. Add + mu*BT(Ax+Bz-c) + yTB*/
-  CHKERRQ(MatMultTranspose(am->subsolverZ->jacobian_equality,am->residual,tempJR));
-  CHKERRQ(VecAXPY(g,am->mu,tempJR));
-  CHKERRQ(MatMultTranspose(am->subsolverZ->jacobian_equality,am->y,tempJR));
-  CHKERRQ(VecAXPY(g,1.,tempJR));
+  PetscCall(MatMultTranspose(am->subsolverZ->jacobian_equality,am->residual,tempJR));
+  PetscCall(VecAXPY(g,am->mu,tempJR));
+  PetscCall(MatMultTranspose(am->subsolverZ->jacobian_equality,am->y,tempJR));
+  PetscCall(VecAXPY(g,1.,tempJR));
   PetscFunctionReturn(0);
 }
 
@@ -238,11 +238,11 @@ static PetscErrorCode ADMML1EpsilonNorm(Tao tao, Vec x, PetscReal eps, PetscReal
   PetscInt       N;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetSize(am->workLeft,&N));
-  CHKERRQ(VecPointwiseMult(am->workLeft,x,x));
-  CHKERRQ(VecShift(am->workLeft,am->l1epsilon*am->l1epsilon));
-  CHKERRQ(VecSqrtAbs(am->workLeft));
-  CHKERRQ(VecSum(am->workLeft,norm));
+  PetscCall(VecGetSize(am->workLeft,&N));
+  PetscCall(VecPointwiseMult(am->workLeft,x,x));
+  PetscCall(VecShift(am->workLeft,am->l1epsilon*am->l1epsilon));
+  PetscCall(VecSqrtAbs(am->workLeft));
+  PetscCall(VecSum(am->workLeft,norm));
   *norm += N*am->l1epsilon;
   *norm *= am->lambda;
   PetscFunctionReturn(0);
@@ -260,9 +260,9 @@ static PetscErrorCode ADMMInternalHessianUpdate(Mat H, Mat Constraint, PetscBool
   case (TAO_ADMM_UPDATE_ADAPTIVE_RELAXED):
     if (H && (am->muold != am->mu)) {
       if (!Identity) {
-        CHKERRQ(MatAXPY(H,am->mu-am->muold,Constraint,DIFFERENT_NONZERO_PATTERN));
+        PetscCall(MatAXPY(H,am->mu-am->muold,Constraint,DIFFERENT_NONZERO_PATTERN));
       } else {
-        CHKERRQ(MatShift(H,am->mu-am->muold));
+        PetscCall(MatShift(H,am->mu-am->muold));
       }
     }
     break;
@@ -285,12 +285,12 @@ static PetscErrorCode SubHessianUpdate(Tao tao, Vec x, Mat H, Mat Hpre, void *pt
   PetscFunctionBegin;
   if (am->Hxchange) {
     /* Case where Hessian gets updated with respect to x vector input. */
-    CHKERRQ((*am->ops->misfithess)(am->subsolverX,x,H,Hpre,am->misfithessP));
-    CHKERRQ(ADMMInternalHessianUpdate(am->subsolverX->hessian,am->ATA,am->xJI,am));
+    PetscCall((*am->ops->misfithess)(am->subsolverX,x,H,Hpre,am->misfithessP));
+    PetscCall(ADMMInternalHessianUpdate(am->subsolverX->hessian,am->ATA,am->xJI,am));
   } else if (am->Hxbool) {
     /* Hessian doesn't get updated. H(x) = c */
     /* Update Lagrangian only only per TAO call */
-    CHKERRQ(ADMMInternalHessianUpdate(am->subsolverX->hessian,am->ATA,am->xJI,am));
+    PetscCall(ADMMInternalHessianUpdate(am->subsolverX->hessian,am->ATA,am->xJI,am));
     am->Hxbool = PETSC_FALSE;
   }
   PetscFunctionReturn(0);
@@ -306,12 +306,12 @@ static PetscErrorCode RegHessianUpdate(Tao tao, Vec z, Mat H, Mat Hpre, void *pt
 
   if (am->Hzchange) {
     /* Case where Hessian gets updated with respect to x vector input. */
-    CHKERRQ((*am->ops->reghess)(am->subsolverZ,z,H,Hpre,am->reghessP));
-    CHKERRQ(ADMMInternalHessianUpdate(am->subsolverZ->hessian,am->BTB,am->zJI,am));
+    PetscCall((*am->ops->reghess)(am->subsolverZ,z,H,Hpre,am->reghessP));
+    PetscCall(ADMMInternalHessianUpdate(am->subsolverZ->hessian,am->BTB,am->zJI,am));
   } else if (am->Hzbool) {
     /* Hessian doesn't get updated. H(x) = c */
     /* Update Lagrangian only only per TAO call */
-    CHKERRQ(ADMMInternalHessianUpdate(am->subsolverZ->hessian,am->BTB,am->zJI,am));
+    PetscCall(ADMMInternalHessianUpdate(am->subsolverZ->hessian,am->BTB,am->zJI,am));
     am->Hzbool = PETSC_FALSE;
   }
   PetscFunctionReturn(0);
@@ -324,7 +324,7 @@ static PetscErrorCode RegHessianUpdate(Tao tao, Vec z, Mat H, Mat Hpre, void *pt
 static PetscErrorCode JacobianIdentity(Mat mat,Vec in,Vec out)
 {
   PetscFunctionBegin;
-  CHKERRQ(VecCopy(in,out));
+  PetscCall(VecCopy(in,out));
   PetscFunctionReturn(0);
 }
 
@@ -335,8 +335,8 @@ static PetscErrorCode JacobianIdentity(Mat mat,Vec in,Vec out)
 static PetscErrorCode JacobianIdentityB(Mat mat,Vec in,Vec out)
 {
   PetscFunctionBegin;
-  CHKERRQ(VecCopy(in,out));
-  CHKERRQ(VecScale(out,-1.));
+  PetscCall(VecCopy(in,out));
+  PetscCall(VecScale(out,-1.));
   PetscFunctionReturn(0);
 }
 
@@ -354,28 +354,28 @@ static PetscErrorCode TaoSolve_ADMM(Tao tao)
     PetscCheck(am->subsolverX->ops->computejacobianequality,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"Must call TaoADMMSetMisfitConstraintJacobian() first");
     PetscCheck(am->subsolverZ->ops->computejacobianequality,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"Must call TaoADMMSetRegularizerConstraintJacobian() first");
     if (am->constraint != NULL) {
-      CHKERRQ(VecNorm(am->constraint,NORM_2,&am->const_norm));
+      PetscCall(VecNorm(am->constraint,NORM_2,&am->const_norm));
     }
   }
   tempL = am->workLeft;
-  CHKERRQ(VecGetSize(tempL,&N));
+  PetscCall(VecGetSize(tempL,&N));
 
   if (am->Hx && am->ops->misfithess) {
-    CHKERRQ(TaoSetHessian(am->subsolverX, am->Hx, am->Hx, SubHessianUpdate, tao));
+    PetscCall(TaoSetHessian(am->subsolverX, am->Hx, am->Hx, SubHessianUpdate, tao));
   }
 
   if (!am->zJI) {
     /* Currently, B is assumed to be a linear system, i.e., not getting updated*/
-    CHKERRQ(MatTransposeMatMult(am->JB,am->JB,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&(am->BTB)));
+    PetscCall(MatTransposeMatMult(am->JB,am->JB,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&(am->BTB)));
   }
   if (!am->xJI) {
     /* Currently, A is assumed to be a linear system, i.e., not getting updated*/
-    CHKERRQ(MatTransposeMatMult(am->subsolverX->jacobian_equality,am->subsolverX->jacobian_equality,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&(am->ATA)));
+    PetscCall(MatTransposeMatMult(am->subsolverX->jacobian_equality,am->subsolverX->jacobian_equality,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&(am->ATA)));
   }
 
   is_reg_shell = PETSC_FALSE;
 
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)am->subsolverZ, TAOSHELL, &is_reg_shell));
+  PetscCall(PetscObjectTypeCompare((PetscObject)am->subsolverZ, TAOSHELL, &is_reg_shell));
 
   if (!is_reg_shell) {
     switch (am->regswitch) {
@@ -387,10 +387,10 @@ static PetscErrorCode TaoSolve_ADMM(Tao tao)
       break;
     }
     if (am->ops->regobjgrad) {
-      CHKERRQ(TaoSetObjectiveAndGradient(am->subsolverZ, NULL, RegObjGradUpdate, tao));
+      PetscCall(TaoSetObjectiveAndGradient(am->subsolverZ, NULL, RegObjGradUpdate, tao));
     }
     if (am->Hz && am->ops->reghess) {
-      CHKERRQ(TaoSetHessian(am->subsolverZ, am->Hz, am->Hzpre, RegHessianUpdate, tao));
+      PetscCall(TaoSetHessian(am->subsolverZ, am->Hz, am->Hzpre, RegHessianUpdate, tao));
     }
   }
 
@@ -400,16 +400,16 @@ static PetscErrorCode TaoSolve_ADMM(Tao tao)
       /* In basic case, Hessian does not get updated w.r.t. to spectral penalty
        * Here, when A is set, i.e., am->xJI, add mu*ATA to Hessian*/
       if (!am->xJI) {
-        CHKERRQ(MatAXPY(am->subsolverX->hessian,am->mu,am->ATA,DIFFERENT_NONZERO_PATTERN));
+        PetscCall(MatAXPY(am->subsolverX->hessian,am->mu,am->ATA,DIFFERENT_NONZERO_PATTERN));
       } else {
-        CHKERRQ(MatShift(am->subsolverX->hessian,am->mu));
+        PetscCall(MatShift(am->subsolverX->hessian,am->mu));
       }
     }
     if (am->subsolverZ->hessian && am->regswitch == TAO_ADMM_REGULARIZER_USER) {
       if (am->regswitch == TAO_ADMM_REGULARIZER_USER && !am->zJI) {
-        CHKERRQ(MatAXPY(am->subsolverZ->hessian,am->mu,am->BTB,DIFFERENT_NONZERO_PATTERN));
+        PetscCall(MatAXPY(am->subsolverZ->hessian,am->mu,am->BTB,DIFFERENT_NONZERO_PATTERN));
       } else {
-        CHKERRQ(MatShift(am->subsolverZ->hessian,am->mu));
+        PetscCall(MatShift(am->subsolverZ->hessian,am->mu));
       }
     }
     break;
@@ -418,41 +418,41 @@ static PetscErrorCode TaoSolve_ADMM(Tao tao)
     break;
   }
 
-  CHKERRQ(PetscCitationsRegister(citation,&cited));
+  PetscCall(PetscCitationsRegister(citation,&cited));
   tao->reason = TAO_CONTINUE_ITERATING;
 
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     if (tao->ops->update) {
-      CHKERRQ((*tao->ops->update)(tao, tao->niter, tao->user_update));
+      PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
     }
-    CHKERRQ(VecCopy(am->Bz, am->Bzold));
+    PetscCall(VecCopy(am->Bz, am->Bzold));
 
     /* x update */
-    CHKERRQ(TaoSolve(am->subsolverX));
-    CHKERRQ(TaoComputeJacobianEquality(am->subsolverX, am->subsolverX->solution, am->subsolverX->jacobian_equality, am->subsolverX->jacobian_equality_pre));
-    CHKERRQ(MatMult(am->subsolverX->jacobian_equality, am->subsolverX->solution,am->Ax));
+    PetscCall(TaoSolve(am->subsolverX));
+    PetscCall(TaoComputeJacobianEquality(am->subsolverX, am->subsolverX->solution, am->subsolverX->jacobian_equality, am->subsolverX->jacobian_equality_pre));
+    PetscCall(MatMult(am->subsolverX->jacobian_equality, am->subsolverX->solution,am->Ax));
 
     am->Hxbool = PETSC_TRUE;
 
     /* z update */
     switch (am->regswitch) {
     case TAO_ADMM_REGULARIZER_USER:
-      CHKERRQ(TaoSolve(am->subsolverZ));
+      PetscCall(TaoSolve(am->subsolverZ));
       break;
     case TAO_ADMM_REGULARIZER_SOFT_THRESH:
       /* L1 assumes A,B jacobians are identity nxn matrix */
-      CHKERRQ(VecWAXPY(am->workJacobianRight,1/am->mu,am->y,am->Ax));
-      CHKERRQ(TaoSoftThreshold(am->workJacobianRight,-am->lambda/am->mu,am->lambda/am->mu,am->subsolverZ->solution));
+      PetscCall(VecWAXPY(am->workJacobianRight,1/am->mu,am->y,am->Ax));
+      PetscCall(TaoSoftThreshold(am->workJacobianRight,-am->lambda/am->mu,am->lambda/am->mu,am->subsolverZ->solution));
       break;
     }
     am->Hzbool = PETSC_TRUE;
     /* Returns Ax + Bz - c with updated Ax,Bz vectors */
-    CHKERRQ(ADMMUpdateConstraintResidualVector(tao, am->subsolverX->solution, am->subsolverZ->solution, am->Ax, am->Bz, am->residual));
+    PetscCall(ADMMUpdateConstraintResidualVector(tao, am->subsolverX->solution, am->subsolverZ->solution, am->Ax, am->Bz, am->residual));
     /* Dual variable, y += y + mu*(Ax+Bz-c) */
-    CHKERRQ(VecWAXPY(am->y, am->mu, am->residual, am->yold));
+    PetscCall(VecWAXPY(am->y, am->mu, am->residual, am->yold));
 
     /* stopping tolerance update */
-    CHKERRQ(TaoADMMToleranceUpdate(tao));
+    PetscCall(TaoADMMToleranceUpdate(tao));
 
     /* Updating Spectral Penalty */
     switch (am->update) {
@@ -462,27 +462,27 @@ static PetscErrorCode TaoSolve_ADMM(Tao tao)
     case TAO_ADMM_UPDATE_ADAPTIVE:
     case TAO_ADMM_UPDATE_ADAPTIVE_RELAXED:
       if (tao->niter == 0) {
-        CHKERRQ(VecCopy(am->y, am->y0));
-        CHKERRQ(VecWAXPY(am->residual, 1., am->Ax, am->Bzold));
+        PetscCall(VecCopy(am->y, am->y0));
+        PetscCall(VecWAXPY(am->residual, 1., am->Ax, am->Bzold));
         if (am->constraint) {
-          CHKERRQ(VecAXPY(am->residual, -1., am->constraint));
+          PetscCall(VecAXPY(am->residual, -1., am->constraint));
         }
-        CHKERRQ(VecWAXPY(am->yhatold, -am->mu, am->residual, am->yold));
-        CHKERRQ(VecCopy(am->Ax, am->Axold));
-        CHKERRQ(VecCopy(am->Bz, am->Bz0));
+        PetscCall(VecWAXPY(am->yhatold, -am->mu, am->residual, am->yold));
+        PetscCall(VecCopy(am->Ax, am->Axold));
+        PetscCall(VecCopy(am->Bz, am->Bz0));
         am->muold = am->mu;
       } else if (tao->niter % am->T == 1) {
         /* we have compute Bzold in a previous iteration, and we computed Ax above */
-        CHKERRQ(VecWAXPY(am->residual, 1., am->Ax, am->Bzold));
+        PetscCall(VecWAXPY(am->residual, 1., am->Ax, am->Bzold));
         if (am->constraint) {
-          CHKERRQ(VecAXPY(am->residual, -1., am->constraint));
+          PetscCall(VecAXPY(am->residual, -1., am->constraint));
         }
-        CHKERRQ(VecWAXPY(am->yhat, -am->mu, am->residual, am->yold));
-        CHKERRQ(AdaptiveADMMPenaltyUpdate(tao));
-        CHKERRQ(VecCopy(am->Ax, am->Axold));
-        CHKERRQ(VecCopy(am->Bz, am->Bz0));
-        CHKERRQ(VecCopy(am->yhat, am->yhatold));
-        CHKERRQ(VecCopy(am->y, am->y0));
+        PetscCall(VecWAXPY(am->yhat, -am->mu, am->residual, am->yold));
+        PetscCall(AdaptiveADMMPenaltyUpdate(tao));
+        PetscCall(VecCopy(am->Ax, am->Axold));
+        PetscCall(VecCopy(am->Bz, am->Bz0));
+        PetscCall(VecCopy(am->yhat, am->yhatold));
+        PetscCall(VecCopy(am->y, am->y0));
       } else {
         am->muold = am->mu;
       }
@@ -496,32 +496,32 @@ static PetscErrorCode TaoSolve_ADMM(Tao tao)
     switch (am->regswitch) {
     case TAO_ADMM_REGULARIZER_USER:
       if (is_reg_shell) {
-        CHKERRQ(ADMML1EpsilonNorm(tao,am->subsolverZ->solution,am->l1epsilon,&reg_func));
+        PetscCall(ADMML1EpsilonNorm(tao,am->subsolverZ->solution,am->l1epsilon,&reg_func));
       } else {
         (*am->ops->regobjgrad)(am->subsolverZ,am->subsolverX->solution,&reg_func,tempL,am->regobjgradP);
       }
       break;
     case TAO_ADMM_REGULARIZER_SOFT_THRESH:
-      CHKERRQ(ADMML1EpsilonNorm(tao,am->subsolverZ->solution,am->l1epsilon,&reg_func));
+      PetscCall(ADMML1EpsilonNorm(tao,am->subsolverZ->solution,am->l1epsilon,&reg_func));
       break;
     }
-    CHKERRQ(VecCopy(am->y,am->yold));
-    CHKERRQ(ADMMUpdateConstraintResidualVector(tao, am->subsolverX->solution, am->subsolverZ->solution, am->Ax, am->Bz, am->residual));
-    CHKERRQ(VecNorm(am->residual,NORM_2,&am->resnorm));
-    CHKERRQ(TaoLogConvergenceHistory(tao,am->last_misfit_val + reg_func,am->dualres,am->resnorm,tao->ksp_its));
+    PetscCall(VecCopy(am->y,am->yold));
+    PetscCall(ADMMUpdateConstraintResidualVector(tao, am->subsolverX->solution, am->subsolverZ->solution, am->Ax, am->Bz, am->residual));
+    PetscCall(VecNorm(am->residual,NORM_2,&am->resnorm));
+    PetscCall(TaoLogConvergenceHistory(tao,am->last_misfit_val + reg_func,am->dualres,am->resnorm,tao->ksp_its));
 
-    CHKERRQ(TaoMonitor(tao,tao->niter,am->last_misfit_val + reg_func,am->dualres,am->resnorm,1.0));
-    CHKERRQ((*tao->ops->convergencetest)(tao,tao->cnvP));
+    PetscCall(TaoMonitor(tao,tao->niter,am->last_misfit_val + reg_func,am->dualres,am->resnorm,1.0));
+    PetscCall((*tao->ops->convergencetest)(tao,tao->cnvP));
   }
   /* Update vectors */
-  CHKERRQ(VecCopy(am->subsolverX->solution,tao->solution));
-  CHKERRQ(VecCopy(am->subsolverX->gradient,tao->gradient));
-  CHKERRQ(PetscObjectCompose((PetscObject)am->subsolverX,"TaoGetADMMParentTao_ADMM", NULL));
-  CHKERRQ(PetscObjectCompose((PetscObject)am->subsolverZ,"TaoGetADMMParentTao_ADMM", NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)tao,"TaoADMMSetRegularizerType_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)tao,"TaoADMMGetRegularizerType_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)tao,"TaoADMMSetUpdateType_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)tao,"TaoADMMGetUpdateType_C",NULL));
+  PetscCall(VecCopy(am->subsolverX->solution,tao->solution));
+  PetscCall(VecCopy(am->subsolverX->gradient,tao->gradient));
+  PetscCall(PetscObjectCompose((PetscObject)am->subsolverX,"TaoGetADMMParentTao_ADMM", NULL));
+  PetscCall(PetscObjectCompose((PetscObject)am->subsolverZ,"TaoGetADMMParentTao_ADMM", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)tao,"TaoADMMSetRegularizerType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)tao,"TaoADMMGetRegularizerType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)tao,"TaoADMMSetUpdateType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)tao,"TaoADMMGetUpdateType_C",NULL));
   PetscFunctionReturn(0);
 }
 
@@ -531,21 +531,21 @@ static PetscErrorCode TaoSetFromOptions_ADMM(PetscOptionItems *PetscOptionsObjec
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"ADMM problem that solves f(x) in a form of f(x) + g(z) subject to x - z = 0. Norm 1 and 2 are supported. Different subsolver routines can be selected. "));
-  CHKERRQ(PetscOptionsReal("-tao_admm_regularizer_coefficient","regularizer constant","",am->lambda,&am->lambda,NULL));
-  CHKERRQ(PetscOptionsReal("-tao_admm_spectral_penalty","Constant for Augmented Lagrangian term.","",am->mu,&am->mu,NULL));
-  CHKERRQ(PetscOptionsReal("-tao_admm_relaxation_parameter","x relaxation parameter for Z update.","",am->gamma,&am->gamma,NULL));
-  CHKERRQ(PetscOptionsReal("-tao_admm_tolerance_update_factor","ADMM dynamic tolerance update factor.","",am->tol,&am->tol,NULL));
-  CHKERRQ(PetscOptionsReal("-tao_admm_spectral_penalty_update_factor","ADMM spectral penalty update curvature safeguard value.","",am->orthval,&am->orthval,NULL));
-  CHKERRQ(PetscOptionsReal("-tao_admm_minimum_spectral_penalty","Set ADMM minimum spectral penalty.","",am->mumin,&am->mumin,NULL));
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"ADMM problem that solves f(x) in a form of f(x) + g(z) subject to x - z = 0. Norm 1 and 2 are supported. Different subsolver routines can be selected. "));
+  PetscCall(PetscOptionsReal("-tao_admm_regularizer_coefficient","regularizer constant","",am->lambda,&am->lambda,NULL));
+  PetscCall(PetscOptionsReal("-tao_admm_spectral_penalty","Constant for Augmented Lagrangian term.","",am->mu,&am->mu,NULL));
+  PetscCall(PetscOptionsReal("-tao_admm_relaxation_parameter","x relaxation parameter for Z update.","",am->gamma,&am->gamma,NULL));
+  PetscCall(PetscOptionsReal("-tao_admm_tolerance_update_factor","ADMM dynamic tolerance update factor.","",am->tol,&am->tol,NULL));
+  PetscCall(PetscOptionsReal("-tao_admm_spectral_penalty_update_factor","ADMM spectral penalty update curvature safeguard value.","",am->orthval,&am->orthval,NULL));
+  PetscCall(PetscOptionsReal("-tao_admm_minimum_spectral_penalty","Set ADMM minimum spectral penalty.","",am->mumin,&am->mumin,NULL));
   ierr = PetscOptionsEnum("-tao_admm_dual_update","Lagrangian dual update policy","TaoADMMUpdateType",
-                          TaoADMMUpdateTypes,(PetscEnum)am->update,(PetscEnum*)&am->update,NULL);CHKERRQ(ierr);
+                          TaoADMMUpdateTypes,(PetscEnum)am->update,(PetscEnum*)&am->update,NULL);PetscCall(ierr);
   ierr = PetscOptionsEnum("-tao_admm_regularizer_type","ADMM regularizer update rule","TaoADMMRegularizerType",
-                          TaoADMMRegularizerTypes,(PetscEnum)am->regswitch,(PetscEnum*)&am->regswitch,NULL);CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsTail());
-  CHKERRQ(TaoSetFromOptions(am->subsolverX));
+                          TaoADMMRegularizerTypes,(PetscEnum)am->regswitch,(PetscEnum*)&am->regswitch,NULL);PetscCall(ierr);
+  PetscCall(PetscOptionsTail());
+  PetscCall(TaoSetFromOptions(am->subsolverX));
   if (am->regswitch != TAO_ADMM_REGULARIZER_SOFT_THRESH) {
-    CHKERRQ(TaoSetFromOptions(am->subsolverZ));
+    PetscCall(TaoSetFromOptions(am->subsolverZ));
   }
   PetscFunctionReturn(0);
 }
@@ -555,10 +555,10 @@ static PetscErrorCode TaoView_ADMM(Tao tao,PetscViewer viewer)
   TAO_ADMM       *am = (TAO_ADMM*)tao->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscViewerASCIIPushTab(viewer));
-  CHKERRQ(TaoView(am->subsolverX,viewer));
-  CHKERRQ(TaoView(am->subsolverZ,viewer));
-  CHKERRQ(PetscViewerASCIIPopTab(viewer));
+  PetscCall(PetscViewerASCIIPushTab(viewer));
+  PetscCall(TaoView(am->subsolverX,viewer));
+  PetscCall(TaoView(am->subsolverZ,viewer));
+  PetscCall(PetscViewerASCIIPopTab(viewer));
   PetscFunctionReturn(0);
 }
 
@@ -568,84 +568,84 @@ static PetscErrorCode TaoSetUp_ADMM(Tao tao)
   PetscInt       n,N,M;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetLocalSize(tao->solution,&n));
-  CHKERRQ(VecGetSize(tao->solution,&N));
+  PetscCall(VecGetLocalSize(tao->solution,&n));
+  PetscCall(VecGetSize(tao->solution,&N));
   /* If Jacobian is given as NULL, it means Jacobian is identity matrix with size of solution vector */
   if (!am->JB) {
     am->zJI   = PETSC_TRUE;
-    CHKERRQ(MatCreateShell(PetscObjectComm((PetscObject)tao),n,n,PETSC_DETERMINE,PETSC_DETERMINE,NULL,&am->JB));
-    CHKERRQ(MatShellSetOperation(am->JB,MATOP_MULT,(void (*)(void))JacobianIdentityB));
-    CHKERRQ(MatShellSetOperation(am->JB,MATOP_MULT_TRANSPOSE,(void (*)(void))JacobianIdentityB));
-    CHKERRQ(MatShellSetOperation(am->JB,MATOP_TRANSPOSE_MAT_MULT,(void (*)(void))JacobianIdentityB));
+    PetscCall(MatCreateShell(PetscObjectComm((PetscObject)tao),n,n,PETSC_DETERMINE,PETSC_DETERMINE,NULL,&am->JB));
+    PetscCall(MatShellSetOperation(am->JB,MATOP_MULT,(void (*)(void))JacobianIdentityB));
+    PetscCall(MatShellSetOperation(am->JB,MATOP_MULT_TRANSPOSE,(void (*)(void))JacobianIdentityB));
+    PetscCall(MatShellSetOperation(am->JB,MATOP_TRANSPOSE_MAT_MULT,(void (*)(void))JacobianIdentityB));
     am->JBpre = am->JB;
   }
   if (!am->JA) {
     am->xJI   = PETSC_TRUE;
-    CHKERRQ(MatCreateShell(PetscObjectComm((PetscObject)tao),n,n,PETSC_DETERMINE,PETSC_DETERMINE,NULL,&am->JA));
-    CHKERRQ(MatShellSetOperation(am->JA,MATOP_MULT,(void (*)(void))JacobianIdentity));
-    CHKERRQ(MatShellSetOperation(am->JA,MATOP_MULT_TRANSPOSE,(void (*)(void))JacobianIdentity));
-    CHKERRQ(MatShellSetOperation(am->JA,MATOP_TRANSPOSE_MAT_MULT,(void (*)(void))JacobianIdentity));
+    PetscCall(MatCreateShell(PetscObjectComm((PetscObject)tao),n,n,PETSC_DETERMINE,PETSC_DETERMINE,NULL,&am->JA));
+    PetscCall(MatShellSetOperation(am->JA,MATOP_MULT,(void (*)(void))JacobianIdentity));
+    PetscCall(MatShellSetOperation(am->JA,MATOP_MULT_TRANSPOSE,(void (*)(void))JacobianIdentity));
+    PetscCall(MatShellSetOperation(am->JA,MATOP_TRANSPOSE_MAT_MULT,(void (*)(void))JacobianIdentity));
     am->JApre = am->JA;
   }
-  CHKERRQ(MatCreateVecs(am->JA,NULL,&am->Ax));
+  PetscCall(MatCreateVecs(am->JA,NULL,&am->Ax));
   if (!tao->gradient) {
-    CHKERRQ(VecDuplicate(tao->solution,&tao->gradient));
+    PetscCall(VecDuplicate(tao->solution,&tao->gradient));
   }
-  CHKERRQ(TaoSetSolution(am->subsolverX, tao->solution));
+  PetscCall(TaoSetSolution(am->subsolverX, tao->solution));
   if (!am->z) {
-    CHKERRQ(VecDuplicate(tao->solution,&am->z));
-    CHKERRQ(VecSet(am->z,0.0));
+    PetscCall(VecDuplicate(tao->solution,&am->z));
+    PetscCall(VecSet(am->z,0.0));
   }
-  CHKERRQ(TaoSetSolution(am->subsolverZ, am->z));
+  PetscCall(TaoSetSolution(am->subsolverZ, am->z));
   if (!am->workLeft) {
-    CHKERRQ(VecDuplicate(tao->solution,&am->workLeft));
+    PetscCall(VecDuplicate(tao->solution,&am->workLeft));
   }
   if (!am->Axold) {
-    CHKERRQ(VecDuplicate(am->Ax,&am->Axold));
+    PetscCall(VecDuplicate(am->Ax,&am->Axold));
   }
   if (!am->workJacobianRight) {
-    CHKERRQ(VecDuplicate(am->Ax,&am->workJacobianRight));
+    PetscCall(VecDuplicate(am->Ax,&am->workJacobianRight));
   }
   if (!am->workJacobianRight2) {
-    CHKERRQ(VecDuplicate(am->Ax,&am->workJacobianRight2));
+    PetscCall(VecDuplicate(am->Ax,&am->workJacobianRight2));
   }
   if (!am->Bz) {
-    CHKERRQ(VecDuplicate(am->Ax,&am->Bz));
+    PetscCall(VecDuplicate(am->Ax,&am->Bz));
   }
   if (!am->Bzold) {
-    CHKERRQ(VecDuplicate(am->Ax,&am->Bzold));
+    PetscCall(VecDuplicate(am->Ax,&am->Bzold));
   }
   if (!am->Bz0) {
-    CHKERRQ(VecDuplicate(am->Ax,&am->Bz0));
+    PetscCall(VecDuplicate(am->Ax,&am->Bz0));
   }
   if (!am->y) {
-    CHKERRQ(VecDuplicate(am->Ax,&am->y));
-    CHKERRQ(VecSet(am->y,0.0));
+    PetscCall(VecDuplicate(am->Ax,&am->y));
+    PetscCall(VecSet(am->y,0.0));
   }
   if (!am->yold) {
-    CHKERRQ(VecDuplicate(am->Ax,&am->yold));
-    CHKERRQ(VecSet(am->yold,0.0));
+    PetscCall(VecDuplicate(am->Ax,&am->yold));
+    PetscCall(VecSet(am->yold,0.0));
   }
   if (!am->y0) {
-    CHKERRQ(VecDuplicate(am->Ax,&am->y0));
-    CHKERRQ(VecSet(am->y0,0.0));
+    PetscCall(VecDuplicate(am->Ax,&am->y0));
+    PetscCall(VecSet(am->y0,0.0));
   }
   if (!am->yhat) {
-    CHKERRQ(VecDuplicate(am->Ax,&am->yhat));
-    CHKERRQ(VecSet(am->yhat,0.0));
+    PetscCall(VecDuplicate(am->Ax,&am->yhat));
+    PetscCall(VecSet(am->yhat,0.0));
   }
   if (!am->yhatold) {
-    CHKERRQ(VecDuplicate(am->Ax,&am->yhatold));
-    CHKERRQ(VecSet(am->yhatold,0.0));
+    PetscCall(VecDuplicate(am->Ax,&am->yhatold));
+    PetscCall(VecSet(am->yhatold,0.0));
   }
   if (!am->residual) {
-    CHKERRQ(VecDuplicate(am->Ax,&am->residual));
-    CHKERRQ(VecSet(am->residual,0.0));
+    PetscCall(VecDuplicate(am->Ax,&am->residual));
+    PetscCall(VecSet(am->residual,0.0));
   }
   if (!am->constraint) {
     am->constraint = NULL;
   } else {
-    CHKERRQ(VecGetSize(am->constraint,&M));
+    PetscCall(VecGetSize(am->constraint,&M));
     PetscCheck(M == N,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"Solution vector and constraint vector must be of same size!");
   }
 
@@ -658,9 +658,9 @@ static PetscErrorCode TaoSetUp_ADMM(Tao tao)
   }
 
   /*Update spectral and dual elements to X subsolver */
-  CHKERRQ(TaoSetObjectiveAndGradient(am->subsolverX, NULL, SubObjGradUpdate, tao));
-  CHKERRQ(TaoSetJacobianEqualityRoutine(am->subsolverX,am->JA,am->JApre, am->ops->misfitjac, am->misfitjacobianP));
-  CHKERRQ(TaoSetJacobianEqualityRoutine(am->subsolverZ,am->JB,am->JBpre, am->ops->regjac, am->regjacobianP));
+  PetscCall(TaoSetObjectiveAndGradient(am->subsolverX, NULL, SubObjGradUpdate, tao));
+  PetscCall(TaoSetJacobianEqualityRoutine(am->subsolverX,am->JA,am->JApre, am->ops->misfitjac, am->misfitjacobianP));
+  PetscCall(TaoSetJacobianEqualityRoutine(am->subsolverZ,am->JB,am->JBpre, am->ops->regjac, am->regjacobianP));
   PetscFunctionReturn(0);
 }
 
@@ -669,44 +669,44 @@ static PetscErrorCode TaoDestroy_ADMM(Tao tao)
   TAO_ADMM       *am = (TAO_ADMM*)tao->data;
 
   PetscFunctionBegin;
-  CHKERRQ(VecDestroy(&am->z));
-  CHKERRQ(VecDestroy(&am->Ax));
-  CHKERRQ(VecDestroy(&am->Axold));
-  CHKERRQ(VecDestroy(&am->Bz));
-  CHKERRQ(VecDestroy(&am->Bzold));
-  CHKERRQ(VecDestroy(&am->Bz0));
-  CHKERRQ(VecDestroy(&am->residual));
-  CHKERRQ(VecDestroy(&am->y));
-  CHKERRQ(VecDestroy(&am->yold));
-  CHKERRQ(VecDestroy(&am->y0));
-  CHKERRQ(VecDestroy(&am->yhat));
-  CHKERRQ(VecDestroy(&am->yhatold));
-  CHKERRQ(VecDestroy(&am->workLeft));
-  CHKERRQ(VecDestroy(&am->workJacobianRight));
-  CHKERRQ(VecDestroy(&am->workJacobianRight2));
+  PetscCall(VecDestroy(&am->z));
+  PetscCall(VecDestroy(&am->Ax));
+  PetscCall(VecDestroy(&am->Axold));
+  PetscCall(VecDestroy(&am->Bz));
+  PetscCall(VecDestroy(&am->Bzold));
+  PetscCall(VecDestroy(&am->Bz0));
+  PetscCall(VecDestroy(&am->residual));
+  PetscCall(VecDestroy(&am->y));
+  PetscCall(VecDestroy(&am->yold));
+  PetscCall(VecDestroy(&am->y0));
+  PetscCall(VecDestroy(&am->yhat));
+  PetscCall(VecDestroy(&am->yhatold));
+  PetscCall(VecDestroy(&am->workLeft));
+  PetscCall(VecDestroy(&am->workJacobianRight));
+  PetscCall(VecDestroy(&am->workJacobianRight2));
 
-  CHKERRQ(MatDestroy(&am->JA));
-  CHKERRQ(MatDestroy(&am->JB));
+  PetscCall(MatDestroy(&am->JA));
+  PetscCall(MatDestroy(&am->JB));
   if (!am->xJI) {
-    CHKERRQ(MatDestroy(&am->JApre));
+    PetscCall(MatDestroy(&am->JApre));
   }
   if (!am->zJI) {
-    CHKERRQ(MatDestroy(&am->JBpre));
+    PetscCall(MatDestroy(&am->JBpre));
   }
   if (am->Hx) {
-    CHKERRQ(MatDestroy(&am->Hx));
-    CHKERRQ(MatDestroy(&am->Hxpre));
+    PetscCall(MatDestroy(&am->Hx));
+    PetscCall(MatDestroy(&am->Hxpre));
   }
   if (am->Hz) {
-    CHKERRQ(MatDestroy(&am->Hz));
-    CHKERRQ(MatDestroy(&am->Hzpre));
+    PetscCall(MatDestroy(&am->Hz));
+    PetscCall(MatDestroy(&am->Hzpre));
   }
-  CHKERRQ(MatDestroy(&am->ATA));
-  CHKERRQ(MatDestroy(&am->BTB));
-  CHKERRQ(TaoDestroy(&am->subsolverX));
-  CHKERRQ(TaoDestroy(&am->subsolverZ));
+  PetscCall(MatDestroy(&am->ATA));
+  PetscCall(MatDestroy(&am->BTB));
+  PetscCall(TaoDestroy(&am->subsolverX));
+  PetscCall(TaoDestroy(&am->subsolverZ));
   am->parent = NULL;
-  CHKERRQ(PetscFree(tao->data));
+  PetscCall(PetscFree(tao->data));
   PetscFunctionReturn(0);
 }
 
@@ -757,7 +757,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_ADMM(Tao tao)
   TAO_ADMM       *am;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNewLog(tao,&am));
+  PetscCall(PetscNewLog(tao,&am));
 
   tao->ops->destroy        = TaoDestroy_ADMM;
   tao->ops->setup          = TaoSetUp_ADMM;
@@ -793,21 +793,21 @@ PETSC_EXTERN PetscErrorCode TaoCreate_ADMM(Tao tao)
   am->Hzbool          = PETSC_TRUE;
   am->Hxbool          = PETSC_TRUE;
 
-  CHKERRQ(TaoCreate(PetscObjectComm((PetscObject)tao),&am->subsolverX));
-  CHKERRQ(TaoSetOptionsPrefix(am->subsolverX,"misfit_"));
-  CHKERRQ(PetscObjectIncrementTabLevel((PetscObject)am->subsolverX,(PetscObject)tao,1));
-  CHKERRQ(TaoCreate(PetscObjectComm((PetscObject)tao),&am->subsolverZ));
-  CHKERRQ(TaoSetOptionsPrefix(am->subsolverZ,"reg_"));
-  CHKERRQ(PetscObjectIncrementTabLevel((PetscObject)am->subsolverZ,(PetscObject)tao,1));
+  PetscCall(TaoCreate(PetscObjectComm((PetscObject)tao),&am->subsolverX));
+  PetscCall(TaoSetOptionsPrefix(am->subsolverX,"misfit_"));
+  PetscCall(PetscObjectIncrementTabLevel((PetscObject)am->subsolverX,(PetscObject)tao,1));
+  PetscCall(TaoCreate(PetscObjectComm((PetscObject)tao),&am->subsolverZ));
+  PetscCall(TaoSetOptionsPrefix(am->subsolverZ,"reg_"));
+  PetscCall(PetscObjectIncrementTabLevel((PetscObject)am->subsolverZ,(PetscObject)tao,1));
 
-  CHKERRQ(TaoSetType(am->subsolverX,TAONLS));
-  CHKERRQ(TaoSetType(am->subsolverZ,TAONLS));
-  CHKERRQ(PetscObjectCompose((PetscObject)am->subsolverX,"TaoGetADMMParentTao_ADMM", (PetscObject) tao));
-  CHKERRQ(PetscObjectCompose((PetscObject)am->subsolverZ,"TaoGetADMMParentTao_ADMM", (PetscObject) tao));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)tao,"TaoADMMSetRegularizerType_C",TaoADMMSetRegularizerType_ADMM));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)tao,"TaoADMMGetRegularizerType_C",TaoADMMGetRegularizerType_ADMM));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)tao,"TaoADMMSetUpdateType_C",TaoADMMSetUpdateType_ADMM));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)tao,"TaoADMMGetUpdateType_C",TaoADMMGetUpdateType_ADMM));
+  PetscCall(TaoSetType(am->subsolverX,TAONLS));
+  PetscCall(TaoSetType(am->subsolverZ,TAONLS));
+  PetscCall(PetscObjectCompose((PetscObject)am->subsolverX,"TaoGetADMMParentTao_ADMM", (PetscObject) tao));
+  PetscCall(PetscObjectCompose((PetscObject)am->subsolverZ,"TaoGetADMMParentTao_ADMM", (PetscObject) tao));
+  PetscCall(PetscObjectComposeFunction((PetscObject)tao,"TaoADMMSetRegularizerType_C",TaoADMMSetRegularizerType_ADMM));
+  PetscCall(PetscObjectComposeFunction((PetscObject)tao,"TaoADMMGetRegularizerType_C",TaoADMMGetRegularizerType_ADMM));
+  PetscCall(PetscObjectComposeFunction((PetscObject)tao,"TaoADMMSetUpdateType_C",TaoADMMSetUpdateType_ADMM));
+  PetscCall(PetscObjectComposeFunction((PetscObject)tao,"TaoADMMGetUpdateType_C",TaoADMMGetUpdateType_ADMM));
   PetscFunctionReturn(0);
 }
 
@@ -1058,13 +1058,13 @@ PetscErrorCode TaoADMMSetMisfitConstraintJacobian(Tao tao, Mat J, Mat Jpre, Pets
   if (func) am->ops->misfitjac  = func;
 
   if (J) {
-    CHKERRQ(PetscObjectReference((PetscObject)J));
-    CHKERRQ(MatDestroy(&am->JA));
+    PetscCall(PetscObjectReference((PetscObject)J));
+    PetscCall(MatDestroy(&am->JA));
     am->JA = J;
   }
   if (Jpre) {
-    CHKERRQ(PetscObjectReference((PetscObject)Jpre));
-    CHKERRQ(MatDestroy(&am->JApre));
+    PetscCall(PetscObjectReference((PetscObject)Jpre));
+    PetscCall(MatDestroy(&am->JApre));
     am->JApre = Jpre;
   }
   PetscFunctionReturn(0);
@@ -1105,13 +1105,13 @@ PetscErrorCode TaoADMMSetRegularizerConstraintJacobian(Tao tao, Mat J, Mat Jpre,
   if (func) am->ops->regjac  = func;
 
   if (J) {
-    CHKERRQ(PetscObjectReference((PetscObject)J));
-    CHKERRQ(MatDestroy(&am->JB));
+    PetscCall(PetscObjectReference((PetscObject)J));
+    PetscCall(MatDestroy(&am->JB));
     am->JB = J;
   }
   if (Jpre) {
-    CHKERRQ(PetscObjectReference((PetscObject)Jpre));
-    CHKERRQ(MatDestroy(&am->JBpre));
+    PetscCall(PetscObjectReference((PetscObject)Jpre));
+    PetscCall(MatDestroy(&am->JBpre));
     am->JBpre = Jpre;
   }
   PetscFunctionReturn(0);
@@ -1182,13 +1182,13 @@ PetscErrorCode TaoADMMSetMisfitHessianRoutine(Tao tao, Mat H, Mat Hpre, PetscErr
     am->ops->misfithess = func;
   }
   if (H) {
-    CHKERRQ(PetscObjectReference((PetscObject)H));
-    CHKERRQ(MatDestroy(&am->Hx));
+    PetscCall(PetscObjectReference((PetscObject)H));
+    PetscCall(MatDestroy(&am->Hx));
     am->Hx = H;
   }
   if (Hpre) {
-    CHKERRQ(PetscObjectReference((PetscObject)Hpre));
-    CHKERRQ(MatDestroy(&am->Hxpre));
+    PetscCall(PetscObjectReference((PetscObject)Hpre));
+    PetscCall(MatDestroy(&am->Hxpre));
     am->Hxpre = Hpre;
   }
   PetscFunctionReturn(0);
@@ -1259,13 +1259,13 @@ PetscErrorCode TaoADMMSetRegularizerHessianRoutine(Tao tao, Mat H, Mat Hpre, Pet
     am->ops->reghess = func;
   }
   if (H) {
-    CHKERRQ(PetscObjectReference((PetscObject)H));
-    CHKERRQ(MatDestroy(&am->Hz));
+    PetscCall(PetscObjectReference((PetscObject)H));
+    PetscCall(MatDestroy(&am->Hz));
     am->Hz = H;
   }
   if (Hpre) {
-    CHKERRQ(PetscObjectReference((PetscObject)Hpre));
-    CHKERRQ(MatDestroy(&am->Hzpre));
+    PetscCall(PetscObjectReference((PetscObject)Hpre));
+    PetscCall(MatDestroy(&am->Hzpre));
     am->Hzpre = Hpre;
   }
   PetscFunctionReturn(0);
@@ -1291,7 +1291,7 @@ PetscErrorCode TaoGetADMMParentTao(Tao tao, Tao *admm_tao)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  CHKERRQ(PetscObjectQuery((PetscObject)tao,"TaoGetADMMParentTao_ADMM", (PetscObject*) admm_tao));
+  PetscCall(PetscObjectQuery((PetscObject)tao,"TaoGetADMMParentTao_ADMM", (PetscObject*) admm_tao));
   PetscFunctionReturn(0);
 }
 
@@ -1342,7 +1342,7 @@ PetscErrorCode TaoADMMSetRegularizerType(Tao tao, TaoADMMRegularizerType type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidLogicalCollectiveEnum(tao,type,2);
-  CHKERRQ(PetscTryMethod(tao,"TaoADMMSetRegularizerType_C",(Tao,TaoADMMRegularizerType),(tao,type)));
+  PetscCall(PetscTryMethod(tao,"TaoADMMSetRegularizerType_C",(Tao,TaoADMMRegularizerType),(tao,type)));
   PetscFunctionReturn(0);
 }
 
@@ -1365,7 +1365,7 @@ PetscErrorCode TaoADMMGetRegularizerType(Tao tao, TaoADMMRegularizerType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  CHKERRQ(PetscUseMethod(tao,"TaoADMMGetRegularizerType_C",(Tao,TaoADMMRegularizerType*),(tao,type)));
+  PetscCall(PetscUseMethod(tao,"TaoADMMGetRegularizerType_C",(Tao,TaoADMMRegularizerType*),(tao,type)));
   PetscFunctionReturn(0);
 }
 
@@ -1387,7 +1387,7 @@ PetscErrorCode TaoADMMSetUpdateType(Tao tao, TaoADMMUpdateType type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidLogicalCollectiveEnum(tao,type,2);
-  CHKERRQ(PetscTryMethod(tao,"TaoADMMSetUpdateType_C",(Tao,TaoADMMUpdateType),(tao,type)));
+  PetscCall(PetscTryMethod(tao,"TaoADMMSetUpdateType_C",(Tao,TaoADMMUpdateType),(tao,type)));
   PetscFunctionReturn(0);
 }
 
@@ -1410,6 +1410,6 @@ PetscErrorCode TaoADMMGetUpdateType(Tao tao, TaoADMMUpdateType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  CHKERRQ(PetscUseMethod(tao,"TaoADMMGetUpdateType_C",(Tao,TaoADMMUpdateType*),(tao,type)));
+  PetscCall(PetscUseMethod(tao,"TaoADMMGetUpdateType_C",(Tao,TaoADMMUpdateType*),(tao,type)));
   PetscFunctionReturn(0);
 }

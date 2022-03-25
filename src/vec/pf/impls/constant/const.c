@@ -15,7 +15,7 @@ static PetscErrorCode PFApply_Constant(void *value,PetscInt n,const PetscScalar 
 static PetscErrorCode PFApplyVec_Constant(void *value,Vec x,Vec y)
 {
   PetscFunctionBegin;
-  CHKERRQ(VecSet(y,*((PetscScalar*)value)));
+  PetscCall(VecSet(y,*((PetscScalar*)value)));
   PetscFunctionReturn(0);
 }
 PetscErrorCode PFView_Constant(void *value,PetscViewer viewer)
@@ -23,12 +23,12 @@ PetscErrorCode PFView_Constant(void *value,PetscViewer viewer)
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
 #if !defined(PETSC_USE_COMPLEX)
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"Constant = %g\n",*(double*)value));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"Constant = %g\n",*(double*)value));
 #else
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"Constant = %g + %gi\n",PetscRealPart(*(PetscScalar*)value),PetscImaginaryPart(*(PetscScalar*)value)));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"Constant = %g + %gi\n",PetscRealPart(*(PetscScalar*)value),PetscImaginaryPart(*(PetscScalar*)value)));
 #endif
   }
   PetscFunctionReturn(0);
@@ -36,7 +36,7 @@ PetscErrorCode PFView_Constant(void *value,PetscViewer viewer)
 static PetscErrorCode PFDestroy_Constant(void *value)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscFree(value));
+  PetscCall(PetscFree(value));
   PetscFunctionReturn(0);
 }
 
@@ -45,9 +45,9 @@ static PetscErrorCode PFSetFromOptions_Constant(PetscOptionItems *PetscOptionsOb
   PetscScalar    *value = (PetscScalar*)pf->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"Constant function options"));
-  CHKERRQ(PetscOptionsScalar("-pf_constant","The constant value","None",*value,value,NULL));
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"Constant function options"));
+  PetscCall(PetscOptionsScalar("-pf_constant","The constant value","None",*value,value,NULL));
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -56,11 +56,11 @@ PETSC_EXTERN PetscErrorCode PFCreate_Constant(PF pf,void *value)
   PetscScalar    *loc;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscMalloc1(2,&loc));
+  PetscCall(PetscMalloc1(2,&loc));
   if (value) loc[0] = *(PetscScalar*)value;
   else loc[0] = 0.0;
   loc[1] = pf->dimout;
-  CHKERRQ(PFSet(pf,PFApply_Constant,PFApplyVec_Constant,PFView_Constant,PFDestroy_Constant,loc));
+  PetscCall(PFSet(pf,PFApply_Constant,PFApplyVec_Constant,PFView_Constant,PFDestroy_Constant,loc));
 
   pf->ops->setfromoptions = PFSetFromOptions_Constant;
   PetscFunctionReturn(0);
@@ -71,7 +71,7 @@ PETSC_EXTERN PetscErrorCode PFCreate_Constant(PF pf,void *value)
 PETSC_EXTERN PetscErrorCode PFCreate_Quick(PF pf,PetscErrorCode (*function)(void*,PetscInt,const PetscScalar*,PetscScalar*))
 {
   PetscFunctionBegin;
-  CHKERRQ(PFSet(pf,function,NULL,NULL,NULL,NULL));
+  PetscCall(PFSet(pf,function,NULL,NULL,NULL,NULL));
   PetscFunctionReturn(0);
 }
 
@@ -89,7 +89,7 @@ static PetscErrorCode PFApply_Identity(void *value,PetscInt n,const PetscScalar 
 static PetscErrorCode PFApplyVec_Identity(void *value,Vec x,Vec y)
 {
   PetscFunctionBegin;
-  CHKERRQ(VecCopy(x,y));
+  PetscCall(VecCopy(x,y));
   PetscFunctionReturn(0);
 }
 static PetscErrorCode PFView_Identity(void *value,PetscViewer viewer)
@@ -97,16 +97,16 @@ static PetscErrorCode PFView_Identity(void *value,PetscViewer viewer)
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"Identity function\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"Identity function\n"));
   }
   PetscFunctionReturn(0);
 }
 static PetscErrorCode PFDestroy_Identity(void *value)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscFree(value));
+  PetscCall(PetscFree(value));
   PetscFunctionReturn(0);
 }
 
@@ -116,8 +116,8 @@ PETSC_EXTERN PetscErrorCode PFCreate_Identity(PF pf,void *value)
 
   PetscFunctionBegin;
   PetscCheckFalse(pf->dimout != pf->dimin,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Input dimension must match output dimension for Identity function, dimin = %" PetscInt_FMT " dimout = %" PetscInt_FMT,pf->dimin,pf->dimout);
-  CHKERRQ(PetscNew(&loc));
+  PetscCall(PetscNew(&loc));
   loc[0] = pf->dimout;
-  CHKERRQ(PFSet(pf,PFApply_Identity,PFApplyVec_Identity,PFView_Identity,PFDestroy_Identity,loc));
+  PetscCall(PFSet(pf,PFApply_Identity,PFApplyVec_Identity,PFView_Identity,PFDestroy_Identity,loc));
   PetscFunctionReturn(0);
 }

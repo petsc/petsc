@@ -49,12 +49,12 @@ static PetscErrorCode TSThetaGetX0AndXdot(TS ts,DM dm,Vec *X0,Vec *Xdot)
   PetscFunctionBegin;
   if (X0) {
     if (dm && dm != ts->dm) {
-      CHKERRQ(DMGetNamedGlobalVector(dm,"TSTheta_X0",X0));
+      PetscCall(DMGetNamedGlobalVector(dm,"TSTheta_X0",X0));
     } else *X0 = ts->vec_sol;
   }
   if (Xdot) {
     if (dm && dm != ts->dm) {
-      CHKERRQ(DMGetNamedGlobalVector(dm,"TSTheta_Xdot",Xdot));
+      PetscCall(DMGetNamedGlobalVector(dm,"TSTheta_Xdot",Xdot));
     } else *Xdot = th->Xdot;
   }
   PetscFunctionReturn(0);
@@ -65,12 +65,12 @@ static PetscErrorCode TSThetaRestoreX0AndXdot(TS ts,DM dm,Vec *X0,Vec *Xdot)
   PetscFunctionBegin;
   if (X0) {
     if (dm && dm != ts->dm) {
-      CHKERRQ(DMRestoreNamedGlobalVector(dm,"TSTheta_X0",X0));
+      PetscCall(DMRestoreNamedGlobalVector(dm,"TSTheta_X0",X0));
     }
   }
   if (Xdot) {
     if (dm && dm != ts->dm) {
-      CHKERRQ(DMRestoreNamedGlobalVector(dm,"TSTheta_Xdot",Xdot));
+      PetscCall(DMRestoreNamedGlobalVector(dm,"TSTheta_Xdot",Xdot));
     }
   }
   PetscFunctionReturn(0);
@@ -88,14 +88,14 @@ static PetscErrorCode DMRestrictHook_TSTheta(DM fine,Mat restrct,Vec rscale,Mat 
   Vec            X0,Xdot,X0_c,Xdot_c;
 
   PetscFunctionBegin;
-  CHKERRQ(TSThetaGetX0AndXdot(ts,fine,&X0,&Xdot));
-  CHKERRQ(TSThetaGetX0AndXdot(ts,coarse,&X0_c,&Xdot_c));
-  CHKERRQ(MatRestrict(restrct,X0,X0_c));
-  CHKERRQ(MatRestrict(restrct,Xdot,Xdot_c));
-  CHKERRQ(VecPointwiseMult(X0_c,rscale,X0_c));
-  CHKERRQ(VecPointwiseMult(Xdot_c,rscale,Xdot_c));
-  CHKERRQ(TSThetaRestoreX0AndXdot(ts,fine,&X0,&Xdot));
-  CHKERRQ(TSThetaRestoreX0AndXdot(ts,coarse,&X0_c,&Xdot_c));
+  PetscCall(TSThetaGetX0AndXdot(ts,fine,&X0,&Xdot));
+  PetscCall(TSThetaGetX0AndXdot(ts,coarse,&X0_c,&Xdot_c));
+  PetscCall(MatRestrict(restrct,X0,X0_c));
+  PetscCall(MatRestrict(restrct,Xdot,Xdot_c));
+  PetscCall(VecPointwiseMult(X0_c,rscale,X0_c));
+  PetscCall(VecPointwiseMult(Xdot_c,rscale,Xdot_c));
+  PetscCall(TSThetaRestoreX0AndXdot(ts,fine,&X0,&Xdot));
+  PetscCall(TSThetaRestoreX0AndXdot(ts,coarse,&X0_c,&Xdot_c));
   PetscFunctionReturn(0);
 }
 
@@ -111,17 +111,17 @@ static PetscErrorCode DMSubDomainRestrictHook_TSTheta(DM dm,VecScatter gscat,Vec
   Vec            X0,Xdot,X0_sub,Xdot_sub;
 
   PetscFunctionBegin;
-  CHKERRQ(TSThetaGetX0AndXdot(ts,dm,&X0,&Xdot));
-  CHKERRQ(TSThetaGetX0AndXdot(ts,subdm,&X0_sub,&Xdot_sub));
+  PetscCall(TSThetaGetX0AndXdot(ts,dm,&X0,&Xdot));
+  PetscCall(TSThetaGetX0AndXdot(ts,subdm,&X0_sub,&Xdot_sub));
 
-  CHKERRQ(VecScatterBegin(gscat,X0,X0_sub,INSERT_VALUES,SCATTER_FORWARD));
-  CHKERRQ(VecScatterEnd(gscat,X0,X0_sub,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterBegin(gscat,X0,X0_sub,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(gscat,X0,X0_sub,INSERT_VALUES,SCATTER_FORWARD));
 
-  CHKERRQ(VecScatterBegin(gscat,Xdot,Xdot_sub,INSERT_VALUES,SCATTER_FORWARD));
-  CHKERRQ(VecScatterEnd(gscat,Xdot,Xdot_sub,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterBegin(gscat,Xdot,Xdot_sub,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(gscat,Xdot,Xdot_sub,INSERT_VALUES,SCATTER_FORWARD));
 
-  CHKERRQ(TSThetaRestoreX0AndXdot(ts,dm,&X0,&Xdot));
-  CHKERRQ(TSThetaRestoreX0AndXdot(ts,subdm,&X0_sub,&Xdot_sub));
+  PetscCall(TSThetaRestoreX0AndXdot(ts,dm,&X0,&Xdot));
+  PetscCall(TSThetaRestoreX0AndXdot(ts,subdm,&X0_sub,&Xdot_sub));
   PetscFunctionReturn(0);
 }
 
@@ -134,14 +134,14 @@ static PetscErrorCode TSThetaEvaluateCostIntegral(TS ts)
   if (th->endpoint) {
     /* Evolve ts->vec_costintegral to compute integrals */
     if (th->Theta!=1.0) {
-      CHKERRQ(TSComputeRHSFunction(quadts,th->ptime0,th->X0,ts->vec_costintegrand));
-      CHKERRQ(VecAXPY(quadts->vec_sol,th->time_step0*(1.0-th->Theta),ts->vec_costintegrand));
+      PetscCall(TSComputeRHSFunction(quadts,th->ptime0,th->X0,ts->vec_costintegrand));
+      PetscCall(VecAXPY(quadts->vec_sol,th->time_step0*(1.0-th->Theta),ts->vec_costintegrand));
     }
-    CHKERRQ(TSComputeRHSFunction(quadts,ts->ptime,ts->vec_sol,ts->vec_costintegrand));
-    CHKERRQ(VecAXPY(quadts->vec_sol,th->time_step0*th->Theta,ts->vec_costintegrand));
+    PetscCall(TSComputeRHSFunction(quadts,ts->ptime,ts->vec_sol,ts->vec_costintegrand));
+    PetscCall(VecAXPY(quadts->vec_sol,th->time_step0*th->Theta,ts->vec_costintegrand));
   } else {
-    CHKERRQ(TSComputeRHSFunction(quadts,th->stage_time,th->X,ts->vec_costintegrand));
-    CHKERRQ(VecAXPY(quadts->vec_sol,th->time_step0,ts->vec_costintegrand));
+    PetscCall(TSComputeRHSFunction(quadts,th->stage_time,th->X,ts->vec_costintegrand));
+    PetscCall(VecAXPY(quadts->vec_sol,th->time_step0,ts->vec_costintegrand));
   }
   PetscFunctionReturn(0);
 }
@@ -153,8 +153,8 @@ static PetscErrorCode TSForwardCostIntegral_Theta(TS ts)
 
   PetscFunctionBegin;
   /* backup cost integral */
-  CHKERRQ(VecCopy(quadts->vec_sol,th->VecCostIntegral0));
-  CHKERRQ(TSThetaEvaluateCostIntegral(ts));
+  PetscCall(VecCopy(quadts->vec_sol,th->VecCostIntegral0));
+  PetscCall(TSThetaEvaluateCostIntegral(ts));
   PetscFunctionReturn(0);
 }
 
@@ -166,7 +166,7 @@ static PetscErrorCode TSAdjointCostIntegral_Theta(TS ts)
   /* Like TSForwardCostIntegral(), the adjoint cost integral evaluation relies on ptime0 and time_step0. */
   th->ptime0     = ts->ptime + ts->time_step;
   th->time_step0 = -ts->time_step;
-  CHKERRQ(TSThetaEvaluateCostIntegral(ts));
+  PetscCall(TSThetaEvaluateCostIntegral(ts));
   PetscFunctionReturn(0);
 }
 
@@ -175,9 +175,9 @@ static PetscErrorCode TSTheta_SNESSolve(TS ts,Vec b,Vec x)
   PetscInt       nits,lits;
 
   PetscFunctionBegin;
-  CHKERRQ(SNESSolve(ts->snes,b,x));
-  CHKERRQ(SNESGetIterationNumber(ts->snes,&nits));
-  CHKERRQ(SNESGetLinearSolveIterations(ts->snes,&lits));
+  PetscCall(SNESSolve(ts->snes,b,x));
+  PetscCall(SNESGetIterationNumber(ts->snes,&nits));
+  PetscCall(SNESGetLinearSolveIterations(ts->snes,&lits));
   ts->snes_its += nits; ts->ksp_its += lits;
   PetscFunctionReturn(0);
 }
@@ -191,43 +191,43 @@ static PetscErrorCode TSStep_Theta(TS ts)
 
   PetscFunctionBegin;
   if (!ts->steprollback) {
-    if (th->vec_sol_prev) CHKERRQ(VecCopy(th->X0,th->vec_sol_prev));
-    CHKERRQ(VecCopy(ts->vec_sol,th->X0));
+    if (th->vec_sol_prev) PetscCall(VecCopy(th->X0,th->vec_sol_prev));
+    PetscCall(VecCopy(ts->vec_sol,th->X0));
   }
 
   th->status     = TS_STEP_INCOMPLETE;
   while (!ts->reason && th->status != TS_STEP_COMPLETE) {
     th->shift      = 1/(th->Theta*ts->time_step);
     th->stage_time = ts->ptime + (th->endpoint ? (PetscReal)1 : th->Theta)*ts->time_step;
-    CHKERRQ(VecCopy(th->X0,th->X));
+    PetscCall(VecCopy(th->X0,th->X));
     if (th->extrapolate && !ts->steprestart) {
-      CHKERRQ(VecAXPY(th->X,1/th->shift,th->Xdot));
+      PetscCall(VecAXPY(th->X,1/th->shift,th->Xdot));
     }
     if (th->endpoint) { /* This formulation assumes linear time-independent mass matrix */
-      if (!th->affine) CHKERRQ(VecDuplicate(ts->vec_sol,&th->affine));
-      CHKERRQ(VecZeroEntries(th->Xdot));
-      CHKERRQ(TSComputeIFunction(ts,ts->ptime,th->X0,th->Xdot,th->affine,PETSC_FALSE));
-      CHKERRQ(VecScale(th->affine,(th->Theta-1)/th->Theta));
+      if (!th->affine) PetscCall(VecDuplicate(ts->vec_sol,&th->affine));
+      PetscCall(VecZeroEntries(th->Xdot));
+      PetscCall(TSComputeIFunction(ts,ts->ptime,th->X0,th->Xdot,th->affine,PETSC_FALSE));
+      PetscCall(VecScale(th->affine,(th->Theta-1)/th->Theta));
     } else if (th->affine) { /* Just in case th->endpoint is changed between calls to TSStep_Theta() */
-      CHKERRQ(VecZeroEntries(th->affine));
+      PetscCall(VecZeroEntries(th->affine));
     }
-    CHKERRQ(TSPreStage(ts,th->stage_time));
-    CHKERRQ(TSTheta_SNESSolve(ts,th->affine,th->X));
-    CHKERRQ(TSPostStage(ts,th->stage_time,0,&th->X));
-    CHKERRQ(TSAdaptCheckStage(ts->adapt,ts,th->stage_time,th->X,&stageok));
+    PetscCall(TSPreStage(ts,th->stage_time));
+    PetscCall(TSTheta_SNESSolve(ts,th->affine,th->X));
+    PetscCall(TSPostStage(ts,th->stage_time,0,&th->X));
+    PetscCall(TSAdaptCheckStage(ts->adapt,ts,th->stage_time,th->X,&stageok));
     if (!stageok) goto reject_step;
 
     th->status = TS_STEP_PENDING;
     if (th->endpoint) {
-      CHKERRQ(VecCopy(th->X,ts->vec_sol));
+      PetscCall(VecCopy(th->X,ts->vec_sol));
     } else {
-      CHKERRQ(VecAXPBYPCZ(th->Xdot,-th->shift,th->shift,0,th->X0,th->X));
-      CHKERRQ(VecAXPY(ts->vec_sol,ts->time_step,th->Xdot));
+      PetscCall(VecAXPBYPCZ(th->Xdot,-th->shift,th->shift,0,th->X0,th->X));
+      PetscCall(VecAXPY(ts->vec_sol,ts->time_step,th->Xdot));
     }
-    CHKERRQ(TSAdaptChoose(ts->adapt,ts,ts->time_step,NULL,&next_time_step,&accept));
+    PetscCall(TSAdaptChoose(ts->adapt,ts,ts->time_step,NULL,&next_time_step,&accept));
     th->status = accept ? TS_STEP_COMPLETE : TS_STEP_INCOMPLETE;
     if (!accept) {
-      CHKERRQ(VecCopy(th->X0,ts->vec_sol));
+      PetscCall(VecCopy(th->X0,ts->vec_sol));
       ts->time_step = next_time_step;
       goto reject_step;
     }
@@ -244,7 +244,7 @@ static PetscErrorCode TSStep_Theta(TS ts)
     ts->reject++; accept = PETSC_FALSE;
     if (!ts->reason && ++rejections > ts->max_reject && ts->max_reject >= 0) {
       ts->reason = TS_DIVERGED_STEP_REJECTED;
-      CHKERRQ(PetscInfo(ts,"Step=%D, step rejections %D greater than current TS allowed, stopping solve\n",ts->steps,rejections));
+      PetscCall(PetscInfo(ts,"Step=%D, step rejections %D greater than current TS allowed, stopping solve\n",ts->steps,rejections));
     }
   }
   PetscFunctionReturn(0);
@@ -265,18 +265,18 @@ static PetscErrorCode TSAdjointStepBEuler_Private(TS ts)
   PetscReal      adjoint_time_step;
 
   PetscFunctionBegin;
-  CHKERRQ(TSGetEquationType(ts,&eqtype));
+  PetscCall(TSGetEquationType(ts,&eqtype));
   if (eqtype == TS_EQ_ODE_EXPLICIT) {
     isexplicitode  = PETSC_TRUE;
     VecsDeltaLam  = ts->vecs_sensi;
     VecsDeltaLam2 = ts->vecs_sensi2;
   }
   th->status = TS_STEP_INCOMPLETE;
-  CHKERRQ(SNESGetKSP(ts->snes,&ksp));
-  CHKERRQ(TSGetIJacobian(ts,&J,&Jpre,NULL,NULL));
+  PetscCall(SNESGetKSP(ts->snes,&ksp));
+  PetscCall(TSGetIJacobian(ts,&J,&Jpre,NULL,NULL));
   if (quadts) {
-    CHKERRQ(TSGetRHSJacobian(quadts,&quadJ,NULL,NULL,NULL));
-    CHKERRQ(TSGetRHSJacobianP(quadts,&quadJp,NULL,NULL));
+    PetscCall(TSGetRHSJacobian(quadts,&quadJ,NULL,NULL,NULL));
+    PetscCall(TSGetRHSJacobianP(quadts,&quadJp,NULL,NULL));
   }
 
   th->stage_time    = ts->ptime;
@@ -284,61 +284,61 @@ static PetscErrorCode TSAdjointStepBEuler_Private(TS ts)
 
   /* Build RHS for first-order adjoint lambda_{n+1}/h + r_u^T(n+1) */
   if (quadts) {
-    CHKERRQ(TSComputeRHSJacobian(quadts,th->stage_time,ts->vec_sol,quadJ,NULL));
+    PetscCall(TSComputeRHSJacobian(quadts,th->stage_time,ts->vec_sol,quadJ,NULL));
   }
 
   for (nadj=0; nadj<ts->numcost; nadj++) {
-    CHKERRQ(VecCopy(ts->vecs_sensi[nadj],VecsSensiTemp[nadj]));
-    CHKERRQ(VecScale(VecsSensiTemp[nadj],1./adjoint_time_step)); /* lambda_{n+1}/h */
+    PetscCall(VecCopy(ts->vecs_sensi[nadj],VecsSensiTemp[nadj]));
+    PetscCall(VecScale(VecsSensiTemp[nadj],1./adjoint_time_step)); /* lambda_{n+1}/h */
     if (quadJ) {
-      CHKERRQ(MatDenseGetColumn(quadJ,nadj,&xarr));
-      CHKERRQ(VecPlaceArray(ts->vec_drdu_col,xarr));
-      CHKERRQ(VecAXPY(VecsSensiTemp[nadj],1.,ts->vec_drdu_col));
-      CHKERRQ(VecResetArray(ts->vec_drdu_col));
-      CHKERRQ(MatDenseRestoreColumn(quadJ,&xarr));
+      PetscCall(MatDenseGetColumn(quadJ,nadj,&xarr));
+      PetscCall(VecPlaceArray(ts->vec_drdu_col,xarr));
+      PetscCall(VecAXPY(VecsSensiTemp[nadj],1.,ts->vec_drdu_col));
+      PetscCall(VecResetArray(ts->vec_drdu_col));
+      PetscCall(MatDenseRestoreColumn(quadJ,&xarr));
     }
   }
 
   /* Build LHS for first-order adjoint */
   th->shift = 1./adjoint_time_step;
-  CHKERRQ(TSComputeSNESJacobian(ts,ts->vec_sol,J,Jpre));
-  CHKERRQ(KSPSetOperators(ksp,J,Jpre));
+  PetscCall(TSComputeSNESJacobian(ts,ts->vec_sol,J,Jpre));
+  PetscCall(KSPSetOperators(ksp,J,Jpre));
 
   /* Solve stage equation LHS*lambda_s = RHS for first-order adjoint */
   for (nadj=0; nadj<ts->numcost; nadj++) {
     KSPConvergedReason kspreason;
-    CHKERRQ(KSPSolveTranspose(ksp,VecsSensiTemp[nadj],VecsDeltaLam[nadj]));
-    CHKERRQ(KSPGetConvergedReason(ksp,&kspreason));
+    PetscCall(KSPSolveTranspose(ksp,VecsSensiTemp[nadj],VecsDeltaLam[nadj]));
+    PetscCall(KSPGetConvergedReason(ksp,&kspreason));
     if (kspreason < 0) {
       ts->reason = TSADJOINT_DIVERGED_LINEAR_SOLVE;
-      CHKERRQ(PetscInfo(ts,"Step=%D, %Dth cost function, transposed linear solve fails, stopping 1st-order adjoint solve\n",ts->steps,nadj));
+      PetscCall(PetscInfo(ts,"Step=%D, %Dth cost function, transposed linear solve fails, stopping 1st-order adjoint solve\n",ts->steps,nadj));
     }
   }
 
   if (ts->vecs_sensi2) { /* U_{n+1} */
     /* Get w1 at t_{n+1} from TLM matrix */
-    CHKERRQ(MatDenseGetColumn(ts->mat_sensip,0,&xarr));
-    CHKERRQ(VecPlaceArray(ts->vec_sensip_col,xarr));
+    PetscCall(MatDenseGetColumn(ts->mat_sensip,0,&xarr));
+    PetscCall(VecPlaceArray(ts->vec_sensip_col,xarr));
     /* lambda_s^T F_UU w_1 */
-    CHKERRQ(TSComputeIHessianProductFunctionUU(ts,th->stage_time,ts->vec_sol,VecsDeltaLam,ts->vec_sensip_col,ts->vecs_fuu));
+    PetscCall(TSComputeIHessianProductFunctionUU(ts,th->stage_time,ts->vec_sol,VecsDeltaLam,ts->vec_sensip_col,ts->vecs_fuu));
     /* lambda_s^T F_UP w_2 */
-    CHKERRQ(TSComputeIHessianProductFunctionUP(ts,th->stage_time,ts->vec_sol,VecsDeltaLam,ts->vec_dir,ts->vecs_fup));
+    PetscCall(TSComputeIHessianProductFunctionUP(ts,th->stage_time,ts->vec_sol,VecsDeltaLam,ts->vec_dir,ts->vecs_fup));
     for (nadj=0; nadj<ts->numcost; nadj++) { /* compute the residual */
-      CHKERRQ(VecCopy(ts->vecs_sensi2[nadj],VecsSensi2Temp[nadj]));
-      CHKERRQ(VecScale(VecsSensi2Temp[nadj],1./adjoint_time_step));
-      CHKERRQ(VecAXPY(VecsSensi2Temp[nadj],-1.,ts->vecs_fuu[nadj]));
+      PetscCall(VecCopy(ts->vecs_sensi2[nadj],VecsSensi2Temp[nadj]));
+      PetscCall(VecScale(VecsSensi2Temp[nadj],1./adjoint_time_step));
+      PetscCall(VecAXPY(VecsSensi2Temp[nadj],-1.,ts->vecs_fuu[nadj]));
       if (ts->vecs_fup) {
-        CHKERRQ(VecAXPY(VecsSensi2Temp[nadj],-1.,ts->vecs_fup[nadj]));
+        PetscCall(VecAXPY(VecsSensi2Temp[nadj],-1.,ts->vecs_fup[nadj]));
       }
     }
     /* Solve stage equation LHS X = RHS for second-order adjoint */
     for (nadj=0; nadj<ts->numcost; nadj++) {
       KSPConvergedReason kspreason;
-      CHKERRQ(KSPSolveTranspose(ksp,VecsSensi2Temp[nadj],VecsDeltaLam2[nadj]));
-      CHKERRQ(KSPGetConvergedReason(ksp,&kspreason));
+      PetscCall(KSPSolveTranspose(ksp,VecsSensi2Temp[nadj],VecsDeltaLam2[nadj]));
+      PetscCall(KSPGetConvergedReason(ksp,&kspreason));
       if (kspreason < 0) {
         ts->reason = TSADJOINT_DIVERGED_LINEAR_SOLVE;
-        CHKERRQ(PetscInfo(ts,"Step=%D, %Dth cost function, transposed linear solve fails, stopping 2nd-order adjoint solve\n",ts->steps,nadj));
+        PetscCall(PetscInfo(ts,"Step=%D, %Dth cost function, transposed linear solve fails, stopping 2nd-order adjoint solve\n",ts->steps,nadj));
       }
     }
   }
@@ -346,60 +346,60 @@ static PetscErrorCode TSAdjointStepBEuler_Private(TS ts)
   /* Update sensitivities, and evaluate integrals if there is any */
   if (!isexplicitode) {
     th->shift = 0.0;
-    CHKERRQ(TSComputeSNESJacobian(ts,ts->vec_sol,J,Jpre));
-    CHKERRQ(KSPSetOperators(ksp,J,Jpre));
+    PetscCall(TSComputeSNESJacobian(ts,ts->vec_sol,J,Jpre));
+    PetscCall(KSPSetOperators(ksp,J,Jpre));
     for (nadj=0; nadj<ts->numcost; nadj++) {
       /* Add f_U \lambda_s to the original RHS */
-      CHKERRQ(VecScale(VecsSensiTemp[nadj],-1.));
-      CHKERRQ(MatMultTransposeAdd(J,VecsDeltaLam[nadj],VecsSensiTemp[nadj],VecsSensiTemp[nadj]));
-      CHKERRQ(VecScale(VecsSensiTemp[nadj],-adjoint_time_step));
-      CHKERRQ(VecCopy(VecsSensiTemp[nadj],ts->vecs_sensi[nadj]));
+      PetscCall(VecScale(VecsSensiTemp[nadj],-1.));
+      PetscCall(MatMultTransposeAdd(J,VecsDeltaLam[nadj],VecsSensiTemp[nadj],VecsSensiTemp[nadj]));
+      PetscCall(VecScale(VecsSensiTemp[nadj],-adjoint_time_step));
+      PetscCall(VecCopy(VecsSensiTemp[nadj],ts->vecs_sensi[nadj]));
       if (ts->vecs_sensi2) {
-        CHKERRQ(MatMultTransposeAdd(J,VecsDeltaLam2[nadj],VecsSensi2Temp[nadj],VecsSensi2Temp[nadj]));
-        CHKERRQ(VecScale(VecsSensi2Temp[nadj],-adjoint_time_step));
-        CHKERRQ(VecCopy(VecsSensi2Temp[nadj],ts->vecs_sensi2[nadj]));
+        PetscCall(MatMultTransposeAdd(J,VecsDeltaLam2[nadj],VecsSensi2Temp[nadj],VecsSensi2Temp[nadj]));
+        PetscCall(VecScale(VecsSensi2Temp[nadj],-adjoint_time_step));
+        PetscCall(VecCopy(VecsSensi2Temp[nadj],ts->vecs_sensi2[nadj]));
       }
     }
   }
   if (ts->vecs_sensip) {
-    CHKERRQ(VecAXPBYPCZ(th->Xdot,-1./adjoint_time_step,1.0/adjoint_time_step,0,th->X0,ts->vec_sol));
-    CHKERRQ(TSComputeIJacobianP(ts,th->stage_time,ts->vec_sol,th->Xdot,1./adjoint_time_step,ts->Jacp,PETSC_FALSE)); /* get -f_p */
+    PetscCall(VecAXPBYPCZ(th->Xdot,-1./adjoint_time_step,1.0/adjoint_time_step,0,th->X0,ts->vec_sol));
+    PetscCall(TSComputeIJacobianP(ts,th->stage_time,ts->vec_sol,th->Xdot,1./adjoint_time_step,ts->Jacp,PETSC_FALSE)); /* get -f_p */
     if (quadts) {
-      CHKERRQ(TSComputeRHSJacobianP(quadts,th->stage_time,ts->vec_sol,quadJp));
+      PetscCall(TSComputeRHSJacobianP(quadts,th->stage_time,ts->vec_sol,quadJp));
     }
     if (ts->vecs_sensi2p) {
       /* lambda_s^T F_PU w_1 */
-      CHKERRQ(TSComputeIHessianProductFunctionPU(ts,th->stage_time,ts->vec_sol,VecsDeltaLam,ts->vec_sensip_col,ts->vecs_fpu));
+      PetscCall(TSComputeIHessianProductFunctionPU(ts,th->stage_time,ts->vec_sol,VecsDeltaLam,ts->vec_sensip_col,ts->vecs_fpu));
       /* lambda_s^T F_PP w_2 */
-      CHKERRQ(TSComputeIHessianProductFunctionPP(ts,th->stage_time,ts->vec_sol,VecsDeltaLam,ts->vec_dir,ts->vecs_fpp));
+      PetscCall(TSComputeIHessianProductFunctionPP(ts,th->stage_time,ts->vec_sol,VecsDeltaLam,ts->vec_dir,ts->vecs_fpp));
     }
 
     for (nadj=0; nadj<ts->numcost; nadj++) {
-      CHKERRQ(MatMultTranspose(ts->Jacp,VecsDeltaLam[nadj],VecsDeltaMu[nadj]));
-      CHKERRQ(VecAXPY(ts->vecs_sensip[nadj],-adjoint_time_step,VecsDeltaMu[nadj]));
+      PetscCall(MatMultTranspose(ts->Jacp,VecsDeltaLam[nadj],VecsDeltaMu[nadj]));
+      PetscCall(VecAXPY(ts->vecs_sensip[nadj],-adjoint_time_step,VecsDeltaMu[nadj]));
       if (quadJp) {
-        CHKERRQ(MatDenseGetColumn(quadJp,nadj,&xarr));
-        CHKERRQ(VecPlaceArray(ts->vec_drdp_col,xarr));
-        CHKERRQ(VecAXPY(ts->vecs_sensip[nadj],adjoint_time_step,ts->vec_drdp_col));
-        CHKERRQ(VecResetArray(ts->vec_drdp_col));
-        CHKERRQ(MatDenseRestoreColumn(quadJp,&xarr));
+        PetscCall(MatDenseGetColumn(quadJp,nadj,&xarr));
+        PetscCall(VecPlaceArray(ts->vec_drdp_col,xarr));
+        PetscCall(VecAXPY(ts->vecs_sensip[nadj],adjoint_time_step,ts->vec_drdp_col));
+        PetscCall(VecResetArray(ts->vec_drdp_col));
+        PetscCall(MatDenseRestoreColumn(quadJp,&xarr));
       }
       if (ts->vecs_sensi2p) {
-        CHKERRQ(MatMultTranspose(ts->Jacp,VecsDeltaLam2[nadj],VecsDeltaMu2[nadj]));
-        CHKERRQ(VecAXPY(ts->vecs_sensi2p[nadj],-adjoint_time_step,VecsDeltaMu2[nadj]));
+        PetscCall(MatMultTranspose(ts->Jacp,VecsDeltaLam2[nadj],VecsDeltaMu2[nadj]));
+        PetscCall(VecAXPY(ts->vecs_sensi2p[nadj],-adjoint_time_step,VecsDeltaMu2[nadj]));
         if (ts->vecs_fpu) {
-          CHKERRQ(VecAXPY(ts->vecs_sensi2p[nadj],-adjoint_time_step,ts->vecs_fpu[nadj]));
+          PetscCall(VecAXPY(ts->vecs_sensi2p[nadj],-adjoint_time_step,ts->vecs_fpu[nadj]));
         }
         if (ts->vecs_fpp) {
-          CHKERRQ(VecAXPY(ts->vecs_sensi2p[nadj],-adjoint_time_step,ts->vecs_fpp[nadj]));
+          PetscCall(VecAXPY(ts->vecs_sensi2p[nadj],-adjoint_time_step,ts->vecs_fpp[nadj]));
         }
       }
     }
   }
 
   if (ts->vecs_sensi2) {
-    CHKERRQ(VecResetArray(ts->vec_sensip_col));
-    CHKERRQ(MatDenseRestoreColumn(ts->mat_sensip,&xarr));
+    PetscCall(VecResetArray(ts->vec_sensip_col));
+    PetscCall(MatDenseRestoreColumn(ts->mat_sensip,&xarr));
   }
   th->status = TS_STEP_COMPLETE;
   PetscFunctionReturn(0);
@@ -420,15 +420,15 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
 
   PetscFunctionBegin;
   if (th->Theta == 1.) {
-    CHKERRQ(TSAdjointStepBEuler_Private(ts));
+    PetscCall(TSAdjointStepBEuler_Private(ts));
     PetscFunctionReturn(0);
   }
   th->status = TS_STEP_INCOMPLETE;
-  CHKERRQ(SNESGetKSP(ts->snes,&ksp));
-  CHKERRQ(TSGetIJacobian(ts,&J,&Jpre,NULL,NULL));
+  PetscCall(SNESGetKSP(ts->snes,&ksp));
+  PetscCall(TSGetIJacobian(ts,&J,&Jpre,NULL,NULL));
   if (quadts) {
-    CHKERRQ(TSGetRHSJacobian(quadts,&quadJ,NULL,NULL,NULL));
-    CHKERRQ(TSGetRHSJacobianP(quadts,&quadJp,NULL,NULL));
+    PetscCall(TSGetRHSJacobian(quadts,&quadJ,NULL,NULL,NULL));
+    PetscCall(TSGetRHSJacobianP(quadts,&quadJp,NULL,NULL));
   }
   /* If endpoint=1, th->ptime and th->X0 will be used; if endpoint=0, th->stage_time and th->X will be used. */
   th->stage_time    = th->endpoint ? ts->ptime : (ts->ptime+(1.-th->Theta)*ts->time_step);
@@ -437,48 +437,48 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
 
   if (!th->endpoint) {
     /* recover th->X0 using vec_sol and the stage value th->X */
-    CHKERRQ(VecAXPBYPCZ(th->X0,1.0/(1.0-th->Theta),th->Theta/(th->Theta-1.0),0,th->X,ts->vec_sol));
+    PetscCall(VecAXPBYPCZ(th->X0,1.0/(1.0-th->Theta),th->Theta/(th->Theta-1.0),0,th->X,ts->vec_sol));
   }
 
   /* Build RHS for first-order adjoint */
   /* Cost function has an integral term */
   if (quadts) {
     if (th->endpoint) {
-      CHKERRQ(TSComputeRHSJacobian(quadts,th->stage_time,ts->vec_sol,quadJ,NULL));
+      PetscCall(TSComputeRHSJacobian(quadts,th->stage_time,ts->vec_sol,quadJ,NULL));
     } else {
-      CHKERRQ(TSComputeRHSJacobian(quadts,th->stage_time,th->X,quadJ,NULL));
+      PetscCall(TSComputeRHSJacobian(quadts,th->stage_time,th->X,quadJ,NULL));
     }
   }
 
   for (nadj=0; nadj<ts->numcost; nadj++) {
-    CHKERRQ(VecCopy(ts->vecs_sensi[nadj],VecsSensiTemp[nadj]));
-    CHKERRQ(VecScale(VecsSensiTemp[nadj],1./(th->Theta*adjoint_time_step)));
+    PetscCall(VecCopy(ts->vecs_sensi[nadj],VecsSensiTemp[nadj]));
+    PetscCall(VecScale(VecsSensiTemp[nadj],1./(th->Theta*adjoint_time_step)));
     if (quadJ) {
-      CHKERRQ(MatDenseGetColumn(quadJ,nadj,&xarr));
-      CHKERRQ(VecPlaceArray(ts->vec_drdu_col,xarr));
-      CHKERRQ(VecAXPY(VecsSensiTemp[nadj],1.,ts->vec_drdu_col));
-      CHKERRQ(VecResetArray(ts->vec_drdu_col));
-      CHKERRQ(MatDenseRestoreColumn(quadJ,&xarr));
+      PetscCall(MatDenseGetColumn(quadJ,nadj,&xarr));
+      PetscCall(VecPlaceArray(ts->vec_drdu_col,xarr));
+      PetscCall(VecAXPY(VecsSensiTemp[nadj],1.,ts->vec_drdu_col));
+      PetscCall(VecResetArray(ts->vec_drdu_col));
+      PetscCall(MatDenseRestoreColumn(quadJ,&xarr));
     }
   }
 
   /* Build LHS for first-order adjoint */
   th->shift = 1./(th->Theta*adjoint_time_step);
   if (th->endpoint) {
-    CHKERRQ(TSComputeSNESJacobian(ts,ts->vec_sol,J,Jpre));
+    PetscCall(TSComputeSNESJacobian(ts,ts->vec_sol,J,Jpre));
   } else {
-    CHKERRQ(TSComputeSNESJacobian(ts,th->X,J,Jpre));
+    PetscCall(TSComputeSNESJacobian(ts,th->X,J,Jpre));
   }
-  CHKERRQ(KSPSetOperators(ksp,J,Jpre));
+  PetscCall(KSPSetOperators(ksp,J,Jpre));
 
   /* Solve stage equation LHS*lambda_s = RHS for first-order adjoint */
   for (nadj=0; nadj<ts->numcost; nadj++) {
     KSPConvergedReason kspreason;
-    CHKERRQ(KSPSolveTranspose(ksp,VecsSensiTemp[nadj],VecsDeltaLam[nadj]));
-    CHKERRQ(KSPGetConvergedReason(ksp,&kspreason));
+    PetscCall(KSPSolveTranspose(ksp,VecsSensiTemp[nadj],VecsDeltaLam[nadj]));
+    PetscCall(KSPGetConvergedReason(ksp,&kspreason));
     if (kspreason < 0) {
       ts->reason = TSADJOINT_DIVERGED_LINEAR_SOLVE;
-      CHKERRQ(PetscInfo(ts,"Step=%D, %Dth cost function, transposed linear solve fails, stopping 1st-order adjoint solve\n",ts->steps,nadj));
+      PetscCall(PetscInfo(ts,"Step=%D, %Dth cost function, transposed linear solve fails, stopping 1st-order adjoint solve\n",ts->steps,nadj));
     }
   }
 
@@ -486,30 +486,30 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
   if (ts->vecs_sensi2) { /* U_{n+1} */
     PetscCheck(th->endpoint,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Operation not implemented in TS_Theta");
     /* Get w1 at t_{n+1} from TLM matrix */
-    CHKERRQ(MatDenseGetColumn(ts->mat_sensip,0,&xarr));
-    CHKERRQ(VecPlaceArray(ts->vec_sensip_col,xarr));
+    PetscCall(MatDenseGetColumn(ts->mat_sensip,0,&xarr));
+    PetscCall(VecPlaceArray(ts->vec_sensip_col,xarr));
     /* lambda_s^T F_UU w_1 */
-    CHKERRQ(TSComputeIHessianProductFunctionUU(ts,th->stage_time,ts->vec_sol,VecsDeltaLam,ts->vec_sensip_col,ts->vecs_fuu));
-    CHKERRQ(VecResetArray(ts->vec_sensip_col));
-    CHKERRQ(MatDenseRestoreColumn(ts->mat_sensip,&xarr));
+    PetscCall(TSComputeIHessianProductFunctionUU(ts,th->stage_time,ts->vec_sol,VecsDeltaLam,ts->vec_sensip_col,ts->vecs_fuu));
+    PetscCall(VecResetArray(ts->vec_sensip_col));
+    PetscCall(MatDenseRestoreColumn(ts->mat_sensip,&xarr));
     /* lambda_s^T F_UP w_2 */
-    CHKERRQ(TSComputeIHessianProductFunctionUP(ts,th->stage_time,ts->vec_sol,VecsDeltaLam,ts->vec_dir,ts->vecs_fup));
+    PetscCall(TSComputeIHessianProductFunctionUP(ts,th->stage_time,ts->vec_sol,VecsDeltaLam,ts->vec_dir,ts->vecs_fup));
     for (nadj=0; nadj<ts->numcost; nadj++) { /* compute the residual */
-      CHKERRQ(VecCopy(ts->vecs_sensi2[nadj],VecsSensi2Temp[nadj]));
-      CHKERRQ(VecScale(VecsSensi2Temp[nadj],th->shift));
-      CHKERRQ(VecAXPY(VecsSensi2Temp[nadj],-1.,ts->vecs_fuu[nadj]));
+      PetscCall(VecCopy(ts->vecs_sensi2[nadj],VecsSensi2Temp[nadj]));
+      PetscCall(VecScale(VecsSensi2Temp[nadj],th->shift));
+      PetscCall(VecAXPY(VecsSensi2Temp[nadj],-1.,ts->vecs_fuu[nadj]));
       if (ts->vecs_fup) {
-        CHKERRQ(VecAXPY(VecsSensi2Temp[nadj],-1.,ts->vecs_fup[nadj]));
+        PetscCall(VecAXPY(VecsSensi2Temp[nadj],-1.,ts->vecs_fup[nadj]));
       }
     }
     /* Solve stage equation LHS X = RHS for second-order adjoint */
     for (nadj=0; nadj<ts->numcost; nadj++) {
       KSPConvergedReason kspreason;
-      CHKERRQ(KSPSolveTranspose(ksp,VecsSensi2Temp[nadj],VecsDeltaLam2[nadj]));
-      CHKERRQ(KSPGetConvergedReason(ksp,&kspreason));
+      PetscCall(KSPSolveTranspose(ksp,VecsSensi2Temp[nadj],VecsDeltaLam2[nadj]));
+      PetscCall(KSPGetConvergedReason(ksp,&kspreason));
       if (kspreason < 0) {
         ts->reason = TSADJOINT_DIVERGED_LINEAR_SOLVE;
-        CHKERRQ(PetscInfo(ts,"Step=%D, %Dth cost function, transposed linear solve fails, stopping 2nd-order adjoint solve\n",ts->steps,nadj));
+        PetscCall(PetscInfo(ts,"Step=%D, %Dth cost function, transposed linear solve fails, stopping 2nd-order adjoint solve\n",ts->steps,nadj));
       }
     }
   }
@@ -518,43 +518,43 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
   if (th->endpoint) { /* two-stage Theta methods with th->Theta!=1, th->Theta==1 leads to BEuler */
     th->shift      = 1./((th->Theta-1.)*adjoint_time_step);
     th->stage_time = adjoint_ptime;
-    CHKERRQ(TSComputeSNESJacobian(ts,th->X0,J,Jpre));
-    CHKERRQ(KSPSetOperators(ksp,J,Jpre));
+    PetscCall(TSComputeSNESJacobian(ts,th->X0,J,Jpre));
+    PetscCall(KSPSetOperators(ksp,J,Jpre));
     /* R_U at t_n */
     if (quadts) {
-      CHKERRQ(TSComputeRHSJacobian(quadts,adjoint_ptime,th->X0,quadJ,NULL));
+      PetscCall(TSComputeRHSJacobian(quadts,adjoint_ptime,th->X0,quadJ,NULL));
     }
     for (nadj=0; nadj<ts->numcost; nadj++) {
-      CHKERRQ(MatMultTranspose(J,VecsDeltaLam[nadj],ts->vecs_sensi[nadj]));
+      PetscCall(MatMultTranspose(J,VecsDeltaLam[nadj],ts->vecs_sensi[nadj]));
       if (quadJ) {
-        CHKERRQ(MatDenseGetColumn(quadJ,nadj,&xarr));
-        CHKERRQ(VecPlaceArray(ts->vec_drdu_col,xarr));
-        CHKERRQ(VecAXPY(ts->vecs_sensi[nadj],-1.,ts->vec_drdu_col));
-        CHKERRQ(VecResetArray(ts->vec_drdu_col));
-        CHKERRQ(MatDenseRestoreColumn(quadJ,&xarr));
+        PetscCall(MatDenseGetColumn(quadJ,nadj,&xarr));
+        PetscCall(VecPlaceArray(ts->vec_drdu_col,xarr));
+        PetscCall(VecAXPY(ts->vecs_sensi[nadj],-1.,ts->vec_drdu_col));
+        PetscCall(VecResetArray(ts->vec_drdu_col));
+        PetscCall(MatDenseRestoreColumn(quadJ,&xarr));
       }
-      CHKERRQ(VecScale(ts->vecs_sensi[nadj],1./th->shift));
+      PetscCall(VecScale(ts->vecs_sensi[nadj],1./th->shift));
     }
 
     /* Second-order adjoint */
     if (ts->vecs_sensi2) { /* U_n */
       /* Get w1 at t_n from TLM matrix */
-      CHKERRQ(MatDenseGetColumn(th->MatFwdSensip0,0,&xarr));
-      CHKERRQ(VecPlaceArray(ts->vec_sensip_col,xarr));
+      PetscCall(MatDenseGetColumn(th->MatFwdSensip0,0,&xarr));
+      PetscCall(VecPlaceArray(ts->vec_sensip_col,xarr));
       /* lambda_s^T F_UU w_1 */
-      CHKERRQ(TSComputeIHessianProductFunctionUU(ts,adjoint_ptime,th->X0,VecsDeltaLam,ts->vec_sensip_col,ts->vecs_fuu));
-      CHKERRQ(VecResetArray(ts->vec_sensip_col));
-      CHKERRQ(MatDenseRestoreColumn(th->MatFwdSensip0,&xarr));
+      PetscCall(TSComputeIHessianProductFunctionUU(ts,adjoint_ptime,th->X0,VecsDeltaLam,ts->vec_sensip_col,ts->vecs_fuu));
+      PetscCall(VecResetArray(ts->vec_sensip_col));
+      PetscCall(MatDenseRestoreColumn(th->MatFwdSensip0,&xarr));
       /* lambda_s^T F_UU w_2 */
-      CHKERRQ(TSComputeIHessianProductFunctionUP(ts,adjoint_ptime,th->X0,VecsDeltaLam,ts->vec_dir,ts->vecs_fup));
+      PetscCall(TSComputeIHessianProductFunctionUP(ts,adjoint_ptime,th->X0,VecsDeltaLam,ts->vec_dir,ts->vecs_fup));
       for (nadj=0; nadj<ts->numcost; nadj++) {
         /* M^T Lambda_s + h(1-theta) F_U^T Lambda_s + h(1-theta) lambda_s^T F_UU w_1 + lambda_s^T F_UP w_2  */
-        CHKERRQ(MatMultTranspose(J,VecsDeltaLam2[nadj],ts->vecs_sensi2[nadj]));
-        CHKERRQ(VecAXPY(ts->vecs_sensi2[nadj],1.,ts->vecs_fuu[nadj]));
+        PetscCall(MatMultTranspose(J,VecsDeltaLam2[nadj],ts->vecs_sensi2[nadj]));
+        PetscCall(VecAXPY(ts->vecs_sensi2[nadj],1.,ts->vecs_fuu[nadj]));
         if (ts->vecs_fup) {
-          CHKERRQ(VecAXPY(ts->vecs_sensi2[nadj],1.,ts->vecs_fup[nadj]));
+          PetscCall(VecAXPY(ts->vecs_sensi2[nadj],1.,ts->vecs_fup[nadj]));
         }
-        CHKERRQ(VecScale(ts->vecs_sensi2[nadj],1./th->shift));
+        PetscCall(VecScale(ts->vecs_sensi2[nadj],1./th->shift));
       }
     }
 
@@ -563,81 +563,81 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
     if (ts->vecs_sensip) { /* sensitivities wrt parameters */
       /* U_{n+1} */
       th->shift = 1.0/(adjoint_time_step*th->Theta);
-      CHKERRQ(VecAXPBYPCZ(th->Xdot,-th->shift,th->shift,0,th->X0,ts->vec_sol));
-      CHKERRQ(TSComputeIJacobianP(ts,th->stage_time,ts->vec_sol,th->Xdot,-1./(th->Theta*adjoint_time_step),ts->Jacp,PETSC_FALSE));
+      PetscCall(VecAXPBYPCZ(th->Xdot,-th->shift,th->shift,0,th->X0,ts->vec_sol));
+      PetscCall(TSComputeIJacobianP(ts,th->stage_time,ts->vec_sol,th->Xdot,-1./(th->Theta*adjoint_time_step),ts->Jacp,PETSC_FALSE));
       if (quadts) {
-        CHKERRQ(TSComputeRHSJacobianP(quadts,th->stage_time,ts->vec_sol,quadJp));
+        PetscCall(TSComputeRHSJacobianP(quadts,th->stage_time,ts->vec_sol,quadJp));
       }
       for (nadj=0; nadj<ts->numcost; nadj++) {
-        CHKERRQ(MatMultTranspose(ts->Jacp,VecsDeltaLam[nadj],VecsDeltaMu[nadj]));
-        CHKERRQ(VecAXPY(ts->vecs_sensip[nadj],-adjoint_time_step*th->Theta,VecsDeltaMu[nadj]));
+        PetscCall(MatMultTranspose(ts->Jacp,VecsDeltaLam[nadj],VecsDeltaMu[nadj]));
+        PetscCall(VecAXPY(ts->vecs_sensip[nadj],-adjoint_time_step*th->Theta,VecsDeltaMu[nadj]));
         if (quadJp) {
-          CHKERRQ(MatDenseGetColumn(quadJp,nadj,&xarr));
-          CHKERRQ(VecPlaceArray(ts->vec_drdp_col,xarr));
-          CHKERRQ(VecAXPY(ts->vecs_sensip[nadj],adjoint_time_step*th->Theta,ts->vec_drdp_col));
-          CHKERRQ(VecResetArray(ts->vec_drdp_col));
-          CHKERRQ(MatDenseRestoreColumn(quadJp,&xarr));
+          PetscCall(MatDenseGetColumn(quadJp,nadj,&xarr));
+          PetscCall(VecPlaceArray(ts->vec_drdp_col,xarr));
+          PetscCall(VecAXPY(ts->vecs_sensip[nadj],adjoint_time_step*th->Theta,ts->vec_drdp_col));
+          PetscCall(VecResetArray(ts->vec_drdp_col));
+          PetscCall(MatDenseRestoreColumn(quadJp,&xarr));
         }
       }
       if (ts->vecs_sensi2p) { /* second-order */
         /* Get w1 at t_{n+1} from TLM matrix */
-        CHKERRQ(MatDenseGetColumn(ts->mat_sensip,0,&xarr));
-        CHKERRQ(VecPlaceArray(ts->vec_sensip_col,xarr));
+        PetscCall(MatDenseGetColumn(ts->mat_sensip,0,&xarr));
+        PetscCall(VecPlaceArray(ts->vec_sensip_col,xarr));
         /* lambda_s^T F_PU w_1 */
-        CHKERRQ(TSComputeIHessianProductFunctionPU(ts,th->stage_time,ts->vec_sol,VecsDeltaLam,ts->vec_sensip_col,ts->vecs_fpu));
-        CHKERRQ(VecResetArray(ts->vec_sensip_col));
-        CHKERRQ(MatDenseRestoreColumn(ts->mat_sensip,&xarr));
+        PetscCall(TSComputeIHessianProductFunctionPU(ts,th->stage_time,ts->vec_sol,VecsDeltaLam,ts->vec_sensip_col,ts->vecs_fpu));
+        PetscCall(VecResetArray(ts->vec_sensip_col));
+        PetscCall(MatDenseRestoreColumn(ts->mat_sensip,&xarr));
 
         /* lambda_s^T F_PP w_2 */
-        CHKERRQ(TSComputeIHessianProductFunctionPP(ts,th->stage_time,ts->vec_sol,VecsDeltaLam,ts->vec_dir,ts->vecs_fpp));
+        PetscCall(TSComputeIHessianProductFunctionPP(ts,th->stage_time,ts->vec_sol,VecsDeltaLam,ts->vec_dir,ts->vecs_fpp));
         for (nadj=0; nadj<ts->numcost; nadj++) {
           /* Mu2 <- Mu2 + h theta F_P^T Lambda_s + h theta (lambda_s^T F_UU w_1 + lambda_s^T F_UP w_2)  */
-          CHKERRQ(MatMultTranspose(ts->Jacp,VecsDeltaLam2[nadj],VecsDeltaMu2[nadj]));
-          CHKERRQ(VecAXPY(ts->vecs_sensi2p[nadj],-adjoint_time_step*th->Theta,VecsDeltaMu2[nadj]));
+          PetscCall(MatMultTranspose(ts->Jacp,VecsDeltaLam2[nadj],VecsDeltaMu2[nadj]));
+          PetscCall(VecAXPY(ts->vecs_sensi2p[nadj],-adjoint_time_step*th->Theta,VecsDeltaMu2[nadj]));
           if (ts->vecs_fpu) {
-            CHKERRQ(VecAXPY(ts->vecs_sensi2p[nadj],-adjoint_time_step*th->Theta,ts->vecs_fpu[nadj]));
+            PetscCall(VecAXPY(ts->vecs_sensi2p[nadj],-adjoint_time_step*th->Theta,ts->vecs_fpu[nadj]));
           }
           if (ts->vecs_fpp) {
-            CHKERRQ(VecAXPY(ts->vecs_sensi2p[nadj],-adjoint_time_step*th->Theta,ts->vecs_fpp[nadj]));
+            PetscCall(VecAXPY(ts->vecs_sensi2p[nadj],-adjoint_time_step*th->Theta,ts->vecs_fpp[nadj]));
           }
         }
       }
 
       /* U_s */
-      CHKERRQ(VecZeroEntries(th->Xdot));
-      CHKERRQ(TSComputeIJacobianP(ts,adjoint_ptime,th->X0,th->Xdot,1./((th->Theta-1.0)*adjoint_time_step),ts->Jacp,PETSC_FALSE));
+      PetscCall(VecZeroEntries(th->Xdot));
+      PetscCall(TSComputeIJacobianP(ts,adjoint_ptime,th->X0,th->Xdot,1./((th->Theta-1.0)*adjoint_time_step),ts->Jacp,PETSC_FALSE));
       if (quadts) {
-        CHKERRQ(TSComputeRHSJacobianP(quadts,adjoint_ptime,th->X0,quadJp));
+        PetscCall(TSComputeRHSJacobianP(quadts,adjoint_ptime,th->X0,quadJp));
       }
       for (nadj=0; nadj<ts->numcost; nadj++) {
-        CHKERRQ(MatMultTranspose(ts->Jacp,VecsDeltaLam[nadj],VecsDeltaMu[nadj]));
-        CHKERRQ(VecAXPY(ts->vecs_sensip[nadj],-adjoint_time_step*(1.0-th->Theta),VecsDeltaMu[nadj]));
+        PetscCall(MatMultTranspose(ts->Jacp,VecsDeltaLam[nadj],VecsDeltaMu[nadj]));
+        PetscCall(VecAXPY(ts->vecs_sensip[nadj],-adjoint_time_step*(1.0-th->Theta),VecsDeltaMu[nadj]));
         if (quadJp) {
-          CHKERRQ(MatDenseGetColumn(quadJp,nadj,&xarr));
-          CHKERRQ(VecPlaceArray(ts->vec_drdp_col,xarr));
-          CHKERRQ(VecAXPY(ts->vecs_sensip[nadj],adjoint_time_step*(1.0-th->Theta),ts->vec_drdp_col));
-          CHKERRQ(VecResetArray(ts->vec_drdp_col));
-          CHKERRQ(MatDenseRestoreColumn(quadJp,&xarr));
+          PetscCall(MatDenseGetColumn(quadJp,nadj,&xarr));
+          PetscCall(VecPlaceArray(ts->vec_drdp_col,xarr));
+          PetscCall(VecAXPY(ts->vecs_sensip[nadj],adjoint_time_step*(1.0-th->Theta),ts->vec_drdp_col));
+          PetscCall(VecResetArray(ts->vec_drdp_col));
+          PetscCall(MatDenseRestoreColumn(quadJp,&xarr));
         }
         if (ts->vecs_sensi2p) { /* second-order */
           /* Get w1 at t_n from TLM matrix */
-          CHKERRQ(MatDenseGetColumn(th->MatFwdSensip0,0,&xarr));
-          CHKERRQ(VecPlaceArray(ts->vec_sensip_col,xarr));
+          PetscCall(MatDenseGetColumn(th->MatFwdSensip0,0,&xarr));
+          PetscCall(VecPlaceArray(ts->vec_sensip_col,xarr));
           /* lambda_s^T F_PU w_1 */
-          CHKERRQ(TSComputeIHessianProductFunctionPU(ts,adjoint_ptime,th->X0,VecsDeltaLam,ts->vec_sensip_col,ts->vecs_fpu));
-          CHKERRQ(VecResetArray(ts->vec_sensip_col));
-          CHKERRQ(MatDenseRestoreColumn(th->MatFwdSensip0,&xarr));
+          PetscCall(TSComputeIHessianProductFunctionPU(ts,adjoint_ptime,th->X0,VecsDeltaLam,ts->vec_sensip_col,ts->vecs_fpu));
+          PetscCall(VecResetArray(ts->vec_sensip_col));
+          PetscCall(MatDenseRestoreColumn(th->MatFwdSensip0,&xarr));
           /* lambda_s^T F_PP w_2 */
-          CHKERRQ(TSComputeIHessianProductFunctionPP(ts,adjoint_ptime,th->X0,VecsDeltaLam,ts->vec_dir,ts->vecs_fpp));
+          PetscCall(TSComputeIHessianProductFunctionPP(ts,adjoint_ptime,th->X0,VecsDeltaLam,ts->vec_dir,ts->vecs_fpp));
           for (nadj=0; nadj<ts->numcost; nadj++) {
             /* Mu2 <- Mu2 + h(1-theta) F_P^T Lambda_s + h(1-theta) (lambda_s^T F_UU w_1 + lambda_s^T F_UP w_2) */
-            CHKERRQ(MatMultTranspose(ts->Jacp,VecsDeltaLam2[nadj],VecsDeltaMu2[nadj]));
-            CHKERRQ(VecAXPY(ts->vecs_sensi2p[nadj],-adjoint_time_step*(1.0-th->Theta),VecsDeltaMu2[nadj]));
+            PetscCall(MatMultTranspose(ts->Jacp,VecsDeltaLam2[nadj],VecsDeltaMu2[nadj]));
+            PetscCall(VecAXPY(ts->vecs_sensi2p[nadj],-adjoint_time_step*(1.0-th->Theta),VecsDeltaMu2[nadj]));
             if (ts->vecs_fpu) {
-              CHKERRQ(VecAXPY(ts->vecs_sensi2p[nadj],-adjoint_time_step*(1.0-th->Theta),ts->vecs_fpu[nadj]));
+              PetscCall(VecAXPY(ts->vecs_sensi2p[nadj],-adjoint_time_step*(1.0-th->Theta),ts->vecs_fpu[nadj]));
             }
             if (ts->vecs_fpp) {
-              CHKERRQ(VecAXPY(ts->vecs_sensi2p[nadj],-adjoint_time_step*(1.0-th->Theta),ts->vecs_fpp[nadj]));
+              PetscCall(VecAXPY(ts->vecs_sensi2p[nadj],-adjoint_time_step*(1.0-th->Theta),ts->vecs_fpp[nadj]));
             }
           }
         }
@@ -645,38 +645,38 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
     }
   } else { /* one-stage case */
     th->shift = 0.0;
-    CHKERRQ(TSComputeSNESJacobian(ts,th->X,J,Jpre)); /* get -f_y */
-    CHKERRQ(KSPSetOperators(ksp,J,Jpre));
+    PetscCall(TSComputeSNESJacobian(ts,th->X,J,Jpre)); /* get -f_y */
+    PetscCall(KSPSetOperators(ksp,J,Jpre));
     if (quadts) {
-      CHKERRQ(TSComputeRHSJacobian(quadts,th->stage_time,th->X,quadJ,NULL));
+      PetscCall(TSComputeRHSJacobian(quadts,th->stage_time,th->X,quadJ,NULL));
     }
     for (nadj=0; nadj<ts->numcost; nadj++) {
-      CHKERRQ(MatMultTranspose(J,VecsDeltaLam[nadj],VecsSensiTemp[nadj]));
-      CHKERRQ(VecAXPY(ts->vecs_sensi[nadj],-adjoint_time_step,VecsSensiTemp[nadj]));
+      PetscCall(MatMultTranspose(J,VecsDeltaLam[nadj],VecsSensiTemp[nadj]));
+      PetscCall(VecAXPY(ts->vecs_sensi[nadj],-adjoint_time_step,VecsSensiTemp[nadj]));
       if (quadJ) {
-        CHKERRQ(MatDenseGetColumn(quadJ,nadj,&xarr));
-        CHKERRQ(VecPlaceArray(ts->vec_drdu_col,xarr));
-        CHKERRQ(VecAXPY(ts->vecs_sensi[nadj],adjoint_time_step,ts->vec_drdu_col));
-        CHKERRQ(VecResetArray(ts->vec_drdu_col));
-        CHKERRQ(MatDenseRestoreColumn(quadJ,&xarr));
+        PetscCall(MatDenseGetColumn(quadJ,nadj,&xarr));
+        PetscCall(VecPlaceArray(ts->vec_drdu_col,xarr));
+        PetscCall(VecAXPY(ts->vecs_sensi[nadj],adjoint_time_step,ts->vec_drdu_col));
+        PetscCall(VecResetArray(ts->vec_drdu_col));
+        PetscCall(MatDenseRestoreColumn(quadJ,&xarr));
       }
     }
     if (ts->vecs_sensip) {
       th->shift = 1.0/(adjoint_time_step*th->Theta);
-      CHKERRQ(VecAXPBYPCZ(th->Xdot,-th->shift,th->shift,0,th->X0,th->X));
-      CHKERRQ(TSComputeIJacobianP(ts,th->stage_time,th->X,th->Xdot,th->shift,ts->Jacp,PETSC_FALSE));
+      PetscCall(VecAXPBYPCZ(th->Xdot,-th->shift,th->shift,0,th->X0,th->X));
+      PetscCall(TSComputeIJacobianP(ts,th->stage_time,th->X,th->Xdot,th->shift,ts->Jacp,PETSC_FALSE));
       if (quadts) {
-        CHKERRQ(TSComputeRHSJacobianP(quadts,th->stage_time,th->X,quadJp));
+        PetscCall(TSComputeRHSJacobianP(quadts,th->stage_time,th->X,quadJp));
       }
       for (nadj=0; nadj<ts->numcost; nadj++) {
-        CHKERRQ(MatMultTranspose(ts->Jacp,VecsDeltaLam[nadj],VecsDeltaMu[nadj]));
-        CHKERRQ(VecAXPY(ts->vecs_sensip[nadj],-adjoint_time_step,VecsDeltaMu[nadj]));
+        PetscCall(MatMultTranspose(ts->Jacp,VecsDeltaLam[nadj],VecsDeltaMu[nadj]));
+        PetscCall(VecAXPY(ts->vecs_sensip[nadj],-adjoint_time_step,VecsDeltaMu[nadj]));
         if (quadJp) {
-          CHKERRQ(MatDenseGetColumn(quadJp,nadj,&xarr));
-          CHKERRQ(VecPlaceArray(ts->vec_drdp_col,xarr));
-          CHKERRQ(VecAXPY(ts->vecs_sensip[nadj],adjoint_time_step,ts->vec_drdp_col));
-          CHKERRQ(VecResetArray(ts->vec_drdp_col));
-          CHKERRQ(MatDenseRestoreColumn(quadJp,&xarr));
+          PetscCall(MatDenseGetColumn(quadJp,nadj,&xarr));
+          PetscCall(VecPlaceArray(ts->vec_drdp_col,xarr));
+          PetscCall(VecAXPY(ts->vecs_sensip[nadj],adjoint_time_step,ts->vec_drdp_col));
+          PetscCall(VecResetArray(ts->vec_drdp_col));
+          PetscCall(MatDenseRestoreColumn(quadJp,&xarr));
         }
       }
     }
@@ -692,9 +692,9 @@ static PetscErrorCode TSInterpolate_Theta(TS ts,PetscReal t,Vec X)
   PetscReal      dt  = t - ts->ptime;
 
   PetscFunctionBegin;
-  CHKERRQ(VecCopy(ts->vec_sol,th->X));
+  PetscCall(VecCopy(ts->vec_sol,th->X));
   if (th->endpoint) dt *= th->Theta;
-  CHKERRQ(VecWAXPY(X,dt,th->Xdot,th->X));
+  PetscCall(VecWAXPY(X,dt,th->Xdot,th->X));
   PetscFunctionReturn(0);
 }
 
@@ -716,9 +716,9 @@ static PetscErrorCode TSEvaluateWLTE_Theta(TS ts,NormType wnormtype,PetscInt *or
     PetscScalar scal[3]; Vec vecs[3];
     scal[0] = +1/a; scal[1] = -1/(a-1); scal[2] = +1/(a*(a-1));
     vecs[0] = X;    vecs[1] = th->X0;   vecs[2] = th->vec_sol_prev;
-    CHKERRQ(VecCopy(X,Y));
-    CHKERRQ(VecMAXPY(Y,3,scal,vecs));
-    CHKERRQ(TSErrorWeightedNorm(ts,X,Y,wnormtype,wlte,&wltea,&wlter));
+    PetscCall(VecCopy(X,Y));
+    PetscCall(VecMAXPY(Y,3,scal,vecs));
+    PetscCall(TSErrorWeightedNorm(ts,X,Y,wnormtype,wlte,&wltea,&wlter));
   }
   if (order) *order = 2;
   PetscFunctionReturn(0);
@@ -730,16 +730,16 @@ static PetscErrorCode TSRollBack_Theta(TS ts)
   TS             quadts = ts->quadraturets;
 
   PetscFunctionBegin;
-  CHKERRQ(VecCopy(th->X0,ts->vec_sol));
+  PetscCall(VecCopy(th->X0,ts->vec_sol));
   if (quadts && ts->costintegralfwd) {
-    CHKERRQ(VecCopy(th->VecCostIntegral0,quadts->vec_sol));
+    PetscCall(VecCopy(th->VecCostIntegral0,quadts->vec_sol));
   }
   th->status = TS_STEP_INCOMPLETE;
   if (ts->mat_sensip) {
-    CHKERRQ(MatCopy(th->MatFwdSensip0,ts->mat_sensip,SAME_NONZERO_PATTERN));
+    PetscCall(MatCopy(th->MatFwdSensip0,ts->mat_sensip,SAME_NONZERO_PATTERN));
   }
   if (quadts && quadts->mat_sensip) {
-    CHKERRQ(MatCopy(th->MatIntegralSensip0,quadts->mat_sensip,SAME_NONZERO_PATTERN));
+    PetscCall(MatCopy(th->MatIntegralSensip0,quadts->mat_sensip,SAME_NONZERO_PATTERN));
   }
   PetscFunctionReturn(0);
 }
@@ -758,58 +758,58 @@ static PetscErrorCode TSForwardStep_Theta(TS ts)
 
   PetscFunctionBegin;
   previous_shift = th->shift;
-  CHKERRQ(MatCopy(ts->mat_sensip,th->MatFwdSensip0,SAME_NONZERO_PATTERN));
+  PetscCall(MatCopy(ts->mat_sensip,th->MatFwdSensip0,SAME_NONZERO_PATTERN));
 
   if (quadts && quadts->mat_sensip) {
-    CHKERRQ(MatCopy(quadts->mat_sensip,th->MatIntegralSensip0,SAME_NONZERO_PATTERN));
+    PetscCall(MatCopy(quadts->mat_sensip,th->MatIntegralSensip0,SAME_NONZERO_PATTERN));
   }
-  CHKERRQ(SNESGetKSP(ts->snes,&ksp));
-  CHKERRQ(TSGetIJacobian(ts,&J,&Jpre,NULL,NULL));
+  PetscCall(SNESGetKSP(ts->snes,&ksp));
+  PetscCall(TSGetIJacobian(ts,&J,&Jpre,NULL,NULL));
   if (quadts) {
-    CHKERRQ(TSGetRHSJacobian(quadts,&quadJ,NULL,NULL,NULL));
-    CHKERRQ(TSGetRHSJacobianP(quadts,&quadJp,NULL,NULL));
+    PetscCall(TSGetRHSJacobian(quadts,&quadJ,NULL,NULL,NULL));
+    PetscCall(TSGetRHSJacobianP(quadts,&quadJp,NULL,NULL));
   }
 
   /* Build RHS */
   if (th->endpoint) { /* 2-stage method*/
     th->shift = 1./((th->Theta-1.)*th->time_step0);
-    CHKERRQ(TSComputeIJacobian(ts,th->ptime0,th->X0,th->Xdot,th->shift,J,Jpre,PETSC_FALSE));
-    CHKERRQ(MatMatMult(J,ts->mat_sensip,MAT_REUSE_MATRIX,PETSC_DEFAULT,&MatDeltaFwdSensip));
-    CHKERRQ(MatScale(MatDeltaFwdSensip,(th->Theta-1.)/th->Theta));
+    PetscCall(TSComputeIJacobian(ts,th->ptime0,th->X0,th->Xdot,th->shift,J,Jpre,PETSC_FALSE));
+    PetscCall(MatMatMult(J,ts->mat_sensip,MAT_REUSE_MATRIX,PETSC_DEFAULT,&MatDeltaFwdSensip));
+    PetscCall(MatScale(MatDeltaFwdSensip,(th->Theta-1.)/th->Theta));
 
     /* Add the f_p forcing terms */
     if (ts->Jacp) {
-      CHKERRQ(VecZeroEntries(th->Xdot));
-      CHKERRQ(TSComputeIJacobianP(ts,th->ptime0,th->X0,th->Xdot,th->shift,ts->Jacp,PETSC_FALSE));
-      CHKERRQ(MatAXPY(MatDeltaFwdSensip,(th->Theta-1.)/th->Theta,ts->Jacp,SUBSET_NONZERO_PATTERN));
+      PetscCall(VecZeroEntries(th->Xdot));
+      PetscCall(TSComputeIJacobianP(ts,th->ptime0,th->X0,th->Xdot,th->shift,ts->Jacp,PETSC_FALSE));
+      PetscCall(MatAXPY(MatDeltaFwdSensip,(th->Theta-1.)/th->Theta,ts->Jacp,SUBSET_NONZERO_PATTERN));
       th->shift = previous_shift;
-      CHKERRQ(VecAXPBYPCZ(th->Xdot,-th->shift,th->shift,0,th->X0,ts->vec_sol));
-      CHKERRQ(TSComputeIJacobianP(ts,th->stage_time,ts->vec_sol,th->Xdot,th->shift,ts->Jacp,PETSC_FALSE));
-      CHKERRQ(MatAXPY(MatDeltaFwdSensip,-1.,ts->Jacp,SUBSET_NONZERO_PATTERN));
+      PetscCall(VecAXPBYPCZ(th->Xdot,-th->shift,th->shift,0,th->X0,ts->vec_sol));
+      PetscCall(TSComputeIJacobianP(ts,th->stage_time,ts->vec_sol,th->Xdot,th->shift,ts->Jacp,PETSC_FALSE));
+      PetscCall(MatAXPY(MatDeltaFwdSensip,-1.,ts->Jacp,SUBSET_NONZERO_PATTERN));
     }
   } else { /* 1-stage method */
     th->shift = 0.0;
-    CHKERRQ(TSComputeIJacobian(ts,th->stage_time,th->X,th->Xdot,th->shift,J,Jpre,PETSC_FALSE));
-    CHKERRQ(MatMatMult(J,ts->mat_sensip,MAT_REUSE_MATRIX,PETSC_DEFAULT,&MatDeltaFwdSensip));
-    CHKERRQ(MatScale(MatDeltaFwdSensip,-1.));
+    PetscCall(TSComputeIJacobian(ts,th->stage_time,th->X,th->Xdot,th->shift,J,Jpre,PETSC_FALSE));
+    PetscCall(MatMatMult(J,ts->mat_sensip,MAT_REUSE_MATRIX,PETSC_DEFAULT,&MatDeltaFwdSensip));
+    PetscCall(MatScale(MatDeltaFwdSensip,-1.));
 
     /* Add the f_p forcing terms */
     if (ts->Jacp) {
       th->shift = previous_shift;
-      CHKERRQ(VecAXPBYPCZ(th->Xdot,-th->shift,th->shift,0,th->X0,th->X));
-      CHKERRQ(TSComputeIJacobianP(ts,th->stage_time,th->X,th->Xdot,th->shift,ts->Jacp,PETSC_FALSE));
-      CHKERRQ(MatAXPY(MatDeltaFwdSensip,-1.,ts->Jacp,SUBSET_NONZERO_PATTERN));
+      PetscCall(VecAXPBYPCZ(th->Xdot,-th->shift,th->shift,0,th->X0,th->X));
+      PetscCall(TSComputeIJacobianP(ts,th->stage_time,th->X,th->Xdot,th->shift,ts->Jacp,PETSC_FALSE));
+      PetscCall(MatAXPY(MatDeltaFwdSensip,-1.,ts->Jacp,SUBSET_NONZERO_PATTERN));
     }
   }
 
   /* Build LHS */
   th->shift = previous_shift; /* recover the previous shift used in TSStep_Theta() */
   if (th->endpoint) {
-    CHKERRQ(TSComputeIJacobian(ts,th->stage_time,ts->vec_sol,th->Xdot,th->shift,J,Jpre,PETSC_FALSE));
+    PetscCall(TSComputeIJacobian(ts,th->stage_time,ts->vec_sol,th->Xdot,th->shift,J,Jpre,PETSC_FALSE));
   } else {
-    CHKERRQ(TSComputeIJacobian(ts,th->stage_time,th->X,th->Xdot,th->shift,J,Jpre,PETSC_FALSE));
+    PetscCall(TSComputeIJacobian(ts,th->stage_time,th->X,th->Xdot,th->shift,J,Jpre,PETSC_FALSE));
   }
-  CHKERRQ(KSPSetOperators(ksp,J,Jpre));
+  PetscCall(KSPSetOperators(ksp,J,Jpre));
 
   /*
     Evaluate the first stage of integral gradients with the 2-stage method:
@@ -818,35 +818,35 @@ static PetscErrorCode TSForwardStep_Theta(TS ts)
   */
   if (th->endpoint) { /* 2-stage method only */
     if (quadts && quadts->mat_sensip) {
-      CHKERRQ(TSComputeRHSJacobian(quadts,th->ptime0,th->X0,quadJ,NULL));
-      CHKERRQ(TSComputeRHSJacobianP(quadts,th->ptime0,th->X0,quadJp));
-      CHKERRQ(MatTransposeMatMult(ts->mat_sensip,quadJ,MAT_REUSE_MATRIX,PETSC_DEFAULT,&th->MatIntegralSensipTemp));
-      CHKERRQ(MatAXPY(th->MatIntegralSensipTemp,1,quadJp,SAME_NONZERO_PATTERN));
-      CHKERRQ(MatAXPY(quadts->mat_sensip,th->time_step0*(1.-th->Theta),th->MatIntegralSensipTemp,SAME_NONZERO_PATTERN));
+      PetscCall(TSComputeRHSJacobian(quadts,th->ptime0,th->X0,quadJ,NULL));
+      PetscCall(TSComputeRHSJacobianP(quadts,th->ptime0,th->X0,quadJp));
+      PetscCall(MatTransposeMatMult(ts->mat_sensip,quadJ,MAT_REUSE_MATRIX,PETSC_DEFAULT,&th->MatIntegralSensipTemp));
+      PetscCall(MatAXPY(th->MatIntegralSensipTemp,1,quadJp,SAME_NONZERO_PATTERN));
+      PetscCall(MatAXPY(quadts->mat_sensip,th->time_step0*(1.-th->Theta),th->MatIntegralSensipTemp,SAME_NONZERO_PATTERN));
     }
   }
 
   /* Solve the tangent linear equation for forward sensitivities to parameters */
   for (ntlm=0; ntlm<th->num_tlm; ntlm++) {
     KSPConvergedReason kspreason;
-    CHKERRQ(MatDenseGetColumn(MatDeltaFwdSensip,ntlm,&barr));
-    CHKERRQ(VecPlaceArray(VecDeltaFwdSensipCol,barr));
+    PetscCall(MatDenseGetColumn(MatDeltaFwdSensip,ntlm,&barr));
+    PetscCall(VecPlaceArray(VecDeltaFwdSensipCol,barr));
     if (th->endpoint) {
-      CHKERRQ(MatDenseGetColumn(ts->mat_sensip,ntlm,&xarr));
-      CHKERRQ(VecPlaceArray(ts->vec_sensip_col,xarr));
-      CHKERRQ(KSPSolve(ksp,VecDeltaFwdSensipCol,ts->vec_sensip_col));
-      CHKERRQ(VecResetArray(ts->vec_sensip_col));
-      CHKERRQ(MatDenseRestoreColumn(ts->mat_sensip,&xarr));
+      PetscCall(MatDenseGetColumn(ts->mat_sensip,ntlm,&xarr));
+      PetscCall(VecPlaceArray(ts->vec_sensip_col,xarr));
+      PetscCall(KSPSolve(ksp,VecDeltaFwdSensipCol,ts->vec_sensip_col));
+      PetscCall(VecResetArray(ts->vec_sensip_col));
+      PetscCall(MatDenseRestoreColumn(ts->mat_sensip,&xarr));
     } else {
-      CHKERRQ(KSPSolve(ksp,VecDeltaFwdSensipCol,VecDeltaFwdSensipCol));
+      PetscCall(KSPSolve(ksp,VecDeltaFwdSensipCol,VecDeltaFwdSensipCol));
     }
-    CHKERRQ(KSPGetConvergedReason(ksp,&kspreason));
+    PetscCall(KSPGetConvergedReason(ksp,&kspreason));
     if (kspreason < 0) {
       ts->reason = TSFORWARD_DIVERGED_LINEAR_SOLVE;
-      CHKERRQ(PetscInfo(ts,"Step=%D, %Dth tangent linear solve, linear solve fails, stopping tangent linear solve\n",ts->steps,ntlm));
+      PetscCall(PetscInfo(ts,"Step=%D, %Dth tangent linear solve, linear solve fails, stopping tangent linear solve\n",ts->steps,ntlm));
     }
-    CHKERRQ(VecResetArray(VecDeltaFwdSensipCol));
-    CHKERRQ(MatDenseRestoreColumn(MatDeltaFwdSensip,&barr));
+    PetscCall(VecResetArray(VecDeltaFwdSensipCol));
+    PetscCall(MatDenseRestoreColumn(MatDeltaFwdSensip,&barr));
   }
 
   /*
@@ -855,23 +855,23 @@ static PetscErrorCode TSForwardStep_Theta(TS ts)
   */
   if (quadts && quadts->mat_sensip) {
     if (!th->endpoint) {
-      CHKERRQ(MatAXPY(ts->mat_sensip,1,MatDeltaFwdSensip,SAME_NONZERO_PATTERN)); /* stage sensitivity */
-      CHKERRQ(TSComputeRHSJacobian(quadts,th->stage_time,th->X,quadJ,NULL));
-      CHKERRQ(TSComputeRHSJacobianP(quadts,th->stage_time,th->X,quadJp));
-      CHKERRQ(MatTransposeMatMult(ts->mat_sensip,quadJ,MAT_REUSE_MATRIX,PETSC_DEFAULT,&th->MatIntegralSensipTemp));
-      CHKERRQ(MatAXPY(th->MatIntegralSensipTemp,1,quadJp,SAME_NONZERO_PATTERN));
-      CHKERRQ(MatAXPY(quadts->mat_sensip,th->time_step0,th->MatIntegralSensipTemp,SAME_NONZERO_PATTERN));
-      CHKERRQ(MatAXPY(ts->mat_sensip,(1.-th->Theta)/th->Theta,MatDeltaFwdSensip,SAME_NONZERO_PATTERN));
+      PetscCall(MatAXPY(ts->mat_sensip,1,MatDeltaFwdSensip,SAME_NONZERO_PATTERN)); /* stage sensitivity */
+      PetscCall(TSComputeRHSJacobian(quadts,th->stage_time,th->X,quadJ,NULL));
+      PetscCall(TSComputeRHSJacobianP(quadts,th->stage_time,th->X,quadJp));
+      PetscCall(MatTransposeMatMult(ts->mat_sensip,quadJ,MAT_REUSE_MATRIX,PETSC_DEFAULT,&th->MatIntegralSensipTemp));
+      PetscCall(MatAXPY(th->MatIntegralSensipTemp,1,quadJp,SAME_NONZERO_PATTERN));
+      PetscCall(MatAXPY(quadts->mat_sensip,th->time_step0,th->MatIntegralSensipTemp,SAME_NONZERO_PATTERN));
+      PetscCall(MatAXPY(ts->mat_sensip,(1.-th->Theta)/th->Theta,MatDeltaFwdSensip,SAME_NONZERO_PATTERN));
     } else {
-      CHKERRQ(TSComputeRHSJacobian(quadts,th->stage_time,ts->vec_sol,quadJ,NULL));
-      CHKERRQ(TSComputeRHSJacobianP(quadts,th->stage_time,ts->vec_sol,quadJp));
-      CHKERRQ(MatTransposeMatMult(ts->mat_sensip,quadJ,MAT_REUSE_MATRIX,PETSC_DEFAULT,&th->MatIntegralSensipTemp));
-      CHKERRQ(MatAXPY(th->MatIntegralSensipTemp,1,quadJp,SAME_NONZERO_PATTERN));
-      CHKERRQ(MatAXPY(quadts->mat_sensip,th->time_step0*th->Theta,th->MatIntegralSensipTemp,SAME_NONZERO_PATTERN));
+      PetscCall(TSComputeRHSJacobian(quadts,th->stage_time,ts->vec_sol,quadJ,NULL));
+      PetscCall(TSComputeRHSJacobianP(quadts,th->stage_time,ts->vec_sol,quadJp));
+      PetscCall(MatTransposeMatMult(ts->mat_sensip,quadJ,MAT_REUSE_MATRIX,PETSC_DEFAULT,&th->MatIntegralSensipTemp));
+      PetscCall(MatAXPY(th->MatIntegralSensipTemp,1,quadJp,SAME_NONZERO_PATTERN));
+      PetscCall(MatAXPY(quadts->mat_sensip,th->time_step0*th->Theta,th->MatIntegralSensipTemp,SAME_NONZERO_PATTERN));
     }
   } else {
     if (!th->endpoint) {
-      CHKERRQ(MatAXPY(ts->mat_sensip,1./th->Theta,MatDeltaFwdSensip,SAME_NONZERO_PATTERN));
+      PetscCall(MatAXPY(ts->mat_sensip,1./th->Theta,MatDeltaFwdSensip,SAME_NONZERO_PATTERN));
     }
   }
   PetscFunctionReturn(0);
@@ -904,15 +904,15 @@ static PetscErrorCode TSReset_Theta(TS ts)
   TS_Theta       *th = (TS_Theta*)ts->data;
 
   PetscFunctionBegin;
-  CHKERRQ(VecDestroy(&th->X));
-  CHKERRQ(VecDestroy(&th->Xdot));
-  CHKERRQ(VecDestroy(&th->X0));
-  CHKERRQ(VecDestroy(&th->affine));
+  PetscCall(VecDestroy(&th->X));
+  PetscCall(VecDestroy(&th->Xdot));
+  PetscCall(VecDestroy(&th->X0));
+  PetscCall(VecDestroy(&th->affine));
 
-  CHKERRQ(VecDestroy(&th->vec_sol_prev));
-  CHKERRQ(VecDestroy(&th->vec_lte_work));
+  PetscCall(VecDestroy(&th->vec_sol_prev));
+  PetscCall(VecDestroy(&th->vec_lte_work));
 
-  CHKERRQ(VecDestroy(&th->VecCostIntegral0));
+  PetscCall(VecDestroy(&th->VecCostIntegral0));
   PetscFunctionReturn(0);
 }
 
@@ -921,28 +921,28 @@ static PetscErrorCode TSAdjointReset_Theta(TS ts)
   TS_Theta       *th = (TS_Theta*)ts->data;
 
   PetscFunctionBegin;
-  CHKERRQ(VecDestroyVecs(ts->numcost,&th->VecsDeltaLam));
-  CHKERRQ(VecDestroyVecs(ts->numcost,&th->VecsDeltaMu));
-  CHKERRQ(VecDestroyVecs(ts->numcost,&th->VecsDeltaLam2));
-  CHKERRQ(VecDestroyVecs(ts->numcost,&th->VecsDeltaMu2));
-  CHKERRQ(VecDestroyVecs(ts->numcost,&th->VecsSensiTemp));
-  CHKERRQ(VecDestroyVecs(ts->numcost,&th->VecsSensi2Temp));
+  PetscCall(VecDestroyVecs(ts->numcost,&th->VecsDeltaLam));
+  PetscCall(VecDestroyVecs(ts->numcost,&th->VecsDeltaMu));
+  PetscCall(VecDestroyVecs(ts->numcost,&th->VecsDeltaLam2));
+  PetscCall(VecDestroyVecs(ts->numcost,&th->VecsDeltaMu2));
+  PetscCall(VecDestroyVecs(ts->numcost,&th->VecsSensiTemp));
+  PetscCall(VecDestroyVecs(ts->numcost,&th->VecsSensi2Temp));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode TSDestroy_Theta(TS ts)
 {
   PetscFunctionBegin;
-  CHKERRQ(TSReset_Theta(ts));
+  PetscCall(TSReset_Theta(ts));
   if (ts->dm) {
-    CHKERRQ(DMCoarsenHookRemove(ts->dm,DMCoarsenHook_TSTheta,DMRestrictHook_TSTheta,ts));
-    CHKERRQ(DMSubDomainHookRemove(ts->dm,DMSubDomainHook_TSTheta,DMSubDomainRestrictHook_TSTheta,ts));
+    PetscCall(DMCoarsenHookRemove(ts->dm,DMCoarsenHook_TSTheta,DMRestrictHook_TSTheta,ts));
+    PetscCall(DMSubDomainHookRemove(ts->dm,DMSubDomainHook_TSTheta,DMSubDomainRestrictHook_TSTheta,ts));
   }
-  CHKERRQ(PetscFree(ts->data));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSThetaGetTheta_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSThetaSetTheta_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSThetaGetEndpoint_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSThetaSetEndpoint_C",NULL));
+  PetscCall(PetscFree(ts->data));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSThetaGetTheta_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSThetaSetTheta_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSThetaGetEndpoint_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSThetaSetEndpoint_C",NULL));
   PetscFunctionReturn(0);
 }
 
@@ -962,20 +962,20 @@ static PetscErrorCode SNESTSFormFunction_Theta(SNES snes,Vec x,Vec y,TS ts)
   PetscReal      shift = th->shift;
 
   PetscFunctionBegin;
-  CHKERRQ(SNESGetDM(snes,&dm));
+  PetscCall(SNESGetDM(snes,&dm));
   /* When using the endpoint variant, this is actually 1/Theta * Xdot */
-  CHKERRQ(TSThetaGetX0AndXdot(ts,dm,&X0,&Xdot));
+  PetscCall(TSThetaGetX0AndXdot(ts,dm,&X0,&Xdot));
   if (x != X0) {
-    CHKERRQ(VecAXPBYPCZ(Xdot,-shift,shift,0,X0,x));
+    PetscCall(VecAXPBYPCZ(Xdot,-shift,shift,0,X0,x));
   } else {
-    CHKERRQ(VecZeroEntries(Xdot));
+    PetscCall(VecZeroEntries(Xdot));
   }
   /* DM monkey-business allows user code to call TSGetDM() inside of functions evaluated on levels of FAS */
   dmsave = ts->dm;
   ts->dm = dm;
-  CHKERRQ(TSComputeIFunction(ts,th->stage_time,x,Xdot,y,PETSC_FALSE));
+  PetscCall(TSComputeIFunction(ts,th->stage_time,x,Xdot,y,PETSC_FALSE));
   ts->dm = dmsave;
-  CHKERRQ(TSThetaRestoreX0AndXdot(ts,dm,&X0,&Xdot));
+  PetscCall(TSThetaRestoreX0AndXdot(ts,dm,&X0,&Xdot));
   PetscFunctionReturn(0);
 }
 
@@ -987,15 +987,15 @@ static PetscErrorCode SNESTSFormJacobian_Theta(SNES snes,Vec x,Mat A,Mat B,TS ts
   PetscReal      shift = th->shift;
 
   PetscFunctionBegin;
-  CHKERRQ(SNESGetDM(snes,&dm));
+  PetscCall(SNESGetDM(snes,&dm));
   /* Xdot has already been computed in SNESTSFormFunction_Theta (SNES guarantees this) */
-  CHKERRQ(TSThetaGetX0AndXdot(ts,dm,NULL,&Xdot));
+  PetscCall(TSThetaGetX0AndXdot(ts,dm,NULL,&Xdot));
 
   dmsave = ts->dm;
   ts->dm = dm;
-  CHKERRQ(TSComputeIJacobian(ts,th->stage_time,x,Xdot,shift,A,B,PETSC_FALSE));
+  PetscCall(TSComputeIJacobian(ts,th->stage_time,x,Xdot,shift,A,B,PETSC_FALSE));
   ts->dm = dmsave;
-  CHKERRQ(TSThetaRestoreX0AndXdot(ts,dm,NULL,&Xdot));
+  PetscCall(TSThetaRestoreX0AndXdot(ts,dm,NULL,&Xdot));
   PetscFunctionReturn(0);
 }
 
@@ -1007,15 +1007,15 @@ static PetscErrorCode TSForwardSetUp_Theta(TS ts)
   PetscFunctionBegin;
   /* combine sensitivities to parameters and sensitivities to initial values into one array */
   th->num_tlm = ts->num_parameters;
-  CHKERRQ(MatDuplicate(ts->mat_sensip,MAT_DO_NOT_COPY_VALUES,&th->MatDeltaFwdSensip));
+  PetscCall(MatDuplicate(ts->mat_sensip,MAT_DO_NOT_COPY_VALUES,&th->MatDeltaFwdSensip));
   if (quadts && quadts->mat_sensip) {
-    CHKERRQ(MatDuplicate(quadts->mat_sensip,MAT_DO_NOT_COPY_VALUES,&th->MatIntegralSensipTemp));
-    CHKERRQ(MatDuplicate(quadts->mat_sensip,MAT_DO_NOT_COPY_VALUES,&th->MatIntegralSensip0));
+    PetscCall(MatDuplicate(quadts->mat_sensip,MAT_DO_NOT_COPY_VALUES,&th->MatIntegralSensipTemp));
+    PetscCall(MatDuplicate(quadts->mat_sensip,MAT_DO_NOT_COPY_VALUES,&th->MatIntegralSensip0));
   }
   /* backup sensitivity results for roll-backs */
-  CHKERRQ(MatDuplicate(ts->mat_sensip,MAT_DO_NOT_COPY_VALUES,&th->MatFwdSensip0));
+  PetscCall(MatDuplicate(ts->mat_sensip,MAT_DO_NOT_COPY_VALUES,&th->MatFwdSensip0));
 
-  CHKERRQ(VecDuplicate(ts->vec_sol,&th->VecDeltaFwdSensipCol));
+  PetscCall(VecDuplicate(ts->vec_sol,&th->VecDeltaFwdSensipCol));
   PetscFunctionReturn(0);
 }
 
@@ -1026,12 +1026,12 @@ static PetscErrorCode TSForwardReset_Theta(TS ts)
 
   PetscFunctionBegin;
   if (quadts && quadts->mat_sensip) {
-    CHKERRQ(MatDestroy(&th->MatIntegralSensipTemp));
-    CHKERRQ(MatDestroy(&th->MatIntegralSensip0));
+    PetscCall(MatDestroy(&th->MatIntegralSensipTemp));
+    PetscCall(MatDestroy(&th->MatIntegralSensip0));
   }
-  CHKERRQ(VecDestroy(&th->VecDeltaFwdSensipCol));
-  CHKERRQ(MatDestroy(&th->MatDeltaFwdSensip));
-  CHKERRQ(MatDestroy(&th->MatFwdSensip0));
+  PetscCall(VecDestroy(&th->VecDeltaFwdSensipCol));
+  PetscCall(MatDestroy(&th->MatDeltaFwdSensip));
+  PetscCall(MatDestroy(&th->MatFwdSensip0));
   PetscFunctionReturn(0);
 }
 
@@ -1043,36 +1043,36 @@ static PetscErrorCode TSSetUp_Theta(TS ts)
 
   PetscFunctionBegin;
   if (!th->VecCostIntegral0 && quadts && ts->costintegralfwd) { /* back up cost integral */
-    CHKERRQ(VecDuplicate(quadts->vec_sol,&th->VecCostIntegral0));
+    PetscCall(VecDuplicate(quadts->vec_sol,&th->VecCostIntegral0));
   }
   if (!th->X) {
-    CHKERRQ(VecDuplicate(ts->vec_sol,&th->X));
+    PetscCall(VecDuplicate(ts->vec_sol,&th->X));
   }
   if (!th->Xdot) {
-    CHKERRQ(VecDuplicate(ts->vec_sol,&th->Xdot));
+    PetscCall(VecDuplicate(ts->vec_sol,&th->Xdot));
   }
   if (!th->X0) {
-    CHKERRQ(VecDuplicate(ts->vec_sol,&th->X0));
+    PetscCall(VecDuplicate(ts->vec_sol,&th->X0));
   }
   if (th->endpoint) {
-    CHKERRQ(VecDuplicate(ts->vec_sol,&th->affine));
+    PetscCall(VecDuplicate(ts->vec_sol,&th->affine));
   }
 
   th->order = (th->Theta == 0.5) ? 2 : 1;
   th->shift = 1/(th->Theta*ts->time_step);
 
-  CHKERRQ(TSGetDM(ts,&ts->dm));
-  CHKERRQ(DMCoarsenHookAdd(ts->dm,DMCoarsenHook_TSTheta,DMRestrictHook_TSTheta,ts));
-  CHKERRQ(DMSubDomainHookAdd(ts->dm,DMSubDomainHook_TSTheta,DMSubDomainRestrictHook_TSTheta,ts));
+  PetscCall(TSGetDM(ts,&ts->dm));
+  PetscCall(DMCoarsenHookAdd(ts->dm,DMCoarsenHook_TSTheta,DMRestrictHook_TSTheta,ts));
+  PetscCall(DMSubDomainHookAdd(ts->dm,DMSubDomainHook_TSTheta,DMSubDomainRestrictHook_TSTheta,ts));
 
-  CHKERRQ(TSGetAdapt(ts,&ts->adapt));
-  CHKERRQ(TSAdaptCandidatesClear(ts->adapt));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)ts->adapt,TSADAPTNONE,&match));
+  PetscCall(TSGetAdapt(ts,&ts->adapt));
+  PetscCall(TSAdaptCandidatesClear(ts->adapt));
+  PetscCall(PetscObjectTypeCompare((PetscObject)ts->adapt,TSADAPTNONE,&match));
   if (!match) {
-    CHKERRQ(VecDuplicate(ts->vec_sol,&th->vec_sol_prev));
-    CHKERRQ(VecDuplicate(ts->vec_sol,&th->vec_lte_work));
+    PetscCall(VecDuplicate(ts->vec_sol,&th->vec_sol_prev));
+    PetscCall(VecDuplicate(ts->vec_sol,&th->vec_lte_work));
   }
-  CHKERRQ(TSGetSNES(ts,&ts->snes));
+  PetscCall(TSGetSNES(ts,&ts->snes));
 
   ts->stifflyaccurate = (!th->endpoint && th->Theta != 1.0) ? PETSC_FALSE : PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -1085,20 +1085,20 @@ static PetscErrorCode TSAdjointSetUp_Theta(TS ts)
   TS_Theta       *th = (TS_Theta*)ts->data;
 
   PetscFunctionBegin;
-  CHKERRQ(VecDuplicateVecs(ts->vecs_sensi[0],ts->numcost,&th->VecsDeltaLam));
-  CHKERRQ(VecDuplicateVecs(ts->vecs_sensi[0],ts->numcost,&th->VecsSensiTemp));
+  PetscCall(VecDuplicateVecs(ts->vecs_sensi[0],ts->numcost,&th->VecsDeltaLam));
+  PetscCall(VecDuplicateVecs(ts->vecs_sensi[0],ts->numcost,&th->VecsSensiTemp));
   if (ts->vecs_sensip) {
-    CHKERRQ(VecDuplicateVecs(ts->vecs_sensip[0],ts->numcost,&th->VecsDeltaMu));
+    PetscCall(VecDuplicateVecs(ts->vecs_sensip[0],ts->numcost,&th->VecsDeltaMu));
   }
   if (ts->vecs_sensi2) {
-    CHKERRQ(VecDuplicateVecs(ts->vecs_sensi[0],ts->numcost,&th->VecsDeltaLam2));
-    CHKERRQ(VecDuplicateVecs(ts->vecs_sensi2[0],ts->numcost,&th->VecsSensi2Temp));
+    PetscCall(VecDuplicateVecs(ts->vecs_sensi[0],ts->numcost,&th->VecsDeltaLam2));
+    PetscCall(VecDuplicateVecs(ts->vecs_sensi2[0],ts->numcost,&th->VecsSensi2Temp));
     /* hack ts to make implicit TS solver work when users provide only explicit versions of callbacks (RHSFunction,RHSJacobian,RHSHessian etc.) */
     if (!ts->ihessianproduct_fuu) ts->vecs_fuu = ts->vecs_guu;
     if (!ts->ihessianproduct_fup) ts->vecs_fup = ts->vecs_gup;
   }
   if (ts->vecs_sensi2p) {
-    CHKERRQ(VecDuplicateVecs(ts->vecs_sensi2p[0],ts->numcost,&th->VecsDeltaMu2));
+    PetscCall(VecDuplicateVecs(ts->vecs_sensi2p[0],ts->numcost,&th->VecsDeltaMu2));
     /* hack ts to make implicit TS solver work when users provide only explicit versions of callbacks (RHSFunction,RHSJacobian,RHSHessian etc.) */
     if (!ts->ihessianproduct_fpu) ts->vecs_fpu = ts->vecs_gpu;
     if (!ts->ihessianproduct_fpp) ts->vecs_fpp = ts->vecs_gpp;
@@ -1111,13 +1111,13 @@ static PetscErrorCode TSSetFromOptions_Theta(PetscOptionItems *PetscOptionsObjec
   TS_Theta       *th = (TS_Theta*)ts->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"Theta ODE solver options"));
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"Theta ODE solver options"));
   {
-    CHKERRQ(PetscOptionsReal("-ts_theta_theta","Location of stage (0<Theta<=1)","TSThetaSetTheta",th->Theta,&th->Theta,NULL));
-    CHKERRQ(PetscOptionsBool("-ts_theta_endpoint","Use the endpoint instead of midpoint form of the Theta method","TSThetaSetEndpoint",th->endpoint,&th->endpoint,NULL));
-    CHKERRQ(PetscOptionsBool("-ts_theta_initial_guess_extrapolate","Extrapolate stage initial guess from previous solution (sometimes unstable)","TSThetaSetExtrapolate",th->extrapolate,&th->extrapolate,NULL));
+    PetscCall(PetscOptionsReal("-ts_theta_theta","Location of stage (0<Theta<=1)","TSThetaSetTheta",th->Theta,&th->Theta,NULL));
+    PetscCall(PetscOptionsBool("-ts_theta_endpoint","Use the endpoint instead of midpoint form of the Theta method","TSThetaSetEndpoint",th->endpoint,&th->endpoint,NULL));
+    PetscCall(PetscOptionsBool("-ts_theta_initial_guess_extrapolate","Extrapolate stage initial guess from previous solution (sometimes unstable)","TSThetaSetExtrapolate",th->extrapolate,&th->extrapolate,NULL));
   }
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -1127,10 +1127,10 @@ static PetscErrorCode TSView_Theta(TS ts,PetscViewer viewer)
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Theta=%g\n",(double)th->Theta));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Extrapolation=%s\n",th->extrapolate ? "yes" : "no"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Theta=%g\n",(double)th->Theta));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Extrapolation=%s\n",th->extrapolate ? "yes" : "no"));
   }
   PetscFunctionReturn(0);
 }
@@ -1292,7 +1292,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Theta(TS ts)
 
   ts->usessnes = PETSC_TRUE;
 
-  CHKERRQ(PetscNewLog(ts,&th));
+  PetscCall(PetscNewLog(ts,&th));
   ts->data = (void*)th;
 
   th->VecsDeltaLam    = NULL;
@@ -1303,10 +1303,10 @@ PETSC_EXTERN PetscErrorCode TSCreate_Theta(TS ts)
   th->extrapolate = PETSC_FALSE;
   th->Theta       = 0.5;
   th->order       = 2;
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSThetaGetTheta_C",TSThetaGetTheta_Theta));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSThetaSetTheta_C",TSThetaSetTheta_Theta));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSThetaGetEndpoint_C",TSThetaGetEndpoint_Theta));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSThetaSetEndpoint_C",TSThetaSetEndpoint_Theta));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSThetaGetTheta_C",TSThetaGetTheta_Theta));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSThetaSetTheta_C",TSThetaSetTheta_Theta));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSThetaGetEndpoint_C",TSThetaGetEndpoint_Theta));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSThetaSetEndpoint_C",TSThetaSetEndpoint_Theta));
   PetscFunctionReturn(0);
 }
 
@@ -1333,7 +1333,7 @@ PetscErrorCode  TSThetaGetTheta(TS ts,PetscReal *theta)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidRealPointer(theta,2);
-  CHKERRQ(PetscUseMethod(ts,"TSThetaGetTheta_C",(TS,PetscReal*),(ts,theta)));
+  PetscCall(PetscUseMethod(ts,"TSThetaGetTheta_C",(TS,PetscReal*),(ts,theta)));
   PetscFunctionReturn(0);
 }
 
@@ -1357,7 +1357,7 @@ PetscErrorCode  TSThetaSetTheta(TS ts,PetscReal theta)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  CHKERRQ(PetscTryMethod(ts,"TSThetaSetTheta_C",(TS,PetscReal),(ts,theta)));
+  PetscCall(PetscTryMethod(ts,"TSThetaSetTheta_C",(TS,PetscReal),(ts,theta)));
   PetscFunctionReturn(0);
 }
 
@@ -1381,7 +1381,7 @@ PetscErrorCode TSThetaGetEndpoint(TS ts,PetscBool *endpoint)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidBoolPointer(endpoint,2);
-  CHKERRQ(PetscUseMethod(ts,"TSThetaGetEndpoint_C",(TS,PetscBool*),(ts,endpoint)));
+  PetscCall(PetscUseMethod(ts,"TSThetaGetEndpoint_C",(TS,PetscBool*),(ts,endpoint)));
   PetscFunctionReturn(0);
 }
 
@@ -1405,7 +1405,7 @@ PetscErrorCode TSThetaSetEndpoint(TS ts,PetscBool flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  CHKERRQ(PetscTryMethod(ts,"TSThetaSetEndpoint_C",(TS,PetscBool),(ts,flg)));
+  PetscCall(PetscTryMethod(ts,"TSThetaSetEndpoint_C",(TS,PetscBool),(ts,flg)));
   PetscFunctionReturn(0);
 }
 
@@ -1421,7 +1421,7 @@ static PetscErrorCode TSSetUp_BEuler(TS ts)
   PetscFunctionBegin;
   PetscCheckFalse(th->Theta != 1.0,PetscObjectComm((PetscObject)ts),PETSC_ERR_OPT_OVERWRITE,"Can not change the default value (1) of theta when using backward Euler");
   PetscCheck(!th->endpoint,PetscObjectComm((PetscObject)ts),PETSC_ERR_OPT_OVERWRITE,"Can not change to the endpoint form of the Theta methods when using backward Euler");
-  CHKERRQ(TSSetUp_Theta(ts));
+  PetscCall(TSSetUp_Theta(ts));
   PetscFunctionReturn(0);
 }
 
@@ -1447,9 +1447,9 @@ M*/
 PETSC_EXTERN PetscErrorCode TSCreate_BEuler(TS ts)
 {
   PetscFunctionBegin;
-  CHKERRQ(TSCreate_Theta(ts));
-  CHKERRQ(TSThetaSetTheta(ts,1.0));
-  CHKERRQ(TSThetaSetEndpoint(ts,PETSC_FALSE));
+  PetscCall(TSCreate_Theta(ts));
+  PetscCall(TSThetaSetTheta(ts,1.0));
+  PetscCall(TSThetaSetEndpoint(ts,PETSC_FALSE));
   ts->ops->setup = TSSetUp_BEuler;
   ts->ops->view  = TSView_BEuler;
   PetscFunctionReturn(0);
@@ -1462,7 +1462,7 @@ static PetscErrorCode TSSetUp_CN(TS ts)
   PetscFunctionBegin;
   PetscCheckFalse(th->Theta != 0.5,PetscObjectComm((PetscObject)ts),PETSC_ERR_OPT_OVERWRITE,"Can not change the default value (0.5) of theta when using Crank-Nicolson");
   PetscCheck(th->endpoint,PetscObjectComm((PetscObject)ts),PETSC_ERR_OPT_OVERWRITE,"Can not change to the midpoint form of the Theta methods when using Crank-Nicolson");
-  CHKERRQ(TSSetUp_Theta(ts));
+  PetscCall(TSSetUp_Theta(ts));
   PetscFunctionReturn(0);
 }
 
@@ -1488,9 +1488,9 @@ M*/
 PETSC_EXTERN PetscErrorCode TSCreate_CN(TS ts)
 {
   PetscFunctionBegin;
-  CHKERRQ(TSCreate_Theta(ts));
-  CHKERRQ(TSThetaSetTheta(ts,0.5));
-  CHKERRQ(TSThetaSetEndpoint(ts,PETSC_TRUE));
+  PetscCall(TSCreate_Theta(ts));
+  PetscCall(TSThetaSetTheta(ts,0.5));
+  PetscCall(TSThetaSetEndpoint(ts,PETSC_TRUE));
   ts->ops->setup = TSSetUp_CN;
   ts->ops->view  = TSView_CN;
   PetscFunctionReturn(0);

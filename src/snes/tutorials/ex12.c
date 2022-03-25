@@ -479,32 +479,32 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->kgrid               = NULL;
   options->rand                = PETSC_FALSE;
 
-  ierr = PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");PetscCall(ierr);
   run  = options->runType;
-  CHKERRQ(PetscOptionsEList("-run_type", "The run type", "ex12.c", runTypes, 4, runTypes[options->runType], &run, NULL));
+  PetscCall(PetscOptionsEList("-run_type", "The run type", "ex12.c", runTypes, 4, runTypes[options->runType], &run, NULL));
   options->runType = (RunType) run;
   bc   = options->bcType;
-  CHKERRQ(PetscOptionsEList("-bc_type","Type of boundary condition","ex12.c",bcTypes,3,bcTypes[options->bcType],&bc,NULL));
+  PetscCall(PetscOptionsEList("-bc_type","Type of boundary condition","ex12.c",bcTypes,3,bcTypes[options->bcType],&bc,NULL));
   options->bcType = (BCType) bc;
   coeff = options->variableCoefficient;
-  CHKERRQ(PetscOptionsEList("-variable_coefficient","Type of variable coefficent","ex12.c",coeffTypes,8,coeffTypes[options->variableCoefficient],&coeff,NULL));
+  PetscCall(PetscOptionsEList("-variable_coefficient","Type of variable coefficent","ex12.c",coeffTypes,8,coeffTypes[options->variableCoefficient],&coeff,NULL));
   options->variableCoefficient = (CoeffType) coeff;
 
-  CHKERRQ(PetscOptionsBool("-field_bc", "Use a field representation for the BC", "ex12.c", options->fieldBC, &options->fieldBC, NULL));
-  CHKERRQ(PetscOptionsBool("-jacobian_mf", "Calculate the action of the Jacobian on the fly", "ex12.c", options->jacobianMF, &options->jacobianMF, NULL));
-  CHKERRQ(PetscOptionsBool("-show_initial", "Output the initial guess for verification", "ex12.c", options->showInitial, &options->showInitial, NULL));
-  CHKERRQ(PetscOptionsBool("-show_solution", "Output the solution for verification", "ex12.c", options->showSolution, &options->showSolution, NULL));
-  CHKERRQ(PetscOptionsBool("-restart", "Read in the mesh and solution from a file", "ex12.c", options->restart, &options->restart, NULL));
-  CHKERRQ(PetscOptionsBool("-quiet", "Don't print any vecs", "ex12.c", options->quiet, &options->quiet, NULL));
-  CHKERRQ(PetscOptionsBool("-nonzero_initial_guess", "nonzero initial guess", "ex12.c", options->nonzInit, &options->nonzInit, NULL));
-  CHKERRQ(PetscOptionsBool("-bd_integral", "Compute the integral of the solution on the boundary", "ex12.c", options->bdIntegral, &options->bdIntegral, NULL));
+  PetscCall(PetscOptionsBool("-field_bc", "Use a field representation for the BC", "ex12.c", options->fieldBC, &options->fieldBC, NULL));
+  PetscCall(PetscOptionsBool("-jacobian_mf", "Calculate the action of the Jacobian on the fly", "ex12.c", options->jacobianMF, &options->jacobianMF, NULL));
+  PetscCall(PetscOptionsBool("-show_initial", "Output the initial guess for verification", "ex12.c", options->showInitial, &options->showInitial, NULL));
+  PetscCall(PetscOptionsBool("-show_solution", "Output the solution for verification", "ex12.c", options->showSolution, &options->showSolution, NULL));
+  PetscCall(PetscOptionsBool("-restart", "Read in the mesh and solution from a file", "ex12.c", options->restart, &options->restart, NULL));
+  PetscCall(PetscOptionsBool("-quiet", "Don't print any vecs", "ex12.c", options->quiet, &options->quiet, NULL));
+  PetscCall(PetscOptionsBool("-nonzero_initial_guess", "nonzero initial guess", "ex12.c", options->nonzInit, &options->nonzInit, NULL));
+  PetscCall(PetscOptionsBool("-bd_integral", "Compute the integral of the solution on the boundary", "ex12.c", options->bdIntegral, &options->bdIntegral, NULL));
   if (options->runType == RUN_TEST) {
-    CHKERRQ(PetscOptionsBool("-run_test_check_ksp", "Check solution of KSP", "ex12.c", options->checkksp, &options->checkksp, NULL));
+    PetscCall(PetscOptionsBool("-run_test_check_ksp", "Check solution of KSP", "ex12.c", options->checkksp, &options->checkksp, NULL));
   }
-  CHKERRQ(PetscOptionsInt("-div", "The number of division for the checkerboard coefficient", "ex12.c", options->div, &options->div, NULL));
-  CHKERRQ(PetscOptionsInt("-k", "The exponent for the checkerboard coefficient", "ex12.c", options->k, &options->k, NULL));
-  CHKERRQ(PetscOptionsBool("-k_random", "Assign random k values to checkerboard", "ex12.c", options->rand, &options->rand, NULL));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-div", "The number of division for the checkerboard coefficient", "ex12.c", options->div, &options->div, NULL));
+  PetscCall(PetscOptionsInt("-k", "The exponent for the checkerboard coefficient", "ex12.c", options->k, &options->k, NULL));
+  PetscCall(PetscOptionsBool("-k_random", "Assign random k values to checkerboard", "ex12.c", options->rand, &options->rand, NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -514,11 +514,11 @@ static PetscErrorCode CreateBCLabel(DM dm, const char name[])
   DMLabel        label;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMCreateLabel(dm, name));
-  CHKERRQ(DMGetLabel(dm, name, &label));
-  CHKERRQ(DMConvert(dm, DMPLEX, &plex));
-  CHKERRQ(DMPlexMarkBoundaryFaces(plex, 1, label));
-  CHKERRQ(DMDestroy(&plex));
+  PetscCall(DMCreateLabel(dm, name));
+  PetscCall(DMGetLabel(dm, name, &label));
+  PetscCall(DMConvert(dm, DMPLEX, &plex));
+  PetscCall(DMPlexMarkBoundaryFaces(plex, 1, label));
+  PetscCall(DMDestroy(&plex));
   PetscFunctionReturn(0);
 }
 
@@ -527,47 +527,47 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMCreate(comm, dm));
-  CHKERRQ(DMSetType(*dm, DMPLEX));
-  CHKERRQ(DMSetFromOptions(*dm));
+  PetscCall(DMCreate(comm, dm));
+  PetscCall(DMSetType(*dm, DMPLEX));
+  PetscCall(DMSetFromOptions(*dm));
   {
     char      convType[256];
     PetscBool flg;
 
-    ierr = PetscOptionsBegin(comm, "", "Mesh conversion options", "DMPLEX");CHKERRQ(ierr);
-    CHKERRQ(PetscOptionsFList("-dm_plex_convert_type","Convert DMPlex to another format","ex12",DMList,DMPLEX,convType,256,&flg));
-    ierr = PetscOptionsEnd();CHKERRQ(ierr);
+    ierr = PetscOptionsBegin(comm, "", "Mesh conversion options", "DMPLEX");PetscCall(ierr);
+    PetscCall(PetscOptionsFList("-dm_plex_convert_type","Convert DMPlex to another format","ex12",DMList,DMPLEX,convType,256,&flg));
+    ierr = PetscOptionsEnd();PetscCall(ierr);
     if (flg) {
       DM dmConv;
 
-      CHKERRQ(DMConvert(*dm,convType,&dmConv));
+      PetscCall(DMConvert(*dm,convType,&dmConv));
       if (dmConv) {
-        CHKERRQ(DMDestroy(dm));
+        PetscCall(DMDestroy(dm));
         *dm  = dmConv;
       }
-      CHKERRQ(DMSetFromOptions(*dm));
-      CHKERRQ(DMSetUp(*dm));
+      PetscCall(DMSetFromOptions(*dm));
+      PetscCall(DMSetUp(*dm));
     }
   }
-  CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
+  PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   if (user->rand) {
     PetscRandom r;
     PetscReal   val;
     PetscInt    dim, N, i;
 
-    CHKERRQ(DMGetDimension(*dm, &dim));
+    PetscCall(DMGetDimension(*dm, &dim));
     N    = PetscPowInt(user->div, dim);
-    CHKERRQ(PetscMalloc1(N, &user->kgrid));
-    CHKERRQ(PetscRandomCreate(PETSC_COMM_SELF, &r));
-    CHKERRQ(PetscRandomSetFromOptions(r));
-    CHKERRQ(PetscRandomSetInterval(r, 0.0, user->k));
-    CHKERRQ(PetscRandomSetSeed(r, 1973));
-    CHKERRQ(PetscRandomSeed(r));
+    PetscCall(PetscMalloc1(N, &user->kgrid));
+    PetscCall(PetscRandomCreate(PETSC_COMM_SELF, &r));
+    PetscCall(PetscRandomSetFromOptions(r));
+    PetscCall(PetscRandomSetInterval(r, 0.0, user->k));
+    PetscCall(PetscRandomSetSeed(r, 1973));
+    PetscCall(PetscRandomSeed(r));
     for (i = 0; i < N; ++i) {
-      CHKERRQ(PetscRandomGetValueReal(r, &val));
+      PetscCall(PetscRandomGetValueReal(r, &val));
       user->kgrid[i] = 1 + (PetscInt) val;
     }
-    CHKERRQ(PetscRandomDestroy(&r));
+    PetscCall(PetscRandomDestroy(&r));
   }
   PetscFunctionReturn(0);
 }
@@ -582,56 +582,56 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   PetscInt        bd, dim;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetDS(dm, &ds));
-  CHKERRQ(DMGetDimension(dm, &dim));
-  CHKERRQ(DMGetPeriodicity(dm, NULL, NULL, NULL, &periodicity));
+  PetscCall(DMGetDS(dm, &ds));
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMGetPeriodicity(dm, NULL, NULL, NULL, &periodicity));
   switch (user->variableCoefficient) {
   case COEFF_NONE:
     if (periodicity && periodicity[0]) {
       if (periodicity && periodicity[1]) {
-        CHKERRQ(PetscDSSetResidual(ds, 0, f0_xytrig_u, f1_u));
-        CHKERRQ(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_uu));
+        PetscCall(PetscDSSetResidual(ds, 0, f0_xytrig_u, f1_u));
+        PetscCall(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_uu));
       } else {
-        CHKERRQ(PetscDSSetResidual(ds, 0, f0_xtrig_u,  f1_u));
-        CHKERRQ(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_uu));
+        PetscCall(PetscDSSetResidual(ds, 0, f0_xtrig_u,  f1_u));
+        PetscCall(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_uu));
       }
     } else {
-      CHKERRQ(PetscDSSetResidual(ds, 0, f0_u, f1_u));
-      CHKERRQ(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_uu));
+      PetscCall(PetscDSSetResidual(ds, 0, f0_u, f1_u));
+      PetscCall(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_uu));
     }
     break;
   case COEFF_ANALYTIC:
-    CHKERRQ(PetscDSSetResidual(ds, 0, f0_analytic_u, f1_analytic_u));
-    CHKERRQ(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_analytic_uu));
+    PetscCall(PetscDSSetResidual(ds, 0, f0_analytic_u, f1_analytic_u));
+    PetscCall(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_analytic_uu));
     break;
   case COEFF_FIELD:
-    CHKERRQ(PetscDSSetResidual(ds, 0, f0_analytic_u, f1_field_u));
-    CHKERRQ(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_field_uu));
+    PetscCall(PetscDSSetResidual(ds, 0, f0_analytic_u, f1_field_u));
+    PetscCall(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_field_uu));
     break;
   case COEFF_NONLINEAR:
-    CHKERRQ(PetscDSSetResidual(ds, 0, f0_analytic_nonlinear_u, f1_analytic_nonlinear_u));
-    CHKERRQ(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_analytic_nonlinear_uu));
+    PetscCall(PetscDSSetResidual(ds, 0, f0_analytic_nonlinear_u, f1_analytic_nonlinear_u));
+    PetscCall(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_analytic_nonlinear_uu));
     break;
   case COEFF_BALL:
-    CHKERRQ(PetscDSSetResidual(ds, 0, f0_ball_u, f1_u));
-    CHKERRQ(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_uu));
+    PetscCall(PetscDSSetResidual(ds, 0, f0_ball_u, f1_u));
+    PetscCall(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_uu));
     break;
   case COEFF_CROSS:
     switch (dim) {
     case 2:
-      CHKERRQ(PetscDSSetResidual(ds, 0, f0_cross_u_2d, f1_u));
+      PetscCall(PetscDSSetResidual(ds, 0, f0_cross_u_2d, f1_u));
       break;
     case 3:
-      CHKERRQ(PetscDSSetResidual(ds, 0, f0_cross_u_3d, f1_u));
+      PetscCall(PetscDSSetResidual(ds, 0, f0_cross_u_3d, f1_u));
       break;
     default:
       SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", dim);
     }
-    CHKERRQ(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_uu));
+    PetscCall(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_uu));
     break;
   case COEFF_CHECKERBOARD_0:
-    CHKERRQ(PetscDSSetResidual(ds, 0, f0_checkerboard_0_u, f1_field_u));
-    CHKERRQ(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_field_uu));
+    PetscCall(PetscDSSetResidual(ds, 0, f0_checkerboard_0_u, f1_field_u));
+    PetscCall(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_field_uu));
     break;
   default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid variable coefficient type %d", user->variableCoefficient);
   }
@@ -657,10 +657,10 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
       }
     }
     if (user->bcType == NEUMANN) {
-      CHKERRQ(DMGetLabel(dm, "boundary", &label));
-      CHKERRQ(DMAddBoundary(dm, DM_BC_NATURAL, "wall", label, 1, &id, 0, 0, NULL, NULL, NULL, user, &bd));
-      CHKERRQ(PetscDSGetBoundary(ds, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
-      CHKERRQ(PetscWeakFormSetIndexBdResidual(wf, label, id, 0, 0, 0, f0_bd_u, 0, NULL));
+      PetscCall(DMGetLabel(dm, "boundary", &label));
+      PetscCall(DMAddBoundary(dm, DM_BC_NATURAL, "wall", label, 1, &id, 0, 0, NULL, NULL, NULL, user, &bd));
+      PetscCall(PetscDSGetBoundary(ds, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
+      PetscCall(PetscWeakFormSetIndexBdResidual(wf, label, id, 0, 0, 0, f0_bd_u, 0, NULL));
     }
     break;
   case 3:
@@ -674,10 +674,10 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
       user->exactFields[0] = quadratic_u_field_3d;
     }
     if (user->bcType == NEUMANN) {
-      CHKERRQ(DMGetLabel(dm, "boundary", &label));
-      CHKERRQ(DMAddBoundary(dm, DM_BC_NATURAL, "wall", label, 1, &id, 0, 0, NULL, NULL, NULL, user, &bd));
-      CHKERRQ(PetscDSGetBoundary(ds, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
-      CHKERRQ(PetscWeakFormSetIndexBdResidual(wf, label, id, 0, 0, 0, f0_bd_u, 0, NULL));
+      PetscCall(DMGetLabel(dm, "boundary", &label));
+      PetscCall(DMAddBoundary(dm, DM_BC_NATURAL, "wall", label, 1, &id, 0, 0, NULL, NULL, NULL, user, &bd));
+      PetscCall(PetscDSGetBoundary(ds, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
+      PetscCall(PetscWeakFormSetIndexBdResidual(wf, label, id, 0, 0, 0, f0_bd_u, 0, NULL));
     }
     break;
   default:
@@ -691,20 +691,20 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
 
     constants[0] = user->div;
     constants[1] = user->k;
-    CHKERRQ(PetscDSSetConstants(ds, 2, constants));
+    PetscCall(PetscDSSetConstants(ds, 2, constants));
   }
   break;
   default: break;
   }
-  CHKERRQ(PetscDSSetExactSolution(ds, 0, user->exactFuncs[0], user));
+  PetscCall(PetscDSSetExactSolution(ds, 0, user->exactFuncs[0], user));
   /* Setup Boundary Conditions */
   if (user->bcType == DIRICHLET) {
-    CHKERRQ(DMGetLabel(dm, "marker", &label));
+    PetscCall(DMGetLabel(dm, "marker", &label));
     if (!label) {
       /* Right now, p4est cannot create labels immediately */
-      CHKERRQ(PetscDSAddBoundaryByName(ds, user->fieldBC ? DM_BC_ESSENTIAL_FIELD : DM_BC_ESSENTIAL, "wall", "marker", 1, &id, 0, 0, NULL, user->fieldBC ? (void (*)(void)) user->exactFields[0] : (void (*)(void)) user->exactFuncs[0], NULL, user, NULL));
+      PetscCall(PetscDSAddBoundaryByName(ds, user->fieldBC ? DM_BC_ESSENTIAL_FIELD : DM_BC_ESSENTIAL, "wall", "marker", 1, &id, 0, 0, NULL, user->fieldBC ? (void (*)(void)) user->exactFields[0] : (void (*)(void)) user->exactFuncs[0], NULL, user, NULL));
     } else {
-      CHKERRQ(DMAddBoundary(dm, user->fieldBC ? DM_BC_ESSENTIAL_FIELD : DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, user->fieldBC ? (void (*)(void)) user->exactFields[0] : (void (*)(void)) user->exactFuncs[0], NULL, user, NULL));
+      PetscCall(DMAddBoundary(dm, user->fieldBC ? DM_BC_ESSENTIAL_FIELD : DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, user->fieldBC ? (void (*)(void)) user->exactFields[0] : (void (*)(void)) user->exactFuncs[0], NULL, user, NULL));
     }
   }
   PetscFunctionReturn(0);
@@ -719,11 +719,11 @@ static PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user)
   PetscFunctionBegin;
   ctx[0] = user;
   if (user->variableCoefficient == COEFF_CHECKERBOARD_0) {matFuncs[0] = checkerboardCoeff;}
-  CHKERRQ(DMCreateLocalVector(dmAux, &nu));
-  CHKERRQ(PetscObjectSetName((PetscObject) nu, "Coefficient"));
-  CHKERRQ(DMProjectFunctionLocal(dmAux, 0.0, matFuncs, ctx, INSERT_ALL_VALUES, nu));
-  CHKERRQ(DMSetAuxiliaryVec(dm, NULL, 0, 0, nu));
-  CHKERRQ(VecDestroy(&nu));
+  PetscCall(DMCreateLocalVector(dmAux, &nu));
+  PetscCall(PetscObjectSetName((PetscObject) nu, "Coefficient"));
+  PetscCall(DMProjectFunctionLocal(dmAux, 0.0, matFuncs, ctx, INSERT_ALL_VALUES, nu));
+  PetscCall(DMSetAuxiliaryVec(dm, NULL, 0, 0, nu));
+  PetscCall(VecDestroy(&nu));
   PetscFunctionReturn(0);
 }
 
@@ -734,13 +734,13 @@ static PetscErrorCode SetupBC(DM dm, DM dmAux, AppCtx *user)
   PetscInt       dim;
 
   PetscFunctionBegin;
-  CHKERRQ(DMGetDimension(dm, &dim));
+  PetscCall(DMGetDimension(dm, &dim));
   if (dim == 2) bcFuncs[0] = quadratic_u_2d;
   else          bcFuncs[0] = quadratic_u_3d;
-  CHKERRQ(DMCreateLocalVector(dmAux, &uexact));
-  CHKERRQ(DMProjectFunctionLocal(dmAux, 0.0, bcFuncs, NULL, INSERT_ALL_VALUES, uexact));
-  CHKERRQ(DMSetAuxiliaryVec(dm, NULL, 0, 0, uexact));
-  CHKERRQ(VecDestroy(&uexact));
+  PetscCall(DMCreateLocalVector(dmAux, &uexact));
+  PetscCall(DMProjectFunctionLocal(dmAux, 0.0, bcFuncs, NULL, INSERT_ALL_VALUES, uexact));
+  PetscCall(DMSetAuxiliaryVec(dm, NULL, 0, 0, uexact));
+  PetscCall(VecDestroy(&uexact));
   PetscFunctionReturn(0);
 }
 
@@ -750,15 +750,15 @@ static PetscErrorCode SetupAuxDM(DM dm, PetscFE feAux, AppCtx *user)
 
   PetscFunctionBegin;
   /* MUST call DMGetCoordinateDM() in order to get p4est setup if present */
-  CHKERRQ(DMGetCoordinateDM(dm, &coordDM));
+  PetscCall(DMGetCoordinateDM(dm, &coordDM));
   if (!feAux) PetscFunctionReturn(0);
-  CHKERRQ(DMClone(dm, &dmAux));
-  CHKERRQ(DMSetCoordinateDM(dmAux, coordDM));
-  CHKERRQ(DMSetField(dmAux, 0, NULL, (PetscObject) feAux));
-  CHKERRQ(DMCreateDS(dmAux));
-  if (user->fieldBC) CHKERRQ(SetupBC(dm, dmAux, user));
-  else               CHKERRQ(SetupMaterial(dm, dmAux, user));
-  CHKERRQ(DMDestroy(&dmAux));
+  PetscCall(DMClone(dm, &dmAux));
+  PetscCall(DMSetCoordinateDM(dmAux, coordDM));
+  PetscCall(DMSetField(dmAux, 0, NULL, (PetscObject) feAux));
+  PetscCall(DMCreateDS(dmAux));
+  if (user->fieldBC) PetscCall(SetupBC(dm, dmAux, user));
+  else               PetscCall(SetupMaterial(dm, dmAux, user));
+  PetscCall(DMDestroy(&dmAux));
   PetscFunctionReturn(0);
 }
 
@@ -771,38 +771,38 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   MPI_Comm       comm;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetDimension(dm, &dim));
-  CHKERRQ(DMConvert(dm, DMPLEX, &plex));
-  CHKERRQ(DMPlexIsSimplex(plex, &simplex));
-  CHKERRQ(DMDestroy(&plex));
-  CHKERRQ(PetscObjectGetComm((PetscObject) dm, &comm));
-  CHKERRQ(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, NULL, -1, &fe));
-  CHKERRQ(PetscObjectSetName((PetscObject) fe, "potential"));
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMConvert(dm, DMPLEX, &plex));
+  PetscCall(DMPlexIsSimplex(plex, &simplex));
+  PetscCall(DMDestroy(&plex));
+  PetscCall(PetscObjectGetComm((PetscObject) dm, &comm));
+  PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, NULL, -1, &fe));
+  PetscCall(PetscObjectSetName((PetscObject) fe, "potential"));
   if (user->variableCoefficient == COEFF_FIELD || user->variableCoefficient == COEFF_CHECKERBOARD_0) {
-    CHKERRQ(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, "mat_", -1, &feAux));
-    CHKERRQ(PetscObjectSetName((PetscObject) feAux, "coefficient"));
-    CHKERRQ(PetscFECopyQuadrature(fe, feAux));
+    PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, "mat_", -1, &feAux));
+    PetscCall(PetscObjectSetName((PetscObject) feAux, "coefficient"));
+    PetscCall(PetscFECopyQuadrature(fe, feAux));
   } else if (user->fieldBC) {
-    CHKERRQ(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, "bc_", -1, &feAux));
-    CHKERRQ(PetscFECopyQuadrature(fe, feAux));
+    PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, "bc_", -1, &feAux));
+    PetscCall(PetscFECopyQuadrature(fe, feAux));
   }
   /* Set discretization and boundary conditions for each mesh */
-  CHKERRQ(DMSetField(dm, 0, NULL, (PetscObject) fe));
-  CHKERRQ(DMCreateDS(dm));
-  CHKERRQ(SetupProblem(dm, user));
+  PetscCall(DMSetField(dm, 0, NULL, (PetscObject) fe));
+  PetscCall(DMCreateDS(dm));
+  PetscCall(SetupProblem(dm, user));
   while (cdm) {
-    CHKERRQ(SetupAuxDM(cdm, feAux, user));
+    PetscCall(SetupAuxDM(cdm, feAux, user));
     if (user->bcType == DIRICHLET) {
       PetscBool hasLabel;
 
-      CHKERRQ(DMHasLabel(cdm, "marker", &hasLabel));
-      if (!hasLabel) CHKERRQ(CreateBCLabel(cdm, "marker"));
+      PetscCall(DMHasLabel(cdm, "marker", &hasLabel));
+      if (!hasLabel) PetscCall(CreateBCLabel(cdm, "marker"));
     }
-    CHKERRQ(DMCopyDisc(dm, cdm));
-    CHKERRQ(DMGetCoarseDM(cdm, &cdm));
+    PetscCall(DMCopyDisc(dm, cdm));
+    PetscCall(DMGetCoarseDM(cdm, &cdm));
   }
-  CHKERRQ(PetscFEDestroy(&fe));
-  CHKERRQ(PetscFEDestroy(&feAux));
+  PetscCall(PetscFEDestroy(&fe));
+  PetscCall(PetscFEDestroy(&feAux));
   PetscFunctionReturn(0);
 }
 
@@ -817,167 +817,167 @@ int main(int argc, char **argv)
   JacActionCtx   userJ;       /* context for Jacobian MF action */
   PetscReal      error = 0.0; /* L_2 error in the solution */
 
-  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
-  CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));
-  CHKERRQ(SNESCreate(PETSC_COMM_WORLD, &snes));
-  CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
-  CHKERRQ(SNESSetDM(snes, dm));
-  CHKERRQ(DMSetApplicationContext(dm, &user));
+  PetscCall(PetscInitialize(&argc, &argv, NULL,help));
+  PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
+  PetscCall(SNESCreate(PETSC_COMM_WORLD, &snes));
+  PetscCall(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
+  PetscCall(SNESSetDM(snes, dm));
+  PetscCall(DMSetApplicationContext(dm, &user));
 
-  CHKERRQ(PetscMalloc2(1, &user.exactFuncs, 1, &user.exactFields));
-  CHKERRQ(SetupDiscretization(dm, &user));
+  PetscCall(PetscMalloc2(1, &user.exactFuncs, 1, &user.exactFields));
+  PetscCall(SetupDiscretization(dm, &user));
 
-  CHKERRQ(DMCreateGlobalVector(dm, &u));
-  CHKERRQ(PetscObjectSetName((PetscObject) u, "potential"));
+  PetscCall(DMCreateGlobalVector(dm, &u));
+  PetscCall(PetscObjectSetName((PetscObject) u, "potential"));
 
-  CHKERRQ(DMCreateMatrix(dm, &J));
+  PetscCall(DMCreateMatrix(dm, &J));
   if (user.jacobianMF) {
     PetscInt M, m, N, n;
 
-    CHKERRQ(MatGetSize(J, &M, &N));
-    CHKERRQ(MatGetLocalSize(J, &m, &n));
-    CHKERRQ(MatCreate(PETSC_COMM_WORLD, &A));
-    CHKERRQ(MatSetSizes(A, m, n, M, N));
-    CHKERRQ(MatSetType(A, MATSHELL));
-    CHKERRQ(MatSetUp(A));
+    PetscCall(MatGetSize(J, &M, &N));
+    PetscCall(MatGetLocalSize(J, &m, &n));
+    PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
+    PetscCall(MatSetSizes(A, m, n, M, N));
+    PetscCall(MatSetType(A, MATSHELL));
+    PetscCall(MatSetUp(A));
 #if 0
-    CHKERRQ(MatShellSetOperation(A, MATOP_MULT, (void (*)(void))FormJacobianAction));
+    PetscCall(MatShellSetOperation(A, MATOP_MULT, (void (*)(void))FormJacobianAction));
 #endif
 
     userJ.dm   = dm;
     userJ.J    = J;
     userJ.user = &user;
 
-    CHKERRQ(DMCreateLocalVector(dm, &userJ.u));
-    if (user.fieldBC) CHKERRQ(DMProjectFieldLocal(dm, 0.0, userJ.u, user.exactFields, INSERT_BC_VALUES, userJ.u));
-    else              CHKERRQ(DMProjectFunctionLocal(dm, 0.0, user.exactFuncs, NULL, INSERT_BC_VALUES, userJ.u));
-    CHKERRQ(MatShellSetContext(A, &userJ));
+    PetscCall(DMCreateLocalVector(dm, &userJ.u));
+    if (user.fieldBC) PetscCall(DMProjectFieldLocal(dm, 0.0, userJ.u, user.exactFields, INSERT_BC_VALUES, userJ.u));
+    else              PetscCall(DMProjectFunctionLocal(dm, 0.0, user.exactFuncs, NULL, INSERT_BC_VALUES, userJ.u));
+    PetscCall(MatShellSetContext(A, &userJ));
   } else {
     A = J;
   }
 
   nullSpace = NULL;
   if (user.bcType != DIRICHLET) {
-    CHKERRQ(MatNullSpaceCreate(PetscObjectComm((PetscObject) dm), PETSC_TRUE, 0, NULL, &nullSpace));
-    CHKERRQ(MatSetNullSpace(A, nullSpace));
+    PetscCall(MatNullSpaceCreate(PetscObjectComm((PetscObject) dm), PETSC_TRUE, 0, NULL, &nullSpace));
+    PetscCall(MatSetNullSpace(A, nullSpace));
   }
 
-  CHKERRQ(DMPlexSetSNESLocalFEM(dm,&user,&user,&user));
-  CHKERRQ(SNESSetJacobian(snes, A, J, NULL, NULL));
+  PetscCall(DMPlexSetSNESLocalFEM(dm,&user,&user,&user));
+  PetscCall(SNESSetJacobian(snes, A, J, NULL, NULL));
 
-  CHKERRQ(SNESSetFromOptions(snes));
+  PetscCall(SNESSetFromOptions(snes));
 
-  if (user.fieldBC) CHKERRQ(DMProjectField(dm, 0.0, u, user.exactFields, INSERT_ALL_VALUES, u));
-  else              CHKERRQ(DMProjectFunction(dm, 0.0, user.exactFuncs, NULL, INSERT_ALL_VALUES, u));
+  if (user.fieldBC) PetscCall(DMProjectField(dm, 0.0, u, user.exactFields, INSERT_ALL_VALUES, u));
+  else              PetscCall(DMProjectFunction(dm, 0.0, user.exactFuncs, NULL, INSERT_ALL_VALUES, u));
   if (user.restart) {
 #if defined(PETSC_HAVE_HDF5)
     PetscViewer viewer;
     char        filename[PETSC_MAX_PATH_LEN];
 
-    CHKERRQ(PetscOptionsGetString(NULL, NULL, "-dm_plex_filename", filename, sizeof(filename), NULL));
-    CHKERRQ(PetscViewerCreate(PETSC_COMM_WORLD, &viewer));
-    CHKERRQ(PetscViewerSetType(viewer, PETSCVIEWERHDF5));
-    CHKERRQ(PetscViewerFileSetMode(viewer, FILE_MODE_READ));
-    CHKERRQ(PetscViewerFileSetName(viewer, filename));
-    CHKERRQ(PetscViewerHDF5PushGroup(viewer, "/fields"));
-    CHKERRQ(VecLoad(u, viewer));
-    CHKERRQ(PetscViewerHDF5PopGroup(viewer));
-    CHKERRQ(PetscViewerDestroy(&viewer));
+    PetscCall(PetscOptionsGetString(NULL, NULL, "-dm_plex_filename", filename, sizeof(filename), NULL));
+    PetscCall(PetscViewerCreate(PETSC_COMM_WORLD, &viewer));
+    PetscCall(PetscViewerSetType(viewer, PETSCVIEWERHDF5));
+    PetscCall(PetscViewerFileSetMode(viewer, FILE_MODE_READ));
+    PetscCall(PetscViewerFileSetName(viewer, filename));
+    PetscCall(PetscViewerHDF5PushGroup(viewer, "/fields"));
+    PetscCall(VecLoad(u, viewer));
+    PetscCall(PetscViewerHDF5PopGroup(viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
 #endif
   }
   if (user.showInitial) {
     Vec lv;
-    CHKERRQ(DMGetLocalVector(dm, &lv));
-    CHKERRQ(DMGlobalToLocalBegin(dm, u, INSERT_VALUES, lv));
-    CHKERRQ(DMGlobalToLocalEnd(dm, u, INSERT_VALUES, lv));
-    CHKERRQ(DMPrintLocalVec(dm, "Local function", 1.0e-10, lv));
-    CHKERRQ(DMRestoreLocalVector(dm, &lv));
+    PetscCall(DMGetLocalVector(dm, &lv));
+    PetscCall(DMGlobalToLocalBegin(dm, u, INSERT_VALUES, lv));
+    PetscCall(DMGlobalToLocalEnd(dm, u, INSERT_VALUES, lv));
+    PetscCall(DMPrintLocalVec(dm, "Local function", 1.0e-10, lv));
+    PetscCall(DMRestoreLocalVector(dm, &lv));
   }
   if (user.runType == RUN_FULL || user.runType == RUN_EXACT) {
     PetscErrorCode (*initialGuess[1])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx) = {zero};
 
     if (user.nonzInit) initialGuess[0] = ecks;
     if (user.runType == RUN_FULL) {
-      CHKERRQ(DMProjectFunction(dm, 0.0, initialGuess, NULL, INSERT_VALUES, u));
+      PetscCall(DMProjectFunction(dm, 0.0, initialGuess, NULL, INSERT_VALUES, u));
     }
-    CHKERRQ(VecViewFromOptions(u, NULL, "-guess_vec_view"));
-    CHKERRQ(SNESSolve(snes, NULL, u));
-    CHKERRQ(SNESGetSolution(snes, &u));
-    CHKERRQ(SNESGetDM(snes, &dm));
+    PetscCall(VecViewFromOptions(u, NULL, "-guess_vec_view"));
+    PetscCall(SNESSolve(snes, NULL, u));
+    PetscCall(SNESGetSolution(snes, &u));
+    PetscCall(SNESGetDM(snes, &dm));
 
     if (user.showSolution) {
-      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Solution\n"));
-      CHKERRQ(VecChop(u, 3.0e-9));
-      CHKERRQ(VecView(u, PETSC_VIEWER_STDOUT_WORLD));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Solution\n"));
+      PetscCall(VecChop(u, 3.0e-9));
+      PetscCall(VecView(u, PETSC_VIEWER_STDOUT_WORLD));
     }
   } else if (user.runType == RUN_PERF) {
     Vec       r;
     PetscReal res = 0.0;
 
-    CHKERRQ(SNESGetFunction(snes, &r, NULL, NULL));
-    CHKERRQ(SNESComputeFunction(snes, u, r));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Initial Residual\n"));
-    CHKERRQ(VecChop(r, 1.0e-10));
-    CHKERRQ(VecNorm(r, NORM_2, &res));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "L_2 Residual: %g\n", (double)res));
+    PetscCall(SNESGetFunction(snes, &r, NULL, NULL));
+    PetscCall(SNESComputeFunction(snes, u, r));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Initial Residual\n"));
+    PetscCall(VecChop(r, 1.0e-10));
+    PetscCall(VecNorm(r, NORM_2, &res));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "L_2 Residual: %g\n", (double)res));
   } else {
     Vec       r;
     PetscReal res = 0.0, tol = 1.0e-11;
 
     /* Check discretization error */
-    CHKERRQ(SNESGetFunction(snes, &r, NULL, NULL));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Initial guess\n"));
-    if (!user.quiet) CHKERRQ(VecView(u, PETSC_VIEWER_STDOUT_WORLD));
-    CHKERRQ(DMComputeL2Diff(dm, 0.0, user.exactFuncs, NULL, u, &error));
-    if (error < tol) CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: < %2.1e\n", (double)tol));
-    else             CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", (double)error));
+    PetscCall(SNESGetFunction(snes, &r, NULL, NULL));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Initial guess\n"));
+    if (!user.quiet) PetscCall(VecView(u, PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(DMComputeL2Diff(dm, 0.0, user.exactFuncs, NULL, u, &error));
+    if (error < tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: < %2.1e\n", (double)tol));
+    else             PetscCall(PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", (double)error));
     /* Check residual */
-    CHKERRQ(SNESComputeFunction(snes, u, r));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Initial Residual\n"));
-    CHKERRQ(VecChop(r, 1.0e-10));
-    if (!user.quiet) CHKERRQ(VecView(r, PETSC_VIEWER_STDOUT_WORLD));
-    CHKERRQ(VecNorm(r, NORM_2, &res));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "L_2 Residual: %g\n", (double)res));
+    PetscCall(SNESComputeFunction(snes, u, r));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Initial Residual\n"));
+    PetscCall(VecChop(r, 1.0e-10));
+    if (!user.quiet) PetscCall(VecView(r, PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(VecNorm(r, NORM_2, &res));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "L_2 Residual: %g\n", (double)res));
     /* Check Jacobian */
     {
       Vec b;
 
-      CHKERRQ(SNESComputeJacobian(snes, u, A, A));
-      CHKERRQ(VecDuplicate(u, &b));
-      CHKERRQ(VecSet(r, 0.0));
-      CHKERRQ(SNESComputeFunction(snes, r, b));
-      CHKERRQ(MatMult(A, u, r));
-      CHKERRQ(VecAXPY(r, 1.0, b));
-      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Au - b = Au + F(0)\n"));
-      CHKERRQ(VecChop(r, 1.0e-10));
-      if (!user.quiet) CHKERRQ(VecView(r, PETSC_VIEWER_STDOUT_WORLD));
-      CHKERRQ(VecNorm(r, NORM_2, &res));
-      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Linear L_2 Residual: %g\n", (double)res));
+      PetscCall(SNESComputeJacobian(snes, u, A, A));
+      PetscCall(VecDuplicate(u, &b));
+      PetscCall(VecSet(r, 0.0));
+      PetscCall(SNESComputeFunction(snes, r, b));
+      PetscCall(MatMult(A, u, r));
+      PetscCall(VecAXPY(r, 1.0, b));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Au - b = Au + F(0)\n"));
+      PetscCall(VecChop(r, 1.0e-10));
+      if (!user.quiet) PetscCall(VecView(r, PETSC_VIEWER_STDOUT_WORLD));
+      PetscCall(VecNorm(r, NORM_2, &res));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Linear L_2 Residual: %g\n", (double)res));
       /* check solver */
       if (user.checkksp) {
         KSP ksp;
 
         if (nullSpace) {
-          CHKERRQ(MatNullSpaceRemove(nullSpace, u));
+          PetscCall(MatNullSpaceRemove(nullSpace, u));
         }
-        CHKERRQ(SNESComputeJacobian(snes, u, A, J));
-        CHKERRQ(MatMult(A, u, b));
-        CHKERRQ(SNESGetKSP(snes, &ksp));
-        CHKERRQ(KSPSetOperators(ksp, A, J));
-        CHKERRQ(KSPSolve(ksp, b, r));
-        CHKERRQ(VecAXPY(r, -1.0, u));
-        CHKERRQ(VecNorm(r, NORM_2, &res));
-        CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "KSP Error: %g\n", (double)res));
+        PetscCall(SNESComputeJacobian(snes, u, A, J));
+        PetscCall(MatMult(A, u, b));
+        PetscCall(SNESGetKSP(snes, &ksp));
+        PetscCall(KSPSetOperators(ksp, A, J));
+        PetscCall(KSPSolve(ksp, b, r));
+        PetscCall(VecAXPY(r, -1.0, u));
+        PetscCall(VecNorm(r, NORM_2, &res));
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "KSP Error: %g\n", (double)res));
       }
-      CHKERRQ(VecDestroy(&b));
+      PetscCall(VecDestroy(&b));
     }
   }
-  CHKERRQ(VecViewFromOptions(u, NULL, "-vec_view"));
+  PetscCall(VecViewFromOptions(u, NULL, "-vec_view"));
   {
     Vec nu;
 
-    CHKERRQ(DMGetAuxiliaryVec(dm, NULL, 0, 0, &nu));
-    if (nu) CHKERRQ(VecViewFromOptions(nu, NULL, "-coeff_view"));
+    PetscCall(DMGetAuxiliaryVec(dm, NULL, 0, 0, &nu));
+    if (nu) PetscCall(VecViewFromOptions(nu, NULL, "-coeff_view"));
   }
 
   if (user.bdIntegral) {
@@ -986,22 +986,22 @@ int main(int argc, char **argv)
     PetscScalar bdInt = 0.0;
     PetscReal   exact = 3.3333333333;
 
-    CHKERRQ(DMGetLabel(dm, "marker", &label));
-    CHKERRQ(DMPlexComputeBdIntegral(dm, u, label, 1, &id, bd_integral_2d, &bdInt, NULL));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Solution boundary integral: %.4g\n", (double) PetscAbsScalar(bdInt)));
+    PetscCall(DMGetLabel(dm, "marker", &label));
+    PetscCall(DMPlexComputeBdIntegral(dm, u, label, 1, &id, bd_integral_2d, &bdInt, NULL));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Solution boundary integral: %.4g\n", (double) PetscAbsScalar(bdInt)));
     PetscCheckFalse(PetscAbsReal(PetscAbsScalar(bdInt) - exact) > PETSC_SQRT_MACHINE_EPSILON,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Invalid boundary integral %g != %g", (double) PetscAbsScalar(bdInt), (double)exact);
   }
 
-  CHKERRQ(MatNullSpaceDestroy(&nullSpace));
-  if (user.jacobianMF) CHKERRQ(VecDestroy(&userJ.u));
-  if (A != J) CHKERRQ(MatDestroy(&A));
-  CHKERRQ(MatDestroy(&J));
-  CHKERRQ(VecDestroy(&u));
-  CHKERRQ(SNESDestroy(&snes));
-  CHKERRQ(DMDestroy(&dm));
-  CHKERRQ(PetscFree2(user.exactFuncs, user.exactFields));
-  CHKERRQ(PetscFree(user.kgrid));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatNullSpaceDestroy(&nullSpace));
+  if (user.jacobianMF) PetscCall(VecDestroy(&userJ.u));
+  if (A != J) PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&J));
+  PetscCall(VecDestroy(&u));
+  PetscCall(SNESDestroy(&snes));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFree2(user.exactFuncs, user.exactFields));
+  PetscCall(PetscFree(user.kgrid));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

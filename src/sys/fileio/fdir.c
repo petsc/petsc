@@ -18,12 +18,12 @@ PetscErrorCode PetscPathJoin(const char dname[],const char fname[],size_t n,char
 {
   size_t         l1,l2;
   PetscFunctionBegin;
-  CHKERRQ(PetscStrlen(dname,&l1));
-  CHKERRQ(PetscStrlen(fname,&l2));
+  PetscCall(PetscStrlen(dname,&l1));
+  PetscCall(PetscStrlen(fname,&l2));
   PetscCheckFalse((l1+l2+2)>n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Path length is greater than buffer size");
-  CHKERRQ(PetscStrncpy(fullname,dname,n));
-  CHKERRQ(PetscStrlcat(fullname,"/",n));
-  CHKERRQ(PetscStrlcat(fullname,fname,n));
+  PetscCall(PetscStrncpy(fullname,dname,n));
+  PetscCall(PetscStrlcat(fullname,"/",n));
+  PetscCall(PetscStrlcat(fullname,fname,n));
   PetscFunctionReturn(0);
 }
 
@@ -33,7 +33,7 @@ PetscErrorCode PetscMkdir(const char dir[])
   PetscBool      flg;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscTestDirectory(dir,'w',&flg));
+  PetscCall(PetscTestDirectory(dir,'w',&flg));
   if (flg) PetscFunctionReturn(0);
 #if defined(PETSC_HAVE__MKDIR) && defined(PETSC_HAVE_DIRECT_H)
   err = _mkdir(dir);
@@ -75,15 +75,15 @@ PetscErrorCode PetscMkdtemp(char dir[])
     PetscErrorCode ierr;
 
     while (err && i < max_retry) {
-      CHKERRQ(PetscStrncpy(name,dir,sizeof(name)));
-      CHKERRQ(PetscStrlen(name,&len));
+      PetscCall(PetscStrncpy(name,dir,sizeof(name)));
+      PetscCall(PetscStrlen(name,&len));
       err = _mktemp_s(name,len+1);
       PetscCheck(!err,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Could not generate a unique name using the template: %s",dir);
       err = _mkdir(name);
       i++;
     }
     PetscCheck(!err,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Exceeds maximum retry time when creating temporary dir using the template: %s",dir);
-    CHKERRQ(PetscStrncpy(dir,name,len+1));
+    PetscCall(PetscStrncpy(dir,name,len+1));
   }
 #else
   dir = mkdtemp(dir);
@@ -106,23 +106,23 @@ PetscErrorCode PetscRMTree(const char dir[])
   #endif
 
   PetscFunctionBegin;
-  CHKERRQ(PetscPathJoin(dir,"*",PETSC_MAX_PATH_LEN,loc));
+  PetscCall(PetscPathJoin(dir,"*",PETSC_MAX_PATH_LEN,loc));
   handle = _findfirst(loc, &data);
   if (handle == -1) {
     PetscBool flg;
-    CHKERRQ(PetscTestDirectory(loc,'r',&flg));
+    PetscCall(PetscTestDirectory(loc,'r',&flg));
     PetscCheck(!flg,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Cannot access directory to delete: %s",dir);
-    CHKERRQ(PetscTestFile(loc,'r',&flg));
+    PetscCall(PetscTestFile(loc,'r',&flg));
     PetscCheck(!flg,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Specified path is a file - not a dir: %s",dir);
     PetscFunctionReturn(0); /* perhaps the dir was not yet created */
   }
   while (_findnext(handle, &data) != -1) {
-    CHKERRQ(PetscStrcmp(data.name, ".",&flg1));
-    CHKERRQ(PetscStrcmp(data.name, "..",&flg2));
+    PetscCall(PetscStrcmp(data.name, ".",&flg1));
+    PetscCall(PetscStrcmp(data.name, "..",&flg2));
     if (flg1 || flg2) continue;
-    CHKERRQ(PetscPathJoin(dir,data.name,PETSC_MAX_PATH_LEN,loc));
+    PetscCall(PetscPathJoin(dir,data.name,PETSC_MAX_PATH_LEN,loc));
     if (data.attrib & _A_SUBDIR) {
-      CHKERRQ(PetscRMTree(loc));
+      PetscCall(PetscRMTree(loc));
     } else{
       PetscCheckFalse(remove(loc),PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Could not delete file: %s",loc);
     }
@@ -146,20 +146,20 @@ PetscErrorCode PetscRMTree(const char dir[])
   dirp = opendir(dir);
   if (!dirp) {
     PetscBool flg;
-    CHKERRQ(PetscTestDirectory(dir,'r',&flg));
+    PetscCall(PetscTestDirectory(dir,'r',&flg));
     PetscCheck(!flg,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Cannot access directory to delete: %s",dir);
-    CHKERRQ(PetscTestFile(dir,'r',&flg));
+    PetscCall(PetscTestFile(dir,'r',&flg));
     PetscCheck(!flg,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Specified path is a file - not a dir: %s",dir);
     PetscFunctionReturn(0); /* perhaps the dir was not yet created */
   }
   while ((data = readdir(dirp))) {
-    CHKERRQ(PetscStrcmp(data->d_name, ".",&flg1));
-    CHKERRQ(PetscStrcmp(data->d_name, "..",&flg2));
+    PetscCall(PetscStrcmp(data->d_name, ".",&flg1));
+    PetscCall(PetscStrcmp(data->d_name, "..",&flg2));
     if (flg1 || flg2) continue;
-    CHKERRQ(PetscPathJoin(dir,data->d_name,PETSC_MAX_PATH_LEN,loc));
+    PetscCall(PetscPathJoin(dir,data->d_name,PETSC_MAX_PATH_LEN,loc));
     PetscCheckFalse(lstat(loc,&statbuf) <0,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"cannot run lstat() on: %s",loc);
     if (S_ISDIR(statbuf.st_mode)) {
-      CHKERRQ(PetscRMTree(loc));
+      PetscCall(PetscRMTree(loc));
     } else {
       PetscCheckFalse(unlink(loc),PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Could not delete file: %s",loc);
     }

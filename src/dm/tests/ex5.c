@@ -12,35 +12,35 @@ int main(int argc, char *argv[])
   Mat            A;
   PetscBool      struct_only=PETSC_TRUE;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,NULL,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL));
+  PetscCall(PetscInitialize(&argc,&argv,NULL,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL));
   switch (dim) {
   case 1:
-    CHKERRQ(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,nx,dof,1,NULL,&da));
+    PetscCall(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,nx,dof,1,NULL,&da));
     break;
   case 2:
-    CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,nx,ny,PETSC_DECIDE,PETSC_DECIDE,dof,1,NULL,NULL,&da));
+    PetscCall(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,nx,ny,PETSC_DECIDE,PETSC_DECIDE,dof,1,NULL,NULL,&da));
     break;
   default:
     ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz,
-                      PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,2,NULL,NULL,NULL,&da);CHKERRQ(ierr);
+                      PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,2,NULL,NULL,NULL,&da);PetscCall(ierr);
   }
 
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
-  CHKERRQ(DMView(da,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMView(da,PETSC_VIEWER_STDOUT_WORLD));
 
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-struct_only",&struct_only,NULL));
-  CHKERRQ(DMSetMatrixStructureOnly(da,struct_only));
-  CHKERRQ(DMCreateMatrix(da,&A));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-struct_only",&struct_only,NULL));
+  PetscCall(DMSetMatrixStructureOnly(da,struct_only));
+  PetscCall(DMCreateMatrix(da,&A));
   /* Set da->structure_only to default PETSC_FALSE in case da is being used to create new matrices */
-  CHKERRQ(DMSetMatrixStructureOnly(da,PETSC_FALSE));
+  PetscCall(DMSetMatrixStructureOnly(da,PETSC_FALSE));
 
-  CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(DMDestroy(&da));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatDestroy(&A));
+  PetscCall(DMDestroy(&da));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

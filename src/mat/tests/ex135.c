@@ -9,27 +9,27 @@ PetscErrorCode Assemble(MPI_Comm comm,PetscInt n,MatType mtype)
   PetscMPIInt    rank,size;
 
   PetscFunctionBegin;
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(MatSetSizes(A, PETSC_DECIDE,PETSC_DECIDE,n,n));
-  CHKERRQ(MatSetType(A,MATMPISBAIJ));
-  CHKERRQ(MatSetFromOptions(A));
-  CHKERRMPI(MPI_Comm_size(comm,&size));
-  CHKERRMPI(MPI_Comm_rank(comm,&rank));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A, PETSC_DECIDE,PETSC_DECIDE,n,n));
+  PetscCall(MatSetType(A,MATMPISBAIJ));
+  PetscCall(MatSetFromOptions(A));
+  PetscCallMPI(MPI_Comm_size(comm,&size));
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
   if (rank < size-1) {
-    CHKERRQ(MatMPISBAIJSetPreallocation(A,1,1,NULL,1,NULL));
+    PetscCall(MatMPISBAIJSetPreallocation(A,1,1,NULL,1,NULL));
   } else {
-    CHKERRQ(MatMPISBAIJSetPreallocation(A,1,2,NULL,0,NULL));
+    PetscCall(MatMPISBAIJSetPreallocation(A,1,2,NULL,0,NULL));
   }
-  CHKERRQ(MatGetOwnershipRange(A,&first,&last));
-  CHKERRQ(MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE));
+  PetscCall(MatGetOwnershipRange(A,&first,&last));
+  PetscCall(MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE));
   last--;
   for (i=first; i<=last; i++) {
-    CHKERRQ(MatSetValue(A,i,i,2.,INSERT_VALUES));
-    if (i != n-1) CHKERRQ(MatSetValue(A,i,n-1,-1.,INSERT_VALUES));
+    PetscCall(MatSetValue(A,i,i,2.,INSERT_VALUES));
+    if (i != n-1) PetscCall(MatSetValue(A,i,n-1,-1.,INSERT_VALUES));
   }
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatDestroy(&A));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatDestroy(&A));
   PetscFunctionReturn(0);
 }
 
@@ -38,11 +38,11 @@ int main(int argc,char *argv[])
   MPI_Comm       comm;
   PetscInt       n = 6;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   comm = PETSC_COMM_WORLD;
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
-  CHKERRQ(Assemble(comm,n,MATMPISBAIJ));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(Assemble(comm,n,MATMPISBAIJ));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

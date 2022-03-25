@@ -31,15 +31,15 @@ int main (int argc, char** argv)
   unsigned int   first_local_index;
   unsigned int   last_local_index;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   PetscCheckFalse(size > 2,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This example is for <=2 procs");
 
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f0",file[0],sizeof(file[0]),&flg));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-f0",file[0],sizeof(file[0]),&flg));
   PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate dof indices file for rank 0 with -f0 option");
   if (size == 2) {
-    CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f1",file[1],sizeof(file[1]),&flg));
+    PetscCall(PetscOptionsGetString(NULL,NULL,"-f1",file[1],sizeof(file[1]),&flg));
     PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate dof indices file for rank 1 with -f1 option");
   }
 
@@ -120,20 +120,20 @@ int main (int argc, char** argv)
   PetscInt n_nz_max = *std::max_element(n_nz.begin(), n_nz.end());
   PetscInt n_oz_max = *std::max_element(n_oz.begin(), n_oz.end());
 
-  CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "Max on-diagonal non-zeros: = %" PetscInt_FMT "\n", n_nz_max));
-  CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "Max off-diagonal non-zeros: = %" PetscInt_FMT "\n", n_oz_max));
-  CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
+  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "Max on-diagonal non-zeros: = %" PetscInt_FMT "\n", n_nz_max));
+  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "Max off-diagonal non-zeros: = %" PetscInt_FMT "\n", n_oz_max));
+  PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
 
   // Initialize the matrix similar to what we do in the PetscMatrix
   // ctor and init() routines.
   Mat mat;
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD, &mat));
-  CHKERRQ(MatSetSizes(mat, n_local_dofs, n_local_dofs, n_dofs, n_dofs));
-  CHKERRQ(MatSetBlockSize(mat, 1));
-  CHKERRQ(MatSetType(mat, MATAIJ)); // Automatically chooses seqaij or mpiaij
-  CHKERRQ(MatSeqAIJSetPreallocation(mat, 0, &n_nz[0]));
-  CHKERRQ(MatMPIAIJSetPreallocation(mat, 0, &n_nz[0], 0, &n_oz[0]));
-  CHKERRQ(MatSetOption(mat, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &mat));
+  PetscCall(MatSetSizes(mat, n_local_dofs, n_local_dofs, n_dofs, n_dofs));
+  PetscCall(MatSetBlockSize(mat, 1));
+  PetscCall(MatSetType(mat, MATAIJ)); // Automatically chooses seqaij or mpiaij
+  PetscCall(MatSeqAIJSetPreallocation(mat, 0, &n_nz[0]));
+  PetscCall(MatMPIAIJSetPreallocation(mat, 0, &n_nz[0], 0, &n_oz[0]));
+  PetscCall(MatSetOption(mat, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE));
 
   // Local "element" loop
   for (unsigned int k = 0; k < elem_dof_indices[rank].size(); k++) {
@@ -141,16 +141,16 @@ int main (int argc, char** argv)
     // DenseMatrix< Number >  zero_mat( dof_indices.size(), dof_indices.size());
     // B.add_matrix( zero_mat, dof_indices);
     std::vector<PetscScalar> ones(dof_indices.size() * dof_indices.size(), 1.);
-    CHKERRQ(MatSetValues(mat, dof_indices.size(), &dof_indices[0], dof_indices.size(), &dof_indices[0], &ones[0], ADD_VALUES));
+    PetscCall(MatSetValues(mat, dof_indices.size(), &dof_indices[0], dof_indices.size(), &dof_indices[0], &ones[0], ADD_VALUES));
   }
 
   // Matrix assembly
-  CHKERRQ(MatAssemblyBegin(mat, MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(mat, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(mat, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(mat, MAT_FINAL_ASSEMBLY));
 
   // Clean up
-  CHKERRQ(MatDestroy(&mat));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatDestroy(&mat));
+  PetscCall(PetscFinalize());
   return 0;
 }
 /*TEST

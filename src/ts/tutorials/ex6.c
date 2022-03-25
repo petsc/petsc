@@ -102,20 +102,20 @@ int main(int argc,char **argv)
      Initialize program and set problem parameters
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
 
   m    = 60;
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
-  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-debug",&appctx.debug));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-debug",&appctx.debug));
 
   appctx.m        = m;
   appctx.h        = 1.0/(m-1.0);
   appctx.norm_2   = 0.0;
   appctx.norm_max = 0.0;
 
-  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Solving a linear TS problem on 1 processor\n"));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"Solving a linear TS problem on 1 processor\n"));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create vector data structures
@@ -124,52 +124,52 @@ int main(int argc,char **argv)
   /*
      Create vector data structures for approximate and exact solutions
   */
-  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,m,&u));
-  CHKERRQ(VecDuplicate(u,&appctx.solution));
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,m,&u));
+  PetscCall(VecDuplicate(u,&appctx.solution));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set up displays to show graphs of the solution and error
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  CHKERRQ(PetscViewerDrawOpen(PETSC_COMM_SELF,0,"",80,380,400,160,&appctx.viewer1));
-  CHKERRQ(PetscViewerDrawGetDraw(appctx.viewer1,0,&draw));
-  CHKERRQ(PetscDrawSetDoubleBuffer(draw));
-  CHKERRQ(PetscViewerDrawOpen(PETSC_COMM_SELF,0,"",80,0,400,160,&appctx.viewer2));
-  CHKERRQ(PetscViewerDrawGetDraw(appctx.viewer2,0,&draw));
-  CHKERRQ(PetscDrawSetDoubleBuffer(draw));
+  PetscCall(PetscViewerDrawOpen(PETSC_COMM_SELF,0,"",80,380,400,160,&appctx.viewer1));
+  PetscCall(PetscViewerDrawGetDraw(appctx.viewer1,0,&draw));
+  PetscCall(PetscDrawSetDoubleBuffer(draw));
+  PetscCall(PetscViewerDrawOpen(PETSC_COMM_SELF,0,"",80,0,400,160,&appctx.viewer2));
+  PetscCall(PetscViewerDrawGetDraw(appctx.viewer2,0,&draw));
+  PetscCall(PetscDrawSetDoubleBuffer(draw));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  CHKERRQ(TSCreate(PETSC_COMM_SELF,&ts));
-  CHKERRQ(TSSetProblemType(ts,TS_LINEAR));
+  PetscCall(TSCreate(PETSC_COMM_SELF,&ts));
+  PetscCall(TSSetProblemType(ts,TS_LINEAR));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set optional user-defined monitoring routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  CHKERRQ(TSMonitorSet(ts,Monitor,&appctx,NULL));
+  PetscCall(TSMonitorSet(ts,Monitor,&appctx,NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
      Create matrix data structure; set matrix evaluation routine.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  CHKERRQ(MatCreate(PETSC_COMM_SELF,&A));
-  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,m));
-  CHKERRQ(MatSetFromOptions(A));
-  CHKERRQ(MatSetUp(A));
+  PetscCall(MatCreate(PETSC_COMM_SELF,&A));
+  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,m));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSetUp(A));
 
-  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-time_dependent_rhs",&flg));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-time_dependent_rhs",&flg));
   if (flg) {
     /*
        For linear problems with a time-dependent f(u,t) in the equation
        u_t = f(u,t), the user provides the discretized right-hand-side
        as a time-dependent matrix.
     */
-    CHKERRQ(TSSetRHSFunction(ts,NULL,TSComputeRHSFunctionLinear,&appctx));
-    CHKERRQ(TSSetRHSJacobian(ts,A,A,RHSMatrixHeat,&appctx));
+    PetscCall(TSSetRHSFunction(ts,NULL,TSComputeRHSFunctionLinear,&appctx));
+    PetscCall(TSSetRHSJacobian(ts,A,A,RHSMatrixHeat,&appctx));
   } else {
     /*
        For linear problems with a time-independent f(u) in the equation
@@ -177,9 +177,9 @@ int main(int argc,char **argv)
        as a matrix only once, and then sets a null matrix evaluation
        routine.
     */
-    CHKERRQ(RHSMatrixHeat(ts,0.0,u,A,A,&appctx));
-    CHKERRQ(TSSetRHSFunction(ts,NULL,TSComputeRHSFunctionLinear,&appctx));
-    CHKERRQ(TSSetRHSJacobian(ts,A,A,TSComputeRHSJacobianConstant,&appctx));
+    PetscCall(RHSMatrixHeat(ts,0.0,u,A,A,&appctx));
+    PetscCall(TSSetRHSFunction(ts,NULL,TSComputeRHSFunctionLinear,&appctx));
+    PetscCall(TSSetRHSJacobian(ts,A,A,TSComputeRHSJacobianConstant,&appctx));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -187,8 +187,8 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   dt   = appctx.h*appctx.h/2.0;
-  CHKERRQ(TSSetTimeStep(ts,dt));
-  CHKERRQ(TSSetSolution(ts,u));
+  PetscCall(TSSetTimeStep(ts,dt));
+  PetscCall(TSSetSolution(ts,u));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize timestepping solver:
@@ -200,10 +200,10 @@ int main(int argc,char **argv)
      to override the defaults set by TSSetMaxSteps()/TSSetMaxTime().
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  CHKERRQ(TSSetMaxSteps(ts,time_steps_max));
-  CHKERRQ(TSSetMaxTime(ts,time_total_max));
-  CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
-  CHKERRQ(TSSetFromOptions(ts));
+  PetscCall(TSSetMaxSteps(ts,time_steps_max));
+  PetscCall(TSSetMaxTime(ts,time_total_max));
+  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
+  PetscCall(TSSetFromOptions(ts));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve the problem
@@ -212,33 +212,33 @@ int main(int argc,char **argv)
   /*
      Evaluate initial conditions
   */
-  CHKERRQ(InitialConditions(u,&appctx));
+  PetscCall(InitialConditions(u,&appctx));
 
   /*
      Run the timestepping solver
   */
-  CHKERRQ(TSSolve(ts,u));
-  CHKERRQ(TSGetSolveTime(ts,&ftime));
-  CHKERRQ(TSGetStepNumber(ts,&steps));
+  PetscCall(TSSolve(ts,u));
+  PetscCall(TSGetSolveTime(ts,&ftime));
+  PetscCall(TSGetStepNumber(ts,&steps));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      View timestepping solver info
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"avg. error (2 norm) = %g, avg. error (max norm) = %g\n",(double)(appctx.norm_2/steps),(double)(appctx.norm_max/steps)));
-  CHKERRQ(TSView(ts,PETSC_VIEWER_STDOUT_SELF));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"avg. error (2 norm) = %g, avg. error (max norm) = %g\n",(double)(appctx.norm_2/steps),(double)(appctx.norm_max/steps)));
+  PetscCall(TSView(ts,PETSC_VIEWER_STDOUT_SELF));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  CHKERRQ(TSDestroy(&ts));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(VecDestroy(&u));
-  CHKERRQ(PetscViewerDestroy(&appctx.viewer1));
-  CHKERRQ(PetscViewerDestroy(&appctx.viewer2));
-  CHKERRQ(VecDestroy(&appctx.solution));
+  PetscCall(TSDestroy(&ts));
+  PetscCall(MatDestroy(&A));
+  PetscCall(VecDestroy(&u));
+  PetscCall(PetscViewerDestroy(&appctx.viewer1));
+  PetscCall(PetscViewerDestroy(&appctx.viewer2));
+  PetscCall(VecDestroy(&appctx.solution));
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine
@@ -246,7 +246,7 @@ int main(int argc,char **argv)
        - provides summary and diagnostic information if certain runtime
          options are chosen (e.g., -log_view).
   */
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 /* --------------------------------------------------------------------- */
@@ -274,7 +274,7 @@ PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
     - Note that the Fortran interface to VecGetArray() differs from the
       C version.  See the users manual for details.
   */
-  CHKERRQ(VecGetArray(u,&u_localptr));
+  PetscCall(VecGetArray(u,&u_localptr));
 
   /*
      We initialize the solution array by simply writing the solution
@@ -286,13 +286,13 @@ PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
   /*
      Restore vector
   */
-  CHKERRQ(VecRestoreArray(u,&u_localptr));
+  PetscCall(VecRestoreArray(u,&u_localptr));
 
   /*
      Print debugging information if desired
   */
   if (appctx->debug) {
-     CHKERRQ(VecView(u,PETSC_VIEWER_STDOUT_SELF));
+     PetscCall(VecView(u,PETSC_VIEWER_STDOUT_SELF));
   }
 
   return 0;
@@ -317,7 +317,7 @@ PetscErrorCode ExactSolution(PetscReal t,Vec solution,AppCtx *appctx)
   /*
      Get a pointer to vector data.
   */
-  CHKERRQ(VecGetArray(solution,&s_localptr));
+  PetscCall(VecGetArray(solution,&s_localptr));
 
   /*
      Simply write the solution directly into the array locations.
@@ -330,7 +330,7 @@ PetscErrorCode ExactSolution(PetscReal t,Vec solution,AppCtx *appctx)
   /*
      Restore vector
   */
-  CHKERRQ(VecRestoreArray(solution,&s_localptr));
+  PetscCall(VecRestoreArray(solution,&s_localptr));
   return 0;
 }
 /* --------------------------------------------------------------------- */
@@ -361,56 +361,56 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal crtime,Vec u,void *ctx)
   /*
      View a graph of the current iterate
   */
-  CHKERRQ(VecView(u,appctx->viewer2));
+  PetscCall(VecView(u,appctx->viewer2));
 
   /*
      Compute the exact solution
   */
-  CHKERRQ(ExactSolution(crtime,appctx->solution,appctx));
+  PetscCall(ExactSolution(crtime,appctx->solution,appctx));
 
   /*
      Print debugging information if desired
   */
   if (appctx->debug) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Computed solution vector\n"));
-    CHKERRQ(VecView(u,PETSC_VIEWER_STDOUT_SELF));
-    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Exact solution vector\n"));
-    CHKERRQ(VecView(appctx->solution,PETSC_VIEWER_STDOUT_SELF));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"Computed solution vector\n"));
+    PetscCall(VecView(u,PETSC_VIEWER_STDOUT_SELF));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"Exact solution vector\n"));
+    PetscCall(VecView(appctx->solution,PETSC_VIEWER_STDOUT_SELF));
   }
 
   /*
      Compute the 2-norm and max-norm of the error
   */
-  CHKERRQ(VecAXPY(appctx->solution,-1.0,u));
-  CHKERRQ(VecNorm(appctx->solution,NORM_2,&norm_2));
+  PetscCall(VecAXPY(appctx->solution,-1.0,u));
+  PetscCall(VecNorm(appctx->solution,NORM_2,&norm_2));
   norm_2 = PetscSqrtReal(appctx->h)*norm_2;
-  CHKERRQ(VecNorm(appctx->solution,NORM_MAX,&norm_max));
+  PetscCall(VecNorm(appctx->solution,NORM_MAX,&norm_max));
 
-  CHKERRQ(TSGetTimeStep(ts,&dt));
+  PetscCall(TSGetTimeStep(ts,&dt));
   if (norm_2 > 1.e-2) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Timestep %D: step size = %g, time = %g, 2-norm error = %g, max norm error = %g\n",step,(double)dt,(double)crtime,(double)norm_2,(double)norm_max));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"Timestep %D: step size = %g, time = %g, 2-norm error = %g, max norm error = %g\n",step,(double)dt,(double)crtime,(double)norm_2,(double)norm_max));
   }
   appctx->norm_2   += norm_2;
   appctx->norm_max += norm_max;
 
   dttol = .0001;
-  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-dttol",&dttol,&flg));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-dttol",&dttol,&flg));
   if (dt < dttol) {
     dt  *= .999;
-    CHKERRQ(TSSetTimeStep(ts,dt));
+    PetscCall(TSSetTimeStep(ts,dt));
   }
 
   /*
      View a graph of the error
   */
-  CHKERRQ(VecView(appctx->solution,appctx->viewer1));
+  PetscCall(VecView(appctx->solution,appctx->viewer1));
 
   /*
      Print debugging information if desired
   */
   if (appctx->debug) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Error vector\n"));
-    CHKERRQ(VecView(appctx->solution,PETSC_VIEWER_STDOUT_SELF));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"Error vector\n"));
+    PetscCall(VecView(appctx->solution,PETSC_VIEWER_STDOUT_SELF));
   }
 
   return 0;
@@ -453,12 +453,12 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat AA,Mat BB,void *ctx)
 
   mstart = 0;
   v[0]   = 1.0;
-  CHKERRQ(MatSetValues(A,1,&mstart,1,&mstart,v,INSERT_VALUES));
+  PetscCall(MatSetValues(A,1,&mstart,1,&mstart,v,INSERT_VALUES));
   mstart++;
 
   mend--;
   v[0] = 1.0;
-  CHKERRQ(MatSetValues(A,1,&mend,1,&mend,v,INSERT_VALUES));
+  PetscCall(MatSetValues(A,1,&mend,1,&mend,v,INSERT_VALUES));
 
   /*
      Set matrix rows corresponding to interior data.  We construct the
@@ -467,7 +467,7 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat AA,Mat BB,void *ctx)
   v[0] = sone; v[1] = stwo; v[2] = sone;
   for (i=mstart; i<mend; i++) {
     idx[0] = i-1; idx[1] = i; idx[2] = i+1;
-    CHKERRQ(MatSetValues(A,1,&i,3,idx,v,INSERT_VALUES));
+    PetscCall(MatSetValues(A,1,&i,3,idx,v,INSERT_VALUES));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -479,14 +479,14 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat AA,Mat BB,void *ctx)
      Computations can be done while messages are in transition
      by placing code between these two statements.
   */
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
   /*
      Set and option to indicate that we will never add a new nonzero location
      to the matrix. If we do, it will generate an error.
   */
-  CHKERRQ(MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE));
+  PetscCall(MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE));
 
   return 0;
 }
@@ -504,11 +504,11 @@ PetscErrorCode MyBCRoutine(TS ts,PetscReal t,Vec f,void *ctx)
   PetscInt       m = appctx->m;
   PetscScalar    *fa;
 
-  CHKERRQ(VecGetArray(f,&fa));
+  PetscCall(VecGetArray(f,&fa));
   fa[0]   = 0.0;
   fa[m-1] = 1.0;
-  CHKERRQ(VecRestoreArray(f,&fa));
-  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"t=%g\n",(double)t));
+  PetscCall(VecRestoreArray(f,&fa));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"t=%g\n",(double)t));
 
   return 0;
 }

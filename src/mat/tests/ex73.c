@@ -33,108 +33,108 @@ int main(int argc,char **args)
   Vec             xin, xout;
   VecScatter      scat;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  CHKERRQ(PetscOptionsHasName(NULL,NULL, "-view_mats", &viewMats));
-  CHKERRQ(PetscOptionsHasName(NULL,NULL, "-view_is", &viewIS));
-  CHKERRQ(PetscOptionsHasName(NULL,NULL, "-view_vecs", &viewVecs));
-  CHKERRQ(PetscOptionsHasName(NULL,NULL, "-use_nd", &useND));
-  CHKERRQ(PetscOptionsHasName(NULL,NULL, "-novec_load", &noVecLoad));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscOptionsHasName(NULL,NULL, "-view_mats", &viewMats));
+  PetscCall(PetscOptionsHasName(NULL,NULL, "-view_is", &viewIS));
+  PetscCall(PetscOptionsHasName(NULL,NULL, "-view_vecs", &viewVecs));
+  PetscCall(PetscOptionsHasName(NULL,NULL, "-use_nd", &useND));
+  PetscCall(PetscOptionsHasName(NULL,NULL, "-novec_load", &noVecLoad));
 
   /*
      Determine file from which we read the matrix
   */
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
 
   /*
        Open binary file.  Note that we use FILE_MODE_READ to indicate
        reading from this file.
   */
-  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
 
   /*
       Load the matrix and vector; then destroy the viewer.
   */
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(MatSetType(A,mtype));
-  CHKERRQ(MatLoad(A,fd));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetType(A,mtype));
+  PetscCall(MatLoad(A,fd));
   if (!noVecLoad) {
-    CHKERRQ(VecCreate(PETSC_COMM_WORLD,&xin));
-    CHKERRQ(VecLoad(xin,fd));
+    PetscCall(VecCreate(PETSC_COMM_WORLD,&xin));
+    PetscCall(VecLoad(xin,fd));
   } else {
-    CHKERRQ(MatCreateVecs(A,&xin,NULL));
-    CHKERRQ(VecSetRandom(xin,NULL));
+    PetscCall(MatCreateVecs(A,&xin,NULL));
+    PetscCall(VecSetRandom(xin,NULL));
   }
-  CHKERRQ(PetscViewerDestroy(&fd));
+  PetscCall(PetscViewerDestroy(&fd));
   if (viewMats) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Original matrix:\n"));
-    CHKERRQ(MatView(A,PETSC_VIEWER_DRAW_WORLD));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Original matrix:\n"));
+    PetscCall(MatView(A,PETSC_VIEWER_DRAW_WORLD));
   }
   if (viewVecs) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Original vector:\n"));
-    CHKERRQ(VecView(xin,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Original vector:\n"));
+    PetscCall(VecView(xin,PETSC_VIEWER_STDOUT_WORLD));
   }
 
   /* Partition the graph of the matrix */
-  CHKERRQ(MatPartitioningCreate(PETSC_COMM_WORLD,&part));
-  CHKERRQ(MatPartitioningSetAdjacency(part,A));
-  CHKERRQ(MatPartitioningSetFromOptions(part));
+  PetscCall(MatPartitioningCreate(PETSC_COMM_WORLD,&part));
+  PetscCall(MatPartitioningSetAdjacency(part,A));
+  PetscCall(MatPartitioningSetFromOptions(part));
 
   /* get new processor owner number of each vertex */
   if (useND) {
-    CHKERRQ(MatPartitioningApplyND(part,&is));
+    PetscCall(MatPartitioningApplyND(part,&is));
   } else {
-    CHKERRQ(MatPartitioningApply(part,&is));
+    PetscCall(MatPartitioningApply(part,&is));
   }
   if (viewIS) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"IS1 - new processor ownership:\n"));
-    CHKERRQ(ISView(is,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"IS1 - new processor ownership:\n"));
+    PetscCall(ISView(is,PETSC_VIEWER_STDOUT_WORLD));
   }
 
   /* get new global number of each old global number */
-  CHKERRQ(ISPartitioningToNumbering(is,&isn));
+  PetscCall(ISPartitioningToNumbering(is,&isn));
   if (viewIS) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"IS2 - new global numbering:\n"));
-    CHKERRQ(ISView(isn,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"IS2 - new global numbering:\n"));
+    PetscCall(ISView(isn,PETSC_VIEWER_STDOUT_WORLD));
   }
 
   /* get number of new vertices for each processor */
-  CHKERRQ(PetscMalloc1(size,&nlocal));
-  CHKERRQ(ISPartitioningCount(is,size,nlocal));
-  CHKERRQ(ISDestroy(&is));
+  PetscCall(PetscMalloc1(size,&nlocal));
+  PetscCall(ISPartitioningCount(is,size,nlocal));
+  PetscCall(ISDestroy(&is));
 
   /* get old global number of each new global number */
-  CHKERRQ(ISInvertPermutation(isn,useND ? PETSC_DECIDE : nlocal[rank],&is));
+  PetscCall(ISInvertPermutation(isn,useND ? PETSC_DECIDE : nlocal[rank],&is));
   if (viewIS) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"IS3=inv(IS2) - old global number of each new global number:\n"));
-    CHKERRQ(ISView(is,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"IS3=inv(IS2) - old global number of each new global number:\n"));
+    PetscCall(ISView(is,PETSC_VIEWER_STDOUT_WORLD));
   }
 
   /* move the matrix rows to the new processes they have been assigned to by the permutation */
-  CHKERRQ(MatCreateSubMatrix(A,is,is,MAT_INITIAL_MATRIX,&B));
-  CHKERRQ(PetscFree(nlocal));
-  CHKERRQ(ISDestroy(&isn));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(MatPartitioningDestroy(&part));
+  PetscCall(MatCreateSubMatrix(A,is,is,MAT_INITIAL_MATRIX,&B));
+  PetscCall(PetscFree(nlocal));
+  PetscCall(ISDestroy(&isn));
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatPartitioningDestroy(&part));
   if (viewMats) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Partitioned matrix:\n"));
-    CHKERRQ(MatView(B,PETSC_VIEWER_DRAW_WORLD));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Partitioned matrix:\n"));
+    PetscCall(MatView(B,PETSC_VIEWER_DRAW_WORLD));
   }
 
   /* move the vector rows to the new processes they have been assigned to */
-  CHKERRQ(MatGetLocalSize(B,&m,&n));
-  CHKERRQ(VecCreateMPI(PETSC_COMM_WORLD,m,PETSC_DECIDE,&xout));
-  CHKERRQ(VecScatterCreate(xin,is,xout,NULL,&scat));
-  CHKERRQ(VecScatterBegin(scat,xin,xout,INSERT_VALUES,SCATTER_FORWARD));
-  CHKERRQ(VecScatterEnd(scat,xin,xout,INSERT_VALUES,SCATTER_FORWARD));
-  CHKERRQ(VecScatterDestroy(&scat));
+  PetscCall(MatGetLocalSize(B,&m,&n));
+  PetscCall(VecCreateMPI(PETSC_COMM_WORLD,m,PETSC_DECIDE,&xout));
+  PetscCall(VecScatterCreate(xin,is,xout,NULL,&scat));
+  PetscCall(VecScatterBegin(scat,xin,xout,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(scat,xin,xout,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterDestroy(&scat));
   if (viewVecs) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Mapped vector:\n"));
-    CHKERRQ(VecView(xout,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Mapped vector:\n"));
+    PetscCall(VecView(xout,PETSC_VIEWER_STDOUT_WORLD));
   }
-  CHKERRQ(VecDestroy(&xout));
-  CHKERRQ(ISDestroy(&is));
+  PetscCall(VecDestroy(&xout));
+  PetscCall(ISDestroy(&is));
 
   {
     PetscInt          rstart,i,*nzd,*nzo,nzl,nzmax = 0,*ncols,nrow,j;
@@ -143,10 +143,10 @@ int main(int argc,char **args)
     const PetscScalar *vals;
     PetscScalar       *nvals;
 
-    CHKERRQ(MatGetOwnershipRange(B,&rstart,NULL));
-    CHKERRQ(PetscCalloc2(2*m,&nzd,2*m,&nzo));
+    PetscCall(MatGetOwnershipRange(B,&rstart,NULL));
+    PetscCall(PetscCalloc2(2*m,&nzd,2*m,&nzo));
     for (i=0; i<m; i++) {
-      CHKERRQ(MatGetRow(B,i+rstart,&nzl,&cols,NULL));
+      PetscCall(MatGetRow(B,i+rstart,&nzl,&cols,NULL));
       for (j=0; j<nzl; j++) {
         if (cols[j] >= rstart && cols[j] < rstart+n) {
           nzd[2*i] += 2;
@@ -157,42 +157,42 @@ int main(int argc,char **args)
         }
       }
       nzmax = PetscMax(nzmax,nzd[2*i]+nzo[2*i]);
-      CHKERRQ(MatRestoreRow(B,i+rstart,&nzl,&cols,NULL));
+      PetscCall(MatRestoreRow(B,i+rstart,&nzl,&cols,NULL));
     }
-    CHKERRQ(MatCreateAIJ(PETSC_COMM_WORLD,2*m,2*m,PETSC_DECIDE,PETSC_DECIDE,0,nzd,0,nzo,&J));
-    CHKERRQ(PetscInfo(0,"Created empty Jacobian matrix\n"));
-    CHKERRQ(PetscFree2(nzd,nzo));
-    CHKERRQ(PetscMalloc2(nzmax,&ncols,nzmax,&nvals));
-    CHKERRQ(PetscArrayzero(nvals,nzmax));
+    PetscCall(MatCreateAIJ(PETSC_COMM_WORLD,2*m,2*m,PETSC_DECIDE,PETSC_DECIDE,0,nzd,0,nzo,&J));
+    PetscCall(PetscInfo(0,"Created empty Jacobian matrix\n"));
+    PetscCall(PetscFree2(nzd,nzo));
+    PetscCall(PetscMalloc2(nzmax,&ncols,nzmax,&nvals));
+    PetscCall(PetscArrayzero(nvals,nzmax));
     for (i=0; i<m; i++) {
-      CHKERRQ(MatGetRow(B,i+rstart,&nzl,&cols,&vals));
+      PetscCall(MatGetRow(B,i+rstart,&nzl,&cols,&vals));
       for (j=0; j<nzl; j++) {
         ncols[2*j]   = 2*cols[j];
         ncols[2*j+1] = 2*cols[j]+1;
       }
       nrow = 2*(i+rstart);
-      CHKERRQ(MatSetValues(J,1,&nrow,2*nzl,ncols,nvals,INSERT_VALUES));
+      PetscCall(MatSetValues(J,1,&nrow,2*nzl,ncols,nvals,INSERT_VALUES));
       nrow = 2*(i+rstart) + 1;
-      CHKERRQ(MatSetValues(J,1,&nrow,2*nzl,ncols,nvals,INSERT_VALUES));
-      CHKERRQ(MatRestoreRow(B,i+rstart,&nzl,&cols,&vals));
+      PetscCall(MatSetValues(J,1,&nrow,2*nzl,ncols,nvals,INSERT_VALUES));
+      PetscCall(MatRestoreRow(B,i+rstart,&nzl,&cols,&vals));
     }
-    CHKERRQ(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY));
     if (viewMats) {
-      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Jacobian matrix structure:\n"));
-      CHKERRQ(MatView(J,PETSC_VIEWER_DRAW_WORLD));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Jacobian matrix structure:\n"));
+      PetscCall(MatView(J,PETSC_VIEWER_DRAW_WORLD));
     }
-    CHKERRQ(MatDestroy(&J));
-    CHKERRQ(PetscFree2(ncols,nvals));
+    PetscCall(MatDestroy(&J));
+    PetscCall(PetscFree2(ncols,nvals));
   }
 
   /*
        Free work space.  All PETSc objects should be destroyed when they
        are no longer needed.
   */
-  CHKERRQ(MatDestroy(&B));
-  CHKERRQ(VecDestroy(&xin));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatDestroy(&B));
+  PetscCall(VecDestroy(&xin));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

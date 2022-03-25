@@ -25,11 +25,11 @@ typedef struct {
 static PetscErrorCode CeedDataDestroy(CeedData *data)
 {
   PetscFunctionBeginUser;
-  CHKERRQ(CeedVectorDestroy(&data->qdata));
-  CHKERRQ(CeedVectorDestroy(&data->uceed));
-  CHKERRQ(CeedVectorDestroy(&data->vceed));
-  CHKERRQ(CeedQFunctionDestroy(&data->qf_apply));
-  CHKERRQ(CeedOperatorDestroy(&data->op_apply));
+  PetscCall(CeedVectorDestroy(&data->qdata));
+  PetscCall(CeedVectorDestroy(&data->uceed));
+  PetscCall(CeedVectorDestroy(&data->vceed));
+  PetscCall(CeedQFunctionDestroy(&data->qf_apply));
+  PetscCall(CeedOperatorDestroy(&data->op_apply));
   PetscFunctionReturn(0);
 }
 
@@ -178,9 +178,9 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *ctx)
 
   PetscFunctionBeginUser;
 
-  ierr = PetscOptionsBegin(comm, "", "libCEED Test Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsGetEnum(NULL, NULL, "-dm_plex_shape", DMPlexShapes, (PetscEnum *) &shape, NULL));
+  ierr = PetscOptionsBegin(comm, "", "libCEED Test Options", "DMPLEX");PetscCall(ierr);
+  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscCall(PetscOptionsGetEnum(NULL, NULL, "-dm_plex_shape", DMPlexShapes, (PetscEnum *) &shape, NULL));
   ctx->setupgeo      = NULL;
   ctx->setupgeofname = NULL;
   ctx->apply         = Mass;
@@ -205,18 +205,18 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *ctx)
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm)
 {
   PetscFunctionBegin;
-  CHKERRQ(DMCreate(comm, dm));
-  CHKERRQ(DMSetType(*dm, DMPLEX));
-  CHKERRQ(DMSetFromOptions(*dm));
-  CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
+  PetscCall(DMCreate(comm, dm));
+  PetscCall(DMSetType(*dm, DMPLEX));
+  PetscCall(DMSetFromOptions(*dm));
+  PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
 #ifdef PETSC_HAVE_LIBCEED
   {
     Ceed        ceed;
     const char *usedresource;
 
-    CHKERRQ(DMGetCeed(*dm, &ceed));
-    CHKERRQ(CeedGetResource(ceed, &usedresource));
-    CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject) *dm), "libCEED Backend: %s\n", usedresource));
+    PetscCall(DMGetCeed(*dm, &ceed));
+    PetscCall(CeedGetResource(ceed, &usedresource));
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject) *dm), "libCEED Backend: %s\n", usedresource));
   }
 #endif
   PetscFunctionReturn(0);
@@ -230,20 +230,20 @@ static PetscErrorCode SetupDiscretization(DM dm)
   PetscBool simplex;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetDimension(dm, &dim));
-  CHKERRQ(DMPlexIsSimplex(dm, &simplex));
-  CHKERRQ(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, NULL, PETSC_DETERMINE, &fe));
-  CHKERRQ(PetscFESetName(fe, "indicator"));
-  CHKERRQ(DMAddField(dm, NULL, (PetscObject) fe));
-  CHKERRQ(PetscFEDestroy(&fe));
-  CHKERRQ(DMCreateDS(dm));
-  CHKERRQ(DMPlexSetClosurePermutationTensor(dm, PETSC_DETERMINE, NULL));
-  CHKERRQ(DMGetCoordinateDim(dm, &cnc));
-  CHKERRQ(PetscFECreateDefault(PETSC_COMM_SELF, dim, cnc, simplex, NULL, PETSC_DETERMINE, &cfe));
-  CHKERRQ(DMProjectCoordinates(dm, cfe));
-  CHKERRQ(PetscFEDestroy(&cfe));
-  CHKERRQ(DMGetCoordinateDM(dm, &cdm));
-  CHKERRQ(DMPlexSetClosurePermutationTensor(cdm, PETSC_DETERMINE, NULL));
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMPlexIsSimplex(dm, &simplex));
+  PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, NULL, PETSC_DETERMINE, &fe));
+  PetscCall(PetscFESetName(fe, "indicator"));
+  PetscCall(DMAddField(dm, NULL, (PetscObject) fe));
+  PetscCall(PetscFEDestroy(&fe));
+  PetscCall(DMCreateDS(dm));
+  PetscCall(DMPlexSetClosurePermutationTensor(dm, PETSC_DETERMINE, NULL));
+  PetscCall(DMGetCoordinateDim(dm, &cnc));
+  PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, cnc, simplex, NULL, PETSC_DETERMINE, &cfe));
+  PetscCall(DMProjectCoordinates(dm, cfe));
+  PetscCall(PetscFEDestroy(&cfe));
+  PetscCall(DMGetCoordinateDM(dm, &cdm));
+  PetscCall(DMPlexSetClosurePermutationTensor(cdm, PETSC_DETERMINE, NULL));
   PetscFunctionReturn(0);
 }
 
@@ -265,71 +265,71 @@ static PetscErrorCode LibCeedSetupByDegree(DM dm, AppCtx *ctx, CeedData *data)
   PetscInt            dim, cdim, cStart, cEnd, Ncell;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetCeed(dm, &ceed));
-  CHKERRQ(DMGetDimension(dm, &dim));
-  CHKERRQ(DMGetCoordinateDim(dm, &cdim));
-  CHKERRQ(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+  PetscCall(DMGetCeed(dm, &ceed));
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMGetCoordinateDim(dm, &cdim));
+  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   Ncell = cEnd - cStart;
   // CEED bases
-  CHKERRQ(DMGetDS(dm, &ds));
-  CHKERRQ(PetscDSGetDiscretization(ds, 0, (PetscObject *) &fe));
-  CHKERRQ(PetscFEGetCeedBasis(fe, &basisu));
-  CHKERRQ(DMGetCoordinateDM(dm, &cdm));
-  CHKERRQ(DMGetDS(cdm, &ds));
-  CHKERRQ(PetscDSGetDiscretization(ds, 0, (PetscObject *) &cfe));
-  CHKERRQ(PetscFEGetCeedBasis(cfe, &basisx));
+  PetscCall(DMGetDS(dm, &ds));
+  PetscCall(PetscDSGetDiscretization(ds, 0, (PetscObject *) &fe));
+  PetscCall(PetscFEGetCeedBasis(fe, &basisu));
+  PetscCall(DMGetCoordinateDM(dm, &cdm));
+  PetscCall(DMGetDS(cdm, &ds));
+  PetscCall(PetscDSGetDiscretization(ds, 0, (PetscObject *) &cfe));
+  PetscCall(PetscFEGetCeedBasis(cfe, &basisx));
 
-  CHKERRQ(DMPlexGetCeedRestriction(cdm, NULL, 0, 0, 0, &Erestrictx));
-  CHKERRQ(DMPlexGetCeedRestriction(dm,  NULL, 0, 0, 0, &Erestrictu));
-  CHKERRQ(CeedBasisGetNumQuadraturePoints(basisu, &nqpts));
-  CHKERRQ(CeedBasisGetNumQuadraturePoints(basisx, &nqptsx));
+  PetscCall(DMPlexGetCeedRestriction(cdm, NULL, 0, 0, 0, &Erestrictx));
+  PetscCall(DMPlexGetCeedRestriction(dm,  NULL, 0, 0, 0, &Erestrictu));
+  PetscCall(CeedBasisGetNumQuadraturePoints(basisu, &nqpts));
+  PetscCall(CeedBasisGetNumQuadraturePoints(basisx, &nqptsx));
   PetscCheckFalse(nqptsx != nqpts,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Number of qpoints for u %D != %D Number of qpoints for x", nqpts, nqptsx);
-  CHKERRQ(CeedElemRestrictionCreateStrided(ceed, Ncell, nqpts, Nqdata, Nqdata*Ncell*nqpts, CEED_STRIDES_BACKEND, &Erestrictq));
+  PetscCall(CeedElemRestrictionCreateStrided(ceed, Ncell, nqpts, Nqdata, Nqdata*Ncell*nqpts, CEED_STRIDES_BACKEND, &Erestrictq));
 
-  CHKERRQ(DMGetCoordinatesLocal(dm, &coords));
-  CHKERRQ(VecGetArrayRead(coords, &coordArray));
-  CHKERRQ(CeedElemRestrictionCreateVector(Erestrictx, &xcoord, NULL));
-  CHKERRQ(CeedVectorSetArray(xcoord, CEED_MEM_HOST, CEED_COPY_VALUES, (PetscScalar *) coordArray));
-  CHKERRQ(VecRestoreArrayRead(coords, &coordArray));
+  PetscCall(DMGetCoordinatesLocal(dm, &coords));
+  PetscCall(VecGetArrayRead(coords, &coordArray));
+  PetscCall(CeedElemRestrictionCreateVector(Erestrictx, &xcoord, NULL));
+  PetscCall(CeedVectorSetArray(xcoord, CEED_MEM_HOST, CEED_COPY_VALUES, (PetscScalar *) coordArray));
+  PetscCall(VecRestoreArrayRead(coords, &coordArray));
 
   // Create the vectors that will be needed in setup and apply
-  CHKERRQ(CeedElemRestrictionCreateVector(Erestrictu, &data->uceed, NULL));
-  CHKERRQ(CeedElemRestrictionCreateVector(Erestrictu, &data->vceed, NULL));
-  CHKERRQ(CeedElemRestrictionCreateVector(Erestrictq, &data->qdata, NULL));
+  PetscCall(CeedElemRestrictionCreateVector(Erestrictu, &data->uceed, NULL));
+  PetscCall(CeedElemRestrictionCreateVector(Erestrictu, &data->vceed, NULL));
+  PetscCall(CeedElemRestrictionCreateVector(Erestrictq, &data->qdata, NULL));
 
   // Create the Q-function that builds the operator (i.e. computes its quadrature data) and set its context data
-  CHKERRQ(CeedQFunctionCreateInterior(ceed, 1, ctx->setupgeo, ctx->setupgeofname, &qf_setupgeo));
-  CHKERRQ(CeedQFunctionAddInput(qf_setupgeo,  "x",      cdim,     CEED_EVAL_INTERP));
-  CHKERRQ(CeedQFunctionAddInput(qf_setupgeo,  "dx",     cdim*dim, CEED_EVAL_GRAD));
-  CHKERRQ(CeedQFunctionAddInput(qf_setupgeo,  "weight", 1,        CEED_EVAL_WEIGHT));
-  CHKERRQ(CeedQFunctionAddOutput(qf_setupgeo, "qdata",  Nqdata,   CEED_EVAL_NONE));
+  PetscCall(CeedQFunctionCreateInterior(ceed, 1, ctx->setupgeo, ctx->setupgeofname, &qf_setupgeo));
+  PetscCall(CeedQFunctionAddInput(qf_setupgeo,  "x",      cdim,     CEED_EVAL_INTERP));
+  PetscCall(CeedQFunctionAddInput(qf_setupgeo,  "dx",     cdim*dim, CEED_EVAL_GRAD));
+  PetscCall(CeedQFunctionAddInput(qf_setupgeo,  "weight", 1,        CEED_EVAL_WEIGHT));
+  PetscCall(CeedQFunctionAddOutput(qf_setupgeo, "qdata",  Nqdata,   CEED_EVAL_NONE));
 
   // Set up the mass operator
-  CHKERRQ(CeedQFunctionCreateInterior(ceed, 1, ctx->apply, ctx->applyfname, &data->qf_apply));
-  CHKERRQ(CeedQFunctionAddInput(data->qf_apply,  "u",     1,      CEED_EVAL_INTERP));
-  CHKERRQ(CeedQFunctionAddInput(data->qf_apply,  "qdata", Nqdata, CEED_EVAL_NONE));
-  CHKERRQ(CeedQFunctionAddOutput(data->qf_apply, "v",     1,      CEED_EVAL_INTERP));
+  PetscCall(CeedQFunctionCreateInterior(ceed, 1, ctx->apply, ctx->applyfname, &data->qf_apply));
+  PetscCall(CeedQFunctionAddInput(data->qf_apply,  "u",     1,      CEED_EVAL_INTERP));
+  PetscCall(CeedQFunctionAddInput(data->qf_apply,  "qdata", Nqdata, CEED_EVAL_NONE));
+  PetscCall(CeedQFunctionAddOutput(data->qf_apply, "v",     1,      CEED_EVAL_INTERP));
 
   // Create the operator that builds the quadrature data for the operator
-  CHKERRQ(CeedOperatorCreate(ceed, qf_setupgeo, CEED_QFUNCTION_NONE, CEED_QFUNCTION_NONE, &op_setupgeo));
-  CHKERRQ(CeedOperatorSetField(op_setupgeo, "x",      Erestrictx, basisx, CEED_VECTOR_ACTIVE));
-  CHKERRQ(CeedOperatorSetField(op_setupgeo, "dx",     Erestrictx, basisx, CEED_VECTOR_ACTIVE));
-  CHKERRQ(CeedOperatorSetField(op_setupgeo, "weight", CEED_ELEMRESTRICTION_NONE, basisx, CEED_VECTOR_NONE));
-  CHKERRQ(CeedOperatorSetField(op_setupgeo, "qdata",  Erestrictq, CEED_BASIS_COLLOCATED, CEED_VECTOR_ACTIVE));
+  PetscCall(CeedOperatorCreate(ceed, qf_setupgeo, CEED_QFUNCTION_NONE, CEED_QFUNCTION_NONE, &op_setupgeo));
+  PetscCall(CeedOperatorSetField(op_setupgeo, "x",      Erestrictx, basisx, CEED_VECTOR_ACTIVE));
+  PetscCall(CeedOperatorSetField(op_setupgeo, "dx",     Erestrictx, basisx, CEED_VECTOR_ACTIVE));
+  PetscCall(CeedOperatorSetField(op_setupgeo, "weight", CEED_ELEMRESTRICTION_NONE, basisx, CEED_VECTOR_NONE));
+  PetscCall(CeedOperatorSetField(op_setupgeo, "qdata",  Erestrictq, CEED_BASIS_COLLOCATED, CEED_VECTOR_ACTIVE));
 
   // Create the mass operator
-  CHKERRQ(CeedOperatorCreate(ceed, data->qf_apply, CEED_QFUNCTION_NONE, CEED_QFUNCTION_NONE, &data->op_apply));
-  CHKERRQ(CeedOperatorSetField(data->op_apply, "u",     Erestrictu, basisu, CEED_VECTOR_ACTIVE));
-  CHKERRQ(CeedOperatorSetField(data->op_apply, "qdata", Erestrictq, CEED_BASIS_COLLOCATED, data->qdata));
-  CHKERRQ(CeedOperatorSetField(data->op_apply, "v",     Erestrictu, basisu, CEED_VECTOR_ACTIVE));
+  PetscCall(CeedOperatorCreate(ceed, data->qf_apply, CEED_QFUNCTION_NONE, CEED_QFUNCTION_NONE, &data->op_apply));
+  PetscCall(CeedOperatorSetField(data->op_apply, "u",     Erestrictu, basisu, CEED_VECTOR_ACTIVE));
+  PetscCall(CeedOperatorSetField(data->op_apply, "qdata", Erestrictq, CEED_BASIS_COLLOCATED, data->qdata));
+  PetscCall(CeedOperatorSetField(data->op_apply, "v",     Erestrictu, basisu, CEED_VECTOR_ACTIVE));
 
   // Setup qdata
-  CHKERRQ(CeedOperatorApply(op_setupgeo, xcoord, data->qdata, CEED_REQUEST_IMMEDIATE));
+  PetscCall(CeedOperatorApply(op_setupgeo, xcoord, data->qdata, CEED_REQUEST_IMMEDIATE));
 
-  CHKERRQ(CeedElemRestrictionDestroy(&Erestrictq));
-  CHKERRQ(CeedQFunctionDestroy(&qf_setupgeo));
-  CHKERRQ(CeedOperatorDestroy(&op_setupgeo));
-  CHKERRQ(CeedVectorDestroy(&xcoord));
+  PetscCall(CeedElemRestrictionDestroy(&Erestrictq));
+  PetscCall(CeedQFunctionDestroy(&qf_setupgeo));
+  PetscCall(CeedOperatorDestroy(&op_setupgeo));
+  PetscCall(CeedVectorDestroy(&xcoord));
   PetscFunctionReturn(0);
 }
 
@@ -343,52 +343,52 @@ int main(int argc, char **argv)
   PetscScalar    area;
   CeedData       ceeddata;
 
-  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
-  CHKERRQ(ProcessOptions(comm, &ctx));
-  CHKERRQ(CreateMesh(comm, &ctx, &dm));
-  CHKERRQ(SetupDiscretization(dm));
+  PetscCall(ProcessOptions(comm, &ctx));
+  PetscCall(CreateMesh(comm, &ctx, &dm));
+  PetscCall(SetupDiscretization(dm));
 
-  CHKERRQ(LibCeedSetupByDegree(dm, &ctx, &ceeddata));
+  PetscCall(LibCeedSetupByDegree(dm, &ctx, &ceeddata));
 
-  CHKERRQ(DMCreateGlobalVector(dm, &U));
-  CHKERRQ(DMCreateLocalVector(dm, &Uloc));
-  CHKERRQ(VecDuplicate(U, &V));
-  CHKERRQ(VecDuplicate(Uloc, &Vloc));
+  PetscCall(DMCreateGlobalVector(dm, &U));
+  PetscCall(DMCreateLocalVector(dm, &Uloc));
+  PetscCall(VecDuplicate(U, &V));
+  PetscCall(VecDuplicate(Uloc, &Vloc));
 
   /**/
-  CHKERRQ(VecSet(Uloc, 1.));
-  CHKERRQ(VecZeroEntries(V));
-  CHKERRQ(VecZeroEntries(Vloc));
-  CHKERRQ(VecGetArray(Vloc, &v));
-  CHKERRQ(CeedVectorSetArray(ceeddata.vceed, CEED_MEM_HOST, CEED_USE_POINTER, v));
-  CHKERRQ(CeedVectorSetValue(ceeddata.uceed, 1.0));
-  CHKERRQ(CeedOperatorApply(ceeddata.op_apply, ceeddata.uceed, ceeddata.vceed, CEED_REQUEST_IMMEDIATE));
-  CHKERRQ(CeedVectorTakeArray(ceeddata.vceed, CEED_MEM_HOST, NULL));
-  CHKERRQ(VecRestoreArray(Vloc, &v));
-  CHKERRQ(DMLocalToGlobalBegin(dm, Vloc, ADD_VALUES, V));
-  CHKERRQ(DMLocalToGlobalEnd(dm, Vloc, ADD_VALUES, V));
+  PetscCall(VecSet(Uloc, 1.));
+  PetscCall(VecZeroEntries(V));
+  PetscCall(VecZeroEntries(Vloc));
+  PetscCall(VecGetArray(Vloc, &v));
+  PetscCall(CeedVectorSetArray(ceeddata.vceed, CEED_MEM_HOST, CEED_USE_POINTER, v));
+  PetscCall(CeedVectorSetValue(ceeddata.uceed, 1.0));
+  PetscCall(CeedOperatorApply(ceeddata.op_apply, ceeddata.uceed, ceeddata.vceed, CEED_REQUEST_IMMEDIATE));
+  PetscCall(CeedVectorTakeArray(ceeddata.vceed, CEED_MEM_HOST, NULL));
+  PetscCall(VecRestoreArray(Vloc, &v));
+  PetscCall(DMLocalToGlobalBegin(dm, Vloc, ADD_VALUES, V));
+  PetscCall(DMLocalToGlobalEnd(dm, Vloc, ADD_VALUES, V));
 
-  CHKERRQ(VecSum(V, &area));
+  PetscCall(VecSum(V, &area));
   if (ctx.areaExact > 0.) {
     PetscReal error = PetscAbsReal(area - ctx.areaExact);
     PetscReal tol   = PETSC_SMALL;
 
-    CHKERRQ(PetscPrintf(comm,   "Exact mesh surface area    : % .*f\n", fabs(ctx.areaExact - round(ctx.areaExact)) > 1E-15 ? 14 : 1, (double) ctx.areaExact));
-    CHKERRQ(PetscPrintf(comm,   "Computed mesh surface area : % .*f\n", fabs(area          - round(area))          > 1E-15 ? 14 : 1, (double) area));
+    PetscCall(PetscPrintf(comm,   "Exact mesh surface area    : % .*f\n", fabs(ctx.areaExact - round(ctx.areaExact)) > 1E-15 ? 14 : 1, (double) ctx.areaExact));
+    PetscCall(PetscPrintf(comm,   "Computed mesh surface area : % .*f\n", fabs(area          - round(area))          > 1E-15 ? 14 : 1, (double) area));
     if (error > tol) {
-      CHKERRQ(PetscPrintf(comm, "Area error                 : % .14f\n", (double) error));
+      PetscCall(PetscPrintf(comm, "Area error                 : % .14f\n", (double) error));
     } else {
-      CHKERRQ(PetscPrintf(comm, "Area verifies!\n", (double) error));
+      PetscCall(PetscPrintf(comm, "Area verifies!\n", (double) error));
     }
   }
 
-  CHKERRQ(CeedDataDestroy(&ceeddata));
-  CHKERRQ(VecDestroy(&U));
-  CHKERRQ(VecDestroy(&Uloc));
-  CHKERRQ(VecDestroy(&V));
-  CHKERRQ(VecDestroy(&Vloc));
-  CHKERRQ(DMDestroy(&dm));
+  PetscCall(CeedDataDestroy(&ceeddata));
+  PetscCall(VecDestroy(&U));
+  PetscCall(VecDestroy(&Uloc));
+  PetscCall(VecDestroy(&V));
+  PetscCall(VecDestroy(&Vloc));
+  PetscCall(DMDestroy(&dm));
   return PetscFinalize();
 }
 

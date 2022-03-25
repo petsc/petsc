@@ -8,14 +8,14 @@ int main(int argc,char **args)
 {
   PetscViewer    viewer;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRQ(PetscViewerCreate(PETSC_COMM_WORLD,&viewer));
-  CHKERRQ(PetscViewerSetFromOptions(viewer));
-  CHKERRQ(PetscViewerDestroy(&viewer));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscViewerCreate(PETSC_COMM_WORLD,&viewer));
+  PetscCall(PetscViewerSetFromOptions(viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
 
-  CHKERRQ(PetscViewerASCIIOpen(PETSC_COMM_WORLD,"stdout",&viewer));
-  CHKERRQ(PetscViewerDestroy(&viewer));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscViewerASCIIOpen(PETSC_COMM_WORLD,"stdout",&viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

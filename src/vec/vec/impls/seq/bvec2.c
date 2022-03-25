@@ -19,16 +19,16 @@ PetscErrorCode VecPointwiseMax_Seq(Vec win,Vec xin,Vec yin)
   PetscScalar    *ww,*xx,*yy; /* cannot make xx or yy const since might be ww */
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(xin,(const PetscScalar**)&xx));
-  CHKERRQ(VecGetArrayRead(yin,(const PetscScalar**)&yy));
-  CHKERRQ(VecGetArray(win,&ww));
+  PetscCall(VecGetArrayRead(xin,(const PetscScalar**)&xx));
+  PetscCall(VecGetArrayRead(yin,(const PetscScalar**)&yy));
+  PetscCall(VecGetArray(win,&ww));
 
   for (i=0; i<n; i++) ww[i] = PetscMax(PetscRealPart(xx[i]),PetscRealPart(yy[i]));
 
-  CHKERRQ(VecRestoreArrayRead(xin,(const PetscScalar**)&xx));
-  CHKERRQ(VecRestoreArrayRead(yin,(const PetscScalar**)&yy));
-  CHKERRQ(VecRestoreArray(win,&ww));
-  CHKERRQ(PetscLogFlops(n));
+  PetscCall(VecRestoreArrayRead(xin,(const PetscScalar**)&xx));
+  PetscCall(VecRestoreArrayRead(yin,(const PetscScalar**)&yy));
+  PetscCall(VecRestoreArray(win,&ww));
+  PetscCall(PetscLogFlops(n));
   PetscFunctionReturn(0);
 }
 
@@ -38,16 +38,16 @@ PetscErrorCode VecPointwiseMin_Seq(Vec win,Vec xin,Vec yin)
   PetscScalar    *ww,*xx,*yy; /* cannot make xx or yy const since might be ww */
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(xin,(const PetscScalar**)&xx));
-  CHKERRQ(VecGetArrayRead(yin,(const PetscScalar**)&yy));
-  CHKERRQ(VecGetArray(win,&ww));
+  PetscCall(VecGetArrayRead(xin,(const PetscScalar**)&xx));
+  PetscCall(VecGetArrayRead(yin,(const PetscScalar**)&yy));
+  PetscCall(VecGetArray(win,&ww));
 
   for (i=0; i<n; i++) ww[i] = PetscMin(PetscRealPart(xx[i]),PetscRealPart(yy[i]));
 
-  CHKERRQ(VecRestoreArrayRead(xin,(const PetscScalar**)&xx));
-  CHKERRQ(VecRestoreArrayRead(yin,(const PetscScalar**)&yy));
-  CHKERRQ(VecRestoreArray(win,&ww));
-  CHKERRQ(PetscLogFlops(n));
+  PetscCall(VecRestoreArrayRead(xin,(const PetscScalar**)&xx));
+  PetscCall(VecRestoreArrayRead(yin,(const PetscScalar**)&yy));
+  PetscCall(VecRestoreArray(win,&ww));
+  PetscCall(PetscLogFlops(n));
   PetscFunctionReturn(0);
 }
 
@@ -57,16 +57,16 @@ PetscErrorCode VecPointwiseMaxAbs_Seq(Vec win,Vec xin,Vec yin)
   PetscScalar    *ww,*xx,*yy; /* cannot make xx or yy const since might be ww */
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(xin,(const PetscScalar**)&xx));
-  CHKERRQ(VecGetArrayRead(yin,(const PetscScalar**)&yy));
-  CHKERRQ(VecGetArray(win,&ww));
+  PetscCall(VecGetArrayRead(xin,(const PetscScalar**)&xx));
+  PetscCall(VecGetArrayRead(yin,(const PetscScalar**)&yy));
+  PetscCall(VecGetArray(win,&ww));
 
   for (i=0; i<n; i++) ww[i] = PetscMax(PetscAbsScalar(xx[i]),PetscAbsScalar(yy[i]));
 
-  CHKERRQ(PetscLogFlops(n));
-  CHKERRQ(VecRestoreArrayRead(xin,(const PetscScalar**)&xx));
-  CHKERRQ(VecRestoreArrayRead(yin,(const PetscScalar**)&yy));
-  CHKERRQ(VecRestoreArray(win,&ww));
+  PetscCall(PetscLogFlops(n));
+  PetscCall(VecRestoreArrayRead(xin,(const PetscScalar**)&xx));
+  PetscCall(VecRestoreArrayRead(yin,(const PetscScalar**)&yy));
+  PetscCall(VecRestoreArray(win,&ww));
   PetscFunctionReturn(0);
 }
 
@@ -78,9 +78,9 @@ PetscErrorCode VecPointwiseMult_Seq(Vec win,Vec xin,Vec yin)
   PetscScalar    *ww,*xx,*yy; /* cannot make xx or yy const since might be ww */
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(xin,(const PetscScalar**)&xx));
-  CHKERRQ(VecGetArrayRead(yin,(const PetscScalar**)&yy));
-  CHKERRQ(VecGetArray(win,&ww));
+  PetscCall(VecGetArrayRead(xin,(const PetscScalar**)&xx));
+  PetscCall(VecGetArrayRead(yin,(const PetscScalar**)&yy));
+  PetscCall(VecGetArray(win,&ww));
   if (ww == xx) {
     for (i=0; i<n; i++) ww[i] *= yy[i];
   } else if (ww == yy) {
@@ -92,10 +92,10 @@ PetscErrorCode VecPointwiseMult_Seq(Vec win,Vec xin,Vec yin)
     for (i=0; i<n; i++) ww[i] = xx[i] * yy[i];
 #endif
   }
-  CHKERRQ(VecRestoreArrayRead(xin,(const PetscScalar**)&xx));
-  CHKERRQ(VecRestoreArrayRead(yin,(const PetscScalar**)&yy));
-  CHKERRQ(VecRestoreArray(win,&ww));
-  CHKERRQ(PetscLogFlops(n));
+  PetscCall(VecRestoreArrayRead(xin,(const PetscScalar**)&xx));
+  PetscCall(VecRestoreArrayRead(yin,(const PetscScalar**)&yy));
+  PetscCall(VecRestoreArray(win,&ww));
+  PetscCall(PetscLogFlops(n));
   PetscFunctionReturn(0);
 }
 
@@ -105,19 +105,19 @@ PetscErrorCode VecPointwiseDivide_Seq(Vec win,Vec xin,Vec yin)
   PetscScalar    *ww,*xx,*yy; /* cannot make xx or yy const since might be ww */
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(xin,(const PetscScalar**)&xx));
-  CHKERRQ(VecGetArrayRead(yin,(const PetscScalar**)&yy));
-  CHKERRQ(VecGetArray(win,&ww));
+  PetscCall(VecGetArrayRead(xin,(const PetscScalar**)&xx));
+  PetscCall(VecGetArrayRead(yin,(const PetscScalar**)&yy));
+  PetscCall(VecGetArray(win,&ww));
 
   for (i=0; i<n; i++) {
     if (yy[i] != 0.0) ww[i] = xx[i] / yy[i];
     else ww[i] = 0.0;
   }
 
-  CHKERRQ(PetscLogFlops(n));
-  CHKERRQ(VecRestoreArrayRead(xin,(const PetscScalar**)&xx));
-  CHKERRQ(VecRestoreArrayRead(yin,(const PetscScalar**)&yy));
-  CHKERRQ(VecRestoreArray(win,&ww));
+  PetscCall(PetscLogFlops(n));
+  PetscCall(VecRestoreArrayRead(xin,(const PetscScalar**)&xx));
+  PetscCall(VecRestoreArrayRead(yin,(const PetscScalar**)&yy));
+  PetscCall(VecRestoreArray(win,&ww));
   PetscFunctionReturn(0);
 }
 
@@ -127,9 +127,9 @@ PetscErrorCode VecSetRandom_Seq(Vec xin,PetscRandom r)
   PetscScalar    *xx;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayWrite(xin,&xx));
-  for (i=0; i<n; i++) CHKERRQ(PetscRandomGetValue(r,&xx[i]));
-  CHKERRQ(VecRestoreArrayWrite(xin,&xx));
+  PetscCall(VecGetArrayWrite(xin,&xx));
+  for (i=0; i<n; i++) PetscCall(PetscRandomGetValue(r,&xx[i]));
+  PetscCall(VecRestoreArrayWrite(xin,&xx));
   PetscFunctionReturn(0);
 }
 
@@ -146,12 +146,12 @@ PetscErrorCode VecConjugate_Seq(Vec xin)
   PetscInt       n = xin->map->n;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArray(xin,&x));
+  PetscCall(VecGetArray(xin,&x));
   while (n-->0) {
     *x = PetscConj(*x);
     x++;
   }
-  CHKERRQ(VecRestoreArray(xin,&x));
+  PetscCall(VecRestoreArray(xin,&x));
   PetscFunctionReturn(0);
 }
 
@@ -172,11 +172,11 @@ PetscErrorCode VecCopy_Seq(Vec xin,Vec yin)
 
   PetscFunctionBegin;
   if (xin != yin) {
-    CHKERRQ(VecGetArrayRead(xin,&xa));
-    CHKERRQ(VecGetArray(yin,&ya));
-    CHKERRQ(PetscArraycpy(ya,xa,xin->map->n));
-    CHKERRQ(VecRestoreArrayRead(xin,&xa));
-    CHKERRQ(VecRestoreArray(yin,&ya));
+    PetscCall(VecGetArrayRead(xin,&xa));
+    PetscCall(VecGetArray(yin,&ya));
+    PetscCall(PetscArraycpy(ya,xa,xin->map->n));
+    PetscCall(VecRestoreArrayRead(xin,&xa));
+    PetscCall(VecRestoreArray(yin,&ya));
   }
   PetscFunctionReturn(0);
 }
@@ -188,12 +188,12 @@ PetscErrorCode VecSwap_Seq(Vec xin,Vec yin)
 
   PetscFunctionBegin;
   if (xin != yin) {
-    CHKERRQ(PetscBLASIntCast(xin->map->n,&bn));
-    CHKERRQ(VecGetArray(xin,&xa));
-    CHKERRQ(VecGetArray(yin,&ya));
+    PetscCall(PetscBLASIntCast(xin->map->n,&bn));
+    PetscCall(VecGetArray(xin,&xa));
+    PetscCall(VecGetArray(yin,&ya));
     PetscStackCallBLAS("BLASswap",BLASswap_(&bn,xa,&one,ya,&one));
-    CHKERRQ(VecRestoreArray(xin,&xa));
-    CHKERRQ(VecRestoreArray(yin,&ya));
+    PetscCall(VecRestoreArray(xin,&xa));
+    PetscCall(VecRestoreArray(yin,&ya));
   }
   PetscFunctionReturn(0);
 }
@@ -207,36 +207,36 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal *z)
   PetscBLASInt      one = 1, bn = 0;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscBLASIntCast(n,&bn));
+  PetscCall(PetscBLASIntCast(n,&bn));
   if (type == NORM_2 || type == NORM_FROBENIUS) {
-    CHKERRQ(VecGetArrayRead(xin,&xx));
+    PetscCall(VecGetArrayRead(xin,&xx));
 #if defined(PETSC_USE_REAL___FP16)
     PetscStackCallBLAS("BLASnrm2",*z = BLASnrm2_(&bn,xx,&one));
 #else
     PetscStackCallBLAS("BLASdot",*z   = PetscRealPart(BLASdot_(&bn,xx,&one,xx,&one)));
     *z   = PetscSqrtReal(*z);
 #endif
-    CHKERRQ(VecRestoreArrayRead(xin,&xx));
-    CHKERRQ(PetscLogFlops(PetscMax(2.0*n-1,0.0)));
+    PetscCall(VecRestoreArrayRead(xin,&xx));
+    PetscCall(PetscLogFlops(PetscMax(2.0*n-1,0.0)));
   } else if (type == NORM_INFINITY) {
     PetscInt  i;
     PetscReal max = 0.0,tmp;
 
-    CHKERRQ(VecGetArrayRead(xin,&xx));
+    PetscCall(VecGetArrayRead(xin,&xx));
     for (i=0; i<n; i++) {
       if ((tmp = PetscAbsScalar(*xx)) > max) max = tmp;
       /* check special case of tmp == NaN */
       if (tmp != tmp) {max = tmp; break;}
       xx++;
     }
-    CHKERRQ(VecRestoreArrayRead(xin,&xx));
+    PetscCall(VecRestoreArrayRead(xin,&xx));
     *z   = max;
   } else if (type == NORM_1) {
 #if defined(PETSC_USE_COMPLEX)
     PetscReal tmp = 0.0;
     PetscInt    i;
 #endif
-    CHKERRQ(VecGetArrayRead(xin,&xx));
+    PetscCall(VecGetArrayRead(xin,&xx));
 #if defined(PETSC_USE_COMPLEX)
     /* BLASasum() returns the nonstandard 1 norm of the 1 norm of the complex entries so we provide a custom loop instead */
     for (i=0; i<n; i++) {
@@ -246,11 +246,11 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal *z)
 #else
     PetscStackCallBLAS("BLASasum",*z   = BLASasum_(&bn,xx,&one));
 #endif
-    CHKERRQ(VecRestoreArrayRead(xin,&xx));
-    CHKERRQ(PetscLogFlops(PetscMax(n-1.0,0.0)));
+    PetscCall(VecRestoreArrayRead(xin,&xx));
+    PetscCall(PetscLogFlops(PetscMax(n-1.0,0.0)));
   } else if (type == NORM_1_AND_2) {
-    CHKERRQ(VecNorm_Seq(xin,NORM_1,z));
-    CHKERRQ(VecNorm_Seq(xin,NORM_2,z+1));
+    PetscCall(VecNorm_Seq(xin,NORM_1,z));
+    PetscCall(VecNorm_Seq(xin,NORM_2,z+1));
   }
   PetscFunctionReturn(0);
 }
@@ -263,31 +263,31 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin,PetscViewer viewer)
   const PetscScalar *xv;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(xin,&xv));
-  CHKERRQ(PetscViewerGetFormat(viewer,&format));
+  PetscCall(VecGetArrayRead(xin,&xv));
+  PetscCall(PetscViewerGetFormat(viewer,&format));
   if (format == PETSC_VIEWER_ASCII_MATLAB) {
-    CHKERRQ(PetscObjectGetName((PetscObject)xin,&name));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"%s = [\n",name));
+    PetscCall(PetscObjectGetName((PetscObject)xin,&name));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"%s = [\n",name));
     for (i=0; i<n; i++) {
 #if defined(PETSC_USE_COMPLEX)
       if (PetscImaginaryPart(xv[i]) > 0.0) {
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"%18.16e + %18.16ei\n",(double)PetscRealPart(xv[i]),(double)PetscImaginaryPart(xv[i])));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"%18.16e + %18.16ei\n",(double)PetscRealPart(xv[i]),(double)PetscImaginaryPart(xv[i])));
       } else if (PetscImaginaryPart(xv[i]) < 0.0) {
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"%18.16e - %18.16ei\n",(double)PetscRealPart(xv[i]),-(double)PetscImaginaryPart(xv[i])));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"%18.16e - %18.16ei\n",(double)PetscRealPart(xv[i]),-(double)PetscImaginaryPart(xv[i])));
       } else {
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"%18.16e\n",(double)PetscRealPart(xv[i])));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"%18.16e\n",(double)PetscRealPart(xv[i])));
       }
 #else
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"%18.16e\n",(double) xv[i]));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"%18.16e\n",(double) xv[i]));
 #endif
     }
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"];\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"];\n"));
   } else if (format == PETSC_VIEWER_ASCII_SYMMODU) {
     for (i=0; i<n; i++) {
 #if defined(PETSC_USE_COMPLEX)
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"%18.16e %18.16e\n",(double)PetscRealPart(xv[i]),(double)PetscImaginaryPart(xv[i])));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"%18.16e %18.16e\n",(double)PetscRealPart(xv[i]),(double)PetscImaginaryPart(xv[i])));
 #else
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"%18.16e\n",(double)xv[i]));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"%18.16e\n",(double)xv[i]));
 #endif
     }
   } else if (format == PETSC_VIEWER_ASCII_VTK_DEPRECATED || format == PETSC_VIEWER_ASCII_VTK_CELL_DEPRECATED) {
@@ -305,12 +305,12 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin,PetscViewer viewer)
     PetscInt bs, b;
 
     if (stateId < 0) {
-      CHKERRQ(PetscObjectComposedDataRegister(&stateId));
+      PetscCall(PetscObjectComposedDataRegister(&stateId));
     }
-    CHKERRQ(PetscObjectComposedDataGetInt((PetscObject) viewer, stateId, outputState, hasState));
+    PetscCall(PetscObjectComposedDataGetInt((PetscObject) viewer, stateId, outputState, hasState));
     if (!hasState) outputState = 0;
-    CHKERRQ(PetscObjectGetName((PetscObject) xin, &name));
-    CHKERRQ(VecGetBlockSize(xin, &bs));
+    PetscCall(PetscObjectGetName((PetscObject) xin, &name));
+    PetscCall(VecGetBlockSize(xin, &bs));
     PetscCheck(bs >= 1 && bs <= 3,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "VTK can only handle 3D objects, but vector dimension is %" PetscInt_FMT, bs);
     if (format == PETSC_VIEWER_ASCII_VTK_DEPRECATED) {
       if (outputState == 0) {
@@ -324,7 +324,7 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin,PetscViewer viewer)
       else PetscCheckFalse(outputState == 4,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Tried to output POINT_DATA again after intervening CELL_DATA");
 
       if (doOutput) {
-        CHKERRQ(PetscViewerASCIIPrintf(viewer, "POINT_DATA %" PetscInt_FMT "\n", n/bs));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "POINT_DATA %" PetscInt_FMT "\n", n/bs));
       }
     } else {
       if (outputState == 0) {
@@ -338,69 +338,69 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin,PetscViewer viewer)
       else if (outputState == 4) doOutput = 0;
 
       if (doOutput) {
-        CHKERRQ(PetscViewerASCIIPrintf(viewer, "CELL_DATA %" PetscInt_FMT "\n", n));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "CELL_DATA %" PetscInt_FMT "\n", n));
       }
     }
-    CHKERRQ(PetscObjectComposedDataSetInt((PetscObject) viewer, stateId, outputState));
+    PetscCall(PetscObjectComposedDataSetInt((PetscObject) viewer, stateId, outputState));
     if (name) {
       if (bs == 3) {
-        CHKERRQ(PetscViewerASCIIPrintf(viewer, "VECTORS %s double\n", name));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "VECTORS %s double\n", name));
       } else {
-        CHKERRQ(PetscViewerASCIIPrintf(viewer, "SCALARS %s double %" PetscInt_FMT "\n", name, bs));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "SCALARS %s double %" PetscInt_FMT "\n", name, bs));
       }
     } else {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer, "SCALARS scalars double %" PetscInt_FMT "\n", bs));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "SCALARS scalars double %" PetscInt_FMT "\n", bs));
     }
     if (bs != 3) {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer, "LOOKUP_TABLE default\n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "LOOKUP_TABLE default\n"));
     }
     for (i=0; i<n/bs; i++) {
       for (b=0; b<bs; b++) {
         if (b > 0) {
-          CHKERRQ(PetscViewerASCIIPrintf(viewer," "));
+          PetscCall(PetscViewerASCIIPrintf(viewer," "));
         }
 #if !defined(PETSC_USE_COMPLEX)
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"%g",(double)xv[i*bs+b]));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"%g",(double)xv[i*bs+b]));
 #endif
       }
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"\n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"\n"));
     }
   } else if (format == PETSC_VIEWER_ASCII_VTK_COORDS_DEPRECATED) {
     PetscInt bs, b;
 
-    CHKERRQ(VecGetBlockSize(xin, &bs));
+    PetscCall(VecGetBlockSize(xin, &bs));
     PetscCheck(bs >= 1 && bs <= 3,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "VTK can only handle 3D objects, but vector dimension is %" PetscInt_FMT, bs);
     for (i=0; i<n/bs; i++) {
       for (b=0; b<bs; b++) {
         if (b > 0) {
-          CHKERRQ(PetscViewerASCIIPrintf(viewer," "));
+          PetscCall(PetscViewerASCIIPrintf(viewer," "));
         }
 #if !defined(PETSC_USE_COMPLEX)
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"%g",(double)xv[i*bs+b]));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"%g",(double)xv[i*bs+b]));
 #endif
       }
       for (b=bs; b<3; b++) {
-        CHKERRQ(PetscViewerASCIIPrintf(viewer," 0.0"));
+        PetscCall(PetscViewerASCIIPrintf(viewer," 0.0"));
       }
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"\n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"\n"));
     }
   } else if (format == PETSC_VIEWER_ASCII_PCICE) {
     PetscInt bs, b;
 
-    CHKERRQ(VecGetBlockSize(xin, &bs));
+    PetscCall(VecGetBlockSize(xin, &bs));
     PetscCheck(bs >= 1 && bs <= 3,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "PCICE can only handle up to 3D objects, but vector dimension is %" PetscInt_FMT, bs);
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT "\n", xin->map->N/bs));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT "\n", xin->map->N/bs));
     for (i=0; i<n/bs; i++) {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"%7" PetscInt_FMT "   ", i+1));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"%7" PetscInt_FMT "   ", i+1));
       for (b=0; b<bs; b++) {
         if (b > 0) {
-          CHKERRQ(PetscViewerASCIIPrintf(viewer," "));
+          PetscCall(PetscViewerASCIIPrintf(viewer," "));
         }
 #if !defined(PETSC_USE_COMPLEX)
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"% 12.5E",(double)xv[i*bs+b]));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"% 12.5E",(double)xv[i*bs+b]));
 #endif
       }
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"\n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"\n"));
     }
   } else if (format == PETSC_VIEWER_ASCII_GLVIS) {
     /* GLVis ASCII visualization/dump: this function mimics mfem::GridFunction::Save() */
@@ -411,50 +411,50 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin,PetscViewer viewer)
     PetscViewerGLVisInfo    glvis_info;
 
     /* mfem::FiniteElementSpace::Save() */
-    CHKERRQ(VecGetBlockSize(xin,&vdim));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"FiniteElementSpace\n"));
-    CHKERRQ(PetscObjectQuery((PetscObject)xin,"_glvis_info_container",(PetscObject*)&glvis_container));
+    PetscCall(VecGetBlockSize(xin,&vdim));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"FiniteElementSpace\n"));
+    PetscCall(PetscObjectQuery((PetscObject)xin,"_glvis_info_container",(PetscObject*)&glvis_container));
     PetscCheck(glvis_container,PetscObjectComm((PetscObject)xin),PETSC_ERR_PLIB,"Missing GLVis container");
-    CHKERRQ(PetscContainerGetPointer(glvis_container,(void**)&glvis_vec_info));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"%s\n",glvis_vec_info->fec_type));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"VDim: %" PetscInt_FMT "\n",vdim));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"Ordering: %" PetscInt_FMT "\n",ordering));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"\n"));
+    PetscCall(PetscContainerGetPointer(glvis_container,(void**)&glvis_vec_info));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"%s\n",glvis_vec_info->fec_type));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"VDim: %" PetscInt_FMT "\n",vdim));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"Ordering: %" PetscInt_FMT "\n",ordering));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"\n"));
     /* mfem::Vector::Print() */
-    CHKERRQ(PetscObjectQuery((PetscObject)viewer,"_glvis_info_container",(PetscObject*)&glvis_container));
+    PetscCall(PetscObjectQuery((PetscObject)viewer,"_glvis_info_container",(PetscObject*)&glvis_container));
     PetscCheck(glvis_container,PetscObjectComm((PetscObject)viewer),PETSC_ERR_PLIB,"Missing GLVis container");
-    CHKERRQ(PetscContainerGetPointer(glvis_container,(void**)&glvis_info));
+    PetscCall(PetscContainerGetPointer(glvis_container,(void**)&glvis_info));
     if (glvis_info->enabled) {
-      CHKERRQ(VecGetLocalSize(xin,&n));
-      CHKERRQ(VecGetArrayRead(xin,&array));
+      PetscCall(VecGetLocalSize(xin,&n));
+      PetscCall(VecGetArrayRead(xin,&array));
       for (i=0;i<n;i++) {
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,glvis_info->fmt,(double)PetscRealPart(array[i])));
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"\n"));
+        PetscCall(PetscViewerASCIIPrintf(viewer,glvis_info->fmt,(double)PetscRealPart(array[i])));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"\n"));
       }
-      CHKERRQ(VecRestoreArrayRead(xin,&array));
+      PetscCall(VecRestoreArrayRead(xin,&array));
     }
   } else if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
     /* No info */
   } else {
     for (i=0; i<n; i++) {
       if (format == PETSC_VIEWER_ASCII_INDEX) {
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT ": ",i));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT ": ",i));
       }
 #if defined(PETSC_USE_COMPLEX)
       if (PetscImaginaryPart(xv[i]) > 0.0) {
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"%g + %g i\n",(double)PetscRealPart(xv[i]),(double)PetscImaginaryPart(xv[i])));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"%g + %g i\n",(double)PetscRealPart(xv[i]),(double)PetscImaginaryPart(xv[i])));
       } else if (PetscImaginaryPart(xv[i]) < 0.0) {
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"%g - %g i\n",(double)PetscRealPart(xv[i]),-(double)PetscImaginaryPart(xv[i])));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"%g - %g i\n",(double)PetscRealPart(xv[i]),-(double)PetscImaginaryPart(xv[i])));
       } else {
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"%g\n",(double)PetscRealPart(xv[i])));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"%g\n",(double)PetscRealPart(xv[i])));
       }
 #else
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"%g\n",(double)xv[i]));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"%g\n",(double)xv[i]));
 #endif
     }
   }
-  CHKERRQ(PetscViewerFlush(viewer));
-  CHKERRQ(VecRestoreArrayRead(xin,&xv));
+  PetscCall(PetscViewerFlush(viewer));
+  PetscCall(VecRestoreArrayRead(xin,&xv));
   PetscFunctionReturn(0);
 }
 
@@ -472,21 +472,21 @@ PetscErrorCode VecView_Seq_Draw_LG(Vec xin,PetscViewer v)
   PetscDrawAxis     axis;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscViewerDrawGetDraw(v,0,&draw));
-  CHKERRQ(PetscDrawIsNull(draw,&isnull));
+  PetscCall(PetscViewerDrawGetDraw(v,0,&draw));
+  PetscCall(PetscDrawIsNull(draw,&isnull));
   if (isnull) PetscFunctionReturn(0);
 
-  CHKERRQ(PetscViewerGetFormat(v,&format));
-  CHKERRQ(PetscMalloc2(n,&xx,n,&yy));
-  CHKERRQ(VecGetArrayRead(xin,&xv));
+  PetscCall(PetscViewerGetFormat(v,&format));
+  PetscCall(PetscMalloc2(n,&xx,n,&yy));
+  PetscCall(VecGetArrayRead(xin,&xv));
   for (c=0; c<bs; c++) {
-    CHKERRQ(PetscViewerDrawGetDrawLG(v,c,&lg));
-    CHKERRQ(PetscDrawLGReset(lg));
-    CHKERRQ(PetscDrawLGSetDimension(lg,1));
-    CHKERRQ(PetscDrawLGSetColors(lg,colors));
+    PetscCall(PetscViewerDrawGetDrawLG(v,c,&lg));
+    PetscCall(PetscDrawLGReset(lg));
+    PetscCall(PetscDrawLGSetDimension(lg,1));
+    PetscCall(PetscDrawLGSetColors(lg,colors));
     if (format == PETSC_VIEWER_DRAW_LG_XRANGE) {
-      CHKERRQ(PetscDrawLGGetAxis(lg,&axis));
-      CHKERRQ(PetscDrawAxisGetLimits(axis,&xmin,&xmax,NULL,NULL));
+      PetscCall(PetscDrawLGGetAxis(lg,&axis));
+      PetscCall(PetscDrawAxisGetLimits(axis,&xmin,&xmax,NULL,NULL));
       h = (xmax - xmin)/n;
       for (i=0; i<n; i++) xx[i] = i*h + 0.5*h; /* cell center */
     } else {
@@ -494,12 +494,12 @@ PetscErrorCode VecView_Seq_Draw_LG(Vec xin,PetscViewer v)
     }
     for (i=0; i<n; i++) yy[i] = PetscRealPart(xv[c + i*bs]);
 
-    CHKERRQ(PetscDrawLGAddPoints(lg,n,&xx,&yy));
-    CHKERRQ(PetscDrawLGDraw(lg));
-    CHKERRQ(PetscDrawLGSave(lg));
+    PetscCall(PetscDrawLGAddPoints(lg,n,&xx,&yy));
+    PetscCall(PetscDrawLGDraw(lg));
+    PetscCall(PetscDrawLGSave(lg));
   }
-  CHKERRQ(VecRestoreArrayRead(xin,&xv));
-  CHKERRQ(PetscFree2(xx,yy));
+  PetscCall(VecRestoreArrayRead(xin,&xv));
+  PetscCall(PetscFree2(xx,yy));
   PetscFunctionReturn(0);
 }
 
@@ -509,11 +509,11 @@ PetscErrorCode VecView_Seq_Draw(Vec xin,PetscViewer v)
   PetscBool         isnull;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscViewerDrawGetDraw(v,0,&draw));
-  CHKERRQ(PetscDrawIsNull(draw,&isnull));
+  PetscCall(PetscViewerDrawGetDraw(v,0,&draw));
+  PetscCall(PetscDrawIsNull(draw,&isnull));
   if (isnull) PetscFunctionReturn(0);
 
-  CHKERRQ(VecView_Seq_Draw_LG(xin,v));
+  PetscCall(VecView_Seq_Draw_LG(xin,v));
   PetscFunctionReturn(0);
 }
 
@@ -531,11 +531,11 @@ PetscErrorCode VecView_Seq_Matlab(Vec vec,PetscViewer viewer)
   const PetscScalar *array;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetLocalSize(vec,&n));
-  CHKERRQ(PetscObjectName((PetscObject)vec));
-  CHKERRQ(VecGetArrayRead(vec,&array));
-  CHKERRQ(PetscViewerMatlabPutArray(viewer,n,1,array,((PetscObject)vec)->name));
-  CHKERRQ(VecRestoreArrayRead(vec,&array));
+  PetscCall(VecGetLocalSize(vec,&n));
+  PetscCall(PetscObjectName((PetscObject)vec));
+  PetscCall(VecGetArrayRead(vec,&array));
+  PetscCall(PetscViewerMatlabPutArray(viewer,n,1,array,((PetscObject)vec)->name));
+  PetscCall(VecRestoreArrayRead(vec,&array));
   PetscFunctionReturn(0);
 }
 #endif
@@ -558,48 +558,48 @@ PETSC_EXTERN PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
 #endif
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSOCKET,&issocket));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSOCKET,&issocket));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary));
 #if defined(PETSC_HAVE_MATHEMATICA)
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERMATHEMATICA,&ismathematica));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERMATHEMATICA,&ismathematica));
 #endif
 #if defined(PETSC_HAVE_HDF5)
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5));
 #endif
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERMATLAB,&ismatlab));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERMATLAB,&ismatlab));
 #endif
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERGLVIS,&isglvis));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERGLVIS,&isglvis));
 #if defined(PETSC_HAVE_ADIOS)
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERADIOS,&isadios));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERADIOS,&isadios));
 #endif
 
   if (isdraw) {
-    CHKERRQ(VecView_Seq_Draw(xin,viewer));
+    PetscCall(VecView_Seq_Draw(xin,viewer));
   } else if (iascii) {
-    CHKERRQ(VecView_Seq_ASCII(xin,viewer));
+    PetscCall(VecView_Seq_ASCII(xin,viewer));
   } else if (isbinary) {
-    CHKERRQ(VecView_Seq_Binary(xin,viewer));
+    PetscCall(VecView_Seq_Binary(xin,viewer));
 #if defined(PETSC_HAVE_MATHEMATICA)
   } else if (ismathematica) {
-    CHKERRQ(PetscViewerMathematicaPutVector(viewer,xin));
+    PetscCall(PetscViewerMathematicaPutVector(viewer,xin));
 #endif
 #if defined(PETSC_HAVE_HDF5)
   } else if (ishdf5) {
-    CHKERRQ(VecView_MPI_HDF5(xin,viewer)); /* Reusing VecView_MPI_HDF5 ... don't want code duplication*/
+    PetscCall(VecView_MPI_HDF5(xin,viewer)); /* Reusing VecView_MPI_HDF5 ... don't want code duplication*/
 #endif
 #if defined(PETSC_HAVE_ADIOS)
   } else if (isadios) {
-    CHKERRQ(VecView_MPI_ADIOS(xin,viewer)); /* Reusing VecView_MPI_ADIOS ... don't want code duplication*/
+    PetscCall(VecView_MPI_ADIOS(xin,viewer)); /* Reusing VecView_MPI_ADIOS ... don't want code duplication*/
 #endif
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   } else if (ismatlab) {
-    CHKERRQ(VecView_Seq_Matlab(xin,viewer));
+    PetscCall(VecView_Seq_Matlab(xin,viewer));
 #endif
   } else if (isglvis) {
-    CHKERRQ(VecView_GLVis(xin,viewer));
+    PetscCall(VecView_GLVis(xin,viewer));
   }
   PetscFunctionReturn(0);
 }
@@ -610,7 +610,7 @@ PetscErrorCode VecGetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],PetscSca
   PetscInt          i;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(xin,&xx));
+  PetscCall(VecGetArrayRead(xin,&xx));
   for (i=0; i<ni; i++) {
     if (xin->stash.ignorenegidx && ix[i] < 0) continue;
     if (PetscDefined(USE_DEBUG)) {
@@ -619,7 +619,7 @@ PetscErrorCode VecGetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],PetscSca
     }
     y[i] = xx[ix[i]];
   }
-  CHKERRQ(VecRestoreArrayRead(xin,&xx));
+  PetscCall(VecRestoreArrayRead(xin,&xx));
   PetscFunctionReturn(0);
 }
 
@@ -629,7 +629,7 @@ PetscErrorCode VecSetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
   PetscInt       i;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArray(xin,&xx));
+  PetscCall(VecGetArray(xin,&xx));
   if (m == INSERT_VALUES) {
     for (i=0; i<ni; i++) {
       if (xin->stash.ignorenegidx && ix[i] < 0) continue;
@@ -649,7 +649,7 @@ PetscErrorCode VecSetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
       xx[ix[i]] += y[i];
     }
   }
-  CHKERRQ(VecRestoreArray(xin,&xx));
+  PetscCall(VecRestoreArray(xin,&xx));
   PetscFunctionReturn(0);
 }
 
@@ -662,8 +662,8 @@ PetscErrorCode VecSetValuesBlocked_Seq(Vec xin,PetscInt ni,const PetscInt ix[],c
        For optimization could treat bs = 2, 3, 4, 5 as special cases with loop unrolling
   */
   PetscFunctionBegin;
-  CHKERRQ(VecGetBlockSize(xin,&bs));
-  CHKERRQ(VecGetArray(xin,&xx));
+  PetscCall(VecGetBlockSize(xin,&bs));
+  PetscCall(VecGetArray(xin,&xx));
   if (m == INSERT_VALUES) {
     for (i=0; i<ni; i++, y+=bs) {
       start = bs*ix[i];
@@ -679,7 +679,7 @@ PetscErrorCode VecSetValuesBlocked_Seq(Vec xin,PetscInt ni,const PetscInt ix[],c
       for (j=0; j<bs; j++) xx[start+j] += y[j];
     }
   }
-  CHKERRQ(VecRestoreArray(xin,&xx));
+  PetscCall(VecRestoreArray(xin,&xx));
   PetscFunctionReturn(0);
 }
 
@@ -691,8 +691,8 @@ PetscErrorCode VecDestroy_Seq(Vec v)
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)v,"Length=%" PetscInt_FMT,v->map->n);
 #endif
-  if (vs) CHKERRQ(PetscFree(vs->array_allocated));
-  CHKERRQ(PetscFree(v->data));
+  if (vs) PetscCall(PetscFree(vs->array_allocated));
+  PetscCall(PetscFree(v->data));
   PetscFunctionReturn(0);
 }
 
@@ -706,12 +706,12 @@ PetscErrorCode VecSetOption_Seq(Vec v,VecOption op,PetscBool flag)
 PetscErrorCode VecDuplicate_Seq(Vec win,Vec *V)
 {
   PetscFunctionBegin;
-  CHKERRQ(VecCreate(PetscObjectComm((PetscObject)win),V));
-  CHKERRQ(VecSetSizes(*V,win->map->n,win->map->n));
-  CHKERRQ(VecSetType(*V,((PetscObject)win)->type_name));
-  CHKERRQ(PetscLayoutReference(win->map,&(*V)->map));
-  CHKERRQ(PetscObjectListDuplicate(((PetscObject)win)->olist,&((PetscObject)(*V))->olist));
-  CHKERRQ(PetscFunctionListDuplicate(((PetscObject)win)->qlist,&((PetscObject)(*V))->qlist));
+  PetscCall(VecCreate(PetscObjectComm((PetscObject)win),V));
+  PetscCall(VecSetSizes(*V,win->map->n,win->map->n));
+  PetscCall(VecSetType(*V,((PetscObject)win)->type_name));
+  PetscCall(PetscLayoutReference(win->map,&(*V)->map));
+  PetscCall(PetscObjectListDuplicate(((PetscObject)win)->olist,&((PetscObject)(*V))->olist));
+  PetscCall(PetscFunctionListDuplicate(((PetscObject)win)->qlist,&((PetscObject)(*V))->qlist));
 
   (*V)->ops->view          = win->ops->view;
   (*V)->stash.ignorenegidx = win->stash.ignorenegidx;
@@ -800,8 +800,8 @@ PetscErrorCode VecCreate_Seq_Private(Vec v,const PetscScalar array[])
   Vec_Seq        *s;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNewLog(v,&s));
-  CHKERRQ(PetscMemcpy(v->ops,&DvOps,sizeof(DvOps)));
+  PetscCall(PetscNewLog(v,&s));
+  PetscCall(PetscMemcpy(v->ops,&DvOps,sizeof(DvOps)));
 
   v->data            = (void*)s;
   v->petscnative     = PETSC_TRUE;
@@ -809,11 +809,11 @@ PetscErrorCode VecCreate_Seq_Private(Vec v,const PetscScalar array[])
   s->array_allocated = NULL;
   if (array) v->offloadmask = PETSC_OFFLOAD_CPU;
 
-  CHKERRQ(PetscLayoutSetUp(v->map));
-  CHKERRQ(PetscObjectChangeTypeName((PetscObject)v,VECSEQ));
+  PetscCall(PetscLayoutSetUp(v->map));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)v,VECSEQ));
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)v,"PetscMatlabEnginePut_C",VecMatlabEnginePut_Default));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)v,"PetscMatlabEngineGet_C",VecMatlabEngineGet_Default));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscMatlabEnginePut_C",VecMatlabEnginePut_Default));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscMatlabEngineGet_C",VecMatlabEngineGet_Default));
 #endif
   PetscFunctionReturn(0);
 }
@@ -853,11 +853,11 @@ PetscErrorCode  VecCreateSeqWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,const
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  CHKERRQ(VecCreate(comm,V));
-  CHKERRQ(VecSetSizes(*V,n,n));
-  CHKERRQ(VecSetBlockSize(*V,bs));
-  CHKERRMPI(MPI_Comm_size(comm,&size));
+  PetscCall(VecCreate(comm,V));
+  PetscCall(VecSetSizes(*V,n,n));
+  PetscCall(VecSetBlockSize(*V,bs));
+  PetscCallMPI(MPI_Comm_size(comm,&size));
   PetscCheckFalse(size > 1,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQ on more than one process");
-  CHKERRQ(VecCreate_Seq_Private(*V,array));
+  PetscCall(VecCreate_Seq_Private(*V,array));
   PetscFunctionReturn(0);
 }

@@ -22,19 +22,19 @@ PetscErrorCode PrintVecWithGhosts(DM da, Vec v)
   DMDALocalInfo  info;
 
   com = PetscObjectComm((PetscObject)da);
-  CHKERRMPI(MPI_Comm_rank(com, &rank));
-  CHKERRQ(DMDAGetLocalInfo(da, &info));
-  CHKERRQ(PetscSynchronizedPrintf(com, "begin rank %d portion (with ghosts, %D x %D)\n",rank, info.gxm, info.gym));
-  CHKERRQ(DMDAVecGetArray(da, v, &p));
+  PetscCallMPI(MPI_Comm_rank(com, &rank));
+  PetscCall(DMDAGetLocalInfo(da, &info));
+  PetscCall(PetscSynchronizedPrintf(com, "begin rank %d portion (with ghosts, %D x %D)\n",rank, info.gxm, info.gym));
+  PetscCall(DMDAVecGetArray(da, v, &p));
   for (i = info.gxs; i < info.gxs + info.gxm; i++) {
     for (j = info.gys; j < info.gys + info.gym; j++) {
-      CHKERRQ(PetscSynchronizedPrintf(com, "%g, ", (double) PetscRealPart(p[j][i])));
+      PetscCall(PetscSynchronizedPrintf(com, "%g, ", (double) PetscRealPart(p[j][i])));
     }
-    CHKERRQ(PetscSynchronizedPrintf(com, "\n"));
+    PetscCall(PetscSynchronizedPrintf(com, "\n"));
   }
-  CHKERRQ(DMDAVecRestoreArray(da, v, &p));
-  CHKERRQ(PetscSynchronizedPrintf(com, "end rank %d portion\n", rank));
-  CHKERRQ(PetscSynchronizedFlush(com, PETSC_STDOUT));
+  PetscCall(DMDAVecRestoreArray(da, v, &p));
+  PetscCall(PetscSynchronizedPrintf(com, "end rank %d portion\n", rank));
+  PetscCall(PetscSynchronizedFlush(com, PETSC_STDOUT));
   return 0;
 }
 
@@ -44,14 +44,14 @@ PetscErrorCode VecSetOwned(DM da, Vec v, PetscScalar value)
   PetscScalar    **p;
   PetscInt         i, j, xs, xm, ys, ym;
 
-  CHKERRQ(DMDAGetCorners(da, &xs, &ys, 0, &xm, &ym, 0));
-  CHKERRQ(DMDAVecGetArray(da, v, &p));
+  PetscCall(DMDAGetCorners(da, &xs, &ys, 0, &xm, &ym, 0));
+  PetscCall(DMDAVecGetArray(da, v, &p));
   for (i = xs; i < xs + xm; i++) {
     for (j = ys; j < ys + ym; j++) {
       p[j][i] = value;
     }
   }
-  CHKERRQ(DMDAVecRestoreArray(da, v, &p));
+  PetscCall(DMDAVecRestoreArray(da, v, &p));
   return 0;
 }
 
@@ -64,39 +64,39 @@ int main(int argc, char **argv)
   DMBoundaryType   bx    = DM_BOUNDARY_PERIODIC, by = DM_BOUNDARY_PERIODIC;
   DMDAStencilType  stype = DMDA_STENCIL_BOX;
 
-  CHKERRQ(PetscInitialize(&argc, &argv, (char*)0, help));
-  CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD,bx,by,stype,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
-  CHKERRQ(DMCreateLocalVector(da, &local));
+  PetscCall(PetscInitialize(&argc, &argv, (char*)0, help));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD,bx,by,stype,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMCreateLocalVector(da, &local));
 
-  CHKERRQ(VecSet(local, value));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "\nAfter setting all values to %d:\n", (int)PetscRealPart(value)));
-  CHKERRQ(PrintVecWithGhosts(da, local));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "done\n"));
+  PetscCall(VecSet(local, value));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nAfter setting all values to %d:\n", (int)PetscRealPart(value)));
+  PetscCall(PrintVecWithGhosts(da, local));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "done\n"));
 
   value += 1.0;
   /* set values owned by a process, leaving ghosts alone */
-  CHKERRQ(VecSetOwned(da, local, value));
+  PetscCall(VecSetOwned(da, local, value));
 
   /* print after re-setting interior values again */
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "\nAfter setting interior values to %d:\n", (int)PetscRealPart(value)));
-  CHKERRQ(PrintVecWithGhosts(da, local));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "done\n"));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nAfter setting interior values to %d:\n", (int)PetscRealPart(value)));
+  PetscCall(PrintVecWithGhosts(da, local));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "done\n"));
 
   /* communicate ghosts */
-  CHKERRQ(DMLocalToLocalBegin(da, local, INSERT_VALUES, local));
-  CHKERRQ(DMLocalToLocalEnd(da, local, INSERT_VALUES, local));
+  PetscCall(DMLocalToLocalBegin(da, local, INSERT_VALUES, local));
+  PetscCall(DMLocalToLocalEnd(da, local, INSERT_VALUES, local));
 
   /* print again */
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "\nAfter local-to-local communication:\n"));
-  CHKERRQ(PrintVecWithGhosts(da, local));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "done\n"));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nAfter local-to-local communication:\n"));
+  PetscCall(PrintVecWithGhosts(da, local));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "done\n"));
 
   /* Free memory */
-  CHKERRQ(VecDestroy(&local));
-  CHKERRQ(DMDestroy(&da));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&local));
+  PetscCall(DMDestroy(&da));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

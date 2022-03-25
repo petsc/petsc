@@ -40,10 +40,10 @@ private:
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
-    CHKERRQ(PetscDeviceCheckDeviceCount_Internal(id));
+    PetscCall(PetscDeviceCheckDeviceCount_Internal(id));
     if (!initialized_) {
       initialized_ = true;
-      CHKERRQ(PetscRegisterFinalize(finalize_));
+      PetscCall(PetscRegisterFinalize(finalize_));
     }
     PetscFunctionReturn(0);
   }
@@ -104,6 +104,6 @@ PetscErrorCode PetscDeviceContextCreate_SYCL(PetscDeviceContext dctx)
 
   PetscFunctionBegin;
   dctx->data = new DeviceContext::PetscDeviceContext_IMPLS();
-  CHKERRQ(PetscMemcpy(dctx->ops,&syclctx.ops,sizeof(syclctx.ops)));
+  PetscCall(PetscMemcpy(dctx->ops,&syclctx.ops,sizeof(syclctx.ops)));
   PetscFunctionReturn(0);
 }

@@ -14,7 +14,7 @@ static PetscBool AOPackageInitialized = PETSC_FALSE;
 PetscErrorCode  AOFinalizePackage(void)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscFunctionListDestroy(&AOList));
+  PetscCall(PetscFunctionListDestroy(&AOList));
   AOPackageInitialized = PETSC_FALSE;
   AORegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -38,26 +38,26 @@ PetscErrorCode  AOInitializePackage(void)
   if (AOPackageInitialized) PetscFunctionReturn(0);
   AOPackageInitialized = PETSC_TRUE;
   /* Register Classes */
-  CHKERRQ(PetscClassIdRegister("Application Order",&AO_CLASSID));
+  PetscCall(PetscClassIdRegister("Application Order",&AO_CLASSID));
   /* Register Constructors */
-  CHKERRQ(AORegisterAll());
+  PetscCall(AORegisterAll());
   /* Register Events */
-  CHKERRQ(PetscLogEventRegister("AOPetscToApplication", AO_CLASSID,&AO_PetscToApplication));
-  CHKERRQ(PetscLogEventRegister("AOApplicationToPetsc", AO_CLASSID,&AO_ApplicationToPetsc));
+  PetscCall(PetscLogEventRegister("AOPetscToApplication", AO_CLASSID,&AO_PetscToApplication));
+  PetscCall(PetscLogEventRegister("AOApplicationToPetsc", AO_CLASSID,&AO_ApplicationToPetsc));
   /* Process Info */
   {
     PetscClassId  classids[1];
 
     classids[0] = AO_CLASSID;
-    CHKERRQ(PetscInfoProcessClass("ao", 1, classids));
+    PetscCall(PetscInfoProcessClass("ao", 1, classids));
   }
   /* Process summary exclusions */
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt));
   if (opt) {
-    CHKERRQ(PetscStrInList("ao",logList,',',&pkg));
-    if (pkg) CHKERRQ(PetscLogEventExcludeClass(AO_CLASSID));
+    PetscCall(PetscStrInList("ao",logList,',',&pkg));
+    if (pkg) PetscCall(PetscLogEventExcludeClass(AO_CLASSID));
   }
   /* Register package finalizer */
-  CHKERRQ(PetscRegisterFinalize(AOFinalizePackage));
+  PetscCall(PetscRegisterFinalize(AOFinalizePackage));
   PetscFunctionReturn(0);
 }

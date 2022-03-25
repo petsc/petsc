@@ -88,55 +88,55 @@ int main(int argc,char **argv)
   PetscBool      pinPressure;
 
   /* Initialize PETSc and process command line arguments */
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   pinPressure = PETSC_TRUE;
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-pinpressure",&pinPressure,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-pinpressure",&pinPressure,NULL));
 
   /* Create 3D DMStag for the solution, and set up. */
   {
     const PetscInt dof0 = 0, dof1 = 0,dof2 = 1, dof3 = 1; /* 1 dof on each face and element center */
     const PetscInt stencilWidth = 1;
-    CHKERRQ(DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,4,5,6,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof0,dof1,dof2,dof3,DMSTAG_STENCIL_BOX,stencilWidth,NULL,NULL,NULL,&dmSol));
-    CHKERRQ(DMSetFromOptions(dmSol));
-    CHKERRQ(DMSetUp(dmSol));
-    CHKERRQ(DMStagSetUniformCoordinatesExplicit(dmSol,0.0,1.0,0.0,1.0,0.0,1.0));
+    PetscCall(DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,4,5,6,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof0,dof1,dof2,dof3,DMSTAG_STENCIL_BOX,stencilWidth,NULL,NULL,NULL,&dmSol));
+    PetscCall(DMSetFromOptions(dmSol));
+    PetscCall(DMSetUp(dmSol));
+    PetscCall(DMStagSetUniformCoordinatesExplicit(dmSol,0.0,1.0,0.0,1.0,0.0,1.0));
     /* Note: also see ex2.c, where another, more efficient option is demonstrated,
        using DMStagSetUniformCoordinatesProduct() */
   }
 
   /* Compute (manufactured) reference solution */
-  CHKERRQ(CreateReferenceSolution(dmSol,&solRef));
+  PetscCall(CreateReferenceSolution(dmSol,&solRef));
 
   /* Assemble system */
-  CHKERRQ(CreateSystem(dmSol,&A,&rhs,pinPressure));
+  PetscCall(CreateSystem(dmSol,&A,&rhs,pinPressure));
 
   /* Attach a constant-pressure nullspace to the operator */
   if (!pinPressure) {
-    CHKERRQ(AttachNullspace(dmSol,A));
+    PetscCall(AttachNullspace(dmSol,A));
   }
 
   /* Solve */
-  CHKERRQ(DMCreateGlobalVector(dmSol,&sol));
-  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
-  CHKERRQ(KSPSetType(ksp,KSPFGMRES));
-  CHKERRQ(KSPSetOperators(ksp,A,A));
-  CHKERRQ(KSPGetPC(ksp,&pc));
-  CHKERRQ(PCSetType(pc,PCFIELDSPLIT));
-  CHKERRQ(PCFieldSplitSetDetectSaddlePoint(pc,PETSC_TRUE));
-  CHKERRQ(KSPSetFromOptions(ksp));
-  CHKERRQ(KSPSolve(ksp,rhs,sol));
+  PetscCall(DMCreateGlobalVector(dmSol,&sol));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPSetType(ksp,KSPFGMRES));
+  PetscCall(KSPSetOperators(ksp,A,A));
+  PetscCall(KSPGetPC(ksp,&pc));
+  PetscCall(PCSetType(pc,PCFIELDSPLIT));
+  PetscCall(PCFieldSplitSetDetectSaddlePoint(pc,PETSC_TRUE));
+  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(KSPSolve(ksp,rhs,sol));
 
   /* Check Solution */
-  CHKERRQ(CheckSolution(sol,solRef));
+  PetscCall(CheckSolution(sol,solRef));
 
   /* Clean up and finalize PETSc */
-  CHKERRQ(KSPDestroy(&ksp));
-  CHKERRQ(VecDestroy(&sol));
-  CHKERRQ(VecDestroy(&solRef));
-  CHKERRQ(VecDestroy(&rhs));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(DMDestroy(&dmSol));
-  CHKERRQ(PetscFinalize());
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(VecDestroy(&sol));
+  PetscCall(VecDestroy(&solRef));
+  PetscCall(VecDestroy(&rhs));
+  PetscCall(MatDestroy(&A));
+  PetscCall(DMDestroy(&dmSol));
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -151,26 +151,26 @@ static PetscErrorCode CreateSystem(DM dmSol,Mat *pA,Vec *pRhs, PetscBool pinPres
   PetscScalar       ****arrCoord;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMCreateMatrix(dmSol,pA));
+  PetscCall(DMCreateMatrix(dmSol,pA));
   A = *pA;
-  CHKERRQ(DMCreateGlobalVector(dmSol,pRhs));
+  PetscCall(DMCreateGlobalVector(dmSol,pRhs));
   rhs = *pRhs;
 
-  CHKERRQ(DMStagGetCorners(dmSol,&startx,&starty,&startz,&nx,&ny,&nz,NULL,NULL,NULL));
-  CHKERRQ(DMStagGetGlobalSizes(dmSol,&N[0],&N[1],&N[2]));
+  PetscCall(DMStagGetCorners(dmSol,&startx,&starty,&startz,&nx,&ny,&nz,NULL,NULL,NULL));
+  PetscCall(DMStagGetGlobalSizes(dmSol,&N[0],&N[1],&N[2]));
   PetscCheckFalse(N[0] < 2 || N[1] < 2 || N[2] < 2,PetscObjectComm((PetscObject)dmSol),PETSC_ERR_ARG_SIZ,"This example requires at least two elements in each dimensions");
   hx = 1.0/N[0]; hy = 1.0/N[1]; hz = 1.0/N[2];
-  CHKERRQ(DMGetCoordinateDM(dmSol,&dmCoord));
-  CHKERRQ(DMGetCoordinatesLocal(dmSol,&coordLocal));
-  CHKERRQ(DMStagVecGetArrayRead(dmCoord,coordLocal,&arrCoord));
+  PetscCall(DMGetCoordinateDM(dmSol,&dmCoord));
+  PetscCall(DMGetCoordinatesLocal(dmSol,&coordLocal));
+  PetscCall(DMStagVecGetArrayRead(dmCoord,coordLocal,&arrCoord));
   for (d=0; d<3; ++d) {
-    CHKERRQ(DMStagGetLocationSlot(dmCoord,ELEMENT,d,&icp[d]));
-    CHKERRQ(DMStagGetLocationSlot(dmCoord,LEFT,   d,&icux[d]));
-    CHKERRQ(DMStagGetLocationSlot(dmCoord,DOWN,   d,&icuy[d]));
-    CHKERRQ(DMStagGetLocationSlot(dmCoord,BACK,   d,&icuz[d]));
-    CHKERRQ(DMStagGetLocationSlot(dmCoord,RIGHT,  d,&icux_right[d]));
-    CHKERRQ(DMStagGetLocationSlot(dmCoord,UP,     d,&icuy_up[d]));
-    CHKERRQ(DMStagGetLocationSlot(dmCoord,FRONT,  d,&icuz_front[d]));
+    PetscCall(DMStagGetLocationSlot(dmCoord,ELEMENT,d,&icp[d]));
+    PetscCall(DMStagGetLocationSlot(dmCoord,LEFT,   d,&icux[d]));
+    PetscCall(DMStagGetLocationSlot(dmCoord,DOWN,   d,&icuy[d]));
+    PetscCall(DMStagGetLocationSlot(dmCoord,BACK,   d,&icuz[d]));
+    PetscCall(DMStagGetLocationSlot(dmCoord,RIGHT,  d,&icux_right[d]));
+    PetscCall(DMStagGetLocationSlot(dmCoord,UP,     d,&icuy_up[d]));
+    PetscCall(DMStagGetLocationSlot(dmCoord,FRONT,  d,&icuz_front[d]));
   }
 
   /* Loop over all local elements. Note that it may be more efficient in real
@@ -185,9 +185,9 @@ static PetscErrorCode CreateSystem(DM dmSol,Mat *pA,Vec *pRhs, PetscBool pinPres
           PetscScalar   valRhs;
           const PetscScalar valA = 1.0;
           row.i = ex; row.j = ey; row.k = ez; row.loc = RIGHT; row.c = 0;
-          CHKERRQ(DMStagMatSetValuesStencil(dmSol,A,1,&row,1,&row,&valA,INSERT_VALUES));
+          PetscCall(DMStagMatSetValuesStencil(dmSol,A,1,&row,1,&row,&valA,INSERT_VALUES));
           valRhs = uxRef(arrCoord[ez][ey][ex][icux_right[0]], arrCoord[ez][ey][ex][icux_right[1]], arrCoord[ez][ey][ex][icux_right[2]]);
-          CHKERRQ(DMStagVecSetValuesStencil(dmSol,rhs,1,&row,&valRhs,INSERT_VALUES));
+          PetscCall(DMStagVecSetValuesStencil(dmSol,rhs,1,&row,&valRhs,INSERT_VALUES));
         }
         if (ey == N[1]-1) {
           /* Top boundary velocity Dirichlet */
@@ -195,9 +195,9 @@ static PetscErrorCode CreateSystem(DM dmSol,Mat *pA,Vec *pRhs, PetscBool pinPres
           PetscScalar   valRhs;
           const PetscScalar valA = 1.0;
           row.i = ex; row.j = ey; row.k = ez; row.loc = UP; row.c = 0;
-          CHKERRQ(DMStagMatSetValuesStencil(dmSol,A,1,&row,1,&row,&valA,INSERT_VALUES));
+          PetscCall(DMStagMatSetValuesStencil(dmSol,A,1,&row,1,&row,&valA,INSERT_VALUES));
           valRhs = uyRef(arrCoord[ez][ey][ex][icuy_up[0]],arrCoord[ez][ey][ex][icuy_up[1]],arrCoord[ez][ey][ex][icuy_up[2]]);
-          CHKERRQ(DMStagVecSetValuesStencil(dmSol,rhs,1,&row,&valRhs,INSERT_VALUES));
+          PetscCall(DMStagVecSetValuesStencil(dmSol,rhs,1,&row,&valRhs,INSERT_VALUES));
         }
         if (ez == N[2]-1) {
           /* Front boundary velocity Dirichlet */
@@ -205,9 +205,9 @@ static PetscErrorCode CreateSystem(DM dmSol,Mat *pA,Vec *pRhs, PetscBool pinPres
           PetscScalar   valRhs;
           const PetscScalar valA = 1.0;
           row.i = ex; row.j = ey; row.k = ez; row.loc = FRONT; row.c = 0;
-          CHKERRQ(DMStagMatSetValuesStencil(dmSol,A,1,&row,1,&row,&valA,INSERT_VALUES));
+          PetscCall(DMStagMatSetValuesStencil(dmSol,A,1,&row,1,&row,&valA,INSERT_VALUES));
           valRhs = uzRef(arrCoord[ez][ey][ex][icuz_front[0]],arrCoord[ez][ey][ex][icuz_front[1]],arrCoord[ez][ey][ex][icuz_front[2]]);
-          CHKERRQ(DMStagVecSetValuesStencil(dmSol,rhs,1,&row,&valRhs,INSERT_VALUES));
+          PetscCall(DMStagVecSetValuesStencil(dmSol,rhs,1,&row,&valRhs,INSERT_VALUES));
         }
 
         /* Equation on left face of this element */
@@ -217,9 +217,9 @@ static PetscErrorCode CreateSystem(DM dmSol,Mat *pA,Vec *pRhs, PetscBool pinPres
           PetscScalar   valRhs;
           const PetscScalar valA = 1.0;
           row.i = ex; row.j = ey; row.k = ez; row.loc = LEFT; row.c = 0;
-          CHKERRQ(DMStagMatSetValuesStencil(dmSol,A,1,&row,1,&row,&valA,INSERT_VALUES));
+          PetscCall(DMStagMatSetValuesStencil(dmSol,A,1,&row,1,&row,&valA,INSERT_VALUES));
           valRhs = uxRef(arrCoord[ez][ey][ex][icux[0]],arrCoord[ez][ey][ex][icux[1]],arrCoord[ez][ey][ex][icux[2]]);
-          CHKERRQ(DMStagVecSetValuesStencil(dmSol,rhs,1,&row,&valRhs,INSERT_VALUES));
+          PetscCall(DMStagVecSetValuesStencil(dmSol,rhs,1,&row,&valRhs,INSERT_VALUES));
         } else {
           /* X-momentum interior equation : (u_xx + u_yy + u_zz) - p_x = f^x */
           DMStagStencil row,col[9];
@@ -331,9 +331,9 @@ static PetscErrorCode CreateSystem(DM dmSol,Mat *pA,Vec *pRhs, PetscBool pinPres
             col[7].i = ex-1; col[7].j = ey  ;  col[7].k = ez  ; col[7].loc = ELEMENT; col[7].c  = 0; valA[7] =  1.0 / hx;
             col[8].i = ex  ; col[8].j = ey  ;  col[8].k = ez  ; col[8].loc = ELEMENT; col[8].c  = 0; valA[8] = -1.0 / hx;
           }
-          CHKERRQ(DMStagMatSetValuesStencil(dmSol,A,1,&row,nEntries,col,valA,INSERT_VALUES));
+          PetscCall(DMStagMatSetValuesStencil(dmSol,A,1,&row,nEntries,col,valA,INSERT_VALUES));
           valRhs = fx(arrCoord[ez][ey][ex][icux[0]], arrCoord[ez][ey][ex][icux[1]], arrCoord[ez][ey][ex][icux[2]]);
-          CHKERRQ(DMStagVecSetValuesStencil(dmSol,rhs,1,&row,&valRhs,INSERT_VALUES));
+          PetscCall(DMStagVecSetValuesStencil(dmSol,rhs,1,&row,&valRhs,INSERT_VALUES));
         }
 
         /* Equation on bottom face of this element */
@@ -343,9 +343,9 @@ static PetscErrorCode CreateSystem(DM dmSol,Mat *pA,Vec *pRhs, PetscBool pinPres
           PetscScalar   valRhs;
           const PetscScalar valA = 1.0;
           row.i = ex; row.j = ey; row.k = ez; row.loc = DOWN; row.c = 0;
-          CHKERRQ(DMStagMatSetValuesStencil(dmSol,A,1,&row,1,&row,&valA,INSERT_VALUES));
+          PetscCall(DMStagMatSetValuesStencil(dmSol,A,1,&row,1,&row,&valA,INSERT_VALUES));
           valRhs = uyRef(arrCoord[ez][ey][ex][icuy[0]],arrCoord[ez][ey][ex][icuy[1]],arrCoord[ez][ey][ex][icuy[2]]);
-          CHKERRQ(DMStagVecSetValuesStencil(dmSol,rhs,1,&row,&valRhs,INSERT_VALUES));
+          PetscCall(DMStagVecSetValuesStencil(dmSol,rhs,1,&row,&valRhs,INSERT_VALUES));
         } else {
           /* Y-momentum equation, (v_xx + v_yy + v_zz) - p_y = f^y */
           DMStagStencil row,col[9];
@@ -457,9 +457,9 @@ static PetscErrorCode CreateSystem(DM dmSol,Mat *pA,Vec *pRhs, PetscBool pinPres
             col[7].i = ex  ; col[7].j = ey-1;  col[7].k = ez  ; col[7].loc = ELEMENT; col[7].c  = 0; valA[7] =  1.0 / hy;
             col[8].i = ex  ; col[8].j = ey  ;  col[8].k = ez  ; col[8].loc = ELEMENT; col[8].c  = 0; valA[8] = -1.0 / hy;
           }
-          CHKERRQ(DMStagMatSetValuesStencil(dmSol,A,1,&row,nEntries,col,valA,INSERT_VALUES));
+          PetscCall(DMStagMatSetValuesStencil(dmSol,A,1,&row,nEntries,col,valA,INSERT_VALUES));
           valRhs = fy(arrCoord[ez][ey][ex][icuy[0]],arrCoord[ez][ey][ex][icuy[1]],arrCoord[ez][ey][ex][icuy[2]]);
-          CHKERRQ(DMStagVecSetValuesStencil(dmSol,rhs,1,&row,&valRhs,INSERT_VALUES));
+          PetscCall(DMStagVecSetValuesStencil(dmSol,rhs,1,&row,&valRhs,INSERT_VALUES));
         }
 
         /* Equation on back face of this element */
@@ -469,9 +469,9 @@ static PetscErrorCode CreateSystem(DM dmSol,Mat *pA,Vec *pRhs, PetscBool pinPres
           PetscScalar   valRhs;
           const PetscScalar valA = 1.0;
           row.i = ex; row.j = ey; row.k = ez; row.loc = BACK; row.c = 0;
-          CHKERRQ(DMStagMatSetValuesStencil(dmSol,A,1,&row,1,&row,&valA,INSERT_VALUES));
+          PetscCall(DMStagMatSetValuesStencil(dmSol,A,1,&row,1,&row,&valA,INSERT_VALUES));
           valRhs = uzRef(arrCoord[ez][ey][ex][icuz[0]],arrCoord[ez][ey][ex][icuz[1]],arrCoord[ez][ey][ex][icuz[2]]);
-          CHKERRQ(DMStagVecSetValuesStencil(dmSol,rhs,1,&row,&valRhs,INSERT_VALUES));
+          PetscCall(DMStagVecSetValuesStencil(dmSol,rhs,1,&row,&valRhs,INSERT_VALUES));
         } else {
           /* Z-momentum equation, (w_xx + w_yy + w_zz) - p_z = f^z */
           DMStagStencil row,col[9];
@@ -583,9 +583,9 @@ static PetscErrorCode CreateSystem(DM dmSol,Mat *pA,Vec *pRhs, PetscBool pinPres
             col[7].i = ex  ; col[7].j = ey  ;  col[7].k = ez-1; col[7].loc = ELEMENT; col[7].c  = 0; valA[7] =  1.0 / hz;
             col[8].i = ex  ; col[8].j = ey  ;  col[8].k = ez  ; col[8].loc = ELEMENT; col[8].c  = 0; valA[8] = -1.0 / hz;
           }
-          CHKERRQ(DMStagMatSetValuesStencil(dmSol,A,1,&row,nEntries,col,valA,INSERT_VALUES));
+          PetscCall(DMStagMatSetValuesStencil(dmSol,A,1,&row,nEntries,col,valA,INSERT_VALUES));
           valRhs = fz(arrCoord[ez][ey][ex][icuz[0]],arrCoord[ez][ey][ex][icuz[1]],arrCoord[ez][ey][ex][icuz[2]]);
-          CHKERRQ(DMStagVecSetValuesStencil(dmSol,rhs,1,&row,&valRhs,INSERT_VALUES));
+          PetscCall(DMStagVecSetValuesStencil(dmSol,rhs,1,&row,&valRhs,INSERT_VALUES));
         }
 
         /* P equation : u_x + v_y + w_z = g
@@ -596,9 +596,9 @@ static PetscErrorCode CreateSystem(DM dmSol,Mat *pA,Vec *pRhs, PetscBool pinPres
           PetscScalar valA,valRhs;
           row.i = ex; row.j = ey; row.k = ez; row.loc  = ELEMENT; row.c = 0;
           valA = 1.0;
-          CHKERRQ(DMStagMatSetValuesStencil(dmSol,A,1,&row,1,&row,&valA,INSERT_VALUES));
+          PetscCall(DMStagMatSetValuesStencil(dmSol,A,1,&row,1,&row,&valA,INSERT_VALUES));
           valRhs = pRef(arrCoord[ez][ey][ex][icp[0]],arrCoord[ez][ey][ex][icp[1]],arrCoord[ez][ey][ex][icp[2]]);
-          CHKERRQ(DMStagVecSetValuesStencil(dmSol,rhs,1,&row,&valRhs,INSERT_VALUES));
+          PetscCall(DMStagVecSetValuesStencil(dmSol,rhs,1,&row,&valRhs,INSERT_VALUES));
         } else {
           DMStagStencil row,col[7];
           PetscScalar   valA[7],valRhs;
@@ -611,18 +611,18 @@ static PetscErrorCode CreateSystem(DM dmSol,Mat *pA,Vec *pRhs, PetscBool pinPres
           col[4].i = ex; col[4].j = ey; col[4].k = ez; col[4].loc = BACK;    col[4].c = 0; valA[4] = -1.0 / hz;
           col[5].i = ex; col[5].j = ey; col[5].k = ez; col[5].loc = FRONT;   col[5].c = 0; valA[5] =  1.0 / hz;
           col[6]   = row;                                                                  valA[6] =  0.0;
-          CHKERRQ(DMStagMatSetValuesStencil(dmSol,A,1,&row,7,col,valA,INSERT_VALUES));
+          PetscCall(DMStagMatSetValuesStencil(dmSol,A,1,&row,7,col,valA,INSERT_VALUES));
           valRhs = g(arrCoord[ez][ey][ex][icp[0]],arrCoord[ez][ey][ex][icp[1]],arrCoord[ez][ey][ex][icp[2]]);
-          CHKERRQ(DMStagVecSetValuesStencil(dmSol,rhs,1,&row,&valRhs,INSERT_VALUES));
+          PetscCall(DMStagVecSetValuesStencil(dmSol,rhs,1,&row,&valRhs,INSERT_VALUES));
         }
       }
     }
   }
-  CHKERRQ(DMStagVecRestoreArrayRead(dmCoord,coordLocal,&arrCoord));
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(VecAssemblyBegin(rhs));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(VecAssemblyEnd(rhs));
+  PetscCall(DMStagVecRestoreArrayRead(dmCoord,coordLocal,&arrCoord));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(VecAssemblyBegin(rhs));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(VecAssemblyEnd(rhs));
 
   PetscFunctionReturn(0);
 }
@@ -642,18 +642,18 @@ static PetscErrorCode AttachNullspace(DM dmSol,Mat A)
   MatNullSpace   matNullSpace;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMStagCreateCompatibleDMStag(dmSol,0,0,0,1,&dmPressure));
-  CHKERRQ(DMGetGlobalVector(dmPressure,&constantPressure));
-  CHKERRQ(VecSet(constantPressure,1.0));
-  CHKERRQ(VecNorm(constantPressure,NORM_2,&nrm));
-  CHKERRQ(VecScale(constantPressure,1.0/nrm));
-  CHKERRQ(DMCreateGlobalVector(dmSol,&basis));
-  CHKERRQ(DMStagMigrateVec(dmPressure,constantPressure,dmSol,basis));
-  CHKERRQ(MatNullSpaceCreate(PetscObjectComm((PetscObject)dmSol),PETSC_FALSE,1,&basis,&matNullSpace));
-  CHKERRQ(VecDestroy(&basis));
-  CHKERRQ(VecDestroy(&constantPressure));
-  CHKERRQ(MatSetNullSpace(A,matNullSpace));
-  CHKERRQ(MatNullSpaceDestroy(&matNullSpace));
+  PetscCall(DMStagCreateCompatibleDMStag(dmSol,0,0,0,1,&dmPressure));
+  PetscCall(DMGetGlobalVector(dmPressure,&constantPressure));
+  PetscCall(VecSet(constantPressure,1.0));
+  PetscCall(VecNorm(constantPressure,NORM_2,&nrm));
+  PetscCall(VecScale(constantPressure,1.0/nrm));
+  PetscCall(DMCreateGlobalVector(dmSol,&basis));
+  PetscCall(DMStagMigrateVec(dmPressure,constantPressure,dmSol,basis));
+  PetscCall(MatNullSpaceCreate(PetscObjectComm((PetscObject)dmSol),PETSC_FALSE,1,&basis,&matNullSpace));
+  PetscCall(VecDestroy(&basis));
+  PetscCall(VecDestroy(&constantPressure));
+  PetscCall(MatSetNullSpace(A,matNullSpace));
+  PetscCall(MatNullSpaceDestroy(&matNullSpace));
   PetscFunctionReturn(0);
 }
 
@@ -666,26 +666,26 @@ static PetscErrorCode CreateReferenceSolution(DM dmSol,Vec *pSolRef)
   PetscScalar       ****arrSol,****arrCoord;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMCreateGlobalVector(dmSol,pSolRef));
+  PetscCall(DMCreateGlobalVector(dmSol,pSolRef));
   solRef = *pSolRef;
-  CHKERRQ(DMStagGetCorners(dmSol,&start[0],&start[1],&start[2],&n[0],&n[1],&n[2],&nExtra[0],&nExtra[1],&nExtra[2]));
-  CHKERRQ(DMGetCoordinateDM(dmSol,&dmCoord));
-  CHKERRQ(DMGetCoordinates(dmSol,&coord));
-  CHKERRQ(DMGetLocalVector(dmCoord,&coordLocal));
-  CHKERRQ(DMGlobalToLocal(dmCoord,coord,INSERT_VALUES,coordLocal));
-  CHKERRQ(DMStagGetLocationSlot(dmSol,ELEMENT,0,&ip));
-  CHKERRQ(DMStagGetLocationSlot(dmSol,LEFT,   0,&iux));
-  CHKERRQ(DMStagGetLocationSlot(dmSol,DOWN,   0,&iuy));
-  CHKERRQ(DMStagGetLocationSlot(dmSol,BACK,   0,&iuz));
+  PetscCall(DMStagGetCorners(dmSol,&start[0],&start[1],&start[2],&n[0],&n[1],&n[2],&nExtra[0],&nExtra[1],&nExtra[2]));
+  PetscCall(DMGetCoordinateDM(dmSol,&dmCoord));
+  PetscCall(DMGetCoordinates(dmSol,&coord));
+  PetscCall(DMGetLocalVector(dmCoord,&coordLocal));
+  PetscCall(DMGlobalToLocal(dmCoord,coord,INSERT_VALUES,coordLocal));
+  PetscCall(DMStagGetLocationSlot(dmSol,ELEMENT,0,&ip));
+  PetscCall(DMStagGetLocationSlot(dmSol,LEFT,   0,&iux));
+  PetscCall(DMStagGetLocationSlot(dmSol,DOWN,   0,&iuy));
+  PetscCall(DMStagGetLocationSlot(dmSol,BACK,   0,&iuz));
   for (d=0; d<3; ++d) {
-    CHKERRQ(DMStagGetLocationSlot(dmCoord,ELEMENT,d,&icp[d]));
-    CHKERRQ(DMStagGetLocationSlot(dmCoord,LEFT,   d,&icux[d]));
-    CHKERRQ(DMStagGetLocationSlot(dmCoord,DOWN,   d,&icuy[d]));
-    CHKERRQ(DMStagGetLocationSlot(dmCoord,BACK,   d,&icuz[d]));
+    PetscCall(DMStagGetLocationSlot(dmCoord,ELEMENT,d,&icp[d]));
+    PetscCall(DMStagGetLocationSlot(dmCoord,LEFT,   d,&icux[d]));
+    PetscCall(DMStagGetLocationSlot(dmCoord,DOWN,   d,&icuy[d]));
+    PetscCall(DMStagGetLocationSlot(dmCoord,BACK,   d,&icuz[d]));
   }
-  CHKERRQ(DMStagVecGetArrayRead(dmCoord,coordLocal,&arrCoord));
-  CHKERRQ(DMGetLocalVector(dmSol,&solRefLocal));
-  CHKERRQ(DMStagVecGetArray(dmSol,solRefLocal,&arrSol));
+  PetscCall(DMStagVecGetArrayRead(dmCoord,coordLocal,&arrCoord));
+  PetscCall(DMGetLocalVector(dmSol,&solRefLocal));
+  PetscCall(DMStagVecGetArray(dmSol,solRefLocal,&arrSol));
   for (ez=start[2]; ez<start[2] + n[2] + nExtra[2]; ++ez) {
     for (ey=start[1]; ey<start[1] + n[1] + nExtra[1]; ++ey) {
       for (ex=start[0]; ex<start[0] + n[0] + nExtra[0]; ++ex) {
@@ -716,11 +716,11 @@ static PetscErrorCode CreateReferenceSolution(DM dmSol,Vec *pSolRef)
       }
     }
   }
-  CHKERRQ(DMStagVecRestoreArrayRead(dmCoord,coordLocal,&arrCoord));
-  CHKERRQ(DMStagVecRestoreArray(dmSol,solRefLocal,&arrSol));
-  CHKERRQ(DMLocalToGlobal(dmSol,solRefLocal,INSERT_VALUES,solRef));
-  CHKERRQ(DMRestoreLocalVector(dmCoord,&coordLocal));
-  CHKERRQ(DMRestoreLocalVector(dmSol,&solRefLocal));
+  PetscCall(DMStagVecRestoreArrayRead(dmCoord,coordLocal,&arrCoord));
+  PetscCall(DMStagVecRestoreArray(dmSol,solRefLocal,&arrSol));
+  PetscCall(DMLocalToGlobal(dmSol,solRefLocal,INSERT_VALUES,solRef));
+  PetscCall(DMRestoreLocalVector(dmCoord,&coordLocal));
+  PetscCall(DMRestoreLocalVector(dmSol,&solRefLocal));
   PetscFunctionReturn(0);
 }
 
@@ -730,14 +730,14 @@ static PetscErrorCode CheckSolution(Vec sol,Vec solRef)
   PetscReal      normsolRef,errAbs,errRel;
 
   PetscFunctionBeginUser;
-  CHKERRQ(VecDuplicate(sol,&diff));
-  CHKERRQ(VecCopy(sol,diff));
-  CHKERRQ(VecAXPY(diff,-1.0,solRef));
-  CHKERRQ(VecNorm(diff,NORM_2,&errAbs));
-  CHKERRQ(VecNorm(solRef,NORM_2,&normsolRef));
+  PetscCall(VecDuplicate(sol,&diff));
+  PetscCall(VecCopy(sol,diff));
+  PetscCall(VecAXPY(diff,-1.0,solRef));
+  PetscCall(VecNorm(diff,NORM_2,&errAbs));
+  PetscCall(VecNorm(solRef,NORM_2,&normsolRef));
   errRel = errAbs/normsolRef;
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Error (abs): %g\nError (rel): %g\n",(double)errAbs,(double)errRel));
-  CHKERRQ(VecDestroy(&diff));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error (abs): %g\nError (rel): %g\n",(double)errAbs,(double)errRel));
+  PetscCall(VecDestroy(&diff));
   PetscFunctionReturn(0);
 }
 

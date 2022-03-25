@@ -80,9 +80,9 @@ private:
     for (auto i = 0; i < 3; ++i) {
       auto cberr = cupmBlasCreate(&handle);
       if (PetscLikely(cberr == CUPMBLAS_STATUS_SUCCESS)) break;
-      if (PetscUnlikely(cberr != CUPMBLAS_STATUS_ALLOC_FAILED) && (cberr != CUPMBLAS_STATUS_NOT_INITIALIZED)) CHKERRCUPMBLAS(cberr);
+      if (PetscUnlikely(cberr != CUPMBLAS_STATUS_ALLOC_FAILED) && (cberr != CUPMBLAS_STATUS_NOT_INITIALIZED)) PetscCallCUPMBLAS(cberr);
       if (i != 2) {
-        CHKERRQ(PetscSleep(3));
+        PetscCall(PetscSleep(3));
         continue;
       }
       PetscCheck(cberr == CUPMBLAS_STATUS_SUCCESS,PETSC_COMM_SELF,PETSC_ERR_GPU_RESOURCE,"Unable to initialize %s",cupmBlasName());
@@ -95,8 +95,8 @@ private:
     cupmStream_t    cupmStream;
 
     PetscFunctionBegin;
-    CHKERRCUPMBLAS(cupmBlasGetStream(handle,&cupmStream));
-    if (cupmStream != stream) CHKERRCUPMBLAS(cupmBlasSetStream(handle,stream));
+    PetscCallCUPMBLAS(cupmBlasGetStream(handle,&cupmStream));
+    if (cupmStream != stream) PetscCallCUPMBLAS(cupmBlasSetStream(handle,stream));
     PetscFunctionReturn(0);
   }
 
@@ -105,13 +105,13 @@ private:
     PetscFunctionBegin;
     for (auto&& handle : blashandles_) {
       if (handle) {
-        CHKERRCUPMBLAS(cupmBlasDestroy(handle));
+        PetscCallCUPMBLAS(cupmBlasDestroy(handle));
         handle     = nullptr;
       }
     }
     for (auto&& handle : solverhandles_) {
       if (handle) {
-        CHKERRQ(cupmBlasInterface_t::DestroyHandle(handle));
+        PetscCall(cupmBlasInterface_t::DestroyHandle(handle));
         handle    = nullptr;
       }
     }
@@ -123,18 +123,18 @@ private:
   {
 
     PetscFunctionBegin;
-    CHKERRQ(PetscDeviceCheckDeviceCount_Internal(id));
+    PetscCall(PetscDeviceCheckDeviceCount_Internal(id));
     if (!initialized_) {
       initialized_ = true;
-      CHKERRQ(PetscRegisterFinalize(finalize_));
+      PetscCall(PetscRegisterFinalize(finalize_));
     }
     // use the blashandle as a canary
     if (!blashandles_[id]) {
-      CHKERRQ(initialize_handle_(blashandles_[id]));
-      CHKERRQ(cupmBlasInterface_t::InitializeHandle(solverhandles_[id]));
+      PetscCall(initialize_handle_(blashandles_[id]));
+      PetscCall(cupmBlasInterface_t::InitializeHandle(solverhandles_[id]));
     }
-    CHKERRQ(set_handle_stream_(blashandles_[id],dci->stream));
-    CHKERRQ(cupmBlasInterface_t::SetHandleStream(solverhandles_[id],dci->stream));
+    PetscCall(set_handle_stream_(blashandles_[id],dci->stream));
+    PetscCall(cupmBlasInterface_t::SetHandleStream(solverhandles_[id],dci->stream));
     dci->blas   = blashandles_[id];
     dci->solver = solverhandles_[id];
     PetscFunctionReturn(0);
@@ -175,11 +175,11 @@ PETSC_CXX_COMPAT_DEFN(PetscErrorCode DeviceContext<T>::destroy(PetscDeviceContex
   auto           dci = impls_cast_(dctx);
 
   PetscFunctionBegin;
-  if (dci->stream) CHKERRCUPM(cupmStreamDestroy(dci->stream));
-  if (dci->event)  CHKERRCUPM(cupmEventDestroy(dci->event));
-  if (dci->begin)  CHKERRCUPM(cupmEventDestroy(dci->begin));
-  if (dci->end)    CHKERRCUPM(cupmEventDestroy(dci->end));
-  CHKERRQ(PetscFree(dctx->data));
+  if (dci->stream) PetscCallCUPM(cupmStreamDestroy(dci->stream));
+  if (dci->event)  PetscCallCUPM(cupmEventDestroy(dci->event));
+  if (dci->begin)  PetscCallCUPM(cupmEventDestroy(dci->begin));
+  if (dci->end)    PetscCallCUPM(cupmEventDestroy(dci->end));
+  PetscCall(PetscFree(dctx->data));
   PetscFunctionReturn(0);
 }
 
@@ -190,7 +190,7 @@ PETSC_CXX_COMPAT_DEFN(PetscErrorCode DeviceContext<T>::changeStreamType(PetscDev
 
   PetscFunctionBegin;
   if (dci->stream) {
-    CHKERRCUPM(cupmStreamDestroy(dci->stream));
+    PetscCallCUPM(cupmStreamDestroy(dci->stream));
     dci->stream = nullptr;
   }
   // set these to null so they aren't usable until setup is called again
@@ -206,7 +206,7 @@ PETSC_CXX_COMPAT_DEFN(PetscErrorCode DeviceContext<T>::setUp(PetscDeviceContext 
 
   PetscFunctionBegin;
   if (dci->stream) {
-    CHKERRCUPM(cupmStreamDestroy(dci->stream));
+    PetscCallCUPM(cupmStreamDestroy(dci->stream));
     dci->stream = nullptr;
   }
   switch (dctx->streamType) {
@@ -214,20 +214,20 @@ PETSC_CXX_COMPAT_DEFN(PetscErrorCode DeviceContext<T>::setUp(PetscDeviceContext 
     // don't create a stream for global blocking
     break;
   case PETSC_STREAM_DEFAULT_BLOCKING:
-    CHKERRCUPM(cupmStreamCreate(&dci->stream));
+    PetscCallCUPM(cupmStreamCreate(&dci->stream));
     break;
   case PETSC_STREAM_GLOBAL_NONBLOCKING:
-    CHKERRCUPM(cupmStreamCreateWithFlags(&dci->stream,cupmStreamNonBlocking));
+    PetscCallCUPM(cupmStreamCreateWithFlags(&dci->stream,cupmStreamNonBlocking));
     break;
   default:
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Invalid PetscStreamType %s",PetscStreamTypes[util::integral_value(dctx->streamType)]);
     break;
   }
-  if (!dci->event) CHKERRCUPM(cupmEventCreate(&dci->event));
+  if (!dci->event) PetscCallCUPM(cupmEventCreate(&dci->event));
 #if PetscDefined(USE_DEBUG)
   dci->timerInUse = PETSC_FALSE;
 #endif
-  CHKERRQ(initialize_(dctx->device->deviceId,dci));
+  PetscCall(initialize_(dctx->device->deviceId,dci));
   PetscFunctionReturn(0);
 }
 
@@ -241,7 +241,7 @@ PETSC_CXX_COMPAT_DEFN(PetscErrorCode DeviceContext<T>::query(PetscDeviceContext 
   if (cerr == cupmSuccess) *idle = PETSC_TRUE;
   else {
     // somethings gone wrong
-    if (PetscUnlikely(cerr != cupmErrorNotReady)) CHKERRCUPM(cerr);
+    if (PetscUnlikely(cerr != cupmErrorNotReady)) PetscCallCUPM(cerr);
     *idle = PETSC_FALSE;
   }
   PetscFunctionReturn(0);
@@ -253,8 +253,8 @@ PETSC_CXX_COMPAT_DEFN(PetscErrorCode DeviceContext<T>::waitForContext(PetscDevic
   auto        dcib = impls_cast_(dctxb);
 
   PetscFunctionBegin;
-  CHKERRCUPM(cupmEventRecord(dcib->event,dcib->stream));
-  CHKERRCUPM(cupmStreamWaitEvent(impls_cast_(dctxa)->stream,dcib->event,0));
+  PetscCallCUPM(cupmEventRecord(dcib->event,dcib->stream));
+  PetscCallCUPM(cupmStreamWaitEvent(impls_cast_(dctxa)->stream,dcib->event,0));
   PetscFunctionReturn(0);
 }
 
@@ -265,8 +265,8 @@ PETSC_CXX_COMPAT_DEFN(PetscErrorCode DeviceContext<T>::synchronize(PetscDeviceCo
 
   PetscFunctionBegin;
   // in case anything was queued on the event
-  CHKERRCUPM(cupmStreamWaitEvent(dci->stream,dci->event,0));
-  CHKERRCUPM(cupmStreamSynchronize(dci->stream));
+  PetscCallCUPM(cupmStreamWaitEvent(dci->stream,dci->event,0));
+  PetscCallCUPM(cupmStreamSynchronize(dci->stream));
   PetscFunctionReturn(0);
 }
 
@@ -290,10 +290,10 @@ PETSC_CXX_COMPAT_DEFN(PetscErrorCode DeviceContext<T>::beginTimer(PetscDeviceCon
   dci->timerInUse = PETSC_TRUE;
 #endif
   if (!dci->begin) {
-    CHKERRCUPM(cupmEventCreate(&dci->begin));
-    CHKERRCUPM(cupmEventCreate(&dci->end));
+    PetscCallCUPM(cupmEventCreate(&dci->begin));
+    PetscCallCUPM(cupmEventCreate(&dci->end));
   }
-  CHKERRCUPM(cupmEventRecord(dci->begin,dci->stream));
+  PetscCallCUPM(cupmEventRecord(dci->begin,dci->stream));
   PetscFunctionReturn(0);
 }
 
@@ -308,9 +308,9 @@ PETSC_CXX_COMPAT_DEFN(PetscErrorCode DeviceContext<T>::endTimer(PetscDeviceConte
   PetscCheck(dci->timerInUse,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Forgot to call PetscLogGpuTimeBegin()?");
   dci->timerInUse = PETSC_FALSE;
 #endif
-  CHKERRCUPM(cupmEventRecord(dci->end,dci->stream));
-  CHKERRCUPM(cupmEventSynchronize(dci->end));
-  CHKERRCUPM(cupmEventElapsedTime(&gtime,dci->begin,dci->end));
+  PetscCallCUPM(cupmEventRecord(dci->end,dci->stream));
+  PetscCallCUPM(cupmEventSynchronize(dci->end));
+  PetscCallCUPM(cupmEventElapsedTime(&gtime,dci->begin,dci->end));
   *elapsed = static_cast<util::remove_pointer_t<decltype(elapsed)>>(gtime);
   PetscFunctionReturn(0);
 }

@@ -17,14 +17,14 @@ int main(int argc,char **argv)
   IS                ix;
   const PetscScalar *xv;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 2,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"The test can only run with two MPI ranks");
 
   /* Test PetscSF */
-  CHKERRQ(PetscSFCreate(PETSC_COMM_WORLD,&sf));
-  CHKERRQ(PetscSFSetFromOptions(sf));
+  PetscCall(PetscSFCreate(PETSC_COMM_WORLD,&sf));
+  PetscCall(PetscSFSetFromOptions(sf));
 
   if (!rank) {
     nroots  = n;
@@ -32,59 +32,59 @@ int main(int argc,char **argv)
   } else {
     nroots  = 0;
     nleaves = n;
-    CHKERRQ(PetscMalloc1(nleaves,&iremote));
+    PetscCall(PetscMalloc1(nleaves,&iremote));
     for (i=0; i<nleaves; i++) {
       iremote[i].rank  = 0;
       iremote[i].index = i;
     }
   }
-  CHKERRQ(PetscSFSetGraph(sf,nroots,nleaves,NULL,PETSC_COPY_VALUES,iremote,PETSC_COPY_VALUES));
-  CHKERRQ(PetscMalloc2(nroots,&rootdata,nleaves,&leafdata));
+  PetscCall(PetscSFSetGraph(sf,nroots,nleaves,NULL,PETSC_COPY_VALUES,iremote,PETSC_COPY_VALUES));
+  PetscCall(PetscMalloc2(nroots,&rootdata,nleaves,&leafdata));
   if (!rank) {
     memset(rootdata,11,nroots);
     rootdata[nroots-1] = 12; /* Use a different value at the end */
   }
 
-  CHKERRQ(PetscSFBcastBegin(sf,MPI_SIGNED_CHAR,rootdata,leafdata,MPI_REPLACE)); /* rank 0->1, bcast rootdata to leafdata */
-  CHKERRQ(PetscSFBcastEnd(sf,MPI_SIGNED_CHAR,rootdata,leafdata,MPI_REPLACE));
-  CHKERRQ(PetscSFReduceBegin(sf,MPI_SIGNED_CHAR,leafdata,rootdata,MPI_SUM)); /* rank 1->0, add leafdata to rootdata */
-  CHKERRQ(PetscSFReduceEnd(sf,MPI_SIGNED_CHAR,leafdata,rootdata,MPI_SUM));
+  PetscCall(PetscSFBcastBegin(sf,MPI_SIGNED_CHAR,rootdata,leafdata,MPI_REPLACE)); /* rank 0->1, bcast rootdata to leafdata */
+  PetscCall(PetscSFBcastEnd(sf,MPI_SIGNED_CHAR,rootdata,leafdata,MPI_REPLACE));
+  PetscCall(PetscSFReduceBegin(sf,MPI_SIGNED_CHAR,leafdata,rootdata,MPI_SUM)); /* rank 1->0, add leafdata to rootdata */
+  PetscCall(PetscSFReduceEnd(sf,MPI_SIGNED_CHAR,leafdata,rootdata,MPI_SUM));
   if (!rank) {
     PetscCheckFalse(rootdata[0] != 22 || rootdata[nroots-1] != 24,PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF: wrong results");
   }
 
-  CHKERRQ(PetscFree2(rootdata,leafdata));
-  CHKERRQ(PetscFree(iremote));
-  CHKERRQ(PetscSFDestroy(&sf));
+  PetscCall(PetscFree2(rootdata,leafdata));
+  PetscCall(PetscFree(iremote));
+  PetscCall(PetscSFDestroy(&sf));
 
   /* Test VecScatter */
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&y));
-  CHKERRQ(VecSetSizes(x,rank==0? n : 64,PETSC_DECIDE));
-  CHKERRQ(VecSetSizes(y,rank==0? 64 : n,PETSC_DECIDE));
-  CHKERRQ(VecSetFromOptions(x));
-  CHKERRQ(VecSetFromOptions(y));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&y));
+  PetscCall(VecSetSizes(x,rank==0? n : 64,PETSC_DECIDE));
+  PetscCall(VecSetSizes(y,rank==0? 64 : n,PETSC_DECIDE));
+  PetscCall(VecSetFromOptions(x));
+  PetscCall(VecSetFromOptions(y));
 
-  CHKERRQ(VecGetOwnershipRange(x,&rstart,&rend));
-  CHKERRQ(ISCreateStride(PETSC_COMM_SELF,rend-rstart,rstart,1,&ix));
-  CHKERRQ(VecScatterCreate(x,ix,y,ix,&vscat));
+  PetscCall(VecGetOwnershipRange(x,&rstart,&rend));
+  PetscCall(ISCreateStride(PETSC_COMM_SELF,rend-rstart,rstart,1,&ix));
+  PetscCall(VecScatterCreate(x,ix,y,ix,&vscat));
 
-  CHKERRQ(VecSet(x,3.0));
-  CHKERRQ(VecScatterBegin(vscat,x,y,INSERT_VALUES,SCATTER_FORWARD));
-  CHKERRQ(VecScatterEnd(vscat,x,y,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecSet(x,3.0));
+  PetscCall(VecScatterBegin(vscat,x,y,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(vscat,x,y,INSERT_VALUES,SCATTER_FORWARD));
 
-  CHKERRQ(VecScatterBegin(vscat,y,x,ADD_VALUES,SCATTER_REVERSE));
-  CHKERRQ(VecScatterEnd(vscat,y,x,ADD_VALUES,SCATTER_REVERSE));
+  PetscCall(VecScatterBegin(vscat,y,x,ADD_VALUES,SCATTER_REVERSE));
+  PetscCall(VecScatterEnd(vscat,y,x,ADD_VALUES,SCATTER_REVERSE));
 
-  CHKERRQ(VecGetArrayRead(x,&xv));
+  PetscCall(VecGetArrayRead(x,&xv));
   PetscCheckFalse(xv[0] != 6.0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"VecScatter: wrong results");
-  CHKERRQ(VecRestoreArrayRead(x,&xv));
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&y));
-  CHKERRQ(VecScatterDestroy(&vscat));
-  CHKERRQ(ISDestroy(&ix));
+  PetscCall(VecRestoreArrayRead(x,&xv));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&y));
+  PetscCall(VecScatterDestroy(&vscat));
+  PetscCall(ISDestroy(&ix));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

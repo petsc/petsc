@@ -21,7 +21,7 @@ PetscErrorCode  MatPythonSetType(Mat mat,const char pyname[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidCharPointer(pyname,2);
-  CHKERRQ(PetscTryMethod(mat,"MatPythonSetType_C",(Mat, const char[]),(mat,pyname)));
+  PetscCall(PetscTryMethod(mat,"MatPythonSetType_C",(Mat, const char[]),(mat,pyname)));
   PetscFunctionReturn(0);
 }
 
@@ -51,9 +51,9 @@ PetscErrorCode  MatPythonCreate(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,P
   PetscFunctionBegin;
   PetscValidCharPointer(pyname,6);
   PetscValidPointer(A,6);
-  CHKERRQ(MatCreate(comm,A));
-  CHKERRQ(MatSetSizes(*A,m,n,M,N));
-  CHKERRQ(MatSetType(*A,MATPYTHON));
-  CHKERRQ(MatPythonSetType(*A,pyname));
+  PetscCall(MatCreate(comm,A));
+  PetscCall(MatSetSizes(*A,m,n,M,N));
+  PetscCall(MatSetType(*A,MATPYTHON));
+  PetscCall(MatPythonSetType(*A,pyname));
   PetscFunctionReturn(0);
 }

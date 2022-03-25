@@ -11,46 +11,46 @@ int main(int argc,char **args)
   PetscBool      different=PETSC_FALSE,skip=PETSC_FALSE;
   PetscInt       m0,m1,n=128,i;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-different",&different,NULL));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-skip",&skip,NULL));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-different",&different,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-skip",&skip,NULL));
   /*
      Create matrices
      A = tridiag(1,-2,1) and B = diag(7);
   */
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&B));
-  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,n,n));
-  CHKERRQ(MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,n,n));
-  CHKERRQ(MatSetFromOptions(A));
-  CHKERRQ(MatSetFromOptions(B));
-  CHKERRQ(MatSetUp(A));
-  CHKERRQ(MatSetUp(B));
-  CHKERRQ(MatGetOwnershipRange(A,&m0,&m1));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&B));
+  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,n,n));
+  PetscCall(MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,n,n));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSetFromOptions(B));
+  PetscCall(MatSetUp(A));
+  PetscCall(MatSetUp(B));
+  PetscCall(MatGetOwnershipRange(A,&m0,&m1));
   for (i=m0;i<m1;i++) {
-    if (i>0) CHKERRQ(MatSetValue(A,i,i-1,-1.0,INSERT_VALUES));
-    if (i<n-1) CHKERRQ(MatSetValue(A,i,i+1,-1.0,INSERT_VALUES));
-    CHKERRQ(MatSetValue(A,i,i,2.0,INSERT_VALUES));
-    CHKERRQ(MatSetValue(B,i,i,7.0,INSERT_VALUES));
+    if (i>0) PetscCall(MatSetValue(A,i,i-1,-1.0,INSERT_VALUES));
+    if (i<n-1) PetscCall(MatSetValue(A,i,i+1,-1.0,INSERT_VALUES));
+    PetscCall(MatSetValue(A,i,i,2.0,INSERT_VALUES));
+    PetscCall(MatSetValue(B,i,i,7.0,INSERT_VALUES));
   }
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
 
-  CHKERRQ(MatDuplicate(A,MAT_COPY_VALUES,&C));
+  PetscCall(MatDuplicate(A,MAT_COPY_VALUES,&C));
   /* Add B */
-  CHKERRQ(MatAXPY(C,1.0,B,(different)?DIFFERENT_NONZERO_PATTERN:SUBSET_NONZERO_PATTERN));
+  PetscCall(MatAXPY(C,1.0,B,(different)?DIFFERENT_NONZERO_PATTERN:SUBSET_NONZERO_PATTERN));
   /* Add A */
-  if (!skip) CHKERRQ(MatAXPY(C,1.0,A,SUBSET_NONZERO_PATTERN));
+  if (!skip) PetscCall(MatAXPY(C,1.0,A,SUBSET_NONZERO_PATTERN));
 
   /*
      Free memory
   */
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(MatDestroy(&B));
-  CHKERRQ(MatDestroy(&C));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&B));
+  PetscCall(MatDestroy(&C));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

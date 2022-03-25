@@ -22,8 +22,8 @@ int main(int argc,char **argv)
   PetscInt       n = 20;
   PetscScalar    one = 1.0;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
   /*
      Create a vector, specifying only its global dimension.
@@ -45,49 +45,49 @@ int main(int argc,char **argv)
      particular type of vector to be formed.
 
   */
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
-  CHKERRQ(VecSetSizes(x,PETSC_DECIDE,n));
-  CHKERRQ(VecSetBlockSize(x,2));
-  CHKERRQ(VecSetFromOptions(x));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+  PetscCall(VecSetSizes(x,PETSC_DECIDE,n));
+  PetscCall(VecSetBlockSize(x,2));
+  PetscCall(VecSetFromOptions(x));
 
   /*
      Set the vectors to entries to a constant value.
   */
-  CHKERRQ(VecSet(x,one));
+  PetscCall(VecSet(x,one));
 
-  CHKERRQ(VecNorm(x,NORM_2,&norm));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"L_2 Norm of entire vector: %g\n",(double)norm));
+  PetscCall(VecNorm(x,NORM_2,&norm));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"L_2 Norm of entire vector: %g\n",(double)norm));
 
-  CHKERRQ(VecNorm(x,NORM_1,&norm));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"L_1 Norm of entire vector: %g\n",(double)norm));
+  PetscCall(VecNorm(x,NORM_1,&norm));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"L_1 Norm of entire vector: %g\n",(double)norm));
 
-  CHKERRQ(VecNorm(x,NORM_INFINITY,&norm));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"L_inf Norm of entire vector: %g\n",(double)norm));
+  PetscCall(VecNorm(x,NORM_INFINITY,&norm));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"L_inf Norm of entire vector: %g\n",(double)norm));
 
-  CHKERRQ(VecStrideNorm(x,0,NORM_2,&norm));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"L_2 Norm of sub-vector 0: %g\n",(double)norm));
+  PetscCall(VecStrideNorm(x,0,NORM_2,&norm));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"L_2 Norm of sub-vector 0: %g\n",(double)norm));
 
-  CHKERRQ(VecStrideNorm(x,0,NORM_1,&norm));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"L_1 Norm of sub-vector 0: %g\n",(double)norm));
+  PetscCall(VecStrideNorm(x,0,NORM_1,&norm));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"L_1 Norm of sub-vector 0: %g\n",(double)norm));
 
-  CHKERRQ(VecStrideNorm(x,0,NORM_INFINITY,&norm));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"L_inf Norm of sub-vector 0: %g\n",(double)norm));
+  PetscCall(VecStrideNorm(x,0,NORM_INFINITY,&norm));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"L_inf Norm of sub-vector 0: %g\n",(double)norm));
 
-  CHKERRQ(VecStrideNorm(x,1,NORM_2,&norm));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"L_2 Norm of sub-vector 1: %g\n",(double)norm));
+  PetscCall(VecStrideNorm(x,1,NORM_2,&norm));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"L_2 Norm of sub-vector 1: %g\n",(double)norm));
 
-  CHKERRQ(VecStrideNorm(x,1,NORM_1,&norm));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"L_1 Norm of sub-vector 1: %g\n",(double)norm));
+  PetscCall(VecStrideNorm(x,1,NORM_1,&norm));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"L_1 Norm of sub-vector 1: %g\n",(double)norm));
 
-  CHKERRQ(VecStrideNorm(x,1,NORM_INFINITY,&norm));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"L_inf Norm of sub-vector 1: %g\n",(double)norm));
+  PetscCall(VecStrideNorm(x,1,NORM_INFINITY,&norm));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"L_inf Norm of sub-vector 1: %g\n",(double)norm));
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&x));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

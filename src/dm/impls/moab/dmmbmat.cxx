@@ -22,37 +22,37 @@ PETSC_EXTERN PetscErrorCode DMCreateMatrix_Moab(DM dm, Mat *J)
 
   /* next, need to allocate the non-zero arrays to enable pre-allocation */
   mtype = dm->mattype;
-  CHKERRQ(PetscStrstr(mtype, MATBAIJ, &tmp));
+  PetscCall(PetscStrstr(mtype, MATBAIJ, &tmp));
   nlsiz = (tmp ? dmmoab->nloc : dmmoab->nloc * dmmoab->numFields);
 
   /* allocate the nnz, onz arrays based on block size and local nodes */
-  CHKERRQ(PetscCalloc2(nlsiz, &nnz, nlsiz, &onz));
+  PetscCall(PetscCalloc2(nlsiz, &nnz, nlsiz, &onz));
 
   /* compute the nonzero pattern based on MOAB connectivity data for local elements */
-  CHKERRQ(DMMoab_Compute_NNZ_From_Connectivity(dm, &innz, nnz, &ionz, onz, (tmp ? PETSC_TRUE : PETSC_FALSE)));
+  PetscCall(DMMoab_Compute_NNZ_From_Connectivity(dm, &innz, nnz, &ionz, onz, (tmp ? PETSC_TRUE : PETSC_FALSE)));
 
   /* create the Matrix and set its type as specified by user */
-  CHKERRQ(MatCreate((((PetscObject)dm)->comm), &A));
-  CHKERRQ(MatSetSizes(A, dmmoab->nloc * dmmoab->numFields, dmmoab->nloc * dmmoab->numFields, PETSC_DETERMINE, PETSC_DETERMINE));
-  CHKERRQ(MatSetType(A, mtype));
-  CHKERRQ(MatSetBlockSize(A, dmmoab->bs));
-  CHKERRQ(MatSetDM(A, dm)); /* set DM reference */
-  CHKERRQ(MatSetFromOptions(A));
+  PetscCall(MatCreate((((PetscObject)dm)->comm), &A));
+  PetscCall(MatSetSizes(A, dmmoab->nloc * dmmoab->numFields, dmmoab->nloc * dmmoab->numFields, PETSC_DETERMINE, PETSC_DETERMINE));
+  PetscCall(MatSetType(A, mtype));
+  PetscCall(MatSetBlockSize(A, dmmoab->bs));
+  PetscCall(MatSetDM(A, dm)); /* set DM reference */
+  PetscCall(MatSetFromOptions(A));
 
   PetscCheck(dmmoab->ltog_map,(((PetscObject)dm)->comm), PETSC_ERR_ORDER, "Cannot create a DMMoab Mat without calling DMSetUp first.");
-  CHKERRQ(MatSetLocalToGlobalMapping(A, dmmoab->ltog_map, dmmoab->ltog_map));
+  PetscCall(MatSetLocalToGlobalMapping(A, dmmoab->ltog_map, dmmoab->ltog_map));
 
   /* set preallocation based on different supported Mat types */
-  CHKERRQ(MatSeqAIJSetPreallocation(A, innz, nnz));
-  CHKERRQ(MatMPIAIJSetPreallocation(A, innz, nnz, ionz, onz));
-  CHKERRQ(MatSeqBAIJSetPreallocation(A, dmmoab->bs, innz, nnz));
-  CHKERRQ(MatMPIBAIJSetPreallocation(A, dmmoab->bs, innz, nnz, ionz, onz));
+  PetscCall(MatSeqAIJSetPreallocation(A, innz, nnz));
+  PetscCall(MatMPIAIJSetPreallocation(A, innz, nnz, ionz, onz));
+  PetscCall(MatSeqBAIJSetPreallocation(A, dmmoab->bs, innz, nnz));
+  PetscCall(MatMPIBAIJSetPreallocation(A, dmmoab->bs, innz, nnz, ionz, onz));
 
   /* clean up temporary memory */
-  CHKERRQ(PetscFree2(nnz, onz));
+  PetscCall(PetscFree2(nnz, onz));
 
   /* set up internal matrix data-structures */
-  CHKERRQ(MatSetUp(A));
+  PetscCall(MatSetUp(A));
 
   /* MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE); */
 
@@ -191,7 +191,7 @@ static PetscErrorCode DMMoabSetBlockFills_Private(PetscInt w, const PetscInt *fi
 
   PetscFunctionBegin;
   if (!fill) PetscFunctionReturn(0);
-  CHKERRQ(PetscMalloc1(w * w, &ifill));
+  PetscCall(PetscMalloc1(w * w, &ifill));
   for (i = 0; i < w; i++) {
     for (j = 0; j < w; j++)
       ifill[i * w + j] = fill[i * w + j];
@@ -241,7 +241,7 @@ PetscErrorCode  DMMoabSetBlockFills(DM dm, const PetscInt *dfill, const PetscInt
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  CHKERRQ(DMMoabSetBlockFills_Private(dmmoab->numFields, dfill, &dmmoab->dfill));
-  CHKERRQ(DMMoabSetBlockFills_Private(dmmoab->numFields, ofill, &dmmoab->ofill));
+  PetscCall(DMMoabSetBlockFills_Private(dmmoab->numFields, dfill, &dmmoab->dfill));
+  PetscCall(DMMoabSetBlockFills_Private(dmmoab->numFields, ofill, &dmmoab->ofill));
   PetscFunctionReturn(0);
 }

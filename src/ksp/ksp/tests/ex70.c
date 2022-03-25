@@ -17,25 +17,25 @@ int main(int argc,char **args)
   PetscMPIInt    size;
   PetscScalar    value[3];
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
 
   /*
      Create vectors.  Note that we form 1 vector from scratch and
      then duplicate as needed.
   */
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
-  CHKERRQ(PetscObjectSetName((PetscObject) x,"Solution"));
-  CHKERRQ(VecSetSizes(x,PETSC_DECIDE,n));
-  CHKERRQ(VecSetFromOptions(x));
-  CHKERRQ(VecDuplicate(x,&b));
-  CHKERRQ(VecDuplicate(x,&u));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+  PetscCall(PetscObjectSetName((PetscObject) x,"Solution"));
+  PetscCall(VecSetSizes(x,PETSC_DECIDE,n));
+  PetscCall(VecSetFromOptions(x));
+  PetscCall(VecDuplicate(x,&b));
+  PetscCall(VecDuplicate(x,&u));
 
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,n,n));
-  CHKERRQ(MatSetFromOptions(A));
-  CHKERRQ(MatSetUp(A));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,n,n));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSetUp(A));
 
   /*
      Set big off-diag values to make the system ill-conditioned
@@ -43,36 +43,36 @@ int main(int argc,char **args)
   value[0] = 10.0; value[1] = 2.0; value[2] = 1.0;
   for (i=1; i<n-1; i++) {
     col[0] = i-1; col[1] = i; col[2] = i+1;
-    CHKERRQ(MatSetValues(A,1,&i,3,col,value,INSERT_VALUES));
+    PetscCall(MatSetValues(A,1,&i,3,col,value,INSERT_VALUES));
   }
   i    = n - 1; col[0] = n - 2; col[1] = n - 1;
-  CHKERRQ(MatSetValues(A,1,&i,2,col,value,INSERT_VALUES));
+  PetscCall(MatSetValues(A,1,&i,2,col,value,INSERT_VALUES));
   i    = 0; col[0] = 0; col[1] = 1; value[0] = 2.0; value[1] = -1.0;
-  CHKERRQ(MatSetValues(A,1,&i,2,col,value,INSERT_VALUES));
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatSetValues(A,1,&i,2,col,value,INSERT_VALUES));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
-  CHKERRQ(VecSet(u,1.0));
-  CHKERRQ(MatMult(A,u,b));
+  PetscCall(VecSet(u,1.0));
+  PetscCall(MatMult(A,u,b));
 
-  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
-  CHKERRQ(KSPSetOperators(ksp,A,A));
-  CHKERRQ(KSPSetFromOptions(ksp));
-  CHKERRQ(KSPSolve(ksp,b,x));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPSetOperators(ksp,A,A));
+  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(KSPSolve(ksp,b,x));
 
-  CHKERRQ(KSPSetInitialGuessNonzero(ksp,PETSC_TRUE));
-  CHKERRQ(PetscOptionsInsertString(NULL,"-ksp_type preonly -ksp_initial_guess_nonzero false"));
-  CHKERRQ(PetscOptionsClearValue(NULL,"-ksp_converged_reason"));
-  CHKERRQ(KSPSetFromOptions(ksp));
-  CHKERRQ(KSPSolve(ksp,b,x));
+  PetscCall(KSPSetInitialGuessNonzero(ksp,PETSC_TRUE));
+  PetscCall(PetscOptionsInsertString(NULL,"-ksp_type preonly -ksp_initial_guess_nonzero false"));
+  PetscCall(PetscOptionsClearValue(NULL,"-ksp_converged_reason"));
+  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(KSPSolve(ksp,b,x));
 
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&u));
-  CHKERRQ(VecDestroy(&b));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(KSPDestroy(&ksp));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&u));
+  PetscCall(VecDestroy(&b));
+  PetscCall(MatDestroy(&A));
+  PetscCall(KSPDestroy(&ksp));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

@@ -22,8 +22,8 @@ static PetscMPIInt Petsc_ScaLAPACK_keyval = MPI_KEYVAL_INVALID;
 static PetscErrorCode Petsc_ScaLAPACK_keyval_free(void)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscInfo(NULL,"Freeing Petsc_ScaLAPACK_keyval\n"));
-  CHKERRMPI(MPI_Comm_free_keyval(&Petsc_ScaLAPACK_keyval));
+  PetscCall(PetscInfo(NULL,"Freeing Petsc_ScaLAPACK_keyval\n"));
+  PetscCallMPI(MPI_Comm_free_keyval(&Petsc_ScaLAPACK_keyval));
   PetscFunctionReturn(0);
 }
 
@@ -35,23 +35,23 @@ static PetscErrorCode MatView_ScaLAPACK(Mat A,PetscViewer viewer)
   Mat               Adense;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    CHKERRQ(PetscViewerGetFormat(viewer,&format));
+    PetscCall(PetscViewerGetFormat(viewer,&format));
     if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"block sizes: %d,%d\n",(int)a->mb,(int)a->nb));
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"grid height=%d, grid width=%d\n",(int)a->grid->nprow,(int)a->grid->npcol));
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"coordinates of process owning first row and column: (%d,%d)\n",(int)a->rsrc,(int)a->csrc));
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"dimension of largest local matrix: %d x %d\n",(int)a->locr,(int)a->locc));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"block sizes: %d,%d\n",(int)a->mb,(int)a->nb));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"grid height=%d, grid width=%d\n",(int)a->grid->nprow,(int)a->grid->npcol));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"coordinates of process owning first row and column: (%d,%d)\n",(int)a->rsrc,(int)a->csrc));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"dimension of largest local matrix: %d x %d\n",(int)a->locr,(int)a->locc));
       PetscFunctionReturn(0);
     } else if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
       PetscFunctionReturn(0);
     }
   }
   /* convert to dense format and call MatView() */
-  CHKERRQ(MatConvert(A,MATDENSE,MAT_INITIAL_MATRIX,&Adense));
-  CHKERRQ(MatView(Adense,viewer));
-  CHKERRQ(MatDestroy(&Adense));
+  PetscCall(MatConvert(A,MATDENSE,MAT_INITIAL_MATRIX,&Adense));
+  PetscCall(MatView(Adense,viewer));
+  PetscCall(MatDestroy(&Adense));
   PetscFunctionReturn(0);
 }
 
@@ -69,11 +69,11 @@ static PetscErrorCode MatGetInfo_ScaLAPACK(Mat A,MatInfoType flag,MatInfo *info)
     info->nz_allocated   = isend[0];
     info->nz_used        = isend[1];
   } else if (flag == MAT_GLOBAL_MAX) {
-    CHKERRMPI(MPIU_Allreduce(isend,irecv,2,MPIU_PETSCLOGDOUBLE,MPIU_MAX,PetscObjectComm((PetscObject)A)));
+    PetscCallMPI(MPIU_Allreduce(isend,irecv,2,MPIU_PETSCLOGDOUBLE,MPIU_MAX,PetscObjectComm((PetscObject)A)));
     info->nz_allocated   = irecv[0];
     info->nz_used        = irecv[1];
   } else if (flag == MAT_GLOBAL_SUM) {
-    CHKERRMPI(MPIU_Allreduce(isend,irecv,2,MPIU_PETSCLOGDOUBLE,MPIU_SUM,PetscObjectComm((PetscObject)A)));
+    PetscCallMPI(MPIU_Allreduce(isend,irecv,2,MPIU_PETSCLOGDOUBLE,MPIU_SUM,PetscObjectComm((PetscObject)A)));
     info->nz_allocated   = irecv[0];
     info->nz_used        = irecv[1];
   }
@@ -114,10 +114,10 @@ static PetscErrorCode MatSetValues_ScaLAPACK(Mat A,PetscInt nr,const PetscInt *r
   PetscFunctionBegin;
   for (i=0;i<nr;i++) {
     if (rows[i] < 0) continue;
-    CHKERRQ(PetscBLASIntCast(rows[i]+1,&gridx));
+    PetscCall(PetscBLASIntCast(rows[i]+1,&gridx));
     for (j=0;j<nc;j++) {
       if (cols[j] < 0) continue;
-      CHKERRQ(PetscBLASIntCast(cols[j]+1,&gcidx));
+      PetscCall(PetscBLASIntCast(cols[j]+1,&gcidx));
       PetscStackCallBLAS("SCALAPACKinfog2l",SCALAPACKinfog2l_(&gridx,&gcidx,a->desc,&a->grid->nprow,&a->grid->npcol,&a->grid->myrow,&a->grid->mycol,&lridx,&lcidx,&rsrc,&csrc));
       if (rsrc==a->grid->myrow && csrc==a->grid->mycol) {
         switch (imode) {
@@ -128,7 +128,7 @@ static PetscErrorCode MatSetValues_ScaLAPACK(Mat A,PetscInt nr,const PetscInt *r
       } else {
         PetscCheck(!A->nooffprocentries,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Setting off process entry even though MatSetOption(,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE) was set");
         A->assembled = PETSC_FALSE;
-        CHKERRQ(MatStashValuesRow_Private(&A->stash,rows[i],1,cols+j,vals+i*nc+j,(PetscBool)(imode==ADD_VALUES)));
+        PetscCall(MatStashValuesRow_Private(&A->stash,rows[i],1,cols+j,vals+i*nc+j,(PetscBool)(imode==ADD_VALUES)));
       }
     }
   }
@@ -146,13 +146,13 @@ static PetscErrorCode MatMultXXXYYY_ScaLAPACK(Mat A,PetscBool transpose,PetscSca
   if (transpose) {
 
     /* create ScaLAPACK descriptors for vectors (1d block distribution) */
-    CHKERRQ(PetscLayoutGetRanges(A->rmap,&ranges));
-    CHKERRQ(PetscBLASIntCast(ranges[1],&mb));  /* x block size */
+    PetscCall(PetscLayoutGetRanges(A->rmap,&ranges));
+    PetscCall(PetscBLASIntCast(ranges[1],&mb));  /* x block size */
     xlld = PetscMax(1,A->rmap->n);
     PetscStackCallBLAS("SCALAPACKdescinit",SCALAPACKdescinit_(xdesc,&a->M,&one,&mb,&one,&zero,&zero,&a->grid->ictxcol,&xlld,&info));
     PetscCheckScaLapackInfo("descinit",info);
-    CHKERRQ(PetscLayoutGetRanges(A->cmap,&ranges));
-    CHKERRQ(PetscBLASIntCast(ranges[1],&nb));  /* y block size */
+    PetscCall(PetscLayoutGetRanges(A->cmap,&ranges));
+    PetscCall(PetscBLASIntCast(ranges[1],&nb));  /* y block size */
     ylld = 1;
     PetscStackCallBLAS("SCALAPACKdescinit",SCALAPACKdescinit_(ydesc,&one,&a->N,&one,&nb,&zero,&zero,&a->grid->ictxrow,&ylld,&info));
     PetscCheckScaLapackInfo("descinit",info);
@@ -160,7 +160,7 @@ static PetscErrorCode MatMultXXXYYY_ScaLAPACK(Mat A,PetscBool transpose,PetscSca
     /* allocate 2d vectors */
     lszx = SCALAPACKnumroc_(&a->M,&a->mb,&a->grid->myrow,&a->rsrc,&a->grid->nprow);
     lszy = SCALAPACKnumroc_(&a->N,&a->nb,&a->grid->mycol,&a->csrc,&a->grid->npcol);
-    CHKERRQ(PetscMalloc2(lszx,&x2d,lszy,&y2d));
+    PetscCall(PetscMalloc2(lszx,&x2d,lszy,&y2d));
     xlld = PetscMax(1,lszx);
 
     /* create ScaLAPACK descriptors for vectors (2d block distribution) */
@@ -184,13 +184,13 @@ static PetscErrorCode MatMultXXXYYY_ScaLAPACK(Mat A,PetscBool transpose,PetscSca
   } else {   /* non-transpose */
 
     /* create ScaLAPACK descriptors for vectors (1d block distribution) */
-    CHKERRQ(PetscLayoutGetRanges(A->cmap,&ranges));
-    CHKERRQ(PetscBLASIntCast(ranges[1],&nb));  /* x block size */
+    PetscCall(PetscLayoutGetRanges(A->cmap,&ranges));
+    PetscCall(PetscBLASIntCast(ranges[1],&nb));  /* x block size */
     xlld = 1;
     PetscStackCallBLAS("SCALAPACKdescinit",SCALAPACKdescinit_(xdesc,&one,&a->N,&one,&nb,&zero,&zero,&a->grid->ictxrow,&xlld,&info));
     PetscCheckScaLapackInfo("descinit",info);
-    CHKERRQ(PetscLayoutGetRanges(A->rmap,&ranges));
-    CHKERRQ(PetscBLASIntCast(ranges[1],&mb));  /* y block size */
+    PetscCall(PetscLayoutGetRanges(A->rmap,&ranges));
+    PetscCall(PetscBLASIntCast(ranges[1],&mb));  /* y block size */
     ylld = PetscMax(1,A->rmap->n);
     PetscStackCallBLAS("SCALAPACKdescinit",SCALAPACKdescinit_(ydesc,&a->M,&one,&mb,&one,&zero,&zero,&a->grid->ictxcol,&ylld,&info));
     PetscCheckScaLapackInfo("descinit",info);
@@ -198,7 +198,7 @@ static PetscErrorCode MatMultXXXYYY_ScaLAPACK(Mat A,PetscBool transpose,PetscSca
     /* allocate 2d vectors */
     lszy = SCALAPACKnumroc_(&a->M,&a->mb,&a->grid->myrow,&a->rsrc,&a->grid->nprow);
     lszx = SCALAPACKnumroc_(&a->N,&a->nb,&a->grid->mycol,&a->csrc,&a->grid->npcol);
-    CHKERRQ(PetscMalloc2(lszx,&x2d,lszy,&y2d));
+    PetscCall(PetscMalloc2(lszx,&x2d,lszy,&y2d));
     ylld = PetscMax(1,lszy);
 
     /* create ScaLAPACK descriptors for vectors (2d block distribution) */
@@ -220,7 +220,7 @@ static PetscErrorCode MatMultXXXYYY_ScaLAPACK(Mat A,PetscBool transpose,PetscSca
     PetscStackCallBLAS("SCALAPACKgemr2d",SCALAPACKgemr2d_(&a->M,&one,y2d,&one,&one,y2desc,y,&one,&one,ydesc,&a->grid->ictxcol));
 
   }
-  CHKERRQ(PetscFree2(x2d,y2d));
+  PetscCall(PetscFree2(x2d,y2d));
   PetscFunctionReturn(0);
 }
 
@@ -230,11 +230,11 @@ static PetscErrorCode MatMult_ScaLAPACK(Mat A,Vec x,Vec y)
   PetscScalar       *yarray;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(x,&xarray));
-  CHKERRQ(VecGetArray(y,&yarray));
-  CHKERRQ(MatMultXXXYYY_ScaLAPACK(A,PETSC_FALSE,0.0,xarray,yarray));
-  CHKERRQ(VecRestoreArrayRead(x,&xarray));
-  CHKERRQ(VecRestoreArray(y,&yarray));
+  PetscCall(VecGetArrayRead(x,&xarray));
+  PetscCall(VecGetArray(y,&yarray));
+  PetscCall(MatMultXXXYYY_ScaLAPACK(A,PETSC_FALSE,0.0,xarray,yarray));
+  PetscCall(VecRestoreArrayRead(x,&xarray));
+  PetscCall(VecRestoreArray(y,&yarray));
   PetscFunctionReturn(0);
 }
 
@@ -244,11 +244,11 @@ static PetscErrorCode MatMultTranspose_ScaLAPACK(Mat A,Vec x,Vec y)
   PetscScalar       *yarray;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(x,&xarray));
-  CHKERRQ(VecGetArray(y,&yarray));
-  CHKERRQ(MatMultXXXYYY_ScaLAPACK(A,PETSC_TRUE,0.0,xarray,yarray));
-  CHKERRQ(VecRestoreArrayRead(x,&xarray));
-  CHKERRQ(VecRestoreArray(y,&yarray));
+  PetscCall(VecGetArrayRead(x,&xarray));
+  PetscCall(VecGetArray(y,&yarray));
+  PetscCall(MatMultXXXYYY_ScaLAPACK(A,PETSC_TRUE,0.0,xarray,yarray));
+  PetscCall(VecRestoreArrayRead(x,&xarray));
+  PetscCall(VecRestoreArray(y,&yarray));
   PetscFunctionReturn(0);
 }
 
@@ -258,12 +258,12 @@ static PetscErrorCode MatMultAdd_ScaLAPACK(Mat A,Vec x,Vec y,Vec z)
   PetscScalar       *zarray;
 
   PetscFunctionBegin;
-  if (y != z) CHKERRQ(VecCopy(y,z));
-  CHKERRQ(VecGetArrayRead(x,&xarray));
-  CHKERRQ(VecGetArray(z,&zarray));
-  CHKERRQ(MatMultXXXYYY_ScaLAPACK(A,PETSC_FALSE,1.0,xarray,zarray));
-  CHKERRQ(VecRestoreArrayRead(x,&xarray));
-  CHKERRQ(VecRestoreArray(z,&zarray));
+  if (y != z) PetscCall(VecCopy(y,z));
+  PetscCall(VecGetArrayRead(x,&xarray));
+  PetscCall(VecGetArray(z,&zarray));
+  PetscCall(MatMultXXXYYY_ScaLAPACK(A,PETSC_FALSE,1.0,xarray,zarray));
+  PetscCall(VecRestoreArrayRead(x,&xarray));
+  PetscCall(VecRestoreArray(z,&zarray));
   PetscFunctionReturn(0);
 }
 
@@ -273,12 +273,12 @@ static PetscErrorCode MatMultTransposeAdd_ScaLAPACK(Mat A,Vec x,Vec y,Vec z)
   PetscScalar       *zarray;
 
   PetscFunctionBegin;
-  if (y != z) CHKERRQ(VecCopy(y,z));
-  CHKERRQ(VecGetArrayRead(x,&xarray));
-  CHKERRQ(VecGetArray(z,&zarray));
-  CHKERRQ(MatMultXXXYYY_ScaLAPACK(A,PETSC_TRUE,1.0,xarray,zarray));
-  CHKERRQ(VecRestoreArrayRead(x,&xarray));
-  CHKERRQ(VecRestoreArray(z,&zarray));
+  if (y != z) PetscCall(VecCopy(y,z));
+  PetscCall(VecGetArrayRead(x,&xarray));
+  PetscCall(VecGetArray(z,&zarray));
+  PetscCall(MatMultXXXYYY_ScaLAPACK(A,PETSC_TRUE,1.0,xarray,zarray));
+  PetscCall(VecRestoreArrayRead(x,&xarray));
+  PetscCall(VecRestoreArray(z,&zarray));
   PetscFunctionReturn(0);
 }
 
@@ -299,9 +299,9 @@ PetscErrorCode MatMatMultNumeric_ScaLAPACK(Mat A,Mat B,Mat C)
 PetscErrorCode MatMatMultSymbolic_ScaLAPACK(Mat A,Mat B,PetscReal fill,Mat C)
 {
   PetscFunctionBegin;
-  CHKERRQ(MatSetSizes(C,A->rmap->n,B->cmap->n,PETSC_DECIDE,PETSC_DECIDE));
-  CHKERRQ(MatSetType(C,MATSCALAPACK));
-  CHKERRQ(MatSetUp(C));
+  PetscCall(MatSetSizes(C,A->rmap->n,B->cmap->n,PETSC_DECIDE,PETSC_DECIDE));
+  PetscCall(MatSetType(C,MATSCALAPACK));
+  PetscCall(MatSetUp(C));
   C->ops->matmultnumeric = MatMatMultNumeric_ScaLAPACK;
   PetscFunctionReturn(0);
 }
@@ -323,9 +323,9 @@ static PetscErrorCode MatMatTransposeMultNumeric_ScaLAPACK(Mat A,Mat B,Mat C)
 static PetscErrorCode MatMatTransposeMultSymbolic_ScaLAPACK(Mat A,Mat B,PetscReal fill,Mat C)
 {
   PetscFunctionBegin;
-  CHKERRQ(MatSetSizes(C,A->rmap->n,B->rmap->n,PETSC_DECIDE,PETSC_DECIDE));
-  CHKERRQ(MatSetType(C,MATSCALAPACK));
-  CHKERRQ(MatSetUp(C));
+  PetscCall(MatSetSizes(C,A->rmap->n,B->rmap->n,PETSC_DECIDE,PETSC_DECIDE));
+  PetscCall(MatSetType(C,MATSCALAPACK));
+  PetscCall(MatSetUp(C));
   PetscFunctionReturn(0);
 }
 
@@ -353,10 +353,10 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_ScaLAPACK(Mat C)
   PetscFunctionBegin;
   switch (product->type) {
     case MATPRODUCT_AB:
-      CHKERRQ(MatProductSetFromOptions_ScaLAPACK_AB(C));
+      PetscCall(MatProductSetFromOptions_ScaLAPACK_AB(C));
       break;
     case MATPRODUCT_ABt:
-      CHKERRQ(MatProductSetFromOptions_ScaLAPACK_ABt(C));
+      PetscCall(MatProductSetFromOptions_ScaLAPACK_ABt(C));
       break;
     default: SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_SUP,"MatProduct type %s is not supported for ScaLAPACK and ScaLAPACK matrices",MatProductTypes[product->type]);
   }
@@ -372,20 +372,20 @@ static PetscErrorCode MatGetDiagonal_ScaLAPACK(Mat A,Vec D)
   PetscBLASInt      j,ddesc[9],d2desc[9],mb,nb,lszd,zero=0,one=1,dlld,info;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArray(D,&darray));
+  PetscCall(VecGetArray(D,&darray));
 
   if (A->rmap->N<=A->cmap->N) {   /* row version */
 
     /* create ScaLAPACK descriptor for vector (1d block distribution) */
-    CHKERRQ(PetscLayoutGetRanges(A->rmap,&ranges));
-    CHKERRQ(PetscBLASIntCast(ranges[1],&mb));  /* D block size */
+    PetscCall(PetscLayoutGetRanges(A->rmap,&ranges));
+    PetscCall(PetscBLASIntCast(ranges[1],&mb));  /* D block size */
     dlld = PetscMax(1,A->rmap->n);
     PetscStackCallBLAS("SCALAPACKdescinit",SCALAPACKdescinit_(ddesc,&a->M,&one,&mb,&one,&zero,&zero,&a->grid->ictxcol,&dlld,&info));
     PetscCheckScaLapackInfo("descinit",info);
 
     /* allocate 2d vector */
     lszd = SCALAPACKnumroc_(&a->M,&a->mb,&a->grid->myrow,&a->rsrc,&a->grid->nprow);
-    CHKERRQ(PetscCalloc1(lszd,&d2d));
+    PetscCall(PetscCalloc1(lszd,&d2d));
     dlld = PetscMax(1,lszd);
 
     /* create ScaLAPACK descriptor for vector (2d block distribution) */
@@ -400,20 +400,20 @@ static PetscErrorCode MatGetDiagonal_ScaLAPACK(Mat A,Vec D)
 
     /* redistribute d from a column of a 2d matrix */
     PetscStackCallBLAS("SCALAPACKgemr2d",SCALAPACKgemr2d_(&a->M,&one,d2d,&one,&one,d2desc,darray,&one,&one,ddesc,&a->grid->ictxcol));
-    CHKERRQ(PetscFree(d2d));
+    PetscCall(PetscFree(d2d));
 
   } else {   /* column version */
 
     /* create ScaLAPACK descriptor for vector (1d block distribution) */
-    CHKERRQ(PetscLayoutGetRanges(A->cmap,&ranges));
-    CHKERRQ(PetscBLASIntCast(ranges[1],&nb));  /* D block size */
+    PetscCall(PetscLayoutGetRanges(A->cmap,&ranges));
+    PetscCall(PetscBLASIntCast(ranges[1],&nb));  /* D block size */
     dlld = 1;
     PetscStackCallBLAS("SCALAPACKdescinit",SCALAPACKdescinit_(ddesc,&one,&a->N,&one,&nb,&zero,&zero,&a->grid->ictxrow,&dlld,&info));
     PetscCheckScaLapackInfo("descinit",info);
 
     /* allocate 2d vector */
     lszd = SCALAPACKnumroc_(&a->N,&a->nb,&a->grid->mycol,&a->csrc,&a->grid->npcol);
-    CHKERRQ(PetscCalloc1(lszd,&d2d));
+    PetscCall(PetscCalloc1(lszd,&d2d));
 
     /* create ScaLAPACK descriptor for vector (2d block distribution) */
     PetscStackCallBLAS("SCALAPACKdescinit",SCALAPACKdescinit_(d2desc,&one,&a->N,&one,&a->nb,&zero,&zero,&a->grid->ictxt,&dlld,&info));
@@ -427,12 +427,12 @@ static PetscErrorCode MatGetDiagonal_ScaLAPACK(Mat A,Vec D)
 
     /* redistribute d from a row of a 2d matrix */
     PetscStackCallBLAS("SCALAPACKgemr2d",SCALAPACKgemr2d_(&one,&a->N,d2d,&one,&one,d2desc,darray,&one,&one,ddesc,&a->grid->ictxrow));
-    CHKERRQ(PetscFree(d2d));
+    PetscCall(PetscFree(d2d));
   }
 
-  CHKERRQ(VecRestoreArray(D,&darray));
-  CHKERRQ(VecAssemblyBegin(D));
-  CHKERRQ(VecAssemblyEnd(D));
+  PetscCall(VecRestoreArray(D,&darray));
+  PetscCall(VecAssemblyBegin(D));
+  PetscCall(VecAssemblyEnd(D));
   PetscFunctionReturn(0);
 }
 
@@ -446,17 +446,17 @@ static PetscErrorCode MatDiagonalScale_ScaLAPACK(Mat A,Vec L,Vec R)
 
   PetscFunctionBegin;
   if (R) {
-    CHKERRQ(VecGetArrayRead(R,(const PetscScalar **)&d));
+    PetscCall(VecGetArrayRead(R,(const PetscScalar **)&d));
     /* create ScaLAPACK descriptor for vector (1d block distribution) */
-    CHKERRQ(PetscLayoutGetRanges(A->cmap,&ranges));
-    CHKERRQ(PetscBLASIntCast(ranges[1],&nb));  /* D block size */
+    PetscCall(PetscLayoutGetRanges(A->cmap,&ranges));
+    PetscCall(PetscBLASIntCast(ranges[1],&nb));  /* D block size */
     dlld = 1;
     PetscStackCallBLAS("SCALAPACKdescinit",SCALAPACKdescinit_(ddesc,&one,&a->N,&one,&nb,&zero,&zero,&a->grid->ictxrow,&dlld,&info));
     PetscCheckScaLapackInfo("descinit",info);
 
     /* allocate 2d vector */
     lszd = SCALAPACKnumroc_(&a->N,&a->nb,&a->grid->mycol,&a->csrc,&a->grid->npcol);
-    CHKERRQ(PetscCalloc1(lszd,&d2d));
+    PetscCall(PetscCalloc1(lszd,&d2d));
 
     /* create ScaLAPACK descriptor for vector (2d block distribution) */
     PetscStackCallBLAS("SCALAPACKdescinit",SCALAPACKdescinit_(d2desc,&one,&a->N,&one,&a->nb,&zero,&zero,&a->grid->ictxt,&dlld,&info));
@@ -472,21 +472,21 @@ static PetscErrorCode MatDiagonalScale_ScaLAPACK(Mat A,Vec L,Vec R)
     /* local scaling */
     for (j=0;j<a->locc;j++) for (i=0;i<a->locr;i++) a->loc[i+j*a->lld] *= d2d[j];
 
-    CHKERRQ(PetscFree(d2d));
-    CHKERRQ(VecRestoreArrayRead(R,(const PetscScalar **)&d));
+    PetscCall(PetscFree(d2d));
+    PetscCall(VecRestoreArrayRead(R,(const PetscScalar **)&d));
   }
   if (L) {
-    CHKERRQ(VecGetArrayRead(L,(const PetscScalar **)&d));
+    PetscCall(VecGetArrayRead(L,(const PetscScalar **)&d));
     /* create ScaLAPACK descriptor for vector (1d block distribution) */
-    CHKERRQ(PetscLayoutGetRanges(A->rmap,&ranges));
-    CHKERRQ(PetscBLASIntCast(ranges[1],&mb));  /* D block size */
+    PetscCall(PetscLayoutGetRanges(A->rmap,&ranges));
+    PetscCall(PetscBLASIntCast(ranges[1],&mb));  /* D block size */
     dlld = PetscMax(1,A->rmap->n);
     PetscStackCallBLAS("SCALAPACKdescinit",SCALAPACKdescinit_(ddesc,&a->M,&one,&mb,&one,&zero,&zero,&a->grid->ictxcol,&dlld,&info));
     PetscCheckScaLapackInfo("descinit",info);
 
     /* allocate 2d vector */
     lszd = SCALAPACKnumroc_(&a->M,&a->mb,&a->grid->myrow,&a->rsrc,&a->grid->nprow);
-    CHKERRQ(PetscCalloc1(lszd,&d2d));
+    PetscCall(PetscCalloc1(lszd,&d2d));
     dlld = PetscMax(1,lszd);
 
     /* create ScaLAPACK descriptor for vector (2d block distribution) */
@@ -503,8 +503,8 @@ static PetscErrorCode MatDiagonalScale_ScaLAPACK(Mat A,Vec L,Vec R)
     /* local scaling */
     for (i=0;i<a->locr;i++) for (j=0;j<a->locc;j++) a->loc[i+j*a->lld] *= d2d[i];
 
-    CHKERRQ(PetscFree(d2d));
-    CHKERRQ(VecRestoreArrayRead(L,(const PetscScalar **)&d));
+    PetscCall(PetscFree(d2d));
+    PetscCall(VecRestoreArrayRead(L,(const PetscScalar **)&d));
   }
   PetscFunctionReturn(0);
 }
@@ -553,7 +553,7 @@ static PetscErrorCode MatAXPY_ScaLAPACK(Mat Y,PetscScalar alpha,Mat X,MatStructu
   PetscFunctionBegin;
   MatScaLAPACKCheckDistribution(Y,1,X,3);
   PetscStackCallBLAS("SCALAPACKmatadd",SCALAPACKmatadd_(&x->M,&x->N,&alpha,x->loc,&one,&one,x->desc,&beta,y->loc,&one,&one,y->desc));
-  CHKERRQ(PetscObjectStateIncrease((PetscObject)Y));
+  PetscCall(PetscObjectStateIncrease((PetscObject)Y));
   PetscFunctionReturn(0);
 }
 
@@ -563,8 +563,8 @@ static PetscErrorCode MatCopy_ScaLAPACK(Mat A,Mat B,MatStructure str)
   Mat_ScaLAPACK  *b = (Mat_ScaLAPACK*)B->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscArraycpy(b->loc,a->loc,a->lld*a->locc));
-  CHKERRQ(PetscObjectStateIncrease((PetscObject)B));
+  PetscCall(PetscArraycpy(b->loc,a->loc,a->lld*a->locc));
+  PetscCall(PetscObjectStateIncrease((PetscObject)B));
   PetscFunctionReturn(0);
 }
 
@@ -575,10 +575,10 @@ static PetscErrorCode MatDuplicate_ScaLAPACK(Mat A,MatDuplicateOption op,Mat *B)
   Mat_ScaLAPACK  *a = (Mat_ScaLAPACK*)A->data,*b;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectGetComm((PetscObject)A,&comm));
-  CHKERRQ(MatCreate(comm,&Bs));
-  CHKERRQ(MatSetSizes(Bs,A->rmap->n,A->cmap->n,PETSC_DECIDE,PETSC_DECIDE));
-  CHKERRQ(MatSetType(Bs,MATSCALAPACK));
+  PetscCall(PetscObjectGetComm((PetscObject)A,&comm));
+  PetscCall(MatCreate(comm,&Bs));
+  PetscCall(MatSetSizes(Bs,A->rmap->n,A->cmap->n,PETSC_DECIDE,PETSC_DECIDE));
+  PetscCall(MatSetType(Bs,MATSCALAPACK));
   b = (Mat_ScaLAPACK*)Bs->data;
   b->M    = a->M;
   b->N    = a->N;
@@ -586,10 +586,10 @@ static PetscErrorCode MatDuplicate_ScaLAPACK(Mat A,MatDuplicateOption op,Mat *B)
   b->nb   = a->nb;
   b->rsrc = a->rsrc;
   b->csrc = a->csrc;
-  CHKERRQ(MatSetUp(Bs));
+  PetscCall(MatSetUp(Bs));
   *B = Bs;
   if (op == MAT_COPY_VALUES) {
-    CHKERRQ(PetscArraycpy(b->loc,a->loc,a->lld*a->locc));
+    PetscCall(PetscArraycpy(b->loc,a->loc,a->lld*a->locc));
   }
   Bs->assembled = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -607,7 +607,7 @@ static PetscErrorCode MatTranspose_ScaLAPACK(Mat A,MatReuse reuse,Mat *B)
 
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) {
-    CHKERRQ(MatCreateScaLAPACK(PetscObjectComm((PetscObject)A),a->nb,a->mb,a->N,a->M,a->csrc,a->rsrc,&Bs));
+    PetscCall(MatCreateScaLAPACK(PetscObjectComm((PetscObject)A),a->nb,a->mb,a->N,a->M,a->csrc,a->rsrc,&Bs));
     *B = Bs;
   } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Only MAT_INITIAL_MATRIX supported");
   b = (Mat_ScaLAPACK*)Bs->data;
@@ -639,7 +639,7 @@ static PetscErrorCode MatHermitianTranspose_ScaLAPACK(Mat A,MatReuse reuse,Mat *
 
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) {
-    CHKERRQ(MatCreateScaLAPACK(PetscObjectComm((PetscObject)A),a->nb,a->mb,a->N,a->M,a->csrc,a->rsrc,&Bs));
+    PetscCall(MatCreateScaLAPACK(PetscObjectComm((PetscObject)A),a->nb,a->mb,a->N,a->M,a->csrc,a->rsrc,&Bs));
     *B = Bs;
   } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Only MAT_INITIAL_MATRIX supported");
   b = (Mat_ScaLAPACK*)Bs->data;
@@ -656,19 +656,19 @@ static PetscErrorCode MatSolve_ScaLAPACK(Mat A,Vec B,Vec X)
   PetscBLASInt   xdesc[9],x2desc[9],mb,lszx,zero=0,one=1,xlld,nrhs=1,info;
 
   PetscFunctionBegin;
-  CHKERRQ(VecCopy(B,X));
-  CHKERRQ(VecGetArray(X,&x));
+  PetscCall(VecCopy(B,X));
+  PetscCall(VecGetArray(X,&x));
 
   /* create ScaLAPACK descriptor for a vector (1d block distribution) */
-  CHKERRQ(PetscLayoutGetRanges(A->rmap,&ranges));
-  CHKERRQ(PetscBLASIntCast(ranges[1],&mb));  /* x block size */
+  PetscCall(PetscLayoutGetRanges(A->rmap,&ranges));
+  PetscCall(PetscBLASIntCast(ranges[1],&mb));  /* x block size */
   xlld = PetscMax(1,A->rmap->n);
   PetscStackCallBLAS("SCALAPACKdescinit",SCALAPACKdescinit_(xdesc,&a->M,&one,&mb,&one,&zero,&zero,&a->grid->ictxcol,&xlld,&info));
   PetscCheckScaLapackInfo("descinit",info);
 
   /* allocate 2d vector */
   lszx = SCALAPACKnumroc_(&a->M,&a->mb,&a->grid->myrow,&a->rsrc,&a->grid->nprow);
-  CHKERRQ(PetscMalloc1(lszx,&x2d));
+  PetscCall(PetscMalloc1(lszx,&x2d));
   xlld = PetscMax(1,lszx);
 
   /* create ScaLAPACK descriptor for a vector (2d block distribution) */
@@ -695,16 +695,16 @@ static PetscErrorCode MatSolve_ScaLAPACK(Mat A,Vec B,Vec X)
   /* redistribute x from a column of a 2d matrix */
   PetscStackCallBLAS("SCALAPACKgemr2d",SCALAPACKgemr2d_(&a->M,&one,x2d,&one,&one,x2desc,x,&one,&one,xdesc,&a->grid->ictxcol));
 
-  CHKERRQ(PetscFree(x2d));
-  CHKERRQ(VecRestoreArray(X,&x));
+  PetscCall(PetscFree(x2d));
+  PetscCall(VecRestoreArray(X,&x));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatSolveAdd_ScaLAPACK(Mat A,Vec B,Vec Y,Vec X)
 {
   PetscFunctionBegin;
-  CHKERRQ(MatSolve_ScaLAPACK(A,B,X));
-  CHKERRQ(VecAXPY(X,1,Y));
+  PetscCall(MatSolve_ScaLAPACK(A,B,X));
+  PetscCall(VecAXPY(X,1,Y));
   PetscFunctionReturn(0);
 }
 
@@ -715,13 +715,13 @@ static PetscErrorCode MatMatSolve_ScaLAPACK(Mat A,Mat B,Mat X)
   PetscBLASInt   one=1,info;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)B,MATSCALAPACK,&flg1));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)X,MATSCALAPACK,&flg2));
+  PetscCall(PetscObjectTypeCompare((PetscObject)B,MATSCALAPACK,&flg1));
+  PetscCall(PetscObjectTypeCompare((PetscObject)X,MATSCALAPACK,&flg2));
   PetscCheckFalse(!(flg1 && flg2),PETSC_COMM_SELF,PETSC_ERR_SUP,"Both B and X must be of type MATSCALAPACK");
   MatScaLAPACKCheckDistribution(B,1,X,2);
   b = (Mat_ScaLAPACK*)B->data;
   x = (Mat_ScaLAPACK*)X->data;
-  CHKERRQ(PetscArraycpy(x->loc,b->loc,b->lld*b->locc));
+  PetscCall(PetscArraycpy(x->loc,b->loc,b->lld*b->locc));
 
   switch (A->factortype) {
     case MAT_FACTOR_LU:
@@ -745,24 +745,24 @@ static PetscErrorCode MatLUFactor_ScaLAPACK(Mat A,IS row,IS col,const MatFactorI
 
   PetscFunctionBegin;
   if (!a->pivots) {
-    CHKERRQ(PetscMalloc1(a->locr+a->mb,&a->pivots));
-    CHKERRQ(PetscLogObjectMemory((PetscObject)A,a->locr*sizeof(PetscBLASInt)));
+    PetscCall(PetscMalloc1(a->locr+a->mb,&a->pivots));
+    PetscCall(PetscLogObjectMemory((PetscObject)A,a->locr*sizeof(PetscBLASInt)));
   }
   PetscStackCallBLAS("SCALAPACKgetrf",SCALAPACKgetrf_(&a->M,&a->N,a->loc,&one,&one,a->desc,a->pivots,&info));
   PetscCheckScaLapackInfo("getrf",info);
   A->factortype = MAT_FACTOR_LU;
   A->assembled  = PETSC_TRUE;
 
-  CHKERRQ(PetscFree(A->solvertype));
-  CHKERRQ(PetscStrallocpy(MATSOLVERSCALAPACK,&A->solvertype));
+  PetscCall(PetscFree(A->solvertype));
+  PetscCall(PetscStrallocpy(MATSOLVERSCALAPACK,&A->solvertype));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatLUFactorNumeric_ScaLAPACK(Mat F,Mat A,const MatFactorInfo *info)
 {
   PetscFunctionBegin;
-  CHKERRQ(MatCopy(A,F,SAME_NONZERO_PATTERN));
-  CHKERRQ(MatLUFactor_ScaLAPACK(F,0,0,info));
+  PetscCall(MatCopy(A,F,SAME_NONZERO_PATTERN));
+  PetscCall(MatLUFactor_ScaLAPACK(F,0,0,info));
   PetscFunctionReturn(0);
 }
 
@@ -784,16 +784,16 @@ static PetscErrorCode MatCholeskyFactor_ScaLAPACK(Mat A,IS perm,const MatFactorI
   A->factortype = MAT_FACTOR_CHOLESKY;
   A->assembled  = PETSC_TRUE;
 
-  CHKERRQ(PetscFree(A->solvertype));
-  CHKERRQ(PetscStrallocpy(MATSOLVERSCALAPACK,&A->solvertype));
+  PetscCall(PetscFree(A->solvertype));
+  PetscCall(PetscStrallocpy(MATSOLVERSCALAPACK,&A->solvertype));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatCholeskyFactorNumeric_ScaLAPACK(Mat F,Mat A,const MatFactorInfo *info)
 {
   PetscFunctionBegin;
-  CHKERRQ(MatCopy(A,F,SAME_NONZERO_PATTERN));
-  CHKERRQ(MatCholeskyFactor_ScaLAPACK(F,0,info));
+  PetscCall(MatCopy(A,F,SAME_NONZERO_PATTERN));
+  PetscCall(MatCholeskyFactor_ScaLAPACK(F,0,info));
   PetscFunctionReturn(0);
 }
 
@@ -818,13 +818,13 @@ static PetscErrorCode MatGetFactor_scalapack_scalapack(Mat A,MatFactorType ftype
 
   PetscFunctionBegin;
   /* Create the factorization matrix */
-  CHKERRQ(MatCreateScaLAPACK(PetscObjectComm((PetscObject)A),a->mb,a->nb,a->M,a->N,a->rsrc,a->csrc,&B));
+  PetscCall(MatCreateScaLAPACK(PetscObjectComm((PetscObject)A),a->mb,a->nb,a->M,a->N,a->rsrc,a->csrc,&B));
   B->trivialsymbolic = PETSC_TRUE;
   B->factortype = ftype;
-  CHKERRQ(PetscFree(B->solvertype));
-  CHKERRQ(PetscStrallocpy(MATSOLVERSCALAPACK,&B->solvertype));
+  PetscCall(PetscFree(B->solvertype));
+  PetscCall(PetscStrallocpy(MATSOLVERSCALAPACK,&B->solvertype));
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_scalapack_scalapack));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_scalapack_scalapack));
   *F = B;
   PetscFunctionReturn(0);
 }
@@ -832,8 +832,8 @@ static PetscErrorCode MatGetFactor_scalapack_scalapack(Mat A,MatFactorType ftype
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_ScaLAPACK(void)
 {
   PetscFunctionBegin;
-  CHKERRQ(MatSolverTypeRegister(MATSOLVERSCALAPACK,MATSCALAPACK,MAT_FACTOR_LU,MatGetFactor_scalapack_scalapack));
-  CHKERRQ(MatSolverTypeRegister(MATSOLVERSCALAPACK,MATSCALAPACK,MAT_FACTOR_CHOLESKY,MatGetFactor_scalapack_scalapack));
+  PetscCall(MatSolverTypeRegister(MATSOLVERSCALAPACK,MATSCALAPACK,MAT_FACTOR_LU,MatGetFactor_scalapack_scalapack));
+  PetscCall(MatSolverTypeRegister(MATSOLVERSCALAPACK,MATSCALAPACK,MAT_FACTOR_CHOLESKY,MatGetFactor_scalapack_scalapack));
   PetscFunctionReturn(0);
 }
 
@@ -861,9 +861,9 @@ static PetscErrorCode MatNorm_ScaLAPACK(Mat A,NormType type,PetscReal *nrm)
     default:
       SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Unsupported norm type");
   }
-  if (lwork) CHKERRQ(PetscMalloc1(lwork,&work));
+  if (lwork) PetscCall(PetscMalloc1(lwork,&work));
   *nrm = SCALAPACKlange_(ntype,&a->M,&a->N,a->loc,&one,&one,a->desc,work);
-  if (lwork) CHKERRQ(PetscFree(work));
+  if (lwork) PetscCall(PetscFree(work));
   PetscFunctionReturn(0);
 }
 
@@ -872,7 +872,7 @@ static PetscErrorCode MatZeroEntries_ScaLAPACK(Mat A)
   Mat_ScaLAPACK  *a = (Mat_ScaLAPACK*)A->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscArrayzero(a->loc,a->lld*a->locc));
+  PetscCall(PetscArrayzero(a->loc,a->lld*a->locc));
   PetscFunctionReturn(0);
 }
 
@@ -888,9 +888,9 @@ static PetscErrorCode MatGetOwnershipIS_ScaLAPACK(Mat A,IS *rows,IS *cols)
     isrc  = a->rsrc;
     nproc = a->grid->nprow;
     iproc = a->grid->myrow;
-    CHKERRQ(PetscMalloc1(n,&idx));
+    PetscCall(PetscMalloc1(n,&idx));
     for (i=0;i<n;i++) idx[i] = nproc*nb*(i/nb) + i%nb + ((nproc+iproc-isrc)%nproc)*nb;
-    CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,n,idx,PETSC_OWN_POINTER,rows));
+    PetscCall(ISCreateGeneral(PETSC_COMM_SELF,n,idx,PETSC_OWN_POINTER,rows));
   }
   if (cols) {
     n     = a->locc;
@@ -898,9 +898,9 @@ static PetscErrorCode MatGetOwnershipIS_ScaLAPACK(Mat A,IS *rows,IS *cols)
     isrc  = a->csrc;
     nproc = a->grid->npcol;
     iproc = a->grid->mycol;
-    CHKERRQ(PetscMalloc1(n,&idx));
+    PetscCall(PetscMalloc1(n,&idx));
     for (i=0;i<n;i++) idx[i] = nproc*nb*(i/nb) + i%nb + ((nproc+iproc-isrc)%nproc)*nb;
-    CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,n,idx,PETSC_OWN_POINTER,cols));
+    PetscCall(ISCreateGeneral(PETSC_COMM_SELF,n,idx,PETSC_OWN_POINTER,cols));
   }
   PetscFunctionReturn(0);
 }
@@ -919,78 +919,78 @@ static PetscErrorCode MatConvert_ScaLAPACK_Dense(Mat A,MatType newtype,MatReuse 
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectGetComm((PetscObject)A,&comm));
-  CHKERRQ(PetscLayoutGetRanges(A->rmap,&ranges));
+  PetscCall(PetscObjectGetComm((PetscObject)A,&comm));
+  PetscCall(PetscLayoutGetRanges(A->rmap,&ranges));
 
   if (reuse == MAT_REUSE_MATRIX) { /* check if local sizes differ in A and B */
-    CHKERRMPI(MPI_Comm_size(comm,&size));
-    CHKERRQ(PetscLayoutGetRanges((*B)->rmap,&branges));
+    PetscCallMPI(MPI_Comm_size(comm,&size));
+    PetscCall(PetscLayoutGetRanges((*B)->rmap,&branges));
     for (i=0;i<size;i++) if (ranges[i+1]!=branges[i+1]) { differ=PETSC_TRUE; break; }
   }
 
   if (reuse == MAT_REUSE_MATRIX && differ) { /* special case, use auxiliary dense matrix */
-    CHKERRQ(MatCreate(comm,&Bmpi));
+    PetscCall(MatCreate(comm,&Bmpi));
     m = PETSC_DECIDE;
-    CHKERRQ(PetscSplitOwnershipEqual(comm,&m,&M));
+    PetscCall(PetscSplitOwnershipEqual(comm,&m,&M));
     n = PETSC_DECIDE;
-    CHKERRQ(PetscSplitOwnershipEqual(comm,&n,&N));
-    CHKERRQ(MatSetSizes(Bmpi,m,n,M,N));
-    CHKERRQ(MatSetType(Bmpi,MATDENSE));
-    CHKERRQ(MatSetUp(Bmpi));
+    PetscCall(PetscSplitOwnershipEqual(comm,&n,&N));
+    PetscCall(MatSetSizes(Bmpi,m,n,M,N));
+    PetscCall(MatSetType(Bmpi,MATDENSE));
+    PetscCall(MatSetUp(Bmpi));
 
     /* create ScaLAPACK descriptor for B (1d block distribution) */
-    CHKERRQ(PetscBLASIntCast(ranges[1],&bmb));  /* row block size */
+    PetscCall(PetscBLASIntCast(ranges[1],&bmb));  /* row block size */
     lld = PetscMax(A->rmap->n,1);  /* local leading dimension */
     PetscStackCallBLAS("SCALAPACKdescinit",SCALAPACKdescinit_(bdesc,&a->M,&a->N,&bmb,&a->N,&zero,&zero,&a->grid->ictxcol,&lld,&info));
     PetscCheckScaLapackInfo("descinit",info);
 
     /* redistribute matrix */
-    CHKERRQ(MatDenseGetArray(Bmpi,&barray));
+    PetscCall(MatDenseGetArray(Bmpi,&barray));
     PetscStackCallBLAS("SCALAPACKgemr2d",SCALAPACKgemr2d_(&a->M,&a->N,a->loc,&one,&one,a->desc,barray,&one,&one,bdesc,&a->grid->ictxcol));
-    CHKERRQ(MatDenseRestoreArray(Bmpi,&barray));
-    CHKERRQ(MatAssemblyBegin(Bmpi,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(Bmpi,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatDenseRestoreArray(Bmpi,&barray));
+    PetscCall(MatAssemblyBegin(Bmpi,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(Bmpi,MAT_FINAL_ASSEMBLY));
 
     /* transfer rows of auxiliary matrix to the final matrix B */
-    CHKERRQ(MatGetOwnershipRange(Bmpi,&rstart,&rend));
+    PetscCall(MatGetOwnershipRange(Bmpi,&rstart,&rend));
     for (i=rstart;i<rend;i++) {
-      CHKERRQ(MatGetRow(Bmpi,i,&nz,&cwork,&vwork));
-      CHKERRQ(MatSetValues(*B,1,&i,nz,cwork,vwork,INSERT_VALUES));
-      CHKERRQ(MatRestoreRow(Bmpi,i,&nz,&cwork,&vwork));
+      PetscCall(MatGetRow(Bmpi,i,&nz,&cwork,&vwork));
+      PetscCall(MatSetValues(*B,1,&i,nz,cwork,vwork,INSERT_VALUES));
+      PetscCall(MatRestoreRow(Bmpi,i,&nz,&cwork,&vwork));
     }
-    CHKERRQ(MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatDestroy(&Bmpi));
+    PetscCall(MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatDestroy(&Bmpi));
 
   } else {  /* normal cases */
 
     if (reuse == MAT_REUSE_MATRIX) Bmpi = *B;
     else {
-      CHKERRQ(MatCreate(comm,&Bmpi));
+      PetscCall(MatCreate(comm,&Bmpi));
       m = PETSC_DECIDE;
-      CHKERRQ(PetscSplitOwnershipEqual(comm,&m,&M));
+      PetscCall(PetscSplitOwnershipEqual(comm,&m,&M));
       n = PETSC_DECIDE;
-      CHKERRQ(PetscSplitOwnershipEqual(comm,&n,&N));
-      CHKERRQ(MatSetSizes(Bmpi,m,n,M,N));
-      CHKERRQ(MatSetType(Bmpi,MATDENSE));
-      CHKERRQ(MatSetUp(Bmpi));
+      PetscCall(PetscSplitOwnershipEqual(comm,&n,&N));
+      PetscCall(MatSetSizes(Bmpi,m,n,M,N));
+      PetscCall(MatSetType(Bmpi,MATDENSE));
+      PetscCall(MatSetUp(Bmpi));
     }
 
     /* create ScaLAPACK descriptor for B (1d block distribution) */
-    CHKERRQ(PetscBLASIntCast(ranges[1],&bmb));  /* row block size */
+    PetscCall(PetscBLASIntCast(ranges[1],&bmb));  /* row block size */
     lld = PetscMax(A->rmap->n,1);  /* local leading dimension */
     PetscStackCallBLAS("SCALAPACKdescinit",SCALAPACKdescinit_(bdesc,&a->M,&a->N,&bmb,&a->N,&zero,&zero,&a->grid->ictxcol,&lld,&info));
     PetscCheckScaLapackInfo("descinit",info);
 
     /* redistribute matrix */
-    CHKERRQ(MatDenseGetArray(Bmpi,&barray));
+    PetscCall(MatDenseGetArray(Bmpi,&barray));
     PetscStackCallBLAS("SCALAPACKgemr2d",SCALAPACKgemr2d_(&a->M,&a->N,a->loc,&one,&one,a->desc,barray,&one,&one,bdesc,&a->grid->ictxcol));
-    CHKERRQ(MatDenseRestoreArray(Bmpi,&barray));
+    PetscCall(MatDenseRestoreArray(Bmpi,&barray));
 
-    CHKERRQ(MatAssemblyBegin(Bmpi,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(Bmpi,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyBegin(Bmpi,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(Bmpi,MAT_FINAL_ASSEMBLY));
     if (reuse == MAT_INPLACE_MATRIX) {
-      CHKERRQ(MatHeaderReplace(A,&Bmpi));
+      PetscCall(MatHeaderReplace(A,&Bmpi));
     } else *B = Bmpi;
   }
   PetscFunctionReturn(0);
@@ -1008,38 +1008,38 @@ PETSC_INTERN PetscErrorCode MatConvert_Dense_ScaLAPACK(Mat A,MatType newtype,Mat
   PetscInt       lda;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectGetComm((PetscObject)A,&comm));
+  PetscCall(PetscObjectGetComm((PetscObject)A,&comm));
 
   if (reuse == MAT_REUSE_MATRIX) Bmpi = *B;
   else {
-    CHKERRQ(MatCreate(comm,&Bmpi));
+    PetscCall(MatCreate(comm,&Bmpi));
     m = PETSC_DECIDE;
-    CHKERRQ(PetscSplitOwnershipEqual(comm,&m,&M));
+    PetscCall(PetscSplitOwnershipEqual(comm,&m,&M));
     n = PETSC_DECIDE;
-    CHKERRQ(PetscSplitOwnershipEqual(comm,&n,&N));
-    CHKERRQ(MatSetSizes(Bmpi,m,n,M,N));
-    CHKERRQ(MatSetType(Bmpi,MATSCALAPACK));
-    CHKERRQ(MatSetUp(Bmpi));
+    PetscCall(PetscSplitOwnershipEqual(comm,&n,&N));
+    PetscCall(MatSetSizes(Bmpi,m,n,M,N));
+    PetscCall(MatSetType(Bmpi,MATSCALAPACK));
+    PetscCall(MatSetUp(Bmpi));
   }
   b = (Mat_ScaLAPACK*)Bmpi->data;
 
   /* create ScaLAPACK descriptor for A (1d block distribution) */
-  CHKERRQ(PetscLayoutGetRanges(A->rmap,&ranges));
-  CHKERRQ(PetscBLASIntCast(ranges[1],&amb));  /* row block size */
-  CHKERRQ(MatDenseGetLDA(A,&lda));
+  PetscCall(PetscLayoutGetRanges(A->rmap,&ranges));
+  PetscCall(PetscBLASIntCast(ranges[1],&amb));  /* row block size */
+  PetscCall(MatDenseGetLDA(A,&lda));
   lld = PetscMax(lda,1);  /* local leading dimension */
   PetscStackCallBLAS("SCALAPACKdescinit",SCALAPACKdescinit_(adesc,&b->M,&b->N,&amb,&b->N,&zero,&zero,&b->grid->ictxcol,&lld,&info));
   PetscCheckScaLapackInfo("descinit",info);
 
   /* redistribute matrix */
-  CHKERRQ(MatDenseGetArray(A,&aarray));
+  PetscCall(MatDenseGetArray(A,&aarray));
   PetscStackCallBLAS("SCALAPACKgemr2d",SCALAPACKgemr2d_(&b->M,&b->N,aarray,&one,&one,adesc,b->loc,&one,&one,b->desc,&b->grid->ictxcol));
-  CHKERRQ(MatDenseRestoreArray(A,&aarray));
+  PetscCall(MatDenseRestoreArray(A,&aarray));
 
-  CHKERRQ(MatAssemblyBegin(Bmpi,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(Bmpi,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(Bmpi,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(Bmpi,MAT_FINAL_ASSEMBLY));
   if (reuse == MAT_INPLACE_MATRIX) {
-    CHKERRQ(MatHeaderReplace(A,&Bmpi));
+    PetscCall(MatHeaderReplace(A,&Bmpi));
   } else *B = Bmpi;
   PetscFunctionReturn(0);
 }
@@ -1054,26 +1054,26 @@ PETSC_INTERN PetscErrorCode MatConvert_AIJ_ScaLAPACK(Mat A,MatType newtype,MatRe
   PetscFunctionBegin;
   if (reuse == MAT_REUSE_MATRIX) {
     mat_scal = *newmat;
-    CHKERRQ(MatZeroEntries(mat_scal));
+    PetscCall(MatZeroEntries(mat_scal));
   } else {
-    CHKERRQ(MatCreate(PetscObjectComm((PetscObject)A),&mat_scal));
+    PetscCall(MatCreate(PetscObjectComm((PetscObject)A),&mat_scal));
     m = PETSC_DECIDE;
-    CHKERRQ(PetscSplitOwnershipEqual(PetscObjectComm((PetscObject)A),&m,&M));
+    PetscCall(PetscSplitOwnershipEqual(PetscObjectComm((PetscObject)A),&m,&M));
     n = PETSC_DECIDE;
-    CHKERRQ(PetscSplitOwnershipEqual(PetscObjectComm((PetscObject)A),&n,&N));
-    CHKERRQ(MatSetSizes(mat_scal,m,n,M,N));
-    CHKERRQ(MatSetType(mat_scal,MATSCALAPACK));
-    CHKERRQ(MatSetUp(mat_scal));
+    PetscCall(PetscSplitOwnershipEqual(PetscObjectComm((PetscObject)A),&n,&N));
+    PetscCall(MatSetSizes(mat_scal,m,n,M,N));
+    PetscCall(MatSetType(mat_scal,MATSCALAPACK));
+    PetscCall(MatSetUp(mat_scal));
   }
   for (row=rstart;row<rend;row++) {
-    CHKERRQ(MatGetRow(A,row,&ncols,&cols,&vals));
-    CHKERRQ(MatSetValues(mat_scal,1,&row,ncols,cols,vals,INSERT_VALUES));
-    CHKERRQ(MatRestoreRow(A,row,&ncols,&cols,&vals));
+    PetscCall(MatGetRow(A,row,&ncols,&cols,&vals));
+    PetscCall(MatSetValues(mat_scal,1,&row,ncols,cols,vals,INSERT_VALUES));
+    PetscCall(MatRestoreRow(A,row,&ncols,&cols,&vals));
   }
-  CHKERRQ(MatAssemblyBegin(mat_scal,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(mat_scal,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(mat_scal,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(mat_scal,MAT_FINAL_ASSEMBLY));
 
-  if (reuse == MAT_INPLACE_MATRIX) CHKERRQ(MatHeaderReplace(A,&mat_scal));
+  if (reuse == MAT_INPLACE_MATRIX) PetscCall(MatHeaderReplace(A,&mat_scal));
   else *newmat = mat_scal;
   PetscFunctionReturn(0);
 }
@@ -1089,33 +1089,33 @@ PETSC_INTERN PetscErrorCode MatConvert_SBAIJ_ScaLAPACK(Mat A, MatType newtype,Ma
   PetscFunctionBegin;
   if (reuse == MAT_REUSE_MATRIX) {
     mat_scal = *newmat;
-    CHKERRQ(MatZeroEntries(mat_scal));
+    PetscCall(MatZeroEntries(mat_scal));
   } else {
-    CHKERRQ(MatCreate(PetscObjectComm((PetscObject)A),&mat_scal));
+    PetscCall(MatCreate(PetscObjectComm((PetscObject)A),&mat_scal));
     m = PETSC_DECIDE;
-    CHKERRQ(PetscSplitOwnershipEqual(PetscObjectComm((PetscObject)A),&m,&M));
+    PetscCall(PetscSplitOwnershipEqual(PetscObjectComm((PetscObject)A),&m,&M));
     n = PETSC_DECIDE;
-    CHKERRQ(PetscSplitOwnershipEqual(PetscObjectComm((PetscObject)A),&n,&N));
-    CHKERRQ(MatSetSizes(mat_scal,m,n,M,N));
-    CHKERRQ(MatSetType(mat_scal,MATSCALAPACK));
-    CHKERRQ(MatSetUp(mat_scal));
+    PetscCall(PetscSplitOwnershipEqual(PetscObjectComm((PetscObject)A),&n,&N));
+    PetscCall(MatSetSizes(mat_scal,m,n,M,N));
+    PetscCall(MatSetType(mat_scal,MATSCALAPACK));
+    PetscCall(MatSetUp(mat_scal));
   }
-  CHKERRQ(MatGetRowUpperTriangular(A));
+  PetscCall(MatGetRowUpperTriangular(A));
   for (row=rstart;row<rend;row++) {
-    CHKERRQ(MatGetRow(A,row,&ncols,&cols,&vals));
-    CHKERRQ(MatSetValues(mat_scal,1,&row,ncols,cols,vals,ADD_VALUES));
+    PetscCall(MatGetRow(A,row,&ncols,&cols,&vals));
+    PetscCall(MatSetValues(mat_scal,1,&row,ncols,cols,vals,ADD_VALUES));
     for (j=0;j<ncols;j++) { /* lower triangular part */
       if (cols[j] == row) continue;
       v    = A->hermitian ? PetscConj(vals[j]) : vals[j];
-      CHKERRQ(MatSetValues(mat_scal,1,&cols[j],1,&row,&v,ADD_VALUES));
+      PetscCall(MatSetValues(mat_scal,1,&cols[j],1,&row,&v,ADD_VALUES));
     }
-    CHKERRQ(MatRestoreRow(A,row,&ncols,&cols,&vals));
+    PetscCall(MatRestoreRow(A,row,&ncols,&cols,&vals));
   }
-  CHKERRQ(MatRestoreRowUpperTriangular(A));
-  CHKERRQ(MatAssemblyBegin(mat_scal,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(mat_scal,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatRestoreRowUpperTriangular(A));
+  PetscCall(MatAssemblyBegin(mat_scal,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(mat_scal,MAT_FINAL_ASSEMBLY));
 
-  if (reuse == MAT_INPLACE_MATRIX) CHKERRQ(MatHeaderReplace(A,&mat_scal));
+  if (reuse == MAT_INPLACE_MATRIX) PetscCall(MatHeaderReplace(A,&mat_scal));
   else *newmat = mat_scal;
   PetscFunctionReturn(0);
 }
@@ -1126,14 +1126,14 @@ static PetscErrorCode MatScaLAPACKSetPreallocation(Mat A)
   PetscInt       sz=0;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscLayoutSetUp(A->rmap));
-  CHKERRQ(PetscLayoutSetUp(A->cmap));
+  PetscCall(PetscLayoutSetUp(A->rmap));
+  PetscCall(PetscLayoutSetUp(A->cmap));
   if (!a->lld) a->lld = a->locr;
 
-  CHKERRQ(PetscFree(a->loc));
-  CHKERRQ(PetscIntMultError(a->lld,a->locc,&sz));
-  CHKERRQ(PetscCalloc1(sz,&a->loc));
-  CHKERRQ(PetscLogObjectMemory((PetscObject)A,sz*sizeof(PetscScalar)));
+  PetscCall(PetscFree(a->loc));
+  PetscCall(PetscIntMultError(a->lld,a->locc,&sz));
+  PetscCall(PetscCalloc1(sz,&a->loc));
+  PetscCall(PetscLogObjectMemory((PetscObject)A,sz*sizeof(PetscScalar)));
 
   A->preallocated = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -1147,24 +1147,24 @@ static PetscErrorCode MatDestroy_ScaLAPACK(Mat A)
   MPI_Comm           icomm;
 
   PetscFunctionBegin;
-  CHKERRQ(MatStashDestroy_Private(&A->stash));
-  CHKERRQ(PetscFree(a->loc));
-  CHKERRQ(PetscFree(a->pivots));
-  CHKERRQ(PetscCommDuplicate(PetscObjectComm((PetscObject)A),&icomm,NULL));
-  CHKERRMPI(MPI_Comm_get_attr(icomm,Petsc_ScaLAPACK_keyval,(void**)&grid,(int*)&flg));
+  PetscCall(MatStashDestroy_Private(&A->stash));
+  PetscCall(PetscFree(a->loc));
+  PetscCall(PetscFree(a->pivots));
+  PetscCall(PetscCommDuplicate(PetscObjectComm((PetscObject)A),&icomm,NULL));
+  PetscCallMPI(MPI_Comm_get_attr(icomm,Petsc_ScaLAPACK_keyval,(void**)&grid,(int*)&flg));
   if (--grid->grid_refct == 0) {
     Cblacs_gridexit(grid->ictxt);
     Cblacs_gridexit(grid->ictxrow);
     Cblacs_gridexit(grid->ictxcol);
-    CHKERRQ(PetscFree(grid));
-    CHKERRMPI(MPI_Comm_delete_attr(icomm,Petsc_ScaLAPACK_keyval));
+    PetscCall(PetscFree(grid));
+    PetscCallMPI(MPI_Comm_delete_attr(icomm,Petsc_ScaLAPACK_keyval));
   }
-  CHKERRQ(PetscCommDestroy(&icomm));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)A,"MatGetOwnershipIS_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverType_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)A,"MatScaLAPACKSetBlockSizes_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)A,"MatScaLAPACKGetBlockSizes_C",NULL));
-  CHKERRQ(PetscFree(A->data));
+  PetscCall(PetscCommDestroy(&icomm));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatGetOwnershipIS_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatScaLAPACKSetBlockSizes_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatScaLAPACKGetBlockSizes_C",NULL));
+  PetscCall(PetscFree(A->data));
   PetscFunctionReturn(0);
 }
 
@@ -1175,9 +1175,9 @@ static inline PetscErrorCode MatScaLAPACKCheckLayout(PetscLayout map)
   PetscInt       i,n;
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_size(map->comm,&size));
+  PetscCallMPI(MPI_Comm_size(map->comm,&size));
   if (size>2) {
-    CHKERRQ(PetscLayoutGetRanges(map,&ranges));
+    PetscCall(PetscLayoutGetRanges(map,&ranges));
     n = ranges[1]-ranges[0];
     for (i=1;i<size-1;i++) if (ranges[i+1]-ranges[i]!=n) break;
     PetscCheckFalse(i<size-1 && ranges[i+1]-ranges[i]!=0 && ranges[i+2]-ranges[i+1]!=0,map->comm,PETSC_ERR_SUP,"MATSCALAPACK must have equal local sizes in all processes (except possibly the last one), consider using MatCreateScaLAPACK");
@@ -1191,22 +1191,22 @@ PetscErrorCode MatSetUp_ScaLAPACK(Mat A)
   PetscBLASInt   info=0;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscLayoutSetUp(A->rmap));
-  CHKERRQ(PetscLayoutSetUp(A->cmap));
+  PetscCall(PetscLayoutSetUp(A->rmap));
+  PetscCall(PetscLayoutSetUp(A->cmap));
 
   /* check that the layout is as enforced by MatCreateScaLAPACK */
-  CHKERRQ(MatScaLAPACKCheckLayout(A->rmap));
-  CHKERRQ(MatScaLAPACKCheckLayout(A->cmap));
+  PetscCall(MatScaLAPACKCheckLayout(A->rmap));
+  PetscCall(MatScaLAPACKCheckLayout(A->cmap));
 
   /* compute local sizes */
-  CHKERRQ(PetscBLASIntCast(A->rmap->N,&a->M));
-  CHKERRQ(PetscBLASIntCast(A->cmap->N,&a->N));
+  PetscCall(PetscBLASIntCast(A->rmap->N,&a->M));
+  PetscCall(PetscBLASIntCast(A->cmap->N,&a->N));
   a->locr = SCALAPACKnumroc_(&a->M,&a->mb,&a->grid->myrow,&a->rsrc,&a->grid->nprow);
   a->locc = SCALAPACKnumroc_(&a->N,&a->nb,&a->grid->mycol,&a->csrc,&a->grid->npcol);
   a->lld  = PetscMax(1,a->locr);
 
   /* allocate local array */
-  CHKERRQ(MatScaLAPACKSetPreallocation(A));
+  PetscCall(MatScaLAPACKSetPreallocation(A));
 
   /* set up ScaLAPACK descriptor */
   PetscStackCallBLAS("SCALAPACKdescinit",SCALAPACKdescinit_(a->desc,&a->M,&a->N,&a->mb,&a->nb,&a->rsrc,&a->csrc,&a->grid->ictxt,&a->lld,&info));
@@ -1220,9 +1220,9 @@ PetscErrorCode MatAssemblyBegin_ScaLAPACK(Mat A,MatAssemblyType type)
 
   PetscFunctionBegin;
   if (A->nooffprocentries) PetscFunctionReturn(0);
-  CHKERRQ(MatStashScatterBegin_Private(A,&A->stash,NULL));
-  CHKERRQ(MatStashGetInfo_Private(&A->stash,&nstash,&reallocs));
-  CHKERRQ(PetscInfo(A,"Stash has %" PetscInt_FMT " entries, uses %" PetscInt_FMT " mallocs.\n",nstash,reallocs));
+  PetscCall(MatStashScatterBegin_Private(A,&A->stash,NULL));
+  PetscCall(MatStashGetInfo_Private(&A->stash,&nstash,&reallocs));
+  PetscCall(PetscInfo(A,"Stash has %" PetscInt_FMT " entries, uses %" PetscInt_FMT " mallocs.\n",nstash,reallocs));
   PetscFunctionReturn(0);
 }
 
@@ -1237,11 +1237,11 @@ PetscErrorCode MatAssemblyEnd_ScaLAPACK(Mat A,MatAssemblyType type)
   PetscFunctionBegin;
   if (A->nooffprocentries) PetscFunctionReturn(0);
   while (1) {
-    CHKERRQ(MatStashScatterGetMesg_Private(&A->stash,&n,&row,&col,&val,&flg));
+    PetscCall(MatStashScatterGetMesg_Private(&A->stash,&n,&row,&col,&val,&flg));
     if (!flg) break;
     for (i=0;i<n;i++) {
-      CHKERRQ(PetscBLASIntCast(row[i]+1,&gridx));
-      CHKERRQ(PetscBLASIntCast(col[i]+1,&gcidx));
+      PetscCall(PetscBLASIntCast(row[i]+1,&gridx));
+      PetscCall(PetscBLASIntCast(col[i]+1,&gcidx));
       PetscStackCallBLAS("SCALAPACKinfog2l",SCALAPACKinfog2l_(&gridx,&gcidx,a->desc,&a->grid->nprow,&a->grid->npcol,&a->grid->myrow,&a->grid->mycol,&lridx,&lcidx,&rsrc,&csrc));
       PetscCheckFalse(rsrc!=a->grid->myrow || csrc!=a->grid->mycol,PetscObjectComm((PetscObject)A),PETSC_ERR_LIB,"Something went wrong, received value does not belong to this process");
       switch (A->insertmode) {
@@ -1251,7 +1251,7 @@ PetscErrorCode MatAssemblyEnd_ScaLAPACK(Mat A,MatAssemblyType type)
       }
     }
   }
-  CHKERRQ(MatStashScatterEnd_Private(&A->stash));
+  PetscCall(MatStashScatterEnd_Private(&A->stash));
   PetscFunctionReturn(0);
 }
 
@@ -1261,13 +1261,13 @@ PetscErrorCode MatLoad_ScaLAPACK(Mat newMat,PetscViewer viewer)
   MPI_Comm       comm;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectGetComm((PetscObject)newMat,&comm));
-  CHKERRQ(MatCreate(comm,&Adense));
-  CHKERRQ(MatSetType(Adense,MATDENSE));
-  CHKERRQ(MatLoad(Adense,viewer));
-  CHKERRQ(MatConvert(Adense,MATSCALAPACK,MAT_INITIAL_MATRIX,&As));
-  CHKERRQ(MatDestroy(&Adense));
-  CHKERRQ(MatHeaderReplace(newMat,&As));
+  PetscCall(PetscObjectGetComm((PetscObject)newMat,&comm));
+  PetscCall(MatCreate(comm,&Adense));
+  PetscCall(MatSetType(Adense,MATDENSE));
+  PetscCall(MatLoad(Adense,viewer));
+  PetscCall(MatConvert(Adense,MATSCALAPACK,MAT_INITIAL_MATRIX,&As));
+  PetscCall(MatDestroy(&Adense));
+  PetscCall(MatHeaderReplace(newMat,&As));
   PetscFunctionReturn(0);
 }
 
@@ -1441,7 +1441,7 @@ static PetscErrorCode MatStashScatterBegin_ScaLAPACK(Mat mat,MatStash *stash,Pet
   PetscFunctionBegin;
   {                             /* make sure all processors are either in INSERTMODE or ADDMODE */
     InsertMode addv;
-    CHKERRMPI(MPIU_Allreduce((PetscEnum*)&mat->insertmode,(PetscEnum*)&addv,1,MPIU_ENUM,MPI_BOR,PetscObjectComm((PetscObject)mat)));
+    PetscCallMPI(MPIU_Allreduce((PetscEnum*)&mat->insertmode,(PetscEnum*)&addv,1,MPIU_ENUM,MPI_BOR,PetscObjectComm((PetscObject)mat)));
     PetscCheckFalse(addv == (ADD_VALUES|INSERT_VALUES),PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Some processors inserted others added");
     mat->insertmode = addv; /* in case this processor had no cache */
   }
@@ -1449,16 +1449,16 @@ static PetscErrorCode MatStashScatterBegin_ScaLAPACK(Mat mat,MatStash *stash,Pet
   bs2 = stash->bs*stash->bs;
 
   /*  first count number of contributors to each processor */
-  CHKERRQ(PetscCalloc1(size,&nlengths));
-  CHKERRQ(PetscMalloc1(stash->n+1,&owner));
+  PetscCall(PetscCalloc1(size,&nlengths));
+  PetscCall(PetscMalloc1(stash->n+1,&owner));
 
   i     = j    = 0;
   space = stash->space_head;
   while (space) {
     space_next = space->next;
     for (l=0; l<space->local_used; l++) {
-      CHKERRQ(PetscBLASIntCast(space->idx[l]+1,&gridx));
-      CHKERRQ(PetscBLASIntCast(space->idy[l]+1,&gcidx));
+      PetscCall(PetscBLASIntCast(space->idx[l]+1,&gridx));
+      PetscCall(PetscBLASIntCast(space->idy[l]+1,&gcidx));
       PetscStackCallBLAS("SCALAPACKinfog2l",SCALAPACKinfog2l_(&gridx,&gcidx,a->desc,&a->grid->nprow,&a->grid->npcol,&a->grid->myrow,&a->grid->mycol,&lridx,&lcidx,&rsrc,&csrc));
       j = Cblacs_pnum(a->grid->ictxt,rsrc,csrc);
       nlengths[j]++; owner[i] = j;
@@ -1468,7 +1468,7 @@ static PetscErrorCode MatStashScatterBegin_ScaLAPACK(Mat mat,MatStash *stash,Pet
   }
 
   /* Now check what procs get messages - and compute nsends. */
-  CHKERRQ(PetscCalloc1(size,&sizes));
+  PetscCall(PetscCalloc1(size,&sizes));
   for (i=0, nsends=0; i<size; i++) {
     if (nlengths[i]) {
       sizes[i] = 1; nsends++;
@@ -1477,24 +1477,24 @@ static PetscErrorCode MatStashScatterBegin_ScaLAPACK(Mat mat,MatStash *stash,Pet
 
   {PetscMPIInt *onodes,*olengths;
    /* Determine the number of messages to expect, their lengths, from from-ids */
-   CHKERRQ(PetscGatherNumberOfMessages(comm,sizes,nlengths,&nreceives));
-   CHKERRQ(PetscGatherMessageLengths(comm,nsends,nreceives,nlengths,&onodes,&olengths));
+   PetscCall(PetscGatherNumberOfMessages(comm,sizes,nlengths,&nreceives));
+   PetscCall(PetscGatherMessageLengths(comm,nsends,nreceives,nlengths,&onodes,&olengths));
    /* since clubbing row,col - lengths are multiplied by 2 */
    for (i=0; i<nreceives; i++) olengths[i] *=2;
-   CHKERRQ(PetscPostIrecvInt(comm,tag1,nreceives,onodes,olengths,&rindices,&recv_waits1));
+   PetscCall(PetscPostIrecvInt(comm,tag1,nreceives,onodes,olengths,&rindices,&recv_waits1));
    /* values are size 'bs2' lengths (and remove earlier factor 2 */
    for (i=0; i<nreceives; i++) olengths[i] = olengths[i]*bs2/2;
-   CHKERRQ(PetscPostIrecvScalar(comm,tag2,nreceives,onodes,olengths,&rvalues,&recv_waits2));
-   CHKERRQ(PetscFree(onodes));
-   CHKERRQ(PetscFree(olengths));}
+   PetscCall(PetscPostIrecvScalar(comm,tag2,nreceives,onodes,olengths,&rvalues,&recv_waits2));
+   PetscCall(PetscFree(onodes));
+   PetscCall(PetscFree(olengths));}
 
   /* do sends:
       1) starts[i] gives the starting index in svalues for stuff going to
          the ith processor
   */
-  CHKERRQ(PetscMalloc2(bs2*stash->n,&svalues,2*(stash->n+1),&sindices));
-  CHKERRQ(PetscMalloc1(2*nsends,&send_waits));
-  CHKERRQ(PetscMalloc2(size,&startv,size,&starti));
+  PetscCall(PetscMalloc2(bs2*stash->n,&svalues,2*(stash->n+1),&sindices));
+  PetscCall(PetscMalloc1(2*nsends,&send_waits));
+  PetscCall(PetscMalloc2(size,&startv,size,&starti));
   /* use 2 sends the first with all_a, the next with all_i and all_j */
   startv[0] = 0; starti[0] = 0;
   for (i=1; i<size; i++) {
@@ -1533,25 +1533,25 @@ static PetscErrorCode MatStashScatterBegin_ScaLAPACK(Mat mat,MatStash *stash,Pet
 
   for (i=0,count=0; i<size; i++) {
     if (sizes[i]) {
-      CHKERRMPI(MPI_Isend(sindices+2*startv[i],2*nlengths[i],MPIU_INT,i,tag1,comm,send_waits+count++));
-      CHKERRMPI(MPI_Isend(svalues+bs2*startv[i],bs2*nlengths[i],MPIU_SCALAR,i,tag2,comm,send_waits+count++));
+      PetscCallMPI(MPI_Isend(sindices+2*startv[i],2*nlengths[i],MPIU_INT,i,tag1,comm,send_waits+count++));
+      PetscCallMPI(MPI_Isend(svalues+bs2*startv[i],bs2*nlengths[i],MPIU_SCALAR,i,tag2,comm,send_waits+count++));
     }
   }
 #if defined(PETSC_USE_INFO)
-  CHKERRQ(PetscInfo(NULL,"No of messages: %" PetscInt_FMT "\n",nsends));
+  PetscCall(PetscInfo(NULL,"No of messages: %" PetscInt_FMT "\n",nsends));
   for (i=0; i<size; i++) {
     if (sizes[i]) {
-      CHKERRQ(PetscInfo(NULL,"Mesg_to: %" PetscInt_FMT ": size: %zu bytes\n",i,(size_t)(nlengths[i]*(bs2*sizeof(PetscScalar)+2*sizeof(PetscInt)))));
+      PetscCall(PetscInfo(NULL,"Mesg_to: %" PetscInt_FMT ": size: %zu bytes\n",i,(size_t)(nlengths[i]*(bs2*sizeof(PetscScalar)+2*sizeof(PetscInt)))));
     }
   }
 #endif
-  CHKERRQ(PetscFree(nlengths));
-  CHKERRQ(PetscFree(owner));
-  CHKERRQ(PetscFree2(startv,starti));
-  CHKERRQ(PetscFree(sizes));
+  PetscCall(PetscFree(nlengths));
+  PetscCall(PetscFree(owner));
+  PetscCall(PetscFree2(startv,starti));
+  PetscCall(PetscFree(sizes));
 
   /* recv_waits need to be contiguous for MatStashScatterGetMesg_Private() */
-  CHKERRQ(PetscMalloc1(2*nreceives,&recv_waits));
+  PetscCall(PetscMalloc1(2*nreceives,&recv_waits));
 
   for (i=0; i<nreceives; i++) {
     recv_waits[2*i]   = recv_waits1[i];
@@ -1559,8 +1559,8 @@ static PetscErrorCode MatStashScatterBegin_ScaLAPACK(Mat mat,MatStash *stash,Pet
   }
   stash->recv_waits = recv_waits;
 
-  CHKERRQ(PetscFree(recv_waits1));
-  CHKERRQ(PetscFree(recv_waits2));
+  PetscCall(PetscFree(recv_waits1));
+  PetscCall(PetscFree(recv_waits2));
 
   stash->svalues         = svalues;
   stash->sindices        = sindices;
@@ -1581,8 +1581,8 @@ static PetscErrorCode MatScaLAPACKSetBlockSizes_ScaLAPACK(Mat A,PetscInt mb,Pets
   PetscCheck(!A->preallocated,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Cannot change block sizes after MatSetUp");
   PetscCheckFalse(mb<1 && mb!=PETSC_DECIDE,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"mb %" PetscInt_FMT " must be at least 1",mb);
   PetscCheckFalse(nb<1 && nb!=PETSC_DECIDE,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"nb %" PetscInt_FMT " must be at least 1",nb);
-  CHKERRQ(PetscBLASIntCast((mb==PETSC_DECIDE)?DEFAULT_BLOCKSIZE:mb,&a->mb));
-  CHKERRQ(PetscBLASIntCast((nb==PETSC_DECIDE)?a->mb:nb,&a->nb));
+  PetscCall(PetscBLASIntCast((mb==PETSC_DECIDE)?DEFAULT_BLOCKSIZE:mb,&a->mb));
+  PetscCall(PetscBLASIntCast((nb==PETSC_DECIDE)?a->mb:nb,&a->nb));
   PetscFunctionReturn(0);
 }
 
@@ -1607,7 +1607,7 @@ PetscErrorCode MatScaLAPACKSetBlockSizes(Mat A,PetscInt mb,PetscInt nb)
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidLogicalCollectiveInt(A,mb,2);
   PetscValidLogicalCollectiveInt(A,nb,3);
-  CHKERRQ(PetscTryMethod(A,"MatScaLAPACKSetBlockSizes_C",(Mat,PetscInt,PetscInt),(A,mb,nb)));
+  PetscCall(PetscTryMethod(A,"MatScaLAPACKSetBlockSizes_C",(Mat,PetscInt,PetscInt),(A,mb,nb)));
   PetscFunctionReturn(0);
 }
 
@@ -1642,7 +1642,7 @@ PetscErrorCode MatScaLAPACKGetBlockSizes(Mat A,PetscInt *mb,PetscInt *nb)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  CHKERRQ(PetscUseMethod(A,"MatScaLAPACKGetBlockSizes_C",(Mat,PetscInt*,PetscInt*),(A,mb,nb)));
+  PetscCall(PetscUseMethod(A,"MatScaLAPACKGetBlockSizes_C",(Mat,PetscInt*,PetscInt*),(A,mb,nb)));
   PetscFunctionReturn(0);
 }
 
@@ -1678,44 +1678,44 @@ PETSC_EXTERN PetscErrorCode MatCreate_ScaLAPACK(Mat A)
   PetscMPIInt        size;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps)));
+  PetscCall(PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps)));
   A->insertmode = NOT_SET_VALUES;
 
-  CHKERRQ(MatStashCreate_Private(PetscObjectComm((PetscObject)A),1,&A->stash));
+  PetscCall(MatStashCreate_Private(PetscObjectComm((PetscObject)A),1,&A->stash));
   A->stash.ScatterBegin   = MatStashScatterBegin_ScaLAPACK;
   A->stash.ScatterGetMesg = MatStashScatterGetMesg_Ref;
   A->stash.ScatterEnd     = MatStashScatterEnd_Ref;
   A->stash.ScatterDestroy = NULL;
 
-  CHKERRQ(PetscNewLog(A,&a));
+  PetscCall(PetscNewLog(A,&a));
   A->data = (void*)a;
 
   /* Grid needs to be shared between multiple Mats on the same communicator, implement by attribute caching on the MPI_Comm */
   if (Petsc_ScaLAPACK_keyval == MPI_KEYVAL_INVALID) {
-    CHKERRMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,MPI_COMM_NULL_DELETE_FN,&Petsc_ScaLAPACK_keyval,(void*)0));
-    CHKERRQ(PetscRegisterFinalize(Petsc_ScaLAPACK_keyval_free));
-    CHKERRQ(PetscCitationsRegister(ScaLAPACKCitation,&ScaLAPACKCite));
+    PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,MPI_COMM_NULL_DELETE_FN,&Petsc_ScaLAPACK_keyval,(void*)0));
+    PetscCall(PetscRegisterFinalize(Petsc_ScaLAPACK_keyval_free));
+    PetscCall(PetscCitationsRegister(ScaLAPACKCitation,&ScaLAPACKCite));
   }
-  CHKERRQ(PetscCommDuplicate(PetscObjectComm((PetscObject)A),&icomm,NULL));
-  CHKERRMPI(MPI_Comm_get_attr(icomm,Petsc_ScaLAPACK_keyval,(void**)&grid,(int*)&flg));
+  PetscCall(PetscCommDuplicate(PetscObjectComm((PetscObject)A),&icomm,NULL));
+  PetscCallMPI(MPI_Comm_get_attr(icomm,Petsc_ScaLAPACK_keyval,(void**)&grid,(int*)&flg));
   if (!flg) {
-    CHKERRQ(PetscNewLog(A,&grid));
+    PetscCall(PetscNewLog(A,&grid));
 
-    CHKERRMPI(MPI_Comm_size(icomm,&size));
+    PetscCallMPI(MPI_Comm_size(icomm,&size));
     grid->nprow = (PetscInt) (PetscSqrtReal((PetscReal)size) + 0.001);
 
-    ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"ScaLAPACK Grid Options","Mat");CHKERRQ(ierr);
-    CHKERRQ(PetscOptionsInt("-mat_scalapack_grid_height","Grid Height","None",grid->nprow,&optv1,&flg1));
+    ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"ScaLAPACK Grid Options","Mat");PetscCall(ierr);
+    PetscCall(PetscOptionsInt("-mat_scalapack_grid_height","Grid Height","None",grid->nprow,&optv1,&flg1));
     if (flg1) {
       PetscCheckFalse(size % optv1,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"Grid Height %" PetscInt_FMT " must evenly divide CommSize %d",optv1,size);
       grid->nprow = optv1;
     }
-    ierr = PetscOptionsEnd();CHKERRQ(ierr);
+    ierr = PetscOptionsEnd();PetscCall(ierr);
 
     if (size % grid->nprow) grid->nprow = 1;  /* cannot use a squarish grid, use a 1d grid */
     grid->npcol = size/grid->nprow;
-    CHKERRQ(PetscBLASIntCast(grid->nprow,&nprow));
-    CHKERRQ(PetscBLASIntCast(grid->npcol,&npcol));
+    PetscCall(PetscBLASIntCast(grid->nprow,&nprow));
+    PetscCall(PetscBLASIntCast(grid->npcol,&npcol));
     grid->ictxt = Csys2blacs_handle(icomm);
     Cblacs_gridinit(&grid->ictxt,"R",nprow,npcol);
     Cblacs_gridinfo(grid->ictxt,&nprow,&npcol,&myrow,&mycol);
@@ -1729,26 +1729,26 @@ PETSC_EXTERN PetscErrorCode MatCreate_ScaLAPACK(Mat A)
     Cblacs_gridinit(&grid->ictxrow,"R",1,size);
     grid->ictxcol = Csys2blacs_handle(icomm);
     Cblacs_gridinit(&grid->ictxcol,"R",size,1);
-    CHKERRMPI(MPI_Comm_set_attr(icomm,Petsc_ScaLAPACK_keyval,(void*)grid));
+    PetscCallMPI(MPI_Comm_set_attr(icomm,Petsc_ScaLAPACK_keyval,(void*)grid));
 
   } else grid->grid_refct++;
-  CHKERRQ(PetscCommDestroy(&icomm));
+  PetscCall(PetscCommDestroy(&icomm));
   a->grid = grid;
   a->mb   = DEFAULT_BLOCKSIZE;
   a->nb   = DEFAULT_BLOCKSIZE;
 
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),NULL,"ScaLAPACK Options","Mat");CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsIntArray("-mat_scalapack_block_sizes","Size of the blocks to use (one or two comma-separated integers)","MatCreateScaLAPACK",array,&k,&flg));
+  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),NULL,"ScaLAPACK Options","Mat");PetscCall(ierr);
+  PetscCall(PetscOptionsIntArray("-mat_scalapack_block_sizes","Size of the blocks to use (one or two comma-separated integers)","MatCreateScaLAPACK",array,&k,&flg));
   if (flg) {
     a->mb = array[0];
     a->nb = (k>1)? array[1]: a->mb;
   }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)A,"MatGetOwnershipIS_C",MatGetOwnershipIS_ScaLAPACK));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)A,"MatScaLAPACKSetBlockSizes_C",MatScaLAPACKSetBlockSizes_ScaLAPACK));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)A,"MatScaLAPACKGetBlockSizes_C",MatScaLAPACKGetBlockSizes_ScaLAPACK));
-  CHKERRQ(PetscObjectChangeTypeName((PetscObject)A,MATSCALAPACK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatGetOwnershipIS_C",MatGetOwnershipIS_ScaLAPACK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatScaLAPACKSetBlockSizes_C",MatScaLAPACKSetBlockSizes_ScaLAPACK));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatScaLAPACKGetBlockSizes_C",MatScaLAPACKGetBlockSizes_ScaLAPACK));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)A,MATSCALAPACK));
   PetscFunctionReturn(0);
 }
 
@@ -1797,22 +1797,22 @@ PetscErrorCode MatCreateScaLAPACK(MPI_Comm comm,PetscInt mb,PetscInt nb,PetscInt
   PetscInt       m,n;
 
   PetscFunctionBegin;
-  CHKERRQ(MatCreate(comm,A));
-  CHKERRQ(MatSetType(*A,MATSCALAPACK));
+  PetscCall(MatCreate(comm,A));
+  PetscCall(MatSetType(*A,MATSCALAPACK));
   PetscCheckFalse(M==PETSC_DECIDE || N==PETSC_DECIDE,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot use PETSC_DECIDE for matrix dimensions");
   /* rows and columns are NOT distributed according to PetscSplitOwnership */
   m = PETSC_DECIDE;
-  CHKERRQ(PetscSplitOwnershipEqual(comm,&m,&M));
+  PetscCall(PetscSplitOwnershipEqual(comm,&m,&M));
   n = PETSC_DECIDE;
-  CHKERRQ(PetscSplitOwnershipEqual(comm,&n,&N));
-  CHKERRQ(MatSetSizes(*A,m,n,M,N));
+  PetscCall(PetscSplitOwnershipEqual(comm,&n,&N));
+  PetscCall(MatSetSizes(*A,m,n,M,N));
   a = (Mat_ScaLAPACK*)(*A)->data;
-  CHKERRQ(PetscBLASIntCast(M,&a->M));
-  CHKERRQ(PetscBLASIntCast(N,&a->N));
-  CHKERRQ(PetscBLASIntCast((mb==PETSC_DECIDE)?DEFAULT_BLOCKSIZE:mb,&a->mb));
-  CHKERRQ(PetscBLASIntCast((nb==PETSC_DECIDE)?a->mb:nb,&a->nb));
-  CHKERRQ(PetscBLASIntCast(rsrc,&a->rsrc));
-  CHKERRQ(PetscBLASIntCast(csrc,&a->csrc));
-  CHKERRQ(MatSetUp(*A));
+  PetscCall(PetscBLASIntCast(M,&a->M));
+  PetscCall(PetscBLASIntCast(N,&a->N));
+  PetscCall(PetscBLASIntCast((mb==PETSC_DECIDE)?DEFAULT_BLOCKSIZE:mb,&a->mb));
+  PetscCall(PetscBLASIntCast((nb==PETSC_DECIDE)?a->mb:nb,&a->nb));
+  PetscCall(PetscBLASIntCast(rsrc,&a->rsrc));
+  PetscCall(PetscBLASIntCast(csrc,&a->csrc));
+  PetscCall(MatSetUp(*A));
   PetscFunctionReturn(0);
 }

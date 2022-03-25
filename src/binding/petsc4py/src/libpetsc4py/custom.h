@@ -12,7 +12,7 @@ static inline
 PetscErrorCode PetscObjectComposedDataGetIntPy(PetscObject o, PetscInt id, PetscInt *v, PetscBool *exist)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectComposedDataGetInt(o,id,*v,*exist));
+  PetscCall(PetscObjectComposedDataGetInt(o,id,*v,*exist));
   PetscFunctionReturn(0);
 }
 
@@ -20,7 +20,7 @@ static inline
 PetscErrorCode PetscObjectComposedDataSetIntPy(PetscObject o, PetscInt id, PetscInt v)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectComposedDataSetInt(o,id,v));
+  PetscCall(PetscObjectComposedDataSetInt(o,id,v));
   PetscFunctionReturn(0);
 }
 
@@ -28,7 +28,7 @@ static inline
 PetscErrorCode PetscObjectComposedDataRegisterPy(PetscInt *id)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectComposedDataRegister(id));
+  PetscCall(PetscObjectComposedDataRegister(id));
   PetscFunctionReturn(0);
 }
 
@@ -37,7 +37,7 @@ PetscErrorCode KSPLogHistory(KSP ksp,PetscReal rnorm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  CHKERRQ(KSPLogResidualHistory(ksp,rnorm));
+  PetscCall(KSPLogResidualHistory(ksp,rnorm));
   PetscFunctionReturn(0);
 }
 
@@ -46,7 +46,7 @@ PetscErrorCode SNESLogHistory(SNES snes,PetscReal rnorm,PetscInt lits)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  CHKERRQ(SNESLogConvergenceHistory(snes,rnorm,lits));
+  PetscCall(SNESLogConvergenceHistory(snes,rnorm,lits));
   PetscFunctionReturn(0);
 }
 
@@ -64,10 +64,10 @@ PetscErrorCode KSPConverged(KSP ksp,
     ksp->ttol = PetscMax(rnorm*ksp->rtol,ksp->abstol);
   }
   if (ksp->converged) {
-    CHKERRQ((*ksp->converged)(ksp,iter,rnorm,&ksp->reason,ksp->cnvP));
+    PetscCall((*ksp->converged)(ksp,iter,rnorm,&ksp->reason,ksp->cnvP));
   } else {
-    CHKERRQ(KSPConvergedSkip(ksp,iter,rnorm,&ksp->reason,NULL));
-    /*CHKERRQ(KSPConvergedDefault(ksp,iter,rnorm,&ksp->reason,NULL));*/
+    PetscCall(KSPConvergedSkip(ksp,iter,rnorm,&ksp->reason,NULL));
+    /*PetscCall(KSPConvergedDefault(ksp,iter,rnorm,&ksp->reason,NULL));*/
   }
   ksp->rnorm = rnorm;
   if (reason) *reason = ksp->reason;
@@ -87,10 +87,10 @@ PetscErrorCode SNESConverged(SNES snes,
     snes->ttol = fnorm*snes->rtol;
   }
   if (snes->ops->converged) {
-    CHKERRQ((*snes->ops->converged)(snes,iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP));
+    PetscCall((*snes->ops->converged)(snes,iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP));
   } else {
-    CHKERRQ(SNESConvergedSkip(snes,iter,xnorm,ynorm,fnorm,&snes->reason,0));
-    /*CHKERRQ(SNESConvergedDefault(snes,iter,xnorm,ynorm,fnorm,&snes->reason,0));*/
+    PetscCall(SNESConvergedSkip(snes,iter,xnorm,ynorm,fnorm,&snes->reason,0));
+    /*PetscCall(SNESConvergedDefault(snes,iter,xnorm,ynorm,fnorm,&snes->reason,0));*/
   }
   snes->norm = fnorm;
   if (reason) *reason = snes->reason;
@@ -102,7 +102,7 @@ PetscErrorCode TaoRegisterCustom(const char sname[], PetscErrorCode (*function)(
 {
   PetscFunctionBegin;
 #if !defined(PETSC_USE_COMPLEX)
-  CHKERRQ(TaoRegister(sname, function));
+  PetscCall(TaoRegister(sname, function));
 #endif
   PetscFunctionReturn(0);
 }
@@ -112,8 +112,8 @@ PetscErrorCode TaoConverged(Tao tao)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  if (tao->ops->convergencetest) CHKERRQ((*tao->ops->convergencetest)(tao,tao->cnvP));
-  else CHKERRQ(TaoDefaultConvergenceTest(tao,tao->cnvP));
+  if (tao->ops->convergencetest) PetscCall((*tao->ops->convergencetest)(tao,tao->cnvP));
+  else PetscCall(TaoDefaultConvergenceTest(tao,tao->cnvP));
   PetscFunctionReturn(0);
 }
 
@@ -131,9 +131,9 @@ PetscErrorCode TaoCreateDefaultKSP(Tao tao)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  CHKERRQ(KSPDestroy(&tao->ksp));
-  CHKERRQ(KSPCreate(((PetscObject)tao)->comm,&tao->ksp));
-  CHKERRQ(PetscObjectIncrementTabLevel((PetscObject)tao->ksp,(PetscObject)tao,1));
+  PetscCall(KSPDestroy(&tao->ksp));
+  PetscCall(KSPCreate(((PetscObject)tao)->comm,&tao->ksp));
+  PetscCall(PetscObjectIncrementTabLevel((PetscObject)tao->ksp,(PetscObject)tao,1));
   PetscFunctionReturn(0);
 }
 
@@ -142,12 +142,12 @@ PetscErrorCode TaoCreateDefaultLineSearch(Tao tao)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  CHKERRQ(TaoLineSearchDestroy(&tao->linesearch));
-  CHKERRQ(TaoLineSearchCreate(((PetscObject)tao)->comm,&tao->linesearch));
-  CHKERRQ(PetscObjectIncrementTabLevel((PetscObject)tao->linesearch,(PetscObject)tao,1));
-  CHKERRQ(TaoLineSearchSetType(tao->linesearch,TAOLINESEARCHMT));
-  CHKERRQ(TaoLineSearchUseTaoRoutines(tao->linesearch,tao));
-  CHKERRQ(TaoLineSearchSetInitialStepLength(tao->linesearch,1.0));
+  PetscCall(TaoLineSearchDestroy(&tao->linesearch));
+  PetscCall(TaoLineSearchCreate(((PetscObject)tao)->comm,&tao->linesearch));
+  PetscCall(PetscObjectIncrementTabLevel((PetscObject)tao->linesearch,(PetscObject)tao,1));
+  PetscCall(TaoLineSearchSetType(tao->linesearch,TAOLINESEARCHMT));
+  PetscCall(TaoLineSearchUseTaoRoutines(tao->linesearch,tao));
+  PetscCall(TaoLineSearchSetInitialStepLength(tao->linesearch,1.0));
   PetscFunctionReturn(0);
 }
 
@@ -178,7 +178,7 @@ PetscErrorCode TaoComputeUpdate(Tao tao)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  if (tao->ops->update) CHKERRQ((*tao->ops->update)(tao,tao->niter,tao->user_update));
+  if (tao->ops->update) PetscCall((*tao->ops->update)(tao,tao->niter,tao->user_update));
   PetscFunctionReturn(0);
 }
 
@@ -188,14 +188,14 @@ PetscErrorCode TaoGetVecs(Tao tao, Vec *X, Vec *G, Vec *S)
   PetscBool has_g;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  CHKERRQ(TaoHasGradientRoutine(tao,&has_g));
+  PetscCall(TaoHasGradientRoutine(tao,&has_g));
   if (X) *X = tao->solution;
   if (G) {
-    if (has_g && !tao->gradient) CHKERRQ(VecDuplicate(tao->solution,&tao->gradient));
+    if (has_g && !tao->gradient) PetscCall(VecDuplicate(tao->solution,&tao->gradient));
     *G = has_g ? tao->gradient : NULL;
   }
   if (S) {
-    if (has_g && !tao->stepdirection) CHKERRQ(VecDuplicate(tao->solution,&tao->stepdirection));
+    if (has_g && !tao->stepdirection) PetscCall(VecDuplicate(tao->solution,&tao->stepdirection));
     *S = has_g ? tao->stepdirection : NULL;
   }
   PetscFunctionReturn(0);
@@ -209,9 +209,9 @@ PetscErrorCode TaoApplyLineSearch(Tao tao, PetscReal* f, PetscReal *s)
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidRealPointer(f,2);
   PetscValidRealPointer(s,3);
-  CHKERRQ(TaoLineSearchApply(tao->linesearch,tao->solution,f,tao->gradient,tao->stepdirection,s,&ls_reason));
+  PetscCall(TaoLineSearchApply(tao->linesearch,tao->solution,f,tao->gradient,tao->stepdirection,s,&ls_reason));
   PetscCheck(ls_reason == TAOLINESEARCH_SUCCESS || ls_reason == TAOLINESEARCH_SUCCESS_USER,PetscObjectComm((PetscObject)tao),PETSC_ERR_SUP,"Linesearch failed");
-  CHKERRQ(TaoAddLineSearchCounts(tao));
+  PetscCall(TaoAddLineSearchCounts(tao));
   PetscFunctionReturn(0);
 }
 

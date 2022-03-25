@@ -29,10 +29,10 @@ PetscErrorCode  ISCreate(MPI_Comm comm,IS *is)
 {
   PetscFunctionBegin;
   PetscValidPointer(is,2);
-  CHKERRQ(ISInitializePackage());
+  PetscCall(ISInitializePackage());
 
-  CHKERRQ(PetscHeaderCreate(*is,IS_CLASSID,"IS","Index Set","IS",comm,ISDestroy,ISView));
-  CHKERRQ(PetscLayoutCreate(comm, &(*is)->map));
+  PetscCall(PetscHeaderCreate(*is,IS_CLASSID,"IS","Index Set","IS",comm,ISDestroy,ISView));
+  PetscCall(PetscLayoutCreate(comm, &(*is)->map));
   PetscFunctionReturn(0);
 }
 
@@ -64,18 +64,18 @@ PetscErrorCode  ISSetType(IS is, ISType method)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID,1);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject) is, method, &match));
+  PetscCall(PetscObjectTypeCompare((PetscObject) is, method, &match));
   if (match) PetscFunctionReturn(0);
 
-  CHKERRQ(ISRegisterAll());
-  CHKERRQ(PetscFunctionListFind(ISList,method,&r));
+  PetscCall(ISRegisterAll());
+  PetscCall(PetscFunctionListFind(ISList,method,&r));
   PetscCheck(r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown IS type: %s", method);
   if (is->ops->destroy) {
-    CHKERRQ((*is->ops->destroy)(is));
+    PetscCall((*is->ops->destroy)(is));
     is->ops->destroy = NULL;
   }
-  CHKERRQ((*r)(is));
-  CHKERRQ(PetscObjectChangeTypeName((PetscObject)is,method));
+  PetscCall((*r)(is));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)is,method));
   PetscFunctionReturn(0);
 }
 
@@ -100,7 +100,7 @@ PetscErrorCode  ISGetType(IS is, ISType *type)
   PetscValidHeaderSpecific(is, IS_CLASSID,1);
   PetscValidPointer(type,2);
   if (!ISRegisterAllCalled) {
-    CHKERRQ(ISRegisterAll());
+    PetscCall(ISRegisterAll());
   }
   *type = ((PetscObject)is)->type_name;
   PetscFunctionReturn(0);
@@ -147,7 +147,7 @@ PetscErrorCode  ISGetType(IS is, ISType *type)
 PetscErrorCode  ISRegister(const char sname[], PetscErrorCode (*function)(IS))
 {
   PetscFunctionBegin;
-  CHKERRQ(ISInitializePackage());
-  CHKERRQ(PetscFunctionListAdd(&ISList,sname,function));
+  PetscCall(ISInitializePackage());
+  PetscCall(PetscFunctionListAdd(&ISList,sname,function));
   PetscFunctionReturn(0);
 }

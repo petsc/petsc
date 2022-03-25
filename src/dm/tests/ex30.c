@@ -16,38 +16,38 @@ int main(int argc,char *argv[])
   Mat            A;
   Vec            x,b,lf;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,0,help));
+  PetscCall(PetscInitialize(&argc,&argv,0,help));
   comm = PETSC_COMM_WORLD;
-  CHKERRMPI(MPI_Comm_size(comm,&size));
-  CHKERRMPI(MPI_Comm_rank(comm,&rank));
+  PetscCallMPI(MPI_Comm_size(comm,&size));
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
 
-  ierr = PetscOptionsBegin(comm,0,"Options for DMSliced test",0);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm,0,"Options for DMSliced test",0);PetscCall(ierr);
   {
-    CHKERRQ(PetscOptionsInt("-n","Global number of nodes","",N,&N,NULL));
-    CHKERRQ(PetscOptionsInt("-bs","Block size (1 or 2)","",bs,&bs,NULL));
+    PetscCall(PetscOptionsInt("-n","Global number of nodes","",N,&N,NULL));
+    PetscCall(PetscOptionsInt("-bs","Block size (1 or 2)","",bs,&bs,NULL));
     if (bs != 1) {
       PetscCheckFalse(bs != 2,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Block size must be 1 or 2");
-      CHKERRQ(PetscOptionsReal("-alpha","Inverse time step for wave operator","",alpha,&alpha,NULL));
-      CHKERRQ(PetscOptionsReal("-K","Bulk modulus of compressibility","",K,&K,NULL));
-      CHKERRQ(PetscOptionsReal("-rho0","Reference density","",rho0,&rho0,NULL));
-      CHKERRQ(PetscOptionsReal("-u0","Reference velocity","",u0,&u0,NULL));
-      CHKERRQ(PetscOptionsReal("-sigma","Width of Gaussian density perturbation","",sigma,&sigma,NULL));
-      CHKERRQ(PetscOptionsBool("-block","Use block matrix assembly","",useblock,&useblock,NULL));
+      PetscCall(PetscOptionsReal("-alpha","Inverse time step for wave operator","",alpha,&alpha,NULL));
+      PetscCall(PetscOptionsReal("-K","Bulk modulus of compressibility","",K,&K,NULL));
+      PetscCall(PetscOptionsReal("-rho0","Reference density","",rho0,&rho0,NULL));
+      PetscCall(PetscOptionsReal("-u0","Reference velocity","",u0,&u0,NULL));
+      PetscCall(PetscOptionsReal("-sigma","Width of Gaussian density perturbation","",sigma,&sigma,NULL));
+      PetscCall(PetscOptionsBool("-block","Use block matrix assembly","",useblock,&useblock,NULL));
     }
-    CHKERRQ(PetscOptionsString("-sliced_mat_type","Matrix type to use (aij or baij)","",mat_type,mat_type,sizeof(mat_type),NULL));
+    PetscCall(PetscOptionsString("-sliced_mat_type","Matrix type to use (aij or baij)","",mat_type,mat_type,sizeof(mat_type),NULL));
   }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
   /* Split ownership, set up periodic grid in 1D */
   n         = PETSC_DECIDE;
-  CHKERRQ(PetscSplitOwnership(comm,&n,&N));
+  PetscCall(PetscSplitOwnership(comm,&n,&N));
   rstart    = 0;
-  CHKERRMPI(MPI_Scan(&n,&rstart,1,MPIU_INT,MPI_SUM,comm));
+  PetscCallMPI(MPI_Scan(&n,&rstart,1,MPIU_INT,MPI_SUM,comm));
   rstart   -= n;
   ghosts[0] = (N+rstart-1)%N;
   ghosts[1] = (rstart+n)%N;
 
-  CHKERRQ(PetscMalloc2(n,&d_nnz,n,&o_nnz));
+  PetscCall(PetscMalloc2(n,&d_nnz,n,&o_nnz));
   for (i=0; i<n; i++) {
     if (size > 1 && (i==0 || i==n-1)) {
       d_nnz[i] = 2;
@@ -57,21 +57,21 @@ int main(int argc,char *argv[])
       o_nnz[i] = 0;
     }
   }
-  CHKERRQ(DMSlicedCreate(comm,bs,n,2,ghosts,d_nnz,o_nnz,&slice)); /* Currently does not copy X_nnz so we can't free them until after DMSlicedGetMatrix */
+  PetscCall(DMSlicedCreate(comm,bs,n,2,ghosts,d_nnz,o_nnz,&slice)); /* Currently does not copy X_nnz so we can't free them until after DMSlicedGetMatrix */
 
-  if (!useblock) CHKERRQ(DMSlicedSetBlockFills(slice,dfill,ofill)); /* Irrelevant for baij formats */
-  CHKERRQ(DMSetMatType(slice,mat_type));
-  CHKERRQ(DMCreateMatrix(slice,&A));
-  CHKERRQ(PetscFree2(d_nnz,o_nnz));
-  CHKERRQ(MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE));
+  if (!useblock) PetscCall(DMSlicedSetBlockFills(slice,dfill,ofill)); /* Irrelevant for baij formats */
+  PetscCall(DMSetMatType(slice,mat_type));
+  PetscCall(DMCreateMatrix(slice,&A));
+  PetscCall(PetscFree2(d_nnz,o_nnz));
+  PetscCall(MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE));
 
-  CHKERRQ(DMCreateGlobalVector(slice,&x));
-  CHKERRQ(VecDuplicate(x,&b));
+  PetscCall(DMCreateGlobalVector(slice,&x));
+  PetscCall(VecDuplicate(x,&b));
 
-  CHKERRQ(VecGhostGetLocalForm(x,&lf));
-  CHKERRQ(VecGetSize(lf,&m));
+  PetscCall(VecGhostGetLocalForm(x,&lf));
+  PetscCall(VecGetSize(lf,&m));
   PetscCheckFalse(m != (n+2)*bs,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"size of local form %D, expected %D",m,(n+2)*bs);
-  CHKERRQ(VecGetArray(lf,&xx));
+  PetscCall(VecGetArray(lf,&xx));
   for (i=0; i<n; i++) {
     PetscInt        row[2],col[9],im,ip;
     PetscScalar     v[12];
@@ -83,7 +83,7 @@ int main(int argc,char *argv[])
     case 1:                     /* Laplacian with periodic boundaries */
       col[0] = im;         col[1] = i;        col[2] = ip;
       v[0]   = -h;           v[1] = 2*h;        v[2] = -h;
-      CHKERRQ(MatSetValuesLocal(A,1,&i,3,col,v,INSERT_VALUES));
+      PetscCall(MatSetValuesLocal(A,1,&i,3,col,v,INSERT_VALUES));
       xx[i]  = PetscSinReal(xref*PETSC_PI);
       break;
     case 2:                     /* Linear acoustic wave operator in variables [rho, u], central differences, periodic, timestep 1/alpha */
@@ -91,15 +91,15 @@ int main(int argc,char *argv[])
       v[6] = -0.5/rho0; v[7] = -0.5*u0;     v[8] = 0;     v[9] = alpha;   v[10] = 0.5/rho0; v[11] = 0.5*u0;
       if (useblock) {
         row[0] = i; col[0] = im; col[1] = i; col[2] = ip;
-        CHKERRQ(MatSetValuesBlockedLocal(A,1,row,3,col,v,INSERT_VALUES));
+        PetscCall(MatSetValuesBlockedLocal(A,1,row,3,col,v,INSERT_VALUES));
       } else {
         row[0] = 2*i; row[1] = 2*i+1;
         col[0] = 2*im; col[1] = 2*im+1; col[2] = 2*i; col[3] = 2*ip; col[4] = 2*ip+1;
         v[3]   = v[4]; v[4] = v[5];                                                     /* pack values in first row */
-        CHKERRQ(MatSetValuesLocal(A,1,row,5,col,v,INSERT_VALUES));
+        PetscCall(MatSetValuesLocal(A,1,row,5,col,v,INSERT_VALUES));
         col[2] = 2*i+1;
         v[8]   = v[9]; v[9] = v[10]; v[10] = v[11];                                     /* pack values in second row */
-        CHKERRQ(MatSetValuesLocal(A,1,row+1,5,col,v+6,INSERT_VALUES));
+        PetscCall(MatSetValuesLocal(A,1,row+1,5,col,v+6,INSERT_VALUES));
       }
       /* Set current state (gaussian density perturbation) */
       xx[2*i]   = 0.2*PetscExpReal(-PetscSqr(xref)/(2*PetscSqr(sigma)));
@@ -108,31 +108,31 @@ int main(int argc,char *argv[])
     default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"not implemented for block size %D",bs);
     }
   }
-  CHKERRQ(VecRestoreArray(lf,&xx));
-  CHKERRQ(VecGhostRestoreLocalForm(x,&lf));
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(VecRestoreArray(lf,&xx));
+  PetscCall(VecGhostRestoreLocalForm(x,&lf));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
-  CHKERRQ(MatMult(A,x,b));
-  CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(VecView(b,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatMult(A,x,b));
+  PetscCall(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecView(b,PETSC_VIEWER_STDOUT_WORLD));
 
   /* Update the ghosted values, view the result on rank 0. */
-  CHKERRQ(VecGhostUpdateBegin(b,INSERT_VALUES,SCATTER_FORWARD));
-  CHKERRQ(VecGhostUpdateEnd(b,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecGhostUpdateBegin(b,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecGhostUpdateEnd(b,INSERT_VALUES,SCATTER_FORWARD));
   if (rank == 0) {
-    CHKERRQ(VecGhostGetLocalForm(b,&lf));
-    CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"Local form of b on rank 0, last two nodes are ghost nodes\n"));
-    CHKERRQ(VecView(lf,PETSC_VIEWER_STDOUT_SELF));
-    CHKERRQ(VecGhostRestoreLocalForm(b,&lf));
+    PetscCall(VecGhostGetLocalForm(b,&lf));
+    PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"Local form of b on rank 0, last two nodes are ghost nodes\n"));
+    PetscCall(VecView(lf,PETSC_VIEWER_STDOUT_SELF));
+    PetscCall(VecGhostRestoreLocalForm(b,&lf));
   }
 
-  CHKERRQ(DMDestroy(&slice));
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&b));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(PetscFinalize());
+  PetscCall(DMDestroy(&slice));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&b));
+  PetscCall(MatDestroy(&A));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

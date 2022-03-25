@@ -55,12 +55,12 @@ PetscErrorCode  PFDestroy(PF *pf)
   PetscValidHeaderSpecific((*pf),PF_CLASSID,1);
   if (--((PetscObject)(*pf))->refct > 0) PetscFunctionReturn(0);
 
-  CHKERRQ(PFViewFromOptions(*pf,NULL,"-pf_view"));
+  PetscCall(PFViewFromOptions(*pf,NULL,"-pf_view"));
   /* if memory was published with SAWs then destroy it */
-  CHKERRQ(PetscObjectSAWsViewOff((PetscObject)*pf));
+  PetscCall(PetscObjectSAWsViewOff((PetscObject)*pf));
 
-  if ((*pf)->ops->destroy) CHKERRQ((*(*pf)->ops->destroy)((*pf)->data));
-  CHKERRQ(PetscHeaderDestroy(pf));
+  if ((*pf)->ops->destroy) PetscCall((*(*pf)->ops->destroy)((*pf)->data));
+  PetscCall(PetscHeaderDestroy(pf));
   PetscFunctionReturn(0);
 }
 
@@ -88,9 +88,9 @@ PetscErrorCode  PFCreate(MPI_Comm comm,PetscInt dimin,PetscInt dimout,PF *pf)
   PetscFunctionBegin;
   PetscValidPointer(pf,4);
   *pf = NULL;
-  CHKERRQ(PFInitializePackage());
+  PetscCall(PFInitializePackage());
 
-  CHKERRQ(PetscHeaderCreate(newpf,PF_CLASSID,"PF","Mathematical functions","Vec",comm,PFDestroy,PFView));
+  PetscCall(PetscHeaderCreate(newpf,PF_CLASSID,"PF","Mathematical functions","Vec",comm,PFDestroy,PFView));
   newpf->data          = NULL;
   newpf->ops->destroy  = NULL;
   newpf->ops->apply    = NULL;
@@ -137,38 +137,38 @@ PetscErrorCode  PFApplyVec(PF pf,Vec x,Vec y)
     PetscScalar *xx;
     PetscInt    lsize;
 
-    CHKERRQ(VecGetLocalSize(y,&lsize));
+    PetscCall(VecGetLocalSize(y,&lsize));
     lsize = pf->dimin*lsize/pf->dimout;
-    CHKERRQ(VecCreateMPI(PetscObjectComm((PetscObject)y),lsize,PETSC_DETERMINE,&x));
+    PetscCall(VecCreateMPI(PetscObjectComm((PetscObject)y),lsize,PETSC_DETERMINE,&x));
     nox   = PETSC_TRUE;
-    CHKERRQ(VecGetOwnershipRange(x,&rstart,&rend));
-    CHKERRQ(VecGetArray(x,&xx));
+    PetscCall(VecGetOwnershipRange(x,&rstart,&rend));
+    PetscCall(VecGetArray(x,&xx));
     for (i=rstart; i<rend; i++) xx[i-rstart] = (PetscScalar)i;
-    CHKERRQ(VecRestoreArray(x,&xx));
+    PetscCall(VecRestoreArray(x,&xx));
   }
 
-  CHKERRQ(VecGetLocalSize(x,&n));
-  CHKERRQ(VecGetLocalSize(y,&p));
+  PetscCall(VecGetLocalSize(x,&n));
+  PetscCall(VecGetLocalSize(y,&p));
   PetscCheckFalse((pf->dimin*(n/pf->dimin)) != n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local input vector length %" PetscInt_FMT " not divisible by dimin %" PetscInt_FMT " of function",n,pf->dimin);
   PetscCheckFalse((pf->dimout*(p/pf->dimout)) != p,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local output vector length %" PetscInt_FMT " not divisible by dimout %" PetscInt_FMT " of function",p,pf->dimout);
   PetscCheckFalse((n/pf->dimin) != (p/pf->dimout),PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local vector lengths %" PetscInt_FMT " %" PetscInt_FMT " are wrong for dimin and dimout %" PetscInt_FMT " %" PetscInt_FMT " of function",n,p,pf->dimin,pf->dimout);
 
   if (pf->ops->applyvec) {
-    CHKERRQ((*pf->ops->applyvec)(pf->data,x,y));
+    PetscCall((*pf->ops->applyvec)(pf->data,x,y));
   } else {
     PetscScalar *xx,*yy;
 
-    CHKERRQ(VecGetLocalSize(x,&n));
+    PetscCall(VecGetLocalSize(x,&n));
     n    = n/pf->dimin;
-    CHKERRQ(VecGetArray(x,&xx));
-    CHKERRQ(VecGetArray(y,&yy));
+    PetscCall(VecGetArray(x,&xx));
+    PetscCall(VecGetArray(y,&yy));
     PetscCheck(pf->ops->apply,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"No function has been provided for this PF");
-    CHKERRQ((*pf->ops->apply)(pf->data,n,xx,yy));
-    CHKERRQ(VecRestoreArray(x,&xx));
-    CHKERRQ(VecRestoreArray(y,&yy));
+    PetscCall((*pf->ops->apply)(pf->data,n,xx,yy));
+    PetscCall(VecRestoreArray(x,&xx));
+    PetscCall(VecRestoreArray(y,&yy));
   }
   if (nox) {
-    CHKERRQ(VecDestroy(&x));
+    PetscCall(VecDestroy(&x));
   }
   PetscFunctionReturn(0);
 }
@@ -203,7 +203,7 @@ PetscErrorCode  PFApply(PF pf,PetscInt n,const PetscScalar *x,PetscScalar *y)
   PetscCheckFalse(x == y,PETSC_COMM_SELF,PETSC_ERR_ARG_IDN,"x and y must be different arrays");
   PetscCheck(pf->ops->apply,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"No function has been provided for this PF");
 
-  CHKERRQ((*pf->ops->apply)(pf->data,n,x,y));
+  PetscCall((*pf->ops->apply)(pf->data,n,x,y));
   PetscFunctionReturn(0);
 }
 
@@ -224,7 +224,7 @@ PetscErrorCode  PFViewFromOptions(PF A,PetscObject obj,const char name[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,PF_CLASSID,1);
-  CHKERRQ(PetscObjectViewFromOptions((PetscObject)A,obj,name));
+  PetscCall(PetscObjectViewFromOptions((PetscObject)A,obj,name));
   PetscFunctionReturn(0);
 }
 
@@ -260,19 +260,19 @@ PetscErrorCode  PFView(PF pf,PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_CLASSID,1);
   if (!viewer) {
-    CHKERRQ(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)pf),&viewer));
+    PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)pf),&viewer));
   }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(pf,1,viewer,2);
 
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    CHKERRQ(PetscViewerGetFormat(viewer,&format));
-    CHKERRQ(PetscObjectPrintClassNamePrefixType((PetscObject)pf,viewer));
+    PetscCall(PetscViewerGetFormat(viewer,&format));
+    PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)pf,viewer));
     if (pf->ops->view) {
-      CHKERRQ(PetscViewerASCIIPushTab(viewer));
-      CHKERRQ((*pf->ops->view)(pf->data,viewer));
-      CHKERRQ(PetscViewerASCIIPopTab(viewer));
+      PetscCall(PetscViewerASCIIPushTab(viewer));
+      PetscCall((*pf->ops->view)(pf->data,viewer));
+      PetscCall(PetscViewerASCIIPopTab(viewer));
     }
   }
   PetscFunctionReturn(0);
@@ -307,8 +307,8 @@ $     -pf_type my_function
 PetscErrorCode  PFRegister(const char sname[],PetscErrorCode (*function)(PF,void*))
 {
   PetscFunctionBegin;
-  CHKERRQ(PFInitializePackage());
-  CHKERRQ(PetscFunctionListAdd(&PFList,sname,function));
+  PetscCall(PFInitializePackage());
+  PetscCall(PetscFunctionListAdd(&PFList,sname,function));
   PetscFunctionReturn(0);
 }
 
@@ -369,14 +369,14 @@ PetscErrorCode  PFSetType(PF pf,PFType type,void *ctx)
   PetscValidHeaderSpecific(pf,PF_CLASSID,1);
   PetscValidCharPointer(type,2);
 
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)pf,type,&match));
+  PetscCall(PetscObjectTypeCompare((PetscObject)pf,type,&match));
   if (match) PetscFunctionReturn(0);
 
-  if (pf->ops->destroy) CHKERRQ((*pf->ops->destroy)(pf));
+  if (pf->ops->destroy) PetscCall((*pf->ops->destroy)(pf));
   pf->data = NULL;
 
   /* Determine the PFCreateXXX routine for a particular function */
-  CHKERRQ(PetscFunctionListFind(PFList,type,&r));
+  PetscCall(PetscFunctionListFind(PFList,type,&r));
   PetscCheck(r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PF type %s",type);
   pf->ops->destroy  = NULL;
   pf->ops->view     = NULL;
@@ -384,9 +384,9 @@ PetscErrorCode  PFSetType(PF pf,PFType type,void *ctx)
   pf->ops->applyvec = NULL;
 
   /* Call the PFCreateXXX routine for this particular function */
-  CHKERRQ((*r)(pf,ctx));
+  PetscCall((*r)(pf,ctx));
 
-  CHKERRQ(PetscObjectChangeTypeName((PetscObject)pf,type));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)pf,type));
   PetscFunctionReturn(0);
 }
 
@@ -417,18 +417,18 @@ PetscErrorCode  PFSetFromOptions(PF pf)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_CLASSID,1);
 
-  ierr = PetscObjectOptionsBegin((PetscObject)pf);CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsFList("-pf_type","Type of function","PFSetType",PFList,NULL,type,256,&flg));
+  ierr = PetscObjectOptionsBegin((PetscObject)pf);PetscCall(ierr);
+  PetscCall(PetscOptionsFList("-pf_type","Type of function","PFSetType",PFList,NULL,type,256,&flg));
   if (flg) {
-    CHKERRQ(PFSetType(pf,type,NULL));
+    PetscCall(PFSetType(pf,type,NULL));
   }
   if (pf->ops->setfromoptions) {
-    CHKERRQ((*pf->ops->setfromoptions)(PetscOptionsObject,pf));
+    PetscCall((*pf->ops->setfromoptions)(PetscOptionsObject,pf));
   }
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  CHKERRQ(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)pf));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)pf));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -444,7 +444,7 @@ static PetscBool PFPackageInitialized = PETSC_FALSE;
 PetscErrorCode  PFFinalizePackage(void)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscFunctionListDestroy(&PFList));
+  PetscCall(PetscFunctionListDestroy(&PFList));
   PFPackageInitialized = PETSC_FALSE;
   PFRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -468,23 +468,23 @@ PetscErrorCode  PFInitializePackage(void)
   if (PFPackageInitialized) PetscFunctionReturn(0);
   PFPackageInitialized = PETSC_TRUE;
   /* Register Classes */
-  CHKERRQ(PetscClassIdRegister("PointFunction",&PF_CLASSID));
+  PetscCall(PetscClassIdRegister("PointFunction",&PF_CLASSID));
   /* Register Constructors */
-  CHKERRQ(PFRegisterAll());
+  PetscCall(PFRegisterAll());
   /* Process Info */
   {
     PetscClassId  classids[1];
 
     classids[0] = PF_CLASSID;
-    CHKERRQ(PetscInfoProcessClass("pf", 1, classids));
+    PetscCall(PetscInfoProcessClass("pf", 1, classids));
   }
   /* Process summary exclusions */
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt));
   if (opt) {
-    CHKERRQ(PetscStrInList("pf",logList,',',&pkg));
-    if (pkg) CHKERRQ(PetscLogEventExcludeClass(PF_CLASSID));
+    PetscCall(PetscStrInList("pf",logList,',',&pkg));
+    if (pkg) PetscCall(PetscLogEventExcludeClass(PF_CLASSID));
   }
   /* Register package finalizer */
-  CHKERRQ(PetscRegisterFinalize(PFFinalizePackage));
+  PetscCall(PetscRegisterFinalize(PFFinalizePackage));
   PetscFunctionReturn(0);
 }

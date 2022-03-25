@@ -28,12 +28,12 @@ int main(int argc,char **argv)
   PetscScalar         *xx;
   SNESConvergedReason reason;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(SNESCreate(PETSC_COMM_WORLD,&snes));
+  PetscCall(SNESCreate(PETSC_COMM_WORLD,&snes));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create matrix and vector data structures; set corresponding routines
@@ -41,40 +41,40 @@ int main(int argc,char **argv)
   /*
      Create vectors for solution and nonlinear function
   */
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
-  CHKERRQ(VecSetSizes(x,PETSC_DECIDE,2));
-  CHKERRQ(VecSetFromOptions(x));
-  CHKERRQ(VecDuplicate(x,&r));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+  PetscCall(VecSetSizes(x,PETSC_DECIDE,2));
+  PetscCall(VecSetFromOptions(x));
+  PetscCall(VecDuplicate(x,&r));
 
   /*
      Create Jacobian matrix data structure
   */
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&J));
-  CHKERRQ(MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,2,2));
-  CHKERRQ(MatSetFromOptions(J));
-  CHKERRQ(MatSetUp(J));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&J));
+  PetscCall(MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,2,2));
+  PetscCall(MatSetFromOptions(J));
+  PetscCall(MatSetUp(J));
 
   /*
      Set function evaluation routine and vector.
   */
-  CHKERRQ(SNESSetFunction(snes,r,FormFunction1,NULL));
+  PetscCall(SNESSetFunction(snes,r,FormFunction1,NULL));
 
   /*
      Set Jacobian matrix data structure and Jacobian evaluation routine
   */
-  CHKERRQ(SNESSetJacobian(snes,J,J,FormJacobian1,NULL));
+  PetscCall(SNESSetJacobian(snes,J,J,FormJacobian1,NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(SNESSetFromOptions(snes));
+  PetscCall(SNESSetFromOptions(snes));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Evaluate initial guess; then solve nonlinear system
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(VecGetArray(x,&xx));
+  PetscCall(VecGetArray(x,&xx));
   xx[0] = -1.2; xx[1] = 1.0;
-  CHKERRQ(VecRestoreArray(x,&xx));
+  PetscCall(VecRestoreArray(x,&xx));
 
   /*
      Note: The user should initialize the vector, x, with the initial guess
@@ -83,26 +83,26 @@ int main(int argc,char **argv)
      this vector to zero by calling VecSet().
   */
 
-  CHKERRQ(SNESSolve(snes,NULL,x));
-  CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(SNESGetIterationNumber(snes,&its));
-  CHKERRQ(SNESGetConvergedReason(snes,&reason));
+  PetscCall(SNESSolve(snes,NULL,x));
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(SNESGetIterationNumber(snes,&its));
+  PetscCall(SNESGetConvergedReason(snes,&reason));
   /*
      Some systems computes a residual that is identically zero, thus converging
      due to FNORM_ABS, others converge due to FNORM_RELATIVE.  Here, we only
      report the reason if the iteration did not converge so that the tests are
      reproducible.
   */
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"%s number of SNES iterations = %D\n",reason>0 ? "CONVERGED" : SNESConvergedReasons[reason],its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%s number of SNES iterations = %D\n",reason>0 ? "CONVERGED" : SNESConvergedReasons[reason],its));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  CHKERRQ(VecDestroy(&x)); CHKERRQ(VecDestroy(&r));
-  CHKERRQ(MatDestroy(&J)); CHKERRQ(SNESDestroy(&snes));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&x)); PetscCall(VecDestroy(&r));
+  PetscCall(MatDestroy(&J)); PetscCall(SNESDestroy(&snes));
+  PetscCall(PetscFinalize());
   return 0;
 }
 /* ------------------------------------------------------------------- */
@@ -129,16 +129,16 @@ PetscErrorCode FormFunction1(SNES snes,Vec x,Vec f,void *ctx)
     - You MUST call VecRestoreArray() when you no longer need access to
     the array.
   */
-  CHKERRQ(VecGetArrayRead(x,&xx));
-  CHKERRQ(VecGetArray(f,&ff));
+  PetscCall(VecGetArrayRead(x,&xx));
+  PetscCall(VecGetArray(f,&ff));
 
   /* Compute function */
   ff[0] = -2.0 + 2.0*xx[0] + 400.0*xx[0]*xx[0]*xx[0] - 400.0*xx[0]*xx[1];
   ff[1] = -200.0*xx[0]*xx[0] + 200.0*xx[1];
 
   /* Restore vectors */
-  CHKERRQ(VecRestoreArrayRead(x,&xx));
-  CHKERRQ(VecRestoreArray(f,&ff));
+  PetscCall(VecRestoreArrayRead(x,&xx));
+  PetscCall(VecRestoreArray(f,&ff));
   return 0;
 }
 /* ------------------------------------------------------------------- */
@@ -164,7 +164,7 @@ PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
   /*
      Get pointer to vector data
   */
-  CHKERRQ(VecGetArrayRead(x,&xx));
+  PetscCall(VecGetArrayRead(x,&xx));
 
   /*
      Compute Jacobian entries and insert into matrix.
@@ -175,21 +175,21 @@ PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
   A[1]  = -400.0*xx[0];
   A[2]  = -400.0*xx[0];
   A[3]  = 200;
-  CHKERRQ(MatSetValues(B,2,idx,2,idx,A,INSERT_VALUES));
+  PetscCall(MatSetValues(B,2,idx,2,idx,A,INSERT_VALUES));
 
   /*
      Restore vector
   */
-  CHKERRQ(VecRestoreArrayRead(x,&xx));
+  PetscCall(VecRestoreArrayRead(x,&xx));
 
   /*
      Assemble matrix
   */
-  CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
   if (jac != B) {
-    CHKERRQ(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
   }
   return 0;
 }

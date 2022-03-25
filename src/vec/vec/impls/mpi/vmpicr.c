@@ -31,8 +31,8 @@
 PetscErrorCode  VecCreateMPI(MPI_Comm comm,PetscInt n,PetscInt N,Vec *v)
 {
   PetscFunctionBegin;
-  CHKERRQ(VecCreate(comm,v));
-  CHKERRQ(VecSetSizes(*v,n,N));
-  CHKERRQ(VecSetType(*v,VECMPI));
+  PetscCall(VecCreate(comm,v));
+  PetscCall(VecSetSizes(*v,n,N));
+  PetscCall(VecSetType(*v,VECMPI));
   PetscFunctionReturn(0);
 }

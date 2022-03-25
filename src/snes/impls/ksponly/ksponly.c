@@ -24,45 +24,45 @@ static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
   Y = snes->vec_sol_update;
 
   if (!snes->vec_func_init_set) {
-    CHKERRQ(SNESComputeFunction(snes,X,F));
+    PetscCall(SNESComputeFunction(snes,X,F));
   } else snes->vec_func_init_set = PETSC_FALSE;
 
   if (snes->numbermonitors) {
     PetscReal fnorm;
-    CHKERRQ(VecNorm(F,NORM_2,&fnorm));
-    CHKERRQ(SNESMonitor(snes,0,fnorm));
+    PetscCall(VecNorm(F,NORM_2,&fnorm));
+    PetscCall(SNESMonitor(snes,0,fnorm));
   }
 
   /* Call general purpose update function */
   if (snes->ops->update) {
-    CHKERRQ((*snes->ops->update)(snes, 0));
+    PetscCall((*snes->ops->update)(snes, 0));
   }
 
   /* Solve J Y = F, where J is Jacobian matrix */
-  CHKERRQ(SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre));
+  PetscCall(SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre));
 
   SNESCheckJacobianDomainerror(snes);
 
-  CHKERRQ(KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre));
+  PetscCall(KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre));
   if (ksponly->transpose_solve) {
-    CHKERRQ(KSPSolveTranspose(snes->ksp,F,Y));
+    PetscCall(KSPSolveTranspose(snes->ksp,F,Y));
   } else {
-    CHKERRQ(KSPSolve(snes->ksp,F,Y));
+    PetscCall(KSPSolve(snes->ksp,F,Y));
   }
   snes->reason = SNES_CONVERGED_ITS;
   SNESCheckKSPSolve(snes);
 
-  CHKERRQ(KSPGetIterationNumber(snes->ksp,&lits));
-  CHKERRQ(PetscInfo(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits));
+  PetscCall(KSPGetIterationNumber(snes->ksp,&lits));
+  PetscCall(PetscInfo(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits));
   snes->iter++;
 
   /* Take the computed step. */
-  CHKERRQ(VecAXPY(X,-1.0,Y));
+  PetscCall(VecAXPY(X,-1.0,Y));
   if (snes->numbermonitors) {
     PetscReal fnorm;
-    CHKERRQ(SNESComputeFunction(snes,X,F));
-    CHKERRQ(VecNorm(F,NORM_2,&fnorm));
-    CHKERRQ(SNESMonitor(snes,1,fnorm));
+    PetscCall(SNESComputeFunction(snes,X,F));
+    PetscCall(VecNorm(F,NORM_2,&fnorm));
+    PetscCall(SNESMonitor(snes,1,fnorm));
   }
   PetscFunctionReturn(0);
 }
@@ -70,14 +70,14 @@ static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
 static PetscErrorCode SNESSetUp_KSPONLY(SNES snes)
 {
   PetscFunctionBegin;
-  CHKERRQ(SNESSetUpMatrices(snes));
+  PetscCall(SNESSetUpMatrices(snes));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode SNESDestroy_KSPONLY(SNES snes)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscFree(snes->data));
+  PetscCall(PetscFree(snes->data));
   PetscFunctionReturn(0);
 }
 
@@ -108,7 +108,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_KSPONLY(SNES snes)
 
   snes->alwayscomputesfinalresidual = PETSC_FALSE;
 
-  CHKERRQ(PetscNewLog(snes,&ksponly));
+  PetscCall(PetscNewLog(snes,&ksponly));
   snes->data = (void*)ksponly;
   PetscFunctionReturn(0);
 }
@@ -127,8 +127,8 @@ PETSC_EXTERN PetscErrorCode SNESCreate_KSPTRANSPOSEONLY(SNES snes)
   SNES_KSPONLY   *kspo;
 
   PetscFunctionBegin;
-  CHKERRQ(SNESCreate_KSPONLY(snes));
-  CHKERRQ(PetscObjectChangeTypeName((PetscObject)snes,SNESKSPTRANSPOSEONLY));
+  PetscCall(SNESCreate_KSPONLY(snes));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)snes,SNESKSPTRANSPOSEONLY));
   kspo = (SNES_KSPONLY*)snes->data;
   kspo->transpose_solve = PETSC_TRUE;
   PetscFunctionReturn(0);

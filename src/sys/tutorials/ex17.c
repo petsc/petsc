@@ -21,15 +21,15 @@ int main(int argc,char **argv)
                  runtime.  The user can use the "help" variable place
                  additional help messages in this printout.
   */
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(PetscGetVersion(version,sizeof(version)));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscGetVersion(version,sizeof(version)));
 
-  CHKERRQ(PetscGetVersionNumber(&major,&minor,&subminor,NULL));
+  PetscCall(PetscGetVersionNumber(&major,&minor,&subminor,NULL));
   PetscCheckFalse(major != PETSC_VERSION_MAJOR,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Library major %d does not equal include %d",(int)major,PETSC_VERSION_MAJOR);
   PetscCheckFalse(minor != PETSC_VERSION_MINOR,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Library minor %d does not equal include %d",(int)minor,PETSC_VERSION_MINOR);
   PetscCheckFalse(subminor != PETSC_VERSION_SUBMINOR,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Library subminor %d does not equal include %d",(int)subminor,PETSC_VERSION_SUBMINOR);
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

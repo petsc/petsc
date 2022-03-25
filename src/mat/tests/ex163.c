@@ -16,124 +16,124 @@ int main(int argc,char **args)
   Vec            x,y;
   PetscRandom    rand;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   /* Determine file from which we read the matrix A */
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
   PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
 
   /* Load matrix A */
-  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(MatLoad(A,fd));
-  CHKERRQ(PetscViewerDestroy(&fd));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatLoad(A,fd));
+  PetscCall(PetscViewerDestroy(&fd));
 
   /* Print (for testing only) */
-  CHKERRQ(PetscOptionsHasName(NULL,NULL, "-view_mats", &viewmats));
+  PetscCall(PetscOptionsHasName(NULL,NULL, "-view_mats", &viewmats));
   if (viewmats) {
     if (rank == 0) printf("A_aij:\n");
-    CHKERRQ(MatView(A,0));
+    PetscCall(MatView(A,0));
   }
 
   /* Test MatTransposeMatMult_aij_aij() */
-  CHKERRQ(MatTransposeMatMult(A,A,MAT_INITIAL_MATRIX,fill,&C));
+  PetscCall(MatTransposeMatMult(A,A,MAT_INITIAL_MATRIX,fill,&C));
   if (viewmats) {
     if (rank == 0) printf("\nC = A_aij^T * A_aij:\n");
-    CHKERRQ(MatView(C,0));
+    PetscCall(MatView(C,0));
   }
-  CHKERRQ(MatDestroy(&C));
-  CHKERRQ(MatGetLocalSize(A,&m,&n));
+  PetscCall(MatDestroy(&C));
+  PetscCall(MatGetLocalSize(A,&m,&n));
 
   /* create a dense matrix Bdense */
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&Bdense));
-  CHKERRQ(MatSetSizes(Bdense,m,PETSC_DECIDE,PETSC_DECIDE,BN));
-  CHKERRQ(MatSetType(Bdense,MATDENSE));
-  CHKERRQ(MatSetFromOptions(Bdense));
-  CHKERRQ(MatSetUp(Bdense));
-  CHKERRQ(MatGetOwnershipRange(Bdense,&rstart,&rend));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&Bdense));
+  PetscCall(MatSetSizes(Bdense,m,PETSC_DECIDE,PETSC_DECIDE,BN));
+  PetscCall(MatSetType(Bdense,MATDENSE));
+  PetscCall(MatSetFromOptions(Bdense));
+  PetscCall(MatSetUp(Bdense));
+  PetscCall(MatGetOwnershipRange(Bdense,&rstart,&rend));
 
-  CHKERRQ(PetscMalloc3(m,&rows,BN,&cols,m*BN,&array));
+  PetscCall(PetscMalloc3(m,&rows,BN,&cols,m*BN,&array));
   for (i=0; i<m; i++) rows[i] = rstart + i;
-  CHKERRQ(PetscRandomCreate(PETSC_COMM_WORLD,&rand));
-  CHKERRQ(PetscRandomSetFromOptions(rand));
+  PetscCall(PetscRandomCreate(PETSC_COMM_WORLD,&rand));
+  PetscCall(PetscRandomSetFromOptions(rand));
   for (j=0; j<BN; j++) {
     cols[j] = j;
     for (i=0; i<m; i++) {
-      CHKERRQ(PetscRandomGetValue(rand,&rval));
+      PetscCall(PetscRandomGetValue(rand,&rval));
       array[m*j+i] = rval;
     }
   }
-  CHKERRQ(MatSetValues(Bdense,m,rows,BN,cols,array,INSERT_VALUES));
-  CHKERRQ(MatAssemblyBegin(Bdense,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(Bdense,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(PetscRandomDestroy(&rand));
-  CHKERRQ(PetscFree3(rows,cols,array));
+  PetscCall(MatSetValues(Bdense,m,rows,BN,cols,array,INSERT_VALUES));
+  PetscCall(MatAssemblyBegin(Bdense,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(Bdense,MAT_FINAL_ASSEMBLY));
+  PetscCall(PetscRandomDestroy(&rand));
+  PetscCall(PetscFree3(rows,cols,array));
   if (viewmats) {
     if (rank == 0) printf("\nBdense:\n");
-    CHKERRQ(MatView(Bdense,0));
+    PetscCall(MatView(Bdense,0));
   }
 
   /* Test MatTransposeMatMult_aij_dense() */
-  CHKERRQ(MatTransposeMatMult(A,Bdense,MAT_INITIAL_MATRIX,fill,&C));
-  CHKERRQ(MatTransposeMatMult(A,Bdense,MAT_REUSE_MATRIX,fill,&C));
+  PetscCall(MatTransposeMatMult(A,Bdense,MAT_INITIAL_MATRIX,fill,&C));
+  PetscCall(MatTransposeMatMult(A,Bdense,MAT_REUSE_MATRIX,fill,&C));
   if (viewmats) {
     if (rank == 0) printf("\nC=A^T*Bdense:\n");
-    CHKERRQ(MatView(C,0));
+    PetscCall(MatView(C,0));
   }
 
   /* Check accuracy */
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&Cdense));
-  CHKERRQ(MatSetSizes(Cdense,n,PETSC_DECIDE,PETSC_DECIDE,BN));
-  CHKERRQ(MatSetType(Cdense,MATDENSE));
-  CHKERRQ(MatSetFromOptions(Cdense));
-  CHKERRQ(MatSetUp(Cdense));
-  CHKERRQ(MatAssemblyBegin(Cdense,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(Cdense,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&Cdense));
+  PetscCall(MatSetSizes(Cdense,n,PETSC_DECIDE,PETSC_DECIDE,BN));
+  PetscCall(MatSetType(Cdense,MATDENSE));
+  PetscCall(MatSetFromOptions(Cdense));
+  PetscCall(MatSetUp(Cdense));
+  PetscCall(MatAssemblyBegin(Cdense,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(Cdense,MAT_FINAL_ASSEMBLY));
 
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   if (size == 1) {
-    CHKERRQ(VecCreateSeqWithArray(PETSC_COMM_SELF,1,m,NULL,&x));
-    CHKERRQ(VecCreateSeqWithArray(PETSC_COMM_SELF,1,n,NULL,&y));
+    PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,1,m,NULL,&x));
+    PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,1,n,NULL,&y));
   } else {
-    CHKERRQ(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,m,PETSC_DECIDE,NULL,&x));
-    CHKERRQ(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,PETSC_DECIDE,NULL,&y));
+    PetscCall(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,m,PETSC_DECIDE,NULL,&x));
+    PetscCall(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,PETSC_DECIDE,NULL,&y));
   }
 
   /* Cdense[:,j] = A^T * Bdense[:,j] */
-  CHKERRQ(MatDenseGetArray(Bdense,&Barray));
-  CHKERRQ(MatDenseGetArray(Cdense,&Carray));
+  PetscCall(MatDenseGetArray(Bdense,&Barray));
+  PetscCall(MatDenseGetArray(Cdense,&Carray));
   for (j=0; j<BN; j++) {
-    CHKERRQ(VecPlaceArray(x,Barray));
-    CHKERRQ(VecPlaceArray(y,Carray));
+    PetscCall(VecPlaceArray(x,Barray));
+    PetscCall(VecPlaceArray(y,Carray));
 
-    CHKERRQ(MatMultTranspose(A,x,y));
+    PetscCall(MatMultTranspose(A,x,y));
 
-    CHKERRQ(VecResetArray(x));
-    CHKERRQ(VecResetArray(y));
+    PetscCall(VecResetArray(x));
+    PetscCall(VecResetArray(y));
     Barray += m;
     Carray += n;
   }
-  CHKERRQ(MatDenseRestoreArray(Bdense,&Barray));
-  CHKERRQ(MatDenseRestoreArray(Cdense,&Carray));
+  PetscCall(MatDenseRestoreArray(Bdense,&Barray));
+  PetscCall(MatDenseRestoreArray(Cdense,&Carray));
   if (viewmats) {
     if (rank == 0) printf("\nCdense:\n");
-    CHKERRQ(MatView(Cdense,0));
+    PetscCall(MatView(Cdense,0));
   }
 
-  CHKERRQ(MatEqual(C,Cdense,&flg));
+  PetscCall(MatEqual(C,Cdense,&flg));
   if (!flg) {
     if (rank == 0) printf(" C != Cdense\n");
   }
 
   /* Free data structures */
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(MatDestroy(&C));
-  CHKERRQ(MatDestroy(&Bdense));
-  CHKERRQ(MatDestroy(&Cdense));
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&y));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&C));
+  PetscCall(MatDestroy(&Bdense));
+  PetscCall(MatDestroy(&Cdense));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&y));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

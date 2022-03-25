@@ -89,7 +89,7 @@ static PetscErrorCode  PetscRandomGetValueReal_Rander48(PetscRandom r, PetscReal
 static PetscErrorCode  PetscRandomDestroy_Rander48(PetscRandom r)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscFree(r->data));
+  PetscCall(PetscFree(r->data));
   PetscFunctionReturn(0);
 }
 
@@ -127,10 +127,10 @@ PETSC_EXTERN PetscErrorCode PetscRandomCreate_Rander48(PetscRandom r)
   PetscRandom_Rander48 *r48;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNewLog(r,&r48));
+  PetscCall(PetscNewLog(r,&r48));
   /* r48 does not need to be initialized because PetscRandomSeed() is always called before use and sets the needed values */
   r->data = r48;
-  CHKERRQ(PetscMemcpy(r->ops, &PetscRandomOps_Values, sizeof(PetscRandomOps_Values)));
-  CHKERRQ(PetscObjectChangeTypeName((PetscObject) r, PETSCRANDER48));
+  PetscCall(PetscMemcpy(r->ops, &PetscRandomOps_Values, sizeof(PetscRandomOps_Values)));
+  PetscCall(PetscObjectChangeTypeName((PetscObject) r, PETSCRANDER48));
   PetscFunctionReturn(0);
 }

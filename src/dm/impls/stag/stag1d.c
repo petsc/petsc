@@ -41,10 +41,10 @@ PETSC_EXTERN PetscErrorCode DMStagCreate1d(MPI_Comm comm,DMBoundaryType bndx,Pet
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_size(comm,&size));
-  CHKERRQ(DMCreate(comm,dm));
-  CHKERRQ(DMSetDimension(*dm,1));
-  CHKERRQ(DMStagInitialize(bndx,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,M,0,0,size,0,0,dof0,dof1,0,0,stencilType,stencilWidth,lx,NULL,NULL,*dm));
+  PetscCallMPI(MPI_Comm_size(comm,&size));
+  PetscCall(DMCreate(comm,dm));
+  PetscCall(DMSetDimension(*dm,1));
+  PetscCall(DMStagInitialize(bndx,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,M,0,0,size,0,0,dof0,dof1,0,0,stencilType,stencilWidth,lx,NULL,NULL,*dm));
   PetscFunctionReturn(0);
 }
 
@@ -59,21 +59,21 @@ PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_1d(DM dm,PetscRe
   PetscInt       ileft,ielement;
 
   PetscFunctionBegin;
-  CHKERRQ(DMGetCoordinateDM(dm, &dmCoord));
+  PetscCall(DMGetCoordinateDM(dm, &dmCoord));
   stagCoord = (DM_Stag*) dmCoord->data;
   for (s=0; s<2; ++s) {
     PetscCheckFalse(stagCoord->dof[s] !=0 && stagCoord->dof[s] != 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Coordinate DM in 1 dimensions must have 0 or 1 dof on each stratum, but stratum %d has %d dof",s,stagCoord->dof[s]);
   }
-  CHKERRQ(DMCreateLocalVector(dmCoord,&coordLocal));
+  PetscCall(DMCreateLocalVector(dmCoord,&coordLocal));
 
-  CHKERRQ(DMStagVecGetArray(dmCoord,coordLocal,&arr));
+  PetscCall(DMStagVecGetArray(dmCoord,coordLocal,&arr));
   if (stagCoord->dof[0]) {
-    CHKERRQ(DMStagGetLocationSlot(dmCoord,DMSTAG_LEFT,0,&ileft));
+    PetscCall(DMStagGetLocationSlot(dmCoord,DMSTAG_LEFT,0,&ileft));
   }
   if (stagCoord->dof[1]) {
-    CHKERRQ(DMStagGetLocationSlot(dmCoord,DMSTAG_ELEMENT,0,&ielement));
+    PetscCall(DMStagGetLocationSlot(dmCoord,DMSTAG_ELEMENT,0,&ielement));
   }
-  CHKERRQ(DMStagGetGhostCorners(dmCoord,&start_ghost,NULL,NULL,&n_ghost,NULL,NULL));
+  PetscCall(DMStagGetGhostCorners(dmCoord,&start_ghost,NULL,NULL,&n_ghost,NULL,NULL));
 
   min = xmin;
   h = (xmax-xmin)/stagCoord->N[0];
@@ -88,10 +88,10 @@ PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_1d(DM dm,PetscRe
         arr[ind][ielement] = min + ((PetscReal)ind + off) * h;
     }
   }
-  CHKERRQ(DMStagVecRestoreArray(dmCoord,coordLocal,&arr));
-  CHKERRQ(DMSetCoordinatesLocal(dm,coordLocal));
-  CHKERRQ(PetscLogObjectParent((PetscObject)dm,(PetscObject)coordLocal));
-  CHKERRQ(VecDestroy(&coordLocal));
+  PetscCall(DMStagVecRestoreArray(dmCoord,coordLocal,&arr));
+  PetscCall(DMSetCoordinatesLocal(dm,coordLocal));
+  PetscCall(PetscLogObjectParent((PetscObject)dm,(PetscObject)coordLocal));
+  PetscCall(VecDestroy(&coordLocal));
   PetscFunctionReturn(0);
 }
 
@@ -106,9 +106,9 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_1d(DM dm)
   PetscInt        j;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectGetComm((PetscObject)dm,&comm));
-  CHKERRMPI(MPI_Comm_size(comm,&size));
-  CHKERRMPI(MPI_Comm_rank(comm,&rank));
+  PetscCall(PetscObjectGetComm((PetscObject)dm,&comm));
+  PetscCallMPI(MPI_Comm_size(comm,&size));
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
 
   /* Check Global size */
   PetscCheckFalse(stag->N[0] < 1,comm,PETSC_ERR_ARG_OUTOFRANGE,"Global grid size of %D < 1 specified",stag->N[0]);
@@ -117,7 +117,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_1d(DM dm)
   PetscCheckFalse(stag->N[0] < size,comm,PETSC_ERR_ARG_OUTOFRANGE,"More ranks (%d) than elements (%D) specified",size,stag->N[0]);
   if (!stag->l[0]) {
     /* Divide equally, giving an extra elements to higher ranks */
-    CHKERRQ(PetscMalloc1(stag->nRanks[0],&stag->l[0]));
+    PetscCall(PetscMalloc1(stag->nRanks[0],&stag->l[0]));
     for (j=0; j<stag->nRanks[0]; ++j) stag->l[0][j] = stag->N[0]/stag->nRanks[0] + (stag->N[0] % stag->nRanks[0] > j ? 1 : 0);
   }
   {
@@ -202,7 +202,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_1d(DM dm)
   stag->entriesGhost = stag->nGhost[0]*stag->entriesPerElement;
 
   /* Define neighbors */
-  CHKERRQ(PetscMalloc1(3,&stag->neighbors));
+  PetscCall(PetscMalloc1(3,&stag->neighbors));
   if (stag->firstRank[0]) {
     switch (stag->boundaryType[0]) {
       case DM_BOUNDARY_GHOSTED:
@@ -257,9 +257,9 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_1d(DM dm)
         SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported x boundary type %s",DMBoundaryTypes[stag->boundaryType[0]]);
     }
 
-    CHKERRQ(PetscMalloc1(entriesToTransferTotal,&idxLocal));
-    CHKERRQ(PetscMalloc1(entriesToTransferTotal,&idxGlobal));
-    CHKERRQ(PetscMalloc1(stag->entriesGhost,&idxGlobalAll));
+    PetscCall(PetscMalloc1(entriesToTransferTotal,&idxLocal));
+    PetscCall(PetscMalloc1(entriesToTransferTotal,&idxGlobal));
+    PetscCall(PetscMalloc1(stag->entriesGhost,&idxGlobalAll));
     if (stag->boundaryType[0] == DM_BOUNDARY_NONE) {
       PetscInt count = 0,countAll = 0;
       /* Left ghost points and native points */
@@ -369,40 +369,40 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_1d(DM dm)
     } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported x boundary type %s",DMBoundaryTypes[stag->boundaryType[0]]);
 
     /* Create Local IS (transferring pointer ownership) */
-    CHKERRQ(ISCreateGeneral(PetscObjectComm((PetscObject)dm),entriesToTransferTotal,idxLocal,PETSC_OWN_POINTER,&isLocal));
+    PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)dm),entriesToTransferTotal,idxLocal,PETSC_OWN_POINTER,&isLocal));
 
     /* Create Global IS (transferring pointer ownership) */
-    CHKERRQ(ISCreateGeneral(PetscObjectComm((PetscObject)dm),entriesToTransferTotal,idxGlobal,PETSC_OWN_POINTER,&isGlobal));
+    PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)dm),entriesToTransferTotal,idxGlobal,PETSC_OWN_POINTER,&isGlobal));
 
     /* Create stag->gtol, which doesn't include dummy entries */
     {
       Vec local,global;
-      CHKERRQ(VecCreateMPIWithArray(PetscObjectComm((PetscObject)dm),1,stag->entries,PETSC_DECIDE,NULL,&global));
-      CHKERRQ(VecCreateSeqWithArray(PETSC_COMM_SELF,stag->entriesPerElement,stag->entriesGhost,NULL,&local));
-      CHKERRQ(VecScatterCreate(global,isGlobal,local,isLocal,&stag->gtol));
-      CHKERRQ(VecDestroy(&global));
-      CHKERRQ(VecDestroy(&local));
+      PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)dm),1,stag->entries,PETSC_DECIDE,NULL,&global));
+      PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,stag->entriesPerElement,stag->entriesGhost,NULL,&local));
+      PetscCall(VecScatterCreate(global,isGlobal,local,isLocal,&stag->gtol));
+      PetscCall(VecDestroy(&global));
+      PetscCall(VecDestroy(&local));
     }
 
     /* In special cases, create a dedicated injective local-to-global map */
     if (stag->boundaryType[0] == DM_BOUNDARY_PERIODIC && stag->nRanks[0] == 1) {
-      CHKERRQ(DMStagPopulateLocalToGlobalInjective(dm));
+      PetscCall(DMStagPopulateLocalToGlobalInjective(dm));
     }
 
     /* Destroy ISs */
-    CHKERRQ(ISDestroy(&isLocal));
-    CHKERRQ(ISDestroy(&isGlobal));
+    PetscCall(ISDestroy(&isLocal));
+    PetscCall(ISDestroy(&isGlobal));
 
     /* Create local-to-global map (transferring pointer ownership) */
-    CHKERRQ(ISLocalToGlobalMappingCreate(comm,1,stag->entriesGhost,idxGlobalAll,PETSC_OWN_POINTER,&dm->ltogmap));
-    CHKERRQ(PetscLogObjectParent((PetscObject)dm,(PetscObject)dm->ltogmap));
+    PetscCall(ISLocalToGlobalMappingCreate(comm,1,stag->entriesGhost,idxGlobalAll,PETSC_OWN_POINTER,&dm->ltogmap));
+    PetscCall(PetscLogObjectParent((PetscObject)dm,(PetscObject)dm->ltogmap));
   }
 
   /* Precompute location offsets */
-  CHKERRQ(DMStagComputeLocationOffsets_1d(dm));
+  PetscCall(DMStagComputeLocationOffsets_1d(dm));
 
   /* View from Options */
-  CHKERRQ(DMViewFromOptions(dm,NULL,"-dm_view"));
+  PetscCall(DMViewFromOptions(dm,NULL,"-dm_view"));
 
  PetscFunctionReturn(0);
 }
@@ -413,7 +413,7 @@ static PetscErrorCode DMStagComputeLocationOffsets_1d(DM dm)
   const PetscInt  epe = stag->entriesPerElement;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscMalloc1(DMSTAG_NUMBER_LOCATIONS,&stag->locationOffsets));
+  PetscCall(PetscMalloc1(DMSTAG_NUMBER_LOCATIONS,&stag->locationOffsets));
   stag->locationOffsets[DMSTAG_LEFT]    = 0;
   stag->locationOffsets[DMSTAG_ELEMENT] = stag->locationOffsets[DMSTAG_LEFT] + stag->dof[0];
   stag->locationOffsets[DMSTAG_RIGHT]   = stag->locationOffsets[DMSTAG_LEFT] + epe;
@@ -428,8 +428,8 @@ PETSC_INTERN PetscErrorCode DMStagPopulateLocalToGlobalInjective_1d(DM dm)
   IS              isLocal,isGlobal;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscMalloc1(stag->entries,&idxLocal));
-  CHKERRQ(PetscMalloc1(stag->entries,&idxGlobal));
+  PetscCall(PetscMalloc1(stag->entries,&idxLocal));
+  PetscCall(PetscMalloc1(stag->entries,&idxGlobal));
   count = 0;
   iLocal = stag->start[0]-stag->startGhost[0];
   for (i=stag->start[0]; i<stag->start[0]+stag->n[0]; ++i,++iLocal) {
@@ -446,18 +446,18 @@ PETSC_INTERN PetscErrorCode DMStagPopulateLocalToGlobalInjective_1d(DM dm)
       idxLocal [count] = iLocal * stag->entriesPerElement + d;
     }
   }
-  CHKERRQ(ISCreateGeneral(PetscObjectComm((PetscObject)dm),stag->entries,idxLocal,PETSC_OWN_POINTER,&isLocal));
-  CHKERRQ(ISCreateGeneral(PetscObjectComm((PetscObject)dm),stag->entries,idxGlobal,PETSC_OWN_POINTER,&isGlobal));
+  PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)dm),stag->entries,idxLocal,PETSC_OWN_POINTER,&isLocal));
+  PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)dm),stag->entries,idxGlobal,PETSC_OWN_POINTER,&isGlobal));
   {
     Vec local,global;
-    CHKERRQ(VecCreateMPIWithArray(PetscObjectComm((PetscObject)dm),1,stag->entries,PETSC_DECIDE,NULL,&global));
-    CHKERRQ(VecCreateSeqWithArray(PETSC_COMM_SELF,stag->entriesPerElement,stag->entriesGhost,NULL,&local));
-    CHKERRQ(VecScatterCreate(local,isLocal,global,isGlobal,&stag->ltog_injective));
-    CHKERRQ(VecDestroy(&global));
-    CHKERRQ(VecDestroy(&local));
+    PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)dm),1,stag->entries,PETSC_DECIDE,NULL,&global));
+    PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,stag->entriesPerElement,stag->entriesGhost,NULL,&local));
+    PetscCall(VecScatterCreate(local,isLocal,global,isGlobal,&stag->ltog_injective));
+    PetscCall(VecDestroy(&global));
+    PetscCall(VecDestroy(&local));
   }
-  CHKERRQ(ISDestroy(&isLocal));
-  CHKERRQ(ISDestroy(&isGlobal));
+  PetscCall(ISDestroy(&isLocal));
+  PetscCall(ISDestroy(&isGlobal));
   PetscFunctionReturn(0);
 }
 
@@ -468,24 +468,24 @@ PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_1D_AIJ_Assemble(DM dm,Mat A)
   DMBoundaryType    boundary_type_x;
 
   PetscFunctionBegin;
-  CHKERRQ(DMStagGetDOF(dm,&dof[0],&dof[1],NULL,NULL));
-  CHKERRQ(DMStagGetStencilType(dm,&stencil_type));
-  CHKERRQ(DMStagGetStencilWidth(dm,&stencil_width));
-  CHKERRQ(DMStagGetCorners(dm,&start,NULL,NULL,&n,NULL,NULL,&n_extra,NULL,NULL));
-  CHKERRQ(DMStagGetGlobalSizes(dm,&N,NULL,NULL));
-  CHKERRQ(DMStagGetEntriesPerElement(dm,&epe));
-  CHKERRQ(DMStagGetBoundaryTypes(dm,&boundary_type_x,NULL,NULL));
+  PetscCall(DMStagGetDOF(dm,&dof[0],&dof[1],NULL,NULL));
+  PetscCall(DMStagGetStencilType(dm,&stencil_type));
+  PetscCall(DMStagGetStencilWidth(dm,&stencil_width));
+  PetscCall(DMStagGetCorners(dm,&start,NULL,NULL,&n,NULL,NULL,&n_extra,NULL,NULL));
+  PetscCall(DMStagGetGlobalSizes(dm,&N,NULL,NULL));
+  PetscCall(DMStagGetEntriesPerElement(dm,&epe));
+  PetscCall(DMStagGetBoundaryTypes(dm,&boundary_type_x,NULL,NULL));
   if (stencil_type == DMSTAG_STENCIL_NONE) {
     /* Couple all DOF at each location to each other */
     DMStagStencil *row_vertex,*row_element;
 
-    CHKERRQ(PetscMalloc1(dof[0],&row_vertex));
+    PetscCall(PetscMalloc1(dof[0],&row_vertex));
     for (PetscInt c=0; c<dof[0]; ++c) {
       row_vertex[c].loc = DMSTAG_LEFT;
       row_vertex[c].c = c;
     }
 
-    CHKERRQ(PetscMalloc1(dof[1],&row_element));
+    PetscCall(PetscMalloc1(dof[1],&row_element));
     for (PetscInt c=0; c<dof[1]; ++c) {
       row_element[c].loc = DMSTAG_ELEMENT;
       row_element[c].c = c;
@@ -496,21 +496,21 @@ PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_1D_AIJ_Assemble(DM dm,Mat A)
         for (PetscInt c=0; c<dof[0]; ++c){
           row_vertex[c].i = e;
         }
-        CHKERRQ(DMStagMatSetValuesStencil(dm,A,dof[0],row_vertex,dof[0],row_vertex,NULL,INSERT_VALUES));
+        PetscCall(DMStagMatSetValuesStencil(dm,A,dof[0],row_vertex,dof[0],row_vertex,NULL,INSERT_VALUES));
       }
       if (e < N) {
         for (PetscInt c=0; c<dof[1]; ++c) {
           row_element[c].i = e;
         }
-        CHKERRQ(DMStagMatSetValuesStencil(dm,A,dof[1],row_element,dof[1],row_element,NULL,INSERT_VALUES));
+        PetscCall(DMStagMatSetValuesStencil(dm,A,dof[1],row_element,dof[1],row_element,NULL,INSERT_VALUES));
       }
     }
-    CHKERRQ(PetscFree(row_vertex));
-    CHKERRQ(PetscFree(row_element));
+    PetscCall(PetscFree(row_vertex));
+    PetscCall(PetscFree(row_element));
   } else if (stencil_type == DMSTAG_STENCIL_STAR || stencil_type == DMSTAG_STENCIL_BOX) {
     DMStagStencil *col,*row;
 
-    CHKERRQ(PetscMalloc1(epe,&row));
+    PetscCall(PetscMalloc1(epe,&row));
     {
       PetscInt nrows = 0;
       for (PetscInt c=0; c<dof[0]; ++c) {
@@ -524,7 +524,7 @@ PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_1D_AIJ_Assemble(DM dm,Mat A)
         ++nrows;
       }
     }
-    CHKERRQ(PetscMalloc1(epe,&col));
+    PetscCall(PetscMalloc1(epe,&col));
     {
       PetscInt ncols = 0;
       for (PetscInt c=0; c<dof[0]; ++c) {
@@ -554,14 +554,14 @@ PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_1D_AIJ_Assemble(DM dm,Mat A)
           for (PetscInt i=0; i<epe; ++i) {
             col[i].i = e_offset;
           }
-          CHKERRQ(DMStagMatSetValuesStencil(dm,A,epe,row,epe,col,NULL,INSERT_VALUES));
+          PetscCall(DMStagMatSetValuesStencil(dm,A,epe,row,epe,col,NULL,INSERT_VALUES));
         }
       }
     }
-    CHKERRQ(PetscFree(row));
-    CHKERRQ(PetscFree(col));
+    PetscCall(PetscFree(row));
+    PetscCall(PetscFree(col));
   } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Unsupported stencil type %s",DMStagStencilTypes[stencil_type]);
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }

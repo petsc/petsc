@@ -51,49 +51,49 @@ int main(int argc,char **argv)
   MatHtoolKernel kernel = GenEntries;
   MyIMatrix      *imatrix;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)NULL,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m_local",&m,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-symmetric",&sym,NULL));
-  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-mat_htool_epsilon",&epsilon,NULL));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)NULL,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m_local",&m,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-symmetric",&sym,NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-mat_htool_epsilon",&epsilon,NULL));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   M = size*m;
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
-  CHKERRQ(PetscMalloc1(m*dim,&coords));
-  CHKERRQ(PetscRandomCreate(PETSC_COMM_WORLD,&rdm));
-  CHKERRQ(PetscRandomGetValuesReal(rdm,m*dim,coords));
-  CHKERRQ(PetscCalloc1(M*dim,&gcoords));
-  CHKERRMPI(MPI_Exscan(&m,&begin,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD));
-  CHKERRQ(PetscArraycpy(gcoords+begin*dim,coords,m*dim));
-  CHKERRMPI(MPIU_Allreduce(MPI_IN_PLACE,gcoords,M*dim,MPIU_REAL,MPI_SUM,PETSC_COMM_WORLD));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
+  PetscCall(PetscMalloc1(m*dim,&coords));
+  PetscCall(PetscRandomCreate(PETSC_COMM_WORLD,&rdm));
+  PetscCall(PetscRandomGetValuesReal(rdm,m*dim,coords));
+  PetscCall(PetscCalloc1(M*dim,&gcoords));
+  PetscCallMPI(MPI_Exscan(&m,&begin,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD));
+  PetscCall(PetscArraycpy(gcoords+begin*dim,coords,m*dim));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE,gcoords,M*dim,MPIU_REAL,MPI_SUM,PETSC_COMM_WORLD));
   imatrix = new MyIMatrix(M,M,dim,gcoords);
-  CHKERRQ(MatCreateHtoolFromKernel(PETSC_COMM_WORLD,m,m,M,M,dim,coords,coords,NULL,imatrix,&A)); /* block-wise assembly using htool::IMatrix<PetscScalar>::copy_submatrix() */
-  CHKERRQ(MatSetOption(A,MAT_SYMMETRIC,sym));
-  CHKERRQ(MatSetFromOptions(A));
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatViewFromOptions(A,NULL,"-A_view"));
-  CHKERRQ(MatCreateHtoolFromKernel(PETSC_COMM_WORLD,m,m,M,M,dim,coords,coords,kernel,gcoords,&B)); /* entry-wise assembly using GenEntries() */
-  CHKERRQ(MatSetOption(B,MAT_SYMMETRIC,sym));
-  CHKERRQ(MatSetFromOptions(B));
-  CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatViewFromOptions(B,NULL,"-B_view"));
-  CHKERRQ(MatConvert(A,MATDENSE,MAT_INITIAL_MATRIX,&P));
-  CHKERRQ(MatNorm(P,NORM_FROBENIUS,&relative));
-  CHKERRQ(MatConvert(B,MATDENSE,MAT_INITIAL_MATRIX,&R));
-  CHKERRQ(MatAXPY(R,-1.0,P,SAME_NONZERO_PATTERN));
-  CHKERRQ(MatNorm(R,NORM_INFINITY,&norm));
+  PetscCall(MatCreateHtoolFromKernel(PETSC_COMM_WORLD,m,m,M,M,dim,coords,coords,NULL,imatrix,&A)); /* block-wise assembly using htool::IMatrix<PetscScalar>::copy_submatrix() */
+  PetscCall(MatSetOption(A,MAT_SYMMETRIC,sym));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatViewFromOptions(A,NULL,"-A_view"));
+  PetscCall(MatCreateHtoolFromKernel(PETSC_COMM_WORLD,m,m,M,M,dim,coords,coords,kernel,gcoords,&B)); /* entry-wise assembly using GenEntries() */
+  PetscCall(MatSetOption(B,MAT_SYMMETRIC,sym));
+  PetscCall(MatSetFromOptions(B));
+  PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatViewFromOptions(B,NULL,"-B_view"));
+  PetscCall(MatConvert(A,MATDENSE,MAT_INITIAL_MATRIX,&P));
+  PetscCall(MatNorm(P,NORM_FROBENIUS,&relative));
+  PetscCall(MatConvert(B,MATDENSE,MAT_INITIAL_MATRIX,&R));
+  PetscCall(MatAXPY(R,-1.0,P,SAME_NONZERO_PATTERN));
+  PetscCall(MatNorm(R,NORM_INFINITY,&norm));
   PetscCheckFalse(PetscAbsReal(norm/relative) > epsilon,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"||A(!symmetric)-A(symmetric)|| = %g (> %g)",(double)PetscAbsReal(norm/relative),(double)epsilon);
-  CHKERRQ(MatDestroy(&B));
-  CHKERRQ(MatDestroy(&R));
-  CHKERRQ(MatDestroy(&P));
-  CHKERRQ(PetscRandomDestroy(&rdm));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(PetscFree(gcoords));
-  CHKERRQ(PetscFree(coords));
+  PetscCall(MatDestroy(&B));
+  PetscCall(MatDestroy(&R));
+  PetscCall(MatDestroy(&P));
+  PetscCall(PetscRandomDestroy(&rdm));
+  PetscCall(MatDestroy(&A));
+  PetscCall(PetscFree(gcoords));
+  PetscCall(PetscFree(coords));
   delete imatrix;
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

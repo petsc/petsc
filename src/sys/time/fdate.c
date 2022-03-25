@@ -44,13 +44,13 @@ PetscErrorCode  PetscGetDate(char date[],size_t len)
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_TIME)
   time(&aclock);
-  CHKERRQ(PetscStrncpy(date,asctime(localtime(&aclock)),len));
+  PetscCall(PetscStrncpy(date,asctime(localtime(&aclock)),len));
 #else
   gettimeofday(&tp,(struct timezone*)0);
-  CHKERRQ(PetscStrncpy(date,asctime(localtime((time_t*)&tp.tv_sec)),len));
+  PetscCall(PetscStrncpy(date,asctime(localtime((time_t*)&tp.tv_sec)),len));
 #endif
   /* now strip out the new-line chars at the end of the string */
-  CHKERRQ(PetscStrstr(date,"\n",&str));
+  PetscCall(PetscStrstr(date,"\n",&str));
   if (str) str[0] = 0;
   PetscFunctionReturn(0);
 }

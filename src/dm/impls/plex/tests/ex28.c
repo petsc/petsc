@@ -18,25 +18,25 @@ int main(int argc, char **args)
   PetscBool       flg;
 
   /*load matrix*/
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   comm = PETSC_COMM_WORLD;
-  CHKERRMPI(MPI_Comm_size(comm, &size));
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-fin",filein,sizeof(filein),&flg));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-fin",filein,sizeof(filein),&flg));
   if (flg) {
     PetscViewer view;
-    CHKERRQ(PetscViewerBinaryOpen(comm,filein,FILE_MODE_READ,&view));
-    CHKERRQ(MatCreate(comm,&A));
-    CHKERRQ(MatLoad(A,view));
-    CHKERRQ(PetscViewerDestroy(&view));
+    PetscCall(PetscViewerBinaryOpen(comm,filein,FILE_MODE_READ,&view));
+    PetscCall(MatCreate(comm,&A));
+    PetscCall(MatLoad(A,view));
+    PetscCall(PetscViewerDestroy(&view));
   }
 
   /*partition matrix*/
-  CHKERRQ(MatPartitioningCreate(comm,&part));
-  CHKERRQ(MatPartitioningSetAdjacency(part, A));
-  CHKERRQ(MatPartitioningSetFromOptions(part));
-  CHKERRQ(MatPartitioningApply(part, &partis));
-  CHKERRQ(MatGetOwnershipRanges(A, &ranges));
-  CHKERRQ(MatGetSize(A, &min, NULL));
+  PetscCall(MatPartitioningCreate(comm,&part));
+  PetscCall(MatPartitioningSetAdjacency(part, A));
+  PetscCall(MatPartitioningSetFromOptions(part));
+  PetscCall(MatPartitioningApply(part, &partis));
+  PetscCall(MatGetOwnershipRanges(A, &ranges));
+  PetscCall(MatGetSize(A, &min, NULL));
   for (p = 0; p < size; ++p) {
     const PetscInt partsize = ranges[p+1]-ranges[p];
 
@@ -44,18 +44,18 @@ int main(int argc, char **args)
     min = PetscMin(min, partsize);
   }
   balance = ((PetscReal) max)/min;
-  CHKERRQ(PetscPrintf(comm, "ranges: "));
+  PetscCall(PetscPrintf(comm, "ranges: "));
   for (p = 0; p <= size; ++p) {
-    if (p > 0) CHKERRQ(PetscPrintf(comm, ", "));
-    CHKERRQ(PetscPrintf(comm, "%D", ranges[p]));
+    if (p > 0) PetscCall(PetscPrintf(comm, ", "));
+    PetscCall(PetscPrintf(comm, "%D", ranges[p]));
   }
-  CHKERRQ(PetscPrintf(comm, "\n"));
-  CHKERRQ(PetscPrintf(comm, "max:%.0lf min:%.0lf balance:%.11lf\n", (double) max,(double) min,(double) balance));
-  CHKERRQ(PetscObjectViewFromOptions((PetscObject)partis,NULL,"-partition_view"));
-  CHKERRQ(MatPartitioningDestroy(&part));
-  CHKERRQ(ISDestroy(&partis));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscPrintf(comm, "\n"));
+  PetscCall(PetscPrintf(comm, "max:%.0lf min:%.0lf balance:%.11lf\n", (double) max,(double) min,(double) balance));
+  PetscCall(PetscObjectViewFromOptions((PetscObject)partis,NULL,"-partition_view"));
+  PetscCall(MatPartitioningDestroy(&part));
+  PetscCall(ISDestroy(&partis));
+  PetscCall(MatDestroy(&A));
+  PetscCall(PetscFinalize());
   return 0;
 
 }

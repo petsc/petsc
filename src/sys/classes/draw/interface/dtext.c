@@ -27,7 +27,7 @@ PetscErrorCode  PetscDrawString(PetscDraw draw,PetscReal xl,PetscReal yl,int cl,
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscValidCharPointer(text,5);
   PetscCheck(draw->ops->string,PETSC_COMM_SELF,PETSC_ERR_SUP,"This draw type %s does not support drawing strings",((PetscObject)draw)->type_name);
-  CHKERRQ((*draw->ops->string)(draw,xl,yl,cl,text));
+  PetscCall((*draw->ops->string)(draw,xl,yl,cl,text));
   PetscFunctionReturn(0);
 }
 
@@ -59,12 +59,12 @@ PetscErrorCode  PetscDrawStringVertical(PetscDraw draw,PetscReal xl,PetscReal yl
   PetscValidCharPointer(text,5);
 
   if (draw->ops->stringvertical) {
-    CHKERRQ((*draw->ops->stringvertical)(draw,xl,yl,cl,text));
+    PetscCall((*draw->ops->stringvertical)(draw,xl,yl,cl,text));
     PetscFunctionReturn(0);
   }
-  CHKERRQ(PetscDrawStringGetSize(draw,&tw,&th));
+  PetscCall(PetscDrawStringGetSize(draw,&tw,&th));
   for (i = 0; (chr[0] = text[i]); i++) {
-    CHKERRQ(PetscDrawString(draw,xl,yl-th*(i+1),cl,chr));
+    PetscCall(PetscDrawString(draw,xl,yl-th*(i+1),cl,chr));
   }
   PetscFunctionReturn(0);
 }
@@ -96,10 +96,10 @@ PetscErrorCode  PetscDrawStringCentered(PetscDraw draw,PetscReal xc,PetscReal yl
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscValidCharPointer(text,5);
 
-  CHKERRQ(PetscDrawStringGetSize(draw,&tw,&th));
-  CHKERRQ(PetscStrlen(text,&len));
+  PetscCall(PetscDrawStringGetSize(draw,&tw,&th));
+  PetscCall(PetscStrlen(text,&len));
   xc   = xc - len*tw/2;
-  CHKERRQ(PetscDrawString(draw,xc,yl,cl,text));
+  PetscCall(PetscDrawString(draw,xc,yl,cl,text));
   PetscFunctionReturn(0);
 }
 
@@ -137,17 +137,17 @@ PetscErrorCode  PetscDrawStringBoxed(PetscDraw draw,PetscReal sxl,PetscReal syl,
   PetscValidCharPointer(text,6);
 
   if (draw->ops->boxedstring) {
-    CHKERRQ((*draw->ops->boxedstring)(draw,sxl,syl,sc,bc,text,w,h));
+    PetscCall((*draw->ops->boxedstring)(draw,sxl,syl,sc,bc,text,w,h));
     PetscFunctionReturn(0);
   }
 
-  CHKERRQ(PetscStrToArray(text,'\n',&cnt,&array));
+  PetscCall(PetscStrToArray(text,'\n',&cnt,&array));
   for (i=0; i<cnt; i++) {
-    CHKERRQ(PetscStrlen(array[i],&len));
+    PetscCall(PetscStrlen(array[i],&len));
     mlen = PetscMax(mlen,len);
   }
 
-  CHKERRQ(PetscDrawStringGetSize(draw,&tw,&th));
+  PetscCall(PetscDrawStringGetSize(draw,&tw,&th));
 
   top    = syl;
   left   = sxl - .5*(mlen + 2)*tw;
@@ -163,15 +163,15 @@ PetscErrorCode  PetscDrawStringBoxed(PetscDraw draw,PetscReal sxl,PetscReal syl,
   draw->boundbox_yr = PetscMax(draw->boundbox_yr,top);
 
   /* top, left, bottom, right lines */
-  CHKERRQ(PetscDrawLine(draw,left,top,right,top,bc));
-  CHKERRQ(PetscDrawLine(draw,left,bottom,left,top,bc));
-  CHKERRQ(PetscDrawLine(draw,right,bottom,right,top,bc));
-  CHKERRQ(PetscDrawLine(draw,left,bottom,right,bottom,bc));
+  PetscCall(PetscDrawLine(draw,left,top,right,top,bc));
+  PetscCall(PetscDrawLine(draw,left,bottom,left,top,bc));
+  PetscCall(PetscDrawLine(draw,right,bottom,right,top,bc));
+  PetscCall(PetscDrawLine(draw,left,bottom,right,bottom,bc));
 
   for  (i=0; i<cnt; i++) {
-    CHKERRQ(PetscDrawString(draw,left + tw,top - (1.5 + i)*th,sc,array[i]));
+    PetscCall(PetscDrawString(draw,left + tw,top - (1.5 + i)*th,sc,array[i]));
   }
-  CHKERRQ(PetscStrToArrayDestroy(cnt,array));
+  PetscCall(PetscStrToArrayDestroy(cnt,array));
   PetscFunctionReturn(0);
 }
 
@@ -199,7 +199,7 @@ PetscErrorCode  PetscDrawStringSetSize(PetscDraw draw,PetscReal width,PetscReal 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   if (draw->ops->stringsetsize) {
-    CHKERRQ((*draw->ops->stringsetsize)(draw,width,height));
+    PetscCall((*draw->ops->stringsetsize)(draw,width,height));
   }
   PetscFunctionReturn(0);
 }
@@ -226,6 +226,6 @@ PetscErrorCode  PetscDrawStringGetSize(PetscDraw draw,PetscReal *width,PetscReal
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscCheck(draw->ops->stringgetsize,PETSC_COMM_SELF,PETSC_ERR_SUP,"This draw type %s does not support getting string size",((PetscObject)draw)->type_name);
-  CHKERRQ((*draw->ops->stringgetsize)(draw,width,height));
+  PetscCall((*draw->ops->stringgetsize)(draw,width,height));
   PetscFunctionReturn(0);
 }

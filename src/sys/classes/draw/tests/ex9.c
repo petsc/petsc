@@ -18,35 +18,35 @@ int main(int argc,char **argv)
 
   xlabel = "X-axis Label"; toplabel = "Top Label"; ylabel = "Y-axis Label";
 
-  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-width",&w,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-height",&h,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&nn,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-bins",&b,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-color",&c,NULL));
-  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-nolabels",&flg));
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-width",&w,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-height",&h,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&nn,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-bins",&b,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-color",&c,NULL));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-nolabels",&flg));
   width = (int) w; height = (int)h; n = (int)nn; bins = (int) b; color = (int) c;
   if (flg) { xlabel = NULL; ylabel = NULL; toplabel = NULL; }
 
-  CHKERRQ(PetscDrawCreate(PETSC_COMM_WORLD,0,"Title",x,y,width,height,&draw));
-  CHKERRQ(PetscDrawSetFromOptions(draw));
-  CHKERRQ(PetscDrawHGCreate(draw,bins,&hist));
-  CHKERRQ(PetscDrawHGSetColor(hist,color));
-  CHKERRQ(PetscDrawHGGetAxis(hist,&axis));
-  CHKERRQ(PetscDrawAxisSetColors(axis,PETSC_DRAW_BLACK,PETSC_DRAW_RED,PETSC_DRAW_BLUE));
-  CHKERRQ(PetscDrawAxisSetLabels(axis,toplabel,xlabel,ylabel));
-  /*CHKERRQ(PetscDrawHGSetFromOptions(hist));*/
+  PetscCall(PetscDrawCreate(PETSC_COMM_WORLD,0,"Title",x,y,width,height,&draw));
+  PetscCall(PetscDrawSetFromOptions(draw));
+  PetscCall(PetscDrawHGCreate(draw,bins,&hist));
+  PetscCall(PetscDrawHGSetColor(hist,color));
+  PetscCall(PetscDrawHGGetAxis(hist,&axis));
+  PetscCall(PetscDrawAxisSetColors(axis,PETSC_DRAW_BLACK,PETSC_DRAW_RED,PETSC_DRAW_BLUE));
+  PetscCall(PetscDrawAxisSetLabels(axis,toplabel,xlabel,ylabel));
+  /*PetscCall(PetscDrawHGSetFromOptions(hist));*/
 
   for (i=0; i<n; i++) {
     xd   = (PetscReal)(i - 5);
-    CHKERRQ(PetscDrawHGAddValue(hist,xd*xd));
+    PetscCall(PetscDrawHGAddValue(hist,xd*xd));
   }
-  CHKERRQ(PetscDrawHGDraw(hist));
-  CHKERRQ(PetscDrawHGSave(hist));
+  PetscCall(PetscDrawHGDraw(hist));
+  PetscCall(PetscDrawHGSave(hist));
 
-  CHKERRQ(PetscDrawHGDestroy(&hist));
-  CHKERRQ(PetscDrawDestroy(&draw));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscDrawHGDestroy(&hist));
+  PetscCall(PetscDrawDestroy(&draw));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

@@ -10,38 +10,38 @@ int main(int argc,char **args)
   PetscScalar    *Av;
   PetscInt       i;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
-  CHKERRQ(MatCreateDense(PETSC_COMM_WORLD,6,6,12,12,NULL,&A));
-  CHKERRQ(MatDenseGetArray(A,&Av));
+  PetscCall(MatCreateDense(PETSC_COMM_WORLD,6,6,12,12,NULL,&A));
+  PetscCall(MatDenseGetArray(A,&Av));
   for (i=0; i<6*12; i++) Av[i] = (PetscScalar) i;
-  CHKERRQ(MatDenseRestoreArray(A,&Av));
+  PetscCall(MatDenseRestoreArray(A,&Av));
 
   /* Load matrices */
-  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"ex191matrix",FILE_MODE_WRITE,&fd));
-  CHKERRQ(PetscViewerPushFormat(fd,PETSC_VIEWER_NATIVE));
-  CHKERRQ(MatView(A,fd));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(PetscViewerPopFormat(fd));
-  CHKERRQ(PetscViewerDestroy(&fd));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"ex191matrix",FILE_MODE_WRITE,&fd));
+  PetscCall(PetscViewerPushFormat(fd,PETSC_VIEWER_NATIVE));
+  PetscCall(MatView(A,fd));
+  PetscCall(MatDestroy(&A));
+  PetscCall(PetscViewerPopFormat(fd));
+  PetscCall(PetscViewerDestroy(&fd));
 
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(MatSetType(A,MATDENSE));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetType(A,MATDENSE));
   if (rank == 0) {
-    CHKERRQ(MatSetSizes(A, 4, PETSC_DETERMINE, PETSC_DETERMINE,PETSC_DETERMINE));
+    PetscCall(MatSetSizes(A, 4, PETSC_DETERMINE, PETSC_DETERMINE,PETSC_DETERMINE));
   } else {
-    CHKERRQ(MatSetSizes(A, 8, PETSC_DETERMINE, PETSC_DETERMINE,PETSC_DETERMINE));
+    PetscCall(MatSetSizes(A, 8, PETSC_DETERMINE, PETSC_DETERMINE,PETSC_DETERMINE));
   }
-  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"ex191matrix",FILE_MODE_READ,&fd));
-  CHKERRQ(MatLoad(A,fd));
-  CHKERRQ(PetscViewerDestroy(&fd));
-  CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO_DETAIL));
-  CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"ex191matrix",FILE_MODE_READ,&fd));
+  PetscCall(MatLoad(A,fd));
+  PetscCall(PetscViewerDestroy(&fd));
+  PetscCall(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO_DETAIL));
+  PetscCall(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatDestroy(&A));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

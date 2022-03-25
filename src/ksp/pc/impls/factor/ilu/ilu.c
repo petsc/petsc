@@ -20,9 +20,9 @@ PetscErrorCode PCReset_ILU(PC pc)
   PC_ILU         *ilu = (PC_ILU*)pc->data;
 
   PetscFunctionBegin;
-  if (!ilu->hdr.inplace) CHKERRQ(MatDestroy(&((PC_Factor*)ilu)->fact));
-  if (ilu->row && ilu->col && ilu->row != ilu->col) CHKERRQ(ISDestroy(&ilu->row));
-  CHKERRQ(ISDestroy(&ilu->col));
+  if (!ilu->hdr.inplace) PetscCall(MatDestroy(&((PC_Factor*)ilu)->fact));
+  if (ilu->row && ilu->col && ilu->row != ilu->col) PetscCall(ISDestroy(&ilu->row));
+  PetscCall(ISDestroy(&ilu->col));
   PetscFunctionReturn(0);
 }
 
@@ -49,22 +49,22 @@ static PetscErrorCode PCSetFromOptions_ILU(PetscOptionItems *PetscOptionsObject,
   PetscReal      tol;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"ILU Options"));
-  CHKERRQ(PCSetFromOptions_Factor(PetscOptionsObject,pc));
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"ILU Options"));
+  PetscCall(PCSetFromOptions_Factor(PetscOptionsObject,pc));
 
-  CHKERRQ(PetscOptionsInt("-pc_factor_levels","levels of fill","PCFactorSetLevels",(PetscInt)((PC_Factor*)ilu)->info.levels,&itmp,&flg));
+  PetscCall(PetscOptionsInt("-pc_factor_levels","levels of fill","PCFactorSetLevels",(PetscInt)((PC_Factor*)ilu)->info.levels,&itmp,&flg));
   if (flg) ((PC_Factor*)ilu)->info.levels = itmp;
 
-  CHKERRQ(PetscOptionsBool("-pc_factor_diagonal_fill","Allow fill into empty diagonal entry","PCFactorSetAllowDiagonalFill",((PC_Factor*)ilu)->info.diagonal_fill ? PETSC_TRUE : PETSC_FALSE,&flg,&set));
+  PetscCall(PetscOptionsBool("-pc_factor_diagonal_fill","Allow fill into empty diagonal entry","PCFactorSetAllowDiagonalFill",((PC_Factor*)ilu)->info.diagonal_fill ? PETSC_TRUE : PETSC_FALSE,&flg,&set));
   if (set) ((PC_Factor*)ilu)->info.diagonal_fill = (PetscReal) flg;
-  CHKERRQ(PetscOptionsName("-pc_factor_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","PCFactorReorderForNonzeroDiagonal",&flg));
+  PetscCall(PetscOptionsName("-pc_factor_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","PCFactorReorderForNonzeroDiagonal",&flg));
   if (flg) {
     tol  = PETSC_DECIDE;
-    CHKERRQ(PetscOptionsReal("-pc_factor_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","PCFactorReorderForNonzeroDiagonal",ilu->nonzerosalongdiagonaltol,&tol,NULL));
-    CHKERRQ(PCFactorReorderForNonzeroDiagonal(pc,tol));
+    PetscCall(PetscOptionsReal("-pc_factor_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","PCFactorReorderForNonzeroDiagonal",ilu->nonzerosalongdiagonaltol,&tol,NULL));
+    PetscCall(PCFactorReorderForNonzeroDiagonal(pc,tol));
   }
 
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -80,28 +80,28 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
   pc->failedreason = PC_NOERROR;
   /* ugly hack to change default, since it is not support by some matrix types */
   if (((PC_Factor*)ilu)->info.shifttype == (PetscReal)MAT_SHIFT_NONZERO) {
-    CHKERRQ(PetscObjectTypeCompare((PetscObject)pc->pmat,MATSEQAIJ,&flg));
+    PetscCall(PetscObjectTypeCompare((PetscObject)pc->pmat,MATSEQAIJ,&flg));
     if (!flg) {
-      CHKERRQ(PetscObjectTypeCompare((PetscObject)pc->pmat,MATMPIAIJ,&flg));
+      PetscCall(PetscObjectTypeCompare((PetscObject)pc->pmat,MATMPIAIJ,&flg));
       if (!flg) {
         ((PC_Factor*)ilu)->info.shifttype = (PetscReal)MAT_SHIFT_INBLOCKS;
-        CHKERRQ(PetscInfo(pc,"Changing shift type from NONZERO to INBLOCKS because block matrices do not support NONZERO\n"));
+        PetscCall(PetscInfo(pc,"Changing shift type from NONZERO to INBLOCKS because block matrices do not support NONZERO\n"));
       }
     }
   }
 
-  CHKERRQ(MatSetErrorIfFailure(pc->pmat,pc->erroriffailure));
+  PetscCall(MatSetErrorIfFailure(pc->pmat,pc->erroriffailure));
   if (ilu->hdr.inplace) {
     if (!pc->setupcalled) {
 
       /* In-place factorization only makes sense with the natural ordering,
          so we only need to get the ordering once, even if nonzero structure changes */
       /* Should not get the ordering if the factorization routine does not use it, but do not yet have access to the factor matrix */
-      CHKERRQ(PCFactorSetDefaultOrdering_Factor(pc));
-      CHKERRQ(MatDestroy(&((PC_Factor*)ilu)->fact));
-      CHKERRQ(MatGetOrdering(pc->pmat,((PC_Factor*)ilu)->ordering,&ilu->row,&ilu->col));
-      if (ilu->row) CHKERRQ(PetscLogObjectParent((PetscObject)pc,(PetscObject)ilu->row));
-      if (ilu->col) CHKERRQ(PetscLogObjectParent((PetscObject)pc,(PetscObject)ilu->col));
+      PetscCall(PCFactorSetDefaultOrdering_Factor(pc));
+      PetscCall(MatDestroy(&((PC_Factor*)ilu)->fact));
+      PetscCall(MatGetOrdering(pc->pmat,((PC_Factor*)ilu)->ordering,&ilu->row,&ilu->col));
+      if (ilu->row) PetscCall(PetscLogObjectParent((PetscObject)pc,(PetscObject)ilu->row));
+      if (ilu->col) PetscCall(PetscLogObjectParent((PetscObject)pc,(PetscObject)ilu->col));
     }
 
     /* In place ILU only makes sense with fill factor of 1.0 because
@@ -109,8 +109,8 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
     ((PC_Factor*)ilu)->info.fill          = 1.0;
     ((PC_Factor*)ilu)->info.diagonal_fill = 0.0;
 
-    CHKERRQ(MatILUFactor(pc->pmat,ilu->row,ilu->col,&((PC_Factor*)ilu)->info));
-    CHKERRQ(MatFactorGetError(pc->pmat,&err));
+    PetscCall(MatILUFactor(pc->pmat,ilu->row,ilu->col,&((PC_Factor*)ilu)->info));
+    PetscCall(MatFactorGetError(pc->pmat,&err));
     if (err) { /* Factor() fails */
       pc->failedreason = (PCFailedReason)err;
       PetscFunctionReturn(0);
@@ -118,72 +118,72 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
 
     ((PC_Factor*)ilu)->fact = pc->pmat;
     /* must update the pc record of the matrix state or the PC will attempt to run PCSetUp() yet again */
-    CHKERRQ(PetscObjectStateGet((PetscObject)pc->pmat,&pc->matstate));
+    PetscCall(PetscObjectStateGet((PetscObject)pc->pmat,&pc->matstate));
   } else {
     if (!pc->setupcalled) {
       /* first time in so compute reordering and symbolic factorization */
       PetscBool canuseordering;
       if (!((PC_Factor*)ilu)->fact) {
-        CHKERRQ(MatGetFactor(pc->pmat,((PC_Factor*)ilu)->solvertype,MAT_FACTOR_ILU,&((PC_Factor*)ilu)->fact));
-        CHKERRQ(PetscLogObjectParent((PetscObject)pc,(PetscObject)((PC_Factor*)ilu)->fact));
+        PetscCall(MatGetFactor(pc->pmat,((PC_Factor*)ilu)->solvertype,MAT_FACTOR_ILU,&((PC_Factor*)ilu)->fact));
+        PetscCall(PetscLogObjectParent((PetscObject)pc,(PetscObject)((PC_Factor*)ilu)->fact));
       }
-      CHKERRQ(MatFactorGetCanUseOrdering(((PC_Factor*)ilu)->fact,&canuseordering));
+      PetscCall(MatFactorGetCanUseOrdering(((PC_Factor*)ilu)->fact,&canuseordering));
       if (canuseordering) {
-        CHKERRQ(PCFactorSetDefaultOrdering_Factor(pc));
-        CHKERRQ(MatGetOrdering(pc->pmat,((PC_Factor*)ilu)->ordering,&ilu->row,&ilu->col));
-        CHKERRQ(PetscLogObjectParent((PetscObject)pc,(PetscObject)ilu->row));
-        CHKERRQ(PetscLogObjectParent((PetscObject)pc,(PetscObject)ilu->col));
+        PetscCall(PCFactorSetDefaultOrdering_Factor(pc));
+        PetscCall(MatGetOrdering(pc->pmat,((PC_Factor*)ilu)->ordering,&ilu->row,&ilu->col));
+        PetscCall(PetscLogObjectParent((PetscObject)pc,(PetscObject)ilu->row));
+        PetscCall(PetscLogObjectParent((PetscObject)pc,(PetscObject)ilu->col));
         /*  Remove zeros along diagonal?     */
         if (ilu->nonzerosalongdiagonal) {
-          CHKERRQ(MatReorderForNonzeroDiagonal(pc->pmat,ilu->nonzerosalongdiagonaltol,ilu->row,ilu->col));
+          PetscCall(MatReorderForNonzeroDiagonal(pc->pmat,ilu->nonzerosalongdiagonaltol,ilu->row,ilu->col));
         }
       }
-      CHKERRQ(MatILUFactorSymbolic(((PC_Factor*)ilu)->fact,pc->pmat,ilu->row,ilu->col,&((PC_Factor*)ilu)->info));
-      CHKERRQ(MatGetInfo(((PC_Factor*)ilu)->fact,MAT_LOCAL,&info));
+      PetscCall(MatILUFactorSymbolic(((PC_Factor*)ilu)->fact,pc->pmat,ilu->row,ilu->col,&((PC_Factor*)ilu)->info));
+      PetscCall(MatGetInfo(((PC_Factor*)ilu)->fact,MAT_LOCAL,&info));
       ilu->hdr.actualfill = info.fill_ratio_needed;
     } else if (pc->flag != SAME_NONZERO_PATTERN) {
       if (!ilu->hdr.reuseordering) {
         PetscBool canuseordering;
-        CHKERRQ(MatDestroy(&((PC_Factor*)ilu)->fact));
-        CHKERRQ(MatGetFactor(pc->pmat,((PC_Factor*)ilu)->solvertype,MAT_FACTOR_ILU,&((PC_Factor*)ilu)->fact));
-        CHKERRQ(PetscLogObjectParent((PetscObject)pc,(PetscObject)((PC_Factor*)ilu)->fact));
-        CHKERRQ(MatFactorGetCanUseOrdering(((PC_Factor*)ilu)->fact,&canuseordering));
+        PetscCall(MatDestroy(&((PC_Factor*)ilu)->fact));
+        PetscCall(MatGetFactor(pc->pmat,((PC_Factor*)ilu)->solvertype,MAT_FACTOR_ILU,&((PC_Factor*)ilu)->fact));
+        PetscCall(PetscLogObjectParent((PetscObject)pc,(PetscObject)((PC_Factor*)ilu)->fact));
+        PetscCall(MatFactorGetCanUseOrdering(((PC_Factor*)ilu)->fact,&canuseordering));
         if (canuseordering) {
           /* compute a new ordering for the ILU */
-          CHKERRQ(ISDestroy(&ilu->row));
-          CHKERRQ(ISDestroy(&ilu->col));
-          CHKERRQ(PCFactorSetDefaultOrdering_Factor(pc));
-          CHKERRQ(MatGetOrdering(pc->pmat,((PC_Factor*)ilu)->ordering,&ilu->row,&ilu->col));
-          CHKERRQ(PetscLogObjectParent((PetscObject)pc,(PetscObject)ilu->row));
-          CHKERRQ(PetscLogObjectParent((PetscObject)pc,(PetscObject)ilu->col));
+          PetscCall(ISDestroy(&ilu->row));
+          PetscCall(ISDestroy(&ilu->col));
+          PetscCall(PCFactorSetDefaultOrdering_Factor(pc));
+          PetscCall(MatGetOrdering(pc->pmat,((PC_Factor*)ilu)->ordering,&ilu->row,&ilu->col));
+          PetscCall(PetscLogObjectParent((PetscObject)pc,(PetscObject)ilu->row));
+          PetscCall(PetscLogObjectParent((PetscObject)pc,(PetscObject)ilu->col));
           /*  Remove zeros along diagonal?     */
           if (ilu->nonzerosalongdiagonal) {
-            CHKERRQ(MatReorderForNonzeroDiagonal(pc->pmat,ilu->nonzerosalongdiagonaltol,ilu->row,ilu->col));
+            PetscCall(MatReorderForNonzeroDiagonal(pc->pmat,ilu->nonzerosalongdiagonaltol,ilu->row,ilu->col));
           }
         }
       }
-      CHKERRQ(MatILUFactorSymbolic(((PC_Factor*)ilu)->fact,pc->pmat,ilu->row,ilu->col,&((PC_Factor*)ilu)->info));
-      CHKERRQ(MatGetInfo(((PC_Factor*)ilu)->fact,MAT_LOCAL,&info));
+      PetscCall(MatILUFactorSymbolic(((PC_Factor*)ilu)->fact,pc->pmat,ilu->row,ilu->col,&((PC_Factor*)ilu)->info));
+      PetscCall(MatGetInfo(((PC_Factor*)ilu)->fact,MAT_LOCAL,&info));
       ilu->hdr.actualfill = info.fill_ratio_needed;
     }
-    CHKERRQ(MatFactorGetError(((PC_Factor*)ilu)->fact,&err));
+    PetscCall(MatFactorGetError(((PC_Factor*)ilu)->fact,&err));
     if (err) { /* FactorSymbolic() fails */
       pc->failedreason = (PCFailedReason)err;
       PetscFunctionReturn(0);
     }
 
-    CHKERRQ(MatLUFactorNumeric(((PC_Factor*)ilu)->fact,pc->pmat,&((PC_Factor*)ilu)->info));
-    CHKERRQ(MatFactorGetError(((PC_Factor*)ilu)->fact,&err));
+    PetscCall(MatLUFactorNumeric(((PC_Factor*)ilu)->fact,pc->pmat,&((PC_Factor*)ilu)->info));
+    PetscCall(MatFactorGetError(((PC_Factor*)ilu)->fact,&err));
     if (err) { /* FactorNumeric() fails */
       pc->failedreason = (PCFailedReason)err;
     }
   }
 
-  CHKERRQ(PCFactorGetMatSolverType(pc,&stype));
+  PetscCall(PCFactorGetMatSolverType(pc,&stype));
   if (!stype) {
     MatSolverType solverpackage;
-    CHKERRQ(MatFactorGetSolverType(((PC_Factor*)ilu)->fact,&solverpackage));
-    CHKERRQ(PCFactorSetMatSolverType(pc,solverpackage));
+    PetscCall(MatFactorGetSolverType(((PC_Factor*)ilu)->fact,&solverpackage));
+    PetscCall(PCFactorSetMatSolverType(pc,solverpackage));
   }
   PetscFunctionReturn(0);
 }
@@ -193,10 +193,10 @@ static PetscErrorCode PCDestroy_ILU(PC pc)
   PC_ILU         *ilu = (PC_ILU*)pc->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PCReset_ILU(pc));
-  CHKERRQ(PetscFree(((PC_Factor*)ilu)->solvertype));
-  CHKERRQ(PetscFree(((PC_Factor*)ilu)->ordering));
-  CHKERRQ(PetscFree(pc->data));
+  PetscCall(PCReset_ILU(pc));
+  PetscCall(PetscFree(((PC_Factor*)ilu)->solvertype));
+  PetscCall(PetscFree(((PC_Factor*)ilu)->ordering));
+  PetscCall(PetscFree(pc->data));
   PetscFunctionReturn(0);
 }
 
@@ -205,7 +205,7 @@ static PetscErrorCode PCApply_ILU(PC pc,Vec x,Vec y)
   PC_ILU         *ilu = (PC_ILU*)pc->data;
 
   PetscFunctionBegin;
-  CHKERRQ(MatSolve(((PC_Factor*)ilu)->fact,x,y));
+  PetscCall(MatSolve(((PC_Factor*)ilu)->fact,x,y));
   PetscFunctionReturn(0);
 }
 
@@ -214,7 +214,7 @@ static PetscErrorCode PCMatApply_ILU(PC pc,Mat X,Mat Y)
   PC_ILU         *ilu = (PC_ILU*)pc->data;
 
   PetscFunctionBegin;
-  CHKERRQ(MatMatSolve(((PC_Factor*)ilu)->fact,X,Y));
+  PetscCall(MatMatSolve(((PC_Factor*)ilu)->fact,X,Y));
   PetscFunctionReturn(0);
 }
 
@@ -223,7 +223,7 @@ static PetscErrorCode PCApplyTranspose_ILU(PC pc,Vec x,Vec y)
   PC_ILU         *ilu = (PC_ILU*)pc->data;
 
   PetscFunctionBegin;
-  CHKERRQ(MatSolveTranspose(((PC_Factor*)ilu)->fact,x,y));
+  PetscCall(MatSolveTranspose(((PC_Factor*)ilu)->fact,x,y));
   PetscFunctionReturn(0);
 }
 
@@ -232,7 +232,7 @@ static PetscErrorCode PCApplySymmetricLeft_ILU(PC pc,Vec x,Vec y)
   PC_ILU         *icc = (PC_ILU*)pc->data;
 
   PetscFunctionBegin;
-  CHKERRQ(MatForwardSolve(((PC_Factor*)icc)->fact,x,y));
+  PetscCall(MatForwardSolve(((PC_Factor*)icc)->fact,x,y));
   PetscFunctionReturn(0);
 }
 
@@ -241,7 +241,7 @@ static PetscErrorCode PCApplySymmetricRight_ILU(PC pc,Vec x,Vec y)
   PC_ILU         *icc = (PC_ILU*)pc->data;
 
   PetscFunctionBegin;
-  CHKERRQ(MatBackwardSolve(((PC_Factor*)icc)->fact,x,y));
+  PetscCall(MatBackwardSolve(((PC_Factor*)icc)->fact,x,y));
   PetscFunctionReturn(0);
 }
 
@@ -297,9 +297,9 @@ PETSC_EXTERN PetscErrorCode PCCreate_ILU(PC pc)
   PC_ILU         *ilu;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNewLog(pc,&ilu));
+  PetscCall(PetscNewLog(pc,&ilu));
   pc->data = (void*)ilu;
-  CHKERRQ(PCFactorInitialize(pc,MAT_FACTOR_ILU));
+  PetscCall(PCFactorInitialize(pc,MAT_FACTOR_ILU));
 
   ((PC_Factor*)ilu)->info.levels        = 0.;
   ((PC_Factor*)ilu)->info.fill          = 1.0;
@@ -320,7 +320,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_ILU(PC pc)
   pc->ops->applysymmetricleft  = PCApplySymmetricLeft_ILU;
   pc->ops->applysymmetricright = PCApplySymmetricRight_ILU;
   pc->ops->applyrichardson     = NULL;
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetDropTolerance_C",PCFactorSetDropTolerance_ILU));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCFactorReorderForNonzeroDiagonal_C",PCFactorReorderForNonzeroDiagonal_ILU));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetDropTolerance_C",PCFactorSetDropTolerance_ILU));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorReorderForNonzeroDiagonal_C",PCFactorReorderForNonzeroDiagonal_ILU));
   PetscFunctionReturn(0);
 }

@@ -12,16 +12,16 @@ int main(int argc,char **args)
   PetscViewer    viewer;
   PetscInt       i;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRQ(PetscViewerCreate(PETSC_COMM_WORLD, &viewer));
-  CHKERRQ(PetscViewerSetType(viewer, PETSCVIEWERASCII));
-  CHKERRQ(PetscViewerFileSetMode(viewer, FILE_MODE_APPEND));
-  CHKERRQ(PetscViewerFileSetName(viewer, "test.txt"));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscViewerCreate(PETSC_COMM_WORLD, &viewer));
+  PetscCall(PetscViewerSetType(viewer, PETSCVIEWERASCII));
+  PetscCall(PetscViewerFileSetMode(viewer, FILE_MODE_APPEND));
+  PetscCall(PetscViewerFileSetName(viewer, "test.txt"));
   for (i = 0; i < 10; ++i) {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer, "test line %" PetscInt_FMT "\n", i));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "test line %" PetscInt_FMT "\n", i));
   }
-  CHKERRQ(PetscViewerDestroy(&viewer));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscViewerDestroy(&viewer));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

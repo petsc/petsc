@@ -38,20 +38,20 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
   PetscFunctionBeginUser;
   options->Nr = 1;
-  ierr = PetscOptionsBegin(comm, "", "1D Refinement Options", "DMPLEX");CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsInt("-num_refine", "Refine cycles", "ex46.c", options->Nr, &options->Nr, NULL));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm, "", "1D Refinement Options", "DMPLEX");PetscCall(ierr);
+  PetscCall(PetscOptionsInt("-num_refine", "Refine cycles", "ex46.c", options->Nr, &options->Nr, NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscFunctionBeginUser;
-  CHKERRQ(DMCreate(comm, dm));
-  CHKERRQ(DMSetType(*dm, DMPLEX));
-  CHKERRQ(DMSetFromOptions(*dm));
-  CHKERRQ(DMSetApplicationContext(*dm, user));
-  CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
+  PetscCall(DMCreate(comm, dm));
+  PetscCall(DMSetType(*dm, DMPLEX));
+  PetscCall(DMSetFromOptions(*dm));
+  PetscCall(DMSetApplicationContext(*dm, user));
+  PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   PetscFunctionReturn(0);
 }
 
@@ -63,17 +63,17 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   PetscInt       dim, deg;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetDimension(dm, &dim));
-  CHKERRQ(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, PETSC_FALSE, NULL, -1, &fe));
-  CHKERRQ(PetscObjectSetName((PetscObject) fe, "scalar"));
-  CHKERRQ(DMSetField(dm, 0, NULL, (PetscObject) fe));
-  CHKERRQ(DMCreateDS(dm));
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, PETSC_FALSE, NULL, -1, &fe));
+  PetscCall(PetscObjectSetName((PetscObject) fe, "scalar"));
+  PetscCall(DMSetField(dm, 0, NULL, (PetscObject) fe));
+  PetscCall(DMCreateDS(dm));
   while (cdm) {
-    CHKERRQ(DMCopyDisc(dm,cdm));
-    CHKERRQ(DMGetCoarseDM(cdm, &cdm));
+    PetscCall(DMCopyDisc(dm,cdm));
+    PetscCall(DMGetCoarseDM(cdm, &cdm));
   }
-  CHKERRQ(PetscFEGetBasisSpace(fe, &sp));
-  CHKERRQ(PetscSpaceGetDegree(sp, &deg, NULL));
+  PetscCall(PetscFEGetBasisSpace(fe, &sp));
+  PetscCall(PetscSpaceGetDegree(sp, &deg, NULL));
   switch (deg) {
   case 0: user->funcs[0] = constant;break;
   case 1: user->funcs[0] = linear;break;
@@ -81,7 +81,7 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   case 3: user->funcs[0] = cubic;break;
   default: SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Could not determine function to test for degree %D", deg);
   }
-  CHKERRQ(PetscFEDestroy(&fe));
+  PetscCall(PetscFEDestroy(&fe));
   PetscFunctionReturn(0);
 }
 
@@ -91,10 +91,10 @@ static PetscErrorCode CheckError(DM dm, Vec u, PetscSimplePointFunc funcs[])
   MPI_Comm       comm;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMComputeL2Diff(dm, 0.0, funcs, NULL, u, &error));
-  CHKERRQ(PetscObjectGetComm((PetscObject) dm, &comm));
-  if (error > tol) CHKERRQ(PetscPrintf(comm, "Function tests FAIL at tolerance %g error %g\n", (double)tol,(double) error));
-  else             CHKERRQ(PetscPrintf(comm, "Function tests pass at tolerance %g\n", (double)tol));
+  PetscCall(DMComputeL2Diff(dm, 0.0, funcs, NULL, u, &error));
+  PetscCall(PetscObjectGetComm((PetscObject) dm, &comm));
+  if (error > tol) PetscCall(PetscPrintf(comm, "Function tests FAIL at tolerance %g error %g\n", (double)tol,(double) error));
+  else             PetscCall(PetscPrintf(comm, "Function tests pass at tolerance %g\n", (double)tol));
   PetscFunctionReturn(0);
 }
 
@@ -105,43 +105,43 @@ int main(int argc, char **argv)
   AppCtx         user;
   PetscInt       cStart, cEnd, c, r;
 
-  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
-  CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));
-  CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
-  CHKERRQ(SetupDiscretization(dm, &user));
-  CHKERRQ(DMGetGlobalVector(dm, &u));
-  CHKERRQ(DMProjectFunction(dm, 0.0, user.funcs, NULL, INSERT_ALL_VALUES, u));
-  CHKERRQ(CheckError(dm, u, user.funcs));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
+  PetscCall(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
+  PetscCall(SetupDiscretization(dm, &user));
+  PetscCall(DMGetGlobalVector(dm, &u));
+  PetscCall(DMProjectFunction(dm, 0.0, user.funcs, NULL, INSERT_ALL_VALUES, u));
+  PetscCall(CheckError(dm, u, user.funcs));
   for (r = 0; r < user.Nr; ++r) {
     DM      adm;
     DMLabel adapt;
     Vec     au;
     Mat     Interp;
 
-    CHKERRQ(DMLabelCreate(PETSC_COMM_SELF, "adapt", &adapt));
-    CHKERRQ(DMLabelSetDefaultValue(adapt, DM_ADAPT_COARSEN));
-    CHKERRQ(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+    PetscCall(DMLabelCreate(PETSC_COMM_SELF, "adapt", &adapt));
+    PetscCall(DMLabelSetDefaultValue(adapt, DM_ADAPT_COARSEN));
+    PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
     for (c = cStart; c < cEnd; ++c) {
-      if (c % 2) CHKERRQ(DMLabelSetValue(adapt, c, DM_ADAPT_REFINE));
+      if (c % 2) PetscCall(DMLabelSetValue(adapt, c, DM_ADAPT_REFINE));
     }
-    CHKERRQ(DMAdaptLabel(dm, adapt, &adm));
-    CHKERRQ(DMLabelDestroy(&adapt));
-    CHKERRQ(PetscObjectSetName((PetscObject) adm, "Adapted Mesh"));
-    CHKERRQ(DMViewFromOptions(adm, NULL, "-dm_view"));
+    PetscCall(DMAdaptLabel(dm, adapt, &adm));
+    PetscCall(DMLabelDestroy(&adapt));
+    PetscCall(PetscObjectSetName((PetscObject) adm, "Adapted Mesh"));
+    PetscCall(DMViewFromOptions(adm, NULL, "-dm_view"));
 
-    CHKERRQ(DMCreateInterpolation(dm, adm, &Interp, NULL));
-    CHKERRQ(DMGetGlobalVector(adm, &au));
-    CHKERRQ(MatInterpolate(Interp, u, au));
-    CHKERRQ(CheckError(adm, au, user.funcs));
-    CHKERRQ(MatDestroy(&Interp));
-    CHKERRQ(DMRestoreGlobalVector(dm, &u));
-    CHKERRQ(DMDestroy(&dm));
+    PetscCall(DMCreateInterpolation(dm, adm, &Interp, NULL));
+    PetscCall(DMGetGlobalVector(adm, &au));
+    PetscCall(MatInterpolate(Interp, u, au));
+    PetscCall(CheckError(adm, au, user.funcs));
+    PetscCall(MatDestroy(&Interp));
+    PetscCall(DMRestoreGlobalVector(dm, &u));
+    PetscCall(DMDestroy(&dm));
     dm   = adm;
     u    = au;
   }
-  CHKERRQ(DMRestoreGlobalVector(dm, &u));
-  CHKERRQ(DMDestroy(&dm));
-  CHKERRQ(PetscFinalize());
+  PetscCall(DMRestoreGlobalVector(dm, &u));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

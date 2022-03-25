@@ -22,55 +22,55 @@ int main(int argc,char **argv)
   PetscViewer    viewer;
   PetscBool      view_sparse;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   /* ------- Assemble matrix, --------- */
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,5,7));
-  CHKERRQ(MatSetFromOptions(A));
-  CHKERRQ(MatSetUp(A));
-  CHKERRQ(MatGetOwnershipRange(A,&rstart,&rend));
-  CHKERRQ(MatGetOwnershipRangeColumn(A,&cstart,&cend));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,5,7));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSetUp(A));
+  PetscCall(MatGetOwnershipRange(A,&rstart,&rend));
+  PetscCall(MatGetOwnershipRangeColumn(A,&cstart,&cend));
 
   for (i=0; i<(PetscInt)(sizeof(entries)/sizeof(entries[0])); i++) {
-    CHKERRQ(MatSetValue(A,entries[i].i,entries[i].j,entries[i].v,INSERT_VALUES));
+    PetscCall(MatSetValue(A,entries[i].i,entries[i].j,entries[i].v,INSERT_VALUES));
   }
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
   /* ------ Prepare index sets ------ */
-  CHKERRQ(ISCreateGeneral(PETSC_COMM_WORLD,rend-rstart,ixrow+rstart,PETSC_USE_POINTER,&isrow));
-  CHKERRQ(ISCreateGeneral(PETSC_COMM_WORLD,cend-cstart,ixcol+cstart,PETSC_USE_POINTER,&iscol));
-  CHKERRQ(ISSetPermutation(isrow));
-  CHKERRQ(ISSetPermutation(iscol));
+  PetscCall(ISCreateGeneral(PETSC_COMM_WORLD,rend-rstart,ixrow+rstart,PETSC_USE_POINTER,&isrow));
+  PetscCall(ISCreateGeneral(PETSC_COMM_WORLD,cend-cstart,ixcol+cstart,PETSC_USE_POINTER,&iscol));
+  PetscCall(ISSetPermutation(isrow));
+  PetscCall(ISSetPermutation(iscol));
 
-  CHKERRQ(PetscViewerASCIIGetStdout(PETSC_COMM_WORLD,&viewer));
+  PetscCall(PetscViewerASCIIGetStdout(PETSC_COMM_WORLD,&viewer));
   view_sparse = PETSC_FALSE;
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL, "-view_sparse", &view_sparse, NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL, "-view_sparse", &view_sparse, NULL));
   if (!view_sparse) {
-    CHKERRQ(PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_DENSE));
+    PetscCall(PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_DENSE));
   }
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"Original matrix\n"));
-  CHKERRQ(MatView(A,viewer));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"Original matrix\n"));
+  PetscCall(MatView(A,viewer));
 
-  CHKERRQ(MatPermute(A,isrow,iscol,&B));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"Permuted matrix\n"));
-  CHKERRQ(MatView(B,viewer));
+  PetscCall(MatPermute(A,isrow,iscol,&B));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"Permuted matrix\n"));
+  PetscCall(MatView(B,viewer));
 
   if (!view_sparse) {
-    CHKERRQ(PetscViewerPopFormat(viewer));
+    PetscCall(PetscViewerPopFormat(viewer));
   }
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"Row permutation\n"));
-  CHKERRQ(ISView(isrow,viewer));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"Column permutation\n"));
-  CHKERRQ(ISView(iscol,viewer));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"Row permutation\n"));
+  PetscCall(ISView(isrow,viewer));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"Column permutation\n"));
+  PetscCall(ISView(iscol,viewer));
 
   /* Free data structures */
-  CHKERRQ(ISDestroy(&isrow));
-  CHKERRQ(ISDestroy(&iscol));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(MatDestroy(&B));
+  PetscCall(ISDestroy(&isrow));
+  PetscCall(ISDestroy(&iscol));
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&B));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

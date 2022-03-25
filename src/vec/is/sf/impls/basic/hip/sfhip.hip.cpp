@@ -477,7 +477,7 @@ static PetscErrorCode Pack(PetscSFLink link,PetscInt count,PetscInt start,PetscS
   if (!count) PetscFunctionReturn(0);
   nblocks = PetscMin(nblocks,link->maxResidentThreadsPerGPU/nthreads);
   hipLaunchKernelGGL(HIP_KERNEL_NAME(d_Pack<Type,BS,EQ>), dim3(nblocks), dim3(nthreads), 0, link->stream, link->bs,count,start,iarray,idx,(const Type*)data,(Type*)buf);
-  CHKERRHIP(hipGetLastError());
+  PetscCallHIP(hipGetLastError());
   PetscFunctionReturn(0);
 }
 
@@ -492,7 +492,7 @@ static PetscErrorCode UnpackAndOp(PetscSFLink link,PetscInt count,PetscInt start
   if (!count) PetscFunctionReturn(0);
   nblocks = PetscMin(nblocks,link->maxResidentThreadsPerGPU/nthreads);
   hipLaunchKernelGGL(HIP_KERNEL_NAME(d_UnpackAndOp<Type,Op,BS,EQ>), dim3(nblocks), dim3(nthreads), 0, link->stream, link->bs,count,start,iarray,idx,(Type*)data,(const Type*)buf);
-  CHKERRHIP(hipGetLastError());
+  PetscCallHIP(hipGetLastError());
   PetscFunctionReturn(0);
 }
 
@@ -507,7 +507,7 @@ static PetscErrorCode FetchAndOp(PetscSFLink link,PetscInt count,PetscInt start,
   if (!count) PetscFunctionReturn(0);
   nblocks = PetscMin(nblocks,link->maxResidentThreadsPerGPU/nthreads);
   hipLaunchKernelGGL(HIP_KERNEL_NAME(d_FetchAndOp<Type,Op,BS,EQ>), dim3(nblocks), dim3(nthreads), 0, link->stream, link->bs,count,start,iarray,idx,(Type*)data,(Type*)buf);
-  CHKERRHIP(hipGetLastError());
+  PetscCallHIP(hipGetLastError());
   PetscFunctionReturn(0);
 }
 
@@ -530,7 +530,7 @@ static PetscErrorCode ScatterAndOp(PetscSFLink link,PetscInt count,PetscInt srcS
   else if (!dstIdx) {dstx = dstX = count; dsty = dstY = 1;}
 
   hipLaunchKernelGGL(HIP_KERNEL_NAME(d_ScatterAndOp<Type,Op,BS,EQ>), dim3(nblocks), dim3(nthreads), 0, link->stream, link->bs,count,srcx,srcy,srcX,srcY,srcStart,srcIdx,(const Type*)src,dstx,dsty,dstX,dstY,dstStart,dstIdx,(Type*)dst);
-  CHKERRHIP(hipGetLastError());
+  PetscCallHIP(hipGetLastError());
   PetscFunctionReturn(0);
 }
 
@@ -542,9 +542,9 @@ static PetscErrorCode ScatterAndInsert(PetscSFLink link,PetscInt count,PetscInt 
   if (!count) PetscFunctionReturn(0);
   /*src and dst are contiguous */
   if ((!srcOpt && !srcIdx) && (!dstOpt && !dstIdx) && src != dst) {
-    CHKERRHIP(hipMemcpyAsync((Type*)dst+dstStart*link->bs,(const Type*)src+srcStart*link->bs,count*link->unitbytes,hipMemcpyDeviceToDevice,link->stream));
+    PetscCallHIP(hipMemcpyAsync((Type*)dst+dstStart*link->bs,(const Type*)src+srcStart*link->bs,count*link->unitbytes,hipMemcpyDeviceToDevice,link->stream));
   } else {
-    CHKERRQ(ScatterAndOp<Type,Insert<Type>,BS,EQ>(link,count,srcStart,srcOpt,srcIdx,src,dstStart,dstOpt,dstIdx,dst));
+    PetscCall(ScatterAndOp<Type,Insert<Type>,BS,EQ>(link,count,srcStart,srcOpt,srcIdx,src,dstStart,dstOpt,dstIdx,dst));
   }
   PetscFunctionReturn(0);
 }
@@ -561,7 +561,7 @@ static PetscErrorCode FetchAndOpLocal(PetscSFLink link,PetscInt count,PetscInt r
   if (!count) PetscFunctionReturn(0);
   nblocks = PetscMin(nblocks,link->maxResidentThreadsPerGPU/nthreads);
   hipLaunchKernelGGL(HIP_KERNEL_NAME(d_FetchAndOpLocal<Type,Op,BS,EQ>), dim3(nblocks), dim3(nthreads), 0, link->stream, link->bs,count,rootstart,rarray,rootidx,(Type*)rootdata,leafstart,larray,leafidx,(const Type*)leafdata,(Type*)leafupdate);
-  CHKERRHIP(hipGetLastError());
+  PetscCallHIP(hipGetLastError());
   PetscFunctionReturn(0);
 }
 
@@ -732,14 +732,14 @@ static void PackInit_DumbType(PetscSFLink link)
 static PetscErrorCode PetscSFLinkSyncDevice_HIP(PetscSFLink link)
 {
   PetscFunctionBegin;
-  CHKERRHIP(hipDeviceSynchronize());
+  PetscCallHIP(hipDeviceSynchronize());
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscSFLinkSyncStream_HIP(PetscSFLink link)
 {
   PetscFunctionBegin;
-  CHKERRHIP(hipStreamSynchronize(link->stream));
+  PetscCallHIP(hipStreamSynchronize(link->stream));
   PetscFunctionReturn(0);
 }
 
@@ -750,11 +750,11 @@ static PetscErrorCode PetscSFLinkMemcpy_HIP(PetscSFLink link,PetscMemType dstmty
 
   if (n) {
     if (PetscMemTypeHost(dstmtype) && PetscMemTypeHost(srcmtype)) { /* Separate HostToHost so that pure-cpu code won't call hip runtime */
-      CHKERRQ(PetscMemcpy(dst,src,n));
+      PetscCall(PetscMemcpy(dst,src,n));
     } else {
       int stype = PetscMemTypeDevice(srcmtype) ? 1 : 0;
       int dtype = PetscMemTypeDevice(dstmtype) ? 1 : 0;
-      CHKERRHIP(hipMemcpyAsync(dst,src,n,kinds[stype][dtype],link->stream));
+      PetscCallHIP(hipMemcpyAsync(dst,src,n,kinds[stype][dtype],link->stream));
     }
   }
   PetscFunctionReturn(0);
@@ -763,10 +763,10 @@ static PetscErrorCode PetscSFLinkMemcpy_HIP(PetscSFLink link,PetscMemType dstmty
 PetscErrorCode PetscSFMalloc_HIP(PetscMemType mtype,size_t size,void** ptr)
 {
   PetscFunctionBegin;
-  if (PetscMemTypeHost(mtype)) CHKERRQ(PetscMalloc(size,ptr));
+  if (PetscMemTypeHost(mtype)) PetscCall(PetscMalloc(size,ptr));
   else if (PetscMemTypeDevice(mtype)) {
-    CHKERRQ(PetscDeviceInitialize(PETSC_DEVICE_HIP));
-    CHKERRHIP(hipMalloc(ptr,size));
+    PetscCall(PetscDeviceInitialize(PETSC_DEVICE_HIP));
+    PetscCallHIP(hipMalloc(ptr,size));
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong PetscMemType %d", (int)mtype);
   PetscFunctionReturn(0);
 }
@@ -774,8 +774,8 @@ PetscErrorCode PetscSFMalloc_HIP(PetscMemType mtype,size_t size,void** ptr)
 PetscErrorCode PetscSFFree_HIP(PetscMemType mtype,void* ptr)
 {
   PetscFunctionBegin;
-  if (PetscMemTypeHost(mtype)) CHKERRQ(PetscFree(ptr));
-  else if (PetscMemTypeDevice(mtype)) CHKERRHIP(hipFree(ptr));
+  if (PetscMemTypeHost(mtype)) PetscCall(PetscFree(ptr));
+  else if (PetscMemTypeDevice(mtype)) PetscCallHIP(hipFree(ptr));
   else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong PetscMemType %d",(int)mtype);
   PetscFunctionReturn(0);
 }
@@ -785,8 +785,8 @@ static PetscErrorCode PetscSFLinkDestroy_MPI_HIP(PetscSF sf,PetscSFLink link)
 {
   PetscFunctionBegin;
   for (int i=PETSCSF_LOCAL; i<=PETSCSF_REMOTE; i++) {
-    CHKERRHIP(hipFree(link->rootbuf_alloc[i][PETSC_MEMTYPE_DEVICE]));
-    CHKERRHIP(hipFree(link->leafbuf_alloc[i][PETSC_MEMTYPE_DEVICE]));
+    PetscCallHIP(hipFree(link->rootbuf_alloc[i][PETSC_MEMTYPE_DEVICE]));
+    PetscCallHIP(hipFree(link->leafbuf_alloc[i][PETSC_MEMTYPE_DEVICE]));
   }
   PetscFunctionReturn(0);
 }
@@ -806,17 +806,17 @@ PetscErrorCode PetscSFLinkSetUp_HIP(PetscSF sf,PetscSFLink link,MPI_Datatype uni
 
   PetscFunctionBegin;
   if (link->deviceinited) PetscFunctionReturn(0);
-  CHKERRQ(MPIPetsc_Type_compare_contig(unit,MPI_SIGNED_CHAR,  &nSignedChar));
-  CHKERRQ(MPIPetsc_Type_compare_contig(unit,MPI_UNSIGNED_CHAR,&nUnsignedChar));
+  PetscCall(MPIPetsc_Type_compare_contig(unit,MPI_SIGNED_CHAR,  &nSignedChar));
+  PetscCall(MPIPetsc_Type_compare_contig(unit,MPI_UNSIGNED_CHAR,&nUnsignedChar));
   /* MPI_CHAR is treated below as a dumb type that does not support reduction according to MPI standard */
-  CHKERRQ(MPIPetsc_Type_compare_contig(unit,MPI_INT,  &nInt));
-  CHKERRQ(MPIPetsc_Type_compare_contig(unit,MPIU_INT, &nPetscInt));
-  CHKERRQ(MPIPetsc_Type_compare_contig(unit,MPIU_REAL,&nPetscReal));
+  PetscCall(MPIPetsc_Type_compare_contig(unit,MPI_INT,  &nInt));
+  PetscCall(MPIPetsc_Type_compare_contig(unit,MPIU_INT, &nPetscInt));
+  PetscCall(MPIPetsc_Type_compare_contig(unit,MPIU_REAL,&nPetscReal));
 #if defined(PETSC_HAVE_COMPLEX)
-  CHKERRQ(MPIPetsc_Type_compare_contig(unit,MPIU_COMPLEX,&nPetscComplex));
+  PetscCall(MPIPetsc_Type_compare_contig(unit,MPIU_COMPLEX,&nPetscComplex));
 #endif
-  CHKERRQ(MPIPetsc_Type_compare(unit,MPI_2INT,&is2Int));
-  CHKERRQ(MPIPetsc_Type_compare(unit,MPIU_2INT,&is2PetscInt));
+  PetscCall(MPIPetsc_Type_compare(unit,MPI_2INT,&is2Int));
+  PetscCall(MPIPetsc_Type_compare(unit,MPIU_2INT,&is2PetscInt));
 
   if (is2Int) {
     PackInit_PairType<PairInt>(link);
@@ -874,7 +874,7 @@ PetscErrorCode PetscSFLinkSetUp_HIP(PetscSF sf,PetscSFLink link,MPI_Datatype uni
 #endif
   } else {
     MPI_Aint lb,nbyte;
-    CHKERRMPI(MPI_Type_get_extent(unit,&lb,&nbyte));
+    PetscCallMPI(MPI_Type_get_extent(unit,&lb,&nbyte));
     PetscCheckFalse(lb != 0,PETSC_COMM_SELF,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld",(long)lb);
     if (nbyte % sizeof(int)) { /* If the type size is not multiple of int */
      #if !defined(PETSC_HAVE_DEVICE)
@@ -898,8 +898,8 @@ PetscErrorCode PetscSFLinkSetUp_HIP(PetscSF sf,PetscSFLink link,MPI_Datatype uni
   if (!sf->maxResidentThreadsPerGPU) { /* Not initialized */
     int                   device;
     struct hipDeviceProp_t props;
-    CHKERRHIP(hipGetDevice(&device));
-    CHKERRHIP(hipGetDeviceProperties(&props,device));
+    PetscCallHIP(hipGetDevice(&device));
+    PetscCallHIP(hipGetDeviceProperties(&props,device));
     sf->maxResidentThreadsPerGPU = props.maxThreadsPerMultiProcessor*props.multiProcessorCount;
   }
   link->maxResidentThreadsPerGPU = sf->maxResidentThreadsPerGPU;

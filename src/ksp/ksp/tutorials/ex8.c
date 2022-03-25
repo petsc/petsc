@@ -55,14 +55,14 @@ int main(int argc,char **args)
   PetscScalar    v, one = 1.0;
   PetscReal      e;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-Mdomains",&M,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-Ndomains",&N,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-overlap",&overlap,NULL));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-user_set_subdomains",&user_subdomains,NULL));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-Mdomains",&M,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-Ndomains",&N,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-overlap",&overlap,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-user_set_subdomains",&user_subdomains,NULL));
 
   /* -------------------------------------------------------------------
          Compute the matrix and right-hand-side vector that define
@@ -72,46 +72,46 @@ int main(int argc,char **args)
   /*
      Assemble the matrix for the five point stencil, YET AGAIN
   */
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n));
-  CHKERRQ(MatSetFromOptions(A));
-  CHKERRQ(MatSetUp(A));
-  CHKERRQ(MatGetOwnershipRange(A,&Istart,&Iend));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSetUp(A));
+  PetscCall(MatGetOwnershipRange(A,&Istart,&Iend));
   for (Ii=Istart; Ii<Iend; Ii++) {
     v = -1.0; i = Ii/n; j = Ii - i*n;
-    if (i>0)   {J = Ii - n; CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
-    if (i<m-1) {J = Ii + n; CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
-    if (j>0)   {J = Ii - 1; CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
-    if (j<n-1) {J = Ii + 1; CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
-    v = 4.0; CHKERRQ(MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES));
+    if (i>0)   {J = Ii - n; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
+    if (i<m-1) {J = Ii + n; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
+    if (j>0)   {J = Ii - 1; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
+    if (j<n-1) {J = Ii + 1; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
+    v = 4.0; PetscCall(MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES));
   }
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
   /*
      Create and set vectors
   */
-  CHKERRQ(MatCreateVecs(A,&u,&b));
-  CHKERRQ(VecDuplicate(u,&x));
-  CHKERRQ(VecSet(u,one));
-  CHKERRQ(MatMult(A,u,b));
+  PetscCall(MatCreateVecs(A,&u,&b));
+  PetscCall(VecDuplicate(u,&x));
+  PetscCall(VecSet(u,one));
+  PetscCall(MatMult(A,u,b));
 
   /*
      Create linear solver context
   */
-  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
 
   /*
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
-  CHKERRQ(KSPSetOperators(ksp,A,A));
+  PetscCall(KSPSetOperators(ksp,A,A));
 
   /*
      Set the default preconditioner for this program to be ASM
   */
-  CHKERRQ(KSPGetPC(ksp,&pc));
-  CHKERRQ(PCSetType(pc,PCASM));
+  PetscCall(KSPGetPC(ksp,&pc));
+  PetscCall(PCSetType(pc,PCASM));
 
   /* -------------------------------------------------------------------
                   Define the problem decomposition
@@ -145,24 +145,24 @@ int main(int argc,char **args)
   */
 
   if (!user_subdomains) { /* basic version */
-    CHKERRQ(PCASMSetOverlap(pc,overlap));
+    PetscCall(PCASMSetOverlap(pc,overlap));
   } else { /* advanced version */
     PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"PCASMCreateSubdomains2D() is currently a uniprocessor routine only!");
-    CHKERRQ(PCASMCreateSubdomains2D(m,n,M,N,1,overlap,&Nsub,&is,&is_local));
-    CHKERRQ(PCASMSetLocalSubdomains(pc,Nsub,is,is_local));
+    PetscCall(PCASMCreateSubdomains2D(m,n,M,N,1,overlap,&Nsub,&is,&is_local));
+    PetscCall(PCASMSetLocalSubdomains(pc,Nsub,is,is_local));
     flg  = PETSC_FALSE;
-    CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-subdomain_view",&flg,NULL));
+    PetscCall(PetscOptionsGetBool(NULL,NULL,"-subdomain_view",&flg,NULL));
     if (flg) {
-      CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Nmesh points: %D x %D; subdomain partition: %D x %D; overlap: %D; Nsub: %D\n",m,n,M,N,overlap,Nsub));
-      CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"IS:\n"));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,"Nmesh points: %D x %D; subdomain partition: %D x %D; overlap: %D; Nsub: %D\n",m,n,M,N,overlap,Nsub));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,"IS:\n"));
       for (i=0; i<Nsub; i++) {
-        CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"  IS[%D]\n",i));
-        CHKERRQ(ISView(is[i],PETSC_VIEWER_STDOUT_SELF));
+        PetscCall(PetscPrintf(PETSC_COMM_SELF,"  IS[%D]\n",i));
+        PetscCall(ISView(is[i],PETSC_VIEWER_STDOUT_SELF));
       }
-      CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"IS_local:\n"));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,"IS_local:\n"));
       for (i=0; i<Nsub; i++) {
-        CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"  IS_local[%D]\n",i));
-        CHKERRQ(ISView(is_local[i],PETSC_VIEWER_STDOUT_SELF));
+        PetscCall(PetscPrintf(PETSC_COMM_SELF,"  IS_local[%D]\n",i));
+        PetscCall(ISView(is_local[i],PETSC_VIEWER_STDOUT_SELF));
       }
     }
   }
@@ -196,24 +196,24 @@ int main(int argc,char **args)
   */
 
   flg  = PETSC_FALSE;
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-user_set_subdomain_solvers",&flg,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-user_set_subdomain_solvers",&flg,NULL));
   if (flg) {
     KSP       *subksp;        /* array of KSP contexts for local subblocks */
     PetscInt  nlocal,first;   /* number of local subblocks, first local subblock */
     PC        subpc;          /* PC context for subblock */
     PetscBool isasm;
 
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"User explicitly sets subdomain solvers.\n"));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"User explicitly sets subdomain solvers.\n"));
 
     /*
        Set runtime options
     */
-    CHKERRQ(KSPSetFromOptions(ksp));
+    PetscCall(KSPSetFromOptions(ksp));
 
     /*
        Flag an error if PCTYPE is changed from the runtime options
      */
-    CHKERRQ(PetscObjectTypeCompare((PetscObject)pc,PCASM,&isasm));
+    PetscCall(PetscObjectTypeCompare((PetscObject)pc,PCASM,&isasm));
     PetscCheck(isasm,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Cannot Change the PCTYPE when manually changing the subdomain solver settings");
 
     /*
@@ -222,46 +222,46 @@ int main(int argc,char **args)
 
        Note: KSPSetUp() MUST be called before PCASMGetSubKSP().
     */
-    CHKERRQ(KSPSetUp(ksp));
+    PetscCall(KSPSetUp(ksp));
 
     /*
        Extract the array of KSP contexts for the local blocks
     */
-    CHKERRQ(PCASMGetSubKSP(pc,&nlocal,&first,&subksp));
+    PetscCall(PCASMGetSubKSP(pc,&nlocal,&first,&subksp));
 
     /*
        Loop over the local blocks, setting various KSP options
        for each block.
     */
     for (i=0; i<nlocal; i++) {
-      CHKERRQ(KSPGetPC(subksp[i],&subpc));
-      CHKERRQ(PCSetType(subpc,PCILU));
-      CHKERRQ(KSPSetType(subksp[i],KSPGMRES));
-      CHKERRQ(KSPSetTolerances(subksp[i],1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT));
+      PetscCall(KSPGetPC(subksp[i],&subpc));
+      PetscCall(PCSetType(subpc,PCILU));
+      PetscCall(KSPSetType(subksp[i],KSPGMRES));
+      PetscCall(KSPSetTolerances(subksp[i],1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT));
     }
   } else {
     /*
        Set runtime options
     */
-    CHKERRQ(KSPSetFromOptions(ksp));
+    PetscCall(KSPSetFromOptions(ksp));
   }
 
   /* -------------------------------------------------------------------
                       Solve the linear system
      ------------------------------------------------------------------- */
 
-  CHKERRQ(KSPSolve(ksp,b,x));
+  PetscCall(KSPSolve(ksp,b,x));
 
   /* -------------------------------------------------------------------
                       Compare result to the exact solution
      ------------------------------------------------------------------- */
-  CHKERRQ(VecAXPY(x,-1.0,u));
-  CHKERRQ(VecNorm(x,NORM_INFINITY, &e));
+  PetscCall(VecAXPY(x,-1.0,u));
+  PetscCall(VecNorm(x,NORM_INFINITY, &e));
 
   flg  = PETSC_FALSE;
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-print_error",&flg,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-print_error",&flg,NULL));
   if (flg) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Infinity norm of the error: %g\n",(double) e));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Infinity norm of the error: %g\n",(double) e));
   }
 
   /*
@@ -271,18 +271,18 @@ int main(int argc,char **args)
 
   if (user_subdomains) {
     for (i=0; i<Nsub; i++) {
-      CHKERRQ(ISDestroy(&is[i]));
-      CHKERRQ(ISDestroy(&is_local[i]));
+      PetscCall(ISDestroy(&is[i]));
+      PetscCall(ISDestroy(&is_local[i]));
     }
-    CHKERRQ(PetscFree(is));
-    CHKERRQ(PetscFree(is_local));
+    PetscCall(PetscFree(is));
+    PetscCall(PetscFree(is_local));
   }
-  CHKERRQ(KSPDestroy(&ksp));
-  CHKERRQ(VecDestroy(&u));
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&b));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(PetscFinalize());
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(VecDestroy(&u));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&b));
+  PetscCall(MatDestroy(&A));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

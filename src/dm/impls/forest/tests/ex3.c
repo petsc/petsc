@@ -14,23 +14,23 @@ int main (int argc, char **argv)
   PetscBool      adapt = PETSC_FALSE, userSection = PETSC_FALSE;
   PetscInt       vStart, vEnd, v, i;
 
-  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
-  CHKERRQ(PetscOptionsGetBool(NULL, NULL, "-adapt", &adapt, NULL));
-  CHKERRQ(PetscOptionsGetBool(NULL, NULL, "-user_section", &userSection, NULL));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-adapt", &adapt, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-user_section", &userSection, NULL));
 
   /* Create a base DMPlex mesh */
-  CHKERRQ(DMCreate(PETSC_COMM_WORLD, &base));
-  CHKERRQ(DMSetType(base, DMPLEX));
-  CHKERRQ(DMSetFromOptions(base));
-  CHKERRQ(DMViewFromOptions(base, NULL, "-dm_view"));
+  PetscCall(DMCreate(PETSC_COMM_WORLD, &base));
+  PetscCall(DMSetType(base, DMPLEX));
+  PetscCall(DMSetFromOptions(base));
+  PetscCall(DMViewFromOptions(base, NULL, "-dm_view"));
 
   /* Covert Plex mesh to Forest and destroy base */
-  CHKERRQ(DMCreate(PETSC_COMM_WORLD, &forest));
-  CHKERRQ(DMSetType(forest, DMP4EST));
-  CHKERRQ(DMForestSetBaseDM(forest, base));
-  CHKERRQ(DMSetUp(forest));
-  CHKERRQ(DMDestroy(&base));
-  CHKERRQ(DMViewFromOptions(forest, NULL, "-dm_view"));
+  PetscCall(DMCreate(PETSC_COMM_WORLD, &forest));
+  PetscCall(DMSetType(forest, DMP4EST));
+  PetscCall(DMForestSetBaseDM(forest, base));
+  PetscCall(DMSetUp(forest));
+  PetscCall(DMDestroy(&base));
+  PetscCall(DMViewFromOptions(forest, NULL, "-dm_view"));
 
   if (adapt) {
     /* Adaptively refine the cell 0 of the mesh */
@@ -38,13 +38,13 @@ int main (int argc, char **argv)
       DM      postforest;
       DMLabel adaptLabel = NULL;
 
-      CHKERRQ(DMLabelCreate(PETSC_COMM_SELF, "adapt", &adaptLabel));
-      CHKERRQ(DMLabelSetValue(adaptLabel, 0, DM_ADAPT_REFINE));
-      CHKERRQ(DMForestTemplate(forest, PETSC_COMM_WORLD, &postforest));
-      CHKERRQ(DMForestSetAdaptivityLabel(postforest, adaptLabel));
-      CHKERRQ(DMLabelDestroy(&adaptLabel));
-      CHKERRQ(DMSetUp(postforest));
-      CHKERRQ(DMDestroy(&forest));
+      PetscCall(DMLabelCreate(PETSC_COMM_SELF, "adapt", &adaptLabel));
+      PetscCall(DMLabelSetValue(adaptLabel, 0, DM_ADAPT_REFINE));
+      PetscCall(DMForestTemplate(forest, PETSC_COMM_WORLD, &postforest));
+      PetscCall(DMForestSetAdaptivityLabel(postforest, adaptLabel));
+      PetscCall(DMLabelDestroy(&adaptLabel));
+      PetscCall(DMSetUp(postforest));
+      PetscCall(DMDestroy(&forest));
       forest = postforest;
     }
   } else {
@@ -55,91 +55,91 @@ int main (int argc, char **argv)
       DM      postforest;
       DMLabel adaptLabel = NULL;
 
-      CHKERRQ(DMLabelCreate(PETSC_COMM_SELF, "adapt", &adaptLabel));
+      PetscCall(DMLabelCreate(PETSC_COMM_SELF, "adapt", &adaptLabel));
 
-      CHKERRQ(DMForestGetCellChart(forest, &cStart, &cEnd));
+      PetscCall(DMForestGetCellChart(forest, &cStart, &cEnd));
       for (c = cStart; c < cEnd; ++c) {
-        CHKERRQ(DMLabelSetValue(adaptLabel, c, DM_ADAPT_REFINE));
+        PetscCall(DMLabelSetValue(adaptLabel, c, DM_ADAPT_REFINE));
       }
 
-      CHKERRQ(DMForestTemplate(forest, PETSC_COMM_WORLD, &postforest));
-      CHKERRQ(DMForestSetAdaptivityLabel(postforest, adaptLabel));
-      CHKERRQ(DMLabelDestroy(&adaptLabel));
-      CHKERRQ(DMSetUp(postforest));
-      CHKERRQ(DMDestroy(&forest));
+      PetscCall(DMForestTemplate(forest, PETSC_COMM_WORLD, &postforest));
+      PetscCall(DMForestSetAdaptivityLabel(postforest, adaptLabel));
+      PetscCall(DMLabelDestroy(&adaptLabel));
+      PetscCall(DMSetUp(postforest));
+      PetscCall(DMDestroy(&forest));
       forest = postforest;
     }
   }
-  CHKERRQ(DMViewFromOptions(forest, NULL, "-dm_view"));
+  PetscCall(DMViewFromOptions(forest, NULL, "-dm_view"));
 
   /*  Setup the section*/
   if (userSection) {
-    CHKERRQ(DMConvert(forest, DMPLEX, &plex));
-    CHKERRQ(DMViewFromOptions(plex, NULL, "-dm_view"));
-    CHKERRQ(DMPlexGetDepthStratum(plex, 0, &vStart, &vEnd));
-    CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "Vertices [%D, %D)\n", vStart, vEnd));
-    CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD, NULL));
-    CHKERRQ(PetscSectionCreate(PetscObjectComm((PetscObject) forest), &s));
-    CHKERRQ(PetscSectionSetNumFields(s, 1));
-    CHKERRQ(PetscSectionSetChart(s, vStart, vEnd));
+    PetscCall(DMConvert(forest, DMPLEX, &plex));
+    PetscCall(DMViewFromOptions(plex, NULL, "-dm_view"));
+    PetscCall(DMPlexGetDepthStratum(plex, 0, &vStart, &vEnd));
+    PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "Vertices [%D, %D)\n", vStart, vEnd));
+    PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, NULL));
+    PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject) forest), &s));
+    PetscCall(PetscSectionSetNumFields(s, 1));
+    PetscCall(PetscSectionSetChart(s, vStart, vEnd));
     for (v = vStart; v < vEnd; ++v) {
-      CHKERRQ(PetscSectionSetDof(s, v, 1));
-      CHKERRQ(PetscSectionSetFieldDof(s, v, 0, 1));
+      PetscCall(PetscSectionSetDof(s, v, 1));
+      PetscCall(PetscSectionSetFieldDof(s, v, 0, 1));
     }
-    CHKERRQ(PetscSectionSetUp(s));
-    CHKERRQ(DMSetLocalSection(forest, s));
-    CHKERRQ(PetscObjectViewFromOptions((PetscObject) s, NULL, "-my_section_view"));
-    CHKERRQ(PetscSectionDestroy(&s));
-    CHKERRQ(DMDestroy(&plex));
+    PetscCall(PetscSectionSetUp(s));
+    PetscCall(DMSetLocalSection(forest, s));
+    PetscCall(PetscObjectViewFromOptions((PetscObject) s, NULL, "-my_section_view"));
+    PetscCall(PetscSectionDestroy(&s));
+    PetscCall(DMDestroy(&plex));
   } else {
     PetscFE  fe;
     PetscInt dim;
 
-    CHKERRQ(DMGetDimension(forest, &dim));
-    CHKERRQ(PetscFECreateLagrange(PETSC_COMM_SELF, dim, 1, PETSC_FALSE, 1, PETSC_DETERMINE, &fe));
-    CHKERRQ(DMAddField(forest, NULL, (PetscObject) fe));
-    CHKERRQ(PetscFEDestroy(&fe));
-    CHKERRQ(DMCreateDS(forest));
+    PetscCall(DMGetDimension(forest, &dim));
+    PetscCall(PetscFECreateLagrange(PETSC_COMM_SELF, dim, 1, PETSC_FALSE, 1, PETSC_DETERMINE, &fe));
+    PetscCall(DMAddField(forest, NULL, (PetscObject) fe));
+    PetscCall(PetscFEDestroy(&fe));
+    PetscCall(DMCreateDS(forest));
   }
 
   /* Create the global vector*/
-  CHKERRQ(DMCreateGlobalVector(forest, &g));
-  CHKERRQ(PetscObjectSetName((PetscObject) g, "g"));
-  CHKERRQ(VecSet(g, 1.0));
+  PetscCall(DMCreateGlobalVector(forest, &g));
+  PetscCall(PetscObjectSetName((PetscObject) g, "g"));
+  PetscCall(VecSet(g, 1.0));
 
   /* Test global to local*/
   Vec l;
-  CHKERRQ(DMCreateLocalVector(forest, &l));
-  CHKERRQ(VecZeroEntries(l));
-  CHKERRQ(DMGlobalToLocal(forest, g, INSERT_VALUES, l));
-  CHKERRQ(VecZeroEntries(g));
-  CHKERRQ(DMLocalToGlobal(forest, l, INSERT_VALUES, g));
-  CHKERRQ(VecDestroy(&l));
+  PetscCall(DMCreateLocalVector(forest, &l));
+  PetscCall(VecZeroEntries(l));
+  PetscCall(DMGlobalToLocal(forest, g, INSERT_VALUES, l));
+  PetscCall(VecZeroEntries(g));
+  PetscCall(DMLocalToGlobal(forest, l, INSERT_VALUES, g));
+  PetscCall(VecDestroy(&l));
 
   /*  Save a vector*/
-  CHKERRQ(PetscViewerHDF5Open(PETSC_COMM_WORLD, "forestHDF.h5", FILE_MODE_WRITE, &viewer));
-  CHKERRQ(VecView(g, viewer));
-  CHKERRQ(PetscViewerDestroy(&viewer));
+  PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD, "forestHDF.h5", FILE_MODE_WRITE, &viewer));
+  PetscCall(VecView(g, viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
 
   /* Load another vector to load into*/
-  CHKERRQ(DMCreateGlobalVector(forest, &g2));
-  CHKERRQ(PetscObjectSetName((PetscObject) g2, "g"));
-  CHKERRQ(VecZeroEntries(g2));
+  PetscCall(DMCreateGlobalVector(forest, &g2));
+  PetscCall(PetscObjectSetName((PetscObject) g2, "g"));
+  PetscCall(VecZeroEntries(g2));
 
   /*  Load a vector*/
-  CHKERRQ(PetscViewerHDF5Open(PETSC_COMM_WORLD, "forestHDF.h5", FILE_MODE_READ, &viewer));
-  CHKERRQ(VecLoad(g2, viewer));
-  CHKERRQ(PetscViewerDestroy(&viewer));
+  PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD, "forestHDF.h5", FILE_MODE_READ, &viewer));
+  PetscCall(VecLoad(g2, viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
 
   /*  Check if the data is the same*/
-  CHKERRQ(VecAXPY(g2, -1.0, g));
-  CHKERRQ(VecNorm(g2, NORM_INFINITY, &nrm));
+  PetscCall(VecAXPY(g2, -1.0, g));
+  PetscCall(VecNorm(g2, NORM_INFINITY, &nrm));
   PetscCheckFalse(PetscAbsReal(nrm) > PETSC_SMALL,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Invalid difference norm %g", (double) nrm);
 
-  CHKERRQ(VecDestroy(&g));
-  CHKERRQ(VecDestroy(&g2));
-  CHKERRQ(DMDestroy(&forest));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&g));
+  PetscCall(VecDestroy(&g2));
+  PetscCall(DMDestroy(&forest));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

@@ -39,9 +39,9 @@ static PetscErrorCode IFunctionSemiExplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,Vec
 
   PetscFunctionBegin;
   /*  The next three lines allow us to access the entries of the vectors directly */
-  CHKERRQ(VecGetArrayRead(Y,&y));
-  CHKERRQ(VecGetArrayRead(Ydot,&ydot));
-  CHKERRQ(VecGetArray(F,&f));
+  PetscCall(VecGetArrayRead(Y,&y));
+  PetscCall(VecGetArrayRead(Ydot,&ydot));
+  PetscCall(VecGetArray(F,&f));
 
   f[0]=-400* PetscSinReal(200*PETSC_PI*t) + 1000*y[3] + ydot[0];
   f[1]=0.5 - 1/(2.* PetscExpReal((500*(y[0] + y[1] - y[3]))/13.)) + (500*y[1])/9. + ydot[1];
@@ -49,9 +49,9 @@ static PetscErrorCode IFunctionSemiExplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,Vec
   f[3]=0.0006666766666666667 - 1/(1.e8* PetscExpReal((500*(y[0] + y[1] - y[3]))/13.)) +  PetscSinReal(200*PETSC_PI*t)/2500. + y[0]/4500. - (11*y[3])/9000.;
   f[4]=0.0006676566666666666 - 99/(1.e8* PetscExpReal((500*(y[0] + y[1] - y[3]))/13.)) + y[2]/9000. - y[4]/4500.;
 
-  CHKERRQ(VecRestoreArrayRead(Y,&y));
-  CHKERRQ(VecRestoreArrayRead(Ydot,&ydot));
-  CHKERRQ(VecRestoreArray(F,&f));
+  PetscCall(VecRestoreArrayRead(Y,&y));
+  PetscCall(VecRestoreArrayRead(Ydot,&ydot));
+  PetscCall(VecRestoreArray(F,&f));
   PetscFunctionReturn(0);
 }
 
@@ -66,10 +66,10 @@ static PetscErrorCode IJacobianSemiExplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,Pet
   PetscScalar        J[5][5];
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(Y,&y));
-  CHKERRQ(VecGetArrayRead(Ydot,&ydot));
+  PetscCall(VecGetArrayRead(Y,&y));
+  PetscCall(VecGetArrayRead(Ydot,&ydot));
 
-  CHKERRQ(PetscMemzero(J,sizeof(J)));
+  PetscCall(PetscMemzero(J,sizeof(J)));
 
   J[0][0]=a;
   J[0][3]=1000;
@@ -90,16 +90,16 @@ static PetscErrorCode IJacobianSemiExplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,Pet
   J[4][3]=-99/(2.6e6* PetscExpReal((500*(y[0] + y[1] - y[3]))/13.));
   J[4][4]=-0.00022222222222222223;
 
-  CHKERRQ(MatSetValues(B,5,rowcol,5,rowcol,&J[0][0],INSERT_VALUES));
+  PetscCall(MatSetValues(B,5,rowcol,5,rowcol,&J[0][0],INSERT_VALUES));
 
-  CHKERRQ(VecRestoreArrayRead(Y,&y));
-  CHKERRQ(VecRestoreArrayRead(Ydot,&ydot));
+  PetscCall(VecRestoreArrayRead(Y,&y));
+  PetscCall(VecRestoreArrayRead(Ydot,&ydot));
 
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   if (A != B) {
-    CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
   }
   PetscFunctionReturn(0);
 }
@@ -117,64 +117,64 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Only for sequential runs");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create necessary matrix and vectors
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(MatSetSizes(A,n,n,PETSC_DETERMINE,PETSC_DETERMINE));
-  CHKERRQ(MatSetFromOptions(A));
-  CHKERRQ(MatSetUp(A));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A,n,n,PETSC_DETERMINE,PETSC_DETERMINE));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSetUp(A));
 
-  CHKERRQ(MatCreateVecs(A,&Y,NULL));
+  PetscCall(MatCreateVecs(A,&Y,NULL));
 
-  CHKERRQ(VecGetArray(Y,&y));
+  PetscCall(VecGetArray(Y,&y));
   y[0] = -3.0;
   y[1] =  3.0;
   y[2] =  6.0;
   y[3] =  0.0;
   y[4] =  6.0;
-  CHKERRQ(VecRestoreArray(Y,&y));
+  PetscCall(VecRestoreArray(Y,&y));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
-  CHKERRQ(TSSetProblemType(ts,TS_NONLINEAR));
-  CHKERRQ(TSSetType(ts,TSARKIMEX));
-  CHKERRQ(TSSetEquationType(ts,TS_EQ_DAE_IMPLICIT_INDEX1));
-  CHKERRQ(TSARKIMEXSetFullyImplicit(ts,PETSC_TRUE));
-  /*CHKERRQ(TSSetType(ts,TSROSW));*/
-  CHKERRQ(TSSetIFunction(ts,NULL,IFunctionSemiExplicit,NULL));
-  CHKERRQ(TSSetIJacobian(ts,A,A,IJacobianSemiExplicit,NULL));
+  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
+  PetscCall(TSSetProblemType(ts,TS_NONLINEAR));
+  PetscCall(TSSetType(ts,TSARKIMEX));
+  PetscCall(TSSetEquationType(ts,TS_EQ_DAE_IMPLICIT_INDEX1));
+  PetscCall(TSARKIMEXSetFullyImplicit(ts,PETSC_TRUE));
+  /*PetscCall(TSSetType(ts,TSROSW));*/
+  PetscCall(TSSetIFunction(ts,NULL,IFunctionSemiExplicit,NULL));
+  PetscCall(TSSetIJacobian(ts,A,A,IJacobianSemiExplicit,NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSSetSolution(ts,Y));
+  PetscCall(TSSetSolution(ts,Y));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSSetMaxTime(ts,0.15));
-  CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
-  CHKERRQ(TSSetTimeStep(ts,.001));
-  CHKERRQ(TSSetFromOptions(ts));
+  PetscCall(TSSetMaxTime(ts,0.15));
+  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
+  PetscCall(TSSetTimeStep(ts,.001));
+  PetscCall(TSSetFromOptions(ts));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Do Time stepping
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSSolve(ts,Y));
+  PetscCall(TSSolve(ts,Y));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(VecDestroy(&Y));
-  CHKERRQ(TSDestroy(&ts));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatDestroy(&A));
+  PetscCall(VecDestroy(&Y));
+  PetscCall(TSDestroy(&ts));
+  PetscCall(PetscFinalize());
   return 0;
 }

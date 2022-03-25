@@ -77,34 +77,34 @@ static PetscErrorCode PCMGCreateCoarseSpaceDefault_Private(PC pc, PetscInt level
   PetscInt          dim, d, Nf, f, k;
 
   PetscFunctionBegin;
-  CHKERRQ(DMGetCoordinateDim(dm, &dim));
-  CHKERRQ(DMGetNumFields(dm, &Nf));
+  PetscCall(DMGetCoordinateDim(dm, &dim));
+  PetscCall(DMGetNumFields(dm, &Nf));
   PetscCheckFalse(Nc % dim,PetscObjectComm((PetscObject) pc), PETSC_ERR_ARG_WRONG, "The number of coarse vectors %D must be divisible by the dimension %D", Nc, dim);
-  CHKERRQ(PetscMalloc2(Nf, &funcs, Nf, &ctxs));
-  if (!*coarseSpace) CHKERRQ(PetscCalloc1(Nc, coarseSpace));
+  PetscCall(PetscMalloc2(Nf, &funcs, Nf, &ctxs));
+  if (!*coarseSpace) PetscCall(PetscCalloc1(Nc, coarseSpace));
   for (k = 0; k < Nc/dim; ++k) {
     for (f = 0; f < Nf; ++f) {ctxs[f] = &k;}
     for (d = 0; d < dim; ++d) {
-      if (!(*coarseSpace)[k*dim+d]) CHKERRQ(DMCreateGlobalVector(dm, &(*coarseSpace)[k*dim+d]));
-      CHKERRQ(DMSetBasisFunction_Internal(Nf, poly, d, funcs));
-      CHKERRQ(DMProjectFunction(dm, 0.0, funcs, ctxs, INSERT_ALL_VALUES, (*coarseSpace)[k*dim+d]));
+      if (!(*coarseSpace)[k*dim+d]) PetscCall(DMCreateGlobalVector(dm, &(*coarseSpace)[k*dim+d]));
+      PetscCall(DMSetBasisFunction_Internal(Nf, poly, d, funcs));
+      PetscCall(DMProjectFunction(dm, 0.0, funcs, ctxs, INSERT_ALL_VALUES, (*coarseSpace)[k*dim+d]));
     }
   }
-  CHKERRQ(PetscFree2(funcs, ctxs));
+  PetscCall(PetscFree2(funcs, ctxs));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCMGCreateCoarseSpace_Polynomial(PC pc, PetscInt level, DM dm, KSP ksp, PetscInt Nc, const Vec initialGuess[], Vec **coarseSpace)
 {
   PetscFunctionBegin;
-  CHKERRQ(PCMGCreateCoarseSpaceDefault_Private(pc, level, PCMG_POLYNOMIAL, dm, ksp, Nc, initialGuess, coarseSpace));
+  PetscCall(PCMGCreateCoarseSpaceDefault_Private(pc, level, PCMG_POLYNOMIAL, dm, ksp, Nc, initialGuess, coarseSpace));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PCMGCreateCoarseSpace_Harmonic(PC pc, PetscInt level, DM dm, KSP ksp, PetscInt Nc, const Vec initialGuess[], Vec **coarseSpace)
 {
   PetscFunctionBegin;
-  CHKERRQ(PCMGCreateCoarseSpaceDefault_Private(pc, level, PCMG_HARMONIC, dm, ksp, Nc, initialGuess, coarseSpace));
+  PetscCall(PCMGCreateCoarseSpaceDefault_Private(pc, level, PCMG_HARMONIC, dm, ksp, Nc, initialGuess, coarseSpace));
   PetscFunctionReturn(0);
 }
 
@@ -137,18 +137,18 @@ PetscErrorCode PCMGComputeCoarseSpace_Internal(PC pc, PetscInt l, PCMGCoarseSpac
   case PCMG_POLYNOMIAL: coarseConstructor = &PCMGCreateCoarseSpace_Polynomial;break;
   case PCMG_HARMONIC:   coarseConstructor = &PCMGCreateCoarseSpace_Harmonic;break;
   case PCMG_EIGENVECTOR:
-    if (l > 0) CHKERRQ(PCMGGetCoarseSpaceConstructor("BAMG_MEV", &coarseConstructor));
-    else       CHKERRQ(PCMGGetCoarseSpaceConstructor("BAMG_EV", &coarseConstructor));
+    if (l > 0) PetscCall(PCMGGetCoarseSpaceConstructor("BAMG_MEV", &coarseConstructor));
+    else       PetscCall(PCMGGetCoarseSpaceConstructor("BAMG_EV", &coarseConstructor));
     break;
   case PCMG_GENERALIZED_EIGENVECTOR:
-    if (l > 0) CHKERRQ(PCMGGetCoarseSpaceConstructor("BAMG_MGEV", &coarseConstructor));
-    else       CHKERRQ(PCMGGetCoarseSpaceConstructor("BAMG_GEV", &coarseConstructor));
+    if (l > 0) PetscCall(PCMGGetCoarseSpaceConstructor("BAMG_MGEV", &coarseConstructor));
+    else       PetscCall(PCMGGetCoarseSpaceConstructor("BAMG_GEV", &coarseConstructor));
     break;
   default: SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle coarse space type %D", cstype);
   }
-  CHKERRQ(PCMGGetSmoother(pc, l, &smooth));
-  CHKERRQ(KSPGetDM(smooth, &dm));
-  CHKERRQ((*coarseConstructor)(pc, l, dm, smooth, Nc, cspace, space));
+  PetscCall(PCMGGetSmoother(pc, l, &smooth));
+  PetscCall(KSPGetDM(smooth, &dm));
+  PetscCall((*coarseConstructor)(pc, l, dm, smooth, Nc, cspace, space));
   PetscFunctionReturn(0);
 }
 
@@ -179,15 +179,15 @@ PetscErrorCode PCMGAdaptInterpolator_Internal(PC pc, PetscInt l, KSP csmooth, KS
   PetscFunctionBegin;
   /* There is no interpolator for the coarse level */
   if (!l) PetscFunctionReturn(0);
-  CHKERRQ(KSPGetDM(csmooth, &cdm));
-  CHKERRQ(KSPGetDM(fsmooth, &dm));
-  CHKERRQ(PCMGGetInterpolation(pc, l, &Interp));
+  PetscCall(KSPGetDM(csmooth, &cdm));
+  PetscCall(KSPGetDM(fsmooth, &dm));
+  PetscCall(PCMGGetInterpolation(pc, l, &Interp));
 
-  CHKERRQ(DMAdaptInterpolator(cdm, dm, Interp, fsmooth, Nc, fspace, cspace, &InterpAdapt, pc));
-  if (mg->mespMonitor) CHKERRQ(DMCheckInterpolator(dm, InterpAdapt, Nc, cspace, fspace, 0.5/* PETSC_SMALL */));
-  CHKERRQ(PCMGSetInterpolation(pc, l, InterpAdapt));
-  CHKERRQ(PCMGSetRestriction(pc, l, InterpAdapt));
-  CHKERRQ(MatDestroy(&InterpAdapt));
+  PetscCall(DMAdaptInterpolator(cdm, dm, Interp, fsmooth, Nc, fspace, cspace, &InterpAdapt, pc));
+  if (mg->mespMonitor) PetscCall(DMCheckInterpolator(dm, InterpAdapt, Nc, cspace, fspace, 0.5/* PETSC_SMALL */));
+  PetscCall(PCMGSetInterpolation(pc, l, InterpAdapt));
+  PetscCall(PCMGSetRestriction(pc, l, InterpAdapt));
+  PetscCall(MatDestroy(&InterpAdapt));
   PetscFunctionReturn(0);
 }
 
@@ -215,20 +215,20 @@ PetscErrorCode PCMGRecomputeLevelOperators_Internal(PC pc, PetscInt l)
   PetscInt         n;                        /* The number of multigrid levels */
 
   PetscFunctionBegin;
-  CHKERRQ(PCMGGetGalerkin(pc, &galerkin));
+  PetscCall(PCMGGetGalerkin(pc, &galerkin));
   if (galerkin >= PC_MG_GALERKIN_NONE) PetscFunctionReturn(0);
-  CHKERRQ(PCMGGetLevels(pc, &n));
+  PetscCall(PCMGGetLevels(pc, &n));
   /* Do not recompute operator for the finest grid */
   if (l == n-1) PetscFunctionReturn(0);
-  CHKERRQ(PCMGGetSmoother(pc, l,   &smooth));
-  CHKERRQ(KSPGetOperators(smooth, &A, &B));
-  CHKERRQ(PCMGGetSmoother(pc, l+1, &fsmooth));
-  CHKERRQ(KSPGetOperators(fsmooth, &fA, &fB));
-  CHKERRQ(PCMGGetInterpolation(pc, l+1, &Interp));
-  CHKERRQ(PCMGGetRestriction(pc, l+1, &Restrc));
+  PetscCall(PCMGGetSmoother(pc, l,   &smooth));
+  PetscCall(KSPGetOperators(smooth, &A, &B));
+  PetscCall(PCMGGetSmoother(pc, l+1, &fsmooth));
+  PetscCall(KSPGetOperators(fsmooth, &fA, &fB));
+  PetscCall(PCMGGetInterpolation(pc, l+1, &Interp));
+  PetscCall(PCMGGetRestriction(pc, l+1, &Restrc));
   if ((galerkin == PC_MG_GALERKIN_PMAT) ||  (galerkin == PC_MG_GALERKIN_BOTH))                doB = PETSC_TRUE;
   if ((galerkin == PC_MG_GALERKIN_MAT)  || ((galerkin == PC_MG_GALERKIN_BOTH) && (fA != fB))) doA = PETSC_TRUE;
-  if (doA) CHKERRQ(MatGalerkin(Restrc, fA, Interp, reuse, 1.0, &A));
-  if (doB) CHKERRQ(MatGalerkin(Restrc, fB, Interp, reuse, 1.0, &B));
+  if (doA) PetscCall(MatGalerkin(Restrc, fA, Interp, reuse, 1.0, &A));
+  if (doB) PetscCall(MatGalerkin(Restrc, fB, Interp, reuse, 1.0, &B));
   PetscFunctionReturn(0);
 }

@@ -67,48 +67,48 @@ int main(int argc,char **argv)
   PetscInt       lits[100];
   AppCtx         user;               /* user-defined work context */
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char *)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char *)0,help));
   /* Allocate vectors */
-  CHKERRQ(VecCreateSeq(MPI_COMM_SELF,NPARAMETERS,&x));
-  CHKERRQ(VecCreateSeq(MPI_COMM_SELF,NOBSERVATIONS,&f));
+  PetscCall(VecCreateSeq(MPI_COMM_SELF,NPARAMETERS,&x));
+  PetscCall(VecCreateSeq(MPI_COMM_SELF,NOBSERVATIONS,&f));
 
   /* Create the Jacobian matrix. */
-  CHKERRQ(MatCreateSeqDense(MPI_COMM_SELF,NOBSERVATIONS,NPARAMETERS,NULL,&J));
+  PetscCall(MatCreateSeqDense(MPI_COMM_SELF,NOBSERVATIONS,NPARAMETERS,NULL,&J));
 
   for (i=0;i<NOBSERVATIONS;i++) user.idm[i] = i;
 
   for (i=0;i<NPARAMETERS;i++) user.idn[i] = i;
 
   /* Create TAO solver and set desired solution method */
-  CHKERRQ(TaoCreate(PETSC_COMM_SELF,&tao));
-  CHKERRQ(TaoSetType(tao,TAOPOUNDERS));
+  PetscCall(TaoCreate(PETSC_COMM_SELF,&tao));
+  PetscCall(TaoSetType(tao,TAOPOUNDERS));
 
  /* Set the function and Jacobian routines. */
-  CHKERRQ(InitializeData(&user));
-  CHKERRQ(FormStartingPoint(x));
-  CHKERRQ(TaoSetSolution(tao,x));
-  CHKERRQ(TaoSetResidualRoutine(tao,f,EvaluateFunction,(void*)&user));
-  CHKERRQ(TaoSetJacobianResidualRoutine(tao, J, J, EvaluateJacobian, (void*)&user));
+  PetscCall(InitializeData(&user));
+  PetscCall(FormStartingPoint(x));
+  PetscCall(TaoSetSolution(tao,x));
+  PetscCall(TaoSetResidualRoutine(tao,f,EvaluateFunction,(void*)&user));
+  PetscCall(TaoSetJacobianResidualRoutine(tao, J, J, EvaluateJacobian, (void*)&user));
 
   /* Check for any TAO command line arguments */
-  CHKERRQ(TaoSetFromOptions(tao));
+  PetscCall(TaoSetFromOptions(tao));
 
-  CHKERRQ(TaoSetConvergenceHistory(tao,hist,resid,0,lits,100,PETSC_TRUE));
+  PetscCall(TaoSetConvergenceHistory(tao,hist,resid,0,lits,100,PETSC_TRUE));
   /* Perform the Solve */
-  CHKERRQ(TaoSolve(tao));
+  PetscCall(TaoSolve(tao));
 
   /* View the vector; then destroy it.  */
-  CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_SELF));
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_SELF));
 
   /* Free TAO data structures */
-  CHKERRQ(TaoDestroy(&tao));
+  PetscCall(TaoDestroy(&tao));
 
    /* Free PETSc data structures */
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&f));
-  CHKERRQ(MatDestroy(&J));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&f));
+  PetscCall(MatDestroy(&J));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -121,14 +121,14 @@ PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
   PetscReal      *y=user->y,*f,*t=user->t;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(X,&x));
-  CHKERRQ(VecGetArray(F,&f));
+  PetscCall(VecGetArrayRead(X,&x));
+  PetscCall(VecGetArray(F,&f));
 
   for (i=0;i<NOBSERVATIONS;i++) {
     f[i] = y[i] - PetscExpScalar(-x[0]*t[i])/(x[1] + x[2]*t[i]);
   }
-  CHKERRQ(VecRestoreArrayRead(X,&x));
-  CHKERRQ(VecRestoreArray(F,&f));
+  PetscCall(VecRestoreArrayRead(X,&x));
+  PetscCall(VecRestoreArray(F,&f));
   PetscLogFlops(6*NOBSERVATIONS);
   PetscFunctionReturn(0);
 }
@@ -144,7 +144,7 @@ PetscErrorCode EvaluateJacobian(Tao tao, Vec X, Mat J, Mat Jpre, void *ptr)
   PetscReal      base;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(X,&x));
+  PetscCall(VecGetArrayRead(X,&x));
   for (i=0;i<NOBSERVATIONS;i++) {
     base = PetscExpScalar(-x[0]*t[i])/(x[1] + x[2]*t[i]);
 
@@ -154,11 +154,11 @@ PetscErrorCode EvaluateJacobian(Tao tao, Vec X, Mat J, Mat Jpre, void *ptr)
   }
 
   /* Assemble the matrix */
-  CHKERRQ(MatSetValues(J,NOBSERVATIONS,user->idm, NPARAMETERS, user->idn,(PetscReal *)user->j,INSERT_VALUES));
-  CHKERRQ(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatSetValues(J,NOBSERVATIONS,user->idm, NPARAMETERS, user->idn,(PetscReal *)user->j,INSERT_VALUES));
+  PetscCall(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY));
 
-  CHKERRQ(VecRestoreArrayRead(X,&x));
+  PetscCall(VecRestoreArrayRead(X,&x));
   PetscLogFlops(NOBSERVATIONS * 13);
   PetscFunctionReturn(0);
 }
@@ -169,11 +169,11 @@ PetscErrorCode FormStartingPoint(Vec X)
   PetscReal      *x;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArray(X,&x));
+  PetscCall(VecGetArray(X,&x));
   x[0] = 0.15;
   x[1] = 0.008;
   x[2] = 0.010;
-  CHKERRQ(VecRestoreArray(X,&x));
+  PetscCall(VecRestoreArray(X,&x));
   PetscFunctionReturn(0);
 }
 

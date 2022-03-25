@@ -38,22 +38,22 @@ int main(int argc,char **argv)
   IS          rowperm = NULL,colperm = NULL;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Matrix Market example options","");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Matrix Market example options","");PetscCall(ierr);
   {
-    CHKERRQ(PetscOptionsString("-fin","Input Matrix Market file","",filein,filein,sizeof(filein),&flag));
+    PetscCall(PetscOptionsString("-fin","Input Matrix Market file","",filein,filein,sizeof(filein),&flag));
     PetscCheck(flag,PETSC_COMM_SELF,PETSC_ERR_USER_INPUT,"Please use -fin <filename> to specify the input file name!");
-    CHKERRQ(PetscOptionsString("-fout","Output file in petsc sparse binary format","",fileout,fileout,sizeof(fileout),&flag));
+    PetscCall(PetscOptionsString("-fout","Output file in petsc sparse binary format","",fileout,fileout,sizeof(fileout),&flag));
     PetscCheck(flag,PETSC_COMM_SELF,PETSC_ERR_USER_INPUT,"Please use -fout <filename> to specify the output file name!");
-    CHKERRQ(PetscOptionsBool("-aij_only","Use MATAIJ for all cases","",aijonly,&aijonly,NULL));
-    CHKERRQ(PetscOptionsFList("-permute","Permute matrix and vector to solving in new ordering","",MatOrderingList,ordering,ordering,sizeof(ordering),&permute));
+    PetscCall(PetscOptionsBool("-aij_only","Use MATAIJ for all cases","",aijonly,&aijonly,NULL));
+    PetscCall(PetscOptionsFList("-permute","Permute matrix and vector to solving in new ordering","",MatOrderingList,ordering,ordering,sizeof(ordering),&permute));
   }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
   /* Read in matrix */
-  CHKERRQ(PetscFOpen(PETSC_COMM_SELF,filein,"r",&file));
+  PetscCall(PetscFOpen(PETSC_COMM_SELF,filein,"r",&file));
 
   PetscCheck(mm_read_banner(file, &matcode) == 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Could not process Matrix Market banner.");
 
@@ -69,11 +69,11 @@ int main(int argc,char **argv)
   /* Find out size of sparse matrix .... */
   PetscCheck(mm_read_mtx_crd_size(file, &M, &N, &nz) == 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Size of sparse matrix is wrong.");
 
-  CHKERRQ(mm_write_banner(stdout, matcode));
-  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"M: %d, N: %d, nnz: %d\n",M,N,nz));
+  PetscCall(mm_write_banner(stdout, matcode));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"M: %d, N: %d, nnz: %d\n",M,N,nz));
 
   /* Reseve memory for matrices */
-  CHKERRQ(PetscMalloc4(nz,&ia,nz,&ja,nz,&val,M,&rownz));
+  PetscCall(PetscMalloc4(nz,&ia,nz,&ja,nz,&val,M,&rownz));
   for (i=0; i<M; i++) rownz[i] = 1; /* Since we will add 0.0 to diagonal entries */
 
   /* NOTE: when reading in doubles, ANSI C requires the use of the "l"  */
@@ -97,69 +97,69 @@ int main(int argc,char **argv)
       } else rownz[ia[i]]++;
     }
   }
-  CHKERRQ(PetscFClose(PETSC_COMM_SELF,file));
-  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Reading matrix completes.\n"));
+  PetscCall(PetscFClose(PETSC_COMM_SELF,file));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"Reading matrix completes.\n"));
 
   /* Create, preallocate, and then assemble the matrix */
-  CHKERRQ(MatCreate(PETSC_COMM_SELF,&A));
-  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,N));
+  PetscCall(MatCreate(PETSC_COMM_SELF,&A));
+  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,N));
 
   if (symmetric && !aijonly) {
-    CHKERRQ(MatSetType(A,MATSEQSBAIJ));
-    CHKERRQ(MatSetFromOptions(A));
-    CHKERRQ(MatSetUp(A));
-    CHKERRQ(MatSeqSBAIJSetPreallocation(A,1,0,rownz));
-    CHKERRQ(PetscObjectTypeCompare((PetscObject)A,MATSEQSBAIJ,&sametype));
+    PetscCall(MatSetType(A,MATSEQSBAIJ));
+    PetscCall(MatSetFromOptions(A));
+    PetscCall(MatSetUp(A));
+    PetscCall(MatSeqSBAIJSetPreallocation(A,1,0,rownz));
+    PetscCall(PetscObjectTypeCompare((PetscObject)A,MATSEQSBAIJ,&sametype));
     PetscCheck(sametype,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Only AIJ and SBAIJ are supported. Your mattype is not supported");
   } else {
-    CHKERRQ(MatSetType(A,MATSEQAIJ));
-    CHKERRQ(MatSetFromOptions(A));
-    CHKERRQ(MatSetUp(A));
-    CHKERRQ(MatSeqAIJSetPreallocation(A,0,rownz));
-    CHKERRQ(PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&sametype));
+    PetscCall(MatSetType(A,MATSEQAIJ));
+    PetscCall(MatSetFromOptions(A));
+    PetscCall(MatSetUp(A));
+    PetscCall(MatSeqAIJSetPreallocation(A,0,rownz));
+    PetscCall(PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&sametype));
     PetscCheck(sametype,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Only AIJ and SBAIJ are supported. Your mattype is not supported");
   }
 
   /* Add zero to diagonals, in case the matrix missing diagonals */
-  for (j=0; j<M; j++)  CHKERRQ(MatSetValues(A,1,&j,1,&j,&zero,INSERT_VALUES));
+  for (j=0; j<M; j++)  PetscCall(MatSetValues(A,1,&j,1,&j,&zero,INSERT_VALUES));
   /* Add values to the matrix, these correspond to lower triangular part for symmetric or skew matrices */
-  for (j=0; j<nz; j++) CHKERRQ(MatSetValues(A,1,&ia[j],1,&ja[j],&val[j],INSERT_VALUES));
+  for (j=0; j<nz; j++) PetscCall(MatSetValues(A,1,&ia[j],1,&ja[j],&val[j],INSERT_VALUES));
 
   /* Add values to upper triangular part for some cases */
   if (symmetric && aijonly) {
     /* MatrixMarket matrix stores symm matrix in lower triangular part. Take its transpose */
-    for (j=0; j<nz; j++) CHKERRQ(MatSetValues(A,1,&ja[j],1,&ia[j],&val[j],INSERT_VALUES));
+    for (j=0; j<nz; j++) PetscCall(MatSetValues(A,1,&ja[j],1,&ia[j],&val[j],INSERT_VALUES));
   }
   if (skew) {
     for (j=0; j<nz; j++) {
       val[j] = -val[j];
-      CHKERRQ(MatSetValues(A,1,&ja[j],1,&ia[j],&val[j],INSERT_VALUES));
+      PetscCall(MatSetValues(A,1,&ja[j],1,&ia[j],&val[j],INSERT_VALUES));
     }
   }
 
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
   if (permute) {
     Mat Aperm;
-    CHKERRQ(MatGetOrdering(A,ordering,&rowperm,&colperm));
-    CHKERRQ(MatPermute(A,rowperm,colperm,&Aperm));
-    CHKERRQ(MatDestroy(&A));
+    PetscCall(MatGetOrdering(A,ordering,&rowperm,&colperm));
+    PetscCall(MatPermute(A,rowperm,colperm,&Aperm));
+    PetscCall(MatDestroy(&A));
     A    = Aperm;               /* Replace original operator with permuted version */
   }
 
   /* Write out matrix */
-  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Writing matrix to binary file %s using PETSc %s format ...\n",fileout,(symmetric && !aijonly)?"SBAIJ":"AIJ"));
-  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_SELF,fileout,FILE_MODE_WRITE,&view));
-  CHKERRQ(MatView(A,view));
-  CHKERRQ(PetscViewerDestroy(&view));
-  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Writing matrix completes.\n"));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"Writing matrix to binary file %s using PETSc %s format ...\n",fileout,(symmetric && !aijonly)?"SBAIJ":"AIJ"));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_SELF,fileout,FILE_MODE_WRITE,&view));
+  PetscCall(MatView(A,view));
+  PetscCall(PetscViewerDestroy(&view));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"Writing matrix completes.\n"));
 
-  CHKERRQ(PetscFree4(ia,ja,val,rownz));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(ISDestroy(&rowperm));
-  CHKERRQ(ISDestroy(&colperm));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFree4(ia,ja,val,rownz));
+  PetscCall(MatDestroy(&A));
+  PetscCall(ISDestroy(&rowperm));
+  PetscCall(ISDestroy(&colperm));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

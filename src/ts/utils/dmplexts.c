@@ -9,22 +9,22 @@ static PetscErrorCode DMTSConvertPlex(DM dm, DM *plex, PetscBool copy)
   PetscBool      isPlex;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject) dm, DMPLEX, &isPlex));
+  PetscCall(PetscObjectTypeCompare((PetscObject) dm, DMPLEX, &isPlex));
   if (isPlex) {
     *plex = dm;
-    CHKERRQ(PetscObjectReference((PetscObject) dm));
+    PetscCall(PetscObjectReference((PetscObject) dm));
   } else {
-    CHKERRQ(PetscObjectQuery((PetscObject) dm, "dm_plex", (PetscObject *) plex));
+    PetscCall(PetscObjectQuery((PetscObject) dm, "dm_plex", (PetscObject *) plex));
     if (!*plex) {
-      CHKERRQ(DMConvert(dm,DMPLEX,plex));
-      CHKERRQ(PetscObjectCompose((PetscObject) dm, "dm_plex", (PetscObject) *plex));
+      PetscCall(DMConvert(dm,DMPLEX,plex));
+      PetscCall(PetscObjectCompose((PetscObject) dm, "dm_plex", (PetscObject) *plex));
       if (copy) {
-        CHKERRQ(DMCopyDMTS(dm, *plex));
-        CHKERRQ(DMCopyDMSNES(dm, *plex));
-        CHKERRQ(DMCopyAuxiliaryVec(dm, *plex));
+        PetscCall(DMCopyDMTS(dm, *plex));
+        PetscCall(DMCopyDMSNES(dm, *plex));
+        PetscCall(DMCopyAuxiliaryVec(dm, *plex));
       }
     } else {
-      CHKERRQ(PetscObjectReference((PetscObject) *plex));
+      PetscCall(PetscObjectReference((PetscObject) *plex));
     }
   }
   PetscFunctionReturn(0);
@@ -55,18 +55,18 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Ve
   PetscFormKey key = {NULL, 0, 0, 0};
 
   PetscFunctionBegin;
-  CHKERRQ(DMTSConvertPlex(dm,&plex,PETSC_TRUE));
-  CHKERRQ(DMPlexGetDepth(plex, &depth));
-  CHKERRQ(DMGetStratumIS(plex, "dim", depth, &cellIS));
-  if (!cellIS) CHKERRQ(DMGetStratumIS(plex, "depth", depth, &cellIS));
-  CHKERRQ(DMGetLocalVector(plex, &locF));
-  CHKERRQ(VecZeroEntries(locF));
-  CHKERRQ(DMPlexComputeResidual_Internal(plex, key, cellIS, time, locX, NULL, time, locF, user));
-  CHKERRQ(DMLocalToGlobalBegin(plex, locF, ADD_VALUES, F));
-  CHKERRQ(DMLocalToGlobalEnd(plex, locF, ADD_VALUES, F));
-  CHKERRQ(DMRestoreLocalVector(plex, &locF));
-  CHKERRQ(ISDestroy(&cellIS));
-  CHKERRQ(DMDestroy(&plex));
+  PetscCall(DMTSConvertPlex(dm,&plex,PETSC_TRUE));
+  PetscCall(DMPlexGetDepth(plex, &depth));
+  PetscCall(DMGetStratumIS(plex, "dim", depth, &cellIS));
+  if (!cellIS) PetscCall(DMGetStratumIS(plex, "depth", depth, &cellIS));
+  PetscCall(DMGetLocalVector(plex, &locF));
+  PetscCall(VecZeroEntries(locF));
+  PetscCall(DMPlexComputeResidual_Internal(plex, key, cellIS, time, locX, NULL, time, locF, user));
+  PetscCall(DMLocalToGlobalBegin(plex, locF, ADD_VALUES, F));
+  PetscCall(DMLocalToGlobalEnd(plex, locF, ADD_VALUES, F));
+  PetscCall(DMRestoreLocalVector(plex, &locF));
+  PetscCall(ISDestroy(&cellIS));
+  PetscCall(DMDestroy(&plex));
   PetscFunctionReturn(0);
 }
 
@@ -91,25 +91,25 @@ PetscErrorCode DMPlexTSComputeBoundary(DM dm, PetscReal time, Vec locX, Vec locX
   PetscInt       Nf, f;
 
   PetscFunctionBegin;
-  CHKERRQ(DMTSConvertPlex(dm, &plex, PETSC_TRUE));
-  CHKERRQ(DMGetNumFields(plex, &Nf));
+  PetscCall(DMTSConvertPlex(dm, &plex, PETSC_TRUE));
+  PetscCall(DMGetNumFields(plex, &Nf));
   if (!locX_t) {
     /* This is the RHS part */
     for (f = 0; f < Nf; f++) {
       PetscObject  obj;
       PetscClassId id;
 
-      CHKERRQ(DMGetField(plex, f, NULL, &obj));
-      CHKERRQ(PetscObjectGetClassId(obj, &id));
+      PetscCall(DMGetField(plex, f, NULL, &obj));
+      PetscCall(PetscObjectGetClassId(obj, &id));
       if (id == PETSCFV_CLASSID) {
-        CHKERRQ(DMPlexGetGeometryFVM(plex, &faceGeometryFVM, NULL, NULL));
+        PetscCall(DMPlexGetGeometryFVM(plex, &faceGeometryFVM, NULL, NULL));
         break;
       }
     }
   }
-  CHKERRQ(DMPlexInsertBoundaryValues(plex, PETSC_TRUE, locX, time, faceGeometryFVM, NULL, NULL));
-  CHKERRQ(DMPlexInsertTimeDerivativeBoundaryValues(plex, PETSC_TRUE, locX_t, time, faceGeometryFVM, NULL, NULL));
-  CHKERRQ(DMDestroy(&plex));
+  PetscCall(DMPlexInsertBoundaryValues(plex, PETSC_TRUE, locX, time, faceGeometryFVM, NULL, NULL));
+  PetscCall(DMPlexInsertTimeDerivativeBoundaryValues(plex, PETSC_TRUE, locX_t, time, faceGeometryFVM, NULL, NULL));
+  PetscCall(DMDestroy(&plex));
   PetscFunctionReturn(0);
 }
 
@@ -137,34 +137,34 @@ PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec 
   PetscInt       Nds, s;
 
   PetscFunctionBegin;
-  CHKERRQ(DMTSConvertPlex(dm, &plex, PETSC_TRUE));
-  CHKERRQ(DMPlexGetAllCells_Internal(plex, &allcellIS));
-  CHKERRQ(DMGetNumDS(dm, &Nds));
+  PetscCall(DMTSConvertPlex(dm, &plex, PETSC_TRUE));
+  PetscCall(DMPlexGetAllCells_Internal(plex, &allcellIS));
+  PetscCall(DMGetNumDS(dm, &Nds));
   for (s = 0; s < Nds; ++s) {
     PetscDS          ds;
     IS               cellIS;
     PetscFormKey key;
 
-    CHKERRQ(DMGetRegionNumDS(dm, s, &key.label, NULL, &ds));
+    PetscCall(DMGetRegionNumDS(dm, s, &key.label, NULL, &ds));
     key.value = 0;
     key.field = 0;
     key.part  = 0;
     if (!key.label) {
-      CHKERRQ(PetscObjectReference((PetscObject) allcellIS));
+      PetscCall(PetscObjectReference((PetscObject) allcellIS));
       cellIS = allcellIS;
     } else {
       IS pointIS;
 
       key.value = 1;
-      CHKERRQ(DMLabelGetStratumIS(key.label, key.value, &pointIS));
-      CHKERRQ(ISIntersect_Caching_Internal(allcellIS, pointIS, &cellIS));
-      CHKERRQ(ISDestroy(&pointIS));
+      PetscCall(DMLabelGetStratumIS(key.label, key.value, &pointIS));
+      PetscCall(ISIntersect_Caching_Internal(allcellIS, pointIS, &cellIS));
+      PetscCall(ISDestroy(&pointIS));
     }
-    CHKERRQ(DMPlexComputeResidual_Internal(plex, key, cellIS, time, locX, locX_t, time, locF, user));
-    CHKERRQ(ISDestroy(&cellIS));
+    PetscCall(DMPlexComputeResidual_Internal(plex, key, cellIS, time, locX, locX_t, time, locF, user));
+    PetscCall(ISDestroy(&cellIS));
   }
-  CHKERRQ(ISDestroy(&allcellIS));
-  CHKERRQ(DMDestroy(&plex));
+  PetscCall(ISDestroy(&allcellIS));
+  PetscCall(DMDestroy(&plex));
   PetscFunctionReturn(0);
 }
 
@@ -194,40 +194,40 @@ PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec 
   PetscInt       Nds, s;
 
   PetscFunctionBegin;
-  CHKERRQ(DMTSConvertPlex(dm, &plex, PETSC_TRUE));
-  CHKERRQ(DMPlexGetAllCells_Internal(plex, &allcellIS));
-  CHKERRQ(DMGetNumDS(dm, &Nds));
+  PetscCall(DMTSConvertPlex(dm, &plex, PETSC_TRUE));
+  PetscCall(DMPlexGetAllCells_Internal(plex, &allcellIS));
+  PetscCall(DMGetNumDS(dm, &Nds));
   for (s = 0; s < Nds; ++s) {
     PetscDS          ds;
     IS               cellIS;
     PetscFormKey key;
 
-    CHKERRQ(DMGetRegionNumDS(dm, s, &key.label, NULL, &ds));
+    PetscCall(DMGetRegionNumDS(dm, s, &key.label, NULL, &ds));
     key.value = 0;
     key.field = 0;
     key.part  = 0;
     if (!key.label) {
-      CHKERRQ(PetscObjectReference((PetscObject) allcellIS));
+      PetscCall(PetscObjectReference((PetscObject) allcellIS));
       cellIS = allcellIS;
     } else {
       IS pointIS;
 
       key.value = 1;
-      CHKERRQ(DMLabelGetStratumIS(key.label, key.value, &pointIS));
-      CHKERRQ(ISIntersect_Caching_Internal(allcellIS, pointIS, &cellIS));
-      CHKERRQ(ISDestroy(&pointIS));
+      PetscCall(DMLabelGetStratumIS(key.label, key.value, &pointIS));
+      PetscCall(ISIntersect_Caching_Internal(allcellIS, pointIS, &cellIS));
+      PetscCall(ISDestroy(&pointIS));
     }
     if (!s) {
-      CHKERRQ(PetscDSHasJacobian(ds, &hasJac));
-      CHKERRQ(PetscDSHasJacobianPreconditioner(ds, &hasPrec));
-      if (hasJac && hasPrec) CHKERRQ(MatZeroEntries(Jac));
-      CHKERRQ(MatZeroEntries(JacP));
+      PetscCall(PetscDSHasJacobian(ds, &hasJac));
+      PetscCall(PetscDSHasJacobianPreconditioner(ds, &hasPrec));
+      if (hasJac && hasPrec) PetscCall(MatZeroEntries(Jac));
+      PetscCall(MatZeroEntries(JacP));
     }
-    CHKERRQ(DMPlexComputeJacobian_Internal(plex, key, cellIS, time, X_tShift, locX, locX_t, Jac, JacP, user));
-    CHKERRQ(ISDestroy(&cellIS));
+    PetscCall(DMPlexComputeJacobian_Internal(plex, key, cellIS, time, X_tShift, locX, locX_t, Jac, JacP, user));
+    PetscCall(ISDestroy(&cellIS));
   }
-  CHKERRQ(ISDestroy(&allcellIS));
-  CHKERRQ(DMDestroy(&plex));
+  PetscCall(ISDestroy(&allcellIS));
+  PetscCall(DMDestroy(&plex));
   PetscFunctionReturn(0);
 }
 
@@ -254,34 +254,34 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFEM(DM dm, PetscReal time, Vec locX, Ve
   PetscInt       Nds, s;
 
   PetscFunctionBegin;
-  CHKERRQ(DMTSConvertPlex(dm, &plex, PETSC_TRUE));
-  CHKERRQ(DMPlexGetAllCells_Internal(plex, &allcellIS));
-  CHKERRQ(DMGetNumDS(dm, &Nds));
+  PetscCall(DMTSConvertPlex(dm, &plex, PETSC_TRUE));
+  PetscCall(DMPlexGetAllCells_Internal(plex, &allcellIS));
+  PetscCall(DMGetNumDS(dm, &Nds));
   for (s = 0; s < Nds; ++s) {
     PetscDS          ds;
     IS               cellIS;
     PetscFormKey key;
 
-    CHKERRQ(DMGetRegionNumDS(dm, s, &key.label, NULL, &ds));
+    PetscCall(DMGetRegionNumDS(dm, s, &key.label, NULL, &ds));
     key.value = 0;
     key.field = 0;
     key.part  = 100;
     if (!key.label) {
-      CHKERRQ(PetscObjectReference((PetscObject) allcellIS));
+      PetscCall(PetscObjectReference((PetscObject) allcellIS));
       cellIS = allcellIS;
     } else {
       IS pointIS;
 
       key.value = 1;
-      CHKERRQ(DMLabelGetStratumIS(key.label, key.value, &pointIS));
-      CHKERRQ(ISIntersect_Caching_Internal(allcellIS, pointIS, &cellIS));
-      CHKERRQ(ISDestroy(&pointIS));
+      PetscCall(DMLabelGetStratumIS(key.label, key.value, &pointIS));
+      PetscCall(ISIntersect_Caching_Internal(allcellIS, pointIS, &cellIS));
+      PetscCall(ISDestroy(&pointIS));
     }
-    CHKERRQ(DMPlexComputeResidual_Internal(plex, key, cellIS, time, locX, NULL, time, locG, user));
-    CHKERRQ(ISDestroy(&cellIS));
+    PetscCall(DMPlexComputeResidual_Internal(plex, key, cellIS, time, locX, NULL, time, locG, user));
+    PetscCall(ISDestroy(&cellIS));
   }
-  CHKERRQ(ISDestroy(&allcellIS));
-  CHKERRQ(DMDestroy(&plex));
+  PetscCall(ISDestroy(&allcellIS));
+  PetscCall(DMDestroy(&plex));
   PetscFunctionReturn(0);
 }
 
@@ -314,25 +314,25 @@ PetscErrorCode DMTSCheckResidual(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
   PetscValidHeaderSpecific(u, VEC_CLASSID, 4);
   if (residual) PetscValidRealPointer(residual, 7);
-  CHKERRQ(PetscObjectGetComm((PetscObject) ts, &comm));
-  CHKERRQ(DMComputeExactSolution(dm, t, u, u_t));
-  CHKERRQ(VecDuplicate(u, &r));
-  CHKERRQ(TSComputeIFunction(ts, t, u, u_t, r, PETSC_FALSE));
-  CHKERRQ(VecNorm(r, NORM_2, &res));
+  PetscCall(PetscObjectGetComm((PetscObject) ts, &comm));
+  PetscCall(DMComputeExactSolution(dm, t, u, u_t));
+  PetscCall(VecDuplicate(u, &r));
+  PetscCall(TSComputeIFunction(ts, t, u, u_t, r, PETSC_FALSE));
+  PetscCall(VecNorm(r, NORM_2, &res));
   if (tol >= 0.0) {
     PetscCheck(res <= tol,comm, PETSC_ERR_ARG_WRONG, "L_2 Residual %g exceeds tolerance %g", (double) res, (double) tol);
   } else if (residual) {
     *residual = res;
   } else {
-    CHKERRQ(PetscPrintf(comm, "L_2 Residual: %g\n", (double)res));
-    CHKERRQ(VecChop(r, 1.0e-10));
-    CHKERRQ(PetscObjectCompose((PetscObject) r, "__Vec_bc_zero__", (PetscObject) dm));
-    CHKERRQ(PetscObjectSetName((PetscObject) r, "Initial Residual"));
-    CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject)r,"res_"));
-    CHKERRQ(VecViewFromOptions(r, NULL, "-vec_view"));
-    CHKERRQ(PetscObjectCompose((PetscObject) r, "__Vec_bc_zero__", NULL));
+    PetscCall(PetscPrintf(comm, "L_2 Residual: %g\n", (double)res));
+    PetscCall(VecChop(r, 1.0e-10));
+    PetscCall(PetscObjectCompose((PetscObject) r, "__Vec_bc_zero__", (PetscObject) dm));
+    PetscCall(PetscObjectSetName((PetscObject) r, "Initial Residual"));
+    PetscCall(PetscObjectSetOptionsPrefix((PetscObject)r,"res_"));
+    PetscCall(VecViewFromOptions(r, NULL, "-vec_view"));
+    PetscCall(PetscObjectCompose((PetscObject) r, "__Vec_bc_zero__", NULL));
   }
-  CHKERRQ(VecDestroy(&r));
+  PetscCall(VecDestroy(&r));
   PetscFunctionReturn(0);
 }
 
@@ -370,33 +370,33 @@ PetscErrorCode DMTSCheckJacobian(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
   PetscValidHeaderSpecific(u, VEC_CLASSID, 4);
   if (isLinear) PetscValidBoolPointer(isLinear, 7);
   if (convRate) PetscValidRealPointer(convRate, 8);
-  CHKERRQ(PetscObjectGetComm((PetscObject) ts, &comm));
-  CHKERRQ(DMComputeExactSolution(dm, t, u, u_t));
+  PetscCall(PetscObjectGetComm((PetscObject) ts, &comm));
+  PetscCall(DMComputeExactSolution(dm, t, u, u_t));
   /* Create and view matrices */
-  CHKERRQ(TSGetTimeStep(ts, &dt));
+  PetscCall(TSGetTimeStep(ts, &dt));
   shift = 1.0/dt;
-  CHKERRQ(DMCreateMatrix(dm, &J));
-  CHKERRQ(DMGetDS(dm, &ds));
-  CHKERRQ(PetscDSHasJacobian(ds, &hasJac));
-  CHKERRQ(PetscDSHasJacobianPreconditioner(ds, &hasPrec));
+  PetscCall(DMCreateMatrix(dm, &J));
+  PetscCall(DMGetDS(dm, &ds));
+  PetscCall(PetscDSHasJacobian(ds, &hasJac));
+  PetscCall(PetscDSHasJacobianPreconditioner(ds, &hasPrec));
   if (hasJac && hasPrec) {
-    CHKERRQ(DMCreateMatrix(dm, &M));
-    CHKERRQ(TSComputeIJacobian(ts, t, u, u_t, shift, J, M, PETSC_FALSE));
-    CHKERRQ(PetscObjectSetName((PetscObject) M, "Preconditioning Matrix"));
-    CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) M, "jacpre_"));
-    CHKERRQ(MatViewFromOptions(M, NULL, "-mat_view"));
-    CHKERRQ(MatDestroy(&M));
+    PetscCall(DMCreateMatrix(dm, &M));
+    PetscCall(TSComputeIJacobian(ts, t, u, u_t, shift, J, M, PETSC_FALSE));
+    PetscCall(PetscObjectSetName((PetscObject) M, "Preconditioning Matrix"));
+    PetscCall(PetscObjectSetOptionsPrefix((PetscObject) M, "jacpre_"));
+    PetscCall(MatViewFromOptions(M, NULL, "-mat_view"));
+    PetscCall(MatDestroy(&M));
   } else {
-    CHKERRQ(TSComputeIJacobian(ts, t, u, u_t, shift, J, J, PETSC_FALSE));
+    PetscCall(TSComputeIJacobian(ts, t, u, u_t, shift, J, J, PETSC_FALSE));
   }
-  CHKERRQ(PetscObjectSetName((PetscObject) J, "Jacobian"));
-  CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) J, "jac_"));
-  CHKERRQ(MatViewFromOptions(J, NULL, "-mat_view"));
+  PetscCall(PetscObjectSetName((PetscObject) J, "Jacobian"));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject) J, "jac_"));
+  PetscCall(MatViewFromOptions(J, NULL, "-mat_view"));
   /* Check nullspace */
-  CHKERRQ(MatGetNullSpace(J, &nullspace));
+  PetscCall(MatGetNullSpace(J, &nullspace));
   if (nullspace) {
     PetscBool isNull;
-    CHKERRQ(MatNullSpaceTest(nullspace, J, &isNull));
+    PetscCall(MatNullSpaceTest(nullspace, J, &isNull));
     PetscCheck(isNull,comm, PETSC_ERR_PLIB, "The null space calculated for the system operator is invalid.");
   }
   /* Taylor test */
@@ -409,45 +409,45 @@ PetscErrorCode DMTSCheckJacobian(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
     PetscInt    Nv, v;
 
     /* Choose a perturbation direction */
-    CHKERRQ(PetscRandomCreate(comm, &rand));
-    CHKERRQ(VecDuplicate(u, &du));
-    CHKERRQ(VecSetRandom(du, rand));
-    CHKERRQ(PetscRandomDestroy(&rand));
-    CHKERRQ(VecDuplicate(u, &df));
-    CHKERRQ(MatMult(J, du, df));
+    PetscCall(PetscRandomCreate(comm, &rand));
+    PetscCall(VecDuplicate(u, &du));
+    PetscCall(VecSetRandom(du, rand));
+    PetscCall(PetscRandomDestroy(&rand));
+    PetscCall(VecDuplicate(u, &df));
+    PetscCall(MatMult(J, du, df));
     /* Evaluate residual at u, F(u), save in vector r */
-    CHKERRQ(VecDuplicate(u, &r));
-    CHKERRQ(TSComputeIFunction(ts, t, u, u_t, r, PETSC_FALSE));
+    PetscCall(VecDuplicate(u, &r));
+    PetscCall(TSComputeIFunction(ts, t, u, u_t, r, PETSC_FALSE));
     /* Look at the convergence of our Taylor approximation as we approach u */
     for (h = hMax, Nv = 0; h >= hMin; h *= hMult, ++Nv);
-    CHKERRQ(PetscCalloc3(Nv, &es, Nv, &hs, Nv, &errors));
-    CHKERRQ(VecDuplicate(u, &uhat));
-    CHKERRQ(VecDuplicate(u, &uhat_t));
-    CHKERRQ(VecDuplicate(u, &rhat));
+    PetscCall(PetscCalloc3(Nv, &es, Nv, &hs, Nv, &errors));
+    PetscCall(VecDuplicate(u, &uhat));
+    PetscCall(VecDuplicate(u, &uhat_t));
+    PetscCall(VecDuplicate(u, &rhat));
     for (h = hMax, Nv = 0; h >= hMin; h *= hMult, ++Nv) {
-      CHKERRQ(VecWAXPY(uhat, h, du, u));
-      CHKERRQ(VecWAXPY(uhat_t, h*shift, du, u_t));
+      PetscCall(VecWAXPY(uhat, h, du, u));
+      PetscCall(VecWAXPY(uhat_t, h*shift, du, u_t));
       /* F(\hat u, \hat u_t) \approx F(u, u_t) + J(u, u_t) (uhat - u) + J_t(u, u_t) (uhat_t - u_t) = F(u) + h * J(u) du + h * shift * J_t(u) du = F(u) + h F' du */
-      CHKERRQ(TSComputeIFunction(ts, t, uhat, uhat_t, rhat, PETSC_FALSE));
-      CHKERRQ(VecAXPBYPCZ(rhat, -1.0, -h, 1.0, r, df));
-      CHKERRQ(VecNorm(rhat, NORM_2, &errors[Nv]));
+      PetscCall(TSComputeIFunction(ts, t, uhat, uhat_t, rhat, PETSC_FALSE));
+      PetscCall(VecAXPBYPCZ(rhat, -1.0, -h, 1.0, r, df));
+      PetscCall(VecNorm(rhat, NORM_2, &errors[Nv]));
 
       es[Nv] = PetscLog10Real(errors[Nv]);
       hs[Nv] = PetscLog10Real(h);
     }
-    CHKERRQ(VecDestroy(&uhat));
-    CHKERRQ(VecDestroy(&uhat_t));
-    CHKERRQ(VecDestroy(&rhat));
-    CHKERRQ(VecDestroy(&df));
-    CHKERRQ(VecDestroy(&r));
-    CHKERRQ(VecDestroy(&du));
+    PetscCall(VecDestroy(&uhat));
+    PetscCall(VecDestroy(&uhat_t));
+    PetscCall(VecDestroy(&rhat));
+    PetscCall(VecDestroy(&df));
+    PetscCall(VecDestroy(&r));
+    PetscCall(VecDestroy(&du));
     for (v = 0; v < Nv; ++v) {
       if ((tol >= 0) && (errors[v] > tol)) break;
       else if (errors[v] > PETSC_SMALL)    break;
     }
     if (v == Nv) isLin = PETSC_TRUE;
-    CHKERRQ(PetscLinearRegression(Nv, hs, es, &slope, &intercept));
-    CHKERRQ(PetscFree3(es, hs, errors));
+    PetscCall(PetscLinearRegression(Nv, hs, es, &slope, &intercept));
+    PetscCall(PetscFree3(es, hs, errors));
     /* Slope should be about 2 */
     if (tol >= 0) {
       PetscCheck(isLin || PetscAbsReal(2 - slope) <= tol,comm, PETSC_ERR_ARG_WRONG, "Taylor approximation convergence rate should be 2, not %0.2f", (double) slope);
@@ -455,11 +455,11 @@ PetscErrorCode DMTSCheckJacobian(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
       if (isLinear) *isLinear = isLin;
       if (convRate) *convRate = slope;
     } else {
-      if (!isLin) CHKERRQ(PetscPrintf(comm, "Taylor approximation converging at order %3.2f\n", (double) slope));
-      else        CHKERRQ(PetscPrintf(comm, "Function appears to be linear\n"));
+      if (!isLin) PetscCall(PetscPrintf(comm, "Taylor approximation converging at order %3.2f\n", (double) slope));
+      else        PetscCall(PetscPrintf(comm, "Function appears to be linear\n"));
     }
   }
-  CHKERRQ(MatDestroy(&J));
+  PetscCall(MatDestroy(&J));
   PetscFunctionReturn(0);
 }
 
@@ -483,23 +483,23 @@ PetscErrorCode DMTSCheckFromOptions(TS ts, Vec u)
   PetscBool      check;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsHasName(((PetscObject)ts)->options,((PetscObject)ts)->prefix, "-dmts_check", &check));
+  PetscCall(PetscOptionsHasName(((PetscObject)ts)->options,((PetscObject)ts)->prefix, "-dmts_check", &check));
   if (!check) PetscFunctionReturn(0);
-  CHKERRQ(VecDuplicate(u, &sol));
-  CHKERRQ(VecCopy(u, sol));
-  CHKERRQ(TSSetSolution(ts, u));
-  CHKERRQ(TSGetDM(ts, &dm));
-  CHKERRQ(TSSetUp(ts));
-  CHKERRQ(TSGetSNES(ts, &snes));
-  CHKERRQ(SNESSetSolution(snes, u));
+  PetscCall(VecDuplicate(u, &sol));
+  PetscCall(VecCopy(u, sol));
+  PetscCall(TSSetSolution(ts, u));
+  PetscCall(TSGetDM(ts, &dm));
+  PetscCall(TSSetUp(ts));
+  PetscCall(TSGetSNES(ts, &snes));
+  PetscCall(SNESSetSolution(snes, u));
 
-  CHKERRQ(TSGetTime(ts, &t));
-  CHKERRQ(DMSNESCheckDiscretization(snes, dm, t, sol, -1.0, NULL));
-  CHKERRQ(DMGetGlobalVector(dm, &u_t));
-  CHKERRQ(DMTSCheckResidual(ts, dm, t, sol, u_t, -1.0, NULL));
-  CHKERRQ(DMTSCheckJacobian(ts, dm, t, sol, u_t, -1.0, NULL, NULL));
-  CHKERRQ(DMRestoreGlobalVector(dm, &u_t));
+  PetscCall(TSGetTime(ts, &t));
+  PetscCall(DMSNESCheckDiscretization(snes, dm, t, sol, -1.0, NULL));
+  PetscCall(DMGetGlobalVector(dm, &u_t));
+  PetscCall(DMTSCheckResidual(ts, dm, t, sol, u_t, -1.0, NULL));
+  PetscCall(DMTSCheckJacobian(ts, dm, t, sol, u_t, -1.0, NULL, NULL));
+  PetscCall(DMRestoreGlobalVector(dm, &u_t));
 
-  CHKERRQ(VecDestroy(&sol));
+  PetscCall(VecDestroy(&sol));
   PetscFunctionReturn(0);
 }

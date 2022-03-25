@@ -7,14 +7,14 @@
 PetscErrorCode PCApply_None(PC pc,Vec x,Vec y)
 {
   PetscFunctionBegin;
-  CHKERRQ(VecCopy(x,y));
+  PetscCall(VecCopy(x,y));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PCMatApply_None(PC pc,Mat X,Mat Y)
 {
   PetscFunctionBegin;
-  CHKERRQ(MatCopy(X,Y,SAME_NONZERO_PATTERN));
+  PetscCall(MatCopy(X,Y,SAME_NONZERO_PATTERN));
   PetscFunctionReturn(0);
 }
 

@@ -24,21 +24,21 @@ static PetscErrorCode  VecMatlabEnginePut_DA2d(PetscObject obj,void *mengine)
   DM             da;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetDM(vec, &da));
+  PetscCall(VecGetDM(vec, &da));
   PetscCheck(da,PetscObjectComm((PetscObject)vec),PETSC_ERR_ARG_WRONGSTATE,"Vector not associated with a DMDA");
-  CHKERRQ(DMDAGetGhostCorners(da,0,0,0,&m,&n,0));
+  PetscCall(DMDAGetGhostCorners(da,0,0,0,&m,&n,0));
 
-  CHKERRQ(VecGetArray(vec,&array));
+  PetscCall(VecGetArray(vec,&array));
 #if !defined(PETSC_USE_COMPLEX)
   mat = mxCreateDoubleMatrix(m,n,mxREAL);
 #else
   mat = mxCreateDoubleMatrix(m,n,mxCOMPLEX);
 #endif
-  CHKERRQ(PetscArraycpy(mxGetPr(mat),array,n*m));
-  CHKERRQ(PetscObjectName(obj));
+  PetscCall(PetscArraycpy(mxGetPr(mat),array,n*m));
+  PetscCall(PetscObjectName(obj));
   engPutVariable((Engine*)mengine,obj->name,mat);
 
-  CHKERRQ(VecRestoreArray(vec,&array));
+  PetscCall(VecRestoreArray(vec,&array));
   PetscFunctionReturn(0);
 }
 #endif
@@ -50,18 +50,18 @@ PetscErrorCode  DMCreateLocalVector_DA(DM da,Vec *g)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(g,2);
-  CHKERRQ(VecCreate(PETSC_COMM_SELF,g));
-  CHKERRQ(VecSetSizes(*g,dd->nlocal,PETSC_DETERMINE));
-  CHKERRQ(VecSetBlockSize(*g,dd->w));
-  CHKERRQ(VecSetType(*g,da->vectype));
+  PetscCall(VecCreate(PETSC_COMM_SELF,g));
+  PetscCall(VecSetSizes(*g,dd->nlocal,PETSC_DETERMINE));
+  PetscCall(VecSetBlockSize(*g,dd->w));
+  PetscCall(VecSetType(*g,da->vectype));
   if (dd->nlocal < da->bind_below) {
-    CHKERRQ(VecSetBindingPropagates(*g,PETSC_TRUE));
-    CHKERRQ(VecBindToCPU(*g,PETSC_TRUE));
+    PetscCall(VecSetBindingPropagates(*g,PETSC_TRUE));
+    PetscCall(VecBindToCPU(*g,PETSC_TRUE));
   }
-  CHKERRQ(VecSetDM(*g, da));
+  PetscCall(VecSetDM(*g, da));
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   if (dd->w == 1  && da->dim == 2) {
-    CHKERRQ(PetscObjectComposeFunction((PetscObject)*g,"PetscMatlabEnginePut_C",VecMatlabEnginePut_DA2d));
+    PetscCall(PetscObjectComposeFunction((PetscObject)*g,"PetscMatlabEnginePut_C",VecMatlabEnginePut_DA2d));
   }
 #endif
   PetscFunctionReturn(0);
@@ -133,7 +133,7 @@ PetscErrorCode DMDAGetCellPoint(DM dm, PetscInt i, PetscInt j, PetscInt k, Petsc
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1,DMDA);
   PetscValidIntPointer(point,5);
-  CHKERRQ(DMDAGetLocalInfo(dm, &info));
+  PetscCall(DMDAGetLocalInfo(dm, &info));
   if (dim > 0) PetscCheckFalse((i < info.gxs) || (i >= info.gxs+info.gxm),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "X index %d not in [%d, %d)", i, info.gxs, info.gxs+info.gxm);
   if (dim > 1) PetscCheckFalse((j < info.gys) || (j >= info.gys+info.gym),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Y index %d not in [%d, %d)", j, info.gys, info.gys+info.gym);
   if (dim > 2) PetscCheckFalse((k < info.gzs) || (k >= info.gzs+info.gzm),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Z index %d not in [%d, %d)", k, info.gzs, info.gzs+info.gzm);
@@ -219,9 +219,9 @@ PetscErrorCode DMDAGetHeightStratum(DM dm, PetscInt height, PetscInt *pStart, Pe
   PetscFunctionBegin;
   if (pStart) PetscValidIntPointer(pStart,3);
   if (pEnd)   PetscValidIntPointer(pEnd,4);
-  CHKERRQ(DMDAGetNumCells(dm, NULL, NULL, NULL, &nC));
-  CHKERRQ(DMDAGetNumVertices(dm, NULL, NULL, NULL, &nV));
-  CHKERRQ(DMDAGetNumFaces(dm, NULL, &nXF, NULL, &nYF, NULL, &nZF));
+  PetscCall(DMDAGetNumCells(dm, NULL, NULL, NULL, &nC));
+  PetscCall(DMDAGetNumVertices(dm, NULL, NULL, NULL, &nV));
+  PetscCall(DMDAGetNumFaces(dm, NULL, &nXF, NULL, &nYF, NULL, &nZF));
   if (height == 0) {
     /* Cells */
     if (pStart) *pStart = 0;
@@ -250,9 +250,9 @@ PetscErrorCode DMDAGetDepthStratum(DM dm, PetscInt depth, PetscInt *pStart, Pets
   PetscFunctionBegin;
   if (pStart) PetscValidIntPointer(pStart,3);
   if (pEnd)   PetscValidIntPointer(pEnd,4);
-  CHKERRQ(DMDAGetNumCells(dm, NULL, NULL, NULL, &nC));
-  CHKERRQ(DMDAGetNumVertices(dm, NULL, NULL, NULL, &nV));
-  CHKERRQ(DMDAGetNumFaces(dm, NULL, &nXF, NULL, &nYF, NULL, &nZF));
+  PetscCall(DMDAGetNumCells(dm, NULL, NULL, NULL, &nC));
+  PetscCall(DMDAGetNumVertices(dm, NULL, NULL, NULL, &nV));
+  PetscCall(DMDAGetNumFaces(dm, NULL, &nXF, NULL, &nYF, NULL, &nZF));
   if (depth == dim) {
     /* Cells */
     if (pStart) *pStart = 0;
@@ -280,9 +280,9 @@ PetscErrorCode DMDAGetConeSize(DM dm, PetscInt p, PetscInt *coneSize)
 
   PetscFunctionBegin;
   *coneSize = 0;
-  CHKERRQ(DMDAGetNumCells(dm, NULL, NULL, NULL, &nC));
-  CHKERRQ(DMDAGetNumVertices(dm, NULL, NULL, NULL, &nV));
-  CHKERRQ(DMDAGetNumFaces(dm, NULL, &nXF, NULL, &nYF, NULL, &nZF));
+  PetscCall(DMDAGetNumCells(dm, NULL, NULL, NULL, &nC));
+  PetscCall(DMDAGetNumVertices(dm, NULL, NULL, NULL, &nV));
+  PetscCall(DMDAGetNumFaces(dm, NULL, &nXF, NULL, &nYF, NULL, &nZF));
   switch (dim) {
   case 2:
     if (p >= 0) {
@@ -307,10 +307,10 @@ PetscErrorCode DMDAGetCone(DM dm, PetscInt p, PetscInt *cone[])
   PetscInt       nCx, nCy, nCz, nC, nVx, nVy, nVz, nV, nxF, nyF, nzF, nXF, nYF, nZF;
 
   PetscFunctionBegin;
-  if (!cone) CHKERRQ(DMGetWorkArray(dm, 6, MPIU_INT, cone));
-  CHKERRQ(DMDAGetNumCells(dm, &nCx, &nCy, &nCz, &nC));
-  CHKERRQ(DMDAGetNumVertices(dm, &nVx, &nVy, &nVz, &nV));
-  CHKERRQ(DMDAGetNumFaces(dm, &nxF, &nXF, &nyF, &nYF, &nzF, &nZF));
+  if (!cone) PetscCall(DMGetWorkArray(dm, 6, MPIU_INT, cone));
+  PetscCall(DMDAGetNumCells(dm, &nCx, &nCy, &nCz, &nC));
+  PetscCall(DMDAGetNumVertices(dm, &nVx, &nVy, &nVz, &nV));
+  PetscCall(DMDAGetNumFaces(dm, &nxF, &nXF, &nyF, &nYF, &nzF, &nZF));
   switch (dim) {
   case 2:
     if (p >= 0) {
@@ -348,7 +348,7 @@ PetscErrorCode DMDAGetCone(DM dm, PetscInt p, PetscInt *cone[])
 PetscErrorCode DMDARestoreCone(DM dm, PetscInt p, PetscInt *cone[])
 {
   PetscFunctionBegin;
-  CHKERRQ(DMGetWorkArray(dm, 6, MPIU_INT, cone));
+  PetscCall(DMGetWorkArray(dm, 6, MPIU_INT, cone));
   PetscFunctionReturn(0);
 }
 
@@ -363,25 +363,25 @@ PetscErrorCode DMDASetVertexCoordinates(DM dm, PetscReal xl, PetscReal xu, Petsc
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1,DMDA);
-  CHKERRQ(DMDAGetInfo(dm, &dim, &M, &N, &P, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
+  PetscCall(DMDAGetInfo(dm, &dim, &M, &N, &P, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   PetscCheckFalse(dim > 3,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"The following code only works for dim <= 3");
   h[0] = (xu - xl)/M;
   h[1] = (yu - yl)/N;
   h[2] = (zu - zl)/P;
-  CHKERRQ(DMDAGetDepthStratum(dm, 0, &vStart, &vEnd));
-  CHKERRQ(DMDAGetNumVertices(dm, &nVx, &nVy, &nVz, &nV));
-  CHKERRQ(PetscSectionCreate(PetscObjectComm((PetscObject) dm), &section));
-  CHKERRQ(PetscSectionSetNumFields(section, 1));
-  CHKERRQ(PetscSectionSetFieldComponents(section, 0, dim));
-  CHKERRQ(PetscSectionSetChart(section, vStart, vEnd));
+  PetscCall(DMDAGetDepthStratum(dm, 0, &vStart, &vEnd));
+  PetscCall(DMDAGetNumVertices(dm, &nVx, &nVy, &nVz, &nV));
+  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject) dm), &section));
+  PetscCall(PetscSectionSetNumFields(section, 1));
+  PetscCall(PetscSectionSetFieldComponents(section, 0, dim));
+  PetscCall(PetscSectionSetChart(section, vStart, vEnd));
   for (v = vStart; v < vEnd; ++v) {
-    CHKERRQ(PetscSectionSetDof(section, v, dim));
+    PetscCall(PetscSectionSetDof(section, v, dim));
   }
-  CHKERRQ(PetscSectionSetUp(section));
-  CHKERRQ(PetscSectionGetStorageSize(section, &size));
-  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF, size, &coordinates));
-  CHKERRQ(PetscObjectSetName((PetscObject)coordinates,"coordinates"));
-  CHKERRQ(VecGetArray(coordinates, &coords));
+  PetscCall(PetscSectionSetUp(section));
+  PetscCall(PetscSectionGetStorageSize(section, &size));
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF, size, &coordinates));
+  PetscCall(PetscObjectSetName((PetscObject)coordinates,"coordinates"));
+  PetscCall(VecGetArray(coordinates, &coords));
   for (k = 0; k < nVz; ++k) {
     PetscInt ind[3], d, off;
 
@@ -393,7 +393,7 @@ PetscErrorCode DMDASetVertexCoordinates(DM dm, PetscReal xl, PetscReal xu, Petsc
       for (i = 0; i < nVx; ++i) {
         const PetscInt vertex = (k*nVy + j)*nVx + i + vStart;
 
-        CHKERRQ(PetscSectionGetOffset(section, vertex, &off));
+        PetscCall(PetscSectionGetOffset(section, vertex, &off));
         ind[0] = i + da->xs;
         for (d = 0; d < dim; ++d) {
           coords[off+d] = h[d]*ind[d];
@@ -401,11 +401,11 @@ PetscErrorCode DMDASetVertexCoordinates(DM dm, PetscReal xl, PetscReal xu, Petsc
       }
     }
   }
-  CHKERRQ(VecRestoreArray(coordinates, &coords));
-  CHKERRQ(DMSetCoordinateSection(dm, PETSC_DETERMINE, section));
-  CHKERRQ(DMSetCoordinatesLocal(dm, coordinates));
-  CHKERRQ(PetscSectionDestroy(&section));
-  CHKERRQ(VecDestroy(&coordinates));
+  PetscCall(VecRestoreArray(coordinates, &coords));
+  PetscCall(DMSetCoordinateSection(dm, PETSC_DETERMINE, section));
+  PetscCall(DMSetCoordinatesLocal(dm, coordinates));
+  PetscCall(PetscSectionDestroy(&section));
+  PetscCall(VecDestroy(&coordinates));
   PetscFunctionReturn(0);
 }
 
@@ -478,7 +478,7 @@ PetscErrorCode  DMDAGetArray(DM da,PetscBool ghosted,void *vptr)
   case 1: {
     void *ptr;
 
-    CHKERRQ(PetscMalloc(xm*sizeof(PetscScalar),&iarray_start));
+    PetscCall(PetscMalloc(xm*sizeof(PetscScalar),&iarray_start));
 
     ptr   = (void*)(iarray_start - xs*sizeof(PetscScalar));
     *iptr = (void*)ptr;
@@ -487,7 +487,7 @@ PetscErrorCode  DMDAGetArray(DM da,PetscBool ghosted,void *vptr)
   case 2: {
     void **ptr;
 
-    CHKERRQ(PetscMalloc((ym+1)*sizeof(void*)+xm*ym*sizeof(PetscScalar),&iarray_start));
+    PetscCall(PetscMalloc((ym+1)*sizeof(void*)+xm*ym*sizeof(PetscScalar),&iarray_start));
 
     ptr = (void**)(iarray_start + xm*ym*sizeof(PetscScalar) - ys*sizeof(void*));
     for (j=ys; j<ys+ym; j++) ptr[j] = iarray_start + sizeof(PetscScalar)*(xm*(j-ys) - xs);
@@ -497,7 +497,7 @@ PetscErrorCode  DMDAGetArray(DM da,PetscBool ghosted,void *vptr)
   case 3: {
     void ***ptr,**bptr;
 
-    CHKERRQ(PetscMalloc((zm+1)*sizeof(void**)+(ym*zm+1)*sizeof(void*)+xm*ym*zm*sizeof(PetscScalar),&iarray_start));
+    PetscCall(PetscMalloc((zm+1)*sizeof(void**)+(ym*zm+1)*sizeof(void*)+xm*ym*zm*sizeof(PetscScalar),&iarray_start));
 
     ptr  = (void***)(iarray_start + xm*ym*zm*sizeof(PetscScalar) - zs*sizeof(void*));
     bptr = (void**)(iarray_start + xm*ym*zm*sizeof(PetscScalar) + zm*sizeof(void**));

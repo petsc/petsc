@@ -99,31 +99,31 @@ PetscErrorCode  PetscOpenHistoryFile(const char filename[],FILE **fd)
   char           version[256];
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   if (rank == 0) {
     char        arch[10];
     int         err;
 
-    CHKERRQ(PetscGetArchType(arch,10));
-    CHKERRQ(PetscGetDate(date,64));
-    CHKERRQ(PetscGetVersion(version,256));
-    CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+    PetscCall(PetscGetArchType(arch,10));
+    PetscCall(PetscGetDate(date,64));
+    PetscCall(PetscGetVersion(version,256));
+    PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
     if (filename) {
-      CHKERRQ(PetscFixFilename(filename,fname));
+      PetscCall(PetscFixFilename(filename,fname));
     } else {
-      CHKERRQ(PetscGetHomeDirectory(pfile,sizeof(pfile)));
-      CHKERRQ(PetscStrlcat(pfile,"/.petschistory",sizeof(pfile)));
-      CHKERRQ(PetscFixFilename(pfile,fname));
+      PetscCall(PetscGetHomeDirectory(pfile,sizeof(pfile)));
+      PetscCall(PetscStrlcat(pfile,"/.petschistory",sizeof(pfile)));
+      PetscCall(PetscFixFilename(pfile,fname));
     }
 
     *fd = fopen(fname,"a");
     PetscCheck(fd,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file: %s",fname);
 
-    CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,*fd,"----------------------------------------\n"));
-    CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,*fd,"%s %s\n",version,date));
-    CHKERRQ(PetscGetProgramName(pname,sizeof(pname)));
-    CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,*fd,"%s on a %s, %d proc. with options:\n",pname,arch,size));
-    CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,*fd,"----------------------------------------\n"));
+    PetscCall(PetscFPrintf(PETSC_COMM_SELF,*fd,"----------------------------------------\n"));
+    PetscCall(PetscFPrintf(PETSC_COMM_SELF,*fd,"%s %s\n",version,date));
+    PetscCall(PetscGetProgramName(pname,sizeof(pname)));
+    PetscCall(PetscFPrintf(PETSC_COMM_SELF,*fd,"%s on a %s, %d proc. with options:\n",pname,arch,size));
+    PetscCall(PetscFPrintf(PETSC_COMM_SELF,*fd,"----------------------------------------\n"));
 
     err = fflush(*fd);
     PetscCheck(!err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
@@ -138,12 +138,12 @@ PETSC_INTERN PetscErrorCode PetscCloseHistoryFile(FILE **fd)
   int            err;
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   if (rank == 0) {
-    CHKERRQ(PetscGetDate(date,64));
-    CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,*fd,"----------------------------------------\n"));
-    CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,*fd,"Finished at %s\n",date));
-    CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,*fd,"----------------------------------------\n"));
+    PetscCall(PetscGetDate(date,64));
+    PetscCall(PetscFPrintf(PETSC_COMM_SELF,*fd,"----------------------------------------\n"));
+    PetscCall(PetscFPrintf(PETSC_COMM_SELF,*fd,"Finished at %s\n",date));
+    PetscCall(PetscFPrintf(PETSC_COMM_SELF,*fd,"----------------------------------------\n"));
     err  = fflush(*fd);
     PetscCheck(!err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
     err = fclose(*fd);
@@ -253,14 +253,14 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
 #endif
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_rank(comm,&rank));
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
 
   /*
      Setup building of stack frames for all function calls
   */
   if (PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)) {
-    CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-checkstack",&flg1,NULL));
-    CHKERRQ(PetscStackSetCheck(flg1));
+    PetscCall(PetscOptionsGetBool(NULL,NULL,"-checkstack",&flg1,NULL));
+    PetscCall(PetscStackSetCheck(flg1));
   }
 
 #if !defined(PETSC_HAVE_THREADSAFETY)
@@ -273,13 +273,13 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
     if (PetscDefined(USE_DEBUG)) {
       mdebug        = PETSC_TRUE;
       initializenan = PETSC_TRUE;
-      CHKERRQ(PetscOptionsHasName(NULL,NULL,"-malloc_test",&flg1));
+      PetscCall(PetscOptionsHasName(NULL,NULL,"-malloc_test",&flg1));
     } else {
       /* don't warn about unused option */
-      CHKERRQ(PetscOptionsHasName(NULL,NULL,"-malloc_test",&flg1));
+      PetscCall(PetscOptionsHasName(NULL,NULL,"-malloc_test",&flg1));
       flg1 = PETSC_FALSE;
     }
-    CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-malloc_debug",&flg2,&flg3));
+    PetscCall(PetscOptionsGetBool(NULL,NULL,"-malloc_debug",&flg2,&flg3));
     if (flg1 || flg2) {
       mdebug        = PETSC_TRUE;
       eachcall      = PETSC_TRUE;
@@ -290,86 +290,86 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
       initializenan = PETSC_FALSE;
     }
 
-    CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-malloc_requested_size",&flg1,&flg2));
-    if (flg2) CHKERRQ(PetscMallocLogRequestedSizeSet(flg1));
+    PetscCall(PetscOptionsGetBool(NULL,NULL,"-malloc_requested_size",&flg1,&flg2));
+    if (flg2) PetscCall(PetscMallocLogRequestedSizeSet(flg1));
 
-    CHKERRQ(PetscOptionsHasName(NULL,NULL,"-malloc_view",&mlog));
+    PetscCall(PetscOptionsHasName(NULL,NULL,"-malloc_view",&mlog));
     if (mlog) {
       mdebug = PETSC_TRUE;
     }
     /* the next line is deprecated */
-    CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-malloc",&mdebug,NULL));
-    CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-malloc_dump",&mdebug,NULL));
-    CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-log_view_memory",&mdebug,NULL));
+    PetscCall(PetscOptionsGetBool(NULL,NULL,"-malloc",&mdebug,NULL));
+    PetscCall(PetscOptionsGetBool(NULL,NULL,"-malloc_dump",&mdebug,NULL));
+    PetscCall(PetscOptionsGetBool(NULL,NULL,"-log_view_memory",&mdebug,NULL));
     if (mdebug) {
-      CHKERRQ(PetscMallocSetDebug(eachcall,initializenan));
+      PetscCall(PetscMallocSetDebug(eachcall,initializenan));
     }
     if (mlog) {
       PetscReal logthreshold = 0;
-      CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-malloc_view_threshold",&logthreshold,NULL));
-      CHKERRQ(PetscMallocViewSet(logthreshold));
+      PetscCall(PetscOptionsGetReal(NULL,NULL,"-malloc_view_threshold",&logthreshold,NULL));
+      PetscCall(PetscMallocViewSet(logthreshold));
     }
 #if defined(PETSC_USE_LOG)
-    CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-log_view_memory",&PetscLogMemory,NULL));
+    PetscCall(PetscOptionsGetBool(NULL,NULL,"-log_view_memory",&PetscLogMemory,NULL));
 #endif
   }
 
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-malloc_coalesce",&flg1,&flg2));
-  if (flg2) CHKERRQ(PetscMallocSetCoalesce(flg1));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-malloc_coalesce",&flg1,&flg2));
+  if (flg2) PetscCall(PetscMallocSetCoalesce(flg1));
   flg1 = PETSC_FALSE;
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-malloc_hbw",&flg1,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-malloc_hbw",&flg1,NULL));
   /* ignore this option if malloc is already set */
-  if (flg1 && !petscsetmallocvisited) CHKERRQ(PetscSetUseHBWMalloc_Private());
+  if (flg1 && !petscsetmallocvisited) PetscCall(PetscSetUseHBWMalloc_Private());
 
   flg1 = PETSC_FALSE;
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-malloc_info",&flg1,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-malloc_info",&flg1,NULL));
   if (!flg1) {
     flg1 = PETSC_FALSE;
-    CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-memory_view",&flg1,NULL));
+    PetscCall(PetscOptionsGetBool(NULL,NULL,"-memory_view",&flg1,NULL));
   }
   if (flg1) {
-    CHKERRQ(PetscMemorySetGetMaximumUsage());
+    PetscCall(PetscMemorySetGetMaximumUsage());
   }
 #endif
 
 #if defined(PETSC_USE_LOG)
-  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-objects_dump",&PetscObjectsLog));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-objects_dump",&PetscObjectsLog));
 #endif
 
   /*
       Set the display variable for graphics
   */
-  CHKERRQ(PetscSetDisplay());
+  PetscCall(PetscSetDisplay());
 
   /*
      Print main application help message
   */
-  CHKERRQ(PetscOptionsHasHelp(NULL,&hasHelp));
+  PetscCall(PetscOptionsHasHelp(NULL,&hasHelp));
   if (help && hasHelp) {
-    CHKERRQ(PetscPrintf(comm,"%s",help));
-    CHKERRQ(PetscPrintf(comm,"----------------------------------------\n"));
+    PetscCall(PetscPrintf(comm,"%s",help));
+    PetscCall(PetscPrintf(comm,"----------------------------------------\n"));
   }
 
   /*
       Print the PETSc version information
   */
-  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-version",&flg1));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-version",&flg1));
   if (flg1 || hasHelp) {
     /*
        Print "higher-level" package version message
     */
     if (PetscExternalVersionFunction) {
-      CHKERRQ((*PetscExternalVersionFunction)(comm));
+      PetscCall((*PetscExternalVersionFunction)(comm));
     }
 
-    CHKERRQ(PetscGetVersion(version,256));
-    CHKERRQ((*PetscHelpPrintf)(comm,"%s\n",version));
-    CHKERRQ((*PetscHelpPrintf)(comm,"%s",PETSC_AUTHOR_INFO));
-    CHKERRQ((*PetscHelpPrintf)(comm,"See docs/changes/index.html for recent updates.\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm,"See docs/faq.html for problems.\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm,"See docs/manualpages/index.html for help. \n"));
-    CHKERRQ((*PetscHelpPrintf)(comm,"Libraries linked from %s\n",PETSC_LIB_DIR));
-    CHKERRQ((*PetscHelpPrintf)(comm,"----------------------------------------\n"));
+    PetscCall(PetscGetVersion(version,256));
+    PetscCall((*PetscHelpPrintf)(comm,"%s\n",version));
+    PetscCall((*PetscHelpPrintf)(comm,"%s",PETSC_AUTHOR_INFO));
+    PetscCall((*PetscHelpPrintf)(comm,"See docs/changes/index.html for recent updates.\n"));
+    PetscCall((*PetscHelpPrintf)(comm,"See docs/faq.html for problems.\n"));
+    PetscCall((*PetscHelpPrintf)(comm,"See docs/manualpages/index.html for help. \n"));
+    PetscCall((*PetscHelpPrintf)(comm,"Libraries linked from %s\n",PETSC_LIB_DIR));
+    PetscCall((*PetscHelpPrintf)(comm,"----------------------------------------\n"));
   }
 
   /*
@@ -379,13 +379,13 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
     PetscBool hasHelpIntro;
 
     if (PetscExternalHelpFunction) {
-      CHKERRQ((*PetscExternalHelpFunction)(comm));
+      PetscCall((*PetscExternalHelpFunction)(comm));
     }
-    CHKERRQ(PetscOptionsHasHelpIntro_Internal(NULL,&hasHelpIntro));
+    PetscCall(PetscOptionsHasHelpIntro_Internal(NULL,&hasHelpIntro));
     if (hasHelpIntro) {
-      CHKERRQ(PetscOptionsDestroyDefault());
-      CHKERRQ(PetscFreeMPIResources());
-      CHKERRMPI(MPI_Finalize());
+      PetscCall(PetscOptionsDestroyDefault());
+      PetscCall(PetscFreeMPIResources());
+      PetscCallMPI(MPI_Finalize());
       exit(0);
     }
   }
@@ -394,40 +394,40 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
       Setup the error handling
   */
   flg1 = PETSC_FALSE;
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-on_error_abort",&flg1,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-on_error_abort",&flg1,NULL));
   if (flg1) {
-    CHKERRMPI(MPI_Comm_set_errhandler(comm,MPI_ERRORS_ARE_FATAL));
-    CHKERRQ(PetscPushErrorHandler(PetscAbortErrorHandler,NULL));
+    PetscCallMPI(MPI_Comm_set_errhandler(comm,MPI_ERRORS_ARE_FATAL));
+    PetscCall(PetscPushErrorHandler(PetscAbortErrorHandler,NULL));
   }
   flg1 = PETSC_FALSE;
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-on_error_mpiabort",&flg1,NULL));
-  if (flg1) CHKERRQ(PetscPushErrorHandler(PetscMPIAbortErrorHandler,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-on_error_mpiabort",&flg1,NULL));
+  if (flg1) PetscCall(PetscPushErrorHandler(PetscMPIAbortErrorHandler,NULL));
   flg1 = PETSC_FALSE;
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-mpi_return_on_error",&flg1,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-mpi_return_on_error",&flg1,NULL));
   if (flg1) {
-    CHKERRMPI(MPI_Comm_set_errhandler(comm,MPI_ERRORS_RETURN));
+    PetscCallMPI(MPI_Comm_set_errhandler(comm,MPI_ERRORS_RETURN));
   }
   flg1 = PETSC_FALSE;
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-no_signal_handler",&flg1,NULL));
-  if (!flg1) CHKERRQ(PetscPushSignalHandler(PetscSignalHandlerDefault,(void*)0));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-no_signal_handler",&flg1,NULL));
+  if (!flg1) PetscCall(PetscPushSignalHandler(PetscSignalHandlerDefault,(void*)0));
 
   /*
       Setup debugger information
   */
-  CHKERRQ(PetscSetDefaultDebugger());
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-on_error_attach_debugger",string,sizeof(string),&flg1));
+  PetscCall(PetscSetDefaultDebugger());
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-on_error_attach_debugger",string,sizeof(string),&flg1));
   if (flg1) {
     MPI_Errhandler err_handler;
 
-    CHKERRQ(PetscSetDebuggerFromString(string));
-    CHKERRMPI(MPI_Comm_create_errhandler(Petsc_MPI_DebuggerOnError,&err_handler));
-    CHKERRMPI(MPI_Comm_set_errhandler(comm,err_handler));
-    CHKERRQ(PetscPushErrorHandler(PetscAttachDebuggerErrorHandler,NULL));
+    PetscCall(PetscSetDebuggerFromString(string));
+    PetscCallMPI(MPI_Comm_create_errhandler(Petsc_MPI_DebuggerOnError,&err_handler));
+    PetscCallMPI(MPI_Comm_set_errhandler(comm,err_handler));
+    PetscCall(PetscPushErrorHandler(PetscAttachDebuggerErrorHandler,NULL));
   }
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-debug_terminal",string,sizeof(string),&flg1));
-  if (flg1) CHKERRQ(PetscSetDebugTerminal(string));
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-start_in_debugger",string,sizeof(string),&flg1));
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-stop_for_debugger",string,sizeof(string),&flg2));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-debug_terminal",string,sizeof(string),&flg1));
+  if (flg1) PetscCall(PetscSetDebugTerminal(string));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-start_in_debugger",string,sizeof(string),&flg1));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-stop_for_debugger",string,sizeof(string),&flg2));
   if (flg1 || flg2) {
     PetscMPIInt    size;
     PetscInt       lsize,*ranks;
@@ -438,49 +438,49 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
        debugger has stated it is likely to receive a SIGUSR1
        and kill the program.
     */
-    CHKERRMPI(MPI_Comm_size(comm,&size));
+    PetscCallMPI(MPI_Comm_size(comm,&size));
     if (size > 2) {
       PetscMPIInt dummy = 0;
       MPI_Status  status;
       for (i=0; i<size; i++) {
         if (rank != i) {
-          CHKERRMPI(MPI_Send(&dummy,1,MPI_INT,i,109,comm));
+          PetscCallMPI(MPI_Send(&dummy,1,MPI_INT,i,109,comm));
         }
       }
       for (i=0; i<size; i++) {
         if (rank != i) {
-          CHKERRMPI(MPI_Recv(&dummy,1,MPI_INT,i,109,comm,&status));
+          PetscCallMPI(MPI_Recv(&dummy,1,MPI_INT,i,109,comm,&status));
         }
       }
     }
     /* check if this processor node should be in debugger */
-    CHKERRQ(PetscMalloc1(size,&ranks));
+    PetscCall(PetscMalloc1(size,&ranks));
     lsize = size;
     /* Deprecated in 3.14 */
-    CHKERRQ(PetscOptionsGetIntArray(NULL,NULL,"-debugger_nodes",ranks,&lsize,&flag));
+    PetscCall(PetscOptionsGetIntArray(NULL,NULL,"-debugger_nodes",ranks,&lsize,&flag));
     if (flag) {
       const char * const quietopt="-options_suppress_deprecated_warnings";
       char               msg[4096];
       PetscBool          quiet = PETSC_FALSE;
 
-      CHKERRQ(PetscOptionsGetBool(NULL,NULL,quietopt,&quiet,NULL));
+      PetscCall(PetscOptionsGetBool(NULL,NULL,quietopt,&quiet,NULL));
       if (!quiet) {
-        CHKERRQ(PetscStrcpy(msg,"** PETSc DEPRECATION WARNING ** : the option "));
-        CHKERRQ(PetscStrcat(msg,"-debugger_nodes"));
-        CHKERRQ(PetscStrcat(msg," is deprecated as of version "));
-        CHKERRQ(PetscStrcat(msg,"3.14"));
-        CHKERRQ(PetscStrcat(msg," and will be removed in a future release."));
-        CHKERRQ(PetscStrcat(msg," Please use the option "));
-        CHKERRQ(PetscStrcat(msg,"-debugger_ranks"));
-        CHKERRQ(PetscStrcat(msg," instead."));
-        CHKERRQ(PetscStrcat(msg," (Silence this warning with "));
-        CHKERRQ(PetscStrcat(msg,quietopt));
-        CHKERRQ(PetscStrcat(msg,")\n"));
-        CHKERRQ(PetscPrintf(comm,"%s",msg));
+        PetscCall(PetscStrcpy(msg,"** PETSc DEPRECATION WARNING ** : the option "));
+        PetscCall(PetscStrcat(msg,"-debugger_nodes"));
+        PetscCall(PetscStrcat(msg," is deprecated as of version "));
+        PetscCall(PetscStrcat(msg,"3.14"));
+        PetscCall(PetscStrcat(msg," and will be removed in a future release."));
+        PetscCall(PetscStrcat(msg," Please use the option "));
+        PetscCall(PetscStrcat(msg,"-debugger_ranks"));
+        PetscCall(PetscStrcat(msg," instead."));
+        PetscCall(PetscStrcat(msg," (Silence this warning with "));
+        PetscCall(PetscStrcat(msg,quietopt));
+        PetscCall(PetscStrcat(msg,")\n"));
+        PetscCall(PetscPrintf(comm,"%s",msg));
       }
     } else {
       lsize = size;
-      CHKERRQ(PetscOptionsGetIntArray(NULL,NULL,"-debugger_ranks",ranks,&lsize,&flag));
+      PetscCall(PetscOptionsGetIntArray(NULL,NULL,"-debugger_ranks",ranks,&lsize,&flag));
     }
     if (flag) {
       for (i=0; i<lsize; i++) {
@@ -488,164 +488,164 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
       }
     }
     if (!flag) {
-      CHKERRQ(PetscSetDebuggerFromString(string));
-      CHKERRQ(PetscPushErrorHandler(PetscAbortErrorHandler,NULL));
+      PetscCall(PetscSetDebuggerFromString(string));
+      PetscCall(PetscPushErrorHandler(PetscAbortErrorHandler,NULL));
       if (flg1) {
-        CHKERRQ(PetscAttachDebugger());
+        PetscCall(PetscAttachDebugger());
       } else {
-        CHKERRQ(PetscStopForDebugger());
+        PetscCall(PetscStopForDebugger());
       }
-      CHKERRMPI(MPI_Comm_create_errhandler(Petsc_MPI_AbortOnError,&err_handler));
-      CHKERRMPI(MPI_Comm_set_errhandler(comm,err_handler));
+      PetscCallMPI(MPI_Comm_create_errhandler(Petsc_MPI_AbortOnError,&err_handler));
+      PetscCallMPI(MPI_Comm_set_errhandler(comm,err_handler));
     } else {
-      CHKERRQ(PetscWaitOnError());
+      PetscCall(PetscWaitOnError());
     }
-    CHKERRQ(PetscFree(ranks));
+    PetscCall(PetscFree(ranks));
   }
 
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-on_error_emacs",emacsmachinename,sizeof(emacsmachinename),&flg1));
-  if (flg1 && rank == 0) CHKERRQ(PetscPushErrorHandler(PetscEmacsClientErrorHandler,emacsmachinename));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-on_error_emacs",emacsmachinename,sizeof(emacsmachinename),&flg1));
+  if (flg1 && rank == 0) PetscCall(PetscPushErrorHandler(PetscEmacsClientErrorHandler,emacsmachinename));
 
   /*
         Setup profiling and logging
   */
 #if defined(PETSC_USE_INFO)
   {
-    CHKERRQ(PetscInfoSetFromOptions(NULL));
+    PetscCall(PetscInfoSetFromOptions(NULL));
   }
 #endif
-  CHKERRQ(PetscDetermineInitialFPTrap());
+  PetscCall(PetscDetermineInitialFPTrap());
   flg1 = PETSC_FALSE;
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-fp_trap",&flg1,&flag));
-  if (flag) CHKERRQ(PetscSetFPTrap((PetscFPTrap)flg1));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-check_pointer_intensity",&intensity,&flag));
-  if (flag) CHKERRQ(PetscCheckPointerSetIntensity(intensity));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-fp_trap",&flg1,&flag));
+  if (flag) PetscCall(PetscSetFPTrap((PetscFPTrap)flg1));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-check_pointer_intensity",&intensity,&flag));
+  if (flag) PetscCall(PetscCheckPointerSetIntensity(intensity));
 #if defined(PETSC_USE_LOG)
   mname[0] = 0;
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-history",mname,sizeof(mname),&flg1));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-history",mname,sizeof(mname),&flg1));
   if (flg1) {
     if (mname[0]) {
-      CHKERRQ(PetscOpenHistoryFile(mname,&petsc_history));
+      PetscCall(PetscOpenHistoryFile(mname,&petsc_history));
     } else {
-      CHKERRQ(PetscOpenHistoryFile(NULL,&petsc_history));
+      PetscCall(PetscOpenHistoryFile(NULL,&petsc_history));
     }
   }
 
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-log_sync",&PetscLogSyncOn,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-log_sync",&PetscLogSyncOn,NULL));
 
 #if defined(PETSC_HAVE_MPE)
   flg1 = PETSC_FALSE;
-  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-log_mpe",&flg1));
-  if (flg1) CHKERRQ(PetscLogMPEBegin());
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-log_mpe",&flg1));
+  if (flg1) PetscCall(PetscLogMPEBegin());
 #endif
   flg1 = PETSC_FALSE;
   flg3 = PETSC_FALSE;
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-log_all",&flg1,NULL));
-  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-log_summary",&flg3));
-  if (flg1)                      CHKERRQ(PetscLogAllBegin());
-  else if (flg3)                 CHKERRQ(PetscLogDefaultBegin());
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-log_all",&flg1,NULL));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-log_summary",&flg3));
+  if (flg1)                      PetscCall(PetscLogAllBegin());
+  else if (flg3)                 PetscCall(PetscLogDefaultBegin());
 
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-log_trace",mname,sizeof(mname),&flg1));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-log_trace",mname,sizeof(mname),&flg1));
   if (flg1) {
     char name[PETSC_MAX_PATH_LEN],fname[PETSC_MAX_PATH_LEN];
     FILE *file;
     if (mname[0]) {
       PetscSNPrintf(name,PETSC_MAX_PATH_LEN,"%s.%d",mname,rank);
-      CHKERRQ(PetscFixFilename(name,fname));
+      PetscCall(PetscFixFilename(name,fname));
       file = fopen(fname,"w");
       PetscCheck(file,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open trace file: %s",fname);
     } else file = PETSC_STDOUT;
-    CHKERRQ(PetscLogTraceBegin(file));
+    PetscCall(PetscLogTraceBegin(file));
   }
 
-  CHKERRQ(PetscOptionsGetViewer(comm,NULL,NULL,"-log_view",NULL,&format,&flg4));
+  PetscCall(PetscOptionsGetViewer(comm,NULL,NULL,"-log_view",NULL,&format,&flg4));
   if (flg4) {
     if (format == PETSC_VIEWER_ASCII_XML || format == PETSC_VIEWER_ASCII_FLAMEGRAPH) {
-      CHKERRQ(PetscLogNestedBegin());
+      PetscCall(PetscLogNestedBegin());
     } else {
-      CHKERRQ(PetscLogDefaultBegin());
+      PetscCall(PetscLogDefaultBegin());
     }
   }
   if (flg4 && (format == PETSC_VIEWER_ASCII_XML || format == PETSC_VIEWER_ASCII_FLAMEGRAPH)) {
     PetscReal threshold = PetscRealConstant(0.01);
-    CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-log_threshold",&threshold,&flg1));
-    if (flg1) CHKERRQ(PetscLogSetThreshold((PetscLogDouble)threshold,NULL));
+    PetscCall(PetscOptionsGetReal(NULL,NULL,"-log_threshold",&threshold,&flg1));
+    if (flg1) PetscCall(PetscLogSetThreshold((PetscLogDouble)threshold,NULL));
   }
 #endif
 
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-saws_options",&PetscOptionsPublish,NULL));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-use_gpu_aware_mpi",&use_gpu_aware_mpi,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-saws_options",&PetscOptionsPublish,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-use_gpu_aware_mpi",&use_gpu_aware_mpi,NULL));
 
   /*
        Print basic help message
   */
   if (hasHelp) {
-    CHKERRQ((*PetscHelpPrintf)(comm,"Options for all PETSc programs:\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm," -version: prints PETSc version\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm," -help intro: prints example description and PETSc version, and exits\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm," -help: prints example description, PETSc version, and available options for used routines\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm," -on_error_abort: cause an abort when an error is detected. Useful \n "));
-    CHKERRQ((*PetscHelpPrintf)(comm,"       only when run in the debugger\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm," -on_error_attach_debugger [gdb,dbx,xxgdb,ups,noxterm]\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm,"       start the debugger in new xterm\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm,"       unless noxterm is given\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm," -start_in_debugger [gdb,dbx,xxgdb,ups,noxterm]\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm,"       start all processes in the debugger\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm," -on_error_emacs <machinename>\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm,"    emacs jumps to error file\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm," -debugger_ranks [n1,n2,..] Ranks to start in debugger\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm," -debugger_pause [m] : delay (in seconds) to attach debugger\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm," -stop_for_debugger : prints message on how to attach debugger manually\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm,"                      waits the delay for you to attach\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm," -display display: Location where X window graphics and debuggers are displayed\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm," -no_signal_handler: do not trap error signals\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm," -mpi_return_on_error: MPI returns error code, rather than abort on internal error\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm," -fp_trap: stop on floating point exceptions\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm,"           note on IBM RS6000 this slows run greatly\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm," -malloc_dump <optional filename>: dump list of unfreed memory at conclusion\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm," -malloc: use PETSc error checking malloc (deprecated, use -malloc_debug)\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm," -malloc no: don't use PETSc error checking malloc (deprecated, use -malloc_debug no)\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm," -malloc_info: prints total memory usage\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm," -malloc_view <optional filename>: keeps log of all memory allocations, displays in PetscFinalize()\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm," -malloc_debug <true or false>: enables or disables extended checking for memory corruption\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm," -options_view: dump list of options inputted\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm," -options_left: dump list of unused options\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm," -options_left no: don't dump list of unused options\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm," -tmp tmpdir: alternative /tmp directory\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm," -shared_tmp: tmp directory is shared by all processors\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm," -not_shared_tmp: each processor has separate tmp directory\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm," -memory_view: print memory usage at end of run\n"));
+    PetscCall((*PetscHelpPrintf)(comm,"Options for all PETSc programs:\n"));
+    PetscCall((*PetscHelpPrintf)(comm," -version: prints PETSc version\n"));
+    PetscCall((*PetscHelpPrintf)(comm," -help intro: prints example description and PETSc version, and exits\n"));
+    PetscCall((*PetscHelpPrintf)(comm," -help: prints example description, PETSc version, and available options for used routines\n"));
+    PetscCall((*PetscHelpPrintf)(comm," -on_error_abort: cause an abort when an error is detected. Useful \n "));
+    PetscCall((*PetscHelpPrintf)(comm,"       only when run in the debugger\n"));
+    PetscCall((*PetscHelpPrintf)(comm," -on_error_attach_debugger [gdb,dbx,xxgdb,ups,noxterm]\n"));
+    PetscCall((*PetscHelpPrintf)(comm,"       start the debugger in new xterm\n"));
+    PetscCall((*PetscHelpPrintf)(comm,"       unless noxterm is given\n"));
+    PetscCall((*PetscHelpPrintf)(comm," -start_in_debugger [gdb,dbx,xxgdb,ups,noxterm]\n"));
+    PetscCall((*PetscHelpPrintf)(comm,"       start all processes in the debugger\n"));
+    PetscCall((*PetscHelpPrintf)(comm," -on_error_emacs <machinename>\n"));
+    PetscCall((*PetscHelpPrintf)(comm,"    emacs jumps to error file\n"));
+    PetscCall((*PetscHelpPrintf)(comm," -debugger_ranks [n1,n2,..] Ranks to start in debugger\n"));
+    PetscCall((*PetscHelpPrintf)(comm," -debugger_pause [m] : delay (in seconds) to attach debugger\n"));
+    PetscCall((*PetscHelpPrintf)(comm," -stop_for_debugger : prints message on how to attach debugger manually\n"));
+    PetscCall((*PetscHelpPrintf)(comm,"                      waits the delay for you to attach\n"));
+    PetscCall((*PetscHelpPrintf)(comm," -display display: Location where X window graphics and debuggers are displayed\n"));
+    PetscCall((*PetscHelpPrintf)(comm," -no_signal_handler: do not trap error signals\n"));
+    PetscCall((*PetscHelpPrintf)(comm," -mpi_return_on_error: MPI returns error code, rather than abort on internal error\n"));
+    PetscCall((*PetscHelpPrintf)(comm," -fp_trap: stop on floating point exceptions\n"));
+    PetscCall((*PetscHelpPrintf)(comm,"           note on IBM RS6000 this slows run greatly\n"));
+    PetscCall((*PetscHelpPrintf)(comm," -malloc_dump <optional filename>: dump list of unfreed memory at conclusion\n"));
+    PetscCall((*PetscHelpPrintf)(comm," -malloc: use PETSc error checking malloc (deprecated, use -malloc_debug)\n"));
+    PetscCall((*PetscHelpPrintf)(comm," -malloc no: don't use PETSc error checking malloc (deprecated, use -malloc_debug no)\n"));
+    PetscCall((*PetscHelpPrintf)(comm," -malloc_info: prints total memory usage\n"));
+    PetscCall((*PetscHelpPrintf)(comm," -malloc_view <optional filename>: keeps log of all memory allocations, displays in PetscFinalize()\n"));
+    PetscCall((*PetscHelpPrintf)(comm," -malloc_debug <true or false>: enables or disables extended checking for memory corruption\n"));
+    PetscCall((*PetscHelpPrintf)(comm," -options_view: dump list of options inputted\n"));
+    PetscCall((*PetscHelpPrintf)(comm," -options_left: dump list of unused options\n"));
+    PetscCall((*PetscHelpPrintf)(comm," -options_left no: don't dump list of unused options\n"));
+    PetscCall((*PetscHelpPrintf)(comm," -tmp tmpdir: alternative /tmp directory\n"));
+    PetscCall((*PetscHelpPrintf)(comm," -shared_tmp: tmp directory is shared by all processors\n"));
+    PetscCall((*PetscHelpPrintf)(comm," -not_shared_tmp: each processor has separate tmp directory\n"));
+    PetscCall((*PetscHelpPrintf)(comm," -memory_view: print memory usage at end of run\n"));
 #if defined(PETSC_USE_LOG)
-    CHKERRQ((*PetscHelpPrintf)(comm," -get_total_flops: total flops over all processors\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm," -log_view [:filename:[format]]: logging objects and events\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm," -log_trace [filename]: prints trace of all PETSc calls\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm," -log_exclude <list,of,classnames>: exclude given classes from logging\n"));
+    PetscCall((*PetscHelpPrintf)(comm," -get_total_flops: total flops over all processors\n"));
+    PetscCall((*PetscHelpPrintf)(comm," -log_view [:filename:[format]]: logging objects and events\n"));
+    PetscCall((*PetscHelpPrintf)(comm," -log_trace [filename]: prints trace of all PETSc calls\n"));
+    PetscCall((*PetscHelpPrintf)(comm," -log_exclude <list,of,classnames>: exclude given classes from logging\n"));
 #if defined(PETSC_HAVE_MPE)
-    CHKERRQ((*PetscHelpPrintf)(comm," -log_mpe: Also create logfile viewable through Jumpshot\n"));
+    PetscCall((*PetscHelpPrintf)(comm," -log_mpe: Also create logfile viewable through Jumpshot\n"));
 #endif
 #endif
 #if defined(PETSC_USE_INFO)
-    CHKERRQ((*PetscHelpPrintf)(comm," -info [filename][:[~]<list,of,classnames>[:[~]self]]: print verbose information\n"));
+    PetscCall((*PetscHelpPrintf)(comm," -info [filename][:[~]<list,of,classnames>[:[~]self]]: print verbose information\n"));
 #endif
-    CHKERRQ((*PetscHelpPrintf)(comm," -options_file <file>: reads options from file\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm," -options_monitor: monitor options to standard output, including that set previously e.g. in option files\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm," -options_monitor_cancel: cancels all hardwired option monitors\n"));
-    CHKERRQ((*PetscHelpPrintf)(comm," -petsc_sleep n: sleeps n seconds before running program\n"));
+    PetscCall((*PetscHelpPrintf)(comm," -options_file <file>: reads options from file\n"));
+    PetscCall((*PetscHelpPrintf)(comm," -options_monitor: monitor options to standard output, including that set previously e.g. in option files\n"));
+    PetscCall((*PetscHelpPrintf)(comm," -options_monitor_cancel: cancels all hardwired option monitors\n"));
+    PetscCall((*PetscHelpPrintf)(comm," -petsc_sleep n: sleeps n seconds before running program\n"));
   }
 
 #if defined(PETSC_HAVE_POPEN)
   {
   char machine[128];
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-popen_machine",machine,sizeof(machine),&flg1));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-popen_machine",machine,sizeof(machine),&flg1));
   if (flg1) {
-    CHKERRQ(PetscPOpenSetMachine(machine));
+    PetscCall(PetscPOpenSetMachine(machine));
   }
   }
 #endif
 
-  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-petsc_sleep",&si,&flg1));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-petsc_sleep",&si,&flg1));
   if (flg1) {
-    CHKERRQ(PetscSleep(si));
+    PetscCall(PetscSleep(si));
   }
   PetscFunctionReturn(0);
 }

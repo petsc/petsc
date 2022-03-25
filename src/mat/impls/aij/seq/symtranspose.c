@@ -22,15 +22,15 @@ PetscErrorCode MatGetSymbolicTranspose_SeqAIJ(Mat A,PetscInt *Ati[],PetscInt *At
   PetscInt       *ati,*atj,*atfill,*ai=a->i,*aj=a->j;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscInfo(A,"Getting Symbolic Transpose.\n"));
+  PetscCall(PetscInfo(A,"Getting Symbolic Transpose.\n"));
 
   /* Set up timers */
-  CHKERRQ(PetscLogEventBegin(MAT_Getsymtranspose,A,0,0,0));
+  PetscCall(PetscLogEventBegin(MAT_Getsymtranspose,A,0,0,0));
 
   /* Allocate space for symbolic transpose info and work array */
-  CHKERRQ(PetscCalloc1(an+1,&ati));
-  CHKERRQ(PetscMalloc1(ai[am],&atj));
-  CHKERRQ(PetscMalloc1(an,&atfill));
+  PetscCall(PetscCalloc1(an+1,&ati));
+  PetscCall(PetscMalloc1(ai[am],&atj));
+  PetscCall(PetscMalloc1(an,&atfill));
 
   /* Walk through aj and count ## of non-zeros in each row of A^T. */
   /* Note: offset by 1 for fast conversion into csr format. */
@@ -43,7 +43,7 @@ PetscErrorCode MatGetSymbolicTranspose_SeqAIJ(Mat A,PetscInt *Ati[],PetscInt *At
   }
 
   /* Copy ati into atfill so we have locations of the next free space in atj */
-  CHKERRQ(PetscArraycpy(atfill,ati,an));
+  PetscCall(PetscArraycpy(atfill,ati,an));
 
   /* Walk through A row-wise and mark nonzero entries of A^T. */
   for (i=0; i<am; i++) {
@@ -55,11 +55,11 @@ PetscErrorCode MatGetSymbolicTranspose_SeqAIJ(Mat A,PetscInt *Ati[],PetscInt *At
   }
 
   /* Clean up temporary space and complete requests. */
-  CHKERRQ(PetscFree(atfill));
+  PetscCall(PetscFree(atfill));
   *Ati = ati;
   *Atj = atj;
 
-  CHKERRQ(PetscLogEventEnd(MAT_Getsymtranspose,A,0,0,0));
+  PetscCall(PetscLogEventEnd(MAT_Getsymtranspose,A,0,0,0));
   PetscFunctionReturn(0);
 }
 /*
@@ -74,14 +74,14 @@ PetscErrorCode MatGetSymbolicTransposeReduced_SeqAIJ(Mat A,PetscInt rstart,Petsc
   PetscInt       *ati,*atj,*atfill,*ai=a->i,*aj=a->j;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscInfo(A,"Getting Symbolic Transpose\n"));
-  CHKERRQ(PetscLogEventBegin(MAT_Getsymtransreduced,A,0,0,0));
+  PetscCall(PetscInfo(A,"Getting Symbolic Transpose\n"));
+  PetscCall(PetscLogEventBegin(MAT_Getsymtransreduced,A,0,0,0));
 
   /* Allocate space for symbolic transpose info and work array */
-  CHKERRQ(PetscCalloc1(an+1,&ati));
+  PetscCall(PetscCalloc1(an+1,&ati));
   anzj = ai[rend] - ai[rstart];
-  CHKERRQ(PetscMalloc1(anzj+1,&atj));
-  CHKERRQ(PetscMalloc1(an+1,&atfill));
+  PetscCall(PetscMalloc1(anzj+1,&atj));
+  PetscCall(PetscMalloc1(an+1,&atfill));
 
   /* Walk through aj and count ## of non-zeros in each row of A^T. */
   /* Note: offset by 1 for fast conversion into csr format. */
@@ -94,7 +94,7 @@ PetscErrorCode MatGetSymbolicTransposeReduced_SeqAIJ(Mat A,PetscInt rstart,Petsc
   }
 
   /* Copy ati into atfill so we have locations of the next free space in atj */
-  CHKERRQ(PetscArraycpy(atfill,ati,an));
+  PetscCall(PetscArraycpy(atfill,ati,an));
 
   /* Walk through A row-wise and mark nonzero entries of A^T. */
   aj = aj + ai[rstart];
@@ -107,11 +107,11 @@ PetscErrorCode MatGetSymbolicTransposeReduced_SeqAIJ(Mat A,PetscInt rstart,Petsc
   }
 
   /* Clean up temporary space and complete requests. */
-  CHKERRQ(PetscFree(atfill));
+  PetscCall(PetscFree(atfill));
   *Ati = ati;
   *Atj = atj;
 
-  CHKERRQ(PetscLogEventEnd(MAT_Getsymtransreduced,A,0,0,0));
+  PetscCall(PetscLogEventEnd(MAT_Getsymtransreduced,A,0,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -126,13 +126,13 @@ PetscErrorCode MatTranspose_SeqAIJ(Mat A,MatReuse reuse,Mat *B)
   const MatScalar *aa,*av;
 
   PetscFunctionBegin;
-  CHKERRQ(MatSeqAIJGetArrayRead(A,&av));
+  PetscCall(MatSeqAIJGetArrayRead(A,&av));
   aa   = av;
   if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_INPLACE_MATRIX) {
     /* Allocate space for symbolic transpose info and work array */
-    CHKERRQ(PetscCalloc1(an+1,&ati));
-    CHKERRQ(PetscMalloc1(ai[am],&atj));
-    CHKERRQ(PetscMalloc1(ai[am],&ata));
+    PetscCall(PetscCalloc1(an+1,&ati));
+    PetscCall(PetscMalloc1(ai[am],&atj));
+    PetscCall(PetscMalloc1(ai[am],&ata));
     /* Walk through aj and count ## of non-zeros in each row of A^T. */
     /* Note: offset by 1 for fast conversion into csr format. */
     for (i=0;i<ai[am];i++) {
@@ -151,8 +151,8 @@ PetscErrorCode MatTranspose_SeqAIJ(Mat A,MatReuse reuse,Mat *B)
   }
 
   /* Copy ati into atfill so we have locations of the next free space in atj */
-  CHKERRQ(PetscMalloc1(an,&atfill));
-  CHKERRQ(PetscArraycpy(atfill,ati,an));
+  PetscCall(PetscMalloc1(an,&atfill));
+  PetscCall(PetscArraycpy(atfill,ati,an));
 
   /* Walk through A row-wise and mark nonzero entries of A^T. */
   for (i=0;i<am;i++) {
@@ -163,13 +163,13 @@ PetscErrorCode MatTranspose_SeqAIJ(Mat A,MatReuse reuse,Mat *B)
       atfill[*aj++]   += 1;
     }
   }
-  CHKERRQ(MatSeqAIJRestoreArrayRead(A,&av));
+  PetscCall(MatSeqAIJRestoreArrayRead(A,&av));
 
   /* Clean up temporary space and complete requests. */
-  CHKERRQ(PetscFree(atfill));
+  PetscCall(PetscFree(atfill));
   if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_INPLACE_MATRIX) {
-    CHKERRQ(MatCreateSeqAIJWithArrays(PetscObjectComm((PetscObject)A),an,am,ati,atj,ata,&At));
-    CHKERRQ(MatSetBlockSizes(At,PetscAbs(A->cmap->bs),PetscAbs(A->rmap->bs)));
+    PetscCall(MatCreateSeqAIJWithArrays(PetscObjectComm((PetscObject)A),an,am,ati,atj,ata,&At));
+    PetscCall(MatSetBlockSizes(At,PetscAbs(A->cmap->bs),PetscAbs(A->rmap->bs)));
 
     at          = (Mat_SeqAIJ*)(At->data);
     at->free_a  = PETSC_TRUE;
@@ -177,13 +177,13 @@ PetscErrorCode MatTranspose_SeqAIJ(Mat A,MatReuse reuse,Mat *B)
     at->nonew   = 0;
     at->maxnz   = ati[an];
 
-    CHKERRQ(MatSetType(At,((PetscObject)A)->type_name));
+    PetscCall(MatSetType(At,((PetscObject)A)->type_name));
   }
 
   if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_REUSE_MATRIX) {
     *B = At;
   } else {
-    CHKERRQ(MatHeaderMerge(A,&At));
+    PetscCall(MatHeaderMerge(A,&At));
   }
   PetscFunctionReturn(0);
 }
@@ -191,8 +191,8 @@ PetscErrorCode MatTranspose_SeqAIJ(Mat A,MatReuse reuse,Mat *B)
 PetscErrorCode MatRestoreSymbolicTranspose_SeqAIJ(Mat A,PetscInt *ati[],PetscInt *atj[])
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscInfo(A,"Restoring Symbolic Transpose.\n"));
-  CHKERRQ(PetscFree(*ati));
-  CHKERRQ(PetscFree(*atj));
+  PetscCall(PetscInfo(A,"Restoring Symbolic Transpose.\n"));
+  PetscCall(PetscFree(*ati));
+  PetscCall(PetscFree(*atj));
   PetscFunctionReturn(0);
 }

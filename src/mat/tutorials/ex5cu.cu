@@ -35,7 +35,7 @@ PetscErrorCode assemble_on_cpu(Mat A, PetscInt start, PetscInt end, PetscInt N, 
   for (PetscInt i=start; i<end+1; i++) {
     PetscInt    js[] = {i-1, i}, nn = (i==N) ? 1 : 2;
     PetscScalar values[] = {1,1,1,1};
-    CHKERRQ(MatSetValues(A,nn,js,nn,js,values,ADD_VALUES));
+    PetscCall(MatSetValues(A,nn,js,nn,js,values,ADD_VALUES));
   }
   PetscFunctionReturn(0);
 }
@@ -50,53 +50,53 @@ int main(int argc,char **args)
   PetscBool                  testmpiseq = PETSC_FALSE;
   Vec                        x,y;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL, "-n", &N, NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL, "-num_threads", &num_threads, NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL, "-nz_row", &nz, NULL));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL, "-testmpiseq", &testmpiseq, NULL));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL, "-n", &N, NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL, "-num_threads", &num_threads, NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL, "-nz_row", &nz, NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL, "-testmpiseq", &testmpiseq, NULL));
   if (nz<3)   nz=3;
   if (nz>N+1) nz=N+1;
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
-  CHKERRQ(PetscLogEventRegister("GPU operator", MAT_CLASSID, &event));
-  CHKERRQ(MatCreateAIJCUSPARSE(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,nz,NULL,nz-1,NULL,&A));
-  CHKERRQ(MatSetFromOptions(A));
-  CHKERRQ(MatSetOption(A,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE));
-  CHKERRQ(MatCreateVecs(A,&x,&y));
-  CHKERRQ(MatGetOwnershipRange(A,&Istart,&Iend));
+  PetscCall(PetscLogEventRegister("GPU operator", MAT_CLASSID, &event));
+  PetscCall(MatCreateAIJCUSPARSE(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,nz,NULL,nz-1,NULL,&A));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSetOption(A,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE));
+  PetscCall(MatCreateVecs(A,&x,&y));
+  PetscCall(MatGetOwnershipRange(A,&Istart,&Iend));
   /* current GPU assembly code does not support offprocessor values insertion */
-  CHKERRQ(assemble_on_cpu(A, Istart, Iend, N, rank));
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(assemble_on_cpu(A, Istart, Iend, N, rank));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
   // test
-  CHKERRQ(VecSet(x,1.0));
-  CHKERRQ(MatMult(A,x,y));
-  CHKERRQ(VecViewFromOptions(y,NULL,"-ex5_vec_view"));
+  PetscCall(VecSet(x,1.0));
+  PetscCall(MatMult(A,x,y));
+  PetscCall(VecViewFromOptions(y,NULL,"-ex5_vec_view"));
 
   if (testmpiseq && size == 1) {
-    CHKERRQ(MatConvert(A,MATSEQAIJ,MAT_INPLACE_MATRIX,&A));
-    CHKERRQ(MatConvert(A,MATMPIAIJCUSPARSE,MAT_INPLACE_MATRIX,&A));
+    PetscCall(MatConvert(A,MATSEQAIJ,MAT_INPLACE_MATRIX,&A));
+    PetscCall(MatConvert(A,MATMPIAIJCUSPARSE,MAT_INPLACE_MATRIX,&A));
   }
-  CHKERRQ(PetscLogEventBegin(event,0,0,0,0));
-  CHKERRQ(MatCUSPARSEGetDeviceMatWrite(A,&d_mat));
+  PetscCall(PetscLogEventBegin(event,0,0,0,0));
+  PetscCall(MatCUSPARSEGetDeviceMatWrite(A,&d_mat));
   assemble_on_gpu<<<1,num_threads>>>(d_mat, Istart, Iend, N, rank);
-  CHKERRCUDA(cudaDeviceSynchronize());
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(PetscLogEventEnd(event,0,0,0,0));
+  PetscCallCUDA(cudaDeviceSynchronize());
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(PetscLogEventEnd(event,0,0,0,0));
 
   // test
-  CHKERRQ(VecSet(x,1.0));
-  CHKERRQ(MatMult(A,x,y));
-  CHKERRQ(VecViewFromOptions(y,NULL,"-ex5_vec_view"));
+  PetscCall(VecSet(x,1.0));
+  PetscCall(MatMult(A,x,y));
+  PetscCall(VecViewFromOptions(y,NULL,"-ex5_vec_view"));
 
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&y));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatDestroy(&A));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&y));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

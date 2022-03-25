@@ -16,14 +16,14 @@ PETSC_INTERN PetscErrorCode PetscSFBcastBegin_Gatherv(PetscSF sf,MPI_Datatype un
   MPI_Request          *req;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscSFLinkCreate(sf,unit,rootmtype,rootdata,leafmtype,leafdata,op,PETSCSF_BCAST,&link));
-  CHKERRQ(PetscSFLinkPackRootData(sf,link,PETSCSF_REMOTE,rootdata));
-  CHKERRQ(PetscSFLinkCopyRootBufferInCaseNotUseGpuAwareMPI(sf,link,PETSC_TRUE/* device2host before sending */));
-  CHKERRQ(PetscObjectGetComm((PetscObject)sf,&comm));
-  CHKERRQ(PetscMPIIntCast(sf->nroots,&sendcount));
-  CHKERRQ(PetscSFLinkGetMPIBuffersAndRequests(sf,link,PETSCSF_ROOT2LEAF,&rootbuf,&leafbuf,&req,NULL));
-  CHKERRQ(PetscSFLinkSyncStreamBeforeCallMPI(sf,link,PETSCSF_ROOT2LEAF));
-  CHKERRMPI(MPIU_Igatherv(rootbuf,sendcount,unit,leafbuf,dat->recvcounts,dat->displs,unit,0/*rank 0*/,comm,req));
+  PetscCall(PetscSFLinkCreate(sf,unit,rootmtype,rootdata,leafmtype,leafdata,op,PETSCSF_BCAST,&link));
+  PetscCall(PetscSFLinkPackRootData(sf,link,PETSCSF_REMOTE,rootdata));
+  PetscCall(PetscSFLinkCopyRootBufferInCaseNotUseGpuAwareMPI(sf,link,PETSC_TRUE/* device2host before sending */));
+  PetscCall(PetscObjectGetComm((PetscObject)sf,&comm));
+  PetscCall(PetscMPIIntCast(sf->nroots,&sendcount));
+  PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf,link,PETSCSF_ROOT2LEAF,&rootbuf,&leafbuf,&req,NULL));
+  PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf,link,PETSCSF_ROOT2LEAF));
+  PetscCallMPI(MPIU_Igatherv(rootbuf,sendcount,unit,leafbuf,dat->recvcounts,dat->displs,unit,0/*rank 0*/,comm,req));
   PetscFunctionReturn(0);
 }
 
@@ -37,14 +37,14 @@ static PetscErrorCode PetscSFReduceBegin_Gatherv(PetscSF sf,MPI_Datatype unit,Pe
   MPI_Request          *req;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscSFLinkCreate(sf,unit,rootmtype,rootdata,leafmtype,leafdata,op,PETSCSF_REDUCE,&link));
-  CHKERRQ(PetscSFLinkPackLeafData(sf,link,PETSCSF_REMOTE,leafdata));
-  CHKERRQ(PetscSFLinkCopyLeafBufferInCaseNotUseGpuAwareMPI(sf,link,PETSC_TRUE/* device2host before sending */));
-  CHKERRQ(PetscObjectGetComm((PetscObject)sf,&comm));
-  CHKERRQ(PetscMPIIntCast(sf->nroots,&recvcount));
-  CHKERRQ(PetscSFLinkGetMPIBuffersAndRequests(sf,link,PETSCSF_LEAF2ROOT,&rootbuf,&leafbuf,&req,NULL));
-  CHKERRQ(PetscSFLinkSyncStreamBeforeCallMPI(sf,link,PETSCSF_LEAF2ROOT));
-  CHKERRMPI(MPIU_Iscatterv(leafbuf,dat->recvcounts,dat->displs,unit,rootbuf,recvcount,unit,0,comm,req));
+  PetscCall(PetscSFLinkCreate(sf,unit,rootmtype,rootdata,leafmtype,leafdata,op,PETSCSF_REDUCE,&link));
+  PetscCall(PetscSFLinkPackLeafData(sf,link,PETSCSF_REMOTE,leafdata));
+  PetscCall(PetscSFLinkCopyLeafBufferInCaseNotUseGpuAwareMPI(sf,link,PETSC_TRUE/* device2host before sending */));
+  PetscCall(PetscObjectGetComm((PetscObject)sf,&comm));
+  PetscCall(PetscMPIIntCast(sf->nroots,&recvcount));
+  PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf,link,PETSCSF_LEAF2ROOT,&rootbuf,&leafbuf,&req,NULL));
+  PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf,link,PETSCSF_LEAF2ROOT));
+  PetscCallMPI(MPIU_Iscatterv(leafbuf,dat->recvcounts,dat->displs,unit,rootbuf,recvcount,unit,0,comm,req));
   PetscFunctionReturn(0);
 }
 
@@ -52,9 +52,9 @@ PETSC_INTERN PetscErrorCode PetscSFFetchAndOpBegin_Gatherv(PetscSF sf,MPI_Dataty
 {
   PetscFunctionBegin;
   /* In Gatherv, each root only has one leaf. So we just need to bcast rootdata to leafupdate and then reduce leafdata to rootdata */
-  CHKERRQ(PetscSFBcastBegin(sf,unit,rootdata,leafupdate,MPI_REPLACE));
-  CHKERRQ(PetscSFBcastEnd(sf,unit,rootdata,leafupdate,MPI_REPLACE));
-  CHKERRQ(PetscSFReduceBegin(sf,unit,leafdata,rootdata,op));
+  PetscCall(PetscSFBcastBegin(sf,unit,rootdata,leafupdate,MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(sf,unit,rootdata,leafupdate,MPI_REPLACE));
+  PetscCall(PetscSFReduceBegin(sf,unit,leafdata,rootdata,op));
   PetscFunctionReturn(0);
 }
 
@@ -81,7 +81,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Gatherv(PetscSF sf)
   sf->ops->ReduceBegin     = PetscSFReduceBegin_Gatherv;
   sf->ops->FetchAndOpBegin = PetscSFFetchAndOpBegin_Gatherv;
 
-  CHKERRQ(PetscNewLog(sf,&dat));
+  PetscCall(PetscNewLog(sf,&dat));
   sf->data = (void*)dat;
   PetscFunctionReturn(0);
 }

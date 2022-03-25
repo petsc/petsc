@@ -14,52 +14,52 @@ PetscErrorCode RunTest(void)
 
   PetscFunctionBegin;
 
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-test",&test,NULL));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-draw",&draw,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-test",&test,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-draw",&draw,NULL));
 
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,N));
-  CHKERRQ(MatSetType(A,MATPYTHON));
-  CHKERRQ(MatPythonSetType(A,"example100.py:Laplace1D"));
-  CHKERRQ(MatSetUp(A));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,N));
+  PetscCall(MatSetType(A,MATPYTHON));
+  PetscCall(MatPythonSetType(A,"example100.py:Laplace1D"));
+  PetscCall(MatSetUp(A));
 
-  CHKERRQ(MatCreateVecs(A,&x,&b));
-  CHKERRQ(VecSet(b,1));
+  PetscCall(MatCreateVecs(A,&x,&b));
+  PetscCall(VecSet(b,1));
 
-  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
-  CHKERRQ(KSPSetType(ksp,KSPPYTHON));
-  CHKERRQ(KSPPythonSetType(ksp,"example100.py:ConjGrad"));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPSetType(ksp,KSPPYTHON));
+  PetscCall(KSPPythonSetType(ksp,"example100.py:ConjGrad"));
 
-  CHKERRQ(KSPGetPC(ksp,&pc));
-  CHKERRQ(PCSetType(pc,PCPYTHON));
-  CHKERRQ(PCPythonSetType(pc,"example100.py:Jacobi"));
+  PetscCall(KSPGetPC(ksp,&pc));
+  PetscCall(PCSetType(pc,PCPYTHON));
+  PetscCall(PCPythonSetType(pc,"example100.py:Jacobi"));
 
-  CHKERRQ(KSPSetOperators(ksp,A,A));
-  CHKERRQ(KSPSetFromOptions(ksp));
-  CHKERRQ(KSPSolve(ksp,b,x));
+  PetscCall(KSPSetOperators(ksp,A,A));
+  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(KSPSolve(ksp,b,x));
 
   if (test) {
-    CHKERRQ(KSPGetTotalIterations(ksp,&its));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Number of KSP iterations = %D\n", its));
+    PetscCall(KSPGetTotalIterations(ksp,&its));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of KSP iterations = %D\n", its));
   } else {
-    CHKERRQ(VecDuplicate(b,&r));
-    CHKERRQ(MatMult(A,x,r));
-    CHKERRQ(VecAYPX(r,-1,b));
-    CHKERRQ(VecNorm(r,NORM_2,&rnorm));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"error norm = %g\n",rnorm));
-    CHKERRQ(VecDestroy(&r));
+    PetscCall(VecDuplicate(b,&r));
+    PetscCall(MatMult(A,x,r));
+    PetscCall(VecAYPX(r,-1,b));
+    PetscCall(VecNorm(r,NORM_2,&rnorm));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"error norm = %g\n",rnorm));
+    PetscCall(VecDestroy(&r));
   }
 
   if (draw) {
-    CHKERRQ(VecView(x,PETSC_VIEWER_DRAW_WORLD));
-    CHKERRQ(PetscSleep(2));
+    PetscCall(VecView(x,PETSC_VIEWER_DRAW_WORLD));
+    PetscCall(PetscSleep(2));
   }
 
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&b));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(KSPDestroy(&ksp));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&b));
+  PetscCall(MatDestroy(&A));
+  PetscCall(KSPDestroy(&ksp));
 
   PetscFunctionReturn(0);
 }
@@ -83,10 +83,10 @@ static char help[] = "Python-implemented Mat/KSP/PC.\n\n";
 int main(int argc, char *argv[])
 {
 
-  CHKERRQ(PetscInitialize(&argc,&argv,0,help));
-  CHKERRQ(PetscPythonInitialize(PYTHON_EXE,PYTHON_LIB));
-  CHKERRQ(RunTest();PetscPythonPrintError());
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscInitialize(&argc,&argv,0,help));
+  PetscCall(PetscPythonInitialize(PYTHON_EXE,PYTHON_LIB));
+  PetscCall(RunTest();PetscPythonPrintError());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

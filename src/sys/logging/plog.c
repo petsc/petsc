@@ -116,26 +116,26 @@ PETSC_INTERN PetscErrorCode PetscLogInitialize(void)
   if (PetscLogInitializeCalled) PetscFunctionReturn(0);
   PetscLogInitializeCalled = PETSC_TRUE;
 
-  CHKERRQ(PetscOptionsHasName(NULL,NULL, "-log_exclude_actions", &opt));
+  PetscCall(PetscOptionsHasName(NULL,NULL, "-log_exclude_actions", &opt));
   if (opt) petsc_logActions = PETSC_FALSE;
-  CHKERRQ(PetscOptionsHasName(NULL,NULL, "-log_exclude_objects", &opt));
+  PetscCall(PetscOptionsHasName(NULL,NULL, "-log_exclude_objects", &opt));
   if (opt) petsc_logObjects = PETSC_FALSE;
   if (petsc_logActions) {
-    CHKERRQ(PetscMalloc1(petsc_maxActions, &petsc_actions));
+    PetscCall(PetscMalloc1(petsc_maxActions, &petsc_actions));
   }
   if (petsc_logObjects) {
-    CHKERRQ(PetscMalloc1(petsc_maxObjects, &petsc_objects));
+    PetscCall(PetscMalloc1(petsc_maxObjects, &petsc_objects));
   }
   PetscLogPHC = PetscLogObjCreateDefault;
   PetscLogPHD = PetscLogObjDestroyDefault;
   /* Setup default logging structures */
-  CHKERRQ(PetscStageLogCreate(&petsc_stageLog));
-  CHKERRQ(PetscStageLogRegister(petsc_stageLog, "Main Stage", &stage));
+  PetscCall(PetscStageLogCreate(&petsc_stageLog));
+  PetscCall(PetscStageLogRegister(petsc_stageLog, "Main Stage", &stage));
 
   /* All processors sync here for more consistent logging */
-  CHKERRMPI(MPI_Barrier(PETSC_COMM_WORLD));
+  PetscCallMPI(MPI_Barrier(PETSC_COMM_WORLD));
   PetscTime(&petsc_BaseTime);
-  CHKERRQ(PetscLogStagePush(stage));
+  PetscCall(PetscLogStagePush(stage));
   PetscFunctionReturn(0);
 }
 
@@ -144,14 +144,14 @@ PETSC_INTERN PetscErrorCode PetscLogFinalize(void)
   PetscStageLog  stageLog;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscFree(petsc_actions));
-  CHKERRQ(PetscFree(petsc_objects));
-  CHKERRQ(PetscLogNestedEnd());
-  CHKERRQ(PetscLogSet(NULL, NULL));
+  PetscCall(PetscFree(petsc_actions));
+  PetscCall(PetscFree(petsc_objects));
+  PetscCall(PetscLogNestedEnd());
+  PetscCall(PetscLogSet(NULL, NULL));
 
   /* Resetting phase */
-  CHKERRQ(PetscLogGetStageLog(&stageLog));
-  CHKERRQ(PetscStageLogDestroy(stageLog));
+  PetscCall(PetscLogGetStageLog(&stageLog));
+  PetscCall(PetscStageLogDestroy(stageLog));
 
   petsc_TotalFlops            = 0.0;
   petsc_numActions            = 0;
@@ -276,7 +276,7 @@ PetscErrorCode PetscLogIsActive(PetscBool *isActive)
 PetscErrorCode  PetscLogDefaultBegin(void)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscLogSet(PetscLogEventBeginDefault, PetscLogEventEndDefault));
+  PetscCall(PetscLogSet(PetscLogEventBeginDefault, PetscLogEventEndDefault));
   PetscFunctionReturn(0);
 }
 
@@ -310,7 +310,7 @@ PetscErrorCode  PetscLogDefaultBegin(void)
 PetscErrorCode  PetscLogAllBegin(void)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscLogSet(PetscLogEventBeginComplete, PetscLogEventEndComplete));
+  PetscCall(PetscLogSet(PetscLogEventBeginComplete, PetscLogEventEndComplete));
   PetscFunctionReturn(0);
 }
 
@@ -343,7 +343,7 @@ PetscErrorCode  PetscLogTraceBegin(FILE *file)
   PetscFunctionBegin;
   petsc_tracefile = file;
 
-  CHKERRQ(PetscLogSet(PetscLogEventBeginTrace, PetscLogEventEndTrace));
+  PetscCall(PetscLogSet(PetscLogEventBeginTrace, PetscLogEventEndTrace));
   PetscFunctionReturn(0);
 }
 
@@ -419,14 +419,14 @@ PetscErrorCode  PetscLogStageRegister(const char sname[],PetscLogStage *stage)
   PetscLogEvent  event;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscLogGetStageLog(&stageLog));
-  CHKERRQ(PetscStageLogRegister(stageLog, sname, stage));
+  PetscCall(PetscLogGetStageLog(&stageLog));
+  PetscCall(PetscStageLogRegister(stageLog, sname, stage));
   /* Copy events already changed in the main stage, this sucks */
-  CHKERRQ(PetscEventPerfLogEnsureSize(stageLog->stageInfo[*stage].eventLog, stageLog->eventLog->numEvents));
+  PetscCall(PetscEventPerfLogEnsureSize(stageLog->stageInfo[*stage].eventLog, stageLog->eventLog->numEvents));
   for (event = 0; event < stageLog->eventLog->numEvents; event++) {
-    CHKERRQ(PetscEventPerfInfoCopy(&stageLog->stageInfo[0].eventLog->eventInfo[event],&stageLog->stageInfo[*stage].eventLog->eventInfo[event]));
+    PetscCall(PetscEventPerfInfoCopy(&stageLog->stageInfo[0].eventLog->eventInfo[event],&stageLog->stageInfo[*stage].eventLog->eventInfo[event]));
   }
-  CHKERRQ(PetscClassPerfLogEnsureSize(stageLog->stageInfo[*stage].classLog, stageLog->classLog->numClasses));
+  PetscCall(PetscClassPerfLogEnsureSize(stageLog->stageInfo[*stage].classLog, stageLog->classLog->numClasses));
   PetscFunctionReturn(0);
 }
 
@@ -465,8 +465,8 @@ PetscErrorCode  PetscLogStagePush(PetscLogStage stage)
   PetscStageLog  stageLog;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscLogGetStageLog(&stageLog));
-  CHKERRQ(PetscStageLogPush(stageLog, stage));
+  PetscCall(PetscLogGetStageLog(&stageLog));
+  PetscCall(PetscStageLogPush(stageLog, stage));
   PetscFunctionReturn(0);
 }
 
@@ -502,8 +502,8 @@ PetscErrorCode  PetscLogStagePop(void)
   PetscStageLog  stageLog;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscLogGetStageLog(&stageLog));
-  CHKERRQ(PetscStageLogPop(stageLog));
+  PetscCall(PetscLogGetStageLog(&stageLog));
+  PetscCall(PetscStageLogPop(stageLog));
   PetscFunctionReturn(0);
 }
 
@@ -525,8 +525,8 @@ PetscErrorCode  PetscLogStageSetActive(PetscLogStage stage, PetscBool isActive)
   PetscStageLog  stageLog;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscLogGetStageLog(&stageLog));
-  CHKERRQ(PetscStageLogSetActive(stageLog, stage, isActive));
+  PetscCall(PetscLogGetStageLog(&stageLog));
+  PetscCall(PetscStageLogSetActive(stageLog, stage, isActive));
   PetscFunctionReturn(0);
 }
 
@@ -550,8 +550,8 @@ PetscErrorCode  PetscLogStageGetActive(PetscLogStage stage, PetscBool  *isActive
   PetscStageLog  stageLog;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscLogGetStageLog(&stageLog));
-  CHKERRQ(PetscStageLogGetActive(stageLog, stage, isActive));
+  PetscCall(PetscLogGetStageLog(&stageLog));
+  PetscCall(PetscStageLogGetActive(stageLog, stage, isActive));
   PetscFunctionReturn(0);
 }
 
@@ -573,8 +573,8 @@ PetscErrorCode  PetscLogStageSetVisible(PetscLogStage stage, PetscBool isVisible
   PetscStageLog  stageLog;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscLogGetStageLog(&stageLog));
-  CHKERRQ(PetscStageLogSetVisible(stageLog, stage, isVisible));
+  PetscCall(PetscLogGetStageLog(&stageLog));
+  PetscCall(PetscStageLogSetVisible(stageLog, stage, isVisible));
   PetscFunctionReturn(0);
 }
 
@@ -598,8 +598,8 @@ PetscErrorCode  PetscLogStageGetVisible(PetscLogStage stage, PetscBool  *isVisib
   PetscStageLog  stageLog;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscLogGetStageLog(&stageLog));
-  CHKERRQ(PetscStageLogGetVisible(stageLog, stage, isVisible));
+  PetscCall(PetscLogGetStageLog(&stageLog));
+  PetscCall(PetscStageLogGetVisible(stageLog, stage, isVisible));
   PetscFunctionReturn(0);
 }
 
@@ -623,8 +623,8 @@ PetscErrorCode  PetscLogStageGetId(const char name[], PetscLogStage *stage)
   PetscStageLog  stageLog;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscLogGetStageLog(&stageLog));
-  CHKERRQ(PetscStageLogGetStage(stageLog, name, stage));
+  PetscCall(PetscLogGetStageLog(&stageLog));
+  PetscCall(PetscStageLogGetStage(stageLog, name, stage));
   PetscFunctionReturn(0);
 }
 
@@ -690,13 +690,13 @@ PetscErrorCode  PetscLogEventRegister(const char name[],PetscClassId classid,Pet
 
   PetscFunctionBegin;
   *event = PETSC_DECIDE;
-  CHKERRQ(PetscLogGetStageLog(&stageLog));
-  CHKERRQ(PetscEventRegLogGetEvent(stageLog->eventLog, name, event));
+  PetscCall(PetscLogGetStageLog(&stageLog));
+  PetscCall(PetscEventRegLogGetEvent(stageLog->eventLog, name, event));
   if (*event > 0) PetscFunctionReturn(0);
-  CHKERRQ(PetscEventRegLogRegister(stageLog->eventLog, name, classid, event));
+  PetscCall(PetscEventRegLogRegister(stageLog->eventLog, name, classid, event));
   for (stage = 0; stage < stageLog->numStages; stage++) {
-    CHKERRQ(PetscEventPerfLogEnsureSize(stageLog->stageInfo[stage].eventLog, stageLog->eventLog->numEvents));
-    CHKERRQ(PetscClassPerfLogEnsureSize(stageLog->stageInfo[stage].classLog, stageLog->classLog->numClasses));
+    PetscCall(PetscEventPerfLogEnsureSize(stageLog->stageInfo[stage].eventLog, stageLog->eventLog->numEvents));
+    PetscCall(PetscClassPerfLogEnsureSize(stageLog->stageInfo[stage].classLog, stageLog->classLog->numClasses));
   }
   PetscFunctionReturn(0);
 }
@@ -723,8 +723,8 @@ PetscErrorCode PetscLogEventSetCollective(PetscLogEvent event,PetscBool collecti
   PetscEventRegLog eventRegLog;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscLogGetStageLog(&stageLog));
-  CHKERRQ(PetscStageLogGetEventRegLog(stageLog,&eventRegLog));
+  PetscCall(PetscLogGetStageLog(&stageLog));
+  PetscCall(PetscStageLogGetEventRegLog(stageLog,&eventRegLog));
   PetscCheckFalse(event < 0 || event > eventRegLog->numEvents,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid event id");
   eventRegLog->eventInfo[event].collective = collective;
   PetscFunctionReturn(0);
@@ -748,9 +748,9 @@ PetscErrorCode  PetscLogEventIncludeClass(PetscClassId classid)
   int            stage;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscLogGetStageLog(&stageLog));
+  PetscCall(PetscLogGetStageLog(&stageLog));
   for (stage = 0; stage < stageLog->numStages; stage++) {
-    CHKERRQ(PetscEventPerfLogActivateClass(stageLog->stageInfo[stage].eventLog, stageLog->eventLog, classid));
+    PetscCall(PetscEventPerfLogActivateClass(stageLog->stageInfo[stage].eventLog, stageLog->eventLog, classid));
   }
   PetscFunctionReturn(0);
 }
@@ -773,9 +773,9 @@ PetscErrorCode  PetscLogEventExcludeClass(PetscClassId classid)
   int            stage;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscLogGetStageLog(&stageLog));
+  PetscCall(PetscLogGetStageLog(&stageLog));
   for (stage = 0; stage < stageLog->numStages; stage++) {
-    CHKERRQ(PetscEventPerfLogDeactivateClass(stageLog->stageInfo[stage].eventLog, stageLog->eventLog, classid));
+    PetscCall(PetscEventPerfLogDeactivateClass(stageLog->stageInfo[stage].eventLog, stageLog->eventLog, classid));
   }
   PetscFunctionReturn(0);
 }
@@ -810,9 +810,9 @@ PetscErrorCode  PetscLogEventActivate(PetscLogEvent event)
   int            stage;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscLogGetStageLog(&stageLog));
-  CHKERRQ(PetscStageLogGetCurrent(stageLog, &stage));
-  CHKERRQ(PetscEventPerfLogActivate(stageLog->stageInfo[stage].eventLog, event));
+  PetscCall(PetscLogGetStageLog(&stageLog));
+  PetscCall(PetscStageLogGetCurrent(stageLog, &stage));
+  PetscCall(PetscEventPerfLogActivate(stageLog->stageInfo[stage].eventLog, event));
   PetscFunctionReturn(0);
 }
 
@@ -846,9 +846,9 @@ PetscErrorCode  PetscLogEventDeactivate(PetscLogEvent event)
   int            stage;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscLogGetStageLog(&stageLog));
-  CHKERRQ(PetscStageLogGetCurrent(stageLog, &stage));
-  CHKERRQ(PetscEventPerfLogDeactivate(stageLog->stageInfo[stage].eventLog, event));
+  PetscCall(PetscLogGetStageLog(&stageLog));
+  PetscCall(PetscStageLogGetCurrent(stageLog, &stage));
+  PetscCall(PetscEventPerfLogDeactivate(stageLog->stageInfo[stage].eventLog, event));
   PetscFunctionReturn(0);
 }
 
@@ -882,9 +882,9 @@ PetscErrorCode  PetscLogEventDeactivatePush(PetscLogEvent event)
   int            stage;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscLogGetStageLog(&stageLog));
-  CHKERRQ(PetscStageLogGetCurrent(stageLog, &stage));
-  CHKERRQ(PetscEventPerfLogDeactivatePush(stageLog->stageInfo[stage].eventLog, event));
+  PetscCall(PetscLogGetStageLog(&stageLog));
+  PetscCall(PetscStageLogGetCurrent(stageLog, &stage));
+  PetscCall(PetscEventPerfLogDeactivatePush(stageLog->stageInfo[stage].eventLog, event));
   PetscFunctionReturn(0);
 }
 
@@ -918,9 +918,9 @@ PetscErrorCode  PetscLogEventDeactivatePop(PetscLogEvent event)
   int            stage;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscLogGetStageLog(&stageLog));
-  CHKERRQ(PetscStageLogGetCurrent(stageLog, &stage));
-  CHKERRQ(PetscEventPerfLogDeactivatePop(stageLog->stageInfo[stage].eventLog, event));
+  PetscCall(PetscLogGetStageLog(&stageLog));
+  PetscCall(PetscStageLogGetCurrent(stageLog, &stage));
+  PetscCall(PetscEventPerfLogDeactivatePop(stageLog->stageInfo[stage].eventLog, event));
   PetscFunctionReturn(0);
 }
 
@@ -943,12 +943,12 @@ PetscErrorCode  PetscLogEventSetActiveAll(PetscLogEvent event, PetscBool isActiv
   int            stage;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscLogGetStageLog(&stageLog));
+  PetscCall(PetscLogGetStageLog(&stageLog));
   for (stage = 0; stage < stageLog->numStages; stage++) {
     if (isActive) {
-      CHKERRQ(PetscEventPerfLogActivate(stageLog->stageInfo[stage].eventLog, event));
+      PetscCall(PetscEventPerfLogActivate(stageLog->stageInfo[stage].eventLog, event));
     } else {
-      CHKERRQ(PetscEventPerfLogDeactivate(stageLog->stageInfo[stage].eventLog, event));
+      PetscCall(PetscEventPerfLogDeactivate(stageLog->stageInfo[stage].eventLog, event));
     }
   }
   PetscFunctionReturn(0);
@@ -972,9 +972,9 @@ PetscErrorCode  PetscLogEventActivateClass(PetscClassId classid)
   int            stage;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscLogGetStageLog(&stageLog));
-  CHKERRQ(PetscStageLogGetCurrent(stageLog, &stage));
-  CHKERRQ(PetscEventPerfLogActivateClass(stageLog->stageInfo[stage].eventLog, stageLog->eventLog, classid));
+  PetscCall(PetscLogGetStageLog(&stageLog));
+  PetscCall(PetscStageLogGetCurrent(stageLog, &stage));
+  PetscCall(PetscEventPerfLogActivateClass(stageLog->stageInfo[stage].eventLog, stageLog->eventLog, classid));
   PetscFunctionReturn(0);
 }
 
@@ -996,9 +996,9 @@ PetscErrorCode  PetscLogEventDeactivateClass(PetscClassId classid)
   int            stage;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscLogGetStageLog(&stageLog));
-  CHKERRQ(PetscStageLogGetCurrent(stageLog, &stage));
-  CHKERRQ(PetscEventPerfLogDeactivateClass(stageLog->stageInfo[stage].eventLog, stageLog->eventLog, classid));
+  PetscCall(PetscLogGetStageLog(&stageLog));
+  PetscCall(PetscStageLogGetCurrent(stageLog, &stage));
+  PetscCall(PetscEventPerfLogDeactivateClass(stageLog->stageInfo[stage].eventLog, stageLog->eventLog, classid));
   PetscFunctionReturn(0);
 }
 
@@ -1129,8 +1129,8 @@ PetscErrorCode  PetscLogEventGetId(const char name[], PetscLogEvent *event)
   PetscStageLog  stageLog;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscLogGetStageLog(&stageLog));
-  CHKERRQ(PetscEventRegLogGetEvent(stageLog->eventLog, name, event));
+  PetscCall(PetscLogGetStageLog(&stageLog));
+  PetscCall(PetscEventRegLogGetEvent(stageLog->eventLog, name, event));
   PetscFunctionReturn(0);
 }
 
@@ -1180,53 +1180,53 @@ PetscErrorCode  PetscLogDump(const char sname[])
   PetscTime(&_TotalTime);
   _TotalTime -= petsc_BaseTime;
   /* Open log file */
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   if (sname && sname[0]) sprintf(file, "%s.%d", sname, rank);
   else sprintf(file, "Log.%d", rank);
-  CHKERRQ(PetscFixFilename(file, fname));
-  CHKERRQ(PetscFOpen(PETSC_COMM_WORLD, fname, "w", &fd));
+  PetscCall(PetscFixFilename(file, fname));
+  PetscCall(PetscFOpen(PETSC_COMM_WORLD, fname, "w", &fd));
   PetscCheckFalse((rank == 0) && (!fd),PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN, "Cannot open file: %s", fname);
   /* Output totals */
-  CHKERRQ(PetscFPrintf(PETSC_COMM_WORLD, fd, "Total Flop %14e %16.8e\n", petsc_TotalFlops, _TotalTime));
-  CHKERRQ(PetscFPrintf(PETSC_COMM_WORLD, fd, "Clock Resolution %g\n", 0.0));
+  PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fd, "Total Flop %14e %16.8e\n", petsc_TotalFlops, _TotalTime));
+  PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fd, "Clock Resolution %g\n", 0.0));
   /* Output actions */
   if (petsc_logActions) {
-    CHKERRQ(PetscFPrintf(PETSC_COMM_WORLD, fd, "Actions accomplished %d\n", petsc_numActions));
+    PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fd, "Actions accomplished %d\n", petsc_numActions));
     for (action = 0; action < petsc_numActions; action++) {
       ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "%g %d %d %d %d %d %d %g %g %g\n",
                           petsc_actions[action].time, petsc_actions[action].action, (int)petsc_actions[action].event, (int)petsc_actions[action].classid, petsc_actions[action].id1,
-                          petsc_actions[action].id2, petsc_actions[action].id3, petsc_actions[action].flops, petsc_actions[action].mem, petsc_actions[action].maxmem);CHKERRQ(ierr);
+                          petsc_actions[action].id2, petsc_actions[action].id3, petsc_actions[action].flops, petsc_actions[action].mem, petsc_actions[action].maxmem);PetscCall(ierr);
     }
   }
   /* Output objects */
   if (petsc_logObjects) {
-    CHKERRQ(PetscFPrintf(PETSC_COMM_WORLD, fd, "Objects created %d destroyed %d\n", petsc_numObjects, petsc_numObjectsDestroyed));
+    PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fd, "Objects created %d destroyed %d\n", petsc_numObjects, petsc_numObjectsDestroyed));
     for (object = 0; object < petsc_numObjects; object++) {
-      CHKERRQ(PetscFPrintf(PETSC_COMM_WORLD, fd, "Parent ID: %d Memory: %d\n", petsc_objects[object].parent, (int) petsc_objects[object].mem));
+      PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fd, "Parent ID: %d Memory: %d\n", petsc_objects[object].parent, (int) petsc_objects[object].mem));
       if (!petsc_objects[object].name[0]) {
-        CHKERRQ(PetscFPrintf(PETSC_COMM_WORLD, fd,"No Name\n"));
+        PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fd,"No Name\n"));
       } else {
-        CHKERRQ(PetscFPrintf(PETSC_COMM_WORLD, fd, "Name: %s\n", petsc_objects[object].name));
+        PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fd, "Name: %s\n", petsc_objects[object].name));
       }
       if (petsc_objects[object].info[0] != 0) {
-        CHKERRQ(PetscFPrintf(PETSC_COMM_WORLD, fd, "No Info\n"));
+        PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fd, "No Info\n"));
       } else {
-        CHKERRQ(PetscFPrintf(PETSC_COMM_WORLD, fd, "Info: %s\n", petsc_objects[object].info));
+        PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fd, "Info: %s\n", petsc_objects[object].info));
       }
     }
   }
   /* Output events */
-  CHKERRQ(PetscFPrintf(PETSC_COMM_WORLD, fd, "Event log:\n"));
-  CHKERRQ(PetscLogGetStageLog(&stageLog));
-  CHKERRQ(PetscIntStackTop(stageLog->stack, &curStage));
+  PetscCall(PetscFPrintf(PETSC_COMM_WORLD, fd, "Event log:\n"));
+  PetscCall(PetscLogGetStageLog(&stageLog));
+  PetscCall(PetscIntStackTop(stageLog->stack, &curStage));
   eventInfo = stageLog->stageInfo[curStage].eventLog->eventInfo;
   for (event = 0; event < stageLog->stageInfo[curStage].eventLog->numEvents; event++) {
     if (eventInfo[event].time != 0.0) flops = eventInfo[event].flops/eventInfo[event].time;
     else flops = 0.0;
     ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "%d %16d %16g %16g %16g\n", event, eventInfo[event].count,
-                        eventInfo[event].flops, eventInfo[event].time, flops);CHKERRQ(ierr);
+                        eventInfo[event].flops, eventInfo[event].time, flops);PetscCall(ierr);
   }
-  CHKERRQ(PetscFClose(PETSC_COMM_WORLD, fd));
+  PetscCall(PetscFClose(PETSC_COMM_WORLD, fd));
   PetscFunctionReturn(0);
 }
 
@@ -1245,73 +1245,73 @@ PetscErrorCode  PetscLogView_Detailed(PetscViewer viewer)
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_size(comm, &size));
-  CHKERRMPI(MPI_Comm_rank(comm, &rank));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
   /* Must preserve reduction count before we go on */
   numRed = petsc_allreduce_ct + petsc_gather_ct + petsc_scatter_ct;
   /* Get the total elapsed time */
   PetscTime(&locTotalTime);  locTotalTime -= petsc_BaseTime;
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"size = %d\n",size));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"LocalTimes = {}\n"));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"LocalMessages = {}\n"));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"LocalMessageLens = {}\n"));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"LocalReductions = {}\n"));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"LocalFlop = {}\n"));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"LocalObjects = {}\n"));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"LocalMemory = {}\n"));
-  CHKERRQ(PetscLogGetStageLog(&stageLog));
-  CHKERRMPI(MPI_Allreduce(&stageLog->numStages, &numStages, 1, MPI_INT, MPI_MAX, comm));
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"Stages = {}\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"size = %d\n",size));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"LocalTimes = {}\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"LocalMessages = {}\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"LocalMessageLens = {}\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"LocalReductions = {}\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"LocalFlop = {}\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"LocalObjects = {}\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"LocalMemory = {}\n"));
+  PetscCall(PetscLogGetStageLog(&stageLog));
+  PetscCallMPI(MPI_Allreduce(&stageLog->numStages, &numStages, 1, MPI_INT, MPI_MAX, comm));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"Stages = {}\n"));
   for (stage=0; stage<numStages; stage++) {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"Stages[\"%s\"] = {}\n",stageLog->stageInfo[stage].name));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"Stages[\"%s\"][\"summary\"] = {}\n",stageLog->stageInfo[stage].name));
-    CHKERRMPI(MPI_Allreduce(&stageLog->stageInfo[stage].eventLog->numEvents, &numEvents, 1, MPI_INT, MPI_MAX, comm));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"Stages[\"%s\"] = {}\n",stageLog->stageInfo[stage].name));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"Stages[\"%s\"][\"summary\"] = {}\n",stageLog->stageInfo[stage].name));
+    PetscCallMPI(MPI_Allreduce(&stageLog->stageInfo[stage].eventLog->numEvents, &numEvents, 1, MPI_INT, MPI_MAX, comm));
     for (event = 0; event < numEvents; event++) {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"Stages[\"%s\"][\"%s\"] = {}\n",stageLog->stageInfo[stage].name,stageLog->eventLog->eventInfo[event].name));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"Stages[\"%s\"][\"%s\"] = {}\n",stageLog->stageInfo[stage].name,stageLog->eventLog->eventInfo[event].name));
     }
   }
-  CHKERRQ(PetscMallocGetMaximumUsage(&maxMem));
-  CHKERRQ(PetscViewerASCIIPushSynchronized(viewer));
-  CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer,"LocalTimes[%d] = %g\n",rank,locTotalTime));
-  CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer,"LocalMessages[%d] = %g\n",rank,(petsc_irecv_ct + petsc_isend_ct + petsc_recv_ct + petsc_send_ct)));
-  CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer,"LocalMessageLens[%d] = %g\n",rank,(petsc_irecv_len + petsc_isend_len + petsc_recv_len + petsc_send_len)));
-  CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer,"LocalReductions[%d] = %g\n",rank,numRed));
-  CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer,"LocalFlop[%d] = %g\n",rank,petsc_TotalFlops));
-  CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer,"LocalObjects[%d] = %d\n",rank,petsc_numObjects));
-  CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer,"LocalMemory[%d] = %g\n",rank,maxMem));
-  CHKERRQ(PetscViewerFlush(viewer));
+  PetscCall(PetscMallocGetMaximumUsage(&maxMem));
+  PetscCall(PetscViewerASCIIPushSynchronized(viewer));
+  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"LocalTimes[%d] = %g\n",rank,locTotalTime));
+  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"LocalMessages[%d] = %g\n",rank,(petsc_irecv_ct + petsc_isend_ct + petsc_recv_ct + petsc_send_ct)));
+  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"LocalMessageLens[%d] = %g\n",rank,(petsc_irecv_len + petsc_isend_len + petsc_recv_len + petsc_send_len)));
+  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"LocalReductions[%d] = %g\n",rank,numRed));
+  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"LocalFlop[%d] = %g\n",rank,petsc_TotalFlops));
+  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"LocalObjects[%d] = %d\n",rank,petsc_numObjects));
+  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"LocalMemory[%d] = %g\n",rank,maxMem));
+  PetscCall(PetscViewerFlush(viewer));
   for (stage=0; stage<numStages; stage++) {
     stageInfo = &stageLog->stageInfo[stage].perfInfo;
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Stages[\"%s\"][\"summary\"][%d] = {\"time\" : %g, \"numMessages\" : %g, \"messageLength\" : %g, \"numReductions\" : %g, \"flop\" : %g}\n",
                                               stageLog->stageInfo[stage].name,rank,
-                                              stageInfo->time,stageInfo->numMessages,stageInfo->messageLength,stageInfo->numReductions,stageInfo->flops);CHKERRQ(ierr);
-    CHKERRMPI(MPI_Allreduce(&stageLog->stageInfo[stage].eventLog->numEvents, &numEvents, 1, MPI_INT, MPI_MAX, comm));
+                                              stageInfo->time,stageInfo->numMessages,stageInfo->messageLength,stageInfo->numReductions,stageInfo->flops);PetscCall(ierr);
+    PetscCallMPI(MPI_Allreduce(&stageLog->stageInfo[stage].eventLog->numEvents, &numEvents, 1, MPI_INT, MPI_MAX, comm));
     for (event = 0; event < numEvents; event++) {
       eventInfo = &stageLog->stageInfo[stage].eventLog->eventInfo[event];
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Stages[\"%s\"][\"%s\"][%d] = {\"count\" : %d, \"time\" : %g, \"syncTime\" : %g, \"numMessages\" : %g, \"messageLength\" : %g, \"numReductions\" : %g, \"flop\" : %g",
                                                 stageLog->stageInfo[stage].name,stageLog->eventLog->eventInfo[event].name,rank,
-                                                eventInfo->count,eventInfo->time,eventInfo->syncTime,eventInfo->numMessages,eventInfo->messageLength,eventInfo->numReductions,eventInfo->flops);CHKERRQ(ierr);
+                                                eventInfo->count,eventInfo->time,eventInfo->syncTime,eventInfo->numMessages,eventInfo->messageLength,eventInfo->numReductions,eventInfo->flops);PetscCall(ierr);
       if (eventInfo->dof[0] >= 0.) {
         PetscInt d, e;
 
-        CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer, ", \"dof\" : ["));
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, ", \"dof\" : ["));
         for (d = 0; d < 8; ++d) {
-          if (d > 0) CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer, ", "));
-          CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer, "%g", eventInfo->dof[d]));
+          if (d > 0) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, ", "));
+          PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%g", eventInfo->dof[d]));
         }
-        CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer, "]"));
-        CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer, ", \"error\" : ["));
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "]"));
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, ", \"error\" : ["));
         for (e = 0; e < 8; ++e) {
-          if (e > 0) CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer, ", "));
-          CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer, "%g", eventInfo->errors[e]));
+          if (e > 0) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, ", "));
+          PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%g", eventInfo->errors[e]));
         }
-        CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer, "]"));
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "]"));
       }
-      CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer,"}\n"));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"}\n"));
     }
   }
-  CHKERRQ(PetscViewerFlush(viewer));
-  CHKERRQ(PetscViewerASCIIPopSynchronized(viewer));
+  PetscCall(PetscViewerFlush(viewer));
+  PetscCall(PetscViewerASCIIPopSynchronized(viewer));
   PetscFunctionReturn(0);
 }
 
@@ -1329,43 +1329,43 @@ PetscErrorCode  PetscLogView_CSV(PetscViewer viewer)
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_size(comm, &size));
-  CHKERRMPI(MPI_Comm_rank(comm, &rank));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
   /* Must preserve reduction count before we go on */
   /* Get the total elapsed time */
   PetscTime(&locTotalTime);  locTotalTime -= petsc_BaseTime;
-  CHKERRQ(PetscLogGetStageLog(&stageLog));
-  CHKERRMPI(MPI_Allreduce(&stageLog->numStages, &numStages, 1, MPI_INT, MPI_MAX, comm));
-  CHKERRQ(PetscMallocGetMaximumUsage(&maxMem));
-  CHKERRQ(PetscViewerASCIIPushSynchronized(viewer));
+  PetscCall(PetscLogGetStageLog(&stageLog));
+  PetscCallMPI(MPI_Allreduce(&stageLog->numStages, &numStages, 1, MPI_INT, MPI_MAX, comm));
+  PetscCall(PetscMallocGetMaximumUsage(&maxMem));
+  PetscCall(PetscViewerASCIIPushSynchronized(viewer));
   ierr = PetscViewerASCIIPrintf(viewer,"Stage Name,Event Name,Rank,Count,Time,Num Messages,Message Length,Num Reductions,FLOP,dof0,dof1,dof2,dof3,dof4,dof5,dof6,dof7,e0,e1,e2,e3,e4,e5,e6,e7,%d\n", size);
-  CHKERRQ(PetscViewerFlush(viewer));
+  PetscCall(PetscViewerFlush(viewer));
   for (stage=0; stage<numStages; stage++) {
     PetscEventPerfInfo *stageInfo = &stageLog->stageInfo[stage].perfInfo;
 
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%s,summary,%d,1,%g,%g,%g,%g,%g\n",
-                                              stageLog->stageInfo[stage].name,rank,stageInfo->time,stageInfo->numMessages,stageInfo->messageLength,stageInfo->numReductions,stageInfo->flops);CHKERRQ(ierr);
-    CHKERRMPI(MPI_Allreduce(&stageLog->stageInfo[stage].eventLog->numEvents, &numEvents, 1, MPI_INT, MPI_MAX, comm));
+                                              stageLog->stageInfo[stage].name,rank,stageInfo->time,stageInfo->numMessages,stageInfo->messageLength,stageInfo->numReductions,stageInfo->flops);PetscCall(ierr);
+    PetscCallMPI(MPI_Allreduce(&stageLog->stageInfo[stage].eventLog->numEvents, &numEvents, 1, MPI_INT, MPI_MAX, comm));
     for (event = 0; event < numEvents; event++) {
       eventInfo = &stageLog->stageInfo[stage].eventLog->eventInfo[event];
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%s,%s,%d,%d,%g,%g,%g,%g,%g",stageLog->stageInfo[stage].name,
                                                 stageLog->eventLog->eventInfo[event].name,rank,eventInfo->count,eventInfo->time,eventInfo->numMessages,
-                                                eventInfo->messageLength,eventInfo->numReductions,eventInfo->flops);CHKERRQ(ierr);
+                                                eventInfo->messageLength,eventInfo->numReductions,eventInfo->flops);PetscCall(ierr);
       if (eventInfo->dof[0] >= 0.) {
         PetscInt d, e;
 
         for (d = 0; d < 8; ++d) {
-          CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer, ",%g", eventInfo->dof[d]));
+          PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, ",%g", eventInfo->dof[d]));
         }
         for (e = 0; e < 8; ++e) {
-          CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer, ",%g", eventInfo->errors[e]));
+          PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, ",%g", eventInfo->errors[e]));
         }
       }
-      CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer,"\n"));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"\n"));
     }
   }
-  CHKERRQ(PetscViewerFlush(viewer));
-  CHKERRQ(PetscViewerASCIIPopSynchronized(viewer));
+  PetscCall(PetscViewerFlush(viewer));
+  PetscCall(PetscViewerASCIIPopSynchronized(viewer));
   PetscFunctionReturn(0);
 }
 
@@ -1373,17 +1373,17 @@ static PetscErrorCode PetscLogViewWarnSync(MPI_Comm comm,FILE *fd)
 {
   PetscFunctionBegin;
   if (!PetscLogSyncOn) PetscFunctionReturn(0);
-  CHKERRQ(PetscFPrintf(comm, fd, "\n\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "      ##########################################################\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "      #                                                        #\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "      #                       WARNING!!!                       #\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "      #                                                        #\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "      #   This program was run with logging synchronization.   #\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "      #   This option provides more meaningful imbalance       #\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "      #   figures at the expense of slowing things down and    #\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "      #   providing a distorted view of the overall runtime.   #\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "      #                                                        #\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "      ##########################################################\n\n\n"));
+  PetscCall(PetscFPrintf(comm, fd, "\n\n"));
+  PetscCall(PetscFPrintf(comm, fd, "      ##########################################################\n"));
+  PetscCall(PetscFPrintf(comm, fd, "      #                                                        #\n"));
+  PetscCall(PetscFPrintf(comm, fd, "      #                       WARNING!!!                       #\n"));
+  PetscCall(PetscFPrintf(comm, fd, "      #                                                        #\n"));
+  PetscCall(PetscFPrintf(comm, fd, "      #   This program was run with logging synchronization.   #\n"));
+  PetscCall(PetscFPrintf(comm, fd, "      #   This option provides more meaningful imbalance       #\n"));
+  PetscCall(PetscFPrintf(comm, fd, "      #   figures at the expense of slowing things down and    #\n"));
+  PetscCall(PetscFPrintf(comm, fd, "      #   providing a distorted view of the overall runtime.   #\n"));
+  PetscCall(PetscFPrintf(comm, fd, "      #                                                        #\n"));
+  PetscCall(PetscFPrintf(comm, fd, "      ##########################################################\n\n\n"));
   PetscFunctionReturn(0);
 }
 
@@ -1391,17 +1391,17 @@ static PetscErrorCode PetscLogViewWarnDebugging(MPI_Comm comm,FILE *fd)
 {
   PetscFunctionBegin;
   if (PetscDefined(USE_DEBUG)) {
-    CHKERRQ(PetscFPrintf(comm, fd, "\n\n"));
-    CHKERRQ(PetscFPrintf(comm, fd, "      ##########################################################\n"));
-    CHKERRQ(PetscFPrintf(comm, fd, "      #                                                        #\n"));
-    CHKERRQ(PetscFPrintf(comm, fd, "      #                       WARNING!!!                       #\n"));
-    CHKERRQ(PetscFPrintf(comm, fd, "      #                                                        #\n"));
-    CHKERRQ(PetscFPrintf(comm, fd, "      #   This code was compiled with a debugging option.      #\n"));
-    CHKERRQ(PetscFPrintf(comm, fd, "      #   To get timing results run ./configure                #\n"));
-    CHKERRQ(PetscFPrintf(comm, fd, "      #   using --with-debugging=no, the performance will      #\n"));
-    CHKERRQ(PetscFPrintf(comm, fd, "      #   be generally two or three times faster.              #\n"));
-    CHKERRQ(PetscFPrintf(comm, fd, "      #                                                        #\n"));
-    CHKERRQ(PetscFPrintf(comm, fd, "      ##########################################################\n\n\n"));
+    PetscCall(PetscFPrintf(comm, fd, "\n\n"));
+    PetscCall(PetscFPrintf(comm, fd, "      ##########################################################\n"));
+    PetscCall(PetscFPrintf(comm, fd, "      #                                                        #\n"));
+    PetscCall(PetscFPrintf(comm, fd, "      #                       WARNING!!!                       #\n"));
+    PetscCall(PetscFPrintf(comm, fd, "      #                                                        #\n"));
+    PetscCall(PetscFPrintf(comm, fd, "      #   This code was compiled with a debugging option.      #\n"));
+    PetscCall(PetscFPrintf(comm, fd, "      #   To get timing results run ./configure                #\n"));
+    PetscCall(PetscFPrintf(comm, fd, "      #   using --with-debugging=no, the performance will      #\n"));
+    PetscCall(PetscFPrintf(comm, fd, "      #   be generally two or three times faster.              #\n"));
+    PetscCall(PetscFPrintf(comm, fd, "      #                                                        #\n"));
+    PetscCall(PetscFPrintf(comm, fd, "      ##########################################################\n\n\n"));
   }
   PetscFunctionReturn(0);
 }
@@ -1412,21 +1412,21 @@ static PetscErrorCode PetscLogViewWarnNoGpuAwareMpi(MPI_Comm comm,FILE *fd)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  CHKERRMPI(MPI_Comm_size(comm, &size));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
   if (use_gpu_aware_mpi || size == 1) PetscFunctionReturn(0);
-  CHKERRQ(PetscFPrintf(comm, fd, "\n\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "      ##########################################################\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "      #                                                        #\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "      #                       WARNING!!!                       #\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "      #                                                        #\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "      #   This code was compiled with GPU support and you've   #\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "      #   created PETSc/GPU objects, but you intentionally     #\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "      #   used -use_gpu_aware_mpi 0, requiring PETSc to copy   #\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "      #   additional data between the GPU and CPU. To obtain   #\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "      #   meaningful timing results on multi-rank runs, use    #\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "      #   GPU-aware MPI instead.                               #\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "      #                                                        #\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "      ##########################################################\n\n\n"));
+  PetscCall(PetscFPrintf(comm, fd, "\n\n"));
+  PetscCall(PetscFPrintf(comm, fd, "      ##########################################################\n"));
+  PetscCall(PetscFPrintf(comm, fd, "      #                                                        #\n"));
+  PetscCall(PetscFPrintf(comm, fd, "      #                       WARNING!!!                       #\n"));
+  PetscCall(PetscFPrintf(comm, fd, "      #                                                        #\n"));
+  PetscCall(PetscFPrintf(comm, fd, "      #   This code was compiled with GPU support and you've   #\n"));
+  PetscCall(PetscFPrintf(comm, fd, "      #   created PETSc/GPU objects, but you intentionally     #\n"));
+  PetscCall(PetscFPrintf(comm, fd, "      #   used -use_gpu_aware_mpi 0, requiring PETSc to copy   #\n"));
+  PetscCall(PetscFPrintf(comm, fd, "      #   additional data between the GPU and CPU. To obtain   #\n"));
+  PetscCall(PetscFPrintf(comm, fd, "      #   meaningful timing results on multi-rank runs, use    #\n"));
+  PetscCall(PetscFPrintf(comm, fd, "      #   GPU-aware MPI instead.                               #\n"));
+  PetscCall(PetscFPrintf(comm, fd, "      #                                                        #\n"));
+  PetscCall(PetscFPrintf(comm, fd, "      ##########################################################\n\n\n"));
   PetscFunctionReturn(0);
 #else
   return 0;
@@ -1465,123 +1465,123 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
   MPI_Comm           comm;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectGetComm((PetscObject)viewer,&comm));
-  CHKERRQ(PetscViewerASCIIGetPointer(viewer,&fd));
-  CHKERRMPI(MPI_Comm_size(comm, &size));
-  CHKERRMPI(MPI_Comm_rank(comm, &rank));
+  PetscCall(PetscObjectGetComm((PetscObject)viewer,&comm));
+  PetscCall(PetscViewerASCIIGetPointer(viewer,&fd));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
   /* Get the total elapsed time */
   PetscTime(&locTotalTime);  locTotalTime -= petsc_BaseTime;
 
-  CHKERRQ(PetscFPrintf(comm, fd, "**************************************** ***********************************************************************************************************************\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "***                                WIDEN YOUR WINDOW TO 160 CHARACTERS.  Use 'enscript -r -fCourier9' to print this document                                 ***\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "****************************************************************************************************************************************************************\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "\n------------------------------------------------------------------ PETSc Performance Summary: -------------------------------------------------------------------\n\n"));
-  CHKERRQ(PetscLogViewWarnSync(comm,fd));
-  CHKERRQ(PetscLogViewWarnDebugging(comm,fd));
-  CHKERRQ(PetscLogViewWarnNoGpuAwareMpi(comm,fd));
-  CHKERRQ(PetscGetArchType(arch,sizeof(arch)));
-  CHKERRQ(PetscGetHostName(hostname,sizeof(hostname)));
-  CHKERRQ(PetscGetUserName(username,sizeof(username)));
-  CHKERRQ(PetscGetProgramName(pname,sizeof(pname)));
-  CHKERRQ(PetscGetDate(date,sizeof(date)));
-  CHKERRQ(PetscGetVersion(version,sizeof(version)));
+  PetscCall(PetscFPrintf(comm, fd, "**************************************** ***********************************************************************************************************************\n"));
+  PetscCall(PetscFPrintf(comm, fd, "***                                WIDEN YOUR WINDOW TO 160 CHARACTERS.  Use 'enscript -r -fCourier9' to print this document                                 ***\n"));
+  PetscCall(PetscFPrintf(comm, fd, "****************************************************************************************************************************************************************\n"));
+  PetscCall(PetscFPrintf(comm, fd, "\n------------------------------------------------------------------ PETSc Performance Summary: -------------------------------------------------------------------\n\n"));
+  PetscCall(PetscLogViewWarnSync(comm,fd));
+  PetscCall(PetscLogViewWarnDebugging(comm,fd));
+  PetscCall(PetscLogViewWarnNoGpuAwareMpi(comm,fd));
+  PetscCall(PetscGetArchType(arch,sizeof(arch)));
+  PetscCall(PetscGetHostName(hostname,sizeof(hostname)));
+  PetscCall(PetscGetUserName(username,sizeof(username)));
+  PetscCall(PetscGetProgramName(pname,sizeof(pname)));
+  PetscCall(PetscGetDate(date,sizeof(date)));
+  PetscCall(PetscGetVersion(version,sizeof(version)));
   if (size == 1) {
-    CHKERRQ(PetscFPrintf(comm,fd,"%s on a %s named %s with %d processor, by %s %s\n", pname, arch, hostname, size, username, date));
+    PetscCall(PetscFPrintf(comm,fd,"%s on a %s named %s with %d processor, by %s %s\n", pname, arch, hostname, size, username, date));
   } else {
-    CHKERRQ(PetscFPrintf(comm,fd,"%s on a %s named %s with %d processors, by %s %s\n", pname, arch, hostname, size, username, date));
+    PetscCall(PetscFPrintf(comm,fd,"%s on a %s named %s with %d processors, by %s %s\n", pname, arch, hostname, size, username, date));
   }
 #if defined(PETSC_HAVE_OPENMP)
-  CHKERRQ(PetscFPrintf(comm,fd,"Using %" PetscInt_FMT " OpenMP threads\n", PetscNumOMPThreads));
+  PetscCall(PetscFPrintf(comm,fd,"Using %" PetscInt_FMT " OpenMP threads\n", PetscNumOMPThreads));
 #endif
-  CHKERRQ(PetscFPrintf(comm, fd, "Using %s\n", version));
+  PetscCall(PetscFPrintf(comm, fd, "Using %s\n", version));
 
   /* Must preserve reduction count before we go on */
   red = petsc_allreduce_ct + petsc_gather_ct + petsc_scatter_ct;
 
   /* Calculate summary information */
-  CHKERRQ(PetscFPrintf(comm, fd, "\n                         Max       Max/Min     Avg       Total\n"));
+  PetscCall(PetscFPrintf(comm, fd, "\n                         Max       Max/Min     Avg       Total\n"));
   /*   Time */
-  CHKERRMPI(MPI_Allreduce(&locTotalTime, &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
-  CHKERRMPI(MPI_Allreduce(&locTotalTime, &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
-  CHKERRMPI(MPI_Allreduce(&locTotalTime, &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+  PetscCallMPI(MPI_Allreduce(&locTotalTime, &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
+  PetscCallMPI(MPI_Allreduce(&locTotalTime, &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
+  PetscCallMPI(MPI_Allreduce(&locTotalTime, &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
   avg  = tot/((PetscLogDouble) size);
   if (min != 0.0) ratio = max/min; else ratio = 0.0;
-  CHKERRQ(PetscFPrintf(comm, fd, "Time (sec):           %5.3e   %7.3f   %5.3e\n", max, ratio, avg));
+  PetscCall(PetscFPrintf(comm, fd, "Time (sec):           %5.3e   %7.3f   %5.3e\n", max, ratio, avg));
   TotalTime = tot;
   /*   Objects */
   avg  = (PetscLogDouble) petsc_numObjects;
-  CHKERRMPI(MPI_Allreduce(&avg,          &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
-  CHKERRMPI(MPI_Allreduce(&avg,          &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
-  CHKERRMPI(MPI_Allreduce(&avg,          &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+  PetscCallMPI(MPI_Allreduce(&avg,          &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
+  PetscCallMPI(MPI_Allreduce(&avg,          &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
+  PetscCallMPI(MPI_Allreduce(&avg,          &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
   avg  = tot/((PetscLogDouble) size);
   if (min != 0.0) ratio = max/min; else ratio = 0.0;
-  CHKERRQ(PetscFPrintf(comm, fd, "Objects:              %5.3e   %7.3f   %5.3e\n", max, ratio, avg));
+  PetscCall(PetscFPrintf(comm, fd, "Objects:              %5.3e   %7.3f   %5.3e\n", max, ratio, avg));
   /*   Flops */
-  CHKERRMPI(MPI_Allreduce(&petsc_TotalFlops,  &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
-  CHKERRMPI(MPI_Allreduce(&petsc_TotalFlops,  &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
-  CHKERRMPI(MPI_Allreduce(&petsc_TotalFlops,  &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+  PetscCallMPI(MPI_Allreduce(&petsc_TotalFlops,  &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
+  PetscCallMPI(MPI_Allreduce(&petsc_TotalFlops,  &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
+  PetscCallMPI(MPI_Allreduce(&petsc_TotalFlops,  &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
   avg  = tot/((PetscLogDouble) size);
   if (min != 0.0) ratio = max/min; else ratio = 0.0;
-  CHKERRQ(PetscFPrintf(comm, fd, "Flops:                %5.3e   %7.3f   %5.3e  %5.3e\n", max, ratio, avg, tot));
+  PetscCall(PetscFPrintf(comm, fd, "Flops:                %5.3e   %7.3f   %5.3e  %5.3e\n", max, ratio, avg, tot));
   TotalFlops = tot;
   /*   Flops/sec -- Must talk to Barry here */
   if (locTotalTime != 0.0) flops = petsc_TotalFlops/locTotalTime; else flops = 0.0;
-  CHKERRMPI(MPI_Allreduce(&flops,        &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
-  CHKERRMPI(MPI_Allreduce(&flops,        &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
-  CHKERRMPI(MPI_Allreduce(&flops,        &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+  PetscCallMPI(MPI_Allreduce(&flops,        &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
+  PetscCallMPI(MPI_Allreduce(&flops,        &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
+  PetscCallMPI(MPI_Allreduce(&flops,        &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
   avg  = tot/((PetscLogDouble) size);
   if (min != 0.0) ratio = max/min; else ratio = 0.0;
-  CHKERRQ(PetscFPrintf(comm, fd, "Flops/sec:            %5.3e   %7.3f   %5.3e  %5.3e\n", max, ratio, avg, tot));
+  PetscCall(PetscFPrintf(comm, fd, "Flops/sec:            %5.3e   %7.3f   %5.3e  %5.3e\n", max, ratio, avg, tot));
   /*   Memory */
-  CHKERRQ(PetscMallocGetMaximumUsage(&mem));
+  PetscCall(PetscMallocGetMaximumUsage(&mem));
   if (mem > 0.0) {
-    CHKERRMPI(MPI_Allreduce(&mem,          &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
-    CHKERRMPI(MPI_Allreduce(&mem,          &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
-    CHKERRMPI(MPI_Allreduce(&mem,          &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+    PetscCallMPI(MPI_Allreduce(&mem,          &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
+    PetscCallMPI(MPI_Allreduce(&mem,          &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
+    PetscCallMPI(MPI_Allreduce(&mem,          &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
     avg  = tot/((PetscLogDouble) size);
     if (min != 0.0) ratio = max/min; else ratio = 0.0;
-    CHKERRQ(PetscFPrintf(comm, fd, "Memory (bytes):       %5.3e   %7.3f   %5.3e  %5.3e\n", max, ratio, avg, tot));
+    PetscCall(PetscFPrintf(comm, fd, "Memory (bytes):       %5.3e   %7.3f   %5.3e  %5.3e\n", max, ratio, avg, tot));
   }
   /*   Messages */
   mess = 0.5*(petsc_irecv_ct + petsc_isend_ct + petsc_recv_ct + petsc_send_ct);
-  CHKERRMPI(MPI_Allreduce(&mess,         &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
-  CHKERRMPI(MPI_Allreduce(&mess,         &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
-  CHKERRMPI(MPI_Allreduce(&mess,         &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+  PetscCallMPI(MPI_Allreduce(&mess,         &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
+  PetscCallMPI(MPI_Allreduce(&mess,         &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
+  PetscCallMPI(MPI_Allreduce(&mess,         &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
   avg  = tot/((PetscLogDouble) size);
   if (min != 0.0) ratio = max/min; else ratio = 0.0;
-  CHKERRQ(PetscFPrintf(comm, fd, "MPI Msg Count:        %5.3e   %7.3f   %5.3e  %5.3e\n", max, ratio, avg, tot));
+  PetscCall(PetscFPrintf(comm, fd, "MPI Msg Count:        %5.3e   %7.3f   %5.3e  %5.3e\n", max, ratio, avg, tot));
   numMessages = tot;
   /*   Message Lengths */
   mess = 0.5*(petsc_irecv_len + petsc_isend_len + petsc_recv_len + petsc_send_len);
-  CHKERRMPI(MPI_Allreduce(&mess,         &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
-  CHKERRMPI(MPI_Allreduce(&mess,         &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
-  CHKERRMPI(MPI_Allreduce(&mess,         &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+  PetscCallMPI(MPI_Allreduce(&mess,         &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
+  PetscCallMPI(MPI_Allreduce(&mess,         &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
+  PetscCallMPI(MPI_Allreduce(&mess,         &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
   if (numMessages != 0) avg = tot/numMessages; else avg = 0.0;
   if (min != 0.0) ratio = max/min; else ratio = 0.0;
-  CHKERRQ(PetscFPrintf(comm, fd, "MPI Msg Len (bytes):  %5.3e   %7.3f   %5.3e  %5.3e\n", max, ratio, avg, tot));
+  PetscCall(PetscFPrintf(comm, fd, "MPI Msg Len (bytes):  %5.3e   %7.3f   %5.3e  %5.3e\n", max, ratio, avg, tot));
   messageLength = tot;
   /*   Reductions */
-  CHKERRMPI(MPI_Allreduce(&red,          &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
-  CHKERRMPI(MPI_Allreduce(&red,          &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
-  CHKERRMPI(MPI_Allreduce(&red,          &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+  PetscCallMPI(MPI_Allreduce(&red,          &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
+  PetscCallMPI(MPI_Allreduce(&red,          &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
+  PetscCallMPI(MPI_Allreduce(&red,          &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
   if (min != 0.0) ratio = max/min; else ratio = 0.0;
-  CHKERRQ(PetscFPrintf(comm, fd, "MPI Reductions:       %5.3e   %7.3f\n", max, ratio));
+  PetscCall(PetscFPrintf(comm, fd, "MPI Reductions:       %5.3e   %7.3f\n", max, ratio));
   numReductions = red; /* wrong because uses count from process zero */
-  CHKERRQ(PetscFPrintf(comm, fd, "\nFlop counting convention: 1 flop = 1 real number operation of type (multiply/divide/add/subtract)\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "                            e.g., VecAXPY() for real vectors of length N --> 2N flops\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "                            and VecAXPY() for complex vectors of length N --> 8N flops\n"));
+  PetscCall(PetscFPrintf(comm, fd, "\nFlop counting convention: 1 flop = 1 real number operation of type (multiply/divide/add/subtract)\n"));
+  PetscCall(PetscFPrintf(comm, fd, "                            e.g., VecAXPY() for real vectors of length N --> 2N flops\n"));
+  PetscCall(PetscFPrintf(comm, fd, "                            and VecAXPY() for complex vectors of length N --> 8N flops\n"));
 
   /* Get total number of stages --
        Currently, a single processor can register more stages than another, but stages must all be registered in order.
        We can removed this requirement if necessary by having a global stage numbering and indirection on the stage ID.
        This seems best accomplished by assoicating a communicator with each stage.
   */
-  CHKERRQ(PetscLogGetStageLog(&stageLog));
-  CHKERRMPI(MPI_Allreduce(&stageLog->numStages, &numStages, 1, MPI_INT, MPI_MAX, comm));
-  CHKERRQ(PetscMalloc1(numStages, &localStageUsed));
-  CHKERRQ(PetscMalloc1(numStages, &stageUsed));
-  CHKERRQ(PetscMalloc1(numStages, &localStageVisible));
-  CHKERRQ(PetscMalloc1(numStages, &stageVisible));
+  PetscCall(PetscLogGetStageLog(&stageLog));
+  PetscCallMPI(MPI_Allreduce(&stageLog->numStages, &numStages, 1, MPI_INT, MPI_MAX, comm));
+  PetscCall(PetscMalloc1(numStages, &localStageUsed));
+  PetscCall(PetscMalloc1(numStages, &stageUsed));
+  PetscCall(PetscMalloc1(numStages, &localStageVisible));
+  PetscCall(PetscMalloc1(numStages, &stageVisible));
   if (numStages > 0) {
     stageInfo = stageLog->stageInfo;
     for (stage = 0; stage < numStages; stage++) {
@@ -1593,12 +1593,12 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
         localStageVisible[stage] = PETSC_TRUE;
       }
     }
-    CHKERRMPI(MPI_Allreduce(localStageUsed,    stageUsed,    numStages, MPIU_BOOL, MPI_LOR,  comm));
-    CHKERRMPI(MPI_Allreduce(localStageVisible, stageVisible, numStages, MPIU_BOOL, MPI_LAND, comm));
+    PetscCallMPI(MPI_Allreduce(localStageUsed,    stageUsed,    numStages, MPIU_BOOL, MPI_LOR,  comm));
+    PetscCallMPI(MPI_Allreduce(localStageVisible, stageVisible, numStages, MPIU_BOOL, MPI_LAND, comm));
     for (stage = 0; stage < numStages; stage++) {
       if (stageUsed[stage]) {
-        CHKERRQ(PetscFPrintf(comm, fd, "\nSummary of Stages:   ----- Time ------  ----- Flop ------  --- Messages ---  -- Message Lengths --  -- Reductions --\n"));
-        CHKERRQ(PetscFPrintf(comm, fd, "                        Avg     %%Total     Avg     %%Total    Count   %%Total     Avg         %%Total    Count   %%Total\n"));
+        PetscCall(PetscFPrintf(comm, fd, "\nSummary of Stages:   ----- Time ------  ----- Flop ------  --- Messages ---  -- Message Lengths --  -- Reductions --\n"));
+        PetscCall(PetscFPrintf(comm, fd, "                        Avg     %%Total     Avg     %%Total    Count   %%Total     Avg         %%Total    Count   %%Total\n"));
         break;
       }
     }
@@ -1606,18 +1606,18 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
       if (!stageUsed[stage]) continue;
       /* CANNOT use MPI_Allreduce() since it might fail the line number check */
       if (localStageUsed[stage]) {
-        CHKERRMPI(MPI_Allreduce(&stageInfo[stage].perfInfo.time,          &stageTime, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        CHKERRMPI(MPI_Allreduce(&stageInfo[stage].perfInfo.flops,         &flops,     1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        CHKERRMPI(MPI_Allreduce(&stageInfo[stage].perfInfo.numMessages,   &mess,      1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        CHKERRMPI(MPI_Allreduce(&stageInfo[stage].perfInfo.messageLength, &messLen,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        CHKERRMPI(MPI_Allreduce(&stageInfo[stage].perfInfo.numReductions, &red,       1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+        PetscCallMPI(MPI_Allreduce(&stageInfo[stage].perfInfo.time,          &stageTime, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+        PetscCallMPI(MPI_Allreduce(&stageInfo[stage].perfInfo.flops,         &flops,     1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+        PetscCallMPI(MPI_Allreduce(&stageInfo[stage].perfInfo.numMessages,   &mess,      1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+        PetscCallMPI(MPI_Allreduce(&stageInfo[stage].perfInfo.messageLength, &messLen,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+        PetscCallMPI(MPI_Allreduce(&stageInfo[stage].perfInfo.numReductions, &red,       1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
         name = stageInfo[stage].name;
       } else {
-        CHKERRMPI(MPI_Allreduce(&zero,                           &stageTime, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        CHKERRMPI(MPI_Allreduce(&zero,                           &flops,     1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        CHKERRMPI(MPI_Allreduce(&zero,                           &mess,      1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        CHKERRMPI(MPI_Allreduce(&zero,                           &messLen,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        CHKERRMPI(MPI_Allreduce(&zero,                           &red,       1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+        PetscCallMPI(MPI_Allreduce(&zero,                           &stageTime, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+        PetscCallMPI(MPI_Allreduce(&zero,                           &flops,     1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+        PetscCallMPI(MPI_Allreduce(&zero,                           &mess,      1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+        PetscCallMPI(MPI_Allreduce(&zero,                           &messLen,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+        PetscCallMPI(MPI_Allreduce(&zero,                           &red,       1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
         name = "";
       }
       mess *= 0.5; messLen *= 0.5; red /= size;
@@ -1630,87 +1630,87 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
       if (numReductions != 0.0) fracReductions = red/numReductions;      else fracReductions = 0.0;
       ierr = PetscFPrintf(comm, fd, "%2d: %15s: %6.4e %5.1f%%  %6.4e %5.1f%%  %5.3e %5.1f%%  %5.3e      %5.1f%%  %5.3e %5.1f%%\n",
                           stage, name, stageTime/size, 100.0*fracTime, flops, 100.0*fracFlops,
-                          mess, 100.0*fracMessages, avgMessLen, 100.0*fracLength, red, 100.0*fracReductions);CHKERRQ(ierr);
+                          mess, 100.0*fracMessages, avgMessLen, 100.0*fracLength, red, 100.0*fracReductions);PetscCall(ierr);
     }
   }
 
-  CHKERRQ(PetscFPrintf(comm, fd,"\n------------------------------------------------------------------------------------------------------------------------\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "See the 'Profiling' chapter of the users' manual for details on interpreting output.\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "Phase summary info:\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "   Count: number of times phase was executed\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "   Time and Flop: Max - maximum over all processors\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "                  Ratio - ratio of maximum to minimum over all processors\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "   Mess: number of messages sent\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "   AvgLen: average message length (bytes)\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "   Reduct: number of global reductions\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "   Global: entire computation\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "   Stage: stages of a computation. Set stages with PetscLogStagePush() and PetscLogStagePop().\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "      %%T - percent time in this phase         %%F - percent flop in this phase\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "      %%M - percent messages in this phase     %%L - percent message lengths in this phase\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "      %%R - percent reductions in this phase\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "   Total Mflop/s: 10e-6 * (sum of flop over all processors)/(max time over all processors)\n"));
+  PetscCall(PetscFPrintf(comm, fd,"\n------------------------------------------------------------------------------------------------------------------------\n"));
+  PetscCall(PetscFPrintf(comm, fd, "See the 'Profiling' chapter of the users' manual for details on interpreting output.\n"));
+  PetscCall(PetscFPrintf(comm, fd, "Phase summary info:\n"));
+  PetscCall(PetscFPrintf(comm, fd, "   Count: number of times phase was executed\n"));
+  PetscCall(PetscFPrintf(comm, fd, "   Time and Flop: Max - maximum over all processors\n"));
+  PetscCall(PetscFPrintf(comm, fd, "                  Ratio - ratio of maximum to minimum over all processors\n"));
+  PetscCall(PetscFPrintf(comm, fd, "   Mess: number of messages sent\n"));
+  PetscCall(PetscFPrintf(comm, fd, "   AvgLen: average message length (bytes)\n"));
+  PetscCall(PetscFPrintf(comm, fd, "   Reduct: number of global reductions\n"));
+  PetscCall(PetscFPrintf(comm, fd, "   Global: entire computation\n"));
+  PetscCall(PetscFPrintf(comm, fd, "   Stage: stages of a computation. Set stages with PetscLogStagePush() and PetscLogStagePop().\n"));
+  PetscCall(PetscFPrintf(comm, fd, "      %%T - percent time in this phase         %%F - percent flop in this phase\n"));
+  PetscCall(PetscFPrintf(comm, fd, "      %%M - percent messages in this phase     %%L - percent message lengths in this phase\n"));
+  PetscCall(PetscFPrintf(comm, fd, "      %%R - percent reductions in this phase\n"));
+  PetscCall(PetscFPrintf(comm, fd, "   Total Mflop/s: 10e-6 * (sum of flop over all processors)/(max time over all processors)\n"));
   if (PetscLogMemory) {
-    CHKERRQ(PetscFPrintf(comm, fd, "   Malloc Mbytes: Memory allocated and kept during event (sum over all calls to event)\n"));
-    CHKERRQ(PetscFPrintf(comm, fd, "   EMalloc Mbytes: extra memory allocated during event and then freed (maximum over all calls to events)\n"));
-    CHKERRQ(PetscFPrintf(comm, fd, "   MMalloc Mbytes: Increase in high water mark of allocated memory (sum over all calls to event)\n"));
-    CHKERRQ(PetscFPrintf(comm, fd, "   RMI Mbytes: Increase in resident memory (sum over all calls to event)\n"));
+    PetscCall(PetscFPrintf(comm, fd, "   Malloc Mbytes: Memory allocated and kept during event (sum over all calls to event)\n"));
+    PetscCall(PetscFPrintf(comm, fd, "   EMalloc Mbytes: extra memory allocated during event and then freed (maximum over all calls to events)\n"));
+    PetscCall(PetscFPrintf(comm, fd, "   MMalloc Mbytes: Increase in high water mark of allocated memory (sum over all calls to event)\n"));
+    PetscCall(PetscFPrintf(comm, fd, "   RMI Mbytes: Increase in resident memory (sum over all calls to event)\n"));
   }
   #if defined(PETSC_HAVE_DEVICE)
-  CHKERRQ(PetscFPrintf(comm, fd, "   GPU Mflop/s: 10e-6 * (sum of flop on GPU over all processors)/(max GPU time over all processors)\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "   CpuToGpu Count: total number of CPU to GPU copies per processor\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "   CpuToGpu Size (Mbytes): 10e-6 * (total size of CPU to GPU copies per processor)\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "   GpuToCpu Count: total number of GPU to CPU copies per processor\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "   GpuToCpu Size (Mbytes): 10e-6 * (total size of GPU to CPU copies per processor)\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "   GPU %%F: percent flops on GPU in this event\n"));
+  PetscCall(PetscFPrintf(comm, fd, "   GPU Mflop/s: 10e-6 * (sum of flop on GPU over all processors)/(max GPU time over all processors)\n"));
+  PetscCall(PetscFPrintf(comm, fd, "   CpuToGpu Count: total number of CPU to GPU copies per processor\n"));
+  PetscCall(PetscFPrintf(comm, fd, "   CpuToGpu Size (Mbytes): 10e-6 * (total size of CPU to GPU copies per processor)\n"));
+  PetscCall(PetscFPrintf(comm, fd, "   GpuToCpu Count: total number of GPU to CPU copies per processor\n"));
+  PetscCall(PetscFPrintf(comm, fd, "   GpuToCpu Size (Mbytes): 10e-6 * (total size of GPU to CPU copies per processor)\n"));
+  PetscCall(PetscFPrintf(comm, fd, "   GPU %%F: percent flops on GPU in this event\n"));
   #endif
-  CHKERRQ(PetscFPrintf(comm, fd, "------------------------------------------------------------------------------------------------------------------------\n"));
+  PetscCall(PetscFPrintf(comm, fd, "------------------------------------------------------------------------------------------------------------------------\n"));
 
-  CHKERRQ(PetscLogViewWarnDebugging(comm,fd));
+  PetscCall(PetscLogViewWarnDebugging(comm,fd));
 
   /* Report events */
-  CHKERRQ(PetscFPrintf(comm, fd,"Event                Count      Time (sec)     Flop                              --- Global ---  --- Stage ----  Total"));
+  PetscCall(PetscFPrintf(comm, fd,"Event                Count      Time (sec)     Flop                              --- Global ---  --- Stage ----  Total"));
   if (PetscLogMemory) {
-    CHKERRQ(PetscFPrintf(comm, fd,"  Malloc EMalloc MMalloc RMI"));
+    PetscCall(PetscFPrintf(comm, fd,"  Malloc EMalloc MMalloc RMI"));
   }
   #if defined(PETSC_HAVE_DEVICE)
-  CHKERRQ(PetscFPrintf(comm, fd,"   GPU    - CpuToGpu -   - GpuToCpu - GPU"));
+  PetscCall(PetscFPrintf(comm, fd,"   GPU    - CpuToGpu -   - GpuToCpu - GPU"));
   #endif
-  CHKERRQ(PetscFPrintf(comm, fd,"\n"));
-  CHKERRQ(PetscFPrintf(comm, fd,"                   Max Ratio  Max     Ratio   Max  Ratio  Mess   AvgLen  Reduct  %%T %%F %%M %%L %%R  %%T %%F %%M %%L %%R Mflop/s"));
+  PetscCall(PetscFPrintf(comm, fd,"\n"));
+  PetscCall(PetscFPrintf(comm, fd,"                   Max Ratio  Max     Ratio   Max  Ratio  Mess   AvgLen  Reduct  %%T %%F %%M %%L %%R  %%T %%F %%M %%L %%R Mflop/s"));
   if (PetscLogMemory) {
-    CHKERRQ(PetscFPrintf(comm, fd," Mbytes Mbytes Mbytes Mbytes"));
+    PetscCall(PetscFPrintf(comm, fd," Mbytes Mbytes Mbytes Mbytes"));
   }
   #if defined(PETSC_HAVE_DEVICE)
-  CHKERRQ(PetscFPrintf(comm, fd," Mflop/s Count   Size   Count   Size  %%F"));
+  PetscCall(PetscFPrintf(comm, fd," Mflop/s Count   Size   Count   Size  %%F"));
   #endif
-  CHKERRQ(PetscFPrintf(comm, fd,"\n"));
-  CHKERRQ(PetscFPrintf(comm, fd,"------------------------------------------------------------------------------------------------------------------------"));
+  PetscCall(PetscFPrintf(comm, fd,"\n"));
+  PetscCall(PetscFPrintf(comm, fd,"------------------------------------------------------------------------------------------------------------------------"));
   if (PetscLogMemory) {
-    CHKERRQ(PetscFPrintf(comm, fd,"-----------------------------"));
+    PetscCall(PetscFPrintf(comm, fd,"-----------------------------"));
   }
   #if defined(PETSC_HAVE_DEVICE)
-  CHKERRQ(PetscFPrintf(comm, fd,"---------------------------------------"));
+  PetscCall(PetscFPrintf(comm, fd,"---------------------------------------"));
   #endif
-  CHKERRQ(PetscFPrintf(comm, fd,"\n"));
+  PetscCall(PetscFPrintf(comm, fd,"\n"));
 
   /* Problem: The stage name will not show up unless the stage executed on proc 1 */
   for (stage = 0; stage < numStages; stage++) {
     if (!stageVisible[stage]) continue;
     /* CANNOT use MPI_Allreduce() since it might fail the line number check */
     if (localStageUsed[stage]) {
-      CHKERRQ(PetscFPrintf(comm, fd, "\n--- Event Stage %d: %s\n\n", stage, stageInfo[stage].name));
-      CHKERRMPI(MPI_Allreduce(&stageInfo[stage].perfInfo.time,          &stageTime, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-      CHKERRMPI(MPI_Allreduce(&stageInfo[stage].perfInfo.flops,         &flops,     1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-      CHKERRMPI(MPI_Allreduce(&stageInfo[stage].perfInfo.numMessages,   &mess,      1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-      CHKERRMPI(MPI_Allreduce(&stageInfo[stage].perfInfo.messageLength, &messLen,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-      CHKERRMPI(MPI_Allreduce(&stageInfo[stage].perfInfo.numReductions, &red,       1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+      PetscCall(PetscFPrintf(comm, fd, "\n--- Event Stage %d: %s\n\n", stage, stageInfo[stage].name));
+      PetscCallMPI(MPI_Allreduce(&stageInfo[stage].perfInfo.time,          &stageTime, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+      PetscCallMPI(MPI_Allreduce(&stageInfo[stage].perfInfo.flops,         &flops,     1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+      PetscCallMPI(MPI_Allreduce(&stageInfo[stage].perfInfo.numMessages,   &mess,      1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+      PetscCallMPI(MPI_Allreduce(&stageInfo[stage].perfInfo.messageLength, &messLen,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+      PetscCallMPI(MPI_Allreduce(&stageInfo[stage].perfInfo.numReductions, &red,       1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
     } else {
-      CHKERRQ(PetscFPrintf(comm, fd, "\n--- Event Stage %d: Unknown\n\n", stage));
-      CHKERRMPI(MPI_Allreduce(&zero,                           &stageTime, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-      CHKERRMPI(MPI_Allreduce(&zero,                           &flops,     1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-      CHKERRMPI(MPI_Allreduce(&zero,                           &mess,      1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-      CHKERRMPI(MPI_Allreduce(&zero,                           &messLen,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-      CHKERRMPI(MPI_Allreduce(&zero,                           &red,       1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+      PetscCall(PetscFPrintf(comm, fd, "\n--- Event Stage %d: Unknown\n\n", stage));
+      PetscCallMPI(MPI_Allreduce(&zero,                           &stageTime, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+      PetscCallMPI(MPI_Allreduce(&zero,                           &flops,     1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+      PetscCallMPI(MPI_Allreduce(&zero,                           &mess,      1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+      PetscCallMPI(MPI_Allreduce(&zero,                           &messLen,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+      PetscCallMPI(MPI_Allreduce(&zero,                           &red,       1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
     }
     mess *= 0.5; messLen *= 0.5; red /= size;
 
@@ -1726,63 +1726,63 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
       eventInfo      = stageLog->stageInfo[stage].eventLog->eventInfo;
       localNumEvents = stageLog->stageInfo[stage].eventLog->numEvents;
     } else localNumEvents = 0;
-    CHKERRMPI(MPI_Allreduce(&localNumEvents, &numEvents, 1, MPI_INT, MPI_MAX, comm));
+    PetscCallMPI(MPI_Allreduce(&localNumEvents, &numEvents, 1, MPI_INT, MPI_MAX, comm));
     for (event = 0; event < numEvents; event++) {
       /* CANNOT use MPI_Allreduce() since it might fail the line number check */
       if (localStageUsed[stage] && (event < stageLog->stageInfo[stage].eventLog->numEvents) && (eventInfo[event].depth == 0)) {
         if ((eventInfo[event].count > 0) && (eventInfo[event].time > 0.0)) flopr = eventInfo[event].flops; else flopr = 0.0;
-        CHKERRMPI(MPI_Allreduce(&flopr,                          &minf,  1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
-        CHKERRMPI(MPI_Allreduce(&flopr,                          &maxf,  1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
-        CHKERRMPI(MPI_Allreduce(&eventInfo[event].flops,         &totf,  1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        CHKERRMPI(MPI_Allreduce(&eventInfo[event].time,          &mint,  1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
-        CHKERRMPI(MPI_Allreduce(&eventInfo[event].time,          &maxt,  1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
-        CHKERRMPI(MPI_Allreduce(&eventInfo[event].time,          &tott,  1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        CHKERRMPI(MPI_Allreduce(&eventInfo[event].numMessages,   &totm,  1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        CHKERRMPI(MPI_Allreduce(&eventInfo[event].messageLength, &totml, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        CHKERRMPI(MPI_Allreduce(&eventInfo[event].numReductions, &totr,  1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        CHKERRMPI(MPI_Allreduce(&eventInfo[event].count,         &minC,  1, MPI_INT,             MPI_MIN, comm));
-        CHKERRMPI(MPI_Allreduce(&eventInfo[event].count,         &maxC,  1, MPI_INT,             MPI_MAX, comm));
+        PetscCallMPI(MPI_Allreduce(&flopr,                          &minf,  1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
+        PetscCallMPI(MPI_Allreduce(&flopr,                          &maxf,  1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
+        PetscCallMPI(MPI_Allreduce(&eventInfo[event].flops,         &totf,  1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+        PetscCallMPI(MPI_Allreduce(&eventInfo[event].time,          &mint,  1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
+        PetscCallMPI(MPI_Allreduce(&eventInfo[event].time,          &maxt,  1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
+        PetscCallMPI(MPI_Allreduce(&eventInfo[event].time,          &tott,  1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+        PetscCallMPI(MPI_Allreduce(&eventInfo[event].numMessages,   &totm,  1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+        PetscCallMPI(MPI_Allreduce(&eventInfo[event].messageLength, &totml, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+        PetscCallMPI(MPI_Allreduce(&eventInfo[event].numReductions, &totr,  1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+        PetscCallMPI(MPI_Allreduce(&eventInfo[event].count,         &minC,  1, MPI_INT,             MPI_MIN, comm));
+        PetscCallMPI(MPI_Allreduce(&eventInfo[event].count,         &maxC,  1, MPI_INT,             MPI_MAX, comm));
         if (PetscLogMemory) {
-          CHKERRMPI(MPI_Allreduce(&eventInfo[event].memIncrease,    &mem,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-          CHKERRMPI(MPI_Allreduce(&eventInfo[event].mallocSpace,    &mal,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-          CHKERRMPI(MPI_Allreduce(&eventInfo[event].mallocIncrease, &malmax,1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-          CHKERRMPI(MPI_Allreduce(&eventInfo[event].mallocIncreaseEvent, &emalmax,1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+          PetscCallMPI(MPI_Allreduce(&eventInfo[event].memIncrease,    &mem,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+          PetscCallMPI(MPI_Allreduce(&eventInfo[event].mallocSpace,    &mal,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+          PetscCallMPI(MPI_Allreduce(&eventInfo[event].mallocIncrease, &malmax,1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+          PetscCallMPI(MPI_Allreduce(&eventInfo[event].mallocIncreaseEvent, &emalmax,1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
         }
         #if defined(PETSC_HAVE_DEVICE)
-        CHKERRMPI(MPI_Allreduce(&eventInfo[event].CpuToGpuCount,    &cct,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        CHKERRMPI(MPI_Allreduce(&eventInfo[event].GpuToCpuCount,    &gct,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        CHKERRMPI(MPI_Allreduce(&eventInfo[event].CpuToGpuSize,     &csz,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        CHKERRMPI(MPI_Allreduce(&eventInfo[event].GpuToCpuSize,     &gsz,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        CHKERRMPI(MPI_Allreduce(&eventInfo[event].GpuFlops,         &gflops,1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        CHKERRMPI(MPI_Allreduce(&eventInfo[event].GpuTime,          &gmaxt ,1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
+        PetscCallMPI(MPI_Allreduce(&eventInfo[event].CpuToGpuCount,    &cct,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+        PetscCallMPI(MPI_Allreduce(&eventInfo[event].GpuToCpuCount,    &gct,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+        PetscCallMPI(MPI_Allreduce(&eventInfo[event].CpuToGpuSize,     &csz,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+        PetscCallMPI(MPI_Allreduce(&eventInfo[event].GpuToCpuSize,     &gsz,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+        PetscCallMPI(MPI_Allreduce(&eventInfo[event].GpuFlops,         &gflops,1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+        PetscCallMPI(MPI_Allreduce(&eventInfo[event].GpuTime,          &gmaxt ,1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
         #endif
         name = stageLog->eventLog->eventInfo[event].name;
       } else {
         flopr = 0.0;
-        CHKERRMPI(MPI_Allreduce(&flopr,                         &minf,  1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
-        CHKERRMPI(MPI_Allreduce(&flopr,                         &maxf,  1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
-        CHKERRMPI(MPI_Allreduce(&zero,                          &totf,  1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        CHKERRMPI(MPI_Allreduce(&zero,                          &mint,  1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
-        CHKERRMPI(MPI_Allreduce(&zero,                          &maxt,  1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
-        CHKERRMPI(MPI_Allreduce(&zero,                          &tott,  1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        CHKERRMPI(MPI_Allreduce(&zero,                          &totm,  1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        CHKERRMPI(MPI_Allreduce(&zero,                          &totml, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        CHKERRMPI(MPI_Allreduce(&zero,                          &totr,  1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        CHKERRMPI(MPI_Allreduce(&ierr,                          &minC,  1, MPI_INT,             MPI_MIN, comm));
-        CHKERRMPI(MPI_Allreduce(&ierr,                          &maxC,  1, MPI_INT,             MPI_MAX, comm));
+        PetscCallMPI(MPI_Allreduce(&flopr,                         &minf,  1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
+        PetscCallMPI(MPI_Allreduce(&flopr,                         &maxf,  1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
+        PetscCallMPI(MPI_Allreduce(&zero,                          &totf,  1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+        PetscCallMPI(MPI_Allreduce(&zero,                          &mint,  1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
+        PetscCallMPI(MPI_Allreduce(&zero,                          &maxt,  1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
+        PetscCallMPI(MPI_Allreduce(&zero,                          &tott,  1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+        PetscCallMPI(MPI_Allreduce(&zero,                          &totm,  1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+        PetscCallMPI(MPI_Allreduce(&zero,                          &totml, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+        PetscCallMPI(MPI_Allreduce(&zero,                          &totr,  1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+        PetscCallMPI(MPI_Allreduce(&ierr,                          &minC,  1, MPI_INT,             MPI_MIN, comm));
+        PetscCallMPI(MPI_Allreduce(&ierr,                          &maxC,  1, MPI_INT,             MPI_MAX, comm));
         if (PetscLogMemory) {
-          CHKERRMPI(MPI_Allreduce(&zero,                        &mem,    1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-          CHKERRMPI(MPI_Allreduce(&zero,                        &mal,    1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-          CHKERRMPI(MPI_Allreduce(&zero,                        &malmax, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-          CHKERRMPI(MPI_Allreduce(&zero,                        &emalmax,1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+          PetscCallMPI(MPI_Allreduce(&zero,                        &mem,    1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+          PetscCallMPI(MPI_Allreduce(&zero,                        &mal,    1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+          PetscCallMPI(MPI_Allreduce(&zero,                        &malmax, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+          PetscCallMPI(MPI_Allreduce(&zero,                        &emalmax,1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
         }
         #if defined(PETSC_HAVE_DEVICE)
-        CHKERRMPI(MPI_Allreduce(&zero,                          &cct,    1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        CHKERRMPI(MPI_Allreduce(&zero,                          &gct,    1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        CHKERRMPI(MPI_Allreduce(&zero,                          &csz,    1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        CHKERRMPI(MPI_Allreduce(&zero,                          &gsz,    1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        CHKERRMPI(MPI_Allreduce(&zero,                          &gflops, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        CHKERRMPI(MPI_Allreduce(&zero,                          &gmaxt , 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
+        PetscCallMPI(MPI_Allreduce(&zero,                          &cct,    1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+        PetscCallMPI(MPI_Allreduce(&zero,                          &gct,    1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+        PetscCallMPI(MPI_Allreduce(&zero,                          &csz,    1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+        PetscCallMPI(MPI_Allreduce(&zero,                          &gsz,    1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+        PetscCallMPI(MPI_Allreduce(&zero,                          &gflops, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+        PetscCallMPI(MPI_Allreduce(&zero,                          &gmaxt , 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
         #endif
         name  = "";
       }
@@ -1809,139 +1809,139 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
         if (red           != 0.0) fracStageRed     = totr/red;                   else fracStageRed     = 0.0;
         if (totm          != 0.0) totml           /= totm;                       else totml            = 0.0;
         if (maxt          != 0.0) flopr            = totf/maxt;                  else flopr            = 0.0;
-        if (fracStageTime > 1.00) CHKERRQ(PetscFPrintf(comm, fd,"Warning -- total time of event greater than time of entire stage -- something is wrong with the timer\n"));
+        if (fracStageTime > 1.00) PetscCall(PetscFPrintf(comm, fd,"Warning -- total time of event greater than time of entire stage -- something is wrong with the timer\n"));
         ierr = PetscFPrintf(comm, fd,
                             "%-16s %7d%4.1f %5.4e%4.1f %3.2e%4.1f %2.1e %2.1e %2.1e%3.0f%3.0f%3.0f%3.0f%3.0f %3.0f%3.0f%3.0f%3.0f%3.0f %5.0f",
                             name, maxC, ratC, maxt, ratt, maxf, ratf, totm, totml, totr,
                             100.0*fracTime, 100.0*fracFlops, 100.0*fracMess, 100.0*fracMessLen, 100.0*fracRed,
                             100.0*fracStageTime, 100.0*fracStageFlops, 100.0*fracStageMess, 100.0*fracStageMessLen, 100.0*fracStageRed,
-                            PetscAbs(flopr)/1.0e6);CHKERRQ(ierr);
+                            PetscAbs(flopr)/1.0e6);PetscCall(ierr);
         if (PetscLogMemory) {
-          CHKERRQ(PetscFPrintf(comm, fd," %5.0f   %5.0f   %5.0f   %5.0f",mal/1.0e6,emalmax/1.0e6,malmax/1.0e6,mem/1.0e6));
+          PetscCall(PetscFPrintf(comm, fd," %5.0f   %5.0f   %5.0f   %5.0f",mal/1.0e6,emalmax/1.0e6,malmax/1.0e6,mem/1.0e6));
         }
         #if defined(PETSC_HAVE_DEVICE)
         if (totf  != 0.0) fracgflops = gflops/totf;  else fracgflops = 0.0;
         if (gmaxt != 0.0) gflopr     = gflops/gmaxt; else gflopr     = 0.0;
-        CHKERRQ(PetscFPrintf(comm, fd,"   %5.0f   %4.0f %3.2e %4.0f %3.2e% 3.0f",PetscAbs(gflopr)/1.0e6,cct/size,csz/(1.0e6*size),gct/size,gsz/(1.0e6*size),100.0*fracgflops));
+        PetscCall(PetscFPrintf(comm, fd,"   %5.0f   %4.0f %3.2e %4.0f %3.2e% 3.0f",PetscAbs(gflopr)/1.0e6,cct/size,csz/(1.0e6*size),gct/size,gsz/(1.0e6*size),100.0*fracgflops));
         #endif
-        CHKERRQ(PetscFPrintf(comm, fd,"\n"));
+        PetscCall(PetscFPrintf(comm, fd,"\n"));
       }
     }
   }
 
   /* Memory usage and object creation */
-  CHKERRQ(PetscFPrintf(comm, fd, "------------------------------------------------------------------------------------------------------------------------"));
+  PetscCall(PetscFPrintf(comm, fd, "------------------------------------------------------------------------------------------------------------------------"));
   if (PetscLogMemory) {
-    CHKERRQ(PetscFPrintf(comm, fd, "-----------------------------"));
+    PetscCall(PetscFPrintf(comm, fd, "-----------------------------"));
   }
   #if defined(PETSC_HAVE_DEVICE)
-  CHKERRQ(PetscFPrintf(comm, fd, "---------------------------------------"));
+  PetscCall(PetscFPrintf(comm, fd, "---------------------------------------"));
   #endif
-  CHKERRQ(PetscFPrintf(comm, fd, "\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "Memory usage is given in bytes:\n\n"));
+  PetscCall(PetscFPrintf(comm, fd, "\n"));
+  PetscCall(PetscFPrintf(comm, fd, "\n"));
+  PetscCall(PetscFPrintf(comm, fd, "Memory usage is given in bytes:\n\n"));
 
   /* Right now, only stages on the first processor are reported here, meaning only objects associated with
      the global communicator, or MPI_COMM_SELF for proc 1. We really should report global stats and then
      stats for stages local to processor sets.
   */
   /* We should figure out the longest object name here (now 20 characters) */
-  CHKERRQ(PetscFPrintf(comm, fd, "Object Type          Creations   Destructions     Memory  Descendants' Mem.\n"));
-  CHKERRQ(PetscFPrintf(comm, fd, "Reports information only for process 0.\n"));
+  PetscCall(PetscFPrintf(comm, fd, "Object Type          Creations   Destructions     Memory  Descendants' Mem.\n"));
+  PetscCall(PetscFPrintf(comm, fd, "Reports information only for process 0.\n"));
   for (stage = 0; stage < numStages; stage++) {
     if (localStageUsed[stage]) {
       classInfo = stageLog->stageInfo[stage].classLog->classInfo;
-      CHKERRQ(PetscFPrintf(comm, fd, "\n--- Event Stage %d: %s\n\n", stage, stageInfo[stage].name));
+      PetscCall(PetscFPrintf(comm, fd, "\n--- Event Stage %d: %s\n\n", stage, stageInfo[stage].name));
       for (oclass = 0; oclass < stageLog->stageInfo[stage].classLog->numClasses; oclass++) {
         if ((classInfo[oclass].creations > 0) || (classInfo[oclass].destructions > 0)) {
           ierr = PetscFPrintf(comm, fd, "%20s %5d          %5d  %11.0f     %g\n", stageLog->classLog->classInfo[oclass].name,
                               classInfo[oclass].creations, classInfo[oclass].destructions, classInfo[oclass].mem,
-                              classInfo[oclass].descMem);CHKERRQ(ierr);
+                              classInfo[oclass].descMem);PetscCall(ierr);
         }
       }
     } else {
       if (!localStageVisible[stage]) continue;
-      CHKERRQ(PetscFPrintf(comm, fd, "\n--- Event Stage %d: Unknown\n\n", stage));
+      PetscCall(PetscFPrintf(comm, fd, "\n--- Event Stage %d: Unknown\n\n", stage));
     }
   }
 
-  CHKERRQ(PetscFree(localStageUsed));
-  CHKERRQ(PetscFree(stageUsed));
-  CHKERRQ(PetscFree(localStageVisible));
-  CHKERRQ(PetscFree(stageVisible));
+  PetscCall(PetscFree(localStageUsed));
+  PetscCall(PetscFree(stageUsed));
+  PetscCall(PetscFree(localStageVisible));
+  PetscCall(PetscFree(stageVisible));
 
   /* Information unrelated to this particular run */
-  CHKERRQ(PetscFPrintf(comm, fd, "========================================================================================================================\n"));
+  PetscCall(PetscFPrintf(comm, fd, "========================================================================================================================\n"));
   PetscTime(&y);
   PetscTime(&x);
   PetscTime(&y); PetscTime(&y); PetscTime(&y); PetscTime(&y); PetscTime(&y);
   PetscTime(&y); PetscTime(&y); PetscTime(&y); PetscTime(&y); PetscTime(&y);
-  CHKERRQ(PetscFPrintf(comm,fd,"Average time to get PetscTime(): %g\n", (y-x)/10.0));
+  PetscCall(PetscFPrintf(comm,fd,"Average time to get PetscTime(): %g\n", (y-x)/10.0));
   /* MPI information */
   if (size > 1) {
     MPI_Status  status;
     PetscMPIInt tag;
     MPI_Comm    newcomm;
 
-    CHKERRMPI(MPI_Barrier(comm));
+    PetscCallMPI(MPI_Barrier(comm));
     PetscTime(&x);
-    CHKERRMPI(MPI_Barrier(comm));
-    CHKERRMPI(MPI_Barrier(comm));
-    CHKERRMPI(MPI_Barrier(comm));
-    CHKERRMPI(MPI_Barrier(comm));
-    CHKERRMPI(MPI_Barrier(comm));
+    PetscCallMPI(MPI_Barrier(comm));
+    PetscCallMPI(MPI_Barrier(comm));
+    PetscCallMPI(MPI_Barrier(comm));
+    PetscCallMPI(MPI_Barrier(comm));
+    PetscCallMPI(MPI_Barrier(comm));
     PetscTime(&y);
-    CHKERRQ(PetscFPrintf(comm, fd, "Average time for MPI_Barrier(): %g\n", (y-x)/5.0));
-    CHKERRQ(PetscCommDuplicate(comm,&newcomm, &tag));
-    CHKERRMPI(MPI_Barrier(comm));
+    PetscCall(PetscFPrintf(comm, fd, "Average time for MPI_Barrier(): %g\n", (y-x)/5.0));
+    PetscCall(PetscCommDuplicate(comm,&newcomm, &tag));
+    PetscCallMPI(MPI_Barrier(comm));
     if (rank) {
-      CHKERRMPI(MPI_Recv(NULL, 0, MPI_INT, rank-1,            tag, newcomm, &status));
-      CHKERRMPI(MPI_Send(NULL, 0, MPI_INT, (rank+1)%size, tag, newcomm));
+      PetscCallMPI(MPI_Recv(NULL, 0, MPI_INT, rank-1,            tag, newcomm, &status));
+      PetscCallMPI(MPI_Send(NULL, 0, MPI_INT, (rank+1)%size, tag, newcomm));
     } else {
       PetscTime(&x);
-      CHKERRMPI(MPI_Send(NULL, 0, MPI_INT, 1,          tag, newcomm));
-      CHKERRMPI(MPI_Recv(NULL, 0, MPI_INT, size-1, tag, newcomm, &status));
+      PetscCallMPI(MPI_Send(NULL, 0, MPI_INT, 1,          tag, newcomm));
+      PetscCallMPI(MPI_Recv(NULL, 0, MPI_INT, size-1, tag, newcomm, &status));
       PetscTime(&y);
-      CHKERRQ(PetscFPrintf(comm,fd,"Average time for zero size MPI_Send(): %g\n", (y-x)/size));
+      PetscCall(PetscFPrintf(comm,fd,"Average time for zero size MPI_Send(): %g\n", (y-x)/size));
     }
-    CHKERRQ(PetscCommDestroy(&newcomm));
+    PetscCall(PetscCommDestroy(&newcomm));
   }
-  CHKERRQ(PetscOptionsView(NULL,viewer));
+  PetscCall(PetscOptionsView(NULL,viewer));
 
   /* Machine and compile information */
 #if defined(PETSC_USE_FORTRAN_KERNELS)
-  CHKERRQ(PetscFPrintf(comm, fd, "Compiled with FORTRAN kernels\n"));
+  PetscCall(PetscFPrintf(comm, fd, "Compiled with FORTRAN kernels\n"));
 #else
-  CHKERRQ(PetscFPrintf(comm, fd, "Compiled without FORTRAN kernels\n"));
+  PetscCall(PetscFPrintf(comm, fd, "Compiled without FORTRAN kernels\n"));
 #endif
 #if defined(PETSC_USE_64BIT_INDICES)
-  CHKERRQ(PetscFPrintf(comm, fd, "Compiled with 64 bit PetscInt\n"));
+  PetscCall(PetscFPrintf(comm, fd, "Compiled with 64 bit PetscInt\n"));
 #elif defined(PETSC_USE___FLOAT128)
-  CHKERRQ(PetscFPrintf(comm, fd, "Compiled with 32 bit PetscInt\n"));
+  PetscCall(PetscFPrintf(comm, fd, "Compiled with 32 bit PetscInt\n"));
 #endif
 #if defined(PETSC_USE_REAL_SINGLE)
-  CHKERRQ(PetscFPrintf(comm, fd, "Compiled with single precision PetscScalar and PetscReal\n"));
+  PetscCall(PetscFPrintf(comm, fd, "Compiled with single precision PetscScalar and PetscReal\n"));
 #elif defined(PETSC_USE___FLOAT128)
-  CHKERRQ(PetscFPrintf(comm, fd, "Compiled with 128 bit precision PetscScalar and PetscReal\n"));
+  PetscCall(PetscFPrintf(comm, fd, "Compiled with 128 bit precision PetscScalar and PetscReal\n"));
 #endif
 #if defined(PETSC_USE_REAL_MAT_SINGLE)
-  CHKERRQ(PetscFPrintf(comm, fd, "Compiled with single precision matrices\n"));
+  PetscCall(PetscFPrintf(comm, fd, "Compiled with single precision matrices\n"));
 #else
-  CHKERRQ(PetscFPrintf(comm, fd, "Compiled with full precision matrices (default)\n"));
+  PetscCall(PetscFPrintf(comm, fd, "Compiled with full precision matrices (default)\n"));
 #endif
   ierr = PetscFPrintf(comm, fd, "sizeof(short) %d sizeof(int) %d sizeof(long) %d sizeof(void*) %d sizeof(PetscScalar) %d sizeof(PetscInt) %d\n",
-                      (int) sizeof(short), (int) sizeof(int), (int) sizeof(long), (int) sizeof(void*),(int) sizeof(PetscScalar),(int) sizeof(PetscInt));CHKERRQ(ierr);
+                      (int) sizeof(short), (int) sizeof(int), (int) sizeof(long), (int) sizeof(void*),(int) sizeof(PetscScalar),(int) sizeof(PetscInt));PetscCall(ierr);
 
-  CHKERRQ(PetscFPrintf(comm, fd, "Configure options: %s",petscconfigureoptions));
-  CHKERRQ(PetscFPrintf(comm, fd, "%s", petscmachineinfo));
-  CHKERRQ(PetscFPrintf(comm, fd, "%s", petsccompilerinfo));
-  CHKERRQ(PetscFPrintf(comm, fd, "%s", petsccompilerflagsinfo));
-  CHKERRQ(PetscFPrintf(comm, fd, "%s", petsclinkerinfo));
+  PetscCall(PetscFPrintf(comm, fd, "Configure options: %s",petscconfigureoptions));
+  PetscCall(PetscFPrintf(comm, fd, "%s", petscmachineinfo));
+  PetscCall(PetscFPrintf(comm, fd, "%s", petsccompilerinfo));
+  PetscCall(PetscFPrintf(comm, fd, "%s", petsccompilerflagsinfo));
+  PetscCall(PetscFPrintf(comm, fd, "%s", petsclinkerinfo));
 
   /* Cleanup */
-  CHKERRQ(PetscFPrintf(comm, fd, "\n"));
-  CHKERRQ(PetscLogViewWarnNoGpuAwareMpi(comm,fd));
-  CHKERRQ(PetscLogViewWarnDebugging(comm,fd));
+  PetscCall(PetscFPrintf(comm, fd, "\n"));
+  PetscCall(PetscLogViewWarnNoGpuAwareMpi(comm,fd));
+  PetscCall(PetscLogViewWarnDebugging(comm,fd));
   PetscFunctionReturn(0);
 }
 
@@ -2000,28 +2000,28 @@ PetscErrorCode  PetscLogView(PetscViewer viewer)
   PetscCheck(PetscLogPLB,PETSC_COMM_SELF,PETSC_ERR_SUP,"Must use -log_view or PetscLogDefaultBegin() before calling this routine");
   /* Pop off any stages the user forgot to remove */
   lastStage = 0;
-  CHKERRQ(PetscLogGetStageLog(&stageLog));
-  CHKERRQ(PetscStageLogGetCurrent(stageLog, &stage));
+  PetscCall(PetscLogGetStageLog(&stageLog));
+  PetscCall(PetscStageLogGetCurrent(stageLog, &stage));
   while (stage >= 0) {
     lastStage = stage;
-    CHKERRQ(PetscStageLogPop(stageLog));
-    CHKERRQ(PetscStageLogGetCurrent(stageLog, &stage));
+    PetscCall(PetscStageLogPop(stageLog));
+    PetscCall(PetscStageLogGetCurrent(stageLog, &stage));
   }
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii));
   PetscCheck(isascii,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Currently can only view logging to ASCII");
-  CHKERRQ(PetscViewerGetFormat(viewer,&format));
+  PetscCall(PetscViewerGetFormat(viewer,&format));
   if (format == PETSC_VIEWER_DEFAULT || format == PETSC_VIEWER_ASCII_INFO) {
-    CHKERRQ(PetscLogView_Default(viewer));
+    PetscCall(PetscLogView_Default(viewer));
   } else if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
-    CHKERRQ(PetscLogView_Detailed(viewer));
+    PetscCall(PetscLogView_Detailed(viewer));
   } else if (format == PETSC_VIEWER_ASCII_CSV) {
-    CHKERRQ(PetscLogView_CSV(viewer));
+    PetscCall(PetscLogView_CSV(viewer));
   } else if (format == PETSC_VIEWER_ASCII_XML) {
-    CHKERRQ(PetscLogView_Nested(viewer));
+    PetscCall(PetscLogView_Nested(viewer));
   } else if (format == PETSC_VIEWER_ASCII_FLAMEGRAPH) {
-    CHKERRQ(PetscLogView_Flamegraph(viewer));
+    PetscCall(PetscLogView_Flamegraph(viewer));
   }
-  CHKERRQ(PetscStageLogPush(stageLog, lastStage));
+  PetscCall(PetscStageLogPush(stageLog, lastStage));
   PetscFunctionReturn(0);
 }
 
@@ -2042,12 +2042,12 @@ PetscErrorCode PetscLogViewFromOptions(void)
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,NULL,"-log_view",&viewer,&format,&flg));
+  PetscCall(PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,NULL,"-log_view",&viewer,&format,&flg));
   if (flg) {
-    CHKERRQ(PetscViewerPushFormat(viewer,format));
-    CHKERRQ(PetscLogView(viewer));
-    CHKERRQ(PetscViewerPopFormat(viewer));
-    CHKERRQ(PetscViewerDestroy(&viewer));
+    PetscCall(PetscViewerPushFormat(viewer,format));
+    PetscCall(PetscLogView(viewer));
+    PetscCall(PetscViewerPopFormat(viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
   }
   PetscFunctionReturn(0);
 }
@@ -2086,7 +2086,7 @@ PetscErrorCode  PetscLogObjectState(PetscObject obj, const char format[], ...)
   PetscFunctionBegin;
   if (!petsc_logObjects) PetscFunctionReturn(0);
   va_start(Argp, format);
-  CHKERRQ(PetscVSNPrintf(petsc_objects[obj->id].info, 64,format,&fullLength, Argp));
+  PetscCall(PetscVSNPrintf(petsc_objects[obj->id].info, 64,format,&fullLength, Argp));
   va_end(Argp);
   PetscFunctionReturn(0);
 }
@@ -2252,10 +2252,10 @@ PetscErrorCode PetscLogGpuTimeBegin(void)
   if (PetscDefined(HAVE_CUDA) || PetscDefined(HAVE_HIP)) {
     PetscDeviceContext dctx;
 
-    CHKERRQ(PetscDeviceContextGetCurrentContext(&dctx));
-    CHKERRQ(PetscDeviceContextBeginTimer_Internal(dctx));
+    PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
+    PetscCall(PetscDeviceContextBeginTimer_Internal(dctx));
   } else {
-    CHKERRQ(PetscTimeSubtract(&petsc_gtime));
+    PetscCall(PetscTimeSubtract(&petsc_gtime));
   }
   PetscFunctionReturn(0);
 }
@@ -2275,11 +2275,11 @@ PetscErrorCode PetscLogGpuTimeEnd(void)
     PetscDeviceContext dctx;
     PetscLogDouble     elapsed;
 
-    CHKERRQ(PetscDeviceContextGetCurrentContext(&dctx));
-    CHKERRQ(PetscDeviceContextEndTimer_Internal(dctx,&elapsed));
+    PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
+    PetscCall(PetscDeviceContextEndTimer_Internal(dctx,&elapsed));
     petsc_gtime += (elapsed/1000.0);
   } else {
-    CHKERRQ(PetscTimeAdd(&petsc_gtime));
+    PetscCall(PetscTimeAdd(&petsc_gtime));
   }
   PetscFunctionReturn(0);
 }
@@ -2322,10 +2322,10 @@ PetscErrorCode  PetscClassIdRegister(const char name[],PetscClassId *oclass)
   PetscFunctionBegin;
   *oclass = ++PETSC_LARGEST_CLASSID;
 #if defined(PETSC_USE_LOG)
-  CHKERRQ(PetscLogGetStageLog(&stageLog));
-  CHKERRQ(PetscClassRegLogRegister(stageLog->classLog, name, *oclass));
+  PetscCall(PetscLogGetStageLog(&stageLog));
+  PetscCall(PetscClassRegLogRegister(stageLog->classLog, name, *oclass));
   for (stage = 0; stage < stageLog->numStages; stage++) {
-    CHKERRQ(PetscClassPerfLogEnsureSize(stageLog->stageInfo[stage].classLog, stageLog->classLog->numClasses));
+    PetscCall(PetscClassPerfLogEnsureSize(stageLog->stageInfo[stage].classLog, stageLog->classLog->numClasses));
   }
 #endif
   PetscFunctionReturn(0);
@@ -2365,14 +2365,14 @@ PetscErrorCode  PetscLogMPEBegin(void)
   PetscFunctionBegin;
   /* Do MPE initialization */
   if (!MPE_Initialized_logging()) { /* This function exists in mpich 1.1.2 and higher */
-    CHKERRQ(PetscInfo(0,"Initializing MPE.\n"));
-    CHKERRQ(MPE_Init_log());
+    PetscCall(PetscInfo(0,"Initializing MPE.\n"));
+    PetscCall(MPE_Init_log());
 
     PetscBeganMPE = PETSC_TRUE;
   } else {
-    CHKERRQ(PetscInfo(0,"MPE already initialized. Not attempting to reinitialize.\n"));
+    PetscCall(PetscInfo(0,"MPE already initialized. Not attempting to reinitialize.\n"));
   }
-  CHKERRQ(PetscLogSet(PetscLogEventBeginMPE, PetscLogEventEndMPE));
+  PetscCall(PetscLogSet(PetscLogEventBeginMPE, PetscLogEventEndMPE));
   PetscFunctionReturn(0);
 }
 
@@ -2392,15 +2392,15 @@ PetscErrorCode  PetscLogMPEDump(const char sname[])
 
   PetscFunctionBegin;
   if (PetscBeganMPE) {
-    CHKERRQ(PetscInfo(0,"Finalizing MPE.\n"));
+    PetscCall(PetscInfo(0,"Finalizing MPE.\n"));
     if (sname) {
-      CHKERRQ(PetscStrcpy(name,sname));
+      PetscCall(PetscStrcpy(name,sname));
     } else {
-      CHKERRQ(PetscGetProgramName(name,sizeof(name)));
+      PetscCall(PetscGetProgramName(name,sizeof(name)));
     }
-    CHKERRQ(MPE_Finish_log(name));
+    PetscCall(MPE_Finish_log(name));
   } else {
-    CHKERRQ(PetscInfo(0,"Not finalizing MPE (not started by PETSc).\n"));
+    PetscCall(PetscInfo(0,"Not finalizing MPE (not started by PETSc).\n"));
   }
   PetscFunctionReturn(0);
 }

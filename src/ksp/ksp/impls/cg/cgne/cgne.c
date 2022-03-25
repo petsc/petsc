@@ -29,7 +29,7 @@ static PetscErrorCode KSPSetUp_CGNE(KSP ksp)
 
   PetscFunctionBegin;
   /* get work vectors needed by CGNE */
-  CHKERRQ(KSPSetWorkVecs(ksp,4));
+  PetscCall(KSPSetWorkVecs(ksp,4));
 
   /*
      If user requested computations of eigenvalues then allocate work
@@ -37,8 +37,8 @@ static PetscErrorCode KSPSetUp_CGNE(KSP ksp)
   */
   if (ksp->calc_sings) {
     /* get space to store tridiagonal matrix for Lanczos */
-    CHKERRQ(PetscMalloc4(maxit,&cgP->e,maxit,&cgP->d,maxit,&cgP->ee,maxit,&cgP->dd));
-    CHKERRQ(PetscLogObjectMemory((PetscObject)ksp,2*maxit*(sizeof(PetscScalar)+sizeof(PetscReal))));
+    PetscCall(PetscMalloc4(maxit,&cgP->e,maxit,&cgP->d,maxit,&cgP->ee,maxit,&cgP->dd));
+    PetscCall(PetscLogObjectMemory((PetscObject)ksp,2*maxit*(sizeof(PetscScalar)+sizeof(PetscReal))));
 
     ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_CG;
     ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_CG;
@@ -68,9 +68,9 @@ static PetscErrorCode  KSPSolve_CGNE(KSP ksp)
   PetscBool      diagonalscale,transpose_pc;
 
   PetscFunctionBegin;
-  CHKERRQ(PCGetDiagonalScale(ksp->pc,&diagonalscale));
+  PetscCall(PCGetDiagonalScale(ksp->pc,&diagonalscale));
   PetscCheck(!diagonalscale,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
-  CHKERRQ(PCApplyTransposeExists(ksp->pc,&transpose_pc));
+  PetscCall(PCApplyTransposeExists(ksp->pc,&transpose_pc));
 
   cg            = (KSP_CG*)ksp->data;
   eigs          = ksp->calc_sings;
@@ -85,57 +85,57 @@ static PetscErrorCode  KSPSolve_CGNE(KSP ksp)
 #define VecXDot(x,y,a) (((cg->type) == (KSP_CG_HERMITIAN)) ? VecDot(x,y,a) : VecTDot(x,y,a))
 
   if (eigs) {e = cg->e; d = cg->d; e[0] = 0.0; }
-  CHKERRQ(PCGetOperators(ksp->pc,&Amat,&Pmat));
+  PetscCall(PCGetOperators(ksp->pc,&Amat,&Pmat));
 
   ksp->its = 0;
-  CHKERRQ(KSP_MatMultTranspose(ksp,Amat,B,T));
+  PetscCall(KSP_MatMultTranspose(ksp,Amat,B,T));
   if (!ksp->guess_zero) {
-    CHKERRQ(KSP_MatMult(ksp,Amat,X,P));
-    CHKERRQ(KSP_MatMultTranspose(ksp,Amat,P,R));
-    CHKERRQ(VecAYPX(R,-1.0,T));
+    PetscCall(KSP_MatMult(ksp,Amat,X,P));
+    PetscCall(KSP_MatMultTranspose(ksp,Amat,P,R));
+    PetscCall(VecAYPX(R,-1.0,T));
   } else {
-    CHKERRQ(VecCopy(T,R));              /*     r <- b (x is 0) */
+    PetscCall(VecCopy(T,R));              /*     r <- b (x is 0) */
   }
   if (transpose_pc) {
-    CHKERRQ(KSP_PCApplyTranspose(ksp,R,T));
+    PetscCall(KSP_PCApplyTranspose(ksp,R,T));
   } else {
-    CHKERRQ(KSP_PCApply(ksp,R,T));
+    PetscCall(KSP_PCApply(ksp,R,T));
   }
-  CHKERRQ(KSP_PCApply(ksp,T,Z));
+  PetscCall(KSP_PCApply(ksp,T,Z));
 
   if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
-    CHKERRQ(VecNorm(Z,NORM_2,&dp)); /*    dp <- z'*z       */
+    PetscCall(VecNorm(Z,NORM_2,&dp)); /*    dp <- z'*z       */
   } else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
-    CHKERRQ(VecNorm(R,NORM_2,&dp)); /*    dp <- r'*r       */
+    PetscCall(VecNorm(R,NORM_2,&dp)); /*    dp <- r'*r       */
   } else if (ksp->normtype == KSP_NORM_NATURAL) {
-    CHKERRQ(VecXDot(Z,R,&beta));
+    PetscCall(VecXDot(Z,R,&beta));
     KSPCheckDot(ksp,beta);
     dp   = PetscSqrtReal(PetscAbsScalar(beta));
   } else dp = 0.0;
-  CHKERRQ(KSPLogResidualHistory(ksp,dp));
-  CHKERRQ(KSPMonitor(ksp,0,dp));
+  PetscCall(KSPLogResidualHistory(ksp,dp));
+  PetscCall(KSPMonitor(ksp,0,dp));
   ksp->rnorm = dp;
-  CHKERRQ((*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP)); /* test for convergence */
+  PetscCall((*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP)); /* test for convergence */
   if (ksp->reason) PetscFunctionReturn(0);
 
   i = 0;
   do {
     ksp->its = i+1;
-    CHKERRQ(VecXDot(Z,R,&beta)); /*     beta <- r'z     */
+    PetscCall(VecXDot(Z,R,&beta)); /*     beta <- r'z     */
     KSPCheckDot(ksp,beta);
     if (beta == 0.0) {
       ksp->reason = KSP_CONVERGED_ATOL;
-      CHKERRQ(PetscInfo(ksp,"converged due to beta = 0\n"));
+      PetscCall(PetscInfo(ksp,"converged due to beta = 0\n"));
       break;
 #if !defined(PETSC_USE_COMPLEX)
     } else if (beta < 0.0) {
       ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
-      CHKERRQ(PetscInfo(ksp,"diverging due to indefinite preconditioner\n"));
+      PetscCall(PetscInfo(ksp,"diverging due to indefinite preconditioner\n"));
       break;
 #endif
     }
     if (!i) {
-      CHKERRQ(VecCopy(Z,P));          /*     p <- z          */
+      PetscCall(VecCopy(Z,P));          /*     p <- z          */
       b    = 0.0;
     } else {
       b = beta/betaold;
@@ -143,42 +143,42 @@ static PetscErrorCode  KSPSolve_CGNE(KSP ksp)
         PetscCheckFalse(ksp->max_it != stored_max_it,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Can not change maxit AND calculate eigenvalues");
         e[i] = PetscSqrtReal(PetscAbsScalar(b))/a;
       }
-      CHKERRQ(VecAYPX(P,b,Z));     /*     p <- z + b* p   */
+      PetscCall(VecAYPX(P,b,Z));     /*     p <- z + b* p   */
     }
     betaold = beta;
-    CHKERRQ(KSP_MatMult(ksp,Amat,P,T));
-    CHKERRQ(KSP_MatMultTranspose(ksp,Amat,T,Z));
-    CHKERRQ(VecXDot(P,Z,&dpi));    /*     dpi <- z'p      */
+    PetscCall(KSP_MatMult(ksp,Amat,P,T));
+    PetscCall(KSP_MatMultTranspose(ksp,Amat,T,Z));
+    PetscCall(VecXDot(P,Z,&dpi));    /*     dpi <- z'p      */
     KSPCheckDot(ksp,dpi);
     a       = beta/dpi;                            /*     a = beta/p'z    */
     if (eigs) d[i] = PetscSqrtReal(PetscAbsScalar(b))*e[i] + 1.0/a;
-    CHKERRQ(VecAXPY(X,a,P));           /*     x <- x + ap     */
-    CHKERRQ(VecAXPY(R,-a,Z));                       /*     r <- r - az     */
+    PetscCall(VecAXPY(X,a,P));           /*     x <- x + ap     */
+    PetscCall(VecAXPY(R,-a,Z));                       /*     r <- r - az     */
     if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
       if (transpose_pc) {
-        CHKERRQ(KSP_PCApplyTranspose(ksp,R,T));
+        PetscCall(KSP_PCApplyTranspose(ksp,R,T));
       } else {
-        CHKERRQ(KSP_PCApply(ksp,R,T));
+        PetscCall(KSP_PCApply(ksp,R,T));
       }
-      CHKERRQ(KSP_PCApply(ksp,T,Z));
-      CHKERRQ(VecNorm(Z,NORM_2,&dp));              /*    dp <- z'*z       */
+      PetscCall(KSP_PCApply(ksp,T,Z));
+      PetscCall(VecNorm(Z,NORM_2,&dp));              /*    dp <- z'*z       */
     } else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
-      CHKERRQ(VecNorm(R,NORM_2,&dp));
+      PetscCall(VecNorm(R,NORM_2,&dp));
     } else if (ksp->normtype == KSP_NORM_NATURAL) {
       dp = PetscSqrtReal(PetscAbsScalar(beta));
     } else dp = 0.0;
     ksp->rnorm = dp;
-    CHKERRQ(KSPLogResidualHistory(ksp,dp));
-    CHKERRQ(KSPMonitor(ksp,i+1,dp));
-    CHKERRQ((*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP));
+    PetscCall(KSPLogResidualHistory(ksp,dp));
+    PetscCall(KSPMonitor(ksp,i+1,dp));
+    PetscCall((*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP));
     if (ksp->reason) break;
     if (ksp->normtype != KSP_NORM_PRECONDITIONED) {
       if (transpose_pc) {
-        CHKERRQ(KSP_PCApplyTranspose(ksp,R,T));
+        PetscCall(KSP_PCApplyTranspose(ksp,R,T));
       } else {
-        CHKERRQ(KSP_PCApply(ksp,R,T));
+        PetscCall(KSP_PCApply(ksp,R,T));
       }
-      CHKERRQ(KSP_PCApply(ksp,T,Z));
+      PetscCall(KSP_PCApply(ksp,T,Z));
     }
     i++;
   } while (i<ksp->max_it);
@@ -232,17 +232,17 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CGNE(KSP ksp)
   KSP_CG         *cg;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNewLog(ksp,&cg));
+  PetscCall(PetscNewLog(ksp,&cg));
 #if !defined(PETSC_USE_COMPLEX)
   cg->type = KSP_CG_SYMMETRIC;
 #else
   cg->type = KSP_CG_HERMITIAN;
 #endif
   ksp->data = (void*)cg;
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3));
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2));
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2));
-  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1));
 
   /*
        Sets the functions that are associated with this data structure
@@ -261,6 +261,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CGNE(KSP ksp)
       KSPCGSetType() checks for this attached function and calls it if it finds
       it. (Sort of like a dynamic member function that can be added at run time
   */
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ksp,"KSPCGSetType_C",KSPCGSetType_CGNE));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPCGSetType_C",KSPCGSetType_CGNE));
   PetscFunctionReturn(0);
 }

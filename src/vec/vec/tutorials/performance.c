@@ -16,51 +16,51 @@ int main(int argc, char **argv)
   PetscLogStage  stage;
 #endif
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
-  CHKERRQ(PetscRandomCreate(PETSC_COMM_WORLD,&rctx));
-  CHKERRQ(PetscRandomSetFromOptions(rctx));
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&v));
-  CHKERRQ(VecSetSizes(v,PETSC_DECIDE,n));
-  CHKERRQ(VecSetFromOptions(v));
-  CHKERRQ(VecDuplicate(v,&w));
-  CHKERRQ(VecSetRandom(v,rctx));
-  CHKERRQ(VecSetRandom(w,rctx));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscRandomCreate(PETSC_COMM_WORLD,&rctx));
+  PetscCall(PetscRandomSetFromOptions(rctx));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&v));
+  PetscCall(VecSetSizes(v,PETSC_DECIDE,n));
+  PetscCall(VecSetFromOptions(v));
+  PetscCall(VecDuplicate(v,&w));
+  PetscCall(VecSetRandom(v,rctx));
+  PetscCall(VecSetRandom(w,rctx));
 
   /* create dummy vector to clear cache */
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
-  CHKERRQ(VecSetSizes(x,PETSC_DECIDE,10000000));
-  CHKERRQ(VecSetFromOptions(x));
-  CHKERRQ(VecSetRandom(x,rctx));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+  PetscCall(VecSetSizes(x,PETSC_DECIDE,10000000));
+  PetscCall(VecSetFromOptions(x));
+  PetscCall(VecSetRandom(x,rctx));
 
   /* send v to GPU */
-  CHKERRQ(PetscBarrier(NULL));
-  CHKERRQ(VecNorm(v,NORM_1,&norm1));
+  PetscCall(PetscBarrier(NULL));
+  PetscCall(VecNorm(v,NORM_1,&norm1));
 
   /* register a stage work on GPU */
-  CHKERRQ(PetscLogStageRegister("Work on GPU", &stage));
-  CHKERRQ(PetscLogStagePush(stage));
-  CHKERRQ(VecNorm(w,NORM_1,&norm1)); /* send w to GPU */
-  CHKERRQ(VecNorm(x,NORM_1,&norm1)); /* clear cache */
-  CHKERRQ(PetscBarrier(NULL));
-  CHKERRQ(VecAXPY(w,1.0,v));
-  CHKERRQ(VecNorm(x,NORM_INFINITY,&norm1));
-  CHKERRQ(PetscBarrier(NULL));
-  CHKERRQ(VecDot(w,v,&val));
-  CHKERRQ(VecNorm(x,NORM_1,&norm1));
-  CHKERRQ(PetscBarrier(NULL));
-  CHKERRQ(VecSet(v,0.0));
-  CHKERRQ(VecNorm(x,NORM_2,&norm2));
-  CHKERRQ(PetscBarrier(NULL));
-  CHKERRQ(VecCopy(v,w));
-  CHKERRQ(PetscLogStagePop());
+  PetscCall(PetscLogStageRegister("Work on GPU", &stage));
+  PetscCall(PetscLogStagePush(stage));
+  PetscCall(VecNorm(w,NORM_1,&norm1)); /* send w to GPU */
+  PetscCall(VecNorm(x,NORM_1,&norm1)); /* clear cache */
+  PetscCall(PetscBarrier(NULL));
+  PetscCall(VecAXPY(w,1.0,v));
+  PetscCall(VecNorm(x,NORM_INFINITY,&norm1));
+  PetscCall(PetscBarrier(NULL));
+  PetscCall(VecDot(w,v,&val));
+  PetscCall(VecNorm(x,NORM_1,&norm1));
+  PetscCall(PetscBarrier(NULL));
+  PetscCall(VecSet(v,0.0));
+  PetscCall(VecNorm(x,NORM_2,&norm2));
+  PetscCall(PetscBarrier(NULL));
+  PetscCall(VecCopy(v,w));
+  PetscCall(PetscLogStagePop());
 
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Test completed successfully!\n"));
-  CHKERRQ(VecDestroy(&v));
-  CHKERRQ(VecDestroy(&w));
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(PetscRandomDestroy(&rctx));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Test completed successfully!\n"));
+  PetscCall(VecDestroy(&v));
+  PetscCall(VecDestroy(&w));
+  PetscCall(VecDestroy(&x));
+  PetscCall(PetscRandomDestroy(&rctx));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

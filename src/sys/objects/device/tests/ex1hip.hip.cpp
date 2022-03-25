@@ -17,28 +17,28 @@ int main(int argc,char **argv)
   hipError_t     cerr;
   PetscLogDouble tstart,tend,time;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
   /* Launch a sequence of kernels asynchronously. Previous launched kernels do not need to be completed before launching a new one */
-  CHKERRQ(PetscTime(&tstart));
+  PetscCall(PetscTime(&tstart));
   for (i=0; i<n; i++) {hipLaunchKernelGGL(NullKernel,dim3(1),dim3(1),0,NULL);}
-  CHKERRQ(PetscTime(&tend));
-  CHKERRHIP(hipStreamSynchronize(NULL)); /* Sync after tend since we don't want to count kernel execution time */
+  PetscCall(PetscTime(&tend));
+  PetscCallHIP(hipStreamSynchronize(NULL)); /* Sync after tend since we don't want to count kernel execution time */
   time = (tend-tstart)*1e6/n;
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Average asynchronous HIP kernel launch time = %.2f microseconds\n",time));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Average asynchronous HIP kernel launch time = %.2f microseconds\n",time));
 
   /* Launch a sequence of kernels synchronously. Only launch a new kernel after the one before it has been completed */
-  CHKERRQ(PetscTime(&tstart));
+  PetscCall(PetscTime(&tstart));
   for (i=0; i<n; i++) {
     hipLaunchKernelGGL(NullKernel,dim3(1),dim3(1),0,NULL);
-    CHKERRHIP(hipStreamSynchronize(NULL));
+    PetscCallHIP(hipStreamSynchronize(NULL));
   }
-  CHKERRQ(PetscTime(&tend));
+  PetscCall(PetscTime(&tend));
   time = (tend-tstart)*1e6/n;
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Average synchronous  HIP kernel launch time = %.2f microseconds\n",time));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Average synchronous  HIP kernel launch time = %.2f microseconds\n",time));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

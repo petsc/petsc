@@ -102,18 +102,18 @@ PetscErrorCode PetscDTAltVApply(PetscInt N, PetscInt k, const PetscReal *w, cons
     PetscInt i, j, l;
     PetscReal sum = 0.;
 
-    CHKERRQ(PetscDTFactorialInt(k, &Nf));
-    CHKERRQ(PetscDTBinomialInt(N, k, &Nk));
-    CHKERRQ(PetscMalloc2(k, &subset, k, &perm));
+    PetscCall(PetscDTFactorialInt(k, &Nf));
+    PetscCall(PetscDTBinomialInt(N, k, &Nk));
+    PetscCall(PetscMalloc2(k, &subset, k, &perm));
     for (i = 0; i < Nk; i++) {
       PetscReal subsum = 0.;
 
-      CHKERRQ(PetscDTEnumSubset(N, k, i, subset));
+      PetscCall(PetscDTEnumSubset(N, k, i, subset));
       for (j = 0; j < Nf; j++) {
         PetscBool permOdd;
         PetscReal prod;
 
-        CHKERRQ(PetscDTEnumPerm(k, j, perm, &permOdd));
+        PetscCall(PetscDTEnumPerm(k, j, perm, &permOdd));
         prod = permOdd ? -1. : 1.;
         for (l = 0; l < k; l++) {
           prod *= v[perm[l] * N + subset[l]];
@@ -122,7 +122,7 @@ PetscErrorCode PetscDTAltVApply(PetscInt N, PetscInt k, const PetscReal *w, cons
       }
       sum += w[i] * subsum;
     }
-    CHKERRQ(PetscFree2(subset, perm));
+    PetscCall(PetscFree2(subset, perm));
     *wv = sum;
   }
   PetscFunctionReturn(0);
@@ -157,7 +157,7 @@ PetscErrorCode PetscDTAltVWedge(PetscInt N, PetscInt j, PetscInt k, const PetscR
   if (N <= 3) {
     PetscInt Njk;
 
-    CHKERRQ(PetscDTBinomialInt(N, j+k, &Njk));
+    PetscCall(PetscDTBinomialInt(N, j+k, &Njk));
     if (!j)      {for (i = 0; i < Njk; i++) {awedgeb[i] = a[0] * b[i];}}
     else if (!k) {for (i = 0; i < Njk; i++) {awedgeb[i] = a[i] * b[0];}}
     else {
@@ -178,32 +178,32 @@ PetscErrorCode PetscDTAltVWedge(PetscInt N, PetscInt j, PetscInt k, const PetscR
     PetscInt *subset, *subsetjk, *subsetj, *subsetk;
     PetscInt  i;
 
-    CHKERRQ(PetscDTBinomialInt(N, j+k, &Njk));
-    CHKERRQ(PetscDTBinomialInt(j+k, j, &JKj));
-    CHKERRQ(PetscMalloc4(j+k, &subset, j+k, &subsetjk, j, &subsetj, k, &subsetk));
+    PetscCall(PetscDTBinomialInt(N, j+k, &Njk));
+    PetscCall(PetscDTBinomialInt(j+k, j, &JKj));
+    PetscCall(PetscMalloc4(j+k, &subset, j+k, &subsetjk, j, &subsetj, k, &subsetk));
     for (i = 0; i < Njk; i++) {
       PetscReal sum = 0.;
       PetscInt  l;
 
-      CHKERRQ(PetscDTEnumSubset(N, j+k, i, subset));
+      PetscCall(PetscDTEnumSubset(N, j+k, i, subset));
       for (l = 0; l < JKj; l++) {
         PetscBool jkOdd;
         PetscInt  m, jInd, kInd;
 
-        CHKERRQ(PetscDTEnumSplit(j+k, j, l, subsetjk, &jkOdd));
+        PetscCall(PetscDTEnumSplit(j+k, j, l, subsetjk, &jkOdd));
         for (m = 0; m < j; m++) {
           subsetj[m] = subset[subsetjk[m]];
         }
         for (m = 0; m < k; m++) {
           subsetk[m] = subset[subsetjk[j+m]];
         }
-        CHKERRQ(PetscDTSubsetIndex(N, j, subsetj, &jInd));
-        CHKERRQ(PetscDTSubsetIndex(N, k, subsetk, &kInd));
+        PetscCall(PetscDTSubsetIndex(N, j, subsetj, &jInd));
+        PetscCall(PetscDTSubsetIndex(N, k, subsetk, &kInd));
         sum += jkOdd ? -(a[jInd] * b[kInd]) : (a[jInd] * b[kInd]);
       }
       awedgeb[i] = sum;
     }
-    CHKERRQ(PetscFree4(subset, subsetjk, subsetj, subsetk));
+    PetscCall(PetscFree4(subset, subsetjk, subsetj, subsetk));
   }
   PetscFunctionReturn(0);
 }
@@ -235,7 +235,7 @@ PetscErrorCode PetscDTAltVWedgeMatrix(PetscInt N, PetscInt j, PetscInt k, const 
   if (N <= 3) {
     PetscInt Njk;
 
-    CHKERRQ(PetscDTBinomialInt(N, j+k, &Njk));
+    PetscCall(PetscDTBinomialInt(N, j+k, &Njk));
     if (!j) {
       for (i = 0; i < Njk * Njk; i++) {awedgeMat[i] = 0.;}
       for (i = 0; i < Njk; i++) {awedgeMat[i * (Njk + 1)] = a[0];}
@@ -260,32 +260,32 @@ PetscErrorCode PetscDTAltVWedgeMatrix(PetscInt N, PetscInt j, PetscInt k, const 
     PetscInt  JKj, i;
     PetscInt *subset, *subsetjk, *subsetj, *subsetk;
 
-    CHKERRQ(PetscDTBinomialInt(N,   k,   &Nk));
-    CHKERRQ(PetscDTBinomialInt(N,   j+k, &Njk));
-    CHKERRQ(PetscDTBinomialInt(j+k, j,   &JKj));
-    CHKERRQ(PetscMalloc4(j+k, &subset, j+k, &subsetjk, j, &subsetj, k, &subsetk));
+    PetscCall(PetscDTBinomialInt(N,   k,   &Nk));
+    PetscCall(PetscDTBinomialInt(N,   j+k, &Njk));
+    PetscCall(PetscDTBinomialInt(j+k, j,   &JKj));
+    PetscCall(PetscMalloc4(j+k, &subset, j+k, &subsetjk, j, &subsetj, k, &subsetk));
     for (i = 0; i < Njk * Nk; i++) awedgeMat[i] = 0.;
     for (i = 0; i < Njk; i++) {
       PetscInt  l;
 
-      CHKERRQ(PetscDTEnumSubset(N, j+k, i, subset));
+      PetscCall(PetscDTEnumSubset(N, j+k, i, subset));
       for (l = 0; l < JKj; l++) {
         PetscBool jkOdd;
         PetscInt  m, jInd, kInd;
 
-        CHKERRQ(PetscDTEnumSplit(j+k, j, l, subsetjk, &jkOdd));
+        PetscCall(PetscDTEnumSplit(j+k, j, l, subsetjk, &jkOdd));
         for (m = 0; m < j; m++) {
           subsetj[m] = subset[subsetjk[m]];
         }
         for (m = 0; m < k; m++) {
           subsetk[m] = subset[subsetjk[j+m]];
         }
-        CHKERRQ(PetscDTSubsetIndex(N, j, subsetj, &jInd));
-        CHKERRQ(PetscDTSubsetIndex(N, k, subsetk, &kInd));
+        PetscCall(PetscDTSubsetIndex(N, j, subsetj, &jInd));
+        PetscCall(PetscDTSubsetIndex(N, k, subsetk, &kInd));
         awedgeMat[i * Nk + kInd] += jkOdd ? - a[jInd] : a[jInd];
       }
     }
-    CHKERRQ(PetscFree4(subset, subsetjk, subsetj, subsetk));
+    PetscCall(PetscFree4(subset, subsetjk, subsetj, subsetk));
   }
   PetscFunctionReturn(0);
 }
@@ -320,8 +320,8 @@ PetscErrorCode PetscDTAltVPullback(PetscInt N, PetscInt M, const PetscReal *L, P
   PetscCheckFalse(PetscAbsInt(k) > N || PetscAbsInt(k) > M,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid form degree");
   if (N <= 3 && M <= 3) {
 
-    CHKERRQ(PetscDTBinomialInt(M, PetscAbsInt(k), &Mk));
-    CHKERRQ(PetscDTBinomialInt(N, PetscAbsInt(k), &Nk));
+    PetscCall(PetscDTBinomialInt(M, PetscAbsInt(k), &Mk));
+    PetscCall(PetscDTBinomialInt(N, PetscAbsInt(k), &Nk));
     if (!k) {
       Lstarw[0] = w[0];
     } else if (k == 1) {
@@ -386,29 +386,29 @@ PetscErrorCode PetscDTAltVPullback(PetscInt N, PetscInt M, const PetscReal *L, P
     const PetscReal *ww = NULL;
     PetscBool        negative = PETSC_FALSE;
 
-    CHKERRQ(PetscDTBinomialInt(M, PetscAbsInt(k), &Mk));
-    CHKERRQ(PetscDTBinomialInt(N, PetscAbsInt(k), &Nk));
-    CHKERRQ(PetscDTFactorialInt(PetscAbsInt(k), &Nf));
+    PetscCall(PetscDTBinomialInt(M, PetscAbsInt(k), &Mk));
+    PetscCall(PetscDTBinomialInt(N, PetscAbsInt(k), &Nk));
+    PetscCall(PetscDTFactorialInt(PetscAbsInt(k), &Nf));
     if (k < 0) {
       negative = PETSC_TRUE;
       k = -k;
-      CHKERRQ(PetscMalloc1(Mk, &walloc));
-      CHKERRQ(PetscDTAltVStar(M, M - k, 1, w, walloc));
+      PetscCall(PetscMalloc1(Mk, &walloc));
+      PetscCall(PetscDTAltVStar(M, M - k, 1, w, walloc));
       ww = walloc;
     } else {
       ww = w;
     }
-    CHKERRQ(PetscMalloc5(k, &subsetw, k, &subsetv, k, &perm, N * k, &Lw, k * k, &Lwv));
+    PetscCall(PetscMalloc5(k, &subsetw, k, &subsetv, k, &perm, N * k, &Lw, k * k, &Lwv));
     for (i = 0; i < Nk; i++) Lstarw[i] = 0.;
     for (i = 0; i < Mk; i++) {
-      CHKERRQ(PetscDTEnumSubset(M, k, i, subsetw));
+      PetscCall(PetscDTEnumSubset(M, k, i, subsetw));
       for (j = 0; j < Nk; j++) {
-        CHKERRQ(PetscDTEnumSubset(N, k, j, subsetv));
+        PetscCall(PetscDTEnumSubset(N, k, j, subsetv));
         for (p = 0; p < Nf; p++) {
           PetscReal prod;
           PetscBool isOdd;
 
-          CHKERRQ(PetscDTEnumPerm(k, p, perm, &isOdd));
+          PetscCall(PetscDTEnumPerm(k, p, perm, &isOdd));
           prod = isOdd ? -ww[i] : ww[i];
           for (l = 0; l < k; l++) {
             prod *= L[subsetw[perm[l]] * N + subsetv[l]];
@@ -420,13 +420,13 @@ PetscErrorCode PetscDTAltVPullback(PetscInt N, PetscInt M, const PetscReal *L, P
     if (negative) {
       PetscReal *sLsw;
 
-      CHKERRQ(PetscMalloc1(Nk, &sLsw));
-      CHKERRQ(PetscDTAltVStar(N, N - k, -1,  Lstarw, sLsw));
+      PetscCall(PetscMalloc1(Nk, &sLsw));
+      PetscCall(PetscDTAltVStar(N, N - k, -1,  Lstarw, sLsw));
       for (i = 0; i < Nk; i++) Lstarw[i] = sLsw[i];
-      CHKERRQ(PetscFree(sLsw));
+      PetscCall(PetscFree(sLsw));
     }
-    CHKERRQ(PetscFree5(subsetw, subsetv, perm, Lw, Lwv));
-    CHKERRQ(PetscFree(walloc));
+    PetscCall(PetscFree5(subsetw, subsetv, perm, Lw, Lwv));
+    PetscCall(PetscFree(walloc));
   }
   PetscFunctionReturn(0);
 }
@@ -461,8 +461,8 @@ PetscErrorCode PetscDTAltVPullbackMatrix(PetscInt N, PetscInt M, const PetscReal
   if (N <= 3 && M <= 3) {
     PetscReal mult[3] = {1., -1., 1.};
 
-    CHKERRQ(PetscDTBinomialInt(M, PetscAbsInt(k), &Mk));
-    CHKERRQ(PetscDTBinomialInt(N, PetscAbsInt(k), &Nk));
+    PetscCall(PetscDTBinomialInt(M, PetscAbsInt(k), &Mk));
+    PetscCall(PetscDTBinomialInt(N, PetscAbsInt(k), &Nk));
     if (!k) {
       Lstar[0] = 1.;
     } else if (k == 1) {
@@ -509,29 +509,29 @@ PetscErrorCode PetscDTAltVPullbackMatrix(PetscInt N, PetscInt M, const PetscReal
       negative = PETSC_TRUE;
       k = -k;
     }
-    CHKERRQ(PetscDTBinomialInt(M, PetscAbsInt(k), &Mk));
-    CHKERRQ(PetscDTBinomialInt(N, PetscAbsInt(k), &Nk));
-    CHKERRQ(PetscDTFactorialInt(PetscAbsInt(k), &Nf));
-    CHKERRQ(PetscMalloc5(M, &subsetw, N, &subsetv, k, &perm, N * k, &Lw, k * k, &Lwv));
+    PetscCall(PetscDTBinomialInt(M, PetscAbsInt(k), &Mk));
+    PetscCall(PetscDTBinomialInt(N, PetscAbsInt(k), &Nk));
+    PetscCall(PetscDTFactorialInt(PetscAbsInt(k), &Nf));
+    PetscCall(PetscMalloc5(M, &subsetw, N, &subsetv, k, &perm, N * k, &Lw, k * k, &Lwv));
     for (i = 0; i < Nk * Mk; i++) Lstar[i] = 0.;
     for (i = 0; i < Mk; i++) {
       PetscBool iOdd;
       PetscInt  iidx, jidx;
 
-      CHKERRQ(PetscDTEnumSplit(M, k, i, subsetw, &iOdd));
+      PetscCall(PetscDTEnumSplit(M, k, i, subsetw, &iOdd));
       iidx = negative ? Mk - 1 - i : i;
       iOdd = negative ? (PetscBool) (iOdd ^ ((k * (M-k)) & 1)) : PETSC_FALSE;
       for (j = 0; j < Nk; j++) {
         PetscBool jOdd;
 
-        CHKERRQ(PetscDTEnumSplit(N, k, j, subsetv, &jOdd));
+        PetscCall(PetscDTEnumSplit(N, k, j, subsetv, &jOdd));
         jidx = negative ? Nk - 1 - j : j;
         jOdd = negative ? (PetscBool) (iOdd ^ jOdd ^ ((k * (N-k)) & 1)) : PETSC_FALSE;
         for (p = 0; p < Nf; p++) {
           PetscReal prod;
           PetscBool isOdd;
 
-          CHKERRQ(PetscDTEnumPerm(k, p, perm, &isOdd));
+          PetscCall(PetscDTEnumPerm(k, p, perm, &isOdd));
           isOdd = (PetscBool) (isOdd ^ jOdd);
           prod = isOdd ? -1. : 1.;
           for (l = 0; l < k; l++) {
@@ -541,7 +541,7 @@ PetscErrorCode PetscDTAltVPullbackMatrix(PetscInt N, PetscInt M, const PetscReal
         }
       }
     }
-    CHKERRQ(PetscFree5(subsetw, subsetv, perm, Lw, Lwv));
+    PetscCall(PetscFree5(subsetw, subsetv, perm, Lw, Lwv));
   }
   PetscFunctionReturn(0);
 }
@@ -568,8 +568,8 @@ PetscErrorCode PetscDTAltVInterior(PetscInt N, PetscInt k, const PetscReal *w, c
 
   PetscFunctionBegin;
   PetscCheckFalse(k <= 0 || k > N,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid form degree");
-  CHKERRQ(PetscDTBinomialInt(N, k,   &Nk));
-  CHKERRQ(PetscDTBinomialInt(N, k-1, &Nkm));
+  PetscCall(PetscDTBinomialInt(N, k,   &Nk));
+  PetscCall(PetscDTBinomialInt(N, k-1, &Nkm));
   if (N <= 3) {
     if (k == 1) {
       PetscReal sum = 0.;
@@ -592,12 +592,12 @@ PetscErrorCode PetscDTAltVInterior(PetscInt N, PetscInt k, const PetscReal *w, c
   } else {
     PetscInt       *subset, *work;
 
-    CHKERRQ(PetscMalloc2(k, &subset, k, &work));
+    PetscCall(PetscMalloc2(k, &subset, k, &work));
     for (i = 0; i < Nkm; i++) wIntv[i] = 0.;
     for (i = 0; i < Nk; i++) {
       PetscInt  j, l, m;
 
-      CHKERRQ(PetscDTEnumSubset(N, k, i, subset));
+      PetscCall(PetscDTEnumSubset(N, k, i, subset));
       for (j = 0; j < k; j++) {
         PetscInt  idx;
         PetscBool flip = (PetscBool) (j & 1);
@@ -605,11 +605,11 @@ PetscErrorCode PetscDTAltVInterior(PetscInt N, PetscInt k, const PetscReal *w, c
         for (l = 0, m = 0; l < k; l++) {
           if (l != j) work[m++] = subset[l];
         }
-        CHKERRQ(PetscDTSubsetIndex(N, k - 1, work, &idx));
+        PetscCall(PetscDTSubsetIndex(N, k - 1, work, &idx));
         wIntv[idx] += flip ? -(w[i] * v[subset[j]]) :  (w[i] * v[subset[j]]);
       }
     }
-    CHKERRQ(PetscFree2(subset, work));
+    PetscCall(PetscFree2(subset, work));
   }
   PetscFunctionReturn(0);
 }
@@ -635,8 +635,8 @@ PetscErrorCode PetscDTAltVInteriorMatrix(PetscInt N, PetscInt k, const PetscReal
 
   PetscFunctionBegin;
   PetscCheckFalse(k <= 0 || k > N,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid form degree");
-  CHKERRQ(PetscDTBinomialInt(N, k,   &Nk));
-  CHKERRQ(PetscDTBinomialInt(N, k-1, &Nkm));
+  PetscCall(PetscDTBinomialInt(N, k,   &Nk));
+  PetscCall(PetscDTBinomialInt(N, k-1, &Nkm));
   if (N <= 3) {
     if (k == 1) {
       for (i = 0; i < N; i++) intvMat[i] = v[i];
@@ -652,12 +652,12 @@ PetscErrorCode PetscDTAltVInteriorMatrix(PetscInt N, PetscInt k, const PetscReal
   } else {
     PetscInt       *subset, *work;
 
-    CHKERRQ(PetscMalloc2(k, &subset, k, &work));
+    PetscCall(PetscMalloc2(k, &subset, k, &work));
     for (i = 0; i < Nk * Nkm; i++) intvMat[i] = 0.;
     for (i = 0; i < Nk; i++) {
       PetscInt  j, l, m;
 
-      CHKERRQ(PetscDTEnumSubset(N, k, i, subset));
+      PetscCall(PetscDTEnumSubset(N, k, i, subset));
       for (j = 0; j < k; j++) {
         PetscInt  idx;
         PetscBool flip = (PetscBool) (j & 1);
@@ -665,11 +665,11 @@ PetscErrorCode PetscDTAltVInteriorMatrix(PetscInt N, PetscInt k, const PetscReal
         for (l = 0, m = 0; l < k; l++) {
           if (l != j) work[m++] = subset[l];
         }
-        CHKERRQ(PetscDTSubsetIndex(N, k - 1, work, &idx));
+        PetscCall(PetscDTSubsetIndex(N, k - 1, work, &idx));
         intvMat[idx * Nk + i] += flip ? -v[subset[j]] :  v[subset[j]];
       }
     }
-    CHKERRQ(PetscFree2(subset, work));
+    PetscCall(PetscFree2(subset, work));
   }
   PetscFunctionReturn(0);
 }
@@ -698,8 +698,8 @@ PetscErrorCode PetscDTAltVInteriorPattern(PetscInt N, PetscInt k, PetscInt (*ind
 
   PetscFunctionBegin;
   PetscCheckFalse(k <= 0 || k > N,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid form degree");
-  CHKERRQ(PetscDTBinomialInt(N, k,   &Nk));
-  CHKERRQ(PetscDTBinomialInt(N, k-1, &Nkm));
+  PetscCall(PetscDTBinomialInt(N, k,   &Nk));
+  PetscCall(PetscDTBinomialInt(N, k-1, &Nkm));
   if (N <= 3) {
     if (k == 1) {
       for (i = 0; i < N; i++) {
@@ -726,11 +726,11 @@ PetscErrorCode PetscDTAltVInteriorPattern(PetscInt N, PetscInt k, PetscInt (*ind
   } else {
     PetscInt       *subset, *work;
 
-    CHKERRQ(PetscMalloc2(k, &subset, k, &work));
+    PetscCall(PetscMalloc2(k, &subset, k, &work));
     for (i = 0; i < Nk; i++) {
       PetscInt  j, l, m;
 
-      CHKERRQ(PetscDTEnumSubset(N, k, i, subset));
+      PetscCall(PetscDTEnumSubset(N, k, i, subset));
       for (j = 0; j < k; j++) {
         PetscInt  idx;
         PetscBool flip = (PetscBool) (j & 1);
@@ -738,13 +738,13 @@ PetscErrorCode PetscDTAltVInteriorPattern(PetscInt N, PetscInt k, PetscInt (*ind
         for (l = 0, m = 0; l < k; l++) {
           if (l != j) work[m++] = subset[l];
         }
-        CHKERRQ(PetscDTSubsetIndex(N, k - 1, work, &idx));
+        PetscCall(PetscDTSubsetIndex(N, k - 1, work, &idx));
         indices[i * k + j][0] = idx;
         indices[i * k + j][1] = i;
         indices[i * k + j][2] = flip ? -(subset[j] + 1) : subset[j];
       }
     }
-    CHKERRQ(PetscFree2(subset, work));
+    PetscCall(PetscFree2(subset, work));
   }
   PetscFunctionReturn(0);
 }
@@ -771,7 +771,7 @@ PetscErrorCode PetscDTAltVStar(PetscInt N, PetscInt k, PetscInt pow, const Petsc
 
   PetscFunctionBegin;
   PetscCheckFalse(k < 0 || k > N,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid form degree");
-  CHKERRQ(PetscDTBinomialInt(N, k, &Nk));
+  PetscCall(PetscDTBinomialInt(N, k, &Nk));
   pow = pow % 4;
   pow = (pow + 4) % 4; /* make non-negative */
   /* pow is now 0, 1, 2, 3 */
@@ -789,16 +789,16 @@ PetscErrorCode PetscDTAltVStar(PetscInt N, PetscInt k, PetscInt pow, const Petsc
   } else {
     PetscInt       *subset;
 
-    CHKERRQ(PetscMalloc1(N, &subset));
+    PetscCall(PetscMalloc1(N, &subset));
     if (pow % 2) {
       PetscInt l = (pow == 1) ? k : N - k;
       for (i = 0; i < Nk; i++) {
         PetscBool sOdd;
         PetscInt  j, idx;
 
-        CHKERRQ(PetscDTEnumSplit(N, l, i, subset, &sOdd));
-        CHKERRQ(PetscDTSubsetIndex(N, l, subset, &idx));
-        CHKERRQ(PetscDTSubsetIndex(N, N-l, &subset[l], &j));
+        PetscCall(PetscDTEnumSplit(N, l, i, subset, &sOdd));
+        PetscCall(PetscDTSubsetIndex(N, l, subset, &idx));
+        PetscCall(PetscDTSubsetIndex(N, N-l, &subset[l], &j));
         starw[j] = sOdd ? -w[idx] : w[idx];
       }
     } else {
@@ -808,7 +808,7 @@ PetscErrorCode PetscDTAltVStar(PetscInt N, PetscInt k, PetscInt pow, const Petsc
     if (pow > 1 && (k * (N - k)) % 2) {
       for (i = 0; i < Nk; i++) starw[i] = -starw[i];
     }
-    CHKERRQ(PetscFree(subset));
+    PetscCall(PetscFree(subset));
   }
   PetscFunctionReturn(0);
 }

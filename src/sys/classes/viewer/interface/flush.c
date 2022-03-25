@@ -20,7 +20,7 @@ PetscErrorCode  PetscViewerFlush(PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   if (viewer->ops->flush) {
-    CHKERRQ((*viewer->ops->flush)(viewer));
+    PetscCall((*viewer->ops->flush)(viewer));
   }
   PetscFunctionReturn(0);
 }

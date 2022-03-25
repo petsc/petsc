@@ -77,41 +77,41 @@ int main(int argc,char **argv)
   KSP            ksp;
   PetscInt       *testarray;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
 
   /*
      Initialize problem parameters
   */
   user.mx = 4; user.my = 4; user.param = 6.0;
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-mx",&user.mx,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-my",&user.my,NULL));
-  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-par",&user.param,NULL));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-pc",&pc,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-mx",&user.mx,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-my",&user.my,NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-par",&user.param,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-pc",&pc,NULL));
   PetscCheckFalse(user.param >= bratu_lambda_max || user.param <= bratu_lambda_min,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Lambda is out of range");
   N = user.mx*user.my;
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-use_convergence_test",&use_convergence_test,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-use_convergence_test",&use_convergence_test,NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  CHKERRQ(SNESCreate(PETSC_COMM_WORLD,&snes));
+  PetscCall(SNESCreate(PETSC_COMM_WORLD,&snes));
 
   if (pc) {
-    CHKERRQ(SNESSetType(snes,SNESNEWTONTR));
-    CHKERRQ(SNESNewtonTRSetPostCheck(snes, postcheck,NULL));
+    PetscCall(SNESSetType(snes,SNESNEWTONTR));
+    PetscCall(SNESNewtonTRSetPostCheck(snes, postcheck,NULL));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create vector data structures; set function evaluation routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
-  CHKERRQ(VecSetSizes(x,PETSC_DECIDE,N));
-  CHKERRQ(VecSetFromOptions(x));
-  CHKERRQ(VecDuplicate(x,&r));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+  PetscCall(VecSetSizes(x,PETSC_DECIDE,N));
+  PetscCall(VecSetFromOptions(x));
+  PetscCall(VecDuplicate(x,&r));
 
   /*
      Set function evaluation routine and vector.  Whenever the nonlinear
@@ -121,7 +121,7 @@ int main(int argc,char **argv)
         context that provides application-specific data for the
         function evaluation routine.
   */
-  CHKERRQ(SNESSetFunction(snes,r,FormFunction,(void*)&user));
+  PetscCall(SNESSetFunction(snes,r,FormFunction,(void*)&user));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create matrix data structure; set Jacobian evaluation routine
@@ -132,21 +132,21 @@ int main(int argc,char **argv)
      for the Jacobian.  See the users manual for a discussion of better
      techniques for preallocating matrix memory.
   */
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-snes_mf",&matrix_free,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-snes_mf",&matrix_free,NULL));
   if (!matrix_free) {
     PetscBool matrix_free_operator = PETSC_FALSE;
-    CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-snes_mf_operator",&matrix_free_operator,NULL));
+    PetscCall(PetscOptionsGetBool(NULL,NULL,"-snes_mf_operator",&matrix_free_operator,NULL));
     if (matrix_free_operator) matrix_free = PETSC_FALSE;
   }
   if (!matrix_free) {
-    CHKERRQ(MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,NULL,&J));
+    PetscCall(MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,NULL,&J));
   }
 
   /*
      This option will cause the Jacobian to be computed via finite differences
     efficiently using a coloring of the columns of the matrix.
   */
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-snes_fd_coloring",&fd_coloring,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-snes_fd_coloring",&fd_coloring,NULL));
   PetscCheckFalse(matrix_free && fd_coloring,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"Use only one of -snes_mf, -snes_fd_coloring options!\nYou can do -snes_mf_operator -snes_fd_coloring");
 
   if (fd_coloring) {
@@ -158,31 +158,31 @@ int main(int argc,char **argv)
       because clearly if we had a routine to compute the Jacobian we won't need
       to use finite differences.
     */
-    CHKERRQ(FormJacobian(snes,x,J,J,&user));
+    PetscCall(FormJacobian(snes,x,J,J,&user));
 
     /*
        Color the matrix, i.e. determine groups of columns that share no common
       rows. These columns in the Jacobian can all be computed simultaneously.
     */
-    CHKERRQ(MatColoringCreate(J,&mc));
-    CHKERRQ(MatColoringSetType(mc,MATCOLORINGSL));
-    CHKERRQ(MatColoringSetFromOptions(mc));
-    CHKERRQ(MatColoringApply(mc,&iscoloring));
-    CHKERRQ(MatColoringDestroy(&mc));
+    PetscCall(MatColoringCreate(J,&mc));
+    PetscCall(MatColoringSetType(mc,MATCOLORINGSL));
+    PetscCall(MatColoringSetFromOptions(mc));
+    PetscCall(MatColoringApply(mc,&iscoloring));
+    PetscCall(MatColoringDestroy(&mc));
     /*
        Create the data structure that SNESComputeJacobianDefaultColor() uses
        to compute the actual Jacobians via finite differences.
     */
-    CHKERRQ(MatFDColoringCreate(J,iscoloring,&fdcoloring));
-    CHKERRQ(MatFDColoringSetFunction(fdcoloring,(PetscErrorCode (*)(void))FormFunction,&user));
-    CHKERRQ(MatFDColoringSetFromOptions(fdcoloring));
-    CHKERRQ(MatFDColoringSetUp(J,iscoloring,fdcoloring));
+    PetscCall(MatFDColoringCreate(J,iscoloring,&fdcoloring));
+    PetscCall(MatFDColoringSetFunction(fdcoloring,(PetscErrorCode (*)(void))FormFunction,&user));
+    PetscCall(MatFDColoringSetFromOptions(fdcoloring));
+    PetscCall(MatFDColoringSetUp(J,iscoloring,fdcoloring));
     /*
         Tell SNES to use the routine SNESComputeJacobianDefaultColor()
       to compute Jacobians.
     */
-    CHKERRQ(SNESSetJacobian(snes,J,J,SNESComputeJacobianDefaultColor,fdcoloring));
-    CHKERRQ(ISColoringDestroy(&iscoloring));
+    PetscCall(SNESSetJacobian(snes,J,J,SNESComputeJacobianDefaultColor,fdcoloring));
+    PetscCall(ISColoringDestroy(&iscoloring));
   }
   /*
      Set Jacobian matrix data structure and default Jacobian evaluation
@@ -200,7 +200,7 @@ int main(int argc,char **argv)
                              products within Newton-Krylov method
   */
   else if (!matrix_free) {
-    CHKERRQ(SNESSetJacobian(snes,J,J,FormJacobian,(void*)&user));
+    PetscCall(SNESSetJacobian(snes,J,J,FormJacobian,(void*)&user));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -210,14 +210,14 @@ int main(int argc,char **argv)
   /*
      Set runtime options (e.g., -snes_monitor -snes_rtol <rtol> -ksp_type <type>)
   */
-  CHKERRQ(SNESSetFromOptions(snes));
+  PetscCall(SNESSetFromOptions(snes));
 
   /*
      Set array that saves the function norms.  This array is intended
      when the user wants to save the convergence history for later use
      rather than just to view the function norms via -snes_monitor.
   */
-  CHKERRQ(SNESSetConvergenceHistory(snes,history,hist_its,50,PETSC_TRUE));
+  PetscCall(SNESSetConvergenceHistory(snes,history,hist_its,50,PETSC_TRUE));
 
   /*
       Add a user provided convergence test; this is to test that SNESNEWTONTR properly calls the
@@ -225,9 +225,9 @@ int main(int argc,char **argv)
       test that it gets properly freed at the end
   */
   if (use_convergence_test) {
-    CHKERRQ(SNESGetKSP(snes,&ksp));
-    CHKERRQ(PetscMalloc1(5,&testarray));
-    CHKERRQ(KSPSetConvergenceTest(ksp,ConvergenceTest,testarray,ConvergenceDestroy));
+    PetscCall(SNESGetKSP(snes,&ksp));
+    PetscCall(PetscMalloc1(5,&testarray));
+    PetscCall(KSPSetConvergenceTest(ksp,ConvergenceTest,testarray,ConvergenceDestroy));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -239,19 +239,19 @@ int main(int argc,char **argv)
      to employ an initial guess of zero, the user should explicitly set
      this vector to zero by calling VecSet().
   */
-  CHKERRQ(FormInitialGuess(&user,x));
-  CHKERRQ(SNESSolve(snes,NULL,x));
-  CHKERRQ(SNESGetIterationNumber(snes,&its));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n",its));
+  PetscCall(FormInitialGuess(&user,x));
+  PetscCall(SNESSolve(snes,NULL,x));
+  PetscCall(SNESGetIterationNumber(snes,&its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n",its));
 
   /*
      Print the convergence history.  This is intended just to demonstrate
      use of the data attained via SNESSetConvergenceHistory().
   */
-  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-print_history",&flg));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-print_history",&flg));
   if (flg) {
     for (i=0; i<its+1; i++) {
-      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"iteration %D: Linear iterations %D Function norm = %g\n",i,hist_its[i],(double)history[i]));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"iteration %D: Linear iterations %D Function norm = %g\n",i,hist_its[i],(double)history[i]));
     }
   }
 
@@ -261,15 +261,15 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   if (!matrix_free) {
-    CHKERRQ(MatDestroy(&J));
+    PetscCall(MatDestroy(&J));
   }
   if (fd_coloring) {
-    CHKERRQ(MatFDColoringDestroy(&fdcoloring));
+    PetscCall(MatFDColoringDestroy(&fdcoloring));
   }
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&r));
-  CHKERRQ(SNESDestroy(&snes));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&r));
+  PetscCall(SNESDestroy(&snes));
+  PetscCall(PetscFinalize());
   return 0;
 }
 /* ------------------------------------------------------------------- */
@@ -303,7 +303,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
        - You MUST call VecRestoreArray() when you no longer need access to
          the array.
   */
-  CHKERRQ(VecGetArray(X,&x));
+  PetscCall(VecGetArray(X,&x));
   temp1 = lambda/(lambda + 1.0);
   for (j=0; j<my; j++) {
     temp = (PetscReal)(PetscMin(j,my-j-1))*hy;
@@ -320,7 +320,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   /*
      Restore vector
   */
-  CHKERRQ(VecRestoreArray(X,&x));
+  PetscCall(VecRestoreArray(X,&x));
   return 0;
 }
 /* ------------------------------------------------------------------- */
@@ -355,8 +355,8 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   /*
      Get pointers to vector data
   */
-  CHKERRQ(VecGetArrayRead(X,&x));
-  CHKERRQ(VecGetArray(F,&f));
+  PetscCall(VecGetArrayRead(X,&x));
+  PetscCall(VecGetArray(F,&f));
 
   /*
      Compute function
@@ -382,8 +382,8 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   /*
      Restore vectors
   */
-  CHKERRQ(VecRestoreArrayRead(X,&x));
-  CHKERRQ(VecRestoreArray(F,&f));
+  PetscCall(VecRestoreArrayRead(X,&x));
+  PetscCall(VecRestoreArray(F,&f));
   return 0;
 }
 /* ------------------------------------------------------------------- */
@@ -420,7 +420,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat jac,void *ptr)
   /*
      Get pointer to vector data
   */
-  CHKERRQ(VecGetArrayRead(X,&x));
+  PetscCall(VecGetArrayRead(X,&x));
 
   /*
      Compute entries of the Jacobian
@@ -429,7 +429,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat jac,void *ptr)
     for (i=0; i<mx; i++) {
       row = i + j*mx;
       if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
-        CHKERRQ(MatSetValues(jac,1,&row,1,&row,&one,INSERT_VALUES));
+        PetscCall(MatSetValues(jac,1,&row,1,&row,&one,INSERT_VALUES));
         continue;
       }
       v[0] = -hxdhy; col[0] = row - mx;
@@ -437,24 +437,24 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat jac,void *ptr)
       v[2] = two*(hydhx + hxdhy) - sc*lambda*PetscExpScalar(x[row]); col[2] = row;
       v[3] = -hydhx; col[3] = row + 1;
       v[4] = -hxdhy; col[4] = row + mx;
-      CHKERRQ(MatSetValues(jac,1,&row,5,col,v,INSERT_VALUES));
+      PetscCall(MatSetValues(jac,1,&row,5,col,v,INSERT_VALUES));
     }
   }
 
   /*
      Restore vector
   */
-  CHKERRQ(VecRestoreArrayRead(X,&x));
+  PetscCall(VecRestoreArrayRead(X,&x));
 
   /*
      Assemble matrix
   */
-  CHKERRQ(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
 
   if (jac != J) {
-    CHKERRQ(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY));
   }
 
   return 0;
@@ -466,7 +466,7 @@ PetscErrorCode ConvergenceTest(KSP ksp,PetscInt it,PetscReal nrm,KSPConvergedRea
   *reason = KSP_CONVERGED_ITERATING;
   if (it > 1) {
     *reason = KSP_CONVERGED_ITS;
-    CHKERRQ(PetscInfo(NULL,"User provided convergence test returning after 2 iterations\n"));
+    PetscCall(PetscInfo(NULL,"User provided convergence test returning after 2 iterations\n"));
   }
   PetscFunctionReturn(0);
 }
@@ -474,8 +474,8 @@ PetscErrorCode ConvergenceTest(KSP ksp,PetscInt it,PetscReal nrm,KSPConvergedRea
 PetscErrorCode ConvergenceDestroy(void* ctx)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscInfo(NULL,"User provided convergence destroy called\n"));
-  CHKERRQ(PetscFree(ctx));
+  PetscCall(PetscInfo(NULL,"User provided convergence destroy called\n"));
+  PetscCall(PetscFree(ctx));
   PetscFunctionReturn(0);
 }
 
@@ -485,11 +485,11 @@ PetscErrorCode postcheck(SNES snes,Vec x,Vec y,Vec w,PetscBool *changed_y,PetscB
   Vec            tmp;
 
   PetscFunctionBegin;
-  CHKERRQ(VecDuplicate(x,&tmp));
-  CHKERRQ(VecWAXPY(tmp,-1.0,x,w));
-  CHKERRQ(VecNorm(tmp,NORM_2,&norm));
-  CHKERRQ(VecDestroy(&tmp));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Norm of search step %g\n",(double)norm));
+  PetscCall(VecDuplicate(x,&tmp));
+  PetscCall(VecWAXPY(tmp,-1.0,x,w));
+  PetscCall(VecNorm(tmp,NORM_2,&norm));
+  PetscCall(VecDestroy(&tmp));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of search step %g\n",(double)norm));
   PetscFunctionReturn(0);
 }
 

@@ -24,11 +24,11 @@ PetscErrorCode KSPAGMRESRoddecInitNeighboor(KSP ksp)
   PetscMPIInt    First, Last, rank, size;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectGetComm((PetscObject)agmres->vecs[0], &comm));
-  CHKERRMPI(MPI_Comm_rank(comm, &rank));
-  CHKERRMPI(MPI_Comm_size(comm, &size));
-  CHKERRMPI(MPIU_Allreduce(&rank, &First, 1, MPI_INT, MPI_MIN, comm));
-  CHKERRMPI(MPIU_Allreduce(&rank, &Last, 1, MPI_INT, MPI_MAX, comm));
+  PetscCall(PetscObjectGetComm((PetscObject)agmres->vecs[0], &comm));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCallMPI(MPIU_Allreduce(&rank, &First, 1, MPI_INT, MPI_MIN, comm));
+  PetscCallMPI(MPIU_Allreduce(&rank, &Last, 1, MPI_INT, MPI_MAX, comm));
 
   if ((rank != Last) && (rank == 0)) {
     agmres->Ileft  = rank - 1;
@@ -131,20 +131,20 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
   PetscBLASInt   N = MAXKSPSIZE + 1;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectGetComm((PetscObject)ksp,&comm));
-  CHKERRQ(PetscLogEventBegin(KSP_AGMRESRoddec,ksp,0,0,0));
-  CHKERRQ(PetscArrayzero(agmres->Rloc, N*N));
+  PetscCall(PetscObjectGetComm((PetscObject)ksp,&comm));
+  PetscCall(PetscLogEventBegin(KSP_AGMRESRoddec,ksp,0,0,0));
+  PetscCall(PetscArrayzero(agmres->Rloc, N*N));
   /* check input arguments */
   PetscCheckFalse(nvec < 1,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE, "The number of input vectors shoud be positive");
-  CHKERRQ(VecGetLocalSize(VEC_V(0), &nloc));
-  CHKERRQ(PetscBLASIntCast(nloc,&bnloc));
+  PetscCall(VecGetLocalSize(VEC_V(0), &nloc));
+  PetscCall(PetscBLASIntCast(nloc,&bnloc));
   PetscCheckFalse(nvec > nloc,PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_WRONG, "In QR factorization, the number of local rows should be greater or equal to the number of columns");
   pas = 1;
   /* Copy the vectors of the basis */
   for (j = 0; j < nvec; j++) {
-    CHKERRQ(VecGetArray(VEC_V(j), &col));
+    PetscCall(VecGetArray(VEC_V(j), &col));
     PetscStackCallBLAS("BLAScopy",BLAScopy_(&bnloc, col, &pas, &Qloc[j*nloc], &pas));
-    CHKERRQ(VecRestoreArray(VEC_V(j), &col));
+    PetscCall(VecRestoreArray(VEC_V(j), &col));
   }
   /* Each process performs a local QR on its own block */
   for (j = 0; j < nvec; j++) {
@@ -171,13 +171,13 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
     len = nvec - d;
     if (rank == First) {
       PetscStackCallBLAS("BLAScopy",BLAScopy_(&len, &(Qloc[d*nloc+d]), &bnloc, &(wbufptr[d]), &pas));
-      CHKERRMPI(MPI_Send(&(wbufptr[d]), len, MPIU_SCALAR, rank + 1, agmres->tag, comm));
+      PetscCallMPI(MPI_Send(&(wbufptr[d]), len, MPIU_SCALAR, rank + 1, agmres->tag, comm));
     } else {
-      CHKERRMPI(MPI_Recv(&(wbufptr[d]), len, MPIU_SCALAR, rank - 1, agmres->tag, comm, &status));
+      PetscCallMPI(MPI_Recv(&(wbufptr[d]), len, MPIU_SCALAR, rank - 1, agmres->tag, comm, &status));
       /* Elimination of Rloc(1,d)*/
       c    = wbufptr[d];
       s    = Qloc[d*nloc];
-      CHKERRQ(KSPAGMRESRoddecGivens(&c, &s, &rho, 1));
+      PetscCall(KSPAGMRESRoddecGivens(&c, &s, &rho, 1));
       /* Apply Givens Rotation*/
       for (k = d; k < nvec; k++) {
         old          = wbufptr[k];
@@ -186,7 +186,7 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
       }
       Qloc[d*nloc] = rho;
       if (rank != Last) {
-        CHKERRMPI(MPI_Send(& (wbufptr[d]), len, MPIU_SCALAR, rank + 1, agmres->tag, comm));
+        PetscCallMPI(MPI_Send(& (wbufptr[d]), len, MPIU_SCALAR, rank + 1, agmres->tag, comm));
       }
       /* zero-out the d-th diagonal of Rloc ...*/
       for (j = d + 1; j < nvec; j++) {
@@ -194,7 +194,7 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
         i    = j - d;
         c    = Qloc[j*nloc+i-1];
         s    = Qloc[j*nloc+i];
-        CHKERRQ(KSPAGMRESRoddecGivens(&c, &s, &rho, 1));
+        PetscCall(KSPAGMRESRoddecGivens(&c, &s, &rho, 1));
         for (k = j; k < nvec; k++) {
           old              = Qloc[k*nloc+i-1];
           Qloc[k*nloc+i-1] = c * old - s * Qloc[k*nloc+i];
@@ -212,7 +212,7 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
   if (rank == Last) {
     for (d = 0; d < nvec; d++) {
       pos    = nvec - d;
-      CHKERRQ(PetscBLASIntCast(pos,&bpos));
+      PetscCall(PetscBLASIntCast(pos,&bpos));
       sgn[d] = PetscSign(*RLOC(d,d));
       PetscStackCallBLAS("BLASscal",BLASscal_(&bpos, &(sgn[d]), RLOC(d,d), &N));
     }
@@ -220,8 +220,8 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
   /* BroadCast Rloc to all other processes
    * NWD : should not be needed
    */
-  CHKERRMPI(MPI_Bcast(agmres->Rloc,N*N,MPIU_SCALAR,Last,comm));
-  CHKERRQ(PetscLogEventEnd(KSP_AGMRESRoddec,ksp,0,0,0));
+  PetscCallMPI(MPI_Bcast(agmres->Rloc,N*N,MPIU_SCALAR,Last,comm));
+  PetscCall(PetscLogEventEnd(KSP_AGMRESRoddec,ksp,0,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -251,13 +251,13 @@ PetscErrorCode KSPAGMRESRodvec(KSP ksp, PetscInt nvec, PetscScalar *In, Vec Out)
   MPI_Status     status;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscBLASIntCast(nvec,&bnvec));
-  CHKERRQ(PetscObjectGetComm((PetscObject)ksp,&comm));
+  PetscCall(PetscBLASIntCast(nvec,&bnvec));
+  PetscCall(PetscObjectGetComm((PetscObject)ksp,&comm));
   pas  = 1;
-  CHKERRQ(VecGetLocalSize(VEC_V(0), &nloc));
-  CHKERRQ(PetscMalloc1(nvec, &y));
-  CHKERRQ(PetscArraycpy(y, In, nvec));
-  CHKERRQ(VecGetArray(Out, &zloc));
+  PetscCall(VecGetLocalSize(VEC_V(0), &nloc));
+  PetscCall(PetscMalloc1(nvec, &y));
+  PetscCall(PetscArraycpy(y, In, nvec));
+  PetscCall(VecGetArray(Out, &zloc));
 
   if (rank == Last) {
     for (i = 0; i < nvec; i++) y[i] = sgn[i] * y[i];
@@ -267,30 +267,30 @@ PetscErrorCode KSPAGMRESRodvec(KSP ksp, PetscInt nvec, PetscScalar *In, Vec Out)
   else {
     for (d = nvec - 1; d >= 0; d--) {
       if (rank == First) {
-        CHKERRMPI(MPI_Recv(&(zloc[d]), 1, MPIU_SCALAR, Iright, agmres->tag, comm, &status));
+        PetscCallMPI(MPI_Recv(&(zloc[d]), 1, MPIU_SCALAR, Iright, agmres->tag, comm, &status));
       } else {
         for (j = nvec - 1; j >= d + 1; j--) {
           i         = j - d;
-          CHKERRQ(KSPAGMRESRoddecGivens(&c, &s, &(Qloc[j * nloc + i]), 0));
+          PetscCall(KSPAGMRESRoddecGivens(&c, &s, &(Qloc[j * nloc + i]), 0));
           zp        = zloc[i-1];
           zq        = zloc[i];
           zloc[i-1] =     c * zp + s * zq;
           zloc[i]   =     -s * zp + c * zq;
         }
-        CHKERRQ(KSPAGMRESRoddecGivens(&c, &s, &(Qloc[d * nloc]), 0));
+        PetscCall(KSPAGMRESRoddecGivens(&c, &s, &(Qloc[d * nloc]), 0));
         if (rank == Last) {
           zp      = y[d];
           zq      = zloc[0];
           y[d]    =      c * zp + s * zq;
           zloc[0] =   -s * zp + c * zq;
-          CHKERRMPI(MPI_Send(&(y[d]), 1, MPIU_SCALAR, Ileft, agmres->tag, comm));
+          PetscCallMPI(MPI_Send(&(y[d]), 1, MPIU_SCALAR, Ileft, agmres->tag, comm));
         } else {
-          CHKERRMPI(MPI_Recv(&yd, 1, MPIU_SCALAR, Iright, agmres->tag, comm, &status));
+          PetscCallMPI(MPI_Recv(&yd, 1, MPIU_SCALAR, Iright, agmres->tag, comm, &status));
           zp      = yd;
           zq      = zloc[0];
           yd      =      c * zp + s * zq;
           zloc[0] =   -s * zp + c * zq;
-          CHKERRMPI(MPI_Send(&yd, 1, MPIU_SCALAR, Ileft, agmres->tag, comm));
+          PetscCallMPI(MPI_Send(&yd, 1, MPIU_SCALAR, Ileft, agmres->tag, comm));
         }
       }
     }
@@ -299,7 +299,7 @@ PetscErrorCode KSPAGMRESRodvec(KSP ksp, PetscInt nvec, PetscScalar *In, Vec Out)
     dpt = j * nloc + j;
     if (tloc[j] != 0.0) {
       len       = nloc - j;
-      CHKERRQ(PetscBLASIntCast(len,&blen));
+      PetscCall(PetscBLASIntCast(len,&blen));
       rho       = Qloc[dpt];
       Qloc[dpt] = 1.0;
       tt        = tloc[j] * (BLASdot_(&blen, &(Qloc[dpt]), &pas, &(zloc[j]), &pas));
@@ -307,7 +307,7 @@ PetscErrorCode KSPAGMRESRodvec(KSP ksp, PetscInt nvec, PetscScalar *In, Vec Out)
       Qloc[dpt] = rho;
     }
   }
-  CHKERRQ(VecRestoreArray(Out, &zloc));
-  CHKERRQ(PetscFree(y));
+  PetscCall(VecRestoreArray(Out, &zloc));
+  PetscCall(PetscFree(y));
   PetscFunctionReturn(0);
 }

@@ -12,17 +12,17 @@ int main(int argc,char **argv)
   PetscScalar    ***vglobal;
   PetscViewer    sview;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,0,"-stencil_width",&stencil_width,0));
-  CHKERRQ(PetscOptionsGetInt(NULL,0,"-dof",&dof,0));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,0,"-stencil_width",&stencil_width,0));
+  PetscCall(PetscOptionsGetInt(NULL,0,"-dof",&dof,0));
 
-  CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_MIRROR,DM_BOUNDARY_MIRROR,DMDA_STENCIL_STAR,M,N,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,NULL,NULL,&da));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
-  CHKERRQ(DMDAGetCorners(da,&xstart,&ystart,0,&m,&n,0));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_MIRROR,DM_BOUNDARY_MIRROR,DMDA_STENCIL_STAR,M,N,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,NULL,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMDAGetCorners(da,&xstart,&ystart,0,&m,&n,0));
 
-  CHKERRQ(DMCreateGlobalVector(da,&global));
-  CHKERRQ(DMDAVecGetArrayDOF(da,global,&vglobal));
+  PetscCall(DMCreateGlobalVector(da,&global));
+  PetscCall(DMDAVecGetArrayDOF(da,global,&vglobal));
   for (j=ystart; j<ystart+n; j++) {
     for (i=xstart; i<xstart+m; i++) {
       for (c=0; c<dof; c++) {
@@ -30,23 +30,23 @@ int main(int argc,char **argv)
       }
     }
   }
-  CHKERRQ(DMDAVecRestoreArrayDOF(da,global,&vglobal));
+  PetscCall(DMDAVecRestoreArrayDOF(da,global,&vglobal));
 
-  CHKERRQ(DMCreateLocalVector(da,&local));
-  CHKERRQ(DMGlobalToLocalBegin(da,global,INSERT_VALUES,local));
-  CHKERRQ(DMGlobalToLocalEnd(da,global,INSERT_VALUES,local));
+  PetscCall(DMCreateLocalVector(da,&local));
+  PetscCall(DMGlobalToLocalBegin(da,global,INSERT_VALUES,local));
+  PetscCall(DMGlobalToLocalEnd(da,global,INSERT_VALUES,local));
 
-  CHKERRQ(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sview));
-  CHKERRQ(VecView(local,sview));
-  CHKERRQ(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sview));
-  CHKERRQ(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(VecView(global,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sview));
+  PetscCall(VecView(local,sview));
+  PetscCall(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sview));
+  PetscCall(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecView(global,PETSC_VIEWER_STDOUT_WORLD));
 
-  CHKERRQ(DMDestroy(&da));
-  CHKERRQ(VecDestroy(&local));
-  CHKERRQ(VecDestroy(&global));
+  PetscCall(DMDestroy(&da));
+  PetscCall(VecDestroy(&local));
+  PetscCall(VecDestroy(&global));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

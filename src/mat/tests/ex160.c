@@ -9,31 +9,31 @@ int main(int argc,char **args)
   PetscMPIInt    rank,size;
   PetscScalar    v;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   /* Create a MPIBAIJ matrix */
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,32,32));
-  CHKERRQ(MatSetType(A,MATMPIBAIJ));
-  CHKERRQ(MatSeqBAIJSetPreallocation(A,2,2,NULL));
-  CHKERRQ(MatMPIBAIJSetPreallocation(A,2,2,NULL,2,NULL));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,32,32));
+  PetscCall(MatSetType(A,MATMPIBAIJ));
+  PetscCall(MatSeqBAIJSetPreallocation(A,2,2,NULL));
+  PetscCall(MatMPIBAIJSetPreallocation(A,2,2,NULL,2,NULL));
 
   v    = 1.0;
-  CHKERRQ(MatGetOwnershipRange(A,&rstart,&rend));
+  PetscCall(MatGetOwnershipRange(A,&rstart,&rend));
   for (i=rstart; i<rend; i++) {
-    CHKERRQ(MatSetValues(A,1,&i,1,&i,&v,INSERT_VALUES));
+    PetscCall(MatSetValues(A,1,&i,1,&i,&v,INSERT_VALUES));
   }
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
   /* Convert A to AIJ format */
-  CHKERRQ(MatConvert(A,MATAIJ,MAT_INITIAL_MATRIX,&B));
+  PetscCall(MatConvert(A,MATAIJ,MAT_INITIAL_MATRIX,&B));
 
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(MatDestroy(&B));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&B));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

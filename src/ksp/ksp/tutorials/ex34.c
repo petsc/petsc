@@ -40,37 +40,37 @@ int main(int argc,char **argv)
   Vec            x,b,r;
   Mat            J;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   dof  = 1;
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-da_dof",&dof,NULL));
-  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
-  CHKERRQ(DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,12,12,12,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,1,0,0,0,&da));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
-  CHKERRQ(DMDASetInterpolationType(da, DMDA_Q0));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-da_dof",&dof,NULL));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,12,12,12,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,1,0,0,0,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMDASetInterpolationType(da, DMDA_Q0));
 
-  CHKERRQ(KSPSetDM(ksp,da));
+  PetscCall(KSPSetDM(ksp,da));
 
-  CHKERRQ(KSPSetComputeRHS(ksp,ComputeRHS,NULL));
-  CHKERRQ(KSPSetComputeOperators(ksp,ComputeMatrix,NULL));
-  CHKERRQ(KSPSetFromOptions(ksp));
-  CHKERRQ(KSPSolve(ksp,NULL,NULL));
-  CHKERRQ(KSPGetSolution(ksp,&x));
-  CHKERRQ(KSPGetRhs(ksp,&b));
-  CHKERRQ(KSPGetOperators(ksp,NULL,&J));
-  CHKERRQ(VecDuplicate(b,&r));
+  PetscCall(KSPSetComputeRHS(ksp,ComputeRHS,NULL));
+  PetscCall(KSPSetComputeOperators(ksp,ComputeMatrix,NULL));
+  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(KSPSolve(ksp,NULL,NULL));
+  PetscCall(KSPGetSolution(ksp,&x));
+  PetscCall(KSPGetRhs(ksp,&b));
+  PetscCall(KSPGetOperators(ksp,NULL,&J));
+  PetscCall(VecDuplicate(b,&r));
 
-  CHKERRQ(MatMult(J,x,r));
-  CHKERRQ(VecAXPY(r,-1.0,b));
-  CHKERRQ(VecNorm(r,NORM_2,&norm));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",(double)norm));
+  PetscCall(MatMult(J,x,r));
+  PetscCall(VecAXPY(r,-1.0,b));
+  PetscCall(VecNorm(r,NORM_2,&norm));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",(double)norm));
 
-  CHKERRQ(DMDAGetInfo(da, 0, &mx, &my, &mz, 0,0,0,0,0,0,0,0,0));
+  PetscCall(DMDAGetInfo(da, 0, &mx, &my, &mz, 0,0,0,0,0,0,0,0,0));
   Hx   = 1.0 / (PetscReal)(mx);
   Hy   = 1.0 / (PetscReal)(my);
   Hz   = 1.0 / (PetscReal)(mz);
-  CHKERRQ(DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm));
-  CHKERRQ(DMDAVecGetArrayDOF(da, x, &array));
+  PetscCall(DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm));
+  PetscCall(DMDAVecGetArrayDOF(da, x, &array));
 
   for (k=zs; k<zs+zm; k++) {
     for (j=ys; j<ys+ym; j++) {
@@ -84,25 +84,25 @@ int main(int argc,char **argv)
       }
     }
   }
-  CHKERRQ(DMDAVecRestoreArrayDOF(da, x, &array));
-  CHKERRQ(VecAssemblyBegin(x));
-  CHKERRQ(VecAssemblyEnd(x));
+  PetscCall(DMDAVecRestoreArrayDOF(da, x, &array));
+  PetscCall(VecAssemblyBegin(x));
+  PetscCall(VecAssemblyEnd(x));
 
-  CHKERRQ(VecNorm(x,NORM_INFINITY,&norm));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Error norm %g\n",(double)norm));
-  CHKERRQ(VecNorm(x,NORM_1,&norm));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Error norm %g\n",(double)(norm/((PetscReal)(mx)*(PetscReal)(my)*(PetscReal)(mz)))));
-  CHKERRQ(VecNorm(x,NORM_2,&norm));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Error norm %g\n",(double)(norm/((PetscReal)(mx)*(PetscReal)(my)*(PetscReal)(mz)))));
-  CHKERRQ(VecSum(x,&norm));
+  PetscCall(VecNorm(x,NORM_INFINITY,&norm));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error norm %g\n",(double)norm));
+  PetscCall(VecNorm(x,NORM_1,&norm));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error norm %g\n",(double)(norm/((PetscReal)(mx)*(PetscReal)(my)*(PetscReal)(mz)))));
+  PetscCall(VecNorm(x,NORM_2,&norm));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error norm %g\n",(double)(norm/((PetscReal)(mx)*(PetscReal)(my)*(PetscReal)(mz)))));
+  PetscCall(VecSum(x,&norm));
   if (norm > 10000*PETSC_MACHINE_EPSILON) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Vector sum %g\n",(double)norm));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Vector sum %g\n",(double)norm));
   }
 
-  CHKERRQ(VecDestroy(&r));
-  CHKERRQ(KSPDestroy(&ksp));
-  CHKERRQ(DMDestroy(&da));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&r));
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(DMDestroy(&da));
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -115,13 +115,13 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
   MatNullSpace   nullspace;
 
   PetscFunctionBeginUser;
-  CHKERRQ(KSPGetDM(ksp,&da));
-  CHKERRQ(DMDAGetInfo(da, 0, &mx, &my, &mz, 0,0,0,&dof,0,0,0,0,0));
+  PetscCall(KSPGetDM(ksp,&da));
+  PetscCall(DMDAGetInfo(da, 0, &mx, &my, &mz, 0,0,0,&dof,0,0,0,0,0));
   Hx   = 1.0 / (PetscReal)(mx);
   Hy   = 1.0 / (PetscReal)(my);
   Hz   = 1.0 / (PetscReal)(mz);
-  CHKERRQ(DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm));
-  CHKERRQ(DMDAVecGetArrayDOFWrite(da, b, &array));
+  PetscCall(DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm));
+  PetscCall(DMDAVecGetArrayDOFWrite(da, b, &array));
   for (k=zs; k<zs+zm; k++) {
     for (j=ys; j<ys+ym; j++) {
       for (i=xs; i<xs+xm; i++) {
@@ -135,16 +135,16 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
       }
     }
   }
-  CHKERRQ(DMDAVecRestoreArrayDOFWrite(da, b, &array));
-  CHKERRQ(VecAssemblyBegin(b));
-  CHKERRQ(VecAssemblyEnd(b));
+  PetscCall(DMDAVecRestoreArrayDOFWrite(da, b, &array));
+  PetscCall(VecAssemblyBegin(b));
+  PetscCall(VecAssemblyEnd(b));
 
   /* force right hand side to be consistent for singular matrix */
   /* note this is really a hack, normally the model would provide you with a consistent right handside */
 
-  CHKERRQ(MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace));
-  CHKERRQ(MatNullSpaceRemove(nullspace,b));
-  CHKERRQ(MatNullSpaceDestroy(&nullspace));
+  PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace));
+  PetscCall(MatNullSpaceRemove(nullspace,b));
+  PetscCall(MatNullSpaceDestroy(&nullspace));
   PetscFunctionReturn(0);
 }
 
@@ -158,15 +158,15 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J,Mat jac, void *ctx)
   PetscBool      dump_mat = PETSC_FALSE, check_matis = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  CHKERRQ(KSPGetDM(ksp,&da));
-  CHKERRQ(DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,&dof,0,0,0,0,0));
+  PetscCall(KSPGetDM(ksp,&da));
+  PetscCall(DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,&dof,0,0,0,0,0));
   Hx      = 1.0 / (PetscReal)(mx);
   Hy      = 1.0 / (PetscReal)(my);
   Hz      = 1.0 / (PetscReal)(mz);
   HyHzdHx = Hy*Hz/Hx;
   HxHzdHy = Hx*Hz/Hy;
   HxHydHz = Hx*Hy/Hz;
-  CHKERRQ(DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm));
+  PetscCall(DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm));
   for (k=zs; k<zs+zm; k++) {
     for (j=ys; j<ys+ym; j++) {
       for (i=xs; i<xs+xm; i++) {
@@ -225,7 +225,7 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J,Mat jac, void *ctx)
             v[num]     = (PetscReal)(numk)*HxHydHz + (PetscReal)(numj)*HxHzdHy + (PetscReal)(numi)*HyHzdHx;
             col[num].i = i;   col[num].j = j;   col[num].k = k; col[num].c = d;
             num++;
-            CHKERRQ(MatSetValuesStencil(jac,1,&row,num,col,v,INSERT_VALUES));
+            PetscCall(MatSetValuesStencil(jac,1,&row,num,col,v,INSERT_VALUES));
           } else {
             v[0] = -HxHydHz;                          col[0].i = i;   col[0].j = j;   col[0].k = k-1; col[0].c = d;
             v[1] = -HxHzdHy;                          col[1].i = i;   col[1].j = j-1; col[1].k = k;   col[1].c = d;
@@ -234,48 +234,48 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J,Mat jac, void *ctx)
             v[4] = -HyHzdHx;                          col[4].i = i+1; col[4].j = j;   col[4].k = k;   col[4].c = d;
             v[5] = -HxHzdHy;                          col[5].i = i;   col[5].j = j+1; col[5].k = k;   col[5].c = d;
             v[6] = -HxHydHz;                          col[6].i = i;   col[6].j = j;   col[6].k = k+1; col[6].c = d;
-            CHKERRQ(MatSetValuesStencil(jac,1,&row,7,col,v,INSERT_VALUES));
+            PetscCall(MatSetValuesStencil(jac,1,&row,7,col,v,INSERT_VALUES));
           }
         }
       }
     }
   }
-  CHKERRQ(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-dump_mat",&dump_mat,NULL));
+  PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-dump_mat",&dump_mat,NULL));
   if (dump_mat) {
     Mat JJ;
 
-    CHKERRQ(MatComputeOperator(jac,MATAIJ,&JJ));
-    CHKERRQ(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_MATLAB));
-    CHKERRQ(MatView(JJ,PETSC_VIEWER_STDOUT_WORLD));
-    CHKERRQ(MatDestroy(&JJ));
+    PetscCall(MatComputeOperator(jac,MATAIJ,&JJ));
+    PetscCall(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_MATLAB));
+    PetscCall(MatView(JJ,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(MatDestroy(&JJ));
   }
-  CHKERRQ(MatViewFromOptions(jac,NULL,"-view_mat"));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-check_matis",&check_matis,NULL));
+  PetscCall(MatViewFromOptions(jac,NULL,"-view_mat"));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-check_matis",&check_matis,NULL));
   if (check_matis) {
     void      (*f)(void);
     Mat       J2;
     MatType   jtype;
     PetscReal nrm;
 
-    CHKERRQ(MatGetType(jac,&jtype));
-    CHKERRQ(MatConvert(jac,MATIS,MAT_INITIAL_MATRIX,&J2));
-    CHKERRQ(MatViewFromOptions(J2,NULL,"-view_conv"));
-    CHKERRQ(MatConvert(J2,jtype,MAT_INPLACE_MATRIX,&J2));
-    CHKERRQ(MatGetOperation(jac,MATOP_VIEW,&f));
-    CHKERRQ(MatSetOperation(J2,MATOP_VIEW,f));
-    CHKERRQ(MatSetDM(J2,da));
-    CHKERRQ(MatViewFromOptions(J2,NULL,"-view_conv_assembled"));
-    CHKERRQ(MatAXPY(J2,-1.,jac,DIFFERENT_NONZERO_PATTERN));
-    CHKERRQ(MatNorm(J2,NORM_FROBENIUS,&nrm));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Error MATIS %g\n",(double)nrm));
-    CHKERRQ(MatViewFromOptions(J2,NULL,"-view_conv_err"));
-    CHKERRQ(MatDestroy(&J2));
+    PetscCall(MatGetType(jac,&jtype));
+    PetscCall(MatConvert(jac,MATIS,MAT_INITIAL_MATRIX,&J2));
+    PetscCall(MatViewFromOptions(J2,NULL,"-view_conv"));
+    PetscCall(MatConvert(J2,jtype,MAT_INPLACE_MATRIX,&J2));
+    PetscCall(MatGetOperation(jac,MATOP_VIEW,&f));
+    PetscCall(MatSetOperation(J2,MATOP_VIEW,f));
+    PetscCall(MatSetDM(J2,da));
+    PetscCall(MatViewFromOptions(J2,NULL,"-view_conv_assembled"));
+    PetscCall(MatAXPY(J2,-1.,jac,DIFFERENT_NONZERO_PATTERN));
+    PetscCall(MatNorm(J2,NORM_FROBENIUS,&nrm));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error MATIS %g\n",(double)nrm));
+    PetscCall(MatViewFromOptions(J2,NULL,"-view_conv_err"));
+    PetscCall(MatDestroy(&J2));
   }
-  CHKERRQ(MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace));
-  CHKERRQ(MatSetNullSpace(J,nullspace));
-  CHKERRQ(MatNullSpaceDestroy(&nullspace));
+  PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace));
+  PetscCall(MatSetNullSpace(J,nullspace));
+  PetscCall(MatNullSpaceDestroy(&nullspace));
   PetscFunctionReturn(0);
 }
 

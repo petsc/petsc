@@ -281,7 +281,7 @@ PETSC_EXTERN PetscErrorCode (*PetscLogPLE)(PetscLogEvent,int,PetscObject,PetscOb
 PETSC_EXTERN PetscErrorCode (*PetscLogPHC)(PetscObject);
 PETSC_EXTERN PetscErrorCode (*PetscLogPHD)(PetscObject);
 
-#define PetscLogObjectParents(p,n,d)  PetscMacroReturnStandard(for (int _i=0; _i<(n); ++_i) CHKERRQ(PetscLogObjectParent((PetscObject)(p),(PetscObject)(d)[_i]));)
+#define PetscLogObjectParents(p,n,d)  PetscMacroReturnStandard(for (int _i=0; _i<(n); ++_i) PetscCall(PetscLogObjectParent((PetscObject)(p),(PetscObject)(d)[_i]));)
 #define PetscLogObjectCreate(h)      ((PetscLogPHC) ? (*PetscLogPHC)((PetscObject)(h)) : 0)
 #define PetscLogObjectDestroy(h)     ((PetscLogPHD) ? (*PetscLogPHD)((PetscObject)(h)) : 0)
 PETSC_EXTERN PetscErrorCode PetscLogObjectState(PetscObject, const char[], ...) PETSC_ATTRIBUTE_FORMAT(2,3);
@@ -391,7 +391,7 @@ static inline PetscErrorCode PetscMPITypeSize(PetscInt count,MPI_Datatype type,P
   PetscMPIInt typesize;
 
   if (type == MPI_DATATYPE_NULL) return 0;
-  CHKERRMPI(MPI_Type_size(type,&typesize));
+  PetscCallMPI(MPI_Type_size(type,&typesize));
   *length += (PetscLogDouble) (count*typesize);
   return 0;
 }
@@ -401,8 +401,8 @@ static inline PetscErrorCode PetscMPITypeSizeComm(MPI_Comm comm,const PetscMPIIn
   PetscMPIInt    typesize,size,p;
 
   if (type == MPI_DATATYPE_NULL) return 0;
-  CHKERRMPI(MPI_Comm_size(comm,&size));
-  CHKERRMPI(MPI_Type_size(type,&typesize));
+  PetscCallMPI(MPI_Comm_size(comm,&size));
+  PetscCallMPI(MPI_Type_size(type,&typesize));
   for (p=0; p<size; ++p) *length += (PetscLogDouble)(counts[p]*typesize);
   return 0;
 }
@@ -412,7 +412,7 @@ static inline PetscErrorCode PetscMPITypeSizeCount(PetscInt n,const PetscMPIInt 
   PetscMPIInt typesize,p;
 
   if (type == MPI_DATATYPE_NULL) return 0;
-  CHKERRMPI(MPI_Type_size(type,&typesize));
+  PetscCallMPI(MPI_Type_size(type,&typesize));
   for (p=0; p<n; ++p) *length += (PetscLogDouble)(counts[p]*typesize);
   return 0;
 }
@@ -701,29 +701,29 @@ do {\
   PetscBool      PetscPreLoading = flag;\
   int            PetscPreLoadMax,PetscPreLoadIt;\
   PetscLogStage  _stageNum;\
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-preload",&PetscPreLoading,NULL));     \
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-preload",&PetscPreLoading,NULL));     \
   PetscPreLoadMax = (int)(PetscPreLoading);\
   PetscPreLoadingUsed = PetscPreLoading ? PETSC_TRUE : PetscPreLoadingUsed;\
   for (PetscPreLoadIt=0; PetscPreLoadIt<=PetscPreLoadMax; PetscPreLoadIt++) {\
     PetscPreLoadingOn = PetscPreLoading;\
-    CHKERRQ(PetscBarrier(NULL));\
-    if (PetscPreLoadIt>0) CHKERRQ(PetscLogStageGetId(name,&_stageNum));\
-    else CHKERRQ(PetscLogStageRegister(name,&_stageNum));\
-    CHKERRQ(PetscLogStageSetActive(_stageNum,(PetscBool)(!PetscPreLoadMax || PetscPreLoadIt)));\
-    CHKERRQ(PetscLogStagePush(_stageNum));
+    PetscCall(PetscBarrier(NULL));\
+    if (PetscPreLoadIt>0) PetscCall(PetscLogStageGetId(name,&_stageNum));\
+    else PetscCall(PetscLogStageRegister(name,&_stageNum));\
+    PetscCall(PetscLogStageSetActive(_stageNum,(PetscBool)(!PetscPreLoadMax || PetscPreLoadIt)));\
+    PetscCall(PetscLogStagePush(_stageNum));
 
 #define PetscPreLoadEnd() \
-    CHKERRQ(PetscLogStagePop());\
+    PetscCall(PetscLogStagePop());\
     PetscPreLoading = PETSC_FALSE;\
   }\
 } while (0)
 
 #define PetscPreLoadStage(name) do {                                                           \
-    CHKERRQ(PetscLogStagePop());                                                               \
-    if (PetscPreLoadIt>0)   CHKERRQ(PetscLogStageGetId(name,&_stageNum));                      \
-    else CHKERRQ(PetscLogStageRegister(name,&_stageNum));                                      \
-    CHKERRQ(PetscLogStageSetActive(_stageNum,(PetscBool)(!PetscPreLoadMax || PetscPreLoadIt))); \
-    CHKERRQ(PetscLogStagePush(_stageNum));                                                     \
+    PetscCall(PetscLogStagePop());                                                               \
+    if (PetscPreLoadIt>0)   PetscCall(PetscLogStageGetId(name,&_stageNum));                      \
+    else PetscCall(PetscLogStageRegister(name,&_stageNum));                                      \
+    PetscCall(PetscLogStageSetActive(_stageNum,(PetscBool)(!PetscPreLoadMax || PetscPreLoadIt))); \
+    PetscCall(PetscLogStagePush(_stageNum));                                                     \
   } while (0)
 
 /* some vars for logging */

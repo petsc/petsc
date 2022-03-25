@@ -21,7 +21,7 @@ static void ourriemannsolver(PetscInt dim,PetscInt Nf,const PetscReal x[],const 
 {
   void (*func)(PetscInt *dim,PetscInt *Nf,const PetscReal x[],const PetscReal n[],const PetscScalar uL[],const PetscScalar uR[],const PetscInt *numConstants,const PetscScalar constants[],PetscScalar flux[],void *ctx);
   void *_ctx;
-  CHKERRABORT(PETSC_COMM_SELF,PetscObjectGetFortranCallback((PetscObject)ctx,PETSC_FORTRAN_CALLBACK_CLASS,riemannsolver,(PetscVoidFunction*)&func,&_ctx));
+  PetscCallAbort(PETSC_COMM_SELF,PetscObjectGetFortranCallback((PetscObject)ctx,PETSC_FORTRAN_CALLBACK_CLASS,riemannsolver,(PetscVoidFunction*)&func,&_ctx));
   if (func) {
     (*func)(&dim,&Nf,x,n,uL,uR,&numConstants,constants,flux,_ctx);
   }

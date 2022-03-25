@@ -7,8 +7,8 @@
 static PetscErrorCode PetscViewerSetFromOptions_ADIOS(PetscOptionItems *PetscOptionsObject,PetscViewer v)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"ADIOS PetscViewer Options"));
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"ADIOS PetscViewer Options"));
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -19,15 +19,15 @@ static PetscErrorCode PetscViewerFileClose_ADIOS(PetscViewer viewer)
   PetscFunctionBegin;
   switch (adios->btype) {
   case FILE_MODE_READ:
-    CHKERRQ(adios_read_close(adios->adios_fp));
+    PetscCall(adios_read_close(adios->adios_fp));
     break;
   case FILE_MODE_WRITE:
-     CHKERRQ(adios_close(adios->adios_handle));
+     PetscCall(adios_close(adios->adios_handle));
     break;
   default:
     break;
   }
-  CHKERRQ(PetscFree(adios->filename));
+  PetscCall(PetscFree(adios->filename));
   PetscFunctionReturn(0);
 }
 
@@ -36,11 +36,11 @@ PetscErrorCode PetscViewerDestroy_ADIOS(PetscViewer viewer)
   PetscViewer_ADIOS *adios = (PetscViewer_ADIOS*) viewer->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscViewerFileClose_ADIOS(viewer));
-  CHKERRQ(PetscFree(adios));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetName_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileGetName_C",NULL));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetMode_C",NULL));
+  PetscCall(PetscViewerFileClose_ADIOS(viewer));
+  PetscCall(PetscFree(adios));
+  PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetName_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileGetName_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetMode_C",NULL));
   PetscFunctionReturn(0);
 }
 
@@ -58,8 +58,8 @@ PetscErrorCode  PetscViewerFileSetName_ADIOS(PetscViewer viewer, const char name
   PetscViewer_ADIOS *adios = (PetscViewer_ADIOS*) viewer->data;
 
   PetscFunctionBegin;
-  if (adios->filename) CHKERRQ(PetscFree(adios->filename));
-  CHKERRQ(PetscStrallocpy(name, &adios->filename));
+  if (adios->filename) PetscCall(PetscFree(adios->filename));
+  PetscCall(PetscStrallocpy(name, &adios->filename));
   /* Create or open the file collectively */
   switch (adios->btype) {
   case FILE_MODE_READ:
@@ -101,7 +101,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ADIOS(PetscViewer v)
   PetscViewer_ADIOS *adios;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNewLog(v,&adios));
+  PetscCall(PetscNewLog(v,&adios));
 
   v->data                = (void*) adios;
   v->ops->destroy        = PetscViewerDestroy_ADIOS;
@@ -111,9 +111,9 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ADIOS(PetscViewer v)
   adios->filename        = NULL;
   adios->timestep        = -1;
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetName_C",PetscViewerFileSetName_ADIOS));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileGetName_C",PetscViewerFileGetName_ADIOS));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetMode_C",PetscViewerFileSetMode_ADIOS));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetName_C",PetscViewerFileSetName_ADIOS));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileGetName_C",PetscViewerFileGetName_ADIOS));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetMode_C",PetscViewerFileSetMode_ADIOS));
   PetscFunctionReturn(0);
 }
 
@@ -145,10 +145,10 @@ $    FILE_MODE_APPEND - open existing file for binary output
 PetscErrorCode  PetscViewerADIOSOpen(MPI_Comm comm, const char name[], PetscFileMode type, PetscViewer *adiosv)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscViewerCreate(comm, adiosv));
-  CHKERRQ(PetscViewerSetType(*adiosv, PETSCVIEWERADIOS));
-  CHKERRQ(PetscViewerFileSetMode(*adiosv, type));
-  CHKERRQ(PetscViewerFileSetName(*adiosv, name));
+  PetscCall(PetscViewerCreate(comm, adiosv));
+  PetscCall(PetscViewerSetType(*adiosv, PETSCVIEWERADIOS));
+  PetscCall(PetscViewerFileSetMode(*adiosv, type));
+  PetscCall(PetscViewerFileSetName(*adiosv, name));
   PetscFunctionReturn(0);
 }
 

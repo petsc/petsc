@@ -26,31 +26,31 @@ PetscErrorCode Assemble(MPI_Comm comm,PetscInt bs,MatType mtype)
   PetscViewer       viewer;
 
   PetscFunctionBegin;
-  CHKERRQ(MatCreate(comm,&A));
-  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,4*bs,4*bs));
-  CHKERRQ(MatSetType(A,mtype));
-  CHKERRQ(MatMPIBAIJSetPreallocation(A,bs,2,NULL,2,NULL));
-  CHKERRQ(MatMPISBAIJSetPreallocation(A,bs,2,NULL,2,NULL));
-  CHKERRQ(MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE));
+  PetscCall(MatCreate(comm,&A));
+  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,4*bs,4*bs));
+  PetscCall(MatSetType(A,mtype));
+  PetscCall(MatMPIBAIJSetPreallocation(A,bs,2,NULL,2,NULL));
+  PetscCall(MatMPISBAIJSetPreallocation(A,bs,2,NULL,2,NULL));
+  PetscCall(MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE));
   /* All processes contribute a global matrix */
-  CHKERRQ(MatSetValuesBlocked(A,4,rc,4,rc,vals,ADD_VALUES));
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(PetscPrintf(comm,"Matrix %s(%" PetscInt_FMT ")\n",mtype,bs));
-  CHKERRQ(PetscViewerASCIIGetStdout(comm,&viewer));
-  CHKERRQ(PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_INFO_DETAIL));
-  CHKERRQ(MatView(A,viewer));
-  CHKERRQ(PetscViewerPopFormat(viewer));
-  CHKERRQ(MatView(A,viewer));
+  PetscCall(MatSetValuesBlocked(A,4,rc,4,rc,vals,ADD_VALUES));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(PetscPrintf(comm,"Matrix %s(%" PetscInt_FMT ")\n",mtype,bs));
+  PetscCall(PetscViewerASCIIGetStdout(comm,&viewer));
+  PetscCall(PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_INFO_DETAIL));
+  PetscCall(MatView(A,viewer));
+  PetscCall(PetscViewerPopFormat(viewer));
+  PetscCall(MatView(A,viewer));
 #if defined(PETSC_HAVE_MUMPS) || defined(PETSC_HAVE_MKL_CPARDISO)
-  CHKERRQ(PetscStrcmp(mtype,MATMPISBAIJ,&issbaij));
+  PetscCall(PetscStrcmp(mtype,MATMPISBAIJ,&issbaij));
   if (!issbaij) {
-    CHKERRQ(MatShift(A,10));
+    PetscCall(MatShift(A,10));
   }
-  CHKERRQ(PetscRandomCreate(PETSC_COMM_WORLD,&rdm));
-  CHKERRQ(PetscRandomSetFromOptions(rdm));
-  CHKERRQ(MatCreateVecs(A,&x,&y));
-  CHKERRQ(VecDuplicate(x,&b));
+  PetscCall(PetscRandomCreate(PETSC_COMM_WORLD,&rdm));
+  PetscCall(PetscRandomSetFromOptions(rdm));
+  PetscCall(MatCreateVecs(A,&x,&y));
+  PetscCall(VecDuplicate(x,&b));
   for (j=0; j<2; j++) {
 #if defined(PETSC_HAVE_MUMPS)
     if (j==0) stype = MATSOLVERMUMPS;
@@ -63,33 +63,33 @@ PetscErrorCode Assemble(MPI_Comm comm,PetscInt bs,MatType mtype)
     if (j==1) continue;
 #endif
     if (issbaij) {
-      CHKERRQ(MatGetFactor(A,stype,MAT_FACTOR_CHOLESKY,&F));
-      CHKERRQ(MatCholeskyFactorSymbolic(F,A,NULL,NULL));
-      CHKERRQ(MatCholeskyFactorNumeric(F,A,NULL));
+      PetscCall(MatGetFactor(A,stype,MAT_FACTOR_CHOLESKY,&F));
+      PetscCall(MatCholeskyFactorSymbolic(F,A,NULL,NULL));
+      PetscCall(MatCholeskyFactorNumeric(F,A,NULL));
     } else {
-      CHKERRQ(MatGetFactor(A,stype,MAT_FACTOR_LU,&F));
-      CHKERRQ(MatLUFactorSymbolic(F,A,NULL,NULL,NULL));
-      CHKERRQ(MatLUFactorNumeric(F,A,NULL));
+      PetscCall(MatGetFactor(A,stype,MAT_FACTOR_LU,&F));
+      PetscCall(MatLUFactorSymbolic(F,A,NULL,NULL,NULL));
+      PetscCall(MatLUFactorNumeric(F,A,NULL));
     }
     for (i=0; i<10; i++) {
-      CHKERRQ(VecSetRandom(b,rdm));
-      CHKERRQ(MatSolve(F,b,y));
+      PetscCall(VecSetRandom(b,rdm));
+      PetscCall(MatSolve(F,b,y));
       /* Check the error */
-      CHKERRQ(MatMult(A,y,x));
-      CHKERRQ(VecAXPY(x,-1.0,b));
-      CHKERRQ(VecNorm(x,NORM_2,&norm2));
+      PetscCall(MatMult(A,y,x));
+      PetscCall(VecAXPY(x,-1.0,b));
+      PetscCall(VecNorm(x,NORM_2,&norm2));
       if (norm2>tol) {
-        CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Error:MatSolve(), norm2: %g\n",(double)norm2));
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error:MatSolve(), norm2: %g\n",(double)norm2));
       }
     }
-    CHKERRQ(MatDestroy(&F));
+    PetscCall(MatDestroy(&F));
   }
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&y));
-  CHKERRQ(VecDestroy(&b));
-  CHKERRQ(PetscRandomDestroy(&rdm));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&y));
+  PetscCall(VecDestroy(&b));
+  PetscCall(PetscRandomDestroy(&rdm));
 #endif
-  CHKERRQ(MatDestroy(&A));
+  PetscCall(MatDestroy(&A));
   PetscFunctionReturn(0);
 }
 
@@ -98,15 +98,15 @@ int main(int argc,char *argv[])
   MPI_Comm       comm;
   PetscMPIInt    size;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   comm = PETSC_COMM_WORLD;
-  CHKERRMPI(MPI_Comm_size(comm,&size));
+  PetscCallMPI(MPI_Comm_size(comm,&size));
   PetscCheckFalse(size != 2,comm,PETSC_ERR_USER,"This example must be run with exactly two processes");
-  CHKERRQ(Assemble(comm,2,MATMPIBAIJ));
-  CHKERRQ(Assemble(comm,2,MATMPISBAIJ));
-  CHKERRQ(Assemble(comm,1,MATMPIBAIJ));
-  CHKERRQ(Assemble(comm,1,MATMPISBAIJ));
-  CHKERRQ(PetscFinalize());
+  PetscCall(Assemble(comm,2,MATMPIBAIJ));
+  PetscCall(Assemble(comm,2,MATMPISBAIJ));
+  PetscCall(Assemble(comm,1,MATMPIBAIJ));
+  PetscCall(Assemble(comm,1,MATMPISBAIJ));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

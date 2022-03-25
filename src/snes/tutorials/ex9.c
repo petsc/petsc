@@ -79,47 +79,47 @@ int main(int argc,char **argv)
   DMDALocalInfo       info;
   PetscReal           error1,errorinf;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,
                       DMDA_STENCIL_STAR,5,5, /* 5x5 coarse grid; override with -da_grid_x,_y */
                       PETSC_DECIDE,PETSC_DECIDE,
                       1,1,  /* dof=1 and s = 1 (stencil extends out one cell) */
-                      NULL,NULL,&da);CHKERRQ(ierr);
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
-  CHKERRQ(DMDASetUniformCoordinates(da,-2.0,2.0,-2.0,2.0,0.0,1.0));
+                      NULL,NULL,&da);PetscCall(ierr);
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMDASetUniformCoordinates(da,-2.0,2.0,-2.0,2.0,0.0,1.0));
 
-  CHKERRQ(DMCreateGlobalVector(da,&u));
-  CHKERRQ(VecSet(u,0.0));
+  PetscCall(DMCreateGlobalVector(da,&u));
+  PetscCall(VecSet(u,0.0));
 
-  CHKERRQ(SNESCreate(PETSC_COMM_WORLD,&snes));
-  CHKERRQ(SNESSetDM(snes,da));
-  CHKERRQ(SNESSetType(snes,SNESVINEWTONRSLS));
-  CHKERRQ(SNESVISetComputeVariableBounds(snes,&FormBounds));
-  CHKERRQ(DMDASNESSetFunctionLocal(da,INSERT_VALUES,(DMDASNESFunction)FormFunctionLocal,NULL));
-  CHKERRQ(DMDASNESSetJacobianLocal(da,(DMDASNESJacobian)FormJacobianLocal,NULL));
-  CHKERRQ(SNESSetFromOptions(snes));
+  PetscCall(SNESCreate(PETSC_COMM_WORLD,&snes));
+  PetscCall(SNESSetDM(snes,da));
+  PetscCall(SNESSetType(snes,SNESVINEWTONRSLS));
+  PetscCall(SNESVISetComputeVariableBounds(snes,&FormBounds));
+  PetscCall(DMDASNESSetFunctionLocal(da,INSERT_VALUES,(DMDASNESFunction)FormFunctionLocal,NULL));
+  PetscCall(DMDASNESSetJacobianLocal(da,(DMDASNESJacobian)FormJacobianLocal,NULL));
+  PetscCall(SNESSetFromOptions(snes));
 
   /* solve nonlinear system */
-  CHKERRQ(SNESSolve(snes,NULL,u));
-  CHKERRQ(VecDestroy(&u));
-  CHKERRQ(DMDestroy(&da));
+  PetscCall(SNESSolve(snes,NULL,u));
+  PetscCall(VecDestroy(&u));
+  PetscCall(DMDestroy(&da));
   /* DMDA after solve may be different, e.g. with -snes_grid_sequence */
-  CHKERRQ(SNESGetDM(snes,&da_after));
-  CHKERRQ(SNESGetSolution(snes,&u)); /* do not destroy u */
-  CHKERRQ(DMDAGetLocalInfo(da_after,&info));
-  CHKERRQ(VecDuplicate(u,&u_exact));
-  CHKERRQ(FormExactSolution(&info,u_exact));
-  CHKERRQ(VecAXPY(u,-1.0,u_exact)); /* u <-- u - u_exact */
-  CHKERRQ(VecNorm(u,NORM_1,&error1));
+  PetscCall(SNESGetDM(snes,&da_after));
+  PetscCall(SNESGetSolution(snes,&u)); /* do not destroy u */
+  PetscCall(DMDAGetLocalInfo(da_after,&info));
+  PetscCall(VecDuplicate(u,&u_exact));
+  PetscCall(FormExactSolution(&info,u_exact));
+  PetscCall(VecAXPY(u,-1.0,u_exact)); /* u <-- u - u_exact */
+  PetscCall(VecNorm(u,NORM_1,&error1));
   error1 /= (PetscReal)info.mx * (PetscReal)info.my; /* average error */
-  CHKERRQ(VecNorm(u,NORM_INFINITY,&errorinf));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"errors on %D x %D grid:  av |u-uexact|  = %.3e,  |u-uexact|_inf = %.3e\n",info.mx,info.my,(double)error1,(double)errorinf));
-  CHKERRQ(VecDestroy(&u_exact));
-  CHKERRQ(SNESDestroy(&snes));
-  CHKERRQ(DMDestroy(&da));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecNorm(u,NORM_INFINITY,&errorinf));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"errors on %D x %D grid:  av |u-uexact|  = %.3e,  |u-uexact|_inf = %.3e\n",info.mx,info.my,(double)error1,(double)errorinf));
+  PetscCall(VecDestroy(&u_exact));
+  PetscCall(SNESDestroy(&snes));
+  PetscCall(DMDestroy(&da));
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -129,7 +129,7 @@ PetscErrorCode FormExactSolution(DMDALocalInfo *info, Vec u)
   PetscReal      **au, dx, dy, x, y;
   dx = 4.0 / (PetscReal)(info->mx-1);
   dy = 4.0 / (PetscReal)(info->my-1);
-  CHKERRQ(DMDAVecGetArray(info->da, u, &au));
+  PetscCall(DMDAVecGetArray(info->da, u, &au));
   for (j=info->ys; j<info->ys+info->ym; j++) {
     y = -2.0 + j * dy;
     for (i=info->xs; i<info->xs+info->xm; i++) {
@@ -137,7 +137,7 @@ PetscErrorCode FormExactSolution(DMDALocalInfo *info, Vec u)
       au[j][i] = u_exact(x,y);
     }
   }
-  CHKERRQ(DMDAVecRestoreArray(info->da, u, &au));
+  PetscCall(DMDAVecRestoreArray(info->da, u, &au));
   return 0;
 }
 
@@ -148,11 +148,11 @@ PetscErrorCode FormBounds(SNES snes, Vec Xl, Vec Xu)
   PetscInt       i, j;
   PetscReal      **aXl, dx, dy, x, y;
 
-  CHKERRQ(SNESGetDM(snes,&da));
-  CHKERRQ(DMDAGetLocalInfo(da,&info));
+  PetscCall(SNESGetDM(snes,&da));
+  PetscCall(DMDAGetLocalInfo(da,&info));
   dx = 4.0 / (PetscReal)(info.mx-1);
   dy = 4.0 / (PetscReal)(info.my-1);
-  CHKERRQ(DMDAVecGetArray(da, Xl, &aXl));
+  PetscCall(DMDAVecGetArray(da, Xl, &aXl));
   for (j=info.ys; j<info.ys+info.ym; j++) {
     y = -2.0 + j * dy;
     for (i=info.xs; i<info.xs+info.xm; i++) {
@@ -160,8 +160,8 @@ PetscErrorCode FormBounds(SNES snes, Vec Xl, Vec Xu)
       aXl[j][i] = psi(x,y);
     }
   }
-  CHKERRQ(DMDAVecRestoreArray(da, Xl, &aXl));
-  CHKERRQ(VecSet(Xu,PETSC_INFINITY));
+  PetscCall(DMDAVecRestoreArray(da, Xl, &aXl));
+  PetscCall(VecSet(Xu,PETSC_INFINITY));
   return 0;
 }
 
@@ -188,7 +188,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscScalar **au, PetscSca
       }
     }
   }
-  CHKERRQ(PetscLogFlops(12.0*info->ym*info->xm));
+  PetscCall(PetscLogFlops(12.0*info->ym*info->xm));
   PetscFunctionReturn(0);
 }
 
@@ -208,7 +208,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, PetscScalar **au, Mat A, M
       row.j = j; row.i = i;
       if (i == 0 || j == 0 || i == info->mx-1 || j == info->my-1) { /* boundary */
         v[0] = 4.0;
-        CHKERRQ(MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES));
+        PetscCall(MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES));
       } else { /* interior grid points */
         v[0] = 2.0 * (oxx + oyy);  col[0].j = j;  col[0].i = i;
         n = 1;
@@ -224,19 +224,19 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, PetscScalar **au, Mat A, M
         if (j+1 < info->my-1) {
           v[n] = -oyy;  col[n].j = j+1;  col[n++].i = i;
         }
-        CHKERRQ(MatSetValuesStencil(jac,1,&row,n,col,v,INSERT_VALUES));
+        PetscCall(MatSetValuesStencil(jac,1,&row,n,col,v,INSERT_VALUES));
       }
     }
   }
 
   /* Assemble matrix, using the 2-step process: */
-  CHKERRQ(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
   if (A != jac) {
-    CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   }
-  CHKERRQ(PetscLogFlops(2.0*info->ym*info->xm));
+  PetscCall(PetscLogFlops(2.0*info->ym*info->xm));
   PetscFunctionReturn(0);
 }
 

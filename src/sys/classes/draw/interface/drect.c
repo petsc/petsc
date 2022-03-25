@@ -25,19 +25,19 @@ PetscErrorCode PetscDrawIndicatorFunction(PetscDraw draw,PetscReal xmin,PetscRea
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  CHKERRQ(PetscDrawIsNull(draw,&isnull));
+  PetscCall(PetscDrawIsNull(draw,&isnull));
   if (isnull) PetscFunctionReturn(0);
 
-  CHKERRQ(PetscDrawCoordinateToPixel(draw,xmin,ymin,&xstart,&ystart));
-  CHKERRQ(PetscDrawCoordinateToPixel(draw,xmax,ymax,&xend,&yend));
+  PetscCall(PetscDrawCoordinateToPixel(draw,xmin,ymin,&xstart,&ystart));
+  PetscCall(PetscDrawCoordinateToPixel(draw,xmax,ymax,&xend,&yend));
   if (yend < ystart) { PetscInt tmp = ystart; ystart = yend; yend = tmp; }
 
   for (i=xstart; i<=xend; i++) {
     for (j=ystart; j<=yend; j++) {
-      CHKERRQ(PetscDrawPixelToCoordinate(draw,i,j,&x,&y));
-      CHKERRQ(indicator(ctx,x,y,&flg));
+      PetscCall(PetscDrawPixelToCoordinate(draw,i,j,&x,&y));
+      PetscCall(indicator(ctx,x,y,&flg));
       if (flg) {
-        CHKERRQ(PetscDrawPointPixel(draw,i,j,c));
+        PetscCall(PetscDrawPointPixel(draw,i,j,c));
       }
     }
   }
@@ -66,7 +66,7 @@ PetscErrorCode PetscDrawCoordinateToPixel(PetscDraw draw,PetscReal x,PetscReal y
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscCheck(draw->ops->coordinatetopixel,PETSC_COMM_SELF,PETSC_ERR_SUP,"This draw type %s does not support locating pixels",((PetscObject)draw)->type_name);
-  CHKERRQ((*draw->ops->coordinatetopixel)(draw,x,y,i,j));
+  PetscCall((*draw->ops->coordinatetopixel)(draw,x,y,i,j));
   PetscFunctionReturn(0);
 }
 
@@ -92,7 +92,7 @@ PetscErrorCode PetscDrawPixelToCoordinate(PetscDraw draw,int i,int j,PetscReal *
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscCheck(draw->ops->pixeltocoordinate,PETSC_COMM_SELF,PETSC_ERR_SUP,"This draw type %s does not support locating coordinates",((PetscObject)draw)->type_name);
-  CHKERRQ((*draw->ops->pixeltocoordinate)(draw,i,j,x,y));
+  PetscCall((*draw->ops->pixeltocoordinate)(draw,i,j,x,y));
   PetscFunctionReturn(0);
 }
 
@@ -117,6 +117,6 @@ PetscErrorCode  PetscDrawRectangle(PetscDraw draw,PetscReal xl,PetscReal yl,Pets
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscCheck(draw->ops->rectangle,PETSC_COMM_SELF,PETSC_ERR_SUP,"This draw type %s does not support drawing rectangles",((PetscObject)draw)->type_name);
-  CHKERRQ((*draw->ops->rectangle)(draw,xl,yl,xr,yr,c1,c2,c3,c4));
+  PetscCall((*draw->ops->rectangle)(draw,xl,yl,xr,yr,c1,c2,c3,c4));
   PetscFunctionReturn(0);
 }

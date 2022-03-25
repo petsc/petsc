@@ -32,10 +32,10 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
   else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Mode must be one of r, w, or x");
 #if defined(PETSC_HAVE_ACCESS)
   if (!access(fname, m)) {
-    CHKERRQ(PetscInfo(NULL,"System call access() succeeded on file %s\n",fname));
+    PetscCall(PetscInfo(NULL,"System call access() succeeded on file %s\n",fname));
     *flg = PETSC_TRUE;
   } else {
-    CHKERRQ(PetscInfo(NULL,"System call access() failed on file %s\n",fname));
+    PetscCall(PetscInfo(NULL,"System call access() failed on file %s\n",fname));
     *flg = PETSC_FALSE;
   }
 #else
@@ -64,7 +64,7 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
   /* Get the number of supplementary group IDs */
 #if !defined(PETSC_MISSING_GETGROUPS)
   numGroups = getgroups(0, gid); PetscCheckFalse(numGroups < 0,PETSC_COMM_SELF,PETSC_ERR_SYS, "Unable to count supplementary group IDs");
-  CHKERRQ(PetscMalloc1(numGroups+1, &gid));
+  PetscCall(PetscMalloc1(numGroups+1, &gid));
 #else
   numGroups = 0;
 #endif
@@ -95,7 +95,7 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
       }
     }
   }
-  CHKERRQ(PetscFree(gid));
+  PetscCall(PetscFree(gid));
 
   if (mode == 'r') {
     if (fmode & rbit) *flg = PETSC_TRUE;
@@ -126,10 +126,10 @@ static PetscErrorCode PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t
 #if defined(EOVERFLOW)
     PetscCheckFalse(errno == EOVERFLOW,PETSC_COMM_SELF,PETSC_ERR_SYS,"EOVERFLOW in stat(), configure PETSc --with-large-file-io=1 to support files larger than 2GiB");
 #endif
-    CHKERRQ(PetscInfo(NULL,"System call stat() failed on file %s\n",fname));
+    PetscCall(PetscInfo(NULL,"System call stat() failed on file %s\n",fname));
     *exists = PETSC_FALSE;
   } else {
-    CHKERRQ(PetscInfo(NULL,"System call stat() succeeded on file %s\n",fname));
+    PetscCall(PetscInfo(NULL,"System call stat() succeeded on file %s\n",fname));
     *exists   = PETSC_TRUE;
     *fileUid  = statbuf.st_uid;
     *fileGid  = statbuf.st_gid;
@@ -167,13 +167,13 @@ PetscErrorCode  PetscTestFile(const char fname[], char mode, PetscBool  *flg)
   *flg = PETSC_FALSE;
   if (!fname) PetscFunctionReturn(0);
 
-  CHKERRQ(PetscGetFileStat(fname, &fuid, &fgid, &fmode, &exists));
+  PetscCall(PetscGetFileStat(fname, &fuid, &fgid, &fmode, &exists));
   if (!exists) PetscFunctionReturn(0);
   /* Except for systems that have this broken stat macros (rare), this is the correct way to check for a regular file */
   if (!S_ISREG(fmode)) PetscFunctionReturn(0);
   /* return if asked to check for existence only */
   if (mode == '\0') { *flg = exists; PetscFunctionReturn(0); }
-  CHKERRQ(PetscTestOwnership(fname, mode, fuid, fgid, fmode, flg));
+  PetscCall(PetscTestOwnership(fname, mode, fuid, fgid, fmode, flg));
   PetscFunctionReturn(0);
 }
 
@@ -204,13 +204,13 @@ PetscErrorCode  PetscTestDirectory(const char dirname[],char mode,PetscBool  *fl
   *flg = PETSC_FALSE;
   if (!dirname) PetscFunctionReturn(0);
 
-  CHKERRQ(PetscGetFileStat(dirname, &fuid, &fgid, &fmode,&exists));
+  PetscCall(PetscGetFileStat(dirname, &fuid, &fgid, &fmode,&exists));
   if (!exists) PetscFunctionReturn(0);
   /* Except for systems that have this broken stat macros (rare), this
      is the correct way to check for a directory */
   if (!S_ISDIR(fmode)) PetscFunctionReturn(0);
 
-  CHKERRQ(PetscTestOwnership(dirname, mode, fuid, fgid, fmode, flg));
+  PetscCall(PetscTestOwnership(dirname, mode, fuid, fgid, fmode, flg));
   PetscFunctionReturn(0);
 }
 
@@ -239,10 +239,10 @@ PetscErrorCode  PetscLs(MPI_Comm comm,const char dirname[],char found[],size_t t
   FILE           *fp;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscStrcpy(program,"ls "));
-  CHKERRQ(PetscStrcat(program,dirname));
+  PetscCall(PetscStrcpy(program,"ls "));
+  PetscCall(PetscStrcat(program,dirname));
 #if defined(PETSC_HAVE_POPEN)
-  CHKERRQ(PetscPOpen(comm,NULL,program,"r",&fp));
+  PetscCall(PetscPOpen(comm,NULL,program,"r",&fp));
 #else
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
 #endif
@@ -250,12 +250,12 @@ PetscErrorCode  PetscLs(MPI_Comm comm,const char dirname[],char found[],size_t t
   if (f) *flg = PETSC_TRUE;
   else *flg = PETSC_FALSE;
   while (f) {
-    CHKERRQ(PetscStrlen(found,&len));
+    PetscCall(PetscStrlen(found,&len));
     f    = fgets(found+len,tlen-len,fp);
   }
-  if (*flg) CHKERRQ(PetscInfo(NULL,"ls on %s gives \n%s\n",dirname,found));
+  if (*flg) PetscCall(PetscInfo(NULL,"ls on %s gives \n%s\n",dirname,found));
 #if defined(PETSC_HAVE_POPEN)
-  CHKERRQ(PetscPClose(comm,fp));
+  PetscCall(PetscPClose(comm,fp));
 #else
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
 #endif

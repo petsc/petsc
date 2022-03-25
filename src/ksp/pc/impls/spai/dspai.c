@@ -20,13 +20,13 @@ PetscErrorCode  MatDumpSPAI(Mat A,FILE *file)
   PetscObjectGetComm((PetscObject)A,&comm);
   MPI_Comm_size(comm,&size);
   PetscCheck(size <= 1,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Only single processor dumps");
-  CHKERRQ(MatGetSize(A,&n,&n));
+  PetscCall(MatGetSize(A,&n,&n));
   /* print the matrix */
   fprintf(file,"%d\n",n);
   for (i=0; i<n; i++) {
-    CHKERRQ(MatGetRow(A,i,&nz,&cols,&vals));
+    PetscCall(MatGetRow(A,i,&nz,&cols,&vals));
     for (j=0; j<nz; j++) fprintf(file,"%d %d %16.14e\n",i+1,cols[j]+1,vals[j]);
-    CHKERRQ(MatRestoreRow(A,i,&nz,&cols,&vals));
+    PetscCall(MatRestoreRow(A,i,&nz,&cols,&vals));
   }
   PetscFunctionReturn(0);
 }
@@ -37,8 +37,8 @@ PetscErrorCode  VecDumpSPAI(Vec b,FILE *file)
   PetscScalar *array;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetSize(b,&n));
-  CHKERRQ(VecGetArray(b,&array));
+  PetscCall(VecGetSize(b,&n));
+  PetscCall(VecGetArray(b,&array));
   fprintf(file,"%d\n",n);
   for (i=0; i<n; i++) fprintf(file,"%d %16.14e\n",i+1,array[i]);
   PetscFunctionReturn(0);

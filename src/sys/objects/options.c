@@ -115,8 +115,8 @@ static PetscErrorCode PetscOptionsMonitor(PetscOptions options,const char name[]
 {
   PetscFunctionBegin;
   if (!value) value = "";
-  if (options->monitorFromOptions) CHKERRQ(PetscOptionsMonitorDefault(name,value,NULL));
-  for (PetscInt i=0; i<options->numbermonitors; i++) CHKERRQ((*options->monitor[i])(name,value,options->monitorcontext[i]));
+  if (options->monitorFromOptions) PetscCall(PetscOptionsMonitorDefault(name,value,NULL));
+  for (PetscInt i=0; i<options->numbermonitors; i++) PetscCall((*options->monitor[i])(name,value,options->monitorcontext[i]));
   PetscFunctionReturn(0);
 }
 
@@ -160,7 +160,7 @@ PetscErrorCode PetscOptionsDestroy(PetscOptions *options)
   PetscFunctionBegin;
   if (!*options) PetscFunctionReturn(0);
   PetscCheck(!(*options)->previous,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"You are destroying an option that has been used with PetscOptionsPush() but does not have a corresponding PetscOptionsPop()");
-  CHKERRQ(PetscOptionsClear(*options));
+  PetscCall(PetscOptionsClear(*options));
   /* XXX what about monitors ? */
   free(*options);
   *options = NULL;
@@ -173,7 +173,7 @@ PetscErrorCode PetscOptionsDestroy(PetscOptions *options)
 PetscErrorCode PetscOptionsCreateDefault(void)
 {
   PetscFunctionBegin;
-  if (PetscUnlikely(!defaultoptions)) CHKERRQ(PetscOptionsCreate(&defaultoptions));
+  if (PetscUnlikely(!defaultoptions)) PetscCall(PetscOptionsCreate(&defaultoptions));
   PetscFunctionReturn(0);
 }
 
@@ -202,7 +202,7 @@ PetscErrorCode PetscOptionsCreateDefault(void)
 PetscErrorCode PetscOptionsPush(PetscOptions opt)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsCreateDefault());
+  PetscCall(PetscOptionsCreateDefault());
   opt->previous  = defaultoptions;
   defaultoptions = opt;
   PetscFunctionReturn(0);
@@ -245,10 +245,10 @@ PetscErrorCode PetscOptionsDestroyDefault(void)
   while (defaultoptions->previous) {
     PetscOptions tmp = defaultoptions;
 
-    CHKERRQ(PetscOptionsPop());
-    CHKERRQ(PetscOptionsDestroy(&tmp));
+    PetscCall(PetscOptionsPop());
+    PetscCall(PetscOptionsDestroy(&tmp));
   }
-  CHKERRQ(PetscOptionsDestroy(&defaultoptions));
+  PetscCall(PetscOptionsDestroy(&defaultoptions));
   PetscFunctionReturn(0);
 }
 
@@ -315,50 +315,50 @@ PetscErrorCode PetscOptionsInsertString(PetscOptions options,const char in_str[]
   PetscToken     token;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscTokenCreate(in_str,' ',&token));
-  CHKERRQ(PetscTokenFind(token,&first));
+  PetscCall(PetscTokenCreate(in_str,' ',&token));
+  PetscCall(PetscTokenFind(token,&first));
   while (first) {
     PetscBool isfile,isfileyaml,isstringyaml,ispush,ispop,key;
-    CHKERRQ(PetscStrcasecmp(first,"-options_file",&isfile));
-    CHKERRQ(PetscStrcasecmp(first,"-options_file_yaml",&isfileyaml));
-    CHKERRQ(PetscStrcasecmp(first,"-options_string_yaml",&isstringyaml));
-    CHKERRQ(PetscStrcasecmp(first,"-prefix_push",&ispush));
-    CHKERRQ(PetscStrcasecmp(first,"-prefix_pop",&ispop));
-    CHKERRQ(PetscOptionsValidKey(first,&key));
+    PetscCall(PetscStrcasecmp(first,"-options_file",&isfile));
+    PetscCall(PetscStrcasecmp(first,"-options_file_yaml",&isfileyaml));
+    PetscCall(PetscStrcasecmp(first,"-options_string_yaml",&isstringyaml));
+    PetscCall(PetscStrcasecmp(first,"-prefix_push",&ispush));
+    PetscCall(PetscStrcasecmp(first,"-prefix_pop",&ispop));
+    PetscCall(PetscOptionsValidKey(first,&key));
     if (!key) {
-      CHKERRQ(PetscTokenFind(token,&first));
+      PetscCall(PetscTokenFind(token,&first));
     } else if (isfile) {
-      CHKERRQ(PetscTokenFind(token,&second));
-      CHKERRQ(PetscOptionsInsertFile(comm,options,second,PETSC_TRUE));
-      CHKERRQ(PetscTokenFind(token,&first));
+      PetscCall(PetscTokenFind(token,&second));
+      PetscCall(PetscOptionsInsertFile(comm,options,second,PETSC_TRUE));
+      PetscCall(PetscTokenFind(token,&first));
     } else if (isfileyaml) {
-      CHKERRQ(PetscTokenFind(token,&second));
-      CHKERRQ(PetscOptionsInsertFileYAML(comm,options,second,PETSC_TRUE));
-      CHKERRQ(PetscTokenFind(token,&first));
+      PetscCall(PetscTokenFind(token,&second));
+      PetscCall(PetscOptionsInsertFileYAML(comm,options,second,PETSC_TRUE));
+      PetscCall(PetscTokenFind(token,&first));
     } else if (isstringyaml) {
-      CHKERRQ(PetscTokenFind(token,&second));
-      CHKERRQ(PetscOptionsInsertStringYAML(options,second));
-      CHKERRQ(PetscTokenFind(token,&first));
+      PetscCall(PetscTokenFind(token,&second));
+      PetscCall(PetscOptionsInsertStringYAML(options,second));
+      PetscCall(PetscTokenFind(token,&first));
     } else if (ispush) {
-      CHKERRQ(PetscTokenFind(token,&second));
-      CHKERRQ(PetscOptionsPrefixPush(options,second));
-      CHKERRQ(PetscTokenFind(token,&first));
+      PetscCall(PetscTokenFind(token,&second));
+      PetscCall(PetscOptionsPrefixPush(options,second));
+      PetscCall(PetscTokenFind(token,&first));
     } else if (ispop) {
-      CHKERRQ(PetscOptionsPrefixPop(options));
-      CHKERRQ(PetscTokenFind(token,&first));
+      PetscCall(PetscOptionsPrefixPop(options));
+      PetscCall(PetscTokenFind(token,&first));
     } else {
-      CHKERRQ(PetscTokenFind(token,&second));
-      CHKERRQ(PetscOptionsValidKey(second,&key));
+      PetscCall(PetscTokenFind(token,&second));
+      PetscCall(PetscOptionsValidKey(second,&key));
       if (!key) {
-        CHKERRQ(PetscOptionsSetValue(options,first,second));
-        CHKERRQ(PetscTokenFind(token,&first));
+        PetscCall(PetscOptionsSetValue(options,first,second));
+        PetscCall(PetscTokenFind(token,&first));
       } else {
-        CHKERRQ(PetscOptionsSetValue(options,first,NULL));
+        PetscCall(PetscOptionsSetValue(options,first,NULL));
         first = second;
       }
     }
   }
-  CHKERRQ(PetscTokenDestroy(&token));
+  PetscCall(PetscTokenDestroy(&token));
   PetscFunctionReturn(0);
 }
 
@@ -393,33 +393,33 @@ static PetscErrorCode PetscOptionsFilename(MPI_Comm comm,const char file[],char 
 
   PetscFunctionBegin;
   *yaml = PETSC_FALSE;
-  CHKERRQ(PetscStrreplace(comm,file,fname,sizeof(fname)));
-  CHKERRQ(PetscFixFilename(fname,path));
-  CHKERRQ(PetscStrendswith(path,":yaml",yaml));
+  PetscCall(PetscStrreplace(comm,file,fname,sizeof(fname)));
+  PetscCall(PetscFixFilename(fname,path));
+  PetscCall(PetscStrendswith(path,":yaml",yaml));
   if (*yaml) {
-    CHKERRQ(PetscStrrchr(path,':',&tail));
+    PetscCall(PetscStrrchr(path,':',&tail));
     tail[-1] = 0; /* remove ":yaml" suffix from path */
   }
-  CHKERRQ(PetscStrncpy(filename,path,PETSC_MAX_PATH_LEN));
+  PetscCall(PetscStrncpy(filename,path,PETSC_MAX_PATH_LEN));
   /* check for standard YAML and JSON filename extensions */
-  if (!*yaml) CHKERRQ(PetscStrendswith(filename,".yaml",yaml));
-  if (!*yaml) CHKERRQ(PetscStrendswith(filename,".yml", yaml));
-  if (!*yaml) CHKERRQ(PetscStrendswith(filename,".json",yaml));
+  if (!*yaml) PetscCall(PetscStrendswith(filename,".yaml",yaml));
+  if (!*yaml) PetscCall(PetscStrendswith(filename,".yml", yaml));
+  if (!*yaml) PetscCall(PetscStrendswith(filename,".json",yaml));
   if (!*yaml) { /* check file contents */
     PetscMPIInt rank;
-    CHKERRMPI(MPI_Comm_rank(comm,&rank));
+    PetscCallMPI(MPI_Comm_rank(comm,&rank));
     if (rank == 0) {
       FILE *fh = fopen(filename,"r");
       if (fh) {
         char buf[6] = "";
         if (fread(buf,1,6,fh) > 0) {
-          CHKERRQ(PetscStrncmp(buf,"%YAML ",6,yaml));  /* check for '%YAML' tag */
-          if (!*yaml) CHKERRQ(PetscStrncmp(buf,"---",3,yaml));  /* check for document start */
+          PetscCall(PetscStrncmp(buf,"%YAML ",6,yaml));  /* check for '%YAML' tag */
+          if (!*yaml) PetscCall(PetscStrncmp(buf,"---",3,yaml));  /* check for document start */
         }
         (void)fclose(fh);
       }
     }
-    CHKERRMPI(MPI_Bcast(yaml,1,MPIU_BOOL,0,comm));
+    PetscCallMPI(MPI_Bcast(yaml,1,MPIU_BOOL,0,comm));
   }
   PetscFunctionReturn(0);
 }
@@ -439,82 +439,82 @@ static PetscErrorCode PetscOptionsInsertFilePetsc(MPI_Comm comm,PetscOptions opt
   PetscBool      isdir,alias=PETSC_FALSE,valid;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscMemzero(tokens,sizeof(tokens)));
-  CHKERRMPI(MPI_Comm_rank(comm,&rank));
+  PetscCall(PetscMemzero(tokens,sizeof(tokens)));
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
   if (rank == 0) {
     char fpath[PETSC_MAX_PATH_LEN];
     char fname[PETSC_MAX_PATH_LEN];
 
-    CHKERRQ(PetscStrreplace(PETSC_COMM_SELF,file,fpath,sizeof(fpath)));
-    CHKERRQ(PetscFixFilename(fpath,fname));
+    PetscCall(PetscStrreplace(PETSC_COMM_SELF,file,fpath,sizeof(fpath)));
+    PetscCall(PetscFixFilename(fpath,fname));
 
     fd   = fopen(fname,"r");
-    CHKERRQ(PetscTestDirectory(fname,'r',&isdir));
+    PetscCall(PetscTestDirectory(fname,'r',&isdir));
     PetscCheckFalse(isdir && require,PETSC_COMM_SELF,PETSC_ERR_USER,"Specified options file %s is a directory",fname);
     if (fd && !isdir) {
       PetscSegBuffer vseg,aseg;
-      CHKERRQ(PetscSegBufferCreate(1,4000,&vseg));
-      CHKERRQ(PetscSegBufferCreate(1,2000,&aseg));
+      PetscCall(PetscSegBufferCreate(1,4000,&vseg));
+      PetscCall(PetscSegBufferCreate(1,2000,&aseg));
 
       /* the following line will not work when opening initial files (like .petscrc) since info is not yet set */
-      CHKERRQ(PetscInfo(NULL,"Opened options file %s\n",file));
+      PetscCall(PetscInfo(NULL,"Opened options file %s\n",file));
 
       while ((string = Petscgetline(fd))) {
         /* eliminate comments from each line */
-        CHKERRQ(PetscStrchr(string,cmt,&cmatch));
+        PetscCall(PetscStrchr(string,cmt,&cmatch));
         if (cmatch) *cmatch = 0;
-        CHKERRQ(PetscStrlen(string,&len));
+        PetscCall(PetscStrlen(string,&len));
         /* replace tabs, ^M, \n with " " */
         for (i=0; i<len; i++) {
           if (string[i] == '\t' || string[i] == '\r' || string[i] == '\n') {
             string[i] = ' ';
           }
         }
-        CHKERRQ(PetscTokenCreate(string,' ',&token));
-        CHKERRQ(PetscTokenFind(token,&tokens[0]));
+        PetscCall(PetscTokenCreate(string,' ',&token));
+        PetscCall(PetscTokenFind(token,&tokens[0]));
         if (!tokens[0]) {
           goto destroy;
         } else if (!tokens[0][0]) { /* if token 0 is empty (string begins with spaces), redo */
-          CHKERRQ(PetscTokenFind(token,&tokens[0]));
+          PetscCall(PetscTokenFind(token,&tokens[0]));
         }
         for (i=1; i<4; i++) {
-          CHKERRQ(PetscTokenFind(token,&tokens[i]));
+          PetscCall(PetscTokenFind(token,&tokens[i]));
         }
         if (!tokens[0]) {
           goto destroy;
         } else if (tokens[0][0] == '-') {
-          CHKERRQ(PetscOptionsValidKey(tokens[0],&valid));
+          PetscCall(PetscOptionsValidKey(tokens[0],&valid));
           PetscCheck(valid,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file %s line %" PetscInt_FMT ": invalid option %s",fname,line,tokens[0]);
-          CHKERRQ(PetscStrlen(tokens[0],&len));
-          CHKERRQ(PetscSegBufferGet(vseg,len+1,&vstring));
-          CHKERRQ(PetscArraycpy(vstring,tokens[0],len));
+          PetscCall(PetscStrlen(tokens[0],&len));
+          PetscCall(PetscSegBufferGet(vseg,len+1,&vstring));
+          PetscCall(PetscArraycpy(vstring,tokens[0],len));
           vstring[len] = ' ';
           if (tokens[1]) {
-            CHKERRQ(PetscOptionsValidKey(tokens[1],&valid));
+            PetscCall(PetscOptionsValidKey(tokens[1],&valid));
             PetscCheck(!valid,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file %s line %" PetscInt_FMT ": cannot specify two options per line (%s %s)",fname,line,tokens[0],tokens[1]);
-            CHKERRQ(PetscStrlen(tokens[1],&len));
-            CHKERRQ(PetscSegBufferGet(vseg,len+3,&vstring));
+            PetscCall(PetscStrlen(tokens[1],&len));
+            PetscCall(PetscSegBufferGet(vseg,len+3,&vstring));
             vstring[0] = '"';
-            CHKERRQ(PetscArraycpy(vstring+1,tokens[1],len));
+            PetscCall(PetscArraycpy(vstring+1,tokens[1],len));
             vstring[len+1] = '"';
             vstring[len+2] = ' ';
           }
         } else {
-          CHKERRQ(PetscStrcasecmp(tokens[0],"alias",&alias));
+          PetscCall(PetscStrcasecmp(tokens[0],"alias",&alias));
           if (alias) {
-            CHKERRQ(PetscOptionsValidKey(tokens[1],&valid));
+            PetscCall(PetscOptionsValidKey(tokens[1],&valid));
             PetscCheck(valid,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file %s line %" PetscInt_FMT ": invalid aliased option %s",fname,line,tokens[1]);
             PetscCheckFalse(!tokens[2],PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file %s line %" PetscInt_FMT ": alias missing for %s",fname,line,tokens[1]);
-            CHKERRQ(PetscOptionsValidKey(tokens[2],&valid));
+            PetscCall(PetscOptionsValidKey(tokens[2],&valid));
             PetscCheck(valid,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file %s line %" PetscInt_FMT ": invalid aliasee option %s",fname,line,tokens[2]);
-            CHKERRQ(PetscStrlen(tokens[1],&len));
-            CHKERRQ(PetscSegBufferGet(aseg,len+1,&astring));
-            CHKERRQ(PetscArraycpy(astring,tokens[1],len));
+            PetscCall(PetscStrlen(tokens[1],&len));
+            PetscCall(PetscSegBufferGet(aseg,len+1,&astring));
+            PetscCall(PetscArraycpy(astring,tokens[1],len));
             astring[len] = ' ';
 
-            CHKERRQ(PetscStrlen(tokens[2],&len));
-            CHKERRQ(PetscSegBufferGet(aseg,len+1,&astring));
-            CHKERRQ(PetscArraycpy(astring,tokens[2],len));
+            PetscCall(PetscStrlen(tokens[2],&len));
+            PetscCall(PetscSegBufferGet(aseg,len+1,&astring));
+            PetscCall(PetscArraycpy(astring,tokens[2],len));
             astring[len] = ' ';
           } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown first token in options file %s line %" PetscInt_FMT ": %s",fname,line,tokens[0]);
         }
@@ -524,25 +524,25 @@ static PetscErrorCode PetscOptionsInsertFilePetsc(MPI_Comm comm,PetscOptions opt
         }
 destroy:
         free(string);
-        CHKERRQ(PetscTokenDestroy(&token));
+        PetscCall(PetscTokenDestroy(&token));
         alias = PETSC_FALSE;
         line++;
       }
       err = fclose(fd);
       PetscCheck(!err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file %s",fname);
-      CHKERRQ(PetscSegBufferGetSize(aseg,&bytes)); /* size without null termination */
-      CHKERRQ(PetscMPIIntCast(bytes,&acnt));
-      CHKERRQ(PetscSegBufferGet(aseg,1,&astring));
+      PetscCall(PetscSegBufferGetSize(aseg,&bytes)); /* size without null termination */
+      PetscCall(PetscMPIIntCast(bytes,&acnt));
+      PetscCall(PetscSegBufferGet(aseg,1,&astring));
       astring[0] = 0;
-      CHKERRQ(PetscSegBufferGetSize(vseg,&bytes)); /* size without null termination */
-      CHKERRQ(PetscMPIIntCast(bytes,&cnt));
-      CHKERRQ(PetscSegBufferGet(vseg,1,&vstring));
+      PetscCall(PetscSegBufferGetSize(vseg,&bytes)); /* size without null termination */
+      PetscCall(PetscMPIIntCast(bytes,&cnt));
+      PetscCall(PetscSegBufferGet(vseg,1,&vstring));
       vstring[0] = 0;
-      CHKERRQ(PetscMalloc1(2+acnt+cnt,&packed));
-      CHKERRQ(PetscSegBufferExtractTo(aseg,packed));
-      CHKERRQ(PetscSegBufferExtractTo(vseg,packed+acnt+1));
-      CHKERRQ(PetscSegBufferDestroy(&aseg));
-      CHKERRQ(PetscSegBufferDestroy(&vseg));
+      PetscCall(PetscMalloc1(2+acnt+cnt,&packed));
+      PetscCall(PetscSegBufferExtractTo(aseg,packed));
+      PetscCall(PetscSegBufferExtractTo(vseg,packed+acnt+1));
+      PetscCall(PetscSegBufferDestroy(&aseg));
+      PetscCall(PetscSegBufferDestroy(&vseg));
     } else PetscCheck(!require,PETSC_COMM_SELF,PETSC_ERR_USER,"Unable to open options file %s",fname);
   }
 
@@ -553,29 +553,29 @@ destroy:
   acnt = counts[0];
   cnt = counts[1];
   if (rank) {
-    CHKERRQ(PetscMalloc1(2+acnt+cnt,&packed));
+    PetscCall(PetscMalloc1(2+acnt+cnt,&packed));
   }
   if (acnt || cnt) {
-    CHKERRMPI(MPI_Bcast(packed,2+acnt+cnt,MPI_CHAR,0,comm));
+    PetscCallMPI(MPI_Bcast(packed,2+acnt+cnt,MPI_CHAR,0,comm));
     astring = packed;
     vstring = packed + acnt + 1;
   }
 
   if (acnt) {
-    CHKERRQ(PetscTokenCreate(astring,' ',&token));
-    CHKERRQ(PetscTokenFind(token,&tokens[0]));
+    PetscCall(PetscTokenCreate(astring,' ',&token));
+    PetscCall(PetscTokenFind(token,&tokens[0]));
     while (tokens[0]) {
-      CHKERRQ(PetscTokenFind(token,&tokens[1]));
-      CHKERRQ(PetscOptionsSetAlias(options,tokens[0],tokens[1]));
-      CHKERRQ(PetscTokenFind(token,&tokens[0]));
+      PetscCall(PetscTokenFind(token,&tokens[1]));
+      PetscCall(PetscOptionsSetAlias(options,tokens[0],tokens[1]));
+      PetscCall(PetscTokenFind(token,&tokens[0]));
     }
-    CHKERRQ(PetscTokenDestroy(&token));
+    PetscCall(PetscTokenDestroy(&token));
   }
 
   if (cnt) {
-    CHKERRQ(PetscOptionsInsertString(options,vstring));
+    PetscCall(PetscOptionsInsertString(options,vstring));
   }
-  CHKERRQ(PetscFree(packed));
+  PetscCall(PetscFree(packed));
   PetscFunctionReturn(0);
 }
 
@@ -618,11 +618,11 @@ PetscErrorCode PetscOptionsInsertFile(MPI_Comm comm,PetscOptions options,const c
   PetscBool      yaml;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsFilename(comm,file,filename,&yaml));
+  PetscCall(PetscOptionsFilename(comm,file,filename,&yaml));
   if (yaml) {
-    CHKERRQ(PetscOptionsInsertFileYAML(comm,options,filename,require));
+    PetscCall(PetscOptionsInsertFileYAML(comm,options,filename,require));
   } else {
-    CHKERRQ(PetscOptionsInsertFilePetsc(comm,options,filename,require));
+    PetscCall(PetscOptionsInsertFilePetsc(comm,options,filename,require));
   }
   PetscFunctionReturn(0);
 }
@@ -650,42 +650,42 @@ PetscErrorCode PetscOptionsInsertArgs(PetscOptions options,int argc,char *args[]
   PetscFunctionBegin;
   while (left) {
     PetscBool isfile,isfileyaml,isstringyaml,ispush,ispop,key;
-    CHKERRQ(PetscStrcasecmp(eargs[0],"-options_file",&isfile));
-    CHKERRQ(PetscStrcasecmp(eargs[0],"-options_file_yaml",&isfileyaml));
-    CHKERRQ(PetscStrcasecmp(eargs[0],"-options_string_yaml",&isstringyaml));
-    CHKERRQ(PetscStrcasecmp(eargs[0],"-prefix_push",&ispush));
-    CHKERRQ(PetscStrcasecmp(eargs[0],"-prefix_pop",&ispop));
-    CHKERRQ(PetscOptionsValidKey(eargs[0],&key));
+    PetscCall(PetscStrcasecmp(eargs[0],"-options_file",&isfile));
+    PetscCall(PetscStrcasecmp(eargs[0],"-options_file_yaml",&isfileyaml));
+    PetscCall(PetscStrcasecmp(eargs[0],"-options_string_yaml",&isstringyaml));
+    PetscCall(PetscStrcasecmp(eargs[0],"-prefix_push",&ispush));
+    PetscCall(PetscStrcasecmp(eargs[0],"-prefix_pop",&ispop));
+    PetscCall(PetscOptionsValidKey(eargs[0],&key));
     if (!key) {
       eargs++; left--;
     } else if (isfile) {
       PetscCheckFalse(left <= 1 || eargs[1][0] == '-',PETSC_COMM_SELF,PETSC_ERR_USER,"Missing filename for -options_file filename option");
-      CHKERRQ(PetscOptionsInsertFile(comm,options,eargs[1],PETSC_TRUE));
+      PetscCall(PetscOptionsInsertFile(comm,options,eargs[1],PETSC_TRUE));
       eargs += 2; left -= 2;
     } else if (isfileyaml) {
       PetscCheckFalse(left <= 1 || eargs[1][0] == '-',PETSC_COMM_SELF,PETSC_ERR_USER,"Missing filename for -options_file_yaml filename option");
-      CHKERRQ(PetscOptionsInsertFileYAML(comm,options,eargs[1],PETSC_TRUE));
+      PetscCall(PetscOptionsInsertFileYAML(comm,options,eargs[1],PETSC_TRUE));
       eargs += 2; left -= 2;
     } else if (isstringyaml) {
       PetscCheckFalse(left <= 1 || eargs[1][0] == '-',PETSC_COMM_SELF,PETSC_ERR_USER,"Missing string for -options_string_yaml string option");
-      CHKERRQ(PetscOptionsInsertStringYAML(options,eargs[1]));
+      PetscCall(PetscOptionsInsertStringYAML(options,eargs[1]));
       eargs += 2; left -= 2;
     } else if (ispush) {
       PetscCheckFalse(left <= 1,PETSC_COMM_SELF,PETSC_ERR_USER,"Missing prefix for -prefix_push option");
       PetscCheckFalse(eargs[1][0] == '-',PETSC_COMM_SELF,PETSC_ERR_USER,"Missing prefix for -prefix_push option (prefixes cannot start with '-')");
-      CHKERRQ(PetscOptionsPrefixPush(options,eargs[1]));
+      PetscCall(PetscOptionsPrefixPush(options,eargs[1]));
       eargs += 2; left -= 2;
     } else if (ispop) {
-      CHKERRQ(PetscOptionsPrefixPop(options));
+      PetscCall(PetscOptionsPrefixPop(options));
       eargs++; left--;
     } else {
       PetscBool nextiskey = PETSC_FALSE;
-      if (left >= 2) CHKERRQ(PetscOptionsValidKey(eargs[1],&nextiskey));
+      if (left >= 2) PetscCall(PetscOptionsValidKey(eargs[1],&nextiskey));
       if (left < 2 || nextiskey) {
-        CHKERRQ(PetscOptionsSetValue(options,eargs[0],NULL));
+        PetscCall(PetscOptionsSetValue(options,eargs[0],NULL));
         eargs++; left--;
       } else {
-        CHKERRQ(PetscOptionsSetValue(options,eargs[0],eargs[1]));
+        PetscCall(PetscOptionsSetValue(options,eargs[0],eargs[1]));
         eargs += 2; left -= 2;
       }
     }
@@ -697,7 +697,7 @@ static inline PetscErrorCode PetscOptionsStringToBoolIfSet_Private(enum PetscPre
 {
   PetscFunctionBegin;
   if (set[opt]) {
-    CHKERRQ(PetscOptionsStringToBool(val[opt],flg));
+    PetscCall(PetscOptionsStringToBool(val[opt],flg));
   } else *flg = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -713,21 +713,21 @@ static PetscErrorCode PetscOptionsProcessPrecedentFlags(PetscOptions options,int
   PetscBool         *set;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscCalloc2(n,&val,n,&set));
+  PetscCall(PetscCalloc2(n,&val,n,&set));
 
   /* Look for options possibly set using PetscOptionsSetValue beforehand */
   for (o=0; o<n; o++) {
-    CHKERRQ(PetscOptionsFindPair(options,NULL,opt[o],&val[o],&set[o]));
+    PetscCall(PetscOptionsFindPair(options,NULL,opt[o],&val[o],&set[o]));
   }
 
   /* Loop through all args to collect last occurring value of each option */
   for (a=1; a<argc; a++) {
     PetscBool valid, eq;
 
-    CHKERRQ(PetscOptionsValidKey(args[a],&valid));
+    PetscCall(PetscOptionsValidKey(args[a],&valid));
     if (!valid) continue;
     for (o=0; o<n; o++) {
-      CHKERRQ(PetscStrcasecmp(args[a],opt[o],&eq));
+      PetscCall(PetscStrcasecmp(args[a],opt[o],&eq));
       if (eq) {
         set[o] = PETSC_TRUE;
         if (a == argc-1 || !args[a+1] || !args[a+1][0] || args[a+1][0] == '-') val[o] = NULL;
@@ -738,23 +738,23 @@ static PetscErrorCode PetscOptionsProcessPrecedentFlags(PetscOptions options,int
   }
 
   /* Process flags */
-  CHKERRQ(PetscStrcasecmp(val[PO_HELP], "intro", &options->help_intro));
+  PetscCall(PetscStrcasecmp(val[PO_HELP], "intro", &options->help_intro));
   if (options->help_intro) options->help = PETSC_TRUE;
-  else CHKERRQ(PetscOptionsStringToBoolIfSet_Private(PO_HELP,            val,set,&options->help));
-  CHKERRQ(PetscOptionsStringToBoolIfSet_Private(PO_OPTIONS_MONITOR_CANCEL,val,set,&options->monitorCancel));
-  CHKERRQ(PetscOptionsStringToBoolIfSet_Private(PO_OPTIONS_MONITOR,       val,set,&options->monitorFromOptions));
-  CHKERRQ(PetscOptionsStringToBoolIfSet_Private(PO_SKIP_PETSCRC,          val,set,skip_petscrc));
+  else PetscCall(PetscOptionsStringToBoolIfSet_Private(PO_HELP,            val,set,&options->help));
+  PetscCall(PetscOptionsStringToBoolIfSet_Private(PO_OPTIONS_MONITOR_CANCEL,val,set,&options->monitorCancel));
+  PetscCall(PetscOptionsStringToBoolIfSet_Private(PO_OPTIONS_MONITOR,       val,set,&options->monitorFromOptions));
+  PetscCall(PetscOptionsStringToBoolIfSet_Private(PO_SKIP_PETSCRC,          val,set,skip_petscrc));
   *skip_petscrc_set = set[PO_SKIP_PETSCRC];
 
   /* Store precedent options in database and mark them as used */
   for (o=0; o<n; o++) {
     if (set[o]) {
-      CHKERRQ(PetscOptionsSetValue_Private(options,opt[o],val[o],&a));
+      PetscCall(PetscOptionsSetValue_Private(options,opt[o],val[o],&a));
       options->used[a] = PETSC_TRUE;
     }
   }
 
-  CHKERRQ(PetscFree2(val,set));
+  PetscCall(PetscFree2(val,set));
   options->precedentProcessed = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -768,7 +768,7 @@ static inline PetscErrorCode PetscOptionsSkipPrecedent(PetscOptions options,cons
     for (int i = 0; i < PO_NUM; ++i) {
       if (!PetscOptNameCmp(precedentOptions[i],name)) {
         /* check if precedent option has been set already */
-        CHKERRQ(PetscOptionsFindPair(options,NULL,name,NULL,flg));
+        PetscCall(PetscOptionsFindPair(options,NULL,name,NULL,flg));
         if (*flg) break;
       }
     }
@@ -816,29 +816,29 @@ PetscErrorCode PetscOptionsInsert(PetscOptions options,int *argc,char ***args,co
 
   PetscFunctionBegin;
   PetscCheckFalse(hasArgs && !(args && *args),comm,PETSC_ERR_ARG_NULL,"*argc > 1 but *args not given");
-  CHKERRMPI(MPI_Comm_rank(comm,&rank));
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
 
   if (!options) {
-    CHKERRQ(PetscOptionsCreateDefault());
+    PetscCall(PetscOptionsCreateDefault());
     options = defaultoptions;
   }
   if (hasArgs) {
     /* process options with absolute precedence */
-    CHKERRQ(PetscOptionsProcessPrecedentFlags(options,*argc,*args,&skipPetscrc,&skipPetscrcSet));
+    PetscCall(PetscOptionsProcessPrecedentFlags(options,*argc,*args,&skipPetscrc,&skipPetscrcSet));
   }
   if (file && file[0]) {
-    CHKERRQ(PetscOptionsInsertFile(comm,options,file,PETSC_TRUE));
+    PetscCall(PetscOptionsInsertFile(comm,options,file,PETSC_TRUE));
     /* if -skip_petscrc has not been set from command line, check whether it has been set in the file */
-    if (!skipPetscrcSet) CHKERRQ(PetscOptionsGetBool(options,NULL,"-skip_petscrc",&skipPetscrc,NULL));
+    if (!skipPetscrcSet) PetscCall(PetscOptionsGetBool(options,NULL,"-skip_petscrc",&skipPetscrc,NULL));
   }
   if (!skipPetscrc) {
     char filename[PETSC_MAX_PATH_LEN];
-    CHKERRQ(PetscGetHomeDirectory(filename,sizeof(filename)));
-    CHKERRMPI(MPI_Bcast(filename,(int)sizeof(filename),MPI_CHAR,0,comm));
-    if (filename[0]) CHKERRQ(PetscStrcat(filename,"/.petscrc"));
-    CHKERRQ(PetscOptionsInsertFile(comm,options,filename,PETSC_FALSE));
-    CHKERRQ(PetscOptionsInsertFile(comm,options,".petscrc",PETSC_FALSE));
-    CHKERRQ(PetscOptionsInsertFile(comm,options,"petscrc",PETSC_FALSE));
+    PetscCall(PetscGetHomeDirectory(filename,sizeof(filename)));
+    PetscCallMPI(MPI_Bcast(filename,(int)sizeof(filename),MPI_CHAR,0,comm));
+    if (filename[0]) PetscCall(PetscStrcat(filename,"/.petscrc"));
+    PetscCall(PetscOptionsInsertFile(comm,options,filename,PETSC_FALSE));
+    PetscCall(PetscOptionsInsertFile(comm,options,".petscrc",PETSC_FALSE));
+    PetscCall(PetscOptionsInsertFile(comm,options,"petscrc",PETSC_FALSE));
   }
 
   /* insert environment options */
@@ -847,15 +847,15 @@ PetscErrorCode PetscOptionsInsert(PetscOptions options,int *argc,char ***args,co
     size_t len       = 0;
     if (rank == 0) {
       eoptions = (char*)getenv("PETSC_OPTIONS");
-      CHKERRQ(PetscStrlen(eoptions,&len));
+      PetscCall(PetscStrlen(eoptions,&len));
     }
-    CHKERRMPI(MPI_Bcast(&len,1,MPIU_SIZE_T,0,comm));
+    PetscCallMPI(MPI_Bcast(&len,1,MPIU_SIZE_T,0,comm));
     if (len) {
-      if (rank) CHKERRQ(PetscMalloc1(len+1,&eoptions));
-      CHKERRMPI(MPI_Bcast(eoptions,len,MPI_CHAR,0,comm));
+      if (rank) PetscCall(PetscMalloc1(len+1,&eoptions));
+      PetscCallMPI(MPI_Bcast(eoptions,len,MPI_CHAR,0,comm));
       if (rank) eoptions[len] = 0;
-      CHKERRQ(PetscOptionsInsertString(options,eoptions));
-      if (rank) CHKERRQ(PetscFree(eoptions));
+      PetscCall(PetscOptionsInsertString(options,eoptions));
+      if (rank) PetscCall(PetscFree(eoptions));
     }
   }
 
@@ -865,20 +865,20 @@ PetscErrorCode PetscOptionsInsert(PetscOptions options,int *argc,char ***args,co
     size_t len       = 0;
     if (rank == 0) {
       eoptions = (char*)getenv("PETSC_OPTIONS_YAML");
-      CHKERRQ(PetscStrlen(eoptions,&len));
+      PetscCall(PetscStrlen(eoptions,&len));
     }
-    CHKERRMPI(MPI_Bcast(&len,1,MPIU_SIZE_T,0,comm));
+    PetscCallMPI(MPI_Bcast(&len,1,MPIU_SIZE_T,0,comm));
     if (len) {
-      if (rank) CHKERRQ(PetscMalloc1(len+1,&eoptions));
-      CHKERRMPI(MPI_Bcast(eoptions,len,MPI_CHAR,0,comm));
+      if (rank) PetscCall(PetscMalloc1(len+1,&eoptions));
+      PetscCallMPI(MPI_Bcast(eoptions,len,MPI_CHAR,0,comm));
       if (rank) eoptions[len] = 0;
-      CHKERRQ(PetscOptionsInsertStringYAML(options,eoptions));
-      if (rank) CHKERRQ(PetscFree(eoptions));
+      PetscCall(PetscOptionsInsertStringYAML(options,eoptions));
+      if (rank) PetscCall(PetscFree(eoptions));
     }
   }
 
   /* insert command line options here because they take precedence over arguments in petscrc/environment */
-  if (hasArgs) CHKERRQ(PetscOptionsInsertArgs(options,*argc-1,*args+1));
+  if (hasArgs) PetscCall(PetscOptionsInsertArgs(options,*argc-1,*args+1));
   PetscFunctionReturn(0);
 }
 
@@ -912,23 +912,23 @@ PetscErrorCode PetscOptionsView(PetscOptions options,PetscViewer viewer)
   if (viewer) PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   options = options ? options : defaultoptions;
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_WORLD;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii));
   PetscCheck(isascii,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Only supports ASCII viewer");
 
   if (!options->N) {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"#No PETSc Option Table entries\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"#No PETSc Option Table entries\n"));
     PetscFunctionReturn(0);
   }
 
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"#PETSc Option Table entries:\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"#PETSc Option Table entries:\n"));
   for (i=0; i<options->N; i++) {
     if (options->values[i]) {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"-%s %s\n",options->names[i],options->values[i]));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"-%s %s\n",options->names[i],options->values[i]));
     } else {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"-%s\n",options->names[i]));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"-%s\n",options->names[i]));
     }
   }
-  CHKERRQ(PetscViewerASCIIPrintf(viewer,"#End of PETSc Option Table entries\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"#End of PETSc Option Table entries\n"));
   PetscFunctionReturn(0);
 }
 
@@ -997,14 +997,14 @@ PetscErrorCode PetscOptionsPrefixPush(PetscOptions options,const char prefix[])
   options = options ? options : defaultoptions;
   PetscCheckFalse(options->prefixind >= MAXPREFIXES,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Maximum depth of prefix stack %d exceeded, recompile \n src/sys/objects/options.c with larger value for MAXPREFIXES",MAXPREFIXES);
   key[0] = '-'; /* keys must start with '-' */
-  CHKERRQ(PetscStrncpy(key+1,prefix,sizeof(key)-1));
-  CHKERRQ(PetscOptionsValidKey(key,&valid));
+  PetscCall(PetscStrncpy(key+1,prefix,sizeof(key)-1));
+  PetscCall(PetscOptionsValidKey(key,&valid));
   if (!valid && options->prefixind > 0 && isdigit((int)prefix[0])) valid = PETSC_TRUE; /* If the prefix stack is not empty, make numbers a valid prefix */
   PetscCheck(valid,PETSC_COMM_SELF,PETSC_ERR_USER,"Given prefix \"%s\" not valid (the first character must be a letter%s, do not include leading '-')",prefix,options->prefixind?" or digit":"");
   start = options->prefixind ? options->prefixstack[options->prefixind-1] : 0;
-  CHKERRQ(PetscStrlen(prefix,&n));
+  PetscCall(PetscStrlen(prefix,&n));
   PetscCheckFalse(n+1 > sizeof(options->prefix)-start,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Maximum prefix length %zu exceeded",sizeof(options->prefix));
-  CHKERRQ(PetscArraycpy(options->prefix+start,prefix,n+1));
+  PetscCall(PetscArraycpy(options->prefix+start,prefix,n+1));
   options->prefixstack[options->prefixind++] = start+n;
   PetscFunctionReturn(0);
 }
@@ -1115,21 +1115,21 @@ PetscErrorCode PetscOptionsSetAlias(PetscOptions options,const char newname[],co
   PetscValidCharPointer(newname,2);
   PetscValidCharPointer(oldname,3);
   options = options ? options : defaultoptions;
-  CHKERRQ(PetscOptionsValidKey(newname,&valid));
+  PetscCall(PetscOptionsValidKey(newname,&valid));
   PetscCheck(valid,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid aliased option %s",newname);
-  CHKERRQ(PetscOptionsValidKey(oldname,&valid));
+  PetscCall(PetscOptionsValidKey(oldname,&valid));
   PetscCheck(valid,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid aliasee option %s",oldname);
 
   n = options->Naliases;
   PetscCheckFalse(n >= MAXALIASES,PETSC_COMM_SELF,PETSC_ERR_MEM,"You have defined to many PETSc options aliases, limit %d recompile \n  src/sys/objects/options.c with larger value for MAXALIASES",MAXALIASES);
 
   newname++; oldname++;
-  CHKERRQ(PetscStrlen(newname,&len));
+  PetscCall(PetscStrlen(newname,&len));
   options->aliases1[n] = (char*)malloc((len+1)*sizeof(char));
-  CHKERRQ(PetscStrcpy(options->aliases1[n],newname));
-  CHKERRQ(PetscStrlen(oldname,&len));
+  PetscCall(PetscStrcpy(options->aliases1[n],newname));
+  PetscCall(PetscStrlen(oldname,&len));
   options->aliases2[n] = (char*)malloc((len+1)*sizeof(char));
-  CHKERRQ(PetscStrcpy(options->aliases2[n],oldname));
+  PetscCall(PetscStrcpy(options->aliases2[n],oldname));
   options->Naliases++;
   PetscFunctionReturn(0);
 }
@@ -1162,7 +1162,7 @@ PetscErrorCode PetscOptionsSetAlias(PetscOptions options,const char newname[],co
 PetscErrorCode PetscOptionsSetValue(PetscOptions options,const char name[],const char value[])
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsSetValue_Private(options,name,value,NULL));
+  PetscCall(PetscOptionsSetValue_Private(options,name,value,NULL));
   PetscFunctionReturn(0);
 }
 
@@ -1176,12 +1176,12 @@ static PetscErrorCode PetscOptionsSetValue_Private(PetscOptions options,const ch
 
   PetscFunctionBegin;
   if (!options) {
-    CHKERRQ(PetscOptionsCreateDefault());
+    PetscCall(PetscOptionsCreateDefault());
     options = defaultoptions;
   }
   PetscCheck(name[0] == '-',PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"name %s must start with '-'",name);
 
-  CHKERRQ(PetscOptionsSkipPrecedent(options,name,&flg));
+  PetscCall(PetscOptionsSkipPrecedent(options,name,&flg));
   if (flg) PetscFunctionReturn(0);
 
   name++; /* skip starting dash */
@@ -1254,7 +1254,7 @@ setvalue:
     options->used[n] = PETSC_TRUE;
   }
 
-  CHKERRQ(PetscOptionsMonitor(options,name,value));
+  PetscCall(PetscOptionsMonitor(options,name,value));
   if (pos) *pos = n;
   PetscFunctionReturn(0);
 }
@@ -1318,7 +1318,7 @@ PetscErrorCode PetscOptionsClearValue(PetscOptions options,const char name[])
   kh_destroy(HO,options->ht);
   options->ht = NULL;
 
-  CHKERRQ(PetscOptionsMonitor(options,name,NULL));
+  PetscCall(PetscOptionsMonitor(options,name,NULL));
   PetscFunctionReturn(0);
 }
 
@@ -1360,16 +1360,16 @@ PetscErrorCode PetscOptionsFindPair(PetscOptions options,const char pre[],const 
   if (pre && pre[0]) {
     char *ptr = buf;
     if (name[0] == '-') { *ptr++ = '-';  name++; }
-    CHKERRQ(PetscStrncpy(ptr,pre,buf+sizeof(buf)-ptr));
-    CHKERRQ(PetscStrlcat(buf,name,sizeof(buf)));
+    PetscCall(PetscStrncpy(ptr,pre,buf+sizeof(buf)-ptr));
+    PetscCall(PetscStrlcat(buf,name,sizeof(buf)));
     name = buf;
   }
 
   if (PetscDefined(USE_DEBUG)) {
     PetscBool valid;
     char      key[MAXOPTNAME+1] = "-";
-    CHKERRQ(PetscStrncpy(key+1,name,sizeof(key)-1));
-    CHKERRQ(PetscOptionsValidKey(key,&valid));
+    PetscCall(PetscStrncpy(key+1,name,sizeof(key)-1));
+    PetscCall(PetscOptionsValidKey(key,&valid));
     PetscCheck(valid,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid option '%s' obtained from pre='%s' and name='%s'",key,pre?pre:"",name);
   }
 
@@ -1440,10 +1440,10 @@ PetscErrorCode PetscOptionsFindPair(PetscOptions options,const char pre[],const 
     for (i=0; i<cnt; i++) {
       PetscBool found;
       char      opt[MAXOPTNAME+1] = "-", tmp[MAXOPTNAME];
-      CHKERRQ(PetscStrncpy(tmp,name,PetscMin((size_t)(locs[i]+1),sizeof(tmp))));
-      CHKERRQ(PetscStrlcat(opt,tmp,sizeof(opt)));
-      CHKERRQ(PetscStrlcat(opt,name+loce[i],sizeof(opt)));
-      CHKERRQ(PetscOptionsFindPair(options,NULL,opt,value,&found));
+      PetscCall(PetscStrncpy(tmp,name,PetscMin((size_t)(locs[i]+1),sizeof(tmp))));
+      PetscCall(PetscStrlcat(opt,tmp,sizeof(opt)));
+      PetscCall(PetscStrlcat(opt,name+loce[i],sizeof(opt)));
+      PetscCall(PetscOptionsFindPair(options,NULL,opt,value,&found));
       if (found) {if (set) *set = PETSC_TRUE; PetscFunctionReturn(0);}
     }
   }
@@ -1469,16 +1469,16 @@ PETSC_EXTERN PetscErrorCode PetscOptionsFindPairPrefix_Private(PetscOptions opti
   if (pre && pre[0]) {
     char *ptr = buf;
     if (name[0] == '-') { *ptr++ = '-';  name++; }
-    CHKERRQ(PetscStrncpy(ptr,pre,sizeof(buf)+(size_t)(ptr-buf)));
-    CHKERRQ(PetscStrlcat(buf,name,sizeof(buf)));
+    PetscCall(PetscStrncpy(ptr,pre,sizeof(buf)+(size_t)(ptr-buf)));
+    PetscCall(PetscStrlcat(buf,name,sizeof(buf)));
     name = buf;
   }
 
   if (PetscDefined(USE_DEBUG)) {
     PetscBool valid;
     char      key[MAXOPTNAME+1] = "-";
-    CHKERRQ(PetscStrncpy(key+1,name,sizeof(key)-1));
-    CHKERRQ(PetscOptionsValidKey(key,&valid));
+    PetscCall(PetscStrncpy(key+1,name,sizeof(key)-1));
+    PetscCall(PetscOptionsValidKey(key,&valid));
     PetscCheck(valid,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid option '%s' obtained from pre='%s' and name='%s'",key,pre?pre:"",name);
   }
 
@@ -1509,15 +1509,15 @@ PETSC_EXTERN PetscErrorCode PetscOptionsFindPairPrefix_Private(PetscOptions opti
       char opt[MAXOPTNAME+1] = "", tmp[MAXOPTNAME];
 
       if (c < 0) {
-        CHKERRQ(PetscStrcpy(opt,name));
+        PetscCall(PetscStrcpy(opt,name));
       } else {
-        CHKERRQ(PetscStrncpy(tmp,name,PetscMin((size_t)(locs[c]+1),sizeof(tmp))));
-        CHKERRQ(PetscStrlcat(opt,tmp,sizeof(opt)));
-        CHKERRQ(PetscStrlcat(opt,name+loce[c],sizeof(opt)));
+        PetscCall(PetscStrncpy(tmp,name,PetscMin((size_t)(locs[c]+1),sizeof(tmp))));
+        PetscCall(PetscStrlcat(opt,tmp,sizeof(opt)));
+        PetscCall(PetscStrlcat(opt,name+loce[c],sizeof(opt)));
       }
-      CHKERRQ(PetscStrlen(opt,&len));
+      PetscCall(PetscStrlen(opt,&len));
       for (i=0; i<options->N; i++) {
-        CHKERRQ(PetscStrncmp(options->names[i],opt,len,&match));
+        PetscCall(PetscStrncmp(options->names[i],opt,len,&match));
         if (match) {
           options->used[i]  = PETSC_TRUE;
           if (value) *value = options->values[i];
@@ -1557,7 +1557,7 @@ PetscErrorCode PetscOptionsReject(PetscOptions options,const char pre[],const ch
   PetscBool      flag = PETSC_FALSE;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsHasName(options,pre,name,&flag));
+  PetscCall(PetscOptionsHasName(options,pre,name,&flag));
   if (flag) {
     PetscCheckFalse(mess && mess[0],PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Program has disabled option: -%s%s with %s",pre?pre:"",name+1,mess);
     else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Program has disabled option: -%s%s",pre?pre:"",name+1);
@@ -1630,7 +1630,7 @@ PetscErrorCode PetscOptionsHasName(PetscOptions options,const char pre[],const c
   PetscBool      flag;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsFindPair(options,pre,name,&value,&flag));
+  PetscCall(PetscOptionsFindPair(options,pre,name,&value,&flag));
   if (set) *set = flag;
   PetscFunctionReturn(0);
 }
@@ -1665,22 +1665,22 @@ PetscErrorCode PetscOptionsGetAll(PetscOptions options,char *copts[])
   options = options ? options : defaultoptions;
   /* count the length of the required string */
   for (i=0; i<options->N; i++) {
-    CHKERRQ(PetscStrlen(options->names[i],&lent));
+    PetscCall(PetscStrlen(options->names[i],&lent));
     len += 2 + lent;
     if (options->values[i]) {
-      CHKERRQ(PetscStrlen(options->values[i],&lent));
+      PetscCall(PetscStrlen(options->values[i],&lent));
       len += 1 + lent;
     }
   }
-  CHKERRQ(PetscMalloc1(len,&coptions));
+  PetscCall(PetscMalloc1(len,&coptions));
   coptions[0] = 0;
   for (i=0; i<options->N; i++) {
-    CHKERRQ(PetscStrcat(coptions,"-"));
-    CHKERRQ(PetscStrcat(coptions,options->names[i]));
-    CHKERRQ(PetscStrcat(coptions," "));
+    PetscCall(PetscStrcat(coptions,"-"));
+    PetscCall(PetscStrcat(coptions,options->names[i]));
+    PetscCall(PetscStrcat(coptions," "));
     if (options->values[i]) {
-      CHKERRQ(PetscStrcat(coptions,options->values[i]));
-      CHKERRQ(PetscStrcat(coptions," "));
+      PetscCall(PetscStrcat(coptions,options->values[i]));
+      PetscCall(PetscStrcat(coptions," "));
     }
   }
   *copts = coptions;
@@ -1717,7 +1717,7 @@ PetscErrorCode PetscOptionsUsed(PetscOptions options,const char *name,PetscBool 
   options = options ? options : defaultoptions;
   *used = PETSC_FALSE;
   for (i=0; i<options->N; i++) {
-    CHKERRQ(PetscStrcasecmp(options->names[i],name,used));
+    PetscCall(PetscStrcasecmp(options->names[i],name,used));
     if (*used) {
       *used = options->used[i];
       break;
@@ -1792,9 +1792,9 @@ PetscErrorCode PetscOptionsLeft(PetscOptions options)
   for (i=0; i<toptions->N; i++) {
     if (!toptions->used[i]) {
       if (toptions->values[i]) {
-        CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Option left: name:-%s value: %s\n",toptions->names[i],toptions->values[i]));
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Option left: name:-%s value: %s\n",toptions->names[i],toptions->values[i]));
       } else {
-        CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Option left: name:-%s (no value)\n",toptions->names[i]));
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Option left: name:-%s (no value)\n",toptions->names[i]));
       }
     }
   }
@@ -1805,7 +1805,7 @@ PetscErrorCode PetscOptionsLeft(PetscOptions options)
       toptions = toptions->previous;
     }
     if (cnt) {
-      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Option left: You may have forgotten some calls to PetscOptionsPop(),\n             PetscOptionsPop() has been called %" PetscInt_FMT " less times than PetscOptionsPush()\n",cnt));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Option left: You may have forgotten some calls to PetscOptionsPop(),\n             PetscOptionsPop() has been called %" PetscInt_FMT " less times than PetscOptionsPush()\n",cnt));
     }
   }
   PetscFunctionReturn(0);
@@ -1849,8 +1849,8 @@ PetscErrorCode PetscOptionsLeftGet(PetscOptions options,PetscInt *N,char **names
     if (!options->used[i]) n++;
   }
   if (N) { *N = n; }
-  if (names)  CHKERRQ(PetscMalloc1(n,names));
-  if (values) CHKERRQ(PetscMalloc1(n,values));
+  if (names)  PetscCall(PetscMalloc1(n,names));
+  if (values) PetscCall(PetscMalloc1(n,values));
 
   n = 0;
   if (names || values) {
@@ -1886,8 +1886,8 @@ PetscErrorCode PetscOptionsLeftRestore(PetscOptions options,PetscInt *N,char **n
   if (names) PetscValidPointer(names,3);
   if (values) PetscValidPointer(values,4);
   if (N) { *N = 0; }
-  if (names)  CHKERRQ(PetscFree(*names));
-  if (values) CHKERRQ(PetscFree(*values));
+  if (names)  PetscCall(PetscFree(*names));
+  if (values) PetscCall(PetscFree(*values));
   PetscFunctionReturn(0);
 }
 
@@ -1916,20 +1916,20 @@ PetscErrorCode PetscOptionsMonitorDefault(const char name[],const char value[],v
   if (ctx) {
     PetscViewer viewer = (PetscViewer)ctx;
     if (!value) {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"Removing option: %s\n",name));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"Removing option: %s\n",name));
     } else if (!value[0]) {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"Setting option: %s (no value)\n",name));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"Setting option: %s (no value)\n",name));
     } else {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer,"Setting option: %s = %s\n",name,value));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"Setting option: %s = %s\n",name,value));
     }
   } else {
     MPI_Comm comm = PETSC_COMM_WORLD;
     if (!value) {
-      CHKERRQ(PetscPrintf(comm,"Removing option: %s\n",name));
+      PetscCall(PetscPrintf(comm,"Removing option: %s\n",name));
     } else if (!value[0]) {
-      CHKERRQ(PetscPrintf(comm,"Setting option: %s (no value)\n",name));
+      PetscCall(PetscPrintf(comm,"Setting option: %s (no value)\n",name));
     } else {
-      CHKERRQ(PetscPrintf(comm,"Setting option: %s = %s\n",name,value));
+      PetscCall(PetscPrintf(comm,"Setting option: %s = %s\n",name,value));
     }
   }
   PetscFunctionReturn(0);
@@ -1995,23 +1995,23 @@ PetscErrorCode PetscOptionsStringToBool(const char value[],PetscBool *a)
 
   PetscFunctionBegin;
   /* PetscStrlen() returns 0 for NULL or "" */
-  CHKERRQ(PetscStrlen(value,&len));
+  PetscCall(PetscStrlen(value,&len));
   if (!len)  {*a = PETSC_TRUE; PetscFunctionReturn(0);}
-  CHKERRQ(PetscStrcasecmp(value,"TRUE",&istrue));
+  PetscCall(PetscStrcasecmp(value,"TRUE",&istrue));
   if (istrue) {*a = PETSC_TRUE; PetscFunctionReturn(0);}
-  CHKERRQ(PetscStrcasecmp(value,"YES",&istrue));
+  PetscCall(PetscStrcasecmp(value,"YES",&istrue));
   if (istrue) {*a = PETSC_TRUE; PetscFunctionReturn(0);}
-  CHKERRQ(PetscStrcasecmp(value,"1",&istrue));
+  PetscCall(PetscStrcasecmp(value,"1",&istrue));
   if (istrue) {*a = PETSC_TRUE; PetscFunctionReturn(0);}
-  CHKERRQ(PetscStrcasecmp(value,"on",&istrue));
+  PetscCall(PetscStrcasecmp(value,"on",&istrue));
   if (istrue) {*a = PETSC_TRUE; PetscFunctionReturn(0);}
-  CHKERRQ(PetscStrcasecmp(value,"FALSE",&isfalse));
+  PetscCall(PetscStrcasecmp(value,"FALSE",&isfalse));
   if (isfalse) {*a = PETSC_FALSE; PetscFunctionReturn(0);}
-  CHKERRQ(PetscStrcasecmp(value,"NO",&isfalse));
+  PetscCall(PetscStrcasecmp(value,"NO",&isfalse));
   if (isfalse) {*a = PETSC_FALSE; PetscFunctionReturn(0);}
-  CHKERRQ(PetscStrcasecmp(value,"0",&isfalse));
+  PetscCall(PetscStrcasecmp(value,"0",&isfalse));
   if (isfalse) {*a = PETSC_FALSE; PetscFunctionReturn(0);}
-  CHKERRQ(PetscStrcasecmp(value,"off",&isfalse));
+  PetscCall(PetscStrcasecmp(value,"off",&isfalse));
   if (isfalse) {*a = PETSC_FALSE; PetscFunctionReturn(0);}
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown logical value: %s",value);
 }
@@ -2025,18 +2025,18 @@ PetscErrorCode PetscOptionsStringToInt(const char name[],PetscInt *a)
   PetscBool decide,tdefault,mouse;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscStrlen(name,&len));
+  PetscCall(PetscStrlen(name,&len));
   PetscCheck(len,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"character string of length zero has no numerical value");
 
-  CHKERRQ(PetscStrcasecmp(name,"PETSC_DEFAULT",&tdefault));
+  PetscCall(PetscStrcasecmp(name,"PETSC_DEFAULT",&tdefault));
   if (!tdefault) {
-    CHKERRQ(PetscStrcasecmp(name,"DEFAULT",&tdefault));
+    PetscCall(PetscStrcasecmp(name,"DEFAULT",&tdefault));
   }
-  CHKERRQ(PetscStrcasecmp(name,"PETSC_DECIDE",&decide));
+  PetscCall(PetscStrcasecmp(name,"PETSC_DECIDE",&decide));
   if (!decide) {
-    CHKERRQ(PetscStrcasecmp(name,"DECIDE",&decide));
+    PetscCall(PetscStrcasecmp(name,"DECIDE",&decide));
   }
-  CHKERRQ(PetscStrcasecmp(name,"mouse",&mouse));
+  PetscCall(PetscStrcasecmp(name,"mouse",&mouse));
 
   if (tdefault)    *a = PETSC_DEFAULT;
   else if (decide) *a = PETSC_DECIDE;
@@ -2083,7 +2083,7 @@ static PetscErrorCode PetscStrtoz(const char name[],PetscScalar *a,char **endptr
   PetscReal      strtoval;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscStrtod(name,&strtoval,&ptr));
+  PetscCall(PetscStrtod(name,&strtoval,&ptr));
   if (ptr == name) {
     strtoval = 1.;
     hasi = PETSC_TRUE;
@@ -2123,18 +2123,18 @@ PetscErrorCode PetscOptionsStringToReal(const char name[],PetscReal *a)
   char      *endptr;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscStrlen(name,&len));
+  PetscCall(PetscStrlen(name,&len));
   PetscCheck(len,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"String of length zero has no numerical value");
 
-  CHKERRQ(PetscStrcasecmp(name,"PETSC_DEFAULT",&match));
-  if (!match) CHKERRQ(PetscStrcasecmp(name,"DEFAULT",&match));
+  PetscCall(PetscStrcasecmp(name,"PETSC_DEFAULT",&match));
+  if (!match) PetscCall(PetscStrcasecmp(name,"DEFAULT",&match));
   if (match) {*a = PETSC_DEFAULT; PetscFunctionReturn(0);}
 
-  CHKERRQ(PetscStrcasecmp(name,"PETSC_DECIDE",&match));
-  if (!match) CHKERRQ(PetscStrcasecmp(name,"DECIDE",&match));
+  PetscCall(PetscStrcasecmp(name,"PETSC_DECIDE",&match));
+  if (!match) PetscCall(PetscStrcasecmp(name,"DECIDE",&match));
   if (match) {*a = PETSC_DECIDE; PetscFunctionReturn(0);}
 
-  CHKERRQ(PetscStrtod(name,a,&endptr));
+  PetscCall(PetscStrtod(name,a,&endptr));
   PetscCheck((size_t) (endptr - name) == len,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s has no numeric value",name);
   PetscFunctionReturn(0);
 }
@@ -2147,15 +2147,15 @@ PetscErrorCode PetscOptionsStringToScalar(const char name[],PetscScalar *a)
   char        *ptr = NULL;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscStrlen(name,&len));
+  PetscCall(PetscStrlen(name,&len));
   PetscCheck(len,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"character string of length zero has no numerical value");
-  CHKERRQ(PetscStrtoz(name,&val,&ptr,&imag1));
+  PetscCall(PetscStrtoz(name,&val,&ptr,&imag1));
 #if defined(PETSC_USE_COMPLEX)
   if ((size_t) (ptr - name) < len) {
     PetscBool   imag2;
     PetscScalar val2;
 
-    CHKERRQ(PetscStrtoz(ptr,&val2,&ptr,&imag2));
+    PetscCall(PetscStrtoz(ptr,&val2,&ptr,&imag2));
     if (imag1) PetscCheck(imag2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s: must specify imaginary component second",name);
     val = PetscCMPLX(PetscRealPart(val),PetscImaginaryPart(val2));
   }
@@ -2207,10 +2207,10 @@ PetscErrorCode PetscOptionsGetBool(PetscOptions options,const char pre[],const c
   PetscFunctionBegin;
   PetscValidCharPointer(name,3);
   if (ivalue) PetscValidBoolPointer(ivalue,4);
-  CHKERRQ(PetscOptionsFindPair(options,pre,name,&value,&flag));
+  PetscCall(PetscOptionsFindPair(options,pre,name,&value,&flag));
   if (flag) {
     if (set) *set = PETSC_TRUE;
-    CHKERRQ(PetscOptionsStringToBool(value, &flag));
+    PetscCall(PetscOptionsStringToBool(value, &flag));
     if (ivalue) *ivalue = flag;
   } else {
     if (set) *set = PETSC_FALSE;
@@ -2259,33 +2259,33 @@ PetscErrorCode PetscOptionsGetEList(PetscOptions options,const char pre[],const 
   PetscFunctionBegin;
   PetscValidCharPointer(opt,3);
   for (i=0; i<ntext; i++) {
-    CHKERRQ(PetscStrlen(list[i],&alen));
+    PetscCall(PetscStrlen(list[i],&alen));
     if (alen > len) len = alen;
     tlen += len + 1;
   }
   len += 5; /* a little extra space for user mistypes */
-  CHKERRQ(PetscMalloc1(len,&svalue));
-  CHKERRQ(PetscOptionsGetString(options,pre,opt,svalue,len,&aset));
+  PetscCall(PetscMalloc1(len,&svalue));
+  PetscCall(PetscOptionsGetString(options,pre,opt,svalue,len,&aset));
   if (aset) {
-    CHKERRQ(PetscEListFind(ntext,list,svalue,value,&flg));
+    PetscCall(PetscEListFind(ntext,list,svalue,value,&flg));
     if (!flg) {
       char *avail,*pavl;
 
-      CHKERRQ(PetscMalloc1(tlen,&avail));
+      PetscCall(PetscMalloc1(tlen,&avail));
       pavl = avail;
       for (i=0; i<ntext; i++) {
-        CHKERRQ(PetscStrlen(list[i],&alen));
-        CHKERRQ(PetscStrcpy(pavl,list[i]));
+        PetscCall(PetscStrlen(list[i],&alen));
+        PetscCall(PetscStrcpy(pavl,list[i]));
         pavl += alen;
-        CHKERRQ(PetscStrcpy(pavl," "));
+        PetscCall(PetscStrcpy(pavl," "));
         pavl += 1;
       }
-      CHKERRQ(PetscStrtolower(avail));
+      PetscCall(PetscStrtolower(avail));
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Unknown option %s for -%s%s. Available options: %s",svalue,pre ? pre : "",opt+1,avail);
     }
     if (set) *set = PETSC_TRUE;
   } else if (set) *set = PETSC_FALSE;
-  CHKERRQ(PetscFree(svalue));
+  PetscCall(PetscFree(svalue));
   PetscFunctionReturn(0);
 }
 
@@ -2332,7 +2332,7 @@ PetscErrorCode PetscOptionsGetEnum(PetscOptions options,const char pre[],const c
   }
   PetscCheckFalse(ntext < 3,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"List argument must have at least two entries: typename and type prefix");
   ntext -= 3;
-  CHKERRQ(PetscOptionsGetEList(options,pre,opt,list,ntext,&tval,&fset));
+  PetscCall(PetscOptionsGetEList(options,pre,opt,list,ntext,&tval,&fset));
   /* with PETSC_USE_64BIT_INDICES sizeof(PetscInt) != sizeof(PetscEnum) */
   if (fset) *value = (PetscEnum)tval;
   if (set) *set = fset;
@@ -2375,13 +2375,13 @@ PetscErrorCode PetscOptionsGetInt(PetscOptions options,const char pre[],const ch
   PetscFunctionBegin;
   PetscValidCharPointer(name,3);
   PetscValidIntPointer(ivalue,4);
-  CHKERRQ(PetscOptionsFindPair(options,pre,name,&value,&flag));
+  PetscCall(PetscOptionsFindPair(options,pre,name,&value,&flag));
   if (flag) {
     if (!value) {
       if (set) *set = PETSC_FALSE;
     } else {
       if (set) *set = PETSC_TRUE;
-      CHKERRQ(PetscOptionsStringToInt(value,ivalue));
+      PetscCall(PetscOptionsStringToInt(value,ivalue));
     }
   } else {
     if (set) *set = PETSC_FALSE;
@@ -2425,13 +2425,13 @@ PetscErrorCode PetscOptionsGetReal(PetscOptions options,const char pre[],const c
   PetscFunctionBegin;
   PetscValidCharPointer(name,3);
   PetscValidRealPointer(dvalue,4);
-  CHKERRQ(PetscOptionsFindPair(options,pre,name,&value,&flag));
+  PetscCall(PetscOptionsFindPair(options,pre,name,&value,&flag));
   if (flag) {
     if (!value) {
       if (set) *set = PETSC_FALSE;
     } else {
       if (set) *set = PETSC_TRUE;
-      CHKERRQ(PetscOptionsStringToReal(value,dvalue));
+      PetscCall(PetscOptionsStringToReal(value,dvalue));
     }
   } else {
     if (set) *set = PETSC_FALSE;
@@ -2478,15 +2478,15 @@ PetscErrorCode PetscOptionsGetScalar(PetscOptions options,const char pre[],const
   PetscFunctionBegin;
   PetscValidCharPointer(name,3);
   PetscValidScalarPointer(dvalue,4);
-  CHKERRQ(PetscOptionsFindPair(options,pre,name,&value,&flag));
+  PetscCall(PetscOptionsFindPair(options,pre,name,&value,&flag));
   if (flag) {
     if (!value) {
       if (set) *set = PETSC_FALSE;
     } else {
 #if !defined(PETSC_USE_COMPLEX)
-      CHKERRQ(PetscOptionsStringToReal(value,dvalue));
+      PetscCall(PetscOptionsStringToReal(value,dvalue));
 #else
-      CHKERRQ(PetscOptionsStringToScalar(value,dvalue));
+      PetscCall(PetscOptionsStringToScalar(value,dvalue));
 #endif
       if (set) *set = PETSC_TRUE;
     }
@@ -2548,13 +2548,13 @@ PetscErrorCode PetscOptionsGetString(PetscOptions options,const char pre[],const
   PetscFunctionBegin;
   PetscValidCharPointer(name,3);
   PetscValidCharPointer(string,4);
-  CHKERRQ(PetscOptionsFindPair(options,pre,name,&value,&flag));
+  PetscCall(PetscOptionsFindPair(options,pre,name,&value,&flag));
   if (!flag) {
     if (set) *set = PETSC_FALSE;
   } else {
     if (set) *set = PETSC_TRUE;
-    if (value) CHKERRQ(PetscStrncpy(string,value,len));
-    else CHKERRQ(PetscArrayzero(string,len));
+    if (value) PetscCall(PetscStrncpy(string,value,len));
+    else PetscCall(PetscArrayzero(string,len));
   }
   PetscFunctionReturn(0);
 }
@@ -2611,18 +2611,18 @@ PetscErrorCode PetscOptionsGetBoolArray(PetscOptions options,const char pre[],co
   PetscValidBoolPointer(dvalue,4);
   PetscValidIntPointer(nmax,5);
 
-  CHKERRQ(PetscOptionsFindPair(options,pre,name,&svalue,&flag));
+  PetscCall(PetscOptionsFindPair(options,pre,name,&svalue,&flag));
   if (!flag || !svalue)  { if (set) *set = PETSC_FALSE; *nmax = 0; PetscFunctionReturn(0);}
   if (set) *set = PETSC_TRUE;
-  CHKERRQ(PetscTokenCreate(svalue,',',&token));
-  CHKERRQ(PetscTokenFind(token,&value));
+  PetscCall(PetscTokenCreate(svalue,',',&token));
+  PetscCall(PetscTokenFind(token,&value));
   while (value && n < *nmax) {
-    CHKERRQ(PetscOptionsStringToBool(value,dvalue));
-    CHKERRQ(PetscTokenFind(token,&value));
+    PetscCall(PetscOptionsStringToBool(value,dvalue));
+    PetscCall(PetscTokenFind(token,&value));
     dvalue++;
     n++;
   }
-  CHKERRQ(PetscTokenDestroy(&token));
+  PetscCall(PetscTokenDestroy(&token));
   *nmax = n;
   PetscFunctionReturn(0);
 }
@@ -2674,18 +2674,18 @@ PetscErrorCode PetscOptionsGetEnumArray(PetscOptions options,const char pre[],co
   PetscValidPointer(ivalue,5);
   PetscValidIntPointer(nmax,6);
 
-  CHKERRQ(PetscOptionsFindPair(options,pre,name,&svalue,&flag));
+  PetscCall(PetscOptionsFindPair(options,pre,name,&svalue,&flag));
   if (!flag || !svalue)  { if (set) *set = PETSC_FALSE; *nmax = 0; PetscFunctionReturn(0);}
   if (set) *set = PETSC_TRUE;
-  CHKERRQ(PetscTokenCreate(svalue,',',&token));
-  CHKERRQ(PetscTokenFind(token,&value));
+  PetscCall(PetscTokenCreate(svalue,',',&token));
+  PetscCall(PetscTokenFind(token,&value));
   while (value && n < *nmax) {
-    CHKERRQ(PetscEnumFind(list,value,&evalue,&flag));
+    PetscCall(PetscEnumFind(list,value,&evalue,&flag));
     PetscCheck(flag,PETSC_COMM_SELF,PETSC_ERR_USER,"Unknown enum value '%s' for -%s%s",svalue,pre ? pre : "",name+1);
     ivalue[n++] = evalue;
-    CHKERRQ(PetscTokenFind(token,&value));
+    PetscCall(PetscTokenFind(token,&value));
   }
-  CHKERRQ(PetscTokenDestroy(&token));
+  PetscCall(PetscTokenDestroy(&token));
   *nmax = n;
   PetscFunctionReturn(0);
 }
@@ -2739,15 +2739,15 @@ PetscErrorCode PetscOptionsGetIntArray(PetscOptions options,const char pre[],con
   PetscValidIntPointer(ivalue,4);
   PetscValidIntPointer(nmax,5);
 
-  CHKERRQ(PetscOptionsFindPair(options,pre,name,&svalue,&flag));
+  PetscCall(PetscOptionsFindPair(options,pre,name,&svalue,&flag));
   if (!flag || !svalue)  { if (set) *set = PETSC_FALSE; *nmax = 0; PetscFunctionReturn(0);}
   if (set) *set = PETSC_TRUE;
-  CHKERRQ(PetscTokenCreate(svalue,',',&token));
-  CHKERRQ(PetscTokenFind(token,&value));
+  PetscCall(PetscTokenCreate(svalue,',',&token));
+  PetscCall(PetscTokenFind(token,&value));
   while (value && n < *nmax) {
     /* look for form  d-D where d and D are integers */
     foundrange = PETSC_FALSE;
-    CHKERRQ(PetscStrlen(value,&len));
+    PetscCall(PetscStrlen(value,&len));
     if (value[0] == '-') i=2;
     else i=1;
     for (;i<(int)len; i++) {
@@ -2755,19 +2755,19 @@ PetscErrorCode PetscOptionsGetIntArray(PetscOptions options,const char pre[],con
         PetscCheckFalse(i == (int)len-1,PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %" PetscInt_FMT "-th array entry %s",n,value);
         value[i] = 0;
 
-        CHKERRQ(PetscOptionsStringToInt(value,&start));
+        PetscCall(PetscOptionsStringToInt(value,&start));
         inc  = 1;
         j    = i+1;
         for (;j<(int)len; j++) {
           if (value[j] == ':') {
             value[j] = 0;
 
-            CHKERRQ(PetscOptionsStringToInt(value+j+1,&inc));
+            PetscCall(PetscOptionsStringToInt(value+j+1,&inc));
             PetscCheckFalse(inc <= 0,PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %" PetscInt_FMT "-th array entry,%s cannot have negative increment",n,value+j+1);
             break;
           }
         }
-        CHKERRQ(PetscOptionsStringToInt(value+i+1,&end));
+        PetscCall(PetscOptionsStringToInt(value+i+1,&end));
         PetscCheckFalse(end <= start,PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %" PetscInt_FMT "-th array entry, %s-%s cannot have decreasing list",n,value,value+i+1);
         nvalues = (end-start)/inc + (end-start)%inc;
         PetscCheckFalse(n + nvalues  > *nmax,PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %" PetscInt_FMT "-th array entry, not enough space left in array (%" PetscInt_FMT ") to contain entire range from %" PetscInt_FMT " to %" PetscInt_FMT,n,*nmax-n,start,end);
@@ -2779,13 +2779,13 @@ PetscErrorCode PetscOptionsGetIntArray(PetscOptions options,const char pre[],con
       }
     }
     if (!foundrange) {
-      CHKERRQ(PetscOptionsStringToInt(value,ivalue));
+      PetscCall(PetscOptionsStringToInt(value,ivalue));
       ivalue++;
       n++;
     }
-    CHKERRQ(PetscTokenFind(token,&value));
+    PetscCall(PetscTokenFind(token,&value));
   }
-  CHKERRQ(PetscTokenDestroy(&token));
+  PetscCall(PetscTokenDestroy(&token));
   *nmax = n;
   PetscFunctionReturn(0);
 }
@@ -2828,17 +2828,17 @@ PetscErrorCode PetscOptionsGetRealArray(PetscOptions options,const char pre[],co
   PetscValidRealPointer(dvalue,4);
   PetscValidIntPointer(nmax,5);
 
-  CHKERRQ(PetscOptionsFindPair(options,pre,name,&svalue,&flag));
+  PetscCall(PetscOptionsFindPair(options,pre,name,&svalue,&flag));
   if (!flag || !svalue)  { if (set) *set = PETSC_FALSE; *nmax = 0; PetscFunctionReturn(0);}
   if (set) *set = PETSC_TRUE;
-  CHKERRQ(PetscTokenCreate(svalue,',',&token));
-  CHKERRQ(PetscTokenFind(token,&value));
+  PetscCall(PetscTokenCreate(svalue,',',&token));
+  PetscCall(PetscTokenFind(token,&value));
   while (value && n < *nmax) {
-    CHKERRQ(PetscOptionsStringToReal(value,dvalue++));
-    CHKERRQ(PetscTokenFind(token,&value));
+    PetscCall(PetscOptionsStringToReal(value,dvalue++));
+    PetscCall(PetscTokenFind(token,&value));
     n++;
   }
-  CHKERRQ(PetscTokenDestroy(&token));
+  PetscCall(PetscTokenDestroy(&token));
   *nmax = n;
   PetscFunctionReturn(0);
 }
@@ -2881,17 +2881,17 @@ PetscErrorCode PetscOptionsGetScalarArray(PetscOptions options,const char pre[],
   PetscValidScalarPointer(dvalue,4);
   PetscValidIntPointer(nmax,5);
 
-  CHKERRQ(PetscOptionsFindPair(options,pre,name,&svalue,&flag));
+  PetscCall(PetscOptionsFindPair(options,pre,name,&svalue,&flag));
   if (!flag || !svalue)  { if (set) *set = PETSC_FALSE; *nmax = 0; PetscFunctionReturn(0);}
   if (set) *set = PETSC_TRUE;
-  CHKERRQ(PetscTokenCreate(svalue,',',&token));
-  CHKERRQ(PetscTokenFind(token,&value));
+  PetscCall(PetscTokenCreate(svalue,',',&token));
+  PetscCall(PetscTokenFind(token,&value));
   while (value && n < *nmax) {
-    CHKERRQ(PetscOptionsStringToScalar(value,dvalue++));
-    CHKERRQ(PetscTokenFind(token,&value));
+    PetscCall(PetscOptionsStringToScalar(value,dvalue++));
+    PetscCall(PetscTokenFind(token,&value));
     n++;
   }
-  CHKERRQ(PetscTokenDestroy(&token));
+  PetscCall(PetscTokenDestroy(&token));
   *nmax = n;
   PetscFunctionReturn(0);
 }
@@ -2943,17 +2943,17 @@ PetscErrorCode PetscOptionsGetStringArray(PetscOptions options,const char pre[],
   PetscValidPointer(strings,4);
   PetscValidIntPointer(nmax,5);
 
-  CHKERRQ(PetscOptionsFindPair(options,pre,name,&svalue,&flag));
+  PetscCall(PetscOptionsFindPair(options,pre,name,&svalue,&flag));
   if (!flag || !svalue)  { if (set) *set = PETSC_FALSE; *nmax = 0; PetscFunctionReturn(0);}
   if (set) *set = PETSC_TRUE;
-  CHKERRQ(PetscTokenCreate(svalue,',',&token));
-  CHKERRQ(PetscTokenFind(token,&value));
+  PetscCall(PetscTokenCreate(svalue,',',&token));
+  PetscCall(PetscTokenFind(token,&value));
   while (value && n < *nmax) {
-    CHKERRQ(PetscStrallocpy(value,&strings[n]));
-    CHKERRQ(PetscTokenFind(token,&value));
+    PetscCall(PetscStrallocpy(value,&strings[n]));
+    PetscCall(PetscTokenFind(token,&value));
     n++;
   }
-  CHKERRQ(PetscTokenDestroy(&token));
+  PetscCall(PetscTokenDestroy(&token));
   *nmax = n;
   PetscFunctionReturn(0);
 }
@@ -3009,39 +3009,39 @@ PetscErrorCode PetscOptionsDeprecated_Private(PetscOptionItems *PetscOptionsObje
     options = PetscOptionsObject->options;
     comm    = PetscOptionsObject->comm;
   }
-  CHKERRQ(PetscOptionsFindPair(options,prefix,oldname,&value,&found));
+  PetscCall(PetscOptionsFindPair(options,prefix,oldname,&value,&found));
   if (found) {
     if (newname) {
       if (prefix) {
-        CHKERRQ(PetscOptionsPrefixPush(options,prefix));
+        PetscCall(PetscOptionsPrefixPush(options,prefix));
       }
-      CHKERRQ(PetscOptionsSetValue(options,newname,value));
+      PetscCall(PetscOptionsSetValue(options,newname,value));
       if (prefix) {
-        CHKERRQ(PetscOptionsPrefixPop(options));
+        PetscCall(PetscOptionsPrefixPop(options));
       }
-      CHKERRQ(PetscOptionsClearValue(options,oldname));
+      PetscCall(PetscOptionsClearValue(options,oldname));
     }
     quiet = PETSC_FALSE;
-    CHKERRQ(PetscOptionsGetBool(options,NULL,quietopt,&quiet,NULL));
+    PetscCall(PetscOptionsGetBool(options,NULL,quietopt,&quiet,NULL));
     if (!quiet) {
-      CHKERRQ(PetscStrcpy(msg,"** PETSc DEPRECATION WARNING ** : the option "));
-      CHKERRQ(PetscStrcat(msg,oldname));
-      CHKERRQ(PetscStrcat(msg," is deprecated as of version "));
-      CHKERRQ(PetscStrcat(msg,version));
-      CHKERRQ(PetscStrcat(msg," and will be removed in a future release."));
+      PetscCall(PetscStrcpy(msg,"** PETSc DEPRECATION WARNING ** : the option "));
+      PetscCall(PetscStrcat(msg,oldname));
+      PetscCall(PetscStrcat(msg," is deprecated as of version "));
+      PetscCall(PetscStrcat(msg,version));
+      PetscCall(PetscStrcat(msg," and will be removed in a future release."));
       if (newname) {
-        CHKERRQ(PetscStrcat(msg," Please use the option "));
-        CHKERRQ(PetscStrcat(msg,newname));
-        CHKERRQ(PetscStrcat(msg," instead."));
+        PetscCall(PetscStrcat(msg," Please use the option "));
+        PetscCall(PetscStrcat(msg,newname));
+        PetscCall(PetscStrcat(msg," instead."));
       }
       if (info) {
-        CHKERRQ(PetscStrcat(msg," "));
-        CHKERRQ(PetscStrcat(msg,info));
+        PetscCall(PetscStrcat(msg," "));
+        PetscCall(PetscStrcat(msg,info));
       }
-      CHKERRQ(PetscStrcat(msg," (Silence this warning with "));
-      CHKERRQ(PetscStrcat(msg,quietopt));
-      CHKERRQ(PetscStrcat(msg,")\n"));
-      CHKERRQ(PetscPrintf(comm,"%s",msg));
+      PetscCall(PetscStrcat(msg," (Silence this warning with "));
+      PetscCall(PetscStrcat(msg,quietopt));
+      PetscCall(PetscStrcat(msg,")\n"));
+      PetscCall(PetscPrintf(comm,"%s",msg));
     }
   }
   PetscFunctionReturn(0);

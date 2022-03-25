@@ -32,7 +32,7 @@ int main(int argc,char **argv)
   PetscReal           nrm;
   Vec                 g,l,gg,ll; /* global/local vectors of the da */
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* ===========================================================================
     Show how to manage a multi-component DMDA with DMDAVecGetKokkosOffsetViewDOF
@@ -43,17 +43,17 @@ int main(int argc,char **argv)
   ConstPetscScalarKokkosOffsetView3D lview;
 
   dof  = 2;
-  CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD,bx,by,st,M,N,PETSC_DECIDE,PETSC_DECIDE,dof,sw,NULL,NULL,&da));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
-  CHKERRQ(DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0));
-  CHKERRQ(DMCreateGlobalVector(da,&g));
-  CHKERRQ(DMCreateLocalVector(da,&l));
-  CHKERRQ(DMCreateGlobalVector(da,&gg));
-  CHKERRQ(DMCreateLocalVector(da,&ll));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD,bx,by,st,M,N,PETSC_DECIDE,PETSC_DECIDE,dof,sw,NULL,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0));
+  PetscCall(DMCreateGlobalVector(da,&g));
+  PetscCall(DMCreateLocalVector(da,&l));
+  PetscCall(DMCreateGlobalVector(da,&gg));
+  PetscCall(DMCreateLocalVector(da,&ll));
 
   /* Init g using array */
-  CHKERRQ(DMDAVecGetArrayDOFWrite(da,g,&garray));
+  PetscCall(DMDAVecGetArrayDOFWrite(da,g,&garray));
   for (PetscInt j=ys; j<ys+ym; j++) { /* run on host */
     for (PetscInt i=xs; i<xs+xm; i++) {
       for (PetscInt c=0; c<dof; c++) {
@@ -61,24 +61,24 @@ int main(int argc,char **argv)
       }
     }
   }
-  CHKERRQ(DMDAVecRestoreArrayDOFWrite(da,g,&garray));
+  PetscCall(DMDAVecRestoreArrayDOFWrite(da,g,&garray));
 
   /* Init gg using view */
-  CHKERRQ(DMDAVecGetKokkosOffsetViewDOFWrite(da,gg,&gview));
+  PetscCall(DMDAVecGetKokkosOffsetViewDOFWrite(da,gg,&gview));
   Kokkos::parallel_for("init 1",MDRangePolicy<Rank<3,Iterate::Right,Iterate::Right>>({ys,xs,0},{ys+ym,xs+xm,dof}),
     KOKKOS_LAMBDA(PetscInt j,PetscInt i,PetscInt c) /* might run on device */
   {
     gview(j,i,c) = 100*j + 10*(i+1) + c;
   });
-  CHKERRQ(DMDAVecRestoreKokkosOffsetViewDOFWrite(da,gg,&gview));
+  PetscCall(DMDAVecRestoreKokkosOffsetViewDOFWrite(da,gg,&gview));
 
   /* Scatter g, gg to l, ll */
-  CHKERRQ(DMGlobalToLocal(da,g,INSERT_VALUES,l));
-  CHKERRQ(DMGlobalToLocal(da,gg,INSERT_VALUES,ll));
+  PetscCall(DMGlobalToLocal(da,g,INSERT_VALUES,l));
+  PetscCall(DMGlobalToLocal(da,gg,INSERT_VALUES,ll));
 
   /* Do stencil on g with values from l that contains ghosts */
-  CHKERRQ(DMDAVecGetArrayDOFWrite(da,g,&garray));
-  CHKERRQ(DMDAVecGetArrayDOFRead(da,l,&larray));
+  PetscCall(DMDAVecGetArrayDOFWrite(da,g,&garray));
+  PetscCall(DMDAVecGetArrayDOFRead(da,l,&larray));
   for (PetscInt j=ys; j<ys+ym; j++) {
     for (PetscInt i=xs; i<xs+xm; i++) {
       for (PetscInt c=0; c<dof; c++) {
@@ -86,30 +86,30 @@ int main(int argc,char **argv)
       }
     }
   }
-  CHKERRQ(DMDAVecRestoreArrayDOFWrite(da,g,&garray));
-  CHKERRQ(DMDAVecRestoreArrayDOFRead(da,l,&larray));
+  PetscCall(DMDAVecRestoreArrayDOFWrite(da,g,&garray));
+  PetscCall(DMDAVecRestoreArrayDOFRead(da,l,&larray));
 
   /* Do stencil on gg with values from ll that contains ghosts */
-  CHKERRQ(DMDAVecGetKokkosOffsetViewDOFWrite(da,gg,&gview));
-  CHKERRQ(DMDAVecGetKokkosOffsetViewDOF(da,ll,&lview));
+  PetscCall(DMDAVecGetKokkosOffsetViewDOFWrite(da,gg,&gview));
+  PetscCall(DMDAVecGetKokkosOffsetViewDOF(da,ll,&lview));
   Kokkos::parallel_for("stencil 1",MDRangePolicy<Rank<3,Iterate::Right,Iterate::Right>>({ys,xs,0},{ys+ym,xs+xm,dof}),
     KOKKOS_LAMBDA(PetscInt j,PetscInt i,PetscInt c)
   {
     gview(j,i,c) = (lview(j,i-1,c) + lview(j,i+1,c) + lview(j-1,i,c) + lview(j+1,i,c))/4.0;
   });
-  CHKERRQ(DMDAVecRestoreKokkosOffsetViewDOFWrite(da,gg,&gview));
-  CHKERRQ(DMDAVecRestoreKokkosOffsetViewDOF(da,ll,&lview));
+  PetscCall(DMDAVecRestoreKokkosOffsetViewDOFWrite(da,gg,&gview));
+  PetscCall(DMDAVecRestoreKokkosOffsetViewDOF(da,ll,&lview));
 
   /* gg should be equal to g */
-  CHKERRQ(VecAXPY(g,-1.0,gg));
-  CHKERRQ(VecNorm(g,NORM_2,&nrm));
+  PetscCall(VecAXPY(g,-1.0,gg));
+  PetscCall(VecNorm(g,NORM_2,&nrm));
   PetscCheck(nrm < PETSC_SMALL,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"gg is not equal to g");
 
-  CHKERRQ(DMDestroy(&da));
-  CHKERRQ(VecDestroy(&l));
-  CHKERRQ(VecDestroy(&g));
-  CHKERRQ(VecDestroy(&ll));
-  CHKERRQ(VecDestroy(&gg));
+  PetscCall(DMDestroy(&da));
+  PetscCall(VecDestroy(&l));
+  PetscCall(VecDestroy(&g));
+  PetscCall(VecDestroy(&ll));
+  PetscCall(VecDestroy(&gg));
 
   /* =============================================================================
     Show how to manage a multi-component DMDA using DMDAVecGetKokkosOffsetView and
@@ -123,17 +123,17 @@ int main(int argc,char **argv)
   ConstNodeKokkosOffsetView2D        lnview;
 
   dof  = sizeof(Node)/sizeof(PetscScalar);
-  CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD,bx,by,st,M,N,PETSC_DECIDE,PETSC_DECIDE,sizeof(Node)/sizeof(PetscScalar),sw,NULL,NULL,&da));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMSetUp(da));
-  CHKERRQ(DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0));
-  CHKERRQ(DMCreateGlobalVector(da,&g));
-  CHKERRQ(DMCreateLocalVector(da,&l));
-  CHKERRQ(DMCreateGlobalVector(da,&gg));
-  CHKERRQ(DMCreateLocalVector(da,&ll));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD,bx,by,st,M,N,PETSC_DECIDE,PETSC_DECIDE,sizeof(Node)/sizeof(PetscScalar),sw,NULL,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0));
+  PetscCall(DMCreateGlobalVector(da,&g));
+  PetscCall(DMCreateLocalVector(da,&l));
+  PetscCall(DMCreateGlobalVector(da,&gg));
+  PetscCall(DMCreateLocalVector(da,&ll));
 
   /* Init g using array */
-  CHKERRQ(DMDAVecGetArrayWrite(da,g,&garray2));
+  PetscCall(DMDAVecGetArrayWrite(da,g,&garray2));
   for (PetscInt j=ys; j<ys+ym; j++) {
     for (PetscInt i=xs; i<xs+xm; i++) {
       garray2[j][i].u = 100*j + 10*(i+1) + 111;
@@ -141,10 +141,10 @@ int main(int argc,char **argv)
       garray2[j][i].w = 100*j + 10*(i+1) + 333;
     }
   }
-  CHKERRQ(DMDAVecRestoreArrayWrite(da,g,&garray2));
+  PetscCall(DMDAVecRestoreArrayWrite(da,g,&garray2));
 
   /* Init gg using view */
-  CHKERRQ(DMDAVecGetKokkosOffsetViewWrite(da,gg,&gview2));
+  PetscCall(DMDAVecGetKokkosOffsetViewWrite(da,gg,&gview2));
   gnview = NodeKokkosOffsetView2D(reinterpret_cast<Node*>(gview2.data()),{gview2.begin(0)/dof,gview2.begin(1)/dof}, {gview2.end(0)/dof,gview2.end(1)/dof});
   Kokkos::parallel_for("init 2",MDRangePolicy<Rank<2,Iterate::Right,Iterate::Right>>({ys,xs},{ys+ym,xs+xm}),
     KOKKOS_LAMBDA(PetscInt j,PetscInt i)
@@ -153,15 +153,15 @@ int main(int argc,char **argv)
     gnview(j,i).v = 100*j + 10*(i+1) + 222;
     gnview(j,i).w = 100*j + 10*(i+1) + 333;
   });
-  CHKERRQ(DMDAVecRestoreKokkosOffsetViewWrite(da,gg,&gview2));
+  PetscCall(DMDAVecRestoreKokkosOffsetViewWrite(da,gg,&gview2));
 
   /* Scatter g, gg to l, ll */
-  CHKERRQ(DMGlobalToLocal(da,g,INSERT_VALUES,l));
-  CHKERRQ(DMGlobalToLocal(da,gg,INSERT_VALUES,ll));
+  PetscCall(DMGlobalToLocal(da,g,INSERT_VALUES,l));
+  PetscCall(DMGlobalToLocal(da,gg,INSERT_VALUES,ll));
 
   /* Do stencil on g with values from l that contains ghosts */
-  CHKERRQ(DMDAVecGetArrayWrite(da,g,&garray2));
-  CHKERRQ(DMDAVecGetArray(da,l,&larray2));
+  PetscCall(DMDAVecGetArrayWrite(da,g,&garray2));
+  PetscCall(DMDAVecGetArray(da,l,&larray2));
   for (PetscInt j=ys; j<ys+ym; j++) {
     for (PetscInt i=xs; i<xs+xm; i++) {
       garray2[j][i].u = (larray2[j][i-1].u + larray2[j][i+1].u + larray2[j-1][i].u + larray2[j+1][i].u)/4.0;
@@ -169,12 +169,12 @@ int main(int argc,char **argv)
       garray2[j][i].w = (larray2[j][i-1].w + larray2[j][i+1].w + larray2[j-1][i].w + larray2[j+1][i].w)/4.0;
     }
   }
-  CHKERRQ(DMDAVecRestoreArrayWrite(da,g,&garray2));
-  CHKERRQ(DMDAVecRestoreArray(da,l,&larray2));
+  PetscCall(DMDAVecRestoreArrayWrite(da,g,&garray2));
+  PetscCall(DMDAVecRestoreArray(da,l,&larray2));
 
   /* Do stencil on gg with values from ll that contains ghosts */
-  CHKERRQ(DMDAVecGetKokkosOffsetViewWrite(da,gg,&gview2)); /* write-only */
-  CHKERRQ(DMDAVecGetKokkosOffsetView(da,ll,&lview2)); /* read-only */
+  PetscCall(DMDAVecGetKokkosOffsetViewWrite(da,gg,&gview2)); /* write-only */
+  PetscCall(DMDAVecGetKokkosOffsetView(da,ll,&lview2)); /* read-only */
   gnview = NodeKokkosOffsetView2D(reinterpret_cast<Node*>(gview2.data()),{gview2.begin(0)/dof,gview2.begin(1)/dof}, {gview2.end(0)/dof,gview2.end(1)/dof});
   lnview = ConstNodeKokkosOffsetView2D(reinterpret_cast<const Node*>(lview2.data()),{lview2.begin(0)/dof,lview2.begin(1)/dof}, {lview2.end(0)/dof,lview2.end(1)/dof});
   Kokkos::parallel_for("stencil 2",MDRangePolicy<Rank<2,Iterate::Right,Iterate::Right>>({ys,xs},{ys+ym,xs+xm}),
@@ -184,20 +184,20 @@ int main(int argc,char **argv)
     gnview(j,i).v = (lnview(j,i-1).v + lnview(j,i+1).v + lnview(j-1,i).v + lnview(j+1,i).v)/4.0;
     gnview(j,i).w = (lnview(j,i-1).w + lnview(j,i+1).w + lnview(j-1,i).w + lnview(j+1,i).w)/4.0;
   });
-  CHKERRQ(DMDAVecRestoreKokkosOffsetViewWrite(da,gg,&gview2));
-  CHKERRQ(DMDAVecRestoreKokkosOffsetView(da,ll,&lview2));
+  PetscCall(DMDAVecRestoreKokkosOffsetViewWrite(da,gg,&gview2));
+  PetscCall(DMDAVecRestoreKokkosOffsetView(da,ll,&lview2));
 
   /* gg should be equal to g */
-  CHKERRQ(VecAXPY(g,-1.0,gg));
-  CHKERRQ(VecNorm(g,NORM_2,&nrm));
+  PetscCall(VecAXPY(g,-1.0,gg));
+  PetscCall(VecNorm(g,NORM_2,&nrm));
   PetscCheck(nrm < PETSC_SMALL,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"gg is not equal to g");
 
-  CHKERRQ(DMDestroy(&da));
-  CHKERRQ(VecDestroy(&l));
-  CHKERRQ(VecDestroy(&g));
-  CHKERRQ(VecDestroy(&ll));
-  CHKERRQ(VecDestroy(&gg));
-  CHKERRQ(PetscFinalize());
+  PetscCall(DMDestroy(&da));
+  PetscCall(VecDestroy(&l));
+  PetscCall(VecDestroy(&g));
+  PetscCall(VecDestroy(&ll));
+  PetscCall(VecDestroy(&gg));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

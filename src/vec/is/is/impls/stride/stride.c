@@ -15,7 +15,7 @@ static PetscErrorCode ISCopy_Stride(IS is,IS isy)
   IS_Stride      *is_stride = (IS_Stride*)is->data,*isy_stride = (IS_Stride*)isy->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscMemcpy(isy_stride,is_stride,sizeof(IS_Stride)));
+  PetscCall(PetscMemcpy(isy_stride,is_stride,sizeof(IS_Stride)));
   PetscFunctionReturn(0);
 }
 
@@ -24,7 +24,7 @@ PetscErrorCode ISDuplicate_Stride(IS is,IS *newIS)
   IS_Stride      *sub = (IS_Stride*)is->data;
 
   PetscFunctionBegin;
-  CHKERRQ(ISCreateStride(PetscObjectComm((PetscObject)is),is->map->n,sub->first,sub->step,newIS));
+  PetscCall(ISCreateStride(PetscObjectComm((PetscObject)is),is->map->n,sub->first,sub->step,newIS));
   PetscFunctionReturn(0);
 }
 
@@ -33,22 +33,22 @@ PetscErrorCode ISInvertPermutation_Stride(IS is,PetscInt nlocal,IS *perm)
   PetscBool      isident;
 
   PetscFunctionBegin;
-  CHKERRQ(ISGetInfo(is,IS_IDENTITY,IS_GLOBAL,PETSC_TRUE,&isident));
+  PetscCall(ISGetInfo(is,IS_IDENTITY,IS_GLOBAL,PETSC_TRUE,&isident));
   if (isident) {
     PetscInt rStart, rEnd;
 
-    CHKERRQ(PetscLayoutGetRange(is->map, &rStart, &rEnd));
-    CHKERRQ(ISCreateStride(PETSC_COMM_SELF,PetscMax(rEnd - rStart, 0),rStart,1,perm));
+    PetscCall(PetscLayoutGetRange(is->map, &rStart, &rEnd));
+    PetscCall(ISCreateStride(PETSC_COMM_SELF,PetscMax(rEnd - rStart, 0),rStart,1,perm));
   } else {
     IS             tmp;
     const PetscInt *indices,n = is->map->n;
 
-    CHKERRQ(ISGetIndices(is,&indices));
-    CHKERRQ(ISCreateGeneral(PetscObjectComm((PetscObject)is),n,indices,PETSC_COPY_VALUES,&tmp));
-    CHKERRQ(ISSetPermutation(tmp));
-    CHKERRQ(ISRestoreIndices(is,&indices));
-    CHKERRQ(ISInvertPermutation(tmp,nlocal,perm));
-    CHKERRQ(ISDestroy(&tmp));
+    PetscCall(ISGetIndices(is,&indices));
+    PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)is),n,indices,PETSC_COPY_VALUES,&tmp));
+    PetscCall(ISSetPermutation(tmp));
+    PetscCall(ISRestoreIndices(is,&indices));
+    PetscCall(ISInvertPermutation(tmp,nlocal,perm));
+    PetscCall(ISDestroy(&tmp));
   }
   PetscFunctionReturn(0);
 }
@@ -82,7 +82,7 @@ PetscErrorCode  ISStrideGetInfo(IS is,PetscInt *first,PetscInt *step)
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   if (first) PetscValidIntPointer(first,2);
   if (step) PetscValidIntPointer(step,3);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)is,ISSTRIDE,&flg));
+  PetscCall(PetscObjectTypeCompare((PetscObject)is,ISSTRIDE,&flg));
   PetscCheck(flg,PetscObjectComm((PetscObject)is),PETSC_ERR_ARG_WRONG,"IS must be of type ISSTRIDE");
 
   sub = (IS_Stride*)is->data;
@@ -94,8 +94,8 @@ PetscErrorCode  ISStrideGetInfo(IS is,PetscInt *first,PetscInt *step)
 PetscErrorCode ISDestroy_Stride(IS is)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)is,"ISStrideSetStride_C",NULL));
-  CHKERRQ(PetscFree(is->data));
+  PetscCall(PetscObjectComposeFunction((PetscObject)is,"ISStrideSetStride_C",NULL));
+  PetscCall(PetscFree(is->data));
   PetscFunctionReturn(0);
 }
 
@@ -105,10 +105,10 @@ PetscErrorCode  ISToGeneral_Stride(IS inis)
   PetscInt       n;
 
   PetscFunctionBegin;
-  CHKERRQ(ISGetLocalSize(inis,&n));
-  CHKERRQ(ISGetIndices(inis,&idx));
-  CHKERRQ(ISSetType(inis,ISGENERAL));
-  CHKERRQ(ISGeneralSetIndices(inis,n,idx,PETSC_OWN_POINTER));
+  PetscCall(ISGetLocalSize(inis,&n));
+  PetscCall(ISGetIndices(inis,&idx));
+  PetscCall(ISSetType(inis,ISGENERAL));
+  PetscCall(ISGeneralSetIndices(inis,n,idx,PETSC_OWN_POINTER));
   PetscFunctionReturn(0);
 }
 
@@ -138,7 +138,7 @@ PetscErrorCode ISGetIndices_Stride(IS is,const PetscInt *idx[])
   PetscInt       i,**dx = (PetscInt**)idx;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscMalloc1(is->map->n,(PetscInt**)idx));
+  PetscCall(PetscMalloc1(is->map->n,(PetscInt**)idx));
   if (is->map->n) {
     (*dx)[0] = sub->first;
     for (i=1; i<is->map->n; i++) (*dx)[i] = (*dx)[i-1] + sub->step;
@@ -149,7 +149,7 @@ PetscErrorCode ISGetIndices_Stride(IS is,const PetscInt *idx[])
 PetscErrorCode ISRestoreIndices_Stride(IS in,const PetscInt *idx[])
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscFree(*(void**)idx));
+  PetscCall(PetscFree(*(void**)idx));
   PetscFunctionReturn(0);
 }
 
@@ -162,48 +162,48 @@ PetscErrorCode ISView_Stride(IS is,PetscViewer viewer)
   PetscViewerFormat fmt;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&ibinary));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&ibinary));
   if (iascii) {
     PetscBool matl, isperm;
 
-    CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)is),&rank));
-    CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)is),&size));
-    CHKERRQ(PetscViewerGetFormat(viewer,&fmt));
+    PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)is),&rank));
+    PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)is),&size));
+    PetscCall(PetscViewerGetFormat(viewer,&fmt));
     matl = (PetscBool)(fmt == PETSC_VIEWER_ASCII_MATLAB);
-    CHKERRQ(ISGetInfo(is,IS_PERMUTATION,IS_GLOBAL,PETSC_FALSE,&isperm));
-    if (isperm && !matl) CHKERRQ(PetscViewerASCIIPrintf(viewer,"Index set is permutation\n"));
+    PetscCall(ISGetInfo(is,IS_PERMUTATION,IS_GLOBAL,PETSC_FALSE,&isperm));
+    if (isperm && !matl) PetscCall(PetscViewerASCIIPrintf(viewer,"Index set is permutation\n"));
     if (size == 1) {
       if (matl) {
         const char* name;
 
-        CHKERRQ(PetscObjectGetName((PetscObject)is,&name));
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"%s = [%" PetscInt_FMT " : %" PetscInt_FMT " : %" PetscInt_FMT "];\n",name,sub->first+1,sub->step,sub->first + sub->step*(n-1)+1));
+        PetscCall(PetscObjectGetName((PetscObject)is,&name));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"%s = [%" PetscInt_FMT " : %" PetscInt_FMT " : %" PetscInt_FMT "];\n",name,sub->first+1,sub->step,sub->first + sub->step*(n-1)+1));
       } else {
-        CHKERRQ(PetscViewerASCIIPrintf(viewer,"Number of indices in (stride) set %" PetscInt_FMT "\n",n));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"Number of indices in (stride) set %" PetscInt_FMT "\n",n));
         for (i=0; i<n; i++) {
-          CHKERRQ(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT " %" PetscInt_FMT "\n",i,sub->first + i*sub->step));
+          PetscCall(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT " %" PetscInt_FMT "\n",i,sub->first + i*sub->step));
         }
       }
-      CHKERRQ(PetscViewerFlush(viewer));
+      PetscCall(PetscViewerFlush(viewer));
     } else {
-      CHKERRQ(PetscViewerASCIIPushSynchronized(viewer));
+      PetscCall(PetscViewerASCIIPushSynchronized(viewer));
       if (matl) {
         const char* name;
 
-        CHKERRQ(PetscObjectGetName((PetscObject)is,&name));
-        CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer,"%s_%d = [%" PetscInt_FMT " : %" PetscInt_FMT " : %" PetscInt_FMT "];\n",name,rank,sub->first+1,sub->step,sub->first + sub->step*(n-1)+1));
+        PetscCall(PetscObjectGetName((PetscObject)is,&name));
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"%s_%d = [%" PetscInt_FMT " : %" PetscInt_FMT " : %" PetscInt_FMT "];\n",name,rank,sub->first+1,sub->step,sub->first + sub->step*(n-1)+1));
       } else {
-        CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of indices in (stride) set %" PetscInt_FMT "\n",rank,n));
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of indices in (stride) set %" PetscInt_FMT "\n",rank,n));
         for (i=0; i<n; i++) {
-          CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %" PetscInt_FMT " %" PetscInt_FMT "\n",rank,i,sub->first + i*sub->step));
+          PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %" PetscInt_FMT " %" PetscInt_FMT "\n",rank,i,sub->first + i*sub->step));
         }
       }
-      CHKERRQ(PetscViewerFlush(viewer));
-      CHKERRQ(PetscViewerASCIIPopSynchronized(viewer));
+      PetscCall(PetscViewerFlush(viewer));
+      PetscCall(PetscViewerASCIIPopSynchronized(viewer));
     }
   } else if (ibinary) {
-    CHKERRQ(ISView_Binary(is,viewer));
+    PetscCall(ISView_Binary(is,viewer));
   }
   PetscFunctionReturn(0);
 }
@@ -264,7 +264,7 @@ static PetscErrorCode ISOnComm_Stride(IS is,MPI_Comm comm,PetscCopyMode mode,IS 
   IS_Stride      *sub = (IS_Stride*)is->data;
 
   PetscFunctionBegin;
-  CHKERRQ(ISCreateStride(comm,is->map->n,sub->first,sub->step,newis));
+  PetscCall(ISCreateStride(comm,is->map->n,sub->first,sub->step,newis));
   PetscFunctionReturn(0);
 }
 
@@ -274,7 +274,7 @@ static PetscErrorCode ISSetBlockSize_Stride(IS is,PetscInt bs)
 
   PetscFunctionBegin;
   PetscCheckFalse(sub->step != 1 && bs != 1,PetscObjectComm((PetscObject)is),PETSC_ERR_ARG_SIZ,"ISSTRIDE has stride %" PetscInt_FMT ", cannot be blocked of size %" PetscInt_FMT,sub->step,bs);
-  CHKERRQ(PetscLayoutSetBlockSize(is->map, bs));
+  PetscCall(PetscLayoutSetBlockSize(is->map, bs));
   PetscFunctionReturn(0);
 }
 
@@ -339,8 +339,8 @@ PetscErrorCode  ISStrideSetStride(IS is,PetscInt n,PetscInt first,PetscInt step)
 {
   PetscFunctionBegin;
   PetscCheckFalse(n < 0,PetscObjectComm((PetscObject)is), PETSC_ERR_ARG_OUTOFRANGE, "Negative length %" PetscInt_FMT " not valid", n);
-  CHKERRQ(ISClearInfoCache(is,PETSC_FALSE));
-  CHKERRQ(PetscUseMethod(is,"ISStrideSetStride_C",(IS,PetscInt,PetscInt,PetscInt),(is,n,first,step)));
+  PetscCall(ISClearInfoCache(is,PETSC_FALSE));
+  PetscCall(PetscUseMethod(is,"ISStrideSetStride_C",(IS,PetscInt,PetscInt,PetscInt),(is,n,first,step)));
   PetscFunctionReturn(0);
 }
 
@@ -351,8 +351,8 @@ PetscErrorCode  ISStrideSetStride_Stride(IS is,PetscInt n,PetscInt first,PetscIn
   PetscLayout    map;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscLayoutCreateFromSizes(PetscObjectComm((PetscObject)is),n,is->map->N,is->map->bs,&map));
-  CHKERRQ(PetscLayoutDestroy(&is->map));
+  PetscCall(PetscLayoutCreateFromSizes(PetscObjectComm((PetscObject)is),n,is->map->N,is->map->bs,&map));
+  PetscCall(PetscLayoutDestroy(&is->map));
   is->map = map;
 
   sub->first = first;
@@ -393,9 +393,9 @@ PetscErrorCode  ISStrideSetStride_Stride(IS is,PetscInt n,PetscInt first,PetscIn
 PetscErrorCode  ISCreateStride(MPI_Comm comm,PetscInt n,PetscInt first,PetscInt step,IS *is)
 {
   PetscFunctionBegin;
-  CHKERRQ(ISCreate(comm,is));
-  CHKERRQ(ISSetType(*is,ISSTRIDE));
-  CHKERRQ(ISStrideSetStride(*is,n,first,step));
+  PetscCall(ISCreate(comm,is));
+  PetscCall(ISSetType(*is,ISSTRIDE));
+  PetscCall(ISStrideSetStride(*is,n,first,step));
   PetscFunctionReturn(0);
 }
 
@@ -404,9 +404,9 @@ PETSC_EXTERN PetscErrorCode ISCreate_Stride(IS is)
   IS_Stride      *sub;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNewLog(is,&sub));
+  PetscCall(PetscNewLog(is,&sub));
   is->data = (void *) sub;
-  CHKERRQ(PetscMemcpy(is->ops,&myops,sizeof(myops)));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)is,"ISStrideSetStride_C",ISStrideSetStride_Stride));
+  PetscCall(PetscMemcpy(is->ops,&myops,sizeof(myops)));
+  PetscCall(PetscObjectComposeFunction((PetscObject)is,"ISStrideSetStride_C",ISStrideSetStride_Stride));
   PetscFunctionReturn(0);
 }

@@ -29,15 +29,15 @@ int main(int argc,char **args)
   int      fcomm;
   Vec      vec;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   /* This function should be called to be able to use PETSc routines
      from the FORTRAN subroutines needed by this program */
 
   PetscInitializeFortran();
 
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&vec));
-  CHKERRQ(VecSetSizes(vec,PETSC_DECIDE,m));
-  CHKERRQ(VecSetFromOptions(vec));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&vec));
+  PetscCall(VecSetSizes(vec,PETSC_DECIDE,m));
+  PetscCall(VecSetFromOptions(vec));
 
   /*
      Call Fortran routine - the use of MPI_Comm_c2f() allows
@@ -48,9 +48,9 @@ int main(int argc,char **args)
 
   ex7f_(&vec,&fcomm);
 
-  CHKERRQ(VecView(vec,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(VecDestroy(&vec));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecView(vec,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecDestroy(&vec));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

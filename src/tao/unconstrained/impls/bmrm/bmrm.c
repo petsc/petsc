@@ -19,9 +19,9 @@ static PetscErrorCode solve(TAO_DF*);
 static PetscErrorCode make_grad_node(Vec X, Vec_Chain **p)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscNew(p));
-  CHKERRQ(VecDuplicate(X, &(*p)->V));
-  CHKERRQ(VecCopy(X, (*p)->V));
+  PetscCall(PetscNew(p));
+  PetscCall(VecDuplicate(X, &(*p)->V));
+  PetscCall(VecCopy(X, (*p)->V));
   (*p)->next = NULL;
   PetscFunctionReturn(0);
 }
@@ -33,8 +33,8 @@ static PetscErrorCode destroy_grad_list(Vec_Chain *head)
   PetscFunctionBegin;
   while (p) {
     q = p->next;
-    CHKERRQ(VecDestroy(&p->V));
-    CHKERRQ(PetscFree(p));
+    PetscCall(VecDestroy(&p->V));
+    PetscCall(PetscFree(p));
     p = q;
   }
   head->next = NULL;
@@ -63,8 +63,8 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
   MPI_Comm           comm;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectGetComm((PetscObject)tao,&comm));
-  CHKERRMPI(MPI_Comm_rank(comm, &rank));
+  PetscCall(PetscObjectGetComm((PetscObject)tao,&comm));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
   lambda = bmrm->lambda;
 
   /* Check Stopping Condition */
@@ -75,7 +75,7 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
   epsilon = 0.0;
 
   if (rank == 0) {
-    CHKERRQ(init_df_solver(&df));
+    PetscCall(init_df_solver(&df));
     grad_list.next = NULL;
     tail_glist = &grad_list;
   }
@@ -85,34 +85,34 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
 
   /*-----------------Algorithm Begins------------------------*/
   /* make the scatter */
-  CHKERRQ(VecScatterCreateToZero(W, &bmrm->scatter, &bmrm->local_w));
-  CHKERRQ(VecAssemblyBegin(bmrm->local_w));
-  CHKERRQ(VecAssemblyEnd(bmrm->local_w));
+  PetscCall(VecScatterCreateToZero(W, &bmrm->scatter, &bmrm->local_w));
+  PetscCall(VecAssemblyBegin(bmrm->local_w));
+  PetscCall(VecAssemblyEnd(bmrm->local_w));
 
   /* NOTE: In application pass the sub-gradient of Remp(W) */
-  CHKERRQ(TaoComputeObjectiveAndGradient(tao, W, &f, G));
-  CHKERRQ(TaoLogConvergenceHistory(tao,f,1.0,0.0,tao->ksp_its));
-  CHKERRQ(TaoMonitor(tao,tao->niter,f,1.0,0.0,tao->step));
-  CHKERRQ((*tao->ops->convergencetest)(tao,tao->cnvP));
+  PetscCall(TaoComputeObjectiveAndGradient(tao, W, &f, G));
+  PetscCall(TaoLogConvergenceHistory(tao,f,1.0,0.0,tao->ksp_its));
+  PetscCall(TaoMonitor(tao,tao->niter,f,1.0,0.0,tao->step));
+  PetscCall((*tao->ops->convergencetest)(tao,tao->cnvP));
 
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     /* Call general purpose update function */
     if (tao->ops->update) {
-      CHKERRQ((*tao->ops->update)(tao, tao->niter, tao->user_update));
+      PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
     }
 
     /* compute bt = Remp(Wt-1) - <Wt-1, At> */
-    CHKERRQ(VecDot(W, G, &bt));
+    PetscCall(VecDot(W, G, &bt));
     bt = f - bt;
 
     /* First gather the gradient to the rank-0 node */
-    CHKERRQ(VecScatterBegin(bmrm->scatter, G, bmrm->local_w, INSERT_VALUES, SCATTER_FORWARD));
-    CHKERRQ(VecScatterEnd(bmrm->scatter, G, bmrm->local_w, INSERT_VALUES, SCATTER_FORWARD));
+    PetscCall(VecScatterBegin(bmrm->scatter, G, bmrm->local_w, INSERT_VALUES, SCATTER_FORWARD));
+    PetscCall(VecScatterEnd(bmrm->scatter, G, bmrm->local_w, INSERT_VALUES, SCATTER_FORWARD));
 
     /* Bring up the inner solver */
     if (rank == 0) {
-      CHKERRQ(ensure_df_space(tao->niter+1, &df));
-      CHKERRQ(make_grad_node(bmrm->local_w, &pgrad));
+      PetscCall(ensure_df_space(tao->niter+1, &df));
+      PetscCall(make_grad_node(bmrm->local_w, &pgrad));
       tail_glist->next = pgrad;
       tail_glist = pgrad;
 
@@ -125,40 +125,40 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
       pgrad = grad_list.next;
       for (i=0; i<=tao->niter; i++) {
         PetscCheck(pgrad,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Assert that there are at least tao->niter+1 pgrad available");
-        CHKERRQ(VecDot(pgrad->V, bmrm->local_w, &reg));
+        PetscCall(VecDot(pgrad->V, bmrm->local_w, &reg));
         df.Q[i][tao->niter] = df.Q[tao->niter][i] = reg / lambda;
         pgrad = pgrad->next;
       }
 
       if (tao->niter > 0) {
         df.x[tao->niter] = 0.0;
-        CHKERRQ(solve(&df));
+        PetscCall(solve(&df));
       } else
         df.x[0] = 1.0;
 
       /* now computing Jt*(alpha_t) which should be = Jt(wt) to check convergence */
       jtwt = 0.0;
-      CHKERRQ(VecSet(bmrm->local_w, 0.0));
+      PetscCall(VecSet(bmrm->local_w, 0.0));
       pgrad = grad_list.next;
       for (i=0; i<=tao->niter; i++) {
         jtwt -= df.x[i] * df.f[i];
-        CHKERRQ(VecAXPY(bmrm->local_w, -df.x[i] / lambda, pgrad->V));
+        PetscCall(VecAXPY(bmrm->local_w, -df.x[i] / lambda, pgrad->V));
         pgrad = pgrad->next;
       }
 
-      CHKERRQ(VecNorm(bmrm->local_w, NORM_2, &reg));
+      PetscCall(VecNorm(bmrm->local_w, NORM_2, &reg));
       reg = 0.5*lambda*reg*reg;
       jtwt -= reg;
     } /* end if rank == 0 */
 
     /* scatter the new W to all nodes */
-    CHKERRQ(VecScatterBegin(bmrm->scatter,bmrm->local_w,W,INSERT_VALUES,SCATTER_REVERSE));
-    CHKERRQ(VecScatterEnd(bmrm->scatter,bmrm->local_w,W,INSERT_VALUES,SCATTER_REVERSE));
+    PetscCall(VecScatterBegin(bmrm->scatter,bmrm->local_w,W,INSERT_VALUES,SCATTER_REVERSE));
+    PetscCall(VecScatterEnd(bmrm->scatter,bmrm->local_w,W,INSERT_VALUES,SCATTER_REVERSE));
 
-    CHKERRQ(TaoComputeObjectiveAndGradient(tao, W, &f, G));
+    PetscCall(TaoComputeObjectiveAndGradient(tao, W, &f, G));
 
-    CHKERRMPI(MPI_Bcast(&jtwt,1,MPIU_REAL,0,comm));
-    CHKERRMPI(MPI_Bcast(&reg,1,MPIU_REAL,0,comm));
+    PetscCallMPI(MPI_Bcast(&jtwt,1,MPIU_REAL,0,comm));
+    PetscCallMPI(MPI_Bcast(&reg,1,MPIU_REAL,0,comm));
 
     jw = reg + f;                                       /* J(w) = regularizer + Remp(w) */
     if (jw < min_jw) min_jw = jw;
@@ -178,19 +178,19 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
     }
 
     tao->niter++;
-    CHKERRQ(TaoLogConvergenceHistory(tao,min_jw,epsilon,0.0,tao->ksp_its));
-    CHKERRQ(TaoMonitor(tao,tao->niter,min_jw,epsilon,0.0,tao->step));
-    CHKERRQ((*tao->ops->convergencetest)(tao,tao->cnvP));
+    PetscCall(TaoLogConvergenceHistory(tao,min_jw,epsilon,0.0,tao->ksp_its));
+    PetscCall(TaoMonitor(tao,tao->niter,min_jw,epsilon,0.0,tao->step));
+    PetscCall((*tao->ops->convergencetest)(tao,tao->cnvP));
   }
 
   /* free all the memory */
   if (rank == 0) {
-    CHKERRQ(destroy_grad_list(&grad_list));
-    CHKERRQ(destroy_df_solver(&df));
+    PetscCall(destroy_grad_list(&grad_list));
+    PetscCall(destroy_df_solver(&df));
   }
 
-  CHKERRQ(VecDestroy(&bmrm->local_w));
-  CHKERRQ(VecScatterDestroy(&bmrm->scatter));
+  PetscCall(VecDestroy(&bmrm->local_w));
+  PetscCall(VecScatterDestroy(&bmrm->scatter));
   PetscFunctionReturn(0);
 }
 
@@ -200,7 +200,7 @@ static PetscErrorCode TaoSetup_BMRM(Tao tao)
 {
   PetscFunctionBegin;
   /* Allocate some arrays */
-  if (!tao->gradient) CHKERRQ(VecDuplicate(tao->solution, &tao->gradient));
+  if (!tao->gradient) PetscCall(VecDuplicate(tao->solution, &tao->gradient));
   PetscFunctionReturn(0);
 }
 
@@ -208,7 +208,7 @@ static PetscErrorCode TaoSetup_BMRM(Tao tao)
 static PetscErrorCode TaoDestroy_BMRM(Tao tao)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscFree(tao->data));
+  PetscCall(PetscFree(tao->data));
   PetscFunctionReturn(0);
 }
 
@@ -217,9 +217,9 @@ static PetscErrorCode TaoSetFromOptions_BMRM(PetscOptionItems *PetscOptionsObjec
   TAO_BMRM*      bmrm = (TAO_BMRM*)tao->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"BMRM for regularized risk minimization"));
-  CHKERRQ(PetscOptionsReal("-tao_bmrm_lambda", "regulariser weight","", 100,&bmrm->lambda,NULL));
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"BMRM for regularized risk minimization"));
+  PetscCall(PetscOptionsReal("-tao_bmrm_lambda", "regulariser weight","", 100,&bmrm->lambda,NULL));
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -229,10 +229,10 @@ static PetscErrorCode TaoView_BMRM(Tao tao, PetscViewer viewer)
   PetscBool      isascii;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii));
   if (isascii) {
-    CHKERRQ(PetscViewerASCIIPushTab(viewer));
-    CHKERRQ(PetscViewerASCIIPopTab(viewer));
+    PetscCall(PetscViewerASCIIPushTab(viewer));
+    PetscCall(PetscViewerASCIIPopTab(viewer));
   }
   PetscFunctionReturn(0);
 }
@@ -258,7 +258,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BMRM(Tao tao)
   tao->ops->setfromoptions = TaoSetFromOptions_BMRM;
   tao->ops->destroy = TaoDestroy_BMRM;
 
-  CHKERRQ(PetscNewLog(tao,&bmrm));
+  PetscCall(PetscNewLog(tao,&bmrm));
   bmrm->lambda = 1.0;
   tao->data = (void*)bmrm;
 
@@ -283,31 +283,31 @@ PetscErrorCode init_df_solver(TAO_DF *df)
 
   /* memory space required by Dai-Fletcher */
   df->cur_num_cp = n;
-  CHKERRQ(PetscMalloc1(n, &df->f));
-  CHKERRQ(PetscMalloc1(n, &df->a));
-  CHKERRQ(PetscMalloc1(n, &df->l));
-  CHKERRQ(PetscMalloc1(n, &df->u));
-  CHKERRQ(PetscMalloc1(n, &df->x));
-  CHKERRQ(PetscMalloc1(n, &df->Q));
+  PetscCall(PetscMalloc1(n, &df->f));
+  PetscCall(PetscMalloc1(n, &df->a));
+  PetscCall(PetscMalloc1(n, &df->l));
+  PetscCall(PetscMalloc1(n, &df->u));
+  PetscCall(PetscMalloc1(n, &df->x));
+  PetscCall(PetscMalloc1(n, &df->Q));
 
   for (i = 0; i < n; i ++) {
-    CHKERRQ(PetscMalloc1(n, &df->Q[i]));
+    PetscCall(PetscMalloc1(n, &df->Q[i]));
   }
 
-  CHKERRQ(PetscMalloc1(n, &df->g));
-  CHKERRQ(PetscMalloc1(n, &df->y));
-  CHKERRQ(PetscMalloc1(n, &df->tempv));
-  CHKERRQ(PetscMalloc1(n, &df->d));
-  CHKERRQ(PetscMalloc1(n, &df->Qd));
-  CHKERRQ(PetscMalloc1(n, &df->t));
-  CHKERRQ(PetscMalloc1(n, &df->xplus));
-  CHKERRQ(PetscMalloc1(n, &df->tplus));
-  CHKERRQ(PetscMalloc1(n, &df->sk));
-  CHKERRQ(PetscMalloc1(n, &df->yk));
+  PetscCall(PetscMalloc1(n, &df->g));
+  PetscCall(PetscMalloc1(n, &df->y));
+  PetscCall(PetscMalloc1(n, &df->tempv));
+  PetscCall(PetscMalloc1(n, &df->d));
+  PetscCall(PetscMalloc1(n, &df->Qd));
+  PetscCall(PetscMalloc1(n, &df->t));
+  PetscCall(PetscMalloc1(n, &df->xplus));
+  PetscCall(PetscMalloc1(n, &df->tplus));
+  PetscCall(PetscMalloc1(n, &df->sk));
+  PetscCall(PetscMalloc1(n, &df->yk));
 
-  CHKERRQ(PetscMalloc1(n, &df->ipt));
-  CHKERRQ(PetscMalloc1(n, &df->ipt2));
-  CHKERRQ(PetscMalloc1(n, &df->uv));
+  PetscCall(PetscMalloc1(n, &df->ipt));
+  PetscCall(PetscMalloc1(n, &df->ipt2));
+  PetscCall(PetscMalloc1(n, &df->uv));
   PetscFunctionReturn(0);
 }
 
@@ -325,81 +325,81 @@ PetscErrorCode ensure_df_space(PetscInt dim, TAO_DF *df)
   n = df->cur_num_cp;
 
   /* memory space required by dai-fletcher */
-  CHKERRQ(PetscMalloc1(n, &tmp));
-  CHKERRQ(PetscArraycpy(tmp, df->f, old_n));
-  CHKERRQ(PetscFree(df->f));
+  PetscCall(PetscMalloc1(n, &tmp));
+  PetscCall(PetscArraycpy(tmp, df->f, old_n));
+  PetscCall(PetscFree(df->f));
   df->f = tmp;
 
-  CHKERRQ(PetscMalloc1(n, &tmp));
-  CHKERRQ(PetscArraycpy(tmp, df->a, old_n));
-  CHKERRQ(PetscFree(df->a));
+  PetscCall(PetscMalloc1(n, &tmp));
+  PetscCall(PetscArraycpy(tmp, df->a, old_n));
+  PetscCall(PetscFree(df->a));
   df->a = tmp;
 
-  CHKERRQ(PetscMalloc1(n, &tmp));
-  CHKERRQ(PetscArraycpy(tmp, df->l, old_n));
-  CHKERRQ(PetscFree(df->l));
+  PetscCall(PetscMalloc1(n, &tmp));
+  PetscCall(PetscArraycpy(tmp, df->l, old_n));
+  PetscCall(PetscFree(df->l));
   df->l = tmp;
 
-  CHKERRQ(PetscMalloc1(n, &tmp));
-  CHKERRQ(PetscArraycpy(tmp, df->u, old_n));
-  CHKERRQ(PetscFree(df->u));
+  PetscCall(PetscMalloc1(n, &tmp));
+  PetscCall(PetscArraycpy(tmp, df->u, old_n));
+  PetscCall(PetscFree(df->u));
   df->u = tmp;
 
-  CHKERRQ(PetscMalloc1(n, &tmp));
-  CHKERRQ(PetscArraycpy(tmp, df->x, old_n));
-  CHKERRQ(PetscFree(df->x));
+  PetscCall(PetscMalloc1(n, &tmp));
+  PetscCall(PetscArraycpy(tmp, df->x, old_n));
+  PetscCall(PetscFree(df->x));
   df->x = tmp;
 
-  CHKERRQ(PetscMalloc1(n, &tmp_Q));
+  PetscCall(PetscMalloc1(n, &tmp_Q));
   for (i = 0; i < n; i ++) {
-    CHKERRQ(PetscMalloc1(n, &tmp_Q[i]));
+    PetscCall(PetscMalloc1(n, &tmp_Q[i]));
     if (i < old_n) {
-      CHKERRQ(PetscArraycpy(tmp_Q[i], df->Q[i], old_n));
-      CHKERRQ(PetscFree(df->Q[i]));
+      PetscCall(PetscArraycpy(tmp_Q[i], df->Q[i], old_n));
+      PetscCall(PetscFree(df->Q[i]));
     }
   }
 
-  CHKERRQ(PetscFree(df->Q));
+  PetscCall(PetscFree(df->Q));
   df->Q = tmp_Q;
 
-  CHKERRQ(PetscFree(df->g));
-  CHKERRQ(PetscMalloc1(n, &df->g));
+  PetscCall(PetscFree(df->g));
+  PetscCall(PetscMalloc1(n, &df->g));
 
-  CHKERRQ(PetscFree(df->y));
-  CHKERRQ(PetscMalloc1(n, &df->y));
+  PetscCall(PetscFree(df->y));
+  PetscCall(PetscMalloc1(n, &df->y));
 
-  CHKERRQ(PetscFree(df->tempv));
-  CHKERRQ(PetscMalloc1(n, &df->tempv));
+  PetscCall(PetscFree(df->tempv));
+  PetscCall(PetscMalloc1(n, &df->tempv));
 
-  CHKERRQ(PetscFree(df->d));
-  CHKERRQ(PetscMalloc1(n, &df->d));
+  PetscCall(PetscFree(df->d));
+  PetscCall(PetscMalloc1(n, &df->d));
 
-  CHKERRQ(PetscFree(df->Qd));
-  CHKERRQ(PetscMalloc1(n, &df->Qd));
+  PetscCall(PetscFree(df->Qd));
+  PetscCall(PetscMalloc1(n, &df->Qd));
 
-  CHKERRQ(PetscFree(df->t));
-  CHKERRQ(PetscMalloc1(n, &df->t));
+  PetscCall(PetscFree(df->t));
+  PetscCall(PetscMalloc1(n, &df->t));
 
-  CHKERRQ(PetscFree(df->xplus));
-  CHKERRQ(PetscMalloc1(n, &df->xplus));
+  PetscCall(PetscFree(df->xplus));
+  PetscCall(PetscMalloc1(n, &df->xplus));
 
-  CHKERRQ(PetscFree(df->tplus));
-  CHKERRQ(PetscMalloc1(n, &df->tplus));
+  PetscCall(PetscFree(df->tplus));
+  PetscCall(PetscMalloc1(n, &df->tplus));
 
-  CHKERRQ(PetscFree(df->sk));
-  CHKERRQ(PetscMalloc1(n, &df->sk));
+  PetscCall(PetscFree(df->sk));
+  PetscCall(PetscMalloc1(n, &df->sk));
 
-  CHKERRQ(PetscFree(df->yk));
-  CHKERRQ(PetscMalloc1(n, &df->yk));
+  PetscCall(PetscFree(df->yk));
+  PetscCall(PetscMalloc1(n, &df->yk));
 
-  CHKERRQ(PetscFree(df->ipt));
-  CHKERRQ(PetscMalloc1(n, &df->ipt));
+  PetscCall(PetscFree(df->ipt));
+  PetscCall(PetscMalloc1(n, &df->ipt));
 
-  CHKERRQ(PetscFree(df->ipt2));
-  CHKERRQ(PetscMalloc1(n, &df->ipt2));
+  PetscCall(PetscFree(df->ipt2));
+  PetscCall(PetscMalloc1(n, &df->ipt2));
 
-  CHKERRQ(PetscFree(df->uv));
-  CHKERRQ(PetscMalloc1(n, &df->uv));
+  PetscCall(PetscFree(df->uv));
+  PetscCall(PetscMalloc1(n, &df->uv));
   PetscFunctionReturn(0);
 }
 
@@ -408,29 +408,29 @@ PetscErrorCode destroy_df_solver(TAO_DF *df)
   PetscInt       i;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscFree(df->f));
-  CHKERRQ(PetscFree(df->a));
-  CHKERRQ(PetscFree(df->l));
-  CHKERRQ(PetscFree(df->u));
-  CHKERRQ(PetscFree(df->x));
+  PetscCall(PetscFree(df->f));
+  PetscCall(PetscFree(df->a));
+  PetscCall(PetscFree(df->l));
+  PetscCall(PetscFree(df->u));
+  PetscCall(PetscFree(df->x));
 
   for (i = 0; i < df->cur_num_cp; i ++) {
-    CHKERRQ(PetscFree(df->Q[i]));
+    PetscCall(PetscFree(df->Q[i]));
   }
-  CHKERRQ(PetscFree(df->Q));
-  CHKERRQ(PetscFree(df->ipt));
-  CHKERRQ(PetscFree(df->ipt2));
-  CHKERRQ(PetscFree(df->uv));
-  CHKERRQ(PetscFree(df->g));
-  CHKERRQ(PetscFree(df->y));
-  CHKERRQ(PetscFree(df->tempv));
-  CHKERRQ(PetscFree(df->d));
-  CHKERRQ(PetscFree(df->Qd));
-  CHKERRQ(PetscFree(df->t));
-  CHKERRQ(PetscFree(df->xplus));
-  CHKERRQ(PetscFree(df->tplus));
-  CHKERRQ(PetscFree(df->sk));
-  CHKERRQ(PetscFree(df->yk));
+  PetscCall(PetscFree(df->Q));
+  PetscCall(PetscFree(df->ipt));
+  PetscCall(PetscFree(df->ipt2));
+  PetscCall(PetscFree(df->uv));
+  PetscCall(PetscFree(df->g));
+  PetscCall(PetscFree(df->y));
+  PetscCall(PetscFree(df->tempv));
+  PetscCall(PetscFree(df->d));
+  PetscCall(PetscFree(df->Qd));
+  PetscCall(PetscFree(df->t));
+  PetscCall(PetscFree(df->xplus));
+  PetscCall(PetscFree(df->tplus));
+  PetscCall(PetscFree(df->sk));
+  PetscCall(PetscFree(df->yk));
   PetscFunctionReturn(0);
 }
 
@@ -583,7 +583,7 @@ PetscInt project(PetscInt n,PetscReal *a,PetscReal b,PetscReal *c,PetscReal *l,P
 
   *lam_ext = lambda;
   if (innerIter >= df->maxProjIter) {
-    CHKERRQ(PetscInfo(NULL,"WARNING: DaiFletcher max iterations\n"));
+    PetscCall(PetscInfo(NULL,"WARNING: DaiFletcher max iterations\n"));
   }
   return innerIter;
 }
@@ -625,7 +625,7 @@ PetscErrorCode solve(TAO_DF *df)
     if (PetscAbsReal(x[i]) > ProdDELTAsv) ipt[it++] = i;
   }
 
-  CHKERRQ(PetscArrayzero(t, dim));
+  PetscCall(PetscArrayzero(t, dim));
   for (i = 0; i < it; i++) {
     tempQ = Q[ipt[i]];
     for (j = 0; j < dim; j++) t[j] += (tempQ[j]*x[ipt[i]]);
@@ -697,7 +697,7 @@ PetscErrorCode solve(TAO_DF *df)
       if (PetscAbsReal(y[i]) > ProdDELTAsv) ipt2[it2++] = i;
     }
 
-    CHKERRQ(PetscArrayzero(Qd, dim));
+    PetscCall(PetscArrayzero(Qd, dim));
     /* compute Qd = Q*d */
     if (it < it2) {
       for (i = 0; i < it; i++) {

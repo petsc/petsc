@@ -10,30 +10,30 @@ int main(int argc,char **argv)
   PetscBool      flg1,flg2,flga,match;
   char           str[16];
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
-  CHKERRQ(PetscOptionsCreate(&opt1));
-  CHKERRQ(PetscOptionsInsertString(opt1,"-testa a"));
-  CHKERRQ(PetscOptionsPush(opt1));
-  CHKERRQ(PetscOptionsSetValue(NULL,"-test1","1"));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-test1",&int1,&flg1));
+  PetscCall(PetscOptionsCreate(&opt1));
+  PetscCall(PetscOptionsInsertString(opt1,"-testa a"));
+  PetscCall(PetscOptionsPush(opt1));
+  PetscCall(PetscOptionsSetValue(NULL,"-test1","1"));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-test1",&int1,&flg1));
   PetscCheckFalse(!flg1 || int1 != 1,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Unable to locate option test1 or it has the wrong value");
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-testa",str,sizeof(str),&flga));
-  CHKERRQ(PetscStrcmp(str,"a",&match));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-testa",str,sizeof(str),&flga));
+  PetscCall(PetscStrcmp(str,"a",&match));
   PetscCheckFalse(!flga|| !match,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Unable to locate option testa or it has the wrong value");
-  CHKERRQ(PetscOptionsCreate(&opt2));
-  CHKERRQ(PetscOptionsPush(opt2));
-  CHKERRQ(PetscOptionsSetValue(NULL,"-test2","2"));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-test2",&int2,&flg2));
+  PetscCall(PetscOptionsCreate(&opt2));
+  PetscCall(PetscOptionsPush(opt2));
+  PetscCall(PetscOptionsSetValue(NULL,"-test2","2"));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-test2",&int2,&flg2));
   PetscCheckFalse(!flg2 || int2 != 2,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Unable to locate option test2 or it has the wrong value");
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-test1",&int1,&flg1));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-test1",&int1,&flg1));
   PetscCheck(!flg1,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Able to access test1 from a different options database");
 
-  CHKERRQ(PetscOptionsPop());
-  CHKERRQ(PetscOptionsPop());
-  CHKERRQ(PetscOptionsDestroy(&opt2));
-  CHKERRQ(PetscOptionsDestroy(&opt1));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscOptionsPop());
+  PetscCall(PetscOptionsPop());
+  PetscCall(PetscOptionsDestroy(&opt2));
+  PetscCall(PetscOptionsDestroy(&opt1));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

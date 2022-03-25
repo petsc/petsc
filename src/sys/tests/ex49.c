@@ -22,24 +22,24 @@ int main(int argc,char **argv)
                  runtime.  The user can use the "help" variable place
                  additional help messages in this printout.
   */
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
-  CHKERRQ(PetscDataTypeFromString("Scalar",&dtype,&found));
+  PetscCall(PetscDataTypeFromString("Scalar",&dtype,&found));
   PetscCheck(found,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Did not find scalar datatype");
   PetscCheckFalse(dtype != PETSC_SCALAR,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Found wrong datatype for scalar");
 
-  CHKERRQ(PetscDataTypeFromString("INT",&dtype,&found));
+  PetscCall(PetscDataTypeFromString("INT",&dtype,&found));
   PetscCheck(found,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Did not find int datatype");
   PetscCheckFalse(dtype != PETSC_INT,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Found wrong datatype for int");
 
-  CHKERRQ(PetscDataTypeFromString("real",&dtype,&found));
+  PetscCall(PetscDataTypeFromString("real",&dtype,&found));
   PetscCheck(found,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Did not find real datatype");
   PetscCheckFalse(dtype != PETSC_REAL,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Found wrong datatype for real");
 
-  CHKERRQ(PetscDataTypeFromString("abogusdatatype",&dtype,&found));
+  PetscCall(PetscDataTypeFromString("abogusdatatype",&dtype,&found));
   PetscCheck(!found,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Found a bogus datatype");
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

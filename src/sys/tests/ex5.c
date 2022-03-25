@@ -9,21 +9,21 @@ int main(int argc,char **argv)
   char           **names,**values;
   PetscBool      set;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-get_an_integer",&M,&set));
-  if (set) CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Option used: name:-get_an_integer value: %" PetscInt_FMT "\n",M));
-  CHKERRQ(PetscOptionsLeftGet(NULL,&N,&names,&values));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-get_an_integer",&M,&set));
+  if (set) PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Option used: name:-get_an_integer value: %" PetscInt_FMT "\n",M));
+  PetscCall(PetscOptionsLeftGet(NULL,&N,&names,&values));
   for (i=0; i<N; i++) {
     if (values[i]) {
-      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Option left: name:-%s value: %s\n",names[i],values[i]));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Option left: name:-%s value: %s\n",names[i],values[i]));
     } else {
-      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Option left: name:-%s (no value)\n",names[i]));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Option left: name:-%s (no value)\n",names[i]));
     }
   }
-  CHKERRQ(PetscOptionsLeftRestore(NULL,&N,&names,&values));
+  PetscCall(PetscOptionsLeftRestore(NULL,&N,&names,&values));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

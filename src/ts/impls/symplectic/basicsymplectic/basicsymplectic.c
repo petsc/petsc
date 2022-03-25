@@ -57,20 +57,20 @@ PetscErrorCode TSBasicSymplecticRegisterAll(void)
   TSBasicSymplecticRegisterAllCalled = PETSC_TRUE;
   {
     PetscReal c[1] = {1.0},d[1] = {1.0};
-    CHKERRQ(TSBasicSymplecticRegister(TSBASICSYMPLECTICSIEULER,1,1,c,d));
+    PetscCall(TSBasicSymplecticRegister(TSBASICSYMPLECTICSIEULER,1,1,c,d));
   }
   {
     PetscReal c[2] = {0,1.0},d[2] = {0.5,0.5};
-    CHKERRQ(TSBasicSymplecticRegister(TSBASICSYMPLECTICVELVERLET,2,2,c,d));
+    PetscCall(TSBasicSymplecticRegister(TSBASICSYMPLECTICVELVERLET,2,2,c,d));
   }
   {
     PetscReal c[3] = {1,-2.0/3.0,2.0/3.0},d[3] = {-1.0/24.0,3.0/4.0,7.0/24.0};
-    CHKERRQ(TSBasicSymplecticRegister(TSBASICSYMPLECTIC3,3,3,c,d));
+    PetscCall(TSBasicSymplecticRegister(TSBASICSYMPLECTIC3,3,3,c,d));
   }
   {
 #define CUBEROOTOFTWO 1.2599210498948731647672106
     PetscReal c[4] = {1.0/2.0/(2.0-CUBEROOTOFTWO),(1.0-CUBEROOTOFTWO)/2.0/(2.0-CUBEROOTOFTWO),(1.0-CUBEROOTOFTWO)/2.0/(2.0-CUBEROOTOFTWO),1.0/2.0/(2.0-CUBEROOTOFTWO)},d[4] = {1.0/(2.0-CUBEROOTOFTWO),-CUBEROOTOFTWO/(2.0-CUBEROOTOFTWO),1.0/(2.0-CUBEROOTOFTWO),0};
-    CHKERRQ(TSBasicSymplecticRegister(TSBASICSYMPLECTIC4,4,4,c,d));
+    PetscCall(TSBasicSymplecticRegister(TSBASICSYMPLECTIC4,4,4,c,d));
   }
   PetscFunctionReturn(0);
 }
@@ -92,9 +92,9 @@ PetscErrorCode TSBasicSymplecticRegisterDestroy(void)
   while ((link = BasicSymplecticSchemeList)) {
     BasicSymplecticScheme scheme = &link->sch;
     BasicSymplecticSchemeList = link->next;
-    CHKERRQ(PetscFree2(scheme->c,scheme->d));
-    CHKERRQ(PetscFree(scheme->name));
-    CHKERRQ(PetscFree(link));
+    PetscCall(PetscFree2(scheme->c,scheme->d));
+    PetscCall(PetscFree(scheme->name));
+    PetscCall(PetscFree(link));
   }
   TSBasicSymplecticRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -113,8 +113,8 @@ PetscErrorCode TSBasicSymplecticInitializePackage(void)
   PetscFunctionBegin;
   if (TSBasicSymplecticPackageInitialized) PetscFunctionReturn(0);
   TSBasicSymplecticPackageInitialized = PETSC_TRUE;
-  CHKERRQ(TSBasicSymplecticRegisterAll());
-  CHKERRQ(PetscRegisterFinalize(TSBasicSymplecticFinalizePackage));
+  PetscCall(TSBasicSymplecticRegisterAll());
+  PetscCall(PetscRegisterFinalize(TSBasicSymplecticFinalizePackage));
   PetscFunctionReturn(0);
 }
 
@@ -130,7 +130,7 @@ PetscErrorCode TSBasicSymplecticFinalizePackage(void)
 {
   PetscFunctionBegin;
   TSBasicSymplecticPackageInitialized = PETSC_FALSE;
-  CHKERRQ(TSBasicSymplecticRegisterDestroy());
+  PetscCall(TSBasicSymplecticRegisterDestroy());
   PetscFunctionReturn(0);
 }
 
@@ -163,15 +163,15 @@ PetscErrorCode TSBasicSymplecticRegister(TSRosWType name,PetscInt order,PetscInt
   PetscValidRealPointer(c,4);
   PetscValidRealPointer(d,5);
 
-  CHKERRQ(TSBasicSymplecticInitializePackage());
-  CHKERRQ(PetscNew(&link));
+  PetscCall(TSBasicSymplecticInitializePackage());
+  PetscCall(PetscNew(&link));
   scheme = &link->sch;
-  CHKERRQ(PetscStrallocpy(name,&scheme->name));
+  PetscCall(PetscStrallocpy(name,&scheme->name));
   scheme->order = order;
   scheme->s = s;
-  CHKERRQ(PetscMalloc2(s,&scheme->c,s,&scheme->d));
-  CHKERRQ(PetscArraycpy(scheme->c,c,s));
-  CHKERRQ(PetscArraycpy(scheme->d,d,s));
+  PetscCall(PetscMalloc2(s,&scheme->c,s,&scheme->d));
+  PetscCall(PetscArraycpy(scheme->c,c,s));
+  PetscCall(PetscArraycpy(scheme->d,d,s));
   link->next = BasicSymplecticSchemeList;
   BasicSymplecticSchemeList = link;
   PetscFunctionReturn(0);
@@ -205,36 +205,36 @@ static PetscErrorCode TSStep_BasicSymplectic(TS ts)
   PetscInt              iter;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetSubVector(solution,is_q,&q));
-  CHKERRQ(VecGetSubVector(solution,is_p,&p));
-  CHKERRQ(VecGetSubVector(update,is_q,&q_update));
-  CHKERRQ(VecGetSubVector(update,is_p,&p_update));
+  PetscCall(VecGetSubVector(solution,is_q,&q));
+  PetscCall(VecGetSubVector(solution,is_p,&p));
+  PetscCall(VecGetSubVector(update,is_q,&q_update));
+  PetscCall(VecGetSubVector(update,is_p,&p_update));
 
   for (iter = 0;iter<scheme->s;iter++) {
-    CHKERRQ(TSPreStage(ts,ts->ptime));
+    PetscCall(TSPreStage(ts,ts->ptime));
     /* update velocity p */
     if (scheme->c[iter]) {
-      CHKERRQ(TSComputeRHSFunction(subts_p,ts->ptime,q,p_update));
-      CHKERRQ(VecAXPY(p,scheme->c[iter]*ts->time_step,p_update));
+      PetscCall(TSComputeRHSFunction(subts_p,ts->ptime,q,p_update));
+      PetscCall(VecAXPY(p,scheme->c[iter]*ts->time_step,p_update));
     }
     /* update position q */
     if (scheme->d[iter]) {
-      CHKERRQ(TSComputeRHSFunction(subts_q,ts->ptime,p,q_update));
-      CHKERRQ(VecAXPY(q,scheme->d[iter]*ts->time_step,q_update));
+      PetscCall(TSComputeRHSFunction(subts_q,ts->ptime,p,q_update));
+      PetscCall(VecAXPY(q,scheme->d[iter]*ts->time_step,q_update));
       ts->ptime = ts->ptime+scheme->d[iter]*ts->time_step;
     }
-    CHKERRQ(TSPostStage(ts,ts->ptime,0,&solution));
-    CHKERRQ(TSAdaptCheckStage(ts->adapt,ts,ts->ptime,solution,&stageok));
+    PetscCall(TSPostStage(ts,ts->ptime,0,&solution));
+    PetscCall(TSAdaptCheckStage(ts->adapt,ts,ts->ptime,solution,&stageok));
     if (!stageok) {ts->reason = TS_DIVERGED_STEP_REJECTED; PetscFunctionReturn(0);}
-    CHKERRQ(TSFunctionDomainError(ts,ts->ptime+ts->time_step,update,&stageok));
+    PetscCall(TSFunctionDomainError(ts,ts->ptime+ts->time_step,update,&stageok));
     if (!stageok) {ts->reason = TS_DIVERGED_STEP_REJECTED; PetscFunctionReturn(0);}
   }
 
   ts->time_step = next_time_step;
-  CHKERRQ(VecRestoreSubVector(solution,is_q,&q));
-  CHKERRQ(VecRestoreSubVector(solution,is_p,&p));
-  CHKERRQ(VecRestoreSubVector(update,is_q,&q_update));
-  CHKERRQ(VecRestoreSubVector(update,is_p,&p_update));
+  PetscCall(VecRestoreSubVector(solution,is_q,&q));
+  PetscCall(VecRestoreSubVector(solution,is_p,&p));
+  PetscCall(VecRestoreSubVector(update,is_q,&q_update));
+  PetscCall(VecRestoreSubVector(update,is_p,&p_update));
   PetscFunctionReturn(0);
 }
 
@@ -268,21 +268,21 @@ static PetscErrorCode TSSetUp_BasicSymplectic(TS ts)
   DM                 dm;
 
   PetscFunctionBegin;
-  CHKERRQ(TSRHSSplitGetIS(ts,"position",&bsymp->is_q));
-  CHKERRQ(TSRHSSplitGetIS(ts,"momentum",&bsymp->is_p));
+  PetscCall(TSRHSSplitGetIS(ts,"position",&bsymp->is_q));
+  PetscCall(TSRHSSplitGetIS(ts,"momentum",&bsymp->is_p));
   PetscCheck(bsymp->is_q && bsymp->is_p,PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set up RHSSplits with TSRHSSplitSetIS() using split names positon and momentum respectively in order to use -ts_type basicsymplectic");
-  CHKERRQ(TSRHSSplitGetSubTS(ts,"position",&bsymp->subts_q));
-  CHKERRQ(TSRHSSplitGetSubTS(ts,"momentum",&bsymp->subts_p));
+  PetscCall(TSRHSSplitGetSubTS(ts,"position",&bsymp->subts_q));
+  PetscCall(TSRHSSplitGetSubTS(ts,"momentum",&bsymp->subts_p));
   PetscCheck(bsymp->subts_q && bsymp->subts_p,PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set up the RHSFunctions for position and momentum using TSRHSSplitSetRHSFunction() or calling TSSetRHSFunction() for each sub-TS");
 
-  CHKERRQ(VecDuplicate(ts->vec_sol,&bsymp->update));
+  PetscCall(VecDuplicate(ts->vec_sol,&bsymp->update));
 
-  CHKERRQ(TSGetAdapt(ts,&ts->adapt));
-  CHKERRQ(TSAdaptCandidatesClear(ts->adapt)); /* make sure to use fixed time stepping */
-  CHKERRQ(TSGetDM(ts,&dm));
+  PetscCall(TSGetAdapt(ts,&ts->adapt));
+  PetscCall(TSAdaptCandidatesClear(ts->adapt)); /* make sure to use fixed time stepping */
+  PetscCall(TSGetDM(ts,&dm));
   if (dm) {
-    CHKERRQ(DMCoarsenHookAdd(dm,DMCoarsenHook_BasicSymplectic,DMRestrictHook_BasicSymplectic,ts));
-    CHKERRQ(DMSubDomainHookAdd(dm,DMSubDomainHook_BasicSymplectic,DMSubDomainRestrictHook_BasicSymplectic,ts));
+    PetscCall(DMCoarsenHookAdd(dm,DMCoarsenHook_BasicSymplectic,DMRestrictHook_BasicSymplectic,ts));
+    PetscCall(DMSubDomainHookAdd(dm,DMSubDomainHook_BasicSymplectic,DMSubDomainRestrictHook_BasicSymplectic,ts));
   }
   PetscFunctionReturn(0);
 }
@@ -292,15 +292,15 @@ static PetscErrorCode TSReset_BasicSymplectic(TS ts)
   TS_BasicSymplectic *bsymp = (TS_BasicSymplectic*)ts->data;
 
   PetscFunctionBegin;
-  CHKERRQ(VecDestroy(&bsymp->update));
+  PetscCall(VecDestroy(&bsymp->update));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode TSDestroy_BasicSymplectic(TS ts)
 {
   PetscFunctionBegin;
-  CHKERRQ(TSReset_BasicSymplectic(ts));
-  CHKERRQ(PetscFree(ts->data));
+  PetscCall(TSReset_BasicSymplectic(ts));
+  PetscCall(PetscFree(ts->data));
   PetscFunctionReturn(0);
 }
 
@@ -309,7 +309,7 @@ static PetscErrorCode TSSetFromOptions_BasicSymplectic(PetscOptionItems *PetscOp
   TS_BasicSymplectic *bsymp = (TS_BasicSymplectic*)ts->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"Basic symplectic integrator options"));
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"Basic symplectic integrator options"));
   {
     BasicSymplecticSchemeLink link;
     PetscInt                  count,choice;
@@ -317,13 +317,13 @@ static PetscErrorCode TSSetFromOptions_BasicSymplectic(PetscOptionItems *PetscOp
     const char                **namelist;
 
     for (link=BasicSymplecticSchemeList,count=0; link; link=link->next,count++) ;
-    CHKERRQ(PetscMalloc1(count,(char***)&namelist));
+    PetscCall(PetscMalloc1(count,(char***)&namelist));
     for (link=BasicSymplecticSchemeList,count=0; link; link=link->next,count++) namelist[count] = link->sch.name;
-    CHKERRQ(PetscOptionsEList("-ts_basicsymplectic_type","Family of basic symplectic integration method","TSBasicSymplecticSetType",(const char*const*)namelist,count,bsymp->scheme->name,&choice,&flg));
-    if (flg) CHKERRQ(TSBasicSymplecticSetType(ts,namelist[choice]));
-    CHKERRQ(PetscFree(namelist));
+    PetscCall(PetscOptionsEList("-ts_basicsymplectic_type","Family of basic symplectic integration method","TSBasicSymplecticSetType",(const char*const*)namelist,count,bsymp->scheme->name,&choice,&flg));
+    if (flg) PetscCall(TSBasicSymplecticSetType(ts,namelist[choice]));
+    PetscCall(PetscFree(namelist));
   }
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -340,8 +340,8 @@ static PetscErrorCode TSInterpolate_BasicSymplectic(TS ts,PetscReal t,Vec X)
   PetscReal          alpha = (ts->ptime - t)/ts->time_step;
 
   PetscFunctionBegin;
-  CHKERRQ(VecWAXPY(X,-ts->time_step,update,ts->vec_sol));
-  CHKERRQ(VecAXPBY(X,1.0-alpha,alpha,ts->vec_sol));
+  PetscCall(VecWAXPY(X,-ts->time_step,update,ts->vec_sol));
+  PetscCall(VecAXPBY(X,1.0-alpha,alpha,ts->vec_sol));
   PetscFunctionReturn(0);
 }
 
@@ -375,7 +375,7 @@ PetscErrorCode TSBasicSymplecticSetType(TS ts,TSBasicSymplecticType bsymptype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  CHKERRQ(PetscTryMethod(ts,"TSBasicSymplecticSetType_C",(TS,TSBasicSymplecticType),(ts,bsymptype)));
+  PetscCall(PetscTryMethod(ts,"TSBasicSymplecticSetType_C",(TS,TSBasicSymplecticType),(ts,bsymptype)));
   PetscFunctionReturn(0);
 }
 
@@ -394,7 +394,7 @@ PetscErrorCode TSBasicSymplecticGetType(TS ts,TSBasicSymplecticType *bsymptype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  CHKERRQ(PetscUseMethod(ts,"TSBasicSymplecticGetType_C",(TS,TSBasicSymplecticType*),(ts,bsymptype)));
+  PetscCall(PetscUseMethod(ts,"TSBasicSymplecticGetType_C",(TS,TSBasicSymplecticType*),(ts,bsymptype)));
   PetscFunctionReturn(0);
 }
 
@@ -406,11 +406,11 @@ static PetscErrorCode TSBasicSymplecticSetType_BasicSymplectic(TS ts,TSBasicSymp
 
   PetscFunctionBegin;
   if (bsymp->scheme) {
-    CHKERRQ(PetscStrcmp(bsymp->scheme->name,bsymptype,&match));
+    PetscCall(PetscStrcmp(bsymp->scheme->name,bsymptype,&match));
     if (match) PetscFunctionReturn(0);
   }
   for (link = BasicSymplecticSchemeList; link; link=link->next) {
-    CHKERRQ(PetscStrcmp(link->sch.name,bsymptype,&match));
+    PetscCall(PetscStrcmp(link->sch.name,bsymptype,&match));
     if (match) {
       bsymp->scheme = &link->sch;
       PetscFunctionReturn(0);
@@ -467,8 +467,8 @@ PETSC_EXTERN PetscErrorCode TSCreate_BasicSymplectic(TS ts)
   TS_BasicSymplectic *bsymp;
 
   PetscFunctionBegin;
-  CHKERRQ(TSBasicSymplecticInitializePackage());
-  CHKERRQ(PetscNewLog(ts,&bsymp));
+  PetscCall(TSBasicSymplecticInitializePackage());
+  PetscCall(PetscNewLog(ts,&bsymp));
   ts->data = (void*)bsymp;
 
   ts->ops->setup           = TSSetUp_BasicSymplectic;
@@ -480,9 +480,9 @@ PETSC_EXTERN PetscErrorCode TSCreate_BasicSymplectic(TS ts)
   ts->ops->interpolate     = TSInterpolate_BasicSymplectic;
   ts->ops->linearstability = TSComputeLinearStability_BasicSymplectic;
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSBasicSymplecticSetType_C",TSBasicSymplecticSetType_BasicSymplectic));
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSBasicSymplecticGetType_C",TSBasicSymplecticGetType_BasicSymplectic));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSBasicSymplecticSetType_C",TSBasicSymplecticSetType_BasicSymplectic));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSBasicSymplecticGetType_C",TSBasicSymplecticGetType_BasicSymplectic));
 
-  CHKERRQ(TSBasicSymplecticSetType(ts,TSBasicSymplecticDefault));
+  PetscCall(TSBasicSymplecticSetType(ts,TSBasicSymplecticDefault));
   PetscFunctionReturn(0);
 }

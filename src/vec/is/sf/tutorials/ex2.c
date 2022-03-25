@@ -19,24 +19,24 @@ int main(int argc, char **argv)
   PetscInt    *ilocal;
   PetscSFNode *iremote;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   PetscCheckFalse(size != 2,PETSC_COMM_WORLD, PETSC_ERR_USER, "Only coded for two MPI processes");
 
-  CHKERRQ(PetscSFCreate(PETSC_COMM_WORLD,&sf));
-  CHKERRQ(PetscSFSetFromOptions(sf));
+  PetscCall(PetscSFCreate(PETSC_COMM_WORLD,&sf));
+  PetscCall(PetscSFSetFromOptions(sf));
 
   nleaves = 2;
   nroots = 1;
-  CHKERRQ(PetscMalloc1(nleaves,&ilocal));
+  PetscCall(PetscMalloc1(nleaves,&ilocal));
 
   for (i = 0; i<nleaves; i++) {
     ilocal[i] = i;
   }
 
-  CHKERRQ(PetscMalloc1(nleaves,&iremote));
+  PetscCall(PetscMalloc1(nleaves,&iremote));
   if (rank == 0) {
     iremote[0].rank = 0;
     iremote[0].index = 0;
@@ -48,48 +48,48 @@ int main(int argc, char **argv)
     iremote[1].rank = 0;
     iremote[1].index = 0;
   }
-  CHKERRQ(PetscSFSetGraph(sf,nroots,nleaves,ilocal,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER));
-  CHKERRQ(PetscSFSetUp(sf));
-  CHKERRQ(PetscSFView(sf,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(VecSetSizes(A,2,PETSC_DETERMINE));
-  CHKERRQ(VecSetFromOptions(A));
-  CHKERRQ(VecSetUp(A));
+  PetscCall(PetscSFSetGraph(sf,nroots,nleaves,ilocal,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER));
+  PetscCall(PetscSFSetUp(sf));
+  PetscCall(PetscSFView(sf,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(VecSetSizes(A,2,PETSC_DETERMINE));
+  PetscCall(VecSetFromOptions(A));
+  PetscCall(VecSetUp(A));
 
-  CHKERRQ(VecDuplicate(A,&B));
-  CHKERRQ(VecDuplicate(A,&Aout));
-  CHKERRQ(VecDuplicate(A,&Bout));
-  CHKERRQ(VecGetArray(A,&bufA));
-  CHKERRQ(VecGetArray(B,&bufB));
+  PetscCall(VecDuplicate(A,&B));
+  PetscCall(VecDuplicate(A,&Aout));
+  PetscCall(VecDuplicate(A,&Bout));
+  PetscCall(VecGetArray(A,&bufA));
+  PetscCall(VecGetArray(B,&bufB));
   for (i=0; i<2; i++) {
     bufA[i] = (PetscScalar)rank;
     bufB[i] = (PetscScalar)(rank) + 10.0;
   }
-  CHKERRQ(VecRestoreArray(A,&bufA));
-  CHKERRQ(VecRestoreArray(B,&bufB));
+  PetscCall(VecRestoreArray(A,&bufA));
+  PetscCall(VecRestoreArray(B,&bufB));
 
-  CHKERRQ(VecGetArrayRead(A,(const PetscScalar**)&bufA));
-  CHKERRQ(VecGetArrayRead(B,(const PetscScalar**)&bufB));
-  CHKERRQ(VecGetArray(Aout,&bufAout));
-  CHKERRQ(VecGetArray(Bout,&bufBout));
-  CHKERRQ(PetscSFBcastBegin(sf,MPIU_SCALAR,(const void*)bufA,(void *)bufAout,MPI_REPLACE));
-  CHKERRQ(PetscSFBcastBegin(sf,MPIU_SCALAR,(const void*)bufB,(void *)bufBout,MPI_REPLACE));
-  CHKERRQ(PetscSFBcastEnd(sf,MPIU_SCALAR,(const void*)bufA,(void *)bufAout,MPI_REPLACE));
-  CHKERRQ(PetscSFBcastEnd(sf,MPIU_SCALAR,(const void*)bufB,(void *)bufBout,MPI_REPLACE));
-  CHKERRQ(VecRestoreArrayRead(A,(const PetscScalar**)&bufA));
-  CHKERRQ(VecRestoreArrayRead(B,(const PetscScalar**)&bufB));
-  CHKERRQ(VecRestoreArray(Aout,&bufAout));
-  CHKERRQ(VecRestoreArray(Bout,&bufBout));
+  PetscCall(VecGetArrayRead(A,(const PetscScalar**)&bufA));
+  PetscCall(VecGetArrayRead(B,(const PetscScalar**)&bufB));
+  PetscCall(VecGetArray(Aout,&bufAout));
+  PetscCall(VecGetArray(Bout,&bufBout));
+  PetscCall(PetscSFBcastBegin(sf,MPIU_SCALAR,(const void*)bufA,(void *)bufAout,MPI_REPLACE));
+  PetscCall(PetscSFBcastBegin(sf,MPIU_SCALAR,(const void*)bufB,(void *)bufBout,MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(sf,MPIU_SCALAR,(const void*)bufA,(void *)bufAout,MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(sf,MPIU_SCALAR,(const void*)bufB,(void *)bufBout,MPI_REPLACE));
+  PetscCall(VecRestoreArrayRead(A,(const PetscScalar**)&bufA));
+  PetscCall(VecRestoreArrayRead(B,(const PetscScalar**)&bufB));
+  PetscCall(VecRestoreArray(Aout,&bufAout));
+  PetscCall(VecRestoreArray(Bout,&bufBout));
 
-  CHKERRQ(VecView(Aout,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(VecView(Bout,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(VecDestroy(&A));
-  CHKERRQ(VecDestroy(&B));
-  CHKERRQ(VecDestroy(&Aout));
-  CHKERRQ(VecDestroy(&Bout));
-  CHKERRQ(PetscSFDestroy(&sf));
+  PetscCall(VecView(Aout,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecView(Bout,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecDestroy(&A));
+  PetscCall(VecDestroy(&B));
+  PetscCall(VecDestroy(&Aout));
+  PetscCall(VecDestroy(&Bout));
+  PetscCall(PetscSFDestroy(&sf));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

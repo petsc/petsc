@@ -12,9 +12,9 @@ int main(int argc,char **argv)
 {
   char           access_token[512],new_refresh_token[512];
 
-  CHKERRQ(PetscInitialize(&argc,&argv,NULL,NULL));
-  CHKERRQ(PetscBoxRefresh(PETSC_COMM_WORLD,NULL,access_token,new_refresh_token,sizeof(access_token)));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscInitialize(&argc,&argv,NULL,NULL));
+  PetscCall(PetscBoxRefresh(PETSC_COMM_WORLD,NULL,access_token,new_refresh_token,sizeof(access_token)));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

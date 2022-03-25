@@ -9,7 +9,7 @@ PetscErrorCode  path_to_unix(char filein[])
   size_t         i,n;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscStrlen(filein,&n));
+  PetscCall(PetscStrlen(filein,&n));
   for (i=0; i<n; i++) {
     if (filein[i] == '\\') filein[i] = '/';
   }
@@ -20,14 +20,14 @@ int main(int argc,char **argv)
 {
   char           fpath[PETSC_MAX_PATH_LEN];
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(PetscGetFullPath("~/somefile",fpath,sizeof(fpath)));
-  CHKERRQ(path_to_unix(fpath));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"%s\n",fpath));
-  CHKERRQ(PetscGetFullPath("someotherfile",fpath,sizeof(fpath)));
-  CHKERRQ(path_to_unix(fpath));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"%s\n",fpath));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscGetFullPath("~/somefile",fpath,sizeof(fpath)));
+  PetscCall(path_to_unix(fpath));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%s\n",fpath));
+  PetscCall(PetscGetFullPath("someotherfile",fpath,sizeof(fpath)));
+  PetscCall(path_to_unix(fpath));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%s\n",fpath));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

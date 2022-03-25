@@ -29,7 +29,7 @@ PetscErrorCode PetscLinearRegression(PetscInt n, const PetscReal x[], const Pets
   }
   PetscValidRealPointer(slope,4);
   PetscValidRealPointer(intercept,5);
-  CHKERRQ(PetscMalloc2(n*2, &X, n*2, &Y));
+  PetscCall(PetscMalloc2(n*2, &X, n*2, &Y));
   for (PetscInt k = 0; k < n; ++k) {
     /* X[n,2] = [1, x] */
     X[k*2+0] = 1.0;
@@ -47,10 +47,10 @@ PetscErrorCode PetscLinearRegression(PetscInt n, const PetscReal x[], const Pets
     PetscBLASInt two = 2, ipiv[2], info;
     PetscScalar  work[2];
 
-    CHKERRQ(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
+    PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
     PetscStackCallBLAS("LAPACKgetrf", LAPACKgetrf_(&two, &two, H, &two, ipiv, &info));
     PetscStackCallBLAS("LAPACKgetri", LAPACKgetri_(&two, H, &two, ipiv, work, &two, &info));
-    CHKERRQ(PetscFPTrapPop());
+    PetscCall(PetscFPTrapPop());
   }
     /* Y = H X^T */
   for (PetscInt i = 0; i < 2; ++i) {
@@ -64,7 +64,7 @@ PetscErrorCode PetscLinearRegression(PetscInt n, const PetscReal x[], const Pets
     beta[i] = 0.0;
     for (PetscInt k = 0; k < n; ++k) beta[i] += Y[i*n+k] * y[k];
   }
-  CHKERRQ(PetscFree2(X, Y));
+  PetscCall(PetscFree2(X, Y));
   *intercept = beta[0];
   *slope     = beta[1];
   PetscFunctionReturn(0);

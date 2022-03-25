@@ -27,8 +27,8 @@ static PetscBool PCPackageInitialized = PETSC_FALSE;
 PetscErrorCode  PCFinalizePackage(void)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscFunctionListDestroy(&PCList));
-  CHKERRQ(PetscFunctionListDestroy(&PCMGCoarseList));
+  PetscCall(PetscFunctionListDestroy(&PCList));
+  PetscCall(PetscFunctionListDestroy(&PCMGCoarseList));
   PCPackageInitialized = PETSC_FALSE;
   PCRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -52,58 +52,58 @@ PetscErrorCode  PCInitializePackage(void)
   if (PCPackageInitialized) PetscFunctionReturn(0);
   PCPackageInitialized = PETSC_TRUE;
   /* Initialize subpackages */
-  CHKERRQ(PCGAMGInitializePackage());
-  CHKERRQ(PCBDDCInitializePackage());
+  PetscCall(PCGAMGInitializePackage());
+  PetscCall(PCBDDCInitializePackage());
 #if defined(PETSC_HAVE_HPDDM) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
-  CHKERRQ(PCHPDDMInitializePackage());
+  PetscCall(PCHPDDMInitializePackage());
 #endif
   /* Register Classes */
-  CHKERRQ(PetscClassIdRegister("Preconditioner",&PC_CLASSID));
+  PetscCall(PetscClassIdRegister("Preconditioner",&PC_CLASSID));
   /* Register Constructors */
-  CHKERRQ(PCRegisterAll());
+  PetscCall(PCRegisterAll());
   /* Register Events */
-  CHKERRQ(PetscLogEventRegister("PCSetUp",          PC_CLASSID,&PC_SetUp));
-  CHKERRQ(PetscLogEventRegister("PCSetUpOnBlocks",  PC_CLASSID,&PC_SetUpOnBlocks));
-  CHKERRQ(PetscLogEventRegister("PCApply",          PC_CLASSID,&PC_Apply));
-  CHKERRQ(PetscLogEventRegister("PCMatApply",       PC_CLASSID,&PC_MatApply));
-  CHKERRQ(PetscLogEventRegister("PCApplyOnBlocks",  PC_CLASSID,&PC_ApplyOnBlocks));
-  CHKERRQ(PetscLogEventRegister("PCApplyCoarse",    PC_CLASSID,&PC_ApplyCoarse));
-  CHKERRQ(PetscLogEventRegister("PCApplyMultiple",  PC_CLASSID,&PC_ApplyMultiple));
-  CHKERRQ(PetscLogEventRegister("PCApplySymmLeft",  PC_CLASSID,&PC_ApplySymmetricLeft));
-  CHKERRQ(PetscLogEventRegister("PCApplySymmRight", PC_CLASSID,&PC_ApplySymmetricRight));
-  CHKERRQ(PetscLogEventRegister("PCModifySubMatri", PC_CLASSID,&PC_ModifySubMatrices));
+  PetscCall(PetscLogEventRegister("PCSetUp",          PC_CLASSID,&PC_SetUp));
+  PetscCall(PetscLogEventRegister("PCSetUpOnBlocks",  PC_CLASSID,&PC_SetUpOnBlocks));
+  PetscCall(PetscLogEventRegister("PCApply",          PC_CLASSID,&PC_Apply));
+  PetscCall(PetscLogEventRegister("PCMatApply",       PC_CLASSID,&PC_MatApply));
+  PetscCall(PetscLogEventRegister("PCApplyOnBlocks",  PC_CLASSID,&PC_ApplyOnBlocks));
+  PetscCall(PetscLogEventRegister("PCApplyCoarse",    PC_CLASSID,&PC_ApplyCoarse));
+  PetscCall(PetscLogEventRegister("PCApplyMultiple",  PC_CLASSID,&PC_ApplyMultiple));
+  PetscCall(PetscLogEventRegister("PCApplySymmLeft",  PC_CLASSID,&PC_ApplySymmetricLeft));
+  PetscCall(PetscLogEventRegister("PCApplySymmRight", PC_CLASSID,&PC_ApplySymmetricRight));
+  PetscCall(PetscLogEventRegister("PCModifySubMatri", PC_CLASSID,&PC_ModifySubMatrices));
 
-  CHKERRQ(PetscLogEventRegister("PCPATCHCreate",    PC_CLASSID, &PC_Patch_CreatePatches));
-  CHKERRQ(PetscLogEventRegister("PCPATCHComputeOp", PC_CLASSID, &PC_Patch_ComputeOp));
-  CHKERRQ(PetscLogEventRegister("PCPATCHSolve",     PC_CLASSID, &PC_Patch_Solve));
-  CHKERRQ(PetscLogEventRegister("PCPATCHApply",     PC_CLASSID, &PC_Patch_Apply));
-  CHKERRQ(PetscLogEventRegister("PCPATCHPrealloc",  PC_CLASSID, &PC_Patch_Prealloc));
+  PetscCall(PetscLogEventRegister("PCPATCHCreate",    PC_CLASSID, &PC_Patch_CreatePatches));
+  PetscCall(PetscLogEventRegister("PCPATCHComputeOp", PC_CLASSID, &PC_Patch_ComputeOp));
+  PetscCall(PetscLogEventRegister("PCPATCHSolve",     PC_CLASSID, &PC_Patch_Solve));
+  PetscCall(PetscLogEventRegister("PCPATCHApply",     PC_CLASSID, &PC_Patch_Apply));
+  PetscCall(PetscLogEventRegister("PCPATCHPrealloc",  PC_CLASSID, &PC_Patch_Prealloc));
 
-  CHKERRQ(PetscLogEventRegister("KSPSolve_FS_0",    KSP_CLASSID,&KSP_Solve_FS_0));
-  CHKERRQ(PetscLogEventRegister("KSPSolve_FS_1",    KSP_CLASSID,&KSP_Solve_FS_1));
-  CHKERRQ(PetscLogEventRegister("KSPSolve_FS_2",    KSP_CLASSID,&KSP_Solve_FS_2));
-  CHKERRQ(PetscLogEventRegister("KSPSolve_FS_3",    KSP_CLASSID,&KSP_Solve_FS_3));
-  CHKERRQ(PetscLogEventRegister("KSPSolve_FS_4",    KSP_CLASSID,&KSP_Solve_FS_4));
-  CHKERRQ(PetscLogEventRegister("KSPSolve_FS_Schu", KSP_CLASSID,&KSP_Solve_FS_S));
-  CHKERRQ(PetscLogEventRegister("KSPSolve_FS_Up",   KSP_CLASSID,&KSP_Solve_FS_U));
-  CHKERRQ(PetscLogEventRegister("KSPSolve_FS_Low",  KSP_CLASSID,&KSP_Solve_FS_L));
+  PetscCall(PetscLogEventRegister("KSPSolve_FS_0",    KSP_CLASSID,&KSP_Solve_FS_0));
+  PetscCall(PetscLogEventRegister("KSPSolve_FS_1",    KSP_CLASSID,&KSP_Solve_FS_1));
+  PetscCall(PetscLogEventRegister("KSPSolve_FS_2",    KSP_CLASSID,&KSP_Solve_FS_2));
+  PetscCall(PetscLogEventRegister("KSPSolve_FS_3",    KSP_CLASSID,&KSP_Solve_FS_3));
+  PetscCall(PetscLogEventRegister("KSPSolve_FS_4",    KSP_CLASSID,&KSP_Solve_FS_4));
+  PetscCall(PetscLogEventRegister("KSPSolve_FS_Schu", KSP_CLASSID,&KSP_Solve_FS_S));
+  PetscCall(PetscLogEventRegister("KSPSolve_FS_Up",   KSP_CLASSID,&KSP_Solve_FS_U));
+  PetscCall(PetscLogEventRegister("KSPSolve_FS_Low",  KSP_CLASSID,&KSP_Solve_FS_L));
   /* Process Info */
   {
     PetscClassId  classids[1];
 
     classids[0] = PC_CLASSID;
-    CHKERRQ(PetscInfoProcessClass("pc", 1, classids));
+    PetscCall(PetscInfoProcessClass("pc", 1, classids));
   }
   /* Process summary exclusions */
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt));
   if (opt) {
-    CHKERRQ(PetscStrInList("pc",logList,',',&pkg));
-    if (pkg) CHKERRQ(PetscLogEventExcludeClass(PC_CLASSID));
+    PetscCall(PetscStrInList("pc",logList,',',&pkg));
+    if (pkg) PetscCall(PetscLogEventExcludeClass(PC_CLASSID));
   }
   /* Register data */
-  CHKERRQ(PetscObjectComposedDataRegister(&PetscMGLevelId));
+  PetscCall(PetscObjectComposedDataRegister(&PetscMGLevelId));
   /* Register package finalizer */
-  CHKERRQ(PetscRegisterFinalize(PCFinalizePackage));
+  PetscCall(PetscRegisterFinalize(PCFinalizePackage));
   PetscFunctionReturn(0);
 }
 
@@ -132,11 +132,11 @@ static PetscBool KSPPackageInitialized = PETSC_FALSE;
 PetscErrorCode  KSPFinalizePackage(void)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscFunctionListDestroy(&KSPList));
-  CHKERRQ(PetscFunctionListDestroy(&KSPGuessList));
-  CHKERRQ(PetscFunctionListDestroy(&KSPMonitorList));
-  CHKERRQ(PetscFunctionListDestroy(&KSPMonitorCreateList));
-  CHKERRQ(PetscFunctionListDestroy(&KSPMonitorDestroyList));
+  PetscCall(PetscFunctionListDestroy(&KSPList));
+  PetscCall(PetscFunctionListDestroy(&KSPGuessList));
+  PetscCall(PetscFunctionListDestroy(&KSPMonitorList));
+  PetscCall(PetscFunctionListDestroy(&KSPMonitorCreateList));
+  PetscCall(PetscFunctionListDestroy(&KSPMonitorDestroyList));
   KSPPackageInitialized       = PETSC_FALSE;
   KSPRegisterAllCalled        = PETSC_FALSE;
   KSPMonitorRegisterAllCalled = PETSC_FALSE;
@@ -161,23 +161,23 @@ PetscErrorCode KSPInitializePackage(void)
   if (KSPPackageInitialized) PetscFunctionReturn(0);
   KSPPackageInitialized = PETSC_TRUE;
   /* Register Classes */
-  CHKERRQ(PetscClassIdRegister("Krylov Solver",&KSP_CLASSID));
-  CHKERRQ(PetscClassIdRegister("DMKSP interface",&DMKSP_CLASSID));
-  CHKERRQ(PetscClassIdRegister("KSPGuess interface",&KSPGUESS_CLASSID));
+  PetscCall(PetscClassIdRegister("Krylov Solver",&KSP_CLASSID));
+  PetscCall(PetscClassIdRegister("DMKSP interface",&DMKSP_CLASSID));
+  PetscCall(PetscClassIdRegister("KSPGuess interface",&KSPGUESS_CLASSID));
   /* Register Constructors */
-  CHKERRQ(KSPRegisterAll());
+  PetscCall(KSPRegisterAll());
   /* Register matrix implementations packaged in KSP */
-  CHKERRQ(KSPMatRegisterAll());
+  PetscCall(KSPMatRegisterAll());
   /* Register KSP guesses implementations */
-  CHKERRQ(KSPGuessRegisterAll());
+  PetscCall(KSPGuessRegisterAll());
   /* Register Monitors */
-  CHKERRQ(KSPMonitorRegisterAll());
+  PetscCall(KSPMonitorRegisterAll());
   /* Register Events */
-  CHKERRQ(PetscLogEventRegister("KSPSetUp",         KSP_CLASSID,&KSP_SetUp));
-  CHKERRQ(PetscLogEventRegister("KSPSolve",         KSP_CLASSID,&KSP_Solve));
-  CHKERRQ(PetscLogEventRegister("KSPGMRESOrthog",   KSP_CLASSID,&KSP_GMRESOrthogonalization));
-  CHKERRQ(PetscLogEventRegister("KSPSolveTranspos", KSP_CLASSID,&KSP_SolveTranspose));
-  CHKERRQ(PetscLogEventRegister("KSPMatSolve",      KSP_CLASSID,&KSP_MatSolve));
+  PetscCall(PetscLogEventRegister("KSPSetUp",         KSP_CLASSID,&KSP_SetUp));
+  PetscCall(PetscLogEventRegister("KSPSolve",         KSP_CLASSID,&KSP_Solve));
+  PetscCall(PetscLogEventRegister("KSPGMRESOrthog",   KSP_CLASSID,&KSP_GMRESOrthogonalization));
+  PetscCall(PetscLogEventRegister("KSPSolveTranspos", KSP_CLASSID,&KSP_SolveTranspose));
+  PetscCall(PetscLogEventRegister("KSPMatSolve",      KSP_CLASSID,&KSP_MatSolve));
   /* Process Info */
   {
     PetscClassId  classids[3];
@@ -185,22 +185,22 @@ PetscErrorCode KSPInitializePackage(void)
     classids[0] = KSP_CLASSID;
     classids[1] = DMKSP_CLASSID;
     classids[2] = KSPGUESS_CLASSID;
-    CHKERRQ(PetscInfoProcessClass("ksp", 1, &classids[0]));
-    CHKERRQ(PetscInfoProcessClass("dm", 1, &classids[1]));
-    CHKERRQ(PetscInfoProcessClass("kspguess", 1, &classids[2]));
+    PetscCall(PetscInfoProcessClass("ksp", 1, &classids[0]));
+    PetscCall(PetscInfoProcessClass("dm", 1, &classids[1]));
+    PetscCall(PetscInfoProcessClass("kspguess", 1, &classids[2]));
   }
   /* Process summary exclusions */
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt));
   if (opt) {
-    CHKERRQ(PetscStrInList("ksp",logList,',',&pkg));
-    if (pkg) CHKERRQ(PetscLogEventExcludeClass(KSP_CLASSID));
-    CHKERRQ(PetscStrInList("dm",logList,',',&cls));
-    if (pkg || cls) CHKERRQ(PetscLogEventExcludeClass(DMKSP_CLASSID));
-    CHKERRQ(PetscStrInList("kspguess",logList,',',&cls));
-    if (pkg || cls) CHKERRQ(PetscLogEventExcludeClass(KSPGUESS_CLASSID));
+    PetscCall(PetscStrInList("ksp",logList,',',&pkg));
+    if (pkg) PetscCall(PetscLogEventExcludeClass(KSP_CLASSID));
+    PetscCall(PetscStrInList("dm",logList,',',&cls));
+    if (pkg || cls) PetscCall(PetscLogEventExcludeClass(DMKSP_CLASSID));
+    PetscCall(PetscStrInList("kspguess",logList,',',&cls));
+    if (pkg || cls) PetscCall(PetscLogEventExcludeClass(KSPGUESS_CLASSID));
   }
   /* Register package finalizer */
-  CHKERRQ(PetscRegisterFinalize(KSPFinalizePackage));
+  PetscCall(PetscRegisterFinalize(KSPFinalizePackage));
   PetscFunctionReturn(0);
 }
 
@@ -216,8 +216,8 @@ PetscErrorCode KSPInitializePackage(void)
 PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscksp(void)
 {
   PetscFunctionBegin;
-  CHKERRQ(PCInitializePackage());
-  CHKERRQ(KSPInitializePackage());
+  PetscCall(PCInitializePackage());
+  PetscCall(KSPInitializePackage());
   PetscFunctionReturn(0);
 }
 

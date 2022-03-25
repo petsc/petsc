@@ -178,9 +178,9 @@ PetscErrorCode PetscStrallocpy(const char s[], char *t[])
   if (s) {
     size_t len;
 
-    CHKERRQ(PetscStrlen(s,&len));
-    CHKERRQ(PetscMalloc1(1+len,&tmp));
-    CHKERRQ(PetscStrcpy(tmp,s));
+    PetscCall(PetscStrlen(s,&len));
+    PetscCall(PetscMalloc1(1+len,&tmp));
+    PetscCall(PetscStrcpy(tmp,s));
   }
   *t = tmp;
   PetscFunctionReturn(0);
@@ -214,8 +214,8 @@ PetscErrorCode PetscStrArrayallocpy(const char *const *list, char ***t)
 
   PetscFunctionBegin;
   while (list[n++]) ;
-  CHKERRQ(PetscMalloc1(n+1,t));
-  for (PetscInt i=0; i<n; i++) CHKERRQ(PetscStrallocpy(list[i],(*t)+i));
+  PetscCall(PetscMalloc1(n+1,t));
+  for (PetscInt i=0; i<n; i++) PetscCall(PetscStrallocpy(list[i],(*t)+i));
   (*t)[n] = NULL;
   PetscFunctionReturn(0);
 }
@@ -243,10 +243,10 @@ PetscErrorCode PetscStrArrayDestroy(char ***list)
   PetscFunctionBegin;
   if (!*list) PetscFunctionReturn(0);
   while ((*list)[n]) {
-    CHKERRQ(PetscFree((*list)[n]));
+    PetscCall(PetscFree((*list)[n]));
     ++n;
   }
-  CHKERRQ(PetscFree(*list));
+  PetscCall(PetscFree(*list));
   PetscFunctionReturn(0);
 }
 
@@ -273,8 +273,8 @@ PetscErrorCode PetscStrArrayDestroy(char ***list)
 PetscErrorCode PetscStrNArrayallocpy(PetscInt n, const char *const *list, char ***t)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscMalloc1(n,t));
-  for (PetscInt i=0; i<n; i++) CHKERRQ(PetscStrallocpy(list[i],(*t)+i));
+  PetscCall(PetscMalloc1(n,t));
+  for (PetscInt i=0; i<n; i++) PetscCall(PetscStrallocpy(list[i],(*t)+i));
   PetscFunctionReturn(0);
 }
 
@@ -299,8 +299,8 @@ PetscErrorCode PetscStrNArrayDestroy(PetscInt n, char ***list)
 {
   PetscFunctionBegin;
   if (!*list) PetscFunctionReturn(0);
-  for (PetscInt i=0; i<n; i++) CHKERRQ(PetscFree((*list)[i]));
-  CHKERRQ(PetscFree(*list));
+  for (PetscInt i=0; i<n; i++) PetscCall(PetscFree((*list)[i]));
+  PetscCall(PetscFree(*list));
   PetscFunctionReturn(0);
 }
 
@@ -441,7 +441,7 @@ PetscErrorCode PetscStrlcat(char s[], const char t[], size_t n)
   PetscValidCharPointer(s,1);
   PetscValidCharPointer(t,2);
   PetscCheck(n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"String buffer length must be positive");
-  CHKERRQ(PetscStrlen(t,&len));
+  PetscCall(PetscStrlen(t,&len));
   strncat(s,t,n - len);
   s[n-1] = 0;
   PetscFunctionReturn(0);
@@ -559,13 +559,13 @@ PetscErrorCode PetscStrcasecmp(const char a[], const char b[], PetscBool *t)
 #else
   else {
     char           *aa,*bb;
-    CHKERRQ(PetscStrallocpy(a,&aa));
-    CHKERRQ(PetscStrallocpy(b,&bb));
-    CHKERRQ(PetscStrtolower(aa));
-    CHKERRQ(PetscStrtolower(bb));
-    CHKERRQ(PetscStrcmp(aa,bb,t));
-    CHKERRQ(PetscFree(aa));
-    CHKERRQ(PetscFree(bb));
+    PetscCall(PetscStrallocpy(a,&aa));
+    PetscCall(PetscStrallocpy(b,&bb));
+    PetscCall(PetscStrtolower(aa));
+    PetscCall(PetscStrtolower(bb));
+    PetscCall(PetscStrcmp(aa,bb,t));
+    PetscCall(PetscFree(aa));
+    PetscCall(PetscFree(bb));
     PetscFunctionReturn(0);
   }
 #endif
@@ -738,12 +738,12 @@ PetscErrorCode PetscStrendswith(const char a[], const char b[], PetscBool *flg)
   PetscFunctionBegin;
   PetscValidBoolPointer(flg,3);
   *flg = PETSC_FALSE;
-  CHKERRQ(PetscStrrstr(a,b,&test));
+  PetscCall(PetscStrrstr(a,b,&test));
   if (test) {
     size_t na,nb;
 
-    CHKERRQ(PetscStrlen(a,&na));
-    CHKERRQ(PetscStrlen(b,&nb));
+    PetscCall(PetscStrlen(a,&na));
+    PetscCall(PetscStrlen(b,&nb));
     if (a+na-nb == test) *flg = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
@@ -779,7 +779,7 @@ PetscErrorCode PetscStrbeginswith(const char a[], const char b[], PetscBool *flg
   PetscValidCharPointer(b,2);
   PetscValidBoolPointer(flg,3);
   *flg = PETSC_FALSE;
-  CHKERRQ(PetscStrrstr(a,b,&test));
+  PetscCall(PetscStrrstr(a,b,&test));
   if (test && (test == a)) *flg = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -811,7 +811,7 @@ PetscErrorCode PetscStrendswithwhich(const char a[], const char *const *bs, Pets
   while (bs[*cnt]) {
     PetscBool flg;
 
-    CHKERRQ(PetscStrendswith(a,bs[*cnt],&flg));
+    PetscCall(PetscStrendswith(a,bs[*cnt],&flg));
     if (flg) PetscFunctionReturn(0);
     ++(*cnt);
   }
@@ -967,8 +967,8 @@ PetscErrorCode PetscTokenCreate(const char a[], const char b, PetscToken *t)
   PetscFunctionBegin;
   PetscValidCharPointer(a,1);
   PetscValidPointer(t,3);
-  CHKERRQ(PetscNew(t));
-  CHKERRQ(PetscStrallocpy(a,&(*t)->array));
+  PetscCall(PetscNew(t));
+  PetscCall(PetscStrallocpy(a,&(*t)->array));
 
   (*t)->current = (*t)->array;
   (*t)->token   = b;
@@ -994,8 +994,8 @@ PetscErrorCode PetscTokenDestroy(PetscToken *a)
 {
   PetscFunctionBegin;
   if (!*a) PetscFunctionReturn(0);
-  CHKERRQ(PetscFree((*a)->array));
-  CHKERRQ(PetscFree(*a));
+  PetscCall(PetscFree((*a)->array));
+  PetscCall(PetscFree(*a));
   PetscFunctionReturn(0);
 }
 
@@ -1027,14 +1027,14 @@ PetscErrorCode PetscStrInList(const char str[], const char list[], char sep, Pet
   PetscFunctionBegin;
   PetscValidBoolPointer(found,4);
   *found = PETSC_FALSE;
-  CHKERRQ(PetscTokenCreate(list,sep,&token));
-  CHKERRQ(PetscTokenFind(token,&item));
+  PetscCall(PetscTokenCreate(list,sep,&token));
+  PetscCall(PetscTokenFind(token,&item));
   while (item) {
-    CHKERRQ(PetscStrcmp(str,item,found));
+    PetscCall(PetscStrcmp(str,item,found));
     if (*found) break;
-    CHKERRQ(PetscTokenFind(token,&item));
+    PetscCall(PetscTokenFind(token,&item));
   }
-  CHKERRQ(PetscTokenDestroy(&token));
+  PetscCall(PetscTokenDestroy(&token));
   PetscFunctionReturn(0);
 }
 
@@ -1097,77 +1097,77 @@ PetscErrorCode PetscStrreplace(MPI_Comm comm, const char aa[], char b[], size_t 
   PetscFunctionBegin;
   PetscValidCharPointer(aa,2);
   PetscValidCharPointer(b,3);
-  if (aa == b) CHKERRQ(PetscStrallocpy(aa,(char**)&a));
-  CHKERRQ(PetscMalloc1(len,&work));
+  if (aa == b) PetscCall(PetscStrallocpy(aa,(char**)&a));
+  PetscCall(PetscMalloc1(len,&work));
 
   /* get values for replaced variables */
-  CHKERRQ(PetscStrallocpy(PETSC_ARCH,&r[0]));
-  CHKERRQ(PetscStrallocpy(PETSC_DIR,&r[1]));
-  CHKERRQ(PetscStrallocpy(PETSC_LIB_DIR,&r[2]));
-  CHKERRQ(PetscMalloc1(DISPLAY_LENGTH,&r[3]));
-  CHKERRQ(PetscMalloc1(PETSC_MAX_PATH_LEN,&r[4]));
-  CHKERRQ(PetscMalloc1(PETSC_MAX_PATH_LEN,&r[5]));
-  CHKERRQ(PetscMalloc1(USER_LENGTH,&r[6]));
-  CHKERRQ(PetscMalloc1(HOST_LENGTH,&r[7]));
-  CHKERRQ(PetscGetDisplay(r[3],DISPLAY_LENGTH));
-  CHKERRQ(PetscGetHomeDirectory(r[4],PETSC_MAX_PATH_LEN));
-  CHKERRQ(PetscGetWorkingDirectory(r[5],PETSC_MAX_PATH_LEN));
-  CHKERRQ(PetscGetUserName(r[6],USER_LENGTH));
-  CHKERRQ(PetscGetHostName(r[7],HOST_LENGTH));
+  PetscCall(PetscStrallocpy(PETSC_ARCH,&r[0]));
+  PetscCall(PetscStrallocpy(PETSC_DIR,&r[1]));
+  PetscCall(PetscStrallocpy(PETSC_LIB_DIR,&r[2]));
+  PetscCall(PetscMalloc1(DISPLAY_LENGTH,&r[3]));
+  PetscCall(PetscMalloc1(PETSC_MAX_PATH_LEN,&r[4]));
+  PetscCall(PetscMalloc1(PETSC_MAX_PATH_LEN,&r[5]));
+  PetscCall(PetscMalloc1(USER_LENGTH,&r[6]));
+  PetscCall(PetscMalloc1(HOST_LENGTH,&r[7]));
+  PetscCall(PetscGetDisplay(r[3],DISPLAY_LENGTH));
+  PetscCall(PetscGetHomeDirectory(r[4],PETSC_MAX_PATH_LEN));
+  PetscCall(PetscGetWorkingDirectory(r[5],PETSC_MAX_PATH_LEN));
+  PetscCall(PetscGetUserName(r[6],USER_LENGTH));
+  PetscCall(PetscGetHostName(r[7],HOST_LENGTH));
 
   /* replace that are in environment */
-  CHKERRQ(PetscOptionsGetenv(comm,"PETSC_LIB_DIR",env,sizeof(env),&flag));
+  PetscCall(PetscOptionsGetenv(comm,"PETSC_LIB_DIR",env,sizeof(env),&flag));
   if (flag) {
-    CHKERRQ(PetscFree(r[2]));
-    CHKERRQ(PetscStrallocpy(env,&r[2]));
+    PetscCall(PetscFree(r[2]));
+    PetscCall(PetscStrallocpy(env,&r[2]));
   }
 
   /* replace the requested strings */
-  CHKERRQ(PetscStrncpy(b,a,len));
+  PetscCall(PetscStrncpy(b,a,len));
   while (s[i]) {
-    CHKERRQ(PetscStrlen(s[i],&l));
-    CHKERRQ(PetscStrstr(b,s[i],&par));
+    PetscCall(PetscStrlen(s[i],&l));
+    PetscCall(PetscStrstr(b,s[i],&par));
     while (par) {
       *par = 0;
       par += l;
 
-      CHKERRQ(PetscStrlen(b,&l1));
-      CHKERRQ(PetscStrlen(r[i],&l2));
-      CHKERRQ(PetscStrlen(par,&l3));
+      PetscCall(PetscStrlen(b,&l1));
+      PetscCall(PetscStrlen(r[i],&l2));
+      PetscCall(PetscStrlen(par,&l3));
       PetscCheckFalse(l1 + l2 + l3 >= len,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"b len is not long enough to hold new values");
-      CHKERRQ(PetscStrncpy(work,b,len));
-      CHKERRQ(PetscStrlcat(work,r[i],len));
-      CHKERRQ(PetscStrlcat(work,par,len));
-      CHKERRQ(PetscStrncpy(b,work,len));
-      CHKERRQ(PetscStrstr(b,s[i],&par));
+      PetscCall(PetscStrncpy(work,b,len));
+      PetscCall(PetscStrlcat(work,r[i],len));
+      PetscCall(PetscStrlcat(work,par,len));
+      PetscCall(PetscStrncpy(b,work,len));
+      PetscCall(PetscStrstr(b,s[i],&par));
     }
     i++;
   }
   i = 0;
   while (r[i]) {
     tfree = (char*)r[i];
-    CHKERRQ(PetscFree(tfree));
+    PetscCall(PetscFree(tfree));
     i++;
   }
 
   /* look for any other ${xxx} strings to replace from environmental variables */
-  CHKERRQ(PetscStrstr(b,"${",&par));
+  PetscCall(PetscStrstr(b,"${",&par));
   while (par) {
     *par  = 0;
     par  += 2;
-    CHKERRQ(PetscStrncpy(work,b,len));
-    CHKERRQ(PetscStrstr(par,"}",&epar));
+    PetscCall(PetscStrncpy(work,b,len));
+    PetscCall(PetscStrstr(par,"}",&epar));
     *epar = 0;
     epar += 1;
-    CHKERRQ(PetscOptionsGetenv(comm,par,env,sizeof(env),&flag));
+    PetscCall(PetscOptionsGetenv(comm,par,env,sizeof(env),&flag));
     PetscCheck(flag,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Substitution string ${%s} not found as environmental variable",par);
-    CHKERRQ(PetscStrlcat(work,env,len));
-    CHKERRQ(PetscStrlcat(work,epar,len));
-    CHKERRQ(PetscStrncpy(b,work,len));
-    CHKERRQ(PetscStrstr(b,"${",&par));
+    PetscCall(PetscStrlcat(work,env,len));
+    PetscCall(PetscStrlcat(work,epar,len));
+    PetscCall(PetscStrncpy(b,work,len));
+    PetscCall(PetscStrstr(b,"${",&par));
   }
-  CHKERRQ(PetscFree(work));
-  if (aa == b) CHKERRQ(PetscFree(a));
+  PetscCall(PetscFree(work));
+  if (aa == b) PetscCall(PetscFree(a));
   PetscFunctionReturn(0);
 }
 
@@ -1200,7 +1200,7 @@ PetscErrorCode PetscEListFind(PetscInt n, const char *const *list, const char *s
   for (PetscInt i = 0; i < n; ++i) {
     PetscBool matched;
 
-    CHKERRQ(PetscStrcasecmp(str,list[i],&matched));
+    PetscCall(PetscStrcasecmp(str,list[i],&matched));
     if (matched || !str[0]) {
       if (found) *found = PETSC_TRUE;
       *value = i;
@@ -1238,7 +1238,7 @@ PetscErrorCode PetscEnumFind(const char *const *enumlist, const char *str, Petsc
   while (enumlist[n++]) PetscCheck(n <= 50,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"List argument appears to be wrong or have more than 50 entries");
   PetscCheck(n >= 3,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"List argument must have at least two entries: typename and type prefix");
   n -= 3; /* drop enum name, prefix, and null termination */
-  CHKERRQ(PetscEListFind(n,enumlist,str,&evalue,&efound));
+  PetscCall(PetscEListFind(n,enumlist,str,&evalue,&efound));
   if (efound) {
     PetscValidPointer(value,3);
     *value = (PetscEnum)evalue;

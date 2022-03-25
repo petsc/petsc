@@ -14,41 +14,41 @@ int main(int argc,char **args)
   char           file[128];
   PetscBool      flg;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   /*  Load the matrix A */
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
   PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate a file name for matrix A with the -f option.");
 
-  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&viewer));
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(MatLoad(A,viewer));
-  CHKERRQ(PetscViewerDestroy(&viewer));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&viewer));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatLoad(A,viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
 
-  CHKERRQ(MatDuplicate(A,MAT_COPY_VALUES,&A1));
-  CHKERRQ(MatDuplicate(A,MAT_COPY_VALUES,&A2));
+  PetscCall(MatDuplicate(A,MAT_COPY_VALUES,&A1));
+  PetscCall(MatDuplicate(A,MAT_COPY_VALUES,&A2));
 
   /* dstMat = A*A1*A2 */
-  CHKERRQ(MatMatMult(A1,A2,MAT_INITIAL_MATRIX,fill,&Mtmp));
-  CHKERRQ(MatMatMult(A,Mtmp,MAT_INITIAL_MATRIX,fill,&dstMat));
-  CHKERRQ(MatDestroy(&Mtmp));
+  PetscCall(MatMatMult(A1,A2,MAT_INITIAL_MATRIX,fill,&Mtmp));
+  PetscCall(MatMatMult(A,Mtmp,MAT_INITIAL_MATRIX,fill,&dstMat));
+  PetscCall(MatDestroy(&Mtmp));
 
   /* dstMat += A1*A2 */
-  CHKERRQ(MatMatMult(A1,A2,MAT_INITIAL_MATRIX,fill,&Mtmp));
-  CHKERRQ(MatAXPY(dstMat,1.0,Mtmp,SUBSET_NONZERO_PATTERN));
-  CHKERRQ(MatDestroy(&Mtmp));
+  PetscCall(MatMatMult(A1,A2,MAT_INITIAL_MATRIX,fill,&Mtmp));
+  PetscCall(MatAXPY(dstMat,1.0,Mtmp,SUBSET_NONZERO_PATTERN));
+  PetscCall(MatDestroy(&Mtmp));
 
   /* dstMat += A*A1 */
-  CHKERRQ(MatMatMult(A,A1,MAT_INITIAL_MATRIX,fill,&Mtmp));
-  CHKERRQ(MatAXPY(dstMat, 1.0, Mtmp,SUBSET_NONZERO_PATTERN));
-  CHKERRQ(MatDestroy(&Mtmp));
+  PetscCall(MatMatMult(A,A1,MAT_INITIAL_MATRIX,fill,&Mtmp));
+  PetscCall(MatAXPY(dstMat, 1.0, Mtmp,SUBSET_NONZERO_PATTERN));
+  PetscCall(MatDestroy(&Mtmp));
 
   /* dstMat += A */
-  CHKERRQ(MatAXPY(dstMat, 1.0, A,SUBSET_NONZERO_PATTERN));
+  PetscCall(MatAXPY(dstMat, 1.0, A,SUBSET_NONZERO_PATTERN));
 
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(MatDestroy(&A1));
-  CHKERRQ(MatDestroy(&A2));
-  CHKERRQ(MatDestroy(&dstMat));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&A1));
+  PetscCall(MatDestroy(&A2));
+  PetscCall(MatDestroy(&dstMat));
+  PetscCall(PetscFinalize());
   return 0;
 }

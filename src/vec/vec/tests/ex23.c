@@ -21,21 +21,21 @@ int main(int argc,char **argv)
   VecScatter     ctx = 0;
   PetscViewer    subviewer;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   PetscCheckFalse(size != 2,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must run with 2 processors");
 
   /* create two vectors */
   if (rank == 0) nlocal = 8;
   else nlocal = 4;
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
-  CHKERRQ(VecSetSizes(x,nlocal,12));
-  CHKERRQ(VecSetFromOptions(x));
-  CHKERRQ(VecCreate(PETSC_COMM_SELF,&y));
-  CHKERRQ(VecSetSizes(y,8,PETSC_DECIDE));
-  CHKERRQ(VecSetFromOptions(y));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+  PetscCall(VecSetSizes(x,nlocal,12));
+  PetscCall(VecSetFromOptions(x));
+  PetscCall(VecCreate(PETSC_COMM_SELF,&y));
+  PetscCall(VecSetSizes(y,8,PETSC_DECIDE));
+  PetscCall(VecSetFromOptions(y));
 
   /* create two index sets */
   if (rank == 0) {
@@ -43,31 +43,31 @@ int main(int argc,char **argv)
   } else {
     blocks[0] = 1; blocks[1] = 2;
   }
-  CHKERRQ(ISCreateBlock(PETSC_COMM_SELF,4,2,blocks,PETSC_COPY_VALUES,&is1));
-  CHKERRQ(ISCreateStride(PETSC_COMM_SELF,8,0,1,&is2));
+  PetscCall(ISCreateBlock(PETSC_COMM_SELF,4,2,blocks,PETSC_COPY_VALUES,&is1));
+  PetscCall(ISCreateStride(PETSC_COMM_SELF,8,0,1,&is2));
 
   for (i=0; i<12; i++) {
     value = i;
-    CHKERRQ(VecSetValues(x,1,&i,&value,INSERT_VALUES));
+    PetscCall(VecSetValues(x,1,&i,&value,INSERT_VALUES));
   }
-  CHKERRQ(VecAssemblyBegin(x));
-  CHKERRQ(VecAssemblyEnd(x));
+  PetscCall(VecAssemblyBegin(x));
+  PetscCall(VecAssemblyEnd(x));
 
-  CHKERRQ(VecScatterCreate(x,is1,y,is2,&ctx));
-  CHKERRQ(VecScatterBegin(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD));
-  CHKERRQ(VecScatterEnd(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD));
-  CHKERRQ(VecScatterDestroy(&ctx));
+  PetscCall(VecScatterCreate(x,is1,y,is2,&ctx));
+  PetscCall(VecScatterBegin(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterDestroy(&ctx));
 
-  CHKERRQ(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&subviewer));
-  CHKERRQ(VecView(y,subviewer));
-  CHKERRQ(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&subviewer));
+  PetscCall(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&subviewer));
+  PetscCall(VecView(y,subviewer));
+  PetscCall(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&subviewer));
 
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&y));
-  CHKERRQ(ISDestroy(&is1));
-  CHKERRQ(ISDestroy(&is2));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&y));
+  PetscCall(ISDestroy(&is1));
+  PetscCall(ISDestroy(&is2));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

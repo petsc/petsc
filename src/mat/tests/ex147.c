@@ -19,12 +19,12 @@ int main(int argc,char **args)
   Vec            fin,fout,fout1,x,y;
   PetscRandom    rnd;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires real numbers. Your current scalar type is complex");
 #endif
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
   PetscRandomCreate(PETSC_COMM_WORLD,&rnd);
   D     =4;
@@ -51,9 +51,9 @@ int main(int argc,char **args)
 /*    printf("The value n is  %d from process %d\n",n,rank); */
 /*    printf("The value n1 is  %d from process %d\n",n1,rank); */
   /* Creating data vector and accompanying array with VeccreateMPIWithArray */
-  CHKERRQ(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,N,(PetscScalar*)in1,&fin));
-  CHKERRQ(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,N,(PetscScalar*)out,&fout));
-  CHKERRQ(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,N,(PetscScalar*)in2,&fout1));
+  PetscCall(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,N,(PetscScalar*)in1,&fin));
+  PetscCall(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,N,(PetscScalar*)out,&fout));
+  PetscCall(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,N,(PetscScalar*)in2,&fout1));
 
 /*    VecGetSize(fin,&size); */
 /*    printf("The size is %d\n",size); */
@@ -80,7 +80,7 @@ int main(int argc,char **args)
   VecRestoreArray(fout,&y_arr);
 
 /*    a = 1.0/(PetscReal)N_factor; */
-/*    CHKERRQ(VecScale(fout1,a)); */
+/*    PetscCall(VecScale(fout1,a)); */
 
   VecAssemblyBegin(fout1);
   VecAssemblyEnd(fout1);
@@ -89,10 +89,10 @@ int main(int argc,char **args)
 
   fftw_destroy_plan(fplan);
   fftw_destroy_plan(bplan);
-  fftw_free(in1); CHKERRQ(VecDestroy(&fin));
-  fftw_free(out); CHKERRQ(VecDestroy(&fout));
-  fftw_free(in2); CHKERRQ(VecDestroy(&fout1));
+  fftw_free(in1); PetscCall(VecDestroy(&fin));
+  fftw_free(out); PetscCall(VecDestroy(&fout));
+  fftw_free(in2); PetscCall(VecDestroy(&fout1));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }

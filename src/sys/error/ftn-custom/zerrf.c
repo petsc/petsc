@@ -89,7 +89,7 @@ PETSC_EXTERN void petscerror_(MPI_Fint *comm,PetscErrorCode *number,PetscErrorTy
   FREECHAR(message,t1);
 }
 
-/* helper routine for CHKERRQ and CHKERRABORT macros on the fortran side */
+/* helper routine for CHKERRQ and PetscCallAbort macros on the fortran side */
 PETSC_EXTERN void petscerrorf_(PetscErrorCode *number)
 {
   PetscError(PETSC_COMM_SELF,0,NULL,NULL,*number,PETSC_ERROR_REPEAT,NULL);

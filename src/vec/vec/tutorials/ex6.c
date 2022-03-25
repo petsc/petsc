@@ -20,61 +20,61 @@ int main(int argc,char **args)
   Vec            vec;
   PetscViewer    view_out,view_in;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
 
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
 
   /* ---------------------------------------------------------------------- */
   /*          PART 1: Write some data to a file in binary format            */
   /* ---------------------------------------------------------------------- */
 
   /* Allocate array and set values */
-  CHKERRQ(PetscMalloc1(m,&array));
+  PetscCall(PetscMalloc1(m,&array));
   for (i=0; i<m; i++) array[i] = i*10.0;
 
   /* Open viewer for binary output */
-  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_SELF,"input.dat",FILE_MODE_WRITE,&view_out));
-  CHKERRQ(PetscViewerBinaryGetDescriptor(view_out,&fd));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_SELF,"input.dat",FILE_MODE_WRITE,&view_out));
+  PetscCall(PetscViewerBinaryGetDescriptor(view_out,&fd));
 
   /* Write binary output */
-  CHKERRQ(PetscBinaryWrite(fd,&m,1,PETSC_INT));
-  CHKERRQ(PetscBinaryWrite(fd,array,m,PETSC_SCALAR));
+  PetscCall(PetscBinaryWrite(fd,&m,1,PETSC_INT));
+  PetscCall(PetscBinaryWrite(fd,array,m,PETSC_SCALAR));
 
   /* Destroy the output viewer and work array */
-  CHKERRQ(PetscViewerDestroy(&view_out));
-  CHKERRQ(PetscFree(array));
+  PetscCall(PetscViewerDestroy(&view_out));
+  PetscCall(PetscFree(array));
 
   /* ---------------------------------------------------------------------- */
   /*          PART 2: Read data from file and form a vector                 */
   /* ---------------------------------------------------------------------- */
 
   /* Open input binary viewer */
-  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_SELF,"input.dat",FILE_MODE_READ,&view_in));
-  CHKERRQ(PetscViewerBinaryGetDescriptor(view_in,&fd));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_SELF,"input.dat",FILE_MODE_READ,&view_in));
+  PetscCall(PetscViewerBinaryGetDescriptor(view_in,&fd));
 
   /* Create vector and get pointer to data space */
-  CHKERRQ(VecCreate(PETSC_COMM_SELF,&vec));
-  CHKERRQ(VecSetSizes(vec,PETSC_DECIDE,m));
-  CHKERRQ(VecSetFromOptions(vec));
-  CHKERRQ(VecGetArray(vec,&avec));
+  PetscCall(VecCreate(PETSC_COMM_SELF,&vec));
+  PetscCall(VecSetSizes(vec,PETSC_DECIDE,m));
+  PetscCall(VecSetFromOptions(vec));
+  PetscCall(VecGetArray(vec,&avec));
 
   /* Read data into vector */
-  CHKERRQ(PetscBinaryRead(fd,&sz,1,NULL,PETSC_INT));
+  PetscCall(PetscBinaryRead(fd,&sz,1,NULL,PETSC_INT));
   PetscCheckFalse(sz <=0,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Error: Must have array length > 0");
 
-  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"reading data in binary from input.dat, sz =%" PetscInt_FMT " ...\n",sz));
-  CHKERRQ(PetscBinaryRead(fd,avec,sz,NULL,PETSC_SCALAR));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"reading data in binary from input.dat, sz =%" PetscInt_FMT " ...\n",sz));
+  PetscCall(PetscBinaryRead(fd,avec,sz,NULL,PETSC_SCALAR));
 
   /* View vector */
-  CHKERRQ(VecRestoreArray(vec,&avec));
-  CHKERRQ(VecView(vec,PETSC_VIEWER_STDOUT_SELF));
+  PetscCall(VecRestoreArray(vec,&avec));
+  PetscCall(VecView(vec,PETSC_VIEWER_STDOUT_SELF));
 
   /* Free data structures */
-  CHKERRQ(VecDestroy(&vec));
-  CHKERRQ(PetscViewerDestroy(&view_in));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&vec));
+  PetscCall(PetscViewerDestroy(&view_in));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

@@ -23,26 +23,26 @@ int main(int argc,char **argv)
   Vec            x;
   PetscBool      set_option_negidx = PETSC_FALSE, set_values_negidx = PETSC_FALSE, get_values_negidx = PETSC_FALSE;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL, "-set_option_negidx", &set_option_negidx, NULL));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL, "-set_values_negidx", &set_values_negidx, NULL));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL, "-get_values_negidx", &get_values_negidx, NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL, "-set_option_negidx", &set_option_negidx, NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL, "-set_values_negidx", &set_values_negidx, NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL, "-get_values_negidx", &get_values_negidx, NULL));
 
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
-  CHKERRQ(VecSetSizes(x,PETSC_DECIDE,n));
-  CHKERRQ(VecSetFromOptions(x));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+  PetscCall(VecSetSizes(x,PETSC_DECIDE,n));
+  PetscCall(VecSetFromOptions(x));
 
   /* If we want to use negative indices, set the option */
-  CHKERRQ(VecSetOption(x, VEC_IGNORE_NEGATIVE_INDICES,set_option_negidx));
+  PetscCall(VecSetOption(x, VEC_IGNORE_NEGATIVE_INDICES,set_option_negidx));
 
-  CHKERRQ(VecGetOwnershipRange(x,&istart,&iend));
+  PetscCall(VecGetOwnershipRange(x,&istart,&iend));
   m    = iend - istart;
 
-  CHKERRQ(PetscMalloc1(n,&values));
-  CHKERRQ(PetscMalloc1(n,&indices));
+  PetscCall(PetscMalloc1(n,&values));
+  PetscCall(PetscMalloc1(n,&indices));
 
   for (i=istart; i<iend; i++) {
     values[i - istart] = (rank + 1) * i * 2;
@@ -50,20 +50,20 @@ int main(int argc,char **argv)
     else                   indices[i - istart] = i;
   }
 
-  CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: Setting values...\n", rank));
+  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: Setting values...\n", rank));
   for (i = 0; i<m; i++) {
-    CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%d: idx[%" PetscInt_FMT "] == %" PetscInt_FMT "; val[%" PetscInt_FMT "] == %f\n",rank,i,indices[i],i,(double)PetscRealPart(values[i])));
+    PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%d: idx[%" PetscInt_FMT "] == %" PetscInt_FMT "; val[%" PetscInt_FMT "] == %f\n",rank,i,indices[i],i,(double)PetscRealPart(values[i])));
   }
-  CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
+  PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
 
-  CHKERRQ(VecSetValues(x, m, indices, values, INSERT_VALUES));
+  PetscCall(VecSetValues(x, m, indices, values, INSERT_VALUES));
 
   /*
      Assemble vector.
   */
 
-  CHKERRQ(VecAssemblyBegin(x));
-  CHKERRQ(VecAssemblyEnd(x));
+  PetscCall(VecAssemblyBegin(x));
+  PetscCall(VecAssemblyEnd(x));
 
   /*
      Extract values from the vector.
@@ -75,29 +75,29 @@ int main(int argc,char **argv)
     else                   indices[i] = istart+i;
   }
 
-  CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: Fetching these values from vector...\n", rank));
+  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: Fetching these values from vector...\n", rank));
   for (i=0; i<m; i++) {
-    CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: idx[%" PetscInt_FMT "] == %" PetscInt_FMT "\n", rank, i, indices[i]));
+    PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: idx[%" PetscInt_FMT "] == %" PetscInt_FMT "\n", rank, i, indices[i]));
   }
-  CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
+  PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
 
-  CHKERRQ(VecGetValues(x, m, indices, values));
+  PetscCall(VecGetValues(x, m, indices, values));
 
-  CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: Fetched values:\n", rank));
+  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: Fetched values:\n", rank));
   for (i = 0; i<m; i++) {
-    CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: idx[%" PetscInt_FMT "] == %" PetscInt_FMT "; val[%" PetscInt_FMT "] == %f\n",rank,i,indices[i],i,(double)PetscRealPart(values[i])));
+    PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: idx[%" PetscInt_FMT "] == %" PetscInt_FMT "; val[%" PetscInt_FMT "] == %f\n",rank,i,indices[i],i,(double)PetscRealPart(values[i])));
   }
-  CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
+  PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
 
   /*
      Free work space.
   */
 
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(PetscFree(values));
-  CHKERRQ(PetscFree(indices));
+  PetscCall(VecDestroy(&x));
+  PetscCall(PetscFree(values));
+  PetscCall(PetscFree(indices));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

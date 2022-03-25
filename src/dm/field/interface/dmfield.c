@@ -17,10 +17,10 @@ PETSC_INTERN PetscErrorCode DMFieldCreate(DM dm,PetscInt numComponents,DMFieldCo
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(field,2);
-  CHKERRQ(DMFieldInitializePackage());
+  PetscCall(DMFieldInitializePackage());
 
-  CHKERRQ(PetscHeaderCreate(b,DMFIELD_CLASSID,"DMField","Field over DM","DM",PetscObjectComm((PetscObject)dm),DMFieldDestroy,DMFieldView));
-  CHKERRQ(PetscObjectReference((PetscObject)dm));
+  PetscCall(PetscHeaderCreate(b,DMFIELD_CLASSID,"DMField","Field over DM","DM",PetscObjectComm((PetscObject)dm),DMFieldDestroy,DMFieldView));
+  PetscCall(PetscObjectReference((PetscObject)dm));
   b->dm = dm;
   b->continuity = continuity;
   b->numComponents = numComponents;
@@ -46,9 +46,9 @@ PetscErrorCode DMFieldDestroy(DMField *field)
   if (!*field) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*field),DMFIELD_CLASSID,1);
   if (--((PetscObject)(*field))->refct > 0) {*field = NULL; PetscFunctionReturn(0);}
-  if ((*field)->ops->destroy) CHKERRQ((*(*field)->ops->destroy)(*field));
-  CHKERRQ(DMDestroy(&((*field)->dm)));
-  CHKERRQ(PetscHeaderDestroy(field));
+  if ((*field)->ops->destroy) PetscCall((*(*field)->ops->destroy)(*field));
+  PetscCall(DMDestroy(&((*field)->dm)));
+  PetscCall(PetscHeaderDestroy(field));
   PetscFunctionReturn(0);
 }
 
@@ -71,22 +71,22 @@ PetscErrorCode DMFieldView(DMField field,PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field,DMFIELD_CLASSID,1);
-  if (!viewer) CHKERRQ(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)field),&viewer));
+  if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)field),&viewer));
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(field,1,viewer,2);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    CHKERRQ(PetscObjectPrintClassNamePrefixType((PetscObject)field,viewer));
-    CHKERRQ(PetscViewerASCIIPushTab(viewer));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"%D components\n",field->numComponents));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"%s continuity\n",DMFieldContinuities[field->continuity]));
-    CHKERRQ(PetscViewerPushFormat(viewer,PETSC_VIEWER_DEFAULT));
-    CHKERRQ(DMView(field->dm,viewer));
-    CHKERRQ(PetscViewerPopFormat(viewer));
+    PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)field,viewer));
+    PetscCall(PetscViewerASCIIPushTab(viewer));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"%D components\n",field->numComponents));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"%s continuity\n",DMFieldContinuities[field->continuity]));
+    PetscCall(PetscViewerPushFormat(viewer,PETSC_VIEWER_DEFAULT));
+    PetscCall(DMView(field->dm,viewer));
+    PetscCall(PetscViewerPopFormat(viewer));
   }
-  if (field->ops->view) CHKERRQ((*field->ops->view)(field,viewer));
+  if (field->ops->view) PetscCall((*field->ops->view)(field,viewer));
   if (iascii) {
-    CHKERRQ(PetscViewerASCIIPopTab(viewer));
+    PetscCall(PetscViewerASCIIPopTab(viewer));
   }
   PetscFunctionReturn(0);
 }
@@ -119,18 +119,18 @@ PetscErrorCode DMFieldSetType(DMField field,DMFieldType type)
   PetscValidHeaderSpecific(field,DMFIELD_CLASSID,1);
   PetscValidCharPointer(type,2);
 
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)field,type,&match));
+  PetscCall(PetscObjectTypeCompare((PetscObject)field,type,&match));
   if (match) PetscFunctionReturn(0);
 
-  CHKERRQ(PetscFunctionListFind(DMFieldList,type,&r));
+  PetscCall(PetscFunctionListFind(DMFieldList,type,&r));
   PetscCheck(r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested DMField type %s",type);
   /* Destroy the previous private DMField context */
-  if (field->ops->destroy) CHKERRQ((*(field)->ops->destroy)(field));
+  if (field->ops->destroy) PetscCall((*(field)->ops->destroy)(field));
 
-  CHKERRQ(PetscMemzero(field->ops,sizeof(*field->ops)));
-  CHKERRQ(PetscObjectChangeTypeName((PetscObject)field,type));
+  PetscCall(PetscMemzero(field->ops,sizeof(*field->ops)));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)field,type));
   field->ops->create = r;
-  CHKERRQ((*r)(field));
+  PetscCall((*r)(field));
   PetscFunctionReturn(0);
 }
 
@@ -154,7 +154,7 @@ PetscErrorCode  DMFieldGetType(DMField field, DMFieldType *type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID,1);
   PetscValidPointer(type,2);
-  CHKERRQ(DMFieldRegisterAll());
+  PetscCall(DMFieldRegisterAll());
   *type = ((PetscObject)field)->type_name;
   PetscFunctionReturn(0);
 }
@@ -245,7 +245,7 @@ PetscErrorCode DMFieldEvaluate(DMField field, Vec points, PetscDataType datatype
   if (D) PetscValidPointer(D,5);
   if (H) PetscValidPointer(H,6);
   if (field->ops->evaluate) {
-    CHKERRQ((*field->ops->evaluate) (field, points, datatype, B, D, H));
+    PetscCall((*field->ops->evaluate) (field, points, datatype, B, D, H));
   } else SETERRQ(PetscObjectComm((PetscObject)field),PETSC_ERR_SUP,"Not implemented for this type");
   PetscFunctionReturn(0);
 }
@@ -290,7 +290,7 @@ PetscErrorCode DMFieldEvaluateFE(DMField field, IS cellIS, PetscQuadrature point
   if (D) PetscValidPointer(D,6);
   if (H) PetscValidPointer(H,7);
   if (field->ops->evaluateFE) {
-    CHKERRQ((*field->ops->evaluateFE) (field, cellIS, points, datatype, B, D, H));
+    PetscCall((*field->ops->evaluateFE) (field, cellIS, points, datatype, B, D, H));
   } else SETERRQ(PetscObjectComm((PetscObject)field),PETSC_ERR_SUP,"Not implemented for this type");
   PetscFunctionReturn(0);
 }
@@ -331,7 +331,7 @@ PetscErrorCode DMFieldEvaluateFV(DMField field, IS cellIS, PetscDataType datatyp
   if (D) PetscValidPointer(D,5);
   if (H) PetscValidPointer(H,6);
   if (field->ops->evaluateFV) {
-    CHKERRQ((*field->ops->evaluateFV) (field, cellIS, datatype, B, D, H));
+    PetscCall((*field->ops->evaluateFV) (field, cellIS, datatype, B, D, H));
   } else SETERRQ(PetscObjectComm((PetscObject)field),PETSC_ERR_SUP,"Not implemented for this type");
   PetscFunctionReturn(0);
 }
@@ -366,7 +366,7 @@ PetscErrorCode DMFieldGetDegree(DMField field, IS cellIS, PetscInt *minDegree, P
   if (maxDegree) *maxDegree = PETSC_MAX_INT;
 
   if (field->ops->getDegree) {
-    CHKERRQ((*field->ops->getDegree) (field,cellIS,minDegree,maxDegree));
+    PetscCall((*field->ops->getDegree) (field,cellIS,minDegree,maxDegree));
   }
   PetscFunctionReturn(0);
 }
@@ -397,7 +397,7 @@ PetscErrorCode DMFieldCreateDefaultQuadrature(DMField field, IS pointIS, PetscQu
 
   *quad = NULL;
   if (field->ops->createDefaultQuadrature) {
-    CHKERRQ((*field->ops->createDefaultQuadrature)(field, pointIS, quad));
+    PetscCall((*field->ops->createDefaultQuadrature)(field, pointIS, quad));
   }
   PetscFunctionReturn(0);
 }
@@ -432,10 +432,10 @@ PetscErrorCode DMFieldCreateFEGeom(DMField field, IS pointIS, PetscQuadrature qu
   PetscValidHeaderSpecific(field,DMFIELD_CLASSID,1);
   PetscValidHeaderSpecific(pointIS,IS_CLASSID,2);
   PetscValidHeader(quad,3);
-  CHKERRQ(ISGetLocalSize(pointIS,&nPoints));
+  PetscCall(ISGetLocalSize(pointIS,&nPoints));
   dE = field->numComponents;
-  CHKERRQ(PetscFEGeomCreate(quad,nPoints,dE,faceData,&g));
-  CHKERRQ(DMFieldEvaluateFE(field,pointIS,quad,PETSC_REAL,g->v,g->J,NULL));
+  PetscCall(PetscFEGeomCreate(quad,nPoints,dE,faceData,&g));
+  PetscCall(DMFieldEvaluateFE(field,pointIS,quad,PETSC_REAL,g->v,g->J,NULL));
   dim = g->dim;
   if (dE > dim) {
     /* space out J and make square Jacobians */
@@ -505,12 +505,12 @@ PetscErrorCode DMFieldCreateFEGeom(DMField field, IS pointIS, PetscQuadrature qu
       }
     }
   }
-  CHKERRQ(PetscFEGeomComplete(g));
-  CHKERRQ(DMFieldGetDegree(field,pointIS,NULL,&maxDegree));
+  PetscCall(PetscFEGeomComplete(g));
+  PetscCall(DMFieldGetDegree(field,pointIS,NULL,&maxDegree));
   g->isAffine = (maxDegree <= 1) ? PETSC_TRUE : PETSC_FALSE;
   if (faceData) {
     PetscCheck(field->ops->computeFaceData,PETSC_COMM_SELF, PETSC_ERR_PLIB, "DMField implementation does not compute face data");
-    CHKERRQ((*field->ops->computeFaceData) (field, pointIS, quad, g));
+    PetscCall((*field->ops->computeFaceData) (field, pointIS, quad, g));
   }
   *geom = g;
   PetscFunctionReturn(0);

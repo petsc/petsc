@@ -20,10 +20,10 @@ static PetscErrorCode ourj(SNES snes, Vec X, Mat J, Mat P, void *ptr)
   DMSNES sdm;
 
   PetscFunctionBegin;
-  CHKERRQ(SNESGetDM(snes,&dm));
-  CHKERRQ(DMGetDMSNES(dm, &sdm));
-  CHKERRQ(PetscObjectGetFortranCallback((PetscObject) sdm, PETSC_FORTRAN_CALLBACK_SUBTYPE, _cb.snesjacobian, (PetscVoidFunction *) &func, &ctx));
-  CHKERR_FORTRAN_VOID_FUNCTION((*func)(&snes, &X, &J, &P, ctx, &ierr));
+  PetscCall(SNESGetDM(snes,&dm));
+  PetscCall(DMGetDMSNES(dm, &sdm));
+  PetscCall(PetscObjectGetFortranCallback((PetscObject) sdm, PETSC_FORTRAN_CALLBACK_SUBTYPE, _cb.snesjacobian, (PetscVoidFunction *) &func, &ctx));
+  PetscCallFortranVoidFunction((*func)(&snes, &X, &J, &P, ctx, &ierr));
   PetscFunctionReturn(0);
 }
 
@@ -43,10 +43,10 @@ static PetscErrorCode ourf(SNES snes, Vec X, Vec F, void *ptr)
   DMSNES sdm;
 
   PetscFunctionBegin;
-  CHKERRQ(SNESGetDM(snes,&dm));
-  CHKERRQ(DMGetDMSNES(dm, &sdm));
-  CHKERRQ(PetscObjectGetFortranCallback((PetscObject) sdm, PETSC_FORTRAN_CALLBACK_SUBTYPE, _cb.snesfunction, (PetscVoidFunction *) &func, &ctx));
-  CHKERR_FORTRAN_VOID_FUNCTION((*func)(&snes, &X, &F, ctx, &ierr));
+  PetscCall(SNESGetDM(snes,&dm));
+  PetscCall(DMGetDMSNES(dm, &sdm));
+  PetscCall(PetscObjectGetFortranCallback((PetscObject) sdm, PETSC_FORTRAN_CALLBACK_SUBTYPE, _cb.snesfunction, (PetscVoidFunction *) &func, &ctx));
+  PetscCallFortranVoidFunction((*func)(&snes, &X, &F, ctx, &ierr));
   PetscFunctionReturn(0);
 }
 

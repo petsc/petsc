@@ -24,16 +24,16 @@ int main(int argc, char *args[])
 
   user.exitHandler = 0;
 
-  CHKERRQ(PetscInitialize(&argc, &args, (char*) 0, help));
-  CHKERRQ(PetscPushSignalHandler(handleSignal, &user));
+  PetscCall(PetscInitialize(&argc, &args, (char*) 0, help));
+  PetscCall(PetscPushSignalHandler(handleSignal, &user));
   while (!user.exitHandler) {
     if (user.signum > 0) {
-      CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "Caught signal %d\n", user.signum));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, "Caught signal %d\n", user.signum));
       user.signum = -1;
     }
   }
-  CHKERRQ(PetscPopSignalHandler());
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscPopSignalHandler());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

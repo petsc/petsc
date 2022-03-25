@@ -10,14 +10,14 @@ static PetscErrorCode TaoBQNKComputeHessian(Tao tao)
   PetscFunctionBegin;
   /* Alias the LMVM matrix into the TAO hessian */
   if (tao->hessian) {
-    CHKERRQ(MatDestroy(&tao->hessian));
+    PetscCall(MatDestroy(&tao->hessian));
   }
   if (tao->hessian_pre) {
-    CHKERRQ(MatDestroy(&tao->hessian_pre));
+    PetscCall(MatDestroy(&tao->hessian_pre));
   }
-  CHKERRQ(PetscObjectReference((PetscObject)bqnk->B));
+  PetscCall(PetscObjectReference((PetscObject)bqnk->B));
   tao->hessian = bqnk->B;
-  CHKERRQ(PetscObjectReference((PetscObject)bqnk->B));
+  PetscCall(PetscObjectReference((PetscObject)bqnk->B));
   tao->hessian_pre = bqnk->B;
   /* Update the Hessian with the latest solution */
   if (bqnk->is_spd) {
@@ -28,22 +28,22 @@ static PetscErrorCode TaoBQNKComputeHessian(Tao tao)
     } else {
       delta = 2.0 * PetscAbsScalar(bnk->f) / gnorm2;
     }
-    CHKERRQ(MatLMVMSymBroydenSetDelta(bqnk->B, delta));
+    PetscCall(MatLMVMSymBroydenSetDelta(bqnk->B, delta));
   }
-  CHKERRQ(MatLMVMUpdate(tao->hessian, tao->solution, bnk->unprojected_gradient));
-  CHKERRQ(MatLMVMResetShift(tao->hessian));
+  PetscCall(MatLMVMUpdate(tao->hessian, tao->solution, bnk->unprojected_gradient));
+  PetscCall(MatLMVMResetShift(tao->hessian));
   /* Prepare the reduced sub-matrices for the inactive set */
-  CHKERRQ(MatDestroy(&bnk->H_inactive));
+  PetscCall(MatDestroy(&bnk->H_inactive));
   if (bnk->active_idx) {
-    CHKERRQ(MatCreateSubMatrixVirtual(tao->hessian, bnk->inactive_idx, bnk->inactive_idx, &bnk->H_inactive));
-    CHKERRQ(PCLMVMSetIS(bqnk->pc, bnk->inactive_idx));
+    PetscCall(MatCreateSubMatrixVirtual(tao->hessian, bnk->inactive_idx, bnk->inactive_idx, &bnk->H_inactive));
+    PetscCall(PCLMVMSetIS(bqnk->pc, bnk->inactive_idx));
   } else {
-    CHKERRQ(PetscObjectReference((PetscObject)tao->hessian));
+    PetscCall(PetscObjectReference((PetscObject)tao->hessian));
     bnk->H_inactive = tao->hessian;
-    CHKERRQ(PCLMVMClearIS(bqnk->pc));
+    PetscCall(PCLMVMClearIS(bqnk->pc));
   }
-  CHKERRQ(MatDestroy(&bnk->Hpre_inactive));
-  CHKERRQ(PetscObjectReference((PetscObject)bnk->H_inactive));
+  PetscCall(MatDestroy(&bnk->Hpre_inactive));
+  PetscCall(PetscObjectReference((PetscObject)bnk->H_inactive));
   bnk->Hpre_inactive = bnk->H_inactive;
   PetscFunctionReturn(0);
 }
@@ -54,11 +54,11 @@ static PetscErrorCode TaoBQNKComputeStep(Tao tao, PetscBool shift, KSPConvergedR
   TAO_BQNK       *bqnk = (TAO_BQNK*)bnk->ctx;
 
   PetscFunctionBegin;
-  CHKERRQ(TaoBNKComputeStep(tao, shift, ksp_reason, step_type));
+  PetscCall(TaoBNKComputeStep(tao, shift, ksp_reason, step_type));
   if (*ksp_reason < 0) {
     /* Krylov solver failed to converge so reset the LMVM matrix */
-    CHKERRQ(MatLMVMReset(bqnk->B, PETSC_FALSE));
-    CHKERRQ(MatLMVMUpdate(bqnk->B, tao->solution, bnk->unprojected_gradient));
+    PetscCall(MatLMVMReset(bqnk->B, PETSC_FALSE));
+    PetscCall(MatLMVMUpdate(bqnk->B, tao->solution, bnk->unprojected_gradient));
   }
   PetscFunctionReturn(0);
 }
@@ -74,24 +74,24 @@ PetscErrorCode TaoSolve_BQNK(Tao tao)
 
   PetscFunctionBegin;
   if (!tao->recycle) {
-    CHKERRQ(MatLMVMReset(bqnk->B, PETSC_FALSE));
+    PetscCall(MatLMVMReset(bqnk->B, PETSC_FALSE));
     lmvm->nresets = 0;
     if (lmvm->J0) {
-      CHKERRQ(PetscObjectBaseTypeCompare((PetscObject)lmvm->J0, MATLMVM, &flg));
+      PetscCall(PetscObjectBaseTypeCompare((PetscObject)lmvm->J0, MATLMVM, &flg));
       if (flg) {
         J0 = (Mat_LMVM*)lmvm->J0->data;
         J0->nresets = 0;
       }
     }
     flg = PETSC_FALSE;
-    CHKERRQ(PetscObjectTypeCompareAny((PetscObject)bqnk->B, &flg, MATLMVMSYMBROYDEN, MATLMVMSYMBADBROYDEN, MATLMVMBFGS, MATLMVMDFP, ""));
+    PetscCall(PetscObjectTypeCompareAny((PetscObject)bqnk->B, &flg, MATLMVMSYMBROYDEN, MATLMVMSYMBADBROYDEN, MATLMVMBFGS, MATLMVMDFP, ""));
     if (flg) {
       diag_ctx = (Mat_SymBrdn*)lmvm->ctx;
       J0 = (Mat_LMVM*)diag_ctx->D->data;
       J0->nresets = 0;
     }
   }
-  CHKERRQ((*bqnk->solve)(tao));
+  PetscCall((*bqnk->solve)(tao));
   PetscFunctionReturn(0);
 }
 
@@ -103,19 +103,19 @@ PetscErrorCode TaoSetUp_BQNK(Tao tao)
   PetscBool      is_lmvm, is_sym, is_spd;
 
   PetscFunctionBegin;
-  CHKERRQ(TaoSetUp_BNK(tao));
-  CHKERRQ(VecGetLocalSize(tao->solution,&n));
-  CHKERRQ(VecGetSize(tao->solution,&N));
-  CHKERRQ(MatSetSizes(bqnk->B, n, n, N, N));
-  CHKERRQ(MatLMVMAllocate(bqnk->B,tao->solution,bnk->unprojected_gradient));
-  CHKERRQ(PetscObjectBaseTypeCompare((PetscObject)bqnk->B, MATLMVM, &is_lmvm));
+  PetscCall(TaoSetUp_BNK(tao));
+  PetscCall(VecGetLocalSize(tao->solution,&n));
+  PetscCall(VecGetSize(tao->solution,&N));
+  PetscCall(MatSetSizes(bqnk->B, n, n, N, N));
+  PetscCall(MatLMVMAllocate(bqnk->B,tao->solution,bnk->unprojected_gradient));
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)bqnk->B, MATLMVM, &is_lmvm));
   PetscCheck(is_lmvm,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "Matrix must be an LMVM-type");
-  CHKERRQ(MatGetOption(bqnk->B, MAT_SYMMETRIC, &is_sym));
+  PetscCall(MatGetOption(bqnk->B, MAT_SYMMETRIC, &is_sym));
   PetscCheck(is_sym,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix must be symmetric");
-  CHKERRQ(MatGetOption(bqnk->B, MAT_SPD, &is_spd));
-  CHKERRQ(KSPGetPC(tao->ksp, &bqnk->pc));
-  CHKERRQ(PCSetType(bqnk->pc, PCLMVM));
-  CHKERRQ(PCLMVMSetMatLMVM(bqnk->pc, bqnk->B));
+  PetscCall(MatGetOption(bqnk->B, MAT_SPD, &is_spd));
+  PetscCall(KSPGetPC(tao->ksp, &bqnk->pc));
+  PetscCall(PCSetType(bqnk->pc, PCLMVM));
+  PetscCall(PCLMVMSetMatLMVM(bqnk->pc, bqnk->B));
   PetscFunctionReturn(0);
 }
 
@@ -125,12 +125,12 @@ static PetscErrorCode TaoSetFromOptions_BQNK(PetscOptionItems *PetscOptionsObjec
   TAO_BQNK       *bqnk = (TAO_BQNK*)bnk->ctx;
 
   PetscFunctionBegin;
-  CHKERRQ(TaoSetFromOptions_BNK(PetscOptionsObject,tao));
+  PetscCall(TaoSetFromOptions_BNK(PetscOptionsObject,tao));
   if (bnk->init_type == BNK_INIT_INTERPOLATION) bnk->init_type = BNK_INIT_DIRECTION;
-  CHKERRQ(MatSetOptionsPrefix(bqnk->B, ((PetscObject)tao)->prefix));
-  CHKERRQ(MatAppendOptionsPrefix(bqnk->B, "tao_bqnk_"));
-  CHKERRQ(MatSetFromOptions(bqnk->B));
-  CHKERRQ(MatGetOption(bqnk->B, MAT_SPD, &bqnk->is_spd));
+  PetscCall(MatSetOptionsPrefix(bqnk->B, ((PetscObject)tao)->prefix));
+  PetscCall(MatAppendOptionsPrefix(bqnk->B, "tao_bqnk_"));
+  PetscCall(MatSetFromOptions(bqnk->B));
+  PetscCall(MatGetOption(bqnk->B, MAT_SPD, &bqnk->is_spd));
   PetscFunctionReturn(0);
 }
 
@@ -141,12 +141,12 @@ static PetscErrorCode TaoView_BQNK(Tao tao, PetscViewer viewer)
   PetscBool      isascii;
 
   PetscFunctionBegin;
-  CHKERRQ(TaoView_BNK(tao, viewer));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii));
+  PetscCall(TaoView_BNK(tao, viewer));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii));
   if (isascii) {
-    CHKERRQ(PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO));
-    CHKERRQ(MatView(bqnk->B, viewer));
-    CHKERRQ(PetscViewerPopFormat(viewer));
+    PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO));
+    PetscCall(MatView(bqnk->B, viewer));
+    PetscCall(PetscViewerPopFormat(viewer));
   }
   PetscFunctionReturn(0);
 }
@@ -157,11 +157,11 @@ static PetscErrorCode TaoDestroy_BQNK(Tao tao)
   TAO_BQNK       *bqnk = (TAO_BQNK*)bnk->ctx;
 
   PetscFunctionBegin;
-  CHKERRQ(MatDestroy(&bnk->Hpre_inactive));
-  CHKERRQ(MatDestroy(&bnk->H_inactive));
-  CHKERRQ(MatDestroy(&bqnk->B));
-  CHKERRQ(PetscFree(bnk->ctx));
-  CHKERRQ(TaoDestroy_BNK(tao));
+  PetscCall(MatDestroy(&bnk->Hpre_inactive));
+  PetscCall(MatDestroy(&bnk->H_inactive));
+  PetscCall(MatDestroy(&bqnk->B));
+  PetscCall(PetscFree(bnk->ctx));
+  PetscCall(TaoDestroy_BNK(tao));
   PetscFunctionReturn(0);
 }
 
@@ -171,7 +171,7 @@ PETSC_INTERN PetscErrorCode TaoCreate_BQNK(Tao tao)
   TAO_BQNK       *bqnk;
 
   PetscFunctionBegin;
-  CHKERRQ(TaoCreate_BNK(tao));
+  PetscCall(TaoCreate_BNK(tao));
   tao->ops->solve = TaoSolve_BQNK;
   tao->ops->setfromoptions = TaoSetFromOptions_BQNK;
   tao->ops->destroy = TaoDestroy_BQNK;
@@ -183,13 +183,13 @@ PETSC_INTERN PetscErrorCode TaoCreate_BQNK(Tao tao)
   bnk->computestep = TaoBQNKComputeStep;
   bnk->init_type = BNK_INIT_DIRECTION;
 
-  CHKERRQ(PetscNewLog(tao,&bqnk));
+  PetscCall(PetscNewLog(tao,&bqnk));
   bnk->ctx = (void*)bqnk;
   bqnk->is_spd = PETSC_TRUE;
 
-  CHKERRQ(MatCreate(PetscObjectComm((PetscObject)tao), &bqnk->B));
-  CHKERRQ(PetscObjectIncrementTabLevel((PetscObject)bqnk->B, (PetscObject)tao, 1));
-  CHKERRQ(MatSetType(bqnk->B, MATLMVMSR1));
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)tao), &bqnk->B));
+  PetscCall(PetscObjectIncrementTabLevel((PetscObject)bqnk->B, (PetscObject)tao, 1));
+  PetscCall(MatSetType(bqnk->B, MATLMVMSR1));
   PetscFunctionReturn(0);
 }
 
@@ -214,7 +214,7 @@ PetscErrorCode TaoGetLMVMMatrix(Tao tao, Mat *B)
   PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompareAny((PetscObject)tao, &flg, TAOBQNLS, TAOBQNKLS, TAOBQNKTR, TAOBQNKTL, ""));
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)tao, &flg, TAOBQNLS, TAOBQNKLS, TAOBQNKTR, TAOBQNKTL, ""));
   PetscCheck(flg,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM Matrix only exists for quasi-Newton algorithms");
   *B = bqnk->B;
   PetscFunctionReturn(0);
@@ -242,14 +242,14 @@ PetscErrorCode TaoSetLMVMMatrix(Tao tao, Mat B)
   PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompareAny((PetscObject)tao, &flg, TAOBQNLS, TAOBQNKLS, TAOBQNKTR, TAOBQNKTL, ""));
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)tao, &flg, TAOBQNLS, TAOBQNKLS, TAOBQNKTR, TAOBQNKTL, ""));
   PetscCheck(flg,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM Matrix only exists for quasi-Newton algorithms");
-  CHKERRQ(PetscObjectBaseTypeCompare((PetscObject)B, MATLMVM, &flg));
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)B, MATLMVM, &flg));
   PetscCheck(flg,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "Given matrix is not an LMVM matrix");
   if (bqnk->B) {
-    CHKERRQ(MatDestroy(&bqnk->B));
+    PetscCall(MatDestroy(&bqnk->B));
   }
-  CHKERRQ(PetscObjectReference((PetscObject)B));
+  PetscCall(PetscObjectReference((PetscObject)B));
   bqnk->B = B;
   PetscFunctionReturn(0);
 }

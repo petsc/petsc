@@ -869,10 +869,10 @@ static inline PetscErrorCode MatSetValueLocal(Mat v,PetscInt i,PetscInt j,PetscS
 M*/
 #define MatPreallocateInitialize(comm,nrows,ncols,dnz,onz) 0; do {                             \
   PetscInt __nrows = (nrows),__ncols = (ncols),__rstart,__start,__end = 0;                     \
-  CHKERRQ(PetscCalloc2(__nrows,&(dnz),__nrows,&(onz)));                                        \
-  CHKERRMPI(MPI_Scan(&__ncols,&__end,1,MPIU_INT,MPI_SUM,comm));                                \
+  PetscCall(PetscCalloc2(__nrows,&(dnz),__nrows,&(onz)));                                        \
+  PetscCallMPI(MPI_Scan(&__ncols,&__end,1,MPIU_INT,MPI_SUM,comm));                                \
   __start = __end - __ncols; (void)__start;                                                    \
-  CHKERRMPI(MPI_Scan(&__nrows,&__rstart,1,MPIU_INT,MPI_SUM,comm));                             \
+  PetscCallMPI(MPI_Scan(&__nrows,&__rstart,1,MPIU_INT,MPI_SUM,comm));                             \
   __rstart -= __nrows
 
 /*MC
@@ -907,9 +907,9 @@ M*/
 M*/
 #define MatPreallocateSetLocal(rmap,nrows,rows,cmap,ncols,cols,dnz,onz)                        \
   PetscMacroReturnStandard(                                                                    \
-    CHKERRQ(ISLocalToGlobalMappingApply(rmap,nrows,rows,rows));                                \
-    CHKERRQ(ISLocalToGlobalMappingApply(cmap,ncols,cols,cols));                                \
-    for (PetscInt __l=0;__l<nrows;__l++) CHKERRQ(MatPreallocateSet((rows)[__l],ncols,cols,dnz,onz)); \
+    PetscCall(ISLocalToGlobalMappingApply(rmap,nrows,rows,rows));                                \
+    PetscCall(ISLocalToGlobalMappingApply(cmap,ncols,cols,cols));                                \
+    for (PetscInt __l=0;__l<nrows;__l++) PetscCall(MatPreallocateSet((rows)[__l],ncols,cols,dnz,onz)); \
   )
 
 /*MC
@@ -944,10 +944,10 @@ M*/
 M*/
 #define MatPreallocateSetLocalRemoveDups(rmap,nrows,rows,cmap,ncols,cols,dnz,onz)              \
   PetscMacroReturnStandard(                                                                    \
-    CHKERRQ(ISLocalToGlobalMappingApply(rmap,nrows,rows,rows));                                \
-    CHKERRQ(ISLocalToGlobalMappingApply(cmap,ncols,cols,cols));                                \
-    CHKERRQ(PetscSortRemoveDupsInt(&ncols,cols));                                              \
-    for (PetscInt __l=0;__l<nrows;__l++) CHKERRQ(MatPreallocateSet((rows)[__l],ncols,cols,dnz,onz)); \
+    PetscCall(ISLocalToGlobalMappingApply(rmap,nrows,rows,rows));                                \
+    PetscCall(ISLocalToGlobalMappingApply(cmap,ncols,cols,cols));                                \
+    PetscCall(PetscSortRemoveDupsInt(&ncols,cols));                                              \
+    for (PetscInt __l=0;__l<nrows;__l++) PetscCall(MatPreallocateSet((rows)[__l],ncols,cols,dnz,onz)); \
   )
 
 /*MC
@@ -982,9 +982,9 @@ M*/
 M*/
 #define MatPreallocateSetLocalBlock(rmap,nrows,rows,cmap,ncols,cols,dnz,onz)                   \
   PetscMacroReturnStandard(                                                                    \
-    CHKERRQ(ISLocalToGlobalMappingApplyBlock(rmap,nrows,rows,rows));                           \
-    CHKERRQ(ISLocalToGlobalMappingApplyBlock(cmap,ncols,cols,cols));                           \
-    for (PetscInt __l=0;__l<nrows;__l++) CHKERRQ(MatPreallocateSet((rows)[__l],ncols,cols,dnz,onz)); \
+    PetscCall(ISLocalToGlobalMappingApplyBlock(rmap,nrows,rows,rows));                           \
+    PetscCall(ISLocalToGlobalMappingApplyBlock(cmap,ncols,cols,cols));                           \
+    for (PetscInt __l=0;__l<nrows;__l++) PetscCall(MatPreallocateSet((rows)[__l],ncols,cols,dnz,onz)); \
   )
 
 /*MC
@@ -1018,9 +1018,9 @@ M*/
 M*/
 #define MatPreallocateSymmetricSetLocalBlock(map,nrows,rows,ncols,cols,dnz,onz)                \
   PetscMacroReturnStandard(                                                                    \
-    CHKERRQ(ISLocalToGlobalMappingApplyBlock(map,nrows,rows,rows));                            \
-    CHKERRQ(ISLocalToGlobalMappingApplyBlock(map,ncols,cols,cols));                            \
-    for (PetscInt __l=0;__l<nrows;__l++) CHKERRQ(MatPreallocateSymmetricSetBlock((rows)[__l],ncols,cols,dnz,onz)); \
+    PetscCall(ISLocalToGlobalMappingApplyBlock(map,nrows,rows,rows));                            \
+    PetscCall(ISLocalToGlobalMappingApplyBlock(map,ncols,cols,cols));                            \
+    for (PetscInt __l=0;__l<nrows;__l++) PetscCall(MatPreallocateSymmetricSetBlock((rows)[__l],ncols,cols,dnz,onz)); \
   )
 
 /*MC
@@ -1131,8 +1131,8 @@ M*/
           MatPreallocateSymmetricSetLocalBlock()
 M*/
 #define MatPreallocateLocation(A,row,ncols,cols,dnz,onz) PetscMacroReturnStandard(      \
-    if (A) CHKERRQ(MatSetValues(A,1,&row,ncols,cols,NULL,INSERT_VALUES));               \
-    else   CHKERRQ(MatPreallocateSet(row,ncols,cols,dnz,onz));                          \
+    if (A) PetscCall(MatSetValues(A,1,&row,ncols,cols,NULL,INSERT_VALUES));               \
+    else   PetscCall(MatPreallocateSet(row,ncols,cols,dnz,onz));                          \
   )
 
 /*MC

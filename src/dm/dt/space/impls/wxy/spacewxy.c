@@ -3,15 +3,15 @@
 static PetscErrorCode PetscSpaceSetFromOptions_WXY(PetscOptionItems *PetscOptionsObject,PetscSpace sp)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"PetscSpace WXY options"));
-  CHKERRQ(PetscOptionsTail());
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"PetscSpace WXY options"));
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscSpacePolynomialView_Ascii(PetscSpace sp, PetscViewer v)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscViewerASCIIPrintf(v, "WXY space of degree %" PetscInt_FMT "\n", sp->degree));
+  PetscCall(PetscViewerASCIIPrintf(v, "WXY space of degree %" PetscInt_FMT "\n", sp->degree));
   PetscFunctionReturn(0);
 }
 
@@ -22,8 +22,8 @@ static PetscErrorCode PetscSpaceView_WXY(PetscSpace sp, PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) CHKERRQ(PetscSpacePolynomialView_Ascii(sp, viewer));
+  PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii));
+  if (iascii) PetscCall(PetscSpacePolynomialView_Ascii(sp, viewer));
   PetscFunctionReturn(0);
 }
 
@@ -32,7 +32,7 @@ static PetscErrorCode PetscSpaceDestroy_WXY(PetscSpace sp)
   PetscSpace_WXY *wxy = (PetscSpace_WXY *) sp->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscFree(wxy));
+  PetscCall(PetscFree(wxy));
   PetscFunctionReturn(0);
 }
 
@@ -64,8 +64,8 @@ static PetscErrorCode PetscSpaceEvaluate_WXY(PetscSpace sp, PetscInt npoints, co
 
   PetscFunctionBegin;
   if (!wxy->setupCalled) {
-    CHKERRQ(PetscSpaceSetUp(sp));
-    CHKERRQ(PetscSpaceEvaluate(sp, npoints, points, B, D, H));
+    PetscCall(PetscSpaceSetUp(sp));
+    PetscCall(PetscSpaceEvaluate(sp, npoints, points, B, D, H));
     PetscFunctionReturn(0);
   }
   PetscCheck((sp->Nc == 3) && (sp->Nv == 3), PETSC_COMM_SELF, PETSC_ERR_PLIB, "WXY space must have 3 variables and 3 components");
@@ -390,10 +390,10 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate_WXY(PetscSpace sp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  CHKERRQ(PetscNewLog(sp,&wxy));
+  PetscCall(PetscNewLog(sp,&wxy));
   sp->data = wxy;
   sp->degree = 2;
 
-  CHKERRQ(PetscSpaceInitialize_WXY(sp));
+  PetscCall(PetscSpaceInitialize_WXY(sp));
   PetscFunctionReturn(0);
 }

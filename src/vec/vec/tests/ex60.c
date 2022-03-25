@@ -9,64 +9,64 @@ int main(int argc,char **argv)
   Vec            x,x1,x2,x3;
   PetscScalar    *px;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* create vector of length 2*n */
-  CHKERRQ(VecCreate(PETSC_COMM_SELF,&x));
-  CHKERRQ(VecSetSizes(x,3*n,PETSC_DECIDE));
-  CHKERRQ(VecSetFromOptions(x));
+  PetscCall(VecCreate(PETSC_COMM_SELF,&x));
+  PetscCall(VecSetSizes(x,3*n,PETSC_DECIDE));
+  PetscCall(VecSetFromOptions(x));
 
   /* create two vectors of length n without array */
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)x,VECSEQCUDA,&iscuda));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)x,VECSEQKOKKOS,&iskokkos));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)x,VECSEQHIP,&iship));
-  CHKERRQ(VecGetBlockSize(x,&bs));
+  PetscCall(PetscObjectTypeCompare((PetscObject)x,VECSEQCUDA,&iscuda));
+  PetscCall(PetscObjectTypeCompare((PetscObject)x,VECSEQKOKKOS,&iskokkos));
+  PetscCall(PetscObjectTypeCompare((PetscObject)x,VECSEQHIP,&iship));
+  PetscCall(VecGetBlockSize(x,&bs));
   if (iscuda) {
 #if defined(PETSC_HAVE_CUDA)
-    CHKERRQ(VecCreateSeqCUDAWithArray(PETSC_COMM_SELF,bs,n,NULL,&x1));
-    CHKERRQ(VecCreateSeqCUDAWithArray(PETSC_COMM_SELF,bs,n,NULL,&x2));
-    CHKERRQ(VecCreateSeqCUDAWithArray(PETSC_COMM_SELF,bs,n,NULL,&x3));
+    PetscCall(VecCreateSeqCUDAWithArray(PETSC_COMM_SELF,bs,n,NULL,&x1));
+    PetscCall(VecCreateSeqCUDAWithArray(PETSC_COMM_SELF,bs,n,NULL,&x2));
+    PetscCall(VecCreateSeqCUDAWithArray(PETSC_COMM_SELF,bs,n,NULL,&x3));
 #endif
   } else if (iskokkos) {
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
-    CHKERRQ(VecCreateSeqKokkosWithArray(PETSC_COMM_SELF,bs,n,NULL,&x1));
-    CHKERRQ(VecCreateSeqKokkosWithArray(PETSC_COMM_SELF,bs,n,NULL,&x2));
-    CHKERRQ(VecCreateSeqKokkosWithArray(PETSC_COMM_SELF,bs,n,NULL,&x3));
+    PetscCall(VecCreateSeqKokkosWithArray(PETSC_COMM_SELF,bs,n,NULL,&x1));
+    PetscCall(VecCreateSeqKokkosWithArray(PETSC_COMM_SELF,bs,n,NULL,&x2));
+    PetscCall(VecCreateSeqKokkosWithArray(PETSC_COMM_SELF,bs,n,NULL,&x3));
 #endif
   } else if (iship) {
 #if defined(PETSC_HAVE_HIP)
-    CHKERRQ(VecCreateSeqHIPWithArray(PETSC_COMM_SELF,bs,n,NULL,&x1));
-    CHKERRQ(VecCreateSeqHIPWithArray(PETSC_COMM_SELF,bs,n,NULL,&x2));
-    CHKERRQ(VecCreateSeqHIPWithArray(PETSC_COMM_SELF,bs,n,NULL,&x3));
+    PetscCall(VecCreateSeqHIPWithArray(PETSC_COMM_SELF,bs,n,NULL,&x1));
+    PetscCall(VecCreateSeqHIPWithArray(PETSC_COMM_SELF,bs,n,NULL,&x2));
+    PetscCall(VecCreateSeqHIPWithArray(PETSC_COMM_SELF,bs,n,NULL,&x3));
 #endif
   } else {
-    CHKERRQ(VecCreateSeqWithArray(PETSC_COMM_SELF,bs,n,NULL,&x1));
-    CHKERRQ(VecCreateSeqWithArray(PETSC_COMM_SELF,bs,n,NULL,&x2));
-    CHKERRQ(VecCreateSeqWithArray(PETSC_COMM_SELF,bs,n,NULL,&x3));
+    PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,bs,n,NULL,&x1));
+    PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,bs,n,NULL,&x2));
+    PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,bs,n,NULL,&x3));
   }
 
-  CHKERRQ(VecGetArrayWrite(x,&px));
-  CHKERRQ(VecPlaceArray(x1,px));
-  CHKERRQ(VecPlaceArray(x2,px+n));
-  CHKERRQ(VecPlaceArray(x3,px+2*n));
-  CHKERRQ(VecSet(x1,1.0));
-  CHKERRQ(VecSet(x2,0.0));
-  CHKERRQ(VecSet(x3,2.0));
-  CHKERRQ(VecResetArray(x1));
-  CHKERRQ(VecResetArray(x2));
-  CHKERRQ(VecResetArray(x3));
-  CHKERRQ(VecRestoreArrayWrite(x,&px));
-  CHKERRQ(VecDestroy(&x1));
-  CHKERRQ(VecDestroy(&x2));
-  CHKERRQ(VecDestroy(&x3));
+  PetscCall(VecGetArrayWrite(x,&px));
+  PetscCall(VecPlaceArray(x1,px));
+  PetscCall(VecPlaceArray(x2,px+n));
+  PetscCall(VecPlaceArray(x3,px+2*n));
+  PetscCall(VecSet(x1,1.0));
+  PetscCall(VecSet(x2,0.0));
+  PetscCall(VecSet(x3,2.0));
+  PetscCall(VecResetArray(x1));
+  PetscCall(VecResetArray(x2));
+  PetscCall(VecResetArray(x3));
+  PetscCall(VecRestoreArrayWrite(x,&px));
+  PetscCall(VecDestroy(&x1));
+  PetscCall(VecDestroy(&x2));
+  PetscCall(VecDestroy(&x3));
 
-  CHKERRQ(VecView(x,NULL));
-  CHKERRQ(VecReciprocal(x));
-  CHKERRQ(VecView(x,NULL));
+  PetscCall(VecView(x,NULL));
+  PetscCall(VecReciprocal(x));
+  PetscCall(VecView(x,NULL));
 
-  CHKERRQ(VecDestroy(&x));
+  PetscCall(VecDestroy(&x));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

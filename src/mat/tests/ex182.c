@@ -11,30 +11,30 @@ int main(int argc,char **argv)
   PetscMPIInt    size;
   PetscBool      issbaij;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*) 0,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&argv,(char*) 0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,m));
-  CHKERRQ(MatSetFromOptions(A));
-  CHKERRQ(MatSetUp(A));
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,m));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSetUp(A));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
-  CHKERRQ(MatShift(A,1.0));
+  PetscCall(MatShift(A,1.0));
 
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)A,MATSEQSBAIJ,&issbaij));
+  PetscCall(PetscObjectTypeCompare((PetscObject)A,MATSEQSBAIJ,&issbaij));
   if (size == 1 && !issbaij) {
-    CHKERRQ(MatGetFactor(A,MATSOLVERPETSC,MAT_FACTOR_LU,&F));
-    CHKERRQ(MatFactorInfoInitialize(&info));
-    CHKERRQ(ISCreateStride(PETSC_COMM_SELF,m,0,1,&perm));
-    CHKERRQ(MatLUFactorSymbolic(F,A,perm,perm,&info));
-    CHKERRQ(MatLUFactorNumeric(F,A,&info));
-    CHKERRQ(MatDestroy(&F));
-    CHKERRQ(ISDestroy(&perm));
+    PetscCall(MatGetFactor(A,MATSOLVERPETSC,MAT_FACTOR_LU,&F));
+    PetscCall(MatFactorInfoInitialize(&info));
+    PetscCall(ISCreateStride(PETSC_COMM_SELF,m,0,1,&perm));
+    PetscCall(MatLUFactorSymbolic(F,A,perm,perm,&info));
+    PetscCall(MatLUFactorNumeric(F,A,&info));
+    PetscCall(MatDestroy(&F));
+    PetscCall(ISDestroy(&perm));
   }
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatDestroy(&A));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

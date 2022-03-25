@@ -11,31 +11,31 @@ int main(int argc,char **argv)
   IS             ispetsc,isapp;
   AO             ao;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   /* create the index sets */
-  CHKERRQ(ISCreateStride(PETSC_COMM_WORLD,n,rank,size,&ispetsc));
-  CHKERRQ(ISCreateStride(PETSC_COMM_WORLD,n,n*rank,1,&isapp));
+  PetscCall(ISCreateStride(PETSC_COMM_WORLD,n,rank,size,&ispetsc));
+  PetscCall(ISCreateStride(PETSC_COMM_WORLD,n,n*rank,1,&isapp));
 
   /* create the application ordering */
-  CHKERRQ(AOCreateBasicIS(isapp,ispetsc,&ao));
+  PetscCall(AOCreateBasicIS(isapp,ispetsc,&ao));
 
-  CHKERRQ(AOView(ao,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(AOView(ao,PETSC_VIEWER_STDOUT_WORLD));
 
-  CHKERRQ(ISView(ispetsc,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(ISView(isapp,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(AOPetscToApplicationIS(ao,ispetsc));
-  CHKERRQ(ISView(isapp,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(ISView(ispetsc,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(ISView(ispetsc,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(ISView(isapp,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(AOPetscToApplicationIS(ao,ispetsc));
+  PetscCall(ISView(isapp,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(ISView(ispetsc,PETSC_VIEWER_STDOUT_WORLD));
 
-  CHKERRQ(ISDestroy(&ispetsc));
-  CHKERRQ(ISDestroy(&isapp));
+  PetscCall(ISDestroy(&ispetsc));
+  PetscCall(ISDestroy(&isapp));
 
-  CHKERRQ(AODestroy(&ao));
-  CHKERRQ(PetscFinalize());
+  PetscCall(AODestroy(&ao));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

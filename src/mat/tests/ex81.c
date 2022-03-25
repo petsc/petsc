@@ -10,67 +10,67 @@ int main(int argc,char **args)
   PetscInt       i,n = 10,col[3],test;
   PetscScalar    v[3];
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
   /* Create A which has empty 0-th row and column */
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,n,n));
-  CHKERRQ(MatSetType(A,MATAIJ));
-  CHKERRQ(MatSetFromOptions(A));
-  CHKERRQ(MatSetUp(A));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,n,n));
+  PetscCall(MatSetType(A,MATAIJ));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSetUp(A));
 
   v[0] = -1.; v[1] = 2.; v[2] = -1.;
   for (i=2; i<n-1; i++) {
     col[0] = i-1; col[1] = i; col[2] = i+1;
-    CHKERRQ(MatSetValues(A,1,&i,3,col,v,INSERT_VALUES));
+    PetscCall(MatSetValues(A,1,&i,3,col,v,INSERT_VALUES));
   }
   i    = 1; col[0] = 1; col[1] = 2;
-  CHKERRQ(MatSetValues(A,1,&i,2,col,v+1,INSERT_VALUES));
+  PetscCall(MatSetValues(A,1,&i,2,col,v+1,INSERT_VALUES));
   i    = n - 1; col[0] = n - 2; col[1] = n - 1;
-  CHKERRQ(MatSetValues(A,1,&i,2,col,v,INSERT_VALUES));
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatSetValues(A,1,&i,2,col,v,INSERT_VALUES));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
   for (test = 0; test < 2; test++) {
-    CHKERRQ(MatProductCreate(A,A,NULL,&B));
+    PetscCall(MatProductCreate(A,A,NULL,&B));
 
     if (test == 0) {
       /* Compute B = A*A; B misses 0-th diagonal */
-      CHKERRQ(MatProductSetType(B,MATPRODUCT_AB));
-      CHKERRQ(MatSetOptionsPrefix(B,"AB_"));
+      PetscCall(MatProductSetType(B,MATPRODUCT_AB));
+      PetscCall(MatSetOptionsPrefix(B,"AB_"));
     } else {
       /* Compute B = A^t*A; B misses 0-th diagonal */
-      CHKERRQ(MatProductSetType(B,MATPRODUCT_AtB));
-      CHKERRQ(MatSetOptionsPrefix(B,"AtB_"));
+      PetscCall(MatProductSetType(B,MATPRODUCT_AtB));
+      PetscCall(MatSetOptionsPrefix(B,"AtB_"));
     }
 
     /* Force allocate missing diagonal entries of B */
-    CHKERRQ(MatSetOption(B,MAT_FORCE_DIAGONAL_ENTRIES,PETSC_TRUE));
-    CHKERRQ(MatProductSetFromOptions(B));
+    PetscCall(MatSetOption(B,MAT_FORCE_DIAGONAL_ENTRIES,PETSC_TRUE));
+    PetscCall(MatProductSetFromOptions(B));
 
-    CHKERRQ(MatProductSymbolic(B));
-    CHKERRQ(MatProductNumeric(B));
+    PetscCall(MatProductSymbolic(B));
+    PetscCall(MatProductNumeric(B));
 
-    CHKERRQ(MatSetOption(B,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE));
+    PetscCall(MatSetOption(B,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE));
 
     /* Insert entries to diagonal of B */
-    CHKERRQ(MatCreateVecs(B,NULL,&diag));
-    CHKERRQ(MatGetDiagonal(B,diag));
-    CHKERRQ(VecSetValue(diag,0,100.0,INSERT_VALUES));
-    CHKERRQ(VecAssemblyBegin(diag));
-    CHKERRQ(VecAssemblyEnd(diag));
+    PetscCall(MatCreateVecs(B,NULL,&diag));
+    PetscCall(MatGetDiagonal(B,diag));
+    PetscCall(VecSetValue(diag,0,100.0,INSERT_VALUES));
+    PetscCall(VecAssemblyBegin(diag));
+    PetscCall(VecAssemblyEnd(diag));
 
-    CHKERRQ(MatDiagonalSet(B,diag,INSERT_VALUES));
+    PetscCall(MatDiagonalSet(B,diag,INSERT_VALUES));
     if (test == 1) {
-      CHKERRQ(MatView(B,PETSC_VIEWER_STDOUT_WORLD));
+      PetscCall(MatView(B,PETSC_VIEWER_STDOUT_WORLD));
     }
-    CHKERRQ(MatDestroy(&B));
-    CHKERRQ(VecDestroy(&diag));
+    PetscCall(MatDestroy(&B));
+    PetscCall(VecDestroy(&diag));
   }
 
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatDestroy(&A));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

@@ -35,56 +35,56 @@ int main(int argc,char **argv)
   TS             ts;
   Mat            A = 0,S;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-time",&time_steps,NULL));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-time",&time_steps,NULL));
 
   /* set initial conditions */
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&global));
-  CHKERRQ(VecSetSizes(global,PETSC_DECIDE,3));
-  CHKERRQ(VecSetFromOptions(global));
-  CHKERRQ(Initial(global,NULL));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&global));
+  PetscCall(VecSetSizes(global,PETSC_DECIDE,3));
+  PetscCall(VecSetFromOptions(global));
+  PetscCall(Initial(global,NULL));
 
   /* make timestep context */
-  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
-  CHKERRQ(TSSetProblemType(ts,TS_NONLINEAR));
-  CHKERRQ(TSMonitorSet(ts,Monitor,NULL,NULL));
+  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
+  PetscCall(TSSetProblemType(ts,TS_NONLINEAR));
+  PetscCall(TSMonitorSet(ts,Monitor,NULL,NULL));
   dt = 0.001;
 
   /*
     The user provides the RHS and Jacobian
   */
-  CHKERRQ(TSSetRHSFunction(ts,NULL,RHSFunction,NULL));
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,3,3));
-  CHKERRQ(MatSetFromOptions(A));
-  CHKERRQ(MatSetUp(A));
-  CHKERRQ(RHSJacobian(ts,0.0,global,A,A,NULL));
-  CHKERRQ(TSSetRHSJacobian(ts,A,A,RHSJacobian,NULL));
+  PetscCall(TSSetRHSFunction(ts,NULL,RHSFunction,NULL));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,3,3));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSetUp(A));
+  PetscCall(RHSJacobian(ts,0.0,global,A,A,NULL));
+  PetscCall(TSSetRHSJacobian(ts,A,A,RHSJacobian,NULL));
 
-  CHKERRQ(MatCreateShell(PETSC_COMM_WORLD,3,3,3,3,NULL,&S));
-  CHKERRQ(MatShellSetOperation(S,MATOP_MULT,(void (*)(void))MyMatMult));
-  CHKERRQ(TSSetRHSJacobian(ts,S,A,RHSJacobian,NULL));
+  PetscCall(MatCreateShell(PETSC_COMM_WORLD,3,3,3,3,NULL,&S));
+  PetscCall(MatShellSetOperation(S,MATOP_MULT,(void (*)(void))MyMatMult));
+  PetscCall(TSSetRHSJacobian(ts,S,A,RHSJacobian,NULL));
 
-  CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP));
-  CHKERRQ(TSSetFromOptions(ts));
+  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP));
+  PetscCall(TSSetFromOptions(ts));
 
-  CHKERRQ(TSSetTimeStep(ts,dt));
-  CHKERRQ(TSSetMaxSteps(ts,time_steps));
-  CHKERRQ(TSSetMaxTime(ts,1));
-  CHKERRQ(TSSetSolution(ts,global));
+  PetscCall(TSSetTimeStep(ts,dt));
+  PetscCall(TSSetMaxSteps(ts,time_steps));
+  PetscCall(TSSetMaxTime(ts,1));
+  PetscCall(TSSetSolution(ts,global));
 
-  CHKERRQ(TSSolve(ts,global));
-  CHKERRQ(TSGetSolveTime(ts,&ftime));
-  CHKERRQ(TSGetStepNumber(ts,&steps));
+  PetscCall(TSSolve(ts,global));
+  PetscCall(TSGetSolveTime(ts,&ftime));
+  PetscCall(TSGetStepNumber(ts,&steps));
 
   /* free the memories */
 
-  CHKERRQ(TSDestroy(&ts));
-  CHKERRQ(VecDestroy(&global));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(MatDestroy(&S));
+  PetscCall(TSDestroy(&ts));
+  PetscCall(VecDestroy(&global));
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&S));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -94,15 +94,15 @@ PetscErrorCode MyMatMult(Mat S,Vec x,Vec y)
   PetscScalar        *outptr;
 
   PetscFunctionBegin;
-  CHKERRQ(VecGetArrayRead(x,&inptr));
-  CHKERRQ(VecGetArrayWrite(y,&outptr));
+  PetscCall(VecGetArrayRead(x,&inptr));
+  PetscCall(VecGetArrayWrite(y,&outptr));
 
   outptr[0] = 2.0*inptr[0]+inptr[1];
   outptr[1] = inptr[0]+2.0*inptr[1]+inptr[2];
   outptr[2] = inptr[1]+2.0*inptr[2];
 
-  CHKERRQ(VecRestoreArrayRead(x,&inptr));
-  CHKERRQ(VecRestoreArrayWrite(y,&outptr));
+  PetscCall(VecRestoreArrayRead(x,&inptr));
+  PetscCall(VecRestoreArrayWrite(y,&outptr));
   PetscFunctionReturn(0);
 }
 
@@ -113,16 +113,16 @@ PetscErrorCode Initial(Vec global,void *ctx)
   PetscInt       i,mybase,myend,locsize;
 
   /* determine starting point of each processor */
-  CHKERRQ(VecGetOwnershipRange(global,&mybase,&myend));
-  CHKERRQ(VecGetLocalSize(global,&locsize));
+  PetscCall(VecGetOwnershipRange(global,&mybase,&myend));
+  PetscCall(VecGetLocalSize(global,&locsize));
 
   /* Initialize the array */
-  CHKERRQ(VecGetArrayWrite(global,&localptr));
+  PetscCall(VecGetArrayWrite(global,&localptr));
   for (i=0; i<locsize; i++) localptr[i] = 1.0;
 
   if (mybase == 0) localptr[0]=1.0;
 
-  CHKERRQ(VecRestoreArrayWrite(global,&localptr));
+  PetscCall(VecRestoreArrayWrite(global,&localptr));
   return 0;
 }
 
@@ -136,33 +136,33 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
   const PetscScalar *tmp;
 
   /* Get the size of the vector */
-  CHKERRQ(VecGetSize(global,&n));
+  PetscCall(VecGetSize(global,&n));
 
   /* Set the index sets */
-  CHKERRQ(PetscMalloc1(n,&idx));
+  PetscCall(PetscMalloc1(n,&idx));
   for (i=0; i<n; i++) idx[i]=i;
 
   /* Create local sequential vectors */
-  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,n,&tmp_vec));
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,n,&tmp_vec));
 
   /* Create scatter context */
-  CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,n,idx,PETSC_COPY_VALUES,&from));
-  CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,n,idx,PETSC_COPY_VALUES,&to));
-  CHKERRQ(VecScatterCreate(global,from,tmp_vec,to,&scatter));
-  CHKERRQ(VecScatterBegin(scatter,global,tmp_vec,INSERT_VALUES,SCATTER_FORWARD));
-  CHKERRQ(VecScatterEnd(scatter,global,tmp_vec,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF,n,idx,PETSC_COPY_VALUES,&from));
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF,n,idx,PETSC_COPY_VALUES,&to));
+  PetscCall(VecScatterCreate(global,from,tmp_vec,to,&scatter));
+  PetscCall(VecScatterBegin(scatter,global,tmp_vec,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(scatter,global,tmp_vec,INSERT_VALUES,SCATTER_FORWARD));
 
-  CHKERRQ(VecGetArrayRead(tmp_vec,&tmp));
+  PetscCall(VecGetArrayRead(tmp_vec,&tmp));
   ierr = PetscPrintf(PETSC_COMM_WORLD,"At t =%14.6e u = %14.6e  %14.6e  %14.6e \n",
-                     (double)time,(double)PetscRealPart(tmp[0]),(double)PetscRealPart(tmp[1]),(double)PetscRealPart(tmp[2]));CHKERRQ(ierr);
+                     (double)time,(double)PetscRealPart(tmp[0]),(double)PetscRealPart(tmp[1]),(double)PetscRealPart(tmp[2]));PetscCall(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"At t =%14.6e errors = %14.6e  %14.6e  %14.6e \n",
-                     (double)time,(double)PetscRealPart(tmp[0]-solx(time)),(double)PetscRealPart(tmp[1]-soly(time)),(double)PetscRealPart(tmp[2]-solz(time)));CHKERRQ(ierr);
-  CHKERRQ(VecRestoreArrayRead(tmp_vec,&tmp));
-  CHKERRQ(VecScatterDestroy(&scatter));
-  CHKERRQ(ISDestroy(&from));
-  CHKERRQ(ISDestroy(&to));
-  CHKERRQ(PetscFree(idx));
-  CHKERRQ(VecDestroy(&tmp_vec));
+                     (double)time,(double)PetscRealPart(tmp[0]-solx(time)),(double)PetscRealPart(tmp[1]-soly(time)),(double)PetscRealPart(tmp[2]-solz(time)));PetscCall(ierr);
+  PetscCall(VecRestoreArrayRead(tmp_vec,&tmp));
+  PetscCall(VecScatterDestroy(&scatter));
+  PetscCall(ISDestroy(&from));
+  PetscCall(ISDestroy(&to));
+  PetscCall(PetscFree(idx));
+  PetscCall(VecDestroy(&tmp_vec));
   return 0;
 }
 
@@ -176,48 +176,48 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
   Vec               tmp_in,tmp_out;
 
   /* Get the length of parallel vector */
-  CHKERRQ(VecGetSize(globalin,&n));
+  PetscCall(VecGetSize(globalin,&n));
 
   /* Set the index sets */
-  CHKERRQ(PetscMalloc1(n,&idx));
+  PetscCall(PetscMalloc1(n,&idx));
   for (i=0; i<n; i++) idx[i]=i;
 
   /* Create local sequential vectors */
-  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,n,&tmp_in));
-  CHKERRQ(VecDuplicate(tmp_in,&tmp_out));
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,n,&tmp_in));
+  PetscCall(VecDuplicate(tmp_in,&tmp_out));
 
   /* Create scatter context */
-  CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,n,idx,PETSC_COPY_VALUES,&from));
-  CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,n,idx,PETSC_COPY_VALUES,&to));
-  CHKERRQ(VecScatterCreate(globalin,from,tmp_in,to,&scatter));
-  CHKERRQ(VecScatterBegin(scatter,globalin,tmp_in,INSERT_VALUES,SCATTER_FORWARD));
-  CHKERRQ(VecScatterEnd(scatter,globalin,tmp_in,INSERT_VALUES,SCATTER_FORWARD));
-  CHKERRQ(VecScatterDestroy(&scatter));
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF,n,idx,PETSC_COPY_VALUES,&from));
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF,n,idx,PETSC_COPY_VALUES,&to));
+  PetscCall(VecScatterCreate(globalin,from,tmp_in,to,&scatter));
+  PetscCall(VecScatterBegin(scatter,globalin,tmp_in,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(scatter,globalin,tmp_in,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterDestroy(&scatter));
 
   /*Extract income array */
-  CHKERRQ(VecGetArrayRead(tmp_in,&inptr));
+  PetscCall(VecGetArrayRead(tmp_in,&inptr));
 
   /* Extract outcome array*/
-  CHKERRQ(VecGetArrayWrite(tmp_out,&outptr));
+  PetscCall(VecGetArrayWrite(tmp_out,&outptr));
 
   outptr[0] = 2.0*inptr[0]+inptr[1];
   outptr[1] = inptr[0]+2.0*inptr[1]+inptr[2];
   outptr[2] = inptr[1]+2.0*inptr[2];
 
-  CHKERRQ(VecRestoreArrayRead(tmp_in,&inptr));
-  CHKERRQ(VecRestoreArrayWrite(tmp_out,&outptr));
+  PetscCall(VecRestoreArrayRead(tmp_in,&inptr));
+  PetscCall(VecRestoreArrayWrite(tmp_out,&outptr));
 
-  CHKERRQ(VecScatterCreate(tmp_out,from,globalout,to,&scatter));
-  CHKERRQ(VecScatterBegin(scatter,tmp_out,globalout,INSERT_VALUES,SCATTER_FORWARD));
-  CHKERRQ(VecScatterEnd(scatter,tmp_out,globalout,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterCreate(tmp_out,from,globalout,to,&scatter));
+  PetscCall(VecScatterBegin(scatter,tmp_out,globalout,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(scatter,tmp_out,globalout,INSERT_VALUES,SCATTER_FORWARD));
 
   /* Destroy idx aand scatter */
-  CHKERRQ(ISDestroy(&from));
-  CHKERRQ(ISDestroy(&to));
-  CHKERRQ(VecScatterDestroy(&scatter));
-  CHKERRQ(VecDestroy(&tmp_in));
-  CHKERRQ(VecDestroy(&tmp_out));
-  CHKERRQ(PetscFree(idx));
+  PetscCall(ISDestroy(&from));
+  PetscCall(ISDestroy(&to));
+  PetscCall(VecScatterDestroy(&scatter));
+  PetscCall(VecDestroy(&tmp_in));
+  PetscCall(VecDestroy(&tmp_out));
+  PetscCall(PetscFree(idx));
   return 0;
 }
 
@@ -228,28 +228,28 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec x,Mat A,Mat BB,void *ctx)
   PetscInt          idx[3],i;
 
   idx[0]=0; idx[1]=1; idx[2]=2;
-  CHKERRQ(VecGetArrayRead(x,&tmp));
+  PetscCall(VecGetArrayRead(x,&tmp));
 
   i    = 0;
   v[0] = 2.0; v[1] = 1.0; v[2] = 0.0;
-  CHKERRQ(MatSetValues(BB,1,&i,3,idx,v,INSERT_VALUES));
+  PetscCall(MatSetValues(BB,1,&i,3,idx,v,INSERT_VALUES));
 
   i    = 1;
   v[0] = 1.0; v[1] = 2.0; v[2] = 1.0;
-  CHKERRQ(MatSetValues(BB,1,&i,3,idx,v,INSERT_VALUES));
+  PetscCall(MatSetValues(BB,1,&i,3,idx,v,INSERT_VALUES));
 
   i    = 2;
   v[0] = 0.0; v[1] = 1.0; v[2] = 2.0;
-  CHKERRQ(MatSetValues(BB,1,&i,3,idx,v,INSERT_VALUES));
+  PetscCall(MatSetValues(BB,1,&i,3,idx,v,INSERT_VALUES));
 
-  CHKERRQ(MatAssemblyBegin(BB,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(BB,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(BB,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(BB,MAT_FINAL_ASSEMBLY));
 
   if (A != BB) {
-    CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   }
-  CHKERRQ(VecRestoreArrayRead(x,&tmp));
+  PetscCall(VecRestoreArrayRead(x,&tmp));
 
   return 0;
 }

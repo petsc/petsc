@@ -28,10 +28,10 @@ PetscErrorCode PetscBarrier(PetscObject obj)
 
   PetscFunctionBegin;
   if (obj) PetscValidHeader(obj,1);
-  CHKERRQ(PetscLogEventBegin(PETSC_Barrier,obj,0,0,0));
-  if (obj) CHKERRQ(PetscObjectGetComm(obj,&comm));
+  PetscCall(PetscLogEventBegin(PETSC_Barrier,obj,0,0,0));
+  if (obj) PetscCall(PetscObjectGetComm(obj,&comm));
   else comm = PETSC_COMM_WORLD;
-  CHKERRMPI(MPI_Barrier(comm));
-  CHKERRQ(PetscLogEventEnd(PETSC_Barrier,obj,0,0,0));
+  PetscCallMPI(MPI_Barrier(comm));
+  PetscCall(PetscLogEventEnd(PETSC_Barrier,obj,0,0,0));
   PetscFunctionReturn(0);
 }

@@ -72,18 +72,18 @@ PetscErrorCode PetscProcessPlacementView(PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii));
   PetscCheck(isascii,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Only ASCII viewer is supported");
 
-  CHKERRMPI(MPI_Comm_rank(MPI_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD,&rank));
   hwloc_topology_init ( &topology);
   hwloc_topology_load ( topology);
   set = hwloc_bitmap_alloc();
 
   PetscStackCallStandard(hwloc_get_proc_cpubind,topology, getpid(), set, HWLOC_CPUBIND_PROCESS);
-  CHKERRQ(PetscViewerASCIIPushSynchronized(viewer));
-  CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer,"MPI rank %d Process id: %d coreid %d\n",rank,getpid(),hwloc_bitmap_first(set)));
-  CHKERRQ(PetscViewerFlush(viewer));
+  PetscCall(PetscViewerASCIIPushSynchronized(viewer));
+  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"MPI rank %d Process id: %d coreid %d\n",rank,getpid(),hwloc_bitmap_first(set)));
+  PetscCall(PetscViewerFlush(viewer));
   hwloc_bitmap_free(set);
   hwloc_topology_destroy(topology);
   PetscFunctionReturn(0);

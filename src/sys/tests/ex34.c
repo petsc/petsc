@@ -7,7 +7,7 @@ PetscReal zero = 0;
 PETSC_INTERN PetscReal zero2;
 PetscReal zero2 = 0;
 
-#define CALL(call) CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"%-32s -> %s\n",#call,(call)?"True":"False"))
+#define CALL(call) PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%-32s -> %s\n",#call,(call)?"True":"False"))
 
 int main(int argc, char **argv) {
 
@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
   PetscReal pos_inf  = pos_one/zero; /* +inf */
   PetscReal x_nan    = zero2/zero;   /*  NaN */ /* some compilers may optimize out zero/zero and set x_nan = 1! */
 
-  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
   CALL(PetscIsInfReal(neg_zero));
   CALL(PetscIsInfReal(pos_zero));
@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
   CALL(PetscIsNanReal(pos_inf));
   CALL(PetscIsNanReal(x_nan));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

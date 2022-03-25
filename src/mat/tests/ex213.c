@@ -26,19 +26,19 @@ int main(int argc,char **args)
   PetscMPIInt    rank,size;
   Vec            v;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size > 4,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Can only use at most 4 processors.");
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   /* Get a partition range based on the vector size */
-  CHKERRQ(VecCreateMPI(PETSC_COMM_WORLD, PETSC_DECIDE, N, &v));
-  CHKERRQ(VecGetLocalSize(v, &n));
-  CHKERRQ(VecGetOwnershipRange(v, &rstart, &rend));
-  CHKERRQ(VecDestroy(&v));
+  PetscCall(VecCreateMPI(PETSC_COMM_WORLD, PETSC_DECIDE, N, &v));
+  PetscCall(VecGetLocalSize(v, &n));
+  PetscCall(VecGetOwnershipRange(v, &rstart, &rend));
+  PetscCall(VecDestroy(&v));
 
-  CHKERRQ(PetscMalloc1(n+1,&ia));
-  CHKERRQ(PetscMalloc1(3*n,&ja));
+  PetscCall(PetscMalloc1(n+1,&ia));
+  PetscCall(PetscMalloc1(3*n,&ja));
 
   /* Construct a tri-diagonal CSR indexing */
   i = 1;
@@ -72,23 +72,23 @@ int main(int argc,char **args)
     i++;
   }
 
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD, &A));
-  CHKERRQ(MatSetSizes(A, n, n, PETSC_DETERMINE, PETSC_DETERMINE));
-  CHKERRQ(MatSetType(A,MATMPIAIJ));
-  CHKERRQ(MatMPIAIJSetPreallocationCSR(A, ia, ja, NULL));
-  CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(MatDestroy(&A));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
+  PetscCall(MatSetSizes(A, n, n, PETSC_DETERMINE, PETSC_DETERMINE));
+  PetscCall(MatSetType(A,MATMPIAIJ));
+  PetscCall(MatMPIAIJSetPreallocationCSR(A, ia, ja, NULL));
+  PetscCall(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatDestroy(&A));
 
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD, &A));
-  CHKERRQ(MatSetSizes(A, bs*n, bs*n, PETSC_DETERMINE, PETSC_DETERMINE));
-  CHKERRQ(MatSetType(A,MATMPIBAIJ));
-  CHKERRQ(MatMPIBAIJSetPreallocationCSR(A, bs, ia, ja, NULL));
-  CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(MatDestroy(&A));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
+  PetscCall(MatSetSizes(A, bs*n, bs*n, PETSC_DETERMINE, PETSC_DETERMINE));
+  PetscCall(MatSetType(A,MATMPIBAIJ));
+  PetscCall(MatMPIBAIJSetPreallocationCSR(A, bs, ia, ja, NULL));
+  PetscCall(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatDestroy(&A));
 
-  CHKERRQ(PetscFree(ia));
-  CHKERRQ(PetscFree(ja));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFree(ia));
+  PetscCall(PetscFree(ja));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

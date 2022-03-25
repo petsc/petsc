@@ -23,7 +23,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJSELL_SeqAIJ(Mat A,MatType type,MatR
 
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) {
-    CHKERRQ(MatDuplicate(A,MAT_COPY_VALUES,&B));
+    PetscCall(MatDuplicate(A,MAT_COPY_VALUES,&B));
   }
 
   /* Reset the original function pointers. */
@@ -36,17 +36,17 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJSELL_SeqAIJ(Mat A,MatType type,MatR
   B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJ;
   B->ops->sor              = MatSOR_SeqAIJ;
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaijsell_seqaij_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaijsell_seqaij_C",NULL));
 
   if (reuse == MAT_INITIAL_MATRIX) aijsell = (Mat_SeqAIJSELL*)B->spptr;
 
   /* Clean up the Mat_SeqAIJSELL data structure.
    * Note that MatDestroy() simply returns if passed a NULL value, so it's OK to call even if the shadow matrix was never constructed. */
-  CHKERRQ(MatDestroy(&aijsell->S));
-  CHKERRQ(PetscFree(B->spptr));
+  PetscCall(MatDestroy(&aijsell->S));
+  PetscCall(PetscFree(B->spptr));
 
   /* Change the type of B to MATSEQAIJ. */
-  CHKERRQ(PetscObjectChangeTypeName((PetscObject)B, MATSEQAIJ));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATSEQAIJ));
 
   *newmat = B;
   PetscFunctionReturn(0);
@@ -62,17 +62,17 @@ PetscErrorCode MatDestroy_SeqAIJSELL(Mat A)
    * spptr pointer. */
   if (aijsell) {
     /* Clean up everything in the Mat_SeqAIJSELL data structure, then free A->spptr. */
-    CHKERRQ(MatDestroy(&aijsell->S));
-    CHKERRQ(PetscFree(A->spptr));
+    PetscCall(MatDestroy(&aijsell->S));
+    PetscCall(PetscFree(A->spptr));
   }
 
   /* Change the type of A back to SEQAIJ and use MatDestroy_SeqAIJ()
    * to destroy everything that remains. */
-  CHKERRQ(PetscObjectChangeTypeName((PetscObject)A, MATSEQAIJ));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)A, MATSEQAIJ));
   /* Note that I don't call MatSetType().  I believe this is because that
    * is only to be called when *building* a matrix.  I could be wrong, but
    * that is how things work for the SuperLU matrix class. */
-  CHKERRQ(MatDestroy_SeqAIJ(A));
+  PetscCall(MatDestroy_SeqAIJ(A));
   PetscFunctionReturn(0);
 }
 
@@ -84,22 +84,22 @@ PETSC_INTERN PetscErrorCode MatSeqAIJSELL_build_shadow(Mat A)
   PetscObjectState state;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectStateGet((PetscObject)A,&state));
+  PetscCall(PetscObjectStateGet((PetscObject)A,&state));
   if (aijsell->S && aijsell->state == state) {
     /* The existing shadow matrix is up-to-date, so simply exit. */
     PetscFunctionReturn(0);
   }
 
-  CHKERRQ(PetscLogEventBegin(MAT_Convert,A,0,0,0));
+  PetscCall(PetscLogEventBegin(MAT_Convert,A,0,0,0));
   if (aijsell->S) {
-    CHKERRQ(MatConvert_SeqAIJ_SeqSELL(A,MATSEQSELL,MAT_REUSE_MATRIX,&aijsell->S));
+    PetscCall(MatConvert_SeqAIJ_SeqSELL(A,MATSEQSELL,MAT_REUSE_MATRIX,&aijsell->S));
   } else {
-    CHKERRQ(MatConvert_SeqAIJ_SeqSELL(A,MATSEQSELL,MAT_INITIAL_MATRIX,&aijsell->S));
+    PetscCall(MatConvert_SeqAIJ_SeqSELL(A,MATSEQSELL,MAT_INITIAL_MATRIX,&aijsell->S));
   }
-  CHKERRQ(PetscLogEventEnd(MAT_Convert,A,0,0,0));
+  PetscCall(PetscLogEventEnd(MAT_Convert,A,0,0,0));
 
   /* Record the ObjectState so that we can tell when the shadow matrix needs updating */
-  CHKERRQ(PetscObjectStateGet((PetscObject)A,&aijsell->state));
+  PetscCall(PetscObjectStateGet((PetscObject)A,&aijsell->state));
 
   PetscFunctionReturn(0);
 }
@@ -110,14 +110,14 @@ PetscErrorCode MatDuplicate_SeqAIJSELL(Mat A, MatDuplicateOption op, Mat *M)
   Mat_SeqAIJSELL *aijsell_dest;
 
   PetscFunctionBegin;
-  CHKERRQ(MatDuplicate_SeqAIJ(A,op,M));
+  PetscCall(MatDuplicate_SeqAIJ(A,op,M));
   aijsell      = (Mat_SeqAIJSELL*) A->spptr;
   aijsell_dest = (Mat_SeqAIJSELL*) (*M)->spptr;
-  CHKERRQ(PetscArraycpy(aijsell_dest,aijsell,1));
+  PetscCall(PetscArraycpy(aijsell_dest,aijsell,1));
   /* We don't duplicate the shadow matrix -- that will be constructed as needed. */
   aijsell_dest->S = NULL;
   if (aijsell->eager_shadow) {
-    CHKERRQ(MatSeqAIJSELL_build_shadow(A));
+    PetscCall(MatSeqAIJSELL_build_shadow(A));
   }
   PetscFunctionReturn(0);
 }
@@ -141,12 +141,12 @@ PetscErrorCode MatAssemblyEnd_SeqAIJSELL(Mat A, MatAssemblyType mode)
    * I'm not sure if this is the best way to do this, but it avoids
    * a lot of code duplication. */
 
-  CHKERRQ(MatAssemblyEnd_SeqAIJ(A, mode));
+  PetscCall(MatAssemblyEnd_SeqAIJ(A, mode));
 
   /* If the user has requested "eager" shadowing, create the SELL shadow matrix (if needed; the function checks).
    * (The default is to take a "lazy" approach, deferring this until something like MatMult() is called.) */
   if (aijsell->eager_shadow) {
-    CHKERRQ(MatSeqAIJSELL_build_shadow(A));
+    PetscCall(MatSeqAIJSELL_build_shadow(A));
   }
 
   PetscFunctionReturn(0);
@@ -157,8 +157,8 @@ PetscErrorCode MatMult_SeqAIJSELL(Mat A,Vec xx,Vec yy)
   Mat_SeqAIJSELL    *aijsell = (Mat_SeqAIJSELL*)A->spptr;
 
   PetscFunctionBegin;
-  CHKERRQ(MatSeqAIJSELL_build_shadow(A));
-  CHKERRQ(MatMult_SeqSELL(aijsell->S,xx,yy));
+  PetscCall(MatSeqAIJSELL_build_shadow(A));
+  PetscCall(MatMult_SeqSELL(aijsell->S,xx,yy));
   PetscFunctionReturn(0);
 }
 
@@ -167,8 +167,8 @@ PetscErrorCode MatMultTranspose_SeqAIJSELL(Mat A,Vec xx,Vec yy)
   Mat_SeqAIJSELL    *aijsell=(Mat_SeqAIJSELL*)A->spptr;
 
   PetscFunctionBegin;
-  CHKERRQ(MatSeqAIJSELL_build_shadow(A));
-  CHKERRQ(MatMultTranspose_SeqSELL(aijsell->S,xx,yy));
+  PetscCall(MatSeqAIJSELL_build_shadow(A));
+  PetscCall(MatMultTranspose_SeqSELL(aijsell->S,xx,yy));
   PetscFunctionReturn(0);
 }
 
@@ -177,8 +177,8 @@ PetscErrorCode MatMultAdd_SeqAIJSELL(Mat A,Vec xx,Vec yy,Vec zz)
   Mat_SeqAIJSELL    *aijsell=(Mat_SeqAIJSELL*)A->spptr;
 
   PetscFunctionBegin;
-  CHKERRQ(MatSeqAIJSELL_build_shadow(A));
-  CHKERRQ(MatMultAdd_SeqSELL(aijsell->S,xx,yy,zz));
+  PetscCall(MatSeqAIJSELL_build_shadow(A));
+  PetscCall(MatMultAdd_SeqSELL(aijsell->S,xx,yy,zz));
   PetscFunctionReturn(0);
 }
 
@@ -187,8 +187,8 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJSELL(Mat A,Vec xx,Vec yy,Vec zz)
   Mat_SeqAIJSELL    *aijsell=(Mat_SeqAIJSELL*)A->spptr;
 
   PetscFunctionBegin;
-  CHKERRQ(MatSeqAIJSELL_build_shadow(A));
-  CHKERRQ(MatMultTransposeAdd_SeqSELL(aijsell->S,xx,yy,zz));
+  PetscCall(MatSeqAIJSELL_build_shadow(A));
+  PetscCall(MatMultTransposeAdd_SeqSELL(aijsell->S,xx,yy,zz));
   PetscFunctionReturn(0);
 }
 
@@ -197,8 +197,8 @@ PetscErrorCode MatSOR_SeqAIJSELL(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
   Mat_SeqAIJSELL    *aijsell=(Mat_SeqAIJSELL*)A->spptr;
 
   PetscFunctionBegin;
-  CHKERRQ(MatSeqAIJSELL_build_shadow(A));
-  CHKERRQ(MatSOR_SeqSELL(aijsell->S,bb,omega,flag,fshift,its,lits,xx));
+  PetscCall(MatSeqAIJSELL_build_shadow(A));
+  PetscCall(MatSOR_SeqSELL(aijsell->S,bb,omega,flag,fshift,its,lits,xx));
   PetscFunctionReturn(0);
 }
 
@@ -217,13 +217,13 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJSELL(Mat A,MatType type,MatR
 
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) {
-    CHKERRQ(MatDuplicate(A,MAT_COPY_VALUES,&B));
+    PetscCall(MatDuplicate(A,MAT_COPY_VALUES,&B));
   }
 
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)A,type,&sametype));
+  PetscCall(PetscObjectTypeCompare((PetscObject)A,type,&sametype));
   if (sametype) PetscFunctionReturn(0);
 
-  CHKERRQ(PetscNewLog(B,&aijsell));
+  PetscCall(PetscNewLog(B,&aijsell));
   b        = (Mat_SeqAIJ*) B->data;
   B->spptr = (void*) aijsell;
 
@@ -242,13 +242,13 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJSELL(Mat A,MatType type,MatR
   aijsell->eager_shadow = PETSC_FALSE;
 
   /* Parse command line options. */
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"AIJSELL Options","Mat");CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsBool("-mat_aijsell_eager_shadow","Eager Shadowing","None",(PetscBool)aijsell->eager_shadow,(PetscBool*)&aijsell->eager_shadow,&set));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"AIJSELL Options","Mat");PetscCall(ierr);
+  PetscCall(PetscOptionsBool("-mat_aijsell_eager_shadow","Eager Shadowing","None",(PetscBool)aijsell->eager_shadow,(PetscBool*)&aijsell->eager_shadow,&set));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
   /* If A has already been assembled and eager shadowing is specified, build the shadow matrix. */
   if (A->assembled && aijsell->eager_shadow) {
-    CHKERRQ(MatSeqAIJSELL_build_shadow(A));
+    PetscCall(MatSeqAIJSELL_build_shadow(A));
   }
 
   B->ops->mult             = MatMult_SeqAIJSELL;
@@ -257,9 +257,9 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJSELL(Mat A,MatType type,MatR
   B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJSELL;
   B->ops->sor              = MatSOR_SeqAIJSELL;
 
-  CHKERRQ(PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaijsell_seqaij_C",MatConvert_SeqAIJSELL_SeqAIJ));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaijsell_seqaij_C",MatConvert_SeqAIJSELL_SeqAIJ));
 
-  CHKERRQ(PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJSELL));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJSELL));
   *newmat = B;
   PetscFunctionReturn(0);
 }
@@ -300,17 +300,17 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJSELL(Mat A,MatType type,MatR
 PetscErrorCode  MatCreateSeqAIJSELL(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt nz,const PetscInt nnz[],Mat *A)
 {
   PetscFunctionBegin;
-  CHKERRQ(MatCreate(comm,A));
-  CHKERRQ(MatSetSizes(*A,m,n,m,n));
-  CHKERRQ(MatSetType(*A,MATSEQAIJSELL));
-  CHKERRQ(MatSeqAIJSetPreallocation_SeqAIJ(*A,nz,nnz));
+  PetscCall(MatCreate(comm,A));
+  PetscCall(MatSetSizes(*A,m,n,m,n));
+  PetscCall(MatSetType(*A,MATSEQAIJSELL));
+  PetscCall(MatSeqAIJSetPreallocation_SeqAIJ(*A,nz,nnz));
   PetscFunctionReturn(0);
 }
 
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJSELL(Mat A)
 {
   PetscFunctionBegin;
-  CHKERRQ(MatSetType(A,MATSEQAIJ));
-  CHKERRQ(MatConvert_SeqAIJ_SeqAIJSELL(A,MATSEQAIJSELL,MAT_INPLACE_MATRIX,&A));
+  PetscCall(MatSetType(A,MATSEQAIJ));
+  PetscCall(MatConvert_SeqAIJ_SeqAIJSELL(A,MATSEQAIJSELL,MAT_INPLACE_MATRIX,&A));
   PetscFunctionReturn(0);
 }

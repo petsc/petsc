@@ -44,14 +44,14 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx
   PetscScalar       *f;
 
   PetscFunctionBeginUser;
-  CHKERRQ(VecGetArrayRead(X,&x));
-  CHKERRQ(VecGetArrayRead(Xdot,&xdot));
-  CHKERRQ(VecGetArray(F,&f));
+  PetscCall(VecGetArrayRead(X,&x));
+  PetscCall(VecGetArrayRead(Xdot,&xdot));
+  PetscCall(VecGetArray(F,&f));
   f[0] = xdot[0] - x[1];
   f[1] = c21*(xdot[0]-x[1]) + xdot[1] - user->mu*((1.0-x[0]*x[0])*x[1] - x[0]) ;
-  CHKERRQ(VecRestoreArrayRead(X,&x));
-  CHKERRQ(VecRestoreArrayRead(Xdot,&xdot));
-  CHKERRQ(VecRestoreArray(F,&f));
+  PetscCall(VecRestoreArrayRead(X,&x));
+  PetscCall(VecRestoreArrayRead(Xdot,&xdot));
+  PetscCall(VecRestoreArray(F,&f));
   PetscFunctionReturn(0);
 }
 
@@ -63,17 +63,17 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat
   const PetscScalar *x;
 
   PetscFunctionBeginUser;
-  CHKERRQ(VecGetArrayRead(X,&x));
+  PetscCall(VecGetArrayRead(X,&x));
   J[0][0] = a;     J[0][1] =  -1.0;
   J[1][0] = c21*a + user->mu*(1.0 + 2.0*x[0]*x[1]);   J[1][1] = -c21 + a - user->mu*(1.0-x[0]*x[0]);
-  CHKERRQ(MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES));
-  CHKERRQ(VecRestoreArrayRead(X,&x));
+  PetscCall(MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES));
+  PetscCall(VecRestoreArrayRead(X,&x));
 
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   if (A != B) {
-    CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
   }
   PetscFunctionReturn(0);
 }
@@ -87,14 +87,14 @@ static PetscErrorCode RHSJacobianP(TS ts,PetscReal t,Vec X,Mat A,void *ctx)
 
   PetscFunctionBeginUser;
   if (user->combined) col[0] = 2;
-  CHKERRQ(VecGetArrayRead(X,&x));
+  PetscCall(VecGetArrayRead(X,&x));
   J[0][0] = 0;
   J[1][0] = (1.-x[0]*x[0])*x[1]-x[0];
-  CHKERRQ(MatSetValues(A,2,row,1,col,&J[0][0],INSERT_VALUES));
-  CHKERRQ(VecRestoreArrayRead(X,&x));
+  PetscCall(MatSetValues(A,2,row,1,col,&J[0][0],INSERT_VALUES));
+  PetscCall(VecRestoreArrayRead(X,&x));
 
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
@@ -107,18 +107,18 @@ static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
   Vec               interpolatedX;
 
   PetscFunctionBeginUser;
-  CHKERRQ(TSGetTimeStep(ts,&dt));
-  CHKERRQ(TSGetMaxTime(ts,&tfinal));
+  PetscCall(TSGetTimeStep(ts,&dt));
+  PetscCall(TSGetMaxTime(ts,&tfinal));
 
   while (user->next_output <= t && user->next_output <= tfinal) {
-    CHKERRQ(VecDuplicate(X,&interpolatedX));
-    CHKERRQ(TSInterpolate(ts,user->next_output,interpolatedX));
-    CHKERRQ(VecGetArrayRead(interpolatedX,&x));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"[%.1f] %D TS %.6f (dt = %.6f) X % 12.6e % 12.6e\n",
+    PetscCall(VecDuplicate(X,&interpolatedX));
+    PetscCall(TSInterpolate(ts,user->next_output,interpolatedX));
+    PetscCall(VecGetArrayRead(interpolatedX,&x));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"[%.1f] %D TS %.6f (dt = %.6f) X % 12.6e % 12.6e\n",
                         user->next_output,step,(double)t,(double)dt,(double)PetscRealPart(x[0]),
                         (double)PetscRealPart(x[1])));
-    CHKERRQ(VecRestoreArrayRead(interpolatedX,&x));
-    CHKERRQ(VecDestroy(&interpolatedX));
+    PetscCall(VecRestoreArrayRead(interpolatedX,&x));
+    PetscCall(VecDestroy(&interpolatedX));
     user->next_output += 0.1;
   }
   PetscFunctionReturn(0);
@@ -136,9 +136,9 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -149,87 +149,87 @@ int main(int argc,char **argv)
   user.steps       = 0;
   user.ftime       = 0.5;
   user.combined    = PETSC_FALSE;
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-monitor",&monitor,NULL));
-  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-mu",&user.mu,NULL));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-combined",&user.combined,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-monitor",&monitor,NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-mu",&user.mu,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-combined",&user.combined,NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create necessary matrix and vectors, solve same ODE on every process
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   rows = 2;
   cols = user.combined ? 3 : 1;
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&user.Jac));
-  CHKERRQ(MatSetSizes(user.Jac,PETSC_DECIDE,PETSC_DECIDE,2,2));
-  CHKERRQ(MatSetFromOptions(user.Jac));
-  CHKERRQ(MatSetUp(user.Jac));
-  CHKERRQ(MatCreateVecs(user.Jac,&user.x,NULL));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&user.Jac));
+  PetscCall(MatSetSizes(user.Jac,PETSC_DECIDE,PETSC_DECIDE,2,2));
+  PetscCall(MatSetFromOptions(user.Jac));
+  PetscCall(MatSetUp(user.Jac));
+  PetscCall(MatCreateVecs(user.Jac,&user.x,NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
-  CHKERRQ(TSSetType(ts,TSBEULER));
-  CHKERRQ(TSSetIFunction(ts,NULL,IFunction,&user));
-  CHKERRQ(TSSetIJacobian(ts,user.Jac,user.Jac,IJacobian,&user));
-  CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP));
-  CHKERRQ(TSSetMaxTime(ts,user.ftime));
+  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
+  PetscCall(TSSetType(ts,TSBEULER));
+  PetscCall(TSSetIFunction(ts,NULL,IFunction,&user));
+  PetscCall(TSSetIJacobian(ts,user.Jac,user.Jac,IJacobian,&user));
+  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP));
+  PetscCall(TSSetMaxTime(ts,user.ftime));
   if (monitor) {
-    CHKERRQ(TSMonitorSet(ts,Monitor,&user,NULL));
+    PetscCall(TSMonitorSet(ts,Monitor,&user,NULL));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(VecGetArray(user.x,&x_ptr));
+  PetscCall(VecGetArray(user.x,&x_ptr));
   x_ptr[0] = 2.0;   x_ptr[1] = -0.66666654321;
-  CHKERRQ(VecRestoreArray(user.x,&x_ptr));
-  CHKERRQ(TSSetTimeStep(ts,1.0/1024.0));
+  PetscCall(VecRestoreArray(user.x,&x_ptr));
+  PetscCall(TSSetTimeStep(ts,1.0/1024.0));
 
   /* Set up forward sensitivity */
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&user.Jacp));
-  CHKERRQ(MatSetSizes(user.Jacp,PETSC_DECIDE,PETSC_DECIDE,rows,cols));
-  CHKERRQ(MatSetFromOptions(user.Jacp));
-  CHKERRQ(MatSetUp(user.Jacp));
-  CHKERRQ(MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,rows,cols,NULL,&user.sp));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&user.Jacp));
+  PetscCall(MatSetSizes(user.Jacp,PETSC_DECIDE,PETSC_DECIDE,rows,cols));
+  PetscCall(MatSetFromOptions(user.Jacp));
+  PetscCall(MatSetUp(user.Jacp));
+  PetscCall(MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,rows,cols,NULL,&user.sp));
   if (user.combined) {
-    CHKERRQ(MatZeroEntries(user.sp));
-    CHKERRQ(MatShift(user.sp,1.0));
+    PetscCall(MatZeroEntries(user.sp));
+    PetscCall(MatShift(user.sp,1.0));
   } else {
-    CHKERRQ(MatZeroEntries(user.sp));
+    PetscCall(MatZeroEntries(user.sp));
   }
-  CHKERRQ(TSForwardSetSensitivities(ts,cols,user.sp));
-  CHKERRQ(TSSetRHSJacobianP(ts,user.Jacp,RHSJacobianP,&user));
+  PetscCall(TSForwardSetSensitivities(ts,cols,user.sp));
+  PetscCall(TSSetRHSJacobianP(ts,user.Jacp,RHSJacobianP,&user));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSSetFromOptions(ts));
+  PetscCall(TSSetFromOptions(ts));
 
-  CHKERRQ(TSSolve(ts,user.x));
-  CHKERRQ(TSGetSolveTime(ts,&user.ftime));
-  CHKERRQ(TSGetStepNumber(ts,&user.steps));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"mu %g, steps %D, ftime %g\n",(double)user.mu,user.steps,(double)user.ftime));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\n ode solution \n"));
-  CHKERRQ(VecView(user.x,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(TSSolve(ts,user.x));
+  PetscCall(TSGetSolveTime(ts,&user.ftime));
+  PetscCall(TSGetStepNumber(ts,&user.steps));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"mu %g, steps %D, ftime %g\n",(double)user.mu,user.steps,(double)user.ftime));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n ode solution \n"));
+  PetscCall(VecView(user.x,PETSC_VIEWER_STDOUT_WORLD));
 
   if (user.combined) {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\n forward sensitivity: d[y(tf) z(tf)]/d[y0 z0 mu]\n"));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n forward sensitivity: d[y(tf) z(tf)]/d[y0 z0 mu]\n"));
   } else {
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\n forward sensitivity: d[y(tf) z(tf)]/d[mu]\n"));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n forward sensitivity: d[y(tf) z(tf)]/d[mu]\n"));
   }
-  CHKERRQ(MatView(user.sp,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatView(user.sp,PETSC_VIEWER_STDOUT_WORLD));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(MatDestroy(&user.Jac));
-  CHKERRQ(MatDestroy(&user.sp));
-  CHKERRQ(MatDestroy(&user.Jacp));
-  CHKERRQ(VecDestroy(&user.x));
-  CHKERRQ(TSDestroy(&ts));
+  PetscCall(MatDestroy(&user.Jac));
+  PetscCall(MatDestroy(&user.sp));
+  PetscCall(MatDestroy(&user.Jacp));
+  PetscCall(VecDestroy(&user.x));
+  PetscCall(TSDestroy(&ts));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

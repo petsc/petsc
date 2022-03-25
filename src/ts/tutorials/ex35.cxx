@@ -40,9 +40,9 @@ PetscErrorCode Initialize_AppContext(UserCtx *puser)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNew(&user));
+  PetscCall(PetscNew(&user));
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Advection-reaction options","ex35.cxx");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Advection-reaction options","ex35.cxx");PetscCall(ierr);
   {
     user->nvars  = 2;
     user->A      = 1;
@@ -55,19 +55,19 @@ PetscErrorCode Initialize_AppContext(UserCtx *puser)
     user->n      = 10;
     user->ntsteps = 10000;
     user->io = PETSC_FALSE;
-    CHKERRQ(PetscOptionsReal("-A","Reaction rate","ex35.cxx",user->A,&user->A,NULL));
-    CHKERRQ(PetscOptionsReal("-B","Reaction rate","ex35.cxx",user->B,&user->B,NULL));
-    CHKERRQ(PetscOptionsReal("-alpha","Diffusion coefficient","ex35.cxx",user->alpha,&user->alpha,NULL));
-    CHKERRQ(PetscOptionsScalar("-uleft","Dirichlet boundary condition","ex35.cxx",user->leftbc.u,&user->leftbc.u,NULL));
-    CHKERRQ(PetscOptionsScalar("-uright","Dirichlet boundary condition","ex35.cxx",user->rightbc.u,&user->rightbc.u,NULL));
-    CHKERRQ(PetscOptionsScalar("-vleft","Dirichlet boundary condition","ex35.cxx",user->leftbc.v,&user->leftbc.v,NULL));
-    CHKERRQ(PetscOptionsScalar("-vright","Dirichlet boundary condition","ex35.cxx",user->rightbc.v,&user->rightbc.v,NULL));
-    CHKERRQ(PetscOptionsInt("-n","Number of 1-D elements","ex35.cxx",user->n,&user->n,NULL));
-    CHKERRQ(PetscOptionsInt("-ndt","Number of time steps","ex35.cxx",user->ntsteps,&user->ntsteps,NULL));
-    CHKERRQ(PetscOptionsBool("-io","Write the mesh and solution output to a file.","ex35.cxx",user->io,&user->io,NULL));
+    PetscCall(PetscOptionsReal("-A","Reaction rate","ex35.cxx",user->A,&user->A,NULL));
+    PetscCall(PetscOptionsReal("-B","Reaction rate","ex35.cxx",user->B,&user->B,NULL));
+    PetscCall(PetscOptionsReal("-alpha","Diffusion coefficient","ex35.cxx",user->alpha,&user->alpha,NULL));
+    PetscCall(PetscOptionsScalar("-uleft","Dirichlet boundary condition","ex35.cxx",user->leftbc.u,&user->leftbc.u,NULL));
+    PetscCall(PetscOptionsScalar("-uright","Dirichlet boundary condition","ex35.cxx",user->rightbc.u,&user->rightbc.u,NULL));
+    PetscCall(PetscOptionsScalar("-vleft","Dirichlet boundary condition","ex35.cxx",user->leftbc.v,&user->leftbc.v,NULL));
+    PetscCall(PetscOptionsScalar("-vright","Dirichlet boundary condition","ex35.cxx",user->rightbc.v,&user->rightbc.v,NULL));
+    PetscCall(PetscOptionsInt("-n","Number of 1-D elements","ex35.cxx",user->n,&user->n,NULL));
+    PetscCall(PetscOptionsInt("-ndt","Number of time steps","ex35.cxx",user->ntsteps,&user->ntsteps,NULL));
+    PetscCall(PetscOptionsBool("-io","Write the mesh and solution output to a file.","ex35.cxx",user->io,&user->io,NULL));
     user->npts   = user->n+1;
   }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
   *puser = user;
   PetscFunctionReturn(0);
@@ -76,7 +76,7 @@ PetscErrorCode Initialize_AppContext(UserCtx *puser)
 PetscErrorCode Destroy_AppContext(UserCtx *user)
 {
   PetscFunctionBegin;
-  CHKERRQ(PetscFree(*user));
+  PetscCall(PetscFree(*user));
   PetscFunctionReturn(0);
 }
 
@@ -102,91 +102,91 @@ int main(int argc,char **argv)
   DM                dm;
   const char        *fields[2] = {"U","V"};
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char *)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char *)0,help));
 
   /* Initialize the user context struct */
-  CHKERRQ(Initialize_AppContext(&user));
+  PetscCall(Initialize_AppContext(&user));
 
   /* Fill in the user defined work context: */
-  CHKERRQ(DMMoabCreateBoxMesh(PETSC_COMM_WORLD, 1, PETSC_FALSE, NULL, user->n, 1, &dm));
-  CHKERRQ(DMMoabSetFieldNames(dm, user->nvars, fields));
-  CHKERRQ(DMMoabSetBlockSize(dm, user->nvars));
-  CHKERRQ(DMSetFromOptions(dm));
+  PetscCall(DMMoabCreateBoxMesh(PETSC_COMM_WORLD, 1, PETSC_FALSE, NULL, user->n, 1, &dm));
+  PetscCall(DMMoabSetFieldNames(dm, user->nvars, fields));
+  PetscCall(DMMoabSetBlockSize(dm, user->nvars));
+  PetscCall(DMSetFromOptions(dm));
 
   /* SetUp the data structures for DMMOAB */
-  CHKERRQ(DMSetUp(dm));
+  PetscCall(DMSetUp(dm));
 
   /*  Create timestepping solver context */
-  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
-  CHKERRQ(TSSetDM(ts, dm));
-  CHKERRQ(TSSetType(ts,TSARKIMEX));
-  CHKERRQ(TSSetEquationType(ts,TS_EQ_DAE_IMPLICIT_INDEX1));
-  CHKERRQ(DMSetMatType(dm,MATBAIJ));
-  CHKERRQ(DMCreateMatrix(dm,&J));
+  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
+  PetscCall(TSSetDM(ts, dm));
+  PetscCall(TSSetType(ts,TSARKIMEX));
+  PetscCall(TSSetEquationType(ts,TS_EQ_DAE_IMPLICIT_INDEX1));
+  PetscCall(DMSetMatType(dm,MATBAIJ));
+  PetscCall(DMCreateMatrix(dm,&J));
 
-  CHKERRQ(TSSetRHSFunction(ts,NULL,FormRHSFunction,user));
-  CHKERRQ(TSSetIFunction(ts,NULL,FormIFunction,user));
-  CHKERRQ(TSSetIJacobian(ts,J,J,FormIJacobian,user));
+  PetscCall(TSSetRHSFunction(ts,NULL,FormRHSFunction,user));
+  PetscCall(TSSetIFunction(ts,NULL,FormIFunction,user));
+  PetscCall(TSSetIJacobian(ts,J,J,FormIJacobian,user));
 
   ftime = 10.0;
-  CHKERRQ(TSSetMaxSteps(ts,user->ntsteps));
-  CHKERRQ(TSSetMaxTime(ts,ftime));
-  CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
+  PetscCall(TSSetMaxSteps(ts,user->ntsteps));
+  PetscCall(TSSetMaxTime(ts,ftime));
+  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create the solution vector and set the initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(DMCreateGlobalVector(dm, &X));
+  PetscCall(DMCreateGlobalVector(dm, &X));
 
-  CHKERRQ(FormInitialSolution(ts,X,user));
-  CHKERRQ(TSSetSolution(ts,X));
-  CHKERRQ(VecGetSize(X,&mx));
+  PetscCall(FormInitialSolution(ts,X,user));
+  PetscCall(TSSetSolution(ts,X));
+  PetscCall(VecGetSize(X,&mx));
   hx = 1.0/(PetscReal)(mx/2-1);
   dt = 0.4 * PetscSqr(hx) / user->alpha; /* Diffusive stability limit */
-  CHKERRQ(TSSetTimeStep(ts,dt));
+  PetscCall(TSSetTimeStep(ts,dt));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSSetFromOptions(ts));
+  PetscCall(TSSetFromOptions(ts));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(TSSolve(ts,X));
-  CHKERRQ(TSGetSolveTime(ts,&ftime));
-  CHKERRQ(TSGetStepNumber(ts,&steps));
-  CHKERRQ(TSGetConvergedReason(ts,&reason));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after %D steps\n",TSConvergedReasons[reason],ftime,steps));
+  PetscCall(TSSolve(ts,X));
+  PetscCall(TSGetSolveTime(ts,&ftime));
+  PetscCall(TSGetStepNumber(ts,&steps));
+  PetscCall(TSGetConvergedReason(ts,&reason));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after %D steps\n",TSConvergedReasons[reason],ftime,steps));
 
   if (user->io) {
     /* Print the numerical solution to screen and then dump to file */
-    CHKERRQ(VecView(X,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(VecView(X,PETSC_VIEWER_STDOUT_WORLD));
 
     /* Write out the solution along with the mesh */
-    CHKERRQ(DMMoabSetGlobalFieldVector(dm, X));
+    PetscCall(DMMoabSetGlobalFieldVector(dm, X));
 #ifdef MOAB_HAVE_HDF5
-    CHKERRQ(DMMoabOutput(dm, "ex35.h5m", ""));
+    PetscCall(DMMoabOutput(dm, "ex35.h5m", ""));
 #else
     /* MOAB does not support true parallel writers that aren't HDF5 based
        And so if you are using VTK as the output format in parallel,
        the data could be jumbled due to the order in which the processors
        write out their parts of the mesh and solution tags
     */
-    CHKERRQ(DMMoabOutput(dm, "ex35.vtk", ""));
+    PetscCall(DMMoabOutput(dm, "ex35.vtk", ""));
 #endif
   }
 
   /* Free work space.
      Free all PETSc related resources: */
-  CHKERRQ(MatDestroy(&J));
-  CHKERRQ(VecDestroy(&X));
-  CHKERRQ(TSDestroy(&ts));
-  CHKERRQ(DMDestroy(&dm));
+  PetscCall(MatDestroy(&J));
+  PetscCall(VecDestroy(&X));
+  PetscCall(TSDestroy(&ts));
+  PetscCall(DMDestroy(&dm));
 
   /* Free all MOAB related resources: */
-  CHKERRQ(Destroy_AppContext(&user));
-  CHKERRQ(PetscFinalize());
+  PetscCall(Destroy_AppContext(&user));
+  PetscCall(PetscFinalize());
   return 0;
 }
 
@@ -203,10 +203,10 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat J,
   PetscBool           vonboundary;
 
   PetscFunctionBegin;
-  CHKERRQ(TSGetDM(ts, &dm));
+  PetscCall(TSGetDM(ts, &dm));
 
   /* get the essential MOAB mesh related quantities needed for FEM assembly */
-  CHKERRQ(DMMoabGetLocalVertices(dm, &vlocal, NULL));
+  PetscCall(DMMoabGetLocalVertices(dm, &vlocal, NULL));
 
   /* compute local element sizes - structured grid */
   hx = 1.0/user->n;
@@ -217,29 +217,29 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat J,
   for (moab::Range::iterator iter = vlocal->begin(); iter != vlocal->end(); iter++) {
     const moab::EntityHandle vhandle = *iter;
 
-    CHKERRQ(DMMoabGetDofsBlocked(dm, 1, &vhandle, &dof));
+    PetscCall(DMMoabGetDofsBlocked(dm, 1, &vhandle, &dof));
 
     /* check if vertex is on the boundary */
-    CHKERRQ(DMMoabIsEntityOnBoundary(dm,vhandle,&vonboundary));
+    PetscCall(DMMoabIsEntityOnBoundary(dm,vhandle,&vonboundary));
 
     if (vonboundary) {
       const PetscScalar bcvals[2][2] = {{hx,0},{0,hx}};
-      CHKERRQ(MatSetValuesBlocked(Jpre,1,&dof,1,&dof,&bcvals[0][0],INSERT_VALUES));
+      PetscCall(MatSetValuesBlocked(Jpre,1,&dof,1,&dof,&bcvals[0][0],INSERT_VALUES));
     }
     else {
       const PetscInt    row           = dof,col[] = {dof-1,dof,dof+1};
       const PetscScalar dxxL          = -user->alpha/hx,dxx0 = 2.*user->alpha/hx,dxxR = -user->alpha/hx;
       const PetscScalar vals[2][3][2] = {{{dxxL,0},{a *hx+dxx0,0},{dxxR,0}},
                                          {{0,dxxL},{0,a*hx+dxx0},{0,dxxR}}};
-      CHKERRQ(MatSetValuesBlocked(Jpre,1,&row,3,col,&vals[0][0][0],INSERT_VALUES));
+      PetscCall(MatSetValuesBlocked(Jpre,1,&row,3,col,&vals[0][0][0],INSERT_VALUES));
     }
   }
 
-  CHKERRQ(MatAssemblyBegin(Jpre,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(Jpre,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(Jpre,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(Jpre,MAT_FINAL_ASSEMBLY));
   if (J != Jpre) {
-    CHKERRQ(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY));
   }
   PetscFunctionReturn(0);
 }
@@ -256,20 +256,20 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 
   PetscFunctionBegin;
   hx = 1.0/user->n;
-  CHKERRQ(TSGetDM(ts,&dm));
+  PetscCall(TSGetDM(ts,&dm));
 
   /* Get pointers to vector data */
-  CHKERRQ(VecSet(F,0.0));
+  PetscCall(VecSet(F,0.0));
 
-  CHKERRQ(DMMoabVecGetArrayRead(dm, X, &x));
-  CHKERRQ(DMMoabVecGetArray(dm, F, &f));
+  PetscCall(DMMoabVecGetArrayRead(dm, X, &x));
+  PetscCall(DMMoabVecGetArray(dm, F, &f));
 
-  CHKERRQ(DMMoabGetLocalVertices(dm, &ownedvtx, NULL));
+  PetscCall(DMMoabGetLocalVertices(dm, &ownedvtx, NULL));
 
   /* Compute function over the locally owned part of the grid */
   for (moab::Range::iterator iter = ownedvtx->begin(); iter != ownedvtx->end(); iter++) {
     const moab::EntityHandle vhandle = *iter;
-    CHKERRQ(DMMoabGetDofsBlockedLocal(dm, 1, &vhandle, &dof));
+    PetscCall(DMMoabGetDofsBlockedLocal(dm, 1, &vhandle, &dof));
 
     PetscScalar u = x[dof].u,v = x[dof].v;
     f[dof].u = hx*(user->A + u*u*v - (user->B+1)*u);
@@ -277,8 +277,8 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
   }
 
   /* Restore vectors */
-  CHKERRQ(DMMoabVecRestoreArrayRead(dm, X, &x));
-  CHKERRQ(DMMoabVecRestoreArray(dm, F, &f));
+  PetscCall(DMMoabVecRestoreArrayRead(dm, X, &x));
+  PetscCall(DMMoabVecRestoreArray(dm, F, &f));
   PetscFunctionReturn(0);
 }
 
@@ -295,34 +295,34 @@ static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
 
   PetscFunctionBegin;
   hx = 1.0/user->n;
-  CHKERRQ(TSGetDM(ts, &dm));
+  PetscCall(TSGetDM(ts, &dm));
 
   /* get the essential MOAB mesh related quantities needed for FEM assembly */
-  CHKERRQ(DMMoabGetLocalVertices(dm, &vlocal, NULL));
+  PetscCall(DMMoabGetLocalVertices(dm, &vlocal, NULL));
 
   /* reset the residual vector */
-  CHKERRQ(VecSet(F,0.0));
+  PetscCall(VecSet(F,0.0));
 
-  CHKERRQ(DMGetLocalVector(dm,&Xloc));
-  CHKERRQ(DMGlobalToLocalBegin(dm,X,INSERT_VALUES,Xloc));
-  CHKERRQ(DMGlobalToLocalEnd(dm,X,INSERT_VALUES,Xloc));
+  PetscCall(DMGetLocalVector(dm,&Xloc));
+  PetscCall(DMGlobalToLocalBegin(dm,X,INSERT_VALUES,Xloc));
+  PetscCall(DMGlobalToLocalEnd(dm,X,INSERT_VALUES,Xloc));
 
   /* get the local representation of the arrays from Vectors */
-  CHKERRQ(DMMoabVecGetArrayRead(dm, Xloc, &x));
-  CHKERRQ(DMMoabVecGetArrayRead(dm, Xdot, &xdot));
-  CHKERRQ(DMMoabVecGetArray(dm, F, &f));
+  PetscCall(DMMoabVecGetArrayRead(dm, Xloc, &x));
+  PetscCall(DMMoabVecGetArrayRead(dm, Xdot, &xdot));
+  PetscCall(DMMoabVecGetArray(dm, F, &f));
 
   /* loop over local elements */
   for (moab::Range::iterator iter = vlocal->begin(); iter != vlocal->end(); iter++) {
     const moab::EntityHandle vhandle = *iter;
 
-    CHKERRQ(DMMoabGetDofsBlockedLocal(dm,1,&vhandle,&i));
+    PetscCall(DMMoabGetDofsBlockedLocal(dm,1,&vhandle,&i));
 
     /* check if vertex is on the boundary */
-    CHKERRQ(DMMoabIsEntityOnBoundary(dm,vhandle,&elem_on_boundary));
+    PetscCall(DMMoabIsEntityOnBoundary(dm,vhandle,&elem_on_boundary));
 
     if (elem_on_boundary) {
-      CHKERRQ(DMMoabGetDofsBlocked(dm, 1, &vhandle, &bcindx));
+      PetscCall(DMMoabGetDofsBlocked(dm, 1, &vhandle, &bcindx));
       if (bcindx == 0) {  /* Apply left BC */
         f[i].u = hx * (x[i].u - user->leftbc.u);
         f[i].v = hx * (x[i].v - user->leftbc.v);
@@ -338,10 +338,10 @@ static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
   }
 
   /* Restore data */
-  CHKERRQ(DMMoabVecRestoreArrayRead(dm, Xloc, &x));
-  CHKERRQ(DMMoabVecRestoreArrayRead(dm, Xdot, &xdot));
-  CHKERRQ(DMMoabVecRestoreArray(dm, F, &f));
-  CHKERRQ(DMRestoreLocalVector(dm, &Xloc));
+  PetscCall(DMMoabVecRestoreArrayRead(dm, Xloc, &x));
+  PetscCall(DMMoabVecRestoreArrayRead(dm, Xdot, &xdot));
+  PetscCall(DMMoabVecRestoreArray(dm, F, &f));
+  PetscCall(DMRestoreLocalVector(dm, &Xloc));
   PetscFunctionReturn(0);
 }
 
@@ -356,23 +356,23 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
   moab::Range::iterator iter;
 
   PetscFunctionBegin;
-  CHKERRQ(TSGetDM(ts, &dm));
+  PetscCall(TSGetDM(ts, &dm));
 
   /* get the essential MOAB mesh related quantities needed for FEM assembly */
-  CHKERRQ(DMMoabGetLocalVertices(dm, &vowned, NULL));
+  PetscCall(DMMoabGetLocalVertices(dm, &vowned, NULL));
 
-  CHKERRQ(VecSet(X, 0.0));
+  PetscCall(VecSet(X, 0.0));
 
   /* Get pointers to vector data */
-  CHKERRQ(DMMoabVecGetArray(dm, X, &x));
+  PetscCall(DMMoabVecGetArray(dm, X, &x));
 
   /* Compute function over the locally owned part of the grid */
   for (moab::Range::iterator iter = vowned->begin(); iter != vowned->end(); iter++) {
     const moab::EntityHandle vhandle = *iter;
-    CHKERRQ(DMMoabGetDofsBlockedLocal(dm, 1, &vhandle, &dof));
+    PetscCall(DMMoabGetDofsBlockedLocal(dm, 1, &vhandle, &dof));
 
     /* compute the mid-point of the element and use a 1-point lumped quadrature */
-    CHKERRQ(DMMoabGetVertexCoordinates(dm,1,&vhandle,vpos));
+    PetscCall(DMMoabGetVertexCoordinates(dm,1,&vhandle,vpos));
 
     PetscReal xi = vpos[0];
     x[dof].u = user->leftbc.u*(1.-xi) + user->rightbc.u*xi + PetscSinReal(2.*PETSC_PI*xi);
@@ -380,7 +380,7 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
   }
 
   /* Restore vectors */
-  CHKERRQ(DMMoabVecRestoreArray(dm, X, &x));
+  PetscCall(DMMoabVecRestoreArray(dm, X, &x));
   PetscFunctionReturn(0);
 }
 

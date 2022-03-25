@@ -83,9 +83,9 @@ int main(int argc,char *argv[])
   double         *PETSC_RESTRICT a,*PETSC_RESTRICT b,*PETSC_RESTRICT c;
 #endif
 
-  CHKERRQ(PetscInitialize(&argc,&argv,0,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-node",&node,NULL));
+  PetscCall(PetscInitialize(&argc,&argv,0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-node",&node,NULL));
   /* --- SETUP --- determine precision and check timing --- */
 
   PetscPrintf(PETSC_COMM_WORLD,HLINE);
@@ -258,7 +258,7 @@ int main(int argc,char *argv[])
     rmstime[j] = sqrt(rmstime[j]/(double)NTIMES);
     PetscPrintf(PETSC_COMM_WORLD,"%8s: %11.4f  %11.4f  %11.4f  %11.4f  %11.4f\n", label[j], 1.0e-06*bytes[j]/mintime[j], size*1.0e-06*bytes[j]/mintime[j], rmstime[j], mintime[j], maxtime[j]);
   }
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

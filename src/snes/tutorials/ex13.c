@@ -122,12 +122,12 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->homogeneous = PETSC_FALSE;
   options->viewError   = PETSC_FALSE;
 
-  ierr = PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsBool("-shear", "Shear the domain", "ex13.c", options->shear, &options->shear, NULL));
-  CHKERRQ(PetscOptionsBool("-spectral", "Look at the spectrum along planes of the solution", "ex13.c", options->spectral, &options->spectral, NULL));
-  CHKERRQ(PetscOptionsBool("-adjoint", "Solve the adjoint problem", "ex13.c", options->adjoint, &options->adjoint, NULL));
-  CHKERRQ(PetscOptionsBool("-homogeneous", "Use homogeneous boundary conditions", "ex13.c", options->homogeneous, &options->homogeneous, NULL));
-  CHKERRQ(PetscOptionsBool("-error_view", "Output the solution error", "ex13.c", options->viewError, &options->viewError, NULL));
+  ierr = PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");PetscCall(ierr);
+  PetscCall(PetscOptionsBool("-shear", "Shear the domain", "ex13.c", options->shear, &options->shear, NULL));
+  PetscCall(PetscOptionsBool("-spectral", "Look at the spectrum along planes of the solution", "ex13.c", options->spectral, &options->spectral, NULL));
+  PetscCall(PetscOptionsBool("-adjoint", "Solve the adjoint problem", "ex13.c", options->adjoint, &options->adjoint, NULL));
+  PetscCall(PetscOptionsBool("-homogeneous", "Use homogeneous boundary conditions", "ex13.c", options->homogeneous, &options->homogeneous, NULL));
+  PetscCall(PetscOptionsBool("-error_view", "Output the solution error", "ex13.c", options->viewError, &options->viewError, NULL));
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -140,46 +140,46 @@ static PetscErrorCode CreateSpectralPlanes(DM dm, PetscInt numPlanes, const Pets
   PetscInt           dim, p, vStart, vEnd, v;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetCoordinateDim(dm, &dim));
-  CHKERRQ(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
-  CHKERRQ(DMGetCoordinatesLocal(dm, &coordinates));
-  CHKERRQ(DMGetCoordinateSection(dm, &coordSection));
-  CHKERRQ(VecGetArrayRead(coordinates, &coords));
+  PetscCall(DMGetCoordinateDim(dm, &dim));
+  PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
+  PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
+  PetscCall(DMGetCoordinateSection(dm, &coordSection));
+  PetscCall(VecGetArrayRead(coordinates, &coords));
   for (p = 0; p < numPlanes; ++p) {
     DMLabel label;
     char    name[PETSC_MAX_PATH_LEN];
 
-    CHKERRQ(PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "spectral_plane_%D", p));
-    CHKERRQ(DMCreateLabel(dm, name));
-    CHKERRQ(DMGetLabel(dm, name, &label));
-    CHKERRQ(DMLabelAddStratum(label, 1));
+    PetscCall(PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "spectral_plane_%D", p));
+    PetscCall(DMCreateLabel(dm, name));
+    PetscCall(DMGetLabel(dm, name, &label));
+    PetscCall(DMLabelAddStratum(label, 1));
     for (v = vStart; v < vEnd; ++v) {
       PetscInt off;
 
-      CHKERRQ(PetscSectionGetOffset(coordSection, v, &off));
+      PetscCall(PetscSectionGetOffset(coordSection, v, &off));
       if (PetscAbsReal(planeCoord[p] - PetscRealPart(coords[off+planeDir[p]])) < PETSC_SMALL) {
-        CHKERRQ(DMLabelSetValue(label, v, 1));
+        PetscCall(DMLabelSetValue(label, v, 1));
       }
     }
   }
-  CHKERRQ(VecRestoreArrayRead(coordinates, &coords));
+  PetscCall(VecRestoreArrayRead(coordinates, &coords));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscFunctionBeginUser;
-  CHKERRQ(DMCreate(comm, dm));
-  CHKERRQ(DMSetType(*dm, DMPLEX));
-  CHKERRQ(DMSetFromOptions(*dm));
-  if (user->shear) CHKERRQ(DMPlexShearGeometry(*dm, DM_X, NULL));
-  CHKERRQ(DMSetApplicationContext(*dm, user));
-  CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
+  PetscCall(DMCreate(comm, dm));
+  PetscCall(DMSetType(*dm, DMPLEX));
+  PetscCall(DMSetFromOptions(*dm));
+  if (user->shear) PetscCall(DMPlexShearGeometry(*dm, DM_X, NULL));
+  PetscCall(DMSetApplicationContext(*dm, user));
+  PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   if (user->spectral) {
     PetscInt  planeDir[2]   = {0,  1};
     PetscReal planeCoord[2] = {0., 1.};
 
-    CHKERRQ(CreateSpectralPlanes(*dm, 2, planeDir, planeCoord, user));
+    PetscCall(CreateSpectralPlanes(*dm, 2, planeDir, planeCoord, user));
   }
   PetscFunctionReturn(0);
 }
@@ -193,12 +193,12 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
   PetscErrorCode (*ex)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *) = user->homogeneous ? trig_homogeneous_u : trig_inhomogeneous_u;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetDS(dm, &ds));
-  CHKERRQ(PetscDSSetResidual(ds, 0, f0, f1_u));
-  CHKERRQ(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_uu));
-  CHKERRQ(PetscDSSetExactSolution(ds, 0, ex, user));
-  CHKERRQ(DMGetLabel(dm, "marker", &label));
-  CHKERRQ(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) ex, NULL, user, NULL));
+  PetscCall(DMGetDS(dm, &ds));
+  PetscCall(PetscDSSetResidual(ds, 0, f0, f1_u));
+  PetscCall(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_uu));
+  PetscCall(PetscDSSetExactSolution(ds, 0, ex, user));
+  PetscCall(DMGetLabel(dm, "marker", &label));
+  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) ex, NULL, user, NULL));
   PetscFunctionReturn(0);
 }
 
@@ -209,12 +209,12 @@ static PetscErrorCode SetupAdjointProblem(DM dm, AppCtx *user)
   const PetscInt id = 1;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetDS(dm, &ds));
-  CHKERRQ(PetscDSSetResidual(ds, 0, f0_unity_u, f1_u));
-  CHKERRQ(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_uu));
-  CHKERRQ(PetscDSSetObjective(ds, 0, obj_error_u));
-  CHKERRQ(DMGetLabel(dm, "marker", &label));
-  CHKERRQ(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) zero, NULL, user, NULL));
+  PetscCall(DMGetDS(dm, &ds));
+  PetscCall(PetscDSSetResidual(ds, 0, f0_unity_u, f1_u));
+  PetscCall(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_uu));
+  PetscCall(PetscDSSetObjective(ds, 0, obj_error_u));
+  PetscCall(DMGetLabel(dm, "marker", &label));
+  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) zero, NULL, user, NULL));
   PetscFunctionReturn(0);
 }
 
@@ -223,7 +223,7 @@ static PetscErrorCode SetupErrorProblem(DM dm, AppCtx *user)
   PetscDS        prob;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetDS(dm, &prob));
+  PetscCall(DMGetDS(dm, &prob));
   PetscFunctionReturn(0);
 }
 
@@ -237,24 +237,24 @@ static PetscErrorCode SetupDiscretization(DM dm, const char name[], PetscErrorCo
   char           prefix[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetDimension(dm, &dim));
-  CHKERRQ(DMPlexGetHeightStratum(dm, 0, &cStart, NULL));
-  CHKERRQ(DMPlexGetCellType(dm, cStart, &ct));
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, NULL));
+  PetscCall(DMPlexGetCellType(dm, cStart, &ct));
   simplex = DMPolytopeTypeGetNumVertices(ct) == DMPolytopeTypeGetDim(ct)+1 ? PETSC_TRUE : PETSC_FALSE;
   /* Create finite element */
-  CHKERRQ(PetscSNPrintf(prefix, PETSC_MAX_PATH_LEN, "%s_", name));
-  CHKERRQ(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, name ? prefix : NULL, -1, &fe));
-  CHKERRQ(PetscObjectSetName((PetscObject) fe, name));
+  PetscCall(PetscSNPrintf(prefix, PETSC_MAX_PATH_LEN, "%s_", name));
+  PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, name ? prefix : NULL, -1, &fe));
+  PetscCall(PetscObjectSetName((PetscObject) fe, name));
   /* Set discretization and boundary conditions for each mesh */
-  CHKERRQ(DMSetField(dm, 0, NULL, (PetscObject) fe));
-  CHKERRQ(DMCreateDS(dm));
-  CHKERRQ((*setup)(dm, user));
+  PetscCall(DMSetField(dm, 0, NULL, (PetscObject) fe));
+  PetscCall(DMCreateDS(dm));
+  PetscCall((*setup)(dm, user));
   while (cdm) {
-    CHKERRQ(DMCopyDisc(dm,cdm));
+    PetscCall(DMCopyDisc(dm,cdm));
     /* TODO: Check whether the boundary of coarse meshes is marked */
-    CHKERRQ(DMGetCoarseDM(cdm, &cdm));
+    PetscCall(DMGetCoarseDM(cdm, &cdm));
   }
-  CHKERRQ(PetscFEDestroy(&fe));
+  PetscCall(PetscFEDestroy(&fe));
   PetscFunctionReturn(0);
 }
 
@@ -268,19 +268,19 @@ static PetscErrorCode ComputeSpectral(DM dm, Vec u, PetscInt numPlanes, const Pe
   PetscMPIInt        size, rank;
 
   PetscFunctionBeginUser;
-  CHKERRQ(PetscObjectGetComm((PetscObject) dm, &comm));
-  CHKERRMPI(MPI_Comm_size(comm, &size));
-  CHKERRMPI(MPI_Comm_rank(comm, &rank));
-  CHKERRQ(DMGetLocalVector(dm, &uloc));
-  CHKERRQ(DMGlobalToLocalBegin(dm, u, INSERT_VALUES, uloc));
-  CHKERRQ(DMGlobalToLocalEnd(dm, u, INSERT_VALUES, uloc));
-  CHKERRQ(DMPlexInsertBoundaryValues(dm, PETSC_TRUE, uloc, 0.0, NULL, NULL, NULL));
-  CHKERRQ(VecViewFromOptions(uloc, NULL, "-sol_view"));
-  CHKERRQ(DMGetLocalSection(dm, &section));
-  CHKERRQ(VecGetArrayRead(uloc, &array));
-  CHKERRQ(DMGetCoordinatesLocal(dm, &coordinates));
-  CHKERRQ(DMGetCoordinateSection(dm, &coordSection));
-  CHKERRQ(VecGetArrayRead(coordinates, &coords));
+  PetscCall(PetscObjectGetComm((PetscObject) dm, &comm));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  PetscCall(DMGetLocalVector(dm, &uloc));
+  PetscCall(DMGlobalToLocalBegin(dm, u, INSERT_VALUES, uloc));
+  PetscCall(DMGlobalToLocalEnd(dm, u, INSERT_VALUES, uloc));
+  PetscCall(DMPlexInsertBoundaryValues(dm, PETSC_TRUE, uloc, 0.0, NULL, NULL, NULL));
+  PetscCall(VecViewFromOptions(uloc, NULL, "-sol_view"));
+  PetscCall(DMGetLocalSection(dm, &section));
+  PetscCall(VecGetArrayRead(uloc, &array));
+  PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
+  PetscCall(DMGetCoordinateSection(dm, &coordSection));
+  PetscCall(VecGetArrayRead(coordinates, &coords));
   for (p = 0; p < numPlanes; ++p) {
     DMLabel         label;
     char            name[PETSC_MAX_PATH_LEN];
@@ -293,15 +293,15 @@ static PetscErrorCode ComputeSpectral(DM dm, Vec u, PetscInt numPlanes, const Pe
     PetscInt        n, N, i, j, off, offu;
     const PetscInt *points;
 
-    CHKERRQ(PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "spectral_plane_%D", p));
-    CHKERRQ(DMGetLabel(dm, name, &label));
-    CHKERRQ(DMLabelGetStratumIS(label, 1, &stratum));
-    CHKERRQ(ISGetLocalSize(stratum, &n));
-    CHKERRQ(ISGetIndices(stratum, &points));
-    CHKERRQ(PetscMalloc2(n, &ray, n, &svals));
+    PetscCall(PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "spectral_plane_%D", p));
+    PetscCall(DMGetLabel(dm, name, &label));
+    PetscCall(DMLabelGetStratumIS(label, 1, &stratum));
+    PetscCall(ISGetLocalSize(stratum, &n));
+    PetscCall(ISGetIndices(stratum, &points));
+    PetscCall(PetscMalloc2(n, &ray, n, &svals));
     for (i = 0; i < n; ++i) {
-      CHKERRQ(PetscSectionGetOffset(coordSection, points[i], &off));
-      CHKERRQ(PetscSectionGetOffset(section, points[i], &offu));
+      PetscCall(PetscSectionGetOffset(coordSection, points[i], &off));
+      PetscCall(PetscSectionGetOffset(section, points[i], &offu));
       ray[i]   = PetscRealPart(coords[off+((planeDir[p]+1)%2)]);
       svals[i] = array[offu];
     }
@@ -309,14 +309,14 @@ static PetscErrorCode ComputeSpectral(DM dm, Vec u, PetscInt numPlanes, const Pe
     if (size > 1) {
       PetscMPIInt *cnt, *displs, p;
 
-      CHKERRQ(PetscCalloc2(size, &cnt, size, &displs));
-      CHKERRMPI(MPI_Gather(&n, 1, MPIU_INT, cnt, 1, MPIU_INT, 0, comm));
+      PetscCall(PetscCalloc2(size, &cnt, size, &displs));
+      PetscCallMPI(MPI_Gather(&n, 1, MPIU_INT, cnt, 1, MPIU_INT, 0, comm));
       for (p = 1; p < size; ++p) displs[p] = displs[p-1] + cnt[p-1];
       N = displs[size-1] + cnt[size-1];
-      CHKERRQ(PetscMalloc2(N, &gray, N, &gsvals));
-      CHKERRMPI(MPI_Gatherv(ray, n, MPIU_REAL, gray, cnt, displs, MPIU_REAL, 0, comm));
-      CHKERRMPI(MPI_Gatherv(svals, n, MPIU_SCALAR, gsvals, cnt, displs, MPIU_SCALAR, 0, comm));
-      CHKERRQ(PetscFree2(cnt, displs));
+      PetscCall(PetscMalloc2(N, &gray, N, &gsvals));
+      PetscCallMPI(MPI_Gatherv(ray, n, MPIU_REAL, gray, cnt, displs, MPIU_REAL, 0, comm));
+      PetscCallMPI(MPI_Gatherv(svals, n, MPIU_SCALAR, gsvals, cnt, displs, MPIU_SCALAR, 0, comm));
+      PetscCall(PetscFree2(cnt, displs));
     } else {
       N      = n;
       gray   = ray;
@@ -324,44 +324,44 @@ static PetscErrorCode ComputeSpectral(DM dm, Vec u, PetscInt numPlanes, const Pe
     }
     if (rank == 0) {
       /* Sort point along ray */
-      CHKERRQ(PetscMalloc2(N, &perm, N, &nperm));
+      PetscCall(PetscMalloc2(N, &perm, N, &nperm));
       for (i = 0; i < N; ++i) {perm[i] = i;}
-      CHKERRQ(PetscSortRealWithPermutation(N, gray, perm));
+      PetscCall(PetscSortRealWithPermutation(N, gray, perm));
       /* Count duplicates and squish mapping */
       nperm[0] = perm[0];
       for (i = 1, j = 1; i < N; ++i) {
         if (PetscAbsReal(gray[perm[i]] - gray[perm[i-1]]) > PETSC_SMALL) nperm[j++] = perm[i];
       }
       /* Create FFT structs */
-      CHKERRQ(MatCreateFFT(PETSC_COMM_SELF, 1, &j, MATFFTW, &F));
-      CHKERRQ(MatCreateVecs(F, &x, &y));
-      CHKERRQ(PetscObjectSetName((PetscObject) y, name));
-      CHKERRQ(VecGetArray(x, &rvals));
+      PetscCall(MatCreateFFT(PETSC_COMM_SELF, 1, &j, MATFFTW, &F));
+      PetscCall(MatCreateVecs(F, &x, &y));
+      PetscCall(PetscObjectSetName((PetscObject) y, name));
+      PetscCall(VecGetArray(x, &rvals));
       for (i = 0, j = 0; i < N; ++i) {
         if (i > 0 && PetscAbsReal(gray[perm[i]] - gray[perm[i-1]]) < PETSC_SMALL) continue;
         rvals[j] = gsvals[nperm[j]];
         ++j;
       }
-      CHKERRQ(PetscFree2(perm, nperm));
-      if (size > 1) CHKERRQ(PetscFree2(gray, gsvals));
-      CHKERRQ(VecRestoreArray(x, &rvals));
+      PetscCall(PetscFree2(perm, nperm));
+      if (size > 1) PetscCall(PetscFree2(gray, gsvals));
+      PetscCall(VecRestoreArray(x, &rvals));
       /* Do FFT along the ray */
-      CHKERRQ(MatMult(F, x, y));
+      PetscCall(MatMult(F, x, y));
       /* Chop FFT */
-      CHKERRQ(VecChop(y, PETSC_SMALL));
-      CHKERRQ(VecViewFromOptions(x, NULL, "-real_view"));
-      CHKERRQ(VecViewFromOptions(y, NULL, "-fft_view"));
-      CHKERRQ(VecDestroy(&x));
-      CHKERRQ(VecDestroy(&y));
-      CHKERRQ(MatDestroy(&F));
+      PetscCall(VecChop(y, PETSC_SMALL));
+      PetscCall(VecViewFromOptions(x, NULL, "-real_view"));
+      PetscCall(VecViewFromOptions(y, NULL, "-fft_view"));
+      PetscCall(VecDestroy(&x));
+      PetscCall(VecDestroy(&y));
+      PetscCall(MatDestroy(&F));
     }
-    CHKERRQ(ISRestoreIndices(stratum, &points));
-    CHKERRQ(ISDestroy(&stratum));
-    CHKERRQ(PetscFree2(ray, svals));
+    PetscCall(ISRestoreIndices(stratum, &points));
+    PetscCall(ISDestroy(&stratum));
+    PetscCall(PetscFree2(ray, svals));
   }
-  CHKERRQ(VecRestoreArrayRead(coordinates, &coords));
-  CHKERRQ(VecRestoreArrayRead(uloc, &array));
-  CHKERRQ(DMRestoreLocalVector(dm, &uloc));
+  PetscCall(VecRestoreArrayRead(coordinates, &coords));
+  PetscCall(VecRestoreArrayRead(uloc, &array));
+  PetscCall(DMRestoreLocalVector(dm, &uloc));
   PetscFunctionReturn(0);
 }
 
@@ -372,21 +372,21 @@ int main(int argc, char **argv)
   Vec            u;    /* Solutions */
   AppCtx         user; /* User-defined work context */
 
-  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
-  CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
   /* Primal system */
-  CHKERRQ(SNESCreate(PETSC_COMM_WORLD, &snes));
-  CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
-  CHKERRQ(SNESSetDM(snes, dm));
-  CHKERRQ(SetupDiscretization(dm, "potential", SetupPrimalProblem, &user));
-  CHKERRQ(DMCreateGlobalVector(dm, &u));
-  CHKERRQ(VecSet(u, 0.0));
-  CHKERRQ(PetscObjectSetName((PetscObject) u, "potential"));
-  CHKERRQ(DMPlexSetSNESLocalFEM(dm, &user, &user, &user));
-  CHKERRQ(SNESSetFromOptions(snes));
-  CHKERRQ(SNESSolve(snes, NULL, u));
-  CHKERRQ(SNESGetSolution(snes, &u));
-  CHKERRQ(VecViewFromOptions(u, NULL, "-potential_view"));
+  PetscCall(SNESCreate(PETSC_COMM_WORLD, &snes));
+  PetscCall(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
+  PetscCall(SNESSetDM(snes, dm));
+  PetscCall(SetupDiscretization(dm, "potential", SetupPrimalProblem, &user));
+  PetscCall(DMCreateGlobalVector(dm, &u));
+  PetscCall(VecSet(u, 0.0));
+  PetscCall(PetscObjectSetName((PetscObject) u, "potential"));
+  PetscCall(DMPlexSetSNESLocalFEM(dm, &user, &user, &user));
+  PetscCall(SNESSetFromOptions(snes));
+  PetscCall(SNESSolve(snes, NULL, u));
+  PetscCall(SNESGetSolution(snes, &u));
+  PetscCall(VecViewFromOptions(u, NULL, "-potential_view"));
   if (user.viewError) {
     PetscErrorCode (*sol)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *);
     void            *ctx;
@@ -394,17 +394,17 @@ int main(int argc, char **argv)
     PetscReal        error;
     PetscInt         N;
 
-    CHKERRQ(DMGetDS(dm, &ds));
-    CHKERRQ(PetscDSGetExactSolution(ds, 0, &sol, &ctx));
-    CHKERRQ(VecGetSize(u, &N));
-    CHKERRQ(DMComputeL2Diff(dm, 0.0, &sol, &ctx, u, &error));
-    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "N: %D L2 error: %g\n", N, (double)error));
+    PetscCall(DMGetDS(dm, &ds));
+    PetscCall(PetscDSGetExactSolution(ds, 0, &sol, &ctx));
+    PetscCall(VecGetSize(u, &N));
+    PetscCall(DMComputeL2Diff(dm, 0.0, &sol, &ctx, u, &error));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "N: %D L2 error: %g\n", N, (double)error));
   }
   if (user.spectral) {
     PetscInt  planeDir[2]   = {0,  1};
     PetscReal planeCoord[2] = {0., 1.};
 
-    CHKERRQ(ComputeSpectral(dm, u, 2, planeDir, planeCoord, &user));
+    PetscCall(ComputeSpectral(dm, u, 2, planeDir, planeCoord, &user));
   }
   /* Adjoint system */
   if (user.adjoint) {
@@ -412,19 +412,19 @@ int main(int argc, char **argv)
     SNES snesAdj;
     Vec  uAdj;
 
-    CHKERRQ(SNESCreate(PETSC_COMM_WORLD, &snesAdj));
-    CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) snesAdj, "adjoint_"));
-    CHKERRQ(DMClone(dm, &dmAdj));
-    CHKERRQ(SNESSetDM(snesAdj, dmAdj));
-    CHKERRQ(SetupDiscretization(dmAdj, "adjoint", SetupAdjointProblem, &user));
-    CHKERRQ(DMCreateGlobalVector(dmAdj, &uAdj));
-    CHKERRQ(VecSet(uAdj, 0.0));
-    CHKERRQ(PetscObjectSetName((PetscObject) uAdj, "adjoint"));
-    CHKERRQ(DMPlexSetSNESLocalFEM(dmAdj, &user, &user, &user));
-    CHKERRQ(SNESSetFromOptions(snesAdj));
-    CHKERRQ(SNESSolve(snesAdj, NULL, uAdj));
-    CHKERRQ(SNESGetSolution(snesAdj, &uAdj));
-    CHKERRQ(VecViewFromOptions(uAdj, NULL, "-adjoint_view"));
+    PetscCall(SNESCreate(PETSC_COMM_WORLD, &snesAdj));
+    PetscCall(PetscObjectSetOptionsPrefix((PetscObject) snesAdj, "adjoint_"));
+    PetscCall(DMClone(dm, &dmAdj));
+    PetscCall(SNESSetDM(snesAdj, dmAdj));
+    PetscCall(SetupDiscretization(dmAdj, "adjoint", SetupAdjointProblem, &user));
+    PetscCall(DMCreateGlobalVector(dmAdj, &uAdj));
+    PetscCall(VecSet(uAdj, 0.0));
+    PetscCall(PetscObjectSetName((PetscObject) uAdj, "adjoint"));
+    PetscCall(DMPlexSetSNESLocalFEM(dmAdj, &user, &user, &user));
+    PetscCall(SNESSetFromOptions(snesAdj));
+    PetscCall(SNESSolve(snesAdj, NULL, uAdj));
+    PetscCall(SNESGetSolution(snesAdj, &uAdj));
+    PetscCall(VecViewFromOptions(uAdj, NULL, "-adjoint_view"));
     /* Error representation */
     {
       DM        dmErr, dmErrAux, dms[2];
@@ -440,81 +440,81 @@ int main(int argc, char **argv)
       void            *ctxs[1] = {0};
 
       ctxs[0] = &user;
-      CHKERRQ(DMClone(dm, &dmErr));
-      CHKERRQ(SetupDiscretization(dmErr, "error", SetupErrorProblem, &user));
-      CHKERRQ(DMGetGlobalVector(dmErr, &errorEst));
-      CHKERRQ(DMGetGlobalVector(dmErr, &errorL2));
+      PetscCall(DMClone(dm, &dmErr));
+      PetscCall(SetupDiscretization(dmErr, "error", SetupErrorProblem, &user));
+      PetscCall(DMGetGlobalVector(dmErr, &errorEst));
+      PetscCall(DMGetGlobalVector(dmErr, &errorL2));
       /*   Compute auxiliary data (solution and projection of adjoint solution) */
-      CHKERRQ(DMGetLocalVector(dmAdj, &uAdjLoc));
-      CHKERRQ(DMGlobalToLocalBegin(dmAdj, uAdj, INSERT_VALUES, uAdjLoc));
-      CHKERRQ(DMGlobalToLocalEnd(dmAdj, uAdj, INSERT_VALUES, uAdjLoc));
-      CHKERRQ(DMGetGlobalVector(dm, &uAdjProj));
-      CHKERRQ(DMSetAuxiliaryVec(dm, NULL, 0, 0, uAdjLoc));
-      CHKERRQ(DMProjectField(dm, 0.0, u, identity, INSERT_VALUES, uAdjProj));
-      CHKERRQ(DMSetAuxiliaryVec(dm, NULL, 0, 0, NULL));
-      CHKERRQ(DMRestoreLocalVector(dmAdj, &uAdjLoc));
+      PetscCall(DMGetLocalVector(dmAdj, &uAdjLoc));
+      PetscCall(DMGlobalToLocalBegin(dmAdj, uAdj, INSERT_VALUES, uAdjLoc));
+      PetscCall(DMGlobalToLocalEnd(dmAdj, uAdj, INSERT_VALUES, uAdjLoc));
+      PetscCall(DMGetGlobalVector(dm, &uAdjProj));
+      PetscCall(DMSetAuxiliaryVec(dm, NULL, 0, 0, uAdjLoc));
+      PetscCall(DMProjectField(dm, 0.0, u, identity, INSERT_VALUES, uAdjProj));
+      PetscCall(DMSetAuxiliaryVec(dm, NULL, 0, 0, NULL));
+      PetscCall(DMRestoreLocalVector(dmAdj, &uAdjLoc));
       /*   Attach auxiliary data */
       dms[0] = dm; dms[1] = dm;
-      CHKERRQ(DMCreateSuperDM(dms, 2, &subis, &dmErrAux));
+      PetscCall(DMCreateSuperDM(dms, 2, &subis, &dmErrAux));
       if (0) {
         PetscSection sec;
 
-        CHKERRQ(DMGetLocalSection(dms[0], &sec));
-        CHKERRQ(PetscSectionView(sec, PETSC_VIEWER_STDOUT_WORLD));
-        CHKERRQ(DMGetLocalSection(dms[1], &sec));
-        CHKERRQ(PetscSectionView(sec, PETSC_VIEWER_STDOUT_WORLD));
-        CHKERRQ(DMGetLocalSection(dmErrAux, &sec));
-        CHKERRQ(PetscSectionView(sec, PETSC_VIEWER_STDOUT_WORLD));
+        PetscCall(DMGetLocalSection(dms[0], &sec));
+        PetscCall(PetscSectionView(sec, PETSC_VIEWER_STDOUT_WORLD));
+        PetscCall(DMGetLocalSection(dms[1], &sec));
+        PetscCall(PetscSectionView(sec, PETSC_VIEWER_STDOUT_WORLD));
+        PetscCall(DMGetLocalSection(dmErrAux, &sec));
+        PetscCall(PetscSectionView(sec, PETSC_VIEWER_STDOUT_WORLD));
       }
-      CHKERRQ(DMViewFromOptions(dmErrAux, NULL, "-dm_err_view"));
-      CHKERRQ(ISViewFromOptions(subis[0], NULL, "-super_is_view"));
-      CHKERRQ(ISViewFromOptions(subis[1], NULL, "-super_is_view"));
-      CHKERRQ(DMGetGlobalVector(dmErrAux, &uErr));
-      CHKERRQ(VecViewFromOptions(u, NULL, "-map_vec_view"));
-      CHKERRQ(VecViewFromOptions(uAdjProj, NULL, "-map_vec_view"));
-      CHKERRQ(VecViewFromOptions(uErr, NULL, "-map_vec_view"));
-      CHKERRQ(VecISCopy(uErr, subis[0], SCATTER_FORWARD, u));
-      CHKERRQ(VecISCopy(uErr, subis[1], SCATTER_FORWARD, uAdjProj));
-      CHKERRQ(DMRestoreGlobalVector(dm, &uAdjProj));
-      for (i = 0; i < 2; ++i) CHKERRQ(ISDestroy(&subis[i]));
-      CHKERRQ(PetscFree(subis));
-      CHKERRQ(DMGetLocalVector(dmErrAux, &uErrLoc));
-      CHKERRQ(DMGlobalToLocalBegin(dm, uErr, INSERT_VALUES, uErrLoc));
-      CHKERRQ(DMGlobalToLocalEnd(dm, uErr, INSERT_VALUES, uErrLoc));
-      CHKERRQ(DMRestoreGlobalVector(dmErrAux, &uErr));
-      CHKERRQ(DMSetAuxiliaryVec(dmAdj, NULL, 0, 0, uErrLoc));
+      PetscCall(DMViewFromOptions(dmErrAux, NULL, "-dm_err_view"));
+      PetscCall(ISViewFromOptions(subis[0], NULL, "-super_is_view"));
+      PetscCall(ISViewFromOptions(subis[1], NULL, "-super_is_view"));
+      PetscCall(DMGetGlobalVector(dmErrAux, &uErr));
+      PetscCall(VecViewFromOptions(u, NULL, "-map_vec_view"));
+      PetscCall(VecViewFromOptions(uAdjProj, NULL, "-map_vec_view"));
+      PetscCall(VecViewFromOptions(uErr, NULL, "-map_vec_view"));
+      PetscCall(VecISCopy(uErr, subis[0], SCATTER_FORWARD, u));
+      PetscCall(VecISCopy(uErr, subis[1], SCATTER_FORWARD, uAdjProj));
+      PetscCall(DMRestoreGlobalVector(dm, &uAdjProj));
+      for (i = 0; i < 2; ++i) PetscCall(ISDestroy(&subis[i]));
+      PetscCall(PetscFree(subis));
+      PetscCall(DMGetLocalVector(dmErrAux, &uErrLoc));
+      PetscCall(DMGlobalToLocalBegin(dm, uErr, INSERT_VALUES, uErrLoc));
+      PetscCall(DMGlobalToLocalEnd(dm, uErr, INSERT_VALUES, uErrLoc));
+      PetscCall(DMRestoreGlobalVector(dmErrAux, &uErr));
+      PetscCall(DMSetAuxiliaryVec(dmAdj, NULL, 0, 0, uErrLoc));
       /*   Compute cellwise error estimate */
-      CHKERRQ(VecSet(errorEst, 0.0));
-      CHKERRQ(DMPlexComputeCellwiseIntegralFEM(dmAdj, uAdj, errorEst, &user));
-      CHKERRQ(DMSetAuxiliaryVec(dmAdj, NULL, 0, 0, NULL));
-      CHKERRQ(DMRestoreLocalVector(dmErrAux, &uErrLoc));
-      CHKERRQ(DMDestroy(&dmErrAux));
+      PetscCall(VecSet(errorEst, 0.0));
+      PetscCall(DMPlexComputeCellwiseIntegralFEM(dmAdj, uAdj, errorEst, &user));
+      PetscCall(DMSetAuxiliaryVec(dmAdj, NULL, 0, 0, NULL));
+      PetscCall(DMRestoreLocalVector(dmErrAux, &uErrLoc));
+      PetscCall(DMDestroy(&dmErrAux));
       /*   Plot cellwise error vector */
-      CHKERRQ(VecViewFromOptions(errorEst, NULL, "-error_view"));
+      PetscCall(VecViewFromOptions(errorEst, NULL, "-error_view"));
       /*   Compute ratio of estimate (sum over cells) with actual L_2 error */
-      CHKERRQ(DMComputeL2Diff(dm, 0.0, funcs, ctxs, u, &errorL2Norm));
-      CHKERRQ(DMPlexComputeL2DiffVec(dm, 0.0, funcs, ctxs, u, errorL2));
-      CHKERRQ(VecViewFromOptions(errorL2, NULL, "-l2_error_view"));
-      CHKERRQ(VecNorm(errorL2,  NORM_INFINITY, &errorL2Tot));
-      CHKERRQ(VecNorm(errorEst, NORM_INFINITY, &errorEstTot));
-      CHKERRQ(VecGetSize(errorEst, &N));
-      CHKERRQ(VecPointwiseDivide(errorEst, errorEst, errorL2));
-      CHKERRQ(PetscObjectSetName((PetscObject) errorEst, "Error ratio"));
-      CHKERRQ(VecViewFromOptions(errorEst, NULL, "-error_ratio_view"));
-      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "N: %D L2 error: %g Error Ratio: %g/%g = %g\n", N, (double) errorL2Norm, (double) errorEstTot, (double) PetscSqrtReal(errorL2Tot), (double) errorEstTot/PetscSqrtReal(errorL2Tot)));
-      CHKERRQ(DMRestoreGlobalVector(dmErr, &errorEst));
-      CHKERRQ(DMRestoreGlobalVector(dmErr, &errorL2));
-      CHKERRQ(DMDestroy(&dmErr));
+      PetscCall(DMComputeL2Diff(dm, 0.0, funcs, ctxs, u, &errorL2Norm));
+      PetscCall(DMPlexComputeL2DiffVec(dm, 0.0, funcs, ctxs, u, errorL2));
+      PetscCall(VecViewFromOptions(errorL2, NULL, "-l2_error_view"));
+      PetscCall(VecNorm(errorL2,  NORM_INFINITY, &errorL2Tot));
+      PetscCall(VecNorm(errorEst, NORM_INFINITY, &errorEstTot));
+      PetscCall(VecGetSize(errorEst, &N));
+      PetscCall(VecPointwiseDivide(errorEst, errorEst, errorL2));
+      PetscCall(PetscObjectSetName((PetscObject) errorEst, "Error ratio"));
+      PetscCall(VecViewFromOptions(errorEst, NULL, "-error_ratio_view"));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "N: %D L2 error: %g Error Ratio: %g/%g = %g\n", N, (double) errorL2Norm, (double) errorEstTot, (double) PetscSqrtReal(errorL2Tot), (double) errorEstTot/PetscSqrtReal(errorL2Tot)));
+      PetscCall(DMRestoreGlobalVector(dmErr, &errorEst));
+      PetscCall(DMRestoreGlobalVector(dmErr, &errorL2));
+      PetscCall(DMDestroy(&dmErr));
     }
-    CHKERRQ(DMDestroy(&dmAdj));
-    CHKERRQ(VecDestroy(&uAdj));
-    CHKERRQ(SNESDestroy(&snesAdj));
+    PetscCall(DMDestroy(&dmAdj));
+    PetscCall(VecDestroy(&uAdj));
+    PetscCall(SNESDestroy(&snesAdj));
   }
   /* Cleanup */
-  CHKERRQ(VecDestroy(&u));
-  CHKERRQ(SNESDestroy(&snes));
-  CHKERRQ(DMDestroy(&dm));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&u));
+  PetscCall(SNESDestroy(&snes));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

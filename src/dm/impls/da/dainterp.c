@@ -28,7 +28,7 @@ static PetscErrorCode ConvertToAIJ(MatType intype,MatType *outtype)
   PetscFunctionBegin;
   *outtype = MATAIJ;
   for (i=0; i<3; i++) {
-    CHKERRQ(PetscStrbeginswith(intype,types[i],&flg));
+    PetscCall(PetscStrbeginswith(intype,types[i],&flg));
     if (flg) {
       *outtype = intype;
       PetscFunctionReturn(0);
@@ -51,8 +51,8 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
   MatType                mattype;
 
   PetscFunctionBegin;
-  CHKERRQ(DMDAGetInfo(dac,NULL,&Mx,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&bx,NULL,NULL,NULL));
-  CHKERRQ(DMDAGetInfo(daf,NULL,&mx,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(DMDAGetInfo(dac,NULL,&Mx,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&bx,NULL,NULL,NULL));
+  PetscCall(DMDAGetInfo(daf,NULL,&mx,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
   if (bx == DM_BOUNDARY_PERIODIC) {
     ratio = mx/Mx;
     PetscCheckFalse(ratio*Mx != mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
@@ -61,32 +61,32 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
     PetscCheckFalse(ratio*(Mx-1) != mx-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %D Mx %D",mx,Mx);
   }
 
-  CHKERRQ(DMDAGetCorners(daf,&i_start,NULL,NULL,&m_f,NULL,NULL));
-  CHKERRQ(DMDAGetGhostCorners(daf,&i_start_ghost,NULL,NULL,&m_ghost,NULL,NULL));
-  CHKERRQ(DMGetLocalToGlobalMapping(daf,&ltog_f));
-  CHKERRQ(ISLocalToGlobalMappingGetBlockIndices(ltog_f,&idx_f));
+  PetscCall(DMDAGetCorners(daf,&i_start,NULL,NULL,&m_f,NULL,NULL));
+  PetscCall(DMDAGetGhostCorners(daf,&i_start_ghost,NULL,NULL,&m_ghost,NULL,NULL));
+  PetscCall(DMGetLocalToGlobalMapping(daf,&ltog_f));
+  PetscCall(ISLocalToGlobalMappingGetBlockIndices(ltog_f,&idx_f));
 
-  CHKERRQ(DMDAGetCorners(dac,&i_start_c,NULL,NULL,&m_c,NULL,NULL));
-  CHKERRQ(DMDAGetGhostCorners(dac,&i_start_ghost_c,NULL,NULL,&m_ghost_c,NULL,NULL));
-  CHKERRQ(DMGetLocalToGlobalMapping(dac,&ltog_c));
-  CHKERRQ(ISLocalToGlobalMappingGetBlockIndices(ltog_c,&idx_c));
+  PetscCall(DMDAGetCorners(dac,&i_start_c,NULL,NULL,&m_c,NULL,NULL));
+  PetscCall(DMDAGetGhostCorners(dac,&i_start_ghost_c,NULL,NULL,&m_ghost_c,NULL,NULL));
+  PetscCall(DMGetLocalToGlobalMapping(dac,&ltog_c));
+  PetscCall(ISLocalToGlobalMappingGetBlockIndices(ltog_c,&idx_c));
 
   /* create interpolation matrix */
-  CHKERRQ(MatCreate(PetscObjectComm((PetscObject)dac),&mat));
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)dac),&mat));
 #if defined(PETSC_HAVE_CUDA)
   /*
      Temporary hack: Since the MAIJ matrix must be converted to AIJ before being used by the GPU
      we don't want the original unconverted matrix copied to the GPU
    */
   if (dof > 1) {
-    CHKERRQ(MatBindToCPU(mat,PETSC_TRUE));
+    PetscCall(MatBindToCPU(mat,PETSC_TRUE));
   }
   #endif
-  CHKERRQ(MatSetSizes(mat,m_f,m_c,mx,Mx));
-  CHKERRQ(ConvertToAIJ(dac->mattype,&mattype));
-  CHKERRQ(MatSetType(mat,mattype));
-  CHKERRQ(MatSeqAIJSetPreallocation(mat,2,NULL));
-  CHKERRQ(MatMPIAIJSetPreallocation(mat,2,NULL,1,NULL));
+  PetscCall(MatSetSizes(mat,m_f,m_c,mx,Mx));
+  PetscCall(ConvertToAIJ(dac->mattype,&mattype));
+  PetscCall(MatSetType(mat,mattype));
+  PetscCall(MatSeqAIJSetPreallocation(mat,2,NULL));
+  PetscCall(MatMPIAIJSetPreallocation(mat,2,NULL,1,NULL));
 
   /* loop over local fine grid nodes setting interpolation for those*/
   if (!NEWVERSION) {
@@ -115,7 +115,7 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
         cols[nc] = idx_c[col+1];
         v[nc++]  = x;
       }
-      CHKERRQ(MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES));
+      PetscCall(MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES));
     }
 
   } else {
@@ -125,7 +125,7 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
 
     /* compute local coordinate arrays */
     nxi  = ratio + 1;
-    CHKERRQ(PetscMalloc1(nxi,&xi));
+    PetscCall(PetscMalloc1(nxi,&xi));
     for (li=0; li<nxi; li++) {
       xi[li] = -1.0 + (PetscScalar)li*(2.0/(PetscScalar)(nxi-1));
     }
@@ -147,7 +147,7 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
       cols[0] = idx_c[col];
       Ni[0]   = 1.0;
       if ((li==0) || (li==nxi-1)) {
-        CHKERRQ(MatSetValue(mat,row,cols[0],Ni[0],INSERT_VALUES));
+        PetscCall(MatSetValue(mat,row,cols[0],Ni[0],INSERT_VALUES));
         continue;
       }
 
@@ -164,16 +164,16 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
       for (n=0; n<2; n++) {
         if (PetscAbsScalar(Ni[n])<1.0e-32) cols[n]=-1;
       }
-      CHKERRQ(MatSetValues(mat,1,&row,2,cols,Ni,INSERT_VALUES));
+      PetscCall(MatSetValues(mat,1,&row,2,cols,Ni,INSERT_VALUES));
     }
-    CHKERRQ(PetscFree(xi));
+    PetscCall(PetscFree(xi));
   }
-  CHKERRQ(ISLocalToGlobalMappingRestoreBlockIndices(ltog_f,&idx_f));
-  CHKERRQ(ISLocalToGlobalMappingRestoreBlockIndices(ltog_c,&idx_c));
-  CHKERRQ(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatCreateMAIJ(mat,dof,A));
-  CHKERRQ(MatDestroy(&mat));
+  PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(ltog_f,&idx_f));
+  PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(ltog_c,&idx_c));
+  PetscCall(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatCreateMAIJ(mat,dof,A));
+  PetscCall(MatDestroy(&mat));
   PetscFunctionReturn(0);
 }
 
@@ -191,8 +191,8 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q0(DM dac,DM daf,Mat *A)
   MatType                mattype;
 
   PetscFunctionBegin;
-  CHKERRQ(DMDAGetInfo(dac,NULL,&Mx,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&bx,NULL,NULL,NULL));
-  CHKERRQ(DMDAGetInfo(daf,NULL,&mx,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(DMDAGetInfo(dac,NULL,&Mx,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&bx,NULL,NULL,NULL));
+  PetscCall(DMDAGetInfo(daf,NULL,&mx,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
   if (bx == DM_BOUNDARY_PERIODIC) {
     PetscCheck(Mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of x coarse grid points %D must be positive",Mx);
     ratio = mx/Mx;
@@ -203,32 +203,32 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q0(DM dac,DM daf,Mat *A)
     PetscCheckFalse(ratio*(Mx-1) != mx-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %D Mx %D",mx,Mx);
   }
 
-  CHKERRQ(DMDAGetCorners(daf,&i_start,NULL,NULL,&m_f,NULL,NULL));
-  CHKERRQ(DMDAGetGhostCorners(daf,&i_start_ghost,NULL,NULL,&m_ghost,NULL,NULL));
-  CHKERRQ(DMGetLocalToGlobalMapping(daf,&ltog_f));
-  CHKERRQ(ISLocalToGlobalMappingGetBlockIndices(ltog_f,&idx_f));
+  PetscCall(DMDAGetCorners(daf,&i_start,NULL,NULL,&m_f,NULL,NULL));
+  PetscCall(DMDAGetGhostCorners(daf,&i_start_ghost,NULL,NULL,&m_ghost,NULL,NULL));
+  PetscCall(DMGetLocalToGlobalMapping(daf,&ltog_f));
+  PetscCall(ISLocalToGlobalMappingGetBlockIndices(ltog_f,&idx_f));
 
-  CHKERRQ(DMDAGetCorners(dac,&i_start_c,NULL,NULL,&m_c,NULL,NULL));
-  CHKERRQ(DMDAGetGhostCorners(dac,&i_start_ghost_c,NULL,NULL,&m_ghost_c,NULL,NULL));
-  CHKERRQ(DMGetLocalToGlobalMapping(dac,&ltog_c));
-  CHKERRQ(ISLocalToGlobalMappingGetBlockIndices(ltog_c,&idx_c));
+  PetscCall(DMDAGetCorners(dac,&i_start_c,NULL,NULL,&m_c,NULL,NULL));
+  PetscCall(DMDAGetGhostCorners(dac,&i_start_ghost_c,NULL,NULL,&m_ghost_c,NULL,NULL));
+  PetscCall(DMGetLocalToGlobalMapping(dac,&ltog_c));
+  PetscCall(ISLocalToGlobalMappingGetBlockIndices(ltog_c,&idx_c));
 
   /* create interpolation matrix */
-  CHKERRQ(MatCreate(PetscObjectComm((PetscObject)dac),&mat));
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)dac),&mat));
 #if defined(PETSC_HAVE_CUDA)
   /*
      Temporary hack: Since the MAIJ matrix must be converted to AIJ before being used by the GPU
      we don't want the original unconverted matrix copied to the GPU
    */
   if (dof > 1) {
-    CHKERRQ(MatBindToCPU(mat,PETSC_TRUE));
+    PetscCall(MatBindToCPU(mat,PETSC_TRUE));
   }
   #endif
-  CHKERRQ(MatSetSizes(mat,m_f,m_c,mx,Mx));
-  CHKERRQ(ConvertToAIJ(dac->mattype,&mattype));
-  CHKERRQ(MatSetType(mat,mattype));
-  CHKERRQ(MatSeqAIJSetPreallocation(mat,2,NULL));
-  CHKERRQ(MatMPIAIJSetPreallocation(mat,2,NULL,0,NULL));
+  PetscCall(MatSetSizes(mat,m_f,m_c,mx,Mx));
+  PetscCall(ConvertToAIJ(dac->mattype,&mattype));
+  PetscCall(MatSetType(mat,mattype));
+  PetscCall(MatSeqAIJSetPreallocation(mat,2,NULL));
+  PetscCall(MatMPIAIJSetPreallocation(mat,2,NULL,0,NULL));
 
   /* loop over local fine grid nodes setting interpolation for those*/
   for (i=i_start; i<i_start+m_f; i++) {
@@ -253,15 +253,15 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q0(DM dac,DM daf,Mat *A)
       cols[nc] = idx_c[col+1];
       v[nc++]  = x;
     }
-    CHKERRQ(MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES));
+    PetscCall(MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES));
   }
-  CHKERRQ(ISLocalToGlobalMappingRestoreBlockIndices(ltog_f,&idx_f));
-  CHKERRQ(ISLocalToGlobalMappingRestoreBlockIndices(ltog_c,&idx_c));
-  CHKERRQ(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatCreateMAIJ(mat,dof,A));
-  CHKERRQ(MatDestroy(&mat));
-  CHKERRQ(PetscLogFlops(5.0*m_f));
+  PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(ltog_f,&idx_f));
+  PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(ltog_c,&idx_c));
+  PetscCall(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatCreateMAIJ(mat,dof,A));
+  PetscCall(MatDestroy(&mat));
+  PetscCall(PetscLogFlops(5.0*m_f));
   PetscFunctionReturn(0);
 }
 
@@ -281,8 +281,8 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
   MatType                mattype;
 
   PetscFunctionBegin;
-  CHKERRQ(DMDAGetInfo(dac,NULL,&Mx,&My,NULL,NULL,NULL,NULL,NULL,NULL,&bx,&by,NULL,NULL));
-  CHKERRQ(DMDAGetInfo(daf,NULL,&mx,&my,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(DMDAGetInfo(dac,NULL,&Mx,&My,NULL,NULL,NULL,NULL,NULL,NULL,&bx,&by,NULL,NULL));
+  PetscCall(DMDAGetInfo(daf,NULL,&mx,&my,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
   if (bx == DM_BOUNDARY_PERIODIC) {
     PetscCheck(Mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of x coarse grid points %D must be positive",Mx);
     ratioi = mx/Mx;
@@ -302,15 +302,15 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
     PetscCheckFalse(ratioj*(My-1) != my-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (my - 1)/(My - 1) must be integer: my %D My %D",my,My);
   }
 
-  CHKERRQ(DMDAGetCorners(daf,&i_start,&j_start,NULL,&m_f,&n_f,NULL));
-  CHKERRQ(DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,NULL,&m_ghost,&n_ghost,NULL));
-  CHKERRQ(DMGetLocalToGlobalMapping(daf,&ltog_f));
-  CHKERRQ(ISLocalToGlobalMappingGetBlockIndices(ltog_f,&idx_f));
+  PetscCall(DMDAGetCorners(daf,&i_start,&j_start,NULL,&m_f,&n_f,NULL));
+  PetscCall(DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,NULL,&m_ghost,&n_ghost,NULL));
+  PetscCall(DMGetLocalToGlobalMapping(daf,&ltog_f));
+  PetscCall(ISLocalToGlobalMappingGetBlockIndices(ltog_f,&idx_f));
 
-  CHKERRQ(DMDAGetCorners(dac,&i_start_c,&j_start_c,NULL,&m_c,&n_c,NULL));
-  CHKERRQ(DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,NULL,&m_ghost_c,&n_ghost_c,NULL));
-  CHKERRQ(DMGetLocalToGlobalMapping(dac,&ltog_c));
-  CHKERRQ(ISLocalToGlobalMappingGetBlockIndices(ltog_c,&idx_c));
+  PetscCall(DMDAGetCorners(dac,&i_start_c,&j_start_c,NULL,&m_c,&n_c,NULL));
+  PetscCall(DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,NULL,&m_ghost_c,&n_ghost_c,NULL));
+  PetscCall(DMGetLocalToGlobalMapping(dac,&ltog_c));
+  PetscCall(ISLocalToGlobalMappingGetBlockIndices(ltog_c,&idx_c));
 
   /*
    Used for handling a coarse DMDA that lives on 1/4 the processors of the fine DMDA.
@@ -322,13 +322,13 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
 
    In the standard case when size_f == size_c col_scale == 1 and col_shift == 0
    */
-  CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dac),&size_c));
-  CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)daf),&size_f));
-  CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)daf),&rank_f));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dac),&size_c));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)daf),&size_f));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)daf),&rank_f));
   col_scale = size_f/size_c;
   col_shift = Mx*My*(rank_f/size_c);
 
-  ierr = MatPreallocateInitialize(PetscObjectComm((PetscObject)daf),m_f*n_f,col_scale*m_c*n_c,dnz,onz);CHKERRQ(ierr);
+  ierr = MatPreallocateInitialize(PetscObjectComm((PetscObject)daf),m_f*n_f,col_scale*m_c*n_c,dnz,onz);PetscCall(ierr);
   for (j=j_start; j<j_start+n_f; j++) {
     for (i=i_start; i<i_start+m_f; i++) {
       /* convert to local "natural" numbering and then to PETSc global numbering */
@@ -357,25 +357,25 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
       if (j_c*ratioj != j) cols[nc++] = col_shift + idx_c[col+m_ghost_c];
       /* one right and above */
       if (i_c*ratioi != i && j_c*ratioj != j) cols[nc++] = col_shift + idx_c[col+(m_ghost_c+1)];
-      CHKERRQ(MatPreallocateSet(row,nc,cols,dnz,onz));
+      PetscCall(MatPreallocateSet(row,nc,cols,dnz,onz));
     }
   }
-  CHKERRQ(MatCreate(PetscObjectComm((PetscObject)daf),&mat));
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)daf),&mat));
 #if defined(PETSC_HAVE_CUDA)
   /*
      Temporary hack: Since the MAIJ matrix must be converted to AIJ before being used by the GPU
      we don't want the original unconverted matrix copied to the GPU
   */
   if (dof > 1) {
-    CHKERRQ(MatBindToCPU(mat,PETSC_TRUE));
+    PetscCall(MatBindToCPU(mat,PETSC_TRUE));
   }
 #endif
-  CHKERRQ(MatSetSizes(mat,m_f*n_f,col_scale*m_c*n_c,mx*my,col_scale*Mx*My));
-  CHKERRQ(ConvertToAIJ(dac->mattype,&mattype));
-  CHKERRQ(MatSetType(mat,mattype));
-  CHKERRQ(MatSeqAIJSetPreallocation(mat,0,dnz));
-  CHKERRQ(MatMPIAIJSetPreallocation(mat,0,dnz,0,onz));
-  ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
+  PetscCall(MatSetSizes(mat,m_f*n_f,col_scale*m_c*n_c,mx*my,col_scale*Mx*My));
+  PetscCall(ConvertToAIJ(dac->mattype,&mattype));
+  PetscCall(MatSetType(mat,mattype));
+  PetscCall(MatSeqAIJSetPreallocation(mat,0,dnz));
+  PetscCall(MatMPIAIJSetPreallocation(mat,0,dnz,0,onz));
+  ierr = MatPreallocateFinalize(dnz,onz);PetscCall(ierr);
 
   /* loop over local fine grid nodes setting interpolation for those*/
   if (!NEWVERSION) {
@@ -416,7 +416,7 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
           cols[nc] = col_shift + idx_c[col+(m_ghost_c+1)];
           v[nc++]  = x*y;
         }
-        CHKERRQ(MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES));
+        PetscCall(MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES));
       }
     }
 
@@ -428,8 +428,8 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
     /* compute local coordinate arrays */
     nxi  = ratioi + 1;
     neta = ratioj + 1;
-    CHKERRQ(PetscMalloc1(nxi,&xi));
-    CHKERRQ(PetscMalloc1(neta,&eta));
+    PetscCall(PetscMalloc1(nxi,&xi));
+    PetscCall(PetscMalloc1(neta,&eta));
     for (li=0; li<nxi; li++) {
       xi[li] = -1.0 + (PetscScalar)li*(2.0/(PetscScalar)(nxi-1));
     }
@@ -458,7 +458,7 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
         Ni[0]   = 1.0;
         if ((li==0) || (li==nxi-1)) {
           if ((lj==0) || (lj==neta-1)) {
-            CHKERRQ(MatSetValue(mat,row,cols[0],Ni[0],INSERT_VALUES));
+            PetscCall(MatSetValue(mat,row,cols[0],Ni[0],INSERT_VALUES));
             continue;
           }
         }
@@ -485,18 +485,18 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
         if (PetscAbsScalar(Ni[2])<1.0e-32) cols[2]=-1;
         if (PetscAbsScalar(Ni[3])<1.0e-32) cols[3]=-1;
 
-        CHKERRQ(MatSetValues(mat,1,&row,4,cols,Ni,INSERT_VALUES));
+        PetscCall(MatSetValues(mat,1,&row,4,cols,Ni,INSERT_VALUES));
       }
     }
-    CHKERRQ(PetscFree(xi));
-    CHKERRQ(PetscFree(eta));
+    PetscCall(PetscFree(xi));
+    PetscCall(PetscFree(eta));
   }
-  CHKERRQ(ISLocalToGlobalMappingRestoreBlockIndices(ltog_f,&idx_f));
-  CHKERRQ(ISLocalToGlobalMappingRestoreBlockIndices(ltog_c,&idx_c));
-  CHKERRQ(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatCreateMAIJ(mat,dof,A));
-  CHKERRQ(MatDestroy(&mat));
+  PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(ltog_f,&idx_f));
+  PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(ltog_c,&idx_c));
+  PetscCall(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatCreateMAIJ(mat,dof,A));
+  PetscCall(MatDestroy(&mat));
   PetscFunctionReturn(0);
 }
 
@@ -519,8 +519,8 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
   MatType                mattype;
 
   PetscFunctionBegin;
-  CHKERRQ(DMDAGetInfo(dac,NULL,&Mx,&My,NULL,NULL,NULL,NULL,NULL,NULL,&bx,&by,NULL,NULL));
-  CHKERRQ(DMDAGetInfo(daf,NULL,&mx,&my,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(DMDAGetInfo(dac,NULL,&Mx,&My,NULL,NULL,NULL,NULL,NULL,NULL,&bx,&by,NULL,NULL));
+  PetscCall(DMDAGetInfo(daf,NULL,&mx,&my,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
   PetscCheck(Mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of x coarse grid points %D must be positive",Mx);
   PetscCheck(My,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of y coarse grid points %D must be positive",My);
   ratioi = mx/Mx;
@@ -530,15 +530,15 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
   PetscCheckFalse(ratioi != 2,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Coarsening factor in x must be 2");
   PetscCheckFalse(ratioj != 2,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Coarsening factor in y must be 2");
 
-  CHKERRQ(DMDAGetCorners(daf,&i_start,&j_start,NULL,&m_f,&n_f,NULL));
-  CHKERRQ(DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,NULL,&m_ghost,&n_ghost,NULL));
-  CHKERRQ(DMGetLocalToGlobalMapping(daf,&ltog_f));
-  CHKERRQ(ISLocalToGlobalMappingGetBlockIndices(ltog_f,&idx_f));
+  PetscCall(DMDAGetCorners(daf,&i_start,&j_start,NULL,&m_f,&n_f,NULL));
+  PetscCall(DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,NULL,&m_ghost,&n_ghost,NULL));
+  PetscCall(DMGetLocalToGlobalMapping(daf,&ltog_f));
+  PetscCall(ISLocalToGlobalMappingGetBlockIndices(ltog_f,&idx_f));
 
-  CHKERRQ(DMDAGetCorners(dac,&i_start_c,&j_start_c,NULL,&m_c,&n_c,NULL));
-  CHKERRQ(DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,NULL,&m_ghost_c,&n_ghost_c,NULL));
-  CHKERRQ(DMGetLocalToGlobalMapping(dac,&ltog_c));
-  CHKERRQ(ISLocalToGlobalMappingGetBlockIndices(ltog_c,&idx_c));
+  PetscCall(DMDAGetCorners(dac,&i_start_c,&j_start_c,NULL,&m_c,&n_c,NULL));
+  PetscCall(DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,NULL,&m_ghost_c,&n_ghost_c,NULL));
+  PetscCall(DMGetLocalToGlobalMapping(dac,&ltog_c));
+  PetscCall(ISLocalToGlobalMappingGetBlockIndices(ltog_c,&idx_c));
 
   /*
      Used for handling a coarse DMDA that lives on 1/4 the processors of the fine DMDA.
@@ -550,13 +550,13 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
 
      In the standard case when size_f == size_c col_scale == 1 and col_shift == 0
   */
-  CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dac),&size_c));
-  CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)daf),&size_f));
-  CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)daf),&rank_f));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dac),&size_c));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)daf),&size_f));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)daf),&rank_f));
   col_scale = size_f/size_c;
   col_shift = Mx*My*(rank_f/size_c);
 
-  ierr = MatPreallocateInitialize(PetscObjectComm((PetscObject)daf),m_f*n_f,col_scale*m_c*n_c,dnz,onz);CHKERRQ(ierr);
+  ierr = MatPreallocateInitialize(PetscObjectComm((PetscObject)daf),m_f*n_f,col_scale*m_c*n_c,dnz,onz);PetscCall(ierr);
   for (j=j_start; j<j_start+n_f; j++) {
     for (i=i_start; i<i_start+m_f; i++) {
       /* convert to local "natural" numbering and then to PETSc global numbering */
@@ -579,25 +579,25 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
       /* one left and below; or we are right on it */
       col        = (m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c));
       cols[nc++] = col_shift + idx_c[col];
-      CHKERRQ(MatPreallocateSet(row,nc,cols,dnz,onz));
+      PetscCall(MatPreallocateSet(row,nc,cols,dnz,onz));
     }
   }
-  CHKERRQ(MatCreate(PetscObjectComm((PetscObject)daf),&mat));
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)daf),&mat));
 #if defined(PETSC_HAVE_CUDA)
   /*
      Temporary hack: Since the MAIJ matrix must be converted to AIJ before being used by the GPU
      we don't want the original unconverted matrix copied to the GPU
   */
   if (dof > 1) {
-    CHKERRQ(MatBindToCPU(mat,PETSC_TRUE));
+    PetscCall(MatBindToCPU(mat,PETSC_TRUE));
   }
   #endif
-  CHKERRQ(MatSetSizes(mat,m_f*n_f,col_scale*m_c*n_c,mx*my,col_scale*Mx*My));
-  CHKERRQ(ConvertToAIJ(dac->mattype,&mattype));
-  CHKERRQ(MatSetType(mat,mattype));
-  CHKERRQ(MatSeqAIJSetPreallocation(mat,0,dnz));
-  CHKERRQ(MatMPIAIJSetPreallocation(mat,0,dnz,0,onz));
-  ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
+  PetscCall(MatSetSizes(mat,m_f*n_f,col_scale*m_c*n_c,mx*my,col_scale*Mx*My));
+  PetscCall(ConvertToAIJ(dac->mattype,&mattype));
+  PetscCall(MatSetType(mat,mattype));
+  PetscCall(MatSeqAIJSetPreallocation(mat,0,dnz));
+  PetscCall(MatMPIAIJSetPreallocation(mat,0,dnz,0,onz));
+  ierr = MatPreallocateFinalize(dnz,onz);PetscCall(ierr);
 
   /* loop over local fine grid nodes setting interpolation for those*/
   for (j=j_start; j<j_start+n_f; j++) {
@@ -613,16 +613,16 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
       cols[nc] = col_shift + idx_c[col];
       v[nc++]  = 1.0;
 
-      CHKERRQ(MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES));
+      PetscCall(MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES));
     }
   }
-  CHKERRQ(ISLocalToGlobalMappingRestoreBlockIndices(ltog_f,&idx_f));
-  CHKERRQ(ISLocalToGlobalMappingRestoreBlockIndices(ltog_c,&idx_c));
-  CHKERRQ(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatCreateMAIJ(mat,dof,A));
-  CHKERRQ(MatDestroy(&mat));
-  CHKERRQ(PetscLogFlops(13.0*m_f*n_f));
+  PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(ltog_f,&idx_f));
+  PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(ltog_c,&idx_c));
+  PetscCall(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatCreateMAIJ(mat,dof,A));
+  PetscCall(MatDestroy(&mat));
+  PetscCall(PetscLogFlops(13.0*m_f*n_f));
   PetscFunctionReturn(0);
 }
 
@@ -645,11 +645,11 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
   MatType                mattype;
 
   PetscFunctionBegin;
-  CHKERRQ(DMDAGetInfo(dac,NULL,&Mx,&My,&Mz,NULL,NULL,NULL,NULL,NULL,&bx,&by,&bz,NULL));
+  PetscCall(DMDAGetInfo(dac,NULL,&Mx,&My,&Mz,NULL,NULL,NULL,NULL,NULL,&bx,&by,&bz,NULL));
   PetscCheck(Mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of x coarse grid points %D must be positive",Mx);
   PetscCheck(My,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of y coarse grid points %D must be positive",My);
   PetscCheck(Mz,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of z coarse grid points %D must be positive",Mz);
-  CHKERRQ(DMDAGetInfo(daf,NULL,&mx,&my,&mz,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(DMDAGetInfo(daf,NULL,&mx,&my,&mz,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
   ratioi = mx/Mx;
   ratioj = my/My;
   ratiol = mz/Mz;
@@ -660,15 +660,15 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
   PetscCheckFalse(ratioj != 2 && ratioj != 1,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Coarsening factor in y must be 1 or 2");
   PetscCheckFalse(ratiol != 2 && ratiol != 1,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Coarsening factor in z must be 1 or 2");
 
-  CHKERRQ(DMDAGetCorners(daf,&i_start,&j_start,&l_start,&m_f,&n_f,&p_f));
-  CHKERRQ(DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,&l_start_ghost,&m_ghost,&n_ghost,&p_ghost));
-  CHKERRQ(DMGetLocalToGlobalMapping(daf,&ltog_f));
-  CHKERRQ(ISLocalToGlobalMappingGetBlockIndices(ltog_f,&idx_f));
+  PetscCall(DMDAGetCorners(daf,&i_start,&j_start,&l_start,&m_f,&n_f,&p_f));
+  PetscCall(DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,&l_start_ghost,&m_ghost,&n_ghost,&p_ghost));
+  PetscCall(DMGetLocalToGlobalMapping(daf,&ltog_f));
+  PetscCall(ISLocalToGlobalMappingGetBlockIndices(ltog_f,&idx_f));
 
-  CHKERRQ(DMDAGetCorners(dac,&i_start_c,&j_start_c,&l_start_c,&m_c,&n_c,&p_c));
-  CHKERRQ(DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,&l_start_ghost_c,&m_ghost_c,&n_ghost_c,&p_ghost_c));
-  CHKERRQ(DMGetLocalToGlobalMapping(dac,&ltog_c));
-  CHKERRQ(ISLocalToGlobalMappingGetBlockIndices(ltog_c,&idx_c));
+  PetscCall(DMDAGetCorners(dac,&i_start_c,&j_start_c,&l_start_c,&m_c,&n_c,&p_c));
+  PetscCall(DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,&l_start_ghost_c,&m_ghost_c,&n_ghost_c,&p_ghost_c));
+  PetscCall(DMGetLocalToGlobalMapping(dac,&ltog_c));
+  PetscCall(ISLocalToGlobalMappingGetBlockIndices(ltog_c,&idx_c));
 
   /*
      Used for handling a coarse DMDA that lives on 1/4 the processors of the fine DMDA.
@@ -680,13 +680,13 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
 
      In the standard case when size_f == size_c col_scale == 1 and col_shift == 0
   */
-  CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dac),&size_c));
-  CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)daf),&size_f));
-  CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)daf),&rank_f));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dac),&size_c));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)daf),&size_f));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)daf),&rank_f));
   col_scale = size_f/size_c;
   col_shift = Mx*My*Mz*(rank_f/size_c);
 
-  ierr = MatPreallocateInitialize(PetscObjectComm((PetscObject)daf),m_f*n_f*p_f,col_scale*m_c*n_c*p_c,dnz,onz);CHKERRQ(ierr);
+  ierr = MatPreallocateInitialize(PetscObjectComm((PetscObject)daf),m_f*n_f*p_f,col_scale*m_c*n_c*p_c,dnz,onz);PetscCall(ierr);
   for (l=l_start; l<l_start+p_f; l++) {
     for (j=j_start; j<j_start+n_f; j++) {
       for (i=i_start; i<i_start+m_f; i++) {
@@ -713,26 +713,26 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
         /* one left and below; or we are right on it */
         col        = (m_ghost_c*n_ghost_c*(l_c-l_start_ghost_c) + m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c));
         cols[nc++] = col_shift + idx_c[col];
-        CHKERRQ(MatPreallocateSet(row,nc,cols,dnz,onz));
+        PetscCall(MatPreallocateSet(row,nc,cols,dnz,onz));
       }
     }
   }
-  CHKERRQ(MatCreate(PetscObjectComm((PetscObject)daf),&mat));
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)daf),&mat));
 #if defined(PETSC_HAVE_CUDA)
   /*
      Temporary hack: Since the MAIJ matrix must be converted to AIJ before being used by the GPU
      we don't want the original unconverted matrix copied to the GPU
   */
   if (dof > 1) {
-    CHKERRQ(MatBindToCPU(mat,PETSC_TRUE));
+    PetscCall(MatBindToCPU(mat,PETSC_TRUE));
   }
   #endif
-  CHKERRQ(MatSetSizes(mat,m_f*n_f*p_f,col_scale*m_c*n_c*p_c,mx*my*mz,col_scale*Mx*My*Mz));
-  CHKERRQ(ConvertToAIJ(dac->mattype,&mattype));
-  CHKERRQ(MatSetType(mat,mattype));
-  CHKERRQ(MatSeqAIJSetPreallocation(mat,0,dnz));
-  CHKERRQ(MatMPIAIJSetPreallocation(mat,0,dnz,0,onz));
-  ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
+  PetscCall(MatSetSizes(mat,m_f*n_f*p_f,col_scale*m_c*n_c*p_c,mx*my*mz,col_scale*Mx*My*Mz));
+  PetscCall(ConvertToAIJ(dac->mattype,&mattype));
+  PetscCall(MatSetType(mat,mattype));
+  PetscCall(MatSeqAIJSetPreallocation(mat,0,dnz));
+  PetscCall(MatMPIAIJSetPreallocation(mat,0,dnz,0,onz));
+  ierr = MatPreallocateFinalize(dnz,onz);PetscCall(ierr);
 
   /* loop over local fine grid nodes setting interpolation for those*/
   for (l=l_start; l<l_start+p_f; l++) {
@@ -750,17 +750,17 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
         cols[nc] = col_shift + idx_c[col];
         v[nc++]  = 1.0;
 
-        CHKERRQ(MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES));
+        PetscCall(MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES));
       }
     }
   }
-  CHKERRQ(ISLocalToGlobalMappingRestoreBlockIndices(ltog_f,&idx_f));
-  CHKERRQ(ISLocalToGlobalMappingRestoreBlockIndices(ltog_c,&idx_c));
-  CHKERRQ(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatCreateMAIJ(mat,dof,A));
-  CHKERRQ(MatDestroy(&mat));
-  CHKERRQ(PetscLogFlops(13.0*m_f*n_f*p_f));
+  PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(ltog_f,&idx_f));
+  PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(ltog_c,&idx_c));
+  PetscCall(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatCreateMAIJ(mat,dof,A));
+  PetscCall(MatDestroy(&mat));
+  PetscCall(PetscLogFlops(13.0*m_f*n_f*p_f));
   PetscFunctionReturn(0);
 }
 
@@ -781,8 +781,8 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
   MatType                mattype;
 
   PetscFunctionBegin;
-  CHKERRQ(DMDAGetInfo(dac,NULL,&Mx,&My,&Mz,NULL,NULL,NULL,NULL,NULL,&bx,&by,&bz,NULL));
-  CHKERRQ(DMDAGetInfo(daf,NULL,&mx,&my,&mz,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(DMDAGetInfo(dac,NULL,&Mx,&My,&Mz,NULL,NULL,NULL,NULL,NULL,&bx,&by,&bz,NULL));
+  PetscCall(DMDAGetInfo(daf,NULL,&mx,&my,&mz,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
   if (mx == Mx) {
     ratioi = 1;
   } else if (bx == DM_BOUNDARY_PERIODIC) {
@@ -817,18 +817,18 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
     PetscCheckFalse(ratiok*(Mz-1) != mz-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mz - 1)/(Mz - 1) must be integer: mz %D Mz %D",mz,Mz);
   }
 
-  CHKERRQ(DMDAGetCorners(daf,&i_start,&j_start,&l_start,&m_f,&n_f,&p_f));
-  CHKERRQ(DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,&l_start_ghost,&m_ghost,&n_ghost,&p_ghost));
-  CHKERRQ(DMGetLocalToGlobalMapping(daf,&ltog_f));
-  CHKERRQ(ISLocalToGlobalMappingGetBlockIndices(ltog_f,&idx_f));
+  PetscCall(DMDAGetCorners(daf,&i_start,&j_start,&l_start,&m_f,&n_f,&p_f));
+  PetscCall(DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,&l_start_ghost,&m_ghost,&n_ghost,&p_ghost));
+  PetscCall(DMGetLocalToGlobalMapping(daf,&ltog_f));
+  PetscCall(ISLocalToGlobalMappingGetBlockIndices(ltog_f,&idx_f));
 
-  CHKERRQ(DMDAGetCorners(dac,&i_start_c,&j_start_c,&l_start_c,&m_c,&n_c,&p_c));
-  CHKERRQ(DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,&l_start_ghost_c,&m_ghost_c,&n_ghost_c,&p_ghost_c));
-  CHKERRQ(DMGetLocalToGlobalMapping(dac,&ltog_c));
-  CHKERRQ(ISLocalToGlobalMappingGetBlockIndices(ltog_c,&idx_c));
+  PetscCall(DMDAGetCorners(dac,&i_start_c,&j_start_c,&l_start_c,&m_c,&n_c,&p_c));
+  PetscCall(DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,&l_start_ghost_c,&m_ghost_c,&n_ghost_c,&p_ghost_c));
+  PetscCall(DMGetLocalToGlobalMapping(dac,&ltog_c));
+  PetscCall(ISLocalToGlobalMappingGetBlockIndices(ltog_c,&idx_c));
 
   /* create interpolation matrix, determining exact preallocation */
-  ierr = MatPreallocateInitialize(PetscObjectComm((PetscObject)dac),m_f*n_f*p_f,m_c*n_c*p_c,dnz,onz);CHKERRQ(ierr);
+  ierr = MatPreallocateInitialize(PetscObjectComm((PetscObject)dac),m_f*n_f*p_f,m_c*n_c*p_c,dnz,onz);PetscCall(ierr);
   /* loop over local fine grid nodes counting interpolating points */
   for (l=l_start; l<l_start+p_f; l++) {
     for (j=j_start; j<j_start+n_f; j++) {
@@ -874,26 +874,26 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
         if (i_c*ratioi != i && l_c*ratiok != l && j_c*ratioj != j) {
           cols[nc++] = idx_c[col+(m_ghost_c*n_ghost_c+m_ghost_c+1)];
         }
-        CHKERRQ(MatPreallocateSet(row,nc,cols,dnz,onz));
+        PetscCall(MatPreallocateSet(row,nc,cols,dnz,onz));
       }
     }
   }
-  CHKERRQ(MatCreate(PetscObjectComm((PetscObject)dac),&mat));
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)dac),&mat));
 #if defined(PETSC_HAVE_CUDA)
   /*
      Temporary hack: Since the MAIJ matrix must be converted to AIJ before being used by the GPU
      we don't want the original unconverted matrix copied to the GPU
   */
   if (dof > 1) {
-    CHKERRQ(MatBindToCPU(mat,PETSC_TRUE));
+    PetscCall(MatBindToCPU(mat,PETSC_TRUE));
   }
   #endif
-  CHKERRQ(MatSetSizes(mat,m_f*n_f*p_f,m_c*n_c*p_c,mx*my*mz,Mx*My*Mz));
-  CHKERRQ(ConvertToAIJ(dac->mattype,&mattype));
-  CHKERRQ(MatSetType(mat,mattype));
-  CHKERRQ(MatSeqAIJSetPreallocation(mat,0,dnz));
-  CHKERRQ(MatMPIAIJSetPreallocation(mat,0,dnz,0,onz));
-  ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
+  PetscCall(MatSetSizes(mat,m_f*n_f*p_f,m_c*n_c*p_c,mx*my*mz,Mx*My*Mz));
+  PetscCall(ConvertToAIJ(dac->mattype,&mattype));
+  PetscCall(MatSetType(mat,mattype));
+  PetscCall(MatSeqAIJSetPreallocation(mat,0,dnz));
+  PetscCall(MatMPIAIJSetPreallocation(mat,0,dnz,0,onz));
+  ierr = MatPreallocateFinalize(dnz,onz);PetscCall(ierr);
 
   /* loop over local fine grid nodes setting interpolation for those*/
   if (!NEWVERSION) {
@@ -958,7 +958,7 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
             cols[nc] = idx_c[col+(m_ghost_c*n_ghost_c+m_ghost_c+1)];
             v[nc++]  = .125*(1. + (2.0*x-1.))*(1. + (2.0*y-1.))*(1. + (2.0*z-1.));
           }
-          CHKERRQ(MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES));
+          PetscCall(MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES));
         }
       }
     }
@@ -972,9 +972,9 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
     nxi   = ratioi + 1;
     neta  = ratioj + 1;
     nzeta = ratiok + 1;
-    CHKERRQ(PetscMalloc1(nxi,&xi));
-    CHKERRQ(PetscMalloc1(neta,&eta));
-    CHKERRQ(PetscMalloc1(nzeta,&zeta));
+    PetscCall(PetscMalloc1(nxi,&xi));
+    PetscCall(PetscMalloc1(neta,&eta));
+    PetscCall(PetscMalloc1(nzeta,&zeta));
     for (li=0; li<nxi; li++) xi[li] = -1.0 + (PetscScalar)li*(2.0/(PetscScalar)(nxi-1));
     for (lj=0; lj<neta; lj++) eta[lj] = -1.0 + (PetscScalar)lj*(2.0/(PetscScalar)(neta-1));
     for (lk=0; lk<nzeta; lk++) zeta[lk] = -1.0 + (PetscScalar)lk*(2.0/(PetscScalar)(nzeta-1));
@@ -1004,7 +1004,7 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
           if ((li==0) || (li==nxi-1)) {
             if ((lj==0) || (lj==neta-1)) {
               if ((lk==0) || (lk==nzeta-1)) {
-                CHKERRQ(MatSetValue(mat,row,cols[0],Ni[0],INSERT_VALUES));
+                PetscCall(MatSetValue(mat,row,cols[0],Ni[0],INSERT_VALUES));
                 continue;
               }
             }
@@ -1040,22 +1040,22 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
           for (n=0; n<8; n++) {
             if (PetscAbsScalar(Ni[n])<1.0e-32) cols[n]=-1;
           }
-          CHKERRQ(MatSetValues(mat,1,&row,8,cols,Ni,INSERT_VALUES));
+          PetscCall(MatSetValues(mat,1,&row,8,cols,Ni,INSERT_VALUES));
 
         }
       }
     }
-    CHKERRQ(PetscFree(xi));
-    CHKERRQ(PetscFree(eta));
-    CHKERRQ(PetscFree(zeta));
+    PetscCall(PetscFree(xi));
+    PetscCall(PetscFree(eta));
+    PetscCall(PetscFree(zeta));
   }
-  CHKERRQ(ISLocalToGlobalMappingRestoreBlockIndices(ltog_f,&idx_f));
-  CHKERRQ(ISLocalToGlobalMappingRestoreBlockIndices(ltog_c,&idx_c));
-  CHKERRQ(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(ltog_f,&idx_f));
+  PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(ltog_c,&idx_c));
+  PetscCall(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
 
-  CHKERRQ(MatCreateMAIJ(mat,dof,A));
-  CHKERRQ(MatDestroy(&mat));
+  PetscCall(MatCreateMAIJ(mat,dof,A));
+  PetscCall(MatDestroy(&mat));
   PetscFunctionReturn(0);
 }
 
@@ -1072,8 +1072,8 @@ PetscErrorCode  DMCreateInterpolation_DA(DM dac,DM daf,Mat *A,Vec *scale)
   PetscValidPointer(A,3);
   if (scale) PetscValidPointer(scale,4);
 
-  CHKERRQ(DMDAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&bxc,&byc,&bzc,&stc));
-  CHKERRQ(DMDAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&bxf,&byf,&bzf,&stf));
+  PetscCall(DMDAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&bxc,&byc,&bzc,&stc));
+  PetscCall(DMDAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&bxf,&byf,&bzf,&stf));
   PetscCheckFalse(dimc != dimf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Dimensions of DMDA do not match %D %D",dimc,dimf);
   PetscCheckFalse(dofc != doff,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"DOF of DMDA do not match %D %D",dofc,doff);
   PetscCheckFalse(sc != sf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil width of DMDA do not match %D %D",sc,sf);
@@ -1085,23 +1085,23 @@ PetscErrorCode  DMCreateInterpolation_DA(DM dac,DM daf,Mat *A,Vec *scale)
 
   if (ddc->interptype == DMDA_Q1) {
     if (dimc == 1) {
-      CHKERRQ(DMCreateInterpolation_DA_1D_Q1(dac,daf,A));
+      PetscCall(DMCreateInterpolation_DA_1D_Q1(dac,daf,A));
     } else if (dimc == 2) {
-      CHKERRQ(DMCreateInterpolation_DA_2D_Q1(dac,daf,A));
+      PetscCall(DMCreateInterpolation_DA_2D_Q1(dac,daf,A));
     } else if (dimc == 3) {
-      CHKERRQ(DMCreateInterpolation_DA_3D_Q1(dac,daf,A));
+      PetscCall(DMCreateInterpolation_DA_3D_Q1(dac,daf,A));
     } else SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_SUP,"No support for this DMDA dimension %D for interpolation type %d",dimc,(int)ddc->interptype);
   } else if (ddc->interptype == DMDA_Q0) {
     if (dimc == 1) {
-      CHKERRQ(DMCreateInterpolation_DA_1D_Q0(dac,daf,A));
+      PetscCall(DMCreateInterpolation_DA_1D_Q0(dac,daf,A));
     } else if (dimc == 2) {
-      CHKERRQ(DMCreateInterpolation_DA_2D_Q0(dac,daf,A));
+      PetscCall(DMCreateInterpolation_DA_2D_Q0(dac,daf,A));
     } else if (dimc == 3) {
-      CHKERRQ(DMCreateInterpolation_DA_3D_Q0(dac,daf,A));
+      PetscCall(DMCreateInterpolation_DA_3D_Q0(dac,daf,A));
     } else SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_SUP,"No support for this DMDA dimension %D for interpolation type %d",dimc,(int)ddc->interptype);
   }
   if (scale) {
-    CHKERRQ(DMCreateInterpolationScale((DM)dac,(DM)daf,*A,scale));
+    PetscCall(DMCreateInterpolationScale((DM)dac,(DM)daf,*A,scale));
   }
   PetscFunctionReturn(0);
 }
@@ -1120,8 +1120,8 @@ PetscErrorCode DMCreateInjection_DA_1D(DM dac,DM daf,VecScatter *inject)
   IS                     isf;
 
   PetscFunctionBegin;
-  CHKERRQ(DMDAGetInfo(dac,NULL,&Mx,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&bx,NULL,NULL,NULL));
-  CHKERRQ(DMDAGetInfo(daf,NULL,&mx,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(DMDAGetInfo(dac,NULL,&Mx,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&bx,NULL,NULL,NULL));
+  PetscCall(DMDAGetInfo(daf,NULL,&mx,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
   if (bx == DM_BOUNDARY_PERIODIC) {
     ratioi = mx/Mx;
     PetscCheckFalse(ratioi*Mx != mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
@@ -1130,17 +1130,17 @@ PetscErrorCode DMCreateInjection_DA_1D(DM dac,DM daf,VecScatter *inject)
     PetscCheckFalse(ratioi*(Mx-1) != mx-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %D Mx %D",mx,Mx);
   }
 
-  CHKERRQ(DMDAGetCorners(daf,&i_start,NULL,NULL,&m_f,NULL,NULL));
-  CHKERRQ(DMDAGetGhostCorners(daf,&i_start_ghost,NULL,NULL,&m_ghost,NULL,NULL));
-  CHKERRQ(DMGetLocalToGlobalMapping(daf,&ltog_f));
-  CHKERRQ(ISLocalToGlobalMappingGetBlockIndices(ltog_f,&idx_f));
+  PetscCall(DMDAGetCorners(daf,&i_start,NULL,NULL,&m_f,NULL,NULL));
+  PetscCall(DMDAGetGhostCorners(daf,&i_start_ghost,NULL,NULL,&m_ghost,NULL,NULL));
+  PetscCall(DMGetLocalToGlobalMapping(daf,&ltog_f));
+  PetscCall(ISLocalToGlobalMappingGetBlockIndices(ltog_f,&idx_f));
 
-  CHKERRQ(DMDAGetCorners(dac,&i_start_c,NULL,NULL,&m_c,NULL,NULL));
-  CHKERRQ(DMDAGetGhostCorners(dac,&i_start_ghost_c,NULL,NULL,&m_ghost_c,NULL,NULL));
+  PetscCall(DMDAGetCorners(dac,&i_start_c,NULL,NULL,&m_c,NULL,NULL));
+  PetscCall(DMDAGetGhostCorners(dac,&i_start_ghost_c,NULL,NULL,&m_ghost_c,NULL,NULL));
 
   /* loop over local fine grid nodes setting interpolation for those*/
   nc   = 0;
-  CHKERRQ(PetscMalloc1(m_f,&cols));
+  PetscCall(PetscMalloc1(m_f,&cols));
 
   for (i=i_start_c; i<i_start_c+m_c; i++) {
     PetscInt i_f = i*ratioi;
@@ -1151,14 +1151,14 @@ PetscErrorCode DMCreateInjection_DA_1D(DM dac,DM daf,VecScatter *inject)
     cols[nc++] = row;
   }
 
-  CHKERRQ(ISLocalToGlobalMappingRestoreBlockIndices(ltog_f,&idx_f));
-  CHKERRQ(ISCreateBlock(PetscObjectComm((PetscObject)daf),dof,nc,cols,PETSC_OWN_POINTER,&isf));
-  CHKERRQ(DMGetGlobalVector(dac,&vecc));
-  CHKERRQ(DMGetGlobalVector(daf,&vecf));
-  CHKERRQ(VecScatterCreate(vecf,isf,vecc,NULL,inject));
-  CHKERRQ(DMRestoreGlobalVector(dac,&vecc));
-  CHKERRQ(DMRestoreGlobalVector(daf,&vecf));
-  CHKERRQ(ISDestroy(&isf));
+  PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(ltog_f,&idx_f));
+  PetscCall(ISCreateBlock(PetscObjectComm((PetscObject)daf),dof,nc,cols,PETSC_OWN_POINTER,&isf));
+  PetscCall(DMGetGlobalVector(dac,&vecc));
+  PetscCall(DMGetGlobalVector(daf,&vecf));
+  PetscCall(VecScatterCreate(vecf,isf,vecc,NULL,inject));
+  PetscCall(DMRestoreGlobalVector(dac,&vecc));
+  PetscCall(DMRestoreGlobalVector(daf,&vecf));
+  PetscCall(ISDestroy(&isf));
   PetscFunctionReturn(0);
 }
 
@@ -1176,8 +1176,8 @@ PetscErrorCode DMCreateInjection_DA_2D(DM dac,DM daf,VecScatter *inject)
   IS                     isf;
 
   PetscFunctionBegin;
-  CHKERRQ(DMDAGetInfo(dac,NULL,&Mx,&My,NULL,NULL,NULL,NULL,NULL,NULL,&bx,&by,NULL,NULL));
-  CHKERRQ(DMDAGetInfo(daf,NULL,&mx,&my,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(DMDAGetInfo(dac,NULL,&Mx,&My,NULL,NULL,NULL,NULL,NULL,NULL,&bx,&by,NULL,NULL));
+  PetscCall(DMDAGetInfo(daf,NULL,&mx,&my,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
   if (bx == DM_BOUNDARY_PERIODIC) {
     ratioi = mx/Mx;
     PetscCheckFalse(ratioi*Mx != mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
@@ -1193,19 +1193,19 @@ PetscErrorCode DMCreateInjection_DA_2D(DM dac,DM daf,VecScatter *inject)
     PetscCheckFalse(ratioj*(My-1) != my-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (my - 1)/(My - 1) must be integer: my %D My %D",my,My);
   }
 
-  CHKERRQ(DMDAGetCorners(daf,&i_start,&j_start,NULL,&m_f,&n_f,NULL));
-  CHKERRQ(DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,NULL,&m_ghost,&n_ghost,NULL));
-  CHKERRQ(DMGetLocalToGlobalMapping(daf,&ltog_f));
-  CHKERRQ(ISLocalToGlobalMappingGetBlockIndices(ltog_f,&idx_f));
+  PetscCall(DMDAGetCorners(daf,&i_start,&j_start,NULL,&m_f,&n_f,NULL));
+  PetscCall(DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,NULL,&m_ghost,&n_ghost,NULL));
+  PetscCall(DMGetLocalToGlobalMapping(daf,&ltog_f));
+  PetscCall(ISLocalToGlobalMappingGetBlockIndices(ltog_f,&idx_f));
 
-  CHKERRQ(DMDAGetCorners(dac,&i_start_c,&j_start_c,NULL,&m_c,&n_c,NULL));
-  CHKERRQ(DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,NULL,&m_ghost_c,&n_ghost_c,NULL));
-  CHKERRQ(DMGetLocalToGlobalMapping(dac,&ltog_c));
-  CHKERRQ(ISLocalToGlobalMappingGetBlockIndices(ltog_c,&idx_c));
+  PetscCall(DMDAGetCorners(dac,&i_start_c,&j_start_c,NULL,&m_c,&n_c,NULL));
+  PetscCall(DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,NULL,&m_ghost_c,&n_ghost_c,NULL));
+  PetscCall(DMGetLocalToGlobalMapping(dac,&ltog_c));
+  PetscCall(ISLocalToGlobalMappingGetBlockIndices(ltog_c,&idx_c));
 
   /* loop over local fine grid nodes setting interpolation for those*/
   nc   = 0;
-  CHKERRQ(PetscMalloc1(n_f*m_f,&cols));
+  PetscCall(PetscMalloc1(n_f*m_f,&cols));
   for (j=j_start_c; j<j_start_c+n_c; j++) {
     for (i=i_start_c; i<i_start_c+m_c; i++) {
       PetscInt i_f = i*ratioi,j_f = j*ratioj;
@@ -1217,16 +1217,16 @@ PetscErrorCode DMCreateInjection_DA_2D(DM dac,DM daf,VecScatter *inject)
       cols[nc++] = row;
     }
   }
-  CHKERRQ(ISLocalToGlobalMappingRestoreBlockIndices(ltog_f,&idx_f));
-  CHKERRQ(ISLocalToGlobalMappingRestoreBlockIndices(ltog_c,&idx_c));
+  PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(ltog_f,&idx_f));
+  PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(ltog_c,&idx_c));
 
-  CHKERRQ(ISCreateBlock(PetscObjectComm((PetscObject)daf),dof,nc,cols,PETSC_OWN_POINTER,&isf));
-  CHKERRQ(DMGetGlobalVector(dac,&vecc));
-  CHKERRQ(DMGetGlobalVector(daf,&vecf));
-  CHKERRQ(VecScatterCreate(vecf,isf,vecc,NULL,inject));
-  CHKERRQ(DMRestoreGlobalVector(dac,&vecc));
-  CHKERRQ(DMRestoreGlobalVector(daf,&vecf));
-  CHKERRQ(ISDestroy(&isf));
+  PetscCall(ISCreateBlock(PetscObjectComm((PetscObject)daf),dof,nc,cols,PETSC_OWN_POINTER,&isf));
+  PetscCall(DMGetGlobalVector(dac,&vecc));
+  PetscCall(DMGetGlobalVector(daf,&vecf));
+  PetscCall(VecScatterCreate(vecf,isf,vecc,NULL,inject));
+  PetscCall(DMRestoreGlobalVector(dac,&vecc));
+  PetscCall(DMRestoreGlobalVector(daf,&vecf));
+  PetscCall(ISDestroy(&isf));
   PetscFunctionReturn(0);
 }
 
@@ -1248,8 +1248,8 @@ PetscErrorCode DMCreateInjection_DA_3D(DM dac,DM daf,VecScatter *inject)
   IS                     isf;
 
   PetscFunctionBegin;
-  CHKERRQ(DMDAGetInfo(dac,NULL,&Mx,&My,&Mz,NULL,NULL,NULL,NULL,NULL,&bx,&by,&bz,NULL));
-  CHKERRQ(DMDAGetInfo(daf,NULL,&mx,&my,&mz,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(DMDAGetInfo(dac,NULL,&Mx,&My,&Mz,NULL,NULL,NULL,NULL,NULL,&bx,&by,&bz,NULL));
+  PetscCall(DMDAGetInfo(daf,NULL,&mx,&my,&mz,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
 
   if (bx == DM_BOUNDARY_PERIODIC) {
     ratioi = mx/Mx;
@@ -1273,19 +1273,19 @@ PetscErrorCode DMCreateInjection_DA_3D(DM dac,DM daf,VecScatter *inject)
     PetscCheckFalse(ratiok*(Mz-1) != mz-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mz - 1)/(Mz - 1) must be integer: mz %D Mz %D",mz,Mz);
   }
 
-  CHKERRQ(DMDAGetCorners(daf,&i_start,&j_start,&k_start,&m_f,&n_f,&p_f));
-  CHKERRQ(DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,&k_start_ghost,&m_ghost,&n_ghost,&p_ghost));
-  CHKERRQ(DMGetLocalToGlobalMapping(daf,&ltog_f));
-  CHKERRQ(ISLocalToGlobalMappingGetBlockIndices(ltog_f,&idx_f));
+  PetscCall(DMDAGetCorners(daf,&i_start,&j_start,&k_start,&m_f,&n_f,&p_f));
+  PetscCall(DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,&k_start_ghost,&m_ghost,&n_ghost,&p_ghost));
+  PetscCall(DMGetLocalToGlobalMapping(daf,&ltog_f));
+  PetscCall(ISLocalToGlobalMappingGetBlockIndices(ltog_f,&idx_f));
 
-  CHKERRQ(DMDAGetCorners(dac,&i_start_c,&j_start_c,&k_start_c,&m_c,&n_c,&p_c));
-  CHKERRQ(DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,&k_start_ghost_c,&m_ghost_c,&n_ghost_c,&p_ghost_c));
-  CHKERRQ(DMGetLocalToGlobalMapping(dac,&ltog_c));
-  CHKERRQ(ISLocalToGlobalMappingGetBlockIndices(ltog_c,&idx_c));
+  PetscCall(DMDAGetCorners(dac,&i_start_c,&j_start_c,&k_start_c,&m_c,&n_c,&p_c));
+  PetscCall(DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,&k_start_ghost_c,&m_ghost_c,&n_ghost_c,&p_ghost_c));
+  PetscCall(DMGetLocalToGlobalMapping(dac,&ltog_c));
+  PetscCall(ISLocalToGlobalMappingGetBlockIndices(ltog_c,&idx_c));
 
   /* loop over local fine grid nodes setting interpolation for those*/
   nc   = 0;
-  CHKERRQ(PetscMalloc1(n_f*m_f*p_f,&cols));
+  PetscCall(PetscMalloc1(n_f*m_f*p_f,&cols));
   for (k=k_start_c; k<k_start_c+p_c; k++) {
     for (j=j_start_c; j<j_start_c+n_c; j++) {
       for (i=i_start_c; i<i_start_c+m_c; i++) {
@@ -1301,16 +1301,16 @@ PetscErrorCode DMCreateInjection_DA_3D(DM dac,DM daf,VecScatter *inject)
       }
     }
   }
-  CHKERRQ(ISLocalToGlobalMappingRestoreBlockIndices(ltog_f,&idx_f));
-  CHKERRQ(ISLocalToGlobalMappingRestoreBlockIndices(ltog_c,&idx_c));
+  PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(ltog_f,&idx_f));
+  PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(ltog_c,&idx_c));
 
-  CHKERRQ(ISCreateBlock(PetscObjectComm((PetscObject)daf),dof,nc,cols,PETSC_OWN_POINTER,&isf));
-  CHKERRQ(DMGetGlobalVector(dac,&vecc));
-  CHKERRQ(DMGetGlobalVector(daf,&vecf));
-  CHKERRQ(VecScatterCreate(vecf,isf,vecc,NULL,inject));
-  CHKERRQ(DMRestoreGlobalVector(dac,&vecc));
-  CHKERRQ(DMRestoreGlobalVector(daf,&vecf));
-  CHKERRQ(ISDestroy(&isf));
+  PetscCall(ISCreateBlock(PetscObjectComm((PetscObject)daf),dof,nc,cols,PETSC_OWN_POINTER,&isf));
+  PetscCall(DMGetGlobalVector(dac,&vecc));
+  PetscCall(DMGetGlobalVector(daf,&vecf));
+  PetscCall(VecScatterCreate(vecf,isf,vecc,NULL,inject));
+  PetscCall(DMRestoreGlobalVector(dac,&vecc));
+  PetscCall(DMRestoreGlobalVector(daf,&vecf));
+  PetscCall(ISDestroy(&isf));
   PetscFunctionReturn(0);
 }
 
@@ -1326,8 +1326,8 @@ PetscErrorCode  DMCreateInjection_DA(DM dac,DM daf,Mat *mat)
   PetscValidHeaderSpecific(daf,DM_CLASSID,2);
   PetscValidPointer(mat,3);
 
-  CHKERRQ(DMDAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&bxc,&byc,&bzc,&stc));
-  CHKERRQ(DMDAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&bxf,&byf,&bzf,&stf));
+  PetscCall(DMDAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&bxc,&byc,&bzc,&stc));
+  PetscCall(DMDAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&bxf,&byf,&bzf,&stf));
   PetscCheckFalse(dimc != dimf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Dimensions of DMDA do not match %D %D",dimc,dimf);
   PetscCheckFalse(dofc != doff,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"DOF of DMDA do not match %D %D",dofc,doff);
   PetscCheckFalse(sc != sf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil width of DMDA do not match %D %D",sc,sf);
@@ -1338,14 +1338,14 @@ PetscErrorCode  DMCreateInjection_DA(DM dac,DM daf,Mat *mat)
   PetscCheckFalse(dimc > 2 && Pc < 2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in z direction");
 
   if (dimc == 1) {
-    CHKERRQ(DMCreateInjection_DA_1D(dac,daf,&inject));
+    PetscCall(DMCreateInjection_DA_1D(dac,daf,&inject));
   } else if (dimc == 2) {
-    CHKERRQ(DMCreateInjection_DA_2D(dac,daf,&inject));
+    PetscCall(DMCreateInjection_DA_2D(dac,daf,&inject));
   } else if (dimc == 3) {
-    CHKERRQ(DMCreateInjection_DA_3D(dac,daf,&inject));
+    PetscCall(DMCreateInjection_DA_3D(dac,daf,&inject));
   }
-  CHKERRQ(MatCreateScatter(PetscObjectComm((PetscObject)inject), inject, mat));
-  CHKERRQ(VecScatterDestroy(&inject));
+  PetscCall(MatCreateScatter(PetscObjectComm((PetscObject)inject), inject, mat));
+  PetscCall(VecScatterDestroy(&inject));
   PetscFunctionReturn(0);
 }
 
@@ -1408,8 +1408,8 @@ PetscErrorCode DMDACreateAggregates(DM dac,DM daf,Mat *rest)
   PetscValidHeaderSpecificType(daf,DM_CLASSID,2,DMDA);
   PetscValidPointer(rest,3);
 
-  CHKERRQ(DMDAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&bxc,&byc,&bzc,&stc));
-  CHKERRQ(DMDAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&bxf,&byf,&bzf,&stf));
+  PetscCall(DMDAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&bxc,&byc,&bzc,&stc));
+  PetscCall(DMDAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&bxf,&byf,&bzf,&stf));
   PetscCheckFalse(dimc != dimf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Dimensions of DMDA do not match %D %D",dimc,dimf);
   PetscCheckFalse(dofc != doff,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"DOF of DMDA do not match %D %D",dofc,doff);
   PetscCheckFalse(sc != sf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil width of DMDA do not match %D %D",sc,sf);
@@ -1425,17 +1425,17 @@ PetscErrorCode DMDACreateAggregates(DM dac,DM daf,Mat *rest)
   if (Nc < 0) Nc = 1;
   if (Nf < 0) Nf = 1;
 
-  CHKERRQ(DMDAGetCorners(daf,&i_start,&j_start,&l_start,&m_f,&n_f,&p_f));
-  CHKERRQ(DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,&l_start_ghost,&m_ghost,&n_ghost,&p_ghost));
+  PetscCall(DMDAGetCorners(daf,&i_start,&j_start,&l_start,&m_f,&n_f,&p_f));
+  PetscCall(DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,&l_start_ghost,&m_ghost,&n_ghost,&p_ghost));
 
-  CHKERRQ(DMGetLocalToGlobalMapping(daf,&ltogmf));
-  CHKERRQ(ISLocalToGlobalMappingGetIndices(ltogmf,&idx_f));
+  PetscCall(DMGetLocalToGlobalMapping(daf,&ltogmf));
+  PetscCall(ISLocalToGlobalMappingGetIndices(ltogmf,&idx_f));
 
-  CHKERRQ(DMDAGetCorners(dac,&i_start_c,&j_start_c,&l_start_c,&m_c,&n_c,&p_c));
-  CHKERRQ(DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,&l_start_ghost_c,&m_ghost_c,&n_ghost_c,&p_ghost_c));
+  PetscCall(DMDAGetCorners(dac,&i_start_c,&j_start_c,&l_start_c,&m_c,&n_c,&p_c));
+  PetscCall(DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,&l_start_ghost_c,&m_ghost_c,&n_ghost_c,&p_ghost_c));
 
-  CHKERRQ(DMGetLocalToGlobalMapping(dac,&ltogmc));
-  CHKERRQ(ISLocalToGlobalMappingGetIndices(ltogmc,&idx_c));
+  PetscCall(DMGetLocalToGlobalMapping(dac,&ltogmc));
+  PetscCall(ISLocalToGlobalMappingGetIndices(ltogmc,&idx_c));
 
   /*
      Basic idea is as follows. Here's a 2D example, suppose r_x, r_y are the ratios
@@ -1449,10 +1449,10 @@ PetscErrorCode DMDACreateAggregates(DM dac,DM daf,Mat *rest)
 
   /* create the matrix that will contain the restriction operator */
   ierr = MatCreateAIJ(PetscObjectComm((PetscObject)daf), m_c*n_c*p_c*dofc, m_f*n_f*p_f*doff, Mc*Nc*Pc*dofc, Mf*Nf*Pf*doff,
-                      max_agg_size, NULL, max_agg_size, NULL, rest);CHKERRQ(ierr);
+                      max_agg_size, NULL, max_agg_size, NULL, rest);PetscCall(ierr);
 
   /* store nodes in the fine grid here */
-  CHKERRQ(PetscMalloc2(max_agg_size, &one_vec,max_agg_size, &fine_nodes));
+  PetscCall(PetscMalloc2(max_agg_size, &one_vec,max_agg_size, &fine_nodes));
   for (i=0; i<max_agg_size; i++) one_vec[i] = 1.0;
 
   /* loop over all coarse nodes */
@@ -1477,15 +1477,15 @@ PetscErrorCode DMDACreateAggregates(DM dac,DM daf,Mat *rest)
             }
           }
           /* add all these points to one aggregate */
-          CHKERRQ(MatSetValues(*rest, 1, &a, fn_idx, fine_nodes, one_vec, INSERT_VALUES));
+          PetscCall(MatSetValues(*rest, 1, &a, fn_idx, fine_nodes, one_vec, INSERT_VALUES));
         }
       }
     }
   }
-  CHKERRQ(ISLocalToGlobalMappingRestoreIndices(ltogmf,&idx_f));
-  CHKERRQ(ISLocalToGlobalMappingRestoreIndices(ltogmc,&idx_c));
-  CHKERRQ(PetscFree2(one_vec,fine_nodes));
-  CHKERRQ(MatAssemblyBegin(*rest, MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(*rest, MAT_FINAL_ASSEMBLY));
+  PetscCall(ISLocalToGlobalMappingRestoreIndices(ltogmf,&idx_f));
+  PetscCall(ISLocalToGlobalMappingRestoreIndices(ltogmc,&idx_c));
+  PetscCall(PetscFree2(one_vec,fine_nodes));
+  PetscCall(MatAssemblyBegin(*rest, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(*rest, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }

@@ -26,47 +26,47 @@ int main(int argc,char **args)
   PetscBool              neg = PETSC_FALSE;
   PetscBool              ismatis, ismpiaij;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-neg",&neg,NULL));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-loc",&loc,NULL));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-locdiag",&locdiag,NULL));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-localapi",&localapi,NULL));
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-neg",&neg,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-loc",&loc,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-locdiag",&locdiag,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-localapi",&localapi,NULL));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
   if (loc) {
     if (locdiag) {
-      CHKERRQ(MatSetSizes(A,m,N,PETSC_DECIDE,PETSC_DECIDE));
+      PetscCall(MatSetSizes(A,m,N,PETSC_DECIDE,PETSC_DECIDE));
     } else {
-      CHKERRQ(MatSetSizes(A,m,m+N,PETSC_DECIDE,PETSC_DECIDE));
+      PetscCall(MatSetSizes(A,m,m+N,PETSC_DECIDE,PETSC_DECIDE));
     }
   } else {
-    CHKERRQ(MatSetSizes(A,m,PETSC_DECIDE,PETSC_DECIDE,N));
+    PetscCall(MatSetSizes(A,m,PETSC_DECIDE,PETSC_DECIDE,N));
   }
-  CHKERRQ(MatSetFromOptions(A));
-  CHKERRQ(MatGetLayouts(A,&rmap,&cmap));
-  CHKERRQ(PetscLayoutSetUp(rmap));
-  CHKERRQ(PetscLayoutSetUp(cmap));
-  CHKERRQ(PetscLayoutGetRange(rmap,&rstart,NULL));
-  CHKERRQ(PetscLayoutGetRange(cmap,&cstart,NULL));
-  CHKERRQ(PetscLayoutGetSize(rmap,&M));
-  CHKERRQ(PetscLayoutGetSize(cmap,&N));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatGetLayouts(A,&rmap,&cmap));
+  PetscCall(PetscLayoutSetUp(rmap));
+  PetscCall(PetscLayoutSetUp(cmap));
+  PetscCall(PetscLayoutGetRange(rmap,&rstart,NULL));
+  PetscCall(PetscLayoutGetRange(cmap,&cstart,NULL));
+  PetscCall(PetscLayoutGetSize(rmap,&M));
+  PetscCall(PetscLayoutGetSize(cmap,&N));
 
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)A,MATIS,&ismatis));
+  PetscCall(PetscObjectTypeCompare((PetscObject)A,MATIS,&ismatis));
 
   /* create fake l2g maps to test the local API */
-  CHKERRQ(ISCreateStride(PETSC_COMM_WORLD,M-rstart,rstart,1,&is));
-  CHKERRQ(ISLocalToGlobalMappingCreateIS(is,&rl2g));
-  CHKERRQ(ISDestroy(&is));
-  CHKERRQ(ISCreateStride(PETSC_COMM_WORLD,N,0,1,&is));
-  CHKERRQ(ISLocalToGlobalMappingCreateIS(is,&cl2g));
-  CHKERRQ(ISDestroy(&is));
-  CHKERRQ(MatSetLocalToGlobalMapping(A,rl2g,cl2g));
-  CHKERRQ(ISLocalToGlobalMappingDestroy(&rl2g));
-  CHKERRQ(ISLocalToGlobalMappingDestroy(&cl2g));
+  PetscCall(ISCreateStride(PETSC_COMM_WORLD,M-rstart,rstart,1,&is));
+  PetscCall(ISLocalToGlobalMappingCreateIS(is,&rl2g));
+  PetscCall(ISDestroy(&is));
+  PetscCall(ISCreateStride(PETSC_COMM_WORLD,N,0,1,&is));
+  PetscCall(ISLocalToGlobalMappingCreateIS(is,&cl2g));
+  PetscCall(ISDestroy(&is));
+  PetscCall(MatSetLocalToGlobalMapping(A,rl2g,cl2g));
+  PetscCall(ISLocalToGlobalMappingDestroy(&rl2g));
+  PetscCall(ISLocalToGlobalMappingDestroy(&cl2g));
 
-  CHKERRQ(MatCreateVecs(A,&x,&y));
-  CHKERRQ(MatCreateVecs(A,NULL,&z));
-  CHKERRQ(VecSet(x,1.));
-  CHKERRQ(VecSet(z,2.));
+  PetscCall(MatCreateVecs(A,&x,&y));
+  PetscCall(MatCreateVecs(A,NULL,&z));
+  PetscCall(VecSet(x,1.));
+  PetscCall(VecSet(z,2.));
   if (!localapi) for (i = 0; i < n1; i++) i1[i] += rstart;
   if (!localapi) for (i = 0; i < n2; i++) i2[i] += rstart;
   if (loc) {
@@ -80,84 +80,84 @@ int main(int argc,char **args)
   }
   if (neg) { n1 += 2; n2 += 2; }
   /* MatSetPreallocationCOOLocal maps the indices! */
-  CHKERRQ(PetscMalloc2(PetscMax(n1,n2),&it,PetscMax(n1,n2),&jt));
+  PetscCall(PetscMalloc2(PetscMax(n1,n2),&it,PetscMax(n1,n2),&jt));
   /* test with repeated entries */
   if (!localapi) {
-    CHKERRQ(MatSetPreallocationCOO(A,n1,i1,j1));
+    PetscCall(MatSetPreallocationCOO(A,n1,i1,j1));
   } else {
-    CHKERRQ(PetscArraycpy(it,i1,n1));
-    CHKERRQ(PetscArraycpy(jt,j1,n1));
-    CHKERRQ(MatSetPreallocationCOOLocal(A,n1,it,jt));
+    PetscCall(PetscArraycpy(it,i1,n1));
+    PetscCall(PetscArraycpy(jt,j1,n1));
+    PetscCall(MatSetPreallocationCOOLocal(A,n1,it,jt));
   }
-  CHKERRQ(MatSetValuesCOO(A,v1,ADD_VALUES));
-  CHKERRQ(MatMult(A,x,y));
-  CHKERRQ(MyMatView(A,NULL));
-  CHKERRQ(MyVecView(y,NULL));
-  CHKERRQ(MatSetValuesCOO(A,v2,ADD_VALUES));
-  CHKERRQ(MatMultAdd(A,x,y,y));
-  CHKERRQ(MyMatView(A,NULL));
-  CHKERRQ(MyVecView(y,NULL));
-  CHKERRQ(MatTranspose(A,MAT_INITIAL_MATRIX,&At));
+  PetscCall(MatSetValuesCOO(A,v1,ADD_VALUES));
+  PetscCall(MatMult(A,x,y));
+  PetscCall(MyMatView(A,NULL));
+  PetscCall(MyVecView(y,NULL));
+  PetscCall(MatSetValuesCOO(A,v2,ADD_VALUES));
+  PetscCall(MatMultAdd(A,x,y,y));
+  PetscCall(MyMatView(A,NULL));
+  PetscCall(MyVecView(y,NULL));
+  PetscCall(MatTranspose(A,MAT_INITIAL_MATRIX,&At));
   if (!ismatis) {
-    CHKERRQ(MatMatMult(A,At,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AAt));
-    CHKERRQ(MyMatView(AAt,NULL));
-    CHKERRQ(MatDestroy(&AAt));
-    CHKERRQ(MatMatMult(At,A,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AAt));
-    CHKERRQ(MyMatView(AAt,NULL));
-    CHKERRQ(MatDestroy(&AAt));
+    PetscCall(MatMatMult(A,At,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AAt));
+    PetscCall(MyMatView(AAt,NULL));
+    PetscCall(MatDestroy(&AAt));
+    PetscCall(MatMatMult(At,A,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AAt));
+    PetscCall(MyMatView(AAt,NULL));
+    PetscCall(MatDestroy(&AAt));
   }
-  CHKERRQ(MatDestroy(&At));
+  PetscCall(MatDestroy(&At));
 
   /* INSERT_VALUES will overwrite matrix entries but
      still perform the sum of the repeated entries */
-  CHKERRQ(MatSetValuesCOO(A,v2,INSERT_VALUES));
-  CHKERRQ(MyMatView(A,NULL));
+  PetscCall(MatSetValuesCOO(A,v2,INSERT_VALUES));
+  PetscCall(MyMatView(A,NULL));
 
   /* test with unique entries */
   if (!localapi) {
-    CHKERRQ(MatSetPreallocationCOO(A,n2,i2,j2));
+    PetscCall(MatSetPreallocationCOO(A,n2,i2,j2));
   } else {
-    CHKERRQ(PetscArraycpy(it,i2,n2));
-    CHKERRQ(PetscArraycpy(jt,j2,n2));
-    CHKERRQ(MatSetPreallocationCOOLocal(A,n2,it,jt));
+    PetscCall(PetscArraycpy(it,i2,n2));
+    PetscCall(PetscArraycpy(jt,j2,n2));
+    PetscCall(MatSetPreallocationCOOLocal(A,n2,it,jt));
   }
-  CHKERRQ(MatSetValuesCOO(A,v1,ADD_VALUES));
-  CHKERRQ(MatMult(A,x,y));
-  CHKERRQ(MyMatView(A,NULL));
-  CHKERRQ(MyVecView(y,NULL));
-  CHKERRQ(MatSetValuesCOO(A,v2,ADD_VALUES));
-  CHKERRQ(MatMultAdd(A,x,y,z));
-  CHKERRQ(MyMatView(A,NULL));
-  CHKERRQ(MyVecView(z,NULL));
+  PetscCall(MatSetValuesCOO(A,v1,ADD_VALUES));
+  PetscCall(MatMult(A,x,y));
+  PetscCall(MyMatView(A,NULL));
+  PetscCall(MyVecView(y,NULL));
+  PetscCall(MatSetValuesCOO(A,v2,ADD_VALUES));
+  PetscCall(MatMultAdd(A,x,y,z));
+  PetscCall(MyMatView(A,NULL));
+  PetscCall(MyVecView(z,NULL));
   if (!localapi) {
-    CHKERRQ(MatSetPreallocationCOO(A,n2,i2,j2));
+    PetscCall(MatSetPreallocationCOO(A,n2,i2,j2));
   } else {
-    CHKERRQ(PetscArraycpy(it,i2,n2));
-    CHKERRQ(PetscArraycpy(jt,j2,n2));
-    CHKERRQ(MatSetPreallocationCOOLocal(A,n2,it,jt));
+    PetscCall(PetscArraycpy(it,i2,n2));
+    PetscCall(PetscArraycpy(jt,j2,n2));
+    PetscCall(MatSetPreallocationCOOLocal(A,n2,it,jt));
   }
-  CHKERRQ(MatSetValuesCOO(A,v1,INSERT_VALUES));
-  CHKERRQ(MatMult(A,x,y));
-  CHKERRQ(MyMatView(A,NULL));
-  CHKERRQ(MyVecView(y,NULL));
-  CHKERRQ(MatSetValuesCOO(A,v2,INSERT_VALUES));
-  CHKERRQ(MatMultAdd(A,x,y,z));
-  CHKERRQ(MyMatView(A,NULL));
-  CHKERRQ(MyVecView(z,NULL));
-  CHKERRQ(MatTranspose(A,MAT_INITIAL_MATRIX,&At));
+  PetscCall(MatSetValuesCOO(A,v1,INSERT_VALUES));
+  PetscCall(MatMult(A,x,y));
+  PetscCall(MyMatView(A,NULL));
+  PetscCall(MyVecView(y,NULL));
+  PetscCall(MatSetValuesCOO(A,v2,INSERT_VALUES));
+  PetscCall(MatMultAdd(A,x,y,z));
+  PetscCall(MyMatView(A,NULL));
+  PetscCall(MyVecView(z,NULL));
+  PetscCall(MatTranspose(A,MAT_INITIAL_MATRIX,&At));
   if (!ismatis) {
-    CHKERRQ(MatMatMult(A,At,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AAt));
-    CHKERRQ(MyMatView(AAt,NULL));
-    CHKERRQ(MatDestroy(&AAt));
-    CHKERRQ(MatMatMult(At,A,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AAt));
-    CHKERRQ(MyMatView(AAt,NULL));
-    CHKERRQ(MatDestroy(&AAt));
+    PetscCall(MatMatMult(A,At,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AAt));
+    PetscCall(MyMatView(AAt,NULL));
+    PetscCall(MatDestroy(&AAt));
+    PetscCall(MatMatMult(At,A,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AAt));
+    PetscCall(MyMatView(AAt,NULL));
+    PetscCall(MatDestroy(&AAt));
   }
-  CHKERRQ(MatDestroy(&At));
+  PetscCall(MatDestroy(&At));
 
   /* test providing diagonal first, then offdiagonal */
-  CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A),&size));
-  CHKERRQ(PetscObjectBaseTypeCompare((PetscObject)A,MATMPIAIJ,&ismpiaij));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A),&size));
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)A,MATMPIAIJ,&ismpiaij));
   if (ismpiaij && size > 1) {
     Mat               lA,lB;
     const PetscInt    *garray,*iA,*jA,*iB,*jB;
@@ -167,13 +167,13 @@ int main(int argc,char **args)
     PetscInt          i,j,nA,nB,nnz;
     PetscBool         flg;
 
-    CHKERRQ(MatMPIAIJGetSeqAIJ(A,&lA,&lB,&garray));
-    CHKERRQ(MatSeqAIJGetArrayRead(lA,&vA));
-    CHKERRQ(MatSeqAIJGetArrayRead(lB,&vB));
-    CHKERRQ(MatGetRowIJ(lA,0,PETSC_FALSE,PETSC_FALSE,&nA,&iA,&jA,&flg));
-    CHKERRQ(MatGetRowIJ(lB,0,PETSC_FALSE,PETSC_FALSE,&nB,&iB,&jB,&flg));
+    PetscCall(MatMPIAIJGetSeqAIJ(A,&lA,&lB,&garray));
+    PetscCall(MatSeqAIJGetArrayRead(lA,&vA));
+    PetscCall(MatSeqAIJGetArrayRead(lB,&vB));
+    PetscCall(MatGetRowIJ(lA,0,PETSC_FALSE,PETSC_FALSE,&nA,&iA,&jA,&flg));
+    PetscCall(MatGetRowIJ(lB,0,PETSC_FALSE,PETSC_FALSE,&nB,&iB,&jB,&flg));
     nnz  = iA[nA] + iB[nB];
-    CHKERRQ(PetscMalloc3(nnz,&coo_i,nnz,&coo_j,nnz,&coo_v));
+    PetscCall(PetscMalloc3(nnz,&coo_i,nnz,&coo_j,nnz,&coo_v));
     nnz  = 0;
     for (i=0;i<nA;i++) {
       for (j=iA[i];j<iA[i+1];j++,nnz++) {
@@ -189,37 +189,37 @@ int main(int argc,char **args)
         coo_v[nnz] = vB[j];
       }
     }
-    CHKERRQ(MatRestoreRowIJ(lA,0,PETSC_FALSE,PETSC_FALSE,&nA,&iA,&jA,&flg));
-    CHKERRQ(MatRestoreRowIJ(lB,0,PETSC_FALSE,PETSC_FALSE,&nB,&iB,&jB,&flg));
-    CHKERRQ(MatSeqAIJRestoreArrayRead(lA,&vA));
-    CHKERRQ(MatSeqAIJRestoreArrayRead(lB,&vB));
+    PetscCall(MatRestoreRowIJ(lA,0,PETSC_FALSE,PETSC_FALSE,&nA,&iA,&jA,&flg));
+    PetscCall(MatRestoreRowIJ(lB,0,PETSC_FALSE,PETSC_FALSE,&nB,&iB,&jB,&flg));
+    PetscCall(MatSeqAIJRestoreArrayRead(lA,&vA));
+    PetscCall(MatSeqAIJRestoreArrayRead(lB,&vB));
 
-    CHKERRQ(MatSetPreallocationCOO(A,nnz,coo_i,coo_j));
-    CHKERRQ(MatSetValuesCOO(A,coo_v,ADD_VALUES));
-    CHKERRQ(MatMult(A,x,y));
-    CHKERRQ(MyMatView(A,NULL));
-    CHKERRQ(MyVecView(y,NULL));
-    CHKERRQ(MatSetValuesCOO(A,coo_v,INSERT_VALUES));
-    CHKERRQ(MatMult(A,x,y));
-    CHKERRQ(MyMatView(A,NULL));
-    CHKERRQ(MyVecView(y,NULL));
-    CHKERRQ(MatTranspose(A,MAT_INITIAL_MATRIX,&At));
-    CHKERRQ(MatMatMult(A,At,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AAt));
-    CHKERRQ(MyMatView(AAt,NULL));
-    CHKERRQ(MatDestroy(&AAt));
-    CHKERRQ(MatMatMult(At,A,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AAt));
-    CHKERRQ(MyMatView(AAt,NULL));
-    CHKERRQ(MatDestroy(&AAt));
-    CHKERRQ(MatDestroy(&At));
+    PetscCall(MatSetPreallocationCOO(A,nnz,coo_i,coo_j));
+    PetscCall(MatSetValuesCOO(A,coo_v,ADD_VALUES));
+    PetscCall(MatMult(A,x,y));
+    PetscCall(MyMatView(A,NULL));
+    PetscCall(MyVecView(y,NULL));
+    PetscCall(MatSetValuesCOO(A,coo_v,INSERT_VALUES));
+    PetscCall(MatMult(A,x,y));
+    PetscCall(MyMatView(A,NULL));
+    PetscCall(MyVecView(y,NULL));
+    PetscCall(MatTranspose(A,MAT_INITIAL_MATRIX,&At));
+    PetscCall(MatMatMult(A,At,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AAt));
+    PetscCall(MyMatView(AAt,NULL));
+    PetscCall(MatDestroy(&AAt));
+    PetscCall(MatMatMult(At,A,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AAt));
+    PetscCall(MyMatView(AAt,NULL));
+    PetscCall(MatDestroy(&AAt));
+    PetscCall(MatDestroy(&At));
 
-    CHKERRQ(PetscFree3(coo_i,coo_j,coo_v));
+    PetscCall(PetscFree3(coo_i,coo_j,coo_v));
   }
-  CHKERRQ(PetscFree2(it,jt));
-  CHKERRQ(VecDestroy(&z));
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&y));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFree2(it,jt));
+  PetscCall(VecDestroy(&z));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&y));
+  PetscCall(MatDestroy(&A));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

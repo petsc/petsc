@@ -31,26 +31,26 @@ int main(int argc,char **args)
   PetscMPIInt    rank;
   PetscBool      usezerorows = PETSC_TRUE;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-usezerorows",&usezerorows,NULL));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-usezerorows",&usezerorows,NULL));
   N    = (m+1)*(m+1); /* dimension of matrix */
   M    = m*m;         /* number of elements */
   h    = 1.0/m;       /* mesh width */
 
   /* create stiffness matrix */
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&C));
-  CHKERRQ(MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,N,N));
-  CHKERRQ(MatSetFromOptions(C));
-  CHKERRQ(MatMPIAIJSetPreallocation(C,9,NULL,9,NULL));
-  CHKERRQ(MatSeqAIJSetPreallocation(C,9,NULL));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&C));
+  PetscCall(MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,N,N));
+  PetscCall(MatSetFromOptions(C));
+  PetscCall(MatMPIAIJSetPreallocation(C,9,NULL,9,NULL));
+  PetscCall(MatSeqAIJSetPreallocation(C,9,NULL));
 #if defined(PETSC_HAVE_HYPRE)
-  CHKERRQ(MatHYPRESetPreallocation(C,9,NULL,9,NULL));
+  PetscCall(MatHYPRESetPreallocation(C,9,NULL,9,NULL));
 #endif
 
   /* forms the element stiffness for the Laplacian */
-  CHKERRQ(FormElementStiffness(h*h,Ke));
+  PetscCall(FormElementStiffness(h*h,Ke));
 
   /* assemble the matrix: only process 0 adds the values, not scalable */
   if (!rank) {
@@ -67,17 +67,17 @@ int main(int argc,char **args)
         }
         Ke[10] = 1.0;
       }
-      CHKERRQ(MatSetValues(C,4,idx,4,idx,Ke,ADD_VALUES));
+      PetscCall(MatSetValues(C,4,idx,4,idx,Ke,ADD_VALUES));
     }
   }
-  CHKERRQ(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
 
   /* create right hand side and solution */
-  CHKERRQ(MatCreateVecs(C,&u,&b));
-  CHKERRQ(VecDuplicate(u,&ustar));
-  CHKERRQ(VecSet(u,0.0));
-  CHKERRQ(VecSet(b,0.0));
+  PetscCall(MatCreateVecs(C,&u,&b));
+  PetscCall(VecDuplicate(u,&ustar));
+  PetscCall(VecSet(u,0.0));
+  PetscCall(VecSet(b,0.0));
 
   /* assemble the right hand side: only process 0 adds the values, not scalable */
   if (!rank) {
@@ -90,16 +90,16 @@ int main(int argc,char **args)
       idx[1] = idx[0]+1;
       idx[2] = idx[1]+m+1;
       idx[3] = idx[2]-1;
-      CHKERRQ(FormElementRhs(x,y,h*h,r));
-      CHKERRQ(VecSetValues(b,4,idx,r,ADD_VALUES));
+      PetscCall(FormElementRhs(x,y,h*h,r));
+      PetscCall(VecSetValues(b,4,idx,r,ADD_VALUES));
     }
   }
-  CHKERRQ(VecAssemblyBegin(b));
-  CHKERRQ(VecAssemblyEnd(b));
+  PetscCall(VecAssemblyBegin(b));
+  PetscCall(VecAssemblyEnd(b));
 
   /* modify matrix and rhs for Dirichlet boundary conditions */
   if (!rank) {
-    CHKERRQ(PetscMalloc1(4*m+1,&rows));
+    PetscCall(PetscMalloc1(4*m+1,&rows));
     for (i=0; i<m+1; i++) {
       rows[i]       = i; /* bottom */
       rows[3*m-1+i] = m*(m+1)+i; /* top */
@@ -112,54 +112,54 @@ int main(int argc,char **args)
 
     for (i=0; i<4*m; i++) {
       val  = h*(rows[i]/(m+1));
-      CHKERRQ(VecSetValues(u,1,&rows[i],&val,INSERT_VALUES));
-      CHKERRQ(VecSetValues(b,1,&rows[i],&val,INSERT_VALUES));
+      PetscCall(VecSetValues(u,1,&rows[i],&val,INSERT_VALUES));
+      PetscCall(VecSetValues(b,1,&rows[i],&val,INSERT_VALUES));
     }
-    if (usezerorows) CHKERRQ(MatZeroRows(C,4*m,rows,1.0,0,0));
-    CHKERRQ(PetscFree(rows));
+    if (usezerorows) PetscCall(MatZeroRows(C,4*m,rows,1.0,0,0));
+    PetscCall(PetscFree(rows));
   } else {
-    if (usezerorows) CHKERRQ(MatZeroRows(C,0,NULL,1.0,0,0));
+    if (usezerorows) PetscCall(MatZeroRows(C,0,NULL,1.0,0,0));
   }
-  CHKERRQ(VecAssemblyBegin(u));
-  CHKERRQ(VecAssemblyEnd(u));
-  CHKERRQ(VecAssemblyBegin(b));
-  CHKERRQ(VecAssemblyEnd(b));
+  PetscCall(VecAssemblyBegin(u));
+  PetscCall(VecAssemblyEnd(u));
+  PetscCall(VecAssemblyBegin(b));
+  PetscCall(VecAssemblyEnd(b));
 
   if (!usezerorows) {
-    CHKERRQ(VecSet(ustar,1.0));
-    CHKERRQ(MatMult(C,ustar,b));
+    PetscCall(VecSet(ustar,1.0));
+    PetscCall(MatMult(C,ustar,b));
   }
 
   /* solve linear system */
-  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
-  CHKERRQ(KSPSetOperators(ksp,C,C));
-  CHKERRQ(KSPSetFromOptions(ksp));
-  CHKERRQ(KSPSetInitialGuessNonzero(ksp,PETSC_TRUE));
-  CHKERRQ(KSPSolve(ksp,b,u));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPSetOperators(ksp,C,C));
+  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(KSPSetInitialGuessNonzero(ksp,PETSC_TRUE));
+  PetscCall(KSPSolve(ksp,b,u));
 
   /* check error */
   if (usezerorows) {
     if (!rank) {
       for (i=0; i<N; i++) {
         val  = h*(i/(m+1));
-        CHKERRQ(VecSetValues(ustar,1,&i,&val,INSERT_VALUES));
+        PetscCall(VecSetValues(ustar,1,&i,&val,INSERT_VALUES));
       }
     }
-    CHKERRQ(VecAssemblyBegin(ustar));
-    CHKERRQ(VecAssemblyEnd(ustar));
+    PetscCall(VecAssemblyBegin(ustar));
+    PetscCall(VecAssemblyEnd(ustar));
   }
 
-  CHKERRQ(VecAXPY(u,-1.0,ustar));
-  CHKERRQ(VecNorm(u,NORM_2,&norm));
-  CHKERRQ(KSPGetIterationNumber(ksp,&its));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g Iterations %D\n",(double)(norm*h),its));
+  PetscCall(VecAXPY(u,-1.0,ustar));
+  PetscCall(VecNorm(u,NORM_2,&norm));
+  PetscCall(KSPGetIterationNumber(ksp,&its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g Iterations %D\n",(double)(norm*h),its));
 
-  CHKERRQ(KSPDestroy(&ksp));
-  CHKERRQ(VecDestroy(&ustar));
-  CHKERRQ(VecDestroy(&u));
-  CHKERRQ(VecDestroy(&b));
-  CHKERRQ(MatDestroy(&C));
-  CHKERRQ(PetscFinalize());
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(VecDestroy(&ustar));
+  PetscCall(VecDestroy(&u));
+  PetscCall(VecDestroy(&b));
+  PetscCall(MatDestroy(&C));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

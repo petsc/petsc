@@ -11,17 +11,17 @@ static PetscErrorCode TaoDestroy_GPCG(Tao tao)
 
   /* Free allocated memory in GPCG structure */
   PetscFunctionBegin;
-  CHKERRQ(VecDestroy(&gpcg->B));
-  CHKERRQ(VecDestroy(&gpcg->Work));
-  CHKERRQ(VecDestroy(&gpcg->X_New));
-  CHKERRQ(VecDestroy(&gpcg->G_New));
-  CHKERRQ(VecDestroy(&gpcg->DXFree));
-  CHKERRQ(VecDestroy(&gpcg->R));
-  CHKERRQ(VecDestroy(&gpcg->PG));
-  CHKERRQ(MatDestroy(&gpcg->Hsub));
-  CHKERRQ(MatDestroy(&gpcg->Hsub_pre));
-  CHKERRQ(ISDestroy(&gpcg->Free_Local));
-  CHKERRQ(PetscFree(tao->data));
+  PetscCall(VecDestroy(&gpcg->B));
+  PetscCall(VecDestroy(&gpcg->Work));
+  PetscCall(VecDestroy(&gpcg->X_New));
+  PetscCall(VecDestroy(&gpcg->G_New));
+  PetscCall(VecDestroy(&gpcg->DXFree));
+  PetscCall(VecDestroy(&gpcg->R));
+  PetscCall(VecDestroy(&gpcg->PG));
+  PetscCall(MatDestroy(&gpcg->Hsub));
+  PetscCall(MatDestroy(&gpcg->Hsub_pre));
+  PetscCall(ISDestroy(&gpcg->Free_Local));
+  PetscCall(PetscFree(tao->data));
   PetscFunctionReturn(0);
 }
 
@@ -32,11 +32,11 @@ static PetscErrorCode TaoSetFromOptions_GPCG(PetscOptionItems *PetscOptionsObjec
   PetscBool      flg;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"Gradient Projection, Conjugate Gradient method for bound constrained optimization"));
-  CHKERRQ(PetscOptionsInt("-tao_gpcg_maxpgits","maximum number of gradient projections per GPCG iterate",NULL,gpcg->maxgpits,&gpcg->maxgpits,&flg));
-  CHKERRQ(PetscOptionsTail());
-  CHKERRQ(KSPSetFromOptions(tao->ksp));
-  CHKERRQ(TaoLineSearchSetFromOptions(tao->linesearch));
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"Gradient Projection, Conjugate Gradient method for bound constrained optimization"));
+  PetscCall(PetscOptionsInt("-tao_gpcg_maxpgits","maximum number of gradient projections per GPCG iterate",NULL,gpcg->maxgpits,&gpcg->maxgpits,&flg));
+  PetscCall(PetscOptionsTail());
+  PetscCall(KSPSetFromOptions(tao->ksp));
+  PetscCall(TaoLineSearchSetFromOptions(tao->linesearch));
   PetscFunctionReturn(0);
 }
 
@@ -47,12 +47,12 @@ static PetscErrorCode TaoView_GPCG(Tao tao, PetscViewer viewer)
   PetscBool      isascii;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii));
   if (isascii) {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"Total PG its: %D,",gpcg->total_gp_its));
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"PG tolerance: %g \n",(double)gpcg->pg_ftol));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"Total PG its: %D,",gpcg->total_gp_its));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"PG tolerance: %g \n",(double)gpcg->pg_ftol));
   }
-  CHKERRQ(TaoLineSearchView(tao->linesearch,viewer));
+  PetscCall(TaoLineSearchView(tao->linesearch,viewer));
   PetscFunctionReturn(0);
 }
 
@@ -67,10 +67,10 @@ static PetscErrorCode GPCGObjectiveAndGradient(TaoLineSearch ls, Vec X, PetscRea
   PetscReal      f1,f2;
 
   PetscFunctionBegin;
-  CHKERRQ(MatMult(tao->hessian,X,G));
-  CHKERRQ(VecDot(G,X,&f1));
-  CHKERRQ(VecDot(gpcg->B,X,&f2));
-  CHKERRQ(VecAXPY(G,1.0,gpcg->B));
+  PetscCall(MatMult(tao->hessian,X,G));
+  PetscCall(VecDot(G,X,&f1));
+  PetscCall(VecDot(gpcg->B,X,&f2));
+  PetscCall(VecAXPY(G,1.0,gpcg->B));
   *f=f1/2.0 + f2 + gpcg->c;
   PetscFunctionReturn(0);
 }
@@ -83,34 +83,34 @@ static PetscErrorCode TaoSetup_GPCG(Tao tao)
   PetscFunctionBegin;
   /* Allocate some arrays */
   if (!tao->gradient) {
-      CHKERRQ(VecDuplicate(tao->solution, &tao->gradient));
+      PetscCall(VecDuplicate(tao->solution, &tao->gradient));
   }
   if (!tao->stepdirection) {
-      CHKERRQ(VecDuplicate(tao->solution, &tao->stepdirection));
+      PetscCall(VecDuplicate(tao->solution, &tao->stepdirection));
   }
   if (!tao->XL) {
-      CHKERRQ(VecDuplicate(tao->solution,&tao->XL));
-      CHKERRQ(VecSet(tao->XL,PETSC_NINFINITY));
+      PetscCall(VecDuplicate(tao->solution,&tao->XL));
+      PetscCall(VecSet(tao->XL,PETSC_NINFINITY));
   }
   if (!tao->XU) {
-      CHKERRQ(VecDuplicate(tao->solution,&tao->XU));
-      CHKERRQ(VecSet(tao->XU,PETSC_INFINITY));
+      PetscCall(VecDuplicate(tao->solution,&tao->XU));
+      PetscCall(VecSet(tao->XU,PETSC_INFINITY));
   }
 
-  CHKERRQ(VecDuplicate(tao->solution,&gpcg->B));
-  CHKERRQ(VecDuplicate(tao->solution,&gpcg->Work));
-  CHKERRQ(VecDuplicate(tao->solution,&gpcg->X_New));
-  CHKERRQ(VecDuplicate(tao->solution,&gpcg->G_New));
-  CHKERRQ(VecDuplicate(tao->solution,&gpcg->DXFree));
-  CHKERRQ(VecDuplicate(tao->solution,&gpcg->R));
-  CHKERRQ(VecDuplicate(tao->solution,&gpcg->PG));
+  PetscCall(VecDuplicate(tao->solution,&gpcg->B));
+  PetscCall(VecDuplicate(tao->solution,&gpcg->Work));
+  PetscCall(VecDuplicate(tao->solution,&gpcg->X_New));
+  PetscCall(VecDuplicate(tao->solution,&gpcg->G_New));
+  PetscCall(VecDuplicate(tao->solution,&gpcg->DXFree));
+  PetscCall(VecDuplicate(tao->solution,&gpcg->R));
+  PetscCall(VecDuplicate(tao->solution,&gpcg->PG));
   /*
     if (gpcg->ksp_type == GPCG_KSP_NASH) {
-        CHKERRQ(KSPSetType(tao->ksp,KSPNASH));
+        PetscCall(KSPSetType(tao->ksp,KSPNASH));
       } else if (gpcg->ksp_type == GPCG_KSP_STCG) {
-        CHKERRQ(KSPSetType(tao->ksp,KSPSTCG));
+        PetscCall(KSPSetType(tao->ksp,KSPSTCG));
       } else {
-        CHKERRQ(KSPSetType(tao->ksp,KSPGLTR));
+        PetscCall(KSPSetType(tao->ksp,KSPGLTR));
       }
       if (tao->ksp->ops->setfromoptions) {
         (*tao->ksp->ops->setfromoptions)(tao->ksp);
@@ -131,93 +131,93 @@ static PetscErrorCode TaoSolve_GPCG(Tao tao)
 
   PetscFunctionBegin;
 
-  CHKERRQ(TaoComputeVariableBounds(tao));
-  CHKERRQ(VecMedian(tao->XL,tao->solution,tao->XU,tao->solution));
-  CHKERRQ(TaoLineSearchSetVariableBounds(tao->linesearch,tao->XL,tao->XU));
+  PetscCall(TaoComputeVariableBounds(tao));
+  PetscCall(VecMedian(tao->XL,tao->solution,tao->XU,tao->solution));
+  PetscCall(TaoLineSearchSetVariableBounds(tao->linesearch,tao->XL,tao->XU));
 
   /* Using f = .5*x'Hx + x'b + c and g=Hx + b,  compute b,c */
-  CHKERRQ(TaoComputeHessian(tao,tao->solution,tao->hessian,tao->hessian_pre));
-  CHKERRQ(TaoComputeObjectiveAndGradient(tao,tao->solution,&f,tao->gradient));
-  CHKERRQ(VecCopy(tao->gradient, gpcg->B));
-  CHKERRQ(MatMult(tao->hessian,tao->solution,gpcg->Work));
-  CHKERRQ(VecDot(gpcg->Work, tao->solution, &xtHx));
-  CHKERRQ(VecAXPY(gpcg->B,-1.0,gpcg->Work));
-  CHKERRQ(VecDot(gpcg->B,tao->solution,&xtb));
+  PetscCall(TaoComputeHessian(tao,tao->solution,tao->hessian,tao->hessian_pre));
+  PetscCall(TaoComputeObjectiveAndGradient(tao,tao->solution,&f,tao->gradient));
+  PetscCall(VecCopy(tao->gradient, gpcg->B));
+  PetscCall(MatMult(tao->hessian,tao->solution,gpcg->Work));
+  PetscCall(VecDot(gpcg->Work, tao->solution, &xtHx));
+  PetscCall(VecAXPY(gpcg->B,-1.0,gpcg->Work));
+  PetscCall(VecDot(gpcg->B,tao->solution,&xtb));
   gpcg->c=f-xtHx/2.0-xtb;
   if (gpcg->Free_Local) {
-      CHKERRQ(ISDestroy(&gpcg->Free_Local));
+      PetscCall(ISDestroy(&gpcg->Free_Local));
   }
-  CHKERRQ(VecWhichInactive(tao->XL,tao->solution,tao->gradient,tao->XU,PETSC_TRUE,&gpcg->Free_Local));
+  PetscCall(VecWhichInactive(tao->XL,tao->solution,tao->gradient,tao->XU,PETSC_TRUE,&gpcg->Free_Local));
 
   /* Project the gradient and calculate the norm */
-  CHKERRQ(VecCopy(tao->gradient,gpcg->G_New));
-  CHKERRQ(VecBoundGradientProjection(tao->gradient,tao->solution,tao->XL,tao->XU,gpcg->PG));
-  CHKERRQ(VecNorm(gpcg->PG,NORM_2,&gpcg->gnorm));
+  PetscCall(VecCopy(tao->gradient,gpcg->G_New));
+  PetscCall(VecBoundGradientProjection(tao->gradient,tao->solution,tao->XL,tao->XU,gpcg->PG));
+  PetscCall(VecNorm(gpcg->PG,NORM_2,&gpcg->gnorm));
   tao->step=1.0;
   gpcg->f = f;
 
     /* Check Stopping Condition      */
   tao->reason = TAO_CONTINUE_ITERATING;
-  CHKERRQ(TaoLogConvergenceHistory(tao,f,gpcg->gnorm,0.0,tao->ksp_its));
-  CHKERRQ(TaoMonitor(tao,tao->niter,f,gpcg->gnorm,0.0,tao->step));
-  CHKERRQ((*tao->ops->convergencetest)(tao,tao->cnvP));
+  PetscCall(TaoLogConvergenceHistory(tao,f,gpcg->gnorm,0.0,tao->ksp_its));
+  PetscCall(TaoMonitor(tao,tao->niter,f,gpcg->gnorm,0.0,tao->step));
+  PetscCall((*tao->ops->convergencetest)(tao,tao->cnvP));
 
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     /* Call general purpose update function */
     if (tao->ops->update) {
-      CHKERRQ((*tao->ops->update)(tao, tao->niter, tao->user_update));
+      PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
     }
     tao->ksp_its=0;
 
-    CHKERRQ(GPCGGradProjections(tao));
-    CHKERRQ(ISGetSize(gpcg->Free_Local,&gpcg->n_free));
+    PetscCall(GPCGGradProjections(tao));
+    PetscCall(ISGetSize(gpcg->Free_Local,&gpcg->n_free));
 
     f=gpcg->f; gnorm=gpcg->gnorm;
 
-    CHKERRQ(KSPReset(tao->ksp));
+    PetscCall(KSPReset(tao->ksp));
 
     if (gpcg->n_free > 0) {
       /* Create a reduced linear system */
-      CHKERRQ(VecDestroy(&gpcg->R));
-      CHKERRQ(VecDestroy(&gpcg->DXFree));
-      CHKERRQ(TaoVecGetSubVec(tao->gradient,gpcg->Free_Local, tao->subset_type, 0.0, &gpcg->R));
-      CHKERRQ(VecScale(gpcg->R, -1.0));
-      CHKERRQ(TaoVecGetSubVec(tao->stepdirection,gpcg->Free_Local,tao->subset_type, 0.0, &gpcg->DXFree));
-      CHKERRQ(VecSet(gpcg->DXFree,0.0));
+      PetscCall(VecDestroy(&gpcg->R));
+      PetscCall(VecDestroy(&gpcg->DXFree));
+      PetscCall(TaoVecGetSubVec(tao->gradient,gpcg->Free_Local, tao->subset_type, 0.0, &gpcg->R));
+      PetscCall(VecScale(gpcg->R, -1.0));
+      PetscCall(TaoVecGetSubVec(tao->stepdirection,gpcg->Free_Local,tao->subset_type, 0.0, &gpcg->DXFree));
+      PetscCall(VecSet(gpcg->DXFree,0.0));
 
-      CHKERRQ(TaoMatGetSubMat(tao->hessian, gpcg->Free_Local, gpcg->Work, tao->subset_type, &gpcg->Hsub));
+      PetscCall(TaoMatGetSubMat(tao->hessian, gpcg->Free_Local, gpcg->Work, tao->subset_type, &gpcg->Hsub));
 
       if (tao->hessian_pre == tao->hessian) {
-        CHKERRQ(MatDestroy(&gpcg->Hsub_pre));
-        CHKERRQ(PetscObjectReference((PetscObject)gpcg->Hsub));
+        PetscCall(MatDestroy(&gpcg->Hsub_pre));
+        PetscCall(PetscObjectReference((PetscObject)gpcg->Hsub));
         gpcg->Hsub_pre = gpcg->Hsub;
       }  else {
-        CHKERRQ(TaoMatGetSubMat(tao->hessian, gpcg->Free_Local, gpcg->Work, tao->subset_type, &gpcg->Hsub_pre));
+        PetscCall(TaoMatGetSubMat(tao->hessian, gpcg->Free_Local, gpcg->Work, tao->subset_type, &gpcg->Hsub_pre));
       }
 
-      CHKERRQ(KSPReset(tao->ksp));
-      CHKERRQ(KSPSetOperators(tao->ksp,gpcg->Hsub,gpcg->Hsub_pre));
+      PetscCall(KSPReset(tao->ksp));
+      PetscCall(KSPSetOperators(tao->ksp,gpcg->Hsub,gpcg->Hsub_pre));
 
-      CHKERRQ(KSPSolve(tao->ksp,gpcg->R,gpcg->DXFree));
-      CHKERRQ(KSPGetIterationNumber(tao->ksp,&its));
+      PetscCall(KSPSolve(tao->ksp,gpcg->R,gpcg->DXFree));
+      PetscCall(KSPGetIterationNumber(tao->ksp,&its));
       tao->ksp_its+=its;
       tao->ksp_tot_its+=its;
-      CHKERRQ(VecSet(tao->stepdirection,0.0));
-      CHKERRQ(VecISAXPY(tao->stepdirection,gpcg->Free_Local,1.0,gpcg->DXFree));
+      PetscCall(VecSet(tao->stepdirection,0.0));
+      PetscCall(VecISAXPY(tao->stepdirection,gpcg->Free_Local,1.0,gpcg->DXFree));
 
-      CHKERRQ(VecDot(tao->stepdirection,tao->gradient,&gdx));
-      CHKERRQ(TaoLineSearchSetInitialStepLength(tao->linesearch,1.0));
+      PetscCall(VecDot(tao->stepdirection,tao->gradient,&gdx));
+      PetscCall(TaoLineSearchSetInitialStepLength(tao->linesearch,1.0));
       f_new=f;
-      CHKERRQ(TaoLineSearchApply(tao->linesearch,tao->solution,&f_new,tao->gradient,tao->stepdirection,&stepsize,&ls_status));
+      PetscCall(TaoLineSearchApply(tao->linesearch,tao->solution,&f_new,tao->gradient,tao->stepdirection,&stepsize,&ls_status));
 
       actred = f_new - f;
 
       /* Evaluate the function and gradient at the new point */
-      CHKERRQ(VecBoundGradientProjection(tao->gradient,tao->solution,tao->XL,tao->XU, gpcg->PG));
-      CHKERRQ(VecNorm(gpcg->PG, NORM_2, &gnorm));
+      PetscCall(VecBoundGradientProjection(tao->gradient,tao->solution,tao->XL,tao->XU, gpcg->PG));
+      PetscCall(VecNorm(gpcg->PG, NORM_2, &gnorm));
       f=f_new;
-      CHKERRQ(ISDestroy(&gpcg->Free_Local));
-      CHKERRQ(VecWhichInactive(tao->XL,tao->solution,tao->gradient,tao->XU,PETSC_TRUE,&gpcg->Free_Local));
+      PetscCall(ISDestroy(&gpcg->Free_Local));
+      PetscCall(VecWhichInactive(tao->XL,tao->solution,tao->gradient,tao->XU,PETSC_TRUE,&gpcg->Free_Local));
     } else {
       actred = 0; gpcg->step=1.0;
       /* if there were no free variables, no cg method */
@@ -225,9 +225,9 @@ static PetscErrorCode TaoSolve_GPCG(Tao tao)
 
     tao->niter++;
     gpcg->f=f;gpcg->gnorm=gnorm; gpcg->actred=actred;
-    CHKERRQ(TaoLogConvergenceHistory(tao,f,gpcg->gnorm,0.0,tao->ksp_its));
-    CHKERRQ(TaoMonitor(tao,tao->niter,f,gpcg->gnorm,0.0,tao->step));
-    CHKERRQ((*tao->ops->convergencetest)(tao,tao->cnvP));
+    PetscCall(TaoLogConvergenceHistory(tao,f,gpcg->gnorm,0.0,tao->ksp_its));
+    PetscCall(TaoMonitor(tao,tao->niter,f,gpcg->gnorm,0.0,tao->step));
+    PetscCall((*tao->ops->convergencetest)(tao,tao->cnvP));
     if (tao->reason != TAO_CONTINUE_ITERATING) break;
   }  /* END MAIN LOOP  */
 
@@ -250,12 +250,12 @@ static PetscErrorCode GPCGGradProjections(Tao tao)
   PetscFunctionBegin;
   for (i=0;i<gpcg->maxgpits;i++) {
     if (-actred <= (gpcg->pg_ftol)*actred_max) break;
-    CHKERRQ(VecBoundGradientProjection(G,X,XL,XU,DX));
-    CHKERRQ(VecScale(DX,-1.0));
-    CHKERRQ(VecDot(DX,G,&gdx));
+    PetscCall(VecBoundGradientProjection(G,X,XL,XU,DX));
+    PetscCall(VecScale(DX,-1.0));
+    PetscCall(VecDot(DX,G,&gdx));
 
-    CHKERRQ(MatMult(tao->hessian,DX,Work));
-    CHKERRQ(VecDot(DX,Work,&gAg));
+    PetscCall(MatMult(tao->hessian,DX,Work));
+    PetscCall(VecDot(DX,Work,&gAg));
 
     gpcg->gp_iterates++;
     gpcg->total_gp_its++;
@@ -266,16 +266,16 @@ static PetscErrorCode GPCGGradProjections(Tao tao)
     } else {
       alpha = PetscAbsReal(gtg/gAg);
     }
-    CHKERRQ(TaoLineSearchSetInitialStepLength(tao->linesearch,alpha));
+    PetscCall(TaoLineSearchSetInitialStepLength(tao->linesearch,alpha));
     f_new=gpcg->f;
-    CHKERRQ(TaoLineSearchApply(tao->linesearch,X,&f_new,G,DX,&stepsize,&lsflag));
+    PetscCall(TaoLineSearchApply(tao->linesearch,X,&f_new,G,DX,&stepsize,&lsflag));
 
     /* Update the iterate */
     actred = f_new - gpcg->f;
     actred_max = PetscMax(actred_max,-(f_new - gpcg->f));
     gpcg->f = f_new;
-    CHKERRQ(ISDestroy(&gpcg->Free_Local));
-    CHKERRQ(VecWhichInactive(XL,X,tao->gradient,XU,PETSC_TRUE,&gpcg->Free_Local));
+    PetscCall(ISDestroy(&gpcg->Free_Local));
+    PetscCall(VecWhichInactive(XL,X,tao->gradient,XU,PETSC_TRUE,&gpcg->Free_Local));
   }
 
   gpcg->gnorm=gtg;
@@ -287,16 +287,16 @@ static PetscErrorCode TaoComputeDual_GPCG(Tao tao, Vec DXL, Vec DXU)
   TAO_GPCG       *gpcg = (TAO_GPCG *)tao->data;
 
   PetscFunctionBegin;
-  CHKERRQ(VecBoundGradientProjection(tao->gradient, tao->solution, tao->XL, tao->XU, gpcg->Work));
-  CHKERRQ(VecCopy(gpcg->Work, DXL));
-  CHKERRQ(VecAXPY(DXL,-1.0,tao->gradient));
-  CHKERRQ(VecSet(DXU,0.0));
-  CHKERRQ(VecPointwiseMax(DXL,DXL,DXU));
+  PetscCall(VecBoundGradientProjection(tao->gradient, tao->solution, tao->XL, tao->XU, gpcg->Work));
+  PetscCall(VecCopy(gpcg->Work, DXL));
+  PetscCall(VecAXPY(DXL,-1.0,tao->gradient));
+  PetscCall(VecSet(DXU,0.0));
+  PetscCall(VecPointwiseMax(DXL,DXL,DXU));
 
-  CHKERRQ(VecCopy(tao->gradient,DXU));
-  CHKERRQ(VecAXPY(DXU,-1.0,gpcg->Work));
-  CHKERRQ(VecSet(gpcg->Work,0.0));
-  CHKERRQ(VecPointwiseMin(DXU,gpcg->Work,DXU));
+  PetscCall(VecCopy(tao->gradient,DXU));
+  PetscCall(VecAXPY(DXU,-1.0,gpcg->Work));
+  PetscCall(VecSet(gpcg->Work,0.0));
+  PetscCall(VecPointwiseMin(DXU,gpcg->Work,DXU));
   PetscFunctionReturn(0);
 }
 
@@ -323,7 +323,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_GPCG(Tao tao)
   tao->ops->destroy = TaoDestroy_GPCG;
   tao->ops->computedual = TaoComputeDual_GPCG;
 
-  CHKERRQ(PetscNewLog(tao,&gpcg));
+  PetscCall(PetscNewLog(tao,&gpcg));
   tao->data = (void*)gpcg;
 
   /* Override default settings (unless already changed) */
@@ -354,15 +354,15 @@ PETSC_EXTERN PetscErrorCode TaoCreate_GPCG(Tao tao)
   gpcg->Hsub=NULL;
   gpcg->Hsub_pre=NULL;
 
-  CHKERRQ(KSPCreate(((PetscObject)tao)->comm, &tao->ksp));
-  CHKERRQ(PetscObjectIncrementTabLevel((PetscObject)tao->ksp, (PetscObject)tao, 1));
-  CHKERRQ(KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix));
-  CHKERRQ(KSPSetType(tao->ksp,KSPNASH));
+  PetscCall(KSPCreate(((PetscObject)tao)->comm, &tao->ksp));
+  PetscCall(PetscObjectIncrementTabLevel((PetscObject)tao->ksp, (PetscObject)tao, 1));
+  PetscCall(KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix));
+  PetscCall(KSPSetType(tao->ksp,KSPNASH));
 
-  CHKERRQ(TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch));
-  CHKERRQ(PetscObjectIncrementTabLevel((PetscObject)tao->linesearch, (PetscObject)tao, 1));
-  CHKERRQ(TaoLineSearchSetType(tao->linesearch, TAOLINESEARCHGPCG));
-  CHKERRQ(TaoLineSearchSetObjectiveAndGradientRoutine(tao->linesearch, GPCGObjectiveAndGradient, tao));
-  CHKERRQ(TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix));
+  PetscCall(TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch));
+  PetscCall(PetscObjectIncrementTabLevel((PetscObject)tao->linesearch, (PetscObject)tao, 1));
+  PetscCall(TaoLineSearchSetType(tao->linesearch, TAOLINESEARCHGPCG));
+  PetscCall(TaoLineSearchSetObjectiveAndGradientRoutine(tao->linesearch, GPCGObjectiveAndGradient, tao));
+  PetscCall(TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix));
   PetscFunctionReturn(0);
 }

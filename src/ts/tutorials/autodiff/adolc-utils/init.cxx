@@ -59,11 +59,11 @@ template <class T> PetscErrorCode GiveGhostPoints(DM da,T *cgs,void *array)
   PetscInt dim;
 
   PetscFunctionBegin;
-  CHKERRQ(DMDAGetInfo(da,&dim,0,0,0,0,0,0,0,0,0,0,0,0));
+  PetscCall(DMDAGetInfo(da,&dim,0,0,0,0,0,0,0,0,0,0,0,0));
   if (dim == 1) {
-    CHKERRQ(GiveGhostPoints1d(da,(T**)array));
+    PetscCall(GiveGhostPoints1d(da,(T**)array));
   } else if (dim == 2) {
-    CHKERRQ(GiveGhostPoints2d(da,cgs,(T***)array));
+    PetscCall(GiveGhostPoints2d(da,cgs,(T***)array));
   } else PetscCheckFalse(dim == 3,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"GiveGhostPoints3d not yet implemented"); // TODO
   PetscFunctionReturn(0);
 }
@@ -83,7 +83,7 @@ template <class T> PetscErrorCode GiveGhostPoints1d(DM da,T *a1d[])
   PetscInt gxs;
 
   PetscFunctionBegin;
-  CHKERRQ(DMDAGetGhostCorners(da,&gxs,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(DMDAGetGhostCorners(da,&gxs,NULL,NULL,NULL,NULL,NULL));
   *a1d -= gxs;
   PetscFunctionReturn(0);
 }
@@ -106,7 +106,7 @@ template <class T> PetscErrorCode GiveGhostPoints2d(DM da,T *cgs,T **a2d[])
   PetscInt gxs,gys,gxm,gym;
 
   PetscFunctionBegin;
-  CHKERRQ(DMDAGetGhostCorners(da,&gxs,&gys,NULL,&gxm,&gym,NULL));
+  PetscCall(DMDAGetGhostCorners(da,&gxs,&gys,NULL,&gxm,&gym,NULL));
   for (PetscInt j=0; j<gym; j++) (*a2d)[j] = cgs + j*gxm - gxs;
   *a2d -= gys;
   PetscFunctionReturn(0);
@@ -143,6 +143,6 @@ template <class T> PetscErrorCode Subidentity(PetscInt n,PetscInt s,T **S)
 template <class T> PetscErrorCode Identity(PetscInt n,T **I)
 {
   PetscFunctionBegin;
-  CHKERRQ(Subidentity(n,0,I));
+  PetscCall(Subidentity(n,0,I));
   PetscFunctionReturn(0);
 }

@@ -14,17 +14,17 @@ PetscErrorCode Create(MPI_Comm comm,Mat *inA,IS *is0,IS *is1)
 
   PetscFunctionBeginUser;
   *inA = 0;
-  CHKERRQ(MatCreate(comm,&A));
-  CHKERRQ(MatSetSizes(A,4,4,PETSC_DETERMINE,PETSC_DETERMINE));
-  CHKERRQ(MatSetFromOptions(A));
-  CHKERRQ(MatSetUp(A));
-  CHKERRQ(MatGetOwnershipRange(A,&r,&rend));
-  CHKERRQ(MatGetSize(A,&M,NULL));
+  PetscCall(MatCreate(comm,&A));
+  PetscCall(MatSetSizes(A,4,4,PETSC_DETERMINE,PETSC_DETERMINE));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSetUp(A));
+  PetscCall(MatGetOwnershipRange(A,&r,&rend));
+  PetscCall(MatGetSize(A,&M,NULL));
 
-  CHKERRQ(ISCreateStride(comm,2,r,1,is0));
-  CHKERRQ(ISCreateStride(comm,2,r+2,1,is1));
+  PetscCall(ISCreateStride(comm,2,r,1,is0));
+  PetscCall(ISCreateStride(comm,2,r+2,1,is1));
 
-  CHKERRMPI(MPI_Comm_rank(comm,&rank));
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
 
   {
     PetscInt    rows[4],cols0[5],cols1[5],cols2[3],cols3[3];
@@ -72,13 +72,13 @@ PetscErrorCode Create(MPI_Comm comm,Mat *inA,IS *is0,IS *is1)
     vals3[0] = RR+13.;
     vals3[1] = RR+14.;
     vals3[2] = RR+15.;
-    CHKERRQ(MatSetValues(A,1,&rows[0],5,cols0,vals0,INSERT_VALUES));
-    CHKERRQ(MatSetValues(A,1,&rows[1],4,cols1,vals1,INSERT_VALUES));
-    CHKERRQ(MatSetValues(A,1,&rows[2],3,cols2,vals2,INSERT_VALUES));
-    CHKERRQ(MatSetValues(A,1,&rows[3],3,cols3,vals3,INSERT_VALUES));
+    PetscCall(MatSetValues(A,1,&rows[0],5,cols0,vals0,INSERT_VALUES));
+    PetscCall(MatSetValues(A,1,&rows[1],4,cols1,vals1,INSERT_VALUES));
+    PetscCall(MatSetValues(A,1,&rows[2],3,cols2,vals2,INSERT_VALUES));
+    PetscCall(MatSetValues(A,1,&rows[3],3,cols3,vals3,INSERT_VALUES));
   }
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd  (A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd  (A,MAT_FINAL_ASSEMBLY));
   *inA = A;
   PetscFunctionReturn(0);
 }
@@ -86,9 +86,9 @@ PetscErrorCode Create(MPI_Comm comm,Mat *inA,IS *is0,IS *is1)
 PetscErrorCode Destroy(Mat *A,IS *is0,IS *is1)
 {
   PetscFunctionBeginUser;
-  CHKERRQ(MatDestroy(A));
-  CHKERRQ(ISDestroy(is0));
-  CHKERRQ(ISDestroy(is1));
+  PetscCall(MatDestroy(A));
+  PetscCall(ISDestroy(is0));
+  PetscCall(ISDestroy(is1));
   PetscFunctionReturn(0);
 }
 
@@ -99,51 +99,51 @@ int main(int argc,char *argv[])
   MatSchurComplementAinvType ainv_type = MAT_SCHUR_COMPLEMENT_AINV_DIAG;
   IS                         is0,is1;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,0,help));
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex21","KSP");CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsEnum("-mat_schur_complement_ainv_type","Type of approximation for inv(A00) used when assembling Sp = A11 - A10 inv(A00) A01","MatSchurComplementAinvType",MatSchurComplementAinvTypes,(PetscEnum)ainv_type,(PetscEnum*)&ainv_type,NULL));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,0,help));
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex21","KSP");PetscCall(ierr);
+  PetscCall(PetscOptionsEnum("-mat_schur_complement_ainv_type","Type of approximation for inv(A00) used when assembling Sp = A11 - A10 inv(A00) A01","MatSchurComplementAinvType",MatSchurComplementAinvTypes,(PetscEnum)ainv_type,(PetscEnum*)&ainv_type,NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
   /* Test the Schur complement one way */
-  CHKERRQ(Create(PETSC_COMM_WORLD,&A,&is0,&is1));
-  CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(ISView(is0,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(ISView(is1,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(MatGetSchurComplement(A,is0,is0,is1,is1,MAT_INITIAL_MATRIX,&S,ainv_type,MAT_IGNORE_MATRIX,NULL));
-  CHKERRQ(MatSetFromOptions(S));
-  CHKERRQ(MatComputeOperator(S,MATAIJ,&Sexplicit));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\nExplicit Schur complement of (0,0) in (1,1)\n"));
-  CHKERRQ(MatView(Sexplicit,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(Destroy(&A,&is0,&is1));
-  CHKERRQ(MatDestroy(&S));
-  CHKERRQ(MatDestroy(&Sexplicit));
+  PetscCall(Create(PETSC_COMM_WORLD,&A,&is0,&is1));
+  PetscCall(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(ISView(is0,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(ISView(is1,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatGetSchurComplement(A,is0,is0,is1,is1,MAT_INITIAL_MATRIX,&S,ainv_type,MAT_IGNORE_MATRIX,NULL));
+  PetscCall(MatSetFromOptions(S));
+  PetscCall(MatComputeOperator(S,MATAIJ,&Sexplicit));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\nExplicit Schur complement of (0,0) in (1,1)\n"));
+  PetscCall(MatView(Sexplicit,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(Destroy(&A,&is0,&is1));
+  PetscCall(MatDestroy(&S));
+  PetscCall(MatDestroy(&Sexplicit));
 
   /* And the other */
-  CHKERRQ(Create(PETSC_COMM_WORLD,&A,&is0,&is1));
-  CHKERRQ(MatGetSchurComplement(A,is1,is1,is0,is0,MAT_INITIAL_MATRIX,&S,ainv_type,MAT_IGNORE_MATRIX,NULL));
-  CHKERRQ(MatSetFromOptions(S));
-  CHKERRQ(MatComputeOperator(S,MATAIJ,&Sexplicit));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\nExplicit Schur complement of (1,1) in (0,0)\n"));
-  CHKERRQ(MatView(Sexplicit,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(Destroy(&A,&is0,&is1));
-  CHKERRQ(MatDestroy(&S));
-  CHKERRQ(MatDestroy(&Sexplicit));
+  PetscCall(Create(PETSC_COMM_WORLD,&A,&is0,&is1));
+  PetscCall(MatGetSchurComplement(A,is1,is1,is0,is0,MAT_INITIAL_MATRIX,&S,ainv_type,MAT_IGNORE_MATRIX,NULL));
+  PetscCall(MatSetFromOptions(S));
+  PetscCall(MatComputeOperator(S,MATAIJ,&Sexplicit));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\nExplicit Schur complement of (1,1) in (0,0)\n"));
+  PetscCall(MatView(Sexplicit,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(Destroy(&A,&is0,&is1));
+  PetscCall(MatDestroy(&S));
+  PetscCall(MatDestroy(&Sexplicit));
 
   /* This time just the preconditioning matrix. */
-  CHKERRQ(Create(PETSC_COMM_WORLD,&A,&is0,&is1));
-  CHKERRQ(MatGetSchurComplement(A,is0,is0,is1,is1,MAT_IGNORE_MATRIX,NULL,ainv_type,MAT_INITIAL_MATRIX,&S));
-  CHKERRQ(MatSetFromOptions(S));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\nPreconditioning Schur complement of (0,0) in (1,1)\n"));
-  CHKERRQ(MatView(S,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(Create(PETSC_COMM_WORLD,&A,&is0,&is1));
+  PetscCall(MatGetSchurComplement(A,is0,is0,is1,is1,MAT_IGNORE_MATRIX,NULL,ainv_type,MAT_INITIAL_MATRIX,&S));
+  PetscCall(MatSetFromOptions(S));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\nPreconditioning Schur complement of (0,0) in (1,1)\n"));
+  PetscCall(MatView(S,PETSC_VIEWER_STDOUT_WORLD));
   /* Modify and refresh */
-  CHKERRQ(MatShift(A,1.));
-  CHKERRQ(MatGetSchurComplement(A,is0,is0,is1,is1,MAT_IGNORE_MATRIX,NULL,ainv_type,MAT_REUSE_MATRIX,&S));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\nAfter update\n"));
-  CHKERRQ(MatView(S,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(Destroy(&A,&is0,&is1));
-  CHKERRQ(MatDestroy(&S));
+  PetscCall(MatShift(A,1.));
+  PetscCall(MatGetSchurComplement(A,is0,is0,is1,is1,MAT_IGNORE_MATRIX,NULL,ainv_type,MAT_REUSE_MATRIX,&S));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\nAfter update\n"));
+  PetscCall(MatView(S,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(Destroy(&A,&is0,&is1));
+  PetscCall(MatDestroy(&S));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

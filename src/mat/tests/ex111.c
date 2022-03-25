@@ -49,18 +49,18 @@ int main(int argc,char **argv)
   PetscBool      Test_3D=PETSC_FALSE,flg;
   const PetscInt *ia,*ja;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   /* Get size of fine grids and coarse grids */
   user.ratio     = 2;
   user.coarse.mx = 4; user.coarse.my = 4; user.coarse.mz = 4;
 
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-Mx",&user.coarse.mx,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-My",&user.coarse.my,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-Mz",&user.coarse.mz,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-ratio",&user.ratio,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-Mx",&user.coarse.mx,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-My",&user.coarse.my,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-Mz",&user.coarse.mz,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-ratio",&user.ratio,NULL));
   if (user.coarse.mz) Test_3D = PETSC_TRUE;
 
   user.fine.mx = user.ratio*(user.coarse.mx-1)+1;
@@ -69,119 +69,119 @@ int main(int argc,char **argv)
 
   if (rank == 0) {
     if (!Test_3D) {
-      CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"coarse grids: %" PetscInt_FMT " %" PetscInt_FMT "; fine grids: %" PetscInt_FMT " %" PetscInt_FMT "\n",user.coarse.mx,user.coarse.my,user.fine.mx,user.fine.my));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,"coarse grids: %" PetscInt_FMT " %" PetscInt_FMT "; fine grids: %" PetscInt_FMT " %" PetscInt_FMT "\n",user.coarse.mx,user.coarse.my,user.fine.mx,user.fine.my));
     } else {
-      CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"coarse grids: %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "; fine grids: %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n",user.coarse.mx,user.coarse.my,user.coarse.mz,user.fine.mx,user.fine.my,user.fine.mz));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,"coarse grids: %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "; fine grids: %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n",user.coarse.mx,user.coarse.my,user.coarse.mz,user.fine.mx,user.fine.my,user.fine.mz));
     }
   }
 
   /* Set up distributed array for fine grid */
   if (!Test_3D) {
-    CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.fine.mx,user.fine.my,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&user.fine.da));
+    PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.fine.mx,user.fine.my,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&user.fine.da));
   } else {
     ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.fine.mx,user.fine.my,user.fine.mz,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,
-                        1,1,NULL,NULL,NULL,&user.fine.da);CHKERRQ(ierr);
+                        1,1,NULL,NULL,NULL,&user.fine.da);PetscCall(ierr);
   }
-  CHKERRQ(DMSetFromOptions(user.fine.da));
-  CHKERRQ(DMSetUp(user.fine.da));
+  PetscCall(DMSetFromOptions(user.fine.da));
+  PetscCall(DMSetUp(user.fine.da));
 
   /* Create and set A at fine grids */
-  CHKERRQ(DMSetMatType(user.fine.da,MATAIJ));
-  CHKERRQ(DMCreateMatrix(user.fine.da,&A));
-  CHKERRQ(MatGetLocalSize(A,&m,&n));
-  CHKERRQ(MatGetSize(A,&M,&N));
+  PetscCall(DMSetMatType(user.fine.da,MATAIJ));
+  PetscCall(DMCreateMatrix(user.fine.da,&A));
+  PetscCall(MatGetLocalSize(A,&m,&n));
+  PetscCall(MatGetSize(A,&M,&N));
 
   /* set val=one to A (replace with random values!) */
-  CHKERRQ(PetscRandomCreate(PETSC_COMM_WORLD,&rdm));
-  CHKERRQ(PetscRandomSetFromOptions(rdm));
+  PetscCall(PetscRandomCreate(PETSC_COMM_WORLD,&rdm));
+  PetscCall(PetscRandomSetFromOptions(rdm));
   if (size == 1) {
-    CHKERRQ(MatGetRowIJ(A,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg));
+    PetscCall(MatGetRowIJ(A,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg));
     if (flg) {
-      CHKERRQ(MatSeqAIJGetArray(A,&array));
+      PetscCall(MatSeqAIJGetArray(A,&array));
       for (i=0; i<ia[nrows]; i++) array[i] = one;
-      CHKERRQ(MatSeqAIJRestoreArray(A,&array));
+      PetscCall(MatSeqAIJRestoreArray(A,&array));
     }
-    CHKERRQ(MatRestoreRowIJ(A,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg));
+    PetscCall(MatRestoreRowIJ(A,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg));
   } else {
     Mat AA,AB;
-    CHKERRQ(MatMPIAIJGetSeqAIJ(A,&AA,&AB,NULL));
-    CHKERRQ(MatGetRowIJ(AA,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg));
+    PetscCall(MatMPIAIJGetSeqAIJ(A,&AA,&AB,NULL));
+    PetscCall(MatGetRowIJ(AA,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg));
     if (flg) {
-      CHKERRQ(MatSeqAIJGetArray(AA,&array));
+      PetscCall(MatSeqAIJGetArray(AA,&array));
       for (i=0; i<ia[nrows]; i++) array[i] = one;
-      CHKERRQ(MatSeqAIJRestoreArray(AA,&array));
+      PetscCall(MatSeqAIJRestoreArray(AA,&array));
     }
-    CHKERRQ(MatRestoreRowIJ(AA,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg));
-    CHKERRQ(MatGetRowIJ(AB,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg));
+    PetscCall(MatRestoreRowIJ(AA,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg));
+    PetscCall(MatGetRowIJ(AB,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg));
     if (flg) {
-      CHKERRQ(MatSeqAIJGetArray(AB,&array));
+      PetscCall(MatSeqAIJGetArray(AB,&array));
       for (i=0; i<ia[nrows]; i++) array[i] = one;
-      CHKERRQ(MatSeqAIJRestoreArray(AB,&array));
+      PetscCall(MatSeqAIJRestoreArray(AB,&array));
     }
-    CHKERRQ(MatRestoreRowIJ(AB,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg));
+    PetscCall(MatRestoreRowIJ(AB,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg));
   }
   /* Set up distributed array for coarse grid */
   if (!Test_3D) {
-    CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,user.coarse.my,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&user.coarse.da));
+    PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,user.coarse.my,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&user.coarse.da));
   } else {
-    CHKERRQ(DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,user.coarse.my,user.coarse.mz,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,NULL,&user.coarse.da));
+    PetscCall(DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,user.coarse.my,user.coarse.mz,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,NULL,&user.coarse.da));
   }
-  CHKERRQ(DMSetFromOptions(user.coarse.da));
-  CHKERRQ(DMSetUp(user.coarse.da));
+  PetscCall(DMSetFromOptions(user.coarse.da));
+  PetscCall(DMSetUp(user.coarse.da));
 
   /* Create interpolation between the fine and coarse grids */
-  CHKERRQ(DMCreateInterpolation(user.coarse.da,user.fine.da,&P,NULL));
+  PetscCall(DMCreateInterpolation(user.coarse.da,user.fine.da,&P,NULL));
 
   /* Get R = P^T */
-  CHKERRQ(MatTranspose(P,MAT_INITIAL_MATRIX,&R));
+  PetscCall(MatTranspose(P,MAT_INITIAL_MATRIX,&R));
 
   /* C = R*A*P */
   /* Developer's API */
-  CHKERRQ(MatProductCreate(R,A,P,&D));
-  CHKERRQ(MatProductSetType(D,MATPRODUCT_ABC));
-  CHKERRQ(MatProductSetFromOptions(D));
-  CHKERRQ(MatProductSymbolic(D));
-  CHKERRQ(MatProductNumeric(D));
-  CHKERRQ(MatProductNumeric(D)); /* Test reuse symbolic D */
+  PetscCall(MatProductCreate(R,A,P,&D));
+  PetscCall(MatProductSetType(D,MATPRODUCT_ABC));
+  PetscCall(MatProductSetFromOptions(D));
+  PetscCall(MatProductSymbolic(D));
+  PetscCall(MatProductNumeric(D));
+  PetscCall(MatProductNumeric(D)); /* Test reuse symbolic D */
 
   /* User's API */
   { /* Test MatMatMatMult_Basic() */
     Mat Adense,Cdense;
-    CHKERRQ(MatConvert(A,MATDENSE,MAT_INITIAL_MATRIX,&Adense));
-    CHKERRQ(MatMatMatMult(R,Adense,P,MAT_INITIAL_MATRIX,fill,&Cdense));
-    CHKERRQ(MatMatMatMult(R,Adense,P,MAT_REUSE_MATRIX,fill,&Cdense));
+    PetscCall(MatConvert(A,MATDENSE,MAT_INITIAL_MATRIX,&Adense));
+    PetscCall(MatMatMatMult(R,Adense,P,MAT_INITIAL_MATRIX,fill,&Cdense));
+    PetscCall(MatMatMatMult(R,Adense,P,MAT_REUSE_MATRIX,fill,&Cdense));
 
-    CHKERRQ(MatMultEqual(D,Cdense,10,&flg));
+    PetscCall(MatMultEqual(D,Cdense,10,&flg));
     PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"D*v != Cdense*v");
-    CHKERRQ(MatDestroy(&Adense));
-    CHKERRQ(MatDestroy(&Cdense));
+    PetscCall(MatDestroy(&Adense));
+    PetscCall(MatDestroy(&Cdense));
   }
 
-  CHKERRQ(MatMatMatMult(R,A,P,MAT_INITIAL_MATRIX,fill,&C));
-  CHKERRQ(MatMatMatMult(R,A,P,MAT_REUSE_MATRIX,fill,&C));
-  CHKERRQ(MatProductClear(C));
+  PetscCall(MatMatMatMult(R,A,P,MAT_INITIAL_MATRIX,fill,&C));
+  PetscCall(MatMatMatMult(R,A,P,MAT_REUSE_MATRIX,fill,&C));
+  PetscCall(MatProductClear(C));
 
   /* Test D == C */
-  CHKERRQ(MatEqual(D,C,&flg));
+  PetscCall(MatEqual(D,C,&flg));
   PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"D != C");
 
   /* Test C == PtAP */
-  CHKERRQ(MatPtAP(A,P,MAT_INITIAL_MATRIX,fill,&PtAP));
-  CHKERRQ(MatPtAP(A,P,MAT_REUSE_MATRIX,fill,&PtAP));
-  CHKERRQ(MatEqual(C,PtAP,&flg));
+  PetscCall(MatPtAP(A,P,MAT_INITIAL_MATRIX,fill,&PtAP));
+  PetscCall(MatPtAP(A,P,MAT_REUSE_MATRIX,fill,&PtAP));
+  PetscCall(MatEqual(C,PtAP,&flg));
   PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"C != PtAP");
-  CHKERRQ(MatDestroy(&PtAP));
+  PetscCall(MatDestroy(&PtAP));
 
   /* Clean up */
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(PetscRandomDestroy(&rdm));
-  CHKERRQ(DMDestroy(&user.fine.da));
-  CHKERRQ(DMDestroy(&user.coarse.da));
-  CHKERRQ(MatDestroy(&P));
-  CHKERRQ(MatDestroy(&R));
-  CHKERRQ(MatDestroy(&C));
-  CHKERRQ(MatDestroy(&D));
-  CHKERRQ(PetscFinalize());
+  PetscCall(MatDestroy(&A));
+  PetscCall(PetscRandomDestroy(&rdm));
+  PetscCall(DMDestroy(&user.fine.da));
+  PetscCall(DMDestroy(&user.coarse.da));
+  PetscCall(MatDestroy(&P));
+  PetscCall(MatDestroy(&R));
+  PetscCall(MatDestroy(&C));
+  PetscCall(MatDestroy(&D));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

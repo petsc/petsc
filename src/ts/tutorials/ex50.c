@@ -101,7 +101,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscFunctionBegin;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /*initialize parameters */
   appctx.param.N    = 10;  /* order of the spectral element */
@@ -112,20 +112,20 @@ int main(int argc,char **argv)
   appctx.param.steps = PETSC_MAX_INT;
   appctx.param.Tend  = 4;
 
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-N",&appctx.param.N,NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-E",&appctx.param.E,NULL));
-  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-Tend",&appctx.param.Tend,NULL));
-  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-mu",&appctx.param.mu,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-N",&appctx.param.N,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-E",&appctx.param.E,NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-Tend",&appctx.param.Tend,NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-mu",&appctx.param.mu,NULL));
   appctx.param.Le = appctx.param.L/appctx.param.E;
 
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck((appctx.param.E % size) == 0,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Number of elements must be divisible by number of processes");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create GLL data structures
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(PetscMalloc2(appctx.param.N,&appctx.SEMop.gll.nodes,appctx.param.N,&appctx.SEMop.gll.weights));
-  CHKERRQ(PetscDTGaussLobattoLegendreQuadrature(appctx.param.N,PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA,appctx.SEMop.gll.nodes,appctx.SEMop.gll.weights));
+  PetscCall(PetscMalloc2(appctx.param.N,&appctx.SEMop.gll.nodes,appctx.param.N,&appctx.SEMop.gll.weights));
+  PetscCall(PetscDTGaussLobattoLegendreQuadrature(appctx.param.N,PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA,appctx.SEMop.gll.nodes,appctx.SEMop.gll.weights));
   appctx.SEMop.gll.n = appctx.param.N;
   lenglob  = appctx.param.E*(appctx.param.N-1);
 
@@ -135,9 +135,9 @@ int main(int argc,char **argv)
      total grid values spread equally among all the processors, except first and last
   */
 
-  CHKERRQ(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,lenglob,1,1,NULL,&appctx.da));
-  CHKERRQ(DMSetFromOptions(appctx.da));
-  CHKERRQ(DMSetUp(appctx.da));
+  PetscCall(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,lenglob,1,1,NULL,&appctx.da));
+  PetscCall(DMSetFromOptions(appctx.da));
+  PetscCall(DMSetUp(appctx.da));
 
   /*
      Extract global and local vectors from DMDA; we use these to store the
@@ -145,13 +145,13 @@ int main(int argc,char **argv)
      have the same types.
   */
 
-  CHKERRQ(DMCreateGlobalVector(appctx.da,&appctx.dat.curr_sol));
-  CHKERRQ(VecDuplicate(appctx.dat.curr_sol,&appctx.SEMop.grid));
-  CHKERRQ(VecDuplicate(appctx.dat.curr_sol,&appctx.SEMop.mass));
+  PetscCall(DMCreateGlobalVector(appctx.da,&appctx.dat.curr_sol));
+  PetscCall(VecDuplicate(appctx.dat.curr_sol,&appctx.SEMop.grid));
+  PetscCall(VecDuplicate(appctx.dat.curr_sol,&appctx.SEMop.mass));
 
-  CHKERRQ(DMDAGetCorners(appctx.da,&xs,NULL,NULL,&xm,NULL,NULL));
-  CHKERRQ(DMDAVecGetArray(appctx.da,appctx.SEMop.grid,&wrk_ptr1));
-  CHKERRQ(DMDAVecGetArray(appctx.da,appctx.SEMop.mass,&wrk_ptr2));
+  PetscCall(DMDAGetCorners(appctx.da,&xs,NULL,NULL,&xm,NULL,NULL));
+  PetscCall(DMDAVecGetArray(appctx.da,appctx.SEMop.grid,&wrk_ptr1));
+  PetscCall(DMDAVecGetArray(appctx.da,appctx.SEMop.mass,&wrk_ptr2));
 
   /* Compute function over the locally owned part of the grid */
 
@@ -171,76 +171,76 @@ int main(int argc,char **argv)
       if (j==0) wrk_ptr2[ind]+=.5*appctx.param.Le*appctx.SEMop.gll.weights[j];
     }
   }
-  CHKERRQ(DMDAVecRestoreArray(appctx.da,appctx.SEMop.grid,&wrk_ptr1));
-  CHKERRQ(DMDAVecRestoreArray(appctx.da,appctx.SEMop.mass,&wrk_ptr2));
+  PetscCall(DMDAVecRestoreArray(appctx.da,appctx.SEMop.grid,&wrk_ptr1));
+  PetscCall(DMDAVecRestoreArray(appctx.da,appctx.SEMop.mass,&wrk_ptr2));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Create matrix data structure; set matrix evaluation routine.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  CHKERRQ(DMSetMatrixPreallocateOnly(appctx.da, PETSC_TRUE));
-  CHKERRQ(DMCreateMatrix(appctx.da,&appctx.SEMop.stiff));
-  CHKERRQ(DMCreateMatrix(appctx.da,&appctx.SEMop.grad));
+  PetscCall(DMSetMatrixPreallocateOnly(appctx.da, PETSC_TRUE));
+  PetscCall(DMCreateMatrix(appctx.da,&appctx.SEMop.stiff));
+  PetscCall(DMCreateMatrix(appctx.da,&appctx.SEMop.grad));
   /*
    For linear problems with a time-dependent f(u,t) in the equation
    u_t = f(u,t), the user provides the discretized right-hand-side
    as a time-dependent matrix.
    */
-  CHKERRQ(RHSMatrixLaplaciangllDM(appctx.ts,0.0,appctx.dat.curr_sol,appctx.SEMop.stiff,appctx.SEMop.stiff,&appctx));
-  CHKERRQ(RHSMatrixAdvectiongllDM(appctx.ts,0.0,appctx.dat.curr_sol,appctx.SEMop.grad,appctx.SEMop.grad,&appctx));
+  PetscCall(RHSMatrixLaplaciangllDM(appctx.ts,0.0,appctx.dat.curr_sol,appctx.SEMop.stiff,appctx.SEMop.stiff,&appctx));
+  PetscCall(RHSMatrixAdvectiongllDM(appctx.ts,0.0,appctx.dat.curr_sol,appctx.SEMop.grad,appctx.SEMop.grad,&appctx));
    /*
        For linear problems with a time-dependent f(u,t) in the equation
        u_t = f(u,t), the user provides the discretized right-hand-side
        as a time-dependent matrix.
     */
 
-  CHKERRQ(MatDuplicate(appctx.SEMop.stiff,MAT_COPY_VALUES,&appctx.SEMop.keptstiff));
+  PetscCall(MatDuplicate(appctx.SEMop.stiff,MAT_COPY_VALUES,&appctx.SEMop.keptstiff));
 
   /* attach the null space to the matrix, this probably is not needed but does no harm */
-  CHKERRQ(MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,NULL,&nsp));
-  CHKERRQ(MatSetNullSpace(appctx.SEMop.stiff,nsp));
-  CHKERRQ(MatSetNullSpace(appctx.SEMop.keptstiff,nsp));
-  CHKERRQ(MatNullSpaceTest(nsp,appctx.SEMop.stiff,NULL));
-  CHKERRQ(MatNullSpaceDestroy(&nsp));
+  PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,NULL,&nsp));
+  PetscCall(MatSetNullSpace(appctx.SEMop.stiff,nsp));
+  PetscCall(MatSetNullSpace(appctx.SEMop.keptstiff,nsp));
+  PetscCall(MatNullSpaceTest(nsp,appctx.SEMop.stiff,NULL));
+  PetscCall(MatNullSpaceDestroy(&nsp));
   /* attach the null space to the matrix, this probably is not needed but does no harm */
-  CHKERRQ(MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,NULL,&nsp));
-  CHKERRQ(MatSetNullSpace(appctx.SEMop.grad,nsp));
-  CHKERRQ(MatNullSpaceTest(nsp,appctx.SEMop.grad,NULL));
-  CHKERRQ(MatNullSpaceDestroy(&nsp));
+  PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,NULL,&nsp));
+  PetscCall(MatSetNullSpace(appctx.SEMop.grad,nsp));
+  PetscCall(MatNullSpaceTest(nsp,appctx.SEMop.grad,NULL));
+  PetscCall(MatNullSpaceDestroy(&nsp));
 
   /* Create the TS solver that solves the ODE and its adjoint; set its options */
-  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&appctx.ts));
-  CHKERRQ(TSSetProblemType(appctx.ts,TS_NONLINEAR));
-  CHKERRQ(TSSetType(appctx.ts,TSRK));
-  CHKERRQ(TSSetDM(appctx.ts,appctx.da));
-  CHKERRQ(TSSetTime(appctx.ts,0.0));
-  CHKERRQ(TSSetTimeStep(appctx.ts,appctx.initial_dt));
-  CHKERRQ(TSSetMaxSteps(appctx.ts,appctx.param.steps));
-  CHKERRQ(TSSetMaxTime(appctx.ts,appctx.param.Tend));
-  CHKERRQ(TSSetExactFinalTime(appctx.ts,TS_EXACTFINALTIME_MATCHSTEP));
-  CHKERRQ(TSSetTolerances(appctx.ts,1e-7,NULL,1e-7,NULL));
-  CHKERRQ(TSSetSaveTrajectory(appctx.ts));
-  CHKERRQ(TSSetFromOptions(appctx.ts));
-  CHKERRQ(TSSetRHSFunction(appctx.ts,NULL,RHSFunction,&appctx));
-  CHKERRQ(TSSetRHSJacobian(appctx.ts,appctx.SEMop.stiff,appctx.SEMop.stiff,RHSJacobian,&appctx));
+  PetscCall(TSCreate(PETSC_COMM_WORLD,&appctx.ts));
+  PetscCall(TSSetProblemType(appctx.ts,TS_NONLINEAR));
+  PetscCall(TSSetType(appctx.ts,TSRK));
+  PetscCall(TSSetDM(appctx.ts,appctx.da));
+  PetscCall(TSSetTime(appctx.ts,0.0));
+  PetscCall(TSSetTimeStep(appctx.ts,appctx.initial_dt));
+  PetscCall(TSSetMaxSteps(appctx.ts,appctx.param.steps));
+  PetscCall(TSSetMaxTime(appctx.ts,appctx.param.Tend));
+  PetscCall(TSSetExactFinalTime(appctx.ts,TS_EXACTFINALTIME_MATCHSTEP));
+  PetscCall(TSSetTolerances(appctx.ts,1e-7,NULL,1e-7,NULL));
+  PetscCall(TSSetSaveTrajectory(appctx.ts));
+  PetscCall(TSSetFromOptions(appctx.ts));
+  PetscCall(TSSetRHSFunction(appctx.ts,NULL,RHSFunction,&appctx));
+  PetscCall(TSSetRHSJacobian(appctx.ts,appctx.SEMop.stiff,appctx.SEMop.stiff,RHSJacobian,&appctx));
 
   /* Set Initial conditions for the problem  */
-  CHKERRQ(TrueSolution(appctx.ts,0,appctx.dat.curr_sol,&appctx));
+  PetscCall(TrueSolution(appctx.ts,0,appctx.dat.curr_sol,&appctx));
 
-  CHKERRQ(TSSetSolutionFunction(appctx.ts,(PetscErrorCode (*)(TS,PetscReal,Vec,void *))TrueSolution,&appctx));
-  CHKERRQ(TSSetTime(appctx.ts,0.0));
-  CHKERRQ(TSSetStepNumber(appctx.ts,0));
+  PetscCall(TSSetSolutionFunction(appctx.ts,(PetscErrorCode (*)(TS,PetscReal,Vec,void *))TrueSolution,&appctx));
+  PetscCall(TSSetTime(appctx.ts,0.0));
+  PetscCall(TSSetStepNumber(appctx.ts,0));
 
-  CHKERRQ(TSSolve(appctx.ts,appctx.dat.curr_sol));
+  PetscCall(TSSolve(appctx.ts,appctx.dat.curr_sol));
 
-  CHKERRQ(MatDestroy(&appctx.SEMop.stiff));
-  CHKERRQ(MatDestroy(&appctx.SEMop.keptstiff));
-  CHKERRQ(MatDestroy(&appctx.SEMop.grad));
-  CHKERRQ(VecDestroy(&appctx.SEMop.grid));
-  CHKERRQ(VecDestroy(&appctx.SEMop.mass));
-  CHKERRQ(VecDestroy(&appctx.dat.curr_sol));
-  CHKERRQ(PetscFree2(appctx.SEMop.gll.nodes,appctx.SEMop.gll.weights));
-  CHKERRQ(DMDestroy(&appctx.da));
-  CHKERRQ(TSDestroy(&appctx.ts));
+  PetscCall(MatDestroy(&appctx.SEMop.stiff));
+  PetscCall(MatDestroy(&appctx.SEMop.keptstiff));
+  PetscCall(MatDestroy(&appctx.SEMop.grad));
+  PetscCall(VecDestroy(&appctx.SEMop.grid));
+  PetscCall(VecDestroy(&appctx.SEMop.mass));
+  PetscCall(VecDestroy(&appctx.dat.curr_sol));
+  PetscCall(PetscFree2(appctx.SEMop.gll.nodes,appctx.SEMop.gll.weights));
+  PetscCall(DMDestroy(&appctx.da));
+  PetscCall(TSDestroy(&appctx.ts));
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine
@@ -248,7 +248,7 @@ int main(int argc,char **argv)
        - provides summary and diagnostic information if certain runtime
          options are chosen (e.g., -log_summary).
   */
-    CHKERRQ(PetscFinalize());
+    PetscCall(PetscFinalize());
     return 0;
 }
 
@@ -268,14 +268,14 @@ PetscErrorCode TrueSolution(TS ts, PetscReal t, Vec u,AppCtx *appctx)
   const PetscScalar *xg;
   PetscInt          i,xs,xn;
 
-  CHKERRQ(DMDAVecGetArray(appctx->da,u,&s));
-  CHKERRQ(DMDAVecGetArrayRead(appctx->da,appctx->SEMop.grid,(void*)&xg));
-  CHKERRQ(DMDAGetCorners(appctx->da,&xs,NULL,NULL,&xn,NULL,NULL));
+  PetscCall(DMDAVecGetArray(appctx->da,u,&s));
+  PetscCall(DMDAVecGetArrayRead(appctx->da,appctx->SEMop.grid,(void*)&xg));
+  PetscCall(DMDAGetCorners(appctx->da,&xs,NULL,NULL,&xn,NULL,NULL));
   for (i=xs; i<xs+xn; i++) {
     s[i]=2.0*appctx->param.mu*PETSC_PI*PetscSinScalar(PETSC_PI*xg[i])*PetscExpReal(-appctx->param.mu*PETSC_PI*PETSC_PI*t)/(2.0+PetscCosScalar(PETSC_PI*xg[i])*PetscExpReal(-appctx->param.mu*PETSC_PI*PETSC_PI*t));
   }
-  CHKERRQ(DMDAVecRestoreArray(appctx->da,u,&s));
-  CHKERRQ(DMDAVecRestoreArrayRead(appctx->da,appctx->SEMop.grid,(void*)&xg));
+  PetscCall(DMDAVecRestoreArray(appctx->da,u,&s));
+  PetscCall(DMDAVecRestoreArrayRead(appctx->da,appctx->SEMop.grid,(void*)&xg));
   return 0;
 }
 
@@ -284,10 +284,10 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
   AppCtx          *appctx = (AppCtx*)ctx;
 
   PetscFunctionBegin;
-  CHKERRQ(MatMult(appctx->SEMop.grad,globalin,globalout)); /* grad u */
-  CHKERRQ(VecPointwiseMult(globalout,globalin,globalout)); /* u grad u */
-  CHKERRQ(VecScale(globalout, -1.0));
-  CHKERRQ(MatMultAdd(appctx->SEMop.keptstiff,globalin,globalout,globalout));
+  PetscCall(MatMult(appctx->SEMop.grad,globalin,globalout)); /* grad u */
+  PetscCall(VecPointwiseMult(globalout,globalin,globalout)); /* u grad u */
+  PetscCall(VecScale(globalout, -1.0));
+  PetscCall(MatMultAdd(appctx->SEMop.keptstiff,globalin,globalout,globalout));
   PetscFunctionReturn(0);
 }
 
@@ -307,18 +307,18 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec globalin,Mat A, Mat B,void *ctx
   PetscFunctionBegin;
   /*    A = diag(u) G */
 
-  CHKERRQ(MatCopy(appctx->SEMop.grad,A,SAME_NONZERO_PATTERN));
-  CHKERRQ(MatDiagonalScale(A,globalin,NULL));
+  PetscCall(MatCopy(appctx->SEMop.grad,A,SAME_NONZERO_PATTERN));
+  PetscCall(MatDiagonalScale(A,globalin,NULL));
 
   /*    A  = A + diag(Gu) */
-  CHKERRQ(VecDuplicate(globalin,&Gglobalin));
-  CHKERRQ(MatMult(appctx->SEMop.grad,globalin,Gglobalin));
-  CHKERRQ(MatDiagonalSet(A,Gglobalin,ADD_VALUES));
-  CHKERRQ(VecDestroy(&Gglobalin));
+  PetscCall(VecDuplicate(globalin,&Gglobalin));
+  PetscCall(MatMult(appctx->SEMop.grad,globalin,Gglobalin));
+  PetscCall(MatDiagonalSet(A,Gglobalin,ADD_VALUES));
+  PetscCall(VecDestroy(&Gglobalin));
 
   /*   A  = K - A    */
-  CHKERRQ(MatScale(A,-1.0));
-  CHKERRQ(MatAXPY(A,0.0,appctx->SEMop.keptstiff,SAME_NONZERO_PATTERN));
+  PetscCall(MatScale(A,-1.0));
+  PetscCall(MatAXPY(A,0.0,appctx->SEMop.keptstiff,SAME_NONZERO_PATTERN));
   PetscFunctionReturn(0);
 }
 
@@ -339,33 +339,33 @@ PetscErrorCode MatMult_Laplacian(Mat A,Vec x,Vec y)
   PetscBLASInt      _One = 1,n;
   PetscScalar       _DOne = 1;
 
-  CHKERRQ(MatShellGetContext(A,&appctx));
-  CHKERRQ(DMGetLocalVector(appctx->da,&xlocal));
-  CHKERRQ(DMGlobalToLocalBegin(appctx->da,x,INSERT_VALUES,xlocal));
-  CHKERRQ(DMGlobalToLocalEnd(appctx->da,x,INSERT_VALUES,xlocal));
-  CHKERRQ(DMGetLocalVector(appctx->da,&ylocal));
-  CHKERRQ(VecSet(ylocal,0.0));
-  CHKERRQ(PetscGaussLobattoLegendreElementLaplacianCreate(appctx->SEMop.gll.n,appctx->SEMop.gll.nodes,appctx->SEMop.gll.weights,&temp));
+  PetscCall(MatShellGetContext(A,&appctx));
+  PetscCall(DMGetLocalVector(appctx->da,&xlocal));
+  PetscCall(DMGlobalToLocalBegin(appctx->da,x,INSERT_VALUES,xlocal));
+  PetscCall(DMGlobalToLocalEnd(appctx->da,x,INSERT_VALUES,xlocal));
+  PetscCall(DMGetLocalVector(appctx->da,&ylocal));
+  PetscCall(VecSet(ylocal,0.0));
+  PetscCall(PetscGaussLobattoLegendreElementLaplacianCreate(appctx->SEMop.gll.n,appctx->SEMop.gll.nodes,appctx->SEMop.gll.weights,&temp));
   for (i=0; i<appctx->param.N; i++) {
     vv =-appctx->param.mu*2.0/appctx->param.Le;
     for (j=0; j<appctx->param.N; j++) temp[i][j]=temp[i][j]*vv;
   }
-  CHKERRQ(DMDAVecGetArrayRead(appctx->da,xlocal,(void*)&xl));
-  CHKERRQ(DMDAVecGetArray(appctx->da,ylocal,&yl));
-  CHKERRQ(DMDAGetCorners(appctx->da,&xs,NULL,NULL,&xn,NULL,NULL));
-  CHKERRQ(PetscBLASIntCast(appctx->param.N,&n));
+  PetscCall(DMDAVecGetArrayRead(appctx->da,xlocal,(void*)&xl));
+  PetscCall(DMDAVecGetArray(appctx->da,ylocal,&yl));
+  PetscCall(DMDAGetCorners(appctx->da,&xs,NULL,NULL,&xn,NULL,NULL));
+  PetscCall(PetscBLASIntCast(appctx->param.N,&n));
   for (j=xs; j<xs+xn; j += appctx->param.N-1) {
     PetscStackCallBLAS("BLASgemv",BLASgemv_("N",&n,&n,&_DOne,&temp[0][0],&n,&xl[j],&_One,&_DOne,&yl[j],&_One));
   }
-  CHKERRQ(DMDAVecRestoreArrayRead(appctx->da,xlocal,(void*)&xl));
-  CHKERRQ(DMDAVecRestoreArray(appctx->da,ylocal,&yl));
-  CHKERRQ(PetscGaussLobattoLegendreElementLaplacianDestroy(appctx->SEMop.gll.n,appctx->SEMop.gll.nodes,appctx->SEMop.gll.weights,&temp));
-  CHKERRQ(VecSet(y,0.0));
-  CHKERRQ(DMLocalToGlobalBegin(appctx->da,ylocal,ADD_VALUES,y));
-  CHKERRQ(DMLocalToGlobalEnd(appctx->da,ylocal,ADD_VALUES,y));
-  CHKERRQ(DMRestoreLocalVector(appctx->da,&xlocal));
-  CHKERRQ(DMRestoreLocalVector(appctx->da,&ylocal));
-  CHKERRQ(VecPointwiseDivide(y,y,appctx->SEMop.mass));
+  PetscCall(DMDAVecRestoreArrayRead(appctx->da,xlocal,(void*)&xl));
+  PetscCall(DMDAVecRestoreArray(appctx->da,ylocal,&yl));
+  PetscCall(PetscGaussLobattoLegendreElementLaplacianDestroy(appctx->SEMop.gll.n,appctx->SEMop.gll.nodes,appctx->SEMop.gll.weights,&temp));
+  PetscCall(VecSet(y,0.0));
+  PetscCall(DMLocalToGlobalBegin(appctx->da,ylocal,ADD_VALUES,y));
+  PetscCall(DMLocalToGlobalEnd(appctx->da,ylocal,ADD_VALUES,y));
+  PetscCall(DMRestoreLocalVector(appctx->da,&xlocal));
+  PetscCall(DMRestoreLocalVector(appctx->da,&ylocal));
+  PetscCall(VecPointwiseDivide(y,y,appctx->SEMop.mass));
   return 0;
 }
 
@@ -380,30 +380,30 @@ PetscErrorCode MatMult_Advection(Mat A,Vec x,Vec y)
   PetscBLASInt      _One = 1,n;
   PetscScalar       _DOne = 1;
 
-  CHKERRQ(MatShellGetContext(A,&appctx));
-  CHKERRQ(DMGetLocalVector(appctx->da,&xlocal));
-  CHKERRQ(DMGlobalToLocalBegin(appctx->da,x,INSERT_VALUES,xlocal));
-  CHKERRQ(DMGlobalToLocalEnd(appctx->da,x,INSERT_VALUES,xlocal));
-  CHKERRQ(DMGetLocalVector(appctx->da,&ylocal));
-  CHKERRQ(VecSet(ylocal,0.0));
-  CHKERRQ(PetscGaussLobattoLegendreElementAdvectionCreate(appctx->SEMop.gll.n,appctx->SEMop.gll.nodes,appctx->SEMop.gll.weights,&temp));
-  CHKERRQ(DMDAVecGetArrayRead(appctx->da,xlocal,(void*)&xl));
-  CHKERRQ(DMDAVecGetArray(appctx->da,ylocal,&yl));
-  CHKERRQ(DMDAGetCorners(appctx->da,&xs,NULL,NULL,&xn,NULL,NULL));
-  CHKERRQ(PetscBLASIntCast(appctx->param.N,&n));
+  PetscCall(MatShellGetContext(A,&appctx));
+  PetscCall(DMGetLocalVector(appctx->da,&xlocal));
+  PetscCall(DMGlobalToLocalBegin(appctx->da,x,INSERT_VALUES,xlocal));
+  PetscCall(DMGlobalToLocalEnd(appctx->da,x,INSERT_VALUES,xlocal));
+  PetscCall(DMGetLocalVector(appctx->da,&ylocal));
+  PetscCall(VecSet(ylocal,0.0));
+  PetscCall(PetscGaussLobattoLegendreElementAdvectionCreate(appctx->SEMop.gll.n,appctx->SEMop.gll.nodes,appctx->SEMop.gll.weights,&temp));
+  PetscCall(DMDAVecGetArrayRead(appctx->da,xlocal,(void*)&xl));
+  PetscCall(DMDAVecGetArray(appctx->da,ylocal,&yl));
+  PetscCall(DMDAGetCorners(appctx->da,&xs,NULL,NULL,&xn,NULL,NULL));
+  PetscCall(PetscBLASIntCast(appctx->param.N,&n));
   for (j=xs; j<xs+xn; j += appctx->param.N-1) {
     PetscStackCallBLAS("BLASgemv",BLASgemv_("N",&n,&n,&_DOne,&temp[0][0],&n,&xl[j],&_One,&_DOne,&yl[j],&_One));
   }
-  CHKERRQ(DMDAVecRestoreArrayRead(appctx->da,xlocal,(void*)&xl));
-  CHKERRQ(DMDAVecRestoreArray(appctx->da,ylocal,&yl));
-  CHKERRQ(PetscGaussLobattoLegendreElementAdvectionDestroy(appctx->SEMop.gll.n,appctx->SEMop.gll.nodes,appctx->SEMop.gll.weights,&temp));
-  CHKERRQ(VecSet(y,0.0));
-  CHKERRQ(DMLocalToGlobalBegin(appctx->da,ylocal,ADD_VALUES,y));
-  CHKERRQ(DMLocalToGlobalEnd(appctx->da,ylocal,ADD_VALUES,y));
-  CHKERRQ(DMRestoreLocalVector(appctx->da,&xlocal));
-  CHKERRQ(DMRestoreLocalVector(appctx->da,&ylocal));
-  CHKERRQ(VecPointwiseDivide(y,y,appctx->SEMop.mass));
-  CHKERRQ(VecScale(y,-1.0));
+  PetscCall(DMDAVecRestoreArrayRead(appctx->da,xlocal,(void*)&xl));
+  PetscCall(DMDAVecRestoreArray(appctx->da,ylocal,&yl));
+  PetscCall(PetscGaussLobattoLegendreElementAdvectionDestroy(appctx->SEMop.gll.n,appctx->SEMop.gll.nodes,appctx->SEMop.gll.weights,&temp));
+  PetscCall(VecSet(y,0.0));
+  PetscCall(DMLocalToGlobalBegin(appctx->da,ylocal,ADD_VALUES,y));
+  PetscCall(DMLocalToGlobalEnd(appctx->da,ylocal,ADD_VALUES,y));
+  PetscCall(DMRestoreLocalVector(appctx->da,&xlocal));
+  PetscCall(DMRestoreLocalVector(appctx->da,&ylocal));
+  PetscCall(VecPointwiseDivide(y,y,appctx->SEMop.mass));
+  PetscCall(VecScale(y,-1.0));
   return 0;
 }
 
@@ -432,13 +432,13 @@ PetscErrorCode RHSMatrixLaplaciangllDM(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void
   PetscInt       *rowsDM;
   PetscBool      flg = PETSC_FALSE;
 
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-gll_mf",&flg,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-gll_mf",&flg,NULL));
 
   if (!flg) {
     /*
      Creates the element stiffness matrix for the given gll
      */
-    CHKERRQ(PetscGaussLobattoLegendreElementLaplacianCreate(appctx->SEMop.gll.n,appctx->SEMop.gll.nodes,appctx->SEMop.gll.weights,&temp));
+    PetscCall(PetscGaussLobattoLegendreElementLaplacianCreate(appctx->SEMop.gll.n,appctx->SEMop.gll.nodes,appctx->SEMop.gll.weights,&temp));
     /* workaround for clang analyzer warning: Division by zero */
     PetscCheck(appctx->param.N > 1,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Spectral element order should be > 1");
 
@@ -448,13 +448,13 @@ PetscErrorCode RHSMatrixLaplaciangllDM(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void
       for (j=0; j<appctx->param.N; j++) temp[i][j]=temp[i][j]*vv;
     }
 
-    CHKERRQ(MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE));
-    CHKERRQ(DMDAGetCorners(appctx->da,&xs,NULL,NULL,&xn,NULL,NULL));
+    PetscCall(MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE));
+    PetscCall(DMDAGetCorners(appctx->da,&xs,NULL,NULL,&xn,NULL,NULL));
 
     xs   = xs/(appctx->param.N-1);
     xn   = xn/(appctx->param.N-1);
 
-    CHKERRQ(PetscMalloc1(appctx->param.N,&rowsDM));
+    PetscCall(PetscMalloc1(appctx->param.N,&rowsDM));
     /*
      loop over local elements
      */
@@ -462,21 +462,21 @@ PetscErrorCode RHSMatrixLaplaciangllDM(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void
       for (l=0; l<appctx->param.N; l++) {
         rowsDM[l] = 1+(j-xs)*(appctx->param.N-1)+l;
       }
-      CHKERRQ(MatSetValuesLocal(A,appctx->param.N,rowsDM,appctx->param.N,rowsDM,&temp[0][0],ADD_VALUES));
+      PetscCall(MatSetValuesLocal(A,appctx->param.N,rowsDM,appctx->param.N,rowsDM,&temp[0][0],ADD_VALUES));
     }
-    CHKERRQ(PetscFree(rowsDM));
-    CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(VecReciprocal(appctx->SEMop.mass));
-    CHKERRQ(MatDiagonalScale(A,appctx->SEMop.mass,0));
-    CHKERRQ(VecReciprocal(appctx->SEMop.mass));
+    PetscCall(PetscFree(rowsDM));
+    PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+    PetscCall(VecReciprocal(appctx->SEMop.mass));
+    PetscCall(MatDiagonalScale(A,appctx->SEMop.mass,0));
+    PetscCall(VecReciprocal(appctx->SEMop.mass));
 
-    CHKERRQ(PetscGaussLobattoLegendreElementLaplacianDestroy(appctx->SEMop.gll.n,appctx->SEMop.gll.nodes,appctx->SEMop.gll.weights,&temp));
+    PetscCall(PetscGaussLobattoLegendreElementLaplacianDestroy(appctx->SEMop.gll.n,appctx->SEMop.gll.nodes,appctx->SEMop.gll.weights,&temp));
   } else {
-    CHKERRQ(MatSetType(A,MATSHELL));
-    CHKERRQ(MatSetUp(A));
-    CHKERRQ(MatShellSetContext(A,appctx));
-    CHKERRQ(MatShellSetOperation(A,MATOP_MULT,(void (*)(void))MatMult_Laplacian));
+    PetscCall(MatSetType(A,MATSHELL));
+    PetscCall(MatSetUp(A));
+    PetscCall(MatShellSetContext(A,appctx));
+    PetscCall(MatShellSetOperation(A,MATOP_MULT,(void (*)(void))MatMult_Laplacian));
   }
   return 0;
 }
@@ -505,39 +505,39 @@ PetscErrorCode RHSMatrixAdvectiongllDM(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void
   PetscInt       *rowsDM;
   PetscBool      flg = PETSC_FALSE;
 
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-gll_mf",&flg,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-gll_mf",&flg,NULL));
 
   if (!flg) {
     /*
      Creates the advection matrix for the given gll
      */
-    CHKERRQ(PetscGaussLobattoLegendreElementAdvectionCreate(appctx->SEMop.gll.n,appctx->SEMop.gll.nodes,appctx->SEMop.gll.weights,&temp));
-    CHKERRQ(MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE));
-    CHKERRQ(DMDAGetCorners(appctx->da,&xs,NULL,NULL,&xn,NULL,NULL));
+    PetscCall(PetscGaussLobattoLegendreElementAdvectionCreate(appctx->SEMop.gll.n,appctx->SEMop.gll.nodes,appctx->SEMop.gll.weights,&temp));
+    PetscCall(MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE));
+    PetscCall(DMDAGetCorners(appctx->da,&xs,NULL,NULL,&xn,NULL,NULL));
     xs   = xs/(appctx->param.N-1);
     xn   = xn/(appctx->param.N-1);
 
-    CHKERRQ(PetscMalloc1(appctx->param.N,&rowsDM));
+    PetscCall(PetscMalloc1(appctx->param.N,&rowsDM));
     for (j=xs; j<xs+xn; j++) {
       for (l=0; l<appctx->param.N; l++) {
         rowsDM[l] = 1+(j-xs)*(appctx->param.N-1)+l;
       }
-      CHKERRQ(MatSetValuesLocal(A,appctx->param.N,rowsDM,appctx->param.N,rowsDM,&temp[0][0],ADD_VALUES));
+      PetscCall(MatSetValuesLocal(A,appctx->param.N,rowsDM,appctx->param.N,rowsDM,&temp[0][0],ADD_VALUES));
     }
-    CHKERRQ(PetscFree(rowsDM));
-    CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-    CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+    PetscCall(PetscFree(rowsDM));
+    PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
-    CHKERRQ(VecReciprocal(appctx->SEMop.mass));
-    CHKERRQ(MatDiagonalScale(A,appctx->SEMop.mass,0));
-    CHKERRQ(VecReciprocal(appctx->SEMop.mass));
+    PetscCall(VecReciprocal(appctx->SEMop.mass));
+    PetscCall(MatDiagonalScale(A,appctx->SEMop.mass,0));
+    PetscCall(VecReciprocal(appctx->SEMop.mass));
 
-    CHKERRQ(PetscGaussLobattoLegendreElementAdvectionDestroy(appctx->SEMop.gll.n,appctx->SEMop.gll.nodes,appctx->SEMop.gll.weights,&temp));
+    PetscCall(PetscGaussLobattoLegendreElementAdvectionDestroy(appctx->SEMop.gll.n,appctx->SEMop.gll.nodes,appctx->SEMop.gll.weights,&temp));
   } else {
-    CHKERRQ(MatSetType(A,MATSHELL));
-    CHKERRQ(MatSetUp(A));
-    CHKERRQ(MatShellSetContext(A,appctx));
-    CHKERRQ(MatShellSetOperation(A,MATOP_MULT,(void (*)(void))MatMult_Advection));
+    PetscCall(MatSetType(A,MATSHELL));
+    PetscCall(MatSetUp(A));
+    PetscCall(MatShellSetContext(A,appctx));
+    PetscCall(MatShellSetOperation(A,MATOP_MULT,(void (*)(void))MatMult_Advection));
   }
   return 0;
 }

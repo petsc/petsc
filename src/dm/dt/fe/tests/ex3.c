@@ -78,16 +78,16 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->shear    = 0.;
   options->flatten  = 1.;
 
-  ierr = PetscOptionsBegin(comm, "", "FE Test Options", "PETSCFE");CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsString("-func", "Function to project into space", "", name, name, PETSC_MAX_PATH_LEN, NULL));
-  CHKERRQ(PetscOptionsReal("-shear", "Factor by which to shear along the x-direction", "", options->shear, &(options->shear), NULL));
-  CHKERRQ(PetscOptionsReal("-flatten", "Factor by which to flatten", "", options->flatten, &(options->flatten), NULL));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm, "", "FE Test Options", "PETSCFE");PetscCall(ierr);
+  PetscCall(PetscOptionsString("-func", "Function to project into space", "", name, name, PETSC_MAX_PATH_LEN, NULL));
+  PetscCall(PetscOptionsReal("-shear", "Factor by which to shear along the x-direction", "", options->shear, &(options->shear), NULL));
+  PetscCall(PetscOptionsReal("-flatten", "Factor by which to flatten", "", options->flatten, &(options->flatten), NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
   for (i = 0; i < Nfunc; ++i) {
     PetscBool flg;
 
-    CHKERRQ(PetscStrcmp(name, names[i], &flg));
+    PetscCall(PetscStrcmp(name, names[i], &flg));
     if (flg) {options->exactSol = functions[i]; break;}
   }
   PetscCheck(options->exactSol, comm, PETSC_ERR_ARG_WRONG, "Invalid test function %s", name);
@@ -129,12 +129,12 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   PetscWeakForm  wf;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetDS(dm, &ds));
-  CHKERRQ(PetscDSGetWeakForm(ds, &wf));
-  CHKERRQ(PetscWeakFormSetIndexResidual(wf, NULL, 0, 0, 0, 0, f0, 0, NULL));
-  CHKERRQ(PetscWeakFormSetIndexResidual(wf, NULL, 0, 0, 0, 1, user->exactSol, 0, NULL));
-  CHKERRQ(PetscWeakFormSetIndexJacobian(wf, NULL, 0, 0, 0, 0, 0, g0, 0, NULL, 0, NULL, 0, NULL));
-  CHKERRQ(PetscDSSetExactSolution(ds, 0, exactSolution, user));
+  PetscCall(DMGetDS(dm, &ds));
+  PetscCall(PetscDSGetWeakForm(ds, &wf));
+  PetscCall(PetscWeakFormSetIndexResidual(wf, NULL, 0, 0, 0, 0, f0, 0, NULL));
+  PetscCall(PetscWeakFormSetIndexResidual(wf, NULL, 0, 0, 0, 1, user->exactSol, 0, NULL));
+  PetscCall(PetscWeakFormSetIndexJacobian(wf, NULL, 0, 0, 0, 0, 0, g0, 0, NULL, 0, NULL, 0, NULL));
+  PetscCall(PetscDSSetExactSolution(ds, 0, exactSolution, user));
   PetscFunctionReturn(0);
 }
 
@@ -145,18 +145,18 @@ static PetscErrorCode SetupDiscretization(DM dm, const char name[], AppCtx *user
   char           prefix[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBeginUser;
-  CHKERRQ(PetscSNPrintf(prefix, PETSC_MAX_PATH_LEN, "%s_", name));
-  CHKERRQ(DMCreateFEDefault(dm, 1, name ? prefix : NULL, -1, &fe));
-  CHKERRQ(PetscObjectSetName((PetscObject) fe, name ? name : "Solution"));
+  PetscCall(PetscSNPrintf(prefix, PETSC_MAX_PATH_LEN, "%s_", name));
+  PetscCall(DMCreateFEDefault(dm, 1, name ? prefix : NULL, -1, &fe));
+  PetscCall(PetscObjectSetName((PetscObject) fe, name ? name : "Solution"));
   /* Set discretization and boundary conditions for each mesh */
-  CHKERRQ(DMSetField(dm, 0, NULL, (PetscObject) fe));
-  CHKERRQ(DMCreateDS(dm));
-  CHKERRQ(SetupProblem(dm, user));
+  PetscCall(DMSetField(dm, 0, NULL, (PetscObject) fe));
+  PetscCall(DMCreateDS(dm));
+  PetscCall(SetupProblem(dm, user));
   while (cdm) {
-    CHKERRQ(DMCopyDisc(dm, cdm));
-    CHKERRQ(DMGetCoarseDM(cdm, &cdm));
+    PetscCall(DMCopyDisc(dm, cdm));
+    PetscCall(DMGetCoarseDM(cdm, &cdm));
   }
-  CHKERRQ(PetscFEDestroy(&fe));
+  PetscCall(PetscFEDestroy(&fe));
   PetscFunctionReturn(0);
 }
 
@@ -171,16 +171,16 @@ static PetscErrorCode CheckInterpolation(DM dm, AppCtx *user)
   MPI_Comm             comm;
 
   PetscFunctionBeginUser;
-  CHKERRQ(PetscObjectGetComm((PetscObject) dm, &comm));
-  CHKERRQ(DMGetDS(dm, &ds));
-  CHKERRQ(DMGetGlobalVector(dm, &u));
-  CHKERRQ(PetscDSGetExactSolution(ds, 0, &exactSol[0], &exactCtx[0]));
-  CHKERRQ(DMProjectFunction(dm, 0.0, exactSol, exactCtx, INSERT_ALL_VALUES, u));
-  CHKERRQ(VecViewFromOptions(u, NULL, "-interpolation_view"));
-  CHKERRQ(DMComputeL2Diff(dm, 0.0, exactSol, exactCtx, u, &error));
-  CHKERRQ(DMRestoreGlobalVector(dm, &u));
-  if (error > tol) CHKERRQ(PetscPrintf(comm, "Interpolation tests FAIL at tolerance %g error %g\n", (double) tol, (double) error));
-  else             CHKERRQ(PetscPrintf(comm, "Interpolation tests pass at tolerance %g\n", (double) tol));
+  PetscCall(PetscObjectGetComm((PetscObject) dm, &comm));
+  PetscCall(DMGetDS(dm, &ds));
+  PetscCall(DMGetGlobalVector(dm, &u));
+  PetscCall(PetscDSGetExactSolution(ds, 0, &exactSol[0], &exactCtx[0]));
+  PetscCall(DMProjectFunction(dm, 0.0, exactSol, exactCtx, INSERT_ALL_VALUES, u));
+  PetscCall(VecViewFromOptions(u, NULL, "-interpolation_view"));
+  PetscCall(DMComputeL2Diff(dm, 0.0, exactSol, exactCtx, u, &error));
+  PetscCall(DMRestoreGlobalVector(dm, &u));
+  if (error > tol) PetscCall(PetscPrintf(comm, "Interpolation tests FAIL at tolerance %g error %g\n", (double) tol, (double) error));
+  else             PetscCall(PetscPrintf(comm, "Interpolation tests pass at tolerance %g\n", (double) tol));
   PetscFunctionReturn(0);
 }
 
@@ -196,24 +196,24 @@ static PetscErrorCode CheckL2Projection(DM dm, AppCtx *user)
   MPI_Comm             comm;
 
   PetscFunctionBeginUser;
-  CHKERRQ(PetscObjectGetComm((PetscObject) dm, &comm));
-  CHKERRQ(DMGetDS(dm, &ds));
-  CHKERRQ(DMGetGlobalVector(dm, &u));
-  CHKERRQ(PetscDSGetExactSolution(ds, 0, &exactSol[0], &exactCtx[0]));
-  CHKERRQ(SNESCreate(comm, &snes));
-  CHKERRQ(SNESSetDM(snes, dm));
-  CHKERRQ(VecSet(u, 0.0));
-  CHKERRQ(PetscObjectSetName((PetscObject) u, "solution"));
-  CHKERRQ(DMPlexSetSNESLocalFEM(dm, user, user, user));
-  CHKERRQ(SNESSetFromOptions(snes));
-  CHKERRQ(DMSNESCheckFromOptions(snes, u));
-  CHKERRQ(SNESSolve(snes, NULL, u));
-  CHKERRQ(SNESDestroy(&snes));
-  CHKERRQ(VecViewFromOptions(u, NULL, "-l2_projection_view"));
-  CHKERRQ(DMComputeL2Diff(dm, 0.0, exactSol, exactCtx, u, &error));
-  CHKERRQ(DMRestoreGlobalVector(dm, &u));
-  if (error > tol) CHKERRQ(PetscPrintf(comm, "L2 projection tests FAIL at tolerance %g error %g\n", (double) tol, (double) error));
-  else             CHKERRQ(PetscPrintf(comm, "L2 projection tests pass at tolerance %g\n", (double) tol));
+  PetscCall(PetscObjectGetComm((PetscObject) dm, &comm));
+  PetscCall(DMGetDS(dm, &ds));
+  PetscCall(DMGetGlobalVector(dm, &u));
+  PetscCall(PetscDSGetExactSolution(ds, 0, &exactSol[0], &exactCtx[0]));
+  PetscCall(SNESCreate(comm, &snes));
+  PetscCall(SNESSetDM(snes, dm));
+  PetscCall(VecSet(u, 0.0));
+  PetscCall(PetscObjectSetName((PetscObject) u, "solution"));
+  PetscCall(DMPlexSetSNESLocalFEM(dm, user, user, user));
+  PetscCall(SNESSetFromOptions(snes));
+  PetscCall(DMSNESCheckFromOptions(snes, u));
+  PetscCall(SNESSolve(snes, NULL, u));
+  PetscCall(SNESDestroy(&snes));
+  PetscCall(VecViewFromOptions(u, NULL, "-l2_projection_view"));
+  PetscCall(DMComputeL2Diff(dm, 0.0, exactSol, exactCtx, u, &error));
+  PetscCall(DMRestoreGlobalVector(dm, &u));
+  if (error > tol) PetscCall(PetscPrintf(comm, "L2 projection tests FAIL at tolerance %g error %g\n", (double) tol, (double) error));
+  else             PetscCall(PetscPrintf(comm, "L2 projection tests pass at tolerance %g\n", (double) tol));
   PetscFunctionReturn(0);
 }
 
@@ -225,15 +225,15 @@ static PetscErrorCode DistortMesh(DM dm, AppCtx *user)
   PetscInt       dE, n, i;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetCoordinateDim(dm, &dE));
-  CHKERRQ(DMGetCoordinates(dm, &coordinates));
-  CHKERRQ(VecGetLocalSize(coordinates, &n));
-  CHKERRQ(VecGetArray(coordinates, &ca));
+  PetscCall(DMGetCoordinateDim(dm, &dE));
+  PetscCall(DMGetCoordinates(dm, &coordinates));
+  PetscCall(VecGetLocalSize(coordinates, &n));
+  PetscCall(VecGetArray(coordinates, &ca));
   for (i = 0; i < (n/dE); ++i) {
     ca[i*dE+0] += user->shear*ca[i*dE+0];
     ca[i*dE+1] *= user->flatten;
   }
-  CHKERRQ(VecRestoreArray(coordinates, &ca));
+  PetscCall(VecRestoreArray(coordinates, &ca));
   PetscFunctionReturn(0);
 }
 
@@ -243,22 +243,22 @@ int main(int argc, char **argv)
   AppCtx         user;
   PetscMPIInt    size;
 
-  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheck(size == 1, PETSC_COMM_WORLD, PETSC_ERR_SUP, "This is a uniprocessor example only.");
-  CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));
-  CHKERRQ(DMCreate(PETSC_COMM_WORLD, &dm));
-  CHKERRQ(DMSetType(dm, DMPLEX));
-  CHKERRQ(DMSetFromOptions(dm));
-  CHKERRQ(DistortMesh(dm,&user));
-  CHKERRQ(DMViewFromOptions(dm, NULL, "-dm_view"));
-  CHKERRQ(SetupDiscretization(dm, NULL, &user));
+  PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
+  PetscCall(DMCreate(PETSC_COMM_WORLD, &dm));
+  PetscCall(DMSetType(dm, DMPLEX));
+  PetscCall(DMSetFromOptions(dm));
+  PetscCall(DistortMesh(dm,&user));
+  PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
+  PetscCall(SetupDiscretization(dm, NULL, &user));
 
-  CHKERRQ(CheckInterpolation(dm, &user));
-  CHKERRQ(CheckL2Projection(dm, &user));
+  PetscCall(CheckInterpolation(dm, &user));
+  PetscCall(CheckL2Projection(dm, &user));
 
-  CHKERRQ(DMDestroy(&dm));
-  CHKERRQ(PetscFinalize());
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

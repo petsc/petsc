@@ -9,12 +9,12 @@ PetscErrorCode CharacteristicView_DA(Characteristic c, PetscViewer viewer)
 
   PetscFunctionBegin;
   /* Pull out field names from DM */
-  CHKERRQ(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERSTRING, &isstring));
+  PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERSTRING, &isstring));
   if (iascii) {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  DMDA: dummy=%D\n", da->dummy));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  DMDA: dummy=%D\n", da->dummy));
   } else if (isstring) {
-    CHKERRQ(PetscViewerStringSPrintf(viewer,"dummy %D", da->dummy));
+    PetscCall(PetscViewerStringSPrintf(viewer,"dummy %D", da->dummy));
   }
   PetscFunctionReturn(0);
 }
@@ -24,7 +24,7 @@ PetscErrorCode CharacteristicDestroy_DA(Characteristic c)
   Characteristic_DA *da = (Characteristic_DA*) c->data;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscFree(da));
+  PetscCall(PetscFree(da));
   PetscFunctionReturn(0);
 }
 
@@ -35,7 +35,7 @@ PetscErrorCode CharacteristicSetUp_DA(Characteristic c)
   MPI_Datatype   oldtypes[2];
   PetscInt       dim, numValues;
 
-  CHKERRQ(DMDAGetInfo(c->velocityDA, &dim, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
+  PetscCall(DMDAGetInfo(c->velocityDA, &dim, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   if (c->structured) c->numIds = dim;
   else c->numIds = 3;
   PetscCheckFalse(c->numFieldComp > MAX_COMPONENTS,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "The maximum number of fields allowed is %d, you have %d. You can recompile after increasing MAX_COMPONENTS.", MAX_COMPONENTS, c->numFieldComp);
@@ -44,22 +44,22 @@ PetscErrorCode CharacteristicSetUp_DA(Characteristic c)
   /* Create new MPI datatype for communication of characteristic point structs */
   blockLen[0] = 1+c->numIds; indices[0] = 0;                              oldtypes[0] = MPIU_INT;
   blockLen[1] = numValues;   indices[1] = (1+c->numIds)*sizeof(PetscInt); oldtypes[1] = MPIU_SCALAR;
-  CHKERRMPI(MPI_Type_create_struct(2, blockLen, indices, oldtypes, &c->itemType));
-  CHKERRMPI(MPI_Type_commit(&c->itemType));
+  PetscCallMPI(MPI_Type_create_struct(2, blockLen, indices, oldtypes, &c->itemType));
+  PetscCallMPI(MPI_Type_commit(&c->itemType));
 
   /* Initialize the local queue for char foot values */
-  CHKERRQ(VecGetLocalSize(c->velocity, &c->queueMax));
-  CHKERRQ(PetscMalloc1(c->queueMax, &c->queue));
+  PetscCall(VecGetLocalSize(c->velocity, &c->queueMax));
+  PetscCall(PetscMalloc1(c->queueMax, &c->queue));
   c->queueSize = 0;
 
   /* Allocate communication structures */
   PetscCheckFalse(c->numNeighbors <= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Invalid number of neighbors %d. Call CharactersiticSetNeighbors() before setup.", c->numNeighbors);
-  CHKERRQ(PetscMalloc1(c->numNeighbors, &c->needCount));
-  CHKERRQ(PetscMalloc1(c->numNeighbors, &c->localOffsets));
-  CHKERRQ(PetscMalloc1(c->numNeighbors, &c->fillCount));
-  CHKERRQ(PetscMalloc1(c->numNeighbors, &c->remoteOffsets));
-  CHKERRQ(PetscMalloc1(c->numNeighbors-1, &c->request));
-  CHKERRQ(PetscMalloc1(c->numNeighbors-1,  &c->status));
+  PetscCall(PetscMalloc1(c->numNeighbors, &c->needCount));
+  PetscCall(PetscMalloc1(c->numNeighbors, &c->localOffsets));
+  PetscCall(PetscMalloc1(c->numNeighbors, &c->fillCount));
+  PetscCall(PetscMalloc1(c->numNeighbors, &c->remoteOffsets));
+  PetscCall(PetscMalloc1(c->numNeighbors-1, &c->request));
+  PetscCall(PetscMalloc1(c->numNeighbors-1,  &c->status));
   PetscFunctionReturn(0);
 }
 
@@ -68,9 +68,9 @@ PETSC_EXTERN PetscErrorCode CharacteristicCreate_DA(Characteristic c)
   Characteristic_DA *da;
 
   PetscFunctionBegin;
-  CHKERRQ(PetscNew(&da));
-  CHKERRQ(PetscMemzero(da, sizeof(Characteristic_DA)));
-  CHKERRQ(PetscLogObjectMemory((PetscObject)c, sizeof(Characteristic_DA)));
+  PetscCall(PetscNew(&da));
+  PetscCall(PetscMemzero(da, sizeof(Characteristic_DA)));
+  PetscCall(PetscLogObjectMemory((PetscObject)c, sizeof(Characteristic_DA)));
   c->data = (void*) da;
 
   c->ops->setup   = CharacteristicSetUp_DA;
@@ -91,7 +91,7 @@ PetscErrorCode DMDAMapCoordsToPeriodicDomain(DM da, PetscScalar *x, PetscScalar 
   PetscInt       dim, gx, gy;
 
   PetscFunctionBegin;
-  CHKERRQ(DMDAGetInfo(da, &dim, &gx, &gy, NULL, NULL, NULL, NULL, NULL, NULL, &bx, &by, NULL, NULL));
+  PetscCall(DMDAGetInfo(da, &dim, &gx, &gy, NULL, NULL, NULL, NULL, NULL, NULL, &bx, &by, NULL, NULL));
 
   if (bx == DM_BOUNDARY_PERIODIC) {
       while (*x >= (PetscScalar)gx) *x -= (PetscScalar)gx;

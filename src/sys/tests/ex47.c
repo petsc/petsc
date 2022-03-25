@@ -8,24 +8,24 @@ int main(int argc,char **argv)
   char      filename[PETSC_MAX_PATH_LEN];
   PetscBool flg;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",filename,sizeof(filename),&flg));
-  if (flg) CHKERRQ(PetscOptionsInsertFileYAML(PETSC_COMM_WORLD,NULL,filename,PETSC_TRUE));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-f",filename,sizeof(filename),&flg));
+  if (flg) PetscCall(PetscOptionsInsertFileYAML(PETSC_COMM_WORLD,NULL,filename,PETSC_TRUE));
 
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-yaml",filename,sizeof(filename),&flg));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-yaml",filename,sizeof(filename),&flg));
   if (flg) {
     PetscBool monitor = PETSC_FALSE;
 
-    CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-monitor",&monitor,NULL));
-    if (monitor) CHKERRQ(PetscOptionsMonitorSet(PetscOptionsMonitorDefault,NULL,NULL));
-    CHKERRQ(PetscOptionsClear(NULL));
-    CHKERRQ(PetscOptionsInsertFileYAML(PETSC_COMM_WORLD,NULL,filename,PETSC_TRUE));
+    PetscCall(PetscOptionsGetBool(NULL,NULL,"-monitor",&monitor,NULL));
+    if (monitor) PetscCall(PetscOptionsMonitorSet(PetscOptionsMonitorDefault,NULL,NULL));
+    PetscCall(PetscOptionsClear(NULL));
+    PetscCall(PetscOptionsInsertFileYAML(PETSC_COMM_WORLD,NULL,filename,PETSC_TRUE));
   }
 
-  CHKERRQ(PetscOptionsView(NULL,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(PetscOptionsClear(NULL));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscOptionsView(NULL,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscOptionsClear(NULL));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

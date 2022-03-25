@@ -24,13 +24,13 @@ int main(int argc,char **args)
   MatPartitioning part;
   IS              is,isn;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 4,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must run with 4 processors");
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
-  CHKERRQ(PetscMalloc1(5,&ia));
-  CHKERRQ(PetscMalloc1(16,&ja));
+  PetscCall(PetscMalloc1(5,&ia));
+  PetscCall(PetscMalloc1(16,&ja));
   if (rank == 0) {
     ja[0] = 1; ja[1] = 4; ja[2] = 0; ja[3] = 2; ja[4] = 5; ja[5] = 1; ja[6] = 3; ja[7] = 6;
     ja[8] = 2; ja[9] = 7;
@@ -49,31 +49,31 @@ int main(int argc,char **args)
     ia[0] = 0; ia[1] = 2; ia[2] = 5; ia[3] = 8; ia[4] = 10;
   }
 
-  CHKERRQ(MatCreateMPIAdj(PETSC_COMM_WORLD,4,16,ia,ja,NULL,&A));
-  CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatCreateMPIAdj(PETSC_COMM_WORLD,4,16,ia,ja,NULL,&A));
+  PetscCall(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
 
   /*
        Partition the graph of the matrix
   */
-  CHKERRQ(MatPartitioningCreate(PETSC_COMM_WORLD,&part));
-  CHKERRQ(MatPartitioningSetAdjacency(part,A));
-  CHKERRQ(MatPartitioningSetFromOptions(part));
+  PetscCall(MatPartitioningCreate(PETSC_COMM_WORLD,&part));
+  PetscCall(MatPartitioningSetAdjacency(part,A));
+  PetscCall(MatPartitioningSetFromOptions(part));
   /* get new processor owner number of each vertex */
-  CHKERRQ(MatPartitioningApply(part,&is));
+  PetscCall(MatPartitioningApply(part,&is));
   /* get new global number of each old global number */
-  CHKERRQ(ISPartitioningToNumbering(is,&isn));
-  CHKERRQ(ISView(isn,PETSC_VIEWER_STDOUT_WORLD));
-  CHKERRQ(ISDestroy(&is));
+  PetscCall(ISPartitioningToNumbering(is,&isn));
+  PetscCall(ISView(isn,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(ISDestroy(&is));
 
-  CHKERRQ(ISDestroy(&isn));
-  CHKERRQ(MatPartitioningDestroy(&part));
+  PetscCall(ISDestroy(&isn));
+  PetscCall(MatPartitioningDestroy(&part));
 
   /*
        Free work space.  All PETSc objects should be destroyed when they
        are no longer needed.
   */
-  CHKERRQ(MatDestroy(&A));
+  PetscCall(MatDestroy(&A));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }

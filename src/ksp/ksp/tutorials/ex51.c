@@ -42,29 +42,29 @@ int main(int argc,char **args)
   PetscReal      *gllNode, *gllWgts;
   PetscErrorCode ierr;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Options for p-FEM","");CHKERRQ(ierr);
-  CHKERRQ(PetscOptionsInt("-m","Number of elements in each direction","None",m,&m,NULL));
-  CHKERRQ(PetscOptionsInt("-p","Order of each element (tensor product basis)","None",p,&p,NULL));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Options for p-FEM","");PetscCall(ierr);
+  PetscCall(PetscOptionsInt("-m","Number of elements in each direction","None",m,&m,NULL));
+  PetscCall(PetscOptionsInt("-p","Order of each element (tensor product basis)","None",p,&p,NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
   PetscCheckFalse(p <=0,PETSC_COMM_SELF,PETSC_ERR_USER,"Option -p value should be greater than zero");
   N    = (p*m+1)*(p*m+1); /* dimension of matrix */
   M    = m*m; /* number of elements */
   h    = 1.0/m; /* mesh width */
-  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   /* Create stiffness matrix */
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,N));
-  CHKERRQ(MatSetFromOptions(A));
-  CHKERRQ(MatSetUp(A));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,N));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSetUp(A));
 
   /* Create matrix  */
-  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&Mass));
-  CHKERRQ(MatSetSizes(Mass,PETSC_DECIDE,PETSC_DECIDE,N,N));
-  CHKERRQ(MatSetFromOptions(Mass));
-  CHKERRQ(MatSetUp(Mass));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&Mass));
+  PetscCall(MatSetSizes(Mass,PETSC_DECIDE,PETSC_DECIDE,N,N));
+  PetscCall(MatSetFromOptions(Mass));
+  PetscCall(MatSetUp(Mass));
   start = rank*(M/size) + ((M%size) < rank ? (M%size) : rank);
   end   = start + M/size + ((M%size) > rank);
 
@@ -72,22 +72,22 @@ int main(int argc,char **args)
   num1Dnodes = (p+1);
   num2Dnodes = num1Dnodes*num1Dnodes;
 
-  CHKERRQ(PetscMalloc1(num1Dnodes*num1Dnodes,&Me1D));
-  CHKERRQ(PetscMalloc1(num1Dnodes*num1Dnodes,&Ke1D));
-  CHKERRQ(PetscMalloc1(num2Dnodes*num2Dnodes,&Me2D));
-  CHKERRQ(PetscMalloc1(num2Dnodes*num2Dnodes,&Ke2D));
-  CHKERRQ(PetscMalloc1(num2Dnodes,&idx));
-  CHKERRQ(PetscMalloc1(num2Dnodes,&r));
-  CHKERRQ(PetscMalloc1(num2Dnodes,&ue));
+  PetscCall(PetscMalloc1(num1Dnodes*num1Dnodes,&Me1D));
+  PetscCall(PetscMalloc1(num1Dnodes*num1Dnodes,&Ke1D));
+  PetscCall(PetscMalloc1(num2Dnodes*num2Dnodes,&Me2D));
+  PetscCall(PetscMalloc1(num2Dnodes*num2Dnodes,&Ke2D));
+  PetscCall(PetscMalloc1(num2Dnodes,&idx));
+  PetscCall(PetscMalloc1(num2Dnodes,&r));
+  PetscCall(PetscMalloc1(num2Dnodes,&ue));
 
   /* Allocate quadrature and create stiffness matrices */
-  CHKERRQ(PetscMalloc1(p+1,&gllNode));
-  CHKERRQ(PetscMalloc1(p+1,&gllWgts));
+  PetscCall(PetscMalloc1(p+1,&gllNode));
+  PetscCall(PetscMalloc1(p+1,&gllWgts));
   leggaulob(0.0,1.0,gllNode,gllWgts,p); /* Get GLL nodes and weights */
-  CHKERRQ(Form1DElementMass(h,p,gllNode,gllWgts,Me1D));
-  CHKERRQ(Form1DElementStiffness(h,p,gllNode,gllWgts,Ke1D));
-  CHKERRQ(Form2DElementMass(p,Me1D,Me2D));
-  CHKERRQ(Form2DElementStiffness(p,Ke1D,Me1D,Ke2D));
+  PetscCall(Form1DElementMass(h,p,gllNode,gllWgts,Me1D));
+  PetscCall(Form1DElementStiffness(h,p,gllNode,gllWgts,Ke1D));
+  PetscCall(Form2DElementMass(p,Me1D,Me2D));
+  PetscCall(Form2DElementStiffness(p,Ke1D,Me1D,Ke2D));
 
   /* Assemble matrix */
   for (i=start; i<end; i++) {
@@ -97,32 +97,32 @@ int main(int argc,char **args)
          idx[indx++] = p*(p*m+1)*(i/m) + p*(i % m) + k*(p*m+1) + j;
        }
      }
-     CHKERRQ(MatSetValues(A,num2Dnodes,idx,num2Dnodes,idx,Ke2D,ADD_VALUES));
-     CHKERRQ(MatSetValues(Mass,num2Dnodes,idx,num2Dnodes,idx,Me2D,ADD_VALUES));
+     PetscCall(MatSetValues(A,num2Dnodes,idx,num2Dnodes,idx,Ke2D,ADD_VALUES));
+     PetscCall(MatSetValues(Mass,num2Dnodes,idx,num2Dnodes,idx,Me2D,ADD_VALUES));
   }
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyBegin(Mass,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(Mass,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(Mass,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(Mass,MAT_FINAL_ASSEMBLY));
 
-  CHKERRQ(PetscFree(Me1D));
-  CHKERRQ(PetscFree(Ke1D));
-  CHKERRQ(PetscFree(Me2D));
-  CHKERRQ(PetscFree(Ke2D));
+  PetscCall(PetscFree(Me1D));
+  PetscCall(PetscFree(Ke1D));
+  PetscCall(PetscFree(Me2D));
+  PetscCall(PetscFree(Ke2D));
 
   /* Create right-hand-side and solution vectors */
-  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&u));
-  CHKERRQ(VecSetSizes(u,PETSC_DECIDE,N));
-  CHKERRQ(VecSetFromOptions(u));
-  CHKERRQ(PetscObjectSetName((PetscObject)u,"Approx. Solution"));
-  CHKERRQ(VecDuplicate(u,&b));
-  CHKERRQ(PetscObjectSetName((PetscObject)b,"Right hand side"));
-  CHKERRQ(VecDuplicate(u,&q));
-  CHKERRQ(PetscObjectSetName((PetscObject)q,"Right hand side 2"));
-  CHKERRQ(VecDuplicate(b,&ustar));
-  CHKERRQ(VecSet(u,0.0));
-  CHKERRQ(VecSet(b,0.0));
-  CHKERRQ(VecSet(q,0.0));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&u));
+  PetscCall(VecSetSizes(u,PETSC_DECIDE,N));
+  PetscCall(VecSetFromOptions(u));
+  PetscCall(PetscObjectSetName((PetscObject)u,"Approx. Solution"));
+  PetscCall(VecDuplicate(u,&b));
+  PetscCall(PetscObjectSetName((PetscObject)b,"Right hand side"));
+  PetscCall(VecDuplicate(u,&q));
+  PetscCall(PetscObjectSetName((PetscObject)q,"Right hand side 2"));
+  PetscCall(VecDuplicate(b,&ustar));
+  PetscCall(VecSet(u,0.0));
+  PetscCall(VecSet(b,0.0));
+  PetscCall(VecSet(q,0.0));
 
   /* Assemble nodal right-hand-side and soln vector  */
   for (i=start; i<end; i++) {
@@ -134,27 +134,27 @@ int main(int argc,char **args)
         idx[indx++] = p*(p*m+1)*(i/m) + p*(i % m) + k*(p*m+1) + j;
       }
     }
-    CHKERRQ(FormNodalRhs(p,x,y,h,gllNode,r));
-    CHKERRQ(FormNodalSoln(p,x,y,h,gllNode,ue));
-    CHKERRQ(VecSetValues(q,num2Dnodes,idx,r,INSERT_VALUES));
-    CHKERRQ(VecSetValues(ustar,num2Dnodes,idx,ue,INSERT_VALUES));
+    PetscCall(FormNodalRhs(p,x,y,h,gllNode,r));
+    PetscCall(FormNodalSoln(p,x,y,h,gllNode,ue));
+    PetscCall(VecSetValues(q,num2Dnodes,idx,r,INSERT_VALUES));
+    PetscCall(VecSetValues(ustar,num2Dnodes,idx,ue,INSERT_VALUES));
   }
-  CHKERRQ(VecAssemblyBegin(q));
-  CHKERRQ(VecAssemblyEnd(q));
-  CHKERRQ(VecAssemblyBegin(ustar));
-  CHKERRQ(VecAssemblyEnd(ustar));
+  PetscCall(VecAssemblyBegin(q));
+  PetscCall(VecAssemblyEnd(q));
+  PetscCall(VecAssemblyBegin(ustar));
+  PetscCall(VecAssemblyEnd(ustar));
 
-  CHKERRQ(PetscFree(idx));
-  CHKERRQ(PetscFree(r));
-  CHKERRQ(PetscFree(ue));
+  PetscCall(PetscFree(idx));
+  PetscCall(PetscFree(r));
+  PetscCall(PetscFree(ue));
 
   /* Get FE right-hand side vector */
-  CHKERRQ(MatMult(Mass,q,b));
+  PetscCall(MatMult(Mass,q,b));
 
   /* Modify matrix and right-hand-side for Dirichlet boundary conditions */
-  CHKERRQ(PetscMalloc1(4*p*m,&rows));
-  CHKERRQ(PetscMalloc1(4*p*m,&rowsx));
-  CHKERRQ(PetscMalloc1(4*p*m,&rowsy));
+  PetscCall(PetscMalloc1(4*p*m,&rows));
+  PetscCall(PetscMalloc1(4*p*m,&rowsx));
+  PetscCall(PetscMalloc1(4*p*m,&rowsy));
   for (i=0; i<p*m+1; i++) {
     rows[i]          = i; /* bottom */
     rowsx[i]         = (i/p)*h+gllNode[i%p]*h;
@@ -183,44 +183,44 @@ int main(int argc,char **args)
     x    = rowsx[i];
     y    = rowsy[i];
     val  = ubdy(x,y);
-    CHKERRQ(VecSetValues(b,1,&rows[i],&val,INSERT_VALUES));
-    CHKERRQ(VecSetValues(u,1,&rows[i],&val,INSERT_VALUES));
+    PetscCall(VecSetValues(b,1,&rows[i],&val,INSERT_VALUES));
+    PetscCall(VecSetValues(u,1,&rows[i],&val,INSERT_VALUES));
   }
-  CHKERRQ(MatZeroRows(A,4*p*m,rows,1.0,0,0));
-  CHKERRQ(PetscFree(rows));
-  CHKERRQ(PetscFree(rowsx));
-  CHKERRQ(PetscFree(rowsy));
+  PetscCall(MatZeroRows(A,4*p*m,rows,1.0,0,0));
+  PetscCall(PetscFree(rows));
+  PetscCall(PetscFree(rowsx));
+  PetscCall(PetscFree(rowsy));
 
-  CHKERRQ(VecAssemblyBegin(u));
-  CHKERRQ(VecAssemblyEnd(u));
-  CHKERRQ(VecAssemblyBegin(b));
-  CHKERRQ(VecAssemblyEnd(b));
+  PetscCall(VecAssemblyBegin(u));
+  PetscCall(VecAssemblyEnd(u));
+  PetscCall(VecAssemblyBegin(b));
+  PetscCall(VecAssemblyEnd(b));
 
   /* Solve linear system */
-  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
-  CHKERRQ(KSPSetOperators(ksp,A,A));
-  CHKERRQ(KSPSetInitialGuessNonzero(ksp,PETSC_TRUE));
-  CHKERRQ(KSPSetFromOptions(ksp));
-  CHKERRQ(KSPSolve(ksp,b,u));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPSetOperators(ksp,A,A));
+  PetscCall(KSPSetInitialGuessNonzero(ksp,PETSC_TRUE));
+  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(KSPSolve(ksp,b,u));
 
   /* Check error */
-  CHKERRQ(VecAXPY(u,-1.0,ustar));
-  CHKERRQ(VecNorm(u,NORM_2,&norm));
-  CHKERRQ(KSPGetIterationNumber(ksp,&its));
-  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g Iterations %D\n",(double)(norm*h),its));
+  PetscCall(VecAXPY(u,-1.0,ustar));
+  PetscCall(VecNorm(u,NORM_2,&norm));
+  PetscCall(KSPGetIterationNumber(ksp,&its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g Iterations %D\n",(double)(norm*h),its));
 
-  CHKERRQ(PetscFree(gllNode));
-  CHKERRQ(PetscFree(gllWgts));
+  PetscCall(PetscFree(gllNode));
+  PetscCall(PetscFree(gllWgts));
 
-  CHKERRQ(KSPDestroy(&ksp));
-  CHKERRQ(VecDestroy(&u));
-  CHKERRQ(VecDestroy(&b));
-  CHKERRQ(VecDestroy(&q));
-  CHKERRQ(VecDestroy(&ustar));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(MatDestroy(&Mass));
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(VecDestroy(&u));
+  PetscCall(VecDestroy(&b));
+  PetscCall(VecDestroy(&q));
+  PetscCall(VecDestroy(&ustar));
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&Mass));
 
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

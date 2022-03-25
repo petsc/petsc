@@ -83,29 +83,29 @@ PetscErrorCode  PetscDrawLGSPDraw(PetscDrawLG lg,PetscDrawSP spin)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
   PetscValidHeaderSpecific(sp,PETSC_DRAWLG_CLASSID,2);
-  CHKERRQ(PetscDrawIsNull(lg->win,&isnull));
+  PetscCall(PetscDrawIsNull(lg->win,&isnull));
   if (isnull) PetscFunctionReturn(0);
-  CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)lg),&rank));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)lg),&rank));
 
   draw = lg->win;
-  CHKERRQ(PetscDrawCheckResizedWindow(draw));
-  CHKERRQ(PetscDrawClear(draw));
+  PetscCall(PetscDrawCheckResizedWindow(draw));
+  PetscCall(PetscDrawClear(draw));
 
   xmin = PetscMin(lg->xmin,sp->xmin); ymin = PetscMin(lg->ymin,sp->ymin);
   xmax = PetscMax(lg->xmax,sp->xmax); ymax = PetscMax(lg->ymax,sp->ymax);
-  CHKERRQ(PetscDrawAxisSetLimits(lg->axis,xmin,xmax,ymin,ymax));
-  CHKERRQ(PetscDrawAxisDraw(lg->axis));
+  PetscCall(PetscDrawAxisSetLimits(lg->axis,xmin,xmax,ymin,ymax));
+  PetscCall(PetscDrawAxisDraw(lg->axis));
 
-  ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
+  ierr = PetscDrawCollectiveBegin(draw);PetscCall(ierr);
   if (rank == 0) {
     int i,j,dim,nopts;
     dim   = lg->dim;
     nopts = lg->nopts;
     for (i=0; i<dim; i++) {
       for (j=1; j<nopts; j++) {
-        CHKERRQ(PetscDrawLine(draw,lg->x[(j-1)*dim+i],lg->y[(j-1)*dim+i],lg->x[j*dim+i],lg->y[j*dim+i],PETSC_DRAW_BLACK+i));
+        PetscCall(PetscDrawLine(draw,lg->x[(j-1)*dim+i],lg->y[(j-1)*dim+i],lg->x[j*dim+i],lg->y[j*dim+i],PETSC_DRAW_BLACK+i));
         if (lg->use_markers) {
-          CHKERRQ(PetscDrawMarker(draw,lg->x[j*dim+i],lg->y[j*dim+i],PETSC_DRAW_RED));
+          PetscCall(PetscDrawMarker(draw,lg->x[j*dim+i],lg->y[j*dim+i],PETSC_DRAW_RED));
         }
       }
     }
@@ -113,14 +113,14 @@ PetscErrorCode  PetscDrawLGSPDraw(PetscDrawLG lg,PetscDrawSP spin)
     nopts = sp->nopts;
     for (i=0; i<dim; i++) {
       for (j=0; j<nopts; j++) {
-        CHKERRQ(PetscDrawMarker(draw,sp->x[j*dim+i],sp->y[j*dim+i],PETSC_DRAW_RED));
+        PetscCall(PetscDrawMarker(draw,sp->x[j*dim+i],sp->y[j*dim+i],PETSC_DRAW_RED));
       }
     }
   }
-  ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
+  ierr = PetscDrawCollectiveEnd(draw);PetscCall(ierr);
 
-  CHKERRQ(PetscDrawFlush(draw));
-  CHKERRQ(PetscDrawPause(draw));
+  PetscCall(PetscDrawFlush(draw));
+  PetscCall(PetscDrawPause(draw));
   PetscFunctionReturn(0);
 }
 
@@ -155,11 +155,11 @@ PetscErrorCode  PetscDrawLGCreate(PetscDraw draw,PetscInt dim,PetscDrawLG *outlg
   PetscValidLogicalCollectiveInt(draw,dim,2);
   PetscValidPointer(outlg,3);
 
-  CHKERRQ(PetscHeaderCreate(lg,PETSC_DRAWLG_CLASSID,"DrawLG","Line Graph","Draw",PetscObjectComm((PetscObject)draw),PetscDrawLGDestroy,NULL));
-  CHKERRQ(PetscLogObjectParent((PetscObject)draw,(PetscObject)lg));
-  CHKERRQ(PetscDrawLGSetOptionsPrefix(lg,((PetscObject)draw)->prefix));
+  PetscCall(PetscHeaderCreate(lg,PETSC_DRAWLG_CLASSID,"DrawLG","Line Graph","Draw",PetscObjectComm((PetscObject)draw),PetscDrawLGDestroy,NULL));
+  PetscCall(PetscLogObjectParent((PetscObject)draw,(PetscObject)lg));
+  PetscCall(PetscDrawLGSetOptionsPrefix(lg,((PetscObject)draw)->prefix));
 
-  CHKERRQ(PetscObjectReference((PetscObject)draw));
+  PetscCall(PetscObjectReference((PetscObject)draw));
   lg->win = draw;
 
   lg->view    = NULL;
@@ -171,15 +171,15 @@ PetscErrorCode  PetscDrawLGCreate(PetscDraw draw,PetscInt dim,PetscDrawLG *outlg
   lg->xmax    = -1.e20;
   lg->ymax    = -1.e20;
 
-  CHKERRQ(PetscMalloc2(dim*PETSC_DRAW_LG_CHUNK_SIZE,&lg->x,dim*PETSC_DRAW_LG_CHUNK_SIZE,&lg->y));
-  CHKERRQ(PetscLogObjectMemory((PetscObject)lg,2*dim*PETSC_DRAW_LG_CHUNK_SIZE*sizeof(PetscReal)));
+  PetscCall(PetscMalloc2(dim*PETSC_DRAW_LG_CHUNK_SIZE,&lg->x,dim*PETSC_DRAW_LG_CHUNK_SIZE,&lg->y));
+  PetscCall(PetscLogObjectMemory((PetscObject)lg,2*dim*PETSC_DRAW_LG_CHUNK_SIZE*sizeof(PetscReal)));
 
   lg->len         = dim*PETSC_DRAW_LG_CHUNK_SIZE;
   lg->loc         = 0;
   lg->use_markers = PETSC_FALSE;
 
-  CHKERRQ(PetscDrawAxisCreate(draw,&lg->axis));
-  CHKERRQ(PetscLogObjectParent((PetscObject)lg,(PetscObject)lg->axis));
+  PetscCall(PetscDrawAxisCreate(draw,&lg->axis));
+  PetscCall(PetscLogObjectParent((PetscObject)lg,(PetscObject)lg->axis));
 
   *outlg = lg;
   PetscFunctionReturn(0);
@@ -205,9 +205,9 @@ PetscErrorCode  PetscDrawLGSetColors(PetscDrawLG lg,const int colors[])
   PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
   if (lg->dim) PetscValidIntPointer(colors,2);
 
-  CHKERRQ(PetscFree(lg->colors));
-  CHKERRQ(PetscMalloc1(lg->dim,&lg->colors));
-  CHKERRQ(PetscArraycpy(lg->colors,colors,lg->dim));
+  PetscCall(PetscFree(lg->colors));
+  PetscCall(PetscMalloc1(lg->dim,&lg->colors));
+  PetscCall(PetscArraycpy(lg->colors,colors,lg->dim));
   PetscFunctionReturn(0);
 }
 
@@ -238,14 +238,14 @@ PetscErrorCode  PetscDrawLGSetLegend(PetscDrawLG lg,const char *const *names)
 
   if (lg->legend) {
     for (i=0; i<lg->dim; i++) {
-      CHKERRQ(PetscFree(lg->legend[i]));
+      PetscCall(PetscFree(lg->legend[i]));
     }
-    CHKERRQ(PetscFree(lg->legend));
+    PetscCall(PetscFree(lg->legend));
   }
   if (names) {
-    CHKERRQ(PetscMalloc1(lg->dim,&lg->legend));
+    PetscCall(PetscMalloc1(lg->dim,&lg->legend));
     for (i=0; i<lg->dim; i++) {
-      CHKERRQ(PetscStrallocpy(names[i],&lg->legend[i]));
+      PetscCall(PetscStrallocpy(names[i],&lg->legend[i]));
     }
   }
   PetscFunctionReturn(0);
@@ -298,17 +298,17 @@ PetscErrorCode  PetscDrawLGSetDimension(PetscDrawLG lg,PetscInt dim)
   PetscValidLogicalCollectiveInt(lg,dim,2);
   if (lg->dim == dim) PetscFunctionReturn(0);
 
-  CHKERRQ(PetscFree2(lg->x,lg->y));
+  PetscCall(PetscFree2(lg->x,lg->y));
   if (lg->legend) {
     for (i=0; i<lg->dim; i++) {
-      CHKERRQ(PetscFree(lg->legend[i]));
+      PetscCall(PetscFree(lg->legend[i]));
     }
-    CHKERRQ(PetscFree(lg->legend));
+    PetscCall(PetscFree(lg->legend));
   }
-  CHKERRQ(PetscFree(lg->colors));
+  PetscCall(PetscFree(lg->colors));
   lg->dim = dim;
-  CHKERRQ(PetscMalloc2(dim*PETSC_DRAW_LG_CHUNK_SIZE,&lg->x,dim*PETSC_DRAW_LG_CHUNK_SIZE,&lg->y));
-  CHKERRQ(PetscLogObjectMemory((PetscObject)lg,2*dim*PETSC_DRAW_LG_CHUNK_SIZE*sizeof(PetscReal)));
+  PetscCall(PetscMalloc2(dim*PETSC_DRAW_LG_CHUNK_SIZE,&lg->x,dim*PETSC_DRAW_LG_CHUNK_SIZE,&lg->y));
+  PetscCall(PetscLogObjectMemory((PetscObject)lg,2*dim*PETSC_DRAW_LG_CHUNK_SIZE*sizeof(PetscReal)));
   lg->len = dim*PETSC_DRAW_LG_CHUNK_SIZE;
   PetscFunctionReturn(0);
 }
@@ -389,15 +389,15 @@ PetscErrorCode  PetscDrawLGDestroy(PetscDrawLG *lg)
 
   if ((*lg)->legend) {
     for (i=0; i<(*lg)->dim; i++) {
-      CHKERRQ(PetscFree((*lg)->legend[i]));
+      PetscCall(PetscFree((*lg)->legend[i]));
     }
-    CHKERRQ(PetscFree((*lg)->legend));
+    PetscCall(PetscFree((*lg)->legend));
   }
-  CHKERRQ(PetscFree((*lg)->colors));
-  CHKERRQ(PetscFree2((*lg)->x,(*lg)->y));
-  CHKERRQ(PetscDrawAxisDestroy(&(*lg)->axis));
-  CHKERRQ(PetscDrawDestroy(&(*lg)->win));
-  CHKERRQ(PetscHeaderDestroy(lg));
+  PetscCall(PetscFree((*lg)->colors));
+  PetscCall(PetscFree2((*lg)->x,(*lg)->y));
+  PetscCall(PetscDrawAxisDestroy(&(*lg)->axis));
+  PetscCall(PetscDrawDestroy(&(*lg)->win));
+  PetscCall(PetscHeaderDestroy(lg));
   PetscFunctionReturn(0);
 }
 /*@
@@ -447,26 +447,26 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
-  CHKERRQ(PetscDrawIsNull(lg->win,&isnull));
+  PetscCall(PetscDrawIsNull(lg->win,&isnull));
   if (isnull) PetscFunctionReturn(0);
-  CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)lg),&rank));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)lg),&rank));
 
   draw = lg->win;
-  CHKERRQ(PetscDrawCheckResizedWindow(draw));
-  CHKERRQ(PetscDrawClear(draw));
+  PetscCall(PetscDrawCheckResizedWindow(draw));
+  PetscCall(PetscDrawClear(draw));
 
   xmin = lg->xmin; xmax = lg->xmax; ymin = lg->ymin; ymax = lg->ymax;
-  CHKERRQ(PetscDrawAxisSetLimits(lg->axis,xmin,xmax,ymin,ymax));
-  CHKERRQ(PetscDrawAxisDraw(lg->axis));
+  PetscCall(PetscDrawAxisSetLimits(lg->axis,xmin,xmax,ymin,ymax));
+  PetscCall(PetscDrawAxisDraw(lg->axis));
 
-  ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
+  ierr = PetscDrawCollectiveBegin(draw);PetscCall(ierr);
   if (rank == 0) {
     int i,j,dim=lg->dim,nopts=lg->nopts,cl;
     for (i=0; i<dim; i++) {
       for (j=1; j<nopts; j++) {
         cl   = lg->colors ? lg->colors[i] : ((PETSC_DRAW_BLACK + i) % PETSC_DRAW_MAXCOLOR);
-        CHKERRQ(PetscDrawLine(draw,lg->x[(j-1)*dim+i],lg->y[(j-1)*dim+i],lg->x[j*dim+i],lg->y[j*dim+i],cl));
-        if (lg->use_markers) CHKERRQ(PetscDrawMarker(draw,lg->x[j*dim+i],lg->y[j*dim+i],cl));
+        PetscCall(PetscDrawLine(draw,lg->x[(j-1)*dim+i],lg->y[(j-1)*dim+i],lg->x[j*dim+i],lg->y[j*dim+i],cl));
+        if (lg->use_markers) PetscCall(PetscDrawMarker(draw,lg->x[j*dim+i],lg->y[j*dim+i],cl));
       }
     }
   }
@@ -475,10 +475,10 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
     int       i,dim=lg->dim,cl;
     PetscReal xl,yl,xr,yr,tw,th;
     size_t    slen,len=0;
-    CHKERRQ(PetscDrawAxisGetLimits(lg->axis,&xl,&xr,&yl,&yr));
-    CHKERRQ(PetscDrawStringGetSize(draw,&tw,&th));
+    PetscCall(PetscDrawAxisGetLimits(lg->axis,&xl,&xr,&yl,&yr));
+    PetscCall(PetscDrawStringGetSize(draw,&tw,&th));
     for (i=0; i<dim; i++) {
-      CHKERRQ(PetscStrlen(lg->legend[i],&slen));
+      PetscCall(PetscStrlen(lg->legend[i],&slen));
       len = PetscMax(len,slen);
     }
     if (right) {
@@ -487,20 +487,20 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
       xl = xl + 1.5*tw; xr = xl + (len + 7)*tw;
     }
     yr = yr - 1.0*th; yl = yr - (dim + 1)*th;
-    CHKERRQ(PetscDrawLine(draw,xl,yl,xr,yl,PETSC_DRAW_BLACK));
-    CHKERRQ(PetscDrawLine(draw,xr,yl,xr,yr,PETSC_DRAW_BLACK));
-    CHKERRQ(PetscDrawLine(draw,xr,yr,xl,yr,PETSC_DRAW_BLACK));
-    CHKERRQ(PetscDrawLine(draw,xl,yr,xl,yl,PETSC_DRAW_BLACK));
+    PetscCall(PetscDrawLine(draw,xl,yl,xr,yl,PETSC_DRAW_BLACK));
+    PetscCall(PetscDrawLine(draw,xr,yl,xr,yr,PETSC_DRAW_BLACK));
+    PetscCall(PetscDrawLine(draw,xr,yr,xl,yr,PETSC_DRAW_BLACK));
+    PetscCall(PetscDrawLine(draw,xl,yr,xl,yl,PETSC_DRAW_BLACK));
     for  (i=0; i<dim; i++) {
       cl   = lg->colors ? lg->colors[i] : (PETSC_DRAW_BLACK + i);
-      CHKERRQ(PetscDrawLine(draw,xl + 1*tw,yr - (i + 1)*th,xl + 5*tw,yr - (i + 1)*th,cl));
-      CHKERRQ(PetscDrawString(draw,xl + 6*tw,yr - (i + 1.5)*th,PETSC_DRAW_BLACK,lg->legend[i]));
+      PetscCall(PetscDrawLine(draw,xl + 1*tw,yr - (i + 1)*th,xl + 5*tw,yr - (i + 1)*th,cl));
+      PetscCall(PetscDrawString(draw,xl + 6*tw,yr - (i + 1.5)*th,PETSC_DRAW_BLACK,lg->legend[i]));
     }
   }
-  ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
+  ierr = PetscDrawCollectiveEnd(draw);PetscCall(ierr);
 
-  CHKERRQ(PetscDrawFlush(draw));
-  CHKERRQ(PetscDrawPause(draw));
+  PetscCall(PetscDrawFlush(draw));
+  PetscCall(PetscDrawPause(draw));
   PetscFunctionReturn(0);
 }
 
@@ -520,7 +520,7 @@ PetscErrorCode  PetscDrawLGSave(PetscDrawLG lg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
-  CHKERRQ(PetscDrawSave(lg->win));
+  PetscCall(PetscDrawSave(lg->win));
   PetscFunctionReturn(0);
 }
 
@@ -549,13 +549,13 @@ PetscErrorCode  PetscDrawLGView(PetscDrawLG lg,PetscViewer viewer)
   if (xmin > xmax || ymin > ymax) PetscFunctionReturn(0);
 
   if (!viewer) {
-    CHKERRQ(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)lg),&viewer));
+    PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)lg),&viewer));
   }
-  CHKERRQ(PetscObjectPrintClassNamePrefixType((PetscObject)lg,viewer));
+  PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)lg,viewer));
   for (i = 0; i < dim; i++) {
-    CHKERRQ(PetscViewerASCIIPrintf(viewer, "Line %" PetscInt_FMT ">\n", i));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Line %" PetscInt_FMT ">\n", i));
     for (j = 0; j < nopts; j++) {
-      CHKERRQ(PetscViewerASCIIPrintf(viewer, "  X: %g Y: %g\n", (double)lg->x[j*dim+i], (double)lg->y[j*dim+i]));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "  X: %g Y: %g\n", (double)lg->x[j*dim+i], (double)lg->y[j*dim+i]));
     }
   }
   PetscFunctionReturn(0);
@@ -579,7 +579,7 @@ PetscErrorCode  PetscDrawLGSetOptionsPrefix(PetscDrawLG lg,const char prefix[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
-  CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject)lg,prefix));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)lg,prefix));
   PetscFunctionReturn(0);
 }
 
@@ -602,14 +602,14 @@ PetscErrorCode  PetscDrawLGSetFromOptions(PetscDrawLG lg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
 
-  CHKERRQ(PetscDrawGetMarkerType(lg->win,&markertype));
-  CHKERRQ(PetscOptionsGetEnum(((PetscObject)lg)->options,((PetscObject)lg)->prefix,"-lg_marker_type",PetscDrawMarkerTypes,(PetscEnum*)&markertype,&set));
+  PetscCall(PetscDrawGetMarkerType(lg->win,&markertype));
+  PetscCall(PetscOptionsGetEnum(((PetscObject)lg)->options,((PetscObject)lg)->prefix,"-lg_marker_type",PetscDrawMarkerTypes,(PetscEnum*)&markertype,&set));
   if (set) {
-    CHKERRQ(PetscDrawLGSetUseMarkers(lg,PETSC_TRUE));
-    CHKERRQ(PetscDrawSetMarkerType(lg->win,markertype));
+    PetscCall(PetscDrawLGSetUseMarkers(lg,PETSC_TRUE));
+    PetscCall(PetscDrawSetMarkerType(lg->win,markertype));
   }
   usemarkers = lg->use_markers;
-  CHKERRQ(PetscOptionsGetBool(((PetscObject)lg)->options,((PetscObject)lg)->prefix,"-lg_use_markers",&usemarkers,&set));
-  if (set) CHKERRQ(PetscDrawLGSetUseMarkers(lg,usemarkers));
+  PetscCall(PetscOptionsGetBool(((PetscObject)lg)->options,((PetscObject)lg)->prefix,"-lg_use_markers",&usemarkers,&set));
+  if (set) PetscCall(PetscDrawLGSetUseMarkers(lg,usemarkers));
   PetscFunctionReturn(0);
 }

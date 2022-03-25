@@ -111,20 +111,20 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->random_initial_guess = PETSC_FALSE;
   options->random_real = PETSC_FALSE;
 
-  ierr = PetscOptionsBegin(comm,NULL,"Problem Options",NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm,NULL,"Problem Options",NULL);PetscCall(ierr);
   pde  = options->pde;
-  CHKERRQ(PetscOptionsEList("-pde_type","The PDE type",__FILE__,pdeTypes,2,pdeTypes[options->pde],&pde,NULL));
+  PetscCall(PetscOptionsEList("-pde_type","The PDE type",__FILE__,pdeTypes,2,pdeTypes[options->pde],&pde,NULL));
   options->pde = (PDEType)pde;
-  CHKERRQ(PetscOptionsInt("-dim","The topological mesh dimension",__FILE__,options->dim,&options->dim,NULL));
-  CHKERRQ(PetscOptionsIntArray("-cells","The mesh division",__FILE__,options->cells,(n=3,&n),NULL));
-  CHKERRQ(PetscOptionsBoolArray("-periodicity","The mesh periodicity",__FILE__,options->per,(n=3,&n),NULL));
-  CHKERRQ(PetscOptionsBool("-use_global","Test MatSetValues",__FILE__,options->useglobal,&options->useglobal,NULL));
-  CHKERRQ(PetscOptionsBool("-dirichlet","Use dirichlet BC",__FILE__,options->dirbc,&options->dirbc,NULL));
-  CHKERRQ(PetscOptionsBool("-test_assembly","Test MATIS assembly",__FILE__,options->test,&options->test,NULL));
-  CHKERRQ(PetscOptionsBool("-use_composite_pc","Multiplicative composite with BDDC + Richardson/Jacobi",__FILE__,options->use_composite_pc,&options->use_composite_pc,NULL));
-  CHKERRQ(PetscOptionsBool("-random_initial_guess","Solve A x = 0 with random initial guess, instead of A x = b with random b",__FILE__,options->random_initial_guess,&options->random_initial_guess,NULL));
-  CHKERRQ(PetscOptionsBool("-random_real","Use real-valued b (or x, if -random_initial_guess) instead of default scalar type",__FILE__,options->random_real,&options->random_real,NULL));
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-dim","The topological mesh dimension",__FILE__,options->dim,&options->dim,NULL));
+  PetscCall(PetscOptionsIntArray("-cells","The mesh division",__FILE__,options->cells,(n=3,&n),NULL));
+  PetscCall(PetscOptionsBoolArray("-periodicity","The mesh periodicity",__FILE__,options->per,(n=3,&n),NULL));
+  PetscCall(PetscOptionsBool("-use_global","Test MatSetValues",__FILE__,options->useglobal,&options->useglobal,NULL));
+  PetscCall(PetscOptionsBool("-dirichlet","Use dirichlet BC",__FILE__,options->dirbc,&options->dirbc,NULL));
+  PetscCall(PetscOptionsBool("-test_assembly","Test MATIS assembly",__FILE__,options->test,&options->test,NULL));
+  PetscCall(PetscOptionsBool("-use_composite_pc","Multiplicative composite with BDDC + Richardson/Jacobi",__FILE__,options->use_composite_pc,&options->use_composite_pc,NULL));
+  PetscCall(PetscOptionsBool("-random_initial_guess","Solve A x = 0 with random initial guess, instead of A x = b with random b",__FILE__,options->random_initial_guess,&options->random_initial_guess,NULL));
+  PetscCall(PetscOptionsBool("-random_real","Use real-valued b (or x, if -random_initial_guess) instead of default scalar type",__FILE__,options->random_real,&options->random_real,NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
   for (n=options->dim;n<3;n++) options->cells[n] = 0;
   if (options->per[0]) options->dirbc = PETSC_FALSE;
@@ -188,8 +188,8 @@ int main(int argc,char **args)
 #endif
   PetscErrorCode         ierr;
 
-  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
-  CHKERRQ(ProcessOptions(PETSC_COMM_WORLD,&user));
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(ProcessOptions(PETSC_COMM_WORLD,&user));
   for (i=0; i<3; i++) nodes[i] = user.cells[i] + !user.per[i];
   switch (user.dim) {
   case 3:
@@ -198,32 +198,32 @@ int main(int argc,char **args)
                                          user.per[2] ? DM_BOUNDARY_PERIODIC : DM_BOUNDARY_NONE,
                                          DMDA_STENCIL_BOX,nodes[0],nodes[1],nodes[2],
                                          PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,user.dof,
-                                         1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+                                         1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&da);PetscCall(ierr);
     break;
   case 2:
     ierr = DMDACreate2d(PETSC_COMM_WORLD,user.per[0] ? DM_BOUNDARY_PERIODIC : DM_BOUNDARY_NONE,
                                          user.per[1] ? DM_BOUNDARY_PERIODIC : DM_BOUNDARY_NONE,
                                          DMDA_STENCIL_BOX,nodes[0],nodes[1],
                                          PETSC_DECIDE,PETSC_DECIDE,user.dof,
-                                         1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+                                         1,PETSC_NULL,PETSC_NULL,&da);PetscCall(ierr);
     break;
   case 1:
     ierr = DMDACreate1d(PETSC_COMM_WORLD,user.per[0] ? DM_BOUNDARY_PERIODIC : DM_BOUNDARY_NONE,
-                        nodes[0],user.dof,1,PETSC_NULL,&da);CHKERRQ(ierr);
+                        nodes[0],user.dof,1,PETSC_NULL,&da);PetscCall(ierr);
     break;
   default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unsupported dimension %D",user.dim);
   }
 
-  CHKERRQ(PetscLogStageRegister("KSPSetUp",&stages[0]));
-  CHKERRQ(PetscLogStageRegister("KSPSolve",&stages[1]));
+  PetscCall(PetscLogStageRegister("KSPSetUp",&stages[0]));
+  PetscCall(PetscLogStageRegister("KSPSolve",&stages[1]));
 
-  CHKERRQ(DMSetMatType(da,MATIS));
-  CHKERRQ(DMSetFromOptions(da));
-  CHKERRQ(DMDASetElementType(da,DMDA_ELEMENT_Q1));
-  CHKERRQ(DMSetUp(da));
+  PetscCall(DMSetMatType(da,MATIS));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMDASetElementType(da,DMDA_ELEMENT_Q1));
+  PetscCall(DMSetUp(da));
   {
     PetscInt M,N,P;
-    CHKERRQ(DMDAGetInfo(da,0,&M,&N,&P,0,0,0,0,0,0,0,0,0));
+    PetscCall(DMDAGetInfo(da,0,&M,&N,&P,0,0,0,0,0,0,0,0,0));
     switch (user.dim) {
     case 3:
       user.cells[2] = P - !user.per[2];
@@ -235,16 +235,16 @@ int main(int argc,char **args)
     default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unsupported dimension %D",user.dim);
     }
   }
-  CHKERRQ(DMDASetUniformCoordinates(da,0.0,1.0*user.cells[0],0.0,1.0*user.cells[1],0.0,1.0*user.cells[2]));
-  CHKERRQ(DMGetCoordinates(da,&xcoor));
+  PetscCall(DMDASetUniformCoordinates(da,0.0,1.0*user.cells[0],0.0,1.0*user.cells[1],0.0,1.0*user.cells[2]));
+  PetscCall(DMGetCoordinates(da,&xcoor));
 
-  CHKERRQ(DMCreateMatrix(da,&A));
-  CHKERRQ(MatSetFromOptions(A));
-  CHKERRQ(DMGetLocalToGlobalMapping(da,&map));
-  CHKERRQ(DMDAGetElements(da,&nel,&nen,&e_loc));
+  PetscCall(DMCreateMatrix(da,&A));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(DMGetLocalToGlobalMapping(da,&map));
+  PetscCall(DMDAGetElements(da,&nel,&nen,&e_loc));
   if (user.useglobal) {
-    CHKERRQ(PetscMalloc1(nel*nen,&e_glo));
-    CHKERRQ(ISLocalToGlobalMappingApplyBlock(map,nen*nel,e_loc,e_glo));
+    PetscCall(PetscMalloc1(nel*nen,&e_glo));
+    PetscCall(ISLocalToGlobalMappingApplyBlock(map,nen*nel,e_loc,e_glo));
   }
 
   /* we reorder the indices since the element matrices are given in lexicographic order,
@@ -261,16 +261,16 @@ int main(int argc,char **args)
     PetscCheckFalse(nen > 8,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not coded");
     if (!e_glo) {
       for (j=0;j<nen;j++) idxs[j] = e_loc[i*nen+ord[j]];
-      CHKERRQ(MatSetValuesBlockedLocal(A,nen,idxs,nen,idxs,user.elemMat,ADD_VALUES));
+      PetscCall(MatSetValuesBlockedLocal(A,nen,idxs,nen,idxs,user.elemMat,ADD_VALUES));
     } else {
       for (j=0;j<nen;j++) idxs[j] = e_glo[i*nen+ord[j]];
-      CHKERRQ(MatSetValuesBlocked(A,nen,idxs,nen,idxs,user.elemMat,ADD_VALUES));
+      PetscCall(MatSetValuesBlocked(A,nen,idxs,nen,idxs,user.elemMat,ADD_VALUES));
     }
   }
-  CHKERRQ(DMDARestoreElements(da,&nel,&nen,&e_loc));
-  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
-  CHKERRQ(MatSetOption(A,MAT_SPD,PETSC_TRUE));
+  PetscCall(DMDARestoreElements(da,&nel,&nen,&e_loc));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatSetOption(A,MAT_SPD,PETSC_TRUE));
 
   /* Boundary conditions */
   zero = NULL;
@@ -280,81 +280,81 @@ int main(int argc,char **args)
     PetscInt    n,*idx,j,st;
 
     n    = PetscGlobalRank ? 0 : (user.cells[1]+1)*(user.cells[2]+1);
-    CHKERRQ(ISCreateStride(PETSC_COMM_WORLD,n,0,user.cells[0]+1,&zero));
+    PetscCall(ISCreateStride(PETSC_COMM_WORLD,n,0,user.cells[0]+1,&zero));
     if (user.dof > 1) { /* zero all components */
       const PetscInt *idx;
       IS             bzero;
 
-      CHKERRQ(ISGetIndices(zero,(const PetscInt**)&idx));
-      CHKERRQ(ISCreateBlock(PETSC_COMM_WORLD,user.dof,n,idx,PETSC_COPY_VALUES,&bzero));
-      CHKERRQ(ISRestoreIndices(zero,(const PetscInt**)&idx));
-      CHKERRQ(ISDestroy(&zero));
+      PetscCall(ISGetIndices(zero,(const PetscInt**)&idx));
+      PetscCall(ISCreateBlock(PETSC_COMM_WORLD,user.dof,n,idx,PETSC_COPY_VALUES,&bzero));
+      PetscCall(ISRestoreIndices(zero,(const PetscInt**)&idx));
+      PetscCall(ISDestroy(&zero));
       zero = bzero;
     }
     /* map indices from natural to global */
-    CHKERRQ(DMDACreateNaturalVector(da,&nat));
-    CHKERRQ(ISGetLocalSize(zero,&n));
-    CHKERRQ(PetscMalloc1(n,&vals));
+    PetscCall(DMDACreateNaturalVector(da,&nat));
+    PetscCall(ISGetLocalSize(zero,&n));
+    PetscCall(PetscMalloc1(n,&vals));
     for (i=0;i<n;i++) vals[i] = 1.0;
-    CHKERRQ(ISGetIndices(zero,(const PetscInt**)&idx));
-    CHKERRQ(VecSetValues(nat,n,idx,vals,INSERT_VALUES));
-    CHKERRQ(ISRestoreIndices(zero,(const PetscInt**)&idx));
-    CHKERRQ(PetscFree(vals));
-    CHKERRQ(VecAssemblyBegin(nat));
-    CHKERRQ(VecAssemblyEnd(nat));
-    CHKERRQ(DMCreateGlobalVector(da,&glob));
-    CHKERRQ(DMDANaturalToGlobalBegin(da,nat,INSERT_VALUES,glob));
-    CHKERRQ(DMDANaturalToGlobalEnd(da,nat,INSERT_VALUES,glob));
-    CHKERRQ(VecDestroy(&nat));
-    CHKERRQ(ISDestroy(&zero));
-    CHKERRQ(VecGetLocalSize(glob,&n));
-    CHKERRQ(PetscMalloc1(n,&idx));
-    CHKERRQ(VecGetOwnershipRange(glob,&st,NULL));
-    CHKERRQ(VecGetArray(glob,&vals));
+    PetscCall(ISGetIndices(zero,(const PetscInt**)&idx));
+    PetscCall(VecSetValues(nat,n,idx,vals,INSERT_VALUES));
+    PetscCall(ISRestoreIndices(zero,(const PetscInt**)&idx));
+    PetscCall(PetscFree(vals));
+    PetscCall(VecAssemblyBegin(nat));
+    PetscCall(VecAssemblyEnd(nat));
+    PetscCall(DMCreateGlobalVector(da,&glob));
+    PetscCall(DMDANaturalToGlobalBegin(da,nat,INSERT_VALUES,glob));
+    PetscCall(DMDANaturalToGlobalEnd(da,nat,INSERT_VALUES,glob));
+    PetscCall(VecDestroy(&nat));
+    PetscCall(ISDestroy(&zero));
+    PetscCall(VecGetLocalSize(glob,&n));
+    PetscCall(PetscMalloc1(n,&idx));
+    PetscCall(VecGetOwnershipRange(glob,&st,NULL));
+    PetscCall(VecGetArray(glob,&vals));
     for (i=0,j=0;i<n;i++) if (PetscRealPart(vals[i]) == 1.0) idx[j++] = i + st;
-    CHKERRQ(VecRestoreArray(glob,&vals));
-    CHKERRQ(VecDestroy(&glob));
-    CHKERRQ(ISCreateGeneral(PETSC_COMM_WORLD,j,idx,PETSC_OWN_POINTER,&zero));
-    CHKERRQ(MatZeroRowsColumnsIS(A,zero,1.0,NULL,NULL));
+    PetscCall(VecRestoreArray(glob,&vals));
+    PetscCall(VecDestroy(&glob));
+    PetscCall(ISCreateGeneral(PETSC_COMM_WORLD,j,idx,PETSC_OWN_POINTER,&zero));
+    PetscCall(MatZeroRowsColumnsIS(A,zero,1.0,NULL,NULL));
   } else {
     switch (user.pde) {
     case PDE_POISSON:
-      CHKERRQ(MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,NULL,&nullsp));
+      PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,NULL,&nullsp));
       break;
     case PDE_ELASTICITY:
-      CHKERRQ(MatNullSpaceCreateRigidBody(xcoor,&nullsp));
+      PetscCall(MatNullSpaceCreateRigidBody(xcoor,&nullsp));
       break;
     }
     /* with periodic BC and Elasticity, just the displacements are in the nullspace
        this is no harm since we eliminate all the components of the rhs */
-    CHKERRQ(MatSetNullSpace(A,nullsp));
+    PetscCall(MatSetNullSpace(A,nullsp));
   }
 
   if (user.test) {
     Mat AA;
 
-    CHKERRQ(MatConvert(A,MATAIJ,MAT_INITIAL_MATRIX,&AA));
-    CHKERRQ(MatViewFromOptions(AA,NULL,"-assembled_view"));
-    CHKERRQ(MatDestroy(&AA));
+    PetscCall(MatConvert(A,MATAIJ,MAT_INITIAL_MATRIX,&AA));
+    PetscCall(MatViewFromOptions(AA,NULL,"-assembled_view"));
+    PetscCall(MatDestroy(&AA));
   }
 
   /* Attach near null space for elasticity */
   if (user.pde == PDE_ELASTICITY) {
     MatNullSpace nearnullsp;
 
-    CHKERRQ(MatNullSpaceCreateRigidBody(xcoor,&nearnullsp));
-    CHKERRQ(MatSetNearNullSpace(A,nearnullsp));
-    CHKERRQ(MatNullSpaceDestroy(&nearnullsp));
+    PetscCall(MatNullSpaceCreateRigidBody(xcoor,&nearnullsp));
+    PetscCall(MatSetNearNullSpace(A,nearnullsp));
+    PetscCall(MatNullSpaceDestroy(&nearnullsp));
   }
 
   /* we may want to use MG for the local solvers: attach local nearnullspace to the local matrices */
-  CHKERRQ(DMGetCoordinatesLocal(da,&xcoorl));
-  CHKERRQ(PetscObjectTypeCompare((PetscObject)A,MATIS,&ismatis));
+  PetscCall(DMGetCoordinatesLocal(da,&xcoorl));
+  PetscCall(PetscObjectTypeCompare((PetscObject)A,MATIS,&ismatis));
   if (ismatis) {
     MatNullSpace lnullsp = NULL;
     Mat          lA;
 
-    CHKERRQ(MatISGetLocalMat(A,&lA));
+    PetscCall(MatISGetLocalMat(A,&lA));
     if (user.pde == PDE_ELASTICITY) {
       Vec                    lc;
       ISLocalToGlobalMapping l2l;
@@ -365,93 +365,93 @@ int main(int argc,char **args)
 
       /* when using a DMDA, the local matrices have an additional local-to-local map
          that maps from the DA local ordering to the ordering induced by the elements */
-      CHKERRQ(MatCreateVecs(lA,&lc,NULL));
-      CHKERRQ(MatGetLocalToGlobalMapping(lA,&l2l,NULL));
-      CHKERRQ(VecSetLocalToGlobalMapping(lc,l2l));
-      CHKERRQ(VecSetOption(lc,VEC_IGNORE_NEGATIVE_INDICES,PETSC_TRUE));
-      CHKERRQ(VecGetLocalSize(xcoorl,&n));
-      CHKERRQ(VecGetBlockSize(xcoorl,&bs));
-      CHKERRQ(ISCreateStride(PETSC_COMM_SELF,n/bs,0,1,&is));
-      CHKERRQ(ISGetIndices(is,&idxs));
-      CHKERRQ(VecGetArrayRead(xcoorl,&a));
-      CHKERRQ(VecSetValuesBlockedLocal(lc,n/bs,idxs,a,INSERT_VALUES));
-      CHKERRQ(VecAssemblyBegin(lc));
-      CHKERRQ(VecAssemblyEnd(lc));
-      CHKERRQ(VecRestoreArrayRead(xcoorl,&a));
-      CHKERRQ(ISRestoreIndices(is,&idxs));
-      CHKERRQ(ISDestroy(&is));
-      CHKERRQ(MatNullSpaceCreateRigidBody(lc,&lnullsp));
-      CHKERRQ(VecDestroy(&lc));
+      PetscCall(MatCreateVecs(lA,&lc,NULL));
+      PetscCall(MatGetLocalToGlobalMapping(lA,&l2l,NULL));
+      PetscCall(VecSetLocalToGlobalMapping(lc,l2l));
+      PetscCall(VecSetOption(lc,VEC_IGNORE_NEGATIVE_INDICES,PETSC_TRUE));
+      PetscCall(VecGetLocalSize(xcoorl,&n));
+      PetscCall(VecGetBlockSize(xcoorl,&bs));
+      PetscCall(ISCreateStride(PETSC_COMM_SELF,n/bs,0,1,&is));
+      PetscCall(ISGetIndices(is,&idxs));
+      PetscCall(VecGetArrayRead(xcoorl,&a));
+      PetscCall(VecSetValuesBlockedLocal(lc,n/bs,idxs,a,INSERT_VALUES));
+      PetscCall(VecAssemblyBegin(lc));
+      PetscCall(VecAssemblyEnd(lc));
+      PetscCall(VecRestoreArrayRead(xcoorl,&a));
+      PetscCall(ISRestoreIndices(is,&idxs));
+      PetscCall(ISDestroy(&is));
+      PetscCall(MatNullSpaceCreateRigidBody(lc,&lnullsp));
+      PetscCall(VecDestroy(&lc));
     } else if (user.pde == PDE_POISSON) {
-      CHKERRQ(MatNullSpaceCreate(PETSC_COMM_SELF,PETSC_TRUE,0,NULL,&lnullsp));
+      PetscCall(MatNullSpaceCreate(PETSC_COMM_SELF,PETSC_TRUE,0,NULL,&lnullsp));
     }
-    CHKERRQ(MatSetNearNullSpace(lA,lnullsp));
-    CHKERRQ(MatNullSpaceDestroy(&lnullsp));
-    CHKERRQ(MatISRestoreLocalMat(A,&lA));
+    PetscCall(MatSetNearNullSpace(lA,lnullsp));
+    PetscCall(MatNullSpaceDestroy(&lnullsp));
+    PetscCall(MatISRestoreLocalMat(A,&lA));
   }
 
-  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
-  CHKERRQ(KSPSetOperators(ksp,A,A));
-  CHKERRQ(KSPSetType(ksp,KSPCG));
-  CHKERRQ(KSPGetPC(ksp,&pc));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPSetOperators(ksp,A,A));
+  PetscCall(KSPSetType(ksp,KSPCG));
+  PetscCall(KSPGetPC(ksp,&pc));
   if (user.use_composite_pc) {
     PC pcksp,pcjacobi;
     KSP ksprich;
-    CHKERRQ(PCSetType(pc,PCCOMPOSITE));
-    CHKERRQ(PCCompositeSetType(pc,PC_COMPOSITE_MULTIPLICATIVE));
-    CHKERRQ(PCCompositeAddPCType(pc,PCBDDC));
-    CHKERRQ(PCCompositeAddPCType(pc,PCKSP));
-    CHKERRQ(PCCompositeGetPC(pc,1,&pcksp));
-    CHKERRQ(PCKSPGetKSP(pcksp,&ksprich));
-    CHKERRQ(KSPSetType(ksprich,KSPRICHARDSON));
-    CHKERRQ(KSPSetTolerances(ksprich,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1));
-    CHKERRQ(KSPSetNormType(ksprich,KSP_NORM_NONE));
-    CHKERRQ(KSPSetConvergenceTest(ksprich,KSPConvergedSkip,NULL,NULL));
-    CHKERRQ(KSPGetPC(ksprich,&pcjacobi));
-    CHKERRQ(PCSetType(pcjacobi,PCJACOBI));
+    PetscCall(PCSetType(pc,PCCOMPOSITE));
+    PetscCall(PCCompositeSetType(pc,PC_COMPOSITE_MULTIPLICATIVE));
+    PetscCall(PCCompositeAddPCType(pc,PCBDDC));
+    PetscCall(PCCompositeAddPCType(pc,PCKSP));
+    PetscCall(PCCompositeGetPC(pc,1,&pcksp));
+    PetscCall(PCKSPGetKSP(pcksp,&ksprich));
+    PetscCall(KSPSetType(ksprich,KSPRICHARDSON));
+    PetscCall(KSPSetTolerances(ksprich,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1));
+    PetscCall(KSPSetNormType(ksprich,KSP_NORM_NONE));
+    PetscCall(KSPSetConvergenceTest(ksprich,KSPConvergedSkip,NULL,NULL));
+    PetscCall(KSPGetPC(ksprich,&pcjacobi));
+    PetscCall(PCSetType(pcjacobi,PCJACOBI));
   } else {
-    CHKERRQ(PCSetType(pc,PCBDDC));
+    PetscCall(PCSetType(pc,PCBDDC));
   }
-  /* CHKERRQ(PCBDDCSetDirichletBoundaries(pc,zero)); */
-  CHKERRQ(KSPSetFromOptions(ksp));
-  CHKERRQ(PetscLogStagePush(stages[0]));
-  CHKERRQ(KSPSetUp(ksp));
-  CHKERRQ(PetscLogStagePop());
+  /* PetscCall(PCBDDCSetDirichletBoundaries(pc,zero)); */
+  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(PetscLogStagePush(stages[0]));
+  PetscCall(KSPSetUp(ksp));
+  PetscCall(PetscLogStagePop());
 
-  CHKERRQ(MatCreateVecs(A,&x,&b));
+  PetscCall(MatCreateVecs(A,&x,&b));
   if (user.random_initial_guess) {
     /* Solving A x = 0 with random initial guess allows Arnoldi to run for more iterations, thereby yielding a more
      * complete Hessenberg matrix and more accurate eigenvalues. */
-    CHKERRQ(VecZeroEntries(b));
-    CHKERRQ(VecSetRandom(x,NULL));
-    if (user.random_real) CHKERRQ(VecRealPart(x));
+    PetscCall(VecZeroEntries(b));
+    PetscCall(VecSetRandom(x,NULL));
+    if (user.random_real) PetscCall(VecRealPart(x));
     if (nullsp) {
-      CHKERRQ(MatNullSpaceRemove(nullsp,x));
+      PetscCall(MatNullSpaceRemove(nullsp,x));
     }
-    CHKERRQ(KSPSetInitialGuessNonzero(ksp,PETSC_TRUE));
-    CHKERRQ(KSPSetComputeEigenvalues(ksp,PETSC_TRUE));
-    CHKERRQ(KSPGMRESSetRestart(ksp,100));
+    PetscCall(KSPSetInitialGuessNonzero(ksp,PETSC_TRUE));
+    PetscCall(KSPSetComputeEigenvalues(ksp,PETSC_TRUE));
+    PetscCall(KSPGMRESSetRestart(ksp,100));
   } else {
-    CHKERRQ(VecSetRandom(b,NULL));
-    if (user.random_real) CHKERRQ(VecRealPart(x));
+    PetscCall(VecSetRandom(b,NULL));
+    if (user.random_real) PetscCall(VecRealPart(x));
     if (nullsp) {
-      CHKERRQ(MatNullSpaceRemove(nullsp,b));
+      PetscCall(MatNullSpaceRemove(nullsp,b));
     }
   }
-  CHKERRQ(PetscLogStagePush(stages[1]));
-  CHKERRQ(KSPSolve(ksp,b,x));
-  CHKERRQ(PetscLogStagePop());
+  PetscCall(PetscLogStagePush(stages[1]));
+  PetscCall(KSPSolve(ksp,b,x));
+  PetscCall(PetscLogStagePop());
 
   /* cleanup */
-  CHKERRQ(VecDestroy(&x));
-  CHKERRQ(VecDestroy(&b));
-  CHKERRQ(ISDestroy(&zero));
-  CHKERRQ(PetscFree(e_glo));
-  CHKERRQ(MatNullSpaceDestroy(&nullsp));
-  CHKERRQ(KSPDestroy(&ksp));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(DMDestroy(&da));
-  CHKERRQ(PetscFinalize());
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&b));
+  PetscCall(ISDestroy(&zero));
+  PetscCall(PetscFree(e_glo));
+  PetscCall(MatNullSpaceDestroy(&nullsp));
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(MatDestroy(&A));
+  PetscCall(DMDestroy(&da));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

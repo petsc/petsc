@@ -31,14 +31,14 @@ static PetscErrorCode CreateFE(DM dm)
   PetscDS        ds;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetCoordinateDM(dm, &cdm));
-  CHKERRQ(DMGetField(cdm, 0, NULL, (PetscObject*) &fe));
-  CHKERRQ(PetscFEGetBasisSpace(fe, &P));
-  CHKERRQ(PetscFEGetDualSpace(fe, &Q));
-  CHKERRQ(PetscDualSpaceGetDM(Q,&K));
-  CHKERRQ(DMGetDimension(K,&dim));
-  CHKERRQ(PetscSpaceGetDegree(P, &k, NULL));
-  CHKERRQ(DMPlexGetCellType(K, 0, &ptype));
+  PetscCall(DMGetCoordinateDM(dm, &cdm));
+  PetscCall(DMGetField(cdm, 0, NULL, (PetscObject*) &fe));
+  PetscCall(PetscFEGetBasisSpace(fe, &P));
+  PetscCall(PetscFEGetDualSpace(fe, &Q));
+  PetscCall(PetscDualSpaceGetDM(Q,&K));
+  PetscCall(DMGetDimension(K,&dim));
+  PetscCall(PetscSpaceGetDegree(P, &k, NULL));
+  PetscCall(DMPlexGetCellType(K, 0, &ptype));
   switch (ptype) {
   case DM_POLYTOPE_QUADRILATERAL:
   case DM_POLYTOPE_HEXAHEDRON:
@@ -47,14 +47,14 @@ static PetscErrorCode CreateFE(DM dm)
     isSimplex = PETSC_TRUE; break;
   }
 
-  CHKERRQ(PetscFECreateLagrange(PETSC_COMM_SELF, dim, 1, isSimplex, k, PETSC_DETERMINE, &fe));
-  CHKERRQ(PetscFESetName(fe, "scalar"));
-  CHKERRQ(DMAddField(dm, NULL, (PetscObject) fe));
-  CHKERRQ(PetscFEDestroy(&fe));
-  CHKERRQ(DMCreateDS(dm));
+  PetscCall(PetscFECreateLagrange(PETSC_COMM_SELF, dim, 1, isSimplex, k, PETSC_DETERMINE, &fe));
+  PetscCall(PetscFESetName(fe, "scalar"));
+  PetscCall(DMAddField(dm, NULL, (PetscObject) fe));
+  PetscCall(PetscFEDestroy(&fe));
+  PetscCall(DMCreateDS(dm));
 
-  CHKERRQ(DMGetDS(dm, &ds));
-  CHKERRQ(PetscDSSetObjective(ds, 0, one));
+  PetscCall(DMGetDS(dm, &ds));
+  PetscCall(PetscDSSetObjective(ds, 0, one));
   PetscFunctionReturn(0);
 }
 
@@ -66,13 +66,13 @@ static PetscErrorCode CheckIntegral(DM dm, PetscReal integral, PetscReal tol)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  CHKERRQ(DMGetGlobalVector(dm, &u));
-  CHKERRQ(DMPlexComputeIntegralFEM(dm, u, &result, NULL));
-  CHKERRQ(DMRestoreGlobalVector(dm, &u));
+  PetscCall(DMGetGlobalVector(dm, &u));
+  PetscCall(DMPlexComputeIntegralFEM(dm, u, &result, NULL));
+  PetscCall(DMRestoreGlobalVector(dm, &u));
   rval = PetscRealPart(result);
   if (integral > 0 && PetscAbsReal(integral - rval) > tol) {
     ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Calculated value %g != %g actual value (error %g > %g tol)\n",
-                       (double) rval, (double) integral, (double) PetscAbsReal(integral - rval), (double) tol);CHKERRQ(ierr);
+                       (double) rval, (double) integral, (double) PetscAbsReal(integral - rval), (double) tol);PetscCall(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -98,65 +98,65 @@ int main(int argc, char **argv)
   PetscBool         set,flg;
   FILE              *fp;
 
-  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
-  CHKERRQ(PetscStrncpy(geodir, "${PETSC_DIR}/share/petsc/datafiles/meshes", sizeof(geodir)));
-  CHKERRQ(PetscOptionsGetenv(PETSC_COMM_SELF, "GMSH", path, sizeof(path), &set));
-  if (set) CHKERRQ(PetscStrncpy(gmsh, path, sizeof(gmsh)));
-  CHKERRQ(PetscOptionsGetString(NULL, NULL, "-gmsh", gmsh, sizeof(gmsh), NULL));
-  CHKERRQ(PetscOptionsGetString(NULL, NULL, "-dir", geodir, sizeof(geodir), NULL));
-  CHKERRQ(PetscOptionsGetString(NULL, NULL, "-out", outdir, sizeof(outdir), NULL));
-  CHKERRQ(PetscOptionsGetEList(NULL, NULL, "-msh", mshlist, (int)(sizeof(mshlist)/sizeof(mshlist[0])), &msh, NULL));
-  CHKERRQ(PetscOptionsGetEList(NULL, NULL, "-fmt", fmtlist, (int)(sizeof(fmtlist)/sizeof(fmtlist[0])), &fmt, NULL));
-  CHKERRQ(PetscOptionsGetBool(NULL, NULL, "-bin", &bin, NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL, NULL, "-dim", &dim, NULL));
-  CHKERRQ(PetscOptionsGetInt(NULL, NULL, "-order", &order, NULL));
+  PetscCall(PetscStrncpy(geodir, "${PETSC_DIR}/share/petsc/datafiles/meshes", sizeof(geodir)));
+  PetscCall(PetscOptionsGetenv(PETSC_COMM_SELF, "GMSH", path, sizeof(path), &set));
+  if (set) PetscCall(PetscStrncpy(gmsh, path, sizeof(gmsh)));
+  PetscCall(PetscOptionsGetString(NULL, NULL, "-gmsh", gmsh, sizeof(gmsh), NULL));
+  PetscCall(PetscOptionsGetString(NULL, NULL, "-dir", geodir, sizeof(geodir), NULL));
+  PetscCall(PetscOptionsGetString(NULL, NULL, "-out", outdir, sizeof(outdir), NULL));
+  PetscCall(PetscOptionsGetEList(NULL, NULL, "-msh", mshlist, (int)(sizeof(mshlist)/sizeof(mshlist[0])), &msh, NULL));
+  PetscCall(PetscOptionsGetEList(NULL, NULL, "-fmt", fmtlist, (int)(sizeof(fmtlist)/sizeof(fmtlist[0])), &fmt, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-bin", &bin, NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-dim", &dim, NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-order", &order, NULL));
   if (fmt == 1) bin = PETSC_FALSE; /* Recent Gmsh releases cannot generate msh40+binary format*/
 
   { /* This test requires Gmsh >= 4.2.0 */
     int inum = 0, major = 0, minor = 0, micro = 0;
-    CHKERRQ(PetscSNPrintf(cmd, sizeof(cmd), "%s -info", gmsh));
-    CHKERRQ(PetscPOpen(PETSC_COMM_SELF, NULL, cmd, "r", &fp));
+    PetscCall(PetscSNPrintf(cmd, sizeof(cmd), "%s -info", gmsh));
+    PetscCall(PetscPOpen(PETSC_COMM_SELF, NULL, cmd, "r", &fp));
     if (fp) {inum = fscanf(fp, "Version : %d.%d.%d", &major, &minor, &micro);}
-    CHKERRQ(PetscPClose(PETSC_COMM_SELF, fp));
+    PetscCall(PetscPClose(PETSC_COMM_SELF, fp));
     if (inum != 3 || major < 4 || (major == 4 && minor < 2)) {
-      CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "Gmsh>=4.2.0 not available\n")); goto finish;
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, "Gmsh>=4.2.0 not available\n")); goto finish;
     }
   }
 
-  CHKERRQ(PetscSNPrintf(tag, sizeof(tag), "%s-%d-%d-%s%s", mshlist[msh], (int)dim, (int)order, fmtlist[fmt], bin?"-bin":""));
-  CHKERRQ(PetscSNPrintf(geo, sizeof(geo), "%s/gmsh-%s.geo", geodir, mshlist[msh]));
-  CHKERRQ(PetscSNPrintf(out, sizeof(out), "%s/mesh-%s.msh", outdir, tag));
-  CHKERRQ(PetscStrreplace(PETSC_COMM_SELF, geo, path, sizeof(path)));
-  CHKERRQ(PetscFixFilename(path, geo));
-  CHKERRQ(PetscStrreplace(PETSC_COMM_SELF, out, path, sizeof(path)));
-  CHKERRQ(PetscFixFilename(path, out));
-  CHKERRQ(PetscTestFile(geo, 'r', &flg));
+  PetscCall(PetscSNPrintf(tag, sizeof(tag), "%s-%d-%d-%s%s", mshlist[msh], (int)dim, (int)order, fmtlist[fmt], bin?"-bin":""));
+  PetscCall(PetscSNPrintf(geo, sizeof(geo), "%s/gmsh-%s.geo", geodir, mshlist[msh]));
+  PetscCall(PetscSNPrintf(out, sizeof(out), "%s/mesh-%s.msh", outdir, tag));
+  PetscCall(PetscStrreplace(PETSC_COMM_SELF, geo, path, sizeof(path)));
+  PetscCall(PetscFixFilename(path, geo));
+  PetscCall(PetscStrreplace(PETSC_COMM_SELF, out, path, sizeof(path)));
+  PetscCall(PetscFixFilename(path, out));
+  PetscCall(PetscTestFile(geo, 'r', &flg));
   PetscCheck(flg,PETSC_COMM_SELF, PETSC_ERR_USER_INPUT, "File not found: %s", geo);
 
-  CHKERRQ(PetscSNPrintf(cmd, sizeof(cmd), cmdtemplate, gmsh, fmtlist[fmt], bin?"-bin":"", (int)dim, (int)order, geo, out));
-  CHKERRQ(PetscPOpen(PETSC_COMM_SELF, NULL, cmd, "r", &fp));
-  CHKERRQ(PetscPClose(PETSC_COMM_SELF, fp));
+  PetscCall(PetscSNPrintf(cmd, sizeof(cmd), cmdtemplate, gmsh, fmtlist[fmt], bin?"-bin":"", (int)dim, (int)order, geo, out));
+  PetscCall(PetscPOpen(PETSC_COMM_SELF, NULL, cmd, "r", &fp));
+  PetscCall(PetscPClose(PETSC_COMM_SELF, fp));
 
-  CHKERRQ(DMPlexCreateFromFile(PETSC_COMM_SELF, out, "ex99_plex", PETSC_TRUE, &dm));
-  CHKERRQ(PetscSNPrintf(tag, sizeof(tag), "mesh-%s", mshlist[msh]));
-  CHKERRQ(PetscObjectSetName((PetscObject)dm, tag));
-  CHKERRQ(DMViewFromOptions(dm, NULL, "-dm_view"));
-  CHKERRQ(DMSetFromOptions(dm));
+  PetscCall(DMPlexCreateFromFile(PETSC_COMM_SELF, out, "ex99_plex", PETSC_TRUE, &dm));
+  PetscCall(PetscSNPrintf(tag, sizeof(tag), "mesh-%s", mshlist[msh]));
+  PetscCall(PetscObjectSetName((PetscObject)dm, tag));
+  PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
+  PetscCall(DMSetFromOptions(dm));
   {
     PetscBool check;
     PetscReal integral = 0, tol = (PetscReal)1.0e-4;
-    CHKERRQ(PetscOptionsGetReal(NULL, NULL, "-integral", &integral, &check));
-    CHKERRQ(PetscOptionsGetReal(NULL, NULL, "-tol", &tol, NULL));
+    PetscCall(PetscOptionsGetReal(NULL, NULL, "-integral", &integral, &check));
+    PetscCall(PetscOptionsGetReal(NULL, NULL, "-tol", &tol, NULL));
     if (check) {
-      CHKERRQ(CreateFE(dm));
-      CHKERRQ(CheckIntegral(dm, integral, tol));
+      PetscCall(CreateFE(dm));
+      PetscCall(CheckIntegral(dm, integral, tol));
     }
   }
-  CHKERRQ(DMDestroy(&dm));
+  PetscCall(DMDestroy(&dm));
 
 finish:
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }
 

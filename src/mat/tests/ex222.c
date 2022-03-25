@@ -10,63 +10,63 @@ int main(int argc,char **argv)
   PetscInt       bs = 1;
   PetscBool      flg, check = PETSC_TRUE;
 
-  CHKERRQ(PetscInitialize(&argc,&argv,(char*) 0,help));
+  PetscCall(PetscInitialize(&argc,&argv,(char*) 0,help));
 
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-expl_type",expltype,sizeof(expltype),&flg));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-expl_type",expltype,sizeof(expltype),&flg));
   if (flg) {
-    CHKERRQ(PetscStrallocpy(expltype,&etype));
+    PetscCall(PetscStrallocpy(expltype,&etype));
   }
-  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",filename,sizeof(filename),&flg));
-  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-f",filename,sizeof(filename),&flg));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL));
   if (!flg) {
     PetscInt M = 13,N = 6;
 
-    CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
-    CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
-    CHKERRQ(MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,M,N,NULL,&A));
-    CHKERRQ(MatSetBlockSize(A,bs));
-    CHKERRQ(MatSetRandom(A,NULL));
+    PetscCall(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
+    PetscCall(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
+    PetscCall(MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,M,N,NULL,&A));
+    PetscCall(MatSetBlockSize(A,bs));
+    PetscCall(MatSetRandom(A,NULL));
   } else {
     PetscViewer viewer;
 
-    CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer));
-    CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-    CHKERRQ(MatSetBlockSize(A,bs));
-    CHKERRQ(MatSetFromOptions(A));
-    CHKERRQ(MatLoad(A,viewer));
-    CHKERRQ(PetscViewerDestroy(&viewer));
+    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer));
+    PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+    PetscCall(MatSetBlockSize(A,bs));
+    PetscCall(MatSetFromOptions(A));
+    PetscCall(MatLoad(A,viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
   }
-  CHKERRQ(PetscObjectSetName((PetscObject)A,"Matrix"));
-  CHKERRQ(MatViewFromOptions(A,NULL,"-view_expl"));
+  PetscCall(PetscObjectSetName((PetscObject)A,"Matrix"));
+  PetscCall(MatViewFromOptions(A,NULL,"-view_expl"));
 
-  CHKERRQ(MatComputeOperator(A,etype,&Ae));
-  CHKERRQ(PetscObjectSetName((PetscObject)Ae,"Explicit matrix"));
-  CHKERRQ(MatViewFromOptions(Ae,NULL,"-view_expl"));
+  PetscCall(MatComputeOperator(A,etype,&Ae));
+  PetscCall(PetscObjectSetName((PetscObject)Ae,"Explicit matrix"));
+  PetscCall(MatViewFromOptions(Ae,NULL,"-view_expl"));
 
-  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-check",&check,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-check",&check,NULL));
   if (check) {
     Mat A2;
     PetscReal err,tol = PETSC_SMALL;
 
-    CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-tol",&tol,NULL));
-    CHKERRQ(MatConvert(A,etype,MAT_INITIAL_MATRIX,&A2));
-    CHKERRQ(MatAXPY(A2,-1.0,Ae,DIFFERENT_NONZERO_PATTERN));
-    CHKERRQ(MatNorm(A2,NORM_FROBENIUS,&err));
+    PetscCall(PetscOptionsGetReal(NULL,NULL,"-tol",&tol,NULL));
+    PetscCall(MatConvert(A,etype,MAT_INITIAL_MATRIX,&A2));
+    PetscCall(MatAXPY(A2,-1.0,Ae,DIFFERENT_NONZERO_PATTERN));
+    PetscCall(MatNorm(A2,NORM_FROBENIUS,&err));
     if (err > tol) {
-      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Error %g > %g (type %s)\n",(double)err,(double)tol,etype));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error %g > %g (type %s)\n",(double)err,(double)tol,etype));
     }
-    CHKERRQ(MatDestroy(&A2));
+    PetscCall(MatDestroy(&A2));
   }
 
-  CHKERRQ(MatComputeOperatorTranspose(A,etype,&Aet));
-  CHKERRQ(PetscObjectSetName((PetscObject)Aet,"Explicit matrix transpose"));
-  CHKERRQ(MatViewFromOptions(Aet,NULL,"-view_expl"));
+  PetscCall(MatComputeOperatorTranspose(A,etype,&Aet));
+  PetscCall(PetscObjectSetName((PetscObject)Aet,"Explicit matrix transpose"));
+  PetscCall(MatViewFromOptions(Aet,NULL,"-view_expl"));
 
-  CHKERRQ(PetscFree(etype));
-  CHKERRQ(MatDestroy(&Ae));
-  CHKERRQ(MatDestroy(&Aet));
-  CHKERRQ(MatDestroy(&A));
-  CHKERRQ(PetscFinalize());
+  PetscCall(PetscFree(etype));
+  PetscCall(MatDestroy(&Ae));
+  PetscCall(MatDestroy(&Aet));
+  PetscCall(MatDestroy(&A));
+  PetscCall(PetscFinalize());
   return 0;
 }
 
