@@ -13,7 +13,7 @@ int main(int argc,char **args)
 
   /* Construct 18 x 18 matrices, which are big enough to have complex communication patterns but still small enough for debugging */
   PetscInt i0[] = {7, 7, 8, 8,  9, 16, 17,  9, 10, 1, 1, -2, 2, 3, 3, 14, 4, 5, 10, 13,  9,  9, 10, 1, 0, 0, 5,   5, 6, 6, 13, 13, 14, -14, 4, 4, 5, 11, 11, 12, 15, 15, 16};
-  PetscInt j0[] = {1, 6, 2, 4, 10, 15, 13, 16, 11, 2, 7,  3, 8, 4, 9, 13, 5, 2, 15, 14, 10, 16, 11, 2, 0, 1, 6, -11, 0, 7, 15, 17, 11,  13, 5, 8, 2, 12, 17, 13,  3, 16,  9};
+  PetscInt j0[] = {1, 6, 2, 4, 10, 15, 13, 16, 11, 2, 7,  3, 8, 4, 9, 13, 5, 2, 15, 14, 10, 16, 11, 2, 0, 1, 5, -11, 0, 7, 15, 17, 11,  13, 4, 8, 2, 12, 17, 13,  3, 16,  9};
 
   PetscInt i1[] = {8, 5, 15, 16, 6, 13, 4, 17, 8,  9,  9, 10, -6, 12, 7, 3, -4, 1, 1, 2, 5, 5,  6, 14, 17, 8,  9,  9, 10, 4,  5, 10, 11, 1, 2};
   PetscInt j1[] = {2, 3, 16,  9, 5, 17, 1, 13, 4, 10, 16, 11, -5, 12, 1, 7, -1, 2, 7, 3, 6, 11, 0, 11, 13, 4, 10, 16, 11, 8, -2, 15, 12, 7, 3};
@@ -93,5 +93,13 @@ int main(int argc,char **args)
     test:
       suffix: aij
       args: -mat_type aij
+
+  testset:
+    # MATHYPRE does not support MAT_IGNORE_OFF_PROC_ENTRIES yet
+    output_file: output/ex254_1.out
+    nsize: {{1 2 3}}
+    suffix: hypre
+    requires: hypre kokkos_kernels
+    args: -ignore_remote 0 -mat_type hypre
 
 TEST*/
