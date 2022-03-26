@@ -1341,14 +1341,14 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
                                                       /* PCASMSetLocalSubdomains() has been called when -pc_hpddm_define_subdomains */
         if (!inner->setupcalled) { /* evaluates to PETSC_FALSE when -pc_hpddm_block_splitting */
           PetscCall(PCASMSetLocalSubdomains(inner, 1, is, &loc));
-          if (!data->Neumann) { /* subdomain matrices are already created for the eigenproblem, reuse them for the fine-level PC */
+          if (!data->Neumann && data->N > 1) { /* subdomain matrices are already created for the eigenproblem, reuse them for the fine-level PC */
             PetscCall(PCHPDDMPermute_Private(*is, NULL, NULL, sub[0], &C, NULL));
             PetscCall(PCHPDDMCommunicationAvoidingPCASM_Private(inner, C, algebraic));
             PetscCall(MatDestroy(&C));
           }
         }
       }
-      PetscCall(PCHPDDMDestroySubMatrices_Private(data->Neumann, PetscBool(algebraic && !block), sub));
+      if (data->N > 1) PetscCall(PCHPDDMDestroySubMatrices_Private(data->Neumann, PetscBool(algebraic && !block), sub));
     }
     PetscCall(ISDestroy(&loc));
   } else data->N = 1 + reused; /* enforce this value to 1 + reused if there is no way to build another level */
