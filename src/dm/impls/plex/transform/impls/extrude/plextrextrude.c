@@ -534,14 +534,12 @@ static PetscErrorCode DMPlexTransformMapCoordinates_Extrude(DMPlexTransform tr, 
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unable to determine normal for extrusion");
   if (ex->normalFunc) {
     PetscScalar n[3];
-    PetscReal   x[3];
+    PetscReal   x[3], dot;
 
-    for (d = 0; d < ex->cdim; ++d) {
-      x[d] = PetscRealPart(in[d]);
-      n[d] = normal[d];
-    }
+    for (d = 0; d < ex->cdim; ++d) x[d] = PetscRealPart(in[d]);
     PetscCall((*ex->normalFunc)(ex->cdim, 0., x, r, n, NULL));
-    for (d = 0; d < dEx; ++d) normal[d] = PetscRealPart(n[d]);
+    for (dot=0,d=0; d < dEx; d++) dot += PetscRealPart(n[d]) * normal[d];
+    for (d = 0; d < dEx; ++d) normal[d] = PetscSign(dot) * PetscRealPart(n[d]);
   }
 
   for (d = 0, norm = 0.0; d < dEx; ++d) norm += PetscSqr(normal[d]);
@@ -860,7 +858,7 @@ $ dim  - The coordinate dimension of the original mesh (usually a surface)
 $ time - The current time, or 0.
 $ x    - The location of the current normal, in the coordinate space of the original mesh
 $ r    - The extrusion replica number (layer number) of this point
-$ u    - On input, this holds the original normal, and the user provides the computed normal on output
+$ u    - The user provides the computed normal on output; the sign and magnitude is not significant
 $ ctx  - An optional user context
 
   Level: intermediate

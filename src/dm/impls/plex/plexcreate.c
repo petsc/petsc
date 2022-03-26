@@ -2,6 +2,7 @@
 #include <petsc/private/dmpleximpl.h>    /*I   "petscdmplex.h"   I*/
 #include <petsc/private/hashseti.h>          /*I   "petscdmplex.h"   I*/
 #include <petscsf.h>
+#include <petscdmplextransform.h>
 #include <petsc/private/kernels/blockmatmult.h>
 #include <petsc/private/kernels/blockinvert.h>
 
@@ -2199,6 +2200,14 @@ static void TPSEvaluate_SchwarzP(const PetscReal y[3], PetscReal *f, PetscReal g
   }
 }
 
+// u[] is a tentative normal on input. Replace with the implicit function gradient in the same direction
+static PetscErrorCode TPSExtrudeNormalFunc_SchwarzP(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt r, PetscScalar u[], void *ctx) {
+  for (PetscInt i=0; i<3; i++) {
+    u[i] = -PETSC_PI * PetscSinReal(x[i] * PETSC_PI);
+  }
+  return 0;
+}
+
 /*
  The Gyroid implicit surface is
 
@@ -2222,6 +2231,16 @@ static void TPSEvaluate_Gyroid(const PetscReal y[3], PetscReal *f, PetscReal gra
   hess[2][0] = -PetscSqr(PETSC_PI) * (s[2] * c[0] + s[1] * c[2]);
   hess[2][1] = -PetscSqr(PETSC_PI) * (c[2] * s[0]);
   hess[2][2] = -PetscSqr(PETSC_PI) * (c[1] * s[2]);
+}
+
+// u[] is a tentative normal on input. Replace with the implicit function gradient in the same direction
+static PetscErrorCode TPSExtrudeNormalFunc_Gyroid(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt r, PetscScalar u[], void *ctx) {
+  PetscReal s[3] = {PetscSinReal(PETSC_PI * x[0]), PetscSinReal(PETSC_PI * (x[1] + .5)), PetscSinReal(PETSC_PI * (x[2] + .25))};
+  PetscReal c[3] = {PetscCosReal(PETSC_PI * x[0]), PetscCosReal(PETSC_PI * (x[1] + .5)), PetscCosReal(PETSC_PI * (x[2] + .25))};
+  u[0] = PETSC_PI * (c[0] * c[1] - s[2] * s[0]);
+  u[1] = PETSC_PI * (c[1] * c[2] - s[0] * s[1]);
+  u[2] = PETSC_PI * (c[2] * c[0] - s[1] * s[2]);
+  return 0;
 }
 
 /*
@@ -2327,6 +2346,7 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
   PetscInt *cells_flat = NULL;
   PetscReal *vtxCoords = NULL;
   TPSEvaluateFunc evalFunc = NULL;
+  PetscSimplePointFunc normalFunc = NULL;
   DMLabel label;
 
   PetscFunctionBegin;
@@ -2451,6 +2471,7 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
       cells_flat = cells[0][0][0];
     }
     evalFunc = TPSEvaluate_SchwarzP;
+    normalFunc = TPSExtrudeNormalFunc_SchwarzP;
     break;
   case DMPLEX_TPS_GYROID:
     if (!rank) {
@@ -2703,6 +2724,7 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
       }
     }
     evalFunc = TPSEvaluate_Gyroid;
+    normalFunc = TPSExtrudeNormalFunc_Gyroid;
     break;
   }
 
@@ -2768,9 +2790,39 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
   PetscCall(DMPlexLabelComplete(dm, label));
 
   if (thickness > 0) {
-    DM dm3;
-    PetscCall(DMPlexExtrude(dm, layers, thickness, PETSC_FALSE, PETSC_TRUE, NULL, NULL, &dm3));
-    PetscCall(DMPlexReplace_Static(dm, &dm3));
+    DM edm,cdm,ecdm;
+    DMPlexTransform tr;
+    const char *prefix;
+    PetscOptions options;
+    // Code from DMPlexExtrude
+    PetscCall(DMPlexTransformCreate(PetscObjectComm((PetscObject)dm), &tr));
+    PetscCall(DMPlexTransformSetDM(tr, dm));
+    PetscCall(DMPlexTransformSetType(tr, DMPLEXEXTRUDE));
+    PetscCall(PetscObjectGetOptionsPrefix((PetscObject) dm, &prefix));
+    PetscCall(PetscObjectSetOptionsPrefix((PetscObject) tr,  prefix));
+    PetscCall(PetscObjectGetOptions((PetscObject) dm, &options));
+    PetscCall(PetscObjectSetOptions((PetscObject) tr, options));
+    PetscCall(DMPlexTransformExtrudeSetLayers(tr, layers));
+    PetscCall(DMPlexTransformExtrudeSetThickness(tr, thickness));
+    PetscCall(DMPlexTransformExtrudeSetTensor(tr, PETSC_FALSE));
+    PetscCall(DMPlexTransformExtrudeSetSymmetric(tr, PETSC_TRUE));
+    PetscCall(DMPlexTransformExtrudeSetNormalFunction(tr, normalFunc));
+    PetscCall(DMPlexTransformSetFromOptions(tr));
+    PetscCall(PetscObjectSetOptions((PetscObject) tr, NULL));
+    PetscCall(DMPlexTransformSetUp(tr));
+    PetscCall(PetscObjectViewFromOptions((PetscObject) tr, NULL, "-dm_plex_tps_transform_view"));
+    PetscCall(DMPlexTransformApply(tr, dm, &edm));
+    PetscCall(DMCopyDisc(dm, edm));
+    PetscCall(DMGetCoordinateDM(dm, &cdm));
+    PetscCall(DMGetCoordinateDM(edm, &ecdm));
+    PetscCall(DMCopyDisc(cdm, ecdm));
+    PetscCall(DMPlexTransformCreateDiscLabels(tr, edm));
+    PetscCall(DMPlexTransformDestroy(&tr));
+    if (edm) {
+      ((DM_Plex *)edm->data)->printFEM = ((DM_Plex *)dm->data)->printFEM;
+      ((DM_Plex *)edm->data)->printL2  = ((DM_Plex *)dm->data)->printL2;
+    }
+    PetscCall(DMPlexReplace_Static(dm, &edm));
   }
   PetscFunctionReturn(0);
 }
