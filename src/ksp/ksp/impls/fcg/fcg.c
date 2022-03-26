@@ -14,7 +14,6 @@ extern PetscErrorCode KSPComputeEigenvalues_CG(KSP,PetscInt,PetscReal*,PetscReal
 
 static PetscErrorCode KSPAllocateVectors_FCG(KSP ksp, PetscInt nvecsneeded, PetscInt chunksize)
 {
-  PetscErrorCode  ierr;
   PetscInt        i;
   KSP_FCG         *fcg = (KSP_FCG*)ksp->data;
   PetscInt        nnewvecs, nvecsprev;
@@ -24,10 +23,10 @@ static PetscErrorCode KSPAllocateVectors_FCG(KSP ksp, PetscInt nvecsneeded, Pets
   if (fcg->nvecs < PetscMin(fcg->mmax+1,nvecsneeded)) {
     nvecsprev = fcg->nvecs;
     nnewvecs = PetscMin(PetscMax(nvecsneeded-fcg->nvecs,chunksize),fcg->mmax+1-fcg->nvecs);
-    ierr = KSPCreateVecs(ksp,nnewvecs,&fcg->pCvecs[fcg->nchunks],0,NULL);CHKERRQ(ierr);
-    ierr = PetscLogObjectParents((PetscObject)ksp,nnewvecs,fcg->pCvecs[fcg->nchunks]);CHKERRQ(ierr);
-    ierr = KSPCreateVecs(ksp,nnewvecs,&fcg->pPvecs[fcg->nchunks],0,NULL);CHKERRQ(ierr);
-    ierr = PetscLogObjectParents((PetscObject)ksp,nnewvecs,fcg->pPvecs[fcg->nchunks]);CHKERRQ(ierr);
+    PetscCall(KSPCreateVecs(ksp,nnewvecs,&fcg->pCvecs[fcg->nchunks],0,NULL));
+    PetscCall(PetscLogObjectParents((PetscObject)ksp,nnewvecs,fcg->pCvecs[fcg->nchunks]));
+    PetscCall(KSPCreateVecs(ksp,nnewvecs,&fcg->pPvecs[fcg->nchunks],0,NULL));
+    PetscCall(PetscLogObjectParents((PetscObject)ksp,nnewvecs,fcg->pPvecs[fcg->nchunks]));
     fcg->nvecs += nnewvecs;
     for (i=0;i<nnewvecs;++i) {
       fcg->Cvecs[nvecsprev + i] = fcg->pCvecs[fcg->nchunks][i];
@@ -41,7 +40,6 @@ static PetscErrorCode KSPAllocateVectors_FCG(KSP ksp, PetscInt nvecsneeded, Pets
 
 static PetscErrorCode    KSPSetUp_FCG(KSP ksp)
 {
-  PetscErrorCode ierr;
   KSP_FCG        *fcg = (KSP_FCG*)ksp->data;
   PetscInt       maxit = ksp->max_it;
   const PetscInt nworkstd = 2;
@@ -49,29 +47,29 @@ static PetscErrorCode    KSPSetUp_FCG(KSP ksp)
   PetscFunctionBegin;
 
   /* Allocate "standard" work vectors (not including the basis and transformed basis vectors) */
-  ierr = KSPSetWorkVecs(ksp,nworkstd);CHKERRQ(ierr);
+  PetscCall(KSPSetWorkVecs(ksp,nworkstd));
 
   /* Allocated space for pointers to additional work vectors
    note that mmax is the number of previous directions, so we add 1 for the current direction,
    and an extra 1 for the prealloc (which might be empty) */
-  ierr = PetscMalloc5(fcg->mmax+1,&fcg->Pvecs,fcg->mmax+1,&fcg->Cvecs,fcg->mmax+1,&fcg->pPvecs,fcg->mmax+1,&fcg->pCvecs,fcg->mmax+2,&fcg->chunksizes);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory((PetscObject)ksp,2*(fcg->mmax+1)*sizeof(Vec*) + 2*(fcg->mmax + 1)*sizeof(Vec**) + (fcg->mmax + 2)*sizeof(PetscInt));CHKERRQ(ierr);
+  PetscCall(PetscMalloc5(fcg->mmax+1,&fcg->Pvecs,fcg->mmax+1,&fcg->Cvecs,fcg->mmax+1,&fcg->pPvecs,fcg->mmax+1,&fcg->pCvecs,fcg->mmax+2,&fcg->chunksizes));
+  PetscCall(PetscLogObjectMemory((PetscObject)ksp,2*(fcg->mmax+1)*sizeof(Vec*) + 2*(fcg->mmax + 1)*sizeof(Vec**) + (fcg->mmax + 2)*sizeof(PetscInt)));
 
   /* If the requested number of preallocated vectors is greater than mmax reduce nprealloc */
   if (fcg->nprealloc > fcg->mmax+1) {
-    ierr = PetscInfo(NULL,"Requested nprealloc=%d is greater than m_max+1=%d. Resetting nprealloc = m_max+1.\n",fcg->nprealloc, fcg->mmax+1);CHKERRQ(ierr);
+    PetscCall(PetscInfo(NULL,"Requested nprealloc=%d is greater than m_max+1=%d. Resetting nprealloc = m_max+1.\n",fcg->nprealloc, fcg->mmax+1));
   }
 
   /* Preallocate additional work vectors */
-  ierr = KSPAllocateVectors_FCG(ksp,fcg->nprealloc,fcg->nprealloc);CHKERRQ(ierr);
+  PetscCall(KSPAllocateVectors_FCG(ksp,fcg->nprealloc,fcg->nprealloc));
   /*
   If user requested computations of eigenvalues then allocate work
   work space needed
   */
   if (ksp->calc_sings) {
     /* get space to store tridiagonal matrix for Lanczos */
-    ierr = PetscMalloc4(maxit,&fcg->e,maxit,&fcg->d,maxit,&fcg->ee,maxit,&fcg->dd);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory((PetscObject)ksp,2*(maxit+1)*(sizeof(PetscScalar)+sizeof(PetscReal)));CHKERRQ(ierr);
+    PetscCall(PetscMalloc4(maxit,&fcg->e,maxit,&fcg->d,maxit,&fcg->ee,maxit,&fcg->dd));
+    PetscCall(PetscLogObjectMemory((PetscObject)ksp,2*(maxit+1)*(sizeof(PetscScalar)+sizeof(PetscReal))));
 
     ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_CG;
     ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_CG;
@@ -81,7 +79,6 @@ static PetscErrorCode    KSPSetUp_FCG(KSP ksp)
 
 static PetscErrorCode KSPSolve_FCG(KSP ksp)
 {
-  PetscErrorCode ierr;
   PetscInt       i,k,idx,mi;
   KSP_FCG        *fcg = (KSP_FCG*)ksp->data;
   PetscScalar    alpha=0.0,beta = 0.0,dpi,s;
@@ -102,29 +99,29 @@ static PetscErrorCode KSPSolve_FCG(KSP ksp)
   R             = ksp->work[0];
   Z             = ksp->work[1];
 
-  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
+  PetscCall(PCGetOperators(ksp->pc,&Amat,&Pmat));
   if (eigs) {e = fcg->e; d = fcg->d; e[0] = 0.0; }
   /* Compute initial residual needed for convergence check*/
   ksp->its = 0;
   if (!ksp->guess_zero) {
-    ierr = KSP_MatMult(ksp,Amat,X,R);CHKERRQ(ierr);
-    ierr = VecAYPX(R,-1.0,B);CHKERRQ(ierr);                    /*   r <- b - Ax     */
+    PetscCall(KSP_MatMult(ksp,Amat,X,R));
+    PetscCall(VecAYPX(R,-1.0,B));                    /*   r <- b - Ax     */
   } else {
-    ierr = VecCopy(B,R);CHKERRQ(ierr);                         /*   r <- b (x is 0) */
+    PetscCall(VecCopy(B,R));                         /*   r <- b (x is 0) */
   }
   switch (ksp->normtype) {
     case KSP_NORM_PRECONDITIONED:
-      ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);               /*   z <- Br         */
-      ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr);              /*   dp <- dqrt(z'*z) = sqrt(e'*A'*B'*B*A*e)     */
+      PetscCall(KSP_PCApply(ksp,R,Z));               /*   z <- Br         */
+      PetscCall(VecNorm(Z,NORM_2,&dp));              /*   dp <- dqrt(z'*z) = sqrt(e'*A'*B'*B*A*e)     */
       KSPCheckNorm(ksp,dp);
       break;
     case KSP_NORM_UNPRECONDITIONED:
-      ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);              /*   dp <- sqrt(r'*r) = sqrt(e'*A'*A*e)     */
+      PetscCall(VecNorm(R,NORM_2,&dp));              /*   dp <- sqrt(r'*r) = sqrt(e'*A'*A*e)     */
       KSPCheckNorm(ksp,dp);
       break;
     case KSP_NORM_NATURAL:
-      ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);               /*   z <- Br         */
-      ierr = VecXDot(R,Z,&s);CHKERRQ(ierr);
+      PetscCall(KSP_PCApply(ksp,R,Z));               /*   z <- Br         */
+      PetscCall(VecXDot(R,Z,&s));
       KSPCheckDot(ksp,s);
       dp = PetscSqrtReal(PetscAbsScalar(s));                   /*   dp <- sqrt(r'*z) = sqrt(e'*A'*B*A*e)  */
       break;
@@ -135,19 +132,19 @@ static PetscErrorCode KSPSolve_FCG(KSP ksp)
   }
 
   /* Initial Convergence Check */
-  ierr       = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
-  ierr       = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
+  PetscCall(KSPLogResidualHistory(ksp,dp));
+  PetscCall(KSPMonitor(ksp,0,dp));
   ksp->rnorm = dp;
   if (ksp->normtype == KSP_NORM_NONE) {
-    ierr = KSPConvergedSkip(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+    PetscCall(KSPConvergedSkip(ksp,0,dp,&ksp->reason,ksp->cnvP));
   } else {
-    ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+    PetscCall((*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP));
   }
   if (ksp->reason) PetscFunctionReturn(0);
 
   /* Apply PC if not already done for convergence check */
   if (ksp->normtype == KSP_NORM_UNPRECONDITIONED || ksp->normtype == KSP_NORM_NONE) {
-    ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);               /*   z <- Br         */
+    PetscCall(KSP_PCApply(ksp,R,Z));               /*   z <- Br         */
   }
 
   i = 0;
@@ -155,7 +152,7 @@ static PetscErrorCode KSPSolve_FCG(KSP ksp)
     ksp->its = i+1;
 
     /*  If needbe, allocate a new chunk of vectors in P and C */
-    ierr = KSPAllocateVectors_FCG(ksp,i+1,fcg->vecb);CHKERRQ(ierr);
+    PetscCall(KSPAllocateVectors_FCG(ksp,i+1,fcg->vecb));
 
     /* Note that we wrap around and start clobbering old vectors */
     idx = i % (fcg->mmax+1);
@@ -175,7 +172,7 @@ static PetscErrorCode KSPSolve_FCG(KSP ksp)
     }
 
     /* Compute a new column of P (Currently does not support modified G-S or iterative refinement)*/
-    ierr = VecCopy(Z,Pcurr);CHKERRQ(ierr);
+    PetscCall(VecCopy(Z,Pcurr));
 
     {
       PetscInt l,ndots;
@@ -187,46 +184,46 @@ static PetscErrorCode KSPSolve_FCG(KSP ksp)
         Vec         *Pold,  *Cold;
         PetscScalar *dots;
 
-        ierr = PetscMalloc3(ndots,&dots,ndots,&Cold,ndots,&Pold);CHKERRQ(ierr);
+        PetscCall(PetscMalloc3(ndots,&dots,ndots,&Cold,ndots,&Pold));
         for (k=l,j=0;j<ndots;++k,++j) {
           idx = k % (fcg->mmax+1);
           Cold[j] = fcg->Cvecs[idx];
           Pold[j] = fcg->Pvecs[idx];
         }
-        ierr = VecXMDot(Z,ndots,Cold,dots);CHKERRQ(ierr);
+        PetscCall(VecXMDot(Z,ndots,Cold,dots));
         for (k=0;k<ndots;++k) {
           dots[k] = -dots[k];
         }
-        ierr = VecMAXPY(Pcurr,ndots,dots,Pold);CHKERRQ(ierr);
-        ierr = PetscFree3(dots,Cold,Pold);CHKERRQ(ierr);
+        PetscCall(VecMAXPY(Pcurr,ndots,dots,Pold));
+        PetscCall(PetscFree3(dots,Cold,Pold));
       }
     }
 
     /* Update X and R */
     betaold = beta;
-    ierr = VecXDot(Pcurr,R,&beta);CHKERRQ(ierr);                 /*  beta <- pi'*r       */
+    PetscCall(VecXDot(Pcurr,R,&beta));                 /*  beta <- pi'*r       */
     KSPCheckDot(ksp,beta);
-    ierr = KSP_MatMult(ksp,Amat,Pcurr,Ccurr);CHKERRQ(ierr);      /*  w <- A*pi (stored in ci)   */
-    ierr = VecXDot(Pcurr,Ccurr,&dpi);CHKERRQ(ierr);              /*  dpi <- pi'*w        */
+    PetscCall(KSP_MatMult(ksp,Amat,Pcurr,Ccurr));      /*  w <- A*pi (stored in ci)   */
+    PetscCall(VecXDot(Pcurr,Ccurr,&dpi));              /*  dpi <- pi'*w        */
     alphaold = alpha;
     alpha = beta / dpi;                                          /*  alpha <- beta/dpi    */
-    ierr = VecAXPY(X,alpha,Pcurr);CHKERRQ(ierr);                 /*  x <- x + alpha * pi  */
-    ierr = VecAXPY(R,-alpha,Ccurr);CHKERRQ(ierr);                /*  r <- r - alpha * wi  */
+    PetscCall(VecAXPY(X,alpha,Pcurr));                 /*  x <- x + alpha * pi  */
+    PetscCall(VecAXPY(R,-alpha,Ccurr));                /*  r <- r - alpha * wi  */
 
     /* Compute norm for convergence check */
     switch (ksp->normtype) {
       case KSP_NORM_PRECONDITIONED:
-        ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);               /*   z <- Br             */
-        ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr);              /*   dp <- sqrt(z'*z) = sqrt(e'*A'*B'*B*A*e)  */
+        PetscCall(KSP_PCApply(ksp,R,Z));               /*   z <- Br             */
+        PetscCall(VecNorm(Z,NORM_2,&dp));              /*   dp <- sqrt(z'*z) = sqrt(e'*A'*B'*B*A*e)  */
         KSPCheckNorm(ksp,dp);
       break;
       case KSP_NORM_UNPRECONDITIONED:
-        ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);              /*   dp <- sqrt(r'*r) = sqrt(e'*A'*A*e)   */
+        PetscCall(VecNorm(R,NORM_2,&dp));              /*   dp <- sqrt(r'*r) = sqrt(e'*A'*A*e)   */
         KSPCheckNorm(ksp,dp);
         break;
       case KSP_NORM_NATURAL:
-        ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);               /*   z <- Br             */
-        ierr = VecXDot(R,Z,&s);CHKERRQ(ierr);
+        PetscCall(KSP_PCApply(ksp,R,Z));               /*   z <- Br             */
+        PetscCall(VecXDot(R,Z,&s));
         KSPCheckDot(ksp,s);
         dp = PetscSqrtReal(PetscAbsScalar(s));                   /*   dp <- sqrt(r'*z) = sqrt(e'*A'*B*A*e)  */
         break;
@@ -238,18 +235,18 @@ static PetscErrorCode KSPSolve_FCG(KSP ksp)
 
     /* Check for convergence */
     ksp->rnorm = dp;
-    ierr = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
-    ierr = KSPMonitor(ksp,i+1,dp);CHKERRQ(ierr);
-    ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+    PetscCall(KSPLogResidualHistory(ksp,dp));
+    PetscCall(KSPMonitor(ksp,i+1,dp));
+    PetscCall((*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP));
     if (ksp->reason) break;
 
     /* Apply PC if not already done for convergence check */
     if (ksp->normtype == KSP_NORM_UNPRECONDITIONED || ksp->normtype == KSP_NORM_NONE) {
-      ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);               /*   z <- Br         */
+      PetscCall(KSP_PCApply(ksp,R,Z));               /*   z <- Br         */
     }
 
     /* Compute current C (which is W/dpi) */
-    ierr = VecScale(Ccurr,1.0/dpi);CHKERRQ(ierr);              /*   w <- ci/dpi   */
+    PetscCall(VecScale(Ccurr,1.0/dpi));              /*   w <- ci/dpi   */
 
     if (eigs) {
       if (i > 0) {
@@ -269,7 +266,6 @@ static PetscErrorCode KSPSolve_FCG(KSP ksp)
 
 static PetscErrorCode KSPDestroy_FCG(KSP ksp)
 {
-  PetscErrorCode ierr;
   PetscInt       i;
   KSP_FCG        *fcg = (KSP_FCG*)ksp->data;
 
@@ -281,40 +277,39 @@ static PetscErrorCode KSPDestroy_FCG(KSP ksp)
   /* Destroy P and C vectors and the arrays that manage pointers to them */
   if (fcg->nvecs) {
     for (i=0;i<fcg->nchunks;++i) {
-      ierr = VecDestroyVecs(fcg->chunksizes[i],&fcg->pPvecs[i]);CHKERRQ(ierr);
-      ierr = VecDestroyVecs(fcg->chunksizes[i],&fcg->pCvecs[i]);CHKERRQ(ierr);
+      PetscCall(VecDestroyVecs(fcg->chunksizes[i],&fcg->pPvecs[i]));
+      PetscCall(VecDestroyVecs(fcg->chunksizes[i],&fcg->pCvecs[i]));
     }
   }
-  ierr = PetscFree5(fcg->Pvecs,fcg->Cvecs,fcg->pPvecs,fcg->pCvecs,fcg->chunksizes);CHKERRQ(ierr);
+  PetscCall(PetscFree5(fcg->Pvecs,fcg->Cvecs,fcg->pPvecs,fcg->pCvecs,fcg->chunksizes));
   /* free space used for singular value calculations */
   if (ksp->calc_sings) {
-    ierr = PetscFree4(fcg->e,fcg->d,fcg->ee,fcg->dd);CHKERRQ(ierr);
+    PetscCall(PetscFree4(fcg->e,fcg->d,fcg->ee,fcg->dd));
   }
-  ierr = KSPDestroyDefault(ksp);CHKERRQ(ierr);
+  PetscCall(KSPDestroyDefault(ksp));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode KSPView_FCG(KSP ksp,PetscViewer viewer)
 {
   KSP_FCG        *fcg = (KSP_FCG*)ksp->data;
-  PetscErrorCode ierr;
   PetscBool      iascii,isstring;
   const char     *truncstr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring));
 
   if (fcg->truncstrat == KSP_FCD_TRUNC_TYPE_STANDARD) truncstr = "Using standard truncation strategy";
   else if (fcg->truncstrat == KSP_FCD_TRUNC_TYPE_NOTAY) truncstr = "Using Notay's truncation strategy";
   else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Undefined FCG truncation strategy");
 
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  m_max=%D\n",fcg->mmax);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  preallocated %D directions\n",PetscMin(fcg->nprealloc,fcg->mmax+1));CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  %s\n",truncstr);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  m_max=%D\n",fcg->mmax));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  preallocated %D directions\n",PetscMin(fcg->nprealloc,fcg->mmax+1)));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  %s\n",truncstr));
   } else if (isstring) {
-    ierr = PetscViewerStringSPrintf(viewer,"m_max %D nprealloc %D %s",fcg->mmax,fcg->nprealloc,truncstr);CHKERRQ(ierr);
+    PetscCall(PetscViewerStringSPrintf(viewer,"m_max %D nprealloc %D %s",fcg->mmax,fcg->nprealloc,truncstr));
   }
   PetscFunctionReturn(0);
 }
@@ -485,23 +480,22 @@ PetscErrorCode KSPFCGGetTruncationType(KSP ksp,KSPFCDTruncationType *truncstrat)
 
 static PetscErrorCode KSPSetFromOptions_FCG(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
-  PetscErrorCode ierr;
   KSP_FCG        *fcg=(KSP_FCG*)ksp->data;
   PetscInt       mmax,nprealloc;
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"KSP FCG Options");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-ksp_fcg_mmax","Maximum number of search directions to store","KSPFCGSetMmax",fcg->mmax,&mmax,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"KSP FCG Options"));
+  PetscCall(PetscOptionsInt("-ksp_fcg_mmax","Maximum number of search directions to store","KSPFCGSetMmax",fcg->mmax,&mmax,&flg));
   if (flg) {
-    ierr = KSPFCGSetMmax(ksp,mmax);CHKERRQ(ierr);
+    PetscCall(KSPFCGSetMmax(ksp,mmax));
   }
-  ierr = PetscOptionsInt("-ksp_fcg_nprealloc","Number of directions to preallocate","KSPFCGSetNprealloc",fcg->nprealloc,&nprealloc,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-ksp_fcg_nprealloc","Number of directions to preallocate","KSPFCGSetNprealloc",fcg->nprealloc,&nprealloc,&flg));
   if (flg) {
-    ierr = KSPFCGSetNprealloc(ksp,nprealloc);CHKERRQ(ierr);
+    PetscCall(KSPFCGSetNprealloc(ksp,nprealloc));
   }
-  ierr = PetscOptionsEnum("-ksp_fcg_truncation_type","Truncation approach for directions","KSPFCGSetTruncationType",KSPFCDTruncationTypes,(PetscEnum)fcg->truncstrat,(PetscEnum*)&fcg->truncstrat,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscCall(PetscOptionsEnum("-ksp_fcg_truncation_type","Truncation approach for directions","KSPFCGSetTruncationType",KSPFCDTruncationTypes,(PetscEnum)fcg->truncstrat,(PetscEnum*)&fcg->truncstrat,NULL));
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -530,11 +524,10 @@ static PetscErrorCode KSPSetFromOptions_FCG(PetscOptionItems *PetscOptionsObject
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_FCG(KSP ksp)
 {
-  PetscErrorCode ierr;
   KSP_FCG        *fcg;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(ksp,&fcg);CHKERRQ(ierr);
+  PetscCall(PetscNewLog(ksp,&fcg));
 #if !defined(PETSC_USE_COMPLEX)
   fcg->type       = KSP_CG_SYMMETRIC;
 #else
@@ -549,10 +542,10 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FCG(KSP ksp)
 
   ksp->data = (void*)fcg;
 
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,1);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,1);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,1));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,1));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1));
 
   ksp->ops->setup          = KSPSetUp_FCG;
   ksp->ops->solve          = KSPSolve_FCG;

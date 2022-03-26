@@ -24,34 +24,33 @@ PetscErrorCode Assemble(MPI_Comm comm,PetscInt bs,MatType mtype)
   PetscBool         issbaij;
 #endif
   PetscViewer       viewer;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = MatCreate(comm,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,4*bs,4*bs);CHKERRQ(ierr);
-  ierr = MatSetType(A,mtype);CHKERRQ(ierr);
-  ierr = MatMPIBAIJSetPreallocation(A,bs,2,NULL,2,NULL);CHKERRQ(ierr);
-  ierr = MatMPISBAIJSetPreallocation(A,bs,2,NULL,2,NULL);CHKERRQ(ierr);
-  ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  PetscCall(MatCreate(comm,&A));
+  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,4*bs,4*bs));
+  PetscCall(MatSetType(A,mtype));
+  PetscCall(MatMPIBAIJSetPreallocation(A,bs,2,NULL,2,NULL));
+  PetscCall(MatMPISBAIJSetPreallocation(A,bs,2,NULL,2,NULL));
+  PetscCall(MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE));
   /* All processes contribute a global matrix */
-  ierr = MatSetValuesBlocked(A,4,rc,4,rc,vals,ADD_VALUES);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"Matrix %s(%" PetscInt_FMT ")\n",mtype,bs);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIGetStdout(comm,&viewer);CHKERRQ(ierr);
-  ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_INFO_DETAIL);CHKERRQ(ierr);
-  ierr = MatView(A,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-  ierr = MatView(A,viewer);CHKERRQ(ierr);
+  PetscCall(MatSetValuesBlocked(A,4,rc,4,rc,vals,ADD_VALUES));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(PetscPrintf(comm,"Matrix %s(%" PetscInt_FMT ")\n",mtype,bs));
+  PetscCall(PetscViewerASCIIGetStdout(comm,&viewer));
+  PetscCall(PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_INFO_DETAIL));
+  PetscCall(MatView(A,viewer));
+  PetscCall(PetscViewerPopFormat(viewer));
+  PetscCall(MatView(A,viewer));
 #if defined(PETSC_HAVE_MUMPS) || defined(PETSC_HAVE_MKL_CPARDISO)
-  ierr = PetscStrcmp(mtype,MATMPISBAIJ,&issbaij);CHKERRQ(ierr);
+  PetscCall(PetscStrcmp(mtype,MATMPISBAIJ,&issbaij));
   if (!issbaij) {
-    ierr = MatShift(A,10);CHKERRQ(ierr);
+    PetscCall(MatShift(A,10));
   }
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rdm);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
-  ierr = MatCreateVecs(A,&x,&y);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
+  PetscCall(PetscRandomCreate(PETSC_COMM_WORLD,&rdm));
+  PetscCall(PetscRandomSetFromOptions(rdm));
+  PetscCall(MatCreateVecs(A,&x,&y));
+  PetscCall(VecDuplicate(x,&b));
   for (j=0; j<2; j++) {
 #if defined(PETSC_HAVE_MUMPS)
     if (j==0) stype = MATSOLVERMUMPS;
@@ -64,52 +63,51 @@ PetscErrorCode Assemble(MPI_Comm comm,PetscInt bs,MatType mtype)
     if (j==1) continue;
 #endif
     if (issbaij) {
-      ierr = MatGetFactor(A,stype,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
-      ierr = MatCholeskyFactorSymbolic(F,A,NULL,NULL);CHKERRQ(ierr);
-      ierr = MatCholeskyFactorNumeric(F,A,NULL);CHKERRQ(ierr);
+      PetscCall(MatGetFactor(A,stype,MAT_FACTOR_CHOLESKY,&F));
+      PetscCall(MatCholeskyFactorSymbolic(F,A,NULL,NULL));
+      PetscCall(MatCholeskyFactorNumeric(F,A,NULL));
     } else {
-      ierr = MatGetFactor(A,stype,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
-      ierr = MatLUFactorSymbolic(F,A,NULL,NULL,NULL);CHKERRQ(ierr);
-      ierr = MatLUFactorNumeric(F,A,NULL);CHKERRQ(ierr);
+      PetscCall(MatGetFactor(A,stype,MAT_FACTOR_LU,&F));
+      PetscCall(MatLUFactorSymbolic(F,A,NULL,NULL,NULL));
+      PetscCall(MatLUFactorNumeric(F,A,NULL));
     }
     for (i=0; i<10; i++) {
-      ierr = VecSetRandom(b,rdm);CHKERRQ(ierr);
-      ierr = MatSolve(F,b,y);CHKERRQ(ierr);
+      PetscCall(VecSetRandom(b,rdm));
+      PetscCall(MatSolve(F,b,y));
       /* Check the error */
-      ierr = MatMult(A,y,x);CHKERRQ(ierr);
-      ierr = VecAXPY(x,-1.0,b);CHKERRQ(ierr);
-      ierr = VecNorm(x,NORM_2,&norm2);CHKERRQ(ierr);
+      PetscCall(MatMult(A,y,x));
+      PetscCall(VecAXPY(x,-1.0,b));
+      PetscCall(VecNorm(x,NORM_2,&norm2));
       if (norm2>tol) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"Error:MatSolve(), norm2: %g\n",(double)norm2);CHKERRQ(ierr);
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error:MatSolve(), norm2: %g\n",(double)norm2));
       }
     }
-    ierr = MatDestroy(&F);CHKERRQ(ierr);
+    PetscCall(MatDestroy(&F));
   }
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&y));
+  PetscCall(VecDestroy(&b));
+  PetscCall(PetscRandomDestroy(&rdm));
 #endif
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  PetscCall(MatDestroy(&A));
   PetscFunctionReturn(0);
 }
 
 int main(int argc,char *argv[])
 {
-  PetscErrorCode ierr;
   MPI_Comm       comm;
   PetscMPIInt    size;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   comm = PETSC_COMM_WORLD;
-  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_size(comm,&size));
   PetscCheckFalse(size != 2,comm,PETSC_ERR_USER,"This example must be run with exactly two processes");
-  ierr = Assemble(comm,2,MATMPIBAIJ);CHKERRQ(ierr);
-  ierr = Assemble(comm,2,MATMPISBAIJ);CHKERRQ(ierr);
-  ierr = Assemble(comm,1,MATMPIBAIJ);CHKERRQ(ierr);
-  ierr = Assemble(comm,1,MATMPISBAIJ);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(Assemble(comm,2,MATMPIBAIJ));
+  PetscCall(Assemble(comm,2,MATMPISBAIJ));
+  PetscCall(Assemble(comm,1,MATMPIBAIJ));
+  PetscCall(Assemble(comm,1,MATMPISBAIJ));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

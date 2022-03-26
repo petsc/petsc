@@ -40,12 +40,11 @@ static PetscErrorCode PCSetUp_ROWSCALINGVIENNACL(PC pc)
 {
   PC_ROWSCALINGVIENNACL  *rowscaling = (PC_ROWSCALINGVIENNACL*)pc->data;
   PetscBool              flg = PETSC_FALSE;
-  PetscErrorCode         ierr;
   Mat_SeqAIJViennaCL     *gpustruct;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATSEQAIJVIENNACL,&flg);CHKERRQ(ierr);
-  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Currently only handles ViennaCL matrices");
+  PetscCall(PetscObjectTypeCompare((PetscObject)pc->pmat,MATSEQAIJVIENNACL,&flg));
+  PetscCheck(flg,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Currently only handles ViennaCL matrices");
   if (pc->setupcalled != 0) {
     try {
       delete rowscaling->ROWSCALINGVIENNACL;
@@ -58,7 +57,7 @@ static PetscErrorCode PCSetUp_ROWSCALINGVIENNACL(PC pc)
     gpustruct = NULL;
     SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"No support for complex arithmetic in ROWSCALINGVIENNACL preconditioner");
 #else
-    ierr      = MatViennaCLCopyToGPU(pc->pmat);CHKERRQ(ierr);
+    PetscCall(MatViennaCLCopyToGPU(pc->pmat));
     gpustruct = (Mat_SeqAIJViennaCL*)(pc->pmat->spptr);
 
     viennacl::linalg::row_scaling_tag pc_tag(1);
@@ -87,22 +86,21 @@ static PetscErrorCode PCSetUp_ROWSCALINGVIENNACL(PC pc)
 static PetscErrorCode PCApply_ROWSCALINGVIENNACL(PC pc,Vec x,Vec y)
 {
   PC_ROWSCALINGVIENNACL         *ilu = (PC_ROWSCALINGVIENNACL*)pc->data;
-  PetscErrorCode                ierr;
   PetscBool                     flg1,flg2;
   viennacl::vector<PetscScalar> const *xarray=NULL;
   viennacl::vector<PetscScalar> *yarray=NULL;
 
   PetscFunctionBegin;
   /*how to apply a certain fixed number of iterations?*/
-  ierr = PetscObjectTypeCompare((PetscObject)x,VECSEQVIENNACL,&flg1);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)y,VECSEQVIENNACL,&flg2);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)x,VECSEQVIENNACL,&flg1));
+  PetscCall(PetscObjectTypeCompare((PetscObject)y,VECSEQVIENNACL,&flg2));
   PetscCheckFalse(!(flg1 && flg2),PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP, "Currently only handles ViennaCL vectors");
   if (!ilu->ROWSCALINGVIENNACL) {
-    ierr = PCSetUp_ROWSCALINGVIENNACL(pc);CHKERRQ(ierr);
+    PetscCall(PCSetUp_ROWSCALINGVIENNACL(pc));
   }
-  ierr = VecSet(y,0.0);CHKERRQ(ierr);
-  ierr = VecViennaCLGetArrayRead(x,&xarray);CHKERRQ(ierr);
-  ierr = VecViennaCLGetArrayWrite(y,&yarray);CHKERRQ(ierr);
+  PetscCall(VecSet(y,0.0));
+  PetscCall(VecViennaCLGetArrayRead(x,&xarray));
+  PetscCall(VecViennaCLGetArrayWrite(y,&yarray));
   try {
 #if defined(PETSC_USE_COMPLEX)
 
@@ -113,9 +111,9 @@ static PetscErrorCode PCApply_ROWSCALINGVIENNACL(PC pc,Vec x,Vec y)
   } catch(char * ex) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex);
   }
-  ierr = VecViennaCLRestoreArrayRead(x,&xarray);CHKERRQ(ierr);
-  ierr = VecViennaCLRestoreArrayWrite(y,&yarray);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
+  PetscCall(VecViennaCLRestoreArrayRead(x,&xarray));
+  PetscCall(VecViennaCLRestoreArrayWrite(y,&yarray));
+  PetscCall(PetscObjectStateIncrease((PetscObject)y));
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
@@ -131,7 +129,6 @@ static PetscErrorCode PCApply_ROWSCALINGVIENNACL(PC pc,Vec x,Vec y)
 static PetscErrorCode PCDestroy_ROWSCALINGVIENNACL(PC pc)
 {
   PC_ROWSCALINGVIENNACL  *rowscaling = (PC_ROWSCALINGVIENNACL*)pc->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (rowscaling->ROWSCALINGVIENNACL) {
@@ -145,17 +142,15 @@ static PetscErrorCode PCDestroy_ROWSCALINGVIENNACL(PC pc)
   /*
       Free the private data structure that was hanging off the PC
   */
-  ierr = PetscFree(pc->data);CHKERRQ(ierr);
+  PetscCall(PetscFree(pc->data));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCSetFromOptions_ROWSCALINGVIENNACL(PetscOptionItems *PetscOptionsObject,PC pc)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"ROWSCALINGVIENNACL options");CHKERRQ(ierr);
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"ROWSCALINGVIENNACL options"));
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -173,14 +168,13 @@ M*/
 PETSC_EXTERN PetscErrorCode PCCreate_ROWSCALINGVIENNACL(PC pc)
 {
   PC_ROWSCALINGVIENNACL  *rowscaling;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /*
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  ierr     = PetscNewLog(pc,&rowscaling);CHKERRQ(ierr);
+  PetscCall(PetscNewLog(pc,&rowscaling));
   pc->data = (void*)rowscaling;
 
   /*

@@ -101,12 +101,12 @@ respectively, below, where ``ierr`` denotes the error variable:
    call KSPSolve(ksp,b,x,ierr) ! Fortran
    ierr = KSPSolve(ksp,b,x);   /* C */
 
-Fortran programmers can check these error codes with ``CHKERRQ(ierr)``,
+Fortran programmers can check these error codes with ``PetscCall(ierr)``,
 which terminates all processes when an error is encountered. Likewise,
 one can set error codes within Fortran programs by using
 ``SETERRQ(comm,p,' ')``, which again terminates all processes upon
 detection of an error. Note that complete error tracebacks with
-``CHKERRQ()`` and ``SETERRQ()``, as described in
+``PetscCall()`` and ``SETERRQ()``, as described in
 :any:`sec_simple` for C routines, are *not* directly supported for
 Fortran routines; however, Fortran programmers can easily use the error
 codes in writing their own tracebacks. For example, one could use code

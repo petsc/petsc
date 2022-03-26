@@ -19,7 +19,6 @@ static char help[] ="Tests MatCreateMPIAIJWithArrays() abd MatUpdateMPIAIJWithAr
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   Mat            A;
   PetscInt       i[3][3] = {{0, 3, 6},{0, 3, 7},{0, 3, 5}};
   PetscInt       j[3][7] = {{0, 1, 3, 1, 2, 5, -1},{0, 2, 4, 1, 2, 3, 5},{1, 2, 5, 0, 5, -1, -1}};
@@ -28,20 +27,20 @@ int main(int argc,char **argv)
   MPI_Comm       comm;
   PetscMPIInt    rank,size;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   comm = PETSC_COMM_WORLD;
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
+  PetscCallMPI(MPI_Comm_size(comm,&size));
   PetscCheckFalse(size != 3,comm,PETSC_ERR_ARG_INCOMP,"You have to use three MPI processes to run this example ");
-  ierr = MatCreateMPIAIJWithArrays(comm,2,2,PETSC_DETERMINE,PETSC_DETERMINE,i[rank],j[rank],a[rank],&A);CHKERRQ(ierr);
-  ierr = MatView(A,NULL);CHKERRQ(ierr);
-  ierr = MatUpdateMPIAIJWithArrays(A,2,2,PETSC_DETERMINE,PETSC_DETERMINE,i[rank],j[rank],anew[rank]);CHKERRQ(ierr);
-  ierr = MatView(A,NULL);CHKERRQ(ierr);
-  ierr = MatUpdateMPIAIJWithArrays(A,2,2,PETSC_DETERMINE,PETSC_DETERMINE,i[rank],j[rank],a[rank]);CHKERRQ(ierr);
-  ierr = MatView(A,NULL);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(MatCreateMPIAIJWithArrays(comm,2,2,PETSC_DETERMINE,PETSC_DETERMINE,i[rank],j[rank],a[rank],&A));
+  PetscCall(MatView(A,NULL));
+  PetscCall(MatUpdateMPIAIJWithArrays(A,2,2,PETSC_DETERMINE,PETSC_DETERMINE,i[rank],j[rank],anew[rank]));
+  PetscCall(MatView(A,NULL));
+  PetscCall(MatUpdateMPIAIJWithArrays(A,2,2,PETSC_DETERMINE,PETSC_DETERMINE,i[rank],j[rank],a[rank]));
+  PetscCall(MatView(A,NULL));
+  PetscCall(MatDestroy(&A));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

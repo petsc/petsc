@@ -8,7 +8,6 @@ int main(int argc,char **argv)
 {
   PetscMPIInt      size;
   PetscInt         N = 6,m=PETSC_DECIDE,n=PETSC_DECIDE,p=PETSC_DECIDE,M=8,dof=1,stencil_width=1,P=5,pt = 0,st = 0;
-  PetscErrorCode   ierr;
   PetscBool        flg2,flg3,native = PETSC_FALSE;
   DMBoundaryType   bx           = DM_BOUNDARY_NONE,by = DM_BOUNDARY_NONE,bz = DM_BOUNDARY_NONE;
   DMDAStencilType  stencil_type = DMDA_STENCIL_STAR;
@@ -19,106 +18,106 @@ int main(int argc,char **argv)
   PetscViewer      viewer;
   PetscRandom      rdm;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-P",&P,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-stencil_width",&stencil_width,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-periodic",&pt,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-native",&native,NULL);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-P",&P,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-stencil_width",&stencil_width,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-periodic",&pt,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-native",&native,NULL));
   if (pt == 1) bx = DM_BOUNDARY_PERIODIC;
   if (pt == 2) by = DM_BOUNDARY_PERIODIC;
   if (pt == 3) {bx = DM_BOUNDARY_PERIODIC; by = DM_BOUNDARY_PERIODIC;}
   if (pt == 4) bz = DM_BOUNDARY_PERIODIC;
 
-  ierr         = PetscOptionsGetInt(NULL,NULL,"-stencil_type",&st,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-stencil_type",&st,NULL));
   stencil_type = (DMDAStencilType) st;
 
-  ierr = PetscOptionsHasName(NULL,NULL,"-one",&flg2);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,NULL,"-two",&flg2);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,NULL,"-three",&flg3);CHKERRQ(ierr);
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-one",&flg2));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-two",&flg2));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-three",&flg3));
   if (flg2) {
-    ierr = DMDACreate2d(PETSC_COMM_WORLD,bx,by,stencil_type,M,N,m,n,dof,stencil_width,0,0,&da);CHKERRQ(ierr);
+    PetscCall(DMDACreate2d(PETSC_COMM_WORLD,bx,by,stencil_type,M,N,m,n,dof,stencil_width,0,0,&da));
   } else if (flg3) {
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,bx,by,bz,stencil_type,M,N,P,m,n,p,dof,stencil_width,0,0,0,&da);CHKERRQ(ierr);
+    PetscCall(DMDACreate3d(PETSC_COMM_WORLD,bx,by,bz,stencil_type,M,N,P,m,n,p,dof,stencil_width,0,0,0,&da));
   } else {
-    ierr = DMDACreate1d(PETSC_COMM_WORLD,bx,M,dof,stencil_width,NULL,&da);CHKERRQ(ierr);
+    PetscCall(DMDACreate1d(PETSC_COMM_WORLD,bx,M,dof,stencil_width,NULL,&da));
   }
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
 
-  ierr = DMCreateGlobalVector(da,&global1);CHKERRQ(ierr);
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rdm);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(da,&global2);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(da,&global3);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(da,&global4);CHKERRQ(ierr);
+  PetscCall(DMCreateGlobalVector(da,&global1));
+  PetscCall(PetscRandomCreate(PETSC_COMM_WORLD,&rdm));
+  PetscCall(PetscRandomSetFromOptions(rdm));
+  PetscCall(DMCreateGlobalVector(da,&global2));
+  PetscCall(DMCreateGlobalVector(da,&global3));
+  PetscCall(DMCreateGlobalVector(da,&global4));
 
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"temp",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
-  if (native) {ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_NATIVE);CHKERRQ(ierr);}
-  ierr = VecSetRandom(global1,rdm);CHKERRQ(ierr);
-  ierr = VecView(global1,viewer);CHKERRQ(ierr);
-  ierr = VecSetRandom(global3,rdm);CHKERRQ(ierr);
-  ierr = VecView(global3,viewer);CHKERRQ(ierr);
-  if (native) {ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);}
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"temp",FILE_MODE_WRITE,&viewer));
+  if (native) PetscCall(PetscViewerPushFormat(viewer,PETSC_VIEWER_NATIVE));
+  PetscCall(VecSetRandom(global1,rdm));
+  PetscCall(VecView(global1,viewer));
+  PetscCall(VecSetRandom(global3,rdm));
+  PetscCall(VecView(global3,viewer));
+  if (native) PetscCall(PetscViewerPopFormat(viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
 
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"temp",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-  if (native) {ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_NATIVE);CHKERRQ(ierr);}
-  ierr = VecLoad(global2,viewer);CHKERRQ(ierr);
-  ierr = VecLoad(global4,viewer);CHKERRQ(ierr);
-  if (native) {ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);}
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"temp",FILE_MODE_READ,&viewer));
+  if (native) PetscCall(PetscViewerPushFormat(viewer,PETSC_VIEWER_NATIVE));
+  PetscCall(VecLoad(global2,viewer));
+  PetscCall(VecLoad(global4,viewer));
+  if (native) PetscCall(PetscViewerPopFormat(viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
 
   if (native) {
     Vec filenative;
     PetscBool same;
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"temp",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-    ierr = DMDACreateNaturalVector(da,&filenative);CHKERRQ(ierr);
+    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"temp",FILE_MODE_READ,&viewer));
+    PetscCall(DMDACreateNaturalVector(da,&filenative));
     /* DMDA "natural" Vec does not commandeer VecLoad.  The following load will only work when run on the same process
      * layout, where as the standard VecView/VecLoad (using DMDA and not PETSC_VIEWER_NATIVE) can be read on a different
      * number of processors. */
-    ierr = VecLoad(filenative,viewer);CHKERRQ(ierr);
-    ierr = VecEqual(global2,filenative,&same);CHKERRQ(ierr);
+    PetscCall(VecLoad(filenative,viewer));
+    PetscCall(VecEqual(global2,filenative,&same));
     if (!same) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"ex23: global vector does not match contents of file\n");CHKERRQ(ierr);
-      ierr = VecView(global2,0);CHKERRQ(ierr);
-      ierr = VecView(filenative,0);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"ex23: global vector does not match contents of file\n"));
+      PetscCall(VecView(global2,0));
+      PetscCall(VecView(filenative,0));
     }
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-    ierr = VecDestroy(&filenative);CHKERRQ(ierr);
+    PetscCall(PetscViewerDestroy(&viewer));
+    PetscCall(VecDestroy(&filenative));
   }
 
-  ierr = VecAXPY(global2,mone,global1);CHKERRQ(ierr);
-  ierr = VecNorm(global2,NORM_MAX,&norm);CHKERRQ(ierr);
+  PetscCall(VecAXPY(global2,mone,global1));
+  PetscCall(VecNorm(global2,NORM_MAX,&norm));
   if (norm != 0.0) {
-    ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"ex23: Norm of difference %g should be zero\n",(double)norm);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Number of processors %d\n",size);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  M,N,P,dof %D %D %D %D\n",M,N,P,dof);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  stencil_width %D stencil_type %d periodic %d\n",stencil_width,(int)stencil_type,(int)bx);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  dimension %d\n",1 + (int) flg2 + (int) flg3);CHKERRQ(ierr);
+    PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"ex23: Norm of difference %g should be zero\n",(double)norm));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  Number of processors %d\n",size));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  M,N,P,dof %D %D %D %D\n",M,N,P,dof));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  stencil_width %D stencil_type %d periodic %d\n",stencil_width,(int)stencil_type,(int)bx));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  dimension %d\n",1 + (int) flg2 + (int) flg3));
   }
-  ierr = VecAXPY(global4,mone,global3);CHKERRQ(ierr);
-  ierr = VecNorm(global4,NORM_MAX,&norm);CHKERRQ(ierr);
+  PetscCall(VecAXPY(global4,mone,global3));
+  PetscCall(VecNorm(global4,NORM_MAX,&norm));
   if (norm != 0.0) {
-    ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"ex23: Norm of difference %g should be zero\n",(double)norm);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Number of processors %d\n",size);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  M,N,P,dof %D %D %D %D\n",M,N,P,dof);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  stencil_width %D stencil_type %d periodic %d\n",stencil_width,(int)stencil_type,(int)bx);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  dimension %d\n",1 + (int) flg2 + (int) flg3);CHKERRQ(ierr);
+    PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"ex23: Norm of difference %g should be zero\n",(double)norm));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  Number of processors %d\n",size));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  M,N,P,dof %D %D %D %D\n",M,N,P,dof));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  stencil_width %D stencil_type %d periodic %d\n",stencil_width,(int)stencil_type,(int)bx));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  dimension %d\n",1 + (int) flg2 + (int) flg3));
   }
 
-  ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
-  ierr = VecDestroy(&global1);CHKERRQ(ierr);
-  ierr = VecDestroy(&global2);CHKERRQ(ierr);
-  ierr = VecDestroy(&global3);CHKERRQ(ierr);
-  ierr = VecDestroy(&global4);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscRandomDestroy(&rdm));
+  PetscCall(DMDestroy(&da));
+  PetscCall(VecDestroy(&global1));
+  PetscCall(VecDestroy(&global2));
+  PetscCall(VecDestroy(&global3));
+  PetscCall(VecDestroy(&global4));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -692,20 +692,18 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
 static PetscErrorCode SolKxSolutionVelocity(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar v[], void *ctx)
 {
   Parameter     *s = (Parameter *) ctx;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = SolKxSolution(x, s->m, s->n, s->B, v, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+  PetscCall(SolKxSolution(x, s->m, s->n, s->B, v, NULL, NULL, NULL, NULL));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode SolKxSolutionPressure(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar p[], void *ctx)
 {
   Parameter     *s = (Parameter *) ctx;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = SolKxSolution(x, s->m, s->n, s->B, NULL, p, NULL, NULL, NULL);CHKERRQ(ierr);
+  PetscCall(SolKxSolution(x, s->m, s->n, s->B, NULL, p, NULL, NULL, NULL));
   PetscFunctionReturn(0);
 }
 
@@ -2995,20 +2993,18 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
 static PetscErrorCode SolCxSolutionVelocity(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar v[], void *ctx)
 {
   Parameter     *s = (Parameter *) ctx;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = SolCxSolution(x, s->m, s->n, s->xc, s->etaA, s->etaB, v, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+  PetscCall(SolCxSolution(x, s->m, s->n, s->xc, s->etaA, s->etaB, v, NULL, NULL, NULL, NULL));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode SolCxSolutionPressure(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar p[], void *ctx)
 {
   Parameter     *s = (Parameter *) ctx;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = SolCxSolution(x, s->m, s->n, s->xc, s->etaA, s->etaB, NULL, p, NULL, NULL, NULL);CHKERRQ(ierr);
+  PetscCall(SolCxSolution(x, s->m, s->n, s->xc, s->etaA, s->etaB, NULL, p, NULL, NULL, NULL));
   PetscFunctionReturn(0);
 }
 
@@ -3020,11 +3016,11 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionBeginUser;
   options->solType = SOLKX;
 
-  ierr = PetscOptionsBegin(comm, "", "Variable-Viscosity Stokes Problem Options", "DMPLEX");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm, "", "Variable-Viscosity Stokes Problem Options", "DMPLEX");PetscCall(ierr);
   sol  = options->solType;
-  ierr = PetscOptionsEList("-sol_type", "Type of exact solution", "ex69.c", solTypes, NUM_SOL_TYPES, solTypes[options->solType], &sol, NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsEList("-sol_type", "Type of exact solution", "ex69.c", solTypes, NUM_SOL_TYPES, solTypes[options->solType], &sol, NULL));
   options->solType = (SolutionType) sol;
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();PetscCall(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3032,31 +3028,30 @@ static PetscErrorCode SetUpParameters(AppCtx *user)
 {
   PetscBag       bag;
   Parameter     *p;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   /* setup PETSc parameter bag */
-  ierr = PetscBagGetData(user->bag, (void **) &p);CHKERRQ(ierr);
-  ierr = PetscBagSetName(user->bag, "par", "Problem parameters");CHKERRQ(ierr);
+  PetscCall(PetscBagGetData(user->bag, (void **) &p));
+  PetscCall(PetscBagSetName(user->bag, "par", "Problem parameters"));
   bag  = user->bag;
   switch (user->solType) {
   case SOLKX:
-    ierr = PetscBagRegisterInt(bag,  &p->n, 1,   "n", "x-wavelength for forcing variation");CHKERRQ(ierr);
-    ierr = PetscBagRegisterInt(bag,  &p->m, 1,   "m", "z-wavelength for forcing variation");CHKERRQ(ierr);
-    ierr = PetscBagRegisterReal(bag, &p->B, 1.0, "B", "Exponential scale for viscosity variation");CHKERRQ(ierr);
+    PetscCall(PetscBagRegisterInt(bag,  &p->n, 1,   "n", "x-wavelength for forcing variation"));
+    PetscCall(PetscBagRegisterInt(bag,  &p->m, 1,   "m", "z-wavelength for forcing variation"));
+    PetscCall(PetscBagRegisterReal(bag, &p->B, 1.0, "B", "Exponential scale for viscosity variation"));
     break;
   case SOLCX:
-    ierr = PetscBagRegisterInt(bag,  &p->n,    1,   "n",    "x-wavelength for forcing variation");CHKERRQ(ierr);
-    ierr = PetscBagRegisterInt(bag,  &p->m,    1,   "m",    "z-wavelength for forcing variation");CHKERRQ(ierr);
-    ierr = PetscBagRegisterReal(bag, &p->etaA, 1.0, "etaA", "Viscosity for x < xc");CHKERRQ(ierr);
-    ierr = PetscBagRegisterReal(bag, &p->etaB, 1.0, "etaB", "Viscosity for x > xc");CHKERRQ(ierr);
-    ierr = PetscBagRegisterReal(bag, &p->xc,   0.5, "xc",   "x-coordinate of the viscosity jump");CHKERRQ(ierr);
+    PetscCall(PetscBagRegisterInt(bag,  &p->n,    1,   "n",    "x-wavelength for forcing variation"));
+    PetscCall(PetscBagRegisterInt(bag,  &p->m,    1,   "m",    "z-wavelength for forcing variation"));
+    PetscCall(PetscBagRegisterReal(bag, &p->etaA, 1.0, "etaA", "Viscosity for x < xc"));
+    PetscCall(PetscBagRegisterReal(bag, &p->etaB, 1.0, "etaB", "Viscosity for x > xc"));
+    PetscCall(PetscBagRegisterReal(bag, &p->xc,   0.5, "xc",   "x-coordinate of the viscosity jump"));
     break;
   default:
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid solution type %d (%s)", (PetscInt) user->solType, solTypes[PetscMin(user->solType, NUM_SOL_TYPES)]);
   }
-  ierr = PetscBagSetFromOptions(bag);CHKERRQ(ierr);
-  ierr = PetscBagViewFromOptions(bag, NULL, "-param_view");CHKERRQ(ierr);
+  PetscCall(PetscBagSetFromOptions(bag));
+  PetscCall(PetscBagViewFromOptions(bag, NULL, "-param_view"));
   PetscFunctionReturn(0);
 }
 
@@ -3068,16 +3063,15 @@ static PetscErrorCode CreateSplitLabels(DM dm)
   DMLabel        label;
   IS             is;
   PetscInt       f;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   for (f = 0; f < 4; ++f) {
-    ierr = DMCreateLabel(dm, names[f]);CHKERRQ(ierr);
-    ierr = DMGetStratumIS(dm, "marker", ids[f],  &is);CHKERRQ(ierr);
+    PetscCall(DMCreateLabel(dm, names[f]));
+    PetscCall(DMGetStratumIS(dm, "marker", ids[f],  &is));
     if (!is) continue;
-    ierr = DMGetLabel(dm, names[f], &label);CHKERRQ(ierr);
-    ierr = DMLabelInsertIS(label, is, 1);CHKERRQ(ierr);
-    ierr = ISDestroy(&is);CHKERRQ(ierr);
+    PetscCall(DMGetLabel(dm, names[f], &label));
+    PetscCall(DMLabelInsertIS(label, is, 1));
+    PetscCall(ISDestroy(&is));
   }
   PetscFunctionReturn(0);
 }
@@ -3085,18 +3079,17 @@ static PetscErrorCode CreateSplitLabels(DM dm)
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   DM             cdm;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
-  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  PetscCall(DMCreate(comm, dm));
+  PetscCall(DMSetType(*dm, DMPLEX));
+  PetscCall(DMSetFromOptions(*dm));
   cdm  = *dm;
   while (cdm) {
-    ierr = CreateSplitLabels(cdm);CHKERRQ(ierr);
-    ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
+    PetscCall(CreateSplitLabels(cdm));
+    PetscCall(DMGetCoarseDM(cdm, &cdm));
   }
-  ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
+  PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   PetscFunctionReturn(0);
 }
 
@@ -3109,44 +3102,43 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   PetscInt       dim, comp;
   Parameter     *ctx;
   void          *data;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMGetDS(dm, &prob));
   switch (user->solType) {
   case SOLKX:
-    ierr = PetscDSSetResidual(prob, 0, f0_u, stokes_momentum_kx);CHKERRQ(ierr);
-    ierr = PetscDSSetResidual(prob, 1, stokes_mass, f1_zero);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL,  NULL,  stokes_momentum_vel_J_kx);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 0, 1, NULL, NULL,  stokes_momentum_pres_J, NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 1, 0, NULL, stokes_mass_J, NULL,  NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobianPreconditioner(prob, 0, 0, NULL, NULL, NULL, stokes_momentum_vel_J_kx);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobianPreconditioner(prob, 1, 1, stokes_identity_J_kx, NULL, NULL, NULL);CHKERRQ(ierr);
+    PetscCall(PetscDSSetResidual(prob, 0, f0_u, stokes_momentum_kx));
+    PetscCall(PetscDSSetResidual(prob, 1, stokes_mass, f1_zero));
+    PetscCall(PetscDSSetJacobian(prob, 0, 0, NULL, NULL,  NULL,  stokes_momentum_vel_J_kx));
+    PetscCall(PetscDSSetJacobian(prob, 0, 1, NULL, NULL,  stokes_momentum_pres_J, NULL));
+    PetscCall(PetscDSSetJacobian(prob, 1, 0, NULL, stokes_mass_J, NULL,  NULL));
+    PetscCall(PetscDSSetJacobianPreconditioner(prob, 0, 0, NULL, NULL, NULL, stokes_momentum_vel_J_kx));
+    PetscCall(PetscDSSetJacobianPreconditioner(prob, 1, 1, stokes_identity_J_kx, NULL, NULL, NULL));
     break;
   case SOLCX:
-    ierr = PetscDSSetResidual(prob, 0, f0_u, stokes_momentum_cx);CHKERRQ(ierr);
-    ierr = PetscDSSetResidual(prob, 1, stokes_mass, f1_zero);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL,  NULL,  stokes_momentum_vel_J_cx);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 0, 1, NULL, NULL,  stokes_momentum_pres_J, NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 1, 0, NULL, stokes_mass_J, NULL,  NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobianPreconditioner(prob, 0, 0, NULL, NULL, NULL, stokes_momentum_vel_J_kx);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobianPreconditioner(prob, 1, 1, stokes_identity_J_cx, NULL, NULL, NULL);CHKERRQ(ierr);
+    PetscCall(PetscDSSetResidual(prob, 0, f0_u, stokes_momentum_cx));
+    PetscCall(PetscDSSetResidual(prob, 1, stokes_mass, f1_zero));
+    PetscCall(PetscDSSetJacobian(prob, 0, 0, NULL, NULL,  NULL,  stokes_momentum_vel_J_cx));
+    PetscCall(PetscDSSetJacobian(prob, 0, 1, NULL, NULL,  stokes_momentum_pres_J, NULL));
+    PetscCall(PetscDSSetJacobian(prob, 1, 0, NULL, stokes_mass_J, NULL,  NULL));
+    PetscCall(PetscDSSetJacobianPreconditioner(prob, 0, 0, NULL, NULL, NULL, stokes_momentum_vel_J_kx));
+    PetscCall(PetscDSSetJacobianPreconditioner(prob, 1, 1, stokes_identity_J_cx, NULL, NULL, NULL));
     break;
   default:
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid solution type %d (%s)", (PetscInt) user->solType, solTypes[PetscMin(user->solType, NUM_SOL_TYPES)]);
   }
-  ierr = PetscBagGetData(user->bag, &data);CHKERRQ(ierr);
+  PetscCall(PetscBagGetData(user->bag, &data));
   switch (dim) {
   case 2:
     switch (user->solType) {
     case SOLKX:
-      ierr = PetscDSSetExactSolution(prob, 0, SolKxSolutionVelocity, data);CHKERRQ(ierr);
-      ierr = PetscDSSetExactSolution(prob, 1, SolKxSolutionPressure, data);CHKERRQ(ierr);
+      PetscCall(PetscDSSetExactSolution(prob, 0, SolKxSolutionVelocity, data));
+      PetscCall(PetscDSSetExactSolution(prob, 1, SolKxSolutionPressure, data));
       break;
     case SOLCX:
-      ierr = PetscDSSetExactSolution(prob, 0, SolCxSolutionVelocity, data);CHKERRQ(ierr);
-      ierr = PetscDSSetExactSolution(prob, 1, SolCxSolutionPressure, data);CHKERRQ(ierr);
+      PetscCall(PetscDSSetExactSolution(prob, 0, SolCxSolutionVelocity, data));
+      PetscCall(PetscDSSetExactSolution(prob, 1, SolCxSolutionPressure, data));
       break;
     default:
       SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid solution type %d (%s)", (PetscInt) user->solType, solTypes[PetscMin(user->solType, NUM_SOL_TYPES)]);
@@ -3159,7 +3151,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   {
     Parameter *param;
 
-    ierr = PetscBagGetData(user->bag, (void **) &param);CHKERRQ(ierr);
+    PetscCall(PetscBagGetData(user->bag, (void **) &param));
     switch (user->solType) {
     case SOLKX:
     {
@@ -3168,7 +3160,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
       constants[0] = param->m;
       constants[1] = param->n;
       constants[2] = param->B;
-      ierr = PetscDSSetConstants(prob, 3, constants);CHKERRQ(ierr);
+      PetscCall(PetscDSSetConstants(prob, 3, constants));
     }
     break;
     case SOLCX:
@@ -3180,26 +3172,26 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
       constants[2] = param->etaA;
       constants[3] = param->etaB;
       constants[4] = param->xc;
-      ierr = PetscDSSetConstants(prob, 5, constants);CHKERRQ(ierr);
+      PetscCall(PetscDSSetConstants(prob, 5, constants));
     }
     break;
     default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "No parameter information for solution type %d", user->solType);
     }
   }
   /* Setup Boundary Conditions */
-  ierr = PetscDSGetExactSolution(prob, 0, &exactFunc, (void **) &ctx);CHKERRQ(ierr);
+  PetscCall(PetscDSGetExactSolution(prob, 0, &exactFunc, (void **) &ctx));
   comp = 1;
-  ierr = DMGetLabel(dm, "markerBottom", &label);CHKERRQ(ierr);
-  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wallB", label, 1, &id, 0, 1, &comp, (void (*)(void)) exactFunc, NULL, ctx, NULL);CHKERRQ(ierr);
+  PetscCall(DMGetLabel(dm, "markerBottom", &label));
+  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wallB", label, 1, &id, 0, 1, &comp, (void (*)(void)) exactFunc, NULL, ctx, NULL));
   comp = 0;
-  ierr = DMGetLabel(dm, "markerRight", &label);CHKERRQ(ierr);
-  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wallR", label, 1, &id, 0, 1, &comp, (void (*)(void)) exactFunc, NULL, ctx, NULL);CHKERRQ(ierr);
+  PetscCall(DMGetLabel(dm, "markerRight", &label));
+  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wallR", label, 1, &id, 0, 1, &comp, (void (*)(void)) exactFunc, NULL, ctx, NULL));
   comp = 1;
-  ierr = DMGetLabel(dm, "markerTop", &label);CHKERRQ(ierr);
-  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wallT", label, 1, &id, 0, 1, &comp, (void (*)(void)) exactFunc, NULL, ctx, NULL);CHKERRQ(ierr);
+  PetscCall(DMGetLabel(dm, "markerTop", &label));
+  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wallT", label, 1, &id, 0, 1, &comp, (void (*)(void)) exactFunc, NULL, ctx, NULL));
   comp = 0;
-  ierr = DMGetLabel(dm, "markerLeft", &label);CHKERRQ(ierr);
-  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wallL", label, 1, &id, 0, 1, &comp, (void (*)(void)) exactFunc, NULL, ctx, NULL);CHKERRQ(ierr);
+  PetscCall(DMGetLabel(dm, "markerLeft", &label));
+  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wallL", label, 1, &id, 0, 1, &comp, (void (*)(void)) exactFunc, NULL, ctx, NULL));
   PetscFunctionReturn(0);
 }
 
@@ -3207,30 +3199,29 @@ static PetscErrorCode CreatePressureNullSpace(DM dm, PetscInt origField, PetscIn
 {
   Vec              vec;
   PetscErrorCode (*funcs[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void* ctx) = {zero, one};
-  PetscErrorCode   ierr;
 
   PetscFunctionBeginUser;
   PetscCheckFalse(origField != 1,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Field %D should be 1 for pressure", origField);
   funcs[field] = one;
   {
     PetscDS ds;
-    ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
-    ierr = PetscObjectViewFromOptions((PetscObject) ds, NULL, "-ds_view");CHKERRQ(ierr);
+    PetscCall(DMGetDS(dm, &ds));
+    PetscCall(PetscObjectViewFromOptions((PetscObject) ds, NULL, "-ds_view"));
   }
-  ierr = DMCreateGlobalVector(dm, &vec);CHKERRQ(ierr);
-  ierr = DMProjectFunction(dm, 0.0, funcs, NULL, INSERT_ALL_VALUES, vec);CHKERRQ(ierr);
-  ierr = VecNormalize(vec, NULL);CHKERRQ(ierr);
-  ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject)dm), PETSC_FALSE, 1, &vec, nullspace);CHKERRQ(ierr);
-  ierr = VecDestroy(&vec);CHKERRQ(ierr);
+  PetscCall(DMCreateGlobalVector(dm, &vec));
+  PetscCall(DMProjectFunction(dm, 0.0, funcs, NULL, INSERT_ALL_VALUES, vec));
+  PetscCall(VecNormalize(vec, NULL));
+  PetscCall(MatNullSpaceCreate(PetscObjectComm((PetscObject)dm), PETSC_FALSE, 1, &vec, nullspace));
+  PetscCall(VecDestroy(&vec));
   /* New style for field null spaces */
   {
     PetscObject  pressure;
     MatNullSpace nullspacePres;
 
-    ierr = DMGetField(dm, field, NULL, &pressure);CHKERRQ(ierr);
-    ierr = MatNullSpaceCreate(PetscObjectComm(pressure), PETSC_TRUE, 0, NULL, &nullspacePres);CHKERRQ(ierr);
-    ierr = PetscObjectCompose(pressure, "nullspace", (PetscObject) nullspacePres);CHKERRQ(ierr);
-    ierr = MatNullSpaceDestroy(&nullspacePres);CHKERRQ(ierr);
+    PetscCall(DMGetField(dm, field, NULL, &pressure));
+    PetscCall(MatNullSpaceCreate(PetscObjectComm(pressure), PETSC_TRUE, 0, NULL, &nullspacePres));
+    PetscCall(PetscObjectCompose(pressure, "nullspace", (PetscObject) nullspacePres));
+    PetscCall(MatNullSpaceDestroy(&nullspacePres));
   }
   PetscFunctionReturn(0);
 }
@@ -3242,39 +3233,38 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   DMPolytopeType ct;
   PetscInt       dim, cStart;
   PetscBool      simplex;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, NULL);CHKERRQ(ierr);
-  ierr = DMPlexGetCellType(dm, cStart, &ct);CHKERRQ(ierr);
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, NULL));
+  PetscCall(DMPlexGetCellType(dm, cStart, &ct));
   simplex = DMPolytopeTypeGetNumVertices(ct) == DMPolytopeTypeGetDim(ct)+1 ? PETSC_TRUE : PETSC_FALSE;
   /* Create discretization of solution fields */
-  ierr = PetscFECreateDefault(PETSC_COMM_SELF, dim, dim, simplex, "vel_", PETSC_DEFAULT, &fe[0]);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) fe[0], "velocity");CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, "pres_", PETSC_DEFAULT, &fe[1]);CHKERRQ(ierr);
-  ierr = PetscFECopyQuadrature(fe[0], fe[1]);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) fe[1], "pressure");CHKERRQ(ierr);
+  PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, dim, simplex, "vel_", PETSC_DEFAULT, &fe[0]));
+  PetscCall(PetscObjectSetName((PetscObject) fe[0], "velocity"));
+  PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, "pres_", PETSC_DEFAULT, &fe[1]));
+  PetscCall(PetscFECopyQuadrature(fe[0], fe[1]));
+  PetscCall(PetscObjectSetName((PetscObject) fe[1], "pressure"));
   /* Set discretization and boundary conditions for each mesh */
-  ierr = DMSetField(dm, 0, NULL, (PetscObject) fe[0]);CHKERRQ(ierr);
-  ierr = DMSetField(dm, 1, NULL, (PetscObject) fe[1]);CHKERRQ(ierr);
-  ierr = DMCreateDS(dm);CHKERRQ(ierr);
-  ierr = SetupProblem(dm, user);CHKERRQ(ierr);
+  PetscCall(DMSetField(dm, 0, NULL, (PetscObject) fe[0]));
+  PetscCall(DMSetField(dm, 1, NULL, (PetscObject) fe[1]));
+  PetscCall(DMCreateDS(dm));
+  PetscCall(SetupProblem(dm, user));
   while (cdm) {
-    ierr = DMCopyDisc(dm, cdm);CHKERRQ(ierr);
-    ierr = DMSetNullSpaceConstructor(cdm, 1, CreatePressureNullSpace);CHKERRQ(ierr);
-    ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
+    PetscCall(DMCopyDisc(dm, cdm));
+    PetscCall(DMSetNullSpaceConstructor(cdm, 1, CreatePressureNullSpace));
+    PetscCall(DMGetCoarseDM(cdm, &cdm));
   }
-  ierr = PetscFEDestroy(&fe[0]);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&fe[1]);CHKERRQ(ierr);
+  PetscCall(PetscFEDestroy(&fe[0]));
+  PetscCall(PetscFEDestroy(&fe[1]));
   {
     PetscObject  pressure;
     MatNullSpace nullSpacePres;
 
-    ierr = DMGetField(dm, 1, NULL, &pressure);CHKERRQ(ierr);
-    ierr = MatNullSpaceCreate(PetscObjectComm(pressure), PETSC_TRUE, 0, NULL, &nullSpacePres);CHKERRQ(ierr);
-    ierr = PetscObjectCompose(pressure, "nullspace", (PetscObject) nullSpacePres);CHKERRQ(ierr);
-    ierr = MatNullSpaceDestroy(&nullSpacePres);CHKERRQ(ierr);
+    PetscCall(DMGetField(dm, 1, NULL, &pressure));
+    PetscCall(MatNullSpaceCreate(PetscObjectComm(pressure), PETSC_TRUE, 0, NULL, &nullSpacePres));
+    PetscCall(PetscObjectCompose(pressure, "nullspace", (PetscObject) nullSpacePres));
+    PetscCall(MatNullSpaceDestroy(&nullSpacePres));
   }
   PetscFunctionReturn(0);
 }
@@ -3296,41 +3286,38 @@ static PetscErrorCode CorrectDiscretePressure(DM dm, MatNullSpace nullspace, Vec
   const Vec     *nullvecs;
   PetscScalar    pintd, intc[2], intn[2];
   MPI_Comm       comm;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
-  ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
-  ierr = PetscDSSetObjective(ds, 1, pressure);CHKERRQ(ierr);
-  ierr = MatNullSpaceGetVecs(nullspace, NULL, NULL, &nullvecs);CHKERRQ(ierr);
-  ierr = VecDot(nullvecs[0], u, &pintd);CHKERRQ(ierr);
+  PetscCall(PetscObjectGetComm((PetscObject) dm, &comm));
+  PetscCall(DMGetDS(dm, &ds));
+  PetscCall(PetscDSSetObjective(ds, 1, pressure));
+  PetscCall(MatNullSpaceGetVecs(nullspace, NULL, NULL, &nullvecs));
+  PetscCall(VecDot(nullvecs[0], u, &pintd));
   PetscCheckFalse(PetscAbsScalar(pintd) > PETSC_SMALL,comm, PETSC_ERR_ARG_WRONG, "Discrete integral of pressure: %g", (double) PetscRealPart(pintd));
-  ierr = DMPlexComputeIntegralFEM(dm, nullvecs[0], intn, user);CHKERRQ(ierr);
-  ierr = DMPlexComputeIntegralFEM(dm, u, intc, user);CHKERRQ(ierr);
-  ierr = VecAXPY(u, -intc[1]/intn[1], nullvecs[0]);CHKERRQ(ierr);
-  ierr = DMPlexComputeIntegralFEM(dm, u, intc, user);CHKERRQ(ierr);
+  PetscCall(DMPlexComputeIntegralFEM(dm, nullvecs[0], intn, user));
+  PetscCall(DMPlexComputeIntegralFEM(dm, u, intc, user));
+  PetscCall(VecAXPY(u, -intc[1]/intn[1], nullvecs[0]));
+  PetscCall(DMPlexComputeIntegralFEM(dm, u, intc, user));
   PetscCheckFalse(PetscAbsScalar(intc[1]) > PETSC_SMALL,comm, PETSC_ERR_ARG_WRONG, "Continuum integral of pressure after correction: %g", (double) PetscRealPart(intc[1]));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode SNESConvergenceCorrectPressure(SNES snes, PetscInt it, PetscReal xnorm, PetscReal gnorm, PetscReal f, SNESConvergedReason *reason, void *user)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
-  ierr = SNESConvergedDefault(snes, it, xnorm, gnorm, f, reason, user);CHKERRQ(ierr);
+  PetscCall(SNESConvergedDefault(snes, it, xnorm, gnorm, f, reason, user));
   if (*reason > 0) {
     DM           dm;
     Mat          J;
     Vec          u;
     MatNullSpace nullspace;
 
-    ierr = SNESGetDM(snes, &dm);CHKERRQ(ierr);
-    ierr = SNESGetSolution(snes, &u);CHKERRQ(ierr);
-    ierr = SNESGetJacobian(snes, &J, NULL, NULL, NULL);CHKERRQ(ierr);
-    ierr = MatGetNullSpace(J, &nullspace);CHKERRQ(ierr);
-    PetscCheckFalse(!nullspace,PetscObjectComm((PetscObject) snes), PETSC_ERR_ARG_WRONG, "SNES Jacobian has no attached null space");
-    ierr = CorrectDiscretePressure(dm, nullspace, u, (AppCtx *) user);CHKERRQ(ierr);
+    PetscCall(SNESGetDM(snes, &dm));
+    PetscCall(SNESGetSolution(snes, &u));
+    PetscCall(SNESGetJacobian(snes, &J, NULL, NULL, NULL));
+    PetscCall(MatGetNullSpace(J, &nullspace));
+    PetscCheck(nullspace,PetscObjectComm((PetscObject) snes), PETSC_ERR_ARG_WRONG, "SNES Jacobian has no attached null space");
+    PetscCall(CorrectDiscretePressure(dm, nullspace, u, (AppCtx *) user));
   }
   PetscFunctionReturn(0);
 }
@@ -3344,75 +3331,74 @@ int main(int argc, char **argv)
   MatNullSpace    nullSpace; /* May be necessary for pressure */
   AppCtx          user;      /* user-defined work context */
   PetscErrorCode  (*initialGuess[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void* ctx) = {zero, zero};
-  PetscErrorCode  ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
-  ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
-  ierr = SNESCreate(PETSC_COMM_WORLD, &snes);CHKERRQ(ierr);
-  ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
-  ierr = SNESSetDM(snes, dm);CHKERRQ(ierr);
-  ierr = DMSetApplicationContext(dm, &user);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc, &argv, NULL,help));
+  PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
+  PetscCall(SNESCreate(PETSC_COMM_WORLD, &snes));
+  PetscCall(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
+  PetscCall(SNESSetDM(snes, dm));
+  PetscCall(DMSetApplicationContext(dm, &user));
   /* Setup problem parameters */
-  ierr = PetscBagCreate(PETSC_COMM_WORLD, sizeof(Parameter), &user.bag);CHKERRQ(ierr);
-  ierr = SetUpParameters(&user);CHKERRQ(ierr);
+  PetscCall(PetscBagCreate(PETSC_COMM_WORLD, sizeof(Parameter), &user.bag));
+  PetscCall(SetUpParameters(&user));
   /* Setup problem */
-  ierr = SetupDiscretization(dm, &user);CHKERRQ(ierr);
-  ierr = DMPlexCreateClosureIndex(dm, NULL);CHKERRQ(ierr);
+  PetscCall(SetupDiscretization(dm, &user));
+  PetscCall(DMPlexCreateClosureIndex(dm, NULL));
 
-  ierr = DMCreateGlobalVector(dm, &u);CHKERRQ(ierr);
-  ierr = VecDuplicate(u, &r);CHKERRQ(ierr);
+  PetscCall(DMCreateGlobalVector(dm, &u));
+  PetscCall(VecDuplicate(u, &r));
 
-  ierr = DMPlexSetSNESLocalFEM(dm,&user,&user,&user);CHKERRQ(ierr);
-  ierr = CreatePressureNullSpace(dm, 1, 1, &nullSpace);CHKERRQ(ierr);
+  PetscCall(DMPlexSetSNESLocalFEM(dm,&user,&user,&user));
+  PetscCall(CreatePressureNullSpace(dm, 1, 1, &nullSpace));
 
   { /* set tolerances */
     KSP ksp;
 
-    ierr = SNESGetKSP(snes, &ksp);CHKERRQ(ierr);
-    ierr = KSPSetTolerances(ksp,1.e-2*PETSC_SMALL,PETSC_SMALL,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
+    PetscCall(SNESGetKSP(snes, &ksp));
+    PetscCall(KSPSetTolerances(ksp,1.e-2*PETSC_SMALL,PETSC_SMALL,PETSC_DEFAULT,PETSC_DEFAULT));
   }
 
   /* There should be a way to express this using the DM */
-  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-  ierr = SNESSetUp(snes);CHKERRQ(ierr);
-  ierr = SNESGetJacobian(snes, &J, &M, NULL, NULL);CHKERRQ(ierr);
-  ierr = MatSetNullSpace(J, nullSpace);CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject) M, "prec_");CHKERRQ(ierr);
-  ierr = MatSetFromOptions(M);CHKERRQ(ierr);
-  ierr = SNESSetConvergenceTest(snes, SNESConvergenceCorrectPressure, &user, NULL);CHKERRQ(ierr);
+  PetscCall(SNESSetFromOptions(snes));
+  PetscCall(SNESSetUp(snes));
+  PetscCall(SNESGetJacobian(snes, &J, &M, NULL, NULL));
+  PetscCall(MatSetNullSpace(J, nullSpace));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject) M, "prec_"));
+  PetscCall(MatSetFromOptions(M));
+  PetscCall(SNESSetConvergenceTest(snes, SNESConvergenceCorrectPressure, &user, NULL));
 
-  ierr = DMSNESCheckFromOptions(snes, u);CHKERRQ(ierr);
-  ierr = DMProjectFunction(dm, 0.0, initialGuess, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) u, "Solution");CHKERRQ(ierr);
-  ierr = SNESSolve(snes, NULL, u);CHKERRQ(ierr);
+  PetscCall(DMSNESCheckFromOptions(snes, u));
+  PetscCall(DMProjectFunction(dm, 0.0, initialGuess, NULL, INSERT_VALUES, u));
+  PetscCall(PetscObjectSetName((PetscObject) u, "Solution"));
+  PetscCall(SNESSolve(snes, NULL, u));
   {
     PetscErrorCode (*exacts[2])(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
     void            *ectxs[2];
     PetscDS          ds;
     Vec              e;
 
-    ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
-    ierr = PetscDSGetExactSolution(ds, 0, &exacts[0], &ectxs[0]);CHKERRQ(ierr);
-    ierr = PetscDSGetExactSolution(ds, 1, &exacts[1], &ectxs[1]);CHKERRQ(ierr);
+    PetscCall(DMGetDS(dm, &ds));
+    PetscCall(PetscDSGetExactSolution(ds, 0, &exacts[0], &ectxs[0]));
+    PetscCall(PetscDSGetExactSolution(ds, 1, &exacts[1], &ectxs[1]));
 
-    ierr = DMGetGlobalVector(dm, &e);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject) e, "__Vec_bc_zero__", (PetscObject) dm);CHKERRQ(ierr);
-    ierr = DMPlexComputeL2DiffVec(dm, 0.0, exacts, ectxs, u, e);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) e, "Solution Error");CHKERRQ(ierr);
-    ierr = VecViewFromOptions(e, NULL, "-error_vec_view");CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject) e, "__Vec_bc_zero__", NULL);CHKERRQ(ierr);
-    ierr = DMRestoreGlobalVector(dm, &e);CHKERRQ(ierr);
+    PetscCall(DMGetGlobalVector(dm, &e));
+    PetscCall(PetscObjectCompose((PetscObject) e, "__Vec_bc_zero__", (PetscObject) dm));
+    PetscCall(DMPlexComputeL2DiffVec(dm, 0.0, exacts, ectxs, u, e));
+    PetscCall(PetscObjectSetName((PetscObject) e, "Solution Error"));
+    PetscCall(VecViewFromOptions(e, NULL, "-error_vec_view"));
+    PetscCall(PetscObjectCompose((PetscObject) e, "__Vec_bc_zero__", NULL));
+    PetscCall(DMRestoreGlobalVector(dm, &e));
   }
-  ierr = VecViewFromOptions(u, NULL, "-sol_vec_view");CHKERRQ(ierr);
+  PetscCall(VecViewFromOptions(u, NULL, "-sol_vec_view"));
 
-  ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = VecDestroy(&r);CHKERRQ(ierr);
-  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
-  ierr = PetscBagDestroy(&user.bag);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(MatNullSpaceDestroy(&nullSpace));
+  PetscCall(VecDestroy(&u));
+  PetscCall(VecDestroy(&r));
+  PetscCall(SNESDestroy(&snes));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscBagDestroy(&user.bag));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

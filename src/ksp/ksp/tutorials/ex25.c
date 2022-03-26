@@ -33,7 +33,6 @@ typedef struct {
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   KSP            ksp;
   DM             da;
   AppCtx         user;
@@ -42,89 +41,87 @@ int main(int argc,char **argv)
   Vec            x;
   PetscReal      nrm;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   user.k = 1;
   user.e = .99;
-  ierr   = PetscOptionsGetInt(NULL,0,"-k",&user.k,0);CHKERRQ(ierr);
-  ierr   = PetscOptionsGetScalar(NULL,0,"-e",&user.e,0);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetInt(NULL,0,"-k",&user.k,0));
+  PetscCall(PetscOptionsGetScalar(NULL,0,"-e",&user.e,0));
 
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,128,1,1,0,&da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
-  ierr = KSPSetDM(ksp,da);CHKERRQ(ierr);
-  ierr = KSPSetComputeRHS(ksp,ComputeRHS,&user);CHKERRQ(ierr);
-  ierr = KSPSetComputeOperators(ksp,ComputeMatrix,&user);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp,NULL,NULL);CHKERRQ(ierr);
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,128,1,1,0,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(KSPSetDM(ksp,da));
+  PetscCall(KSPSetComputeRHS(ksp,ComputeRHS,&user));
+  PetscCall(KSPSetComputeOperators(ksp,ComputeMatrix,&user));
+  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(KSPSolve(ksp,NULL,NULL));
 
-  ierr = KSPGetOperators(ksp,&A,NULL);CHKERRQ(ierr);
-  ierr = KSPGetSolution(ksp,&x);CHKERRQ(ierr);
-  ierr = KSPGetRhs(ksp,&b);CHKERRQ(ierr);
-  ierr = VecDuplicate(b,&b2);CHKERRQ(ierr);
-  ierr = MatMult(A,x,b2);CHKERRQ(ierr);
-  ierr = VecAXPY(b2,-1.0,b);CHKERRQ(ierr);
-  ierr = VecNorm(b2,NORM_MAX,&nrm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",(double)nrm);CHKERRQ(ierr);
+  PetscCall(KSPGetOperators(ksp,&A,NULL));
+  PetscCall(KSPGetSolution(ksp,&x));
+  PetscCall(KSPGetRhs(ksp,&b));
+  PetscCall(VecDuplicate(b,&b2));
+  PetscCall(MatMult(A,x,b2));
+  PetscCall(VecAXPY(b2,-1.0,b));
+  PetscCall(VecNorm(b2,NORM_MAX,&nrm));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",(double)nrm));
 
-  ierr = VecDestroy(&b2);CHKERRQ(ierr);
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(VecDestroy(&b2));
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(DMDestroy(&da));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 static PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
 {
-  PetscErrorCode ierr;
   PetscInt       mx,idx[2];
   PetscScalar    h,v[2];
   DM             da;
 
   PetscFunctionBeginUser;
-  ierr   = KSPGetDM(ksp,&da);CHKERRQ(ierr);
-  ierr   = DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  PetscCall(KSPGetDM(ksp,&da));
+  PetscCall(DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0));
   h      = 1.0/((mx-1));
-  ierr   = VecSet(b,h);CHKERRQ(ierr);
+  PetscCall(VecSet(b,h));
   idx[0] = 0; idx[1] = mx -1;
   v[0]   = v[1] = 0.0;
-  ierr   = VecSetValues(b,2,idx,v,INSERT_VALUES);CHKERRQ(ierr);
-  ierr   = VecAssemblyBegin(b);CHKERRQ(ierr);
-  ierr   = VecAssemblyEnd(b);CHKERRQ(ierr);
+  PetscCall(VecSetValues(b,2,idx,v,INSERT_VALUES));
+  PetscCall(VecAssemblyBegin(b));
+  PetscCall(VecAssemblyEnd(b));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,void *ctx)
 {
   AppCtx         *user = (AppCtx*)ctx;
-  PetscErrorCode ierr;
   PetscInt       i,mx,xm,xs;
   PetscScalar    v[3],h,xlow,xhigh;
   MatStencil     row,col[3];
   DM             da;
 
   PetscFunctionBeginUser;
-  ierr = KSPGetDM(ksp,&da);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
+  PetscCall(KSPGetDM(ksp,&da));
+  PetscCall(DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0));
+  PetscCall(DMDAGetCorners(da,&xs,0,0,&xm,0,0));
   h    = 1.0/(mx-1);
 
   for (i=xs; i<xs+xm; i++) {
     row.i = i;
     if (i==0 || i==mx-1) {
       v[0] = 2.0/h;
-      ierr = MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
+      PetscCall(MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES));
     } else {
       xlow  = h*(PetscReal)i - .5*h;
       xhigh = xlow + h;
       v[0]  = (-1.0 - user->e*PetscSinScalar(2.0*PETSC_PI*user->k*xlow))/h;col[0].i = i-1;
       v[1]  = (2.0 + user->e*PetscSinScalar(2.0*PETSC_PI*user->k*xlow) + user->e*PetscSinScalar(2.0*PETSC_PI*user->k*xhigh))/h;col[1].i = row.i;
       v[2]  = (-1.0 - user->e*PetscSinScalar(2.0*PETSC_PI*user->k*xhigh))/h;col[2].i = i+1;
-      ierr  = MatSetValuesStencil(jac,1,&row,3,col,v,INSERT_VALUES);CHKERRQ(ierr);
+      PetscCall(MatSetValuesStencil(jac,1,&row,3,col,v,INSERT_VALUES));
     }
   }
-  ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 

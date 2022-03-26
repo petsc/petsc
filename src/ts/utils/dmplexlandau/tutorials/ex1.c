@@ -7,7 +7,6 @@ int main(int argc, char **argv)
 {
   DM             dm;
   Vec            X,X_0;
-  PetscErrorCode ierr;
   PetscInt       dim=2;
   TS             ts;
   Mat            J;
@@ -17,43 +16,43 @@ int main(int argc, char **argv)
   SNESLineSearch linesearch;
   PetscReal      time;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL, "-dim", &dim, NULL);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc, &argv, NULL,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL, "-dim", &dim, NULL));
   /* Create a mesh */
-  ierr = DMPlexLandauCreateVelocitySpace(PETSC_COMM_SELF, dim, "", &X, &J, &dm);CHKERRQ(ierr);
-  ierr = DMSetUp(dm);CHKERRQ(ierr);
-  ierr = VecDuplicate(X,&X_0);CHKERRQ(ierr);
-  ierr = VecCopy(X,X_0);CHKERRQ(ierr);
-  ierr = DMPlexLandauPrintNorms(X,0);CHKERRQ(ierr);
-  ierr = DMSetOutputSequenceNumber(dm, 0, 0.0);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dm,NULL,"-dm_view");CHKERRQ(ierr);
-  ierr = VecViewFromOptions(X,NULL,"-vec_view");CHKERRQ(ierr);
+  PetscCall(DMPlexLandauCreateVelocitySpace(PETSC_COMM_SELF, dim, "", &X, &J, &dm));
+  PetscCall(DMSetUp(dm));
+  PetscCall(VecDuplicate(X,&X_0));
+  PetscCall(VecCopy(X,X_0));
+  PetscCall(DMPlexLandauPrintNorms(X,0));
+  PetscCall(DMSetOutputSequenceNumber(dm, 0, 0.0));
+  PetscCall(DMViewFromOptions(dm,NULL,"-dm_view"));
+  PetscCall(VecViewFromOptions(X,NULL,"-vec_view"));
   /* Create timestepping solver context */
-  ierr = TSCreate(PETSC_COMM_SELF,&ts);CHKERRQ(ierr);
-  ierr = TSSetDM(ts,dm);CHKERRQ(ierr);
-  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
-  ierr = SNESLineSearchSetType(linesearch,SNESLINESEARCHBASIC);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,NULL,DMPlexLandauIFunction,NULL);CHKERRQ(ierr);
-  ierr = TSSetIJacobian(ts,J,J,DMPlexLandauIJacobian,NULL);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
-  ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-  ierr = TSSetSolution(ts,X);CHKERRQ(ierr);
-  ierr = TSSolve(ts,X);CHKERRQ(ierr);
-  ierr = DMPlexLandauPrintNorms(X,1);CHKERRQ(ierr);
-  ierr = TSGetTime(ts, &time);CHKERRQ(ierr);
-  ierr = DMSetOutputSequenceNumber(dm, 1, time);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(X,NULL,"-vec_view");CHKERRQ(ierr);
-  ierr = VecAXPY(X,-1,X_0);CHKERRQ(ierr);
+  PetscCall(TSCreate(PETSC_COMM_SELF,&ts));
+  PetscCall(TSSetDM(ts,dm));
+  PetscCall(TSGetSNES(ts,&snes));
+  PetscCall(SNESGetLineSearch(snes,&linesearch));
+  PetscCall(SNESLineSearchSetType(linesearch,SNESLINESEARCHBASIC));
+  PetscCall(TSSetIFunction(ts,NULL,DMPlexLandauIFunction,NULL));
+  PetscCall(TSSetIJacobian(ts,J,J,DMPlexLandauIJacobian,NULL));
+  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
+  PetscCall(SNESGetKSP(snes,&ksp));
+  PetscCall(KSPGetPC(ksp,&pc));
+  PetscCall(TSSetFromOptions(ts));
+  PetscCall(TSSetSolution(ts,X));
+  PetscCall(TSSolve(ts,X));
+  PetscCall(DMPlexLandauPrintNorms(X,1));
+  PetscCall(TSGetTime(ts, &time));
+  PetscCall(DMSetOutputSequenceNumber(dm, 1, time));
+  PetscCall(VecViewFromOptions(X,NULL,"-vec_view"));
+  PetscCall(VecAXPY(X,-1,X_0));
   /* clean up */
-  ierr = DMPlexLandauDestroyVelocitySpace(&dm);CHKERRQ(ierr);
-  ierr = TSDestroy(&ts);CHKERRQ(ierr);
-  ierr = VecDestroy(&X);CHKERRQ(ierr);
-  ierr = VecDestroy(&X_0);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(DMPlexLandauDestroyVelocitySpace(&dm));
+  PetscCall(TSDestroy(&ts));
+  PetscCall(VecDestroy(&X));
+  PetscCall(VecDestroy(&X_0));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

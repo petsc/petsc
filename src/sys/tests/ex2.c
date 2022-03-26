@@ -5,23 +5,21 @@ static char help[] = "Tests the signal handler.\n";
 
 int CreateError(int n)
 {
-  PetscErrorCode ierr;
   PetscReal      *x = 0;
   if (!n) {x[0] = 100.; return 0;}
-  ierr = CreateError(n-1);CHKERRQ(ierr);
+  PetscCall(CreateError(n-1));
   return 0;
 }
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscFPrintf(PETSC_COMM_WORLD,stdout,"Demonstrates how PETSc can trap error interrupts\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(PETSC_COMM_WORLD,stdout,"The error below is contrived to test the code!\n");CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
-  ierr = CreateError(5);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscFPrintf(PETSC_COMM_WORLD,stdout,"Demonstrates how PETSc can trap error interrupts\n"));
+  PetscCall(PetscFPrintf(PETSC_COMM_WORLD,stdout,"The error below is contrived to test the code!\n"));
+  PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
+  PetscCall(CreateError(5));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

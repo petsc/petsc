@@ -14,13 +14,12 @@
 
 PETSC_EXTERN void matsetvalue_(Mat *mat,PetscInt *i,PetscInt *j,PetscScalar *va,InsertMode *mode,PetscErrorCode *ierr)
 {
-  /* cannot use MatSetValue() here since that uses CHKERRQ() which has a return in it */
+  /* cannot use MatSetValue() here since that uses PetscCall() which has a return in it */
   *ierr = MatSetValues(*mat,1,i,1,j,va,*mode);
 }
 
 PETSC_EXTERN void matsetvaluelocal_(Mat *mat,PetscInt *i,PetscInt *j,PetscScalar *va,InsertMode *mode,PetscErrorCode *ierr)
 {
-  /* cannot use MatSetValueLocal() here since that uses CHKERRQ() which has a return in it */
+  /* cannot use MatSetValueLocal() here since that uses PetscCall() which has a return in it */
   *ierr = MatSetValuesLocal(*mat,1,i,1,j,va,*mode);
 }
-

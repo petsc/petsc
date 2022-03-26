@@ -19,13 +19,12 @@
 @*/
 PETSC_EXTERN PetscErrorCode DMProductGetDM(DM dm,PetscInt slot,DM *subdm)
 {
-  PetscErrorCode ierr;
   DM_Product     *product = (DM_Product*)dm->data;
   PetscInt       dim;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMPRODUCT);
-  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+  PetscCall(DMGetDimension(dm,&dim));
   PetscCheckFalse(slot >= dim || slot < 0,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"slot number must be in range 0-%D",dim-1);
   *subdm = product->dm[slot];
   PetscFunctionReturn(0);
@@ -50,16 +49,15 @@ PETSC_EXTERN PetscErrorCode DMProductGetDM(DM dm,PetscInt slot,DM *subdm)
 @*/
 PETSC_EXTERN PetscErrorCode DMProductSetDM(DM dm,PetscInt slot,DM subdm)
 {
-  PetscErrorCode ierr;
   DM_Product     *product = (DM_Product*)dm->data;
   PetscInt       dim;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMPRODUCT);
-  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+  PetscCall(DMGetDimension(dm,&dim));
   PetscCheckFalse(slot >= dim || slot < 0,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"slot number must be in range 0-%D",dim-1);
-  ierr = PetscObjectReference((PetscObject)subdm);CHKERRQ(ierr);
-  ierr = DMDestroy(&product->dm[slot]);CHKERRQ(ierr);
+  PetscCall(PetscObjectReference((PetscObject)subdm));
+  PetscCall(DMDestroy(&product->dm[slot]));
   product->dm[slot] = subdm;
   PetscFunctionReturn(0);
 }
@@ -80,13 +78,12 @@ PETSC_EXTERN PetscErrorCode DMProductSetDM(DM dm,PetscInt slot,DM subdm)
 @*/
 PETSC_EXTERN PetscErrorCode DMProductSetDimensionIndex(DM dm,PetscInt slot,PetscInt idx)
 {
-  PetscErrorCode ierr;
   DM_Product     *product = (DM_Product*)dm->data;
   PetscInt       dim;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMPRODUCT);
-  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+  PetscCall(DMGetDimension(dm,&dim));
   PetscCheckFalse(slot >= dim || slot < 0,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"slot number must be in range 0-%D",dim-1);
   product->dim[slot] = idx;
   PetscFunctionReturn(0);

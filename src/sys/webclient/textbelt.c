@@ -34,38 +34,37 @@
 @*/
 PetscErrorCode PetscTextBelt(MPI_Comm comm,const char number[],const char message[],PetscBool *flg)
 {
-  PetscErrorCode ierr;
   size_t         nlen,mlen,blen;
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
-  ierr = PetscStrlen(number,&nlen);CHKERRQ(ierr);
+  PetscCall(PetscStrlen(number,&nlen));
   PetscCheckFalse(nlen != 10,comm,PETSC_ERR_ARG_WRONG,"Number %s is not ten digits",number);
-  ierr = PetscStrlen(message,&mlen);CHKERRQ(ierr);
+  PetscCall(PetscStrlen(message,&mlen));
   PetscCheckFalse(mlen > 100,comm,PETSC_ERR_ARG_WRONG,"Message  %s is too long",message);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
   if (rank == 0) {
     int       sock;
     char      buff[474],*body;
     PetscInt  i;
 
-    ierr = PetscMalloc1(mlen+nlen+100,&body);CHKERRQ(ierr);
-    ierr = PetscStrcpy(body,"number=");CHKERRQ(ierr);
-    ierr = PetscStrcat(body,number);CHKERRQ(ierr);
-    ierr = PetscStrcat(body,"&");CHKERRQ(ierr);
-    ierr = PetscStrcat(body,"message=");CHKERRQ(ierr);
-    ierr = PetscStrcat(body,message);CHKERRQ(ierr);
-    ierr = PetscStrlen(body,&blen);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(mlen+nlen+100,&body));
+    PetscCall(PetscStrcpy(body,"number="));
+    PetscCall(PetscStrcat(body,number));
+    PetscCall(PetscStrcat(body,"&"));
+    PetscCall(PetscStrcat(body,"message="));
+    PetscCall(PetscStrcat(body,message));
+    PetscCall(PetscStrlen(body,&blen));
     for (i=0; i<(int)blen; i++) {
       if (body[i] == ' ') body[i] = '+';
     }
-    ierr = PetscOpenSocket("textbelt.com",80,&sock);CHKERRQ(ierr);
-    ierr = PetscHTTPRequest("POST","textbelt.com/text",NULL,"application/x-www-form-urlencoded",body,sock,buff,sizeof(buff));CHKERRQ(ierr);
+    PetscCall(PetscOpenSocket("textbelt.com",80,&sock));
+    PetscCall(PetscHTTPRequest("POST","textbelt.com/text",NULL,"application/x-www-form-urlencoded",body,sock,buff,sizeof(buff)));
     close(sock);
-    ierr = PetscFree(body);CHKERRQ(ierr);
+    PetscCall(PetscFree(body));
     if (flg) {
       char *found;
-      ierr = PetscStrstr(buff,"\"success\":tr",&found);CHKERRQ(ierr);
+      PetscCall(PetscStrstr(buff,"\"success\":tr",&found));
       *flg = found ? PETSC_TRUE : PETSC_FALSE;
     }
   }

@@ -6,36 +6,35 @@ int main(int argc, char **args)
   Mat            A, AHT;
   Vec            x, y;
   PetscRandom    rand;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &args, (char*)0, help); if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc, &args, (char*)0, help));
 
-  ierr = MatCreate(PETSC_COMM_WORLD, &A);CHKERRQ(ierr);
-  ierr = MatSetType(A, MATAIJ);CHKERRQ(ierr);
-  ierr = MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, 10, 10);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
+  PetscCall(MatSetType(A, MATAIJ));
+  PetscCall(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, 10, 10));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSetUp(A));
 
-  ierr = MatSetValue(A, 0, 0, 1.0, INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatSetValue(A, 0, 0, 1.0, INSERT_VALUES));
+  PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
 
-  ierr = MatCreateHermitianTranspose(A, &AHT);CHKERRQ(ierr);
-  ierr = MatCreateVecs(AHT, &x, &y);CHKERRQ(ierr);
+  PetscCall(MatCreateHermitianTranspose(A, &AHT));
+  PetscCall(MatCreateVecs(AHT, &x, &y));
 
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD, &rand);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
-  ierr = VecSetRandom(y, rand);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
+  PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &rand));
+  PetscCall(PetscRandomSetFromOptions(rand));
+  PetscCall(VecSetRandom(y, rand));
+  PetscCall(PetscRandomDestroy(&rand));
 
-  ierr = MatMultHermitianTranspose(AHT, y, x);CHKERRQ(ierr);
+  PetscCall(MatMultHermitianTranspose(AHT, y, x));
 
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&AHT);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&y));
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&AHT));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -129,11 +129,10 @@ int main(int argc,char **argv)
   Parameter      param;
   GridInfo       grid;
   PetscInt       nits;
-  PetscErrorCode ierr;
   MPI_Comm       comm;
   DM             da;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscOptionsSetValue(NULL,"-file","ex30_output");
   PetscOptionsSetValue(NULL,"-snes_monitor_short",NULL);
   PetscOptionsSetValue(NULL,"-snes_max_it","20");
@@ -146,61 +145,61 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set up the problem parameters.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = SetParams(&param,&grid);CHKERRQ(ierr);
-  ierr = ReportParams(&param,&grid);CHKERRQ(ierr);
+  PetscCall(SetParams(&param,&grid));
+  PetscCall(ReportParams(&param,&grid));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = SNESCreate(comm,&snes);CHKERRQ(ierr);
-  ierr = DMDACreate2d(comm,grid.bx,grid.by,grid.stencil,grid.ni,grid.nj,PETSC_DECIDE,PETSC_DECIDE,grid.dof,grid.stencil_width,0,0,&da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
-  ierr = SNESSetDM(snes,da);CHKERRQ(ierr);
-  ierr = DMDASetFieldName(da,0,"x-velocity");CHKERRQ(ierr);
-  ierr = DMDASetFieldName(da,1,"y-velocity");CHKERRQ(ierr);
-  ierr = DMDASetFieldName(da,2,"pressure");CHKERRQ(ierr);
-  ierr = DMDASetFieldName(da,3,"temperature");CHKERRQ(ierr);
+  PetscCall(SNESCreate(comm,&snes));
+  PetscCall(DMDACreate2d(comm,grid.bx,grid.by,grid.stencil,grid.ni,grid.nj,PETSC_DECIDE,PETSC_DECIDE,grid.dof,grid.stencil_width,0,0,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(SNESSetDM(snes,da));
+  PetscCall(DMDASetFieldName(da,0,"x-velocity"));
+  PetscCall(DMDASetFieldName(da,1,"y-velocity"));
+  PetscCall(DMDASetFieldName(da,2,"pressure"));
+  PetscCall(DMDASetFieldName(da,3,"temperature"));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create user context, set problem data, create vector data structures.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr        = PetscNew(&user);CHKERRQ(ierr);
+  PetscCall(PetscNew(&user));
   user->param = &param;
   user->grid  = &grid;
-  ierr        = DMSetApplicationContext(da,user);CHKERRQ(ierr);
-  ierr        = DMCreateGlobalVector(da,&(user->Xguess));CHKERRQ(ierr);
+  PetscCall(DMSetApplicationContext(da,user));
+  PetscCall(DMCreateGlobalVector(da,&(user->Xguess)));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set up the SNES solver with callback functions.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDASNESSetFunctionLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))FormFunctionLocal,(void*)user);CHKERRQ(ierr);
-  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+  PetscCall(DMDASNESSetFunctionLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))FormFunctionLocal,(void*)user));
+  PetscCall(SNESSetFromOptions(snes));
 
-  ierr = SNESSetConvergenceTest(snes,SNESConverged_Interactive,(void*)user,NULL);CHKERRQ(ierr);
-  ierr = PetscPushSignalHandler(InteractiveHandler,(void*)user);CHKERRQ(ierr);
+  PetscCall(SNESSetConvergenceTest(snes,SNESConverged_Interactive,(void*)user,NULL));
+  PetscCall(PetscPushSignalHandler(InteractiveHandler,(void*)user));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize and solve the nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = Initialize(da);CHKERRQ(ierr);
-  ierr = UpdateSolution(snes,user,&nits);CHKERRQ(ierr);
+  PetscCall(Initialize(da));
+  PetscCall(UpdateSolution(snes,user,&nits));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Output variables.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DoOutput(snes,nits);CHKERRQ(ierr);
+  PetscCall(DoOutput(snes,nits));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = VecDestroy(&user->Xguess);CHKERRQ(ierr);
-  ierr = VecDestroy(&user->x);CHKERRQ(ierr);
-  ierr = PetscFree(user);CHKERRQ(ierr);
-  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
-  ierr = PetscPopSignalHandler();CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(VecDestroy(&user->Xguess));
+  PetscCall(VecDestroy(&user->x));
+  PetscCall(PetscFree(user));
+  PetscCall(SNESDestroy(&snes));
+  PetscCall(DMDestroy(&da));
+  PetscCall(PetscPopSignalHandler());
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*=====================================================================
@@ -217,16 +216,15 @@ PetscErrorCode UpdateSolution(SNES snes, AppCtx *user, PetscInt *nits)
   Parameter           *param   = user->param;
   PetscReal           cont_incr=0.3;
   PetscInt            its;
-  PetscErrorCode      ierr;
   PetscBool           q = PETSC_FALSE;
   DM                  dm;
 
   PetscFunctionBeginUser;
-  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(dm,&user->x);CHKERRQ(ierr);
-  ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-  ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
-  ierr = KSPSetComputeSingularValues(ksp, PETSC_TRUE);CHKERRQ(ierr);
+  PetscCall(SNESGetDM(snes,&dm));
+  PetscCall(DMCreateGlobalVector(dm,&user->x));
+  PetscCall(SNESGetKSP(snes,&ksp));
+  PetscCall(KSPGetPC(ksp, &pc));
+  PetscCall(KSPSetComputeSingularValues(ksp, PETSC_TRUE));
 
   *nits=0;
 
@@ -234,29 +232,29 @@ PetscErrorCode UpdateSolution(SNES snes, AppCtx *user, PetscInt *nits)
   if (param->ivisc == VISC_CONST && !param->stop_solve) {
     param->ivisc = VISC_CONST;
 
-    ierr   = SNESSolve(snes,0,user->x);CHKERRQ(ierr);
-    ierr   = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
-    ierr   = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
+    PetscCall(SNESSolve(snes,0,user->x));
+    PetscCall(SNESGetConvergedReason(snes,&reason));
+    PetscCall(SNESGetIterationNumber(snes,&its));
     *nits += its;
-    ierr   = VecCopy(user->x,user->Xguess);CHKERRQ(ierr);
+    PetscCall(VecCopy(user->x,user->Xguess));
     if (param->stop_solve) goto done;
   }
 
   /* Olivine diffusion creep */
   if (param->ivisc >= VISC_DIFN && !param->stop_solve) {
-    if (!q) {ierr = PetscPrintf(PETSC_COMM_WORLD,"Computing Variable Viscosity Solution\n");CHKERRQ(ierr);}
+    if (!q) PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Computing Variable Viscosity Solution\n"));
 
     /* continuation method on viscosity cutoff */
     for (param->continuation=0.0;; param->continuation+=cont_incr) {
-      if (!q) {ierr = PetscPrintf(PETSC_COMM_WORLD," Continuation parameter = %g\n", (double)param->continuation);CHKERRQ(ierr);}
+      if (!q) PetscCall(PetscPrintf(PETSC_COMM_WORLD," Continuation parameter = %g\n", (double)param->continuation));
 
       /* solve the non-linear system */
-      ierr   = VecCopy(user->Xguess,user->x);CHKERRQ(ierr);
-      ierr   = SNESSolve(snes,0,user->x);CHKERRQ(ierr);
-      ierr   = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
-      ierr   = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
+      PetscCall(VecCopy(user->Xguess,user->x));
+      PetscCall(SNESSolve(snes,0,user->x));
+      PetscCall(SNESGetConvergedReason(snes,&reason));
+      PetscCall(SNESGetIterationNumber(snes,&its));
       *nits += its;
-      if (!q) {ierr = PetscPrintf(PETSC_COMM_WORLD," SNES iterations: %D, Cumulative: %D\n", its, *nits);CHKERRQ(ierr);}
+      if (!q) PetscCall(PetscPrintf(PETSC_COMM_WORLD," SNES iterations: %D, Cumulative: %D\n", its, *nits));
       if (param->stop_solve) goto done;
 
       if (reason<0) {
@@ -266,7 +264,7 @@ PetscErrorCode UpdateSolution(SNES snes, AppCtx *user, PetscInt *nits)
 
       } else {
         /* converged */
-        ierr = VecCopy(user->x,user->Xguess);CHKERRQ(ierr);
+        PetscCall(VecCopy(user->x,user->Xguess));
         if (param->continuation >= 1.0) goto done;
         if (its<=3)      cont_incr = 0.30001;
         else if (its<=8) cont_incr = 0.15001;
@@ -277,8 +275,8 @@ PetscErrorCode UpdateSolution(SNES snes, AppCtx *user, PetscInt *nits)
     }
   }
 done:
-  if (param->stop_solve && !q) {ierr = PetscPrintf(PETSC_COMM_WORLD,"USER SIGNAL: stopping solve.\n");CHKERRQ(ierr);}
-  if (reason<0 && !q) {ierr = PetscPrintf(PETSC_COMM_WORLD,"FAILED TO CONVERGE: stopping solve.\n");CHKERRQ(ierr);}
+  if (param->stop_solve && !q) PetscCall(PetscPrintf(PETSC_COMM_WORLD,"USER SIGNAL: stopping solve.\n"));
+  if (reason<0 && !q) PetscCall(PetscPrintf(PETSC_COMM_WORLD,"FAILED TO CONVERGE: stopping solve.\n"));
   PetscFunctionReturn(0);
 }
 
@@ -769,9 +767,8 @@ static inline PetscScalar ZNormalStress(Field **x, PetscInt i, PetscInt j, Petsc
 PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
 /*---------------------------------------------------------------------*/
 {
-  PetscErrorCode ierr, ierr_out=0;
-  PetscReal      SEC_PER_YR                    = 3600.00*24.00*365.2500;
-  PetscReal      alpha_g_on_cp_units_inverse_km=4.0e-5*9.8;
+  PetscReal SEC_PER_YR                     = 3600.00*24.00*365.2500;
+  PetscReal alpha_g_on_cp_units_inverse_km = 4.0e-5*9.8;
 
   /* domain geometry */
   param->slab_dip    = 45.0;
@@ -780,25 +777,25 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
   param->lid_depth   = 35.0;                                               /* km */
   param->fault_depth = 35.0;                                               /* km */
 
-  ierr = PetscOptionsGetReal(NULL,NULL,"-slab_dip",&(param->slab_dip),NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,NULL,"-width",&(param->width),NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,NULL,"-depth",&(param->depth),NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,NULL,"-lid_depth",&(param->lid_depth),NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,NULL,"-fault_depth",&(param->fault_depth),NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-slab_dip",&(param->slab_dip),NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-width",&(param->width),NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-depth",&(param->depth),NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-lid_depth",&(param->lid_depth),NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-fault_depth",&(param->fault_depth),NULL));
 
   param->slab_dip = param->slab_dip*PETSC_PI/180.0;                    /* radians */
 
   /* grid information */
-  ierr     = PetscOptionsGetInt(NULL,NULL, "-jfault",&(grid->jfault),NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetInt(NULL,NULL, "-jfault",&(grid->jfault),NULL));
   grid->ni = 82;
-  ierr     = PetscOptionsGetInt(NULL,NULL, "-ni",&(grid->ni),NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetInt(NULL,NULL, "-ni",&(grid->ni),NULL));
 
   grid->dx            = param->width/((PetscReal)(grid->ni-2));               /* km */
   grid->dz            = grid->dx*PetscTanReal(param->slab_dip);               /* km */
   grid->nj            = (PetscInt)(param->depth/grid->dz + 3.0);         /* gridpoints*/
   param->depth        = grid->dz*(grid->nj-2);                             /* km */
   grid->inose         = 0;                                          /* gridpoints*/
-  ierr                = PetscOptionsGetInt(NULL,NULL,"-inose",&(grid->inose),NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-inose",&(grid->inose),NULL));
   grid->bx            = DM_BOUNDARY_NONE;
   grid->by            = DM_BOUNDARY_NONE;
   grid->stencil       = DMDA_STENCIL_BOX;
@@ -809,7 +806,7 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
   /* boundary conditions */
   param->pv_analytic = PETSC_FALSE;
   param->ibound      = BC_NOSTRESS;
-  ierr               = PetscOptionsGetInt(NULL,NULL,"-ibound",&(param->ibound),NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-ibound",&(param->ibound),NULL));
 
   /* physical constants */
   param->slab_velocity = 5.0;               /* cm/yr */
@@ -818,11 +815,11 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
   param->kappa         = 0.7272e-6;         /* m^2/sec */
   param->potentialT    = 1300.0;            /* degrees C */
 
-  ierr = PetscOptionsGetReal(NULL,NULL,"-slab_velocity",&(param->slab_velocity),NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,NULL,"-slab_age",&(param->slab_age),NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,NULL,"-lid_age",&(param->lid_age),NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,NULL,"-kappa",&(param->kappa),NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,NULL,"-potentialT",&(param->potentialT),NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-slab_velocity",&(param->slab_velocity),NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-slab_age",&(param->slab_age),NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-lid_age",&(param->lid_age),NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-kappa",&(param->kappa),NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-potentialT",&(param->potentialT),NULL));
 
   /* viscosity */
   param->ivisc        = 3;                  /* 0=isovisc, 1=difn creep, 2=disl creep, 3=full */
@@ -842,26 +839,26 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
   param->dislocation.Estar = 530e3;           /* J/mol */
   param->dislocation.Vstar = 14e-6;           /* m^3/mol */
 
-  ierr = PetscOptionsGetInt(NULL,NULL, "-ivisc",&(param->ivisc),NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,NULL,"-visc_cutoff",&(param->visc_cutoff),NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetInt(NULL,NULL, "-ivisc",&(param->ivisc),NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-visc_cutoff",&(param->visc_cutoff),NULL));
 
   param->output_ivisc = param->ivisc;
 
-  ierr = PetscOptionsGetInt(NULL,NULL,"-output_ivisc",&(param->output_ivisc),NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,NULL,"-vstar",&(param->dislocation.Vstar),NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-output_ivisc",&(param->output_ivisc),NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-vstar",&(param->dislocation.Vstar),NULL));
 
   /* output options */
   param->quiet      = PETSC_FALSE;
   param->param_test = PETSC_FALSE;
 
-  ierr = PetscOptionsHasName(NULL,NULL,"-quiet",&(param->quiet));CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,NULL,"-test",&(param->param_test));CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,NULL,"-file",param->filename,sizeof(param->filename),&(param->output_to_file));CHKERRQ(ierr);
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-quiet",&(param->quiet)));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-test",&(param->param_test)));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-file",param->filename,sizeof(param->filename),&(param->output_to_file)));
 
   /* advection */
   param->adv_scheme = ADVECT_FROMM;       /* advection scheme: 0=finite vol, 1=Fromm */
 
-  ierr = PetscOptionsGetInt(NULL,NULL,"-adv_scheme",&(param->adv_scheme),NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-adv_scheme",&(param->adv_scheme),NULL));
 
   /* misc. flags */
   param->stop_solve    = PETSC_FALSE;
@@ -896,9 +893,9 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
                         / param->kappa;                         /* m^2/sec */
   param->z_scale = param->L * alpha_g_on_cp_units_inverse_km;
   param->skt     = PetscSqrtReal(param->kappa*param->slab_age*SEC_PER_YR);
-  ierr           = PetscOptionsGetReal(NULL,NULL,"-peclet",&(param->peclet),NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-peclet",&(param->peclet),NULL));
 
-  return ierr_out;
+  return 0;
 }
 
 /*---------------------------------------------------------------------*/
@@ -906,70 +903,69 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
 PetscErrorCode ReportParams(Parameter *param, GridInfo *grid)
 /*---------------------------------------------------------------------*/
 {
-  PetscErrorCode ierr, ierr_out=0;
   char           date[30];
 
-  ierr = PetscGetDate(date,30);CHKERRQ(ierr);
+  PetscCall(PetscGetDate(date,30));
 
   if (!(param->quiet)) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"---------------------BEGIN ex30 PARAM REPORT-------------------\n");CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Domain: \n");CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Width = %g km,         Depth = %g km\n",(double)param->width,(double)param->depth);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Slab dip = %g degrees,  Slab velocity = %g cm/yr\n",(double)(param->slab_dip*180.0/PETSC_PI),(double)param->slab_velocity);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Lid depth = %5.2f km,   Fault depth = %5.2f km\n",(double)(param->lid_depth*param->L),(double)(param->fault_depth*param->L));CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"---------------------BEGIN ex30 PARAM REPORT-------------------\n"));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Domain: \n"));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  Width = %g km,         Depth = %g km\n",(double)param->width,(double)param->depth));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  Slab dip = %g degrees,  Slab velocity = %g cm/yr\n",(double)(param->slab_dip*180.0/PETSC_PI),(double)param->slab_velocity));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  Lid depth = %5.2f km,   Fault depth = %5.2f km\n",(double)(param->lid_depth*param->L),(double)(param->fault_depth*param->L)));
 
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"\nGrid: \n");CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  [ni,nj] = %D, %D       [dx,dz] = %g, %g km\n",grid->ni,grid->nj,(double)(grid->dx*param->L),(double)(grid->dz*param->L));CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  jlid = %3D              jfault = %3D \n",grid->jlid,grid->jfault);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Pe = %g\n",(double)param->peclet);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\nGrid: \n"));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  [ni,nj] = %D, %D       [dx,dz] = %g, %g km\n",grid->ni,grid->nj,(double)(grid->dx*param->L),(double)(grid->dz*param->L)));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  jlid = %3D              jfault = %3D \n",grid->jlid,grid->jfault));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  Pe = %g\n",(double)param->peclet));
 
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"\nRheology:");CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\nRheology:"));
     if (param->ivisc==VISC_CONST) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"                 Isoviscous \n");CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"                 Isoviscous \n"));
       if (param->pv_analytic) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"                          Pressure and Velocity prescribed! \n");CHKERRQ(ierr);
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"                          Pressure and Velocity prescribed! \n"));
       }
     } else if (param->ivisc==VISC_DIFN) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"                 Diffusion Creep (T-Dependent Newtonian) \n");CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"                          Viscosity range: %g--%g Pa-sec \n",(double)param->eta0,(double)(param->visc_cutoff*param->eta0));CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"                 Diffusion Creep (T-Dependent Newtonian) \n"));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"                          Viscosity range: %g--%g Pa-sec \n",(double)param->eta0,(double)(param->visc_cutoff*param->eta0)));
     } else if (param->ivisc==VISC_DISL) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"                 Dislocation Creep (T-Dependent Non-Newtonian) \n");CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"                          Viscosity range: %g--%g Pa-sec \n",(double)param->eta0,(double)(param->visc_cutoff*param->eta0));CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"                 Dislocation Creep (T-Dependent Non-Newtonian) \n"));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"                          Viscosity range: %g--%g Pa-sec \n",(double)param->eta0,(double)(param->visc_cutoff*param->eta0)));
     } else if (param->ivisc==VISC_FULL) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"                 Full Rheology \n");CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"                          Viscosity range: %g--%g Pa-sec \n",(double)param->eta0,(double)(param->visc_cutoff*param->eta0));CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"                 Full Rheology \n"));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"                          Viscosity range: %g--%g Pa-sec \n",(double)param->eta0,(double)(param->visc_cutoff*param->eta0)));
     } else {
-      ierr     = PetscPrintf(PETSC_COMM_WORLD,"                 Invalid! \n");CHKERRQ(ierr);
-      ierr_out = 1;
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"                 Invalid! \n"));
+      return 1;
     }
 
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Boundary condition:");CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Boundary condition:"));
     if (param->ibound==BC_ANALYTIC) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"       Isoviscous Analytic Dirichlet \n");CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"       Isoviscous Analytic Dirichlet \n"));
     } else if (param->ibound==BC_NOSTRESS) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"       Stress-Free (normal & shear stress)\n");CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"       Stress-Free (normal & shear stress)\n"));
     } else if (param->ibound==BC_EXPERMNT) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"       Experimental boundary condition \n");CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"       Experimental boundary condition \n"));
     } else {
-      ierr     = PetscPrintf(PETSC_COMM_WORLD,"       Invalid! \n");CHKERRQ(ierr);
-      ierr_out = 1;
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"       Invalid! \n"));
+      return 1;
     }
 
     if (param->output_to_file) {
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Output Destination:       Mat file \"%s\"\n",param->filename);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Output Destination:       Mat file \"%s\"\n",param->filename));
 #else
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Output Destination:       PETSc binary file \"%s\"\n",param->filename);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Output Destination:       PETSc binary file \"%s\"\n",param->filename));
 #endif
     }
     if (param->output_ivisc != param->ivisc) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"                          Output viscosity: -ivisc %D\n",param->output_ivisc);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"                          Output viscosity: -ivisc %D\n",param->output_ivisc));
     }
 
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"---------------------END ex30 PARAM REPORT---------------------\n");CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"---------------------END ex30 PARAM REPORT---------------------\n"));
   }
   if (param->param_test) PetscEnd();
-  return ierr_out;
+  return 0;
 }
 
 /* ------------------------------------------------------------------- */
@@ -982,17 +978,16 @@ PetscErrorCode Initialize(DM da)
   Parameter      *param;
   GridInfo       *grid;
   PetscInt       i,j,is,js,im,jm;
-  PetscErrorCode ierr;
   Field          **x;
   Vec            Xguess;
 
   /* Get the fine grid */
-  ierr   = DMGetApplicationContext(da,&user);CHKERRQ(ierr);
+  PetscCall(DMGetApplicationContext(da,&user));
   Xguess = user->Xguess;
   param  = user->param;
   grid   = user->grid;
-  ierr   = DMDAGetCorners(da,&is,&js,NULL,&im,&jm,NULL);CHKERRQ(ierr);
-  ierr   = DMDAVecGetArray(da,Xguess,(void**)&x);CHKERRQ(ierr);
+  PetscCall(DMDAGetCorners(da,&is,&js,NULL,&im,&jm,NULL));
+  PetscCall(DMDAVecGetArray(da,Xguess,(void**)&x));
 
   /* Compute initial guess */
   for (j=js; j<js+jm; j++) {
@@ -1013,7 +1008,7 @@ PetscErrorCode Initialize(DM da)
   }
 
   /* Restore x to Xguess */
-  ierr = DMDAVecRestoreArray(da,Xguess,(void**)&x);CHKERRQ(ierr);
+  PetscCall(DMDAVecRestoreArray(da,Xguess,(void**)&x));
 
   return 0;
 }
@@ -1027,15 +1022,14 @@ PetscErrorCode DoOutput(SNES snes, PetscInt its)
   Parameter      *param;
   GridInfo       *grid;
   PetscInt       ivt;
-  PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscViewer    viewer;
   Vec            res, pars;
   MPI_Comm       comm;
   DM             da;
 
-  ierr  = SNESGetDM(snes,&da);CHKERRQ(ierr);
-  ierr  = DMGetApplicationContext(da,&user);CHKERRQ(ierr);
+  PetscCall(SNESGetDM(snes,&da));
+  PetscCall(DMGetApplicationContext(da,&user));
   param = user->param;
   grid  = user->grid;
   ivt   = param->ivisc;
@@ -1043,64 +1037,64 @@ PetscErrorCode DoOutput(SNES snes, PetscInt its)
   param->ivisc = param->output_ivisc;
 
   /* compute final residual and final viscosity/strain rate fields */
-  ierr = SNESGetFunction(snes, &res, NULL, NULL);CHKERRQ(ierr);
-  ierr = ViscosityField(da, user->x, user->Xguess);CHKERRQ(ierr);
+  PetscCall(SNESGetFunction(snes, &res, NULL, NULL));
+  PetscCall(ViscosityField(da, user->x, user->Xguess));
 
   /* get the communicator and the rank of the processor */
-  ierr = PetscObjectGetComm((PetscObject)snes, &comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
+  PetscCall(PetscObjectGetComm((PetscObject)snes, &comm));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
 
   if (param->output_to_file) { /* send output to binary file */
-    ierr = VecCreate(comm, &pars);CHKERRQ(ierr);
+    PetscCall(VecCreate(comm, &pars));
     if (rank == 0) { /* on processor 0 */
-      ierr = VecSetSizes(pars, 20, PETSC_DETERMINE);CHKERRQ(ierr);
-      ierr = VecSetFromOptions(pars);CHKERRQ(ierr);
-      ierr = VecSetValue(pars,0, (PetscScalar)(grid->ni),INSERT_VALUES);CHKERRQ(ierr);
-      ierr = VecSetValue(pars,1, (PetscScalar)(grid->nj),INSERT_VALUES);CHKERRQ(ierr);
-      ierr = VecSetValue(pars,2, (PetscScalar)(grid->dx),INSERT_VALUES);CHKERRQ(ierr);
-      ierr = VecSetValue(pars,3, (PetscScalar)(grid->dz),INSERT_VALUES);CHKERRQ(ierr);
-      ierr = VecSetValue(pars,4, (PetscScalar)(param->L),INSERT_VALUES);CHKERRQ(ierr);
-      ierr = VecSetValue(pars,5, (PetscScalar)(param->V),INSERT_VALUES);CHKERRQ(ierr);
+      PetscCall(VecSetSizes(pars, 20, PETSC_DETERMINE));
+      PetscCall(VecSetFromOptions(pars));
+      PetscCall(VecSetValue(pars,0, (PetscScalar)(grid->ni),INSERT_VALUES));
+      PetscCall(VecSetValue(pars,1, (PetscScalar)(grid->nj),INSERT_VALUES));
+      PetscCall(VecSetValue(pars,2, (PetscScalar)(grid->dx),INSERT_VALUES));
+      PetscCall(VecSetValue(pars,3, (PetscScalar)(grid->dz),INSERT_VALUES));
+      PetscCall(VecSetValue(pars,4, (PetscScalar)(param->L),INSERT_VALUES));
+      PetscCall(VecSetValue(pars,5, (PetscScalar)(param->V),INSERT_VALUES));
       /* skipped 6 intentionally */
-      ierr = VecSetValue(pars,7, (PetscScalar)(param->slab_dip),INSERT_VALUES);CHKERRQ(ierr);
-      ierr = VecSetValue(pars,8, (PetscScalar)(grid->jlid),INSERT_VALUES);CHKERRQ(ierr);
-      ierr = VecSetValue(pars,9, (PetscScalar)(param->lid_depth),INSERT_VALUES);CHKERRQ(ierr);
-      ierr = VecSetValue(pars,10,(PetscScalar)(grid->jfault),INSERT_VALUES);CHKERRQ(ierr);
-      ierr = VecSetValue(pars,11,(PetscScalar)(param->fault_depth),INSERT_VALUES);CHKERRQ(ierr);
-      ierr = VecSetValue(pars,12,(PetscScalar)(param->potentialT),INSERT_VALUES);CHKERRQ(ierr);
-      ierr = VecSetValue(pars,13,(PetscScalar)(param->ivisc),INSERT_VALUES);CHKERRQ(ierr);
-      ierr = VecSetValue(pars,14,(PetscScalar)(param->visc_cutoff),INSERT_VALUES);CHKERRQ(ierr);
-      ierr = VecSetValue(pars,15,(PetscScalar)(param->ibound),INSERT_VALUES);CHKERRQ(ierr);
-      ierr = VecSetValue(pars,16,(PetscScalar)(its),INSERT_VALUES);CHKERRQ(ierr);
+      PetscCall(VecSetValue(pars,7, (PetscScalar)(param->slab_dip),INSERT_VALUES));
+      PetscCall(VecSetValue(pars,8, (PetscScalar)(grid->jlid),INSERT_VALUES));
+      PetscCall(VecSetValue(pars,9, (PetscScalar)(param->lid_depth),INSERT_VALUES));
+      PetscCall(VecSetValue(pars,10,(PetscScalar)(grid->jfault),INSERT_VALUES));
+      PetscCall(VecSetValue(pars,11,(PetscScalar)(param->fault_depth),INSERT_VALUES));
+      PetscCall(VecSetValue(pars,12,(PetscScalar)(param->potentialT),INSERT_VALUES));
+      PetscCall(VecSetValue(pars,13,(PetscScalar)(param->ivisc),INSERT_VALUES));
+      PetscCall(VecSetValue(pars,14,(PetscScalar)(param->visc_cutoff),INSERT_VALUES));
+      PetscCall(VecSetValue(pars,15,(PetscScalar)(param->ibound),INSERT_VALUES));
+      PetscCall(VecSetValue(pars,16,(PetscScalar)(its),INSERT_VALUES));
     } else { /* on some other processor */
-      ierr = VecSetSizes(pars, 0, PETSC_DETERMINE);CHKERRQ(ierr);
-      ierr = VecSetFromOptions(pars);CHKERRQ(ierr);
+      PetscCall(VecSetSizes(pars, 0, PETSC_DETERMINE));
+      PetscCall(VecSetFromOptions(pars));
     }
-    ierr = VecAssemblyBegin(pars);CHKERRQ(ierr); ierr = VecAssemblyEnd(pars);CHKERRQ(ierr);
+    PetscCall(VecAssemblyBegin(pars)); PetscCall(VecAssemblyEnd(pars));
 
     /* create viewer */
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-    ierr = PetscViewerMatlabOpen(PETSC_COMM_WORLD,param->filename,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+    PetscCall(PetscViewerMatlabOpen(PETSC_COMM_WORLD,param->filename,FILE_MODE_WRITE,&viewer));
 #else
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,param->filename,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,param->filename,FILE_MODE_WRITE,&viewer));
 #endif
 
     /* send vectors to viewer */
-    ierr = PetscObjectSetName((PetscObject)res,"res");CHKERRQ(ierr);
-    ierr = VecView(res,viewer);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)user->x,"out");CHKERRQ(ierr);
-    ierr = VecView(user->x, viewer);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)(user->Xguess),"aux");CHKERRQ(ierr);
-    ierr = VecView(user->Xguess, viewer);CHKERRQ(ierr);
-    ierr = StressField(da);CHKERRQ(ierr); /* compute stress fields */
-    ierr = PetscObjectSetName((PetscObject)(user->Xguess),"str");CHKERRQ(ierr);
-    ierr = VecView(user->Xguess, viewer);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)pars,"par");CHKERRQ(ierr);
-    ierr = VecView(pars, viewer);CHKERRQ(ierr);
+    PetscCall(PetscObjectSetName((PetscObject)res,"res"));
+    PetscCall(VecView(res,viewer));
+    PetscCall(PetscObjectSetName((PetscObject)user->x,"out"));
+    PetscCall(VecView(user->x, viewer));
+    PetscCall(PetscObjectSetName((PetscObject)(user->Xguess),"aux"));
+    PetscCall(VecView(user->Xguess, viewer));
+    PetscCall(StressField(da)); /* compute stress fields */
+    PetscCall(PetscObjectSetName((PetscObject)(user->Xguess),"str"));
+    PetscCall(VecView(user->Xguess, viewer));
+    PetscCall(PetscObjectSetName((PetscObject)pars,"par"));
+    PetscCall(VecView(pars, viewer));
 
     /* destroy viewer and vector */
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-    ierr = VecDestroy(&pars);CHKERRQ(ierr);
+    PetscCall(PetscViewerDestroy(&viewer));
+    PetscCall(VecDestroy(&pars));
   }
 
   param->ivisc = ivt;
@@ -1119,20 +1113,19 @@ PetscErrorCode ViscosityField(DM da, Vec X, Vec V)
   Field          **v, **x;
   PetscReal      eps, /* dx,*/ dz, T, epsC, TC;
   PetscInt       i,j,is,js,im,jm,ilim,jlim,ivt;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr         = DMGetApplicationContext(da,&user);CHKERRQ(ierr);
+  PetscCall(DMGetApplicationContext(da,&user));
   param        = user->param;
   grid         = user->grid;
   ivt          = param->ivisc;
   param->ivisc = param->output_ivisc;
 
-  ierr = DMGetLocalVector(da, &localX);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(da, X, INSERT_VALUES, localX);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da, X, INSERT_VALUES, localX);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,localX,(void**)&x);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,V,(void**)&v);CHKERRQ(ierr);
+  PetscCall(DMGetLocalVector(da, &localX));
+  PetscCall(DMGlobalToLocalBegin(da, X, INSERT_VALUES, localX));
+  PetscCall(DMGlobalToLocalEnd(da, X, INSERT_VALUES, localX));
+  PetscCall(DMDAVecGetArray(da,localX,(void**)&x));
+  PetscCall(DMDAVecGetArray(da,V,(void**)&v));
 
   /* Parameters */
   /* dx = grid->dx; */ dz = grid->dz;
@@ -1140,7 +1133,7 @@ PetscErrorCode ViscosityField(DM da, Vec X, Vec V)
   ilim = grid->ni-1; jlim = grid->nj-1;
 
   /* Compute real temperature, strain rate and viscosity */
-  ierr = DMDAGetCorners(da,&is,&js,NULL,&im,&jm,NULL);CHKERRQ(ierr);
+  PetscCall(DMDAGetCorners(da,&is,&js,NULL,&im,&jm,NULL));
   for (j=js; j<js+jm; j++) {
     for (i=is; i<is+im; i++) {
       T = PetscRealPart(param->potentialT * x[j][i].T * PetscExpScalar((j-0.5)*dz*param->z_scale));
@@ -1158,9 +1151,9 @@ PetscErrorCode ViscosityField(DM da, Vec X, Vec V)
       v[j][i].T = Viscosity(TC,epsC,dz*j,param);
     }
   }
-  ierr = DMDAVecRestoreArray(da,V,(void**)&v);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(da,localX,(void**)&x);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(da, &localX);CHKERRQ(ierr);
+  PetscCall(DMDAVecRestoreArray(da,V,(void**)&v));
+  PetscCall(DMDAVecRestoreArray(da,localX,(void**)&x));
+  PetscCall(DMRestoreLocalVector(da, &localX));
 
   param->ivisc = ivt;
   PetscFunctionReturn(0);
@@ -1173,20 +1166,19 @@ PetscErrorCode StressField(DM da)
 {
   AppCtx         *user;
   PetscInt       i,j,is,js,im,jm;
-  PetscErrorCode ierr;
   Vec            locVec;
   Field          **x, **y;
 
-  ierr = DMGetApplicationContext(da,&user);CHKERRQ(ierr);
+  PetscCall(DMGetApplicationContext(da,&user));
 
   /* Get the fine grid of Xguess and X */
-  ierr = DMDAGetCorners(da,&is,&js,NULL,&im,&jm,NULL);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,user->Xguess,(void**)&x);CHKERRQ(ierr);
+  PetscCall(DMDAGetCorners(da,&is,&js,NULL,&im,&jm,NULL));
+  PetscCall(DMDAVecGetArray(da,user->Xguess,(void**)&x));
 
-  ierr = DMGetLocalVector(da, &locVec);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(da, user->x, INSERT_VALUES, locVec);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da, user->x, INSERT_VALUES, locVec);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,locVec,(void**)&y);CHKERRQ(ierr);
+  PetscCall(DMGetLocalVector(da, &locVec));
+  PetscCall(DMGlobalToLocalBegin(da, user->x, INSERT_VALUES, locVec));
+  PetscCall(DMGlobalToLocalEnd(da, user->x, INSERT_VALUES, locVec));
+  PetscCall(DMDAVecGetArray(da,locVec,(void**)&y));
 
   /* Compute stress on the corner points */
   for (j=js; j<js+jm; j++) {
@@ -1199,9 +1191,9 @@ PetscErrorCode StressField(DM da)
   }
 
   /* Restore the fine grid of Xguess and X */
-  ierr = DMDAVecRestoreArray(da,user->Xguess,(void**)&x);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(da,locVec,(void**)&y);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(da, &locVec);CHKERRQ(ierr);
+  PetscCall(DMDAVecRestoreArray(da,user->Xguess,(void**)&x));
+  PetscCall(DMDAVecRestoreArray(da,locVec,(void**)&y));
+  PetscCall(DMRestoreLocalVector(da, &locVec));
   return 0;
 }
 
@@ -1258,31 +1250,30 @@ PetscErrorCode SNESConverged_Interactive(SNES snes, PetscInt it,PetscReal xnorm,
   AppCtx         *user  = (AppCtx*) ctx;
   Parameter      *param = user->param;
   KSP            ksp;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   if (param->interrupted) {
     param->interrupted = PETSC_FALSE;
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"USER SIGNAL: exiting SNES solve. \n");CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"USER SIGNAL: exiting SNES solve. \n"));
     *reason = SNES_CONVERGED_FNORM_ABS;
     PetscFunctionReturn(0);
   } else if (param->toggle_kspmon) {
     param->toggle_kspmon = PETSC_FALSE;
 
-    ierr = SNESGetKSP(snes, &ksp);CHKERRQ(ierr);
+    PetscCall(SNESGetKSP(snes, &ksp));
 
     if (param->kspmon) {
-      ierr = KSPMonitorCancel(ksp);CHKERRQ(ierr);
+      PetscCall(KSPMonitorCancel(ksp));
 
       param->kspmon = PETSC_FALSE;
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"USER SIGNAL: deactivating ksp singular value monitor. \n");CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"USER SIGNAL: deactivating ksp singular value monitor. \n"));
     } else {
       PetscViewerAndFormat *vf;
-      ierr = PetscViewerAndFormatCreate(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_DEFAULT,&vf);CHKERRQ(ierr);
-      ierr = KSPMonitorSet(ksp,(PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*))KSPMonitorSingularValue,vf,(PetscErrorCode (*)(void**))PetscViewerAndFormatDestroy);CHKERRQ(ierr);
+      PetscCall(PetscViewerAndFormatCreate(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_DEFAULT,&vf));
+      PetscCall(KSPMonitorSet(ksp,(PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*))KSPMonitorSingularValue,vf,(PetscErrorCode (*)(void**))PetscViewerAndFormatDestroy));
 
       param->kspmon = PETSC_TRUE;
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"USER SIGNAL: activating ksp singular value monitor. \n");CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"USER SIGNAL: activating ksp singular value monitor. \n"));
     }
   }
   PetscFunctionReturn(SNESConvergedDefault(snes,it,xnorm,snorm,fnorm,reason,ctx));

@@ -3,7 +3,6 @@
 
 static PetscErrorCode DMDAGetElements_1D(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 {
-  PetscErrorCode ierr;
   DM_DA          *da = (DM_DA*)dm->data;
   PetscInt       i,xs,xe,Xs,Xe;
   PetscInt       cnt=0;
@@ -13,11 +12,11 @@ static PetscErrorCode DMDAGetElements_1D(DM dm,PetscInt *nel,PetscInt *nen,const
     PetscInt corners[2];
 
     PetscCheck(da->s,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Cannot get elements for DMDA with zero stencil width");
-    ierr   = DMDAGetCorners(dm,&xs,NULL,NULL,&xe,NULL,NULL);CHKERRQ(ierr);
-    ierr   = DMDAGetGhostCorners(dm,&Xs,NULL,NULL,&Xe,NULL,NULL);CHKERRQ(ierr);
+    PetscCall(DMDAGetCorners(dm,&xs,NULL,NULL,&xe,NULL,NULL));
+    PetscCall(DMDAGetGhostCorners(dm,&Xs,NULL,NULL,&Xe,NULL,NULL));
     xe    += xs; Xe += Xs; if (xs != Xs) xs -= 1;
     da->ne = 1*(xe - xs - 1);
-    ierr   = PetscMalloc1(1 + 2*da->ne,&da->e);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(1 + 2*da->ne,&da->e));
     for (i=xs; i<xe-1; i++) {
       da->e[cnt++] = (i-Xs);
       da->e[cnt++] = (i-Xs+1);
@@ -26,7 +25,7 @@ static PetscErrorCode DMDAGetElements_1D(DM dm,PetscInt *nel,PetscInt *nen,const
 
     corners[0] = (xs  -Xs);
     corners[1] = (xe-1-Xs);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,2,corners,PETSC_COPY_VALUES,&da->ecorners);CHKERRQ(ierr);
+    PetscCall(ISCreateGeneral(PETSC_COMM_SELF,2,corners,PETSC_COPY_VALUES,&da->ecorners));
   }
   *nel = da->ne;
   *nen = da->nen;
@@ -36,7 +35,6 @@ static PetscErrorCode DMDAGetElements_1D(DM dm,PetscInt *nel,PetscInt *nen,const
 
 static PetscErrorCode DMDAGetElements_2D(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 {
-  PetscErrorCode ierr;
   DM_DA          *da = (DM_DA*)dm->data;
   PetscInt       i,xs,xe,Xs,Xe;
   PetscInt       j,ys,ye,Ys,Ye;
@@ -64,12 +62,12 @@ static PetscErrorCode DMDAGetElements_2D(DM dm,PetscInt *nel,PetscInt *nen,const
 
     if (da->elementtype == DMDA_ELEMENT_P1) {ns=2;}
     if (da->elementtype == DMDA_ELEMENT_Q1) {ns=1;}
-    ierr   = DMDAGetCorners(dm,&xs,&ys,NULL,&xe,&ye,NULL);CHKERRQ(ierr);
-    ierr   = DMDAGetGhostCorners(dm,&Xs,&Ys,NULL,&Xe,&Ye,NULL);CHKERRQ(ierr);
+    PetscCall(DMDAGetCorners(dm,&xs,&ys,NULL,&xe,&ye,NULL));
+    PetscCall(DMDAGetGhostCorners(dm,&Xs,&Ys,NULL,&Xe,&Ye,NULL));
     xe    += xs; Xe += Xs; if (xs != Xs) xs -= 1;
     ye    += ys; Ye += Ys; if (ys != Ys) ys -= 1;
     da->ne = ns*(xe - xs - 1)*(ye - ys - 1);
-    ierr   = PetscMalloc1(1 + nn*da->ne,&da->e);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(1 + nn*da->ne,&da->e));
     for (j=ys; j<ye-1; j++) {
       for (i=xs; i<xe-1; i++) {
         cell[0] = (i-Xs)   + (j-Ys)*(Xe-Xs);
@@ -89,7 +87,7 @@ static PetscErrorCode DMDAGetElements_2D(DM dm,PetscInt *nel,PetscInt *nen,const
     corners[1] = (xe-1-Xs) + (ys  -Ys)*(Xe-Xs);
     corners[2] = (xs  -Xs) + (ye-1-Ys)*(Xe-Xs);
     corners[3] = (xe-1-Xs) + (ye-1-Ys)*(Xe-Xs);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,4,corners,PETSC_COPY_VALUES,&da->ecorners);CHKERRQ(ierr);
+    PetscCall(ISCreateGeneral(PETSC_COMM_SELF,4,corners,PETSC_COPY_VALUES,&da->ecorners));
   }
   *nel = da->ne;
   *nen = da->nen;
@@ -99,7 +97,6 @@ static PetscErrorCode DMDAGetElements_2D(DM dm,PetscInt *nel,PetscInt *nen,const
 
 static PetscErrorCode DMDAGetElements_3D(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 {
-  PetscErrorCode ierr;
   DM_DA          *da = (DM_DA*)dm->data;
   PetscInt       i,xs,xe,Xs,Xe;
   PetscInt       j,ys,ye,Ys,Ye;
@@ -132,13 +129,13 @@ static PetscErrorCode DMDAGetElements_3D(DM dm,PetscInt *nel,PetscInt *nen,const
 
     if (da->elementtype == DMDA_ELEMENT_P1) {ns=6;}
     if (da->elementtype == DMDA_ELEMENT_Q1) {ns=1;}
-    ierr   = DMDAGetCorners(dm,&xs,&ys,&zs,&xe,&ye,&ze);CHKERRQ(ierr);
-    ierr   = DMDAGetGhostCorners(dm,&Xs,&Ys,&Zs,&Xe,&Ye,&Ze);CHKERRQ(ierr);
+    PetscCall(DMDAGetCorners(dm,&xs,&ys,&zs,&xe,&ye,&ze));
+    PetscCall(DMDAGetGhostCorners(dm,&Xs,&Ys,&Zs,&Xe,&Ye,&Ze));
     xe    += xs; Xe += Xs; if (xs != Xs) xs -= 1;
     ye    += ys; Ye += Ys; if (ys != Ys) ys -= 1;
     ze    += zs; Ze += Zs; if (zs != Zs) zs -= 1;
     da->ne = ns*(xe - xs - 1)*(ye - ys - 1)*(ze - zs - 1);
-    ierr   = PetscMalloc1(1 + nn*da->ne,&da->e);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(1 + nn*da->ne,&da->e));
     for (k=zs; k<ze-1; k++) {
       for (j=ys; j<ye-1; j++) {
         for (i=xs; i<xe-1; i++) {
@@ -168,7 +165,7 @@ static PetscErrorCode DMDAGetElements_3D(DM dm,PetscInt *nel,PetscInt *nen,const
     corners[5] = (xe-1-Xs) + (ys  -Ys)*(Xe-Xs) + (ze-1-Zs)*(Xe-Xs)*(Ye-Ys);
     corners[6] = (xs  -Xs) + (ye-1-Ys)*(Xe-Xs) + (ze-1-Zs)*(Xe-Xs)*(Ye-Ys);
     corners[7] = (xe-1-Xs) + (ye-1-Ys)*(Xe-Xs) + (ze-1-Zs)*(Xe-Xs)*(Ye-Ys);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,8,corners,PETSC_COPY_VALUES,&da->ecorners);CHKERRQ(ierr);
+    PetscCall(ISCreateGeneral(PETSC_COMM_SELF,8,corners,PETSC_COPY_VALUES,&da->ecorners));
   }
   *nel = da->ne;
   *nen = da->nen;
@@ -202,17 +199,16 @@ PetscErrorCode  DMDAGetElementsCorners(DM da, PetscInt *gx, PetscInt *gy, PetscI
   PetscInt       ys,Ys;
   PetscInt       zs,Zs;
   PetscBool      isda;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   if (gx) PetscValidIntPointer(gx,2);
   if (gy) PetscValidIntPointer(gy,3);
   if (gz) PetscValidIntPointer(gz,4);
-  ierr = PetscObjectTypeCompare((PetscObject)da,DMDA,&isda);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)da,DMDA,&isda));
   PetscCheck(isda,PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Not for DM type %s",((PetscObject)da)->type_name);
-  ierr = DMDAGetCorners(da,&xs,&ys,&zs,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(da,&Xs,&Ys,&Zs,NULL,NULL,NULL);CHKERRQ(ierr);
+  PetscCall(DMDAGetCorners(da,&xs,&ys,&zs,NULL,NULL,NULL));
+  PetscCall(DMDAGetGhostCorners(da,&Xs,&Ys,&Zs,NULL,NULL,NULL));
   if (xs != Xs) xs -= 1;
   if (ys != Ys) ys -= 1;
   if (zs != Zs) zs -= 1;
@@ -249,24 +245,23 @@ PetscErrorCode  DMDAGetElementsSizes(DM da, PetscInt *mx, PetscInt *my, PetscInt
   PetscInt       zs,ze,Zs;
   PetscInt       dim;
   PetscBool      isda;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   if (mx) PetscValidIntPointer(mx,2);
   if (my) PetscValidIntPointer(my,3);
   if (mz) PetscValidIntPointer(mz,4);
-  ierr = PetscObjectTypeCompare((PetscObject)da,DMDA,&isda);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)da,DMDA,&isda));
   PetscCheck(isda,PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Not for DM type %s",((PetscObject)da)->type_name);
-  ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xe,&ye,&ze);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(da,&Xs,&Ys,&Zs,NULL,NULL,NULL);CHKERRQ(ierr);
+  PetscCall(DMDAGetCorners(da,&xs,&ys,&zs,&xe,&ye,&ze));
+  PetscCall(DMDAGetGhostCorners(da,&Xs,&Ys,&Zs,NULL,NULL,NULL));
   xe  += xs; if (xs != Xs) xs -= 1;
   ye  += ys; if (ys != Ys) ys -= 1;
   ze  += zs; if (zs != Zs) zs -= 1;
   if (mx) *mx  = 0;
   if (my) *my  = 0;
   if (mz) *mz  = 0;
-  ierr = DMGetDimension(da,&dim);CHKERRQ(ierr);
+  PetscCall(DMGetDimension(da,&dim));
   switch (dim) {
   case 3:
     if (mz) *mz = ze - zs - 1;
@@ -297,17 +292,16 @@ PetscErrorCode  DMDAGetElementsSizes(DM da, PetscInt *mx, PetscInt *my, PetscInt
 PetscErrorCode  DMDASetElementType(DM da, DMDAElementType etype)
 {
   DM_DA          *dd = (DM_DA*)da->data;
-  PetscErrorCode ierr;
   PetscBool      isda;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidLogicalCollectiveEnum(da,etype,2);
-  ierr = PetscObjectTypeCompare((PetscObject)da,DMDA,&isda);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)da,DMDA,&isda));
   if (!isda) PetscFunctionReturn(0);
   if (dd->elementtype != etype) {
-    ierr = PetscFree(dd->e);CHKERRQ(ierr);
-    ierr = ISDestroy(&dd->ecorners);CHKERRQ(ierr);
+    PetscCall(PetscFree(dd->e));
+    PetscCall(ISDestroy(&dd->ecorners));
 
     dd->elementtype = etype;
     dd->ne          = 0;
@@ -335,13 +329,12 @@ PetscErrorCode  DMDASetElementType(DM da, DMDAElementType etype)
 PetscErrorCode  DMDAGetElementType(DM da, DMDAElementType *etype)
 {
   DM_DA          *dd = (DM_DA*)da->data;
-  PetscErrorCode ierr;
   PetscBool      isda;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidPointer(etype,2);
-  ierr = PetscObjectTypeCompare((PetscObject)da,DMDA,&isda);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)da,DMDA,&isda));
   PetscCheck(isda,PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Not for DM type %s",((PetscObject)da)->type_name);
   *etype = dd->elementtype;
   PetscFunctionReturn(0);
@@ -377,7 +370,6 @@ PetscErrorCode  DMDAGetElementType(DM da, DMDAElementType *etype)
 PetscErrorCode  DMDAGetElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 {
   PetscInt       dim;
-  PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)dm->data;
   PetscBool      isda;
 
@@ -386,10 +378,10 @@ PetscErrorCode  DMDAGetElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt
   PetscValidIntPointer(nel,2);
   PetscValidIntPointer(nen,3);
   PetscValidPointer(e,4);
-  ierr = PetscObjectTypeCompare((PetscObject)dm,DMDA,&isda);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)dm,DMDA,&isda));
   PetscCheck(isda,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Not for DM type %s",((PetscObject)dm)->type_name);
   PetscCheckFalse(dd->stencil_type == DMDA_STENCIL_STAR,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DMDAGetElements() requires you use a stencil type of DMDA_STENCIL_BOX");
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  PetscCall(DMGetDimension(dm, &dim));
   if (dd->e) {
     *nel = dd->ne;
     *nen = dd->nen;
@@ -399,11 +391,11 @@ PetscErrorCode  DMDAGetElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt
   if (dim==-1) {
     *nel = 0; *nen = 0; *e = NULL;
   } else if (dim==1) {
-    ierr = DMDAGetElements_1D(dm,nel,nen,e);CHKERRQ(ierr);
+    PetscCall(DMDAGetElements_1D(dm,nel,nen,e));
   } else if (dim==2) {
-    ierr = DMDAGetElements_2D(dm,nel,nen,e);CHKERRQ(ierr);
+    PetscCall(DMDAGetElements_2D(dm,nel,nen,e));
   } else if (dim==3) {
-    ierr = DMDAGetElements_3D(dm,nel,nen,e);CHKERRQ(ierr);
+    PetscCall(DMDAGetElements_3D(dm,nel,nen,e));
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"DMDA dimension not 1, 2, or 3, it is %D",dim);
   PetscFunctionReturn(0);
 }
@@ -429,22 +421,21 @@ PetscErrorCode  DMDAGetElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt
 @*/
 PetscErrorCode  DMDAGetSubdomainCornersIS(DM dm,IS *is)
 {
-  PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)dm->data;
   PetscBool      isda;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMDA);
   PetscValidPointer(is,2);
-  ierr = PetscObjectTypeCompare((PetscObject)dm,DMDA,&isda);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)dm,DMDA,&isda));
   PetscCheck(isda,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Not for DM type %s",((PetscObject)dm)->type_name);
   PetscCheckFalse(dd->stencil_type == DMDA_STENCIL_STAR,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DMDAGetElement() requires you use a stencil type of DMDA_STENCIL_BOX");
   if (!dd->ecorners) { /* compute elements if not yet done */
     const PetscInt *e;
     PetscInt       nel,nen;
 
-    ierr = DMDAGetElements(dm,&nel,&nen,&e);CHKERRQ(ierr);
-    ierr = DMDARestoreElements(dm,&nel,&nen,&e);CHKERRQ(ierr);
+    PetscCall(DMDAGetElements(dm,&nel,&nen,&e));
+    PetscCall(DMDARestoreElements(dm,&nel,&nen,&e));
   }
   *is = dd->ecorners;
   PetscFunctionReturn(0);

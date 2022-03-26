@@ -14,7 +14,7 @@
 
     Level: developer
 @*/
-PetscBool PetscEqualReal(PetscReal a,PetscReal b)
+PetscBool PetscEqualReal(PetscReal a, PetscReal b)
 {
   return (a == b) ? PETSC_TRUE : PETSC_FALSE;
 }
@@ -33,7 +33,7 @@ PetscBool PetscEqualReal(PetscReal a,PetscReal b)
 
     Level: developer
 @*/
-PetscBool PetscEqualScalar(PetscScalar a,PetscScalar b)
+PetscBool PetscEqualScalar(PetscScalar a, PetscScalar b)
 {
   return (a == b) ? PETSC_TRUE : PETSC_FALSE;
 }

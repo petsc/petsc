@@ -24,7 +24,7 @@ PetscErrorCode TSDAESimpleCreate(MPI_Comm comm,TSDAESimple *tsdae)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr           = PetscNew(tsdae);CHKERRQ(ierr);
+  PetscCall(PetscNew(tsdae));
   (*tsdae)->comm = comm;
   PetscFunctionReturn(0);
 }
@@ -36,7 +36,7 @@ PetscErrorCode TSDAESimpleSetRHSFunction(TSDAESimple tsdae,Vec U,PetscErrorCode 
   PetscFunctionBegin;
   tsdae->f    = f;
   tsdae->U    = U;
-  ierr        = PetscObjectReference((PetscObject)U);CHKERRQ(ierr);
+  PetscCall(PetscObjectReference((PetscObject)U));
   tsdae->fctx = ctx;
   PetscFunctionReturn(0);
 }
@@ -48,7 +48,7 @@ PetscErrorCode TSDAESimpleSetIFunction(TSDAESimple tsdae,Vec V,PetscErrorCode (*
   PetscFunctionBegin;
   tsdae->F    = F;
   tsdae->V    = V;
-  ierr        = PetscObjectReference((PetscObject)V);CHKERRQ(ierr);
+  PetscCall(PetscObjectReference((PetscObject)V));
   tsdae->Fctx = ctx;
   PetscFunctionReturn(0);
 }
@@ -58,10 +58,10 @@ PetscErrorCode TSDAESimpleDestroy(TSDAESimple *tsdae)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = (*(*tsdae)->destroy)(*tsdae);CHKERRQ(ierr);
-  ierr = VecDestroy(&(*tsdae)->U);CHKERRQ(ierr);
-  ierr = VecDestroy(&(*tsdae)->V);CHKERRQ(ierr);
-  ierr = PetscFree(*tsdae);CHKERRQ(ierr);
+  PetscCall((*(*tsdae)->destroy)(*tsdae));
+  PetscCall(VecDestroy(&(*tsdae)->U));
+  PetscCall(VecDestroy(&(*tsdae)->V));
+  PetscCall(PetscFree(*tsdae));
   PetscFunctionReturn(0);
 }
 
@@ -70,7 +70,7 @@ PetscErrorCode TSDAESimpleSolve(TSDAESimple tsdae,Vec Usolution)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = (*tsdae->solve)(tsdae,Usolution);CHKERRQ(ierr);
+  PetscCall((*tsdae->solve)(tsdae,Usolution));
   PetscFunctionReturn(0);
 }
 
@@ -79,7 +79,7 @@ PetscErrorCode TSDAESimpleSetFromOptions(TSDAESimple tsdae)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = (*tsdae->setfromoptions)(PetscOptionsObject,tsdae);CHKERRQ(ierr);
+  PetscCall((*tsdae->setfromoptions)(PetscOptionsObject,tsdae));
   PetscFunctionReturn(0);
 }
 
@@ -111,8 +111,8 @@ PetscErrorCode TSDAESimple_Reduced_TSFunction(TS ts,PetscReal t,Vec U,Vec F,void
   PetscFunctionBeginUser;
   red->t = t;
   red->U = U;
-  ierr   = SNESSolve(red->snes,NULL,tsdae->V);CHKERRQ(ierr);
-  ierr   = (*tsdae->f)(t,U,tsdae->V,F,tsdae->fctx);CHKERRQ(ierr);
+  PetscCall(SNESSolve(red->snes,NULL,tsdae->V));
+  PetscCall((*tsdae->f)(t,U,tsdae->V,F,tsdae->fctx));
   PetscFunctionReturn(0);
 }
 
@@ -127,7 +127,7 @@ PetscErrorCode TSDAESimple_Reduced_SNESFunction(SNES snes,Vec V,Vec F,void *actx
   PetscErrorCode      ierr;
 
   PetscFunctionBeginUser;
-  ierr = (*tsdae->F)(red->t,red->U,V,F,tsdae->Fctx);CHKERRQ(ierr);
+  PetscCall((*tsdae->F)(red->t,red->U,V,F,tsdae->Fctx));
   PetscFunctionReturn(0);
 }
 
@@ -137,7 +137,7 @@ PetscErrorCode TSDAESimpleSolve_Reduced(TSDAESimple tsdae,Vec U)
   TSDAESimple_Reduced *red = (TSDAESimple_Reduced*)tsdae->data;
 
   PetscFunctionBegin;
-  ierr = TSSolve(red->ts,U);CHKERRQ(ierr);
+  PetscCall(TSSolve(red->ts,U));
   PetscFunctionReturn(0);
 }
 
@@ -147,8 +147,8 @@ PetscErrorCode TSDAESimpleSetFromOptions_Reduced(PetscOptionItems *PetscOptionsO
   TSDAESimple_Reduced *red = (TSDAESimple_Reduced*)tsdae->data;
 
   PetscFunctionBegin;
-  ierr = TSSetFromOptions(red->ts);CHKERRQ(ierr);
-  ierr = SNESSetFromOptions(red->snes);CHKERRQ(ierr);
+  PetscCall(TSSetFromOptions(red->ts));
+  PetscCall(SNESSetFromOptions(red->snes));
   PetscFunctionReturn(0);
 }
 
@@ -158,9 +158,9 @@ PetscErrorCode TSDAESimpleDestroy_Reduced(TSDAESimple tsdae)
   TSDAESimple_Reduced *red = (TSDAESimple_Reduced*)tsdae->data;
 
   PetscFunctionBegin;
-  ierr = TSDestroy(&red->ts);CHKERRQ(ierr);
-  ierr = SNESDestroy(&red->snes);CHKERRQ(ierr);
-  ierr = PetscFree(red);CHKERRQ(ierr);
+  PetscCall(TSDestroy(&red->ts));
+  PetscCall(SNESDestroy(&red->snes));
+  PetscCall(PetscFree(red));
   PetscFunctionReturn(0);
 }
 
@@ -171,25 +171,25 @@ PetscErrorCode TSDAESimpleSetUp_Reduced(TSDAESimple tsdae)
   Vec                 tsrhs;
 
   PetscFunctionBegin;
-  ierr = PetscNew(&red);CHKERRQ(ierr);
+  PetscCall(PetscNew(&red));
   tsdae->data = red;
 
   tsdae->setfromoptions = TSDAESimpleSetFromOptions_Reduced;
   tsdae->solve          = TSDAESimpleSolve_Reduced;
   tsdae->destroy        = TSDAESimpleDestroy_Reduced;
 
-  ierr = TSCreate(tsdae->comm,&red->ts);CHKERRQ(ierr);
-  ierr = TSSetProblemType(red->ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetType(red->ts,TSEULER);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(red->ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
-  ierr = VecDuplicate(tsdae->U,&tsrhs);CHKERRQ(ierr);
-  ierr = TSSetRHSFunction(red->ts,tsrhs,TSDAESimple_Reduced_TSFunction,tsdae);CHKERRQ(ierr);
-  ierr = VecDestroy(&tsrhs);CHKERRQ(ierr);
+  PetscCall(TSCreate(tsdae->comm,&red->ts));
+  PetscCall(TSSetProblemType(red->ts,TS_NONLINEAR));
+  PetscCall(TSSetType(red->ts,TSEULER));
+  PetscCall(TSSetExactFinalTime(red->ts,TS_EXACTFINALTIME_STEPOVER));
+  PetscCall(VecDuplicate(tsdae->U,&tsrhs));
+  PetscCall(TSSetRHSFunction(red->ts,tsrhs,TSDAESimple_Reduced_TSFunction,tsdae));
+  PetscCall(VecDestroy(&tsrhs));
 
-  ierr = SNESCreate(tsdae->comm,&red->snes);CHKERRQ(ierr);
-  ierr = SNESSetOptionsPrefix(red->snes,"tsdaesimple_");CHKERRQ(ierr);
-  ierr = SNESSetFunction(red->snes,NULL,TSDAESimple_Reduced_SNESFunction,tsdae);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(red->snes,NULL,NULL,SNESComputeJacobianDefault,tsdae);CHKERRQ(ierr);
+  PetscCall(SNESCreate(tsdae->comm,&red->snes));
+  PetscCall(SNESSetOptionsPrefix(red->snes,"tsdaesimple_"));
+  PetscCall(SNESSetFunction(red->snes,NULL,TSDAESimple_Reduced_SNESFunction,tsdae));
+  PetscCall(SNESSetJacobian(red->snes,NULL,NULL,SNESComputeJacobianDefault,tsdae));
   PetscFunctionReturn(0);
 }
 
@@ -219,14 +219,14 @@ PetscErrorCode TSDAESimple_Full_TSRHSFunction(TS ts,PetscReal t,Vec UV,Vec F,voi
   PetscErrorCode   ierr;
 
   PetscFunctionBeginUser;
-  ierr = VecSet(F,0.0);CHKERRQ(ierr);
-  ierr = VecScatterBegin(full->scatterU,UV,tsdae->U,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd(full->scatterU,UV,tsdae->U,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterBegin(full->scatterV,UV,tsdae->V,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd(full->scatterV,UV,tsdae->V,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = (*tsdae->f)(t,tsdae->U,tsdae->V,full->UF,tsdae->fctx);CHKERRQ(ierr);
-  ierr = VecScatterBegin(full->scatterU,full->UF,F,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(full->scatterU,full->UF,F,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  PetscCall(VecSet(F,0.0));
+  PetscCall(VecScatterBegin(full->scatterU,UV,tsdae->U,INSERT_VALUES,SCATTER_REVERSE));
+  PetscCall(VecScatterEnd(full->scatterU,UV,tsdae->U,INSERT_VALUES,SCATTER_REVERSE));
+  PetscCall(VecScatterBegin(full->scatterV,UV,tsdae->V,INSERT_VALUES,SCATTER_REVERSE));
+  PetscCall(VecScatterEnd(full->scatterV,UV,tsdae->V,INSERT_VALUES,SCATTER_REVERSE));
+  PetscCall((*tsdae->f)(t,tsdae->U,tsdae->V,full->UF,tsdae->fctx));
+  PetscCall(VecScatterBegin(full->scatterU,full->UF,F,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(full->scatterU,full->UF,F,INSERT_VALUES,SCATTER_FORWARD));
   PetscFunctionReturn(0);
 }
 
@@ -244,14 +244,14 @@ PetscErrorCode TSDAESimple_Full_TSIFunction(TS ts,PetscReal t,Vec UV,Vec UVdot,V
   PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
-  ierr = VecCopy(UVdot,F);CHKERRQ(ierr);
-  ierr = VecScatterBegin(full->scatterU,UV,tsdae->U,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd(full->scatterU,UV,tsdae->U,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterBegin(full->scatterV,UV,tsdae->V,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd(full->scatterV,UV,tsdae->V,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = (*tsdae->F)(t,tsdae->U,tsdae->V,full->VF,tsdae->Fctx);CHKERRQ(ierr);
-  ierr = VecScatterBegin(full->scatterV,full->VF,F,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(full->scatterV,full->VF,F,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  PetscCall(VecCopy(UVdot,F));
+  PetscCall(VecScatterBegin(full->scatterU,UV,tsdae->U,INSERT_VALUES,SCATTER_REVERSE));
+  PetscCall(VecScatterEnd(full->scatterU,UV,tsdae->U,INSERT_VALUES,SCATTER_REVERSE));
+  PetscCall(VecScatterBegin(full->scatterV,UV,tsdae->V,INSERT_VALUES,SCATTER_REVERSE));
+  PetscCall(VecScatterEnd(full->scatterV,UV,tsdae->V,INSERT_VALUES,SCATTER_REVERSE));
+  PetscCall((*tsdae->F)(t,tsdae->U,tsdae->V,full->VF,tsdae->Fctx));
+  PetscCall(VecScatterBegin(full->scatterV,full->VF,F,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(full->scatterV,full->VF,F,INSERT_VALUES,SCATTER_FORWARD));
   PetscFunctionReturn(0);
 }
 
@@ -261,12 +261,12 @@ PetscErrorCode TSDAESimpleSolve_Full(TSDAESimple tsdae,Vec U)
   TSDAESimple_Full *full = (TSDAESimple_Full*)tsdae->data;
 
   PetscFunctionBegin;
-  ierr = VecSet(full->UV,1.0);CHKERRQ(ierr);
-  ierr = VecScatterBegin(full->scatterU,U,full->UV,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(full->scatterU,U,full->UV,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = TSSolve(full->ts,full->UV);CHKERRQ(ierr);
-  ierr = VecScatterBegin(full->scatterU,full->UV,U,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd(full->scatterU,full->UV,U,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  PetscCall(VecSet(full->UV,1.0));
+  PetscCall(VecScatterBegin(full->scatterU,U,full->UV,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(full->scatterU,U,full->UV,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(TSSolve(full->ts,full->UV));
+  PetscCall(VecScatterBegin(full->scatterU,full->UV,U,INSERT_VALUES,SCATTER_REVERSE));
+  PetscCall(VecScatterEnd(full->scatterU,full->UV,U,INSERT_VALUES,SCATTER_REVERSE));
   PetscFunctionReturn(0);
 }
 
@@ -276,7 +276,7 @@ PetscErrorCode TSDAESimpleSetFromOptions_Full(PetscOptionItems *PetscOptionsObje
   TSDAESimple_Full *full = (TSDAESimple_Full*)tsdae->data;
 
   PetscFunctionBegin;
-  ierr = TSSetFromOptions(full->ts);CHKERRQ(ierr);
+  PetscCall(TSSetFromOptions(full->ts));
   PetscFunctionReturn(0);
 }
 
@@ -286,13 +286,13 @@ PetscErrorCode TSDAESimpleDestroy_Full(TSDAESimple tsdae)
   TSDAESimple_Full *full = (TSDAESimple_Full*)tsdae->data;
 
   PetscFunctionBegin;
-  ierr = TSDestroy(&full->ts);CHKERRQ(ierr);
-  ierr = VecDestroy(&full->UV);CHKERRQ(ierr);
-  ierr = VecDestroy(&full->UF);CHKERRQ(ierr);
-  ierr = VecDestroy(&full->VF);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&full->scatterU);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&full->scatterV);CHKERRQ(ierr);
-  ierr = PetscFree(full);CHKERRQ(ierr);
+  PetscCall(TSDestroy(&full->ts));
+  PetscCall(VecDestroy(&full->UV));
+  PetscCall(VecDestroy(&full->UF));
+  PetscCall(VecDestroy(&full->VF));
+  PetscCall(VecScatterDestroy(&full->scatterU));
+  PetscCall(VecScatterDestroy(&full->scatterV));
+  PetscCall(PetscFree(full));
   PetscFunctionReturn(0);
 }
 
@@ -305,36 +305,36 @@ PetscErrorCode TSDAESimpleSetUp_Full(TSDAESimple tsdae)
   IS               is;
 
   PetscFunctionBegin;
-  ierr = PetscNew(&full);CHKERRQ(ierr);
+  PetscCall(PetscNew(&full));
   tsdae->data = full;
 
   tsdae->setfromoptions = TSDAESimpleSetFromOptions_Full;
   tsdae->solve          = TSDAESimpleSolve_Full;
   tsdae->destroy        = TSDAESimpleDestroy_Full;
 
-  ierr = TSCreate(tsdae->comm,&full->ts);CHKERRQ(ierr);
-  ierr = TSSetProblemType(full->ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetType(full->ts,TSROSW);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(full->ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
-  ierr = VecDuplicate(tsdae->U,&full->UF);CHKERRQ(ierr);
-  ierr = VecDuplicate(tsdae->V,&full->VF);CHKERRQ(ierr);
+  PetscCall(TSCreate(tsdae->comm,&full->ts));
+  PetscCall(TSSetProblemType(full->ts,TS_NONLINEAR));
+  PetscCall(TSSetType(full->ts,TSROSW));
+  PetscCall(TSSetExactFinalTime(full->ts,TS_EXACTFINALTIME_STEPOVER));
+  PetscCall(VecDuplicate(tsdae->U,&full->UF));
+  PetscCall(VecDuplicate(tsdae->V,&full->VF));
 
-  ierr = VecGetLocalSize(tsdae->U,&nU);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(tsdae->V,&nV);CHKERRQ(ierr);
-  ierr = VecCreateMPI(tsdae->comm,nU+nV,PETSC_DETERMINE,&tsrhs);CHKERRQ(ierr);
-  ierr = VecDuplicate(tsrhs,&full->UV);CHKERRQ(ierr);
+  PetscCall(VecGetLocalSize(tsdae->U,&nU));
+  PetscCall(VecGetLocalSize(tsdae->V,&nV));
+  PetscCall(VecCreateMPI(tsdae->comm,nU+nV,PETSC_DETERMINE,&tsrhs));
+  PetscCall(VecDuplicate(tsrhs,&full->UV));
 
-  ierr = VecGetOwnershipRange(tsrhs,&UVstart,NULL);CHKERRQ(ierr);
-  ierr = ISCreateStride(tsdae->comm,nU,UVstart,1,&is);CHKERRQ(ierr);
-  ierr = VecScatterCreate(tsdae->U,NULL,tsrhs,is,&full->scatterU);CHKERRQ(ierr);
-  ierr = ISDestroy(&is);CHKERRQ(ierr);
-  ierr = ISCreateStride(tsdae->comm,nV,UVstart+nU,1,&is);CHKERRQ(ierr);
-  ierr = VecScatterCreate(tsdae->V,NULL,tsrhs,is,&full->scatterV);CHKERRQ(ierr);
-  ierr = ISDestroy(&is);CHKERRQ(ierr);
+  PetscCall(VecGetOwnershipRange(tsrhs,&UVstart,NULL));
+  PetscCall(ISCreateStride(tsdae->comm,nU,UVstart,1,&is));
+  PetscCall(VecScatterCreate(tsdae->U,NULL,tsrhs,is,&full->scatterU));
+  PetscCall(ISDestroy(&is));
+  PetscCall(ISCreateStride(tsdae->comm,nV,UVstart+nU,1,&is));
+  PetscCall(VecScatterCreate(tsdae->V,NULL,tsrhs,is,&full->scatterV));
+  PetscCall(ISDestroy(&is));
 
-  ierr = TSSetRHSFunction(full->ts,tsrhs,TSDAESimple_Full_TSRHSFunction,tsdae);CHKERRQ(ierr);
-  ierr = TSSetIFunction(full->ts,NULL,TSDAESimple_Full_TSIFunction,tsdae);CHKERRQ(ierr);
-  ierr = VecDestroy(&tsrhs);CHKERRQ(ierr);
+  PetscCall(TSSetRHSFunction(full->ts,tsrhs,TSDAESimple_Full_TSRHSFunction,tsdae));
+  PetscCall(TSSetIFunction(full->ts,NULL,TSDAESimple_Full_TSIFunction,tsdae));
+  PetscCall(VecDestroy(&tsrhs));
   PetscFunctionReturn(0);
 }
 
@@ -349,7 +349,7 @@ PetscErrorCode f(PetscReal t,Vec U,Vec V,Vec F,void *ctx)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = VecWAXPY(F,1.0,U,V);CHKERRQ(ierr);
+  PetscCall(VecWAXPY(F,1.0,U,V));
   PetscFunctionReturn(0);
 }
 
@@ -362,7 +362,7 @@ PetscErrorCode F(PetscReal t,Vec U,Vec V,Vec F,void *ctx)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = VecWAXPY(F,-1.0,V,U);CHKERRQ(ierr);
+  PetscCall(VecWAXPY(F,-1.0,V,U));
   PetscFunctionReturn(0);
 }
 
@@ -372,28 +372,27 @@ int main(int argc,char **argv)
   TSDAESimple    tsdae;
   Vec            U,V,Usolution;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = TSDAESimpleCreate(PETSC_COMM_WORLD,&tsdae);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(TSDAESimpleCreate(PETSC_COMM_WORLD,&tsdae));
 
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,1,PETSC_DETERMINE,&U);CHKERRQ(ierr);
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,1,PETSC_DETERMINE,&V);CHKERRQ(ierr);
-  ierr = TSDAESimpleSetRHSFunction(tsdae,U,f,NULL);CHKERRQ(ierr);
-  ierr = TSDAESimpleSetIFunction(tsdae,V,F,NULL);CHKERRQ(ierr);
+  PetscCall(VecCreateMPI(PETSC_COMM_WORLD,1,PETSC_DETERMINE,&U));
+  PetscCall(VecCreateMPI(PETSC_COMM_WORLD,1,PETSC_DETERMINE,&V));
+  PetscCall(TSDAESimpleSetRHSFunction(tsdae,U,f,NULL));
+  PetscCall(TSDAESimpleSetIFunction(tsdae,V,F,NULL));
 
-  ierr = VecDuplicate(U,&Usolution);CHKERRQ(ierr);
-  ierr = VecSet(Usolution,1.0);CHKERRQ(ierr);
+  PetscCall(VecDuplicate(U,&Usolution));
+  PetscCall(VecSet(Usolution,1.0));
 
-  /*  ierr = TSDAESimpleSetUp_Full(tsdae);CHKERRQ(ierr); */
-  ierr = TSDAESimpleSetUp_Reduced(tsdae);CHKERRQ(ierr);
+  /*  PetscCall(TSDAESimpleSetUp_Full(tsdae)); */
+  PetscCall(TSDAESimpleSetUp_Reduced(tsdae));
 
-  ierr = TSDAESimpleSetFromOptions(tsdae);CHKERRQ(ierr);
-  ierr = TSDAESimpleSolve(tsdae,Usolution);CHKERRQ(ierr);
-  ierr = TSDAESimpleDestroy(&tsdae);CHKERRQ(ierr);
+  PetscCall(TSDAESimpleSetFromOptions(tsdae));
+  PetscCall(TSDAESimpleSolve(tsdae,Usolution));
+  PetscCall(TSDAESimpleDestroy(&tsdae));
 
-  ierr = VecDestroy(&U);CHKERRQ(ierr);
-  ierr = VecDestroy(&Usolution);CHKERRQ(ierr);
-  ierr = VecDestroy(&V);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(VecDestroy(&U));
+  PetscCall(VecDestroy(&Usolution));
+  PetscCall(VecDestroy(&V));
+  PetscCall(PetscFinalize());
+  return 0;
 }
-

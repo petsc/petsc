@@ -4,28 +4,27 @@
 
 PetscErrorCode GetListofEdges_Power(PFDATA *pfdata,PetscInt *edgelist)
 {
-  PetscErrorCode ierr;
   PetscInt       i,fbus,tbus,nbranches=pfdata->nbranch;
   EDGE_Power     branch=pfdata->branch;
   PetscBool      netview=PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHasName(NULL,NULL, "-powernet_view",&netview);CHKERRQ(ierr);
+  PetscCall(PetscOptionsHasName(NULL,NULL, "-powernet_view",&netview));
   for (i=0; i<nbranches; i++) {
     fbus = branch[i].internal_i;
     tbus = branch[i].internal_j;
     edgelist[2*i]   = fbus;
     edgelist[2*i+1] = tbus;
     if (netview) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"branch %d, bus[%d] -> bus[%d]\n",i,fbus,tbus);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,"branch %d, bus[%d] -> bus[%d]\n",i,fbus,tbus));
     }
   }
   if (netview) {
     for (i=0; i<pfdata->nbus; i++) {
       if (pfdata->bus[i].ngen) {
-        ierr = PetscPrintf(PETSC_COMM_SELF," bus %D: gen\n",i);CHKERRQ(ierr);
+        PetscCall(PetscPrintf(PETSC_COMM_SELF," bus %D: gen\n",i));
       } else if (pfdata->bus[i].nload) {
-        ierr = PetscPrintf(PETSC_COMM_SELF," bus %D: load\n",i);CHKERRQ(ierr);
+        PetscCall(PetscPrintf(PETSC_COMM_SELF," bus %D: load\n",i));
       }
     }
   }
@@ -34,7 +33,6 @@ PetscErrorCode GetListofEdges_Power(PFDATA *pfdata,PetscInt *edgelist)
 
 PetscErrorCode FormJacobian_Power_private(DM networkdm,Vec localX,Mat J,PetscInt nv,PetscInt ne,const PetscInt* vtx,const PetscInt* edges,void* appctx)
 {
-  PetscErrorCode    ierr;
   const PetscScalar *xarr;
   PetscInt          i,v,row[2],col[8],e,vfrom,vto;
   PetscInt          offsetfrom,offsetto,goffsetfrom,goffsetto,numComps;
@@ -48,16 +46,16 @@ PetscErrorCode FormJacobian_Power_private(DM networkdm,Vec localX,Mat J,PetscInt
   void*             component;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayRead(localX,&xarr);CHKERRQ(ierr);
+  PetscCall(VecGetArrayRead(localX,&xarr));
 
   for (v=0; v<nv; v++) {
-    ierr = DMNetworkIsGhostVertex(networkdm,vtx[v],&ghostvtex);CHKERRQ(ierr);
+    PetscCall(DMNetworkIsGhostVertex(networkdm,vtx[v],&ghostvtex));
 
-    ierr = DMNetworkGetNumComponents(networkdm,vtx[v],&numComps);CHKERRQ(ierr);
+    PetscCall(DMNetworkGetNumComponents(networkdm,vtx[v],&numComps));
     for (j = 0; j < numComps; j++) {
-      ierr = DMNetworkGetLocalVecOffset(networkdm,vtx[v],ALL_COMPONENTS,&offset);CHKERRQ(ierr);
-      ierr = DMNetworkGetGlobalVecOffset(networkdm,vtx[v],ALL_COMPONENTS,&goffset);CHKERRQ(ierr);
-      ierr = DMNetworkGetComponent(networkdm,vtx[v],j,&key,&component,NULL);CHKERRQ(ierr);
+      PetscCall(DMNetworkGetLocalVecOffset(networkdm,vtx[v],ALL_COMPONENTS,&offset));
+      PetscCall(DMNetworkGetGlobalVecOffset(networkdm,vtx[v],ALL_COMPONENTS,&goffset));
+      PetscCall(DMNetworkGetComponent(networkdm,vtx[v],j,&key,&component,NULL));
 
       if (key == user_power->compkey_bus) {
         PetscInt       nconnedges;
@@ -70,7 +68,7 @@ PetscErrorCode FormJacobian_Power_private(DM networkdm,Vec localX,Mat J,PetscInt
             row[0] = goffset; row[1] = goffset+1;
             col[0] = goffset; col[1] = goffset+1; col[2] = goffset; col[3] = goffset+1;
             values[0] = 1.0; values[1] = 0.0; values[2] = 0.0; values[3] = 1.0;
-            ierr = MatSetValues(J,2,row,2,col,values,ADD_VALUES);CHKERRQ(ierr);
+            PetscCall(MatSetValues(J,2,row,2,col,values,ADD_VALUES));
             break;
           }
 
@@ -84,10 +82,10 @@ PetscErrorCode FormJacobian_Power_private(DM networkdm,Vec localX,Mat J,PetscInt
             values[1] = 2.0*Vm*bus->gl/Sbase;
             values[3] = -2.0*Vm*bus->bl/Sbase;
           }
-          ierr = MatSetValues(J,2,row,2,col,values,ADD_VALUES);CHKERRQ(ierr);
+          PetscCall(MatSetValues(J,2,row,2,col,values,ADD_VALUES));
         }
 
-        ierr = DMNetworkGetSupportingEdges(networkdm,vtx[v],&nconnedges,&connedges);CHKERRQ(ierr);
+        PetscCall(DMNetworkGetSupportingEdges(networkdm,vtx[v],&nconnedges,&connedges));
 
         for (i=0; i < nconnedges; i++) {
           EDGE_Power     branch;
@@ -98,7 +96,7 @@ PetscErrorCode FormJacobian_Power_private(DM networkdm,Vec localX,Mat J,PetscInt
           PetscScalar    Vmf,Vmt,thetaf,thetat,thetaft,thetatf;
 
           e = connedges[i];
-          ierr = DMNetworkGetComponent(networkdm,e,0,&key,(void**)&branch,NULL);CHKERRQ(ierr);
+          PetscCall(DMNetworkGetComponent(networkdm,e,0,&key,(void**)&branch,NULL));
           if (!branch->status) continue;
 
           Gff = branch->yff[0];
@@ -110,14 +108,14 @@ PetscErrorCode FormJacobian_Power_private(DM networkdm,Vec localX,Mat J,PetscInt
           Gtt = branch->ytt[0];
           Btt = branch->ytt[1];
 
-          ierr = DMNetworkGetConnectedVertices(networkdm,edges[e],&cone);CHKERRQ(ierr);
+          PetscCall(DMNetworkGetConnectedVertices(networkdm,edges[e],&cone));
           vfrom = cone[0];
           vto   = cone[1];
 
-          ierr = DMNetworkGetLocalVecOffset(networkdm,vfrom,ALL_COMPONENTS,&offsetfrom);CHKERRQ(ierr);
-          ierr = DMNetworkGetLocalVecOffset(networkdm,vto,ALL_COMPONENTS,&offsetto);CHKERRQ(ierr);
-          ierr = DMNetworkGetGlobalVecOffset(networkdm,vfrom,ALL_COMPONENTS,&goffsetfrom);CHKERRQ(ierr);
-          ierr = DMNetworkGetGlobalVecOffset(networkdm,vto,ALL_COMPONENTS,&goffsetto);CHKERRQ(ierr);
+          PetscCall(DMNetworkGetLocalVecOffset(networkdm,vfrom,ALL_COMPONENTS,&offsetfrom));
+          PetscCall(DMNetworkGetLocalVecOffset(networkdm,vto,ALL_COMPONENTS,&offsetto));
+          PetscCall(DMNetworkGetGlobalVecOffset(networkdm,vfrom,ALL_COMPONENTS,&goffsetfrom));
+          PetscCall(DMNetworkGetGlobalVecOffset(networkdm,vto,ALL_COMPONENTS,&goffsetto));
 
           if (goffsetto < 0) goffsetto = -goffsetto - 1;
 
@@ -128,8 +126,8 @@ PetscErrorCode FormJacobian_Power_private(DM networkdm,Vec localX,Mat J,PetscInt
           thetaft = thetaf - thetat;
           thetatf = thetat - thetaf;
 
-          ierr = DMNetworkGetComponent(networkdm,vfrom,0,&keyf,(void**)&busf,NULL);CHKERRQ(ierr);
-          ierr = DMNetworkGetComponent(networkdm,vto,0,&keyt,(void**)&bust,NULL);CHKERRQ(ierr);
+          PetscCall(DMNetworkGetComponent(networkdm,vfrom,0,&keyf,(void**)&busf,NULL));
+          PetscCall(DMNetworkGetComponent(networkdm,vto,0,&keyt,(void**)&bust,NULL));
 
           if (vfrom == vtx[v]) {
             if (busf->ide != REF_BUS) {
@@ -141,7 +139,7 @@ PetscErrorCode FormJacobian_Power_private(DM networkdm,Vec localX,Mat J,PetscInt
               values[2] =  Vmf*Vmt*(Gft*PetscSinScalar(thetaft) + Bft*-PetscCosScalar(thetaft)); /* df_dthetat */
               values[3] =  Vmf*(Gft*PetscCosScalar(thetaft) + Bft*PetscSinScalar(thetaft)); /* df_dVmt */
 
-              ierr = MatSetValues(J,1,row,4,col,values,ADD_VALUES);CHKERRQ(ierr);
+              PetscCall(MatSetValues(J,1,row,4,col,values,ADD_VALUES));
             }
             if (busf->ide != PV_BUS && busf->ide != REF_BUS) {
               row[0] = goffsetfrom+1;
@@ -152,7 +150,7 @@ PetscErrorCode FormJacobian_Power_private(DM networkdm,Vec localX,Mat J,PetscInt
               values[2] =  Vmf*Vmt*(-Bft*PetscSinScalar(thetaft) + Gft*-PetscCosScalar(thetaft));
               values[3] =  Vmf*(-Bft*PetscCosScalar(thetaft) + Gft*PetscSinScalar(thetaft));
 
-              ierr = MatSetValues(J,1,row,4,col,values,ADD_VALUES);CHKERRQ(ierr);
+              PetscCall(MatSetValues(J,1,row,4,col,values,ADD_VALUES));
             }
           } else {
             if (bust->ide != REF_BUS) {
@@ -164,7 +162,7 @@ PetscErrorCode FormJacobian_Power_private(DM networkdm,Vec localX,Mat J,PetscInt
               values[2] =  Vmt*Vmf*(Gtf*PetscSinScalar(thetatf) + Btf*-PetscCosScalar(thetatf)); /* df_dthetaf */
               values[3] =  Vmt*(Gtf*PetscCosScalar(thetatf) + Btf*PetscSinScalar(thetatf)); /* df_dVmf */
 
-              ierr = MatSetValues(J,1,row,4,col,values,ADD_VALUES);CHKERRQ(ierr);
+              PetscCall(MatSetValues(J,1,row,4,col,values,ADD_VALUES));
             }
             if (bust->ide != PV_BUS && bust->ide != REF_BUS) {
               row[0] = goffsetto+1;
@@ -175,53 +173,51 @@ PetscErrorCode FormJacobian_Power_private(DM networkdm,Vec localX,Mat J,PetscInt
               values[2] =  Vmt*Vmf*(-Btf*PetscSinScalar(thetatf) + Gtf*-PetscCosScalar(thetatf));
               values[3] =  Vmt*(-Btf*PetscCosScalar(thetatf) + Gtf*PetscSinScalar(thetatf));
 
-              ierr = MatSetValues(J,1,row,4,col,values,ADD_VALUES);CHKERRQ(ierr);
+              PetscCall(MatSetValues(J,1,row,4,col,values,ADD_VALUES));
             }
           }
         }
         if (!ghostvtex && bus->ide == PV_BUS) {
           row[0] = goffset+1; col[0] = goffset+1; values[0]  = 1.0;
           if (user_power->jac_error) values[0] = 50.0;
-          ierr = MatSetValues(J,1,row,1,col,values,ADD_VALUES);CHKERRQ(ierr);
+          PetscCall(MatSetValues(J,1,row,1,col,values,ADD_VALUES));
         }
       }
     }
   }
 
-  ierr = VecRestoreArrayRead(localX,&xarr);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(localX,&xarr));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode FormJacobian_Power(SNES snes,Vec X, Mat J,Mat Jpre,void *appctx)
 {
-  PetscErrorCode ierr;
   DM             networkdm;
   Vec            localX;
   PetscInt       nv,ne;
   const PetscInt *vtx,*edges;
 
   PetscFunctionBegin;
-  ierr = MatZeroEntries(J);CHKERRQ(ierr);
+  PetscCall(MatZeroEntries(J));
 
-  ierr = SNESGetDM(snes,&networkdm);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(networkdm,&localX);CHKERRQ(ierr);
+  PetscCall(SNESGetDM(snes,&networkdm));
+  PetscCall(DMGetLocalVector(networkdm,&localX));
 
-  ierr = DMGlobalToLocalBegin(networkdm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(networkdm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  PetscCall(DMGlobalToLocalBegin(networkdm,X,INSERT_VALUES,localX));
+  PetscCall(DMGlobalToLocalEnd(networkdm,X,INSERT_VALUES,localX));
 
-  ierr = DMNetworkGetSubnetwork(networkdm,0,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
-  ierr = FormJacobian_Power_private(networkdm,localX,J,nv,ne,vtx,edges,appctx);CHKERRQ(ierr);
+  PetscCall(DMNetworkGetSubnetwork(networkdm,0,&nv,&ne,&vtx,&edges));
+  PetscCall(FormJacobian_Power_private(networkdm,localX,J,nv,ne,vtx,edges,appctx));
 
-  ierr = DMRestoreLocalVector(networkdm,&localX);CHKERRQ(ierr);
+  PetscCall(DMRestoreLocalVector(networkdm,&localX));
 
-  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode FormFunction_Power(DM networkdm,Vec localX, Vec localF,PetscInt nv,PetscInt ne,const PetscInt* vtx,const PetscInt* edges,void* appctx)
 {
-  PetscErrorCode    ierr;
   UserCtx_Power     *User=(UserCtx_Power*)appctx;
   PetscInt          e,v,vfrom,vto;
   const PetscScalar *xarr;
@@ -236,16 +232,16 @@ PetscErrorCode FormFunction_Power(DM networkdm,Vec localX, Vec localF,PetscInt n
   void*             component;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayRead(localX,&xarr);CHKERRQ(ierr);
-  ierr = VecGetArray(localF,&farr);CHKERRQ(ierr);
+  PetscCall(VecGetArrayRead(localX,&xarr));
+  PetscCall(VecGetArray(localF,&farr));
 
   for (v=0; v<nv; v++) {
-    ierr = DMNetworkIsGhostVertex(networkdm,vtx[v],&ghostvtex);CHKERRQ(ierr);
-    ierr = DMNetworkGetNumComponents(networkdm,vtx[v],&numComps);CHKERRQ(ierr);
-    ierr = DMNetworkGetLocalVecOffset(networkdm,vtx[v],ALL_COMPONENTS,&offset);CHKERRQ(ierr);
+    PetscCall(DMNetworkIsGhostVertex(networkdm,vtx[v],&ghostvtex));
+    PetscCall(DMNetworkGetNumComponents(networkdm,vtx[v],&numComps));
+    PetscCall(DMNetworkGetLocalVecOffset(networkdm,vtx[v],ALL_COMPONENTS,&offset));
 
     for (j = 0; j < numComps; j++) {
-      ierr = DMNetworkGetComponent(networkdm,vtx[v],j,&key,&component,NULL);CHKERRQ(ierr);
+      PetscCall(DMNetworkGetComponent(networkdm,vtx[v],j,&key,&component,NULL));
       if (key == User->compkey_bus) {
         PetscInt       nconnedges;
         const PetscInt *connedges;
@@ -266,7 +262,7 @@ PetscErrorCode FormFunction_Power(DM networkdm,Vec localX, Vec localF,PetscInt n
           if (bus->ide != PV_BUS) farr[offset+1] += -Vm*Vm*bus->bl/Sbase;
         }
 
-        ierr = DMNetworkGetSupportingEdges(networkdm,vtx[v],&nconnedges,&connedges);CHKERRQ(ierr);
+        PetscCall(DMNetworkGetSupportingEdges(networkdm,vtx[v],&nconnedges,&connedges));
         for (i=0; i < nconnedges; i++) {
           EDGE_Power       branch;
           PetscInt       keye;
@@ -275,7 +271,7 @@ PetscErrorCode FormFunction_Power(DM networkdm,Vec localX, Vec localF,PetscInt n
           PetscScalar    Vmf,Vmt,thetaf,thetat,thetaft,thetatf;
 
           e = connedges[i];
-          ierr = DMNetworkGetComponent(networkdm,e,0,&keye,(void**)&branch,NULL);CHKERRQ(ierr);
+          PetscCall(DMNetworkGetComponent(networkdm,e,0,&keye,(void**)&branch,NULL));
           if (!branch->status) continue;
           Gff = branch->yff[0];
           Bff = branch->yff[1];
@@ -286,12 +282,12 @@ PetscErrorCode FormFunction_Power(DM networkdm,Vec localX, Vec localF,PetscInt n
           Gtt = branch->ytt[0];
           Btt = branch->ytt[1];
 
-          ierr = DMNetworkGetConnectedVertices(networkdm,e,&cone);CHKERRQ(ierr);
+          PetscCall(DMNetworkGetConnectedVertices(networkdm,e,&cone));
           vfrom = cone[0];
           vto   = cone[1];
 
-          ierr = DMNetworkGetLocalVecOffset(networkdm,vfrom,ALL_COMPONENTS,&offsetfrom);CHKERRQ(ierr);
-          ierr = DMNetworkGetLocalVecOffset(networkdm,vto,ALL_COMPONENTS,&offsetto);CHKERRQ(ierr);
+          PetscCall(DMNetworkGetLocalVecOffset(networkdm,vfrom,ALL_COMPONENTS,&offsetfrom));
+          PetscCall(DMNetworkGetLocalVecOffset(networkdm,vto,ALL_COMPONENTS,&offsetto));
 
           thetaf = xarr[offsetfrom];
           Vmf     = xarr[offsetfrom+1];
@@ -327,14 +323,13 @@ PetscErrorCode FormFunction_Power(DM networkdm,Vec localX, Vec localF,PetscInt n
       farr[offset+1] = xarr[offset+1] - bus->vm;
     }
   }
-  ierr = VecRestoreArrayRead(localX,&xarr);CHKERRQ(ierr);
-  ierr = VecRestoreArray(localF,&farr);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(localX,&xarr));
+  PetscCall(VecRestoreArray(localF,&farr));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode SetInitialGuess_Power(DM networkdm,Vec localX,PetscInt nv,PetscInt ne,const PetscInt *vtx,const PetscInt *edges,void* appctx)
 {
-  PetscErrorCode ierr;
   VERTEX_Power   bus;
   PetscInt       i;
   GEN            gen;
@@ -347,18 +342,18 @@ PetscErrorCode SetInitialGuess_Power(DM networkdm,Vec localX,PetscInt nv,PetscIn
   UserCtx_Power  *User=(UserCtx_Power*)appctx;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)networkdm,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  ierr = VecGetArray(localX,&xarr);CHKERRQ(ierr);
+  PetscCall(PetscObjectGetComm((PetscObject)networkdm,&comm));
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
+  PetscCall(VecGetArray(localX,&xarr));
   for (i = 0; i < nv; i++) {
-    ierr = DMNetworkIsGhostVertex(networkdm,vtx[i],&ghostvtex);CHKERRQ(ierr);
-    ierr = DMNetworkIsSharedVertex(networkdm,vtx[i],&sharedv);CHKERRQ(ierr);
+    PetscCall(DMNetworkIsGhostVertex(networkdm,vtx[i],&ghostvtex));
+    PetscCall(DMNetworkIsSharedVertex(networkdm,vtx[i],&sharedv));
     if (ghostvtex ||sharedv) continue;
 
-    ierr = DMNetworkGetLocalVecOffset(networkdm,vtx[i],ALL_COMPONENTS,&offset);CHKERRQ(ierr);
-    ierr = DMNetworkGetNumComponents(networkdm,vtx[i],&numComps);CHKERRQ(ierr);
+    PetscCall(DMNetworkGetLocalVecOffset(networkdm,vtx[i],ALL_COMPONENTS,&offset));
+    PetscCall(DMNetworkGetNumComponents(networkdm,vtx[i],&numComps));
     for (j=0; j < numComps; j++) {
-      ierr = DMNetworkGetComponent(networkdm,vtx[i],j,&key,&component,NULL);CHKERRQ(ierr);
+      PetscCall(DMNetworkGetComponent(networkdm,vtx[i],j,&key,&component,NULL));
       if (key == User->compkey_bus) {
         bus = (VERTEX_Power)(component);
         xarr[offset] = bus->va*PETSC_PI/180.0;
@@ -371,6 +366,6 @@ PetscErrorCode SetInitialGuess_Power(DM networkdm,Vec localX,PetscInt nv,PetscIn
       }
     }
   }
-  ierr = VecRestoreArray(localX,&xarr);CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(localX,&xarr));
   PetscFunctionReturn(0);
 }

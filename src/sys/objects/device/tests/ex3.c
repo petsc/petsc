@@ -9,38 +9,37 @@ static PetscErrorCode TestPetscDeviceContextDuplicate(PetscDeviceContext dctx)
   PetscDevice        origDevice;
   PetscStreamType    origStype;
   PetscDeviceContext ddup;
-  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   PetscValidDeviceContext(dctx,1);
   /* get everything we want first before any duplication */
-  ierr = PetscDeviceContextGetStreamType(dctx,&origStype);CHKERRQ(ierr);
-  ierr = PetscDeviceContextGetDevice(dctx,&origDevice);CHKERRQ(ierr);
+  PetscCall(PetscDeviceContextGetStreamType(dctx,&origStype));
+  PetscCall(PetscDeviceContextGetDevice(dctx,&origDevice));
 
   /* duplicate */
-  ierr = PetscDeviceContextDuplicate(dctx,&ddup);CHKERRQ(ierr);
+  PetscCall(PetscDeviceContextDuplicate(dctx,&ddup));
   PetscValidDeviceContext(ddup,2);
   PetscCheckCompatibleDeviceContexts(dctx,1,ddup,2);
 
   {
     PetscDevice parDevice,dupDevice;
 
-    ierr = PetscDeviceContextGetDevice(dctx,&parDevice);CHKERRQ(ierr);
-    ierr = AssertPetscDevicesValidAndEqual(parDevice,origDevice,"Parent PetscDevice after duplication does not match parent original PetscDevice");CHKERRQ(ierr);
-    ierr = PetscDeviceContextGetDevice(ddup,&dupDevice);CHKERRQ(ierr);
-    ierr = AssertPetscDevicesValidAndEqual(dupDevice,origDevice,"Duplicated PetscDevice does not match parent original PetscDevice");CHKERRQ(ierr);
+    PetscCall(PetscDeviceContextGetDevice(dctx,&parDevice));
+    PetscCall(AssertPetscDevicesValidAndEqual(parDevice,origDevice,"Parent PetscDevice after duplication does not match parent original PetscDevice"));
+    PetscCall(PetscDeviceContextGetDevice(ddup,&dupDevice));
+    PetscCall(AssertPetscDevicesValidAndEqual(dupDevice,origDevice,"Duplicated PetscDevice does not match parent original PetscDevice"));
   }
 
   {
     PetscStreamType parStype,dupStype;
 
-    ierr = PetscDeviceContextGetStreamType(dctx,&parStype);CHKERRQ(ierr);
-    ierr = AssertPetscStreamTypesValidAndEqual(parStype,origStype,"Parent PetscStreamType after duplication does not match parent original PetscStreamType");CHKERRQ(ierr);
-    ierr = PetscDeviceContextGetStreamType(ddup,&dupStype);CHKERRQ(ierr);
-    ierr = AssertPetscStreamTypesValidAndEqual(dupStype,origStype,"Duplicated PetscStreamType '%s' does not match parent original PetscStreamType '%s'");CHKERRQ(ierr);
+    PetscCall(PetscDeviceContextGetStreamType(dctx,&parStype));
+    PetscCall(AssertPetscStreamTypesValidAndEqual(parStype,origStype,"Parent PetscStreamType after duplication does not match parent original PetscStreamType"));
+    PetscCall(PetscDeviceContextGetStreamType(ddup,&dupStype));
+    PetscCall(AssertPetscStreamTypesValidAndEqual(dupStype,origStype,"Duplicated PetscStreamType '%s' does not match parent original PetscStreamType '%s'"));
   }
 
-  ierr = PetscDeviceContextDestroy(&ddup);CHKERRQ(ierr);
+  PetscCall(PetscDeviceContextDestroy(&ddup));
   /* duplicate should not take the original down with it */
   PetscValidDeviceContext(dctx,1);
   PetscFunctionReturn(0);
@@ -49,23 +48,22 @@ static PetscErrorCode TestPetscDeviceContextDuplicate(PetscDeviceContext dctx)
 int main(int argc, char *argv[])
 {
   PetscDeviceContext dctx;
-  PetscErrorCode     ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
   /* basic creation and destruction */
-  ierr = PetscDeviceContextCreate(&dctx);CHKERRQ(ierr);
-  ierr = PetscDeviceContextSetFromOptions(PETSC_COMM_WORLD,"local_",dctx);CHKERRQ(ierr);
-  ierr = PetscDeviceContextSetUp(dctx);CHKERRQ(ierr);
-  ierr = TestPetscDeviceContextDuplicate(dctx);CHKERRQ(ierr);
-  ierr = PetscDeviceContextDestroy(&dctx);CHKERRQ(ierr);
+  PetscCall(PetscDeviceContextCreate(&dctx));
+  PetscCall(PetscDeviceContextSetFromOptions(PETSC_COMM_WORLD,"local_",dctx));
+  PetscCall(PetscDeviceContextSetUp(dctx));
+  PetscCall(TestPetscDeviceContextDuplicate(dctx));
+  PetscCall(PetscDeviceContextDestroy(&dctx));
 
-  ierr = PetscDeviceContextGetCurrentContext(&dctx);CHKERRQ(ierr);
-  ierr = TestPetscDeviceContextDuplicate(dctx);CHKERRQ(ierr);
+  PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
+  PetscCall(TestPetscDeviceContextDuplicate(dctx));
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"EXIT_SUCCESS\n");CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"EXIT_SUCCESS\n"));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

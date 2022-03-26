@@ -18,7 +18,7 @@ PetscErrorCode f(PetscReal t,Vec U,Vec V,Vec F)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = VecWAXPY(F,1.0,U,V);CHKERRQ(ierr);
+  PetscCall(VecWAXPY(F,1.0,U,V));
   PetscFunctionReturn(0);
 }
 
@@ -31,7 +31,7 @@ PetscErrorCode F(PetscReal t,Vec U,Vec V,Vec F)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = VecWAXPY(F,-1.0,V,U);CHKERRQ(ierr);
+  PetscCall(VecWAXPY(F,-1.0,V,U));
   PetscFunctionReturn(0);
 }
 
@@ -56,45 +56,45 @@ int main(int argc,char **argv)
   PetscInt       I;
   PetscMPIInt    rank;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSROSW);CHKERRQ(ierr);
-  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,2,PETSC_DETERMINE,&tsrhs);CHKERRQ(ierr);
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,2,PETSC_DETERMINE,&UV);CHKERRQ(ierr);
-  ierr = TSSetRHSFunction(ts,tsrhs,TSFunctionRHS,&ctx);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,NULL,TSFunctionI,&ctx);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
+  PetscCall(TSSetProblemType(ts,TS_NONLINEAR));
+  PetscCall(TSSetType(ts,TSROSW));
+  PetscCall(TSSetFromOptions(ts));
+  PetscCall(VecCreateMPI(PETSC_COMM_WORLD,2,PETSC_DETERMINE,&tsrhs));
+  PetscCall(VecCreateMPI(PETSC_COMM_WORLD,2,PETSC_DETERMINE,&UV));
+  PetscCall(TSSetRHSFunction(ts,tsrhs,TSFunctionRHS,&ctx));
+  PetscCall(TSSetIFunction(ts,NULL,TSFunctionI,&ctx));
   ctx.f = f;
   ctx.F = F;
 
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,1,PETSC_DETERMINE,&ctx.U);CHKERRQ(ierr);
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,1,PETSC_DETERMINE,&ctx.V);CHKERRQ(ierr);
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,1,PETSC_DETERMINE,&ctx.UF);CHKERRQ(ierr);
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,1,PETSC_DETERMINE,&ctx.VF);CHKERRQ(ierr);
+  PetscCall(VecCreateMPI(PETSC_COMM_WORLD,1,PETSC_DETERMINE,&ctx.U));
+  PetscCall(VecCreateMPI(PETSC_COMM_WORLD,1,PETSC_DETERMINE,&ctx.V));
+  PetscCall(VecCreateMPI(PETSC_COMM_WORLD,1,PETSC_DETERMINE,&ctx.UF));
+  PetscCall(VecCreateMPI(PETSC_COMM_WORLD,1,PETSC_DETERMINE,&ctx.VF));
   I    = 2*rank;
-  ierr = ISCreateGeneral(PETSC_COMM_WORLD,1,&I,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
-  ierr = VecScatterCreate(ctx.U,NULL,UV,is,&ctx.scatterU);CHKERRQ(ierr);
-  ierr = ISDestroy(&is);CHKERRQ(ierr);
+  PetscCall(ISCreateGeneral(PETSC_COMM_WORLD,1,&I,PETSC_COPY_VALUES,&is));
+  PetscCall(VecScatterCreate(ctx.U,NULL,UV,is,&ctx.scatterU));
+  PetscCall(ISDestroy(&is));
   I    = 2*rank + 1;
-  ierr = ISCreateGeneral(PETSC_COMM_WORLD,1,&I,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
-  ierr = VecScatterCreate(ctx.V,NULL,UV,is,&ctx.scatterV);CHKERRQ(ierr);
-  ierr = ISDestroy(&is);CHKERRQ(ierr);
+  PetscCall(ISCreateGeneral(PETSC_COMM_WORLD,1,&I,PETSC_COPY_VALUES,&is));
+  PetscCall(VecScatterCreate(ctx.V,NULL,UV,is,&ctx.scatterV));
+  PetscCall(ISDestroy(&is));
 
-  ierr = VecSet(UV,1.0);CHKERRQ(ierr);
-  ierr = TSSolve(ts,UV);CHKERRQ(ierr);
-  ierr = VecDestroy(&tsrhs);CHKERRQ(ierr);
-  ierr = VecDestroy(&UV);CHKERRQ(ierr);
-  ierr = VecDestroy(&ctx.U);CHKERRQ(ierr);
-  ierr = VecDestroy(&ctx.V);CHKERRQ(ierr);
-  ierr = VecDestroy(&ctx.UF);CHKERRQ(ierr);
-  ierr = VecDestroy(&ctx.VF);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&ctx.scatterU);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&ctx.scatterV);CHKERRQ(ierr);
-  ierr = TSDestroy(&ts);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(VecSet(UV,1.0));
+  PetscCall(TSSolve(ts,UV));
+  PetscCall(VecDestroy(&tsrhs));
+  PetscCall(VecDestroy(&UV));
+  PetscCall(VecDestroy(&ctx.U));
+  PetscCall(VecDestroy(&ctx.V));
+  PetscCall(VecDestroy(&ctx.UF));
+  PetscCall(VecDestroy(&ctx.VF));
+  PetscCall(VecScatterDestroy(&ctx.scatterU));
+  PetscCall(VecScatterDestroy(&ctx.scatterV));
+  PetscCall(TSDestroy(&ts));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*
@@ -107,14 +107,14 @@ PetscErrorCode TSFunctionRHS(TS ts,PetscReal t,Vec UV,Vec F,void *actx)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = VecSet(F,0.0);CHKERRQ(ierr);
-  ierr = VecScatterBegin(ctx->scatterU,UV,ctx->U,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd(ctx->scatterU,UV,ctx->U,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterBegin(ctx->scatterV,UV,ctx->V,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd(ctx->scatterV,UV,ctx->V,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = (*ctx->f)(t,ctx->U,ctx->V,ctx->UF);CHKERRQ(ierr);
-  ierr = VecScatterBegin(ctx->scatterU,ctx->UF,F,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(ctx->scatterU,ctx->UF,F,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  PetscCall(VecSet(F,0.0));
+  PetscCall(VecScatterBegin(ctx->scatterU,UV,ctx->U,INSERT_VALUES,SCATTER_REVERSE));
+  PetscCall(VecScatterEnd(ctx->scatterU,UV,ctx->U,INSERT_VALUES,SCATTER_REVERSE));
+  PetscCall(VecScatterBegin(ctx->scatterV,UV,ctx->V,INSERT_VALUES,SCATTER_REVERSE));
+  PetscCall(VecScatterEnd(ctx->scatterV,UV,ctx->V,INSERT_VALUES,SCATTER_REVERSE));
+  PetscCall((*ctx->f)(t,ctx->U,ctx->V,ctx->UF));
+  PetscCall(VecScatterBegin(ctx->scatterU,ctx->UF,F,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(ctx->scatterU,ctx->UF,F,INSERT_VALUES,SCATTER_FORWARD));
   PetscFunctionReturn(0);
 }
 
@@ -128,13 +128,13 @@ PetscErrorCode TSFunctionI(TS ts,PetscReal t,Vec UV,Vec UVdot,Vec F,void *actx)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = VecCopy(UVdot,F);CHKERRQ(ierr);
-  ierr = VecScatterBegin(ctx->scatterU,UV,ctx->U,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd(ctx->scatterU,UV,ctx->U,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterBegin(ctx->scatterV,UV,ctx->V,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd(ctx->scatterV,UV,ctx->V,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = (*ctx->F)(t,ctx->U,ctx->V,ctx->VF);CHKERRQ(ierr);
-  ierr = VecScatterBegin(ctx->scatterV,ctx->VF,F,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(ctx->scatterV,ctx->VF,F,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  PetscCall(VecCopy(UVdot,F));
+  PetscCall(VecScatterBegin(ctx->scatterU,UV,ctx->U,INSERT_VALUES,SCATTER_REVERSE));
+  PetscCall(VecScatterEnd(ctx->scatterU,UV,ctx->U,INSERT_VALUES,SCATTER_REVERSE));
+  PetscCall(VecScatterBegin(ctx->scatterV,UV,ctx->V,INSERT_VALUES,SCATTER_REVERSE));
+  PetscCall(VecScatterEnd(ctx->scatterV,UV,ctx->V,INSERT_VALUES,SCATTER_REVERSE));
+  PetscCall((*ctx->F)(t,ctx->U,ctx->V,ctx->VF));
+  PetscCall(VecScatterBegin(ctx->scatterV,ctx->VF,F,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(ctx->scatterV,ctx->VF,F,INSERT_VALUES,SCATTER_FORWARD));
   PetscFunctionReturn(0);
 }

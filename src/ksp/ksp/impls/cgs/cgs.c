@@ -9,16 +9,13 @@
 
 static PetscErrorCode KSPSetUp_CGS(KSP ksp)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = KSPSetWorkVecs(ksp,7);CHKERRQ(ierr);
+  PetscCall(KSPSetWorkVecs(ksp,7));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode  KSPSolve_CGS(KSP ksp)
 {
-  PetscErrorCode ierr;
   PetscInt       i;
   PetscScalar    rho,rhoold,a,s,b;
   Vec            X,B,V,P,R,RP,T,Q,U,AUQ;
@@ -28,8 +25,8 @@ static PetscErrorCode  KSPSolve_CGS(KSP ksp)
   PetscFunctionBegin;
   /* not sure what residual norm it does use, should use for right preconditioning */
 
-  ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
-  PetscCheckFalse(diagonalscale,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
+  PetscCall(PCGetDiagonalScale(ksp->pc,&diagonalscale));
+  PetscCheck(!diagonalscale,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
   X   = ksp->vec_sol;
   B   = ksp->vec_rhs;
@@ -43,26 +40,26 @@ static PetscErrorCode  KSPSolve_CGS(KSP ksp)
   AUQ = V;
 
   /* Compute initial preconditioned residual */
-  ierr = KSPInitialResidual(ksp,X,V,T,R,B);CHKERRQ(ierr);
+  PetscCall(KSPInitialResidual(ksp,X,V,T,R,B));
 
   /* Test for nothing to do */
   if (ksp->normtype != KSP_NORM_NONE) {
-    ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
+    PetscCall(VecNorm(R,NORM_2,&dp));
     KSPCheckNorm(ksp,dp);
     if (ksp->normtype == KSP_NORM_NATURAL) dp *= dp;
   } else dp = 0.0;
 
-  ierr       = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+  PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
   ksp->its   = 0;
   ksp->rnorm = dp;
-  ierr       = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
-  ierr = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
-  ierr = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
-  ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+  PetscCall(PetscObjectSAWsGrantAccess((PetscObject)ksp));
+  PetscCall(KSPLogResidualHistory(ksp,dp));
+  PetscCall(KSPMonitor(ksp,0,dp));
+  PetscCall((*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP));
   if (ksp->reason) PetscFunctionReturn(0);
 
   /* Make the initial Rp == R */
-  ierr = VecCopy(R,RP);CHKERRQ(ierr);
+  PetscCall(VecCopy(R,RP));
   /*  added for Fidap */
   /* Penalize Startup - Isaac Hasbani Trick for CGS
      Since most initial conditions result in a mostly 0 residual,
@@ -72,62 +69,62 @@ static PetscErrorCode  KSPSolve_CGS(KSP ksp)
     PetscReal   vr0max;
     PetscScalar *tmp_RP=NULL;
     PetscInt    numnp  =0, *max_pos=NULL;
-    ierr = VecMax(RP, max_pos, &vr0max);CHKERRQ(ierr);
-    ierr = VecGetArray(RP, &tmp_RP);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(RP, &numnp);CHKERRQ(ierr);
+    PetscCall(VecMax(RP, max_pos, &vr0max));
+    PetscCall(VecGetArray(RP, &tmp_RP));
+    PetscCall(VecGetLocalSize(RP, &numnp));
     for (i=0; i<numnp; i++) {
       if (tmp_RP[i] == 0.0) tmp_RP[i] = vr0max;
     }
-    ierr = VecRestoreArray(RP, &tmp_RP);CHKERRQ(ierr);
+    PetscCall(VecRestoreArray(RP, &tmp_RP));
   }
   /*  end of addition for Fidap */
 
   /* Set the initial conditions */
-  ierr = VecDot(R,RP,&rhoold);CHKERRQ(ierr);        /* rhoold = (r,rp)      */
-  ierr = VecCopy(R,U);CHKERRQ(ierr);
-  ierr = VecCopy(R,P);CHKERRQ(ierr);
-  ierr = KSP_PCApplyBAorAB(ksp,P,V,T);CHKERRQ(ierr);
+  PetscCall(VecDot(R,RP,&rhoold));        /* rhoold = (r,rp)      */
+  PetscCall(VecCopy(R,U));
+  PetscCall(VecCopy(R,P));
+  PetscCall(KSP_PCApplyBAorAB(ksp,P,V,T));
 
   i = 0;
   do {
 
-    ierr = VecDot(V,RP,&s);CHKERRQ(ierr);           /* s <- (v,rp)          */
+    PetscCall(VecDot(V,RP,&s));           /* s <- (v,rp)          */
     KSPCheckDot(ksp,s);
     a    = rhoold / s;                               /* a <- rho / s         */
-    ierr = VecWAXPY(Q,-a,V,U);CHKERRQ(ierr);      /* q <- u - a v         */
-    ierr = VecWAXPY(T,1.0,U,Q);CHKERRQ(ierr);      /* t <- u + q           */
-    ierr = VecAXPY(X,a,T);CHKERRQ(ierr);           /* x <- x + a (u + q)   */
-    ierr = KSP_PCApplyBAorAB(ksp,T,AUQ,U);CHKERRQ(ierr);
-    ierr = VecAXPY(R,-a,AUQ);CHKERRQ(ierr);       /* r <- r - a K (u + q) */
-    ierr = VecDot(R,RP,&rho);CHKERRQ(ierr);         /* rho <- (r,rp)        */
+    PetscCall(VecWAXPY(Q,-a,V,U));      /* q <- u - a v         */
+    PetscCall(VecWAXPY(T,1.0,U,Q));      /* t <- u + q           */
+    PetscCall(VecAXPY(X,a,T));           /* x <- x + a (u + q)   */
+    PetscCall(KSP_PCApplyBAorAB(ksp,T,AUQ,U));
+    PetscCall(VecAXPY(R,-a,AUQ));       /* r <- r - a K (u + q) */
+    PetscCall(VecDot(R,RP,&rho));         /* rho <- (r,rp)        */
     KSPCheckDot(ksp,rho);
     if (ksp->normtype == KSP_NORM_NATURAL) {
       dp = PetscAbsScalar(rho);
     } else if (ksp->normtype != KSP_NORM_NONE) {
-      ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
+      PetscCall(VecNorm(R,NORM_2,&dp));
       KSPCheckNorm(ksp,dp);
     } else dp = 0.0;
 
-    ierr = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+    PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
     ksp->its++;
     ksp->rnorm = dp;
-    ierr       = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
-    ierr = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
-    ierr = KSPMonitor(ksp,i+1,dp);CHKERRQ(ierr);
-    ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+    PetscCall(PetscObjectSAWsGrantAccess((PetscObject)ksp));
+    PetscCall(KSPLogResidualHistory(ksp,dp));
+    PetscCall(KSPMonitor(ksp,i+1,dp));
+    PetscCall((*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP));
     if (ksp->reason) break;
 
     b      = rho / rhoold;                           /* b <- rho / rhoold    */
-    ierr   = VecWAXPY(U,b,Q,R);CHKERRQ(ierr);       /* u <- r + b q         */
-    ierr   = VecAXPY(Q,b,P);CHKERRQ(ierr);
-    ierr   = VecWAXPY(P,b,Q,U);CHKERRQ(ierr);       /* p <- u + b(q + b p)  */
-    ierr   = KSP_PCApplyBAorAB(ksp,P,V,Q);CHKERRQ(ierr);    /* v <- K p    */
+    PetscCall(VecWAXPY(U,b,Q,R));       /* u <- r + b q         */
+    PetscCall(VecAXPY(Q,b,P));
+    PetscCall(VecWAXPY(P,b,Q,U));       /* p <- u + b(q + b p)  */
+    PetscCall(KSP_PCApplyBAorAB(ksp,P,V,Q));    /* v <- K p    */
     rhoold = rho;
     i++;
   } while (i<ksp->max_it);
   if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
 
-  ierr = KSPUnwindPreconditioner(ksp,X,T);CHKERRQ(ierr);
+  PetscCall(KSPUnwindPreconditioner(ksp,X,T));
   PetscFunctionReturn(0);
 }
 
@@ -154,17 +151,15 @@ static PetscErrorCode  KSPSolve_CGS(KSP ksp)
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_CGS(KSP ksp)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   ksp->data = (void*)0;
 
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_RIGHT,2);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1);CHKERRQ(ierr);
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_RIGHT,2));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1));
 
   ksp->ops->setup          = KSPSetUp_CGS;
   ksp->ops->solve          = KSPSolve_CGS;

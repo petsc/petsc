@@ -27,19 +27,17 @@ PetscBool PetscDrawRegisterAllCalled = PETSC_FALSE;
 @*/
 PetscErrorCode  PetscDrawRegisterAll(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (PetscDrawRegisterAllCalled) PetscFunctionReturn(0);
   PetscDrawRegisterAllCalled = PETSC_TRUE;
 
-  ierr = PetscDrawRegister(PETSC_DRAW_IMAGE,    PetscDrawCreate_Image);CHKERRQ(ierr);
-  ierr = PetscDrawRegister(PETSC_DRAW_TIKZ,     PetscDrawCreate_TikZ);CHKERRQ(ierr);
+  PetscCall(PetscDrawRegister(PETSC_DRAW_IMAGE,    PetscDrawCreate_Image));
+  PetscCall(PetscDrawRegister(PETSC_DRAW_TIKZ,     PetscDrawCreate_TikZ));
 #if defined(PETSC_HAVE_X)
-  ierr = PetscDrawRegister(PETSC_DRAW_X,        PetscDrawCreate_X);CHKERRQ(ierr);
+  PetscCall(PetscDrawRegister(PETSC_DRAW_X,        PetscDrawCreate_X));
 #elif defined(PETSC_USE_WINDOWS_GRAPHICS)
-  ierr = PetscDrawRegister(PETSC_DRAW_WIN32,    PetscDrawCreate_Win32);CHKERRQ(ierr);
+  PetscCall(PetscDrawRegister(PETSC_DRAW_WIN32,    PetscDrawCreate_Win32));
 #endif
-  ierr = PetscDrawRegister(PETSC_DRAW_NULL,     PetscDrawCreate_Null);CHKERRQ(ierr);
+  PetscCall(PetscDrawRegister(PETSC_DRAW_NULL,     PetscDrawCreate_Null));
   PetscFunctionReturn(0);
 }

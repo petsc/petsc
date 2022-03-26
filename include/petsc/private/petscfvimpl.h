@@ -90,12 +90,11 @@ typedef struct {
 
 static inline PetscErrorCode PetscFVInterpolate_Static(PetscFV fv, const PetscScalar x[], PetscInt q, PetscScalar interpolant[])
 {
-  PetscInt       Nc, fc;
-  PetscErrorCode ierr;
+  PetscInt Nc;
 
   PetscFunctionBeginHot;
-  ierr = PetscFVGetNumComponents(fv, &Nc);CHKERRQ(ierr);
-  for (fc = 0; fc < Nc; ++fc) {interpolant[fc] = x[fc];}
+  PetscCall(PetscFVGetNumComponents(fv, &Nc));
+  PetscCall(PetscArraycpy(interpolant,x,Nc));
   PetscFunctionReturn(0);
 }
 

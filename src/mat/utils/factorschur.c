@@ -5,15 +5,14 @@ PETSC_INTERN PetscErrorCode MatFactorSetUpInPlaceSchur_Private(Mat F)
 {
   Mat              St, S = F->schur;
   MatFactorInfo    info;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = MatSetUnfactored(S);CHKERRQ(ierr);
-  ierr = MatGetFactor(S,S->solvertype ? S->solvertype : MATSOLVERPETSC,F->factortype,&St);CHKERRQ(ierr);
+  PetscCall(MatSetUnfactored(S));
+  PetscCall(MatGetFactor(S,S->solvertype ? S->solvertype : MATSOLVERPETSC,F->factortype,&St));
   if (St->factortype == MAT_FACTOR_CHOLESKY) { /* LDL^t regarded as Cholesky */
-    ierr = MatCholeskyFactorSymbolic(St,S,NULL,&info);CHKERRQ(ierr);
+    PetscCall(MatCholeskyFactorSymbolic(St,S,NULL,&info));
   } else {
-    ierr = MatLUFactorSymbolic(St,S,NULL,NULL,&info);CHKERRQ(ierr);
+    PetscCall(MatLUFactorSymbolic(St,S,NULL,NULL,&info));
   }
   S->ops->solve             = St->ops->solve;
   S->ops->matsolve          = St->ops->matsolve;
@@ -22,14 +21,13 @@ PETSC_INTERN PetscErrorCode MatFactorSetUpInPlaceSchur_Private(Mat F)
   S->ops->solveadd          = St->ops->solveadd;
   S->ops->solvetransposeadd = St->ops->solvetransposeadd;
 
-  ierr = MatDestroy(&St);CHKERRQ(ierr);
+  PetscCall(MatDestroy(&St));
   PetscFunctionReturn(0);
 }
 
 PETSC_INTERN PetscErrorCode MatFactorUpdateSchurStatus_Private(Mat F)
 {
   Mat            S = F->schur;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   switch(F->schur_status) {
@@ -43,7 +41,7 @@ PETSC_INTERN PetscErrorCode MatFactorUpdateSchurStatus_Private(Mat F)
       S->ops->solveadd          = NULL;
       S->ops->solvetransposeadd = NULL;
       S->factortype             = MAT_FACTOR_NONE;
-      ierr                      = PetscFree(S->solvertype);CHKERRQ(ierr);
+      PetscCall(PetscFree(S->solvertype));
     }
     break;
   case MAT_FACTOR_SCHUR_FACTORED:
@@ -58,16 +56,15 @@ PETSC_INTERN PetscErrorCode MatFactorUpdateSchurStatus_Private(Mat F)
 PETSC_INTERN PetscErrorCode MatFactorFactorizeSchurComplement_Private(Mat F)
 {
   MatFactorInfo  info;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscLogEventBegin(MAT_FactorFactS,F,0,0,0);CHKERRQ(ierr);
+  PetscCall(PetscLogEventBegin(MAT_FactorFactS,F,0,0,0));
   if (F->factortype == MAT_FACTOR_CHOLESKY) { /* LDL^t regarded as Cholesky */
-    ierr = MatCholeskyFactor(F->schur,NULL,&info);CHKERRQ(ierr);
+    PetscCall(MatCholeskyFactor(F->schur,NULL,&info));
   } else {
-    ierr = MatLUFactor(F->schur,NULL,NULL,&info);CHKERRQ(ierr);
+    PetscCall(MatLUFactor(F->schur,NULL,NULL,&info));
   }
-  ierr = PetscLogEventEnd(MAT_FactorFactS,F,0,0,0);CHKERRQ(ierr);
+  PetscCall(PetscLogEventEnd(MAT_FactorFactS,F,0,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -80,21 +77,20 @@ PETSC_INTERN PetscErrorCode MatFactorInvertSchurComplement_Private(Mat F)
   if (S) {
     PetscMPIInt    size;
     PetscBool      isdense,isdensecuda;
-    PetscErrorCode ierr;
 
-    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)S),&size);CHKERRMPI(ierr);
+    PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)S),&size));
     PetscCheckFalse(size > 1,PetscObjectComm((PetscObject)S),PETSC_ERR_SUP,"Not yet implemented");
-    ierr = PetscObjectTypeCompare((PetscObject)S,MATSEQDENSE,&isdense);CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)S,MATSEQDENSECUDA,&isdensecuda);CHKERRQ(ierr);
-    ierr = PetscLogEventBegin(MAT_FactorInvS,F,0,0,0);CHKERRQ(ierr);
+    PetscCall(PetscObjectTypeCompare((PetscObject)S,MATSEQDENSE,&isdense));
+    PetscCall(PetscObjectTypeCompare((PetscObject)S,MATSEQDENSECUDA,&isdensecuda));
+    PetscCall(PetscLogEventBegin(MAT_FactorInvS,F,0,0,0));
     if (isdense) {
-      ierr = MatSeqDenseInvertFactors_Private(S);CHKERRQ(ierr);
+      PetscCall(MatSeqDenseInvertFactors_Private(S));
 #if defined(PETSC_HAVE_CUDA)
     } else if (isdensecuda) {
-      ierr = MatSeqDenseCUDAInvertFactors_Private(S);CHKERRQ(ierr);
+      PetscCall(MatSeqDenseCUDAInvertFactors_Private(S));
 #endif
     } else SETERRQ(PetscObjectComm((PetscObject)S),PETSC_ERR_SUP,"Not implemented for type %s",((PetscObject)S)->type_name);
-    ierr = PetscLogEventEnd(MAT_FactorInvS,F,0,0,0);CHKERRQ(ierr);
+    PetscCall(PetscLogEventEnd(MAT_FactorInvS,F,0,0,0));
   }
   PetscFunctionReturn(0);
 }

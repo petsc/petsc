@@ -10,26 +10,25 @@ int main(int argc, char **args)
   PetscScalar    c[16] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
   Mat            ssbaij;
   Mat            msbaij;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,(char*)0);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,(char*)0));
 
-  ierr = MatCreate(PETSC_COMM_SELF, &ssbaij);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_SELF, &msbaij);CHKERRQ(ierr);
-  ierr = MatSetType(ssbaij, MATSEQSBAIJ);CHKERRQ(ierr);
-  ierr = MatSetType(msbaij, MATMPISBAIJ);CHKERRQ(ierr);
-  ierr = MatSetBlockSize(ssbaij, 2);CHKERRQ(ierr);
-  ierr = MatSetSizes(ssbaij, 4, 4, 4, 4);CHKERRQ(ierr);
-  ierr = MatSetBlockSize(msbaij, 2);CHKERRQ(ierr);
-  ierr = MatSetSizes(msbaij, 4, 4, 4, 4);CHKERRQ(ierr);
-  ierr = MatSeqSBAIJSetPreallocationCSR(ssbaij, 2, ia, ja, c);CHKERRQ(ierr);
-  ierr = MatMPISBAIJSetPreallocationCSR(msbaij, 2, ia, ja, c);CHKERRQ(ierr);
-  ierr = MatView(ssbaij, PETSC_VIEWER_STDOUT_(PETSC_COMM_SELF));CHKERRQ(ierr);
-  ierr = MatView(msbaij, PETSC_VIEWER_STDOUT_(PETSC_COMM_SELF));CHKERRQ(ierr);
-  ierr = MatDestroy(&ssbaij);CHKERRQ(ierr);
-  ierr = MatDestroy(&msbaij);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(MatCreate(PETSC_COMM_SELF, &ssbaij));
+  PetscCall(MatCreate(PETSC_COMM_SELF, &msbaij));
+  PetscCall(MatSetType(ssbaij, MATSEQSBAIJ));
+  PetscCall(MatSetType(msbaij, MATMPISBAIJ));
+  PetscCall(MatSetBlockSize(ssbaij, 2));
+  PetscCall(MatSetSizes(ssbaij, 4, 4, 4, 4));
+  PetscCall(MatSetBlockSize(msbaij, 2));
+  PetscCall(MatSetSizes(msbaij, 4, 4, 4, 4));
+  PetscCall(MatSeqSBAIJSetPreallocationCSR(ssbaij, 2, ia, ja, c));
+  PetscCall(MatMPISBAIJSetPreallocationCSR(msbaij, 2, ia, ja, c));
+  PetscCall(MatView(ssbaij, PETSC_VIEWER_STDOUT_(PETSC_COMM_SELF)));
+  PetscCall(MatView(msbaij, PETSC_VIEWER_STDOUT_(PETSC_COMM_SELF)));
+  PetscCall(MatDestroy(&ssbaij));
+  PetscCall(MatDestroy(&msbaij));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

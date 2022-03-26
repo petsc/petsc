@@ -7,21 +7,18 @@
 static PetscErrorCode PetscConvEstSetTS_Private(PetscConvEst ce, PetscObject solver)
 {
   PetscClassId   id;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetClassId(ce->solver, &id);CHKERRQ(ierr);
+  PetscCall(PetscObjectGetClassId(ce->solver, &id));
   PetscCheck(id == TS_CLASSID,PetscObjectComm((PetscObject) ce), PETSC_ERR_ARG_WRONG, "Solver was not a TS");
-  ierr = TSGetDM((TS) ce->solver, &ce->idm);CHKERRQ(ierr);
+  PetscCall(TSGetDM((TS) ce->solver, &ce->idm));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscConvEstInitGuessTS_Private(PetscConvEst ce, PetscInt r, DM dm, Vec u)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = TSComputeInitialCondition((TS) ce->solver, u);CHKERRQ(ierr);
+  PetscCall(TSComputeInitialCondition((TS) ce->solver, u));
   PetscFunctionReturn(0);
 }
 
@@ -29,24 +26,23 @@ static PetscErrorCode PetscConvEstComputeErrorTS_Private(PetscConvEst ce, PetscI
 {
   TS               ts = (TS) ce->solver;
   PetscErrorCode (*exactError)(TS, Vec, Vec);
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = TSGetComputeExactError(ts, &exactError);CHKERRQ(ierr);
+  PetscCall(TSGetComputeExactError(ts, &exactError));
   if (exactError) {
     Vec      e;
     PetscInt f;
 
-    ierr = VecDuplicate(u, &e);CHKERRQ(ierr);
-    ierr = TSComputeExactError(ts, u, e);CHKERRQ(ierr);
-    ierr = VecNorm(e, NORM_2, errors);CHKERRQ(ierr);
+    PetscCall(VecDuplicate(u, &e));
+    PetscCall(TSComputeExactError(ts, u, e));
+    PetscCall(VecNorm(e, NORM_2, errors));
     for (f = 1; f < ce->Nf; ++f) errors[f] = errors[0];
-    ierr = VecDestroy(&e);CHKERRQ(ierr);
+    PetscCall(VecDestroy(&e));
   } else {
     PetscReal t;
 
-    ierr = TSGetSolveTime(ts, &t);CHKERRQ(ierr);
-    ierr = DMComputeL2FieldDiff(dm, t, ce->exactSol, ce->ctxs, u, errors);CHKERRQ(ierr);
+    PetscCall(TSGetSolveTime(ts, &t));
+    PetscCall(DMComputeL2FieldDiff(dm, t, ce->exactSol, ce->ctxs, u, errors));
   }
   PetscFunctionReturn(0);
 }
@@ -57,58 +53,57 @@ static PetscErrorCode PetscConvEstGetConvRateTS_Temporal_Private(PetscConvEst ce
   Vec            u;
   PetscReal     *dt, *x, *y, slope, intercept;
   PetscInt       Ns, oNs, Nf = ce->Nf, f, Nr = ce->Nr, r;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TSGetSolution(ts, &u);CHKERRQ(ierr);
-  ierr = PetscMalloc1(Nr+1, &dt);CHKERRQ(ierr);
-  ierr = TSGetTimeStep(ts, &dt[0]);CHKERRQ(ierr);
-  ierr = TSGetMaxSteps(ts, &oNs);CHKERRQ(ierr);
+  PetscCall(TSGetSolution(ts, &u));
+  PetscCall(PetscMalloc1(Nr+1, &dt));
+  PetscCall(TSGetTimeStep(ts, &dt[0]));
+  PetscCall(TSGetMaxSteps(ts, &oNs));
   Ns   = oNs;
   for (r = 0; r <= Nr; ++r) {
     if (r > 0) {
       dt[r] = dt[r-1]/ce->r;
       Ns    = PetscCeilReal(Ns*ce->r);
     }
-    ierr = TSSetTime(ts, 0.0);CHKERRQ(ierr);
-    ierr = TSSetStepNumber(ts, 0);CHKERRQ(ierr);
-    ierr = TSSetTimeStep(ts, dt[r]);CHKERRQ(ierr);
-    ierr = TSSetMaxSteps(ts, Ns);CHKERRQ(ierr);
-    ierr = PetscConvEstComputeInitialGuess(ce, r, NULL, u);CHKERRQ(ierr);
-    ierr = TSSolve(ts, u);CHKERRQ(ierr);
-    ierr = PetscLogEventBegin(ce->event, ce, 0, 0, 0);CHKERRQ(ierr);
-    ierr = PetscConvEstComputeError(ce, r, ce->idm, u, &ce->errors[r*Nf]);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(ce->event, ce, 0, 0, 0);CHKERRQ(ierr);
+    PetscCall(TSSetTime(ts, 0.0));
+    PetscCall(TSSetStepNumber(ts, 0));
+    PetscCall(TSSetTimeStep(ts, dt[r]));
+    PetscCall(TSSetMaxSteps(ts, Ns));
+    PetscCall(PetscConvEstComputeInitialGuess(ce, r, NULL, u));
+    PetscCall(TSSolve(ts, u));
+    PetscCall(PetscLogEventBegin(ce->event, ce, 0, 0, 0));
+    PetscCall(PetscConvEstComputeError(ce, r, ce->idm, u, &ce->errors[r*Nf]));
+    PetscCall(PetscLogEventEnd(ce->event, ce, 0, 0, 0));
     for (f = 0; f < Nf; ++f) {
       ce->dofs[r*Nf+f] = 1.0/dt[r];
-      ierr = PetscLogEventSetDof(ce->event, f, ce->dofs[r*Nf+f]);CHKERRQ(ierr);
-      ierr = PetscLogEventSetError(ce->event, f, ce->errors[r*Nf+f]);CHKERRQ(ierr);
+      PetscCall(PetscLogEventSetDof(ce->event, f, ce->dofs[r*Nf+f]));
+      PetscCall(PetscLogEventSetError(ce->event, f, ce->errors[r*Nf+f]));
     }
     /* Monitor */
-    ierr = PetscConvEstMonitorDefault(ce, r);CHKERRQ(ierr);
+    PetscCall(PetscConvEstMonitorDefault(ce, r));
   }
   /* Fit convergence rate */
   if (Nr) {
-    ierr = PetscMalloc2(Nr+1, &x, Nr+1, &y);CHKERRQ(ierr);
+    PetscCall(PetscMalloc2(Nr+1, &x, Nr+1, &y));
     for (f = 0; f < Nf; ++f) {
       for (r = 0; r <= Nr; ++r) {
         x[r] = PetscLog10Real(dt[r]);
         y[r] = PetscLog10Real(ce->errors[r*Nf+f]);
       }
-      ierr = PetscLinearRegression(Nr+1, x, y, &slope, &intercept);CHKERRQ(ierr);
+      PetscCall(PetscLinearRegression(Nr+1, x, y, &slope, &intercept));
       /* Since lg err = s lg dt + b */
       alpha[f] = slope;
     }
-    ierr = PetscFree2(x, y);CHKERRQ(ierr);
+    PetscCall(PetscFree2(x, y));
   }
   /* Reset solver */
-  ierr = TSSetConvergedReason(ts, TS_CONVERGED_ITERATING);CHKERRQ(ierr);
-  ierr = TSSetTime(ts, 0.0);CHKERRQ(ierr);
-  ierr = TSSetStepNumber(ts, 0);CHKERRQ(ierr);
-  ierr = TSSetTimeStep(ts, dt[0]);CHKERRQ(ierr);
-  ierr = TSSetMaxSteps(ts, oNs);CHKERRQ(ierr);
-  ierr = PetscConvEstComputeInitialGuess(ce, 0, NULL, u);CHKERRQ(ierr);
-  ierr = PetscFree(dt);CHKERRQ(ierr);
+  PetscCall(TSSetConvergedReason(ts, TS_CONVERGED_ITERATING));
+  PetscCall(TSSetTime(ts, 0.0));
+  PetscCall(TSSetStepNumber(ts, 0));
+  PetscCall(TSSetTimeStep(ts, dt[0]));
+  PetscCall(TSSetMaxSteps(ts, oNs));
+  PetscCall(PetscConvEstComputeInitialGuess(ce, 0, NULL, u));
+  PetscCall(PetscFree(dt));
   PetscFunctionReturn(0);
 }
 
@@ -121,16 +116,15 @@ static PetscErrorCode PetscConvEstGetConvRateTS_Spatial_Private(PetscConvEst ce,
   PetscReal     *x, *y, slope, intercept;
   PetscInt       Nr = ce->Nr, r, Nf = ce->Nf, f, dim, oldlevel, oldnlev;
   void          *ctx;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscCheck(ce->r == 2.0,PetscObjectComm((PetscObject) ce), PETSC_ERR_SUP, "Only refinement factor 2 is currently supported (not %g)", (double) ce->r);
-  ierr = DMGetDimension(ce->idm, &dim);CHKERRQ(ierr);
-  ierr = DMGetApplicationContext(ce->idm, &ctx);CHKERRQ(ierr);
-  ierr = DMPlexSetRefinementUniform(ce->idm, PETSC_TRUE);CHKERRQ(ierr);
-  ierr = DMGetRefineLevel(ce->idm, &oldlevel);CHKERRQ(ierr);
-  ierr = PetscMalloc1((Nr+1), &dm);CHKERRQ(ierr);
-  ierr = TSGetSolution(ts, &uInitial);CHKERRQ(ierr);
+  PetscCall(DMGetDimension(ce->idm, &dim));
+  PetscCall(DMGetApplicationContext(ce->idm, &ctx));
+  PetscCall(DMPlexSetRefinementUniform(ce->idm, PETSC_TRUE));
+  PetscCall(DMGetRefineLevel(ce->idm, &oldlevel));
+  PetscCall(PetscMalloc1((Nr+1), &dm));
+  PetscCall(TSGetSolution(ts, &uInitial));
   /* Loop over meshes */
   dm[0] = ce->idm;
   for (r = 0; r <= Nr; ++r) {
@@ -141,125 +135,125 @@ static PetscErrorCode PetscConvEstGetConvRateTS_Spatial_Private(PetscConvEst ce,
     char          stageName[PETSC_MAX_PATH_LEN];
     const char   *dmname, *uname;
 
-    ierr = PetscSNPrintf(stageName, PETSC_MAX_PATH_LEN-1, "ConvEst Refinement Level %D", r);CHKERRQ(ierr);
+    PetscCall(PetscSNPrintf(stageName, PETSC_MAX_PATH_LEN-1, "ConvEst Refinement Level %D", r));
 #if defined(PETSC_USE_LOG)
-    ierr = PetscLogStageGetId(stageName, &stage);CHKERRQ(ierr);
-    if (stage < 0) {ierr = PetscLogStageRegister(stageName, &stage);CHKERRQ(ierr);}
+    PetscCall(PetscLogStageGetId(stageName, &stage));
+    if (stage < 0) PetscCall(PetscLogStageRegister(stageName, &stage));
 #endif
-    ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
+    PetscCall(PetscLogStagePush(stage));
     if (r > 0) {
       if (!ce->noRefine) {
-        ierr = DMRefine(dm[r-1], MPI_COMM_NULL, &dm[r]);CHKERRQ(ierr);
-        ierr = DMSetCoarseDM(dm[r], dm[r-1]);CHKERRQ(ierr);
+        PetscCall(DMRefine(dm[r-1], MPI_COMM_NULL, &dm[r]));
+        PetscCall(DMSetCoarseDM(dm[r], dm[r-1]));
       } else {
         DM cdm, rcdm;
 
-        ierr = DMClone(dm[r-1], &dm[r]);CHKERRQ(ierr);
-        ierr = DMCopyDisc(dm[r-1], dm[r]);CHKERRQ(ierr);
-        ierr = DMGetCoordinateDM(dm[r-1], &cdm);CHKERRQ(ierr);
-        ierr = DMGetCoordinateDM(dm[r],   &rcdm);CHKERRQ(ierr);
-        ierr = DMCopyDisc(cdm, rcdm);CHKERRQ(ierr);
+        PetscCall(DMClone(dm[r-1], &dm[r]));
+        PetscCall(DMCopyDisc(dm[r-1], dm[r]));
+        PetscCall(DMGetCoordinateDM(dm[r-1], &cdm));
+        PetscCall(DMGetCoordinateDM(dm[r],   &rcdm));
+        PetscCall(DMCopyDisc(cdm, rcdm));
       }
-      ierr = DMCopyTransform(ce->idm, dm[r]);CHKERRQ(ierr);
-      ierr = PetscObjectGetName((PetscObject) dm[r-1], &dmname);CHKERRQ(ierr);
-      ierr = PetscObjectSetName((PetscObject) dm[r], dmname);CHKERRQ(ierr);
+      PetscCall(DMCopyTransform(ce->idm, dm[r]));
+      PetscCall(PetscObjectGetName((PetscObject) dm[r-1], &dmname));
+      PetscCall(PetscObjectSetName((PetscObject) dm[r], dmname));
       for (f = 0; f <= Nf; ++f) {
         PetscErrorCode (*nspconstr)(DM, PetscInt, PetscInt, MatNullSpace *);
 
-        ierr = DMGetNullSpaceConstructor(dm[r-1], f, &nspconstr);CHKERRQ(ierr);
-        ierr = DMSetNullSpaceConstructor(dm[r],   f,  nspconstr);CHKERRQ(ierr);
+        PetscCall(DMGetNullSpaceConstructor(dm[r-1], f, &nspconstr));
+        PetscCall(DMSetNullSpaceConstructor(dm[r],   f,  nspconstr));
       }
     }
-    ierr = DMViewFromOptions(dm[r], NULL, "-conv_dm_view");CHKERRQ(ierr);
+    PetscCall(DMViewFromOptions(dm[r], NULL, "-conv_dm_view"));
     /* Create solution */
-    ierr = DMCreateGlobalVector(dm[r], &u);CHKERRQ(ierr);
-    ierr = DMGetField(dm[r], 0, NULL, &disc);CHKERRQ(ierr);
-    ierr = PetscObjectGetName(disc, &uname);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) u, uname);CHKERRQ(ierr);
+    PetscCall(DMCreateGlobalVector(dm[r], &u));
+    PetscCall(DMGetField(dm[r], 0, NULL, &disc));
+    PetscCall(PetscObjectGetName(disc, &uname));
+    PetscCall(PetscObjectSetName((PetscObject) u, uname));
     /* Setup solver */
-    ierr = TSReset(ts);CHKERRQ(ierr);
-    ierr = TSSetDM(ts, dm[r]);CHKERRQ(ierr);
-    ierr = DMTSSetBoundaryLocal(dm[r], DMPlexTSComputeBoundary, ctx);CHKERRQ(ierr);
-    ierr = DMTSSetIFunctionLocal(dm[r], DMPlexTSComputeIFunctionFEM, ctx);CHKERRQ(ierr);
-    ierr = DMTSSetIJacobianLocal(dm[r], DMPlexTSComputeIJacobianFEM, ctx);CHKERRQ(ierr);
-    ierr = TSSetTime(ts, 0.0);CHKERRQ(ierr);
-    ierr = TSSetStepNumber(ts, 0);CHKERRQ(ierr);
-    ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
+    PetscCall(TSReset(ts));
+    PetscCall(TSSetDM(ts, dm[r]));
+    PetscCall(DMTSSetBoundaryLocal(dm[r], DMPlexTSComputeBoundary, ctx));
+    PetscCall(DMTSSetIFunctionLocal(dm[r], DMPlexTSComputeIFunctionFEM, ctx));
+    PetscCall(DMTSSetIJacobianLocal(dm[r], DMPlexTSComputeIJacobianFEM, ctx));
+    PetscCall(TSSetTime(ts, 0.0));
+    PetscCall(TSSetStepNumber(ts, 0));
+    PetscCall(TSSetFromOptions(ts));
     /* Create initial guess */
-    ierr = PetscConvEstComputeInitialGuess(ce, r, dm[r], u);CHKERRQ(ierr);
-    ierr = TSSolve(ts, u);CHKERRQ(ierr);
-    ierr = PetscLogEventBegin(ce->event, ce, 0, 0, 0);CHKERRQ(ierr);
-    ierr = PetscConvEstComputeError(ce, r, dm[r], u, &ce->errors[r*Nf]);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(ce->event, ce, 0, 0, 0);CHKERRQ(ierr);
+    PetscCall(PetscConvEstComputeInitialGuess(ce, r, dm[r], u));
+    PetscCall(TSSolve(ts, u));
+    PetscCall(PetscLogEventBegin(ce->event, ce, 0, 0, 0));
+    PetscCall(PetscConvEstComputeError(ce, r, dm[r], u, &ce->errors[r*Nf]));
+    PetscCall(PetscLogEventEnd(ce->event, ce, 0, 0, 0));
     for (f = 0; f < Nf; ++f) {
       PetscSection s, fs;
       PetscInt     lsize;
 
       /* Could use DMGetOutputDM() to add in Dirichlet dofs */
-      ierr = DMGetLocalSection(dm[r], &s);CHKERRQ(ierr);
-      ierr = PetscSectionGetField(s, f, &fs);CHKERRQ(ierr);
-      ierr = PetscSectionGetConstrainedStorageSize(fs, &lsize);CHKERRQ(ierr);
-      ierr = MPI_Allreduce(&lsize, &ce->dofs[r*Nf+f], 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject) ts));CHKERRMPI(ierr);
-      ierr = PetscLogEventSetDof(ce->event, f, ce->dofs[r*Nf+f]);CHKERRQ(ierr);
-      ierr = PetscLogEventSetError(ce->event, f, ce->errors[r*Nf+f]);CHKERRQ(ierr);
+      PetscCall(DMGetLocalSection(dm[r], &s));
+      PetscCall(PetscSectionGetField(s, f, &fs));
+      PetscCall(PetscSectionGetConstrainedStorageSize(fs, &lsize));
+      PetscCallMPI(MPI_Allreduce(&lsize, &ce->dofs[r*Nf+f], 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject) ts)));
+      PetscCall(PetscLogEventSetDof(ce->event, f, ce->dofs[r*Nf+f]));
+      PetscCall(PetscLogEventSetError(ce->event, f, ce->errors[r*Nf+f]));
     }
     /* Monitor */
-    ierr = PetscConvEstMonitorDefault(ce, r);CHKERRQ(ierr);
+    PetscCall(PetscConvEstMonitorDefault(ce, r));
     if (!r) {
       /* PCReset() does not wipe out the level structure */
       SNES snes;
       KSP  ksp;
       PC   pc;
 
-      ierr = TSGetSNES(ts, &snes);CHKERRQ(ierr);
-      ierr = SNESGetKSP(snes, &ksp);CHKERRQ(ierr);
-      ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
-      ierr = PCMGGetLevels(pc, &oldnlev);CHKERRQ(ierr);
+      PetscCall(TSGetSNES(ts, &snes));
+      PetscCall(SNESGetKSP(snes, &ksp));
+      PetscCall(KSPGetPC(ksp, &pc));
+      PetscCall(PCMGGetLevels(pc, &oldnlev));
     }
     /* Cleanup */
-    ierr = VecDestroy(&u);CHKERRQ(ierr);
-    ierr = PetscLogStagePop();CHKERRQ(ierr);
+    PetscCall(VecDestroy(&u));
+    PetscCall(PetscLogStagePop());
   }
   for (r = 1; r <= Nr; ++r) {
-    ierr = DMDestroy(&dm[r]);CHKERRQ(ierr);
+    PetscCall(DMDestroy(&dm[r]));
   }
   /* Fit convergence rate */
-  ierr = PetscMalloc2(Nr+1, &x, Nr+1, &y);CHKERRQ(ierr);
+  PetscCall(PetscMalloc2(Nr+1, &x, Nr+1, &y));
   for (f = 0; f < Nf; ++f) {
     for (r = 0; r <= Nr; ++r) {
       x[r] = PetscLog10Real(ce->dofs[r*Nf+f]);
       y[r] = PetscLog10Real(ce->errors[r*Nf+f]);
     }
-    ierr = PetscLinearRegression(Nr+1, x, y, &slope, &intercept);CHKERRQ(ierr);
+    PetscCall(PetscLinearRegression(Nr+1, x, y, &slope, &intercept));
     /* Since h^{-dim} = N, lg err = s lg N + b = -s dim lg h + b */
     alpha[f] = -slope * dim;
   }
-  ierr = PetscFree2(x, y);CHKERRQ(ierr);
-  ierr = PetscFree(dm);CHKERRQ(ierr);
+  PetscCall(PetscFree2(x, y));
+  PetscCall(PetscFree(dm));
   /* Restore solver */
-  ierr = TSReset(ts);CHKERRQ(ierr);
+  PetscCall(TSReset(ts));
   {
     /* PCReset() does not wipe out the level structure */
     SNES snes;
     KSP  ksp;
     PC   pc;
 
-    ierr = TSGetSNES(ts, &snes);CHKERRQ(ierr);
-    ierr = SNESGetKSP(snes, &ksp);CHKERRQ(ierr);
-    ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
-    ierr = PCMGSetLevels(pc, oldnlev, NULL);CHKERRQ(ierr);
-    ierr = DMSetRefineLevel(ce->idm, oldlevel);CHKERRQ(ierr); /* The damn DMCoarsen() calls in PCMG can reset this */
+    PetscCall(TSGetSNES(ts, &snes));
+    PetscCall(SNESGetKSP(snes, &ksp));
+    PetscCall(KSPGetPC(ksp, &pc));
+    PetscCall(PCMGSetLevels(pc, oldnlev, NULL));
+    PetscCall(DMSetRefineLevel(ce->idm, oldlevel)); /* The damn DMCoarsen() calls in PCMG can reset this */
   }
-  ierr = TSSetDM(ts, ce->idm);CHKERRQ(ierr);
-  ierr = DMTSSetBoundaryLocal(ce->idm, DMPlexTSComputeBoundary, ctx);CHKERRQ(ierr);
-  ierr = DMTSSetIFunctionLocal(ce->idm, DMPlexTSComputeIFunctionFEM, ctx);CHKERRQ(ierr);
-  ierr = DMTSSetIJacobianLocal(ce->idm, DMPlexTSComputeIJacobianFEM, ctx);CHKERRQ(ierr);
-  ierr = TSSetConvergedReason(ts, TS_CONVERGED_ITERATING);CHKERRQ(ierr);
-  ierr = TSSetTime(ts, 0.0);CHKERRQ(ierr);
-  ierr = TSSetStepNumber(ts, 0);CHKERRQ(ierr);
-  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-  ierr = TSSetSolution(ts, uInitial);CHKERRQ(ierr);
-  ierr = PetscConvEstComputeInitialGuess(ce, 0, NULL, uInitial);CHKERRQ(ierr);
+  PetscCall(TSSetDM(ts, ce->idm));
+  PetscCall(DMTSSetBoundaryLocal(ce->idm, DMPlexTSComputeBoundary, ctx));
+  PetscCall(DMTSSetIFunctionLocal(ce->idm, DMPlexTSComputeIFunctionFEM, ctx));
+  PetscCall(DMTSSetIJacobianLocal(ce->idm, DMPlexTSComputeIJacobianFEM, ctx));
+  PetscCall(TSSetConvergedReason(ts, TS_CONVERGED_ITERATING));
+  PetscCall(TSSetTime(ts, 0.0));
+  PetscCall(TSSetStepNumber(ts, 0));
+  PetscCall(TSSetFromOptions(ts));
+  PetscCall(TSSetSolution(ts, uInitial));
+  PetscCall(PetscConvEstComputeInitialGuess(ce, 0, NULL, uInitial));
   PetscFunctionReturn(0);
 }
 

@@ -25,24 +25,24 @@ int main(int argc,char **args)
   PetscScalar     *x_array,*y_array,*z_array;
   fftw_plan       fplan,bplan;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires real numbers");
 #endif
 
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP, "This is a uniprocessor example only!");
-  ierr     = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "FFTW Options", "ex142");CHKERRQ(ierr);
-  ierr     = PetscOptionsEList("-function", "Function type", "ex142", funcNames, NUM_FUNCS, funcNames[function], &func, NULL);CHKERRQ(ierr);
-  ierr     = PetscOptionsBool("-vec_view draw", "View the functions", "ex142", view, &view, NULL);CHKERRQ(ierr);
+  ierr     = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "FFTW Options", "ex142");PetscCall(ierr);
+  PetscCall(PetscOptionsEList("-function", "Function type", "ex142", funcNames, NUM_FUNCS, funcNames[function], &func, NULL));
+  PetscCall(PetscOptionsBool("-vec_view draw", "View the functions", "ex142", view, &view, NULL));
   function = (FuncType) func;
-  ierr     = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr     = PetscOptionsEnd();PetscCall(ierr);
 
   for (DIM = 0; DIM < ndim; DIM++) {
     dim[DIM] = n;  /* size of real space vector in DIM-dimension */
   }
-  ierr = PetscRandomCreate(PETSC_COMM_SELF, &rdm);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
+  PetscCall(PetscRandomCreate(PETSC_COMM_SELF, &rdm));
+  PetscCall(PetscRandomSetFromOptions(rdm));
 
   for (DIM = 1; DIM < 5; DIM++) {
     /* create vectors of length N=dim[0]*dim[1]* ...*dim[DIM-1] */
@@ -54,26 +54,26 @@ int main(int argc,char **args)
     Ny = N; Ny *= 2*(dim[DIM-1]/2 + 1); /* add padding elements to output vector y */
     N *= dim[DIM-1];
 
-    ierr = PetscPrintf(PETSC_COMM_SELF, "\n %d-D: FFTW on vector of size %d \n",DIM,N);CHKERRQ(ierr);
-    ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) x, "Real space vector");CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n %d-D: FFTW on vector of size %d \n",DIM,N));
+    PetscCall(VecCreateSeq(PETSC_COMM_SELF,N,&x));
+    PetscCall(PetscObjectSetName((PetscObject) x, "Real space vector"));
 
-    ierr = VecCreateSeq(PETSC_COMM_SELF,Ny,&y);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) y, "Frequency space vector");CHKERRQ(ierr);
+    PetscCall(VecCreateSeq(PETSC_COMM_SELF,Ny,&y));
+    PetscCall(PetscObjectSetName((PetscObject) y, "Frequency space vector"));
 
-    ierr = VecDuplicate(x,&z);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) z, "Reconstructed vector");CHKERRQ(ierr);
+    PetscCall(VecDuplicate(x,&z));
+    PetscCall(PetscObjectSetName((PetscObject) z, "Reconstructed vector"));
 
     /* Set fftw plan                    */
     /*----------------------------------*/
-    ierr = VecGetArray(x,&x_array);CHKERRQ(ierr);
-    ierr = VecGetArray(y,&y_array);CHKERRQ(ierr);
-    ierr = VecGetArray(z,&z_array);CHKERRQ(ierr);
+    PetscCall(VecGetArray(x,&x_array));
+    PetscCall(VecGetArray(y,&y_array));
+    PetscCall(VecGetArray(z,&z_array));
 
     unsigned int flags = FFTW_ESTIMATE; /*or FFTW_MEASURE */
     /* The data in the in/out arrays is overwritten during FFTW_MEASURE planning, so such planning
      should be done before the input is initialized by the user. */
-    ierr = PetscPrintf(PETSC_COMM_SELF,"DIM: %d, N %d, Ny %d\n",DIM,N,Ny);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"DIM: %d, N %d, Ny %d\n",DIM,N,Ny));
 
     switch (DIM) {
     case 1:
@@ -94,34 +94,34 @@ int main(int argc,char **args)
       break;
     }
 
-    ierr = VecRestoreArray(x,&x_array);CHKERRQ(ierr);
-    ierr = VecRestoreArray(y,&y_array);CHKERRQ(ierr);
-    ierr = VecRestoreArray(z,&z_array);CHKERRQ(ierr);
+    PetscCall(VecRestoreArray(x,&x_array));
+    PetscCall(VecRestoreArray(y,&y_array));
+    PetscCall(VecRestoreArray(z,&z_array));
 
     /* Initialize Real space vector x:
        The data in the in/out arrays is overwritten during FFTW_MEASURE planning, so planning
        should be done before the input is initialized by the user.
     --------------------------------------------------------*/
     if (function == RANDOM) {
-      ierr = VecSetRandom(x, rdm);CHKERRQ(ierr);
+      PetscCall(VecSetRandom(x, rdm));
     } else if (function == CONSTANT) {
-      ierr = VecSet(x, 1.0);CHKERRQ(ierr);
+      PetscCall(VecSet(x, 1.0));
     } else if (function == TANH) {
-      ierr = VecGetArray(x, &x_array);CHKERRQ(ierr);
+      PetscCall(VecGetArray(x, &x_array));
       for (i = 0; i < N; ++i) {
         x_array[i] = tanh((i - N/2.0)*(10.0/N));
       }
-      ierr = VecRestoreArray(x, &x_array);CHKERRQ(ierr);
+      PetscCall(VecRestoreArray(x, &x_array));
     }
     if (view) {
-      ierr = VecView(x, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+      PetscCall(VecView(x, PETSC_VIEWER_STDOUT_WORLD));
     }
 
     /* FFT - also test repeated transformation   */
     /*-------------------------------------------*/
-    ierr = VecGetArray(x,&x_array);CHKERRQ(ierr);
-    ierr = VecGetArray(y,&y_array);CHKERRQ(ierr);
-    ierr = VecGetArray(z,&z_array);CHKERRQ(ierr);
+    PetscCall(VecGetArray(x,&x_array));
+    PetscCall(VecGetArray(y,&y_array));
+    PetscCall(VecGetArray(z,&z_array));
     for (i=0; i<4; i++) {
       /* FFTW_FORWARD */
       fftw_execute(fplan);
@@ -129,32 +129,32 @@ int main(int argc,char **args)
       /* FFTW_BACKWARD: destroys its input array 'y_array' even for out-of-place transforms! */
       fftw_execute(bplan);
     }
-    ierr = VecRestoreArray(x,&x_array);CHKERRQ(ierr);
-    ierr = VecRestoreArray(y,&y_array);CHKERRQ(ierr);
-    ierr = VecRestoreArray(z,&z_array);CHKERRQ(ierr);
+    PetscCall(VecRestoreArray(x,&x_array));
+    PetscCall(VecRestoreArray(y,&y_array));
+    PetscCall(VecRestoreArray(z,&z_array));
 
     /* Compare x and z. FFTW computes an unnormalized DFT, thus z = N*x */
     /*------------------------------------------------------------------*/
     s    = 1.0/(PetscReal)N;
-    ierr = VecScale(z,s);CHKERRQ(ierr);
-    if (view) {ierr = VecView(x, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
-    if (view) {ierr = VecView(z, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
-    ierr = VecAXPY(z,-1.0,x);CHKERRQ(ierr);
-    ierr = VecNorm(z,NORM_1,&enorm);CHKERRQ(ierr);
+    PetscCall(VecScale(z,s));
+    if (view) PetscCall(VecView(x, PETSC_VIEWER_DRAW_WORLD));
+    if (view) PetscCall(VecView(z, PETSC_VIEWER_DRAW_WORLD));
+    PetscCall(VecAXPY(z,-1.0,x));
+    PetscCall(VecNorm(z,NORM_1,&enorm));
     if (enorm > 1.e-11) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %g\n",(double)enorm);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %g\n",(double)enorm));
     }
 
     /* free spaces */
     fftw_destroy_plan(fplan);
     fftw_destroy_plan(bplan);
-    ierr = VecDestroy(&x);CHKERRQ(ierr);
-    ierr = VecDestroy(&y);CHKERRQ(ierr);
-    ierr = VecDestroy(&z);CHKERRQ(ierr);
+    PetscCall(VecDestroy(&x));
+    PetscCall(VecDestroy(&y));
+    PetscCall(VecDestroy(&z));
   }
-  ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscRandomDestroy(&rdm));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -6,7 +6,6 @@ using DefaultMemorySpace = Kokkos::DefaultExecutionSpace::memory_space;
 
 PetscErrorCode FillMatrixKokkosCOO(FEStruct *fe,Mat A)
 {
-  PetscErrorCode                                ierr;
   Kokkos::View<PetscScalar*,DefaultMemorySpace> v("v",3*3*fe->Ne);
 
   PetscFunctionBeginUser;
@@ -19,6 +18,6 @@ PetscErrorCode FillMatrixKokkosCOO(FEStruct *fe,Mat A)
         }
       }
     });
-  ierr = MatSetValuesCOO(A,v.data(),INSERT_VALUES);CHKERRQ(ierr);
+  PetscCall(MatSetValuesCOO(A,v.data(),INSERT_VALUES));
   PetscFunctionReturn(0);
 }

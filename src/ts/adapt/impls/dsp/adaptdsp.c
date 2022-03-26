@@ -72,7 +72,6 @@ static PetscErrorCode TSAdaptChoose_DSP(TSAdapt adapt,TS ts,PetscReal h,PetscInt
   PetscReal      safety = adapt->safety * (PetscReal)0.9;
   PetscReal      hnew,hfac = PETSC_INFINITY;
   PetscReal      hmin = adapt->dt_min*(1 + PETSC_SQRT_MACHINE_EPSILON);
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   *next_sc = 0;   /* Reuse the same order scheme */
@@ -80,7 +79,7 @@ static PetscErrorCode TSAdaptChoose_DSP(TSAdapt adapt,TS ts,PetscReal h,PetscInt
   *wlter   = -1;  /* Weighted relative local truncation error is not used */
 
   if (ts->ops->evaluatewlte) {
-    ierr = TSEvaluateWLTE(ts,adapt->wnormtype,&order,&enorm);CHKERRQ(ierr);
+    PetscCall(TSEvaluateWLTE(ts,adapt->wnormtype,&order,&enorm));
     PetscCheckFalse(enorm >= 0 && order < 1,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_OUTOFRANGE,"Computed error order %D must be positive",order);
   } else if (ts->ops->evaluatestep) {
     DM  dm;
@@ -89,33 +88,33 @@ static PetscErrorCode TSAdaptChoose_DSP(TSAdapt adapt,TS ts,PetscReal h,PetscInt
     PetscCheckFalse(adapt->candidates.n < 1,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONGSTATE,"No candidate has been registered");
     PetscCheck(adapt->candidates.inuse_set,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONGSTATE,"The current in-use scheme is not among the %D candidates",adapt->candidates.n);
     order = adapt->candidates.order[0];
-    ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-    ierr = DMGetGlobalVector(dm,&Y);CHKERRQ(ierr);
-    ierr = TSEvaluateStep(ts,order-1,Y,NULL);CHKERRQ(ierr);
-    ierr = TSErrorWeightedNorm(ts,ts->vec_sol,Y,adapt->wnormtype,&enorm,&enorma,&enormr);CHKERRQ(ierr);
-    ierr = DMRestoreGlobalVector(dm,&Y);CHKERRQ(ierr);
+    PetscCall(TSGetDM(ts,&dm));
+    PetscCall(DMGetGlobalVector(dm,&Y));
+    PetscCall(TSEvaluateStep(ts,order-1,Y,NULL));
+    PetscCall(TSErrorWeightedNorm(ts,ts->vec_sol,Y,adapt->wnormtype,&enorm,&enorma,&enormr));
+    PetscCall(DMRestoreGlobalVector(dm,&Y));
   }
   if (enorm < 0) {
-    ierr = TSAdaptRestart_DSP(adapt);CHKERRQ(ierr);
+    PetscCall(TSAdaptRestart_DSP(adapt));
     *accept = PETSC_TRUE;  /* Accept the step */
     *next_h = h;           /* Reuse the old step size */
     *wlte   = -1;          /* Weighted local truncation error was not evaluated */
     PetscFunctionReturn(0);
   }
 
-  ierr = PetscCitationsRegister(citation[0],&cited[0]);CHKERRQ(ierr);
-  ierr = PetscCitationsRegister(citation[1],&cited[1]);CHKERRQ(ierr);
+  PetscCall(PetscCitationsRegister(citation[0],&cited[0]));
+  PetscCall(PetscCitationsRegister(citation[1],&cited[1]));
 
   /* Update history after rollback */
   if (!ts->steprollback)
     dsp->rollback = PETSC_FALSE;
   else if (!dsp->rollback) {
     dsp->rollback = PETSC_TRUE;
-    ierr = TSAdaptRollBack_DSP(adapt);CHKERRQ(ierr);
+    PetscCall(TSAdaptRollBack_DSP(adapt));
   }
   /* Reset history after restart */
   if (ts->steprestart) {
-    ierr = TSAdaptRestart_DSP(adapt);CHKERRQ(ierr);
+    PetscCall(TSAdaptRestart_DSP(adapt));
   }
 
   {
@@ -175,12 +174,10 @@ static PetscErrorCode TSAdaptChoose_DSP(TSAdapt adapt,TS ts,PetscReal h,PetscInt
 
 static PetscErrorCode TSAdaptDestroy_DSP(TSAdapt adapt)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscObjectComposeFunction((PetscObject)adapt,"TSAdaptDSPSetFilter_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)adapt,"TSAdaptDSPSetPID_C",NULL);CHKERRQ(ierr);
-  ierr = PetscFree(adapt->data);CHKERRQ(ierr);
+  PetscCall(PetscObjectComposeFunction((PetscObject)adapt,"TSAdaptDSPSetFilter_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)adapt,"TSAdaptDSPSetPID_C",NULL));
+  PetscCall(PetscFree(adapt->data));
   PetscFunctionReturn(0);
 }
 
@@ -188,14 +185,13 @@ static PetscErrorCode TSAdaptView_DSP(TSAdapt adapt,PetscViewer viewer)
 {
   TSAdapt_DSP    *dsp = (TSAdapt_DSP*)adapt->data;
   PetscBool      iascii;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
     double a2 = (double)dsp->Alpha[0], a3 = (double)dsp->Alpha[1];
     double b1 = (double)dsp->kBeta[0], b2 = (double)dsp->kBeta[1], b3 = (double)dsp->kBeta[2];
-    ierr = PetscViewerASCIIPrintf(viewer,"filter parameters kBeta=[%g,%g,%g] Alpha=[%g,%g]\n",b1,b2,b3,a2,a3);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"filter parameters kBeta=[%g,%g,%g] Alpha=[%g,%g]\n",b1,b2,b3,a2,a3));
   }
   PetscFunctionReturn(0);
 }
@@ -237,11 +233,10 @@ static PetscErrorCode TSAdaptDSPSetFilter_DSP(TSAdapt adapt,const char *name)
   PetscInt          i,count = (PetscInt)(sizeof(filterlist)/sizeof(filterlist[0]));
   struct FilterTab* tab = NULL;
   PetscBool         match;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   for (i=0; i<count; i++) {
-    ierr = PetscStrcasecmp(name,filterlist[i].name,&match);CHKERRQ(ierr);
+    PetscCall(PetscStrcasecmp(name,filterlist[i].name,&match));
     if (match) { tab = &filterlist[i]; break; }
   }
   PetscCheck(tab,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_UNKNOWN_TYPE,"Filter name %s not found",name);
@@ -275,28 +270,27 @@ static PetscErrorCode TSAdaptSetFromOptions_DSP(PetscOptionItems *PetscOptionsOb
   PetscReal      pid[3] = {1,0,0};
   PetscInt       i,n;
   PetscBool      set;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   for (i=0; i<count; i++) names[i] = filterlist[i].name;
-  ierr = PetscOptionsHead(PetscOptionsObject,"DSP adaptive controller options");CHKERRQ(ierr);
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"DSP adaptive controller options"));
 
-  ierr = PetscOptionsEList("-ts_adapt_dsp_filter","Filter name","TSAdaptDSPSetFilter",names,count,names[index],&index,&set);CHKERRQ(ierr);
-  if (set) { ierr = TSAdaptDSPSetFilter(adapt,names[index]);CHKERRQ(ierr);}
+  PetscCall(PetscOptionsEList("-ts_adapt_dsp_filter","Filter name","TSAdaptDSPSetFilter",names,count,names[index],&index,&set));
+  if (set) PetscCall(TSAdaptDSPSetFilter(adapt,names[index]));
 
-  ierr = PetscOptionsRealArray("-ts_adapt_dsp_pid","PID parameters <kkI,kkP,kkD>","TSAdaptDSPSetPID",pid,(n=3,&n),&set);CHKERRQ(ierr);
+  PetscCall(PetscOptionsRealArray("-ts_adapt_dsp_pid","PID parameters <kkI,kkP,kkD>","TSAdaptDSPSetPID",pid,(n=3,&n),&set));
   PetscCheckFalse(set && !n,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONG,"Must provide at least one value for PID parameters");
-  if (set) {ierr = TSAdaptDSPSetPID(adapt,pid[0],pid[1],pid[2]);CHKERRQ(ierr);}
+  if (set) PetscCall(TSAdaptDSPSetPID(adapt,pid[0],pid[1],pid[2]));
 
-  ierr = PetscOptionsRealArray("-ts_adapt_dsp_kbeta","Filter parameters","",dsp->kBeta,(n=3,&n),&set);CHKERRQ(ierr);
+  PetscCall(PetscOptionsRealArray("-ts_adapt_dsp_kbeta","Filter parameters","",dsp->kBeta,(n=3,&n),&set));
   PetscCheckFalse(set && !n,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONG,"Must provide at least one value for parameter kbeta");
   if (set) for (i=n; i<3; i++) dsp->kBeta[i] = 0;
 
-  ierr = PetscOptionsRealArray("-ts_adapt_dsp_alpha","Filter parameters","",dsp->Alpha,(n=2,&n),&set);CHKERRQ(ierr);
+  PetscCall(PetscOptionsRealArray("-ts_adapt_dsp_alpha","Filter parameters","",dsp->Alpha,(n=2,&n),&set));
   PetscCheckFalse(set && !n,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONG,"Must provide at least one value for parameter alpha");
   if (set) for (i=n; i<2; i++) dsp->Alpha[i] = 0;
 
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -330,11 +324,10 @@ static PetscErrorCode TSAdaptSetFromOptions_DSP(PetscOptionItems *PetscOptionsOb
 @*/
 PetscErrorCode TSAdaptDSPSetFilter(TSAdapt adapt,const char *name)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
   PetscValidCharPointer(name,2);
-  ierr = PetscTryMethod(adapt,"TSAdaptDSPSetFilter_C",(TSAdapt,const char*),(adapt,name));CHKERRQ(ierr);
+  PetscCall(PetscTryMethod(adapt,"TSAdaptDSPSetFilter_C",(TSAdapt,const char*),(adapt,name)));
   PetscFunctionReturn(0);
 }
 
@@ -359,13 +352,12 @@ PetscErrorCode TSAdaptDSPSetFilter(TSAdapt adapt,const char *name)
 @*/
 PetscErrorCode TSAdaptDSPSetPID(TSAdapt adapt,PetscReal kkI,PetscReal kkP,PetscReal kkD)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
   PetscValidLogicalCollectiveReal(adapt,kkI,2);
   PetscValidLogicalCollectiveReal(adapt,kkP,3);
   PetscValidLogicalCollectiveReal(adapt,kkD,4);
-  ierr = PetscTryMethod(adapt,"TSAdaptDSPSetPID_C",(TSAdapt,PetscReal,PetscReal,PetscReal),(adapt,kkI,kkP,kkD));CHKERRQ(ierr);
+  PetscCall(PetscTryMethod(adapt,"TSAdaptDSPSetPID_C",(TSAdapt,PetscReal,PetscReal,PetscReal),(adapt,kkI,kkP,kkD)));
   PetscFunctionReturn(0);
 }
 
@@ -389,10 +381,9 @@ M*/
 PETSC_EXTERN PetscErrorCode TSAdaptCreate_DSP(TSAdapt adapt)
 {
   TSAdapt_DSP    *dsp;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(adapt,&dsp);CHKERRQ(ierr);
+  PetscCall(PetscNewLog(adapt,&dsp));
   adapt->reject_safety = 1.0; /* unused */
 
   adapt->data                = (void*)dsp;
@@ -401,10 +392,10 @@ PETSC_EXTERN PetscErrorCode TSAdaptCreate_DSP(TSAdapt adapt)
   adapt->ops->destroy        = TSAdaptDestroy_DSP;
   adapt->ops->view           = TSAdaptView_DSP;
 
-  ierr = PetscObjectComposeFunction((PetscObject)adapt,"TSAdaptDSPSetFilter_C",TSAdaptDSPSetFilter_DSP);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)adapt,"TSAdaptDSPSetPID_C",TSAdaptDSPSetPID_DSP);CHKERRQ(ierr);
+  PetscCall(PetscObjectComposeFunction((PetscObject)adapt,"TSAdaptDSPSetFilter_C",TSAdaptDSPSetFilter_DSP));
+  PetscCall(PetscObjectComposeFunction((PetscObject)adapt,"TSAdaptDSPSetPID_C",TSAdaptDSPSetPID_DSP));
 
-  ierr = TSAdaptDSPSetFilter_DSP(adapt,"PI42");CHKERRQ(ierr);
-  ierr = TSAdaptRestart_DSP(adapt);CHKERRQ(ierr);
+  PetscCall(TSAdaptDSPSetFilter_DSP(adapt,"PI42"));
+  PetscCall(TSAdaptRestart_DSP(adapt));
   PetscFunctionReturn(0);
 }

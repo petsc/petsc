@@ -7,31 +7,24 @@
 
 PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj)
 {
-  PetscErrorCode ierr;
-  PetscInt       i;
+  PetscInt i;
 
   PetscFunctionBegin;
   if (obj->intstar_idmax>0) {
-    for (i=0; i<obj->intstar_idmax; i++) {
-      ierr = PetscFree(obj->intstarcomposeddata[i]);CHKERRQ(ierr);
-    }
-    ierr = PetscFree2(obj->intstarcomposeddata,obj->intstarcomposedstate);CHKERRQ(ierr);
+    for (i=0; i<obj->intstar_idmax; i++) PetscCall(PetscFree(obj->intstarcomposeddata[i]));
+    PetscCall(PetscFree2(obj->intstarcomposeddata,obj->intstarcomposedstate));
   }
   if (obj->realstar_idmax>0) {
-    for (i=0; i<obj->realstar_idmax; i++) {
-      ierr = PetscFree(obj->realstarcomposeddata[i]);CHKERRQ(ierr);
-    }
-    ierr = PetscFree2(obj->realstarcomposeddata,obj->realstarcomposedstate);CHKERRQ(ierr);
+    for (i=0; i<obj->realstar_idmax; i++) PetscCall(PetscFree(obj->realstarcomposeddata[i]));
+    PetscCall(PetscFree2(obj->realstarcomposeddata,obj->realstarcomposedstate));
   }
   if (obj->scalarstar_idmax>0) {
-    for (i=0; i<obj->scalarstar_idmax; i++) {
-      ierr = PetscFree(obj->scalarstarcomposeddata[i]);CHKERRQ(ierr);
-    }
-    ierr = PetscFree2(obj->scalarstarcomposeddata,obj->scalarstarcomposedstate);CHKERRQ(ierr);
+    for (i=0; i<obj->scalarstar_idmax; i++) PetscCall(PetscFree(obj->scalarstarcomposeddata[i]));
+    PetscCall(PetscFree2(obj->scalarstarcomposeddata,obj->scalarstarcomposedstate));
   }
-  ierr = PetscFree2(obj->intcomposeddata,obj->intcomposedstate);CHKERRQ(ierr);
-  ierr = PetscFree2(obj->realcomposeddata,obj->realcomposedstate);CHKERRQ(ierr);
-  ierr = PetscFree2(obj->scalarcomposeddata,obj->scalarcomposedstate);CHKERRQ(ierr);
+  PetscCall(PetscFree2(obj->intcomposeddata,obj->intcomposedstate));
+  PetscCall(PetscFree2(obj->realcomposeddata,obj->realcomposedstate));
+  PetscCall(PetscFree2(obj->scalarcomposeddata,obj->scalarcomposedstate));
   PetscFunctionReturn(0);
 }
 
@@ -50,14 +43,11 @@ PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj)
 @*/
 PetscErrorCode  PetscObjectDestroy(PetscObject *obj)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  if (!*obj) PetscFunctionReturn(0);
+  if (!obj || !*obj) PetscFunctionReturn(0);
   PetscValidHeader(*obj,1);
-  if (*obj && (*obj)->bops->destroy) {
-    ierr = (*(*obj)->bops->destroy)(obj);CHKERRQ(ierr);
-  } else PetscCheckFalse(*obj,PETSC_COMM_SELF,PETSC_ERR_PLIB,"This PETSc object of class %s does not have a generic destroy routine",(*obj)->class_name);
+  PetscCheck((*obj)->bops->destroy,PETSC_COMM_SELF,PETSC_ERR_PLIB,"This PETSc object of class %s does not have a generic destroy routine",(*obj)->class_name);
+  PetscCall((*(*obj)->bops->destroy)(obj));
   PetscFunctionReturn(0);
 }
 
@@ -77,18 +67,13 @@ PetscErrorCode  PetscObjectDestroy(PetscObject *obj)
 @*/
 PetscErrorCode  PetscObjectView(PetscObject obj,PetscViewer viewer)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(obj->comm,&viewer);CHKERRQ(ierr);
-  }
+  PetscCheck(obj->bops->view,PETSC_COMM_SELF,PETSC_ERR_SUP,"This PETSc object does not have a generic viewer routine");
+  if (!viewer) PetscCall(PetscViewerASCIIGetStdout(obj->comm,&viewer));
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
 
-  if (obj->bops->view) {
-    ierr = (*obj->bops->view)(obj,viewer);CHKERRQ(ierr);
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This PETSc object does not have a generic viewer routine");
+  PetscCall((*obj->bops->view)(obj,viewer));
   PetscFunctionReturn(0);
 }
 
@@ -107,7 +92,6 @@ PetscErrorCode  PetscObjectView(PetscObject obj,PetscViewer viewer)
 @*/
 PetscErrorCode PetscObjectViewFromOptions(PetscObject obj,PetscObject bobj,const char optionname[])
 {
-  PetscErrorCode    ierr;
   PetscViewer       viewer;
   PetscBool         flg;
   static PetscBool  incall = PETSC_FALSE;
@@ -118,13 +102,13 @@ PetscErrorCode PetscObjectViewFromOptions(PetscObject obj,PetscObject bobj,const
   if (incall) PetscFunctionReturn(0);
   incall = PETSC_TRUE;
   prefix = bobj ? bobj->prefix : obj->prefix;
-  ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj),obj->options,prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj),obj->options,prefix,optionname,&viewer,&format,&flg));
   if (flg) {
-    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
-    ierr = PetscObjectView(obj,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    PetscCall(PetscViewerPushFormat(viewer,format));
+    PetscCall(PetscObjectView(obj,viewer));
+    PetscCall(PetscViewerFlush(viewer));
+    PetscCall(PetscViewerPopFormat(viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
   }
   incall = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -151,17 +135,15 @@ PetscErrorCode PetscObjectViewFromOptions(PetscObject obj,PetscObject bobj,const
 @*/
 PetscErrorCode  PetscObjectTypeCompare(PetscObject obj,const char type_name[],PetscBool  *same)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  PetscValidPointer(same,3);
+  PetscValidBoolPointer(same,3);
   if (!obj) *same = PETSC_FALSE;
   else if (!type_name && !obj->type_name) *same = PETSC_TRUE;
   else if (!type_name || !obj->type_name) *same = PETSC_FALSE;
   else {
     PetscValidHeader(obj,1);
     PetscValidCharPointer(type_name,2);
-    ierr = PetscStrcmp((char*)(obj->type_name),type_name,same);CHKERRQ(ierr);
+    PetscCall(PetscStrcmp((char*)(obj->type_name),type_name,same));
   }
   PetscFunctionReturn(0);
 }
@@ -185,17 +167,15 @@ PetscErrorCode  PetscObjectTypeCompare(PetscObject obj,const char type_name[],Pe
 @*/
 PetscErrorCode  PetscObjectBaseTypeCompare(PetscObject obj,const char type_name[],PetscBool  *same)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  PetscValidPointer(same,3);
+  PetscValidBoolPointer(same,3);
   if (!obj) *same = PETSC_FALSE;
   else if (!type_name && !obj->type_name) *same = PETSC_TRUE;
   else if (!type_name || !obj->type_name) *same = PETSC_FALSE;
   else {
     PetscValidHeader(obj,1);
     PetscValidCharPointer(type_name,2);
-    ierr = PetscStrbeginswith((char*)(obj->type_name),type_name,same);CHKERRQ(ierr);
+    PetscCall(PetscStrbeginswith((char*)(obj->type_name),type_name,same));
   }
   PetscFunctionReturn(0);
 }
@@ -220,17 +200,16 @@ PetscErrorCode  PetscObjectBaseTypeCompare(PetscObject obj,const char type_name[
 @*/
 PetscErrorCode PetscObjectTypeCompareAny(PetscObject obj,PetscBool *match,const char type_name[],...)
 {
-  PetscErrorCode ierr;
-  va_list        Argp;
+  va_list Argp;
 
   PetscFunctionBegin;
-  PetscValidPointer(match,2);
+  PetscValidBoolPointer(match,2);
   *match = PETSC_FALSE;
   if (!obj) PetscFunctionReturn(0);
   va_start(Argp,type_name);
   while (type_name && type_name[0]) {
     PetscBool found;
-    ierr = PetscObjectTypeCompare(obj,type_name,&found);CHKERRQ(ierr);
+    PetscCall(PetscObjectTypeCompare(obj,type_name,&found));
     if (found) {
       *match = PETSC_TRUE;
       break;
@@ -261,16 +240,15 @@ PetscErrorCode PetscObjectTypeCompareAny(PetscObject obj,PetscBool *match,const 
 @*/
 PetscErrorCode PetscObjectBaseTypeCompareAny(PetscObject obj,PetscBool *match,const char type_name[],...)
 {
-  PetscErrorCode ierr;
-  va_list        Argp;
+  va_list Argp;
 
   PetscFunctionBegin;
-  PetscValidPointer(match,2);
+  PetscValidBoolPointer(match,2);
   *match = PETSC_FALSE;
   va_start(Argp,type_name);
   while (type_name && type_name[0]) {
     PetscBool found;
-    ierr = PetscObjectBaseTypeCompare(obj,type_name,&found);CHKERRQ(ierr);
+    PetscCall(PetscObjectBaseTypeCompare(obj,type_name,&found));
     if (found) {
       *match = PETSC_TRUE;
       break;
@@ -308,8 +286,8 @@ PetscErrorCode  PetscObjectRegisterDestroy(PetscObject obj)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  if (PetscObjectRegisterDestroy_Count < MAXREGDESOBJS) PetscObjectRegisterDestroy_Objects[PetscObjectRegisterDestroy_Count++] = obj;
-  else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"No more room in array, limit %d \n recompile src/sys/objects/destroy.c with larger value for MAXREGDESOBJS",MAXREGDESOBJS);
+  PetscCheck(PetscObjectRegisterDestroy_Count < MAXREGDESOBJS,PETSC_COMM_SELF,PETSC_ERR_PLIB,"No more room in array, limit %d \n recompile %s with larger value for " PetscStringize_(MAXREGDESOBJS),MAXREGDESOBJS,__FILE__);
+  PetscObjectRegisterDestroy_Objects[PetscObjectRegisterDestroy_Count++] = obj;
   PetscFunctionReturn(0);
 }
 
@@ -325,13 +303,8 @@ PetscErrorCode  PetscObjectRegisterDestroy(PetscObject obj)
 @*/
 PetscErrorCode  PetscObjectRegisterDestroyAll(void)
 {
-  PetscErrorCode ierr;
-  PetscInt       i;
-
   PetscFunctionBegin;
-  for (i=0; i<PetscObjectRegisterDestroy_Count; i++) {
-    ierr = PetscObjectDestroy(&PetscObjectRegisterDestroy_Objects[i]);CHKERRQ(ierr);
-  }
+  for (PetscInt i=0; i<PetscObjectRegisterDestroy_Count; i++) PetscCall(PetscObjectDestroy(&PetscObjectRegisterDestroy_Objects[i]));
   PetscObjectRegisterDestroy_Count = 0;
   PetscFunctionReturn(0);
 }
@@ -357,14 +330,12 @@ static PetscErrorCode (*PetscRegisterFinalize_Functions[MAXREGFIN])(void);
 @*/
 PetscErrorCode  PetscRegisterFinalize(PetscErrorCode (*f)(void))
 {
-  PetscInt i;
-
   PetscFunctionBegin;
-  for (i=0; i<PetscRegisterFinalize_Count; i++) {
+  for (PetscInt i=0; i<PetscRegisterFinalize_Count; i++) {
     if (f == PetscRegisterFinalize_Functions[i]) PetscFunctionReturn(0);
   }
-  if (PetscRegisterFinalize_Count < MAXREGFIN) PetscRegisterFinalize_Functions[PetscRegisterFinalize_Count++] = f;
-  else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"No more room in array, limit %d \n recompile src/sys/objects/destroy.c with larger value for MAXREGFIN",MAXREGFIN);
+  PetscCheck(PetscRegisterFinalize_Count < MAXREGFIN,PETSC_COMM_SELF,PETSC_ERR_PLIB,"No more room in array, limit %d \n recompile %s with larger value for " PetscStringize_(MAXREGFIN),MAXREGFIN,__FILE__);
+  PetscRegisterFinalize_Functions[PetscRegisterFinalize_Count++] = f;
   PetscFunctionReturn(0);
 }
 
@@ -379,13 +350,8 @@ PetscErrorCode  PetscRegisterFinalize(PetscErrorCode (*f)(void))
 @*/
 PetscErrorCode  PetscRegisterFinalizeAll(void)
 {
-  PetscErrorCode ierr;
-  PetscInt       i;
-
   PetscFunctionBegin;
-  for (i=0; i<PetscRegisterFinalize_Count; i++) {
-    ierr = (*PetscRegisterFinalize_Functions[i])();CHKERRQ(ierr);
-  }
+  for (PetscInt i=0; i<PetscRegisterFinalize_Count; i++) PetscCall((*PetscRegisterFinalize_Functions[i])());
   PetscRegisterFinalize_Count = 0;
   PetscFunctionReturn(0);
 }

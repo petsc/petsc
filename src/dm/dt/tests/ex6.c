@@ -5,43 +5,42 @@ static char help[] = "Tests 1D Gauss-Lobatto-Legendre discretization on [-1, 1].
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
 
   PetscInt       n = 3,i;
   PetscReal      *la_nodes,*la_weights,*n_nodes,*n_weights;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
-  ierr = PetscMalloc1(n,&la_nodes);CHKERRQ(ierr);
-  ierr = PetscMalloc1(n,&la_weights);CHKERRQ(ierr);
-  ierr = PetscMalloc1(n,&n_nodes);CHKERRQ(ierr);
-  ierr = PetscMalloc1(n,&n_weights);CHKERRQ(ierr);
-  ierr = PetscDTGaussLobattoLegendreQuadrature(n,PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA,la_nodes,la_weights);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(n,&la_nodes));
+  PetscCall(PetscMalloc1(n,&la_weights));
+  PetscCall(PetscMalloc1(n,&n_nodes));
+  PetscCall(PetscMalloc1(n,&n_weights));
+  PetscCall(PetscDTGaussLobattoLegendreQuadrature(n,PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA,la_nodes,la_weights));
 
-  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"Gauss-Lobatto-Legendre nodes and weights computed via linear algebra: \n");CHKERRQ(ierr);
-  ierr = PetscRealView(n,la_nodes,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = PetscRealView(n,la_weights,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = PetscDTGaussLobattoLegendreQuadrature(n,PETSCGAUSSLOBATTOLEGENDRE_VIA_NEWTON,n_nodes,n_weights);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"Gauss-Lobatto-Legendre nodes and weights computed via Newton: \n");CHKERRQ(ierr);
-  ierr = PetscRealView(n,n_nodes,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = PetscRealView(n,n_weights,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"Gauss-Lobatto-Legendre nodes and weights computed via linear algebra: \n"));
+  PetscCall(PetscRealView(n,la_nodes,PETSC_VIEWER_STDOUT_SELF));
+  PetscCall(PetscRealView(n,la_weights,PETSC_VIEWER_STDOUT_SELF));
+  PetscCall(PetscDTGaussLobattoLegendreQuadrature(n,PETSCGAUSSLOBATTOLEGENDRE_VIA_NEWTON,n_nodes,n_weights));
+  PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"Gauss-Lobatto-Legendre nodes and weights computed via Newton: \n"));
+  PetscCall(PetscRealView(n,n_nodes,PETSC_VIEWER_STDOUT_SELF));
+  PetscCall(PetscRealView(n,n_weights,PETSC_VIEWER_STDOUT_SELF));
 
   for (i=0; i<n; i++) {
     la_nodes[i]   -= n_nodes[i];
     la_weights[i] -= n_weights[i];
   }
-  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"Difference: \n");CHKERRQ(ierr);
-  ierr = PetscRealView(n,la_nodes,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = PetscRealView(n,la_weights,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"Difference: \n"));
+  PetscCall(PetscRealView(n,la_nodes,PETSC_VIEWER_STDOUT_SELF));
+  PetscCall(PetscRealView(n,la_weights,PETSC_VIEWER_STDOUT_SELF));
 
-  ierr = PetscFree(la_nodes);CHKERRQ(ierr);
-  ierr = PetscFree(la_weights);CHKERRQ(ierr);
-  ierr = PetscFree(n_nodes);CHKERRQ(ierr);
-  ierr = PetscFree(n_weights);CHKERRQ(ierr);
+  PetscCall(PetscFree(la_nodes));
+  PetscCall(PetscFree(la_weights));
+  PetscCall(PetscFree(n_nodes));
+  PetscCall(PetscFree(n_weights));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

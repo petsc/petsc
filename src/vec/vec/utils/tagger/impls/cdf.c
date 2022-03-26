@@ -46,31 +46,30 @@ static PetscErrorCode VecTaggerComputeBoxes_CDF_Serial(VecTagger tagger,Vec vec,
 #if defined (PETSC_USE_COMPLEX)
   PetscReal        *cReal, *cImag;
 #endif
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
+  PetscCall(VecGetLocalSize(vec,&n));
   m    = n/bs;
-  ierr = VecCreateSeq(PETSC_COMM_SELF,m,&vComp);CHKERRQ(ierr);
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,m,&vComp));
 #if defined (PETSC_USE_COMPLEX)
-  ierr = PetscMalloc2(m,&cReal,m,&cImag);CHKERRQ(ierr);
+  PetscCall(PetscMalloc2(m,&cReal,m,&cImag));
 #endif
   for (i = 0; i < bs; i++) {
     IS          isStride;
     VecScatter  vScat;
     PetscScalar *cArray;
 
-    ierr = ISCreateStride(PETSC_COMM_SELF,m,i,bs,&isStride);CHKERRQ(ierr);
-    ierr = VecScatterCreate(vec,isStride,vComp,NULL,&vScat);CHKERRQ(ierr);
-    ierr = VecScatterBegin(vScat,vec,vComp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(vScat,vec,vComp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(&vScat);CHKERRQ(ierr);
-    ierr = ISDestroy(&isStride);CHKERRQ(ierr);
+    PetscCall(ISCreateStride(PETSC_COMM_SELF,m,i,bs,&isStride));
+    PetscCall(VecScatterCreate(vec,isStride,vComp,NULL,&vScat));
+    PetscCall(VecScatterBegin(vScat,vec,vComp,INSERT_VALUES,SCATTER_FORWARD));
+    PetscCall(VecScatterEnd(vScat,vec,vComp,INSERT_VALUES,SCATTER_FORWARD));
+    PetscCall(VecScatterDestroy(&vScat));
+    PetscCall(ISDestroy(&isStride));
 
-    ierr = VecGetArray(vComp,&cArray);CHKERRQ(ierr);
+    PetscCall(VecGetArray(vComp,&cArray));
 #if !defined(PETSC_USE_COMPLEX)
-    ierr = PetscSortReal(m,cArray);CHKERRQ(ierr);
-    ierr = VecTaggerComputeBox_CDF_SortedArray(cArray,m,&smpl->box[i],&boxes[i]);CHKERRQ(ierr);
+    PetscCall(PetscSortReal(m,cArray));
+    PetscCall(VecTaggerComputeBox_CDF_SortedArray(cArray,m,&smpl->box[i],&boxes[i]));
 #else
     {
       PetscInt         j;
@@ -81,25 +80,25 @@ static PetscErrorCode VecTaggerComputeBoxes_CDF_Serial(VecTagger tagger,Vec vec,
         cReal[j] = PetscRealPart(cArray[j]);
         cImag[j] = PetscImaginaryPart(cArray[j]);
       }
-      ierr = PetscSortReal(m,cReal);CHKERRQ(ierr);
-      ierr = PetscSortReal(m,cImag);CHKERRQ(ierr);
+      PetscCall(PetscSortReal(m,cReal));
+      PetscCall(PetscSortReal(m,cImag));
 
       realBxs.min = PetscRealPart(smpl->box[i].min);
       realBxs.max = PetscRealPart(smpl->box[i].max);
       imagBxs.min = PetscImaginaryPart(smpl->box[i].min);
       imagBxs.max = PetscImaginaryPart(smpl->box[i].max);
-      ierr = VecTaggerComputeBox_CDF_SortedArray(cReal,m,&realBxs,&realBoxes);CHKERRQ(ierr);
-      ierr = VecTaggerComputeBox_CDF_SortedArray(cImag,m,&imagBxs,&imagBoxes);CHKERRQ(ierr);
+      PetscCall(VecTaggerComputeBox_CDF_SortedArray(cReal,m,&realBxs,&realBoxes));
+      PetscCall(VecTaggerComputeBox_CDF_SortedArray(cImag,m,&imagBxs,&imagBoxes));
       boxes[i].min = PetscCMPLX(realBoxes.min,imagBoxes.min);
       boxes[i].max = PetscCMPLX(realBoxes.max,imagBoxes.max);
     }
 #endif
-    ierr = VecRestoreArray(vComp,&cArray);CHKERRQ(ierr);
+    PetscCall(VecRestoreArray(vComp,&cArray));
   }
 #if defined(PETSC_USE_COMPLEX)
-  ierr = PetscFree2(cReal,cImag);CHKERRQ(ierr);
+  PetscCall(PetscFree2(cReal,cImag));
 #endif
-  ierr = VecDestroy(&vComp);CHKERRQ(ierr);
+  PetscCall(VecDestroy(&vComp));
   PetscFunctionReturn(0);
 }
 
@@ -108,19 +107,18 @@ static PetscErrorCode VecTaggerComputeBoxes_CDF_Gather(VecTagger tagger,Vec vec,
   Vec            gVec = NULL;
   VecScatter     vScat;
   PetscMPIInt    rank;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecScatterCreateToZero(vec,&vScat,&gVec);CHKERRQ(ierr);
-  ierr = VecScatterBegin(vScat,vec,gVec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(vScat,vec,gVec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&vScat);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank (PetscObjectComm((PetscObject)vec),&rank);CHKERRMPI(ierr);
+  PetscCall(VecScatterCreateToZero(vec,&vScat,&gVec));
+  PetscCall(VecScatterBegin(vScat,vec,gVec,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(vScat,vec,gVec,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterDestroy(&vScat));
+  PetscCallMPI(MPI_Comm_rank (PetscObjectComm((PetscObject)vec),&rank));
   if (rank == 0) {
-    ierr = VecTaggerComputeBoxes_CDF_Serial(tagger,gVec,bs,boxes);CHKERRQ(ierr);
+    PetscCall(VecTaggerComputeBoxes_CDF_Serial(tagger,gVec,bs,boxes));
   }
-  ierr = MPI_Bcast((PetscScalar *)boxes,2*bs,MPIU_SCALAR,0,PetscObjectComm((PetscObject)vec));CHKERRMPI(ierr);
-  ierr = VecDestroy(&gVec);CHKERRQ(ierr);
+  PetscCallMPI(MPI_Bcast((PetscScalar *)boxes,2*bs,MPIU_SCALAR,0,PetscObjectComm((PetscObject)vec)));
+  PetscCall(VecDestroy(&gVec));
   PetscFunctionReturn(0);
 }
 
@@ -166,7 +164,6 @@ static PetscErrorCode VecTaggerComputeBox_CDF_SortedArray_Iterative(VecTagger ta
   PetscInt       offsets[2];
   PetscReal      intervalLen = cdfBox->max - cdfBox->min;
   PetscReal      rtol, atol;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   comm  = PetscObjectComm((PetscObject)tagger);
@@ -179,7 +176,7 @@ static PetscErrorCode VecTaggerComputeBox_CDF_SortedArray_Iterative(VecTagger ta
   offsets[1] = 0;
   bounds[0][0] = 0; bounds[0][1] = m;
   bounds[1][0] = 0; bounds[1][1] = m;
-  ierr = VecTaggerComputeBox_CDF_SortedArray(cArray,m,cdfBox,absBox);CHKERRQ(ierr); /* compute a local estimate of the interval */
+  PetscCall(VecTaggerComputeBox_CDF_SortedArray(cArray,m,cdfBox,absBox)); /* compute a local estimate of the interval */
   {
     CDFStats stats[3];
 
@@ -207,11 +204,11 @@ static PetscErrorCode VecTaggerComputeBox_CDF_SortedArray_Iterative(VecTagger ta
       stats[2].moment[2] += val * val;
     }
     /* reduce those statistics */
-    ierr = MPI_Allreduce(MPI_IN_PLACE,stats,3,statType,statReduce,comm);CHKERRMPI(ierr);
+    PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE,stats,3,statType,statReduce,comm));
     M    = (PetscInt) stats[2].moment[0];
     /* use those initial statistics to get the initial (globally agreed-upon) choices for the absolute box bounds */
     for (i = 0; i < 2; i++) {
-      ierr = CDFUtilInverseEstimate(&stats[i],i ? cdfBox->max : cdfBox->min,(i ? &absBox->max : &absBox->min));CHKERRQ(ierr);
+      PetscCall(CDFUtilInverseEstimate(&stats[i],i ? cdfBox->max : cdfBox->min,(i ? &absBox->max : &absBox->min)));
     }
   }
   /* refine the estimates by computing how close they come to the desired box and refining */
@@ -250,7 +247,7 @@ static PetscErrorCode VecTaggerComputeBox_CDF_SortedArray_Iterative(VecTagger ta
         newBounds[i][section][1] = PetscMax(newBounds[i][section][0],thisInd + 1);
       }
     }
-    ierr = MPI_Allreduce(MPI_IN_PLACE, stats, 4, statType, statReduce, comm);CHKERRMPI(ierr);
+    PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, stats, 4, statType, statReduce, comm));
     for (i = 0; i < 2; i++) {
       PetscInt  totalLessThan = offsets[i] + stats[i][0].moment[0];
       PetscReal cdfOfAbs      = (PetscReal) totalLessThan / (PetscReal) M;
@@ -271,7 +268,7 @@ static PetscErrorCode VecTaggerComputeBox_CDF_SortedArray_Iterative(VecTagger ta
       for (j = 0; j < 2; j++) {
         bounds[i][j] = newBounds[i][section][j];
       }
-      ierr = CDFUtilInverseEstimate(&stats[i][section],((i ? cdfBox->max : cdfBox->min) - ((PetscReal) offsets[i] / (PetscReal) M))/stats[i][section].moment[0],(i ? &absBox->max : &absBox->min));CHKERRQ(ierr);
+      PetscCall(CDFUtilInverseEstimate(&stats[i][section],((i ? cdfBox->max : cdfBox->min) - ((PetscReal) offsets[i] / (PetscReal) M))/stats[i][section].moment[0],(i ? &absBox->max : &absBox->min)));
       diff = PetscAbs(cdfOfAbs - (i ? cdfBox->max : cdfBox->min));
       maxDiff = PetscMax(maxDiff,diff);
     }
@@ -295,39 +292,38 @@ static PetscErrorCode VecTaggerComputeBoxes_CDF_Iterative(VecTagger tagger,Vec v
   MPI_Comm         comm;
   MPI_Datatype     statType;
   MPI_Op           statReduce;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   comm = PetscObjectComm((PetscObject)vec);
-  ierr = VecGetSize(vec,&N);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
+  PetscCall(VecGetSize(vec,&N));
+  PetscCall(VecGetLocalSize(vec,&n));
   M    = N/bs;
   m    = n/bs;
-  ierr = VecCreateMPI(comm,m,M,&vComp);CHKERRQ(ierr);
-  ierr = VecSetUp(vComp);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(vComp,&rstart,NULL);CHKERRQ(ierr);
+  PetscCall(VecCreateMPI(comm,m,M,&vComp));
+  PetscCall(VecSetUp(vComp));
+  PetscCall(VecGetOwnershipRange(vComp,&rstart,NULL));
 #if defined (PETSC_USE_COMPLEX)
-  ierr = PetscMalloc2(m,&cReal,m,&cImag);CHKERRQ(ierr);
+  PetscCall(PetscMalloc2(m,&cReal,m,&cImag));
 #endif
-  ierr = MPI_Type_contiguous(5,MPIU_REAL,&statType);CHKERRMPI(ierr);
-  ierr = MPI_Type_commit(&statType);CHKERRMPI(ierr);
-  ierr = MPI_Op_create(VecTaggerCDFStatsReduce,1,&statReduce);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Type_contiguous(5,MPIU_REAL,&statType));
+  PetscCallMPI(MPI_Type_commit(&statType));
+  PetscCallMPI(MPI_Op_create(VecTaggerCDFStatsReduce,1,&statReduce));
   for (i = 0; i < bs; i++) {
     IS          isStride;
     VecScatter  vScat;
     PetscScalar *cArray;
 
-    ierr = ISCreateStride(comm,m,bs * rstart + i,bs,&isStride);CHKERRQ(ierr);
-    ierr = VecScatterCreate(vec,isStride,vComp,NULL,&vScat);CHKERRQ(ierr);
-    ierr = VecScatterBegin(vScat,vec,vComp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(vScat,vec,vComp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(&vScat);CHKERRQ(ierr);
-    ierr = ISDestroy(&isStride);CHKERRQ(ierr);
+    PetscCall(ISCreateStride(comm,m,bs * rstart + i,bs,&isStride));
+    PetscCall(VecScatterCreate(vec,isStride,vComp,NULL,&vScat));
+    PetscCall(VecScatterBegin(vScat,vec,vComp,INSERT_VALUES,SCATTER_FORWARD));
+    PetscCall(VecScatterEnd(vScat,vec,vComp,INSERT_VALUES,SCATTER_FORWARD));
+    PetscCall(VecScatterDestroy(&vScat));
+    PetscCall(ISDestroy(&isStride));
 
-    ierr = VecGetArray(vComp,&cArray);CHKERRQ(ierr);
+    PetscCall(VecGetArray(vComp,&cArray));
 #if !defined(PETSC_USE_COMPLEX)
-    ierr = PetscSortReal(m,cArray);CHKERRQ(ierr);
-    ierr = VecTaggerComputeBox_CDF_SortedArray_Iterative(tagger,statType,statReduce,cArray,m,&smpl->box[i],&boxes[i]);CHKERRQ(ierr);
+    PetscCall(PetscSortReal(m,cArray));
+    PetscCall(VecTaggerComputeBox_CDF_SortedArray_Iterative(tagger,statType,statReduce,cArray,m,&smpl->box[i],&boxes[i]));
 #else
     {
       PetscInt         j;
@@ -338,27 +334,27 @@ static PetscErrorCode VecTaggerComputeBoxes_CDF_Iterative(VecTagger tagger,Vec v
         cReal[j] = PetscRealPart(cArray[j]);
         cImag[j] = PetscImaginaryPart(cArray[j]);
       }
-      ierr = PetscSortReal(m,cReal);CHKERRQ(ierr);
-      ierr = PetscSortReal(m,cImag);CHKERRQ(ierr);
+      PetscCall(PetscSortReal(m,cReal));
+      PetscCall(PetscSortReal(m,cImag));
 
       realBxs.min = PetscRealPart(smpl->box[i].min);
       realBxs.max = PetscRealPart(smpl->box[i].max);
       imagBxs.min = PetscImaginaryPart(smpl->box[i].min);
       imagBxs.max = PetscImaginaryPart(smpl->box[i].max);
-      ierr = VecTaggerComputeBox_CDF_SortedArray_Iterative(tagger,statType,statReduce,cReal,m,&realBxs,&realBoxes);CHKERRQ(ierr);
-      ierr = VecTaggerComputeBox_CDF_SortedArray_Iterative(tagger,statType,statReduce,cImag,m,&imagBxs,&imagBoxes);CHKERRQ(ierr);
+      PetscCall(VecTaggerComputeBox_CDF_SortedArray_Iterative(tagger,statType,statReduce,cReal,m,&realBxs,&realBoxes));
+      PetscCall(VecTaggerComputeBox_CDF_SortedArray_Iterative(tagger,statType,statReduce,cImag,m,&imagBxs,&imagBoxes));
       boxes[i].min = PetscCMPLX(realBoxes.min,imagBoxes.min);
       boxes[i].max = PetscCMPLX(realBoxes.max,imagBoxes.max);
     }
 #endif
-    ierr = VecRestoreArray(vComp,&cArray);CHKERRQ(ierr);
+    PetscCall(VecRestoreArray(vComp,&cArray));
   }
-  ierr = MPI_Op_free(&statReduce);CHKERRMPI(ierr);
-  ierr = MPI_Type_free(&statType);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Op_free(&statReduce));
+  PetscCallMPI(MPI_Type_free(&statType));
 #if defined(PETSC_USE_COMPLEX)
-  ierr = PetscFree2(cReal,cImag);CHKERRQ(ierr);
+  PetscCall(PetscFree2(cReal,cImag));
 #endif
-  ierr = VecDestroy(&vComp);CHKERRQ(ierr);
+  PetscCall(VecDestroy(&vComp));
   PetscFunctionReturn(0);
 }
 
@@ -368,24 +364,23 @@ static PetscErrorCode VecTaggerComputeBoxes_CDF(VecTagger tagger,Vec vec,PetscIn
   PetscMPIInt    size;
   PetscInt       bs;
   VecTaggerBox   *bxs;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecTaggerGetBlockSize(tagger,&bs);CHKERRQ(ierr);
+  PetscCall(VecTaggerGetBlockSize(tagger,&bs));
   *numBoxes = 1;
-  ierr = PetscMalloc1(bs,&bxs);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)tagger),&size);CHKERRMPI(ierr);
+  PetscCall(PetscMalloc1(bs,&bxs));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)tagger),&size));
   if (size == 1) {
-    ierr = VecTaggerComputeBoxes_CDF_Serial(tagger,vec,bs,bxs);CHKERRQ(ierr);
+    PetscCall(VecTaggerComputeBoxes_CDF_Serial(tagger,vec,bs,bxs));
     *boxes = bxs;
     PetscFunctionReturn(0);
   }
   switch (cuml->method) {
   case VECTAGGER_CDF_GATHER:
-    ierr = VecTaggerComputeBoxes_CDF_Gather(tagger,vec,bs,bxs);CHKERRQ(ierr);
+    PetscCall(VecTaggerComputeBoxes_CDF_Gather(tagger,vec,bs,bxs));
     break;
   case VECTAGGER_CDF_ITERATIVE:
-    ierr = VecTaggerComputeBoxes_CDF_Iterative(tagger,vec,bs,bxs);CHKERRQ(ierr);
+    PetscCall(VecTaggerComputeBoxes_CDF_Iterative(tagger,vec,bs,bxs));
     break;
   default:
     SETERRQ(PetscObjectComm((PetscObject)tagger),PETSC_ERR_SUP,"Unknown CDF calculation/estimation method.");
@@ -400,18 +395,17 @@ static PetscErrorCode VecTaggerView_CDF(VecTagger tagger,PetscViewer viewer)
   VecTagger_CDF  *cuml = (VecTagger_CDF *) tagger->data;
   PetscBool      iascii;
   PetscMPIInt    size;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecTaggerView_Simple(tagger,viewer);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)tagger),&size);CHKERRMPI(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  PetscCall(VecTaggerView_Simple(tagger,viewer));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)tagger),&size));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (size > 1 && iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"CDF computation method: %s\n",VecTaggerCDFMethods[cuml->method]);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"CDF computation method: %s\n",VecTaggerCDFMethods[cuml->method]));
     if (cuml->method == VECTAGGER_CDF_ITERATIVE) {
-      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"max its: %" PetscInt_FMT ", abs tol: %g, rel tol %g\n",cuml->maxit,(double) cuml->atol,(double) cuml->rtol);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPushTab(viewer));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"max its: %" PetscInt_FMT ", abs tol: %g, rel tol %g\n",cuml->maxit,(double) cuml->atol,(double) cuml->rtol));
+      PetscCall(PetscViewerASCIIPopTab(viewer));
     }
   }
   PetscFunctionReturn(0);
@@ -422,17 +416,16 @@ static PetscErrorCode VecTaggerSetFromOptions_CDF(PetscOptionItems *PetscOptions
   VecTagger_CDF *cuml = (VecTagger_CDF *) tagger->data;
   PetscInt       method;
   PetscBool      set;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecTaggerSetFromOptions_Simple(PetscOptionsObject,tagger);CHKERRQ(ierr);
-  ierr = PetscOptionsHead(PetscOptionsObject,"VecTagger options for CDF boxes");CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-vec_tagger_cdf_method","Method for computing absolute boxes from CDF boxes","VecTaggerCDFSetMethod()",VecTaggerCDFMethods,VECTAGGER_CDF_NUM_METHODS,VecTaggerCDFMethods[cuml->method],&method,&set);CHKERRQ(ierr);
+  PetscCall(VecTaggerSetFromOptions_Simple(PetscOptionsObject,tagger));
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"VecTagger options for CDF boxes"));
+  PetscCall(PetscOptionsEList("-vec_tagger_cdf_method","Method for computing absolute boxes from CDF boxes","VecTaggerCDFSetMethod()",VecTaggerCDFMethods,VECTAGGER_CDF_NUM_METHODS,VecTaggerCDFMethods[cuml->method],&method,&set));
   if (set) cuml->method = (VecTaggerCDFMethod) method;
-  ierr = PetscOptionsInt("-vec_tagger_cdf_max_it","Maximum iterations for iterative computation of absolute boxes from CDF boxes","VecTaggerCDFIterativeSetTolerances()",cuml->maxit,&cuml->maxit,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-vec_tagger_cdf_rtol","Maximum relative tolerance for iterative computation of absolute boxes from CDF boxes","VecTaggerCDFIterativeSetTolerances()",cuml->rtol,&cuml->rtol,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-vec_tagger_cdf_atol","Maximum absolute tolerance for iterative computation of absolute boxes from CDF boxes","VecTaggerCDFIterativeSetTolerances()",cuml->atol,&cuml->atol,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-vec_tagger_cdf_max_it","Maximum iterations for iterative computation of absolute boxes from CDF boxes","VecTaggerCDFIterativeSetTolerances()",cuml->maxit,&cuml->maxit,NULL));
+  PetscCall(PetscOptionsReal("-vec_tagger_cdf_rtol","Maximum relative tolerance for iterative computation of absolute boxes from CDF boxes","VecTaggerCDFIterativeSetTolerances()",cuml->rtol,&cuml->rtol,NULL));
+  PetscCall(PetscOptionsReal("-vec_tagger_cdf_atol","Maximum absolute tolerance for iterative computation of absolute boxes from CDF boxes","VecTaggerCDFIterativeSetTolerances()",cuml->atol,&cuml->atol,NULL));
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -560,10 +553,8 @@ PetscErrorCode VecTaggerCDFIterativeGetTolerances(VecTagger tagger, PetscInt *ma
 @*/
 PetscErrorCode VecTaggerCDFSetBox(VecTagger tagger,VecTaggerBox *box)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = VecTaggerSetBox_Simple(tagger,box);CHKERRQ(ierr);
+  PetscCall(VecTaggerSetBox_Simple(tagger,box));
   PetscFunctionReturn(0);
 }
 
@@ -584,23 +575,20 @@ PetscErrorCode VecTaggerCDFSetBox(VecTagger tagger,VecTaggerBox *box)
 @*/
 PetscErrorCode VecTaggerCDFGetBox(VecTagger tagger,const VecTaggerBox **box)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = VecTaggerGetBox_Simple(tagger,box);CHKERRQ(ierr);
+  PetscCall(VecTaggerGetBox_Simple(tagger,box));
   PetscFunctionReturn(0);
 }
 
 PETSC_INTERN PetscErrorCode VecTaggerCreate_CDF(VecTagger tagger)
 {
   VecTagger_CDF  *cuml;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecTaggerCreate_Simple(tagger);CHKERRQ(ierr);
-  ierr = PetscNewLog(tagger,&cuml);CHKERRQ(ierr);
-  ierr = PetscMemcpy(&cuml->smpl,tagger->data,sizeof(VecTagger_Simple));CHKERRQ(ierr);
-  ierr = PetscFree(tagger->data);CHKERRQ(ierr);
+  PetscCall(VecTaggerCreate_Simple(tagger));
+  PetscCall(PetscNewLog(tagger,&cuml));
+  PetscCall(PetscMemcpy(&cuml->smpl,tagger->data,sizeof(VecTagger_Simple)));
+  PetscCall(PetscFree(tagger->data));
   tagger->data = cuml;
   tagger->ops->view           = VecTaggerView_CDF;
   tagger->ops->setfromoptions = VecTaggerSetFromOptions_CDF;

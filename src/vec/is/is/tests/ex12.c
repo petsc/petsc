@@ -13,46 +13,45 @@ int main(int argc,char **argv)
   PetscViewer     viewer;
   PetscMPIInt     size, rank;
   MPI_Comm        comm;
-  PetscErrorCode  ierr;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   comm = PETSC_COMM_WORLD;
-  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
 
   {
     PetscInt *idx, i, n, start, end;
 
     n = rank + 2;
-    ierr = PetscCalloc1(n, &idx);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(comm, n, idx, PETSC_OWN_POINTER, &is0);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)is0, objname);CHKERRQ(ierr);
-    ierr = ISGetLayout(is0, &map);CHKERRQ(ierr);
-    ierr = PetscLayoutGetRange(map, &start, &end);CHKERRQ(ierr);
+    PetscCall(PetscCalloc1(n, &idx));
+    PetscCall(ISCreateGeneral(comm, n, idx, PETSC_OWN_POINTER, &is0));
+    PetscCall(PetscObjectSetName((PetscObject)is0, objname));
+    PetscCall(ISGetLayout(is0, &map));
+    PetscCall(PetscLayoutGetRange(map, &start, &end));
     PetscCheck(end - start == n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "end - start == n");
     for (i=0; i<n; i++) idx[i] = i + start;
   }
 
-  ierr = PetscViewerHDF5Open(comm, filename, FILE_MODE_WRITE, &viewer);CHKERRQ(ierr);
-  ierr = ISView(is0, viewer);CHKERRQ(ierr);
+  PetscCall(PetscViewerHDF5Open(comm, filename, FILE_MODE_WRITE, &viewer));
+  PetscCall(ISView(is0, viewer));
 
-  ierr = ISCreate(comm, &is1);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)is1, objname);CHKERRQ(ierr);
-  ierr = ISSetLayout(is1, map);CHKERRQ(ierr);
-  ierr = ISLoad(is1, viewer);CHKERRQ(ierr);
+  PetscCall(ISCreate(comm, &is1));
+  PetscCall(PetscObjectSetName((PetscObject)is1, objname));
+  PetscCall(ISSetLayout(is1, map));
+  PetscCall(ISLoad(is1, viewer));
 
   {
     PetscBool flg;
 
-    ierr = ISEqual(is0, is1, &flg);CHKERRQ(ierr);
+    PetscCall(ISEqual(is0, is1, &flg));
     PetscCheck(flg, comm, PETSC_ERR_PLIB, "is0 and is1 differ");
   }
 
-  ierr = ISDestroy(&is0);CHKERRQ(ierr);
-  ierr = ISDestroy(&is1);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(ISDestroy(&is0));
+  PetscCall(ISDestroy(&is1));
+  PetscCall(PetscViewerDestroy(&viewer));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -48,7 +48,6 @@ int main(int argc,char **argv)
 {
   TS             ts;                  /* ODE integrator */
   Vec            x,r;                 /* solution, residual */
-  PetscErrorCode ierr;
   DM             da;
   AppCtx         appctx;              /* Application context */
   AdolcMatCtx    matctx;              /* Matrix (free) context */
@@ -60,59 +59,59 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-forwardonly",&forwardonly,NULL);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-forwardonly",&forwardonly,NULL));
   PetscFunctionBeginUser;
   appctx.D1    = 8.0e-5;
   appctx.D2    = 4.0e-5;
   appctx.gamma = .024;
   appctx.kappa = .06;
-  ierr = PetscLogEventRegister("df/dx forward",MAT_CLASSID,&matctx.event1);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("df/d(xdot) forward",MAT_CLASSID,&matctx.event2);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("df/dx reverse",MAT_CLASSID,&matctx.event3);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("df/d(xdot) reverse",MAT_CLASSID,&matctx.event4);CHKERRQ(ierr);
+  PetscCall(PetscLogEventRegister("df/dx forward",MAT_CLASSID,&matctx.event1));
+  PetscCall(PetscLogEventRegister("df/d(xdot) forward",MAT_CLASSID,&matctx.event2));
+  PetscCall(PetscLogEventRegister("df/dx reverse",MAT_CLASSID,&matctx.event3));
+  PetscCall(PetscLogEventRegister("df/d(xdot) reverse",MAT_CLASSID,&matctx.event4));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DMDA_STENCIL_STAR,65,65,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,&da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
-  ierr = DMDASetFieldName(da,0,"u");CHKERRQ(ierr);
-  ierr = DMDASetFieldName(da,1,"v");CHKERRQ(ierr);
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DMDA_STENCIL_STAR,65,65,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMDASetFieldName(da,0,"u"));
+  PetscCall(DMDASetFieldName(da,1,"v"));
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Extract global vectors from DMDA; then duplicate for remaining
      vectors that are the same types
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
+  PetscCall(DMCreateGlobalVector(da,&x));
+  PetscCall(VecDuplicate(x,&r));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create matrix free context and specify usage of PETSc-ADOL-C drivers
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMSetMatType(da,MATSHELL);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(da,&A);CHKERRQ(ierr);
-  ierr = MatShellSetContext(A,&matctx);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(A,MATOP_MULT,(void (*)(void))PetscAdolcIJacobianVectorProductIDMass);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(A,MATOP_MULT_TRANSPOSE,(void (*)(void))PetscAdolcIJacobianTransposeVectorProductIDMass);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&matctx.X);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&matctx.Xdot);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(da,&matctx.localX0);CHKERRQ(ierr);
+  PetscCall(DMSetMatType(da,MATSHELL));
+  PetscCall(DMCreateMatrix(da,&A));
+  PetscCall(MatShellSetContext(A,&matctx));
+  PetscCall(MatShellSetOperation(A,MATOP_MULT,(void (*)(void))PetscAdolcIJacobianVectorProductIDMass));
+  PetscCall(MatShellSetOperation(A,MATOP_MULT_TRANSPOSE,(void (*)(void))PetscAdolcIJacobianTransposeVectorProductIDMass));
+  PetscCall(VecDuplicate(x,&matctx.X));
+  PetscCall(VecDuplicate(x,&matctx.Xdot));
+  PetscCall(DMGetLocalVector(da,&matctx.localX0));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSCN);CHKERRQ(ierr);
-  ierr = TSSetDM(ts,da);CHKERRQ(ierr);
-  ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = DMDATSSetIFunctionLocal(da,INSERT_VALUES,(DMDATSIFunctionLocal)IFunctionLocalPassive,&appctx);CHKERRQ(ierr);
+  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
+  PetscCall(TSSetType(ts,TSCN));
+  PetscCall(TSSetDM(ts,da));
+  PetscCall(TSSetProblemType(ts,TS_NONLINEAR));
+  PetscCall(DMDATSSetIFunctionLocal(da,INSERT_VALUES,(DMDATSIFunctionLocal)IFunctionLocalPassive,&appctx));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Some data required for matrix-free context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDAGetGhostCorners(da,NULL,NULL,NULL,&gxm,&gym,NULL);CHKERRQ(ierr);
+  PetscCall(DMDAGetGhostCorners(da,NULL,NULL,NULL,&gxm,&gym,NULL));
   matctx.m = 2*gxm*gym;matctx.n = 2*gxm*gym; /* Number of dependent and independent variables */
   matctx.flg = PETSC_FALSE;                  /* Flag for reverse mode */
   matctx.tag1 = 1;                           /* Tape identifier */
@@ -120,79 +119,78 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Trace function just once
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscNew(&appctx.adctx);CHKERRQ(ierr);
-  ierr = IFunctionActive(ts,1.,x,matctx.Xdot,r,&appctx);CHKERRQ(ierr);
-  ierr = PetscFree(appctx.adctx);CHKERRQ(ierr);
+  PetscCall(PetscNew(&appctx.adctx));
+  PetscCall(IFunctionActive(ts,1.,x,matctx.Xdot,r,&appctx));
+  PetscCall(PetscFree(appctx.adctx));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set Jacobian. In this case, IJacobian simply acts to pass context
      information to the matrix-free Jacobian vector product.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSetIJacobian(ts,A,A,IJacobianMatFree,&appctx);CHKERRQ(ierr);
+  PetscCall(TSSetIJacobian(ts,A,A,IJacobianMatFree,&appctx));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = InitialConditions(da,x);CHKERRQ(ierr);
-  ierr = TSSetSolution(ts,x);CHKERRQ(ierr);
+  PetscCall(InitialConditions(da,x));
+  PetscCall(TSSetSolution(ts,x));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Have the TS save its trajectory so that TSAdjointSolve() may be used
     and set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   if (!forwardonly) {
-    ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
-    ierr = TSSetMaxTime(ts,200.0);CHKERRQ(ierr);
-    ierr = TSSetTimeStep(ts,0.5);CHKERRQ(ierr);
+    PetscCall(TSSetSaveTrajectory(ts));
+    PetscCall(TSSetMaxTime(ts,200.0));
+    PetscCall(TSSetTimeStep(ts,0.5));
   } else {
-    ierr = TSSetMaxTime(ts,2000.0);CHKERRQ(ierr);
-    ierr = TSSetTimeStep(ts,10);CHKERRQ(ierr);
+    PetscCall(TSSetMaxTime(ts,2000.0));
+    PetscCall(TSSetTimeStep(ts,10));
   }
-  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
-  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
+  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
+  PetscCall(TSSetFromOptions(ts));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve ODE system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSolve(ts,x);CHKERRQ(ierr);
+  PetscCall(TSSolve(ts,x));
   if (!forwardonly) {
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Start the Adjoint model
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-    ierr = VecDuplicate(x,&lambda[0]);CHKERRQ(ierr);
+    PetscCall(VecDuplicate(x,&lambda[0]));
     /*   Reset initial conditions for the adjoint integration */
-    ierr = InitializeLambda(da,lambda[0],0.5,0.5);CHKERRQ(ierr);
-    ierr = TSSetCostGradients(ts,1,lambda,NULL);CHKERRQ(ierr);
-    ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
-    ierr = VecDestroy(&lambda[0]);CHKERRQ(ierr);
+    PetscCall(InitializeLambda(da,lambda[0],0.5,0.5));
+    PetscCall(TSSetCostGradients(ts,1,lambda,NULL));
+    PetscCall(TSAdjointSolve(ts));
+    PetscCall(VecDestroy(&lambda[0]));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMRestoreLocalVector(da,&matctx.localX0);CHKERRQ(ierr);
-  ierr = VecDestroy(&r);CHKERRQ(ierr);
-  ierr = VecDestroy(&matctx.X);CHKERRQ(ierr);
-  ierr = VecDestroy(&matctx.Xdot);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = TSDestroy(&ts);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  PetscCall(DMRestoreLocalVector(da,&matctx.localX0));
+  PetscCall(VecDestroy(&r));
+  PetscCall(VecDestroy(&matctx.X));
+  PetscCall(VecDestroy(&matctx.Xdot));
+  PetscCall(MatDestroy(&A));
+  PetscCall(VecDestroy(&x));
+  PetscCall(TSDestroy(&ts));
+  PetscCall(DMDestroy(&da));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 PetscErrorCode InitialConditions(DM da,Vec U)
 {
-  PetscErrorCode ierr;
   PetscInt       i,j,xs,ys,xm,ym,Mx,My;
   Field          **u;
   PetscReal      hx,hy,x,y;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
+  PetscCall(DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
 
   hx = 2.5/(PetscReal)Mx;
   hy = 2.5/(PetscReal)My;
@@ -200,12 +198,12 @@ PetscErrorCode InitialConditions(DM da,Vec U)
   /*
      Get pointers to vector data
   */
-  ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
+  PetscCall(DMDAVecGetArray(da,U,&u));
 
   /*
      Get local grid boundaries
   */
-  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
+  PetscCall(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
 
   /*
      Compute function over the locally owned part of the grid
@@ -224,29 +222,28 @@ PetscErrorCode InitialConditions(DM da,Vec U)
   /*
      Restore vectors
   */
-  ierr = DMDAVecRestoreArray(da,U,&u);CHKERRQ(ierr);
+  PetscCall(DMDAVecRestoreArray(da,U,&u));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode InitializeLambda(DM da,Vec lambda,PetscReal x,PetscReal y)
 {
    PetscInt i,j,Mx,My,xs,ys,xm,ym;
-   PetscErrorCode ierr;
    Field **l;
 
    PetscFunctionBegin;
-   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
+   PetscCall(DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
    /* locate the global i index for x and j index for y */
    i = (PetscInt)(x*(Mx-1));
    j = (PetscInt)(y*(My-1));
-   ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
+   PetscCall(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
 
    if (xs <= i && i < xs+xm && ys <= j && j < ys+ym) {
      /* the i,j vertex is on this process */
-     ierr = DMDAVecGetArray(da,lambda,&l);CHKERRQ(ierr);
+     PetscCall(DMDAVecGetArray(da,lambda,&l));
      l[j][i].u = 1.0;
      l[j][i].v = 1.0;
-     ierr = DMDAVecRestoreArray(da,lambda,&l);CHKERRQ(ierr);
+     PetscCall(DMDAVecRestoreArray(da,lambda,&l));
    }
    PetscFunctionReturn(0);
 }
@@ -257,7 +254,6 @@ PetscErrorCode IFunctionLocalPassive(DMDALocalInfo *info,PetscReal t,Field**u,Fi
   PetscInt       i,j,xs,ys,xm,ym;
   PetscReal      hx,hy,sx,sy;
   PetscScalar    uc,uxx,uyy,vc,vxx,vyy;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   hx = 2.50/(PetscReal)(info->mx); sx = 1.0/(hx*hx);
@@ -279,13 +275,12 @@ PetscErrorCode IFunctionLocalPassive(DMDALocalInfo *info,PetscReal t,Field**u,Fi
       f[j][i].v = udot[j][i].v - appctx->D2*(vxx + vyy) - uc*vc*vc + (appctx->gamma + appctx->kappa)*vc;
     }
   }
-  ierr = PetscLogFlops(16.0*xm*ym);CHKERRQ(ierr);
+  PetscCall(PetscLogFlops(16.0*xm*ym));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode IFunctionActive(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
 {
-  PetscErrorCode ierr;
   AppCtx         *appctx = (AppCtx*)ptr;
   DM             da;
   DMDALocalInfo  info;
@@ -298,9 +293,9 @@ PetscErrorCode IFunctionActive(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *
   PetscScalar    dummy;
 
   PetscFunctionBegin;
-  ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
-  ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(da,&localU);CHKERRQ(ierr);
+  PetscCall(TSGetDM(ts,&da));
+  PetscCall(DMDAGetLocalInfo(da,&info));
+  PetscCall(DMGetLocalVector(da,&localU));
   hx = 2.50/(PetscReal)(info.mx); sx = 1.0/(hx*hx);
   hy = 2.50/(PetscReal)(info.my); sy = 1.0/(hy*hy);
   xs = info.xs; xm = info.xm; gxs = info.gxs; gxm = info.gxm;
@@ -312,15 +307,15 @@ PetscErrorCode IFunctionActive(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *
      By placing code between these two statements, computations can be
      done while messages are in transition.
   */
-  ierr = DMGlobalToLocalBegin(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
+  PetscCall(DMGlobalToLocalBegin(da,U,INSERT_VALUES,localU));
+  PetscCall(DMGlobalToLocalEnd(da,U,INSERT_VALUES,localU));
 
   /*
      Get pointers to vector data
   */
-  ierr = DMDAVecGetArrayRead(da,localU,&u);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
-  ierr = DMDAVecGetArrayRead(da,Udot,&udot);CHKERRQ(ierr);
+  PetscCall(DMDAVecGetArrayRead(da,localU,&u));
+  PetscCall(DMDAVecGetArray(da,F,&f));
+  PetscCall(DMDAVecGetArrayRead(da,Udot,&udot));
 
   /*
     Create contiguous 1-arrays of AFields
@@ -337,8 +332,8 @@ PetscErrorCode IFunctionActive(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *
   f_a = new AField*[info.gym];
 
   /* Align indices between array types to endow 2d array with ghost points */
-  ierr = GiveGhostPoints(da,u_c,&u_a);CHKERRQ(ierr);
-  ierr = GiveGhostPoints(da,f_c,&f_a);CHKERRQ(ierr);
+  PetscCall(GiveGhostPoints(da,u_c,&u_a));
+  PetscCall(GiveGhostPoints(da,f_c,&f_a));
 
   trace_on(1);  /* Start of active section on tape 1 */
 
@@ -387,14 +382,14 @@ PetscErrorCode IFunctionActive(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *
     }
   }
   trace_off();  /* End of active section */
-  ierr = PetscLogFlops(16.0*xm*ym);CHKERRQ(ierr);
+  PetscCall(PetscLogFlops(16.0*xm*ym));
 
   /* Restore vectors */
-  ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArrayRead(da,localU,&u);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArrayRead(da,Udot,&udot);CHKERRQ(ierr);
+  PetscCall(DMDAVecRestoreArray(da,F,&f));
+  PetscCall(DMDAVecRestoreArrayRead(da,localU,&u));
+  PetscCall(DMDAVecRestoreArrayRead(da,Udot,&udot));
 
-  ierr = DMRestoreLocalVector(da,&localU);CHKERRQ(ierr);
+  PetscCall(DMRestoreLocalVector(da,&localU));
 
   /* Destroy AFields appropriately */
   f_a += info.gys;
@@ -412,20 +407,19 @@ PetscErrorCode IFunctionActive(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *
 PetscErrorCode IJacobianMatFree(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat A_shell,Mat B,void *ctx)
 {
   AdolcMatCtx       *mctx;
-  PetscErrorCode    ierr;
   DM                da;
 
   PetscFunctionBeginUser;
-  ierr = MatShellGetContext(A_shell,&mctx);CHKERRQ(ierr);
+  PetscCall(MatShellGetContext(A_shell,&mctx));
 
   mctx->time  = t;
   mctx->shift = a;
   if (mctx->ts != ts) mctx->ts = ts;
-  ierr = VecCopy(X,mctx->X);CHKERRQ(ierr);
-  ierr = VecCopy(Xdot,mctx->Xdot);CHKERRQ(ierr);
-  ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(da,mctx->X,INSERT_VALUES,mctx->localX0);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da,mctx->X,INSERT_VALUES,mctx->localX0);CHKERRQ(ierr);
+  PetscCall(VecCopy(X,mctx->X));
+  PetscCall(VecCopy(Xdot,mctx->Xdot));
+  PetscCall(TSGetDM(ts,&da));
+  PetscCall(DMGlobalToLocalBegin(da,mctx->X,INSERT_VALUES,mctx->localX0));
+  PetscCall(DMGlobalToLocalEnd(da,mctx->X,INSERT_VALUES,mctx->localX0));
   PetscFunctionReturn(0);
 }
 

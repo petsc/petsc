@@ -12,14 +12,13 @@ PetscErrorCode KSPComputeEigenvalues_CG(KSP ksp,PetscInt nmax,PetscReal *r,Petsc
   KSP_CG         *cgP = (KSP_CG*)ksp->data;
   PetscScalar    *d,*e;
   PetscReal      *ee;
-  PetscErrorCode ierr;
   PetscInt       j,n = ksp->its;
 
   PetscFunctionBegin;
   PetscCheckFalse(nmax < n,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_SIZ,"Not enough room in work space r and c for eigenvalues");
   *neig = n;
 
-  ierr = PetscArrayzero(c,nmax);CHKERRQ(ierr);
+  PetscCall(PetscArrayzero(c,nmax));
   if (!n) {
     PetscFunctionReturn(0);
   }
@@ -33,7 +32,7 @@ PetscErrorCode KSPComputeEigenvalues_CG(KSP ksp,PetscInt nmax,PetscReal *r,Petsc
 
   LINPACKcgtql1(&n,r,ee,&j);
   PetscCheckFalse(j != 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error from tql1(); eispack eigenvalue routine");
-  ierr = PetscSortReal(n,r);CHKERRQ(ierr);
+  PetscCall(PetscSortReal(n,r));
   PetscFunctionReturn(0);
 }
 
@@ -281,4 +280,3 @@ L20:
   ret_val = p;
   PetscFunctionReturn(ret_val);
 } /* cgpthy_ */
-

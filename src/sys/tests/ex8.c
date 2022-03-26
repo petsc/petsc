@@ -10,7 +10,6 @@ typedef struct {
 
 static PetscErrorCode MakeDatatype(MPI_Datatype *dtype)
 {
-  PetscErrorCode ierr;
   MPI_Datatype dtypes[3],tmptype;
   PetscMPIInt  lengths[3];
   MPI_Aint     displs[3];
@@ -27,14 +26,14 @@ static PetscErrorCode MakeDatatype(MPI_Datatype *dtype)
   displs[0] = (char*)&dummy.rank - (char*)&dummy;  /* offsetof(Unit,rank); */
   displs[1] = (char*)&dummy.value - (char*)&dummy; /* offsetof(Unit,value); */
   displs[2] = (char*)&dummy.ok - (char*)&dummy;    /* offsetof(Unit,ok); */
-  ierr = MPI_Type_create_struct(3,lengths,displs,dtypes,&tmptype);CHKERRMPI(ierr);
-  ierr = MPI_Type_commit(&tmptype);CHKERRMPI(ierr);
-  ierr = MPI_Type_create_resized(tmptype,0,sizeof(Unit),dtype);CHKERRMPI(ierr);
-  ierr = MPI_Type_commit(dtype);CHKERRMPI(ierr);
-  ierr = MPI_Type_free(&tmptype);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Type_create_struct(3,lengths,displs,dtypes,&tmptype));
+  PetscCallMPI(MPI_Type_commit(&tmptype));
+  PetscCallMPI(MPI_Type_create_resized(tmptype,0,sizeof(Unit),dtype));
+  PetscCallMPI(MPI_Type_commit(dtype));
+  PetscCallMPI(MPI_Type_free(&tmptype));
   {
     MPI_Aint lb,extent;
-    ierr = MPI_Type_get_extent(*dtype,&lb,&extent);CHKERRMPI(ierr);
+    PetscCallMPI(MPI_Type_get_extent(*dtype,&lb,&extent));
     PetscCheckFalse(extent != sizeof(Unit),PETSC_COMM_WORLD,PETSC_ERR_LIB,"New type has extent %d != sizeof(Unit) %d",(int)extent,(int)sizeof(Unit));
   }
   PetscFunctionReturn(0);
@@ -51,27 +50,25 @@ struct FCtx {
 static PetscErrorCode FSend(MPI_Comm comm,const PetscMPIInt tag[],PetscMPIInt tonum,PetscMPIInt rank,void *todata,MPI_Request req[],void *ctx)
 {
   struct FCtx *fctx = (struct FCtx*)ctx;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscCheckFalse(rank != fctx->toranks[tonum],PETSC_COMM_SELF,PETSC_ERR_PLIB,"Rank %d does not match toranks[%d] %d",rank,tonum,fctx->toranks[tonum]);
   PetscCheckFalse(fctx->rank != *(PetscMPIInt*)todata,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Todata %d does not match rank %d",*(PetscMPIInt*)todata,fctx->rank);
-  ierr = MPI_Isend(&fctx->todata[tonum].rank,1,MPIU_INT,rank,tag[0],comm,&req[0]);CHKERRMPI(ierr);
-  ierr = MPI_Isend(&fctx->todata[tonum].value,1,MPIU_SCALAR,rank,tag[1],comm,&req[1]);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Isend(&fctx->todata[tonum].rank,1,MPIU_INT,rank,tag[0],comm,&req[0]));
+  PetscCallMPI(MPI_Isend(&fctx->todata[tonum].value,1,MPIU_SCALAR,rank,tag[1],comm,&req[1]));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode FRecv(MPI_Comm comm,const PetscMPIInt tag[],PetscMPIInt rank,void *fromdata,MPI_Request req[],void *ctx)
 {
   struct FCtx *fctx = (struct FCtx*)ctx;
-  PetscErrorCode ierr;
   Unit           *buf;
 
   PetscFunctionBegin;
   PetscCheckFalse(*(PetscMPIInt*)fromdata != rank,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Dummy data %d from rank %d corrupt",*(PetscMPIInt*)fromdata,rank);
-  ierr = PetscSegBufferGet(fctx->seg,1,&buf);CHKERRQ(ierr);
-  ierr = MPI_Irecv(&buf->rank,1,MPIU_INT,rank,tag[0],comm,&req[0]);CHKERRMPI(ierr);
-  ierr = MPI_Irecv(&buf->value,1,MPIU_SCALAR,rank,tag[1],comm,&req[1]);CHKERRMPI(ierr);
+  PetscCall(PetscSegBufferGet(fctx->seg,1,&buf));
+  PetscCallMPI(MPI_Irecv(&buf->rank,1,MPIU_INT,rank,tag[0],comm,&req[0]));
+  PetscCallMPI(MPI_Irecv(&buf->value,1,MPIU_SCALAR,rank,tag[1],comm,&req[1]));
   buf->ok[0] = 'o';
   buf->ok[1] = 'k';
   buf->ok[2] = 0;
@@ -80,24 +77,23 @@ static PetscErrorCode FRecv(MPI_Comm comm,const PetscMPIInt tag[],PetscMPIInt ra
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    rank,size,*toranks,*fromranks,nto,nfrom;
   PetscInt       i,n;
   PetscBool      verbose,build_twosided_f;
   Unit           *todata,*fromdata;
   MPI_Datatype   dtype;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   verbose = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-verbose",&verbose,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-verbose",&verbose,NULL));
   build_twosided_f = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-build_twosided_f",&build_twosided_f,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-build_twosided_f",&build_twosided_f,NULL));
 
   for (i=1,nto=0; i<size; i*=2) nto++;
-  ierr = PetscMalloc2(nto,&todata,nto,&toranks);CHKERRQ(ierr);
+  PetscCall(PetscMalloc2(nto,&todata,nto,&toranks));
   for (n=0,i=1; i<size; n++,i*=2) {
     toranks[n] = (rank+i) % size;
     todata[n].rank  = (rank+i) % size;
@@ -108,12 +104,12 @@ int main(int argc,char **argv)
   }
   if (verbose) {
     for (i=0; i<nto; i++) {
-      ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] TO %d: {%" PetscInt_FMT ", %g, \"%s\"}\n",rank,toranks[i],todata[i].rank,(double)PetscRealPart(todata[i].value),todata[i].ok);CHKERRQ(ierr);
+      PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] TO %d: {%" PetscInt_FMT ", %g, \"%s\"}\n",rank,toranks[i],todata[i].rank,(double)PetscRealPart(todata[i].value),todata[i].ok));
     }
-    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+    PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
   }
 
-  ierr = MakeDatatype(&dtype);CHKERRQ(ierr);
+  PetscCall(MakeDatatype(&dtype));
 
   if (build_twosided_f) {
     struct FCtx fctx;
@@ -122,34 +118,34 @@ int main(int argc,char **argv)
     fctx.nto     = nto;
     fctx.toranks = toranks;
     fctx.todata  = todata;
-    ierr = PetscSegBufferCreate(sizeof(Unit),1,&fctx.seg);CHKERRQ(ierr);
-    ierr = PetscMalloc1(nto,&todummy);CHKERRQ(ierr);
+    PetscCall(PetscSegBufferCreate(sizeof(Unit),1,&fctx.seg));
+    PetscCall(PetscMalloc1(nto,&todummy));
     for (i=0; i<nto; i++) todummy[i] = rank;
-    ierr = PetscCommBuildTwoSidedF(PETSC_COMM_WORLD,1,MPI_INT,nto,toranks,todummy,&nfrom,&fromranks,&fromdummy,2,FSend,FRecv,&fctx);CHKERRQ(ierr);
-    ierr = PetscFree(todummy);CHKERRQ(ierr);
-    ierr = PetscFree(fromdummy);CHKERRQ(ierr);
-    ierr = PetscSegBufferExtractAlloc(fctx.seg,&fromdata);CHKERRQ(ierr);
-    ierr = PetscSegBufferDestroy(&fctx.seg);CHKERRQ(ierr);
+    PetscCall(PetscCommBuildTwoSidedF(PETSC_COMM_WORLD,1,MPI_INT,nto,toranks,todummy,&nfrom,&fromranks,&fromdummy,2,FSend,FRecv,&fctx));
+    PetscCall(PetscFree(todummy));
+    PetscCall(PetscFree(fromdummy));
+    PetscCall(PetscSegBufferExtractAlloc(fctx.seg,&fromdata));
+    PetscCall(PetscSegBufferDestroy(&fctx.seg));
   } else {
-    ierr = PetscCommBuildTwoSided(PETSC_COMM_WORLD,1,dtype,nto,toranks,todata,&nfrom,&fromranks,&fromdata);CHKERRQ(ierr);
+    PetscCall(PetscCommBuildTwoSided(PETSC_COMM_WORLD,1,dtype,nto,toranks,todata,&nfrom,&fromranks,&fromdata));
   }
-  ierr = MPI_Type_free(&dtype);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Type_free(&dtype));
 
   if (verbose) {
     PetscInt *iranks,*iperm;
-    ierr = PetscMalloc2(nfrom,&iranks,nfrom,&iperm);CHKERRQ(ierr);
+    PetscCall(PetscMalloc2(nfrom,&iranks,nfrom,&iperm));
     for (i=0; i<nfrom; i++) {
       iranks[i] = fromranks[i];
       iperm[i] = i;
     }
     /* Receive ordering is non-deterministic in general, so sort to make verbose output deterministic. */
-    ierr = PetscSortIntWithPermutation(nfrom,iranks,iperm);CHKERRQ(ierr);
+    PetscCall(PetscSortIntWithPermutation(nfrom,iranks,iperm));
     for (i=0; i<nfrom; i++) {
       PetscInt ip = iperm[i];
-      ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] FROM %d: {%" PetscInt_FMT ", %g, \"%s\"}\n",rank,fromranks[ip],fromdata[ip].rank,(double)PetscRealPart(fromdata[ip].value),fromdata[ip].ok);CHKERRQ(ierr);
+      PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] FROM %d: {%" PetscInt_FMT ", %g, \"%s\"}\n",rank,fromranks[ip],fromdata[ip].rank,(double)PetscRealPart(fromdata[ip].value),fromdata[ip].ok));
     }
-    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
-    ierr = PetscFree2(iranks,iperm);CHKERRQ(ierr);
+    PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
+    PetscCall(PetscFree2(iranks,iperm));
   }
 
   PetscCheckFalse(nto != nfrom,PETSC_COMM_SELF,PETSC_ERR_PLIB,"[%d] From ranks %d does not match To ranks %d",rank,nto,nfrom);
@@ -162,14 +158,14 @@ int main(int argc,char **argv)
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"[%d] Could not find expected from rank %d",rank,expected_rank);
     found:
     PetscCheckFalse(PetscRealPart(fromdata[n].value) != expected_rank,PETSC_COMM_SELF,PETSC_ERR_PLIB,"[%d] Got data %g from rank %d",rank,(double)PetscRealPart(fromdata[n].value),expected_rank);
-    ierr = PetscStrcmp(fromdata[n].ok,"ok",&flg);CHKERRQ(ierr);
-    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"[%d] Got string %s from rank %d",rank,fromdata[n].ok,expected_rank);
+    PetscCall(PetscStrcmp(fromdata[n].ok,"ok",&flg));
+    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"[%d] Got string %s from rank %d",rank,fromdata[n].ok,expected_rank);
   }
-  ierr = PetscFree2(todata,toranks);CHKERRQ(ierr);
-  ierr = PetscFree(fromdata);CHKERRQ(ierr);
-  ierr = PetscFree(fromranks);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFree2(todata,toranks));
+  PetscCall(PetscFree(fromdata));
+  PetscCall(PetscFree(fromranks));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

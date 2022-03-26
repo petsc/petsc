@@ -19,16 +19,14 @@ PetscFunctionList VecTaggerList;
 @*/
 PetscErrorCode  VecTaggerRegisterAll(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (VecTaggerRegisterAllCalled) PetscFunctionReturn(0);
   VecTaggerRegisterAllCalled = PETSC_TRUE;
-  ierr = VecTaggerRegister(VECTAGGERABSOLUTE, VecTaggerCreate_Absolute);CHKERRQ(ierr);
-  ierr = VecTaggerRegister(VECTAGGERRELATIVE, VecTaggerCreate_Relative);CHKERRQ(ierr);
-  ierr = VecTaggerRegister(VECTAGGERCDF,      VecTaggerCreate_CDF);CHKERRQ(ierr);
-  ierr = VecTaggerRegister(VECTAGGEROR,       VecTaggerCreate_Or);CHKERRQ(ierr);
-  ierr = VecTaggerRegister(VECTAGGERAND,      VecTaggerCreate_And);CHKERRQ(ierr);
+  PetscCall(VecTaggerRegister(VECTAGGERABSOLUTE, VecTaggerCreate_Absolute));
+  PetscCall(VecTaggerRegister(VECTAGGERRELATIVE, VecTaggerCreate_Relative));
+  PetscCall(VecTaggerRegister(VECTAGGERCDF,      VecTaggerCreate_CDF));
+  PetscCall(VecTaggerRegister(VECTAGGEROR,       VecTaggerCreate_Or));
+  PetscCall(VecTaggerRegister(VECTAGGERAND,      VecTaggerCreate_And));
   PetscFunctionReturn(0);
 }
 
@@ -60,10 +58,7 @@ $     -snes_type my_solver
 @*/
 PetscErrorCode  VecTaggerRegister(const char sname[],PetscErrorCode (*function)(VecTagger))
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&VecTaggerList,sname,function);CHKERRQ(ierr);
+  PetscCall(PetscFunctionListAdd(&VecTaggerList,sname,function));
   PetscFunctionReturn(0);
 }
-

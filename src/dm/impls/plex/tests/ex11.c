@@ -8,19 +8,18 @@ static PetscErrorCode TestInsertion()
   DMLabel        label, label2;
   const PetscInt values[5] = {0, 3, 4, -1, 176}, N = 10000;
   PetscInt       i, v;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMLabelCreate(PETSC_COMM_SELF, "Test Label", &label);CHKERRQ(ierr);
-  ierr = DMLabelSetDefaultValue(label, -100);CHKERRQ(ierr);
+  PetscCall(DMLabelCreate(PETSC_COMM_SELF, "Test Label", &label));
+  PetscCall(DMLabelSetDefaultValue(label, -100));
   for (i = 0; i < N; ++i) {
-    ierr = DMLabelSetValue(label, i, values[i%5]);CHKERRQ(ierr);
+    PetscCall(DMLabelSetValue(label, i, values[i%5]));
   }
   /* Test get in hash mode */
   for (i = 0; i < N; ++i) {
     PetscInt val;
 
-    ierr = DMLabelGetValue(label, i, &val);CHKERRQ(ierr);
+    PetscCall(DMLabelGetValue(label, i, &val));
     PetscCheckFalse(val != values[i%5],PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Value %d for point %d should be %d", val, i, values[i%5]);
   }
   /* Test stratum */
@@ -29,33 +28,33 @@ static PetscErrorCode TestInsertion()
     const PetscInt *points;
     PetscInt        n;
 
-    ierr = DMLabelGetStratumIS(label, values[v], &stratum);CHKERRQ(ierr);
-    PetscCheckFalse(!stratum,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Stratum %d is empty!", v);
-    ierr = ISGetIndices(stratum, &points);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(stratum, &n);CHKERRQ(ierr);
+    PetscCall(DMLabelGetStratumIS(label, values[v], &stratum));
+    PetscCheck(stratum,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Stratum %d is empty!", v);
+    PetscCall(ISGetIndices(stratum, &points));
+    PetscCall(ISGetLocalSize(stratum, &n));
     for (i = 0; i < n; ++i) {
       PetscCheckFalse(points[i] != i*5+v,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %d should be %d", points[i], i*5+v);
     }
-    ierr = ISRestoreIndices(stratum, &points);CHKERRQ(ierr);
-    ierr = ISDestroy(&stratum);CHKERRQ(ierr);
+    PetscCall(ISRestoreIndices(stratum, &points));
+    PetscCall(ISDestroy(&stratum));
   }
   /* Test get in array mode */
   for (i = 0; i < N; ++i) {
     PetscInt val;
 
-    ierr = DMLabelGetValue(label, i, &val);CHKERRQ(ierr);
+    PetscCall(DMLabelGetValue(label, i, &val));
     PetscCheckFalse(val != values[i%5],PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Value %d should be %d", val, values[i%5]);
   }
   /* Test Duplicate */
-  ierr = DMLabelDuplicate(label, &label2);CHKERRQ(ierr);
+  PetscCall(DMLabelDuplicate(label, &label2));
   for (i = 0; i < N; ++i) {
     PetscInt val;
 
-    ierr = DMLabelGetValue(label2, i, &val);CHKERRQ(ierr);
+    PetscCall(DMLabelGetValue(label2, i, &val));
     PetscCheckFalse(val != values[i%5],PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Value %d should be %d", val, values[i%5]);
   }
-  ierr = DMLabelDestroy(&label2);CHKERRQ(ierr);
-  ierr = DMLabelDestroy(&label);CHKERRQ(ierr);
+  PetscCall(DMLabelDestroy(&label2));
+  PetscCall(DMLabelDestroy(&label));
   PetscFunctionReturn(0);
 }
 
@@ -78,86 +77,85 @@ static PetscErrorCode TestEmptyStrata(MPI_Comm comm)
   PetscInt         c12[4] = {21,22,23,24};
   PetscInt         dim    = 3;
   PetscMPIInt      rank;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
   /* A 3D box with two adjacent cells, sharing one face and four vertices */
-  ierr = DMCreate(comm, &dm);CHKERRQ(ierr);
-  ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetDimension(dm, dim);CHKERRQ(ierr);
+  PetscCall(DMCreate(comm, &dm));
+  PetscCall(DMSetType(dm, DMPLEX));
+  PetscCall(DMSetDimension(dm, dim));
   if (rank == 0) {
-    ierr = DMPlexSetChart(dm, 0, 25);CHKERRQ(ierr);
-    ierr = DMPlexSetConeSize(dm, 0, 6);CHKERRQ(ierr);
-    ierr = DMPlexSetConeSize(dm, 1, 6);CHKERRQ(ierr);
-    ierr = DMPlexSetConeSize(dm, 2, 4);CHKERRQ(ierr);
-    ierr = DMPlexSetConeSize(dm, 3, 4);CHKERRQ(ierr);
-    ierr = DMPlexSetConeSize(dm, 4, 4);CHKERRQ(ierr);
-    ierr = DMPlexSetConeSize(dm, 5, 4);CHKERRQ(ierr);
-    ierr = DMPlexSetConeSize(dm, 6, 4);CHKERRQ(ierr);
-    ierr = DMPlexSetConeSize(dm, 7, 4);CHKERRQ(ierr);
-    ierr = DMPlexSetConeSize(dm, 8, 4);CHKERRQ(ierr);
-    ierr = DMPlexSetConeSize(dm, 9, 4);CHKERRQ(ierr);
-    ierr = DMPlexSetConeSize(dm, 10, 4);CHKERRQ(ierr);
-    ierr = DMPlexSetConeSize(dm, 11, 4);CHKERRQ(ierr);
-    ierr = DMPlexSetConeSize(dm, 12, 4);CHKERRQ(ierr);
+    PetscCall(DMPlexSetChart(dm, 0, 25));
+    PetscCall(DMPlexSetConeSize(dm, 0, 6));
+    PetscCall(DMPlexSetConeSize(dm, 1, 6));
+    PetscCall(DMPlexSetConeSize(dm, 2, 4));
+    PetscCall(DMPlexSetConeSize(dm, 3, 4));
+    PetscCall(DMPlexSetConeSize(dm, 4, 4));
+    PetscCall(DMPlexSetConeSize(dm, 5, 4));
+    PetscCall(DMPlexSetConeSize(dm, 6, 4));
+    PetscCall(DMPlexSetConeSize(dm, 7, 4));
+    PetscCall(DMPlexSetConeSize(dm, 8, 4));
+    PetscCall(DMPlexSetConeSize(dm, 9, 4));
+    PetscCall(DMPlexSetConeSize(dm, 10, 4));
+    PetscCall(DMPlexSetConeSize(dm, 11, 4));
+    PetscCall(DMPlexSetConeSize(dm, 12, 4));
   }
-  ierr = DMSetUp(dm);CHKERRQ(ierr);
+  PetscCall(DMSetUp(dm));
   if (rank == 0) {
-    ierr = DMPlexSetCone(dm, 0, c0);CHKERRQ(ierr);
-    ierr = DMPlexSetCone(dm, 1, c1);CHKERRQ(ierr);
-    ierr = DMPlexSetCone(dm, 2, c2);CHKERRQ(ierr);
-    ierr = DMPlexSetCone(dm, 3, c3);CHKERRQ(ierr);
-    ierr = DMPlexSetCone(dm, 4, c4);CHKERRQ(ierr);
-    ierr = DMPlexSetCone(dm, 5, c5);CHKERRQ(ierr);
-    ierr = DMPlexSetCone(dm, 6, c6);CHKERRQ(ierr);
-    ierr = DMPlexSetCone(dm, 7, c7);CHKERRQ(ierr);
-    ierr = DMPlexSetCone(dm, 8, c8);CHKERRQ(ierr);
-    ierr = DMPlexSetCone(dm, 9, c9);CHKERRQ(ierr);
-    ierr = DMPlexSetCone(dm, 10, c10);CHKERRQ(ierr);
-    ierr = DMPlexSetCone(dm, 11, c11);CHKERRQ(ierr);
-    ierr = DMPlexSetCone(dm, 12, c12);CHKERRQ(ierr);
+    PetscCall(DMPlexSetCone(dm, 0, c0));
+    PetscCall(DMPlexSetCone(dm, 1, c1));
+    PetscCall(DMPlexSetCone(dm, 2, c2));
+    PetscCall(DMPlexSetCone(dm, 3, c3));
+    PetscCall(DMPlexSetCone(dm, 4, c4));
+    PetscCall(DMPlexSetCone(dm, 5, c5));
+    PetscCall(DMPlexSetCone(dm, 6, c6));
+    PetscCall(DMPlexSetCone(dm, 7, c7));
+    PetscCall(DMPlexSetCone(dm, 8, c8));
+    PetscCall(DMPlexSetCone(dm, 9, c9));
+    PetscCall(DMPlexSetCone(dm, 10, c10));
+    PetscCall(DMPlexSetCone(dm, 11, c11));
+    PetscCall(DMPlexSetCone(dm, 12, c12));
   }
-  ierr = DMPlexSymmetrize(dm);CHKERRQ(ierr);
+  PetscCall(DMPlexSymmetrize(dm));
   /* Create a user managed depth label, so that we can leave out edges */
   {
     DMLabel label;
     PetscInt numValues, maxValues = 0, v;
 
-    ierr = DMCreateLabel(dm, "depth");CHKERRQ(ierr);
-    ierr = DMPlexGetDepthLabel(dm, &label);CHKERRQ(ierr);
+    PetscCall(DMCreateLabel(dm, "depth"));
+    PetscCall(DMPlexGetDepthLabel(dm, &label));
     if (rank == 0) {
       PetscInt i;
 
       for (i = 0; i < 25; ++i) {
-        if (i < 2)       {ierr = DMLabelSetValue(label, i, 3);CHKERRQ(ierr);}
-        else if (i < 13) {ierr = DMLabelSetValue(label, i, 2);CHKERRQ(ierr);}
+        if (i < 2)       PetscCall(DMLabelSetValue(label, i, 3));
+        else if (i < 13) PetscCall(DMLabelSetValue(label, i, 2));
         else             {
-          if (i==13) {ierr = DMLabelAddStratum(label, 1);CHKERRQ(ierr);}
-          ierr = DMLabelSetValue(label, i, 0);CHKERRQ(ierr);
+          if (i==13) PetscCall(DMLabelAddStratum(label, 1));
+          PetscCall(DMLabelSetValue(label, i, 0));
         }
       }
     }
-    ierr = DMLabelGetNumValues(label, &numValues);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(&numValues, &maxValues, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject) dm));CHKERRMPI(ierr);
-    for (v = numValues; v < maxValues; ++v) {ierr = DMLabelAddStratum(label,v);CHKERRQ(ierr);}
+    PetscCall(DMLabelGetNumValues(label, &numValues));
+    PetscCallMPI(MPI_Allreduce(&numValues, &maxValues, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject) dm)));
+    for (v = numValues; v < maxValues; ++v) PetscCall(DMLabelAddStratum(label,v));
   }
   {
     DMLabel label;
-    ierr = DMPlexGetDepthLabel(dm, &label);CHKERRQ(ierr);
-    ierr = DMLabelView(label, PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
+    PetscCall(DMPlexGetDepthLabel(dm, &label));
+    PetscCall(DMLabelView(label, PETSC_VIEWER_STDOUT_(comm)));
   }
-  ierr = DMPlexGetPartitioner(dm,&part);CHKERRQ(ierr);
-  ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
-  ierr = DMPlexDistribute(dm, 1, NULL, &dmDist);CHKERRQ(ierr);
+  PetscCall(DMPlexGetPartitioner(dm,&part));
+  PetscCall(PetscPartitionerSetFromOptions(part));
+  PetscCall(DMPlexDistribute(dm, 1, NULL, &dmDist));
   if (dmDist) {
-    ierr = DMDestroy(&dm);CHKERRQ(ierr);
+    PetscCall(DMDestroy(&dm));
     dm   = dmDist;
   }
   {
     DMLabel label;
-    ierr = DMPlexGetDepthLabel(dm, &label);CHKERRQ(ierr);
-    ierr = DMLabelView(label, PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
+    PetscCall(DMPlexGetDepthLabel(dm, &label));
+    PetscCall(DMLabelView(label, PETSC_VIEWER_STDOUT_(comm)));
   }
   /* Create a cell vector */
   {
@@ -167,19 +165,19 @@ static PetscErrorCode TestEmptyStrata(MPI_Comm comm)
     PetscInt     dof[]     = {0,0,0,1};
     PetscInt     N;
 
-    ierr = DMSetNumFields(dm, 1);CHKERRQ(ierr);
-    ierr = DMPlexCreateSection(dm, NULL, numComp, dof, 0, NULL, NULL, NULL, NULL, &s);CHKERRQ(ierr);
-    ierr = DMSetLocalSection(dm, s);CHKERRQ(ierr);
-    ierr = PetscSectionDestroy(&s);CHKERRQ(ierr);
-    ierr = DMCreateGlobalVector(dm, &v);CHKERRQ(ierr);
-    ierr = VecGetSize(v, &N);CHKERRQ(ierr);
+    PetscCall(DMSetNumFields(dm, 1));
+    PetscCall(DMPlexCreateSection(dm, NULL, numComp, dof, 0, NULL, NULL, NULL, NULL, &s));
+    PetscCall(DMSetLocalSection(dm, s));
+    PetscCall(PetscSectionDestroy(&s));
+    PetscCall(DMCreateGlobalVector(dm, &v));
+    PetscCall(VecGetSize(v, &N));
     if (N != 2) {
-      ierr = DMView(dm, PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
+      PetscCall(DMView(dm, PETSC_VIEWER_STDOUT_(comm)));
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "FAIL: Vector size %d != 2", N);
     }
-    ierr = VecDestroy(&v);CHKERRQ(ierr);
+    PetscCall(VecDestroy(&v));
   }
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  PetscCall(DMDestroy(&dm));
   PetscFunctionReturn(0);
 }
 
@@ -193,34 +191,33 @@ static PetscErrorCode TestDistribution(MPI_Comm comm)
   PetscInt         overlap = 0, cStart, cEnd, c;
   PetscMPIInt      rank;
   PetscBool        flg;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
-  ierr = PetscOptionsGetString(NULL, NULL, "-filename", filename, sizeof(filename), &flg);CHKERRQ(ierr);
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  PetscCall(PetscOptionsGetString(NULL, NULL, "-filename", filename, sizeof(filename), &flg));
   if (!flg) PetscFunctionReturn(0);
-  ierr = PetscOptionsGetInt(NULL, NULL, "-overlap", &overlap, NULL);CHKERRQ(ierr);
-  ierr = DMPlexCreateFromFile(comm, filename, "ex11_plex", PETSC_TRUE, &dm);CHKERRQ(ierr);
-  ierr = DMSetBasicAdjacency(dm, PETSC_TRUE, PETSC_FALSE);CHKERRQ(ierr);
-  ierr = DMCreateLabel(dm, name);CHKERRQ(ierr);
-  ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-overlap", &overlap, NULL));
+  PetscCall(DMPlexCreateFromFile(comm, filename, "ex11_plex", PETSC_TRUE, &dm));
+  PetscCall(DMSetBasicAdjacency(dm, PETSC_TRUE, PETSC_FALSE));
+  PetscCall(DMCreateLabel(dm, name));
+  PetscCall(DMGetLabel(dm, name, &label));
+  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   for (c = cStart; c < cEnd; ++c) {
-    ierr = DMLabelSetValue(label, c, c);CHKERRQ(ierr);
+    PetscCall(DMLabelSetValue(label, c, c));
   }
-  ierr = DMLabelView(label, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = DMPlexGetPartitioner(dm,&part);CHKERRQ(ierr);
-  ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
-  ierr = DMPlexDistribute(dm, overlap, NULL, &dmDist);CHKERRQ(ierr);
+  PetscCall(DMLabelView(label, PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(DMPlexGetPartitioner(dm,&part));
+  PetscCall(PetscPartitionerSetFromOptions(part));
+  PetscCall(DMPlexDistribute(dm, overlap, NULL, &dmDist));
   if (dmDist) {
-    ierr = DMDestroy(&dm);CHKERRQ(ierr);
+    PetscCall(DMDestroy(&dm));
     dm   = dmDist;
   }
-  ierr = PetscObjectSetName((PetscObject) dm, "Mesh");CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
-  ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
-  ierr = DMLabelView(label, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  PetscCall(PetscObjectSetName((PetscObject) dm, "Mesh"));
+  PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
+  PetscCall(DMGetLabel(dm, name, &label));
+  PetscCall(DMLabelView(label, PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(DMDestroy(&dm));
   PetscFunctionReturn(0);
 }
 
@@ -231,89 +228,87 @@ static PetscErrorCode TestUniversalLabel(MPI_Comm comm)
   DMUniversalLabel universal;
   PetscInt         pStart, pEnd, p;
   PetscBool        run = PETSC_FALSE, notFile;
-  PetscErrorCode   ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscOptionsGetBool(NULL, NULL, "-universal", &run, NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-universal", &run, NULL));
   if (!run) PetscFunctionReturn(0);
 
   char filename[PETSC_MAX_PATH_LEN];
   PetscBool flg;
 
-  ierr = PetscOptionsGetString(NULL, NULL, "-filename", filename, sizeof(filename), &flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetString(NULL, NULL, "-filename", filename, sizeof(filename), &flg));
   if (flg) {
-    ierr = DMPlexCreateFromFile(comm, filename, "ex11_plex", PETSC_TRUE, &dm1);CHKERRQ(ierr);
+    PetscCall(DMPlexCreateFromFile(comm, filename, "ex11_plex", PETSC_TRUE, &dm1));
   } else {
-    ierr = DMCreate(comm, &dm1);CHKERRQ(ierr);
-    ierr = DMSetType(dm1, DMPLEX);CHKERRQ(ierr);
-    ierr = DMSetFromOptions(dm1);CHKERRQ(ierr);
+    PetscCall(DMCreate(comm, &dm1));
+    PetscCall(DMSetType(dm1, DMPLEX));
+    PetscCall(DMSetFromOptions(dm1));
   }
-  ierr = DMHasLabel(dm1, "marker", &notFile);CHKERRQ(ierr);
+  PetscCall(DMHasLabel(dm1, "marker", &notFile));
   if (notFile) {
-    ierr = DMCreateLabel(dm1, "Boundary Faces");CHKERRQ(ierr);
-    ierr = DMGetLabel(dm1, "Boundary Faces", &bd1);CHKERRQ(ierr);
-    ierr = DMPlexMarkBoundaryFaces(dm1, 13, bd1);CHKERRQ(ierr);
-    ierr = DMCreateLabel(dm1, "Boundary");CHKERRQ(ierr);
-    ierr = DMGetLabel(dm1, "Boundary", &bd2);CHKERRQ(ierr);
-    ierr = DMPlexMarkBoundaryFaces(dm1, 121, bd2);CHKERRQ(ierr);
-    ierr = DMPlexLabelComplete(dm1, bd2);CHKERRQ(ierr);
+    PetscCall(DMCreateLabel(dm1, "Boundary Faces"));
+    PetscCall(DMGetLabel(dm1, "Boundary Faces", &bd1));
+    PetscCall(DMPlexMarkBoundaryFaces(dm1, 13, bd1));
+    PetscCall(DMCreateLabel(dm1, "Boundary"));
+    PetscCall(DMGetLabel(dm1, "Boundary", &bd2));
+    PetscCall(DMPlexMarkBoundaryFaces(dm1, 121, bd2));
+    PetscCall(DMPlexLabelComplete(dm1, bd2));
   }
-  ierr = PetscObjectSetName((PetscObject) dm1, "First Mesh");CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dm1, NULL, "-dm_view");CHKERRQ(ierr);
+  PetscCall(PetscObjectSetName((PetscObject) dm1, "First Mesh"));
+  PetscCall(DMViewFromOptions(dm1, NULL, "-dm_view"));
 
-  ierr = DMUniversalLabelCreate(dm1, &universal);CHKERRQ(ierr);
-  ierr = DMUniversalLabelGetLabel(universal, &ulabel);CHKERRQ(ierr);
-  ierr = PetscObjectViewFromOptions((PetscObject) ulabel, NULL, "-universal_view");CHKERRQ(ierr);
+  PetscCall(DMUniversalLabelCreate(dm1, &universal));
+  PetscCall(DMUniversalLabelGetLabel(universal, &ulabel));
+  PetscCall(PetscObjectViewFromOptions((PetscObject) ulabel, NULL, "-universal_view"));
 
   if (!notFile) {
     PetscInt Nl, l;
 
-    ierr = DMClone(dm1, &dm2);CHKERRQ(ierr);
-    ierr = DMGetNumLabels(dm2, &Nl);CHKERRQ(ierr);
+    PetscCall(DMClone(dm1, &dm2));
+    PetscCall(DMGetNumLabels(dm2, &Nl));
     for (l = Nl-1; l >= 0; --l) {
       PetscBool   isdepth, iscelltype;
       const char *name;
 
-      ierr = DMGetLabelName(dm2, l, &name);CHKERRQ(ierr);
-      ierr = PetscStrncmp(name, "depth", 6, &isdepth);CHKERRQ(ierr);
-      ierr = PetscStrncmp(name, "celltype", 9, &iscelltype);CHKERRQ(ierr);
-      if (!isdepth && !iscelltype) {ierr = DMRemoveLabel(dm2, name, NULL);CHKERRQ(ierr);}
+      PetscCall(DMGetLabelName(dm2, l, &name));
+      PetscCall(PetscStrncmp(name, "depth", 6, &isdepth));
+      PetscCall(PetscStrncmp(name, "celltype", 9, &iscelltype));
+      if (!isdepth && !iscelltype) PetscCall(DMRemoveLabel(dm2, name, NULL));
     }
   } else {
-    ierr = DMCreate(comm, &dm2);CHKERRQ(ierr);
-    ierr = DMSetType(dm2, DMPLEX);CHKERRQ(ierr);
-    ierr = DMSetFromOptions(dm2);CHKERRQ(ierr);
+    PetscCall(DMCreate(comm, &dm2));
+    PetscCall(DMSetType(dm2, DMPLEX));
+    PetscCall(DMSetFromOptions(dm2));
   }
-  ierr = PetscObjectSetName((PetscObject) dm2, "Second Mesh");CHKERRQ(ierr);
-  ierr = DMUniversalLabelCreateLabels(universal, PETSC_TRUE, dm2);CHKERRQ(ierr);
-  ierr = DMPlexGetChart(dm2, &pStart, &pEnd);CHKERRQ(ierr);
+  PetscCall(PetscObjectSetName((PetscObject) dm2, "Second Mesh"));
+  PetscCall(DMUniversalLabelCreateLabels(universal, PETSC_TRUE, dm2));
+  PetscCall(DMPlexGetChart(dm2, &pStart, &pEnd));
   for (p = pStart; p < pEnd; ++p) {
     PetscInt val;
 
-    ierr = DMLabelGetValue(ulabel, p, &val);CHKERRQ(ierr);
+    PetscCall(DMLabelGetValue(ulabel, p, &val));
     if (val < 0) continue;
-    ierr = DMUniversalLabelSetLabelValue(universal, dm2, PETSC_TRUE, p, val);CHKERRQ(ierr);
+    PetscCall(DMUniversalLabelSetLabelValue(universal, dm2, PETSC_TRUE, p, val));
   }
-  ierr = DMViewFromOptions(dm2, NULL, "-dm_view");CHKERRQ(ierr);
+  PetscCall(DMViewFromOptions(dm2, NULL, "-dm_view"));
 
-  ierr = DMUniversalLabelDestroy(&universal);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm1);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm2);CHKERRQ(ierr);
+  PetscCall(DMUniversalLabelDestroy(&universal));
+  PetscCall(DMDestroy(&dm1));
+  PetscCall(DMDestroy(&dm2));
   PetscFunctionReturn(0);
 }
 
 int main(int argc, char **argv)
 {
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
-  /*ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);*/
-  ierr = TestInsertion();CHKERRQ(ierr);
-  ierr = TestEmptyStrata(PETSC_COMM_WORLD);CHKERRQ(ierr);
-  ierr = TestDistribution(PETSC_COMM_WORLD);CHKERRQ(ierr);
-  ierr = TestUniversalLabel(PETSC_COMM_WORLD);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  /*PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));*/
+  PetscCall(TestInsertion());
+  PetscCall(TestEmptyStrata(PETSC_COMM_WORLD));
+  PetscCall(TestDistribution(PETSC_COMM_WORLD));
+  PetscCall(TestUniversalLabel(PETSC_COMM_WORLD));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -10,43 +10,42 @@ int main(int argc,char **args)
   PetscInt       i,j,m = 5,n,nrows,ncols;
   const PetscInt *rows,*cols;
   IS             isrows,iscols;
-  PetscErrorCode ierr;
   PetscScalar    *v;
   PetscMPIInt    rank,size;
   PetscReal      Cnorm;
   PetscBool      flg,mats_view=PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   n    = m;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,NULL,"-mats_view",&mats_view);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-mats_view",&mats_view));
 
-  ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
-  ierr = MatSetSizes(C,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = MatSetType(C,MATELEMENTAL);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(C);CHKERRQ(ierr);
-  ierr = MatSetUp(C);CHKERRQ(ierr);
-  ierr = MatGetOwnershipIS(C,&isrows,&iscols);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(isrows,&nrows);CHKERRQ(ierr);
-  ierr = ISGetIndices(isrows,&rows);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(iscols,&ncols);CHKERRQ(ierr);
-  ierr = ISGetIndices(iscols,&cols);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nrows*ncols,&v);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&C));
+  PetscCall(MatSetSizes(C,m,n,PETSC_DECIDE,PETSC_DECIDE));
+  PetscCall(MatSetType(C,MATELEMENTAL));
+  PetscCall(MatSetFromOptions(C));
+  PetscCall(MatSetUp(C));
+  PetscCall(MatGetOwnershipIS(C,&isrows,&iscols));
+  PetscCall(ISGetLocalSize(isrows,&nrows));
+  PetscCall(ISGetIndices(isrows,&rows));
+  PetscCall(ISGetLocalSize(iscols,&ncols));
+  PetscCall(ISGetIndices(iscols,&cols));
+  PetscCall(PetscMalloc1(nrows*ncols,&v));
 #if defined(PETSC_USE_COMPLEX)
   PetscRandom rand;
   PetscScalar rval;
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
+  PetscCall(PetscRandomCreate(PETSC_COMM_WORLD,&rand));
+  PetscCall(PetscRandomSetFromOptions(rand));
   for (i=0; i<nrows; i++) {
     for (j=0; j<ncols; j++) {
-      ierr         = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
+      PetscCall(PetscRandomGetValue(rand,&rval));
       v[i*ncols+j] = rval;
     }
   }
-  ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
+  PetscCall(PetscRandomDestroy(&rand));
 #else
   for (i=0; i<nrows; i++) {
     for (j=0; j<ncols; j++) {
@@ -54,107 +53,107 @@ int main(int argc,char **args)
     }
   }
 #endif
-  ierr = MatSetValues(C,nrows,rows,ncols,cols,v,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(isrows,&rows);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(iscols,&cols);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = ISDestroy(&isrows);CHKERRQ(ierr);
-  ierr = ISDestroy(&iscols);CHKERRQ(ierr);
+  PetscCall(MatSetValues(C,nrows,rows,ncols,cols,v,INSERT_VALUES));
+  PetscCall(ISRestoreIndices(isrows,&rows));
+  PetscCall(ISRestoreIndices(iscols,&cols));
+  PetscCall(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
+  PetscCall(ISDestroy(&isrows));
+  PetscCall(ISDestroy(&iscols));
 
   /* Test MatView(), MatDuplicate() and out-of-place MatConvert() */
-  ierr = MatDuplicate(C,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+  PetscCall(MatDuplicate(C,MAT_COPY_VALUES,&B));
   if (mats_view) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Duplicated C:\n");CHKERRQ(ierr);
-    ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Duplicated C:\n"));
+    PetscCall(MatView(B,PETSC_VIEWER_STDOUT_WORLD));
   }
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = MatConvert(C,MATMPIDENSE,MAT_INITIAL_MATRIX,&Cdense);CHKERRQ(ierr);
-  ierr = MatMultEqual(C,Cdense,5,&flg);CHKERRQ(ierr);
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Cdense != C. MatConvert() fails");
+  PetscCall(MatDestroy(&B));
+  PetscCall(MatConvert(C,MATMPIDENSE,MAT_INITIAL_MATRIX,&Cdense));
+  PetscCall(MatMultEqual(C,Cdense,5,&flg));
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Cdense != C. MatConvert() fails");
 
   /* Test MatNorm() */
-  ierr = MatNorm(C,NORM_1,&Cnorm);CHKERRQ(ierr);
+  PetscCall(MatNorm(C,NORM_1,&Cnorm));
 
   /* Test MatTranspose(), MatZeroEntries() and MatGetDiagonal() */
-  ierr = MatTranspose(C,MAT_INITIAL_MATRIX,&Ct);CHKERRQ(ierr);
-  ierr = MatConjugate(Ct);CHKERRQ(ierr);
+  PetscCall(MatTranspose(C,MAT_INITIAL_MATRIX,&Ct));
+  PetscCall(MatConjugate(Ct));
   if (mats_view) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"C's Transpose Conjugate:\n");CHKERRQ(ierr);
-    ierr = MatView(Ct,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"C's Transpose Conjugate:\n"));
+    PetscCall(MatView(Ct,PETSC_VIEWER_STDOUT_WORLD));
   }
-  ierr = MatZeroEntries(Ct);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,&d);CHKERRQ(ierr);
-  ierr = VecSetSizes(d,m>n ? n : m,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(d);CHKERRQ(ierr);
-  ierr = MatGetDiagonal(C,d);CHKERRQ(ierr);
+  PetscCall(MatZeroEntries(Ct));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&d));
+  PetscCall(VecSetSizes(d,m>n ? n : m,PETSC_DECIDE));
+  PetscCall(VecSetFromOptions(d));
+  PetscCall(MatGetDiagonal(C,d));
   if (mats_view) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Diagonal of C:\n");CHKERRQ(ierr);
-    ierr = VecView(d,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Diagonal of C:\n"));
+    PetscCall(VecView(d,PETSC_VIEWER_STDOUT_WORLD));
   }
   if (m>n) {
-    ierr = MatDiagonalScale(C,NULL,d);CHKERRQ(ierr);
+    PetscCall(MatDiagonalScale(C,NULL,d));
   } else {
-    ierr = MatDiagonalScale(C,d,NULL);CHKERRQ(ierr);
+    PetscCall(MatDiagonalScale(C,d,NULL));
   }
   if (mats_view) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Diagonal Scaled C:\n");CHKERRQ(ierr);
-    ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Diagonal Scaled C:\n"));
+    PetscCall(MatView(C,PETSC_VIEWER_STDOUT_WORLD));
   }
 
   /* Test MatAXPY(), MatAYPX() and in-place MatConvert() */
-  ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = MatSetType(B,MATELEMENTAL);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(B);CHKERRQ(ierr);
-  ierr = MatSetUp(B);CHKERRQ(ierr);
-  ierr = MatGetOwnershipIS(B,&isrows,&iscols);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(isrows,&nrows);CHKERRQ(ierr);
-  ierr = ISGetIndices(isrows,&rows);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(iscols,&ncols);CHKERRQ(ierr);
-  ierr = ISGetIndices(iscols,&cols);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&B));
+  PetscCall(MatSetSizes(B,m,n,PETSC_DECIDE,PETSC_DECIDE));
+  PetscCall(MatSetType(B,MATELEMENTAL));
+  PetscCall(MatSetFromOptions(B));
+  PetscCall(MatSetUp(B));
+  PetscCall(MatGetOwnershipIS(B,&isrows,&iscols));
+  PetscCall(ISGetLocalSize(isrows,&nrows));
+  PetscCall(ISGetIndices(isrows,&rows));
+  PetscCall(ISGetLocalSize(iscols,&ncols));
+  PetscCall(ISGetIndices(iscols,&cols));
   for (i=0; i<nrows; i++) {
     for (j=0; j<ncols; j++) {
       v[i*ncols+j] = (PetscReal)(1000*rows[i]+cols[j]);
     }
   }
-  ierr = MatSetValues(B,nrows,rows,ncols,cols,v,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = PetscFree(v);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(isrows,&rows);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(iscols,&cols);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAXPY(B,2.5,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatAYPX(B,3.75,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatConvert(B,MATDENSE,MAT_INPLACE_MATRIX,&B);CHKERRQ(ierr);
+  PetscCall(MatSetValues(B,nrows,rows,ncols,cols,v,INSERT_VALUES));
+  PetscCall(PetscFree(v));
+  PetscCall(ISRestoreIndices(isrows,&rows));
+  PetscCall(ISRestoreIndices(iscols,&cols));
+  PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAXPY(B,2.5,C,SAME_NONZERO_PATTERN));
+  PetscCall(MatAYPX(B,3.75,C,SAME_NONZERO_PATTERN));
+  PetscCall(MatConvert(B,MATDENSE,MAT_INPLACE_MATRIX,&B));
   if (mats_view) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"B after MatAXPY and MatAYPX:\n");CHKERRQ(ierr);
-    ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"B after MatAXPY and MatAYPX:\n"));
+    PetscCall(MatView(B,PETSC_VIEWER_STDOUT_WORLD));
   }
-  ierr = ISDestroy(&isrows);CHKERRQ(ierr);
-  ierr = ISDestroy(&iscols);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  PetscCall(ISDestroy(&isrows));
+  PetscCall(ISDestroy(&iscols));
+  PetscCall(MatDestroy(&B));
 
   /* Test MatMatTransposeMult(): B = C*C^T */
-  ierr = MatMatTransposeMult(C,C,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&B);CHKERRQ(ierr);
-  ierr = MatScale(C,2.0);CHKERRQ(ierr);
-  ierr = MatMatTransposeMult(C,C,MAT_REUSE_MATRIX,PETSC_DEFAULT,&B);CHKERRQ(ierr);
-  ierr = MatMatTransposeMultEqual(C,C,B,10,&flg);CHKERRQ(ierr);
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MatMatTransposeMult: B != C*B^T");
+  PetscCall(MatMatTransposeMult(C,C,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&B));
+  PetscCall(MatScale(C,2.0));
+  PetscCall(MatMatTransposeMult(C,C,MAT_REUSE_MATRIX,PETSC_DEFAULT,&B));
+  PetscCall(MatMatTransposeMultEqual(C,C,B,10,&flg));
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MatMatTransposeMult: B != C*B^T");
 
   if (mats_view) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"C MatMatTransposeMult C:\n");CHKERRQ(ierr);
-    ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"C MatMatTransposeMult C:\n"));
+    PetscCall(MatView(B,PETSC_VIEWER_STDOUT_WORLD));
   }
 
-  ierr = MatDestroy(&Cdense);CHKERRQ(ierr);
-  ierr = PetscFree(v);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
-  ierr = MatDestroy(&Ct);CHKERRQ(ierr);
-  ierr = VecDestroy(&d);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(MatDestroy(&Cdense));
+  PetscCall(PetscFree(v));
+  PetscCall(MatDestroy(&B));
+  PetscCall(MatDestroy(&C));
+  PetscCall(MatDestroy(&Ct));
+  PetscCall(VecDestroy(&d));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

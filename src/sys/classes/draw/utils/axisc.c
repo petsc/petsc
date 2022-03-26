@@ -27,16 +27,15 @@ PetscClassId PETSC_DRAWAXIS_CLASSID = 0;
 PetscErrorCode  PetscDrawAxisCreate(PetscDraw draw,PetscDrawAxis *axis)
 {
   PetscDrawAxis  ad;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscValidPointer(axis,2);
 
-  ierr = PetscHeaderCreate(ad,PETSC_DRAWAXIS_CLASSID,"DrawAxis","Draw Axis","Draw",PetscObjectComm((PetscObject)draw),PetscDrawAxisDestroy,NULL);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)draw,(PetscObject)ad);CHKERRQ(ierr);
+  PetscCall(PetscHeaderCreate(ad,PETSC_DRAWAXIS_CLASSID,"DrawAxis","Draw Axis","Draw",PetscObjectComm((PetscObject)draw),PetscDrawAxisDestroy,NULL));
+  PetscCall(PetscLogObjectParent((PetscObject)draw,(PetscObject)ad));
 
-  ierr = PetscObjectReference((PetscObject)draw);CHKERRQ(ierr);
+  PetscCall(PetscObjectReference((PetscObject)draw));
   ad->win = draw;
 
   ad->xticks    = PetscADefTicks;
@@ -68,18 +67,16 @@ PetscErrorCode  PetscDrawAxisCreate(PetscDraw draw,PetscDrawAxis *axis)
 @*/
 PetscErrorCode  PetscDrawAxisDestroy(PetscDrawAxis *axis)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (!*axis) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*axis,PETSC_DRAWAXIS_CLASSID,1);
   if (--((PetscObject)(*axis))->refct > 0) {*axis = NULL; PetscFunctionReturn(0);}
 
-  ierr = PetscFree((*axis)->toplabel);CHKERRQ(ierr);
-  ierr = PetscFree((*axis)->xlabel);CHKERRQ(ierr);
-  ierr = PetscFree((*axis)->ylabel);CHKERRQ(ierr);
-  ierr = PetscDrawDestroy(&(*axis)->win);CHKERRQ(ierr);
-  ierr = PetscHeaderDestroy(axis);CHKERRQ(ierr);
+  PetscCall(PetscFree((*axis)->toplabel));
+  PetscCall(PetscFree((*axis)->xlabel));
+  PetscCall(PetscFree((*axis)->ylabel));
+  PetscCall(PetscDrawDestroy(&(*axis)->win));
+  PetscCall(PetscHeaderDestroy(axis));
   PetscFunctionReturn(0);
 }
 
@@ -130,16 +127,14 @@ PetscErrorCode  PetscDrawAxisSetColors(PetscDrawAxis axis,int ac,int tc,int cc)
 @*/
 PetscErrorCode  PetscDrawAxisSetLabels(PetscDrawAxis axis,const char top[],const char xlabel[],const char ylabel[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(axis,PETSC_DRAWAXIS_CLASSID,1);
-  ierr = PetscFree(axis->xlabel);CHKERRQ(ierr);
-  ierr = PetscFree(axis->ylabel);CHKERRQ(ierr);
-  ierr = PetscFree(axis->toplabel);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(xlabel,&axis->xlabel);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(ylabel,&axis->ylabel);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(top,&axis->toplabel);CHKERRQ(ierr);
+  PetscCall(PetscFree(axis->xlabel));
+  PetscCall(PetscFree(axis->ylabel));
+  PetscCall(PetscFree(axis->toplabel));
+  PetscCall(PetscStrallocpy(xlabel,&axis->xlabel));
+  PetscCall(PetscStrallocpy(ylabel,&axis->ylabel));
+  PetscCall(PetscStrallocpy(top,&axis->toplabel));
   PetscFunctionReturn(0);
 }
 
@@ -163,8 +158,6 @@ PetscErrorCode  PetscDrawAxisSetLabels(PetscDrawAxis axis,const char top[],const
 @*/
 PetscErrorCode  PetscDrawAxisSetLimits(PetscDrawAxis axis,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(axis,PETSC_DRAWAXIS_CLASSID,1);
   if (axis->hold) PetscFunctionReturn(0);
@@ -172,7 +165,7 @@ PetscErrorCode  PetscDrawAxisSetLimits(PetscDrawAxis axis,PetscReal xmin,PetscRe
   axis->xhigh= xmax;
   axis->ylow = ymin;
   axis->yhigh= ymax;
-  ierr = PetscOptionsHasName(((PetscObject)axis)->options,((PetscObject)axis)->prefix,"-drawaxis_hold",&axis->hold);CHKERRQ(ierr);
+  PetscCall(PetscOptionsHasName(((PetscObject)axis)->options,((PetscObject)axis)->prefix,"-drawaxis_hold",&axis->hold));
   PetscFunctionReturn(0);
 }
 
@@ -263,9 +256,9 @@ PetscErrorCode  PetscDrawAxisDraw(PetscDrawAxis axis)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(axis,PETSC_DRAWAXIS_CLASSID,1);
-  ierr = PetscDrawIsNull(axis->win,&isnull);CHKERRQ(ierr);
+  PetscCall(PetscDrawIsNull(axis->win,&isnull));
   if (isnull) PetscFunctionReturn(0);
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)axis),&rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)axis),&rank));
 
   draw = axis->win;
 
@@ -273,12 +266,12 @@ PetscErrorCode  PetscDrawAxisDraw(PetscDrawAxis axis)
   if (axis->xlow == axis->xhigh) {axis->xlow -= .5; axis->xhigh += .5;}
   if (axis->ylow == axis->yhigh) {axis->ylow -= .5; axis->yhigh += .5;}
 
-  ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
+  ierr = PetscDrawCollectiveBegin(draw);PetscCall(ierr);
   if (rank) goto finally;
 
   /* get cannonical string size */
-  ierr = PetscDrawSetCoordinates(draw,0,0,1,1);CHKERRQ(ierr);
-  ierr = PetscDrawStringGetSize(draw,&tw,&th);CHKERRQ(ierr);
+  PetscCall(PetscDrawSetCoordinates(draw,0,0,1,1));
+  PetscCall(PetscDrawStringGetSize(draw,&tw,&th));
   /* lower spacing */
   if (axis->xlabelstr) dyl += 1.5*th;
   if (axis->xlabel)    dyl += 1.5*th;
@@ -297,29 +290,29 @@ PetscErrorCode  PetscDrawAxisDraw(PetscDrawAxis axis)
   xr = (dxl*axis->xhigh + dxr*axis->xlow - axis->xhigh) / (dxl + dxr - 1);
   yl = (dyl*axis->yhigh + dyr*axis->ylow - axis->ylow)  / (dyl + dyr - 1);
   yr = (dyl*axis->yhigh + dyr*axis->ylow - axis->yhigh) / (dyl + dyr - 1);
-  ierr = PetscDrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
-  ierr = PetscDrawStringGetSize(draw,&tw,&th);CHKERRQ(ierr);
+  PetscCall(PetscDrawSetCoordinates(draw,xl,yl,xr,yr));
+  PetscCall(PetscDrawStringGetSize(draw,&tw,&th));
 
   /* PetscDraw the axis lines */
-  ierr = PetscDrawLine(draw,axis->xlow,axis->ylow,axis->xhigh,axis->ylow,ac);CHKERRQ(ierr);
-  ierr = PetscDrawLine(draw,axis->xlow,axis->ylow,axis->xlow,axis->yhigh,ac);CHKERRQ(ierr);
-  ierr = PetscDrawLine(draw,axis->xlow,axis->yhigh,axis->xhigh,axis->yhigh,ac);CHKERRQ(ierr);
-  ierr = PetscDrawLine(draw,axis->xhigh,axis->ylow,axis->xhigh,axis->yhigh,ac);CHKERRQ(ierr);
+  PetscCall(PetscDrawLine(draw,axis->xlow,axis->ylow,axis->xhigh,axis->ylow,ac));
+  PetscCall(PetscDrawLine(draw,axis->xlow,axis->ylow,axis->xlow,axis->yhigh,ac));
+  PetscCall(PetscDrawLine(draw,axis->xlow,axis->yhigh,axis->xhigh,axis->yhigh,ac));
+  PetscCall(PetscDrawLine(draw,axis->xhigh,axis->ylow,axis->xhigh,axis->yhigh,ac));
 
   /* PetscDraw the top label */
   if (axis->toplabel) {
     PetscReal x = (axis->xlow + axis->xhigh)/2, y = axis->yhigh + 0.5*th;
-    ierr = PetscDrawStringCentered(draw,x,y,cc,axis->toplabel);CHKERRQ(ierr);
+    PetscCall(PetscDrawStringCentered(draw,x,y,cc,axis->toplabel));
   }
 
   /* PetscDraw the X ticks and labels */
   if (axis->xticks) {
     numx = (int)(.15*(axis->xhigh-axis->xlow)/tw); numx = PetscClipInterval(numx,2,6);
-    ierr = (*axis->xticks)(axis->xlow,axis->xhigh,numx,&ntick,tickloc,PETSC_DRAW_AXIS_MAX_SEGMENTS);CHKERRQ(ierr);
+    PetscCall((*axis->xticks)(axis->xlow,axis->xhigh,numx,&ntick,tickloc,PETSC_DRAW_AXIS_MAX_SEGMENTS));
     /* PetscDraw in tick marks */
     for (i=0; i<ntick; i++) {
-      ierr = PetscDrawLine(draw,tickloc[i],axis->ylow,tickloc[i],axis->ylow+.5*th,tc);CHKERRQ(ierr);
-      ierr = PetscDrawLine(draw,tickloc[i],axis->yhigh,tickloc[i],axis->yhigh-.5*th,tc);CHKERRQ(ierr);
+      PetscCall(PetscDrawLine(draw,tickloc[i],axis->ylow,tickloc[i],axis->ylow+.5*th,tc));
+      PetscCall(PetscDrawLine(draw,tickloc[i],axis->yhigh,tickloc[i],axis->yhigh-.5*th,tc));
     }
     /* label ticks */
     if (axis->xlabelstr) {
@@ -327,25 +320,25 @@ PetscErrorCode  PetscDrawAxisDraw(PetscDrawAxis axis)
         if (i < ntick - 1) sep = tickloc[i+1] - tickloc[i];
         else if (i > 0)    sep = tickloc[i]   - tickloc[i-1];
         else               sep = 0.0;
-        ierr = (*axis->xlabelstr)(tickloc[i],sep,&p);CHKERRQ(ierr);
-        ierr = PetscDrawStringCentered(draw,tickloc[i],axis->ylow-1.5*th,cc,p);CHKERRQ(ierr);
+        PetscCall((*axis->xlabelstr)(tickloc[i],sep,&p));
+        PetscCall(PetscDrawStringCentered(draw,tickloc[i],axis->ylow-1.5*th,cc,p));
       }
     }
   }
   if (axis->xlabel) {
     PetscReal x = (axis->xlow + axis->xhigh)/2, y = axis->ylow - 1.5*th;
     if (axis->xlabelstr) y -= 1.5*th;
-    ierr = PetscDrawStringCentered(draw,x,y,cc,axis->xlabel);CHKERRQ(ierr);
+    PetscCall(PetscDrawStringCentered(draw,x,y,cc,axis->xlabel));
   }
 
   /* PetscDraw the Y ticks and labels */
   if (axis->yticks) {
     numy = (int)(.50*(axis->yhigh-axis->ylow)/th); numy = PetscClipInterval(numy,2,6);
-    ierr = (*axis->yticks)(axis->ylow,axis->yhigh,numy,&ntick,tickloc,PETSC_DRAW_AXIS_MAX_SEGMENTS);CHKERRQ(ierr);
+    PetscCall((*axis->yticks)(axis->ylow,axis->yhigh,numy,&ntick,tickloc,PETSC_DRAW_AXIS_MAX_SEGMENTS));
     /* PetscDraw in tick marks */
     for (i=0; i<ntick; i++) {
-      ierr = PetscDrawLine(draw,axis->xlow,tickloc[i],axis->xlow+.5*tw,tickloc[i],tc);CHKERRQ(ierr);
-      ierr = PetscDrawLine(draw,axis->xhigh,tickloc[i],axis->xhigh-.5*tw,tickloc[i],tc);CHKERRQ(ierr);
+      PetscCall(PetscDrawLine(draw,axis->xlow,tickloc[i],axis->xlow+.5*tw,tickloc[i],tc));
+      PetscCall(PetscDrawLine(draw,axis->xhigh,tickloc[i],axis->xhigh-.5*tw,tickloc[i],tc));
     }
     /* label ticks */
     if (axis->ylabelstr) {
@@ -353,24 +346,24 @@ PetscErrorCode  PetscDrawAxisDraw(PetscDrawAxis axis)
         if (i < ntick - 1) sep = tickloc[i+1] - tickloc[i];
         else if (i > 0)    sep = tickloc[i]   - tickloc[i-1];
         else               sep = 0.0;
-        ierr = (*axis->ylabelstr)(tickloc[i],sep,&p);CHKERRQ(ierr);
-        ierr = PetscStrlen(p,&len);CHKERRQ(ierr); ytlen = PetscMax(ytlen,len);
-        ierr = PetscDrawString(draw,axis->xlow-(len+.5)*tw,tickloc[i]-.5*th,cc,p);CHKERRQ(ierr);
+        PetscCall((*axis->ylabelstr)(tickloc[i],sep,&p));
+        PetscCall(PetscStrlen(p,&len)); ytlen = PetscMax(ytlen,len);
+        PetscCall(PetscDrawString(draw,axis->xlow-(len+.5)*tw,tickloc[i]-.5*th,cc,p));
       }
     }
   }
   if (axis->ylabel) {
     PetscReal x = axis->xlow - 2.0*tw, y = (axis->ylow + axis->yhigh)/2;
     if (axis->ylabelstr) x -= (ytlen+.5)*tw;
-    ierr = PetscStrlen(axis->ylabel,&len);CHKERRQ(ierr);
-    ierr = PetscDrawStringVertical(draw,x,y+len*th/2,cc,axis->ylabel);CHKERRQ(ierr);
+    PetscCall(PetscStrlen(axis->ylabel,&len));
+    PetscCall(PetscDrawStringVertical(draw,x,y+len*th/2,cc,axis->ylabel));
   }
 
-  ierr = PetscDrawGetCoordinates(draw,&coors[0],&coors[1],&coors[2],&coors[3]);CHKERRQ(ierr);
+  PetscCall(PetscDrawGetCoordinates(draw,&coors[0],&coors[1],&coors[2],&coors[3]));
 finally:
-  ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
-  ierr = MPI_Bcast(coors,4,MPIU_REAL,0,PetscObjectComm((PetscObject)draw));CHKERRMPI(ierr);
-  ierr = PetscDrawSetCoordinates(draw,coors[0],coors[1],coors[2],coors[3]);CHKERRQ(ierr);
+  ierr = PetscDrawCollectiveEnd(draw);PetscCall(ierr);
+  PetscCallMPI(MPI_Bcast(coors,4,MPIU_REAL,0,PetscObjectComm((PetscObject)draw)));
+  PetscCall(PetscDrawSetCoordinates(draw,coors[0],coors[1],coors[2],coors[3]));
   PetscFunctionReturn(0);
 }
 
@@ -379,21 +372,20 @@ finally:
 */
 PetscErrorCode PetscStripe0(char *buf)
 {
-  PetscErrorCode ierr;
   size_t         n;
   PetscBool      flg;
   char           *str;
 
   PetscFunctionBegin;
-  ierr = PetscStrlen(buf,&n);CHKERRQ(ierr);
-  ierr = PetscStrendswith(buf,"e00",&flg);CHKERRQ(ierr);
+  PetscCall(PetscStrlen(buf,&n));
+  PetscCall(PetscStrendswith(buf,"e00",&flg));
   if (flg) buf[n-3] = 0;
-  ierr = PetscStrstr(buf,"e0",&str);CHKERRQ(ierr);
+  PetscCall(PetscStrstr(buf,"e0",&str));
   if (str) {
     buf[n-2] = buf[n-1];
     buf[n-1] = 0;
   }
-  ierr = PetscStrstr(buf,"e-0",&str);CHKERRQ(ierr);
+  PetscCall(PetscStrstr(buf,"e-0",&str));
   if (str) {
     buf[n-2] = buf[n-1];
     buf[n-1] = 0;
@@ -406,11 +398,10 @@ PetscErrorCode PetscStripe0(char *buf)
 */
 PetscErrorCode PetscStripAllZeros(char *buf)
 {
-  PetscErrorCode ierr;
   size_t         i,n;
 
   PetscFunctionBegin;
-  ierr = PetscStrlen(buf,&n);CHKERRQ(ierr);
+  PetscCall(PetscStrlen(buf,&n));
   if (buf[0] != '.') PetscFunctionReturn(0);
   for (i=1; i<n; i++) {
     if (buf[i] != '0') PetscFunctionReturn(0);
@@ -425,16 +416,15 @@ PetscErrorCode PetscStripAllZeros(char *buf)
 */
 PetscErrorCode PetscStripTrailingZeros(char *buf)
 {
-  PetscErrorCode ierr;
   char           *found;
   size_t         i,n,m = PETSC_MAX_INT;
 
   PetscFunctionBegin;
   /* if there is an e in string DO NOT strip trailing zeros */
-  ierr = PetscStrchr(buf,'e',&found);CHKERRQ(ierr);
+  PetscCall(PetscStrchr(buf,'e',&found));
   if (found) PetscFunctionReturn(0);
 
-  ierr = PetscStrlen(buf,&n);CHKERRQ(ierr);
+  PetscCall(PetscStrlen(buf,&n));
   /* locate decimal point */
   for (i=0; i<n; i++) {
     if (buf[i] == '.') {m = i; break;}
@@ -454,11 +444,10 @@ PetscErrorCode PetscStripTrailingZeros(char *buf)
 */
 PetscErrorCode PetscStripInitialZero(char *buf)
 {
-  PetscErrorCode ierr;
   size_t         i,n;
 
   PetscFunctionBegin;
-  ierr = PetscStrlen(buf,&n);CHKERRQ(ierr);
+  PetscCall(PetscStrlen(buf,&n));
   if (buf[0] == '0') {
     for (i=0; i<n; i++) buf[i] = buf[i+1];
   } else if (buf[0] == '-' && buf[1] == '0') {
@@ -472,16 +461,15 @@ PetscErrorCode PetscStripInitialZero(char *buf)
 */
 PetscErrorCode PetscStripZeros(char *buf)
 {
-  PetscErrorCode ierr;
   size_t         i,j,n;
 
   PetscFunctionBegin;
-  ierr = PetscStrlen(buf,&n);CHKERRQ(ierr);
+  PetscCall(PetscStrlen(buf,&n));
   if (n<5) PetscFunctionReturn(0);
   for (i=1; i<n-1; i++) {
     if (buf[i] == 'e' && buf[i-1] == '0') {
       for (j=i; j<n+1; j++) buf[j-1] = buf[j];
-      ierr = PetscStripZeros(buf);CHKERRQ(ierr);
+      PetscCall(PetscStripZeros(buf));
       PetscFunctionReturn(0);
     }
   }
@@ -493,11 +481,10 @@ PetscErrorCode PetscStripZeros(char *buf)
 */
 PetscErrorCode PetscStripZerosPlus(char *buf)
 {
-  PetscErrorCode ierr;
   size_t         i,j,n;
 
   PetscFunctionBegin;
-  ierr = PetscStrlen(buf,&n);CHKERRQ(ierr);
+  PetscCall(PetscStrlen(buf,&n));
   if (n<5) PetscFunctionReturn(0);
   for (i=1; i<n-2; i++) {
     if (buf[i] == '+') {

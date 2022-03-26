@@ -7,36 +7,35 @@ arguments are\n\
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       n = 15,i;
   PetscScalar    v;
   Vec            x,y;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   if (n < 5) n = 5;
 
   /* create two vectors */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&y);CHKERRQ(ierr);
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,n,&x));
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,n,&y));
 
   for (i=0; i<n; i++) {
     v    = ((PetscReal)i) + 1.0/(((PetscReal)i) + .35);
-    ierr = VecSetValues(x,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(VecSetValues(x,1,&i,&v,INSERT_VALUES));
     v   += 1.375547826473644376;
-    ierr = VecSetValues(y,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(VecSetValues(y,1,&i,&v,INSERT_VALUES));
   }
-  ierr = VecAssemblyBegin(y);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(y);CHKERRQ(ierr);
+  PetscCall(VecAssemblyBegin(y));
+  PetscCall(VecAssemblyEnd(y));
 
-  ierr = VecDot(x,y,&v);CHKERRQ(ierr);
-  ierr = PetscFPrintf(PETSC_COMM_WORLD,stdout,"Vector inner product %16.12e\n",(double)PetscRealPart(v));CHKERRQ(ierr);
+  PetscCall(VecDot(x,y,&v));
+  PetscCall(PetscFPrintf(PETSC_COMM_WORLD,stdout,"Vector inner product %16.12e\n",(double)PetscRealPart(v)));
 
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&y));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

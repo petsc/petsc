@@ -13,21 +13,20 @@ static PetscErrorCode TSStep_Euler(TS ts)
   Vec            solution = ts->vec_sol,update = euler->update;
   PetscBool      stageok,accept = PETSC_TRUE;
   PetscReal      next_time_step = ts->time_step;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TSPreStage(ts,ts->ptime);CHKERRQ(ierr);
-  ierr = TSComputeRHSFunction(ts,ts->ptime,solution,update);CHKERRQ(ierr);
-  ierr = VecAYPX(update,ts->time_step,solution);CHKERRQ(ierr);
-  ierr = TSPostStage(ts,ts->ptime,0,&solution);CHKERRQ(ierr);
-  ierr = TSAdaptCheckStage(ts->adapt,ts,ts->ptime,solution,&stageok);CHKERRQ(ierr);
+  PetscCall(TSPreStage(ts,ts->ptime));
+  PetscCall(TSComputeRHSFunction(ts,ts->ptime,solution,update));
+  PetscCall(VecAYPX(update,ts->time_step,solution));
+  PetscCall(TSPostStage(ts,ts->ptime,0,&solution));
+  PetscCall(TSAdaptCheckStage(ts->adapt,ts,ts->ptime,solution,&stageok));
   if (!stageok) {ts->reason = TS_DIVERGED_STEP_REJECTED; PetscFunctionReturn(0);}
-  ierr = TSFunctionDomainError(ts,ts->ptime+ts->time_step,update,&stageok);CHKERRQ(ierr);
+  PetscCall(TSFunctionDomainError(ts,ts->ptime+ts->time_step,update,&stageok));
   if (!stageok) {ts->reason = TS_DIVERGED_STEP_REJECTED; PetscFunctionReturn(0);}
 
-  ierr = TSAdaptChoose(ts->adapt,ts,ts->time_step,NULL,&next_time_step,&accept);CHKERRQ(ierr);
+  PetscCall(TSAdaptChoose(ts->adapt,ts,ts->time_step,NULL,&next_time_step,&accept));
   if (!accept) {ts->reason = TS_DIVERGED_STEP_REJECTED; PetscFunctionReturn(0);}
-  ierr = VecCopy(update,solution);CHKERRQ(ierr);
+  PetscCall(VecCopy(update,solution));
 
   ts->ptime += ts->time_step;
   ts->time_step = next_time_step;
@@ -38,33 +37,29 @@ static PetscErrorCode TSStep_Euler(TS ts)
 static PetscErrorCode TSSetUp_Euler(TS ts)
 {
   TS_Euler       *euler = (TS_Euler*)ts->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TSCheckImplicitTerm(ts);CHKERRQ(ierr);
-  ierr = VecDuplicate(ts->vec_sol,&euler->update);CHKERRQ(ierr);
-  ierr = TSGetAdapt(ts,&ts->adapt);CHKERRQ(ierr);
-  ierr = TSAdaptCandidatesClear(ts->adapt);CHKERRQ(ierr);
+  PetscCall(TSCheckImplicitTerm(ts));
+  PetscCall(VecDuplicate(ts->vec_sol,&euler->update));
+  PetscCall(TSGetAdapt(ts,&ts->adapt));
+  PetscCall(TSAdaptCandidatesClear(ts->adapt));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode TSReset_Euler(TS ts)
 {
   TS_Euler       *euler = (TS_Euler*)ts->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecDestroy(&euler->update);CHKERRQ(ierr);
+  PetscCall(VecDestroy(&euler->update));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode TSDestroy_Euler(TS ts)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = TSReset_Euler(ts);CHKERRQ(ierr);
-  ierr = PetscFree(ts->data);CHKERRQ(ierr);
+  PetscCall(TSReset_Euler(ts));
+  PetscCall(PetscFree(ts->data));
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
@@ -86,11 +81,10 @@ static PetscErrorCode TSInterpolate_Euler(TS ts,PetscReal t,Vec X)
   TS_Euler       *euler = (TS_Euler*)ts->data;
   Vec            update = euler->update;
   PetscReal      alpha = (ts->ptime - t)/ts->time_step;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecWAXPY(X,-ts->time_step,update,ts->vec_sol);CHKERRQ(ierr);
-  ierr = VecAXPBY(X,1.0-alpha,alpha,ts->vec_sol);CHKERRQ(ierr);
+  PetscCall(VecWAXPY(X,-ts->time_step,update,ts->vec_sol));
+  PetscCall(VecAXPBY(X,1.0-alpha,alpha,ts->vec_sol));
   PetscFunctionReturn(0);
 }
 
@@ -114,10 +108,9 @@ M*/
 PETSC_EXTERN PetscErrorCode TSCreate_Euler(TS ts)
 {
   TS_Euler       *euler;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(ts,&euler);CHKERRQ(ierr);
+  PetscCall(PetscNewLog(ts,&euler));
   ts->data = (void*)euler;
 
   ts->ops->setup           = TSSetUp_Euler;

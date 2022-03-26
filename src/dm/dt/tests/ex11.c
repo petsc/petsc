@@ -4,13 +4,12 @@ static char help[] = "Test memory allocation of PetscFV arrays used in PetscFVCo
 
 int main(int argc, char **argv)
 {
-    PetscErrorCode ierr;
     PetscFV        fvm;
     PetscInt       dim, numFaces;
     PetscScalar    *dx, *grad;
 
     PetscFunctionBeginUser;
-    ierr = PetscInitialize(&argc, &argv, PETSC_NULL, help); if (ierr) return ierr;
+    PetscCall(PetscInitialize(&argc, &argv, PETSC_NULL, help));
 
     /*
       Working with a 2D mesh, made of triangles, and using the 2nd neighborhood
@@ -19,17 +18,17 @@ int main(int argc, char **argv)
       */
     dim = 2;
     numFaces = 9;
-    ierr = PetscMalloc2(dim * numFaces, &dx, dim * numFaces, &grad);CHKERRQ(ierr);
-    ierr = PetscFVCreate(PETSC_COMM_WORLD, &fvm);CHKERRQ(ierr);
-    ierr = PetscFVSetType(fvm, PETSCFVLEASTSQUARES);CHKERRQ(ierr);
-    ierr = PetscFVLeastSquaresSetMaxFaces(fvm, numFaces);CHKERRQ(ierr);
+    PetscCall(PetscMalloc2(dim * numFaces, &dx, dim * numFaces, &grad));
+    PetscCall(PetscFVCreate(PETSC_COMM_WORLD, &fvm));
+    PetscCall(PetscFVSetType(fvm, PETSCFVLEASTSQUARES));
+    PetscCall(PetscFVLeastSquaresSetMaxFaces(fvm, numFaces));
 
     /* Issue here */
-    ierr = PetscFVComputeGradient(fvm, numFaces, dx, grad);CHKERRQ(ierr);
+    PetscCall(PetscFVComputeGradient(fvm, numFaces, dx, grad));
 
-    ierr = PetscFVDestroy(&fvm);CHKERRQ(ierr);
-    ierr = PetscFree2(dx, grad);CHKERRQ(ierr);
-    ierr = PetscFinalize();CHKERRQ(ierr);
+    PetscCall(PetscFVDestroy(&fvm));
+    PetscCall(PetscFree2(dx, grad));
+    PetscCall(PetscFinalize());
     PetscFunctionReturn(0);
 }
 

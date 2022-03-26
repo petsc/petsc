@@ -16,50 +16,49 @@ int main(int argc,char **args)
   Vec            b;
   MatType        mtype = MATSEQBAIJ;
   Mat            A,*B;
-  PetscErrorCode ierr;
   PetscInt       start=0;
   PetscInt       m;
   IS             isrow,iscol;
   PetscBool      flg;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetString(NULL,NULL,"-fin",fin,sizeof(fin),&flg);CHKERRQ(ierr);
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -fin option");
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,fin,FILE_MODE_READ,&fdin);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-fin",fin,sizeof(fin),&flg));
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -fin option");
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_SELF,fin,FILE_MODE_READ,&fdin));
 
-  ierr = PetscOptionsGetString(NULL,NULL,"-fout",fout,sizeof(fout),&flg);CHKERRQ(ierr);
-  if (!flg) {ierr = PetscPrintf(PETSC_COMM_WORLD,"Writing submatrix to file : %s\n",fout);CHKERRQ(ierr);}
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,fout,FILE_MODE_WRITE,&fdout);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-fout",fout,sizeof(fout),&flg));
+  if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Writing submatrix to file : %s\n",fout));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_SELF,fout,FILE_MODE_WRITE,&fdout));
 
-  ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
-  ierr = MatSetType(A,mtype);CHKERRQ(ierr);
-  ierr = MatLoad(A,fdin);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&fdin);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_SELF,&A));
+  PetscCall(MatSetType(A,mtype));
+  PetscCall(MatLoad(A,fdin));
+  PetscCall(PetscViewerDestroy(&fdin));
 
-  ierr  = MatGetSize(A,&m,&m);CHKERRQ(ierr);
+  PetscCall(MatGetSize(A,&m,&m));
   m /= 2;
-  ierr  = PetscOptionsGetInt(NULL,NULL,"-start",&start,NULL);CHKERRQ(ierr);
-  ierr  = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-start",&start,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
 
-  ierr = ISCreateStride(PETSC_COMM_SELF,m,start,1,&isrow);CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF,m,start,1,&iscol);CHKERRQ(ierr);
-  ierr = MatCreateSubMatrices(A,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
-  ierr = MatView(B[0],fdout);CHKERRQ(ierr);
+  PetscCall(ISCreateStride(PETSC_COMM_SELF,m,start,1,&isrow));
+  PetscCall(ISCreateStride(PETSC_COMM_SELF,m,start,1,&iscol));
+  PetscCall(MatCreateSubMatrices(A,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&B));
+  PetscCall(MatView(B[0],fdout));
 
-  ierr = VecCreate(PETSC_COMM_SELF,&b);CHKERRQ(ierr);
-  ierr = VecSetSizes(b,PETSC_DECIDE,m);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(b);CHKERRQ(ierr);
-  ierr = MatView(B[0],fdout);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&fdout);CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_SELF,&b));
+  PetscCall(VecSetSizes(b,PETSC_DECIDE,m));
+  PetscCall(VecSetFromOptions(b));
+  PetscCall(MatView(B[0],fdout));
+  PetscCall(PetscViewerDestroy(&fdout));
 
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&B[0]);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = PetscFree(B);CHKERRQ(ierr);
-  ierr = ISDestroy(&iscol);CHKERRQ(ierr);
-  ierr = ISDestroy(&isrow);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&B[0]));
+  PetscCall(VecDestroy(&b));
+  PetscCall(PetscFree(B));
+  PetscCall(ISDestroy(&iscol));
+  PetscCall(ISDestroy(&isrow));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST
@@ -69,4 +68,3 @@ int main(int argc,char **args)
       requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
 
 TEST*/
-

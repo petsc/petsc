@@ -21,125 +21,125 @@ int main(int argc, char **argv)
   PetscInt       dim;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, (char *) 0, help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc, &argv, (char *) 0, help));
   comm = PETSC_COMM_WORLD;
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","Test Options","none");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-test_read","Test reading from the HDF5 file","",PETSC_FALSE,&test_read,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-verbose","print the Vecs","",PETSC_FALSE,&verbose,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","Test Options","none");PetscCall(ierr);
+  PetscCall(PetscOptionsBool("-test_read","Test reading from the HDF5 file","",PETSC_FALSE,&test_read,NULL));
+  PetscCall(PetscOptionsBool("-verbose","print the Vecs","",PETSC_FALSE,&verbose,NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
-  ierr = DMCreate(comm, &dm);CHKERRQ(ierr);
-  ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMPlexDistributeSetDefault(dm, PETSC_FALSE);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  PetscCall(DMCreate(comm, &dm));
+  PetscCall(DMSetType(dm, DMPLEX));
+  PetscCall(DMPlexDistributeSetDefault(dm, PETSC_FALSE));
+  PetscCall(DMSetFromOptions(dm));
+  PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
+  PetscCall(DMGetDimension(dm, &dim));
   numDof[0] = dim;
-  ierr = DMSetNumFields(dm, numFields);CHKERRQ(ierr);
-  ierr = DMPlexCreateSection(dm, NULL, numComp, numDof, numBC, bcFields, bcPoints, NULL, NULL, &section);CHKERRQ(ierr);
-  ierr = DMSetLocalSection(dm, section);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
-  ierr = DMSetUseNatural(dm, PETSC_TRUE);CHKERRQ(ierr);
+  PetscCall(DMSetNumFields(dm, numFields));
+  PetscCall(DMPlexCreateSection(dm, NULL, numComp, numDof, numBC, bcFields, bcPoints, NULL, NULL, &section));
+  PetscCall(DMSetLocalSection(dm, section));
+  PetscCall(PetscSectionDestroy(&section));
+  PetscCall(DMSetUseNatural(dm, PETSC_TRUE));
   {
     PetscPartitioner part;
     DM               dmDist;
 
-    ierr = DMPlexGetPartitioner(dm,&part);CHKERRQ(ierr);
-    ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
-    ierr = DMPlexDistribute(dm, 0, NULL, &dmDist);CHKERRQ(ierr);
+    PetscCall(DMPlexGetPartitioner(dm,&part));
+    PetscCall(PetscPartitionerSetFromOptions(part));
+    PetscCall(DMPlexDistribute(dm, 0, NULL, &dmDist));
     if (dmDist) {
-      ierr = DMDestroy(&dm);CHKERRQ(ierr);
+      PetscCall(DMDestroy(&dm));
       dm   = dmDist;
     }
   }
 
-  ierr = DMCreateGlobalVector(dm, &v);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) v, "V");CHKERRQ(ierr);
-  ierr = DMGetCoordinates(dm, &coord);CHKERRQ(ierr);
-  ierr = VecCopy(coord, v);CHKERRQ(ierr);
+  PetscCall(DMCreateGlobalVector(dm, &v));
+  PetscCall(PetscObjectSetName((PetscObject) v, "V"));
+  PetscCall(DMGetCoordinates(dm, &coord));
+  PetscCall(VecCopy(coord, v));
 
   if (verbose) {
     PetscInt size, bs;
 
-    ierr = VecGetSize(v, &size);CHKERRQ(ierr);
-    ierr = VecGetBlockSize(v, &bs);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "==== original V in global ordering. size==%d\tblock size=%d\n", size, bs);CHKERRQ(ierr);
-    ierr = VecView(v, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    PetscCall(VecGetSize(v, &size));
+    PetscCall(VecGetBlockSize(v, &bs));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "==== original V in global ordering. size==%d\tblock size=%d\n", size, bs));
+    PetscCall(VecView(v, PETSC_VIEWER_STDOUT_WORLD));
   }
 
-  ierr = DMCreateGlobalVector(dm, &nv);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) nv, "NV");CHKERRQ(ierr);
-  ierr = DMPlexGlobalToNaturalBegin(dm, v, nv);CHKERRQ(ierr);
-  ierr = DMPlexGlobalToNaturalEnd(dm, v, nv);CHKERRQ(ierr);
+  PetscCall(DMCreateGlobalVector(dm, &nv));
+  PetscCall(PetscObjectSetName((PetscObject) nv, "NV"));
+  PetscCall(DMPlexGlobalToNaturalBegin(dm, v, nv));
+  PetscCall(DMPlexGlobalToNaturalEnd(dm, v, nv));
 
   if (verbose) {
     PetscInt size, bs;
 
-    ierr = VecGetSize(nv, &size);CHKERRQ(ierr);
-    ierr = VecGetBlockSize(nv, &bs);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "====  V in natural ordering. size==%d\tblock size=%d\n", size, bs);CHKERRQ(ierr);
-    ierr = VecView(nv, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    PetscCall(VecGetSize(nv, &size));
+    PetscCall(VecGetBlockSize(nv, &bs));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "====  V in natural ordering. size==%d\tblock size=%d\n", size, bs));
+    PetscCall(VecView(nv, PETSC_VIEWER_STDOUT_WORLD));
   }
 
-  ierr = VecViewFromOptions(v, NULL, "-global_vec_view");CHKERRQ(ierr);
+  PetscCall(VecViewFromOptions(v, NULL, "-global_vec_view"));
 
   if (test_read) {
-    ierr = DMCreateGlobalVector(dm, &rv);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) rv, "V");CHKERRQ(ierr);
+    PetscCall(DMCreateGlobalVector(dm, &rv));
+    PetscCall(PetscObjectSetName((PetscObject) rv, "V"));
     /* Test native read */
-    ierr = PetscViewerHDF5Open(comm, "V.h5", FILE_MODE_READ, &hdf5Viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPushFormat(hdf5Viewer, PETSC_VIEWER_NATIVE);CHKERRQ(ierr);
-    ierr = VecLoad(rv, hdf5Viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(hdf5Viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&hdf5Viewer);CHKERRQ(ierr);
+    PetscCall(PetscViewerHDF5Open(comm, "V.h5", FILE_MODE_READ, &hdf5Viewer));
+    PetscCall(PetscViewerPushFormat(hdf5Viewer, PETSC_VIEWER_NATIVE));
+    PetscCall(VecLoad(rv, hdf5Viewer));
+    PetscCall(PetscViewerPopFormat(hdf5Viewer));
+    PetscCall(PetscViewerDestroy(&hdf5Viewer));
     if (verbose) {
       PetscInt size, bs;
 
-      ierr = VecGetSize(rv, &size);CHKERRQ(ierr);
-      ierr = VecGetBlockSize(rv, &bs);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD, "==== Vector from file. size==%d\tblock size=%d\n", size, bs);CHKERRQ(ierr);
-      ierr = VecView(rv, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+      PetscCall(VecGetSize(rv, &size));
+      PetscCall(VecGetBlockSize(rv, &bs));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "==== Vector from file. size==%d\tblock size=%d\n", size, bs));
+      PetscCall(VecView(rv, PETSC_VIEWER_STDOUT_WORLD));
     }
-    ierr = VecEqual(rv, v, &flg);CHKERRQ(ierr);
+    PetscCall(VecEqual(rv, v, &flg));
     if (flg) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD, "V and RV are equal\n");CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "V and RV are equal\n"));
     } else {
-      ierr = PetscPrintf(PETSC_COMM_WORLD, "V and RV are not equal\n\n");CHKERRQ(ierr);
-      ierr = VecAXPY(rv, -1.0, v);CHKERRQ(ierr);
-      ierr = VecNorm(rv, NORM_INFINITY, &norm);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD, "diff norm is = %g\n", (double) norm);CHKERRQ(ierr);
-      ierr = VecView(rv, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "V and RV are not equal\n\n"));
+      PetscCall(VecAXPY(rv, -1.0, v));
+      PetscCall(VecNorm(rv, NORM_INFINITY, &norm));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "diff norm is = %g\n", (double) norm));
+      PetscCall(VecView(rv, PETSC_VIEWER_STDOUT_WORLD));
     }
     /* Test raw read */
-    ierr = PetscViewerHDF5Open(comm, "V.h5", FILE_MODE_READ, &hdf5Viewer);CHKERRQ(ierr);
-    ierr = VecLoad(rv, hdf5Viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&hdf5Viewer);CHKERRQ(ierr);
+    PetscCall(PetscViewerHDF5Open(comm, "V.h5", FILE_MODE_READ, &hdf5Viewer));
+    PetscCall(VecLoad(rv, hdf5Viewer));
+    PetscCall(PetscViewerDestroy(&hdf5Viewer));
     if (verbose) {
       PetscInt size, bs;
 
-      ierr = VecGetSize(rv, &size);CHKERRQ(ierr);
-      ierr = VecGetBlockSize(rv, &bs);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD, "==== Vector from file. size==%d\tblock size=%d\n", size, bs);CHKERRQ(ierr);
-      ierr = VecView(rv, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+      PetscCall(VecGetSize(rv, &size));
+      PetscCall(VecGetBlockSize(rv, &bs));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "==== Vector from file. size==%d\tblock size=%d\n", size, bs));
+      PetscCall(VecView(rv, PETSC_VIEWER_STDOUT_WORLD));
     }
-    ierr = VecEqual(rv, nv, &flg);CHKERRQ(ierr);
+    PetscCall(VecEqual(rv, nv, &flg));
     if (flg) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD, "NV and RV are equal\n");CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "NV and RV are equal\n"));
     } else {
-      ierr = PetscPrintf(PETSC_COMM_WORLD, "NV and RV are not equal\n\n");CHKERRQ(ierr);
-      ierr = VecAXPY(rv, -1.0, v);CHKERRQ(ierr);
-      ierr = VecNorm(rv, NORM_INFINITY, &norm);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD, "diff norm is = %g\n", (double) norm);CHKERRQ(ierr);
-      ierr = VecView(rv, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "NV and RV are not equal\n\n"));
+      PetscCall(VecAXPY(rv, -1.0, v));
+      PetscCall(VecNorm(rv, NORM_INFINITY, &norm));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "diff norm is = %g\n", (double) norm));
+      PetscCall(VecView(rv, PETSC_VIEWER_STDOUT_WORLD));
     }
-    ierr = VecDestroy(&rv);CHKERRQ(ierr);
+    PetscCall(VecDestroy(&rv));
   }
-  ierr = VecDestroy(&nv);CHKERRQ(ierr);
-  ierr = VecDestroy(&v);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(VecDestroy(&nv));
+  PetscCall(VecDestroy(&v));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

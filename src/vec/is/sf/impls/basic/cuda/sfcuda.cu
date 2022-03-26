@@ -562,7 +562,6 @@ template<typename Type> struct AtomicLXOR {__device__ Type operator()(Type& x,Ty
 template<typename Type,PetscInt BS,PetscInt EQ>
 static PetscErrorCode Pack(PetscSFLink link,PetscInt count,PetscInt start,PetscSFPackOpt opt,const PetscInt *idx,const void *data,void *buf)
 {
-  cudaError_t        cerr;
   PetscInt           nthreads=256;
   PetscInt           nblocks=(count+nthreads-1)/nthreads;
   const PetscInt     *iarray=opt ? opt->array : NULL;
@@ -570,11 +569,11 @@ static PetscErrorCode Pack(PetscSFLink link,PetscInt count,PetscInt start,PetscS
   PetscFunctionBegin;
   if (!count) PetscFunctionReturn(0);
   if (!opt && !idx) { /* It is a 'CUDA data to nvshmem buf' memory copy */
-    cerr = cudaMemcpyAsync(buf,(char*)data+start*link->unitbytes,count*link->unitbytes,cudaMemcpyDeviceToDevice,link->stream);CHKERRCUDA(cerr);
+    PetscCallCUDA(cudaMemcpyAsync(buf,(char*)data+start*link->unitbytes,count*link->unitbytes,cudaMemcpyDeviceToDevice,link->stream));
   } else {
     nblocks = PetscMin(nblocks,link->maxResidentThreadsPerGPU/nthreads);
     d_Pack<Type,BS,EQ><<<nblocks,nthreads,0,link->stream>>>(link->bs,count,start,iarray,idx,(const Type*)data,(Type*)buf);
-    cerr = cudaGetLastError();CHKERRCUDA(cerr);
+    PetscCallCUDA(cudaGetLastError());
   }
   PetscFunctionReturn(0);
 }
@@ -585,7 +584,6 @@ static PetscErrorCode Pack(PetscSFLink link,PetscInt count,PetscInt start,PetscS
 template<typename Type,PetscInt BS,PetscInt EQ>
 static PetscErrorCode Unpack(PetscSFLink link,PetscInt count,PetscInt start,PetscSFPackOpt opt,const PetscInt *idx,void *data,const void *buf)
 {
-  cudaError_t        cerr;
   PetscInt           nthreads=256;
   PetscInt           nblocks=(count+nthreads-1)/nthreads;
   const PetscInt     *iarray=opt ? opt->array : NULL;
@@ -593,11 +591,11 @@ static PetscErrorCode Unpack(PetscSFLink link,PetscInt count,PetscInt start,Pets
   PetscFunctionBegin;
   if (!count) PetscFunctionReturn(0);
   if (!opt && !idx) { /* It is a 'nvshmem buf to CUDA data' memory copy */
-    cerr = cudaMemcpyAsync((char*)data+start*link->unitbytes,buf,count*link->unitbytes,cudaMemcpyDeviceToDevice,link->stream);CHKERRCUDA(cerr);
+    PetscCallCUDA(cudaMemcpyAsync((char*)data+start*link->unitbytes,buf,count*link->unitbytes,cudaMemcpyDeviceToDevice,link->stream));
   } else {
     nblocks = PetscMin(nblocks,link->maxResidentThreadsPerGPU/nthreads);
     d_UnpackAndOp<Type,Insert<Type>,BS,EQ><<<nblocks,nthreads,0,link->stream>>>(link->bs,count,start,iarray,idx,(Type*)data,(const Type*)buf);
-    cerr = cudaGetLastError();CHKERRCUDA(cerr);
+    PetscCallCUDA(cudaGetLastError());
   }
   PetscFunctionReturn(0);
 }
@@ -605,7 +603,6 @@ static PetscErrorCode Unpack(PetscSFLink link,PetscInt count,PetscInt start,Pets
 template<typename Type,class Op,PetscInt BS,PetscInt EQ>
 static PetscErrorCode UnpackAndOp(PetscSFLink link,PetscInt count,PetscInt start,PetscSFPackOpt opt,const PetscInt *idx,void *data,const void *buf)
 {
-  cudaError_t        cerr;
   PetscInt           nthreads=256;
   PetscInt           nblocks=(count+nthreads-1)/nthreads;
   const PetscInt     *iarray=opt ? opt->array : NULL;
@@ -614,14 +611,13 @@ static PetscErrorCode UnpackAndOp(PetscSFLink link,PetscInt count,PetscInt start
   if (!count) PetscFunctionReturn(0);
   nblocks = PetscMin(nblocks,link->maxResidentThreadsPerGPU/nthreads);
   d_UnpackAndOp<Type,Op,BS,EQ><<<nblocks,nthreads,0,link->stream>>>(link->bs,count,start,iarray,idx,(Type*)data,(const Type*)buf);
-  cerr = cudaGetLastError();CHKERRCUDA(cerr);
+  PetscCallCUDA(cudaGetLastError());
   PetscFunctionReturn(0);
 }
 
 template<typename Type,class Op,PetscInt BS,PetscInt EQ>
 static PetscErrorCode FetchAndOp(PetscSFLink link,PetscInt count,PetscInt start,PetscSFPackOpt opt,const PetscInt *idx,void *data,void *buf)
 {
-  cudaError_t        cerr;
   PetscInt           nthreads=256;
   PetscInt           nblocks=(count+nthreads-1)/nthreads;
   const PetscInt     *iarray=opt ? opt->array : NULL;
@@ -630,14 +626,13 @@ static PetscErrorCode FetchAndOp(PetscSFLink link,PetscInt count,PetscInt start,
   if (!count) PetscFunctionReturn(0);
   nblocks = PetscMin(nblocks,link->maxResidentThreadsPerGPU/nthreads);
   d_FetchAndOp<Type,Op,BS,EQ><<<nblocks,nthreads,0,link->stream>>>(link->bs,count,start,iarray,idx,(Type*)data,(Type*)buf);
-  cerr = cudaGetLastError();CHKERRCUDA(cerr);
+  PetscCallCUDA(cudaGetLastError());
   PetscFunctionReturn(0);
 }
 
 template<typename Type,class Op,PetscInt BS,PetscInt EQ>
 static PetscErrorCode ScatterAndOp(PetscSFLink link,PetscInt count,PetscInt srcStart,PetscSFPackOpt srcOpt,const PetscInt *srcIdx,const void *src,PetscInt dstStart,PetscSFPackOpt dstOpt,const PetscInt *dstIdx,void *dst)
 {
-  cudaError_t        cerr;
   PetscInt           nthreads=256;
   PetscInt           nblocks=(count+nthreads-1)/nthreads;
   PetscInt           srcx=0,srcy=0,srcX=0,srcY=0,dstx=0,dsty=0,dstX=0,dstY=0;
@@ -654,7 +649,7 @@ static PetscErrorCode ScatterAndOp(PetscSFLink link,PetscInt count,PetscInt srcS
   else if (!dstIdx) {dstx = dstX = count; dsty = dstY = 1;}
 
   d_ScatterAndOp<Type,Op,BS,EQ><<<nblocks,nthreads,0,link->stream>>>(link->bs,count,srcx,srcy,srcX,srcY,srcStart,srcIdx,(const Type*)src,dstx,dsty,dstX,dstY,dstStart,dstIdx,(Type*)dst);
-  cerr = cudaGetLastError();CHKERRCUDA(cerr);
+  PetscCallCUDA(cudaGetLastError());
   PetscFunctionReturn(0);
 }
 
@@ -662,16 +657,13 @@ static PetscErrorCode ScatterAndOp(PetscSFLink link,PetscInt count,PetscInt srcS
 template<typename Type,PetscInt BS,PetscInt EQ>
 static PetscErrorCode ScatterAndInsert(PetscSFLink link,PetscInt count,PetscInt srcStart,PetscSFPackOpt srcOpt,const PetscInt *srcIdx,const void *src,PetscInt dstStart,PetscSFPackOpt dstOpt,const PetscInt *dstIdx,void *dst)
 {
-  PetscErrorCode    ierr;
-  cudaError_t       cerr;
-
   PetscFunctionBegin;
   if (!count) PetscFunctionReturn(0);
   /*src and dst are contiguous */
   if ((!srcOpt && !srcIdx) && (!dstOpt && !dstIdx) && src != dst) {
-    cerr = cudaMemcpyAsync((Type*)dst+dstStart*link->bs,(const Type*)src+srcStart*link->bs,count*link->unitbytes,cudaMemcpyDeviceToDevice,link->stream);CHKERRCUDA(cerr);
+    PetscCallCUDA(cudaMemcpyAsync((Type*)dst+dstStart*link->bs,(const Type*)src+srcStart*link->bs,count*link->unitbytes,cudaMemcpyDeviceToDevice,link->stream));
   } else {
-    ierr = ScatterAndOp<Type,Insert<Type>,BS,EQ>(link,count,srcStart,srcOpt,srcIdx,src,dstStart,dstOpt,dstIdx,dst);CHKERRQ(ierr);
+    PetscCall(ScatterAndOp<Type,Insert<Type>,BS,EQ>(link,count,srcStart,srcOpt,srcIdx,src,dstStart,dstOpt,dstIdx,dst));
   }
   PetscFunctionReturn(0);
 }
@@ -679,7 +671,6 @@ static PetscErrorCode ScatterAndInsert(PetscSFLink link,PetscInt count,PetscInt 
 template<typename Type,class Op,PetscInt BS,PetscInt EQ>
 static PetscErrorCode FetchAndOpLocal(PetscSFLink link,PetscInt count,PetscInt rootstart,PetscSFPackOpt rootopt,const PetscInt *rootidx,void *rootdata,PetscInt leafstart,PetscSFPackOpt leafopt,const PetscInt *leafidx,const void *leafdata,void *leafupdate)
 {
-  cudaError_t       cerr;
   PetscInt          nthreads=256;
   PetscInt          nblocks=(count+nthreads-1)/nthreads;
   const PetscInt    *rarray = rootopt ? rootopt->array : NULL;
@@ -689,7 +680,7 @@ static PetscErrorCode FetchAndOpLocal(PetscSFLink link,PetscInt count,PetscInt r
   if (!count) PetscFunctionReturn(0);
   nblocks = PetscMin(nblocks,link->maxResidentThreadsPerGPU/nthreads);
   d_FetchAndOpLocal<Type,Op,BS,EQ><<<nblocks,nthreads,0,link->stream>>>(link->bs,count,rootstart,rarray,rootidx,(Type*)rootdata,leafstart,larray,leafidx,(const Type*)leafdata,(Type*)leafupdate);
-  cerr = cudaGetLastError();CHKERRCUDA(cerr);
+  PetscCallCUDA(cudaGetLastError());
   PetscFunctionReturn(0);
 }
 
@@ -859,17 +850,15 @@ static void PackInit_DumbType(PetscSFLink link)
 /* Some device-specific utilities */
 static PetscErrorCode PetscSFLinkSyncDevice_CUDA(PetscSFLink link)
 {
-  cudaError_t cerr;
   PetscFunctionBegin;
-  cerr = cudaDeviceSynchronize();CHKERRCUDA(cerr);
+  PetscCallCUDA(cudaDeviceSynchronize());
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscSFLinkSyncStream_CUDA(PetscSFLink link)
 {
-  cudaError_t cerr;
   PetscFunctionBegin;
-  cerr = cudaStreamSynchronize(link->stream);CHKERRCUDA(cerr);
+  PetscCallCUDA(cudaStreamSynchronize(link->stream));
   PetscFunctionReturn(0);
 }
 
@@ -880,11 +869,11 @@ static PetscErrorCode PetscSFLinkMemcpy_CUDA(PetscSFLink link,PetscMemType dstmt
 
   if (n) {
     if (PetscMemTypeHost(dstmtype) && PetscMemTypeHost(srcmtype)) { /* Separate HostToHost so that pure-cpu code won't call cuda runtime */
-      PetscErrorCode ierr = PetscMemcpy(dst,src,n);CHKERRQ(ierr);
+      PetscCall(PetscMemcpy(dst,src,n));
     } else {
       int stype = PetscMemTypeDevice(srcmtype) ? 1 : 0;
       int dtype = PetscMemTypeDevice(dstmtype) ? 1 : 0;
-      cudaError_t cerr = cudaMemcpyAsync(dst,src,n,kinds[stype][dtype],link->stream);CHKERRCUDA(cerr);
+      PetscCallCUDA(cudaMemcpyAsync(dst,src,n,kinds[stype][dtype],link->stream));
     }
   }
   PetscFunctionReturn(0);
@@ -893,10 +882,10 @@ static PetscErrorCode PetscSFLinkMemcpy_CUDA(PetscSFLink link,PetscMemType dstmt
 PetscErrorCode PetscSFMalloc_CUDA(PetscMemType mtype,size_t size,void** ptr)
 {
   PetscFunctionBegin;
-  if (PetscMemTypeHost(mtype)) {PetscErrorCode ierr = PetscMalloc(size,ptr);CHKERRQ(ierr);}
+  if (PetscMemTypeHost(mtype)) PetscCall(PetscMalloc(size,ptr));
   else if (PetscMemTypeDevice(mtype)) {
-    PetscErrorCode ierr = PetscDeviceInitialize(PETSC_DEVICE_CUDA);CHKERRQ(ierr);
-    cudaError_t    err  = cudaMalloc(ptr,size);CHKERRCUDA(err);
+    PetscCall(PetscDeviceInitialize(PETSC_DEVICE_CUDA));
+    PetscCallCUDA(cudaMalloc(ptr,size));
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong PetscMemType %d", (int)mtype);
   PetscFunctionReturn(0);
 }
@@ -904,8 +893,8 @@ PetscErrorCode PetscSFMalloc_CUDA(PetscMemType mtype,size_t size,void** ptr)
 PetscErrorCode PetscSFFree_CUDA(PetscMemType mtype,void* ptr)
 {
   PetscFunctionBegin;
-  if (PetscMemTypeHost(mtype)) {PetscErrorCode ierr = PetscFree(ptr);CHKERRQ(ierr);}
-  else if (PetscMemTypeDevice(mtype)) {cudaError_t err = cudaFree(ptr);CHKERRCUDA(err);}
+  if (PetscMemTypeHost(mtype)) PetscCall(PetscFree(ptr));
+  else if (PetscMemTypeDevice(mtype)) PetscCallCUDA(cudaFree(ptr));
   else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong PetscMemType %d",(int)mtype);
   PetscFunctionReturn(0);
 }
@@ -913,12 +902,10 @@ PetscErrorCode PetscSFFree_CUDA(PetscMemType mtype,void* ptr)
 /* Destructor when the link uses MPI for communication on CUDA device */
 static PetscErrorCode PetscSFLinkDestroy_MPI_CUDA(PetscSF sf,PetscSFLink link)
 {
-  cudaError_t    cerr;
-
   PetscFunctionBegin;
   for (int i=PETSCSF_LOCAL; i<=PETSCSF_REMOTE; i++) {
-    cerr = cudaFree(link->rootbuf_alloc[i][PETSC_MEMTYPE_DEVICE]);CHKERRCUDA(cerr);
-    cerr = cudaFree(link->leafbuf_alloc[i][PETSC_MEMTYPE_DEVICE]);CHKERRCUDA(cerr);
+    PetscCallCUDA(cudaFree(link->rootbuf_alloc[i][PETSC_MEMTYPE_DEVICE]));
+    PetscCallCUDA(cudaFree(link->leafbuf_alloc[i][PETSC_MEMTYPE_DEVICE]));
   }
   PetscFunctionReturn(0);
 }
@@ -926,8 +913,6 @@ static PetscErrorCode PetscSFLinkDestroy_MPI_CUDA(PetscSF sf,PetscSFLink link)
 /* Some fields of link are initialized by PetscSFPackSetUp_Host. This routine only does what needed on device */
 PetscErrorCode PetscSFLinkSetUp_CUDA(PetscSF sf,PetscSFLink link,MPI_Datatype unit)
 {
-  PetscErrorCode ierr;
-  cudaError_t    cerr;
   PetscInt       nSignedChar=0,nUnsignedChar=0,nInt=0,nPetscInt=0,nPetscReal=0;
   PetscBool      is2Int,is2PetscInt;
 #if defined(PETSC_HAVE_COMPLEX)
@@ -936,17 +921,17 @@ PetscErrorCode PetscSFLinkSetUp_CUDA(PetscSF sf,PetscSFLink link,MPI_Datatype un
 
   PetscFunctionBegin;
   if (link->deviceinited) PetscFunctionReturn(0);
-  ierr = MPIPetsc_Type_compare_contig(unit,MPI_SIGNED_CHAR,  &nSignedChar);CHKERRQ(ierr);
-  ierr = MPIPetsc_Type_compare_contig(unit,MPI_UNSIGNED_CHAR,&nUnsignedChar);CHKERRQ(ierr);
+  PetscCall(MPIPetsc_Type_compare_contig(unit,MPI_SIGNED_CHAR,  &nSignedChar));
+  PetscCall(MPIPetsc_Type_compare_contig(unit,MPI_UNSIGNED_CHAR,&nUnsignedChar));
   /* MPI_CHAR is treated below as a dumb type that does not support reduction according to MPI standard */
-  ierr = MPIPetsc_Type_compare_contig(unit,MPI_INT,  &nInt);CHKERRQ(ierr);
-  ierr = MPIPetsc_Type_compare_contig(unit,MPIU_INT, &nPetscInt);CHKERRQ(ierr);
-  ierr = MPIPetsc_Type_compare_contig(unit,MPIU_REAL,&nPetscReal);CHKERRQ(ierr);
+  PetscCall(MPIPetsc_Type_compare_contig(unit,MPI_INT,  &nInt));
+  PetscCall(MPIPetsc_Type_compare_contig(unit,MPIU_INT, &nPetscInt));
+  PetscCall(MPIPetsc_Type_compare_contig(unit,MPIU_REAL,&nPetscReal));
 #if defined(PETSC_HAVE_COMPLEX)
-  ierr = MPIPetsc_Type_compare_contig(unit,MPIU_COMPLEX,&nPetscComplex);CHKERRQ(ierr);
+  PetscCall(MPIPetsc_Type_compare_contig(unit,MPIU_COMPLEX,&nPetscComplex));
 #endif
-  ierr = MPIPetsc_Type_compare(unit,MPI_2INT,&is2Int);CHKERRQ(ierr);
-  ierr = MPIPetsc_Type_compare(unit,MPIU_2INT,&is2PetscInt);CHKERRQ(ierr);
+  PetscCall(MPIPetsc_Type_compare(unit,MPI_2INT,&is2Int));
+  PetscCall(MPIPetsc_Type_compare(unit,MPIU_2INT,&is2PetscInt));
 
   if (is2Int) {
     PackInit_PairType<PairInt>(link);
@@ -1004,7 +989,7 @@ PetscErrorCode PetscSFLinkSetUp_CUDA(PetscSF sf,PetscSFLink link,MPI_Datatype un
 #endif
   } else {
     MPI_Aint lb,nbyte;
-    ierr = MPI_Type_get_extent(unit,&lb,&nbyte);CHKERRMPI(ierr);
+    PetscCallMPI(MPI_Type_get_extent(unit,&lb,&nbyte));
     PetscCheckFalse(lb != 0,PETSC_COMM_SELF,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld",(long)lb);
     if (nbyte % sizeof(int)) { /* If the type size is not multiple of int */
      #if !defined(PETSC_HAVE_DEVICE)
@@ -1028,8 +1013,8 @@ PetscErrorCode PetscSFLinkSetUp_CUDA(PetscSF sf,PetscSFLink link,MPI_Datatype un
   if (!sf->maxResidentThreadsPerGPU) { /* Not initialized */
     int                   device;
     struct cudaDeviceProp props;
-    cerr = cudaGetDevice(&device);CHKERRCUDA(cerr);
-    cerr = cudaGetDeviceProperties(&props,device);CHKERRCUDA(cerr);
+    PetscCallCUDA(cudaGetDevice(&device));
+    PetscCallCUDA(cudaGetDeviceProperties(&props,device));
     sf->maxResidentThreadsPerGPU = props.maxThreadsPerMultiProcessor*props.multiProcessorCount;
   }
   link->maxResidentThreadsPerGPU = sf->maxResidentThreadsPerGPU;

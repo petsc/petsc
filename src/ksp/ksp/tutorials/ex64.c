@@ -62,23 +62,23 @@ int main(int argc,char **args)
   MPI_Comm        comm;
   PetscReal       e;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   comm = PETSC_COMM_WORLD;
-  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex62","PC");CHKERRQ(ierr);
+  PetscCallMPI(MPI_Comm_size(comm,&size));
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex62","PC");PetscCall(ierr);
   m = 15;
-  ierr = PetscOptionsInt("-M", "Number of mesh points in the x-direction","PCGASMCreateSubdomains2D",m,&m,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-M", "Number of mesh points in the x-direction","PCGASMCreateSubdomains2D",m,&m,NULL));
   n = 17;
-  ierr = PetscOptionsInt("-N","Number of mesh points in the y-direction","PCGASMCreateSubdomains2D",n,&n,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-N","Number of mesh points in the y-direction","PCGASMCreateSubdomains2D",n,&n,NULL));
   user_set_subdomains = PETSC_FALSE;
-  ierr = PetscOptionsBool("-user_set_subdomains","Use the user-specified 2D tiling of mesh by subdomains","PCGASMCreateSubdomains2D",user_set_subdomains,&user_set_subdomains,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsBool("-user_set_subdomains","Use the user-specified 2D tiling of mesh by subdomains","PCGASMCreateSubdomains2D",user_set_subdomains,&user_set_subdomains,NULL));
   M = 2;
-  ierr = PetscOptionsInt("-Mdomains","Number of subdomain tiles in the x-direction","PCGASMSetSubdomains2D",M,&M,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-Mdomains","Number of subdomain tiles in the x-direction","PCGASMSetSubdomains2D",M,&M,NULL));
   N = 1;
-  ierr = PetscOptionsInt("-Ndomains","Number of subdomain tiles in the y-direction","PCGASMSetSubdomains2D",N,&N,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-Ndomains","Number of subdomain tiles in the y-direction","PCGASMSetSubdomains2D",N,&N,NULL));
   overlap = 1;
-  ierr = PetscOptionsInt("-overlap","Size of tile overlap.","PCGASMSetSubdomains2D",overlap,&overlap,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-overlap","Size of tile overlap.","PCGASMSetSubdomains2D",overlap,&overlap,NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
   /* -------------------------------------------------------------------
          Compute the matrix and right-hand-side vector that define
@@ -88,94 +88,94 @@ int main(int argc,char **args)
   /*
      Assemble the matrix for the five point stencil, YET AGAIN
   */
-  ierr = MatCreate(comm,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
+  PetscCall(MatCreate(comm,&A));
+  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSetUp(A));
+  PetscCall(MatGetOwnershipRange(A,&Istart,&Iend));
   for (Ii=Istart; Ii<Iend; Ii++) {
     v = -1.0; i = Ii/n; j = Ii - i*n;
-    if (i>0)   {J = Ii - n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-    if (i<m-1) {J = Ii + n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-    if (j>0)   {J = Ii - 1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-    if (j<n-1) {J = Ii + 1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-    v = 4.0; ierr = MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES);CHKERRQ(ierr);
+    if (i>0)   {J = Ii - n; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
+    if (i<m-1) {J = Ii + n; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
+    if (j>0)   {J = Ii - 1; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
+    if (j<n-1) {J = Ii + 1; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
+    v = 4.0; PetscCall(MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES));
   }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
   /*
     Partition the graph of the matrix
   */
-  ierr = MatPartitioningCreate(comm,&part);CHKERRQ(ierr);
-  ierr = MatPartitioningSetAdjacency(part,A);CHKERRQ(ierr);
-  ierr = MatPartitioningSetType(part,MATPARTITIONINGHIERARCH);CHKERRQ(ierr);
-  ierr = MatPartitioningHierarchicalSetNcoarseparts(part,2);CHKERRQ(ierr);
-  ierr = MatPartitioningHierarchicalSetNfineparts(part,2);CHKERRQ(ierr);
-  ierr = MatPartitioningSetFromOptions(part);CHKERRQ(ierr);
+  PetscCall(MatPartitioningCreate(comm,&part));
+  PetscCall(MatPartitioningSetAdjacency(part,A));
+  PetscCall(MatPartitioningSetType(part,MATPARTITIONINGHIERARCH));
+  PetscCall(MatPartitioningHierarchicalSetNcoarseparts(part,2));
+  PetscCall(MatPartitioningHierarchicalSetNfineparts(part,2));
+  PetscCall(MatPartitioningSetFromOptions(part));
   /* get new processor owner number of each vertex */
-  ierr = MatPartitioningApply(part,&is);CHKERRQ(ierr);
+  PetscCall(MatPartitioningApply(part,&is));
   /* get coarse parts according to which we rearrange the matrix */
-  ierr = MatPartitioningHierarchicalGetCoarseparts(part,&coarseparts);CHKERRQ(ierr);
+  PetscCall(MatPartitioningHierarchicalGetCoarseparts(part,&coarseparts));
   /* fine parts are used with coarse parts */
-  ierr = MatPartitioningHierarchicalGetFineparts(part,&fineparts);CHKERRQ(ierr);
+  PetscCall(MatPartitioningHierarchicalGetFineparts(part,&fineparts));
   /* get new global number of each old global number */
-  ierr = ISPartitioningToNumbering(is,&isn);CHKERRQ(ierr);
-  ierr = ISBuildTwoSided(is,NULL,&isrows);CHKERRQ(ierr);
-  ierr = MatCreateSubMatrix(A,isrows,isrows,MAT_INITIAL_MATRIX,&perA);CHKERRQ(ierr);
-  ierr = MatCreateVecs(perA,&b,NULL);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(b);CHKERRQ(ierr);
-  ierr = VecDuplicate(b,&u);CHKERRQ(ierr);
-  ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
-  ierr = VecSet(u,one);CHKERRQ(ierr);
-  ierr = MatMult(perA,u,b);CHKERRQ(ierr);
-  ierr = KSPCreate(comm,&ksp);CHKERRQ(ierr);
+  PetscCall(ISPartitioningToNumbering(is,&isn));
+  PetscCall(ISBuildTwoSided(is,NULL,&isrows));
+  PetscCall(MatCreateSubMatrix(A,isrows,isrows,MAT_INITIAL_MATRIX,&perA));
+  PetscCall(MatCreateVecs(perA,&b,NULL));
+  PetscCall(VecSetFromOptions(b));
+  PetscCall(VecDuplicate(b,&u));
+  PetscCall(VecDuplicate(b,&x));
+  PetscCall(VecSet(u,one));
+  PetscCall(MatMult(perA,u,b));
+  PetscCall(KSPCreate(comm,&ksp));
   /*
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
-  ierr = KSPSetOperators(ksp,perA,perA);CHKERRQ(ierr);
+  PetscCall(KSPSetOperators(ksp,perA,perA));
 
   /*
      Set the default preconditioner for this program to be GASM
   */
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCGASM);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  PetscCall(KSPGetPC(ksp,&pc));
+  PetscCall(PCSetType(pc,PCGASM));
+  PetscCall(KSPSetFromOptions(ksp));
   /* -------------------------------------------------------------------
                       Solve the linear system
      ------------------------------------------------------------------- */
 
-  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+  PetscCall(KSPSolve(ksp,b,x));
   /* -------------------------------------------------------------------
                       Compare result to the exact solution
      ------------------------------------------------------------------- */
-  ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_INFINITY, &e);CHKERRQ(ierr);
+  PetscCall(VecAXPY(x,-1.0,u));
+  PetscCall(VecNorm(x,NORM_INFINITY, &e));
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-print_error",&flg,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-print_error",&flg,NULL));
   if (flg) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Infinity norm of the error: %g\n", (double)e);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Infinity norm of the error: %g\n", (double)e));
   }
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&perA);CHKERRQ(ierr);
-  ierr = ISDestroy(&is);CHKERRQ(ierr);
-  ierr = ISDestroy(&coarseparts);CHKERRQ(ierr);
-  ierr = ISDestroy(&fineparts);CHKERRQ(ierr);
-  ierr = ISDestroy(&isrows);CHKERRQ(ierr);
-  ierr = ISDestroy(&isn);CHKERRQ(ierr);
-  ierr = MatPartitioningDestroy(&part);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(VecDestroy(&u));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&b));
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&perA));
+  PetscCall(ISDestroy(&is));
+  PetscCall(ISDestroy(&coarseparts));
+  PetscCall(ISDestroy(&fineparts));
+  PetscCall(ISDestroy(&isrows));
+  PetscCall(ISDestroy(&isn));
+  PetscCall(MatPartitioningDestroy(&part));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

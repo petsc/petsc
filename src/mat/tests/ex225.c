@@ -8,28 +8,27 @@ int main(int argc,char **args)
   Mat            A, B, C;
   PetscReal      err;
   PetscInt       i,j,M = 20;
-  PetscErrorCode ierr;
   PetscMPIInt    NP;
   MPI_Comm       comm;
   PetscInt       *rows;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   comm = PETSC_COMM_WORLD;
-  ierr = MPI_Comm_size(comm,&NP);CHKERRMPI(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL);CHKERRQ(ierr);
+  PetscCallMPI(MPI_Comm_size(comm,&NP));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
   PetscCheckFalse(M < 6,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Matrix has to have more than 6 columns");
   /* Hypre matrix */
-  ierr = MatCreate(comm,&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,M,M);CHKERRQ(ierr);
-  ierr = MatSetType(B,MATHYPRE);CHKERRQ(ierr);
-  ierr = MatHYPRESetPreallocation(B,9,NULL,9,NULL);CHKERRQ(ierr);
+  PetscCall(MatCreate(comm,&B));
+  PetscCall(MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,M,M));
+  PetscCall(MatSetType(B,MATHYPRE));
+  PetscCall(MatHYPRESetPreallocation(B,9,NULL,9,NULL));
 
   /* PETSc AIJ matrix */
-  ierr = MatCreate(comm,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,M);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(A,9,NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(A,9,NULL,9,NULL);CHKERRQ(ierr);
+  PetscCall(MatCreate(comm,&A));
+  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,M));
+  PetscCall(MatSetType(A,MATAIJ));
+  PetscCall(MatSeqAIJSetPreallocation(A,9,NULL));
+  PetscCall(MatMPIAIJSetPreallocation(A,9,NULL,9,NULL));
 
   /*Set Values */
   for (i=0; i<M; i++) {
@@ -39,44 +38,44 @@ int main(int argc,char **args)
     for (j=0; j<6; j++)
       vals[j] = ((PetscReal)j)/NP;
 
-    ierr = MatSetValues(B,1,&i,6,cols,vals,ADD_VALUES);CHKERRQ(ierr);
-    ierr = MatSetValues(B,1,&i,1,&i,value,ADD_VALUES);CHKERRQ(ierr);
-    ierr = MatSetValues(A,1,&i,6,cols,vals,ADD_VALUES);CHKERRQ(ierr);
-    ierr = MatSetValues(A,1,&i,1,&i,value,ADD_VALUES);CHKERRQ(ierr);
+    PetscCall(MatSetValues(B,1,&i,6,cols,vals,ADD_VALUES));
+    PetscCall(MatSetValues(B,1,&i,1,&i,value,ADD_VALUES));
+    PetscCall(MatSetValues(A,1,&i,6,cols,vals,ADD_VALUES));
+    PetscCall(MatSetValues(A,1,&i,1,&i,value,ADD_VALUES));
   }
 
   /* MAT_FLUSH_ASSEMBLY currently not supported */
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
 
   /* Compare A and B */
-  ierr = MatConvert(B,MATAIJ,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
-  ierr = MatAXPY(C,-1.,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatNorm(C,NORM_INFINITY,&err);CHKERRQ(ierr);
+  PetscCall(MatConvert(B,MATAIJ,MAT_INITIAL_MATRIX,&C));
+  PetscCall(MatAXPY(C,-1.,A,SAME_NONZERO_PATTERN));
+  PetscCall(MatNorm(C,NORM_INFINITY,&err));
   PetscCheckFalse(err > PETSC_SMALL,PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"Error MatSetValues %g",err);
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  PetscCall(MatDestroy(&C));
 
   /* MatZeroRows */
-  ierr = PetscMalloc1(M, &rows);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(M, &rows));
   for (i=0; i<M; i++) rows[i] = i;
-  ierr = MatZeroRows(B, M, rows, 10.0, NULL, NULL);CHKERRQ(ierr);
-  ierr = MatSetOption(A, MAT_KEEP_NONZERO_PATTERN, PETSC_TRUE);CHKERRQ(ierr);
-  ierr = MatZeroRows(A, M, rows, 10.0,NULL, NULL);CHKERRQ(ierr);
-  ierr = MatConvert(B,MATAIJ,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
-  ierr = MatAXPY(C,-1.,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatNorm(C,NORM_INFINITY,&err);CHKERRQ(ierr);
+  PetscCall(MatZeroRows(B, M, rows, 10.0, NULL, NULL));
+  PetscCall(MatSetOption(A, MAT_KEEP_NONZERO_PATTERN, PETSC_TRUE));
+  PetscCall(MatZeroRows(A, M, rows, 10.0,NULL, NULL));
+  PetscCall(MatConvert(B,MATAIJ,MAT_INITIAL_MATRIX,&C));
+  PetscCall(MatAXPY(C,-1.,A,SAME_NONZERO_PATTERN));
+  PetscCall(MatNorm(C,NORM_INFINITY,&err));
   PetscCheckFalse(err > PETSC_SMALL,PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"Error MatZeroRows %g",err);
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
-  ierr = PetscFree(rows);CHKERRQ(ierr);
+  PetscCall(MatDestroy(&C));
+  PetscCall(PetscFree(rows));
 
   /* Test MatZeroEntries */
-  ierr = MatZeroEntries(B);CHKERRQ(ierr);
-  ierr = MatConvert(B,MATAIJ,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
-  ierr = MatNorm(C,NORM_INFINITY,&err);CHKERRQ(ierr);
+  PetscCall(MatZeroEntries(B));
+  PetscCall(MatConvert(B,MATAIJ,MAT_INITIAL_MATRIX,&C));
+  PetscCall(MatNorm(C,NORM_INFINITY,&err));
   PetscCheckFalse(err > PETSC_SMALL,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error MatZeroEntries %g",err);
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  PetscCall(MatDestroy(&C));
 
   /* Insert Values */
   for (i=0; i<M; i++) {
@@ -87,17 +86,17 @@ int main(int argc,char **args)
     for (j=0; j<6; j++)
       vals[j] = ((PetscReal)j)/NP;
 
-    ierr = MatSetValues(B,1,&i,6,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatSetValues(B,1,&i,1,&i,value,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatSetValues(A,1,&i,6,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatSetValues(A,1,&i,1,&i,value,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(MatSetValues(B,1,&i,6,cols,vals,INSERT_VALUES));
+    PetscCall(MatSetValues(B,1,&i,1,&i,value,INSERT_VALUES));
+    PetscCall(MatSetValues(A,1,&i,6,cols,vals,INSERT_VALUES));
+    PetscCall(MatSetValues(A,1,&i,1,&i,value,INSERT_VALUES));
   }
 
   /* MAT_FLUSH_ASSEMBLY currently not supported */
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
 
   /* Rows are not sorted with HYPRE so we need an intermediate sort
      They use a temporary buffer, so we can sort inplace the const memory */
@@ -110,46 +109,46 @@ int main(int argc,char **args)
     PetscScalar       *valuesA, *valuesB;
     PetscBool         flg;
 
-    ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
+    PetscCall(MatGetOwnershipRange(A,&rstart,&rend));
     for (i=rstart; i<rend; i++) {
-      ierr = MatGetRow(A,i,&nzA,&idxA,&vA);CHKERRQ(ierr);
-      ierr = MatGetRow(B,i,&nzB,&idxB,&vB);CHKERRQ(ierr);
+      PetscCall(MatGetRow(A,i,&nzA,&idxA,&vA));
+      PetscCall(MatGetRow(B,i,&nzB,&idxB,&vB));
       PetscCheckFalse(nzA!=nzB,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error MatGetRow %" PetscInt_FMT, nzA-nzB);
-      ierr = PetscSortIntWithScalarArray(nzB,(PetscInt*)idxB,(PetscScalar*)vB);CHKERRQ(ierr);
-      ierr = PetscArraycmp(idxA,idxB,nzA,&flg);CHKERRQ(ierr);
-      PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error MatGetRow %" PetscInt_FMT " (indices)",i);
-      ierr = PetscArraycmp(vA,vB,nzA,&flg);CHKERRQ(ierr);
-      PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error MatGetRow %" PetscInt_FMT " (values)",i);
-      ierr = MatRestoreRow(A,i,&nzA,&idxA,&vA);CHKERRQ(ierr);
-      ierr = MatRestoreRow(B,i,&nzB,&idxB,&vB);CHKERRQ(ierr);
+      PetscCall(PetscSortIntWithScalarArray(nzB,(PetscInt*)idxB,(PetscScalar*)vB));
+      PetscCall(PetscArraycmp(idxA,idxB,nzA,&flg));
+      PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error MatGetRow %" PetscInt_FMT " (indices)",i);
+      PetscCall(PetscArraycmp(vA,vB,nzA,&flg));
+      PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error MatGetRow %" PetscInt_FMT " (values)",i);
+      PetscCall(MatRestoreRow(A,i,&nzA,&idxA,&vA));
+      PetscCall(MatRestoreRow(B,i,&nzB,&idxB,&vB));
     }
 
-    ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
-    ierr = PetscCalloc3((rend-rstart)*6,&valuesA,(rend-rstart)*6,&valuesB,rend-rstart,&rows);CHKERRQ(ierr);
+    PetscCall(MatGetOwnershipRange(A,&rstart,&rend));
+    PetscCall(PetscCalloc3((rend-rstart)*6,&valuesA,(rend-rstart)*6,&valuesB,rend-rstart,&rows));
     for (i=rstart; i<rend; i++) rows[i-rstart] =i;
 
-    ierr = MatGetValues(A,rend-rstart,rows,6,cols,valuesA);CHKERRQ(ierr);
-    ierr = MatGetValues(B,rend-rstart,rows,6,cols,valuesB);CHKERRQ(ierr);
+    PetscCall(MatGetValues(A,rend-rstart,rows,6,cols,valuesA));
+    PetscCall(MatGetValues(B,rend-rstart,rows,6,cols,valuesB));
 
     for (i=0; i<(rend-rstart); i++) {
-      ierr = PetscArraycmp(valuesA + 6*i,valuesB + 6*i,6,&flg);CHKERRQ(ierr);
-      PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error MatGetValues %" PetscInt_FMT,i + rstart);
+      PetscCall(PetscArraycmp(valuesA + 6*i,valuesB + 6*i,6,&flg));
+      PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error MatGetValues %" PetscInt_FMT,i + rstart);
     }
-    ierr = PetscFree3(valuesA,valuesB,rows);CHKERRQ(ierr);
+    PetscCall(PetscFree3(valuesA,valuesB,rows));
   }
 
   /* Compare A and B */
-  ierr = MatConvert(B,MATAIJ,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
-  ierr = MatAXPY(C,-1.,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatNorm(C,NORM_INFINITY,&err);CHKERRQ(ierr);
+  PetscCall(MatConvert(B,MATAIJ,MAT_INITIAL_MATRIX,&C));
+  PetscCall(MatAXPY(C,-1.,A,SAME_NONZERO_PATTERN));
+  PetscCall(MatNorm(C,NORM_INFINITY,&err));
   PetscCheckFalse(err > PETSC_SMALL,PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"Error MatSetValues with INSERT_VALUES %g",err);
 
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&B));
+  PetscCall(MatDestroy(&C));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

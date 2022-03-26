@@ -4,82 +4,80 @@ static char help[] = "Tests ISRenumber.\n\n";
 
 PetscErrorCode TestRenumber(IS is, IS mult)
 {
-  IS             nis;
-  PetscInt       N;
-  PetscErrorCode ierr;
+  IS       nis;
+  PetscInt N;
 
   PetscFunctionBegin;
-  ierr = PetscPrintf(PetscObjectComm((PetscObject)is),"\n-----------------\n");CHKERRQ(ierr);
-  ierr = PetscPrintf(PetscObjectComm((PetscObject)is),"\nInitial\n");CHKERRQ(ierr);
-  ierr = ISView(is,NULL);CHKERRQ(ierr);
+  PetscCall(PetscPrintf(PetscObjectComm((PetscObject)is),"\n-----------------\n"));
+  PetscCall(PetscPrintf(PetscObjectComm((PetscObject)is),"\nInitial\n"));
+  PetscCall(ISView(is,NULL));
   if (mult) {
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)is),"\nMult\n");CHKERRQ(ierr);
-    ierr = ISView(mult,NULL);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject)is),"\nMult\n"));
+    PetscCall(ISView(mult,NULL));
   }
-  ierr = ISRenumber(is,mult,&N,NULL);CHKERRQ(ierr);
-  ierr = PetscPrintf(PetscObjectComm((PetscObject)is),"\nRenumbered, unique entries %" PetscInt_FMT "\n",N);CHKERRQ(ierr);
-  ierr = ISRenumber(is,mult,NULL,&nis);CHKERRQ(ierr);
-  ierr = ISView(nis,NULL);CHKERRQ(ierr);
-  ierr = ISDestroy(&nis);CHKERRQ(ierr);
+  PetscCall(ISRenumber(is,mult,&N,NULL));
+  PetscCall(PetscPrintf(PetscObjectComm((PetscObject)is),"\nRenumbered, unique entries %" PetscInt_FMT "\n",N));
+  PetscCall(ISRenumber(is,mult,NULL,&nis));
+  PetscCall(ISView(nis,NULL));
+  PetscCall(ISDestroy(&nis));
   PetscFunctionReturn(0);
 }
 
 int main(int argc, char **argv)
 {
   IS              is;
-  PetscErrorCode  ierr;
   PetscMPIInt     size, rank;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help); if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   for (PetscInt c = 0; c < 3; c++) {
     IS mult = NULL;
 
-    ierr = ISCreateStride(PETSC_COMM_WORLD,0,0,0,&is);CHKERRQ(ierr);
+    PetscCall(ISCreateStride(PETSC_COMM_WORLD,0,0,0,&is));
     if (c) {
       PetscInt n;
-      ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
-      ierr = ISCreateStride(PETSC_COMM_WORLD,n,c-2,0,&mult);CHKERRQ(ierr);
+      PetscCall(ISGetLocalSize(is,&n));
+      PetscCall(ISCreateStride(PETSC_COMM_WORLD,n,c-2,0,&mult));
     }
-    ierr = TestRenumber(is,mult);CHKERRQ(ierr);
-    ierr = ISDestroy(&is);CHKERRQ(ierr);
-    ierr = ISDestroy(&mult);CHKERRQ(ierr);
+    PetscCall(TestRenumber(is,mult));
+    PetscCall(ISDestroy(&is));
+    PetscCall(ISDestroy(&mult));
 
-    ierr = ISCreateStride(PETSC_COMM_WORLD,2,-rank-1,-4,&is);CHKERRQ(ierr);
+    PetscCall(ISCreateStride(PETSC_COMM_WORLD,2,-rank-1,-4,&is));
     if (c) {
       PetscInt n;
-      ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
-      ierr = ISCreateStride(PETSC_COMM_WORLD,n,c-2,0,&mult);CHKERRQ(ierr);
+      PetscCall(ISGetLocalSize(is,&n));
+      PetscCall(ISCreateStride(PETSC_COMM_WORLD,n,c-2,0,&mult));
     }
-    ierr = TestRenumber(is,mult);CHKERRQ(ierr);
-    ierr = ISDestroy(&is);CHKERRQ(ierr);
-    ierr = ISDestroy(&mult);CHKERRQ(ierr);
+    PetscCall(TestRenumber(is,mult));
+    PetscCall(ISDestroy(&is));
+    PetscCall(ISDestroy(&mult));
 
-    ierr = ISCreateStride(PETSC_COMM_WORLD,10,4+rank,2,&is);CHKERRQ(ierr);
+    PetscCall(ISCreateStride(PETSC_COMM_WORLD,10,4+rank,2,&is));
     if (c) {
       PetscInt n;
-      ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
-      ierr = ISCreateStride(PETSC_COMM_WORLD,n,c-2,1,&mult);CHKERRQ(ierr);
+      PetscCall(ISGetLocalSize(is,&n));
+      PetscCall(ISCreateStride(PETSC_COMM_WORLD,n,c-2,1,&mult));
     }
-    ierr = TestRenumber(is,mult);CHKERRQ(ierr);
-    ierr = ISDestroy(&is);CHKERRQ(ierr);
-    ierr = ISDestroy(&mult);CHKERRQ(ierr);
+    PetscCall(TestRenumber(is,mult));
+    PetscCall(ISDestroy(&is));
+    PetscCall(ISDestroy(&mult));
 
-    ierr = ISCreateStride(PETSC_COMM_WORLD,10,-rank-1,2,&is);CHKERRQ(ierr);
+    PetscCall(ISCreateStride(PETSC_COMM_WORLD,10,-rank-1,2,&is));
     if (c) {
       PetscInt n;
-      ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
-      ierr = ISCreateStride(PETSC_COMM_WORLD,n,c-2,1,&mult);CHKERRQ(ierr);
+      PetscCall(ISGetLocalSize(is,&n));
+      PetscCall(ISCreateStride(PETSC_COMM_WORLD,n,c-2,1,&mult));
     }
-    ierr = TestRenumber(is,mult);CHKERRQ(ierr);
-    ierr = ISDestroy(&is);CHKERRQ(ierr);
-    ierr = ISDestroy(&mult);CHKERRQ(ierr);
+    PetscCall(TestRenumber(is,mult));
+    PetscCall(ISDestroy(&is));
+    PetscCall(ISDestroy(&mult));
   }
   /* Finalize */
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

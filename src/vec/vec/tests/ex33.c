@@ -6,64 +6,63 @@ static char help[] = "Tests the routines VecScatterCreateToAll(), VecScatterCrea
 int main(int argc,char **argv)
 {
   PetscInt       n = 3,i,len,start,end;
-  PetscErrorCode ierr;
   PetscMPIInt    size,rank;
   PetscScalar    value,*yy;
   Vec            x,y,z,y_t;
   VecScatter     toall,tozero;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   /* create two vectors */
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,size*n,&x);CHKERRQ(ierr);
+  PetscCall(VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,size*n,&x));
 
   /* each processor inserts its values */
 
-  ierr = VecGetOwnershipRange(x,&start,&end);CHKERRQ(ierr);
+  PetscCall(VecGetOwnershipRange(x,&start,&end));
   for (i=start; i<end; i++) {
     value = (PetscScalar) i;
-    ierr  = VecSetValues(x,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(VecSetValues(x,1,&i,&value,INSERT_VALUES));
   }
-  ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscCall(VecAssemblyBegin(x));
+  PetscCall(VecAssemblyEnd(x));
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = VecScatterCreateToAll(x,&toall,&y);CHKERRQ(ierr);
-  ierr = VecScatterBegin(toall,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(toall,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&toall);CHKERRQ(ierr);
+  PetscCall(VecScatterCreateToAll(x,&toall,&y));
+  PetscCall(VecScatterBegin(toall,x,y,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(toall,x,y,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterDestroy(&toall));
 
   /* Cannot view the above vector with VecView(), so place it in an MPI Vec
      and do a VecView() */
-  ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(y,&len);CHKERRQ(ierr);
-  ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,len,PETSC_DECIDE,yy,&y_t);CHKERRQ(ierr);
-  ierr = VecView(y_t,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecDestroy(&y_t);CHKERRQ(ierr);
-  ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
+  PetscCall(VecGetArray(y,&yy));
+  PetscCall(VecGetLocalSize(y,&len));
+  PetscCall(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,len,PETSC_DECIDE,yy,&y_t));
+  PetscCall(VecView(y_t,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecDestroy(&y_t));
+  PetscCall(VecRestoreArray(y,&yy));
 
-  ierr = VecScatterCreateToAll(x,&tozero,&z);CHKERRQ(ierr);
-  ierr = VecScatterBegin(tozero,x,z,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(tozero,x,z,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&tozero);CHKERRQ(ierr);
+  PetscCall(VecScatterCreateToAll(x,&tozero,&z));
+  PetscCall(VecScatterBegin(tozero,x,z,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(tozero,x,z,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterDestroy(&tozero));
   if (rank == 0) {
-    ierr = VecView(z,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    PetscCall(VecView(z,PETSC_VIEWER_STDOUT_SELF));
   }
-  ierr = VecDestroy(&z);CHKERRQ(ierr);
+  PetscCall(VecDestroy(&z));
 
-  ierr = VecScatterCreateToZero(x,&tozero,&z);CHKERRQ(ierr);
-  ierr = VecScatterBegin(tozero,x,z,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(tozero,x,z,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&tozero);CHKERRQ(ierr);
-  ierr = VecDestroy(&z);CHKERRQ(ierr);
+  PetscCall(VecScatterCreateToZero(x,&tozero,&z));
+  PetscCall(VecScatterBegin(tozero,x,z,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(tozero,x,z,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterDestroy(&tozero));
+  PetscCall(VecDestroy(&z));
 
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&y));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

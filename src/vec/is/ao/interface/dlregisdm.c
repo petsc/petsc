@@ -13,10 +13,8 @@ static PetscBool AOPackageInitialized = PETSC_FALSE;
 @*/
 PetscErrorCode  AOFinalizePackage(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&AOList);CHKERRQ(ierr);
+  PetscCall(PetscFunctionListDestroy(&AOList));
   AOPackageInitialized = PETSC_FALSE;
   AORegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -35,32 +33,31 @@ PetscErrorCode  AOInitializePackage(void)
 {
   char           logList[256];
   PetscBool      opt,pkg;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (AOPackageInitialized) PetscFunctionReturn(0);
   AOPackageInitialized = PETSC_TRUE;
   /* Register Classes */
-  ierr = PetscClassIdRegister("Application Order",&AO_CLASSID);CHKERRQ(ierr);
+  PetscCall(PetscClassIdRegister("Application Order",&AO_CLASSID));
   /* Register Constructors */
-  ierr = AORegisterAll();CHKERRQ(ierr);
+  PetscCall(AORegisterAll());
   /* Register Events */
-  ierr = PetscLogEventRegister("AOPetscToApplication", AO_CLASSID,&AO_PetscToApplication);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("AOApplicationToPetsc", AO_CLASSID,&AO_ApplicationToPetsc);CHKERRQ(ierr);
+  PetscCall(PetscLogEventRegister("AOPetscToApplication", AO_CLASSID,&AO_PetscToApplication));
+  PetscCall(PetscLogEventRegister("AOApplicationToPetsc", AO_CLASSID,&AO_ApplicationToPetsc));
   /* Process Info */
   {
     PetscClassId  classids[1];
 
     classids[0] = AO_CLASSID;
-    ierr = PetscInfoProcessClass("ao", 1, classids);CHKERRQ(ierr);
+    PetscCall(PetscInfoProcessClass("ao", 1, classids));
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt));
   if (opt) {
-    ierr = PetscStrInList("ao",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscLogEventExcludeClass(AO_CLASSID);CHKERRQ(ierr);}
+    PetscCall(PetscStrInList("ao",logList,',',&pkg));
+    if (pkg) PetscCall(PetscLogEventExcludeClass(AO_CLASSID));
   }
   /* Register package finalizer */
-  ierr = PetscRegisterFinalize(AOFinalizePackage);CHKERRQ(ierr);
+  PetscCall(PetscRegisterFinalize(AOFinalizePackage));
   PetscFunctionReturn(0);
 }

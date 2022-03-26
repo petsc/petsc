@@ -25,16 +25,15 @@
 @*/
 PetscErrorCode  SNESMonitorSolution(SNES snes,PetscInt its,PetscReal fgnorm,PetscViewerAndFormat *vf)
 {
-  PetscErrorCode ierr;
   Vec            x;
   PetscViewer    viewer = vf->viewer;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
-  ierr = SNESGetSolution(snes,&x);CHKERRQ(ierr);
-  ierr = PetscViewerPushFormat(viewer,vf->format);CHKERRQ(ierr);
-  ierr = VecView(x,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+  PetscCall(SNESGetSolution(snes,&x));
+  PetscCall(PetscViewerPushFormat(viewer,vf->format));
+  PetscCall(VecView(x,viewer));
+  PetscCall(PetscViewerPopFormat(viewer));
   PetscFunctionReturn(0);
 }
 
@@ -59,16 +58,15 @@ PetscErrorCode  SNESMonitorSolution(SNES snes,PetscInt its,PetscReal fgnorm,Pets
 @*/
 PetscErrorCode  SNESMonitorResidual(SNES snes,PetscInt its,PetscReal fgnorm,PetscViewerAndFormat *vf)
 {
-  PetscErrorCode ierr;
   Vec            x;
   PetscViewer    viewer = vf->viewer;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
-  ierr = SNESGetFunction(snes,&x,NULL,NULL);CHKERRQ(ierr);
-  ierr = PetscViewerPushFormat(viewer,vf->format);CHKERRQ(ierr);
-  ierr = VecView(x,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+  PetscCall(SNESGetFunction(snes,&x,NULL,NULL));
+  PetscCall(PetscViewerPushFormat(viewer,vf->format));
+  PetscCall(VecView(x,viewer));
+  PetscCall(PetscViewerPopFormat(viewer));
   PetscFunctionReturn(0);
 }
 
@@ -93,16 +91,15 @@ PetscErrorCode  SNESMonitorResidual(SNES snes,PetscInt its,PetscReal fgnorm,Pets
 @*/
 PetscErrorCode  SNESMonitorSolutionUpdate(SNES snes,PetscInt its,PetscReal fgnorm,PetscViewerAndFormat *vf)
 {
-  PetscErrorCode ierr;
   Vec            x;
   PetscViewer    viewer = vf->viewer;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
-  ierr = SNESGetSolutionUpdate(snes,&x);CHKERRQ(ierr);
-  ierr = PetscViewerPushFormat(viewer,vf->format);CHKERRQ(ierr);
-  ierr = VecView(x,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+  PetscCall(SNESGetSolutionUpdate(snes,&x));
+  PetscCall(PetscViewerPushFormat(viewer,vf->format));
+  PetscCall(VecView(x,viewer));
+  PetscCall(PetscViewerPopFormat(viewer));
   PetscFunctionReturn(0);
 }
 
@@ -135,28 +132,27 @@ PetscErrorCode KSPMonitorSNESResidual(KSP ksp, PetscInt n, PetscReal rnorm, Pets
   PetscReal         snorm;
   PetscInt          tablevel;
   const char       *prefix;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 4);
-  ierr = SNESGetSolution(snes, &snes_solution);CHKERRQ(ierr);
-  ierr = VecDuplicate(snes_solution, &work1);CHKERRQ(ierr);
-  ierr = VecDuplicate(snes_solution, &work2);CHKERRQ(ierr);
-  ierr = KSPBuildSolution(ksp, work1, NULL);CHKERRQ(ierr);
-  ierr = VecAYPX(work1, -1.0, snes_solution);CHKERRQ(ierr);
-  ierr = SNESComputeFunction(snes, work1, work2);CHKERRQ(ierr);
-  ierr = VecNorm(work2, NORM_2, &snorm);CHKERRQ(ierr);
-  ierr = VecDestroy(&work1);CHKERRQ(ierr);
-  ierr = VecDestroy(&work2);CHKERRQ(ierr);
+  PetscCall(SNESGetSolution(snes, &snes_solution));
+  PetscCall(VecDuplicate(snes_solution, &work1));
+  PetscCall(VecDuplicate(snes_solution, &work2));
+  PetscCall(KSPBuildSolution(ksp, work1, NULL));
+  PetscCall(VecAYPX(work1, -1.0, snes_solution));
+  PetscCall(SNESComputeFunction(snes, work1, work2));
+  PetscCall(VecNorm(work2, NORM_2, &snorm));
+  PetscCall(VecDestroy(&work1));
+  PetscCall(VecDestroy(&work2));
 
-  ierr = PetscObjectGetTabLevel((PetscObject) ksp, &tablevel);CHKERRQ(ierr);
-  ierr = PetscObjectGetOptionsPrefix((PetscObject) ksp, &prefix);CHKERRQ(ierr);
-  ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIAddTab(viewer, tablevel);CHKERRQ(ierr);
-  if (n == 0 && prefix) {ierr = PetscViewerASCIIPrintf(viewer, "  Residual norms for %s solve.\n", prefix);CHKERRQ(ierr);}
-  ierr = PetscViewerASCIIPrintf(viewer, "%3D SNES Residual norm %5.3e KSP Residual norm %5.3e \n", n, (double) snorm, (double) rnorm);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISubtractTab(viewer, tablevel);CHKERRQ(ierr);
-  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+  PetscCall(PetscObjectGetTabLevel((PetscObject) ksp, &tablevel));
+  PetscCall(PetscObjectGetOptionsPrefix((PetscObject) ksp, &prefix));
+  PetscCall(PetscViewerPushFormat(viewer, format));
+  PetscCall(PetscViewerASCIIAddTab(viewer, tablevel));
+  if (n == 0 && prefix) PetscCall(PetscViewerASCIIPrintf(viewer, "  Residual norms for %s solve.\n", prefix));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "%3D SNES Residual norm %5.3e KSP Residual norm %5.3e \n", n, (double) snorm, (double) rnorm));
+  PetscCall(PetscViewerASCIISubtractTab(viewer, tablevel));
+  PetscCall(PetscViewerPopFormat(viewer));
   PetscFunctionReturn(0);
 }
 
@@ -188,36 +184,35 @@ PetscErrorCode KSPMonitorSNESResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm
   PetscReal          snorm;
   KSPConvergedReason reason;
   PetscReal          x[2], y[2];
-  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 4);
   PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 4);
-  ierr = SNESGetSolution(snes, &snes_solution);CHKERRQ(ierr);
-  ierr = VecDuplicate(snes_solution, &work1);CHKERRQ(ierr);
-  ierr = VecDuplicate(snes_solution, &work2);CHKERRQ(ierr);
-  ierr = KSPBuildSolution(ksp, work1, NULL);CHKERRQ(ierr);
-  ierr = VecAYPX(work1, -1.0, snes_solution);CHKERRQ(ierr);
-  ierr = SNESComputeFunction(snes, work1, work2);CHKERRQ(ierr);
-  ierr = VecNorm(work2, NORM_2, &snorm);CHKERRQ(ierr);
-  ierr = VecDestroy(&work1);CHKERRQ(ierr);
-  ierr = VecDestroy(&work2);CHKERRQ(ierr);
+  PetscCall(SNESGetSolution(snes, &snes_solution));
+  PetscCall(VecDuplicate(snes_solution, &work1));
+  PetscCall(VecDuplicate(snes_solution, &work2));
+  PetscCall(KSPBuildSolution(ksp, work1, NULL));
+  PetscCall(VecAYPX(work1, -1.0, snes_solution));
+  PetscCall(SNESComputeFunction(snes, work1, work2));
+  PetscCall(VecNorm(work2, NORM_2, &snorm));
+  PetscCall(VecDestroy(&work1));
+  PetscCall(VecDestroy(&work2));
 
-  ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
-  if (!n) {ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);}
+  PetscCall(PetscViewerPushFormat(viewer, format));
+  if (!n) PetscCall(PetscDrawLGReset(lg));
   x[0] = (PetscReal) n;
   if (rnorm > 0.0) y[0] = PetscLog10Real(rnorm);
   else y[0] = -15.0;
   x[1] = (PetscReal) n;
   if (snorm > 0.0) y[1] = PetscLog10Real(snorm);
   else y[1] = -15.0;
-  ierr = PetscDrawLGAddPoint(lg, x, y);CHKERRQ(ierr);
-  ierr = KSPGetConvergedReason(ksp, &reason);CHKERRQ(ierr);
+  PetscCall(PetscDrawLGAddPoint(lg, x, y));
+  PetscCall(KSPGetConvergedReason(ksp, &reason));
   if (n <= 20 || !(n % 5) || reason) {
-    ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
-    ierr = PetscDrawLGSave(lg);CHKERRQ(ierr);
+    PetscCall(PetscDrawLGDraw(lg));
+    PetscCall(PetscDrawLGSave(lg));
   }
-  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+  PetscCall(PetscViewerPopFormat(viewer));
   PetscFunctionReturn(0);
 }
 
@@ -241,22 +236,19 @@ PetscErrorCode KSPMonitorSNESResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm
 PetscErrorCode KSPMonitorSNESResidualDrawLGCreate(PetscViewer viewer, PetscViewerFormat format, void *ctx, PetscViewerAndFormat **vf)
 {
   const char    *names[] = {"linear", "nonlinear"};
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerAndFormatCreate(viewer, format, vf);CHKERRQ(ierr);
+  PetscCall(PetscViewerAndFormatCreate(viewer, format, vf));
   (*vf)->data = ctx;
-  ierr = KSPMonitorLGCreate(PetscObjectComm((PetscObject) viewer), NULL, NULL, "Log Residual Norm", 2, names, PETSC_DECIDE, PETSC_DECIDE, 400, 300, &(*vf)->lg);CHKERRQ(ierr);
+  PetscCall(KSPMonitorLGCreate(PetscObjectComm((PetscObject) viewer), NULL, NULL, "Log Residual Norm", 2, names, PETSC_DECIDE, PETSC_DECIDE, 400, 300, &(*vf)->lg));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode SNESMonitorDefaultSetUp(SNES snes, PetscViewerAndFormat *vf)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (vf->format == PETSC_VIEWER_DRAW_LG) {
-    ierr = KSPMonitorLGCreate(PetscObjectComm((PetscObject) vf->viewer), NULL, NULL, "Log Residual Norm", 1, NULL, PETSC_DECIDE, PETSC_DECIDE, 400, 300, &vf->lg);CHKERRQ(ierr);
+    PetscCall(KSPMonitorLGCreate(PetscObjectComm((PetscObject) vf->viewer), NULL, NULL, "Log Residual Norm", 1, NULL, PETSC_DECIDE, PETSC_DECIDE, 400, 300, &vf->lg));
   }
   PetscFunctionReturn(0);
 }
@@ -284,35 +276,34 @@ PetscErrorCode  SNESMonitorDefault(SNES snes,PetscInt its,PetscReal fgnorm,Petsc
   PetscViewer       viewer = vf->viewer;
   PetscViewerFormat format = vf->format;
   PetscBool         isascii, isdraw;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
-  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERDRAW,  &isdraw);CHKERRQ(ierr);
-  ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERDRAW,  &isdraw));
+  PetscCall(PetscViewerPushFormat(viewer,format));
   if (isascii) {
-    ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES Function norm %14.12e \n",its,(double)fgnorm);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIAddTab(viewer,((PetscObject)snes)->tablevel));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"%3D SNES Function norm %14.12e \n",its,(double)fgnorm));
+    PetscCall(PetscViewerASCIISubtractTab(viewer,((PetscObject)snes)->tablevel));
   } else if (isdraw) {
     if (format == PETSC_VIEWER_DRAW_LG) {
       PetscDrawLG lg = (PetscDrawLG) vf->lg;
       PetscReal   x, y;
 
       PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,4);
-      if (!its) {ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);}
+      if (!its) PetscCall(PetscDrawLGReset(lg));
       x = (PetscReal) its;
       if (fgnorm > 0.0) y = PetscLog10Real(fgnorm);
       else y = -15.0;
-      ierr = PetscDrawLGAddPoint(lg,&x,&y);CHKERRQ(ierr);
+      PetscCall(PetscDrawLGAddPoint(lg,&x,&y));
       if (its <= 20 || !(its % 5) || snes->reason) {
-        ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
-        ierr = PetscDrawLGSave(lg);CHKERRQ(ierr);
+        PetscCall(PetscDrawLGDraw(lg));
+        PetscCall(PetscDrawLGSave(lg));
       }
     }
   }
-  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+  PetscCall(PetscViewerPopFormat(viewer));
   PetscFunctionReturn(0);
 }
 
@@ -336,7 +327,6 @@ PetscErrorCode  SNESMonitorDefault(SNES snes,PetscInt its,PetscReal fgnorm,Petsc
 @*/
 PetscErrorCode  SNESMonitorScaling(SNES snes,PetscInt its,PetscReal fgnorm,PetscViewerAndFormat *vf)
 {
-  PetscErrorCode ierr;
   PetscViewer    viewer = vf->viewer;
   KSP            ksp;
   Mat            J;
@@ -344,17 +334,17 @@ PetscErrorCode  SNESMonitorScaling(SNES snes,PetscInt its,PetscReal fgnorm,Petsc
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
-  ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-  ierr = KSPGetOperators(ksp,&J,NULL);CHKERRQ(ierr);
-  ierr = MatCreateVecs(J,&v,NULL);CHKERRQ(ierr);
-  ierr = MatGetRowMaxAbs(J,v,NULL);CHKERRQ(ierr);
-  ierr = PetscViewerPushFormat(viewer,vf->format);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES Jacobian maximum row entries \n");CHKERRQ(ierr);
-  ierr = VecView(v,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
-  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-  ierr = VecDestroy(&v);CHKERRQ(ierr);
+  PetscCall(SNESGetKSP(snes,&ksp));
+  PetscCall(KSPGetOperators(ksp,&J,NULL));
+  PetscCall(MatCreateVecs(J,&v,NULL));
+  PetscCall(MatGetRowMaxAbs(J,v,NULL));
+  PetscCall(PetscViewerPushFormat(viewer,vf->format));
+  PetscCall(PetscViewerASCIIAddTab(viewer,((PetscObject)snes)->tablevel));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"%3D SNES Jacobian maximum row entries \n"));
+  PetscCall(VecView(v,viewer));
+  PetscCall(PetscViewerASCIISubtractTab(viewer,((PetscObject)snes)->tablevel));
+  PetscCall(PetscViewerPopFormat(viewer));
+  PetscCall(VecDestroy(&v));
   PetscFunctionReturn(0);
 }
 
@@ -362,7 +352,6 @@ PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes,PetscInt it,PetscReal fnor
 {
   Vec            X;
   Mat            J,dJ,dJdense;
-  PetscErrorCode ierr;
   PetscErrorCode (*func)(SNES,Vec,Mat,Mat,void*);
   PetscInt       n;
   PetscBLASInt   nb = 0,lwork;
@@ -373,40 +362,40 @@ PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes,PetscInt it,PetscReal fnor
   PetscFunctionBegin;
   if (it == 0) PetscFunctionReturn(0);
   /* create the difference between the current update and the current jacobian */
-  ierr = SNESGetSolution(snes,&X);CHKERRQ(ierr);
-  ierr = SNESGetJacobian(snes,NULL,&J,&func,NULL);CHKERRQ(ierr);
-  ierr = MatDuplicate(J,MAT_COPY_VALUES,&dJ);CHKERRQ(ierr);
-  ierr = SNESComputeJacobian(snes,X,dJ,dJ);CHKERRQ(ierr);
-  ierr = MatAXPY(dJ,-1.0,J,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  PetscCall(SNESGetSolution(snes,&X));
+  PetscCall(SNESGetJacobian(snes,NULL,&J,&func,NULL));
+  PetscCall(MatDuplicate(J,MAT_COPY_VALUES,&dJ));
+  PetscCall(SNESComputeJacobian(snes,X,dJ,dJ));
+  PetscCall(MatAXPY(dJ,-1.0,J,SAME_NONZERO_PATTERN));
 
   /* compute the spectrum directly */
-  ierr  = MatConvert(dJ,MATSEQDENSE,MAT_INITIAL_MATRIX,&dJdense);CHKERRQ(ierr);
-  ierr  = MatGetSize(dJ,&n,NULL);CHKERRQ(ierr);
-  ierr  = PetscBLASIntCast(n,&nb);CHKERRQ(ierr);
+  PetscCall(MatConvert(dJ,MATSEQDENSE,MAT_INITIAL_MATRIX,&dJdense));
+  PetscCall(MatGetSize(dJ,&n,NULL));
+  PetscCall(PetscBLASIntCast(n,&nb));
   lwork = 3*nb;
-  ierr  = PetscMalloc1(n,&eigr);CHKERRQ(ierr);
-  ierr  = PetscMalloc1(n,&eigi);CHKERRQ(ierr);
-  ierr  = PetscMalloc1(lwork,&work);CHKERRQ(ierr);
-  ierr  = MatDenseGetArray(dJdense,&a);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(n,&eigr));
+  PetscCall(PetscMalloc1(n,&eigi));
+  PetscCall(PetscMalloc1(lwork,&work));
+  PetscCall(MatDenseGetArray(dJdense,&a));
 #if !defined(PETSC_USE_COMPLEX)
   {
     PetscBLASInt lierr;
     PetscInt     i;
-    ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+    PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
     PetscStackCallBLAS("LAPACKgeev",LAPACKgeev_("N","N",&nb,a,&nb,eigr,eigi,NULL,&nb,NULL,&nb,work,&lwork,&lierr));
-    PetscCheckFalse(lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"geev() error %d",lierr);
-    ierr = PetscFPTrapPop();CHKERRQ(ierr);
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)snes),"Eigenvalues of J_%d - J_%d:\n",it,it-1);CHKERRQ(ierr);
+    PetscCheck(!lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"geev() error %d",lierr);
+    PetscCall(PetscFPTrapPop());
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject)snes),"Eigenvalues of J_%d - J_%d:\n",it,it-1));
     for (i=0;i<n;i++) {
-      ierr = PetscPrintf(PetscObjectComm((PetscObject)snes),"%5d: %20.5g + %20.5gi\n",i,(double)eigr[i],(double)eigi[i]);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PetscObjectComm((PetscObject)snes),"%5d: %20.5g + %20.5gi\n",i,(double)eigr[i],(double)eigi[i]));
     }
   }
-  ierr = MatDenseRestoreArray(dJdense,&a);CHKERRQ(ierr);
-  ierr = MatDestroy(&dJ);CHKERRQ(ierr);
-  ierr = MatDestroy(&dJdense);CHKERRQ(ierr);
-  ierr = PetscFree(eigr);CHKERRQ(ierr);
-  ierr = PetscFree(eigi);CHKERRQ(ierr);
-  ierr = PetscFree(work);CHKERRQ(ierr);
+  PetscCall(MatDenseRestoreArray(dJdense,&a));
+  PetscCall(MatDestroy(&dJ));
+  PetscCall(MatDestroy(&dJdense));
+  PetscCall(PetscFree(eigr));
+  PetscCall(PetscFree(eigi));
+  PetscCall(PetscFree(work));
   PetscFunctionReturn(0);
 #else
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not coded for complex");
@@ -417,24 +406,23 @@ PETSC_INTERN PetscErrorCode  SNESMonitorRange_Private(SNES,PetscInt,PetscReal*);
 
 PetscErrorCode  SNESMonitorRange_Private(SNES snes,PetscInt it,PetscReal *per)
 {
-  PetscErrorCode ierr;
   Vec            resid;
   PetscReal      rmax,pwork;
   PetscInt       i,n,N;
   PetscScalar    *r;
 
   PetscFunctionBegin;
-  ierr  = SNESGetFunction(snes,&resid,NULL,NULL);CHKERRQ(ierr);
-  ierr  = VecNorm(resid,NORM_INFINITY,&rmax);CHKERRQ(ierr);
-  ierr  = VecGetLocalSize(resid,&n);CHKERRQ(ierr);
-  ierr  = VecGetSize(resid,&N);CHKERRQ(ierr);
-  ierr  = VecGetArray(resid,&r);CHKERRQ(ierr);
+  PetscCall(SNESGetFunction(snes,&resid,NULL,NULL));
+  PetscCall(VecNorm(resid,NORM_INFINITY,&rmax));
+  PetscCall(VecGetLocalSize(resid,&n));
+  PetscCall(VecGetSize(resid,&N));
+  PetscCall(VecGetArray(resid,&r));
   pwork = 0.0;
   for (i=0; i<n; i++) {
     pwork += (PetscAbsScalar(r[i]) > .20*rmax);
   }
-  ierr = MPIU_Allreduce(&pwork,per,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)snes));CHKERRMPI(ierr);
-  ierr = VecRestoreArray(resid,&r);CHKERRQ(ierr);
+  PetscCallMPI(MPIU_Allreduce(&pwork,per,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)snes)));
+  PetscCall(VecRestoreArray(resid,&r));
   *per = *per/N;
   PetscFunctionReturn(0);
 }
@@ -459,7 +447,6 @@ PetscErrorCode  SNESMonitorRange_Private(SNES snes,PetscInt it,PetscReal *per)
 @*/
 PetscErrorCode  SNESMonitorRange(SNES snes,PetscInt it,PetscReal rnorm,PetscViewerAndFormat *vf)
 {
-  PetscErrorCode ierr;
   PetscReal      perc,rel;
   PetscViewer    viewer = vf->viewer;
   /* should be in a MonitorRangeContext */
@@ -468,15 +455,15 @@ PetscErrorCode  SNESMonitorRange(SNES snes,PetscInt it,PetscReal rnorm,PetscView
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
   if (!it) prev = rnorm;
-  ierr = SNESMonitorRange_Private(snes,it,&perc);CHKERRQ(ierr);
+  PetscCall(SNESMonitorRange_Private(snes,it,&perc));
 
   rel  = (prev - rnorm)/prev;
   prev = rnorm;
-  ierr = PetscViewerPushFormat(viewer,vf->format);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES preconditioned resid norm %14.12e Percent values above 20 percent of maximum %5.2f relative decrease %5.2e ratio %5.2e \n",it,(double)rnorm,(double)(100.0*perc),(double)rel,(double)(rel/perc));CHKERRQ(ierr);
-  ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
-  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+  PetscCall(PetscViewerPushFormat(viewer,vf->format));
+  PetscCall(PetscViewerASCIIAddTab(viewer,((PetscObject)snes)->tablevel));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"%3D SNES preconditioned resid norm %14.12e Percent values above 20 percent of maximum %5.2f relative decrease %5.2e ratio %5.2e \n",it,(double)rnorm,(double)(100.0*perc),(double)rel,(double)(rel/perc)));
+  PetscCall(PetscViewerASCIISubtractTab(viewer,((PetscObject)snes)->tablevel));
+  PetscCall(PetscViewerPopFormat(viewer));
   PetscFunctionReturn(0);
 }
 
@@ -500,23 +487,22 @@ PetscErrorCode  SNESMonitorRange(SNES snes,PetscInt it,PetscReal rnorm,PetscView
 @*/
 PetscErrorCode  SNESMonitorRatio(SNES snes,PetscInt its,PetscReal fgnorm,PetscViewerAndFormat *vf)
 {
-  PetscErrorCode          ierr;
   PetscInt                len;
   PetscReal               *history;
   PetscViewer             viewer = vf->viewer;
 
   PetscFunctionBegin;
-  ierr = SNESGetConvergenceHistory(snes,&history,NULL,&len);CHKERRQ(ierr);
-  ierr = PetscViewerPushFormat(viewer,vf->format);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+  PetscCall(SNESGetConvergenceHistory(snes,&history,NULL,&len));
+  PetscCall(PetscViewerPushFormat(viewer,vf->format));
+  PetscCall(PetscViewerASCIIAddTab(viewer,((PetscObject)snes)->tablevel));
   if (!its || !history || its > len) {
-    ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES Function norm %14.12e \n",its,(double)fgnorm);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"%3D SNES Function norm %14.12e \n",its,(double)fgnorm));
   } else {
     PetscReal ratio = fgnorm/history[its-1];
-    ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES Function norm %14.12e %14.12e \n",its,(double)fgnorm,(double)ratio);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"%3D SNES Function norm %14.12e %14.12e \n",its,(double)fgnorm,(double)ratio));
   }
-  ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
-  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+  PetscCall(PetscViewerASCIISubtractTab(viewer,((PetscObject)snes)->tablevel));
+  PetscCall(PetscViewerPopFormat(viewer));
   PetscFunctionReturn(0);
 }
 
@@ -535,13 +521,12 @@ PetscErrorCode  SNESMonitorRatio(SNES snes,PetscInt its,PetscReal fgnorm,PetscVi
 @*/
 PetscErrorCode  SNESMonitorRatioSetUp(SNES snes,PetscViewerAndFormat *vf)
 {
-  PetscErrorCode          ierr;
   PetscReal               *history;
 
   PetscFunctionBegin;
-  ierr = SNESGetConvergenceHistory(snes,&history,NULL,NULL);CHKERRQ(ierr);
+  PetscCall(SNESGetConvergenceHistory(snes,&history,NULL,NULL));
   if (!history) {
-    ierr = SNESSetConvergenceHistory(snes,NULL,NULL,100,PETSC_TRUE);CHKERRQ(ierr);
+    PetscCall(SNESSetConvergenceHistory(snes,NULL,NULL,100,PETSC_TRUE));
   }
   PetscFunctionReturn(0);
 }
@@ -558,22 +543,21 @@ PetscErrorCode  SNESMonitorRatioSetUp(SNES snes,PetscViewerAndFormat *vf)
 */
 PetscErrorCode  SNESMonitorDefaultShort(SNES snes,PetscInt its,PetscReal fgnorm,PetscViewerAndFormat *vf)
 {
-  PetscErrorCode ierr;
   PetscViewer    viewer = vf->viewer;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
-  ierr = PetscViewerPushFormat(viewer,vf->format);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+  PetscCall(PetscViewerPushFormat(viewer,vf->format));
+  PetscCall(PetscViewerASCIIAddTab(viewer,((PetscObject)snes)->tablevel));
   if (fgnorm > 1.e-9) {
-    ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES Function norm %g \n",its,(double)fgnorm);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"%3D SNES Function norm %g \n",its,(double)fgnorm));
   } else if (fgnorm > 1.e-11) {
-    ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES Function norm %5.3e \n",its,(double)fgnorm);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"%3D SNES Function norm %5.3e \n",its,(double)fgnorm));
   } else {
-    ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES Function norm < 1.e-11\n",its);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"%3D SNES Function norm < 1.e-11\n",its));
   }
-  ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
-  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+  PetscCall(PetscViewerASCIISubtractTab(viewer,((PetscObject)snes)->tablevel));
+  PetscCall(PetscViewerPopFormat(viewer));
   PetscFunctionReturn(0);
 }
 
@@ -602,34 +586,33 @@ PetscErrorCode SNESMonitorDefaultField(SNES snes, PetscInt its, PetscReal fgnorm
   DM             dm;
   PetscReal      res[256];
   PetscInt       tablevel;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
-  ierr = SNESGetFunction(snes, &r, NULL, NULL);CHKERRQ(ierr);
-  ierr = VecGetDM(r, &dm);CHKERRQ(ierr);
-  if (!dm) {ierr = SNESMonitorDefault(snes, its, fgnorm, vf);CHKERRQ(ierr);}
+  PetscCall(SNESGetFunction(snes, &r, NULL, NULL));
+  PetscCall(VecGetDM(r, &dm));
+  if (!dm) PetscCall(SNESMonitorDefault(snes, its, fgnorm, vf));
   else {
     PetscSection s, gs;
     PetscInt     Nf, f;
 
-    ierr = DMGetLocalSection(dm, &s);CHKERRQ(ierr);
-    ierr = DMGetGlobalSection(dm, &gs);CHKERRQ(ierr);
-    if (!s || !gs) {ierr = SNESMonitorDefault(snes, its, fgnorm, vf);CHKERRQ(ierr);}
-    ierr = PetscSectionGetNumFields(s, &Nf);CHKERRQ(ierr);
+    PetscCall(DMGetLocalSection(dm, &s));
+    PetscCall(DMGetGlobalSection(dm, &gs));
+    if (!s || !gs) PetscCall(SNESMonitorDefault(snes, its, fgnorm, vf));
+    PetscCall(PetscSectionGetNumFields(s, &Nf));
     PetscCheckFalse(Nf > 256,PetscObjectComm((PetscObject) snes), PETSC_ERR_SUP, "Do not support %d fields > 256", Nf);
-    ierr = PetscSectionVecNorm(s, gs, r, NORM_2, res);CHKERRQ(ierr);
-    ierr = PetscObjectGetTabLevel((PetscObject) snes, &tablevel);CHKERRQ(ierr);
-    ierr = PetscViewerPushFormat(viewer,vf->format);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIAddTab(viewer, tablevel);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "%3D SNES Function norm %14.12e [", its, (double) fgnorm);CHKERRQ(ierr);
+    PetscCall(PetscSectionVecNorm(s, gs, r, NORM_2, res));
+    PetscCall(PetscObjectGetTabLevel((PetscObject) snes, &tablevel));
+    PetscCall(PetscViewerPushFormat(viewer,vf->format));
+    PetscCall(PetscViewerASCIIAddTab(viewer, tablevel));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "%3D SNES Function norm %14.12e [", its, (double) fgnorm));
     for (f = 0; f < Nf; ++f) {
-      if (f) {ierr = PetscViewerASCIIPrintf(viewer, ", ");CHKERRQ(ierr);}
-      ierr = PetscViewerASCIIPrintf(viewer, "%14.12e", res[f]);CHKERRQ(ierr);
+      if (f) PetscCall(PetscViewerASCIIPrintf(viewer, ", "));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "%14.12e", res[f]));
     }
-    ierr = PetscViewerASCIIPrintf(viewer, "] \n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIISubtractTab(viewer, tablevel);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer, "] \n"));
+    PetscCall(PetscViewerASCIISubtractTab(viewer, tablevel));
+    PetscCall(PetscViewerPopFormat(viewer));
   }
   PetscFunctionReturn(0);
 }
@@ -681,8 +664,6 @@ $  SNES_DIVERGED_DTOL             - (fnorm > divtol*snes->fnorm0)
 @*/
 PetscErrorCode  SNESConvergedDefault(SNES snes,PetscInt it,PetscReal xnorm,PetscReal snorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidPointer(reason,6);
@@ -695,25 +676,25 @@ PetscErrorCode  SNESConvergedDefault(SNES snes,PetscInt it,PetscReal xnorm,Petsc
     snes->rnorm0 = fnorm;
   }
   if (PetscIsInfOrNanReal(fnorm)) {
-    ierr    = PetscInfo(snes,"Failed to converged, function norm is NaN\n");CHKERRQ(ierr);
+    PetscCall(PetscInfo(snes,"Failed to converged, function norm is NaN\n"));
     *reason = SNES_DIVERGED_FNORM_NAN;
   } else if (fnorm < snes->abstol && (it || !snes->forceiteration)) {
-    ierr    = PetscInfo(snes,"Converged due to function norm %14.12e < %14.12e\n",(double)fnorm,(double)snes->abstol);CHKERRQ(ierr);
+    PetscCall(PetscInfo(snes,"Converged due to function norm %14.12e < %14.12e\n",(double)fnorm,(double)snes->abstol));
     *reason = SNES_CONVERGED_FNORM_ABS;
   } else if (snes->nfuncs >= snes->max_funcs && snes->max_funcs >= 0) {
-    ierr    = PetscInfo(snes,"Exceeded maximum number of function evaluations: %D > %D\n",snes->nfuncs,snes->max_funcs);CHKERRQ(ierr);
+    PetscCall(PetscInfo(snes,"Exceeded maximum number of function evaluations: %D > %D\n",snes->nfuncs,snes->max_funcs));
     *reason = SNES_DIVERGED_FUNCTION_COUNT;
   }
 
   if (it && !*reason) {
     if (fnorm <= snes->ttol) {
-      ierr    = PetscInfo(snes,"Converged due to function norm %14.12e < %14.12e (relative tolerance)\n",(double)fnorm,(double)snes->ttol);CHKERRQ(ierr);
+      PetscCall(PetscInfo(snes,"Converged due to function norm %14.12e < %14.12e (relative tolerance)\n",(double)fnorm,(double)snes->ttol));
       *reason = SNES_CONVERGED_FNORM_RELATIVE;
     } else if (snorm < snes->stol*xnorm) {
-      ierr    = PetscInfo(snes,"Converged due to small update length: %14.12e < %14.12e * %14.12e\n",(double)snorm,(double)snes->stol,(double)xnorm);CHKERRQ(ierr);
+      PetscCall(PetscInfo(snes,"Converged due to small update length: %14.12e < %14.12e * %14.12e\n",(double)snorm,(double)snes->stol,(double)xnorm));
       *reason = SNES_CONVERGED_SNORM_RELATIVE;
     } else if (snes->divtol > 0 && (fnorm > snes->divtol*snes->rnorm0)) {
-      ierr    = PetscInfo(snes,"Diverged due to increase in function norm: %14.12e > %14.12e * %14.12e\n",(double)fnorm,(double)snes->divtol,(double)snes->rnorm0);CHKERRQ(ierr);
+      PetscCall(PetscInfo(snes,"Diverged due to increase in function norm: %14.12e > %14.12e * %14.12e\n",(double)fnorm,(double)snes->divtol,(double)snes->rnorm0));
       *reason = SNES_DIVERGED_DTOL;
     }
 
@@ -747,8 +728,6 @@ PetscErrorCode  SNESConvergedDefault(SNES snes,PetscInt it,PetscReal xnorm,Petsc
 @*/
 PetscErrorCode  SNESConvergedSkip(SNES snes,PetscInt it,PetscReal xnorm,PetscReal snorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidPointer(reason,6);
@@ -756,7 +735,7 @@ PetscErrorCode  SNESConvergedSkip(SNES snes,PetscInt it,PetscReal xnorm,PetscRea
   *reason = SNES_CONVERGED_ITERATING;
 
   if (fnorm != fnorm) {
-    ierr    = PetscInfo(snes,"Failed to converged, function norm is NaN\n");CHKERRQ(ierr);
+    PetscCall(PetscInfo(snes,"Failed to converged, function norm is NaN\n"));
     *reason = SNES_DIVERGED_FNORM_NAN;
   } else if (it == snes->max_its) {
     *reason = SNES_CONVERGED_ITS;
@@ -778,16 +757,15 @@ PetscErrorCode SNESSetWorkVecs(SNES snes,PetscInt nw)
 {
   DM             dm;
   Vec            v;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (snes->work) {ierr = VecDestroyVecs(snes->nwork,&snes->work);CHKERRQ(ierr);}
+  if (snes->work) PetscCall(VecDestroyVecs(snes->nwork,&snes->work));
   snes->nwork = nw;
 
-  ierr = SNESGetDM(snes, &dm);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(dm, &v);CHKERRQ(ierr);
-  ierr = VecDuplicateVecs(v,snes->nwork,&snes->work);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(dm, &v);CHKERRQ(ierr);
-  ierr = PetscLogObjectParents(snes,nw,snes->work);CHKERRQ(ierr);
+  PetscCall(SNESGetDM(snes, &dm));
+  PetscCall(DMGetGlobalVector(dm, &v));
+  PetscCall(VecDuplicateVecs(v,snes->nwork,&snes->work));
+  PetscCall(DMRestoreGlobalVector(dm, &v));
+  PetscCall(PetscLogObjectParents(snes,nw,snes->work));
   PetscFunctionReturn(0);
 }

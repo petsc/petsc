@@ -11,52 +11,51 @@ int main(int argc,char **args)
   PetscReal      r1,r2,rnorm,tol = PETSC_SQRT_MACHINE_EPSILON;
   PetscScalar    one=1.0, neg_one=-1.0, value[3], four=4.0,alpha=0.1;
   PetscInt       n,col[3],n1,block,row,i,j,i2,j2,Ii,J,rstart,rend,bs=1,mbs=16,d_nz=3,o_nz=3,prob=1;
-  PetscErrorCode ierr;
   PetscMPIInt    size,rank;
   PetscBool      flg;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-mbs",&mbs,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-prob",&prob,NULL);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-mbs",&mbs,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-prob",&prob,NULL));
 
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   /* Create a BAIJ matrix A */
   n = mbs*bs;
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,n,n);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATBAIJ);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatMPIBAIJSetPreallocation(A,bs,d_nz,NULL,o_nz,NULL);CHKERRQ(ierr);
-  ierr = MatSeqBAIJSetPreallocation(A,bs,d_nz,NULL);CHKERRQ(ierr);
-  ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,n,n));
+  PetscCall(MatSetType(A,MATBAIJ));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatMPIBAIJSetPreallocation(A,bs,d_nz,NULL,o_nz,NULL));
+  PetscCall(MatSeqBAIJSetPreallocation(A,bs,d_nz,NULL));
+  PetscCall(MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE));
 
   if (bs == 1) {
     if (prob == 1) { /* tridiagonal matrix */
       value[0] = -1.0; value[1] = 0.0; value[2] = -1.0;
       for (i=1; i<n-1; i++) {
         col[0] = i-1; col[1] = i; col[2] = i+1;
-        ierr   = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
+        PetscCall(MatSetValues(A,1,&i,3,col,value,INSERT_VALUES));
       }
       i       = n - 1; col[0]=0; col[1] = n - 2; col[2] = n - 1;
       value[0]= 0.1; value[1]=-1.0; value[2]=0.0;
-      ierr    = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
+      PetscCall(MatSetValues(A,1,&i,3,col,value,INSERT_VALUES));
 
       i        = 0; col[0] = 0; col[1] = 1; col[2]=n-1;
       value[0] = 0.0; value[1] = -1.0; value[2]=0.1;
-      ierr     = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
+      PetscCall(MatSetValues(A,1,&i,3,col,value,INSERT_VALUES));
     } else if (prob ==2) { /* matrix for the five point stencil */
       n1 = (int) PetscSqrtReal((PetscReal)n);
       for (i=0; i<n1; i++) {
         for (j=0; j<n1; j++) {
           Ii = j + n1*i;
-          if (i>0)    {J = Ii - n1; ierr = MatSetValues(A,1,&Ii,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);}
-          if (i<n1-1) {J = Ii + n1; ierr = MatSetValues(A,1,&Ii,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);}
-          if (j>0)    {J = Ii - 1;  ierr = MatSetValues(A,1,&Ii,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);}
-          if (j<n1-1) {J = Ii + 1;  ierr = MatSetValues(A,1,&Ii,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);}
-          ierr = MatSetValues(A,1,&Ii,1,&Ii,&four,INSERT_VALUES);CHKERRQ(ierr);
+          if (i>0)    {J = Ii - n1; PetscCall(MatSetValues(A,1,&Ii,1,&J,&neg_one,INSERT_VALUES));}
+          if (i<n1-1) {J = Ii + n1; PetscCall(MatSetValues(A,1,&Ii,1,&J,&neg_one,INSERT_VALUES));}
+          if (j>0)    {J = Ii - 1;  PetscCall(MatSetValues(A,1,&Ii,1,&J,&neg_one,INSERT_VALUES));}
+          if (j<n1-1) {J = Ii + 1;  PetscCall(MatSetValues(A,1,&Ii,1,&J,&neg_one,INSERT_VALUES));}
+          PetscCall(MatSetValues(A,1,&Ii,1,&Ii,&four,INSERT_VALUES));
         }
       }
     }
@@ -67,192 +66,192 @@ int main(int argc,char **args)
       value[0] = -1.0; value[1] = 4.0; value[2] = -1.0;
       for (i=1+block*bs; i<bs-1+block*bs; i++) {
         col[0] = i-1; col[1] = i; col[2] = i+1;
-        ierr   = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
+        PetscCall(MatSetValues(A,1,&i,3,col,value,INSERT_VALUES));
       }
       i       = bs - 1+block*bs; col[0] = bs - 2+block*bs; col[1] = bs - 1+block*bs;
       value[0]=-1.0; value[1]=4.0;
-      ierr    = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
+      PetscCall(MatSetValues(A,1,&i,2,col,value,INSERT_VALUES));
 
       i       = 0+block*bs; col[0] = 0+block*bs; col[1] = 1+block*bs;
       value[0]=4.0; value[1] = -1.0;
-      ierr    = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
+      PetscCall(MatSetValues(A,1,&i,2,col,value,INSERT_VALUES));
     }
     /* off-diagonal blocks */
     value[0]=-1.0;
     for (i=0; i<(n/bs-1)*bs; i++) {
       col[0]=i+bs;
-      ierr  = MatSetValues(A,1,&i,1,col,value,INSERT_VALUES);CHKERRQ(ierr);
+      PetscCall(MatSetValues(A,1,&i,1,col,value,INSERT_VALUES));
       col[0]=i; row=i+bs;
-      ierr  = MatSetValues(A,1,&row,1,col,value,INSERT_VALUES);CHKERRQ(ierr);
+      PetscCall(MatSetValues(A,1,&row,1,col,value,INSERT_VALUES));
     }
   }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE));
 
   /* Get SBAIJ matrix sA from A */
-  ierr = MatConvert(A,MATSBAIJ,MAT_INITIAL_MATRIX,&sA);CHKERRQ(ierr);
+  PetscCall(MatConvert(A,MATSBAIJ,MAT_INITIAL_MATRIX,&sA));
 
   /* Test MatGetSize(), MatGetLocalSize() */
-  ierr = MatGetSize(sA, &i,&j);CHKERRQ(ierr);
-  ierr = MatGetSize(A, &i2,&j2);CHKERRQ(ierr);
+  PetscCall(MatGetSize(sA, &i,&j));
+  PetscCall(MatGetSize(A, &i2,&j2));
   i   -= i2; j -= j2;
   if (i || j) {
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatGetSize()\n",rank);CHKERRQ(ierr);
-    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+    PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatGetSize()\n",rank));
+    PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
   }
 
-  ierr = MatGetLocalSize(sA, &i,&j);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(A, &i2,&j2);CHKERRQ(ierr);
+  PetscCall(MatGetLocalSize(sA, &i,&j));
+  PetscCall(MatGetLocalSize(A, &i2,&j2));
   i2  -= i; j2 -= j;
   if (i2 || j2) {
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatGetLocalSize()\n",rank);CHKERRQ(ierr);
-    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+    PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatGetLocalSize()\n",rank));
+    PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
   }
 
   /* vectors */
   /*--------------------*/
   /* i is obtained from MatGetLocalSize() */
-  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,i,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&u);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&s1);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&s2);CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+  PetscCall(VecSetSizes(x,i,PETSC_DECIDE));
+  PetscCall(VecSetFromOptions(x));
+  PetscCall(VecDuplicate(x,&y));
+  PetscCall(VecDuplicate(x,&u));
+  PetscCall(VecDuplicate(x,&s1));
+  PetscCall(VecDuplicate(x,&s2));
 
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
-  ierr = VecSetRandom(x,rctx);CHKERRQ(ierr);
-  ierr = VecSet(u,one);CHKERRQ(ierr);
+  PetscCall(PetscRandomCreate(PETSC_COMM_WORLD,&rctx));
+  PetscCall(PetscRandomSetFromOptions(rctx));
+  PetscCall(VecSetRandom(x,rctx));
+  PetscCall(VecSet(u,one));
 
   /* Test MatNorm() */
-  ierr  = MatNorm(A,NORM_FROBENIUS,&r1);CHKERRQ(ierr);
-  ierr  = MatNorm(sA,NORM_FROBENIUS,&r2);CHKERRQ(ierr);
+  PetscCall(MatNorm(A,NORM_FROBENIUS,&r1));
+  PetscCall(MatNorm(sA,NORM_FROBENIUS,&r2));
   rnorm = PetscAbsReal(r1-r2)/r2;
   if (rnorm > tol && rank == 0) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_FROBENIUS(), Anorm=%16.14e, sAnorm=%16.14e bs=%" PetscInt_FMT "\n",(double)r1,(double)r2,bs);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_FROBENIUS(), Anorm=%16.14e, sAnorm=%16.14e bs=%" PetscInt_FMT "\n",(double)r1,(double)r2,bs));
   }
-  ierr  = MatNorm(A,NORM_INFINITY,&r1);CHKERRQ(ierr);
-  ierr  = MatNorm(sA,NORM_INFINITY,&r2);CHKERRQ(ierr);
+  PetscCall(MatNorm(A,NORM_INFINITY,&r1));
+  PetscCall(MatNorm(sA,NORM_INFINITY,&r2));
   rnorm = PetscAbsReal(r1-r2)/r2;
   if (rnorm > tol && rank == 0) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error: MatNorm_INFINITY(), Anorm=%16.14e, sAnorm=%16.14e bs=%" PetscInt_FMT "\n",(double)r1,(double)r2,bs);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error: MatNorm_INFINITY(), Anorm=%16.14e, sAnorm=%16.14e bs=%" PetscInt_FMT "\n",(double)r1,(double)r2,bs));
   }
-  ierr  = MatNorm(A,NORM_1,&r1);CHKERRQ(ierr);
-  ierr  = MatNorm(sA,NORM_1,&r2);CHKERRQ(ierr);
+  PetscCall(MatNorm(A,NORM_1,&r1));
+  PetscCall(MatNorm(sA,NORM_1,&r2));
   rnorm = PetscAbsReal(r1-r2)/r2;
   if (rnorm > tol && rank == 0) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error: MatNorm_1(), Anorm=%16.14e, sAnorm=%16.14e bs=%" PetscInt_FMT "\n",(double)r1,(double)r2,bs);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error: MatNorm_1(), Anorm=%16.14e, sAnorm=%16.14e bs=%" PetscInt_FMT "\n",(double)r1,(double)r2,bs));
   }
 
   /* Test MatGetOwnershipRange() */
-  ierr = MatGetOwnershipRange(sA,&rstart,&rend);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(A,&i2,&j2);CHKERRQ(ierr);
+  PetscCall(MatGetOwnershipRange(sA,&rstart,&rend));
+  PetscCall(MatGetOwnershipRange(A,&i2,&j2));
   i2  -= rstart; j2 -= rend;
   if (i2 || j2) {
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MaGetOwnershipRange()\n",rank);CHKERRQ(ierr);
-    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+    PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MaGetOwnershipRange()\n",rank));
+    PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
   }
 
   /* Test MatDiagonalScale() */
-  ierr = MatDiagonalScale(A,x,x);CHKERRQ(ierr);
-  ierr = MatDiagonalScale(sA,x,x);CHKERRQ(ierr);
-  ierr = MatMultEqual(A,sA,10,&flg);CHKERRQ(ierr);
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatDiagonalScale");
+  PetscCall(MatDiagonalScale(A,x,x));
+  PetscCall(MatDiagonalScale(sA,x,x));
+  PetscCall(MatMultEqual(A,sA,10,&flg));
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatDiagonalScale");
 
   /* Test MatGetDiagonal(), MatScale() */
-  ierr = MatGetDiagonal(A,s1);CHKERRQ(ierr);
-  ierr = MatGetDiagonal(sA,s2);CHKERRQ(ierr);
-  ierr = VecNorm(s1,NORM_1,&r1);CHKERRQ(ierr);
-  ierr = VecNorm(s2,NORM_1,&r2);CHKERRQ(ierr);
+  PetscCall(MatGetDiagonal(A,s1));
+  PetscCall(MatGetDiagonal(sA,s2));
+  PetscCall(VecNorm(s1,NORM_1,&r1));
+  PetscCall(VecNorm(s2,NORM_1,&r2));
   r1  -= r2;
   if (r1<-tol || r1>tol) {
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatDiagonalScale() or MatGetDiagonal(), r1=%g \n",rank,(double)r1);CHKERRQ(ierr);
-    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+    PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatDiagonalScale() or MatGetDiagonal(), r1=%g \n",rank,(double)r1));
+    PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
   }
 
-  ierr = MatScale(A,alpha);CHKERRQ(ierr);
-  ierr = MatScale(sA,alpha);CHKERRQ(ierr);
+  PetscCall(MatScale(A,alpha));
+  PetscCall(MatScale(sA,alpha));
 
   /* Test MatGetRowMaxAbs() */
-  ierr = MatGetRowMaxAbs(A,s1,NULL);CHKERRQ(ierr);
-  ierr = MatGetRowMaxAbs(sA,s2,NULL);CHKERRQ(ierr);
+  PetscCall(MatGetRowMaxAbs(A,s1,NULL));
+  PetscCall(MatGetRowMaxAbs(sA,s2,NULL));
 
-  ierr = VecNorm(s1,NORM_1,&r1);CHKERRQ(ierr);
-  ierr = VecNorm(s2,NORM_1,&r2);CHKERRQ(ierr);
+  PetscCall(VecNorm(s1,NORM_1,&r1));
+  PetscCall(VecNorm(s2,NORM_1,&r2));
   r1  -= r2;
   if (r1<-tol || r1>tol) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatGetRowMaxAbs() \n");CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"Error: MatGetRowMaxAbs() \n"));
   }
 
   /* Test MatMult(), MatMultAdd() */
-  ierr = MatMultEqual(A,sA,10,&flg);CHKERRQ(ierr);
+  PetscCall(MatMultEqual(A,sA,10,&flg));
   if (!flg) {
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatMult() or MatScale()\n",rank);CHKERRQ(ierr);
-    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+    PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatMult() or MatScale()\n",rank));
+    PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
   }
 
-  ierr = MatMultAddEqual(A,sA,10,&flg);CHKERRQ(ierr);
+  PetscCall(MatMultAddEqual(A,sA,10,&flg));
   if (!flg) {
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatMultAdd()\n",rank);CHKERRQ(ierr);
-    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+    PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatMultAdd()\n",rank));
+    PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
   }
 
   /* Test MatMultTranspose(), MatMultTransposeAdd() */
   for (i=0; i<10; i++) {
-    ierr = VecSetRandom(x,rctx);CHKERRQ(ierr);
-    ierr = MatMultTranspose(A,x,s1);CHKERRQ(ierr);
-    ierr = MatMultTranspose(sA,x,s2);CHKERRQ(ierr);
-    ierr = VecNorm(s1,NORM_1,&r1);CHKERRQ(ierr);
-    ierr = VecNorm(s2,NORM_1,&r2);CHKERRQ(ierr);
+    PetscCall(VecSetRandom(x,rctx));
+    PetscCall(MatMultTranspose(A,x,s1));
+    PetscCall(MatMultTranspose(sA,x,s2));
+    PetscCall(VecNorm(s1,NORM_1,&r1));
+    PetscCall(VecNorm(s2,NORM_1,&r2));
     r1  -= r2;
     if (r1<-tol || r1>tol) {
-      ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatMult() or MatScale(), err=%g\n",rank,(double)r1);CHKERRQ(ierr);
-      ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+      PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatMult() or MatScale(), err=%g\n",rank,(double)r1));
+      PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
     }
   }
   for (i=0; i<10; i++) {
-    ierr = VecSetRandom(x,rctx);CHKERRQ(ierr);
-    ierr = VecSetRandom(y,rctx);CHKERRQ(ierr);
-    ierr = MatMultTransposeAdd(A,x,y,s1);CHKERRQ(ierr);
-    ierr = MatMultTransposeAdd(sA,x,y,s2);CHKERRQ(ierr);
-    ierr = VecNorm(s1,NORM_1,&r1);CHKERRQ(ierr);
-    ierr = VecNorm(s2,NORM_1,&r2);CHKERRQ(ierr);
+    PetscCall(VecSetRandom(x,rctx));
+    PetscCall(VecSetRandom(y,rctx));
+    PetscCall(MatMultTransposeAdd(A,x,y,s1));
+    PetscCall(MatMultTransposeAdd(sA,x,y,s2));
+    PetscCall(VecNorm(s1,NORM_1,&r1));
+    PetscCall(VecNorm(s2,NORM_1,&r2));
     r1  -= r2;
     if (r1<-tol || r1>tol) {
-      ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatMultAdd(), err=%g \n",rank,(double)r1);CHKERRQ(ierr);
-      ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+      PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatMultAdd(), err=%g \n",rank,(double)r1));
+      PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
     }
   }
 
   /* Test MatDuplicate() */
-  ierr = MatDuplicate(sA,MAT_COPY_VALUES,&sB);CHKERRQ(ierr);
-  ierr = MatEqual(sA,sB,&flg);CHKERRQ(ierr);
+  PetscCall(MatDuplicate(sA,MAT_COPY_VALUES,&sB));
+  PetscCall(MatEqual(sA,sB,&flg));
   if (!flg) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD," Error in MatDuplicate(), sA != sB \n");CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD," Error in MatDuplicate(), sA != sB \n"));
   }
-  ierr = MatMultEqual(sA,sB,5,&flg);CHKERRQ(ierr);
+  PetscCall(MatMultEqual(sA,sB,5,&flg));
   if (!flg) {
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatDuplicate() or MatMult()\n",rank);CHKERRQ(ierr);
-    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+    PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatDuplicate() or MatMult()\n",rank));
+    PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
   }
-  ierr = MatMultAddEqual(sA,sB,5,&flg);CHKERRQ(ierr);
+  PetscCall(MatMultAddEqual(sA,sB,5,&flg));
   if (!flg) {
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatDuplicate() or MatMultAdd(()\n",rank);CHKERRQ(ierr);
-    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+    PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatDuplicate() or MatMultAdd(()\n",rank));
+    PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
   }
-  ierr = MatDestroy(&sB);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
-  ierr = VecDestroy(&s1);CHKERRQ(ierr);
-  ierr = VecDestroy(&s2);CHKERRQ(ierr);
-  ierr = MatDestroy(&sA);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(MatDestroy(&sB));
+  PetscCall(VecDestroy(&u));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&y));
+  PetscCall(VecDestroy(&s1));
+  PetscCall(VecDestroy(&s2));
+  PetscCall(MatDestroy(&sA));
+  PetscCall(MatDestroy(&A));
+  PetscCall(PetscRandomDestroy(&rctx));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -36,7 +36,6 @@ static char help[] = "\n\n";
 int main(int argc,char **argv)
 {
   PetscInt         M = 6;
-  PetscErrorCode   ierr;
   DM               da;
   Vec              local,global,natural;
   PetscInt         i,start,end,*ifrom,x,y,xm,ym;
@@ -46,99 +45,99 @@ int main(int argc,char **argv)
   VecScatter       scatter1,scatter2;
   PetscViewer      subviewer;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* Create distributed array and get vectors */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_GHOSTED,DM_BOUNDARY_GHOSTED,DMDA_STENCIL_STAR,M,M,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
-  ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_GHOSTED,DM_BOUNDARY_GHOSTED,DMDA_STENCIL_STAR,M,M,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMCreateGlobalVector(da,&global));
+  PetscCall(DMCreateLocalVector(da,&local));
 
   /* construct global to local scatter for the left side of the domain to the ghost on the bottom */
-  ierr = DMDAGetCorners(da,&x,&y,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
+  PetscCall(DMDAGetCorners(da,&x,&y,NULL,&xm,&ym,NULL));
   if (!y) { /* only processes on the bottom of the domain fill up the ghost locations */
-    ierr = ISCreateStride(PETSC_COMM_SELF,xm,1,1,&to);CHKERRQ(ierr);
+    PetscCall(ISCreateStride(PETSC_COMM_SELF,xm,1,1,&to));
   } else {
-    ierr = ISCreateStride(PETSC_COMM_SELF,0,0,0,&to);CHKERRQ(ierr);
+    PetscCall(ISCreateStride(PETSC_COMM_SELF,0,0,0,&to));
   }
-  ierr = PetscMalloc1(xm,&ifrom);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(xm,&ifrom));
   for (i=x;i<x+xm;i++) {
     ifrom[i-x] = M*i;
   }
-  ierr = DMDAGetAO(da,&ao);CHKERRQ(ierr);
-  ierr = AOApplicationToPetsc(ao,xm,ifrom);CHKERRQ(ierr);
+  PetscCall(DMDAGetAO(da,&ao));
+  PetscCall(AOApplicationToPetsc(ao,xm,ifrom));
   if (!y) {
-    ierr = ISCreateGeneral(PETSC_COMM_WORLD,xm,ifrom,PETSC_OWN_POINTER,&from);CHKERRQ(ierr);
+    PetscCall(ISCreateGeneral(PETSC_COMM_WORLD,xm,ifrom,PETSC_OWN_POINTER,&from));
   } else {
-    ierr = PetscFree(ifrom);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_WORLD,0,NULL,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
+    PetscCall(PetscFree(ifrom));
+    PetscCall(ISCreateGeneral(PETSC_COMM_WORLD,0,NULL,PETSC_COPY_VALUES,&from));
   }
-  ierr = VecScatterCreate(global,from,local,to,&scatter1);CHKERRQ(ierr);
-  ierr = ISDestroy(&to);CHKERRQ(ierr);
-  ierr = ISDestroy(&from);CHKERRQ(ierr);
+  PetscCall(VecScatterCreate(global,from,local,to,&scatter1));
+  PetscCall(ISDestroy(&to));
+  PetscCall(ISDestroy(&from));
 
   /* construct global to local scatter for the bottom side of the domain to the ghost on the right */
   if (!x) { /* only processes on the left side of the domain fill up the ghost locations */
-    ierr = ISCreateStride(PETSC_COMM_SELF,ym,xm+2,xm+2,&to);CHKERRQ(ierr);
+    PetscCall(ISCreateStride(PETSC_COMM_SELF,ym,xm+2,xm+2,&to));
   } else {
-    ierr = ISCreateStride(PETSC_COMM_SELF,0,0,0,&to);CHKERRQ(ierr);
+    PetscCall(ISCreateStride(PETSC_COMM_SELF,0,0,0,&to));
   }
-  ierr = PetscMalloc1(ym,&ifrom);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(ym,&ifrom));
   for (i=y;i<y+ym;i++) {
     ifrom[i-y] = i;
   }
-  ierr = DMDAGetAO(da,&ao);CHKERRQ(ierr);
-  ierr = AOApplicationToPetsc(ao,ym,ifrom);CHKERRQ(ierr);
+  PetscCall(DMDAGetAO(da,&ao));
+  PetscCall(AOApplicationToPetsc(ao,ym,ifrom));
   if (!x) {
-    ierr = ISCreateGeneral(PETSC_COMM_WORLD,ym,ifrom,PETSC_OWN_POINTER,&from);CHKERRQ(ierr);
+    PetscCall(ISCreateGeneral(PETSC_COMM_WORLD,ym,ifrom,PETSC_OWN_POINTER,&from));
   } else {
-    ierr = PetscFree(ifrom);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_WORLD,0,NULL,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
+    PetscCall(PetscFree(ifrom));
+    PetscCall(ISCreateGeneral(PETSC_COMM_WORLD,0,NULL,PETSC_COPY_VALUES,&from));
   }
-  ierr = VecScatterCreate(global,from,local,to,&scatter2);CHKERRQ(ierr);
-  ierr = ISDestroy(&to);CHKERRQ(ierr);
-  ierr = ISDestroy(&from);CHKERRQ(ierr);
+  PetscCall(VecScatterCreate(global,from,local,to,&scatter2));
+  PetscCall(ISDestroy(&to));
+  PetscCall(ISDestroy(&from));
 
   /*
      fill the global vector with the natural global numbering for each local entry
      this is only done for testing purposes since it is easy to see if the scatter worked correctly
   */
-  ierr = DMDACreateNaturalVector(da,&natural);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(natural,&start,&end);CHKERRQ(ierr);
-  ierr = VecGetArray(natural,&xnatural);CHKERRQ(ierr);
+  PetscCall(DMDACreateNaturalVector(da,&natural));
+  PetscCall(VecGetOwnershipRange(natural,&start,&end));
+  PetscCall(VecGetArray(natural,&xnatural));
   for (i=start; i<end; i++) {
     xnatural[i-start] = i;
   }
-  ierr = VecRestoreArray(natural,&xnatural);CHKERRQ(ierr);
-  ierr = DMDANaturalToGlobalBegin(da,natural,INSERT_VALUES,global);CHKERRQ(ierr);
-  ierr = DMDANaturalToGlobalEnd(da,natural,INSERT_VALUES,global);CHKERRQ(ierr);
-  ierr = VecDestroy(&natural);CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(natural,&xnatural));
+  PetscCall(DMDANaturalToGlobalBegin(da,natural,INSERT_VALUES,global));
+  PetscCall(DMDANaturalToGlobalEnd(da,natural,INSERT_VALUES,global));
+  PetscCall(VecDestroy(&natural));
 
   /* scatter from global to local */
-  ierr = VecScatterBegin(scatter1,global,local,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(scatter1,global,local,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterBegin(scatter2,global,local,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(scatter2,global,local,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  PetscCall(VecScatterBegin(scatter1,global,local,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(scatter1,global,local,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterBegin(scatter2,global,local,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(scatter2,global,local,INSERT_VALUES,SCATTER_FORWARD));
   /*
      normally here you would also call
-  ierr = DMGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
+  PetscCall(DMGlobalToLocalBegin(da,global,INSERT_VALUES,local));
+  PetscCall(DMGlobalToLocalEnd(da,global,INSERT_VALUES,local));
     to update all the interior ghost cells between neighboring processes.
     We don't do it here since this is only a test of "special" ghost points.
   */
 
   /* view each local ghosted vector */
-  ierr = PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&subviewer);CHKERRQ(ierr);
-  ierr = VecView(local,subviewer);CHKERRQ(ierr);
-  ierr = PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&subviewer);CHKERRQ(ierr);
+  PetscCall(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&subviewer));
+  PetscCall(VecView(local,subviewer));
+  PetscCall(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&subviewer));
 
-  ierr = VecScatterDestroy(&scatter1);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&scatter2);CHKERRQ(ierr);
-  ierr = VecDestroy(&local);CHKERRQ(ierr);
-  ierr = VecDestroy(&global);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(VecScatterDestroy(&scatter1));
+  PetscCall(VecScatterDestroy(&scatter2));
+  PetscCall(VecDestroy(&local));
+  PetscCall(VecDestroy(&global));
+  PetscCall(DMDestroy(&da));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

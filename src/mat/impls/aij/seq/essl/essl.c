@@ -32,9 +32,9 @@ PetscErrorCode MatDestroy_Essl(Mat A)
 
   PetscFunctionBegin;
   if (essl->CleanUpESSL) {
-    ierr = PetscFree4(essl->a,essl->aux,essl->ia,essl->ja);CHKERRQ(ierr);
+    PetscCall(PetscFree4(essl->a,essl->aux,essl->ia,essl->ja));
   }
-  ierr = PetscFree(A->data);CHKERRQ(ierr);
+  PetscCall(PetscFree(A->data));
   PetscFunctionReturn(0);
 }
 
@@ -46,11 +46,11 @@ PetscErrorCode MatSolve_Essl(Mat A,Vec b,Vec x)
   int            nessl,zero = 0;
 
   PetscFunctionBegin;
-  ierr = PetscBLASIntCast(A->cmap->n,&nessl);CHKERRQ(ierr);
-  ierr = VecCopy(b,x);CHKERRQ(ierr);
-  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+  PetscCall(PetscBLASIntCast(A->cmap->n,&nessl));
+  PetscCall(VecCopy(b,x));
+  PetscCall(VecGetArray(x,&xx));
   dgss(&zero,&nessl,essl->a,essl->ia,essl->ja,&essl->lna,xx,essl->aux,&essl->naux);
-  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(x,&xx));
   PetscFunctionReturn(0);
 }
 
@@ -62,12 +62,12 @@ PetscErrorCode MatLUFactorNumeric_Essl(Mat F,Mat A,const MatFactorInfo *info)
   int            nessl,i,one = 1;
 
   PetscFunctionBegin;
-  ierr = PetscBLASIntCast(A->rmap->n,&nessl);CHKERRQ(ierr);
+  PetscCall(PetscBLASIntCast(A->rmap->n,&nessl));
   /* copy matrix data into silly ESSL data structure (1-based Frotran style) */
   for (i=0; i<A->rmap->n+1; i++) essl->ia[i] = aa->i[i] + 1;
   for (i=0; i<aa->nz; i++) essl->ja[i] = aa->j[i] + 1;
 
-  ierr = PetscArraycpy(essl->a,aa->a,aa->nz);CHKERRQ(ierr);
+  PetscCall(PetscArraycpy(essl->a,aa->a,aa->nz));
 
   /* set Essl options */
   essl->iparm[0] = 1;
@@ -77,7 +77,7 @@ PetscErrorCode MatLUFactorNumeric_Essl(Mat F,Mat A,const MatFactorInfo *info)
   essl->rparm[0] = 1.e-12;
   essl->rparm[1] = 1.0;
 
-  ierr = PetscOptionsGetReal(NULL,((PetscObject)A)->prefix,"-matessl_lu_threshold",&essl->rparm[1],NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetReal(NULL,((PetscObject)A)->prefix,"-matessl_lu_threshold",&essl->rparm[1],NULL));
 
   dgsf(&one,&nessl,&essl->nz,essl->a,essl->ia,essl->ja,&essl->lna,essl->iparm,essl->rparm,essl->oparm,essl->aux,&essl->naux);
 
@@ -99,16 +99,16 @@ PetscErrorCode MatLUFactorSymbolic_Essl(Mat B,Mat A,IS r,IS c,const MatFactorInf
 
   /* allocate the work arrays required by ESSL */
   f    = info->fill;
-  ierr = PetscBLASIntCast(a->nz,&essl->nz);CHKERRQ(ierr);
-  ierr = PetscBLASIntCast((PetscInt)(a->nz*f),&essl->lna);CHKERRQ(ierr);
-  ierr = PetscBLASIntCast(100 + 10*A->rmap->n,&essl->naux);CHKERRQ(ierr);
+  PetscCall(PetscBLASIntCast(a->nz,&essl->nz));
+  PetscCall(PetscBLASIntCast((PetscInt)(a->nz*f),&essl->lna));
+  PetscCall(PetscBLASIntCast(100 + 10*A->rmap->n,&essl->naux));
 
   /* since malloc is slow on IBM we try a single malloc */
-  ierr = PetscMalloc4(essl->lna,&essl->a,essl->naux,&essl->aux,essl->lna,&essl->ia,essl->lna,&essl->ja);CHKERRQ(ierr);
+  PetscCall(PetscMalloc4(essl->lna,&essl->a,essl->naux,&essl->aux,essl->lna,&essl->ia,essl->lna,&essl->ja));
 
   essl->CleanUpESSL = PETSC_TRUE;
 
-  ierr = PetscLogObjectMemory((PetscObject)B,essl->lna*(2*sizeof(int)+sizeof(PetscScalar)) + essl->naux*sizeof(PetscScalar));CHKERRQ(ierr);
+  PetscCall(PetscLogObjectMemory((PetscObject)B,essl->lna*(2*sizeof(int)+sizeof(PetscScalar)) + essl->naux*sizeof(PetscScalar)));
 
   B->ops->lufactornumeric = MatLUFactorNumeric_Essl;
   PetscFunctionReturn(0);
@@ -143,24 +143,24 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_essl(Mat A,MatFactorType ftype,M
 
   PetscFunctionBegin;
   PetscCheckFalse(A->cmap->N != A->rmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"matrix must be square");
-  ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,A->rmap->n,A->cmap->n);CHKERRQ(ierr);
-  ierr = PetscStrallocpy("essl",&((PetscObject)B)->type_name);CHKERRQ(ierr);
-  ierr = MatSetUp(B);CHKERRQ(ierr);
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)A),&B));
+  PetscCall(MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,A->rmap->n,A->cmap->n));
+  PetscCall(PetscStrallocpy("essl",&((PetscObject)B)->type_name));
+  PetscCall(MatSetUp(B));
 
-  ierr = PetscNewLog(B,&essl);CHKERRQ(ierr);
+  PetscCall(PetscNewLog(B,&essl));
 
   B->data                  = essl;
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_Essl;
   B->ops->destroy          = MatDestroy_Essl;
   B->ops->getinfo          = MatGetInfo_External;
 
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_essl);CHKERRQ(ierr);
+  PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_essl));
 
   B->factortype = MAT_FACTOR_LU;
-  ierr = PetscStrallocpy(MATORDERINGEXTERNAL,(char**)&B->preferredordering[MAT_FACTOR_LU]);CHKERRQ(ierr);
-  ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(MATSOLVERESSL,&B->solvertype);CHKERRQ(ierr);
+  PetscCall(PetscStrallocpy(MATORDERINGEXTERNAL,(char**)&B->preferredordering[MAT_FACTOR_LU]));
+  PetscCall(PetscFree(B->solvertype));
+  PetscCall(PetscStrallocpy(MATSOLVERESSL,&B->solvertype));
 
   *F            = B;
   PetscFunctionReturn(0);
@@ -170,6 +170,6 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Essl(void)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = MatSolverTypeRegister(MATSOLVERESSL,MATSEQAIJ,          MAT_FACTOR_LU,MatGetFactor_seqaij_essl);CHKERRQ(ierr);
+  PetscCall(MatSolverTypeRegister(MATSOLVERESSL,MATSEQAIJ,          MAT_FACTOR_LU,MatGetFactor_seqaij_essl));
   PetscFunctionReturn(0);
 }

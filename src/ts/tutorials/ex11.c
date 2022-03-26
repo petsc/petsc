@@ -269,10 +269,9 @@ static PetscErrorCode PhysicsFunctional_Advect(Model mod,PetscReal time,const Pe
   Physics        phys    = (Physics)ctx;
   Physics_Advect *advect = (Physics_Advect*)phys->data;
   PetscScalar    yexact[1] = {0.0};
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PhysicsSolution_Advect(mod,time,x,yexact,phys);CHKERRQ(ierr);
+  PetscCall(PhysicsSolution_Advect(mod,time,x,yexact,phys));
   f[advect->functional.Solution] = PetscRealPart(y[0]);
   f[advect->functional.Error] = PetscAbsScalar(y[0]-yexact[0]);
   PetscFunctionReturn(0);
@@ -280,44 +279,42 @@ static PetscErrorCode PhysicsFunctional_Advect(Model mod,PetscReal time,const Pe
 
 static PetscErrorCode SetUpBC_Advect(DM dm, PetscDS prob, Physics phys)
 {
-  PetscErrorCode ierr;
   const PetscInt inflowids[] = {100,200,300},outflowids[] = {101};
   DMLabel        label;
 
   PetscFunctionBeginUser;
   /* Register "canned" boundary conditions and defaults for where to apply. */
-  ierr = DMGetLabel(dm, "Face Sets", &label);CHKERRQ(ierr);
-  ierr = PetscDSAddBoundary(prob, DM_BC_NATURAL_RIEMANN, "inflow",  label, ALEN(inflowids),  inflowids,  0, 0, NULL, (void (*)(void)) PhysicsBoundary_Advect_Inflow, NULL,  phys, NULL);CHKERRQ(ierr);
-  ierr = PetscDSAddBoundary(prob, DM_BC_NATURAL_RIEMANN, "outflow", label, ALEN(outflowids), outflowids, 0, 0, NULL, (void (*)(void)) PhysicsBoundary_Advect_Outflow, NULL, phys, NULL);CHKERRQ(ierr);
+  PetscCall(DMGetLabel(dm, "Face Sets", &label));
+  PetscCall(PetscDSAddBoundary(prob, DM_BC_NATURAL_RIEMANN, "inflow",  label, ALEN(inflowids),  inflowids,  0, 0, NULL, (void (*)(void)) PhysicsBoundary_Advect_Inflow, NULL,  phys, NULL));
+  PetscCall(PetscDSAddBoundary(prob, DM_BC_NATURAL_RIEMANN, "outflow", label, ALEN(outflowids), outflowids, 0, 0, NULL, (void (*)(void)) PhysicsBoundary_Advect_Outflow, NULL, phys, NULL));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PhysicsCreate_Advect(Model mod,Physics phys,PetscOptionItems *PetscOptionsObject)
 {
   Physics_Advect *advect;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   phys->field_desc = PhysicsFields_Advect;
   phys->riemann    = (PetscRiemannFunc)PhysicsRiemann_Advect;
-  ierr = PetscNew(&advect);CHKERRQ(ierr);
+  PetscCall(PetscNew(&advect));
   phys->data       = advect;
   mod->setupbc = SetUpBC_Advect;
 
-  ierr = PetscOptionsHead(PetscOptionsObject,"Advect options");CHKERRQ(ierr);
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"Advect options"));
   {
     PetscInt two = 2,dof = 1;
     advect->soltype = ADVECT_SOL_TILTED;
-    ierr = PetscOptionsEnum("-advect_sol_type","solution type","",AdvectSolTypes,(PetscEnum)advect->soltype,(PetscEnum*)&advect->soltype,NULL);CHKERRQ(ierr);
+    PetscCall(PetscOptionsEnum("-advect_sol_type","solution type","",AdvectSolTypes,(PetscEnum)advect->soltype,(PetscEnum*)&advect->soltype,NULL));
     switch (advect->soltype) {
     case ADVECT_SOL_TILTED: {
       Physics_Advect_Tilted *tilted = &advect->sol.tilted;
       two = 2;
       tilted->wind[0] = 0.0;
       tilted->wind[1] = 1.0;
-      ierr = PetscOptionsRealArray("-advect_tilted_wind","background wind vx,vy","",tilted->wind,&two,NULL);CHKERRQ(ierr);
+      PetscCall(PetscOptionsRealArray("-advect_tilted_wind","background wind vx,vy","",tilted->wind,&two,NULL));
       advect->inflowState = -2.0;
-      ierr = PetscOptionsRealArray("-advect_tilted_inflow","Inflow state","",&advect->inflowState,&dof,NULL);CHKERRQ(ierr);
+      PetscCall(PetscOptionsRealArray("-advect_tilted_inflow","Inflow state","",&advect->inflowState,&dof,NULL));
       phys->maxspeed = Norm2Real(tilted->wind);
     } break;
     case ADVECT_SOL_BUMP_CAVITY:
@@ -326,21 +323,21 @@ static PetscErrorCode PhysicsCreate_Advect(Model mod,Physics phys,PetscOptionIte
       two = 2;
       bump->center[0] = 2.;
       bump->center[1] = 0.;
-      ierr = PetscOptionsRealArray("-advect_bump_center","location of center of bump x,y","",bump->center,&two,NULL);CHKERRQ(ierr);
+      PetscCall(PetscOptionsRealArray("-advect_bump_center","location of center of bump x,y","",bump->center,&two,NULL));
       bump->radius = 0.9;
-      ierr = PetscOptionsReal("-advect_bump_radius","radius of bump","",bump->radius,&bump->radius,NULL);CHKERRQ(ierr);
+      PetscCall(PetscOptionsReal("-advect_bump_radius","radius of bump","",bump->radius,&bump->radius,NULL));
       bump->type = ADVECT_SOL_BUMP_CONE;
-      ierr = PetscOptionsEnum("-advect_bump_type","type of bump","",AdvectSolBumpTypes,(PetscEnum)bump->type,(PetscEnum*)&bump->type,NULL);CHKERRQ(ierr);
+      PetscCall(PetscOptionsEnum("-advect_bump_type","type of bump","",AdvectSolBumpTypes,(PetscEnum)bump->type,(PetscEnum*)&bump->type,NULL));
       phys->maxspeed = 3.;       /* radius of mesh, kludge */
     } break;
     }
   }
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscCall(PetscOptionsTail());
   /* Initial/transient solution with default boundary conditions */
-  ierr = ModelSolutionSetDefault(mod,PhysicsSolution_Advect,phys);CHKERRQ(ierr);
+  PetscCall(ModelSolutionSetDefault(mod,PhysicsSolution_Advect,phys));
   /* Register "canned" functionals */
-  ierr = ModelFunctionalRegister(mod,"Solution",&advect->functional.Solution,PhysicsFunctional_Advect,phys);CHKERRQ(ierr);
-  ierr = ModelFunctionalRegister(mod,"Error",&advect->functional.Error,PhysicsFunctional_Advect,phys);CHKERRQ(ierr);
+  PetscCall(ModelFunctionalRegister(mod,"Solution",&advect->functional.Solution,PhysicsFunctional_Advect,phys));
+  PetscCall(ModelFunctionalRegister(mod,"Error",&advect->functional.Error,PhysicsFunctional_Advect,phys));
   PetscFunctionReturn(0);
 }
 
@@ -516,13 +513,12 @@ static PetscErrorCode PhysicsFunctional_SW(Model mod,PetscReal time,const PetscR
 
 static PetscErrorCode SetUpBC_SW(DM dm, PetscDS prob,Physics phys)
 {
-  PetscErrorCode ierr;
   const PetscInt wallids[] = {100,101,200,300};
   DMLabel        label;
 
   PetscFunctionBeginUser;
-  ierr = DMGetLabel(dm, "Face Sets", &label);CHKERRQ(ierr);
-  ierr = PetscDSAddBoundary(prob, DM_BC_NATURAL_RIEMANN, "wall", label, ALEN(wallids), wallids, 0, 0, NULL, (void (*)(void)) PhysicsBoundary_SW_Wall, NULL, phys, NULL);CHKERRQ(ierr);
+  PetscCall(DMGetLabel(dm, "Face Sets", &label));
+  PetscCall(PetscDSAddBoundary(prob, DM_BC_NATURAL_RIEMANN, "wall", label, ALEN(wallids), wallids, 0, 0, NULL, (void (*)(void)) PhysicsBoundary_SW_Wall, NULL, phys, NULL));
   PetscFunctionReturn(0);
 }
 
@@ -530,33 +526,32 @@ static PetscErrorCode PhysicsCreate_SW(Model mod,Physics phys,PetscOptionItems *
 {
   Physics_SW     *sw;
   char           sw_riemann[64] = "rusanov";
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   phys->field_desc = PhysicsFields_SW;
-  ierr          = PetscNew(&sw);CHKERRQ(ierr);
+  PetscCall(PetscNew(&sw));
   phys->data    = sw;
   mod->setupbc  = SetUpBC_SW;
 
   PetscFunctionListAdd(&PhysicsRiemannList_SW, "rusanov", PhysicsRiemann_SW_Rusanov);
   PetscFunctionListAdd(&PhysicsRiemannList_SW, "hll", PhysicsRiemann_SW_HLL);
 
-  ierr          = PetscOptionsHead(PetscOptionsObject,"SW options");CHKERRQ(ierr);
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"SW options"));
   {
     void (*PhysicsRiemann_SW)(PetscInt, PetscInt, const PetscReal *, const PetscReal *, const PetscScalar *, const PetscScalar *, PetscInt, const PetscScalar, PetscScalar *, Physics);
     sw->gravity = 1.0;
-    ierr = PetscOptionsReal("-sw_gravity","Gravitational constant","",sw->gravity,&sw->gravity,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsFList("-sw_riemann","Riemann solver","",PhysicsRiemannList_SW,sw_riemann,sw_riemann,sizeof sw_riemann,NULL);CHKERRQ(ierr);
-    ierr = PetscFunctionListFind(PhysicsRiemannList_SW,sw_riemann,&PhysicsRiemann_SW);CHKERRQ(ierr);
+    PetscCall(PetscOptionsReal("-sw_gravity","Gravitational constant","",sw->gravity,&sw->gravity,NULL));
+    PetscCall(PetscOptionsFList("-sw_riemann","Riemann solver","",PhysicsRiemannList_SW,sw_riemann,sw_riemann,sizeof sw_riemann,NULL));
+    PetscCall(PetscFunctionListFind(PhysicsRiemannList_SW,sw_riemann,&PhysicsRiemann_SW));
     phys->riemann = (PetscRiemannFunc) PhysicsRiemann_SW;
   }
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscCall(PetscOptionsTail());
   phys->maxspeed = PetscSqrtReal(2.0*sw->gravity); /* Mach 1 for depth of 2 */
 
-  ierr = ModelSolutionSetDefault(mod,PhysicsSolution_SW,phys);CHKERRQ(ierr);
-  ierr = ModelFunctionalRegister(mod,"Height",&sw->functional.Height,PhysicsFunctional_SW,phys);CHKERRQ(ierr);
-  ierr = ModelFunctionalRegister(mod,"Speed",&sw->functional.Speed,PhysicsFunctional_SW,phys);CHKERRQ(ierr);
-  ierr = ModelFunctionalRegister(mod,"Energy",&sw->functional.Energy,PhysicsFunctional_SW,phys);CHKERRQ(ierr);
+  PetscCall(ModelSolutionSetDefault(mod,PhysicsSolution_SW,phys));
+  PetscCall(ModelFunctionalRegister(mod,"Height",&sw->functional.Height,PhysicsFunctional_SW,phys));
+  PetscCall(ModelFunctionalRegister(mod,"Speed",&sw->functional.Speed,PhysicsFunctional_SW,phys));
+  PetscCall(ModelFunctionalRegister(mod,"Energy",&sw->functional.Energy,PhysicsFunctional_SW,phys));
 
   PetscFunctionReturn(0);
 }
@@ -788,19 +783,18 @@ static PetscErrorCode PhysicsFunctional_Euler(Model mod,PetscReal time,const Pet
 
 static PetscErrorCode SetUpBC_Euler(DM dm, PetscDS prob,Physics phys)
 {
-  PetscErrorCode  ierr;
   Physics_Euler   *eu = (Physics_Euler *) phys->data;
   DMLabel         label;
 
   PetscFunctionBeginUser;
-  ierr = DMGetLabel(dm, "Face Sets", &label);CHKERRQ(ierr);
+  PetscCall(DMGetLabel(dm, "Face Sets", &label));
   if (eu->type == EULER_LINEAR_WAVE) {
     const PetscInt wallids[] = {100,101};
-    ierr = PetscDSAddBoundary(prob, DM_BC_NATURAL_RIEMANN, "wall", label, ALEN(wallids), wallids, 0, 0, NULL, (void (*)(void)) PhysicsBoundary_Euler_Wall, NULL, phys, NULL);CHKERRQ(ierr);
+    PetscCall(PetscDSAddBoundary(prob, DM_BC_NATURAL_RIEMANN, "wall", label, ALEN(wallids), wallids, 0, 0, NULL, (void (*)(void)) PhysicsBoundary_Euler_Wall, NULL, phys, NULL));
   }
   else {
     const PetscInt wallids[] = {100,101,200,300};
-    ierr = PetscDSAddBoundary(prob, DM_BC_NATURAL_RIEMANN, "wall", label, ALEN(wallids), wallids, 0, 0, NULL, (void (*)(void)) PhysicsBoundary_Euler_Wall, NULL, phys, NULL);CHKERRQ(ierr);
+    PetscCall(PetscDSAddBoundary(prob, DM_BC_NATURAL_RIEMANN, "wall", label, ALEN(wallids), wallids, 0, 0, NULL, (void (*)(void)) PhysicsBoundary_Euler_Wall, NULL, phys, NULL));
   }
   PetscFunctionReturn(0);
 }
@@ -808,15 +802,14 @@ static PetscErrorCode SetUpBC_Euler(DM dm, PetscDS prob,Physics phys)
 static PetscErrorCode PhysicsCreate_Euler(Model mod,Physics phys,PetscOptionItems *PetscOptionsObject)
 {
   Physics_Euler   *eu;
-  PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
   phys->field_desc = PhysicsFields_Euler;
   phys->riemann = (PetscRiemannFunc) PhysicsRiemann_Euler_Godunov;
-  ierr = PetscNew(&eu);CHKERRQ(ierr);
+  PetscCall(PetscNew(&eu));
   phys->data    = eu;
   mod->setupbc = SetUpBC_Euler;
-  ierr = PetscOptionsHead(PetscOptionsObject,"Euler options");CHKERRQ(ierr);
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"Euler options"));
   {
     PetscReal alpha;
     char type[64] = "linear_wave";
@@ -825,51 +818,51 @@ static PetscErrorCode PhysicsCreate_Euler(Model mod,Physics phys,PetscOptionItem
     eu->pars[EULER_PAR_AMACH] = 2.02;
     eu->pars[EULER_PAR_RHOR] = 3.0;
     eu->pars[EULER_PAR_ITANA] = 0.57735026918963; /* angle of Euler self similar (SS) shock */
-    ierr = PetscOptionsReal("-eu_gamma","Heat capacity ratio","",eu->pars[EULER_PAR_GAMMA],&eu->pars[EULER_PAR_GAMMA],NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-eu_amach","Shock speed (Mach)","",eu->pars[EULER_PAR_AMACH],&eu->pars[EULER_PAR_AMACH],NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-eu_rho2","Density right of discontinuity","",eu->pars[EULER_PAR_RHOR],&eu->pars[EULER_PAR_RHOR],NULL);CHKERRQ(ierr);
+    PetscCall(PetscOptionsReal("-eu_gamma","Heat capacity ratio","",eu->pars[EULER_PAR_GAMMA],&eu->pars[EULER_PAR_GAMMA],NULL));
+    PetscCall(PetscOptionsReal("-eu_amach","Shock speed (Mach)","",eu->pars[EULER_PAR_AMACH],&eu->pars[EULER_PAR_AMACH],NULL));
+    PetscCall(PetscOptionsReal("-eu_rho2","Density right of discontinuity","",eu->pars[EULER_PAR_RHOR],&eu->pars[EULER_PAR_RHOR],NULL));
     alpha = 60.;
-    ierr = PetscOptionsReal("-eu_alpha","Angle of discontinuity","",alpha,&alpha,NULL);CHKERRQ(ierr);
+    PetscCall(PetscOptionsReal("-eu_alpha","Angle of discontinuity","",alpha,&alpha,NULL));
     PetscCheck(alpha>0. && alpha<=90.,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Alpha bust be > 0 and <= 90 (%g)",alpha);
     eu->pars[EULER_PAR_ITANA] = 1./PetscTanReal( alpha * PETSC_PI / 180.0);
-    ierr = PetscOptionsString("-eu_type","Type of Euler test","",type,type,sizeof(type),NULL);CHKERRQ(ierr);
-    ierr = PetscStrcmp(type,"linear_wave", &is);CHKERRQ(ierr);
+    PetscCall(PetscOptionsString("-eu_type","Type of Euler test","",type,type,sizeof(type),NULL));
+    PetscCall(PetscStrcmp(type,"linear_wave", &is));
     if (is) {
       /* Remember this should be periodic */
       eu->type = EULER_LINEAR_WAVE;
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%s set Euler type: %s\n",PETSC_FUNCTION_NAME,"linear_wave");CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%s set Euler type: %s\n",PETSC_FUNCTION_NAME,"linear_wave"));
     }
     else {
       PetscCheck(DIM == 2,PETSC_COMM_WORLD,PETSC_ERR_SUP,"DIM must be 2 unless linear wave test %s",type);
-      ierr = PetscStrcmp(type,"iv_shock", &is);CHKERRQ(ierr);
+      PetscCall(PetscStrcmp(type,"iv_shock", &is));
       if (is) {
         eu->type = EULER_IV_SHOCK;
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"%s set Euler type: %s\n",PETSC_FUNCTION_NAME,"iv_shock");CHKERRQ(ierr);
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%s set Euler type: %s\n",PETSC_FUNCTION_NAME,"iv_shock"));
       }
       else {
-        ierr = PetscStrcmp(type,"ss_shock", &is);CHKERRQ(ierr);
+        PetscCall(PetscStrcmp(type,"ss_shock", &is));
         if (is) {
           eu->type = EULER_SS_SHOCK;
-          ierr = PetscPrintf(PETSC_COMM_WORLD,"%s set Euler type: %s\n",PETSC_FUNCTION_NAME,"ss_shock");CHKERRQ(ierr);
+          PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%s set Euler type: %s\n",PETSC_FUNCTION_NAME,"ss_shock"));
         }
         else {
-          ierr = PetscStrcmp(type,"shock_tube", &is);CHKERRQ(ierr);
+          PetscCall(PetscStrcmp(type,"shock_tube", &is));
           if (is) eu->type = EULER_SHOCK_TUBE;
           else SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unknown Euler type %s",type);
-          ierr = PetscPrintf(PETSC_COMM_WORLD,"%s set Euler type: %s\n",PETSC_FUNCTION_NAME,"shock_tube");CHKERRQ(ierr);
+          PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%s set Euler type: %s\n",PETSC_FUNCTION_NAME,"shock_tube"));
         }
       }
     }
   }
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscCall(PetscOptionsTail());
   eu->sound = SpeedOfSound_PG;
   phys->maxspeed = 0.; /* will get set in solution */
-  ierr = ModelSolutionSetDefault(mod,PhysicsSolution_Euler,phys);CHKERRQ(ierr);
-  ierr = ModelFunctionalRegister(mod,"Speed",&eu->monitor.Speed,PhysicsFunctional_Euler,phys);CHKERRQ(ierr);
-  ierr = ModelFunctionalRegister(mod,"Energy",&eu->monitor.Energy,PhysicsFunctional_Euler,phys);CHKERRQ(ierr);
-  ierr = ModelFunctionalRegister(mod,"Density",&eu->monitor.Density,PhysicsFunctional_Euler,phys);CHKERRQ(ierr);
-  ierr = ModelFunctionalRegister(mod,"Momentum",&eu->monitor.Momentum,PhysicsFunctional_Euler,phys);CHKERRQ(ierr);
-  ierr = ModelFunctionalRegister(mod,"Pressure",&eu->monitor.Pressure,PhysicsFunctional_Euler,phys);CHKERRQ(ierr);
+  PetscCall(ModelSolutionSetDefault(mod,PhysicsSolution_Euler,phys));
+  PetscCall(ModelFunctionalRegister(mod,"Speed",&eu->monitor.Speed,PhysicsFunctional_Euler,phys));
+  PetscCall(ModelFunctionalRegister(mod,"Energy",&eu->monitor.Energy,PhysicsFunctional_Euler,phys));
+  PetscCall(ModelFunctionalRegister(mod,"Density",&eu->monitor.Density,PhysicsFunctional_Euler,phys));
+  PetscCall(ModelFunctionalRegister(mod,"Momentum",&eu->monitor.Momentum,PhysicsFunctional_Euler,phys));
+  PetscCall(ModelFunctionalRegister(mod,"Pressure",&eu->monitor.Pressure,PhysicsFunctional_Euler,phys));
 
   PetscFunctionReturn(0);
 }
@@ -898,36 +891,35 @@ PetscErrorCode CreatePartitionVec(DM dm, DM *dmCell, Vec *partition)
   PetscScalar    *part;
   PetscInt       cStart, cEnd, c;
   PetscMPIInt    rank;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = DMClone(dm, dmCell);CHKERRQ(ierr);
-  ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
-  ierr = DMSetPointSF(*dmCell, sfPoint);CHKERRQ(ierr);
-  ierr = DMSetCoordinateSection(*dmCell, PETSC_DETERMINE, coordSection);CHKERRQ(ierr);
-  ierr = DMSetCoordinatesLocal(*dmCell, coordinates);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRMPI(ierr);
-  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &sectionCell);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(*dmCell, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(sectionCell, cStart, cEnd);CHKERRQ(ierr);
+  PetscCall(DMGetCoordinateSection(dm, &coordSection));
+  PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
+  PetscCall(DMClone(dm, dmCell));
+  PetscCall(DMGetPointSF(dm, &sfPoint));
+  PetscCall(DMSetPointSF(*dmCell, sfPoint));
+  PetscCall(DMSetCoordinateSection(*dmCell, PETSC_DETERMINE, coordSection));
+  PetscCall(DMSetCoordinatesLocal(*dmCell, coordinates));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
+  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)dm), &sectionCell));
+  PetscCall(DMPlexGetHeightStratum(*dmCell, 0, &cStart, &cEnd));
+  PetscCall(PetscSectionSetChart(sectionCell, cStart, cEnd));
   for (c = cStart; c < cEnd; ++c) {
-    ierr = PetscSectionSetDof(sectionCell, c, 1);CHKERRQ(ierr);
+    PetscCall(PetscSectionSetDof(sectionCell, c, 1));
   }
-  ierr = PetscSectionSetUp(sectionCell);CHKERRQ(ierr);
-  ierr = DMSetLocalSection(*dmCell, sectionCell);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&sectionCell);CHKERRQ(ierr);
-  ierr = DMCreateLocalVector(*dmCell, partition);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)*partition, "partition");CHKERRQ(ierr);
-  ierr = VecGetArray(*partition, &part);CHKERRQ(ierr);
+  PetscCall(PetscSectionSetUp(sectionCell));
+  PetscCall(DMSetLocalSection(*dmCell, sectionCell));
+  PetscCall(PetscSectionDestroy(&sectionCell));
+  PetscCall(DMCreateLocalVector(*dmCell, partition));
+  PetscCall(PetscObjectSetName((PetscObject)*partition, "partition"));
+  PetscCall(VecGetArray(*partition, &part));
   for (c = cStart; c < cEnd; ++c) {
     PetscScalar *p;
 
-    ierr = DMPlexPointLocalRef(*dmCell, c, part, &p);CHKERRQ(ierr);
+    PetscCall(DMPlexPointLocalRef(*dmCell, c, part, &p));
     p[0] = rank;
   }
-  ierr = VecRestoreArray(*partition, &part);CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(*partition, &part));
   PetscFunctionReturn(0);
 }
 
@@ -940,71 +932,70 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
   PetscScalar       *m;
   const PetscScalar *fgeom, *cgeom, *coords;
   PetscInt          vStart, vEnd, v;
-  PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
-  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = DMClone(dm, &dmMass);CHKERRQ(ierr);
-  ierr = DMSetCoordinateSection(dmMass, PETSC_DETERMINE, coordSection);CHKERRQ(ierr);
-  ierr = DMSetCoordinatesLocal(dmMass, coordinates);CHKERRQ(ierr);
-  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &sectionMass);CHKERRQ(ierr);
-  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(sectionMass, vStart, vEnd);CHKERRQ(ierr);
+  PetscCall(DMConvert(dm, DMPLEX, &plex));
+  PetscCall(DMGetCoordinateSection(dm, &coordSection));
+  PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
+  PetscCall(DMClone(dm, &dmMass));
+  PetscCall(DMSetCoordinateSection(dmMass, PETSC_DETERMINE, coordSection));
+  PetscCall(DMSetCoordinatesLocal(dmMass, coordinates));
+  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)dm), &sectionMass));
+  PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
+  PetscCall(PetscSectionSetChart(sectionMass, vStart, vEnd));
   for (v = vStart; v < vEnd; ++v) {
     PetscInt numFaces;
 
-    ierr = DMPlexGetSupportSize(dmMass, v, &numFaces);CHKERRQ(ierr);
-    ierr = PetscSectionSetDof(sectionMass, v, numFaces*numFaces);CHKERRQ(ierr);
+    PetscCall(DMPlexGetSupportSize(dmMass, v, &numFaces));
+    PetscCall(PetscSectionSetDof(sectionMass, v, numFaces*numFaces));
   }
-  ierr = PetscSectionSetUp(sectionMass);CHKERRQ(ierr);
-  ierr = DMSetLocalSection(dmMass, sectionMass);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&sectionMass);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dmMass, massMatrix);CHKERRQ(ierr);
-  ierr = VecGetArray(*massMatrix, &m);CHKERRQ(ierr);
-  ierr = DMPlexGetGeometryFVM(plex, &facegeom, &cellgeom, NULL);CHKERRQ(ierr);
-  ierr = VecGetDM(facegeom, &dmFace);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(facegeom, &fgeom);CHKERRQ(ierr);
-  ierr = VecGetDM(cellgeom, &dmCell);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(cellgeom, &cgeom);CHKERRQ(ierr);
-  ierr = DMGetCoordinateDM(dm, &dmCoord);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
+  PetscCall(PetscSectionSetUp(sectionMass));
+  PetscCall(DMSetLocalSection(dmMass, sectionMass));
+  PetscCall(PetscSectionDestroy(&sectionMass));
+  PetscCall(DMGetLocalVector(dmMass, massMatrix));
+  PetscCall(VecGetArray(*massMatrix, &m));
+  PetscCall(DMPlexGetGeometryFVM(plex, &facegeom, &cellgeom, NULL));
+  PetscCall(VecGetDM(facegeom, &dmFace));
+  PetscCall(VecGetArrayRead(facegeom, &fgeom));
+  PetscCall(VecGetDM(cellgeom, &dmCell));
+  PetscCall(VecGetArrayRead(cellgeom, &cgeom));
+  PetscCall(DMGetCoordinateDM(dm, &dmCoord));
+  PetscCall(VecGetArrayRead(coordinates, &coords));
   for (v = vStart; v < vEnd; ++v) {
     const PetscInt        *faces;
     PetscFVFaceGeom       *fgA, *fgB, *cg;
     PetscScalar           *vertex;
     PetscInt               numFaces, sides[2], f, g;
 
-    ierr = DMPlexPointLocalRead(dmCoord, v, coords, &vertex);CHKERRQ(ierr);
-    ierr = DMPlexGetSupportSize(dmMass, v, &numFaces);CHKERRQ(ierr);
-    ierr = DMPlexGetSupport(dmMass, v, &faces);CHKERRQ(ierr);
+    PetscCall(DMPlexPointLocalRead(dmCoord, v, coords, &vertex));
+    PetscCall(DMPlexGetSupportSize(dmMass, v, &numFaces));
+    PetscCall(DMPlexGetSupport(dmMass, v, &faces));
     for (f = 0; f < numFaces; ++f) {
       sides[0] = faces[f];
-      ierr = DMPlexPointLocalRead(dmFace, faces[f], fgeom, &fgA);CHKERRQ(ierr);
+      PetscCall(DMPlexPointLocalRead(dmFace, faces[f], fgeom, &fgA));
       for (g = 0; g < numFaces; ++g) {
         const PetscInt *cells = NULL;
         PetscReal      area   = 0.0;
         PetscInt       numCells;
 
         sides[1] = faces[g];
-        ierr = DMPlexPointLocalRead(dmFace, faces[g], fgeom, &fgB);CHKERRQ(ierr);
-        ierr = DMPlexGetJoin(dmMass, 2, sides, &numCells, &cells);CHKERRQ(ierr);
+        PetscCall(DMPlexPointLocalRead(dmFace, faces[g], fgeom, &fgB));
+        PetscCall(DMPlexGetJoin(dmMass, 2, sides, &numCells, &cells));
         PetscCheck(numCells == 1,PETSC_COMM_SELF, PETSC_ERR_LIB, "Invalid join for faces");
-        ierr = DMPlexPointLocalRead(dmCell, cells[0], cgeom, &cg);CHKERRQ(ierr);
+        PetscCall(DMPlexPointLocalRead(dmCell, cells[0], cgeom, &cg));
         area += PetscAbsScalar((vertex[0] - cg->centroid[0])*(fgA->centroid[1] - cg->centroid[1]) - (vertex[1] - cg->centroid[1])*(fgA->centroid[0] - cg->centroid[0]));
         area += PetscAbsScalar((vertex[0] - cg->centroid[0])*(fgB->centroid[1] - cg->centroid[1]) - (vertex[1] - cg->centroid[1])*(fgB->centroid[0] - cg->centroid[0]));
         m[f*numFaces+g] = Dot2Real(fgA->normal, fgB->normal)*area*0.5;
-        ierr = DMPlexRestoreJoin(dmMass, 2, sides, &numCells, &cells);CHKERRQ(ierr);
+        PetscCall(DMPlexRestoreJoin(dmMass, 2, sides, &numCells, &cells));
       }
     }
   }
-  ierr = VecRestoreArrayRead(facegeom, &fgeom);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(cellgeom, &cgeom);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(coordinates, &coords);CHKERRQ(ierr);
-  ierr = VecRestoreArray(*massMatrix, &m);CHKERRQ(ierr);
-  ierr = DMDestroy(&dmMass);CHKERRQ(ierr);
-  ierr = DMDestroy(&plex);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(facegeom, &fgeom));
+  PetscCall(VecRestoreArrayRead(cellgeom, &cgeom));
+  PetscCall(VecRestoreArrayRead(coordinates, &coords));
+  PetscCall(VecRestoreArray(*massMatrix, &m));
+  PetscCall(DMDestroy(&dmMass));
+  PetscCall(DMDestroy(&plex));
   PetscFunctionReturn(0);
 }
 
@@ -1019,14 +1010,13 @@ static PetscErrorCode ModelSolutionSetDefault(Model mod,SolutionFunction func,vo
 
 static PetscErrorCode ModelFunctionalRegister(Model mod,const char *name,PetscInt *offset,FunctionalFunction func,void *ctx)
 {
-  PetscErrorCode ierr;
   FunctionalLink link,*ptr;
   PetscInt       lastoffset = -1;
 
   PetscFunctionBeginUser;
   for (ptr=&mod->functionalRegistry; *ptr; ptr = &(*ptr)->next) lastoffset = (*ptr)->offset;
-  ierr         = PetscNew(&link);CHKERRQ(ierr);
-  ierr         = PetscStrallocpy(name,&link->name);CHKERRQ(ierr);
+  PetscCall(PetscNew(&link));
+  PetscCall(PetscStrallocpy(name,&link->name));
   link->offset = lastoffset + 1;
   link->func   = func;
   link->ctx    = ctx;
@@ -1038,23 +1028,22 @@ static PetscErrorCode ModelFunctionalRegister(Model mod,const char *name,PetscIn
 
 static PetscErrorCode ModelFunctionalSetFromOptions(Model mod,PetscOptionItems *PetscOptionsObject)
 {
-  PetscErrorCode ierr;
   PetscInt       i,j;
   FunctionalLink link;
   char           *names[256];
 
   PetscFunctionBeginUser;
   mod->numMonitored = ALEN(names);
-  ierr = PetscOptionsStringArray("-monitor","list of functionals to monitor","",names,&mod->numMonitored,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsStringArray("-monitor","list of functionals to monitor","",names,&mod->numMonitored,NULL));
   /* Create list of functionals that will be computed somehow */
-  ierr = PetscMalloc1(mod->numMonitored,&mod->functionalMonitored);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(mod->numMonitored,&mod->functionalMonitored));
   /* Create index of calls that we will have to make to compute these functionals (over-allocation in general). */
-  ierr = PetscMalloc1(mod->numMonitored,&mod->functionalCall);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(mod->numMonitored,&mod->functionalCall));
   mod->numCall = 0;
   for (i=0; i<mod->numMonitored; i++) {
     for (link=mod->functionalRegistry; link; link=link->next) {
       PetscBool match;
-      ierr = PetscStrcasecmp(names[i],link->name,&match);CHKERRQ(ierr);
+      PetscCall(PetscStrcasecmp(names[i],link->name,&match));
       if (match) break;
     }
     PetscCheck(link,mod->comm,PETSC_ERR_USER,"No known functional '%s'",names[i]);
@@ -1064,7 +1053,7 @@ static PetscErrorCode ModelFunctionalSetFromOptions(Model mod,PetscOptionItems *
     }
     mod->functionalCall[mod->numCall++] = link; /* Just points to the first link using the result. There may be more results. */
 next_name:
-    ierr = PetscFree(names[i]);CHKERRQ(ierr);
+    PetscCall(PetscFree(names[i]));
   }
 
   /* Find out the maximum index of any functional computed by a function we will be calling (even if we are not using it) */
@@ -1082,7 +1071,6 @@ next_name:
 
 static PetscErrorCode FunctionalLinkDestroy(FunctionalLink *link)
 {
-  PetscErrorCode ierr;
   FunctionalLink l,next;
 
   PetscFunctionBeginUser;
@@ -1091,8 +1079,8 @@ static PetscErrorCode FunctionalLinkDestroy(FunctionalLink *link)
   *link = NULL;
   for (; l; l=next) {
     next = l->next;
-    ierr = PetscFree(l->name);CHKERRQ(ierr);
-    ierr = PetscFree(l);CHKERRQ(ierr);
+    PetscCall(PetscFree(l->name));
+    PetscCall(PetscFree(l));
   }
   PetscFunctionReturn(0);
 }
@@ -1101,10 +1089,9 @@ static PetscErrorCode FunctionalLinkDestroy(FunctionalLink *link)
 static PetscErrorCode SolutionFunctional(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *modctx)
 {
   Model          mod;
-  PetscErrorCode ierr;
   PetscFunctionBegin;
   mod  = (Model) modctx;
-  ierr = (*mod->solution)(mod, time, x, u, mod->solutionctx);CHKERRQ(ierr);
+  PetscCall((*mod->solution)(mod, time, x, u, mod->solutionctx));
   PetscFunctionReturn(0);
 }
 
@@ -1113,23 +1100,20 @@ PetscErrorCode SetInitialCondition(DM dm, Vec X, User user)
   PetscErrorCode     (*func[1]) (PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
   void               *ctx[1];
   Model              mod = user->model;
-  PetscErrorCode     ierr;
 
   PetscFunctionBeginUser;
   func[0] = SolutionFunctional;
   ctx[0]  = (void *) mod;
-  ierr    = DMProjectFunction(dm,0.0,func,ctx,INSERT_ALL_VALUES,X);CHKERRQ(ierr);
+  PetscCall(DMProjectFunction(dm,0.0,func,ctx,INSERT_ALL_VALUES,X));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode OutputVTK(DM dm, const char *filename, PetscViewer *viewer)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
-  ierr = PetscViewerCreate(PetscObjectComm((PetscObject)dm), viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(*viewer, PETSCVIEWERVTK);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetName(*viewer, filename);CHKERRQ(ierr);
+  PetscCall(PetscViewerCreate(PetscObjectComm((PetscObject)dm), viewer));
+  PetscCall(PetscViewerSetType(*viewer, PETSCVIEWERVTK));
+  PetscCall(PetscViewerFileSetName(*viewer, filename));
   PetscFunctionReturn(0);
 }
 
@@ -1140,12 +1124,11 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
   PetscViewer    viewer;
   char           filename[PETSC_MAX_PATH_LEN],*ftable = NULL;
   PetscReal      xnorm;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscObjectSetName((PetscObject) X, "u");CHKERRQ(ierr);
-  ierr = VecGetDM(X,&dm);CHKERRQ(ierr);
-  ierr = VecNorm(X,NORM_INFINITY,&xnorm);CHKERRQ(ierr);
+  PetscCall(PetscObjectSetName((PetscObject) X, "u"));
+  PetscCall(VecGetDM(X,&dm));
+  PetscCall(VecNorm(X,NORM_INFINITY,&xnorm));
 
   if (stepnum >= 0) {
     stepnum += user->monitorStepOffset;
@@ -1160,20 +1143,20 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
     DMLabel           vtkLabel;
     PetscReal         *fmin,*fmax,*fintegral,*ftmp;
 
-    ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
-    ierr = DMPlexGetGeometryFVM(plex, NULL, &cellgeom, NULL);CHKERRQ(ierr);
+    PetscCall(DMConvert(dm, DMPLEX, &plex));
+    PetscCall(DMPlexGetGeometryFVM(plex, NULL, &cellgeom, NULL));
     fcount = mod->maxComputed+1;
-    ierr   = PetscMalloc4(fcount,&fmin,fcount,&fmax,fcount,&fintegral,fcount,&ftmp);CHKERRQ(ierr);
+    PetscCall(PetscMalloc4(fcount,&fmin,fcount,&fmax,fcount,&fintegral,fcount,&ftmp));
     for (i=0; i<fcount; i++) {
       fmin[i]      = PETSC_MAX_REAL;
       fmax[i]      = PETSC_MIN_REAL;
       fintegral[i] = 0;
     }
-    ierr = VecGetDM(cellgeom,&dmCell);CHKERRQ(ierr);
-    ierr = DMPlexGetSimplexOrBoxCells(dmCell,0,&cStart,&cEnd);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(cellgeom,&cgeom);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-    ierr = DMGetLabel(dm,"vtk",&vtkLabel);CHKERRQ(ierr);
+    PetscCall(VecGetDM(cellgeom,&dmCell));
+    PetscCall(DMPlexGetSimplexOrBoxCells(dmCell,0,&cStart,&cEnd));
+    PetscCall(VecGetArrayRead(cellgeom,&cgeom));
+    PetscCall(VecGetArrayRead(X,&x));
+    PetscCall(DMGetLabel(dm,"vtk",&vtkLabel));
     for (c = cStart; c < cEnd; ++c) {
       PetscFVCellGeom       *cg;
       const PetscScalar     *cx    = NULL;
@@ -1181,13 +1164,13 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
 
       /* not that these two routines as currently implemented work for any dm with a
        * localSection/globalSection */
-      ierr = DMPlexPointLocalRead(dmCell,c,cgeom,&cg);CHKERRQ(ierr);
-      ierr = DMPlexPointGlobalRead(dm,c,x,&cx);CHKERRQ(ierr);
-      if (vtkLabel) {ierr = DMLabelGetValue(vtkLabel,c,&vtkVal);CHKERRQ(ierr);}
+      PetscCall(DMPlexPointLocalRead(dmCell,c,cgeom,&cg));
+      PetscCall(DMPlexPointGlobalRead(dm,c,x,&cx));
+      if (vtkLabel) PetscCall(DMLabelGetValue(vtkLabel,c,&vtkVal));
       if (!vtkVal || !cx) continue;        /* ghost, or not a global cell */
       for (i=0; i<mod->numCall; i++) {
         FunctionalLink flink = mod->functionalCall[i];
-        ierr = (*flink->func)(mod,time,cg->centroid,cx,ftmp,flink->ctx);CHKERRQ(ierr);
+        PetscCall((*flink->func)(mod,time,cg->centroid,cx,ftmp,flink->ctx));
       }
       for (i=0; i<fcount; i++) {
         fmin[i]       = PetscMin(fmin[i],ftmp[i]);
@@ -1195,79 +1178,77 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
         fintegral[i] += cg->volume * ftmp[i];
       }
     }
-    ierr = VecRestoreArrayRead(cellgeom,&cgeom);CHKERRQ(ierr);
-    ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
-    ierr = DMDestroy(&plex);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(MPI_IN_PLACE,fmin,fcount,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)ts));CHKERRMPI(ierr);
-    ierr = MPI_Allreduce(MPI_IN_PLACE,fmax,fcount,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)ts));CHKERRMPI(ierr);
-    ierr = MPI_Allreduce(MPI_IN_PLACE,fintegral,fcount,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)ts));CHKERRMPI(ierr);
+    PetscCall(VecRestoreArrayRead(cellgeom,&cgeom));
+    PetscCall(VecRestoreArrayRead(X,&x));
+    PetscCall(DMDestroy(&plex));
+    PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE,fmin,fcount,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)ts)));
+    PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE,fmax,fcount,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)ts)));
+    PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE,fintegral,fcount,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)ts)));
 
     ftablealloc = fcount * 100;
     ftableused  = 0;
-    ierr        = PetscMalloc1(ftablealloc,&ftable);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(ftablealloc,&ftable));
     for (i=0; i<mod->numMonitored; i++) {
       size_t         countused;
       char           buffer[256],*p;
       FunctionalLink flink = mod->functionalMonitored[i];
       PetscInt       id    = flink->offset;
       if (i % 3) {
-        ierr = PetscArraycpy(buffer,"  ",2);CHKERRQ(ierr);
+        PetscCall(PetscArraycpy(buffer,"  ",2));
         p    = buffer + 2;
       } else if (i) {
         char newline[] = "\n";
-        ierr = PetscMemcpy(buffer,newline,sizeof(newline)-1);CHKERRQ(ierr);
+        PetscCall(PetscMemcpy(buffer,newline,sizeof(newline)-1));
         p    = buffer + sizeof(newline) - 1;
       } else {
         p = buffer;
       }
-      ierr = PetscSNPrintfCount(p,sizeof buffer-(p-buffer),"%12s [%10.7g,%10.7g] int %10.7g",&countused,flink->name,(double)fmin[id],(double)fmax[id],(double)fintegral[id]);CHKERRQ(ierr);
+      PetscCall(PetscSNPrintfCount(p,sizeof buffer-(p-buffer),"%12s [%10.7g,%10.7g] int %10.7g",&countused,flink->name,(double)fmin[id],(double)fmax[id],(double)fintegral[id]));
       countused--;
       countused += p - buffer;
       if (countused > ftablealloc-ftableused-1) { /* reallocate */
         char *ftablenew;
         ftablealloc = 2*ftablealloc + countused;
-        ierr = PetscMalloc(ftablealloc,&ftablenew);CHKERRQ(ierr);
-        ierr = PetscArraycpy(ftablenew,ftable,ftableused);CHKERRQ(ierr);
-        ierr = PetscFree(ftable);CHKERRQ(ierr);
+        PetscCall(PetscMalloc(ftablealloc,&ftablenew));
+        PetscCall(PetscArraycpy(ftablenew,ftable,ftableused));
+        PetscCall(PetscFree(ftable));
         ftable = ftablenew;
       }
-      ierr = PetscArraycpy(ftable+ftableused,buffer,countused);CHKERRQ(ierr);
+      PetscCall(PetscArraycpy(ftable+ftableused,buffer,countused));
       ftableused += countused;
       ftable[ftableused] = 0;
     }
-    ierr = PetscFree4(fmin,fmax,fintegral,ftmp);CHKERRQ(ierr);
+    PetscCall(PetscFree4(fmin,fmax,fintegral,ftmp));
 
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)ts),"% 3D  time %8.4g  |x| %8.4g  %s\n",stepnum,(double)time,(double)xnorm,ftable ? ftable : "");CHKERRQ(ierr);
-    ierr = PetscFree(ftable);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts),"% 3D  time %8.4g  |x| %8.4g  %s\n",stepnum,(double)time,(double)xnorm,ftable ? ftable : ""));
+    PetscCall(PetscFree(ftable));
   }
   if (user->vtkInterval < 1) PetscFunctionReturn(0);
   if ((stepnum == -1) ^ (stepnum % user->vtkInterval == 0)) {
     if (stepnum == -1) {        /* Final time is not multiple of normal time interval, write it anyway */
-      ierr = TSGetStepNumber(ts,&stepnum);CHKERRQ(ierr);
+      PetscCall(TSGetStepNumber(ts,&stepnum));
     }
-    ierr = PetscSNPrintf(filename,sizeof filename,"%s-%03D.vtu",user->outputBasename,stepnum);CHKERRQ(ierr);
-    ierr = OutputVTK(dm,filename,&viewer);CHKERRQ(ierr);
-    ierr = VecView(X,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    PetscCall(PetscSNPrintf(filename,sizeof filename,"%s-%03D.vtu",user->outputBasename,stepnum));
+    PetscCall(OutputVTK(dm,filename,&viewer));
+    PetscCall(VecView(X,viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
   }
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode initializeTS(DM dm, User user, TS *ts)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = TSCreate(PetscObjectComm((PetscObject)dm), ts);CHKERRQ(ierr);
-  ierr = TSSetType(*ts, TSSSP);CHKERRQ(ierr);
-  ierr = TSSetDM(*ts, dm);CHKERRQ(ierr);
+  PetscCall(TSCreate(PetscObjectComm((PetscObject)dm), ts));
+  PetscCall(TSSetType(*ts, TSSSP));
+  PetscCall(TSSetDM(*ts, dm));
   if (user->vtkmon) {
-    ierr = TSMonitorSet(*ts,MonitorVTK,user,NULL);CHKERRQ(ierr);
+    PetscCall(TSMonitorSet(*ts,MonitorVTK,user,NULL));
   }
-  ierr = DMTSSetBoundaryLocal(dm, DMPlexTSComputeBoundary, user);CHKERRQ(ierr);
-  ierr = DMTSSetRHSFunctionLocal(dm, DMPlexTSComputeRHSFunctionFVM, user);CHKERRQ(ierr);
-  ierr = TSSetMaxTime(*ts,2.0);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(*ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
+  PetscCall(DMTSSetBoundaryLocal(dm, DMPlexTSComputeBoundary, user));
+  PetscCall(DMTSSetRHSFunctionLocal(dm, DMPlexTSComputeRHSFunctionFVM, user));
+  PetscCall(TSSetMaxTime(*ts,2.0));
+  PetscCall(TSSetExactFinalTime(*ts,TS_EXACTFINALTIME_STEPOVER));
   PetscFunctionReturn(0);
 }
 
@@ -1285,89 +1266,88 @@ static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, VecTagger r
   const PetscScalar *pointGeom;
   DMLabel           adaptLabel = NULL;
   IS                refineIS, coarsenIS;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = TSGetTime(ts,&time);CHKERRQ(ierr);
-  ierr = VecGetDM(sol, &dm);CHKERRQ(ierr);
-  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
-  ierr = PetscFVGetComputeGradients(fvm,&computeGradient);CHKERRQ(ierr);
-  ierr = PetscFVSetComputeGradients(fvm,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = DMIsForest(dm, &isForest);CHKERRQ(ierr);
-  ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
-  ierr = DMPlexGetDataFVM(plex, fvm, &cellGeom, &faceGeom, &gradDM);CHKERRQ(ierr);
-  ierr = DMCreateLocalVector(plex,&locX);CHKERRQ(ierr);
-  ierr = DMPlexInsertBoundaryValues(plex, PETSC_TRUE, locX, 0.0, faceGeom, cellGeom, NULL);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(plex, sol, INSERT_VALUES, locX);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd  (plex, sol, INSERT_VALUES, locX);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(gradDM, &grad);CHKERRQ(ierr);
-  ierr = DMPlexReconstructGradientsFVM(plex, locX, grad);CHKERRQ(ierr);
-  ierr = DMCreateLocalVector(gradDM, &locGrad);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(gradDM, grad, INSERT_VALUES, locGrad);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(gradDM, grad, INSERT_VALUES, locGrad);CHKERRQ(ierr);
-  ierr = VecDestroy(&grad);CHKERRQ(ierr);
-  ierr = DMPlexGetSimplexOrBoxCells(plex,0,&cStart,&cEnd);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(locGrad,&pointGrads);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(cellGeom,&pointGeom);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(locX,&pointVals);CHKERRQ(ierr);
-  ierr = VecGetDM(cellGeom,&cellDM);CHKERRQ(ierr);
-  ierr = DMLabelCreate(PETSC_COMM_SELF,"adapt",&adaptLabel);CHKERRQ(ierr);
-  ierr = VecCreateMPI(PetscObjectComm((PetscObject)plex),cEnd-cStart,PETSC_DETERMINE,&errVec);CHKERRQ(ierr);
-  ierr = VecSetUp(errVec);CHKERRQ(ierr);
-  ierr = VecGetArray(errVec,&errArray);CHKERRQ(ierr);
+  PetscCall(TSGetTime(ts,&time));
+  PetscCall(VecGetDM(sol, &dm));
+  PetscCall(DMGetDimension(dm,&dim));
+  PetscCall(PetscFVGetComputeGradients(fvm,&computeGradient));
+  PetscCall(PetscFVSetComputeGradients(fvm,PETSC_TRUE));
+  PetscCall(DMIsForest(dm, &isForest));
+  PetscCall(DMConvert(dm, DMPLEX, &plex));
+  PetscCall(DMPlexGetDataFVM(plex, fvm, &cellGeom, &faceGeom, &gradDM));
+  PetscCall(DMCreateLocalVector(plex,&locX));
+  PetscCall(DMPlexInsertBoundaryValues(plex, PETSC_TRUE, locX, 0.0, faceGeom, cellGeom, NULL));
+  PetscCall(DMGlobalToLocalBegin(plex, sol, INSERT_VALUES, locX));
+  PetscCall(DMGlobalToLocalEnd  (plex, sol, INSERT_VALUES, locX));
+  PetscCall(DMCreateGlobalVector(gradDM, &grad));
+  PetscCall(DMPlexReconstructGradientsFVM(plex, locX, grad));
+  PetscCall(DMCreateLocalVector(gradDM, &locGrad));
+  PetscCall(DMGlobalToLocalBegin(gradDM, grad, INSERT_VALUES, locGrad));
+  PetscCall(DMGlobalToLocalEnd(gradDM, grad, INSERT_VALUES, locGrad));
+  PetscCall(VecDestroy(&grad));
+  PetscCall(DMPlexGetSimplexOrBoxCells(plex,0,&cStart,&cEnd));
+  PetscCall(VecGetArrayRead(locGrad,&pointGrads));
+  PetscCall(VecGetArrayRead(cellGeom,&pointGeom));
+  PetscCall(VecGetArrayRead(locX,&pointVals));
+  PetscCall(VecGetDM(cellGeom,&cellDM));
+  PetscCall(DMLabelCreate(PETSC_COMM_SELF,"adapt",&adaptLabel));
+  PetscCall(VecCreateMPI(PetscObjectComm((PetscObject)plex),cEnd-cStart,PETSC_DETERMINE,&errVec));
+  PetscCall(VecSetUp(errVec));
+  PetscCall(VecGetArray(errVec,&errArray));
   for (c = cStart; c < cEnd; c++) {
     PetscReal             errInd = 0.;
     PetscScalar           *pointGrad;
     PetscScalar           *pointVal;
     PetscFVCellGeom       *cg;
 
-    ierr = DMPlexPointLocalRead(gradDM,c,pointGrads,&pointGrad);CHKERRQ(ierr);
-    ierr = DMPlexPointLocalRead(cellDM,c,pointGeom,&cg);CHKERRQ(ierr);
-    ierr = DMPlexPointLocalRead(plex,c,pointVals,&pointVal);CHKERRQ(ierr);
+    PetscCall(DMPlexPointLocalRead(gradDM,c,pointGrads,&pointGrad));
+    PetscCall(DMPlexPointLocalRead(cellDM,c,pointGeom,&cg));
+    PetscCall(DMPlexPointLocalRead(plex,c,pointVals,&pointVal));
 
-    ierr = (user->model->errorIndicator)(dim,cg->volume,user->model->physics->dof,pointVal,pointGrad,&errInd,user->model->errorCtx);CHKERRQ(ierr);
+    PetscCall((user->model->errorIndicator)(dim,cg->volume,user->model->physics->dof,pointVal,pointGrad,&errInd,user->model->errorCtx));
     errArray[c-cStart] = errInd;
     minMaxInd[0] = PetscMin(minMaxInd[0],errInd);
     minMaxInd[1] = PetscMax(minMaxInd[1],errInd);
   }
-  ierr = VecRestoreArray(errVec,&errArray);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(locX,&pointVals);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(cellGeom,&pointGeom);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(locGrad,&pointGrads);CHKERRQ(ierr);
-  ierr = VecDestroy(&locGrad);CHKERRQ(ierr);
-  ierr = VecDestroy(&locX);CHKERRQ(ierr);
-  ierr = DMDestroy(&plex);CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(errVec,&errArray));
+  PetscCall(VecRestoreArrayRead(locX,&pointVals));
+  PetscCall(VecRestoreArrayRead(cellGeom,&pointGeom));
+  PetscCall(VecRestoreArrayRead(locGrad,&pointGrads));
+  PetscCall(VecDestroy(&locGrad));
+  PetscCall(VecDestroy(&locX));
+  PetscCall(DMDestroy(&plex));
 
-  ierr = VecTaggerComputeIS(refineTag,errVec,&refineIS,NULL);CHKERRQ(ierr);
-  ierr = VecTaggerComputeIS(coarsenTag,errVec,&coarsenIS,NULL);CHKERRQ(ierr);
-  ierr = ISGetSize(refineIS,&nRefine);CHKERRQ(ierr);
-  ierr = ISGetSize(coarsenIS,&nCoarsen);CHKERRQ(ierr);
-  if (nRefine) {ierr = DMLabelSetStratumIS(adaptLabel,DM_ADAPT_REFINE,refineIS);CHKERRQ(ierr);}
-  if (nCoarsen) {ierr = DMLabelSetStratumIS(adaptLabel,DM_ADAPT_COARSEN,coarsenIS);CHKERRQ(ierr);}
-  ierr = ISDestroy(&coarsenIS);CHKERRQ(ierr);
-  ierr = ISDestroy(&refineIS);CHKERRQ(ierr);
-  ierr = VecDestroy(&errVec);CHKERRQ(ierr);
+  PetscCall(VecTaggerComputeIS(refineTag,errVec,&refineIS,NULL));
+  PetscCall(VecTaggerComputeIS(coarsenTag,errVec,&coarsenIS,NULL));
+  PetscCall(ISGetSize(refineIS,&nRefine));
+  PetscCall(ISGetSize(coarsenIS,&nCoarsen));
+  if (nRefine) PetscCall(DMLabelSetStratumIS(adaptLabel,DM_ADAPT_REFINE,refineIS));
+  if (nCoarsen) PetscCall(DMLabelSetStratumIS(adaptLabel,DM_ADAPT_COARSEN,coarsenIS));
+  PetscCall(ISDestroy(&coarsenIS));
+  PetscCall(ISDestroy(&refineIS));
+  PetscCall(VecDestroy(&errVec));
 
-  ierr = PetscFVSetComputeGradients(fvm,computeGradient);CHKERRQ(ierr);
+  PetscCall(PetscFVSetComputeGradients(fvm,computeGradient));
   minMaxInd[1] = -minMaxInd[1];
-  ierr = MPI_Allreduce(minMaxInd,minMaxIndGlobal,2,MPIU_REAL,MPI_MIN,PetscObjectComm((PetscObject)dm));CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Allreduce(minMaxInd,minMaxIndGlobal,2,MPIU_REAL,MPI_MIN,PetscObjectComm((PetscObject)dm)));
   minInd = minMaxIndGlobal[0];
   maxInd = -minMaxIndGlobal[1];
-  ierr = PetscInfo(ts, "error indicator range (%E, %E)\n", minInd, maxInd);CHKERRQ(ierr);
+  PetscCall(PetscInfo(ts, "error indicator range (%E, %E)\n", minInd, maxInd));
   if (nRefine || nCoarsen) { /* at least one cell is over the refinement threshold */
-    ierr = DMAdaptLabel(dm,adaptLabel,&adaptedDM);CHKERRQ(ierr);
+    PetscCall(DMAdaptLabel(dm,adaptLabel,&adaptedDM));
   }
-  ierr = DMLabelDestroy(&adaptLabel);CHKERRQ(ierr);
+  PetscCall(DMLabelDestroy(&adaptLabel));
   if (adaptedDM) {
-    ierr = PetscInfo(ts, "Adapted mesh, marking %D cells for refinement, and %D cells for coarsening\n", nRefine, nCoarsen);CHKERRQ(ierr);
-    if (tsNew) {ierr = initializeTS(adaptedDM, user, tsNew);CHKERRQ(ierr);}
+    PetscCall(PetscInfo(ts, "Adapted mesh, marking %D cells for refinement, and %D cells for coarsening\n", nRefine, nCoarsen));
+    if (tsNew) PetscCall(initializeTS(adaptedDM, user, tsNew));
     if (solNew) {
-      ierr = DMCreateGlobalVector(adaptedDM, solNew);CHKERRQ(ierr);
-      ierr = PetscObjectSetName((PetscObject) *solNew, "solution");CHKERRQ(ierr);
-      ierr = DMForestTransferVec(dm, sol, adaptedDM, *solNew, PETSC_TRUE, time);CHKERRQ(ierr);
+      PetscCall(DMCreateGlobalVector(adaptedDM, solNew));
+      PetscCall(PetscObjectSetName((PetscObject) *solNew, "solution"));
+      PetscCall(DMForestTransferVec(dm, sol, adaptedDM, *solNew, PETSC_TRUE, time));
     }
-    if (isForest) {ierr = DMForestSetAdaptivityForest(adaptedDM,NULL);CHKERRQ(ierr);} /* clear internal references to the previous dm */
-    ierr = DMDestroy(&adaptedDM);CHKERRQ(ierr);
+    if (isForest) PetscCall(DMForestSetAdaptivityForest(adaptedDM,NULL)); /* clear internal references to the previous dm */
+    PetscCall(DMDestroy(&adaptedDM));
   } else {
     if (tsNew)  *tsNew  = NULL;
     if (solNew) *solNew = NULL;
@@ -1397,12 +1377,12 @@ int main(int argc, char **argv)
   VecTagger         refineTag = NULL, coarsenTag = NULL;
   PetscErrorCode    ierr;
 
-  ierr = PetscInitialize(&argc, &argv, (char*) 0, help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc, &argv, (char*) 0, help));
   comm = PETSC_COMM_WORLD;
 
-  ierr          = PetscNew(&user);CHKERRQ(ierr);
-  ierr          = PetscNew(&user->model);CHKERRQ(ierr);
-  ierr          = PetscNew(&user->model->physics);CHKERRQ(ierr);
+  PetscCall(PetscNew(&user));
+  PetscCall(PetscNew(&user->model));
+  PetscCall(PetscNew(&user->model->physics));
   mod           = user->model;
   phys          = mod->physics;
   mod->comm     = comm;
@@ -1410,26 +1390,26 @@ int main(int argc, char **argv)
   adaptInterval = 1;
 
   /* Register physical models to be available on the command line */
-  ierr = PetscFunctionListAdd(&PhysicsList,"advect"          ,PhysicsCreate_Advect);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&PhysicsList,"sw"              ,PhysicsCreate_SW);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&PhysicsList,"euler"           ,PhysicsCreate_Euler);CHKERRQ(ierr);
+  PetscCall(PetscFunctionListAdd(&PhysicsList,"advect"          ,PhysicsCreate_Advect));
+  PetscCall(PetscFunctionListAdd(&PhysicsList,"sw"              ,PhysicsCreate_SW));
+  PetscCall(PetscFunctionListAdd(&PhysicsList,"euler"           ,PhysicsCreate_Euler));
 
-  ierr = PetscOptionsBegin(comm,NULL,"Unstructured Finite Volume Mesh Options","");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm,NULL,"Unstructured Finite Volume Mesh Options","");PetscCall(ierr);
   {
     cfl  = 0.9 * 4; /* default SSPRKS2 with s=5 stages is stable for CFL number s-1 */
-    ierr = PetscOptionsReal("-ufv_cfl","CFL number per step","",cfl,&cfl,NULL);CHKERRQ(ierr);
+    PetscCall(PetscOptionsReal("-ufv_cfl","CFL number per step","",cfl,&cfl,NULL));
     user->vtkInterval = 1;
-    ierr = PetscOptionsInt("-ufv_vtk_interval","VTK output interval (0 to disable)","",user->vtkInterval,&user->vtkInterval,NULL);CHKERRQ(ierr);
+    PetscCall(PetscOptionsInt("-ufv_vtk_interval","VTK output interval (0 to disable)","",user->vtkInterval,&user->vtkInterval,NULL));
     user->vtkmon = PETSC_TRUE;
-    ierr = PetscOptionsBool("-ufv_vtk_monitor","Use VTKMonitor routine","",user->vtkmon,&user->vtkmon,NULL);CHKERRQ(ierr);
+    PetscCall(PetscOptionsBool("-ufv_vtk_monitor","Use VTKMonitor routine","",user->vtkmon,&user->vtkmon,NULL));
     vtkCellGeom = PETSC_FALSE;
-    ierr = PetscStrcpy(user->outputBasename, "ex11");CHKERRQ(ierr);
-    ierr = PetscOptionsString("-ufv_vtk_basename","VTK output basename","",user->outputBasename,user->outputBasename,sizeof(user->outputBasename),NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-ufv_vtk_cellgeom","Write cell geometry (for debugging)","",vtkCellGeom,&vtkCellGeom,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-ufv_use_amr","use local adaptive mesh refinement","",useAMR,&useAMR,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-ufv_adapt_interval","time steps between AMR","",adaptInterval,&adaptInterval,NULL);CHKERRQ(ierr);
+    PetscCall(PetscStrcpy(user->outputBasename, "ex11"));
+    PetscCall(PetscOptionsString("-ufv_vtk_basename","VTK output basename","",user->outputBasename,user->outputBasename,sizeof(user->outputBasename),NULL));
+    PetscCall(PetscOptionsBool("-ufv_vtk_cellgeom","Write cell geometry (for debugging)","",vtkCellGeom,&vtkCellGeom,NULL));
+    PetscCall(PetscOptionsBool("-ufv_use_amr","use local adaptive mesh refinement","",useAMR,&useAMR,NULL));
+    PetscCall(PetscOptionsInt("-ufv_adapt_interval","time steps between AMR","",adaptInterval,&adaptInterval,NULL));
   }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
   if (useAMR) {
     VecTaggerBox refineBox, coarsenBox;
@@ -1437,55 +1417,55 @@ int main(int argc, char **argv)
     refineBox.min  = refineBox.max  = PETSC_MAX_REAL;
     coarsenBox.min = coarsenBox.max = PETSC_MIN_REAL;
 
-    ierr = VecTaggerCreate(comm,&refineTag);CHKERRQ(ierr);
-    ierr = PetscObjectSetOptionsPrefix((PetscObject)refineTag,"refine_");CHKERRQ(ierr);
-    ierr = VecTaggerSetType(refineTag,VECTAGGERABSOLUTE);CHKERRQ(ierr);
-    ierr = VecTaggerAbsoluteSetBox(refineTag,&refineBox);CHKERRQ(ierr);
-    ierr = VecTaggerSetFromOptions(refineTag);CHKERRQ(ierr);
-    ierr = VecTaggerSetUp(refineTag);CHKERRQ(ierr);
-    ierr = PetscObjectViewFromOptions((PetscObject)refineTag,NULL,"-tag_view");CHKERRQ(ierr);
+    PetscCall(VecTaggerCreate(comm,&refineTag));
+    PetscCall(PetscObjectSetOptionsPrefix((PetscObject)refineTag,"refine_"));
+    PetscCall(VecTaggerSetType(refineTag,VECTAGGERABSOLUTE));
+    PetscCall(VecTaggerAbsoluteSetBox(refineTag,&refineBox));
+    PetscCall(VecTaggerSetFromOptions(refineTag));
+    PetscCall(VecTaggerSetUp(refineTag));
+    PetscCall(PetscObjectViewFromOptions((PetscObject)refineTag,NULL,"-tag_view"));
 
-    ierr = VecTaggerCreate(comm,&coarsenTag);CHKERRQ(ierr);
-    ierr = PetscObjectSetOptionsPrefix((PetscObject)coarsenTag,"coarsen_");CHKERRQ(ierr);
-    ierr = VecTaggerSetType(coarsenTag,VECTAGGERABSOLUTE);CHKERRQ(ierr);
-    ierr = VecTaggerAbsoluteSetBox(coarsenTag,&coarsenBox);CHKERRQ(ierr);
-    ierr = VecTaggerSetFromOptions(coarsenTag);CHKERRQ(ierr);
-    ierr = VecTaggerSetUp(coarsenTag);CHKERRQ(ierr);
-    ierr = PetscObjectViewFromOptions((PetscObject)coarsenTag,NULL,"-tag_view");CHKERRQ(ierr);
+    PetscCall(VecTaggerCreate(comm,&coarsenTag));
+    PetscCall(PetscObjectSetOptionsPrefix((PetscObject)coarsenTag,"coarsen_"));
+    PetscCall(VecTaggerSetType(coarsenTag,VECTAGGERABSOLUTE));
+    PetscCall(VecTaggerAbsoluteSetBox(coarsenTag,&coarsenBox));
+    PetscCall(VecTaggerSetFromOptions(coarsenTag));
+    PetscCall(VecTaggerSetUp(coarsenTag));
+    PetscCall(PetscObjectViewFromOptions((PetscObject)coarsenTag,NULL,"-tag_view"));
   }
 
-  ierr = PetscOptionsBegin(comm,NULL,"Unstructured Finite Volume Physics Options","");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm,NULL,"Unstructured Finite Volume Physics Options","");PetscCall(ierr);
   {
     PetscErrorCode (*physcreate)(Model,Physics,PetscOptionItems*);
-    ierr = PetscOptionsFList("-physics","Physics module to solve","",PhysicsList,physname,physname,sizeof physname,NULL);CHKERRQ(ierr);
-    ierr = PetscFunctionListFind(PhysicsList,physname,&physcreate);CHKERRQ(ierr);
-    ierr = PetscMemzero(phys,sizeof(struct _n_Physics));CHKERRQ(ierr);
-    ierr = (*physcreate)(mod,phys,PetscOptionsObject);CHKERRQ(ierr);
+    PetscCall(PetscOptionsFList("-physics","Physics module to solve","",PhysicsList,physname,physname,sizeof physname,NULL));
+    PetscCall(PetscFunctionListFind(PhysicsList,physname,&physcreate));
+    PetscCall(PetscMemzero(phys,sizeof(struct _n_Physics)));
+    PetscCall((*physcreate)(mod,phys,PetscOptionsObject));
     /* Count number of fields and dofs */
     for (phys->nfields=0,phys->dof=0; phys->field_desc[phys->nfields].name; phys->nfields++) phys->dof += phys->field_desc[phys->nfields].dof;
     PetscCheck(phys->dof > 0,comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set dof",physname);
-    ierr = ModelFunctionalSetFromOptions(mod,PetscOptionsObject);CHKERRQ(ierr);
+    PetscCall(ModelFunctionalSetFromOptions(mod,PetscOptionsObject));
   }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
   /* Create mesh */
   {
     PetscInt i;
 
-    ierr = DMCreate(comm, &dm);CHKERRQ(ierr);
-    ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
-    ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
+    PetscCall(DMCreate(comm, &dm));
+    PetscCall(DMSetType(dm, DMPLEX));
+    PetscCall(DMSetFromOptions(dm));
     for (i = 0; i < DIM; i++) { mod->bounds[2*i] = 0.; mod->bounds[2*i+1] = 1.;};
     dim = DIM;
     { /* a null name means just do a hex box */
       PetscInt  cells[3] = {1, 1, 1}, n = 3;
       PetscBool flg2, skew = PETSC_FALSE;
       PetscInt nret2 = 2*DIM;
-      ierr = PetscOptionsBegin(comm,NULL,"Rectangular mesh options","");CHKERRQ(ierr);
-      ierr = PetscOptionsRealArray("-grid_bounds","bounds of the mesh in each direction (i.e., x_min,x_max,y_min,y_max","",mod->bounds,&nret2,&flg2);CHKERRQ(ierr);
-      ierr = PetscOptionsBool("-grid_skew_60","Skew grid for 60 degree shock mesh","",skew,&skew,NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsIntArray("-dm_plex_box_faces", "Number of faces along each dimension", "", cells, &n, NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsEnd();CHKERRQ(ierr);
+      ierr = PetscOptionsBegin(comm,NULL,"Rectangular mesh options","");PetscCall(ierr);
+      PetscCall(PetscOptionsRealArray("-grid_bounds","bounds of the mesh in each direction (i.e., x_min,x_max,y_min,y_max","",mod->bounds,&nret2,&flg2));
+      PetscCall(PetscOptionsBool("-grid_skew_60","Skew grid for 60 degree shock mesh","",skew,&skew,NULL));
+      PetscCall(PetscOptionsIntArray("-dm_plex_box_faces", "Number of faces along each dimension", "", cells, &n, NULL));
+      ierr = PetscOptionsEnd();PetscCall(ierr);
       /* TODO Rewrite this with Mark, and remove grid_bounds at that time */
       if (flg2) {
         PetscInt dimEmbed, i;
@@ -1493,11 +1473,11 @@ int main(int argc, char **argv)
         PetscScalar *coords;
         Vec coordinates;
 
-        ierr = DMGetCoordinatesLocal(dm,&coordinates);CHKERRQ(ierr);
-        ierr = DMGetCoordinateDim(dm,&dimEmbed);CHKERRQ(ierr);
-        ierr = VecGetLocalSize(coordinates,&nCoords);CHKERRQ(ierr);
+        PetscCall(DMGetCoordinatesLocal(dm,&coordinates));
+        PetscCall(DMGetCoordinateDim(dm,&dimEmbed));
+        PetscCall(VecGetLocalSize(coordinates,&nCoords));
         PetscCheck(!(nCoords % dimEmbed),PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Coordinate vector the wrong size");
-        ierr = VecGetArray(coordinates,&coords);CHKERRQ(ierr);
+        PetscCall(VecGetArray(coordinates,&coords));
         for (i = 0; i < nCoords; i += dimEmbed) {
           PetscInt j;
 
@@ -1515,39 +1495,39 @@ int main(int argc, char **argv)
             }
           }
         }
-        ierr = VecRestoreArray(coordinates,&coords);CHKERRQ(ierr);
-        ierr = DMSetCoordinatesLocal(dm,coordinates);CHKERRQ(ierr);
+        PetscCall(VecRestoreArray(coordinates,&coords));
+        PetscCall(DMSetCoordinatesLocal(dm,coordinates));
       }
     }
   }
-  ierr = DMViewFromOptions(dm, NULL, "-orig_dm_view");CHKERRQ(ierr);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  PetscCall(DMViewFromOptions(dm, NULL, "-orig_dm_view"));
+  PetscCall(DMGetDimension(dm, &dim));
 
   /* set up BCs, functions, tags */
-  ierr = DMCreateLabel(dm, "Face Sets");CHKERRQ(ierr);
+  PetscCall(DMCreateLabel(dm, "Face Sets"));
   mod->errorIndicator = ErrorIndicator_Simple;
 
   {
     DM gdm;
 
-    ierr = DMPlexConstructGhostCells(dm, NULL, NULL, &gdm);CHKERRQ(ierr);
-    ierr = DMDestroy(&dm);CHKERRQ(ierr);
+    PetscCall(DMPlexConstructGhostCells(dm, NULL, NULL, &gdm));
+    PetscCall(DMDestroy(&dm));
     dm   = gdm;
-    ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
+    PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
   }
 
-  ierr = PetscFVCreate(comm, &fvm);CHKERRQ(ierr);
-  ierr = PetscFVSetFromOptions(fvm);CHKERRQ(ierr);
-  ierr = PetscFVSetNumComponents(fvm, phys->dof);CHKERRQ(ierr);
-  ierr = PetscFVSetSpatialDimension(fvm, dim);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) fvm,"");CHKERRQ(ierr);
+  PetscCall(PetscFVCreate(comm, &fvm));
+  PetscCall(PetscFVSetFromOptions(fvm));
+  PetscCall(PetscFVSetNumComponents(fvm, phys->dof));
+  PetscCall(PetscFVSetSpatialDimension(fvm, dim));
+  PetscCall(PetscObjectSetName((PetscObject) fvm,""));
   {
     PetscInt f, dof;
     for (f=0,dof=0; f < phys->nfields; f++) {
       PetscInt newDof = phys->field_desc[f].dof;
 
       if (newDof == 1) {
-        ierr = PetscFVSetComponentName(fvm,dof,phys->field_desc[f].name);CHKERRQ(ierr);
+        PetscCall(PetscFVSetComponentName(fvm,dof,phys->field_desc[f].name));
       }
       else {
         PetscInt j;
@@ -1555,210 +1535,210 @@ int main(int argc, char **argv)
         for (j = 0; j < newDof; j++) {
           char     compName[256]  = "Unknown";
 
-          ierr = PetscSNPrintf(compName,sizeof(compName),"%s_%d",phys->field_desc[f].name,j);CHKERRQ(ierr);
-          ierr = PetscFVSetComponentName(fvm,dof+j,compName);CHKERRQ(ierr);
+          PetscCall(PetscSNPrintf(compName,sizeof(compName),"%s_%d",phys->field_desc[f].name,j));
+          PetscCall(PetscFVSetComponentName(fvm,dof+j,compName));
         }
       }
       dof += newDof;
     }
   }
   /* FV is now structured with one field having all physics as components */
-  ierr = DMAddField(dm, NULL, (PetscObject) fvm);CHKERRQ(ierr);
-  ierr = DMCreateDS(dm);CHKERRQ(ierr);
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSSetRiemannSolver(prob, 0, user->model->physics->riemann);CHKERRQ(ierr);
-  ierr = PetscDSSetContext(prob, 0, user->model->physics);CHKERRQ(ierr);
-  ierr = (*mod->setupbc)(dm, prob,phys);CHKERRQ(ierr);
-  ierr = PetscDSSetFromOptions(prob);CHKERRQ(ierr);
+  PetscCall(DMAddField(dm, NULL, (PetscObject) fvm));
+  PetscCall(DMCreateDS(dm));
+  PetscCall(DMGetDS(dm, &prob));
+  PetscCall(PetscDSSetRiemannSolver(prob, 0, user->model->physics->riemann));
+  PetscCall(PetscDSSetContext(prob, 0, user->model->physics));
+  PetscCall((*mod->setupbc)(dm, prob,phys));
+  PetscCall(PetscDSSetFromOptions(prob));
   {
     char      convType[256];
     PetscBool flg;
 
-    ierr = PetscOptionsBegin(comm, "", "Mesh conversion options", "DMPLEX");CHKERRQ(ierr);
-    ierr = PetscOptionsFList("-dm_type","Convert DMPlex to another format","ex12",DMList,DMPLEX,convType,256,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsEnd();CHKERRQ(ierr);
+    ierr = PetscOptionsBegin(comm, "", "Mesh conversion options", "DMPLEX");PetscCall(ierr);
+    PetscCall(PetscOptionsFList("-dm_type","Convert DMPlex to another format","ex12",DMList,DMPLEX,convType,256,&flg));
+    ierr = PetscOptionsEnd();PetscCall(ierr);
     if (flg) {
       DM dmConv;
 
-      ierr = DMConvert(dm,convType,&dmConv);CHKERRQ(ierr);
+      PetscCall(DMConvert(dm,convType,&dmConv));
       if (dmConv) {
-        ierr = DMViewFromOptions(dmConv, NULL, "-dm_conv_view");CHKERRQ(ierr);
-        ierr = DMDestroy(&dm);CHKERRQ(ierr);
+        PetscCall(DMViewFromOptions(dmConv, NULL, "-dm_conv_view"));
+        PetscCall(DMDestroy(&dm));
         dm   = dmConv;
-        ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
+        PetscCall(DMSetFromOptions(dm));
       }
     }
   }
 
-  ierr = initializeTS(dm, user, &ts);CHKERRQ(ierr);
+  PetscCall(initializeTS(dm, user, &ts));
 
-  ierr = DMCreateGlobalVector(dm, &X);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) X, "solution");CHKERRQ(ierr);
-  ierr = SetInitialCondition(dm, X, user);CHKERRQ(ierr);
+  PetscCall(DMCreateGlobalVector(dm, &X));
+  PetscCall(PetscObjectSetName((PetscObject) X, "solution"));
+  PetscCall(SetInitialCondition(dm, X, user));
   if (useAMR) {
     PetscInt adaptIter;
 
     /* use no limiting when reconstructing gradients for adaptivity */
-    ierr = PetscFVGetLimiter(fvm, &limiter);CHKERRQ(ierr);
-    ierr = PetscObjectReference((PetscObject) limiter);CHKERRQ(ierr);
-    ierr = PetscLimiterCreate(PetscObjectComm((PetscObject) fvm), &noneLimiter);CHKERRQ(ierr);
-    ierr = PetscLimiterSetType(noneLimiter, PETSCLIMITERNONE);CHKERRQ(ierr);
+    PetscCall(PetscFVGetLimiter(fvm, &limiter));
+    PetscCall(PetscObjectReference((PetscObject) limiter));
+    PetscCall(PetscLimiterCreate(PetscObjectComm((PetscObject) fvm), &noneLimiter));
+    PetscCall(PetscLimiterSetType(noneLimiter, PETSCLIMITERNONE));
 
-    ierr = PetscFVSetLimiter(fvm, noneLimiter);CHKERRQ(ierr);
+    PetscCall(PetscFVSetLimiter(fvm, noneLimiter));
     for (adaptIter = 0; ; ++adaptIter) {
       PetscLogDouble bytes;
       TS             tsNew = NULL;
 
-      ierr = PetscMemoryGetCurrentUsage(&bytes);CHKERRQ(ierr);
-      ierr = PetscInfo(ts, "refinement loop %D: memory used %g\n", adaptIter, bytes);CHKERRQ(ierr);
-      ierr = DMViewFromOptions(dm, NULL, "-initial_dm_view");CHKERRQ(ierr);
-      ierr = VecViewFromOptions(X, NULL, "-initial_vec_view");CHKERRQ(ierr);
+      PetscCall(PetscMemoryGetCurrentUsage(&bytes));
+      PetscCall(PetscInfo(ts, "refinement loop %D: memory used %g\n", adaptIter, bytes));
+      PetscCall(DMViewFromOptions(dm, NULL, "-initial_dm_view"));
+      PetscCall(VecViewFromOptions(X, NULL, "-initial_vec_view"));
 #if 0
       if (viewInitial) {
         PetscViewer viewer;
         char        buf[256];
         PetscBool   isHDF5, isVTK;
 
-        ierr = PetscViewerCreate(comm,&viewer);CHKERRQ(ierr);
-        ierr = PetscViewerSetType(viewer,PETSCVIEWERVTK);CHKERRQ(ierr);
-        ierr = PetscViewerSetOptionsPrefix(viewer,"initial_");CHKERRQ(ierr);
-        ierr = PetscViewerSetFromOptions(viewer);CHKERRQ(ierr);
-        ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&isHDF5);CHKERRQ(ierr);
-        ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERVTK,&isVTK);CHKERRQ(ierr);
+        PetscCall(PetscViewerCreate(comm,&viewer));
+        PetscCall(PetscViewerSetType(viewer,PETSCVIEWERVTK));
+        PetscCall(PetscViewerSetOptionsPrefix(viewer,"initial_"));
+        PetscCall(PetscViewerSetFromOptions(viewer));
+        PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&isHDF5));
+        PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERVTK,&isVTK));
         if (isHDF5) {
-          ierr = PetscSNPrintf(buf, 256, "ex11-initial-%d.h5", adaptIter);CHKERRQ(ierr);
+          PetscCall(PetscSNPrintf(buf, 256, "ex11-initial-%d.h5", adaptIter));
         } else if (isVTK) {
-          ierr = PetscSNPrintf(buf, 256, "ex11-initial-%d.vtu", adaptIter);CHKERRQ(ierr);
-          ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_VTK_VTU);CHKERRQ(ierr);
+          PetscCall(PetscSNPrintf(buf, 256, "ex11-initial-%d.vtu", adaptIter));
+          PetscCall(PetscViewerPushFormat(viewer,PETSC_VIEWER_VTK_VTU));
         }
-        ierr = PetscViewerFileSetMode(viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
-        ierr = PetscViewerFileSetName(viewer,buf);CHKERRQ(ierr);
+        PetscCall(PetscViewerFileSetMode(viewer,FILE_MODE_WRITE));
+        PetscCall(PetscViewerFileSetName(viewer,buf));
         if (isHDF5) {
-          ierr = DMView(dm,viewer);CHKERRQ(ierr);
-          ierr = PetscViewerFileSetMode(viewer,FILE_MODE_UPDATE);CHKERRQ(ierr);
+          PetscCall(DMView(dm,viewer));
+          PetscCall(PetscViewerFileSetMode(viewer,FILE_MODE_UPDATE));
         }
-        ierr = VecView(X,viewer);CHKERRQ(ierr);
-        ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+        PetscCall(VecView(X,viewer));
+        PetscCall(PetscViewerDestroy(&viewer));
       }
 #endif
 
-      ierr = adaptToleranceFVM(fvm, ts, X, refineTag, coarsenTag, user, &tsNew, NULL);CHKERRQ(ierr);
+      PetscCall(adaptToleranceFVM(fvm, ts, X, refineTag, coarsenTag, user, &tsNew, NULL));
       if (!tsNew) {
         break;
       } else {
-        ierr = DMDestroy(&dm);CHKERRQ(ierr);
-        ierr = VecDestroy(&X);CHKERRQ(ierr);
-        ierr = TSDestroy(&ts);CHKERRQ(ierr);
+        PetscCall(DMDestroy(&dm));
+        PetscCall(VecDestroy(&X));
+        PetscCall(TSDestroy(&ts));
         ts   = tsNew;
-        ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-        ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
-        ierr = DMCreateGlobalVector(dm,&X);CHKERRQ(ierr);
-        ierr = PetscObjectSetName((PetscObject) X, "solution");CHKERRQ(ierr);
-        ierr = SetInitialCondition(dm, X, user);CHKERRQ(ierr);
+        PetscCall(TSGetDM(ts,&dm));
+        PetscCall(PetscObjectReference((PetscObject)dm));
+        PetscCall(DMCreateGlobalVector(dm,&X));
+        PetscCall(PetscObjectSetName((PetscObject) X, "solution"));
+        PetscCall(SetInitialCondition(dm, X, user));
       }
     }
     /* restore original limiter */
-    ierr = PetscFVSetLimiter(fvm, limiter);CHKERRQ(ierr);
+    PetscCall(PetscFVSetLimiter(fvm, limiter));
   }
 
-  ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
+  PetscCall(DMConvert(dm, DMPLEX, &plex));
   if (vtkCellGeom) {
     DM  dmCell;
     Vec cellgeom, partition;
 
-    ierr = DMPlexGetGeometryFVM(plex, NULL, &cellgeom, NULL);CHKERRQ(ierr);
-    ierr = OutputVTK(dm, "ex11-cellgeom.vtk", &viewer);CHKERRQ(ierr);
-    ierr = VecView(cellgeom, viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-    ierr = CreatePartitionVec(dm, &dmCell, &partition);CHKERRQ(ierr);
-    ierr = OutputVTK(dmCell, "ex11-partition.vtk", &viewer);CHKERRQ(ierr);
-    ierr = VecView(partition, viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-    ierr = VecDestroy(&partition);CHKERRQ(ierr);
-    ierr = DMDestroy(&dmCell);CHKERRQ(ierr);
+    PetscCall(DMPlexGetGeometryFVM(plex, NULL, &cellgeom, NULL));
+    PetscCall(OutputVTK(dm, "ex11-cellgeom.vtk", &viewer));
+    PetscCall(VecView(cellgeom, viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
+    PetscCall(CreatePartitionVec(dm, &dmCell, &partition));
+    PetscCall(OutputVTK(dmCell, "ex11-partition.vtk", &viewer));
+    PetscCall(VecView(partition, viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
+    PetscCall(VecDestroy(&partition));
+    PetscCall(DMDestroy(&dmCell));
   }
   /* collect max maxspeed from all processes -- todo */
-  ierr = DMPlexGetGeometryFVM(plex, NULL, NULL, &minRadius);CHKERRQ(ierr);
-  ierr = DMDestroy(&plex);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&phys->maxspeed,&mod->maxspeed,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)ts));CHKERRMPI(ierr);
+  PetscCall(DMPlexGetGeometryFVM(plex, NULL, NULL, &minRadius));
+  PetscCall(DMDestroy(&plex));
+  PetscCallMPI(MPI_Allreduce(&phys->maxspeed,&mod->maxspeed,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)ts)));
   PetscCheck(mod->maxspeed > 0,comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
   dt   = cfl * minRadius / mod->maxspeed;
-  ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
-  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
+  PetscCall(TSSetTimeStep(ts,dt));
+  PetscCall(TSSetFromOptions(ts));
   if (!useAMR) {
-    ierr = TSSolve(ts,X);CHKERRQ(ierr);
-    ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
-    ierr = TSGetStepNumber(ts,&nsteps);CHKERRQ(ierr);
+    PetscCall(TSSolve(ts,X));
+    PetscCall(TSGetSolveTime(ts,&ftime));
+    PetscCall(TSGetStepNumber(ts,&nsteps));
   } else {
     PetscReal finalTime;
     PetscInt  adaptIter;
     TS        tsNew = NULL;
     Vec       solNew = NULL;
 
-    ierr   = TSGetMaxTime(ts,&finalTime);CHKERRQ(ierr);
-    ierr   = TSSetMaxSteps(ts,adaptInterval);CHKERRQ(ierr);
-    ierr   = TSSolve(ts,X);CHKERRQ(ierr);
-    ierr   = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
-    ierr   = TSGetStepNumber(ts,&nsteps);CHKERRQ(ierr);
+    PetscCall(TSGetMaxTime(ts,&finalTime));
+    PetscCall(TSSetMaxSteps(ts,adaptInterval));
+    PetscCall(TSSolve(ts,X));
+    PetscCall(TSGetSolveTime(ts,&ftime));
+    PetscCall(TSGetStepNumber(ts,&nsteps));
     for (adaptIter = 0;ftime < finalTime;adaptIter++) {
       PetscLogDouble bytes;
 
-      ierr = PetscMemoryGetCurrentUsage(&bytes);CHKERRQ(ierr);
-      ierr = PetscInfo(ts, "AMR time step loop %D: memory used %g\n", adaptIter, bytes);CHKERRQ(ierr);
-      ierr = PetscFVSetLimiter(fvm,noneLimiter);CHKERRQ(ierr);
-      ierr = adaptToleranceFVM(fvm,ts,X,refineTag,coarsenTag,user,&tsNew,&solNew);CHKERRQ(ierr);
-      ierr = PetscFVSetLimiter(fvm,limiter);CHKERRQ(ierr);
+      PetscCall(PetscMemoryGetCurrentUsage(&bytes));
+      PetscCall(PetscInfo(ts, "AMR time step loop %D: memory used %g\n", adaptIter, bytes));
+      PetscCall(PetscFVSetLimiter(fvm,noneLimiter));
+      PetscCall(adaptToleranceFVM(fvm,ts,X,refineTag,coarsenTag,user,&tsNew,&solNew));
+      PetscCall(PetscFVSetLimiter(fvm,limiter));
       if (tsNew) {
-        ierr = PetscInfo(ts, "AMR used\n");CHKERRQ(ierr);
-        ierr = DMDestroy(&dm);CHKERRQ(ierr);
-        ierr = VecDestroy(&X);CHKERRQ(ierr);
-        ierr = TSDestroy(&ts);CHKERRQ(ierr);
+        PetscCall(PetscInfo(ts, "AMR used\n"));
+        PetscCall(DMDestroy(&dm));
+        PetscCall(VecDestroy(&X));
+        PetscCall(TSDestroy(&ts));
         ts   = tsNew;
         X    = solNew;
-        ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-        ierr = VecGetDM(X,&dm);CHKERRQ(ierr);
-        ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
-        ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
-        ierr = DMPlexGetGeometryFVM(dm, NULL, NULL, &minRadius);CHKERRQ(ierr);
-        ierr = DMDestroy(&plex);CHKERRQ(ierr);
-        ierr = MPI_Allreduce(&phys->maxspeed,&mod->maxspeed,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)ts));CHKERRMPI(ierr);
+        PetscCall(TSSetFromOptions(ts));
+        PetscCall(VecGetDM(X,&dm));
+        PetscCall(PetscObjectReference((PetscObject)dm));
+        PetscCall(DMConvert(dm, DMPLEX, &plex));
+        PetscCall(DMPlexGetGeometryFVM(dm, NULL, NULL, &minRadius));
+        PetscCall(DMDestroy(&plex));
+        PetscCallMPI(MPI_Allreduce(&phys->maxspeed,&mod->maxspeed,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)ts)));
         PetscCheck(mod->maxspeed > 0,comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
         dt   = cfl * minRadius / mod->maxspeed;
-        ierr = TSSetStepNumber(ts,nsteps);CHKERRQ(ierr);
-        ierr = TSSetTime(ts,ftime);CHKERRQ(ierr);
-        ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
+        PetscCall(TSSetStepNumber(ts,nsteps));
+        PetscCall(TSSetTime(ts,ftime));
+        PetscCall(TSSetTimeStep(ts,dt));
       } else {
-        ierr = PetscInfo(ts, "AMR not used\n");CHKERRQ(ierr);
+        PetscCall(PetscInfo(ts, "AMR not used\n"));
       }
       user->monitorStepOffset = nsteps;
-      ierr = TSSetMaxSteps(ts,nsteps+adaptInterval);CHKERRQ(ierr);
-      ierr = TSSolve(ts,X);CHKERRQ(ierr);
-      ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
-      ierr = TSGetStepNumber(ts,&nsteps);CHKERRQ(ierr);
+      PetscCall(TSSetMaxSteps(ts,nsteps+adaptInterval));
+      PetscCall(TSSolve(ts,X));
+      PetscCall(TSGetSolveTime(ts,&ftime));
+      PetscCall(TSGetStepNumber(ts,&nsteps));
     }
   }
-  ierr = TSGetConvergedReason(ts,&reason);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after %D steps\n",TSConvergedReasons[reason],(double)ftime,nsteps);CHKERRQ(ierr);
-  ierr = TSDestroy(&ts);CHKERRQ(ierr);
+  PetscCall(TSGetConvergedReason(ts,&reason));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after %D steps\n",TSConvergedReasons[reason],(double)ftime,nsteps));
+  PetscCall(TSDestroy(&ts));
 
-  ierr = VecTaggerDestroy(&refineTag);CHKERRQ(ierr);
-  ierr = VecTaggerDestroy(&coarsenTag);CHKERRQ(ierr);
-  ierr = PetscFunctionListDestroy(&PhysicsList);CHKERRQ(ierr);
-  ierr = PetscFunctionListDestroy(&PhysicsRiemannList_SW);CHKERRQ(ierr);
-  ierr = FunctionalLinkDestroy(&user->model->functionalRegistry);CHKERRQ(ierr);
-  ierr = PetscFree(user->model->functionalMonitored);CHKERRQ(ierr);
-  ierr = PetscFree(user->model->functionalCall);CHKERRQ(ierr);
-  ierr = PetscFree(user->model->physics->data);CHKERRQ(ierr);
-  ierr = PetscFree(user->model->physics);CHKERRQ(ierr);
-  ierr = PetscFree(user->model);CHKERRQ(ierr);
-  ierr = PetscFree(user);CHKERRQ(ierr);
-  ierr = VecDestroy(&X);CHKERRQ(ierr);
-  ierr = PetscLimiterDestroy(&limiter);CHKERRQ(ierr);
-  ierr = PetscLimiterDestroy(&noneLimiter);CHKERRQ(ierr);
-  ierr = PetscFVDestroy(&fvm);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(VecTaggerDestroy(&refineTag));
+  PetscCall(VecTaggerDestroy(&coarsenTag));
+  PetscCall(PetscFunctionListDestroy(&PhysicsList));
+  PetscCall(PetscFunctionListDestroy(&PhysicsRiemannList_SW));
+  PetscCall(FunctionalLinkDestroy(&user->model->functionalRegistry));
+  PetscCall(PetscFree(user->model->functionalMonitored));
+  PetscCall(PetscFree(user->model->functionalCall));
+  PetscCall(PetscFree(user->model->physics->data));
+  PetscCall(PetscFree(user->model->physics));
+  PetscCall(PetscFree(user->model));
+  PetscCall(PetscFree(user));
+  PetscCall(VecDestroy(&X));
+  PetscCall(PetscLimiterDestroy(&limiter));
+  PetscCall(PetscLimiterDestroy(&noneLimiter));
+  PetscCall(PetscFVDestroy(&fvm));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /* Godunov fluxs */

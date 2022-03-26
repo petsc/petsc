@@ -32,11 +32,9 @@ $     -ksp_guess_type my_initial_guess
 @*/
 PetscErrorCode  KSPGuessRegister(const char sname[],PetscErrorCode (*function)(KSPGuess))
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = KSPInitializePackage();CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&KSPGuessList,sname,function);CHKERRQ(ierr);
+  PetscCall(KSPInitializePackage());
+  PetscCall(PetscFunctionListAdd(&KSPGuessList,sname,function));
   PetscFunctionReturn(0);
 }
 
@@ -51,13 +49,11 @@ PetscErrorCode  KSPGuessRegister(const char sname[],PetscErrorCode (*function)(K
 */
 PetscErrorCode KSPGuessRegisterAll(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (KSPGuessRegisterAllCalled) PetscFunctionReturn(0);
   KSPGuessRegisterAllCalled = PETSC_TRUE;
-  ierr = KSPGuessRegister(KSPGUESSFISCHER,KSPGuessCreate_Fischer);CHKERRQ(ierr);
-  ierr = KSPGuessRegister(KSPGUESSPOD,KSPGuessCreate_POD);CHKERRQ(ierr);
+  PetscCall(KSPGuessRegister(KSPGUESSFISCHER,KSPGuessCreate_Fischer));
+  PetscCall(KSPGuessRegister(KSPGUESSPOD,KSPGuessCreate_POD));
   PetscFunctionReturn(0);
 }
 
@@ -75,11 +71,9 @@ PetscErrorCode KSPGuessRegisterAll(void)
 @*/
 PetscErrorCode KSPGuessSetFromOptions(KSPGuess guess)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(guess,KSPGUESS_CLASSID,1);
-  if (guess->ops->setfromoptions) { ierr = (*guess->ops->setfromoptions)(guess);CHKERRQ(ierr); }
+  if (guess->ops->setfromoptions) PetscCall((*guess->ops->setfromoptions)(guess));
   PetscFunctionReturn(0);
 }
 
@@ -97,11 +91,9 @@ PetscErrorCode KSPGuessSetFromOptions(KSPGuess guess)
 @*/
 PetscErrorCode KSPGuessSetTolerance(KSPGuess guess, PetscReal tol)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(guess,KSPGUESS_CLASSID,1);
-  if (guess->ops->settolerance) { ierr = (*guess->ops->settolerance)(guess,tol);CHKERRQ(ierr); }
+  if (guess->ops->settolerance) PetscCall((*guess->ops->settolerance)(guess,tol));
   PetscFunctionReturn(0);
 }
 
@@ -119,15 +111,13 @@ PetscErrorCode KSPGuessSetTolerance(KSPGuess guess, PetscReal tol)
 @*/
 PetscErrorCode  KSPGuessDestroy(KSPGuess *guess)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (!*guess) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*guess),KSPGUESS_CLASSID,1);
   if (--((PetscObject)(*guess))->refct > 0) {*guess = NULL; PetscFunctionReturn(0);}
-  if ((*guess)->ops->destroy) { ierr = (*(*guess)->ops->destroy)(*guess);CHKERRQ(ierr); }
-  ierr = MatDestroy(&(*guess)->A);CHKERRQ(ierr);
-  ierr = PetscHeaderDestroy(guess);CHKERRQ(ierr);
+  if ((*guess)->ops->destroy) PetscCall((*(*guess)->ops->destroy)(*guess));
+  PetscCall(MatDestroy(&(*guess)->A));
+  PetscCall(PetscHeaderDestroy(guess));
   PetscFunctionReturn(0);
 }
 
@@ -148,23 +138,22 @@ PetscErrorCode  KSPGuessDestroy(KSPGuess *guess)
 @*/
 PetscErrorCode  KSPGuessView(KSPGuess guess, PetscViewer view)
 {
-  PetscErrorCode ierr;
   PetscBool      ascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(guess,KSPGUESS_CLASSID,1);
   if (!view) {
-    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)guess),&view);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)guess),&view));
   }
   PetscValidHeaderSpecific(view,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(guess,1,view,2);
-  ierr = PetscObjectTypeCompare((PetscObject)view,PETSCVIEWERASCII,&ascii);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)view,PETSCVIEWERASCII,&ascii));
   if (ascii) {
-    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)guess,view);CHKERRQ(ierr);
+    PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)guess,view));
     if (guess->ops->view) {
-      ierr = PetscViewerASCIIPushTab(view);CHKERRQ(ierr);
-      ierr = (*guess->ops->view)(guess,view);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopTab(view);CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPushTab(view));
+      PetscCall((*guess->ops->view)(guess,view));
+      PetscCall(PetscViewerASCIIPopTab(view));
     }
   }
   PetscFunctionReturn(0);
@@ -191,13 +180,12 @@ PetscErrorCode  KSPGuessView(KSPGuess guess, PetscViewer view)
 PetscErrorCode  KSPGuessCreate(MPI_Comm comm,KSPGuess *guess)
 {
   KSPGuess       tguess;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidPointer(guess,2);
   *guess = NULL;
-  ierr = KSPInitializePackage();CHKERRQ(ierr);
-  ierr = PetscHeaderCreate(tguess,KSPGUESS_CLASSID,"KSPGuess","Initial guess for Krylov Method","KSPGuess",comm,KSPGuessDestroy,KSPGuessView);CHKERRQ(ierr);
+  PetscCall(KSPInitializePackage());
+  PetscCall(PetscHeaderCreate(tguess,KSPGUESS_CLASSID,"KSPGuess","Initial guess for Krylov Method","KSPGuess",comm,KSPGuessDestroy,KSPGuessView));
   tguess->omatstate = -1;
   *guess = tguess;
   PetscFunctionReturn(0);
@@ -225,25 +213,25 @@ PetscErrorCode  KSPGuessCreate(MPI_Comm comm,KSPGuess *guess)
 @*/
 PetscErrorCode  KSPGuessSetType(KSPGuess guess, KSPGuessType type)
 {
-  PetscErrorCode ierr,(*r)(KSPGuess);
   PetscBool      match;
+  PetscErrorCode (*r)(KSPGuess);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(guess,KSPGUESS_CLASSID,1);
   PetscValidCharPointer(type,2);
 
-  ierr = PetscObjectTypeCompare((PetscObject)guess,type,&match);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)guess,type,&match));
   if (match) PetscFunctionReturn(0);
 
-  ierr =  PetscFunctionListFind(KSPGuessList,type,&r);CHKERRQ(ierr);
-  PetscCheckFalse(!r,PetscObjectComm((PetscObject)guess),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested KSPGuess type %s",type);
+  PetscCall(PetscFunctionListFind(KSPGuessList,type,&r));
+  PetscCheck(r,PetscObjectComm((PetscObject)guess),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested KSPGuess type %s",type);
   if (guess->ops->destroy) {
-    ierr                = (*guess->ops->destroy)(guess);CHKERRQ(ierr);
+    PetscCall((*guess->ops->destroy)(guess));
     guess->ops->destroy = NULL;
   }
-  ierr = PetscMemzero(guess->ops,sizeof(struct _KSPGuessOps));CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)guess,type);CHKERRQ(ierr);
-  ierr = (*r)(guess);CHKERRQ(ierr);
+  PetscCall(PetscMemzero(guess->ops,sizeof(struct _KSPGuessOps)));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)guess,type));
+  PetscCall((*r)(guess));
   PetscFunctionReturn(0);
 }
 
@@ -287,13 +275,11 @@ PetscErrorCode  KSPGuessGetType(KSPGuess guess,KSPGuessType *type)
 @*/
 PetscErrorCode  KSPGuessUpdate(KSPGuess guess, Vec rhs, Vec sol)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(guess,KSPGUESS_CLASSID,1);
   PetscValidHeaderSpecific(rhs,VEC_CLASSID,2);
   PetscValidHeaderSpecific(sol,VEC_CLASSID,3);
-  if (guess->ops->update) { ierr = (*guess->ops->update)(guess,rhs,sol);CHKERRQ(ierr); }
+  if (guess->ops->update) PetscCall((*guess->ops->update)(guess,rhs,sol));
   PetscFunctionReturn(0);
 }
 
@@ -313,13 +299,11 @@ PetscErrorCode  KSPGuessUpdate(KSPGuess guess, Vec rhs, Vec sol)
 @*/
 PetscErrorCode  KSPGuessFormGuess(KSPGuess guess, Vec rhs, Vec sol)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(guess,KSPGUESS_CLASSID,1);
   PetscValidHeaderSpecific(rhs,VEC_CLASSID,2);
   PetscValidHeaderSpecific(sol,VEC_CLASSID,3);
-  if (guess->ops->formguess) { ierr = (*guess->ops->formguess)(guess,rhs,sol);CHKERRQ(ierr); }
+  if (guess->ops->formguess) PetscCall((*guess->ops->formguess)(guess,rhs,sol));
   PetscFunctionReturn(0);
 }
 
@@ -337,7 +321,6 @@ PetscErrorCode  KSPGuessFormGuess(KSPGuess guess, Vec rhs, Vec sol)
 @*/
 PetscErrorCode  KSPGuessSetUp(KSPGuess guess)
 {
-  PetscErrorCode   ierr;
   PetscObjectState matstate;
   PetscInt         oM = 0, oN = 0, M, N;
   Mat              omat = NULL;
@@ -348,26 +331,26 @@ PetscErrorCode  KSPGuessSetUp(KSPGuess guess)
   PetscValidHeaderSpecific(guess,KSPGUESS_CLASSID,1);
   if (guess->A) {
     omat = guess->A;
-    ierr = MatGetSize(guess->A,&oM,&oN);CHKERRQ(ierr);
+    PetscCall(MatGetSize(guess->A,&oM,&oN));
   }
-  ierr = KSPGetOperators(guess->ksp,&guess->A,NULL);CHKERRQ(ierr);
-  ierr = KSPGetPC(guess->ksp,&pc);CHKERRQ(ierr);
-  ierr = PCGetReusePreconditioner(pc,&reuse);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)guess->A);CHKERRQ(ierr);
-  ierr = MatGetSize(guess->A,&M,&N);CHKERRQ(ierr);
-  ierr = PetscObjectStateGet((PetscObject)guess->A,&matstate);CHKERRQ(ierr);
+  PetscCall(KSPGetOperators(guess->ksp,&guess->A,NULL));
+  PetscCall(KSPGetPC(guess->ksp,&pc));
+  PetscCall(PCGetReusePreconditioner(pc,&reuse));
+  PetscCall(PetscObjectReference((PetscObject)guess->A));
+  PetscCall(MatGetSize(guess->A,&M,&N));
+  PetscCall(PetscObjectStateGet((PetscObject)guess->A,&matstate));
   if (M != oM || N != oN) {
-    ierr = PetscInfo(guess,"Resetting KSPGuess since matrix sizes have changed (%D != %D, %D != %D)\n",oM,M,oN,N);CHKERRQ(ierr);
+    PetscCall(PetscInfo(guess,"Resetting KSPGuess since matrix sizes have changed (%D != %D, %D != %D)\n",oM,M,oN,N));
   } else if (!reuse && (omat != guess->A || guess->omatstate != matstate)) {
-    ierr = PetscInfo(guess,"Resetting KSPGuess since %s has changed\n",omat != guess->A ? "matrix" : "matrix state");CHKERRQ(ierr);
-    if (guess->ops->reset) { ierr = (*guess->ops->reset)(guess);CHKERRQ(ierr); }
+    PetscCall(PetscInfo(guess,"Resetting KSPGuess since %s has changed\n",omat != guess->A ? "matrix" : "matrix state"));
+    if (guess->ops->reset) PetscCall((*guess->ops->reset)(guess));
   } else if (reuse) {
-    ierr = PetscInfo(guess,"Not resettting KSPGuess since reuse preconditioner has been specified\n");CHKERRQ(ierr);
+    PetscCall(PetscInfo(guess,"Not resettting KSPGuess since reuse preconditioner has been specified\n"));
   } else {
-    ierr = PetscInfo(guess,"KSPGuess status unchanged\n");CHKERRQ(ierr);
+    PetscCall(PetscInfo(guess,"KSPGuess status unchanged\n"));
   }
-  if (guess->ops->setup) { ierr = (*guess->ops->setup)(guess);CHKERRQ(ierr); }
+  if (guess->ops->setup) PetscCall((*guess->ops->setup)(guess));
   guess->omatstate = matstate;
-  ierr = MatDestroy(&omat);CHKERRQ(ierr);
+  PetscCall(MatDestroy(&omat));
   PetscFunctionReturn(0);
 }

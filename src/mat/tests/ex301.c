@@ -10,61 +10,60 @@ int main(int argc,char **args)
   PetscScalar    one = 1.0,zero = 0.0,negativeone = -1.0;
   PetscReal      norm;
   Vec            x,y;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
 
   for (i=0; i<2; i++) {
     /* Create the matrix and set it to contain explicit zero entries on the diagonal. */
-    ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-    ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*m,m*m);CHKERRQ(ierr);
-    ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-    ierr = MatSetUp(A);CHKERRQ(ierr);
-    ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
-    ierr = MatCreateVecs(A,&x,&y);CHKERRQ(ierr);
-    ierr = VecSet(x,one);CHKERRQ(ierr);
-    ierr = VecSet(y,zero);CHKERRQ(ierr);
-    ierr = MatDiagonalSet(A,y,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+    PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*m,m*m));
+    PetscCall(MatSetFromOptions(A));
+    PetscCall(MatSetUp(A));
+    PetscCall(MatGetOwnershipRange(A,&rstart,&rend));
+    PetscCall(MatCreateVecs(A,&x,&y));
+    PetscCall(VecSet(x,one));
+    PetscCall(VecSet(y,zero));
+    PetscCall(MatDiagonalSet(A,y,INSERT_VALUES));
 
     /* Now set A to be the identity using various approaches.
      * Note that there may be other approaches that should be added here. */
     switch (i) {
     case 0:
-      ierr = MatDiagonalSet(A,x,INSERT_VALUES);CHKERRQ(ierr);
+      PetscCall(MatDiagonalSet(A,x,INSERT_VALUES));
       break;
     case 1:
       for (j=rstart; j<rend; j++) {
-        ierr = MatSetValue(A,j,j,one,INSERT_VALUES);CHKERRQ(ierr);
+        PetscCall(MatSetValue(A,j,j,one,INSERT_VALUES));
       }
-      ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-      ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+      PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
       break;
     case 2:
       for (j=rstart; j<rend; j++) {
-        ierr = MatSetValuesRow(A,j,&one);CHKERRQ(ierr);
+        PetscCall(MatSetValuesRow(A,j,&one));
       }
-      ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-      ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+      PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
     default:
       break;
     }
 
     /* Compute y <- A*x and verify that the difference between y and x is negligible, as it should be since A is the identity. */
-    ierr = MatMult(A,x,y);CHKERRQ(ierr);
-    ierr = VecAXPY(y,negativeone,x);CHKERRQ(ierr);
-    ierr = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
+    PetscCall(MatMult(A,x,y));
+    PetscCall(VecAXPY(y,negativeone,x));
+    PetscCall(VecNorm(y,NORM_2,&norm));
     if (norm > PETSC_SQRT_MACHINE_EPSILON) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Test %" PetscInt_FMT ": Norm of error is %g, but should be near 0.\n",i,(double)norm);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Test %" PetscInt_FMT ": Norm of error is %g, but should be near 0.\n",i,(double)norm));
     }
 
-    ierr = MatDestroy(&A);CHKERRQ(ierr);
-    ierr = VecDestroy(&x);CHKERRQ(ierr);
-    ierr = VecDestroy(&y);CHKERRQ(ierr);
+    PetscCall(MatDestroy(&A));
+    PetscCall(VecDestroy(&x));
+    PetscCall(VecDestroy(&y));
   }
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

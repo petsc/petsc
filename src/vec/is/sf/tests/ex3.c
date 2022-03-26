@@ -6,7 +6,6 @@ static char help[]= "Test PetscSFFetchAndOp on patterned SF graphs. PetscSFFetch
 #include <petscsf.h>
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       i,N=10,low,high,nleaves;
   PetscMPIInt    size,rank;
   Vec            x,y,y2,gy2;
@@ -18,112 +17,112 @@ int main(int argc,char **argv)
   const char     *mpiopname;
   PetscBool      flag,isreplace,issum;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
-  ierr = PetscOptionsGetString(NULL,NULL,"-op",opname,sizeof(opname),&flag);CHKERRQ(ierr);
-  ierr = PetscStrcmp(opname,"replace",&isreplace);CHKERRQ(ierr);
-  ierr = PetscStrcmp(opname,"sum",&issum);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-op",opname,sizeof(opname),&flag));
+  PetscCall(PetscStrcmp(opname,"replace",&isreplace));
+  PetscCall(PetscStrcmp(opname,"sum",&issum));
 
   if (isreplace)  {op = MPI_REPLACE; mpiopname = "MPI_REPLACE";}
   else if (issum) {op = MPIU_SUM;     mpiopname = "MPI_SUM";}
   else SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Unsupported argument (%s) to -op, which must be 'replace' or 'sum'",opname);
 
-  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,PETSC_DECIDE,N);CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+  PetscCall(VecSetFromOptions(x));
+  PetscCall(VecSetSizes(x,PETSC_DECIDE,N));
 
   /*-------------------------------------*/
   /*       PETSCSF_PATTERN_GATHER        */
   /*-------------------------------------*/
 
   /* set MPI vec x to [1, 2, .., N] */
-  ierr = VecGetOwnershipRange(x,&low,&high);CHKERRQ(ierr);
-  for (i=low; i<high; i++) {ierr = VecSetValue(x,i,(PetscScalar)i+1.0,INSERT_VALUES);CHKERRQ(ierr);}
-  ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
+  PetscCall(VecGetOwnershipRange(x,&low,&high));
+  for (i=low; i<high; i++) PetscCall(VecSetValue(x,i,(PetscScalar)i+1.0,INSERT_VALUES));
+  PetscCall(VecAssemblyBegin(x));
+  PetscCall(VecAssemblyEnd(x));
 
   /* Create the gather SF */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\nTesting PetscSFFetchAndOp on a PETSCSF_PATTERN_GATHER graph with op = %s\n",mpiopname);CHKERRQ(ierr);
-  ierr = VecGetLayout(x,&layout);CHKERRQ(ierr);
-  ierr = PetscSFCreate(PETSC_COMM_WORLD,&gathersf);CHKERRQ(ierr);
-  ierr = PetscSFSetGraphWithPattern(gathersf,layout,PETSCSF_PATTERN_GATHER);CHKERRQ(ierr);
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\nTesting PetscSFFetchAndOp on a PETSCSF_PATTERN_GATHER graph with op = %s\n",mpiopname));
+  PetscCall(VecGetLayout(x,&layout));
+  PetscCall(PetscSFCreate(PETSC_COMM_WORLD,&gathersf));
+  PetscCall(PetscSFSetGraphWithPattern(gathersf,layout,PETSCSF_PATTERN_GATHER));
 
   /* Create the leaf vector y (seq vector) and its duplicate y2 working as leafupdate */
-  ierr = PetscSFGetGraph(gathersf,NULL,&nleaves,NULL,NULL);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,nleaves,&y);CHKERRQ(ierr);
-  ierr = VecDuplicate(y,&y2);CHKERRQ(ierr);
+  PetscCall(PetscSFGetGraph(gathersf,NULL,&nleaves,NULL,NULL));
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,nleaves,&y));
+  PetscCall(VecDuplicate(y,&y2));
 
-  ierr = VecGetArray(x,&rootdata);CHKERRQ(ierr);
-  ierr = VecGetArray(y,&leafdata);CHKERRQ(ierr);
-  ierr = VecGetArray(y2,&leafupdate);CHKERRQ(ierr);
+  PetscCall(VecGetArray(x,&rootdata));
+  PetscCall(VecGetArray(y,&leafdata));
+  PetscCall(VecGetArray(y2,&leafupdate));
 
   /* Bcast x to y,to initialize y = [1,N], then scale y to make leafupdate = y = [2,2*N] */
-  ierr = PetscSFBcastBegin(gathersf,MPIU_SCALAR,rootdata,leafdata,MPI_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(gathersf,MPIU_SCALAR,rootdata,leafdata,MPI_REPLACE);CHKERRQ(ierr);
-  ierr = VecRestoreArray(y,&leafdata);CHKERRQ(ierr);
-  ierr = VecScale(y,2);CHKERRQ(ierr);
-  ierr = VecGetArray(y,&leafdata);CHKERRQ(ierr);
+  PetscCall(PetscSFBcastBegin(gathersf,MPIU_SCALAR,rootdata,leafdata,MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(gathersf,MPIU_SCALAR,rootdata,leafdata,MPI_REPLACE));
+  PetscCall(VecRestoreArray(y,&leafdata));
+  PetscCall(VecScale(y,2));
+  PetscCall(VecGetArray(y,&leafdata));
 
   /* FetchAndOp x to y */
-  ierr = PetscSFFetchAndOpBegin(gathersf,MPIU_SCALAR,rootdata,leafdata,leafupdate,op);CHKERRQ(ierr);
-  ierr = PetscSFFetchAndOpEnd(gathersf,MPIU_SCALAR,rootdata,leafdata,leafupdate,op);CHKERRQ(ierr);
+  PetscCall(PetscSFFetchAndOpBegin(gathersf,MPIU_SCALAR,rootdata,leafdata,leafupdate,op));
+  PetscCall(PetscSFFetchAndOpEnd(gathersf,MPIU_SCALAR,rootdata,leafdata,leafupdate,op));
 
   /* View roots (x) and leafupdate (y2). Since this is a gather graph, leafudpate = rootdata = [1,N], then rootdata += leafdata, i.e., [3,3*N] */
-  ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,nleaves,PETSC_DECIDE,leafupdate,&gy2);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)x,"rootdata");CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)gy2,"leafupdate");CHKERRQ(ierr);
+  PetscCall(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,nleaves,PETSC_DECIDE,leafupdate,&gy2));
+  PetscCall(PetscObjectSetName((PetscObject)x,"rootdata"));
+  PetscCall(PetscObjectSetName((PetscObject)gy2,"leafupdate"));
 
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecView(gy2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecDestroy(&gy2);CHKERRQ(ierr);
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecView(gy2,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecDestroy(&gy2));
 
-  ierr = VecRestoreArray(y2,&leafupdate);CHKERRQ(ierr);
-  ierr = VecDestroy(&y2);CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(y2,&leafupdate));
+  PetscCall(VecDestroy(&y2));
 
-  ierr = VecRestoreArray(y,&leafdata);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(y,&leafdata));
+  PetscCall(VecDestroy(&y));
 
-  ierr = VecRestoreArray(x,&rootdata);CHKERRQ(ierr);
-  /* ierr = VecDestroy(&x);CHKERRQ(ierr); */ /* We will reuse x in ALLGATHER, so do not destroy it */
+  PetscCall(VecRestoreArray(x,&rootdata));
+  /* PetscCall(VecDestroy(&x)); */ /* We will reuse x in ALLGATHER, so do not destroy it */
 
-  ierr = PetscSFDestroy(&gathersf);CHKERRQ(ierr);
+  PetscCall(PetscSFDestroy(&gathersf));
 
   /*-------------------------------------*/
   /*       PETSCSF_PATTERN_ALLGATHER     */
   /*-------------------------------------*/
 
   /* set MPI vec x to [1, 2, .., N] */
-  for (i=low; i<high; i++) {ierr = VecSetValue(x,i,(PetscScalar)i+1.0,INSERT_VALUES);CHKERRQ(ierr);}
-  ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
+  for (i=low; i<high; i++) PetscCall(VecSetValue(x,i,(PetscScalar)i+1.0,INSERT_VALUES));
+  PetscCall(VecAssemblyBegin(x));
+  PetscCall(VecAssemblyEnd(x));
 
   /* Create the allgather SF */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\nTesting PetscSFFetchAndOp on a PETSCSF_PATTERN_ALLGATHER graph with op = %s\n",mpiopname);CHKERRQ(ierr);
-  ierr = VecGetLayout(x,&layout);CHKERRQ(ierr);
-  ierr = PetscSFCreate(PETSC_COMM_WORLD,&allgathersf);CHKERRQ(ierr);
-  ierr = PetscSFSetGraphWithPattern(allgathersf,layout,PETSCSF_PATTERN_ALLGATHER);CHKERRQ(ierr);
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\nTesting PetscSFFetchAndOp on a PETSCSF_PATTERN_ALLGATHER graph with op = %s\n",mpiopname));
+  PetscCall(VecGetLayout(x,&layout));
+  PetscCall(PetscSFCreate(PETSC_COMM_WORLD,&allgathersf));
+  PetscCall(PetscSFSetGraphWithPattern(allgathersf,layout,PETSCSF_PATTERN_ALLGATHER));
 
   /* Create the leaf vector y (seq vector) and its duplicate y2 working as leafupdate */
-  ierr = PetscSFGetGraph(allgathersf,NULL,&nleaves,NULL,NULL);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,nleaves,&y);CHKERRQ(ierr);
-  ierr = VecDuplicate(y,&y2);CHKERRQ(ierr);
+  PetscCall(PetscSFGetGraph(allgathersf,NULL,&nleaves,NULL,NULL));
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,nleaves,&y));
+  PetscCall(VecDuplicate(y,&y2));
 
-  ierr = VecGetArray(x,&rootdata);CHKERRQ(ierr);
-  ierr = VecGetArray(y,&leafdata);CHKERRQ(ierr);
-  ierr = VecGetArray(y2,&leafupdate);CHKERRQ(ierr);
+  PetscCall(VecGetArray(x,&rootdata));
+  PetscCall(VecGetArray(y,&leafdata));
+  PetscCall(VecGetArray(y2,&leafupdate));
 
   /* Bcast x to y, to initialize y = [1,N], then scale y to make leafupdate = y = [2,2*N] */
-  ierr = PetscSFBcastBegin(allgathersf,MPIU_SCALAR,rootdata,leafdata,MPI_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(allgathersf,MPIU_SCALAR,rootdata,leafdata,MPI_REPLACE);CHKERRQ(ierr);
-  ierr = VecRestoreArray(y,&leafdata);CHKERRQ(ierr);
-  ierr = VecScale(y,2);CHKERRQ(ierr);
-  ierr = VecGetArray(y,&leafdata);CHKERRQ(ierr);
+  PetscCall(PetscSFBcastBegin(allgathersf,MPIU_SCALAR,rootdata,leafdata,MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(allgathersf,MPIU_SCALAR,rootdata,leafdata,MPI_REPLACE));
+  PetscCall(VecRestoreArray(y,&leafdata));
+  PetscCall(VecScale(y,2));
+  PetscCall(VecGetArray(y,&leafdata));
 
   /* FetchAndOp x to y */
-  ierr = PetscSFFetchAndOpBegin(allgathersf,MPIU_SCALAR,rootdata,leafdata,leafupdate,op);CHKERRQ(ierr);
-  ierr = PetscSFFetchAndOpEnd(allgathersf,MPIU_SCALAR,rootdata,leafdata,leafupdate,op);CHKERRQ(ierr);
+  PetscCall(PetscSFFetchAndOpBegin(allgathersf,MPIU_SCALAR,rootdata,leafdata,leafupdate,op));
+  PetscCall(PetscSFFetchAndOpEnd(allgathersf,MPIU_SCALAR,rootdata,leafdata,leafupdate,op));
 
   /* View roots (x) and leafupdate (y2). Since this is an allgather graph, we have (suppose ranks get updates in ascending order)
      rank 0: leafupdate = rootdata = [1,N],   rootdata += leafdata = [3,3*N]
@@ -131,85 +130,85 @@ int main(int argc,char **argv)
      rank 2: leafupdate = rootdata = [5,5*N], rootdata += leafdata = [7,7*N]
      ...
    */
-  ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,nleaves,PETSC_DECIDE,leafupdate,&gy2);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)x,"rootdata");CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)gy2,"leafupdate");CHKERRQ(ierr);
+  PetscCall(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,nleaves,PETSC_DECIDE,leafupdate,&gy2));
+  PetscCall(PetscObjectSetName((PetscObject)x,"rootdata"));
+  PetscCall(PetscObjectSetName((PetscObject)gy2,"leafupdate"));
 
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecView(gy2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecDestroy(&gy2);CHKERRQ(ierr);
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecView(gy2,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecDestroy(&gy2));
 
-  ierr = VecRestoreArray(y2,&leafupdate);CHKERRQ(ierr);
-  ierr = VecDestroy(&y2);CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(y2,&leafupdate));
+  PetscCall(VecDestroy(&y2));
 
-  ierr = VecRestoreArray(y,&leafdata);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(y,&leafdata));
+  PetscCall(VecDestroy(&y));
 
-  ierr = VecRestoreArray(x,&rootdata);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr); /* We won't reuse x in ALLGATHER, so destroy it */
+  PetscCall(VecRestoreArray(x,&rootdata));
+  PetscCall(VecDestroy(&x)); /* We won't reuse x in ALLGATHER, so destroy it */
 
-  ierr = PetscSFDestroy(&allgathersf);CHKERRQ(ierr);
+  PetscCall(PetscSFDestroy(&allgathersf));
 
   /*-------------------------------------*/
   /*       PETSCSF_PATTERN_ALLTOALL     */
   /*-------------------------------------*/
 
-  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,size,PETSC_DECIDE);CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+  PetscCall(VecSetFromOptions(x));
+  PetscCall(VecSetSizes(x,size,PETSC_DECIDE));
 
   /* set MPI vec x to [1, 2, .., size^2] */
-  ierr = VecGetOwnershipRange(x,&low,&high);CHKERRQ(ierr);
-  for (i=low; i<high; i++) {ierr = VecSetValue(x,i,(PetscScalar)i+1.0,INSERT_VALUES);CHKERRQ(ierr);}
-  ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
+  PetscCall(VecGetOwnershipRange(x,&low,&high));
+  for (i=low; i<high; i++) PetscCall(VecSetValue(x,i,(PetscScalar)i+1.0,INSERT_VALUES));
+  PetscCall(VecAssemblyBegin(x));
+  PetscCall(VecAssemblyEnd(x));
 
 /* Create the alltoall SF */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\nTesting PetscSFFetchAndOp on a PETSCSF_PATTERN_ALLTOALL graph with op = %s\n",mpiopname);CHKERRQ(ierr);
-  ierr = PetscSFCreate(PETSC_COMM_WORLD,&alltoallsf);CHKERRQ(ierr);
-  ierr = PetscSFSetGraphWithPattern(alltoallsf,NULL/*insignificant*/,PETSCSF_PATTERN_ALLTOALL);CHKERRQ(ierr);
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\nTesting PetscSFFetchAndOp on a PETSCSF_PATTERN_ALLTOALL graph with op = %s\n",mpiopname));
+  PetscCall(PetscSFCreate(PETSC_COMM_WORLD,&alltoallsf));
+  PetscCall(PetscSFSetGraphWithPattern(alltoallsf,NULL/*insignificant*/,PETSCSF_PATTERN_ALLTOALL));
 
   /* Create the leaf vector y (seq vector) and its duplicate y2 working as leafupdate */
-  ierr = PetscSFGetGraph(alltoallsf,NULL,&nleaves,NULL,NULL);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,nleaves,&y);CHKERRQ(ierr);
-  ierr = VecDuplicate(y,&y2);CHKERRQ(ierr);
+  PetscCall(PetscSFGetGraph(alltoallsf,NULL,&nleaves,NULL,NULL));
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,nleaves,&y));
+  PetscCall(VecDuplicate(y,&y2));
 
-  ierr = VecGetArray(x,&rootdata);CHKERRQ(ierr);
-  ierr = VecGetArray(y,&leafdata);CHKERRQ(ierr);
-  ierr = VecGetArray(y2,&leafupdate);CHKERRQ(ierr);
+  PetscCall(VecGetArray(x,&rootdata));
+  PetscCall(VecGetArray(y,&leafdata));
+  PetscCall(VecGetArray(y2,&leafupdate));
 
   /* Bcast x to y, to initialize y = 1+rank+size*i, with i=0..size-1 */
-  ierr = PetscSFBcastBegin(alltoallsf,MPIU_SCALAR,rootdata,leafdata,MPI_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(alltoallsf,MPIU_SCALAR,rootdata,leafdata,MPI_REPLACE);CHKERRQ(ierr);
+  PetscCall(PetscSFBcastBegin(alltoallsf,MPIU_SCALAR,rootdata,leafdata,MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(alltoallsf,MPIU_SCALAR,rootdata,leafdata,MPI_REPLACE));
 
   /* FetchAndOp x to y */
-  ierr = PetscSFFetchAndOpBegin(alltoallsf,MPIU_SCALAR,rootdata,leafdata,leafupdate,op);CHKERRQ(ierr);
-  ierr = PetscSFFetchAndOpEnd(alltoallsf,MPIU_SCALAR,rootdata,leafdata,leafupdate,op);CHKERRQ(ierr);
+  PetscCall(PetscSFFetchAndOpBegin(alltoallsf,MPIU_SCALAR,rootdata,leafdata,leafupdate,op));
+  PetscCall(PetscSFFetchAndOpEnd(alltoallsf,MPIU_SCALAR,rootdata,leafdata,leafupdate,op));
 
   /* View roots (x) and leafupdate (y2). Since this is an alltoall graph, each root has only one leaf.
      So, leafupdate = rootdata = 1+rank+size*i, i=0..size-1; and rootdata += leafdata, i.e., rootdata = [2,2*N]
    */
-  ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,nleaves,PETSC_DECIDE,leafupdate,&gy2);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)x,"rootdata");CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)gy2,"leafupdate");CHKERRQ(ierr);
+  PetscCall(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,nleaves,PETSC_DECIDE,leafupdate,&gy2));
+  PetscCall(PetscObjectSetName((PetscObject)x,"rootdata"));
+  PetscCall(PetscObjectSetName((PetscObject)gy2,"leafupdate"));
 
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecView(gy2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecDestroy(&gy2);CHKERRQ(ierr);
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecView(gy2,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecDestroy(&gy2));
 
-  ierr = VecRestoreArray(y2,&leafupdate);CHKERRQ(ierr);
-  ierr = VecDestroy(&y2);CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(y2,&leafupdate));
+  PetscCall(VecDestroy(&y2));
 
-  ierr = VecRestoreArray(y,&leafdata);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(y,&leafdata));
+  PetscCall(VecDestroy(&y));
 
-  ierr = VecRestoreArray(x,&rootdata);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(x,&rootdata));
+  PetscCall(VecDestroy(&x));
 
-  ierr = PetscSFDestroy(&alltoallsf);CHKERRQ(ierr);
+  PetscCall(PetscSFDestroy(&alltoallsf));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST
@@ -240,4 +239,3 @@ int main(int argc,char **argv)
       args: -op sum
 
 TEST*/
-

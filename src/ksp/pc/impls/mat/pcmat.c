@@ -3,28 +3,22 @@
 
 static PetscErrorCode PCApply_Mat(PC pc,Vec x,Vec y)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = MatMult(pc->pmat,x,y);CHKERRQ(ierr);
+  PetscCall(MatMult(pc->pmat,x,y));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCMatApply_Mat(PC pc,Mat X,Mat Y)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = MatMatMult(pc->pmat,X,MAT_REUSE_MATRIX,PETSC_DEFAULT,&Y);CHKERRQ(ierr);
+  PetscCall(MatMatMult(pc->pmat,X,MAT_REUSE_MATRIX,PETSC_DEFAULT,&Y));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCApplyTranspose_Mat(PC pc,Vec x,Vec y)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = MatMultTranspose(pc->pmat,x,y);CHKERRQ(ierr);
+  PetscCall(MatMultTranspose(pc->pmat,x,y));
   PetscFunctionReturn(0);
 }
 
@@ -64,4 +58,3 @@ PETSC_EXTERN PetscErrorCode PCCreate_Mat(PC pc)
   pc->ops->applysymmetricright = NULL;
   PetscFunctionReturn(0);
 }
-

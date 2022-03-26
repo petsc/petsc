@@ -48,20 +48,19 @@ static char      version[256];
 */
 PetscErrorCode  PetscErrorPrintfInitialize(void)
 {
-  PetscErrorCode ierr;
   PetscBool      use_stdout = PETSC_FALSE,use_none = PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscGetArchType(arch,sizeof(arch));CHKERRQ(ierr);
-  ierr = PetscGetHostName(hostname,sizeof(hostname));CHKERRQ(ierr);
-  ierr = PetscGetUserName(username,sizeof(username));CHKERRQ(ierr);
-  ierr = PetscGetProgramName(pname,sizeof(pname));CHKERRQ(ierr);
-  ierr = PetscGetDate(date,sizeof(date));CHKERRQ(ierr);
-  ierr = PetscGetVersion(version,sizeof(version));CHKERRQ(ierr);
+  PetscCall(PetscGetArchType(arch,sizeof(arch)));
+  PetscCall(PetscGetHostName(hostname,sizeof(hostname)));
+  PetscCall(PetscGetUserName(username,sizeof(username)));
+  PetscCall(PetscGetProgramName(pname,sizeof(pname)));
+  PetscCall(PetscGetDate(date,sizeof(date)));
+  PetscCall(PetscGetVersion(version,sizeof(version)));
 
-  ierr = PetscOptionsGetBool(NULL,NULL,"-error_output_stdout",&use_stdout,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-error_output_stdout",&use_stdout,NULL));
   if (use_stdout) PETSC_STDERR = PETSC_STDOUT;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-error_output_none",&use_none,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-error_output_none",&use_none,NULL));
   if (use_none) PetscErrorPrintf = PetscErrorPrintfNone;
   PetscErrorPrintfInitializeCalled = PETSC_TRUE;
   PetscFunctionReturn(0);

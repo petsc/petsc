@@ -21,11 +21,10 @@ PetscErrorCode PetscFEGeomCreate(PetscQuadrature quad, PetscInt numCells, PetscI
   PetscFEGeom     *g;
   PetscInt        dim, Nq, N;
   const PetscReal *p;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscQuadratureGetData(quad,&dim,NULL,&Nq,&p,NULL);CHKERRQ(ierr);
-  ierr = PetscNew(&g);CHKERRQ(ierr);
+  PetscCall(PetscQuadratureGetData(quad,&dim,NULL,&Nq,&p,NULL));
+  PetscCall(PetscNew(&g));
   g->xi         = p;
   g->numCells   = numCells;
   g->numPoints  = Nq;
@@ -33,14 +32,14 @@ PetscErrorCode PetscFEGeomCreate(PetscQuadrature quad, PetscInt numCells, PetscI
   g->dimEmbed   = dimEmbed;
   g->isCohesive = PETSC_FALSE;
   N = numCells * Nq;
-  ierr = PetscCalloc3(N * dimEmbed, &g->v, N * dimEmbed * dimEmbed, &g->J, N, &g->detJ);CHKERRQ(ierr);
+  PetscCall(PetscCalloc3(N * dimEmbed, &g->v, N * dimEmbed * dimEmbed, &g->J, N, &g->detJ));
   if (faceData) {
-    ierr = PetscCalloc2(numCells, &g->face, N * dimEmbed, &g->n);CHKERRQ(ierr);
-    ierr = PetscCalloc6(N * dimEmbed * dimEmbed, &(g->suppJ[0]),    N * dimEmbed * dimEmbed, &(g->suppJ[1]),
-                        N * dimEmbed * dimEmbed, &(g->suppInvJ[0]), N * dimEmbed * dimEmbed, &(g->suppInvJ[1]),
-                        N,                       &(g->suppDetJ[0]), N,                       &(g->suppDetJ[1]));CHKERRQ(ierr);
+    PetscCall(PetscCalloc2(numCells, &g->face, N * dimEmbed, &g->n));
+    PetscCall(PetscCalloc6(N * dimEmbed * dimEmbed, &(g->suppJ[0]),    N * dimEmbed * dimEmbed, &(g->suppJ[1]),
+                         N * dimEmbed * dimEmbed, &(g->suppInvJ[0]), N * dimEmbed * dimEmbed, &(g->suppInvJ[1]),
+                         N,                       &(g->suppDetJ[0]), N,                       &(g->suppDetJ[1])));
   }
-  ierr = PetscCalloc1(N * dimEmbed * dimEmbed, &g->invJ);CHKERRQ(ierr);
+  PetscCall(PetscCalloc1(N * dimEmbed * dimEmbed, &g->invJ));
   *geom = g;
   PetscFunctionReturn(0);
 }
@@ -57,15 +56,13 @@ PetscErrorCode PetscFEGeomCreate(PetscQuadrature quad, PetscInt numCells, PetscI
 @*/
 PetscErrorCode PetscFEGeomDestroy(PetscFEGeom **geom)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (!*geom) PetscFunctionReturn(0);
-  ierr = PetscFree3((*geom)->v,(*geom)->J,(*geom)->detJ);CHKERRQ(ierr);
-  ierr = PetscFree((*geom)->invJ);CHKERRQ(ierr);
-  ierr = PetscFree2((*geom)->face,(*geom)->n);CHKERRQ(ierr);
-  ierr = PetscFree6((*geom)->suppJ[0],(*geom)->suppJ[1],(*geom)->suppInvJ[0],(*geom)->suppInvJ[1],(*geom)->suppDetJ[0],(*geom)->suppDetJ[1]);CHKERRQ(ierr);
-  ierr = PetscFree(*geom);CHKERRQ(ierr);
+  PetscCall(PetscFree3((*geom)->v,(*geom)->J,(*geom)->detJ));
+  PetscCall(PetscFree((*geom)->invJ));
+  PetscCall(PetscFree2((*geom)->face,(*geom)->n));
+  PetscCall(PetscFree6((*geom)->suppJ[0],(*geom)->suppJ[1],(*geom)->suppInvJ[0],(*geom)->suppInvJ[1],(*geom)->suppDetJ[0],(*geom)->suppDetJ[1]));
+  PetscCall(PetscFree(*geom));
   PetscFunctionReturn(0);
 }
 
@@ -88,13 +85,12 @@ PetscErrorCode PetscFEGeomGetChunk(PetscFEGeom *geom, PetscInt cStart, PetscInt 
 {
   PetscInt       Nq;
   PetscInt       dE;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidPointer(geom,1);
   PetscValidPointer(chunkGeom,4);
   if (!(*chunkGeom)) {
-    ierr = PetscNew(chunkGeom);CHKERRQ(ierr);
+    PetscCall(PetscNew(chunkGeom));
   }
   Nq = geom->numPoints;
   dE= geom->dimEmbed;
@@ -134,10 +130,8 @@ PetscErrorCode PetscFEGeomGetChunk(PetscFEGeom *geom, PetscInt cStart, PetscInt 
 @*/
 PetscErrorCode PetscFEGeomRestoreChunk(PetscFEGeom *geom, PetscInt cStart, PetscInt cEnd, PetscFEGeom **chunkGeom)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscFree(*chunkGeom);CHKERRQ(ierr);
+  PetscCall(PetscFree(*chunkGeom));
   PetscFunctionReturn(0);
 }
 

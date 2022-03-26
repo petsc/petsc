@@ -6,37 +6,36 @@ static char help[] = "Tests VecMax() with index.\n\
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       n = 5,idx;
   PetscReal      value,value2;
   Vec            x;
   PetscScalar    one = 1.0;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
   /* create vector */
-  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,PETSC_DECIDE,n);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+  PetscCall(VecSetSizes(x,PETSC_DECIDE,n));
+  PetscCall(VecSetFromOptions(x));
 
-  ierr = VecSet(x,one);CHKERRQ(ierr);
-  ierr = VecSetValue(x,0,0.0,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecSetValue(x,n-1,2.0,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecMax(x,&idx,&value);CHKERRQ(ierr);
-  ierr = VecMax(x,NULL,&value2);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Maximum value %g index %" PetscInt_FMT " (no index %g)\n",(double)value,idx,(double)value2);CHKERRQ(ierr);
-  ierr = VecMin(x,&idx,&value);CHKERRQ(ierr);
-  ierr = VecMin(x,NULL,&value2);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Minimum value %g index %" PetscInt_FMT " (no index %g)\n",(double)value,idx,(double)value2);CHKERRQ(ierr);
+  PetscCall(VecSet(x,one));
+  PetscCall(VecSetValue(x,0,0.0,INSERT_VALUES));
+  PetscCall(VecSetValue(x,n-1,2.0,INSERT_VALUES));
+  PetscCall(VecAssemblyBegin(x));
+  PetscCall(VecAssemblyEnd(x));
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecMax(x,&idx,&value));
+  PetscCall(VecMax(x,NULL,&value2));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Maximum value %g index %" PetscInt_FMT " (no index %g)\n",(double)value,idx,(double)value2));
+  PetscCall(VecMin(x,&idx,&value));
+  PetscCall(VecMin(x,NULL,&value2));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Minimum value %g index %" PetscInt_FMT " (no index %g)\n",(double)value,idx,(double)value2));
 
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  PetscCall(VecDestroy(&x));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -7,25 +7,24 @@
 static PetscErrorCode DMTSConvertPlex(DM dm, DM *plex, PetscBool copy)
 {
   PetscBool      isPlex;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject) dm, DMPLEX, &isPlex);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject) dm, DMPLEX, &isPlex));
   if (isPlex) {
     *plex = dm;
-    ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr);
+    PetscCall(PetscObjectReference((PetscObject) dm));
   } else {
-    ierr = PetscObjectQuery((PetscObject) dm, "dm_plex", (PetscObject *) plex);CHKERRQ(ierr);
+    PetscCall(PetscObjectQuery((PetscObject) dm, "dm_plex", (PetscObject *) plex));
     if (!*plex) {
-      ierr = DMConvert(dm,DMPLEX,plex);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject) dm, "dm_plex", (PetscObject) *plex);CHKERRQ(ierr);
+      PetscCall(DMConvert(dm,DMPLEX,plex));
+      PetscCall(PetscObjectCompose((PetscObject) dm, "dm_plex", (PetscObject) *plex));
       if (copy) {
-        ierr = DMCopyDMTS(dm, *plex);CHKERRQ(ierr);
-        ierr = DMCopyDMSNES(dm, *plex);CHKERRQ(ierr);
-        ierr = DMCopyAuxiliaryVec(dm, *plex);CHKERRQ(ierr);
+        PetscCall(DMCopyDMTS(dm, *plex));
+        PetscCall(DMCopyDMSNES(dm, *plex));
+        PetscCall(DMCopyAuxiliaryVec(dm, *plex));
       }
     } else {
-      ierr = PetscObjectReference((PetscObject) *plex);CHKERRQ(ierr);
+      PetscCall(PetscObjectReference((PetscObject) *plex));
     }
   }
   PetscFunctionReturn(0);
@@ -49,28 +48,25 @@ static PetscErrorCode DMTSConvertPlex(DM dm, DM *plex, PetscBool copy)
 @*/
 PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Vec F, void *user)
 {
-  Vec            locF;
-  IS             cellIS;
-  DM             plex;
-  PetscInt       depth;
+  Vec          locF;
+  IS           cellIS;
+  DM           plex;
+  PetscInt     depth;
   PetscFormKey key = {NULL, 0, 0, 0};
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMTSConvertPlex(dm,&plex,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = DMPlexGetDepth(plex, &depth);CHKERRQ(ierr);
-  ierr = DMGetStratumIS(plex, "dim", depth, &cellIS);CHKERRQ(ierr);
-  if (!cellIS) {
-    ierr = DMGetStratumIS(plex, "depth", depth, &cellIS);CHKERRQ(ierr);
-  }
-  ierr = DMGetLocalVector(plex, &locF);CHKERRQ(ierr);
-  ierr = VecZeroEntries(locF);CHKERRQ(ierr);
-  ierr = DMPlexComputeResidual_Internal(plex, key, cellIS, time, locX, NULL, time, locF, user);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalBegin(plex, locF, ADD_VALUES, F);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(plex, locF, ADD_VALUES, F);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(plex, &locF);CHKERRQ(ierr);
-  ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
-  ierr = DMDestroy(&plex);CHKERRQ(ierr);
+  PetscCall(DMTSConvertPlex(dm,&plex,PETSC_TRUE));
+  PetscCall(DMPlexGetDepth(plex, &depth));
+  PetscCall(DMGetStratumIS(plex, "dim", depth, &cellIS));
+  if (!cellIS) PetscCall(DMGetStratumIS(plex, "depth", depth, &cellIS));
+  PetscCall(DMGetLocalVector(plex, &locF));
+  PetscCall(VecZeroEntries(locF));
+  PetscCall(DMPlexComputeResidual_Internal(plex, key, cellIS, time, locX, NULL, time, locF, user));
+  PetscCall(DMLocalToGlobalBegin(plex, locF, ADD_VALUES, F));
+  PetscCall(DMLocalToGlobalEnd(plex, locF, ADD_VALUES, F));
+  PetscCall(DMRestoreLocalVector(plex, &locF));
+  PetscCall(ISDestroy(&cellIS));
+  PetscCall(DMDestroy(&plex));
   PetscFunctionReturn(0);
 }
 
@@ -93,28 +89,27 @@ PetscErrorCode DMPlexTSComputeBoundary(DM dm, PetscReal time, Vec locX, Vec locX
   DM             plex;
   Vec            faceGeometryFVM = NULL;
   PetscInt       Nf, f;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMTSConvertPlex(dm, &plex, PETSC_TRUE);CHKERRQ(ierr);
-  ierr = DMGetNumFields(plex, &Nf);CHKERRQ(ierr);
+  PetscCall(DMTSConvertPlex(dm, &plex, PETSC_TRUE));
+  PetscCall(DMGetNumFields(plex, &Nf));
   if (!locX_t) {
     /* This is the RHS part */
     for (f = 0; f < Nf; f++) {
       PetscObject  obj;
       PetscClassId id;
 
-      ierr = DMGetField(plex, f, NULL, &obj);CHKERRQ(ierr);
-      ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+      PetscCall(DMGetField(plex, f, NULL, &obj));
+      PetscCall(PetscObjectGetClassId(obj, &id));
       if (id == PETSCFV_CLASSID) {
-        ierr = DMPlexGetGeometryFVM(plex, &faceGeometryFVM, NULL, NULL);CHKERRQ(ierr);
+        PetscCall(DMPlexGetGeometryFVM(plex, &faceGeometryFVM, NULL, NULL));
         break;
       }
     }
   }
-  ierr = DMPlexInsertBoundaryValues(plex, PETSC_TRUE, locX, time, faceGeometryFVM, NULL, NULL);CHKERRQ(ierr);
-  ierr = DMPlexInsertTimeDerivativeBoundaryValues(plex, PETSC_TRUE, locX_t, time, faceGeometryFVM, NULL, NULL);CHKERRQ(ierr);
-  ierr = DMDestroy(&plex);CHKERRQ(ierr);
+  PetscCall(DMPlexInsertBoundaryValues(plex, PETSC_TRUE, locX, time, faceGeometryFVM, NULL, NULL));
+  PetscCall(DMPlexInsertTimeDerivativeBoundaryValues(plex, PETSC_TRUE, locX_t, time, faceGeometryFVM, NULL, NULL));
+  PetscCall(DMDestroy(&plex));
   PetscFunctionReturn(0);
 }
 
@@ -140,37 +135,36 @@ PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec 
   DM             plex;
   IS             allcellIS;
   PetscInt       Nds, s;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMTSConvertPlex(dm, &plex, PETSC_TRUE);CHKERRQ(ierr);
-  ierr = DMPlexGetAllCells_Internal(plex, &allcellIS);CHKERRQ(ierr);
-  ierr = DMGetNumDS(dm, &Nds);CHKERRQ(ierr);
+  PetscCall(DMTSConvertPlex(dm, &plex, PETSC_TRUE));
+  PetscCall(DMPlexGetAllCells_Internal(plex, &allcellIS));
+  PetscCall(DMGetNumDS(dm, &Nds));
   for (s = 0; s < Nds; ++s) {
     PetscDS          ds;
     IS               cellIS;
     PetscFormKey key;
 
-    ierr = DMGetRegionNumDS(dm, s, &key.label, NULL, &ds);CHKERRQ(ierr);
+    PetscCall(DMGetRegionNumDS(dm, s, &key.label, NULL, &ds));
     key.value = 0;
     key.field = 0;
     key.part  = 0;
     if (!key.label) {
-      ierr = PetscObjectReference((PetscObject) allcellIS);CHKERRQ(ierr);
+      PetscCall(PetscObjectReference((PetscObject) allcellIS));
       cellIS = allcellIS;
     } else {
       IS pointIS;
 
       key.value = 1;
-      ierr = DMLabelGetStratumIS(key.label, key.value, &pointIS);CHKERRQ(ierr);
-      ierr = ISIntersect_Caching_Internal(allcellIS, pointIS, &cellIS);CHKERRQ(ierr);
-      ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
+      PetscCall(DMLabelGetStratumIS(key.label, key.value, &pointIS));
+      PetscCall(ISIntersect_Caching_Internal(allcellIS, pointIS, &cellIS));
+      PetscCall(ISDestroy(&pointIS));
     }
-    ierr = DMPlexComputeResidual_Internal(plex, key, cellIS, time, locX, locX_t, time, locF, user);CHKERRQ(ierr);
-    ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
+    PetscCall(DMPlexComputeResidual_Internal(plex, key, cellIS, time, locX, locX_t, time, locF, user));
+    PetscCall(ISDestroy(&cellIS));
   }
-  ierr = ISDestroy(&allcellIS);CHKERRQ(ierr);
-  ierr = DMDestroy(&plex);CHKERRQ(ierr);
+  PetscCall(ISDestroy(&allcellIS));
+  PetscCall(DMDestroy(&plex));
   PetscFunctionReturn(0);
 }
 
@@ -198,43 +192,42 @@ PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec 
   IS             allcellIS;
   PetscBool      hasJac, hasPrec;
   PetscInt       Nds, s;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMTSConvertPlex(dm, &plex, PETSC_TRUE);CHKERRQ(ierr);
-  ierr = DMPlexGetAllCells_Internal(plex, &allcellIS);CHKERRQ(ierr);
-  ierr = DMGetNumDS(dm, &Nds);CHKERRQ(ierr);
+  PetscCall(DMTSConvertPlex(dm, &plex, PETSC_TRUE));
+  PetscCall(DMPlexGetAllCells_Internal(plex, &allcellIS));
+  PetscCall(DMGetNumDS(dm, &Nds));
   for (s = 0; s < Nds; ++s) {
     PetscDS          ds;
     IS               cellIS;
     PetscFormKey key;
 
-    ierr = DMGetRegionNumDS(dm, s, &key.label, NULL, &ds);CHKERRQ(ierr);
+    PetscCall(DMGetRegionNumDS(dm, s, &key.label, NULL, &ds));
     key.value = 0;
     key.field = 0;
     key.part  = 0;
     if (!key.label) {
-      ierr = PetscObjectReference((PetscObject) allcellIS);CHKERRQ(ierr);
+      PetscCall(PetscObjectReference((PetscObject) allcellIS));
       cellIS = allcellIS;
     } else {
       IS pointIS;
 
       key.value = 1;
-      ierr = DMLabelGetStratumIS(key.label, key.value, &pointIS);CHKERRQ(ierr);
-      ierr = ISIntersect_Caching_Internal(allcellIS, pointIS, &cellIS);CHKERRQ(ierr);
-      ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
+      PetscCall(DMLabelGetStratumIS(key.label, key.value, &pointIS));
+      PetscCall(ISIntersect_Caching_Internal(allcellIS, pointIS, &cellIS));
+      PetscCall(ISDestroy(&pointIS));
     }
     if (!s) {
-      ierr = PetscDSHasJacobian(ds, &hasJac);CHKERRQ(ierr);
-      ierr = PetscDSHasJacobianPreconditioner(ds, &hasPrec);CHKERRQ(ierr);
-      if (hasJac && hasPrec) {ierr = MatZeroEntries(Jac);CHKERRQ(ierr);}
-      ierr = MatZeroEntries(JacP);CHKERRQ(ierr);
+      PetscCall(PetscDSHasJacobian(ds, &hasJac));
+      PetscCall(PetscDSHasJacobianPreconditioner(ds, &hasPrec));
+      if (hasJac && hasPrec) PetscCall(MatZeroEntries(Jac));
+      PetscCall(MatZeroEntries(JacP));
     }
-    ierr = DMPlexComputeJacobian_Internal(plex, key, cellIS, time, X_tShift, locX, locX_t, Jac, JacP, user);CHKERRQ(ierr);
-    ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
+    PetscCall(DMPlexComputeJacobian_Internal(plex, key, cellIS, time, X_tShift, locX, locX_t, Jac, JacP, user));
+    PetscCall(ISDestroy(&cellIS));
   }
-  ierr = ISDestroy(&allcellIS);CHKERRQ(ierr);
-  ierr = DMDestroy(&plex);CHKERRQ(ierr);
+  PetscCall(ISDestroy(&allcellIS));
+  PetscCall(DMDestroy(&plex));
   PetscFunctionReturn(0);
 }
 
@@ -259,37 +252,36 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFEM(DM dm, PetscReal time, Vec locX, Ve
   DM             plex;
   IS             allcellIS;
   PetscInt       Nds, s;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMTSConvertPlex(dm, &plex, PETSC_TRUE);CHKERRQ(ierr);
-  ierr = DMPlexGetAllCells_Internal(plex, &allcellIS);CHKERRQ(ierr);
-  ierr = DMGetNumDS(dm, &Nds);CHKERRQ(ierr);
+  PetscCall(DMTSConvertPlex(dm, &plex, PETSC_TRUE));
+  PetscCall(DMPlexGetAllCells_Internal(plex, &allcellIS));
+  PetscCall(DMGetNumDS(dm, &Nds));
   for (s = 0; s < Nds; ++s) {
     PetscDS          ds;
     IS               cellIS;
     PetscFormKey key;
 
-    ierr = DMGetRegionNumDS(dm, s, &key.label, NULL, &ds);CHKERRQ(ierr);
+    PetscCall(DMGetRegionNumDS(dm, s, &key.label, NULL, &ds));
     key.value = 0;
     key.field = 0;
     key.part  = 100;
     if (!key.label) {
-      ierr = PetscObjectReference((PetscObject) allcellIS);CHKERRQ(ierr);
+      PetscCall(PetscObjectReference((PetscObject) allcellIS));
       cellIS = allcellIS;
     } else {
       IS pointIS;
 
       key.value = 1;
-      ierr = DMLabelGetStratumIS(key.label, key.value, &pointIS);CHKERRQ(ierr);
-      ierr = ISIntersect_Caching_Internal(allcellIS, pointIS, &cellIS);CHKERRQ(ierr);
-      ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
+      PetscCall(DMLabelGetStratumIS(key.label, key.value, &pointIS));
+      PetscCall(ISIntersect_Caching_Internal(allcellIS, pointIS, &cellIS));
+      PetscCall(ISDestroy(&pointIS));
     }
-    ierr = DMPlexComputeResidual_Internal(plex, key, cellIS, time, locX, NULL, time, locG, user);CHKERRQ(ierr);
-    ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
+    PetscCall(DMPlexComputeResidual_Internal(plex, key, cellIS, time, locX, NULL, time, locG, user));
+    PetscCall(ISDestroy(&cellIS));
   }
-  ierr = ISDestroy(&allcellIS);CHKERRQ(ierr);
-  ierr = DMDestroy(&plex);CHKERRQ(ierr);
+  PetscCall(ISDestroy(&allcellIS));
+  PetscCall(DMDestroy(&plex));
   PetscFunctionReturn(0);
 }
 
@@ -316,32 +308,31 @@ PetscErrorCode DMTSCheckResidual(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
   MPI_Comm       comm;
   Vec            r;
   PetscReal      res;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
   PetscValidHeaderSpecific(u, VEC_CLASSID, 4);
   if (residual) PetscValidRealPointer(residual, 7);
-  ierr = PetscObjectGetComm((PetscObject) ts, &comm);CHKERRQ(ierr);
-  ierr = DMComputeExactSolution(dm, t, u, u_t);CHKERRQ(ierr);
-  ierr = VecDuplicate(u, &r);CHKERRQ(ierr);
-  ierr = TSComputeIFunction(ts, t, u, u_t, r, PETSC_FALSE);CHKERRQ(ierr);
-  ierr = VecNorm(r, NORM_2, &res);CHKERRQ(ierr);
+  PetscCall(PetscObjectGetComm((PetscObject) ts, &comm));
+  PetscCall(DMComputeExactSolution(dm, t, u, u_t));
+  PetscCall(VecDuplicate(u, &r));
+  PetscCall(TSComputeIFunction(ts, t, u, u_t, r, PETSC_FALSE));
+  PetscCall(VecNorm(r, NORM_2, &res));
   if (tol >= 0.0) {
     PetscCheck(res <= tol,comm, PETSC_ERR_ARG_WRONG, "L_2 Residual %g exceeds tolerance %g", (double) res, (double) tol);
   } else if (residual) {
     *residual = res;
   } else {
-    ierr = PetscPrintf(comm, "L_2 Residual: %g\n", (double)res);CHKERRQ(ierr);
-    ierr = VecChop(r, 1.0e-10);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject) r, "__Vec_bc_zero__", (PetscObject) dm);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) r, "Initial Residual");CHKERRQ(ierr);
-    ierr = PetscObjectSetOptionsPrefix((PetscObject)r,"res_");CHKERRQ(ierr);
-    ierr = VecViewFromOptions(r, NULL, "-vec_view");CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject) r, "__Vec_bc_zero__", NULL);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(comm, "L_2 Residual: %g\n", (double)res));
+    PetscCall(VecChop(r, 1.0e-10));
+    PetscCall(PetscObjectCompose((PetscObject) r, "__Vec_bc_zero__", (PetscObject) dm));
+    PetscCall(PetscObjectSetName((PetscObject) r, "Initial Residual"));
+    PetscCall(PetscObjectSetOptionsPrefix((PetscObject)r,"res_"));
+    PetscCall(VecViewFromOptions(r, NULL, "-vec_view"));
+    PetscCall(PetscObjectCompose((PetscObject) r, "__Vec_bc_zero__", NULL));
   }
-  ierr = VecDestroy(&r);CHKERRQ(ierr);
+  PetscCall(VecDestroy(&r));
   PetscFunctionReturn(0);
 }
 
@@ -372,7 +363,6 @@ PetscErrorCode DMTSCheckJacobian(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
   MatNullSpace   nullspace;
   PetscReal      dt, shift, slope, intercept;
   PetscBool      hasJac, hasPrec, isLin = PETSC_FALSE;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -380,33 +370,33 @@ PetscErrorCode DMTSCheckJacobian(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
   PetscValidHeaderSpecific(u, VEC_CLASSID, 4);
   if (isLinear) PetscValidBoolPointer(isLinear, 7);
   if (convRate) PetscValidRealPointer(convRate, 8);
-  ierr = PetscObjectGetComm((PetscObject) ts, &comm);CHKERRQ(ierr);
-  ierr = DMComputeExactSolution(dm, t, u, u_t);CHKERRQ(ierr);
+  PetscCall(PetscObjectGetComm((PetscObject) ts, &comm));
+  PetscCall(DMComputeExactSolution(dm, t, u, u_t));
   /* Create and view matrices */
-  ierr = TSGetTimeStep(ts, &dt);CHKERRQ(ierr);
+  PetscCall(TSGetTimeStep(ts, &dt));
   shift = 1.0/dt;
-  ierr = DMCreateMatrix(dm, &J);CHKERRQ(ierr);
-  ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
-  ierr = PetscDSHasJacobian(ds, &hasJac);CHKERRQ(ierr);
-  ierr = PetscDSHasJacobianPreconditioner(ds, &hasPrec);CHKERRQ(ierr);
+  PetscCall(DMCreateMatrix(dm, &J));
+  PetscCall(DMGetDS(dm, &ds));
+  PetscCall(PetscDSHasJacobian(ds, &hasJac));
+  PetscCall(PetscDSHasJacobianPreconditioner(ds, &hasPrec));
   if (hasJac && hasPrec) {
-    ierr = DMCreateMatrix(dm, &M);CHKERRQ(ierr);
-    ierr = TSComputeIJacobian(ts, t, u, u_t, shift, J, M, PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) M, "Preconditioning Matrix");CHKERRQ(ierr);
-    ierr = PetscObjectSetOptionsPrefix((PetscObject) M, "jacpre_");CHKERRQ(ierr);
-    ierr = MatViewFromOptions(M, NULL, "-mat_view");CHKERRQ(ierr);
-    ierr = MatDestroy(&M);CHKERRQ(ierr);
+    PetscCall(DMCreateMatrix(dm, &M));
+    PetscCall(TSComputeIJacobian(ts, t, u, u_t, shift, J, M, PETSC_FALSE));
+    PetscCall(PetscObjectSetName((PetscObject) M, "Preconditioning Matrix"));
+    PetscCall(PetscObjectSetOptionsPrefix((PetscObject) M, "jacpre_"));
+    PetscCall(MatViewFromOptions(M, NULL, "-mat_view"));
+    PetscCall(MatDestroy(&M));
   } else {
-    ierr = TSComputeIJacobian(ts, t, u, u_t, shift, J, J, PETSC_FALSE);CHKERRQ(ierr);
+    PetscCall(TSComputeIJacobian(ts, t, u, u_t, shift, J, J, PETSC_FALSE));
   }
-  ierr = PetscObjectSetName((PetscObject) J, "Jacobian");CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject) J, "jac_");CHKERRQ(ierr);
-  ierr = MatViewFromOptions(J, NULL, "-mat_view");CHKERRQ(ierr);
+  PetscCall(PetscObjectSetName((PetscObject) J, "Jacobian"));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject) J, "jac_"));
+  PetscCall(MatViewFromOptions(J, NULL, "-mat_view"));
   /* Check nullspace */
-  ierr = MatGetNullSpace(J, &nullspace);CHKERRQ(ierr);
+  PetscCall(MatGetNullSpace(J, &nullspace));
   if (nullspace) {
     PetscBool isNull;
-    ierr = MatNullSpaceTest(nullspace, J, &isNull);CHKERRQ(ierr);
+    PetscCall(MatNullSpaceTest(nullspace, J, &isNull));
     PetscCheck(isNull,comm, PETSC_ERR_PLIB, "The null space calculated for the system operator is invalid.");
   }
   /* Taylor test */
@@ -419,45 +409,45 @@ PetscErrorCode DMTSCheckJacobian(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
     PetscInt    Nv, v;
 
     /* Choose a perturbation direction */
-    ierr = PetscRandomCreate(comm, &rand);CHKERRQ(ierr);
-    ierr = VecDuplicate(u, &du);CHKERRQ(ierr);
-    ierr = VecSetRandom(du, rand);CHKERRQ(ierr);
-    ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
-    ierr = VecDuplicate(u, &df);CHKERRQ(ierr);
-    ierr = MatMult(J, du, df);CHKERRQ(ierr);
+    PetscCall(PetscRandomCreate(comm, &rand));
+    PetscCall(VecDuplicate(u, &du));
+    PetscCall(VecSetRandom(du, rand));
+    PetscCall(PetscRandomDestroy(&rand));
+    PetscCall(VecDuplicate(u, &df));
+    PetscCall(MatMult(J, du, df));
     /* Evaluate residual at u, F(u), save in vector r */
-    ierr = VecDuplicate(u, &r);CHKERRQ(ierr);
-    ierr = TSComputeIFunction(ts, t, u, u_t, r, PETSC_FALSE);CHKERRQ(ierr);
+    PetscCall(VecDuplicate(u, &r));
+    PetscCall(TSComputeIFunction(ts, t, u, u_t, r, PETSC_FALSE));
     /* Look at the convergence of our Taylor approximation as we approach u */
     for (h = hMax, Nv = 0; h >= hMin; h *= hMult, ++Nv);
-    ierr = PetscCalloc3(Nv, &es, Nv, &hs, Nv, &errors);CHKERRQ(ierr);
-    ierr = VecDuplicate(u, &uhat);CHKERRQ(ierr);
-    ierr = VecDuplicate(u, &uhat_t);CHKERRQ(ierr);
-    ierr = VecDuplicate(u, &rhat);CHKERRQ(ierr);
+    PetscCall(PetscCalloc3(Nv, &es, Nv, &hs, Nv, &errors));
+    PetscCall(VecDuplicate(u, &uhat));
+    PetscCall(VecDuplicate(u, &uhat_t));
+    PetscCall(VecDuplicate(u, &rhat));
     for (h = hMax, Nv = 0; h >= hMin; h *= hMult, ++Nv) {
-      ierr = VecWAXPY(uhat, h, du, u);CHKERRQ(ierr);
-      ierr = VecWAXPY(uhat_t, h*shift, du, u_t);CHKERRQ(ierr);
+      PetscCall(VecWAXPY(uhat, h, du, u));
+      PetscCall(VecWAXPY(uhat_t, h*shift, du, u_t));
       /* F(\hat u, \hat u_t) \approx F(u, u_t) + J(u, u_t) (uhat - u) + J_t(u, u_t) (uhat_t - u_t) = F(u) + h * J(u) du + h * shift * J_t(u) du = F(u) + h F' du */
-      ierr = TSComputeIFunction(ts, t, uhat, uhat_t, rhat, PETSC_FALSE);CHKERRQ(ierr);
-      ierr = VecAXPBYPCZ(rhat, -1.0, -h, 1.0, r, df);CHKERRQ(ierr);
-      ierr = VecNorm(rhat, NORM_2, &errors[Nv]);CHKERRQ(ierr);
+      PetscCall(TSComputeIFunction(ts, t, uhat, uhat_t, rhat, PETSC_FALSE));
+      PetscCall(VecAXPBYPCZ(rhat, -1.0, -h, 1.0, r, df));
+      PetscCall(VecNorm(rhat, NORM_2, &errors[Nv]));
 
       es[Nv] = PetscLog10Real(errors[Nv]);
       hs[Nv] = PetscLog10Real(h);
     }
-    ierr = VecDestroy(&uhat);CHKERRQ(ierr);
-    ierr = VecDestroy(&uhat_t);CHKERRQ(ierr);
-    ierr = VecDestroy(&rhat);CHKERRQ(ierr);
-    ierr = VecDestroy(&df);CHKERRQ(ierr);
-    ierr = VecDestroy(&r);CHKERRQ(ierr);
-    ierr = VecDestroy(&du);CHKERRQ(ierr);
+    PetscCall(VecDestroy(&uhat));
+    PetscCall(VecDestroy(&uhat_t));
+    PetscCall(VecDestroy(&rhat));
+    PetscCall(VecDestroy(&df));
+    PetscCall(VecDestroy(&r));
+    PetscCall(VecDestroy(&du));
     for (v = 0; v < Nv; ++v) {
       if ((tol >= 0) && (errors[v] > tol)) break;
       else if (errors[v] > PETSC_SMALL)    break;
     }
     if (v == Nv) isLin = PETSC_TRUE;
-    ierr = PetscLinearRegression(Nv, hs, es, &slope, &intercept);CHKERRQ(ierr);
-    ierr = PetscFree3(es, hs, errors);CHKERRQ(ierr);
+    PetscCall(PetscLinearRegression(Nv, hs, es, &slope, &intercept));
+    PetscCall(PetscFree3(es, hs, errors));
     /* Slope should be about 2 */
     if (tol >= 0) {
       PetscCheck(isLin || PetscAbsReal(2 - slope) <= tol,comm, PETSC_ERR_ARG_WRONG, "Taylor approximation convergence rate should be 2, not %0.2f", (double) slope);
@@ -465,11 +455,11 @@ PetscErrorCode DMTSCheckJacobian(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
       if (isLinear) *isLinear = isLin;
       if (convRate) *convRate = slope;
     } else {
-      if (!isLin) {ierr = PetscPrintf(comm, "Taylor approximation converging at order %3.2f\n", (double) slope);CHKERRQ(ierr);}
-      else        {ierr = PetscPrintf(comm, "Function appears to be linear\n");CHKERRQ(ierr);}
+      if (!isLin) PetscCall(PetscPrintf(comm, "Taylor approximation converging at order %3.2f\n", (double) slope));
+      else        PetscCall(PetscPrintf(comm, "Function appears to be linear\n"));
     }
   }
-  ierr = MatDestroy(&J);CHKERRQ(ierr);
+  PetscCall(MatDestroy(&J));
   PetscFunctionReturn(0);
 }
 
@@ -491,26 +481,25 @@ PetscErrorCode DMTSCheckFromOptions(TS ts, Vec u)
   Vec            sol, u_t;
   PetscReal      t;
   PetscBool      check;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHasName(((PetscObject)ts)->options,((PetscObject)ts)->prefix, "-dmts_check", &check);CHKERRQ(ierr);
+  PetscCall(PetscOptionsHasName(((PetscObject)ts)->options,((PetscObject)ts)->prefix, "-dmts_check", &check));
   if (!check) PetscFunctionReturn(0);
-  ierr = VecDuplicate(u, &sol);CHKERRQ(ierr);
-  ierr = VecCopy(u, sol);CHKERRQ(ierr);
-  ierr = TSSetSolution(ts, u);CHKERRQ(ierr);
-  ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
-  ierr = TSSetUp(ts);CHKERRQ(ierr);
-  ierr = TSGetSNES(ts, &snes);CHKERRQ(ierr);
-  ierr = SNESSetSolution(snes, u);CHKERRQ(ierr);
+  PetscCall(VecDuplicate(u, &sol));
+  PetscCall(VecCopy(u, sol));
+  PetscCall(TSSetSolution(ts, u));
+  PetscCall(TSGetDM(ts, &dm));
+  PetscCall(TSSetUp(ts));
+  PetscCall(TSGetSNES(ts, &snes));
+  PetscCall(SNESSetSolution(snes, u));
 
-  ierr = TSGetTime(ts, &t);CHKERRQ(ierr);
-  ierr = DMSNESCheckDiscretization(snes, dm, t, sol, -1.0, NULL);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(dm, &u_t);CHKERRQ(ierr);
-  ierr = DMTSCheckResidual(ts, dm, t, sol, u_t, -1.0, NULL);CHKERRQ(ierr);
-  ierr = DMTSCheckJacobian(ts, dm, t, sol, u_t, -1.0, NULL, NULL);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(dm, &u_t);CHKERRQ(ierr);
+  PetscCall(TSGetTime(ts, &t));
+  PetscCall(DMSNESCheckDiscretization(snes, dm, t, sol, -1.0, NULL));
+  PetscCall(DMGetGlobalVector(dm, &u_t));
+  PetscCall(DMTSCheckResidual(ts, dm, t, sol, u_t, -1.0, NULL));
+  PetscCall(DMTSCheckJacobian(ts, dm, t, sol, u_t, -1.0, NULL, NULL));
+  PetscCall(DMRestoreGlobalVector(dm, &u_t));
 
-  ierr = VecDestroy(&sol);CHKERRQ(ierr);
+  PetscCall(VecDestroy(&sol));
   PetscFunctionReturn(0);
 }

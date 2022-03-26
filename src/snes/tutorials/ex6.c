@@ -33,23 +33,22 @@ int main(int argc,char **argv)
   Vec            x,r,F,U;             /* vectors */
   Mat            J;                   /* Jacobian matrix */
   ReasonViewCtx     monP;             /* monitoring context */
-  PetscErrorCode ierr;
   PetscInt       its,n = 5,i;
   PetscMPIInt    size;
   PetscScalar    h,xp,v;
   MPI_Comm       comm;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"This is a uniprocessor example only!");
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   h    = 1.0/(n-1);
   comm = PETSC_COMM_WORLD;
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SNESCreate(comm,&snes);CHKERRQ(ierr);
+  PetscCall(SNESCreate(comm,&snes));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create vector data structures; set function evaluation routine
@@ -57,26 +56,26 @@ int main(int argc,char **argv)
   /*
      Note that we form 1 vector from scratch and then duplicate as needed.
   */
-  ierr = VecCreate(comm,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,PETSC_DECIDE,n);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&F);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&U);CHKERRQ(ierr);
+  PetscCall(VecCreate(comm,&x));
+  PetscCall(VecSetSizes(x,PETSC_DECIDE,n));
+  PetscCall(VecSetFromOptions(x));
+  PetscCall(VecDuplicate(x,&r));
+  PetscCall(VecDuplicate(x,&F));
+  PetscCall(VecDuplicate(x,&U));
 
   /*
      Set function evaluation routine and vector
   */
-  ierr = SNESSetFunction(snes,r,FormFunction,(void*)F);CHKERRQ(ierr);
+  PetscCall(SNESSetFunction(snes,r,FormFunction,(void*)F));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create matrix data structure; set Jacobian evaluation routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = MatCreate(comm,&J);CHKERRQ(ierr);
-  ierr = MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,n,n);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(J);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(J,3,NULL);CHKERRQ(ierr);
+  PetscCall(MatCreate(comm,&J));
+  PetscCall(MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,n,n));
+  PetscCall(MatSetFromOptions(J));
+  PetscCall(MatSeqAIJSetPreallocation(J,3,NULL));
 
   /*
      Set Jacobian matrix data structure and default Jacobian evaluation
@@ -89,7 +88,7 @@ int main(int argc,char **argv)
                          products within Newton-Krylov method
   */
 
-  ierr = SNESSetJacobian(snes,J,J,FormJacobian,NULL);CHKERRQ(ierr);
+  PetscCall(SNESSetJacobian(snes,J,J,FormJacobian,NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options
@@ -98,25 +97,25 @@ int main(int argc,char **argv)
   /*
      Set an optional user-defined reasonview routine
   */
-  ierr = PetscViewerASCIIGetStdout(comm,&monP.viewer);CHKERRQ(ierr);
+  PetscCall(PetscViewerASCIIGetStdout(comm,&monP.viewer));
   /* Just make sure we can not repeat addding the same function
    * PETSc will be able to igore the repeated function
    */
   for (i=0; i<4; i++) {
-    ierr = SNESConvergedReasonViewSet(snes,MySNESConvergedReasonView,&monP,0);CHKERRQ(ierr);
+    PetscCall(SNESConvergedReasonViewSet(snes,MySNESConvergedReasonView,&monP,0));
   }
-  ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+  PetscCall(SNESGetKSP(snes,&ksp));
   /* Just make sure we can not repeat addding the same function
    * PETSc will be able to igore the repeated function
    */
   for (i=0; i<4; i++) {
-    ierr = KSPConvergedReasonViewSet(ksp,MyKSPConvergedReasonView,&monP,0);CHKERRQ(ierr);
+    PetscCall(KSPConvergedReasonViewSet(ksp,MyKSPConvergedReasonView,&monP,0));
   }
   /*
      Set SNES/KSP/KSP/PC runtime options, e.g.,
          -snes_view -snes_monitor -ksp_type <ksp> -pc_type <pc>
   */
-  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+  PetscCall(SNESSetFromOptions(snes));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize application:
@@ -126,9 +125,9 @@ int main(int argc,char **argv)
   xp = 0.0;
   for (i=0; i<n; i++) {
     v    = 6.0*xp + PetscPowScalar(xp+1.e-12,6.0); /* +1.e-12 is to prevent 0^6 */
-    ierr = VecSetValues(F,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(VecSetValues(F,1,&i,&v,INSERT_VALUES));
     v    = xp*xp*xp;
-    ierr = VecSetValues(U,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(VecSetValues(U,1,&i,&v,INSERT_VALUES));
     xp  += h;
   }
 
@@ -141,20 +140,20 @@ int main(int argc,char **argv)
      to employ an initial guess of zero, the user should explicitly set
      this vector to zero by calling VecSet().
   */
-  ierr = FormInitialGuess(x);CHKERRQ(ierr);
-  ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
-  ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
+  PetscCall(FormInitialGuess(x));
+  PetscCall(SNESSolve(snes,NULL,x));
+  PetscCall(SNESGetIterationNumber(snes,&its));
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = VecDestroy(&x);CHKERRQ(ierr);  ierr = VecDestroy(&r);CHKERRQ(ierr);
-  ierr = VecDestroy(&U);CHKERRQ(ierr);  ierr = VecDestroy(&F);CHKERRQ(ierr);
-  ierr = MatDestroy(&J);CHKERRQ(ierr);  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-  /*ierr = PetscViewerDestroy(&monP.viewer);CHKERRQ(ierr);*/
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(VecDestroy(&x));  PetscCall(VecDestroy(&r));
+  PetscCall(VecDestroy(&U));  PetscCall(VecDestroy(&F));
+  PetscCall(MatDestroy(&J));  PetscCall(SNESDestroy(&snes));
+  /*PetscCall(PetscViewerDestroy(&monP.viewer));*/
+  PetscCall(PetscFinalize());
+  return 0;
 }
 /* ------------------------------------------------------------------- */
 /*
@@ -165,9 +164,8 @@ int main(int argc,char **argv)
 */
 PetscErrorCode FormInitialGuess(Vec x)
 {
-  PetscErrorCode ierr;
   PetscScalar    pfive = .50;
-  ierr = VecSet(x,pfive);CHKERRQ(ierr);
+  PetscCall(VecSet(x,pfive));
   return 0;
 }
 /* ------------------------------------------------------------------- */
@@ -194,7 +192,6 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
   Vec               g = (Vec)ctx;
   const PetscScalar *xx,*gg;
   PetscScalar       *ff,d;
-  PetscErrorCode    ierr;
   PetscInt          i,n;
 
   /*
@@ -204,14 +201,14 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
        - You MUST call VecRestoreArray() when you no longer need access to
          the array.
   */
-  ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
-  ierr = VecGetArray(f,&ff);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(g,&gg);CHKERRQ(ierr);
+  PetscCall(VecGetArrayRead(x,&xx));
+  PetscCall(VecGetArray(f,&ff));
+  PetscCall(VecGetArrayRead(g,&gg));
 
   /*
      Compute function
   */
-  ierr  = VecGetSize(x,&n);CHKERRQ(ierr);
+  PetscCall(VecGetSize(x,&n));
   d     = (PetscReal)(n - 1); d = d*d;
   ff[0] = xx[0];
   for (i=1; i<n-1; i++) ff[i] = d*(xx[i-1] - 2.0*xx[i] + xx[i+1]) + xx[i]*xx[i] - gg[i];
@@ -220,9 +217,9 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
   /*
      Restore vectors
   */
-  ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
-  ierr = VecRestoreArray(f,&ff);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(g,&gg);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(x,&xx));
+  PetscCall(VecRestoreArray(f,&ff));
+  PetscCall(VecRestoreArrayRead(g,&gg));
   return 0;
 }
 /* ------------------------------------------------------------------- */
@@ -244,20 +241,19 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
 {
   const PetscScalar *xx;
   PetscScalar       A[3],d;
-  PetscErrorCode    ierr;
   PetscInt          i,n,j[3];
 
   /*
      Get pointer to vector data
   */
-  ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
+  PetscCall(VecGetArrayRead(x,&xx));
 
   /*
      Compute Jacobian entries and insert into matrix.
       - Note that in this case we set all elements for a particular
         row at once.
   */
-  ierr = VecGetSize(x,&n);CHKERRQ(ierr);
+  PetscCall(VecGetSize(x,&n));
   d    = (PetscReal)(n - 1); d = d*d;
 
   /*
@@ -266,7 +262,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
   for (i=1; i<n-1; i++) {
     j[0] = i - 1; j[1] = i; j[2] = i + 1;
     A[0] = A[2] = d; A[1] = -2.0*d + 2.0*xx[i];
-    ierr = MatSetValues(B,1,&i,3,j,A,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(MatSetValues(B,1,&i,3,j,A,INSERT_VALUES));
   }
 
   /*
@@ -274,69 +270,67 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
   */
   i = 0;   A[0] = 1.0;
 
-  ierr = MatSetValues(B,1,&i,1,&i,A,INSERT_VALUES);CHKERRQ(ierr);
+  PetscCall(MatSetValues(B,1,&i,1,&i,A,INSERT_VALUES));
 
   i = n-1; A[0] = 1.0;
 
-  ierr = MatSetValues(B,1,&i,1,&i,A,INSERT_VALUES);CHKERRQ(ierr);
+  PetscCall(MatSetValues(B,1,&i,1,&i,A,INSERT_VALUES));
 
   /*
      Restore vector
   */
-  ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(x,&xx));
 
   /*
      Assemble matrix
   */
-  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
   if (jac != B) {
-    ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
   }
   return 0;
 }
 
 PetscErrorCode MySNESConvergedReasonView(SNES snes,void *ctx)
 {
-  PetscErrorCode        ierr;
   ReasonViewCtx         *monP = (ReasonViewCtx*) ctx;
   PetscViewer           viewer = monP->viewer;
   SNESConvergedReason   reason;
   const char            *strreason;
 
-  ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
-  ierr = SNESGetConvergedReasonString(snes,&strreason);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"Customized SNES converged reason view\n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIAddTab(viewer,1);CHKERRQ(ierr);
+  PetscCall(SNESGetConvergedReason(snes,&reason));
+  PetscCall(SNESGetConvergedReasonString(snes,&strreason));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"Customized SNES converged reason view\n"));
+  PetscCall(PetscViewerASCIIAddTab(viewer,1));
   if (reason > 0) {
-    ierr = PetscViewerASCIIPrintf(viewer,"Converged due to %s\n",strreason);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"Converged due to %s\n",strreason));
   } else if (reason <= 0) {
-    ierr = PetscViewerASCIIPrintf(viewer,"Did not converge due to %s\n",strreason);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"Did not converge due to %s\n",strreason));
   }
-  ierr = PetscViewerASCIISubtractTab(viewer,1);CHKERRQ(ierr);
+  PetscCall(PetscViewerASCIISubtractTab(viewer,1));
   return 0;
 }
 
 PetscErrorCode MyKSPConvergedReasonView(KSP ksp,void *ctx)
 {
-  PetscErrorCode        ierr;
   ReasonViewCtx         *monP = (ReasonViewCtx*) ctx;
   PetscViewer           viewer = monP->viewer;
   KSPConvergedReason    reason;
   const char            *reasonstr;
 
-  ierr = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);
-  ierr = KSPGetConvergedReasonString(ksp,&reasonstr);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIAddTab(viewer,2);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"Customized KSP converged reason view\n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIAddTab(viewer,1);CHKERRQ(ierr);
+  PetscCall(KSPGetConvergedReason(ksp,&reason));
+  PetscCall(KSPGetConvergedReasonString(ksp,&reasonstr));
+  PetscCall(PetscViewerASCIIAddTab(viewer,2));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"Customized KSP converged reason view\n"));
+  PetscCall(PetscViewerASCIIAddTab(viewer,1));
   if (reason > 0) {
-    ierr = PetscViewerASCIIPrintf(viewer,"Converged due to %s\n",reasonstr);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"Converged due to %s\n",reasonstr));
   } else if (reason <= 0) {
-    ierr = PetscViewerASCIIPrintf(viewer,"Did not converge due to %s\n",reasonstr);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"Did not converge due to %s\n",reasonstr));
   }
-  ierr = PetscViewerASCIISubtractTab(viewer,3);CHKERRQ(ierr);
+  PetscCall(PetscViewerASCIISubtractTab(viewer,3));
   return 0;
 }
 

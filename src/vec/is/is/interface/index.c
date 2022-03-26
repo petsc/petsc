@@ -40,25 +40,24 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
   PetscInt       n_n,nlocals,start,first_index,npos,nneg;
   PetscMPIInt    commsize;
   PetscBool      first_found,isblock;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(subset,IS_CLASSID,1);
   if (subset_mult) PetscValidHeaderSpecific(subset_mult,IS_CLASSID,2);
   if (N) PetscValidIntPointer(N,3);
   else if (!subset_n) PetscFunctionReturn(0);
-  ierr = ISGetLocalSize(subset,&n);CHKERRQ(ierr);
+  PetscCall(ISGetLocalSize(subset,&n));
   if (subset_mult) {
-    ierr = ISGetLocalSize(subset_mult,&i);CHKERRQ(ierr);
+    PetscCall(ISGetLocalSize(subset_mult,&i));
     PetscCheck(i == n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Local subset and multiplicity sizes don't match! %" PetscInt_FMT " != %" PetscInt_FMT,n,i);
   }
   /* create workspace layout for computing global indices of subset */
-  ierr = PetscMalloc1(n,&ilocal);CHKERRQ(ierr);
-  ierr = PetscMalloc1(n,&ilocalneg);CHKERRQ(ierr);
-  ierr = ISGetIndices(subset,&idxs);CHKERRQ(ierr);
-  ierr = ISGetBlockSize(subset,&ibs);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)subset,ISBLOCK,&isblock);CHKERRQ(ierr);
-  if (subset_mult) { ierr = ISGetIndices(subset_mult,&idxs_mult);CHKERRQ(ierr); }
+  PetscCall(PetscMalloc1(n,&ilocal));
+  PetscCall(PetscMalloc1(n,&ilocalneg));
+  PetscCall(ISGetIndices(subset,&idxs));
+  PetscCall(ISGetBlockSize(subset,&ibs));
+  PetscCall(PetscObjectTypeCompare((PetscObject)subset,ISBLOCK,&isblock));
+  if (subset_mult) PetscCall(ISGetIndices(subset_mult,&idxs_mult));
   lbounds[0] = PETSC_MAX_INT;
   lbounds[1] = PETSC_MIN_INT;
   for (i=0,npos=0,nneg=0;i<n;i++) {
@@ -68,56 +67,56 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
     ilocal[npos++] = i;
   }
   if (npos == n) {
-    ierr = PetscFree(ilocal);CHKERRQ(ierr);
-    ierr = PetscFree(ilocalneg);CHKERRQ(ierr);
+    PetscCall(PetscFree(ilocal));
+    PetscCall(PetscFree(ilocalneg));
   }
 
   /* create sf : leaf_data == multiplicity of indexes, root data == global index in layout */
-  ierr = PetscMalloc1(n,&leaf_data);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(n,&leaf_data));
   for (i=0;i<n;i++) leaf_data[i] = idxs_mult ? PetscMax(idxs_mult[i],0) : 1;
 
   /* local size of new subset */
   n_n = 0;
   for (i=0;i<n;i++) n_n += leaf_data[i];
   if (ilocalneg) for (i=0;i<nneg;i++) leaf_data[ilocalneg[i]] = 0;
-  ierr = PetscFree(ilocalneg);CHKERRQ(ierr);
-  ierr = PetscMalloc1(PetscMax(n_n,n),&gidxs);CHKERRQ(ierr); /* allocating extra space to reuse gidxs */
+  PetscCall(PetscFree(ilocalneg));
+  PetscCall(PetscMalloc1(PetscMax(n_n,n),&gidxs)); /* allocating extra space to reuse gidxs */
   /* check for early termination (all negative) */
-  ierr = PetscGlobalMinMaxInt(PetscObjectComm((PetscObject)subset),lbounds,gbounds);CHKERRQ(ierr);
+  PetscCall(PetscGlobalMinMaxInt(PetscObjectComm((PetscObject)subset),lbounds,gbounds));
   if (gbounds[1] < gbounds[0]) {
     if (N) *N = 0;
     if (subset_n) { /* all negative */
       for (i=0;i<n_n;i++) gidxs[i] = -1;
-      ierr = ISCreateGeneral(PetscObjectComm((PetscObject)subset),n_n,gidxs,PETSC_COPY_VALUES,subset_n);CHKERRQ(ierr);
+      PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)subset),n_n,gidxs,PETSC_COPY_VALUES,subset_n));
     }
-    ierr = PetscFree(leaf_data);CHKERRQ(ierr);
-    ierr = PetscFree(gidxs);CHKERRQ(ierr);
-    ierr = ISRestoreIndices(subset,&idxs);CHKERRQ(ierr);
-    if (subset_mult) { ierr = ISRestoreIndices(subset_mult,&idxs_mult);CHKERRQ(ierr); }
-    ierr = PetscFree(ilocal);CHKERRQ(ierr);
-    ierr = PetscFree(ilocalneg);CHKERRQ(ierr);
+    PetscCall(PetscFree(leaf_data));
+    PetscCall(PetscFree(gidxs));
+    PetscCall(ISRestoreIndices(subset,&idxs));
+    if (subset_mult) PetscCall(ISRestoreIndices(subset_mult,&idxs_mult));
+    PetscCall(PetscFree(ilocal));
+    PetscCall(PetscFree(ilocalneg));
     PetscFunctionReturn(0);
   }
 
   /* split work */
   N_n  = gbounds[1] - gbounds[0] + 1;
-  ierr = PetscLayoutCreate(PetscObjectComm((PetscObject)subset),&map);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(map,1);CHKERRQ(ierr);
-  ierr = PetscLayoutSetSize(map,N_n);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
-  ierr = PetscLayoutGetLocalSize(map,&Nl);CHKERRQ(ierr);
+  PetscCall(PetscLayoutCreate(PetscObjectComm((PetscObject)subset),&map));
+  PetscCall(PetscLayoutSetBlockSize(map,1));
+  PetscCall(PetscLayoutSetSize(map,N_n));
+  PetscCall(PetscLayoutSetUp(map));
+  PetscCall(PetscLayoutGetLocalSize(map,&Nl));
 
   /* global indexes in layout */
   for (i=0;i<npos;i++) gidxs[i] = (ilocal ? idxs[ilocal[i]] : idxs[i]) - gbounds[0];
-  ierr = ISRestoreIndices(subset,&idxs);CHKERRQ(ierr);
-  ierr = PetscSFCreate(PetscObjectComm((PetscObject)subset),&sf);CHKERRQ(ierr);
-  ierr = PetscSFSetGraphLayout(sf,map,npos,ilocal,PETSC_USE_POINTER,gidxs);CHKERRQ(ierr);
-  ierr = PetscLayoutDestroy(&map);CHKERRQ(ierr);
+  PetscCall(ISRestoreIndices(subset,&idxs));
+  PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)subset),&sf));
+  PetscCall(PetscSFSetGraphLayout(sf,map,npos,ilocal,PETSC_USE_POINTER,gidxs));
+  PetscCall(PetscLayoutDestroy(&map));
 
   /* reduce from leaves to roots */
-  ierr = PetscCalloc1(Nl,&root_data);CHKERRQ(ierr);
-  ierr = PetscSFReduceBegin(sf,MPIU_INT,leaf_data,root_data,MPI_MAX);CHKERRQ(ierr);
-  ierr = PetscSFReduceEnd(sf,MPIU_INT,leaf_data,root_data,MPI_MAX);CHKERRQ(ierr);
+  PetscCall(PetscCalloc1(Nl,&root_data));
+  PetscCall(PetscSFReduceBegin(sf,MPIU_INT,leaf_data,root_data,MPI_MAX));
+  PetscCall(PetscSFReduceEnd(sf,MPIU_INT,leaf_data,root_data,MPI_MAX));
 
   /* count indexes in local part of layout */
   nlocals = 0;
@@ -134,25 +133,25 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
   /* cumulative of number of indexes and size of subset without holes */
 #if defined(PETSC_HAVE_MPI_EXSCAN)
   start = 0;
-  ierr  = MPI_Exscan(&nlocals,&start,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)subset));CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Exscan(&nlocals,&start,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)subset)));
 #else
-  ierr  = MPI_Scan(&nlocals,&start,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)subset));CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Scan(&nlocals,&start,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)subset)));
   start = start-nlocals;
 #endif
 
   if (N) { /* compute total size of new subset if requested */
     *N   = start + nlocals;
-    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)subset),&commsize);CHKERRMPI(ierr);
-    ierr = MPI_Bcast(N,1,MPIU_INT,commsize-1,PetscObjectComm((PetscObject)subset));CHKERRMPI(ierr);
+    PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)subset),&commsize));
+    PetscCallMPI(MPI_Bcast(N,1,MPIU_INT,commsize-1,PetscObjectComm((PetscObject)subset)));
   }
 
   if (!subset_n) {
-    ierr = PetscFree(gidxs);CHKERRQ(ierr);
-    ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
-    ierr = PetscFree(leaf_data);CHKERRQ(ierr);
-    ierr = PetscFree(root_data);CHKERRQ(ierr);
-    ierr = PetscFree(ilocal);CHKERRQ(ierr);
-    if (subset_mult) { ierr = ISRestoreIndices(subset_mult,&idxs_mult);CHKERRQ(ierr); }
+    PetscCall(PetscFree(gidxs));
+    PetscCall(PetscSFDestroy(&sf));
+    PetscCall(PetscFree(leaf_data));
+    PetscCall(PetscFree(root_data));
+    PetscCall(PetscFree(ilocal));
+    if (subset_mult) PetscCall(ISRestoreIndices(subset_mult,&idxs_mult));
     PetscFunctionReturn(0);
   }
 
@@ -171,9 +170,9 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
   }
 
   /* from roots to leaves */
-  ierr = PetscSFBcastBegin(sf,MPIU_INT,root_data,leaf_data,MPI_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sf,MPIU_INT,root_data,leaf_data,MPI_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
+  PetscCall(PetscSFBcastBegin(sf,MPIU_INT,root_data,leaf_data,MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(sf,MPIU_INT,root_data,leaf_data,MPI_REPLACE));
+  PetscCall(PetscSFDestroy(&sf));
 
   /* create new IS with global indexes without holes */
   for (i=0;i<n_n;i++) gidxs[i] = -1;
@@ -186,15 +185,15 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
 
   if (isblock) {
     if (ibs > 1) for (i=0;i<n_n/ibs;i++) gidxs[i] = gidxs[i*ibs]/ibs;
-    ierr = ISCreateBlock(PetscObjectComm((PetscObject)subset),ibs,n_n/ibs,gidxs,PETSC_COPY_VALUES,subset_n);CHKERRQ(ierr);
+    PetscCall(ISCreateBlock(PetscObjectComm((PetscObject)subset),ibs,n_n/ibs,gidxs,PETSC_COPY_VALUES,subset_n));
   } else {
-    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)subset),n_n,gidxs,PETSC_COPY_VALUES,subset_n);CHKERRQ(ierr);
+    PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)subset),n_n,gidxs,PETSC_COPY_VALUES,subset_n));
   }
-  if (subset_mult) { ierr = ISRestoreIndices(subset_mult,&idxs_mult);CHKERRQ(ierr); }
-  ierr = PetscFree(gidxs);CHKERRQ(ierr);
-  ierr = PetscFree(leaf_data);CHKERRQ(ierr);
-  ierr = PetscFree(root_data);CHKERRQ(ierr);
-  ierr = PetscFree(ilocal);CHKERRQ(ierr);
+  if (subset_mult) PetscCall(ISRestoreIndices(subset_mult,&idxs_mult));
+  PetscCall(PetscFree(gidxs));
+  PetscCall(PetscFree(leaf_data));
+  PetscCall(PetscFree(root_data));
+  PetscCall(PetscFree(ilocal));
   PetscFunctionReturn(0);
 }
 
@@ -229,7 +228,6 @@ PetscErrorCode ISCreateSubIS(IS is,IS comps,IS *subis)
   PetscInt        *subis_indices,nroots,nleaves,*mine,i,lidx;
   PetscMPIInt     owner;
   PetscSFNode     *remote;
-  PetscErrorCode  ierr;
   MPI_Comm        comm;
 
   PetscFunctionBegin;
@@ -237,12 +235,12 @@ PetscErrorCode ISCreateSubIS(IS is,IS comps,IS *subis)
   PetscValidHeaderSpecific(comps,IS_CLASSID,2);
   PetscValidPointer(subis,3);
 
-  ierr = PetscObjectGetComm((PetscObject)is, &comm);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(comps,&nleaves);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(is,&nroots);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nleaves,&remote);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nleaves,&mine);CHKERRQ(ierr);
-  ierr = ISGetIndices(comps,&comps_indices);CHKERRQ(ierr);
+  PetscCall(PetscObjectGetComm((PetscObject)is, &comm));
+  PetscCall(ISGetLocalSize(comps,&nleaves));
+  PetscCall(ISGetLocalSize(is,&nroots));
+  PetscCall(PetscMalloc1(nleaves,&remote));
+  PetscCall(PetscMalloc1(nleaves,&mine));
+  PetscCall(ISGetIndices(comps,&comps_indices));
   /*
    * Construct a PetscSF in which "is" data serves as roots and "subis" is leaves.
    * Root data are sent to leaves using PetscSFBcast().
@@ -254,22 +252,22 @@ PetscErrorCode ISCreateSubIS(IS is,IS comps,IS *subis)
      * */
     owner = -1;
     lidx =  -1;
-    ierr = PetscLayoutFindOwnerIndex(is->map,comps_indices[i],&owner,&lidx);CHKERRQ(ierr);
+    PetscCall(PetscLayoutFindOwnerIndex(is->map,comps_indices[i],&owner,&lidx));
     remote[i].rank = owner;
     remote[i].index = lidx;
   }
-  ierr = ISRestoreIndices(comps,&comps_indices);CHKERRQ(ierr);
-  ierr = PetscSFCreate(comm,&sf);CHKERRQ(ierr);
-  ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);\
-  ierr = PetscSFSetGraph(sf,nroots,nleaves,mine,PETSC_OWN_POINTER,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
+  PetscCall(ISRestoreIndices(comps,&comps_indices));
+  PetscCall(PetscSFCreate(comm,&sf));
+  PetscCall(PetscSFSetFromOptions(sf));\
+  PetscCall(PetscSFSetGraph(sf,nroots,nleaves,mine,PETSC_OWN_POINTER,remote,PETSC_OWN_POINTER));
 
-  ierr = PetscMalloc1(nleaves,&subis_indices);CHKERRQ(ierr);
-  ierr = ISGetIndices(is, &is_indices);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(sf,MPIU_INT,is_indices,subis_indices,MPI_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sf,MPIU_INT,is_indices,subis_indices,MPI_REPLACE);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(is,&is_indices);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(comm,nleaves,subis_indices,PETSC_OWN_POINTER,subis);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(nleaves,&subis_indices));
+  PetscCall(ISGetIndices(is, &is_indices));
+  PetscCall(PetscSFBcastBegin(sf,MPIU_INT,is_indices,subis_indices,MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(sf,MPIU_INT,is_indices,subis_indices,MPI_REPLACE));
+  PetscCall(ISRestoreIndices(is,&is_indices));
+  PetscCall(PetscSFDestroy(&sf));
+  PetscCall(ISCreateGeneral(comm,nleaves,subis_indices,PETSC_OWN_POINTER,subis));
   PetscFunctionReturn(0);
 }
 
@@ -443,7 +441,6 @@ PetscErrorCode ISSetInfo(IS is, ISInfo info, ISInfoType type, PetscBool permanen
 {
   MPI_Comm       comm, errcomm;
   PetscMPIInt    size;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
@@ -460,10 +457,10 @@ PetscErrorCode ISSetInfo(IS is, ISInfo info, ISInfoType type, PetscBool permanen
 
   PetscCheckFalse(((int) info) <= IS_INFO_MIN || ((int) info) >= IS_INFO_MAX,errcomm,PETSC_ERR_ARG_OUTOFRANGE,"Options %d is out of range",(int)info);
 
-  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_size(comm, &size));
   /* do not use global values if size == 1: it makes it easier to keep the implications straight */
   if (size == 1) type = IS_LOCAL;
-  ierr = ISSetInfo_Internal(is, info, type, permanent ? IS_INFO_TRUE : IS_INFO_FALSE, flg);CHKERRQ(ierr);
+  PetscCall(ISSetInfo_Internal(is, info, type, permanent ? IS_INFO_TRUE : IS_INFO_FALSE, flg));
   PetscFunctionReturn(0);
 }
 
@@ -471,48 +468,47 @@ static PetscErrorCode ISGetInfo_Sorted(IS is, ISInfoType type, PetscBool *flg)
 {
   MPI_Comm       comm;
   PetscMPIInt    size, rank;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   comm = PetscObjectComm((PetscObject)is);
-  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(comm, &rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCallMPI(MPI_Comm_size(comm, &rank));
   if (type == IS_GLOBAL && is->ops->sortedglobal) {
-    ierr = (*is->ops->sortedglobal)(is,flg);CHKERRQ(ierr);
+    PetscCall((*is->ops->sortedglobal)(is,flg));
   } else {
     PetscBool sortedLocal = PETSC_FALSE;
 
     /* determine if the array is locally sorted */
     if (type == IS_GLOBAL && size > 1) {
       /* call ISGetInfo so that a cached value will be used if possible */
-      ierr = ISGetInfo(is, IS_SORTED, IS_LOCAL, PETSC_TRUE, &sortedLocal);CHKERRQ(ierr);
+      PetscCall(ISGetInfo(is, IS_SORTED, IS_LOCAL, PETSC_TRUE, &sortedLocal));
     } else if (is->ops->sortedlocal) {
-      ierr = (*is->ops->sortedlocal)(is,&sortedLocal);CHKERRQ(ierr);
+      PetscCall((*is->ops->sortedlocal)(is,&sortedLocal));
     } else {
       /* default: get the local indices and directly check */
       const PetscInt *idx;
       PetscInt n;
 
-      ierr = ISGetIndices(is, &idx);CHKERRQ(ierr);
-      ierr = ISGetLocalSize(is, &n);CHKERRQ(ierr);
-      ierr = PetscSortedInt(n, idx, &sortedLocal);CHKERRQ(ierr);
-      ierr = ISRestoreIndices(is, &idx);CHKERRQ(ierr);
+      PetscCall(ISGetIndices(is, &idx));
+      PetscCall(ISGetLocalSize(is, &n));
+      PetscCall(PetscSortedInt(n, idx, &sortedLocal));
+      PetscCall(ISRestoreIndices(is, &idx));
     }
 
     if (type == IS_LOCAL || size == 1) {
       *flg = sortedLocal;
     } else {
-      ierr = MPI_Allreduce(&sortedLocal, flg, 1, MPIU_BOOL, MPI_LAND, comm);CHKERRMPI(ierr);
+      PetscCallMPI(MPI_Allreduce(&sortedLocal, flg, 1, MPIU_BOOL, MPI_LAND, comm));
       if (*flg) {
         PetscInt  n, min = PETSC_MAX_INT, max = PETSC_MIN_INT;
         PetscInt  maxprev;
 
-        ierr = ISGetLocalSize(is, &n);CHKERRQ(ierr);
-        if (n) {ierr = ISGetMinMax(is, &min, &max);CHKERRQ(ierr);}
+        PetscCall(ISGetLocalSize(is, &n));
+        if (n) PetscCall(ISGetMinMax(is, &min, &max));
         maxprev = PETSC_MIN_INT;
-        ierr = MPI_Exscan(&max, &maxprev, 1, MPIU_INT, MPI_MAX, comm);CHKERRMPI(ierr);
+        PetscCallMPI(MPI_Exscan(&max, &maxprev, 1, MPIU_INT, MPI_MAX, comm));
         if (rank && (maxprev > min)) sortedLocal = PETSC_FALSE;
-        ierr = MPI_Allreduce(&sortedLocal, flg, 1, MPIU_BOOL, MPI_LAND, comm);CHKERRMPI(ierr);
+        PetscCallMPI(MPI_Allreduce(&sortedLocal, flg, 1, MPIU_BOOL, MPI_LAND, comm));
       }
     }
   }
@@ -526,14 +522,13 @@ static PetscErrorCode ISGetInfo_Unique(IS is, ISInfoType type, PetscBool *flg)
   MPI_Comm       comm;
   PetscMPIInt    size, rank;
   PetscInt       i;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   comm = PetscObjectComm((PetscObject)is);
-  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(comm, &rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCallMPI(MPI_Comm_size(comm, &rank));
   if (type == IS_GLOBAL && is->ops->uniqueglobal) {
-    ierr = (*is->ops->uniqueglobal)(is,flg);CHKERRQ(ierr);
+    PetscCall((*is->ops->uniqueglobal)(is,flg));
   } else {
     PetscBool uniqueLocal;
     PetscInt  n = -1;
@@ -542,34 +537,34 @@ static PetscErrorCode ISGetInfo_Unique(IS is, ISInfoType type, PetscBool *flg)
     /* determine if the array is locally unique */
     if (type == IS_GLOBAL && size > 1) {
       /* call ISGetInfo so that a cached value will be used if possible */
-      ierr = ISGetInfo(is, IS_UNIQUE, IS_LOCAL, PETSC_TRUE, &uniqueLocal);CHKERRQ(ierr);
+      PetscCall(ISGetInfo(is, IS_UNIQUE, IS_LOCAL, PETSC_TRUE, &uniqueLocal));
     } else if (is->ops->uniquelocal) {
-      ierr = (*is->ops->uniquelocal)(is,&uniqueLocal);CHKERRQ(ierr);
+      PetscCall((*is->ops->uniquelocal)(is,&uniqueLocal));
     } else {
       /* default: get the local indices and directly check */
       uniqueLocal = PETSC_TRUE;
-      ierr = ISGetLocalSize(is, &n);CHKERRQ(ierr);
-      ierr = PetscMalloc1(n, &idx);CHKERRQ(ierr);
-      ierr = ISGetIndicesCopy(is, idx);CHKERRQ(ierr);
-      ierr = PetscIntSortSemiOrdered(n, idx);CHKERRQ(ierr);
+      PetscCall(ISGetLocalSize(is, &n));
+      PetscCall(PetscMalloc1(n, &idx));
+      PetscCall(ISGetIndicesCopy(is, idx));
+      PetscCall(PetscIntSortSemiOrdered(n, idx));
       for (i = 1; i < n; i++) if (idx[i] == idx[i-1]) break;
       if (i < n) uniqueLocal = PETSC_FALSE;
     }
 
-    ierr = PetscFree(idx);CHKERRQ(ierr);
+    PetscCall(PetscFree(idx));
     if (type == IS_LOCAL || size == 1) {
       *flg = uniqueLocal;
     } else {
-      ierr = MPI_Allreduce(&uniqueLocal, flg, 1, MPIU_BOOL, MPI_LAND, comm);CHKERRMPI(ierr);
+      PetscCallMPI(MPI_Allreduce(&uniqueLocal, flg, 1, MPIU_BOOL, MPI_LAND, comm));
       if (*flg) {
         PetscInt  min = PETSC_MAX_INT, max = PETSC_MIN_INT, maxprev;
 
         if (!idx) {
-          ierr = ISGetLocalSize(is, &n);CHKERRQ(ierr);
-          ierr = PetscMalloc1(n, &idx);CHKERRQ(ierr);
-          ierr = ISGetIndicesCopy(is, idx);CHKERRQ(ierr);
+          PetscCall(ISGetLocalSize(is, &n));
+          PetscCall(PetscMalloc1(n, &idx));
+          PetscCall(ISGetIndicesCopy(is, idx));
         }
-        ierr = PetscParallelSortInt(is->map, is->map, idx, idx);CHKERRQ(ierr);
+        PetscCall(PetscParallelSortInt(is->map, is->map, idx, idx));
         if (n) {
           min = idx[0];
           max = idx[n - 1];
@@ -577,12 +572,12 @@ static PetscErrorCode ISGetInfo_Unique(IS is, ISInfoType type, PetscBool *flg)
         for (i = 1; i < n; i++) if (idx[i] == idx[i-1]) break;
         if (i < n) uniqueLocal = PETSC_FALSE;
         maxprev = PETSC_MIN_INT;
-        ierr = MPI_Exscan(&max, &maxprev, 1, MPIU_INT, MPI_MAX, comm);CHKERRMPI(ierr);
+        PetscCallMPI(MPI_Exscan(&max, &maxprev, 1, MPIU_INT, MPI_MAX, comm));
         if (rank && (maxprev == min)) uniqueLocal = PETSC_FALSE;
-        ierr = MPI_Allreduce(&uniqueLocal, flg, 1, MPIU_BOOL, MPI_LAND, comm);CHKERRMPI(ierr);
+        PetscCallMPI(MPI_Allreduce(&uniqueLocal, flg, 1, MPIU_BOOL, MPI_LAND, comm));
       }
     }
-    ierr = PetscFree(idx);CHKERRQ(ierr);
+    PetscCall(PetscFree(idx));
   }
   PetscFunctionReturn(0);
 }
@@ -591,29 +586,28 @@ static PetscErrorCode ISGetInfo_Permutation(IS is, ISInfoType type, PetscBool *f
 {
   MPI_Comm       comm;
   PetscMPIInt    size, rank;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   comm = PetscObjectComm((PetscObject)is);
-  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(comm, &rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCallMPI(MPI_Comm_size(comm, &rank));
   if (type == IS_GLOBAL && is->ops->permglobal) {
-    ierr = (*is->ops->permglobal)(is,flg);CHKERRQ(ierr);
+    PetscCall((*is->ops->permglobal)(is,flg));
   } else if (type == IS_LOCAL && is->ops->permlocal) {
-    ierr = (*is->ops->permlocal)(is,flg);CHKERRQ(ierr);
+    PetscCall((*is->ops->permlocal)(is,flg));
   } else {
     PetscBool permLocal;
     PetscInt  n, i, rStart;
     PetscInt  *idx;
 
-    ierr = ISGetLocalSize(is, &n);CHKERRQ(ierr);
-    ierr = PetscMalloc1(n, &idx);CHKERRQ(ierr);
-    ierr = ISGetIndicesCopy(is, idx);CHKERRQ(ierr);
+    PetscCall(ISGetLocalSize(is, &n));
+    PetscCall(PetscMalloc1(n, &idx));
+    PetscCall(ISGetIndicesCopy(is, idx));
     if (type == IS_GLOBAL) {
-      ierr = PetscParallelSortInt(is->map, is->map, idx, idx);CHKERRQ(ierr);
-      ierr = PetscLayoutGetRange(is->map, &rStart, NULL);CHKERRQ(ierr);
+      PetscCall(PetscParallelSortInt(is->map, is->map, idx, idx));
+      PetscCall(PetscLayoutGetRange(is->map, &rStart, NULL));
     } else {
-      ierr = PetscIntSortSemiOrdered(n, idx);CHKERRQ(ierr);
+      PetscCall(PetscIntSortSemiOrdered(n, idx));
       rStart = 0;
     }
     permLocal = PETSC_TRUE;
@@ -624,9 +618,9 @@ static PetscErrorCode ISGetInfo_Permutation(IS is, ISInfoType type, PetscBool *f
     if (type == IS_LOCAL || size == 1) {
       *flg = permLocal;
     } else {
-      ierr = MPI_Allreduce(&permLocal, flg, 1, MPIU_BOOL, MPI_LAND, comm);CHKERRMPI(ierr);
+      PetscCallMPI(MPI_Allreduce(&permLocal, flg, 1, MPIU_BOOL, MPI_LAND, comm));
     }
-    ierr = PetscFree(idx);CHKERRQ(ierr);
+    PetscCall(PetscFree(idx));
   }
   PetscFunctionReturn(0);
 }
@@ -636,50 +630,49 @@ static PetscErrorCode ISGetInfo_Interval(IS is, ISInfoType type, PetscBool *flg)
   MPI_Comm       comm;
   PetscMPIInt    size, rank;
   PetscInt       i;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   comm = PetscObjectComm((PetscObject)is);
-  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(comm, &rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCallMPI(MPI_Comm_size(comm, &rank));
   if (type == IS_GLOBAL && is->ops->intervalglobal) {
-    ierr = (*is->ops->intervalglobal)(is,flg);CHKERRQ(ierr);
+    PetscCall((*is->ops->intervalglobal)(is,flg));
   } else {
     PetscBool intervalLocal;
 
     /* determine if the array is locally an interval */
     if (type == IS_GLOBAL && size > 1) {
       /* call ISGetInfo so that a cached value will be used if possible */
-      ierr = ISGetInfo(is, IS_INTERVAL, IS_LOCAL, PETSC_TRUE, &intervalLocal);CHKERRQ(ierr);
+      PetscCall(ISGetInfo(is, IS_INTERVAL, IS_LOCAL, PETSC_TRUE, &intervalLocal));
     } else if (is->ops->intervallocal) {
-      ierr = (*is->ops->intervallocal)(is,&intervalLocal);CHKERRQ(ierr);
+      PetscCall((*is->ops->intervallocal)(is,&intervalLocal));
     } else {
       PetscInt        n;
       const PetscInt  *idx;
       /* default: get the local indices and directly check */
       intervalLocal = PETSC_TRUE;
-      ierr = ISGetLocalSize(is, &n);CHKERRQ(ierr);
-      ierr = PetscMalloc1(n, &idx);CHKERRQ(ierr);
-      ierr = ISGetIndices(is, &idx);CHKERRQ(ierr);
+      PetscCall(ISGetLocalSize(is, &n));
+      PetscCall(PetscMalloc1(n, &idx));
+      PetscCall(ISGetIndices(is, &idx));
       for (i = 1; i < n; i++) if (idx[i] != idx[i-1] + 1) break;
       if (i < n) intervalLocal = PETSC_FALSE;
-      ierr = ISRestoreIndices(is, &idx);CHKERRQ(ierr);
+      PetscCall(ISRestoreIndices(is, &idx));
     }
 
     if (type == IS_LOCAL || size == 1) {
       *flg = intervalLocal;
     } else {
-      ierr = MPI_Allreduce(&intervalLocal, flg, 1, MPIU_BOOL, MPI_LAND, comm);CHKERRMPI(ierr);
+      PetscCallMPI(MPI_Allreduce(&intervalLocal, flg, 1, MPIU_BOOL, MPI_LAND, comm));
       if (*flg) {
         PetscInt  n, min = PETSC_MAX_INT, max = PETSC_MIN_INT;
         PetscInt  maxprev;
 
-        ierr = ISGetLocalSize(is, &n);CHKERRQ(ierr);
-        if (n) {ierr = ISGetMinMax(is, &min, &max);CHKERRQ(ierr);}
+        PetscCall(ISGetLocalSize(is, &n));
+        if (n) PetscCall(ISGetMinMax(is, &min, &max));
         maxprev = PETSC_MIN_INT;
-        ierr = MPI_Exscan(&max, &maxprev, 1, MPIU_INT, MPI_MAX, comm);CHKERRMPI(ierr);
+        PetscCallMPI(MPI_Exscan(&max, &maxprev, 1, MPIU_INT, MPI_MAX, comm));
         if (rank && n && (maxprev != min - 1)) intervalLocal = PETSC_FALSE;
-        ierr = MPI_Allreduce(&intervalLocal, flg, 1, MPIU_BOOL, MPI_LAND, comm);CHKERRMPI(ierr);
+        PetscCallMPI(MPI_Allreduce(&intervalLocal, flg, 1, MPIU_BOOL, MPI_LAND, comm));
       }
     }
   }
@@ -690,33 +683,32 @@ static PetscErrorCode ISGetInfo_Identity(IS is, ISInfoType type, PetscBool *flg)
 {
   MPI_Comm       comm;
   PetscMPIInt    size, rank;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   comm = PetscObjectComm((PetscObject)is);
-  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(comm, &rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCallMPI(MPI_Comm_size(comm, &rank));
   if (type == IS_GLOBAL && is->ops->intervalglobal) {
     PetscBool isinterval;
 
-    ierr = (*is->ops->intervalglobal)(is,&isinterval);CHKERRQ(ierr);
+    PetscCall((*is->ops->intervalglobal)(is,&isinterval));
     *flg = PETSC_FALSE;
     if (isinterval) {
       PetscInt  min;
 
-      ierr = ISGetMinMax(is, &min, NULL);CHKERRQ(ierr);
-      ierr = MPI_Bcast(&min, 1, MPIU_INT, 0, comm);CHKERRMPI(ierr);
+      PetscCall(ISGetMinMax(is, &min, NULL));
+      PetscCallMPI(MPI_Bcast(&min, 1, MPIU_INT, 0, comm));
       if (min == 0) *flg = PETSC_TRUE;
     }
   } else if (type == IS_LOCAL && is->ops->intervallocal) {
     PetscBool isinterval;
 
-    ierr = (*is->ops->intervallocal)(is,&isinterval);CHKERRQ(ierr);
+    PetscCall((*is->ops->intervallocal)(is,&isinterval));
     *flg = PETSC_FALSE;
     if (isinterval) {
       PetscInt  min;
 
-      ierr = ISGetMinMax(is, &min, NULL);CHKERRQ(ierr);
+      PetscCall(ISGetMinMax(is, &min, NULL));
       if (min == 0) *flg = PETSC_TRUE;
     }
   } else {
@@ -724,9 +716,9 @@ static PetscErrorCode ISGetInfo_Identity(IS is, ISInfoType type, PetscBool *flg)
     PetscInt  n, i, rStart;
     const PetscInt *idx;
 
-    ierr = ISGetLocalSize(is, &n);CHKERRQ(ierr);
-    ierr = ISGetIndices(is, &idx);CHKERRQ(ierr);
-    ierr = PetscLayoutGetRange(is->map, &rStart, NULL);CHKERRQ(ierr);
+    PetscCall(ISGetLocalSize(is, &n));
+    PetscCall(ISGetIndices(is, &idx));
+    PetscCall(PetscLayoutGetRange(is->map, &rStart, NULL));
     identLocal = PETSC_TRUE;
     for (i = 0; i < n; i++) {
       if (idx[i] != rStart + i) break;
@@ -735,9 +727,9 @@ static PetscErrorCode ISGetInfo_Identity(IS is, ISInfoType type, PetscBool *flg)
     if (type == IS_LOCAL || size == 1) {
       *flg = identLocal;
     } else {
-      ierr = MPI_Allreduce(&identLocal, flg, 1, MPIU_BOOL, MPI_LAND, comm);CHKERRMPI(ierr);
+      PetscCallMPI(MPI_Allreduce(&identLocal, flg, 1, MPIU_BOOL, MPI_LAND, comm));
     }
-    ierr = ISRestoreIndices(is, &idx);CHKERRQ(ierr);
+    PetscCall(ISRestoreIndices(is, &idx));
   }
   PetscFunctionReturn(0);
 }
@@ -770,7 +762,6 @@ PetscErrorCode ISGetInfo(IS is, ISInfo info, ISInfoType type, PetscBool compute,
   PetscInt       itype;
   PetscBool      hasprop;
   PetscBool      infer;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
@@ -783,8 +774,8 @@ PetscErrorCode ISGetInfo(IS is, ISInfo info, ISInfoType type, PetscBool compute,
     errcomm = PETSC_COMM_SELF;
   }
 
-  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
 
   PetscCheckFalse(((int) info) <= IS_INFO_MIN || ((int) info) >= IS_INFO_MAX,errcomm,PETSC_ERR_ARG_OUTOFRANGE,"Options %d is out of range",(int)info);
   if (size == 1) type = IS_LOCAL;
@@ -803,19 +794,19 @@ PetscErrorCode ISGetInfo(IS is, ISInfo info, ISInfoType type, PetscBool compute,
   } else if (compute) {
     switch (info) {
     case IS_SORTED:
-      ierr = ISGetInfo_Sorted(is, type, &hasprop);CHKERRQ(ierr);
+      PetscCall(ISGetInfo_Sorted(is, type, &hasprop));
       break;
     case IS_UNIQUE:
-      ierr = ISGetInfo_Unique(is, type, &hasprop);CHKERRQ(ierr);
+      PetscCall(ISGetInfo_Unique(is, type, &hasprop));
       break;
     case IS_PERMUTATION:
-      ierr = ISGetInfo_Permutation(is, type, &hasprop);CHKERRQ(ierr);
+      PetscCall(ISGetInfo_Permutation(is, type, &hasprop));
       break;
     case IS_INTERVAL:
-      ierr = ISGetInfo_Interval(is, type, &hasprop);CHKERRQ(ierr);
+      PetscCall(ISGetInfo_Interval(is, type, &hasprop));
       break;
     case IS_IDENTITY:
-      ierr = ISGetInfo_Identity(is, type, &hasprop);CHKERRQ(ierr);
+      PetscCall(ISGetInfo_Identity(is, type, &hasprop));
       break;
     default:
       SETERRQ(errcomm, PETSC_ERR_ARG_OUTOFRANGE, "Unknown IS property");
@@ -823,18 +814,16 @@ PetscErrorCode ISGetInfo(IS is, ISInfo info, ISInfoType type, PetscBool compute,
     infer = PETSC_TRUE;
   }
   /* call ISSetInfo_Internal to keep all of the implications straight */
-  if (infer) {ierr = ISSetInfo_Internal(is, info, type, IS_INFO_UNKNOWN, hasprop);CHKERRQ(ierr);}
+  if (infer) PetscCall(ISSetInfo_Internal(is, info, type, IS_INFO_UNKNOWN, hasprop));
   *flg = hasprop;
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode ISCopyInfo(IS source, IS dest)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscArraycpy(&dest->info[0], &source->info[0], 2);CHKERRQ(ierr);
-  ierr = PetscArraycpy(&dest->info_permanent[0], &source->info_permanent[0], 2);CHKERRQ(ierr);
+  PetscCall(PetscArraycpy(&dest->info[0], &source->info[0], 2));
+  PetscCall(PetscArraycpy(&dest->info_permanent[0], &source->info_permanent[0], 2));
   PetscFunctionReturn(0);
 }
 
@@ -861,12 +850,10 @@ static PetscErrorCode ISCopyInfo(IS source, IS dest)
 @*/
 PetscErrorCode  ISIdentity(IS is,PetscBool  *ident)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidBoolPointer(ident,2);
-  ierr = ISGetInfo(is,IS_IDENTITY,IS_GLOBAL,PETSC_TRUE,ident);CHKERRQ(ierr);
+  PetscCall(ISGetInfo(is,IS_IDENTITY,IS_GLOBAL,PETSC_TRUE,ident));
   PetscFunctionReturn(0);
 }
 
@@ -888,11 +875,9 @@ PetscErrorCode  ISIdentity(IS is,PetscBool  *ident)
 @*/
 PetscErrorCode  ISSetIdentity(IS is)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
-  ierr = ISSetInfo(is,IS_IDENTITY,IS_GLOBAL,PETSC_TRUE,PETSC_TRUE);CHKERRQ(ierr);
+  PetscCall(ISSetInfo(is,IS_IDENTITY,IS_GLOBAL,PETSC_TRUE,PETSC_TRUE));
   PetscFunctionReturn(0);
 }
 
@@ -916,8 +901,6 @@ PetscErrorCode  ISSetIdentity(IS is)
 @*/
 PetscErrorCode  ISContiguousLocal(IS is,PetscInt gstart,PetscInt gend,PetscInt *start,PetscBool *contig)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidIntPointer(start,4);
@@ -925,7 +908,7 @@ PetscErrorCode  ISContiguousLocal(IS is,PetscInt gstart,PetscInt gend,PetscInt *
   *start  = -1;
   *contig = PETSC_FALSE;
   if (is->ops->contiguous) {
-    ierr = (*is->ops->contiguous)(is,gstart,gend,start,contig);CHKERRQ(ierr);
+    PetscCall((*is->ops->contiguous)(is,gstart,gend,start,contig));
   }
   PetscFunctionReturn(0);
 }
@@ -954,12 +937,10 @@ PetscErrorCode  ISContiguousLocal(IS is,PetscInt gstart,PetscInt gend,PetscInt *
 @*/
 PetscErrorCode  ISPermutation(IS is,PetscBool  *perm)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidBoolPointer(perm,2);
-  ierr = ISGetInfo(is,IS_PERMUTATION,IS_GLOBAL,PETSC_FALSE,perm);CHKERRQ(ierr);
+  PetscCall(ISGetInfo(is,IS_PERMUTATION,IS_GLOBAL,PETSC_FALSE,perm));
   PetscFunctionReturn(0);
 }
 
@@ -984,31 +965,29 @@ PetscErrorCode  ISPermutation(IS is,PetscBool  *perm)
 @*/
 PetscErrorCode  ISSetPermutation(IS is)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   if (PetscDefined(USE_DEBUG)) {
     PetscMPIInt    size;
 
-    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)is),&size);CHKERRMPI(ierr);
+    PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)is),&size));
     if (size == 1) {
       PetscInt       i,n,*idx;
       const PetscInt *iidx;
 
-      ierr = ISGetSize(is,&n);CHKERRQ(ierr);
-      ierr = PetscMalloc1(n,&idx);CHKERRQ(ierr);
-      ierr = ISGetIndices(is,&iidx);CHKERRQ(ierr);
-      ierr = PetscArraycpy(idx,iidx,n);CHKERRQ(ierr);
-      ierr = PetscIntSortSemiOrdered(n,idx);CHKERRQ(ierr);
+      PetscCall(ISGetSize(is,&n));
+      PetscCall(PetscMalloc1(n,&idx));
+      PetscCall(ISGetIndices(is,&iidx));
+      PetscCall(PetscArraycpy(idx,iidx,n));
+      PetscCall(PetscIntSortSemiOrdered(n,idx));
       for (i=0; i<n; i++) {
         PetscCheckFalse(idx[i] != i,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Index set is not a permutation");
       }
-      ierr = PetscFree(idx);CHKERRQ(ierr);
-      ierr = ISRestoreIndices(is,&iidx);CHKERRQ(ierr);
+      PetscCall(PetscFree(idx));
+      PetscCall(ISRestoreIndices(is,&iidx));
     }
   }
-  ierr = ISSetInfo(is,IS_PERMUTATION,IS_GLOBAL,PETSC_TRUE,PETSC_TRUE);CHKERRQ(ierr);
+  PetscCall(ISSetInfo(is,IS_PERMUTATION,IS_GLOBAL,PETSC_TRUE,PETSC_TRUE));
   PetscFunctionReturn(0);
 }
 
@@ -1026,26 +1005,24 @@ PetscErrorCode  ISSetPermutation(IS is)
 @*/
 PetscErrorCode  ISDestroy(IS *is)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (!*is) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*is),IS_CLASSID,1);
   if (--((PetscObject)(*is))->refct > 0) {*is = NULL; PetscFunctionReturn(0);}
   if ((*is)->complement) {
     PetscInt refcnt;
-    ierr = PetscObjectGetReference((PetscObject)((*is)->complement), &refcnt);CHKERRQ(ierr);
+    PetscCall(PetscObjectGetReference((PetscObject)((*is)->complement), &refcnt));
     PetscCheckFalse(refcnt > 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Nonlocal IS has not been restored");
-    ierr = ISDestroy(&(*is)->complement);CHKERRQ(ierr);
+    PetscCall(ISDestroy(&(*is)->complement));
   }
   if ((*is)->ops->destroy) {
-    ierr = (*(*is)->ops->destroy)(*is);CHKERRQ(ierr);
+    PetscCall((*(*is)->ops->destroy)(*is));
   }
-  ierr = PetscLayoutDestroy(&(*is)->map);CHKERRQ(ierr);
+  PetscCall(PetscLayoutDestroy(&(*is)->map));
   /* Destroy local representations of offproc data. */
-  ierr = PetscFree((*is)->total);CHKERRQ(ierr);
-  ierr = PetscFree((*is)->nonlocal);CHKERRQ(ierr);
-  ierr = PetscHeaderDestroy(is);CHKERRQ(ierr);
+  PetscCall(PetscFree((*is)->total));
+  PetscCall(PetscFree((*is)->nonlocal));
+  PetscCall(PetscHeaderDestroy(is));
   PetscFunctionReturn(0);
 }
 
@@ -1073,29 +1050,28 @@ PetscErrorCode  ISDestroy(IS *is)
 PetscErrorCode  ISInvertPermutation(IS is,PetscInt nlocal,IS *isout)
 {
   PetscBool      isperm, isidentity, issame;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(isout,3);
-  ierr = ISGetInfo(is,IS_PERMUTATION,IS_GLOBAL,PETSC_TRUE,&isperm);CHKERRQ(ierr);
-  PetscCheckFalse(!isperm,PetscObjectComm((PetscObject)is),PETSC_ERR_ARG_WRONG,"Not a permutation");
-  ierr = ISGetInfo(is,IS_IDENTITY,IS_GLOBAL,PETSC_TRUE,&isidentity);CHKERRQ(ierr);
+  PetscCall(ISGetInfo(is,IS_PERMUTATION,IS_GLOBAL,PETSC_TRUE,&isperm));
+  PetscCheck(isperm,PetscObjectComm((PetscObject)is),PETSC_ERR_ARG_WRONG,"Not a permutation");
+  PetscCall(ISGetInfo(is,IS_IDENTITY,IS_GLOBAL,PETSC_TRUE,&isidentity));
   issame = PETSC_FALSE;
   if (isidentity) {
     PetscInt n;
     PetscBool isallsame;
 
-    ierr = ISGetLocalSize(is, &n);CHKERRQ(ierr);
+    PetscCall(ISGetLocalSize(is, &n));
     issame = (PetscBool) (n == nlocal);
-    ierr = MPI_Allreduce(&issame, &isallsame, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)is));CHKERRMPI(ierr);
+    PetscCallMPI(MPI_Allreduce(&issame, &isallsame, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)is)));
     issame = isallsame;
   }
   if (issame) {
-    ierr = ISDuplicate(is,isout);CHKERRQ(ierr);
+    PetscCall(ISDuplicate(is,isout));
   } else {
-    ierr = (*is->ops->invertpermutation)(is,nlocal,isout);CHKERRQ(ierr);
-    ierr = ISSetPermutation(*isout);CHKERRQ(ierr);
+    PetscCall((*is->ops->invertpermutation)(is,nlocal,isout));
+    PetscCall(ISSetPermutation(*isout));
   }
   PetscFunctionReturn(0);
 }
@@ -1163,7 +1139,6 @@ PetscErrorCode  ISGetLocalSize(IS is,PetscInt *size)
 @*/
 PetscErrorCode ISGetLayout(IS is,PetscLayout *map)
 {
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(map,2);
@@ -1192,12 +1167,10 @@ PetscErrorCode ISGetLayout(IS is,PetscLayout *map)
 @*/
 PetscErrorCode ISSetLayout(IS is,PetscLayout map)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(map,2);
-  ierr = PetscLayoutReference(map,&is->map);CHKERRQ(ierr);
+  PetscCall(PetscLayoutReference(map,&is->map));
   PetscFunctionReturn(0);
 }
 
@@ -1243,12 +1216,10 @@ $          call ISGetIndicesF90(i,array,ierr)
 @*/
 PetscErrorCode  ISGetIndices(IS is,const PetscInt *ptr[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
-  PetscValidIntPointer(ptr,2);
-  ierr = (*is->ops->getindices)(is,ptr);CHKERRQ(ierr);
+  PetscValidPointer(ptr,2);
+  PetscCall((*is->ops->getindices)(is,ptr));
   PetscFunctionReturn(0);
 }
 
@@ -1297,21 +1268,19 @@ PetscErrorCode  ISGetMinMax(IS is,PetscInt *min,PetscInt *max)
 @*/
 PetscErrorCode ISLocate(IS is, PetscInt key, PetscInt *location)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (is->ops->locate) {
-    ierr = (*is->ops->locate)(is,key,location);CHKERRQ(ierr);
+    PetscCall((*is->ops->locate)(is,key,location));
   } else {
     PetscInt       numIdx;
     PetscBool      sorted;
     const PetscInt *idx;
 
-    ierr = ISGetLocalSize(is,&numIdx);CHKERRQ(ierr);
-    ierr = ISGetIndices(is,&idx);CHKERRQ(ierr);
-    ierr = ISSorted(is,&sorted);CHKERRQ(ierr);
+    PetscCall(ISGetLocalSize(is,&numIdx));
+    PetscCall(ISGetIndices(is,&idx));
+    PetscCall(ISSorted(is,&sorted));
     if (sorted) {
-      ierr = PetscFindInt(key,numIdx,idx,location);CHKERRQ(ierr);
+      PetscCall(PetscFindInt(key,numIdx,idx,location));
     } else {
       PetscInt i;
 
@@ -1323,7 +1292,7 @@ PetscErrorCode ISLocate(IS is, PetscInt key, PetscInt *location)
         }
       }
     }
-    ierr = ISRestoreIndices(is,&idx);CHKERRQ(ierr);
+    PetscCall(ISRestoreIndices(is,&idx));
   }
   PetscFunctionReturn(0);
 }
@@ -1364,20 +1333,17 @@ $       call ISRestoreIndices(is,is_array,i_is,ierr)
 @*/
 PetscErrorCode  ISRestoreIndices(IS is,const PetscInt *ptr[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(ptr,2);
   if (is->ops->restoreindices) {
-    ierr = (*is->ops->restoreindices)(is,ptr);CHKERRQ(ierr);
+    PetscCall((*is->ops->restoreindices)(is,ptr));
   }
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode ISGatherTotal_Private(IS is)
 {
-  PetscErrorCode ierr;
   PetscInt       i,n,N;
   const PetscInt *lindices;
   MPI_Comm       comm;
@@ -1386,24 +1352,24 @@ static PetscErrorCode ISGatherTotal_Private(IS is)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
 
-  ierr = PetscObjectGetComm((PetscObject)is,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
-  ierr = PetscMalloc2(size,&sizes,size,&offsets);CHKERRQ(ierr);
+  PetscCall(PetscObjectGetComm((PetscObject)is,&comm));
+  PetscCallMPI(MPI_Comm_size(comm,&size));
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
+  PetscCall(ISGetLocalSize(is,&n));
+  PetscCall(PetscMalloc2(size,&sizes,size,&offsets));
 
-  ierr = PetscMPIIntCast(n,&nn);CHKERRQ(ierr);
-  ierr = MPI_Allgather(&nn,1,MPI_INT,sizes,1,MPI_INT,comm);CHKERRMPI(ierr);
+  PetscCall(PetscMPIIntCast(n,&nn));
+  PetscCallMPI(MPI_Allgather(&nn,1,MPI_INT,sizes,1,MPI_INT,comm));
   offsets[0] = 0;
   for (i=1; i<size; ++i) offsets[i] = offsets[i-1] + sizes[i-1];
   N = offsets[size-1] + sizes[size-1];
 
-  ierr = PetscMalloc1(N,&(is->total));CHKERRQ(ierr);
-  ierr = ISGetIndices(is,&lindices);CHKERRQ(ierr);
-  ierr = MPI_Allgatherv((void*)lindices,nn,MPIU_INT,is->total,sizes,offsets,MPIU_INT,comm);CHKERRMPI(ierr);
-  ierr = ISRestoreIndices(is,&lindices);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(N,&(is->total)));
+  PetscCall(ISGetIndices(is,&lindices));
+  PetscCallMPI(MPI_Allgatherv((void*)lindices,nn,MPIU_INT,is->total,sizes,offsets,MPIU_INT,comm));
+  PetscCall(ISRestoreIndices(is,&lindices));
   is->local_offset = offsets[rank];
-  ierr = PetscFree2(sizes,offsets);CHKERRQ(ierr);
+  PetscCall(PetscFree2(sizes,offsets));
   PetscFunctionReturn(0);
 }
 
@@ -1433,18 +1399,17 @@ static PetscErrorCode ISGatherTotal_Private(IS is)
 @*/
 PetscErrorCode ISGetTotalIndices(IS is, const PetscInt *indices[])
 {
-  PetscErrorCode ierr;
   PetscMPIInt    size;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(indices,2);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)is), &size);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)is), &size));
   if (size == 1) {
-    ierr = (*is->ops->getindices)(is,indices);CHKERRQ(ierr);
+    PetscCall((*is->ops->getindices)(is,indices));
   } else {
     if (!is->total) {
-      ierr = ISGatherTotal_Private(is);CHKERRQ(ierr);
+      PetscCall(ISGatherTotal_Private(is));
     }
     *indices = is->total;
   }
@@ -1466,15 +1431,14 @@ PetscErrorCode ISGetTotalIndices(IS is, const PetscInt *indices[])
 @*/
 PetscErrorCode  ISRestoreTotalIndices(IS is, const PetscInt *indices[])
 {
-  PetscErrorCode ierr;
   PetscMPIInt    size;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(indices,2);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)is), &size);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)is), &size));
   if (size == 1) {
-    ierr = (*is->ops->restoreindices)(is,indices);CHKERRQ(ierr);
+    PetscCall((*is->ops->restoreindices)(is,indices));
   } else {
     PetscCheckFalse(is->total != *indices,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Index array pointer being restored does not point to the array obtained from the IS.");
   }
@@ -1507,24 +1471,23 @@ PetscErrorCode  ISRestoreTotalIndices(IS is, const PetscInt *indices[])
 @*/
 PetscErrorCode  ISGetNonlocalIndices(IS is, const PetscInt *indices[])
 {
-  PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscInt       n, N;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(indices,2);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)is), &size);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)is), &size));
   if (size == 1) *indices = NULL;
   else {
     if (!is->total) {
-      ierr = ISGatherTotal_Private(is);CHKERRQ(ierr);
+      PetscCall(ISGatherTotal_Private(is));
     }
-    ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
-    ierr = ISGetSize(is,&N);CHKERRQ(ierr);
-    ierr = PetscMalloc1(N-n, &(is->nonlocal));CHKERRQ(ierr);
-    ierr = PetscArraycpy(is->nonlocal, is->total, is->local_offset);CHKERRQ(ierr);
-    ierr = PetscArraycpy(is->nonlocal+is->local_offset, is->total+is->local_offset+n,N - is->local_offset - n);CHKERRQ(ierr);
+    PetscCall(ISGetLocalSize(is,&n));
+    PetscCall(ISGetSize(is,&N));
+    PetscCall(PetscMalloc1(N-n, &(is->nonlocal)));
+    PetscCall(PetscArraycpy(is->nonlocal, is->total, is->local_offset));
+    PetscCall(PetscArraycpy(is->nonlocal+is->local_offset, is->total+is->local_offset+n,N - is->local_offset - n));
     *indices = is->nonlocal;
   }
   PetscFunctionReturn(0);
@@ -1576,23 +1539,21 @@ PetscErrorCode  ISRestoreNonlocalIndices(IS is, const PetscInt *indices[])
 @*/
 PetscErrorCode  ISGetNonlocalIS(IS is, IS *complement)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(complement,2);
   /* Check if the complement exists already. */
   if (is->complement) {
     *complement = is->complement;
-    ierr = PetscObjectReference((PetscObject)(is->complement));CHKERRQ(ierr);
+    PetscCall(PetscObjectReference((PetscObject)(is->complement)));
   } else {
     PetscInt       N, n;
     const PetscInt *idx;
-    ierr = ISGetSize(is, &N);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
-    ierr = ISGetNonlocalIndices(is, &idx);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF, N-n,idx, PETSC_USE_POINTER, &(is->complement));CHKERRQ(ierr);
-    ierr = PetscObjectReference((PetscObject)is->complement);CHKERRQ(ierr);
+    PetscCall(ISGetSize(is, &N));
+    PetscCall(ISGetLocalSize(is,&n));
+    PetscCall(ISGetNonlocalIndices(is, &idx));
+    PetscCall(ISCreateGeneral(PETSC_COMM_SELF, N-n,idx, PETSC_USE_POINTER, &(is->complement)));
+    PetscCall(PetscObjectReference((PetscObject)is->complement));
     *complement = is->complement;
   }
   PetscFunctionReturn(0);
@@ -1613,16 +1574,15 @@ PetscErrorCode  ISGetNonlocalIS(IS is, IS *complement)
 @*/
 PetscErrorCode  ISRestoreNonlocalIS(IS is, IS *complement)
 {
-  PetscErrorCode ierr;
   PetscInt       refcnt;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(complement,2);
   PetscCheckFalse(*complement != is->complement,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Complement IS being restored was not obtained with ISGetNonlocalIS()");
-  ierr = PetscObjectGetReference((PetscObject)(is->complement), &refcnt);CHKERRQ(ierr);
+  PetscCall(PetscObjectGetReference((PetscObject)(is->complement), &refcnt));
   PetscCheckFalse(refcnt <= 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Duplicate call to ISRestoreNonlocalIS() detected");
-  ierr = PetscObjectDereference((PetscObject)(is->complement));CHKERRQ(ierr);
+  PetscCall(PetscObjectDereference((PetscObject)(is->complement)));
   PetscFunctionReturn(0);
 }
 
@@ -1641,11 +1601,9 @@ PetscErrorCode  ISRestoreNonlocalIS(IS is, IS *complement)
 @*/
 PetscErrorCode  ISViewFromOptions(IS A,PetscObject obj,const char name[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,IS_CLASSID,1);
-  ierr = PetscObjectViewFromOptions((PetscObject)A,obj,name);CHKERRQ(ierr);
+  PetscCall(PetscObjectViewFromOptions((PetscObject)A,obj,name));
   PetscFunctionReturn(0);
 }
 
@@ -1664,18 +1622,16 @@ PetscErrorCode  ISViewFromOptions(IS A,PetscObject obj,const char name[])
 @*/
 PetscErrorCode  ISView(IS is,PetscViewer viewer)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
-  if (!viewer) {ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)is),&viewer);CHKERRQ(ierr);}
+  if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)is),&viewer));
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(is,1,viewer,2);
 
-  ierr = PetscObjectPrintClassNamePrefixType((PetscObject)is,viewer);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(IS_View,is,viewer,0,0);CHKERRQ(ierr);
-  ierr = (*is->ops->view)(is,viewer);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(IS_View,is,viewer,0,0);CHKERRQ(ierr);
+  PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)is,viewer));
+  PetscCall(PetscLogEventBegin(IS_View,is,viewer,0,0));
+  PetscCall((*is->ops->view)(is,viewer));
+  PetscCall(PetscLogEventEnd(IS_View,is,viewer,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -1700,19 +1656,18 @@ PetscErrorCode  ISView(IS is,PetscViewer viewer)
 PetscErrorCode ISLoad(IS is, PetscViewer viewer)
 {
   PetscBool      isbinary, ishdf5;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(is,1,viewer,2);
-  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERBINARY, &isbinary);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERBINARY, &isbinary));
+  PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5));
   PetscCheckFalse(!isbinary && !ishdf5,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
-  if (!((PetscObject)is)->type_name) {ierr = ISSetType(is, ISGENERAL);CHKERRQ(ierr);}
-  ierr = PetscLogEventBegin(IS_Load,is,viewer,0,0);CHKERRQ(ierr);
-  ierr = (*is->ops->load)(is, viewer);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(IS_Load,is,viewer,0,0);CHKERRQ(ierr);
+  if (!((PetscObject)is)->type_name) PetscCall(ISSetType(is, ISGENERAL));
+  PetscCall(PetscLogEventBegin(IS_Load,is,viewer,0,0));
+  PetscCall((*is->ops->load)(is, viewer));
+  PetscCall(PetscLogEventEnd(IS_Load,is,viewer,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -1730,12 +1685,10 @@ PetscErrorCode ISLoad(IS is, PetscViewer viewer)
 @*/
 PetscErrorCode  ISSort(IS is)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
-  ierr = (*is->ops->sort)(is);CHKERRQ(ierr);
-  ierr = ISSetInfo(is,IS_SORTED,IS_LOCAL,is->info_permanent[IS_LOCAL][IS_SORTED],PETSC_TRUE);CHKERRQ(ierr);
+  PetscCall((*is->ops->sort)(is));
+  PetscCall(ISSetInfo(is,IS_SORTED,IS_LOCAL,is->info_permanent[IS_LOCAL][IS_SORTED],PETSC_TRUE));
   PetscFunctionReturn(0);
 }
 
@@ -1753,14 +1706,12 @@ PetscErrorCode  ISSort(IS is)
 @*/
 PetscErrorCode ISSortRemoveDups(IS is)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
-  ierr = ISClearInfoCache(is,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = (*is->ops->sortremovedups)(is);CHKERRQ(ierr);
-  ierr = ISSetInfo(is,IS_SORTED,IS_LOCAL,is->info_permanent[IS_LOCAL][IS_SORTED],PETSC_TRUE);CHKERRQ(ierr);
-  ierr = ISSetInfo(is,IS_UNIQUE,IS_LOCAL,is->info_permanent[IS_LOCAL][IS_UNIQUE],PETSC_TRUE);CHKERRQ(ierr);
+  PetscCall(ISClearInfoCache(is,PETSC_FALSE));
+  PetscCall((*is->ops->sortremovedups)(is));
+  PetscCall(ISSetInfo(is,IS_SORTED,IS_LOCAL,is->info_permanent[IS_LOCAL][IS_SORTED],PETSC_TRUE));
+  PetscCall(ISSetInfo(is,IS_UNIQUE,IS_LOCAL,is->info_permanent[IS_LOCAL][IS_UNIQUE],PETSC_TRUE));
   PetscFunctionReturn(0);
 }
 
@@ -1778,12 +1729,10 @@ PetscErrorCode ISSortRemoveDups(IS is)
 @*/
 PetscErrorCode  ISToGeneral(IS is)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   if (is->ops->togeneral) {
-    ierr = (*is->ops->togeneral)(is);CHKERRQ(ierr);
+    PetscCall((*is->ops->togeneral)(is));
   } else SETERRQ(PetscObjectComm((PetscObject)is),PETSC_ERR_SUP,"Not written for this type %s",((PetscObject)is)->type_name);
   PetscFunctionReturn(0);
 }
@@ -1811,12 +1760,10 @@ PetscErrorCode  ISToGeneral(IS is)
 @*/
 PetscErrorCode  ISSorted(IS is,PetscBool  *flg)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidBoolPointer(flg,2);
-  ierr = ISGetInfo(is,IS_SORTED,IS_LOCAL,PETSC_TRUE,flg);CHKERRQ(ierr);
+  PetscCall(ISGetInfo(is,IS_SORTED,IS_LOCAL,PETSC_TRUE,flg));
   PetscFunctionReturn(0);
 }
 
@@ -1837,13 +1784,11 @@ PetscErrorCode  ISSorted(IS is,PetscBool  *flg)
 @*/
 PetscErrorCode  ISDuplicate(IS is,IS *newIS)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(newIS,2);
-  ierr = (*is->ops->duplicate)(is,newIS);CHKERRQ(ierr);
-  ierr = ISCopyInfo(is,*newIS);CHKERRQ(ierr);
+  PetscCall((*is->ops->duplicate)(is,newIS));
+  PetscCall(ISCopyInfo(is,*newIS));
   PetscFunctionReturn(0);
 }
 
@@ -1864,17 +1809,15 @@ PetscErrorCode  ISDuplicate(IS is,IS *newIS)
 @*/
 PetscErrorCode  ISCopy(IS is,IS isy)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidHeaderSpecific(isy,IS_CLASSID,2);
   PetscCheckSameComm(is,1,isy,2);
   if (is == isy) PetscFunctionReturn(0);
-  ierr = ISCopyInfo(is,isy);CHKERRQ(ierr);
+  PetscCall(ISCopyInfo(is,isy));
   isy->max        = is->max;
   isy->min        = is->min;
-  ierr = (*is->ops->copy)(is,isy);CHKERRQ(ierr);
+  PetscCall((*is->ops->copy)(is,isy));
   PetscFunctionReturn(0);
 }
 
@@ -1903,18 +1846,17 @@ PetscErrorCode  ISCopy(IS is,IS isy)
 @*/
 PetscErrorCode  ISOnComm(IS is,MPI_Comm comm,PetscCopyMode mode,IS *newis)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    match;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(newis,4);
-  ierr = MPI_Comm_compare(PetscObjectComm((PetscObject)is),comm,&match);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_compare(PetscObjectComm((PetscObject)is),comm,&match));
   if (mode != PETSC_COPY_VALUES && (match == MPI_IDENT || match == MPI_CONGRUENT)) {
-    ierr   = PetscObjectReference((PetscObject)is);CHKERRQ(ierr);
+    PetscCall(PetscObjectReference((PetscObject)is));
     *newis = is;
   } else {
-    ierr = (*is->ops->oncomm)(is,comm,mode,newis);CHKERRQ(ierr);
+    PetscCall((*is->ops->oncomm)(is,comm,mode,newis));
   }
   PetscFunctionReturn(0);
 }
@@ -1940,8 +1882,6 @@ PetscErrorCode  ISOnComm(IS is,MPI_Comm comm,PetscCopyMode mode,IS *newis)
 @*/
 PetscErrorCode  ISSetBlockSize(IS is,PetscInt bs)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidLogicalCollectiveInt(is,bs,2);
@@ -1949,9 +1889,9 @@ PetscErrorCode  ISSetBlockSize(IS is,PetscInt bs)
   if (PetscDefined(USE_DEBUG)) {
     const PetscInt *indices;
     PetscInt       length,i,j;
-    ierr = ISGetIndices(is,&indices);CHKERRQ(ierr);
+    PetscCall(ISGetIndices(is,&indices));
     if (indices) {
-      ierr = ISGetLocalSize(is,&length);CHKERRQ(ierr);
+      PetscCall(ISGetLocalSize(is,&length));
       PetscCheckFalse(length%bs != 0,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local size %D not compatible with block size %D",length,bs);
       for (i=0;i<length/bs;i+=bs) {
         for (j=0;j<bs-1;j++) {
@@ -1959,9 +1899,9 @@ PetscErrorCode  ISSetBlockSize(IS is,PetscInt bs)
         }
       }
     }
-    ierr = ISRestoreIndices(is,&indices);CHKERRQ(ierr);
+    PetscCall(ISRestoreIndices(is,&indices));
   }
-  ierr = (*is->ops->setblocksize)(is,bs);CHKERRQ(ierr);
+  PetscCall((*is->ops->setblocksize)(is,bs));
   PetscFunctionReturn(0);
 }
 
@@ -1988,24 +1928,21 @@ Notes:
 @*/
 PetscErrorCode  ISGetBlockSize(IS is,PetscInt *size)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscLayoutGetBlockSize(is->map, size);CHKERRQ(ierr);
+  PetscCall(PetscLayoutGetBlockSize(is->map, size));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode ISGetIndicesCopy(IS is, PetscInt idx[])
 {
-  PetscErrorCode ierr;
   PetscInt       len,i;
   const PetscInt *ptr;
 
   PetscFunctionBegin;
-  ierr = ISGetLocalSize(is,&len);CHKERRQ(ierr);
-  ierr = ISGetIndices(is,&ptr);CHKERRQ(ierr);
+  PetscCall(ISGetLocalSize(is,&len));
+  PetscCall(ISGetIndices(is,&ptr));
   for (i=0; i<len; i++) idx[i] = ptr[i];
-  ierr = ISRestoreIndices(is,&ptr);CHKERRQ(ierr);
+  PetscCall(ISRestoreIndices(is,&ptr));
   PetscFunctionReturn(0);
 }
 

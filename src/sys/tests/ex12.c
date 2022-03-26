@@ -11,44 +11,43 @@ int main(int argc,char **argv)
 #endif
   PetscRandom    rand;
   PetscReal      value;
-  PetscErrorCode ierr;
   PetscBool      values_view=PETSC_FALSE;
   PetscMPIInt    rank;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,0,"-values_view",&values_view,NULL);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,0,"-values_view",&values_view,NULL));
 
-  ierr = PetscRandomCreate(PETSC_COMM_SELF,&rand);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
+  PetscCall(PetscRandomCreate(PETSC_COMM_SELF,&rand));
+  PetscCall(PetscRandomSetFromOptions(rand));
 
-  ierr = PetscMalloc1(n,&values);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(n,&values));
   for (i=0; i<n; i++) {
-    ierr      = PetscRandomGetValueReal(rand,&value);CHKERRQ(ierr);
+    PetscCall(PetscRandomGetValueReal(rand,&value));
     values[i] = (PetscInt)(n*value + 2.0);
   }
-  ierr = PetscSortInt(n,values);CHKERRQ(ierr);
+  PetscCall(PetscSortInt(n,values));
 
-  ierr = PetscLogEventRegister("Sort",0,&event);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(event,0,0,0,0);CHKERRQ(ierr);
+  PetscCall(PetscLogEventRegister("Sort",0,&event));
+  PetscCall(PetscLogEventBegin(event,0,0,0,0));
 
   for (i=0; i<n; i++) {
-    ierr      = PetscRandomGetValueReal(rand,&value);CHKERRQ(ierr);
+    PetscCall(PetscRandomGetValueReal(rand,&value));
     values[i] = (PetscInt)(n*value + 2.0);
   }
-  ierr = PetscSortInt(n,values);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(event,0,0,0,0);CHKERRQ(ierr);
+  PetscCall(PetscSortInt(n,values));
+  PetscCall(PetscLogEventEnd(event,0,0,0,0));
 
   for (i=1; i<n; i++) {
     PetscCheckFalse(values[i] < values[i-1],PETSC_COMM_SELF,PETSC_ERR_PLIB,"Values not sorted");
-    if (values_view && rank == 0) {ierr = PetscPrintf(PETSC_COMM_SELF,"%" PetscInt_FMT " %" PetscInt_FMT "\n",i,values[i]);CHKERRQ(ierr);}
+    if (values_view && rank == 0) PetscCall(PetscPrintf(PETSC_COMM_SELF,"%" PetscInt_FMT " %" PetscInt_FMT "\n",i,values[i]));
   }
-  ierr = PetscFree(values);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
+  PetscCall(PetscFree(values));
+  PetscCall(PetscRandomDestroy(&rand));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -156,45 +156,44 @@ static PetscErrorCode PetscRandomCreate_Dummy(PetscRandom arand)
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscReal      A[1],Gamma[1] = {1.0},b[1],c[1],d[1];
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   /* TaoLineSearchRegister() also has the same memory leak */
   /* TaoRegister() also has the same memory leak */
-  ierr = TSGLLEAdaptRegister("dummy",TSGLLEAdaptCreate_Dummy);CHKERRQ(ierr);
-  ierr = TSGLLERegister("dummy",TSGLLECreate_Dummy);CHKERRQ(ierr);
-  ierr = TSRKRegister("dummy",0,0,A,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = TSGLEERegister("dummy",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = TSARKIMEXRegister("dummy",0,0,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = TSRosWRegister("dummy",0,1,A,Gamma,b,0,0,0);CHKERRQ(ierr);
-  ierr = TSBasicSymplecticRegister("dummy",0,0,c,d);CHKERRQ(ierr);
-  ierr = TSAdaptRegister("dummy",TSAdaptCreate_Dummy);CHKERRQ(ierr);
-  ierr = TSRegister("dummy",TSCreate_Dummy);CHKERRQ(ierr);
+  PetscCall(TSGLLEAdaptRegister("dummy",TSGLLEAdaptCreate_Dummy));
+  PetscCall(TSGLLERegister("dummy",TSGLLECreate_Dummy));
+  PetscCall(TSRKRegister("dummy",0,0,A,0,0,0,0,0));
+  PetscCall(TSGLEERegister("dummy",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0));
+  PetscCall(TSARKIMEXRegister("dummy",0,0,0,0,0,0,0,0,0,0,0,0,0));
+  PetscCall(TSRosWRegister("dummy",0,1,A,Gamma,b,0,0,0));
+  PetscCall(TSBasicSymplecticRegister("dummy",0,0,c,d));
+  PetscCall(TSAdaptRegister("dummy",TSAdaptCreate_Dummy));
+  PetscCall(TSRegister("dummy",TSCreate_Dummy));
 #if !defined(PETSC_USE_COMPLEX)
-  ierr = CharacteristicRegister("dummy",CharacteristicCreate_Dummy);CHKERRQ(ierr);
+  PetscCall(CharacteristicRegister("dummy",CharacteristicCreate_Dummy));
 #endif
-  ierr = SNESLineSearchRegister("dummy",SNESLineSearchCreate_Dummy);CHKERRQ(ierr);
-  ierr = SNESRegister("dummy",SNESCreate_Dummy);CHKERRQ(ierr);
-  ierr = KSPGuessRegister("dummy",KSPGuessCreate_Dummy);CHKERRQ(ierr);
-  ierr = KSPRegister("dummy",KSPCreate_Dummy);CHKERRQ(ierr);
-  ierr = PCRegister("dummy",PCCreate_Dummy);CHKERRQ(ierr);
-  ierr = DMRegister("dummy",DMCreate_Dummy);CHKERRQ(ierr);
-  ierr = MatOrderingRegister("dummy",MatOrderingCreate_Dummy);CHKERRQ(ierr);
-  ierr = MatPartitioningRegister("dummy",MatPartitioningCreate_Dummy);CHKERRQ(ierr);
-  ierr = MatRegister("dummy",MatCreate_Dummy);CHKERRQ(ierr);
-  ierr = PFRegister("dummy",PFCreate_Dummy);CHKERRQ(ierr);
-  ierr = VecScatterRegister("dummy",VecScatterCreate_Dummy);CHKERRQ(ierr);
-  ierr = VecRegister("dummy",VecCreate_Dummy);CHKERRQ(ierr);
-  ierr = PetscSFRegister("dummy",PetscSFCreate_Dummy);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingRegister("dummy",ISLocalToGlobalMappingCreate_Dummy);CHKERRQ(ierr);
-  ierr = ISRegister("dummy",ISCreate_Dummy);CHKERRQ(ierr);
-  ierr = AORegister("dummy",AOCreate_Dummy);CHKERRQ(ierr);
-  ierr = PetscDrawRegister("dummy",PetscDrawCreate_Dummy);CHKERRQ(ierr);
-  ierr = PetscViewerRegister("dummy",PetscViewerCreate_Dummy);CHKERRQ(ierr);
-  ierr = PetscRandomRegister("dummy",PetscRandomCreate_Dummy);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(SNESLineSearchRegister("dummy",SNESLineSearchCreate_Dummy));
+  PetscCall(SNESRegister("dummy",SNESCreate_Dummy));
+  PetscCall(KSPGuessRegister("dummy",KSPGuessCreate_Dummy));
+  PetscCall(KSPRegister("dummy",KSPCreate_Dummy));
+  PetscCall(PCRegister("dummy",PCCreate_Dummy));
+  PetscCall(DMRegister("dummy",DMCreate_Dummy));
+  PetscCall(MatOrderingRegister("dummy",MatOrderingCreate_Dummy));
+  PetscCall(MatPartitioningRegister("dummy",MatPartitioningCreate_Dummy));
+  PetscCall(MatRegister("dummy",MatCreate_Dummy));
+  PetscCall(PFRegister("dummy",PFCreate_Dummy));
+  PetscCall(VecScatterRegister("dummy",VecScatterCreate_Dummy));
+  PetscCall(VecRegister("dummy",VecCreate_Dummy));
+  PetscCall(PetscSFRegister("dummy",PetscSFCreate_Dummy));
+  PetscCall(ISLocalToGlobalMappingRegister("dummy",ISLocalToGlobalMappingCreate_Dummy));
+  PetscCall(ISRegister("dummy",ISCreate_Dummy));
+  PetscCall(AORegister("dummy",AOCreate_Dummy));
+  PetscCall(PetscDrawRegister("dummy",PetscDrawCreate_Dummy));
+  PetscCall(PetscViewerRegister("dummy",PetscViewerCreate_Dummy));
+  PetscCall(PetscRandomRegister("dummy",PetscRandomCreate_Dummy));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

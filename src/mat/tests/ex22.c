@@ -8,7 +8,6 @@ int main(int argc,char **args)
 {
   Mat               C,Cperm;
   PetscInt          i,j,m = 5,n = 5,Ii,J,ncols;
-  PetscErrorCode    ierr;
   PetscScalar       v;
   PetscMPIInt       size;
   IS                rperm,cperm,icperm;
@@ -16,95 +15,94 @@ int main(int argc,char **args)
   const PetscScalar *vals;
   PetscBool         TestMyorder=PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
   /* create the matrix for the five point stencil, YET AGAIN */
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,m*n,m*n,5,NULL,&C);CHKERRQ(ierr);
-  ierr = MatSetUp(C);CHKERRQ(ierr);
+  PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF,m*n,m*n,5,NULL,&C));
+  PetscCall(MatSetUp(C));
   for (i=0; i<m; i++) {
     for (j=0; j<n; j++) {
       v = -1.0;  Ii = j + n*i;
-      if (i>0)   {J = Ii - n; ierr = MatSetValues(C,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-      if (i<m-1) {J = Ii + n; ierr = MatSetValues(C,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-      if (j>0)   {J = Ii - 1; ierr = MatSetValues(C,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-      if (j<n-1) {J = Ii + 1; ierr = MatSetValues(C,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-      v = 4.0; ierr = MatSetValues(C,1,&Ii,1,&Ii,&v,INSERT_VALUES);CHKERRQ(ierr);
+      if (i>0)   {J = Ii - n; PetscCall(MatSetValues(C,1,&Ii,1,&J,&v,INSERT_VALUES));}
+      if (i<m-1) {J = Ii + n; PetscCall(MatSetValues(C,1,&Ii,1,&J,&v,INSERT_VALUES));}
+      if (j>0)   {J = Ii - 1; PetscCall(MatSetValues(C,1,&Ii,1,&J,&v,INSERT_VALUES));}
+      if (j<n-1) {J = Ii + 1; PetscCall(MatSetValues(C,1,&Ii,1,&J,&v,INSERT_VALUES));}
+      v = 4.0; PetscCall(MatSetValues(C,1,&Ii,1,&Ii,&v,INSERT_VALUES));
     }
   }
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
 
-  ierr = MatGetOrdering(C,MATORDERINGND,&rperm,&cperm);CHKERRQ(ierr);
-  ierr = ISView(rperm,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = ISDestroy(&rperm);CHKERRQ(ierr);
-  ierr = ISDestroy(&cperm);CHKERRQ(ierr);
+  PetscCall(MatGetOrdering(C,MATORDERINGND,&rperm,&cperm));
+  PetscCall(ISView(rperm,PETSC_VIEWER_STDOUT_SELF));
+  PetscCall(ISDestroy(&rperm));
+  PetscCall(ISDestroy(&cperm));
 
-  ierr = MatGetOrdering(C,MATORDERINGRCM,&rperm,&cperm);CHKERRQ(ierr);
-  ierr = ISView(rperm,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = ISDestroy(&rperm);CHKERRQ(ierr);
-  ierr = ISDestroy(&cperm);CHKERRQ(ierr);
+  PetscCall(MatGetOrdering(C,MATORDERINGRCM,&rperm,&cperm));
+  PetscCall(ISView(rperm,PETSC_VIEWER_STDOUT_SELF));
+  PetscCall(ISDestroy(&rperm));
+  PetscCall(ISDestroy(&cperm));
 
-  ierr = MatGetOrdering(C,MATORDERINGQMD,&rperm,&cperm);CHKERRQ(ierr);
-  ierr = ISView(rperm,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = ISDestroy(&rperm);CHKERRQ(ierr);
-  ierr = ISDestroy(&cperm);CHKERRQ(ierr);
+  PetscCall(MatGetOrdering(C,MATORDERINGQMD,&rperm,&cperm));
+  PetscCall(ISView(rperm,PETSC_VIEWER_STDOUT_SELF));
+  PetscCall(ISDestroy(&rperm));
+  PetscCall(ISDestroy(&cperm));
 
   /* create Cperm = rperm*C*icperm */
-  ierr = PetscOptionsGetBool(NULL,NULL,"-testmyordering",&TestMyorder,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-testmyordering",&TestMyorder,NULL));
   if (TestMyorder) {
-    ierr = MatGetOrdering_myordering(C,MATORDERINGQMD,&rperm,&cperm);CHKERRQ(ierr);
+    PetscCall(MatGetOrdering_myordering(C,MATORDERINGQMD,&rperm,&cperm));
     printf("myordering's rperm:\n");
-    ierr = ISView(rperm,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-    ierr = ISInvertPermutation(cperm,PETSC_DECIDE,&icperm);CHKERRQ(ierr);
-    ierr = ISGetIndices(rperm,&rperm_ptr);CHKERRQ(ierr);
-    ierr = ISGetIndices(icperm,&cperm_ptr);CHKERRQ(ierr);
-    ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,m*n,m*n,5,NULL,&Cperm);CHKERRQ(ierr);
+    PetscCall(ISView(rperm,PETSC_VIEWER_STDOUT_SELF));
+    PetscCall(ISInvertPermutation(cperm,PETSC_DECIDE,&icperm));
+    PetscCall(ISGetIndices(rperm,&rperm_ptr));
+    PetscCall(ISGetIndices(icperm,&cperm_ptr));
+    PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF,m*n,m*n,5,NULL,&Cperm));
     for (i=0; i<m*n; i++) {
-      ierr = MatGetRow(C,rperm_ptr[i],&ncols,&cols,&vals);CHKERRQ(ierr);
+      PetscCall(MatGetRow(C,rperm_ptr[i],&ncols,&cols,&vals));
       for (j=0; j<ncols; j++) {
         /* printf(" (%d %d %g)\n",i,cperm_ptr[cols[j]],vals[j]); */
-        ierr = MatSetValues(Cperm,1,&i,1,&cperm_ptr[cols[j]],&vals[j],INSERT_VALUES);CHKERRQ(ierr);
+        PetscCall(MatSetValues(Cperm,1,&i,1,&cperm_ptr[cols[j]],&vals[j],INSERT_VALUES));
       }
     }
-    ierr = MatAssemblyBegin(Cperm,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(Cperm,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = ISRestoreIndices(rperm,&rperm_ptr);CHKERRQ(ierr);
-    ierr = ISRestoreIndices(icperm,&cperm_ptr);CHKERRQ(ierr);
+    PetscCall(MatAssemblyBegin(Cperm,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(Cperm,MAT_FINAL_ASSEMBLY));
+    PetscCall(ISRestoreIndices(rperm,&rperm_ptr));
+    PetscCall(ISRestoreIndices(icperm,&cperm_ptr));
 
-    ierr = ISDestroy(&rperm);CHKERRQ(ierr);
-    ierr = ISDestroy(&cperm);CHKERRQ(ierr);
-    ierr = ISDestroy(&icperm);CHKERRQ(ierr);
-    ierr = MatDestroy(&Cperm);CHKERRQ(ierr);
+    PetscCall(ISDestroy(&rperm));
+    PetscCall(ISDestroy(&cperm));
+    PetscCall(ISDestroy(&icperm));
+    PetscCall(MatDestroy(&Cperm));
   }
 
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(MatDestroy(&C));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 #include <petsc/private/matimpl.h>
 /* This is modified from MatGetOrdering_Natural() */
 PetscErrorCode MatGetOrdering_myordering(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 {
-  PetscErrorCode ierr;
   PetscInt       n,i,*ii;
   PetscBool      done;
   MPI_Comm       comm;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
-  ierr = MatGetRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&n,NULL,NULL,&done);CHKERRQ(ierr);
-  ierr = MatRestoreRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,NULL,NULL,NULL,&done);CHKERRQ(ierr);
+  PetscCall(PetscObjectGetComm((PetscObject)mat,&comm));
+  PetscCall(MatGetRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&n,NULL,NULL,&done));
+  PetscCall(MatRestoreRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,NULL,NULL,NULL,&done));
   if (done) { /* matrix may be "compressed" in symbolic factorization, due to i-nodes or block storage */
-    ierr = PetscMalloc1(n,&ii);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(n,&ii));
     for (i=0; i<n; i++) ii[i] = n-i-1; /* replace your index here */
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,PETSC_COPY_VALUES,irow);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,PETSC_OWN_POINTER,icol);CHKERRQ(ierr);
+    PetscCall(ISCreateGeneral(PETSC_COMM_SELF,n,ii,PETSC_COPY_VALUES,irow));
+    PetscCall(ISCreateGeneral(PETSC_COMM_SELF,n,ii,PETSC_OWN_POINTER,icol));
   } else SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"MatRestoreRowIJ fails!");
-  ierr = ISSetPermutation(*irow);CHKERRQ(ierr);
-  ierr = ISSetPermutation(*icol);CHKERRQ(ierr);
+  PetscCall(ISSetPermutation(*irow));
+  PetscCall(ISSetPermutation(*icol));
   PetscFunctionReturn(0);
 }
 

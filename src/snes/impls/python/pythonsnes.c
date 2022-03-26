@@ -18,11 +18,9 @@
 @*/
 PetscErrorCode  SNESPythonSetType(SNES snes,const char pyname[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidCharPointer(pyname,2);
-  ierr = PetscTryMethod(snes,"SNESPythonSetType_C",(SNES, const char[]),(snes,pyname));CHKERRQ(ierr);
+  PetscCall(PetscTryMethod(snes,"SNESPythonSetType_C",(SNES, const char[]),(snes,pyname)));
   PetscFunctionReturn(0);
 }

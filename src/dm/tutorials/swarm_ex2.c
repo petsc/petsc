@@ -11,68 +11,66 @@ static char help[] = "Tests DMSwarm\n\n";
 PetscErrorCode ex2_1(void)
 {
   DM             dms;
-  PetscErrorCode ierr;
   Vec            x;
   PetscMPIInt    rank;
   PetscInt       p,bs,nlocal;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
-  ierr = DMCreate(PETSC_COMM_WORLD,&dms);CHKERRQ(ierr);
-  ierr = DMSetType(dms,DMSWARM);CHKERRQ(ierr);
-  ierr = DMSwarmInitializeFieldRegister(dms);CHKERRQ(ierr);
-  ierr = DMSwarmRegisterPetscDatatypeField(dms,"viscosity",1,PETSC_REAL);CHKERRQ(ierr);
-  ierr = DMSwarmRegisterPetscDatatypeField(dms,"strain",3,PETSC_REAL);CHKERRQ(ierr);
-  ierr = DMSwarmFinalizeFieldRegister(dms);CHKERRQ(ierr);
-  ierr = DMSwarmSetLocalSizes(dms,5+rank,4);CHKERRQ(ierr);
-  ierr = DMView(dms,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = DMSwarmGetLocalSize(dms,&nlocal);CHKERRQ(ierr);
+  PetscCall(DMCreate(PETSC_COMM_WORLD,&dms));
+  PetscCall(DMSetType(dms,DMSWARM));
+  PetscCall(DMSwarmInitializeFieldRegister(dms));
+  PetscCall(DMSwarmRegisterPetscDatatypeField(dms,"viscosity",1,PETSC_REAL));
+  PetscCall(DMSwarmRegisterPetscDatatypeField(dms,"strain",3,PETSC_REAL));
+  PetscCall(DMSwarmFinalizeFieldRegister(dms));
+  PetscCall(DMSwarmSetLocalSizes(dms,5+rank,4));
+  PetscCall(DMView(dms,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(DMSwarmGetLocalSize(dms,&nlocal));
 
   {
     PetscReal *array;
-    ierr = DMSwarmGetField(dms,"viscosity",&bs,NULL,(void**)&array);CHKERRQ(ierr);
+    PetscCall(DMSwarmGetField(dms,"viscosity",&bs,NULL,(void**)&array));
     for (p=0; p<nlocal; p++) {
       array[p] = 11.1 + p*0.1 + rank*100.0;
     }
-    ierr = DMSwarmRestoreField(dms,"viscosity",&bs,NULL,(void**)&array);CHKERRQ(ierr);
+    PetscCall(DMSwarmRestoreField(dms,"viscosity",&bs,NULL,(void**)&array));
   }
 
   {
     PetscReal *array;
-    ierr = DMSwarmGetField(dms,"strain",&bs,NULL,(void**)&array);CHKERRQ(ierr);
+    PetscCall(DMSwarmGetField(dms,"strain",&bs,NULL,(void**)&array));
     for (p=0; p<nlocal; p++) {
       array[bs*p+0] = 2.0e-2 + p*0.001 + rank*1.0;
       array[bs*p+1] = 2.0e-2 + p*0.002 + rank*1.0;
       array[bs*p+2] = 2.0e-2 + p*0.003 + rank*1.0;
     }
-    ierr = DMSwarmRestoreField(dms,"strain",&bs,NULL,(void**)&array);CHKERRQ(ierr);
+    PetscCall(DMSwarmRestoreField(dms,"strain",&bs,NULL,(void**)&array));
   }
 
-  ierr = DMSwarmCreateGlobalVectorFromField(dms,"viscosity",&x);CHKERRQ(ierr);
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = DMSwarmDestroyGlobalVectorFromField(dms,"viscosity",&x);CHKERRQ(ierr);
+  PetscCall(DMSwarmCreateGlobalVectorFromField(dms,"viscosity",&x));
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(DMSwarmDestroyGlobalVectorFromField(dms,"viscosity",&x));
 
-  ierr = DMSwarmCreateGlobalVectorFromField(dms,"strain",&x);CHKERRQ(ierr);
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = DMSwarmDestroyGlobalVectorFromField(dms,"strain",&x);CHKERRQ(ierr);
+  PetscCall(DMSwarmCreateGlobalVectorFromField(dms,"strain",&x));
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(DMSwarmDestroyGlobalVectorFromField(dms,"strain",&x));
 
-  ierr = DMSwarmVectorDefineField(dms,"strain");CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(dms,&x);CHKERRQ(ierr);
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = DMDestroy(&dms);CHKERRQ(ierr);
+  PetscCall(DMSwarmVectorDefineField(dms,"strain"));
+  PetscCall(DMCreateGlobalVector(dms,&x));
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecDestroy(&x));
+  PetscCall(DMDestroy(&dms));
   PetscFunctionReturn(0);
 }
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = ex2_1();CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(ex2_1());
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

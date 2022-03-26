@@ -20,10 +20,8 @@ static PetscErrorCode KSPPGMRESBuildSoln(PetscScalar*,Vec,Vec,KSP,PetscInt);
 */
 static PetscErrorCode KSPSetUp_PGMRES(KSP ksp)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = KSPSetUp_GMRES(ksp);CHKERRQ(ierr);
+  PetscCall(KSPSetUp_GMRES(ksp));
   PetscFunctionReturn(0);
 }
 
@@ -48,36 +46,35 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount,KSP ksp)
 {
   KSP_PGMRES     *pgmres = (KSP_PGMRES*)(ksp->data);
   PetscReal      res_norm,res,newnorm;
-  PetscErrorCode ierr;
   PetscInt       it     = 0,j,k;
   PetscBool      hapend = PETSC_FALSE;
 
   PetscFunctionBegin;
   if (itcount) *itcount = 0;
-  ierr   = VecNormalize(VEC_VV(0),&res_norm);CHKERRQ(ierr);
+  PetscCall(VecNormalize(VEC_VV(0),&res_norm));
   KSPCheckNorm(ksp,res_norm);
   res    = res_norm;
   *RS(0) = res_norm;
 
   /* check for the convergence */
-  ierr       = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+  PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
   if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = res;
   else ksp->rnorm = 0;
-  ierr       = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+  PetscCall(PetscObjectSAWsGrantAccess((PetscObject)ksp));
   pgmres->it = it-2;
-  ierr = KSPLogResidualHistory(ksp,ksp->rnorm);CHKERRQ(ierr);
-  ierr = KSPMonitor(ksp,ksp->its,ksp->rnorm);CHKERRQ(ierr);
+  PetscCall(KSPLogResidualHistory(ksp,ksp->rnorm));
+  PetscCall(KSPMonitor(ksp,ksp->its,ksp->rnorm));
   if (!res) {
     ksp->reason = KSP_CONVERGED_ATOL;
-    ierr        = PetscInfo(ksp,"Converged due to zero residual norm on entry\n");CHKERRQ(ierr);
+    PetscCall(PetscInfo(ksp,"Converged due to zero residual norm on entry\n"));
     PetscFunctionReturn(0);
   }
 
-  ierr = (*ksp->converged)(ksp,ksp->its,ksp->rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+  PetscCall((*ksp->converged)(ksp,ksp->its,ksp->rnorm,&ksp->reason,ksp->cnvP));
   for (; !ksp->reason; it++) {
     Vec Zcur,Znext;
     if (pgmres->vv_allocated <= it + VEC_OFFSET + 1) {
-      ierr = KSPGMRESGetNewVectors(ksp,it+1);CHKERRQ(ierr);
+      PetscCall(KSPGMRESGetNewVectors(ksp,it+1));
     }
     /* VEC_VV(it-1) is orthogonal, it will be normalized once the VecNorm arrives. */
     Zcur  = VEC_VV(it);         /* Zcur is not yet orthogonal, but the VecMDot to orthogonalize it has been started. */
@@ -85,36 +82,36 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount,KSP ksp)
                                  * Zcur relates to the previous vectors, and start the reduction to orthogonalize it. */
 
     if (it < pgmres->max_k+1 && ksp->its+1 < PetscMax(2,ksp->max_it)) { /* We don't know whether what we have computed is enough, so apply the matrix. */
-      ierr = KSP_PCApplyBAorAB(ksp,Zcur,Znext,VEC_TEMP_MATOP);CHKERRQ(ierr);
+      PetscCall(KSP_PCApplyBAorAB(ksp,Zcur,Znext,VEC_TEMP_MATOP));
     }
 
     if (it > 1) {               /* Complete the pending reduction */
-      ierr           = VecNormEnd(VEC_VV(it-1),NORM_2,&newnorm);CHKERRQ(ierr);
+      PetscCall(VecNormEnd(VEC_VV(it-1),NORM_2,&newnorm));
       *HH(it-1,it-2) = newnorm;
     }
     if (it > 0) {               /* Finish the reduction computing the latest column of H */
-      ierr = VecMDotEnd(Zcur,it,&(VEC_VV(0)),HH(0,it-1));CHKERRQ(ierr);
+      PetscCall(VecMDotEnd(Zcur,it,&(VEC_VV(0)),HH(0,it-1)));
     }
 
     if (it > 1) {
       /* normalize the base vector from two iterations ago, basis is complete up to here */
-      ierr = VecScale(VEC_VV(it-1),1./ *HH(it-1,it-2));CHKERRQ(ierr);
+      PetscCall(VecScale(VEC_VV(it-1),1./ *HH(it-1,it-2)));
 
-      ierr       = KSPPGMRESUpdateHessenberg(ksp,it-2,&hapend,&res);CHKERRQ(ierr);
+      PetscCall(KSPPGMRESUpdateHessenberg(ksp,it-2,&hapend,&res));
       pgmres->it = it-2;
       ksp->its++;
       if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = res;
       else ksp->rnorm = 0;
 
-      ierr = (*ksp->converged)(ksp,ksp->its,ksp->rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+      PetscCall((*ksp->converged)(ksp,ksp->its,ksp->rnorm,&ksp->reason,ksp->cnvP));
       if (it < pgmres->max_k+1 || ksp->reason || ksp->its == ksp->max_it) {  /* Monitor if we are done or still iterating, but not before a restart. */
-        ierr = KSPLogResidualHistory(ksp,ksp->rnorm);CHKERRQ(ierr);
-        ierr = KSPMonitor(ksp,ksp->its,ksp->rnorm);CHKERRQ(ierr);
+        PetscCall(KSPLogResidualHistory(ksp,ksp->rnorm));
+        PetscCall(KSPMonitor(ksp,ksp->its,ksp->rnorm));
       }
       if (ksp->reason) break;
       /* Catch error in happy breakdown and signal convergence and break from loop */
       if (hapend) {
-        PetscCheckFalse(ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"You reached the happy break down, but convergence was not indicated. Residual norm = %g",(double)res);
+        PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"You reached the happy break down, but convergence was not indicated. Residual norm = %g",(double)res);
         else {
           ksp->reason = KSP_DIVERGED_BREAKDOWN;
           break;
@@ -124,9 +121,9 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount,KSP ksp)
       if (!(it < pgmres->max_k+1 && ksp->its < ksp->max_it)) break;
 
       /* The it-2 column of H was not scaled when we computed Zcur, apply correction */
-      ierr = VecScale(Zcur,1./ *HH(it-1,it-2));CHKERRQ(ierr);
+      PetscCall(VecScale(Zcur,1./ *HH(it-1,it-2)));
       /* And Znext computed in this iteration was computed using the under-scaled Zcur */
-      ierr = VecScale(Znext,1./ *HH(it-1,it-2));CHKERRQ(ierr);
+      PetscCall(VecScale(Znext,1./ *HH(it-1,it-2)));
 
       /* In the previous iteration, we projected an unnormalized Zcur against the Krylov basis, so we need to fix the column of H resulting from that projection. */
       for (k=0; k<it; k++) *HH(k,it-1) /= *HH(it-1,it-2);
@@ -137,7 +134,7 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount,KSP ksp)
 
     if (it > 0) {
       PetscScalar *work;
-      if (!pgmres->orthogwork) {ierr = PetscMalloc1(pgmres->max_k + 2,&pgmres->orthogwork);CHKERRQ(ierr);}
+      if (!pgmres->orthogwork) PetscCall(PetscMalloc1(pgmres->max_k + 2,&pgmres->orthogwork));
       work = pgmres->orthogwork;
       /* Apply correction computed by the VecMDot in the last iteration to Znext. The original form is
        *
@@ -162,22 +159,22 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount,KSP ksp)
         work[k] = 0;
         for (j=PetscMax(0,k-1); j<it-1; j++) work[k] -= *HES(k,j) * *HH(j,it-1);
       }
-      ierr = VecMAXPY(Znext,it+1,work,&VEC_VV(0));CHKERRQ(ierr);
-      ierr = VecAXPY(Znext,-*HH(it-1,it-1),Zcur);CHKERRQ(ierr);
+      PetscCall(VecMAXPY(Znext,it+1,work,&VEC_VV(0)));
+      PetscCall(VecAXPY(Znext,-*HH(it-1,it-1),Zcur));
 
       /* Orthogonalize Zcur against existing basis vectors. */
       for (k=0; k<it; k++) work[k] = -*HH(k,it-1);
-      ierr = VecMAXPY(Zcur,it,work,&VEC_VV(0));CHKERRQ(ierr);
+      PetscCall(VecMAXPY(Zcur,it,work,&VEC_VV(0)));
       /* Zcur is now orthogonal, and will be referred to as VEC_VV(it) again, though it is still not normalized. */
       /* Begin computing the norm of the new vector, will be normalized after the MatMult in the next iteration. */
-      ierr = VecNormBegin(VEC_VV(it),NORM_2,&newnorm);CHKERRQ(ierr);
+      PetscCall(VecNormBegin(VEC_VV(it),NORM_2,&newnorm));
     }
 
     /* Compute column of H (to the diagonal, but not the subdiagonal) to be able to orthogonalize the newest vector. */
-    ierr = VecMDotBegin(Znext,it+1,&VEC_VV(0),HH(0,it));CHKERRQ(ierr);
+    PetscCall(VecMDotBegin(Znext,it+1,&VEC_VV(0),HH(0,it)));
 
     /* Start an asynchronous split-mode reduction, the result of the MDot and Norm will be collected on the next iteration. */
-    ierr = PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)Znext));CHKERRQ(ierr);
+    PetscCall(PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)Znext)));
   }
 
   if (itcount) *itcount = it-1; /* Number of iterations actually completed. */
@@ -188,7 +185,7 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount,KSP ksp)
     preconditioning from the solution
    */
   /* Form the solution (or the solution so far) */
-  ierr = KSPPGMRESBuildSoln(RS(0),ksp->vec_sol,ksp->vec_sol,ksp,it-2);CHKERRQ(ierr);
+  PetscCall(KSPPGMRESBuildSoln(RS(0),ksp->vec_sol,ksp->vec_sol,ksp,it-2));
   PetscFunctionReturn(0);
 }
 
@@ -204,22 +201,21 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount,KSP ksp)
 */
 static PetscErrorCode KSPSolve_PGMRES(KSP ksp)
 {
-  PetscErrorCode ierr;
   PetscInt       its,itcount;
   KSP_PGMRES     *pgmres    = (KSP_PGMRES*)ksp->data;
   PetscBool      guess_zero = ksp->guess_zero;
 
   PetscFunctionBegin;
   PetscCheckFalse(ksp->calc_sings && !pgmres->Rsvd,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
-  ierr     = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+  PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
   ksp->its = 0;
-  ierr     = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+  PetscCall(PetscObjectSAWsGrantAccess((PetscObject)ksp));
 
   itcount     = 0;
   ksp->reason = KSP_CONVERGED_ITERATING;
   while (!ksp->reason) {
-    ierr     = KSPInitialResidual(ksp,ksp->vec_sol,VEC_TEMP,VEC_TEMP_MATOP,VEC_VV(0),ksp->vec_rhs);CHKERRQ(ierr);
-    ierr     = KSPPGMRESCycle(&its,ksp);CHKERRQ(ierr);
+    PetscCall(KSPInitialResidual(ksp,ksp->vec_sol,VEC_TEMP,VEC_TEMP_MATOP,VEC_VV(0),ksp->vec_rhs));
+    PetscCall(KSPPGMRESCycle(&its,ksp));
     itcount += its;
     if (itcount >= ksp->max_it) {
       if (!ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
@@ -233,10 +229,8 @@ static PetscErrorCode KSPSolve_PGMRES(KSP ksp)
 
 static PetscErrorCode KSPDestroy_PGMRES(KSP ksp)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = KSPDestroy_GMRES(ksp);CHKERRQ(ierr);
+  PetscCall(KSPDestroy_GMRES(ksp));
   PetscFunctionReturn(0);
 }
 
@@ -256,7 +250,6 @@ static PetscErrorCode KSPDestroy_PGMRES(KSP ksp)
 static PetscErrorCode KSPPGMRESBuildSoln(PetscScalar *nrs,Vec vguess,Vec vdest,KSP ksp,PetscInt it)
 {
   PetscScalar    tt;
-  PetscErrorCode ierr;
   PetscInt       k,j;
   KSP_PGMRES     *pgmres = (KSP_PGMRES*)(ksp->data);
 
@@ -264,7 +257,7 @@ static PetscErrorCode KSPPGMRESBuildSoln(PetscScalar *nrs,Vec vguess,Vec vdest,K
   /* Solve for solution vector that minimizes the residual */
 
   if (it < 0) {                                 /* no pgmres steps have been performed */
-    ierr = VecCopy(vguess,vdest);CHKERRQ(ierr); /* VecCopy() is smart, exits immediately if vguess == vdest */
+    PetscCall(VecCopy(vguess,vdest)); /* VecCopy() is smart, exits immediately if vguess == vdest */
     PetscFunctionReturn(0);
   }
 
@@ -280,14 +273,14 @@ static PetscErrorCode KSPPGMRESBuildSoln(PetscScalar *nrs,Vec vguess,Vec vdest,K
   }
 
   /* Accumulate the correction to the solution of the preconditioned problem in TEMP */
-  ierr = VecZeroEntries(VEC_TEMP);CHKERRQ(ierr);
-  ierr = VecMAXPY(VEC_TEMP,it+1,nrs,&VEC_VV(0));CHKERRQ(ierr);
-  ierr = KSPUnwindPreconditioner(ksp,VEC_TEMP,VEC_TEMP_MATOP);CHKERRQ(ierr);
+  PetscCall(VecZeroEntries(VEC_TEMP));
+  PetscCall(VecMAXPY(VEC_TEMP,it+1,nrs,&VEC_VV(0)));
+  PetscCall(KSPUnwindPreconditioner(ksp,VEC_TEMP,VEC_TEMP_MATOP));
   /* add solution to previous solution */
   if (vdest == vguess) {
-    ierr = VecAXPY(vdest,1.0,VEC_TEMP);CHKERRQ(ierr);
+    PetscCall(VecAXPY(vdest,1.0,VEC_TEMP));
   } else {
-    ierr = VecWAXPY(vdest,1.0,VEC_TEMP,vguess);CHKERRQ(ierr);
+    PetscCall(VecWAXPY(vdest,1.0,VEC_TEMP,vguess));
   }
   PetscFunctionReturn(0);
 }
@@ -317,7 +310,6 @@ static PetscErrorCode KSPPGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBool *h
   PetscInt       j;
   PetscReal      hapbnd;
   KSP_PGMRES     *pgmres = (KSP_PGMRES*)(ksp->data);
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   hh = HH(0,it);   /* pointer to beginning of column to update */
@@ -331,7 +323,7 @@ static PetscErrorCode KSPPGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBool *h
   /* check for the happy breakdown */
   hapbnd = PetscMin(PetscAbsScalar(hh[it+1] / rs[it]),pgmres->haptol);
   if (PetscAbsScalar(hh[it+1]) < hapbnd) {
-    ierr    = PetscInfo(ksp,"Detected happy breakdown, current hapbnd = %14.12e H(%D,%D) = %14.12e\n",(double)hapbnd,it+1,it,(double)PetscAbsScalar(*HH(it+1,it)));CHKERRQ(ierr);
+    PetscCall(PetscInfo(ksp,"Detected happy breakdown, current hapbnd = %14.12e H(%D,%D) = %14.12e\n",(double)hapbnd,it+1,it,(double)PetscAbsScalar(*HH(it+1,it))));
     *hapend = PETSC_TRUE;
   }
 
@@ -401,44 +393,39 @@ static PetscErrorCode KSPPGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBool *h
 PetscErrorCode KSPBuildSolution_PGMRES(KSP ksp,Vec ptr,Vec *result)
 {
   KSP_PGMRES     *pgmres = (KSP_PGMRES*)ksp->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!ptr) {
     if (!pgmres->sol_temp) {
-      ierr = VecDuplicate(ksp->vec_sol,&pgmres->sol_temp);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent((PetscObject)ksp,(PetscObject)pgmres->sol_temp);CHKERRQ(ierr);
+      PetscCall(VecDuplicate(ksp->vec_sol,&pgmres->sol_temp));
+      PetscCall(PetscLogObjectParent((PetscObject)ksp,(PetscObject)pgmres->sol_temp));
     }
     ptr = pgmres->sol_temp;
   }
   if (!pgmres->nrs) {
     /* allocate the work area */
-    ierr = PetscMalloc1(pgmres->max_k,&pgmres->nrs);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory((PetscObject)ksp,pgmres->max_k*sizeof(PetscScalar));CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(pgmres->max_k,&pgmres->nrs));
+    PetscCall(PetscLogObjectMemory((PetscObject)ksp,pgmres->max_k*sizeof(PetscScalar)));
   }
 
-  ierr = KSPPGMRESBuildSoln(pgmres->nrs,ksp->vec_sol,ptr,ksp,pgmres->it);CHKERRQ(ierr);
+  PetscCall(KSPPGMRESBuildSoln(pgmres->nrs,ksp->vec_sol,ptr,ksp,pgmres->it));
   if (result) *result = ptr;
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode KSPSetFromOptions_PGMRES(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = KSPSetFromOptions_GMRES(PetscOptionsObject,ksp);CHKERRQ(ierr);
-  ierr = PetscOptionsHead(PetscOptionsObject,"KSP pipelined GMRES Options");CHKERRQ(ierr);
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscCall(KSPSetFromOptions_GMRES(PetscOptionsObject,ksp));
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"KSP pipelined GMRES Options"));
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode KSPReset_PGMRES(KSP ksp)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = KSPReset_GMRES(ksp);CHKERRQ(ierr);
+  PetscCall(KSPReset_GMRES(ksp));
   PetscFunctionReturn(0);
 }
 
@@ -477,10 +464,9 @@ M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_PGMRES(KSP ksp)
 {
   KSP_PGMRES     *pgmres;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(ksp,&pgmres);CHKERRQ(ierr);
+  PetscCall(PetscNewLog(ksp,&pgmres));
 
   ksp->data                              = (void*)pgmres;
   ksp->ops->buildsolution                = KSPBuildSolution_PGMRES;
@@ -493,17 +479,17 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PGMRES(KSP ksp)
   ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_GMRES;
   ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_GMRES;
 
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1);CHKERRQ(ierr);
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1));
 
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C",KSPGMRESSetPreAllocateVectors_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C",KSPGMRESSetOrthogonalization_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESGetOrthogonalization_C",KSPGMRESGetOrthogonalization_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetRestart_C",KSPGMRESSetRestart_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESGetRestart_C",KSPGMRESGetRestart_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetCGSRefinementType_C",KSPGMRESSetCGSRefinementType_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESGetCGSRefinementType_C",KSPGMRESGetCGSRefinementType_GMRES);CHKERRQ(ierr);
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C",KSPGMRESSetPreAllocateVectors_GMRES));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C",KSPGMRESSetOrthogonalization_GMRES));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESGetOrthogonalization_C",KSPGMRESGetOrthogonalization_GMRES));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetRestart_C",KSPGMRESSetRestart_GMRES));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESGetRestart_C",KSPGMRESGetRestart_GMRES));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetCGSRefinementType_C",KSPGMRESSetCGSRefinementType_GMRES));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESGetCGSRefinementType_C",KSPGMRESGetCGSRefinementType_GMRES));
 
   pgmres->nextra_vecs    = 1;
   pgmres->haptol         = 1.0e-30;

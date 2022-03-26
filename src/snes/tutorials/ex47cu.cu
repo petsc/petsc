@@ -23,37 +23,36 @@ int main(int argc,char **argv)
   Vec            x,f;
   Mat            J;
   DM             da;
-  PetscErrorCode ierr;
   char           *tmp,typeName[256];
   PetscBool      flg;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetString(NULL,NULL,"-dm_vec_type",typeName,sizeof(typeName),&flg);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-dm_vec_type",typeName,sizeof(typeName),&flg));
   if (flg) {
-    ierr = PetscStrstr(typeName,"cuda",&tmp);CHKERRQ(ierr);
+    PetscCall(PetscStrstr(typeName,"cuda",&tmp));
     if (tmp) useCUDA = PETSC_TRUE;
   }
 
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,8,1,1,NULL,&da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(da,&x); VecDuplicate(x,&f);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(da,&J);CHKERRQ(ierr);
+  PetscCall(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,8,1,1,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMCreateGlobalVector(da,&x); VecDuplicate(x,&f));
+  PetscCall(DMCreateMatrix(da,&J));
 
-  ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
-  ierr = SNESSetFunction(snes,f,ComputeFunction,da);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes,J,J,ComputeJacobian,da);CHKERRQ(ierr);
-  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-  ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
+  PetscCall(SNESCreate(PETSC_COMM_WORLD,&snes));
+  PetscCall(SNESSetFunction(snes,f,ComputeFunction,da));
+  PetscCall(SNESSetJacobian(snes,J,J,ComputeJacobian,da));
+  PetscCall(SNESSetFromOptions(snes));
+  PetscCall(SNESSolve(snes,NULL,x));
 
-  ierr = MatDestroy(&J);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&f);CHKERRQ(ierr);
-  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  PetscCall(MatDestroy(&J));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&f));
+  PetscCall(SNESDestroy(&snes));
+  PetscCall(DMDestroy(&da));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 struct ApplyStencil
@@ -80,30 +79,29 @@ PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
   PetscScalar       *xx,*ff,hx;
   DM                da = (DM) ctx;
   Vec               xlocal;
-  PetscErrorCode    ierr;
   PetscMPIInt       rank,size;
   MPI_Comm          comm;
   PetscScalar const *xarray;
   PetscScalar       *farray;
 
-  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
+  PetscCall(DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
   hx   = 1.0/(PetscReal)(Mx-1);
-  ierr = DMGetLocalVector(da,&xlocal);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
+  PetscCall(DMGetLocalVector(da,&xlocal));
+  PetscCall(DMGlobalToLocalBegin(da,x,INSERT_VALUES,xlocal));
+  PetscCall(DMGlobalToLocalEnd(da,x,INSERT_VALUES,xlocal));
 
   if (useCUDA) {
-    ierr = VecCUDAGetArrayRead(xlocal,&xarray);CHKERRQ(ierr);
-    ierr = VecCUDAGetArrayWrite(f,&farray);CHKERRQ(ierr);
-    ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
-    ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
-    ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+    PetscCall(VecCUDAGetArrayRead(xlocal,&xarray));
+    PetscCall(VecCUDAGetArrayWrite(f,&farray));
+    PetscCall(PetscObjectGetComm((PetscObject)da,&comm));
+    PetscCallMPI(MPI_Comm_size(comm,&size));
+    PetscCallMPI(MPI_Comm_rank(comm,&rank));
     if (rank) xstartshift = 1;
     else xstartshift = 0;
     if (rank != size-1) xendshift = 1;
     else xendshift = 0;
-    ierr = VecGetOwnershipRange(f,&fstart,NULL);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(x,&lsize);CHKERRQ(ierr);
+    PetscCall(VecGetOwnershipRange(f,&fstart,NULL));
+    PetscCall(VecGetLocalSize(x,&lsize));
     try {
       thrust::for_each(
         thrust::make_zip_iterator(
@@ -127,23 +125,23 @@ PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
         ApplyStencil());
     }
     catch (char *all) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD, "Thrust is not working\n");CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Thrust is not working\n"));
     }
-    ierr = VecCUDARestoreArrayRead(xlocal,&xarray);CHKERRQ(ierr);
-    ierr = VecCUDARestoreArrayWrite(f,&farray);CHKERRQ(ierr);
+    PetscCall(VecCUDARestoreArrayRead(xlocal,&xarray));
+    PetscCall(VecCUDARestoreArrayWrite(f,&farray));
   } else {
-    ierr = DMDAVecGetArray(da,xlocal,&xx);CHKERRQ(ierr);
-    ierr = DMDAVecGetArray(da,f,&ff);CHKERRQ(ierr);
-    ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
+    PetscCall(DMDAVecGetArray(da,xlocal,&xx));
+    PetscCall(DMDAVecGetArray(da,f,&ff));
+    PetscCall(DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL));
 
     for (i=xs; i<xs+xm; i++) {
       if (i == 0 || i == Mx-1) ff[i] = xx[i]/hx;
       else ff[i] =  (2.0*xx[i] - xx[i-1] - xx[i+1])/hx - hx*PetscExpScalar(xx[i]);
     }
-    ierr = DMDAVecRestoreArray(da,xlocal,&xx);CHKERRQ(ierr);
-    ierr = DMDAVecRestoreArray(da,f,&ff);CHKERRQ(ierr);
+    PetscCall(DMDAVecRestoreArray(da,xlocal,&xx));
+    PetscCall(DMDAVecRestoreArray(da,f,&ff));
   }
-  ierr = DMRestoreLocalVector(da,&xlocal);CHKERRQ(ierr);
+  PetscCall(DMRestoreLocalVector(da,&xlocal));
   return 0;
 
 }
@@ -153,29 +151,28 @@ PetscErrorCode ComputeJacobian(SNES snes,Vec x,Mat J,Mat B,void *ctx)
   PetscInt       i,Mx,xm,xs;
   PetscScalar    hx,*xx;
   Vec            xlocal;
-  PetscErrorCode ierr;
 
-  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
+  PetscCall(DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
   hx   = 1.0/(PetscReal)(Mx-1);
-  ierr = DMGetLocalVector(da,&xlocal);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,xlocal,&xx);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
+  PetscCall(DMGetLocalVector(da,&xlocal));
+  PetscCall(DMGlobalToLocalBegin(da,x,INSERT_VALUES,xlocal));
+  PetscCall(DMGlobalToLocalEnd(da,x,INSERT_VALUES,xlocal));
+  PetscCall(DMDAVecGetArray(da,xlocal,&xx));
+  PetscCall(DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL));
 
   for (i=xs; i<xs+xm; i++) {
     if (i == 0 || i == Mx-1) {
-      ierr = MatSetValue(J,i,i,1.0/hx,INSERT_VALUES);CHKERRQ(ierr);
+      PetscCall(MatSetValue(J,i,i,1.0/hx,INSERT_VALUES));
     } else {
-      ierr = MatSetValue(J,i,i-1,-1.0/hx,INSERT_VALUES);CHKERRQ(ierr);
-      ierr = MatSetValue(J,i,i,2.0/hx - hx*PetscExpScalar(xx[i]),INSERT_VALUES);CHKERRQ(ierr);
-      ierr = MatSetValue(J,i,i+1,-1.0/hx,INSERT_VALUES);CHKERRQ(ierr);
+      PetscCall(MatSetValue(J,i,i-1,-1.0/hx,INSERT_VALUES));
+      PetscCall(MatSetValue(J,i,i,2.0/hx - hx*PetscExpScalar(xx[i]),INSERT_VALUES));
+      PetscCall(MatSetValue(J,i,i+1,-1.0/hx,INSERT_VALUES));
     }
   }
-  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(da,xlocal,&xx);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(da,&xlocal);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY));
+  PetscCall(DMDAVecRestoreArray(da,xlocal,&xx));
+  PetscCall(DMRestoreLocalVector(da,&xlocal));
   return 0;
 }
 

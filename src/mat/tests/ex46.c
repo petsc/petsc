@@ -10,45 +10,44 @@ int main(int argc,char **args)
   IS                     is;
   ISLocalToGlobalMapping rmap,cmap;
   PetscInt               bs[4],l2gbs[4],rbs,cbs,l2grbs,l2gcbs,i;
-  PetscErrorCode         ierr;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,12,12,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_WORLD,12,0,1,&is);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingCreateIS(is,&rmap);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingSetBlockSize(rmap,2);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingCreateIS(is,&cmap);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingSetBlockSize(cmap,2);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A,12,12,PETSC_DECIDE,PETSC_DECIDE));
+  PetscCall(MatSetType(A,MATAIJ));
+  PetscCall(ISCreateStride(PETSC_COMM_WORLD,12,0,1,&is));
+  PetscCall(ISLocalToGlobalMappingCreateIS(is,&rmap));
+  PetscCall(ISLocalToGlobalMappingSetBlockSize(rmap,2));
+  PetscCall(ISLocalToGlobalMappingCreateIS(is,&cmap));
+  PetscCall(ISLocalToGlobalMappingSetBlockSize(cmap,2));
 
-  ierr = MatSetLocalToGlobalMapping(A,rmap,cmap);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&rmap);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&cmap);CHKERRQ(ierr);
-  ierr = ISDestroy(&is);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
+  PetscCall(MatSetLocalToGlobalMapping(A,rmap,cmap));
+  PetscCall(ISLocalToGlobalMappingDestroy(&rmap));
+  PetscCall(ISLocalToGlobalMappingDestroy(&cmap));
+  PetscCall(ISDestroy(&is));
+  PetscCall(MatSetUp(A));
 
-  ierr = MatCreateVecs(A,&x[1],&x[0]);CHKERRQ(ierr);
-  ierr = MatSetBlockSizes(A,6,3);CHKERRQ(ierr);
-  ierr = MatCreateVecs(A,&x[3],&x[2]);CHKERRQ(ierr);
+  PetscCall(MatCreateVecs(A,&x[1],&x[0]));
+  PetscCall(MatSetBlockSizes(A,6,3));
+  PetscCall(MatCreateVecs(A,&x[3],&x[2]));
   for (i=0;i<4;i++) {
     ISLocalToGlobalMapping l2g;
 
-    ierr = VecGetBlockSize(x[i],&bs[i]);CHKERRQ(ierr);
-    ierr = VecGetLocalToGlobalMapping(x[i],&l2g);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingGetBlockSize(l2g,&l2gbs[i]);CHKERRQ(ierr);
-    ierr = VecDestroy(&x[i]);CHKERRQ(ierr);
+    PetscCall(VecGetBlockSize(x[i],&bs[i]));
+    PetscCall(VecGetLocalToGlobalMapping(x[i],&l2g));
+    PetscCall(ISLocalToGlobalMappingGetBlockSize(l2g,&l2gbs[i]));
+    PetscCall(VecDestroy(&x[i]));
   }
-  ierr = MatGetBlockSizes(A,&rbs,&cbs);CHKERRQ(ierr);
-  ierr = MatGetLocalToGlobalMapping(A,&rmap,&cmap);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetBlockSize(rmap,&l2grbs);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetBlockSize(cmap,&l2gcbs);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Mat Block sizes: %" PetscInt_FMT " %" PetscInt_FMT " (l2g %" PetscInt_FMT " %" PetscInt_FMT ")\n",rbs,cbs,l2grbs,l2gcbs);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Vec Block sizes: %" PetscInt_FMT " %" PetscInt_FMT " (l2g %" PetscInt_FMT " %" PetscInt_FMT ")\n",bs[0],bs[1],l2gbs[0],l2gbs[1]);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Vec Block sizes: %" PetscInt_FMT " %" PetscInt_FMT " (l2g %" PetscInt_FMT " %" PetscInt_FMT ")\n",bs[2],bs[3],l2gbs[2],l2gbs[3]);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(MatGetBlockSizes(A,&rbs,&cbs));
+  PetscCall(MatGetLocalToGlobalMapping(A,&rmap,&cmap));
+  PetscCall(ISLocalToGlobalMappingGetBlockSize(rmap,&l2grbs));
+  PetscCall(ISLocalToGlobalMappingGetBlockSize(cmap,&l2gcbs));
+  PetscCall(MatDestroy(&A));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Mat Block sizes: %" PetscInt_FMT " %" PetscInt_FMT " (l2g %" PetscInt_FMT " %" PetscInt_FMT ")\n",rbs,cbs,l2grbs,l2gcbs));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Vec Block sizes: %" PetscInt_FMT " %" PetscInt_FMT " (l2g %" PetscInt_FMT " %" PetscInt_FMT ")\n",bs[0],bs[1],l2gbs[0],l2gbs[1]));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Vec Block sizes: %" PetscInt_FMT " %" PetscInt_FMT " (l2g %" PetscInt_FMT " %" PetscInt_FMT ")\n",bs[2],bs[3],l2gbs[2],l2gbs[3]));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

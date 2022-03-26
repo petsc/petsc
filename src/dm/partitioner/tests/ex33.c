@@ -4,7 +4,6 @@ static char help[] = "Tests PetscPartitioner.\n\n";
 
 int main(int argc, char **argv)
 {
-  PetscErrorCode   ierr;
   PetscPartitioner p;
   PetscSection     partSection, vertexSection = NULL, targetSection = NULL;
   IS               partition,is;
@@ -17,119 +16,119 @@ int main(int argc, char **argv)
   PetscBool        vwgts = PETSC_FALSE;
   PetscBool        pwgts = PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   nparts = size;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-nparts",&nparts,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-vwgts",&vwgts,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-pwgts",&pwgts,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-nparts",&nparts,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-vwgts",&vwgts,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-pwgts",&pwgts,NULL));
 
   /* create PetscPartitioner */
-  ierr = PetscPartitionerCreate(PETSC_COMM_WORLD,&p);CHKERRQ(ierr);
-  ierr = PetscPartitionerSetType(p,PETSCPARTITIONERSIMPLE);CHKERRQ(ierr);
-  ierr = PetscPartitionerSetFromOptions(p);CHKERRQ(ierr);
+  PetscCall(PetscPartitionerCreate(PETSC_COMM_WORLD,&p));
+  PetscCall(PetscPartitionerSetType(p,PETSCPARTITIONERSIMPLE));
+  PetscCall(PetscPartitionerSetFromOptions(p));
 
   /* create partition section */
-  ierr = PetscSectionCreate(PETSC_COMM_WORLD,&partSection);CHKERRQ(ierr);
+  PetscCall(PetscSectionCreate(PETSC_COMM_WORLD,&partSection));
 
   if (vwgts) { /* create vertex weights section */
-    ierr = PetscSectionCreate(PETSC_COMM_WORLD,&vertexSection);CHKERRQ(ierr);
-    ierr = PetscSectionSetChart(vertexSection,0,nv);CHKERRQ(ierr);
-    for (i = 0; i< nv; i++) {ierr = PetscSectionSetDof(vertexSection,i,1);CHKERRQ(ierr);}
-    ierr = PetscSectionSetUp(vertexSection);CHKERRQ(ierr);
+    PetscCall(PetscSectionCreate(PETSC_COMM_WORLD,&vertexSection));
+    PetscCall(PetscSectionSetChart(vertexSection,0,nv));
+    for (i = 0; i< nv; i++) PetscCall(PetscSectionSetDof(vertexSection,i,1));
+    PetscCall(PetscSectionSetUp(vertexSection));
   }
 
   if (pwgts) { /* create partition weights section */
-    ierr = PetscSectionCreate(PETSC_COMM_WORLD,&targetSection);CHKERRQ(ierr);
-    ierr = PetscSectionSetChart(targetSection,0,nparts);CHKERRQ(ierr);
-    for (i = 0; i< nparts; i++) {ierr = PetscSectionSetDof(targetSection,i,1);CHKERRQ(ierr);}
-    ierr = PetscSectionSetUp(targetSection);CHKERRQ(ierr);
+    PetscCall(PetscSectionCreate(PETSC_COMM_WORLD,&targetSection));
+    PetscCall(PetscSectionSetChart(targetSection,0,nparts));
+    for (i = 0; i< nparts; i++) PetscCall(PetscSectionSetDof(targetSection,i,1));
+    PetscCall(PetscSectionSetUp(targetSection));
   }
 
 #if defined(PETSC_USE_LOG)
   { /* Test logging */
     PetscLogEvent event;
 
-    ierr = PetscLogEventRegister("MyPartitionerEvent",PETSCPARTITIONER_CLASSID,&event);CHKERRQ(ierr);
+    PetscCall(PetscLogEventRegister("MyPartitionerEvent",PETSCPARTITIONER_CLASSID,&event));
     { /* PetscLogEventExcludeClass is broken, new events are not deactivated */
       char      logList[256];
       PetscBool opt,pkg;
 
-      ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
+      PetscCall(PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt));
       if (opt) {
-        ierr = PetscStrInList("partitioner",logList,',',&pkg);CHKERRQ(ierr);
-        if (pkg) {ierr = PetscLogEventExcludeClass(PETSCPARTITIONER_CLASSID);CHKERRQ(ierr);}
+        PetscCall(PetscStrInList("partitioner",logList,',',&pkg));
+        if (pkg) PetscCall(PetscLogEventExcludeClass(PETSCPARTITIONER_CLASSID));
       }
     }
-    ierr = PetscLogEventBegin(event,p,NULL,NULL,NULL);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(event,p,NULL,NULL,NULL);CHKERRQ(ierr);
+    PetscCall(PetscLogEventBegin(event,p,NULL,NULL,NULL));
+    PetscCall(PetscLogEventEnd(event,p,NULL,NULL,NULL));
   }
 #endif
 
   /* test setup and reset */
-  ierr = PetscPartitionerSetUp(p);CHKERRQ(ierr);
-  ierr = PetscPartitionerReset(p);CHKERRQ(ierr);
+  PetscCall(PetscPartitionerSetUp(p));
+  PetscCall(PetscPartitionerReset(p));
 
   /* test partitioning an empty graph */
-  ierr = PetscPartitionerPartition(p,nparts,0,NULL,NULL,vertexSection,targetSection,partSection,&partition);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)partSection,"NULL SECTION");CHKERRQ(ierr);
-  ierr = PetscSectionView(partSection,NULL);CHKERRQ(ierr);
-  ierr = ISOnComm(partition,PETSC_COMM_WORLD,PETSC_USE_POINTER,&is);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)is,"NULL PARTITION");CHKERRQ(ierr);
-  ierr = ISView(is,NULL);CHKERRQ(ierr);
-  ierr = ISDestroy(&is);CHKERRQ(ierr);
-  ierr = ISDestroy(&partition);CHKERRQ(ierr);
+  PetscCall(PetscPartitionerPartition(p,nparts,0,NULL,NULL,vertexSection,targetSection,partSection,&partition));
+  PetscCall(PetscObjectSetName((PetscObject)partSection,"NULL SECTION"));
+  PetscCall(PetscSectionView(partSection,NULL));
+  PetscCall(ISOnComm(partition,PETSC_COMM_WORLD,PETSC_USE_POINTER,&is));
+  PetscCall(PetscObjectSetName((PetscObject)is,"NULL PARTITION"));
+  PetscCall(ISView(is,NULL));
+  PetscCall(ISDestroy(&is));
+  PetscCall(ISDestroy(&partition));
 
   /* test view from options */
-  ierr = PetscPartitionerViewFromOptions(p,NULL,"-part_view");CHKERRQ(ierr);
+  PetscCall(PetscPartitionerViewFromOptions(p,NULL,"-part_view"));
 
   /* test partitioning a graph on one process only (not main) */
   if (rank == size - 1) {
-    ierr = PetscPartitionerPartition(p,nparts,nv,vv,vadj,vertexSection,targetSection,partSection,&partition);CHKERRQ(ierr);
+    PetscCall(PetscPartitionerPartition(p,nparts,nv,vv,vadj,vertexSection,targetSection,partSection,&partition));
   } else {
-    ierr = PetscPartitionerPartition(p,nparts,0,NULL,NULL,vertexSection,targetSection,partSection,&partition);CHKERRQ(ierr);
+    PetscCall(PetscPartitionerPartition(p,nparts,0,NULL,NULL,vertexSection,targetSection,partSection,&partition));
   }
-  ierr = PetscObjectSetName((PetscObject)partSection,"SEQ SECTION");CHKERRQ(ierr);
-  ierr = PetscSectionView(partSection,NULL);CHKERRQ(ierr);
-  ierr = ISOnComm(partition,PETSC_COMM_WORLD,PETSC_USE_POINTER,&is);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)is,"SEQ PARTITION");CHKERRQ(ierr);
-  ierr = ISView(is,NULL);CHKERRQ(ierr);
-  ierr = ISDestroy(&is);CHKERRQ(ierr);
-  ierr = ISDestroy(&partition);CHKERRQ(ierr);
+  PetscCall(PetscObjectSetName((PetscObject)partSection,"SEQ SECTION"));
+  PetscCall(PetscSectionView(partSection,NULL));
+  PetscCall(ISOnComm(partition,PETSC_COMM_WORLD,PETSC_USE_POINTER,&is));
+  PetscCall(PetscObjectSetName((PetscObject)is,"SEQ PARTITION"));
+  PetscCall(ISView(is,NULL));
+  PetscCall(ISDestroy(&is));
+  PetscCall(ISDestroy(&partition));
 
-  ierr = PetscObjectTypeCompareAny((PetscObject)p,&sequential,PETSCPARTITIONERCHACO,NULL);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)p,&sequential,PETSCPARTITIONERCHACO,NULL));
   if (sequential) goto finally;
 
   /* test partitioning a graph on a subset of the processess only */
   if (rank%2) {
-    ierr = PetscPartitionerPartition(p,nparts,0,NULL,NULL,NULL,targetSection,partSection,&partition);CHKERRQ(ierr);
+    PetscCall(PetscPartitionerPartition(p,nparts,0,NULL,NULL,NULL,targetSection,partSection,&partition));
   } else {
     PetscInt i,totv = nv*((size+1)/2),*pvadj;
 
-    ierr = PetscMalloc1(2*nv,&pvadj);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(2*nv,&pvadj));
     for (i = 0; i < nv; i++) {
       pvadj[2*i]   = (nv*(rank/2) + totv + i - 1)%totv;
       pvadj[2*i+1] = (nv*(rank/2) + totv + i + 1)%totv;
     }
-    ierr = PetscPartitionerPartition(p,nparts,nv,vv,pvadj,NULL,targetSection,partSection,&partition);CHKERRQ(ierr);
-    ierr = PetscFree(pvadj);CHKERRQ(ierr);
+    PetscCall(PetscPartitionerPartition(p,nparts,nv,vv,pvadj,NULL,targetSection,partSection,&partition));
+    PetscCall(PetscFree(pvadj));
   }
-  ierr = PetscObjectSetName((PetscObject)partSection,"PARVOID SECTION");CHKERRQ(ierr);
-  ierr = PetscSectionView(partSection,NULL);CHKERRQ(ierr);
-  ierr = ISOnComm(partition,PETSC_COMM_WORLD,PETSC_USE_POINTER,&is);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)is,"PARVOID PARTITION");CHKERRQ(ierr);
-  ierr = ISView(is,NULL);CHKERRQ(ierr);
-  ierr = ISDestroy(&is);CHKERRQ(ierr);
-  ierr = ISDestroy(&partition);CHKERRQ(ierr);
+  PetscCall(PetscObjectSetName((PetscObject)partSection,"PARVOID SECTION"));
+  PetscCall(PetscSectionView(partSection,NULL));
+  PetscCall(ISOnComm(partition,PETSC_COMM_WORLD,PETSC_USE_POINTER,&is));
+  PetscCall(PetscObjectSetName((PetscObject)is,"PARVOID PARTITION"));
+  PetscCall(ISView(is,NULL));
+  PetscCall(ISDestroy(&is));
+  PetscCall(ISDestroy(&partition));
 
 finally:
-  ierr = PetscSectionDestroy(&partSection);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&vertexSection);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&targetSection);CHKERRQ(ierr);
-  ierr = PetscPartitionerDestroy(&p);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscSectionDestroy(&partSection));
+  PetscCall(PetscSectionDestroy(&vertexSection));
+  PetscCall(PetscSectionDestroy(&targetSection));
+  PetscCall(PetscPartitionerDestroy(&p));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -20,10 +20,7 @@
 @*/
 PetscErrorCode  KSPGMRESSetPreAllocateVectors(KSP ksp)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscTryMethod(ksp,"KSPGMRESSetPreAllocateVectors_C",(KSP),(ksp));CHKERRQ(ierr);
+  PetscCall(PetscTryMethod(ksp,"KSPGMRESSetPreAllocateVectors_C",(KSP),(ksp)));
   PetscFunctionReturn(0);
 }
-

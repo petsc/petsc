@@ -8,18 +8,17 @@ static PetscErrorCode testIdentity(DM dm, PetscBool dmIsSimplicial, PetscInt cel
 {
   PetscInt       i, j, dimC, dimR;
   PetscReal      *preimage, *mapped, *inverted;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetDimension(dm,&dimR);CHKERRQ(ierr);
-  ierr = DMGetCoordinateDim(dm,&dimC);CHKERRQ(ierr);
+  PetscCall(DMGetDimension(dm,&dimR));
+  PetscCall(DMGetCoordinateDim(dm,&dimC));
 
-  ierr = DMGetWorkArray(dm,dimR * numPoints,MPIU_REAL,&preimage);CHKERRQ(ierr);
-  ierr = DMGetWorkArray(dm,dimC * numPoints,MPIU_REAL,&mapped);CHKERRQ(ierr);
-  ierr = DMGetWorkArray(dm,dimR * numPoints,MPIU_REAL,&inverted);CHKERRQ(ierr);
+  PetscCall(DMGetWorkArray(dm,dimR * numPoints,MPIU_REAL,&preimage));
+  PetscCall(DMGetWorkArray(dm,dimC * numPoints,MPIU_REAL,&mapped));
+  PetscCall(DMGetWorkArray(dm,dimR * numPoints,MPIU_REAL,&inverted));
 
   for (i = 0; i < dimR * numPoints; i++) {
-    ierr = PetscRandomGetValueReal(randCtx, &preimage[i]);CHKERRQ(ierr);
+    PetscCall(PetscRandomGetValueReal(randCtx, &preimage[i]));
   }
   if (dmIsSimplicial && dimR > 1) {
     for (i = 0; i < numPoints; i++) {
@@ -32,8 +31,8 @@ static PetscErrorCode testIdentity(DM dm, PetscBool dmIsSimplicial, PetscInt cel
     }
   }
 
-  ierr = DMPlexReferenceToCoordinates(dm,cell,numPoints,preimage,mapped);CHKERRQ(ierr);
-  ierr = DMPlexCoordinatesToReference(dm,cell,numPoints,mapped,inverted);CHKERRQ(ierr);
+  PetscCall(DMPlexReferenceToCoordinates(dm,cell,numPoints,preimage,mapped));
+  PetscCall(DMPlexCoordinatesToReference(dm,cell,numPoints,mapped,inverted));
 
   for (i = 0; i < numPoints; i++) {
     PetscReal max = 0.;
@@ -42,70 +41,70 @@ static PetscErrorCode testIdentity(DM dm, PetscBool dmIsSimplicial, PetscInt cel
       max = PetscMax(max,PetscAbsReal(preimage[i * dimR + j] - inverted[i * dimR + j]));
     }
     if (max > tol) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Bad inversion for cell %D with error %g (tol %g): (",cell,(double)max,(double)tol);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,"Bad inversion for cell %D with error %g (tol %g): (",cell,(double)max,(double)tol));
       for (j = 0; j < dimR; j++) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"%+f",(double) preimage[i * dimR + j]);CHKERRQ(ierr);
+        PetscCall(PetscPrintf(PETSC_COMM_SELF,"%+f",(double) preimage[i * dimR + j]));
         if (j < dimR - 1) {
-          ierr = PetscPrintf(PETSC_COMM_SELF,",");CHKERRQ(ierr);
+          PetscCall(PetscPrintf(PETSC_COMM_SELF,","));
         }
       }
-      ierr = PetscPrintf(PETSC_COMM_SELF,") --> (");CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,") --> ("));
       for (j = 0; j < dimC; j++) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"%+f",(double) mapped[i * dimC + j]);CHKERRQ(ierr);
+        PetscCall(PetscPrintf(PETSC_COMM_SELF,"%+f",(double) mapped[i * dimC + j]));
         if (j < dimC - 1) {
-          ierr = PetscPrintf(PETSC_COMM_SELF,",");CHKERRQ(ierr);
+          PetscCall(PetscPrintf(PETSC_COMM_SELF,","));
         }
       }
-      ierr = PetscPrintf(PETSC_COMM_SELF,") --> (");CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,") --> ("));
       for (j = 0; j < dimR; j++) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"%+f",(double) inverted[i * dimR + j]);CHKERRQ(ierr);
+        PetscCall(PetscPrintf(PETSC_COMM_SELF,"%+f",(double) inverted[i * dimR + j]));
         if (j < dimR - 1) {
-          ierr = PetscPrintf(PETSC_COMM_SELF,",");CHKERRQ(ierr);
+          PetscCall(PetscPrintf(PETSC_COMM_SELF,","));
         }
       }
-      ierr = PetscPrintf(PETSC_COMM_SELF,")\n");CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,")\n"));
     } else {
       char   strBuf[BUFSIZ] = {'\0'};
       size_t offset = 0, count;
 
-      ierr = PetscSNPrintfCount(strBuf + offset,BUFSIZ-offset,"Good inversion for cell %D: (",&count,cell);CHKERRQ(ierr);
+      PetscCall(PetscSNPrintfCount(strBuf + offset,BUFSIZ-offset,"Good inversion for cell %D: (",&count,cell));
       offset += count;
       for (j = 0; j < dimR; j++) {
-        ierr = PetscSNPrintfCount(strBuf + offset,BUFSIZ-offset,"%+f",&count,(double) preimage[i * dimR + j]);CHKERRQ(ierr);
+        PetscCall(PetscSNPrintfCount(strBuf + offset,BUFSIZ-offset,"%+f",&count,(double) preimage[i * dimR + j]));
         offset += count;
         if (j < dimR - 1) {
-          ierr = PetscSNPrintfCount(strBuf + offset,BUFSIZ-offset,",",&count);CHKERRQ(ierr);
+          PetscCall(PetscSNPrintfCount(strBuf + offset,BUFSIZ-offset,",",&count));
           offset += count;
         }
       }
-      ierr = PetscSNPrintfCount(strBuf + offset,BUFSIZ-offset,") --> (",&count);CHKERRQ(ierr);
+      PetscCall(PetscSNPrintfCount(strBuf + offset,BUFSIZ-offset,") --> (",&count));
       offset += count;
       for (j = 0; j < dimC; j++) {
-        ierr = PetscSNPrintfCount(strBuf + offset,BUFSIZ-offset,"%+f",&count,(double) mapped[i * dimC + j]);CHKERRQ(ierr);
+        PetscCall(PetscSNPrintfCount(strBuf + offset,BUFSIZ-offset,"%+f",&count,(double) mapped[i * dimC + j]));
         offset += count;
         if (j < dimC - 1) {
-          ierr = PetscSNPrintfCount(strBuf + offset,BUFSIZ-offset,",",&count);CHKERRQ(ierr);
+          PetscCall(PetscSNPrintfCount(strBuf + offset,BUFSIZ-offset,",",&count));
           offset += count;
         }
       }
-      ierr = PetscSNPrintfCount(strBuf + offset,BUFSIZ-offset,") --> (",&count);CHKERRQ(ierr);
+      PetscCall(PetscSNPrintfCount(strBuf + offset,BUFSIZ-offset,") --> (",&count));
       offset += count;
       for (j = 0; j < dimR; j++) {
-        ierr = PetscSNPrintfCount(strBuf + offset,BUFSIZ-offset,"%+f",&count,(double) inverted[i * dimR + j]);CHKERRQ(ierr);
+        PetscCall(PetscSNPrintfCount(strBuf + offset,BUFSIZ-offset,"%+f",&count,(double) inverted[i * dimR + j]));
         offset += count;
         if (j < dimR - 1) {
-          ierr = PetscSNPrintfCount(strBuf + offset,BUFSIZ-offset,",",&count);CHKERRQ(ierr);
+          PetscCall(PetscSNPrintfCount(strBuf + offset,BUFSIZ-offset,",",&count));
           offset += count;
         }
       }
-      ierr = PetscSNPrintfCount(strBuf + offset,BUFSIZ-offset,")\n",&count);CHKERRQ(ierr);
-      ierr = PetscInfo(dm,"%s",strBuf);CHKERRQ(ierr);
+      PetscCall(PetscSNPrintfCount(strBuf + offset,BUFSIZ-offset,")\n",&count));
+      PetscCall(PetscInfo(dm,"%s",strBuf));
     }
   }
 
-  ierr = DMRestoreWorkArray(dm,dimR * numPoints,MPIU_REAL,&inverted);CHKERRQ(ierr);
-  ierr = DMRestoreWorkArray(dm,dimC * numPoints,MPIU_REAL,&mapped);CHKERRQ(ierr);
-  ierr = DMRestoreWorkArray(dm,dimR * numPoints,MPIU_REAL,&preimage);CHKERRQ(ierr);
+  PetscCall(DMRestoreWorkArray(dm,dimR * numPoints,MPIU_REAL,&inverted));
+  PetscCall(DMRestoreWorkArray(dm,dimC * numPoints,MPIU_REAL,&mapped));
+  PetscCall(DMRestoreWorkArray(dm,dimR * numPoints,MPIU_REAL,&preimage));
   PetscFunctionReturn(0);
 }
 
@@ -124,14 +123,14 @@ int main(int argc, char **argv)
   PetscReal      perturb = 0.1, tol = 10. * PETSC_SMALL;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
-  ierr = PetscRandomCreate(PETSC_COMM_SELF,&randCtx);CHKERRQ(ierr);
-  ierr = PetscRandomSetInterval(randCtx,-1.,1.);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(randCtx);CHKERRQ(ierr);
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex21",NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-vertex_perturbation","scale of random vertex distortion",NULL,perturb,&perturb,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-num_test_points","number of points to test",NULL,numTests,&numTests,NULL,0);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscRandomCreate(PETSC_COMM_SELF,&randCtx));
+  PetscCall(PetscRandomSetInterval(randCtx,-1.,1.));
+  PetscCall(PetscRandomSetFromOptions(randCtx));
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex21",NULL);PetscCall(ierr);
+  PetscCall(PetscOptionsReal("-vertex_perturbation","scale of random vertex distortion",NULL,perturb,&perturb,NULL));
+  PetscCall(PetscOptionsBoundedInt("-num_test_points","number of points to test",NULL,numTests,&numTests,NULL,0));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
   for (dim = 1; dim <= 3; dim++) {
     for (dimC = dim; dimC <= PetscMin(3,dim + 1); dimC++) {
       for (isSimplex = 0; isSimplex < 2; isSimplex++) {
@@ -142,7 +141,7 @@ int main(int argc, char **argv)
           PetscReal    noise;
           PetscInt     i, n, order = 1;
 
-          ierr = DMPlexCreateReferenceCell(PETSC_COMM_SELF, DMPolytopeTypeSimpleShape(dim, isSimplex ? PETSC_TRUE : PETSC_FALSE), &dm);CHKERRQ(ierr);
+          PetscCall(DMPlexCreateReferenceCell(PETSC_COMM_SELF, DMPolytopeTypeSimpleShape(dim, isSimplex ? PETSC_TRUE : PETSC_FALSE), &dm));
           if (isFE) {
             DM             dmCoord;
             PetscSpace     sp;
@@ -151,26 +150,26 @@ int main(int argc, char **argv)
             PetscErrorCode (*funcs[1])(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *) = {identityEmbedding};
             void           *ctxs[1] = {NULL};
 
-            ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm),dim,dim,isSimplex ? PETSC_TRUE : PETSC_FALSE,isSimplex ? NULL : "tensor_" ,PETSC_DEFAULT,&fe);CHKERRQ(ierr);
-            ierr = PetscFEGetBasisSpace(fe,&sp);CHKERRQ(ierr);
-            ierr = PetscSpaceGetDegree(sp,&order,NULL);CHKERRQ(ierr);
-            ierr = DMSetField(dm,0,NULL,(PetscObject)fe);CHKERRQ(ierr);
-            ierr = DMCreateDS(dm);CHKERRQ(ierr);
-            ierr = DMCreateLocalVector(dm,&localCoords);CHKERRQ(ierr);
-            ierr = DMProjectFunctionLocal(dm,0,funcs,ctxs,INSERT_VALUES,localCoords);CHKERRQ(ierr);
-            ierr = VecSetDM(localCoords,NULL);CHKERRQ(ierr); /* This is necessary to prevent a reference loop */
-            ierr = DMClone(dm,&dmCoord);CHKERRQ(ierr);
-            ierr = DMSetField(dmCoord,0,NULL,(PetscObject)fe);CHKERRQ(ierr);
-            ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
-            ierr = DMCreateDS(dmCoord);CHKERRQ(ierr);
-            ierr = DMSetCoordinateDM(dm,dmCoord);CHKERRQ(ierr);
-            ierr = DMDestroy(&dmCoord);CHKERRQ(ierr);
-            ierr = DMSetCoordinatesLocal(dm,localCoords);CHKERRQ(ierr);
-            ierr = VecDestroy(&localCoords);CHKERRQ(ierr);
+            PetscCall(PetscFECreateDefault(PetscObjectComm((PetscObject) dm),dim,dim,isSimplex ? PETSC_TRUE : PETSC_FALSE,isSimplex ? NULL : "tensor_" ,PETSC_DEFAULT,&fe));
+            PetscCall(PetscFEGetBasisSpace(fe,&sp));
+            PetscCall(PetscSpaceGetDegree(sp,&order,NULL));
+            PetscCall(DMSetField(dm,0,NULL,(PetscObject)fe));
+            PetscCall(DMCreateDS(dm));
+            PetscCall(DMCreateLocalVector(dm,&localCoords));
+            PetscCall(DMProjectFunctionLocal(dm,0,funcs,ctxs,INSERT_VALUES,localCoords));
+            PetscCall(VecSetDM(localCoords,NULL)); /* This is necessary to prevent a reference loop */
+            PetscCall(DMClone(dm,&dmCoord));
+            PetscCall(DMSetField(dmCoord,0,NULL,(PetscObject)fe));
+            PetscCall(PetscFEDestroy(&fe));
+            PetscCall(DMCreateDS(dmCoord));
+            PetscCall(DMSetCoordinateDM(dm,dmCoord));
+            PetscCall(DMDestroy(&dmCoord));
+            PetscCall(DMSetCoordinatesLocal(dm,localCoords));
+            PetscCall(VecDestroy(&localCoords));
           }
-          ierr = PetscInfo(dm,"Testing %s%D %DD mesh embedded in %DD\n",isSimplex ? "P" : "Q" , order, dim, dimC);CHKERRQ(ierr);
-          ierr = DMGetCoordinatesLocal(dm,&coords);CHKERRQ(ierr);
-          ierr = VecGetLocalSize(coords,&n);CHKERRQ(ierr);
+          PetscCall(PetscInfo(dm,"Testing %s%D %DD mesh embedded in %DD\n",isSimplex ? "P" : "Q" , order, dim, dimC));
+          PetscCall(DMGetCoordinatesLocal(dm,&coords));
+          PetscCall(VecGetLocalSize(coords,&n));
           if (dimC > dim) { /* reembed in higher dimension */
             PetscSection sec, newSec;
             PetscInt     pStart, pEnd, p, i, newN;
@@ -178,24 +177,24 @@ int main(int argc, char **argv)
             DM           coordDM;
             PetscScalar  *newCoordArray;
 
-            ierr = DMGetCoordinateSection(dm,&sec);CHKERRQ(ierr);
-            ierr = PetscSectionCreate(PetscObjectComm((PetscObject)sec),&newSec);CHKERRQ(ierr);
-            ierr = PetscSectionSetNumFields(newSec,1);CHKERRQ(ierr);
-            ierr = PetscSectionGetChart(sec,&pStart,&pEnd);CHKERRQ(ierr);
-            ierr = PetscSectionSetChart(newSec,pStart,pEnd);CHKERRQ(ierr);
+            PetscCall(DMGetCoordinateSection(dm,&sec));
+            PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)sec),&newSec));
+            PetscCall(PetscSectionSetNumFields(newSec,1));
+            PetscCall(PetscSectionGetChart(sec,&pStart,&pEnd));
+            PetscCall(PetscSectionSetChart(newSec,pStart,pEnd));
             for (p = pStart; p < pEnd; p++) {
               PetscInt nDof;
 
-              ierr = PetscSectionGetDof(sec,p,&nDof);CHKERRQ(ierr);
+              PetscCall(PetscSectionGetDof(sec,p,&nDof));
               PetscCheckFalse(nDof % dim,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Coordinate section point %D has %D dofs != 0 mod %D",p,nDof,dim);
-              ierr = PetscSectionSetDof(newSec,p,(nDof/dim)*dimC);CHKERRQ(ierr);
-              ierr = PetscSectionSetFieldDof(newSec,p,0,(nDof/dim)*dimC);CHKERRQ(ierr);
+              PetscCall(PetscSectionSetDof(newSec,p,(nDof/dim)*dimC));
+              PetscCall(PetscSectionSetFieldDof(newSec,p,0,(nDof/dim)*dimC));
             }
-            ierr = PetscSectionSetUp(newSec);CHKERRQ(ierr);
-            ierr = PetscSectionGetStorageSize(newSec,&newN);CHKERRQ(ierr);
-            ierr = VecCreateSeq(PETSC_COMM_SELF,newN,&newVec);CHKERRQ(ierr);
-            ierr = VecGetArray(newVec,&newCoordArray);CHKERRQ(ierr);
-            ierr = VecGetArray(coords,&coordArray);CHKERRQ(ierr);
+            PetscCall(PetscSectionSetUp(newSec));
+            PetscCall(PetscSectionGetStorageSize(newSec,&newN));
+            PetscCall(VecCreateSeq(PETSC_COMM_SELF,newN,&newVec));
+            PetscCall(VecGetArray(newVec,&newCoordArray));
+            PetscCall(VecGetArray(coords,&coordArray));
             for (i = 0; i < n / dim; i++) {
               PetscInt j;
 
@@ -206,42 +205,42 @@ int main(int argc, char **argv)
                 newCoordArray[i * dimC + j] = 0.;
               }
             }
-            ierr = VecRestoreArray(coords,&coordArray);CHKERRQ(ierr);
-            ierr = VecRestoreArray(newVec,&newCoordArray);CHKERRQ(ierr);
-            ierr = DMSetCoordinateDim(dm,dimC);CHKERRQ(ierr);
-            ierr = DMSetCoordinateSection(dm,dimC,newSec);CHKERRQ(ierr);
-            ierr = DMSetCoordinatesLocal(dm,newVec);CHKERRQ(ierr);
-            ierr = VecDestroy(&newVec);CHKERRQ(ierr);
-            ierr = PetscSectionDestroy(&newSec);CHKERRQ(ierr);
-            ierr = DMGetCoordinatesLocal(dm,&coords);CHKERRQ(ierr);
-            ierr = DMGetCoordinateDM(dm,&coordDM);CHKERRQ(ierr);
+            PetscCall(VecRestoreArray(coords,&coordArray));
+            PetscCall(VecRestoreArray(newVec,&newCoordArray));
+            PetscCall(DMSetCoordinateDim(dm,dimC));
+            PetscCall(DMSetCoordinateSection(dm,dimC,newSec));
+            PetscCall(DMSetCoordinatesLocal(dm,newVec));
+            PetscCall(VecDestroy(&newVec));
+            PetscCall(PetscSectionDestroy(&newSec));
+            PetscCall(DMGetCoordinatesLocal(dm,&coords));
+            PetscCall(DMGetCoordinateDM(dm,&coordDM));
             if (isFE) {
               PetscFE fe;
 
-              ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm),dim,dimC,isSimplex ? PETSC_TRUE : PETSC_FALSE,isSimplex ? NULL : "tensor_",PETSC_DEFAULT,&fe);CHKERRQ(ierr);
-              ierr = DMSetField(coordDM,0,NULL,(PetscObject)fe);CHKERRQ(ierr);
-              ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
-              ierr = DMCreateDS(coordDM);CHKERRQ(ierr);
+              PetscCall(PetscFECreateDefault(PetscObjectComm((PetscObject) dm),dim,dimC,isSimplex ? PETSC_TRUE : PETSC_FALSE,isSimplex ? NULL : "tensor_",PETSC_DEFAULT,&fe));
+              PetscCall(DMSetField(coordDM,0,NULL,(PetscObject)fe));
+              PetscCall(PetscFEDestroy(&fe));
+              PetscCall(DMCreateDS(coordDM));
             }
-            ierr = DMSetCoordinateDim(coordDM,dimC);CHKERRQ(ierr);
-            ierr = VecGetLocalSize(coords,&n);CHKERRQ(ierr);
+            PetscCall(DMSetCoordinateDim(coordDM,dimC));
+            PetscCall(VecGetLocalSize(coords,&n));
           }
-          ierr = VecGetArray(coords,&coordArray);CHKERRQ(ierr);
+          PetscCall(VecGetArray(coords,&coordArray));
           for (i = 0; i < n; i++) {
-            ierr = PetscRandomGetValueReal(randCtx,&noise);CHKERRQ(ierr);
+            PetscCall(PetscRandomGetValueReal(randCtx,&noise));
             coordArray[i] += noise * perturb;
           }
-          ierr = VecRestoreArray(coords,&coordArray);CHKERRQ(ierr);
-          ierr = DMSetCoordinatesLocal(dm, coords);CHKERRQ(ierr);
-          ierr = testIdentity(dm, isSimplex ? PETSC_TRUE : PETSC_FALSE, 0, randCtx, numTests, tol);CHKERRQ(ierr);
-          ierr = DMDestroy(&dm);CHKERRQ(ierr);
+          PetscCall(VecRestoreArray(coords,&coordArray));
+          PetscCall(DMSetCoordinatesLocal(dm, coords));
+          PetscCall(testIdentity(dm, isSimplex ? PETSC_TRUE : PETSC_FALSE, 0, randCtx, numTests, tol));
+          PetscCall(DMDestroy(&dm));
         }
       }
     }
   }
-  ierr = PetscRandomDestroy(&randCtx);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscRandomDestroy(&randCtx));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

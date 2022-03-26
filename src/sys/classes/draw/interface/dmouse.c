@@ -28,7 +28,6 @@
 PetscErrorCode  PetscDrawGetMouseButton(PetscDraw draw,PetscDrawButton *button,PetscReal *x_user,PetscReal *y_user,PetscReal *x_phys,PetscReal *y_phys)
 {
   PetscReal      bcast[4] = {0,0,0,0};
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
@@ -36,18 +35,17 @@ PetscErrorCode  PetscDrawGetMouseButton(PetscDraw draw,PetscDrawButton *button,P
   *button = PETSC_BUTTON_NONE;
   if (!draw->ops->getmousebutton) PetscFunctionReturn(0);
 
-  ierr = (*draw->ops->getmousebutton)(draw,button,x_user,y_user,x_phys,y_phys);CHKERRQ(ierr);
+  PetscCall((*draw->ops->getmousebutton)(draw,button,x_user,y_user,x_phys,y_phys));
 
-  ierr = MPI_Bcast((PetscEnum*)button,1,MPIU_ENUM,0,PetscObjectComm((PetscObject)draw));CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Bcast((PetscEnum*)button,1,MPIU_ENUM,0,PetscObjectComm((PetscObject)draw)));
   if (x_user) bcast[0] = *x_user;
   if (y_user) bcast[1] = *y_user;
   if (x_phys) bcast[2] = *x_phys;
   if (y_phys) bcast[3] = *y_phys;
-  ierr = MPI_Bcast(bcast,4,MPIU_REAL,0,PetscObjectComm((PetscObject)draw));CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Bcast(bcast,4,MPIU_REAL,0,PetscObjectComm((PetscObject)draw)));
   if (x_user) *x_user = bcast[0];
   if (y_user) *y_user = bcast[1];
   if (x_phys) *x_phys = bcast[2];
   if (y_phys) *y_phys = bcast[3];
   PetscFunctionReturn(0);
 }
-

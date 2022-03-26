@@ -318,7 +318,7 @@ M*/
 
   Level: advanced
 
-.seealso: PetscLikely(), PetscUnlikelyDebug(), CHKERRQ, PetscDefined(), PetscHasAttribute()
+.seealso: PetscLikely(), PetscUnlikelyDebug(), PetscCall(), PetscDefined(), PetscHasAttribute()
 M*/
 
 /*MC
@@ -674,9 +674,17 @@ M*/
 
   Level: advanced
 
-.seealso: PetscUnlikely(), PetscLikely(), CHKERRQ, SETERRQ
+.seealso: PetscUnlikely(), PetscLikely(), PetscCall(), SETERRQ
 M*/
 #define PetscUnlikelyDebug(cond) (PetscDefined(USE_DEBUG) && PetscUnlikely(cond))
+
+#if defined(PETSC_CLANG_STATIC_ANALYZER)
+// silence compiler warnings when using -pedantic, this is only used by the linter and it cares
+// not what ISO C allows
+#  define PetscMacroReturns_(retexpr,...) __extension__ ({ __VA_ARGS__; retexpr; })
+#else
+#  define PetscMacroReturns_(retexpr,...) retexpr; do { __VA_ARGS__; } while (0)
+#endif
 
 /*MC
   PetscExpandToNothing - Expands to absolutely nothing at all
@@ -704,6 +712,85 @@ M*/
 .seealso: PetscConcat(), PetscDefined(), PetscStringize(), PetscExpand()
 M*/
 #define PetscExpandToNothing(...)
+
+/*MC
+  PetscMacroReturns - Define a macro body that returns a value
+
+  Synopsis:
+  #include <petscmacros.h>
+  return_type PetscMacroReturns(return_type retexpr, ...)
+
+  Input Parameters:
++ retexpr     - The value or expression that the macro should return
+- __VA_ARGS__ - The body of the macro
+
+  Notes:
+  Due to limitations of the C-preprocessor retexpr cannot depend on symbols declared in the
+  body of the macro and should not depend on values produced as a result of the expression. The
+  user should not assume that the result of this macro is equivalent to a single logical source
+  line. It is not portable to use macros defined using this one in conditional or loop bodies
+  without enclosing them in curly braces\:
+
+.vb
+  #define FOO(arg1) PetscMacroReturns(0,arg1+=10) // returns 0
+
+  int err,x = 10;
+
+  if (...) err = FOO(x);      // ERROR, body of FOO() executed outside the if statement
+  if (...) { err = FOO(x); }  // OK
+
+  for (...) err = FOO(x);     // ERROR, body of FOO() executed outside the loop
+  for (...) { err = FOO(x); } // OK
+.ve
+
+  It is also not portable to use this macro directly inside function call, conditional, loop,
+  or switch statements\:
+
+.vb
+  extern void bar(int);
+
+  int ret = FOO(x);
+
+  bar(FOO(x)); // ERROR, may not compile
+  bar(ret);    // OK
+
+  if (FOO(x))  // ERROR, may not compile
+  if (ret)     // OK
+.ve
+
+  Example usage:
+.vb
+  #define MY_SIMPLE_RETURNING_MACRO(arg1) PetscMacroReturns(0,arg1+=10)
+
+  int x = 10;
+  int err = MY_SIMPLE_RETURNING_MACRO(x); // err = 0, x = 20
+
+  // multiline macros allowed, but must declare with line continuation as usual
+  #define MY_COMPLEX_RETURNING_MACRO(arg1) PetscMacroReturns(0, \
+    if (arg1 > 10) {                                            \
+      puts("big int!");                                         \
+    } else {                                                    \
+      return 7355608;                                           \
+    }                                                           \
+  )
+
+  // if retexpr contains commas, must enclose it with braces
+  #define MY_COMPLEX_RETEXPR_MACRO_1() PetscMacroReturns(x+=10,0,body...)
+  #define MY_COMPLEX_RETEXPR_MACRO_2() PetscMacroReturns((x+=10,0),body...)
+
+  int x = 10;
+  int y = MY_COMPLEX_RETEXPR_MACRO_1(); // ERROR, y = x = 20 not 0
+  int z = MY_COMPLEX_RETEXPR_MACRO_2(); // OK, y = 0, x = 20
+.ve
+
+  Level: intermediate
+
+.seealso: PetscExpand(), PetscConcat(), PetscStringize()
+M*/
+#define PetscMacroReturns(retexpr,...) PetscMacroReturns_(retexpr,__VA_ARGS__)
+
+#define PetscMacroReturnStandard(...) PetscMacroReturns(0,__VA_ARGS__)
+
 #endif /* !PETSC_SKIP_VARIADIC_MACROS */
 
 #endif /* PETSC_PREPROCESSOR_MACROS_H */

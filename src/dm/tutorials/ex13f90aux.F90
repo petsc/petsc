@@ -73,7 +73,7 @@ contains
     PetscReal, intent(inout), dimension(:,1-stw:,1-stw:,1-stw:) :: f
     PetscErrorCode                                                :: ierr
     !
-    call DMDAVecGetArrayF90(da,vec,array,ierr);CHKERRQ(ierr);
+    call DMDAVecGetArrayF90(da,vec,array,ierr);PetscCall(ierr);
     call transform_petsc_us(array,f,stw)
   end subroutine petsc_to_local
   subroutine transform_petsc_us(array,f,stw)
@@ -92,7 +92,7 @@ contains
     PetscReal,intent(inout),dimension(:,1-stw:,1-stw:,1-stw:)  :: f
     PetscErrorCode                                        :: ierr
     call transform_us_petsc(array,f,stw)
-    call DMDAVecRestoreArrayF90(da,vec,array,ierr);CHKERRQ(ierr);
+    call DMDAVecRestoreArrayF90(da,vec,array,ierr);PetscCall(ierr);
   end subroutine local_to_petsc
   subroutine transform_us_petsc(array,f,stw)
     !Note: this assumed shape-array is what does the "coordinate transformation"

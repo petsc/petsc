@@ -6,9 +6,8 @@ int main(int argc,char **argv)
 {
   PetscLogDouble x,y;
   int            i;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,0,0);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,0,0));
   /* To take care of paging effects */
   PetscTime(&y);
 
@@ -27,9 +26,9 @@ int main(int argc,char **argv)
     fprintf(stdout,"%-15s : %e sec\n","PetscTime",(y-x)/10.0);
   }
   PetscTime(&x);
-  ierr = PetscSleep(10);CHKERRQ(ierr);
+  PetscCall(PetscSleep(10));
   PetscTime(&y);
   fprintf(stdout,"%-15s : %e sec - Slept for 10 sec \n","PetscTime",(y-x));
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }

@@ -140,7 +140,6 @@ PetscErrorCode  PetscDLOpen(const char name[],PetscDLMode mode,PetscDLHandle *ha
 @*/
 PetscErrorCode  PetscDLClose(PetscDLHandle *handle)
 {
-
   PetscFunctionBegin;
   PetscValidPointer(handle,1);
 
@@ -276,7 +275,7 @@ PetscErrorCode  PetscDLSym(PetscDLHandle handle,const char symbol[],void **value
       dlhandle = dlopen(NULL, dlflags1|dlflags2);
 #if defined(PETSC_HAVE_DLERROR)
       { const char *e = (const char*) dlerror();
-        PetscCheckFalse(e,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Error opening main executable as a dynamic library:\n  Error message from dlopen(): '%s'", e);
+        PetscCheck(!e,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Error opening main executable as a dynamic library:\n  Error message from dlopen(): '%s'", e);
       }
 #endif
 #endif
@@ -298,10 +297,7 @@ PetscErrorCode  PetscDLSym(PetscDLHandle handle,const char symbol[],void **value
   *value = *((void**)&dlsymbol);
 
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
-  if (*value) {
-    PetscErrorCode ierr;
-    ierr = PetscFPTAdd(*value,symbol);CHKERRQ(ierr);
-  }
+  if (*value) PetscCall(PetscFPTAdd(*value,symbol));
 #endif
   return(0);
 }
@@ -331,19 +327,18 @@ PetscErrorCode  PetscDLSym(PetscDLHandle handle,const char symbol[],void **value
 PetscErrorCode PetscDLAddr(void (*func)(void), char **name)
 {
   PetscFunctionBegin;
-  PetscValidCharPointer(name,2);
+  PetscValidPointer(name,2);
   *name = NULL;
 #if defined(PETSC_HAVE_DLADDR)
   dlerror(); /* clear any previous error */
   {
-    Dl_info        info;
-    PetscErrorCode ierr;
+    Dl_info info;
 
-    ierr = dladdr(*(void **) &func, &info);PetscCheckFalse(!ierr,PETSC_COMM_SELF, PETSC_ERR_LIB, "Failed to lookup symbol: %s", dlerror());
+    PetscCheck(dladdr(*(void **) &func, &info),PETSC_COMM_SELF, PETSC_ERR_LIB, "Failed to lookup symbol: %s", dlerror());
 #ifdef PETSC_HAVE_CXX
-    ierr = PetscDemangleSymbol(info.dli_sname, name);CHKERRQ(ierr);
+    PetscCall(PetscDemangleSymbol(info.dli_sname, name));
 #else
-    ierr = PetscStrallocpy(info.dli_sname, name);CHKERRQ(ierr);
+    PetscCall(PetscStrallocpy(info.dli_sname, name));
 #endif
   }
 #endif

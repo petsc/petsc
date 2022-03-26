@@ -11,20 +11,19 @@ PetscErrorCode fill(Mat m, Vec v)
   PetscInt       idxn[3] = {0, 1, 2};
   PetscInt       localRows = 0;
   PetscMPIInt    rank,size;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(MPI_COMM_WORLD, &rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(MPI_COMM_WORLD, &size);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD, &rank));
+  PetscCallMPI(MPI_Comm_size(MPI_COMM_WORLD, &size));
 
   if (rank == 1 || rank == 2) localRows = 4;
   if (size == 1) localRows = 8;
-  ierr = MatSetSizes(m, localRows, PETSC_DECIDE, PETSC_DECIDE, 3);CHKERRQ(ierr);
-  ierr = VecSetSizes(v, localRows, PETSC_DECIDE);CHKERRQ(ierr);
+  PetscCall(MatSetSizes(m, localRows, PETSC_DECIDE, PETSC_DECIDE, 3));
+  PetscCall(VecSetSizes(v, localRows, PETSC_DECIDE));
 
-  ierr = MatSetFromOptions(m);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(v);CHKERRQ(ierr);
-  ierr = MatSetUp(m);CHKERRQ(ierr);
+  PetscCall(MatSetFromOptions(m));
+  PetscCall(VecSetFromOptions(v));
+  PetscCall(MatSetUp(m));
 
   if (size == 1) {
     PetscInt    idxm1[4] = {0, 1, 2, 3};
@@ -32,32 +31,32 @@ PetscErrorCode fill(Mat m, Vec v)
     PetscInt    idxm2[4] = {4, 5, 6, 7};
     PetscScalar values2[12] = {1, 2, 0, 1, 2, 1, 1, 3, 0, 1, 3, 1};
 
-    ierr = MatSetValues(m, 4, idxm1, 3, idxn, values1, INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecSetValue(v, 0, 1.1, INSERT_VALUES); VecSetValue(v, 1, 2.5, INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecSetValue(v, 2, 3, INSERT_VALUES); VecSetValue(v, 3, 4, INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(MatSetValues(m, 4, idxm1, 3, idxn, values1, INSERT_VALUES));
+    PetscCall(VecSetValue(v, 0, 1.1, INSERT_VALUES); VecSetValue(v, 1, 2.5, INSERT_VALUES));
+    PetscCall(VecSetValue(v, 2, 3, INSERT_VALUES); VecSetValue(v, 3, 4, INSERT_VALUES));
 
-    ierr = MatSetValues(m, 4, idxm2, 3, idxn, values2, INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecSetValue(v, 4, 5, INSERT_VALUES); VecSetValue(v, 5, 6, INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecSetValue(v, 6, 7, INSERT_VALUES); VecSetValue(v, 7, 8, INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(MatSetValues(m, 4, idxm2, 3, idxn, values2, INSERT_VALUES));
+    PetscCall(VecSetValue(v, 4, 5, INSERT_VALUES); VecSetValue(v, 5, 6, INSERT_VALUES));
+    PetscCall(VecSetValue(v, 6, 7, INSERT_VALUES); VecSetValue(v, 7, 8, INSERT_VALUES));
   } else if (rank == 1) {
     PetscInt    idxm[4] = {0, 1, 2, 3};
     PetscScalar values[12] = {1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1};
 
-    ierr = MatSetValues(m, 4, idxm, 3, idxn, values, INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecSetValue(v, 0, 1.1, INSERT_VALUES); VecSetValue(v, 1, 2.5, INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecSetValue(v, 2, 3, INSERT_VALUES); VecSetValue(v, 3, 4, INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(MatSetValues(m, 4, idxm, 3, idxn, values, INSERT_VALUES));
+    PetscCall(VecSetValue(v, 0, 1.1, INSERT_VALUES); VecSetValue(v, 1, 2.5, INSERT_VALUES));
+    PetscCall(VecSetValue(v, 2, 3, INSERT_VALUES); VecSetValue(v, 3, 4, INSERT_VALUES));
   } else if (rank == 2) {
     PetscInt    idxm[4] = {4, 5, 6, 7};
     PetscScalar values[12] = {1, 2, 0, 1, 2, 1, 1, 3, 0, 1, 3, 1};
 
-    ierr = MatSetValues(m, 4, idxm, 3, idxn, values, INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecSetValue(v, 4, 5, INSERT_VALUES); VecSetValue(v, 5, 6, INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecSetValue(v, 6, 7, INSERT_VALUES); VecSetValue(v, 7, 8, INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(MatSetValues(m, 4, idxm, 3, idxn, values, INSERT_VALUES));
+    PetscCall(VecSetValue(v, 4, 5, INSERT_VALUES); VecSetValue(v, 5, 6, INSERT_VALUES));
+    PetscCall(VecSetValue(v, 6, 7, INSERT_VALUES); VecSetValue(v, 7, 8, INSERT_VALUES));
   }
-  ierr = MatAssemblyBegin(m, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(m, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(v);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(v);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(m, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(m, MAT_FINAL_ASSEMBLY));
+  PetscCall(VecAssemblyBegin(v));
+  PetscCall(VecAssemblyEnd(v));
   PetscFunctionReturn(0);
 }
 
@@ -70,86 +69,85 @@ int main(int argc, char** argv)
   PetscReal      norm;
   PetscInt       m, n;
   PetscBool      exact = PETSC_FALSE;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, NULL);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc, &argv, NULL, NULL));
 
-  ierr = VecCreate(PETSC_COMM_WORLD, &v);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD, &Q);CHKERRQ(ierr);
-  ierr = MatSetType(Q, MATDENSE);CHKERRQ(ierr);
-  ierr = fill(Q, v);CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_WORLD, &v));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &Q));
+  PetscCall(MatSetType(Q, MATDENSE));
+  PetscCall(fill(Q, v));
 
-  ierr = MatCreateVecs(Q, &a, NULL);CHKERRQ(ierr);
-  ierr = MatCreateNormalHermitian(Q, &C);CHKERRQ(ierr);
-  ierr = KSPCreate(PETSC_COMM_WORLD, &QRsolver);CHKERRQ(ierr);
-  ierr = KSPGetPC(QRsolver, &pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc, PCNONE);CHKERRQ(ierr);
-  ierr = KSPSetType(QRsolver, KSPLSQR);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(QRsolver);CHKERRQ(ierr);
-  ierr = KSPSetOperators(QRsolver, Q, Q);CHKERRQ(ierr);
-  ierr = MatViewFromOptions(Q, NULL, "-sys_view");CHKERRQ(ierr);
-  ierr = VecViewFromOptions(a, NULL, "-rhs_view");CHKERRQ(ierr);
-  ierr = KSPSolve(QRsolver, v, a);CHKERRQ(ierr);
-  ierr = KSPLSQRGetStandardErrorVec(QRsolver, &se);CHKERRQ(ierr);
+  PetscCall(MatCreateVecs(Q, &a, NULL));
+  PetscCall(MatCreateNormalHermitian(Q, &C));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD, &QRsolver));
+  PetscCall(KSPGetPC(QRsolver, &pc));
+  PetscCall(PCSetType(pc, PCNONE));
+  PetscCall(KSPSetType(QRsolver, KSPLSQR));
+  PetscCall(KSPSetFromOptions(QRsolver));
+  PetscCall(KSPSetOperators(QRsolver, Q, Q));
+  PetscCall(MatViewFromOptions(Q, NULL, "-sys_view"));
+  PetscCall(VecViewFromOptions(a, NULL, "-rhs_view"));
+  PetscCall(KSPSolve(QRsolver, v, a));
+  PetscCall(KSPLSQRGetStandardErrorVec(QRsolver, &se));
   if (se) {
-    ierr = VecViewFromOptions(se, NULL, "-se_view");CHKERRQ(ierr);
+    PetscCall(VecViewFromOptions(se, NULL, "-se_view"));
   }
-  ierr = PetscOptionsGetBool(NULL, NULL, "-exact", &exact, NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-exact", &exact, NULL));
   if (exact) {
-    ierr = KSPDestroy(&QRsolver);CHKERRQ(ierr);
-    ierr = MatDestroy(&C);CHKERRQ(ierr);
-    ierr = MatConvert(Q, MATAIJ, MAT_INPLACE_MATRIX, &Q);CHKERRQ(ierr);
-    ierr = MatCreateNormalHermitian(Q, &C);CHKERRQ(ierr);
-    ierr = KSPCreate(PETSC_COMM_WORLD, &QRsolver);CHKERRQ(ierr);
-    ierr = KSPGetPC(QRsolver, &pc);CHKERRQ(ierr);
-    ierr = PCSetType(pc, PCQR);CHKERRQ(ierr);
-    ierr = KSPSetType(QRsolver, KSPLSQR);CHKERRQ(ierr);
-    ierr = KSPSetFromOptions(QRsolver);CHKERRQ(ierr);
-    ierr = KSPSetOperators(QRsolver, Q, C);CHKERRQ(ierr);
-    ierr = VecZeroEntries(a);CHKERRQ(ierr);
-    ierr = KSPSolve(QRsolver, v, a);CHKERRQ(ierr);
-    ierr = MatGetLocalSize(Q, &m, &n);CHKERRQ(ierr);
-    ierr = MatCreateDense(PETSC_COMM_WORLD, m, PETSC_DECIDE, PETSC_DECIDE, 5, NULL, &V);CHKERRQ(ierr);
-    ierr = MatCreateDense(PETSC_COMM_WORLD, n, PETSC_DECIDE, PETSC_DECIDE, 5, NULL, &A);CHKERRQ(ierr);
-    ierr = MatDuplicate(A, MAT_SHARE_NONZERO_PATTERN, &B);CHKERRQ(ierr);
-    ierr = MatSetRandom(V, NULL);CHKERRQ(ierr);
-    ierr = KSPMatSolve(QRsolver, V, A);CHKERRQ(ierr);
-    ierr = KSPView(QRsolver, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PCSetType(pc, PCCHOLESKY);CHKERRQ(ierr);
-    ierr = MatDestroy(&C);CHKERRQ(ierr);
+    PetscCall(KSPDestroy(&QRsolver));
+    PetscCall(MatDestroy(&C));
+    PetscCall(MatConvert(Q, MATAIJ, MAT_INPLACE_MATRIX, &Q));
+    PetscCall(MatCreateNormalHermitian(Q, &C));
+    PetscCall(KSPCreate(PETSC_COMM_WORLD, &QRsolver));
+    PetscCall(KSPGetPC(QRsolver, &pc));
+    PetscCall(PCSetType(pc, PCQR));
+    PetscCall(KSPSetType(QRsolver, KSPLSQR));
+    PetscCall(KSPSetFromOptions(QRsolver));
+    PetscCall(KSPSetOperators(QRsolver, Q, C));
+    PetscCall(VecZeroEntries(a));
+    PetscCall(KSPSolve(QRsolver, v, a));
+    PetscCall(MatGetLocalSize(Q, &m, &n));
+    PetscCall(MatCreateDense(PETSC_COMM_WORLD, m, PETSC_DECIDE, PETSC_DECIDE, 5, NULL, &V));
+    PetscCall(MatCreateDense(PETSC_COMM_WORLD, n, PETSC_DECIDE, PETSC_DECIDE, 5, NULL, &A));
+    PetscCall(MatDuplicate(A, MAT_SHARE_NONZERO_PATTERN, &B));
+    PetscCall(MatSetRandom(V, NULL));
+    PetscCall(KSPMatSolve(QRsolver, V, A));
+    PetscCall(KSPView(QRsolver, PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(PCSetType(pc, PCCHOLESKY));
+    PetscCall(MatDestroy(&C));
     if (!PetscDefined(USE_COMPLEX)) {
-      ierr = MatTransposeMatMult(Q, Q, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C);CHKERRQ(ierr);
+      PetscCall(MatTransposeMatMult(Q, Q, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C));
     } else {
       Mat Qc;
-      ierr = MatHermitianTranspose(Q, MAT_INITIAL_MATRIX, &Qc);CHKERRQ(ierr);
-      ierr = MatMatMult(Qc, Q, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C);CHKERRQ(ierr);
-      ierr = MatDestroy(&Qc);CHKERRQ(ierr);
+      PetscCall(MatHermitianTranspose(Q, MAT_INITIAL_MATRIX, &Qc));
+      PetscCall(MatMatMult(Qc, Q, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C));
+      PetscCall(MatDestroy(&Qc));
     }
-    ierr = KSPSetOperators(QRsolver, Q, C);CHKERRQ(ierr);
-    ierr = KSPSetFromOptions(QRsolver);CHKERRQ(ierr);
-    ierr = VecDuplicate(a, &b);CHKERRQ(ierr);
-    ierr = KSPSolve(QRsolver, v, b);CHKERRQ(ierr);
-    ierr = KSPMatSolve(QRsolver, V, B);CHKERRQ(ierr);
-    ierr = KSPView(QRsolver, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = VecAXPY(a, -1.0, b);CHKERRQ(ierr);
-    ierr = VecNorm(a, NORM_2, &norm);CHKERRQ(ierr);
+    PetscCall(KSPSetOperators(QRsolver, Q, C));
+    PetscCall(KSPSetFromOptions(QRsolver));
+    PetscCall(VecDuplicate(a, &b));
+    PetscCall(KSPSolve(QRsolver, v, b));
+    PetscCall(KSPMatSolve(QRsolver, V, B));
+    PetscCall(KSPView(QRsolver, PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(VecAXPY(a, -1.0, b));
+    PetscCall(VecNorm(a, NORM_2, &norm));
     PetscCheckFalse(norm > PETSC_SMALL,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "||a-b|| > PETSC_SMALL (%g)", (double)norm);
-    ierr = MatAXPY(A, -1.0, B, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-    ierr = MatNorm(A, NORM_FROBENIUS, &norm);CHKERRQ(ierr);
+    PetscCall(MatAXPY(A, -1.0, B, SAME_NONZERO_PATTERN));
+    PetscCall(MatNorm(A, NORM_FROBENIUS, &norm));
     PetscCheckFalse(norm > PETSC_SMALL,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "||A-B|| > PETSC_SMALL (%g)", (double)norm);
-    ierr = VecDestroy(&b);CHKERRQ(ierr);
-    ierr = MatDestroy(&V);CHKERRQ(ierr);
-    ierr = MatDestroy(&A);CHKERRQ(ierr);
-    ierr = MatDestroy(&B);CHKERRQ(ierr);
+    PetscCall(VecDestroy(&b));
+    PetscCall(MatDestroy(&V));
+    PetscCall(MatDestroy(&A));
+    PetscCall(MatDestroy(&B));
   }
-  ierr = KSPDestroy(&QRsolver);CHKERRQ(ierr);
-  ierr = VecDestroy(&a);CHKERRQ(ierr);
-  ierr = VecDestroy(&v);CHKERRQ(ierr);
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
-  ierr = MatDestroy(&Q);CHKERRQ(ierr);
+  PetscCall(KSPDestroy(&QRsolver));
+  PetscCall(VecDestroy(&a));
+  PetscCall(VecDestroy(&v));
+  PetscCall(MatDestroy(&C));
+  PetscCall(MatDestroy(&Q));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

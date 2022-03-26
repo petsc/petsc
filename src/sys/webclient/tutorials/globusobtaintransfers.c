@@ -10,14 +10,13 @@
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   char           buff[4096];
 
-  ierr = PetscInitialize(&argc,&argv,NULL,NULL);if (ierr) return ierr;
-  ierr = PetscGlobusGetTransfers(PETSC_COMM_WORLD,NULL,buff,sizeof(buff));CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Transfers are %s\n",buff);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,NULL,NULL));
+  PetscCall(PetscGlobusGetTransfers(PETSC_COMM_WORLD,NULL,buff,sizeof(buff)));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Transfers are %s\n",buff));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST
@@ -29,4 +28,3 @@ int main(int argc,char **argv)
      TODO: determine how to run this test without going through the browser
 
 TEST*/
-

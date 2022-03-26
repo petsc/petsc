@@ -11,23 +11,22 @@ PETSC_INTERN PetscErrorCode MatSetBlockSizes_Default(Mat mat,PetscInt rbs, Petsc
 
 PETSC_INTERN PetscErrorCode MatShift_Basic(Mat Y,PetscScalar a)
 {
-  PetscErrorCode ierr;
   PetscInt       i,start,end;
   PetscScalar    alpha = a;
   PetscBool      prevoption;
 
   PetscFunctionBegin;
-  ierr = MatGetOption(Y,MAT_NO_OFF_PROC_ENTRIES,&prevoption);CHKERRQ(ierr);
-  ierr = MatSetOption(Y,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(Y,&start,&end);CHKERRQ(ierr);
+  PetscCall(MatGetOption(Y,MAT_NO_OFF_PROC_ENTRIES,&prevoption));
+  PetscCall(MatSetOption(Y,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE));
+  PetscCall(MatGetOwnershipRange(Y,&start,&end));
   for (i=start; i<end; i++) {
     if (i < Y->cmap->N) {
-      ierr = MatSetValues(Y,1,&i,1,&i,&alpha,ADD_VALUES);CHKERRQ(ierr);
+      PetscCall(MatSetValues(Y,1,&i,1,&i,&alpha,ADD_VALUES));
     }
   }
-  ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatSetOption(Y,MAT_NO_OFF_PROC_ENTRIES,prevoption);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatSetOption(Y,MAT_NO_OFF_PROC_ENTRIES,prevoption));
   PetscFunctionReturn(0);
 }
 
@@ -71,18 +70,17 @@ PETSC_INTERN PetscErrorCode MatShift_Basic(Mat Y,PetscScalar a)
 PetscErrorCode  MatCreate(MPI_Comm comm,Mat *A)
 {
   Mat            B;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidPointer(A,2);
 
   *A = NULL;
-  ierr = MatInitializePackage();CHKERRQ(ierr);
+  PetscCall(MatInitializePackage());
 
-  ierr = PetscHeaderCreate(B,MAT_CLASSID,"Mat","Matrix","Mat",comm,MatDestroy,MatView);CHKERRQ(ierr);
-  ierr = PetscLayoutCreate(comm,&B->rmap);CHKERRQ(ierr);
-  ierr = PetscLayoutCreate(comm,&B->cmap);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(VECSTANDARD,&B->defaultvectype);CHKERRQ(ierr);
+  PetscCall(PetscHeaderCreate(B,MAT_CLASSID,"Mat","Matrix","Mat",comm,MatDestroy,MatView));
+  PetscCall(PetscLayoutCreate(comm,&B->rmap));
+  PetscCall(PetscLayoutCreate(comm,&B->cmap));
+  PetscCall(PetscStrallocpy(VECSTANDARD,&B->defaultvectype));
 
   B->congruentlayouts = PETSC_DECIDE;
   B->preallocated     = PETSC_FALSE;
@@ -207,58 +205,58 @@ PetscErrorCode  MatSetFromOptions(Mat B)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B,MAT_CLASSID,1);
 
-  ierr = PetscObjectOptionsBegin((PetscObject)B);CHKERRQ(ierr);
+  ierr = PetscObjectOptionsBegin((PetscObject)B);PetscCall(ierr);
 
   if (B->rmap->bs < 0) {
     PetscInt newbs = -1;
-    ierr = PetscOptionsInt("-mat_block_size","Set the blocksize used to store the matrix","MatSetBlockSize",newbs,&newbs,&flg);CHKERRQ(ierr);
+    PetscCall(PetscOptionsInt("-mat_block_size","Set the blocksize used to store the matrix","MatSetBlockSize",newbs,&newbs,&flg));
     if (flg) {
-      ierr = PetscLayoutSetBlockSize(B->rmap,newbs);CHKERRQ(ierr);
-      ierr = PetscLayoutSetBlockSize(B->cmap,newbs);CHKERRQ(ierr);
+      PetscCall(PetscLayoutSetBlockSize(B->rmap,newbs));
+      PetscCall(PetscLayoutSetBlockSize(B->cmap,newbs));
     }
   }
 
-  ierr = PetscOptionsFList("-mat_type","Matrix type","MatSetType",MatList,deft,type,256,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsFList("-mat_type","Matrix type","MatSetType",MatList,deft,type,256,&flg));
   if (flg) {
-    ierr = MatSetType(B,type);CHKERRQ(ierr);
+    PetscCall(MatSetType(B,type));
   } else if (!((PetscObject)B)->type_name) {
-    ierr = MatSetType(B,deft);CHKERRQ(ierr);
+    PetscCall(MatSetType(B,deft));
   }
 
-  ierr = PetscOptionsName("-mat_is_symmetric","Checks if mat is symmetric on MatAssemblyEnd()","MatIsSymmetric",&B->checksymmetryonassembly);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-mat_is_symmetric","Checks if mat is symmetric on MatAssemblyEnd()","MatIsSymmetric",B->checksymmetrytol,&B->checksymmetrytol,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-mat_null_space_test","Checks if provided null space is correct in MatAssemblyEnd()","MatSetNullSpaceTest",B->checknullspaceonassembly,&B->checknullspaceonassembly,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-mat_error_if_failure","Generate an error if an error occurs when factoring the matrix","MatSetErrorIfFailure",B->erroriffailure,&B->erroriffailure,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsName("-mat_is_symmetric","Checks if mat is symmetric on MatAssemblyEnd()","MatIsSymmetric",&B->checksymmetryonassembly));
+  PetscCall(PetscOptionsReal("-mat_is_symmetric","Checks if mat is symmetric on MatAssemblyEnd()","MatIsSymmetric",B->checksymmetrytol,&B->checksymmetrytol,NULL));
+  PetscCall(PetscOptionsBool("-mat_null_space_test","Checks if provided null space is correct in MatAssemblyEnd()","MatSetNullSpaceTest",B->checknullspaceonassembly,&B->checknullspaceonassembly,NULL));
+  PetscCall(PetscOptionsBool("-mat_error_if_failure","Generate an error if an error occurs when factoring the matrix","MatSetErrorIfFailure",B->erroriffailure,&B->erroriffailure,NULL));
 
   if (B->ops->setfromoptions) {
-    ierr = (*B->ops->setfromoptions)(PetscOptionsObject,B);CHKERRQ(ierr);
+    PetscCall((*B->ops->setfromoptions)(PetscOptionsObject,B));
   }
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-mat_new_nonzero_location_err","Generate an error if new nonzeros are created in the matrix structure (useful to test preallocation)","MatSetOption",flg,&flg,&set);CHKERRQ(ierr);
-  if (set) {ierr = MatSetOption(B,MAT_NEW_NONZERO_LOCATION_ERR,flg);CHKERRQ(ierr);}
+  PetscCall(PetscOptionsBool("-mat_new_nonzero_location_err","Generate an error if new nonzeros are created in the matrix structure (useful to test preallocation)","MatSetOption",flg,&flg,&set));
+  if (set) PetscCall(MatSetOption(B,MAT_NEW_NONZERO_LOCATION_ERR,flg));
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-mat_new_nonzero_allocation_err","Generate an error if new nonzeros are allocated in the matrix structure (useful to test preallocation)","MatSetOption",flg,&flg,&set);CHKERRQ(ierr);
-  if (set) {ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,flg);CHKERRQ(ierr);}
+  PetscCall(PetscOptionsBool("-mat_new_nonzero_allocation_err","Generate an error if new nonzeros are allocated in the matrix structure (useful to test preallocation)","MatSetOption",flg,&flg,&set));
+  if (set) PetscCall(MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,flg));
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-mat_ignore_zero_entries","For AIJ/IS matrices this will stop zero values from creating a zero location in the matrix","MatSetOption",flg,&flg,&set);CHKERRQ(ierr);
-  if (set) {ierr = MatSetOption(B,MAT_IGNORE_ZERO_ENTRIES,flg);CHKERRQ(ierr);}
+  PetscCall(PetscOptionsBool("-mat_ignore_zero_entries","For AIJ/IS matrices this will stop zero values from creating a zero location in the matrix","MatSetOption",flg,&flg,&set));
+  if (set) PetscCall(MatSetOption(B,MAT_IGNORE_ZERO_ENTRIES,flg));
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-mat_form_explicit_transpose","Hint to form an explicit transpose for operations like MatMultTranspose","MatSetOption",flg,&flg,&set);CHKERRQ(ierr);
-  if (set) {ierr = MatSetOption(B,MAT_FORM_EXPLICIT_TRANSPOSE,flg);CHKERRQ(ierr);}
+  PetscCall(PetscOptionsBool("-mat_form_explicit_transpose","Hint to form an explicit transpose for operations like MatMultTranspose","MatSetOption",flg,&flg,&set));
+  if (set) PetscCall(MatSetOption(B,MAT_FORM_EXPLICIT_TRANSPOSE,flg));
 
   /* Bind to CPU if below a user-specified size threshold.
    * This perhaps belongs in the options for the GPU Mat types, but MatBindToCPU() does nothing when called on non-GPU types,
    * and putting it here makes is more maintainable than duplicating this for all. */
-  ierr = PetscOptionsInt("-mat_bind_below","Set the size threshold (in local rows) below which the Mat is bound to the CPU","MatBindToCPU",bind_below,&bind_below,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-mat_bind_below","Set the size threshold (in local rows) below which the Mat is bound to the CPU","MatBindToCPU",bind_below,&bind_below,&flg));
   if (flg && B->rmap->n < bind_below) {
-    ierr = MatBindToCPU(B,PETSC_TRUE);CHKERRQ(ierr);
+    PetscCall(MatBindToCPU(B,PETSC_TRUE));
   }
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)B);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)B));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -282,7 +280,6 @@ PetscErrorCode  MatSetFromOptions(Mat B)
 @*/
 PetscErrorCode MatXAIJSetPreallocation(Mat A,PetscInt bs,const PetscInt dnnz[],const PetscInt onnz[],const PetscInt dnnzu[],const PetscInt onnzu[])
 {
-  PetscErrorCode ierr;
   PetscInt       cbs;
   void           (*aij)(void);
   void           (*is)(void);
@@ -290,51 +287,51 @@ PetscErrorCode MatXAIJSetPreallocation(Mat A,PetscInt bs,const PetscInt dnnz[],c
 
   PetscFunctionBegin;
   if (bs != PETSC_DECIDE) { /* don't mess with an already set block size */
-    ierr = MatSetBlockSize(A,bs);CHKERRQ(ierr);
+    PetscCall(MatSetBlockSize(A,bs));
   }
-  ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
-  ierr = MatGetBlockSizes(A,&bs,&cbs);CHKERRQ(ierr);
+  PetscCall(PetscLayoutSetUp(A->rmap));
+  PetscCall(PetscLayoutSetUp(A->cmap));
+  PetscCall(MatGetBlockSizes(A,&bs,&cbs));
   /* these routines assumes bs == cbs, this should be checked somehow */
-  ierr = MatSeqBAIJSetPreallocation(A,bs,0,dnnz);CHKERRQ(ierr);
-  ierr = MatMPIBAIJSetPreallocation(A,bs,0,dnnz,0,onnz);CHKERRQ(ierr);
-  ierr = MatSeqSBAIJSetPreallocation(A,bs,0,dnnzu);CHKERRQ(ierr);
-  ierr = MatMPISBAIJSetPreallocation(A,bs,0,dnnzu,0,onnzu);CHKERRQ(ierr);
+  PetscCall(MatSeqBAIJSetPreallocation(A,bs,0,dnnz));
+  PetscCall(MatMPIBAIJSetPreallocation(A,bs,0,dnnz,0,onnz));
+  PetscCall(MatSeqSBAIJSetPreallocation(A,bs,0,dnnzu));
+  PetscCall(MatMPISBAIJSetPreallocation(A,bs,0,dnnzu,0,onnzu));
   /*
     In general, we have to do extra work to preallocate for scalar (AIJ) or unassembled (IS) matrices so we check whether it will do any
     good before going on with it.
   */
-  ierr = PetscObjectQueryFunction((PetscObject)A,"MatMPIAIJSetPreallocation_C",&aij);CHKERRQ(ierr);
-  ierr = PetscObjectQueryFunction((PetscObject)A,"MatISSetPreallocation_C",&is);CHKERRQ(ierr);
+  PetscCall(PetscObjectQueryFunction((PetscObject)A,"MatMPIAIJSetPreallocation_C",&aij));
+  PetscCall(PetscObjectQueryFunction((PetscObject)A,"MatISSetPreallocation_C",&is));
 #if defined(PETSC_HAVE_HYPRE)
-  ierr = PetscObjectQueryFunction((PetscObject)A,"MatHYPRESetPreallocation_C",&hyp);CHKERRQ(ierr);
+  PetscCall(PetscObjectQueryFunction((PetscObject)A,"MatHYPRESetPreallocation_C",&hyp));
 #endif
   if (!aij && !is && !hyp) {
-    ierr = PetscObjectQueryFunction((PetscObject)A,"MatSeqAIJSetPreallocation_C",&aij);CHKERRQ(ierr);
+    PetscCall(PetscObjectQueryFunction((PetscObject)A,"MatSeqAIJSetPreallocation_C",&aij));
   }
   if (aij || is || hyp) {
     if (bs == cbs && bs == 1) {
-      ierr = MatSeqAIJSetPreallocation(A,0,dnnz);CHKERRQ(ierr);
-      ierr = MatMPIAIJSetPreallocation(A,0,dnnz,0,onnz);CHKERRQ(ierr);
-      ierr = MatISSetPreallocation(A,0,dnnz,0,onnz);CHKERRQ(ierr);
+      PetscCall(MatSeqAIJSetPreallocation(A,0,dnnz));
+      PetscCall(MatMPIAIJSetPreallocation(A,0,dnnz,0,onnz));
+      PetscCall(MatISSetPreallocation(A,0,dnnz,0,onnz));
 #if defined(PETSC_HAVE_HYPRE)
-      ierr = MatHYPRESetPreallocation(A,0,dnnz,0,onnz);CHKERRQ(ierr);
+      PetscCall(MatHYPRESetPreallocation(A,0,dnnz,0,onnz));
 #endif
     } else { /* Convert block-row precallocation to scalar-row */
       PetscInt i,m,*sdnnz,*sonnz;
-      ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
-      ierr = PetscMalloc2((!!dnnz)*m,&sdnnz,(!!onnz)*m,&sonnz);CHKERRQ(ierr);
+      PetscCall(MatGetLocalSize(A,&m,NULL));
+      PetscCall(PetscMalloc2((!!dnnz)*m,&sdnnz,(!!onnz)*m,&sonnz));
       for (i=0; i<m; i++) {
         if (dnnz) sdnnz[i] = dnnz[i/bs] * cbs;
         if (onnz) sonnz[i] = onnz[i/bs] * cbs;
       }
-      ierr = MatSeqAIJSetPreallocation(A,0,dnnz ? sdnnz : NULL);CHKERRQ(ierr);
-      ierr = MatMPIAIJSetPreallocation(A,0,dnnz ? sdnnz : NULL,0,onnz ? sonnz : NULL);CHKERRQ(ierr);
-      ierr = MatISSetPreallocation(A,0,dnnz ? sdnnz : NULL,0,onnz ? sonnz : NULL);CHKERRQ(ierr);
+      PetscCall(MatSeqAIJSetPreallocation(A,0,dnnz ? sdnnz : NULL));
+      PetscCall(MatMPIAIJSetPreallocation(A,0,dnnz ? sdnnz : NULL,0,onnz ? sonnz : NULL));
+      PetscCall(MatISSetPreallocation(A,0,dnnz ? sdnnz : NULL,0,onnz ? sonnz : NULL));
 #if defined(PETSC_HAVE_HYPRE)
-      ierr = MatHYPRESetPreallocation(A,0,dnnz ? sdnnz : NULL,0,onnz ? sonnz : NULL);CHKERRQ(ierr);
+      PetscCall(MatHYPRESetPreallocation(A,0,dnnz ? sdnnz : NULL,0,onnz ? sonnz : NULL));
 #endif
-      ierr = PetscFree2(sdnnz,sonnz);CHKERRQ(ierr);
+      PetscCall(PetscFree2(sdnnz,sonnz));
     }
   }
   PetscFunctionReturn(0);
@@ -347,7 +344,6 @@ PetscErrorCode MatXAIJSetPreallocation(Mat A,PetscInt bs,const PetscInt dnnz[],c
 */
 PetscErrorCode MatHeaderMerge(Mat A,Mat *C)
 {
-  PetscErrorCode   ierr;
   PetscInt         refct;
   PetscOps         Abops;
   struct _MatOps   Aops;
@@ -377,17 +373,17 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat *C)
   ((PetscObject)A)->name      = NULL;
 
   /* free all the interior data structures from mat */
-  ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
+  PetscCall((*A->ops->destroy)(A));
 
-  ierr = PetscFree(A->defaultvectype);CHKERRQ(ierr);
-  ierr = PetscLayoutDestroy(&A->rmap);CHKERRQ(ierr);
-  ierr = PetscLayoutDestroy(&A->cmap);CHKERRQ(ierr);
-  ierr = PetscFunctionListDestroy(&((PetscObject)A)->qlist);CHKERRQ(ierr);
-  ierr = PetscObjectListDestroy(&((PetscObject)A)->olist);CHKERRQ(ierr);
-  ierr = PetscComposedQuantitiesDestroy((PetscObject)A);CHKERRQ(ierr);
+  PetscCall(PetscFree(A->defaultvectype));
+  PetscCall(PetscLayoutDestroy(&A->rmap));
+  PetscCall(PetscLayoutDestroy(&A->cmap));
+  PetscCall(PetscFunctionListDestroy(&((PetscObject)A)->qlist));
+  PetscCall(PetscObjectListDestroy(&((PetscObject)A)->olist));
+  PetscCall(PetscComposedQuantitiesDestroy((PetscObject)A));
 
   /* copy C over to A */
-  ierr = PetscMemcpy(A,*C,sizeof(struct _p_Mat));CHKERRQ(ierr);
+  PetscCall(PetscMemcpy(A,*C,sizeof(struct _p_Mat)));
 
   /* return the parts of A we saved */
   ((PetscObject)A)->bops[0]   = Abops;
@@ -404,7 +400,7 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat *C)
   ((PetscObject)*C)->qlist = NULL;
   ((PetscObject)*C)->olist = NULL;
 
-  ierr = PetscHeaderDestroy(C);CHKERRQ(ierr);
+  PetscCall(PetscHeaderDestroy(C));
   PetscFunctionReturn(0);
 }
 /*
@@ -418,7 +414,6 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat *C)
 */
 PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat A,Mat *C)
 {
-  PetscErrorCode   ierr;
   PetscInt         refct;
   PetscObjectState state;
   struct _p_Mat    buffer;
@@ -435,16 +430,16 @@ PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat A,Mat *C)
   refct   = ((PetscObject)A)->refct;
   state   = ((PetscObject)A)->state;
   stencil = A->stencil;
-  ierr  = PetscMemcpy(&buffer,A,sizeof(struct _p_Mat));CHKERRQ(ierr);
-  ierr  = PetscMemcpy(A,*C,sizeof(struct _p_Mat));CHKERRQ(ierr);
-  ierr  = PetscMemcpy(*C,&buffer,sizeof(struct _p_Mat));CHKERRQ(ierr);
+  PetscCall(PetscMemcpy(&buffer,A,sizeof(struct _p_Mat)));
+  PetscCall(PetscMemcpy(A,*C,sizeof(struct _p_Mat)));
+  PetscCall(PetscMemcpy(*C,&buffer,sizeof(struct _p_Mat)));
   ((PetscObject)A)->refct = refct;
   ((PetscObject)A)->state = state + 1;
   A->stencil              = stencil;
 
   ((PetscObject)*C)->refct = 1;
-  ierr = MatShellSetOperation(*C,MATOP_DESTROY,(void(*)(void))NULL);CHKERRQ(ierr);
-  ierr = MatDestroy(C);CHKERRQ(ierr);
+  PetscCall(MatShellSetOperation(*C,MATOP_DESTROY,(void(*)(void))NULL));
+  PetscCall(MatDestroy(C));
   PetscFunctionReturn(0);
 }
 
@@ -470,8 +465,7 @@ PetscErrorCode MatBindToCPU(Mat A,PetscBool flg)
   if (A->boundtocpu == flg) PetscFunctionReturn(0);
   A->boundtocpu = flg;
   if (A->ops->bindtocpu) {
-    PetscErrorCode ierr;
-    ierr = (*A->ops->bindtocpu)(A,flg);CHKERRQ(ierr);
+    PetscCall((*A->ops->bindtocpu)(A,flg));
   }
 #endif
   PetscFunctionReturn(0);
@@ -494,7 +488,7 @@ PetscErrorCode MatBoundToCPU(Mat A,PetscBool *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  PetscValidPointer(flg,2);
+  PetscValidBoolPointer(flg,2);
 #if defined(PETSC_HAVE_DEVICE)
   *flg = A->boundtocpu;
 #else
@@ -509,26 +503,25 @@ PetscErrorCode MatSetValuesCOO_Basic(Mat A,const PetscScalar coo_v[],InsertMode 
   const PetscInt *coo_i,*coo_j;
   PetscInt       n,n_i,n_j;
   PetscScalar    zero = 0.;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject)A,"__PETSc_coo_i",(PetscObject*)&is_coo_i);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject)A,"__PETSc_coo_j",(PetscObject*)&is_coo_j);CHKERRQ(ierr);
-  PetscCheckFalse(!is_coo_i,PetscObjectComm((PetscObject)A),PETSC_ERR_COR,"Missing coo_i IS");
-  PetscCheckFalse(!is_coo_j,PetscObjectComm((PetscObject)A),PETSC_ERR_COR,"Missing coo_j IS");
-  ierr = ISGetLocalSize(is_coo_i,&n_i);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(is_coo_j,&n_j);CHKERRQ(ierr);
+  PetscCall(PetscObjectQuery((PetscObject)A,"__PETSc_coo_i",(PetscObject*)&is_coo_i));
+  PetscCall(PetscObjectQuery((PetscObject)A,"__PETSc_coo_j",(PetscObject*)&is_coo_j));
+  PetscCheck(is_coo_i,PetscObjectComm((PetscObject)A),PETSC_ERR_COR,"Missing coo_i IS");
+  PetscCheck(is_coo_j,PetscObjectComm((PetscObject)A),PETSC_ERR_COR,"Missing coo_j IS");
+  PetscCall(ISGetLocalSize(is_coo_i,&n_i));
+  PetscCall(ISGetLocalSize(is_coo_j,&n_j));
   PetscCheckFalse(n_i != n_j,PETSC_COMM_SELF,PETSC_ERR_COR,"Wrong local size %" PetscInt_FMT " != %" PetscInt_FMT,n_i,n_j);
-  ierr = ISGetIndices(is_coo_i,&coo_i);CHKERRQ(ierr);
-  ierr = ISGetIndices(is_coo_j,&coo_j);CHKERRQ(ierr);
+  PetscCall(ISGetIndices(is_coo_i,&coo_i));
+  PetscCall(ISGetIndices(is_coo_j,&coo_j));
   if (imode != ADD_VALUES) {
-    ierr = MatZeroEntries(A);CHKERRQ(ierr);
+    PetscCall(MatZeroEntries(A));
   }
   for (n = 0; n < n_i; n++) {
-    ierr = MatSetValue(A,coo_i[n],coo_j[n],coo_v ? coo_v[n] : zero,ADD_VALUES);CHKERRQ(ierr);
+    PetscCall(MatSetValue(A,coo_i[n],coo_j[n],coo_v ? coo_v[n] : zero,ADD_VALUES));
   }
-  ierr = ISRestoreIndices(is_coo_i,&coo_i);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(is_coo_j,&coo_j);CHKERRQ(ierr);
+  PetscCall(ISRestoreIndices(is_coo_i,&coo_i));
+  PetscCall(ISRestoreIndices(is_coo_j,&coo_j));
   PetscFunctionReturn(0);
 }
 
@@ -537,30 +530,29 @@ PetscErrorCode MatSetPreallocationCOO_Basic(Mat A,PetscCount ncoo,const PetscInt
   Mat            preallocator;
   IS             is_coo_i,is_coo_j;
   PetscScalar    zero = 0.0;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
-  ierr = MatCreate(PetscObjectComm((PetscObject)A),&preallocator);CHKERRQ(ierr);
-  ierr = MatSetType(preallocator,MATPREALLOCATOR);CHKERRQ(ierr);
-  ierr = MatSetSizes(preallocator,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
-  ierr = MatSetLayouts(preallocator,A->rmap,A->cmap);CHKERRQ(ierr);
-  ierr = MatSetUp(preallocator);CHKERRQ(ierr);
+  PetscCall(PetscLayoutSetUp(A->rmap));
+  PetscCall(PetscLayoutSetUp(A->cmap));
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)A),&preallocator));
+  PetscCall(MatSetType(preallocator,MATPREALLOCATOR));
+  PetscCall(MatSetSizes(preallocator,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N));
+  PetscCall(MatSetLayouts(preallocator,A->rmap,A->cmap));
+  PetscCall(MatSetUp(preallocator));
   for (PetscCount n = 0; n < ncoo; n++) {
-    ierr = MatSetValue(preallocator,coo_i[n],coo_j[n],zero,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(MatSetValue(preallocator,coo_i[n],coo_j[n],zero,INSERT_VALUES));
   }
-  ierr = MatAssemblyBegin(preallocator,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(preallocator,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatPreallocatorPreallocate(preallocator,PETSC_TRUE,A);CHKERRQ(ierr);
-  ierr = MatDestroy(&preallocator);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(preallocator,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(preallocator,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatPreallocatorPreallocate(preallocator,PETSC_TRUE,A));
+  PetscCall(MatDestroy(&preallocator));
   PetscCheck(ncoo <= PETSC_MAX_INT,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"ncoo %" PetscCount_FMT " overflowed PetscInt; configure --with-64-bit-indices or request support",ncoo);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,ncoo,coo_i,PETSC_COPY_VALUES,&is_coo_i);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,ncoo,coo_j,PETSC_COPY_VALUES,&is_coo_j);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)A,"__PETSc_coo_i",(PetscObject)is_coo_i);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)A,"__PETSc_coo_j",(PetscObject)is_coo_j);CHKERRQ(ierr);
-  ierr = ISDestroy(&is_coo_i);CHKERRQ(ierr);
-  ierr = ISDestroy(&is_coo_j);CHKERRQ(ierr);
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF,ncoo,coo_i,PETSC_COPY_VALUES,&is_coo_i));
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF,ncoo,coo_j,PETSC_COPY_VALUES,&is_coo_j));
+  PetscCall(PetscObjectCompose((PetscObject)A,"__PETSc_coo_i",(PetscObject)is_coo_i));
+  PetscCall(PetscObjectCompose((PetscObject)A,"__PETSc_coo_j",(PetscObject)is_coo_j));
+  PetscCall(ISDestroy(&is_coo_i));
+  PetscCall(ISDestroy(&is_coo_j));
   PetscFunctionReturn(0);
 }
 
@@ -590,24 +582,23 @@ PetscErrorCode MatSetPreallocationCOO_Basic(Mat A,PetscCount ncoo,const PetscInt
 PetscErrorCode MatSetPreallocationCOO(Mat A,PetscCount ncoo,const PetscInt coo_i[],const PetscInt coo_j[])
 {
   PetscErrorCode (*f)(Mat,PetscCount,const PetscInt[],const PetscInt[]) = NULL;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
   if (ncoo) PetscValidIntPointer(coo_i,3);
   if (ncoo) PetscValidIntPointer(coo_j,4);
-  ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
-  ierr = PetscObjectQueryFunction((PetscObject)A,"MatSetPreallocationCOO_C",&f);CHKERRQ(ierr);
+  PetscCall(PetscLayoutSetUp(A->rmap));
+  PetscCall(PetscLayoutSetUp(A->cmap));
+  PetscCall(PetscObjectQueryFunction((PetscObject)A,"MatSetPreallocationCOO_C",&f));
 
-  ierr = PetscLogEventBegin(MAT_PreallCOO,A,0,0,0);CHKERRQ(ierr);
+  PetscCall(PetscLogEventBegin(MAT_PreallCOO,A,0,0,0));
   if (f) {
-    ierr = (*f)(A,ncoo,coo_i,coo_j);CHKERRQ(ierr);
+    PetscCall((*f)(A,ncoo,coo_i,coo_j));
   } else { /* allow fallback, very slow */
-    ierr = MatSetPreallocationCOO_Basic(A,ncoo,coo_i,coo_j);CHKERRQ(ierr);
+    PetscCall(MatSetPreallocationCOO_Basic(A,ncoo,coo_i,coo_j));
   }
-  ierr = PetscLogEventEnd(MAT_PreallCOO,A,0,0,0);CHKERRQ(ierr);
+  PetscCall(PetscLogEventEnd(MAT_PreallCOO,A,0,0,0));
   A->preallocated = PETSC_TRUE;
   A->nonzerostate++;
   PetscFunctionReturn(0);
@@ -642,7 +633,6 @@ PetscErrorCode MatSetPreallocationCOO(Mat A,PetscCount ncoo,const PetscInt coo_i
 @*/
 PetscErrorCode MatSetPreallocationCOOLocal(Mat A,PetscCount ncoo,PetscInt coo_i[],PetscInt coo_j[])
 {
-  PetscErrorCode ierr;
   PetscErrorCode (*f)(Mat,PetscCount,PetscInt[],PetscInt[]) = NULL;
 
   PetscFunctionBegin;
@@ -651,19 +641,19 @@ PetscErrorCode MatSetPreallocationCOOLocal(Mat A,PetscCount ncoo,PetscInt coo_i[
   if (ncoo) PetscValidIntPointer(coo_i,3);
   if (ncoo) PetscValidIntPointer(coo_j,4);
   PetscCheck(ncoo <= PETSC_MAX_INT,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"ncoo %" PetscCount_FMT " overflowed PetscInt; configure --with-64-bit-indices or request support",ncoo);
-  ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
+  PetscCall(PetscLayoutSetUp(A->rmap));
+  PetscCall(PetscLayoutSetUp(A->cmap));
 
-  ierr = PetscObjectQueryFunction((PetscObject)A,"MatSetPreallocationCOOLocal_C",&f);CHKERRQ(ierr);
+  PetscCall(PetscObjectQueryFunction((PetscObject)A,"MatSetPreallocationCOOLocal_C",&f));
   if (f) {
-    ierr = (*f)(A,ncoo,coo_i,coo_j);CHKERRQ(ierr);
+    PetscCall((*f)(A,ncoo,coo_i,coo_j));
     A->nonzerostate++;
   } else {
     ISLocalToGlobalMapping ltog_row,ltog_col;
-    ierr = MatGetLocalToGlobalMapping(A,&ltog_row,&ltog_col);CHKERRQ(ierr);
-    if (ltog_row) { ierr = ISLocalToGlobalMappingApply(ltog_row,ncoo,coo_i,coo_i);CHKERRQ(ierr); }
-    if (ltog_col) { ierr = ISLocalToGlobalMappingApply(ltog_col,ncoo,coo_j,coo_j);CHKERRQ(ierr); }
-    ierr = MatSetPreallocationCOO(A,ncoo,coo_i,coo_j);CHKERRQ(ierr);
+    PetscCall(MatGetLocalToGlobalMapping(A,&ltog_row,&ltog_col));
+    if (ltog_row) PetscCall(ISLocalToGlobalMappingApply(ltog_row,ncoo,coo_i,coo_i));
+    if (ltog_col) PetscCall(ISLocalToGlobalMappingApply(ltog_col,ncoo,coo_j,coo_j));
+    PetscCall(MatSetPreallocationCOO(A,ncoo,coo_i,coo_j));
   }
   A->preallocated = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -691,23 +681,22 @@ PetscErrorCode MatSetPreallocationCOOLocal(Mat A,PetscCount ncoo,PetscInt coo_i[
 PetscErrorCode MatSetValuesCOO(Mat A, const PetscScalar coo_v[], InsertMode imode)
 {
   PetscErrorCode (*f)(Mat,const PetscScalar[],InsertMode) = NULL;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
   MatCheckPreallocated(A,1);
   PetscValidLogicalCollectiveEnum(A,imode,3);
-  ierr = PetscObjectQueryFunction((PetscObject)A,"MatSetValuesCOO_C",&f);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(MAT_SetVCOO,A,0,0,0);CHKERRQ(ierr);
+  PetscCall(PetscObjectQueryFunction((PetscObject)A,"MatSetValuesCOO_C",&f));
+  PetscCall(PetscLogEventBegin(MAT_SetVCOO,A,0,0,0));
   if (f) {
-    ierr = (*f)(A,coo_v,imode);CHKERRQ(ierr);
+    PetscCall((*f)(A,coo_v,imode));
   } else { /* allow fallback */
-    ierr = MatSetValuesCOO_Basic(A,coo_v,imode);CHKERRQ(ierr);
+    PetscCall(MatSetValuesCOO_Basic(A,coo_v,imode));
   }
-  ierr = PetscLogEventEnd(MAT_SetVCOO,A,0,0,0);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(PetscLogEventEnd(MAT_SetVCOO,A,0,0,0));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 

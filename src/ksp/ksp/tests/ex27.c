@@ -19,28 +19,27 @@ int main(int argc,char **args)
   PetscViewer    fd;             /* viewer */
   char           file[1][PETSC_MAX_PATH_LEN];     /* input file name */
   PetscBool      flg;
-  PetscErrorCode ierr;
   PetscInt       M,N,i,its;
   PetscReal      norm;
   PetscScalar    val=1.0;
   PetscMPIInt    size;
   PC             pc;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
   /* Read matrix and right-hand-side vector */
-  ierr = PetscOptionsGetString(NULL,NULL,"-f",file[0],sizeof(file[0]),&flg);CHKERRQ(ierr);
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-f",file[0],sizeof(file[0]),&flg));
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
 
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[0],FILE_MODE_READ,&fd);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
-  ierr = MatLoad(A,fd);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
-  ierr = VecLoad(b,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[0],FILE_MODE_READ,&fd));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetType(A,MATAIJ));
+  PetscCall(MatLoad(A,fd));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&b));
+  PetscCall(VecLoad(b,fd));
+  PetscCall(PetscViewerDestroy(&fd));
 
   /*
      If the loaded matrix is larger than the vector (due to being padded
@@ -52,87 +51,86 @@ int main(int argc,char **args)
     PetscScalar *bold;
 
     /* Create a new vector b by padding the old one */
-    ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
+    PetscCall(MatGetLocalSize(A,&m,&n));
     PetscCheckFalse(m != n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%D, %D)", m, n);
-    ierr = VecCreate(PETSC_COMM_WORLD,&tmp);CHKERRQ(ierr);
-    ierr = VecSetSizes(tmp,m,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(tmp);CHKERRQ(ierr);
-    ierr = VecGetOwnershipRange(b,&start,&end);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(b,&mvec);CHKERRQ(ierr);
-    ierr = VecGetArray(b,&bold);CHKERRQ(ierr);
+    PetscCall(VecCreate(PETSC_COMM_WORLD,&tmp));
+    PetscCall(VecSetSizes(tmp,m,PETSC_DECIDE));
+    PetscCall(VecSetFromOptions(tmp));
+    PetscCall(VecGetOwnershipRange(b,&start,&end));
+    PetscCall(VecGetLocalSize(b,&mvec));
+    PetscCall(VecGetArray(b,&bold));
     for (j=0; j<mvec; j++) {
       indx = start+j;
-      ierr = VecSetValues(tmp,1,&indx,bold+j,INSERT_VALUES);CHKERRQ(ierr);
+      PetscCall(VecSetValues(tmp,1,&indx,bold+j,INSERT_VALUES));
     }
-    ierr = VecRestoreArray(b,&bold);CHKERRQ(ierr);
-    ierr = VecDestroy(&b);CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(tmp);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(tmp);CHKERRQ(ierr);
+    PetscCall(VecRestoreArray(b,&bold));
+    PetscCall(VecDestroy(&b));
+    PetscCall(VecAssemblyBegin(tmp));
+    PetscCall(VecAssemblyEnd(tmp));
     b    = tmp;
   }
-  ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
-  ierr = VecDuplicate(b,&u);CHKERRQ(ierr);
-  ierr = VecSet(x,0.0);CHKERRQ(ierr);
+  PetscCall(VecDuplicate(b,&x));
+  PetscCall(VecDuplicate(b,&u));
+  PetscCall(VecSet(x,0.0));
 
   /* Create dense matric B and X. Set B as an identity matrix */
-  ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
-  ierr = MatCreate(MPI_COMM_SELF,&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,M,N,M,N);CHKERRQ(ierr);
-  ierr = MatSetType(B,MATSEQDENSE);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetPreallocation(B,NULL);CHKERRQ(ierr);
+  PetscCall(MatGetSize(A,&M,&N));
+  PetscCall(MatCreate(MPI_COMM_SELF,&B));
+  PetscCall(MatSetSizes(B,M,N,M,N));
+  PetscCall(MatSetType(B,MATSEQDENSE));
+  PetscCall(MatSeqDenseSetPreallocation(B,NULL));
   for (i=0; i<M; i++) {
-    ierr = MatSetValues(B,1,&i,1,&i,&val,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(MatSetValues(B,1,&i,1,&i,&val,INSERT_VALUES));
   }
-  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
 
-  ierr = MatDuplicate(B,MAT_DO_NOT_COPY_VALUES,&X);CHKERRQ(ierr);
+  PetscCall(MatDuplicate(B,MAT_DO_NOT_COPY_VALUES,&X));
 
   /* Compute X=inv(A) by MatMatSolve() */
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
-  ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
-  ierr = MatMatSolve(F,B,X);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPSetOperators(ksp,A,A));
+  PetscCall(KSPGetPC(ksp,&pc));
+  PetscCall(PCSetType(pc,PCLU));
+  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(KSPSetUp(ksp));
+  PetscCall(PCFactorGetMatrix(pc,&F));
+  PetscCall(MatMatSolve(F,B,X));
+  PetscCall(MatDestroy(&B));
 
   /* Now, set X=inv(A) as a preconditioner */
-  ierr = PCSetType(pc,PCSHELL);CHKERRQ(ierr);
-  ierr = PCShellSetContext(pc,X);CHKERRQ(ierr);
-  ierr = PCShellSetApply(pc,PCShellApply_Matinv);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  PetscCall(PCSetType(pc,PCSHELL));
+  PetscCall(PCShellSetContext(pc,X));
+  PetscCall(PCShellSetApply(pc,PCShellApply_Matinv));
+  PetscCall(KSPSetFromOptions(ksp));
 
   /* Solve preconditioned system A*x = b */
-  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
+  PetscCall(KSPSolve(ksp,b,x));
+  PetscCall(KSPGetIterationNumber(ksp,&its));
 
   /* Check error */
-  ierr = MatMult(A,x,u);CHKERRQ(ierr);
-  ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);
-  ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",(double)norm);CHKERRQ(ierr);
+  PetscCall(MatMult(A,x,u));
+  PetscCall(VecAXPY(u,-1.0,b));
+  PetscCall(VecNorm(u,NORM_2,&norm));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",(double)norm));
 
   /* Free work space.  */
-  ierr = MatDestroy(&X);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr); ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr); ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(MatDestroy(&X));
+  PetscCall(MatDestroy(&A)); PetscCall(VecDestroy(&b));
+  PetscCall(VecDestroy(&u)); PetscCall(VecDestroy(&x));
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 PetscErrorCode PCShellApply_Matinv(PC pc,Vec xin,Vec xout)
 {
-  PetscErrorCode ierr;
   Mat            X;
 
   PetscFunctionBeginUser;
-  ierr = PCShellGetContext(pc,&X);CHKERRQ(ierr);
-  ierr = MatMult(X,xin,xout);CHKERRQ(ierr);
+  PetscCall(PCShellGetContext(pc,&X));
+  PetscCall(MatMult(X,xin,xout));
   PetscFunctionReturn(0);
 }
 

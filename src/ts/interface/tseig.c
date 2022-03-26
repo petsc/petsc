@@ -46,30 +46,29 @@ struct _n_TSMonitorSPEigCtx {
 PetscErrorCode  TSMonitorSPEigCtxCreate(MPI_Comm comm,const char host[],const char label[],int x,int y,int m,int n,PetscInt howoften,TSMonitorSPEigCtx *ctx)
 {
   PetscDraw      win;
-  PetscErrorCode ierr;
   PC             pc;
 
   PetscFunctionBegin;
-  ierr = PetscNew(ctx);CHKERRQ(ierr);
-  ierr = PetscRandomCreate(comm,&(*ctx)->rand);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions((*ctx)->rand);CHKERRQ(ierr);
-  ierr = PetscDrawCreate(comm,host,label,x,y,m,n,&win);CHKERRQ(ierr);
-  ierr = PetscDrawSetFromOptions(win);CHKERRQ(ierr);
-  ierr = PetscDrawSPCreate(win,1,&(*ctx)->drawsp);CHKERRQ(ierr);
-  ierr = KSPCreate(comm,&(*ctx)->ksp);CHKERRQ(ierr);
-  ierr = KSPSetOptionsPrefix((*ctx)->ksp,"ts_monitor_sp_eig_");CHKERRQ(ierr); /* this is wrong, used use also prefix from the TS */
-  ierr = KSPSetType((*ctx)->ksp,KSPGMRES);CHKERRQ(ierr);
-  ierr = KSPGMRESSetRestart((*ctx)->ksp,200);CHKERRQ(ierr);
-  ierr = KSPSetTolerances((*ctx)->ksp,1.e-10,PETSC_DEFAULT,PETSC_DEFAULT,200);CHKERRQ(ierr);
-  ierr = KSPSetComputeSingularValues((*ctx)->ksp,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions((*ctx)->ksp);CHKERRQ(ierr);
-  ierr = KSPGetPC((*ctx)->ksp,&pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
+  PetscCall(PetscNew(ctx));
+  PetscCall(PetscRandomCreate(comm,&(*ctx)->rand));
+  PetscCall(PetscRandomSetFromOptions((*ctx)->rand));
+  PetscCall(PetscDrawCreate(comm,host,label,x,y,m,n,&win));
+  PetscCall(PetscDrawSetFromOptions(win));
+  PetscCall(PetscDrawSPCreate(win,1,&(*ctx)->drawsp));
+  PetscCall(KSPCreate(comm,&(*ctx)->ksp));
+  PetscCall(KSPSetOptionsPrefix((*ctx)->ksp,"ts_monitor_sp_eig_")); /* this is wrong, used use also prefix from the TS */
+  PetscCall(KSPSetType((*ctx)->ksp,KSPGMRES));
+  PetscCall(KSPGMRESSetRestart((*ctx)->ksp,200));
+  PetscCall(KSPSetTolerances((*ctx)->ksp,1.e-10,PETSC_DEFAULT,PETSC_DEFAULT,200));
+  PetscCall(KSPSetComputeSingularValues((*ctx)->ksp,PETSC_TRUE));
+  PetscCall(KSPSetFromOptions((*ctx)->ksp));
+  PetscCall(KSPGetPC((*ctx)->ksp,&pc));
+  PetscCall(PCSetType(pc,PCNONE));
 
   (*ctx)->howoften          = howoften;
   (*ctx)->computeexplicitly = PETSC_FALSE;
 
-  ierr = PetscOptionsGetBool(NULL,NULL,"-ts_monitor_sp_eig_explicitly",&(*ctx)->computeexplicitly,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-ts_monitor_sp_eig_explicitly",&(*ctx)->computeexplicitly,NULL));
 
   (*ctx)->comm = comm;
   (*ctx)->xmin = -2.1;
@@ -81,11 +80,10 @@ PetscErrorCode  TSMonitorSPEigCtxCreate(MPI_Comm comm,const char host[],const ch
 
 static PetscErrorCode TSLinearStabilityIndicator(TS ts, PetscReal xr,PetscReal xi,PetscBool *flg)
 {
-  PetscErrorCode ierr;
   PetscReal      yr,yi;
 
   PetscFunctionBegin;
-  ierr = TSComputeLinearStability(ts,xr,xi,&yr,&yi);CHKERRQ(ierr);
+  PetscCall(TSComputeLinearStability(ts,xr,xi,&yr,&yi));
   if ((yr*yr + yi*yi) <= 1.0) *flg = PETSC_TRUE;
   else *flg = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -94,7 +92,6 @@ static PetscErrorCode TSLinearStabilityIndicator(TS ts, PetscReal xr,PetscReal x
 PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *monctx)
 {
   TSMonitorSPEigCtx ctx = (TSMonitorSPEigCtx) monctx;
-  PetscErrorCode    ierr;
   KSP               ksp = ctx->ksp;
   PetscInt          n,N,nits,neig,i,its = 200;
   PetscReal         *r,*c,time_step_save;
@@ -107,10 +104,10 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
   if (step < 0) PetscFunctionReturn(0); /* -1 indicates interpolated solution */
   if (!step) PetscFunctionReturn(0);
   if (((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && ts->reason)) {
-    ierr = VecDuplicate(v,&xdot);CHKERRQ(ierr);
-    ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-    ierr = SNESGetJacobian(snes,&A,&B,NULL,NULL);CHKERRQ(ierr);
-    ierr = MatDuplicate(A,MAT_DO_NOT_COPY_VALUES,&B);CHKERRQ(ierr);
+    PetscCall(VecDuplicate(v,&xdot));
+    PetscCall(TSGetSNES(ts,&snes));
+    PetscCall(SNESGetJacobian(snes,&A,&B,NULL,NULL));
+    PetscCall(MatDuplicate(A,MAT_DO_NOT_COPY_VALUES,&B));
     /*
        This doesn't work because methods keep and use internal information about the shift so it
        seems we would need code for each method to trick the correct Jacobian in being computed.
@@ -118,18 +115,18 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
     time_step_save = ts->time_step;
     ts->time_step  = PETSC_MAX_REAL;
 
-    ierr = SNESComputeJacobian(snes,v,A,B);CHKERRQ(ierr);
+    PetscCall(SNESComputeJacobian(snes,v,A,B));
 
     ts->time_step  = time_step_save;
 
-    ierr = KSPSetOperators(ksp,B,B);CHKERRQ(ierr);
-    ierr = VecGetSize(v,&n);CHKERRQ(ierr);
+    PetscCall(KSPSetOperators(ksp,B,B));
+    PetscCall(VecGetSize(v,&n));
     if (n < 200) its = n;
-    ierr = KSPSetTolerances(ksp,1.e-10,PETSC_DEFAULT,PETSC_DEFAULT,its);CHKERRQ(ierr);
-    ierr = VecSetRandom(xdot,ctx->rand);CHKERRQ(ierr);
-    ierr = KSPSolve(ksp,xdot,xdot);CHKERRQ(ierr);
-    ierr = VecDestroy(&xdot);CHKERRQ(ierr);
-    ierr = KSPGetIterationNumber(ksp,&nits);CHKERRQ(ierr);
+    PetscCall(KSPSetTolerances(ksp,1.e-10,PETSC_DEFAULT,PETSC_DEFAULT,its));
+    PetscCall(VecSetRandom(xdot,ctx->rand));
+    PetscCall(KSPSolve(ksp,xdot,xdot));
+    PetscCall(VecDestroy(&xdot));
+    PetscCall(KSPGetIterationNumber(ksp,&nits));
     N    = nits+2;
 
     if (nits) {
@@ -138,42 +135,42 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
       PetscDrawAxis axis;
       PetscReal     xmin,xmax,ymin,ymax;
 
-      ierr = PetscDrawSPReset(drawsp);CHKERRQ(ierr);
-      ierr = PetscDrawSPSetLimits(drawsp,ctx->xmin,ctx->xmax,ctx->ymin,ctx->ymax);CHKERRQ(ierr);
-      ierr = PetscMalloc2(PetscMax(n,N),&r,PetscMax(n,N),&c);CHKERRQ(ierr);
+      PetscCall(PetscDrawSPReset(drawsp));
+      PetscCall(PetscDrawSPSetLimits(drawsp,ctx->xmin,ctx->xmax,ctx->ymin,ctx->ymax));
+      PetscCall(PetscMalloc2(PetscMax(n,N),&r,PetscMax(n,N),&c));
       if (ctx->computeexplicitly) {
-        ierr = KSPComputeEigenvaluesExplicitly(ksp,n,r,c);CHKERRQ(ierr);
+        PetscCall(KSPComputeEigenvaluesExplicitly(ksp,n,r,c));
         neig = n;
       } else {
-        ierr = KSPComputeEigenvalues(ksp,N,r,c,&neig);CHKERRQ(ierr);
+        PetscCall(KSPComputeEigenvalues(ksp,N,r,c,&neig));
       }
       /* We used the positive operator to be able to reuse KSPs that require positive definiteness, now flip the spectrum as is conventional for ODEs */
       for (i=0; i<neig; i++) r[i] = -r[i];
       for (i=0; i<neig; i++) {
         if (ts->ops->linearstability) {
           PetscReal fr,fi;
-          ierr = TSComputeLinearStability(ts,r[i],c[i],&fr,&fi);CHKERRQ(ierr);
+          PetscCall(TSComputeLinearStability(ts,r[i],c[i],&fr,&fi));
           if ((fr*fr + fi*fi) > 1.0) {
-            ierr = PetscPrintf(ctx->comm,"Linearized Eigenvalue %g + %g i linear stability function %g norm indicates unstable scheme \n",(double)r[i],(double)c[i],(double)(fr*fr + fi*fi));CHKERRQ(ierr);
+            PetscCall(PetscPrintf(ctx->comm,"Linearized Eigenvalue %g + %g i linear stability function %g norm indicates unstable scheme \n",(double)r[i],(double)c[i],(double)(fr*fr + fi*fi)));
           }
         }
-        ierr = PetscDrawSPAddPoint(drawsp,r+i,c+i);CHKERRQ(ierr);
+        PetscCall(PetscDrawSPAddPoint(drawsp,r+i,c+i));
       }
-      ierr = PetscFree2(r,c);CHKERRQ(ierr);
-      ierr = PetscDrawSPGetDraw(drawsp,&draw);CHKERRQ(ierr);
-      ierr = PetscDrawGetPause(draw,&pause);CHKERRQ(ierr);
-      ierr = PetscDrawSetPause(draw,0.0);CHKERRQ(ierr);
-      ierr = PetscDrawSPDraw(drawsp,PETSC_TRUE);CHKERRQ(ierr);
-      ierr = PetscDrawSetPause(draw,pause);CHKERRQ(ierr);
+      PetscCall(PetscFree2(r,c));
+      PetscCall(PetscDrawSPGetDraw(drawsp,&draw));
+      PetscCall(PetscDrawGetPause(draw,&pause));
+      PetscCall(PetscDrawSetPause(draw,0.0));
+      PetscCall(PetscDrawSPDraw(drawsp,PETSC_TRUE));
+      PetscCall(PetscDrawSetPause(draw,pause));
       if (ts->ops->linearstability) {
-        ierr = PetscDrawSPGetAxis(drawsp,&axis);CHKERRQ(ierr);
-        ierr = PetscDrawAxisGetLimits(axis,&xmin,&xmax,&ymin,&ymax);CHKERRQ(ierr);
-        ierr = PetscDrawIndicatorFunction(draw,xmin,xmax,ymin,ymax,PETSC_DRAW_CYAN,(PetscErrorCode (*)(void*,PetscReal,PetscReal,PetscBool*))TSLinearStabilityIndicator,ts);CHKERRQ(ierr);
-        ierr = PetscDrawSPDraw(drawsp,PETSC_FALSE);CHKERRQ(ierr);
+        PetscCall(PetscDrawSPGetAxis(drawsp,&axis));
+        PetscCall(PetscDrawAxisGetLimits(axis,&xmin,&xmax,&ymin,&ymax));
+        PetscCall(PetscDrawIndicatorFunction(draw,xmin,xmax,ymin,ymax,PETSC_DRAW_CYAN,(PetscErrorCode (*)(void*,PetscReal,PetscReal,PetscBool*))TSLinearStabilityIndicator,ts));
+        PetscCall(PetscDrawSPDraw(drawsp,PETSC_FALSE));
       }
-      ierr = PetscDrawSPSave(drawsp);CHKERRQ(ierr);
+      PetscCall(PetscDrawSPSave(drawsp));
     }
-    ierr = MatDestroy(&B);CHKERRQ(ierr);
+    PetscCall(MatDestroy(&B));
   }
   PetscFunctionReturn(0);
 }
@@ -193,15 +190,13 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
 PetscErrorCode  TSMonitorSPEigCtxDestroy(TSMonitorSPEigCtx *ctx)
 {
   PetscDraw      draw;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscDrawSPGetDraw((*ctx)->drawsp,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
-  ierr = PetscDrawSPDestroy(&(*ctx)->drawsp);CHKERRQ(ierr);
-  ierr = KSPDestroy(&(*ctx)->ksp);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&(*ctx)->rand);CHKERRQ(ierr);
-  ierr = PetscFree(*ctx);CHKERRQ(ierr);
+  PetscCall(PetscDrawSPGetDraw((*ctx)->drawsp,&draw));
+  PetscCall(PetscDrawDestroy(&draw));
+  PetscCall(PetscDrawSPDestroy(&(*ctx)->drawsp));
+  PetscCall(KSPDestroy(&(*ctx)->ksp));
+  PetscCall(PetscRandomDestroy(&(*ctx)->rand));
+  PetscCall(PetscFree(*ctx));
   PetscFunctionReturn(0);
 }
-

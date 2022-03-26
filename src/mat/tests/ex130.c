@@ -8,7 +8,6 @@ int main(int argc,char **args)
 {
   Mat            A,F;
   Vec            u,x,b;
-  PetscErrorCode ierr;
   PetscMPIInt    rank,size;
   PetscInt       m,n,nfact,ipack=0;
   PetscReal      norm,tol=1.e-12,Anorm;
@@ -18,87 +17,87 @@ int main(int argc,char **args)
   PetscViewer    fd;              /* viewer */
   char           file[PETSC_MAX_PATH_LEN]; /* input file name */
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
 
   /* Determine file from which we read the matrix A */
-  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg);CHKERRQ(ierr);
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
 
   /* Load matrix A */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatLoad(A,fd);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
-  ierr = VecLoad(b,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatLoad(A,fd));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&b));
+  PetscCall(VecLoad(b,fd));
+  PetscCall(PetscViewerDestroy(&fd));
+  PetscCall(MatGetLocalSize(A,&m,&n));
   PetscCheckFalse(m != n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);
-  ierr = MatNorm(A,NORM_INFINITY,&Anorm);CHKERRQ(ierr);
+  PetscCall(MatNorm(A,NORM_INFINITY,&Anorm));
 
   /* Create vectors */
-  ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&u);CHKERRQ(ierr); /* save the true solution */
+  PetscCall(VecDuplicate(b,&x));
+  PetscCall(VecDuplicate(x,&u)); /* save the true solution */
 
   /* Test LU Factorization */
-  ierr = MatGetOrdering(A,MATORDERINGNATURAL,&perm,&iperm);CHKERRQ(ierr);
+  PetscCall(MatGetOrdering(A,MATORDERINGNATURAL,&perm,&iperm));
 
-  ierr = PetscOptionsGetInt(NULL,NULL,"-mat_solver_type",&ipack,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-mat_solver_type",&ipack,NULL));
   switch (ipack) {
   case 1:
 #if defined(PETSC_HAVE_SUPERLU)
     if (rank == 0) printf(" SUPERLU LU:\n");
-    ierr = MatGetFactor(A,MATSOLVERSUPERLU,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
+    PetscCall(MatGetFactor(A,MATSOLVERSUPERLU,MAT_FACTOR_LU,&F));
     break;
 #endif
   case 2:
 #if defined(PETSC_HAVE_MUMPS)
     if (rank == 0) printf(" MUMPS LU:\n");
-    ierr = MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
+    PetscCall(MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_LU,&F));
     {
       /* test mumps options */
       PetscInt icntl_7 = 5;
-      ierr = MatMumpsSetIcntl(F,7,icntl_7);CHKERRQ(ierr);
+      PetscCall(MatMumpsSetIcntl(F,7,icntl_7));
     }
     break;
 #endif
   default:
     if (rank == 0) printf(" PETSC LU:\n");
-    ierr = MatGetFactor(A,MATSOLVERPETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
+    PetscCall(MatGetFactor(A,MATSOLVERPETSC,MAT_FACTOR_LU,&F));
   }
 
   info.fill = 5.0;
-  ierr      = MatLUFactorSymbolic(F,A,perm,iperm,&info);CHKERRQ(ierr);
+  PetscCall(MatLUFactorSymbolic(F,A,perm,iperm,&info));
 
   for (nfact = 0; nfact < 1; nfact++) {
     if (rank == 0) printf(" %d-the LU numfactorization \n",nfact);
-    ierr = MatLUFactorNumeric(F,A,&info);CHKERRQ(ierr);
+    PetscCall(MatLUFactorNumeric(F,A,&info));
 
     /* Test MatSolve() */
     if (testMatSolve) {
-      ierr = MatSolve(F,b,x);CHKERRQ(ierr);
+      PetscCall(MatSolve(F,b,x));
 
       /* Check the residual */
-      ierr = MatMult(A,x,u);CHKERRQ(ierr);
-      ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);
-      ierr = VecNorm(u,NORM_INFINITY,&norm);CHKERRQ(ierr);
+      PetscCall(MatMult(A,x,u));
+      PetscCall(VecAXPY(u,-1.0,b));
+      PetscCall(VecNorm(u,NORM_INFINITY,&norm));
       if (norm > tol) {
         if (rank == 0) {
-          ierr = PetscPrintf(PETSC_COMM_SELF,"MatSolve: rel residual %g/%g = %g, LU numfact %d\n",norm,Anorm,norm/Anorm,nfact);CHKERRQ(ierr);
+          PetscCall(PetscPrintf(PETSC_COMM_SELF,"MatSolve: rel residual %g/%g = %g, LU numfact %d\n",norm,Anorm,norm/Anorm,nfact));
         }
       }
     }
   }
 
   /* Free data structures */
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&F);CHKERRQ(ierr);
-  ierr = ISDestroy(&perm);CHKERRQ(ierr);
-  ierr = ISDestroy(&iperm);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&F));
+  PetscCall(ISDestroy(&perm));
+  PetscCall(ISDestroy(&iperm));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&b));
+  PetscCall(VecDestroy(&u));
+  PetscCall(PetscFinalize());
+  return 0;
 }

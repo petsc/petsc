@@ -10,111 +10,110 @@ int main(int argc,char **args)
   PetscMPIInt    rank,size,subsize;
   PetscInt       i,j,m = 3,n = 2,low,high,iglobal;
   PetscInt       Ii,J,ldim,nsubcomms;
-  PetscErrorCode ierr;
   PetscBool      flg_info,flg_mat;
   PetscScalar    v,one = 1.0;
   Vec            x,y;
   MPI_Comm       subcomm;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   n    = 2*size;
 
-  ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
-  ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(C);CHKERRQ(ierr);
-  ierr = MatSetUp(C);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&C));
+  PetscCall(MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n));
+  PetscCall(MatSetFromOptions(C));
+  PetscCall(MatSetUp(C));
 
   /* Create the matrix for the five point stencil, YET AGAIN */
   for (i=0; i<m; i++) {
     for (j=2*rank; j<2*rank+2; j++) {
       v = -1.0;  Ii = j + n*i;
-      if (i>0)   {J = Ii - n; ierr = MatSetValues(C,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-      if (i<m-1) {J = Ii + n; ierr = MatSetValues(C,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-      if (j>0)   {J = Ii - 1; ierr = MatSetValues(C,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-      if (j<n-1) {J = Ii + 1; ierr = MatSetValues(C,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-      v = 4.0; ierr = MatSetValues(C,1,&Ii,1,&Ii,&v,INSERT_VALUES);CHKERRQ(ierr);
+      if (i>0)   {J = Ii - n; PetscCall(MatSetValues(C,1,&Ii,1,&J,&v,INSERT_VALUES));}
+      if (i<m-1) {J = Ii + n; PetscCall(MatSetValues(C,1,&Ii,1,&J,&v,INSERT_VALUES));}
+      if (j>0)   {J = Ii - 1; PetscCall(MatSetValues(C,1,&Ii,1,&J,&v,INSERT_VALUES));}
+      if (j<n-1) {J = Ii + 1; PetscCall(MatSetValues(C,1,&Ii,1,&J,&v,INSERT_VALUES));}
+      v = 4.0; PetscCall(MatSetValues(C,1,&Ii,1,&Ii,&v,INSERT_VALUES));
     }
   }
 
   /* Add extra elements (to illustrate variants of MatGetInfo) */
   Ii   = n; J = n-2; v = 100.0;
-  ierr = MatSetValues(C,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
+  PetscCall(MatSetValues(C,1,&Ii,1,&J,&v,INSERT_VALUES));
   Ii   = n-2; J = n; v = 100.0;
-  ierr = MatSetValues(C,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
+  PetscCall(MatSetValues(C,1,&Ii,1,&J,&v,INSERT_VALUES));
 
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
 
   /* Form vectors */
-  ierr = MatCreateVecs(C,&x,&y);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(x,&ldim);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(x,&low,&high);CHKERRQ(ierr);
+  PetscCall(MatCreateVecs(C,&x,&y));
+  PetscCall(VecGetLocalSize(x,&ldim));
+  PetscCall(VecGetOwnershipRange(x,&low,&high));
   for (i=0; i<ldim; i++) {
     iglobal = i + low;
     v       = one*((PetscReal)i) + 100.0*rank;
-    ierr    = VecSetValues(x,1,&iglobal,&v,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(VecSetValues(x,1,&iglobal,&v,INSERT_VALUES));
   }
-  ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
+  PetscCall(VecAssemblyBegin(x));
+  PetscCall(VecAssemblyEnd(x));
 
-  ierr = MatMult(C,x,y);CHKERRQ(ierr);
+  PetscCall(MatMult(C,x,y));
 
-  ierr = PetscOptionsHasName(NULL,NULL,"-view_info",&flg_info);CHKERRQ(ierr);
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-view_info",&flg_info));
   if (flg_info)  {
-    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
-    ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    PetscCall(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO));
+    PetscCall(MatView(C,PETSC_VIEWER_STDOUT_WORLD));
 
-    ierr = MatGetInfo(C,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"matrix information (global sums):\nnonzeros = %" PetscInt_FMT ", allocated nonzeros = %" PetscInt_FMT "\n",(PetscInt)info.nz_used,(PetscInt)info.nz_allocated);CHKERRQ(ierr);
-    ierr = MatGetInfo (C,MAT_GLOBAL_MAX,&info);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"matrix information (global max):\nnonzeros = %" PetscInt_FMT ", allocated nonzeros = %" PetscInt_FMT "\n",(PetscInt)info.nz_used,(PetscInt)info.nz_allocated);CHKERRQ(ierr);
+    PetscCall(MatGetInfo(C,MAT_GLOBAL_SUM,&info));
+    PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"matrix information (global sums):\nnonzeros = %" PetscInt_FMT ", allocated nonzeros = %" PetscInt_FMT "\n",(PetscInt)info.nz_used,(PetscInt)info.nz_allocated));
+    PetscCall(MatGetInfo (C,MAT_GLOBAL_MAX,&info));
+    PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"matrix information (global max):\nnonzeros = %" PetscInt_FMT ", allocated nonzeros = %" PetscInt_FMT "\n",(PetscInt)info.nz_used,(PetscInt)info.nz_allocated));
   }
 
-  ierr = PetscOptionsHasName(NULL,NULL,"-view_mat",&flg_mat);CHKERRQ(ierr);
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-view_mat",&flg_mat));
   if (flg_mat) {
-    ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    PetscCall(MatView(C,PETSC_VIEWER_STDOUT_WORLD));
   }
 
   /* Test MatCreateRedundantMatrix() */
   nsubcomms = size;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-nsubcomms",&nsubcomms,NULL);CHKERRQ(ierr);
-  ierr = MatCreateRedundantMatrix(C,nsubcomms,MPI_COMM_NULL,MAT_INITIAL_MATRIX,&Credundant);CHKERRQ(ierr);
-  ierr = MatCreateRedundantMatrix(C,nsubcomms,MPI_COMM_NULL,MAT_REUSE_MATRIX,&Credundant);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-nsubcomms",&nsubcomms,NULL));
+  PetscCall(MatCreateRedundantMatrix(C,nsubcomms,MPI_COMM_NULL,MAT_INITIAL_MATRIX,&Credundant));
+  PetscCall(MatCreateRedundantMatrix(C,nsubcomms,MPI_COMM_NULL,MAT_REUSE_MATRIX,&Credundant));
 
-  ierr = PetscObjectGetComm((PetscObject)Credundant,&subcomm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(subcomm,&subsize);CHKERRMPI(ierr);
+  PetscCall(PetscObjectGetComm((PetscObject)Credundant,&subcomm));
+  PetscCallMPI(MPI_Comm_size(subcomm,&subsize));
 
   if (subsize==2 && flg_mat) {
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_(subcomm),"\n[%d] Credundant:\n",rank);CHKERRQ(ierr);
-    ierr = MatView(Credundant,PETSC_VIEWER_STDOUT_(subcomm));CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_(subcomm),"\n[%d] Credundant:\n",rank));
+    PetscCall(MatView(Credundant,PETSC_VIEWER_STDOUT_(subcomm)));
   }
-  ierr = MatDestroy(&Credundant);CHKERRQ(ierr);
+  PetscCall(MatDestroy(&Credundant));
 
   /* Test MatCreateRedundantMatrix() with user-provided subcomm */
   {
     PetscSubcomm psubcomm;
 
-    ierr = PetscSubcommCreate(PETSC_COMM_WORLD,&psubcomm);CHKERRQ(ierr);
-    ierr = PetscSubcommSetNumber(psubcomm,nsubcomms);CHKERRQ(ierr);
-    ierr = PetscSubcommSetType(psubcomm,PETSC_SUBCOMM_CONTIGUOUS);CHKERRQ(ierr);
+    PetscCall(PetscSubcommCreate(PETSC_COMM_WORLD,&psubcomm));
+    PetscCall(PetscSubcommSetNumber(psubcomm,nsubcomms));
+    PetscCall(PetscSubcommSetType(psubcomm,PETSC_SUBCOMM_CONTIGUOUS));
     /* enable runtime switch of psubcomm type, e.g., '-psubcomm_type interlaced */
-    ierr = PetscSubcommSetFromOptions(psubcomm);CHKERRQ(ierr);
+    PetscCall(PetscSubcommSetFromOptions(psubcomm));
 
-    ierr = MatCreateRedundantMatrix(C,nsubcomms,PetscSubcommChild(psubcomm),MAT_INITIAL_MATRIX,&Credundant);CHKERRQ(ierr);
-    ierr = MatCreateRedundantMatrix(C,nsubcomms,PetscSubcommChild(psubcomm),MAT_REUSE_MATRIX,&Credundant);CHKERRQ(ierr);
+    PetscCall(MatCreateRedundantMatrix(C,nsubcomms,PetscSubcommChild(psubcomm),MAT_INITIAL_MATRIX,&Credundant));
+    PetscCall(MatCreateRedundantMatrix(C,nsubcomms,PetscSubcommChild(psubcomm),MAT_REUSE_MATRIX,&Credundant));
 
-    ierr = PetscSubcommDestroy(&psubcomm);CHKERRQ(ierr);
-    ierr = MatDestroy(&Credundant);CHKERRQ(ierr);
+    PetscCall(PetscSubcommDestroy(&psubcomm));
+    PetscCall(MatDestroy(&Credundant));
   }
 
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&y));
+  PetscCall(MatDestroy(&C));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

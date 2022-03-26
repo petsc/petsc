@@ -24,7 +24,6 @@
 static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t fgid, int fmode, PetscBool  *flg)
 {
   int            m = R_OK;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (mode == 'r') m = R_OK;
@@ -33,10 +32,10 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
   else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Mode must be one of r, w, or x");
 #if defined(PETSC_HAVE_ACCESS)
   if (!access(fname, m)) {
-    ierr = PetscInfo(NULL,"System call access() succeeded on file %s\n",fname);CHKERRQ(ierr);
+    PetscCall(PetscInfo(NULL,"System call access() succeeded on file %s\n",fname));
     *flg = PETSC_TRUE;
   } else {
-    ierr = PetscInfo(NULL,"System call access() failed on file %s\n",fname);CHKERRQ(ierr);
+    PetscCall(PetscInfo(NULL,"System call access() failed on file %s\n",fname));
     *flg = PETSC_FALSE;
   }
 #else
@@ -65,7 +64,7 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
   /* Get the number of supplementary group IDs */
 #if !defined(PETSC_MISSING_GETGROUPS)
   numGroups = getgroups(0, gid); PetscCheckFalse(numGroups < 0,PETSC_COMM_SELF,PETSC_ERR_SYS, "Unable to count supplementary group IDs");
-  ierr = PetscMalloc1(numGroups+1, &gid);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(numGroups+1, &gid));
 #else
   numGroups = 0;
 #endif
@@ -96,7 +95,7 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
       }
     }
   }
-  ierr = PetscFree(gid);CHKERRQ(ierr);
+  PetscCall(PetscFree(gid));
 
   if (mode == 'r') {
     if (fmode & rbit) *flg = PETSC_TRUE;
@@ -127,10 +126,10 @@ static PetscErrorCode PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t
 #if defined(EOVERFLOW)
     PetscCheckFalse(errno == EOVERFLOW,PETSC_COMM_SELF,PETSC_ERR_SYS,"EOVERFLOW in stat(), configure PETSc --with-large-file-io=1 to support files larger than 2GiB");
 #endif
-    ierr    = PetscInfo(NULL,"System call stat() failed on file %s\n",fname);CHKERRQ(ierr);
+    PetscCall(PetscInfo(NULL,"System call stat() failed on file %s\n",fname));
     *exists = PETSC_FALSE;
   } else {
-    ierr      = PetscInfo(NULL,"System call stat() succeeded on file %s\n",fname);CHKERRQ(ierr);
+    PetscCall(PetscInfo(NULL,"System call stat() succeeded on file %s\n",fname));
     *exists   = PETSC_TRUE;
     *fileUid  = statbuf.st_uid;
     *fileGid  = statbuf.st_gid;
@@ -162,20 +161,19 @@ PetscErrorCode  PetscTestFile(const char fname[], char mode, PetscBool  *flg)
   uid_t          fuid;
   gid_t          fgid;
   int            fmode;
-  PetscErrorCode ierr;
   PetscBool      exists;
 
   PetscFunctionBegin;
   *flg = PETSC_FALSE;
   if (!fname) PetscFunctionReturn(0);
 
-  ierr = PetscGetFileStat(fname, &fuid, &fgid, &fmode, &exists);CHKERRQ(ierr);
+  PetscCall(PetscGetFileStat(fname, &fuid, &fgid, &fmode, &exists));
   if (!exists) PetscFunctionReturn(0);
   /* Except for systems that have this broken stat macros (rare), this is the correct way to check for a regular file */
   if (!S_ISREG(fmode)) PetscFunctionReturn(0);
   /* return if asked to check for existence only */
   if (mode == '\0') { *flg = exists; PetscFunctionReturn(0); }
-  ierr = PetscTestOwnership(fname, mode, fuid, fgid, fmode, flg);CHKERRQ(ierr);
+  PetscCall(PetscTestOwnership(fname, mode, fuid, fgid, fmode, flg));
   PetscFunctionReturn(0);
 }
 
@@ -200,20 +198,19 @@ PetscErrorCode  PetscTestDirectory(const char dirname[],char mode,PetscBool  *fl
   uid_t          fuid;
   gid_t          fgid;
   int            fmode;
-  PetscErrorCode ierr;
   PetscBool      exists;
 
   PetscFunctionBegin;
   *flg = PETSC_FALSE;
   if (!dirname) PetscFunctionReturn(0);
 
-  ierr = PetscGetFileStat(dirname, &fuid, &fgid, &fmode,&exists);CHKERRQ(ierr);
+  PetscCall(PetscGetFileStat(dirname, &fuid, &fgid, &fmode,&exists));
   if (!exists) PetscFunctionReturn(0);
   /* Except for systems that have this broken stat macros (rare), this
      is the correct way to check for a directory */
   if (!S_ISDIR(fmode)) PetscFunctionReturn(0);
 
-  ierr = PetscTestOwnership(dirname, mode, fuid, fgid, fmode, flg);CHKERRQ(ierr);
+  PetscCall(PetscTestOwnership(dirname, mode, fuid, fgid, fmode, flg));
   PetscFunctionReturn(0);
 }
 
@@ -237,16 +234,15 @@ PetscErrorCode  PetscTestDirectory(const char dirname[],char mode,PetscBool  *fl
 @*/
 PetscErrorCode  PetscLs(MPI_Comm comm,const char dirname[],char found[],size_t tlen,PetscBool  *flg)
 {
-  PetscErrorCode ierr;
   size_t         len;
   char           *f,program[PETSC_MAX_PATH_LEN];
   FILE           *fp;
 
   PetscFunctionBegin;
-  ierr = PetscStrcpy(program,"ls ");CHKERRQ(ierr);
-  ierr = PetscStrcat(program,dirname);CHKERRQ(ierr);
+  PetscCall(PetscStrcpy(program,"ls "));
+  PetscCall(PetscStrcat(program,dirname));
 #if defined(PETSC_HAVE_POPEN)
-  ierr = PetscPOpen(comm,NULL,program,"r",&fp);CHKERRQ(ierr);
+  PetscCall(PetscPOpen(comm,NULL,program,"r",&fp));
 #else
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
 #endif
@@ -254,12 +250,12 @@ PetscErrorCode  PetscLs(MPI_Comm comm,const char dirname[],char found[],size_t t
   if (f) *flg = PETSC_TRUE;
   else *flg = PETSC_FALSE;
   while (f) {
-    ierr = PetscStrlen(found,&len);CHKERRQ(ierr);
+    PetscCall(PetscStrlen(found,&len));
     f    = fgets(found+len,tlen-len,fp);
   }
-  if (*flg) {ierr = PetscInfo(NULL,"ls on %s gives \n%s\n",dirname,found);CHKERRQ(ierr);}
+  if (*flg) PetscCall(PetscInfo(NULL,"ls on %s gives \n%s\n",dirname,found));
 #if defined(PETSC_HAVE_POPEN)
-  ierr = PetscPClose(comm,fp);CHKERRQ(ierr);
+  PetscCall(PetscPClose(comm,fp));
 #else
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
 #endif

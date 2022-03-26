@@ -51,7 +51,6 @@ PetscBool         KSPMonitorRegisterAllCalled = PETSC_FALSE;
 @*/
 PetscErrorCode  KSPLoad(KSP newdm, PetscViewer viewer)
 {
-  PetscErrorCode ierr;
   PetscBool      isbinary;
   PetscInt       classid;
   char           type[256];
@@ -60,18 +59,16 @@ PetscErrorCode  KSPLoad(KSP newdm, PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(newdm,KSP_CLASSID,1);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
-  PetscCheckFalse(!isbinary,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary));
+  PetscCheck(isbinary,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
 
-  ierr = PetscViewerBinaryRead(viewer,&classid,1,NULL,PETSC_INT);CHKERRQ(ierr);
-  PetscCheckFalse(classid != KSP_FILE_CLASSID,PetscObjectComm((PetscObject)newdm),PETSC_ERR_ARG_WRONG,"Not KSP next in file");
-  ierr = PetscViewerBinaryRead(viewer,type,256,NULL,PETSC_CHAR);CHKERRQ(ierr);
-  ierr = KSPSetType(newdm, type);CHKERRQ(ierr);
-  if (newdm->ops->load) {
-    ierr = (*newdm->ops->load)(newdm,viewer);CHKERRQ(ierr);
-  }
-  ierr = KSPGetPC(newdm,&pc);CHKERRQ(ierr);
-  ierr = PCLoad(pc,viewer);CHKERRQ(ierr);
+  PetscCall(PetscViewerBinaryRead(viewer,&classid,1,NULL,PETSC_INT));
+  PetscCheck(classid == KSP_FILE_CLASSID,PetscObjectComm((PetscObject)newdm),PETSC_ERR_ARG_WRONG,"Not KSP next in file");
+  PetscCall(PetscViewerBinaryRead(viewer,type,256,NULL,PETSC_CHAR));
+  PetscCall(KSPSetType(newdm, type));
+  if (newdm->ops->load) PetscCall((*newdm->ops->load)(newdm,viewer));
+  PetscCall(KSPGetPC(newdm,&pc));
+  PetscCall(PCLoad(pc,viewer));
   PetscFunctionReturn(0);
 }
 
@@ -114,7 +111,6 @@ PetscErrorCode  KSPLoad(KSP newdm, PetscViewer viewer)
 @*/
 PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
 {
-  PetscErrorCode ierr;
   PetscBool      iascii,isbinary,isdraw,isstring;
 #if defined(PETSC_HAVE_SAWS)
   PetscBool      issaws;
@@ -123,115 +119,115 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)ksp),&viewer);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)ksp),&viewer));
   }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(ksp,1,viewer,2);
 
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring));
 #if defined(PETSC_HAVE_SAWS)
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&issaws);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&issaws));
 #endif
   if (iascii) {
-    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)ksp,viewer);CHKERRQ(ierr);
+    PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)ksp,viewer));
     if (ksp->ops->view) {
-      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = (*ksp->ops->view)(ksp,viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPushTab(viewer));
+      PetscCall((*ksp->ops->view)(ksp,viewer));
+      PetscCall(PetscViewerASCIIPopTab(viewer));
     }
     if (ksp->guess_zero) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  maximum iterations=%D, initial guess is zero\n",ksp->max_it);CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  maximum iterations=%D, initial guess is zero\n",ksp->max_it));
     } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"  maximum iterations=%D, nonzero initial guess\n", ksp->max_it);CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  maximum iterations=%D, nonzero initial guess\n", ksp->max_it));
     }
-    if (ksp->guess_knoll) {ierr = PetscViewerASCIIPrintf(viewer,"  using preconditioner applied to right hand side for initial guess\n");CHKERRQ(ierr);}
-    ierr = PetscViewerASCIIPrintf(viewer,"  tolerances:  relative=%g, absolute=%g, divergence=%g\n",(double)ksp->rtol,(double)ksp->abstol,(double)ksp->divtol);CHKERRQ(ierr);
+    if (ksp->guess_knoll) PetscCall(PetscViewerASCIIPrintf(viewer,"  using preconditioner applied to right hand side for initial guess\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  tolerances:  relative=%g, absolute=%g, divergence=%g\n",(double)ksp->rtol,(double)ksp->abstol,(double)ksp->divtol));
     if (ksp->pc_side == PC_RIGHT) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  right preconditioning\n");CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  right preconditioning\n"));
     } else if (ksp->pc_side == PC_SYMMETRIC) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  symmetric preconditioning\n");CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  symmetric preconditioning\n"));
     } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"  left preconditioning\n");CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  left preconditioning\n"));
     }
     if (ksp->guess) {
-      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = KSPGuessView(ksp->guess,viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPushTab(viewer));
+      PetscCall(KSPGuessView(ksp->guess,viewer));
+      PetscCall(PetscViewerASCIIPopTab(viewer));
     }
-    if (ksp->dscale) {ierr = PetscViewerASCIIPrintf(viewer,"  diagonally scaled system\n");CHKERRQ(ierr);}
-    ierr = PetscViewerASCIIPrintf(viewer,"  using %s norm type for convergence test\n",KSPNormTypes[ksp->normtype]);CHKERRQ(ierr);
+    if (ksp->dscale) PetscCall(PetscViewerASCIIPrintf(viewer,"  diagonally scaled system\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  using %s norm type for convergence test\n",KSPNormTypes[ksp->normtype]));
   } else if (isbinary) {
     PetscInt    classid = KSP_FILE_CLASSID;
     MPI_Comm    comm;
     PetscMPIInt rank;
     char        type[256];
 
-    ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+    PetscCall(PetscObjectGetComm((PetscObject)ksp,&comm));
+    PetscCallMPI(MPI_Comm_rank(comm,&rank));
     if (rank == 0) {
-      ierr = PetscViewerBinaryWrite(viewer,&classid,1,PETSC_INT);CHKERRQ(ierr);
-      ierr = PetscStrncpy(type,((PetscObject)ksp)->type_name,256);CHKERRQ(ierr);
-      ierr = PetscViewerBinaryWrite(viewer,type,256,PETSC_CHAR);CHKERRQ(ierr);
+      PetscCall(PetscViewerBinaryWrite(viewer,&classid,1,PETSC_INT));
+      PetscCall(PetscStrncpy(type,((PetscObject)ksp)->type_name,256));
+      PetscCall(PetscViewerBinaryWrite(viewer,type,256,PETSC_CHAR));
     }
     if (ksp->ops->view) {
-      ierr = (*ksp->ops->view)(ksp,viewer);CHKERRQ(ierr);
+      PetscCall((*ksp->ops->view)(ksp,viewer));
     }
   } else if (isstring) {
     const char *type;
-    ierr = KSPGetType(ksp,&type);CHKERRQ(ierr);
-    ierr = PetscViewerStringSPrintf(viewer," KSPType: %-7.7s",type);CHKERRQ(ierr);
-    if (ksp->ops->view) {ierr = (*ksp->ops->view)(ksp,viewer);CHKERRQ(ierr);}
+    PetscCall(KSPGetType(ksp,&type));
+    PetscCall(PetscViewerStringSPrintf(viewer," KSPType: %-7.7s",type));
+    if (ksp->ops->view) PetscCall((*ksp->ops->view)(ksp,viewer));
   } else if (isdraw) {
     PetscDraw draw;
     char      str[36];
     PetscReal x,y,bottom,h;
     PetscBool flg;
 
-    ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
-    ierr = PetscDrawGetCurrentPoint(draw,&x,&y);CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPPREONLY,&flg);CHKERRQ(ierr);
+    PetscCall(PetscViewerDrawGetDraw(viewer,0,&draw));
+    PetscCall(PetscDrawGetCurrentPoint(draw,&x,&y));
+    PetscCall(PetscObjectTypeCompare((PetscObject)ksp,KSPPREONLY,&flg));
     if (!flg) {
-      ierr   = PetscStrncpy(str,"KSP: ",sizeof(str));CHKERRQ(ierr);
-      ierr   = PetscStrlcat(str,((PetscObject)ksp)->type_name,sizeof(str));CHKERRQ(ierr);
-      ierr   = PetscDrawStringBoxed(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,NULL,&h);CHKERRQ(ierr);
+      PetscCall(PetscStrncpy(str,"KSP: ",sizeof(str)));
+      PetscCall(PetscStrlcat(str,((PetscObject)ksp)->type_name,sizeof(str)));
+      PetscCall(PetscDrawStringBoxed(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,NULL,&h));
       bottom = y - h;
     } else {
       bottom = y;
     }
-    ierr = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
+    PetscCall(PetscDrawPushCurrentPoint(draw,x,bottom));
 #if defined(PETSC_HAVE_SAWS)
   } else if (issaws) {
     PetscMPIInt rank;
     const char  *name;
 
-    ierr = PetscObjectGetName((PetscObject)ksp,&name);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+    PetscCall(PetscObjectGetName((PetscObject)ksp,&name));
+    PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
     if (!((PetscObject)ksp)->amsmem && rank == 0) {
       char       dir[1024];
 
-      ierr = PetscObjectViewSAWs((PetscObject)ksp,viewer);CHKERRQ(ierr);
-      ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/its",name);CHKERRQ(ierr);
+      PetscCall(PetscObjectViewSAWs((PetscObject)ksp,viewer));
+      PetscCall(PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/its",name));
       PetscStackCallSAWs(SAWs_Register,(dir,&ksp->its,1,SAWs_READ,SAWs_INT));
       if (!ksp->res_hist) {
-        ierr = KSPSetResidualHistory(ksp,NULL,PETSC_DECIDE,PETSC_TRUE);CHKERRQ(ierr);
+        PetscCall(KSPSetResidualHistory(ksp,NULL,PETSC_DECIDE,PETSC_TRUE));
       }
-      ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/res_hist",name);CHKERRQ(ierr);
+      PetscCall(PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/res_hist",name));
       PetscStackCallSAWs(SAWs_Register,(dir,ksp->res_hist,10,SAWs_READ,SAWs_DOUBLE));
     }
 #endif
   } else if (ksp->ops->view) {
-    ierr = (*ksp->ops->view)(ksp,viewer);CHKERRQ(ierr);
+    PetscCall((*ksp->ops->view)(ksp,viewer));
   }
   if (ksp->pc) {
-    ierr = PCView(ksp->pc,viewer);CHKERRQ(ierr);
+    PetscCall(PCView(ksp->pc,viewer));
   }
   if (isdraw) {
     PetscDraw draw;
-    ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
-    ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
+    PetscCall(PetscViewerDrawGetDraw(viewer,0,&draw));
+    PetscCall(PetscDrawPopCurrentPoint(draw));
   }
   PetscFunctionReturn(0);
 }
@@ -251,11 +247,9 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
 @*/
 PetscErrorCode  KSPViewFromOptions(KSP A,PetscObject obj,const char name[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,KSP_CLASSID,1);
-  ierr = PetscObjectViewFromOptions((PetscObject)A,obj,name);CHKERRQ(ierr);
+  PetscCall(PetscObjectViewFromOptions((PetscObject)A,obj,name));
   PetscFunctionReturn(0);
 }
 
@@ -387,7 +381,6 @@ PetscErrorCode  KSPSetLagNorm(KSP ksp,PetscBool flg)
 @*/
 PetscErrorCode KSPSetSupportedNorm(KSP ksp,KSPNormType normtype,PCSide pcside,PetscInt priority)
 {
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   ksp->normsupporttable[normtype][pcside] = priority;
@@ -396,10 +389,8 @@ PetscErrorCode KSPSetSupportedNorm(KSP ksp,KSPNormType normtype,PCSide pcside,Pe
 
 PetscErrorCode KSPNormSupportTableReset_Private(KSP ksp)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscMemzero(ksp->normsupporttable,sizeof(ksp->normsupporttable));CHKERRQ(ierr);
+  PetscCall(PetscMemzero(ksp->normsupporttable,sizeof(ksp->normsupporttable)));
   ksp->pc_side  = ksp->pc_side_set;
   ksp->normtype = ksp->normtype_set;
   PetscFunctionReturn(0);
@@ -421,9 +412,9 @@ PetscErrorCode KSPSetUpNorms_Private(KSP ksp,PetscBool errorifnotsupported,KSPNo
     }
   }
   if (best < 1 && errorifnotsupported) {
-    PetscCheckFalse(ksp->normtype == KSP_NORM_DEFAULT && ksp->pc_side == PC_SIDE_DEFAULT,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"The %s KSP implementation did not call KSPSetSupportedNorm()",((PetscObject)ksp)->type_name);
-    PetscCheckFalse(ksp->normtype == KSP_NORM_DEFAULT,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"KSP %s does not support %s",((PetscObject)ksp)->type_name,PCSides[ksp->pc_side]);
-    PetscCheckFalse(ksp->pc_side == PC_SIDE_DEFAULT,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"KSP %s does not support %s",((PetscObject)ksp)->type_name,KSPNormTypes[ksp->normtype]);
+    PetscCheck(ksp->normtype != KSP_NORM_DEFAULT || ksp->pc_side != PC_SIDE_DEFAULT,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"The %s KSP implementation did not call KSPSetSupportedNorm()",((PetscObject)ksp)->type_name);
+    PetscCheck(ksp->normtype != KSP_NORM_DEFAULT,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"KSP %s does not support %s",((PetscObject)ksp)->type_name,PCSides[ksp->pc_side]);
+    PetscCheck(ksp->pc_side != PC_SIDE_DEFAULT,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"KSP %s does not support %s",((PetscObject)ksp)->type_name,KSPNormTypes[ksp->normtype]);
     SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"KSP %s does not support %s with %s",((PetscObject)ksp)->type_name,KSPNormTypes[ksp->normtype],PCSides[ksp->pc_side]);
   }
   if (normtype) *normtype = (KSPNormType)ibest;
@@ -448,12 +439,10 @@ PetscErrorCode KSPSetUpNorms_Private(KSP ksp,PetscBool errorifnotsupported,KSPNo
 @*/
 PetscErrorCode  KSPGetNormType(KSP ksp, KSPNormType *normtype)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidPointer(normtype,2);
-  ierr      = KSPSetUpNorms_Private(ksp,PETSC_TRUE,&ksp->normtype,&ksp->pc_side);CHKERRQ(ierr);
+  PetscCall(KSPSetUpNorms_Private(ksp,PETSC_TRUE,&ksp->normtype,&ksp->pc_side));
   *normtype = ksp->normtype;
   PetscFunctionReturn(0);
 }
@@ -529,16 +518,14 @@ $           set size, type, etc of mat and pmat
 @*/
 PetscErrorCode  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (Amat) PetscValidHeaderSpecific(Amat,MAT_CLASSID,2);
   if (Pmat) PetscValidHeaderSpecific(Pmat,MAT_CLASSID,3);
   if (Amat) PetscCheckSameComm(ksp,1,Amat,2);
   if (Pmat) PetscCheckSameComm(ksp,1,Pmat,3);
-  if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-  ierr = PCSetOperators(ksp->pc,Amat,Pmat);CHKERRQ(ierr);
+  if (!ksp->pc) PetscCall(KSPGetPC(ksp,&ksp->pc));
+  PetscCall(PCSetOperators(ksp->pc,Amat,Pmat));
   if (ksp->setupstage == KSP_SETUP_NEWRHS) ksp->setupstage = KSP_SETUP_NEWMATRIX;  /* so that next solve call will call PCSetUp() on new matrix */
   PetscFunctionReturn(0);
 }
@@ -565,12 +552,10 @@ PetscErrorCode  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat)
 @*/
 PetscErrorCode  KSPGetOperators(KSP ksp,Mat *Amat,Mat *Pmat)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-  ierr = PCGetOperators(ksp->pc,Amat,Pmat);CHKERRQ(ierr);
+  if (!ksp->pc) PetscCall(KSPGetPC(ksp,&ksp->pc));
+  PetscCall(PCGetOperators(ksp->pc,Amat,Pmat));
   PetscFunctionReturn(0);
 }
 
@@ -593,12 +578,10 @@ PetscErrorCode  KSPGetOperators(KSP ksp,Mat *Amat,Mat *Pmat)
 @*/
 PetscErrorCode  KSPGetOperatorsSet(KSP ksp,PetscBool  *mat,PetscBool  *pmat)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-  ierr = PCGetOperatorsSet(ksp->pc,mat,pmat);CHKERRQ(ierr);
+  if (!ksp->pc) PetscCall(KSPGetPC(ksp,&ksp->pc));
+  PetscCall(PCGetOperatorsSet(ksp->pc,mat,pmat));
   PetscFunctionReturn(0);
 }
 
@@ -686,15 +669,14 @@ PetscErrorCode  KSPSetPostSolve(KSP ksp,PetscErrorCode (*postsolve)(KSP,Vec,Vec,
 PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
 {
   KSP            ksp;
-  PetscErrorCode ierr;
   void           *ctx;
 
   PetscFunctionBegin;
   PetscValidPointer(inksp,2);
   *inksp = NULL;
-  ierr = KSPInitializePackage();CHKERRQ(ierr);
+  PetscCall(KSPInitializePackage());
 
-  ierr = PetscHeaderCreate(ksp,KSP_CLASSID,"KSP","Krylov Method","KSP",comm,KSPDestroy,KSPView);CHKERRQ(ierr);
+  PetscCall(PetscHeaderCreate(ksp,KSP_CLASSID,"KSP","Krylov Method","KSP",comm,KSPDestroy,KSPView));
 
   ksp->max_it  = 10000;
   ksp->pc_side = ksp->pc_side_set = PC_SIDE_DEFAULT;
@@ -727,8 +709,8 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
   ksp->setfromoptionscalled = 0;
   ksp->nmax = PETSC_DECIDE;
 
-  ierr                    = KSPConvergedDefaultCreate(&ctx);CHKERRQ(ierr);
-  ierr                    = KSPSetConvergenceTest(ksp,KSPConvergedDefault,ctx,KSPConvergedDefaultDestroy);CHKERRQ(ierr);
+  PetscCall(KSPConvergedDefaultCreate(&ctx));
+  PetscCall(KSPSetConvergenceTest(ksp,KSPConvergedDefault,ctx,KSPConvergedDefaultDestroy));
   ksp->ops->buildsolution = KSPBuildSolutionDefault;
   ksp->ops->buildresidual = KSPBuildResidualDefault;
 
@@ -741,7 +723,7 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
   ksp->reason     = KSP_CONVERGED_ITERATING;
   ksp->setupstage = KSP_SETUP_NEW;
 
-  ierr = KSPNormSupportTableReset_Private(ksp);CHKERRQ(ierr);
+  PetscCall(KSPNormSupportTableReset_Private(ksp));
 
   *inksp = ksp;
   PetscFunctionReturn(0);
@@ -786,33 +768,33 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
 @*/
 PetscErrorCode  KSPSetType(KSP ksp, KSPType type)
 {
-  PetscErrorCode ierr,(*r)(KSP);
   PetscBool      match;
+  PetscErrorCode (*r)(KSP);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidCharPointer(type,2);
 
-  ierr = PetscObjectTypeCompare((PetscObject)ksp,type,&match);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)ksp,type,&match));
   if (match) PetscFunctionReturn(0);
 
-  ierr = PetscFunctionListFind(KSPList,type,&r);CHKERRQ(ierr);
-  PetscCheckFalse(!r,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested KSP type %s",type);
+  PetscCall(PetscFunctionListFind(KSPList,type,&r));
+  PetscCheck(r,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested KSP type %s",type);
   /* Destroy the previous private KSP context */
   if (ksp->ops->destroy) {
-    ierr              = (*ksp->ops->destroy)(ksp);CHKERRQ(ierr);
+    PetscCall((*ksp->ops->destroy)(ksp));
     ksp->ops->destroy = NULL;
   }
   /* Reinitialize function pointers in KSPOps structure */
-  ierr                    = PetscMemzero(ksp->ops,sizeof(struct _KSPOps));CHKERRQ(ierr);
+  PetscCall(PetscMemzero(ksp->ops,sizeof(struct _KSPOps)));
   ksp->ops->buildsolution = KSPBuildSolutionDefault;
   ksp->ops->buildresidual = KSPBuildResidualDefault;
-  ierr                    = KSPNormSupportTableReset_Private(ksp);CHKERRQ(ierr);
+  PetscCall(KSPNormSupportTableReset_Private(ksp));
   ksp->setupnewmatrix     = PETSC_FALSE; // restore default (setup not called in case of new matrix)
   /* Call the KSPCreate_XXX routine for this particular Krylov solver */
   ksp->setupstage = KSP_SETUP_NEW;
-  ierr            = (*r)(ksp);CHKERRQ(ierr);
-  ierr            = PetscObjectChangeTypeName((PetscObject)ksp,type);CHKERRQ(ierr);
+  PetscCall((*r)(ksp));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)ksp,type));
   PetscFunctionReturn(0);
 }
 
@@ -868,24 +850,20 @@ $     -ksp_type my_solver
 @*/
 PetscErrorCode  KSPRegister(const char sname[],PetscErrorCode (*function)(KSP))
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = KSPInitializePackage();CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&KSPList,sname,function);CHKERRQ(ierr);
+  PetscCall(KSPInitializePackage());
+  PetscCall(PetscFunctionListAdd(&KSPList,sname,function));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode KSPMonitorMakeKey_Internal(const char name[], PetscViewerType vtype, PetscViewerFormat format, char key[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscStrncpy(key, name, PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-  ierr = PetscStrlcat(key, ":", PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-  ierr = PetscStrlcat(key, vtype, PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-  ierr = PetscStrlcat(key, ":", PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-  ierr = PetscStrlcat(key, PetscViewerFormats[format], PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+  PetscCall(PetscStrncpy(key, name, PETSC_MAX_PATH_LEN));
+  PetscCall(PetscStrlcat(key, ":", PETSC_MAX_PATH_LEN));
+  PetscCall(PetscStrlcat(key, vtype, PETSC_MAX_PATH_LEN));
+  PetscCall(PetscStrlcat(key, ":", PETSC_MAX_PATH_LEN));
+  PetscCall(PetscStrlcat(key, PetscViewerFormats[format], PETSC_MAX_PATH_LEN));
   PetscFunctionReturn(0);
 }
 
@@ -925,13 +903,12 @@ PetscErrorCode KSPMonitorRegister(const char name[], PetscViewerType vtype, Pets
                                   PetscErrorCode (*destroy)(PetscViewerAndFormat **))
 {
   char           key[PETSC_MAX_PATH_LEN];
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPInitializePackage();CHKERRQ(ierr);
-  ierr = KSPMonitorMakeKey_Internal(name, vtype, format, key);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&KSPMonitorList, key, monitor);CHKERRQ(ierr);
-  if (create)  {ierr = PetscFunctionListAdd(&KSPMonitorCreateList,  key, create);CHKERRQ(ierr);}
-  if (destroy) {ierr = PetscFunctionListAdd(&KSPMonitorDestroyList, key, destroy);CHKERRQ(ierr);}
+  PetscCall(KSPInitializePackage());
+  PetscCall(KSPMonitorMakeKey_Internal(name, vtype, format, key));
+  PetscCall(PetscFunctionListAdd(&KSPMonitorList, key, monitor));
+  if (create)  PetscCall(PetscFunctionListAdd(&KSPMonitorCreateList,  key, create));
+  if (destroy) PetscCall(PetscFunctionListAdd(&KSPMonitorDestroyList, key, destroy));
   PetscFunctionReturn(0);
 }

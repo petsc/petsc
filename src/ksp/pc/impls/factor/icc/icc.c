@@ -5,7 +5,6 @@ static PetscErrorCode PCSetUp_ICC(PC pc)
 {
   PC_ICC                 *icc = (PC_ICC*)pc->data;
   IS                     perm = NULL,cperm = NULL;
-  PetscErrorCode         ierr;
   MatInfo                info;
   MatSolverType          stype;
   MatFactorError         err;
@@ -14,51 +13,51 @@ static PetscErrorCode PCSetUp_ICC(PC pc)
   PetscFunctionBegin;
   pc->failedreason = PC_NOERROR;
 
-  ierr = MatSetErrorIfFailure(pc->pmat,pc->erroriffailure);CHKERRQ(ierr);
+  PetscCall(MatSetErrorIfFailure(pc->pmat,pc->erroriffailure));
   if (!pc->setupcalled) {
     if (!((PC_Factor*)icc)->fact) {
-      ierr = MatGetFactor(pc->pmat,((PC_Factor*)icc)->solvertype,MAT_FACTOR_ICC,&((PC_Factor*)icc)->fact);CHKERRQ(ierr);
+      PetscCall(MatGetFactor(pc->pmat,((PC_Factor*)icc)->solvertype,MAT_FACTOR_ICC,&((PC_Factor*)icc)->fact));
     }
-    ierr = MatFactorGetCanUseOrdering(((PC_Factor*)icc)->fact,&canuseordering);CHKERRQ(ierr);
+    PetscCall(MatFactorGetCanUseOrdering(((PC_Factor*)icc)->fact,&canuseordering));
     if (canuseordering) {
-      ierr = PCFactorSetDefaultOrdering_Factor(pc);CHKERRQ(ierr);
-      ierr = MatGetOrdering(pc->pmat, ((PC_Factor*)icc)->ordering,&perm,&cperm);CHKERRQ(ierr);
+      PetscCall(PCFactorSetDefaultOrdering_Factor(pc));
+      PetscCall(MatGetOrdering(pc->pmat, ((PC_Factor*)icc)->ordering,&perm,&cperm));
     }
-    ierr = MatICCFactorSymbolic(((PC_Factor*)icc)->fact,pc->pmat,perm,&((PC_Factor*)icc)->info);CHKERRQ(ierr);
+    PetscCall(MatICCFactorSymbolic(((PC_Factor*)icc)->fact,pc->pmat,perm,&((PC_Factor*)icc)->info));
   } else if (pc->flag != SAME_NONZERO_PATTERN) {
     PetscBool canuseordering;
-    ierr = MatDestroy(&((PC_Factor*)icc)->fact);CHKERRQ(ierr);
-    ierr = MatGetFactor(pc->pmat,((PC_Factor*)icc)->solvertype,MAT_FACTOR_ICC,&((PC_Factor*)icc)->fact);CHKERRQ(ierr);
-    ierr = MatFactorGetCanUseOrdering(((PC_Factor*)icc)->fact,&canuseordering);CHKERRQ(ierr);
+    PetscCall(MatDestroy(&((PC_Factor*)icc)->fact));
+    PetscCall(MatGetFactor(pc->pmat,((PC_Factor*)icc)->solvertype,MAT_FACTOR_ICC,&((PC_Factor*)icc)->fact));
+    PetscCall(MatFactorGetCanUseOrdering(((PC_Factor*)icc)->fact,&canuseordering));
     if (canuseordering) {
-      ierr = PCFactorSetDefaultOrdering_Factor(pc);CHKERRQ(ierr);
-      ierr = MatGetOrdering(pc->pmat, ((PC_Factor*)icc)->ordering,&perm,&cperm);CHKERRQ(ierr);
+      PetscCall(PCFactorSetDefaultOrdering_Factor(pc));
+      PetscCall(MatGetOrdering(pc->pmat, ((PC_Factor*)icc)->ordering,&perm,&cperm));
     }
-    ierr = MatICCFactorSymbolic(((PC_Factor*)icc)->fact,pc->pmat,perm,&((PC_Factor*)icc)->info);CHKERRQ(ierr);
+    PetscCall(MatICCFactorSymbolic(((PC_Factor*)icc)->fact,pc->pmat,perm,&((PC_Factor*)icc)->info));
   }
-  ierr                = MatGetInfo(((PC_Factor*)icc)->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
+  PetscCall(MatGetInfo(((PC_Factor*)icc)->fact,MAT_LOCAL,&info));
   icc->hdr.actualfill = info.fill_ratio_needed;
 
-  ierr = ISDestroy(&cperm);CHKERRQ(ierr);
-  ierr = ISDestroy(&perm);CHKERRQ(ierr);
+  PetscCall(ISDestroy(&cperm));
+  PetscCall(ISDestroy(&perm));
 
-  ierr = MatFactorGetError(((PC_Factor*)icc)->fact,&err);CHKERRQ(ierr);
+  PetscCall(MatFactorGetError(((PC_Factor*)icc)->fact,&err));
   if (err) { /* FactorSymbolic() fails */
     pc->failedreason = (PCFailedReason)err;
     PetscFunctionReturn(0);
   }
 
-  ierr = MatCholeskyFactorNumeric(((PC_Factor*)icc)->fact,pc->pmat,&((PC_Factor*)icc)->info);CHKERRQ(ierr);
-  ierr = MatFactorGetError(((PC_Factor*)icc)->fact,&err);CHKERRQ(ierr);
+  PetscCall(MatCholeskyFactorNumeric(((PC_Factor*)icc)->fact,pc->pmat,&((PC_Factor*)icc)->info));
+  PetscCall(MatFactorGetError(((PC_Factor*)icc)->fact,&err));
   if (err) { /* FactorNumeric() fails */
     pc->failedreason = (PCFailedReason)err;
   }
 
-  ierr = PCFactorGetMatSolverType(pc,&stype);CHKERRQ(ierr);
+  PetscCall(PCFactorGetMatSolverType(pc,&stype));
   if (!stype) {
     MatSolverType solverpackage;
-    ierr = MatFactorGetSolverType(((PC_Factor*)icc)->fact,&solverpackage);CHKERRQ(ierr);
-    ierr = PCFactorSetMatSolverType(pc,solverpackage);CHKERRQ(ierr);
+    PetscCall(MatFactorGetSolverType(((PC_Factor*)icc)->fact,&solverpackage));
+    PetscCall(PCFactorSetMatSolverType(pc,solverpackage));
   }
   PetscFunctionReturn(0);
 }
@@ -66,63 +65,57 @@ static PetscErrorCode PCSetUp_ICC(PC pc)
 static PetscErrorCode PCReset_ICC(PC pc)
 {
   PC_ICC         *icc = (PC_ICC*)pc->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatDestroy(&((PC_Factor*)icc)->fact);CHKERRQ(ierr);
+  PetscCall(MatDestroy(&((PC_Factor*)icc)->fact));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCDestroy_ICC(PC pc)
 {
   PC_ICC         *icc = (PC_ICC*)pc->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PCReset_ICC(pc);CHKERRQ(ierr);
-  ierr = PetscFree(((PC_Factor*)icc)->ordering);CHKERRQ(ierr);
-  ierr = PetscFree(((PC_Factor*)icc)->solvertype);CHKERRQ(ierr);
-  ierr = PetscFree(pc->data);CHKERRQ(ierr);
+  PetscCall(PCReset_ICC(pc));
+  PetscCall(PetscFree(((PC_Factor*)icc)->ordering));
+  PetscCall(PetscFree(((PC_Factor*)icc)->solvertype));
+  PetscCall(PetscFree(pc->data));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCApply_ICC(PC pc,Vec x,Vec y)
 {
   PC_ICC         *icc = (PC_ICC*)pc->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatSolve(((PC_Factor*)icc)->fact,x,y);CHKERRQ(ierr);
+  PetscCall(MatSolve(((PC_Factor*)icc)->fact,x,y));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCMatApply_ICC(PC pc,Mat X,Mat Y)
 {
   PC_ICC         *icc = (PC_ICC*)pc->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatMatSolve(((PC_Factor*)icc)->fact,X,Y);CHKERRQ(ierr);
+  PetscCall(MatMatSolve(((PC_Factor*)icc)->fact,X,Y));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCApplySymmetricLeft_ICC(PC pc,Vec x,Vec y)
 {
-  PetscErrorCode ierr;
   PC_ICC         *icc = (PC_ICC*)pc->data;
 
   PetscFunctionBegin;
-  ierr = MatForwardSolve(((PC_Factor*)icc)->fact,x,y);CHKERRQ(ierr);
+  PetscCall(MatForwardSolve(((PC_Factor*)icc)->fact,x,y));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCApplySymmetricRight_ICC(PC pc,Vec x,Vec y)
 {
-  PetscErrorCode ierr;
   PC_ICC         *icc = (PC_ICC*)pc->data;
 
   PetscFunctionBegin;
-  ierr = MatBackwardSolve(((PC_Factor*)icc)->fact,x,y);CHKERRQ(ierr);
+  PetscCall(MatBackwardSolve(((PC_Factor*)icc)->fact,x,y));
   PetscFunctionReturn(0);
 }
 
@@ -130,24 +123,23 @@ static PetscErrorCode PCSetFromOptions_ICC(PetscOptionItems *PetscOptionsObject,
 {
   PC_ICC         *icc = (PC_ICC*)pc->data;
   PetscBool      flg;
-  PetscErrorCode ierr;
   /* PetscReal      dt[3];*/
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"ICC Options");CHKERRQ(ierr);
-  ierr = PCSetFromOptions_Factor(PetscOptionsObject,pc);CHKERRQ(ierr);
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"ICC Options"));
+  PetscCall(PCSetFromOptions_Factor(PetscOptionsObject,pc));
 
-  ierr = PetscOptionsReal("-pc_factor_levels","levels of fill","PCFactorSetLevels",((PC_Factor*)icc)->info.levels,&((PC_Factor*)icc)->info.levels,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsReal("-pc_factor_levels","levels of fill","PCFactorSetLevels",((PC_Factor*)icc)->info.levels,&((PC_Factor*)icc)->info.levels,&flg));
   /*dt[0] = ((PC_Factor*)icc)->info.dt;
   dt[1] = ((PC_Factor*)icc)->info.dtcol;
   dt[2] = ((PC_Factor*)icc)->info.dtcount;
   PetscInt       dtmax = 3;
-  ierr = PetscOptionsRealArray("-pc_factor_drop_tolerance","<dt,dtcol,maxrowcount>","PCFactorSetDropTolerance",dt,&dtmax,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsRealArray("-pc_factor_drop_tolerance","<dt,dtcol,maxrowcount>","PCFactorSetDropTolerance",dt,&dtmax,&flg));
   if (flg) {
-    ierr = PCFactorSetDropTolerance(pc,dt[0],dt[1],(PetscInt)dt[2]);CHKERRQ(ierr);
+    PetscCall(PCFactorSetDropTolerance(pc,dt[0],dt[1],(PetscInt)dt[2]));
   }
   */
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -189,13 +181,12 @@ M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_ICC(PC pc)
 {
-  PetscErrorCode ierr;
   PC_ICC         *icc;
 
   PetscFunctionBegin;
-  ierr     = PetscNewLog(pc,&icc);CHKERRQ(ierr);
+  PetscCall(PetscNewLog(pc,&icc));
   pc->data = (void*)icc;
-  ierr     = PCFactorInitialize(pc, MAT_FACTOR_ICC);CHKERRQ(ierr);
+  PetscCall(PCFactorInitialize(pc, MAT_FACTOR_ICC));
 
   ((PC_Factor*)icc)->info.fill      = 1.0;
   ((PC_Factor*)icc)->info.dtcol     = PETSC_DEFAULT;

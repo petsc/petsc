@@ -43,27 +43,26 @@ PetscErrorCode  TSSetType(TS ts,TSType type)
 {
   PetscErrorCode (*r)(TS);
   PetscBool      match;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
   PetscValidCharPointer(type,2);
-  ierr = PetscObjectTypeCompare((PetscObject) ts, type, &match);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject) ts, type, &match));
   if (match) PetscFunctionReturn(0);
 
-  ierr = PetscFunctionListFind(TSList,type,&r);CHKERRQ(ierr);
+  PetscCall(PetscFunctionListFind(TSList,type,&r));
   PetscCheck(r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown TS type: %s", type);
   if (ts->ops->destroy) {
-    ierr = (*(ts)->ops->destroy)(ts);CHKERRQ(ierr);
+    PetscCall((*(ts)->ops->destroy)(ts));
   }
-  ierr = PetscMemzero(ts->ops,sizeof(*ts->ops));CHKERRQ(ierr);
+  PetscCall(PetscMemzero(ts->ops,sizeof(*ts->ops)));
   ts->usessnes           = PETSC_FALSE;
   ts->default_adapt_type = TSADAPTNONE;
 
   ts->setupcalled = PETSC_FALSE;
 
-  ierr = PetscObjectChangeTypeName((PetscObject)ts, type);CHKERRQ(ierr);
-  ierr = (*r)(ts);CHKERRQ(ierr);
+  PetscCall(PetscObjectChangeTypeName((PetscObject)ts, type));
+  PetscCall((*r)(ts));
   PetscFunctionReturn(0);
 }
 
@@ -127,11 +126,8 @@ PetscErrorCode  TSGetType(TS ts, TSType *type)
 @*/
 PetscErrorCode  TSRegister(const char sname[], PetscErrorCode (*function)(TS))
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = TSInitializePackage();CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&TSList,sname,function);CHKERRQ(ierr);
+  PetscCall(TSInitializePackage());
+  PetscCall(PetscFunctionListAdd(&TSList,sname,function));
   PetscFunctionReturn(0);
 }
-

@@ -27,22 +27,20 @@ PetscBool         PetscSFRegisterAllCalled;
 @*/
 PetscErrorCode  PetscSFRegisterAll(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (PetscSFRegisterAllCalled) PetscFunctionReturn(0);
   PetscSFRegisterAllCalled = PETSC_TRUE;
-  ierr = PetscSFRegister(PETSCSFBASIC,  PetscSFCreate_Basic);CHKERRQ(ierr);
+  PetscCall(PetscSFRegister(PETSCSFBASIC,  PetscSFCreate_Basic));
 #if defined(PETSC_HAVE_MPI_WIN_CREATE)
-  ierr = PetscSFRegister(PETSCSFWINDOW, PetscSFCreate_Window);CHKERRQ(ierr);
+  PetscCall(PetscSFRegister(PETSCSFWINDOW, PetscSFCreate_Window));
 #endif
-  ierr = PetscSFRegister(PETSCSFALLGATHERV,PetscSFCreate_Allgatherv);CHKERRQ(ierr);
-  ierr = PetscSFRegister(PETSCSFALLGATHER, PetscSFCreate_Allgather);CHKERRQ(ierr);
-  ierr = PetscSFRegister(PETSCSFGATHERV,   PetscSFCreate_Gatherv);CHKERRQ(ierr);
-  ierr = PetscSFRegister(PETSCSFGATHER,    PetscSFCreate_Gather);CHKERRQ(ierr);
-  ierr = PetscSFRegister(PETSCSFALLTOALL,  PetscSFCreate_Alltoall);CHKERRQ(ierr);
+  PetscCall(PetscSFRegister(PETSCSFALLGATHERV,PetscSFCreate_Allgatherv));
+  PetscCall(PetscSFRegister(PETSCSFALLGATHER, PetscSFCreate_Allgather));
+  PetscCall(PetscSFRegister(PETSCSFGATHERV,   PetscSFCreate_Gatherv));
+  PetscCall(PetscSFRegister(PETSCSFGATHER,    PetscSFCreate_Gather));
+  PetscCall(PetscSFRegister(PETSCSFALLTOALL,  PetscSFCreate_Alltoall));
 #if defined(PETSC_HAVE_MPI_NEIGHBORHOOD_COLLECTIVES)
-  ierr = PetscSFRegister(PETSCSFNEIGHBOR,  PetscSFCreate_Neighbor);CHKERRQ(ierr);
+  PetscCall(PetscSFRegister(PETSCSFNEIGHBOR,  PetscSFCreate_Neighbor));
 #endif
   PetscFunctionReturn(0);
 }
@@ -75,10 +73,8 @@ $     -sf_type my_impl
 @*/
 PetscErrorCode  PetscSFRegister(const char name[],PetscErrorCode (*create)(PetscSF))
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscSFInitializePackage();CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&PetscSFList,name,create);CHKERRQ(ierr);
+  PetscCall(PetscSFInitializePackage());
+  PetscCall(PetscFunctionListAdd(&PetscSFList,name,create));
   PetscFunctionReturn(0);
 }

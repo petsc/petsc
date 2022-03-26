@@ -18,21 +18,17 @@ static PetscClassId        _maxclassid = PETSC_SMALLEST_CLASSID;
 
 static PetscErrorCode PetscFortranCallbackFinalize(void)
 {
-  PetscErrorCode ierr;
-  PetscClassId   i;
-
   PetscFunctionBegin;
-  for (i=PETSC_SMALLEST_CLASSID; i<_maxclassid; i++) {
+  for (PetscInt i=PETSC_SMALLEST_CLASSID; i<_maxclassid; i++) {
     FortranCallbackBase *base = &_classbase[i-PETSC_SMALLEST_CLASSID];
     FortranCallbackLink next,link = base->subtypes;
     for (; link; link=next) {
       next = link->next;
-      ierr = PetscFree(link->type_name);CHKERRQ(ierr);
-      ierr = PetscFree(link);CHKERRQ(ierr);
+      PetscCall(PetscFree(link->type_name));
+      PetscCall(PetscFree(link));
     }
   }
-  ierr = PetscFree(_classbase);CHKERRQ(ierr);
-
+  PetscCall(PetscFree(_classbase));
   _maxclassid = PETSC_SMALLEST_CLASSID;
   PetscFunctionReturn(0);
 }
@@ -55,7 +51,6 @@ static PetscErrorCode PetscFortranCallbackFinalize(void)
 @*/
 PetscErrorCode PetscFortranCallbackRegister(PetscClassId classid,const char *subtype,PetscFortranCallbackId *id)
 {
-  PetscErrorCode      ierr;
   FortranCallbackBase *base;
   FortranCallbackLink link;
 
@@ -67,12 +62,10 @@ PetscErrorCode PetscFortranCallbackRegister(PetscClassId classid,const char *sub
   if (classid >= _maxclassid) {
     PetscClassId        newmax = PETSC_SMALLEST_CLASSID + 2*(PETSC_LARGEST_CLASSID-PETSC_SMALLEST_CLASSID);
     FortranCallbackBase *newbase;
-    if (!_classbase) {
-      ierr = PetscRegisterFinalize(PetscFortranCallbackFinalize);CHKERRQ(ierr);
-    }
-    ierr = PetscCalloc1(newmax-PETSC_SMALLEST_CLASSID,&newbase);CHKERRQ(ierr);
-    ierr = PetscArraycpy(newbase,_classbase,_maxclassid-PETSC_SMALLEST_CLASSID);CHKERRQ(ierr);
-    ierr = PetscFree(_classbase);CHKERRQ(ierr);
+    if (!_classbase) PetscCall(PetscRegisterFinalize(PetscFortranCallbackFinalize));
+    PetscCall(PetscCalloc1(newmax-PETSC_SMALLEST_CLASSID,&newbase));
+    PetscCall(PetscArraycpy(newbase,_classbase,_maxclassid-PETSC_SMALLEST_CLASSID));
+    PetscCall(PetscFree(_classbase));
 
     _classbase = newbase;
     _maxclassid = newmax;
@@ -82,14 +75,14 @@ PetscErrorCode PetscFortranCallbackRegister(PetscClassId classid,const char *sub
   else {
     for (link=base->subtypes; link; link=link->next) { /* look for either both NULL or matching values (implies both non-NULL) */
       PetscBool match;
-      ierr = PetscStrcmp(subtype,link->type_name,&match);CHKERRQ(ierr);
+      PetscCall(PetscStrcmp(subtype,link->type_name,&match));
       if (match) { /* base type or matching subtype */
         goto found;
       }
     }
     /* Not found. Create node and prepend to class' subtype list */
-    ierr = PetscNew(&link);CHKERRQ(ierr);
-    ierr = PetscStrallocpy(subtype,&link->type_name);CHKERRQ(ierr);
+    PetscCall(PetscNew(&link));
+    PetscCall(PetscStrallocpy(subtype,&link->type_name));
 
     link->max      = PETSC_SMALLEST_FORTRAN_CALLBACK;
     link->next     = base->subtypes;
@@ -121,8 +114,9 @@ found:
 @*/
 PetscErrorCode PetscFortranCallbackGetSizes(PetscClassId classid,PetscFortranCallbackId *numbase,PetscFortranCallbackId *numsubtype)
 {
-
   PetscFunctionBegin;
+  PetscValidPointer(numbase,2);
+  PetscValidPointer(numsubtype,3);
   if (classid < _maxclassid) {
     FortranCallbackBase *base = &_classbase[classid-PETSC_SMALLEST_CLASSID];
     *numbase    = base->basecount;

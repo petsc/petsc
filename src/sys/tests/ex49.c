@@ -10,7 +10,6 @@ T*/
 #include <petscsys.h>
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscDataType  dtype;
   PetscBool      found;
 
@@ -23,25 +22,25 @@ int main(int argc,char **argv)
                  runtime.  The user can use the "help" variable place
                  additional help messages in this printout.
   */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
-  ierr = PetscDataTypeFromString("Scalar",&dtype,&found);CHKERRQ(ierr);
-  PetscCheckFalse(!found,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Did not find scalar datatype");
+  PetscCall(PetscDataTypeFromString("Scalar",&dtype,&found));
+  PetscCheck(found,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Did not find scalar datatype");
   PetscCheckFalse(dtype != PETSC_SCALAR,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Found wrong datatype for scalar");
 
-  ierr = PetscDataTypeFromString("INT",&dtype,&found);CHKERRQ(ierr);
-  PetscCheckFalse(!found,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Did not find int datatype");
+  PetscCall(PetscDataTypeFromString("INT",&dtype,&found));
+  PetscCheck(found,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Did not find int datatype");
   PetscCheckFalse(dtype != PETSC_INT,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Found wrong datatype for int");
 
-  ierr = PetscDataTypeFromString("real",&dtype,&found);CHKERRQ(ierr);
-  PetscCheckFalse(!found,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Did not find real datatype");
+  PetscCall(PetscDataTypeFromString("real",&dtype,&found));
+  PetscCheck(found,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Did not find real datatype");
   PetscCheckFalse(dtype != PETSC_REAL,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Found wrong datatype for real");
 
-  ierr = PetscDataTypeFromString("abogusdatatype",&dtype,&found);CHKERRQ(ierr);
-  PetscCheckFalse(found,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Found a bogus datatype");
+  PetscCall(PetscDataTypeFromString("abogusdatatype",&dtype,&found));
+  PetscCheck(!found,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Found a bogus datatype");
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

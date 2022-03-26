@@ -2,7 +2,6 @@
 
 static PetscErrorCode MatColoringApply_Power(MatColoring mc,ISColoring *iscoloring)
 {
-  PetscErrorCode  ierr;
   Mat             m = mc->mat,mp,ms;
   MatColoring     imc;
   PetscInt        i;
@@ -13,24 +12,24 @@ static PetscErrorCode MatColoringApply_Power(MatColoring mc,ISColoring *iscolori
   if (mc->dist == 1) {
     mp = m;
   } else {
-    ierr = MatMatMult(m,m,MAT_INITIAL_MATRIX,2.0,&mp);CHKERRQ(ierr);
+    PetscCall(MatMatMult(m,m,MAT_INITIAL_MATRIX,2.0,&mp));
     for (i=2;i<mc->dist;i++) {
       ms = mp;
-      ierr = MatMatMult(m,ms,MAT_INITIAL_MATRIX,2.0,&mp);CHKERRQ(ierr);
-      ierr = MatDestroy(&ms);CHKERRQ(ierr);
+      PetscCall(MatMatMult(m,ms,MAT_INITIAL_MATRIX,2.0,&mp));
+      PetscCall(MatDestroy(&ms));
     }
   }
-  ierr = MatColoringCreate(mp,&imc);CHKERRQ(ierr);
-  ierr = PetscObjectGetOptionsPrefix((PetscObject)mc,&optionsprefix);CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)imc,optionsprefix);CHKERRQ(ierr);
-  ierr = PetscObjectAppendOptionsPrefix((PetscObject)imc,"power_");CHKERRQ(ierr);
-  ierr = MatColoringSetType(imc,MATCOLORINGGREEDY);CHKERRQ(ierr);
-  ierr = MatColoringSetDistance(imc,1);CHKERRQ(ierr);
-  ierr = MatColoringSetWeightType(imc,mc->weight_type);CHKERRQ(ierr);
-  ierr = MatColoringSetFromOptions(imc);CHKERRQ(ierr);
-  ierr = MatColoringApply(imc,iscoloring);CHKERRQ(ierr);
-  ierr = MatColoringDestroy(&imc);CHKERRQ(ierr);
-  if (mp != m) {ierr = MatDestroy(&mp);CHKERRQ(ierr);}
+  PetscCall(MatColoringCreate(mp,&imc));
+  PetscCall(PetscObjectGetOptionsPrefix((PetscObject)mc,&optionsprefix));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)imc,optionsprefix));
+  PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)imc,"power_"));
+  PetscCall(MatColoringSetType(imc,MATCOLORINGGREEDY));
+  PetscCall(MatColoringSetDistance(imc,1));
+  PetscCall(MatColoringSetWeightType(imc,mc->weight_type));
+  PetscCall(MatColoringSetFromOptions(imc));
+  PetscCall(MatColoringApply(imc,iscoloring));
+  PetscCall(MatColoringDestroy(&imc));
+  if (mp != m) PetscCall(MatDestroy(&mp));
   PetscFunctionReturn(0);
 }
 

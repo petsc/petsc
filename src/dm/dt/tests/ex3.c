@@ -150,10 +150,10 @@ int main(int argc, char **argv)
   PetscInt        f;
   PetscErrorCode  ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","Test Options","none");CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-digits", "The number of significant digits for the integral","ex3.c",digits,&digits,NULL,1);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","Test Options","none");PetscCall(ierr);
+  PetscCall(PetscOptionsBoundedInt("-digits", "The number of significant digits for the integral","ex3.c",digits,&digits,NULL,1));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
   /* Integrate each function */
   for (f = 0; f < 14; ++f) {
@@ -164,23 +164,23 @@ int main(int argc, char **argv)
 #if defined(PETSC_USE_REAL_SINGLE)
     if (f == 8) continue;
 #endif
-    ierr = PetscDTTanhSinhIntegrate(funcs[f], bounds[f*2+0], bounds[f*2+1], digits, NULL, &integral);CHKERRQ(ierr);
+    PetscCall(PetscDTTanhSinhIntegrate(funcs[f], bounds[f*2+0], bounds[f*2+1], digits, NULL, &integral));
     if (PetscAbsReal(integral - analytic[f]) > PetscMax(epsilon, PetscPowRealInt(10.0, -digits)) || PetscIsInfOrNanScalar(integral - analytic[f])) {
-      ierr = PetscPrintf(PETSC_COMM_SELF, "The integral of func%2d is wrong: %g (%g)\n", f+1, (double)integral, (double) PetscAbsReal(integral - analytic[f]));CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, "The integral of func%2d is wrong: %g (%g)\n", f+1, (double)integral, (double) PetscAbsReal(integral - analytic[f])));
     }
   }
 #if defined(PETSC_HAVE_MPFR)
   for (f = 0; f < 14; ++f) {
     PetscReal integral;
 
-    ierr = PetscDTTanhSinhIntegrateMPFR(funcs[f], bounds[f*2+0], bounds[f*2+1], digits, NULL, &integral);CHKERRQ(ierr);
+    PetscCall(PetscDTTanhSinhIntegrateMPFR(funcs[f], bounds[f*2+0], bounds[f*2+1], digits, NULL, &integral));
     if (PetscAbsReal(integral - analytic[f]) > PetscPowRealInt(10.0, -digits)) {
-      ierr = PetscPrintf(PETSC_COMM_SELF, "The integral of func%2d is wrong: %g (%g)\n", f+1, (double)integral, (double)PetscAbsReal(integral - analytic[f]));CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, "The integral of func%2d is wrong: %g (%g)\n", f+1, (double)integral, (double)PetscAbsReal(integral - analytic[f])));
     }
   }
 #endif
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

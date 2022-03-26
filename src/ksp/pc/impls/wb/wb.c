@@ -18,7 +18,6 @@ const char *const PCExoticTypes[] = {"face","wirebasket","PCExoticType","PC_Exot
 */
 PetscErrorCode DMDAGetWireBasketInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat Aglobal,MatReuse reuse,Mat *P)
 {
-  PetscErrorCode         ierr;
   PetscInt               dim,i,j,k,m,n,p,dof,Nint,Nface,Nwire,Nsurf,*Iint,*Isurf,cint = 0,csurf = 0,istart,jstart,kstart,*II,N,c = 0;
   PetscInt               mwidth,nwidth,pwidth,cnt,mp,np,pp,Ntotal,gl[26],*globals,Ng,*IIint,*IIsurf,Nt;
   Mat                    Xint, Xsurf,Xint_tmp;
@@ -35,11 +34,11 @@ PetscErrorCode DMDAGetWireBasketInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat 
   PetscTable             ht;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(da,&dim,NULL,NULL,NULL,&mp,&np,&pp,&dof,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+  PetscCall(DMDAGetInfo(da,&dim,NULL,NULL,NULL,&mp,&np,&pp,&dof,NULL,NULL,NULL,NULL,NULL));
   PetscCheckFalse(dof != 1,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Only for single field problems");
   PetscCheckFalse(dim != 3,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Only coded for 3d problems");
-  ierr   = DMDAGetCorners(da,NULL,NULL,NULL,&m,&n,&p);CHKERRQ(ierr);
-  ierr   = DMDAGetGhostCorners(da,&istart,&jstart,&kstart,&mwidth,&nwidth,&pwidth);CHKERRQ(ierr);
+  PetscCall(DMDAGetCorners(da,NULL,NULL,NULL,&m,&n,&p));
+  PetscCall(DMDAGetGhostCorners(da,&istart,&jstart,&kstart,&mwidth,&nwidth,&pwidth));
   istart = istart ? -1 : 0;
   jstart = jstart ? -1 : 0;
   kstart = kstart ? -1 : 0;
@@ -62,9 +61,9 @@ PetscErrorCode DMDAGetWireBasketInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat 
   Nface = 2*((m-2-istart)*(n-2-jstart) + (m-2-istart)*(p-2-kstart) + (n-2-jstart)*(p-2-kstart));
   Nwire = 4*((m-2-istart) + (n-2-jstart) + (p-2-kstart)) + 8;
   Nsurf = Nface + Nwire;
-  ierr  = MatCreateSeqDense(MPI_COMM_SELF,Nint,26,NULL,&Xint);CHKERRQ(ierr);
-  ierr  = MatCreateSeqDense(MPI_COMM_SELF,Nsurf,26,NULL,&Xsurf);CHKERRQ(ierr);
-  ierr  = MatDenseGetArray(Xsurf,&xsurf);CHKERRQ(ierr);
+  PetscCall(MatCreateSeqDense(MPI_COMM_SELF,Nint,26,NULL,&Xint));
+  PetscCall(MatCreateSeqDense(MPI_COMM_SELF,Nsurf,26,NULL,&Xsurf));
+  PetscCall(MatDenseGetArray(Xsurf,&xsurf));
 
   /*
      Require that all 12 edges and 6 faces have at least one grid point. Otherwise some of the columns of
@@ -128,8 +127,8 @@ PetscErrorCode DMDAGetWireBasketInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat 
     PetscCheckFalse(PetscAbsScalar(tmp-1.0) > 1.e-10,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong Xsurf interpolation at i %D value %g",i,(double)PetscAbsScalar(tmp));
   }
 #endif
-  ierr = MatDenseRestoreArray(Xsurf,&xsurf);CHKERRQ(ierr);
-  /* ierr = MatView(Xsurf,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
+  PetscCall(MatDenseRestoreArray(Xsurf,&xsurf));
+  /* PetscCall(MatView(Xsurf,PETSC_VIEWER_STDOUT_WORLD));*/
 
   /*
        I are the indices for all the needed vertices (in global numbering)
@@ -139,8 +138,8 @@ PetscErrorCode DMDAGetWireBasketInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat 
        IIint and IIsurf are the same as the Iint, Isurf except they are in the global numbering
   */
 #define Endpoint(a,start,b) (a == 0 || a == (b-1-start))
-  ierr = PetscMalloc3(N,&II,Nint,&Iint,Nsurf,&Isurf);CHKERRQ(ierr);
-  ierr = PetscMalloc2(Nint,&IIint,Nsurf,&IIsurf);CHKERRQ(ierr);
+  PetscCall(PetscMalloc3(N,&II,Nint,&Iint,Nsurf,&Isurf));
+  PetscCall(PetscMalloc2(Nint,&IIint,Nsurf,&IIsurf));
   for (k=0; k<p-kstart; k++) {
     for (j=0; j<n-jstart; j++) {
       for (i=0; i<m-istart; i++) {
@@ -159,73 +158,73 @@ PetscErrorCode DMDAGetWireBasketInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat 
   PetscCheckFalse(c != N,PETSC_COMM_SELF,PETSC_ERR_PLIB,"c != N");
   PetscCheckFalse(cint != Nint,PETSC_COMM_SELF,PETSC_ERR_PLIB,"cint != Nint");
   PetscCheckFalse(csurf != Nsurf,PETSC_COMM_SELF,PETSC_ERR_PLIB,"csurf != Nsurf");
-  ierr = DMGetLocalToGlobalMapping(da,&ltg);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingApply(ltg,N,II,II);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingApply(ltg,Nint,IIint,IIint);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingApply(ltg,Nsurf,IIsurf,IIsurf);CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(comm,N,II,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,Nint,Iint,PETSC_COPY_VALUES,&isint);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,Nsurf,Isurf,PETSC_COPY_VALUES,&issurf);CHKERRQ(ierr);
-  ierr = PetscFree3(II,Iint,Isurf);CHKERRQ(ierr);
+  PetscCall(DMGetLocalToGlobalMapping(da,&ltg));
+  PetscCall(ISLocalToGlobalMappingApply(ltg,N,II,II));
+  PetscCall(ISLocalToGlobalMappingApply(ltg,Nint,IIint,IIint));
+  PetscCall(ISLocalToGlobalMappingApply(ltg,Nsurf,IIsurf,IIsurf));
+  PetscCall(PetscObjectGetComm((PetscObject)da,&comm));
+  PetscCall(ISCreateGeneral(comm,N,II,PETSC_COPY_VALUES,&is));
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF,Nint,Iint,PETSC_COPY_VALUES,&isint));
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF,Nsurf,Isurf,PETSC_COPY_VALUES,&issurf));
+  PetscCall(PetscFree3(II,Iint,Isurf));
 
-  ierr = MatCreateSubMatrices(Aglobal,1,&is,&is,MAT_INITIAL_MATRIX,&Aholder);CHKERRQ(ierr);
+  PetscCall(MatCreateSubMatrices(Aglobal,1,&is,&is,MAT_INITIAL_MATRIX,&Aholder));
   A    = *Aholder;
-  ierr = PetscFree(Aholder);CHKERRQ(ierr);
+  PetscCall(PetscFree(Aholder));
 
-  ierr = MatCreateSubMatrix(A,isint,isint,MAT_INITIAL_MATRIX,&Aii);CHKERRQ(ierr);
-  ierr = MatCreateSubMatrix(A,isint,issurf,MAT_INITIAL_MATRIX,&Ais);CHKERRQ(ierr);
-  ierr = MatCreateSubMatrix(A,issurf,isint,MAT_INITIAL_MATRIX,&Asi);CHKERRQ(ierr);
+  PetscCall(MatCreateSubMatrix(A,isint,isint,MAT_INITIAL_MATRIX,&Aii));
+  PetscCall(MatCreateSubMatrix(A,isint,issurf,MAT_INITIAL_MATRIX,&Ais));
+  PetscCall(MatCreateSubMatrix(A,issurf,isint,MAT_INITIAL_MATRIX,&Asi));
 
   /*
      Solve for the interpolation onto the interior Xint
   */
-  ierr = MatMatMult(Ais,Xsurf,MAT_INITIAL_MATRIX,PETSC_DETERMINE,&Xint_tmp);CHKERRQ(ierr);
-  ierr = MatScale(Xint_tmp,-1.0);CHKERRQ(ierr);
+  PetscCall(MatMatMult(Ais,Xsurf,MAT_INITIAL_MATRIX,PETSC_DETERMINE,&Xint_tmp));
+  PetscCall(MatScale(Xint_tmp,-1.0));
   if (exotic->directSolve) {
-    ierr = MatGetFactor(Aii,MATSOLVERPETSC,MAT_FACTOR_LU,&iAii);CHKERRQ(ierr);
-    ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
-    ierr = MatGetOrdering(Aii,MATORDERINGND,&row,&col);CHKERRQ(ierr);
-    ierr = MatLUFactorSymbolic(iAii,Aii,row,col,&info);CHKERRQ(ierr);
-    ierr = ISDestroy(&row);CHKERRQ(ierr);
-    ierr = ISDestroy(&col);CHKERRQ(ierr);
-    ierr = MatLUFactorNumeric(iAii,Aii,&info);CHKERRQ(ierr);
-    ierr = MatMatSolve(iAii,Xint_tmp,Xint);CHKERRQ(ierr);
-    ierr = MatDestroy(&iAii);CHKERRQ(ierr);
+    PetscCall(MatGetFactor(Aii,MATSOLVERPETSC,MAT_FACTOR_LU,&iAii));
+    PetscCall(MatFactorInfoInitialize(&info));
+    PetscCall(MatGetOrdering(Aii,MATORDERINGND,&row,&col));
+    PetscCall(MatLUFactorSymbolic(iAii,Aii,row,col,&info));
+    PetscCall(ISDestroy(&row));
+    PetscCall(ISDestroy(&col));
+    PetscCall(MatLUFactorNumeric(iAii,Aii,&info));
+    PetscCall(MatMatSolve(iAii,Xint_tmp,Xint));
+    PetscCall(MatDestroy(&iAii));
   } else {
     Vec         b,x;
     PetscScalar *xint_tmp;
 
-    ierr = MatDenseGetArray(Xint,&xint);CHKERRQ(ierr);
-    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,Nint,NULL,&x);CHKERRQ(ierr);
-    ierr = MatDenseGetArray(Xint_tmp,&xint_tmp);CHKERRQ(ierr);
-    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,Nint,NULL,&b);CHKERRQ(ierr);
-    ierr = KSPSetOperators(exotic->ksp,Aii,Aii);CHKERRQ(ierr);
+    PetscCall(MatDenseGetArray(Xint,&xint));
+    PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,1,Nint,NULL,&x));
+    PetscCall(MatDenseGetArray(Xint_tmp,&xint_tmp));
+    PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,1,Nint,NULL,&b));
+    PetscCall(KSPSetOperators(exotic->ksp,Aii,Aii));
     for (i=0; i<26; i++) {
-      ierr = VecPlaceArray(x,xint+i*Nint);CHKERRQ(ierr);
-      ierr = VecPlaceArray(b,xint_tmp+i*Nint);CHKERRQ(ierr);
-      ierr = KSPSolve(exotic->ksp,b,x);CHKERRQ(ierr);
-      ierr = KSPCheckSolve(exotic->ksp,pc,x);CHKERRQ(ierr);
-      ierr = VecResetArray(x);CHKERRQ(ierr);
-      ierr = VecResetArray(b);CHKERRQ(ierr);
+      PetscCall(VecPlaceArray(x,xint+i*Nint));
+      PetscCall(VecPlaceArray(b,xint_tmp+i*Nint));
+      PetscCall(KSPSolve(exotic->ksp,b,x));
+      PetscCall(KSPCheckSolve(exotic->ksp,pc,x));
+      PetscCall(VecResetArray(x));
+      PetscCall(VecResetArray(b));
     }
-    ierr = MatDenseRestoreArray(Xint,&xint);CHKERRQ(ierr);
-    ierr = MatDenseRestoreArray(Xint_tmp,&xint_tmp);CHKERRQ(ierr);
-    ierr = VecDestroy(&x);CHKERRQ(ierr);
-    ierr = VecDestroy(&b);CHKERRQ(ierr);
+    PetscCall(MatDenseRestoreArray(Xint,&xint));
+    PetscCall(MatDenseRestoreArray(Xint_tmp,&xint_tmp));
+    PetscCall(VecDestroy(&x));
+    PetscCall(VecDestroy(&b));
   }
-  ierr = MatDestroy(&Xint_tmp);CHKERRQ(ierr);
+  PetscCall(MatDestroy(&Xint_tmp));
 
 #if defined(PETSC_USE_DEBUG_foo)
-  ierr = MatDenseGetArrayRead(Xint,&rxint);CHKERRQ(ierr);
+  PetscCall(MatDenseGetArrayRead(Xint,&rxint));
   for (i=0; i<Nint; i++) {
     tmp = 0.0;
     for (j=0; j<26; j++) tmp += rxint[i+j*Nint];
 
     PetscCheckFalse(PetscAbsScalar(tmp-1.0) > 1.e-10,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong Xint interpolation at i %D value %g",i,(double)PetscAbsScalar(tmp));
   }
-  ierr = MatDenseRestoreArrayRead(Xint,&rxint);CHKERRQ(ierr);
-  /* ierr = MatView(Xint,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
+  PetscCall(MatDenseRestoreArrayRead(Xint,&rxint));
+  /* PetscCall(MatView(Xint,PETSC_VIEWER_STDOUT_WORLD)); */
 #endif
 
   /*         total vertices             total faces                                  total edges */
@@ -250,72 +249,72 @@ PetscErrorCode DMDAGetWireBasketInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat 
 
   /* PetscIntView(26,gl,PETSC_VIEWER_STDOUT_WORLD); */
   /* convert that to global numbering and get them on all processes */
-  ierr = ISLocalToGlobalMappingApply(ltg,26,gl,gl);CHKERRQ(ierr);
+  PetscCall(ISLocalToGlobalMappingApply(ltg,26,gl,gl));
   /* PetscIntView(26,gl,PETSC_VIEWER_STDOUT_WORLD); */
-  ierr = PetscMalloc1(26*mp*np*pp,&globals);CHKERRQ(ierr);
-  ierr = MPI_Allgather(gl,26,MPIU_INT,globals,26,MPIU_INT,PetscObjectComm((PetscObject)da));CHKERRMPI(ierr);
+  PetscCall(PetscMalloc1(26*mp*np*pp,&globals));
+  PetscCallMPI(MPI_Allgather(gl,26,MPIU_INT,globals,26,MPIU_INT,PetscObjectComm((PetscObject)da)));
 
   /* Number the coarse grid points from 0 to Ntotal */
-  ierr = MatGetSize(Aglobal,&Nt,NULL);CHKERRQ(ierr);
-  ierr = PetscTableCreate(Ntotal/3,Nt+1,&ht);CHKERRQ(ierr);
+  PetscCall(MatGetSize(Aglobal,&Nt,NULL));
+  PetscCall(PetscTableCreate(Ntotal/3,Nt+1,&ht));
   for (i=0; i<26*mp*np*pp; i++) {
-    ierr = PetscTableAddCount(ht,globals[i]+1);CHKERRQ(ierr);
+    PetscCall(PetscTableAddCount(ht,globals[i]+1));
   }
-  ierr = PetscTableGetCount(ht,&cnt);CHKERRQ(ierr);
+  PetscCall(PetscTableGetCount(ht,&cnt));
   PetscCheckFalse(cnt != Ntotal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Hash table size %D not equal to total number coarse grid points %D",cnt,Ntotal);
-  ierr = PetscFree(globals);CHKERRQ(ierr);
+  PetscCall(PetscFree(globals));
   for (i=0; i<26; i++) {
-    ierr = PetscTableFind(ht,gl[i]+1,&gl[i]);CHKERRQ(ierr);
+    PetscCall(PetscTableFind(ht,gl[i]+1,&gl[i]));
     gl[i]--;
   }
-  ierr = PetscTableDestroy(&ht);CHKERRQ(ierr);
+  PetscCall(PetscTableDestroy(&ht));
   /* PetscIntView(26,gl,PETSC_VIEWER_STDOUT_WORLD); */
 
   /* construct global interpolation matrix */
-  ierr = MatGetLocalSize(Aglobal,&Ng,NULL);CHKERRQ(ierr);
+  PetscCall(MatGetLocalSize(Aglobal,&Ng,NULL));
   if (reuse == MAT_INITIAL_MATRIX) {
-    ierr = MatCreateAIJ(PetscObjectComm((PetscObject)da),Ng,PETSC_DECIDE,PETSC_DECIDE,Ntotal,Nint+Nsurf,NULL,Nint+Nsurf,NULL,P);CHKERRQ(ierr);
+    PetscCall(MatCreateAIJ(PetscObjectComm((PetscObject)da),Ng,PETSC_DECIDE,PETSC_DECIDE,Ntotal,Nint+Nsurf,NULL,Nint+Nsurf,NULL,P));
   } else {
-    ierr = MatZeroEntries(*P);CHKERRQ(ierr);
+    PetscCall(MatZeroEntries(*P));
   }
-  ierr = MatSetOption(*P,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = MatDenseGetArrayRead(Xint,&rxint);CHKERRQ(ierr);
-  ierr = MatSetValues(*P,Nint,IIint,26,gl,rxint,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatDenseRestoreArrayRead(Xint,&rxint);CHKERRQ(ierr);
-  ierr = MatDenseGetArrayRead(Xsurf,&rxint);CHKERRQ(ierr);
-  ierr = MatSetValues(*P,Nsurf,IIsurf,26,gl,rxint,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatDenseRestoreArrayRead(Xsurf,&rxint);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscFree2(IIint,IIsurf);CHKERRQ(ierr);
+  PetscCall(MatSetOption(*P,MAT_ROW_ORIENTED,PETSC_FALSE));
+  PetscCall(MatDenseGetArrayRead(Xint,&rxint));
+  PetscCall(MatSetValues(*P,Nint,IIint,26,gl,rxint,INSERT_VALUES));
+  PetscCall(MatDenseRestoreArrayRead(Xint,&rxint));
+  PetscCall(MatDenseGetArrayRead(Xsurf,&rxint));
+  PetscCall(MatSetValues(*P,Nsurf,IIsurf,26,gl,rxint,INSERT_VALUES));
+  PetscCall(MatDenseRestoreArrayRead(Xsurf,&rxint));
+  PetscCall(MatAssemblyBegin(*P,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(*P,MAT_FINAL_ASSEMBLY));
+  PetscCall(PetscFree2(IIint,IIsurf));
 
 #if defined(PETSC_USE_DEBUG_foo)
   {
     Vec         x,y;
     PetscScalar *yy;
-    ierr = VecCreateMPI(PetscObjectComm((PetscObject)da),Ng,PETSC_DETERMINE,&y);CHKERRQ(ierr);
-    ierr = VecCreateMPI(PetscObjectComm((PetscObject)da),PETSC_DETERMINE,Ntotal,&x);CHKERRQ(ierr);
-    ierr = VecSet(x,1.0);CHKERRQ(ierr);
-    ierr = MatMult(*P,x,y);CHKERRQ(ierr);
-    ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
+    PetscCall(VecCreateMPI(PetscObjectComm((PetscObject)da),Ng,PETSC_DETERMINE,&y));
+    PetscCall(VecCreateMPI(PetscObjectComm((PetscObject)da),PETSC_DETERMINE,Ntotal,&x));
+    PetscCall(VecSet(x,1.0));
+    PetscCall(MatMult(*P,x,y));
+    PetscCall(VecGetArray(y,&yy));
     for (i=0; i<Ng; i++) {
       PetscCheckFalse(PetscAbsScalar(yy[i]-1.0) > 1.e-10,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong p interpolation at i %D value %g",i,(double)PetscAbsScalar(yy[i]));
     }
-    ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
-    ierr = VecDestroy(x);CHKERRQ(ierr);
-    ierr = VecDestroy(y);CHKERRQ(ierr);
+    PetscCall(VecRestoreArray(y,&yy));
+    PetscCall(VecDestroy(x));
+    PetscCall(VecDestroy(y));
   }
 #endif
 
-  ierr = MatDestroy(&Aii);CHKERRQ(ierr);
-  ierr = MatDestroy(&Ais);CHKERRQ(ierr);
-  ierr = MatDestroy(&Asi);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = ISDestroy(&is);CHKERRQ(ierr);
-  ierr = ISDestroy(&isint);CHKERRQ(ierr);
-  ierr = ISDestroy(&issurf);CHKERRQ(ierr);
-  ierr = MatDestroy(&Xint);CHKERRQ(ierr);
-  ierr = MatDestroy(&Xsurf);CHKERRQ(ierr);
+  PetscCall(MatDestroy(&Aii));
+  PetscCall(MatDestroy(&Ais));
+  PetscCall(MatDestroy(&Asi));
+  PetscCall(MatDestroy(&A));
+  PetscCall(ISDestroy(&is));
+  PetscCall(ISDestroy(&isint));
+  PetscCall(ISDestroy(&issurf));
+  PetscCall(MatDestroy(&Xint));
+  PetscCall(MatDestroy(&Xsurf));
   PetscFunctionReturn(0);
 }
 
@@ -325,7 +324,6 @@ PetscErrorCode DMDAGetWireBasketInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat 
 */
 PetscErrorCode DMDAGetFaceInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat Aglobal,MatReuse reuse,Mat *P)
 {
-  PetscErrorCode         ierr;
   PetscInt               dim,i,j,k,m,n,p,dof,Nint,Nface,Nwire,Nsurf,*Iint,*Isurf,cint = 0,csurf = 0,istart,jstart,kstart,*II,N,c = 0;
   PetscInt               mwidth,nwidth,pwidth,cnt,mp,np,pp,Ntotal,gl[6],*globals,Ng,*IIint,*IIsurf,Nt;
   Mat                    Xint, Xsurf,Xint_tmp;
@@ -342,11 +340,11 @@ PetscErrorCode DMDAGetFaceInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat Agloba
   PetscTable             ht;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(da,&dim,NULL,NULL,NULL,&mp,&np,&pp,&dof,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+  PetscCall(DMDAGetInfo(da,&dim,NULL,NULL,NULL,&mp,&np,&pp,&dof,NULL,NULL,NULL,NULL,NULL));
   PetscCheckFalse(dof != 1,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Only for single field problems");
   PetscCheckFalse(dim != 3,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Only coded for 3d problems");
-  ierr   = DMDAGetCorners(da,NULL,NULL,NULL,&m,&n,&p);CHKERRQ(ierr);
-  ierr   = DMDAGetGhostCorners(da,&istart,&jstart,&kstart,&mwidth,&nwidth,&pwidth);CHKERRQ(ierr);
+  PetscCall(DMDAGetCorners(da,NULL,NULL,NULL,&m,&n,&p));
+  PetscCall(DMDAGetGhostCorners(da,&istart,&jstart,&kstart,&mwidth,&nwidth,&pwidth));
   istart = istart ? -1 : 0;
   jstart = jstart ? -1 : 0;
   kstart = kstart ? -1 : 0;
@@ -369,9 +367,9 @@ PetscErrorCode DMDAGetFaceInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat Agloba
   Nface = 2*((m-2-istart)*(n-2-jstart) + (m-2-istart)*(p-2-kstart) + (n-2-jstart)*(p-2-kstart));
   Nwire = 4*((m-2-istart) + (n-2-jstart) + (p-2-kstart)) + 8;
   Nsurf = Nface + Nwire;
-  ierr  = MatCreateSeqDense(MPI_COMM_SELF,Nint,6,NULL,&Xint);CHKERRQ(ierr);
-  ierr  = MatCreateSeqDense(MPI_COMM_SELF,Nsurf,6,NULL,&Xsurf);CHKERRQ(ierr);
-  ierr  = MatDenseGetArray(Xsurf,&xsurf);CHKERRQ(ierr);
+  PetscCall(MatCreateSeqDense(MPI_COMM_SELF,Nint,6,NULL,&Xint));
+  PetscCall(MatCreateSeqDense(MPI_COMM_SELF,Nsurf,6,NULL,&Xsurf));
+  PetscCall(MatDenseGetArray(Xsurf,&xsurf));
 
   /*
      Require that all 12 edges and 6 faces have at least one grid point. Otherwise some of the columns of
@@ -407,8 +405,8 @@ PetscErrorCode DMDAGetFaceInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat Agloba
     PetscCheckFalse(PetscAbsScalar(tmp-1.0) > 1.e-10,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong Xsurf interpolation at i %D value %g",i,(double)PetscAbsScalar(tmp));
   }
 #endif
-  ierr = MatDenseRestoreArray(Xsurf,&xsurf);CHKERRQ(ierr);
-  /* ierr = MatView(Xsurf,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
+  PetscCall(MatDenseRestoreArray(Xsurf,&xsurf));
+  /* PetscCall(MatView(Xsurf,PETSC_VIEWER_STDOUT_WORLD));*/
 
   /*
        I are the indices for all the needed vertices (in global numbering)
@@ -418,8 +416,8 @@ PetscErrorCode DMDAGetFaceInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat Agloba
        IIint and IIsurf are the same as the Iint, Isurf except they are in the global numbering
   */
 #define Endpoint(a,start,b) (a == 0 || a == (b-1-start))
-  ierr = PetscMalloc3(N,&II,Nint,&Iint,Nsurf,&Isurf);CHKERRQ(ierr);
-  ierr = PetscMalloc2(Nint,&IIint,Nsurf,&IIsurf);CHKERRQ(ierr);
+  PetscCall(PetscMalloc3(N,&II,Nint,&Iint,Nsurf,&Isurf));
+  PetscCall(PetscMalloc2(Nint,&IIint,Nsurf,&IIsurf));
   for (k=0; k<p-kstart; k++) {
     for (j=0; j<n-jstart; j++) {
       for (i=0; i<m-istart; i++) {
@@ -438,75 +436,75 @@ PetscErrorCode DMDAGetFaceInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat Agloba
   PetscCheckFalse(c != N,PETSC_COMM_SELF,PETSC_ERR_PLIB,"c != N");
   PetscCheckFalse(cint != Nint,PETSC_COMM_SELF,PETSC_ERR_PLIB,"cint != Nint");
   PetscCheckFalse(csurf != Nsurf,PETSC_COMM_SELF,PETSC_ERR_PLIB,"csurf != Nsurf");
-  ierr = DMGetLocalToGlobalMapping(da,&ltg);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingApply(ltg,N,II,II);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingApply(ltg,Nint,IIint,IIint);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingApply(ltg,Nsurf,IIsurf,IIsurf);CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(comm,N,II,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,Nint,Iint,PETSC_COPY_VALUES,&isint);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,Nsurf,Isurf,PETSC_COPY_VALUES,&issurf);CHKERRQ(ierr);
-  ierr = PetscFree3(II,Iint,Isurf);CHKERRQ(ierr);
+  PetscCall(DMGetLocalToGlobalMapping(da,&ltg));
+  PetscCall(ISLocalToGlobalMappingApply(ltg,N,II,II));
+  PetscCall(ISLocalToGlobalMappingApply(ltg,Nint,IIint,IIint));
+  PetscCall(ISLocalToGlobalMappingApply(ltg,Nsurf,IIsurf,IIsurf));
+  PetscCall(PetscObjectGetComm((PetscObject)da,&comm));
+  PetscCall(ISCreateGeneral(comm,N,II,PETSC_COPY_VALUES,&is));
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF,Nint,Iint,PETSC_COPY_VALUES,&isint));
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF,Nsurf,Isurf,PETSC_COPY_VALUES,&issurf));
+  PetscCall(PetscFree3(II,Iint,Isurf));
 
-  ierr = ISSort(is);CHKERRQ(ierr);
-  ierr = MatCreateSubMatrices(Aglobal,1,&is,&is,MAT_INITIAL_MATRIX,&Aholder);CHKERRQ(ierr);
+  PetscCall(ISSort(is));
+  PetscCall(MatCreateSubMatrices(Aglobal,1,&is,&is,MAT_INITIAL_MATRIX,&Aholder));
   A    = *Aholder;
-  ierr = PetscFree(Aholder);CHKERRQ(ierr);
+  PetscCall(PetscFree(Aholder));
 
-  ierr = MatCreateSubMatrix(A,isint,isint,MAT_INITIAL_MATRIX,&Aii);CHKERRQ(ierr);
-  ierr = MatCreateSubMatrix(A,isint,issurf,MAT_INITIAL_MATRIX,&Ais);CHKERRQ(ierr);
-  ierr = MatCreateSubMatrix(A,issurf,isint,MAT_INITIAL_MATRIX,&Asi);CHKERRQ(ierr);
+  PetscCall(MatCreateSubMatrix(A,isint,isint,MAT_INITIAL_MATRIX,&Aii));
+  PetscCall(MatCreateSubMatrix(A,isint,issurf,MAT_INITIAL_MATRIX,&Ais));
+  PetscCall(MatCreateSubMatrix(A,issurf,isint,MAT_INITIAL_MATRIX,&Asi));
 
   /*
      Solve for the interpolation onto the interior Xint
   */
-  ierr = MatMatMult(Ais,Xsurf,MAT_INITIAL_MATRIX,PETSC_DETERMINE,&Xint_tmp);CHKERRQ(ierr);
-  ierr = MatScale(Xint_tmp,-1.0);CHKERRQ(ierr);
+  PetscCall(MatMatMult(Ais,Xsurf,MAT_INITIAL_MATRIX,PETSC_DETERMINE,&Xint_tmp));
+  PetscCall(MatScale(Xint_tmp,-1.0));
 
   if (exotic->directSolve) {
-    ierr = MatGetFactor(Aii,MATSOLVERPETSC,MAT_FACTOR_LU,&iAii);CHKERRQ(ierr);
-    ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
-    ierr = MatGetOrdering(Aii,MATORDERINGND,&row,&col);CHKERRQ(ierr);
-    ierr = MatLUFactorSymbolic(iAii,Aii,row,col,&info);CHKERRQ(ierr);
-    ierr = ISDestroy(&row);CHKERRQ(ierr);
-    ierr = ISDestroy(&col);CHKERRQ(ierr);
-    ierr = MatLUFactorNumeric(iAii,Aii,&info);CHKERRQ(ierr);
-    ierr = MatMatSolve(iAii,Xint_tmp,Xint);CHKERRQ(ierr);
-    ierr = MatDestroy(&iAii);CHKERRQ(ierr);
+    PetscCall(MatGetFactor(Aii,MATSOLVERPETSC,MAT_FACTOR_LU,&iAii));
+    PetscCall(MatFactorInfoInitialize(&info));
+    PetscCall(MatGetOrdering(Aii,MATORDERINGND,&row,&col));
+    PetscCall(MatLUFactorSymbolic(iAii,Aii,row,col,&info));
+    PetscCall(ISDestroy(&row));
+    PetscCall(ISDestroy(&col));
+    PetscCall(MatLUFactorNumeric(iAii,Aii,&info));
+    PetscCall(MatMatSolve(iAii,Xint_tmp,Xint));
+    PetscCall(MatDestroy(&iAii));
   } else {
     Vec         b,x;
     PetscScalar *xint_tmp;
 
-    ierr = MatDenseGetArray(Xint,&xint);CHKERRQ(ierr);
-    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,Nint,NULL,&x);CHKERRQ(ierr);
-    ierr = MatDenseGetArray(Xint_tmp,&xint_tmp);CHKERRQ(ierr);
-    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,Nint,NULL,&b);CHKERRQ(ierr);
-    ierr = KSPSetOperators(exotic->ksp,Aii,Aii);CHKERRQ(ierr);
+    PetscCall(MatDenseGetArray(Xint,&xint));
+    PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,1,Nint,NULL,&x));
+    PetscCall(MatDenseGetArray(Xint_tmp,&xint_tmp));
+    PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,1,Nint,NULL,&b));
+    PetscCall(KSPSetOperators(exotic->ksp,Aii,Aii));
     for (i=0; i<6; i++) {
-      ierr = VecPlaceArray(x,xint+i*Nint);CHKERRQ(ierr);
-      ierr = VecPlaceArray(b,xint_tmp+i*Nint);CHKERRQ(ierr);
-      ierr = KSPSolve(exotic->ksp,b,x);CHKERRQ(ierr);
-      ierr = KSPCheckSolve(exotic->ksp,pc,x);CHKERRQ(ierr);
-      ierr = VecResetArray(x);CHKERRQ(ierr);
-      ierr = VecResetArray(b);CHKERRQ(ierr);
+      PetscCall(VecPlaceArray(x,xint+i*Nint));
+      PetscCall(VecPlaceArray(b,xint_tmp+i*Nint));
+      PetscCall(KSPSolve(exotic->ksp,b,x));
+      PetscCall(KSPCheckSolve(exotic->ksp,pc,x));
+      PetscCall(VecResetArray(x));
+      PetscCall(VecResetArray(b));
     }
-    ierr = MatDenseRestoreArray(Xint,&xint);CHKERRQ(ierr);
-    ierr = MatDenseRestoreArray(Xint_tmp,&xint_tmp);CHKERRQ(ierr);
-    ierr = VecDestroy(&x);CHKERRQ(ierr);
-    ierr = VecDestroy(&b);CHKERRQ(ierr);
+    PetscCall(MatDenseRestoreArray(Xint,&xint));
+    PetscCall(MatDenseRestoreArray(Xint_tmp,&xint_tmp));
+    PetscCall(VecDestroy(&x));
+    PetscCall(VecDestroy(&b));
   }
-  ierr = MatDestroy(&Xint_tmp);CHKERRQ(ierr);
+  PetscCall(MatDestroy(&Xint_tmp));
 
 #if defined(PETSC_USE_DEBUG_foo)
-  ierr = MatDenseGetArrayRead(Xint,&rxint);CHKERRQ(ierr);
+  PetscCall(MatDenseGetArrayRead(Xint,&rxint));
   for (i=0; i<Nint; i++) {
     tmp = 0.0;
     for (j=0; j<6; j++) tmp += rxint[i+j*Nint];
 
     PetscCheckFalse(PetscAbsScalar(tmp-1.0) > 1.e-10,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong Xint interpolation at i %D value %g",i,(double)PetscAbsScalar(tmp));
   }
-  ierr = MatDenseRestoreArrayRead(Xint,&rxint);CHKERRQ(ierr);
-  /* ierr = MatView(Xint,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
+  PetscCall(MatDenseRestoreArrayRead(Xint,&rxint));
+  /* PetscCall(MatView(Xint,PETSC_VIEWER_STDOUT_WORLD)); */
 #endif
 
   /*         total faces    */
@@ -526,72 +524,72 @@ PetscErrorCode DMDAGetFaceInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat Agloba
 
   /* PetscIntView(6,gl,PETSC_VIEWER_STDOUT_WORLD); */
   /* convert that to global numbering and get them on all processes */
-  ierr = ISLocalToGlobalMappingApply(ltg,6,gl,gl);CHKERRQ(ierr);
+  PetscCall(ISLocalToGlobalMappingApply(ltg,6,gl,gl));
   /* PetscIntView(6,gl,PETSC_VIEWER_STDOUT_WORLD); */
-  ierr = PetscMalloc1(6*mp*np*pp,&globals);CHKERRQ(ierr);
-  ierr = MPI_Allgather(gl,6,MPIU_INT,globals,6,MPIU_INT,PetscObjectComm((PetscObject)da));CHKERRMPI(ierr);
+  PetscCall(PetscMalloc1(6*mp*np*pp,&globals));
+  PetscCallMPI(MPI_Allgather(gl,6,MPIU_INT,globals,6,MPIU_INT,PetscObjectComm((PetscObject)da)));
 
   /* Number the coarse grid points from 0 to Ntotal */
-  ierr = MatGetSize(Aglobal,&Nt,NULL);CHKERRQ(ierr);
-  ierr = PetscTableCreate(Ntotal/3,Nt+1,&ht);CHKERRQ(ierr);
+  PetscCall(MatGetSize(Aglobal,&Nt,NULL));
+  PetscCall(PetscTableCreate(Ntotal/3,Nt+1,&ht));
   for (i=0; i<6*mp*np*pp; i++) {
-    ierr = PetscTableAddCount(ht,globals[i]+1);CHKERRQ(ierr);
+    PetscCall(PetscTableAddCount(ht,globals[i]+1));
   }
-  ierr = PetscTableGetCount(ht,&cnt);CHKERRQ(ierr);
+  PetscCall(PetscTableGetCount(ht,&cnt));
   PetscCheckFalse(cnt != Ntotal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Hash table size %D not equal to total number coarse grid points %D",cnt,Ntotal);
-  ierr = PetscFree(globals);CHKERRQ(ierr);
+  PetscCall(PetscFree(globals));
   for (i=0; i<6; i++) {
-    ierr = PetscTableFind(ht,gl[i]+1,&gl[i]);CHKERRQ(ierr);
+    PetscCall(PetscTableFind(ht,gl[i]+1,&gl[i]));
     gl[i]--;
   }
-  ierr = PetscTableDestroy(&ht);CHKERRQ(ierr);
+  PetscCall(PetscTableDestroy(&ht));
   /* PetscIntView(6,gl,PETSC_VIEWER_STDOUT_WORLD); */
 
   /* construct global interpolation matrix */
-  ierr = MatGetLocalSize(Aglobal,&Ng,NULL);CHKERRQ(ierr);
+  PetscCall(MatGetLocalSize(Aglobal,&Ng,NULL));
   if (reuse == MAT_INITIAL_MATRIX) {
-    ierr = MatCreateAIJ(PetscObjectComm((PetscObject)da),Ng,PETSC_DECIDE,PETSC_DECIDE,Ntotal,Nint+Nsurf,NULL,Nint,NULL,P);CHKERRQ(ierr);
+    PetscCall(MatCreateAIJ(PetscObjectComm((PetscObject)da),Ng,PETSC_DECIDE,PETSC_DECIDE,Ntotal,Nint+Nsurf,NULL,Nint,NULL,P));
   } else {
-    ierr = MatZeroEntries(*P);CHKERRQ(ierr);
+    PetscCall(MatZeroEntries(*P));
   }
-  ierr = MatSetOption(*P,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = MatDenseGetArrayRead(Xint,&rxint);CHKERRQ(ierr);
-  ierr = MatSetValues(*P,Nint,IIint,6,gl,rxint,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatDenseRestoreArrayRead(Xint,&rxint);CHKERRQ(ierr);
-  ierr = MatDenseGetArrayRead(Xsurf,&rxint);CHKERRQ(ierr);
-  ierr = MatSetValues(*P,Nsurf,IIsurf,6,gl,rxint,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatDenseRestoreArrayRead(Xsurf,&rxint);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscFree2(IIint,IIsurf);CHKERRQ(ierr);
+  PetscCall(MatSetOption(*P,MAT_ROW_ORIENTED,PETSC_FALSE));
+  PetscCall(MatDenseGetArrayRead(Xint,&rxint));
+  PetscCall(MatSetValues(*P,Nint,IIint,6,gl,rxint,INSERT_VALUES));
+  PetscCall(MatDenseRestoreArrayRead(Xint,&rxint));
+  PetscCall(MatDenseGetArrayRead(Xsurf,&rxint));
+  PetscCall(MatSetValues(*P,Nsurf,IIsurf,6,gl,rxint,INSERT_VALUES));
+  PetscCall(MatDenseRestoreArrayRead(Xsurf,&rxint));
+  PetscCall(MatAssemblyBegin(*P,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(*P,MAT_FINAL_ASSEMBLY));
+  PetscCall(PetscFree2(IIint,IIsurf));
 
 #if defined(PETSC_USE_DEBUG_foo)
   {
     Vec         x,y;
     PetscScalar *yy;
-    ierr = VecCreateMPI(PetscObjectComm((PetscObject)da),Ng,PETSC_DETERMINE,&y);CHKERRQ(ierr);
-    ierr = VecCreateMPI(PetscObjectComm((PetscObject)da),PETSC_DETERMINE,Ntotal,&x);CHKERRQ(ierr);
-    ierr = VecSet(x,1.0);CHKERRQ(ierr);
-    ierr = MatMult(*P,x,y);CHKERRQ(ierr);
-    ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
+    PetscCall(VecCreateMPI(PetscObjectComm((PetscObject)da),Ng,PETSC_DETERMINE,&y));
+    PetscCall(VecCreateMPI(PetscObjectComm((PetscObject)da),PETSC_DETERMINE,Ntotal,&x));
+    PetscCall(VecSet(x,1.0));
+    PetscCall(MatMult(*P,x,y));
+    PetscCall(VecGetArray(y,&yy));
     for (i=0; i<Ng; i++) {
       PetscCheckFalse(PetscAbsScalar(yy[i]-1.0) > 1.e-10,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong p interpolation at i %D value %g",i,(double)PetscAbsScalar(yy[i]));
     }
-    ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
-    ierr = VecDestroy(x);CHKERRQ(ierr);
-    ierr = VecDestroy(y);CHKERRQ(ierr);
+    PetscCall(VecRestoreArray(y,&yy));
+    PetscCall(VecDestroy(x));
+    PetscCall(VecDestroy(y));
   }
 #endif
 
-  ierr = MatDestroy(&Aii);CHKERRQ(ierr);
-  ierr = MatDestroy(&Ais);CHKERRQ(ierr);
-  ierr = MatDestroy(&Asi);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = ISDestroy(&is);CHKERRQ(ierr);
-  ierr = ISDestroy(&isint);CHKERRQ(ierr);
-  ierr = ISDestroy(&issurf);CHKERRQ(ierr);
-  ierr = MatDestroy(&Xint);CHKERRQ(ierr);
-  ierr = MatDestroy(&Xsurf);CHKERRQ(ierr);
+  PetscCall(MatDestroy(&Aii));
+  PetscCall(MatDestroy(&Ais));
+  PetscCall(MatDestroy(&Asi));
+  PetscCall(MatDestroy(&A));
+  PetscCall(ISDestroy(&is));
+  PetscCall(ISDestroy(&isint));
+  PetscCall(ISDestroy(&issurf));
+  PetscCall(MatDestroy(&Xint));
+  PetscCall(MatDestroy(&Xsurf));
   PetscFunctionReturn(0);
 }
 
@@ -624,12 +622,10 @@ PetscErrorCode DMDAGetFaceInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat Agloba
 @*/
 PetscErrorCode  PCExoticSetType(PC pc,PCExoticType type)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveEnum(pc,type,2);
-  ierr = PetscTryMethod(pc,"PCExoticSetType_C",(PC,PCExoticType),(pc,type));CHKERRQ(ierr);
+  PetscCall(PetscTryMethod(pc,"PCExoticSetType_C",(PC,PCExoticType),(pc,type)));
   PetscFunctionReturn(0);
 }
 
@@ -645,104 +641,100 @@ static PetscErrorCode  PCExoticSetType_Exotic(PC pc,PCExoticType type)
 
 PetscErrorCode PCSetUp_Exotic(PC pc)
 {
-  PetscErrorCode ierr;
   Mat            A;
   PC_MG          *mg   = (PC_MG*)pc->data;
   PC_Exotic      *ex   = (PC_Exotic*) mg->innerctx;
   MatReuse       reuse = (ex->P) ? MAT_REUSE_MATRIX : MAT_INITIAL_MATRIX;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!pc->dm,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Need to call PCSetDM() before using this PC");
-  ierr = PCGetOperators(pc,NULL,&A);CHKERRQ(ierr);
+  PetscCheck(pc->dm,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Need to call PCSetDM() before using this PC");
+  PetscCall(PCGetOperators(pc,NULL,&A));
   if (ex->type == PC_EXOTIC_FACE) {
-    ierr = DMDAGetFaceInterpolation(pc,pc->dm,ex,A,reuse,&ex->P);CHKERRQ(ierr);
+    PetscCall(DMDAGetFaceInterpolation(pc,pc->dm,ex,A,reuse,&ex->P));
   } else if (ex->type == PC_EXOTIC_WIREBASKET) {
-    ierr = DMDAGetWireBasketInterpolation(pc,pc->dm,ex,A,reuse,&ex->P);CHKERRQ(ierr);
+    PetscCall(DMDAGetWireBasketInterpolation(pc,pc->dm,ex,A,reuse,&ex->P));
   } else SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"Unknown exotic coarse space %d",ex->type);
-  ierr = PCMGSetInterpolation(pc,1,ex->P);CHKERRQ(ierr);
+  PetscCall(PCMGSetInterpolation(pc,1,ex->P));
   /* if PC has attached DM we must remove it or the PCMG will use it to compute incorrect sized vectors and interpolations */
-  ierr = PCSetDM(pc,NULL);CHKERRQ(ierr);
-  ierr = PCSetUp_MG(pc);CHKERRQ(ierr);
+  PetscCall(PCSetDM(pc,NULL));
+  PetscCall(PCSetUp_MG(pc));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PCDestroy_Exotic(PC pc)
 {
-  PetscErrorCode ierr;
   PC_MG          *mg  = (PC_MG*)pc->data;
   PC_Exotic      *ctx = (PC_Exotic*) mg->innerctx;
 
   PetscFunctionBegin;
-  ierr = MatDestroy(&ctx->P);CHKERRQ(ierr);
-  ierr = KSPDestroy(&ctx->ksp);CHKERRQ(ierr);
-  ierr = PetscFree(ctx);CHKERRQ(ierr);
-  ierr = PCDestroy_MG(pc);CHKERRQ(ierr);
+  PetscCall(MatDestroy(&ctx->P));
+  PetscCall(KSPDestroy(&ctx->ksp));
+  PetscCall(PetscFree(ctx));
+  PetscCall(PCDestroy_MG(pc));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PCView_Exotic(PC pc,PetscViewer viewer)
 {
   PC_MG          *mg = (PC_MG*)pc->data;
-  PetscErrorCode ierr;
   PetscBool      iascii;
   PC_Exotic      *ctx = (PC_Exotic*) mg->innerctx;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"    Exotic type = %s\n",PCExoticTypes[ctx->type]);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    Exotic type = %s\n",PCExoticTypes[ctx->type]));
     if (ctx->directSolve) {
-      ierr = PetscViewerASCIIPrintf(viewer,"      Using direct solver to construct interpolation\n");CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer,"      Using direct solver to construct interpolation\n"));
     } else {
       PetscViewer sviewer;
       PetscMPIInt rank;
 
-      ierr = PetscViewerASCIIPrintf(viewer,"      Using iterative solver to construct interpolation\n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);  /* should not need to push this twice? */
-      ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
-      ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRMPI(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer,"      Using iterative solver to construct interpolation\n"));
+      PetscCall(PetscViewerASCIIPushTab(viewer));
+      PetscCall(PetscViewerASCIIPushTab(viewer));  /* should not need to push this twice? */
+      PetscCall(PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer));
+      PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank));
       if (rank == 0) {
-        ierr = KSPView(ctx->ksp,sviewer);CHKERRQ(ierr);
+        PetscCall(KSPView(ctx->ksp,sviewer));
       }
-      ierr = PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+      PetscCall(PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer));
+      PetscCall(PetscViewerASCIIPopTab(viewer));
+      PetscCall(PetscViewerASCIIPopTab(viewer));
     }
   }
-  ierr = PCView_MG(pc,viewer);CHKERRQ(ierr);
+  PetscCall(PCView_MG(pc,viewer));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PCSetFromOptions_Exotic(PetscOptionItems *PetscOptionsObject,PC pc)
 {
-  PetscErrorCode ierr;
   PetscBool      flg;
   PC_MG          *mg = (PC_MG*)pc->data;
   PCExoticType   mgctype;
   PC_Exotic      *ctx = (PC_Exotic*) mg->innerctx;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"Exotic coarse space options");CHKERRQ(ierr);
-  ierr = PetscOptionsEnum("-pc_exotic_type","face or wirebasket","PCExoticSetType",PCExoticTypes,(PetscEnum)ctx->type,(PetscEnum*)&mgctype,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"Exotic coarse space options"));
+  PetscCall(PetscOptionsEnum("-pc_exotic_type","face or wirebasket","PCExoticSetType",PCExoticTypes,(PetscEnum)ctx->type,(PetscEnum*)&mgctype,&flg));
   if (flg) {
-    ierr = PCExoticSetType(pc,mgctype);CHKERRQ(ierr);
+    PetscCall(PCExoticSetType(pc,mgctype));
   }
-  ierr = PetscOptionsBool("-pc_exotic_direct_solver","use direct solver to construct interpolation","None",ctx->directSolve,&ctx->directSolve,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsBool("-pc_exotic_direct_solver","use direct solver to construct interpolation","None",ctx->directSolve,&ctx->directSolve,NULL));
   if (!ctx->directSolve) {
     if (!ctx->ksp) {
       const char *prefix;
-      ierr = KSPCreate(PETSC_COMM_SELF,&ctx->ksp);CHKERRQ(ierr);
-      ierr = KSPSetErrorIfNotConverged(ctx->ksp,pc->erroriffailure);CHKERRQ(ierr);
-      ierr = PetscObjectIncrementTabLevel((PetscObject)ctx->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)ctx->ksp);CHKERRQ(ierr);
-      ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
-      ierr = KSPSetOptionsPrefix(ctx->ksp,prefix);CHKERRQ(ierr);
-      ierr = KSPAppendOptionsPrefix(ctx->ksp,"exotic_");CHKERRQ(ierr);
+      PetscCall(KSPCreate(PETSC_COMM_SELF,&ctx->ksp));
+      PetscCall(KSPSetErrorIfNotConverged(ctx->ksp,pc->erroriffailure));
+      PetscCall(PetscObjectIncrementTabLevel((PetscObject)ctx->ksp,(PetscObject)pc,1));
+      PetscCall(PetscLogObjectParent((PetscObject)pc,(PetscObject)ctx->ksp));
+      PetscCall(PCGetOptionsPrefix(pc,&prefix));
+      PetscCall(KSPSetOptionsPrefix(ctx->ksp,prefix));
+      PetscCall(KSPAppendOptionsPrefix(ctx->ksp,"exotic_"));
     }
-    ierr = KSPSetFromOptions(ctx->ksp);CHKERRQ(ierr);
+    PetscCall(KSPSetFromOptions(ctx->ksp));
   }
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -793,23 +785,22 @@ M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_Exotic(PC pc)
 {
-  PetscErrorCode ierr;
   PC_Exotic      *ex;
   PC_MG          *mg;
 
   PetscFunctionBegin;
   /* if type was previously mg; must manually destroy it because call to PCSetType(pc,PCMG) will not destroy it */
   if (pc->ops->destroy) {
-    ierr =  (*pc->ops->destroy)(pc);CHKERRQ(ierr);
+    PetscCall((*pc->ops->destroy)(pc));
     pc->data = NULL;
   }
-  ierr = PetscFree(((PetscObject)pc)->type_name);CHKERRQ(ierr);
+  PetscCall(PetscFree(((PetscObject)pc)->type_name));
   ((PetscObject)pc)->type_name = NULL;
 
-  ierr         = PCSetType(pc,PCMG);CHKERRQ(ierr);
-  ierr         = PCMGSetLevels(pc,2,NULL);CHKERRQ(ierr);
-  ierr         = PCMGSetGalerkin(pc,PC_MG_GALERKIN_PMAT);CHKERRQ(ierr);
-  ierr         = PetscNew(&ex);CHKERRQ(ierr); \
+  PetscCall(PCSetType(pc,PCMG));
+  PetscCall(PCMGSetLevels(pc,2,NULL));
+  PetscCall(PCMGSetGalerkin(pc,PC_MG_GALERKIN_PMAT));
+  PetscCall(PetscNew(&ex)); \
   ex->type     = PC_EXOTIC_FACE;
   mg           = (PC_MG*) pc->data;
   mg->innerctx = ex;
@@ -819,6 +810,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_Exotic(PC pc)
   pc->ops->destroy        = PCDestroy_Exotic;
   pc->ops->setup          = PCSetUp_Exotic;
 
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCExoticSetType_C",PCExoticSetType_Exotic);CHKERRQ(ierr);
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCExoticSetType_C",PCExoticSetType_Exotic));
   PetscFunctionReturn(0);
 }

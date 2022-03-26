@@ -103,7 +103,7 @@ PetscErrorCode PetscRandomDestroy_Random123(PetscRandom r)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree(r->data);CHKERRQ(ierr);
+  PetscCall(PetscFree(r->data));
   PetscFunctionReturn(0);
 }
 
@@ -136,10 +136,10 @@ PETSC_EXTERN PetscErrorCode PetscRandomCreate_Random123(PetscRandom r)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(r,&r123);CHKERRQ(ierr);
+  PetscCall(PetscNewLog(r,&r123));
   r->data = r123;
-  ierr = PetscMemcpy(r->ops,&PetscRandomOps_Values,sizeof(PetscRandomOps_Values));CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)r,PETSCRANDOM123);CHKERRQ(ierr);
-  ierr = PetscRandomSeed(r);CHKERRQ(ierr);
+  PetscCall(PetscMemcpy(r->ops,&PetscRandomOps_Values,sizeof(PetscRandomOps_Values)));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)r,PETSCRANDOM123));
+  PetscCall(PetscRandomSeed(r));
   PetscFunctionReturn(0);
 }

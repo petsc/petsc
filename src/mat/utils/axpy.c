@@ -3,34 +3,34 @@
 
 static PetscErrorCode MatTransposeAXPY_Private(Mat Y,PetscScalar a,Mat X,MatStructure str,Mat T)
 {
-  PetscErrorCode ierr,(*f)(Mat,Mat*);
   Mat            A,F;
+  PetscErrorCode (*f)(Mat,Mat*);
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)T,"MatTransposeGetMat_C",&f);CHKERRQ(ierr);
+  PetscCall(PetscObjectQueryFunction((PetscObject)T,"MatTransposeGetMat_C",&f));
   if (f) {
-    ierr = MatTransposeGetMat(T,&A);CHKERRQ(ierr);
+    PetscCall(MatTransposeGetMat(T,&A));
     if (T == X) {
-      ierr = PetscInfo(NULL,"Explicitly transposing X of type MATTRANSPOSEMAT to perform MatAXPY()\n");CHKERRQ(ierr);
-      ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&F);CHKERRQ(ierr);
+      PetscCall(PetscInfo(NULL,"Explicitly transposing X of type MATTRANSPOSEMAT to perform MatAXPY()\n"));
+      PetscCall(MatTranspose(A,MAT_INITIAL_MATRIX,&F));
       A = Y;
     } else {
-      ierr = PetscInfo(NULL,"Transposing X because Y of type MATTRANSPOSEMAT to perform MatAXPY()\n");CHKERRQ(ierr);
-      ierr = MatTranspose(X,MAT_INITIAL_MATRIX,&F);CHKERRQ(ierr);
+      PetscCall(PetscInfo(NULL,"Transposing X because Y of type MATTRANSPOSEMAT to perform MatAXPY()\n"));
+      PetscCall(MatTranspose(X,MAT_INITIAL_MATRIX,&F));
     }
   } else {
-    ierr = MatHermitianTransposeGetMat(T,&A);CHKERRQ(ierr);
+    PetscCall(MatHermitianTransposeGetMat(T,&A));
     if (T == X) {
-      ierr = PetscInfo(NULL,"Explicitly Hermitian transposing X of type MATTRANSPOSEMAT to perform MatAXPY()\n");CHKERRQ(ierr);
-      ierr = MatHermitianTranspose(A,MAT_INITIAL_MATRIX,&F);CHKERRQ(ierr);
+      PetscCall(PetscInfo(NULL,"Explicitly Hermitian transposing X of type MATTRANSPOSEMAT to perform MatAXPY()\n"));
+      PetscCall(MatHermitianTranspose(A,MAT_INITIAL_MATRIX,&F));
       A = Y;
     } else {
-      ierr = PetscInfo(NULL,"Hermitian transposing X because Y of type MATTRANSPOSEMAT to perform MatAXPY()\n");CHKERRQ(ierr);
-      ierr = MatHermitianTranspose(X,MAT_INITIAL_MATRIX,&F);CHKERRQ(ierr);
+      PetscCall(PetscInfo(NULL,"Hermitian transposing X because Y of type MATTRANSPOSEMAT to perform MatAXPY()\n"));
+      PetscCall(MatHermitianTranspose(X,MAT_INITIAL_MATRIX,&F));
     }
   }
-  ierr = MatAXPY(A,a,F,str);CHKERRQ(ierr);
-  ierr = MatDestroy(&F);CHKERRQ(ierr);
+  PetscCall(MatAXPY(A,a,F,str));
+  PetscCall(MatDestroy(&F));
   PetscFunctionReturn(0);
 }
 
@@ -53,7 +53,6 @@ static PetscErrorCode MatTransposeAXPY_Private(Mat Y,PetscScalar a,Mat X,MatStru
  @*/
 PetscErrorCode MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
-  PetscErrorCode ierr;
   PetscInt       M1,M2,N1,N2;
   PetscInt       m1,m2,n1,n2;
   MatType        t1,t2;
@@ -64,115 +63,113 @@ PetscErrorCode MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
   PetscValidLogicalCollectiveScalar(Y,a,2);
   PetscValidHeaderSpecific(X,MAT_CLASSID,3);
   PetscCheckSameComm(Y,1,X,3);
-  ierr = MatGetSize(X,&M1,&N1);CHKERRQ(ierr);
-  ierr = MatGetSize(Y,&M2,&N2);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(X,&m1,&n1);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(Y,&m2,&n2);CHKERRQ(ierr);
+  PetscCall(MatGetSize(X,&M1,&N1));
+  PetscCall(MatGetSize(Y,&M2,&N2));
+  PetscCall(MatGetLocalSize(X,&m1,&n1));
+  PetscCall(MatGetLocalSize(Y,&m2,&n2));
   PetscCheck(M1 == M2 && N1 == N2,PetscObjectComm((PetscObject)Y),PETSC_ERR_ARG_SIZ,"Non conforming matrix add: global sizes X %" PetscInt_FMT " x %" PetscInt_FMT ", Y %" PetscInt_FMT " x %" PetscInt_FMT,M1,N1,M2,N2);
   PetscCheck(m1 == m2 && n1 == n2,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Non conforming matrix add: local sizes X %" PetscInt_FMT " x %" PetscInt_FMT ", Y %" PetscInt_FMT " x %" PetscInt_FMT,m1,n1,m2,n2);
   PetscCheck(Y->assembled,PetscObjectComm((PetscObject)Y),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix (Y)");
   PetscCheck(X->assembled,PetscObjectComm((PetscObject)X),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix (X)");
   if (a == (PetscScalar)0.0) PetscFunctionReturn(0);
   if (Y == X) {
-    ierr = MatScale(Y,1.0 + a);CHKERRQ(ierr);
+    PetscCall(MatScale(Y,1.0 + a));
     PetscFunctionReturn(0);
   }
-  ierr = MatGetType(X,&t1);CHKERRQ(ierr);
-  ierr = MatGetType(Y,&t2);CHKERRQ(ierr);
-  ierr = PetscStrcmp(t1,t2,&sametype);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(MAT_AXPY,Y,0,0,0);CHKERRQ(ierr);
+  PetscCall(MatGetType(X,&t1));
+  PetscCall(MatGetType(Y,&t2));
+  PetscCall(PetscStrcmp(t1,t2,&sametype));
+  PetscCall(PetscLogEventBegin(MAT_AXPY,Y,0,0,0));
   if (Y->ops->axpy && (sametype || X->ops->axpy == Y->ops->axpy)) {
-    ierr = (*Y->ops->axpy)(Y,a,X,str);CHKERRQ(ierr);
+    PetscCall((*Y->ops->axpy)(Y,a,X,str));
   } else {
-    ierr = PetscStrcmp(t1,MATTRANSPOSEMAT,&transpose);CHKERRQ(ierr);
+    PetscCall(PetscStrcmp(t1,MATTRANSPOSEMAT,&transpose));
     if (transpose) {
-      ierr = MatTransposeAXPY_Private(Y,a,X,str,X);CHKERRQ(ierr);
+      PetscCall(MatTransposeAXPY_Private(Y,a,X,str,X));
     } else {
-      ierr = PetscStrcmp(t2,MATTRANSPOSEMAT,&transpose);CHKERRQ(ierr);
+      PetscCall(PetscStrcmp(t2,MATTRANSPOSEMAT,&transpose));
       if (transpose) {
-        ierr = MatTransposeAXPY_Private(Y,a,X,str,Y);CHKERRQ(ierr);
+        PetscCall(MatTransposeAXPY_Private(Y,a,X,str,Y));
       } else {
-        ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
+        PetscCall(MatAXPY_Basic(Y,a,X,str));
       }
     }
   }
-  ierr = PetscLogEventEnd(MAT_AXPY,Y,0,0,0);CHKERRQ(ierr);
+  PetscCall(PetscLogEventEnd(MAT_AXPY,Y,0,0,0));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatAXPY_Basic_Preallocate(Mat Y, Mat X, Mat *B)
 {
-  PetscErrorCode ierr;
   PetscErrorCode (*preall)(Mat,Mat,Mat*) = NULL;
 
   PetscFunctionBegin;
   /* look for any available faster alternative to the general preallocator */
-  ierr = PetscObjectQueryFunction((PetscObject)Y,"MatAXPYGetPreallocation_C",&preall);CHKERRQ(ierr);
+  PetscCall(PetscObjectQueryFunction((PetscObject)Y,"MatAXPYGetPreallocation_C",&preall));
   if (preall) {
-    ierr = (*preall)(Y,X,B);CHKERRQ(ierr);
+    PetscCall((*preall)(Y,X,B));
   } else { /* Use MatPrellocator, assumes same row-col distribution */
     Mat      preallocator;
     PetscInt r,rstart,rend;
     PetscInt m,n,M,N;
 
-    ierr = MatGetRowUpperTriangular(Y);CHKERRQ(ierr);
-    ierr = MatGetRowUpperTriangular(X);CHKERRQ(ierr);
-    ierr = MatGetSize(Y,&M,&N);CHKERRQ(ierr);
-    ierr = MatGetLocalSize(Y,&m,&n);CHKERRQ(ierr);
-    ierr = MatCreate(PetscObjectComm((PetscObject)Y),&preallocator);CHKERRQ(ierr);
-    ierr = MatSetType(preallocator,MATPREALLOCATOR);CHKERRQ(ierr);
-    ierr = MatSetLayouts(preallocator,Y->rmap,Y->cmap);CHKERRQ(ierr);
-    ierr = MatSetUp(preallocator);CHKERRQ(ierr);
-    ierr = MatGetOwnershipRange(preallocator,&rstart,&rend);CHKERRQ(ierr);
+    PetscCall(MatGetRowUpperTriangular(Y));
+    PetscCall(MatGetRowUpperTriangular(X));
+    PetscCall(MatGetSize(Y,&M,&N));
+    PetscCall(MatGetLocalSize(Y,&m,&n));
+    PetscCall(MatCreate(PetscObjectComm((PetscObject)Y),&preallocator));
+    PetscCall(MatSetType(preallocator,MATPREALLOCATOR));
+    PetscCall(MatSetLayouts(preallocator,Y->rmap,Y->cmap));
+    PetscCall(MatSetUp(preallocator));
+    PetscCall(MatGetOwnershipRange(preallocator,&rstart,&rend));
     for (r = rstart; r < rend; ++r) {
       PetscInt          ncols;
       const PetscInt    *row;
       const PetscScalar *vals;
 
-      ierr = MatGetRow(Y,r,&ncols,&row,&vals);CHKERRQ(ierr);
-      ierr = MatSetValues(preallocator,1,&r,ncols,row,vals,INSERT_VALUES);CHKERRQ(ierr);
-      ierr = MatRestoreRow(Y,r,&ncols,&row,&vals);CHKERRQ(ierr);
-      ierr = MatGetRow(X,r,&ncols,&row,&vals);CHKERRQ(ierr);
-      ierr = MatSetValues(preallocator,1,&r,ncols,row,vals,INSERT_VALUES);CHKERRQ(ierr);
-      ierr = MatRestoreRow(X,r,&ncols,&row,&vals);CHKERRQ(ierr);
+      PetscCall(MatGetRow(Y,r,&ncols,&row,&vals));
+      PetscCall(MatSetValues(preallocator,1,&r,ncols,row,vals,INSERT_VALUES));
+      PetscCall(MatRestoreRow(Y,r,&ncols,&row,&vals));
+      PetscCall(MatGetRow(X,r,&ncols,&row,&vals));
+      PetscCall(MatSetValues(preallocator,1,&r,ncols,row,vals,INSERT_VALUES));
+      PetscCall(MatRestoreRow(X,r,&ncols,&row,&vals));
     }
-    ierr = MatSetOption(preallocator,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = MatAssemblyBegin(preallocator,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(preallocator,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatRestoreRowUpperTriangular(Y);CHKERRQ(ierr);
-    ierr = MatRestoreRowUpperTriangular(X);CHKERRQ(ierr);
+    PetscCall(MatSetOption(preallocator,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE));
+    PetscCall(MatAssemblyBegin(preallocator,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(preallocator,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatRestoreRowUpperTriangular(Y));
+    PetscCall(MatRestoreRowUpperTriangular(X));
 
-    ierr = MatCreate(PetscObjectComm((PetscObject)Y),B);CHKERRQ(ierr);
-    ierr = MatSetType(*B,((PetscObject)Y)->type_name);CHKERRQ(ierr);
-    ierr = MatSetLayouts(*B,Y->rmap,Y->cmap);CHKERRQ(ierr);
-    ierr = MatPreallocatorPreallocate(preallocator,PETSC_FALSE,*B);CHKERRQ(ierr);
-    ierr = MatDestroy(&preallocator);CHKERRQ(ierr);
+    PetscCall(MatCreate(PetscObjectComm((PetscObject)Y),B));
+    PetscCall(MatSetType(*B,((PetscObject)Y)->type_name));
+    PetscCall(MatSetLayouts(*B,Y->rmap,Y->cmap));
+    PetscCall(MatPreallocatorPreallocate(preallocator,PETSC_FALSE,*B));
+    PetscCall(MatDestroy(&preallocator));
   }
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatAXPY_Basic(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
-  PetscErrorCode ierr;
   PetscBool      isshell,isdense,isnest;
 
   PetscFunctionBegin;
-  ierr = MatIsShell(Y,&isshell);CHKERRQ(ierr);
+  PetscCall(MatIsShell(Y,&isshell));
   if (isshell) { /* MatShell has special support for AXPY */
     PetscErrorCode (*f)(Mat,PetscScalar,Mat,MatStructure);
 
-    ierr = MatGetOperation(Y,MATOP_AXPY,(void (**)(void))&f);CHKERRQ(ierr);
+    PetscCall(MatGetOperation(Y,MATOP_AXPY,(void (**)(void))&f));
     if (f) {
-      ierr = (*f)(Y,a,X,str);CHKERRQ(ierr);
+      PetscCall((*f)(Y,a,X,str));
       PetscFunctionReturn(0);
     }
   }
   /* no need to preallocate if Y is dense */
-  ierr = PetscObjectBaseTypeCompareAny((PetscObject)Y,&isdense,MATSEQDENSE,MATMPIDENSE,"");CHKERRQ(ierr);
+  PetscCall(PetscObjectBaseTypeCompareAny((PetscObject)Y,&isdense,MATSEQDENSE,MATMPIDENSE,""));
   if (isdense) {
-    ierr = PetscObjectTypeCompare((PetscObject)X,MATNEST,&isnest);CHKERRQ(ierr);
+    PetscCall(PetscObjectTypeCompare((PetscObject)X,MATNEST,&isnest));
     if (isnest) {
-      ierr = MatAXPY_Dense_Nest(Y,a,X);CHKERRQ(ierr);
+      PetscCall(MatAXPY_Dense_Nest(Y,a,X));
       PetscFunctionReturn(0);
     }
     if (str == DIFFERENT_NONZERO_PATTERN || str == UNKNOWN_NONZERO_PATTERN) str = SUBSET_NONZERO_PATTERN;
@@ -183,40 +180,40 @@ PetscErrorCode MatAXPY_Basic(Mat Y,PetscScalar a,Mat X,MatStructure str)
     PetscScalar       *val;
     const PetscScalar *vals;
 
-    ierr = MatGetSize(X,&m,&n);CHKERRQ(ierr);
-    ierr = MatGetOwnershipRange(X,&start,&end);CHKERRQ(ierr);
-    ierr = MatGetRowUpperTriangular(X);CHKERRQ(ierr);
+    PetscCall(MatGetSize(X,&m,&n));
+    PetscCall(MatGetOwnershipRange(X,&start,&end));
+    PetscCall(MatGetRowUpperTriangular(X));
     if (a == 1.0) {
       for (i = start; i < end; i++) {
-        ierr = MatGetRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
-        ierr = MatSetValues(Y,1,&i,ncols,row,vals,ADD_VALUES);CHKERRQ(ierr);
-        ierr = MatRestoreRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
+        PetscCall(MatGetRow(X,i,&ncols,&row,&vals));
+        PetscCall(MatSetValues(Y,1,&i,ncols,row,vals,ADD_VALUES));
+        PetscCall(MatRestoreRow(X,i,&ncols,&row,&vals));
       }
     } else {
       PetscInt vs = 100;
       /* realloc if needed, as this function may be used in parallel */
-      ierr = PetscMalloc1(vs,&val);CHKERRQ(ierr);
+      PetscCall(PetscMalloc1(vs,&val));
       for (i=start; i<end; i++) {
-        ierr = MatGetRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
+        PetscCall(MatGetRow(X,i,&ncols,&row,&vals));
         if (vs < ncols) {
           vs   = PetscMin(2*ncols,n);
-          ierr = PetscRealloc(vs*sizeof(*val),&val);CHKERRQ(ierr);
+          PetscCall(PetscRealloc(vs*sizeof(*val),&val));
         }
         for (j=0; j<ncols; j++) val[j] = a*vals[j];
-        ierr = MatSetValues(Y,1,&i,ncols,row,val,ADD_VALUES);CHKERRQ(ierr);
-        ierr = MatRestoreRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
+        PetscCall(MatSetValues(Y,1,&i,ncols,row,val,ADD_VALUES));
+        PetscCall(MatRestoreRow(X,i,&ncols,&row,&vals));
       }
-      ierr = PetscFree(val);CHKERRQ(ierr);
+      PetscCall(PetscFree(val));
     }
-    ierr = MatRestoreRowUpperTriangular(X);CHKERRQ(ierr);
-    ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    PetscCall(MatRestoreRowUpperTriangular(X));
+    PetscCall(MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY));
   } else {
     Mat B;
 
-    ierr = MatAXPY_Basic_Preallocate(Y,X,&B);CHKERRQ(ierr);
-    ierr = MatAXPY_BasicWithPreallocation(B,Y,a,X,str);CHKERRQ(ierr);
-    ierr = MatHeaderMerge(Y,&B);CHKERRQ(ierr);
+    PetscCall(MatAXPY_Basic_Preallocate(Y,X,&B));
+    PetscCall(MatAXPY_BasicWithPreallocation(B,Y,a,X,str));
+    PetscCall(MatHeaderMerge(Y,&B));
   }
   PetscFunctionReturn(0);
 }
@@ -224,50 +221,49 @@ PetscErrorCode MatAXPY_Basic(Mat Y,PetscScalar a,Mat X,MatStructure str)
 PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B,Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
   PetscInt          i,start,end,j,ncols,m,n;
-  PetscErrorCode    ierr;
   const PetscInt    *row;
   PetscScalar       *val;
   const PetscScalar *vals;
 
   PetscFunctionBegin;
-  ierr = MatGetSize(X,&m,&n);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(X,&start,&end);CHKERRQ(ierr);
-  ierr = MatGetRowUpperTriangular(Y);CHKERRQ(ierr);
-  ierr = MatGetRowUpperTriangular(X);CHKERRQ(ierr);
+  PetscCall(MatGetSize(X,&m,&n));
+  PetscCall(MatGetOwnershipRange(X,&start,&end));
+  PetscCall(MatGetRowUpperTriangular(Y));
+  PetscCall(MatGetRowUpperTriangular(X));
   if (a == 1.0) {
     for (i = start; i < end; i++) {
-      ierr = MatGetRow(Y,i,&ncols,&row,&vals);CHKERRQ(ierr);
-      ierr = MatSetValues(B,1,&i,ncols,row,vals,ADD_VALUES);CHKERRQ(ierr);
-      ierr = MatRestoreRow(Y,i,&ncols,&row,&vals);CHKERRQ(ierr);
+      PetscCall(MatGetRow(Y,i,&ncols,&row,&vals));
+      PetscCall(MatSetValues(B,1,&i,ncols,row,vals,ADD_VALUES));
+      PetscCall(MatRestoreRow(Y,i,&ncols,&row,&vals));
 
-      ierr = MatGetRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
-      ierr = MatSetValues(B,1,&i,ncols,row,vals,ADD_VALUES);CHKERRQ(ierr);
-      ierr = MatRestoreRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
+      PetscCall(MatGetRow(X,i,&ncols,&row,&vals));
+      PetscCall(MatSetValues(B,1,&i,ncols,row,vals,ADD_VALUES));
+      PetscCall(MatRestoreRow(X,i,&ncols,&row,&vals));
     }
   } else {
     PetscInt vs = 100;
     /* realloc if needed, as this function may be used in parallel */
-    ierr = PetscMalloc1(vs,&val);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(vs,&val));
     for (i=start; i<end; i++) {
-      ierr = MatGetRow(Y,i,&ncols,&row,&vals);CHKERRQ(ierr);
-      ierr = MatSetValues(B,1,&i,ncols,row,vals,ADD_VALUES);CHKERRQ(ierr);
-      ierr = MatRestoreRow(Y,i,&ncols,&row,&vals);CHKERRQ(ierr);
+      PetscCall(MatGetRow(Y,i,&ncols,&row,&vals));
+      PetscCall(MatSetValues(B,1,&i,ncols,row,vals,ADD_VALUES));
+      PetscCall(MatRestoreRow(Y,i,&ncols,&row,&vals));
 
-      ierr = MatGetRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
+      PetscCall(MatGetRow(X,i,&ncols,&row,&vals));
       if (vs < ncols) {
         vs   = PetscMin(2*ncols,n);
-        ierr = PetscRealloc(vs*sizeof(*val),&val);CHKERRQ(ierr);
+        PetscCall(PetscRealloc(vs*sizeof(*val),&val));
       }
       for (j=0; j<ncols; j++) val[j] = a*vals[j];
-      ierr = MatSetValues(B,1,&i,ncols,row,val,ADD_VALUES);CHKERRQ(ierr);
-      ierr = MatRestoreRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
+      PetscCall(MatSetValues(B,1,&i,ncols,row,val,ADD_VALUES));
+      PetscCall(MatRestoreRow(X,i,&ncols,&row,&vals));
     }
-    ierr = PetscFree(val);CHKERRQ(ierr);
+    PetscCall(PetscFree(val));
   }
-  ierr = MatRestoreRowUpperTriangular(Y);CHKERRQ(ierr);
-  ierr = MatRestoreRowUpperTriangular(X);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatRestoreRowUpperTriangular(Y));
+  PetscCall(MatRestoreRowUpperTriangular(X));
+  PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
@@ -293,40 +289,34 @@ PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B,Mat Y,PetscScalar a,Mat X,Ma
  @*/
 PetscErrorCode  MatShift(Mat Y,PetscScalar a)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(Y,MAT_CLASSID,1);
-  PetscCheckFalse(!Y->assembled,PetscObjectComm((PetscObject)Y),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  PetscCheckFalse(Y->factortype,PetscObjectComm((PetscObject)Y),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  PetscCheck(Y->assembled,PetscObjectComm((PetscObject)Y),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  PetscCheck(!Y->factortype,PetscObjectComm((PetscObject)Y),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   MatCheckPreallocated(Y,1);
   if (a == 0.0) PetscFunctionReturn(0);
 
-  if (Y->ops->shift) {
-    ierr = (*Y->ops->shift)(Y,a);CHKERRQ(ierr);
-  } else {
-    ierr = MatShift_Basic(Y,a);CHKERRQ(ierr);
-  }
+  if (Y->ops->shift) PetscCall((*Y->ops->shift)(Y,a));
+  else PetscCall(MatShift_Basic(Y,a));
 
-  ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);
+  PetscCall(PetscObjectStateIncrease((PetscObject)Y));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode  MatDiagonalSet_Default(Mat Y,Vec D,InsertMode is)
 {
-  PetscErrorCode    ierr;
   PetscInt          i,start,end;
   const PetscScalar *v;
 
   PetscFunctionBegin;
-  ierr = MatGetOwnershipRange(Y,&start,&end);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(D,&v);CHKERRQ(ierr);
+  PetscCall(MatGetOwnershipRange(Y,&start,&end));
+  PetscCall(VecGetArrayRead(D,&v));
   for (i=start; i<end; i++) {
-    ierr = MatSetValues(Y,1,&i,1,&i,v+i-start,is);CHKERRQ(ierr);
+    PetscCall(MatSetValues(Y,1,&i,1,&i,v+i-start,is));
   }
-  ierr = VecRestoreArrayRead(D,&v);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(D,&v));
+  PetscCall(MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
@@ -353,21 +343,20 @@ PetscErrorCode  MatDiagonalSet_Default(Mat Y,Vec D,InsertMode is)
 @*/
 PetscErrorCode  MatDiagonalSet(Mat Y,Vec D,InsertMode is)
 {
-  PetscErrorCode ierr;
   PetscInt       matlocal,veclocal;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(Y,MAT_CLASSID,1);
   PetscValidHeaderSpecific(D,VEC_CLASSID,2);
-  ierr = MatGetLocalSize(Y,&matlocal,NULL);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(D,&veclocal);CHKERRQ(ierr);
-  PetscCheckFalse(matlocal != veclocal,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number local rows of matrix %" PetscInt_FMT " does not match that of vector for diagonal %" PetscInt_FMT,matlocal,veclocal);
+  PetscCall(MatGetLocalSize(Y,&matlocal,NULL));
+  PetscCall(VecGetLocalSize(D,&veclocal));
+  PetscCheck(matlocal == veclocal,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number local rows of matrix %" PetscInt_FMT " does not match that of vector for diagonal %" PetscInt_FMT,matlocal,veclocal);
   if (Y->ops->diagonalset) {
-    ierr = (*Y->ops->diagonalset)(Y,D,is);CHKERRQ(ierr);
+    PetscCall((*Y->ops->diagonalset)(Y,D,is));
   } else {
-    ierr = MatDiagonalSet_Default(Y,D,is);CHKERRQ(ierr);
+    PetscCall(MatDiagonalSet_Default(Y,D,is));
   }
-  ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);
+  PetscCall(PetscObjectStateIncrease((PetscObject)Y));
   PetscFunctionReturn(0);
 }
 
@@ -388,11 +377,9 @@ PetscErrorCode  MatDiagonalSet(Mat Y,Vec D,InsertMode is)
  @*/
 PetscErrorCode  MatAYPX(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = MatScale(Y,a);CHKERRQ(ierr);
-  ierr = MatAXPY(Y,1.0,X,str);CHKERRQ(ierr);
+  PetscCall(MatScale(Y,a));
+  PetscCall(MatAXPY(Y,1.0,X,str));
   PetscFunctionReturn(0);
 }
 
@@ -418,12 +405,10 @@ PetscErrorCode  MatAYPX(Mat Y,PetscScalar a,Mat X,MatStructure str)
 @*/
 PetscErrorCode  MatComputeOperator(Mat inmat,MatType mattype,Mat *mat)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(inmat,MAT_CLASSID,1);
   PetscValidPointer(mat,3);
-  ierr = MatConvert_Shell(inmat,mattype ? mattype : MATDENSE,MAT_INITIAL_MATRIX,mat);CHKERRQ(ierr);
+  PetscCall(MatConvert_Shell(inmat,mattype ? mattype : MATDENSE,MAT_INITIAL_MATRIX,mat));
   PetscFunctionReturn(0);
 }
 
@@ -451,14 +436,13 @@ PetscErrorCode  MatComputeOperator(Mat inmat,MatType mattype,Mat *mat)
 PetscErrorCode  MatComputeOperatorTranspose(Mat inmat,MatType mattype,Mat *mat)
 {
   Mat            A;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(inmat,MAT_CLASSID,1);
   PetscValidPointer(mat,3);
-  ierr = MatCreateTranspose(inmat,&A);CHKERRQ(ierr);
-  ierr = MatConvert_Shell(A,mattype ? mattype : MATDENSE,MAT_INITIAL_MATRIX,mat);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  PetscCall(MatCreateTranspose(inmat,&A));
+  PetscCall(MatConvert_Shell(A,mattype ? mattype : MATDENSE,MAT_INITIAL_MATRIX,mat));
+  PetscCall(MatDestroy(&A));
   PetscFunctionReturn(0);
 }
 
@@ -482,36 +466,35 @@ PetscErrorCode MatChop(Mat A, PetscReal tol)
   PetscScalar    *newVals;
   PetscInt       *newCols, rStart, rEnd, numRows, maxRows, r, colMax = 0;
   PetscBool      flg;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectBaseTypeCompareAny((PetscObject)A, &flg, MATSEQDENSE, MATMPIDENSE, "");CHKERRQ(ierr);
+  PetscCall(PetscObjectBaseTypeCompareAny((PetscObject)A, &flg, MATSEQDENSE, MATMPIDENSE, ""));
   if (flg) {
-    ierr = MatDenseGetLocalMatrix(A, &a);CHKERRQ(ierr);
-    ierr = MatDenseGetLDA(a, &r);CHKERRQ(ierr);
-    ierr = MatGetSize(a, &rStart, &rEnd);CHKERRQ(ierr);
-    ierr = MatDenseGetArray(a, &newVals);CHKERRQ(ierr);
+    PetscCall(MatDenseGetLocalMatrix(A, &a));
+    PetscCall(MatDenseGetLDA(a, &r));
+    PetscCall(MatGetSize(a, &rStart, &rEnd));
+    PetscCall(MatDenseGetArray(a, &newVals));
     for (; colMax < rEnd; ++colMax) {
       for (maxRows = 0; maxRows < rStart; ++maxRows) {
         newVals[maxRows + colMax * r] = PetscAbsScalar(newVals[maxRows + colMax * r]) < tol ? 0.0 : newVals[maxRows + colMax * r];
       }
     }
-    ierr = MatDenseRestoreArray(a, &newVals);CHKERRQ(ierr);
+    PetscCall(MatDenseRestoreArray(a, &newVals));
   } else {
-    ierr = MatGetOwnershipRange(A, &rStart, &rEnd);CHKERRQ(ierr);
-    ierr = MatGetRowUpperTriangular(A);CHKERRQ(ierr);
+    PetscCall(MatGetOwnershipRange(A, &rStart, &rEnd));
+    PetscCall(MatGetRowUpperTriangular(A));
     for (r = rStart; r < rEnd; ++r) {
       PetscInt ncols;
 
-      ierr   = MatGetRow(A, r, &ncols, NULL, NULL);CHKERRQ(ierr);
-      colMax = PetscMax(colMax, ncols);CHKERRQ(ierr);
-      ierr   = MatRestoreRow(A, r, &ncols, NULL, NULL);CHKERRQ(ierr);
+      PetscCall(MatGetRow(A, r, &ncols, NULL, NULL));
+      colMax = PetscMax(colMax, ncols);
+      PetscCall(MatRestoreRow(A, r, &ncols, NULL, NULL));
     }
     numRows = rEnd - rStart;
-    ierr    = MPIU_Allreduce(&numRows, &maxRows, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
-    ierr    = PetscMalloc2(colMax, &newCols, colMax, &newVals);CHKERRQ(ierr);
-    ierr    = MatGetOption(A, MAT_NO_OFF_PROC_ENTRIES, &flg);CHKERRQ(ierr); /* cache user-defined value */
-    ierr    = MatSetOption(A, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE);CHKERRQ(ierr);
+    PetscCallMPI(MPIU_Allreduce(&numRows, &maxRows, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)A)));
+    PetscCall(PetscMalloc2(colMax, &newCols, colMax, &newVals));
+    PetscCall(MatGetOption(A, MAT_NO_OFF_PROC_ENTRIES, &flg)); /* cache user-defined value */
+    PetscCall(MatSetOption(A, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
     /* short-circuit code in MatAssemblyBegin() and MatAssemblyEnd()             */
     /* that are potentially called many times depending on the distribution of A */
     for (r = rStart; r < rStart+maxRows; ++r) {
@@ -520,21 +503,21 @@ PetscErrorCode MatChop(Mat A, PetscReal tol)
       PetscInt           ncols, newcols, c;
 
       if (r < rEnd) {
-        ierr = MatGetRow(A, r, &ncols, &cols, &vals);CHKERRQ(ierr);
+        PetscCall(MatGetRow(A, r, &ncols, &cols, &vals));
         for (c = 0; c < ncols; ++c) {
           newCols[c] = cols[c];
           newVals[c] = PetscAbsScalar(vals[c]) < tol ? 0.0 : vals[c];
         }
         newcols = ncols;
-        ierr = MatRestoreRow(A, r, &ncols, &cols, &vals);CHKERRQ(ierr);
-        ierr = MatSetValues(A, 1, &r, newcols, newCols, newVals, INSERT_VALUES);CHKERRQ(ierr);
+        PetscCall(MatRestoreRow(A, r, &ncols, &cols, &vals));
+        PetscCall(MatSetValues(A, 1, &r, newcols, newCols, newVals, INSERT_VALUES));
       }
-      ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-      ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+      PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
     }
-    ierr = MatRestoreRowUpperTriangular(A);CHKERRQ(ierr);
-    ierr = PetscFree2(newCols, newVals);CHKERRQ(ierr);
-    ierr = MatSetOption(A, MAT_NO_OFF_PROC_ENTRIES, flg);CHKERRQ(ierr); /* reset option to its user-defined value */
+    PetscCall(MatRestoreRowUpperTriangular(A));
+    PetscCall(PetscFree2(newCols, newVals));
+    PetscCall(MatSetOption(A, MAT_NO_OFF_PROC_ENTRIES, flg)); /* reset option to its user-defined value */
   }
   PetscFunctionReturn(0);
 }

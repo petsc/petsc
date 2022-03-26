@@ -16,16 +16,14 @@
 @*/
 PetscErrorCode TaoSetVariableBounds(Tao tao, Vec XL, Vec XU)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   if (XL) PetscValidHeaderSpecific(XL,VEC_CLASSID,2);
   if (XU) PetscValidHeaderSpecific(XU,VEC_CLASSID,3);
-  ierr = PetscObjectReference((PetscObject)XL);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)XU);CHKERRQ(ierr);
-  ierr = VecDestroy(&tao->XL);CHKERRQ(ierr);
-  ierr = VecDestroy(&tao->XU);CHKERRQ(ierr);
+  PetscCall(PetscObjectReference((PetscObject)XL));
+  PetscCall(PetscObjectReference((PetscObject)XU));
+  PetscCall(VecDestroy(&tao->XL));
+  PetscCall(VecDestroy(&tao->XU));
   tao->XL = XL;
   tao->XU = XU;
   tao->bounded = (PetscBool)(XL || XU);
@@ -109,20 +107,18 @@ PetscErrorCode TaoGetVariableBounds(Tao tao, Vec *XL, Vec *XU)
 
 PetscErrorCode TaoComputeVariableBounds(Tao tao)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   if (!tao->XL || !tao->XU) {
     PetscCheck(tao->solution,PetscObjectComm((PetscObject)tao),PETSC_ERR_ORDER,"TaoSetSolution must be called before TaoComputeVariableBounds");
-    ierr = VecDuplicate(tao->solution, &tao->XL);CHKERRQ(ierr);
-    ierr = VecSet(tao->XL, PETSC_NINFINITY);CHKERRQ(ierr);
-    ierr = VecDuplicate(tao->solution, &tao->XU);CHKERRQ(ierr);
-    ierr = VecSet(tao->XU, PETSC_INFINITY);CHKERRQ(ierr);
+    PetscCall(VecDuplicate(tao->solution, &tao->XL));
+    PetscCall(VecSet(tao->XL, PETSC_NINFINITY));
+    PetscCall(VecDuplicate(tao->solution, &tao->XU));
+    PetscCall(VecSet(tao->XU, PETSC_INFINITY));
   }
   if (tao->ops->computebounds) {
     PetscStackPush("Tao compute variable bounds");
-    ierr = (*tao->ops->computebounds)(tao,tao->XL,tao->XU,tao->user_boundsP);CHKERRQ(ierr);
+    PetscCall((*tao->ops->computebounds)(tao,tao->XL,tao->XU,tao->user_boundsP));
     PetscStackPop;
   }
   PetscFunctionReturn(0);
@@ -144,16 +140,14 @@ PetscErrorCode TaoComputeVariableBounds(Tao tao)
 @*/
 PetscErrorCode TaoSetInequalityBounds(Tao tao, Vec IL, Vec IU)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   if (IL) PetscValidHeaderSpecific(IL,VEC_CLASSID,2);
   if (IU) PetscValidHeaderSpecific(IU,VEC_CLASSID,3);
-  ierr = PetscObjectReference((PetscObject)IL);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)IU);CHKERRQ(ierr);
-  ierr = VecDestroy(&tao->IL);CHKERRQ(ierr);
-  ierr = VecDestroy(&tao->IU);CHKERRQ(ierr);
+  PetscCall(PetscObjectReference((PetscObject)IL));
+  PetscCall(PetscObjectReference((PetscObject)IU));
+  PetscCall(VecDestroy(&tao->IL));
+  PetscCall(VecDestroy(&tao->IU));
   tao->IL = IL;
   tao->IU = IU;
   tao->ineq_doublesided = (PetscBool)(IL || IU);
@@ -201,8 +195,6 @@ PetscErrorCode TaoGetInequalityBounds(Tao tao, Vec *IL, Vec *IU)
 
 PetscErrorCode TaoComputeConstraints(Tao tao, Vec X, Vec C)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidHeaderSpecific(X,VEC_CLASSID,2);
@@ -210,11 +202,11 @@ PetscErrorCode TaoComputeConstraints(Tao tao, Vec X, Vec C)
   PetscCheckSameComm(tao,1,X,2);
   PetscCheckSameComm(tao,1,C,3);
   PetscCheck(tao->ops->computeconstraints,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"TaoSetConstraintsRoutine() has not been called");
-  ierr = PetscLogEventBegin(TAO_ConstraintsEval,tao,X,C,NULL);CHKERRQ(ierr);
+  PetscCall(PetscLogEventBegin(TAO_ConstraintsEval,tao,X,C,NULL));
   PetscStackPush("Tao constraints evaluation routine");
-  ierr = (*tao->ops->computeconstraints)(tao,X,C,tao->user_conP);CHKERRQ(ierr);
+  PetscCall((*tao->ops->computeconstraints)(tao,X,C,tao->user_conP));
   PetscStackPop;
-  ierr = PetscLogEventEnd(TAO_ConstraintsEval,tao,X,C,NULL);CHKERRQ(ierr);
+  PetscCall(PetscLogEventEnd(TAO_ConstraintsEval,tao,X,C,NULL));
   tao->nconstraints++;
   PetscFunctionReturn(0);
 }
@@ -245,13 +237,11 @@ $      func (Tao tao, Vec x, Vec c, void *ctx);
 @*/
 PetscErrorCode TaoSetConstraintsRoutine(Tao tao, Vec c, PetscErrorCode (*func)(Tao, Vec, Vec, void*), void *ctx)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   if (c) PetscValidHeaderSpecific(c,VEC_CLASSID,2);
-  ierr = PetscObjectReference((PetscObject)c);CHKERRQ(ierr);
-  ierr = VecDestroy(&tao->constraints);CHKERRQ(ierr);
+  PetscCall(PetscObjectReference((PetscObject)c));
+  PetscCall(VecDestroy(&tao->constraints));
   tao->constrained = func ? PETSC_TRUE : PETSC_FALSE;
   tao->constraints = c;
   tao->user_conP = ctx;
@@ -285,8 +275,6 @@ PetscErrorCode TaoSetConstraintsRoutine(Tao tao, Vec c, PetscErrorCode (*func)(T
 @*/
 PetscErrorCode TaoComputeDualVariables(Tao tao, Vec DL, Vec DU)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidHeaderSpecific(DL,VEC_CLASSID,2);
@@ -294,10 +282,10 @@ PetscErrorCode TaoComputeDualVariables(Tao tao, Vec DL, Vec DU)
   PetscCheckSameComm(tao,1,DL,2);
   PetscCheckSameComm(tao,1,DU,3);
   if (tao->ops->computedual) {
-    ierr = (*tao->ops->computedual)(tao,DL,DU);CHKERRQ(ierr);
+    PetscCall((*tao->ops->computedual)(tao,DL,DU));
   } else {
-    ierr = VecSet(DL,0.0);CHKERRQ(ierr);
-    ierr = VecSet(DU,0.0);CHKERRQ(ierr);
+    PetscCall(VecSet(DL,0.0));
+    PetscCall(VecSet(DU,0.0));
   }
   PetscFunctionReturn(0);
 }
@@ -353,13 +341,11 @@ $      func (Tao tao, Vec x, Vec ce, void *ctx);
 @*/
 PetscErrorCode TaoSetEqualityConstraintsRoutine(Tao tao, Vec ce, PetscErrorCode (*func)(Tao, Vec, Vec, void*), void *ctx)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   if (ce) PetscValidHeaderSpecific(ce,VEC_CLASSID,2);
-  ierr = PetscObjectReference((PetscObject)ce);CHKERRQ(ierr);
-  ierr = VecDestroy(&tao->constraints_equality);CHKERRQ(ierr);
+  PetscCall(PetscObjectReference((PetscObject)ce));
+  PetscCall(VecDestroy(&tao->constraints_equality));
   tao->eq_constrained = func ? PETSC_TRUE : PETSC_FALSE;
   tao->constraints_equality = ce;
   tao->user_con_equalityP = ctx;
@@ -393,13 +379,11 @@ $      func (Tao tao, Vec x, Vec ci, void *ctx);
 @*/
 PetscErrorCode TaoSetInequalityConstraintsRoutine(Tao tao, Vec ci, PetscErrorCode (*func)(Tao, Vec, Vec, void*), void *ctx)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   if (ci) PetscValidHeaderSpecific(ci,VEC_CLASSID,2);
-  ierr = PetscObjectReference((PetscObject)ci);CHKERRQ(ierr);
-  ierr = VecDestroy(&tao->constraints_inequality);CHKERRQ(ierr);
+  PetscCall(PetscObjectReference((PetscObject)ci));
+  PetscCall(VecDestroy(&tao->constraints_inequality));
   tao->constraints_inequality = ci;
   tao->ineq_constrained = func ? PETSC_TRUE : PETSC_FALSE;
   tao->user_con_inequalityP = ctx;
@@ -423,8 +407,6 @@ PetscErrorCode TaoSetInequalityConstraintsRoutine(Tao tao, Vec ci, PetscErrorCod
 
 PetscErrorCode TaoComputeEqualityConstraints(Tao tao, Vec X, Vec CE)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidHeaderSpecific(X,VEC_CLASSID,2);
@@ -432,11 +414,11 @@ PetscErrorCode TaoComputeEqualityConstraints(Tao tao, Vec X, Vec CE)
   PetscCheckSameComm(tao,1,X,2);
   PetscCheckSameComm(tao,1,CE,3);
   PetscCheck(tao->ops->computeequalityconstraints,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"TaoSetEqualityConstraintsRoutine() has not been called");
-  ierr = PetscLogEventBegin(TAO_ConstraintsEval,tao,X,CE,NULL);CHKERRQ(ierr);
+  PetscCall(PetscLogEventBegin(TAO_ConstraintsEval,tao,X,CE,NULL));
   PetscStackPush("Tao equality constraints evaluation routine");
-  ierr = (*tao->ops->computeequalityconstraints)(tao,X,CE,tao->user_con_equalityP);CHKERRQ(ierr);
+  PetscCall((*tao->ops->computeequalityconstraints)(tao,X,CE,tao->user_con_equalityP));
   PetscStackPop;
-  ierr = PetscLogEventEnd(TAO_ConstraintsEval,tao,X,CE,NULL);CHKERRQ(ierr);
+  PetscCall(PetscLogEventEnd(TAO_ConstraintsEval,tao,X,CE,NULL));
   tao->nconstraints++;
   PetscFunctionReturn(0);
 }
@@ -457,8 +439,6 @@ PetscErrorCode TaoComputeEqualityConstraints(Tao tao, Vec X, Vec CE)
 
 PetscErrorCode TaoComputeInequalityConstraints(Tao tao, Vec X, Vec CI)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidHeaderSpecific(X,VEC_CLASSID,2);
@@ -466,11 +446,11 @@ PetscErrorCode TaoComputeInequalityConstraints(Tao tao, Vec X, Vec CI)
   PetscCheckSameComm(tao,1,X,2);
   PetscCheckSameComm(tao,1,CI,3);
   PetscCheck(tao->ops->computeinequalityconstraints,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"TaoSetInequalityConstraintsRoutine() has not been called");
-  ierr = PetscLogEventBegin(TAO_ConstraintsEval,tao,X,CI,NULL);CHKERRQ(ierr);
+  PetscCall(PetscLogEventBegin(TAO_ConstraintsEval,tao,X,CI,NULL));
   PetscStackPush("Tao inequality constraints evaluation routine");
-  ierr = (*tao->ops->computeinequalityconstraints)(tao,X,CI,tao->user_con_inequalityP);CHKERRQ(ierr);
+  PetscCall((*tao->ops->computeinequalityconstraints)(tao,X,CI,tao->user_con_inequalityP));
   PetscStackPop;
-  ierr = PetscLogEventEnd(TAO_ConstraintsEval,tao,X,CI,NULL);CHKERRQ(ierr);
+  PetscCall(PetscLogEventEnd(TAO_ConstraintsEval,tao,X,CI,NULL));
   tao->nconstraints++;
   PetscFunctionReturn(0);
 }

@@ -9,31 +9,30 @@ PetscErrorCode PCFactorSetDefaultOrdering_Factor(PC pc)
 {
   Mat            B;
   PetscBool      foundmtype,flg;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (pc->pmat) {
     PC_Factor *fact = (PC_Factor*)pc->data;
-    ierr = MatSolverTypeGet(fact->solvertype,((PetscObject)pc->pmat)->type_name,fact->factortype,NULL,&foundmtype,NULL);CHKERRQ(ierr);
+    PetscCall(MatSolverTypeGet(fact->solvertype,((PetscObject)pc->pmat)->type_name,fact->factortype,NULL,&foundmtype,NULL));
     if (foundmtype) {
       if (!fact->fact) {
-        ierr = MatGetFactor(pc->pmat,fact->solvertype,fact->factortype,&fact->fact);CHKERRQ(ierr);
+        PetscCall(MatGetFactor(pc->pmat,fact->solvertype,fact->factortype,&fact->fact));
       } else if (!fact->fact->assembled) {
-        ierr = PetscStrcmp(fact->solvertype,fact->fact->solvertype,&flg);CHKERRQ(ierr);
+        PetscCall(PetscStrcmp(fact->solvertype,fact->fact->solvertype,&flg));
         if (!flg) {
-          ierr = MatGetFactor(pc->pmat,fact->solvertype,fact->factortype,&B);CHKERRQ(ierr);
-          ierr = MatHeaderReplace(fact->fact,&B);CHKERRQ(ierr);
+          PetscCall(MatGetFactor(pc->pmat,fact->solvertype,fact->factortype,&B));
+          PetscCall(MatHeaderReplace(fact->fact,&B));
         }
       }
       if (!fact->ordering) {
         PetscBool       canuseordering;
         MatOrderingType otype;
 
-        ierr = MatFactorGetCanUseOrdering(fact->fact,&canuseordering);CHKERRQ(ierr);
+        PetscCall(MatFactorGetCanUseOrdering(fact->fact,&canuseordering));
         if (canuseordering) {
-          ierr = MatFactorGetPreferredOrdering(fact->fact,fact->factortype,&otype);CHKERRQ(ierr);
+          PetscCall(MatFactorGetPreferredOrdering(fact->fact,fact->factortype,&otype));
         } else otype = MATORDERINGEXTERNAL;
-        ierr = PetscStrallocpy(otype,(char **)&fact->ordering);CHKERRQ(ierr);
+        PetscCall(PetscStrallocpy(otype,(char **)&fact->ordering));
       }
     }
   }
@@ -92,11 +91,9 @@ static PetscErrorCode  PCFactorGetUseInPlace_Factor(PC pc,PetscBool *flg)
 @*/
 PetscErrorCode PCFactorSetUpMatSolverType(PC pc)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCFactorSetUpMatSolverType_C",(PC),(pc));CHKERRQ(ierr);
+  PetscCall(PetscTryMethod(pc,"PCFactorSetUpMatSolverType_C",(PC),(pc)));
   PetscFunctionReturn(0);
 }
 
@@ -118,12 +115,10 @@ PetscErrorCode PCFactorSetUpMatSolverType(PC pc)
 @*/
 PetscErrorCode  PCFactorSetZeroPivot(PC pc,PetscReal zero)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveReal(pc,zero,2);
-  ierr = PetscTryMethod(pc,"PCFactorSetZeroPivot_C",(PC,PetscReal),(pc,zero));CHKERRQ(ierr);
+  PetscCall(PetscTryMethod(pc,"PCFactorSetZeroPivot_C",(PC,PetscReal),(pc,zero)));
   PetscFunctionReturn(0);
 }
 
@@ -146,12 +141,10 @@ PetscErrorCode  PCFactorSetZeroPivot(PC pc,PetscReal zero)
 @*/
 PetscErrorCode  PCFactorSetShiftType(PC pc,MatFactorShiftType shifttype)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveEnum(pc,shifttype,2);
-  ierr = PetscTryMethod(pc,"PCFactorSetShiftType_C",(PC,MatFactorShiftType),(pc,shifttype));CHKERRQ(ierr);
+  PetscCall(PetscTryMethod(pc,"PCFactorSetShiftType_C",(PC,MatFactorShiftType),(pc,shifttype)));
   PetscFunctionReturn(0);
 }
 
@@ -174,12 +167,10 @@ PetscErrorCode  PCFactorSetShiftType(PC pc,MatFactorShiftType shifttype)
 @*/
 PetscErrorCode  PCFactorSetShiftAmount(PC pc,PetscReal shiftamount)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveReal(pc,shiftamount,2);
-  ierr = PetscTryMethod(pc,"PCFactorSetShiftAmount_C",(PC,PetscReal),(pc,shiftamount));CHKERRQ(ierr);
+  PetscCall(PetscTryMethod(pc,"PCFactorSetShiftAmount_C",(PC,PetscReal),(pc,shiftamount)));
   PetscFunctionReturn(0);
 }
 
@@ -207,13 +198,11 @@ PetscErrorCode  PCFactorSetShiftAmount(PC pc,PetscReal shiftamount)
 @*/
 PetscErrorCode  PCFactorSetDropTolerance(PC pc,PetscReal dt,PetscReal dtcol,PetscInt maxrowcount)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveReal(pc,dtcol,3);
   PetscValidLogicalCollectiveInt(pc,maxrowcount,4);
-  ierr = PetscTryMethod(pc,"PCFactorSetDropTolerance_C",(PC,PetscReal,PetscReal,PetscInt),(pc,dt,dtcol,maxrowcount));CHKERRQ(ierr);
+  PetscCall(PetscTryMethod(pc,"PCFactorSetDropTolerance_C",(PC,PetscReal,PetscReal,PetscInt),(pc,dt,dtcol,maxrowcount)));
   PetscFunctionReturn(0);
 }
 
@@ -234,11 +223,9 @@ PetscErrorCode  PCFactorSetDropTolerance(PC pc,PetscReal dt,PetscReal dtcol,Pets
 @*/
 PetscErrorCode  PCFactorGetZeroPivot(PC pc,PetscReal *pivot)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscUseMethod(pc,"PCFactorGetZeroPivot_C",(PC,PetscReal*),(pc,pivot));CHKERRQ(ierr);
+  PetscCall(PetscUseMethod(pc,"PCFactorGetZeroPivot_C",(PC,PetscReal*),(pc,pivot)));
   PetscFunctionReturn(0);
 }
 
@@ -259,11 +246,9 @@ PetscErrorCode  PCFactorGetZeroPivot(PC pc,PetscReal *pivot)
 @*/
 PetscErrorCode  PCFactorGetShiftAmount(PC pc,PetscReal *shift)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscUseMethod(pc,"PCFactorGetShiftAmount_C",(PC,PetscReal*),(pc,shift));CHKERRQ(ierr);
+  PetscCall(PetscUseMethod(pc,"PCFactorGetShiftAmount_C",(PC,PetscReal*),(pc,shift)));
   PetscFunctionReturn(0);
 }
 
@@ -284,11 +269,9 @@ PetscErrorCode  PCFactorGetShiftAmount(PC pc,PetscReal *shift)
 @*/
 PetscErrorCode  PCFactorGetShiftType(PC pc,MatFactorShiftType *type)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscUseMethod(pc,"PCFactorGetShiftType_C",(PC,MatFactorShiftType*),(pc,type));CHKERRQ(ierr);
+  PetscCall(PetscUseMethod(pc,"PCFactorGetShiftType_C",(PC,MatFactorShiftType*),(pc,type)));
   PetscFunctionReturn(0);
 }
 
@@ -308,11 +291,9 @@ PetscErrorCode  PCFactorGetShiftType(PC pc,MatFactorShiftType *type)
 @*/
 PetscErrorCode  PCFactorGetLevels(PC pc,PetscInt *levels)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscUseMethod(pc,"PCFactorGetLevels_C",(PC,PetscInt*),(pc,levels));CHKERRQ(ierr);
+  PetscCall(PetscUseMethod(pc,"PCFactorGetLevels_C",(PC,PetscInt*),(pc,levels)));
   PetscFunctionReturn(0);
 }
 
@@ -333,13 +314,11 @@ PetscErrorCode  PCFactorGetLevels(PC pc,PetscInt *levels)
 @*/
 PetscErrorCode  PCFactorSetLevels(PC pc,PetscInt levels)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCheckFalse(levels < 0,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"negative levels");
+  PetscCheck(levels >= 0,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"negative levels");
   PetscValidLogicalCollectiveInt(pc,levels,2);
-  ierr = PetscTryMethod(pc,"PCFactorSetLevels_C",(PC,PetscInt),(pc,levels));CHKERRQ(ierr);
+  PetscCall(PetscTryMethod(pc,"PCFactorSetLevels_C",(PC,PetscInt),(pc,levels)));
   PetscFunctionReturn(0);
 }
 
@@ -365,11 +344,9 @@ PetscErrorCode  PCFactorSetLevels(PC pc,PetscInt levels)
 @*/
 PetscErrorCode  PCFactorSetAllowDiagonalFill(PC pc,PetscBool flg)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCFactorSetAllowDiagonalFill_C",(PC,PetscBool),(pc,flg));CHKERRQ(ierr);
+  PetscCall(PetscTryMethod(pc,"PCFactorSetAllowDiagonalFill_C",(PC,PetscBool),(pc,flg)));
   PetscFunctionReturn(0);
 }
 
@@ -394,11 +371,9 @@ PetscErrorCode  PCFactorSetAllowDiagonalFill(PC pc,PetscBool flg)
 @*/
 PetscErrorCode  PCFactorGetAllowDiagonalFill(PC pc,PetscBool *flg)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscUseMethod(pc,"PCFactorGetAllowDiagonalFill_C",(PC,PetscBool*),(pc,flg));CHKERRQ(ierr);
+  PetscCall(PetscUseMethod(pc,"PCFactorGetAllowDiagonalFill_C",(PC,PetscBool*),(pc,flg)));
   PetscFunctionReturn(0);
 }
 
@@ -420,12 +395,10 @@ PetscErrorCode  PCFactorGetAllowDiagonalFill(PC pc,PetscBool *flg)
 @*/
 PetscErrorCode  PCFactorReorderForNonzeroDiagonal(PC pc,PetscReal rtol)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveReal(pc,rtol,2);
-  ierr = PetscTryMethod(pc,"PCFactorReorderForNonzeroDiagonal_C",(PC,PetscReal),(pc,rtol));CHKERRQ(ierr);
+  PetscCall(PetscTryMethod(pc,"PCFactorReorderForNonzeroDiagonal_C",(PC,PetscReal),(pc,rtol)));
   PetscFunctionReturn(0);
 }
 
@@ -450,11 +423,9 @@ PetscErrorCode  PCFactorReorderForNonzeroDiagonal(PC pc,PetscReal rtol)
 @*/
 PetscErrorCode  PCFactorSetMatSolverType(PC pc,MatSolverType stype)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCFactorSetMatSolverType_C",(PC,MatSolverType),(pc,stype));CHKERRQ(ierr);
+  PetscCall(PetscTryMethod(pc,"PCFactorSetMatSolverType_C",(PC,MatSolverType),(pc,stype)));
   PetscFunctionReturn(0);
 }
 
@@ -475,16 +446,14 @@ PetscErrorCode  PCFactorSetMatSolverType(PC pc,MatSolverType stype)
 @*/
 PetscErrorCode  PCFactorGetMatSolverType(PC pc,MatSolverType *stype)
 {
-  PetscErrorCode ierr,(*f)(PC,MatSolverType*);
+  PetscErrorCode (*f)(PC,MatSolverType*);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFactorGetMatSolverType_C",&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,stype);CHKERRQ(ierr);
-  } else {
-    *stype = NULL;
-  }
+  PetscValidPointer(stype,2);
+  PetscCall(PetscObjectQueryFunction((PetscObject)pc,"PCFactorGetMatSolverType_C",&f));
+  if (f) PetscCall((*f)(pc,stype));
+  else *stype = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -514,12 +483,10 @@ PetscErrorCode  PCFactorGetMatSolverType(PC pc,MatSolverType *stype)
 @*/
 PetscErrorCode  PCFactorSetFill(PC pc,PetscReal fill)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCheckFalse(fill < 1.0,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Fill factor cannot be less then 1.0");
-  ierr = PetscTryMethod(pc,"PCFactorSetFill_C",(PC,PetscReal),(pc,fill));CHKERRQ(ierr);
+  PetscCheck(fill >= 1.0,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Fill factor cannot be less then 1.0");
+  PetscCall(PetscTryMethod(pc,"PCFactorSetFill_C",(PC,PetscReal),(pc,fill)));
   PetscFunctionReturn(0);
 }
 
@@ -554,11 +521,9 @@ PetscErrorCode  PCFactorSetFill(PC pc,PetscReal fill)
 @*/
 PetscErrorCode  PCFactorSetUseInPlace(PC pc,PetscBool flg)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCFactorSetUseInPlace_C",(PC,PetscBool),(pc,flg));CHKERRQ(ierr);
+  PetscCall(PetscTryMethod(pc,"PCFactorSetUseInPlace_C",(PC,PetscBool),(pc,flg)));
   PetscFunctionReturn(0);
 }
 
@@ -579,11 +544,9 @@ PetscErrorCode  PCFactorSetUseInPlace(PC pc,PetscBool flg)
 @*/
 PetscErrorCode  PCFactorGetUseInPlace(PC pc,PetscBool *flg)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscUseMethod(pc,"PCFactorGetUseInPlace_C",(PC,PetscBool*),(pc,flg));CHKERRQ(ierr);
+  PetscCall(PetscUseMethod(pc,"PCFactorGetUseInPlace_C",(PC,PetscBool*),(pc,flg)));
   PetscFunctionReturn(0);
 }
 
@@ -617,11 +580,9 @@ PetscErrorCode  PCFactorGetUseInPlace(PC pc,PetscBool *flg)
 @*/
 PetscErrorCode  PCFactorSetMatOrderingType(PC pc,MatOrderingType ordering)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCFactorSetMatOrderingType_C",(PC,MatOrderingType),(pc,ordering));CHKERRQ(ierr);
+  PetscCall(PetscTryMethod(pc,"PCFactorSetMatOrderingType_C",(PC,MatOrderingType),(pc,ordering)));
   PetscFunctionReturn(0);
 }
 
@@ -645,12 +606,10 @@ PetscErrorCode  PCFactorSetMatOrderingType(PC pc,MatOrderingType ordering)
 @*/
 PetscErrorCode  PCFactorSetColumnPivot(PC pc,PetscReal dtcol)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveReal(pc,dtcol,2);
-  ierr = PetscTryMethod(pc,"PCFactorSetColumnPivot_C",(PC,PetscReal),(pc,dtcol));CHKERRQ(ierr);
+  PetscCall(PetscTryMethod(pc,"PCFactorSetColumnPivot_C",(PC,PetscReal),(pc,dtcol)));
   PetscFunctionReturn(0);
 }
 
@@ -673,12 +632,10 @@ PetscErrorCode  PCFactorSetColumnPivot(PC pc,PetscReal dtcol)
 @*/
 PetscErrorCode  PCFactorSetPivotInBlocks(PC pc,PetscBool pivot)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveBool(pc,pivot,2);
-  ierr = PetscTryMethod(pc,"PCFactorSetPivotInBlocks_C",(PC,PetscBool),(pc,pivot));CHKERRQ(ierr);
+  PetscCall(PetscTryMethod(pc,"PCFactorSetPivotInBlocks_C",(PC,PetscBool),(pc,pivot)));
   PetscFunctionReturn(0);
 }
 
@@ -701,22 +658,19 @@ PetscErrorCode  PCFactorSetPivotInBlocks(PC pc,PetscBool pivot)
 @*/
 PetscErrorCode  PCFactorSetReuseFill(PC pc,PetscBool flag)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveBool(pc,flag,2);
-  ierr = PetscTryMethod(pc,"PCFactorSetReuseFill_C",(PC,PetscBool),(pc,flag));CHKERRQ(ierr);
+  PetscCall(PetscTryMethod(pc,"PCFactorSetReuseFill_C",(PC,PetscBool),(pc,flag)));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PCFactorInitialize(PC pc,MatFactorType ftype)
 {
-  PetscErrorCode ierr;
   PC_Factor      *fact = (PC_Factor*)pc->data;
 
   PetscFunctionBegin;
-  ierr                       = MatFactorInfoInitialize(&fact->info);CHKERRQ(ierr);
+  PetscCall(MatFactorInfoInitialize(&fact->info));
   fact->factortype           = ftype;
   fact->info.shifttype       = (PetscReal)MAT_SHIFT_NONE;
   fact->info.shiftamount     = 100.0*PETSC_MACHINE_EPSILON;
@@ -724,25 +678,25 @@ PetscErrorCode PCFactorInitialize(PC pc,MatFactorType ftype)
   fact->info.pivotinblocks   = 1.0;
   pc->ops->getfactoredmatrix = PCFactorGetMatrix_Factor;
 
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetZeroPivot_C",PCFactorSetZeroPivot_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetZeroPivot_C",PCFactorGetZeroPivot_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetShiftType_C",PCFactorSetShiftType_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetShiftType_C",PCFactorGetShiftType_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetShiftAmount_C",PCFactorSetShiftAmount_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetShiftAmount_C",PCFactorGetShiftAmount_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetMatSolverType_C",PCFactorGetMatSolverType_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetMatSolverType_C",PCFactorSetMatSolverType_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetUpMatSolverType_C",PCFactorSetUpMatSolverType_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetFill_C",PCFactorSetFill_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetMatOrderingType_C",PCFactorSetMatOrderingType_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetLevels_C",PCFactorSetLevels_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetLevels_C",PCFactorGetLevels_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetAllowDiagonalFill_C",PCFactorSetAllowDiagonalFill_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetAllowDiagonalFill_C",PCFactorGetAllowDiagonalFill_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetPivotInBlocks_C",PCFactorSetPivotInBlocks_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetUseInPlace_C",PCFactorSetUseInPlace_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetUseInPlace_C",PCFactorGetUseInPlace_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetReuseOrdering_C",PCFactorSetReuseOrdering_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetReuseFill_C",PCFactorSetReuseFill_Factor);CHKERRQ(ierr);
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetZeroPivot_C",PCFactorSetZeroPivot_Factor));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetZeroPivot_C",PCFactorGetZeroPivot_Factor));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetShiftType_C",PCFactorSetShiftType_Factor));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetShiftType_C",PCFactorGetShiftType_Factor));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetShiftAmount_C",PCFactorSetShiftAmount_Factor));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetShiftAmount_C",PCFactorGetShiftAmount_Factor));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetMatSolverType_C",PCFactorGetMatSolverType_Factor));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetMatSolverType_C",PCFactorSetMatSolverType_Factor));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetUpMatSolverType_C",PCFactorSetUpMatSolverType_Factor));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetFill_C",PCFactorSetFill_Factor));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetMatOrderingType_C",PCFactorSetMatOrderingType_Factor));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetLevels_C",PCFactorSetLevels_Factor));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetLevels_C",PCFactorGetLevels_Factor));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetAllowDiagonalFill_C",PCFactorSetAllowDiagonalFill_Factor));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetAllowDiagonalFill_C",PCFactorGetAllowDiagonalFill_Factor));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetPivotInBlocks_C",PCFactorSetPivotInBlocks_Factor));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetUseInPlace_C",PCFactorSetUseInPlace_Factor));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetUseInPlace_C",PCFactorGetUseInPlace_Factor));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetReuseOrdering_C",PCFactorSetReuseOrdering_Factor));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetReuseFill_C",PCFactorSetReuseFill_Factor));
   PetscFunctionReturn(0);
 }

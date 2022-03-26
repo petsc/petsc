@@ -22,12 +22,10 @@
 @*/
 PetscErrorCode  PetscDrawPoint(PetscDraw draw,PetscReal xl,PetscReal yl,int cl)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  PetscCheckFalse(!draw->ops->point,PETSC_COMM_SELF,PETSC_ERR_SUP,"This draw type %s does not support drawing points",((PetscObject)draw)->type_name);
-  ierr = (*draw->ops->point)(draw,xl,yl,cl);CHKERRQ(ierr);
+  PetscCheck(draw->ops->point,PETSC_COMM_SELF,PETSC_ERR_SUP,"This draw type %s does not support drawing points",((PetscObject)draw)->type_name);
+  PetscCall((*draw->ops->point)(draw,xl,yl,cl));
   PetscFunctionReturn(0);
 }
 
@@ -48,12 +46,10 @@ PetscErrorCode  PetscDrawPoint(PetscDraw draw,PetscReal xl,PetscReal yl,int cl)
 @*/
 PetscErrorCode  PetscDrawPointPixel(PetscDraw draw,int x,int y,int c)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  PetscCheckFalse(!draw->ops->pointpixel,PETSC_COMM_SELF,PETSC_ERR_SUP,"This draw type %s does not support drawing point pixels",((PetscObject)draw)->type_name);
-  ierr = (*draw->ops->pointpixel)(draw,x,y,c);CHKERRQ(ierr);
+  PetscCheck(draw->ops->pointpixel,PETSC_COMM_SELF,PETSC_ERR_SUP,"This draw type %s does not support drawing point pixels",((PetscObject)draw)->type_name);
+  PetscCall((*draw->ops->pointpixel)(draw,x,y,c));
   PetscFunctionReturn(0);
 }
 
@@ -77,13 +73,11 @@ PetscErrorCode  PetscDrawPointPixel(PetscDraw draw,int x,int y,int c)
 @*/
 PetscErrorCode  PetscDrawPointSetSize(PetscDraw draw,PetscReal width)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscCheckFalse(width < 0.0 || width > 1.0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Bad size %g, should be between 0 and 1",(double)width);
   if (draw->ops->pointsetsize) {
-    ierr = (*draw->ops->pointsetsize)(draw,width);CHKERRQ(ierr);
+    PetscCall((*draw->ops->pointsetsize)(draw,width));
   }
   PetscFunctionReturn(0);
 }

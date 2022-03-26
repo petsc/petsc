@@ -7,7 +7,6 @@ int main(int argc,char **argv)
 {
   PetscMPIInt      rank;
   PetscInt         M=8,dof=1,stencil_width=1,i,start,end,P=5,N = 6,m=PETSC_DECIDE,n=PETSC_DECIDE,p=PETSC_DECIDE,pt = 0,st = 0;
-  PetscErrorCode   ierr;
   PetscBool        flg = PETSC_FALSE,flg2,flg3;
   DMBoundaryType   periodic;
   DMDAStencilType  stencil_type;
@@ -19,77 +18,77 @@ int main(int argc,char **argv)
   char             filename[64];
   FILE             *file;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-stencil_width",&stencil_width,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-periodic",&pt,NULL);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-stencil_width",&stencil_width,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-periodic",&pt,NULL));
 
   periodic = (DMBoundaryType) pt;
 
-  ierr = PetscOptionsGetInt(NULL,NULL,"-stencil_type",&st,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-stencil_type",&st,NULL));
 
   stencil_type = (DMDAStencilType) st;
 
-  ierr = PetscOptionsHasName(NULL,NULL,"-grid2d",&flg2);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,NULL,"-grid3d",&flg3);CHKERRQ(ierr);
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-grid2d",&flg2));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-grid3d",&flg3));
   if (flg2) {
-    ierr = DMDACreate2d(PETSC_COMM_WORLD,periodic,periodic,stencil_type,M,N,m,n,dof,stencil_width,NULL,NULL,&da);CHKERRQ(ierr);
+    PetscCall(DMDACreate2d(PETSC_COMM_WORLD,periodic,periodic,stencil_type,M,N,m,n,dof,stencil_width,NULL,NULL,&da));
   } else if (flg3) {
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,periodic,periodic,periodic,stencil_type,M,N,P,m,n,p,dof,stencil_width,NULL,NULL,NULL,&da);CHKERRQ(ierr);
+    PetscCall(DMDACreate3d(PETSC_COMM_WORLD,periodic,periodic,periodic,stencil_type,M,N,P,m,n,p,dof,stencil_width,NULL,NULL,NULL,&da));
   } else {
-    ierr = DMDACreate1d(PETSC_COMM_WORLD,periodic,M,dof,stencil_width,NULL,&da);CHKERRQ(ierr);
+    PetscCall(DMDACreate1d(PETSC_COMM_WORLD,periodic,M,dof,stencil_width,NULL,&da));
   }
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
 
-  ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
-  ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
-  ierr = VecDuplicate(local,&local_copy);CHKERRQ(ierr);
+  PetscCall(DMCreateGlobalVector(da,&global));
+  PetscCall(DMCreateLocalVector(da,&local));
+  PetscCall(VecDuplicate(local,&local_copy));
 
   /* zero out vectors so that ghostpoints are zero */
   value = 0;
-  ierr  = VecSet(local,value);CHKERRQ(ierr);
-  ierr  = VecSet(local_copy,value);CHKERRQ(ierr);
+  PetscCall(VecSet(local,value));
+  PetscCall(VecSet(local_copy,value));
 
-  ierr = VecGetOwnershipRange(global,&start,&end);CHKERRQ(ierr);
+  PetscCall(VecGetOwnershipRange(global,&start,&end));
   for (i=start; i<end; i++) {
     value = i + 1;
-    ierr  = VecSetValues(global,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(VecSetValues(global,1,&i,&value,INSERT_VALUES));
   }
-  ierr = VecAssemblyBegin(global);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(global);CHKERRQ(ierr);
+  PetscCall(VecAssemblyBegin(global));
+  PetscCall(VecAssemblyEnd(global));
 
-  ierr = DMGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
+  PetscCall(DMGlobalToLocalBegin(da,global,INSERT_VALUES,local));
+  PetscCall(DMGlobalToLocalEnd(da,global,INSERT_VALUES,local));
 
-  ierr = DMLocalToLocalBegin(da,local,INSERT_VALUES,local_copy);CHKERRQ(ierr);
-  ierr = DMLocalToLocalEnd(da,local,INSERT_VALUES,local_copy);CHKERRQ(ierr);
+  PetscCall(DMLocalToLocalBegin(da,local,INSERT_VALUES,local_copy));
+  PetscCall(DMLocalToLocalEnd(da,local,INSERT_VALUES,local_copy));
 
-  ierr = PetscOptionsGetBool(NULL,NULL,"-save",&flg,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-save",&flg,NULL));
   if (flg) {
-    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+    PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
     sprintf(filename,"local.%d",rank);
-    ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF,filename,&viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIGetPointer(viewer,&file);CHKERRQ(ierr);
-    ierr = VecView(local,viewer);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIOpen(PETSC_COMM_SELF,filename,&viewer));
+    PetscCall(PetscViewerASCIIGetPointer(viewer,&file));
+    PetscCall(VecView(local,viewer));
     fprintf(file,"Vector with correct ghost points\n");
-    ierr = VecView(local_copy,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    PetscCall(VecView(local_copy,viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
   }
 
-  ierr = VecAXPY(local_copy,-1.0,local);CHKERRQ(ierr);
-  ierr = VecNorm(local_copy,NORM_MAX,&work);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&work,&norm,1,MPIU_REAL,MPIU_MAX,PETSC_COMM_WORLD);CHKERRMPI(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of difference %g should be zero\n",(double)norm);CHKERRQ(ierr);
+  PetscCall(VecAXPY(local_copy,-1.0,local));
+  PetscCall(VecNorm(local_copy,NORM_MAX,&work));
+  PetscCallMPI(MPI_Allreduce(&work,&norm,1,MPIU_REAL,MPIU_MAX,PETSC_COMM_WORLD));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of difference %g should be zero\n",(double)norm));
 
-  ierr = VecDestroy(&local_copy);CHKERRQ(ierr);
-  ierr = VecDestroy(&local);CHKERRQ(ierr);
-  ierr = VecDestroy(&global);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(VecDestroy(&local_copy));
+  PetscCall(VecDestroy(&local));
+  PetscCall(VecDestroy(&global));
+  PetscCall(DMDestroy(&da));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

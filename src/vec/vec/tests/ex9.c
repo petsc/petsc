@@ -5,7 +5,6 @@ static char help[]= "Scatters from a parallel vector to a sequential vector.\n\n
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       n = 5,i,idx2[3] = {0,2,3},idx1[3] = {0,1,2};
   PetscMPIInt    size,rank;
   PetscScalar    value;
@@ -13,48 +12,48 @@ int main(int argc,char **argv)
   IS             is1,is2;
   VecScatter     ctx = 0;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   /* create two vectors */
-  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,PETSC_DECIDE,size*n);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&y);CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+  PetscCall(VecSetSizes(x,PETSC_DECIDE,size*n));
+  PetscCall(VecSetFromOptions(x));
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,n,&y));
 
   /* create two index sets */
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,3,idx1,PETSC_COPY_VALUES,&is1);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,3,idx2,PETSC_COPY_VALUES,&is2);CHKERRQ(ierr);
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF,3,idx1,PETSC_COPY_VALUES,&is1));
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF,3,idx2,PETSC_COPY_VALUES,&is2));
 
   /* fill local part of parallel vector */
   for (i=n*rank; i<n*(rank+1); i++) {
     value = (PetscScalar) i;
-    ierr  = VecSetValues(x,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(VecSetValues(x,1,&i,&value,INSERT_VALUES));
   }
-  ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
+  PetscCall(VecAssemblyBegin(x));
+  PetscCall(VecAssemblyEnd(x));
 
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = VecSet(y,-1.0);CHKERRQ(ierr);
+  PetscCall(VecSet(y,-1.0));
 
-  ierr = VecScatterCreate(x,is1,y,is2,&ctx);CHKERRQ(ierr);
-  ierr = VecScatterBegin(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&ctx);CHKERRQ(ierr);
+  PetscCall(VecScatterCreate(x,is1,y,is2,&ctx));
+  PetscCall(VecScatterBegin(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterDestroy(&ctx));
 
   if (rank == 0) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"scattered vector\n");CHKERRQ(ierr);
-    ierr = VecView(y,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"scattered vector\n"));
+    PetscCall(VecView(y,PETSC_VIEWER_STDOUT_SELF));
   }
-  ierr = ISDestroy(&is1);CHKERRQ(ierr);
-  ierr = ISDestroy(&is2);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
+  PetscCall(ISDestroy(&is1));
+  PetscCall(ISDestroy(&is2));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&y));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

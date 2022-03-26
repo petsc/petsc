@@ -6,7 +6,6 @@
 PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
 {
   FILE           *fp;
-  PetscErrorCode ierr;
   VERTEX_Power   Bus;
   LOAD           Load;
   GEN            Gen;
@@ -26,7 +25,7 @@ PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
   PetscFunctionBegin;
   fp = fopen(filename,"r");
   /* Check for valid file */
-  PetscCheckFalse(!fp,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Can't open Matpower data file %s",filename);
+  PetscCheck(fp,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Can't open Matpower data file %s",filename);
   pf->nload=0;
   while (fgets(line,MAXLINE,fp)) {
     if (strstr(line,"mpc.bus = ["))    bus_start_line = line_counter+1; /* Bus data starts from next line */
@@ -52,16 +51,16 @@ PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
   pf->ngen    = gen_end_line - gen_start_line;
   pf->nbranch = br_end_line  - br_start_line;
 
-  ierr = PetscCalloc1(pf->nbus,&pf->bus);CHKERRQ(ierr);
-  ierr = PetscCalloc1(pf->ngen,&pf->gen);CHKERRQ(ierr);
-  ierr = PetscCalloc1(pf->nload,&pf->load);CHKERRQ(ierr);
-  ierr = PetscCalloc1(pf->nbranch,&pf->branch);CHKERRQ(ierr);
+  PetscCall(PetscCalloc1(pf->nbus,&pf->bus));
+  PetscCall(PetscCalloc1(pf->ngen,&pf->gen));
+  PetscCall(PetscCalloc1(pf->nload,&pf->load));
+  PetscCall(PetscCalloc1(pf->nbranch,&pf->branch));
   Bus = pf->bus; Gen = pf->gen; Load = pf->load; Branch = pf->branch;
 
   /* Setting pf->sbase to 100 */
   pf->sbase = 100.0;
 
-  ierr = PetscMalloc1(maxbusnum+1,&busext2intmap);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(maxbusnum+1,&busext2intmap));
   for (i=0; i < maxbusnum+1; i++) busext2intmap[i] = -1;
 
   fp = fopen(filename,"r");
@@ -166,21 +165,21 @@ PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
 
   /* Reorder the generator data structure according to bus numbers */
   genj=0; loadj=0;
-  ierr = PetscMalloc1(pf->ngen,&newgen);CHKERRQ(ierr);
-  ierr = PetscMalloc1(pf->nload,&newload);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(pf->ngen,&newgen));
+  PetscCall(PetscMalloc1(pf->nload,&newload));
   for (i = 0; i < pf->nbus; i++) {
     for (j = 0; j < pf->bus[i].ngen; j++) {
-      ierr = PetscMemcpy(&newgen[genj++],&pf->gen[pf->bus[i].gidx[j]],sizeof(struct _p_GEN));CHKERRQ(ierr);
+      PetscCall(PetscMemcpy(&newgen[genj++],&pf->gen[pf->bus[i].gidx[j]],sizeof(struct _p_GEN)));
     }
     for (j = 0; j < pf->bus[i].nload; j++) {
-      ierr = PetscMemcpy(&newload[loadj++],&pf->load[pf->bus[i].lidx[j]],sizeof(struct _p_LOAD));CHKERRQ(ierr);
+      PetscCall(PetscMemcpy(&newload[loadj++],&pf->load[pf->bus[i].lidx[j]],sizeof(struct _p_LOAD)));
     }
   }
-  ierr = PetscFree(pf->gen);CHKERRQ(ierr);
-  ierr = PetscFree(pf->load);CHKERRQ(ierr);
+  PetscCall(PetscFree(pf->gen));
+  PetscCall(PetscFree(pf->load));
   pf->gen = newgen;
   pf->load = newload;
 
-  ierr = PetscFree(busext2intmap);CHKERRQ(ierr);
+  PetscCall(PetscFree(busext2intmap));
   PetscFunctionReturn(0);
 }

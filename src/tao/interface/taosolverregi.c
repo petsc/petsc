@@ -74,45 +74,44 @@ const char **TaoConvergedReasons = TaoConvergedReasons_Shifted - TAO_DIVERGED_US
 PetscErrorCode TaoRegisterAll(void)
 {
 #if !defined(PETSC_USE_COMPLEX)
-  PetscErrorCode ierr;
 #endif
 
   PetscFunctionBegin;
   if (TaoRegisterAllCalled) PetscFunctionReturn(0);
   TaoRegisterAllCalled = PETSC_TRUE;
 #if !defined(PETSC_USE_COMPLEX)
-  ierr = TaoRegister(TAOLMVM,TaoCreate_LMVM);CHKERRQ(ierr);
-  ierr = TaoRegister(TAONLS,TaoCreate_NLS);CHKERRQ(ierr);
-  ierr = TaoRegister(TAONTR,TaoCreate_NTR);CHKERRQ(ierr);
-  ierr = TaoRegister(TAONTL,TaoCreate_NTL);CHKERRQ(ierr);
-  ierr = TaoRegister(TAOCG,TaoCreate_CG);CHKERRQ(ierr);
-  ierr = TaoRegister(TAOTRON,TaoCreate_TRON);CHKERRQ(ierr);
-  ierr = TaoRegister(TAOOWLQN,TaoCreate_OWLQN);CHKERRQ(ierr);
-  ierr = TaoRegister(TAOBMRM,TaoCreate_BMRM);CHKERRQ(ierr);
-  ierr = TaoRegister(TAOBLMVM,TaoCreate_BLMVM);CHKERRQ(ierr);
-  ierr = TaoRegister(TAOBQNLS,TaoCreate_BQNLS);CHKERRQ(ierr);
-  ierr = TaoRegister(TAOBNCG,TaoCreate_BNCG);CHKERRQ(ierr);
-  ierr = TaoRegister(TAOBNLS,TaoCreate_BNLS);CHKERRQ(ierr);
-  ierr = TaoRegister(TAOBNTR,TaoCreate_BNTR);CHKERRQ(ierr);
-  ierr = TaoRegister(TAOBNTL,TaoCreate_BNTL);CHKERRQ(ierr);
-  ierr = TaoRegister(TAOBQNKLS,TaoCreate_BQNKLS);CHKERRQ(ierr);
-  ierr = TaoRegister(TAOBQNKTR,TaoCreate_BQNKTR);CHKERRQ(ierr);
-  ierr = TaoRegister(TAOBQNKTL,TaoCreate_BQNKTL);CHKERRQ(ierr);
-  ierr = TaoRegister(TAOBQPIP,TaoCreate_BQPIP);CHKERRQ(ierr);
-  ierr = TaoRegister(TAOGPCG,TaoCreate_GPCG);CHKERRQ(ierr);
-  ierr = TaoRegister(TAONM,TaoCreate_NM);CHKERRQ(ierr);
-  ierr = TaoRegister(TAOPOUNDERS,TaoCreate_POUNDERS);CHKERRQ(ierr);
-  ierr = TaoRegister(TAOBRGN,TaoCreate_BRGN);CHKERRQ(ierr);
-  ierr = TaoRegister(TAOLCL,TaoCreate_LCL);CHKERRQ(ierr);
-  ierr = TaoRegister(TAOSSILS,TaoCreate_SSILS);CHKERRQ(ierr);
-  ierr = TaoRegister(TAOSSFLS,TaoCreate_SSFLS);CHKERRQ(ierr);
-  ierr = TaoRegister(TAOASILS,TaoCreate_ASILS);CHKERRQ(ierr);
-  ierr = TaoRegister(TAOASFLS,TaoCreate_ASFLS);CHKERRQ(ierr);
-  ierr = TaoRegister(TAOIPM,TaoCreate_IPM);CHKERRQ(ierr);
-  ierr = TaoRegister(TAOPDIPM,TaoCreate_PDIPM);CHKERRQ(ierr);
-  ierr = TaoRegister(TAOSHELL,TaoCreate_Shell);CHKERRQ(ierr);
-  ierr = TaoRegister(TAOADMM,TaoCreate_ADMM);CHKERRQ(ierr);
-  ierr = TaoRegister(TAOALMM,TaoCreate_ALMM);CHKERRQ(ierr);
+  PetscCall(TaoRegister(TAOLMVM,TaoCreate_LMVM));
+  PetscCall(TaoRegister(TAONLS,TaoCreate_NLS));
+  PetscCall(TaoRegister(TAONTR,TaoCreate_NTR));
+  PetscCall(TaoRegister(TAONTL,TaoCreate_NTL));
+  PetscCall(TaoRegister(TAOCG,TaoCreate_CG));
+  PetscCall(TaoRegister(TAOTRON,TaoCreate_TRON));
+  PetscCall(TaoRegister(TAOOWLQN,TaoCreate_OWLQN));
+  PetscCall(TaoRegister(TAOBMRM,TaoCreate_BMRM));
+  PetscCall(TaoRegister(TAOBLMVM,TaoCreate_BLMVM));
+  PetscCall(TaoRegister(TAOBQNLS,TaoCreate_BQNLS));
+  PetscCall(TaoRegister(TAOBNCG,TaoCreate_BNCG));
+  PetscCall(TaoRegister(TAOBNLS,TaoCreate_BNLS));
+  PetscCall(TaoRegister(TAOBNTR,TaoCreate_BNTR));
+  PetscCall(TaoRegister(TAOBNTL,TaoCreate_BNTL));
+  PetscCall(TaoRegister(TAOBQNKLS,TaoCreate_BQNKLS));
+  PetscCall(TaoRegister(TAOBQNKTR,TaoCreate_BQNKTR));
+  PetscCall(TaoRegister(TAOBQNKTL,TaoCreate_BQNKTL));
+  PetscCall(TaoRegister(TAOBQPIP,TaoCreate_BQPIP));
+  PetscCall(TaoRegister(TAOGPCG,TaoCreate_GPCG));
+  PetscCall(TaoRegister(TAONM,TaoCreate_NM));
+  PetscCall(TaoRegister(TAOPOUNDERS,TaoCreate_POUNDERS));
+  PetscCall(TaoRegister(TAOBRGN,TaoCreate_BRGN));
+  PetscCall(TaoRegister(TAOLCL,TaoCreate_LCL));
+  PetscCall(TaoRegister(TAOSSILS,TaoCreate_SSILS));
+  PetscCall(TaoRegister(TAOSSFLS,TaoCreate_SSFLS));
+  PetscCall(TaoRegister(TAOASILS,TaoCreate_ASILS));
+  PetscCall(TaoRegister(TAOASFLS,TaoCreate_ASFLS));
+  PetscCall(TaoRegister(TAOIPM,TaoCreate_IPM));
+  PetscCall(TaoRegister(TAOPDIPM,TaoCreate_PDIPM));
+  PetscCall(TaoRegister(TAOSHELL,TaoCreate_Shell));
+  PetscCall(TaoRegister(TAOADMM,TaoCreate_ADMM));
+  PetscCall(TaoRegister(TAOALMM,TaoCreate_ALMM));
 #endif
   PetscFunctionReturn(0);
 }

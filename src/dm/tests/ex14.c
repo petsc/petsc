@@ -12,55 +12,53 @@ int main(int argc,char **argv)
 {
   PetscMPIInt    rank;
   PetscInt       M = 10,N = 8,m = PETSC_DECIDE,n = PETSC_DECIDE, dof = 1;
-  PetscErrorCode ierr;
   DM             da;
   Vec            local,global,natural;
   PetscScalar    value;
   PetscViewer    bviewer;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL));
 
   /* Create distributed array and get vectors */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,N,m,n,dof,1,NULL,NULL,&da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
-  ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,N,m,n,dof,1,NULL,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMCreateGlobalVector(da,&global));
+  PetscCall(DMCreateLocalVector(da,&local));
 
   value = -3.0;
-  ierr  = VecSet(global,value);CHKERRQ(ierr);
-  ierr  = DMGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
-  ierr  = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
+  PetscCall(VecSet(global,value));
+  PetscCall(DMGlobalToLocalBegin(da,global,INSERT_VALUES,local));
+  PetscCall(DMGlobalToLocalEnd(da,global,INSERT_VALUES,local));
 
-  ierr  = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   value = rank+1;
-  ierr  = VecScale(local,value);CHKERRQ(ierr);
-  ierr  = DMLocalToGlobalBegin(da,local,ADD_VALUES,global);CHKERRQ(ierr);
-  ierr  = DMLocalToGlobalEnd(da,local,ADD_VALUES,global);CHKERRQ(ierr);
+  PetscCall(VecScale(local,value));
+  PetscCall(DMLocalToGlobalBegin(da,local,ADD_VALUES,global));
+  PetscCall(DMLocalToGlobalEnd(da,local,ADD_VALUES,global));
 
-  ierr = DMDACreateNaturalVector(da,&natural);CHKERRQ(ierr);
-  ierr = DMDAGlobalToNaturalBegin(da,global,INSERT_VALUES,natural);CHKERRQ(ierr);
-  ierr = DMDAGlobalToNaturalEnd(da,global,INSERT_VALUES,natural);CHKERRQ(ierr);
+  PetscCall(DMDACreateNaturalVector(da,&natural));
+  PetscCall(DMDAGlobalToNaturalBegin(da,global,INSERT_VALUES,natural));
+  PetscCall(DMDAGlobalToNaturalEnd(da,global,INSERT_VALUES,natural));
 
-  ierr = DMDASetFieldName(da,0,"First field");CHKERRQ(ierr);
-  /*  ierr = VecView(global,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr); */
+  PetscCall(DMDASetFieldName(da,0,"First field"));
+  /*  PetscCall(VecView(global,PETSC_VIEWER_DRAW_WORLD)); */
 
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"daoutput",FILE_MODE_WRITE,&bviewer);CHKERRQ(ierr);
-  ierr = DMView(da,bviewer);CHKERRQ(ierr);
-  ierr = VecView(global,bviewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&bviewer);CHKERRQ(ierr);
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"daoutput",FILE_MODE_WRITE,&bviewer));
+  PetscCall(DMView(da,bviewer));
+  PetscCall(VecView(global,bviewer));
+  PetscCall(PetscViewerDestroy(&bviewer));
 
   /* Free memory */
-  ierr = VecDestroy(&local);CHKERRQ(ierr);
-  ierr = VecDestroy(&global);CHKERRQ(ierr);
-  ierr = VecDestroy(&natural);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(VecDestroy(&local));
+  PetscCall(VecDestroy(&global));
+  PetscCall(VecDestroy(&natural));
+  PetscCall(DMDestroy(&da));
+  PetscCall(PetscFinalize());
+  return 0;
 }
-

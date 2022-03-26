@@ -5,55 +5,54 @@ static char help[] = "Tests VecSetValuesBlocked() on sequential vectors.\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscInt       n = 9,bs = 3,indices[2],i;
   PetscScalar    values[6];
   Vec            x;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must be run with one processor");
 
   /* create vector */
-  ierr = VecCreate(PETSC_COMM_SELF,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,n,n);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(x,bs);CHKERRQ(ierr);
-  ierr = VecSetType(x,VECSEQ);CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_SELF,&x));
+  PetscCall(VecSetSizes(x,n,n));
+  PetscCall(VecSetBlockSize(x,bs));
+  PetscCall(VecSetType(x,VECSEQ));
 
   for (i=0; i<6; i++) values[i] = 4.0*i;
   indices[0] = 0;
   indices[1] = 2;
 
-  ierr = VecSetValuesBlocked(x,2,indices,values,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
+  PetscCall(VecSetValuesBlocked(x,2,indices,values,INSERT_VALUES));
+  PetscCall(VecAssemblyBegin(x));
+  PetscCall(VecAssemblyEnd(x));
 
   /*
       Resulting vector should be 0 4 8  0 0 0 12 16 20
   */
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
 
   /* test insertion with negative indices */
-  ierr = VecSetOption(x,VEC_IGNORE_NEGATIVE_INDICES,PETSC_TRUE);CHKERRQ(ierr);
+  PetscCall(VecSetOption(x,VEC_IGNORE_NEGATIVE_INDICES,PETSC_TRUE));
   for (i=0; i<6; i++) values[i] = -4.0*i;
   indices[0] = -1;
   indices[1] = 2;
 
-  ierr = VecSetValuesBlocked(x,2,indices,values,ADD_VALUES);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
+  PetscCall(VecSetValuesBlocked(x,2,indices,values,ADD_VALUES));
+  PetscCall(VecAssemblyBegin(x));
+  PetscCall(VecAssemblyEnd(x));
 
   /*
       Resulting vector should be 0 4 8  0 0 0 0 0 0
   */
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  PetscCall(VecDestroy(&x));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

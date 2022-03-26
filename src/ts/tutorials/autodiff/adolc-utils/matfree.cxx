@@ -30,7 +30,6 @@
 PetscErrorCode PetscAdolcIJacobianVectorProduct(Mat A_shell,Vec X,Vec Y)
 {
   AdolcMatCtx        *mctx;
-  PetscErrorCode    ierr;
   PetscInt          m,n,i,j,k = 0,d;
   const PetscScalar *x0;
   PetscScalar       *action,*x1;
@@ -41,62 +40,62 @@ PetscErrorCode PetscAdolcIJacobianVectorProduct(Mat A_shell,Vec X,Vec Y)
   PetscFunctionBegin;
 
   /* Get matrix-free context info */
-  ierr = MatShellGetContext(A_shell,&mctx);CHKERRQ(ierr);
+  PetscCall(MatShellGetContext(A_shell,&mctx));
   m = mctx->m;
   n = mctx->n;
 
   /* Get local input vectors and extract data, x0 and x1*/
-  ierr = TSGetDM(mctx->ts,&da);CHKERRQ(ierr);
-  ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(da,&localX1);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX1);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX1);CHKERRQ(ierr);
+  PetscCall(TSGetDM(mctx->ts,&da));
+  PetscCall(DMDAGetLocalInfo(da,&info));
+  PetscCall(DMGetLocalVector(da,&localX1));
+  PetscCall(DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX1));
+  PetscCall(DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX1));
 
-  ierr = VecGetArrayRead(mctx->localX0,&x0);CHKERRQ(ierr);
-  ierr = VecGetArray(localX1,&x1);CHKERRQ(ierr);
+  PetscCall(VecGetArrayRead(mctx->localX0,&x0));
+  PetscCall(VecGetArray(localX1,&x1));
 
   /* dF/dx part */
-  ierr = PetscMalloc1(m,&action);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(mctx->event1,0,0,0,0);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(m,&action));
+  PetscCall(PetscLogEventBegin(mctx->event1,0,0,0,0));
   fos_forward(mctx->tag1,m,n,0,x0,x1,NULL,action);
   for (j=info.gys; j<info.gys+info.gym; j++) {
     for (i=info.gxs; i<info.gxs+info.gxm; i++) {
       for (d=0; d<2; d++) {
         if ((i >= info.xs) && (i < info.xs+info.xm) && (j >= info.ys) && (j < info.ys+info.ym)) {
-          ierr = VecSetValuesLocal(Y,1,&k,&action[k],INSERT_VALUES);CHKERRQ(ierr);
+          PetscCall(VecSetValuesLocal(Y,1,&k,&action[k],INSERT_VALUES));
         }
         k++;
       }
     }
   }
-  ierr = PetscLogEventEnd(mctx->event1,0,0,0,0);CHKERRQ(ierr);
+  PetscCall(PetscLogEventEnd(mctx->event1,0,0,0,0));
   k = 0;
-  ierr = VecAssemblyBegin(Y);CHKERRQ(ierr); /* Note: Need to assemble between separate calls */
-  ierr = VecAssemblyEnd(Y);CHKERRQ(ierr);   /*       to INSERT_VALUES and ADD_VALUES         */
+  PetscCall(VecAssemblyBegin(Y)); /* Note: Need to assemble between separate calls */
+  PetscCall(VecAssemblyEnd(Y));   /*       to INSERT_VALUES and ADD_VALUES         */
 
   /* a * dF/d(xdot) part */
-  ierr = PetscLogEventBegin(mctx->event2,0,0,0,0);CHKERRQ(ierr);
+  PetscCall(PetscLogEventBegin(mctx->event2,0,0,0,0));
   fos_forward(mctx->tag2,m,n,0,x0,x1,NULL,action);
   for (j=info.gys; j<info.gys+info.gym; j++) {
     for (i=info.gxs; i<info.gxs+info.gxm; i++) {
       for (d=0; d<2; d++) {
         if ((i >= info.xs) && (i < info.xs+info.xm) && (j >= info.ys) && (j < info.ys+info.ym)) {
           action[k] *= mctx->shift;
-          ierr = VecSetValuesLocal(Y,1,&k,&action[k],ADD_VALUES);CHKERRQ(ierr);
+          PetscCall(VecSetValuesLocal(Y,1,&k,&action[k],ADD_VALUES));
         }
         k++;
       }
     }
   }
-  ierr = PetscLogEventEnd(mctx->event2,0,0,0,0);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(Y);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(Y);CHKERRQ(ierr);
-  ierr = PetscFree(action);CHKERRQ(ierr);
+  PetscCall(PetscLogEventEnd(mctx->event2,0,0,0,0));
+  PetscCall(VecAssemblyBegin(Y));
+  PetscCall(VecAssemblyEnd(Y));
+  PetscCall(PetscFree(action));
 
   /* Restore local vector */
-  ierr = VecRestoreArray(localX1,&x1);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(mctx->localX0,&x0);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(da,&localX1);CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(localX1,&x1));
+  PetscCall(VecRestoreArrayRead(mctx->localX0,&x0));
+  PetscCall(DMRestoreLocalVector(da,&localX1));
   PetscFunctionReturn(0);
 }
 
@@ -116,7 +115,6 @@ PetscErrorCode PetscAdolcIJacobianVectorProduct(Mat A_shell,Vec X,Vec Y)
 PetscErrorCode PetscAdolcIJacobianVectorProductIDMass(Mat A_shell,Vec X,Vec Y)
 {
   AdolcMatCtx       *mctx;
-  PetscErrorCode    ierr;
   PetscInt          m,n,i,j,k = 0,d;
   const PetscScalar *x0;
   PetscScalar       *action,*x1;
@@ -127,49 +125,49 @@ PetscErrorCode PetscAdolcIJacobianVectorProductIDMass(Mat A_shell,Vec X,Vec Y)
   PetscFunctionBegin;
 
   /* Get matrix-free context info */
-  ierr = MatShellGetContext(A_shell,&mctx);CHKERRQ(ierr);
+  PetscCall(MatShellGetContext(A_shell,&mctx));
   m = mctx->m;
   n = mctx->n;
 
   /* Get local input vectors and extract data, x0 and x1*/
-  ierr = TSGetDM(mctx->ts,&da);CHKERRQ(ierr);
-  ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(da,&localX1);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX1);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX1);CHKERRQ(ierr);
+  PetscCall(TSGetDM(mctx->ts,&da));
+  PetscCall(DMDAGetLocalInfo(da,&info));
+  PetscCall(DMGetLocalVector(da,&localX1));
+  PetscCall(DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX1));
+  PetscCall(DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX1));
 
-  ierr = VecGetArrayRead(mctx->localX0,&x0);CHKERRQ(ierr);
-  ierr = VecGetArray(localX1,&x1);CHKERRQ(ierr);
+  PetscCall(VecGetArrayRead(mctx->localX0,&x0));
+  PetscCall(VecGetArray(localX1,&x1));
 
   /* dF/dx part */
-  ierr = PetscMalloc1(m,&action);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(mctx->event1,0,0,0,0);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(m,&action));
+  PetscCall(PetscLogEventBegin(mctx->event1,0,0,0,0));
   fos_forward(mctx->tag1,m,n,0,x0,x1,NULL,action);
   for (j=info.gys; j<info.gys+info.gym; j++) {
     for (i=info.gxs; i<info.gxs+info.gxm; i++) {
       for (d=0; d<2; d++) {
         if ((i >= info.xs) && (i < info.xs+info.xm) && (j >= info.ys) && (j < info.ys+info.ym)) {
-          ierr = VecSetValuesLocal(Y,1,&k,&action[k],INSERT_VALUES);CHKERRQ(ierr);
+          PetscCall(VecSetValuesLocal(Y,1,&k,&action[k],INSERT_VALUES));
         }
         k++;
       }
     }
   }
-  ierr = PetscLogEventEnd(mctx->event1,0,0,0,0);CHKERRQ(ierr);
+  PetscCall(PetscLogEventEnd(mctx->event1,0,0,0,0));
   k = 0;
-  ierr = VecAssemblyBegin(Y);CHKERRQ(ierr); /* Note: Need to assemble between separate calls */
-  ierr = VecAssemblyEnd(Y);CHKERRQ(ierr);   /*       to INSERT_VALUES and ADD_VALUES         */
-  ierr = PetscFree(action);CHKERRQ(ierr);
+  PetscCall(VecAssemblyBegin(Y)); /* Note: Need to assemble between separate calls */
+  PetscCall(VecAssemblyEnd(Y));   /*       to INSERT_VALUES and ADD_VALUES         */
+  PetscCall(PetscFree(action));
 
   /* Restore local vector */
-  ierr = VecRestoreArray(localX1,&x1);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(mctx->localX0,&x0);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(da,&localX1);CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(localX1,&x1));
+  PetscCall(VecRestoreArrayRead(mctx->localX0,&x0));
+  PetscCall(DMRestoreLocalVector(da,&localX1));
 
   /* a * dF/d(xdot) part */
-  ierr = PetscLogEventBegin(mctx->event2,0,0,0,0);CHKERRQ(ierr);
-  ierr = VecAXPY(Y,mctx->shift,X);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(mctx->event2,0,0,0,0);CHKERRQ(ierr);
+  PetscCall(PetscLogEventBegin(mctx->event2,0,0,0,0));
+  PetscCall(VecAXPY(Y,mctx->shift,X));
+  PetscCall(PetscLogEventEnd(mctx->event2,0,0,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -188,7 +186,6 @@ PetscErrorCode PetscAdolcIJacobianVectorProductIDMass(Mat A_shell,Vec X,Vec Y)
 PetscErrorCode PetscAdolcIJacobianTransposeVectorProduct(Mat A_shell,Vec Y,Vec X)
 {
   AdolcMatCtx       *mctx;
-  PetscErrorCode    ierr;
   PetscInt          m,n,i,j,k = 0,d;
   const PetscScalar *x;
   PetscScalar       *action,*y;
@@ -199,22 +196,22 @@ PetscErrorCode PetscAdolcIJacobianTransposeVectorProduct(Mat A_shell,Vec Y,Vec X
   PetscFunctionBegin;
 
   /* Get matrix-free context info */
-  ierr = MatShellGetContext(A_shell,&mctx);CHKERRQ(ierr);
+  PetscCall(MatShellGetContext(A_shell,&mctx));
   m = mctx->m;
   n = mctx->n;
 
   /* Get local input vectors and extract data, x0 and x1*/
-  ierr = TSGetDM(mctx->ts,&da);CHKERRQ(ierr);
-  ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(da,&localY);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(da,Y,INSERT_VALUES,localY);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da,Y,INSERT_VALUES,localY);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(mctx->localX0,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(localY,&y);CHKERRQ(ierr);
+  PetscCall(TSGetDM(mctx->ts,&da));
+  PetscCall(DMDAGetLocalInfo(da,&info));
+  PetscCall(DMGetLocalVector(da,&localY));
+  PetscCall(DMGlobalToLocalBegin(da,Y,INSERT_VALUES,localY));
+  PetscCall(DMGlobalToLocalEnd(da,Y,INSERT_VALUES,localY));
+  PetscCall(VecGetArrayRead(mctx->localX0,&x));
+  PetscCall(VecGetArray(localY,&y));
 
   /* dF/dx part */
-  ierr = PetscMalloc1(n,&action);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(mctx->event3,0,0,0,0);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(n,&action));
+  PetscCall(PetscLogEventBegin(mctx->event3,0,0,0,0));
   if (!mctx->flg)
     zos_forward(mctx->tag1,m,n,1,x,NULL);
   fos_reverse(mctx->tag1,m,n,y,action);
@@ -222,19 +219,19 @@ PetscErrorCode PetscAdolcIJacobianTransposeVectorProduct(Mat A_shell,Vec Y,Vec X
     for (i=info.gxs; i<info.gxs+info.gxm; i++) {
       for (d=0; d<2; d++) {
         if ((i >= info.xs) && (i < info.xs+info.xm) && (j >= info.ys) && (j < info.ys+info.ym)) {
-          ierr = VecSetValuesLocal(X,1,&k,&action[k],INSERT_VALUES);CHKERRQ(ierr);
+          PetscCall(VecSetValuesLocal(X,1,&k,&action[k],INSERT_VALUES));
         }
         k++;
       }
     }
   }
-  ierr = PetscLogEventEnd(mctx->event3,0,0,0,0);CHKERRQ(ierr);
+  PetscCall(PetscLogEventEnd(mctx->event3,0,0,0,0));
   k = 0;
-  ierr = VecAssemblyBegin(X);CHKERRQ(ierr); /* Note: Need to assemble between separate calls */
-  ierr = VecAssemblyEnd(X);CHKERRQ(ierr);   /*       to INSERT_VALUES and ADD_VALUES         */
+  PetscCall(VecAssemblyBegin(X)); /* Note: Need to assemble between separate calls */
+  PetscCall(VecAssemblyEnd(X));   /*       to INSERT_VALUES and ADD_VALUES         */
 
   /* a * dF/d(xdot) part */
-  ierr = PetscLogEventBegin(mctx->event4,0,0,0,0);CHKERRQ(ierr);
+  PetscCall(PetscLogEventBegin(mctx->event4,0,0,0,0));
   if (!mctx->flg) {
     zos_forward(mctx->tag2,m,n,1,x,NULL);
     mctx->flg = PETSC_TRUE;
@@ -245,21 +242,21 @@ PetscErrorCode PetscAdolcIJacobianTransposeVectorProduct(Mat A_shell,Vec Y,Vec X
       for (d=0; d<2; d++) {
         if ((i >= info.xs) && (i < info.xs+info.xm) && (j >= info.ys) && (j < info.ys+info.ym)) {
           action[k] *= mctx->shift;
-          ierr = VecSetValuesLocal(X,1,&k,&action[k],ADD_VALUES);CHKERRQ(ierr);
+          PetscCall(VecSetValuesLocal(X,1,&k,&action[k],ADD_VALUES));
         }
         k++;
       }
     }
   }
-  ierr = PetscLogEventEnd(mctx->event4,0,0,0,0);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(X);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
-  ierr = PetscFree(action);CHKERRQ(ierr);
+  PetscCall(PetscLogEventEnd(mctx->event4,0,0,0,0));
+  PetscCall(VecAssemblyBegin(X));
+  PetscCall(VecAssemblyEnd(X));
+  PetscCall(PetscFree(action));
 
   /* Restore local vector */
-  ierr = VecRestoreArray(localY,&y);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(mctx->localX0,&x);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(da,&localY);CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(localY,&y));
+  PetscCall(VecRestoreArrayRead(mctx->localX0,&x));
+  PetscCall(DMRestoreLocalVector(da,&localY));
   PetscFunctionReturn(0);
 }
 
@@ -279,7 +276,6 @@ PetscErrorCode PetscAdolcIJacobianTransposeVectorProduct(Mat A_shell,Vec Y,Vec X
 PetscErrorCode PetscAdolcIJacobianTransposeVectorProductIDMass(Mat A_shell,Vec Y,Vec X)
 {
   AdolcMatCtx       *mctx;
-  PetscErrorCode    ierr;
   PetscInt          m,n,i,j,k = 0,d;
   const PetscScalar *x;
   PetscScalar       *action,*y;
@@ -290,48 +286,48 @@ PetscErrorCode PetscAdolcIJacobianTransposeVectorProductIDMass(Mat A_shell,Vec Y
   PetscFunctionBegin;
 
   /* Get matrix-free context info */
-  ierr = MatShellGetContext(A_shell,&mctx);CHKERRQ(ierr);
+  PetscCall(MatShellGetContext(A_shell,&mctx));
   m = mctx->m;
   n = mctx->n;
 
   /* Get local input vectors and extract data, x0 and x1*/
-  ierr = TSGetDM(mctx->ts,&da);CHKERRQ(ierr);
-  ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(da,&localY);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(da,Y,INSERT_VALUES,localY);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da,Y,INSERT_VALUES,localY);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(mctx->localX0,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(localY,&y);CHKERRQ(ierr);
+  PetscCall(TSGetDM(mctx->ts,&da));
+  PetscCall(DMDAGetLocalInfo(da,&info));
+  PetscCall(DMGetLocalVector(da,&localY));
+  PetscCall(DMGlobalToLocalBegin(da,Y,INSERT_VALUES,localY));
+  PetscCall(DMGlobalToLocalEnd(da,Y,INSERT_VALUES,localY));
+  PetscCall(VecGetArrayRead(mctx->localX0,&x));
+  PetscCall(VecGetArray(localY,&y));
 
   /* dF/dx part */
-  ierr = PetscMalloc1(n,&action);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(mctx->event3,0,0,0,0);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(n,&action));
+  PetscCall(PetscLogEventBegin(mctx->event3,0,0,0,0));
   if (!mctx->flg) zos_forward(mctx->tag1,m,n,1,x,NULL);
   fos_reverse(mctx->tag1,m,n,y,action);
   for (j=info.gys; j<info.gys+info.gym; j++) {
     for (i=info.gxs; i<info.gxs+info.gxm; i++) {
       for (d=0; d<2; d++) {
         if ((i >= info.xs) && (i < info.xs+info.xm) && (j >= info.ys) && (j < info.ys+info.ym)) {
-          ierr = VecSetValuesLocal(X,1,&k,&action[k],INSERT_VALUES);CHKERRQ(ierr);
+          PetscCall(VecSetValuesLocal(X,1,&k,&action[k],INSERT_VALUES));
         }
         k++;
       }
     }
   }
-  ierr = PetscLogEventEnd(mctx->event3,0,0,0,0);CHKERRQ(ierr);
+  PetscCall(PetscLogEventEnd(mctx->event3,0,0,0,0));
   k = 0;
-  ierr = VecAssemblyBegin(X);CHKERRQ(ierr); /* Note: Need to assemble between separate calls */
-  ierr = VecAssemblyEnd(X);CHKERRQ(ierr);   /*       to INSERT_VALUES and ADD_VALUES         */
-  ierr = PetscFree(action);CHKERRQ(ierr);
+  PetscCall(VecAssemblyBegin(X)); /* Note: Need to assemble between separate calls */
+  PetscCall(VecAssemblyEnd(X));   /*       to INSERT_VALUES and ADD_VALUES         */
+  PetscCall(PetscFree(action));
 
   /* Restore local vector */
-  ierr = VecRestoreArray(localY,&y);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(mctx->localX0,&x);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(da,&localY);CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(localY,&y));
+  PetscCall(VecRestoreArrayRead(mctx->localX0,&x));
+  PetscCall(DMRestoreLocalVector(da,&localY));
 
   /* a * dF/d(xdot) part */
-  ierr = PetscLogEventBegin(mctx->event4,0,0,0,0);CHKERRQ(ierr);
-  ierr = VecAXPY(X,mctx->shift,Y);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(mctx->event4,0,0,0,0);CHKERRQ(ierr);
+  PetscCall(PetscLogEventBegin(mctx->event4,0,0,0,0));
+  PetscCall(VecAXPY(X,mctx->shift,Y));
+  PetscCall(PetscLogEventEnd(mctx->event4,0,0,0,0));
   PetscFunctionReturn(0);
 }

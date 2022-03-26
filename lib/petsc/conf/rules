@@ -552,7 +552,7 @@ exampleconcepts:
 # which is processed to generate HTML.
 #
 manimplementations:
-	-@git grep "struct\s\+_p_[^\s]\+.*{" -- *.cu *.c *.h *.cxx | grep -v -e ";" -e "/tests/" -e "/tutorials/" > implsClassAll.txt ; \
+	-@git grep "struct\s\+_[pn]_[^\s]\+.*{" -- *.cu *.c *.h *.cxx | grep -v -e ";" -e "/tests/" -e "/tutorials/" > implsClassAll.txt ; \
   git grep -n "^\(static \)\?\(PETSC_EXTERN \)\?\(PETSC_INTERN \)\?\(extern \)\?PetscErrorCode \+[^_ ]\+_[^_ ]\+(" -- '*/impls/*.c' '*/impls/*.cu' '*/impls/*.cxx' '*/impls/*.h' | grep -v -e ";" -e "_[Pp]rivate" > implsFuncAll.txt ; \
   for i in ${LOC}/docs/manualpages/*/*.html foo; do \
        if [ "$$i" != "foo" ] ; then \
@@ -602,7 +602,13 @@ simplehtml: chk_c2html
               idir=`dirname $$i`;\
               if [ ! -d $${loc}/$${idir} ]; then ${MKDIR} -p $${loc}/$${idir}; fi ; \
               ${RM} $${loc}/$$i.html; \
-              sed -e "s/CHKERRMPI(ierr);//g" -e "s/CHKERRQ(ierr);//g" -e "s/PetscFunctionReturn(0)/return(0)/g" -e "s/ierr [ ]*= //g" -e "s/PETSC[A-Z]*_DLLEXPORT//g" $$i | ${C2HTML} -n | \
+              sed -E -e "s/PetscCall[A-z_]*\((.*)\)\;/\1;/g" \
+                     -e "s/\;ierr\;/;/g" \
+                     -e "/\s*PetscFunctionBegin\;/d" \
+                     -e "s/PetscFunctionReturn\((\w+)\)/return \1/g" \
+                     -e "s/PetscFunctionReturnVoid\(\)/return/g" \
+                     -e "s/ierr\s+=\s+//g" \
+                     -e "s/PETSC[A-Z]*_DLLEXPORT//g" $$i | ${C2HTML} -n | \
               awk '{ sub(/<pre width="80">/,"<pre width=\"80\">\n"); print }' > $${loc}/$$i.html ; \
 	    fi; \
          done
@@ -629,7 +635,13 @@ html: chk_c2html
               fi;\
               ${RM} $${loc}/$$i.html; \
               echo "<center><a href=\"https://gitlab.com/petsc/petsc/-/blob/$$current_git_sha/$$rel_dir/$$i\">Actual source code: $${iroot}</a></center><br>" > $${loc}/$$i.html; \
-              sed -e "s/CHKERRMPI(ierr);//g" -e "s/CHKERRQ(ierr);//g" -e "s/PetscFunctionReturn(0)/return(0)/g" -e "s/ierr [ ]*= //g" -e "s/PETSC[A-Z]*_DLLEXPORT//g" $$i | ${C2HTML} -n | \
+              sed -E -e "s/PetscCall[A-z_]*\((.*)\)\;/\1;/g" \
+                     -e "s/\;ierr\;/;/g" \
+                     -e "/\s*PetscFunctionBegin\;/d" \
+                     -e "s/PetscFunctionReturn\((\w+)\)/return \1/g" \
+                     -e "s/PetscFunctionReturnVoid\(\)/return/g" \
+                     -e "s/ierr\s+=\s+//g" \
+                     -e "s/PETSC[A-Z]*_DLLEXPORT//g" $$i | ${C2HTML} -n | \
               awk '{ sub(/<pre width="80">/,"<pre width=\"80\">\n"); print }' | ${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/fixinclude.py $$i $${PETSC_DIR} | \
               egrep -v '(PetscValid|PetscFunctionBegin|PetscCheck|PetscErrorCode ierr;|#if !defined\(__|#define __|#undef __|EXTERN_C )' | \
               ${MAPNAMES} -map $$htmlmap_tmp -inhtml | sed -e s?ROOT?$${IROOT}?g >> $${loc}/$$i.html ; \
@@ -708,15 +720,13 @@ checkbadSource:
 	-@git --no-pager grep -n -P 'for \( ' -- ${GITSRC} >> checkbadSource.out;true
 	-@git --no-pager grep -n -P 'while \( ' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "Space before ) ---------------------------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P '(?!.*\\$$) \)' -- ${GITSRC} >> checkbadSource.out;true
-	-@echo "Space before CHKERR(Q|MPI|CUDA|CUBLAS|CUSPARSE) ------" >> checkbadSource.out
-	-@git --no-pager grep -n -P '; CHKERR(Q|MPI|CUDA|CUBLAS|CUSPARSE)\(' -- ${GITSRC} >> checkbadSource.out;true
+	-@git --no-pager grep -n -P '(?!.*\\$$)\w+ +\)' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "No space after if, for or while ----------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -e '[^_]for\(' -e '[^_]if\(' -e 'while\(' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "Two ;; -----------------------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -e ';;' -- ${GITSRC} | grep -v ' for (' >> checkbadSource.out;true
-	-@echo "CHKERRQ for an MPI error code ------------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P -e '= MPI[U]*_\w*\(.*CHKERRQ' -- ${GITSRC} | grep -v MPIU_File >> checkbadSource.out;true
+	-@echo "PetscCall for an MPI error code ----------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P -e '= MPI[U]*_\w*\(.*PetscCall' -- ${GITSRC} | grep -v MPIU_File >> checkbadSource.out;true
 	-@echo "Missing if (ierr) return ierr; -----------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -e 'ierr = PetscInitialize\(' -- '*.[ch]' '*.cpp' '*.cxx' '*.cu' | grep -v 'if (ierr) return ierr;' | egrep "(test|tutorial)" >> checkbadSource.out;true
 	-@echo "DOS file (with DOS newlines) -------------------------" >> checkbadSource.out
@@ -724,9 +734,9 @@ checkbadSource:
 	-@echo "{ before SETERRQ -------------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P '{SETERRQ' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "{ on the same line as a function definition ----------" >> checkbadSource.out
-	-@git --no-pager grep -n -P -e '(PetscErrorCode|void|inline|PETSC_EXTERN|PETSC_INTERN|static inline)[ ]+[a-zA-Z0-9_-]+(.*)(\s*){$$' -- ${GITSRC} >> checkbadSource.out;true
-	-@echo "CHKERRQ following SETERRQ ----------------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P 'SETERRQ' -- ${GITSRC} | grep ";CHKERRQ" >> checkbadSource.out;true
+	-@git --no-pager grep -n -P -e '^\s*(PetscErrorCode|void|inline|PETSC_EXTERN|PETSC_INTERN|static inline)[ ]+[a-zA-Z0-9_-]+(.*)(\s*){$$' -- ${GITSRC} >> checkbadSource.out;true
+	-@echo "PetscCall following SETERRQ --------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P 'SETERRQ' -- ${GITSRC} | grep ";PetscCall" >> checkbadSource.out;true
 	-@echo "SETERRQ() without defined error code -----------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P 'SETERRQ\((?!\))' -- ${GITSRC} | grep -v PETSC_ERR  | grep " if " | grep -v "__VA_ARGS__" | grep -v flow.c >> checkbadSource.out;true
 	-@echo "SETERRQ() with trailing newline ----------------------" >> checkbadSource.out
@@ -743,9 +753,15 @@ checkbadSource:
 	-@git --no-pager grep -n -P ' if +(.*) *SETERRQ' -- ${GITSRC} | grep -v 'PetscUnlikelyDebug' | grep -v 'petscerror.h' >> checkbadSource.out;true
 	-@echo "Using if (PetscUnlikelyDebug(condition)) SETERRQ(...) instead of PetscAssert()" >> checkbadSource.out
 	-@git --no-pager grep -n -P -E ' if +\(PetscUnlikelyDebug.*\) *SETERRQ' -- ${GITSRC} | grep -v petscerror.h >> checkbadSource.out;true
+	-@echo "Using PetscFunctionReturn(ierr) ----------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P 'PetscFunctionReturn(ierr)' -- ${GITSRC} >> checkbadSource.out;true
+	-@echo "Defining a returning macro without PetscMacroReturns()" >> checkbadSource.out
+	-@git --no-pager grep -n -P 'define .*\w+;\s+do' -- ${GITSRC} | egrep -v '(PetscMacroReturns|PetscDrawCollectiveBegin|MatPreallocateInitialize|PetscOptionsBegin|PetscObjectOptionsBegin|PetscOptionsTail)' >> checkbadSource.out;true
+	-@echo "Defining a error checking macro using CHKERR style ---" >> checkbadSource.out
+	-@git --no-pager grep -n -P 'define\s+CHKERR\w*\(.*\)\s*do\s+{' -- ${GITSRC} >> checkbadSource.out;true
 #	-@echo "Missing CHKERRQ --------------------------" >> checkbadSource.out
 #	-@git --no-pager grep -P 'ierr = ' -- '*.[ch]' '*.cxx' | grep ');' | egrep -v '(PetscFinalize|PetscInitialize|sys|benchmark|interfaces|fun3d|ftn-custom|f90-custom|CHK)' >> checkbadSource.out;true
-	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 22` ;\
+	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 24` ;\
          if [ $$l -gt 0 ] ; then \
            echo $$l " files with errors detected in source code formatting" ;\
            cat checkbadSource.out ;\

@@ -1,4 +1,4 @@
-LINE 95
+LINE 94
 Mat Object: 4 MPI processes
 row 0: (13, 10.) 
 row 1: (9, 10.)  (11, 5.)  (12, 6.) 
@@ -32,7 +32,7 @@ row 28: (53, 4.)
 row 29:
 row 30: (54, 1.) 
 row 31: (51, -1.) 
-LINE 96
+LINE 95
 Vec Object: 4 MPI processes
 Process [0]
 10.
@@ -70,7 +70,7 @@ Process [3]
 0.
 1.
 -1.
-LINE 99
+LINE 98
 Mat Object: 4 MPI processes
 row 0: (13, 0.) 
 row 1: (9, 0.)  (11, 0.)  (12, 0.) 
@@ -104,7 +104,7 @@ row 28: (53, 0.)
 row 29:
 row 30: (54, 0.) 
 row 31: (51, 0.) 
-LINE 100
+LINE 99
 Vec Object: 4 MPI processes
 Process [0]
 10.
@@ -142,7 +142,7 @@ Process [3]
 0.
 1.
 -1.
-LINE 104
+LINE 103
 Mat Object: 4 MPI processes
 row 0: (0, 0.) 
 row 1: (1, 0.)  (2, 0.)  (4, 0.)  (6, 0.)  (7, 0.) 
@@ -176,7 +176,7 @@ row 28: (25, 0.)  (26, 0.)  (28, 0.)
 row 29:
 row 30: (25, 0.)  (30, 0.) 
 row 31: (25, 0.)  (31, 0.) 
-LINE 107
+LINE 106
 Mat Object: 4 MPI processes
 row 0:
 row 1:
@@ -234,7 +234,7 @@ row 52:
 row 53: (50, 0.)  (51, 0.)  (53, 0.)  (54, 0.) 
 row 54: (51, 0.)  (53, 0.)  (54, 0.) 
 row 55: (55, 0.) 
-LINE 115
+LINE 114
 Mat Object: 4 MPI processes
 row 0: (13, -10.) 
 row 1: (9, -10.)  (11, -5.)  (12, -6.) 
@@ -268,7 +268,7 @@ row 28: (53, -4.)
 row 29:
 row 30: (54, -1.) 
 row 31: (51, 1.) 
-LINE 127
+LINE 126
 Mat Object: 4 MPI processes
 row 0: (13, 3.) 
 row 1: (9, 8.)  (11, 5.)  (12, 6.) 
@@ -302,7 +302,7 @@ row 28: (53, 4.)
 row 29:
 row 30: (54, 1.) 
 row 31: (51, -1.) 
-LINE 128
+LINE 127
 Vec Object: 4 MPI processes
 Process [0]
 3.
@@ -340,7 +340,7 @@ Process [3]
 0.
 1.
 -1.
-LINE 131
+LINE 130
 Mat Object: 4 MPI processes
 row 0: (13, 0.) 
 row 1: (9, 0.)  (11, 0.)  (12, 0.) 
@@ -374,7 +374,7 @@ row 28: (53, 0.)
 row 29:
 row 30: (54, 0.) 
 row 31: (51, 0.) 
-LINE 132
+LINE 131
 Vec Object: 4 MPI processes
 Process [0]
 3.
@@ -412,7 +412,7 @@ Process [3]
 0.
 1.
 -1.
-LINE 142
+LINE 141
 Mat Object: 4 MPI processes
 row 0: (13, 3.) 
 row 1: (9, 8.)  (11, 5.)  (12, 6.) 
@@ -446,7 +446,7 @@ row 28: (53, 4.)
 row 29:
 row 30: (54, 1.) 
 row 31: (51, -1.) 
-LINE 143
+LINE 142
 Vec Object: 4 MPI processes
 Process [0]
 3.
@@ -484,7 +484,7 @@ Process [3]
 0.
 1.
 -1.
-LINE 146
+LINE 145
 Mat Object: 4 MPI processes
 row 0: (13, -3.) 
 row 1: (9, -8.)  (11, -5.)  (12, -6.) 
@@ -518,7 +518,7 @@ row 28: (53, -4.)
 row 29:
 row 30: (54, -1.) 
 row 31: (51, 1.) 
-LINE 147
+LINE 146
 Vec Object: 4 MPI processes
 Process [0]
 0.
@@ -556,7 +556,7 @@ Process [3]
 0.
 0.
 0.
-LINE 151
+LINE 150
 Mat Object: 4 MPI processes
 row 0: (0, 9.) 
 row 1: (1, 125.)  (2, 10.)  (4, 20.)  (6, 6.)  (7, -8.) 
@@ -590,7 +590,7 @@ row 28: (25, 20.)  (26, 8.)  (28, 16.)
 row 29:
 row 30: (25, 6.)  (30, 1.) 
 row 31: (25, -8.)  (31, 1.) 
-LINE 154
+LINE 153
 Mat Object: 4 MPI processes
 row 0:
 row 1:
@@ -648,41 +648,41 @@ row 52:
 row 53: (50, 14.)  (51, 40.)  (53, 45.)  (54, 30.) 
 row 54: (51, 48.)  (53, 30.)  (54, 37.) 
 row 55: (55, 9.) 
+LINE 200
+Mat Object: 4 MPI processes
+row 0: (13, -3.) 
+row 1: (9, -8.)  (11, -5.)  (12, -6.) 
+row 2: (8, -7.)  (11, -2.) 
+row 3:
+row 4: (11, -4.) 
+row 5:
+row 6: (12, -1.) 
+row 7: (9, 1.) 
+row 8: (27, -3.) 
+row 9: (23, -8.)  (25, -5.)  (26, -6.) 
+row 10: (22, -7.)  (25, -2.) 
+row 11:
+row 12: (25, -4.) 
+row 13:
+row 14: (26, -1.) 
+row 15: (23, 1.) 
+row 16: (41, -3.) 
+row 17: (37, -8.)  (39, -5.)  (40, -6.) 
+row 18: (36, -7.)  (39, -2.) 
+row 19:
+row 20: (39, -4.) 
+row 21:
+row 22: (40, -1.) 
+row 23: (37, 1.) 
+row 24: (55, -3.) 
+row 25: (51, -8.)  (53, -5.)  (54, -6.) 
+row 26: (50, -7.)  (53, -2.) 
+row 27:
+row 28: (53, -4.) 
+row 29:
+row 30: (54, -1.) 
+row 31: (51, 1.) 
 LINE 201
-Mat Object: 4 MPI processes
-row 0: (13, -3.) 
-row 1: (9, -8.)  (11, -5.)  (12, -6.) 
-row 2: (8, -7.)  (11, -2.) 
-row 3:
-row 4: (11, -4.) 
-row 5:
-row 6: (12, -1.) 
-row 7: (9, 1.) 
-row 8: (27, -3.) 
-row 9: (23, -8.)  (25, -5.)  (26, -6.) 
-row 10: (22, -7.)  (25, -2.) 
-row 11:
-row 12: (25, -4.) 
-row 13:
-row 14: (26, -1.) 
-row 15: (23, 1.) 
-row 16: (41, -3.) 
-row 17: (37, -8.)  (39, -5.)  (40, -6.) 
-row 18: (36, -7.)  (39, -2.) 
-row 19:
-row 20: (39, -4.) 
-row 21:
-row 22: (40, -1.) 
-row 23: (37, 1.) 
-row 24: (55, -3.) 
-row 25: (51, -8.)  (53, -5.)  (54, -6.) 
-row 26: (50, -7.)  (53, -2.) 
-row 27:
-row 28: (53, -4.) 
-row 29:
-row 30: (54, -1.) 
-row 31: (51, 1.) 
-LINE 202
 Vec Object: 4 MPI processes
 Process [0]
 -3.
@@ -720,41 +720,41 @@ Process [3]
 0.
 -1.
 1.
+LINE 204
+Mat Object: 4 MPI processes
+row 0: (13, -3.) 
+row 1: (9, -8.)  (11, -5.)  (12, -6.) 
+row 2: (8, -7.)  (11, -2.) 
+row 3:
+row 4: (11, -4.) 
+row 5:
+row 6: (12, -1.) 
+row 7: (9, 1.) 
+row 8: (27, -3.) 
+row 9: (23, -8.)  (25, -5.)  (26, -6.) 
+row 10: (22, -7.)  (25, -2.) 
+row 11:
+row 12: (25, -4.) 
+row 13:
+row 14: (26, -1.) 
+row 15: (23, 1.) 
+row 16: (41, -3.) 
+row 17: (37, -8.)  (39, -5.)  (40, -6.) 
+row 18: (36, -7.)  (39, -2.) 
+row 19:
+row 20: (39, -4.) 
+row 21:
+row 22: (40, -1.) 
+row 23: (37, 1.) 
+row 24: (55, -3.) 
+row 25: (51, -8.)  (53, -5.)  (54, -6.) 
+row 26: (50, -7.)  (53, -2.) 
+row 27:
+row 28: (53, -4.) 
+row 29:
+row 30: (54, -1.) 
+row 31: (51, 1.) 
 LINE 205
-Mat Object: 4 MPI processes
-row 0: (13, -3.) 
-row 1: (9, -8.)  (11, -5.)  (12, -6.) 
-row 2: (8, -7.)  (11, -2.) 
-row 3:
-row 4: (11, -4.) 
-row 5:
-row 6: (12, -1.) 
-row 7: (9, 1.) 
-row 8: (27, -3.) 
-row 9: (23, -8.)  (25, -5.)  (26, -6.) 
-row 10: (22, -7.)  (25, -2.) 
-row 11:
-row 12: (25, -4.) 
-row 13:
-row 14: (26, -1.) 
-row 15: (23, 1.) 
-row 16: (41, -3.) 
-row 17: (37, -8.)  (39, -5.)  (40, -6.) 
-row 18: (36, -7.)  (39, -2.) 
-row 19:
-row 20: (39, -4.) 
-row 21:
-row 22: (40, -1.) 
-row 23: (37, 1.) 
-row 24: (55, -3.) 
-row 25: (51, -8.)  (53, -5.)  (54, -6.) 
-row 26: (50, -7.)  (53, -2.) 
-row 27:
-row 28: (53, -4.) 
-row 29:
-row 30: (54, -1.) 
-row 31: (51, 1.) 
-LINE 206
 Vec Object: 4 MPI processes
 Process [0]
 -3.
@@ -792,7 +792,7 @@ Process [3]
 0.
 -1.
 1.
-LINE 209
+LINE 208
 Mat Object: 4 MPI processes
 row 0: (0, 9.) 
 row 1: (1, 125.)  (2, 10.)  (4, 20.)  (6, 6.)  (7, -8.) 
@@ -826,7 +826,7 @@ row 28: (25, 20.)  (26, 8.)  (28, 16.)
 row 29:
 row 30: (25, 6.)  (30, 1.) 
 row 31: (25, -8.)  (31, 1.) 
-LINE 212
+LINE 211
 Mat Object: 4 MPI processes
 row 0:
 row 1:

@@ -6,7 +6,6 @@ static PetscErrorCode TaoBQNLSComputeHessian(Tao tao)
 {
   TAO_BNK        *bnk = (TAO_BNK *)tao->data;
   TAO_BQNK       *bqnk = (TAO_BQNK*)bnk->ctx;
-  PetscErrorCode ierr;
   PetscReal      gnorm2, delta;
 
   PetscFunctionBegin;
@@ -15,8 +14,8 @@ static PetscErrorCode TaoBQNLSComputeHessian(Tao tao)
   if (gnorm2 == 0.0) gnorm2 = PETSC_MACHINE_EPSILON;
   if (bnk->f == 0.0) delta = 2.0 / gnorm2;
   else delta = 2.0 * PetscAbsScalar(bnk->f) / gnorm2;
-  ierr = MatLMVMSymBroydenSetDelta(bqnk->B, delta);CHKERRQ(ierr);
-  ierr = MatLMVMUpdate(bqnk->B, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
+  PetscCall(MatLMVMSymBroydenSetDelta(bqnk->B, delta));
+  PetscCall(MatLMVMUpdate(bqnk->B, tao->solution, bnk->unprojected_gradient));
   PetscFunctionReturn(0);
 }
 
@@ -24,15 +23,14 @@ static PetscErrorCode TaoBQNLSComputeStep(Tao tao, PetscBool shift, KSPConverged
 {
   TAO_BNK        *bnk = (TAO_BNK *)tao->data;
   TAO_BQNK       *bqnk = (TAO_BQNK*)bnk->ctx;
-  PetscErrorCode ierr;
   PetscInt       nupdates;
 
   PetscFunctionBegin;
-  ierr = MatSolve(bqnk->B, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
-  ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
-  ierr = TaoBNKBoundStep(tao, bnk->as_type, tao->stepdirection);CHKERRQ(ierr);
+  PetscCall(MatSolve(bqnk->B, tao->gradient, tao->stepdirection));
+  PetscCall(VecScale(tao->stepdirection, -1.0));
+  PetscCall(TaoBNKBoundStep(tao, bnk->as_type, tao->stepdirection));
   *ksp_reason = KSP_CONVERGED_ATOL;
-  ierr = MatLMVMGetUpdateCount(bqnk->B, &nupdates);CHKERRQ(ierr);
+  PetscCall(MatLMVMGetUpdateCount(bqnk->B, &nupdates));
   if (nupdates == 0) *step_type = BNK_SCALED_GRADIENT;
   else *step_type = BNK_BFGS;
   PetscFunctionReturn(0);
@@ -42,26 +40,25 @@ static PetscErrorCode TaoSetFromOptions_BQNLS(PetscOptionItems *PetscOptionsObje
 {
   TAO_BNK        *bnk = (TAO_BNK *)tao->data;
   TAO_BQNK       *bqnk = (TAO_BQNK*)bnk->ctx;
-  PetscErrorCode ierr;
   PetscBool      is_spd;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"Quasi-Newton-Krylov method for bound constrained optimization");CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-tao_bnk_as_type", "active set estimation method", "", BNK_AS, BNK_AS_TYPES, BNK_AS[bnk->as_type], &bnk->as_type, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_epsilon", "(developer) tolerance used when computing actual and predicted reduction", "", bnk->epsilon, &bnk->epsilon,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_as_tol", "(developer) initial tolerance used when estimating actively bounded variables", "", bnk->as_tol, &bnk->as_tol,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_as_step", "(developer) step length used when estimating actively bounded variables", "", bnk->as_step, &bnk->as_step,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-tao_bnk_max_cg_its", "number of BNCG iterations to take for each Newton step", "", bnk->max_cg_its, &bnk->max_cg_its,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"Quasi-Newton-Krylov method for bound constrained optimization"));
+  PetscCall(PetscOptionsEList("-tao_bnk_as_type", "active set estimation method", "", BNK_AS, BNK_AS_TYPES, BNK_AS[bnk->as_type], &bnk->as_type, NULL));
+  PetscCall(PetscOptionsReal("-tao_bnk_epsilon", "(developer) tolerance used when computing actual and predicted reduction", "", bnk->epsilon, &bnk->epsilon,NULL));
+  PetscCall(PetscOptionsReal("-tao_bnk_as_tol", "(developer) initial tolerance used when estimating actively bounded variables", "", bnk->as_tol, &bnk->as_tol,NULL));
+  PetscCall(PetscOptionsReal("-tao_bnk_as_step", "(developer) step length used when estimating actively bounded variables", "", bnk->as_step, &bnk->as_step,NULL));
+  PetscCall(PetscOptionsInt("-tao_bnk_max_cg_its", "number of BNCG iterations to take for each Newton step", "", bnk->max_cg_its, &bnk->max_cg_its,NULL));
+  PetscCall(PetscOptionsTail());
 
-  ierr = TaoSetOptionsPrefix(bnk->bncg,((PetscObject)(tao))->prefix);CHKERRQ(ierr);
-  ierr = TaoAppendOptionsPrefix(bnk->bncg,"tao_bnk_");CHKERRQ(ierr);
-  ierr = TaoSetFromOptions(bnk->bncg);CHKERRQ(ierr);
+  PetscCall(TaoSetOptionsPrefix(bnk->bncg,((PetscObject)(tao))->prefix));
+  PetscCall(TaoAppendOptionsPrefix(bnk->bncg,"tao_bnk_"));
+  PetscCall(TaoSetFromOptions(bnk->bncg));
 
-  ierr = MatSetOptionsPrefix(bqnk->B, ((PetscObject)tao)->prefix);CHKERRQ(ierr);
-  ierr = MatAppendOptionsPrefix(bqnk->B, "tao_bqnls_");CHKERRQ(ierr);
-  ierr = MatSetFromOptions(bqnk->B);CHKERRQ(ierr);
-  ierr = MatGetOption(bqnk->B, MAT_SPD, &is_spd);CHKERRQ(ierr);
+  PetscCall(MatSetOptionsPrefix(bqnk->B, ((PetscObject)tao)->prefix));
+  PetscCall(MatAppendOptionsPrefix(bqnk->B, "tao_bqnls_"));
+  PetscCall(MatSetFromOptions(bqnk->B));
+  PetscCall(MatGetOption(bqnk->B, MAT_SPD, &is_spd));
   PetscCheck(is_spd,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix must be symmetric positive-definite");
   PetscFunctionReturn(0);
 }
@@ -86,10 +83,9 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BQNLS(Tao tao)
 {
   TAO_BNK        *bnk;
   TAO_BQNK       *bqnk;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TaoCreate_BQNK(tao);CHKERRQ(ierr);
+  PetscCall(TaoCreate_BQNK(tao));
   tao->ops->setfromoptions = TaoSetFromOptions_BQNLS;
 
   bnk = (TAO_BNK*)tao->data;
@@ -99,6 +95,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BQNLS(Tao tao)
 
   bqnk = (TAO_BQNK*)bnk->ctx;
   bqnk->solve = TaoSolve_BNLS;
-  ierr = MatSetType(bqnk->B, MATLMVMBFGS);CHKERRQ(ierr);
+  PetscCall(MatSetType(bqnk->B, MATLMVMBFGS));
   PetscFunctionReturn(0);
 }

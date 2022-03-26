@@ -81,7 +81,6 @@ static char help[] = "Solve a toy 1D problem on a staggered grid.\n\
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode    ierr;
   DM                dmSol,dmForcing;
   DM                dmCoordSol;
   Vec               sol,solRef,solRefLocal,f,fLocal,rhs,coordSolLocal;
@@ -98,47 +97,47 @@ int main(int argc,char **argv)
   const PetscReal domainSize = 1.0;
 
   /* Initialize PETSc */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* Create 1D DMStag for the solution, and set up. Note that you can supply many
      command line options (see the man page for DMStagCreate1d)
   */
-  ierr = DMStagCreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,3,1,1,DMSTAG_STENCIL_BOX,1,NULL,&dmSol);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(dmSol);CHKERRQ(ierr);
-  ierr = DMSetUp(dmSol);CHKERRQ(ierr);
+  PetscCall(DMStagCreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,3,1,1,DMSTAG_STENCIL_BOX,1,NULL,&dmSol));
+  PetscCall(DMSetFromOptions(dmSol));
+  PetscCall(DMSetUp(dmSol));
 
   /* Create uniform coordinates. Note that in higher-dimensional examples,
       coordinates are created differently.*/
-  ierr = DMStagSetUniformCoordinatesExplicit(dmSol,0.0,domainSize,0.0,0.0,0.0,0.0);CHKERRQ(ierr);
+  PetscCall(DMStagSetUniformCoordinatesExplicit(dmSol,0.0,domainSize,0.0,0.0,0.0,0.0));
 
   /* Determine boundary type */
-  ierr = DMStagGetBoundaryTypes(dmSol,&boundary,NULL,NULL);CHKERRQ(ierr);
+  PetscCall(DMStagGetBoundaryTypes(dmSol,&boundary,NULL,NULL));
 
   /* Process command line options (depends on DMStag setup) */
   a = 1.0; b = 2.0; c = 1.0;
-  ierr = PetscOptionsGetScalar(NULL,NULL,"-a",&a,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetScalar(NULL,NULL,"-a",&a,NULL));
   if (boundary == DM_BOUNDARY_PERIODIC) {
     b = a;
     c = 0.0;
   } else {
-    ierr = PetscOptionsGetScalar(NULL,NULL,"-b",&b,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsGetScalar(NULL,NULL,"-c",&c,NULL);CHKERRQ(ierr);
+    PetscCall(PetscOptionsGetScalar(NULL,NULL,"-b",&b,NULL));
+    PetscCall(PetscOptionsGetScalar(NULL,NULL,"-c",&c,NULL));
   }
 
   /* Compute reference solution on the grid, using direct array access */
-  ierr = DMCreateGlobalVector(dmSol,&solRef);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dmSol,&solRefLocal);CHKERRQ(ierr);
-  ierr = DMStagVecGetArray(dmSol,solRefLocal,&arrSol);CHKERRQ(ierr);
-  ierr = DMGetCoordinateDM(dmSol,&dmCoordSol);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocal(dmSol,&coordSolLocal);CHKERRQ(ierr);
-  ierr = DMStagVecGetArrayRead(dmCoordSol,coordSolLocal,&arrCoordSol);CHKERRQ(ierr);
-  ierr = DMStagGetCorners(dmSol,&start,NULL,NULL,&n,NULL,NULL,&nExtra,NULL,NULL);CHKERRQ(ierr);
+  PetscCall(DMCreateGlobalVector(dmSol,&solRef));
+  PetscCall(DMGetLocalVector(dmSol,&solRefLocal));
+  PetscCall(DMStagVecGetArray(dmSol,solRefLocal,&arrSol));
+  PetscCall(DMGetCoordinateDM(dmSol,&dmCoordSol));
+  PetscCall(DMGetCoordinatesLocal(dmSol,&coordSolLocal));
+  PetscCall(DMStagVecGetArrayRead(dmCoordSol,coordSolLocal,&arrCoordSol));
+  PetscCall(DMStagGetCorners(dmSol,&start,NULL,NULL,&n,NULL,NULL,&nExtra,NULL,NULL));
 
   /* Get the correct entries for each of our variables in local element-wise storage */
-  ierr = DMStagGetLocationSlot(dmSol,LEFT,   0,&iu);CHKERRQ(ierr);
-  ierr = DMStagGetLocationSlot(dmSol,ELEMENT,0,&ip);CHKERRQ(ierr);
-  ierr = DMStagGetLocationSlot(dmCoordSol,LEFT,   0,&ixu);CHKERRQ(ierr);
-  ierr = DMStagGetLocationSlot(dmCoordSol,ELEMENT,0,&ixp);CHKERRQ(ierr);
+  PetscCall(DMStagGetLocationSlot(dmSol,LEFT,   0,&iu));
+  PetscCall(DMStagGetLocationSlot(dmSol,ELEMENT,0,&ip));
+  PetscCall(DMStagGetLocationSlot(dmCoordSol,LEFT,   0,&ixu));
+  PetscCall(DMStagGetLocationSlot(dmCoordSol,ELEMENT,0,&ixp));
   for (e=start; e<start + n + nExtra; ++e) {
     {
       const PetscScalar coordu = arrCoordSol[e][ixu];
@@ -149,10 +148,10 @@ int main(int argc,char **argv)
       arrSol[e][ip] = b - a - (c/2.0) + c * coordp;
     }
   }
-  ierr = DMStagVecRestoreArrayRead(dmCoordSol,coordSolLocal,&arrCoordSol);CHKERRQ(ierr);
-  ierr = DMStagVecRestoreArray(dmSol,solRefLocal,&arrSol);CHKERRQ(ierr);
-  ierr = DMLocalToGlobal(dmSol,solRefLocal,INSERT_VALUES,solRef);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dmSol,&solRefLocal);CHKERRQ(ierr);
+  PetscCall(DMStagVecRestoreArrayRead(dmCoordSol,coordSolLocal,&arrCoordSol));
+  PetscCall(DMStagVecRestoreArray(dmSol,solRefLocal,&arrSol));
+  PetscCall(DMLocalToGlobal(dmSol,solRefLocal,INSERT_VALUES,solRef));
+  PetscCall(DMRestoreLocalVector(dmSol,&solRefLocal));
 
   /* Create another 1D DMStag for the forcing term, and populate a field on it.
      Here this is not really necessary, but in other contexts we may have auxiliary
@@ -162,15 +161,15 @@ int main(int argc,char **argv)
      "default section" (though the current implementation does NOT actually use
      PetscSection). Since it is created as a derivative of the original DMStag,
      we can be confident that it is compatible. One could check with DMGetCompatiblity() */
-  ierr = DMStagCreateCompatibleDMStag(dmSol,1,0,0,0,&dmForcing);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(dmForcing,&f);CHKERRQ(ierr);
-  ierr = VecSet(f,c);CHKERRQ(ierr); /* Dummy for logic which depends on auxiliary data */
+  PetscCall(DMStagCreateCompatibleDMStag(dmSol,1,0,0,0,&dmForcing));
+  PetscCall(DMCreateGlobalVector(dmForcing,&f));
+  PetscCall(VecSet(f,c)); /* Dummy for logic which depends on auxiliary data */
 
   /* Assemble System */
-  ierr = DMCreateMatrix(dmSol,&A);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(dmSol,&rhs);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dmForcing,&fLocal);CHKERRQ(ierr);
-  ierr = DMGlobalToLocal(dmForcing,f,INSERT_VALUES,fLocal);CHKERRQ(ierr);
+  PetscCall(DMCreateMatrix(dmSol,&A));
+  PetscCall(DMCreateGlobalVector(dmSol,&rhs));
+  PetscCall(DMGetLocalVector(dmForcing,&fLocal));
+  PetscCall(DMGlobalToLocal(dmForcing,f,INSERT_VALUES,fLocal));
 
   /* Note: if iterating over all the elements, you will usually need to do something
      special at one of the boundaries. You can either make use of the existence
@@ -178,8 +177,8 @@ int main(int argc,char **argv)
      The construction of the reference solution above uses the first method,
      so here we will use the second */
 
-  ierr = DMStagGetIsLastRank(dmSol,&isLastRank,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMStagGetIsFirstRank(dmSol,&isFirstRank,NULL,NULL);CHKERRQ(ierr);
+  PetscCall(DMStagGetIsLastRank(dmSol,&isLastRank,NULL,NULL));
+  PetscCall(DMStagGetIsFirstRank(dmSol,&isFirstRank,NULL,NULL));
   for (e = start; e<start+n; ++e) {
     DMStagStencil pos[3];
     PetscScalar   val[3];
@@ -208,7 +207,7 @@ int main(int argc,char **argv)
       pos[idxLoc].loc = LEFT;  /* vertex-centered dof (u) */
       pos[idxLoc].c   = 0;
 
-      ierr = DMStagVecGetValuesStencil(dmForcing,fLocal,1,&pos[idxLoc],&fVal);CHKERRQ(ierr);
+      PetscCall(DMStagVecGetValuesStencil(dmForcing,fLocal,1,&pos[idxLoc],&fVal));
 
       val[idxLoc]     = fVal;     /* p'(x) = f, in interior */
       ++idxLoc;
@@ -221,15 +220,15 @@ int main(int argc,char **argv)
       val[idxLoc]     = b;     /* u(1) = b */
       ++idxLoc;
     }
-    ierr = DMStagVecSetValuesStencil(dmSol,rhs,idxLoc,pos,val,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(DMStagVecSetValuesStencil(dmSol,rhs,idxLoc,pos,val,INSERT_VALUES));
   }
-  ierr = DMRestoreLocalVector(dmForcing,&fLocal);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(rhs);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(rhs);CHKERRQ(ierr);
+  PetscCall(DMRestoreLocalVector(dmForcing,&fLocal));
+  PetscCall(VecAssemblyBegin(rhs));
+  PetscCall(VecAssemblyEnd(rhs));
 
   /* Note: normally it would be more efficient to assemble the RHS and the matrix
      in the same loop over elements, but we separate them for clarity here */
-  ierr = DMGetCoordinatesLocal(dmSol,&coordSolLocal);CHKERRQ(ierr);
+  PetscCall(DMGetCoordinatesLocal(dmSol,&coordSolLocal));
   for (e = start; e<start+n; ++e) {
 
     /* Velocity is either a BC or an interior point */
@@ -241,7 +240,7 @@ int main(int argc,char **argv)
       row.loc = LEFT;
       row.c   = 0;
       val     = 1.0;
-      ierr = DMStagMatSetValuesStencil(dmSol,A,1,&row,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);
+      PetscCall(DMStagMatSetValuesStencil(dmSol,A,1,&row,1,&row,&val,INSERT_VALUES));
     } else {
       DMStagStencil row,col[3];
       PetscScalar   val[3],xp[2];
@@ -258,7 +257,7 @@ int main(int argc,char **argv)
       col[1].loc = ELEMENT;
       col[1].c   = 0;
 
-      ierr = DMStagVecGetValuesStencil(dmCoordSol,coordSolLocal,2,col,xp);CHKERRQ(ierr);
+      PetscCall(DMStagVecGetValuesStencil(dmCoordSol,coordSolLocal,2,col,xp));
       h = xp[0]- xp[1];
       if (boundary == DM_BOUNDARY_PERIODIC && PetscRealPart(h) < 0.0) h += domainSize;
 
@@ -272,7 +271,7 @@ int main(int argc,char **argv)
       col[2].c   = 0;
       val[2]     = 0.0;
 
-      ierr = DMStagMatSetValuesStencil(dmSol,A,1,&row,3,col,val,INSERT_VALUES);CHKERRQ(ierr);
+      PetscCall(DMStagMatSetValuesStencil(dmSol,A,1,&row,3,col,val,INSERT_VALUES));
     }
 
     /* Additional velocity point (BC) on the right */
@@ -284,7 +283,7 @@ int main(int argc,char **argv)
       row.loc = RIGHT;
       row.c = 0;
       val = 1.0;
-      ierr = DMStagMatSetValuesStencil(dmSol,A,1,&row,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);
+      PetscCall(DMStagMatSetValuesStencil(dmSol,A,1,&row,1,&row,&val,INSERT_VALUES));
     }
 
     /* Equation on pressure (element) variables */
@@ -304,7 +303,7 @@ int main(int argc,char **argv)
       col[1].loc = LEFT;
       col[1].c   = 0;
 
-      ierr = DMStagVecGetValuesStencil(dmCoordSol,coordSolLocal,2,col,xu);CHKERRQ(ierr);
+      PetscCall(DMStagVecGetValuesStencil(dmCoordSol,coordSolLocal,2,col,xu));
       h = xu[0]- xu[1];
       if (boundary == DM_BOUNDARY_PERIODIC && PetscRealPart(h) < 0.0) h += domainSize;
 
@@ -316,43 +315,43 @@ int main(int argc,char **argv)
       col[2].c   = 0;
       val[2]     = 1.0;
 
-      ierr = DMStagMatSetValuesStencil(dmSol,A,1,&row,3,col,val,INSERT_VALUES);CHKERRQ(ierr);
+      PetscCall(DMStagMatSetValuesStencil(dmSol,A,1,&row,3,col,val,INSERT_VALUES));
     }
   }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
   /* Solve */
-  ierr = DMCreateGlobalVector(dmSol,&sol);CHKERRQ(ierr);
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr); /* A simple, but non-scalable, solver choice */
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp,rhs,sol);CHKERRQ(ierr);
+  PetscCall(DMCreateGlobalVector(dmSol,&sol));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPSetOperators(ksp,A,A));
+  PetscCall(KSPGetPC(ksp,&pc));
+  PetscCall(PCSetType(pc,PCJACOBI)); /* A simple, but non-scalable, solver choice */
+  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(KSPSolve(ksp,rhs,sol));
 
   /* View the components of the solution, demonstrating DMStagMigrateVec() */
   {
     DM  dmVertsOnly,dmElementsOnly;
     Vec u,p;
 
-    ierr = DMStagCreateCompatibleDMStag(dmSol,1,0,0,0,&dmVertsOnly);CHKERRQ(ierr);
-    ierr = DMStagCreateCompatibleDMStag(dmSol,0,1,0,0,&dmElementsOnly);CHKERRQ(ierr);
-    ierr = DMGetGlobalVector(dmVertsOnly,&u);CHKERRQ(ierr);
-    ierr = DMGetGlobalVector(dmElementsOnly,&p);CHKERRQ(ierr);
+    PetscCall(DMStagCreateCompatibleDMStag(dmSol,1,0,0,0,&dmVertsOnly));
+    PetscCall(DMStagCreateCompatibleDMStag(dmSol,0,1,0,0,&dmElementsOnly));
+    PetscCall(DMGetGlobalVector(dmVertsOnly,&u));
+    PetscCall(DMGetGlobalVector(dmElementsOnly,&p));
 
-    ierr = DMStagMigrateVec(dmSol,sol,dmVertsOnly,u);CHKERRQ(ierr);
-    ierr = DMStagMigrateVec(dmSol,sol,dmElementsOnly,p);CHKERRQ(ierr);
+    PetscCall(DMStagMigrateVec(dmSol,sol,dmVertsOnly,u));
+    PetscCall(DMStagMigrateVec(dmSol,sol,dmElementsOnly,p));
 
-    ierr = PetscObjectSetName((PetscObject)u,"Sol_u");CHKERRQ(ierr);
-    ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)p,"Sol_p");CHKERRQ(ierr);
-    ierr = VecView(p,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    PetscCall(PetscObjectSetName((PetscObject)u,"Sol_u"));
+    PetscCall(VecView(u,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(PetscObjectSetName((PetscObject)p,"Sol_p"));
+    PetscCall(VecView(p,PETSC_VIEWER_STDOUT_WORLD));
 
-    ierr = DMRestoreGlobalVector(dmVertsOnly,&u);CHKERRQ(ierr);
-    ierr = DMRestoreGlobalVector(dmElementsOnly,&p);CHKERRQ(ierr);
-    ierr = DMDestroy(&dmVertsOnly);CHKERRQ(ierr);
-    ierr = DMDestroy(&dmElementsOnly);CHKERRQ(ierr);
+    PetscCall(DMRestoreGlobalVector(dmVertsOnly,&u));
+    PetscCall(DMRestoreGlobalVector(dmElementsOnly,&p));
+    PetscCall(DMDestroy(&dmVertsOnly));
+    PetscCall(DMDestroy(&dmElementsOnly));
   }
 
   /* Check Solution */
@@ -360,27 +359,27 @@ int main(int argc,char **argv)
     Vec       diff;
     PetscReal normsolRef,errAbs,errRel;
 
-    ierr = VecDuplicate(sol,&diff);CHKERRQ(ierr);
-    ierr = VecCopy(sol,diff);CHKERRQ(ierr);
-    ierr = VecAXPY(diff,-1.0,solRef);CHKERRQ(ierr);
-    ierr = VecNorm(diff,NORM_2,&errAbs);CHKERRQ(ierr);
-    ierr = VecNorm(solRef,NORM_2,&normsolRef);CHKERRQ(ierr);
+    PetscCall(VecDuplicate(sol,&diff));
+    PetscCall(VecCopy(sol,diff));
+    PetscCall(VecAXPY(diff,-1.0,solRef));
+    PetscCall(VecNorm(diff,NORM_2,&errAbs));
+    PetscCall(VecNorm(solRef,NORM_2,&normsolRef));
     errRel = errAbs/normsolRef;
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error (abs): %g\nError (rel): %g\n",(double)errAbs,(double)errRel);CHKERRQ(ierr);
-    ierr = VecDestroy(&diff);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error (abs): %g\nError (rel): %g\n",(double)errAbs,(double)errRel));
+    PetscCall(VecDestroy(&diff));
   }
 
   /* Clean up and finalize PETSc */
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = VecDestroy(&sol);CHKERRQ(ierr);
-  ierr = VecDestroy(&solRef);CHKERRQ(ierr);
-  ierr = VecDestroy(&rhs);CHKERRQ(ierr);
-  ierr = VecDestroy(&f);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = DMDestroy(&dmSol);CHKERRQ(ierr);
-  ierr = DMDestroy(&dmForcing);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(VecDestroy(&sol));
+  PetscCall(VecDestroy(&solRef));
+  PetscCall(VecDestroy(&rhs));
+  PetscCall(VecDestroy(&f));
+  PetscCall(MatDestroy(&A));
+  PetscCall(DMDestroy(&dmSol));
+  PetscCall(DMDestroy(&dmForcing));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

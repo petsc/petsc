@@ -14,42 +14,41 @@ int main(int argc,char **args)
 {
   Mat            A;
   PetscScalar    v;
-  PetscErrorCode ierr;
   PetscInt       i,j,rowlens[] = {2,3,1},cols[] = {0,2,0,1,2,2};
   PetscBool      flg;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsHasName(NULL,NULL,"-baij",&flg);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-baij",&flg));
   if (flg) {
-    ierr = MatCreateSeqBAIJ(PETSC_COMM_WORLD,1,3,3,0,rowlens,&A);CHKERRQ(ierr);
-    ierr = MatSeqBAIJSetColumnIndices(A,cols);CHKERRQ(ierr);
+    PetscCall(MatCreateSeqBAIJ(PETSC_COMM_WORLD,1,3,3,0,rowlens,&A));
+    PetscCall(MatSeqBAIJSetColumnIndices(A,cols));
   } else {
-    ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,3,3,0,rowlens,&A);CHKERRQ(ierr);
-    ierr = MatSeqAIJSetColumnIndices(A,cols);CHKERRQ(ierr);
+    PetscCall(MatCreateSeqAIJ(PETSC_COMM_WORLD,3,3,0,rowlens,&A));
+    PetscCall(MatSeqAIJSetColumnIndices(A,cols));
   }
 
   i    = 0; j = 0; v = 1.0;
-  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
+  PetscCall(MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES));
   i    = 0; j = 2; v = 3.0;
-  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
+  PetscCall(MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES));
 
   i    = 1; j = 0; v = 1.0;
-  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
+  PetscCall(MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES));
   i    = 1; j = 1; v = 2.0;
-  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
+  PetscCall(MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES));
   i    = 1; j = 2; v = 3.0;
-  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
+  PetscCall(MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES));
 
   i    = 2; j = 2; v = 3.0;
-  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
+  PetscCall(MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES));
 
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(MatDestroy(&A));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

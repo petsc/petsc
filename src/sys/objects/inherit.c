@@ -31,7 +31,6 @@ PetscErrorCode  PetscHeaderCreate_Private(PetscObject h,PetscClassId classid,con
                                           MPI_Comm comm,PetscObjectDestroyFunction destroy,PetscObjectViewFunction view)
 {
   static PetscInt idcnt = 1;
-  PetscErrorCode  ierr;
 #if defined(PETSC_USE_LOG)
   PetscObject     *newPetscObjects;
   PetscInt         newPetscObjectsMaxCounts,i;
@@ -60,7 +59,7 @@ PetscErrorCode  PetscHeaderCreate_Private(PetscObject h,PetscClassId classid,con
   h->bops->composefunction = PetscObjectComposeFunction_Petsc;
   h->bops->queryfunction   = PetscObjectQueryFunction_Petsc;
 
-  ierr = PetscCommDuplicate(comm,&h->comm,&h->tag);CHKERRQ(ierr);
+  PetscCall(PetscCommDuplicate(comm,&h->comm,&h->tag));
 
 #if defined(PETSC_USE_LOG)
   /* Keep a record of object created */
@@ -75,9 +74,9 @@ PetscErrorCode  PetscHeaderCreate_Private(PetscObject h,PetscClassId classid,con
     /* Need to increase the space for storing PETSc objects */
     if (!PetscObjectsMaxCounts) newPetscObjectsMaxCounts = 100;
     else                        newPetscObjectsMaxCounts = 2*PetscObjectsMaxCounts;
-    ierr = PetscCalloc1(newPetscObjectsMaxCounts,&newPetscObjects);CHKERRQ(ierr);
-    ierr = PetscArraycpy(newPetscObjects,PetscObjects,PetscObjectsMaxCounts);CHKERRQ(ierr);
-    ierr = PetscFree(PetscObjects);CHKERRQ(ierr);
+    PetscCall(PetscCalloc1(newPetscObjectsMaxCounts,&newPetscObjects));
+    PetscCall(PetscArraycpy(newPetscObjects,PetscObjects,PetscObjectsMaxCounts));
+    PetscCall(PetscFree(PetscObjects));
 
     PetscObjects                        = newPetscObjects;
     PetscObjects[PetscObjectsMaxCounts] = h;
@@ -96,15 +95,13 @@ PETSC_INTERN PetscLogDouble PetscMemoryMaximumUsage;
 */
 PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeader(h,1);
-  ierr = PetscLogObjectDestroy(h);CHKERRQ(ierr);
-  ierr = PetscComposedQuantitiesDestroy(h);CHKERRQ(ierr);
+  PetscCall(PetscLogObjectDestroy(h));
+  PetscCall(PetscComposedQuantitiesDestroy(h));
   if (PetscMemoryCollectMaximumUsage) {
     PetscLogDouble usage;
-    ierr = PetscMemoryGetCurrentUsage(&usage);CHKERRQ(ierr);
+    PetscCall(PetscMemoryGetCurrentUsage(&usage));
     if (usage > PetscMemoryMaximumUsage) PetscMemoryMaximumUsage = usage;
   }
   /* first destroy things that could execute arbitrary code */
@@ -114,21 +111,21 @@ PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
     h->python_context = NULL;
     h->python_destroy = NULL;
 
-    ierr = (*python_destroy)(python_context);CHKERRQ(ierr);
+    PetscCall((*python_destroy)(python_context));
   }
-  ierr = PetscObjectDestroyOptionsHandlers(h);CHKERRQ(ierr);
-  ierr = PetscObjectListDestroy(&h->olist);CHKERRQ(ierr);
-  ierr = PetscCommDestroy(&h->comm);CHKERRQ(ierr);
+  PetscCall(PetscObjectDestroyOptionsHandlers(h));
+  PetscCall(PetscObjectListDestroy(&h->olist));
+  PetscCall(PetscCommDestroy(&h->comm));
   /* next destroy other things */
   h->classid = PETSCFREEDHEADER;
 
-  ierr = PetscFunctionListDestroy(&h->qlist);CHKERRQ(ierr);
-  ierr = PetscFree(h->type_name);CHKERRQ(ierr);
-  ierr = PetscFree(h->name);CHKERRQ(ierr);
-  ierr = PetscFree(h->prefix);CHKERRQ(ierr);
-  ierr = PetscFree(h->fortran_func_pointers);CHKERRQ(ierr);
-  ierr = PetscFree(h->fortrancallback[PETSC_FORTRAN_CALLBACK_CLASS]);CHKERRQ(ierr);
-  ierr = PetscFree(h->fortrancallback[PETSC_FORTRAN_CALLBACK_SUBTYPE]);CHKERRQ(ierr);
+  PetscCall(PetscFunctionListDestroy(&h->qlist));
+  PetscCall(PetscFree(h->type_name));
+  PetscCall(PetscFree(h->name));
+  PetscCall(PetscFree(h->prefix));
+  PetscCall(PetscFree(h->fortran_func_pointers));
+  PetscCall(PetscFree(h->fortrancallback[PETSC_FORTRAN_CALLBACK_CLASS]));
+  PetscCall(PetscFree(h->fortrancallback[PETSC_FORTRAN_CALLBACK_SUBTYPE]));
 
 #if defined(PETSC_USE_LOG)
   if (PetscObjectsLog) {
@@ -142,7 +139,7 @@ PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
       }
     }
     if (!PetscObjectsCounts) {
-      ierr = PetscFree(PetscObjects);CHKERRQ(ierr);
+      PetscCall(PetscFree(PetscObjects));
       PetscObjectsMaxCounts = 0;
     }
   }
@@ -166,25 +163,24 @@ PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
 @*/
 PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject src,PetscObject dest)
 {
-  PetscErrorCode         ierr;
   PetscFortranCallbackId cbtype,numcb[PETSC_FORTRAN_CALLBACK_MAXTYPE];
 
   PetscFunctionBegin;
   PetscValidHeader(src,1);
   PetscValidHeader(dest,2);
-  PetscCheckFalse(src->classid != dest->classid,src->comm,PETSC_ERR_ARG_INCOMP,"Objects must be of the same class");
+  PetscCheck(src->classid == dest->classid,src->comm,PETSC_ERR_ARG_INCOMP,"Objects must be of the same class");
 
-  ierr = PetscFree(dest->fortran_func_pointers);CHKERRQ(ierr);
-  ierr = PetscMalloc(src->num_fortran_func_pointers*sizeof(void(*)(void)),&dest->fortran_func_pointers);CHKERRQ(ierr);
-  ierr = PetscMemcpy(dest->fortran_func_pointers,src->fortran_func_pointers,src->num_fortran_func_pointers*sizeof(void(*)(void)));CHKERRQ(ierr);
+  PetscCall(PetscFree(dest->fortran_func_pointers));
+  PetscCall(PetscMalloc(src->num_fortran_func_pointers*sizeof(void(*)(void)),&dest->fortran_func_pointers));
+  PetscCall(PetscMemcpy(dest->fortran_func_pointers,src->fortran_func_pointers,src->num_fortran_func_pointers*sizeof(void(*)(void))));
 
   dest->num_fortran_func_pointers = src->num_fortran_func_pointers;
 
-  ierr = PetscFortranCallbackGetSizes(src->classid,&numcb[PETSC_FORTRAN_CALLBACK_CLASS],&numcb[PETSC_FORTRAN_CALLBACK_SUBTYPE]);CHKERRQ(ierr);
+  PetscCall(PetscFortranCallbackGetSizes(src->classid,&numcb[PETSC_FORTRAN_CALLBACK_CLASS],&numcb[PETSC_FORTRAN_CALLBACK_SUBTYPE]));
   for (cbtype=PETSC_FORTRAN_CALLBACK_CLASS; cbtype<PETSC_FORTRAN_CALLBACK_MAXTYPE; cbtype++) {
-    ierr = PetscFree(dest->fortrancallback[cbtype]);CHKERRQ(ierr);
-    ierr = PetscCalloc1(numcb[cbtype],&dest->fortrancallback[cbtype]);CHKERRQ(ierr);
-    ierr = PetscMemcpy(dest->fortrancallback[cbtype],src->fortrancallback[cbtype],src->num_fortrancallback[cbtype]*sizeof(PetscFortranCallback));CHKERRQ(ierr);
+    PetscCall(PetscFree(dest->fortrancallback[cbtype]));
+    PetscCall(PetscCalloc1(numcb[cbtype],&dest->fortrancallback[cbtype]));
+    PetscCall(PetscMemcpy(dest->fortrancallback[cbtype],src->fortrancallback[cbtype],src->num_fortrancallback[cbtype]*sizeof(PetscFortranCallback)));
     dest->num_fortrancallback[cbtype] = src->num_fortrancallback[cbtype];
   }
   PetscFunctionReturn(0);
@@ -208,20 +204,19 @@ PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject src,PetscObjec
 @*/
 PetscErrorCode PetscObjectSetFortranCallback(PetscObject obj,PetscFortranCallbackType cbtype,PetscFortranCallbackId *cid,void (*func)(void),void *ctx)
 {
-  PetscErrorCode ierr;
   const char     *subtype = NULL;
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
   if (cbtype == PETSC_FORTRAN_CALLBACK_SUBTYPE) subtype = obj->type_name;
-  if (!*cid) {ierr = PetscFortranCallbackRegister(obj->classid,subtype,cid);CHKERRQ(ierr);}
+  if (!*cid) PetscCall(PetscFortranCallbackRegister(obj->classid,subtype,cid));
   if (*cid >= PETSC_SMALLEST_FORTRAN_CALLBACK+obj->num_fortrancallback[cbtype]) {
     PetscFortranCallbackId oldnum = obj->num_fortrancallback[cbtype];
     PetscFortranCallbackId newnum = PetscMax(*cid - PETSC_SMALLEST_FORTRAN_CALLBACK + 1, 2*oldnum);
     PetscFortranCallback   *callback;
-    ierr = PetscMalloc1(newnum,&callback);CHKERRQ(ierr);
-    ierr = PetscMemcpy(callback,obj->fortrancallback[cbtype],oldnum*sizeof(*obj->fortrancallback[cbtype]));CHKERRQ(ierr);
-    ierr = PetscFree(obj->fortrancallback[cbtype]);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(newnum,&callback));
+    PetscCall(PetscMemcpy(callback,obj->fortrancallback[cbtype],oldnum*sizeof(*obj->fortrancallback[cbtype])));
+    PetscCall(PetscFree(obj->fortrancallback[cbtype]));
 
     obj->fortrancallback[cbtype] = callback;
     obj->num_fortrancallback[cbtype] = newnum;
@@ -255,8 +250,8 @@ PetscErrorCode PetscObjectGetFortranCallback(PetscObject obj,PetscFortranCallbac
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  PetscCheckFalse(cid < PETSC_SMALLEST_FORTRAN_CALLBACK,obj->comm,PETSC_ERR_ARG_CORRUPT,"Fortran callback Id invalid");
-  PetscCheckFalse(cid >= PETSC_SMALLEST_FORTRAN_CALLBACK+obj->num_fortrancallback[cbtype],obj->comm,PETSC_ERR_ARG_CORRUPT,"Fortran callback not set on this object");
+  PetscCheck(cid >= PETSC_SMALLEST_FORTRAN_CALLBACK,obj->comm,PETSC_ERR_ARG_CORRUPT,"Fortran callback Id invalid");
+  PetscCheck(cid < PETSC_SMALLEST_FORTRAN_CALLBACK+obj->num_fortrancallback[cbtype],obj->comm,PETSC_ERR_ARG_CORRUPT,"Fortran callback not set on this object");
   cb = &obj->fortrancallback[cbtype][cid-PETSC_SMALLEST_FORTRAN_CALLBACK];
   if (func) *func = cb->func;
   if (ctx) *ctx = cb->ctx;
@@ -281,7 +276,6 @@ PetscErrorCode PetscObjectGetFortranCallback(PetscObject obj,PetscFortranCallbac
 @*/
 PetscErrorCode  PetscObjectsDump(FILE *fd,PetscBool all)
 {
-  PetscErrorCode ierr;
   PetscInt       i;
 #if defined(PETSC_USE_DEBUG)
   PetscInt       j,k=0;
@@ -290,38 +284,38 @@ PetscErrorCode  PetscObjectsDump(FILE *fd,PetscBool all)
 
   PetscFunctionBegin;
   if (PetscObjectsCounts) {
-    ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"The following objects were never freed\n");CHKERRQ(ierr);
-    ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"-----------------------------------------\n");CHKERRQ(ierr);
+    PetscCall(PetscFPrintf(PETSC_COMM_WORLD,fd,"The following objects were never freed\n"));
+    PetscCall(PetscFPrintf(PETSC_COMM_WORLD,fd,"-----------------------------------------\n"));
     for (i=0; i<PetscObjectsMaxCounts; i++) {
       if ((h = PetscObjects[i])) {
-        ierr = PetscObjectName(h);CHKERRQ(ierr);
+        PetscCall(PetscObjectName(h));
         {
 #if defined(PETSC_USE_DEBUG)
         PetscStack *stack = NULL;
         char       *create,*rclass;
 
         /* if the PETSc function the user calls is not a create then this object was NOT directly created by them */
-        ierr = PetscMallocGetStack(h,&stack);CHKERRQ(ierr);
+        PetscCall(PetscMallocGetStack(h,&stack));
         if (stack) {
           k = stack->currentsize-2;
           if (!all) {
             k = 0;
             while (!stack->petscroutine[k]) k++;
-            ierr = PetscStrstr(stack->function[k],"Create",&create);CHKERRQ(ierr);
+            PetscCall(PetscStrstr(stack->function[k],"Create",&create));
             if (!create) {
-              ierr = PetscStrstr(stack->function[k],"Get",&create);CHKERRQ(ierr);
+              PetscCall(PetscStrstr(stack->function[k],"Get",&create));
             }
-            ierr = PetscStrstr(stack->function[k],h->class_name,&rclass);CHKERRQ(ierr);
+            PetscCall(PetscStrstr(stack->function[k],h->class_name,&rclass));
             if (!create) continue;
             if (!rclass) continue;
           }
         }
 #endif
 
-        ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"[%d] %s %s %s\n",PetscGlobalRank,h->class_name,h->type_name,h->name);CHKERRQ(ierr);
+        PetscCall(PetscFPrintf(PETSC_COMM_WORLD,fd,"[%d] %s %s %s\n",PetscGlobalRank,h->class_name,h->type_name,h->name));
 
 #if defined(PETSC_USE_DEBUG)
-        ierr = PetscMallocGetStack(h,&stack);CHKERRQ(ierr);
+        PetscCall(PetscMallocGetStack(h,&stack));
         if (stack) {
           for (j=k; j>=0; j--) {
             fprintf(fd,"      [%d]  %s() in %s\n",PetscGlobalRank,stack->function[j],stack->file[j]);
@@ -351,16 +345,15 @@ PetscErrorCode  PetscObjectsDump(FILE *fd,PetscBool all)
 @*/
 PetscErrorCode  PetscObjectsView(PetscViewer viewer)
 {
-  PetscErrorCode ierr;
   PetscBool      isascii;
   FILE           *fd;
 
   PetscFunctionBegin;
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_WORLD;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
-  PetscCheckFalse(!isascii,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Only supports ASCII viewer");
-  ierr = PetscViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
-  ierr = PetscObjectsDump(fd,PETSC_TRUE);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii));
+  PetscCheck(isascii,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Only supports ASCII viewer");
+  PetscCall(PetscViewerASCIIGetPointer(viewer,&fd));
+  PetscCall(PetscObjectsDump(fd,PETSC_TRUE));
   PetscFunctionReturn(0);
 }
 
@@ -381,17 +374,18 @@ PetscErrorCode  PetscObjectsView(PetscViewer viewer)
 @*/
 PetscErrorCode  PetscObjectsGetObject(const char *name,PetscObject *obj,char **classname)
 {
-  PetscErrorCode ierr;
-  PetscInt       i;
-  PetscObject    h;
-  PetscBool      flg;
+  PetscInt    i;
+  PetscObject h;
+  PetscBool   flg;
 
   PetscFunctionBegin;
+  PetscValidCharPointer(name,1);
+  PetscValidPointer(obj,2);
   *obj = NULL;
   for (i=0; i<PetscObjectsMaxCounts; i++) {
     if ((h = PetscObjects[i])) {
-      ierr = PetscObjectName(h);CHKERRQ(ierr);
-      ierr = PetscStrcmp(h->name,name,&flg);CHKERRQ(ierr);
+      PetscCall(PetscObjectName(h));
+      PetscCall(PetscStrcmp(h->name,name,&flg));
       if (flg) {
         *obj = h;
         if (classname) *classname = h->class_name;
@@ -420,6 +414,7 @@ PetscErrorCode  PetscObjectsGetObject(const char *name,PetscObject *obj,char **c
 PetscErrorCode PetscObjectSetPrintedOptions(PetscObject obj)
 {
   PetscFunctionBegin;
+  PetscValidPointer(obj,1);
   obj->optionsprinted = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -443,12 +438,13 @@ PetscErrorCode PetscObjectSetPrintedOptions(PetscObject obj)
 @*/
 PetscErrorCode PetscObjectInheritPrintedOptions(PetscObject pobj,PetscObject obj)
 {
-  PetscErrorCode ierr;
-  PetscMPIInt    prank,size;
+  PetscMPIInt prank,size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(pobj->comm,&prank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(obj->comm,&size);CHKERRMPI(ierr);
+  PetscValidHeader(pobj,1);
+  PetscValidHeader(obj,2);
+  PetscCallMPI(MPI_Comm_rank(pobj->comm,&prank));
+  PetscCallMPI(MPI_Comm_size(obj->comm,&size));
   if (size == 1 && prank > 0) obj->optionsprinted = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -473,7 +469,7 @@ PetscErrorCode PetscObjectAddOptionsHandler(PetscObject obj,PetscErrorCode (*han
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  PetscCheckFalse(obj->noptionhandler >= PETSC_MAX_OPTIONS_HANDLER,obj->comm,PETSC_ERR_ARG_OUTOFRANGE,"To many options handlers added");
+  PetscCheck(obj->noptionhandler < PETSC_MAX_OPTIONS_HANDLER,obj->comm,PETSC_ERR_ARG_OUTOFRANGE,"To many options handlers added");
   obj->optionhandler[obj->noptionhandler] = handle;
   obj->optiondestroy[obj->noptionhandler] = destroy;
   obj->optionctx[obj->noptionhandler++]   = ctx;
@@ -495,14 +491,9 @@ PetscErrorCode PetscObjectAddOptionsHandler(PetscObject obj,PetscErrorCode (*han
 @*/
 PetscErrorCode  PetscObjectProcessOptionsHandlers(PetscOptionItems *PetscOptionsObject,PetscObject obj)
 {
-  PetscInt       i;
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeader(obj,2);
-  for (i=0; i<obj->noptionhandler; i++) {
-    ierr = (*obj->optionhandler[i])(PetscOptionsObject,obj,obj->optionctx[i]);CHKERRQ(ierr);
-  }
+  for (PetscInt i=0; i<obj->noptionhandler; i++) PetscCall((*obj->optionhandler[i])(PetscOptionsObject,obj,obj->optionctx[i]));
   PetscFunctionReturn(0);
 }
 
@@ -521,15 +512,10 @@ PetscErrorCode  PetscObjectProcessOptionsHandlers(PetscOptionItems *PetscOptions
 @*/
 PetscErrorCode  PetscObjectDestroyOptionsHandlers(PetscObject obj)
 {
-  PetscInt       i;
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  for (i=0; i<obj->noptionhandler; i++) {
-    if (obj->optiondestroy[i]) {
-      ierr = (*obj->optiondestroy[i])(obj,obj->optionctx[i]);CHKERRQ(ierr);
-    }
+  for (PetscInt i=0; i<obj->noptionhandler; i++) {
+    if (obj->optiondestroy[i]) PetscCall((*obj->optiondestroy[i])(obj,obj->optionctx[i]));
   }
   obj->noptionhandler = 0;
   PetscFunctionReturn(0);
@@ -605,14 +591,11 @@ PetscErrorCode  PetscObjectGetReference(PetscObject obj,PetscInt *cnt)
 @*/
 PetscErrorCode  PetscObjectDereference(PetscObject obj)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (!obj) PetscFunctionReturn(0);
   PetscValidHeader(obj,1);
-  if (obj->bops->destroy) {
-    ierr = (*obj->bops->destroy)(&obj);CHKERRQ(ierr);
-  } else PetscCheckFalse(!--obj->refct,PETSC_COMM_SELF,PETSC_ERR_SUP,"This PETSc object does not have a generic destroy routine");
+  if (obj->bops->destroy) PetscCall((*obj->bops->destroy)(&obj));
+  else PetscCheck(--(obj->refct),PETSC_COMM_SELF,PETSC_ERR_SUP,"This PETSc object does not have a generic destroy routine");
   PetscFunctionReturn(0);
 }
 
@@ -625,62 +608,54 @@ PetscErrorCode PetscObjectGetComm_Petsc(PetscObject obj,MPI_Comm *comm)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
+  PetscValidPointer(comm,2);
   *comm = obj->comm;
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PetscObjectRemoveReference(PetscObject obj,const char name[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  ierr = PetscObjectListRemoveReference(&obj->olist,name);CHKERRQ(ierr);
+  PetscCall(PetscObjectListRemoveReference(&obj->olist,name));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PetscObjectCompose_Petsc(PetscObject obj,const char name[],PetscObject ptr)
 {
-  PetscErrorCode ierr;
-  char           *tname;
-  PetscBool      skipreference;
-
   PetscFunctionBegin;
   if (ptr) {
-    ierr = PetscObjectListReverseFind(ptr->olist,obj,&tname,&skipreference);CHKERRQ(ierr);
-    PetscCheckFalse(tname && !skipreference,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"An object cannot be composed with an object that was composed with it");
+    char      *tname;
+    PetscBool skipreference;
+
+    PetscCall(PetscObjectListReverseFind(ptr->olist,obj,&tname,&skipreference));
+    if (tname) PetscCheck(skipreference,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"An object cannot be composed with an object that was composed with it");
   }
-  ierr = PetscObjectListAdd(&obj->olist,name,ptr);CHKERRQ(ierr);
+  PetscCall(PetscObjectListAdd(&obj->olist,name,ptr));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PetscObjectQuery_Petsc(PetscObject obj,const char name[],PetscObject *ptr)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  ierr = PetscObjectListFind(obj->olist,name,ptr);CHKERRQ(ierr);
+  PetscCall(PetscObjectListFind(obj->olist,name,ptr));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject obj,const char name[],void (*ptr)(void))
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  ierr = PetscFunctionListAdd(&obj->qlist,name,ptr);CHKERRQ(ierr);
+  PetscCall(PetscFunctionListAdd(&obj->qlist,name,ptr));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject obj,const char name[],void (**ptr)(void))
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  ierr = PetscFunctionListFind(obj->qlist,name,ptr);CHKERRQ(ierr);
+  PetscCall(PetscFunctionListFind(obj->qlist,name,ptr));
   PetscFunctionReturn(0);
 }
 
@@ -716,14 +691,12 @@ PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject obj,const char name[],
 @*/
 PetscErrorCode  PetscObjectCompose(PetscObject obj,const char name[],PetscObject ptr)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
   PetscValidCharPointer(name,2);
   if (ptr) PetscValidHeader(ptr,3);
-  PetscCheckFalse(obj == ptr,PetscObjectComm((PetscObject)obj),PETSC_ERR_SUP,"Cannot compose object with itself");
-  ierr = (*obj->bops->compose)(obj,name,ptr);CHKERRQ(ierr);
+  PetscCheck(obj != ptr,PetscObjectComm((PetscObject)obj),PETSC_ERR_SUP,"Cannot compose object with itself");
+  PetscCall((*obj->bops->compose)(obj,name,ptr));
   PetscFunctionReturn(0);
 }
 
@@ -748,13 +721,11 @@ PetscErrorCode  PetscObjectCompose(PetscObject obj,const char name[],PetscObject
 @*/
 PetscErrorCode  PetscObjectQuery(PetscObject obj,const char name[],PetscObject *ptr)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
   PetscValidCharPointer(name,2);
   PetscValidPointer(ptr,3);
-  ierr = (*obj->bops->query)(obj,name,ptr);CHKERRQ(ierr);
+  PetscCall((*obj->bops->query)(obj,name,ptr));
   PetscFunctionReturn(0);
 }
 
@@ -787,12 +758,10 @@ M*/
 
 PetscErrorCode  PetscObjectComposeFunction_Private(PetscObject obj,const char name[],void (*fptr)(void))
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
   PetscValidCharPointer(name,2);
-  ierr = (*obj->bops->composefunction)(obj,name,fptr);CHKERRQ(ierr);
+  PetscCall((*obj->bops->composefunction)(obj,name,fptr));
   PetscFunctionReturn(0);
 }
 
@@ -819,12 +788,10 @@ PetscErrorCode  PetscObjectComposeFunction_Private(PetscObject obj,const char na
 M*/
 PETSC_EXTERN PetscErrorCode PetscObjectQueryFunction_Private(PetscObject obj,const char name[],void (**ptr)(void))
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
   PetscValidCharPointer(name,2);
-  ierr = (*obj->bops->queryfunction)(obj,name,ptr);CHKERRQ(ierr);
+  PetscCall((*obj->bops->queryfunction)(obj,name,ptr));
   PetscFunctionReturn(0);
 }
 
@@ -848,10 +815,8 @@ struct _p_PetscContainer {
 @*/
 PetscErrorCode PetscContainerUserDestroyDefault(void* ctx)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscFree(ctx);CHKERRQ(ierr);
+  PetscCall(PetscFree(ctx));
   PetscFunctionReturn(0);
 }
 
@@ -917,14 +882,12 @@ PetscErrorCode  PetscContainerSetPointer(PetscContainer obj,void *ptr)
 @*/
 PetscErrorCode  PetscContainerDestroy(PetscContainer *obj)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (!*obj) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*obj,PETSC_CONTAINER_CLASSID,1);
   if (--((PetscObject)(*obj))->refct > 0) {*obj = NULL; PetscFunctionReturn(0);}
-  if ((*obj)->userdestroy) { ierr = (*(*obj)->userdestroy)((*obj)->ptr);CHKERRQ(ierr); }
-  ierr = PetscHeaderDestroy(obj);CHKERRQ(ierr);
+  if ((*obj)->userdestroy) PetscCall((*(*obj)->userdestroy)((*obj)->ptr));
+  PetscCall(PetscHeaderDestroy(obj));
   PetscFunctionReturn(0);
 }
 
@@ -974,14 +937,10 @@ PetscClassId PETSC_CONTAINER_CLASSID;
 @*/
 PetscErrorCode  PetscContainerCreate(MPI_Comm comm,PetscContainer *container)
 {
-  PetscErrorCode ierr;
-  PetscContainer contain;
-
   PetscFunctionBegin;
   PetscValidPointer(container,2);
-  ierr = PetscSysInitializePackage();CHKERRQ(ierr);
-  ierr = PetscHeaderCreate(contain,PETSC_CONTAINER_CLASSID,"PetscContainer","Container","Sys",comm,PetscContainerDestroy,NULL);CHKERRQ(ierr);
-  *container = contain;
+  PetscCall(PetscSysInitializePackage());
+  PetscCall(PetscHeaderCreate(*container,PETSC_CONTAINER_CLASSID,"PetscContainer","Container","Sys",comm,PetscContainerDestroy,NULL));
   PetscFunctionReturn(0);
 }
 

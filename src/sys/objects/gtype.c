@@ -51,4 +51,5 @@ PetscErrorCode  PetscObjectSetType(PetscObject obj, const char type[])
   PetscValidHeader(obj,1);
   PetscValidCharPointer(type,2);
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Cannot set the type of a generic PetscObject");
+  PetscFunctionReturn(0);
 }

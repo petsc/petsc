@@ -8,7 +8,6 @@ static char help[] = "Tests setup PCFIELDSPLIT with blocked IS.\n\n";
 int main(int argc, char *argv[])
 {
    Mat            A;
-   PetscErrorCode ierr;
    KSP            ksp;
    PC             pc;
    PetscInt       Istart,Iend,local_m,local_n,i;
@@ -16,38 +15,38 @@ int main(int argc, char *argv[])
    PetscInt       method=2,mat_size=40,block_size=2,*A_indices=NULL,*B_indices=NULL,A_size=0,B_size=0;
    IS             A_IS, B_IS;
 
-   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-   ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRMPI(ierr);
+   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+   PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD,&rank));
 
-   ierr = PetscOptionsGetInt(PETSC_NULL,PETSC_NULL,"-mat_size",&mat_size,PETSC_NULL);CHKERRQ(ierr);
-   ierr = PetscOptionsGetInt(PETSC_NULL,PETSC_NULL,"-method",&method,PETSC_NULL);CHKERRQ(ierr);
-   ierr = PetscOptionsGetInt(PETSC_NULL,PETSC_NULL,"-block_size",&block_size,PETSC_NULL);CHKERRQ(ierr);
+   PetscCall(PetscOptionsGetInt(PETSC_NULL,PETSC_NULL,"-mat_size",&mat_size,PETSC_NULL));
+   PetscCall(PetscOptionsGetInt(PETSC_NULL,PETSC_NULL,"-method",&method,PETSC_NULL));
+   PetscCall(PetscOptionsGetInt(PETSC_NULL,PETSC_NULL,"-block_size",&block_size,PETSC_NULL));
 
    if (rank == 0) {
-     ierr = PetscPrintf(PETSC_COMM_SELF,"  matrix size = %D, block size = %D\n",mat_size,block_size);CHKERRQ(ierr);
+     PetscCall(PetscPrintf(PETSC_COMM_SELF,"  matrix size = %D, block size = %D\n",mat_size,block_size));
    }
 
-   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,mat_size,mat_size);CHKERRQ(ierr);
-   ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
-   ierr = MatSetUp(A);CHKERRQ(ierr);
+   PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+   PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,mat_size,mat_size));
+   PetscCall(MatSetType(A,MATMPIAIJ));
+   PetscCall(MatSetUp(A));
 
-   ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
+   PetscCall(MatGetOwnershipRange(A,&Istart,&Iend));
 
    for (i = Istart; i < Iend; ++i) {
-     ierr = MatSetValue(A,i,i,2,INSERT_VALUES);CHKERRQ(ierr);
+     PetscCall(MatSetValue(A,i,i,2,INSERT_VALUES));
      if (i < mat_size-1) {
-       ierr = MatSetValue(A,i,i+1,-1,INSERT_VALUES);CHKERRQ(ierr);
+       PetscCall(MatSetValue(A,i,i+1,-1,INSERT_VALUES));
      }
      if (i > 0) {
-       ierr = MatSetValue(A,i,i-1,-1,INSERT_VALUES);CHKERRQ(ierr);
+       PetscCall(MatSetValue(A,i,i-1,-1,INSERT_VALUES));
      }
    }
 
-   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+   PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+   PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
-   ierr = MatGetLocalSize(A,&local_m,&local_n);CHKERRQ(ierr);
+   PetscCall(MatGetLocalSize(A,&local_m,&local_n));
 
    /* Create Index Sets */
    if (rank == 0) {
@@ -60,46 +59,46 @@ int main(int argc, char *argv[])
        A_size = (Iend-Istart)/2;
        B_size = (Iend-Istart)/2;
      }
-     ierr = PetscCalloc1(A_size,&A_indices);CHKERRQ(ierr);
-     ierr = PetscCalloc1(B_size,&B_indices);CHKERRQ(ierr);
+     PetscCall(PetscCalloc1(A_size,&A_indices));
+     PetscCall(PetscCalloc1(B_size,&B_indices));
      for (i = 0; i < A_size; ++i) A_indices[i] = Istart + i;
      for (i = 0; i < B_size; ++i) B_indices[i] = Istart + i + A_size;
    } else if (rank == 1) {
      A_size = (Iend-Istart)/2;
      B_size = (Iend-Istart)/2;
-     ierr = PetscCalloc1(A_size,&A_indices);CHKERRQ(ierr);
-     ierr = PetscCalloc1(B_size,&B_indices);CHKERRQ(ierr);
+     PetscCall(PetscCalloc1(A_size,&A_indices));
+     PetscCall(PetscCalloc1(B_size,&B_indices));
      for (i = 0; i < A_size; ++i) A_indices[i] = Istart + i;
      for (i = 0; i < B_size; ++i) B_indices[i] = Istart + i + A_size;
    }
 
-   ierr = ISCreateGeneral(PETSC_COMM_WORLD,A_size,A_indices,PETSC_OWN_POINTER,&A_IS);CHKERRQ(ierr);
-   ierr = ISCreateGeneral(PETSC_COMM_WORLD,B_size,B_indices,PETSC_OWN_POINTER,&B_IS);CHKERRQ(ierr);
-   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d]: A_size = %D, B_size = %D\n",rank,A_size,B_size);CHKERRQ(ierr);
-   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+   PetscCall(ISCreateGeneral(PETSC_COMM_WORLD,A_size,A_indices,PETSC_OWN_POINTER,&A_IS));
+   PetscCall(ISCreateGeneral(PETSC_COMM_WORLD,B_size,B_indices,PETSC_OWN_POINTER,&B_IS));
+   PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d]: A_size = %D, B_size = %D\n",rank,A_size,B_size));
+   PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
 
    /* Solve the system */
-   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-   ierr = KSPSetType(ksp,KSPGMRES);CHKERRQ(ierr);
-   ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
+   PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+   PetscCall(KSPSetType(ksp,KSPGMRES));
+   PetscCall(KSPSetOperators(ksp,A,A));
 
    /* Define the fieldsplit for the global matrix */
-   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-   ierr = PCSetType(pc,PCFIELDSPLIT);CHKERRQ(ierr);
-   ierr = PCFieldSplitSetIS(pc,"a",A_IS);CHKERRQ(ierr);
-   ierr = PCFieldSplitSetIS(pc,"b",B_IS);CHKERRQ(ierr);
-   ierr = ISSetBlockSize(A_IS,block_size);CHKERRQ(ierr);
-   ierr = ISSetBlockSize(B_IS,block_size);CHKERRQ(ierr);
+   PetscCall(KSPGetPC(ksp,&pc));
+   PetscCall(PCSetType(pc,PCFIELDSPLIT));
+   PetscCall(PCFieldSplitSetIS(pc,"a",A_IS));
+   PetscCall(PCFieldSplitSetIS(pc,"b",B_IS));
+   PetscCall(ISSetBlockSize(A_IS,block_size));
+   PetscCall(ISSetBlockSize(B_IS,block_size));
 
-   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+   PetscCall(KSPSetFromOptions(ksp));
+   PetscCall(KSPSetUp(ksp));
 
-   ierr = ISDestroy(&A_IS);CHKERRQ(ierr);
-   ierr = ISDestroy(&B_IS);CHKERRQ(ierr);
-   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-   ierr = MatDestroy(&A);CHKERRQ(ierr);
-   ierr = PetscFinalize();
-   return ierr;
+   PetscCall(ISDestroy(&A_IS));
+   PetscCall(ISDestroy(&B_IS));
+   PetscCall(KSPDestroy(&ksp));
+   PetscCall(MatDestroy(&A));
+   PetscCall(PetscFinalize());
+   return 0;
 }
 
 /*TEST

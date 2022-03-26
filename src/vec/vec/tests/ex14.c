@@ -6,7 +6,6 @@ This does the tricky case.\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       n = 5,N;
   PetscMPIInt    size,rank;
   PetscScalar    value,zero = 0.0;
@@ -14,39 +13,39 @@ int main(int argc,char **argv)
   IS             is1,is2;
   VecScatter     ctx = 0;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   /* create two vectors */
   N    = size*n;
-  ierr = VecCreate(PETSC_COMM_WORLD,&y);CHKERRQ(ierr);
-  ierr = VecSetSizes(y,PETSC_DECIDE,N);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(y);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x);CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&y));
+  PetscCall(VecSetSizes(y,PETSC_DECIDE,N));
+  PetscCall(VecSetFromOptions(y));
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,N,&x));
 
   /* create two index sets */
-  ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,&is1);CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF,n,rank,1,&is2);CHKERRQ(ierr);
+  PetscCall(ISCreateStride(PETSC_COMM_SELF,n,0,1,&is1));
+  PetscCall(ISCreateStride(PETSC_COMM_SELF,n,rank,1,&is2));
 
   value = rank+1;
-  ierr  = VecSet(x,value);CHKERRQ(ierr);
-  ierr  = VecSet(y,zero);CHKERRQ(ierr);
+  PetscCall(VecSet(x,value));
+  PetscCall(VecSet(y,zero));
 
-  ierr = VecScatterCreate(x,is1,y,is2,&ctx);CHKERRQ(ierr);
-  ierr = VecScatterBegin(ctx,x,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(ctx,x,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&ctx);CHKERRQ(ierr);
+  PetscCall(VecScatterCreate(x,is1,y,is2,&ctx));
+  PetscCall(VecScatterBegin(ctx,x,y,ADD_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(ctx,x,y,ADD_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterDestroy(&ctx));
 
-  ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscCall(VecView(y,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
-  ierr = ISDestroy(&is1);CHKERRQ(ierr);
-  ierr = ISDestroy(&is2);CHKERRQ(ierr);
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&y));
+  PetscCall(ISDestroy(&is1));
+  PetscCall(ISDestroy(&is2));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

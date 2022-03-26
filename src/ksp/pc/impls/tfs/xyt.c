@@ -250,7 +250,6 @@ static PetscErrorCode xyt_generate(xyt_ADT xyt_handle)
   PetscInt       yt_zero_nnz_0=0;
   PetscBLASInt   i1           = 1,dlen;
   PetscScalar    dm1          = -1.0;
-  PetscErrorCode ierr;
 
   n              =xyt_handle->mvi->n;
   nsep           =xyt_handle->info->nsep;
@@ -266,10 +265,10 @@ static PetscErrorCode xyt_generate(xyt_ADT xyt_handle)
 
   m = j-xyt_handle->ns;
   if (m!=j) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"xyt_generate() :: null space exists %D %D %D\n",m,j,xyt_handle->ns);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"xyt_generate() :: null space exists %D %D %D\n",m,j,xyt_handle->ns));
   }
 
-  ierr = PetscInfo(0,"xyt_generate() :: X(%D,%D)\n",n,m);CHKERRQ(ierr);
+  PetscCall(PetscInfo(0,"xyt_generate() :: X(%D,%D)\n",n,m));
 
   /* get and initialize storage for x local         */
   /* note that x local is nxm and stored by columns */
@@ -337,7 +336,7 @@ static PetscErrorCode xyt_generate(xyt_ADT xyt_handle)
 
     /* shouldn't need this */
     if (col==INT_MAX) {
-      ierr = PetscInfo(0,"hey ... col==INT_MAX??\n");CHKERRQ(ierr);
+      PetscCall(PetscInfo(0,"hey ... col==INT_MAX??\n"));
       continue;
     }
 
@@ -368,13 +367,13 @@ static PetscErrorCode xyt_generate(xyt_ADT xyt_handle)
     for (k=0; k<i; k++) {
       off   = *iptr++;
       len   = *iptr++;
-      ierr  = PetscBLASIntCast(len,&dlen);CHKERRQ(ierr);
+      PetscCall(PetscBLASIntCast(len,&dlen));
       PetscStackCallBLAS("BLASdot",uu[k] = BLASdot_(&dlen,u+off,&i1,y_ptr,&i1));
       y_ptr+=len;
     }
 
     /* uu = X^T.u_l (comm portion) */
-    ierr = PCTFS_ssgl_radd  (uu, w, dim, stages);CHKERRQ(ierr);
+    PetscCall(PCTFS_ssgl_radd  (uu, w, dim, stages));
 
     /* z = X.uu */
     PCTFS_rvec_zero(z,n);
@@ -383,14 +382,14 @@ static PetscErrorCode xyt_generate(xyt_ADT xyt_handle)
     for (k=0; k<i; k++) {
       off  = *iptr++;
       len  = *iptr++;
-      ierr = PetscBLASIntCast(len,&dlen);CHKERRQ(ierr);
+      PetscCall(PetscBLASIntCast(len,&dlen));
       PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&dlen,&uu[k],x_ptr,&i1,z+off,&i1));
       x_ptr+=len;
     }
 
     /* compute v_l = v_l - z */
     PCTFS_rvec_zero(v+a_n,a_m-a_n);
-    ierr = PetscBLASIntCast(n,&dlen);CHKERRQ(ierr);
+    PetscCall(PetscBLASIntCast(n,&dlen));
     PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&dlen,&dm1,z,&i1,v,&i1));
 
     /* compute u_l = A.v_l */
@@ -399,7 +398,7 @@ static PetscErrorCode xyt_generate(xyt_ADT xyt_handle)
     do_matvec(xyt_handle->mvi,v,u);
 
     /* compute sqrt(alpha) = sqrt(u_l^T.u_l) - local portion */
-    ierr  = PetscBLASIntCast(n,&dlen);CHKERRQ(ierr);
+    PetscCall(PetscBLASIntCast(n,&dlen));
     PetscStackCallBLAS("BLASdot",alpha = BLASdot_(&dlen,u,&i1,u,&i1));
     /* compute sqrt(alpha) = sqrt(u_l^T.u_l) - comm portion */
     PCTFS_grop_hc(&alpha, &alpha_w, 1, op, dim);
@@ -428,7 +427,7 @@ static PetscErrorCode xyt_generate(xyt_ADT xyt_handle)
 
     if (len>0) {
       if ((xt_nnz+len)>xt_max_nnz) {
-        ierr        = PetscInfo(0,"increasing space for X by 2x!\n");CHKERRQ(ierr);
+        PetscCall(PetscInfo(0,"increasing space for X by 2x!\n"));
         xt_max_nnz *= 2;
         x_ptr       = (PetscScalar*) malloc(xt_max_nnz*sizeof(PetscScalar));
         PCTFS_rvec_copy(x_ptr,x,xt_nnz);
@@ -472,7 +471,7 @@ static PetscErrorCode xyt_generate(xyt_ADT xyt_handle)
 
     if (len>0) {
       if ((yt_nnz+len)>yt_max_nnz) {
-        ierr        = PetscInfo(0,"increasing space for Y by 2x!\n");CHKERRQ(ierr);
+        PetscCall(PetscInfo(0,"increasing space for Y by 2x!\n"));
         yt_max_nnz *= 2;
         y_ptr       = (PetscScalar*) malloc(yt_max_nnz*sizeof(PetscScalar));
         PCTFS_rvec_copy(y_ptr,y,yt_nnz);
@@ -506,7 +505,7 @@ static PetscErrorCode xyt_generate(xyt_ADT xyt_handle)
   /* close off stages for execution phase */
   while (dim!=level) {
     stages[dim++]=i;
-    ierr         = PetscInfo(0,"disconnected!!! dim(%D)!=level(%D)\n",dim,level);CHKERRQ(ierr);
+    PetscCall(PetscInfo(0,"disconnected!!! dim(%D)!=level(%D)\n",dim,level));
   }
   stages[dim]=i;
 
@@ -553,7 +552,6 @@ static PetscErrorCode do_xyt_solve(xyt_ADT xyt_handle,  PetscScalar *uc)
   PetscScalar    *x       =xyt_handle->info->x;
   PetscScalar    *y       =xyt_handle->info->y;
   PetscBLASInt   i1       = 1,dlen;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   uu_ptr=solve_uu;
@@ -564,20 +562,20 @@ static PetscErrorCode do_xyt_solve(xyt_ADT xyt_handle,  PetscScalar *uc)
   for (y_ptr=y,iptr=ycol_indices; *iptr!=-1; y_ptr+=len) {
     off       =*iptr++;
     len       =*iptr++;
-    ierr      = PetscBLASIntCast(len,&dlen);CHKERRQ(ierr);
+    PetscCall(PetscBLASIntCast(len,&dlen));
     PetscStackCallBLAS("BLASdot",*uu_ptr++ = BLASdot_(&dlen,uc+off,&i1,y_ptr,&i1));
   }
 
   /* comunication of beta */
   uu_ptr=solve_uu;
-  if (level) {ierr = PCTFS_ssgl_radd(uu_ptr, solve_w, level, stages);CHKERRQ(ierr);}
+  if (level) PetscCall(PCTFS_ssgl_radd(uu_ptr, solve_w, level, stages));
   PCTFS_rvec_zero(uc,n);
 
   /* x = X.uu */
   for (x_ptr=x,iptr=xcol_indices; *iptr!=-1; x_ptr+=len) {
     off  =*iptr++;
     len  =*iptr++;
-    ierr = PetscBLASIntCast(len,&dlen);CHKERRQ(ierr);
+    PetscCall(PetscBLASIntCast(len,&dlen));
     PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&dlen,uu_ptr++,x_ptr,&i1,uc+off,&i1));
   }
   PetscFunctionReturn(0);
@@ -589,7 +587,7 @@ static PetscErrorCode check_handle(xyt_ADT xyt_handle)
   PetscInt vals[2], work[2], op[] = {NON_UNIFORM,GL_MIN,GL_MAX};
 
   PetscFunctionBegin;
-  PetscCheckFalse(!xyt_handle,PETSC_COMM_SELF,PETSC_ERR_PLIB,"check_handle() :: bad handle :: NULL %D",xyt_handle);
+  PetscCheck(xyt_handle,PETSC_COMM_SELF,PETSC_ERR_PLIB,"check_handle() :: bad handle :: NULL %D",xyt_handle);
 
   vals[0]=vals[1]=xyt_handle->id;
   PCTFS_giop(vals,work,sizeof(op)/sizeof(op[0])-1,op);
@@ -614,7 +612,6 @@ static PetscErrorCode det_separators(xyt_ADT xyt_handle)
   PetscInt       m              =xyt_handle->mvi->m;
   PetscInt       level          =xyt_handle->level;
   PetscInt       shared         =0;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   dir  = (PetscInt*)malloc(sizeof(PetscInt)*(level+1));
@@ -636,7 +633,7 @@ static PetscErrorCode det_separators(xyt_ADT xyt_handle)
   PCTFS_rvec_zero(lhs,m);
   PCTFS_rvec_set(lhs,1.0,n);
   PCTFS_gs_gop_hc(PCTFS_gs_handle,lhs,"+\0",level);
-  ierr = PetscInfo(0,"done first PCTFS_gs_gop_hc\n");CHKERRQ(ierr);
+  PetscCall(PetscInfo(0,"done first PCTFS_gs_gop_hc\n"));
   PCTFS_rvec_zero(rsum,2);
   for (i=0; i<n; i++) {
     if (lhs[i]!=0.0) { rsum[0]+=1.0/lhs[i]; rsum[1]+=lhs[i]; }
@@ -776,4 +773,3 @@ static PetscErrorCode do_matvec(mv_info *A, PetscScalar *v, PetscScalar *u)
   A->matvec((mv_info*)A->grid_data,v,u);
   PetscFunctionReturn(0);
 }
-

@@ -22,30 +22,29 @@ int main(int argc,char **args)
   Mat            A;            /* matrix */
   Vec            x,b;          /* approx solution, RHS, exact solution */
   PetscViewer    fd;               /* viewer */
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   fd = PETSC_VIEWER_SOCKET_WORLD;
 
-  ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
-  ierr = VecLoad(b,fd);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatLoad(A,fd);CHKERRQ(ierr);
-  ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&b));
+  PetscCall(VecLoad(b,fd));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatLoad(A,fd));
+  PetscCall(VecDuplicate(b,&x));
 
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-  ierr = VecView(x,fd);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPSetOperators(ksp,A,A));
+  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(KSPSetUp(ksp));
+  PetscCall(KSPSolve(ksp,b,x));
+  PetscCall(VecView(x,fd));
+  PetscCall(MatDestroy(&A));
+  PetscCall(VecDestroy(&b));
+  PetscCall(VecDestroy(&x));
+  PetscCall(KSPDestroy(&ksp));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

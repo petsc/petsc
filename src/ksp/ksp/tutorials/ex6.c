@@ -10,82 +10,81 @@ int main(int argc,char **args)
   KSP            ksp;          /* linear solver context */
   PC             pc;           /* preconditioner context */
   PetscReal      norm;         /* norm of solution error */
-  PetscErrorCode ierr;
   PetscInt       i,col[3],its,rstart,rend,N=10,num_numfac;
   PetscScalar    value[3];
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
 
   /* Create and assemble matrix. */
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,N));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSetUp(A));
+  PetscCall(MatGetOwnershipRange(A,&rstart,&rend));
 
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
   for (i=rstart; i<rend; i++) {
     col[0] = i-1; col[1] = i; col[2] = i+1;
     if (i == 0) {
-      ierr = MatSetValues(A,1,&i,2,col+1,value+1,INSERT_VALUES);CHKERRQ(ierr);
+      PetscCall(MatSetValues(A,1,&i,2,col+1,value+1,INSERT_VALUES));
     } else if (i == N-1) {
-      ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
+      PetscCall(MatSetValues(A,1,&i,2,col,value,INSERT_VALUES));
     } else {
-      ierr   = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
+      PetscCall(MatSetValues(A,1,&i,3,col,value,INSERT_VALUES));
     }
   }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE));
 
   /* Create vectors */
-  ierr = MatCreateVecs(A,&x,&b);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&u);CHKERRQ(ierr);
+  PetscCall(MatCreateVecs(A,&x,&b));
+  PetscCall(VecDuplicate(x,&u));
 
   /* Set exact solution; then compute right-hand-side vector. */
-  ierr = VecSet(u,1.0);CHKERRQ(ierr);
-  ierr = MatMult(A,u,b);CHKERRQ(ierr);
+  PetscCall(VecSet(u,1.0));
+  PetscCall(MatMult(A,u,b));
 
   /* Create the linear solver and set various options. */
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr);
-  ierr = KSPSetTolerances(ksp,1.e-5,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPGetPC(ksp,&pc));
+  PetscCall(PCSetType(pc,PCJACOBI));
+  PetscCall(KSPSetTolerances(ksp,1.e-5,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT));
+  PetscCall(KSPSetOperators(ksp,A,A));
+  PetscCall(KSPSetFromOptions(ksp));
 
   num_numfac = 1;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-num_numfac",&num_numfac,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-num_numfac",&num_numfac,NULL));
   while (num_numfac--) {
     /* An example on how to update matrix A for repeated numerical factorization and solve. */
     PetscScalar one=1.0;
     PetscInt    i = 0;
-    ierr = MatSetValues(A,1,&i,1,&i,&one,ADD_VALUES);CHKERRQ(ierr);
-    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    PetscCall(MatSetValues(A,1,&i,1,&i,&one,ADD_VALUES));
+    PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
     /* Update b */
-    ierr = MatMult(A,u,b);CHKERRQ(ierr);
+    PetscCall(MatMult(A,u,b));
 
     /* Solve the linear system */
-    ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+    PetscCall(KSPSolve(ksp,b,x));
 
     /* Check the solution and clean up */
-    ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
-    ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-    ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
+    PetscCall(VecAXPY(x,-1.0,u));
+    PetscCall(VecNorm(x,NORM_2,&norm));
+    PetscCall(KSPGetIterationNumber(ksp,&its));
     if (norm > 100*PETSC_MACHINE_EPSILON) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its));
     }
   }
 
   /* Free work space. */
-  ierr = VecDestroy(&x);CHKERRQ(ierr); ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr); ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+  PetscCall(VecDestroy(&x)); PetscCall(VecDestroy(&u));
+  PetscCall(VecDestroy(&b)); PetscCall(MatDestroy(&A));
+  PetscCall(KSPDestroy(&ksp));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

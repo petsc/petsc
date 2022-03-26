@@ -9,21 +9,20 @@ PetscClassId MAT_PARTITIONING_CLASSID;
 */
 static PetscErrorCode MatPartitioningApply_Current(MatPartitioning part,IS *partitioning)
 {
-  PetscErrorCode ierr;
   PetscInt       m;
   PetscMPIInt    rank,size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)part),&size);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)part),&size));
   if (part->n != size) {
     const char *prefix;
-    ierr = PetscObjectGetOptionsPrefix((PetscObject)part,&prefix);CHKERRQ(ierr);
+    PetscCall(PetscObjectGetOptionsPrefix((PetscObject)part,&prefix));
     SETERRQ(PetscObjectComm((PetscObject)part),PETSC_ERR_SUP,"This is the DEFAULT NO-OP partitioner, it currently only supports one domain per processor\nuse -%smat_partitioning_type parmetis or chaco or ptscotch for more than one subdomain per processor",prefix ? prefix : "");
   }
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)part),&rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)part),&rank));
 
-  ierr = MatGetLocalSize(part->adj,&m,NULL);CHKERRQ(ierr);
-  ierr = ISCreateStride(PetscObjectComm((PetscObject)part),m,rank,0,partitioning);CHKERRQ(ierr);
+  PetscCall(MatGetLocalSize(part->adj,&m,NULL));
+  PetscCall(ISCreateStride(PetscObjectComm((PetscObject)part),m,rank,0,partitioning));
   PetscFunctionReturn(0);
 }
 
@@ -32,55 +31,53 @@ static PetscErrorCode MatPartitioningApply_Current(MatPartitioning part,IS *part
 */
 static PetscErrorCode MatPartitioningApply_Average(MatPartitioning part,IS *partitioning)
 {
-  PetscErrorCode ierr;
   PetscInt       m,M,nparts,*indices,r,d,*parts,i,start,end,loc;
 
   PetscFunctionBegin;
-  ierr   = MatGetSize(part->adj,&M,NULL);CHKERRQ(ierr);
-  ierr   = MatGetLocalSize(part->adj,&m,NULL);CHKERRQ(ierr);
+  PetscCall(MatGetSize(part->adj,&M,NULL));
+  PetscCall(MatGetLocalSize(part->adj,&m,NULL));
   nparts = part->n;
-  ierr   = PetscMalloc1(nparts,&parts);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(nparts,&parts));
   d      = M/nparts;
   for (i=0; i<nparts; i++) parts[i] = d;
   r = M%nparts;
   for (i=0; i<r; i++) parts[i] += 1;
   for (i=1; i<nparts; i++) parts[i] += parts[i-1];
-  ierr = PetscMalloc1(m,&indices);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(part->adj,&start,&end);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(m,&indices));
+  PetscCall(MatGetOwnershipRange(part->adj,&start,&end));
   for (i=start; i<end; i++) {
-    ierr = PetscFindInt(i,nparts,parts,&loc);CHKERRQ(ierr);
+    PetscCall(PetscFindInt(i,nparts,parts,&loc));
     if (loc<0) loc = -(loc+1);
     else loc = loc+1;
     indices[i-start] = loc;
   }
-  ierr = PetscFree(parts);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)part),m,indices,PETSC_OWN_POINTER,partitioning);CHKERRQ(ierr);
+  PetscCall(PetscFree(parts));
+  PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)part),m,indices,PETSC_OWN_POINTER,partitioning));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatPartitioningApply_Square(MatPartitioning part,IS *partitioning)
 {
-  PetscErrorCode ierr;
   PetscInt       cell,n,N,p,rstart,rend,*color;
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)part),&size);CHKERRMPI(ierr);
-  PetscCheckFalse(part->n != size,PetscObjectComm((PetscObject)part),PETSC_ERR_SUP,"Currently only supports one domain per processor");
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)part),&size));
+  PetscCheck(part->n == size,PetscObjectComm((PetscObject)part),PETSC_ERR_SUP,"Currently only supports one domain per processor");
   p = (PetscInt)PetscSqrtReal((PetscReal)part->n);
-  PetscCheckFalse(p*p != part->n,PetscObjectComm((PetscObject)part),PETSC_ERR_SUP,"Square partitioning requires \"perfect square\" number of domains");
+  PetscCheck(p*p == part->n,PetscObjectComm((PetscObject)part),PETSC_ERR_SUP,"Square partitioning requires \"perfect square\" number of domains");
 
-  ierr = MatGetSize(part->adj,&N,NULL);CHKERRQ(ierr);
+  PetscCall(MatGetSize(part->adj,&N,NULL));
   n    = (PetscInt)PetscSqrtReal((PetscReal)N);
-  PetscCheckFalse(n*n != N,PetscObjectComm((PetscObject)part),PETSC_ERR_SUP,"Square partitioning requires square domain");
-  PetscCheckFalse(n%p != 0,PETSC_COMM_SELF,PETSC_ERR_SUP,"Square partitioning requires p to divide n");
-  ierr = MatGetOwnershipRange(part->adj,&rstart,&rend);CHKERRQ(ierr);
-  ierr = PetscMalloc1(rend-rstart,&color);CHKERRQ(ierr);
+  PetscCheck(n*n == N,PetscObjectComm((PetscObject)part),PETSC_ERR_SUP,"Square partitioning requires square domain");
+  PetscCheck(n%p == 0,PETSC_COMM_SELF,PETSC_ERR_SUP,"Square partitioning requires p to divide n");
+  PetscCall(MatGetOwnershipRange(part->adj,&rstart,&rend));
+  PetscCall(PetscMalloc1(rend-rstart,&color));
   /* for (int cell=rstart; cell<rend; cell++) { color[cell-rstart] = ((cell%n) < (n/2)) + 2 * ((cell/n) < (n/2)); } */
   for (cell=rstart; cell<rend; cell++) {
     color[cell-rstart] = ((cell%n) / (n/p)) + p * ((cell/n) / (n/p));
   }
-  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)part),rend-rstart,color,PETSC_OWN_POINTER,partitioning);CHKERRQ(ierr);
+  PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)part),rend-rstart,color,PETSC_OWN_POINTER,partitioning));
   PetscFunctionReturn(0);
 }
 
@@ -120,14 +117,13 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Square(MatPartitioning part)
 PETSC_INTERN PetscErrorCode MatPartitioningSizesToSep_Private(PetscInt p, PetscInt sizes[], PetscInt seps[], PetscInt level[])
 {
   PetscInt       l2p,i,pTree,pStartTree;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   l2p = PetscLog2Real(p);
-  PetscCheckFalse(l2p - (PetscInt)PetscLog2Real(p),PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"%" PetscInt_FMT " is not a power of 2",p);
+  PetscCheck(!(l2p - (PetscInt)PetscLog2Real(p)),PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"%" PetscInt_FMT " is not a power of 2",p);
   if (!p) PetscFunctionReturn(0);
-  ierr = PetscArrayzero(seps,2*p-2);CHKERRQ(ierr);
-  ierr = PetscArrayzero(level,p-1);CHKERRQ(ierr);
+  PetscCall(PetscArrayzero(seps,2*p-2));
+  PetscCall(PetscArrayzero(level,p-1));
   seps[2*p-2] = sizes[2*p-2];
   pTree = p;
   pStartTree = 0;
@@ -156,7 +152,7 @@ PETSC_INTERN PetscErrorCode MatPartitioningSizesToSep_Private(PetscInt p, PetscI
     pStartTree -= pTree;
   }
   /* I know there should be a formula */
-  ierr = PetscSortIntWithArrayPair(p-1,seps+p,sizes+p,level);CHKERRQ(ierr);
+  PetscCall(PetscSortIntWithArrayPair(p-1,seps+p,sizes+p,level));
   for (i=2*p-2;i>=0;i--) { seps[2*i] = seps[i]; seps[2*i+1] = seps[i] + PetscMax(sizes[i] - 1,0); }
   PetscFunctionReturn(0);
 }
@@ -191,11 +187,9 @@ $     -mat_partitioning_type my_part
 @*/
 PetscErrorCode  MatPartitioningRegister(const char sname[],PetscErrorCode (*function)(MatPartitioning))
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = MatInitializePackage();CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&MatPartitioningList,sname,function);CHKERRQ(ierr);
+  PetscCall(MatInitializePackage());
+  PetscCall(PetscFunctionListAdd(&MatPartitioningList,sname,function));
   PetscFunctionReturn(0);
 }
 
@@ -271,20 +265,18 @@ PetscErrorCode  MatPartitioningSetNParts(MatPartitioning part,PetscInt n)
 @*/
 PetscErrorCode  MatPartitioningApplyND(MatPartitioning matp,IS *partitioning)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matp,MAT_PARTITIONING_CLASSID,1);
   PetscValidPointer(partitioning,2);
-  PetscCheckFalse(!matp->adj->assembled,PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  PetscCheckFalse(matp->adj->factortype,PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-  PetscCheckFalse(!matp->ops->applynd,PetscObjectComm((PetscObject)matp),PETSC_ERR_SUP,"Nested dissection not provided by MatPartitioningType %s",((PetscObject)matp)->type_name);
-  ierr = PetscLogEventBegin(MAT_PartitioningND,matp,0,0,0);CHKERRQ(ierr);
-  ierr = (*matp->ops->applynd)(matp,partitioning);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_PartitioningND,matp,0,0,0);CHKERRQ(ierr);
+  PetscCheck(matp->adj->assembled,PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  PetscCheck(!matp->adj->factortype,PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  PetscCheck(matp->ops->applynd,PetscObjectComm((PetscObject)matp),PETSC_ERR_SUP,"Nested dissection not provided by MatPartitioningType %s",((PetscObject)matp)->type_name);
+  PetscCall(PetscLogEventBegin(MAT_PartitioningND,matp,0,0,0));
+  PetscCall((*matp->ops->applynd)(matp,partitioning));
+  PetscCall(PetscLogEventEnd(MAT_PartitioningND,matp,0,0,0));
 
-  ierr = MatPartitioningViewFromOptions(matp,NULL,"-mat_partitioning_view");CHKERRQ(ierr);
-  ierr = ISViewFromOptions(*partitioning,NULL,"-mat_partitioning_view");CHKERRQ(ierr);
+  PetscCall(MatPartitioningViewFromOptions(matp,NULL,"-mat_partitioning_view"));
+  PetscCall(ISViewFromOptions(*partitioning,NULL,"-mat_partitioning_view"));
   PetscFunctionReturn(0);
 }
 
@@ -323,29 +315,29 @@ PetscErrorCode  MatPartitioningApply(MatPartitioning matp,IS *partitioning)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matp,MAT_PARTITIONING_CLASSID,1);
   PetscValidPointer(partitioning,2);
-  PetscCheckFalse(!matp->adj->assembled,PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  PetscCheckFalse(matp->adj->factortype,PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-  PetscCheckFalse(!matp->ops->apply,PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Must set type with MatPartitioningSetFromOptions() or MatPartitioningSetType()");
-  ierr = PetscLogEventBegin(MAT_Partitioning,matp,0,0,0);CHKERRQ(ierr);
-  ierr = (*matp->ops->apply)(matp,partitioning);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_Partitioning,matp,0,0,0);CHKERRQ(ierr);
+  PetscCheck(matp->adj->assembled,PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  PetscCheck(!matp->adj->factortype,PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  PetscCheck(matp->ops->apply,PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Must set type with MatPartitioningSetFromOptions() or MatPartitioningSetType()");
+  PetscCall(PetscLogEventBegin(MAT_Partitioning,matp,0,0,0));
+  PetscCall((*matp->ops->apply)(matp,partitioning));
+  PetscCall(PetscLogEventEnd(MAT_Partitioning,matp,0,0,0));
 
-  ierr = MatPartitioningViewFromOptions(matp,NULL,"-mat_partitioning_view");CHKERRQ(ierr);
-  ierr = ISViewFromOptions(*partitioning,NULL,"-mat_partitioning_view");CHKERRQ(ierr);
+  PetscCall(MatPartitioningViewFromOptions(matp,NULL,"-mat_partitioning_view"));
+  PetscCall(ISViewFromOptions(*partitioning,NULL,"-mat_partitioning_view"));
 
-  ierr = PetscObjectOptionsBegin((PetscObject)matp);CHKERRQ(ierr);
+  ierr = PetscObjectOptionsBegin((PetscObject)matp);PetscCall(ierr);
   viewbalance = PETSC_FALSE;
-  ierr = PetscOptionsBool("-mat_partitioning_view_imbalance","Display imbalance information of a partition",NULL,PETSC_FALSE,&viewbalance,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsBool("-mat_partitioning_view_imbalance","Display imbalance information of a partition",NULL,PETSC_FALSE,&viewbalance,NULL));
   improve = PETSC_FALSE;
-  ierr = PetscOptionsBool("-mat_partitioning_improve","Improve the quality of a partition",NULL,PETSC_FALSE,&improve,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(PetscOptionsBool("-mat_partitioning_improve","Improve the quality of a partition",NULL,PETSC_FALSE,&improve,NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
   if (improve) {
-    ierr = MatPartitioningImprove(matp,partitioning);CHKERRQ(ierr);
+    PetscCall(MatPartitioningImprove(matp,partitioning));
   }
 
   if (viewbalance) {
-    ierr = MatPartitioningViewImbalance(matp,*partitioning);CHKERRQ(ierr);
+    PetscCall(MatPartitioningViewImbalance(matp,*partitioning));
   }
   PetscFunctionReturn(0);
 }
@@ -376,18 +368,14 @@ $    -mat_partitioning_improve
 @*/
 PetscErrorCode  MatPartitioningImprove(MatPartitioning matp,IS *partitioning)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matp,MAT_PARTITIONING_CLASSID,1);
   PetscValidPointer(partitioning,2);
-  PetscCheckFalse(!matp->adj->assembled,PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  PetscCheckFalse(matp->adj->factortype,PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-  ierr = PetscLogEventBegin(MAT_Partitioning,matp,0,0,0);CHKERRQ(ierr);
-  if (matp->ops->improve) {
-    ierr = (*matp->ops->improve)(matp,partitioning);CHKERRQ(ierr);
-  }
-  ierr = PetscLogEventEnd(MAT_Partitioning,matp,0,0,0);CHKERRQ(ierr);
+  PetscCheck(matp->adj->assembled,PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  PetscCheck(!matp->adj->factortype,PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  PetscCall(PetscLogEventBegin(MAT_Partitioning,matp,0,0,0));
+  if (matp->ops->improve) PetscCall((*matp->ops->improve)(matp,partitioning));
+  PetscCall(PetscLogEventEnd(MAT_Partitioning,matp,0,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -411,7 +399,6 @@ $    -mat_partitioning_view_balance
 @*/
 PetscErrorCode  MatPartitioningViewImbalance(MatPartitioning matp, IS partitioning)
 {
-  PetscErrorCode  ierr;
   PetscInt        nparts,*subdomainsizes,*subdomainsizes_tmp,nlocal,i,maxsub,minsub,avgsub;
   const PetscInt  *indices;
   PetscViewer     viewer;
@@ -420,14 +407,14 @@ PetscErrorCode  MatPartitioningViewImbalance(MatPartitioning matp, IS partitioni
   PetscValidHeaderSpecific(matp,MAT_PARTITIONING_CLASSID,1);
   PetscValidHeaderSpecific(partitioning,IS_CLASSID,2);
   nparts = matp->n;
-  ierr = PetscCalloc2(nparts,&subdomainsizes,nparts,&subdomainsizes_tmp);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(partitioning,&nlocal);CHKERRQ(ierr);
-  ierr = ISGetIndices(partitioning,&indices);CHKERRQ(ierr);
+  PetscCall(PetscCalloc2(nparts,&subdomainsizes,nparts,&subdomainsizes_tmp));
+  PetscCall(ISGetLocalSize(partitioning,&nlocal));
+  PetscCall(ISGetIndices(partitioning,&indices));
   for (i=0;i<nlocal;i++) {
     subdomainsizes_tmp[indices[i]] += matp->vertex_weights? matp->vertex_weights[i]:1;
   }
-  ierr = MPI_Allreduce(subdomainsizes_tmp,subdomainsizes,nparts,MPIU_INT,MPI_SUM, PetscObjectComm((PetscObject)matp));CHKERRMPI(ierr);
-  ierr = ISRestoreIndices(partitioning,&indices);CHKERRQ(ierr);
+  PetscCallMPI(MPI_Allreduce(subdomainsizes_tmp,subdomainsizes,nparts,MPIU_INT,MPI_SUM, PetscObjectComm((PetscObject)matp)));
+  PetscCall(ISRestoreIndices(partitioning,&indices));
   minsub = PETSC_MAX_INT, maxsub = PETSC_MIN_INT, avgsub=0;
   for (i=0; i<nparts; i++) {
     minsub = PetscMin(minsub,subdomainsizes[i]);
@@ -435,10 +422,10 @@ PetscErrorCode  MatPartitioningViewImbalance(MatPartitioning matp, IS partitioni
     avgsub += subdomainsizes[i];
   }
   avgsub /=nparts;
-  ierr = PetscFree2(subdomainsizes,subdomainsizes_tmp);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)matp),&viewer);CHKERRQ(ierr);
-  ierr = MatPartitioningView(matp,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"Partitioning Imbalance Info: Max %" PetscInt_FMT ", Min %" PetscInt_FMT ", Avg %" PetscInt_FMT ", R %g\n",maxsub, minsub, avgsub, (double)(maxsub/(PetscReal)minsub));CHKERRQ(ierr);
+  PetscCall(PetscFree2(subdomainsizes,subdomainsizes_tmp));
+  PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)matp),&viewer));
+  PetscCall(MatPartitioningView(matp,viewer));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"Partitioning Imbalance Info: Max %" PetscInt_FMT ", Min %" PetscInt_FMT ", Avg %" PetscInt_FMT ", R %g\n",maxsub, minsub, avgsub, (double)(maxsub/(PetscReal)minsub)));
   PetscFunctionReturn(0);
 }
 
@@ -479,19 +466,17 @@ PetscErrorCode  MatPartitioningSetAdjacency(MatPartitioning part,Mat adj)
 @*/
 PetscErrorCode  MatPartitioningDestroy(MatPartitioning *part)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (!*part) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*part),MAT_PARTITIONING_CLASSID,1);
   if (--((PetscObject)(*part))->refct > 0) {*part = NULL; PetscFunctionReturn(0);}
 
   if ((*part)->ops->destroy) {
-    ierr = (*(*part)->ops->destroy)((*part));CHKERRQ(ierr);
+    PetscCall((*(*part)->ops->destroy)((*part)));
   }
-  ierr = PetscFree((*part)->vertex_weights);CHKERRQ(ierr);
-  ierr = PetscFree((*part)->part_weights);CHKERRQ(ierr);
-  ierr = PetscHeaderDestroy(part);CHKERRQ(ierr);
+  PetscCall(PetscFree((*part)->vertex_weights));
+  PetscCall(PetscFree((*part)->part_weights));
+  PetscCall(PetscHeaderDestroy(part));
   PetscFunctionReturn(0);
 }
 
@@ -514,11 +499,9 @@ PetscErrorCode  MatPartitioningDestroy(MatPartitioning *part)
 @*/
 PetscErrorCode  MatPartitioningSetVertexWeights(MatPartitioning part,const PetscInt weights[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
-  ierr = PetscFree(part->vertex_weights);CHKERRQ(ierr);
+  PetscCall(PetscFree(part->vertex_weights));
   part->vertex_weights = (PetscInt*)weights;
   PetscFunctionReturn(0);
 }
@@ -547,11 +530,9 @@ PetscErrorCode  MatPartitioningSetVertexWeights(MatPartitioning part,const Petsc
 @*/
 PetscErrorCode  MatPartitioningSetPartitionWeights(MatPartitioning part,const PetscReal weights[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
-  ierr = PetscFree(part->part_weights);CHKERRQ(ierr);
+  PetscCall(PetscFree(part->part_weights));
   part->part_weights = (PetscReal*)weights;
   PetscFunctionReturn(0);
 }
@@ -601,7 +582,7 @@ PetscErrorCode  MatPartitioningGetUseEdgeWeights(MatPartitioning part,PetscBool 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
-  PetscValidPointer(use_edge_weights,2);
+  PetscValidBoolPointer(use_edge_weights,2);
   *use_edge_weights = part->use_edge_weights;
   PetscFunctionReturn(0);
 }
@@ -626,19 +607,18 @@ PetscErrorCode  MatPartitioningGetUseEdgeWeights(MatPartitioning part,PetscBool 
 PetscErrorCode  MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
 {
   MatPartitioning part;
-  PetscErrorCode  ierr;
   PetscMPIInt     size;
 
   PetscFunctionBegin;
   *newp = NULL;
 
-  ierr = MatInitializePackage();CHKERRQ(ierr);
-  ierr = PetscHeaderCreate(part,MAT_PARTITIONING_CLASSID,"MatPartitioning","Matrix/graph partitioning","MatOrderings",comm,MatPartitioningDestroy,MatPartitioningView);CHKERRQ(ierr);
+  PetscCall(MatInitializePackage());
+  PetscCall(PetscHeaderCreate(part,MAT_PARTITIONING_CLASSID,"MatPartitioning","Matrix/graph partitioning","MatOrderings",comm,MatPartitioningDestroy,MatPartitioningView));
   part->vertex_weights = NULL;
   part->part_weights   = NULL;
   part->use_edge_weights = PETSC_FALSE; /* By default we don't use edge weights */
 
-  ierr    = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_size(comm,&size));
   part->n = (PetscInt)size;
 
   *newp = part;
@@ -660,11 +640,9 @@ PetscErrorCode  MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
 @*/
 PetscErrorCode  MatPartitioningViewFromOptions(MatPartitioning A,PetscObject obj,const char name[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_PARTITIONING_CLASSID,1);
-  ierr = PetscObjectViewFromOptions((PetscObject)A,obj,name);CHKERRQ(ierr);
+  PetscCall(PetscObjectViewFromOptions((PetscObject)A,obj,name));
   PetscFunctionReturn(0);
 }
 
@@ -694,28 +672,27 @@ PetscErrorCode  MatPartitioningViewFromOptions(MatPartitioning A,PetscObject obj
 @*/
 PetscErrorCode  MatPartitioningView(MatPartitioning part,PetscViewer viewer)
 {
-  PetscErrorCode ierr;
   PetscBool      iascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
   if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)part),&viewer);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)part),&viewer));
   }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(part,1,viewer,2);
 
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)part,viewer);CHKERRQ(ierr);
+    PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)part,viewer));
     if (part->vertex_weights) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  Using vertex weights\n");CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  Using vertex weights\n"));
     }
   }
   if (part->ops->view) {
-    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    ierr = (*part->ops->view)(part,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPushTab(viewer));
+    PetscCall((*part->ops->view)(part,viewer));
+    PetscCall(PetscViewerASCIIPopTab(viewer));
   }
   PetscFunctionReturn(0);
 }
@@ -741,31 +718,31 @@ $      (for instance, parmetis)
 @*/
 PetscErrorCode  MatPartitioningSetType(MatPartitioning part,MatPartitioningType type)
 {
-  PetscErrorCode ierr,(*r)(MatPartitioning);
   PetscBool      match;
+  PetscErrorCode (*r)(MatPartitioning);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
   PetscValidCharPointer(type,2);
 
-  ierr = PetscObjectTypeCompare((PetscObject)part,type,&match);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)part,type,&match));
   if (match) PetscFunctionReturn(0);
 
   if (part->ops->destroy) {
-    ierr = (*part->ops->destroy)(part);CHKERRQ(ierr);
+    PetscCall((*part->ops->destroy)(part));
     part->ops->destroy = NULL;
   }
   part->setupcalled = 0;
   part->data        = NULL;
-  ierr = PetscMemzero(part->ops,sizeof(struct _MatPartitioningOps));CHKERRQ(ierr);
+  PetscCall(PetscMemzero(part->ops,sizeof(struct _MatPartitioningOps)));
 
-  ierr = PetscFunctionListFind(MatPartitioningList,type,&r);CHKERRQ(ierr);
-  PetscCheckFalse(!r,PetscObjectComm((PetscObject)part),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown partitioning type %s",type);
+  PetscCall(PetscFunctionListFind(MatPartitioningList,type,&r));
+  PetscCheck(r,PetscObjectComm((PetscObject)part),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown partitioning type %s",type);
 
-  ierr = (*r)(part);CHKERRQ(ierr);
+  PetscCall((*r)(part));
 
-  ierr = PetscFree(((PetscObject)part)->type_name);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(type,&((PetscObject)part)->type_name);CHKERRQ(ierr);
+  PetscCall(PetscFree(((PetscObject)part)->type_name));
+  PetscCall(PetscStrallocpy(type,&((PetscObject)part)->type_name));
   PetscFunctionReturn(0);
 }
 
@@ -799,7 +776,7 @@ PetscErrorCode  MatPartitioningSetFromOptions(MatPartitioning part)
   const char     *def;
 
   PetscFunctionBegin;
-  ierr = PetscObjectOptionsBegin((PetscObject)part);CHKERRQ(ierr);
+  ierr = PetscObjectOptionsBegin((PetscObject)part);PetscCall(ierr);
   if (!((PetscObject)part)->type_name) {
 #if defined(PETSC_HAVE_PARMETIS)
     def = MATPARTITIONINGPARMETIS;
@@ -815,25 +792,25 @@ PetscErrorCode  MatPartitioningSetFromOptions(MatPartitioning part)
   } else {
     def = ((PetscObject)part)->type_name;
   }
-  ierr = PetscOptionsFList("-mat_partitioning_type","Type of partitioner","MatPartitioningSetType",MatPartitioningList,def,type,256,&flag);CHKERRQ(ierr);
+  PetscCall(PetscOptionsFList("-mat_partitioning_type","Type of partitioner","MatPartitioningSetType",MatPartitioningList,def,type,256,&flag));
   if (flag) {
-    ierr = MatPartitioningSetType(part,type);CHKERRQ(ierr);
+    PetscCall(MatPartitioningSetType(part,type));
   }
 
-  ierr = PetscOptionsInt("-mat_partitioning_nparts","number of fine parts",NULL,part->n,& part->n,&flag);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-mat_partitioning_nparts","number of fine parts",NULL,part->n,& part->n,&flag));
 
-  ierr = PetscOptionsBool("-mat_partitioning_use_edge_weights","whether or not to use edge weights",NULL,part->use_edge_weights,&part->use_edge_weights,&flag);CHKERRQ(ierr);
+  PetscCall(PetscOptionsBool("-mat_partitioning_use_edge_weights","whether or not to use edge weights",NULL,part->use_edge_weights,&part->use_edge_weights,&flag));
 
   /*
     Set the type if it was never set.
   */
   if (!((PetscObject)part)->type_name) {
-    ierr = MatPartitioningSetType(part,def);CHKERRQ(ierr);
+    PetscCall(MatPartitioningSetType(part,def));
   }
 
   if (part->ops->setfromoptions) {
-    ierr = (*part->ops->setfromoptions)(PetscOptionsObject,part);CHKERRQ(ierr);
+    PetscCall((*part->ops->setfromoptions)(PetscOptionsObject,part));
   }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();PetscCall(ierr);
   PetscFunctionReturn(0);
 }

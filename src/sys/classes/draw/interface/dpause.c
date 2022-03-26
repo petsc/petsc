@@ -18,12 +18,10 @@
 @*/
 PetscErrorCode  PetscDrawPause(PetscDraw draw)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   if (draw->ops->pause) {
-    ierr = (*draw->ops->pause)(draw);CHKERRQ(ierr);
+    PetscCall((*draw->ops->pause)(draw));
   }
   PetscFunctionReturn(0);
 }
@@ -76,7 +74,7 @@ PetscErrorCode  PetscDrawGetPause(PetscDraw draw,PetscReal *lpause)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  PetscValidPointer(lpause,2);
+  PetscValidRealPointer(lpause,2);
   *lpause = draw->pause;
   PetscFunctionReturn(0);
 }

@@ -19,10 +19,10 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->dim_inp = 2;
   options->Np   = 100;
 
-  ierr = PetscOptionsBegin(comm, "", "Test of colorized scatter plot", "");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-Np", "Number of particles", "ex35.c", options->Np, &options->Np, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "Number of dimensions", "ex35.c", options->dim_inp, &options->dim_inp, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm, "", "Test of colorized scatter plot", "");PetscCall(ierr);
+  PetscCall(PetscOptionsInt("-Np", "Number of particles", "ex35.c", options->Np, &options->Np, PETSC_NULL));
+  PetscCall(PetscOptionsInt("-dim", "Number of dimensions", "ex35.c", options->dim_inp, &options->dim_inp, PETSC_NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -31,22 +31,21 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 */
 PetscReal erfinv(PetscReal x)
 {
-  PetscReal      *ck, r = 0.;
-  PetscInt       k, m, maxIter=100;
-  PetscErrorCode ierr;
+  PetscReal *ck, r   = 0.;
+  PetscInt   maxIter = 100;
 
-  ierr = PetscCalloc1(maxIter,&ck);CHKERRQ(ierr);
+  PetscCall(PetscCalloc1(maxIter,&ck));
   ck[0] = 1;
   r = ck[0]*((PetscSqrtReal(PETSC_PI)/2.)*x);
-  for (k = 1; k < maxIter; ++k){
-    for (m = 0; m <= k-1; ++m){
+  for (PetscInt k = 1; k < maxIter; ++k){
+    for (PetscInt m = 0; m <= k-1; ++m){
       PetscReal denom = (m+1.)*(2.*m+1.);
       ck[k] += (ck[m]*ck[k-1-m])/denom;
     }
     PetscReal temp = 2.*k+1.;
     r += (ck[k]/temp)*PetscPowReal((PetscSqrtReal(PETSC_PI)/2.)*x,2.*k+1.);
   }
-  ierr = PetscFree(ck);
+  PetscCallAbort(PETSC_COMM_SELF,PetscFree(ck));
   return r;
 }
 
@@ -63,40 +62,39 @@ int main(int argc, char **argv)
   PetscDraw         positionDraw;
   PetscDrawSP       positionDrawSP;
   MPI_Comm          comm;
-  PetscErrorCode    ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   comm = PETSC_COMM_WORLD;
-  ierr = ProcessOptions(comm, &user);CHKERRQ(ierr);
+  PetscCall(ProcessOptions(comm, &user));
 
   Np = user.Np;
   dim = user.dim;
 
-  ierr = PetscMalloc2(Np*dim, &x, Np*dim, &v);CHKERRQ(ierr);
+  PetscCall(PetscMalloc2(Np*dim, &x, Np*dim, &v));
 
-  ierr = PetscRandomCreate(comm, &rngx);CHKERRQ(ierr);
-  ierr = PetscRandomSetInterval(rngx, 0., 1.);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rngx);CHKERRQ(ierr);
-  ierr = PetscRandomSetSeed(rngx, 1034);CHKERRQ(ierr);
-  ierr = PetscRandomSeed(rngx);CHKERRQ(ierr);
+  PetscCall(PetscRandomCreate(comm, &rngx));
+  PetscCall(PetscRandomSetInterval(rngx, 0., 1.));
+  PetscCall(PetscRandomSetFromOptions(rngx));
+  PetscCall(PetscRandomSetSeed(rngx, 1034));
+  PetscCall(PetscRandomSeed(rngx));
 
-  ierr = PetscRandomCreate(comm, &rng1);CHKERRQ(ierr);
-  ierr = PetscRandomSetInterval(rng1, 0., 1.);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rng1);CHKERRQ(ierr);
-  ierr = PetscRandomSetSeed(rng1, 3084);CHKERRQ(ierr);
-  ierr = PetscRandomSeed(rng1);CHKERRQ(ierr);
+  PetscCall(PetscRandomCreate(comm, &rng1));
+  PetscCall(PetscRandomSetInterval(rng1, 0., 1.));
+  PetscCall(PetscRandomSetFromOptions(rng1));
+  PetscCall(PetscRandomSetSeed(rng1, 3084));
+  PetscCall(PetscRandomSeed(rng1));
 
-  ierr = PetscRandomCreate(comm, &rng2);CHKERRQ(ierr);
-  ierr = PetscRandomSetInterval(rng2, 0., 1.);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rng2);CHKERRQ(ierr);
-  ierr = PetscRandomSetSeed(rng2, 2397);CHKERRQ(ierr);
-  ierr = PetscRandomSeed(rng2);CHKERRQ(ierr);
+  PetscCall(PetscRandomCreate(comm, &rng2));
+  PetscCall(PetscRandomSetInterval(rng2, 0., 1.));
+  PetscCall(PetscRandomSetFromOptions(rng2));
+  PetscCall(PetscRandomSetSeed(rng2, 2397));
+  PetscCall(PetscRandomSeed(rng2));
 
   /* Set particle positions and velocities */
   if (user.dim_inp == 1) {
     for (p = 0; p < Np; ++p) {
       PetscReal temp;
-      ierr = PetscRandomGetValueReal(rngx, &value);CHKERRQ(ierr);
+      PetscCall(PetscRandomGetValueReal(rngx, &value));
       x[p*dim] = value;
       x[p*dim+1] = 0.;
       temp = erfinv(2*value-1);
@@ -108,19 +106,19 @@ int main(int argc, char **argv)
      Use Box-Muller to sample a distribution of velocities for the maxwellian.
      https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform
     */
-    ierr = VecCreate(comm,&randVec);
-    ierr = VecSetSizes(randVec,PETSC_DECIDE, Np*dim);
-    ierr = VecSetFromOptions(randVec);
+    PetscCall(VecCreate(comm,&randVec));
+    PetscCall(VecSetSizes(randVec,PETSC_DECIDE, Np*dim));
+    PetscCall(VecSetFromOptions(randVec));
 
-    ierr = ISCreateStride(comm, Np*dim/2, 0, 2, &isvx);CHKERRQ(ierr);
-    ierr = ISCreateStride(comm, Np*dim/2, 1, 2, &isvy);CHKERRQ(ierr);
-    ierr = VecGetSubVector(randVec, isvx, &subvecvx);CHKERRQ(ierr);
-    ierr = VecGetSubVector(randVec, isvy, &subvecvy);CHKERRQ(ierr);
-    ierr = VecSetRandom(subvecvx, rng1);CHKERRQ(ierr);
-    ierr = VecSetRandom(subvecvy, rng2);CHKERRQ(ierr);
-    ierr = VecRestoreSubVector(randVec, isvx, &subvecvx);CHKERRQ(ierr);
-    ierr = VecRestoreSubVector(randVec, isvy, &subvecvy);CHKERRQ(ierr);
-    ierr = VecGetArray(randVec, &randVecNums);CHKERRQ(ierr);
+    PetscCall(ISCreateStride(comm, Np*dim/2, 0, 2, &isvx));
+    PetscCall(ISCreateStride(comm, Np*dim/2, 1, 2, &isvy));
+    PetscCall(VecGetSubVector(randVec, isvx, &subvecvx));
+    PetscCall(VecGetSubVector(randVec, isvy, &subvecvy));
+    PetscCall(VecSetRandom(subvecvx, rng1));
+    PetscCall(VecSetRandom(subvecvy, rng2));
+    PetscCall(VecRestoreSubVector(randVec, isvx, &subvecvx));
+    PetscCall(VecRestoreSubVector(randVec, isvy, &subvecvy));
+    PetscCall(VecGetArray(randVec, &randVecNums));
 
     for (p = 0; p < Np; ++p) {
       PetscReal u1, u2, mag, zx, zy;
@@ -139,39 +137,39 @@ int main(int argc, char **argv)
       v[p*dim] = zx;
       v[p*dim+1] = zy;
     }
-    ierr = ISDestroy(&isvx);CHKERRQ(ierr);
-    ierr = ISDestroy(&isvy);CHKERRQ(ierr);
-    ierr = VecDestroy(&subvecvx);CHKERRQ(ierr);
-    ierr = VecDestroy(&subvecvy);CHKERRQ(ierr);
-    ierr = VecDestroy(&randVec);CHKERRQ(ierr);
+    PetscCall(ISDestroy(&isvx));
+    PetscCall(ISDestroy(&isvy));
+    PetscCall(VecDestroy(&subvecvx));
+    PetscCall(VecDestroy(&subvecvy));
+    PetscCall(VecDestroy(&randVec));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Do not support dimension %D", dim);
 
-  ierr = PetscDrawCreate(comm, NULL, "monitor_particle_positions", 0,0,400,300, &positionDraw);CHKERRQ(ierr);
-  ierr = PetscDrawSetFromOptions(positionDraw);CHKERRQ(ierr);
-  ierr = PetscDrawSPCreate(positionDraw, 10, &positionDrawSP);CHKERRQ(ierr);
-  ierr = PetscDrawSPSetDimension(positionDrawSP,1);CHKERRQ(ierr);
-  ierr = PetscDrawSPGetAxis(positionDrawSP, &axis);CHKERRQ(ierr);
-  ierr = PetscDrawSPReset(positionDrawSP);CHKERRQ(ierr);
-  ierr = PetscDrawAxisSetLabels(axis, "Particles", "x", "y");CHKERRQ(ierr);
-  ierr = PetscDrawSetSave(positionDraw, "ex35_pos.ppm");CHKERRQ(ierr);
-  ierr = PetscDrawSPReset(positionDrawSP);CHKERRQ(ierr);
-  ierr = PetscDrawSPSetLimits(positionDrawSP, 0, 1, 0, 1);CHKERRQ(ierr);
+  PetscCall(PetscDrawCreate(comm, NULL, "monitor_particle_positions", 0,0,400,300, &positionDraw));
+  PetscCall(PetscDrawSetFromOptions(positionDraw));
+  PetscCall(PetscDrawSPCreate(positionDraw, 10, &positionDrawSP));
+  PetscCall(PetscDrawSPSetDimension(positionDrawSP,1));
+  PetscCall(PetscDrawSPGetAxis(positionDrawSP, &axis));
+  PetscCall(PetscDrawSPReset(positionDrawSP));
+  PetscCall(PetscDrawAxisSetLabels(axis, "Particles", "x", "y"));
+  PetscCall(PetscDrawSetSave(positionDraw, "ex35_pos.ppm"));
+  PetscCall(PetscDrawSPReset(positionDrawSP));
+  PetscCall(PetscDrawSPSetLimits(positionDrawSP, 0, 1, 0, 1));
   for (p = 0; p < Np; ++p) {
     speed = PetscSqrtReal(PetscSqr(v[p*dim]) + PetscSqr(v[p*dim+1]));
-    ierr = PetscDrawSPAddPointColorized(positionDrawSP, &x[p*dim], &x[p*dim+1], &speed);CHKERRQ(ierr);
+    PetscCall(PetscDrawSPAddPointColorized(positionDrawSP, &x[p*dim], &x[p*dim+1], &speed));
   }
-  ierr = PetscDrawSPDraw(positionDrawSP, PETSC_TRUE);CHKERRQ(ierr);
-  ierr = PetscDrawSave(positionDraw);CHKERRQ(ierr);
+  PetscCall(PetscDrawSPDraw(positionDrawSP, PETSC_TRUE));
+  PetscCall(PetscDrawSave(positionDraw));
 
-  ierr = PetscFree2(x, v);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&rngx);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&rng1);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&rng2);CHKERRQ(ierr);
+  PetscCall(PetscFree2(x, v));
+  PetscCall(PetscRandomDestroy(&rngx));
+  PetscCall(PetscRandomDestroy(&rng1));
+  PetscCall(PetscRandomDestroy(&rng2));
 
-  ierr = PetscDrawSPDestroy(&positionDrawSP);CHKERRQ(ierr);
-  ierr = PetscDrawDestroy(&positionDraw);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscDrawSPDestroy(&positionDrawSP));
+  PetscCall(PetscDrawDestroy(&positionDraw));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

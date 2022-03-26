@@ -28,40 +28,39 @@ int main(int argc,char **argv)
   PetscScalar    sum;                     /* used to test sum of parent vector elements */
   PetscScalar    mean;                    /* used to test mean of parent vector elements */
   PetscBool      usehdf5 = PETSC_FALSE;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, (char*) 0, help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc, &argv, (char*) 0, help));
 
   /* parse input options to determine I/O format */
-  ierr = PetscOptionsGetBool(NULL,NULL,"-hdf5",&usehdf5,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-hdf5",&usehdf5,NULL));
 
   /* Create parent vector with 100 elements, set it to 1 */
-  ierr = VecCreate(PETSC_COMM_WORLD, &testvec);CHKERRQ(ierr);
-  ierr = VecSetSizes(testvec, PETSC_DECIDE,100);CHKERRQ(ierr);
-  ierr = VecSetUp(testvec);CHKERRQ(ierr);
-  ierr = VecSet(testvec, (PetscScalar) 1);CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_WORLD, &testvec));
+  PetscCall(VecSetSizes(testvec, PETSC_DECIDE,100));
+  PetscCall(VecSetUp(testvec));
+  PetscCall(VecSet(testvec, (PetscScalar) 1));
 
   /* Create a vector with 50 elements, set it to 2. */
-  ierr = VecCreate(PETSC_COMM_WORLD, &writevec);CHKERRQ(ierr);
-  ierr = VecSetSizes(writevec, PETSC_DECIDE,50);CHKERRQ(ierr);
-  ierr = VecSetUp(writevec);CHKERRQ(ierr);
-  ierr = VecSet(writevec, (PetscScalar) 2);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)writevec,"temp");CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_WORLD, &writevec));
+  PetscCall(VecSetSizes(writevec, PETSC_DECIDE,50));
+  PetscCall(VecSetUp(writevec));
+  PetscCall(VecSet(writevec, (PetscScalar) 2));
+  PetscCall(PetscObjectSetName((PetscObject)writevec,"temp"));
 
   /* Save to disk in specified format, destroy vector & viewer */
   if (usehdf5) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"writing vector in hdf5 to vector.dat ...\n");CHKERRQ(ierr);
-    ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"writing vector in hdf5 to vector.dat ...\n"));
+    PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_WRITE,&viewer));
   } else {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"writing vector in binary to vector.dat ...\n");CHKERRQ(ierr);
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"writing vector in binary to vector.dat ...\n"));
+    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_WRITE,&viewer));
   }
-  ierr = VecView(writevec,viewer);CHKERRQ(ierr);
-  ierr = VecDestroy(&writevec);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  PetscCall(VecView(writevec,viewer));
+  PetscCall(VecDestroy(&writevec));
+  PetscCall(PetscViewerDestroy(&viewer));
 
   /* Create index sets on each mpi rank to select the last 50 elements of parent vec */
-  ierr = VecGetOwnershipRange(testvec, &low, &high);CHKERRQ(ierr);
+  PetscCall(VecGetOwnershipRange(testvec, &low, &high));
   if (low>=skipuntil) {
     isstart = low;
     issize = high - low;
@@ -72,40 +71,40 @@ int main(int argc,char **argv)
     isstart = low;
     issize  = 0;
   }
-  ierr = ISCreateStride(PETSC_COMM_WORLD, issize, isstart, 1, &loadis);CHKERRQ(ierr);
+  PetscCall(ISCreateStride(PETSC_COMM_WORLD, issize, isstart, 1, &loadis));
 
   /* Create subvector using the index set created above */
-  ierr = VecGetSubVector(testvec, loadis, &loadvec);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)loadvec,"temp");CHKERRQ(ierr);
+  PetscCall(VecGetSubVector(testvec, loadis, &loadvec));
+  PetscCall(PetscObjectSetName((PetscObject)loadvec,"temp"));
 
   /* Load the previously saved vector into the subvector, destroy viewer */
   if (usehdf5) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"reading vector in hdf5 from vector.dat ...\n");CHKERRQ(ierr);
-    ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"reading vector in hdf5 from vector.dat ...\n"));
+    PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_READ,&viewer));
   } else {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"reading vector in binary from vector.dat ...\n");CHKERRQ(ierr);
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"reading vector in binary from vector.dat ...\n"));
+    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_READ,&viewer));
   }
-  ierr = VecLoad(loadvec, viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  PetscCall(VecLoad(loadvec, viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
 
   /* Restore subvector to transfer loaded data into parent vector */
-  ierr = VecRestoreSubVector(testvec, loadis, &loadvec);CHKERRQ(ierr);
+  PetscCall(VecRestoreSubVector(testvec, loadis, &loadvec));
 
   /* Compute sum of parent vector elements */
-  ierr = VecSum(testvec, &sum);CHKERRQ(ierr);
-  ierr = VecMean(testvec, &mean);CHKERRQ(ierr);
+  PetscCall(VecSum(testvec, &sum));
+  PetscCall(VecMean(testvec, &mean));
 
   /* to verify that the loaded data has been transferred */
   PetscCheckFalse(sum != 150,PETSC_COMM_WORLD, PETSC_ERR_PLIB,"Data has not been transferred from subvector to parent vector");
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecSum on parent vec is : %e\n",(double)PetscAbsScalar(sum));CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecMean on parent vec is : %e\n",(double)PetscAbsScalar(mean));CHKERRQ(ierr);
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"VecSum on parent vec is : %e\n",(double)PetscAbsScalar(sum)));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"VecMean on parent vec is : %e\n",(double)PetscAbsScalar(mean)));
 
   /* destroy parent vector, index set and exit */
-  ierr = VecDestroy(&testvec);CHKERRQ(ierr);
-  ierr = ISDestroy(&loadis);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(VecDestroy(&testvec));
+  PetscCall(ISDestroy(&loadis));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

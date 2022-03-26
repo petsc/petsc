@@ -13,34 +13,32 @@ __global__ void NullKernel(){}
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       i,n=100000;
-  cudaError_t    cerr;
   PetscLogDouble tstart,tend,time;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
   /* Launch a sequence of kernels asynchronously. Previous launched kernels do not need to be completed before launching a new one */
-  ierr = PetscTime(&tstart);CHKERRQ(ierr);
+  PetscCall(PetscTime(&tstart));
   for (i=0; i<n; i++) {NullKernel<<<1,1,0,NULL>>>();}
-  ierr = PetscTime(&tend);CHKERRQ(ierr);
-  cerr = cudaStreamSynchronize(NULL);CHKERRCUDA(cerr); /* Sync after tend since we don't want to count kernel execution time */
+  PetscCall(PetscTime(&tend));
+  PetscCallCUDA(cudaStreamSynchronize(NULL)); /* Sync after tend since we don't want to count kernel execution time */
   time = (tend-tstart)*1e6/n;
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Average asynchronous CUDA kernel launch time = %.2f microseconds\n",time);CHKERRQ(ierr);
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Average asynchronous CUDA kernel launch time = %.2f microseconds\n",time));
 
   /* Launch a sequence of kernels synchronously. Only launch a new kernel after the one before it has been completed */
-  ierr = PetscTime(&tstart);CHKERRQ(ierr);
+  PetscCall(PetscTime(&tstart));
   for (i=0; i<n; i++) {
     NullKernel<<<1,1,0,NULL>>>();
-    cerr = cudaStreamSynchronize(NULL);CHKERRCUDA(cerr);
+    PetscCallCUDA(cudaStreamSynchronize(NULL));
   }
-  ierr = PetscTime(&tend);CHKERRQ(ierr);
+  PetscCall(PetscTime(&tend));
   time = (tend-tstart)*1e6/n;
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Average synchronous  CUDA kernel launch time = %.2f microseconds\n",time);CHKERRQ(ierr);
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Average synchronous  CUDA kernel launch time = %.2f microseconds\n",time));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

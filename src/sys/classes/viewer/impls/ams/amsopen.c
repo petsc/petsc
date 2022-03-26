@@ -37,11 +37,9 @@
 @*/
 PetscErrorCode PetscViewerSAWsOpen(MPI_Comm comm,PetscViewer *lab)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscViewerCreate(comm,lab);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(*lab,PETSCVIEWERSAWS);CHKERRQ(ierr);
+  PetscCall(PetscViewerCreate(comm,lab));
+  PetscCall(PetscViewerSetType(*lab,PETSCVIEWERSAWS));
   PetscFunctionReturn(0);
 }
 
@@ -68,25 +66,24 @@ PetscErrorCode PetscViewerSAWsOpen(MPI_Comm comm,PetscViewer *lab)
 @*/
 PetscErrorCode  PetscObjectViewSAWs(PetscObject obj,PetscViewer viewer)
 {
-  PetscErrorCode ierr;
-  char           dir[1024];
-  PetscMPIInt    rank;
+  char        dir[1024];
+  PetscMPIInt rank;
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
   if (obj->amsmem) PetscFunctionReturn(0);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  PetscCheckFalse(rank,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Should only be being called on rank zero");
-  PetscCheckFalse(!obj->name,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Object must already have been named");
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCheck(!rank,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Should only be being called on rank zero");
+  PetscCheck(obj->name,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Object must already have been named");
 
   obj->amsmem = PETSC_TRUE;
-  ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/Class",obj->name);CHKERRQ(ierr);
+  PetscCall(PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/Class",obj->name));
   PetscStackCallSAWs(SAWs_Register,(dir,&obj->class_name,1,SAWs_READ,SAWs_STRING));
-  ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/Type",obj->name);CHKERRQ(ierr);
+  PetscCall(PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/Type",obj->name));
   PetscStackCallSAWs(SAWs_Register,(dir,&obj->type_name,1,SAWs_READ,SAWs_STRING));
-  ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/__Id",obj->name);CHKERRQ(ierr);
+  PetscCall(PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/__Id",obj->name));
   PetscStackCallSAWs(SAWs_Register,(dir,&obj->id,1,SAWs_READ,SAWs_INT));
-  ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/__ParentID",obj->name);CHKERRQ(ierr);
+  PetscCall(PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/__ParentID",obj->name));
   PetscStackCallSAWs(SAWs_Register,(dir,&obj->parentid,1,SAWs_READ,SAWs_INT));
   PetscFunctionReturn(0);
 }

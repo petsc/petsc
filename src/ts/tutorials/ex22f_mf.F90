@@ -179,9 +179,9 @@ end program main
   PetscErrorCode ierr
   PetscInt xm,gxm
   call DMDAGetInfo(da,PETSC_NULL_INTEGER,mx,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,    &
-       PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr);CHKERRQ(ierr)
-  call DMDAGetCorners(da,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,xm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr);CHKERRQ(ierr)
-  call DMDAGetGhostCorners(da,gxs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,gxm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr);CHKERRQ(ierr)
+       PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr);PetscCall(ierr)
+  call DMDAGetCorners(da,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,xm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr);PetscCall(ierr)
+  call DMDAGetGhostCorners(da,gxs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,gxm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr);PetscCall(ierr)
   xs = xs + 1
   gxs = gxs + 1
   xe = xs + xm - 1
@@ -221,19 +221,19 @@ subroutine FormIFunction(ts,t,X,Xdot,F,user,ierr)
   PetscOffset    ixx,ixxdot,iff
   PetscScalar    xx(0:1),xxdot(0:1),ff(0:1)
 
-  call TSGetDM(ts,da,ierr);CHKERRQ(ierr)
-  call GetLayout(da,mx,xs,xe,gxs,gxe,ierr);CHKERRQ(ierr)
+  call TSGetDM(ts,da,ierr);PetscCall(ierr)
+  call GetLayout(da,mx,xs,xe,gxs,gxe,ierr);PetscCall(ierr)
 
   ! Get access to vector data
-  call VecGetArrayRead(X,xx,ixx,ierr);CHKERRQ(ierr)
-  call VecGetArrayRead(Xdot,xxdot,ixxdot,ierr);CHKERRQ(ierr)
-  call VecGetArray(F,ff,iff,ierr);CHKERRQ(ierr)
+  call VecGetArrayRead(X,xx,ixx,ierr);PetscCall(ierr)
+  call VecGetArrayRead(Xdot,xxdot,ixxdot,ierr);PetscCall(ierr)
+  call VecGetArray(F,ff,iff,ierr);PetscCall(ierr)
 
-  call FormIFunctionLocal(mx,xs,xe,gxs,gxe,xx(ixx),xxdot(ixxdot),ff(iff),user(user_a),user(user_k),user(user_s),ierr);CHKERRQ(ierr)
+  call FormIFunctionLocal(mx,xs,xe,gxs,gxe,xx(ixx),xxdot(ixxdot),ff(iff),user(user_a),user(user_k),user(user_s),ierr);PetscCall(ierr)
 
-  call VecRestoreArrayRead(X,xx,ixx,ierr);CHKERRQ(ierr)
-  call VecRestoreArrayRead(Xdot,xxdot,ixxdot,ierr);CHKERRQ(ierr)
-  call VecRestoreArray(F,ff,iff,ierr);CHKERRQ(ierr)
+  call VecRestoreArrayRead(X,xx,ixx,ierr);PetscCall(ierr)
+  call VecRestoreArrayRead(Xdot,xxdot,ixxdot,ierr);PetscCall(ierr)
+  call VecRestoreArray(F,ff,iff,ierr);PetscCall(ierr)
 end subroutine FormIFunction
 
 subroutine FormRHSFunctionLocal(mx,xs,xe,gxs,gxe,t,x,f,a,k,s,ierr)
@@ -306,26 +306,26 @@ subroutine FormRHSFunction(ts,t,X,F,user,ierr)
   PetscOffset    ixx,iff
   PetscScalar    xx(0:1),ff(0:1)
 
-  call TSGetDM(ts,da,ierr);CHKERRQ(ierr)
-  call GetLayout(da,mx,xs,xe,gxs,gxe,ierr);CHKERRQ(ierr)
+  call TSGetDM(ts,da,ierr);PetscCall(ierr)
+  call GetLayout(da,mx,xs,xe,gxs,gxe,ierr);PetscCall(ierr)
 
   !     Scatter ghost points to local vector,using the 2-step process
   !        DMGlobalToLocalBegin(),DMGlobalToLocalEnd().
   !     By placing code between these two statements, computations can be
   !     done while messages are in transition.
-  call DMGetLocalVector(da,Xloc,ierr);CHKERRQ(ierr)
-  call DMGlobalToLocalBegin(da,X,INSERT_VALUES,Xloc,ierr);CHKERRQ(ierr)
-  call DMGlobalToLocalEnd(da,X,INSERT_VALUES,Xloc,ierr);CHKERRQ(ierr)
+  call DMGetLocalVector(da,Xloc,ierr);PetscCall(ierr)
+  call DMGlobalToLocalBegin(da,X,INSERT_VALUES,Xloc,ierr);PetscCall(ierr)
+  call DMGlobalToLocalEnd(da,X,INSERT_VALUES,Xloc,ierr);PetscCall(ierr)
 
   ! Get access to vector data
-  call VecGetArrayRead(Xloc,xx,ixx,ierr);CHKERRQ(ierr)
-  call VecGetArray(F,ff,iff,ierr);CHKERRQ(ierr)
+  call VecGetArrayRead(Xloc,xx,ixx,ierr);PetscCall(ierr)
+  call VecGetArray(F,ff,iff,ierr);PetscCall(ierr)
 
-  call FormRHSFunctionLocal(mx,xs,xe,gxs,gxe,t,xx(ixx),ff(iff),user(user_a),user(user_k),user(user_s),ierr);CHKERRQ(ierr)
+  call FormRHSFunctionLocal(mx,xs,xe,gxs,gxe,t,xx(ixx),ff(iff),user(user_a),user(user_k),user(user_s),ierr);PetscCall(ierr)
 
-  call VecRestoreArrayRead(Xloc,xx,ixx,ierr);CHKERRQ(ierr)
-  call VecRestoreArray(F,ff,iff,ierr);CHKERRQ(ierr)
-  call DMRestoreLocalVector(da,Xloc,ierr);CHKERRQ(ierr)
+  call VecRestoreArrayRead(Xloc,xx,ixx,ierr);PetscCall(ierr)
+  call VecRestoreArray(F,ff,iff,ierr);PetscCall(ierr)
+  call DMRestoreLocalVector(da,Xloc,ierr);PetscCall(ierr)
 end subroutine FormRHSFunction
 
 ! ---------------------------------------------------------------------
@@ -352,8 +352,8 @@ subroutine FormIJacobian(ts,t,X,Xdot,shift,J,Jpre,user,ierr)
   PetscReal      k1,k2;
   PetscScalar    val(4)
 
-  call TSGetDM(ts,da,ierr);CHKERRQ(ierr)
-  call GetLayout(da,mx,xs,xe,gxs,gxe,ierr);CHKERRQ(ierr)
+  call TSGetDM(ts,da,ierr);PetscCall(ierr)
+  call GetLayout(da,mx,xs,xe,gxs,gxe,ierr);PetscCall(ierr)
 
   i1 = 1
   k1 = user(user_k+1)
@@ -365,13 +365,13 @@ subroutine FormIJacobian(ts,t,X,Xdot,shift,J,Jpre,user,ierr)
      val(2) = -k2
      val(3) = -k1
      val(4) = shift + k2
-     call MatSetValuesBlockedLocal(Jpre,i1,row,i1,col,val,INSERT_VALUES,ierr);CHKERRQ(ierr)
+     call MatSetValuesBlockedLocal(Jpre,i1,row,i1,col,val,INSERT_VALUES,ierr);PetscCall(ierr)
   end do
-  call MatAssemblyBegin(Jpre,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
-  call MatAssemblyEnd(Jpre,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
+  call MatAssemblyBegin(Jpre,MAT_FINAL_ASSEMBLY,ierr);PetscCall(ierr)
+  call MatAssemblyEnd(Jpre,MAT_FINAL_ASSEMBLY,ierr);PetscCall(ierr)
   if (J /= Jpre) then
-     call MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
-     call MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
+     call MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY,ierr);PetscCall(ierr)
+     call MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY,ierr);PetscCall(ierr)
   end if
 end subroutine FormIJacobian
 
@@ -415,15 +415,15 @@ subroutine FormInitialSolution(ts,X,user,ierr)
   PetscOffset    ixx
   PetscScalar    xx(0:1)
 
-  call TSGetDM(ts,da,ierr);CHKERRQ(ierr)
-  call GetLayout(da,mx,xs,xe,gxs,gxe,ierr);CHKERRQ(ierr)
+  call TSGetDM(ts,da,ierr);PetscCall(ierr)
+  call GetLayout(da,mx,xs,xe,gxs,gxe,ierr);PetscCall(ierr)
 
   ! Get access to vector data
-  call VecGetArray(X,xx,ixx,ierr);CHKERRQ(ierr)
+  call VecGetArray(X,xx,ixx,ierr);PetscCall(ierr)
 
-  call FormInitialSolutionLocal(mx,xs,xe,gxs,gxe,xx(ixx),user(user_a),user(user_k),user(user_s),ierr);CHKERRQ(ierr)
+  call FormInitialSolutionLocal(mx,xs,xe,gxs,gxe,xx(ixx),user(user_a),user(user_k),user(user_s),ierr);PetscCall(ierr)
 
-  call VecRestoreArray(X,xx,ixx,ierr);CHKERRQ(ierr)
+  call VecRestoreArray(X,xx,ixx,ierr);PetscCall(ierr)
 end subroutine FormInitialSolution
 
 ! ---------------------------------------------------------------------

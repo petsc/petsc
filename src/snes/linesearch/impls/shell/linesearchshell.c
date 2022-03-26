@@ -27,21 +27,21 @@ $  {
 $     Vec  X,Y,F,W,G;
 $     SNES snes;
 $     PetscFunctionBegin;
-$     ierr = SNESLineSearchGetSNES(linesearch,&snes);CHKERRQ(ierr);
-$     ierr = SNESLineSearchSetReason(linesearch,SNES_LINESEARCH_SUCCEEDED);CHKERRQ(ierr);
-$     ierr = SNESLineSearchGetVecs(linesearch,&X,&F,&Y,&W,&G);CHKERRQ(ierr);
+$     PetscCall(SNESLineSearchGetSNES(linesearch,&snes));
+$     PetscCall(SNESLineSearchSetReason(linesearch,SNES_LINESEARCH_SUCCEEDED));
+$     PetscCall(SNESLineSearchGetVecs(linesearch,&X,&F,&Y,&W,&G));
 $     .. determine lambda using W and G as work vecs..
-$     ierr = VecAXPY(X,-lambda,Y);CHKERRQ(ierr);
-$     ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-$     ierr = SNESLineSearchComputeNorms(linesearch);CHKERRQ(ierr);
+$     PetscCall(VecAXPY(X,-lambda,Y));
+$     PetscCall(SNESComputeFunction(snes,X,F));
+$     PetscCall(SNESLineSearchComputeNorms(linesearch));
 $     PetscFunctionReturn(0);
 $  }
 $
 $  ...
 $
-$  ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
-$  ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHSHELL);CHKERRQ(ierr);
-$  ierr = SNESLineSearchShellSetUserFunc(linesearch, shellfunc, NULL);CHKERRQ(ierr);
+$  PetscCall(SNESGetLineSearch(snes, &linesearch));
+$  PetscCall(SNESLineSearchSetType(linesearch, SNESLINESEARCHSHELL));
+$  PetscCall(SNESLineSearchShellSetUserFunc(linesearch, shellfunc, NULL));
 
    Level: advanced
 
@@ -49,13 +49,12 @@ $  ierr = SNESLineSearchShellSetUserFunc(linesearch, shellfunc, NULL);CHKERRQ(ie
 @*/
 PetscErrorCode SNESLineSearchShellSetUserFunc(SNESLineSearch linesearch, SNESLineSearchUserFunc func, void *ctx)
 {
-  PetscErrorCode       ierr;
   PetscBool            flg;
   SNESLineSearch_Shell *shell = (SNESLineSearch_Shell*)linesearch->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch, SNESLINESEARCH_CLASSID, 1);
-  ierr = PetscObjectTypeCompare((PetscObject)linesearch,SNESLINESEARCHSHELL,&flg);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)linesearch,SNESLINESEARCHSHELL,&flg));
   if (flg) {
     shell->ctx  = ctx;
     shell->func = func;
@@ -81,7 +80,6 @@ PetscErrorCode SNESLineSearchShellSetUserFunc(SNESLineSearch linesearch, SNESLin
 @*/
 PetscErrorCode SNESLineSearchShellGetUserFunc(SNESLineSearch linesearch, SNESLineSearchUserFunc *func, void **ctx)
 {
-  PetscErrorCode       ierr;
   PetscBool            flg;
   SNESLineSearch_Shell *shell = (SNESLineSearch_Shell*)linesearch->data;
 
@@ -89,7 +87,7 @@ PetscErrorCode SNESLineSearchShellGetUserFunc(SNESLineSearch linesearch, SNESLin
   PetscValidHeaderSpecific(linesearch, SNESLINESEARCH_CLASSID, 1);
   if (func) PetscValidPointer(func,2);
   if (ctx)  PetscValidPointer(ctx,3);
-  ierr = PetscObjectTypeCompare((PetscObject)linesearch,SNESLINESEARCHSHELL,&flg);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)linesearch,SNESLINESEARCHSHELL,&flg));
   if (flg) {
     if (func) *func = shell->func;
     if (ctx) *ctx  = shell->ctx;
@@ -100,12 +98,11 @@ PetscErrorCode SNESLineSearchShellGetUserFunc(SNESLineSearch linesearch, SNESLin
 static PetscErrorCode  SNESLineSearchApply_Shell(SNESLineSearch linesearch)
 {
   SNESLineSearch_Shell *shell = (SNESLineSearch_Shell*)linesearch->data;
-  PetscErrorCode       ierr;
 
   PetscFunctionBegin;
   /* apply the user function */
   if (shell->func) {
-    ierr = (*shell->func)(linesearch, shell->ctx);CHKERRQ(ierr);
+    PetscCall((*shell->func)(linesearch, shell->ctx));
   } else SETERRQ(PetscObjectComm((PetscObject)linesearch), PETSC_ERR_USER, "SNESLineSearchShell needs to have a shell function set with SNESLineSearchShellSetUserFunc");
   PetscFunctionReturn(0);
 }
@@ -113,10 +110,9 @@ static PetscErrorCode  SNESLineSearchApply_Shell(SNESLineSearch linesearch)
 static PetscErrorCode  SNESLineSearchDestroy_Shell(SNESLineSearch linesearch)
 {
   SNESLineSearch_Shell *shell = (SNESLineSearch_Shell*)linesearch->data;
-  PetscErrorCode       ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree(shell);CHKERRQ(ierr);
+  PetscCall(PetscFree(shell));
   PetscFunctionReturn(0);
 }
 
@@ -136,7 +132,6 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_Shell(SNESLineSearch linesearch
 {
 
   SNESLineSearch_Shell *shell;
-  PetscErrorCode       ierr;
 
   PetscFunctionBegin;
   linesearch->ops->apply          = SNESLineSearchApply_Shell;
@@ -146,7 +141,7 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_Shell(SNESLineSearch linesearch
   linesearch->ops->view           = NULL;
   linesearch->ops->setup          = NULL;
 
-  ierr = PetscNewLog(linesearch,&shell);CHKERRQ(ierr);
+  PetscCall(PetscNewLog(linesearch,&shell));
 
   linesearch->data = (void*) shell;
   PetscFunctionReturn(0);

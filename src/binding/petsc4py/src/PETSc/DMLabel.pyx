@@ -22,4 +22,3 @@ cdef class DMLabel(Object):
         cdef PetscInt cvalue = asInt(value)
         CHKERR( DMLabelInsertIS(self.dmlabel, iset.iset, cvalue)  )
         return self
-

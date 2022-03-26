@@ -38,7 +38,6 @@ typedef struct {
 */
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   AppCtx         user;
   PetscInt       Npx=PETSC_DECIDE,Npy=PETSC_DECIDE,Npz=PETSC_DECIDE;
   PetscMPIInt    size,rank;
@@ -53,219 +52,219 @@ int main(int argc,char **argv)
   PetscBool      Test_MatMatMult=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE,Test_3D=PETSC_TRUE,flg;
   const PetscInt *ia,*ja;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetReal(NULL,NULL,"-tol",&tol,NULL);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-tol",&tol,NULL));
 
   user.ratio     = 2;
   user.coarse.mx = 20; user.coarse.my = 20; user.coarse.mz = 20;
 
-  ierr = PetscOptionsGetInt(NULL,NULL,"-Mx",&user.coarse.mx,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-My",&user.coarse.my,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-Mz",&user.coarse.mz,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-ratio",&user.ratio,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-Mx",&user.coarse.mx,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-My",&user.coarse.my,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-Mz",&user.coarse.mz,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-ratio",&user.ratio,NULL));
 
   if (user.coarse.mz) Test_3D = PETSC_TRUE;
 
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-Npx",&Npx,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-Npy",&Npy,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-Npz",&Npz,NULL);CHKERRQ(ierr);
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-Npx",&Npx,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-Npy",&Npy,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-Npz",&Npz,NULL));
 
   /* Set up distributed array for fine grid */
   if (!Test_3D) {
-    ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,user.coarse.my,Npx,Npy,1,1,NULL,NULL,&user.coarse.da);CHKERRQ(ierr);
+    PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,user.coarse.my,Npx,Npy,1,1,NULL,NULL,&user.coarse.da));
   } else {
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,user.coarse.my,user.coarse.mz,Npx,Npy,Npz,1,1,NULL,NULL,NULL,&user.coarse.da);CHKERRQ(ierr);
+    PetscCall(DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,user.coarse.my,user.coarse.mz,Npx,Npy,Npz,1,1,NULL,NULL,NULL,&user.coarse.da));
   }
-  ierr = DMSetFromOptions(user.coarse.da);CHKERRQ(ierr);
-  ierr = DMSetUp(user.coarse.da);CHKERRQ(ierr);
+  PetscCall(DMSetFromOptions(user.coarse.da));
+  PetscCall(DMSetUp(user.coarse.da));
 
   /* This makes sure the coarse DMDA has the same partition as the fine DMDA */
-  ierr = DMRefine(user.coarse.da,PetscObjectComm((PetscObject)user.coarse.da),&user.fine.da);CHKERRQ(ierr);
+  PetscCall(DMRefine(user.coarse.da,PetscObjectComm((PetscObject)user.coarse.da),&user.fine.da));
 
   /* Test DMCreateMatrix()                                         */
   /*------------------------------------------------------------*/
-  ierr = DMSetMatType(user.fine.da,MATAIJ);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(user.fine.da,&A);CHKERRQ(ierr);
-  ierr = DMSetMatType(user.fine.da,MATBAIJ);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(user.fine.da,&C);CHKERRQ(ierr);
+  PetscCall(DMSetMatType(user.fine.da,MATAIJ));
+  PetscCall(DMCreateMatrix(user.fine.da,&A));
+  PetscCall(DMSetMatType(user.fine.da,MATBAIJ));
+  PetscCall(DMCreateMatrix(user.fine.da,&C));
 
-  ierr = MatConvert(C,MATAIJ,MAT_INITIAL_MATRIX,&A_tmp);CHKERRQ(ierr); /* not work for mpisbaij matrix! */
-  ierr = MatEqual(A,A_tmp,&flg);CHKERRQ(ierr);
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"A != C");
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
-  ierr = MatDestroy(&A_tmp);CHKERRQ(ierr);
+  PetscCall(MatConvert(C,MATAIJ,MAT_INITIAL_MATRIX,&A_tmp)); /* not work for mpisbaij matrix! */
+  PetscCall(MatEqual(A,A_tmp,&flg));
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"A != C");
+  PetscCall(MatDestroy(&C));
+  PetscCall(MatDestroy(&A_tmp));
 
   /*------------------------------------------------------------*/
 
-  ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-  ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
+  PetscCall(MatGetLocalSize(A,&m,&n));
+  PetscCall(MatGetSize(A,&M,&N));
   /* if (rank == 0) printf("A %d, %d\n",M,N); */
 
   /* set val=one to A */
   if (size == 1) {
-    ierr = MatGetRowIJ(A,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg);CHKERRQ(ierr);
+    PetscCall(MatGetRowIJ(A,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg));
     if (flg) {
-      ierr = MatSeqAIJGetArray(A,&array);CHKERRQ(ierr);
+      PetscCall(MatSeqAIJGetArray(A,&array));
       for (i=0; i<ia[nrows]; i++) array[i] = one;
-      ierr = MatSeqAIJRestoreArray(A,&array);CHKERRQ(ierr);
+      PetscCall(MatSeqAIJRestoreArray(A,&array));
     }
-    ierr = MatRestoreRowIJ(A,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg);CHKERRQ(ierr);
+    PetscCall(MatRestoreRowIJ(A,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg));
   } else {
     Mat AA,AB;
-    ierr = MatMPIAIJGetSeqAIJ(A,&AA,&AB,NULL);CHKERRQ(ierr);
-    ierr = MatGetRowIJ(AA,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg);CHKERRQ(ierr);
+    PetscCall(MatMPIAIJGetSeqAIJ(A,&AA,&AB,NULL));
+    PetscCall(MatGetRowIJ(AA,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg));
     if (flg) {
-      ierr = MatSeqAIJGetArray(AA,&array);CHKERRQ(ierr);
+      PetscCall(MatSeqAIJGetArray(AA,&array));
       for (i=0; i<ia[nrows]; i++) array[i] = one;
-      ierr = MatSeqAIJRestoreArray(AA,&array);CHKERRQ(ierr);
+      PetscCall(MatSeqAIJRestoreArray(AA,&array));
     }
-    ierr = MatRestoreRowIJ(AA,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg);CHKERRQ(ierr);
-    ierr = MatGetRowIJ(AB,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg);CHKERRQ(ierr);
+    PetscCall(MatRestoreRowIJ(AA,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg));
+    PetscCall(MatGetRowIJ(AB,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg));
     if (flg) {
-      ierr = MatSeqAIJGetArray(AB,&array);CHKERRQ(ierr);
+      PetscCall(MatSeqAIJGetArray(AB,&array));
       for (i=0; i<ia[nrows]; i++) array[i] = one;
-      ierr = MatSeqAIJRestoreArray(AB,&array);CHKERRQ(ierr);
+      PetscCall(MatSeqAIJRestoreArray(AB,&array));
     }
-    ierr = MatRestoreRowIJ(AB,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg);CHKERRQ(ierr);
+    PetscCall(MatRestoreRowIJ(AB,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg));
   }
-  /* ierr = MatView(A, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
+  /* PetscCall(MatView(A, PETSC_VIEWER_STDOUT_WORLD)); */
 
   /* Create interpolation between the fine and coarse grids */
-  ierr = DMCreateInterpolation(user.coarse.da,user.fine.da,&P,NULL);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(P,&m,&n);CHKERRQ(ierr);
-  ierr = MatGetSize(P,&M,&N);CHKERRQ(ierr);
+  PetscCall(DMCreateInterpolation(user.coarse.da,user.fine.da,&P,NULL));
+  PetscCall(MatGetLocalSize(P,&m,&n));
+  PetscCall(MatGetSize(P,&M,&N));
   /* if (rank == 0) printf("P %d, %d\n",M,N); */
 
   /* Create vectors v1 and v2 that are compatible with A */
-  ierr = VecCreate(PETSC_COMM_WORLD,&v1);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
-  ierr = VecSetSizes(v1,m,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(v1);CHKERRQ(ierr);
-  ierr = VecDuplicate(v1,&v2);CHKERRQ(ierr);
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rdm);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&v1));
+  PetscCall(MatGetLocalSize(A,&m,NULL));
+  PetscCall(VecSetSizes(v1,m,PETSC_DECIDE));
+  PetscCall(VecSetFromOptions(v1));
+  PetscCall(VecDuplicate(v1,&v2));
+  PetscCall(PetscRandomCreate(PETSC_COMM_WORLD,&rdm));
+  PetscCall(PetscRandomSetFromOptions(rdm));
 
   /* Test MatMatMult(): C = A*P */
   /*----------------------------*/
   if (Test_MatMatMult) {
-    ierr = MatDuplicate(A,MAT_COPY_VALUES,&A_tmp);CHKERRQ(ierr);
-    ierr = MatMatMult(A_tmp,P,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
+    PetscCall(MatDuplicate(A,MAT_COPY_VALUES,&A_tmp));
+    PetscCall(MatMatMult(A_tmp,P,MAT_INITIAL_MATRIX,fill,&C));
 
     /* Test MAT_REUSE_MATRIX - reuse symbolic C */
     alpha=1.0;
     for (i=0; i<2; i++) {
       alpha -= 0.1;
-      ierr   = MatScale(A_tmp,alpha);CHKERRQ(ierr);
-      ierr   = MatMatMult(A_tmp,P,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
+      PetscCall(MatScale(A_tmp,alpha));
+      PetscCall(MatMatMult(A_tmp,P,MAT_REUSE_MATRIX,fill,&C));
     }
     /* Free intermediate data structures created for reuse of C=Pt*A*P */
-    ierr = MatProductClear(C);CHKERRQ(ierr);
+    PetscCall(MatProductClear(C));
 
     /* Test MatDuplicate()        */
     /*----------------------------*/
-    ierr = MatDuplicate(C,MAT_COPY_VALUES,&C1);CHKERRQ(ierr);
-    ierr = MatDuplicate(C1,MAT_COPY_VALUES,&C2);CHKERRQ(ierr);
-    ierr = MatDestroy(&C1);CHKERRQ(ierr);
-    ierr = MatDestroy(&C2);CHKERRQ(ierr);
+    PetscCall(MatDuplicate(C,MAT_COPY_VALUES,&C1));
+    PetscCall(MatDuplicate(C1,MAT_COPY_VALUES,&C2));
+    PetscCall(MatDestroy(&C1));
+    PetscCall(MatDestroy(&C2));
 
     /* Create vector x that is compatible with P */
-    ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-    ierr = MatGetLocalSize(P,NULL,&n);CHKERRQ(ierr);
-    ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(x);CHKERRQ(ierr);
+    PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+    PetscCall(MatGetLocalSize(P,NULL,&n));
+    PetscCall(VecSetSizes(x,n,PETSC_DECIDE));
+    PetscCall(VecSetFromOptions(x));
 
     norm = 0.0;
     for (i=0; i<10; i++) {
-      ierr      = VecSetRandom(x,rdm);CHKERRQ(ierr);
-      ierr      = MatMult(P,x,v1);CHKERRQ(ierr);
-      ierr      = MatMult(A_tmp,v1,v2);CHKERRQ(ierr); /* v2 = A*P*x */
-      ierr      = MatMult(C,x,v1);CHKERRQ(ierr);  /* v1 = C*x   */
-      ierr      = VecAXPY(v1,none,v2);CHKERRQ(ierr);
-      ierr      = VecNorm(v1,NORM_1,&norm_tmp);CHKERRQ(ierr);
-      ierr      = VecNorm(v2,NORM_1,&norm_tmp1);CHKERRQ(ierr);
+      PetscCall(VecSetRandom(x,rdm));
+      PetscCall(MatMult(P,x,v1));
+      PetscCall(MatMult(A_tmp,v1,v2)); /* v2 = A*P*x */
+      PetscCall(MatMult(C,x,v1));  /* v1 = C*x   */
+      PetscCall(VecAXPY(v1,none,v2));
+      PetscCall(VecNorm(v1,NORM_1,&norm_tmp));
+      PetscCall(VecNorm(v2,NORM_1,&norm_tmp1));
       norm_tmp /= norm_tmp1;
       if (norm_tmp > norm) norm = norm_tmp;
     }
     if (norm >= tol && rank == 0) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatMatMult(), |v1 - v2|/|v2|: %g\n",(double)norm);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,"Error: MatMatMult(), |v1 - v2|/|v2|: %g\n",(double)norm));
     }
 
-    ierr = VecDestroy(&x);CHKERRQ(ierr);
-    ierr = MatDestroy(&C);CHKERRQ(ierr);
-    ierr = MatDestroy(&A_tmp);CHKERRQ(ierr);
+    PetscCall(VecDestroy(&x));
+    PetscCall(MatDestroy(&C));
+    PetscCall(MatDestroy(&A_tmp));
   }
 
   /* Test P^T * A * P - MatPtAP() */
   /*------------------------------*/
   if (Test_MatPtAP) {
-    ierr = MatPtAP(A,P,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
-    ierr = MatGetLocalSize(C,&m,&n);CHKERRQ(ierr);
+    PetscCall(MatPtAP(A,P,MAT_INITIAL_MATRIX,fill,&C));
+    PetscCall(MatGetLocalSize(C,&m,&n));
 
     /* Test MAT_REUSE_MATRIX - reuse symbolic C */
     alpha=1.0;
     for (i=0; i<1; i++) {
       alpha -= 0.1;
-      ierr   = MatScale(A,alpha);CHKERRQ(ierr);
-      ierr   = MatPtAP(A,P,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
+      PetscCall(MatScale(A,alpha));
+      PetscCall(MatPtAP(A,P,MAT_REUSE_MATRIX,fill,&C));
     }
 
     /* Free intermediate data structures created for reuse of C=Pt*A*P */
-    ierr = MatProductClear(C);CHKERRQ(ierr);
+    PetscCall(MatProductClear(C));
 
     /* Test MatDuplicate()        */
     /*----------------------------*/
-    ierr = MatDuplicate(C,MAT_COPY_VALUES,&C1);CHKERRQ(ierr);
-    ierr = MatDuplicate(C1,MAT_COPY_VALUES,&C2);CHKERRQ(ierr);
-    ierr = MatDestroy(&C1);CHKERRQ(ierr);
-    ierr = MatDestroy(&C2);CHKERRQ(ierr);
+    PetscCall(MatDuplicate(C,MAT_COPY_VALUES,&C1));
+    PetscCall(MatDuplicate(C1,MAT_COPY_VALUES,&C2));
+    PetscCall(MatDestroy(&C1));
+    PetscCall(MatDestroy(&C2));
 
     /* Create vector x that is compatible with P */
-    ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-    ierr = MatGetLocalSize(P,&m,&n);CHKERRQ(ierr);
-    ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(x);CHKERRQ(ierr);
+    PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+    PetscCall(MatGetLocalSize(P,&m,&n));
+    PetscCall(VecSetSizes(x,n,PETSC_DECIDE));
+    PetscCall(VecSetFromOptions(x));
 
-    ierr = VecCreate(PETSC_COMM_WORLD,&v3);CHKERRQ(ierr);
-    ierr = VecSetSizes(v3,n,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(v3);CHKERRQ(ierr);
-    ierr = VecDuplicate(v3,&v4);CHKERRQ(ierr);
+    PetscCall(VecCreate(PETSC_COMM_WORLD,&v3));
+    PetscCall(VecSetSizes(v3,n,PETSC_DECIDE));
+    PetscCall(VecSetFromOptions(v3));
+    PetscCall(VecDuplicate(v3,&v4));
 
     norm = 0.0;
     for (i=0; i<10; i++) {
-      ierr = VecSetRandom(x,rdm);CHKERRQ(ierr);
-      ierr = MatMult(P,x,v1);CHKERRQ(ierr);
-      ierr = MatMult(A,v1,v2);CHKERRQ(ierr);  /* v2 = A*P*x */
+      PetscCall(VecSetRandom(x,rdm));
+      PetscCall(MatMult(P,x,v1));
+      PetscCall(MatMult(A,v1,v2));  /* v2 = A*P*x */
 
-      ierr = MatMultTranspose(P,v2,v3);CHKERRQ(ierr); /* v3 = Pt*A*P*x */
-      ierr = MatMult(C,x,v4);CHKERRQ(ierr);           /* v3 = C*x   */
-      ierr = VecAXPY(v4,none,v3);CHKERRQ(ierr);
-      ierr = VecNorm(v4,NORM_1,&norm_tmp);CHKERRQ(ierr);
-      ierr = VecNorm(v3,NORM_1,&norm_tmp1);CHKERRQ(ierr);
+      PetscCall(MatMultTranspose(P,v2,v3)); /* v3 = Pt*A*P*x */
+      PetscCall(MatMult(C,x,v4));           /* v3 = C*x   */
+      PetscCall(VecAXPY(v4,none,v3));
+      PetscCall(VecNorm(v4,NORM_1,&norm_tmp));
+      PetscCall(VecNorm(v3,NORM_1,&norm_tmp1));
 
       norm_tmp /= norm_tmp1;
       if (norm_tmp > norm) norm = norm_tmp;
     }
     if (norm >= tol && rank == 0) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatPtAP(), |v3 - v4|/|v3|: %g\n",(double)norm);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,"Error: MatPtAP(), |v3 - v4|/|v3|: %g\n",(double)norm));
     }
-    ierr = MatDestroy(&C);CHKERRQ(ierr);
-    ierr = VecDestroy(&v3);CHKERRQ(ierr);
-    ierr = VecDestroy(&v4);CHKERRQ(ierr);
-    ierr = VecDestroy(&x);CHKERRQ(ierr);
+    PetscCall(MatDestroy(&C));
+    PetscCall(VecDestroy(&v3));
+    PetscCall(VecDestroy(&v4));
+    PetscCall(VecDestroy(&x));
   }
 
   /* Clean up */
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
-  ierr = VecDestroy(&v1);CHKERRQ(ierr);
-  ierr = VecDestroy(&v2);CHKERRQ(ierr);
-  ierr = DMDestroy(&user.fine.da);CHKERRQ(ierr);
-  ierr = DMDestroy(&user.coarse.da);CHKERRQ(ierr);
-  ierr = MatDestroy(&P);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(MatDestroy(&A));
+  PetscCall(PetscRandomDestroy(&rdm));
+  PetscCall(VecDestroy(&v1));
+  PetscCall(VecDestroy(&v2));
+  PetscCall(DMDestroy(&user.fine.da));
+  PetscCall(DMDestroy(&user.coarse.da));
+  PetscCall(MatDestroy(&P));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

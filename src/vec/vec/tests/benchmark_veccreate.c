@@ -7,32 +7,31 @@ static char help[] = "Benchmark VecCreate() for GPU vectors.\n\
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
-  PetscInt       i,n = 5, iter = 10;
-  Vec            x;
-  PetscLogDouble v0,v1;
-  PetscMemType   memtype;
+  PetscInt        i,n = 5, iter = 10;
+  Vec             x;
+  PetscLogDouble  v0,v1;
+  PetscMemType    memtype;
   PetscScalar    *array;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-iter",&iter,NULL);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-iter",&iter,NULL));
 
   for (i=0; i<iter; i++) {
-    ierr = PetscTime(&v0);CHKERRQ(ierr);
-    ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-    ierr = VecSetSizes(x,PETSC_DECIDE,n);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(x);CHKERRQ(ierr);
+    PetscCall(PetscTime(&v0));
+    PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+    PetscCall(VecSetSizes(x,PETSC_DECIDE,n));
+    PetscCall(VecSetFromOptions(x));
     /* make sure the vector's array exists */
-    ierr = VecGetArrayAndMemType(x,&array,&memtype);CHKERRQ(ierr);
-    ierr = VecRestoreArrayAndMemType(x,&array);CHKERRQ(ierr);
-    ierr = WaitForCUDA();CHKERRQ(ierr);
-    ierr = PetscTime(&v1);CHKERRQ(ierr);
-    ierr = VecDestroy(&x);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Iteration %" PetscInt_FMT ": Time= %g\n",i,(double)(v1-v0));CHKERRQ(ierr);
+    PetscCall(VecGetArrayAndMemType(x,&array,&memtype));
+    PetscCall(VecRestoreArrayAndMemType(x,&array));
+    PetscCall(WaitForCUDA());
+    PetscCall(PetscTime(&v1));
+    PetscCall(VecDestroy(&x));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Iteration %" PetscInt_FMT ": Time= %g\n",i,(double)(v1-v0)));
   }
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 /*TEST
   build:

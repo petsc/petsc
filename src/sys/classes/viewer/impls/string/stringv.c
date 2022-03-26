@@ -11,13 +11,12 @@ typedef struct  {
 static PetscErrorCode PetscViewerDestroy_String(PetscViewer viewer)
 {
   PetscViewer_String *vstr = (PetscViewer_String*)viewer->data;
-  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   if (vstr->ownstring) {
-    ierr = PetscFree(vstr->string);CHKERRQ(ierr);
+    PetscCall(PetscFree(vstr->string));
   }
-  ierr = PetscFree(vstr);CHKERRQ(ierr);
+  PetscCall(PetscFree(vstr));
   PetscFunctionReturn(0);
 }
 
@@ -42,7 +41,6 @@ PetscErrorCode  PetscViewerStringSPrintf(PetscViewer viewer,const char format[],
   va_list            Argp;
   size_t             fullLength;
   size_t             shift,cshift;
-  PetscErrorCode     ierr;
   PetscBool          isstring;
   char               tmp[4096];
   PetscViewer_String *vstr = (PetscViewer_String*)viewer->data;
@@ -50,17 +48,17 @@ PetscErrorCode  PetscViewerStringSPrintf(PetscViewer viewer,const char format[],
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidCharPointer(format,2);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring));
   if (!isstring) PetscFunctionReturn(0);
-  PetscCheckFalse(!vstr->string,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call PetscViewerStringSetString() before using");
+  PetscCheck(vstr->string,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call PetscViewerStringSetString() before using");
 
   va_start(Argp,format);
-  ierr = PetscVSNPrintf(tmp,4096,format,&fullLength,Argp);CHKERRQ(ierr);
+  PetscCall(PetscVSNPrintf(tmp,4096,format,&fullLength,Argp));
   va_end(Argp);
-  ierr = PetscStrlen(tmp,&shift);CHKERRQ(ierr);
+  PetscCall(PetscStrlen(tmp,&shift));
   cshift = shift+1;
   if (cshift >= vstr->maxlen - vstr->curlen - 1) cshift = vstr->maxlen - vstr->curlen - 1;
-  ierr = PetscStrncpy(vstr->head,tmp,cshift);CHKERRQ(ierr);
+  PetscCall(PetscStrncpy(vstr->head,tmp,cshift));
   vstr->head   += shift;
   vstr->curlen += shift;
   PetscFunctionReturn(0);
@@ -90,35 +88,31 @@ PetscErrorCode  PetscViewerStringSPrintf(PetscViewer viewer,const char format[],
 @*/
 PetscErrorCode  PetscViewerStringOpen(MPI_Comm comm,char string[],size_t len,PetscViewer *lab)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscViewerCreate(comm,lab);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(*lab,PETSCVIEWERSTRING);CHKERRQ(ierr);
-  ierr = PetscViewerStringSetString(*lab,string,len);CHKERRQ(ierr);
+  PetscCall(PetscViewerCreate(comm,lab));
+  PetscCall(PetscViewerSetType(*lab,PETSCVIEWERSTRING));
+  PetscCall(PetscViewerStringSetString(*lab,string,len));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PetscViewerGetSubViewer_String(PetscViewer viewer,MPI_Comm comm,PetscViewer *sviewer)
 {
   PetscViewer_String *vstr = (PetscViewer_String*)viewer->data;
-  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerStringOpen(PETSC_COMM_SELF,vstr->head,vstr->maxlen-vstr->curlen,sviewer);CHKERRQ(ierr);
+  PetscCall(PetscViewerStringOpen(PETSC_COMM_SELF,vstr->head,vstr->maxlen-vstr->curlen,sviewer));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PetscViewerRestoreSubViewer_String(PetscViewer viewer,MPI_Comm comm,PetscViewer *sviewer)
 {
-  PetscErrorCode     ierr;
   PetscViewer_String *iviewer = (PetscViewer_String*)(*sviewer)->data;
   PetscViewer_String *vstr    = (PetscViewer_String*)viewer->data;
 
   PetscFunctionBegin;
   vstr->head    = iviewer->head;
   vstr->curlen += iviewer->curlen;
-  ierr          = PetscViewerDestroy(sviewer);CHKERRQ(ierr);
+  PetscCall(PetscViewerDestroy(sviewer));
   PetscFunctionReturn(0);
 }
 
@@ -136,7 +130,6 @@ M*/
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_String(PetscViewer v)
 {
   PetscViewer_String *vstr;
-  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   v->ops->destroy          = PetscViewerDestroy_String;
@@ -144,7 +137,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_String(PetscViewer v)
   v->ops->flush            = NULL;
   v->ops->getsubviewer     = PetscViewerGetSubViewer_String;
   v->ops->restoresubviewer = PetscViewerRestoreSubViewer_String;
-  ierr                     = PetscNewLog(v,&vstr);CHKERRQ(ierr);
+  PetscCall(PetscNewLog(v,&vstr));
   v->data                  = (void*)vstr;
   vstr->string             = NULL;
   PetscFunctionReturn(0);
@@ -173,13 +166,12 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_String(PetscViewer v)
 PetscErrorCode  PetscViewerStringGetStringRead(PetscViewer viewer,const char *string[],size_t *len)
 {
   PetscViewer_String *vstr = (PetscViewer_String*)viewer->data;
-  PetscErrorCode     ierr;
   PetscBool          isstring;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
-  PetscCheckFalse(!isstring,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Only for PETSCVIEWERSTRING");
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring));
+  PetscCheck(isstring,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Only for PETSCVIEWERSTRING");
   if (string) *string = vstr->string;
   if (len)    *len    = vstr->maxlen;
   PetscFunctionReturn(0);
@@ -209,17 +201,16 @@ PetscErrorCode  PetscViewerStringGetStringRead(PetscViewer viewer,const char *st
 PetscErrorCode  PetscViewerStringSetString(PetscViewer viewer,char string[],size_t len)
 {
   PetscViewer_String *vstr = (PetscViewer_String*)viewer->data;
-  PetscErrorCode     ierr;
   PetscBool          isstring;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidCharPointer(string,2);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring));
   if (!isstring) PetscFunctionReturn(0);
   PetscCheckFalse(len <= 2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"String must have length at least 2");
 
-  ierr         = PetscArrayzero(string,len);CHKERRQ(ierr);
+  PetscCall(PetscArrayzero(string,len));
   vstr->string = string;
   vstr->head   = string;
   vstr->curlen = 0;
@@ -246,15 +237,13 @@ PetscErrorCode  PetscViewerStringSetString(PetscViewer viewer,char string[],size
 PetscErrorCode  PetscViewerStringSetOwnString(PetscViewer viewer)
 {
   PetscViewer_String *vstr = (PetscViewer_String*)viewer->data;
-  PetscErrorCode     ierr;
   PetscBool          isstring;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring));
   if (!isstring) PetscFunctionReturn(0);
 
   vstr->ownstring = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
-

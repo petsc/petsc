@@ -519,7 +519,7 @@ it is common to redistribute the mesh for a better distribution using
       dm = distributedDM;
       PetscObjectSetName((PetscObject)dm, "plexA");
     }
-    PetscSFCompose(sfO, sfDist, &sf);CHKERRQ(ierr);
+    PetscSFCompose(sfO, sfDist, &sf);
     PetscSFDestroy(&sfO);
     PetscSFDestroy(&sfDist);
 

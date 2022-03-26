@@ -182,20 +182,18 @@ PetscErrorCode  PetscDataTypeGetSize(PetscDataType ptype,size_t *size)
 @*/
 PetscErrorCode  PetscDataTypeFromString(const char*name, PetscDataType *ptype,PetscBool *found)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscEnumFind(PetscDataTypes,name,(PetscEnum*)ptype,found);CHKERRQ(ierr);
+  PetscCall(PetscEnumFind(PetscDataTypes,name,(PetscEnum*)ptype,found));
   if (!*found) {
     char formatted[16];
 
-    ierr = PetscStrncpy(formatted,name,16);CHKERRQ(ierr);
-    ierr = PetscStrtolower(formatted);CHKERRQ(ierr);
-    ierr = PetscStrcmp(formatted,"scalar",found);CHKERRQ(ierr);
+    PetscCall(PetscStrncpy(formatted,name,16));
+    PetscCall(PetscStrtolower(formatted));
+    PetscCall(PetscStrcmp(formatted,"scalar",found));
     if (*found) {
       *ptype = PETSC_SCALAR;
     } else {
-      ierr = PetscStrcmp(formatted,"real",found);CHKERRQ(ierr);
+      PetscCall(PetscStrcmp(formatted,"real",found));
       if (*found) {
         *ptype = PETSC_REAL;
       }

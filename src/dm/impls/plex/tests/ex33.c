@@ -28,43 +28,43 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->volume            = -1.0;
   options->tol               = PETSC_SMALL;
 
-  ierr = PetscOptionsBegin(comm, "", "Meshing Interpolation Test Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-coord_space", "Flag to create a coordinate space", "ex33.c", options->coordSpace, &options->coordSpace, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnum("-mesh_transform", "Method to transform initial box mesh <none, shear, annulus, shell>", "ex33.c", TransformTypes, (PetscEnum) options->meshTransform, (PetscEnum *) &options->meshTransform, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm, "", "Meshing Interpolation Test Options", "DMPLEX");PetscCall(ierr);
+  PetscCall(PetscOptionsBool("-coord_space", "Flag to create a coordinate space", "ex33.c", options->coordSpace, &options->coordSpace, NULL));
+  PetscCall(PetscOptionsEnum("-mesh_transform", "Method to transform initial box mesh <none, shear, annulus, shell>", "ex33.c", TransformTypes, (PetscEnum) options->meshTransform, (PetscEnum *) &options->meshTransform, NULL));
   switch (options->meshTransform) {
     case TRANSFORM_NONE: break;
     case TRANSFORM_SHEAR:
       n = 2;
-      ierr = PetscMalloc1(n, &options->transformDataReal);CHKERRQ(ierr);
+      PetscCall(PetscMalloc1(n, &options->transformDataReal));
       for (i = 0; i < n; ++i) options->transformDataReal[i] = 1.0;
-      ierr = PetscOptionsRealArray("-transform_data", "Parameters for mesh transforms", "ex33.c", options->transformDataReal, &n, NULL);CHKERRQ(ierr);
+      PetscCall(PetscOptionsRealArray("-transform_data", "Parameters for mesh transforms", "ex33.c", options->transformDataReal, &n, NULL));
       break;
     case TRANSFORM_FLARE:
       n = 4;
-      ierr = PetscMalloc1(n, &options->transformData);CHKERRQ(ierr);
+      PetscCall(PetscMalloc1(n, &options->transformData));
       for (i = 0; i < n; ++i) options->transformData[i] = 1.0;
       options->transformData[0] = (PetscScalar) 0;
-      ierr = PetscOptionsScalarArray("-transform_data", "Parameters for mesh transforms", "ex33.c", options->transformData, &n, NULL);CHKERRQ(ierr);
+      PetscCall(PetscOptionsScalarArray("-transform_data", "Parameters for mesh transforms", "ex33.c", options->transformData, &n, NULL));
       break;
     case TRANSFORM_ANNULUS:
       n = 2;
-      ierr = PetscMalloc1(n, &options->transformData);CHKERRQ(ierr);
+      PetscCall(PetscMalloc1(n, &options->transformData));
       options->transformData[0] = 1.0;
       options->transformData[1] = 2.0;
-      ierr = PetscOptionsScalarArray("-transform_data", "Parameters for mesh transforms", "ex33.c", options->transformData, &n, NULL);CHKERRQ(ierr);
+      PetscCall(PetscOptionsScalarArray("-transform_data", "Parameters for mesh transforms", "ex33.c", options->transformData, &n, NULL));
       break;
     case TRANSFORM_SHELL:
       n = 2;
-      ierr = PetscMalloc1(n, &options->transformData);CHKERRQ(ierr);
+      PetscCall(PetscMalloc1(n, &options->transformData));
       options->transformData[0] = 1.0;
       options->transformData[1] = 2.0;
-      ierr = PetscOptionsScalarArray("-transform_data", "Parameters for mesh transforms", "ex33.c", options->transformData, &n, NULL);CHKERRQ(ierr);
+      PetscCall(PetscOptionsScalarArray("-transform_data", "Parameters for mesh transforms", "ex33.c", options->transformData, &n, NULL));
       break;
     default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Unknown mesh transform %D", options->meshTransform);
   }
-  ierr = PetscOptionsReal("-volume", "The analytical volume of the mesh", "ex33.c", options->volume, &options->volume, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tol", "The tolerance for the volume check", "ex33.c", options->tol, &options->tol, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(PetscOptionsReal("-volume", "The analytical volume of the mesh", "ex33.c", options->volume, &options->volume, NULL));
+  PetscCall(PetscOptionsReal("-tol", "The tolerance for the volume check", "ex33.c", options->tol, &options->tol, NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -152,18 +152,17 @@ static PetscErrorCode DMCreateCoordinateDisc(DM dm)
   DMPolytopeType ct;
   PetscInt       dim, dE, cStart;
   PetscBool      simplex;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMGetCoordinateDim(dm, &dE);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(cdm, 0, &cStart, NULL);CHKERRQ(ierr);
-  ierr = DMPlexGetCellType(dm, cStart, &ct);CHKERRQ(ierr);
+  PetscCall(DMGetCoordinateDM(dm, &cdm));
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMGetCoordinateDim(dm, &dE));
+  PetscCall(DMPlexGetHeightStratum(cdm, 0, &cStart, NULL));
+  PetscCall(DMPlexGetCellType(dm, cStart, &ct));
   simplex = DMPolytopeTypeGetNumVertices(ct) == DMPolytopeTypeGetDim(ct)+1 ? PETSC_TRUE : PETSC_FALSE;
-  ierr = PetscFECreateDefault(PETSC_COMM_SELF, dim, dE, simplex, "dm_coord_", -1, &fe);CHKERRQ(ierr);
-  ierr = DMProjectCoordinates(dm, fe);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
+  PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, dE, simplex, "dm_coord_", -1, &fe));
+  PetscCall(DMProjectCoordinates(dm, fe));
+  PetscCall(PetscFEDestroy(&fe));
   PetscFunctionReturn(0);
 }
 
@@ -171,42 +170,41 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm)
 {
   DM             cdm;
   PetscDS        cds;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
-  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  PetscCall(DMCreate(comm, dm));
+  PetscCall(DMSetType(*dm, DMPLEX));
+  PetscCall(DMSetFromOptions(*dm));
 
-  if (ctx->coordSpace) {ierr = DMCreateCoordinateDisc(*dm);CHKERRQ(ierr);}
+  if (ctx->coordSpace) PetscCall(DMCreateCoordinateDisc(*dm));
   switch (ctx->meshTransform) {
     case TRANSFORM_NONE:
-      ierr = DMPlexRemapGeometry(*dm, 0.0, identity);CHKERRQ(ierr);
+      PetscCall(DMPlexRemapGeometry(*dm, 0.0, identity));
       break;
     case TRANSFORM_SHEAR:
-      ierr = DMPlexShearGeometry(*dm, DM_X, ctx->transformDataReal);CHKERRQ(ierr);
+      PetscCall(DMPlexShearGeometry(*dm, DM_X, ctx->transformDataReal));
       break;
     case TRANSFORM_FLARE:
-      ierr = DMGetCoordinateDM(*dm, &cdm);CHKERRQ(ierr);
-      ierr = DMGetDS(cdm, &cds);CHKERRQ(ierr);
-      ierr = PetscDSSetConstants(cds, 4, ctx->transformData);CHKERRQ(ierr);
-      ierr = DMPlexRemapGeometry(*dm, 0.0, f0_flare);CHKERRQ(ierr);
+      PetscCall(DMGetCoordinateDM(*dm, &cdm));
+      PetscCall(DMGetDS(cdm, &cds));
+      PetscCall(PetscDSSetConstants(cds, 4, ctx->transformData));
+      PetscCall(DMPlexRemapGeometry(*dm, 0.0, f0_flare));
       break;
     case TRANSFORM_ANNULUS:
-      ierr = DMGetCoordinateDM(*dm, &cdm);CHKERRQ(ierr);
-      ierr = DMGetDS(cdm, &cds);CHKERRQ(ierr);
-      ierr = PetscDSSetConstants(cds, 2, ctx->transformData);CHKERRQ(ierr);
-      ierr = DMPlexRemapGeometry(*dm, 0.0, f0_annulus);CHKERRQ(ierr);
+      PetscCall(DMGetCoordinateDM(*dm, &cdm));
+      PetscCall(DMGetDS(cdm, &cds));
+      PetscCall(PetscDSSetConstants(cds, 2, ctx->transformData));
+      PetscCall(DMPlexRemapGeometry(*dm, 0.0, f0_annulus));
       break;
     case TRANSFORM_SHELL:
-      ierr = DMGetCoordinateDM(*dm, &cdm);CHKERRQ(ierr);
-      ierr = DMGetDS(cdm, &cds);CHKERRQ(ierr);
-      ierr = PetscDSSetConstants(cds, 2, ctx->transformData);CHKERRQ(ierr);
-      ierr = DMPlexRemapGeometry(*dm, 0.0, f0_shell);CHKERRQ(ierr);
+      PetscCall(DMGetCoordinateDM(*dm, &cdm));
+      PetscCall(DMGetDS(cdm, &cds));
+      PetscCall(PetscDSSetConstants(cds, 2, ctx->transformData));
+      PetscCall(DMPlexRemapGeometry(*dm, 0.0, f0_shell));
       break;
     default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Unknown mesh transform %D", ctx->meshTransform);
   }
-  ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
+  PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   PetscFunctionReturn(0);
 }
 
@@ -225,20 +223,19 @@ static PetscErrorCode CreateDiscretization(DM dm, AppCtx *ctx)
   DMPolytopeType ct;
   PetscInt       dim, cStart;
   PetscBool      simplex;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, NULL);CHKERRQ(ierr);
-  ierr = DMPlexGetCellType(dm, cStart, &ct);CHKERRQ(ierr);
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, NULL));
+  PetscCall(DMPlexGetCellType(dm, cStart, &ct));
   simplex = DMPolytopeTypeGetNumVertices(ct) == DMPolytopeTypeGetDim(ct)+1 ? PETSC_TRUE : PETSC_FALSE;
-  ierr = PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, NULL, PETSC_DETERMINE, &fe);CHKERRQ(ierr);
-  ierr = PetscFESetName(fe, "scalar");CHKERRQ(ierr);
-  ierr = DMAddField(dm, NULL, (PetscObject) fe);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
-  ierr = DMCreateDS(dm);CHKERRQ(ierr);
-  ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
-  ierr = PetscDSSetObjective(ds, 0, volume);CHKERRQ(ierr);
+  PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, NULL, PETSC_DETERMINE, &fe));
+  PetscCall(PetscFESetName(fe, "scalar"));
+  PetscCall(DMAddField(dm, NULL, (PetscObject) fe));
+  PetscCall(PetscFEDestroy(&fe));
+  PetscCall(DMCreateDS(dm));
+  PetscCall(DMGetDS(dm, &ds));
+  PetscCall(PetscDSSetObjective(ds, 0, volume));
   PetscFunctionReturn(0);
 }
 
@@ -247,14 +244,13 @@ static PetscErrorCode CheckVolume(DM dm, AppCtx *ctx)
   Vec            u;
   PetscScalar    result;
   PetscReal      vol, tol = ctx->tol;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetGlobalVector(dm, &u);CHKERRQ(ierr);
-  ierr = DMPlexComputeIntegralFEM(dm, u, &result, ctx);CHKERRQ(ierr);
+  PetscCall(DMGetGlobalVector(dm, &u));
+  PetscCall(DMPlexComputeIntegralFEM(dm, u, &result, ctx));
   vol  = PetscRealPart(result);
-  ierr = DMRestoreGlobalVector(dm, &u);CHKERRQ(ierr);
-  ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Volume: %g\n", (double) vol);CHKERRQ(ierr);
+  PetscCall(DMRestoreGlobalVector(dm, &u));
+  PetscCall(PetscPrintf(PetscObjectComm((PetscObject) dm), "Volume: %g\n", (double) vol));
   if (ctx->volume > 0.0 && PetscAbsReal(ctx->volume - vol) > tol) {
     SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "Calculated volume %g != %g actual volume (error %g > %g tol)", (double) vol, (double) ctx->volume, (double) PetscAbsReal(ctx->volume - vol), (double) tol);
   }
@@ -265,18 +261,17 @@ int main(int argc, char **argv)
 {
   DM             dm;
   AppCtx         user;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
-  ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
-  ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
-  ierr = CreateDiscretization(dm, &user);CHKERRQ(ierr);
-  ierr = CheckVolume(dm, &user);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
-  ierr = PetscFree(user.transformDataReal);CHKERRQ(ierr);
-  ierr = PetscFree(user.transformData);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscInitialize(&argc, &argv, NULL,help));
+  PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
+  PetscCall(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
+  PetscCall(CreateDiscretization(dm, &user));
+  PetscCall(CheckVolume(dm, &user));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFree(user.transformDataReal));
+  PetscCall(PetscFree(user.transformData));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

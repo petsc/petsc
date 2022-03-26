@@ -18,13 +18,13 @@ PetscErrorCode ComputeSolution(PetscInt n,PetscReal *nodes,PetscReal *weights,Ve
   PetscReal      xd;
 
   PetscFunctionBegin;
-  ierr = VecGetSize(x,&m);CHKERRQ(ierr);
-  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+  PetscCall(VecGetSize(x,&m));
+  PetscCall(VecGetArray(x,&xx));
   for (i=0; i<m; i++) {
     xd    = nodes[i];
     xx[i] = (xd*xd - 1.0)*PetscCosReal(5.*PETSC_PI*xd);
   }
-  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(x,&xx));
   PetscFunctionReturn(0);
 }
 
@@ -40,13 +40,13 @@ PetscErrorCode ComputeRhs(PetscInt n,PetscReal *nodes,PetscReal *weights,Vec b)
   PetscReal      xd;
 
   PetscFunctionBegin;
-  ierr = VecGetSize(b,&m);CHKERRQ(ierr);
-  ierr = VecGetArray(b,&bb);CHKERRQ(ierr);
+  PetscCall(VecGetSize(b,&m));
+  PetscCall(VecGetArray(b,&bb));
   for (i=0; i<m; i++) {
     xd    = nodes[i];
     bb[i] = -weights[i]*(-20.*PETSC_PI*xd*PetscSinReal(5.*PETSC_PI*xd) + (2. - (5.*PETSC_PI)*(5.*PETSC_PI)*(xd*xd - 1.))*PetscCosReal(5.*PETSC_PI*xd));
   }
-  ierr = VecRestoreArray(b,&bb);CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(b,&bb));
   PetscFunctionReturn(0);
 }
 
@@ -68,69 +68,69 @@ int main(int argc,char **args)
   PetscDrawLG    lg;
   PetscDrawAxis  axis;
 
-  ierr = PetscInitialize(&argc,&args,NULL,NULL);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&args,NULL,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
 
-  ierr = PetscDrawCreate(PETSC_COMM_SELF,NULL,"Log(Error norm) vs Number of GLL points",0,0,500,500,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
-  ierr = PetscDrawLGCreate(draw,1,&lg);CHKERRQ(ierr);
-  ierr = PetscDrawLGSetUseMarkers(lg,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = PetscDrawLGGetAxis(lg,&axis);CHKERRQ(ierr);
-  ierr = PetscDrawAxisSetLabels(axis,NULL,"Number of GLL points","Log(Error Norm)");CHKERRQ(ierr);
+  PetscCall(PetscDrawCreate(PETSC_COMM_SELF,NULL,"Log(Error norm) vs Number of GLL points",0,0,500,500,&draw));
+  PetscCall(PetscDrawSetFromOptions(draw));
+  PetscCall(PetscDrawLGCreate(draw,1,&lg));
+  PetscCall(PetscDrawLGSetUseMarkers(lg,PETSC_TRUE));
+  PetscCall(PetscDrawLGGetAxis(lg,&axis));
+  PetscCall(PetscDrawAxisSetLabels(axis,NULL,"Number of GLL points","Log(Error Norm)"));
 
   for (n=4; n<N; n+=2) {
     /*
        compute GLL node and weight values
     */
-    ierr = PetscMalloc2(n,&nodes,n,&weights);CHKERRQ(ierr);
-    ierr = PetscDTGaussLobattoLegendreQuadrature(n,PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA,nodes,weights);CHKERRQ(ierr);
+    PetscCall(PetscMalloc2(n,&nodes,n,&weights));
+    PetscCall(PetscDTGaussLobattoLegendreQuadrature(n,PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA,nodes,weights));
     /*
        Creates the element stiffness matrix for the given gll
     */
-    ierr = PetscGaussLobattoLegendreElementLaplacianCreate(n,nodes,weights,&A);CHKERRQ(ierr);
-    ierr = MatCreateSeqDense(PETSC_COMM_SELF,n,n,&A[0][0],&K);CHKERRQ(ierr);
+    PetscCall(PetscGaussLobattoLegendreElementLaplacianCreate(n,nodes,weights,&A));
+    PetscCall(MatCreateSeqDense(PETSC_COMM_SELF,n,n,&A[0][0],&K));
     rows[0] = 0;
     rows[1] = n-1;
-    ierr = KSPCreate(PETSC_COMM_SELF,&ksp);CHKERRQ(ierr);
-    ierr = MatCreateVecs(K,&x,&b);CHKERRQ(ierr);
-    ierr = ComputeRhs(n,nodes,weights,b);CHKERRQ(ierr);
+    PetscCall(KSPCreate(PETSC_COMM_SELF,&ksp));
+    PetscCall(MatCreateVecs(K,&x,&b));
+    PetscCall(ComputeRhs(n,nodes,weights,b));
     /*
         Replace the first and last rows/columns of the matrix with the identity to obtain the zero Dirichlet boundary conditions
     */
-    ierr = MatZeroRowsColumns(K,2,rows,1.0,x,b);CHKERRQ(ierr);
-    ierr = KSPSetOperators(ksp,K,K);CHKERRQ(ierr);
-    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-    ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
-    ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-    ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+    PetscCall(MatZeroRowsColumns(K,2,rows,1.0,x,b));
+    PetscCall(KSPSetOperators(ksp,K,K));
+    PetscCall(KSPGetPC(ksp,&pc));
+    PetscCall(PCSetType(pc,PCLU));
+    PetscCall(KSPSetFromOptions(ksp));
+    PetscCall(KSPSolve(ksp,b,x));
 
     /* compute the error to the continium problem */
-    ierr = ComputeSolution(n,nodes,weights,b);CHKERRQ(ierr);
-    ierr = VecAXPY(x,-1.0,b);CHKERRQ(ierr);
+    PetscCall(ComputeSolution(n,nodes,weights,b));
+    PetscCall(VecAXPY(x,-1.0,b));
 
     /* compute the L^2 norm of the error */
-    ierr = VecGetArray(x,&f);CHKERRQ(ierr);
-    ierr = PetscGaussLobattoLegendreIntegrate(n,nodes,weights,f,&norm);CHKERRQ(ierr);
-    ierr = VecRestoreArray(x,&f);CHKERRQ(ierr);
+    PetscCall(VecGetArray(x,&f));
+    PetscCall(PetscGaussLobattoLegendreIntegrate(n,nodes,weights,f,&norm));
+    PetscCall(VecRestoreArray(x,&f));
     norm = PetscSqrtReal(norm);
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"L^2 norm of the error %D %g\n",n,(double)norm);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"L^2 norm of the error %D %g\n",n,(double)norm));
     xc   = (PetscReal)n;
     yc   = PetscLog10Real(norm);
-    ierr = PetscDrawLGAddPoint(lg,&xc,&yc);CHKERRQ(ierr);
-    ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
+    PetscCall(PetscDrawLGAddPoint(lg,&xc,&yc));
+    PetscCall(PetscDrawLGDraw(lg));
 
-    ierr = VecDestroy(&b);CHKERRQ(ierr);
-    ierr = VecDestroy(&x);CHKERRQ(ierr);
-    ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-    ierr = MatDestroy(&K);CHKERRQ(ierr);
-    ierr = PetscGaussLobattoLegendreElementLaplacianDestroy(n,nodes,weights,&A);CHKERRQ(ierr);
-    ierr = PetscFree2(nodes,weights);CHKERRQ(ierr);
+    PetscCall(VecDestroy(&b));
+    PetscCall(VecDestroy(&x));
+    PetscCall(KSPDestroy(&ksp));
+    PetscCall(MatDestroy(&K));
+    PetscCall(PetscGaussLobattoLegendreElementLaplacianDestroy(n,nodes,weights,&A));
+    PetscCall(PetscFree2(nodes,weights));
   }
-  ierr = PetscDrawSetPause(draw,-2);CHKERRQ(ierr);
-  ierr = PetscDrawLGDestroy(&lg);CHKERRQ(ierr);
-  ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscDrawSetPause(draw,-2));
+  PetscCall(PetscDrawLGDestroy(&lg));
+  PetscCall(PetscDrawDestroy(&draw));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

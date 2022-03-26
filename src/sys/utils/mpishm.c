@@ -17,14 +17,13 @@ struct _n_PetscShmComm {
 */
 PETSC_EXTERN PetscMPIInt MPIAPI Petsc_ShmComm_Attr_Delete_Fn(MPI_Comm comm,PetscMPIInt keyval,void *val,void *extra_state)
 {
-  PetscErrorCode  ierr;
   PetscShmComm p = (PetscShmComm)val;
 
   PetscFunctionBegin;
-  ierr = PetscInfo(NULL,"Deleting shared memory subcommunicator in a MPI_Comm %ld\n",(long)comm);CHKERRMPI(ierr);
-  ierr = MPI_Comm_free(&p->shmcomm);CHKERRMPI(ierr);
-  ierr = PetscFree(p->globranks);CHKERRMPI(ierr);
-  ierr = PetscFree(val);CHKERRMPI(ierr);
+  PetscCallMPI(PetscInfo(NULL,"Deleting shared memory subcommunicator in a MPI_Comm %ld\n",(long)comm));
+  PetscCallMPI(MPI_Comm_free(&p->shmcomm));
+  PetscCallMPI(PetscFree(p->globranks));
+  PetscCallMPI(PetscFree(val));
   PetscFunctionReturn(MPI_SUCCESS);
 }
 
@@ -40,10 +39,9 @@ static PetscInt       num_dupped_comms=0;
 static MPI_Comm       shmcomm_dupped_comms[MAX_SHMCOMM_DUPPED_COMMS];
 static PetscErrorCode PetscShmCommDestroyDuppedComms(void)
 {
-  PetscErrorCode   ierr;
   PetscInt         i;
   PetscFunctionBegin;
-  for (i=0; i<num_dupped_comms; i++) {ierr = PetscCommDestroy(&shmcomm_dupped_comms[i]);CHKERRQ(ierr);}
+  for (i=0; i<num_dupped_comms; i++) PetscCall(PetscCommDestroy(&shmcomm_dupped_comms[i]));
   num_dupped_comms = 0; /* reset so that PETSc can be reinitialized */
   PetscFunctionReturn(0);
 }
@@ -69,7 +67,6 @@ static PetscErrorCode PetscShmCommDestroyDuppedComms(void)
 PetscErrorCode PetscShmCommGet(MPI_Comm globcomm,PetscShmComm *pshmcomm)
 {
 #ifdef PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY
-  PetscErrorCode   ierr;
   MPI_Group        globgroup,shmgroup;
   PetscMPIInt      *shmranks,i,flg;
   PetscCommCounter *counter;
@@ -77,17 +74,17 @@ PetscErrorCode PetscShmCommGet(MPI_Comm globcomm,PetscShmComm *pshmcomm)
   PetscFunctionBegin;
   PetscValidPointer(pshmcomm,2);
   /* Get a petsc inner comm, since we always want to stash pshmcomm on petsc inner comms */
-  ierr = MPI_Comm_get_attr(globcomm,Petsc_Counter_keyval,&counter,&flg);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_get_attr(globcomm,Petsc_Counter_keyval,&counter,&flg));
   if (!flg) { /* globcomm is not a petsc comm */
     union {MPI_Comm comm; void *ptr;} ucomm;
     /* check if globcomm already has a linked petsc inner comm */
-    ierr = MPI_Comm_get_attr(globcomm,Petsc_InnerComm_keyval,&ucomm,&flg);CHKERRMPI(ierr);
+    PetscCallMPI(MPI_Comm_get_attr(globcomm,Petsc_InnerComm_keyval,&ucomm,&flg));
     if (!flg) {
       /* globcomm does not have a linked petsc inner comm, so we create one and replace globcomm with it */
       PetscCheckFalse(num_dupped_comms >= MAX_SHMCOMM_DUPPED_COMMS,globcomm,PETSC_ERR_PLIB,"PetscShmCommGet() is trying to dup more than %d MPI_Comms",MAX_SHMCOMM_DUPPED_COMMS);
-      ierr = PetscCommDuplicate(globcomm,&globcomm,NULL);CHKERRQ(ierr);
+      PetscCall(PetscCommDuplicate(globcomm,&globcomm,NULL));
       /* Register a function to free the dupped petsc comms at PetscFinalize at the first time */
-      if (num_dupped_comms == 0) {ierr = PetscRegisterFinalize(PetscShmCommDestroyDuppedComms);CHKERRQ(ierr);}
+      if (num_dupped_comms == 0) PetscCall(PetscRegisterFinalize(PetscShmCommDestroyDuppedComms));
       shmcomm_dupped_comms[num_dupped_comms] = globcomm;
       num_dupped_comms++;
     } else {
@@ -97,29 +94,29 @@ PetscErrorCode PetscShmCommGet(MPI_Comm globcomm,PetscShmComm *pshmcomm)
   }
 
   /* Check if globcomm already has an attached pshmcomm. If no, create one */
-  ierr = MPI_Comm_get_attr(globcomm,Petsc_ShmComm_keyval,pshmcomm,&flg);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_get_attr(globcomm,Petsc_ShmComm_keyval,pshmcomm,&flg));
   if (flg) PetscFunctionReturn(0);
 
-  ierr        = PetscNew(pshmcomm);CHKERRQ(ierr);
+  PetscCall(PetscNew(pshmcomm));
   (*pshmcomm)->globcomm = globcomm;
 
-  ierr = MPI_Comm_split_type(globcomm, MPI_COMM_TYPE_SHARED,0, MPI_INFO_NULL,&(*pshmcomm)->shmcomm);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_split_type(globcomm, MPI_COMM_TYPE_SHARED,0, MPI_INFO_NULL,&(*pshmcomm)->shmcomm));
 
-  ierr = MPI_Comm_size((*pshmcomm)->shmcomm,&(*pshmcomm)->shmsize);CHKERRMPI(ierr);
-  ierr = MPI_Comm_group(globcomm, &globgroup);CHKERRMPI(ierr);
-  ierr = MPI_Comm_group((*pshmcomm)->shmcomm, &shmgroup);CHKERRMPI(ierr);
-  ierr = PetscMalloc1((*pshmcomm)->shmsize,&shmranks);CHKERRQ(ierr);
-  ierr = PetscMalloc1((*pshmcomm)->shmsize,&(*pshmcomm)->globranks);CHKERRQ(ierr);
+  PetscCallMPI(MPI_Comm_size((*pshmcomm)->shmcomm,&(*pshmcomm)->shmsize));
+  PetscCallMPI(MPI_Comm_group(globcomm, &globgroup));
+  PetscCallMPI(MPI_Comm_group((*pshmcomm)->shmcomm, &shmgroup));
+  PetscCall(PetscMalloc1((*pshmcomm)->shmsize,&shmranks));
+  PetscCall(PetscMalloc1((*pshmcomm)->shmsize,&(*pshmcomm)->globranks));
   for (i=0; i<(*pshmcomm)->shmsize; i++) shmranks[i] = i;
-  ierr = MPI_Group_translate_ranks(shmgroup, (*pshmcomm)->shmsize, shmranks, globgroup, (*pshmcomm)->globranks);CHKERRMPI(ierr);
-  ierr = PetscFree(shmranks);CHKERRQ(ierr);
-  ierr = MPI_Group_free(&globgroup);CHKERRMPI(ierr);
-  ierr = MPI_Group_free(&shmgroup);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Group_translate_ranks(shmgroup, (*pshmcomm)->shmsize, shmranks, globgroup, (*pshmcomm)->globranks));
+  PetscCall(PetscFree(shmranks));
+  PetscCallMPI(MPI_Group_free(&globgroup));
+  PetscCallMPI(MPI_Group_free(&shmgroup));
 
   for (i=0; i<(*pshmcomm)->shmsize; i++) {
-    ierr = PetscInfo(NULL,"Shared memory rank %d global rank %d\n",i,(*pshmcomm)->globranks[i]);CHKERRQ(ierr);
+    PetscCall(PetscInfo(NULL,"Shared memory rank %d global rank %d\n",i,(*pshmcomm)->globranks[i]));
   }
-  ierr = MPI_Comm_set_attr(globcomm,Petsc_ShmComm_keyval,*pshmcomm);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_set_attr(globcomm,Petsc_ShmComm_keyval,*pshmcomm));
   PetscFunctionReturn(0);
 #else
   SETERRQ(globcomm, PETSC_ERR_SUP, "Shared memory communicators need MPI-3 package support.\nPlease upgrade your MPI or reconfigure with --download-mpich.");
@@ -148,15 +145,14 @@ PetscErrorCode PetscShmCommGlobalToLocal(PetscShmComm pshmcomm,PetscMPIInt grank
 {
   PetscMPIInt    low,high,t,i;
   PetscBool      flg = PETSC_FALSE;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidPointer(pshmcomm,1);
-  PetscValidPointer(lrank,3);
+  PetscValidIntPointer(lrank,3);
   *lrank = MPI_PROC_NULL;
   if (grank < pshmcomm->globranks[0]) PetscFunctionReturn(0);
   if (grank > pshmcomm->globranks[pshmcomm->shmsize-1]) PetscFunctionReturn(0);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-noshared",&flg,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-noshared",&flg,NULL));
   if (flg) PetscFunctionReturn(0);
   low  = 0;
   high = pshmcomm->shmsize;
@@ -192,7 +188,7 @@ PetscErrorCode PetscShmCommLocalToGlobal(PetscShmComm pshmcomm,PetscMPIInt lrank
 {
   PetscFunctionBegin;
   PetscValidPointer(pshmcomm,1);
-  PetscValidPointer(grank,3);
+  PetscValidIntPointer(grank,3);
   PetscCheck(lrank >= 0 && lrank < pshmcomm->shmsize,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"No rank %d in the shared memory communicator",lrank);
   *grank = pshmcomm->globranks[lrank];
   PetscFunctionReturn(0);
@@ -258,7 +254,6 @@ struct _n_PetscOmpCtrl {
  */
 static inline PetscErrorCode PetscOmpCtrlCreateBarrier(PetscOmpCtrl ctrl)
 {
-  PetscErrorCode        ierr;
   MPI_Aint              size;
   void                  *baseptr;
   pthread_barrierattr_t  attr;
@@ -275,59 +270,57 @@ static inline PetscErrorCode PetscOmpCtrlCreateBarrier(PetscOmpCtrl ctrl)
   size = sizeof(pthread_barrier_t);
   if (ctrl->is_omp_master) {
     /* use PETSC_COMM_SELF in PetscGetTmp, since it is a collective call. Using omp_comm would otherwise bcast the partially populated pathname to slaves */
-    ierr    = PetscGetTmp(PETSC_COMM_SELF,pathname,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-    ierr    = PetscStrlcat(pathname,"/petsc-shm-XXXXXX",PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+    PetscCall(PetscGetTmp(PETSC_COMM_SELF,pathname,PETSC_MAX_PATH_LEN));
+    PetscCall(PetscStrlcat(pathname,"/petsc-shm-XXXXXX",PETSC_MAX_PATH_LEN));
     /* mkstemp replaces XXXXXX with a unique file name and opens the file for us */
     fd      = mkstemp(pathname); PetscCheckFalse(fd == -1,PETSC_COMM_SELF,PETSC_ERR_LIB,"Could not create tmp file %s with mkstemp", pathname);
-    ierr    = ftruncate(fd,size);CHKERRQ(ierr);
+    PetscCall(ftruncate(fd,size));
     baseptr = mmap(NULL,size,PROT_READ | PROT_WRITE, MAP_SHARED,fd,0); PetscCheckFalse(baseptr == MAP_FAILED,PETSC_COMM_SELF,PETSC_ERR_LIB,"mmap() failed");
-    ierr    = close(fd);CHKERRQ(ierr);
-    ierr    = MPI_Bcast(pathname,PETSC_MAX_PATH_LEN,MPI_CHAR,0,ctrl->omp_comm);CHKERRMPI(ierr);
+    PetscCall(close(fd));
+    PetscCallMPI(MPI_Bcast(pathname,PETSC_MAX_PATH_LEN,MPI_CHAR,0,ctrl->omp_comm));
     /* this MPI_Barrier is to wait slaves to open the file before master unlinks it */
-    ierr    = MPI_Barrier(ctrl->omp_comm);CHKERRMPI(ierr);
-    ierr    = unlink(pathname);CHKERRQ(ierr);
+    PetscCallMPI(MPI_Barrier(ctrl->omp_comm));
+    PetscCall(unlink(pathname));
   } else {
-    ierr    = MPI_Bcast(pathname,PETSC_MAX_PATH_LEN,MPI_CHAR,0,ctrl->omp_comm);CHKERRMPI(ierr);
+    PetscCallMPI(MPI_Bcast(pathname,PETSC_MAX_PATH_LEN,MPI_CHAR,0,ctrl->omp_comm));
     fd      = open(pathname,O_RDWR); PetscCheckFalse(fd == -1,PETSC_COMM_SELF,PETSC_ERR_LIB,"Could not open tmp file %s", pathname);
     baseptr = mmap(NULL,size,PROT_READ | PROT_WRITE, MAP_SHARED,fd,0); PetscCheckFalse(baseptr == MAP_FAILED,PETSC_COMM_SELF,PETSC_ERR_LIB,"mmap() failed");
-    ierr    = close(fd);CHKERRQ(ierr);
-    ierr    = MPI_Barrier(ctrl->omp_comm);CHKERRMPI(ierr);
+    PetscCall(close(fd));
+    PetscCallMPI(MPI_Barrier(ctrl->omp_comm));
   }
 #else
   size = ctrl->is_omp_master ? sizeof(pthread_barrier_t) : 0;
-  ierr = MPI_Win_allocate_shared(size,1,MPI_INFO_NULL,ctrl->omp_comm,&baseptr,&ctrl->omp_win);CHKERRMPI(ierr);
-  ierr = MPI_Win_shared_query(ctrl->omp_win,0,&size,&disp_unit,&baseptr);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Win_allocate_shared(size,1,MPI_INFO_NULL,ctrl->omp_comm,&baseptr,&ctrl->omp_win));
+  PetscCallMPI(MPI_Win_shared_query(ctrl->omp_win,0,&size,&disp_unit,&baseptr));
 #endif
   ctrl->barrier = (pthread_barrier_t*)baseptr;
 
   /* omp master initializes the barrier */
   if (ctrl->is_omp_master) {
-    ierr = MPI_Comm_size(ctrl->omp_comm,&ctrl->omp_comm_size);CHKERRMPI(ierr);
-    ierr = pthread_barrierattr_init(&attr);CHKERRQ(ierr);
-    ierr = pthread_barrierattr_setpshared(&attr,PTHREAD_PROCESS_SHARED);CHKERRQ(ierr); /* make the barrier also work for processes */
-    ierr = pthread_barrier_init(ctrl->barrier,&attr,(unsigned int)ctrl->omp_comm_size);CHKERRQ(ierr);
-    ierr = pthread_barrierattr_destroy(&attr);CHKERRQ(ierr);
+    PetscCallMPI(MPI_Comm_size(ctrl->omp_comm,&ctrl->omp_comm_size));
+    PetscCall(pthread_barrierattr_init(&attr));
+    PetscCall(pthread_barrierattr_setpshared(&attr,PTHREAD_PROCESS_SHARED)); /* make the barrier also work for processes */
+    PetscCall(pthread_barrier_init(ctrl->barrier,&attr,(unsigned int)ctrl->omp_comm_size));
+    PetscCall(pthread_barrierattr_destroy(&attr));
   }
 
   /* this MPI_Barrier is to make sure the omp barrier is initialized before slaves use it */
-  ierr = MPI_Barrier(ctrl->omp_comm);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Barrier(ctrl->omp_comm));
   PetscFunctionReturn(0);
 }
 
 /* Destroy the pthread barrier in the PETSc OpenMP controller */
 static inline PetscErrorCode PetscOmpCtrlDestroyBarrier(PetscOmpCtrl ctrl)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   /* this MPI_Barrier is to make sure slaves have finished using the omp barrier before master destroys it */
-  ierr = MPI_Barrier(ctrl->omp_comm);CHKERRMPI(ierr);
-  if (ctrl->is_omp_master) { ierr = pthread_barrier_destroy(ctrl->barrier);CHKERRQ(ierr); }
+  PetscCallMPI(MPI_Barrier(ctrl->omp_comm));
+  if (ctrl->is_omp_master) PetscCall(pthread_barrier_destroy(ctrl->barrier));
 
 #if defined(USE_MMAP_ALLOCATE_SHARED_MEMORY) && defined(PETSC_HAVE_MMAP)
-  ierr = munmap(ctrl->barrier,sizeof(pthread_barrier_t));CHKERRQ(ierr);
+  PetscCall(munmap(ctrl->barrier,sizeof(pthread_barrier_t)));
 #else
-  ierr = MPI_Win_free(&ctrl->omp_win);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Win_free(&ctrl->omp_win));
 #endif
   PetscFunctionReturn(0);
 }
@@ -350,28 +343,27 @@ static inline PetscErrorCode PetscOmpCtrlDestroyBarrier(PetscOmpCtrl ctrl)
 @*/
 PetscErrorCode PetscOmpCtrlCreate(MPI_Comm petsc_comm,PetscInt nthreads,PetscOmpCtrl *pctrl)
 {
-  PetscErrorCode        ierr;
-  PetscOmpCtrl          ctrl;
-  unsigned long         *cpu_ulongs=NULL;
-  PetscInt              i,nr_cpu_ulongs;
-  PetscShmComm          pshmcomm;
-  MPI_Comm              shm_comm;
-  PetscMPIInt           shm_rank,shm_comm_size,omp_rank,color;
-  PetscInt              num_packages,num_cores;
+  PetscOmpCtrl   ctrl;
+  unsigned long *cpu_ulongs = NULL;
+  PetscInt       i,nr_cpu_ulongs;
+  PetscShmComm   pshmcomm;
+  MPI_Comm       shm_comm;
+  PetscMPIInt    shm_rank,shm_comm_size,omp_rank,color;
+  PetscInt       num_packages,num_cores;
 
   PetscFunctionBegin;
-  ierr = PetscNew(&ctrl);CHKERRQ(ierr);
+  PetscCall(PetscNew(&ctrl));
 
   /*=================================================================================
     Init hwloc
    ==================================================================================*/
-  ierr = hwloc_topology_init(&ctrl->topology);CHKERRQ(ierr);
+  PetscCall(hwloc_topology_init(&ctrl->topology));
 #if HWLOC_API_VERSION >= 0x00020000
   /* to filter out unneeded info and have faster hwloc_topology_load */
-  ierr = hwloc_topology_set_all_types_filter(ctrl->topology,HWLOC_TYPE_FILTER_KEEP_NONE);CHKERRQ(ierr);
-  ierr = hwloc_topology_set_type_filter(ctrl->topology,HWLOC_OBJ_CORE,HWLOC_TYPE_FILTER_KEEP_ALL);CHKERRQ(ierr);
+  PetscCall(hwloc_topology_set_all_types_filter(ctrl->topology,HWLOC_TYPE_FILTER_KEEP_NONE));
+  PetscCall(hwloc_topology_set_type_filter(ctrl->topology,HWLOC_OBJ_CORE,HWLOC_TYPE_FILTER_KEEP_ALL));
 #endif
-  ierr = hwloc_topology_load(ctrl->topology);CHKERRQ(ierr);
+  PetscCall(hwloc_topology_load(ctrl->topology));
 
   /*=================================================================================
     Split petsc_comm into multiple omp_comms. Ranks in an omp_comm have access to
@@ -381,11 +373,11 @@ PetscErrorCode PetscOmpCtrlCreate(MPI_Comm petsc_comm,PetscInt nthreads,PetscOmp
    ==================================================================================*/
 
   /* fetch the stored shared memory communicator */
-  ierr = PetscShmCommGet(petsc_comm,&pshmcomm);CHKERRQ(ierr);
-  ierr = PetscShmCommGetMpiShmComm(pshmcomm,&shm_comm);CHKERRQ(ierr);
+  PetscCall(PetscShmCommGet(petsc_comm,&pshmcomm));
+  PetscCall(PetscShmCommGetMpiShmComm(pshmcomm,&shm_comm));
 
-  ierr = MPI_Comm_rank(shm_comm,&shm_rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(shm_comm,&shm_comm_size);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_rank(shm_comm,&shm_rank));
+  PetscCallMPI(MPI_Comm_size(shm_comm,&shm_comm_size));
 
   /* PETSc decides nthreads, which is the smaller of shm_comm_size or cores per package(socket) */
   if (nthreads == -1) {
@@ -395,8 +387,8 @@ PetscErrorCode PetscOmpCtrlCreate(MPI_Comm petsc_comm,PetscInt nthreads,PetscOmp
     if (nthreads > shm_comm_size) nthreads = shm_comm_size;
   }
 
-  PetscCheckFalse(nthreads < 1 || nthreads > shm_comm_size,petsc_comm,PETSC_ERR_ARG_OUTOFRANGE,"number of OpenMP threads %" PetscInt_FMT " can not be < 1 or > the MPI shared memory communicator size %d",nthreads,shm_comm_size);
-  if (shm_comm_size % nthreads) { ierr = PetscPrintf(petsc_comm,"Warning: number of OpenMP threads %" PetscInt_FMT " is not a factor of the MPI shared memory communicator size %d, which may cause load-imbalance!\n",nthreads,shm_comm_size);CHKERRQ(ierr); }
+  PetscCheck(nthreads >= 1 && nthreads <= shm_comm_size,petsc_comm,PETSC_ERR_ARG_OUTOFRANGE,"number of OpenMP threads %" PetscInt_FMT " can not be < 1 or > the MPI shared memory communicator size %d",nthreads,shm_comm_size);
+  if (shm_comm_size % nthreads) PetscCall(PetscPrintf(petsc_comm,"Warning: number of OpenMP threads %" PetscInt_FMT " is not a factor of the MPI shared memory communicator size %d, which may cause load-imbalance!\n",nthreads,shm_comm_size));
 
   /* split shm_comm into a set of omp_comms with each of size nthreads. Ex., if
      shm_comm_size=16, nthreads=8, then ranks 0~7 get color 0 and ranks 8~15 get
@@ -405,10 +397,10 @@ PetscErrorCode PetscOmpCtrlCreate(MPI_Comm petsc_comm,PetscInt nthreads,PetscOmp
      Use 0 as key so that rank ordering wont change in new comm.
    */
   color = shm_rank / nthreads;
-  ierr  = MPI_Comm_split(shm_comm,color,0/*key*/,&ctrl->omp_comm);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_split(shm_comm,color,0/*key*/,&ctrl->omp_comm));
 
   /* put rank 0's in omp_comms (i.e., master ranks) into a new comm - omp_master_comm */
-  ierr = MPI_Comm_rank(ctrl->omp_comm,&omp_rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_rank(ctrl->omp_comm,&omp_rank));
   if (!omp_rank) {
     ctrl->is_omp_master = PETSC_TRUE;  /* master */
     color = 0;
@@ -416,46 +408,46 @@ PetscErrorCode PetscOmpCtrlCreate(MPI_Comm petsc_comm,PetscInt nthreads,PetscOmp
     ctrl->is_omp_master = PETSC_FALSE; /* slave */
     color = MPI_UNDEFINED; /* to make slaves get omp_master_comm = MPI_COMM_NULL in MPI_Comm_split */
   }
-  ierr = MPI_Comm_split(petsc_comm,color,0/*key*/,&ctrl->omp_master_comm);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_split(petsc_comm,color,0/*key*/,&ctrl->omp_master_comm));
 
   /*=================================================================================
     Each omp_comm has a pthread_barrier_t in its shared memory, which is used to put
     slave ranks in sleep and idle their CPU, so that the master can fork OMP threads
     and run them on the idle CPUs.
    ==================================================================================*/
-  ierr = PetscOmpCtrlCreateBarrier(ctrl);CHKERRQ(ierr);
+  PetscCall(PetscOmpCtrlCreateBarrier(ctrl));
 
   /*=================================================================================
     omp master logs its cpu binding (i.e., cpu set) and computes a new binding that
     is the union of the bindings of all ranks in the omp_comm
     =================================================================================*/
 
-  ctrl->cpuset = hwloc_bitmap_alloc(); PetscCheckFalse(!ctrl->cpuset,PETSC_COMM_SELF,PETSC_ERR_LIB,"hwloc_bitmap_alloc() failed");
-  ierr = hwloc_get_cpubind(ctrl->topology,ctrl->cpuset, HWLOC_CPUBIND_PROCESS);CHKERRQ(ierr);
+  ctrl->cpuset = hwloc_bitmap_alloc(); PetscCheck(ctrl->cpuset,PETSC_COMM_SELF,PETSC_ERR_LIB,"hwloc_bitmap_alloc() failed");
+  PetscCall(hwloc_get_cpubind(ctrl->topology,ctrl->cpuset, HWLOC_CPUBIND_PROCESS));
 
   /* hwloc main developer said they will add new APIs hwloc_bitmap_{nr,to,from}_ulongs in 2.1 to help us simplify the following bitmap pack/unpack code */
   nr_cpu_ulongs = (hwloc_bitmap_last(hwloc_topology_get_topology_cpuset (ctrl->topology))+sizeof(unsigned long)*8)/sizeof(unsigned long)/8;
-  ierr = PetscMalloc1(nr_cpu_ulongs,&cpu_ulongs);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(nr_cpu_ulongs,&cpu_ulongs));
   if (nr_cpu_ulongs == 1) {
     cpu_ulongs[0] = hwloc_bitmap_to_ulong(ctrl->cpuset);
   } else {
     for (i=0; i<nr_cpu_ulongs; i++) cpu_ulongs[i] = hwloc_bitmap_to_ith_ulong(ctrl->cpuset,(unsigned)i);
   }
 
-  ierr = MPI_Reduce(ctrl->is_omp_master ? MPI_IN_PLACE : cpu_ulongs, cpu_ulongs,nr_cpu_ulongs, MPI_UNSIGNED_LONG,MPI_BOR,0,ctrl->omp_comm);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Reduce(ctrl->is_omp_master ? MPI_IN_PLACE : cpu_ulongs, cpu_ulongs,nr_cpu_ulongs, MPI_UNSIGNED_LONG,MPI_BOR,0,ctrl->omp_comm));
 
   if (ctrl->is_omp_master) {
-    ctrl->omp_cpuset = hwloc_bitmap_alloc(); PetscCheckFalse(!ctrl->omp_cpuset,PETSC_COMM_SELF,PETSC_ERR_LIB,"hwloc_bitmap_alloc() failed");
+    ctrl->omp_cpuset = hwloc_bitmap_alloc(); PetscCheck(ctrl->omp_cpuset,PETSC_COMM_SELF,PETSC_ERR_LIB,"hwloc_bitmap_alloc() failed");
     if (nr_cpu_ulongs == 1) {
 #if HWLOC_API_VERSION >= 0x00020000
-      ierr = hwloc_bitmap_from_ulong(ctrl->omp_cpuset,cpu_ulongs[0]);CHKERRQ(ierr);
+      PetscCall(hwloc_bitmap_from_ulong(ctrl->omp_cpuset,cpu_ulongs[0]));
 #else
       hwloc_bitmap_from_ulong(ctrl->omp_cpuset,cpu_ulongs[0]);
 #endif
     } else {
       for (i=0; i<nr_cpu_ulongs; i++)  {
 #if HWLOC_API_VERSION >= 0x00020000
-        ierr = hwloc_bitmap_set_ith_ulong(ctrl->omp_cpuset,(unsigned)i,cpu_ulongs[i]);CHKERRQ(ierr);
+        PetscCall(hwloc_bitmap_set_ith_ulong(ctrl->omp_cpuset,(unsigned)i,cpu_ulongs[i]));
 #else
         hwloc_bitmap_set_ith_ulong(ctrl->omp_cpuset,(unsigned)i,cpu_ulongs[i]);
 #endif
@@ -463,7 +455,7 @@ PetscErrorCode PetscOmpCtrlCreate(MPI_Comm petsc_comm,PetscInt nthreads,PetscOmp
     }
   }
 
-  ierr = PetscFree(cpu_ulongs);CHKERRQ(ierr);
+  PetscCall(PetscFree(cpu_ulongs));
   *pctrl = ctrl;
   PetscFunctionReturn(0);
 }
@@ -480,19 +472,18 @@ PetscErrorCode PetscOmpCtrlCreate(MPI_Comm petsc_comm,PetscInt nthreads,PetscOmp
 @*/
 PetscErrorCode PetscOmpCtrlDestroy(PetscOmpCtrl *pctrl)
 {
-  PetscErrorCode  ierr;
-  PetscOmpCtrl    ctrl = *pctrl;
+  PetscOmpCtrl ctrl = *pctrl;
 
   PetscFunctionBegin;
   hwloc_bitmap_free(ctrl->cpuset);
   hwloc_topology_destroy(ctrl->topology);
   PetscOmpCtrlDestroyBarrier(ctrl);
-  ierr = MPI_Comm_free(&ctrl->omp_comm);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_free(&ctrl->omp_comm));
   if (ctrl->is_omp_master) {
     hwloc_bitmap_free(ctrl->omp_cpuset);
-    ierr = MPI_Comm_free(&ctrl->omp_master_comm);CHKERRMPI(ierr);
+    PetscCallMPI(MPI_Comm_free(&ctrl->omp_master_comm));
   }
-  ierr = PetscFree(ctrl);CHKERRQ(ierr);
+  PetscCall(PetscFree(ctrl));
   PetscFunctionReturn(0);
 }
 
@@ -571,10 +562,8 @@ PetscErrorCode PetscOmpCtrlBarrier(PetscOmpCtrl ctrl)
 @*/
 PetscErrorCode PetscOmpCtrlOmpRegionOnMasterBegin(PetscOmpCtrl ctrl)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = hwloc_set_cpubind(ctrl->topology,ctrl->omp_cpuset,HWLOC_CPUBIND_PROCESS);CHKERRQ(ierr);
+  PetscCall(hwloc_set_cpubind(ctrl->topology,ctrl->omp_cpuset,HWLOC_CPUBIND_PROCESS));
   omp_set_num_threads(ctrl->omp_comm_size); /* may override the OMP_NUM_THREAD env var */
   PetscFunctionReturn(0);
 }
@@ -595,10 +584,8 @@ PetscErrorCode PetscOmpCtrlOmpRegionOnMasterBegin(PetscOmpCtrl ctrl)
 @*/
 PetscErrorCode PetscOmpCtrlOmpRegionOnMasterEnd(PetscOmpCtrl ctrl)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = hwloc_set_cpubind(ctrl->topology,ctrl->cpuset,HWLOC_CPUBIND_PROCESS);CHKERRQ(ierr);
+  PetscCall(hwloc_set_cpubind(ctrl->topology,ctrl->cpuset,HWLOC_CPUBIND_PROCESS));
   omp_set_num_threads(1);
   PetscFunctionReturn(0);
 }

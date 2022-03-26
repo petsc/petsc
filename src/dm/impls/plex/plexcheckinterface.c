@@ -11,35 +11,34 @@ static PetscErrorCode ExchangeArrayByRank_Private(PetscObject obj, MPI_Datatype 
   MPI_Request *sreq, *rreq;
   PetscMPIInt tag, unitsize;
   MPI_Comm comm;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Type_size(dt, &unitsize);CHKERRMPI(ierr);
-  ierr = PetscObjectGetComm(obj, &comm);CHKERRQ(ierr);
-  ierr = PetscMalloc2(nrranks, &rsize, nrranks, &rarr);CHKERRQ(ierr);
-  ierr = PetscMalloc2(nrranks, &rreq, nsranks, &sreq);CHKERRQ(ierr);
+  PetscCallMPI(MPI_Type_size(dt, &unitsize));
+  PetscCall(PetscObjectGetComm(obj, &comm));
+  PetscCall(PetscMalloc2(nrranks, &rsize, nrranks, &rarr));
+  PetscCall(PetscMalloc2(nrranks, &rreq, nsranks, &sreq));
   /* exchange array size */
-  ierr = PetscObjectGetNewTag(obj,&tag);CHKERRQ(ierr);
+  PetscCall(PetscObjectGetNewTag(obj,&tag));
   for (r=0; r<nrranks; r++) {
-    ierr = MPI_Irecv(&rsize[r], 1, MPIU_INT, rranks[r], tag, comm, &rreq[r]);CHKERRMPI(ierr);
+    PetscCallMPI(MPI_Irecv(&rsize[r], 1, MPIU_INT, rranks[r], tag, comm, &rreq[r]));
   }
   for (r=0; r<nsranks; r++) {
-    ierr = MPI_Isend(&ssize[r], 1, MPIU_INT, sranks[r], tag, comm, &sreq[r]);CHKERRMPI(ierr);
+    PetscCallMPI(MPI_Isend(&ssize[r], 1, MPIU_INT, sranks[r], tag, comm, &sreq[r]));
   }
-  ierr = MPI_Waitall(nrranks, rreq, MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
-  ierr = MPI_Waitall(nsranks, sreq, MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Waitall(nrranks, rreq, MPI_STATUSES_IGNORE));
+  PetscCallMPI(MPI_Waitall(nsranks, sreq, MPI_STATUSES_IGNORE));
   /* exchange array */
-  ierr = PetscObjectGetNewTag(obj,&tag);CHKERRQ(ierr);
+  PetscCall(PetscObjectGetNewTag(obj,&tag));
   for (r=0; r<nrranks; r++) {
-    ierr = PetscMalloc(rsize[r]*unitsize, &rarr[r]);CHKERRQ(ierr);
-    ierr = MPI_Irecv(rarr[r], rsize[r], dt, rranks[r], tag, comm, &rreq[r]);CHKERRMPI(ierr);
+    PetscCall(PetscMalloc(rsize[r]*unitsize, &rarr[r]));
+    PetscCallMPI(MPI_Irecv(rarr[r], rsize[r], dt, rranks[r], tag, comm, &rreq[r]));
   }
   for (r=0; r<nsranks; r++) {
-    ierr = MPI_Isend(sarr[r], ssize[r], dt, sranks[r], tag, comm, &sreq[r]);CHKERRMPI(ierr);
+    PetscCallMPI(MPI_Isend(sarr[r], ssize[r], dt, sranks[r], tag, comm, &sreq[r]));
   }
-  ierr = MPI_Waitall(nrranks, rreq, MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
-  ierr = MPI_Waitall(nsranks, sreq, MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
-  ierr = PetscFree2(rreq, sreq);CHKERRQ(ierr);
+  PetscCallMPI(MPI_Waitall(nrranks, rreq, MPI_STATUSES_IGNORE));
+  PetscCallMPI(MPI_Waitall(nsranks, sreq, MPI_STATUSES_IGNORE));
+  PetscCall(PetscFree2(rreq, sreq));
   *rsize_out = rsize;
   *rarr_out = rarr;
   PetscFunctionReturn(0);
@@ -55,26 +54,25 @@ static PetscErrorCode ExchangeVecByRank_Private(PetscObject obj, PetscInt nsrank
   const PetscScalar **sarr;
   Vec *rvecs_;
   MPI_Request *sreq, *rreq;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc4(nsranks, &ssize, nsranks, &sarr, nrranks, &rreq, nsranks, &sreq);CHKERRQ(ierr);
+  PetscCall(PetscMalloc4(nsranks, &ssize, nsranks, &sarr, nrranks, &rreq, nsranks, &sreq));
   for (r=0; r<nsranks; r++) {
-    ierr = VecGetLocalSize(svecs[r], &ssize[r]);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(svecs[r], &sarr[r]);CHKERRQ(ierr);
+    PetscCall(VecGetLocalSize(svecs[r], &ssize[r]));
+    PetscCall(VecGetArrayRead(svecs[r], &sarr[r]));
   }
-  ierr = ExchangeArrayByRank_Private(obj, MPIU_SCALAR, nsranks, sranks, ssize, (const void**)sarr, nrranks, rranks, &rsize, (void***)&rarr);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nrranks, &rvecs_);CHKERRQ(ierr);
+  PetscCall(ExchangeArrayByRank_Private(obj, MPIU_SCALAR, nsranks, sranks, ssize, (const void**)sarr, nrranks, rranks, &rsize, (void***)&rarr));
+  PetscCall(PetscMalloc1(nrranks, &rvecs_));
   for (r=0; r<nrranks; r++) {
     /* set array in two steps to mimic PETSC_OWN_POINTER */
-    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, 1, rsize[r], NULL, &rvecs_[r]);CHKERRQ(ierr);
-    ierr = VecReplaceArray(rvecs_[r], rarr[r]);CHKERRQ(ierr);
+    PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, 1, rsize[r], NULL, &rvecs_[r]));
+    PetscCall(VecReplaceArray(rvecs_[r], rarr[r]));
   }
   for (r=0; r<nsranks; r++) {
-    ierr = VecRestoreArrayRead(svecs[r], &sarr[r]);CHKERRQ(ierr);
+    PetscCall(VecRestoreArrayRead(svecs[r], &sarr[r]));
   }
-  ierr = PetscFree2(rsize, rarr);CHKERRQ(ierr);
-  ierr = PetscFree4(ssize, sarr, rreq, sreq);CHKERRQ(ierr);
+  PetscCall(PetscFree2(rsize, rarr));
+  PetscCall(PetscFree4(ssize, sarr, rreq, sreq));
   *rvecs = rvecs_;
   PetscFunctionReturn(0);
 }
@@ -86,20 +84,19 @@ static PetscErrorCode SortByRemote_Private(PetscSF sf, PetscInt *rmine1[], Petsc
   const PetscMPIInt   *ranks;
   const PetscInt      *roffset, *rmine, *rremote;
   PetscInt            n, o, r;
-  PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  ierr = PetscSFGetRootRanks(sf, &nranks, &ranks, &roffset, &rmine, &rremote);CHKERRQ(ierr);
+  PetscCall(PetscSFGetRootRanks(sf, &nranks, &ranks, &roffset, &rmine, &rremote));
   nleaves = roffset[nranks];
-  ierr = PetscMalloc2(nleaves, rmine1, nleaves, rremote1);CHKERRQ(ierr);
+  PetscCall(PetscMalloc2(nleaves, rmine1, nleaves, rremote1));
   for (r=0; r<nranks; r++) {
     /* simultaneously sort rank-wise portions of rmine & rremote by values in rremote
        - to unify order with the other side */
     o = roffset[r];
     n = roffset[r+1] - o;
-    ierr = PetscArraycpy(&(*rmine1)[o], &rmine[o], n);CHKERRQ(ierr);
-    ierr = PetscArraycpy(&(*rremote1)[o], &rremote[o], n);CHKERRQ(ierr);
-    ierr = PetscSortIntWithArray(n, &(*rremote1)[o], &(*rmine1)[o]);CHKERRQ(ierr);
+    PetscCall(PetscArraycpy(&(*rmine1)[o], &rmine[o], n));
+    PetscCall(PetscArraycpy(&(*rremote1)[o], &rremote[o], n));
+    PetscCall(PetscSortIntWithArray(n, &(*rremote1)[o], &(*rmine1)[o]));
   }
   PetscFunctionReturn(0);
 }
@@ -111,20 +108,19 @@ static PetscErrorCode GetRecursiveConeCoordinatesPerRank_Private(DM dm, PetscSF 
   const PetscMPIInt   *ranks;
   const PetscInt      *roffset;
   PetscInt            n, o, r;
-  PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetCoordinatesLocalSetUp(dm);CHKERRQ(ierr);
-  ierr = PetscSFGetRootRanks(sf, &nranks, &ranks, &roffset, NULL, NULL);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nranks, coordinatesPerRank);CHKERRQ(ierr);
+  PetscCall(DMGetCoordinatesLocalSetUp(dm));
+  PetscCall(PetscSFGetRootRanks(sf, &nranks, &ranks, &roffset, NULL, NULL));
+  PetscCall(PetscMalloc1(nranks, coordinatesPerRank));
   for (r=0; r<nranks; r++) {
     o = roffset[r];
     n = roffset[r+1] - o;
-    ierr = ISCreateGeneral(PETSC_COMM_SELF, n, &rmine[o], PETSC_USE_POINTER, &pointsPerRank);CHKERRQ(ierr);
-    ierr = DMPlexGetConeRecursiveVertices(dm, pointsPerRank, &conesPerRank);CHKERRQ(ierr);
-    ierr = DMGetCoordinatesLocalTuple(dm, conesPerRank, NULL, &(*coordinatesPerRank)[r]);CHKERRQ(ierr);
-    ierr = ISDestroy(&pointsPerRank);CHKERRQ(ierr);
-    ierr = ISDestroy(&conesPerRank);CHKERRQ(ierr);
+    PetscCall(ISCreateGeneral(PETSC_COMM_SELF, n, &rmine[o], PETSC_USE_POINTER, &pointsPerRank));
+    PetscCall(DMPlexGetConeRecursiveVertices(dm, pointsPerRank, &conesPerRank));
+    PetscCall(DMGetCoordinatesLocalTuple(dm, conesPerRank, NULL, &(*coordinatesPerRank)[r]));
+    PetscCall(ISDestroy(&pointsPerRank));
+    PetscCall(ISDestroy(&conesPerRank));
   }
   PetscFunctionReturn(0);
 }
@@ -135,22 +131,21 @@ static PetscErrorCode PetscSFComputeMultiRootOriginalNumberingByRank_Private(Pet
   PetscInt            nileaves, niranks;
   const PetscInt      *iroffset, *irmine, *degree;
   PetscInt            i, n, o, r;
-  PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  ierr = PetscSFGetGraph(imsf, NULL, &nileaves, NULL, NULL);CHKERRQ(ierr);
-  ierr = PetscSFGetRootRanks(imsf, &niranks, NULL, &iroffset, &irmine, NULL);CHKERRQ(ierr);
+  PetscCall(PetscSFGetGraph(imsf, NULL, &nileaves, NULL, NULL));
+  PetscCall(PetscSFGetRootRanks(imsf, &niranks, NULL, &iroffset, &irmine, NULL));
   PetscCheckFalse(nileaves != iroffset[niranks],PETSC_COMM_SELF,PETSC_ERR_PLIB,"nileaves != iroffset[niranks])");
-  ierr = PetscSFComputeDegreeBegin(sf, &degree);CHKERRQ(ierr);
-  ierr = PetscSFComputeDegreeEnd(sf, &degree);CHKERRQ(ierr);
-  ierr = PetscSFComputeMultiRootOriginalNumbering(sf, degree, NULL, &mRootsOrigNumbering);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nileaves, irmine1);CHKERRQ(ierr);
+  PetscCall(PetscSFComputeDegreeBegin(sf, &degree));
+  PetscCall(PetscSFComputeDegreeEnd(sf, &degree));
+  PetscCall(PetscSFComputeMultiRootOriginalNumbering(sf, degree, NULL, &mRootsOrigNumbering));
+  PetscCall(PetscMalloc1(nileaves, irmine1));
   for (r=0; r<niranks; r++) {
     o = iroffset[r];
     n = iroffset[r+1] - o;
     for (i=0; i<n; i++) (*irmine1)[o+i] = mRootsOrigNumbering[irmine[o+i]];
   }
-  ierr = PetscFree(mRootsOrigNumbering);CHKERRQ(ierr);
+  PetscCall(PetscFree(mRootsOrigNumbering));
   PetscFunctionReturn(0);
 }
 
@@ -196,104 +191,103 @@ PetscErrorCode DMPlexCheckInterfaceCones(DM dm)
   PetscBool           same;
   PetscBool           verbose=PETSC_FALSE;
   MPI_Comm            comm;
-  PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &myrank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(comm, &commsize);CHKERRMPI(ierr);
+  PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
+  PetscCallMPI(MPI_Comm_rank(comm, &myrank));
+  PetscCallMPI(MPI_Comm_size(comm, &commsize));
   if (commsize < 2) PetscFunctionReturn(0);
-  ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
+  PetscCall(DMGetPointSF(dm, &sf));
   if (!sf) PetscFunctionReturn(0);
-  ierr = PetscSFGetGraph(sf, &nroots, &nleaves, &mine, &remote);CHKERRQ(ierr);
+  PetscCall(PetscSFGetGraph(sf, &nroots, &nleaves, &mine, &remote));
   if (nroots < 0) PetscFunctionReturn(0);
   PetscCheckFalse(!dm->coordinates && !dm->coordinatesLocal,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM coordinates must be set");
-  ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
-  ierr = PetscSFGetRootRanks(sf, &nranks, &ranks, &roffset, &rmine, &rremote);CHKERRQ(ierr);
+  PetscCall(PetscSFSetUp(sf));
+  PetscCall(PetscSFGetRootRanks(sf, &nranks, &ranks, &roffset, &rmine, &rremote));
 
   /* Expand sent cones per rank */
-  ierr = SortByRemote_Private(sf, &rmine1, &rremote1);CHKERRQ(ierr);
-  ierr = GetRecursiveConeCoordinatesPerRank_Private(dm, sf, rmine1, &sntCoordinatesPerRank);CHKERRQ(ierr);
+  PetscCall(SortByRemote_Private(sf, &rmine1, &rremote1));
+  PetscCall(GetRecursiveConeCoordinatesPerRank_Private(dm, sf, rmine1, &sntCoordinatesPerRank));
 
   /* Create inverse SF */
-  ierr = PetscSFGetMultiSF(sf,&msf);CHKERRQ(ierr);
-  ierr = PetscSFCreateInverseSF(msf,&imsf);CHKERRQ(ierr);
-  ierr = PetscSFSetUp(imsf);CHKERRQ(ierr);
-  ierr = PetscSFGetGraph(imsf, NULL, &nileaves, NULL, NULL);CHKERRQ(ierr);
-  ierr = PetscSFGetRootRanks(imsf, &niranks, &iranks, &iroffset, &irmine, &irremote);CHKERRQ(ierr);
+  PetscCall(PetscSFGetMultiSF(sf,&msf));
+  PetscCall(PetscSFCreateInverseSF(msf,&imsf));
+  PetscCall(PetscSFSetUp(imsf));
+  PetscCall(PetscSFGetGraph(imsf, NULL, &nileaves, NULL, NULL));
+  PetscCall(PetscSFGetRootRanks(imsf, &niranks, &iranks, &iroffset, &irmine, &irremote));
 
   /* Compute original numbering of multi-roots (referenced points) */
-  ierr = PetscSFComputeMultiRootOriginalNumberingByRank_Private(sf, imsf, &mine_orig_numbering);CHKERRQ(ierr);
+  PetscCall(PetscSFComputeMultiRootOriginalNumberingByRank_Private(sf, imsf, &mine_orig_numbering));
 
   /* Expand coordinates of the referred cones per rank */
-  ierr = GetRecursiveConeCoordinatesPerRank_Private(dm, imsf, mine_orig_numbering, &refCoordinatesPerRank);CHKERRQ(ierr);
+  PetscCall(GetRecursiveConeCoordinatesPerRank_Private(dm, imsf, mine_orig_numbering, &refCoordinatesPerRank));
 
   /* Send the coordinates */
-  ierr = ExchangeVecByRank_Private((PetscObject)sf, nranks, ranks, sntCoordinatesPerRank, niranks, iranks, &recCoordinatesPerRank);CHKERRQ(ierr);
+  PetscCall(ExchangeVecByRank_Private((PetscObject)sf, nranks, ranks, sntCoordinatesPerRank, niranks, iranks, &recCoordinatesPerRank));
 
   /* verbose output */
-  ierr = PetscOptionsGetBool(((PetscObject)dm)->options, ((PetscObject)dm)->prefix, "-dm_plex_check_cones_conform_on_interfaces_verbose", &verbose, NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetBool(((PetscObject)dm)->options, ((PetscObject)dm)->prefix, "-dm_plex_check_cones_conform_on_interfaces_verbose", &verbose, NULL));
   if (verbose) {
     PetscViewer sv, v = PETSC_VIEWER_STDOUT_WORLD;
-    ierr = PetscViewerASCIIPrintf(v, "============\nDMPlexCheckInterfaceCones output\n============\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPushSynchronized(v);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(v, "[%d] --------\n", myrank);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(v, "============\nDMPlexCheckInterfaceCones output\n============\n"));
+    PetscCall(PetscViewerASCIIPushSynchronized(v));
+    PetscCall(PetscViewerASCIISynchronizedPrintf(v, "[%d] --------\n", myrank));
     for (r=0; r<nranks; r++) {
-      ierr = PetscViewerASCIISynchronizedPrintf(v, "  r=%D ranks[r]=%d sntCoordinatesPerRank[r]:\n", r, ranks[r]);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
-      ierr = PetscViewerGetSubViewer(v,PETSC_COMM_SELF,&sv);CHKERRQ(ierr);
-      ierr = VecView(sntCoordinatesPerRank[r], sv);CHKERRQ(ierr);
-      ierr = PetscViewerRestoreSubViewer(v,PETSC_COMM_SELF,&sv);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIISynchronizedPrintf(v, "  r=%D ranks[r]=%d sntCoordinatesPerRank[r]:\n", r, ranks[r]));
+      PetscCall(PetscViewerASCIIPushTab(v));
+      PetscCall(PetscViewerGetSubViewer(v,PETSC_COMM_SELF,&sv));
+      PetscCall(VecView(sntCoordinatesPerRank[r], sv));
+      PetscCall(PetscViewerRestoreSubViewer(v,PETSC_COMM_SELF,&sv));
+      PetscCall(PetscViewerASCIIPopTab(v));
     }
-    ierr = PetscViewerASCIISynchronizedPrintf(v, "  ----------\n");CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIISynchronizedPrintf(v, "  ----------\n"));
     for (r=0; r<niranks; r++) {
-      ierr = PetscViewerASCIISynchronizedPrintf(v, "  r=%D iranks[r]=%d refCoordinatesPerRank[r]:\n", r, iranks[r]);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
-      ierr = PetscViewerGetSubViewer(v,PETSC_COMM_SELF,&sv);CHKERRQ(ierr);
-      ierr = VecView(refCoordinatesPerRank[r], sv);CHKERRQ(ierr);
-      ierr = PetscViewerRestoreSubViewer(v,PETSC_COMM_SELF,&sv);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIISynchronizedPrintf(v, "  r=%D iranks[r]=%d refCoordinatesPerRank[r]:\n", r, iranks[r]));
+      PetscCall(PetscViewerASCIIPushTab(v));
+      PetscCall(PetscViewerGetSubViewer(v,PETSC_COMM_SELF,&sv));
+      PetscCall(VecView(refCoordinatesPerRank[r], sv));
+      PetscCall(PetscViewerRestoreSubViewer(v,PETSC_COMM_SELF,&sv));
+      PetscCall(PetscViewerASCIIPopTab(v));
     }
-    ierr = PetscViewerASCIISynchronizedPrintf(v, "  ----------\n");CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIISynchronizedPrintf(v, "  ----------\n"));
     for (r=0; r<niranks; r++) {
-      ierr = PetscViewerASCIISynchronizedPrintf(v, "  r=%D iranks[r]=%d recCoordinatesPerRank[r]:\n", r, iranks[r]);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
-      ierr = PetscViewerGetSubViewer(v,PETSC_COMM_SELF,&sv);CHKERRQ(ierr);
-      ierr = VecView(recCoordinatesPerRank[r], sv);CHKERRQ(ierr);
-      ierr = PetscViewerRestoreSubViewer(v,PETSC_COMM_SELF,&sv);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIISynchronizedPrintf(v, "  r=%D iranks[r]=%d recCoordinatesPerRank[r]:\n", r, iranks[r]));
+      PetscCall(PetscViewerASCIIPushTab(v));
+      PetscCall(PetscViewerGetSubViewer(v,PETSC_COMM_SELF,&sv));
+      PetscCall(VecView(recCoordinatesPerRank[r], sv));
+      PetscCall(PetscViewerRestoreSubViewer(v,PETSC_COMM_SELF,&sv));
+      PetscCall(PetscViewerASCIIPopTab(v));
     }
-    ierr = PetscViewerFlush(v);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPopSynchronized(v);CHKERRQ(ierr);
+    PetscCall(PetscViewerFlush(v));
+    PetscCall(PetscViewerASCIIPopSynchronized(v));
   }
 
   /* Compare recCoordinatesPerRank with refCoordinatesPerRank */
   for (r=0; r<niranks; r++) {
-    ierr = VecEqual(refCoordinatesPerRank[r], recCoordinatesPerRank[r], &same);CHKERRQ(ierr);
-    PetscCheckFalse(!same,PETSC_COMM_SELF, PETSC_ERR_PLIB, "interface cones do not conform for remote rank %d", iranks[r]);
+    PetscCall(VecEqual(refCoordinatesPerRank[r], recCoordinatesPerRank[r], &same));
+    PetscCheck(same,PETSC_COMM_SELF, PETSC_ERR_PLIB, "interface cones do not conform for remote rank %d", iranks[r]);
   }
 
   /* destroy sent stuff */
   for (r=0; r<nranks; r++) {
-    ierr = VecDestroy(&sntCoordinatesPerRank[r]);CHKERRQ(ierr);
+    PetscCall(VecDestroy(&sntCoordinatesPerRank[r]));
   }
-  ierr = PetscFree(sntCoordinatesPerRank);CHKERRQ(ierr);
-  ierr = PetscFree2(rmine1, rremote1);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&imsf);CHKERRQ(ierr);
+  PetscCall(PetscFree(sntCoordinatesPerRank));
+  PetscCall(PetscFree2(rmine1, rremote1));
+  PetscCall(PetscSFDestroy(&imsf));
 
   /* destroy referenced stuff */
   for (r=0; r<niranks; r++) {
-    ierr = VecDestroy(&refCoordinatesPerRank[r]);CHKERRQ(ierr);
+    PetscCall(VecDestroy(&refCoordinatesPerRank[r]));
   }
-  ierr = PetscFree(refCoordinatesPerRank);CHKERRQ(ierr);
-  ierr = PetscFree(mine_orig_numbering);CHKERRQ(ierr);
+  PetscCall(PetscFree(refCoordinatesPerRank));
+  PetscCall(PetscFree(mine_orig_numbering));
 
   /* destroy received stuff */
   for (r=0; r<niranks; r++) {
-    ierr = VecDestroy(&recCoordinatesPerRank[r]);CHKERRQ(ierr);
+    PetscCall(VecDestroy(&recCoordinatesPerRank[r]));
   }
-  ierr = PetscFree(recCoordinatesPerRank);CHKERRQ(ierr);
+  PetscCall(PetscFree(recCoordinatesPerRank));
   PetscFunctionReturn(0);
 }

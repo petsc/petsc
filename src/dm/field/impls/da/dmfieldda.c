@@ -14,12 +14,11 @@ DMField_DA;
 static PetscErrorCode DMFieldDestroy_DA(DMField field)
 {
   DMField_DA     *dafield;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   dafield = (DMField_DA *) field->data;
-  ierr = PetscFree3(dafield->cornerVals,dafield->cornerCoeffs,dafield->work);CHKERRQ(ierr);
-  ierr = PetscFree(dafield);CHKERRQ(ierr);
+  PetscCall(PetscFree3(dafield->cornerVals,dafield->cornerCoeffs,dafield->work));
+  PetscCall(PetscFree(dafield));
   PetscFunctionReturn(0);
 }
 
@@ -27,18 +26,17 @@ static PetscErrorCode DMFieldView_DA(DMField field,PetscViewer viewer)
 {
   DMField_DA     *dafield = (DMField_DA *) field->data;
   PetscBool      iascii;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
     PetscInt i, c, dim;
     PetscInt nc;
     DM       dm = field->dm;
 
-    ierr = PetscViewerASCIIPrintf(viewer, "Field corner values:\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Field corner values:\n"));
+    PetscCall(PetscViewerASCIIPushTab(viewer));
+    PetscCall(DMGetDimension(dm,&dim));
     nc = field->numComponents;
     for (i = 0, c = 0; i < (1 << dim); i++) {
       PetscInt j;
@@ -47,14 +45,14 @@ static PetscErrorCode DMFieldView_DA(DMField field,PetscViewer viewer)
         PetscScalar val = dafield->cornerVals[nc * i + j];
 
 #if !defined(PETSC_USE_COMPLEX)
-        ierr = PetscViewerASCIIPrintf(viewer,"%g ",(double) val);CHKERRQ(ierr);
+        PetscCall(PetscViewerASCIIPrintf(viewer,"%g ",(double) val));
 #else
-        ierr = PetscViewerASCIIPrintf(viewer,"%g+i%g ",(double) PetscRealPart(val),(double) PetscImaginaryPart(val));CHKERRQ(ierr);
+        PetscCall(PetscViewerASCIIPrintf(viewer,"%g+i%g ",(double) PetscRealPart(val),(double) PetscImaginaryPart(val)));
 #endif
       }
-      ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer,"\n"));
     }
-    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPopTab(viewer));
   }
   PetscFunctionReturn(0);
 }
@@ -194,20 +192,19 @@ static PetscErrorCode DMFieldEvaluate_DA(DMField field, Vec points, PetscDataTyp
   PetscInt       N, n, nc;
   const PetscScalar *array;
   PetscReal (*coordRange)[2];
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   dm      = field->dm;
   nc      = field->numComponents;
   dafield = (DMField_DA *) field->data;
-  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(points,&N);CHKERRQ(ierr);
+  PetscCall(DMGetDimension(dm,&dim));
+  PetscCall(VecGetLocalSize(points,&N));
   PetscCheckFalse(N % dim,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Point vector size %D not divisible by coordinate dimension %D",N,dim);
   n = N / dim;
   coordRange = &(dafield->coordRange[0]);
-  ierr = VecGetArrayRead(points,&array);CHKERRQ(ierr);
+  PetscCall(VecGetArrayRead(points,&array));
   MultilinearEvaluate(dim,coordRange,nc,dafield->cornerCoeffs,dafield->work,n,array,datatype,B,D,H);
-  ierr = VecRestoreArrayRead(points,&array);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(points,&array));
   PetscFunctionReturn(0);
 }
 
@@ -231,13 +228,12 @@ static PetscErrorCode DMFieldEvaluateFE_DA(DMField field, IS cellIS, PetscQuadra
   PetscBool      isStride;
   const PetscInt *cells = NULL;
   PetscInt       sfirst = -1, stride = -1, nCells;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   dafield = (DMField_DA *) field->data;
   dm = field->dm;
   nc = field->numComponents;
-  ierr = DMDAGetLocalInfo(dm,&info);CHKERRQ(ierr);
+  PetscCall(DMDAGetLocalInfo(dm,&info));
   dim = info.dim;
   work = dafield->work;
   stepPer[0] = 1./ info.mx;
@@ -250,23 +246,23 @@ static PetscErrorCode DMFieldEvaluateFE_DA(DMField field, IS cellIS, PetscQuadra
   cellsPer[1] = info.gym;
   cellsPer[2] = info.gzm;
   /* TODO: probably take components into account */
-  ierr = PetscQuadratureGetData(points, NULL, NULL, &nq, &q, NULL);CHKERRQ(ierr);
+  PetscCall(PetscQuadratureGetData(points, NULL, NULL, &nq, &q, NULL));
 #if defined(PETSC_USE_COMPLEX)
-  ierr = DMGetWorkArray(dm,nq * dim,MPIU_SCALAR,&qs);CHKERRQ(ierr);
+  PetscCall(DMGetWorkArray(dm,nq * dim,MPIU_SCALAR,&qs));
   for (i = 0; i < nq * dim; i++) qs[i] = q[i];
 #else
   qs = q;
 #endif
-  ierr = DMDAGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
-  ierr = DMGetWorkArray(dm,(1 << dim) * nc,MPIU_SCALAR,&cellCoeffs);CHKERRQ(ierr);
+  PetscCall(DMDAGetHeightStratum(dm,0,&cStart,&cEnd));
+  PetscCall(DMGetWorkArray(dm,(1 << dim) * nc,MPIU_SCALAR,&cellCoeffs));
   whol = (1 << dim);
   half = whol >> 1;
-  ierr = ISGetLocalSize(cellIS,&nCells);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)cellIS,ISSTRIDE,&isStride);CHKERRQ(ierr);
+  PetscCall(ISGetLocalSize(cellIS,&nCells));
+  PetscCall(PetscObjectTypeCompare((PetscObject)cellIS,ISSTRIDE,&isStride));
   if (isStride) {
-    ierr = ISStrideGetInfo(cellIS,&sfirst,&stride);CHKERRQ(ierr);
+    PetscCall(ISStrideGetInfo(cellIS,&sfirst,&stride));
   } else {
-    ierr = ISGetIndices(cellIS,&cells);CHKERRQ(ierr);
+    PetscCall(ISGetIndices(cellIS,&cells));
   }
   for (c = 0; c < nCells; c++) {
     PetscInt  cell = isStride ? (sfirst + c * stride) : cells[c];
@@ -303,11 +299,11 @@ static PetscErrorCode DMFieldEvaluateFE_DA(DMField field, IS cellIS, PetscQuadra
     MultilinearEvaluate(dim,cellCoordRange,nc,cellCoeffs,dafield->work,nq,qs,datatype,cB,cD,cH);
   }
   if (!isStride) {
-    ierr = ISRestoreIndices(cellIS,&cells);CHKERRQ(ierr);
+    PetscCall(ISRestoreIndices(cellIS,&cells));
   }
-  ierr = DMRestoreWorkArray(dm,(1 << dim) * nc,MPIU_SCALAR,&cellCoeffs);CHKERRQ(ierr);
+  PetscCall(DMRestoreWorkArray(dm,(1 << dim) * nc,MPIU_SCALAR,&cellCoeffs));
 #if defined(PETSC_USE_COMPLEX)
-  ierr = DMRestoreWorkArray(dm,nq * dim,MPIU_SCALAR,&qs);CHKERRQ(ierr);
+  PetscCall(DMRestoreWorkArray(dm,nq * dim,MPIU_SCALAR,&qs));
 #endif
   PetscFunctionReturn(0);
 }
@@ -325,13 +321,12 @@ static PetscErrorCode DMFieldEvaluateFV_DA(DMField field, IS cellIS, PetscDataTy
   PetscBool      isStride;
   const PetscInt *cells = NULL;
   PetscInt       sfirst = -1, stride = -1;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   dafield = (DMField_DA *) field->data;
   dm = field->dm;
   nc = field->numComponents;
-  ierr = DMDAGetLocalInfo(dm,&info);CHKERRQ(ierr);
+  PetscCall(DMDAGetLocalInfo(dm,&info));
   dim = info.dim;
   stepPer[0] = 1./ info.mx;
   stepPer[1] = 1./ info.my;
@@ -342,14 +337,14 @@ static PetscErrorCode DMFieldEvaluateFV_DA(DMField field, IS cellIS, PetscDataTy
   cellsPer[0] = info.gxm;
   cellsPer[1] = info.gym;
   cellsPer[2] = info.gzm;
-  ierr = DMDAGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(cellIS,&numCells);CHKERRQ(ierr);
-  ierr = DMGetWorkArray(dm,dim * numCells,MPIU_SCALAR,&points);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)cellIS,ISSTRIDE,&isStride);CHKERRQ(ierr);
+  PetscCall(DMDAGetHeightStratum(dm,0,&cStart,&cEnd));
+  PetscCall(ISGetLocalSize(cellIS,&numCells));
+  PetscCall(DMGetWorkArray(dm,dim * numCells,MPIU_SCALAR,&points));
+  PetscCall(PetscObjectTypeCompare((PetscObject)cellIS,ISSTRIDE,&isStride));
   if (isStride) {
-    ierr = ISStrideGetInfo(cellIS,&sfirst,&stride);CHKERRQ(ierr);
+    PetscCall(ISStrideGetInfo(cellIS,&sfirst,&stride));
   } else {
-    ierr = ISGetIndices(cellIS,&cells);CHKERRQ(ierr);
+    PetscCall(ISGetIndices(cellIS,&cells));
   }
   for (c = 0; c < numCells; c++) {
     PetscInt  cell = isStride ? (sfirst + c * stride) : cells[c];
@@ -364,10 +359,10 @@ static PetscErrorCode DMFieldEvaluateFV_DA(DMField field, IS cellIS, PetscDataTy
     }
   }
   if (!isStride) {
-    ierr = ISRestoreIndices(cellIS,&cells);CHKERRQ(ierr);
+    PetscCall(ISRestoreIndices(cellIS,&cells));
   }
   MultilinearEvaluate(dim,dafield->coordRange,nc,dafield->cornerCoeffs,dafield->work,numCells,points,datatype,B,D,H);
-  ierr = DMRestoreWorkArray(dm,dim * numCells,MPIU_SCALAR,&points);CHKERRQ(ierr);
+  PetscCall(DMRestoreWorkArray(dm,dim * numCells,MPIU_SCALAR,&points));
   PetscFunctionReturn(0);
 }
 
@@ -375,16 +370,15 @@ static PetscErrorCode DMFieldGetDegree_DA(DMField field, IS pointIS, PetscInt *m
 {
   DM             dm;
   PetscInt       dim, h, imin;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   dm = field->dm;
-  ierr = ISGetMinMax(pointIS,&imin,NULL);CHKERRQ(ierr);
-  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+  PetscCall(ISGetMinMax(pointIS,&imin,NULL));
+  PetscCall(DMGetDimension(dm,&dim));
   for (h = 0; h <= dim; h++) {
     PetscInt hEnd;
 
-    ierr = DMDAGetHeightStratum(dm,h,NULL,&hEnd);CHKERRQ(ierr);
+    PetscCall(DMDAGetHeightStratum(dm,h,NULL,&hEnd));
     if (imin < hEnd) break;
   }
   dim -= h;
@@ -397,22 +391,21 @@ static PetscErrorCode DMFieldCreateDefaultQuadrature_DA(DMField field, IS cellIS
 {
   PetscInt       h, dim, imax, imin;
   DM             dm;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   dm = field->dm;
-  ierr = ISGetMinMax(cellIS,&imin,&imax);CHKERRQ(ierr);
-  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+  PetscCall(ISGetMinMax(cellIS,&imin,&imax));
+  PetscCall(DMGetDimension(dm,&dim));
   *quad = NULL;
   for (h = 0; h <= dim; h++) {
     PetscInt hStart, hEnd;
 
-    ierr = DMDAGetHeightStratum(dm,h,&hStart,&hEnd);CHKERRQ(ierr);
+    PetscCall(DMDAGetHeightStratum(dm,h,&hStart,&hEnd));
     if (imin >= hStart && imax < hEnd) break;
   }
   dim -= h;
   if (dim > 0) {
-    ierr = PetscDTGaussTensorQuadrature(dim, 1, 1, -1.0, 1.0, quad);CHKERRQ(ierr);
+    PetscCall(PetscDTGaussTensorQuadrature(dim, 1, 1, -1.0, 1.0, quad));
   }
 
   PetscFunctionReturn(0);
@@ -424,7 +417,6 @@ static PetscErrorCode DMFieldInitialize_DA(DMField field)
   Vec            coords = NULL;
   PetscInt       dim, i, j, k;
   DMField_DA     *dafield = (DMField_DA *) field->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   field->ops->destroy                 = DMFieldDestroy_DA;
@@ -435,7 +427,7 @@ static PetscErrorCode DMFieldInitialize_DA(DMField field)
   field->ops->createDefaultQuadrature = DMFieldCreateDefaultQuadrature_DA;
   field->ops->view                    = DMFieldView_DA;
   dm = field->dm;
-  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+  PetscCall(DMGetDimension(dm,&dim));
   if (dm->coordinates) coords = dm->coordinates;
   else if (dm->coordinatesLocal) coords = dm->coordinatesLocal;
   if (coords) {
@@ -443,9 +435,9 @@ static PetscErrorCode DMFieldInitialize_DA(DMField field)
     const PetscScalar *array;
     PetscReal         mins[3][2] = {{PETSC_MAX_REAL,PETSC_MAX_REAL},{PETSC_MAX_REAL,PETSC_MAX_REAL},{PETSC_MAX_REAL,PETSC_MAX_REAL}};
 
-    ierr = VecGetLocalSize(coords,&n);CHKERRQ(ierr);
+    PetscCall(VecGetLocalSize(coords,&n));
     n /= dim;
-    ierr = VecGetArrayRead(coords,&array);CHKERRQ(ierr);
+    PetscCall(VecGetArrayRead(coords,&array));
     for (i = 0, k = 0; i < n; i++) {
       for (j = 0; j < dim; j++, k++) {
         PetscReal val = PetscRealPart(array[k]);
@@ -454,8 +446,8 @@ static PetscErrorCode DMFieldInitialize_DA(DMField field)
         mins[j][1] = PetscMin(mins[j][1],-val);
       }
     }
-    ierr = VecRestoreArrayRead(coords,&array);CHKERRQ(ierr);
-    ierr = MPIU_Allreduce((PetscReal *) mins,&(dafield->coordRange[0][0]),2*dim,MPIU_REAL,MPI_MIN,PetscObjectComm((PetscObject)dm));CHKERRMPI(ierr);
+    PetscCall(VecRestoreArrayRead(coords,&array));
+    PetscCallMPI(MPIU_Allreduce((PetscReal *) mins,&(dafield->coordRange[0][0]),2*dim,MPIU_REAL,MPI_MIN,PetscObjectComm((PetscObject)dm)));
     for (j = 0; j < dim; j++) {
       dafield->coordRange[j][1] = -dafield->coordRange[j][1];
     }
@@ -478,12 +470,11 @@ static PetscErrorCode DMFieldInitialize_DA(DMField field)
 PETSC_INTERN PetscErrorCode DMFieldCreate_DA(DMField field)
 {
   DMField_DA     *dafield;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(field,&dafield);CHKERRQ(ierr);
+  PetscCall(PetscNewLog(field,&dafield));
   field->data = dafield;
-  ierr = DMFieldInitialize_DA(field);CHKERRQ(ierr);
+  PetscCall(DMFieldInitialize_DA(field));
   PetscFunctionReturn(0);
 }
 
@@ -494,15 +485,14 @@ PetscErrorCode DMFieldCreateDA(DM dm, PetscInt nc, const PetscScalar *cornerValu
   PetscInt       dim, nv, i, j, k;
   PetscInt       half;
   PetscScalar    *cv, *cf, *work;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMFieldCreate(dm,nc,DMFIELD_VERTEX,&b);CHKERRQ(ierr);
-  ierr = DMFieldSetType(b,DMFIELDDA);CHKERRQ(ierr);
+  PetscCall(DMFieldCreate(dm,nc,DMFIELD_VERTEX,&b));
+  PetscCall(DMFieldSetType(b,DMFIELDDA));
   dafield = (DMField_DA *) b->data;
-  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+  PetscCall(DMGetDimension(dm,&dim));
   nv = (1 << dim) * nc;
-  ierr = PetscMalloc3(nv,&cv,nv,&cf,nv,&work);CHKERRQ(ierr);
+  PetscCall(PetscMalloc3(nv,&cv,nv,&cf,nv,&work));
   for (i = 0; i < nv; i++) cv[i] = cornerValues[i];
   for (i = 0; i < nv; i++) cf[i] = cv[i];
   dafield->cornerVals = cv;

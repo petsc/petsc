@@ -24,7 +24,6 @@ PetscErrorCode DMMoabSetFieldVector(DM dm, PetscInt ifield, Vec fvec)
   const PetscScalar *varray;
   PetscScalar *farray;
   moab::ErrorCode merr;
-  PetscErrorCode  ierr;
   std::string tag_name;
 
   PetscFunctionBegin;
@@ -37,22 +36,22 @@ PetscErrorCode DMMoabSetFieldVector(DM dm, PetscInt ifield, Vec fvec)
   merr = dmmoab->mbiface->tag_get_handle(dmmoab->fieldNames[ifield], 1, moab::MB_TYPE_DOUBLE, ntag,
                                          moab::MB_TAG_DENSE | moab::MB_TAG_CREAT); MBERRNM(merr);
 
-  ierr = DMMoabGetVecTag(fvec, &vtag);CHKERRQ(ierr);
+  PetscCall(DMMoabGetVecTag(fvec, &vtag));
 
   merr = dmmoab->mbiface->tag_get_name(vtag, tag_name);
   if (!tag_name.length() && merr != moab::MB_SUCCESS) {
-    ierr = VecGetArrayRead(fvec, &varray);CHKERRQ(ierr);
+    PetscCall(VecGetArrayRead(fvec, &varray));
     /* use the entity handle and the Dof index to set the right value */
     merr = dmmoab->mbiface->tag_set_data(ntag, *dmmoab->vowned, (const void*)varray); MBERRNM(merr);
-    ierr = VecRestoreArrayRead(fvec, &varray);CHKERRQ(ierr);
+    PetscCall(VecRestoreArrayRead(fvec, &varray));
   }
   else {
-    ierr = PetscMalloc1(dmmoab->nloc, &farray);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(dmmoab->nloc, &farray));
     /* we are using a MOAB Vec - directly copy the tag data to new one */
     merr = dmmoab->mbiface->tag_get_data(vtag, *dmmoab->vowned, (void*)farray); MBERRNM(merr);
     merr = dmmoab->mbiface->tag_set_data(ntag, *dmmoab->vowned, (const void*)farray); MBERRNM(merr);
     /* make sure the parallel exchange for ghosts are done appropriately */
-    ierr = PetscFree(farray);CHKERRQ(ierr);
+    PetscCall(PetscFree(farray));
   }
 #ifdef MOAB_HAVE_MPI
   merr = dmmoab->pcomm->exchange_tags(ntag, *dmmoab->vowned); MBERRNM(merr);
@@ -83,7 +82,6 @@ PetscErrorCode DMMoabSetGlobalFieldVector(DM dm, Vec fvec)
   const PetscScalar   *rarray;
   PetscScalar   *varray, *farray;
   moab::ErrorCode merr;
-  PetscErrorCode  ierr;
   PetscInt i, ifield;
   std::string tag_name;
   moab::Range::iterator iter;
@@ -93,12 +91,12 @@ PetscErrorCode DMMoabSetGlobalFieldVector(DM dm, Vec fvec)
   dmmoab = (DM_Moab*)(dm)->data;
 
   /* get the Tag corresponding to the global vector - possible that there is no tag associated.. */
-  ierr = DMMoabGetVecTag(fvec, &vtag);CHKERRQ(ierr);
+  PetscCall(DMMoabGetVecTag(fvec, &vtag));
   merr = dmmoab->mbiface->tag_get_name(vtag, tag_name);
-  ierr = PetscMalloc1(dmmoab->nloc, &farray);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(dmmoab->nloc, &farray));
   if (!tag_name.length() && merr != moab::MB_SUCCESS) {
     /* not a MOAB vector - use VecGetSubVector to get the parts as needed */
-    ierr = VecGetArrayRead(fvec, &rarray);CHKERRQ(ierr);
+    PetscCall(VecGetArrayRead(fvec, &rarray));
     for (ifield = 0; ifield < dmmoab->numFields; ++ifield) {
 
       /* Create a tag in MOAB mesh to index and keep track of number of Petsc vec tags */
@@ -112,10 +110,10 @@ PetscErrorCode DMMoabSetGlobalFieldVector(DM dm, Vec fvec)
       /* use the entity handle and the Dof index to set the right value */
       merr = dmmoab->mbiface->tag_set_data(ntag, *dmmoab->vowned, (const void*)farray); MBERRNM(merr);
     }
-    ierr = VecRestoreArrayRead(fvec, &rarray);CHKERRQ(ierr);
+    PetscCall(VecRestoreArrayRead(fvec, &rarray));
   }
   else {
-    ierr = PetscMalloc1(dmmoab->nloc * dmmoab->numFields, &varray);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(dmmoab->nloc * dmmoab->numFields, &varray));
 
     /* we are using a MOAB Vec - directly copy the tag data to new one */
     merr = dmmoab->mbiface->tag_get_data(vtag, *dmmoab->vowned, (void*)varray); MBERRNM(merr);
@@ -137,9 +135,9 @@ PetscErrorCode DMMoabSetGlobalFieldVector(DM dm, Vec fvec)
       merr = dmmoab->pcomm->exchange_tags(ntag, *dmmoab->vlocal); MBERRNM(merr);
 #endif
     }
-    ierr = PetscFree(varray);CHKERRQ(ierr);
+    PetscCall(PetscFree(varray));
   }
-  ierr = PetscFree(farray);CHKERRQ(ierr);
+  PetscCall(PetscFree(farray));
   PetscFunctionReturn(0);
 }
 
@@ -159,7 +157,6 @@ PetscErrorCode DMMoabSetGlobalFieldVector(DM dm, Vec fvec)
 @*/
 PetscErrorCode DMMoabSetFieldNames(DM dm, PetscInt numFields, const char* fields[])
 {
-  PetscErrorCode ierr;
   PetscInt       i;
   DM_Moab        *dmmoab;
 
@@ -170,20 +167,20 @@ PetscErrorCode DMMoabSetFieldNames(DM dm, PetscInt numFields, const char* fields
   /* first deallocate the existing field structure */
   if (dmmoab->fieldNames) {
     for (i = 0; i < dmmoab->numFields; i++) {
-      ierr = PetscFree(dmmoab->fieldNames[i]);CHKERRQ(ierr);
+      PetscCall(PetscFree(dmmoab->fieldNames[i]));
     }
-    ierr = PetscFree(dmmoab->fieldNames);CHKERRQ(ierr);
+    PetscCall(PetscFree(dmmoab->fieldNames));
   }
 
   /* now re-allocate and assign field names  */
   dmmoab->numFields = numFields;
-  ierr = PetscMalloc1(numFields, &dmmoab->fieldNames);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(numFields, &dmmoab->fieldNames));
   if (fields) {
     for (i = 0; i < dmmoab->numFields; i++) {
-      ierr = PetscStrallocpy(fields[i], (char**) &dmmoab->fieldNames[i]);CHKERRQ(ierr);
+      PetscCall(PetscStrallocpy(fields[i], (char**) &dmmoab->fieldNames[i]));
     }
   }
-  ierr = DMSetNumFields(dm, numFields);CHKERRQ(ierr);
+  PetscCall(DMSetNumFields(dm, numFields));
   PetscFunctionReturn(0);
 }
 
@@ -236,7 +233,6 @@ PetscErrorCode DMMoabGetFieldName(DM dm, PetscInt field, const char **fieldName)
 @*/
 PetscErrorCode DMMoabSetFieldName(DM dm, PetscInt field, const char *fieldName)
 {
-  PetscErrorCode ierr;
   DM_Moab        *dmmoab;
 
   PetscFunctionBegin;
@@ -247,9 +243,9 @@ PetscErrorCode DMMoabSetFieldName(DM dm, PetscInt field, const char *fieldName)
   PetscCheckFalse((field < 0) || (field >= dmmoab->numFields),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "DM field %d should be in [%d, %d)", field, 0, dmmoab->numFields);
 
   if (dmmoab->fieldNames[field]) {
-    ierr = PetscFree(dmmoab->fieldNames[field]);CHKERRQ(ierr);
+    PetscCall(PetscFree(dmmoab->fieldNames[field]));
   }
-  ierr = PetscStrallocpy(fieldName, (char**) &dmmoab->fieldNames[field]);CHKERRQ(ierr);
+  PetscCall(PetscStrallocpy(fieldName, (char**) &dmmoab->fieldNames[field]));
   PetscFunctionReturn(0);
 }
 
@@ -306,7 +302,6 @@ PetscErrorCode DMMoabGetFieldDof(DM dm, moab::EntityHandle point, PetscInt field
 PetscErrorCode DMMoabGetFieldDofs(DM dm, PetscInt npoints, const moab::EntityHandle* points, PetscInt field, PetscInt* dof)
 {
   PetscInt        i;
-  PetscErrorCode  ierr;
   DM_Moab        *dmmoab;
 
   PetscFunctionBegin;
@@ -315,7 +310,7 @@ PetscErrorCode DMMoabGetFieldDofs(DM dm, PetscInt npoints, const moab::EntityHan
   dmmoab = (DM_Moab*)(dm)->data;
 
   if (!dof) {
-    ierr = PetscMalloc1(npoints, &dof);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(npoints, &dof));
   }
 
   /* compute the DOF based on local blocking in the fields */
@@ -349,7 +344,6 @@ PetscErrorCode DMMoabGetFieldDofs(DM dm, PetscInt npoints, const moab::EntityHan
 PetscErrorCode DMMoabGetFieldDofsLocal(DM dm, PetscInt npoints, const moab::EntityHandle* points, PetscInt field, PetscInt* dof)
 {
   PetscInt i;
-  PetscErrorCode  ierr;
   DM_Moab        *dmmoab;
 
   PetscFunctionBegin;
@@ -358,7 +352,7 @@ PetscErrorCode DMMoabGetFieldDofsLocal(DM dm, PetscInt npoints, const moab::Enti
   dmmoab = (DM_Moab*)(dm)->data;
 
   if (!dof) {
-    ierr = PetscMalloc1(npoints, &dof);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(npoints, &dof));
   }
 
   /* compute the DOF based on local blocking in the fields */
@@ -392,7 +386,6 @@ PetscErrorCode DMMoabGetFieldDofsLocal(DM dm, PetscInt npoints, const moab::Enti
 PetscErrorCode DMMoabGetDofs(DM dm, PetscInt npoints, const moab::EntityHandle* points, PetscInt* dof)
 {
   PetscInt        i, field, offset;
-  PetscErrorCode  ierr;
   DM_Moab        *dmmoab;
 
   PetscFunctionBegin;
@@ -401,7 +394,7 @@ PetscErrorCode DMMoabGetDofs(DM dm, PetscInt npoints, const moab::EntityHandle* 
   dmmoab = (DM_Moab*)(dm)->data;
 
   if (!dof) {
-    ierr = PetscMalloc1(dmmoab->numFields * npoints, &dof);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(dmmoab->numFields * npoints, &dof));
   }
 
   /* compute the DOF based on local blocking in the fields */
@@ -437,7 +430,6 @@ PetscErrorCode DMMoabGetDofs(DM dm, PetscInt npoints, const moab::EntityHandle* 
 PetscErrorCode DMMoabGetDofsLocal(DM dm, PetscInt npoints, const moab::EntityHandle* points, PetscInt* dof)
 {
   PetscInt        i, field, offset;
-  PetscErrorCode  ierr;
   DM_Moab        *dmmoab;
 
   PetscFunctionBegin;
@@ -446,7 +438,7 @@ PetscErrorCode DMMoabGetDofsLocal(DM dm, PetscInt npoints, const moab::EntityHan
   dmmoab = (DM_Moab*)(dm)->data;
 
   if (!dof) {
-    ierr = PetscMalloc1(dmmoab->numFields * npoints, &dof);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(dmmoab->numFields * npoints, &dof));
   }
 
   /* compute the DOF based on local blocking in the fields */
@@ -484,7 +476,6 @@ PetscErrorCode DMMoabGetDofsBlocked(DM dm, PetscInt npoints, const moab::EntityH
 {
   PetscInt        i;
   DM_Moab        *dmmoab;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -492,7 +483,7 @@ PetscErrorCode DMMoabGetDofsBlocked(DM dm, PetscInt npoints, const moab::EntityH
   dmmoab = (DM_Moab*)(dm)->data;
 
   if (!dof) {
-    ierr = PetscMalloc1(npoints, &dof);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(npoints, &dof));
   }
 
   for (i = 0; i < npoints; ++i) {
@@ -524,19 +515,15 @@ PetscErrorCode DMMoabGetDofsBlockedLocal(DM dm, PetscInt npoints, const moab::En
 {
   PetscInt        i;
   DM_Moab        *dmmoab;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(points, 3);
   dmmoab = (DM_Moab*)(dm)->data;
 
-  if (!dof) {
-    ierr = PetscMalloc1(npoints, &dof);CHKERRQ(ierr);
-  }
+  if (!dof) PetscCall(PetscMalloc1(npoints, &dof));
 
-  for (i = 0; i < npoints; ++i)
-    dof[i] = dmmoab->lidmap[(PetscInt)points[i] - dmmoab->seqstart];
+  for (i = 0; i < npoints; ++i) dof[i] = dmmoab->lidmap[(PetscInt)points[i] - dmmoab->seqstart];
   PetscFunctionReturn(0);
 }
 
@@ -598,4 +585,3 @@ PetscErrorCode DMMoabGetVertexDofsBlockedLocal(DM dm, PetscInt** dof)
   *dof = dmmoab->lidmap;
   PetscFunctionReturn(0);
 }
-

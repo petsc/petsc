@@ -13,21 +13,20 @@ static PetscErrorCode PCLSCAllocate_Private(PC pc)
 {
   PC_LSC         *lsc = (PC_LSC*)pc->data;
   Mat            A;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (lsc->allocated) PetscFunctionReturn(0);
-  ierr = KSPCreate(PetscObjectComm((PetscObject)pc),&lsc->kspL);CHKERRQ(ierr);
-  ierr = KSPSetErrorIfNotConverged(lsc->kspL,pc->erroriffailure);CHKERRQ(ierr);
-  ierr = PetscObjectIncrementTabLevel((PetscObject)lsc->kspL,(PetscObject)pc,1);CHKERRQ(ierr);
-  ierr = KSPSetType(lsc->kspL,KSPPREONLY);CHKERRQ(ierr);
-  ierr = KSPSetOptionsPrefix(lsc->kspL,((PetscObject)pc)->prefix);CHKERRQ(ierr);
-  ierr = KSPAppendOptionsPrefix(lsc->kspL,"lsc_");CHKERRQ(ierr);
-  ierr = MatSchurComplementGetSubMatrices(pc->mat,&A,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = MatCreateVecs(A,&lsc->x0,&lsc->y0);CHKERRQ(ierr);
-  ierr = MatCreateVecs(pc->pmat,&lsc->x1,NULL);CHKERRQ(ierr);
+  PetscCall(KSPCreate(PetscObjectComm((PetscObject)pc),&lsc->kspL));
+  PetscCall(KSPSetErrorIfNotConverged(lsc->kspL,pc->erroriffailure));
+  PetscCall(PetscObjectIncrementTabLevel((PetscObject)lsc->kspL,(PetscObject)pc,1));
+  PetscCall(KSPSetType(lsc->kspL,KSPPREONLY));
+  PetscCall(KSPSetOptionsPrefix(lsc->kspL,((PetscObject)pc)->prefix));
+  PetscCall(KSPAppendOptionsPrefix(lsc->kspL,"lsc_"));
+  PetscCall(MatSchurComplementGetSubMatrices(pc->mat,&A,NULL,NULL,NULL,NULL));
+  PetscCall(MatCreateVecs(A,&lsc->x0,&lsc->y0));
+  PetscCall(MatCreateVecs(pc->pmat,&lsc->x1,NULL));
   if (lsc->scalediag) {
-    ierr = VecDuplicate(lsc->x0,&lsc->scale);CHKERRQ(ierr);
+    PetscCall(VecDuplicate(lsc->x0,&lsc->scale));
   }
   lsc->allocated = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -37,31 +36,30 @@ static PetscErrorCode PCSetUp_LSC(PC pc)
 {
   PC_LSC         *lsc = (PC_LSC*)pc->data;
   Mat            L,Lp,B,C;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PCLSCAllocate_Private(pc);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject)pc->mat,"LSC_L",(PetscObject*)&L);CHKERRQ(ierr);
-  if (!L) {ierr = PetscObjectQuery((PetscObject)pc->pmat,"LSC_L",(PetscObject*)&L);CHKERRQ(ierr);}
-  ierr = PetscObjectQuery((PetscObject)pc->pmat,"LSC_Lp",(PetscObject*)&Lp);CHKERRQ(ierr);
-  if (!Lp) {ierr = PetscObjectQuery((PetscObject)pc->mat,"LSC_Lp",(PetscObject*)&Lp);CHKERRQ(ierr);}
+  PetscCall(PCLSCAllocate_Private(pc));
+  PetscCall(PetscObjectQuery((PetscObject)pc->mat,"LSC_L",(PetscObject*)&L));
+  if (!L) PetscCall(PetscObjectQuery((PetscObject)pc->pmat,"LSC_L",(PetscObject*)&L));
+  PetscCall(PetscObjectQuery((PetscObject)pc->pmat,"LSC_Lp",(PetscObject*)&Lp));
+  if (!Lp) PetscCall(PetscObjectQuery((PetscObject)pc->mat,"LSC_Lp",(PetscObject*)&Lp));
   if (!L) {
-    ierr = MatSchurComplementGetSubMatrices(pc->mat,NULL,NULL,&B,&C,NULL);CHKERRQ(ierr);
+    PetscCall(MatSchurComplementGetSubMatrices(pc->mat,NULL,NULL,&B,&C,NULL));
     if (!lsc->L) {
-      ierr = MatMatMult(C,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&lsc->L);CHKERRQ(ierr);
+      PetscCall(MatMatMult(C,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&lsc->L));
     } else {
-      ierr = MatMatMult(C,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&lsc->L);CHKERRQ(ierr);
+      PetscCall(MatMatMult(C,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&lsc->L));
     }
     Lp = L = lsc->L;
   }
   if (lsc->scale) {
     Mat Ap;
-    ierr = MatSchurComplementGetSubMatrices(pc->mat,NULL,&Ap,NULL,NULL,NULL);CHKERRQ(ierr);
-    ierr = MatGetDiagonal(Ap,lsc->scale);CHKERRQ(ierr); /* Should be the mass matrix, but we don't have plumbing for that yet */
-    ierr = VecReciprocal(lsc->scale);CHKERRQ(ierr);
+    PetscCall(MatSchurComplementGetSubMatrices(pc->mat,NULL,&Ap,NULL,NULL,NULL));
+    PetscCall(MatGetDiagonal(Ap,lsc->scale)); /* Should be the mass matrix, but we don't have plumbing for that yet */
+    PetscCall(VecReciprocal(lsc->scale));
   }
-  ierr = KSPSetOperators(lsc->kspL,L,Lp);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(lsc->kspL);CHKERRQ(ierr);
+  PetscCall(KSPSetOperators(lsc->kspL,L,Lp));
+  PetscCall(KSPSetFromOptions(lsc->kspL));
   PetscFunctionReturn(0);
 }
 
@@ -69,81 +67,75 @@ static PetscErrorCode PCApply_LSC(PC pc,Vec x,Vec y)
 {
   PC_LSC         *lsc = (PC_LSC*)pc->data;
   Mat            A,B,C;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatSchurComplementGetSubMatrices(pc->mat,&A,NULL,&B,&C,NULL);CHKERRQ(ierr);
-  ierr = KSPSolve(lsc->kspL,x,lsc->x1);CHKERRQ(ierr);
-  ierr = KSPCheckSolve(lsc->kspL,pc,lsc->x1);CHKERRQ(ierr);
-  ierr = MatMult(B,lsc->x1,lsc->x0);CHKERRQ(ierr);
+  PetscCall(MatSchurComplementGetSubMatrices(pc->mat,&A,NULL,&B,&C,NULL));
+  PetscCall(KSPSolve(lsc->kspL,x,lsc->x1));
+  PetscCall(KSPCheckSolve(lsc->kspL,pc,lsc->x1));
+  PetscCall(MatMult(B,lsc->x1,lsc->x0));
   if (lsc->scale) {
-    ierr = VecPointwiseMult(lsc->x0,lsc->x0,lsc->scale);CHKERRQ(ierr);
+    PetscCall(VecPointwiseMult(lsc->x0,lsc->x0,lsc->scale));
   }
-  ierr = MatMult(A,lsc->x0,lsc->y0);CHKERRQ(ierr);
+  PetscCall(MatMult(A,lsc->x0,lsc->y0));
   if (lsc->scale) {
-    ierr = VecPointwiseMult(lsc->y0,lsc->y0,lsc->scale);CHKERRQ(ierr);
+    PetscCall(VecPointwiseMult(lsc->y0,lsc->y0,lsc->scale));
   }
-  ierr = MatMult(C,lsc->y0,lsc->x1);CHKERRQ(ierr);
-  ierr = KSPSolve(lsc->kspL,lsc->x1,y);CHKERRQ(ierr);
-  ierr = KSPCheckSolve(lsc->kspL,pc,y);CHKERRQ(ierr);
+  PetscCall(MatMult(C,lsc->y0,lsc->x1));
+  PetscCall(KSPSolve(lsc->kspL,lsc->x1,y));
+  PetscCall(KSPCheckSolve(lsc->kspL,pc,y));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCReset_LSC(PC pc)
 {
   PC_LSC         *lsc = (PC_LSC*)pc->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecDestroy(&lsc->x0);CHKERRQ(ierr);
-  ierr = VecDestroy(&lsc->y0);CHKERRQ(ierr);
-  ierr = VecDestroy(&lsc->x1);CHKERRQ(ierr);
-  ierr = VecDestroy(&lsc->scale);CHKERRQ(ierr);
-  ierr = KSPDestroy(&lsc->kspL);CHKERRQ(ierr);
-  ierr = MatDestroy(&lsc->L);CHKERRQ(ierr);
+  PetscCall(VecDestroy(&lsc->x0));
+  PetscCall(VecDestroy(&lsc->y0));
+  PetscCall(VecDestroy(&lsc->x1));
+  PetscCall(VecDestroy(&lsc->scale));
+  PetscCall(KSPDestroy(&lsc->kspL));
+  PetscCall(MatDestroy(&lsc->L));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCDestroy_LSC(PC pc)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PCReset_LSC(pc);CHKERRQ(ierr);
-  ierr = PetscFree(pc->data);CHKERRQ(ierr);
+  PetscCall(PCReset_LSC(pc));
+  PetscCall(PetscFree(pc->data));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCSetFromOptions_LSC(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_LSC         *lsc = (PC_LSC*)pc->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"LSC options");CHKERRQ(ierr);
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"LSC options"));
   {
-    ierr = PetscOptionsBool("-pc_lsc_scale_diag","Use diagonal of velocity block (A) for scaling","None",lsc->scalediag,&lsc->scalediag,NULL);CHKERRQ(ierr);
+    PetscCall(PetscOptionsBool("-pc_lsc_scale_diag","Use diagonal of velocity block (A) for scaling","None",lsc->scalediag,&lsc->scalediag,NULL));
   }
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCView_LSC(PC pc,PetscViewer viewer)
 {
   PC_LSC         *jac = (PC_LSC*)pc->data;
-  PetscErrorCode ierr;
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPushTab(viewer));
     if (jac->kspL) {
-      ierr = KSPView(jac->kspL,viewer);CHKERRQ(ierr);
+      PetscCall(KSPView(jac->kspL,viewer));
     } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"PCLSC KSP object not yet created, hence cannot display");CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer,"PCLSC KSP object not yet created, hence cannot display"));
     }
-    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPopTab(viewer));
   }
   PetscFunctionReturn(0);
 }
@@ -213,10 +205,9 @@ M*/
 PETSC_EXTERN PetscErrorCode PCCreate_LSC(PC pc)
 {
   PC_LSC         *lsc;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr     = PetscNewLog(pc,&lsc);CHKERRQ(ierr);
+  PetscCall(PetscNewLog(pc,&lsc));
   pc->data = (void*)lsc;
 
   pc->ops->apply           = PCApply_LSC;

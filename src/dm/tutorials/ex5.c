@@ -9,7 +9,6 @@ int main(int argc,char **argv)
 {
   PetscInt         M = 10,N = 8,ne,nc,i;
   const PetscInt   *e;
-  PetscErrorCode   ierr;
   PetscBool        flg = PETSC_FALSE;
   DM               da;
   PetscViewer      viewer;
@@ -19,51 +18,51 @@ int main(int argc,char **argv)
   DMDAStencilType  stype = DMDA_STENCIL_BOX;
   PetscScalar      *lv;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,300,300,&viewer);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,300,300,&viewer));
 
   /* Read options */
-  ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-star_stencil",&flg,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-star_stencil",&flg,NULL));
   if (flg) stype = DMDA_STENCIL_STAR;
 
   /* Create distributed array and get vectors */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,bx,by,stype,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
-  ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD,bx,by,stype,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMCreateGlobalVector(da,&global));
+  PetscCall(DMCreateLocalVector(da,&local));
 
   value = -3.0;
-  ierr  = VecSet(global,value);CHKERRQ(ierr);
-  ierr  = DMGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
-  ierr  = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
+  PetscCall(VecSet(global,value));
+  PetscCall(DMGlobalToLocalBegin(da,global,INSERT_VALUES,local));
+  PetscCall(DMGlobalToLocalEnd(da,global,INSERT_VALUES,local));
 
-  ierr = DMDASetElementType(da,DMDA_ELEMENT_P1);CHKERRQ(ierr);
-  ierr = DMDAGetElements(da,&ne,&nc,&e);CHKERRQ(ierr);
-  ierr = VecGetArray(local,&lv);CHKERRQ(ierr);
+  PetscCall(DMDASetElementType(da,DMDA_ELEMENT_P1));
+  PetscCall(DMDAGetElements(da,&ne,&nc,&e));
+  PetscCall(VecGetArray(local,&lv));
   for (i=0; i<ne; i++) {
-    ierr       = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"i %D e[3*i] %D %D %D\n",i,e[3*i],e[3*i+1],e[3*i+2]);CHKERRQ(ierr);
+    PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"i %D e[3*i] %D %D %D\n",i,e[3*i],e[3*i+1],e[3*i+2]));
     lv[e[3*i]] = i;
   }
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,stdout);CHKERRQ(ierr);
-  ierr = VecRestoreArray(local,&lv);CHKERRQ(ierr);
-  ierr = DMDARestoreElements(da,&ne,&nc,&e);CHKERRQ(ierr);
+  PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,stdout));
+  PetscCall(VecRestoreArray(local,&lv));
+  PetscCall(DMDARestoreElements(da,&ne,&nc,&e));
 
-  ierr = DMLocalToGlobalBegin(da,local,ADD_VALUES,global);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(da,local,ADD_VALUES,global);CHKERRQ(ierr);
+  PetscCall(DMLocalToGlobalBegin(da,local,ADD_VALUES,global));
+  PetscCall(DMLocalToGlobalEnd(da,local,ADD_VALUES,global));
 
-  ierr = DMView(da,viewer);CHKERRQ(ierr);
-  ierr = VecView(global,viewer);CHKERRQ(ierr);
+  PetscCall(DMView(da,viewer));
+  PetscCall(VecView(global,viewer));
 
   /* Free memory */
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = VecDestroy(&local);CHKERRQ(ierr);
-  ierr = VecDestroy(&global);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscViewerDestroy(&viewer));
+  PetscCall(VecDestroy(&local));
+  PetscCall(VecDestroy(&global));
+  PetscCall(DMDestroy(&da));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

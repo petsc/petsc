@@ -4,7 +4,6 @@ static char help[]= "  Test VecScatter with x, y on different communicators\n\n"
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode     ierr;
   PetscInt           i,n=5,rstart;
   PetscScalar        *val;
   const PetscScalar  *dat;
@@ -15,69 +14,69 @@ int main(int argc,char **argv)
   VecScatter         vscat1,vscat2;
 
   PetscFunctionBegin;
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&nproc);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&nproc));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   PetscCheckFalse(nproc != 2,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This test must run with exactly two MPI ranks");
 
   /* Create MPI vectors x and y, which are on the same comm (i.e., MPI_IDENT) */
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,n,PETSC_DECIDE,&x);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&y1);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(x,&rstart,NULL);CHKERRQ(ierr);
+  PetscCall(VecCreateMPI(PETSC_COMM_WORLD,n,PETSC_DECIDE,&x));
+  PetscCall(VecDuplicate(x,&y1));
+  PetscCall(VecGetOwnershipRange(x,&rstart,NULL));
 
   /* Set x's value locally. x would be {0., 1., 2., ..., 9.} */
-  ierr = VecGetArray(x,&val);CHKERRQ(ierr);
+  PetscCall(VecGetArray(x,&val));
   for (i=0; i<n; i++) val[i] = rstart + i;
-  ierr = VecRestoreArray(x,&val);CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(x,&val));
 
   /* Create index set ix = {0, 1, 2, ..., 9} */
-  ierr = ISCreateStride(PETSC_COMM_WORLD,n,rstart,1,&ix);CHKERRQ(ierr);
+  PetscCall(ISCreateStride(PETSC_COMM_WORLD,n,rstart,1,&ix));
 
   /* Create newcomm that reverses processes in x's comm, and then create y2 on it*/
-  ierr = MPI_Comm_split(PETSC_COMM_WORLD,0/*color*/,-rank/*key*/,&newcomm);CHKERRMPI(ierr);
-  ierr = VecCreateMPI(newcomm,n,PETSC_DECIDE,&y2);CHKERRQ(ierr);
+  PetscCallMPI(MPI_Comm_split(PETSC_COMM_WORLD,0/*color*/,-rank/*key*/,&newcomm));
+  PetscCall(VecCreateMPI(newcomm,n,PETSC_DECIDE,&y2));
 
   /* It looks vscat1/2 are the same, but actually not. y2 is on a different communicator than x */
-  ierr = VecScatterCreate(x,ix,y1,ix,&vscat1);CHKERRQ(ierr);
-  ierr = VecScatterCreate(x,ix,y2,ix,&vscat2);CHKERRQ(ierr);
+  PetscCall(VecScatterCreate(x,ix,y1,ix,&vscat1));
+  PetscCall(VecScatterCreate(x,ix,y2,ix,&vscat2));
 
-  ierr = VecScatterBegin(vscat1,x,y1,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterBegin(vscat2,x,y2,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (vscat1,x,y1,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (vscat2,x,y2,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  PetscCall(VecScatterBegin(vscat1,x,y1,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterBegin(vscat2,x,y2,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd  (vscat1,x,y1,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd  (vscat2,x,y2,INSERT_VALUES,SCATTER_FORWARD));
 
   /* View on rank 0 of x's comm, which is PETSC_COMM_WORLD */
   if (rank == 0) {
     /* Print the part of x on rank 0, which is 0 1 2 3 4 */
-    ierr = PetscPrintf(PETSC_COMM_SELF,"\nOn rank 0 of PETSC_COMM_WORLD, x  = ");CHKERRQ(ierr);
-    ierr = VecGetArrayRead(x,&dat);CHKERRQ(ierr);
-    for (i=0; i<n; i++) {ierr = PetscPrintf(PETSC_COMM_SELF," %.0g",(double)PetscRealPart(dat[i]));CHKERRQ(ierr);}
-    ierr = VecRestoreArrayRead(x,&dat);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"\nOn rank 0 of PETSC_COMM_WORLD, x  = "));
+    PetscCall(VecGetArrayRead(x,&dat));
+    for (i=0; i<n; i++) PetscCall(PetscPrintf(PETSC_COMM_SELF," %.0g",(double)PetscRealPart(dat[i])));
+    PetscCall(VecRestoreArrayRead(x,&dat));
 
     /* Print the part of y1 on rank 0, which is 0 1 2 3 4 */
-    ierr = PetscPrintf(PETSC_COMM_SELF,"\nOn rank 0 of PETSC_COMM_WORLD, y1 = ");CHKERRQ(ierr);
-    ierr = VecGetArrayRead(y1,&dat);CHKERRQ(ierr);
-    for (i=0; i<n; i++) {ierr = PetscPrintf(PETSC_COMM_SELF," %.0g",(double)PetscRealPart(dat[i]));CHKERRQ(ierr);}
-    ierr = VecRestoreArrayRead(y1,&dat);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"\nOn rank 0 of PETSC_COMM_WORLD, y1 = "));
+    PetscCall(VecGetArrayRead(y1,&dat));
+    for (i=0; i<n; i++) PetscCall(PetscPrintf(PETSC_COMM_SELF," %.0g",(double)PetscRealPart(dat[i])));
+    PetscCall(VecRestoreArrayRead(y1,&dat));
 
     /* Print the part of y2 on rank 0, which is 5 6 7 8 9 since y2 swapped the processes of PETSC_COMM_WORLD */
-    ierr = PetscPrintf(PETSC_COMM_SELF,"\nOn rank 0 of PETSC_COMM_WORLD, y2 = ");CHKERRQ(ierr);
-    ierr = VecGetArrayRead(y2,&dat);CHKERRQ(ierr);
-    for (i=0; i<n; i++) {ierr = PetscPrintf(PETSC_COMM_SELF," %.0g",(double)PetscRealPart(dat[i]));CHKERRQ(ierr);}
-    ierr = VecRestoreArrayRead(y2,&dat);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"\nOn rank 0 of PETSC_COMM_WORLD, y2 = "));
+    PetscCall(VecGetArrayRead(y2,&dat));
+    for (i=0; i<n; i++) PetscCall(PetscPrintf(PETSC_COMM_SELF," %.0g",(double)PetscRealPart(dat[i])));
+    PetscCall(VecRestoreArrayRead(y2,&dat));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"\n"));
   }
 
-  ierr = ISDestroy(&ix);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&y1);CHKERRQ(ierr);
-  ierr = VecDestroy(&y2);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&vscat1);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&vscat2);CHKERRQ(ierr);
-  ierr = MPI_Comm_free(&newcomm);CHKERRMPI(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(ISDestroy(&ix));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&y1));
+  PetscCall(VecDestroy(&y2));
+  PetscCall(VecScatterDestroy(&vscat1));
+  PetscCall(VecScatterDestroy(&vscat2));
+  PetscCallMPI(MPI_Comm_free(&newcomm));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST
@@ -86,4 +85,3 @@ int main(int argc,char **argv)
       nsize: 2
       requires: double
 TEST*/
-

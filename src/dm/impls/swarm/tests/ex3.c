@@ -15,21 +15,19 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionBeginUser;
   options->particlesPerCell = 1;
 
-  ierr = PetscOptionsBegin(comm, "", "CellSwarm Options", "DMSWARM");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-particles_per_cell", "Number of particles per cell", "ex3.c", options->particlesPerCell, &options->particlesPerCell, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm, "", "CellSwarm Options", "DMSWARM");PetscCall(ierr);
+  PetscCall(PetscOptionsInt("-particles_per_cell", "Number of particles per cell", "ex3.c", options->particlesPerCell, &options->particlesPerCell, NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
-  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
-  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
+  PetscCall(DMCreate(comm, dm));
+  PetscCall(DMSetType(*dm, DMPLEX));
+  PetscCall(DMSetFromOptions(*dm));
+  PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   PetscFunctionReturn(0);
 }
 
@@ -37,21 +35,20 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
 {
   PetscInt      *cellid;
   PetscInt       dim, cStart, cEnd, c, Np = user->particlesPerCell, p;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMCreate(PetscObjectComm((PetscObject) dm), sw);CHKERRQ(ierr);
-  ierr = DMSetType(*sw, DMSWARM);CHKERRQ(ierr);
-  ierr = DMSetDimension(*sw, dim);CHKERRQ(ierr);
-  ierr = DMSwarmSetType(*sw, DMSWARM_PIC);CHKERRQ(ierr);
-  ierr = DMSwarmSetCellDM(*sw, dm);CHKERRQ(ierr);
-  ierr = DMSwarmRegisterPetscDatatypeField(*sw, "kinematics", 2, PETSC_REAL);CHKERRQ(ierr);
-  ierr = DMSwarmFinalizeFieldRegister(*sw);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMSwarmSetLocalSizes(*sw, (cEnd - cStart) * Np, 0);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*sw);CHKERRQ(ierr);
-  ierr = DMSwarmGetField(*sw, DMSwarmPICField_cellid, NULL, NULL, (void **) &cellid);CHKERRQ(ierr);
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMCreate(PetscObjectComm((PetscObject) dm), sw));
+  PetscCall(DMSetType(*sw, DMSWARM));
+  PetscCall(DMSetDimension(*sw, dim));
+  PetscCall(DMSwarmSetType(*sw, DMSWARM_PIC));
+  PetscCall(DMSwarmSetCellDM(*sw, dm));
+  PetscCall(DMSwarmRegisterPetscDatatypeField(*sw, "kinematics", 2, PETSC_REAL));
+  PetscCall(DMSwarmFinalizeFieldRegister(*sw));
+  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+  PetscCall(DMSwarmSetLocalSizes(*sw, (cEnd - cStart) * Np, 0));
+  PetscCall(DMSetFromOptions(*sw));
+  PetscCall(DMSwarmGetField(*sw, DMSwarmPICField_cellid, NULL, NULL, (void **) &cellid));
   for (c = cStart; c < cEnd; ++c) {
     for (p = 0; p < Np; ++p) {
       const PetscInt n = c*Np + p;
@@ -59,9 +56,9 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
       cellid[n] = c;
     }
   }
-  ierr = DMSwarmRestoreField(*sw, DMSwarmPICField_cellid, NULL, NULL, (void **) &cellid);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) *sw, "Particles");CHKERRQ(ierr);
-  ierr = DMViewFromOptions(*sw, NULL, "-sw_view");CHKERRQ(ierr);
+  PetscCall(DMSwarmRestoreField(*sw, DMSwarmPICField_cellid, NULL, NULL, (void **) &cellid));
+  PetscCall(PetscObjectSetName((PetscObject) *sw, "Particles"));
+  PetscCall(DMViewFromOptions(*sw, NULL, "-sw_view"));
   PetscFunctionReturn(0);
 }
 
@@ -70,23 +67,22 @@ int main(int argc,char **argv)
   DM             dm, sw, cellsw; /* Mesh and particle managers */
   MPI_Comm       comm;
   AppCtx         user;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
-  ierr = ProcessOptions(comm, &user);CHKERRQ(ierr);
-  ierr = CreateMesh(comm, &dm, &user);CHKERRQ(ierr);
-  ierr = CreateParticles(dm, &sw, &user);CHKERRQ(ierr);
-  ierr = DMSetApplicationContext(sw, &user);CHKERRQ(ierr);
-  ierr = DMCreate(comm, &cellsw);CHKERRQ(ierr);
-  ierr = DMSwarmGetCellSwarm(sw, 1, cellsw);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(cellsw, NULL, "-subswarm_view");CHKERRQ(ierr);
-  ierr = DMSwarmRestoreCellSwarm(sw, 1, cellsw);CHKERRQ(ierr);
-  ierr = DMDestroy(&sw);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
-  ierr = DMDestroy(&cellsw);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(ProcessOptions(comm, &user));
+  PetscCall(CreateMesh(comm, &dm, &user));
+  PetscCall(CreateParticles(dm, &sw, &user));
+  PetscCall(DMSetApplicationContext(sw, &user));
+  PetscCall(DMCreate(comm, &cellsw));
+  PetscCall(DMSwarmGetCellSwarm(sw, 1, cellsw));
+  PetscCall(DMViewFromOptions(cellsw, NULL, "-subswarm_view"));
+  PetscCall(DMSwarmRestoreCellSwarm(sw, 1, cellsw));
+  PetscCall(DMDestroy(&sw));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(DMDestroy(&cellsw));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

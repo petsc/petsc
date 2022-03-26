@@ -20,12 +20,11 @@ T*/
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       i,n,first,step;
   IS             set;
   const PetscInt *indices;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   n     = 10;
   first = 3;
@@ -36,28 +35,28 @@ int main(int argc,char **argv)
     Note each processor is generating its own index set
     (in this case they are all identical)
   */
-  ierr = ISCreateStride(PETSC_COMM_SELF,n,first,step,&set);CHKERRQ(ierr);
-  ierr = ISView(set,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  PetscCall(ISCreateStride(PETSC_COMM_SELF,n,first,step,&set));
+  PetscCall(ISView(set,PETSC_VIEWER_STDOUT_SELF));
 
   /*
     Extract indices from set.
   */
-  ierr = ISGetIndices(set,&indices);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Printing indices directly\n");CHKERRQ(ierr);
+  PetscCall(ISGetIndices(set,&indices));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Printing indices directly\n"));
   for (i=0; i<n; i++) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT "\n",indices[i]);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT "\n",indices[i]));
   }
 
-  ierr = ISRestoreIndices(set,&indices);CHKERRQ(ierr);
+  PetscCall(ISRestoreIndices(set,&indices));
 
   /*
       Determine information on stride
   */
-  ierr = ISStrideGetInfo(set,&first,&step);CHKERRQ(ierr);
+  PetscCall(ISStrideGetInfo(set,&first,&step));
   PetscCheckFalse(first != 3 || step != 2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Stride info not correct!");
-  ierr = ISDestroy(&set);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(ISDestroy(&set));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

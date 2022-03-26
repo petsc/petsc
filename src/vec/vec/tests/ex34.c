@@ -10,153 +10,152 @@ int main(int argc,char **argv)
   PetscScalar    one=1,e=2.7181;
   PetscReal      nrm1,nrm2,nrm3,nrm4;
   PetscInt       ione=1;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,0,help));
   comm = MPI_COMM_SELF;
 
-  ierr = VecCreate(comm,&V);CHKERRQ(ierr);
-  ierr = VecSetSizes(V,10,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(V);CHKERRQ(ierr);
-  ierr = VecSetRandom(V,NULL);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(V);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(V);CHKERRQ(ierr);
+  PetscCall(VecCreate(comm,&V));
+  PetscCall(VecSetSizes(V,10,PETSC_DECIDE));
+  PetscCall(VecSetFromOptions(V));
+  PetscCall(VecSetRandom(V,NULL));
+  PetscCall(VecAssemblyBegin(V));
+  PetscCall(VecAssemblyEnd(V));
 
   /*
    * Initial
    */
   /* display norm 1 & 2 */
-  ierr = VecNorm(V,NORM_1,&nrm1);CHKERRQ(ierr);
-  ierr = VecNorm(V,NORM_2,&nrm2);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"Original: norm1=%e,norm2=%e\n",(double)nrm1,(double)nrm2);CHKERRQ(ierr);
+  PetscCall(VecNorm(V,NORM_1,&nrm1));
+  PetscCall(VecNorm(V,NORM_2,&nrm2));
+  PetscCall(PetscPrintf(comm,"Original: norm1=%e,norm2=%e\n",(double)nrm1,(double)nrm2));
 
   /* display cached norm 1 & 2 */
-  ierr = VecNorm(V,NORM_1,&nrm1);CHKERRQ(ierr);
-  ierr = VecNorm(V,NORM_2,&nrm2);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"cached: norm1=%e,norm2=%e\n",(double)nrm1,(double)nrm2);CHKERRQ(ierr);
+  PetscCall(VecNorm(V,NORM_1,&nrm1));
+  PetscCall(VecNorm(V,NORM_2,&nrm2));
+  PetscCall(PetscPrintf(comm,"cached: norm1=%e,norm2=%e\n",(double)nrm1,(double)nrm2));
 
   /*
    * Alter an element
    */
-  ierr = VecSetValues(V,1,&ione,&one,INSERT_VALUES);CHKERRQ(ierr);
+  PetscCall(VecSetValues(V,1,&ione,&one,INSERT_VALUES));
 
   /* display norm 1 & 2 */
-  ierr = VecNorm(V,NORM_1,&nrm1);CHKERRQ(ierr);
-  ierr = VecNorm(V,NORM_2,&nrm2);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"Altered: norm1=%e,norm2=%e\n",(double)nrm1,(double)nrm2);CHKERRQ(ierr);
+  PetscCall(VecNorm(V,NORM_1,&nrm1));
+  PetscCall(VecNorm(V,NORM_2,&nrm2));
+  PetscCall(PetscPrintf(comm,"Altered: norm1=%e,norm2=%e\n",(double)nrm1,(double)nrm2));
 
   /* display cached norm 1 & 2 */
-  ierr = VecNorm(V,NORM_1,&nrm1);CHKERRQ(ierr);
-  ierr = VecNorm(V,NORM_2,&nrm2);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"recomputed: norm1=%e,norm2=%e\n",(double)nrm1,(double)nrm2);CHKERRQ(ierr);
+  PetscCall(VecNorm(V,NORM_1,&nrm1));
+  PetscCall(VecNorm(V,NORM_2,&nrm2));
+  PetscCall(PetscPrintf(comm,"recomputed: norm1=%e,norm2=%e\n",(double)nrm1,(double)nrm2));
 
   /*
    * Scale the vector a little
    */
-  ierr = VecScale(V,e);CHKERRQ(ierr);
+  PetscCall(VecScale(V,e));
 
   /* display updated cached norm 1 & 2 */
-  ierr = VecNorm(V,NORM_1,&nrm1);CHKERRQ(ierr);
-  ierr = VecNorm(V,NORM_2,&nrm2);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"Scale: norm1=%e,norm2=%e\n",(double)nrm1,(double)nrm2);CHKERRQ(ierr);
+  PetscCall(VecNorm(V,NORM_1,&nrm1));
+  PetscCall(VecNorm(V,NORM_2,&nrm2));
+  PetscCall(PetscPrintf(comm,"Scale: norm1=%e,norm2=%e\n",(double)nrm1,(double)nrm2));
 
   /* display forced norm 1 & 2 */
-  ierr = PetscObjectStateIncrease((PetscObject)V);CHKERRQ(ierr);
-  ierr = VecNorm(V,NORM_1,&nrm1);CHKERRQ(ierr);
-  ierr = VecNorm(V,NORM_2,&nrm2);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"recompute: norm1=%e,norm2=%e\n",(double)nrm1,(double)nrm2);CHKERRQ(ierr);
+  PetscCall(PetscObjectStateIncrease((PetscObject)V));
+  PetscCall(VecNorm(V,NORM_1,&nrm1));
+  PetscCall(VecNorm(V,NORM_2,&nrm2));
+  PetscCall(PetscPrintf(comm,"recompute: norm1=%e,norm2=%e\n",(double)nrm1,(double)nrm2));
 
   /*
    * Normalize the vector a little
    */
-  ierr = VecNormalize(V,&nrm1);CHKERRQ(ierr);
+  PetscCall(VecNormalize(V,&nrm1));
 
   /* display updated cached norm 1 & 2 */
-  ierr = VecNorm(V,NORM_1,&nrm1);CHKERRQ(ierr);
-  ierr = VecNorm(V,NORM_2,&nrm2);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"Normalize: norm1=%e,norm2=%e\n",(double)nrm1,(double)nrm2);CHKERRQ(ierr);
+  PetscCall(VecNorm(V,NORM_1,&nrm1));
+  PetscCall(VecNorm(V,NORM_2,&nrm2));
+  PetscCall(PetscPrintf(comm,"Normalize: norm1=%e,norm2=%e\n",(double)nrm1,(double)nrm2));
 
   /* display forced norm 1 & 2 */
-  ierr = PetscObjectStateIncrease((PetscObject)V);CHKERRQ(ierr);
-  ierr = VecNorm(V,NORM_1,&nrm1);CHKERRQ(ierr);
-  ierr = VecNorm(V,NORM_2,&nrm2);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"recompute: norm1=%e,norm2=%e\n",(double)nrm1,(double)nrm2);CHKERRQ(ierr);
+  PetscCall(PetscObjectStateIncrease((PetscObject)V));
+  PetscCall(VecNorm(V,NORM_1,&nrm1));
+  PetscCall(VecNorm(V,NORM_2,&nrm2));
+  PetscCall(PetscPrintf(comm,"recompute: norm1=%e,norm2=%e\n",(double)nrm1,(double)nrm2));
 
   /*
    * Copy to another vector
    */
-  ierr = VecDuplicate(V,&W);CHKERRQ(ierr);
-  ierr = VecCopy(V,W);CHKERRQ(ierr);
+  PetscCall(VecDuplicate(V,&W));
+  PetscCall(VecCopy(V,W));
 
   /* display norm 1 & 2 */
-  ierr = VecNorm(V,NORM_1,&nrm1);CHKERRQ(ierr);
-  ierr = VecNorm(V,NORM_2,&nrm2);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"Original: norm1=%e,norm2=%e\n",(double)nrm1,(double)nrm2);CHKERRQ(ierr);
+  PetscCall(VecNorm(V,NORM_1,&nrm1));
+  PetscCall(VecNorm(V,NORM_2,&nrm2));
+  PetscCall(PetscPrintf(comm,"Original: norm1=%e,norm2=%e\n",(double)nrm1,(double)nrm2));
 
   /* display cached norm 1 & 2 */
-  ierr = VecNorm(W,NORM_1,&nrm1);CHKERRQ(ierr);
-  ierr = VecNorm(W,NORM_2,&nrm2);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"copied: norm1=%e,norm2=%e\n",(double)nrm1,(double)nrm2);CHKERRQ(ierr);
+  PetscCall(VecNorm(W,NORM_1,&nrm1));
+  PetscCall(VecNorm(W,NORM_2,&nrm2));
+  PetscCall(PetscPrintf(comm,"copied: norm1=%e,norm2=%e\n",(double)nrm1,(double)nrm2));
 
   /*
    * Copy while data is invalid
    */
-  ierr = VecSetValues(V,1,&ione,&one,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecCopy(V,W);CHKERRQ(ierr);
+  PetscCall(VecSetValues(V,1,&ione,&one,INSERT_VALUES));
+  PetscCall(VecCopy(V,W));
 
   /* display norm 1 & 2 */
-  ierr = VecNorm(V,NORM_1,&nrm1);CHKERRQ(ierr);
-  ierr = VecNorm(V,NORM_2,&nrm2);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"Invalidated: norm1=%e,norm2=%e\n",(double)nrm1,(double)nrm2);CHKERRQ(ierr);
+  PetscCall(VecNorm(V,NORM_1,&nrm1));
+  PetscCall(VecNorm(V,NORM_2,&nrm2));
+  PetscCall(PetscPrintf(comm,"Invalidated: norm1=%e,norm2=%e\n",(double)nrm1,(double)nrm2));
 
   /* display norm 1 & 2 */
-  ierr = VecNorm(W,NORM_1,&nrm1);CHKERRQ(ierr);
-  ierr = VecNorm(W,NORM_2,&nrm2);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"copied: norm1=%e,norm2=%e\n",(double)nrm1,(double)nrm2);CHKERRQ(ierr);
+  PetscCall(VecNorm(W,NORM_1,&nrm1));
+  PetscCall(VecNorm(W,NORM_2,&nrm2));
+  PetscCall(PetscPrintf(comm,"copied: norm1=%e,norm2=%e\n",(double)nrm1,(double)nrm2));
 
   /*
    * Constant vector
    */
-  ierr = VecSet(V,e);CHKERRQ(ierr);
+  PetscCall(VecSet(V,e));
 
   /* display updated cached norm 1 & 2 */
-  ierr = VecNorm(V,NORM_1,&nrm1);CHKERRQ(ierr);
-  ierr = VecNorm(V,NORM_2,&nrm2);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"Constant: norm1=%e,norm2=%e\n",(double)nrm1,(double)nrm2);CHKERRQ(ierr);
+  PetscCall(VecNorm(V,NORM_1,&nrm1));
+  PetscCall(VecNorm(V,NORM_2,&nrm2));
+  PetscCall(PetscPrintf(comm,"Constant: norm1=%e,norm2=%e\n",(double)nrm1,(double)nrm2));
 
   /* display forced norm 1 & 2 */
-  ierr = PetscObjectStateIncrease((PetscObject)V);CHKERRQ(ierr);
-  ierr = VecNorm(V,NORM_1,&nrm1);CHKERRQ(ierr);
-  ierr = VecNorm(V,NORM_2,&nrm2);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"recomputed: norm1=%e,norm2=%e\n",(double)nrm1,(double)nrm2);CHKERRQ(ierr);
+  PetscCall(PetscObjectStateIncrease((PetscObject)V));
+  PetscCall(VecNorm(V,NORM_1,&nrm1));
+  PetscCall(VecNorm(V,NORM_2,&nrm2));
+  PetscCall(PetscPrintf(comm,"recomputed: norm1=%e,norm2=%e\n",(double)nrm1,(double)nrm2));
 
   /*
    * Swap vectors
    */
-  ierr = VecNorm(V,NORM_1,&nrm1);CHKERRQ(ierr);
-  ierr = VecNorm(W,NORM_1,&nrm2);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"Orig: norm_V=%e,norm_W=%e\n",(double)nrm1,(double)nrm2);CHKERRQ(ierr);
+  PetscCall(VecNorm(V,NORM_1,&nrm1));
+  PetscCall(VecNorm(W,NORM_1,&nrm2));
+  PetscCall(PetscPrintf(comm,"Orig: norm_V=%e,norm_W=%e\n",(double)nrm1,(double)nrm2));
   /* store inf norm */
-  ierr = VecNorm(V,NORM_INFINITY,&nrm3);CHKERRQ(ierr);
-  ierr = VecNorm(W,NORM_INFINITY,&nrm4);CHKERRQ(ierr);
+  PetscCall(VecNorm(V,NORM_INFINITY,&nrm3));
+  PetscCall(VecNorm(W,NORM_INFINITY,&nrm4));
 
-  ierr = VecSwap(V,W);CHKERRQ(ierr);
+  PetscCall(VecSwap(V,W));
 
-  ierr = PetscObjectStateIncrease((PetscObject)V);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject)W);CHKERRQ(ierr);
-  ierr = VecNorm(V,NORM_1,&nrm1);CHKERRQ(ierr);
-  ierr = VecNorm(W,NORM_1,&nrm2);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"swapped: norm_V=%e,norm_W=%e\n",(double)nrm2,(double)nrm1);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"orig: F-norm_V=%e,F-norm_W=%e\n",(double)nrm3,(double)nrm4);CHKERRQ(ierr);
-  ierr = VecNorm(V,NORM_INFINITY,&nrm3);CHKERRQ(ierr);
-  ierr = VecNorm(W,NORM_INFINITY,&nrm4);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"swapped: F-norm_V=%e,F-norm_W=%e\n",(double)nrm4,(double)nrm3);CHKERRQ(ierr);
+  PetscCall(PetscObjectStateIncrease((PetscObject)V));
+  PetscCall(PetscObjectStateIncrease((PetscObject)W));
+  PetscCall(VecNorm(V,NORM_1,&nrm1));
+  PetscCall(VecNorm(W,NORM_1,&nrm2));
+  PetscCall(PetscPrintf(comm,"swapped: norm_V=%e,norm_W=%e\n",(double)nrm2,(double)nrm1));
+  PetscCall(PetscPrintf(comm,"orig: F-norm_V=%e,F-norm_W=%e\n",(double)nrm3,(double)nrm4));
+  PetscCall(VecNorm(V,NORM_INFINITY,&nrm3));
+  PetscCall(VecNorm(W,NORM_INFINITY,&nrm4));
+  PetscCall(PetscPrintf(comm,"swapped: F-norm_V=%e,F-norm_W=%e\n",(double)nrm4,(double)nrm3));
 
-  ierr = VecDestroy(&V);CHKERRQ(ierr);
-  ierr = VecDestroy(&W);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(VecDestroy(&V));
+  PetscCall(VecDestroy(&W));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

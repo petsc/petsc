@@ -19,43 +19,42 @@ int main(int argc,char **args)
   PetscViewer    fd;              /* viewer */
   char           file[PETSC_MAX_PATH_LEN];     /* input file name */
   PetscBool      flg,partition=PETSC_FALSE,displayIS=PETSC_FALSE,displayMat=PETSC_FALSE;
-  PetscErrorCode ierr;
   PetscInt       its,m,n;
   PetscReal      norm;
   PetscMPIInt    size,rank;
   PetscScalar    one = 1.0;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
-  ierr = PetscOptionsGetBool(NULL,NULL,"-partition",&partition,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-displayIS",&displayIS,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-displayMat",&displayMat,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-partition",&partition,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-displayIS",&displayIS,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-displayMat",&displayMat,NULL));
 
   /* Determine file from which we read the matrix.*/
-  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg);CHKERRQ(ierr);
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Must indicate binary file with the -f option");
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Must indicate binary file with the -f option");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - -
                            Load system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatLoad(A,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatLoad(A,fd));
+  PetscCall(PetscViewerDestroy(&fd));
+  PetscCall(MatGetLocalSize(A,&m,&n));
   PetscCheckFalse(m != n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%D, %D)", m, n);
 
   /* Create rhs vector of all ones */
-  ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
-  ierr = VecSetSizes(b,m,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(b);CHKERRQ(ierr);
-  ierr = VecSet(b,one);CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&b));
+  PetscCall(VecSetSizes(b,m,PETSC_DECIDE));
+  PetscCall(VecSetFromOptions(b));
+  PetscCall(VecSet(b,one));
 
-  ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
-  ierr = VecDuplicate(b,&u);CHKERRQ(ierr);
-  ierr = VecSet(x,0.0);CHKERRQ(ierr);
+  PetscCall(VecDuplicate(b,&x));
+  PetscCall(VecDuplicate(b,&u));
+  PetscCall(VecSet(x,0.0));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - -
                       Test partition
@@ -67,90 +66,90 @@ int main(int argc,char **args)
     Mat             BB;
 
     if (displayMat) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Before partitioning/reordering, A:\n");CHKERRQ(ierr);
-      ierr = MatView(A,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Before partitioning/reordering, A:\n"));
+      PetscCall(MatView(A,PETSC_VIEWER_DRAW_WORLD));
     }
 
-    ierr = PetscMalloc1(size,&count);CHKERRQ(ierr);
-    ierr = MatPartitioningCreate(PETSC_COMM_WORLD, &mpart);CHKERRQ(ierr);
-    ierr = MatPartitioningSetAdjacency(mpart, A);CHKERRQ(ierr);
-    /* ierr = MatPartitioningSetVertexWeights(mpart, weight);CHKERRQ(ierr); */
-    ierr = MatPartitioningSetFromOptions(mpart);CHKERRQ(ierr);
-    ierr = MatPartitioningApply(mpart, &mis);CHKERRQ(ierr);
-    ierr = MatPartitioningDestroy(&mpart);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(size,&count));
+    PetscCall(MatPartitioningCreate(PETSC_COMM_WORLD, &mpart));
+    PetscCall(MatPartitioningSetAdjacency(mpart, A));
+    /* PetscCall(MatPartitioningSetVertexWeights(mpart, weight)); */
+    PetscCall(MatPartitioningSetFromOptions(mpart));
+    PetscCall(MatPartitioningApply(mpart, &mis));
+    PetscCall(MatPartitioningDestroy(&mpart));
     if (displayIS) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"mis, new processor assignment:\n");CHKERRQ(ierr);
-      ierr = ISView(mis,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"mis, new processor assignment:\n"));
+      PetscCall(ISView(mis,PETSC_VIEWER_STDOUT_WORLD));
     }
 
-    ierr = ISPartitioningToNumbering(mis,&nis);CHKERRQ(ierr);
+    PetscCall(ISPartitioningToNumbering(mis,&nis));
     if (displayIS) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"nis:\n");CHKERRQ(ierr);
-      ierr = ISView(nis,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"nis:\n"));
+      PetscCall(ISView(nis,PETSC_VIEWER_STDOUT_WORLD));
     }
 
-    ierr = ISPartitioningCount(mis,size,count);CHKERRQ(ierr);
-    ierr = ISDestroy(&mis);CHKERRQ(ierr);
+    PetscCall(ISPartitioningCount(mis,size,count));
+    PetscCall(ISDestroy(&mis));
     if (displayIS && rank == 0) {
       PetscInt i;
-      ierr = PetscPrintf(PETSC_COMM_SELF,"[ %d ] count:\n",rank);CHKERRQ(ierr);
-      for (i=0; i<size; i++) {ierr = PetscPrintf(PETSC_COMM_WORLD," %d",count[i]);CHKERRQ(ierr);}
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"\n");CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,"[ %d ] count:\n",rank));
+      for (i=0; i<size; i++) PetscCall(PetscPrintf(PETSC_COMM_WORLD," %d",count[i]));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n"));
     }
 
-    ierr = ISInvertPermutation(nis, count[rank], &is);CHKERRQ(ierr);
-    ierr = PetscFree(count);CHKERRQ(ierr);
-    ierr = ISDestroy(&nis);CHKERRQ(ierr);
-    ierr = ISSort(is);CHKERRQ(ierr);
+    PetscCall(ISInvertPermutation(nis, count[rank], &is));
+    PetscCall(PetscFree(count));
+    PetscCall(ISDestroy(&nis));
+    PetscCall(ISSort(is));
     if (displayIS) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"inverse of nis - maps new local rows to old global rows:\n");CHKERRQ(ierr);
-      ierr = ISView(is,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"inverse of nis - maps new local rows to old global rows:\n"));
+      PetscCall(ISView(is,PETSC_VIEWER_STDOUT_WORLD));
     }
 
-    ierr = MatCreateSubMatrix(A,is,is,MAT_INITIAL_MATRIX,&BB);CHKERRQ(ierr);
+    PetscCall(MatCreateSubMatrix(A,is,is,MAT_INITIAL_MATRIX,&BB));
     if (displayMat) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"After partitioning/reordering, A:\n");CHKERRQ(ierr);
-      ierr = MatView(BB,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"After partitioning/reordering, A:\n"));
+      PetscCall(MatView(BB,PETSC_VIEWER_DRAW_WORLD));
     }
 
     /* need to move the vector also */
-    ierr = ISDestroy(&is);CHKERRQ(ierr);
-    ierr = MatDestroy(&A);CHKERRQ(ierr);
+    PetscCall(ISDestroy(&is));
+    PetscCall(MatDestroy(&A));
     A    = BB;
   }
 
   /* Create linear solver; set operators; set runtime options.*/
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPSetOperators(ksp,A,A));
+  PetscCall(KSPSetFromOptions(ksp));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - -
                            Solve system
         - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
+  PetscCall(KSPSolve(ksp,b,x));
+  PetscCall(KSPGetIterationNumber(ksp,&its));
 
   /* Check error */
-  ierr = MatMult(A,x,u);CHKERRQ(ierr);
-  ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);
-  ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",(double)norm);CHKERRQ(ierr);
+  PetscCall(MatMult(A,x,u));
+  PetscCall(VecAXPY(u,-1.0,b));
+  PetscCall(VecNorm(u,NORM_2,&norm));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",(double)norm));
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL, "-ksp_reason", &flg,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetBool(NULL,NULL, "-ksp_reason", &flg,NULL));
   if (flg) {
     KSPConvergedReason reason;
-    ierr = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);
+    PetscCall(KSPGetConvergedReason(ksp,&reason));
     PetscPrintf(PETSC_COMM_WORLD,"KSPConvergedReason: %D\n", reason);
   }
 
   /* Free work space.*/
-  ierr = MatDestroy(&A);CHKERRQ(ierr); ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr); ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+  PetscCall(MatDestroy(&A)); PetscCall(VecDestroy(&b));
+  PetscCall(VecDestroy(&u)); PetscCall(VecDestroy(&x));
+  PetscCall(KSPDestroy(&ksp));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

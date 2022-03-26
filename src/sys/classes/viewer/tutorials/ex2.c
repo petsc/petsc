@@ -6,17 +6,16 @@ static char help[] = "Demonstrates PetscOptionsGetViewer().\n\n";
 int main(int argc,char **args)
 {
   PetscViewer       viewer;
-  PetscErrorCode    ierr;
   PetscViewerFormat format;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,NULL,"-myviewer",&viewer,&format,NULL);CHKERRQ(ierr);
-  ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
-  ierr = PetscViewerView(viewer,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,NULL,"-myviewer",&viewer,&format,NULL));
+  PetscCall(PetscViewerPushFormat(viewer,format));
+  PetscCall(PetscViewerView(viewer,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscViewerPopFormat(viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

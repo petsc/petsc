@@ -6,19 +6,15 @@
 
 PetscErrorCode PCApply_None(PC pc,Vec x,Vec y)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = VecCopy(x,y);CHKERRQ(ierr);
+  PetscCall(VecCopy(x,y));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PCMatApply_None(PC pc,Mat X,Mat Y)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = MatCopy(X,Y,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  PetscCall(MatCopy(X,Y,SAME_NONZERO_PATTERN));
   PetscFunctionReturn(0);
 }
 

@@ -17,7 +17,6 @@ int FormElementStiffness(PetscReal H,PetscScalar *Ke)
 
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
   Mat            C;
   PetscMPIInt    rank,size;
   PetscInt       i,m = 5,N,start,end,M;
@@ -28,72 +27,72 @@ int main(int argc,char **args)
   KSP            ksp;
   MatNullSpace   nullsp;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   N    = (m+1)*(m+1); /* dimension of matrix */
   M    = m*m; /* number of elements */
   h    = 1.0/m;    /* mesh width */
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   /* Create stiffness matrix */
-  ierr  = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
-  ierr  = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
-  ierr  = MatSetFromOptions(C);CHKERRQ(ierr);
-  ierr  = MatSetUp(C);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&C));
+  PetscCall(MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,N,N));
+  PetscCall(MatSetFromOptions(C));
+  PetscCall(MatSetUp(C));
   start = rank*(M/size) + ((M%size) < rank ? (M%size) : rank);
   end   = start + M/size + ((M%size) > rank);
 
   /* Assemble matrix */
-  ierr = FormElementStiffness(h*h,Ke);CHKERRQ(ierr);   /* element stiffness for Laplacian */
+  PetscCall(FormElementStiffness(h*h,Ke));   /* element stiffness for Laplacian */
   for (i=start; i<end; i++) {
     /* location of lower left corner of element */
     /* node numbers for the four corners of element */
     idx[0] = (m+1)*(i/m) + (i % m);
     idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
-    ierr   = MatSetValues(C,4,idx,4,idx,Ke,ADD_VALUES);CHKERRQ(ierr);
+    PetscCall(MatSetValues(C,4,idx,4,idx,Ke,ADD_VALUES));
   }
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
 
   /* Create right-hand-side and solution vectors */
-  ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
-  ierr = VecSetSizes(u,PETSC_DECIDE,N);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(u);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)u,"Approx. Solution");CHKERRQ(ierr);
-  ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)b,"Right hand side");CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&u));
+  PetscCall(VecSetSizes(u,PETSC_DECIDE,N));
+  PetscCall(VecSetFromOptions(u));
+  PetscCall(PetscObjectSetName((PetscObject)u,"Approx. Solution"));
+  PetscCall(VecDuplicate(u,&b));
+  PetscCall(PetscObjectSetName((PetscObject)b,"Right hand side"));
 
-  ierr = VecSet(b,1.0);CHKERRQ(ierr);
-  ierr = VecSetValue(b,0,1.2,ADD_VALUES);CHKERRQ(ierr);
-  ierr = VecSet(u,0.0);CHKERRQ(ierr);
+  PetscCall(VecSet(b,1.0));
+  PetscCall(VecSetValue(b,0,1.2,ADD_VALUES));
+  PetscCall(VecSet(u,0.0));
 
   /* Solve linear system */
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,C,C);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPSetOperators(ksp,C,C));
+  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(KSPSetInitialGuessNonzero(ksp,PETSC_TRUE));
 
-  ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,NULL,&nullsp);CHKERRQ(ierr);
+  PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,NULL,&nullsp));
   /*
      The KSP solver will remove this nullspace from the solution at each iteration
   */
-  ierr = MatSetNullSpace(C,nullsp);CHKERRQ(ierr);
+  PetscCall(MatSetNullSpace(C,nullsp));
   /*
      The KSP solver will remove from the right hand side any portion in this nullspace, thus making the linear system consistent.
   */
-  ierr = MatSetTransposeNullSpace(C,nullsp);CHKERRQ(ierr);
-  ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
+  PetscCall(MatSetTransposeNullSpace(C,nullsp));
+  PetscCall(MatNullSpaceDestroy(&nullsp));
 
-  ierr = KSPSolve(ksp,b,u);CHKERRQ(ierr);
+  PetscCall(KSPSolve(ksp,b,u));
 
   /* Free work space */
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(VecDestroy(&u));
+  PetscCall(VecDestroy(&b));
+  PetscCall(MatDestroy(&C));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

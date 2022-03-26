@@ -7,32 +7,31 @@ int main(int argc,char **argv)
   Vec            x;
   PetscReal      norm;
   PetscLogDouble t1,t2;
-  PetscErrorCode ierr;
   PetscInt       n = 10000;
 
-  ierr = PetscInitialize(&argc,&argv,0,0);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,0,0));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
-  ierr = VecCreate(PETSC_COMM_SELF,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,n,n);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_SELF,&x));
+  PetscCall(VecSetSizes(x,n,n));
+  PetscCall(VecSetFromOptions(x));
 
   PetscPreLoadBegin(PETSC_TRUE,"VecNorm");
-  ierr = PetscTime(&t1);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
+  PetscCall(PetscTime(&t1));
+  PetscCall(VecNorm(x,NORM_2,&norm));
+  PetscCall(VecNorm(x,NORM_2,&norm));
+  PetscCall(VecNorm(x,NORM_2,&norm));
+  PetscCall(VecNorm(x,NORM_2,&norm));
+  PetscCall(VecNorm(x,NORM_2,&norm));
+  PetscCall(VecNorm(x,NORM_2,&norm));
+  PetscCall(VecNorm(x,NORM_2,&norm));
+  PetscCall(VecNorm(x,NORM_2,&norm));
+  PetscCall(VecNorm(x,NORM_2,&norm));
+  PetscCall(VecNorm(x,NORM_2,&norm));
   PetscPreLoadEnd();
-  ierr = PetscTime(&t2);CHKERRQ(ierr);
+  PetscCall(PetscTime(&t2));
   fprintf(stdout,"%s : \n","VecNorm");
   fprintf(stdout," Time %g\n",t2-t1);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }

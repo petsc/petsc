@@ -24,18 +24,18 @@ int main(int argc,char **args)
   Vec            x,y,z;
   PetscBool      view=PETSC_FALSE,use_interface=PETSC_TRUE;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "FFTW Options", "ex143");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-vec_view draw", "View the vectors", "ex143", view, &view, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-use_FFTW_interface", "Use PETSc-FFTW interface", "ex143",use_interface, &use_interface, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "FFTW Options", "ex143");PetscCall(ierr);
+  PetscCall(PetscOptionsBool("-vec_view draw", "View the vectors", "ex143", view, &view, NULL));
+  PetscCall(PetscOptionsBool("-use_FFTW_interface", "Use PETSc-FFTW interface", "ex143",use_interface, &use_interface, NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
-  ierr = PetscOptionsGetBool(NULL,NULL,"-use_FFTW_interface",&use_interface,NULL);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-use_FFTW_interface",&use_interface,NULL));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD, &rdm);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
+  PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &rdm));
+  PetscCall(PetscRandomSetFromOptions(rdm));
 
   if (!use_interface) {
     /* Use mpi FFTW without PETSc-FFTW interface, 2D case only */
@@ -46,7 +46,7 @@ int main(int argc,char **args)
 
     DIM = 2;
     if (rank == 0) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Use FFTW without PETSc-FFTW interface, DIM %" PetscInt_FMT "\n",DIM);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,"Use FFTW without PETSc-FFTW interface, DIM %" PetscInt_FMT "\n",DIM));
     }
     fftw_mpi_init();
     N           = N0*N1;
@@ -56,40 +56,40 @@ int main(int argc,char **args)
     data_out  = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
     data_out2 = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
 
-    ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,(PetscInt)local_n0*N1,(PetscInt)N,(const PetscScalar*)data_in,&x);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) x, "Real Space vector");CHKERRQ(ierr);
-    ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,(PetscInt)local_n0*N1,(PetscInt)N,(const PetscScalar*)data_out,&y);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) y, "Frequency space vector");CHKERRQ(ierr);
-    ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,(PetscInt)local_n0*N1,(PetscInt)N,(const PetscScalar*)data_out2,&z);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) z, "Reconstructed vector");CHKERRQ(ierr);
+    PetscCall(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,(PetscInt)local_n0*N1,(PetscInt)N,(const PetscScalar*)data_in,&x));
+    PetscCall(PetscObjectSetName((PetscObject) x, "Real Space vector"));
+    PetscCall(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,(PetscInt)local_n0*N1,(PetscInt)N,(const PetscScalar*)data_out,&y));
+    PetscCall(PetscObjectSetName((PetscObject) y, "Frequency space vector"));
+    PetscCall(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,(PetscInt)local_n0*N1,(PetscInt)N,(const PetscScalar*)data_out2,&z));
+    PetscCall(PetscObjectSetName((PetscObject) z, "Reconstructed vector"));
 
     fplan = fftw_mpi_plan_dft_2d(N0,N1,data_in,data_out,PETSC_COMM_WORLD,FFTW_FORWARD,FFTW_ESTIMATE);
     bplan = fftw_mpi_plan_dft_2d(N0,N1,data_out,data_out2,PETSC_COMM_WORLD,FFTW_BACKWARD,FFTW_ESTIMATE);
 
-    ierr = VecSetRandom(x, rdm);CHKERRQ(ierr);
-    if (view) {ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
+    PetscCall(VecSetRandom(x, rdm));
+    if (view) PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
 
     fftw_execute(fplan);
-    if (view) {ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
+    if (view) PetscCall(VecView(y,PETSC_VIEWER_STDOUT_WORLD));
 
     fftw_execute(bplan);
 
     /* Compare x and z. FFTW computes an unnormalized DFT, thus z = N*x */
     a    = 1.0/(PetscReal)N;
-    ierr = VecScale(z,a);CHKERRQ(ierr);
-    if (view) {ierr = VecView(z, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
-    ierr = VecAXPY(z,-1.0,x);CHKERRQ(ierr);
-    ierr = VecNorm(z,NORM_1,&enorm);CHKERRQ(ierr);
+    PetscCall(VecScale(z,a));
+    if (view) PetscCall(VecView(z, PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(VecAXPY(z,-1.0,x));
+    PetscCall(VecNorm(z,NORM_1,&enorm));
     if (enorm > 1.e-11 && rank == 0) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %g\n",(double)enorm);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %g\n",(double)enorm));
     }
 
     /* Free spaces */
     fftw_destroy_plan(fplan);
     fftw_destroy_plan(bplan);
-    fftw_free(data_in);  ierr = VecDestroy(&x);CHKERRQ(ierr);
-    fftw_free(data_out); ierr = VecDestroy(&y);CHKERRQ(ierr);
-    fftw_free(data_out2);ierr = VecDestroy(&z);CHKERRQ(ierr);
+    fftw_free(data_in);  PetscCall(VecDestroy(&x));
+    fftw_free(data_out); PetscCall(VecDestroy(&y));
+    fftw_free(data_out2);PetscCall(VecDestroy(&z));
 
   } else {
     /* Use PETSc-FFTW interface                  */
@@ -100,7 +100,7 @@ int main(int argc,char **args)
     N=1;
     for (i=1; i<5; i++) {
       DIM  = i;
-      ierr = PetscMalloc1(i,&dim);CHKERRQ(ierr);
+      PetscCall(PetscMalloc1(i,&dim));
       for (k=0; k<i; k++) {
         dim[k]=30;
       }
@@ -109,48 +109,48 @@ int main(int argc,char **args)
       /* Create FFTW object */
       if (rank == 0) printf("Use PETSc-FFTW interface...%d-DIM: %d\n",(int)DIM,(int)N);
 
-      ierr = MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A);CHKERRQ(ierr);
+      PetscCall(MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A));
 
       /* Create vectors that are compatible with parallel layout of A - must call MatCreateVecs()! */
 
-      ierr = MatCreateVecsFFTW(A,&x,&y,&z);CHKERRQ(ierr);
-      ierr = PetscObjectSetName((PetscObject) x, "Real space vector");CHKERRQ(ierr);
-      ierr = PetscObjectSetName((PetscObject) y, "Frequency space vector");CHKERRQ(ierr);
-      ierr = PetscObjectSetName((PetscObject) z, "Reconstructed vector");CHKERRQ(ierr);
+      PetscCall(MatCreateVecsFFTW(A,&x,&y,&z));
+      PetscCall(PetscObjectSetName((PetscObject) x, "Real space vector"));
+      PetscCall(PetscObjectSetName((PetscObject) y, "Frequency space vector"));
+      PetscCall(PetscObjectSetName((PetscObject) z, "Reconstructed vector"));
 
       /* Set values of space vector x */
-      ierr = VecSetRandom(x,rdm);CHKERRQ(ierr);
+      PetscCall(VecSetRandom(x,rdm));
 
-      if (view) {ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
+      if (view) PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
 
       /* Apply FFTW_FORWARD and FFTW_BACKWARD */
-      ierr = MatMult(A,x,y);CHKERRQ(ierr);
-      if (view) {ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
+      PetscCall(MatMult(A,x,y));
+      if (view) PetscCall(VecView(y,PETSC_VIEWER_STDOUT_WORLD));
 
-      ierr = MatMultTranspose(A,y,z);CHKERRQ(ierr);
+      PetscCall(MatMultTranspose(A,y,z));
 
       /* Compare x and z. FFTW computes an unnormalized DFT, thus z = N*x */
       a    = 1.0/(PetscReal)N;
-      ierr = VecScale(z,a);CHKERRQ(ierr);
-      if (view) {ierr = VecView(z,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
-      ierr = VecAXPY(z,-1.0,x);CHKERRQ(ierr);
-      ierr = VecNorm(z,NORM_1,&enorm);CHKERRQ(ierr);
+      PetscCall(VecScale(z,a));
+      if (view) PetscCall(VecView(z,PETSC_VIEWER_STDOUT_WORLD));
+      PetscCall(VecAXPY(z,-1.0,x));
+      PetscCall(VecNorm(z,NORM_1,&enorm));
       if (enorm > 1.e-9 && rank == 0) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %e\n",enorm);CHKERRQ(ierr);
+        PetscCall(PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %e\n",enorm));
       }
 
-      ierr = VecDestroy(&x);CHKERRQ(ierr);
-      ierr = VecDestroy(&y);CHKERRQ(ierr);
-      ierr = VecDestroy(&z);CHKERRQ(ierr);
-      ierr = MatDestroy(&A);CHKERRQ(ierr);
+      PetscCall(VecDestroy(&x));
+      PetscCall(VecDestroy(&y));
+      PetscCall(VecDestroy(&z));
+      PetscCall(MatDestroy(&A));
 
-      ierr = PetscFree(dim);CHKERRQ(ierr);
+      PetscCall(PetscFree(dim));
     }
   }
 
-  ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscRandomDestroy(&rdm));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -8,73 +8,72 @@ int main(int argc,char **args)
   Vec            x,b,u;      /* approx solution, RHS, exact solution */
   Mat            A;            /* linear system matrix */
   KSP            ksp;         /* KSP context */
-  PetscErrorCode ierr;
   PetscInt       i,n = 10,col[3],its,i1,i2;
   PetscScalar    none = -1.0,value[3],avalue;
   PetscReal      norm;
   PC             pc;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
   /* Create vectors */
-  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,PETSC_DECIDE,n);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&u);CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+  PetscCall(VecSetSizes(x,PETSC_DECIDE,n));
+  PetscCall(VecSetFromOptions(x));
+  PetscCall(VecDuplicate(x,&b));
+  PetscCall(VecDuplicate(x,&u));
 
   /* create a solution that is orthogonal to the constants */
-  ierr = VecGetOwnershipRange(u,&i1,&i2);CHKERRQ(ierr);
+  PetscCall(VecGetOwnershipRange(u,&i1,&i2));
   for (i=i1; i<i2; i++) {
     avalue = i;
     VecSetValues(u,1,&i,&avalue,INSERT_VALUES);
   }
-  ierr   = VecAssemblyBegin(u);CHKERRQ(ierr);
-  ierr   = VecAssemblyEnd(u);CHKERRQ(ierr);
-  ierr   = VecSum(u,&avalue);CHKERRQ(ierr);
+  PetscCall(VecAssemblyBegin(u));
+  PetscCall(VecAssemblyEnd(u));
+  PetscCall(VecSum(u,&avalue));
   avalue = -avalue/(PetscReal)n;
-  ierr   = VecShift(u,avalue);CHKERRQ(ierr);
+  PetscCall(VecShift(u,avalue));
 
   /* Create and assemble matrix */
-  ierr     = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr     = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,n,n);CHKERRQ(ierr);
-  ierr     = MatSetFromOptions(A);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,n,n));
+  PetscCall(MatSetFromOptions(A));
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
   for (i=1; i<n-1; i++) {
     col[0] = i-1; col[1] = i; col[2] = i+1;
-    ierr   = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(MatSetValues(A,1,&i,3,col,value,INSERT_VALUES));
   }
   i    = n - 1; col[0] = n - 2; col[1] = n - 1; value[1] = 1.0;
-  ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
+  PetscCall(MatSetValues(A,1,&i,2,col,value,INSERT_VALUES));
   i    = 0; col[0] = 0; col[1] = 1; value[0] = 1.0; value[1] = -1.0;
-  ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatMult(A,u,b);CHKERRQ(ierr);
+  PetscCall(MatSetValues(A,1,&i,2,col,value,INSERT_VALUES));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatMult(A,u,b));
 
   /* Create KSP context; set operators and options; solve linear system */
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPSetOperators(ksp,A,A));
 
   /* Insure that preconditioner has same null space as matrix */
   /* currently does not do anything */
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+  PetscCall(KSPGetPC(ksp,&pc));
 
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-  /* ierr = KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
+  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(KSPSolve(ksp,b,x));
+  /* PetscCall(KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD)); */
 
   /* Check error */
-  ierr = VecAXPY(x,none,u);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its);CHKERRQ(ierr);
+  PetscCall(VecAXPY(x,none,u));
+  PetscCall(VecNorm(x,NORM_2,&norm));
+  PetscCall(KSPGetIterationNumber(ksp,&its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its));
 
   /* Free work space */
-  ierr = VecDestroy(&x);CHKERRQ(ierr);ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(VecDestroy(&x));PetscCall(VecDestroy(&u));
+  PetscCall(VecDestroy(&b));PetscCall(MatDestroy(&A));
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(PetscFinalize());
+  return 0;
 }

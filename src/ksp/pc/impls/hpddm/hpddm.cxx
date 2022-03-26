@@ -22,24 +22,23 @@ const char *const PCHPDDMCoarseCorrectionTypes[] = { "DEFLATED", "ADDITIVE", "BA
 
 static PetscErrorCode PCReset_HPDDM(PC pc)
 {
-  PC_HPDDM       *data = (PC_HPDDM*)pc->data;
-  PetscInt       i;
-  PetscErrorCode ierr;
+  PC_HPDDM *data = (PC_HPDDM*)pc->data;
+  PetscInt i;
 
   PetscFunctionBegin;
   if (data->levels) {
     for (i = 0; i < PETSC_PCHPDDM_MAXLEVELS && data->levels[i]; ++i) {
-      ierr = KSPDestroy(&data->levels[i]->ksp);CHKERRQ(ierr);
-      ierr = PCDestroy(&data->levels[i]->pc);CHKERRQ(ierr);
-      ierr = PetscFree(data->levels[i]);CHKERRQ(ierr);
+      PetscCall(KSPDestroy(&data->levels[i]->ksp));
+      PetscCall(PCDestroy(&data->levels[i]->pc));
+      PetscCall(PetscFree(data->levels[i]));
     }
-    ierr = PetscFree(data->levels);CHKERRQ(ierr);
+    PetscCall(PetscFree(data->levels));
   }
 
-  ierr = ISDestroy(&data->is);CHKERRQ(ierr);
-  ierr = MatDestroy(&data->aux);CHKERRQ(ierr);
-  ierr = MatDestroy(&data->B);CHKERRQ(ierr);
-  ierr = VecDestroy(&data->normal);CHKERRQ(ierr);
+  PetscCall(ISDestroy(&data->is));
+  PetscCall(MatDestroy(&data->aux));
+  PetscCall(MatDestroy(&data->B));
+  PetscCall(VecDestroy(&data->normal));
   data->correction = PC_HPDDM_COARSE_CORRECTION_DEFLATED;
   data->Neumann    = PETSC_FALSE;
   data->setup      = NULL;
@@ -49,40 +48,38 @@ static PetscErrorCode PCReset_HPDDM(PC pc)
 
 static PetscErrorCode PCDestroy_HPDDM(PC pc)
 {
-  PC_HPDDM       *data = (PC_HPDDM*)pc->data;
-  PetscErrorCode ierr;
+  PC_HPDDM *data = (PC_HPDDM*)pc->data;
 
   PetscFunctionBegin;
-  ierr = PCReset_HPDDM(pc);CHKERRQ(ierr);
-  ierr = PetscFree(data);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)pc, NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetAuxiliaryMat_C", NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMHasNeumannMat_C", NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetRHSMat_C", NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetCoarseCorrectionType_C", NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMGetCoarseCorrectionType_C", NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMGetSTShareSubKSP_C", NULL);CHKERRQ(ierr);
+  PetscCall(PCReset_HPDDM(pc));
+  PetscCall(PetscFree(data));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)pc, NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetAuxiliaryMat_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMHasNeumannMat_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetRHSMat_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetCoarseCorrectionType_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMGetCoarseCorrectionType_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMGetSTShareSubKSP_C", NULL));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCHPDDMSetAuxiliaryMat_HPDDM(PC pc, IS is, Mat A, PetscErrorCode (*setup)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void*), void* setup_ctx)
 {
-  PC_HPDDM       *data = (PC_HPDDM*)pc->data;
-  PetscErrorCode ierr;
+  PC_HPDDM *data = (PC_HPDDM*)pc->data;
 
   PetscFunctionBegin;
   if (is) {
-    ierr = PetscObjectReference((PetscObject)is);CHKERRQ(ierr);
+    PetscCall(PetscObjectReference((PetscObject)is));
     if (data->is) { /* new overlap definition resets the PC */
-      ierr = PCReset_HPDDM(pc);CHKERRQ(ierr);
+      PetscCall(PCReset_HPDDM(pc));
       pc->setfromoptionscalled = 0;
     }
-    ierr = ISDestroy(&data->is);CHKERRQ(ierr);
+    PetscCall(ISDestroy(&data->is));
     data->is = is;
   }
   if (A) {
-    ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
-    ierr = MatDestroy(&data->aux);CHKERRQ(ierr);
+    PetscCall(PetscObjectReference((PetscObject)A));
+    PetscCall(MatDestroy(&data->aux));
     data->aux = A;
   }
   if (setup) {
@@ -108,8 +105,6 @@ static PetscErrorCode PCHPDDMSetAuxiliaryMat_HPDDM(PC pc, IS is, Mat A, PetscErr
 @*/
 PetscErrorCode PCHPDDMSetAuxiliaryMat(PC pc, IS is, Mat A, PetscErrorCode (*setup)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void*), void* setup_ctx)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   if (is) PetscValidHeaderSpecific(is, IS_CLASSID, 2);
@@ -118,7 +113,7 @@ PetscErrorCode PCHPDDMSetAuxiliaryMat(PC pc, IS is, Mat A, PetscErrorCode (*setu
   if (reinterpret_cast<void*>(setup) == reinterpret_cast<void*>(PETSC_NULL_FUNCTION_Fortran)) setup = NULL;
   if (setup_ctx == PETSC_NULL_INTEGER_Fortran) setup_ctx = NULL;
 #endif
-  ierr = PetscTryMethod(pc, "PCHPDDMSetAuxiliaryMat_C", (PC, IS, Mat, PetscErrorCode (*)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void*), void*), (pc, is, A, setup, setup_ctx));CHKERRQ(ierr);
+  PetscCall(PetscTryMethod(pc, "PCHPDDMSetAuxiliaryMat_C", (PC, IS, Mat, PetscErrorCode (*)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void*), void*), (pc, is, A, setup, setup_ctx)));
   PetscFunctionReturn(0);
 }
 
@@ -144,22 +139,19 @@ static PetscErrorCode PCHPDDMHasNeumannMat_HPDDM(PC pc, PetscBool has)
 @*/
 PetscErrorCode PCHPDDMHasNeumannMat(PC pc, PetscBool has)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  ierr = PetscTryMethod(pc, "PCHPDDMHasNeumannMat_C", (PC, PetscBool), (pc, has));CHKERRQ(ierr);
+  PetscCall(PetscTryMethod(pc, "PCHPDDMHasNeumannMat_C", (PC, PetscBool), (pc, has)));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCHPDDMSetRHSMat_HPDDM(PC pc, Mat B)
 {
-  PC_HPDDM       *data = (PC_HPDDM*)pc->data;
-  PetscErrorCode ierr;
+  PC_HPDDM *data = (PC_HPDDM*)pc->data;
 
   PetscFunctionBegin;
-  ierr = PetscObjectReference((PetscObject)B);CHKERRQ(ierr);
-  ierr = MatDestroy(&data->B);CHKERRQ(ierr);
+  PetscCall(PetscObjectReference((PetscObject)B));
+  PetscCall(MatDestroy(&data->B));
   data->B = B;
   PetscFunctionReturn(0);
 }
@@ -177,13 +169,11 @@ static PetscErrorCode PCHPDDMSetRHSMat_HPDDM(PC pc, Mat B)
 @*/
 PetscErrorCode PCHPDDMSetRHSMat(PC pc, Mat B)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   if (B) {
     PetscValidHeaderSpecific(B, MAT_CLASSID, 2);
-    ierr = PetscTryMethod(pc, "PCHPDDMSetRHSMat_C", (PC, Mat), (pc, B));CHKERRQ(ierr);
+    PetscCall(PetscTryMethod(pc, "PCHPDDMSetRHSMat_C", (PC, Mat), (pc, B)));
   }
   PetscFunctionReturn(0);
 }
@@ -198,50 +188,47 @@ static PetscErrorCode PCSetFromOptions_HPDDM(PetscOptionItems *PetscOptionsObjec
   PetscInt                    n;
   PCHPDDMCoarseCorrectionType type;
   PetscBool                   flg = PETSC_TRUE;
-  PetscErrorCode              ierr;
 
   PetscFunctionBegin;
   if (!data->levels) {
-    ierr = PetscCalloc1(PETSC_PCHPDDM_MAXLEVELS, &levels);CHKERRQ(ierr);
+    PetscCall(PetscCalloc1(PETSC_PCHPDDM_MAXLEVELS, &levels));
     data->levels = levels;
   }
-  ierr = PetscOptionsHead(PetscOptionsObject, "PCHPDDM options");CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc), &size);CHKERRMPI(ierr);
+  PetscCall(PetscOptionsHead(PetscOptionsObject, "PCHPDDM options"));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)pc), &size));
   previous = size;
   while (i < PETSC_PCHPDDM_MAXLEVELS) {
     PetscInt p = 1;
 
-    if (!data->levels[i - 1]) {
-      ierr = PetscNewLog(pc, data->levels + i - 1);CHKERRQ(ierr);
-    }
+    if (!data->levels[i - 1]) PetscCall(PetscNewLog(pc, data->levels + i - 1));
     data->levels[i - 1]->parent = data;
     /* if the previous level has a single process, it is not possible to coarsen further */
     if (previous == 1 || !flg) break;
     data->levels[i - 1]->nu = 0;
     data->levels[i - 1]->threshold = -1.0;
-    ierr = PetscSNPrintf(prefix, sizeof(prefix), "-pc_hpddm_levels_%d_eps_nev", i);CHKERRQ(ierr);
-    ierr = PetscOptionsInt(prefix, "Local number of deflation vectors computed by SLEPc", "EPSSetDimensions", data->levels[i - 1]->nu, &data->levels[i - 1]->nu, NULL);CHKERRQ(ierr);
-    ierr = PetscSNPrintf(prefix, sizeof(prefix), "-pc_hpddm_levels_%d_eps_threshold", i);CHKERRQ(ierr);
-    ierr = PetscOptionsReal(prefix, "Local threshold for selecting deflation vectors returned by SLEPc", "PCHPDDM", data->levels[i - 1]->threshold, &data->levels[i - 1]->threshold, NULL);CHKERRQ(ierr);
+    PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "-pc_hpddm_levels_%d_eps_nev", i));
+    PetscCall(PetscOptionsInt(prefix, "Local number of deflation vectors computed by SLEPc", "EPSSetDimensions", data->levels[i - 1]->nu, &data->levels[i - 1]->nu, NULL));
+    PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "-pc_hpddm_levels_%d_eps_threshold", i));
+    PetscCall(PetscOptionsReal(prefix, "Local threshold for selecting deflation vectors returned by SLEPc", "PCHPDDM", data->levels[i - 1]->threshold, &data->levels[i - 1]->threshold, NULL));
     if (i == 1) {
-      ierr = PetscSNPrintf(prefix, sizeof(prefix), "-pc_hpddm_levels_1_st_share_sub_ksp");CHKERRQ(ierr);
-      ierr = PetscOptionsBool(prefix, "Shared KSP between SLEPc ST and the fine-level subdomain solver", "PCHPDDMGetSTShareSubKSP", PETSC_FALSE, &data->share, NULL);CHKERRQ(ierr);
+      PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "-pc_hpddm_levels_1_st_share_sub_ksp"));
+      PetscCall(PetscOptionsBool(prefix, "Shared KSP between SLEPc ST and the fine-level subdomain solver", "PCHPDDMGetSTShareSubKSP", PETSC_FALSE, &data->share, NULL));
     }
     /* if there is no prescribed coarsening, just break out of the loop */
     if (data->levels[i - 1]->threshold <= 0.0 && data->levels[i - 1]->nu <= 0) break;
     else {
       ++i;
-      ierr = PetscSNPrintf(prefix, sizeof(prefix), "-pc_hpddm_levels_%d_eps_nev", i);CHKERRQ(ierr);
-      ierr = PetscOptionsHasName(PetscOptionsObject->options, PetscOptionsObject->prefix, prefix, &flg);CHKERRQ(ierr);
+      PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "-pc_hpddm_levels_%d_eps_nev", i));
+      PetscCall(PetscOptionsHasName(PetscOptionsObject->options, PetscOptionsObject->prefix, prefix, &flg));
       if (!flg) {
-        ierr = PetscSNPrintf(prefix, sizeof(prefix), "-pc_hpddm_levels_%d_eps_threshold", i);CHKERRQ(ierr);
-        ierr = PetscOptionsHasName(PetscOptionsObject->options, PetscOptionsObject->prefix, prefix, &flg);CHKERRQ(ierr);
+        PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "-pc_hpddm_levels_%d_eps_threshold", i));
+        PetscCall(PetscOptionsHasName(PetscOptionsObject->options, PetscOptionsObject->prefix, prefix, &flg));
       }
       if (flg) {
         /* if there are coarsening options for the next level, then register it  */
         /* otherwise, don't to avoid having both options levels_N_p and coarse_p */
-        ierr = PetscSNPrintf(prefix, sizeof(prefix), "-pc_hpddm_levels_%d_p", i);CHKERRQ(ierr);
-        ierr = PetscOptionsRangeInt(prefix, "Number of processes used to assemble the coarse operator at this level", "PCHPDDM", p, &p, &flg, 1, PetscMax(1, previous / 2));CHKERRQ(ierr);
+        PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "-pc_hpddm_levels_%d_p", i));
+        PetscCall(PetscOptionsRangeInt(prefix, "Number of processes used to assemble the coarse operator at this level", "PCHPDDM", p, &p, &flg, 1, PetscMax(1, previous / 2)));
         previous = p;
       }
     }
@@ -249,76 +236,61 @@ static PetscErrorCode PCSetFromOptions_HPDDM(PetscOptionItems *PetscOptionsObjec
   data->N = i;
   n = 1;
   if (i > 1) {
-    ierr = PetscSNPrintf(prefix, sizeof(prefix), "-pc_hpddm_coarse_p");CHKERRQ(ierr);
-    ierr = PetscOptionsRangeInt(prefix, "Number of processes used to assemble the coarsest operator", "PCHPDDM", n, &n, NULL, 1, PetscMax(1, previous / 2));CHKERRQ(ierr);
+    PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "-pc_hpddm_coarse_p"));
+    PetscCall(PetscOptionsRangeInt(prefix, "Number of processes used to assemble the coarsest operator", "PCHPDDM", n, &n, NULL, 1, PetscMax(1, previous / 2)));
 #if defined(PETSC_HAVE_MUMPS)
-    ierr = PetscSNPrintf(prefix, sizeof(prefix), "pc_hpddm_coarse_");CHKERRQ(ierr);
-    ierr = PetscOptionsHasName(NULL, prefix, "-mat_mumps_use_omp_threads", &flg);CHKERRQ(ierr);
+    PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "pc_hpddm_coarse_"));
+    PetscCall(PetscOptionsHasName(NULL, prefix, "-mat_mumps_use_omp_threads", &flg));
     if (flg) {
       char type[64]; /* same size as in src/ksp/pc/impls/factor/factimpl.c */
-      if (n == 1) { /* default solver for a sequential Mat */
-        ierr = PetscStrcpy(type, MATSOLVERPETSC);CHKERRQ(ierr);
-      }
-      ierr = PetscOptionsGetString(NULL, prefix, "-pc_factor_mat_solver_type", type, sizeof(type), &flg);CHKERRQ(ierr);
-      if (flg) {
-        ierr = PetscStrcmp(type, MATSOLVERMUMPS, &flg);CHKERRQ(ierr);
-      }
+      if (n == 1) PetscCall(PetscStrcpy(type, MATSOLVERPETSC)); /* default solver for a sequential Mat */
+      PetscCall(PetscOptionsGetString(NULL, prefix, "-pc_factor_mat_solver_type", type, sizeof(type), &flg));
+      if (flg) PetscCall(PetscStrcmp(type, MATSOLVERMUMPS, &flg));
       PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "-%smat_mumps_use_omp_threads and -%spc_factor_mat_solver_type != %s", prefix, prefix, MATSOLVERMUMPS);
       size = n;
       n = -1;
-      ierr = PetscOptionsGetInt(NULL, prefix, "-mat_mumps_use_omp_threads", &n, NULL);CHKERRQ(ierr);
+      PetscCall(PetscOptionsGetInt(NULL, prefix, "-mat_mumps_use_omp_threads", &n, NULL));
       PetscCheck(n >= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Need to specify a positive integer for -%smat_mumps_use_omp_threads", prefix);
       PetscCheck(n * size <= previous, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "%d MPI process%s x %d OpenMP thread%s greater than %d available MPI process%s for the coarsest operator", (int)size, size > 1 ? "es" : "", (int)n, n > 1 ? "s" : "", (int)previous, previous > 1 ? "es" : "");
     }
 #endif
-    ierr = PetscOptionsEnum("-pc_hpddm_coarse_correction", "Type of coarse correction applied each iteration", "PCHPDDMSetCoarseCorrectionType", PCHPDDMCoarseCorrectionTypes, (PetscEnum)data->correction, (PetscEnum*)&type, &flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PCHPDDMSetCoarseCorrectionType(pc, type);CHKERRQ(ierr);
-    }
-    ierr = PetscSNPrintf(prefix, sizeof(prefix), "-pc_hpddm_has_neumann");CHKERRQ(ierr);
-    ierr = PetscOptionsBool(prefix, "Is the auxiliary Mat the local Neumann matrix?", "PCHPDDMHasNeumannMat", data->Neumann, &data->Neumann, NULL);CHKERRQ(ierr);
+    PetscCall(PetscOptionsEnum("-pc_hpddm_coarse_correction", "Type of coarse correction applied each iteration", "PCHPDDMSetCoarseCorrectionType", PCHPDDMCoarseCorrectionTypes, (PetscEnum)data->correction, (PetscEnum*)&type, &flg));
+    if (flg) PetscCall(PCHPDDMSetCoarseCorrectionType(pc, type));
+    PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "-pc_hpddm_has_neumann"));
+    PetscCall(PetscOptionsBool(prefix, "Is the auxiliary Mat the local Neumann matrix?", "PCHPDDMHasNeumannMat", data->Neumann, &data->Neumann, NULL));
     data->log_separate = PETSC_FALSE;
     if (PetscDefined(USE_LOG)) {
-      ierr = PetscSNPrintf(prefix, sizeof(prefix), "-pc_hpddm_log_separate");CHKERRQ(ierr);
-      ierr = PetscOptionsBool(prefix, "Log events level by level instead of inside PCSetUp()/KSPSolve()", NULL, data->log_separate, &data->log_separate, NULL);CHKERRQ(ierr);
+      PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "-pc_hpddm_log_separate"));
+      PetscCall(PetscOptionsBool(prefix, "Log events level by level instead of inside PCSetUp()/KSPSolve()", NULL, data->log_separate, &data->log_separate, NULL));
     }
   }
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
-  while (i < PETSC_PCHPDDM_MAXLEVELS && data->levels[i]) {
-    ierr = PetscFree(data->levels[i++]);CHKERRQ(ierr);
-  }
+  PetscCall(PetscOptionsTail());
+  while (i < PETSC_PCHPDDM_MAXLEVELS && data->levels[i]) PetscCall(PetscFree(data->levels[i++]));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCApply_HPDDM(PC pc, Vec x, Vec y)
 {
-  PC_HPDDM       *data = (PC_HPDDM*)pc->data;
-  PetscErrorCode ierr;
+  PC_HPDDM *data = (PC_HPDDM*)pc->data;
 
   PetscFunctionBegin;
-  ierr = PetscCitationsRegister(HPDDMCitation, &HPDDMCite);CHKERRQ(ierr);
+  PetscCall(PetscCitationsRegister(HPDDMCitation, &HPDDMCite));
   if (data->levels[0]->ksp) {
-    if (data->log_separate) { /* coarser-level events are directly triggered in HPDDM */
-      ierr = PetscLogEventBegin(PC_HPDDM_Solve[0], data->levels[0]->ksp, 0, 0, 0);CHKERRQ(ierr);
-    }
-    ierr = KSPSolve(data->levels[0]->ksp, x, y);CHKERRQ(ierr);
-    if (data->log_separate) {
-      ierr = PetscLogEventEnd(PC_HPDDM_Solve[0], data->levels[0]->ksp, 0, 0, 0);CHKERRQ(ierr);
-    }
+    if (data->log_separate) PetscCall(PetscLogEventBegin(PC_HPDDM_Solve[0], data->levels[0]->ksp, 0, 0, 0)); /* coarser-level events are directly triggered in HPDDM */
+    PetscCall(KSPSolve(data->levels[0]->ksp, x, y));
+    if (data->log_separate) PetscCall(PetscLogEventEnd(PC_HPDDM_Solve[0], data->levels[0]->ksp, 0, 0, 0));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "No KSP attached to PCHPDDM");
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCMatApply_HPDDM(PC pc, Mat X, Mat Y)
 {
-  PC_HPDDM       *data = (PC_HPDDM*)pc->data;
-  PetscErrorCode ierr;
+  PC_HPDDM *data = (PC_HPDDM*)pc->data;
 
   PetscFunctionBegin;
-  ierr = PetscCitationsRegister(HPDDMCitation, &HPDDMCite);CHKERRQ(ierr);
-  if (data->levels[0]->ksp) {
-    ierr = KSPMatSolve(data->levels[0]->ksp, X, Y);CHKERRQ(ierr);
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "No KSP attached to PCHPDDM");
+  PetscCall(PetscCitationsRegister(HPDDMCitation, &HPDDMCite));
+  if (data->levels[0]->ksp) PetscCall(KSPMatSolve(data->levels[0]->ksp, X, Y));
+  else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "No KSP attached to PCHPDDM");
   PetscFunctionReturn(0);
 }
 
@@ -345,33 +317,30 @@ static PetscErrorCode PCHPDDMGetComplexities(PC pc, PetscReal *gc, PetscReal *oc
   MatInfo        info;
   PetscInt       n, m;
   PetscLogDouble accumulate[2] { }, nnz1 = 1.0, m1 = 1.0;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   for (n = 0, *gc = 0, *oc = 0; n < data->N; ++n) {
     if (data->levels[n]->ksp) {
       Mat P, A;
-      ierr = KSPGetOperators(data->levels[n]->ksp, NULL, &P);CHKERRQ(ierr);
-      ierr = MatGetSize(P, &m, NULL);CHKERRQ(ierr);
+      PetscCall(KSPGetOperators(data->levels[n]->ksp, NULL, &P));
+      PetscCall(MatGetSize(P, &m, NULL));
       accumulate[0] += m;
       if (n == 0) {
         PetscBool flg;
-        ierr = PetscObjectTypeCompare((PetscObject)P, MATNORMAL, &flg);CHKERRQ(ierr);
+        PetscCall(PetscObjectTypeCompare((PetscObject)P, MATNORMAL, &flg));
         if (flg) {
-          ierr = MatConvert(P, MATAIJ, MAT_INITIAL_MATRIX, &A);CHKERRQ(ierr);
+          PetscCall(MatConvert(P, MATAIJ, MAT_INITIAL_MATRIX, &A));
           P = A;
-        } else {
-          ierr = PetscObjectReference((PetscObject)P);CHKERRQ(ierr);
-        }
+        } else PetscCall(PetscObjectReference((PetscObject)P));
       }
       if (P->ops->getinfo) {
-        ierr = MatGetInfo(P, MAT_GLOBAL_SUM, &info);CHKERRQ(ierr);
+        PetscCall(MatGetInfo(P, MAT_GLOBAL_SUM, &info));
         accumulate[1] += info.nz_used;
       }
       if (n == 0) {
         m1 = m;
         if (P->ops->getinfo) nnz1 = info.nz_used;
-        ierr = MatDestroy(&P);CHKERRQ(ierr);
+        PetscCall(MatDestroy(&P));
       }
     }
   }
@@ -382,63 +351,56 @@ static PetscErrorCode PCHPDDMGetComplexities(PC pc, PetscReal *gc, PetscReal *oc
 
 static PetscErrorCode PCView_HPDDM(PC pc, PetscViewer viewer)
 {
-  PC_HPDDM       *data = (PC_HPDDM*)pc->data;
-  PetscViewer    subviewer;
-  PetscSubcomm   subcomm;
-  PetscReal      oc, gc;
-  PetscInt       i, tabs;
-  PetscMPIInt    size, color, rank;
-  PetscBool      ascii;
-  PetscErrorCode ierr;
+  PC_HPDDM     *data = (PC_HPDDM*)pc->data;
+  PetscViewer  subviewer;
+  PetscSubcomm subcomm;
+  PetscReal    oc, gc;
+  PetscInt     i, tabs;
+  PetscMPIInt  size, color, rank;
+  PetscBool    ascii;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &ascii);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &ascii));
   if (ascii) {
-    ierr = PetscViewerASCIIPrintf(viewer, "level%s: %" PetscInt_FMT "\n", data->N > 1 ? "s" : "", data->N);CHKERRQ(ierr);
-    ierr = PCHPDDMGetComplexities(pc, &gc, &oc);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer, "level%s: %" PetscInt_FMT "\n", data->N > 1 ? "s" : "", data->N));
+    PetscCall(PCHPDDMGetComplexities(pc, &gc, &oc));
     if (data->N > 1) {
-      ierr = PetscViewerASCIIPrintf(viewer, "Neumann matrix attached? %s\n", PetscBools[data->Neumann]);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer, "shared subdomain KSP between SLEPc and PETSc? %s\n", PetscBools[data->share]);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer, "coarse correction: %s\n", PCHPDDMCoarseCorrectionTypes[data->correction]);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer, "on process #0, value%s (+ threshold%s if available) for selecting deflation vectors:", data->N > 2 ? "s" : "", data->N > 2 ? "s" : "");CHKERRQ(ierr);
-      ierr = PetscViewerASCIIGetTab(viewer, &tabs);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISetTab(viewer, 0);CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer, "Neumann matrix attached? %s\n", PetscBools[data->Neumann]));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "shared subdomain KSP between SLEPc and PETSc? %s\n", PetscBools[data->share]));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "coarse correction: %s\n", PCHPDDMCoarseCorrectionTypes[data->correction]));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "on process #0, value%s (+ threshold%s if available) for selecting deflation vectors:", data->N > 2 ? "s" : "", data->N > 2 ? "s" : ""));
+      PetscCall(PetscViewerASCIIGetTab(viewer, &tabs));
+      PetscCall(PetscViewerASCIISetTab(viewer, 0));
       for (i = 1; i < data->N; ++i) {
-        ierr = PetscViewerASCIIPrintf(viewer, " %" PetscInt_FMT, data->levels[i - 1]->nu);CHKERRQ(ierr);
-        if (data->levels[i - 1]->threshold > -0.1) {
-          ierr = PetscViewerASCIIPrintf(viewer, " (%g)", (double)data->levels[i - 1]->threshold);CHKERRQ(ierr);
-        }
+        PetscCall(PetscViewerASCIIPrintf(viewer, " %" PetscInt_FMT, data->levels[i - 1]->nu));
+        if (data->levels[i - 1]->threshold > -0.1) PetscCall(PetscViewerASCIIPrintf(viewer, " (%g)", (double)data->levels[i - 1]->threshold));
       }
-      ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIISetTab(viewer, tabs);CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
+      PetscCall(PetscViewerASCIISetTab(viewer, tabs));
     }
-    ierr = PetscViewerASCIIPrintf(viewer, "grid and operator complexities: %g %g\n", (double)gc, (double)oc);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer, "grid and operator complexities: %g %g\n", (double)gc, (double)oc));
     if (data->levels[0]->ksp) {
-      ierr = KSPView(data->levels[0]->ksp, viewer);CHKERRQ(ierr);
-      if (data->levels[0]->pc) {
-        ierr = PCView(data->levels[0]->pc, viewer);CHKERRQ(ierr);
-      }
+      PetscCall(KSPView(data->levels[0]->ksp, viewer));
+      if (data->levels[0]->pc) PetscCall(PCView(data->levels[0]->pc, viewer));
       for (i = 1; i < data->N; ++i) {
         if (data->levels[i]->ksp) color = 1;
         else color = 0;
-        ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc), &size);CHKERRMPI(ierr);
-        ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc), &rank);CHKERRMPI(ierr);
-        ierr = PetscSubcommCreate(PetscObjectComm((PetscObject)pc), &subcomm);CHKERRQ(ierr);
-        ierr = PetscSubcommSetNumber(subcomm, PetscMin(size, 2));CHKERRQ(ierr);
-        ierr = PetscSubcommSetTypeGeneral(subcomm, color, rank);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-        ierr = PetscViewerGetSubViewer(viewer, PetscSubcommChild(subcomm), &subviewer);CHKERRQ(ierr);
+        PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)pc), &size));
+        PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)pc), &rank));
+        PetscCall(PetscSubcommCreate(PetscObjectComm((PetscObject)pc), &subcomm));
+        PetscCall(PetscSubcommSetNumber(subcomm, PetscMin(size, 2)));
+        PetscCall(PetscSubcommSetTypeGeneral(subcomm, color, rank));
+        PetscCall(PetscViewerASCIIPushTab(viewer));
+        PetscCall(PetscViewerGetSubViewer(viewer, PetscSubcommChild(subcomm), &subviewer));
         if (color == 1) {
-          ierr = KSPView(data->levels[i]->ksp, subviewer);CHKERRQ(ierr);
-          if (data->levels[i]->pc) {
-            ierr = PCView(data->levels[i]->pc, subviewer);CHKERRQ(ierr);
-          }
-          ierr = PetscViewerFlush(subviewer);CHKERRQ(ierr);
+          PetscCall(KSPView(data->levels[i]->ksp, subviewer));
+          if (data->levels[i]->pc) PetscCall(PCView(data->levels[i]->pc, subviewer));
+          PetscCall(PetscViewerFlush(subviewer));
         }
-        ierr = PetscViewerRestoreSubViewer(viewer, PetscSubcommChild(subcomm), &subviewer);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-        ierr = PetscSubcommDestroy(&subcomm);CHKERRQ(ierr);
-        ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+        PetscCall(PetscViewerRestoreSubViewer(viewer, PetscSubcommChild(subcomm), &subviewer));
+        PetscCall(PetscViewerASCIIPopTab(viewer));
+        PetscCall(PetscSubcommDestroy(&subcomm));
+        PetscCall(PetscViewerFlush(viewer));
       }
     }
   }
@@ -447,17 +409,16 @@ static PetscErrorCode PCView_HPDDM(PC pc, PetscViewer viewer)
 
 static PetscErrorCode PCPreSolve_HPDDM(PC pc, KSP ksp, Vec, Vec)
 {
-  PC_HPDDM       *data = (PC_HPDDM*)pc->data;
-  PetscBool      flg;
-  Mat            A;
-  PetscErrorCode ierr;
+  PC_HPDDM  *data = (PC_HPDDM*)pc->data;
+  PetscBool flg;
+  Mat       A;
 
   PetscFunctionBegin;
   if (ksp) {
-    ierr = PetscObjectTypeCompare((PetscObject)ksp, KSPLSQR, &flg);CHKERRQ(ierr);
+    PetscCall(PetscObjectTypeCompare((PetscObject)ksp, KSPLSQR, &flg));
     if (flg && !data->normal) {
-      ierr = KSPGetOperators(ksp, &A, NULL);CHKERRQ(ierr);
-      ierr = MatCreateVecs(A, NULL, &data->normal);CHKERRQ(ierr); /* temporary Vec used in PCHPDDMShellApply() for coarse grid corrections */
+      PetscCall(KSPGetOperators(ksp, &A, NULL));
+      PetscCall(MatCreateVecs(A, NULL, &data->normal)); /* temporary Vec used in PCHPDDMShellApply() for coarse grid corrections */
     }
   }
   PetscFunctionReturn(0);
@@ -469,23 +430,20 @@ static PetscErrorCode PCHPDDMShellSetUp(PC pc)
   Mat            A, P;
   Vec            x;
   const char     *pcpre;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PCShellGetContext(pc, &ctx);CHKERRQ(ierr);
-  ierr = KSPGetOptionsPrefix(ctx->ksp, &pcpre);CHKERRQ(ierr);
-  ierr = KSPGetOperators(ctx->ksp, &A, &P);CHKERRQ(ierr);
+  PetscCall(PCShellGetContext(pc, &ctx));
+  PetscCall(KSPGetOptionsPrefix(ctx->ksp, &pcpre));
+  PetscCall(KSPGetOperators(ctx->ksp, &A, &P));
   /* smoother */
-  ierr = PCSetOptionsPrefix(ctx->pc, pcpre);CHKERRQ(ierr);
-  ierr = PCSetOperators(ctx->pc, A, P);CHKERRQ(ierr);
+  PetscCall(PCSetOptionsPrefix(ctx->pc, pcpre));
+  PetscCall(PCSetOperators(ctx->pc, A, P));
   if (!ctx->v[0]) {
-    ierr = VecDuplicateVecs(ctx->D, 1, &ctx->v[0]);CHKERRQ(ierr);
-    if (!std::is_same<PetscScalar, PetscReal>::value) {
-      ierr = VecDestroy(&ctx->D);CHKERRQ(ierr);
-    }
-    ierr = MatCreateVecs(A, &x, NULL);CHKERRQ(ierr);
-    ierr = VecDuplicateVecs(x, 2, &ctx->v[1]);CHKERRQ(ierr);
-    ierr = VecDestroy(&x);CHKERRQ(ierr);
+    PetscCall(VecDuplicateVecs(ctx->D, 1, &ctx->v[0]));
+    if (!std::is_same<PetscScalar, PetscReal>::value) PetscCall(VecDestroy(&ctx->D));
+    PetscCall(MatCreateVecs(A, &x, NULL));
+    PetscCall(VecDuplicateVecs(x, 2, &ctx->v[1]));
+    PetscCall(VecDestroy(&x));
   }
   std::fill_n(ctx->V, 3, nullptr);
   PetscFunctionReturn(0);
@@ -496,19 +454,18 @@ static inline PetscErrorCode PCHPDDMDeflate_Private(PC pc, Type x, Type y)
 {
   PC_HPDDM_Level *ctx;
   PetscScalar    *out;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PCShellGetContext(pc, &ctx);CHKERRQ(ierr);
+  PetscCall(PCShellGetContext(pc, &ctx));
   /* going from PETSc to HPDDM numbering */
-  ierr = VecScatterBegin(ctx->scatter, x, ctx->v[0][0], INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(ctx->scatter, x, ctx->v[0][0], INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecGetArrayWrite(ctx->v[0][0], &out);CHKERRQ(ierr);
+  PetscCall(VecScatterBegin(ctx->scatter, x, ctx->v[0][0], INSERT_VALUES, SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(ctx->scatter, x, ctx->v[0][0], INSERT_VALUES, SCATTER_FORWARD));
+  PetscCall(VecGetArrayWrite(ctx->v[0][0], &out));
   ctx->P->deflation<false>(NULL, out, 1); /* y = Q x */
-  ierr = VecRestoreArrayWrite(ctx->v[0][0], &out);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayWrite(ctx->v[0][0], &out));
   /* going from HPDDM to PETSc numbering */
-  ierr = VecScatterBegin(ctx->scatter, ctx->v[0][0], y, INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd(ctx->scatter, ctx->v[0][0], y, INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
+  PetscCall(VecScatterBegin(ctx->scatter, ctx->v[0][0], y, INSERT_VALUES, SCATTER_REVERSE));
+  PetscCall(VecScatterEnd(ctx->scatter, ctx->v[0][0], y, INSERT_VALUES, SCATTER_REVERSE));
   PetscFunctionReturn(0);
 }
 
@@ -519,31 +476,30 @@ static inline PetscErrorCode PCHPDDMDeflate_Private(PC pc, Type X, Type Y)
   Vec            vX, vY, vC;
   PetscScalar    *out;
   PetscInt       i, N;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PCShellGetContext(pc, &ctx);CHKERRQ(ierr);
-  ierr = MatGetSize(X, NULL, &N);CHKERRQ(ierr);
+  PetscCall(PCShellGetContext(pc, &ctx));
+  PetscCall(MatGetSize(X, NULL, &N));
   /* going from PETSc to HPDDM numbering */
   for (i = 0; i < N; ++i) {
-    ierr = MatDenseGetColumnVecRead(X, i, &vX);CHKERRQ(ierr);
-    ierr = MatDenseGetColumnVecWrite(ctx->V[0], i, &vC);CHKERRQ(ierr);
-    ierr = VecScatterBegin(ctx->scatter, vX, vC, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(ctx->scatter, vX, vC, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = MatDenseRestoreColumnVecWrite(ctx->V[0], i, &vC);CHKERRQ(ierr);
-    ierr = MatDenseRestoreColumnVecRead(X, i, &vX);CHKERRQ(ierr);
+    PetscCall(MatDenseGetColumnVecRead(X, i, &vX));
+    PetscCall(MatDenseGetColumnVecWrite(ctx->V[0], i, &vC));
+    PetscCall(VecScatterBegin(ctx->scatter, vX, vC, INSERT_VALUES, SCATTER_FORWARD));
+    PetscCall(VecScatterEnd(ctx->scatter, vX, vC, INSERT_VALUES, SCATTER_FORWARD));
+    PetscCall(MatDenseRestoreColumnVecWrite(ctx->V[0], i, &vC));
+    PetscCall(MatDenseRestoreColumnVecRead(X, i, &vX));
   }
-  ierr = MatDenseGetArrayWrite(ctx->V[0], &out);CHKERRQ(ierr);
+  PetscCall(MatDenseGetArrayWrite(ctx->V[0], &out));
   ctx->P->deflation<false>(NULL, out, N); /* Y = Q X */
-  ierr = MatDenseRestoreArrayWrite(ctx->V[0], &out);CHKERRQ(ierr);
+  PetscCall(MatDenseRestoreArrayWrite(ctx->V[0], &out));
   /* going from HPDDM to PETSc numbering */
   for (i = 0; i < N; ++i) {
-    ierr = MatDenseGetColumnVecRead(ctx->V[0], i, &vC);CHKERRQ(ierr);
-    ierr = MatDenseGetColumnVecWrite(Y, i, &vY);CHKERRQ(ierr);
-    ierr = VecScatterBegin(ctx->scatter, vC, vY, INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd(ctx->scatter, vC, vY, INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = MatDenseRestoreColumnVecWrite(Y, i, &vY);CHKERRQ(ierr);
-    ierr = MatDenseRestoreColumnVecRead(ctx->V[0], i, &vC);CHKERRQ(ierr);
+    PetscCall(MatDenseGetColumnVecRead(ctx->V[0], i, &vC));
+    PetscCall(MatDenseGetColumnVecWrite(Y, i, &vY));
+    PetscCall(VecScatterBegin(ctx->scatter, vC, vY, INSERT_VALUES, SCATTER_REVERSE));
+    PetscCall(VecScatterEnd(ctx->scatter, vC, vY, INSERT_VALUES, SCATTER_REVERSE));
+    PetscCall(MatDenseRestoreColumnVecWrite(Y, i, &vY));
+    PetscCall(MatDenseRestoreColumnVecRead(ctx->V[0], i, &vC));
   }
   PetscFunctionReturn(0);
 }
@@ -579,37 +535,32 @@ static PetscErrorCode PCHPDDMShellApply(PC pc, Vec x, Vec y)
 {
   PC_HPDDM_Level *ctx;
   Mat            A;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PCShellGetContext(pc, &ctx);CHKERRQ(ierr);
+  PetscCall(PCShellGetContext(pc, &ctx));
   if (ctx->P) {
-    ierr = KSPGetOperators(ctx->ksp, &A, NULL);CHKERRQ(ierr);
-    ierr = PCHPDDMDeflate_Private(pc, x, y);CHKERRQ(ierr);                    /* y = Q x                          */
+    PetscCall(KSPGetOperators(ctx->ksp, &A, NULL));
+    PetscCall(PCHPDDMDeflate_Private(pc, x, y));                    /* y = Q x                          */
     if (ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_DEFLATED || ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_BALANCED) {
-      if (!ctx->parent->normal || ctx != ctx->parent->levels[0]) {
-        ierr = MatMult(A, y, ctx->v[1][0]);CHKERRQ(ierr);                     /* y = A Q x                        */
-      } else { /* KSPLSQR and finest level */
-        ierr = MatMult(A, y, ctx->parent->normal);CHKERRQ(ierr);              /* y = A Q x                        */
-        ierr = MatMultTranspose(A, ctx->parent->normal, ctx->v[1][0]);CHKERRQ(ierr); /* y = A^T A Q x             */
+      if (!ctx->parent->normal || ctx != ctx->parent->levels[0]) PetscCall(MatMult(A, y, ctx->v[1][0])); /* y = A Q x */
+      else { /* KSPLSQR and finest level */
+        PetscCall(MatMult(A, y, ctx->parent->normal));              /* y = A Q x                        */
+        PetscCall(MatMultTranspose(A, ctx->parent->normal, ctx->v[1][0])); /* y = A^T A Q x             */
       }
-      ierr = VecWAXPY(ctx->v[1][1], -1.0, ctx->v[1][0], x);CHKERRQ(ierr);     /* y = (I - A Q) x                  */
-      ierr = PCApply(ctx->pc, ctx->v[1][1], ctx->v[1][0]);CHKERRQ(ierr);      /* y = M^-1 (I - A Q) x             */
+      PetscCall(VecWAXPY(ctx->v[1][1], -1.0, ctx->v[1][0], x));     /* y = (I - A Q) x                  */
+      PetscCall(PCApply(ctx->pc, ctx->v[1][1], ctx->v[1][0]));      /* y = M^-1 (I - A Q) x             */
       if (ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_BALANCED) {
-        if (!ctx->parent->normal || ctx != ctx->parent->levels[0]) {
-          ierr = MatMultTranspose(A, ctx->v[1][0], ctx->v[1][1]);CHKERRQ(ierr); /* z = A^T y                      */
-        } else {
-          ierr = MatMult(A, ctx->v[1][0], ctx->parent->normal);CHKERRQ(ierr);
-          ierr = MatMultTranspose(A, ctx->parent->normal, ctx->v[1][1]);CHKERRQ(ierr); /* z = A^T A y             */
+        if (!ctx->parent->normal || ctx != ctx->parent->levels[0]) PetscCall(MatMultTranspose(A, ctx->v[1][0], ctx->v[1][1])); /* z = A^T y */
+        else {
+          PetscCall(MatMult(A, ctx->v[1][0], ctx->parent->normal));
+          PetscCall(MatMultTranspose(A, ctx->parent->normal, ctx->v[1][1])); /* z = A^T A y             */
         }
-        ierr = PCHPDDMDeflate_Private(pc, ctx->v[1][1], ctx->v[1][1]);CHKERRQ(ierr);
-        ierr = VecAXPBYPCZ(y, -1.0, 1.0, 1.0, ctx->v[1][1], ctx->v[1][0]);CHKERRQ(ierr); /* y = (I - Q A^T) y + Q x */
-      } else {
-        ierr = VecAXPY(y, 1.0, ctx->v[1][0]);CHKERRQ(ierr);                   /* y = Q M^-1 (I - A Q) x + Q x     */
-      }
+        PetscCall(PCHPDDMDeflate_Private(pc, ctx->v[1][1], ctx->v[1][1]));
+        PetscCall(VecAXPBYPCZ(y, -1.0, 1.0, 1.0, ctx->v[1][1], ctx->v[1][0])); /* y = (I - Q A^T) y + Q x */
+      } else PetscCall(VecAXPY(y, 1.0, ctx->v[1][0]));              /* y = Q M^-1 (I - A Q) x + Q x     */
     } else if (ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_ADDITIVE) {
-      ierr = PCApply(ctx->pc, x, ctx->v[1][0]);CHKERRQ(ierr);
-      ierr = VecAXPY(y, 1.0, ctx->v[1][0]);CHKERRQ(ierr);                     /* y = M^-1 x + Q x                 */
+      PetscCall(PCApply(ctx->pc, x, ctx->v[1][0]));
+      PetscCall(VecAXPY(y, 1.0, ctx->v[1][0]));                     /* y = M^-1 x + Q x                 */
     } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "PCSHELL from PCHPDDM called with an unknown PCHPDDMCoarseCorrectionType %d", ctx->parent->correction);
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "PCSHELL from PCHPDDM called with no HPDDM object");
   PetscFunctionReturn(0);
@@ -639,94 +590,87 @@ static PetscErrorCode PCHPDDMShellMatApply(PC pc, Mat X, Mat Y)
   PetscScalar    *array;
   PetscInt       m, M, N, prev = 0;
   PetscBool      reset = PETSC_FALSE;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PCShellGetContext(pc, &ctx);CHKERRQ(ierr);
+  PetscCall(PCShellGetContext(pc, &ctx));
   if (ctx->P) {
-    ierr = MatGetSize(X, NULL, &N);CHKERRQ(ierr);
-    ierr = KSPGetOperators(ctx->ksp, &A, NULL);CHKERRQ(ierr);
-    ierr = PetscObjectQuery((PetscObject)A, "_HPDDM_MatProduct", (PetscObject*)&container);CHKERRQ(ierr);
+    PetscCall(MatGetSize(X, NULL, &N));
+    PetscCall(KSPGetOperators(ctx->ksp, &A, NULL));
+    PetscCall(PetscObjectQuery((PetscObject)A, "_HPDDM_MatProduct", (PetscObject*)&container));
     if (container) { /* MatProduct container already attached */
-      ierr = PetscContainerGetPointer(container, (void**)&ptr);CHKERRQ(ierr);
+      PetscCall(PetscContainerGetPointer(container, (void**)&ptr));
       if (ptr[1] != ctx->V[2]) /* Mat has changed or may have been set first in KSPHPDDM */
         for (m = 0; m < 2; ++m) {
-          ierr = MatDestroy(ctx->V + m + 1);CHKERRQ(ierr);
+          PetscCall(MatDestroy(ctx->V + m + 1));
           ctx->V[m + 1] = ptr[m];
-          ierr = PetscObjectReference((PetscObject)ctx->V[m + 1]);CHKERRQ(ierr);
+          PetscCall(PetscObjectReference((PetscObject)ctx->V[m + 1]));
         }
     }
-    if (ctx->V[1]) {
-      ierr = MatGetSize(ctx->V[1], NULL, &prev);CHKERRQ(ierr);
-    }
+    if (ctx->V[1]) PetscCall(MatGetSize(ctx->V[1], NULL, &prev));
     if (N != prev || !ctx->V[0]) {
-      ierr = MatDestroy(ctx->V);CHKERRQ(ierr);
-      ierr = VecGetLocalSize(ctx->v[0][0], &m);CHKERRQ(ierr);
-      ierr = MatCreateDense(PetscObjectComm((PetscObject)pc), m, PETSC_DECIDE, PETSC_DECIDE, N, NULL, ctx->V);CHKERRQ(ierr);
+      PetscCall(MatDestroy(ctx->V));
+      PetscCall(VecGetLocalSize(ctx->v[0][0], &m));
+      PetscCall(MatCreateDense(PetscObjectComm((PetscObject)pc), m, PETSC_DECIDE, PETSC_DECIDE, N, NULL, ctx->V));
       if (N != prev) {
-        ierr = MatDestroy(ctx->V + 1);CHKERRQ(ierr);
-        ierr = MatDestroy(ctx->V + 2);CHKERRQ(ierr);
-        ierr = MatGetLocalSize(X, &m, NULL);CHKERRQ(ierr);
-        ierr = MatGetSize(X, &M, NULL);CHKERRQ(ierr);
-        if (ctx->parent->correction != PC_HPDDM_COARSE_CORRECTION_BALANCED) {
-          ierr = MatDenseGetArrayWrite(ctx->V[0], &array);CHKERRQ(ierr);
-        } else array = NULL;
-        ierr = MatCreateDense(PetscObjectComm((PetscObject)pc), m, PETSC_DECIDE, M, N, array, ctx->V + 1);CHKERRQ(ierr);
-        if (ctx->parent->correction != PC_HPDDM_COARSE_CORRECTION_BALANCED) {
-          ierr = MatDenseRestoreArrayWrite(ctx->V[0], &array);CHKERRQ(ierr);
-        } else {
-          ierr = MatAssemblyBegin(ctx->V[1], MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-          ierr = MatAssemblyEnd(ctx->V[1], MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+        PetscCall(MatDestroy(ctx->V + 1));
+        PetscCall(MatDestroy(ctx->V + 2));
+        PetscCall(MatGetLocalSize(X, &m, NULL));
+        PetscCall(MatGetSize(X, &M, NULL));
+        if (ctx->parent->correction != PC_HPDDM_COARSE_CORRECTION_BALANCED) PetscCall(MatDenseGetArrayWrite(ctx->V[0], &array));
+        else array = NULL;
+        PetscCall(MatCreateDense(PetscObjectComm((PetscObject)pc), m, PETSC_DECIDE, M, N, array, ctx->V + 1));
+        if (ctx->parent->correction != PC_HPDDM_COARSE_CORRECTION_BALANCED) PetscCall(MatDenseRestoreArrayWrite(ctx->V[0], &array));
+        else {
+          PetscCall(MatAssemblyBegin(ctx->V[1], MAT_FINAL_ASSEMBLY));
+          PetscCall(MatAssemblyEnd(ctx->V[1], MAT_FINAL_ASSEMBLY));
         }
-        ierr = MatCreateDense(PetscObjectComm((PetscObject)pc), m, PETSC_DECIDE, M, N, NULL, ctx->V + 2);CHKERRQ(ierr);
-        ierr = MatAssemblyBegin(ctx->V[2], MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-        ierr = MatAssemblyEnd(ctx->V[2], MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-        ierr = MatProductCreateWithMat(A, Y, NULL, ctx->V[1]);CHKERRQ(ierr);
-        ierr = MatProductSetType(ctx->V[1], MATPRODUCT_AB);CHKERRQ(ierr);
-        ierr = MatProductSetFromOptions(ctx->V[1]);CHKERRQ(ierr);
-        ierr = MatProductSymbolic(ctx->V[1]);CHKERRQ(ierr);
+        PetscCall(MatCreateDense(PetscObjectComm((PetscObject)pc), m, PETSC_DECIDE, M, N, NULL, ctx->V + 2));
+        PetscCall(MatAssemblyBegin(ctx->V[2], MAT_FINAL_ASSEMBLY));
+        PetscCall(MatAssemblyEnd(ctx->V[2], MAT_FINAL_ASSEMBLY));
+        PetscCall(MatProductCreateWithMat(A, Y, NULL, ctx->V[1]));
+        PetscCall(MatProductSetType(ctx->V[1], MATPRODUCT_AB));
+        PetscCall(MatProductSetFromOptions(ctx->V[1]));
+        PetscCall(MatProductSymbolic(ctx->V[1]));
         if (!container) { /* no MatProduct container attached, create one to be queried in KSPHPDDM or at the next call to PCMatApply() */
-          ierr = PetscContainerCreate(PetscObjectComm((PetscObject)A), &container);CHKERRQ(ierr);
-          ierr = PetscObjectCompose((PetscObject)A, "_HPDDM_MatProduct", (PetscObject)container);CHKERRQ(ierr);
+          PetscCall(PetscContainerCreate(PetscObjectComm((PetscObject)A), &container));
+          PetscCall(PetscObjectCompose((PetscObject)A, "_HPDDM_MatProduct", (PetscObject)container));
         }
-        ierr = PetscContainerSetPointer(container, ctx->V + 1);CHKERRQ(ierr); /* need to compose B and D from MatProductCreateWithMath(A, B, NULL, D), which are stored in the contiguous array ctx->V */
+        PetscCall(PetscContainerSetPointer(container, ctx->V + 1)); /* need to compose B and D from MatProductCreateWithMath(A, B, NULL, D), which are stored in the contiguous array ctx->V */
       }
       if (ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_BALANCED) {
-        ierr = MatProductCreateWithMat(A, ctx->V[1], NULL, ctx->V[2]);CHKERRQ(ierr);
-        ierr = MatProductSetType(ctx->V[2], MATPRODUCT_AtB);CHKERRQ(ierr);
-        ierr = MatProductSetFromOptions(ctx->V[2]);CHKERRQ(ierr);
-        ierr = MatProductSymbolic(ctx->V[2]);CHKERRQ(ierr);
+        PetscCall(MatProductCreateWithMat(A, ctx->V[1], NULL, ctx->V[2]));
+        PetscCall(MatProductSetType(ctx->V[2], MATPRODUCT_AtB));
+        PetscCall(MatProductSetFromOptions(ctx->V[2]));
+        PetscCall(MatProductSymbolic(ctx->V[2]));
       }
       ctx->P->start(N);
     }
     if (N == prev || container) { /* when MatProduct container is attached, always need to MatProductReplaceMats() since KSPHPDDM may have replaced the Mat as well */
-      ierr = MatProductReplaceMats(NULL, Y, NULL, ctx->V[1]);CHKERRQ(ierr);
+      PetscCall(MatProductReplaceMats(NULL, Y, NULL, ctx->V[1]));
       if (container && ctx->parent->correction != PC_HPDDM_COARSE_CORRECTION_BALANCED) {
-        ierr = MatDenseGetArrayWrite(ctx->V[0], &array);CHKERRQ(ierr);
-        ierr = MatDensePlaceArray(ctx->V[1], array);CHKERRQ(ierr);
-        ierr = MatDenseRestoreArrayWrite(ctx->V[0], &array);CHKERRQ(ierr);
+        PetscCall(MatDenseGetArrayWrite(ctx->V[0], &array));
+        PetscCall(MatDensePlaceArray(ctx->V[1], array));
+        PetscCall(MatDenseRestoreArrayWrite(ctx->V[0], &array));
         reset = PETSC_TRUE;
       }
     }
-    ierr = PCHPDDMDeflate_Private(pc, X, Y);CHKERRQ(ierr);
+    PetscCall(PCHPDDMDeflate_Private(pc, X, Y));
     if (ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_DEFLATED || ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_BALANCED) {
-      ierr = MatProductNumeric(ctx->V[1]);CHKERRQ(ierr);
-      ierr = MatCopy(ctx->V[1], ctx->V[2], SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-      ierr = MatAXPY(ctx->V[2], -1.0, X, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-      ierr = PCMatApply(ctx->pc, ctx->V[2], ctx->V[1]);CHKERRQ(ierr);
+      PetscCall(MatProductNumeric(ctx->V[1]));
+      PetscCall(MatCopy(ctx->V[1], ctx->V[2], SAME_NONZERO_PATTERN));
+      PetscCall(MatAXPY(ctx->V[2], -1.0, X, SAME_NONZERO_PATTERN));
+      PetscCall(PCMatApply(ctx->pc, ctx->V[2], ctx->V[1]));
       if (ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_BALANCED) {
-        ierr = MatProductNumeric(ctx->V[2]);CHKERRQ(ierr);
-        ierr = PCHPDDMDeflate_Private(pc, ctx->V[2], ctx->V[2]);CHKERRQ(ierr);
-        ierr = MatAXPY(ctx->V[1], -1.0, ctx->V[2], SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+        PetscCall(MatProductNumeric(ctx->V[2]));
+        PetscCall(PCHPDDMDeflate_Private(pc, ctx->V[2], ctx->V[2]));
+        PetscCall(MatAXPY(ctx->V[1], -1.0, ctx->V[2], SAME_NONZERO_PATTERN));
       }
-      ierr = MatAXPY(Y, -1.0, ctx->V[1], SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      PetscCall(MatAXPY(Y, -1.0, ctx->V[1], SAME_NONZERO_PATTERN));
     } else if (ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_ADDITIVE) {
-      ierr = PCMatApply(ctx->pc, X, ctx->V[1]);CHKERRQ(ierr);
-      ierr = MatAXPY(Y, 1.0, ctx->V[1], SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      PetscCall(PCMatApply(ctx->pc, X, ctx->V[1]));
+      PetscCall(MatAXPY(Y, 1.0, ctx->V[1], SAME_NONZERO_PATTERN));
     } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "PCSHELL from PCHPDDM called with an unknown PCHPDDMCoarseCorrectionType %d", ctx->parent->correction);
-    if (reset) {
-      ierr = MatDenseResetArray(ctx->V[1]);CHKERRQ(ierr);
-    }
+    if (reset) PetscCall(MatDenseResetArray(ctx->V[1]));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "PCSHELL from PCHPDDM called with no HPDDM object");
   PetscFunctionReturn(0);
 }
@@ -735,66 +679,61 @@ static PetscErrorCode PCHPDDMShellDestroy(PC pc)
 {
   PC_HPDDM_Level *ctx;
   PetscContainer container;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PCShellGetContext(pc, &ctx);CHKERRQ(ierr);
-  ierr = HPDDM::Schwarz<PetscScalar>::destroy(ctx, PETSC_TRUE);CHKERRQ(ierr);
-  ierr = VecDestroyVecs(1, &ctx->v[0]);CHKERRQ(ierr);
-  ierr = VecDestroyVecs(2, &ctx->v[1]);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject)(ctx->pc)->mat, "_HPDDM_MatProduct", (PetscObject*)&container);CHKERRQ(ierr);
-  ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)(ctx->pc)->mat, "_HPDDM_MatProduct", NULL);CHKERRQ(ierr);
-  ierr = MatDestroy(ctx->V);CHKERRQ(ierr);
-  ierr = MatDestroy(ctx->V + 1);CHKERRQ(ierr);
-  ierr = MatDestroy(ctx->V + 2);CHKERRQ(ierr);
-  ierr = VecDestroy(&ctx->D);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&ctx->scatter);CHKERRQ(ierr);
-  ierr = PCDestroy(&ctx->pc);CHKERRQ(ierr);
+  PetscCall(PCShellGetContext(pc, &ctx));
+  PetscCall(HPDDM::Schwarz<PetscScalar>::destroy(ctx, PETSC_TRUE));
+  PetscCall(VecDestroyVecs(1, &ctx->v[0]));
+  PetscCall(VecDestroyVecs(2, &ctx->v[1]));
+  PetscCall(PetscObjectQuery((PetscObject)(ctx->pc)->mat, "_HPDDM_MatProduct", (PetscObject*)&container));
+  PetscCall(PetscContainerDestroy(&container));
+  PetscCall(PetscObjectCompose((PetscObject)(ctx->pc)->mat, "_HPDDM_MatProduct", NULL));
+  PetscCall(MatDestroy(ctx->V));
+  PetscCall(MatDestroy(ctx->V + 1));
+  PetscCall(MatDestroy(ctx->V + 2));
+  PetscCall(VecDestroy(&ctx->D));
+  PetscCall(VecScatterDestroy(&ctx->scatter));
+  PetscCall(PCDestroy(&ctx->pc));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCHPDDMSolve_Private(const PC_HPDDM_Level *ctx, PetscScalar *rhs, const unsigned short& mu)
 {
-  Mat            B, X;
-  PetscInt       n, N, j = 0;
-  PetscErrorCode ierr;
+  Mat      B, X;
+  PetscInt n, N, j = 0;
 
   PetscFunctionBegin;
-  ierr = KSPGetOperators(ctx->ksp, &B, NULL);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(B, &n, NULL);CHKERRQ(ierr);
-  ierr = MatGetSize(B, &N, NULL);CHKERRQ(ierr);
+  PetscCall(KSPGetOperators(ctx->ksp, &B, NULL));
+  PetscCall(MatGetLocalSize(B, &n, NULL));
+  PetscCall(MatGetSize(B, &N, NULL));
   if (ctx->parent->log_separate) {
     j = std::distance(ctx->parent->levels, std::find(ctx->parent->levels, ctx->parent->levels + ctx->parent->N, ctx));
-    ierr = PetscLogEventBegin(PC_HPDDM_Solve[j], ctx->ksp, 0, 0, 0);CHKERRQ(ierr);
+    PetscCall(PetscLogEventBegin(PC_HPDDM_Solve[j], ctx->ksp, 0, 0, 0));
   }
   if (mu == 1) {
     if (!ctx->ksp->vec_rhs) {
-      ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)ctx->ksp), 1, n, N, NULL, &ctx->ksp->vec_rhs);CHKERRQ(ierr);
-      ierr = VecCreateMPI(PetscObjectComm((PetscObject)ctx->ksp), n, N, &ctx->ksp->vec_sol);CHKERRQ(ierr);
+      PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)ctx->ksp), 1, n, N, NULL, &ctx->ksp->vec_rhs));
+      PetscCall(VecCreateMPI(PetscObjectComm((PetscObject)ctx->ksp), n, N, &ctx->ksp->vec_sol));
     }
-    ierr = VecPlaceArray(ctx->ksp->vec_rhs, rhs);CHKERRQ(ierr);
-    ierr = KSPSolve(ctx->ksp, NULL, NULL);CHKERRQ(ierr);
-    ierr = VecCopy(ctx->ksp->vec_sol, ctx->ksp->vec_rhs);CHKERRQ(ierr);
-    ierr = VecResetArray(ctx->ksp->vec_rhs);CHKERRQ(ierr);
+    PetscCall(VecPlaceArray(ctx->ksp->vec_rhs, rhs));
+    PetscCall(KSPSolve(ctx->ksp, NULL, NULL));
+    PetscCall(VecCopy(ctx->ksp->vec_sol, ctx->ksp->vec_rhs));
+    PetscCall(VecResetArray(ctx->ksp->vec_rhs));
   } else {
-    ierr = MatCreateDense(PetscObjectComm((PetscObject)ctx->ksp), n, PETSC_DECIDE, N, mu, rhs, &B);CHKERRQ(ierr);
-    ierr = MatCreateDense(PetscObjectComm((PetscObject)ctx->ksp), n, PETSC_DECIDE, N, mu, NULL, &X);CHKERRQ(ierr);
-    ierr = KSPMatSolve(ctx->ksp, B, X);CHKERRQ(ierr);
-    ierr = MatCopy(X, B, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-    ierr = MatDestroy(&X);CHKERRQ(ierr);
-    ierr = MatDestroy(&B);CHKERRQ(ierr);
+    PetscCall(MatCreateDense(PetscObjectComm((PetscObject)ctx->ksp), n, PETSC_DECIDE, N, mu, rhs, &B));
+    PetscCall(MatCreateDense(PetscObjectComm((PetscObject)ctx->ksp), n, PETSC_DECIDE, N, mu, NULL, &X));
+    PetscCall(KSPMatSolve(ctx->ksp, B, X));
+    PetscCall(MatCopy(X, B, SAME_NONZERO_PATTERN));
+    PetscCall(MatDestroy(&X));
+    PetscCall(MatDestroy(&B));
   }
-  if (ctx->parent->log_separate) {
-    ierr = PetscLogEventEnd(PC_HPDDM_Solve[j], ctx->ksp, 0, 0, 0);CHKERRQ(ierr);
-  }
+  if (ctx->parent->log_separate) PetscCall(PetscLogEventEnd(PC_HPDDM_Solve[j], ctx->ksp, 0, 0, 0));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCHPDDMSetUpNeumannOverlap_Private(PC pc)
 {
-  PC_HPDDM       *data = (PC_HPDDM*)pc->data;
-  PetscErrorCode ierr;
+  PC_HPDDM *data = (PC_HPDDM*)pc->data;
 
   PetscFunctionBegin;
   if (data->setup) {
@@ -802,10 +741,10 @@ static PetscErrorCode PCHPDDMSetUpNeumannOverlap_Private(PC pc)
     Vec       x, xt = NULL;
     PetscReal t = 0.0, s = 0.0;
 
-    ierr = PCGetOperators(pc, NULL, &P);CHKERRQ(ierr);
-    ierr = PetscObjectQuery((PetscObject)P, "__SNES_latest_X", (PetscObject*)&x);CHKERRQ(ierr);
+    PetscCall(PCGetOperators(pc, NULL, &P));
+    PetscCall(PetscObjectQuery((PetscObject)P, "__SNES_latest_X", (PetscObject*)&x));
     PetscStackPush("PCHPDDM Neumann callback");
-    ierr = (*data->setup)(data->aux, t, x, xt, s, data->is, data->setup_ctx);CHKERRQ(ierr);
+    PetscCall((*data->setup)(data->aux, t, x, xt, s, data->is, data->setup_ctx));
     PetscStackPop;
   }
   PetscFunctionReturn(0);
@@ -813,42 +752,36 @@ static PetscErrorCode PCHPDDMSetUpNeumannOverlap_Private(PC pc)
 
 static PetscErrorCode PCHPDDMCreateSubMatrices_Private(Mat mat, PetscInt n, const IS*, const IS*, MatReuse scall, Mat *submat[])
 {
-  Mat            A;
-  PetscErrorCode ierr;
+  Mat A;
 
   PetscFunctionBegin;
   PetscCheck(n == 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "MatCreateSubMatrices() called to extract %" PetscInt_FMT " submatrices, which is different than 1", n);
   /* previously composed Mat */
-  ierr = PetscObjectQuery((PetscObject)mat, "_PCHPDDM_SubMatrices", (PetscObject*)&A);CHKERRQ(ierr);
+  PetscCall(PetscObjectQuery((PetscObject)mat, "_PCHPDDM_SubMatrices", (PetscObject*)&A));
   PetscCheck(A, PETSC_COMM_SELF, PETSC_ERR_PLIB, "SubMatrices not found in Mat");
   if (scall == MAT_INITIAL_MATRIX) {
-    ierr = PetscCalloc1(1, submat);CHKERRQ(ierr);
-    ierr = MatDuplicate(A, MAT_COPY_VALUES, *submat);CHKERRQ(ierr);
-  } else {
-    ierr = MatCopy(A, (*submat)[0], SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-  }
+    PetscCall(PetscCalloc1(1, submat));
+    PetscCall(MatDuplicate(A, MAT_COPY_VALUES, *submat));
+  } else PetscCall(MatCopy(A, (*submat)[0], SAME_NONZERO_PATTERN));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCHPDDMCommunicationAvoidingPCASM_Private(PC pc, Mat C, PetscBool sorted)
 {
-  void           (*op)(void);
-  PetscErrorCode ierr;
+  void (*op)(void);
 
   PetscFunctionBegin;
   /* previously-composed Mat */
-  ierr = PetscObjectCompose((PetscObject)pc->pmat, "_PCHPDDM_SubMatrices", (PetscObject)C);CHKERRQ(ierr);
-  ierr = MatGetOperation(pc->pmat, MATOP_CREATE_SUBMATRICES, &op);CHKERRQ(ierr);
+  PetscCall(PetscObjectCompose((PetscObject)pc->pmat, "_PCHPDDM_SubMatrices", (PetscObject)C));
+  PetscCall(MatGetOperation(pc->pmat, MATOP_CREATE_SUBMATRICES, &op));
   /* trick suggested by Barry https://lists.mcs.anl.gov/pipermail/petsc-dev/2020-January/025491.html */
-  ierr = MatSetOperation(pc->pmat, MATOP_CREATE_SUBMATRICES, (void(*)(void))PCHPDDMCreateSubMatrices_Private);CHKERRQ(ierr);
-  if (sorted) { /* everything is already sorted */
-    ierr = PCASMSetSortIndices(pc, PETSC_FALSE);CHKERRQ(ierr);
-  }
-  ierr = PCSetFromOptions(pc);CHKERRQ(ierr); /* otherwise -pc_hpddm_levels_1_pc_asm_sub_mat_type is not used */
-  ierr = PCSetUp(pc);CHKERRQ(ierr);
+  PetscCall(MatSetOperation(pc->pmat, MATOP_CREATE_SUBMATRICES, (void(*)(void))PCHPDDMCreateSubMatrices_Private));
+  if (sorted) PetscCall(PCASMSetSortIndices(pc, PETSC_FALSE)); /* everything is already sorted */
+  PetscCall(PCSetFromOptions(pc)); /* otherwise -pc_hpddm_levels_1_pc_asm_sub_mat_type is not used */
+  PetscCall(PCSetUp(pc));
   /* reset MatCreateSubMatrices() */
-  ierr = MatSetOperation(pc->pmat, MATOP_CREATE_SUBMATRICES, op);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)pc->pmat, "_PCHPDDM_SubMatrices", NULL);CHKERRQ(ierr);
+  PetscCall(MatSetOperation(pc->pmat, MATOP_CREATE_SUBMATRICES, op));
+  PetscCall(PetscObjectCompose((PetscObject)pc->pmat, "_PCHPDDM_SubMatrices", NULL));
   PetscFunctionReturn(0);
 }
 
@@ -859,178 +792,164 @@ static PetscErrorCode PCHPDDMPermute_Private(IS is, IS in_is, IS *out_is, Mat in
   PetscInt                     *concatenate, size, n;
   std::map<PetscInt, PetscInt> order;
   PetscBool                    sorted;
-  PetscErrorCode               ierr;
 
   PetscFunctionBegin;
-  ierr = ISSorted(is, &sorted);CHKERRQ(ierr);
+  PetscCall(ISSorted(is, &sorted));
   if (!sorted) {
-    ierr = ISGetLocalSize(is, &size);CHKERRQ(ierr);
-    ierr = ISGetIndices(is, &ptr);CHKERRQ(ierr);
+    PetscCall(ISGetLocalSize(is, &size));
+    PetscCall(ISGetIndices(is, &ptr));
     /* MatCreateSubMatrices(), called by PCASM, follows the global numbering of Pmat */
-    for (n = 0; n < size; ++n)
-      order.insert(std::make_pair(ptr[n], n));
-    ierr = ISRestoreIndices(is, &ptr);CHKERRQ(ierr);
+    for (n = 0; n < size; ++n) order.insert(std::make_pair(ptr[n], n));
+    PetscCall(ISRestoreIndices(is, &ptr));
     if (out_C) {
-      ierr = PetscMalloc1(size, &concatenate);CHKERRQ(ierr);
-      for (const std::pair<const PetscInt, PetscInt>& i : order)
-        *concatenate++ = i.second;
+      PetscCall(PetscMalloc1(size, &concatenate));
+      for (const std::pair<const PetscInt, PetscInt>& i : order) *concatenate++ = i.second;
       concatenate -= size;
-      ierr = ISCreateGeneral(PetscObjectComm((PetscObject)in_C), size, concatenate, PETSC_OWN_POINTER, &perm);CHKERRQ(ierr);
-      ierr = ISSetPermutation(perm);CHKERRQ(ierr);
+      PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)in_C), size, concatenate, PETSC_OWN_POINTER, &perm));
+      PetscCall(ISSetPermutation(perm));
       /* permute user-provided Mat so that it matches with MatCreateSubMatrices() numbering */
-      ierr = MatPermute(in_C, perm, perm, out_C);CHKERRQ(ierr);
+      PetscCall(MatPermute(in_C, perm, perm, out_C));
       if (p) *p = perm;
-      else { /* no need to save the permutation */
-        ierr = ISDestroy(&perm);CHKERRQ(ierr);
-      }
+      else PetscCall(ISDestroy(&perm)); /* no need to save the permutation */
     }
     if (out_is) {
-      ierr = PetscMalloc1(size, &concatenate);CHKERRQ(ierr);
-      for (const std::pair<const PetscInt, PetscInt>& i : order)
-        *concatenate++ = i.first;
+      PetscCall(PetscMalloc1(size, &concatenate));
+      for (const std::pair<const PetscInt, PetscInt>& i : order) *concatenate++ = i.first;
       concatenate -= size;
       /* permute user-provided IS so that it matches with MatCreateSubMatrices() numbering */
-      ierr = ISCreateGeneral(PetscObjectComm((PetscObject)in_is), size, concatenate, PETSC_OWN_POINTER, out_is);CHKERRQ(ierr);
+      PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)in_is), size, concatenate, PETSC_OWN_POINTER, out_is));
     }
   } else { /* input IS is sorted, nothing to permute, simply duplicate inputs when needed */
-    if (out_C) {
-      ierr = MatDuplicate(in_C, MAT_COPY_VALUES, out_C);CHKERRQ(ierr);
-    }
-    if (out_is) {
-      ierr = ISDuplicate(in_is, out_is);CHKERRQ(ierr);
-    }
+    if (out_C) PetscCall(MatDuplicate(in_C, MAT_COPY_VALUES, out_C));
+    if (out_is) PetscCall(ISDuplicate(in_is, out_is));
   }
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCHPDDMDestroySubMatrices_Private(PetscBool flg, PetscBool algebraic, Mat *sub)
 {
-  IS             is;
-  PetscErrorCode ierr;
+  IS is;
 
   PetscFunctionBegin;
   if (!flg) {
     if (algebraic) {
-      ierr = PetscObjectQuery((PetscObject)sub[0], "_PCHPDDM_Embed", (PetscObject*)&is);CHKERRQ(ierr);
-      ierr = ISDestroy(&is);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject)sub[0], "_PCHPDDM_Embed", NULL);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject)sub[0], "_PCHPDDM_Compact", NULL);CHKERRQ(ierr);
+      PetscCall(PetscObjectQuery((PetscObject)sub[0], "_PCHPDDM_Embed", (PetscObject*)&is));
+      PetscCall(ISDestroy(&is));
+      PetscCall(PetscObjectCompose((PetscObject)sub[0], "_PCHPDDM_Embed", NULL));
+      PetscCall(PetscObjectCompose((PetscObject)sub[0], "_PCHPDDM_Compact", NULL));
     }
-    ierr = MatDestroySubMatrices(algebraic ? 2 : 1, &sub);CHKERRQ(ierr);
+    PetscCall(MatDestroySubMatrices(algebraic ? 2 : 1, &sub));
   }
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCHPDDMAlgebraicAuxiliaryMat_Private(Mat P, IS *is, Mat *sub[], PetscBool block)
 {
-  IS             icol[3], irow[2];
-  Mat            *M, Q;
-  PetscReal      *ptr;
-  PetscInt       *idx, p = 0, n;
-  PetscBool      flg;
-  PetscErrorCode ierr;
+  IS        icol[3], irow[2];
+  Mat       *M, Q;
+  PetscReal *ptr;
+  PetscInt  *idx, p = 0, n;
+  PetscBool flg;
 
   PetscFunctionBegin;
-  ierr = ISCreateStride(PETSC_COMM_SELF, P->cmap->N, 0, 1, icol + 2);CHKERRQ(ierr);
-  ierr = ISSetBlockSize(icol[2], P->cmap->bs);CHKERRQ(ierr);
-  ierr = ISSetIdentity(icol[2]);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)P, MATMPISBAIJ, &flg);CHKERRQ(ierr);
+  PetscCall(ISCreateStride(PETSC_COMM_SELF, P->cmap->N, 0, 1, icol + 2));
+  PetscCall(ISSetBlockSize(icol[2], P->cmap->bs));
+  PetscCall(ISSetIdentity(icol[2]));
+  PetscCall(PetscObjectTypeCompare((PetscObject)P, MATMPISBAIJ, &flg));
   if (flg) {
     /* MatCreateSubMatrices() does not handle MATMPISBAIJ properly when iscol != isrow, so convert first to MATMPIBAIJ */
-    ierr = MatConvert(P, MATMPIBAIJ, MAT_INITIAL_MATRIX, &Q);CHKERRQ(ierr);
+    PetscCall(MatConvert(P, MATMPIBAIJ, MAT_INITIAL_MATRIX, &Q));
     std::swap(P, Q);
   }
-  ierr = MatCreateSubMatrices(P, 1, is, icol + 2, MAT_INITIAL_MATRIX, &M);CHKERRQ(ierr);
+  PetscCall(MatCreateSubMatrices(P, 1, is, icol + 2, MAT_INITIAL_MATRIX, &M));
   if (flg) {
     std::swap(P, Q);
-    ierr = MatDestroy(&Q);CHKERRQ(ierr);
+    PetscCall(MatDestroy(&Q));
   }
-  ierr = ISDestroy(icol + 2);CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF, M[0]->rmap->N, 0, 1, irow);CHKERRQ(ierr);
-  ierr = ISSetBlockSize(irow[0], P->cmap->bs);CHKERRQ(ierr);
-  ierr = ISSetIdentity(irow[0]);CHKERRQ(ierr);
+  PetscCall(ISDestroy(icol + 2));
+  PetscCall(ISCreateStride(PETSC_COMM_SELF, M[0]->rmap->N, 0, 1, irow));
+  PetscCall(ISSetBlockSize(irow[0], P->cmap->bs));
+  PetscCall(ISSetIdentity(irow[0]));
   if (!block) {
-    ierr = PetscMalloc2(P->cmap->N, &ptr, P->cmap->N, &idx);CHKERRQ(ierr);
-    ierr = MatGetColumnNorms(M[0], NORM_INFINITY, ptr);CHKERRQ(ierr);
+    PetscCall(PetscMalloc2(P->cmap->N, &ptr, P->cmap->N, &idx));
+    PetscCall(MatGetColumnNorms(M[0], NORM_INFINITY, ptr));
     /* check for nonzero columns so that M[0] may be expressed in compact form */
     for (n = 0; n < P->cmap->N; n += P->cmap->bs)
       if (std::find_if(ptr + n, ptr + n + P->cmap->bs, [](PetscReal v) { return v > PETSC_MACHINE_EPSILON; }) != ptr + n + P->cmap->bs) {
         std::iota(idx + p, idx + p + P->cmap->bs, n);
         p += P->cmap->bs;
       }
-    ierr = ISCreateGeneral(PETSC_COMM_SELF, p, idx, PETSC_USE_POINTER, icol + 1);CHKERRQ(ierr);
-    ierr = ISSetBlockSize(icol[1], P->cmap->bs);CHKERRQ(ierr);
-    ierr = ISSetInfo(icol[1], IS_SORTED, IS_GLOBAL, PETSC_TRUE, PETSC_TRUE);CHKERRQ(ierr);
-    ierr = ISEmbed(*is, icol[1], PETSC_FALSE, icol + 2);CHKERRQ(ierr);
+    PetscCall(ISCreateGeneral(PETSC_COMM_SELF, p, idx, PETSC_USE_POINTER, icol + 1));
+    PetscCall(ISSetBlockSize(icol[1], P->cmap->bs));
+    PetscCall(ISSetInfo(icol[1], IS_SORTED, IS_GLOBAL, PETSC_TRUE, PETSC_TRUE));
+    PetscCall(ISEmbed(*is, icol[1], PETSC_FALSE, icol + 2));
     irow[1] = irow[0];
     /* first Mat will be used in PCASM (if it is used as a PC on this level) and as the left-hand side of GenEO */
     icol[0] = is[0];
-    ierr = MatCreateSubMatrices(M[0], 2, irow, icol, MAT_INITIAL_MATRIX, sub);CHKERRQ(ierr);
-    ierr = ISDestroy(icol + 1);CHKERRQ(ierr);
-    ierr = PetscFree2(ptr, idx);CHKERRQ(ierr);
+    PetscCall(MatCreateSubMatrices(M[0], 2, irow, icol, MAT_INITIAL_MATRIX, sub));
+    PetscCall(ISDestroy(icol + 1));
+    PetscCall(PetscFree2(ptr, idx));
     /* IS used to go back and forth between the augmented and the original local linear system, see eq. (3.4) of [2022b] */
-    ierr = PetscObjectCompose((PetscObject)(*sub)[0], "_PCHPDDM_Embed", (PetscObject)icol[2]);CHKERRQ(ierr);
+    PetscCall(PetscObjectCompose((PetscObject)(*sub)[0], "_PCHPDDM_Embed", (PetscObject)icol[2]));
     /* Mat used in eq. (3.1) of [2022b] */
-    ierr = PetscObjectCompose((PetscObject)(*sub)[0], "_PCHPDDM_Compact", (PetscObject)(*sub)[1]);CHKERRQ(ierr);
+    PetscCall(PetscObjectCompose((PetscObject)(*sub)[0], "_PCHPDDM_Compact", (PetscObject)(*sub)[1]));
   } else {
     Mat aux;
-    ierr = MatSetOption(M[0], MAT_SUBMAT_SINGLEIS, PETSC_TRUE);CHKERRQ(ierr);
+    PetscCall(MatSetOption(M[0], MAT_SUBMAT_SINGLEIS, PETSC_TRUE));
     /* diagonal block of the overlapping rows */
-    ierr = MatCreateSubMatrices(M[0], 1, irow, is, MAT_INITIAL_MATRIX, sub);CHKERRQ(ierr);
-    ierr = MatDuplicate((*sub)[0], MAT_COPY_VALUES, &aux);CHKERRQ(ierr);
-    ierr = MatSetOption(aux, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE);CHKERRQ(ierr);
+    PetscCall(MatCreateSubMatrices(M[0], 1, irow, is, MAT_INITIAL_MATRIX, sub));
+    PetscCall(MatDuplicate((*sub)[0], MAT_COPY_VALUES, &aux));
+    PetscCall(MatSetOption(aux, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
     if (P->cmap->bs == 1) { /* scalar case */
       Vec sum[2];
-      ierr = MatCreateVecs(aux, sum, sum + 1);CHKERRQ(ierr);
-      ierr = MatGetRowSum(M[0], sum[0]);CHKERRQ(ierr);
-      ierr = MatGetRowSum(aux, sum[1]);CHKERRQ(ierr);
+      PetscCall(MatCreateVecs(aux, sum, sum + 1));
+      PetscCall(MatGetRowSum(M[0], sum[0]));
+      PetscCall(MatGetRowSum(aux, sum[1]));
       /* off-diagonal block row sum (full rows - diagonal block rows) */
-      ierr = VecAXPY(sum[0], -1.0, sum[1]);CHKERRQ(ierr);
+      PetscCall(VecAXPY(sum[0], -1.0, sum[1]));
       /* subdomain matrix plus off-diagonal block row sum */
-      ierr = MatDiagonalSet(aux, sum[0], ADD_VALUES);CHKERRQ(ierr);
-      ierr = VecDestroy(sum);CHKERRQ(ierr);
-      ierr = VecDestroy(sum + 1);CHKERRQ(ierr);
+      PetscCall(MatDiagonalSet(aux, sum[0], ADD_VALUES));
+      PetscCall(VecDestroy(sum));
+      PetscCall(VecDestroy(sum + 1));
     } else { /* vectorial case */
       /* TODO: missing MatGetValuesBlocked(), so the code below is     */
       /* an extension of the scalar case for when bs > 1, but it could */
       /* be more efficient by avoiding all these MatMatMult()          */
       Mat         sum[2], ones;
       PetscScalar *ptr;
-      ierr = PetscCalloc1(M[0]->cmap->n * P->cmap->bs, &ptr);CHKERRQ(ierr);
-      ierr = MatCreateDense(PETSC_COMM_SELF, M[0]->cmap->n, P->cmap->bs, M[0]->cmap->n, P->cmap->bs, ptr, &ones);CHKERRQ(ierr);
+      PetscCall(PetscCalloc1(M[0]->cmap->n * P->cmap->bs, &ptr));
+      PetscCall(MatCreateDense(PETSC_COMM_SELF, M[0]->cmap->n, P->cmap->bs, M[0]->cmap->n, P->cmap->bs, ptr, &ones));
       for (n = 0; n < M[0]->cmap->n; n += P->cmap->bs) {
         for (p = 0; p < P->cmap->bs; ++p) ptr[n + p * (M[0]->cmap->n + 1)] = 1.0;
       }
-      ierr = MatMatMult(M[0], ones, MAT_INITIAL_MATRIX, PETSC_DEFAULT, sum);CHKERRQ(ierr);
-      ierr = MatDestroy(&ones);CHKERRQ(ierr);
-      ierr = MatCreateDense(PETSC_COMM_SELF, aux->cmap->n, P->cmap->bs, aux->cmap->n, P->cmap->bs, ptr, &ones);CHKERRQ(ierr);
-      ierr = MatDenseSetLDA(ones, M[0]->cmap->n);CHKERRQ(ierr);
-      ierr = MatMatMult(aux, ones, MAT_INITIAL_MATRIX, PETSC_DEFAULT, sum + 1);CHKERRQ(ierr);
-      ierr = MatDestroy(&ones);CHKERRQ(ierr);
-      ierr = PetscFree(ptr);CHKERRQ(ierr);
+      PetscCall(MatMatMult(M[0], ones, MAT_INITIAL_MATRIX, PETSC_DEFAULT, sum));
+      PetscCall(MatDestroy(&ones));
+      PetscCall(MatCreateDense(PETSC_COMM_SELF, aux->cmap->n, P->cmap->bs, aux->cmap->n, P->cmap->bs, ptr, &ones));
+      PetscCall(MatDenseSetLDA(ones, M[0]->cmap->n));
+      PetscCall(MatMatMult(aux, ones, MAT_INITIAL_MATRIX, PETSC_DEFAULT, sum + 1));
+      PetscCall(MatDestroy(&ones));
+      PetscCall(PetscFree(ptr));
       /* off-diagonal block row sum (full rows - diagonal block rows) */
-      ierr = MatAXPY(sum[0], -1.0, sum[1], SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-      ierr = MatDestroy(sum + 1);CHKERRQ(ierr);
+      PetscCall(MatAXPY(sum[0], -1.0, sum[1], SAME_NONZERO_PATTERN));
+      PetscCall(MatDestroy(sum + 1));
       /* re-order values to be consistent with MatSetValuesBlocked()           */
       /* equivalent to MatTranspose() which does not truly handle              */
       /* MAT_INPLACE_MATRIX in the rectangular case, as it calls PetscMalloc() */
-      ierr = MatDenseGetArrayWrite(sum[0], &ptr);CHKERRQ(ierr);
+      PetscCall(MatDenseGetArrayWrite(sum[0], &ptr));
       HPDDM::Wrapper<PetscScalar>::imatcopy<'T'>(P->cmap->bs, sum[0]->rmap->n, ptr, sum[0]->rmap->n, P->cmap->bs);
       /* subdomain matrix plus off-diagonal block row sum */
-      for (n = 0; n < aux->cmap->n / P->cmap->bs; ++n) {
-        ierr = MatSetValuesBlocked(aux, 1, &n, 1, &n, ptr + n * P->cmap->bs * P->cmap->bs, ADD_VALUES);CHKERRQ(ierr);
-      }
-      ierr = MatAssemblyBegin(aux, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-      ierr = MatAssemblyEnd(aux, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-      ierr = MatDenseRestoreArrayWrite(sum[0], &ptr);CHKERRQ(ierr);
-      ierr = MatDestroy(sum);CHKERRQ(ierr);
+      for (n = 0; n < aux->cmap->n / P->cmap->bs; ++n) PetscCall(MatSetValuesBlocked(aux, 1, &n, 1, &n, ptr + n * P->cmap->bs * P->cmap->bs, ADD_VALUES));
+      PetscCall(MatAssemblyBegin(aux, MAT_FINAL_ASSEMBLY));
+      PetscCall(MatAssemblyEnd(aux, MAT_FINAL_ASSEMBLY));
+      PetscCall(MatDenseRestoreArrayWrite(sum[0], &ptr));
+      PetscCall(MatDestroy(sum));
     }
-    ierr = MatSetOption(aux, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE);CHKERRQ(ierr);
+    PetscCall(MatSetOption(aux, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE));
     /* left-hand side of GenEO, with the same sparsity pattern as PCASM subdomain solvers  */
-    ierr = PetscObjectCompose((PetscObject)(*sub)[0], "_PCHPDDM_Neumann_Mat", (PetscObject)aux);CHKERRQ(ierr);
+    PetscCall(PetscObjectCompose((PetscObject)(*sub)[0], "_PCHPDDM_Neumann_Mat", (PetscObject)aux));
   }
-  ierr = ISDestroy(irow);CHKERRQ(ierr);
-  ierr = MatDestroySubMatrices(1, &M);CHKERRQ(ierr);
+  PetscCall(ISDestroy(irow));
+  PetscCall(MatDestroySubMatrices(1, &M));
   PetscFunctionReturn(0);
 }
 
@@ -1051,28 +970,23 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
   MatStructure             structure = UNKNOWN_NONZERO_PATTERN;
   PetscBool                subdomains = PETSC_FALSE, flg = PETSC_FALSE, ismatis, swap = PETSC_FALSE, algebraic = PETSC_FALSE, block = PETSC_FALSE;
   DM                       dm;
-  PetscErrorCode           ierr;
 
   PetscFunctionBegin;
   PetscCheck(data->levels && data->levels[0], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not a single level allocated");
-  ierr = PCGetOptionsPrefix(pc, &pcpre);CHKERRQ(ierr);
-  ierr = PCGetOperators(pc, &A, &P);CHKERRQ(ierr);
+  PetscCall(PCGetOptionsPrefix(pc, &pcpre));
+  PetscCall(PCGetOperators(pc, &A, &P));
   if (!data->levels[0]->ksp) {
-    ierr = KSPCreate(PetscObjectComm((PetscObject)pc), &data->levels[0]->ksp);CHKERRQ(ierr);
-    ierr = PetscSNPrintf(prefix, sizeof(prefix), "%spc_hpddm_%s_", pcpre ? pcpre : "", data->N > 1 ? "levels_1" : "coarse");CHKERRQ(ierr);
-    ierr = KSPSetOptionsPrefix(data->levels[0]->ksp, prefix);CHKERRQ(ierr);
-    ierr = KSPSetType(data->levels[0]->ksp, KSPPREONLY);CHKERRQ(ierr);
+    PetscCall(KSPCreate(PetscObjectComm((PetscObject)pc), &data->levels[0]->ksp));
+    PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%spc_hpddm_%s_", pcpre ? pcpre : "", data->N > 1 ? "levels_1" : "coarse"));
+    PetscCall(KSPSetOptionsPrefix(data->levels[0]->ksp, prefix));
+    PetscCall(KSPSetType(data->levels[0]->ksp, KSPPREONLY));
   } else if (data->levels[0]->ksp->pc && data->levels[0]->ksp->pc->setupcalled == 1 && data->levels[0]->ksp->pc->reusepreconditioner) {
     /* if the fine-level PCSHELL exists, its setup has succeeded, and one wants to reuse it, */
     /* then just propagate the appropriate flag to the coarser levels                        */
     for (n = 0; n < PETSC_PCHPDDM_MAXLEVELS && data->levels[n]; ++n) {
       /* the following KSP and PC may be NULL for some processes, hence the check            */
-      if (data->levels[n]->ksp) {
-        ierr = KSPSetReusePreconditioner(data->levels[n]->ksp, PETSC_TRUE);CHKERRQ(ierr);
-      }
-      if (data->levels[n]->pc) {
-        ierr = PCSetReusePreconditioner(data->levels[n]->pc, PETSC_TRUE);CHKERRQ(ierr);
-      }
+      if (data->levels[n]->ksp) PetscCall(KSPSetReusePreconditioner(data->levels[n]->ksp, PETSC_TRUE));
+      if (data->levels[n]->pc) PetscCall(PCSetReusePreconditioner(data->levels[n]->pc, PETSC_TRUE));
     }
     /* early bail out because there is nothing to do */
     PetscFunctionReturn(0);
@@ -1083,11 +997,11 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
         reused = data->N - n;
         break;
       }
-      ierr = KSPDestroy(&data->levels[n]->ksp);CHKERRQ(ierr);
-      ierr = PCDestroy(&data->levels[n]->pc);CHKERRQ(ierr);
+      PetscCall(KSPDestroy(&data->levels[n]->ksp));
+      PetscCall(PCDestroy(&data->levels[n]->pc));
     }
     /* check if some coarser levels are being reused */
-    ierr = MPIU_Allreduce(MPI_IN_PLACE, &reused, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)pc));CHKERRMPI(ierr);
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &reused, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)pc)));
     const int *addr = data->levels[0]->P ? data->levels[0]->P->getAddrLocal() : &HPDDM::i__0;
 
     if (addr != &HPDDM::i__0 && reused != data->N - 1) {
@@ -1095,253 +1009,236 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
       ev = data->levels[0]->P->getVectors();
       if (ev) {
         initial.reserve(*addr);
-        ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, 1, data->levels[0]->P->getDof(), ev[0], &xin);CHKERRQ(ierr);
+        PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, 1, data->levels[0]->P->getDof(), ev[0], &xin));
         for (n = 0; n < *addr; ++n) {
-          ierr = VecDuplicate(xin, &v);CHKERRQ(ierr);
-          ierr = VecPlaceArray(xin, ev[n]);CHKERRQ(ierr);
-          ierr = VecCopy(xin, v);CHKERRQ(ierr);
+          PetscCall(VecDuplicate(xin, &v));
+          PetscCall(VecPlaceArray(xin, ev[n]));
+          PetscCall(VecCopy(xin, v));
           initial.emplace_back(v);
-          ierr = VecResetArray(xin);CHKERRQ(ierr);
+          PetscCall(VecResetArray(xin));
         }
-        ierr = VecDestroy(&xin);CHKERRQ(ierr);
+        PetscCall(VecDestroy(&xin));
       }
     }
   }
   data->N -= reused;
-  ierr = KSPSetOperators(data->levels[0]->ksp, A, P);CHKERRQ(ierr);
+  PetscCall(KSPSetOperators(data->levels[0]->ksp, A, P));
 
-  ierr = PetscObjectTypeCompare((PetscObject)P, MATIS, &ismatis);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)P, MATIS, &ismatis));
   if (!data->is && !ismatis) {
     PetscErrorCode (*create)(DM, IS*, Mat*, PetscErrorCode (**)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void*), void**) = NULL;
     PetscErrorCode (*usetup)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void*) = NULL;
     void           *uctx = NULL;
 
     /* first see if we can get the data from the DM */
-    ierr = MatGetDM(P, &dm);CHKERRQ(ierr);
-    if (!dm) {
-      ierr = MatGetDM(A, &dm);CHKERRQ(ierr);
-    }
-    if (!dm) {
-      ierr = PCGetDM(pc, &dm);CHKERRQ(ierr);
-    }
+    PetscCall(MatGetDM(P, &dm));
+    if (!dm) PetscCall(MatGetDM(A, &dm));
+    if (!dm) PetscCall(PCGetDM(pc, &dm));
     if (dm) { /* this is the hook for DMPLEX and DMDA for which the auxiliary Mat is the local Neumann matrix */
-      ierr = PetscObjectQueryFunction((PetscObject)dm, "DMCreateNeumannOverlap_C", &create);CHKERRQ(ierr);
+      PetscCall(PetscObjectQueryFunction((PetscObject)dm, "DMCreateNeumannOverlap_C", &create));
       if (create) {
-        ierr = (*create)(dm, &uis, &uaux, &usetup, &uctx);CHKERRQ(ierr);
+        PetscCall((*create)(dm, &uis, &uaux, &usetup, &uctx));
         data->Neumann = PETSC_TRUE;
       }
     }
     if (!create) {
       if (!uis) {
-        ierr = PetscObjectQuery((PetscObject)pc, "_PCHPDDM_Neumann_IS", (PetscObject*)&uis);CHKERRQ(ierr);
-        ierr = PetscObjectReference((PetscObject)uis);CHKERRQ(ierr);
+        PetscCall(PetscObjectQuery((PetscObject)pc, "_PCHPDDM_Neumann_IS", (PetscObject*)&uis));
+        PetscCall(PetscObjectReference((PetscObject)uis));
       }
       if (!uaux) {
-        ierr = PetscObjectQuery((PetscObject)pc, "_PCHPDDM_Neumann_Mat", (PetscObject*)&uaux);CHKERRQ(ierr);
-        ierr = PetscObjectReference((PetscObject)uaux);CHKERRQ(ierr);
+        PetscCall(PetscObjectQuery((PetscObject)pc, "_PCHPDDM_Neumann_Mat", (PetscObject*)&uaux));
+        PetscCall(PetscObjectReference((PetscObject)uaux));
       }
       /* look inside the Pmat instead of the PC, needed for MatSchurComplementComputeExplicitOperator() */
       if (!uis) {
-        ierr = PetscObjectQuery((PetscObject)P, "_PCHPDDM_Neumann_IS", (PetscObject*)&uis);CHKERRQ(ierr);
-        ierr = PetscObjectReference((PetscObject)uis);CHKERRQ(ierr);
+        PetscCall(PetscObjectQuery((PetscObject)P, "_PCHPDDM_Neumann_IS", (PetscObject*)&uis));
+        PetscCall(PetscObjectReference((PetscObject)uis));
       }
       if (!uaux) {
-        ierr = PetscObjectQuery((PetscObject)P, "_PCHPDDM_Neumann_Mat", (PetscObject*)&uaux);CHKERRQ(ierr);
-        ierr = PetscObjectReference((PetscObject)uaux);CHKERRQ(ierr);
+        PetscCall(PetscObjectQuery((PetscObject)P, "_PCHPDDM_Neumann_Mat", (PetscObject*)&uaux));
+        PetscCall(PetscObjectReference((PetscObject)uaux));
       }
     }
-    ierr = PCHPDDMSetAuxiliaryMat(pc, uis, uaux, usetup, uctx);CHKERRQ(ierr);
-    ierr = MatDestroy(&uaux);CHKERRQ(ierr);
-    ierr = ISDestroy(&uis);CHKERRQ(ierr);
+    PetscCall(PCHPDDMSetAuxiliaryMat(pc, uis, uaux, usetup, uctx));
+    PetscCall(MatDestroy(&uaux));
+    PetscCall(ISDestroy(&uis));
   }
 
   if (!ismatis) {
-    ierr = PCHPDDMSetUpNeumannOverlap_Private(pc);CHKERRQ(ierr);
+    PetscCall(PCHPDDMSetUpNeumannOverlap_Private(pc));
     if (!data->is && data->N > 1) {
       char type[256] = { }; /* same size as in src/ksp/pc/interface/pcset.c */
-      ierr = PetscOptionsGetString(NULL, pcpre, "-pc_hpddm_levels_1_st_pc_type", type, sizeof(type), NULL);CHKERRQ(ierr);
-      ierr = PetscStrcmp(type, PCMAT, &algebraic);CHKERRQ(ierr);
-      ierr = PetscOptionsGetBool(NULL, pcpre, "-pc_hpddm_block_splitting", &block, NULL);CHKERRQ(ierr);
+      PetscCall(PetscOptionsGetString(NULL, pcpre, "-pc_hpddm_levels_1_st_pc_type", type, sizeof(type), NULL));
+      PetscCall(PetscStrcmp(type, PCMAT, &algebraic));
+      PetscCall(PetscOptionsGetBool(NULL, pcpre, "-pc_hpddm_block_splitting", &block, NULL));
       PetscCheck(!algebraic || !block, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "-pc_hpddm_levels_1_st_pc_type mat and -pc_hpddm_block_splitting");
       if (block) algebraic = PETSC_TRUE;
       if (algebraic) {
-        ierr = ISCreateStride(PETSC_COMM_SELF, P->rmap->n, P->rmap->rstart, 1, &data->is);CHKERRQ(ierr);
-        ierr = MatIncreaseOverlap(P, 1, &data->is, 1);CHKERRQ(ierr);
-        ierr = ISSort(data->is);CHKERRQ(ierr);
-      } else {
-        ierr = PetscInfo(pc, "Cannot assemble a fully-algebraic coarse operator with an assembled Pmat and -%spc_hpddm_levels_1_st_pc_type != mat and -%spc_hpddm_block_splitting != true\n", pcpre ? pcpre : "", pcpre ? pcpre : "");CHKERRQ(ierr);
-      }
+        PetscCall(ISCreateStride(PETSC_COMM_SELF, P->rmap->n, P->rmap->rstart, 1, &data->is));
+        PetscCall(MatIncreaseOverlap(P, 1, &data->is, 1));
+        PetscCall(ISSort(data->is));
+      } else PetscCall(PetscInfo(pc, "Cannot assemble a fully-algebraic coarse operator with an assembled Pmat and -%spc_hpddm_levels_1_st_pc_type != mat and -%spc_hpddm_block_splitting != true\n", pcpre ? pcpre : "", pcpre ? pcpre : ""));
     }
   }
 
   if (data->is || (ismatis && data->N > 1)) {
     if (ismatis) {
       std::initializer_list<std::string> list = { MATSEQBAIJ, MATSEQSBAIJ };
-      ierr = MatISGetLocalMat(P, &N);CHKERRQ(ierr);
+      PetscCall(MatISGetLocalMat(P, &N));
       std::initializer_list<std::string>::const_iterator it = std::find(list.begin(), list.end(), ((PetscObject)N)->type_name);
-      ierr = MatISRestoreLocalMat(P, &N);CHKERRQ(ierr);
+      PetscCall(MatISRestoreLocalMat(P, &N));
       switch (std::distance(list.begin(), it)) {
       case 0:
-        ierr = MatConvert(P, MATMPIBAIJ, MAT_INITIAL_MATRIX, &C);CHKERRQ(ierr);
+        PetscCall(MatConvert(P, MATMPIBAIJ, MAT_INITIAL_MATRIX, &C));
         break;
       case 1:
         /* MatCreateSubMatrices() does not work with MATSBAIJ and unsorted ISes, so convert to MPIBAIJ */
-        ierr = MatConvert(P, MATMPIBAIJ, MAT_INITIAL_MATRIX, &C);CHKERRQ(ierr);
-        ierr = MatSetOption(C, MAT_SYMMETRIC, PETSC_TRUE);CHKERRQ(ierr);
+        PetscCall(MatConvert(P, MATMPIBAIJ, MAT_INITIAL_MATRIX, &C));
+        PetscCall(MatSetOption(C, MAT_SYMMETRIC, PETSC_TRUE));
         break;
       default:
-        ierr = MatConvert(P, MATMPIAIJ, MAT_INITIAL_MATRIX, &C);CHKERRQ(ierr);
+        PetscCall(MatConvert(P, MATMPIAIJ, MAT_INITIAL_MATRIX, &C));
       }
-      ierr = MatISGetLocalToGlobalMapping(P, &l2g, NULL);CHKERRQ(ierr);
-      ierr = PetscObjectReference((PetscObject)P);CHKERRQ(ierr);
-      ierr = KSPSetOperators(data->levels[0]->ksp, A, C);CHKERRQ(ierr);
+      PetscCall(MatISGetLocalToGlobalMapping(P, &l2g, NULL));
+      PetscCall(PetscObjectReference((PetscObject)P));
+      PetscCall(KSPSetOperators(data->levels[0]->ksp, A, C));
       std::swap(C, P);
-      ierr = ISLocalToGlobalMappingGetSize(l2g, &n);CHKERRQ(ierr);
-      ierr = ISCreateStride(PETSC_COMM_SELF, n, 0, 1, &loc);CHKERRQ(ierr);
-      ierr = ISLocalToGlobalMappingApplyIS(l2g, loc, &is[0]);CHKERRQ(ierr);
-      ierr = ISDestroy(&loc);CHKERRQ(ierr);
+      PetscCall(ISLocalToGlobalMappingGetSize(l2g, &n));
+      PetscCall(ISCreateStride(PETSC_COMM_SELF, n, 0, 1, &loc));
+      PetscCall(ISLocalToGlobalMappingApplyIS(l2g, loc, &is[0]));
+      PetscCall(ISDestroy(&loc));
       /* the auxiliary Mat is _not_ the local Neumann matrix                                */
       /* it is the local Neumann matrix augmented (with zeros) through MatIncreaseOverlap() */
       data->Neumann = PETSC_FALSE;
       structure = SAME_NONZERO_PATTERN;
       if (data->share) {
         data->share = PETSC_FALSE;
-        ierr = PetscInfo(pc, "Cannot share subdomain KSP between SLEPc and PETSc with a Pmat of type MATIS\n");CHKERRQ(ierr);
+        PetscCall(PetscInfo(pc, "Cannot share subdomain KSP between SLEPc and PETSc with a Pmat of type MATIS\n"));
       }
     } else {
       is[0] = data->is;
       if (algebraic) subdomains = PETSC_TRUE;
-      ierr = PetscOptionsGetBool(NULL, pcpre, "-pc_hpddm_define_subdomains", &subdomains, NULL);CHKERRQ(ierr);
+      PetscCall(PetscOptionsGetBool(NULL, pcpre, "-pc_hpddm_define_subdomains", &subdomains, NULL));
       if (!subdomains && data->share) {
         data->share = PETSC_FALSE;
-        ierr = PetscInfo(pc, "Cannot share subdomain KSP between SLEPc and PETSc since -%spc_hpddm_define_subdomains is not true\n", pcpre ? pcpre : "");CHKERRQ(ierr);
+        PetscCall(PetscInfo(pc, "Cannot share subdomain KSP between SLEPc and PETSc since -%spc_hpddm_define_subdomains is not true\n", pcpre ? pcpre : ""));
       }
       if (data->Neumann) {
         PetscCheck(!block, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "-pc_hpddm_block_splitting and -pc_hpddm_has_neumann");
         PetscCheck(!algebraic, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "-pc_hpddm_levels_1_st_pc_type mat and -pc_hpddm_has_neumann");
       }
       if (data->Neumann || block) structure = SAME_NONZERO_PATTERN;
-      ierr = ISCreateStride(PetscObjectComm((PetscObject)data->is), P->rmap->n, P->rmap->rstart, 1, &loc);CHKERRQ(ierr);
+      PetscCall(ISCreateStride(PetscObjectComm((PetscObject)data->is), P->rmap->n, P->rmap->rstart, 1, &loc));
     }
-    ierr = PetscSNPrintf(prefix, sizeof(prefix), "%spc_hpddm_levels_1_", pcpre ? pcpre : "");CHKERRQ(ierr);
-    ierr = PetscOptionsGetEnum(NULL, prefix, "-st_matstructure", MatStructures, (PetscEnum*)&structure, &flg);CHKERRQ(ierr); /* if not user-provided, force its value when possible */
+    PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%spc_hpddm_levels_1_", pcpre ? pcpre : ""));
+    PetscCall(PetscOptionsGetEnum(NULL, prefix, "-st_matstructure", MatStructures, (PetscEnum*)&structure, &flg)); /* if not user-provided, force its value when possible */
     if (!flg && structure == SAME_NONZERO_PATTERN) { /* cannot call STSetMatStructure() yet, insert the appropriate option in the database, parsed by STSetFromOptions() */
-      ierr = PetscSNPrintf(prefix, sizeof(prefix), "-%spc_hpddm_levels_1_st_matstructure", pcpre ? pcpre : "");CHKERRQ(ierr);
-      ierr = PetscOptionsSetValue(NULL, prefix, MatStructures[structure]);CHKERRQ(ierr);
+      PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "-%spc_hpddm_levels_1_st_matstructure", pcpre ? pcpre : ""));
+      PetscCall(PetscOptionsSetValue(NULL, prefix, MatStructures[structure]));
     }
     if (data->N > 1 && (data->aux || ismatis || algebraic)) {
       PetscCheck(loadedSym, PETSC_COMM_SELF, PETSC_ERR_PLIB, "HPDDM library not loaded, cannot use more than one level");
-      ierr = MatSetOption(P, MAT_SUBMAT_SINGLEIS, PETSC_TRUE);CHKERRQ(ierr);
+      PetscCall(MatSetOption(P, MAT_SUBMAT_SINGLEIS, PETSC_TRUE));
       if (ismatis) {
         /* needed by HPDDM (currently) so that the partition of unity is 0 on subdomain interfaces */
-        ierr = MatIncreaseOverlap(P, 1, is, 1);CHKERRQ(ierr);
-        ierr = ISDestroy(&data->is);CHKERRQ(ierr);
+        PetscCall(MatIncreaseOverlap(P, 1, is, 1));
+        PetscCall(ISDestroy(&data->is));
         data->is = is[0];
       } else {
         if (PetscDefined(USE_DEBUG)) {
           PetscBool equal;
           IS        intersect;
 
-          ierr = ISIntersect(data->is, loc, &intersect);CHKERRQ(ierr);
-          ierr = ISEqualUnsorted(loc, intersect, &equal);CHKERRQ(ierr);
-          ierr = ISDestroy(&intersect);CHKERRQ(ierr);
+          PetscCall(ISIntersect(data->is, loc, &intersect));
+          PetscCall(ISEqualUnsorted(loc, intersect, &equal));
+          PetscCall(ISDestroy(&intersect));
           PetscCheck(equal, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "IS of the auxiliary Mat does not include all local rows of A");
         }
-        ierr = PetscObjectComposeFunction((PetscObject)pc->pmat, "PCHPDDMAlgebraicAuxiliaryMat_Private_C", PCHPDDMAlgebraicAuxiliaryMat_Private);CHKERRQ(ierr);
+        PetscCall(PetscObjectComposeFunction((PetscObject)pc->pmat, "PCHPDDMAlgebraicAuxiliaryMat_Private_C", PCHPDDMAlgebraicAuxiliaryMat_Private));
         if (!data->Neumann && !algebraic) {
-          ierr = PetscObjectTypeCompare((PetscObject)P, MATMPISBAIJ, &flg);CHKERRQ(ierr);
+          PetscCall(PetscObjectTypeCompare((PetscObject)P, MATMPISBAIJ, &flg));
           if (flg) {
             /* maybe better to ISSort(is[0]), MatCreateSubMatrices(), and then MatPermute() */
             /* but there is no MatPermute_SeqSBAIJ(), so as before, just use MATMPIBAIJ     */
-            ierr = MatConvert(P, MATMPIBAIJ, MAT_INITIAL_MATRIX, &uaux);CHKERRQ(ierr);
+            PetscCall(MatConvert(P, MATMPIBAIJ, MAT_INITIAL_MATRIX, &uaux));
             flg = PETSC_FALSE;
           }
         }
       }
       if (algebraic) {
-        ierr = PetscUseMethod(pc->pmat, "PCHPDDMAlgebraicAuxiliaryMat_Private_C", (Mat, IS*, Mat*[], PetscBool), (P, is, &sub, block));CHKERRQ(ierr);
+        PetscCall(PetscUseMethod(pc->pmat, "PCHPDDMAlgebraicAuxiliaryMat_Private_C", (Mat, IS*, Mat*[], PetscBool), (P, is, &sub, block)));
         if (block) {
-          ierr = PetscObjectQuery((PetscObject)sub[0], "_PCHPDDM_Neumann_Mat", (PetscObject*)&data->aux);CHKERRQ(ierr);
-          ierr = PetscObjectCompose((PetscObject)sub[0], "_PCHPDDM_Neumann_Mat", NULL);CHKERRQ(ierr);
+          PetscCall(PetscObjectQuery((PetscObject)sub[0], "_PCHPDDM_Neumann_Mat", (PetscObject*)&data->aux));
+          PetscCall(PetscObjectCompose((PetscObject)sub[0], "_PCHPDDM_Neumann_Mat", NULL));
         }
       } else if (!uaux) {
         if (data->Neumann) sub = &data->aux;
-        else {
-          ierr = MatCreateSubMatrices(P, 1, is, is, MAT_INITIAL_MATRIX, &sub);CHKERRQ(ierr);
-        }
+        else PetscCall(MatCreateSubMatrices(P, 1, is, is, MAT_INITIAL_MATRIX, &sub));
       } else {
-        ierr = MatCreateSubMatrices(uaux, 1, is, is, MAT_INITIAL_MATRIX, &sub);CHKERRQ(ierr);
-        ierr = MatDestroy(&uaux);CHKERRQ(ierr);
-        ierr = MatConvert(sub[0], MATSEQSBAIJ, MAT_INPLACE_MATRIX, sub);CHKERRQ(ierr);
+        PetscCall(MatCreateSubMatrices(uaux, 1, is, is, MAT_INITIAL_MATRIX, &sub));
+        PetscCall(MatDestroy(&uaux));
+        PetscCall(MatConvert(sub[0], MATSEQSBAIJ, MAT_INPLACE_MATRIX, sub));
       }
       /* Vec holding the partition of unity */
       if (!data->levels[0]->D) {
-        ierr = ISGetLocalSize(data->is, &n);CHKERRQ(ierr);
-        ierr = VecCreateMPI(PETSC_COMM_SELF, n, PETSC_DETERMINE, &data->levels[0]->D);CHKERRQ(ierr);
+        PetscCall(ISGetLocalSize(data->is, &n));
+        PetscCall(VecCreateMPI(PETSC_COMM_SELF, n, PETSC_DETERMINE, &data->levels[0]->D));
       }
       if (data->share && structure == SAME_NONZERO_PATTERN) { /* share the KSP only when the MatStructure is SAME_NONZERO_PATTERN */
         Mat      D;
         IS       perm = NULL;
         PetscInt size = -1;
-        ierr = PCHPDDMPermute_Private(*is, data->is, &uis, data->Neumann || block ? sub[0] : data->aux, &C, &perm);CHKERRQ(ierr);
+        PetscCall(PCHPDDMPermute_Private(*is, data->is, &uis, data->Neumann || block ? sub[0] : data->aux, &C, &perm));
         if (!data->Neumann && !block) {
-          ierr = MatPermute(sub[0], perm, perm, &D);CHKERRQ(ierr); /* permute since PCASM will call ISSort() */
-          ierr = MatHeaderReplace(sub[0], &D);CHKERRQ(ierr);
+          PetscCall(MatPermute(sub[0], perm, perm, &D)); /* permute since PCASM will call ISSort() */
+          PetscCall(MatHeaderReplace(sub[0], &D));
         }
         if (data->B) { /* see PCHPDDMSetRHSMat() */
-          ierr = MatPermute(data->B, perm, perm, &D);CHKERRQ(ierr);
-          ierr = MatHeaderReplace(data->B, &D);CHKERRQ(ierr);
+          PetscCall(MatPermute(data->B, perm, perm, &D));
+          PetscCall(MatHeaderReplace(data->B, &D));
         }
-        ierr = ISDestroy(&perm);CHKERRQ(ierr);
+        PetscCall(ISDestroy(&perm));
         if (!data->levels[0]->pc) {
-          ierr = PetscSNPrintf(prefix, sizeof(prefix), "%spc_hpddm_levels_1_", pcpre ? pcpre : "");CHKERRQ(ierr);
-          ierr = PCCreate(PetscObjectComm((PetscObject)pc), &data->levels[0]->pc);CHKERRQ(ierr);
-          ierr = PCSetOptionsPrefix(data->levels[0]->pc, prefix);CHKERRQ(ierr);
-          ierr = PCSetOperators(data->levels[0]->pc, A, P);CHKERRQ(ierr);
+          PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%spc_hpddm_levels_1_", pcpre ? pcpre : ""));
+          PetscCall(PCCreate(PetscObjectComm((PetscObject)pc), &data->levels[0]->pc));
+          PetscCall(PCSetOptionsPrefix(data->levels[0]->pc, prefix));
+          PetscCall(PCSetOperators(data->levels[0]->pc, A, P));
         }
-        ierr = PCSetType(data->levels[0]->pc, PCASM);CHKERRQ(ierr);
-        if (!data->levels[0]->pc->setupcalled) {
-          ierr = PCASMSetLocalSubdomains(data->levels[0]->pc, 1, is, &loc);CHKERRQ(ierr);
-        }
-        ierr = PCSetFromOptions(data->levels[0]->pc);CHKERRQ(ierr);
-        if (block) {
-          ierr = PCHPDDMCommunicationAvoidingPCASM_Private(data->levels[0]->pc, C, algebraic);CHKERRQ(ierr);
-        } else {
-          ierr = PCSetUp(data->levels[0]->pc);CHKERRQ(ierr);
-        }
-        ierr = PetscTryMethod(data->levels[0]->pc, "PCASMGetSubKSP_C", (PC, PetscInt*, PetscInt*, KSP**), (data->levels[0]->pc, &size, NULL, &ksp));CHKERRQ(ierr);
+        PetscCall(PCSetType(data->levels[0]->pc, PCASM));
+        if (!data->levels[0]->pc->setupcalled) PetscCall(PCASMSetLocalSubdomains(data->levels[0]->pc, 1, is, &loc));
+        PetscCall(PCSetFromOptions(data->levels[0]->pc));
+        if (block) PetscCall(PCHPDDMCommunicationAvoidingPCASM_Private(data->levels[0]->pc, C, algebraic));
+        else PetscCall(PCSetUp(data->levels[0]->pc));
+        PetscCall(PetscTryMethod(data->levels[0]->pc, "PCASMGetSubKSP_C", (PC, PetscInt*, PetscInt*, KSP**), (data->levels[0]->pc, &size, NULL, &ksp)));
         if (size != 1) {
-          ierr = PCDestroy(&data->levels[0]->pc);CHKERRQ(ierr);
-          ierr = MatDestroy(&C);CHKERRQ(ierr);
-          ierr = ISDestroy(&uis);CHKERRQ(ierr);
+          PetscCall(PCDestroy(&data->levels[0]->pc));
+          PetscCall(MatDestroy(&C));
+          PetscCall(ISDestroy(&uis));
           data->share = PETSC_FALSE;
-          if (size == -1) {
-            ierr = PetscInfo(pc, "Cannot share subdomain KSP between SLEPc and PETSc since PCASMGetSubKSP() not found in fine-level PC\n");CHKERRQ(ierr);
-          } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of subdomain solver %" PetscInt_FMT " != 1", size);
+          if (size == -1) PetscCall(PetscInfo(pc, "Cannot share subdomain KSP between SLEPc and PETSc since PCASMGetSubKSP() not found in fine-level PC\n"));
+          else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of subdomain solver %" PetscInt_FMT " != 1", size);
         } else {
           const char *matpre;
           PetscBool  cmp[2];
-          ierr = KSPGetOperators(ksp[0], subA, subA + 1);CHKERRQ(ierr);
-          ierr = MatDuplicate(subA[1], MAT_SHARE_NONZERO_PATTERN, &D);CHKERRQ(ierr);
-          ierr = MatGetOptionsPrefix(subA[1], &matpre);CHKERRQ(ierr);
-          ierr = MatSetOptionsPrefix(D, matpre);CHKERRQ(ierr);
-          ierr = PetscObjectTypeCompare((PetscObject)D, MATNORMAL, cmp);CHKERRQ(ierr);
-          ierr = PetscObjectTypeCompare((PetscObject)C, MATNORMAL, cmp + 1);CHKERRQ(ierr);
+          PetscCall(KSPGetOperators(ksp[0], subA, subA + 1));
+          PetscCall(MatDuplicate(subA[1], MAT_SHARE_NONZERO_PATTERN, &D));
+          PetscCall(MatGetOptionsPrefix(subA[1], &matpre));
+          PetscCall(MatSetOptionsPrefix(D, matpre));
+          PetscCall(PetscObjectTypeCompare((PetscObject)D, MATNORMAL, cmp));
+          PetscCall(PetscObjectTypeCompare((PetscObject)C, MATNORMAL, cmp + 1));
           PetscCheck(cmp[0] == cmp[1], PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "-pc_hpddm_levels_1_pc_asm_sub_mat_type %s and auxiliary Mat of type %s",((PetscObject)D)->type_name,((PetscObject)C)->type_name);
           if (!cmp[0]) {
-            if (!block) {
-              ierr = MatAXPY(D, 1.0, C, SUBSET_NONZERO_PATTERN);CHKERRQ(ierr);
-            } else {
-              ierr = MatAXPY(D, 1.0, data->aux, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-            }
+            if (!block) PetscCall(MatAXPY(D, 1.0, C, SUBSET_NONZERO_PATTERN));
+            else PetscCall(MatAXPY(D, 1.0, data->aux, SAME_NONZERO_PATTERN));
           } else {
             Mat mat[2];
-            ierr = MatNormalGetMat(D, mat);CHKERRQ(ierr);
-            ierr = MatNormalGetMat(C, mat + 1);CHKERRQ(ierr);
-            ierr = MatAXPY(mat[0], 1.0, mat[1], SUBSET_NONZERO_PATTERN);CHKERRQ(ierr);
+            PetscCall(MatNormalGetMat(D, mat));
+            PetscCall(MatNormalGetMat(C, mat + 1));
+            PetscCall(MatAXPY(mat[0], 1.0, mat[1], SUBSET_NONZERO_PATTERN));
           }
-          ierr = MatPropagateSymmetryOptions(C, D);CHKERRQ(ierr);
-          ierr = MatDestroy(&C);CHKERRQ(ierr);
+          PetscCall(MatPropagateSymmetryOptions(C, D));
+          PetscCall(MatDestroy(&C));
           C = D;
           /* swap pointers so that variables stay consistent throughout PCSetUp() */
           std::swap(C, data->aux);
@@ -1350,157 +1247,131 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
         }
       } else if (data->share) {
         data->share = PETSC_FALSE;
-        ierr = PetscInfo(pc, "Cannot share subdomain KSP between SLEPc and PETSc since -%spc_hpddm_levels_1_st_matstructure %s (!= %s)\n", pcpre ? pcpre : "", MatStructures[structure], MatStructures[SAME_NONZERO_PATTERN]);CHKERRQ(ierr);
+        PetscCall(PetscInfo(pc, "Cannot share subdomain KSP between SLEPc and PETSc since -%spc_hpddm_levels_1_st_matstructure %s (!= %s)\n", pcpre ? pcpre : "", MatStructures[structure], MatStructures[SAME_NONZERO_PATTERN]));
       }
       if (!data->levels[0]->scatter) {
-        ierr = MatCreateVecs(P, &xin, NULL);CHKERRQ(ierr);
-        if (ismatis) {
-          ierr = MatDestroy(&P);CHKERRQ(ierr);
-        }
-        ierr = VecScatterCreate(xin, data->is, data->levels[0]->D, NULL, &data->levels[0]->scatter);CHKERRQ(ierr);
-        ierr = VecDestroy(&xin);CHKERRQ(ierr);
+        PetscCall(MatCreateVecs(P, &xin, NULL));
+        if (ismatis) PetscCall(MatDestroy(&P));
+        PetscCall(VecScatterCreate(xin, data->is, data->levels[0]->D, NULL, &data->levels[0]->scatter));
+        PetscCall(VecDestroy(&xin));
       }
       if (data->levels[0]->P) {
         /* if the pattern is the same and PCSetUp() has previously succeeded, reuse HPDDM buffers and connectivity */
-        ierr = HPDDM::Schwarz<PetscScalar>::destroy(data->levels[0], pc->setupcalled < 1 || pc->flag == DIFFERENT_NONZERO_PATTERN ? PETSC_TRUE : PETSC_FALSE);CHKERRQ(ierr);
+        PetscCall(HPDDM::Schwarz<PetscScalar>::destroy(data->levels[0], pc->setupcalled < 1 || pc->flag == DIFFERENT_NONZERO_PATTERN ? PETSC_TRUE : PETSC_FALSE));
       }
       if (!data->levels[0]->P) data->levels[0]->P = new HPDDM::Schwarz<PetscScalar>();
-      if (data->log_separate) {
-        ierr = PetscLogEventBegin(PC_HPDDM_SetUp[0], data->levels[0]->ksp, 0, 0, 0);CHKERRQ(ierr);
-      } else {
-        ierr = PetscLogEventBegin(PC_HPDDM_Strc, data->levels[0]->ksp, 0, 0, 0);CHKERRQ(ierr);
-      }
+      if (data->log_separate) PetscCall(PetscLogEventBegin(PC_HPDDM_SetUp[0], data->levels[0]->ksp, 0, 0, 0));
+      else PetscCall(PetscLogEventBegin(PC_HPDDM_Strc, data->levels[0]->ksp, 0, 0, 0));
       /* HPDDM internal data structure */
-      ierr = data->levels[0]->P->structure(loc, data->is, sub[0], ismatis ? C : data->aux, data->levels);CHKERRQ(ierr);
-      if (!data->log_separate) {
-        ierr = PetscLogEventEnd(PC_HPDDM_Strc, data->levels[0]->ksp, 0, 0, 0);CHKERRQ(ierr);
-      }
+      PetscCall(data->levels[0]->P->structure(loc, data->is, sub[0], ismatis ? C : data->aux, data->levels));
+      if (!data->log_separate) PetscCall(PetscLogEventEnd(PC_HPDDM_Strc, data->levels[0]->ksp, 0, 0, 0));
       /* matrix pencil of the generalized eigenvalue problem on the overlap (GenEO) */
       if (!data->B) {
-        ierr = MatDuplicate(sub[0], MAT_COPY_VALUES, &weighted);CHKERRQ(ierr);
-        ierr = PetscObjectTypeCompare((PetscObject)weighted, MATNORMAL, &flg);CHKERRQ(ierr);
-        if (!flg) {
-          ierr = MatDiagonalScale(weighted, data->levels[0]->D, data->levels[0]->D);CHKERRQ(ierr);
-        } else { /* MATNORMAL applies MatDiagonalScale() in a matrix-free fashion, not what is needed since this won't be passed to SLEPc during the eigensolve */
-          ierr = MatNormalGetMat(weighted, &data->B);CHKERRQ(ierr);
-          ierr = MatDiagonalScale(data->B, NULL, data->levels[0]->D);CHKERRQ(ierr);
+        PetscCall(MatDuplicate(sub[0], MAT_COPY_VALUES, &weighted));
+        PetscCall(PetscObjectTypeCompare((PetscObject)weighted, MATNORMAL, &flg));
+        if (!flg) PetscCall(MatDiagonalScale(weighted, data->levels[0]->D, data->levels[0]->D));
+        else { /* MATNORMAL applies MatDiagonalScale() in a matrix-free fashion, not what is needed since this won't be passed to SLEPc during the eigensolve */
+          PetscCall(MatNormalGetMat(weighted, &data->B));
+          PetscCall(MatDiagonalScale(data->B, NULL, data->levels[0]->D));
           data->B = NULL;
           flg = PETSC_FALSE;
         }
         /* neither MatDuplicate() nor MatDiagonaleScale() handles the symmetry options, so propagate the options explicitly */
         /* only useful for -mat_type baij -pc_hpddm_levels_1_st_pc_type cholesky (no problem with MATAIJ or MATSBAIJ)       */
-        ierr = MatPropagateSymmetryOptions(sub[0], weighted);CHKERRQ(ierr);
+        PetscCall(MatPropagateSymmetryOptions(sub[0], weighted));
       } else weighted = data->B;
       /* SLEPc is used inside the loaded symbol */
-      ierr = (*loadedSym)(data->levels[0]->P, data->is, ismatis ? C : (algebraic && !block ? sub[0] : data->aux), weighted, data->B, initial, data->levels);CHKERRQ(ierr);
+      PetscCall((*loadedSym)(data->levels[0]->P, data->is, ismatis ? C : (algebraic && !block ? sub[0] : data->aux), weighted, data->B, initial, data->levels));
       if (data->share) {
         Mat st[2];
-        ierr = KSPGetOperators(ksp[0], st, st + 1);CHKERRQ(ierr);
-        ierr = MatCopy(subA[0], st[0], SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-        if (subA[1] != subA[0] || st[1] != st[0]) {
-          ierr = MatCopy(subA[1], st[1], SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-        }
+        PetscCall(KSPGetOperators(ksp[0], st, st + 1));
+        PetscCall(MatCopy(subA[0], st[0], SAME_NONZERO_PATTERN));
+        if (subA[1] != subA[0] || st[1] != st[0]) PetscCall(MatCopy(subA[1], st[1], SAME_NONZERO_PATTERN));
       }
-      if (data->log_separate) {
-        ierr = PetscLogEventEnd(PC_HPDDM_SetUp[0], data->levels[0]->ksp, 0, 0, 0);CHKERRQ(ierr);
-      }
-      if (ismatis) {
-        ierr = MatISGetLocalMat(C, &N);CHKERRQ(ierr);
-      } else N = data->aux;
+      if (data->log_separate) PetscCall(PetscLogEventEnd(PC_HPDDM_SetUp[0], data->levels[0]->ksp, 0, 0, 0));
+      if (ismatis) PetscCall(MatISGetLocalMat(C, &N));
+      else N = data->aux;
       P = sub[0];
       /* going through the grid hierarchy */
       for (n = 1; n < data->N; ++n) {
-        if (data->log_separate) {
-          ierr = PetscLogEventBegin(PC_HPDDM_SetUp[n], data->levels[n]->ksp, 0, 0, 0);CHKERRQ(ierr);
-        }
+        if (data->log_separate) PetscCall(PetscLogEventBegin(PC_HPDDM_SetUp[n], data->levels[n]->ksp, 0, 0, 0));
         /* method composed in the loaded symbol since there, SLEPc is used as well */
-        ierr = PetscTryMethod(data->levels[0]->ksp, "PCHPDDMSetUp_Private_C", (Mat*, Mat*, PetscInt, PetscInt* const, PC_HPDDM_Level** const), (&P, &N, n, &data->N, data->levels));CHKERRQ(ierr);
-        if (data->log_separate) {
-          ierr = PetscLogEventEnd(PC_HPDDM_SetUp[n], data->levels[n]->ksp, 0, 0, 0);CHKERRQ(ierr);
-        }
+        PetscCall(PetscTryMethod(data->levels[0]->ksp, "PCHPDDMSetUp_Private_C", (Mat*, Mat*, PetscInt, PetscInt* const, PC_HPDDM_Level** const), (&P, &N, n, &data->N, data->levels)));
+        if (data->log_separate) PetscCall(PetscLogEventEnd(PC_HPDDM_SetUp[n], data->levels[n]->ksp, 0, 0, 0));
       }
       /* reset to NULL to avoid any faulty use */
-      ierr = PetscObjectComposeFunction((PetscObject)data->levels[0]->ksp, "PCHPDDMSetUp_Private_C", NULL);CHKERRQ(ierr);
-      if (!ismatis) {
-        ierr = PetscObjectComposeFunction((PetscObject)pc->pmat, "PCHPDDMAlgebraicAuxiliaryMat_C", NULL);CHKERRQ(ierr);
-      } else {
-        /* matching PetscObjectReference() above */
-        ierr = PetscObjectDereference((PetscObject)C);CHKERRQ(ierr);
-      }
+      PetscCall(PetscObjectComposeFunction((PetscObject)data->levels[0]->ksp, "PCHPDDMSetUp_Private_C", NULL));
+      if (!ismatis) PetscCall(PetscObjectComposeFunction((PetscObject)pc->pmat, "PCHPDDMAlgebraicAuxiliaryMat_C", NULL));
+      else PetscCall(PetscObjectDereference((PetscObject)C)); /* matching PetscObjectReference() above */
       for (n = 0; n < data->N - 1; ++n)
         if (data->levels[n]->P) {
           /* HPDDM internal work buffers */
           data->levels[n]->P->setBuffer();
           data->levels[n]->P->super::start();
         }
-      if (ismatis || !subdomains) {
-        ierr = PCHPDDMDestroySubMatrices_Private(data->Neumann, PetscBool(algebraic && !block), sub);CHKERRQ(ierr);
-      }
+      if (ismatis || !subdomains) PetscCall(PCHPDDMDestroySubMatrices_Private(data->Neumann, PetscBool(algebraic && !block), sub));
       if (ismatis) data->is = NULL;
       for (n = 0; n < data->N - 1 + (reused > 0); ++n) {
         if (data->levels[n]->P) {
           PC spc;
 
           /* force the PC to be PCSHELL to do the coarse grid corrections */
-          ierr = KSPSetSkipPCSetFromOptions(data->levels[n]->ksp, PETSC_TRUE);CHKERRQ(ierr);
-          ierr = KSPGetPC(data->levels[n]->ksp, &spc);CHKERRQ(ierr);
-          ierr = PCSetType(spc, PCSHELL);CHKERRQ(ierr);
-          ierr = PCShellSetContext(spc, data->levels[n]);CHKERRQ(ierr);
-          ierr = PCShellSetSetUp(spc, PCHPDDMShellSetUp);CHKERRQ(ierr);
-          ierr = PCShellSetApply(spc, PCHPDDMShellApply);CHKERRQ(ierr);
-          ierr = PCShellSetMatApply(spc, PCHPDDMShellMatApply);CHKERRQ(ierr);
-          ierr = PCShellSetDestroy(spc, PCHPDDMShellDestroy);CHKERRQ(ierr);
-          if (!data->levels[n]->pc) {
-            ierr = PCCreate(PetscObjectComm((PetscObject)data->levels[n]->ksp), &data->levels[n]->pc);CHKERRQ(ierr);
-          }
+          PetscCall(KSPSetSkipPCSetFromOptions(data->levels[n]->ksp, PETSC_TRUE));
+          PetscCall(KSPGetPC(data->levels[n]->ksp, &spc));
+          PetscCall(PCSetType(spc, PCSHELL));
+          PetscCall(PCShellSetContext(spc, data->levels[n]));
+          PetscCall(PCShellSetSetUp(spc, PCHPDDMShellSetUp));
+          PetscCall(PCShellSetApply(spc, PCHPDDMShellApply));
+          PetscCall(PCShellSetMatApply(spc, PCHPDDMShellMatApply));
+          PetscCall(PCShellSetDestroy(spc, PCHPDDMShellDestroy));
+          if (!data->levels[n]->pc) PetscCall(PCCreate(PetscObjectComm((PetscObject)data->levels[n]->ksp), &data->levels[n]->pc));
           if (n < reused) {
-            ierr = PCSetReusePreconditioner(spc, PETSC_TRUE);CHKERRQ(ierr);
-            ierr = PCSetReusePreconditioner(data->levels[n]->pc, PETSC_TRUE);CHKERRQ(ierr);
+            PetscCall(PCSetReusePreconditioner(spc, PETSC_TRUE));
+            PetscCall(PCSetReusePreconditioner(data->levels[n]->pc, PETSC_TRUE));
           }
-          ierr = PCSetUp(spc);CHKERRQ(ierr);
+          PetscCall(PCSetUp(spc));
         }
       }
     } else flg = reused ? PETSC_FALSE : PETSC_TRUE;
     if (!ismatis && subdomains) {
-      if (flg) {
-        ierr = KSPGetPC(data->levels[0]->ksp, &inner);CHKERRQ(ierr);
-      } else inner = data->levels[0]->pc;
+      if (flg) PetscCall(KSPGetPC(data->levels[0]->ksp, &inner));
+      else inner = data->levels[0]->pc;
       if (inner) {
-        ierr = PCSetType(inner, PCASM);CHKERRQ(ierr); /* inner is the fine-level PC for which one must ensure                       */
+        PetscCall(PCSetType(inner, PCASM)); /* inner is the fine-level PC for which one must ensure                       */
                                                       /* PCASMSetLocalSubdomains() has been called when -pc_hpddm_define_subdomains */
         if (!inner->setupcalled) { /* evaluates to PETSC_FALSE when -pc_hpddm_block_splitting */
-          ierr = PCASMSetLocalSubdomains(inner, 1, is, &loc);CHKERRQ(ierr);
+          PetscCall(PCASMSetLocalSubdomains(inner, 1, is, &loc));
           if (!data->Neumann) { /* subdomain matrices are already created for the eigenproblem, reuse them for the fine-level PC */
-            ierr = PCHPDDMPermute_Private(*is, NULL, NULL, sub[0], &C, NULL);CHKERRQ(ierr);
-            ierr = PCHPDDMCommunicationAvoidingPCASM_Private(inner, C, algebraic);CHKERRQ(ierr);
-            ierr = MatDestroy(&C);CHKERRQ(ierr);
+            PetscCall(PCHPDDMPermute_Private(*is, NULL, NULL, sub[0], &C, NULL));
+            PetscCall(PCHPDDMCommunicationAvoidingPCASM_Private(inner, C, algebraic));
+            PetscCall(MatDestroy(&C));
           }
         }
       }
-      ierr = PCHPDDMDestroySubMatrices_Private(data->Neumann, PetscBool(algebraic && !block), sub);CHKERRQ(ierr);
+      PetscCall(PCHPDDMDestroySubMatrices_Private(data->Neumann, PetscBool(algebraic && !block), sub));
     }
-    ierr = ISDestroy(&loc);CHKERRQ(ierr);
+    PetscCall(ISDestroy(&loc));
   } else data->N = 1 + reused; /* enforce this value to 1 + reused if there is no way to build another level */
   if (requested != data->N + reused) {
-    ierr = PetscInfo(pc, "%" PetscInt_FMT " levels requested, only %" PetscInt_FMT " built + %" PetscInt_FMT " reused. Options for level(s) > %" PetscInt_FMT ", including -%spc_hpddm_coarse_ will not be taken into account\n", requested, data->N, reused, data->N, pcpre ? pcpre : "");CHKERRQ(ierr);
-    ierr = PetscInfo(pc, "It is best to tune parameters, e.g., a higher value for -%spc_hpddm_levels_%" PetscInt_FMT "_eps_threshold so that at least one local deflation vector will be selected\n", pcpre ? pcpre : "", data->N);CHKERRQ(ierr);
+    PetscCall(PetscInfo(pc, "%" PetscInt_FMT " levels requested, only %" PetscInt_FMT " built + %" PetscInt_FMT " reused. Options for level(s) > %" PetscInt_FMT ", including -%spc_hpddm_coarse_ will not be taken into account\n", requested, data->N, reused, data->N, pcpre ? pcpre : ""));
+    PetscCall(PetscInfo(pc, "It is best to tune parameters, e.g., a higher value for -%spc_hpddm_levels_%" PetscInt_FMT "_eps_threshold so that at least one local deflation vector will be selected\n", pcpre ? pcpre : "", data->N));
     /* cannot use PCHPDDMShellDestroy() because PCSHELL not set for unassembled levels */
     for (n = data->N - 1; n < requested - 1; ++n) {
       if (data->levels[n]->P) {
-        ierr = HPDDM::Schwarz<PetscScalar>::destroy(data->levels[n], PETSC_TRUE);CHKERRQ(ierr);
-        ierr = VecDestroyVecs(1, &data->levels[n]->v[0]);CHKERRQ(ierr);
-        ierr = VecDestroyVecs(2, &data->levels[n]->v[1]);CHKERRQ(ierr);
-        ierr = MatDestroy(data->levels[n]->V);CHKERRQ(ierr);
-        ierr = MatDestroy(data->levels[n]->V + 1);CHKERRQ(ierr);
-        ierr = MatDestroy(data->levels[n]->V + 2);CHKERRQ(ierr);
-        ierr = VecDestroy(&data->levels[n]->D);CHKERRQ(ierr);
-        ierr = VecScatterDestroy(&data->levels[n]->scatter);CHKERRQ(ierr);
+        PetscCall(HPDDM::Schwarz<PetscScalar>::destroy(data->levels[n], PETSC_TRUE));
+        PetscCall(VecDestroyVecs(1, &data->levels[n]->v[0]));
+        PetscCall(VecDestroyVecs(2, &data->levels[n]->v[1]));
+        PetscCall(MatDestroy(data->levels[n]->V));
+        PetscCall(MatDestroy(data->levels[n]->V + 1));
+        PetscCall(MatDestroy(data->levels[n]->V + 2));
+        PetscCall(VecDestroy(&data->levels[n]->D));
+        PetscCall(VecScatterDestroy(&data->levels[n]->scatter));
       }
     }
     if (reused) {
       for (n = reused; n < PETSC_PCHPDDM_MAXLEVELS && data->levels[n]; ++n) {
-        ierr = KSPDestroy(&data->levels[n]->ksp);CHKERRQ(ierr);
-        ierr = PCDestroy(&data->levels[n]->pc);CHKERRQ(ierr);
+        PetscCall(KSPDestroy(&data->levels[n]->ksp));
+        PetscCall(PCDestroy(&data->levels[n]->pc));
       }
     }
     PetscCheck(!PetscDefined(USE_DEBUG), PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "%" PetscInt_FMT " levels requested, only %" PetscInt_FMT " built + %" PetscInt_FMT " reused. Options for level(s) > %" PetscInt_FMT ", including -%spc_hpddm_coarse_ will not be taken into account. It is best to tune parameters, e.g., a higher value for -%spc_hpddm_levels_%" PetscInt_FMT "_eps_threshold so that at least one local deflation vector will be selected. If you don't want this to error out, compile --with-debugging=0", requested, data->N, reused, data->N, pcpre ? pcpre : "", pcpre ? pcpre : "", data->N);
@@ -1508,12 +1379,8 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
   /* these solvers are created after PCSetFromOptions() is called */
   if (pc->setfromoptionscalled) {
     for (n = 0; n < data->N; ++n) {
-      if (data->levels[n]->ksp) {
-        ierr = KSPSetFromOptions(data->levels[n]->ksp);CHKERRQ(ierr);
-      }
-      if (data->levels[n]->pc) {
-        ierr = PCSetFromOptions(data->levels[n]->pc);CHKERRQ(ierr);
-      }
+      if (data->levels[n]->ksp) PetscCall(KSPSetFromOptions(data->levels[n]->ksp));
+      if (data->levels[n]->pc) PetscCall(PCSetFromOptions(data->levels[n]->pc));
     }
     pc->setfromoptionscalled = 0;
   }
@@ -1522,8 +1389,8 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
     /* swap back pointers so that variables follow the user-provided numbering */
     std::swap(C, data->aux);
     std::swap(uis, data->is);
-    ierr = MatDestroy(&C);CHKERRQ(ierr);
-    ierr = ISDestroy(&uis);CHKERRQ(ierr);
+    PetscCall(MatDestroy(&C));
+    PetscCall(ISDestroy(&uis));
   }
   PetscFunctionReturn(0);
 }
@@ -1544,12 +1411,10 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
 @*/
 PetscErrorCode PCHPDDMSetCoarseCorrectionType(PC pc, PCHPDDMCoarseCorrectionType type)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(pc, type, 2);
-  ierr = PetscTryMethod(pc, "PCHPDDMSetCoarseCorrectionType_C", (PC, PCHPDDMCoarseCorrectionType), (pc, type));CHKERRQ(ierr);
+  PetscCall(PetscTryMethod(pc, "PCHPDDMSetCoarseCorrectionType_C", (PC, PCHPDDMCoarseCorrectionType), (pc, type)));
   PetscFunctionReturn(0);
 }
 
@@ -1568,13 +1433,11 @@ PetscErrorCode PCHPDDMSetCoarseCorrectionType(PC pc, PCHPDDMCoarseCorrectionType
 @*/
 PetscErrorCode PCHPDDMGetCoarseCorrectionType(PC pc, PCHPDDMCoarseCorrectionType *type)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   if (type) {
     PetscValidPointer(type, 2);
-    ierr = PetscUseMethod(pc, "PCHPDDMGetCoarseCorrectionType_C", (PC, PCHPDDMCoarseCorrectionType*), (pc, type));CHKERRQ(ierr);
+    PetscCall(PetscUseMethod(pc, "PCHPDDMGetCoarseCorrectionType_C", (PC, PCHPDDMCoarseCorrectionType*), (pc, type)));
   }
   PetscFunctionReturn(0);
 }
@@ -1616,13 +1479,11 @@ static PetscErrorCode PCHPDDMGetCoarseCorrectionType_HPDDM(PC pc, PCHPDDMCoarseC
 @*/
 PetscErrorCode PCHPDDMGetSTShareSubKSP(PC pc, PetscBool *share)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   if (share) {
     PetscValidPointer(share, 2);
-    ierr = PetscUseMethod(pc, "PCHPDDMGetSTShareSubKSP_C", (PC, PetscBool*), (pc, share));CHKERRQ(ierr);
+    PetscCall(PetscUseMethod(pc, "PCHPDDMGetSTShareSubKSP_C", (PC, PetscBool*), (pc, share)));
   }
   PetscFunctionReturn(0);
 }
@@ -1638,25 +1499,22 @@ static PetscErrorCode PCHPDDMGetSTShareSubKSP_HPDDM(PC pc, PetscBool *share)
 
 PetscErrorCode HPDDMLoadDL_Private(PetscBool *found)
 {
-  char           lib[PETSC_MAX_PATH_LEN], dlib[PETSC_MAX_PATH_LEN], dir[PETSC_MAX_PATH_LEN];
-  PetscErrorCode ierr;
+  char lib[PETSC_MAX_PATH_LEN], dlib[PETSC_MAX_PATH_LEN], dir[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscStrcpy(dir, "${PETSC_LIB_DIR}");CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL, NULL, "-hpddm_dir", dir, sizeof(dir), NULL);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(lib, sizeof(lib), "%s/libhpddm_petsc", dir);CHKERRQ(ierr);
-  ierr = PetscDLLibraryRetrieve(PETSC_COMM_SELF, lib, dlib, 1024, found);CHKERRQ(ierr);
-  if (*found) {
-    ierr = PetscDLLibraryAppend(PETSC_COMM_SELF, &PetscDLLibrariesLoaded, dlib);CHKERRQ(ierr);
+  PetscCall(PetscStrcpy(dir, "${PETSC_LIB_DIR}"));
+  PetscCall(PetscOptionsGetString(NULL, NULL, "-hpddm_dir", dir, sizeof(dir), NULL));
+  PetscCall(PetscSNPrintf(lib, sizeof(lib), "%s/libhpddm_petsc", dir));
+  PetscCall(PetscDLLibraryRetrieve(PETSC_COMM_SELF, lib, dlib, 1024, found));
+  if (*found) PetscCall(PetscDLLibraryAppend(PETSC_COMM_SELF, &PetscDLLibrariesLoaded, dlib));
 #if defined(SLEPC_LIB_DIR) /* this variable is passed during SLEPc ./configure since    */
-  } else {                 /* slepcconf.h is not yet built (and thus can't be included) */
-    ierr = PetscStrcpy(dir, HPDDM_STR(SLEPC_LIB_DIR));CHKERRQ(ierr);
-    ierr = PetscSNPrintf(lib, sizeof(lib), "%s/libhpddm_petsc", dir);CHKERRQ(ierr);
-    ierr = PetscDLLibraryRetrieve(PETSC_COMM_SELF, lib, dlib, 1024, found);CHKERRQ(ierr);
-    if (*found) {
-      ierr = PetscDLLibraryAppend(PETSC_COMM_SELF, &PetscDLLibrariesLoaded, dlib);CHKERRQ(ierr);
+  else {                   /* slepcconf.h is not yet built (and thus can't be included) */
+    PetscCall(PetscStrcpy(dir, HPDDM_STR(SLEPC_LIB_DIR)));
+    PetscCall(PetscSNPrintf(lib, sizeof(lib), "%s/libhpddm_petsc", dir));
+    PetscCall(PetscDLLibraryRetrieve(PETSC_COMM_SELF, lib, dlib, 1024, found));
+    if (*found) PetscCall(PetscDLLibraryAppend(PETSC_COMM_SELF, &PetscDLLibrariesLoaded, dlib));
 #endif
-    } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "%s not found", lib);
+    else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "%s not found", lib);
 #if defined(SLEPC_LIB_DIR)
   }
 #endif
@@ -1707,19 +1565,16 @@ PetscErrorCode HPDDMLoadDL_Private(PetscBool *found)
 M*/
 PETSC_EXTERN PetscErrorCode PCCreate_HPDDM(PC pc)
 {
-  PC_HPDDM       *data;
-  PetscBool      found;
-  PetscErrorCode ierr;
+  PC_HPDDM  *data;
+  PetscBool found;
 
   PetscFunctionBegin;
   if (!loadedSym) {
-    ierr = HPDDMLoadDL_Private(&found);CHKERRQ(ierr);
-    if (found) {
-      ierr = PetscDLLibrarySym(PETSC_COMM_SELF, &PetscDLLibrariesLoaded, NULL, "PCHPDDM_Internal", (void**)&loadedSym);CHKERRQ(ierr);
-    }
+    PetscCall(HPDDMLoadDL_Private(&found));
+    if (found) PetscCall(PetscDLLibrarySym(PETSC_COMM_SELF, &PetscDLLibrariesLoaded, NULL, "PCHPDDM_Internal", (void**)&loadedSym));
   }
   PetscCheck(loadedSym, PETSC_COMM_SELF, PETSC_ERR_PLIB, "PCHPDDM_Internal symbol not found in loaded libhpddm_petsc");
-  ierr = PetscNewLog(pc, &data);CHKERRQ(ierr);
+  PetscCall(PetscNewLog(pc, &data));
   pc->data                = data;
   pc->ops->reset          = PCReset_HPDDM;
   pc->ops->destroy        = PCDestroy_HPDDM;
@@ -1729,12 +1584,12 @@ PETSC_EXTERN PetscErrorCode PCCreate_HPDDM(PC pc)
   pc->ops->matapply       = PCMatApply_HPDDM;
   pc->ops->view           = PCView_HPDDM;
   pc->ops->presolve       = PCPreSolve_HPDDM;
-  ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetAuxiliaryMat_C", PCHPDDMSetAuxiliaryMat_HPDDM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMHasNeumannMat_C", PCHPDDMHasNeumannMat_HPDDM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetRHSMat_C", PCHPDDMSetRHSMat_HPDDM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetCoarseCorrectionType_C", PCHPDDMSetCoarseCorrectionType_HPDDM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMGetCoarseCorrectionType_C", PCHPDDMGetCoarseCorrectionType_HPDDM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMGetSTShareSubKSP_C", PCHPDDMGetSTShareSubKSP_HPDDM);CHKERRQ(ierr);
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetAuxiliaryMat_C", PCHPDDMSetAuxiliaryMat_HPDDM));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMHasNeumannMat_C", PCHPDDMHasNeumannMat_HPDDM));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetRHSMat_C", PCHPDDMSetRHSMat_HPDDM));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetCoarseCorrectionType_C", PCHPDDMSetCoarseCorrectionType_HPDDM));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMGetCoarseCorrectionType_C", PCHPDDMGetCoarseCorrectionType_HPDDM));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMGetSTShareSubKSP_C", PCHPDDMGetSTShareSubKSP_HPDDM));
   PetscFunctionReturn(0);
 }
 
@@ -1747,37 +1602,36 @@ PETSC_EXTERN PetscErrorCode PCCreate_HPDDM(PC pc)
 @*/
 PetscErrorCode PCHPDDMInitializePackage(void)
 {
-  char           ename[32];
-  PetscInt       i;
-  PetscErrorCode ierr;
+  char     ename[32];
+  PetscInt i;
 
   PetscFunctionBegin;
   if (PCHPDDMPackageInitialized) PetscFunctionReturn(0);
   PCHPDDMPackageInitialized = PETSC_TRUE;
-  ierr = PetscRegisterFinalize(PCHPDDMFinalizePackage);CHKERRQ(ierr);
+  PetscCall(PetscRegisterFinalize(PCHPDDMFinalizePackage));
   /* general events registered once during package initialization */
   /* some of these events are not triggered in libpetsc,          */
   /* but rather directly in libhpddm_petsc,                       */
   /* which is in charge of performing the following operations    */
 
   /* domain decomposition structure from Pmat sparsity pattern    */
-  ierr = PetscLogEventRegister("PCHPDDMStrc", PC_CLASSID, &PC_HPDDM_Strc);CHKERRQ(ierr);
+  PetscCall(PetscLogEventRegister("PCHPDDMStrc", PC_CLASSID, &PC_HPDDM_Strc));
   /* Galerkin product, redistribution, and setup (not triggered in libpetsc)                */
-  ierr = PetscLogEventRegister("PCHPDDMPtAP", PC_CLASSID, &PC_HPDDM_PtAP);CHKERRQ(ierr);
+  PetscCall(PetscLogEventRegister("PCHPDDMPtAP", PC_CLASSID, &PC_HPDDM_PtAP));
   /* Galerkin product with summation, redistribution, and setup (not triggered in libpetsc) */
-  ierr = PetscLogEventRegister("PCHPDDMPtBP", PC_CLASSID, &PC_HPDDM_PtBP);CHKERRQ(ierr);
+  PetscCall(PetscLogEventRegister("PCHPDDMPtBP", PC_CLASSID, &PC_HPDDM_PtBP));
   /* next level construction using PtAP and PtBP (not triggered in libpetsc)                */
-  ierr = PetscLogEventRegister("PCHPDDMNext", PC_CLASSID, &PC_HPDDM_Next);CHKERRQ(ierr);
+  PetscCall(PetscLogEventRegister("PCHPDDMNext", PC_CLASSID, &PC_HPDDM_Next));
   static_assert(PETSC_PCHPDDM_MAXLEVELS <= 9, "PETSC_PCHPDDM_MAXLEVELS value is too high");
   for (i = 1; i < PETSC_PCHPDDM_MAXLEVELS; ++i) {
-    ierr = PetscSNPrintf(ename, sizeof(ename), "PCHPDDMSetUp L%1d", i);CHKERRQ(ierr);
+    PetscCall(PetscSNPrintf(ename, sizeof(ename), "PCHPDDMSetUp L%1d", i));
     /* events during a PCSetUp() at level #i _except_ the assembly */
     /* of the Galerkin operator of the coarser level #(i + 1)      */
-    ierr = PetscLogEventRegister(ename, PC_CLASSID, &PC_HPDDM_SetUp[i - 1]);CHKERRQ(ierr);
-    ierr = PetscSNPrintf(ename, sizeof(ename), "PCHPDDMSolve L%1d", i);CHKERRQ(ierr);
+    PetscCall(PetscLogEventRegister(ename, PC_CLASSID, &PC_HPDDM_SetUp[i - 1]));
+    PetscCall(PetscSNPrintf(ename, sizeof(ename), "PCHPDDMSolve L%1d", i));
     /* events during a PCApply() at level #i _except_              */
     /* the KSPSolve() of the coarser level #(i + 1)                */
-    ierr = PetscLogEventRegister(ename, PC_CLASSID, &PC_HPDDM_Solve[i - 1]);CHKERRQ(ierr);
+    PetscCall(PetscLogEventRegister(ename, PC_CLASSID, &PC_HPDDM_Solve[i - 1]));
   }
   PetscFunctionReturn(0);
 }

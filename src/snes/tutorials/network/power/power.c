@@ -16,7 +16,6 @@ static char help[] = "This example demonstrates the use of DMNetwork interface f
 
 PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
 {
-  PetscErrorCode ierr;
   DM             networkdm;
   UserCtx_Power  *User=(UserCtx_Power*)appctx;
   Vec            localX,localF;
@@ -24,55 +23,53 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
   const PetscInt *vtx,*edges;
 
   PetscFunctionBegin;
-  ierr = SNESGetDM(snes,&networkdm);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(networkdm,&localX);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(networkdm,&localF);CHKERRQ(ierr);
-  ierr = VecSet(F,0.0);CHKERRQ(ierr);
-  ierr = VecSet(localF,0.0);CHKERRQ(ierr);
+  PetscCall(SNESGetDM(snes,&networkdm));
+  PetscCall(DMGetLocalVector(networkdm,&localX));
+  PetscCall(DMGetLocalVector(networkdm,&localF));
+  PetscCall(VecSet(F,0.0));
+  PetscCall(VecSet(localF,0.0));
 
-  ierr = DMGlobalToLocalBegin(networkdm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(networkdm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  PetscCall(DMGlobalToLocalBegin(networkdm,X,INSERT_VALUES,localX));
+  PetscCall(DMGlobalToLocalEnd(networkdm,X,INSERT_VALUES,localX));
 
-  ierr = DMNetworkGetSubnetwork(networkdm,0,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
-  ierr = FormFunction_Power(networkdm,localX,localF,nv,ne,vtx,edges,User);CHKERRQ(ierr);
+  PetscCall(DMNetworkGetSubnetwork(networkdm,0,&nv,&ne,&vtx,&edges));
+  PetscCall(FormFunction_Power(networkdm,localX,localF,nv,ne,vtx,edges,User));
 
-  ierr = DMRestoreLocalVector(networkdm,&localX);CHKERRQ(ierr);
+  PetscCall(DMRestoreLocalVector(networkdm,&localX));
 
-  ierr = DMLocalToGlobalBegin(networkdm,localF,ADD_VALUES,F);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(networkdm,localF,ADD_VALUES,F);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(networkdm,&localF);CHKERRQ(ierr);
+  PetscCall(DMLocalToGlobalBegin(networkdm,localF,ADD_VALUES,F));
+  PetscCall(DMLocalToGlobalEnd(networkdm,localF,ADD_VALUES,F));
+  PetscCall(DMRestoreLocalVector(networkdm,&localF));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode SetInitialValues(DM networkdm,Vec X,void* appctx)
 {
-  PetscErrorCode ierr;
   PetscInt       vStart,vEnd,nv,ne;
   const PetscInt *vtx,*edges;
   Vec            localX;
   UserCtx_Power  *user_power=(UserCtx_Power*)appctx;
 
   PetscFunctionBegin;
-  ierr = DMNetworkGetVertexRange(networkdm,&vStart, &vEnd);CHKERRQ(ierr);
+  PetscCall(DMNetworkGetVertexRange(networkdm,&vStart, &vEnd));
 
-  ierr = DMGetLocalVector(networkdm,&localX);CHKERRQ(ierr);
+  PetscCall(DMGetLocalVector(networkdm,&localX));
 
-  ierr = VecSet(X,0.0);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(networkdm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(networkdm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  PetscCall(VecSet(X,0.0));
+  PetscCall(DMGlobalToLocalBegin(networkdm,X,INSERT_VALUES,localX));
+  PetscCall(DMGlobalToLocalEnd(networkdm,X,INSERT_VALUES,localX));
 
-  ierr = DMNetworkGetSubnetwork(networkdm,0,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
-  ierr = SetInitialGuess_Power(networkdm,localX,nv,ne,vtx,edges,user_power);CHKERRQ(ierr);
+  PetscCall(DMNetworkGetSubnetwork(networkdm,0,&nv,&ne,&vtx,&edges));
+  PetscCall(SetInitialGuess_Power(networkdm,localX,nv,ne,vtx,edges,user_power));
 
-  ierr = DMLocalToGlobalBegin(networkdm,localX,ADD_VALUES,X);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(networkdm,localX,ADD_VALUES,X);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(networkdm,&localX);CHKERRQ(ierr);
+  PetscCall(DMLocalToGlobalBegin(networkdm,localX,ADD_VALUES,X));
+  PetscCall(DMLocalToGlobalEnd(networkdm,localX,ADD_VALUES,X));
+  PetscCall(DMRestoreLocalVector(networkdm,&localX));
   PetscFunctionReturn(0);
 }
 
 int main(int argc,char ** argv)
 {
-  PetscErrorCode   ierr;
   char             pfdata_file[PETSC_MAX_PATH_LEN]="case9.m";
   PFDATA           *pfdata;
   PetscInt         numEdges=0;
@@ -90,95 +87,95 @@ int main(int argc,char ** argv)
   Mat              J;
   SNES             snes;
 
-  ierr = PetscInitialize(&argc,&argv,"poweroptions",help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,"poweroptions",help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   {
     /* introduce the const crank so the clang static analyzer realizes that if it enters any of the if (crank) then it must have entered the first */
     /* this is an experiment to see how the analyzer reacts */
     const PetscMPIInt crank = rank;
 
     /* Create an empty network object */
-    ierr = DMNetworkCreate(PETSC_COMM_WORLD,&networkdm);CHKERRQ(ierr);
+    PetscCall(DMNetworkCreate(PETSC_COMM_WORLD,&networkdm));
     /* Register the components in the network */
-    ierr = DMNetworkRegisterComponent(networkdm,"branchstruct",sizeof(struct _p_EDGE_Power),&User.compkey_branch);CHKERRQ(ierr);
-    ierr = DMNetworkRegisterComponent(networkdm,"busstruct",sizeof(struct _p_VERTEX_Power),&User.compkey_bus);CHKERRQ(ierr);
-    ierr = DMNetworkRegisterComponent(networkdm,"genstruct",sizeof(struct _p_GEN),&User.compkey_gen);CHKERRQ(ierr);
-    ierr = DMNetworkRegisterComponent(networkdm,"loadstruct",sizeof(struct _p_LOAD),&User.compkey_load);CHKERRQ(ierr);
+    PetscCall(DMNetworkRegisterComponent(networkdm,"branchstruct",sizeof(struct _p_EDGE_Power),&User.compkey_branch));
+    PetscCall(DMNetworkRegisterComponent(networkdm,"busstruct",sizeof(struct _p_VERTEX_Power),&User.compkey_bus));
+    PetscCall(DMNetworkRegisterComponent(networkdm,"genstruct",sizeof(struct _p_GEN),&User.compkey_gen));
+    PetscCall(DMNetworkRegisterComponent(networkdm,"loadstruct",sizeof(struct _p_LOAD),&User.compkey_load));
 
-    ierr = PetscLogStageRegister("Read Data",&stage1);CHKERRQ(ierr);
+    PetscCall(PetscLogStageRegister("Read Data",&stage1));
     PetscLogStagePush(stage1);
     /* READ THE DATA */
     if (!crank) {
       /*    READ DATA */
       /* Only rank 0 reads the data */
-      ierr = PetscOptionsGetString(NULL,NULL,"-pfdata",pfdata_file,sizeof(pfdata_file),NULL);CHKERRQ(ierr);
-      ierr = PetscNew(&pfdata);CHKERRQ(ierr);
-      ierr = PFReadMatPowerData(pfdata,pfdata_file);CHKERRQ(ierr);
+      PetscCall(PetscOptionsGetString(NULL,NULL,"-pfdata",pfdata_file,sizeof(pfdata_file),NULL));
+      PetscCall(PetscNew(&pfdata));
+      PetscCall(PFReadMatPowerData(pfdata,pfdata_file));
       User.Sbase = pfdata->sbase;
 
       numEdges = pfdata->nbranch;
-      ierr = PetscMalloc1(2*numEdges,&edges);CHKERRQ(ierr);
-      ierr = GetListofEdges_Power(pfdata,edges);CHKERRQ(ierr);
+      PetscCall(PetscMalloc1(2*numEdges,&edges));
+      PetscCall(GetListofEdges_Power(pfdata,edges));
     }
 
     /* If external option activated. Introduce error in jacobian */
-    ierr = PetscOptionsHasName(NULL,NULL, "-jac_error", &User.jac_error);CHKERRQ(ierr);
+    PetscCall(PetscOptionsHasName(NULL,NULL, "-jac_error", &User.jac_error));
 
     PetscLogStagePop();
-    ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRMPI(ierr);
-    ierr = PetscLogStageRegister("Create network",&stage2);CHKERRQ(ierr);
+    PetscCallMPI(MPI_Barrier(PETSC_COMM_WORLD));
+    PetscCall(PetscLogStageRegister("Create network",&stage2));
     PetscLogStagePush(stage2);
     /* Set number of nodes/edges */
-    ierr = DMNetworkSetNumSubNetworks(networkdm,PETSC_DECIDE,1);CHKERRQ(ierr);
-    ierr = DMNetworkAddSubnetwork(networkdm,"",numEdges,edges,NULL);CHKERRQ(ierr);
+    PetscCall(DMNetworkSetNumSubNetworks(networkdm,PETSC_DECIDE,1));
+    PetscCall(DMNetworkAddSubnetwork(networkdm,"",numEdges,edges,NULL));
 
     /* Set up the network layout */
-    ierr = DMNetworkLayoutSetUp(networkdm);CHKERRQ(ierr);
+    PetscCall(DMNetworkLayoutSetUp(networkdm));
 
     if (!crank) {
-      ierr = PetscFree(edges);CHKERRQ(ierr);
+      PetscCall(PetscFree(edges));
     }
 
     /* Add network components only process 0 has any data to add */
     if (!crank) {
       genj=0; loadj=0;
-      ierr = DMNetworkGetEdgeRange(networkdm,&eStart,&eEnd);CHKERRQ(ierr);
+      PetscCall(DMNetworkGetEdgeRange(networkdm,&eStart,&eEnd));
       for (i = eStart; i < eEnd; i++) {
-        ierr = DMNetworkAddComponent(networkdm,i,User.compkey_branch,&pfdata->branch[i-eStart],0);CHKERRQ(ierr);
+        PetscCall(DMNetworkAddComponent(networkdm,i,User.compkey_branch,&pfdata->branch[i-eStart],0));
       }
-      ierr = DMNetworkGetVertexRange(networkdm,&vStart,&vEnd);CHKERRQ(ierr);
+      PetscCall(DMNetworkGetVertexRange(networkdm,&vStart,&vEnd));
       for (i = vStart; i < vEnd; i++) {
-        ierr = DMNetworkAddComponent(networkdm,i,User.compkey_bus,&pfdata->bus[i-vStart],2);CHKERRQ(ierr);
+        PetscCall(DMNetworkAddComponent(networkdm,i,User.compkey_bus,&pfdata->bus[i-vStart],2));
         if (pfdata->bus[i-vStart].ngen) {
           for (j = 0; j < pfdata->bus[i-vStart].ngen; j++) {
-            ierr = DMNetworkAddComponent(networkdm,i,User.compkey_gen,&pfdata->gen[genj++],0);CHKERRQ(ierr);
+            PetscCall(DMNetworkAddComponent(networkdm,i,User.compkey_gen,&pfdata->gen[genj++],0));
           }
         }
         if (pfdata->bus[i-vStart].nload) {
           for (j=0; j < pfdata->bus[i-vStart].nload; j++) {
-            ierr = DMNetworkAddComponent(networkdm,i,User.compkey_load,&pfdata->load[loadj++],0);CHKERRQ(ierr);
+            PetscCall(DMNetworkAddComponent(networkdm,i,User.compkey_load,&pfdata->load[loadj++],0));
           }
         }
       }
     }
 
     /* Set up DM for use */
-    ierr = DMSetUp(networkdm);CHKERRQ(ierr);
+    PetscCall(DMSetUp(networkdm));
 
     if (!crank) {
-      ierr = PetscFree(pfdata->bus);CHKERRQ(ierr);
-      ierr = PetscFree(pfdata->gen);CHKERRQ(ierr);
-      ierr = PetscFree(pfdata->branch);CHKERRQ(ierr);
-      ierr = PetscFree(pfdata->load);CHKERRQ(ierr);
-      ierr = PetscFree(pfdata);CHKERRQ(ierr);
+      PetscCall(PetscFree(pfdata->bus));
+      PetscCall(PetscFree(pfdata->gen));
+      PetscCall(PetscFree(pfdata->branch));
+      PetscCall(PetscFree(pfdata->load));
+      PetscCall(PetscFree(pfdata));
     }
 
     /* Distribute networkdm to multiple processes */
-    ierr = DMNetworkDistribute(&networkdm,0);CHKERRQ(ierr);
+    PetscCall(DMNetworkDistribute(&networkdm,0));
 
     PetscLogStagePop();
-    ierr = DMNetworkGetEdgeRange(networkdm,&eStart,&eEnd);CHKERRQ(ierr);
-    ierr = DMNetworkGetVertexRange(networkdm,&vStart,&vEnd);CHKERRQ(ierr);
+    PetscCall(DMNetworkGetEdgeRange(networkdm,&eStart,&eEnd));
+    PetscCall(DMNetworkGetVertexRange(networkdm,&vStart,&vEnd));
 
 #if 0
     EDGE_Power     edge;
@@ -188,58 +185,58 @@ int main(int argc,char ** argv)
     LOAD           load;
 
     for (i = eStart; i < eEnd; i++) {
-      ierr = DMNetworkGetComponent(networkdm,i,0,&key,(void**)&edge);CHKERRQ(ierr);
-      ierr = DMNetworkGetNumComponents(networkdm,i,&numComponents);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Rank %d ncomps = %d Line %d ---- %d\n",crank,numComponents,edge->internal_i,edge->internal_j);CHKERRQ(ierr);
+      PetscCall(DMNetworkGetComponent(networkdm,i,0,&key,(void**)&edge));
+      PetscCall(DMNetworkGetNumComponents(networkdm,i,&numComponents));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,"Rank %d ncomps = %d Line %d ---- %d\n",crank,numComponents,edge->internal_i,edge->internal_j));
     }
 
     for (i = vStart; i < vEnd; i++) {
-      ierr = DMNetworkGetNumComponents(networkdm,i,&numComponents);CHKERRQ(ierr);
+      PetscCall(DMNetworkGetNumComponents(networkdm,i,&numComponents));
       for (kk=0; kk < numComponents; kk++) {
-        ierr = DMNetworkGetComponent(networkdm,i,kk,&key,&component);CHKERRQ(ierr);
+        PetscCall(DMNetworkGetComponent(networkdm,i,kk,&key,&component));
         if (key == 1) {
           bus = (VERTEX_Power)(component);
-          ierr = PetscPrintf(PETSC_COMM_SELF,"Rank %d ncomps = %d Bus %d\n",crank,numComponents,bus->internal_i);CHKERRQ(ierr);
+          PetscCall(PetscPrintf(PETSC_COMM_SELF,"Rank %d ncomps = %d Bus %d\n",crank,numComponents,bus->internal_i));
         } else if (key == 2) {
           gen = (GEN)(component);
-          ierr = PetscPrintf(PETSC_COMM_SELF,"Rank %d Gen pg = %f qg = %f\n",crank,gen->pg,gen->qg);CHKERRQ(ierr);
+          PetscCall(PetscPrintf(PETSC_COMM_SELF,"Rank %d Gen pg = %f qg = %f\n",crank,gen->pg,gen->qg));
         } else if (key == 3) {
           load = (LOAD)(component);
-          ierr = PetscPrintf(PETSC_COMM_SELF,"Rank %d Load pl = %f ql = %f\n",crank,load->pl,load->ql);CHKERRQ(ierr);
+          PetscCall(PetscPrintf(PETSC_COMM_SELF,"Rank %d Load pl = %f ql = %f\n",crank,load->pl,load->ql));
         }
       }
     }
 #endif
     /* Broadcast Sbase to all processors */
-    ierr = MPI_Bcast(&User.Sbase,1,MPIU_SCALAR,0,PETSC_COMM_WORLD);CHKERRMPI(ierr);
+    PetscCallMPI(MPI_Bcast(&User.Sbase,1,MPIU_SCALAR,0,PETSC_COMM_WORLD));
 
-    ierr = DMCreateGlobalVector(networkdm,&X);CHKERRQ(ierr);
-    ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
+    PetscCall(DMCreateGlobalVector(networkdm,&X));
+    PetscCall(VecDuplicate(X,&F));
 
-    ierr = DMCreateMatrix(networkdm,&J);CHKERRQ(ierr);
-    ierr = MatSetOption(J,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
+    PetscCall(DMCreateMatrix(networkdm,&J));
+    PetscCall(MatSetOption(J,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE));
 
-    ierr = SetInitialValues(networkdm,X,&User);CHKERRQ(ierr);
+    PetscCall(SetInitialValues(networkdm,X,&User));
 
     /* HOOK UP SOLVER */
-    ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
-    ierr = SNESSetDM(snes,networkdm);CHKERRQ(ierr);
-    ierr = SNESSetFunction(snes,F,FormFunction,&User);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,J,J,FormJacobian_Power,&User);CHKERRQ(ierr);
-    ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+    PetscCall(SNESCreate(PETSC_COMM_WORLD,&snes));
+    PetscCall(SNESSetDM(snes,networkdm));
+    PetscCall(SNESSetFunction(snes,F,FormFunction,&User));
+    PetscCall(SNESSetJacobian(snes,J,J,FormJacobian_Power,&User));
+    PetscCall(SNESSetFromOptions(snes));
 
-    ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
-    /* ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
+    PetscCall(SNESSolve(snes,NULL,X));
+    /* PetscCall(VecView(X,PETSC_VIEWER_STDOUT_WORLD)); */
 
-    ierr = VecDestroy(&X);CHKERRQ(ierr);
-    ierr = VecDestroy(&F);CHKERRQ(ierr);
-    ierr = MatDestroy(&J);CHKERRQ(ierr);
+    PetscCall(VecDestroy(&X));
+    PetscCall(VecDestroy(&F));
+    PetscCall(MatDestroy(&J));
 
-    ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-    ierr = DMDestroy(&networkdm);CHKERRQ(ierr);
+    PetscCall(SNESDestroy(&snes));
+    PetscCall(DMDestroy(&networkdm));
   }
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -4,29 +4,28 @@ static char help[] = "Tests repeated VecSetType().\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       n   = 5;
   PetscScalar    one = 1.0,two = 2.0;
   Vec            x,y;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* create vector */
-  ierr = VecCreate(PETSC_COMM_SELF,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetType(x,"mpi");CHKERRQ(ierr);
-  ierr = VecSetType(x,"seq");CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
-  ierr = VecSetType(x,"mpi");CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_SELF,&x));
+  PetscCall(VecSetSizes(x,n,PETSC_DECIDE));
+  PetscCall(VecSetType(x,"mpi"));
+  PetscCall(VecSetType(x,"seq"));
+  PetscCall(VecDuplicate(x,&y));
+  PetscCall(VecSetType(x,"mpi"));
 
-  ierr = VecSet(x,one);CHKERRQ(ierr);
-  ierr = VecSet(y,two);CHKERRQ(ierr);
+  PetscCall(VecSet(x,one));
+  PetscCall(VecSet(y,two));
 
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&y));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

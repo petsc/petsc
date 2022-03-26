@@ -21,47 +21,46 @@ int main(int argc,char **argv)
   SNES           snes;
   Vec            x,r;
   Mat            J;
-  PetscErrorCode ierr;
   PetscInt       its;
   AppCtx         user;
   PetscMPIInt    size;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
 
   /* Allocate vectors / matrix */
-  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,PETSC_DECIDE,1);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+  PetscCall(VecSetSizes(x,PETSC_DECIDE,1));
+  PetscCall(VecSetFromOptions(x));
+  PetscCall(VecDuplicate(x,&r));
 
-  ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,1,1,1,NULL,&J);CHKERRQ(ierr);
+  PetscCall(MatCreateSeqAIJ(PETSC_COMM_WORLD,1,1,1,NULL,&J));
 
   /* Create / set-up SNES */
-  ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
-  ierr = SNESSetFunction(snes,r,UserFunction,&user);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes,J,J,UserJacobian,&user);CHKERRQ(ierr);
-  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+  PetscCall(SNESCreate(PETSC_COMM_WORLD,&snes));
+  PetscCall(SNESSetFunction(snes,r,UserFunction,&user));
+  PetscCall(SNESSetJacobian(snes,J,J,UserJacobian,&user));
+  PetscCall(SNESSetFromOptions(snes));
 
   /* Set initial guess (=1) and target value */
   user.value = 1e-4;
 
-  ierr = VecSet(x,1.0);CHKERRQ(ierr);
+  PetscCall(VecSet(x,1.0));
 
   /* Set initial guess / solve */
-  ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
-  ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n",its);CHKERRQ(ierr);
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscCall(SNESSolve(snes,NULL,x));
+  PetscCall(SNESGetIterationNumber(snes,&its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n",its));
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
 
   /* Done */
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&r);CHKERRQ(ierr);
-  ierr = MatDestroy(&J);CHKERRQ(ierr);
-  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&r));
+  PetscCall(MatDestroy(&J));
+  PetscCall(SNESDestroy(&snes));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*
@@ -74,13 +73,12 @@ PetscErrorCode UserFunction(SNES snes,Vec X,Vec F,void *ptr)
   PetscScalar       *f;
   PetscReal         half;
   const PetscScalar *x;
-  PetscErrorCode    ierr;
 
   half = 0.5;
 
-  ierr = VecGetSize(X,&N);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+  PetscCall(VecGetSize(X,&N));
+  PetscCall(VecGetArrayRead(X,&x));
+  PetscCall(VecGetArray(F,&f));
 
   /* Calculate residual */
   for (i=0; i<N; ++i) {
@@ -91,13 +89,13 @@ PetscErrorCode UserFunction(SNES snes,Vec X,Vec F,void *ptr)
        In later iterations, snes->domainerror should be cleared, allowing iterations in the feasible region to be accepted.
     */
     if ((half-user->value) < PetscRealPart(x[i]) && PetscRealPart(x[i]) < (half+user->value)) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"DOMAIN ERROR: x=%g\n",(double)PetscRealPart(x[i]));CHKERRQ(ierr);
-      ierr = SNESSetFunctionDomainError(snes);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"DOMAIN ERROR: x=%g\n",(double)PetscRealPart(x[i])));
+      PetscCall(SNESSetFunctionDomainError(snes));
     }
     f[i] = x[i]*x[i] - user->value;
   }
-  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(X,&x));
+  PetscCall(VecRestoreArray(F,&f));
   return 0;
 }
 
@@ -109,25 +107,24 @@ PetscErrorCode UserJacobian(SNES snes,Vec X,Mat J,Mat jac,void *ptr)
   PetscInt          N,i,row,col;
   const PetscScalar *x;
   PetscScalar       v;
-  PetscErrorCode    ierr;
 
-  ierr = VecGetSize(X,&N);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
+  PetscCall(VecGetSize(X,&N));
+  PetscCall(VecGetArrayRead(X,&x));
 
   /* Calculate Jacobian */
   for (i=0; i<N; ++i) {
     row = i;
     col = i;
     v = 2*x[i];
-    ierr = MatSetValues(jac,1,&row,1,&col,&v,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(MatSetValues(jac,1,&row,1,&col,&v,INSERT_VALUES));
   }
-  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(X,&x));
+  PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
 
   if (jac != J) {
-    ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    PetscCall(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY));
   }
   return 0;
 }

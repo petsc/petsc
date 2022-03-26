@@ -7,7 +7,6 @@
 PetscErrorCode MatSolve_SeqBAIJ_11_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ       *a=(Mat_SeqBAIJ*)A->data;
-  PetscErrorCode    ierr;
   const PetscInt    n=a->mbs,*ai=a->i,*aj=a->j,*adiag=a->diag,*vi,bs=A->rmap->bs,bs2=a->bs2;
   PetscInt          i,k,nz,idx,idt,m;
   const MatScalar   *aa=a->a,*v;
@@ -16,8 +15,8 @@ PetscErrorCode MatSolve_SeqBAIJ_11_NaturalOrdering(Mat A,Vec bb,Vec xx)
   const PetscScalar *b;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  PetscCall(VecGetArrayRead(bb,&b));
+  PetscCall(VecGetArray(xx,&x));
 
   /* forward solve the lower triangular */
   for (i=0; i<n; i++) {
@@ -75,7 +74,7 @@ PetscErrorCode MatSolve_SeqBAIJ_11_NaturalOrdering(Mat A,Vec bb,Vec xx)
         v     += 11;
       }
     }
-    ierr = PetscArrayzero(x+idt,bs);CHKERRQ(ierr);
+    PetscCall(PetscArrayzero(x+idt,bs));
     for (k=0; k<11; k++) {
       x[idt]    += v[0]*s[k];
       x[1+idt]  += v[1]*s[k];
@@ -91,8 +90,8 @@ PetscErrorCode MatSolve_SeqBAIJ_11_NaturalOrdering(Mat A,Vec bb,Vec xx)
       v         += 11;
     }
   }
-  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2.0*bs2*(a->nz) - bs*A->cmap->n);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(bb,&b));
+  PetscCall(VecRestoreArray(xx,&x));
+  PetscCall(PetscLogFlops(2.0*bs2*(a->nz) - bs*A->cmap->n));
   PetscFunctionReturn(0);
 }

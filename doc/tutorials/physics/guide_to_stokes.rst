@@ -97,8 +97,8 @@ which is implemented in our ``f0_quadratic_u`` pointwise function
 We let PETSc know about these solutions
 
 .. literalinclude:: /../src/snes/tutorials/ex62.c
-   :start-at: ierr = PetscDSSetExactSolution(ds, 0
-   :end-at: ierr = PetscDSSetExactSolution(ds, 1
+   :start-at: PetscCall(PetscDSSetExactSolution(ds, 0
+   :end-at: PetscCall(PetscDSSetExactSolution(ds, 1
 
 These solutions will be captured exactly by the :math:`P_2-P_1` finite element space. We can use the ``-dmsnes_check`` option to activate function space checks. It gives the :math:`L_2` error, or *discretization* error, of the exact solution, the residual computed using the interpolation of the exact solution into our finite element space, and uses a Taylor test to check that our Jacobian matches the residual. It should converge at order 2, or be exact in the case of linear equations like Stokes. Our :math:`P_2-P_1` runs in the PETSc test section at the bottom of the source file
 
@@ -168,8 +168,8 @@ We can now use ``-snes_convergence_estimate`` to determine the convergence expon
 However, the test needs an accurate linear solver. Sparse LU factorizations do not, in general, do full pivoting. Thus we must deal with the zero pressure block explicitly. We use the ``PCFIELDSPLIT`` preconditioner and the full Schur complement factorization, but we still need a preconditioner for the Schur complement :math:`B^T A^{-1} B`. We can have PETSc construct that matrix automatically, but the cost rises steeply as the problem size increases. Instead, we use the fact that the Schur complement is spectrally equivalent to the pressure mass matrix :math:`M_p`. We can make a preconditioning matrix, which has the diagonal blocks we will use to build the preconditioners, letting PETSc know that we get the off-diagonal blocks from the original system with ``-pc_fieldsplit_off_diag_use_amat`` and to build the Schur complement from the original matrix using ``-pc_use_amat``,
 
 .. literalinclude:: /../src/snes/tutorials/ex62.c
-   :start-at: ierr = PetscDSSetJacobianPreconditioner(ds, 0
-   :end-at: ierr = PetscDSSetJacobianPreconditioner(ds, 1
+   :start-at: PetscCall(PetscDSSetJacobianPreconditioner(ds, 0
+   :end-at: PetscCall(PetscDSSetJacobianPreconditioner(ds, 1
 
 Putting this all together, and using exact solvers on the subblocks, we have
 

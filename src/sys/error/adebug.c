@@ -46,17 +46,14 @@ PetscBool        petscindebugger  = PETSC_FALSE;
 
 .seealso: PetscSetDebugger()
 @*/
-PetscErrorCode  PetscSetDebugTerminal(const char terminal[])
+PetscErrorCode PetscSetDebugTerminal(const char terminal[])
 {
-  PetscErrorCode ierr;
-  PetscBool      xterm;
+  PetscBool xterm;
 
   PetscFunctionBegin;
-  ierr = PetscStrncpy(DebugTerminal,terminal,sizeof(DebugTerminal));CHKERRQ(ierr);
-  ierr = PetscStrcmp(terminal,"xterm",&xterm);CHKERRQ(ierr);
-  if (xterm) {
-    ierr = PetscStrlcat(DebugTerminal," -e",sizeof(DebugTerminal));CHKERRQ(ierr);
-  }
+  PetscCall(PetscStrncpy(DebugTerminal,terminal,sizeof(DebugTerminal)));
+  PetscCall(PetscStrcmp(terminal,"xterm",&xterm));
+  if (xterm) PetscCall(PetscStrlcat(DebugTerminal," -e",sizeof(DebugTerminal)));
   PetscFunctionReturn(0);
 }
 
@@ -82,14 +79,10 @@ PetscErrorCode  PetscSetDebugTerminal(const char terminal[])
 
 .seealso: PetscAttachDebugger(), PetscAttachDebuggerErrorHandler(), PetscSetDebugTerminal()
 @*/
-PetscErrorCode  PetscSetDebugger(const char debugger[],PetscBool usedebugterminal)
+PetscErrorCode PetscSetDebugger(const char debugger[], PetscBool usedebugterminal)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  if (debugger) {
-    ierr = PetscStrncpy(PetscDebugger,debugger,sizeof(PetscDebugger));CHKERRQ(ierr);
-  }
+  if (debugger) PetscCall(PetscStrncpy(PetscDebugger,debugger,sizeof(PetscDebugger)));
   if (UseDebugTerminal) UseDebugTerminal = usedebugterminal;
   PetscFunctionReturn(0);
 }
@@ -103,32 +96,29 @@ PetscErrorCode  PetscSetDebugger(const char debugger[],PetscBool usedebugtermina
 
 .seealso: PetscSetDebugger(), PetscSetDebuggerFromString()
 @*/
-PetscErrorCode  PetscSetDefaultDebugger(void)
+PetscErrorCode PetscSetDefaultDebugger(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
 #if defined(PETSC_USE_DEBUGGER)
-  ierr = PetscSetDebugger(PETSC_USE_DEBUGGER,PETSC_TRUE);CHKERRQ(ierr);
+  PetscCall(PetscSetDebugger(PETSC_USE_DEBUGGER,PETSC_TRUE));
 #endif
 #if defined(__APPLE__)
-  ierr = PetscSetDebugTerminal("Terminal");CHKERRQ(ierr);
+  PetscCall(PetscSetDebugTerminal("Terminal"));
 #else
-  ierr = PetscSetDebugTerminal("xterm");CHKERRQ(ierr);
+  PetscCall(PetscSetDebugTerminal("xterm"));
 #endif
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscCheckDebugger_Private(const char defaultDbg[], const char string[], const char *debugger[])
 {
-  PetscBool      exists;
-  char           *f;
-  PetscErrorCode ierr;
+  PetscBool  exists;
+  char      *f;
 
   PetscFunctionBegin;
-  ierr = PetscStrstr(string, defaultDbg, &f);CHKERRQ(ierr);
+  PetscCall(PetscStrstr(string, defaultDbg, &f));
   if (f) {
-    ierr = PetscTestFile(string, 'x', &exists);CHKERRQ(ierr);
+    PetscCall(PetscTestFile(string, 'x', &exists));
     if (exists) *debugger = string;
     else        *debugger = defaultDbg;
   }
@@ -147,34 +137,32 @@ static PetscErrorCode PetscCheckDebugger_Private(const char defaultDbg[], const 
 @*/
 PetscErrorCode  PetscSetDebuggerFromString(const char *string)
 {
-  const char     *debugger = NULL;
-  PetscBool      useterminal     = PETSC_TRUE;
-  char           *f;
-  PetscErrorCode ierr;
+  const char *debugger    = NULL;
+  PetscBool   useterminal = PETSC_TRUE;
+  char       *f;
 
   PetscFunctionBegin;
-  ierr = PetscStrstr(string, "noxterm", &f);CHKERRQ(ierr);
+  PetscCall(PetscStrstr(string, "noxterm", &f));
   if (f) useterminal = PETSC_FALSE;
-  ierr = PetscStrstr(string, "ddd", &f);CHKERRQ(ierr);
+  PetscCall(PetscStrstr(string, "ddd", &f));
   if (f) useterminal = PETSC_FALSE;
-  ierr = PetscStrstr(string, "noterminal", &f);CHKERRQ(ierr);
+  PetscCall(PetscStrstr(string, "noterminal", &f));
   if (f) useterminal = PETSC_FALSE;
-  ierr = PetscCheckDebugger_Private("xdb",      string, &debugger);CHKERRQ(ierr);
-  ierr = PetscCheckDebugger_Private("dbx",      string, &debugger);CHKERRQ(ierr);
-  ierr = PetscCheckDebugger_Private("xldb",     string, &debugger);CHKERRQ(ierr);
-  ierr = PetscCheckDebugger_Private("gdb",      string, &debugger);CHKERRQ(ierr);
-  ierr = PetscCheckDebugger_Private("cuda-gdb", string, &debugger);CHKERRQ(ierr);
-  ierr = PetscCheckDebugger_Private("idb",      string, &debugger);CHKERRQ(ierr);
-  ierr = PetscCheckDebugger_Private("xxgdb",    string, &debugger);CHKERRQ(ierr);
-  ierr = PetscCheckDebugger_Private("ddd",      string, &debugger);CHKERRQ(ierr);
-  ierr = PetscCheckDebugger_Private("kdbg",     string, &debugger);CHKERRQ(ierr);
-  ierr = PetscCheckDebugger_Private("ups",      string, &debugger);CHKERRQ(ierr);
-  ierr = PetscCheckDebugger_Private("workshop", string, &debugger);CHKERRQ(ierr);
-  ierr = PetscCheckDebugger_Private("pgdbg",    string, &debugger);CHKERRQ(ierr);
-  ierr = PetscCheckDebugger_Private("pathdb",   string, &debugger);CHKERRQ(ierr);
-  ierr = PetscCheckDebugger_Private("lldb",     string, &debugger);CHKERRQ(ierr);
-
-  ierr = PetscSetDebugger(debugger, useterminal);CHKERRQ(ierr);
+  PetscCall(PetscCheckDebugger_Private("xdb",      string, &debugger));
+  PetscCall(PetscCheckDebugger_Private("dbx",      string, &debugger));
+  PetscCall(PetscCheckDebugger_Private("xldb",     string, &debugger));
+  PetscCall(PetscCheckDebugger_Private("gdb",      string, &debugger));
+  PetscCall(PetscCheckDebugger_Private("cuda-gdb", string, &debugger));
+  PetscCall(PetscCheckDebugger_Private("idb",      string, &debugger));
+  PetscCall(PetscCheckDebugger_Private("xxgdb",    string, &debugger));
+  PetscCall(PetscCheckDebugger_Private("ddd",      string, &debugger));
+  PetscCall(PetscCheckDebugger_Private("kdbg",     string, &debugger));
+  PetscCall(PetscCheckDebugger_Private("ups",      string, &debugger));
+  PetscCall(PetscCheckDebugger_Private("workshop", string, &debugger));
+  PetscCall(PetscCheckDebugger_Private("pgdbg",    string, &debugger));
+  PetscCall(PetscCheckDebugger_Private("pathdb",   string, &debugger));
+  PetscCall(PetscCheckDebugger_Private("lldb",     string, &debugger));
+  PetscCall(PetscSetDebugger(debugger, useterminal));
   PetscFunctionReturn(0);
 }
 
@@ -210,11 +198,11 @@ PetscErrorCode  PetscWaitOnError()
    Level: advanced
 
    Developer Notes:
-    Since this can be called by the error handler should it be calling SETERRQ() and CHKERRQ()?
+    Since this can be called by the error handler should it be calling SETERRQ() and PetscCall()?
 
 .seealso: PetscSetDebugger(), PetscSetDefaultDebugger(), PetscSetDebugTerminal(), PetscAttachDebuggerErrorHandler(), PetscStopForDebugger()
 @*/
-PetscErrorCode  PetscAttachDebugger(void)
+PetscErrorCode PetscAttachDebugger(void)
 {
 #if !defined(PETSC_CANNOT_START_DEBUGGER) && defined(PETSC_HAVE_FORK)
   int            child    =0;
@@ -230,18 +218,22 @@ PetscErrorCode  PetscAttachDebugger(void)
   (*PetscErrorPrintf)("On Windows use Developer Studio(MSDEV)\n");
   PETSCABORT(PETSC_COMM_WORLD,PETSC_ERR_SUP_SYS);
 #else
-  ierr = PetscGetDisplay(display,sizeof(display));CHKERRQ(ierr);
-  ierr = PetscGetProgramName(program,sizeof(program));CHKERRQ(ierr);
-  if (ierr) {
+  ierr = PetscGetDisplay(display,sizeof(display));
+  if (PetscUnlikely(ierr)) {
+    (*PetscErrorPrintf)("Cannot determine display\n");
+    PetscFunctionReturn(PETSC_ERR_SYS);
+  }
+  PetscCall(PetscGetProgramName(program,sizeof(program)));
+  if (PetscUnlikely(ierr)) {
     (*PetscErrorPrintf)("Cannot determine program name\n");
     PetscFunctionReturn(PETSC_ERR_SYS);
   }
-  if (!program[0]) {
+  if (PetscUnlikely(!program[0])) {
     (*PetscErrorPrintf)("Cannot determine program name\n");
     PetscFunctionReturn(PETSC_ERR_SYS);
   }
   child = (int)fork();
-  if (child < 0) {
+  if (PetscUnlikely(child < 0)) {
     (*PetscErrorPrintf)("Error in fork() prior to attaching debugger\n");
     PetscFunctionReturn(PETSC_ERR_SYS);
   }
@@ -262,7 +254,7 @@ PetscErrorCode  PetscAttachDebugger(void)
     PetscInt   j,jj;
     PetscBool  isdbx,isidb,isxldb,isxxgdb,isups,isxdb,isworkshop,isddd,iskdbg,islldb;
 
-    ierr = PetscGetHostName(hostname,sizeof(hostname));CHKERRQ(ierr);
+    PetscCall(PetscGetHostName(hostname,sizeof(hostname)));
     /*
          We need to send a continue signal to the "child" process on the
        alpha, otherwise it just stays off forever
@@ -272,16 +264,16 @@ PetscErrorCode  PetscAttachDebugger(void)
 #endif
     sprintf(pid,"%d",child);
 
-    ierr = PetscStrcmp(PetscDebugger,"xxgdb",&isxxgdb);CHKERRQ(ierr);
-    ierr = PetscStrcmp(PetscDebugger,"ddd",&isddd);CHKERRQ(ierr);
-    ierr = PetscStrcmp(PetscDebugger,"kdbg",&iskdbg);CHKERRQ(ierr);
-    ierr = PetscStrcmp(PetscDebugger,"ups",&isups);CHKERRQ(ierr);
-    ierr = PetscStrcmp(PetscDebugger,"xldb",&isxldb);CHKERRQ(ierr);
-    ierr = PetscStrcmp(PetscDebugger,"xdb",&isxdb);CHKERRQ(ierr);
-    ierr = PetscStrcmp(PetscDebugger,"dbx",&isdbx);CHKERRQ(ierr);
-    ierr = PetscStrcmp(PetscDebugger,"idb",&isidb);CHKERRQ(ierr);
-    ierr = PetscStrcmp(PetscDebugger,"workshop",&isworkshop);CHKERRQ(ierr);
-    ierr = PetscStrcmp(PetscDebugger,"lldb",&islldb);CHKERRQ(ierr);
+    PetscCall(PetscStrcmp(PetscDebugger,"xxgdb",&isxxgdb));
+    PetscCall(PetscStrcmp(PetscDebugger,"ddd",&isddd));
+    PetscCall(PetscStrcmp(PetscDebugger,"kdbg",&iskdbg));
+    PetscCall(PetscStrcmp(PetscDebugger,"ups",&isups));
+    PetscCall(PetscStrcmp(PetscDebugger,"xldb",&isxldb));
+    PetscCall(PetscStrcmp(PetscDebugger,"xdb",&isxdb));
+    PetscCall(PetscStrcmp(PetscDebugger,"dbx",&isdbx));
+    PetscCall(PetscStrcmp(PetscDebugger,"idb",&isidb));
+    PetscCall(PetscStrcmp(PetscDebugger,"workshop",&isworkshop));
+    PetscCall(PetscStrcmp(PetscDebugger,"lldb",&islldb));
 
     if (isxxgdb || isups || isddd) {
       args[1] = program; args[2] = pid; args[3] = "-display";
@@ -320,23 +312,23 @@ PetscErrorCode  PetscAttachDebugger(void)
       if (UseDebugTerminal) {
         PetscBool cmp;
         char      *tmp,*tmp1;
-        ierr = PetscStrncmp(DebugTerminal,"Terminal",8,&cmp);CHKERRQ(ierr);
+        PetscCall(PetscStrncmp(DebugTerminal,"Terminal",8,&cmp));
         if (cmp) {
           char command[1024];
-          ierr = PetscSNPrintf(command,sizeof(command),"osascript -e 'tell app \"Terminal\" to do script \"lldb  -p %s  %s \"'\n",pid,program);CHKERRQ(ierr);
-          ierr = PetscPOpen(PETSC_COMM_SELF,NULL,command,"r",NULL);CHKERRQ(ierr);
+          PetscCall(PetscSNPrintf(command,sizeof(command),"osascript -e 'tell app \"Terminal\" to do script \"lldb  -p %s  %s \"'\n",pid,program));
+          PetscCall(PetscPOpen(PETSC_COMM_SELF,NULL,command,"r",NULL));
           exit(0);
         }
 
-        ierr = PetscStrncmp(DebugTerminal,"screen",6,&cmp);CHKERRQ(ierr);
-        if (!cmp) {ierr = PetscStrncmp(DebugTerminal,"gnome-terminal",6,&cmp);CHKERRQ(ierr);}
+        PetscCall(PetscStrncmp(DebugTerminal,"screen",6,&cmp));
+        if (!cmp) PetscCall(PetscStrncmp(DebugTerminal,"gnome-terminal",6,&cmp));
         if (cmp) display[0] = 0; /* when using screen, we never pass -display */
         args[j++] = tmp = DebugTerminal;
         if (display[0]) {
           args[j++] = "-display"; args[j++] = display;
         }
         while (*tmp) {
-          ierr = PetscStrchr(tmp,' ',&tmp1);CHKERRQ(ierr);
+          PetscCall(PetscStrchr(tmp,' ',&tmp1));
           if (!tmp1) break;
           *tmp1     = 0;
           tmp       = tmp1+1;
@@ -407,7 +399,7 @@ PetscErrorCode  PetscAttachDebugger(void)
     }
   } else {   /* I am the child, continue with user code */
     sleeptime = 10; /* default to sleep waiting for debugger */
-    ierr = PetscOptionsGetReal(NULL,NULL,"-debugger_pause",&sleeptime,NULL);CHKERRQ(ierr);
+    PetscCall(PetscOptionsGetReal(NULL,NULL,"-debugger_pause",&sleeptime,NULL));
     if (sleeptime < 0) sleeptime = -sleeptime;
 #if defined(PETSC_NEED_DEBUGGER_NO_SLEEP)
     /*
@@ -507,7 +499,7 @@ PetscErrorCode  PetscAttachDebuggerErrorHandler(MPI_Comm comm,int line,const cha
     This is likely never needed since PetscAttachDebugger() is easier to use and seems to always work.
 
    Developer Notes:
-    Since this can be called by the error handler, should it be calling SETERRQ() and CHKERRQ()?
+    Since this can be called by the error handler, should it be calling SETERRQ() and PetscCall()?
 
 .seealso: PetscSetDebugger(), PetscAttachDebugger()
 @*/
@@ -546,14 +538,14 @@ PetscErrorCode  PetscStopForDebugger(void)
 
   ppid = getpid();
 
-  ierr = PetscStrcmp(PetscDebugger,"xxgdb",&isxxgdb);CHKERRQ(ierr);
-  ierr = PetscStrcmp(PetscDebugger,"ddd",&isddd);CHKERRQ(ierr);
-  ierr = PetscStrcmp(PetscDebugger,"kdbg",&iskdbg);CHKERRQ(ierr);
-  ierr = PetscStrcmp(PetscDebugger,"ups",&isups);CHKERRQ(ierr);
-  ierr = PetscStrcmp(PetscDebugger,"xldb",&isxldb);CHKERRQ(ierr);
-  ierr = PetscStrcmp(PetscDebugger,"xdb",&isxdb);CHKERRQ(ierr);
-  ierr = PetscStrcmp(PetscDebugger,"dbx",&isdbx);CHKERRQ(ierr);
-  ierr = PetscStrcmp(PetscDebugger,"lldb",&islldb);CHKERRQ(ierr);
+  PetscCall(PetscStrcmp(PetscDebugger,"xxgdb",&isxxgdb));
+  PetscCall(PetscStrcmp(PetscDebugger,"ddd",&isddd));
+  PetscCall(PetscStrcmp(PetscDebugger,"kdbg",&iskdbg));
+  PetscCall(PetscStrcmp(PetscDebugger,"ups",&isups));
+  PetscCall(PetscStrcmp(PetscDebugger,"xldb",&isxldb));
+  PetscCall(PetscStrcmp(PetscDebugger,"xdb",&isxdb));
+  PetscCall(PetscStrcmp(PetscDebugger,"dbx",&isdbx));
+  PetscCall(PetscStrcmp(PetscDebugger,"lldb",&islldb));
 
   if (isxxgdb || isups || isddd || iskdbg) printf("[%d]%s>>%s %s %d\n",rank,hostname,PetscDebugger,program,ppid);
   else if (isxldb) printf("[%d]%s>>%s -a %d %s\n",rank,hostname,PetscDebugger,ppid,program);

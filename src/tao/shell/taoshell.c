@@ -61,13 +61,12 @@ PetscErrorCode TaoShellSetSolve(Tao tao, PetscErrorCode (*solve) (Tao))
 @*/
 PetscErrorCode  TaoShellGetContext(Tao tao,void *ctx)
 {
-  PetscErrorCode ierr;
   PetscBool      flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidPointer(ctx,2);
-  ierr = PetscObjectTypeCompare((PetscObject)tao,TAOSHELL,&flg);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)tao,TAOSHELL,&flg));
   if (!flg) *(void**)ctx = NULL;
   else      *(void**)ctx = ((Tao_Shell*)(tao->data))->ctx;
   PetscFunctionReturn(0);
@@ -93,12 +92,11 @@ PetscErrorCode  TaoShellGetContext(Tao tao,void *ctx)
 PetscErrorCode  TaoShellSetContext(Tao tao,void *ctx)
 {
   Tao_Shell     *shell = (Tao_Shell*)tao->data;
-  PetscErrorCode ierr;
   PetscBool      flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  ierr = PetscObjectTypeCompare((PetscObject)tao,TAOSHELL,&flg);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)tao,TAOSHELL,&flg));
   if (flg) shell->ctx = ctx;
   PetscFunctionReturn(0);
 }
@@ -106,21 +104,18 @@ PetscErrorCode  TaoShellSetContext(Tao tao,void *ctx)
 static PetscErrorCode TaoSolve_Shell(Tao tao)
 {
   Tao_Shell                    *shell = (Tao_Shell*)tao->data;
-  PetscErrorCode               ierr;
 
   PetscFunctionBegin;
   PetscCheck(shell->solve,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"Must call TaoShellSetSolve() first");
   tao->reason = TAO_CONVERGED_USER;
-  ierr = (*(shell->solve)) (tao);CHKERRQ(ierr);
+  PetscCall((*(shell->solve)) (tao));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode TaoDestroy_Shell(Tao tao)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscFree(tao->data);CHKERRQ(ierr);
+  PetscCall(PetscFree(tao->data));
   PetscFunctionReturn(0);
 }
 
@@ -152,7 +147,6 @@ M*/
 PETSC_EXTERN PetscErrorCode TaoCreate_Shell(Tao tao)
 {
   Tao_Shell      *shell;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   tao->ops->destroy = TaoDestroy_Shell;
@@ -161,8 +155,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_Shell(Tao tao)
   tao->ops->view = TaoView_Shell;
   tao->ops->solve = TaoSolve_Shell;
 
-  ierr = PetscNewLog(tao,&shell);CHKERRQ(ierr);
+  PetscCall(PetscNewLog(tao,&shell));
   tao->data = (void*)shell;
   PetscFunctionReturn(0);
 }
-

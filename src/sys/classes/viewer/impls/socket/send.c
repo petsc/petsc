@@ -69,9 +69,9 @@ static PetscErrorCode PetscViewerDestroy_Socket(PetscViewer viewer)
 #else
     ierr = close(vmatlab->port);
 #endif
-    PetscCheckFalse(ierr,PETSC_COMM_SELF,PETSC_ERR_SYS,"System error closing socket");
+    PetscCheck(!ierr,PETSC_COMM_SELF,PETSC_ERR_SYS,"System error closing socket");
   }
-  ierr = PetscFree(vmatlab);CHKERRQ(ierr);
+  PetscCall(PetscFree(vmatlab));
   PetscFunctionReturn(0);
 }
 
@@ -100,7 +100,6 @@ PetscErrorCode  PetscOpenSocket(const char hostname[],int portnum,int *t)
   struct sockaddr_in sa;
   struct hostent     *hp;
   int                s = 0;
-  PetscErrorCode     ierr;
   PetscBool          flg = PETSC_TRUE;
   static int         refcnt = 0;
 
@@ -109,8 +108,8 @@ PetscErrorCode  PetscOpenSocket(const char hostname[],int portnum,int *t)
     perror("SEND: error gethostbyname: ");
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"system error open connection to %s",hostname);
   }
-  ierr = PetscMemzero(&sa,sizeof(sa));CHKERRQ(ierr);
-  ierr = PetscMemcpy(&sa.sin_addr,hp->h_addr_list[0],hp->h_length);CHKERRQ(ierr);
+  PetscCall(PetscMemzero(&sa,sizeof(sa)));
+  PetscCall(PetscMemcpy(&sa.sin_addr,hp->h_addr_list[0],hp->h_length));
 
   sa.sin_family = hp->h_addrtype;
   sa.sin_port   = htons((u_short) portnum);
@@ -141,7 +140,7 @@ PetscErrorCode  PetscOpenSocket(const char hostname[],int portnum,int *t)
       } else if (errno == ECONNREFUSED) {
         refcnt++;
         PetscCheckFalse(refcnt > 5,PETSC_COMM_SELF,PETSC_ERR_SYS,"Connection refused by remote host %s port %d",hostname,portnum);
-        ierr = PetscInfo(NULL,"Connection refused in attaching socket, trying again\n");CHKERRQ(ierr);
+        PetscCall(PetscInfo(NULL,"Connection refused in attaching socket, trying again\n"));
         sleep((unsigned) 1);
       } else {
         perror(NULL); SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"system error");
@@ -178,17 +177,16 @@ PETSC_INTERN PetscErrorCode PetscSocketEstablish(int portnum,int *ss)
   static size_t      MAXHOSTNAME = 100;
   char               myname[MAXHOSTNAME+1];
   int                s;
-  PetscErrorCode     ierr;
   struct sockaddr_in sa;
   struct hostent     *hp;
 
   PetscFunctionBegin;
-  ierr = PetscGetHostName(myname,sizeof(myname));CHKERRQ(ierr);
+  PetscCall(PetscGetHostName(myname,sizeof(myname)));
 
-  ierr = PetscMemzero(&sa,sizeof(struct sockaddr_in));CHKERRQ(ierr);
+  PetscCall(PetscMemzero(&sa,sizeof(struct sockaddr_in)));
 
   hp = gethostbyname(myname);
-  PetscCheckFalse(!hp,PETSC_COMM_SELF,PETSC_ERR_SYS,"Unable to get hostent information from system");
+  PetscCheck(hp,PETSC_COMM_SELF,PETSC_ERR_SYS,"Unable to get hostent information from system");
 
   sa.sin_family = hp->h_addrtype;
   sa.sin_port   = htons((u_short)portnum);
@@ -197,7 +195,7 @@ PETSC_INTERN PetscErrorCode PetscSocketEstablish(int portnum,int *ss)
 #if defined(PETSC_HAVE_SO_REUSEADDR)
   {
     int optval = 1; /* Turn on the option */
-    ierr = setsockopt(s,SOL_SOCKET,SO_REUSEADDR,(char*)&optval,sizeof(optval));CHKERRQ(ierr);
+    PetscCall(setsockopt(s,SOL_SOCKET,SO_REUSEADDR,(char*)&optval,sizeof(optval)));
   }
 #endif
 
@@ -303,18 +301,15 @@ $    -viewer_socket_port <port>
 @*/
 PetscErrorCode  PetscViewerSocketOpen(MPI_Comm comm,const char machine[],int port,PetscViewer *lab)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscViewerCreate(comm,lab);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(*lab,PETSCVIEWERSOCKET);CHKERRQ(ierr);
-  ierr = PetscViewerSocketSetConnection(*lab,machine,port);CHKERRQ(ierr);
+  PetscCall(PetscViewerCreate(comm,lab));
+  PetscCall(PetscViewerSetType(*lab,PETSCVIEWERSOCKET));
+  PetscCall(PetscViewerSocketSetConnection(*lab,machine,port));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscViewerSetFromOptions_Socket(PetscOptionItems *PetscOptionsObject,PetscViewer v)
 {
-  PetscErrorCode ierr;
   PetscInt       def = -1;
   char           sdef[256];
   PetscBool      tflg;
@@ -324,19 +319,19 @@ static PetscErrorCode PetscViewerSetFromOptions_Socket(PetscOptionItems *PetscOp
        These options are not processed here, they are processed in PetscViewerSocketSetConnection(), they
     are listed here for the GUI to display
   */
-  ierr = PetscOptionsHead(PetscOptionsObject,"Socket PetscViewer Options");CHKERRQ(ierr);
-  ierr = PetscOptionsGetenv(PetscObjectComm((PetscObject)v),"PETSC_VIEWER_SOCKET_PORT",sdef,16,&tflg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"Socket PetscViewer Options"));
+  PetscCall(PetscOptionsGetenv(PetscObjectComm((PetscObject)v),"PETSC_VIEWER_SOCKET_PORT",sdef,16,&tflg));
   if (tflg) {
-    ierr = PetscOptionsStringToInt(sdef,&def);CHKERRQ(ierr);
+    PetscCall(PetscOptionsStringToInt(sdef,&def));
   } else def = PETSCSOCKETDEFAULTPORT;
-  ierr = PetscOptionsInt("-viewer_socket_port","Port number to use for socket","PetscViewerSocketSetConnection",def,NULL,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-viewer_socket_port","Port number to use for socket","PetscViewerSocketSetConnection",def,NULL,NULL));
 
-  ierr = PetscOptionsString("-viewer_socket_machine","Machine to use for socket","PetscViewerSocketSetConnection",sdef,NULL,sizeof(sdef),NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetenv(PetscObjectComm((PetscObject)v),"PETSC_VIEWER_SOCKET_MACHINE",sdef,sizeof(sdef),&tflg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsString("-viewer_socket_machine","Machine to use for socket","PetscViewerSocketSetConnection",sdef,NULL,sizeof(sdef),NULL));
+  PetscCall(PetscOptionsGetenv(PetscObjectComm((PetscObject)v),"PETSC_VIEWER_SOCKET_MACHINE",sdef,sizeof(sdef),&tflg));
   if (!tflg) {
-    ierr = PetscGetHostName(sdef,sizeof(sdef));CHKERRQ(ierr);
+    PetscCall(PetscGetHostName(sdef,sizeof(sdef)));
   }
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -379,10 +374,9 @@ M*/
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_Socket(PetscViewer v)
 {
   PetscViewer_Socket *vmatlab;
-  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr                   = PetscNewLog(v,&vmatlab);CHKERRQ(ierr);
+  PetscCall(PetscNewLog(v,&vmatlab));
   vmatlab->port          = 0;
   v->data                = (void*)vmatlab;
   v->ops->destroy        = PetscViewerDestroy_Socket;
@@ -390,10 +384,10 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Socket(PetscViewer v)
   v->ops->setfromoptions = PetscViewerSetFromOptions_Socket;
 
   /* lie and say this is a binary viewer; then all the XXXView_Binary() methods will work correctly on it */
-  ierr = PetscObjectChangeTypeName((PetscObject)v,PETSCVIEWERBINARY);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinarySetSkipHeader_C",PetscViewerBinarySetSkipHeader_Socket);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinaryGetSkipHeader_C",PetscViewerBinaryGetSkipHeader_Socket);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinaryGetFlowControl_C",PetscViewerBinaryGetFlowControl_Socket);CHKERRQ(ierr);
+  PetscCall(PetscObjectChangeTypeName((PetscObject)v,PETSCVIEWERBINARY));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinarySetSkipHeader_C",PetscViewerBinarySetSkipHeader_Socket));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinaryGetSkipHeader_C",PetscViewerBinaryGetSkipHeader_Socket));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinaryGetFlowControl_C",PetscViewerBinaryGetFlowControl_Socket));
 
   PetscFunctionReturn(0);
 }
@@ -416,7 +410,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Socket(PetscViewer v)
 @*/
 PetscErrorCode  PetscViewerSocketSetConnection(PetscViewer v,const char machine[],int port)
 {
-  PetscErrorCode     ierr;
   PetscMPIInt        rank;
   char               mach[256];
   PetscBool          tflg;
@@ -429,34 +422,34 @@ PetscErrorCode  PetscViewerSocketSetConnection(PetscViewer v,const char machine[
   /* PetscValidLogicalCollectiveInt(v,port,3); not a PetscInt */
   if (port <= 0) {
     char portn[16];
-    ierr = PetscOptionsGetenv(PetscObjectComm((PetscObject)v),"PETSC_VIEWER_SOCKET_PORT",portn,16,&tflg);CHKERRQ(ierr);
+    PetscCall(PetscOptionsGetenv(PetscObjectComm((PetscObject)v),"PETSC_VIEWER_SOCKET_PORT",portn,16,&tflg));
     if (tflg) {
       PetscInt pport;
-      ierr = PetscOptionsStringToInt(portn,&pport);CHKERRQ(ierr);
+      PetscCall(PetscOptionsStringToInt(portn,&pport));
       port = (int)pport;
     } else port = PETSCSOCKETDEFAULTPORT;
   }
   if (!machine) {
-    ierr = PetscOptionsGetenv(PetscObjectComm((PetscObject)v),"PETSC_VIEWER_SOCKET_MACHINE",mach,sizeof(mach),&tflg);CHKERRQ(ierr);
+    PetscCall(PetscOptionsGetenv(PetscObjectComm((PetscObject)v),"PETSC_VIEWER_SOCKET_MACHINE",mach,sizeof(mach),&tflg));
     if (!tflg) {
-      ierr = PetscGetHostName(mach,sizeof(mach));CHKERRQ(ierr);
+      PetscCall(PetscGetHostName(mach,sizeof(mach)));
     }
   } else {
-    ierr = PetscStrncpy(mach,machine,sizeof(mach));CHKERRQ(ierr);
+    PetscCall(PetscStrncpy(mach,machine,sizeof(mach)));
   }
 
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)v),&rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)v),&rank));
   if (rank == 0) {
-    ierr = PetscStrcmp(mach,"server",&tflg);CHKERRQ(ierr);
+    PetscCall(PetscStrcmp(mach,"server",&tflg));
     if (tflg) {
       int listenport;
-      ierr = PetscInfo(v,"Waiting for connection from socket process on port %d\n",port);CHKERRQ(ierr);
-      ierr = PetscSocketEstablish(port,&listenport);CHKERRQ(ierr);
-      ierr = PetscSocketListen(listenport,&vmatlab->port);CHKERRQ(ierr);
+      PetscCall(PetscInfo(v,"Waiting for connection from socket process on port %d\n",port));
+      PetscCall(PetscSocketEstablish(port,&listenport));
+      PetscCall(PetscSocketListen(listenport,&vmatlab->port));
       close(listenport);
     } else {
-      ierr = PetscInfo(v,"Connecting to socket process on port %d machine %s\n",port,mach);CHKERRQ(ierr);
-      ierr = PetscOpenSocket(mach,port,&vmatlab->port);CHKERRQ(ierr);
+      PetscCall(PetscInfo(v,"Connecting to socket process on port %d machine %s\n",port,mach));
+      PetscCall(PetscOpenSocket(mach,port,&vmatlab->port));
     }
   }
   PetscFunctionReturn(0);

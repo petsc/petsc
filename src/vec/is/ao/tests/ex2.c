@@ -7,21 +7,20 @@ static char help[] = "Tests application ordering.\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    rank,size;
   PetscInt       n,*ispetsc,*isapp,start,N,i;
   AO             ao;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);n = rank + 2;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));n = rank + 2;
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   /* create the orderings */
-  ierr = PetscMalloc2(n,&ispetsc,n,&isapp);CHKERRQ(ierr);
+  PetscCall(PetscMalloc2(n,&ispetsc,n,&isapp));
 
-  ierr   = MPI_Scan(&n,&start,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRMPI(ierr);
-  ierr   = MPI_Allreduce(&n,&N,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Scan(&n,&start,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD));
+  PetscCallMPI(MPI_Allreduce(&n,&N,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD));
   start -= n;
 
   for (i=0; i<n; i++) {
@@ -30,21 +29,21 @@ int main(int argc,char **argv)
   }
 
   /* create the application ordering */
-  ierr = AOCreateBasic(PETSC_COMM_WORLD,n,isapp,ispetsc,&ao);CHKERRQ(ierr);
-  ierr = AOView(ao,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscCall(AOCreateBasic(PETSC_COMM_WORLD,n,isapp,ispetsc,&ao));
+  PetscCall(AOView(ao,PETSC_VIEWER_STDOUT_WORLD));
 
   /* check the mapping */
-  ierr = AOPetscToApplication(ao,n,ispetsc);CHKERRQ(ierr);
+  PetscCall(AOPetscToApplication(ao,n,ispetsc));
   for (i=0; i<n; i++) {
     if (ispetsc[i] != isapp[i]) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d] Problem with mapping %" PetscInt_FMT " to %" PetscInt_FMT "\n",rank,i,ispetsc[i]);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"[%d] Problem with mapping %" PetscInt_FMT " to %" PetscInt_FMT "\n",rank,i,ispetsc[i]));
     }
   }
-  ierr = PetscFree2(ispetsc,isapp);CHKERRQ(ierr);
+  PetscCall(PetscFree2(ispetsc,isapp));
 
-  ierr = AODestroy(&ao);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(AODestroy(&ao));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

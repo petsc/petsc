@@ -40,15 +40,14 @@ int main(int argc,char **args)
   KSP            ksp;         /* linear solver context */
   PetscReal      norm;         /* norm of solution error */
   PetscInt       dim,i,j,Ii,J,Istart,Iend,n = 6,its,use_random;
-  PetscErrorCode ierr;
   PetscScalar    v,none = -1.0,sigma2,pfive = 0.5,*xa;
   PetscRandom    rctx;
   PetscReal      h2,sigma1 = 100.0;
   PetscBool      flg = PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetReal(NULL,NULL,"-sigma1",&sigma1,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-sigma1",&sigma1,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   dim  = n*n;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -61,17 +60,17 @@ int main(int argc,char **args)
      runtime. Also, the parallel partitioning of the matrix is
      determined by PETSc at runtime.
   */
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,dim,dim);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,dim,dim));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSetUp(A));
 
   /*
      Currently, all PETSc parallel matrix formats are partitioned by
      contiguous chunks of rows across the processors.  Determine which
      rows of the matrix are locally owned.
   */
-  ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
+  PetscCall(MatGetOwnershipRange(A,&Istart,&Iend));
 
   /*
      Set matrix elements in parallel.
@@ -81,13 +80,13 @@ int main(int argc,char **args)
       - Always specify global rows and columns of matrix entries.
   */
 
-  ierr = PetscOptionsGetBool(NULL,NULL,"-norandom",&flg,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-norandom",&flg,NULL));
   if (flg) use_random = 0;
   else use_random = 1;
   if (use_random) {
-    ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
-    ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
-    ierr = PetscRandomSetInterval(rctx,0.0,PETSC_i);CHKERRQ(ierr);
+    PetscCall(PetscRandomCreate(PETSC_COMM_WORLD,&rctx));
+    PetscCall(PetscRandomSetFromOptions(rctx));
+    PetscCall(PetscRandomSetInterval(rctx,0.0,PETSC_i));
   } else {
     sigma2 = 10.0*PETSC_i;
   }
@@ -95,22 +94,22 @@ int main(int argc,char **args)
   for (Ii=Istart; Ii<Iend; Ii++) {
     v = -1.0; i = Ii/n; j = Ii - i*n;
     if (i>0) {
-      J = Ii-n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);
+      J = Ii-n; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES));
     }
     if (i<n-1) {
-      J = Ii+n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);
+      J = Ii+n; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES));
     }
     if (j>0) {
-      J = Ii-1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);
+      J = Ii-1; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES));
     }
     if (j<n-1) {
-      J = Ii+1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);
+      J = Ii+1; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES));
     }
-    if (use_random) {ierr = PetscRandomGetValue(rctx,&sigma2);CHKERRQ(ierr);}
+    if (use_random) PetscCall(PetscRandomGetValue(rctx,&sigma2));
     v    = 4.0 - sigma1*h2 + sigma2*h2;
-    ierr = MatSetValues(A,1,&Ii,1,&Ii,&v,ADD_VALUES);CHKERRQ(ierr);
+    PetscCall(MatSetValues(A,1,&Ii,1,&Ii,&v,ADD_VALUES));
   }
-  if (use_random) {ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);}
+  if (use_random) PetscCall(PetscRandomDestroy(&rctx));
 
   /*
      Assemble matrix, using the 2-step process:
@@ -118,8 +117,8 @@ int main(int argc,char **args)
      Computations can be done while messages are in transition
      by placing code between these two statements.
   */
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
   /*
      Create parallel vectors.
@@ -128,24 +127,24 @@ int main(int argc,char **args)
         dimension; the parallel partitioning is determined at runtime.
       - Note: We form 1 vector from scratch and then duplicate as needed.
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
-  ierr = VecSetSizes(u,PETSC_DECIDE,dim);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(u);CHKERRQ(ierr);
-  ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
-  ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&u));
+  PetscCall(VecSetSizes(u,PETSC_DECIDE,dim));
+  PetscCall(VecSetFromOptions(u));
+  PetscCall(VecDuplicate(u,&b));
+  PetscCall(VecDuplicate(b,&x));
 
   /*
      Set exact solution; then compute right-hand-side vector.
   */
 
   if (use_random) {
-    ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
-    ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
-    ierr = VecSetRandom(u,rctx);CHKERRQ(ierr);
+    PetscCall(PetscRandomCreate(PETSC_COMM_WORLD,&rctx));
+    PetscCall(PetscRandomSetFromOptions(rctx));
+    PetscCall(VecSetRandom(u,rctx));
   } else {
-    ierr = VecSet(u,pfive);CHKERRQ(ierr);
+    PetscCall(VecSet(u,pfive));
   }
-  ierr = MatMult(A,u,b);CHKERRQ(ierr);
+  PetscCall(MatMult(A,u,b));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 Create the linear solver and set various options
@@ -154,25 +153,25 @@ int main(int argc,char **args)
   /*
      Create linear solver context
   */
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
 
   /*
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
-  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
+  PetscCall(KSPSetOperators(ksp,A,A));
 
   /*
     Set runtime options, e.g.,
         -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
   */
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  PetscCall(KSPSetFromOptions(ksp));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+  PetscCall(KSPSolve(ksp,b,x));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Check solution and clean up
@@ -183,38 +182,38 @@ int main(int argc,char **args)
       real and imaginary components of the complex vector, x.
   */
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-print_x3",&flg,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-print_x3",&flg,NULL));
   if (flg) {
-    ierr = VecGetArray(x,&xa);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"The first three entries of x are:\n");CHKERRQ(ierr);
+    PetscCall(VecGetArray(x,&xa));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"The first three entries of x are:\n"));
     for (i=0; i<3; i++) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"x[%D] = %g + %g i\n",i,(double)PetscRealPart(xa[i]),(double)PetscImaginaryPart(xa[i]));CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"x[%D] = %g + %g i\n",i,(double)PetscRealPart(xa[i]),(double)PetscImaginaryPart(xa[i])));
     }
-    ierr = VecRestoreArray(x,&xa);CHKERRQ(ierr);
+    PetscCall(VecRestoreArray(x,&xa));
   }
 
   /*
      Check the error
   */
-  ierr = VecAXPY(x,none,u);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
+  PetscCall(VecAXPY(x,none,u));
+  PetscCall(VecNorm(x,NORM_2,&norm));
+  PetscCall(KSPGetIterationNumber(ksp,&its));
   if (norm < 1.e-12) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error < 1.e-12 iterations %D\n",its);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error < 1.e-12 iterations %D\n",its));
   } else {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %D\n",(double)norm,its);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %D\n",(double)norm,its));
   }
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  if (use_random) {ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);}
-  ierr = VecDestroy(&u);CHKERRQ(ierr); ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr); ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(KSPDestroy(&ksp));
+  if (use_random) PetscCall(PetscRandomDestroy(&rctx));
+  PetscCall(VecDestroy(&u)); PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&b)); PetscCall(MatDestroy(&A));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

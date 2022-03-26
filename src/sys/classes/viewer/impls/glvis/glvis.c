@@ -45,26 +45,23 @@ typedef struct _n_PetscViewerGLVis *PetscViewerGLVis;
 @*/
 PetscErrorCode PetscViewerGLVisSetPrecision(PetscViewer viewer, PetscInt prec)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  ierr = PetscTryMethod(viewer,"PetscViewerGLVisSetPrecision_C",(PetscViewer,PetscInt),(viewer,prec));CHKERRQ(ierr);
+  PetscCall(PetscTryMethod(viewer,"PetscViewerGLVisSetPrecision_C",(PetscViewer,PetscInt),(viewer,prec)));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscViewerGLVisSetPrecision_GLVis(PetscViewer viewer, PetscInt prec)
 {
-  PetscErrorCode   ierr;
   PetscViewerGLVis socket = (PetscViewerGLVis)viewer->data;
 
   PetscFunctionBegin;
-  ierr = PetscFree(socket->fmt);CHKERRQ(ierr);
+  PetscCall(PetscFree(socket->fmt));
   if (prec > 0) {
-    ierr = PetscMalloc1(16,&socket->fmt);CHKERRQ(ierr);
-    ierr = PetscSNPrintf(socket->fmt,16," %%.%" PetscInt_FMT "e",prec);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(16,&socket->fmt));
+    PetscCall(PetscSNPrintf(socket->fmt,16," %%.%" PetscInt_FMT "e",prec));
   } else {
-    ierr = PetscStrallocpy(" %g",&socket->fmt);CHKERRQ(ierr);
+    PetscCall(PetscStrallocpy(" %g",&socket->fmt));
   }
   PetscFunctionReturn(0);
 }
@@ -84,12 +81,10 @@ static PetscErrorCode PetscViewerGLVisSetPrecision_GLVis(PetscViewer viewer, Pet
 @*/
 PetscErrorCode PetscViewerGLVisSetSnapId(PetscViewer viewer, PetscInt id)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidLogicalCollectiveInt(viewer,id,2);
-  ierr = PetscTryMethod(viewer,"PetscViewerGLVisSetSnapId_C",(PetscViewer,PetscInt),(viewer,id));CHKERRQ(ierr);
+  PetscCall(PetscTryMethod(viewer,"PetscViewerGLVisSetSnapId_C",(PetscViewer,PetscInt),(viewer,id)));
   PetscFunctionReturn(0);
 }
 
@@ -131,16 +126,14 @@ static PetscErrorCode PetscViewerGLVisSetSnapId_GLVis(PetscViewer viewer, PetscI
 @*/
 PetscErrorCode PetscViewerGLVisSetFields(PetscViewer viewer, PetscInt nf, const char* fec_type[], PetscInt dim[], PetscErrorCode(*g2l)(PetscObject,PetscInt,PetscObject[],void*), PetscObject Vfield[], void* ctx, PetscErrorCode(*destroyctx)(void*))
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidLogicalCollectiveInt(viewer,nf,2);
-  PetscCheckFalse(!fec_type,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"You need to provide the FiniteElementCollection names for the fields");
+  PetscCheck(fec_type,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"You need to provide the FiniteElementCollection names for the fields");
   PetscValidPointer(fec_type,3);
-  PetscValidPointer(dim,4);
+  PetscValidIntPointer(dim,4);
   PetscValidPointer(Vfield,6);
-  ierr = PetscTryMethod(viewer,"PetscViewerGLVisSetFields_C",(PetscViewer,PetscInt,const char*[],PetscInt[],PetscErrorCode(*)(PetscObject,PetscInt,PetscObject[],void*),PetscObject[],void*,PetscErrorCode(*)(void*)),(viewer,nf,fec_type,dim,g2l,Vfield,ctx,destroyctx));CHKERRQ(ierr);
+  PetscCall(PetscTryMethod(viewer,"PetscViewerGLVisSetFields_C",(PetscViewer,PetscInt,const char*[],PetscInt[],PetscErrorCode(*)(PetscObject,PetscInt,PetscObject[],void*),PetscObject[],void*,PetscErrorCode(*)(void*)),(viewer,nf,fec_type,dim,g2l,Vfield,ctx,destroyctx)));
   PetscFunctionReturn(0);
 }
 
@@ -148,21 +141,20 @@ static PetscErrorCode PetscViewerGLVisSetFields_GLVis(PetscViewer viewer, PetscI
 {
   PetscViewerGLVis socket = (PetscViewerGLVis)viewer->data;
   PetscInt         i;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   PetscCheckFalse(socket->nwindow && socket->nwindow != nfields,PetscObjectComm((PetscObject)viewer),PETSC_ERR_USER,"Cannot set number of fields %" PetscInt_FMT " with number of windows %" PetscInt_FMT,nfields,socket->nwindow);
   if (!socket->nwindow) {
     socket->nwindow = nfields;
 
-    ierr = PetscCalloc5(nfields,&socket->window,nfields,&socket->windowtitle,nfields,&socket->fec_type,nfields,&socket->spacedim,nfields,&socket->Ufield);CHKERRQ(ierr);
+    PetscCall(PetscCalloc5(nfields,&socket->window,nfields,&socket->windowtitle,nfields,&socket->fec_type,nfields,&socket->spacedim,nfields,&socket->Ufield));
     for (i=0;i<nfields;i++) {
       const char     *name;
 
-      ierr = PetscObjectGetName(Vfield[i],&name);CHKERRQ(ierr);
-      ierr = PetscStrallocpy(name,&socket->windowtitle[i]);CHKERRQ(ierr);
-      ierr = PetscStrallocpy(fec_type[i],&socket->fec_type[i]);CHKERRQ(ierr);
-      ierr = PetscObjectReference(Vfield[i]);CHKERRQ(ierr);
+      PetscCall(PetscObjectGetName(Vfield[i],&name));
+      PetscCall(PetscStrallocpy(name,&socket->windowtitle[i]));
+      PetscCall(PetscStrallocpy(fec_type[i],&socket->fec_type[i]));
+      PetscCall(PetscObjectReference(Vfield[i]));
       socket->Ufield[i] = Vfield[i];
       socket->spacedim[i] = dim[i];
     }
@@ -170,7 +162,7 @@ static PetscErrorCode PetscViewerGLVisSetFields_GLVis(PetscViewer viewer, PetscI
   /* number of fields are not allowed to vary */
   PetscCheckFalse(nfields != socket->nwindow,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Cannot visualize %" PetscInt_FMT " fields using %" PetscInt_FMT " socket windows",nfields,socket->nwindow);
   socket->g2lfield = g2l;
-  if (socket->destroyctx && socket->userctx) { ierr = (*socket->destroyctx)(socket->userctx);CHKERRQ(ierr); }
+  if (socket->destroyctx && socket->userctx) PetscCall((*socket->destroyctx)(socket->userctx));
   socket->userctx = ctx;
   socket->destroyctx = destroyctx;
   PetscFunctionReturn(0);
@@ -179,11 +171,10 @@ static PetscErrorCode PetscViewerGLVisSetFields_GLVis(PetscViewer viewer, PetscI
 static PetscErrorCode PetscViewerGLVisInfoDestroy_Private(void *ptr)
 {
   PetscViewerGLVisInfo info = (PetscViewerGLVisInfo)ptr;
-  PetscErrorCode       ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree(info->fmt);CHKERRQ(ierr);
-  ierr = PetscFree(info);CHKERRQ(ierr);
+  PetscCall(PetscFree(info->fmt));
+  PetscCall(PetscFree(info));
   PetscFunctionReturn(0);
 }
 
@@ -191,29 +182,28 @@ static PetscErrorCode PetscViewerGLVisInfoDestroy_Private(void *ptr)
 static PetscErrorCode PetscViewerGLVisAttachInfo_Private(PetscViewer viewer, PetscViewer window)
 {
   PetscViewerGLVis     socket = (PetscViewerGLVis)viewer->data;
-  PetscErrorCode       ierr;
   PetscContainer       container;
   PetscViewerGLVisInfo info;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject)window,"_glvis_info_container",(PetscObject*)&container);CHKERRQ(ierr);
+  PetscCall(PetscObjectQuery((PetscObject)window,"_glvis_info_container",(PetscObject*)&container));
   if (!container) {
-    ierr = PetscNew(&info);CHKERRQ(ierr);
+    PetscCall(PetscNew(&info));
     info->enabled = PETSC_TRUE;
     info->init    = PETSC_FALSE;
     info->size[0] = socket->windowsizes[0];
     info->size[1] = socket->windowsizes[1];
     info->pause   = socket->pause;
-    ierr = PetscContainerCreate(PetscObjectComm((PetscObject)window),&container);CHKERRQ(ierr);
-    ierr = PetscContainerSetPointer(container,(void*)info);CHKERRQ(ierr);
-    ierr = PetscContainerSetUserDestroy(container,PetscViewerGLVisInfoDestroy_Private);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject)window,"_glvis_info_container",(PetscObject)container);CHKERRQ(ierr);
-    ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
+    PetscCall(PetscContainerCreate(PetscObjectComm((PetscObject)window),&container));
+    PetscCall(PetscContainerSetPointer(container,(void*)info));
+    PetscCall(PetscContainerSetUserDestroy(container,PetscViewerGLVisInfoDestroy_Private));
+    PetscCall(PetscObjectCompose((PetscObject)window,"_glvis_info_container",(PetscObject)container));
+    PetscCall(PetscContainerDestroy(&container));
   } else {
-    ierr = PetscContainerGetPointer(container,(void**)&info);CHKERRQ(ierr);
+    PetscCall(PetscContainerGetPointer(container,(void**)&info));
   }
-  ierr = PetscFree(info->fmt);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(socket->fmt,&info->fmt);CHKERRQ(ierr);
+  PetscCall(PetscFree(info->fmt));
+  PetscCall(PetscStrallocpy(socket->fmt,&info->fmt));
   PetscFunctionReturn(0);
 }
 
@@ -229,10 +219,10 @@ static PetscErrorCode PetscViewerGLVisGetNewWindow_Private(PetscViewer viewer,Pe
   /* if we could not estabilish a connection the first time,
      we disable the socket viewer */
   ldis = ierr ? PETSC_TRUE : PETSC_FALSE;
-  ierr = MPIU_Allreduce(&ldis,&dis,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)viewer));CHKERRMPI(ierr);
+  PetscCallMPI(MPIU_Allreduce(&ldis,&dis,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)viewer)));
   if (dis) {
     socket->status = PETSCVIEWERGLVIS_DISABLED;
-    ierr  = PetscViewerDestroy(&window);CHKERRQ(ierr);
+    PetscCall(PetscViewerDestroy(&window));
   }
   *view = window;
   PetscFunctionReturn(0);
@@ -241,11 +231,10 @@ static PetscErrorCode PetscViewerGLVisGetNewWindow_Private(PetscViewer viewer,Pe
 PetscErrorCode PetscViewerGLVisPause_Private(PetscViewer viewer)
 {
   PetscViewerGLVis socket = (PetscViewerGLVis)viewer->data;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   if (socket->type == PETSC_VIEWER_GLVIS_SOCKET && socket->pause > 0) {
-    ierr = PetscSleep(socket->pause);CHKERRQ(ierr);
+    PetscCall(PetscSleep(socket->pause));
   }
   PetscFunctionReturn(0);
 }
@@ -253,7 +242,6 @@ PetscErrorCode PetscViewerGLVisPause_Private(PetscViewer viewer)
 /* DM specific support */
 PetscErrorCode PetscViewerGLVisSetDM_Private(PetscViewer viewer, PetscObject dm)
 {
-  PetscErrorCode   ierr;
   PetscViewerGLVis socket  = (PetscViewerGLVis)viewer->data;
 
   PetscFunctionBegin;
@@ -261,11 +249,11 @@ PetscErrorCode PetscViewerGLVisSetDM_Private(PetscViewer viewer, PetscObject dm)
   if (!socket->dm) {
     PetscErrorCode (*setupwithdm)(PetscObject,PetscViewer) = NULL;
 
-    ierr = PetscObjectQueryFunction(dm,"DMSetUpGLVisViewer_C",&setupwithdm);CHKERRQ(ierr);
+    PetscCall(PetscObjectQueryFunction(dm,"DMSetUpGLVisViewer_C",&setupwithdm));
     if (setupwithdm) {
-      ierr = (*setupwithdm)(dm,viewer);CHKERRQ(ierr);
+      PetscCall((*setupwithdm)(dm,viewer));
     } else SETERRQ(PetscObjectComm(dm),PETSC_ERR_SUP,"No support for DM type %s",dm->type_name);
-    ierr = PetscObjectReference(dm);CHKERRQ(ierr);
+    PetscCall(PetscObjectReference(dm));
     socket->dm = dm;
   }
   PetscFunctionReturn(0);
@@ -274,35 +262,34 @@ PetscErrorCode PetscViewerGLVisSetDM_Private(PetscViewer viewer, PetscObject dm)
 PetscErrorCode PetscViewerGLVisGetDMWindow_Private(PetscViewer viewer,PetscViewer *view)
 {
   PetscViewerGLVis socket = (PetscViewerGLVis)viewer->data;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   PetscValidPointer(view,2);
   if (!socket->meshwindow) {
     if (socket->type == PETSC_VIEWER_GLVIS_SOCKET) {
-      ierr = PetscViewerGLVisGetNewWindow_Private(viewer,&socket->meshwindow);CHKERRQ(ierr);
+      PetscCall(PetscViewerGLVisGetNewWindow_Private(viewer,&socket->meshwindow));
     } else {
       size_t    len;
       PetscBool isstdout;
 
-      ierr = PetscStrlen(socket->name,&len);CHKERRQ(ierr);
-      ierr = PetscStrcmp(socket->name,"stdout",&isstdout);CHKERRQ(ierr);
+      PetscCall(PetscStrlen(socket->name,&len));
+      PetscCall(PetscStrcmp(socket->name,"stdout",&isstdout));
       if (!socket->name || !len || isstdout) {
-        ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF,"stdout",&socket->meshwindow);CHKERRQ(ierr);
+        PetscCall(PetscViewerASCIIOpen(PETSC_COMM_SELF,"stdout",&socket->meshwindow));
       } else {
         PetscMPIInt rank;
         char        filename[PETSC_MAX_PATH_LEN];
-        ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRMPI(ierr);
-        ierr = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN,"%s-mesh.%06d",socket->name,rank);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF,filename,&socket->meshwindow);CHKERRQ(ierr);
+        PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank));
+        PetscCall(PetscSNPrintf(filename,PETSC_MAX_PATH_LEN,"%s-mesh.%06d",socket->name,rank));
+        PetscCall(PetscViewerASCIIOpen(PETSC_COMM_SELF,filename,&socket->meshwindow));
       }
     }
     if (socket->meshwindow) {
-      ierr = PetscViewerPushFormat(socket->meshwindow,PETSC_VIEWER_ASCII_GLVIS);CHKERRQ(ierr);
+      PetscCall(PetscViewerPushFormat(socket->meshwindow,PETSC_VIEWER_ASCII_GLVIS));
     }
   }
   if (socket->meshwindow) {
-    ierr = PetscViewerGLVisAttachInfo_Private(viewer,socket->meshwindow);CHKERRQ(ierr);
+    PetscCall(PetscViewerGLVisAttachInfo_Private(viewer,socket->meshwindow));
   }
   *view = socket->meshwindow;
   PetscFunctionReturn(0);
@@ -311,17 +298,16 @@ PetscErrorCode PetscViewerGLVisGetDMWindow_Private(PetscViewer viewer,PetscViewe
 PetscErrorCode PetscViewerGLVisRestoreDMWindow_Private(PetscViewer viewer,PetscViewer *view)
 {
   PetscViewerGLVis socket = (PetscViewerGLVis)viewer->data;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   PetscValidPointer(view,2);
   PetscCheckFalse(*view && *view != socket->meshwindow,PetscObjectComm((PetscObject)viewer),PETSC_ERR_USER,"Viewer was not obtained from PetscViewerGLVisGetDMWindow()");
   if (*view) {
-    ierr = PetscViewerFlush(*view);CHKERRQ(ierr);
-    ierr = PetscBarrier((PetscObject)viewer);CHKERRQ(ierr);
+    PetscCall(PetscViewerFlush(*view));
+    PetscCall(PetscBarrier((PetscObject)viewer));
   }
   if (socket->type == PETSC_VIEWER_GLVIS_DUMP) { /* destroy the viewer, as it is associated with a single time step */
-    ierr = PetscViewerDestroy(&socket->meshwindow);CHKERRQ(ierr);
+    PetscCall(PetscViewerDestroy(&socket->meshwindow));
   } else if (!*view) { /* something went wrong (SIGPIPE) so we just zero the private pointer */
     socket->meshwindow = NULL;
   }
@@ -351,13 +337,12 @@ PetscErrorCode PetscViewerGLVisGetStatus_Private(PetscViewer viewer, PetscViewer
   } else if (socket->status == PETSCVIEWERGLVIS_DISCONNECTED && socket->nwindow) {
     PetscInt       i;
     PetscBool      lconn,conn;
-    PetscErrorCode ierr;
 
     for (i=0,lconn=PETSC_TRUE;i<socket->nwindow;i++)
       if (!socket->window[i])
         lconn = PETSC_FALSE;
 
-    ierr = MPIU_Allreduce(&lconn,&conn,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)viewer));CHKERRMPI(ierr);
+    PetscCallMPI(MPIU_Allreduce(&lconn,&conn,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)viewer)));
     if (conn) socket->status = PETSCVIEWERGLVIS_CONNECTED;
   }
   *sockstatus = socket->status;
@@ -395,7 +380,6 @@ PetscErrorCode PetscViewerGLVisGetWindow_Private(PetscViewer viewer,PetscInt wid
 {
   PetscViewerGLVis       socket = (PetscViewerGLVis)viewer->data;
   PetscViewerGLVisStatus status;
-  PetscErrorCode         ierr;
 
   PetscFunctionBegin;
   PetscValidLogicalCollectiveInt(viewer,wid,2);
@@ -410,23 +394,23 @@ PetscErrorCode PetscViewerGLVisGetWindow_Private(PetscViewer viewer,PetscInt wid
         size_t    len;
         PetscBool isstdout;
 
-        ierr = PetscStrlen(socket->name,&len);CHKERRQ(ierr);
-        ierr = PetscStrcmp(socket->name,"stdout",&isstdout);CHKERRQ(ierr);
+        PetscCall(PetscStrlen(socket->name,&len));
+        PetscCall(PetscStrcmp(socket->name,"stdout",&isstdout));
         if (!socket->name || !len || isstdout) {
-          ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF,"stdout",&socket->window[wid]);CHKERRQ(ierr);
+          PetscCall(PetscViewerASCIIOpen(PETSC_COMM_SELF,"stdout",&socket->window[wid]));
         } else {
           PetscMPIInt rank;
           char        filename[PETSC_MAX_PATH_LEN];
 
-          ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRMPI(ierr);
-          ierr = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN,"%s-%s-%" PetscInt_FMT ".%06d",socket->name,socket->windowtitle[wid],socket->snapid,rank);CHKERRQ(ierr);
-          ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF,filename,&socket->window[wid]);CHKERRQ(ierr);
+          PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank));
+          PetscCall(PetscSNPrintf(filename,PETSC_MAX_PATH_LEN,"%s-%s-%" PetscInt_FMT ".%06d",socket->name,socket->windowtitle[wid],socket->snapid,rank));
+          PetscCall(PetscViewerASCIIOpen(PETSC_COMM_SELF,filename,&socket->window[wid]));
         }
       } else {
-        ierr = PetscViewerGLVisGetNewWindow_Private(viewer,&socket->window[wid]);CHKERRQ(ierr);
+        PetscCall(PetscViewerGLVisGetNewWindow_Private(viewer,&socket->window[wid]));
       }
       if (socket->window[wid]) {
-        ierr = PetscViewerPushFormat(socket->window[wid],PETSC_VIEWER_ASCII_GLVIS);CHKERRQ(ierr);
+        PetscCall(PetscViewerPushFormat(socket->window[wid],PETSC_VIEWER_ASCII_GLVIS));
       }
       *view = socket->window[wid];
       break;
@@ -440,7 +424,7 @@ PetscErrorCode PetscViewerGLVisGetWindow_Private(PetscViewer viewer,PetscInt wid
       SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Unhandled socket status %d",(int)status);
   }
   if (*view) {
-    ierr = PetscViewerGLVisAttachInfo_Private(viewer,*view);CHKERRQ(ierr);
+    PetscCall(PetscViewerGLVisAttachInfo_Private(viewer,*view));
   }
   PetscFunctionReturn(0);
 }
@@ -455,7 +439,6 @@ PetscErrorCode PetscViewerGLVisGetWindow_Private(PetscViewer viewer,PetscInt wid
 PetscErrorCode PetscViewerGLVisRestoreWindow_Private(PetscViewer viewer,PetscInt wid, PetscViewer* view)
 {
   PetscViewerGLVis socket = (PetscViewerGLVis)viewer->data;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(viewer,PETSC_VIEWER_CLASSID,1,PETSCVIEWERGLVIS);
@@ -464,11 +447,11 @@ PetscErrorCode PetscViewerGLVisRestoreWindow_Private(PetscViewer viewer,PetscInt
   PetscCheckFalse(wid < 0 || wid > socket->nwindow-1,PetscObjectComm((PetscObject)viewer),PETSC_ERR_USER,"Cannot restore window id %" PetscInt_FMT ": allowed range [0,%" PetscInt_FMT ")",wid,socket->nwindow);
   PetscCheckFalse(*view && *view != socket->window[wid],PetscObjectComm((PetscObject)viewer),PETSC_ERR_USER,"Viewer was not obtained from PetscViewerGLVisGetWindow()");
   if (*view) {
-    ierr = PetscViewerFlush(*view);CHKERRQ(ierr);
-    ierr = PetscBarrier((PetscObject)viewer);CHKERRQ(ierr);
+    PetscCall(PetscViewerFlush(*view));
+    PetscCall(PetscBarrier((PetscObject)viewer));
   }
   if (socket->type == PETSC_VIEWER_GLVIS_DUMP) { /* destroy the viewer, as it is associated with a single time step */
-    ierr = PetscViewerDestroy(&socket->window[wid]);CHKERRQ(ierr);
+    PetscCall(PetscViewerDestroy(&socket->window[wid]));
   } else if (!*view) { /* something went wrong (SIGPIPE) so we just zero the private pointer */
     socket->window[wid] = NULL;
   }
@@ -479,49 +462,48 @@ PetscErrorCode PetscViewerGLVisRestoreWindow_Private(PetscViewer viewer,PetscInt
 /* default window appearance in the PETSC_VIEWER_GLVIS_SOCKET case */
 PetscErrorCode PetscViewerGLVisInitWindow_Private(PetscViewer viewer, PetscBool mesh, PetscInt dim, const char *name)
 {
-  PetscErrorCode       ierr;
   PetscViewerGLVisInfo info;
   PetscContainer       container;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject)viewer,"_glvis_info_container",(PetscObject*)&container);CHKERRQ(ierr);
-  PetscCheckFalse(!container,PETSC_COMM_SELF,PETSC_ERR_USER,"Viewer was not obtained from PetscGLVisViewerGetNewWindow_Private");
-  ierr = PetscContainerGetPointer(container,(void**)&info);CHKERRQ(ierr);
+  PetscCall(PetscObjectQuery((PetscObject)viewer,"_glvis_info_container",(PetscObject*)&container));
+  PetscCheck(container,PETSC_COMM_SELF,PETSC_ERR_USER,"Viewer was not obtained from PetscGLVisViewerGetNewWindow_Private");
+  PetscCall(PetscContainerGetPointer(container,(void**)&info));
   if (info->init) PetscFunctionReturn(0);
 
   /* Configure window */
   if (info->size[0] > 0) {
-    ierr = PetscViewerASCIIPrintf(viewer,"window_size %" PetscInt_FMT " %" PetscInt_FMT "\n",info->size[0],info->size[1]);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"window_size %" PetscInt_FMT " %" PetscInt_FMT "\n",info->size[0],info->size[1]));
   }
   if (name) {
-    ierr = PetscViewerASCIIPrintf(viewer,"window_title '%s'\n",name);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"window_title '%s'\n",name));
   }
 
   /* Configure default view */
   if (mesh) {
     switch (dim) {
     case 1:
-      ierr = PetscViewerASCIIPrintf(viewer,"keys m\n");CHKERRQ(ierr); /* show mesh */
+      PetscCall(PetscViewerASCIIPrintf(viewer,"keys m\n")); /* show mesh */
       break;
     case 2:
-      ierr = PetscViewerASCIIPrintf(viewer,"keys m\n");CHKERRQ(ierr); /* show mesh */
+      PetscCall(PetscViewerASCIIPrintf(viewer,"keys m\n")); /* show mesh */
       break;
     case 3: /* TODO: decide default view in 3D */
       break;
     }
   } else {
-    ierr = PetscViewerASCIIPrintf(viewer,"keys cm\n");CHKERRQ(ierr); /* show colorbar and mesh */
+    PetscCall(PetscViewerASCIIPrintf(viewer,"keys cm\n")); /* show colorbar and mesh */
     switch (dim) {
     case 1:
-      ierr = PetscViewerASCIIPrintf(viewer,"keys RRjl\n");CHKERRQ(ierr); /* set to 1D (side view), turn off perspective and light */
+      PetscCall(PetscViewerASCIIPrintf(viewer,"keys RRjl\n")); /* set to 1D (side view), turn off perspective and light */
       break;
     case 2:
-      ierr = PetscViewerASCIIPrintf(viewer,"keys Rjl\n");CHKERRQ(ierr); /* set to 2D (top view), turn off perspective and light */
+      PetscCall(PetscViewerASCIIPrintf(viewer,"keys Rjl\n")); /* set to 2D (top view), turn off perspective and light */
       break;
     case 3:
       break;
     }
-    ierr = PetscViewerASCIIPrintf(viewer,"autoscale value\n");CHKERRQ(ierr); /* update value-range; keep mesh-extents fixed */
+    PetscCall(PetscViewerASCIIPrintf(viewer,"autoscale value\n")); /* update value-range; keep mesh-extents fixed */
   }
 
   { /* Additional keys and commands */
@@ -529,18 +511,18 @@ PetscErrorCode PetscViewerGLVisInitWindow_Private(PetscViewer viewer, PetscBool 
     PetscOptions opt = ((PetscObject)viewer)->options;
     const char  *pre = ((PetscObject)viewer)->prefix;
 
-    ierr = PetscOptionsGetString(opt,pre,"-glvis_keys",keys,sizeof(keys),NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsGetString(opt,pre,"-glvis_exec",cmds,sizeof(cmds),NULL);CHKERRQ(ierr);
-    if (keys[0]) {ierr = PetscViewerASCIIPrintf(viewer,"keys %s\n",keys);CHKERRQ(ierr);}
-    if (cmds[0]) {ierr = PetscViewerASCIIPrintf(viewer,"%s\n",cmds);CHKERRQ(ierr);}
+    PetscCall(PetscOptionsGetString(opt,pre,"-glvis_keys",keys,sizeof(keys),NULL));
+    PetscCall(PetscOptionsGetString(opt,pre,"-glvis_exec",cmds,sizeof(cmds),NULL));
+    if (keys[0]) PetscCall(PetscViewerASCIIPrintf(viewer,"keys %s\n",keys));
+    if (cmds[0]) PetscCall(PetscViewerASCIIPrintf(viewer,"%s\n",cmds));
   }
 
   /* Pause visualization */
   if (!mesh && info->pause == -1) {
-    ierr = PetscViewerASCIIPrintf(viewer,"autopause 1\n");CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"autopause 1\n"));
   }
   if (!mesh && info->pause == 0) {
-    ierr = PetscViewerASCIIPrintf(viewer,"pause\n");CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"pause\n"));
   }
 
   info->init = PETSC_TRUE;
@@ -551,48 +533,46 @@ static PetscErrorCode PetscViewerDestroy_GLVis(PetscViewer viewer)
 {
   PetscViewerGLVis socket = (PetscViewerGLVis)viewer->data;
   PetscInt         i;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   for (i=0;i<socket->nwindow;i++) {
-    ierr = PetscViewerDestroy(&socket->window[i]);CHKERRQ(ierr);
-    ierr = PetscFree(socket->windowtitle[i]);CHKERRQ(ierr);
-    ierr = PetscFree(socket->fec_type[i]);CHKERRQ(ierr);
-    ierr = PetscObjectDestroy(&socket->Ufield[i]);CHKERRQ(ierr);
+    PetscCall(PetscViewerDestroy(&socket->window[i]));
+    PetscCall(PetscFree(socket->windowtitle[i]));
+    PetscCall(PetscFree(socket->fec_type[i]));
+    PetscCall(PetscObjectDestroy(&socket->Ufield[i]));
   }
-  ierr = PetscFree(socket->name);CHKERRQ(ierr);
-  ierr = PetscFree5(socket->window,socket->windowtitle,socket->fec_type,socket->spacedim,socket->Ufield);CHKERRQ(ierr);
-  ierr = PetscFree(socket->fmt);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&socket->meshwindow);CHKERRQ(ierr);
-  ierr = PetscObjectDestroy(&socket->dm);CHKERRQ(ierr);
-  if (socket->destroyctx && socket->userctx) { ierr = (*socket->destroyctx)(socket->userctx);CHKERRQ(ierr); }
+  PetscCall(PetscFree(socket->name));
+  PetscCall(PetscFree5(socket->window,socket->windowtitle,socket->fec_type,socket->spacedim,socket->Ufield));
+  PetscCall(PetscFree(socket->fmt));
+  PetscCall(PetscViewerDestroy(&socket->meshwindow));
+  PetscCall(PetscObjectDestroy(&socket->dm));
+  if (socket->destroyctx && socket->userctx) PetscCall((*socket->destroyctx)(socket->userctx));
 
-  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerGLVisSetPrecision_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerGLVisSetSnapId_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerGLVisSetFields_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetName_C",NULL);CHKERRQ(ierr);
-  ierr = PetscFree(socket);CHKERRQ(ierr);
+  PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerGLVisSetPrecision_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerGLVisSetSnapId_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerGLVisSetFields_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetName_C",NULL));
+  PetscCall(PetscFree(socket));
   viewer->data = NULL;
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscViewerSetFromOptions_GLVis(PetscOptionItems *PetscOptionsObject,PetscViewer v)
 {
-  PetscErrorCode   ierr;
   PetscViewerGLVis socket = (PetscViewerGLVis)v->data;
   PetscInt         nsizes = 2, prec = PETSC_DECIDE;
   PetscBool        set;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"GLVis PetscViewer Options");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-glvis_precision","Number of digits for floating point values","PetscViewerGLVisSetPrecision",prec,&prec,&set);CHKERRQ(ierr);
-  if (set) {ierr = PetscViewerGLVisSetPrecision(v,prec);CHKERRQ(ierr);}
-  ierr = PetscOptionsIntArray("-glvis_size","Window sizes",NULL,socket->windowsizes,&nsizes,&set);CHKERRQ(ierr);
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"GLVis PetscViewer Options"));
+  PetscCall(PetscOptionsInt("-glvis_precision","Number of digits for floating point values","PetscViewerGLVisSetPrecision",prec,&prec,&set));
+  if (set) PetscCall(PetscViewerGLVisSetPrecision(v,prec));
+  PetscCall(PetscOptionsIntArray("-glvis_size","Window sizes",NULL,socket->windowsizes,&nsizes,&set));
   if (set && (nsizes == 1 || socket->windowsizes[1] < 0)) socket->windowsizes[1] = socket->windowsizes[0];
-  ierr = PetscOptionsReal("-glvis_pause","-1 to pause after each visualization, otherwise sleeps for given seconds",NULL,socket->pause,&socket->pause,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsName("-glvis_keys","Additional keys to configure visualization",NULL,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsName("-glvis_exec","Additional commands to configure visualization",NULL,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscCall(PetscOptionsReal("-glvis_pause","-1 to pause after each visualization, otherwise sleeps for given seconds",NULL,socket->pause,&socket->pause,NULL));
+  PetscCall(PetscOptionsName("-glvis_keys","Additional keys to configure visualization",NULL,NULL));
+  PetscCall(PetscOptionsName("-glvis_exec","Additional commands to configure visualization",NULL,NULL));
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -600,25 +580,25 @@ static PetscErrorCode PetscViewerFileSetName_GLVis(PetscViewer viewer, const cha
 {
   char             *sport;
   PetscViewerGLVis socket = (PetscViewerGLVis)viewer->data;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   socket->type = PETSC_VIEWER_GLVIS_DUMP;
   /* we accept localhost^port */
-  ierr = PetscFree(socket->name);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(name,&socket->name);CHKERRQ(ierr);
-  ierr = PetscStrchr(socket->name,'^',&sport);CHKERRQ(ierr);
+  PetscCall(PetscFree(socket->name));
+  PetscCall(PetscStrallocpy(name,&socket->name));
+  PetscCall(PetscStrchr(socket->name,'^',&sport));
   if (sport) {
-    PetscInt port = 19916;
-    size_t   len;
+    PetscInt       port = 19916;
+    size_t         len;
+    PetscErrorCode ierr;
 
     *sport++ = 0;
-    ierr = PetscStrlen(sport,&len);CHKERRQ(ierr);
-    if (len) ierr = PetscOptionsStringToInt(sport,&port);
-    if (!ierr) {
-      socket->port = (port != PETSC_DECIDE && port != PETSC_DEFAULT) ? port : 19916;
-    } else {
+    PetscCall(PetscStrlen(sport,&len));
+    ierr = PetscOptionsStringToInt(sport,&port);
+    if (PetscUnlikely(ierr)) {
       socket->port = 19916;
+    } else {
+      socket->port = (port != PETSC_DECIDE && port != PETSC_DEFAULT) ? port : 19916;
     }
     socket->type = PETSC_VIEWER_GLVIS_SOCKET;
   }
@@ -657,21 +637,20 @@ static PetscErrorCode PetscViewerFileSetName_GLVis(PetscViewer viewer, const cha
 PetscErrorCode PetscViewerGLVisOpen(MPI_Comm comm, PetscViewerGLVisType type, const char name[], PetscInt port, PetscViewer *viewer)
 {
   PetscViewerGLVis socket;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerCreate(comm,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(*viewer,PETSCVIEWERGLVIS);CHKERRQ(ierr);
+  PetscCall(PetscViewerCreate(comm,viewer));
+  PetscCall(PetscViewerSetType(*viewer,PETSCVIEWERGLVIS));
 
   socket       = (PetscViewerGLVis)((*viewer)->data);
   socket->type = type;
   if (type == PETSC_VIEWER_GLVIS_DUMP || name) {
-    ierr = PetscFree(socket->name);CHKERRQ(ierr);
-    ierr = PetscStrallocpy(name,&socket->name);CHKERRQ(ierr);
+    PetscCall(PetscFree(socket->name));
+    PetscCall(PetscStrallocpy(name,&socket->name));
   }
   socket->port = (!port || port == PETSC_DETERMINE || port == PETSC_DECIDE) ? 19916 : port;
 
-  ierr = PetscViewerSetFromOptions(*viewer);CHKERRQ(ierr);
+  PetscCall(PetscViewerSetFromOptions(*viewer));
   PetscFunctionReturn(0);
 }
 
@@ -739,13 +718,12 @@ PetscViewer PETSC_VIEWER_GLVIS_(MPI_Comm comm)
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_GLVis(PetscViewer viewer)
 {
   PetscViewerGLVis socket;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(viewer,&socket);CHKERRQ(ierr);
+  PetscCall(PetscNewLog(viewer,&socket));
 
   /* defaults to socket viewer */
-  ierr = PetscStrallocpy("localhost",&socket->name);CHKERRQ(ierr);
+  PetscCall(PetscStrallocpy("localhost",&socket->name));
   socket->port  = 19916; /* GLVis default listening port */
   socket->type  = PETSC_VIEWER_GLVIS_SOCKET;
   socket->pause = 0; /* just pause the first time */
@@ -754,16 +732,16 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_GLVis(PetscViewer viewer)
   socket->windowsizes[1] = 600;
 
   /* defaults to full precision */
-  ierr = PetscStrallocpy(" %g",&socket->fmt);CHKERRQ(ierr);
+  PetscCall(PetscStrallocpy(" %g",&socket->fmt));
 
   viewer->data                = (void*)socket;
   viewer->ops->destroy        = PetscViewerDestroy_GLVis;
   viewer->ops->setfromoptions = PetscViewerSetFromOptions_GLVis;
 
-  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerGLVisSetPrecision_C",PetscViewerGLVisSetPrecision_GLVis);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerGLVisSetSnapId_C",PetscViewerGLVisSetSnapId_GLVis);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerGLVisSetFields_C",PetscViewerGLVisSetFields_GLVis);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetName_C",PetscViewerFileSetName_GLVis);CHKERRQ(ierr);
+  PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerGLVisSetPrecision_C",PetscViewerGLVisSetPrecision_GLVis));
+  PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerGLVisSetSnapId_C",PetscViewerGLVisSetSnapId_GLVis));
+  PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerGLVisSetFields_C",PetscViewerGLVisSetFields_GLVis));
+  PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetName_C",PetscViewerFileSetName_GLVis));
   PetscFunctionReturn(0);
 }
 
@@ -781,12 +759,12 @@ static PetscErrorCode PetscViewerDestroy_ASCII_Socket(PetscViewer viewer)
   FILE *stream;
   PetscErrorCode ierr = 0;
   PetscFunctionBegin;
-  ierr = PetscViewerASCIIGetPointer(viewer,&stream);CHKERRQ(ierr);
+  PetscCall(PetscViewerASCIIGetPointer(viewer,&stream));
   if (stream) {
     ierr = fclose(stream);
-    PetscCheckFalse(ierr,PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on stream");
+    PetscCheck(!ierr,PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on stream");
   }
-  ierr = PetscViewerDestroy_ASCII(viewer);CHKERRQ(ierr);
+  PetscCall(PetscViewerDestroy_ASCII(viewer));
   PetscFunctionReturn(0);
 }
 #endif
@@ -802,7 +780,7 @@ static PetscErrorCode PetscViewerASCIISocketOpen(MPI_Comm comm,const char* hostn
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(hostname,2);
+  PetscValidCharPointer(hostname,2);
   PetscValidPointer(viewer,4);
 #if defined(PETSC_USE_SOCKET_VIEWER)
   ierr = PetscOpenSocket(hostname,port,&fd);
@@ -813,19 +791,19 @@ static PetscErrorCode PetscViewerASCIISocketOpen(MPI_Comm comm,const char* hostn
     PetscInt sierr = ierr;
     char     err[1024];
 
-    ierr    = PetscSNPrintf(err,1024,"Cannot connect to socket on %s:%" PetscInt_FMT ". Socket visualization is disabled\n",hostname,port);CHKERRQ(ierr);
-    ierr    = PetscInfo(NULL,"%s",err);CHKERRQ(ierr);
+    PetscCall(PetscSNPrintf(err,1024,"Cannot connect to socket on %s:%" PetscInt_FMT ". Socket visualization is disabled\n",hostname,port));
+    PetscCall(PetscInfo(NULL,"%s",err));
     *viewer = NULL;
     PetscFunctionReturn(sierr);
   } else {
     char msg[1024];
 
-    ierr = PetscSNPrintf(msg,1024,"Successfully connect to socket on %s:%" PetscInt_FMT ". Socket visualization is enabled\n",hostname,port);CHKERRQ(ierr);
-    ierr = PetscInfo(NULL,"%s",msg);CHKERRQ(ierr);
+    PetscCall(PetscSNPrintf(msg,1024,"Successfully connect to socket on %s:%" PetscInt_FMT ". Socket visualization is enabled\n",hostname,port));
+    PetscCall(PetscInfo(NULL,"%s",msg));
   }
   stream = fdopen(fd,"w"); /* Not possible on Windows */
-  PetscCheckFalse(!stream,PETSC_COMM_SELF,PETSC_ERR_SYS,"Cannot open stream from socket %s:%" PetscInt_FMT,hostname,port);
-  ierr = PetscViewerASCIIOpenWithFILE(PETSC_COMM_SELF,stream,viewer);CHKERRQ(ierr);
+  PetscCheck(stream,PETSC_COMM_SELF,PETSC_ERR_SYS,"Cannot open stream from socket %s:%" PetscInt_FMT,hostname,port);
+  PetscCall(PetscViewerASCIIOpenWithFILE(PETSC_COMM_SELF,stream,viewer));
   PetscViewerDestroy_ASCII = (*viewer)->ops->destroy;
   (*viewer)->ops->destroy = PetscViewerDestroy_ASCII_Socket;
 #endif
@@ -857,7 +835,7 @@ static void PetscGLVisSigHandler_SIGPIPE(PETSC_UNUSED int sig)
 PetscErrorCode PetscGLVisCollectiveBegin(PETSC_UNUSED MPI_Comm comm,PETSC_UNUSED PetscViewer *win)
 {
   PetscFunctionBegin;
-  PetscCheckFalse(PetscGLVisSigHandler_save,comm,PETSC_ERR_PLIB,"Nested call to %s()",PETSC_FUNCTION_NAME);
+  PetscCheck(!PetscGLVisSigHandler_save,comm,PETSC_ERR_PLIB,"Nested call to %s()",PETSC_FUNCTION_NAME);
   PetscGLVisBrokenPipe = PETSC_FALSE;
   PetscGLVisSigHandler_save = signal(SIGPIPE,PetscGLVisSigHandler_SIGPIPE);
   PetscFunctionReturn(0);
@@ -866,16 +844,15 @@ PetscErrorCode PetscGLVisCollectiveBegin(PETSC_UNUSED MPI_Comm comm,PETSC_UNUSED
 PetscErrorCode PetscGLVisCollectiveEnd(MPI_Comm comm,PetscViewer *win)
 {
   PetscBool      flag,brokenpipe;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   flag = PetscGLVisBrokenPipe;
-  ierr = MPIU_Allreduce(&flag,&brokenpipe,1,MPIU_BOOL,MPI_LOR,comm);CHKERRMPI(ierr);
+  PetscCallMPI(MPIU_Allreduce(&flag,&brokenpipe,1,MPIU_BOOL,MPI_LOR,comm));
   if (brokenpipe) {
     FILE *sock, *null = fopen(PETSC_DEVNULL,"w");
-    ierr = PetscViewerASCIIGetPointer(*win,&sock);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISetFILE(*win,null);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(win);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIGetPointer(*win,&sock));
+    PetscCall(PetscViewerASCIISetFILE(*win,null));
+    PetscCall(PetscViewerDestroy(win));
     if (sock) (void)fclose(sock);
   }
   (void)signal(SIGPIPE,PetscGLVisSigHandler_save);

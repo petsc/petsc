@@ -40,7 +40,6 @@ PetscErrorCode  PetscDrawSetSave(PetscDraw draw,const char filename[])
   const char     *savename = NULL;
   const char     *imageext = NULL;
   char           buf[PETSC_MAX_PATH_LEN];
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
@@ -48,30 +47,30 @@ PetscErrorCode  PetscDrawSetSave(PetscDraw draw,const char filename[])
 
   /* determine save filename and image extension */
   if (filename && filename[0]) {
-    ierr = PetscStrchr(filename,'.',(char **)&imageext);CHKERRQ(ierr);
+    PetscCall(PetscStrchr(filename,'.',(char **)&imageext));
     if (!imageext) savename = filename;
     else if (imageext != filename) {
       size_t l1 = 0,l2 = 0;
-      ierr = PetscStrlen(filename,&l1);CHKERRQ(ierr);
-      ierr = PetscStrlen(imageext,&l2);CHKERRQ(ierr);
-      ierr = PetscStrncpy(buf,filename,l1-l2+1);CHKERRQ(ierr);
+      PetscCall(PetscStrlen(filename,&l1));
+      PetscCall(PetscStrlen(imageext,&l2));
+      PetscCall(PetscStrncpy(buf,filename,l1-l2+1));
       savename = buf;
     }
   }
 
-  if (!savename) {ierr = PetscObjectGetName((PetscObject)draw,&savename);CHKERRQ(ierr);}
-  ierr = PetscDrawImageCheckFormat(&imageext);CHKERRQ(ierr);
+  if (!savename) PetscCall(PetscObjectGetName((PetscObject)draw,&savename));
+  PetscCall(PetscDrawImageCheckFormat(&imageext));
 
   draw->savefilecount = 0;
-  ierr = PetscFree(draw->savefilename);CHKERRQ(ierr);
-  ierr = PetscFree(draw->saveimageext);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(savename,&draw->savefilename);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(imageext,&draw->saveimageext);CHKERRQ(ierr);
+  PetscCall(PetscFree(draw->savefilename));
+  PetscCall(PetscFree(draw->saveimageext));
+  PetscCall(PetscStrallocpy(savename,&draw->savefilename));
+  PetscCall(PetscStrallocpy(imageext,&draw->saveimageext));
 
   if (draw->savesinglefile) {
-    ierr = PetscInfo(NULL,"Will save image to file %s%s\n",draw->savefilename,draw->saveimageext);CHKERRQ(ierr);
+    PetscCall(PetscInfo(NULL,"Will save image to file %s%s\n",draw->savefilename,draw->saveimageext));
   } else {
-    ierr = PetscInfo(NULL,"Will save images to file %s/%s_%%d%s\n",draw->savefilename,draw->savefilename,draw->saveimageext);CHKERRQ(ierr);
+    PetscCall(PetscInfo(NULL,"Will save images to file %s/%s_%%d%s\n",draw->savefilename,draw->savefilename,draw->saveimageext));
   }
   PetscFunctionReturn(0);
 }
@@ -98,19 +97,16 @@ PetscErrorCode  PetscDrawSetSave(PetscDraw draw,const char filename[])
 @*/
 PetscErrorCode  PetscDrawSetSaveMovie(PetscDraw draw,const char movieext[])
 {
-
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   if (movieext) PetscValidCharPointer(movieext,2);
 
-  if (!draw->savefilename) {ierr = PetscDrawSetSave(draw,"");CHKERRQ(ierr);}
-  ierr = PetscDrawMovieCheckFormat(&movieext);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(movieext,&draw->savemovieext);CHKERRQ(ierr);
+  if (!draw->savefilename) PetscCall(PetscDrawSetSave(draw,""));
+  PetscCall(PetscDrawMovieCheckFormat(&movieext));
+  PetscCall(PetscStrallocpy(movieext,&draw->savemovieext));
   draw->savesinglefile = PETSC_FALSE; /* otherwise we cannot generage movies */
 
-  ierr = PetscInfo(NULL,"Will save movie to file %s%s\n",draw->savefilename,draw->savemovieext);CHKERRQ(ierr);
+  PetscCall(PetscInfo(NULL,"Will save movie to file %s%s\n",draw->savefilename,draw->savemovieext));
   PetscFunctionReturn(0);
 }
 
@@ -141,20 +137,19 @@ PetscErrorCode  PetscDrawSetSaveMovie(PetscDraw draw,const char movieext[])
 PetscErrorCode  PetscDrawSetSaveFinalImage(PetscDraw draw,const char filename[])
 {
   char           buf[PETSC_MAX_PATH_LEN];
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   if (!filename || !filename[0]) {
     if (!draw->savefilename) {
-      ierr = PetscObjectGetName((PetscObject)draw,&filename);CHKERRQ(ierr);
+      PetscCall(PetscObjectGetName((PetscObject)draw,&filename));
     } else {
-      ierr = PetscSNPrintf(buf,sizeof(buf),"%s%s",draw->savefilename,draw->saveimageext);CHKERRQ(ierr);
+      PetscCall(PetscSNPrintf(buf,sizeof(buf),"%s%s",draw->savefilename,draw->saveimageext));
       filename = buf;
     }
   }
-  ierr = PetscFree(draw->savefinalfilename);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(filename,&draw->savefinalfilename);CHKERRQ(ierr);
+  PetscCall(PetscFree(draw->savefinalfilename));
+  PetscCall(PetscStrallocpy(filename,&draw->savefinalfilename));
   PetscFunctionReturn(0);
 }
 
@@ -182,55 +177,54 @@ PetscErrorCode  PetscDrawSave(PetscDraw draw)
   unsigned int   w,h;
   unsigned char  *pixels = NULL;
   PetscMPIInt    rank;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   if (!draw->ops->save && !draw->ops->getimage) PetscFunctionReturn(0);
-  if (draw->ops->save) {ierr = (*draw->ops->save)(draw);CHKERRQ(ierr); goto finally;}
+  if (draw->ops->save) {PetscCall((*draw->ops->save)(draw)); goto finally;}
   if (!draw->savefilename || !draw->saveimageext) PetscFunctionReturn(0);
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank));
 
   saveindex = draw->savefilecount++;
 
   if (rank == 0 && !saveindex) {
     char path[PETSC_MAX_PATH_LEN];
     if (draw->savesinglefile) {
-      ierr = PetscSNPrintf(path,sizeof(path),"%s%s",draw->savefilename,draw->saveimageext);CHKERRQ(ierr);
+      PetscCall(PetscSNPrintf(path,sizeof(path),"%s%s",draw->savefilename,draw->saveimageext));
       (void)remove(path);
     } else {
-      ierr = PetscSNPrintf(path,sizeof(path),"%s",draw->savefilename);CHKERRQ(ierr);
-      ierr = PetscRMTree(path);CHKERRQ(ierr);
-      ierr = PetscMkdir(path);CHKERRQ(ierr);
+      PetscCall(PetscSNPrintf(path,sizeof(path),"%s",draw->savefilename));
+      PetscCall(PetscRMTree(path));
+      PetscCall(PetscMkdir(path));
     }
     if (draw->savemovieext) {
-      ierr = PetscSNPrintf(path,sizeof(path),"%s%s",draw->savefilename,draw->savemovieext);CHKERRQ(ierr);
+      PetscCall(PetscSNPrintf(path,sizeof(path),"%s%s",draw->savefilename,draw->savemovieext));
       (void)remove(path);
     }
   }
   if (draw->savesinglefile) {
-    ierr = PetscSNPrintf(basename,sizeof(basename),"%s",draw->savefilename);CHKERRQ(ierr);
+    PetscCall(PetscSNPrintf(basename,sizeof(basename),"%s",draw->savefilename));
   } else {
     char *basefilename;
 
-    ierr = PetscStrrchr(draw->savefilename, '/', (char **) &basefilename);CHKERRQ(ierr);
+    PetscCall(PetscStrrchr(draw->savefilename, '/', (char **) &basefilename));
     if (basefilename != draw->savefilename) {
-      ierr = PetscSNPrintf(basename,sizeof(basename),"%s_%d",draw->savefilename,(int)saveindex);CHKERRQ(ierr);
+      PetscCall(PetscSNPrintf(basename,sizeof(basename),"%s_%d",draw->savefilename,(int)saveindex));
     } else {
-      ierr = PetscSNPrintf(basename,sizeof(basename),"%s/%s_%d",draw->savefilename,draw->savefilename,(int)saveindex);CHKERRQ(ierr);
+      PetscCall(PetscSNPrintf(basename,sizeof(basename),"%s/%s_%d",draw->savefilename,draw->savefilename,(int)saveindex));
     }
   }
 
   /* this call is collective, only the first process gets the image data */
-  ierr = (*draw->ops->getimage)(draw,palette,&w,&h,&pixels);CHKERRQ(ierr);
+  PetscCall((*draw->ops->getimage)(draw,palette,&w,&h,&pixels));
   /* only the first process handles the saving business */
-  if (rank == 0) {ierr = PetscDrawImageSave(basename,draw->saveimageext,palette,w,h,pixels);CHKERRQ(ierr);}
-  ierr = PetscFree(pixels);CHKERRQ(ierr);
-  ierr = MPI_Barrier(PetscObjectComm((PetscObject)draw));CHKERRMPI(ierr);
+  if (rank == 0) PetscCall(PetscDrawImageSave(basename,draw->saveimageext,palette,w,h,pixels));
+  PetscCall(PetscFree(pixels));
+  PetscCallMPI(MPI_Barrier(PetscObjectComm((PetscObject)draw)));
 
 finally:
 #if defined(PETSC_HAVE_SAWS)
-  ierr = PetscDrawSave_SAWs(draw);CHKERRQ(ierr);
+  PetscCall(PetscDrawSave_SAWs(draw));
 #endif
   PetscFunctionReturn(0);
 }
@@ -255,19 +249,18 @@ finally:
 PetscErrorCode PetscDrawSaveMovie(PetscDraw draw)
 {
   PetscMPIInt    rank;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   if (!draw->ops->save && !draw->ops->getimage) PetscFunctionReturn(0);
   if (!draw->savefilename || !draw->savemovieext || draw->savesinglefile) PetscFunctionReturn(0);
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank));
   {
     const char *fname = draw->savefilename;
     const char *imext = draw->saveimageext;
     const char *mvext = draw->savemovieext;
-    if (rank == 0) {ierr = PetscDrawMovieSave(fname,draw->savefilecount,imext,draw->savemoviefps,mvext);CHKERRQ(ierr);}
-    ierr = MPI_Barrier(PetscObjectComm((PetscObject)draw));CHKERRMPI(ierr);
+    if (rank == 0) PetscCall(PetscDrawMovieSave(fname,draw->savefilecount,imext,draw->savemoviefps,mvext));
+    PetscCallMPI(MPI_Barrier(PetscObjectComm((PetscObject)draw)));
   }
   PetscFunctionReturn(0);
 }
@@ -290,15 +283,14 @@ static PetscImageList SAWs_images = NULL;
 
 static PetscErrorCode PetscImageListDestroy(void)
 {
-  PetscErrorCode ierr;
   PetscImageList image = SAWs_images;
 
   PetscFunctionBegin;
   while (image) {
     PetscImageList next = image->next;
-    ierr = PetscFree(image->filename);CHKERRQ(ierr);
-    ierr = PetscFree(image->ext);CHKERRQ(ierr);
-    ierr = PetscFree(image);CHKERRQ(ierr);
+    PetscCall(PetscFree(image->filename));
+    PetscCall(PetscFree(image->ext));
+    PetscCall(PetscFree(image));
     image = next;
   }
   PetscFunctionReturn(0);
@@ -306,34 +298,33 @@ static PetscErrorCode PetscImageListDestroy(void)
 
 static PetscErrorCode PetscImageListAdd(const char filename[],const char ext[],PetscInt count)
 {
-  PetscErrorCode  ierr;
-  PetscImageList  image,oimage = SAWs_images;
-  PetscBool       flg;
+  PetscImageList image,oimage = SAWs_images;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   if (oimage) {
-    ierr = PetscStrcmp(filename,oimage->filename,&flg);CHKERRQ(ierr);
+    PetscCall(PetscStrcmp(filename,oimage->filename,&flg));
     if (flg) {
       oimage->count = count;
       PetscFunctionReturn(0);
     }
     while (oimage->next) {
       oimage = oimage->next;
-      ierr = PetscStrcmp(filename,oimage->filename,&flg);CHKERRQ(ierr);
+      PetscCall(PetscStrcmp(filename,oimage->filename,&flg));
       if (flg) {
         oimage->count = count;
         PetscFunctionReturn(0);
       }
     }
-    ierr = PetscNew(&image);CHKERRQ(ierr);
+    PetscCall(PetscNew(&image));
     oimage->next = image;
   } else {
-    ierr = PetscRegisterFinalize(PetscImageListDestroy);CHKERRQ(ierr);
-    ierr = PetscNew(&image);CHKERRQ(ierr);
+    PetscCall(PetscRegisterFinalize(PetscImageListDestroy));
+    PetscCall(PetscNew(&image));
     SAWs_images = image;
   }
-  ierr = PetscStrallocpy(filename,&image->filename);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(ext,&image->ext);CHKERRQ(ierr);
+  PetscCall(PetscStrallocpy(filename,&image->filename));
+  PetscCall(PetscStrallocpy(ext,&image->ext));
   image->count = count;
   PetscFunctionReturn(0);
 }
@@ -343,24 +334,23 @@ static PetscErrorCode PetscDrawSave_SAWs(PetscDraw draw)
   PetscImageList image;
   char           body[4096];
   size_t         len = 0;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!draw->savefilename || !draw->saveimageext) PetscFunctionReturn(0);
-  ierr = PetscImageListAdd(draw->savefilename,draw->saveimageext,draw->savefilecount-1);CHKERRQ(ierr);
+  PetscCall(PetscImageListAdd(draw->savefilename,draw->saveimageext,draw->savefilecount-1));
   image = SAWs_images;
   while (image) {
     const char *name = image->filename;
     const char *ext  = image->ext;
     if (draw->savesinglefile) {
-      ierr = PetscSNPrintf(body+len,4086-len,"<img src=\"%s%s\" alt=\"None\">",name,ext);CHKERRQ(ierr);
+      PetscCall(PetscSNPrintf(body+len,4086-len,"<img src=\"%s%s\" alt=\"None\">",name,ext));
     } else {
-      ierr = PetscSNPrintf(body+len,4086-len,"<img src=\"%s/%s_%d%s\" alt=\"None\">",name,name,image->count,ext);CHKERRQ(ierr);
+      PetscCall(PetscSNPrintf(body+len,4086-len,"<img src=\"%s/%s_%d%s\" alt=\"None\">",name,name,image->count,ext));
     }
-    ierr = PetscStrlen(body,&len);CHKERRQ(ierr);
+    PetscCall(PetscStrlen(body,&len));
     image = image->next;
   }
-  ierr = PetscStrlcat(body,"<br>\n",sizeof(body));CHKERRQ(ierr);
+  PetscCall(PetscStrlcat(body,"<br>\n",sizeof(body)));
   if (draw->savefilecount > 0) PetscStackCallSAWs(SAWs_Pop_Body,("index.html",1));
   PetscStackCallSAWs(SAWs_Push_Body,("index.html",1,body));
   PetscFunctionReturn(0);

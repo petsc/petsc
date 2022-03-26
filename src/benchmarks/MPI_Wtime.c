@@ -6,7 +6,7 @@ int main(int argc,char **argv)
   double x,y;
   int    ierr;
 
-  ierr = PetscInitialize(&argc,&argv,0,0);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,0,0));
   /* To take care of paging effects */
   y = MPI_Wtime();
 
@@ -27,10 +27,10 @@ int main(int argc,char **argv)
   fprintf(stdout,"%-15s : %e sec\n","MPI_Wtick",y);
 
   x    = MPI_Wtime();
-  ierr = PetscSleep(10);CHKERRQ(ierr);
+  PetscCall(PetscSleep(10));
   y    = MPI_Wtime();
   fprintf(stdout,"%-15s : %e sec - Slept for 10 sec \n","MPI_Wtime",(y-x));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }

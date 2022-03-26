@@ -6,14 +6,13 @@ static char help[] = "Test AO with on IS with 0 entries - contributed by Ethan C
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   AO             ao;
   PetscInt       *localvert=NULL, nlocal;
   PetscMPIInt    rank;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = PetscMalloc1(4,&localvert);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscMalloc1(4,&localvert));
 
   if (rank == 0) {
     nlocal       = 4;
@@ -26,16 +25,16 @@ int main(int argc,char **argv)
   }
 
   /* Test AOCreateBasic() */
-  ierr = AOCreateBasic(PETSC_COMM_WORLD, nlocal, localvert, NULL, &ao);CHKERRQ(ierr);
-  ierr = AODestroy(&ao);CHKERRQ(ierr);
+  PetscCall(AOCreateBasic(PETSC_COMM_WORLD, nlocal, localvert, NULL, &ao));
+  PetscCall(AODestroy(&ao));
 
   /* Test AOCreateMemoryScalable() */
-  ierr = AOCreateMemoryScalable(PETSC_COMM_WORLD, nlocal, localvert, NULL, &ao);CHKERRQ(ierr);
-  ierr = AODestroy(&ao);CHKERRQ(ierr);
+  PetscCall(AOCreateMemoryScalable(PETSC_COMM_WORLD, nlocal, localvert, NULL, &ao));
+  PetscCall(AODestroy(&ao));
 
-  ierr = PetscFree(localvert);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFree(localvert));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

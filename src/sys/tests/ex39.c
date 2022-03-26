@@ -7,10 +7,7 @@ PetscReal zero = 0;
 PETSC_INTERN PetscReal zero2;
 PetscReal zero2 = 0;
 
-#define CALL(call) do { \
-    PetscErrorCode _ierr;                                               \
-    _ierr = PetscPrintf(PETSC_COMM_WORLD,"%s -> %s\n",#call,(call)?"True":"False");CHKERRQ(_ierr); \
-  } while (0);
+#define CALL(call) PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%s -> %s\n",#call,(call)?"True":"False"))
 
 int main(int argc, char **argv) {
 
@@ -23,8 +20,7 @@ int main(int argc, char **argv) {
   PetscReal pos_inf  = pos_one/zero; /* +inf */
   PetscReal x_nan    = zero2/zero;   /*  NaN */ /* some compilers may optimize out zero/zero and set x_nan = 1! */
 
-  PetscErrorCode ierr;
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
   CALL(PetscIsCloseAtTol(pos_zero,neg_zero,0,0));
   CALL(PetscIsCloseAtTol(pos_one,pos_one,0,0));
@@ -71,8 +67,8 @@ int main(int argc, char **argv) {
   CALL(PetscIsCloseAtTol(x_nan,pos_inf,2,2));
   CALL(PetscIsCloseAtTol(x_nan,x_nan,2,2));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

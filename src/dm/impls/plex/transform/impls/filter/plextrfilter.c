@@ -3,17 +3,16 @@
 static PetscErrorCode DMPlexTransformView_Filter(DMPlexTransform tr, PetscViewer viewer)
 {
   PetscBool      isascii;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii));
   if (isascii) {
     const char *name;
 
-    ierr = PetscObjectGetName((PetscObject) tr, &name);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "Filter transformation %s\n", name ? name : "");CHKERRQ(ierr);
+    PetscCall(PetscObjectGetName((PetscObject) tr, &name));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Filter transformation %s\n", name ? name : ""));
   } else {
     SETERRQ(PetscObjectComm((PetscObject) tr), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMPlexTransform writing", ((PetscObject) viewer)->type_name);
   }
@@ -29,11 +28,10 @@ static PetscErrorCode DMPlexTransformSetUp_Filter(DMPlexTransform tr)
 static PetscErrorCode DMPlexTransformDestroy_Filter(DMPlexTransform tr)
 {
   DMPlexTransform_Filter *f = (DMPlexTransform_Filter *) tr->data;
-  PetscErrorCode          ierr;
 
   PetscFunctionBegin;
-  ierr = DMLabelDestroy(&f->label);CHKERRQ(ierr);
-  ierr = PetscFree(f);CHKERRQ(ierr);
+  PetscCall(DMLabelDestroy(&f->label));
+  PetscCall(PetscFree(f));
   PetscFunctionReturn(0);
 }
 
@@ -57,13 +55,12 @@ static PetscErrorCode DMPlexTransformInitialize_Filter(DMPlexTransform tr)
 PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_Filter(DMPlexTransform tr)
 {
   DMPlexTransform_Filter *f;
-  PetscErrorCode          ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
-  ierr = PetscNewLog(tr, &f);CHKERRQ(ierr);
+  PetscCall(PetscNewLog(tr, &f));
   tr->data = f;
 
-  ierr = DMPlexTransformInitialize_Filter(tr);CHKERRQ(ierr);
+  PetscCall(DMPlexTransformInitialize_Filter(tr));
   PetscFunctionReturn(0);
 }

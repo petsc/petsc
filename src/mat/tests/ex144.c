@@ -23,14 +23,13 @@ int main(int argc,char **args)
   Vec             fin,fout,fout1;
   Vec             ini,final;
   PetscRandom     rnd;
-  PetscErrorCode  ierr;
   PetscInt        *indx3,tempindx,low,*indx4,tempindx1;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rnd);CHKERRQ(ierr);
+  PetscCall(PetscRandomCreate(PETSC_COMM_WORLD,&rnd));
 
   alloc_local = fftw_mpi_local_size_2d_transposed(N0,N1/2+1,PETSC_COMM_WORLD,&local_n0,&local_0_start,&local_n1,&local_1_start);
 #if defined(DEBUGGING)
@@ -55,12 +54,12 @@ int main(int argc,char **args)
 /*    printf("The value n is  %d from process %d\n",n,rank);  */
 /*    printf("The value n1 is  %d from process %d\n",n1,rank);*/
   /* Creating data vector and accompanying array with VeccreateMPIWithArray */
-  ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,N,(PetscScalar*)in1,&fin);CHKERRQ(ierr);
-  ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,N,(PetscScalar*)out,&fout);CHKERRQ(ierr);
-  ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,N,(PetscScalar*)in2,&fout1);CHKERRQ(ierr);
+  PetscCall(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,N,(PetscScalar*)in1,&fin));
+  PetscCall(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,N,(PetscScalar*)out,&fout));
+  PetscCall(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,N,(PetscScalar*)in2,&fout1));
 
   /* Set the vector with random data */
-  ierr = VecSet(fin,zero);CHKERRQ(ierr);
+  PetscCall(VecSet(fin,zero));
 /*    for (i=0;i<N0*N1;i++) */
 /*       { */
 /*       VecSetValues(fin,1,&i,&one,INSERT_VALUES); */
@@ -68,23 +67,23 @@ int main(int argc,char **args)
 
 /*    VecSet(fin,one); */
   i    =0;
-  ierr = VecSetValues(fin,1,&i,&one,INSERT_VALUES);CHKERRQ(ierr);
+  PetscCall(VecSetValues(fin,1,&i,&one,INSERT_VALUES));
   i    =1;
-  ierr = VecSetValues(fin,1,&i,&two,INSERT_VALUES);CHKERRQ(ierr);
+  PetscCall(VecSetValues(fin,1,&i,&two,INSERT_VALUES));
   i    =4;
-  ierr = VecSetValues(fin,1,&i,&three,INSERT_VALUES);CHKERRQ(ierr);
+  PetscCall(VecSetValues(fin,1,&i,&three,INSERT_VALUES));
   i    =5;
-  ierr = VecSetValues(fin,1,&i,&four,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(fin);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(fin);CHKERRQ(ierr);
+  PetscCall(VecSetValues(fin,1,&i,&four,INSERT_VALUES));
+  PetscCall(VecAssemblyBegin(fin));
+  PetscCall(VecAssemblyEnd(fin));
 
-  ierr = VecSet(fout,zero);CHKERRQ(ierr);
-  ierr = VecSet(fout1,zero);CHKERRQ(ierr);
+  PetscCall(VecSet(fout,zero));
+  PetscCall(VecSet(fout1,zero));
 
   /* Get the meaningful portion of array */
-  ierr = VecGetArray(fin,&x_arr);CHKERRQ(ierr);
-  ierr = VecGetArray(fout1,&z_arr);CHKERRQ(ierr);
-  ierr = VecGetArray(fout,&y_arr);CHKERRQ(ierr);
+  PetscCall(VecGetArray(fin,&x_arr));
+  PetscCall(VecGetArray(fout1,&z_arr));
+  PetscCall(VecGetArray(fout,&y_arr));
 
   fplan=fftw_mpi_plan_dft_r2c_2d(N0,N1,(double*)x_arr,(fftw_complex*)y_arr,PETSC_COMM_WORLD,FFTW_ESTIMATE);
   bplan=fftw_mpi_plan_dft_c2r_2d(N0,N1,(fftw_complex*)y_arr,(double*)z_arr,PETSC_COMM_WORLD,FFTW_ESTIMATE);
@@ -92,17 +91,17 @@ int main(int argc,char **args)
   fftw_execute(fplan);
   fftw_execute(bplan);
 
-  ierr = VecRestoreArray(fin,&x_arr);CHKERRQ(ierr);
-  ierr = VecRestoreArray(fout1,&z_arr);CHKERRQ(ierr);
-  ierr = VecRestoreArray(fout,&y_arr);CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(fin,&x_arr));
+  PetscCall(VecRestoreArray(fout1,&z_arr));
+  PetscCall(VecRestoreArray(fout,&y_arr));
 
 /*    VecView(fin,PETSC_VIEWER_STDOUT_WORLD); */
-  ierr = VecCreate(PETSC_COMM_WORLD,&ini);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,&final);CHKERRQ(ierr);
-  ierr = VecSetSizes(ini,local_n0*N1,N0*N1);CHKERRQ(ierr);
-  ierr = VecSetSizes(final,local_n0*N1,N0*N1);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(ini);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(final);CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&ini));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&final));
+  PetscCall(VecSetSizes(ini,local_n0*N1,N0*N1));
+  PetscCall(VecSetSizes(final,local_n0*N1,N0*N1));
+  PetscCall(VecSetFromOptions(ini));
+  PetscCall(VecSetFromOptions(final));
 
   if (N1%2==0) {
     NM = N1+2;
@@ -110,10 +109,10 @@ int main(int argc,char **args)
     NM = N1+1;
   }
   /*printf("The Value of NM is %d",NM); */
-  ierr = VecGetOwnershipRange(fin,&low,NULL);CHKERRQ(ierr);
+  PetscCall(VecGetOwnershipRange(fin,&low,NULL));
   /*printf("The local index is %d from %d\n",low,rank); */
-  ierr = PetscMalloc1(local_n0*N1,&indx3);CHKERRQ(ierr);
-  ierr = PetscMalloc1(local_n0*N1,&indx4);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(local_n0*N1,&indx3));
+  PetscCall(PetscMalloc1(local_n0*N1,&indx4));
   for (i=0;i<local_n0;i++) {
     for (j=0;j<N1;j++) {
       tempindx  = i*N1 + j;
@@ -126,18 +125,18 @@ int main(int argc,char **args)
     }
   }
 
-  ierr = PetscMalloc2(local_n0*N1,&x_arr,local_n0*N1,&y_arr);CHKERRQ(ierr); /* arr must be allocated for VecGetValues() */
-  ierr = VecGetValues(fin,local_n0*N1,indx4,(PetscScalar*)x_arr);CHKERRQ(ierr);
-  ierr = VecSetValues(ini,local_n0*N1,indx3,x_arr,INSERT_VALUES);CHKERRQ(ierr);
+  PetscCall(PetscMalloc2(local_n0*N1,&x_arr,local_n0*N1,&y_arr)); /* arr must be allocated for VecGetValues() */
+  PetscCall(VecGetValues(fin,local_n0*N1,indx4,(PetscScalar*)x_arr));
+  PetscCall(VecSetValues(ini,local_n0*N1,indx3,x_arr,INSERT_VALUES));
 
-  ierr = VecAssemblyBegin(ini);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(ini);CHKERRQ(ierr);
+  PetscCall(VecAssemblyBegin(ini));
+  PetscCall(VecAssemblyEnd(ini));
 
-  ierr = VecGetValues(fout1,local_n0*N1,indx4,y_arr);CHKERRQ(ierr);
-  ierr = VecSetValues(final,local_n0*N1,indx3,y_arr,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(final);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(final);CHKERRQ(ierr);
-  ierr = PetscFree2(x_arr,y_arr);CHKERRQ(ierr);
+  PetscCall(VecGetValues(fout1,local_n0*N1,indx4,y_arr));
+  PetscCall(VecSetValues(final,local_n0*N1,indx3,y_arr,INSERT_VALUES));
+  PetscCall(VecAssemblyBegin(final));
+  PetscCall(VecAssemblyEnd(final));
+  PetscCall(PetscFree2(x_arr,y_arr));
 
 /*
     VecScatter      vecscat;
@@ -156,33 +155,33 @@ int main(int argc,char **args)
 */
 
   a    = 1.0/(PetscReal)N_factor;
-  ierr = VecScale(fout1,a);CHKERRQ(ierr);
-  ierr = VecScale(final,a);CHKERRQ(ierr);
+  PetscCall(VecScale(fout1,a));
+  PetscCall(VecScale(final,a));
 
 /*    VecView(ini,PETSC_VIEWER_STDOUT_WORLD);   */
 /*    VecView(final,PETSC_VIEWER_STDOUT_WORLD); */
-  ierr = VecAXPY(final,-1.0,ini);CHKERRQ(ierr);
+  PetscCall(VecAXPY(final,-1.0,ini));
 
-  ierr = VecNorm(final,NORM_1,&enorm);CHKERRQ(ierr);
+  PetscCall(VecNorm(final,NORM_1,&enorm));
   if (enorm > 1.e-10) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Error norm of |x - z|  = %e\n",enorm);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  Error norm of |x - z|  = %e\n",enorm));
   }
 
   /* Execute fftw with function fftw_execute and destroy it after execution */
   fftw_destroy_plan(fplan);
   fftw_destroy_plan(bplan);
-  fftw_free(in1);  ierr = VecDestroy(&fin);CHKERRQ(ierr);
-  fftw_free(out);  ierr = VecDestroy(&fout);CHKERRQ(ierr);
-  fftw_free(in2);  ierr = VecDestroy(&fout1);CHKERRQ(ierr);
+  fftw_free(in1);  PetscCall(VecDestroy(&fin));
+  fftw_free(out);  PetscCall(VecDestroy(&fout));
+  fftw_free(in2);  PetscCall(VecDestroy(&fout1));
 
-  ierr = VecDestroy(&ini);CHKERRQ(ierr);
-  ierr = VecDestroy(&final);CHKERRQ(ierr);
+  PetscCall(VecDestroy(&ini));
+  PetscCall(VecDestroy(&final));
 
-  ierr = PetscRandomDestroy(&rnd);CHKERRQ(ierr);
-  ierr = PetscFree(indx3);CHKERRQ(ierr);
-  ierr = PetscFree(indx4);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscRandomDestroy(&rnd));
+  PetscCall(PetscFree(indx3));
+  PetscCall(PetscFree(indx4));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

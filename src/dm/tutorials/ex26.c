@@ -9,20 +9,19 @@ static char help[] = "Calculates moments for Gaussian functions.\n\n";
 
 int main(int argc, char **argv)
 {
-  PetscErrorCode ierr;
   int            s,n = 15;
   PetscInt       tick, moment = 0,momentummax = 7;
   PetscReal      *zeros,*weights,scale,h,sigma = 1/sqrt(2), g = 0, mu = 0;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-moment_max",&momentummax,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,NULL,"-sigma",&sigma,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,NULL,"-mu",&mu,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-moment_max",&momentummax,NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-sigma",&sigma,NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-mu",&mu,NULL));
 
   /* calulate zeros and roots of Hermite Gauss quadrature */
-  ierr = PetscMalloc1(n,&zeros);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(n,&zeros));
   zeros[0] = 0;
   tick = n % 2;
   for (s=0; s<n/2; s++) {
@@ -30,9 +29,9 @@ int main(int argc, char **argv)
     zeros[2*s+1+tick] =  gsl_sf_hermite_zero(n,s+1);
   }
 
-  ierr = PetscDTFactorial(n, &scale);CHKERRQ(ierr);
+  PetscCall(PetscDTFactorial(n, &scale));
   scale = exp2(n-1)*scale*PetscSqrtReal(PETSC_PI)/(n*n);
-  ierr = PetscMalloc1(n+1,&weights);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(n+1,&weights));
   for (s=0; s<n; s++) {
     h          = gsl_sf_hermite(n-1, (double) zeros[s]);
     weights[s] = scale/(h*h);
@@ -54,13 +53,13 @@ int main(int argc, char **argv)
     }
     g /= sqrt(PETSC_PI);
     /* results confirmed with https://en.wikipedia.org/wiki/Normal_distribution#Moments sigma^p * (p-1)!!*/
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Moment %D %g \n",moment,(double)g);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Moment %D %g \n",moment,(double)g));
 
   }
-  ierr = PetscFree(zeros);CHKERRQ(ierr);
-  ierr = PetscFree(weights);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFree(zeros));
+  PetscCall(PetscFree(weights));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST
@@ -71,4 +70,3 @@ int main(int argc, char **argv)
   test:
 
 TEST*/
-

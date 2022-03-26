@@ -264,7 +264,10 @@ PETSC_INTERN PetscErrorCode MatProductCreate_Private(Mat,Mat,Mat,Mat);
    does not rely on the function pointers; used by cuSPARSE and KOKKOS-KERNELS */
 PETSC_INTERN PetscErrorCode MatProductSymbolic_ABC_Basic(Mat);
 
-#if !defined(PETSC_CLANG_STATIC_ANALYZER)
+#if defined(PETSC_CLANG_STATIC_ANALYZER)
+template <typename Tm> void MatCheckPreallocated(Tm,int);
+template <typename Tm> void MatCheckProduct(Tm,int);
+#else/* PETSC_CLANG_STATIC_ANALYZER */
 #if defined(PETSC_USE_DEBUG)
 #  define MatCheckPreallocated(A,arg) do {                              \
     PetscCheck((A)->preallocated,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call MatXXXSetPreallocation(), MatSetUp() or the matrix has not yet been factored on argument %d \"%s\" before %s()",(arg),#A,PETSC_FUNCTION_NAME); \
@@ -280,11 +283,6 @@ PETSC_INTERN PetscErrorCode MatProductSymbolic_ABC_Basic(Mat);
 #else
 #  define MatCheckProduct(A,arg) do {} while (0)
 #endif
-#else  /* PETSC_CLANG_STATIC_ANALYZER */
-template <typename Tm>
-void MatCheckPreallocated(Tm,int);
-template <typename Tm>
-void MatCheckProduct(Tm,int);
 #endif /* PETSC_CLANG_STATIC_ANALYZER */
 
 /*
@@ -794,39 +792,36 @@ static inline PetscErrorCode MatPivotCheck_inblocks(Mat mat,const MatFactorInfo 
 
 static inline PetscErrorCode MatPivotCheck_none(Mat fact,Mat mat,const MatFactorInfo *info,FactorShiftCtx *sctx,PetscInt row)
 {
-  PetscReal      _zero = info->zeropivot;
-  PetscErrorCode ierr;
+  PetscReal _zero = info->zeropivot;
 
   PetscFunctionBegin;
   sctx->newshift = PETSC_FALSE;
   if (PetscAbsScalar(sctx->pv) <= _zero && !PetscIsNanScalar(sctx->pv)) {
-    if (!mat->erroriffailure) {
-      ierr = PetscInfo(mat,"Detected zero pivot in factorization in row %" PetscInt_FMT " value %g tolerance %g\n",row,(double)PetscAbsScalar(sctx->pv),(double)_zero);CHKERRQ(ierr);
-      fact->factorerrortype             = MAT_FACTOR_NUMERIC_ZEROPIVOT;
-      fact->factorerror_zeropivot_value = PetscAbsScalar(sctx->pv);
-      fact->factorerror_zeropivot_row   = row;
-    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %" PetscInt_FMT " value %g tolerance %g",row,(double)PetscAbsScalar(sctx->pv),(double)_zero);
+    PetscCheck(!mat->erroriffailure,PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %" PetscInt_FMT " value %g tolerance %g",row,(double)PetscAbsScalar(sctx->pv),(double)_zero);
+    PetscCall(PetscInfo(mat,"Detected zero pivot in factorization in row %" PetscInt_FMT " value %g tolerance %g\n",row,(double)PetscAbsScalar(sctx->pv),(double)_zero));
+    fact->factorerrortype             = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+    fact->factorerror_zeropivot_value = PetscAbsScalar(sctx->pv);
+    fact->factorerror_zeropivot_row   = row;
   }
   PetscFunctionReturn(0);
 }
 
 static inline PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFactorInfo *info,FactorShiftCtx *sctx,PetscInt row)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (info->shifttype == (PetscReal) MAT_SHIFT_NONZERO) {
-    ierr = MatPivotCheck_nz(mat,info,sctx,row);CHKERRQ(ierr);
+    PetscCall(MatPivotCheck_nz(mat,info,sctx,row));
   } else if (info->shifttype == (PetscReal) MAT_SHIFT_POSITIVE_DEFINITE) {
-    ierr = MatPivotCheck_pd(mat,info,sctx,row);CHKERRQ(ierr);
+    PetscCall(MatPivotCheck_pd(mat,info,sctx,row));
   } else if (info->shifttype == (PetscReal) MAT_SHIFT_INBLOCKS) {
-    ierr = MatPivotCheck_inblocks(mat,info,sctx,row);CHKERRQ(ierr);
+    PetscCall(MatPivotCheck_inblocks(mat,info,sctx,row));
   } else {
-    ierr = MatPivotCheck_none(fact,mat,info,sctx,row);CHKERRQ(ierr);
+    PetscCall(MatPivotCheck_none(fact,mat,info,sctx,row));
   }
   PetscFunctionReturn(0);
 }
 
+#include <petscbt.h>
 /*
   Create and initialize a linked list
   Input Parameters:
@@ -844,6 +839,38 @@ static inline PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFactorInfo 
 #define PetscLLCreate_new(idx_start,lnk_max,nlnk,lnk,bt,lnk_empty)\
   (PetscMalloc1(nlnk,&lnk) || PetscBTCreate(nlnk,&(bt)) || (lnk_empty = PETSC_TRUE,0) ||(lnk[idx_start] = lnk_max,0))
 
+static inline PetscErrorCode PetscLLInsertLocation_Private(PetscBool assume_sorted, PetscInt k, PetscInt idx_start, PetscInt entry, PetscInt *PETSC_RESTRICT nlnk, PetscInt *PETSC_RESTRICT lnkdata, PetscInt *PETSC_RESTRICT lnk)
+{
+  PetscInt location;
+
+  PetscFunctionBegin;
+  /* start from the beginning if entry < previous entry */
+  if (!assume_sorted && k && entry < *lnkdata) *lnkdata = idx_start;
+  /* search for insertion location */
+  do {
+    location = *lnkdata;
+    *lnkdata = lnk[location];
+  } while (entry > *lnkdata);
+  /* insertion location is found, add entry into lnk */
+  lnk[location] = entry;
+  lnk[entry]    = *lnkdata;
+  ++(*nlnk);
+  *lnkdata      = entry; /* next search starts from here if next_entry > entry */
+  PetscFunctionReturn(0);
+}
+
+static inline PetscErrorCode PetscLLAdd_Private(PetscInt nidx, const PetscInt *PETSC_RESTRICT indices, PetscInt idx_start, PetscInt *PETSC_RESTRICT nlnk, PetscInt *PETSC_RESTRICT lnk, PetscBT bt, PetscBool assume_sorted)
+{
+  PetscFunctionBegin;
+  *nlnk = 0;
+  for (PetscInt k = 0, lnkdata = idx_start; k < nidx; ++k) {
+    const PetscInt entry = indices[k];
+
+    if (!PetscBTLookupSet(bt,entry)) PetscCall(PetscLLInsertLocation_Private(assume_sorted,k,idx_start,entry,nlnk,&lnkdata,lnk));
+  }
+  PetscFunctionReturn(0);
+}
+
 /*
   Add an index set into a sorted linked list
   Input Parameters:
@@ -857,28 +884,31 @@ static inline PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFactorInfo 
     lnk       - the sorted(increasing order) linked list containing new and non-redundate entries from indices
     bt        - updated PetscBT (bitarray)
 */
-#define PetscLLAdd(nidx,indices,idx_start,nlnk,lnk,bt) 0;\
-{\
-  PetscInt _k,_entry,_location,_lnkdata;\
-  nlnk     = 0;\
-  _lnkdata = idx_start;\
-  for (_k=0; _k<nidx; _k++) {\
-    _entry = indices[_k];\
-    if (!PetscBTLookupSet(bt,_entry)) {  /* new entry */\
-      /* search for insertion location */\
-      /* start from the beginning if _entry < previous _entry */\
-      if (_k && _entry < _lnkdata) _lnkdata  = idx_start;\
-      do {\
-        _location = _lnkdata;\
-        _lnkdata  = lnk[_location];\
-      } while (_entry > _lnkdata);\
-      /* insertion location is found, add entry into lnk */\
-      lnk[_location] = _entry;\
-      lnk[_entry]    = _lnkdata;\
-      nlnk++;\
-      _lnkdata = _entry; /* next search starts from here if next_entry > _entry */\
-    }\
-  }\
+static inline PetscErrorCode PetscLLAdd(PetscInt nidx, const PetscInt *PETSC_RESTRICT indices, PetscInt idx_start, PetscInt *PETSC_RESTRICT nlnk, PetscInt *PETSC_RESTRICT lnk, PetscBT bt)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscLLAdd_Private(nidx,indices,idx_start,nlnk,lnk,bt,PETSC_FALSE));
+  PetscFunctionReturn(0);
+}
+
+/*
+  Add a SORTED ascending index set into a sorted linked list - same as PetscLLAdd() bus skip 'if (_k && _entry < _lnkdata) _lnkdata  = idx_start;'
+  Input Parameters:
+    nidx      - number of input indices
+    indices   - sorted integer array
+    idx_start - starting index of the list
+    lnk       - linked list(an integer array) that is created
+    bt        - PetscBT (bitarray), bt[idx]=true marks idx is in lnk
+  output Parameters:
+    nlnk      - number of newly added indices
+    lnk       - the sorted(increasing order) linked list containing new and non-redundate entries from indices
+    bt        - updated PetscBT (bitarray)
+*/
+static inline PetscErrorCode PetscLLAddSorted(PetscInt nidx, const PetscInt *PETSC_RESTRICT indices, PetscInt idx_start, PetscInt *PETSC_RESTRICT nlnk, PetscInt *PETSC_RESTRICT lnk, PetscBT bt)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscLLAdd_Private(nidx,indices,idx_start,nlnk,lnk,bt,PETSC_TRUE));
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -895,111 +925,57 @@ static inline PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFactorInfo 
     lnk       - the sorted(increasing order) linked list containing new and non-redundate entries from indices
     bt        - updated PetscBT (bitarray)
 */
-#define PetscLLAddPerm(nidx,indices,perm,idx_start,nlnk,lnk,bt) 0;\
-{\
-  PetscInt _k,_entry,_location,_lnkdata;\
-  nlnk     = 0;\
-  _lnkdata = idx_start;\
-  for (_k=0; _k<nidx; _k++) {\
-    _entry = perm[indices[_k]];\
-    if (!PetscBTLookupSet(bt,_entry)) {  /* new entry */\
-      /* search for insertion location */\
-      /* start from the beginning if _entry < previous _entry */\
-      if (_k && _entry < _lnkdata) _lnkdata  = idx_start;\
-      do {\
-        _location = _lnkdata;\
-        _lnkdata  = lnk[_location];\
-      } while (_entry > _lnkdata);\
-      /* insertion location is found, add entry into lnk */\
-      lnk[_location] = _entry;\
-      lnk[_entry]    = _lnkdata;\
-      nlnk++;\
-      _lnkdata = _entry; /* next search starts from here if next_entry > _entry */\
-    }\
-  }\
+static inline PetscErrorCode PetscLLAddPerm(PetscInt nidx, const PetscInt *PETSC_RESTRICT indices, const PetscInt *PETSC_RESTRICT perm, PetscInt idx_start, PetscInt *PETSC_RESTRICT nlnk, PetscInt *PETSC_RESTRICT lnk, PetscBT bt)
+{
+  PetscFunctionBegin;
+  *nlnk = 0;
+  for (PetscInt k = 0, lnkdata = idx_start; k < nidx; ++k) {
+    const PetscInt entry = perm[indices[k]];
+
+    if (!PetscBTLookupSet(bt,entry)) PetscCall(PetscLLInsertLocation_Private(PETSC_FALSE,k,idx_start,entry,nlnk,&lnkdata,lnk));
+  }
+  PetscFunctionReturn(0);
 }
 
-/*
-  Add a SORTED ascending index set into a sorted linked list - same as PetscLLAdd() bus skip 'if (_k && _entry < _lnkdata) _lnkdata  = idx_start;'
-  Input Parameters:
-    nidx      - number of input indices
-    indices   - sorted integer array
-    idx_start - starting index of the list
-    lnk       - linked list(an integer array) that is created
-    bt        - PetscBT (bitarray), bt[idx]=true marks idx is in lnk
-  output Parameters:
-    nlnk      - number of newly added indices
-    lnk       - the sorted(increasing order) linked list containing new and non-redundate entries from indices
-    bt        - updated PetscBT (bitarray)
-*/
-#define PetscLLAddSorted(nidx,indices,idx_start,nlnk,lnk,bt) 0;\
-{\
-  PetscInt _k,_entry,_location,_lnkdata;\
-  nlnk      = 0;\
-  _lnkdata  = idx_start;\
-  for (_k=0; _k<nidx; _k++) {\
-    _entry = indices[_k];\
-    if (!PetscBTLookupSet(bt,_entry)) {  /* new entry */\
-      /* search for insertion location */\
-      do {\
-        _location = _lnkdata;\
-        _lnkdata  = lnk[_location];\
-      } while (_entry > _lnkdata);\
-      /* insertion location is found, add entry into lnk */\
-      lnk[_location] = _entry;\
-      lnk[_entry]    = _lnkdata;\
-      nlnk++;\
-      _lnkdata = _entry; /* next search starts from here */\
-    }\
-  }\
-}
+#if 0
+/* this appears to be unused? */
+static inline PetscErrorCode PetscLLAddSorted_new(PetscInt nidx, PetscInt *indices, PetscInt idx_start, PetscBool *lnk_empty, PetscInt *nlnk, PetscInt *lnk, PetscBT bt)
+{
+  PetscInt lnkdata = idx_start;
 
-#define PetscLLAddSorted_new(nidx,indices,idx_start,lnk_empty,nlnk,lnk,bt) 0; \
-{\
-  PetscInt _k,_entry,_location,_lnkdata;\
-  if (lnk_empty) {\
-    _lnkdata  = idx_start;                      \
-    for (_k=0; _k<nidx; _k++) {                  \
-      _entry = indices[_k];                             \
-      PetscBTSet(bt,_entry);  /* mark the new entry */          \
-          _location = _lnkdata;                                 \
-          _lnkdata  = lnk[_location];                           \
-        /* insertion location is found, add entry into lnk */   \
-        lnk[_location] = _entry;                                \
-        lnk[_entry]    = _lnkdata;                              \
-        _lnkdata = _entry; /* next search starts from here */   \
-    }                                                           \
-    /*\
-    lnk[indices[nidx-1]] = lnk[idx_start];\
-    lnk[idx_start]       = indices[0];\
-    PetscBTSet(bt,indices[0]);  \
-    for (_k=1; _k<nidx; _k++) {                  \
-      PetscBTSet(bt,indices[_k]);                                          \
-      lnk[indices[_k-1]] = indices[_k];                                  \
-    }                                                           \
-     */\
-    nlnk      = nidx;\
-    lnk_empty = PETSC_FALSE;\
-  } else {\
-    nlnk      = 0;                              \
-    _lnkdata  = idx_start;                      \
-    for (_k=0; _k<nidx; _k++) {                  \
-      _entry = indices[_k];                             \
-      if (!PetscBTLookupSet(bt,_entry)) {  /* new entry */       \
-        /* search for insertion location */                     \
-        do {                                                    \
-          _location = _lnkdata;                                 \
-          _lnkdata  = lnk[_location];                           \
-        } while (_entry > _lnkdata);                            \
-        /* insertion location is found, add entry into lnk */   \
-        lnk[_location] = _entry;                                \
-        lnk[_entry]    = _lnkdata;                              \
-        nlnk++;                                                 \
-        _lnkdata = _entry; /* next search starts from here */   \
-      }                                                         \
-    }                                                           \
-  }                                                             \
+  PetscFunctionBegin;
+  if (*lnk_empty) {
+    for (PetscInt k = 0; k < nidx; ++k) {
+      const PetscInt entry = indices[k], location = lnkdata;
+
+      PetscCall(PetscBTSet(bt,entry)); /* mark the new entry */
+      lnkdata       = lnk[location];
+      /* insertion location is found, add entry into lnk */
+      lnk[location] = entry;
+      lnk[entry]    = lnkdata;
+      lnkdata       = entry; /* next search starts from here */
+    }
+    /* lnk[indices[nidx-1]] = lnk[idx_start];
+       lnk[idx_start]       = indices[0];
+       PetscCall(PetscBTSet(bt,indices[0]));
+       for (_k=1; _k<nidx; _k++) {
+       PetscCall(PetscBTSet(bt,indices[_k]));
+       lnk[indices[_k-1]] = indices[_k];
+       }
+    */
+    *nlnk      = nidx;
+    *lnk_empty = PETSC_FALSE;
+  } else {
+    *nlnk = 0;
+    for (PetscInt k = 0; k < nidx; ++k) {
+      const PetscInt entry = indices[k];
+
+      if (!PetscBTLookupSet(bt,entry)) PetscCall(PetscLLInsertLocation_Private(PETSC_TRUE,k,idx_start,entry,nlnk,&lnkdata,lnk));
+    }
+  }
+  PetscFunctionReturn(0);
 }
+#endif
 
 /*
   Add a SORTED index set into a sorted linked list used for LUFactorSymbolic()
@@ -1020,29 +996,20 @@ static inline PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFactorInfo 
     im        - im[idx_start]: unchanged if diag is not an entry
                              : num of entries with indices <= diag if diag is an entry
 */
-#define PetscLLAddSortedLU(indices,idx_start,nlnk,lnk,bt,diag,nzbd,im) 0;\
-{\
-  PetscInt _k,_entry,_location,_lnkdata,_nidx;\
-  nlnk     = 0;\
-  _lnkdata = idx_start;\
-  _nidx = im[idx_start] - nzbd; /* num of entries with idx_start < index <= diag */\
-  for (_k=0; _k<_nidx; _k++) {\
-    _entry = indices[_k];\
-    nzbd++;\
-    if (_entry== diag) im[idx_start] = nzbd;\
-    if (!PetscBTLookupSet(bt,_entry)) {  /* new entry */\
-      /* search for insertion location */\
-      do {\
-        _location = _lnkdata;\
-        _lnkdata  = lnk[_location];\
-      } while (_entry > _lnkdata);\
-      /* insertion location is found, add entry into lnk */\
-      lnk[_location] = _entry;\
-      lnk[_entry]    = _lnkdata;\
-      nlnk++;\
-      _lnkdata = _entry; /* next search starts from here */\
-    }\
-  }\
+static inline PetscErrorCode PetscLLAddSortedLU(const PetscInt *PETSC_RESTRICT indices, PetscInt idx_start, PetscInt *PETSC_RESTRICT nlnk, PetscInt *PETSC_RESTRICT lnk, PetscBT bt, PetscInt diag, PetscInt nzbd, PetscInt *PETSC_RESTRICT im)
+{
+  const PetscInt nidx = im[idx_start]-nzbd; /* num of entries with idx_start < index <= diag */
+
+  PetscFunctionBegin;
+  *nlnk = 0;
+  for (PetscInt k = 0, lnkdata = idx_start; k < nidx; ++k) {
+    const PetscInt entry = indices[k];
+
+    ++nzbd;
+    if (entry == diag) im[idx_start] = nzbd;
+    if (!PetscBTLookupSet(bt,entry)) PetscCall(PetscLLInsertLocation_Private(PETSC_TRUE,k,idx_start,entry,nlnk,&lnkdata,lnk));
+  }
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -1058,16 +1025,18 @@ static inline PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFactorInfo 
     lnk       - linked list that is cleaned and initialize
     bt        - PetscBT (bitarray) with all bits set to false
 */
-#define PetscLLClean(idx_start,lnk_max,nlnk,lnk,indices,bt) 0;\
-{\
-  PetscInt _j,_idx=idx_start;\
-  for (_j=0; _j<nlnk; _j++) {\
-    _idx = lnk[_idx];\
-    indices[_j] = _idx;\
-    ierr = PetscBTClear(bt,_idx);CHKERRQ(ierr);\
-  }\
-  lnk[idx_start] = lnk_max;\
+static inline PetscErrorCode PetscLLClean(PetscInt idx_start, PetscInt lnk_max, PetscInt nlnk, PetscInt *PETSC_RESTRICT lnk, PetscInt *PETSC_RESTRICT indices, PetscBT bt)
+{
+  PetscFunctionBegin;
+  for (PetscInt j = 0, idx = idx_start; j < nlnk; ++j) {
+    idx        = lnk[idx];
+    indices[j] = idx;
+    PetscCall(PetscBTClear(bt,idx));
+  }
+  lnk[idx_start] = lnk_max;
+  PetscFunctionReturn(0);
 }
+
 /*
   Free memories used by the list
 */
@@ -1088,6 +1057,14 @@ static inline PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFactorInfo 
 #define PetscIncompleteLLCreate(idx_start,lnk_max,nlnk,lnk,lnk_lvl,bt)\
   (PetscIntMultError(2,nlnk,NULL) || PetscMalloc1(2*nlnk,&lnk) || PetscBTCreate(nlnk,&(bt)) || (lnk[idx_start] = lnk_max,lnk_lvl = lnk + nlnk,0))
 
+static inline PetscErrorCode PetscIncompleteLLInsertLocation_Private(PetscBool assume_sorted, PetscInt k, PetscInt idx_start, PetscInt entry, PetscInt *PETSC_RESTRICT nlnk, PetscInt *PETSC_RESTRICT lnkdata, PetscInt *PETSC_RESTRICT lnk, PetscInt *PETSC_RESTRICT lnklvl, PetscInt newval)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscLLInsertLocation_Private(assume_sorted,k,idx_start,entry,nlnk,lnkdata,lnk));
+  lnklvl[entry] = newval;
+  PetscFunctionReturn(0);
+}
+
 /*
   Initialize a sorted linked list used for ILU and ICC
   Input Parameters:
@@ -1104,28 +1081,60 @@ static inline PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFactorInfo 
     lnklvl   - levels of lnk
     bt       - updated PetscBT (bitarray)
 */
-#define PetscIncompleteLLInit(nidx,idx,idx_start,perm,nlnk,lnk,lnklvl,bt) 0;\
-{\
-  PetscInt _k,_entry,_location,_lnkdata;\
-  nlnk     = 0;\
-  _lnkdata = idx_start;\
-  for (_k=0; _k<nidx; _k++) {\
-    _entry = perm[idx[_k]];\
-    if (!PetscBTLookupSet(bt,_entry)) {  /* new entry */\
-      /* search for insertion location */\
-      if (_k && _entry < _lnkdata) _lnkdata  = idx_start;\
-      do {\
-        _location = _lnkdata;\
-        _lnkdata  = lnk[_location];\
-      } while (_entry > _lnkdata);\
-      /* insertion location is found, add entry into lnk */\
-      lnk[_location]  = _entry;\
-      lnk[_entry]     = _lnkdata;\
-      lnklvl[_entry] = 0;\
-      nlnk++;\
-      _lnkdata = _entry; /* next search starts from here if next_entry > _entry */\
-    }\
-  }\
+static inline PetscErrorCode PetscIncompleteLLInit(PetscInt nidx, const PetscInt *PETSC_RESTRICT idx, PetscInt idx_start, const PetscInt *PETSC_RESTRICT perm, PetscInt *PETSC_RESTRICT nlnk, PetscInt *PETSC_RESTRICT lnk, PetscInt *PETSC_RESTRICT lnklvl, PetscBT bt)
+{
+  PetscFunctionBegin;
+  *nlnk = 0;
+  for (PetscInt k = 0, lnkdata = idx_start; k < nidx; ++k) {
+    const PetscInt entry = perm[idx[k]];
+
+    if (!PetscBTLookupSet(bt,entry)) PetscCall(PetscIncompleteLLInsertLocation_Private(PETSC_FALSE,k,idx_start,entry,nlnk,&lnkdata,lnk,lnklvl,0));
+  }
+  PetscFunctionReturn(0);
+}
+
+static inline PetscErrorCode PetscIncompleteLLAdd_Private(PetscInt nidx, const PetscInt *PETSC_RESTRICT idx, PetscReal level, const PetscInt *PETSC_RESTRICT idxlvl, PetscInt idx_start, PetscInt *PETSC_RESTRICT nlnk, PetscInt *PETSC_RESTRICT lnk, PetscInt *PETSC_RESTRICT lnklvl, PetscBT bt, PetscInt prow_offset, PetscBool assume_sorted)
+{
+  PetscFunctionBegin;
+  *nlnk = 0;
+  for (PetscInt k = 0, lnkdata = idx_start; k < nidx; ++k) {
+    const PetscInt incrlev = idxlvl[k]+prow_offset+1;
+
+    if (incrlev <= level) {
+      const PetscInt entry = idx[k];
+
+      if (!PetscBTLookupSet(bt,entry)) PetscCall(PetscIncompleteLLInsertLocation_Private(assume_sorted,k,idx_start,entry,nlnk,&lnkdata,lnk,lnklvl,incrlev));
+      else if (lnklvl[entry] > incrlev) lnklvl[entry] = incrlev;  /* existing entry */
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+/*
+  Add a SORTED index set into a sorted linked list for ICC
+  Input Parameters:
+    nidx      - number of input indices
+    idx       - sorted integer array used for storing column indices
+    level     - level of fill, e.g., ICC(level)
+    idxlvl    - level of idx
+    idx_start - starting index of the list
+    lnk       - linked list(an integer array) that is created
+    lnklvl    - levels of lnk
+    bt        - PetscBT (bitarray), bt[idx]=true marks idx is in lnk
+    idxlvl_prow - idxlvl[prow], where prow is the row number of the idx
+  output Parameters:
+    nlnk   - number of newly added indices
+    lnk    - the sorted(increasing order) linked list containing new and non-redundate entries from idx
+    lnklvl - levels of lnk
+    bt     - updated PetscBT (bitarray)
+  Note: the level of U(i,j) is set as lvl(i,j) = min{ lvl(i,j), lvl(prow,i)+lvl(prow,j)+1)
+        where idx = non-zero columns of U(prow,prow+1:n-1), prow<i
+*/
+static inline PetscErrorCode PetscICCLLAddSorted(PetscInt nidx, const PetscInt *PETSC_RESTRICT idx, PetscReal level, const PetscInt *PETSC_RESTRICT idxlvl, PetscInt idx_start, PetscInt *PETSC_RESTRICT nlnk, PetscInt *PETSC_RESTRICT lnk, PetscInt *PETSC_RESTRICT lnklvl, PetscBT bt, PetscInt idxlvl_prow)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscIncompleteLLAdd_Private(nidx,idx,level,idxlvl,idx_start,nlnk,lnk,lnklvl,bt,idxlvl_prow,PETSC_TRUE));
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -1149,31 +1158,11 @@ static inline PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFactorInfo 
   Note: the level of factor(i,j) is set as lvl(i,j) = min{ lvl(i,j), lvl(i,prow)+lvl(prow,j)+1)
         where idx = non-zero columns of U(prow,prow+1:n-1), prow<i
 */
-#define PetscILULLAddSorted(nidx,idx,level,idxlvl,idx_start,nlnk,lnk,lnklvl,bt,lnklvl_prow) 0;\
-{\
-  PetscInt _k,_entry,_location,_lnkdata,_incrlev,_lnklvl_prow=lnklvl[prow];\
-  nlnk     = 0;\
-  _lnkdata = idx_start;\
-  for (_k=0; _k<nidx; _k++) {\
-    _incrlev = idxlvl[_k] + _lnklvl_prow + 1;\
-    if (_incrlev > level) continue;\
-    _entry = idx[_k];\
-    if (!PetscBTLookupSet(bt,_entry)) {  /* new entry */\
-      /* search for insertion location */\
-      do {\
-        _location = _lnkdata;\
-        _lnkdata  = lnk[_location];\
-      } while (_entry > _lnkdata);\
-      /* insertion location is found, add entry into lnk */\
-      lnk[_location]  = _entry;\
-      lnk[_entry]     = _lnkdata;\
-      lnklvl[_entry] = _incrlev;\
-      nlnk++;\
-      _lnkdata = _entry; /* next search starts from here if next_entry > _entry */\
-    } else { /* existing entry: update lnklvl */\
-      if (lnklvl[_entry] > _incrlev) lnklvl[_entry] = _incrlev;\
-    }\
-  }\
+static inline PetscErrorCode PetscILULLAddSorted(PetscInt nidx, const PetscInt *PETSC_RESTRICT idx, PetscInt level, const PetscInt *PETSC_RESTRICT idxlvl, PetscInt idx_start, PetscInt *PETSC_RESTRICT nlnk, PetscInt *PETSC_RESTRICT lnk, PetscInt *PETSC_RESTRICT lnklvl, PetscBT bt, PetscInt prow)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscIncompleteLLAdd_Private(nidx,idx,level,idxlvl,idx_start,nlnk,lnk,lnklvl,bt,lnklvl[prow],PETSC_TRUE));
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -1193,32 +1182,11 @@ static inline PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFactorInfo 
     lnklvl   - levels of lnk
     bt        - updated PetscBT (bitarray)
 */
-#define PetscIncompleteLLAdd(nidx,idx,level,idxlvl,idx_start,nlnk,lnk,lnklvl,bt) 0;\
-{\
-  PetscInt _k,_entry,_location,_lnkdata,_incrlev;\
-  nlnk     = 0;\
-  _lnkdata = idx_start;\
-  for (_k=0; _k<nidx; _k++) {\
-    _incrlev = idxlvl[_k] + 1;\
-    if (_incrlev > level) continue;\
-    _entry = idx[_k];\
-    if (!PetscBTLookupSet(bt,_entry)) {  /* new entry */\
-      /* search for insertion location */\
-      if (_k && _entry < _lnkdata) _lnkdata  = idx_start;\
-      do {\
-        _location = _lnkdata;\
-        _lnkdata  = lnk[_location];\
-      } while (_entry > _lnkdata);\
-      /* insertion location is found, add entry into lnk */\
-      lnk[_location]  = _entry;\
-      lnk[_entry]     = _lnkdata;\
-      lnklvl[_entry] = _incrlev;\
-      nlnk++;\
-      _lnkdata = _entry; /* next search starts from here if next_entry > _entry */\
-    } else { /* existing entry: update lnklvl */\
-      if (lnklvl[_entry] > _incrlev) lnklvl[_entry] = _incrlev;\
-    }\
-  }\
+static inline PetscErrorCode PetscIncompleteLLAdd(PetscInt nidx, const PetscInt *PETSC_RESTRICT idx, PetscReal level, const PetscInt *PETSC_RESTRICT idxlvl, PetscInt idx_start, PetscInt *PETSC_RESTRICT nlnk, PetscInt *PETSC_RESTRICT lnk, PetscInt *PETSC_RESTRICT lnklvl, PetscBT bt)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscIncompleteLLAdd_Private(nidx,idx,level,idxlvl,idx_start,nlnk,lnk,lnklvl,bt,0,PETSC_FALSE));
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -1238,78 +1206,11 @@ static inline PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFactorInfo 
     lnklvl    - levels of lnk
     bt        - updated PetscBT (bitarray)
 */
-#define PetscIncompleteLLAddSorted(nidx,idx,level,idxlvl,idx_start,nlnk,lnk,lnklvl,bt) 0;\
-{\
-  PetscInt _k,_entry,_location,_lnkdata,_incrlev;\
-  nlnk = 0;\
-  _lnkdata = idx_start;\
-  for (_k=0; _k<nidx; _k++) {\
-    _incrlev = idxlvl[_k] + 1;\
-    if (_incrlev > level) continue;\
-    _entry = idx[_k];\
-    if (!PetscBTLookupSet(bt,_entry)) {  /* new entry */\
-      /* search for insertion location */\
-      do {\
-        _location = _lnkdata;\
-        _lnkdata  = lnk[_location];\
-      } while (_entry > _lnkdata);\
-      /* insertion location is found, add entry into lnk */\
-      lnk[_location] = _entry;\
-      lnk[_entry]    = _lnkdata;\
-      lnklvl[_entry] = _incrlev;\
-      nlnk++;\
-      _lnkdata = _entry; /* next search starts from here */\
-    } else { /* existing entry: update lnklvl */\
-      if (lnklvl[_entry] > _incrlev) lnklvl[_entry] = _incrlev;\
-    }\
-  }\
-}
-
-/*
-  Add a SORTED index set into a sorted linked list for ICC
-  Input Parameters:
-    nidx      - number of input indices
-    idx       - sorted integer array used for storing column indices
-    level     - level of fill, e.g., ICC(level)
-    idxlvl    - level of idx
-    idx_start - starting index of the list
-    lnk       - linked list(an integer array) that is created
-    lnklvl    - levels of lnk
-    bt        - PetscBT (bitarray), bt[idx]=true marks idx is in lnk
-    idxlvl_prow - idxlvl[prow], where prow is the row number of the idx
-  output Parameters:
-    nlnk   - number of newly added indices
-    lnk    - the sorted(increasing order) linked list containing new and non-redundate entries from idx
-    lnklvl - levels of lnk
-    bt     - updated PetscBT (bitarray)
-  Note: the level of U(i,j) is set as lvl(i,j) = min{ lvl(i,j), lvl(prow,i)+lvl(prow,j)+1)
-        where idx = non-zero columns of U(prow,prow+1:n-1), prow<i
-*/
-#define PetscICCLLAddSorted(nidx,idx,level,idxlvl,idx_start,nlnk,lnk,lnklvl,bt,idxlvl_prow) 0;\
-{\
-  PetscInt _k,_entry,_location,_lnkdata,_incrlev;\
-  nlnk = 0;\
-  _lnkdata = idx_start;\
-  for (_k=0; _k<nidx; _k++) {\
-    _incrlev = idxlvl[_k] + idxlvl_prow + 1;\
-    if (_incrlev > level) continue;\
-    _entry = idx[_k];\
-    if (!PetscBTLookupSet(bt,_entry)) {  /* new entry */\
-      /* search for insertion location */\
-      do {\
-        _location = _lnkdata;\
-        _lnkdata  = lnk[_location];\
-      } while (_entry > _lnkdata);\
-      /* insertion location is found, add entry into lnk */\
-      lnk[_location] = _entry;\
-      lnk[_entry]    = _lnkdata;\
-      lnklvl[_entry] = _incrlev;\
-      nlnk++;\
-      _lnkdata = _entry; /* next search starts from here */\
-    } else { /* existing entry: update lnklvl */\
-      if (lnklvl[_entry] > _incrlev) lnklvl[_entry] = _incrlev;\
-    }\
-  }\
+static inline PetscErrorCode PetscIncompleteLLAddSorted(PetscInt nidx, const PetscInt *PETSC_RESTRICT idx, PetscReal level, const PetscInt *PETSC_RESTRICT idxlvl, PetscInt idx_start, PetscInt *PETSC_RESTRICT nlnk, PetscInt *PETSC_RESTRICT lnk, PetscInt *PETSC_RESTRICT lnklvl, PetscBT bt)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscIncompleteLLAdd_Private(nidx,idx,level,idxlvl,idx_start,nlnk,lnk,lnklvl,bt,0,PETSC_TRUE));
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -1327,18 +1228,20 @@ static inline PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFactorInfo 
     lnklvl  - level of lnk that is reinitialized
     bt      - PetscBT (bitarray) with all bits set to false
 */
-#define PetscIncompleteLLClean(idx_start,lnk_max,nlnk,lnk,lnklvl,indices,indiceslvl,bt) 0;\
-do {\
-  PetscInt _j,_idx=idx_start;\
-  for (_j=0; _j<nlnk; _j++) {\
-    _idx = lnk[_idx];\
-    *(indices+_j) = _idx;\
-    *(indiceslvl+_j) = lnklvl[_idx];\
-    lnklvl[_idx] = -1;\
-    ierr = PetscBTClear(bt,_idx);CHKERRQ(ierr);\
-  }\
-  lnk[idx_start] = lnk_max;\
-} while (0)
+static inline PetscErrorCode PetscIncompleteLLClean(PetscInt idx_start, PetscInt lnk_max, PetscInt nlnk, PetscInt *PETSC_RESTRICT lnk, PetscInt *PETSC_RESTRICT lnklvl, PetscInt *PETSC_RESTRICT indices, PetscInt *PETSC_RESTRICT indiceslvl, PetscBT bt)
+{
+  PetscFunctionBegin;
+  for (PetscInt j = 0, idx = idx_start; j < nlnk; ++j) {
+    idx           = lnk[idx];
+    indices[j]    = idx;
+    indiceslvl[j] = lnklvl[idx];
+    lnklvl[idx]   = -1;
+    PetscCall(PetscBTClear(bt,idx));
+  }
+  lnk[idx_start] = lnk_max;
+  PetscFunctionReturn(0);
+}
+
 /*
   Free memories used by the list
 */
@@ -1366,7 +1269,6 @@ void MatCheckSameSize(Tm,int,Tm,int);
   } while (0)
 
 /* -------------------------------------------------------------------------------------------------------*/
-#include <petscbt.h>
 /*
   Create and initialize a condensed linked list -
     same as PetscLLCreate(), but uses a scalable array 'lnk' with size of max number of entries, not O(N).
@@ -1405,13 +1307,12 @@ void MatCheckSameSize(Tm,int,Tm,int);
 */
 static inline PetscErrorCode PetscLLCondensedCreate(PetscInt nlnk_max,PetscInt lnk_max,PetscInt **lnk,PetscBT *bt)
 {
-  PetscErrorCode ierr;
-  PetscInt       *llnk,lsize = 0;
+  PetscInt *llnk,lsize = 0;
 
   PetscFunctionBegin;
-  ierr = PetscIntMultError(2,nlnk_max+2,&lsize);CHKERRQ(ierr);
-  ierr = PetscMalloc1(lsize,lnk);CHKERRQ(ierr);
-  ierr = PetscBTCreate(lnk_max,bt);CHKERRQ(ierr);
+  PetscCall(PetscIntMultError(2,nlnk_max+2,&lsize));
+  PetscCall(PetscMalloc1(lsize,lnk));
+  PetscCall(PetscBTCreate(lnk_max,bt));
   llnk = *lnk;
   llnk[0] = 0;         /* number of entries on the list */
   llnk[2] = lnk_max;   /* value in the head node */
@@ -1461,16 +1362,14 @@ static inline PetscErrorCode PetscLLCondensedAddSorted(PetscInt nidx,const Petsc
 
 static inline PetscErrorCode PetscLLCondensedClean(PetscInt lnk_max,PetscInt nidx,PetscInt *indices,PetscInt lnk[],PetscBT bt)
 {
-  PetscErrorCode ierr;
-  PetscInt       _k,_next,_nlnk;
+  PetscInt _next = lnk[3]; /* head node */
+  PetscInt _nlnk = lnk[0]; /* num of entries on the list */
 
   PetscFunctionBegin;
-  _next = lnk[3];       /* head node */
-  _nlnk = lnk[0];       /* num of entries on the list */
-  for (_k=0; _k<_nlnk; _k++) {
+  for (PetscInt _k=0; _k<_nlnk; _k++) {
     indices[_k] = lnk[_next];
     _next       = lnk[_next + 1];
-    ierr = PetscBTClear(bt,indices[_k]);CHKERRQ(ierr);
+    PetscCall(PetscBTClear(bt,indices[_k]));
   }
   lnk[0] = 0;          /* num of entries on the list */
   lnk[2] = lnk_max;    /* initialize head node */
@@ -1480,12 +1379,10 @@ static inline PetscErrorCode PetscLLCondensedClean(PetscInt lnk_max,PetscInt nid
 
 static inline PetscErrorCode PetscLLCondensedView(PetscInt *lnk)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscPrintf(PETSC_COMM_SELF,"LLCondensed of size %" PetscInt_FMT ", (val,  next)\n",lnk[0]);CHKERRQ(ierr);
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"LLCondensed of size %" PetscInt_FMT ", (val,  next)\n",lnk[0]));
   for (PetscInt k = 2; k < lnk[0]+2; ++k) {
-    ierr = PetscPrintf(PETSC_COMM_SELF," %" PetscInt_FMT ": (%" PetscInt_FMT ", %" PetscInt_FMT")\n",2*k,lnk[2*k],lnk[2*k+1]);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_SELF," %" PetscInt_FMT ": (%" PetscInt_FMT ", %" PetscInt_FMT")\n",2*k,lnk[2*k],lnk[2*k+1]));
   }
   PetscFunctionReturn(0);
 }
@@ -1495,11 +1392,9 @@ static inline PetscErrorCode PetscLLCondensedView(PetscInt *lnk)
 */
 static inline PetscErrorCode PetscLLCondensedDestroy(PetscInt *lnk,PetscBT bt)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscFree(lnk);CHKERRQ(ierr);
-  ierr = PetscBTDestroy(&bt);CHKERRQ(ierr);
+  PetscCall(PetscFree(lnk));
+  PetscCall(PetscBTDestroy(&bt));
   PetscFunctionReturn(0);
 }
 
@@ -1513,12 +1408,11 @@ static inline PetscErrorCode PetscLLCondensedDestroy(PetscInt *lnk,PetscBT bt)
 */
 static inline PetscErrorCode PetscLLCondensedCreate_Scalable(PetscInt nlnk_max,PetscInt **lnk)
 {
-  PetscErrorCode ierr;
-  PetscInt       *llnk,lsize = 0;
+  PetscInt *llnk,lsize = 0;
 
   PetscFunctionBegin;
-  ierr = PetscIntMultError(2,nlnk_max+2,&lsize);CHKERRQ(ierr);
-  ierr = PetscMalloc1(lsize,lnk);CHKERRQ(ierr);
+  PetscCall(PetscIntMultError(2,nlnk_max+2,&lsize));
+  PetscCall(PetscMalloc1(lsize,lnk));
   llnk = *lnk;
   llnk[0] = 0;               /* number of entries on the list */
   llnk[2] = PETSC_MAX_INT;   /* value in the head node */
@@ -1528,12 +1422,11 @@ static inline PetscErrorCode PetscLLCondensedCreate_Scalable(PetscInt nlnk_max,P
 
 static inline PetscErrorCode PetscLLCondensedExpand_Scalable(PetscInt nlnk_max,PetscInt **lnk)
 {
-  PetscErrorCode ierr;
-  PetscInt       lsize = 0;
+  PetscInt lsize = 0;
 
   PetscFunctionBegin;
-  ierr = PetscIntMultError(2,nlnk_max+2,&lsize);CHKERRQ(ierr);
-  ierr = PetscRealloc(lsize*sizeof(PetscInt),lnk);CHKERRQ(ierr);
+  PetscCall(PetscIntMultError(2,nlnk_max+2,&lsize));
+  PetscCall(PetscRealloc(lsize*sizeof(PetscInt),lnk));
   PetscFunctionReturn(0);
 }
 
@@ -1606,12 +1499,11 @@ static inline PetscErrorCode PetscLLCondensedDestroy_Scalable(PetscInt *lnk)
 
 static inline PetscErrorCode PetscLLCondensedCreate_fast(PetscInt nlnk_max,PetscInt **lnk)
 {
-  PetscErrorCode ierr;
-  PetscInt       *llnk,lsize = 0;
+  PetscInt *llnk,lsize = 0;
 
   PetscFunctionBegin;
-  ierr = PetscIntMultError(3,nlnk_max+3,&lsize);CHKERRQ(ierr);
-  ierr = PetscMalloc1(lsize,lnk);CHKERRQ(ierr);
+  PetscCall(PetscIntMultError(3,nlnk_max+3,&lsize));
+  PetscCall(PetscMalloc1(lsize,lnk));
   llnk = *lnk;
   llnk[0] = 0;   /* nlnk: number of entries on the list */
   llnk[1] = 0;          /* number of integer entries represented in list */

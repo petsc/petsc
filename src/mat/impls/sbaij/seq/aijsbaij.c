@@ -8,7 +8,6 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype,Ma
   Mat            B;
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
   Mat_SeqAIJ     *b;
-  PetscErrorCode ierr;
   PetscInt       *ai=a->i,*aj=a->j,m=A->rmap->N,n=A->cmap->n,i,j,k,*bi,*bj,*rowlengths,nz,*rowstart,itmp;
   PetscInt       bs =A->rmap->bs,bs2=bs*bs,mbs=A->rmap->N/bs,diagcnt=0;
   MatScalar      *av,*bv;
@@ -20,7 +19,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype,Ma
 
   PetscFunctionBegin;
   /* compute rowlengths of newmat */
-  ierr = PetscMalloc2(m,&rowlengths,m+1,&rowstart);CHKERRQ(ierr);
+  PetscCall(PetscMalloc2(m,&rowlengths,m+1,&rowstart));
 
   for (i=0; i<mbs; i++) rowlengths[i*bs] = 0;
   k  = 0;
@@ -41,11 +40,11 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype,Ma
   }
 
   if (reuse != MAT_REUSE_MATRIX) {
-    ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
-    ierr = MatSetSizes(B,m,n,m,n);CHKERRQ(ierr);
-    ierr = MatSetType(B,MATSEQAIJ);CHKERRQ(ierr);
-    ierr = MatSeqAIJSetPreallocation(B,0,rowlengths);CHKERRQ(ierr);
-    ierr = MatSetBlockSize(B,A->rmap->bs);CHKERRQ(ierr);
+    PetscCall(MatCreate(PetscObjectComm((PetscObject)A),&B));
+    PetscCall(MatSetSizes(B,m,n,m,n));
+    PetscCall(MatSetType(B,MATSEQAIJ));
+    PetscCall(MatSeqAIJSetPreallocation(B,0,rowlengths));
+    PetscCall(MatSetBlockSize(B,A->rmap->bs));
   } else B = *newmat;
 
   b  = (Mat_SeqAIJ*)(B->data);
@@ -104,12 +103,12 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype,Ma
       aj++; av += bs2;
     }
   }
-  ierr = PetscFree2(rowlengths,rowstart);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(PetscFree2(rowlengths,rowstart));
+  PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
 
   if (reuse == MAT_INPLACE_MATRIX) {
-    ierr = MatHeaderReplace(A,&B);CHKERRQ(ierr);
+    PetscCall(MatHeaderReplace(A,&B));
   } else {
     *newmat = B;
   }
@@ -121,20 +120,19 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqSBAIJ(Mat A,MatType newtype,Mat
   Mat            B;
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   Mat_SeqSBAIJ   *b;
-  PetscErrorCode ierr;
   PetscInt       *ai=a->i,*aj,m=A->rmap->N,n=A->cmap->N,i,j,*bi,*bj,*rowlengths,bs=PetscAbs(A->rmap->bs);
   MatScalar      *av,*bv;
   PetscBool      miss = PETSC_FALSE;
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_COMPLEX)
-  PetscCheckFalse(!A->symmetric,PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"Matrix must be symmetric. Call MatSetOption(mat,MAT_SYMMETRIC,PETSC_TRUE)");
+  PetscCheck(A->symmetric,PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"Matrix must be symmetric. Call MatSetOption(mat,MAT_SYMMETRIC,PETSC_TRUE)");
 #else
   PetscCheckFalse(!A->symmetric && !A->hermitian,PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"Matrix must be either symmetric or hermitian. Call MatSetOption(mat,MAT_SYMMETRIC,PETSC_TRUE) and/or MatSetOption(mat,MAT_HERMITIAN,PETSC_TRUE)");
 #endif
   PetscCheckFalse(n != m,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Matrix must be square");
 
-  ierr = PetscMalloc1(m/bs,&rowlengths);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(m/bs,&rowlengths));
   for (i=0; i<m/bs; i++) {
     if (a->diag[i*bs] == ai[i*bs+1]) { /* missing diagonal */
       rowlengths[i] = (ai[i*bs+1] - ai[i*bs])/bs; /* allocate some extra space */
@@ -144,10 +142,10 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqSBAIJ(Mat A,MatType newtype,Mat
     }
   }
   if (reuse != MAT_REUSE_MATRIX) {
-    ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
-    ierr = MatSetSizes(B,m,n,m,n);CHKERRQ(ierr);
-    ierr = MatSetType(B,MATSEQSBAIJ);CHKERRQ(ierr);
-    ierr = MatSeqSBAIJSetPreallocation(B,bs,0,rowlengths);CHKERRQ(ierr);
+    PetscCall(MatCreate(PetscObjectComm((PetscObject)A),&B));
+    PetscCall(MatSetSizes(B,m,n,m,n));
+    PetscCall(MatSetType(B,MATSEQSBAIJ));
+    PetscCall(MatSeqSBAIJSetPreallocation(B,bs,0,rowlengths));
   } else B = *newmat;
 
   if (bs == 1 && !miss) {
@@ -167,18 +165,18 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqSBAIJ(Mat A,MatType newtype,Mat
       bi[i+1]    = bi[i] + rowlengths[i];
       b->ilen[i] = rowlengths[i];
     }
-    ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
   } else {
-    ierr = MatSetOption(B,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
+    PetscCall(MatSetOption(B,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE));
     /* reuse may not be equal to MAT_REUSE_MATRIX, but the basic converter will reallocate or replace newmat if this value is not used */
     /* if reuse is equal to MAT_INITIAL_MATRIX, it has been appropriately preallocated before                                          */
     /*                      MAT_INPLACE_MATRIX, it will be replaced with MatHeaderReplace below                                        */
-    ierr = MatConvert_Basic(A,newtype,MAT_REUSE_MATRIX,&B);CHKERRQ(ierr);
+    PetscCall(MatConvert_Basic(A,newtype,MAT_REUSE_MATRIX,&B));
   }
-  ierr = PetscFree(rowlengths);CHKERRQ(ierr);
+  PetscCall(PetscFree(rowlengths));
   if (reuse == MAT_INPLACE_MATRIX) {
-    ierr = MatHeaderReplace(A,&B);CHKERRQ(ierr);
+    PetscCall(MatHeaderReplace(A,&B));
   } else *newmat = B;
   PetscFunctionReturn(0);
 }
@@ -188,7 +186,6 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype,M
   Mat            B;
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
   Mat_SeqBAIJ    *b;
-  PetscErrorCode ierr;
   PetscInt       *ai=a->i,*aj=a->j,m=A->rmap->N,n=A->cmap->n,i,k,*bi,*bj,*browlengths,nz,*browstart,itmp;
   PetscInt       bs =A->rmap->bs,bs2=bs*bs,mbs=m/bs,col,row;
   MatScalar      *av,*bv;
@@ -200,7 +197,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype,M
 
   PetscFunctionBegin;
   /* compute browlengths of newmat */
-  ierr = PetscMalloc2(mbs,&browlengths,mbs,&browstart);CHKERRQ(ierr);
+  PetscCall(PetscMalloc2(mbs,&browlengths,mbs,&browstart));
   for (i=0; i<mbs; i++) browlengths[i] = 0;
   for (i=0; i<mbs; i++) {
     nz = ai[i+1] - ai[i];
@@ -212,10 +209,10 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype,M
   }
 
   if (reuse != MAT_REUSE_MATRIX) {
-    ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
-    ierr = MatSetSizes(B,m,n,m,n);CHKERRQ(ierr);
-    ierr = MatSetType(B,MATSEQBAIJ);CHKERRQ(ierr);
-    ierr = MatSeqBAIJSetPreallocation(B,bs,0,browlengths);CHKERRQ(ierr);
+    PetscCall(MatCreate(PetscObjectComm((PetscObject)A),&B));
+    PetscCall(MatSetSizes(B,m,n,m,n));
+    PetscCall(MatSetType(B,MATSEQBAIJ));
+    PetscCall(MatSeqBAIJSetPreallocation(B,bs,0,browlengths));
   } else B = *newmat;
 
   b  = (Mat_SeqBAIJ*)(B->data);
@@ -270,12 +267,12 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype,M
       browstart[i]++;
     }
   }
-  ierr = PetscFree2(browlengths,browstart);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(PetscFree2(browlengths,browstart));
+  PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
 
   if (reuse == MAT_INPLACE_MATRIX) {
-    ierr = MatHeaderReplace(A,&B);CHKERRQ(ierr);
+    PetscCall(MatHeaderReplace(A,&B));
   } else *newmat = B;
   PetscFunctionReturn(0);
 }
@@ -285,28 +282,27 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqSBAIJ(Mat A, MatType newtype,M
   Mat            B;
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
   Mat_SeqSBAIJ   *b;
-  PetscErrorCode ierr;
   PetscInt       *ai=a->i,*aj,m=A->rmap->N,n=A->cmap->n,i,j,k,*bi,*bj,*browlengths;
   PetscInt       bs =A->rmap->bs,bs2=bs*bs,mbs=m/bs,dd;
   MatScalar      *av,*bv;
   PetscBool      flg;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!A->symmetric,PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"Matrix must be symmetric. Call MatSetOption(mat,MAT_SYMMETRIC,PETSC_TRUE)");
+  PetscCheck(A->symmetric,PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"Matrix must be symmetric. Call MatSetOption(mat,MAT_SYMMETRIC,PETSC_TRUE)");
   PetscCheckFalse(n != m,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Matrix must be square");
-  ierr = MatMissingDiagonal_SeqBAIJ(A,&flg,&dd);CHKERRQ(ierr); /* check for missing diagonals, then mark diag */
-  PetscCheckFalse(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal %" PetscInt_FMT,dd);
+  PetscCall(MatMissingDiagonal_SeqBAIJ(A,&flg,&dd)); /* check for missing diagonals, then mark diag */
+  PetscCheck(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal %" PetscInt_FMT,dd);
 
-  ierr = PetscMalloc1(mbs,&browlengths);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(mbs,&browlengths));
   for (i=0; i<mbs; i++) {
     browlengths[i] = ai[i+1] - a->diag[i];
   }
 
   if (reuse != MAT_REUSE_MATRIX) {
-    ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
-    ierr = MatSetSizes(B,m,n,m,n);CHKERRQ(ierr);
-    ierr = MatSetType(B,MATSEQSBAIJ);CHKERRQ(ierr);
-    ierr = MatSeqSBAIJSetPreallocation(B,bs,0,browlengths);CHKERRQ(ierr);
+    PetscCall(MatCreate(PetscObjectComm((PetscObject)A),&B));
+    PetscCall(MatSetSizes(B,m,n,m,n));
+    PetscCall(MatSetType(B,MATSEQSBAIJ));
+    PetscCall(MatSeqSBAIJSetPreallocation(B,bs,0,browlengths));
   } else B = *newmat;
 
   b  = (Mat_SeqSBAIJ*)(B->data);
@@ -327,12 +323,12 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqSBAIJ(Mat A, MatType newtype,M
     bi[i+1]    = bi[i] + browlengths[i];
     b->ilen[i] = browlengths[i];
   }
-  ierr = PetscFree(browlengths);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(PetscFree(browlengths));
+  PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
 
   if (reuse == MAT_INPLACE_MATRIX) {
-    ierr = MatHeaderReplace(A,&B);CHKERRQ(ierr);
+    PetscCall(MatHeaderReplace(A,&B));
   } else *newmat = B;
   PetscFunctionReturn(0);
 }

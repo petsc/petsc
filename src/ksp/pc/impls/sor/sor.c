@@ -13,51 +13,46 @@ typedef struct {
 
 static PetscErrorCode PCDestroy_SOR(PC pc)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscFree(pc->data);CHKERRQ(ierr);
+  PetscCall(PetscFree(pc->data));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCApply_SOR(PC pc,Vec x,Vec y)
 {
   PC_SOR         *jac = (PC_SOR*)pc->data;
-  PetscErrorCode ierr;
   PetscInt       flag = jac->sym | SOR_ZERO_INITIAL_GUESS;
 
   PetscFunctionBegin;
-  ierr = MatSOR(pc->pmat,x,jac->omega,(MatSORType)flag,jac->fshift,jac->its,jac->lits,y);CHKERRQ(ierr);
-  ierr = MatFactorGetError(pc->pmat,(MatFactorError*)&pc->failedreason);CHKERRQ(ierr);
+  PetscCall(MatSOR(pc->pmat,x,jac->omega,(MatSORType)flag,jac->fshift,jac->its,jac->lits,y));
+  PetscCall(MatFactorGetError(pc->pmat,(MatFactorError*)&pc->failedreason));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCApplyTranspose_SOR(PC pc,Vec x,Vec y)
 {
   PC_SOR         *jac = (PC_SOR*)pc->data;
-  PetscErrorCode ierr;
   PetscInt       flag = jac->sym | SOR_ZERO_INITIAL_GUESS;
   PetscBool      set,sym;
 
   PetscFunctionBegin;
-  ierr = MatIsSymmetricKnown(pc->pmat,&set,&sym);CHKERRQ(ierr);
+  PetscCall(MatIsSymmetricKnown(pc->pmat,&set,&sym));
   PetscCheckFalse(!set || !sym || (jac->sym != SOR_SYMMETRIC_SWEEP && jac->sym != SOR_LOCAL_SYMMETRIC_SWEEP),PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Can only apply transpose of SOR if matrix is symmetric and sweep is symmetric");
-  ierr = MatSOR(pc->pmat,x,jac->omega,(MatSORType)flag,jac->fshift,jac->its,jac->lits,y);CHKERRQ(ierr);
-  ierr = MatFactorGetError(pc->pmat,(MatFactorError*)&pc->failedreason);CHKERRQ(ierr);
+  PetscCall(MatSOR(pc->pmat,x,jac->omega,(MatSORType)flag,jac->fshift,jac->its,jac->lits,y));
+  PetscCall(MatFactorGetError(pc->pmat,(MatFactorError*)&pc->failedreason));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscBool guesszero,PetscInt *outits,PCRichardsonConvergedReason *reason)
 {
   PC_SOR         *jac = (PC_SOR*)pc->data;
-  PetscErrorCode ierr;
   MatSORType     stype = jac->sym;
 
   PetscFunctionBegin;
-  ierr = PetscInfo(pc,"Warning, convergence critera ignored, using %D iterations\n",its);CHKERRQ(ierr);
+  PetscCall(PetscInfo(pc,"Warning, convergence critera ignored, using %D iterations\n",its));
   if (guesszero) stype = (MatSORType) (stype | SOR_ZERO_INITIAL_GUESS);
-  ierr = MatSOR(pc->pmat,b,jac->omega,stype,jac->fshift,its*jac->its,jac->lits,y);CHKERRQ(ierr);
-  ierr = MatFactorGetError(pc->pmat,(MatFactorError*)&pc->failedreason);CHKERRQ(ierr);
+  PetscCall(MatSOR(pc->pmat,b,jac->omega,stype,jac->fshift,its*jac->its,jac->lits,y));
+  PetscCall(MatFactorGetError(pc->pmat,(MatFactorError*)&pc->failedreason));
   *outits = its;
   *reason = PCRICHARDSON_CONVERGED_ITS;
   PetscFunctionReturn(0);
@@ -66,28 +61,27 @@ static PetscErrorCode PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,PetscReal rt
 PetscErrorCode PCSetFromOptions_SOR(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_SOR         *jac = (PC_SOR*)pc->data;
-  PetscErrorCode ierr;
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"(S)SOR options");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-pc_sor_omega","relaxation factor (0 < omega < 2)","PCSORSetOmega",jac->omega,&jac->omega,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-pc_sor_diagonal_shift","Add to the diagonal entries","",jac->fshift,&jac->fshift,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-pc_sor_its","number of inner SOR iterations","PCSORSetIterations",jac->its,&jac->its,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-pc_sor_lits","number of local inner SOR iterations","PCSORSetIterations",jac->lits,&jac->lits,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBoolGroupBegin("-pc_sor_symmetric","SSOR, not SOR","PCSORSetSymmetric",&flg);CHKERRQ(ierr);
-  if (flg) {ierr = PCSORSetSymmetric(pc,SOR_SYMMETRIC_SWEEP);CHKERRQ(ierr);}
-  ierr = PetscOptionsBoolGroup("-pc_sor_backward","use backward sweep instead of forward","PCSORSetSymmetric",&flg);CHKERRQ(ierr);
-  if (flg) {ierr = PCSORSetSymmetric(pc,SOR_BACKWARD_SWEEP);CHKERRQ(ierr);}
-  ierr = PetscOptionsBoolGroup("-pc_sor_forward","use forward sweep","PCSORSetSymmetric",&flg);CHKERRQ(ierr);
-  if (flg) {ierr = PCSORSetSymmetric(pc,SOR_FORWARD_SWEEP);CHKERRQ(ierr);}
-  ierr = PetscOptionsBoolGroup("-pc_sor_local_symmetric","use SSOR separately on each processor","PCSORSetSymmetric",&flg);CHKERRQ(ierr);
-  if (flg) {ierr = PCSORSetSymmetric(pc,SOR_LOCAL_SYMMETRIC_SWEEP);CHKERRQ(ierr);}
-  ierr = PetscOptionsBoolGroup("-pc_sor_local_backward","use backward sweep locally","PCSORSetSymmetric",&flg);CHKERRQ(ierr);
-  if (flg) {ierr = PCSORSetSymmetric(pc,SOR_LOCAL_BACKWARD_SWEEP);CHKERRQ(ierr);}
-  ierr = PetscOptionsBoolGroupEnd("-pc_sor_local_forward","use forward sweep locally","PCSORSetSymmetric",&flg);CHKERRQ(ierr);
-  if (flg) {ierr = PCSORSetSymmetric(pc,SOR_LOCAL_FORWARD_SWEEP);CHKERRQ(ierr);}
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscCall(PetscOptionsHead(PetscOptionsObject,"(S)SOR options"));
+  PetscCall(PetscOptionsReal("-pc_sor_omega","relaxation factor (0 < omega < 2)","PCSORSetOmega",jac->omega,&jac->omega,NULL));
+  PetscCall(PetscOptionsReal("-pc_sor_diagonal_shift","Add to the diagonal entries","",jac->fshift,&jac->fshift,NULL));
+  PetscCall(PetscOptionsInt("-pc_sor_its","number of inner SOR iterations","PCSORSetIterations",jac->its,&jac->its,NULL));
+  PetscCall(PetscOptionsInt("-pc_sor_lits","number of local inner SOR iterations","PCSORSetIterations",jac->lits,&jac->lits,NULL));
+  PetscCall(PetscOptionsBoolGroupBegin("-pc_sor_symmetric","SSOR, not SOR","PCSORSetSymmetric",&flg));
+  if (flg) PetscCall(PCSORSetSymmetric(pc,SOR_SYMMETRIC_SWEEP));
+  PetscCall(PetscOptionsBoolGroup("-pc_sor_backward","use backward sweep instead of forward","PCSORSetSymmetric",&flg));
+  if (flg) PetscCall(PCSORSetSymmetric(pc,SOR_BACKWARD_SWEEP));
+  PetscCall(PetscOptionsBoolGroup("-pc_sor_forward","use forward sweep","PCSORSetSymmetric",&flg));
+  if (flg) PetscCall(PCSORSetSymmetric(pc,SOR_FORWARD_SWEEP));
+  PetscCall(PetscOptionsBoolGroup("-pc_sor_local_symmetric","use SSOR separately on each processor","PCSORSetSymmetric",&flg));
+  if (flg) PetscCall(PCSORSetSymmetric(pc,SOR_LOCAL_SYMMETRIC_SWEEP));
+  PetscCall(PetscOptionsBoolGroup("-pc_sor_local_backward","use backward sweep locally","PCSORSetSymmetric",&flg));
+  if (flg) PetscCall(PCSORSetSymmetric(pc,SOR_LOCAL_BACKWARD_SWEEP));
+  PetscCall(PetscOptionsBoolGroupEnd("-pc_sor_local_forward","use forward sweep locally","PCSORSetSymmetric",&flg));
+  if (flg) PetscCall(PCSORSetSymmetric(pc,SOR_LOCAL_FORWARD_SWEEP));
+  PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -96,13 +90,12 @@ PetscErrorCode PCView_SOR(PC pc,PetscViewer viewer)
   PC_SOR         *jac = (PC_SOR*)pc->data;
   MatSORType     sym  = jac->sym;
   const char     *sortype;
-  PetscErrorCode ierr;
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    if (sym & SOR_ZERO_INITIAL_GUESS) {ierr = PetscViewerASCIIPrintf(viewer,"  zero initial guess\n");CHKERRQ(ierr);}
+    if (sym & SOR_ZERO_INITIAL_GUESS) PetscCall(PetscViewerASCIIPrintf(viewer,"  zero initial guess\n"));
     if (sym == SOR_APPLY_UPPER)                                              sortype = "apply_upper";
     else if (sym == SOR_APPLY_LOWER)                                         sortype = "apply_lower";
     else if (sym & SOR_EISENSTAT)                                            sortype = "Eisenstat";
@@ -113,7 +106,7 @@ PetscErrorCode PCView_SOR(PC pc,PetscViewer viewer)
     else if (sym & SOR_LOCAL_FORWARD_SWEEP)                                  sortype = "local_forward";
     else if (sym & SOR_LOCAL_BACKWARD_SWEEP)                                 sortype = "local_backward";
     else                                                                     sortype = "unknown";
-    ierr = PetscViewerASCIIPrintf(viewer,"  type = %s, iterations = %D, local iterations = %D, omega = %g\n",sortype,jac->its,jac->lits,(double)jac->omega);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  type = %s, iterations = %D, local iterations = %D, omega = %g\n",sortype,jac->its,jac->lits,(double)jac->omega));
   }
   PetscFunctionReturn(0);
 }
@@ -215,11 +208,9 @@ static PetscErrorCode  PCSORGetIterations_SOR(PC pc,PetscInt *its,PetscInt *lits
 @*/
 PetscErrorCode  PCSORGetSymmetric(PC pc,MatSORType *flag)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscUseMethod(pc,"PCSORGetSymmetric_C",(PC,MatSORType*),(pc,flag));CHKERRQ(ierr);
+  PetscCall(PetscUseMethod(pc,"PCSORGetSymmetric_C",(PC,MatSORType*),(pc,flag)));
   PetscFunctionReturn(0);
 }
 
@@ -244,11 +235,9 @@ PetscErrorCode  PCSORGetSymmetric(PC pc,MatSORType *flag)
 @*/
 PetscErrorCode  PCSORGetOmega(PC pc,PetscReal *omega)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscUseMethod(pc,"PCSORGetOmega_C",(PC,PetscReal*),(pc,omega));CHKERRQ(ierr);
+  PetscCall(PetscUseMethod(pc,"PCSORGetOmega_C",(PC,PetscReal*),(pc,omega)));
   PetscFunctionReturn(0);
 }
 
@@ -278,11 +267,9 @@ PetscErrorCode  PCSORGetOmega(PC pc,PetscReal *omega)
 @*/
 PetscErrorCode  PCSORGetIterations(PC pc,PetscInt *its,PetscInt *lits)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscUseMethod(pc,"PCSORGetIterations_C",(PC,PetscInt*,PetscInt*),(pc,its,lits));CHKERRQ(ierr);
+  PetscCall(PetscUseMethod(pc,"PCSORGetIterations_C",(PC,PetscInt*,PetscInt*),(pc,its,lits)));
   PetscFunctionReturn(0);
 }
 
@@ -323,12 +310,10 @@ PetscErrorCode  PCSORGetIterations(PC pc,PetscInt *its,PetscInt *lits)
 @*/
 PetscErrorCode  PCSORSetSymmetric(PC pc,MatSORType flag)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveEnum(pc,flag,2);
-  ierr = PetscTryMethod(pc,"PCSORSetSymmetric_C",(PC,MatSORType),(pc,flag));CHKERRQ(ierr);
+  PetscCall(PetscTryMethod(pc,"PCSORSetSymmetric_C",(PC,MatSORType),(pc,flag)));
   PetscFunctionReturn(0);
 }
 
@@ -354,12 +339,10 @@ PetscErrorCode  PCSORSetSymmetric(PC pc,MatSORType flag)
 @*/
 PetscErrorCode  PCSORSetOmega(PC pc,PetscReal omega)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveReal(pc,omega,2);
-  ierr = PetscTryMethod(pc,"PCSORSetOmega_C",(PC,PetscReal),(pc,omega));CHKERRQ(ierr);
+  PetscCall(PetscTryMethod(pc,"PCSORSetOmega_C",(PC,PetscReal),(pc,omega)));
   PetscFunctionReturn(0);
 }
 
@@ -387,12 +370,10 @@ PetscErrorCode  PCSORSetOmega(PC pc,PetscReal omega)
 @*/
 PetscErrorCode  PCSORSetIterations(PC pc,PetscInt its,PetscInt lits)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveInt(pc,its,2);
-  ierr = PetscTryMethod(pc,"PCSORSetIterations_C",(PC,PetscInt,PetscInt),(pc,its,lits));CHKERRQ(ierr);
+  PetscCall(PetscTryMethod(pc,"PCSORSetIterations_C",(PC,PetscInt,PetscInt),(pc,its,lits)));
   PetscFunctionReturn(0);
 }
 
@@ -439,11 +420,10 @@ M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_SOR(PC pc)
 {
-  PetscErrorCode ierr;
   PC_SOR         *jac;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(pc,&jac);CHKERRQ(ierr);
+  PetscCall(PetscNewLog(pc,&jac));
 
   pc->ops->apply           = PCApply_SOR;
   pc->ops->applytranspose  = PCApplyTranspose_SOR;
@@ -459,11 +439,11 @@ PETSC_EXTERN PetscErrorCode PCCreate_SOR(PC pc)
   jac->its                 = 1;
   jac->lits                = 1;
 
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSORSetSymmetric_C",PCSORSetSymmetric_SOR);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSORSetOmega_C",PCSORSetOmega_SOR);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSORSetIterations_C",PCSORSetIterations_SOR);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSORGetSymmetric_C",PCSORGetSymmetric_SOR);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSORGetOmega_C",PCSORGetOmega_SOR);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSORGetIterations_C",PCSORGetIterations_SOR);CHKERRQ(ierr);
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCSORSetSymmetric_C",PCSORSetSymmetric_SOR));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCSORSetOmega_C",PCSORSetOmega_SOR));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCSORSetIterations_C",PCSORSetIterations_SOR));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCSORGetSymmetric_C",PCSORGetSymmetric_SOR));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCSORGetOmega_C",PCSORGetOmega_SOR));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCSORGetIterations_C",PCSORGetIterations_SOR));
   PetscFunctionReturn(0);
 }

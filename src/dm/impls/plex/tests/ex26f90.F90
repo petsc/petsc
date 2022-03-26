@@ -273,7 +273,7 @@ program ex26f90
     call ISDestroy(csIS,ierr);CHKERRA(ierr)
     call PetscSectionSetUp(section,ierr);CHKERRA(ierr)
     call DMSetLocalSection(dm, section,ierr);CHKERRA(ierr)
-    call PetscObjectViewFromOptions(section, PETSC_NULL_SECTION, "-dm_section_view",ierr);CHKERRQ(ierr)
+    call PetscObjectViewFromOptions(section, PETSC_NULL_SECTION, "-dm_section_view",ierr);PetscCall(ierr)
     call PetscSectionDestroy(section,ierr);CHKERRA(ierr)
 
     call DMSetUseNatural(dm,PETSC_TRUE,ierr);CHKERRA(ierr)
@@ -447,7 +447,7 @@ program ex26f90
     call PetscObjectSetName(tmpVec, "Sigma",ierr);CHKERRA(ierr)
     call VecLoad(tmpVec,viewer,ierr);CHKERRA(ierr)
     call VecAXPY(S, -1.0_kPR, tmpVec,ierr);CHKERRA(ierr)
-    call VecNorm(S, NORM_INFINITY,norm,ierr);CHKERRQ(ierr)
+    call VecNorm(S, NORM_INFINITY,norm,ierr);PetscCall(ierr)
     if (norm > PETSC_SQRT_MACHINE_EPSILON) then
        write(IOBuffer,'("Sigma ||Vin - Vout|| = ",ES12.5)') norm
     end if

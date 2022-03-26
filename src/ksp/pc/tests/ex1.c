@@ -6,24 +6,23 @@ static char help[] = "Tests the creation of a PC context.\n\n";
 int main(int argc,char **args)
 {
   PC             pc;
-  PetscErrorCode ierr;
   PetscInt       n = 5;
   Mat            mat;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PCCreate(PETSC_COMM_WORLD,&pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PCCreate(PETSC_COMM_WORLD,&pc));
+  PetscCall(PCSetType(pc,PCNONE));
 
   /* Vector and matrix must be set before calling PCSetUp */
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,NULL,&mat);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PCSetOperators(pc,mat,mat);CHKERRQ(ierr);
-  ierr = PCSetUp(pc);CHKERRQ(ierr);
-  ierr = MatDestroy(&mat);CHKERRQ(ierr);
-  ierr = PCDestroy(&pc);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,NULL,&mat));
+  PetscCall(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(PCSetOperators(pc,mat,mat));
+  PetscCall(PCSetUp(pc));
+  PetscCall(MatDestroy(&mat));
+  PetscCall(PCDestroy(&pc));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

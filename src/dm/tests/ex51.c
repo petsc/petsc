@@ -9,7 +9,6 @@ int main(int argc,char **argv)
 {
   PetscInt         i,j,M = 10,N = 8,m = PETSC_DECIDE,n = PETSC_DECIDE;
   PetscMPIInt      rank;
-  PetscErrorCode   ierr;
   PetscBool        flg = PETSC_FALSE;
   DM               da;
   PetscViewer      viewer;
@@ -20,66 +19,66 @@ int main(int argc,char **argv)
   VecScatter       tolocalall,fromlocalall;
   PetscInt         start,end;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,300,300,&viewer);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,300,300,&viewer));
 
   /* Read options */
-  ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-star_stencil",&flg,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-star_stencil",&flg,NULL));
   if (flg) stype = DMDA_STENCIL_STAR;
 
   /* Create distributed array and get vectors */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,bx,by,stype,M,N,m,n,1,1,NULL,NULL,&da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD,bx,by,stype,M,N,m,n,1,1,NULL,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
 
-  ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,M*N,&localall);CHKERRQ(ierr);
+  PetscCall(DMCreateGlobalVector(da,&global));
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,M*N,&localall));
 
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = VecGetOwnershipRange(global,&start,&end);CHKERRQ(ierr);
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(VecGetOwnershipRange(global,&start,&end));
   for (i=start; i<end; i++) {
     value = 5.0*rank;
-    ierr  = VecSetValues(global,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(VecSetValues(global,1,&i,&value,INSERT_VALUES));
   }
-  ierr = VecView(global,viewer);CHKERRQ(ierr);
+  PetscCall(VecView(global,viewer));
 
   /*
      Create Scatter from global DMDA parallel vector to local vector that
    contains all entries
   */
-  ierr = DMDAGlobalToNaturalAllCreate(da,&tolocalall);CHKERRQ(ierr);
-  ierr = DMDANaturalAllToGlobalCreate(da,&fromlocalall);CHKERRQ(ierr);
+  PetscCall(DMDAGlobalToNaturalAllCreate(da,&tolocalall));
+  PetscCall(DMDANaturalAllToGlobalCreate(da,&fromlocalall));
 
-  ierr = VecScatterBegin(tolocalall,global,localall,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(tolocalall,global,localall,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  PetscCall(VecScatterBegin(tolocalall,global,localall,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(tolocalall,global,localall,INSERT_VALUES,SCATTER_FORWARD));
 
-  ierr = VecGetArray(localall,&vlocal);CHKERRQ(ierr);
+  PetscCall(VecGetArray(localall,&vlocal));
   for (j=0; j<N; j++) {
     for (i=0; i<M; i++) {
       *vlocal++ += i + j*M;
     }
   }
-  ierr = VecRestoreArray(localall,&vlocal);CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(localall,&vlocal));
 
   /* scatter back to global vector */
-  ierr = VecScatterBegin(fromlocalall,localall,global,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(fromlocalall,localall,global,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  PetscCall(VecScatterBegin(fromlocalall,localall,global,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(fromlocalall,localall,global,INSERT_VALUES,SCATTER_FORWARD));
 
-  ierr = VecView(global,viewer);CHKERRQ(ierr);
+  PetscCall(VecView(global,viewer));
 
   /* Free memory */
-  ierr = VecScatterDestroy(&tolocalall);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&fromlocalall);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = VecDestroy(&localall);CHKERRQ(ierr);
-  ierr = VecDestroy(&global);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(VecScatterDestroy(&tolocalall));
+  PetscCall(VecScatterDestroy(&fromlocalall));
+  PetscCall(PetscViewerDestroy(&viewer));
+  PetscCall(VecDestroy(&localall));
+  PetscCall(VecDestroy(&global));
+  PetscCall(DMDestroy(&da));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

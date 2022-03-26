@@ -55,66 +55,65 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscInt       bc;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,12,12,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
-  ierr = DMDASetInterpolationType(da, DMDA_Q0);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,12,12,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMDASetInterpolationType(da, DMDA_Q0));
 
-  ierr = KSPSetDM(ksp,da);CHKERRQ(ierr);
+  PetscCall(KSPSetDM(ksp,da));
 
-  ierr        = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "DM");CHKERRQ(ierr);
+  ierr        = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "DM");PetscCall(ierr);
   user.nu     = 0.1;
-  ierr        = PetscOptionsScalar("-nu", "The width of the Gaussian source", "ex29.c", 0.1, &user.nu, NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsScalar("-nu", "The width of the Gaussian source", "ex29.c", 0.1, &user.nu, NULL));
   bc          = (PetscInt)NEUMANN;
-  ierr        = PetscOptionsEList("-bc_type","Type of boundary condition","ex29.c",bcTypes,2,bcTypes[0],&bc,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsEList("-bc_type","Type of boundary condition","ex29.c",bcTypes,2,bcTypes[0],&bc,NULL));
   user.bcType = (BCType)bc;
-  ierr        = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr        = PetscOptionsEnd();PetscCall(ierr);
 
-  ierr = KSPSetComputeRHS(ksp,ComputeRHS,&user);CHKERRQ(ierr);
-  ierr = KSPSetComputeOperators(ksp,ComputeMatrix,&user);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp,NULL,NULL);CHKERRQ(ierr);
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(KSPSetComputeRHS(ksp,ComputeRHS,&user));
+  PetscCall(KSPSetComputeOperators(ksp,ComputeMatrix,&user));
+  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(KSPSolve(ksp,NULL,NULL));
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(DMDestroy(&da));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
 {
   UserContext    *user = (UserContext*)ctx;
-  PetscErrorCode ierr;
   PetscInt       i,j,mx,my,xm,ym,xs,ys;
   PetscScalar    Hx,Hy;
   PetscScalar    **array;
   DM             da;
 
   PetscFunctionBeginUser;
-  ierr = KSPGetDM(ksp,&da);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da, 0, &mx, &my, 0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  PetscCall(KSPGetDM(ksp,&da));
+  PetscCall(DMDAGetInfo(da, 0, &mx, &my, 0,0,0,0,0,0,0,0,0,0));
   Hx   = 1.0 / (PetscReal)(mx);
   Hy   = 1.0 / (PetscReal)(my);
-  ierr = DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da, b, &array);CHKERRQ(ierr);
+  PetscCall(DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0));
+  PetscCall(DMDAVecGetArray(da, b, &array));
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {
       array[j][i] = PetscExpScalar(-(((PetscReal)i+0.5)*Hx)*(((PetscReal)i+0.5)*Hx)/user->nu)*PetscExpScalar(-(((PetscReal)j+0.5)*Hy)*(((PetscReal)j+0.5)*Hy)/user->nu)*Hx*Hy;
     }
   }
-  ierr = DMDAVecRestoreArray(da, b, &array);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
+  PetscCall(DMDAVecRestoreArray(da, b, &array));
+  PetscCall(VecAssemblyBegin(b));
+  PetscCall(VecAssemblyEnd(b));
 
   /* force right hand side to be consistent for singular matrix */
   /* note this is really a hack, normally the model would provide you with a consistent right handside */
   if (user->bcType == NEUMANN) {
     MatNullSpace nullspace;
 
-    ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace);CHKERRQ(ierr);
-    ierr = MatNullSpaceRemove(nullspace,b);CHKERRQ(ierr);
-    ierr = MatNullSpaceDestroy(&nullspace);CHKERRQ(ierr);
+    PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace));
+    PetscCall(MatNullSpaceRemove(nullspace,b));
+    PetscCall(MatNullSpaceDestroy(&nullspace));
   }
   PetscFunctionReturn(0);
 }
@@ -122,27 +121,26 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
 PetscErrorCode ComputeMatrix(KSP ksp, Mat J,Mat jac, void *ctx)
 {
   UserContext    *user = (UserContext*)ctx;
-  PetscErrorCode ierr;
   PetscInt       i,j,mx,my,xm,ym,xs,ys,num, numi, numj;
   PetscScalar    v[5],Hx,Hy,HydHx,HxdHy;
   MatStencil     row, col[5];
   DM             da;
 
   PetscFunctionBeginUser;
-  ierr  = KSPGetDM(ksp,&da);CHKERRQ(ierr);
-  ierr  = DMDAGetInfo(da,0,&mx,&my,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  PetscCall(KSPGetDM(ksp,&da));
+  PetscCall(DMDAGetInfo(da,0,&mx,&my,0,0,0,0,0,0,0,0,0,0));
   Hx    = 1.0 / (PetscReal)(mx);
   Hy    = 1.0 / (PetscReal)(my);
   HxdHy = Hx/Hy;
   HydHx = Hy/Hx;
-  ierr  = DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
+  PetscCall(DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0));
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {
       row.i = i; row.j = j;
       if (i==0 || j==0 || i==mx-1 || j==my-1) {
         if (user->bcType == DIRICHLET) {
           v[0] = 2.0*(HxdHy + HydHx);
-          ierr = MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
+          PetscCall(MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES));
           SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Dirichlet boundary conditions not supported !");
         } else if (user->bcType == NEUMANN) {
           num = 0; numi=0; numj=0;
@@ -172,7 +170,7 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J,Mat jac, void *ctx)
           }
           v[num] = (PetscReal)(numj)*HxdHy + (PetscReal)(numi)*HydHx; col[num].i = i;   col[num].j = j;
           num++;
-          ierr = MatSetValuesStencil(jac,1,&row,num,col,v,INSERT_VALUES);CHKERRQ(ierr);
+          PetscCall(MatSetValuesStencil(jac,1,&row,num,col,v,INSERT_VALUES));
         }
       } else {
         v[0] = -HxdHy;              col[0].i = i;   col[0].j = j-1;
@@ -180,18 +178,18 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J,Mat jac, void *ctx)
         v[2] = 2.0*(HxdHy + HydHx); col[2].i = i;   col[2].j = j;
         v[3] = -HydHx;              col[3].i = i+1; col[3].j = j;
         v[4] = -HxdHy;              col[4].i = i;   col[4].j = j+1;
-        ierr = MatSetValuesStencil(jac,1,&row,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
+        PetscCall(MatSetValuesStencil(jac,1,&row,5,col,v,INSERT_VALUES));
       }
     }
   }
-  ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
   if (user->bcType == NEUMANN) {
     MatNullSpace nullspace;
 
-    ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace);CHKERRQ(ierr);
-    ierr = MatSetNullSpace(J,nullspace);CHKERRQ(ierr);
-    ierr = MatNullSpaceDestroy(&nullspace);CHKERRQ(ierr);
+    PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace));
+    PetscCall(MatSetNullSpace(J,nullspace));
+    PetscCall(MatNullSpaceDestroy(&nullspace));
   }
   PetscFunctionReturn(0);
 }

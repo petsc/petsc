@@ -12,17 +12,17 @@ int main(int argc, char **argv)
   PetscDualSpace dsp;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help); if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   dim = 2;
   tensorCell = PETSC_FALSE;
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","Options for PETSCDUALSPACELAGRANGE test","none");CHKERRQ(ierr);
-  ierr = PetscOptionsRangeInt("-dim", "The spatial dimension","ex1.c",dim,&dim,NULL,0,3);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-tensor", "Whether the cell is a tensor product cell or a simplex","ex1.c",tensorCell,&tensorCell,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","Options for PETSCDUALSPACELAGRANGE test","none");PetscCall(ierr);
+  PetscCall(PetscOptionsRangeInt("-dim", "The spatial dimension","ex1.c",dim,&dim,NULL,0,3));
+  PetscCall(PetscOptionsBool("-tensor", "Whether the cell is a tensor product cell or a simplex","ex1.c",tensorCell,&tensorCell,NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
-  ierr = PetscDualSpaceCreate(PETSC_COMM_WORLD, &dsp);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)dsp, "Lagrange dual space");CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetType(dsp, PETSCDUALSPACELAGRANGE);CHKERRQ(ierr);
+  PetscCall(PetscDualSpaceCreate(PETSC_COMM_WORLD, &dsp));
+  PetscCall(PetscObjectSetName((PetscObject)dsp, "Lagrange dual space"));
+  PetscCall(PetscDualSpaceSetType(dsp, PETSCDUALSPACELAGRANGE));
   /* While Lagrange nodes don't require the existence of a reference cell to
    * be refined, when we construct finite element dual spaces we have to be
    * careful about what kind of continuity is maintained when cells are glued
@@ -30,13 +30,13 @@ int main(int argc, char **argv)
    * conveying continuity requirements to a finite element assembly routines,
    * so a PetscDualSpace needs a reference element: a single element mesh,
    * whose boundary points are the interstitial points in a mesh */
-  ierr = DMPlexCreateReferenceCell(PETSC_COMM_WORLD, DMPolytopeTypeSimpleShape(dim, (PetscBool) !tensorCell), &K);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetDM(dsp, K);CHKERRQ(ierr);
+  PetscCall(DMPlexCreateReferenceCell(PETSC_COMM_WORLD, DMPolytopeTypeSimpleShape(dim, (PetscBool) !tensorCell), &K));
+  PetscCall(PetscDualSpaceSetDM(dsp, K));
   /* This gives us the opportunity to change the parameters of the dual space
    * from the command line, as we do in the tests below.  When
    * PetscDualSpaceSetFromOptions() is called, it also enables other optional
    * behavior (see the next step) */
-  ierr = PetscDualSpaceSetFromOptions(dsp);CHKERRQ(ierr);
+  PetscCall(PetscDualSpaceSetFromOptions(dsp));
   /* This step parses the parameters of the dual space into
    * sets of functionals that are assigned to each of the mesh points in K.
    *
@@ -55,11 +55,11 @@ int main(int argc, char **argv)
    * with "-petscdualspace_view", followed by an optional description of how
    * we would like to see the dual space (see examples in the tests below).
    * */
-  ierr = PetscDualSpaceSetUp(dsp);CHKERRQ(ierr);
-  ierr = DMDestroy(&K);CHKERRQ(ierr);
-  ierr = PetscDualSpaceDestroy(&dsp);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscDualSpaceSetUp(dsp));
+  PetscCall(DMDestroy(&K));
+  PetscCall(PetscDualSpaceDestroy(&dsp));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

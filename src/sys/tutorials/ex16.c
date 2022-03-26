@@ -23,18 +23,18 @@ int main(int argc,char **argv)
                  additional help messages in this printout.
 
     Since when PetscInitialize() returns with an error the PETSc data structures
-    may not be set up hence we cannot call CHKERRQ() hence directly return the error code.
+    may not be set up hence we cannot call PetscCall() hence directly return the error code.
 
     Since PetscOptionsSetValue() is called before the PetscInitialize() we cannot call
-    CHKERRQ() on the error code and just return it directly.
+    PetscCall() on the error code and just return it directly.
   */
   ierr = PetscOptionsSetValue(NULL,"-no_signal_handler","true");if (ierr) return ierr;
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of processors = %d, rank = %d\n",size,rank);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of processors = %d, rank = %d\n",size,rank));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

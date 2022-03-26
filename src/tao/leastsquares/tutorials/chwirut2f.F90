@@ -143,9 +143,9 @@
 
 !     Get pointers to vector data
       call VecGetArray(x,x_v,x_i,ierr)
-      CHKERRQ(ierr)
+      PetscCall(ierr)
       call VecGetArray(f,f_v,f_i,ierr)
-      CHKERRQ(ierr)
+      PetscCall(ierr)
 
 !     Compute F(X)
       if (size .eq. 1) then
@@ -185,9 +185,9 @@
 
 !     Restore vectors
       call VecRestoreArray(x,x_v,x_i,ierr)
-      CHKERRQ(ierr)
+      PetscCall(ierr)
       call VecRestoreArray(F,f_v,f_i,ierr)
-      CHKERRQ(ierr)
+      PetscCall(ierr)
       return
       end
 
@@ -200,12 +200,12 @@
       PetscErrorCode  ierr
 
       call VecGetArray(x,x_v,x_i,ierr)
-      CHKERRQ(ierr)
+      PetscCall(ierr)
       x_v(x_i) = 0.15
       x_v(x_i+1) = 0.008
       x_v(x_i+2) = 0.01
       call VecRestoreArray(x,x_v,x_i,ierr)
-      CHKERRQ(ierr)
+      PetscCall(ierr)
       return
       end
 
@@ -445,25 +445,25 @@
       f   = 0.0
       ! Send check-in message to rank-0
       call MPI_Send(f,one,MPIU_SCALAR,zero,IDLE_TAG,PETSC_COMM_WORLD,ierr)
-      CHKERRQ(ierr)
+      PetscCall(ierr)
       do while (tag .ne. DIE_TAG)
          call MPI_Recv(x,nn,MPIU_SCALAR,zero,MPI_ANY_TAG,PETSC_COMM_WORLD,     &
      &        status,ierr)
-         CHKERRQ(ierr)
+         PetscCall(ierr)
          tag = status(MPI_TAG)
          if (tag .eq. IDLE_TAG) then
             call MPI_Send(f,one,MPIU_SCALAR,zero,IDLE_TAG,PETSC_COMM_WORLD,     &
      &           ierr)
-            CHKERRQ(ierr)
+            PetscCall(ierr)
          else if (tag .ne. DIE_TAG) then
             index = tag
             ! Compute local part of residual
             call RunSimulation(x,index,f(1),ierr)
-            CHKERRQ(ierr)
+            PetscCall(ierr)
 
             ! Return residual to rank-0
             call MPI_Send(f,one,MPIU_SCALAR,zero,tag,PETSC_COMM_WORLD,ierr)
-            CHKERRQ(ierr)
+            PetscCall(ierr)
          end if
       enddo
       ierr = 0
@@ -495,7 +495,7 @@
       do while (checkedin .lt. size-1)
          call MPI_Recv(f,one,MPIU_SCALAR,MPI_ANY_SOURCE,MPI_ANY_TAG,         &
      &        PETSC_COMM_WORLD,status,ierr)
-         CHKERRQ(ierr)
+         PetscCall(ierr)
          checkedin=checkedin+1
          source = status(MPI_SOURCE)
          do i=1,n
@@ -503,7 +503,7 @@
          enddo
          call MPI_Send(x,nn,MPIU_SCALAR,source,DIE_TAG,PETSC_COMM_WORLD,    &
      &        ierr)
-         CHKERRQ(ierr)
+         PetscCall(ierr)
       enddo
       ierr = 0
       return

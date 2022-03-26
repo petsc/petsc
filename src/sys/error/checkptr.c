@@ -29,7 +29,6 @@ static PetscInt petsc_checkpointer_intensity = 1;
 @*/
 PetscErrorCode PetscCheckPointerSetIntensity(PetscInt intensity)
 {
-
   PetscFunctionBegin;
   switch (intensity) {
   case 0:

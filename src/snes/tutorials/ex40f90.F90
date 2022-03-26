@@ -34,8 +34,8 @@
 
       call DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,ten,ten,PETSC_DECIDE,PETSC_DECIDE,two,one, &
      &     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr);CHKERRA(ierr)
-      call DMSetFromOptions(da,ierr)
-      call DMSetUp(da,ierr)
+      call DMSetFromOptions(da,ierr);CHKERRA(ierr)
+      call DMSetUp(da,ierr);CHKERRA(ierr)
 
 !       Create solver object and associate it with the unknowns (on the grid)
 

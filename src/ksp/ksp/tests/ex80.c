@@ -6,7 +6,6 @@ static char help[] = "Test the Fischer-3 initial guess routine.\n\n";
 
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
   PetscInt i;
   {
     Mat         A;
@@ -14,48 +13,48 @@ int main(int argc,char **args)
     PetscScalar values[SIZE] = {1.0,1.0,1.0};
     Vec         sol,rhs,newsol,newrhs;
 
-    ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+    PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
 
     /* common data structures */
-    ierr = MatCreateSeqDense(PETSC_COMM_SELF,SIZE,SIZE,NULL,&A);CHKERRQ(ierr);
+    PetscCall(MatCreateSeqDense(PETSC_COMM_SELF,SIZE,SIZE,NULL,&A));
     for (i = 0; i < SIZE; ++i) {
-      ierr = MatSetValue(A,i,i,1.0,INSERT_VALUES);CHKERRQ(ierr);
+      PetscCall(MatSetValue(A,i,i,1.0,INSERT_VALUES));
     }
-    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
-    ierr = VecCreateSeq(PETSC_COMM_SELF,SIZE,&sol);CHKERRQ(ierr);
-    ierr = VecDuplicate(sol,&rhs);CHKERRQ(ierr);
-    ierr = VecDuplicate(sol,&newrhs);CHKERRQ(ierr);
-    ierr = VecDuplicate(sol,&newsol);CHKERRQ(ierr);
+    PetscCall(VecCreateSeq(PETSC_COMM_SELF,SIZE,&sol));
+    PetscCall(VecDuplicate(sol,&rhs));
+    PetscCall(VecDuplicate(sol,&newrhs));
+    PetscCall(VecDuplicate(sol,&newsol));
 
-    ierr = VecSetValues(sol,SIZE,indices,values,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecSetValues(rhs,SIZE - 1,indices,values,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecSetValues(newrhs,SIZE - 2,indices,values,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(sol);CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(rhs);CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(newrhs);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(sol);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(rhs);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(newrhs);CHKERRQ(ierr);
+    PetscCall(VecSetValues(sol,SIZE,indices,values,INSERT_VALUES));
+    PetscCall(VecSetValues(rhs,SIZE - 1,indices,values,INSERT_VALUES));
+    PetscCall(VecSetValues(newrhs,SIZE - 2,indices,values,INSERT_VALUES));
+    PetscCall(VecAssemblyBegin(sol));
+    PetscCall(VecAssemblyBegin(rhs));
+    PetscCall(VecAssemblyBegin(newrhs));
+    PetscCall(VecAssemblyEnd(sol));
+    PetscCall(VecAssemblyEnd(rhs));
+    PetscCall(VecAssemblyEnd(newrhs));
 
     /* Test one vector */
     {
       KSP      ksp;
       KSPGuess guess;
 
-      ierr = KSPCreate(PETSC_COMM_SELF,&ksp);CHKERRQ(ierr);
-      ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
-      ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-      ierr = KSPGetGuess(ksp,&guess);CHKERRQ(ierr);
+      PetscCall(KSPCreate(PETSC_COMM_SELF,&ksp));
+      PetscCall(KSPSetOperators(ksp,A,A));
+      PetscCall(KSPSetFromOptions(ksp));
+      PetscCall(KSPGetGuess(ksp,&guess));
       /* we aren't calling through the KSP so we call this ourselves */
-      ierr = KSPGuessSetUp(guess);CHKERRQ(ierr);
+      PetscCall(KSPGuessSetUp(guess));
 
-      ierr = KSPGuessUpdate(guess,rhs,sol);CHKERRQ(ierr);
-      ierr = KSPGuessFormGuess(guess,newrhs,newsol);CHKERRQ(ierr);
-      ierr = VecView(newsol,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+      PetscCall(KSPGuessUpdate(guess,rhs,sol));
+      PetscCall(KSPGuessFormGuess(guess,newrhs,newsol));
+      PetscCall(VecView(newsol,PETSC_VIEWER_STDOUT_SELF));
 
-      ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+      PetscCall(KSPDestroy(&ksp));
     }
 
     /* Test a singular projection matrix */
@@ -63,26 +62,26 @@ int main(int argc,char **args)
       KSP      ksp;
       KSPGuess guess;
 
-      ierr = KSPCreate(PETSC_COMM_SELF,&ksp);CHKERRQ(ierr);
-      ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
-      ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-      ierr = KSPGetGuess(ksp,&guess);CHKERRQ(ierr);
-      ierr = KSPGuessSetUp(guess);CHKERRQ(ierr);
+      PetscCall(KSPCreate(PETSC_COMM_SELF,&ksp));
+      PetscCall(KSPSetOperators(ksp,A,A));
+      PetscCall(KSPSetFromOptions(ksp));
+      PetscCall(KSPGetGuess(ksp,&guess));
+      PetscCall(KSPGuessSetUp(guess));
 
       for (i = 0; i < 15; ++i) {
-        ierr = KSPGuessUpdate(guess,rhs,sol);CHKERRQ(ierr);
+        PetscCall(KSPGuessUpdate(guess,rhs,sol));
       }
-      ierr = KSPGuessFormGuess(guess,newrhs,newsol);CHKERRQ(ierr);
-      ierr = VecView(newsol,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+      PetscCall(KSPGuessFormGuess(guess,newrhs,newsol));
+      PetscCall(VecView(newsol,PETSC_VIEWER_STDOUT_SELF));
 
-      ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+      PetscCall(KSPDestroy(&ksp));
     }
-    ierr = VecDestroy(&newsol);CHKERRQ(ierr);
-    ierr = VecDestroy(&newrhs);CHKERRQ(ierr);
-    ierr = VecDestroy(&rhs);CHKERRQ(ierr);
-    ierr = VecDestroy(&sol);CHKERRQ(ierr);
+    PetscCall(VecDestroy(&newsol));
+    PetscCall(VecDestroy(&newrhs));
+    PetscCall(VecDestroy(&rhs));
+    PetscCall(VecDestroy(&sol));
 
-    ierr = MatDestroy(&A);CHKERRQ(ierr);
+    PetscCall(MatDestroy(&A));
   }
 
   /* Test something triangular */
@@ -90,12 +89,12 @@ int main(int argc,char **args)
     PetscInt triangle_size = 10;
     Mat      A;
 
-    ierr = MatCreateSeqDense(PETSC_COMM_SELF,triangle_size,triangle_size,NULL,&A);CHKERRQ(ierr);
+    PetscCall(MatCreateSeqDense(PETSC_COMM_SELF,triangle_size,triangle_size,NULL,&A));
     for (i = 0; i < triangle_size; ++i) {
-      ierr = MatSetValue(A,i,i,1.0,INSERT_VALUES);CHKERRQ(ierr);
+      PetscCall(MatSetValue(A,i,i,1.0,INSERT_VALUES));
     }
-    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
     {
       KSP         ksp;
@@ -104,47 +103,47 @@ int main(int argc,char **args)
       PetscInt    j,indices[] = {0,1,2,3,4};
       PetscScalar values[] = {1.0,2.0,3.0,4.0,5.0};
 
-      ierr = KSPCreate(PETSC_COMM_SELF,&ksp);CHKERRQ(ierr);
-      ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
-      ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-      ierr = KSPGetGuess(ksp,&guess);CHKERRQ(ierr);
-      ierr = KSPGuessSetUp(guess);CHKERRQ(ierr);
+      PetscCall(KSPCreate(PETSC_COMM_SELF,&ksp));
+      PetscCall(KSPSetOperators(ksp,A,A));
+      PetscCall(KSPSetFromOptions(ksp));
+      PetscCall(KSPGetGuess(ksp,&guess));
+      PetscCall(KSPGuessSetUp(guess));
 
       for (i = 0; i < 5; ++i) {
-        ierr = VecCreateSeq(PETSC_COMM_SELF,triangle_size,&sol);CHKERRQ(ierr);
-        ierr = VecCreateSeq(PETSC_COMM_SELF,triangle_size,&rhs);CHKERRQ(ierr);
+        PetscCall(VecCreateSeq(PETSC_COMM_SELF,triangle_size,&sol));
+        PetscCall(VecCreateSeq(PETSC_COMM_SELF,triangle_size,&rhs));
         for (j = 0; j < i; ++j) {
-          ierr = VecSetValue(sol,j,(PetscScalar)j,INSERT_VALUES);CHKERRQ(ierr);
-          ierr = VecSetValue(rhs,j,(PetscScalar)j,INSERT_VALUES);CHKERRQ(ierr);
+          PetscCall(VecSetValue(sol,j,(PetscScalar)j,INSERT_VALUES));
+          PetscCall(VecSetValue(rhs,j,(PetscScalar)j,INSERT_VALUES));
         }
-        ierr = VecAssemblyBegin(sol);CHKERRQ(ierr);
-        ierr = VecAssemblyBegin(rhs);CHKERRQ(ierr);
-        ierr = VecAssemblyEnd(sol);CHKERRQ(ierr);
-        ierr = VecAssemblyEnd(rhs);CHKERRQ(ierr);
+        PetscCall(VecAssemblyBegin(sol));
+        PetscCall(VecAssemblyBegin(rhs));
+        PetscCall(VecAssemblyEnd(sol));
+        PetscCall(VecAssemblyEnd(rhs));
 
-        ierr = KSPGuessUpdate(guess,rhs,sol);CHKERRQ(ierr);
+        PetscCall(KSPGuessUpdate(guess,rhs,sol));
 
-        ierr = VecDestroy(&rhs);CHKERRQ(ierr);
-        ierr = VecDestroy(&sol);CHKERRQ(ierr);
+        PetscCall(VecDestroy(&rhs));
+        PetscCall(VecDestroy(&sol));
       }
 
-      ierr = VecCreateSeq(PETSC_COMM_SELF,triangle_size,&sol);CHKERRQ(ierr);
-      ierr = VecCreateSeq(PETSC_COMM_SELF,triangle_size,&rhs);CHKERRQ(ierr);
-      ierr = VecSetValues(rhs,5,indices,values,INSERT_VALUES);CHKERRQ(ierr);
-      ierr = VecAssemblyBegin(sol);CHKERRQ(ierr);
-      ierr = VecAssemblyEnd(sol);CHKERRQ(ierr);
+      PetscCall(VecCreateSeq(PETSC_COMM_SELF,triangle_size,&sol));
+      PetscCall(VecCreateSeq(PETSC_COMM_SELF,triangle_size,&rhs));
+      PetscCall(VecSetValues(rhs,5,indices,values,INSERT_VALUES));
+      PetscCall(VecAssemblyBegin(sol));
+      PetscCall(VecAssemblyEnd(sol));
 
-      ierr = KSPGuessFormGuess(guess,rhs,sol);CHKERRQ(ierr);
-      ierr = VecView(sol,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+      PetscCall(KSPGuessFormGuess(guess,rhs,sol));
+      PetscCall(VecView(sol,PETSC_VIEWER_STDOUT_SELF));
 
-      ierr = VecDestroy(&rhs);CHKERRQ(ierr);
-      ierr = VecDestroy(&sol);CHKERRQ(ierr);
-      ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+      PetscCall(VecDestroy(&rhs));
+      PetscCall(VecDestroy(&sol));
+      PetscCall(KSPDestroy(&ksp));
     }
-    ierr = MatDestroy(&A);CHKERRQ(ierr);
+    PetscCall(MatDestroy(&A));
   }
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /* The relative tolerance here is strict enough to get rid of all the noise in both single and double precision: values as low as 5e-7 also work */

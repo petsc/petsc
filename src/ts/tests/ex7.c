@@ -15,20 +15,19 @@ static char help[] = "Solves DAE with integrator only on non-algebraic terms \n"
 */
 PetscErrorCode f(PetscReal t,Vec UV,Vec F)
 {
-  PetscErrorCode    ierr;
   const PetscScalar *u,*v;
   PetscScalar       *f;
   PetscInt          n,i;
 
   PetscFunctionBeginUser;
-  ierr = VecGetLocalSize(UV,&n);CHKERRQ(ierr);
+  PetscCall(VecGetLocalSize(UV,&n));
   n    = n/2;
-  ierr = VecGetArrayRead(UV,&u);CHKERRQ(ierr);
+  PetscCall(VecGetArrayRead(UV,&u));
   v    = u + n;
-  ierr = VecGetArrayWrite(F,&f);CHKERRQ(ierr);
+  PetscCall(VecGetArrayWrite(F,&f));
   for (i=0; i<n; i++) f[i] = u[i] + v[i];
-  ierr = VecRestoreArrayRead(UV,&u);CHKERRQ(ierr);
-  ierr = VecRestoreArrayWrite(F,&f);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(UV,&u));
+  PetscCall(VecRestoreArrayWrite(F,&f));
   PetscFunctionReturn(0);
 }
 
@@ -37,20 +36,19 @@ PetscErrorCode f(PetscReal t,Vec UV,Vec F)
 */
 PetscErrorCode F(PetscReal t,Vec UV,Vec F)
 {
-  PetscErrorCode    ierr;
   const PetscScalar *u,*v;
   PetscScalar       *f;
   PetscInt          n,i;
 
   PetscFunctionBeginUser;
-  ierr = VecGetLocalSize(UV,&n);CHKERRQ(ierr);
+  PetscCall(VecGetLocalSize(UV,&n));
   n    = n/2;
-  ierr = VecGetArrayRead(UV,&u);CHKERRQ(ierr);
+  PetscCall(VecGetArrayRead(UV,&u));
   v    = u + n;
-  ierr = VecGetArrayWrite(F,&f);CHKERRQ(ierr);
+  PetscCall(VecGetArrayWrite(F,&f));
   for (i=0; i<n; i++) f[i] = u[i] - v[i];
-  ierr = VecRestoreArrayRead(UV,&u);CHKERRQ(ierr);
-  ierr = VecRestoreArrayWrite(F,&f);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(UV,&u));
+  PetscCall(VecRestoreArrayWrite(F,&f));
   PetscFunctionReturn(0);
 }
 
@@ -68,7 +66,6 @@ extern PetscErrorCode SNESFunction(SNES,Vec,Vec,void*);
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   AppCtx         ctx;
   TS             ts;
   Vec            tsrhs,U;
@@ -76,49 +73,49 @@ int main(int argc,char **argv)
   PetscInt       i;
   PetscMPIInt    rank;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSEULER);CHKERRQ(ierr);
-  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,1,PETSC_DETERMINE,&tsrhs);CHKERRQ(ierr);
-  ierr = VecDuplicate(tsrhs,&U);CHKERRQ(ierr);
-  ierr = TSSetRHSFunction(ts,tsrhs,TSFunction,&ctx);CHKERRQ(ierr);
-  ierr = TSSetMaxTime(ts,1.0);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
+  PetscCall(TSSetProblemType(ts,TS_NONLINEAR));
+  PetscCall(TSSetType(ts,TSEULER));
+  PetscCall(TSSetFromOptions(ts));
+  PetscCall(VecCreateMPI(PETSC_COMM_WORLD,1,PETSC_DETERMINE,&tsrhs));
+  PetscCall(VecDuplicate(tsrhs,&U));
+  PetscCall(TSSetRHSFunction(ts,tsrhs,TSFunction,&ctx));
+  PetscCall(TSSetMaxTime(ts,1.0));
   ctx.f = f;
 
-  ierr = SNESCreate(PETSC_COMM_WORLD,&ctx.snes);CHKERRQ(ierr);
-  ierr = SNESSetFromOptions(ctx.snes);CHKERRQ(ierr);
-  ierr = SNESSetFunction(ctx.snes,NULL,SNESFunction,&ctx);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(ctx.snes,NULL,NULL,SNESComputeJacobianDefault,&ctx);CHKERRQ(ierr);
+  PetscCall(SNESCreate(PETSC_COMM_WORLD,&ctx.snes));
+  PetscCall(SNESSetFromOptions(ctx.snes));
+  PetscCall(SNESSetFunction(ctx.snes,NULL,SNESFunction,&ctx));
+  PetscCall(SNESSetJacobian(ctx.snes,NULL,NULL,SNESComputeJacobianDefault,&ctx));
   ctx.F = F;
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,1,PETSC_DETERMINE,&ctx.V);CHKERRQ(ierr);
+  PetscCall(VecCreateMPI(PETSC_COMM_WORLD,1,PETSC_DETERMINE,&ctx.V));
 
   /* Create scatters to move between separate U and V representation and UV representation of solution */
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,2,PETSC_DETERMINE,&ctx.UV);CHKERRQ(ierr);
+  PetscCall(VecCreateMPI(PETSC_COMM_WORLD,2,PETSC_DETERMINE,&ctx.UV));
   i    = 2*rank;
-  ierr = ISCreateGeneral(PETSC_COMM_WORLD,1,&i,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
-  ierr = VecScatterCreate(U,NULL,ctx.UV,is,&ctx.scatterU);CHKERRQ(ierr);
-  ierr = ISDestroy(&is);CHKERRQ(ierr);
+  PetscCall(ISCreateGeneral(PETSC_COMM_WORLD,1,&i,PETSC_COPY_VALUES,&is));
+  PetscCall(VecScatterCreate(U,NULL,ctx.UV,is,&ctx.scatterU));
+  PetscCall(ISDestroy(&is));
   i    = 2*rank + 1;
-  ierr = ISCreateGeneral(PETSC_COMM_WORLD,1,&i,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
-  ierr = VecScatterCreate(ctx.V,NULL,ctx.UV,is,&ctx.scatterV);CHKERRQ(ierr);
-  ierr = ISDestroy(&is);CHKERRQ(ierr);
+  PetscCall(ISCreateGeneral(PETSC_COMM_WORLD,1,&i,PETSC_COPY_VALUES,&is));
+  PetscCall(VecScatterCreate(ctx.V,NULL,ctx.UV,is,&ctx.scatterV));
+  PetscCall(ISDestroy(&is));
 
-  ierr = VecSet(U,1.0);CHKERRQ(ierr);
-  ierr = TSSolve(ts,U);CHKERRQ(ierr);
+  PetscCall(VecSet(U,1.0));
+  PetscCall(TSSolve(ts,U));
 
-  ierr = VecDestroy(&ctx.V);CHKERRQ(ierr);
-  ierr = VecDestroy(&ctx.UV);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&ctx.scatterU);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&ctx.scatterV);CHKERRQ(ierr);
-  ierr = VecDestroy(&tsrhs);CHKERRQ(ierr);
-  ierr = VecDestroy(&U);CHKERRQ(ierr);
-  ierr = SNESDestroy(&ctx.snes);CHKERRQ(ierr);
-  ierr = TSDestroy(&ts);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(VecDestroy(&ctx.V));
+  PetscCall(VecDestroy(&ctx.UV));
+  PetscCall(VecScatterDestroy(&ctx.scatterU));
+  PetscCall(VecScatterDestroy(&ctx.scatterV));
+  PetscCall(VecDestroy(&tsrhs));
+  PetscCall(VecDestroy(&U));
+  PetscCall(SNESDestroy(&ctx.snes));
+  PetscCall(TSDestroy(&ts));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*
@@ -129,16 +126,15 @@ int main(int argc,char **argv)
 PetscErrorCode TSFunction(TS ts,PetscReal t,Vec U,Vec F,void *actx)
 {
   AppCtx         *ctx = (AppCtx*)actx;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   ctx->t = t;
-  ierr = VecScatterBegin(ctx->scatterU,U,ctx->UV,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(ctx->scatterU,U,ctx->UV,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = SNESSolve(ctx->snes,NULL,ctx->V);CHKERRQ(ierr);
-  ierr = VecScatterBegin(ctx->scatterV,ctx->V,ctx->UV,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(ctx->scatterV,ctx->V,ctx->UV,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = (*ctx->f)(t,ctx->UV,F);CHKERRQ(ierr);
+  PetscCall(VecScatterBegin(ctx->scatterU,U,ctx->UV,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(ctx->scatterU,U,ctx->UV,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(SNESSolve(ctx->snes,NULL,ctx->V));
+  PetscCall(VecScatterBegin(ctx->scatterV,ctx->V,ctx->UV,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(ctx->scatterV,ctx->V,ctx->UV,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall((*ctx->f)(t,ctx->UV,F));
   PetscFunctionReturn(0);
 }
 
@@ -149,12 +145,11 @@ PetscErrorCode TSFunction(TS ts,PetscReal t,Vec U,Vec F,void *actx)
 PetscErrorCode SNESFunction(SNES snes,Vec V,Vec F,void *actx)
 {
   AppCtx         *ctx = (AppCtx*)actx;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = VecScatterBegin(ctx->scatterV,V,ctx->UV,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(ctx->scatterV,V,ctx->UV,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = (*ctx->F)(ctx->t,ctx->UV,F);CHKERRQ(ierr);
+  PetscCall(VecScatterBegin(ctx->scatterV,V,ctx->UV,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(ctx->scatterV,V,ctx->UV,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall((*ctx->F)(ctx->t,ctx->UV,F));
   PetscFunctionReturn(0);
 }
 

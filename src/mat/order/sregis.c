@@ -39,28 +39,25 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_METISND(Mat,MatOrderingType,IS*,IS*);
 @*/
 PetscErrorCode  MatOrderingRegisterAll(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (MatOrderingRegisterAllCalled) PetscFunctionReturn(0);
   MatOrderingRegisterAllCalled = PETSC_TRUE;
 
-  ierr = MatOrderingRegister(MATORDERINGNATURAL,  MatGetOrdering_Natural);CHKERRQ(ierr);
-  ierr = MatOrderingRegister(MATORDERINGND,       MatGetOrdering_ND);CHKERRQ(ierr);
-  ierr = MatOrderingRegister(MATORDERING1WD,      MatGetOrdering_1WD);CHKERRQ(ierr);
-  ierr = MatOrderingRegister(MATORDERINGRCM,      MatGetOrdering_RCM);CHKERRQ(ierr);
-  ierr = MatOrderingRegister(MATORDERINGQMD,      MatGetOrdering_QMD);CHKERRQ(ierr);
-  ierr = MatOrderingRegister(MATORDERINGROWLENGTH,MatGetOrdering_RowLength);CHKERRQ(ierr);
+  PetscCall(MatOrderingRegister(MATORDERINGNATURAL,  MatGetOrdering_Natural));
+  PetscCall(MatOrderingRegister(MATORDERINGND,       MatGetOrdering_ND));
+  PetscCall(MatOrderingRegister(MATORDERING1WD,      MatGetOrdering_1WD));
+  PetscCall(MatOrderingRegister(MATORDERINGRCM,      MatGetOrdering_RCM));
+  PetscCall(MatOrderingRegister(MATORDERINGQMD,      MatGetOrdering_QMD));
+  PetscCall(MatOrderingRegister(MATORDERINGROWLENGTH,MatGetOrdering_RowLength));
 #if defined(PETSC_HAVE_SUPERLU_DIST)
-  ierr = MatOrderingRegister(MATORDERINGWBM,      MatGetOrdering_WBM);CHKERRQ(ierr);
+  PetscCall(MatOrderingRegister(MATORDERINGWBM,      MatGetOrdering_WBM));
 #endif
-  ierr = MatOrderingRegister(MATORDERINGSPECTRAL, MatGetOrdering_Spectral);CHKERRQ(ierr);
+  PetscCall(MatOrderingRegister(MATORDERINGSPECTRAL, MatGetOrdering_Spectral));
 #if defined(PETSC_HAVE_SUITESPARSE)
-  ierr = MatOrderingRegister(MATORDERINGAMD,      MatGetOrdering_AMD);CHKERRQ(ierr);
+  PetscCall(MatOrderingRegister(MATORDERINGAMD,      MatGetOrdering_AMD));
 #endif
 #if defined(PETSC_HAVE_METIS)
-  ierr = MatOrderingRegister(MATORDERINGMETISND,  MatGetOrdering_METISND);CHKERRQ(ierr);
+  PetscCall(MatOrderingRegister(MATORDERINGMETISND,  MatGetOrdering_METISND));
 #endif
   PetscFunctionReturn(0);
 }
-

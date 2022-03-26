@@ -6,7 +6,6 @@ static char help[] = "Tests the different MatColoring implementatons.\n\n";
 int main(int argc,char **args)
 {
   Mat            C;
-  PetscErrorCode ierr;
   PetscViewer    viewer;
   char           file[128];
   PetscBool      flg;
@@ -14,31 +13,31 @@ int main(int argc,char **args)
   ISColoring     coloring;
   PetscMPIInt    size;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
-  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg);CHKERRQ(ierr);
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must use -f filename to load sparse matrix");
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
-  ierr = MatLoad(C,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must use -f filename to load sparse matrix");
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&viewer));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&C));
+  PetscCall(MatLoad(C,viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
 
-  ierr = MatColoringCreate(C,&ctx);CHKERRQ(ierr);
-  ierr = MatColoringSetFromOptions(ctx);CHKERRQ(ierr);
-  ierr = MatColoringApply(ctx,&coloring);CHKERRQ(ierr);
-  ierr = MatColoringTest(ctx,coloring);CHKERRQ(ierr);
+  PetscCall(MatColoringCreate(C,&ctx));
+  PetscCall(MatColoringSetFromOptions(ctx));
+  PetscCall(MatColoringApply(ctx,&coloring));
+  PetscCall(MatColoringTest(ctx,coloring));
   if (size == 1) {
     /* jp, power and greedy have bug -- need to be fixed */
-    ierr = MatISColoringTest(C,coloring);CHKERRQ(ierr);
+    PetscCall(MatISColoringTest(C,coloring));
   }
 
   /* Free data structures */
-  ierr = ISColoringDestroy(&coloring);CHKERRQ(ierr);
-  ierr = MatColoringDestroy(&ctx);CHKERRQ(ierr);
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(ISColoringDestroy(&coloring));
+  PetscCall(MatColoringDestroy(&ctx));
+  PetscCall(MatDestroy(&C));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

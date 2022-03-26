@@ -27,39 +27,37 @@ PetscBool PetscViewerRegisterAllCalled;
 @*/
 PetscErrorCode  PetscViewerRegisterAll(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (PetscViewerRegisterAllCalled) PetscFunctionReturn(0);
   PetscViewerRegisterAllCalled = PETSC_TRUE;
 
-  ierr = PetscViewerRegister(PETSCVIEWERASCII,      PetscViewerCreate_ASCII);CHKERRQ(ierr);
-  ierr = PetscViewerRegister(PETSCVIEWERBINARY,     PetscViewerCreate_Binary);CHKERRQ(ierr);
-  ierr = PetscViewerRegister(PETSCVIEWERSTRING,     PetscViewerCreate_String);CHKERRQ(ierr);
-  ierr = PetscViewerRegister(PETSCVIEWERDRAW,       PetscViewerCreate_Draw);CHKERRQ(ierr);
+  PetscCall(PetscViewerRegister(PETSCVIEWERASCII,      PetscViewerCreate_ASCII));
+  PetscCall(PetscViewerRegister(PETSCVIEWERBINARY,     PetscViewerCreate_Binary));
+  PetscCall(PetscViewerRegister(PETSCVIEWERSTRING,     PetscViewerCreate_String));
+  PetscCall(PetscViewerRegister(PETSCVIEWERDRAW,       PetscViewerCreate_Draw));
 #if defined(PETSC_USE_SOCKET_VIEWER)
-  ierr = PetscViewerRegister(PETSCVIEWERSOCKET,     PetscViewerCreate_Socket);CHKERRQ(ierr);
+  PetscCall(PetscViewerRegister(PETSCVIEWERSOCKET,     PetscViewerCreate_Socket));
 #endif
 #if defined(PETSC_HAVE_MATHEMATICA)
-  ierr = PetscViewerRegister(PETSCVIEWERMATHEMATICA,PetscViewerCreate_Mathematica);CHKERRQ(ierr);
+  PetscCall(PetscViewerRegister(PETSCVIEWERMATHEMATICA,PetscViewerCreate_Mathematica));
 #endif
-  ierr = PetscViewerRegister(PETSCVIEWERVU,         PetscViewerCreate_VU);CHKERRQ(ierr);
+  PetscCall(PetscViewerRegister(PETSCVIEWERVU,         PetscViewerCreate_VU));
 #if defined(PETSC_HAVE_HDF5)
-  ierr = PetscViewerRegister(PETSCVIEWERHDF5,       PetscViewerCreate_HDF5);CHKERRQ(ierr);
+  PetscCall(PetscViewerRegister(PETSCVIEWERHDF5,       PetscViewerCreate_HDF5));
 #endif
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-  ierr = PetscViewerRegister(PETSCVIEWERMATLAB,     PetscViewerCreate_Matlab);CHKERRQ(ierr);
+  PetscCall(PetscViewerRegister(PETSCVIEWERMATLAB,     PetscViewerCreate_Matlab));
 #endif
 #if defined(PETSC_HAVE_SAWS)
-  ierr = PetscViewerRegister(PETSCVIEWERSAWS,        PetscViewerCreate_SAWs);CHKERRQ(ierr);
+  PetscCall(PetscViewerRegister(PETSCVIEWERSAWS,        PetscViewerCreate_SAWs));
 #endif
-  ierr = PetscViewerRegister(PETSCVIEWERVTK,        PetscViewerCreate_VTK);CHKERRQ(ierr);
-  ierr = PetscViewerRegister(PETSCVIEWERGLVIS,      PetscViewerCreate_GLVis);CHKERRQ(ierr);
+  PetscCall(PetscViewerRegister(PETSCVIEWERVTK,        PetscViewerCreate_VTK));
+  PetscCall(PetscViewerRegister(PETSCVIEWERGLVIS,      PetscViewerCreate_GLVis));
 #if defined(PETSC_HAVE_ADIOS)
-  ierr = PetscViewerRegister(PETSCVIEWERADIOS,      PetscViewerCreate_ADIOS);CHKERRQ(ierr);
+  PetscCall(PetscViewerRegister(PETSCVIEWERADIOS,      PetscViewerCreate_ADIOS));
 #endif
 #if defined(PETSC_HAVE_EXODUSII)
-  ierr = PetscViewerRegister(PETSCVIEWEREXODUSII,    PetscViewerCreate_ExodusII);CHKERRQ(ierr);
+  PetscCall(PetscViewerRegister(PETSCVIEWEREXODUSII,    PetscViewerCreate_ExodusII));
 #endif
   PetscFunctionReturn(0);
 }

@@ -4,7 +4,6 @@
 static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
 {
   PetscBool      changed_y, changed_w;
-  PetscErrorCode ierr;
   Vec            X;
   Vec            F;
   Vec            Y;
@@ -22,78 +21,78 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
   PetscErrorCode (*objective)(SNES,Vec,PetscReal*,void*);
 
   PetscFunctionBegin;
-  ierr = SNESLineSearchGetVecs(linesearch, &X, &F, &Y, &W, NULL);CHKERRQ(ierr);
-  ierr = SNESLineSearchGetNorms(linesearch, &xnorm, &gnorm, &ynorm);CHKERRQ(ierr);
-  ierr = SNESLineSearchGetLambda(linesearch, &lambda);CHKERRQ(ierr);
-  ierr = SNESLineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
-  ierr = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_SUCCEEDED);CHKERRQ(ierr);
-  ierr = SNESLineSearchGetTolerances(linesearch, &steptol, &maxstep, &rtol, &atol, &ltol, &max_its);CHKERRQ(ierr);
-  ierr = SNESLineSearchGetDefaultMonitor(linesearch, &monitor);CHKERRQ(ierr);
+  PetscCall(SNESLineSearchGetVecs(linesearch, &X, &F, &Y, &W, NULL));
+  PetscCall(SNESLineSearchGetNorms(linesearch, &xnorm, &gnorm, &ynorm));
+  PetscCall(SNESLineSearchGetLambda(linesearch, &lambda));
+  PetscCall(SNESLineSearchGetSNES(linesearch, &snes));
+  PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_SUCCEEDED));
+  PetscCall(SNESLineSearchGetTolerances(linesearch, &steptol, &maxstep, &rtol, &atol, &ltol, &max_its));
+  PetscCall(SNESLineSearchGetDefaultMonitor(linesearch, &monitor));
 
-  ierr = SNESGetObjective(snes,&objective,NULL);CHKERRQ(ierr);
+  PetscCall(SNESGetObjective(snes,&objective,NULL));
 
   /* precheck */
-  ierr       = SNESLineSearchPreCheck(linesearch,X,Y,&changed_y);CHKERRQ(ierr);
+  PetscCall(SNESLineSearchPreCheck(linesearch,X,Y,&changed_y));
   lambda_old = 0.0;
   if (!objective) {
     fnrm_old = gnorm*gnorm;
   } else {
-    ierr = SNESComputeObjective(snes,X,&fnrm_old);CHKERRQ(ierr);
+    PetscCall(SNESComputeObjective(snes,X,&fnrm_old));
   }
   lambda_mid = 0.5*(lambda + lambda_old);
 
   for (i = 0; i < max_its; i++) {
 
     while (PETSC_TRUE) {
-      ierr = VecCopy(X, W);CHKERRQ(ierr);
-      ierr = VecAXPY(W, -lambda_mid, Y);CHKERRQ(ierr);
+      PetscCall(VecCopy(X, W));
+      PetscCall(VecAXPY(W, -lambda_mid, Y));
       if (linesearch->ops->viproject) {
-        ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
+        PetscCall((*linesearch->ops->viproject)(snes, W));
       }
       if (!objective) {
         /* compute the norm at the midpoint */
-        ierr = (*linesearch->ops->snesfunc)(snes, W, F);CHKERRQ(ierr);
+        PetscCall((*linesearch->ops->snesfunc)(snes, W, F));
         if (linesearch->ops->vinorm) {
           fnrm_mid = gnorm;
-          ierr     = (*linesearch->ops->vinorm)(snes, F, W, &fnrm_mid);CHKERRQ(ierr);
+          PetscCall((*linesearch->ops->vinorm)(snes, F, W, &fnrm_mid));
         } else {
-          ierr = VecNorm(F,NORM_2,&fnrm_mid);CHKERRQ(ierr);
+          PetscCall(VecNorm(F,NORM_2,&fnrm_mid));
         }
 
         /* compute the norm at the new endpoit */
-        ierr = VecCopy(X, W);CHKERRQ(ierr);
-        ierr = VecAXPY(W, -lambda, Y);CHKERRQ(ierr);
+        PetscCall(VecCopy(X, W));
+        PetscCall(VecAXPY(W, -lambda, Y));
         if (linesearch->ops->viproject) {
-          ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
+          PetscCall((*linesearch->ops->viproject)(snes, W));
         }
-        ierr = (*linesearch->ops->snesfunc)(snes, W, F);CHKERRQ(ierr);
+        PetscCall((*linesearch->ops->snesfunc)(snes, W, F));
         if (linesearch->ops->vinorm) {
           fnrm = gnorm;
-          ierr = (*linesearch->ops->vinorm)(snes, F, W, &fnrm);CHKERRQ(ierr);
+          PetscCall((*linesearch->ops->vinorm)(snes, F, W, &fnrm));
         } else {
-          ierr = VecNorm(F,NORM_2,&fnrm);CHKERRQ(ierr);
+          PetscCall(VecNorm(F,NORM_2,&fnrm));
         }
         fnrm_mid = fnrm_mid*fnrm_mid;
         fnrm = fnrm*fnrm;
       } else {
         /* compute the objective at the midpoint */
-        ierr = VecCopy(X, W);CHKERRQ(ierr);
-        ierr = VecAXPY(W, -lambda_mid, Y);CHKERRQ(ierr);
-        ierr = SNESComputeObjective(snes,W,&fnrm_mid);CHKERRQ(ierr);
+        PetscCall(VecCopy(X, W));
+        PetscCall(VecAXPY(W, -lambda_mid, Y));
+        PetscCall(SNESComputeObjective(snes,W,&fnrm_mid));
 
         /* compute the objective at the new endpoint */
-        ierr = VecCopy(X, W);CHKERRQ(ierr);
-        ierr = VecAXPY(W, -lambda, Y);CHKERRQ(ierr);
-        ierr = SNESComputeObjective(snes,W,&fnrm);CHKERRQ(ierr);
+        PetscCall(VecCopy(X, W));
+        PetscCall(VecAXPY(W, -lambda, Y));
+        PetscCall(SNESComputeObjective(snes,W,&fnrm));
       }
       if (!PetscIsInfOrNanReal(fnrm)) break;
       if (monitor) {
-        ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(monitor,"    Line search: objective function at lambdas = %g is Inf or Nan, cutting lambda\n",(double)lambda);CHKERRQ(ierr);
-        ierr = PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
+        PetscCall(PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel));
+        PetscCall(PetscViewerASCIIPrintf(monitor,"    Line search: objective function at lambdas = %g is Inf or Nan, cutting lambda\n",(double)lambda));
+        PetscCall(PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel));
       }
       if (lambda <= steptol) {
-        ierr = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_REDUCT);CHKERRQ(ierr);
+        PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_REDUCT));
         PetscFunctionReturn(0);
       }
       maxstep = .95*lambda; /* forbid the search from ever going back to the "failed" length that generates Nan or Inf */
@@ -109,13 +108,13 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
     del2Fnrm    = (delFnrm - delFnrm_old) / delLambda;
 
     if (monitor) {
-      ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel));
       if (!objective) {
-        ierr = PetscViewerASCIIPrintf(monitor,"    Line search: lambdas = [%g, %g, %g], fnorms = [%g, %g, %g]\n",(double)lambda, (double)lambda_mid, (double)lambda_old, (double)PetscSqrtReal(fnrm), (double)PetscSqrtReal(fnrm_mid), (double)PetscSqrtReal(fnrm_old));CHKERRQ(ierr);
+        PetscCall(PetscViewerASCIIPrintf(monitor,"    Line search: lambdas = [%g, %g, %g], fnorms = [%g, %g, %g]\n",(double)lambda, (double)lambda_mid, (double)lambda_old, (double)PetscSqrtReal(fnrm), (double)PetscSqrtReal(fnrm_mid), (double)PetscSqrtReal(fnrm_old)));
       } else {
-        ierr = PetscViewerASCIIPrintf(monitor,"    Line search: lambdas = [%g, %g, %g], obj = [%g, %g, %g]\n",(double)lambda, (double)lambda_mid, (double)lambda_old, (double)fnrm, (double)fnrm_mid, (double)fnrm_old);CHKERRQ(ierr);
+        PetscCall(PetscViewerASCIIPrintf(monitor,"    Line search: lambdas = [%g, %g, %g], obj = [%g, %g, %g]\n",(double)lambda, (double)lambda_mid, (double)lambda_old, (double)fnrm, (double)fnrm_mid, (double)fnrm_old));
       }
-      ierr = PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel));
     }
 
     /* compute the secant (Newton) update -- always go downhill */
@@ -136,35 +135,35 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
     lambda_mid = 0.5*(lambda + lambda_old);
   }
   /* construct the solution */
-  ierr = VecCopy(X, W);CHKERRQ(ierr);
-  ierr = VecAXPY(W, -lambda, Y);CHKERRQ(ierr);
+  PetscCall(VecCopy(X, W));
+  PetscCall(VecAXPY(W, -lambda, Y));
   if (linesearch->ops->viproject) {
-    ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
+    PetscCall((*linesearch->ops->viproject)(snes, W));
   }
 
   /* postcheck */
-  ierr = SNESLineSearchPostCheck(linesearch,X,Y,W,&changed_y,&changed_w);CHKERRQ(ierr);
+  PetscCall(SNESLineSearchPostCheck(linesearch,X,Y,W,&changed_y,&changed_w));
   if (changed_y) {
-    ierr = VecAXPY(X, -lambda, Y);CHKERRQ(ierr);
+    PetscCall(VecAXPY(X, -lambda, Y));
     if (linesearch->ops->viproject) {
-      ierr = (*linesearch->ops->viproject)(snes, X);CHKERRQ(ierr);
+      PetscCall((*linesearch->ops->viproject)(snes, X));
     }
   } else {
-    ierr = VecCopy(W, X);CHKERRQ(ierr);
+    PetscCall(VecCopy(W, X));
   }
-  ierr = (*linesearch->ops->snesfunc)(snes,X,F);CHKERRQ(ierr);
+  PetscCall((*linesearch->ops->snesfunc)(snes,X,F));
 
-  ierr = SNESLineSearchSetLambda(linesearch, lambda);CHKERRQ(ierr);
-  ierr = SNESLineSearchComputeNorms(linesearch);CHKERRQ(ierr);
-  ierr = SNESLineSearchGetNorms(linesearch, &xnorm, &gnorm, &ynorm);CHKERRQ(ierr);
+  PetscCall(SNESLineSearchSetLambda(linesearch, lambda));
+  PetscCall(SNESLineSearchComputeNorms(linesearch));
+  PetscCall(SNESLineSearchGetNorms(linesearch, &xnorm, &gnorm, &ynorm));
 
   if (monitor) {
-    ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(monitor,"    Line search terminated: lambda = %g, fnorms = %g\n", (double)lambda, (double)gnorm);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel));
+    PetscCall(PetscViewerASCIIPrintf(monitor,"    Line search terminated: lambda = %g, fnorms = %g\n", (double)lambda, (double)gnorm));
+    PetscCall(PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel));
   }
   if (lambda <= steptol) {
-    ierr = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_REDUCT);CHKERRQ(ierr);
+    PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_REDUCT));
   }
   PetscFunctionReturn(0);
 }

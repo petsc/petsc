@@ -6,27 +6,26 @@ int main(int argc,char **argv)
 {
   PetscLogDouble x,y;
   PetscInt       i;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,0,0);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,0,0));
   /* To take care of paging effects */
-  ierr = PetscTime(&y);CHKERRQ(ierr);
+  PetscCall(PetscTime(&y));
 
   for (i=0; i<2; i++) {
-    ierr = PetscTime(&x);CHKERRQ(ierr);
-    ierr = PetscTime(&y);CHKERRQ(ierr);
-    ierr = PetscTime(&y);CHKERRQ(ierr);
-    ierr = PetscTime(&y);CHKERRQ(ierr);
-    ierr = PetscTime(&y);CHKERRQ(ierr);
-    ierr = PetscTime(&y);CHKERRQ(ierr);
-    ierr = PetscTime(&y);CHKERRQ(ierr);
-    ierr = PetscTime(&y);CHKERRQ(ierr);
-    ierr = PetscTime(&y);CHKERRQ(ierr);
-    ierr = PetscTime(&y);CHKERRQ(ierr);
-    ierr = PetscTime(&y);CHKERRQ(ierr);
+    PetscCall(PetscTime(&x));
+    PetscCall(PetscTime(&y));
+    PetscCall(PetscTime(&y));
+    PetscCall(PetscTime(&y));
+    PetscCall(PetscTime(&y));
+    PetscCall(PetscTime(&y));
+    PetscCall(PetscTime(&y));
+    PetscCall(PetscTime(&y));
+    PetscCall(PetscTime(&y));
+    PetscCall(PetscTime(&y));
+    PetscCall(PetscTime(&y));
     fprintf(stdout,"%-15s : %e sec\n","PetscTime",(y-x)/10.0);
   }
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }

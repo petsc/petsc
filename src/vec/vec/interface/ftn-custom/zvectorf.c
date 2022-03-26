@@ -165,12 +165,12 @@ PETSC_EXTERN void  vecsetvaluesblocked11_(Vec *x,PetscInt *ni, PetscInt ix[], Pe
 
 PETSC_EXTERN void vecsetvalue_(Vec *v,PetscInt *i,PetscScalar *va,InsertMode *mode,PetscErrorCode *ierr)
 {
-  /* cannot use VecSetValue() here since that uses CHKERRQ() which has a return in it */
+  /* cannot use VecSetValue() here since that uses PetscCall() which has a return in it */
   *ierr = VecSetValues(*v,1,i,va,*mode);
 }
 PETSC_EXTERN void vecsetvaluelocal_(Vec *v,PetscInt *i,PetscScalar *va,InsertMode *mode,PetscErrorCode *ierr)
 {
-  /* cannot use VecSetValue() here since that uses CHKERRQ() which has a return in it */
+  /* cannot use VecSetValue() here since that uses PetscCall() which has a return in it */
   *ierr = VecSetValuesLocal(*v,1,i,va,*mode);
 }
 

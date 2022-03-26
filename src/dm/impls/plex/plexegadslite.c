@@ -16,36 +16,35 @@ PetscErrorCode DMPlexSnapToGeomModel_EGADSLite_Internal(DM dm, PetscInt p, Petsc
   PetscScalar   *coords = NULL;
   PetscInt       Nv, v, Np = 0, pm;
   PetscInt       d;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginHot;
-  ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocal(dm, &coordinatesLocal);CHKERRQ(ierr);
-  ierr = EGlite_getTopology(model, &geom, &oclass, &mtype, NULL, &Nb, &bodies, &senses);CHKERRQ(ierr);
+  PetscCall(DMGetCoordinateDM(dm, &cdm));
+  PetscCall(DMGetCoordinatesLocal(dm, &coordinatesLocal));
+  PetscCall(EGlite_getTopology(model, &geom, &oclass, &mtype, NULL, &Nb, &bodies, &senses));
   PetscCheckFalse(bodyID >= Nb,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Body %D is not in [0, %d)", bodyID, Nb);
   body = bodies[bodyID];
 
-  if (edgeID >= 0)      {ierr = EGlite_objectBodyTopo(body, EDGE, edgeID, &obj);CHKERRQ(ierr); Np = 1;}
-  else if (faceID >= 0) {ierr = EGlite_objectBodyTopo(body, FACE, faceID, &obj);CHKERRQ(ierr); Np = 2;}
+  if (edgeID >= 0)      {PetscCall(EGlite_objectBodyTopo(body, EDGE, edgeID, &obj)); Np = 1;}
+  else if (faceID >= 0) {PetscCall(EGlite_objectBodyTopo(body, FACE, faceID, &obj)); Np = 2;}
   else {
     for (d = 0; d < dE; ++d) gcoords[d] = mcoords[d];
     PetscFunctionReturn(0);
   }
 
   /* Calculate parameters (t or u,v) for vertices */
-  ierr = DMPlexVecGetClosure(cdm, NULL, coordinatesLocal, p, &Nv, &coords);CHKERRQ(ierr);
+  PetscCall(DMPlexVecGetClosure(cdm, NULL, coordinatesLocal, p, &Nv, &coords));
   Nv  /= dE;
   if (Nv == 1) {
-    ierr = DMPlexVecRestoreClosure(cdm, NULL, coordinatesLocal, p, &Nv, &coords);CHKERRQ(ierr);
+    PetscCall(DMPlexVecRestoreClosure(cdm, NULL, coordinatesLocal, p, &Nv, &coords));
     for (d = 0; d < dE; ++d) gcoords[d] = mcoords[d];
     PetscFunctionReturn(0);
   }
   PetscCheckFalse(Nv > 16,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle %D coordinates associated to point %D", Nv, p);
 
   /* Correct EGADSlite 2pi bug when calculating nearest point on Periodic Surfaces */
-  ierr = EGlite_getRange(obj, range, &peri);CHKERRQ(ierr);
+  PetscCall(EGlite_getRange(obj, range, &peri));
   for (v = 0; v < Nv; ++v) {
-    ierr = EGlite_invEvaluate(obj, &coords[v*dE], &paramsV[v*3], &resultV[v*3]);CHKERRQ(ierr);
+    PetscCall(EGlite_invEvaluate(obj, &coords[v*dE], &paramsV[v*3], &resultV[v*3]));
 #if 1
     if (peri > 0) {
       if      (paramsV[v*3+0] + 1.e-4 < range[0]) {paramsV[v*3+0] += 2. * PETSC_PI;}
@@ -57,7 +56,7 @@ PetscErrorCode DMPlexSnapToGeomModel_EGADSLite_Internal(DM dm, PetscInt p, Petsc
     }
 #endif
   }
-  ierr = DMPlexVecRestoreClosure(cdm, NULL, coordinatesLocal, p, &Nv, &coords);CHKERRQ(ierr);
+  PetscCall(DMPlexVecRestoreClosure(cdm, NULL, coordinatesLocal, p, &Nv, &coords));
   /* Calculate parameters (t or u,v) for new vertex at edge midpoint */
   for (pm = 0; pm < Np; ++pm) {
     params[pm] = 0.;
@@ -67,7 +66,7 @@ PetscErrorCode DMPlexSnapToGeomModel_EGADSLite_Internal(DM dm, PetscInt p, Petsc
   PetscCheckFalse((params[0] < range[0]) || (params[0] > range[1]),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %D had bad interpolation", p);
   PetscCheckFalse(Np > 1 && ((params[1] < range[2]) || (params[1] > range[3])),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %D had bad interpolation", p);
   /* Put coordinates for new vertex in result[] */
-  ierr = EGlite_evaluate(obj, params, result);CHKERRQ(ierr);
+  PetscCall(EGlite_evaluate(obj, params, result));
   for (d = 0; d < dE; ++d) gcoords[d] = result[d];
   PetscFunctionReturn(0);
 }
@@ -93,10 +92,9 @@ static PetscErrorCode DMPlexCreateEGADSLite_Internal(MPI_Comm comm, ego context,
   PetscInt      *cells  = NULL, *cone = NULL;
   PetscReal     *coords = NULL;
   PetscMPIInt    rank;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
   if (!rank) {
     const PetscInt debug = 0;
 
@@ -108,30 +106,30 @@ static PetscErrorCode DMPlexCreateEGADSLite_Internal(MPI_Comm comm, ego context,
     */
 
     /* Calculate cell and vertex sizes */
-    ierr = EGlite_getTopology(model, &geom, &oclass, &mtype, NULL, &nbodies, &bodies, &senses);CHKERRQ(ierr);
-    ierr = PetscHMapICreate(&edgeMap);CHKERRQ(ierr);
+    PetscCall(EGlite_getTopology(model, &geom, &oclass, &mtype, NULL, &nbodies, &bodies, &senses));
+    PetscCall(PetscHMapICreate(&edgeMap));
     numEdges = 0;
     for (b = 0; b < nbodies; ++b) {
       ego body = bodies[b];
       int id, Nl, l, Nv, v;
 
-      ierr = EGlite_getBodyTopos(body, NULL, LOOP, &Nl, &lobjs);CHKERRQ(ierr);
+      PetscCall(EGlite_getBodyTopos(body, NULL, LOOP, &Nl, &lobjs));
       for (l = 0; l < Nl; ++l) {
         ego loop = lobjs[l];
         int Ner  = 0, Ne, e, Nc;
 
-        ierr = EGlite_getTopology(loop, &geom, &oclass, &mtype, NULL, &Ne, &objs, &senses);CHKERRQ(ierr);
+        PetscCall(EGlite_getTopology(loop, &geom, &oclass, &mtype, NULL, &Ne, &objs, &senses));
         for (e = 0; e < Ne; ++e) {
           ego edge = objs[e];
           int Nv, id;
           PetscHashIter iter;
           PetscBool     found;
 
-          ierr = EGlite_getTopology(edge, &geom, &oclass, &mtype, NULL, &Nv, &nobjs, &senses);
+          PetscCall(EGlite_getTopology(edge, &geom, &oclass, &mtype, NULL, &Nv, &nobjs, &senses));
           if (mtype == DEGENERATE) continue;
-          id   = EGlite_indexBodyTopo(body, edge);CHKERRQ(ierr);
-          ierr = PetscHMapIFind(edgeMap, id-1, &iter, &found);CHKERRQ(ierr);
-          if (!found) {ierr = PetscHMapISet(edgeMap, id-1, numEdges++);CHKERRQ(ierr);}
+          id   = EGlite_indexBodyTopo(body, edge);
+          PetscCall(PetscHMapIFind(edgeMap, id-1, &iter, &found));
+          if (!found) PetscCall(PetscHMapISet(edgeMap, id-1, numEdges++));
           ++Ner;
         }
         if (Ner == 2)      {Nc = 2;}
@@ -142,7 +140,7 @@ static PetscErrorCode DMPlexCreateEGADSLite_Internal(MPI_Comm comm, ego context,
         newCells += Nc-1;
         maxCorners = PetscMax(Ner*2+1, maxCorners);
       }
-      ierr = EGlite_getBodyTopos(body, NULL, NODE, &Nv, &nobjs);CHKERRQ(ierr);
+      PetscCall(EGlite_getBodyTopos(body, NULL, NODE, &Nv, &nobjs));
       for (v = 0; v < Nv; ++v) {
         ego vertex = nobjs[v];
 
@@ -153,35 +151,35 @@ static PetscErrorCode DMPlexCreateEGADSLite_Internal(MPI_Comm comm, ego context,
       EGlite_free(lobjs);
       EGlite_free(nobjs);
     }
-    ierr = PetscHMapIGetSize(edgeMap, &numEdges);CHKERRQ(ierr);
+    PetscCall(PetscHMapIGetSize(edgeMap, &numEdges));
     newVertices  = numEdges + numQuads;
     numVertices += newVertices;
 
     dim        = 2; /* Assume 3D Models :: Need to update to handle 2D Models in the future */
     cdim       = 3; /* Assume 3D Models :: Need to update to handle 2D Models in the future */
     numCorners = 3; /* Split cells into triangles */
-    ierr = PetscMalloc3(numVertices*cdim, &coords, numCells*numCorners, &cells, maxCorners, &cone);CHKERRQ(ierr);
+    PetscCall(PetscMalloc3(numVertices*cdim, &coords, numCells*numCorners, &cells, maxCorners, &cone));
 
     /* Get vertex coordinates */
     for (b = 0; b < nbodies; ++b) {
       ego body = bodies[b];
       int id, Nv, v;
 
-      ierr = EGlite_getBodyTopos(body, NULL, NODE, &Nv, &nobjs);CHKERRQ(ierr);
+      PetscCall(EGlite_getBodyTopos(body, NULL, NODE, &Nv, &nobjs));
       for (v = 0; v < Nv; ++v) {
         ego    vertex = nobjs[v];
         double limits[4];
         int    dummy;
 
-        ierr = EGlite_getTopology(vertex, &geom, &oclass, &mtype, limits, &dummy, &mobjs, &senses);CHKERRQ(ierr);
-        id   = EGlite_indexBodyTopo(body, vertex);CHKERRQ(ierr);
+        PetscCall(EGlite_getTopology(vertex, &geom, &oclass, &mtype, limits, &dummy, &mobjs, &senses));
+        id   = EGlite_indexBodyTopo(body, vertex);
         coords[(id-1)*cdim+0] = limits[0];
         coords[(id-1)*cdim+1] = limits[1];
         coords[(id-1)*cdim+2] = limits[2];
       }
       EGlite_free(nobjs);
     }
-    ierr = PetscHMapIClear(edgeMap);CHKERRQ(ierr);
+    PetscCall(PetscHMapIClear(edgeMap));
     fOff     = numVertices - newVertices + numEdges;
     numEdges = 0;
     numQuads = 0;
@@ -189,33 +187,33 @@ static PetscErrorCode DMPlexCreateEGADSLite_Internal(MPI_Comm comm, ego context,
       ego body = bodies[b];
       int Nl, l;
 
-      ierr = EGlite_getBodyTopos(body, NULL, LOOP, &Nl, &lobjs);CHKERRQ(ierr);
+      PetscCall(EGlite_getBodyTopos(body, NULL, LOOP, &Nl, &lobjs));
       for (l = 0; l < Nl; ++l) {
         ego loop = lobjs[l];
         int lid, Ner = 0, Ne, e;
 
-        lid  = EGlite_indexBodyTopo(body, loop);CHKERRQ(ierr);
-        ierr = EGlite_getTopology(loop, &geom, &oclass, &mtype, NULL, &Ne, &objs, &senses);CHKERRQ(ierr);
+        lid  = EGlite_indexBodyTopo(body, loop);
+        PetscCall(EGlite_getTopology(loop, &geom, &oclass, &mtype, NULL, &Ne, &objs, &senses));
         for (e = 0; e < Ne; ++e) {
           ego       edge = objs[e];
           int       eid, Nv;
           PetscHashIter iter;
           PetscBool     found;
 
-          ierr = EGlite_getTopology(edge, &geom, &oclass, &mtype, NULL, &Nv, &nobjs, &senses);
+          PetscCall(EGlite_getTopology(edge, &geom, &oclass, &mtype, NULL, &Nv, &nobjs, &senses));
           if (mtype == DEGENERATE) continue;
           ++Ner;
-          eid  = EGlite_indexBodyTopo(body, edge);CHKERRQ(ierr);
-          ierr = PetscHMapIFind(edgeMap, eid-1, &iter, &found);CHKERRQ(ierr);
+          eid  = EGlite_indexBodyTopo(body, edge);
+          PetscCall(PetscHMapIFind(edgeMap, eid-1, &iter, &found));
           if (!found) {
             PetscInt v = numVertices - newVertices + numEdges;
             double range[4], params[3] = {0., 0., 0.}, result[18];
             int    periodic[2];
 
-            ierr = PetscHMapISet(edgeMap, eid-1, numEdges++);CHKERRQ(ierr);
-            ierr = EGlite_getRange(edge, range, periodic);CHKERRQ(ierr);
+            PetscCall(PetscHMapISet(edgeMap, eid-1, numEdges++));
+            PetscCall(EGlite_getRange(edge, range, periodic));
             params[0] = 0.5*(range[0] + range[1]);
-            ierr = EGlite_evaluate(edge, params, result);CHKERRQ(ierr);
+            PetscCall(EGlite_evaluate(edge, params, result));
             coords[v*cdim+0] = result[0];
             coords[v*cdim+1] = result[1];
             coords[v*cdim+2] = result[2];
@@ -227,14 +225,14 @@ static PetscErrorCode DMPlexCreateEGADSLite_Internal(MPI_Comm comm, ego context,
           double   range[4], params[3] = {0., 0., 0.}, result[18];
           int      Nf, fid, periodic[2];
 
-          ierr = EGlite_getBodyTopos(body, loop, FACE, &Nf, &fobjs);CHKERRQ(ierr);
+          PetscCall(EGlite_getBodyTopos(body, loop, FACE, &Nf, &fobjs));
           face = fobjs[0];
-          fid  = EGlite_indexBodyTopo(body, face);CHKERRQ(ierr);
+          fid  = EGlite_indexBodyTopo(body, face);
           PetscCheckFalse(Nf != 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Loop %d has %d faces, instead of 1 (%d)", lid-1, Nf, fid);
-          ierr = EGlite_getRange(face, range, periodic);CHKERRQ(ierr);
+          PetscCall(EGlite_getRange(face, range, periodic));
           params[0] = 0.5*(range[0] + range[1]);
           params[1] = 0.5*(range[2] + range[3]);
-          ierr = EGlite_evaluate(face, params, result);CHKERRQ(ierr);
+          PetscCall(EGlite_evaluate(face, params, result));
           coords[v*cdim+0] = result[0];
           coords[v*cdim+1] = result[1];
           coords[v*cdim+2] = result[2];
@@ -250,13 +248,13 @@ static PetscErrorCode DMPlexCreateEGADSLite_Internal(MPI_Comm comm, ego context,
       ego body = bodies[b];
       int id, Nl, l;
 
-      ierr = EGlite_getBodyTopos(body, NULL, LOOP, &Nl, &lobjs);CHKERRQ(ierr);
+      PetscCall(EGlite_getBodyTopos(body, NULL, LOOP, &Nl, &lobjs));
       for (l = 0; l < Nl; ++l) {
         ego loop = lobjs[l];
         int lid, Ner = 0, Ne, e, nc = 0, c, Nt, t;
 
-        lid  = EGlite_indexBodyTopo(body, loop);CHKERRQ(ierr);
-        ierr = EGlite_getTopology(loop, &geom, &oclass, &mtype, NULL, &Ne, &objs, &senses);CHKERRQ(ierr);
+        lid  = EGlite_indexBodyTopo(body, loop);
+        PetscCall(EGlite_getTopology(loop, &geom, &oclass, &mtype, NULL, &Ne, &objs, &senses));
 
         for (e = 0; e < Ne; ++e) {
           ego edge = objs[e];
@@ -264,7 +262,7 @@ static PetscErrorCode DMPlexCreateEGADSLite_Internal(MPI_Comm comm, ego context,
           int eid, Nv, v, tmp;
 
           eid  = EGlite_indexBodyTopo(body, edge);
-          ierr = EGlite_getTopology(edge, &geom, &oclass, &mtype, NULL, &Nv, &nobjs, &senses);
+          PetscCall(EGlite_getTopology(edge, &geom, &oclass, &mtype, NULL, &Nv, &nobjs, &senses));
           if (mtype == DEGENERATE) continue;
           else                     ++Ner;
           PetscCheckFalse(Nv != 2,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Edge %d has %d vertices != 2", eid, Nv);
@@ -278,7 +276,7 @@ static PetscErrorCode DMPlexCreateEGADSLite_Internal(MPI_Comm comm, ego context,
           {
             PetscInt edgeNum;
 
-            ierr = PetscHMapIGet(edgeMap, eid-1, &edgeNum);CHKERRQ(ierr);
+            PetscCall(PetscHMapIGet(edgeMap, eid-1, &edgeNum));
             points[1] = numVertices - newVertices + edgeNum;
           }
           /* EGADS loops are not oriented, but seem to be in order, so we must piece them together */
@@ -366,12 +364,12 @@ static PetscErrorCode DMPlexCreateEGADSLite_Internal(MPI_Comm comm, ego context,
         }
         if (debug) {
           for (t = 0; t < Nt; ++t) {
-            ierr = PetscPrintf(PETSC_COMM_SELF, "  LOOP Corner NODEs Triangle %D (", t);CHKERRQ(ierr);
+            PetscCall(PetscPrintf(PETSC_COMM_SELF, "  LOOP Corner NODEs Triangle %D (", t));
             for (c = 0; c < numCorners; ++c) {
-              if (c > 0) {ierr = PetscPrintf(PETSC_COMM_SELF, ", ");CHKERRQ(ierr);}
-              ierr = PetscPrintf(PETSC_COMM_SELF, "%D", cells[(cOff-Nt+t)*numCorners+c]);CHKERRQ(ierr);
+              if (c > 0) PetscCall(PetscPrintf(PETSC_COMM_SELF, ", "));
+              PetscCall(PetscPrintf(PETSC_COMM_SELF, "%D", cells[(cOff-Nt+t)*numCorners+c]));
             }
-            ierr = PetscPrintf(PETSC_COMM_SELF, ")\n");CHKERRQ(ierr);
+            PetscCall(PetscPrintf(PETSC_COMM_SELF, ")\n"));
           }
         }
       }
@@ -379,51 +377,51 @@ static PetscErrorCode DMPlexCreateEGADSLite_Internal(MPI_Comm comm, ego context,
     }
   }
   PetscCheckFalse(cOff != numCells,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Count of total cells %D != %D previous count", cOff, numCells);
-  ierr = DMPlexCreateFromCellListPetsc(PETSC_COMM_WORLD, dim, numCells, numVertices, numCorners, PETSC_TRUE, cells, cdim, coords, &dm);CHKERRQ(ierr);
-  ierr = PetscFree3(coords, cells, cone);CHKERRQ(ierr);
-  ierr = PetscInfo(dm, " Total Number of Unique Cells    = %D (%D)\n", numCells, newCells);CHKERRQ(ierr);
-  ierr = PetscInfo(dm, " Total Number of Unique Vertices = %D (%D)\n", numVertices, newVertices);CHKERRQ(ierr);
+  PetscCall(DMPlexCreateFromCellListPetsc(PETSC_COMM_WORLD, dim, numCells, numVertices, numCorners, PETSC_TRUE, cells, cdim, coords, &dm));
+  PetscCall(PetscFree3(coords, cells, cone));
+  PetscCall(PetscInfo(dm, " Total Number of Unique Cells    = %D (%D)\n", numCells, newCells));
+  PetscCall(PetscInfo(dm, " Total Number of Unique Vertices = %D (%D)\n", numVertices, newVertices));
   /* Embed EGADS model in DM */
   {
     PetscContainer modelObj, contextObj;
 
-    ierr = PetscContainerCreate(PETSC_COMM_SELF, &modelObj);CHKERRQ(ierr);
-    ierr = PetscContainerSetPointer(modelObj, model);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject) dm, "EGADSLite Model", (PetscObject) modelObj);CHKERRQ(ierr);
-    ierr = PetscContainerDestroy(&modelObj);CHKERRQ(ierr);
+    PetscCall(PetscContainerCreate(PETSC_COMM_SELF, &modelObj));
+    PetscCall(PetscContainerSetPointer(modelObj, model));
+    PetscCall(PetscObjectCompose((PetscObject) dm, "EGADSLite Model", (PetscObject) modelObj));
+    PetscCall(PetscContainerDestroy(&modelObj));
 
-    ierr = PetscContainerCreate(PETSC_COMM_SELF, &contextObj);CHKERRQ(ierr);
-    ierr = PetscContainerSetPointer(contextObj, context);CHKERRQ(ierr);
-    ierr = PetscContainerSetUserDestroy(contextObj, DMPlexEGADSLiteDestroy_Private);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject) dm, "EGADSLite Context", (PetscObject) contextObj);CHKERRQ(ierr);
-    ierr = PetscContainerDestroy(&contextObj);CHKERRQ(ierr);
+    PetscCall(PetscContainerCreate(PETSC_COMM_SELF, &contextObj));
+    PetscCall(PetscContainerSetPointer(contextObj, context));
+    PetscCall(PetscContainerSetUserDestroy(contextObj, DMPlexEGADSLiteDestroy_Private));
+    PetscCall(PetscObjectCompose((PetscObject) dm, "EGADSLite Context", (PetscObject) contextObj));
+    PetscCall(PetscContainerDestroy(&contextObj));
   }
   /* Label points */
-  ierr = DMCreateLabel(dm, "EGADS Body ID");CHKERRQ(ierr);
-  ierr = DMGetLabel(dm, "EGADS Body ID", &bodyLabel);CHKERRQ(ierr);
-  ierr = DMCreateLabel(dm, "EGADS Face ID");CHKERRQ(ierr);
-  ierr = DMGetLabel(dm, "EGADS Face ID", &faceLabel);CHKERRQ(ierr);
-  ierr = DMCreateLabel(dm, "EGADS Edge ID");CHKERRQ(ierr);
-  ierr = DMGetLabel(dm, "EGADS Edge ID", &edgeLabel);CHKERRQ(ierr);
-  ierr = DMCreateLabel(dm, "EGADS Vertex ID");CHKERRQ(ierr);
-  ierr = DMGetLabel(dm, "EGADS Vertex ID", &vertexLabel);CHKERRQ(ierr);
+  PetscCall(DMCreateLabel(dm, "EGADS Body ID"));
+  PetscCall(DMGetLabel(dm, "EGADS Body ID", &bodyLabel));
+  PetscCall(DMCreateLabel(dm, "EGADS Face ID"));
+  PetscCall(DMGetLabel(dm, "EGADS Face ID", &faceLabel));
+  PetscCall(DMCreateLabel(dm, "EGADS Edge ID"));
+  PetscCall(DMGetLabel(dm, "EGADS Edge ID", &edgeLabel));
+  PetscCall(DMCreateLabel(dm, "EGADS Vertex ID"));
+  PetscCall(DMGetLabel(dm, "EGADS Vertex ID", &vertexLabel));
   cOff = 0;
   for (b = 0; b < nbodies; ++b) {
     ego body = bodies[b];
     int id, Nl, l;
 
-    ierr = EGlite_getBodyTopos(body, NULL, LOOP, &Nl, &lobjs);CHKERRQ(ierr);
+    PetscCall(EGlite_getBodyTopos(body, NULL, LOOP, &Nl, &lobjs));
     for (l = 0; l < Nl; ++l) {
       ego  loop = lobjs[l];
       ego *fobjs;
       int  lid, Nf, fid, Ner = 0, Ne, e, Nt = 0, t;
 
-      lid  = EGlite_indexBodyTopo(body, loop);CHKERRQ(ierr);
-      ierr = EGlite_getBodyTopos(body, loop, FACE, &Nf, &fobjs);CHKERRQ(ierr);
+      lid  = EGlite_indexBodyTopo(body, loop);
+      PetscCall(EGlite_getBodyTopos(body, loop, FACE, &Nf, &fobjs));
       PetscCheckFalse(Nf > 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Loop %d has %d > 1 faces, which is not supported", lid, Nf);
-      fid  = EGlite_indexBodyTopo(body, fobjs[0]);CHKERRQ(ierr);
+      fid  = EGlite_indexBodyTopo(body, fobjs[0]);
       EGlite_free(fobjs);
-      ierr = EGlite_getTopology(loop, &geom, &oclass, &mtype, NULL, &Ne, &objs, &senses);CHKERRQ(ierr);
+      PetscCall(EGlite_getTopology(loop, &geom, &oclass, &mtype, NULL, &Ne, &objs, &senses));
       for (e = 0; e < Ne; ++e) {
         ego             edge = objs[e];
         int             eid, Nv, v;
@@ -431,32 +429,32 @@ static PetscErrorCode DMPlexCreateEGADSLite_Internal(MPI_Comm comm, ego context,
         const PetscInt *edges;
 
         eid  = EGlite_indexBodyTopo(body, edge);
-        ierr = EGlite_getTopology(edge, &geom, &oclass, &mtype, NULL, &Nv, &nobjs, &senses);
+        PetscCall(EGlite_getTopology(edge, &geom, &oclass, &mtype, NULL, &Nv, &nobjs, &senses));
         if (mtype == DEGENERATE) continue;
         else                     ++Ner;
         for (v = 0; v < Nv; ++v) {
           ego vertex = nobjs[v];
 
           id   = EGlite_indexBodyTopo(body, vertex);
-          ierr = DMLabelSetValue(edgeLabel, numCells + id-1, eid);CHKERRQ(ierr);
+          PetscCall(DMLabelSetValue(edgeLabel, numCells + id-1, eid));
           points[v*2] = numCells + id-1;
         }
-        ierr = PetscHMapIGet(edgeMap, eid-1, &edgeNum);CHKERRQ(ierr);
+        PetscCall(PetscHMapIGet(edgeMap, eid-1, &edgeNum));
         points[1] = numCells + numVertices - newVertices + edgeNum;
 
-        ierr = DMLabelSetValue(edgeLabel, points[1], eid);CHKERRQ(ierr);
+        PetscCall(DMLabelSetValue(edgeLabel, points[1], eid));
         support[0] = points[0];
         support[1] = points[1];
-        ierr = DMPlexGetJoin(dm, 2, support, &numEdges, &edges);CHKERRQ(ierr);
+        PetscCall(DMPlexGetJoin(dm, 2, support, &numEdges, &edges));
         PetscCheckFalse(numEdges != 1,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Vertices (%D, %D) should only bound 1 edge, not %D", support[0], support[1], numEdges);
-        ierr = DMLabelSetValue(edgeLabel, edges[0], eid);CHKERRQ(ierr);
-        ierr = DMPlexRestoreJoin(dm, 2, support, &numEdges, &edges);CHKERRQ(ierr);
+        PetscCall(DMLabelSetValue(edgeLabel, edges[0], eid));
+        PetscCall(DMPlexRestoreJoin(dm, 2, support, &numEdges, &edges));
         support[0] = points[1];
         support[1] = points[2];
-        ierr = DMPlexGetJoin(dm, 2, support, &numEdges, &edges);CHKERRQ(ierr);
+        PetscCall(DMPlexGetJoin(dm, 2, support, &numEdges, &edges));
         PetscCheckFalse(numEdges != 1,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Vertices (%D, %D) should only bound 1 edge, not %D", support[0], support[1], numEdges);
-        ierr = DMLabelSetValue(edgeLabel, edges[0], eid);CHKERRQ(ierr);
-        ierr = DMPlexRestoreJoin(dm, 2, support, &numEdges, &edges);CHKERRQ(ierr);
+        PetscCall(DMLabelSetValue(edgeLabel, edges[0], eid));
+        PetscCall(DMPlexRestoreJoin(dm, 2, support, &numEdges, &edges));
       }
       switch (Ner) {
         case 2: Nt = 2;break;
@@ -465,27 +463,27 @@ static PetscErrorCode DMPlexCreateEGADSLite_Internal(MPI_Comm comm, ego context,
         default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Loop with %d edges is unsupported", Ner);
       }
       for (t = 0; t < Nt; ++t) {
-        ierr = DMLabelSetValue(bodyLabel, cOff+t, b);CHKERRQ(ierr);
-        ierr = DMLabelSetValue(faceLabel, cOff+t, fid);CHKERRQ(ierr);
+        PetscCall(DMLabelSetValue(bodyLabel, cOff+t, b));
+        PetscCall(DMLabelSetValue(faceLabel, cOff+t, fid));
       }
       cOff += Nt;
     }
     EGlite_free(lobjs);
   }
-  ierr = PetscHMapIDestroy(&edgeMap);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  PetscCall(PetscHMapIDestroy(&edgeMap));
+  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   for (c = cStart; c < cEnd; ++c) {
     PetscInt *closure = NULL;
     PetscInt  clSize, cl, bval, fval;
 
-    ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &clSize, &closure);CHKERRQ(ierr);
-    ierr = DMLabelGetValue(bodyLabel, c, &bval);CHKERRQ(ierr);
-    ierr = DMLabelGetValue(faceLabel, c, &fval);CHKERRQ(ierr);
+    PetscCall(DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &clSize, &closure));
+    PetscCall(DMLabelGetValue(bodyLabel, c, &bval));
+    PetscCall(DMLabelGetValue(faceLabel, c, &fval));
     for (cl = 0; cl < clSize*2; cl += 2) {
-      ierr = DMLabelSetValue(bodyLabel, closure[cl], bval);CHKERRQ(ierr);
-      ierr = DMLabelSetValue(faceLabel, closure[cl], fval);CHKERRQ(ierr);
+      PetscCall(DMLabelSetValue(bodyLabel, closure[cl], bval));
+      PetscCall(DMLabelSetValue(faceLabel, closure[cl], fval));
     }
-    ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &clSize, &closure);CHKERRQ(ierr);
+    PetscCall(DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &clSize, &closure));
   }
   *newdm = dm;
   PetscFunctionReturn(0);
@@ -493,48 +491,47 @@ static PetscErrorCode DMPlexCreateEGADSLite_Internal(MPI_Comm comm, ego context,
 
 static PetscErrorCode DMPlexEGADSLitePrintModel_Internal(ego model)
 {
-  ego            geom, *bodies, *objs, *nobjs, *mobjs, *lobjs;
-  int            oclass, mtype, *senses;
-  int            Nb, b;
-  PetscErrorCode ierr;
+  ego geom, *bodies, *objs, *nobjs, *mobjs, *lobjs;
+  int oclass, mtype, *senses;
+  int Nb, b;
 
   PetscFunctionBeginUser;
   /* test bodyTopo functions */
-  ierr = EGlite_getTopology(model, &geom, &oclass, &mtype, NULL, &Nb, &bodies, &senses);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF, " Number of BODIES (nbodies): %d \n", Nb);CHKERRQ(ierr);
+  PetscCall(EGlite_getTopology(model, &geom, &oclass, &mtype, NULL, &Nb, &bodies, &senses));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, " Number of BODIES (nbodies): %d \n", Nb));
 
   for (b = 0; b < Nb; ++b) {
     ego body = bodies[b];
     int id, Nsh, Nf, Nl, l, Ne, e, Nv, v;
 
     /* Output Basic Model Topology */
-    ierr = EGlite_getBodyTopos(body, NULL, SHELL, &Nsh, &objs);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF, "   Number of SHELLS: %d \n", Nsh);CHKERRQ(ierr);
+    PetscCall(EGlite_getBodyTopos(body, NULL, SHELL, &Nsh, &objs));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF, "   Number of SHELLS: %d \n", Nsh));
     EGlite_free(objs);
 
-    ierr = EGlite_getBodyTopos(body, NULL, FACE,  &Nf, &objs);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF, "   Number of FACES: %d \n", Nf);CHKERRQ(ierr);
+    PetscCall(EGlite_getBodyTopos(body, NULL, FACE,  &Nf, &objs));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF, "   Number of FACES: %d \n", Nf));
     EGlite_free(objs);
 
-    ierr = EGlite_getBodyTopos(body, NULL, LOOP,  &Nl, &lobjs);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF, "   Number of LOOPS: %d \n", Nl);CHKERRQ(ierr);
+    PetscCall(EGlite_getBodyTopos(body, NULL, LOOP,  &Nl, &lobjs));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF, "   Number of LOOPS: %d \n", Nl));
 
-    ierr = EGlite_getBodyTopos(body, NULL, EDGE,  &Ne, &objs);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF, "   Number of EDGES: %d \n", Ne);CHKERRQ(ierr);
+    PetscCall(EGlite_getBodyTopos(body, NULL, EDGE,  &Ne, &objs));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF, "   Number of EDGES: %d \n", Ne));
     EGlite_free(objs);
 
-    ierr = EGlite_getBodyTopos(body, NULL, NODE,  &Nv, &objs);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF, "   Number of NODES: %d \n", Nv);CHKERRQ(ierr);
+    PetscCall(EGlite_getBodyTopos(body, NULL, NODE,  &Nv, &objs));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF, "   Number of NODES: %d \n", Nv));
     EGlite_free(objs);
 
     for (l = 0; l < Nl; ++l) {
       ego loop = lobjs[l];
 
       id   = EGlite_indexBodyTopo(body, loop);
-      ierr = PetscPrintf(PETSC_COMM_SELF, "          LOOP ID: %d\n", id);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, "          LOOP ID: %d\n", id));
 
       /* Get EDGE info which associated with the current LOOP */
-      ierr = EGlite_getTopology(loop, &geom, &oclass, &mtype, NULL, &Ne, &objs, &senses);CHKERRQ(ierr);
+      PetscCall(EGlite_getTopology(loop, &geom, &oclass, &mtype, NULL, &Ne, &objs, &senses));
 
       for (e = 0; e < Ne; ++e) {
         ego    edge      = objs[e];
@@ -544,23 +541,23 @@ static PetscErrorCode DMPlexEGADSLitePrintModel_Internal(ego model)
         double result[18];
         int    peri;
 
-        id   = EGlite_indexBodyTopo(body, edge);CHKERRQ(ierr);
-        ierr = PetscPrintf(PETSC_COMM_SELF, "            EDGE ID: %d (%d)\n", id, e);CHKERRQ(ierr);
+        PetscCall(EGlite_indexBodyTopo(body, edge));
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, "            EDGE ID: %d (%d)\n", id, e));
 
-        ierr = EGlite_getRange(edge, range, &peri);CHKERRQ(ierr);
-        ierr = PetscPrintf(PETSC_COMM_SELF, "  Range = %lf, %lf, %lf, %lf \n", range[0], range[1], range[2], range[3]);
+        PetscCall(EGlite_getRange(edge, range, &peri));
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Range = %lf, %lf, %lf, %lf \n", range[0], range[1], range[2], range[3]));
 
         /* Get NODE info which associated with the current EDGE */
-        ierr = EGlite_getTopology(edge, &geom, &oclass, &mtype, NULL, &Nv, &nobjs, &senses);CHKERRQ(ierr);
+        PetscCall(EGlite_getTopology(edge, &geom, &oclass, &mtype, NULL, &Nv, &nobjs, &senses));
         if (mtype == DEGENERATE) {
-          ierr = PetscPrintf(PETSC_COMM_SELF, "  EDGE %d is DEGENERATE \n", id);CHKERRQ(ierr);
+          PetscCall(PetscPrintf(PETSC_COMM_SELF, "  EDGE %d is DEGENERATE \n", id));
         } else {
           params[0] = range[0];
-          ierr = EGlite_evaluate(edge, params, result);CHKERRQ(ierr);
-          ierr = PetscPrintf(PETSC_COMM_SELF, "   between (%lf, %lf, %lf)", result[0], result[1], result[2]);
+          PetscCall(EGlite_evaluate(edge, params, result));
+          PetscCall(PetscPrintf(PETSC_COMM_SELF, "   between (%lf, %lf, %lf)", result[0], result[1], result[2]));
           params[0] = range[1];
-          ierr = EGlite_evaluate(edge, params, result);CHKERRQ(ierr);
-          ierr = PetscPrintf(PETSC_COMM_SELF, " and (%lf, %lf, %lf)\n", result[0], result[1], result[2]);
+          PetscCall(EGlite_evaluate(edge, params, result));
+          PetscCall(PetscPrintf(PETSC_COMM_SELF, " and (%lf, %lf, %lf)\n", result[0], result[1], result[2]));
         }
 
         for (v = 0; v < Nv; ++v) {
@@ -568,10 +565,10 @@ static PetscErrorCode DMPlexEGADSLitePrintModel_Internal(ego model)
           double limits[4];
           int    dummy;
 
-          ierr = EGlite_getTopology(vertex, &geom, &oclass, &mtype, limits, &dummy, &mobjs, &senses);CHKERRQ(ierr);
-          id   = EGlite_indexBodyTopo(body, vertex);
-          ierr = PetscPrintf(PETSC_COMM_SELF, "              NODE ID: %d \n", id);CHKERRQ(ierr);
-          ierr = PetscPrintf(PETSC_COMM_SELF, "                 (x, y, z) = (%lf, %lf, %lf) \n", limits[0], limits[1], limits[2]);
+          PetscCall(EGlite_getTopology(vertex, &geom, &oclass, &mtype, limits, &dummy, &mobjs, &senses));
+          PetscCall(EGlite_indexBodyTopo(body, vertex));
+          PetscCall(PetscPrintf(PETSC_COMM_SELF, "              NODE ID: %d \n", id));
+          PetscCall(PetscPrintf(PETSC_COMM_SELF, "                 (x, y, z) = (%lf, %lf, %lf) \n", limits[0], limits[1], limits[2]));
 
           point[0] = point[0] + limits[0];
           point[1] = point[1] + limits[1];
@@ -608,21 +605,20 @@ PetscErrorCode DMPlexCreateEGADSLiteFromFile(MPI_Comm comm, const char filename[
   ego            context= NULL, model = NULL;
 #endif
   PetscBool      printModel = PETSC_FALSE;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidCharPointer(filename, 2);
-  ierr = PetscOptionsGetBool(NULL, NULL, "-dm_plex_egads_print_model", &printModel, NULL);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-dm_plex_egads_print_model", &printModel, NULL));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
 #if defined(PETSC_HAVE_EGADS)
   if (!rank) {
 
-    ierr = EGlite_open(&context);CHKERRQ(ierr);
-    ierr = EGlite_loadModel(context, 0, filename, &model);CHKERRQ(ierr);
-    if (printModel) {ierr = DMPlexEGADSLitePrintModel_Internal(model);CHKERRQ(ierr);}
+    PetscCall(EGlite_open(&context));
+    PetscCall(EGlite_loadModel(context, 0, filename, &model));
+    if (printModel) PetscCall(DMPlexEGADSLitePrintModel_Internal(model));
 
   }
-  ierr = DMPlexCreateEGADSLite_Internal(comm, context, model, dm);CHKERRQ(ierr);
+  PetscCall(DMPlexCreateEGADSLite_Internal(comm, context, model, dm));
   PetscFunctionReturn(0);
 #else
   SETERRQ(comm, PETSC_ERR_SUP, "This method requires EGADSLite support. Reconfigure using --download-egads");

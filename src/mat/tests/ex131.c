@@ -7,47 +7,46 @@ int main(int argc,char **args)
 {
   Mat            A;
   Vec            x,b;
-  PetscErrorCode ierr;
   PetscViewer    fd;              /* viewer */
   char           file[PETSC_MAX_PATH_LEN]; /* input file name */
   PetscBool      flg;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   /* Determine file from which we read the matrix A */
-  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg);CHKERRQ(ierr);
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
 
   /* Load matrix A */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatLoad(A,fd);CHKERRQ(ierr);
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatLoad(A,fd));
   flg  = PETSC_FALSE;
-  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,NULL,"-vec",file,sizeof(file),&flg);CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-vec",file,sizeof(file),&flg));
   if (flg) {
     if (file[0] == '0') {
       PetscInt    m;
       PetscScalar one = 1.0;
-      ierr = PetscInfo(0,"Using vector of ones for RHS\n");CHKERRQ(ierr);
-      ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
-      ierr = VecSetSizes(x,m,PETSC_DECIDE);CHKERRQ(ierr);
-      ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-      ierr = VecSet(x,one);CHKERRQ(ierr);
+      PetscCall(PetscInfo(0,"Using vector of ones for RHS\n"));
+      PetscCall(MatGetLocalSize(A,&m,NULL));
+      PetscCall(VecSetSizes(x,m,PETSC_DECIDE));
+      PetscCall(VecSetFromOptions(x));
+      PetscCall(VecSet(x,one));
     }
   } else {
-    ierr = VecLoad(x,fd);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
+    PetscCall(VecLoad(x,fd));
+    PetscCall(PetscViewerDestroy(&fd));
   }
-  ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
-  ierr = MatMult(A,x,b);CHKERRQ(ierr);
+  PetscCall(VecDuplicate(x,&b));
+  PetscCall(MatMult(A,x,b));
 
   /* Print (for testing only) */
-  ierr = MatView(A,0);CHKERRQ(ierr);
-  ierr = VecView(b,0);CHKERRQ(ierr);
+  PetscCall(MatView(A,0));
+  PetscCall(VecView(b,0));
   /* Free data structures */
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(MatDestroy(&A));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&b));
+  PetscCall(PetscFinalize());
+  return 0;
 }

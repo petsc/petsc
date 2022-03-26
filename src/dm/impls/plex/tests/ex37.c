@@ -20,10 +20,10 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->filename[0] = '\0';
   options->volumeMesh  = PETSC_TRUE;
 
-  ierr = PetscOptionsBegin(comm, "", "EGADSPlex Problem Options", "EGADSLite");CHKERRQ(ierr);
-  ierr = PetscOptionsString("-filename", "The CAD file", "ex37.c", options->filename, options->filename, sizeof(options->filename), NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-volume_mesh", "Create a volume mesh", "ex37.c", options->volumeMesh, &options->volumeMesh, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm, "", "EGADSPlex Problem Options", "EGADSLite");PetscCall(ierr);
+  PetscCall(PetscOptionsString("-filename", "The CAD file", "ex37.c", options->filename, options->filename, sizeof(options->filename), NULL));
+  PetscCall(PetscOptionsBool("-volume_mesh", "Create a volume mesh", "ex37.c", options->volumeMesh, &options->volumeMesh, NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -37,31 +37,31 @@ static PetscErrorCode ComputeVolume(DM dm)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  PetscCall(DMGetDimension(dm, &dim));
   if (dim < 2) PetscFunctionReturn(0);
-  ierr = DMGetLabel(dm, "EGADS Body ID", &bodyLabel);CHKERRQ(ierr);
-  ierr = DMGetLabel(dm, "EGADS Face ID", &faceLabel);CHKERRQ(ierr);
-  ierr = DMGetLabel(dm, "EGADS Edge ID", &edgeLabel);CHKERRQ(ierr);
+  PetscCall(DMGetLabel(dm, "EGADS Body ID", &bodyLabel));
+  PetscCall(DMGetLabel(dm, "EGADS Face ID", &faceLabel));
+  PetscCall(DMGetLabel(dm, "EGADS Edge ID", &edgeLabel));
 
-  ierr = DMPlexGetHeightStratum(dm, 0, &pStart, &pEnd);CHKERRQ(ierr);
+  PetscCall(DMPlexGetHeightStratum(dm, 0, &pStart, &pEnd));
   for (p = pStart; p < pEnd; ++p) {
-    ierr = DMLabelGetValue(dim == 2 ? faceLabel : bodyLabel, p, &pid);CHKERRQ(ierr);
+    PetscCall(DMLabelGetValue(dim == 2 ? faceLabel : bodyLabel, p, &pid));
     if (pid >= 0) {
-      ierr = DMPlexComputeCellGeometryFVM(dm, p, &vol, NULL, NULL);CHKERRQ(ierr);
+      PetscCall(DMPlexComputeCellGeometryFVM(dm, p, &vol, NULL, NULL));
       volume += vol;
     }
   }
-  ierr = DMPlexGetHeightStratum(dm, 1, &pStart, &pEnd);CHKERRQ(ierr);
+  PetscCall(DMPlexGetHeightStratum(dm, 1, &pStart, &pEnd));
   for (p = pStart; p < pEnd; ++p) {
-    ierr = DMLabelGetValue(dim == 2 ? edgeLabel : faceLabel, p, &pid);CHKERRQ(ierr);
+    PetscCall(DMLabelGetValue(dim == 2 ? edgeLabel : faceLabel, p, &pid));
     if (pid >= 0) {
-      ierr = DMPlexComputeCellGeometryFVM(dm, p, &vol, NULL, NULL);CHKERRQ(ierr);
+      PetscCall(DMPlexComputeCellGeometryFVM(dm, p, &vol, NULL, NULL));
       surface += vol;
     }
   }
 
-  ierr = PetscObjectGetName(obj, &name);CHKERRQ(ierr);
-  ierr = PetscPrintf(PetscObjectComm(obj), "DM %s: Surface Area = %.6e Volume = %.6e\n", name ? name : "", surface, volume);CHKERRQ(ierr);
+  PetscCall(PetscObjectGetName(obj, &name));
+  PetscCall(PetscPrintf(PetscObjectComm(obj), "DM %s: Surface Area = %.6e Volume = %.6e\n", name ? name : "", surface, volume));
   PetscFunctionReturn(0);
 }
 
@@ -71,33 +71,33 @@ int main(int argc, char *argv[])
   AppCtx         ctx;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help); if (ierr) return ierr;
-  ierr = ProcessOptions(PETSC_COMM_WORLD, &ctx);CHKERRQ(ierr);
-  ierr = DMPlexCreateFromFile(PETSC_COMM_WORLD, ctx.filename, "ex37_plex", PETSC_TRUE, &surface);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) surface, "CAD Surface");CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject) surface, "sur_");CHKERRQ(ierr);
-  ierr = DMSetFromOptions(surface);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(surface, NULL, "-dm_view");CHKERRQ(ierr);
-  ierr = ComputeVolume(surface);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(ProcessOptions(PETSC_COMM_WORLD, &ctx));
+  PetscCall(DMPlexCreateFromFile(PETSC_COMM_WORLD, ctx.filename, "ex37_plex", PETSC_TRUE, &surface));
+  PetscCall(PetscObjectSetName((PetscObject) surface, "CAD Surface"));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject) surface, "sur_"));
+  PetscCall(DMSetFromOptions(surface));
+  PetscCall(DMViewFromOptions(surface, NULL, "-dm_view"));
+  PetscCall(ComputeVolume(surface));
 
   if (ctx.volumeMesh) {
-    ierr = DMPlexGenerate(surface, "tetgen", PETSC_TRUE, &dm);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) dm, "CAD Mesh");CHKERRQ(ierr);
-    ierr = DMPlexSetRefinementUniform(dm, PETSC_TRUE);CHKERRQ(ierr);
-    ierr = DMViewFromOptions(dm, NULL, "-pre_dm_view");CHKERRQ(ierr);
+    PetscCall(DMPlexGenerate(surface, "tetgen", PETSC_TRUE, &dm));
+    PetscCall(PetscObjectSetName((PetscObject) dm, "CAD Mesh"));
+    PetscCall(DMPlexSetRefinementUniform(dm, PETSC_TRUE));
+    PetscCall(DMViewFromOptions(dm, NULL, "-pre_dm_view"));
 
-    ierr = DMPlexInflateToGeomModel(dm);CHKERRQ(ierr);
-    ierr = DMViewFromOptions(dm, NULL, "-inf_dm_view");CHKERRQ(ierr);
+    PetscCall(DMPlexInflateToGeomModel(dm));
+    PetscCall(DMViewFromOptions(dm, NULL, "-inf_dm_view"));
 
-    ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
-    ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
-    ierr = ComputeVolume(dm);CHKERRQ(ierr);
+    PetscCall(DMSetFromOptions(dm));
+    PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
+    PetscCall(ComputeVolume(dm));
   }
 
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
-  ierr = DMDestroy(&surface);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(DMDestroy(&dm));
+  PetscCall(DMDestroy(&surface));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

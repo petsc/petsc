@@ -18,7 +18,6 @@ PetscInt VecGetSubVectorSavedStateId = -1;
 PETSC_EXTERN PetscErrorCode VecValidValues(Vec vec,PetscInt argnum,PetscBool begin)
 {
 #if defined(PETSC_USE_DEBUG)
-  PetscErrorCode    ierr;
   PetscInt          n,i;
   const PetscScalar *x;
 
@@ -28,8 +27,8 @@ PETSC_EXTERN PetscErrorCode VecValidValues(Vec vec,PetscInt argnum,PetscBool beg
 #else
   if (vec->petscnative || vec->ops->getarray) {
 #endif
-    ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(vec,&x);CHKERRQ(ierr);
+    PetscCall(VecGetLocalSize(vec,&n));
+    PetscCall(VecGetArrayRead(vec,&x));
     for (i=0; i<n; i++) {
       if (begin) {
         PetscCheckFalse(PetscIsInfOrNanScalar(x[i]),PETSC_COMM_SELF,PETSC_ERR_FP,"Vec entry at local location %" PetscInt_FMT " is not-a-number or infinite at beginning of function: Parameter number %" PetscInt_FMT,i,argnum);
@@ -37,7 +36,7 @@ PETSC_EXTERN PetscErrorCode VecValidValues(Vec vec,PetscInt argnum,PetscBool beg
         PetscCheckFalse(PetscIsInfOrNanScalar(x[i]),PETSC_COMM_SELF,PETSC_ERR_FP,"Vec entry at local location %" PetscInt_FMT " is not-a-number or infinite at end of function: Parameter number %" PetscInt_FMT,i,argnum);
       }
     }
-    ierr = VecRestoreArrayRead(vec,&x);CHKERRQ(ierr);
+    PetscCall(VecRestoreArrayRead(vec,&x));
   }
 #else
   PetscFunctionBegin;
@@ -66,8 +65,6 @@ PETSC_EXTERN PetscErrorCode VecValidValues(Vec vec,PetscInt argnum,PetscBool beg
 @*/
 PetscErrorCode  VecMaxPointwiseDivide(Vec x,Vec y,PetscReal *max)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidHeaderSpecific(y,VEC_CLASSID,2);
@@ -76,7 +73,7 @@ PetscErrorCode  VecMaxPointwiseDivide(Vec x,Vec y,PetscReal *max)
   PetscValidType(y,2);
   PetscCheckSameTypeAndComm(x,1,y,2);
   VecCheckSameSize(x,1,y,2);
-  ierr = (*x->ops->maxpointwisedivide)(x,y,max);CHKERRQ(ierr);
+  PetscCall((*x->ops->maxpointwisedivide)(x,y,max));
   PetscFunctionReturn(0);
 }
 
@@ -113,8 +110,6 @@ $     val = (x,y) = y^T x,
 @*/
 PetscErrorCode  VecDot(Vec x,Vec y,PetscScalar *val)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidHeaderSpecific(y,VEC_CLASSID,2);
@@ -124,9 +119,9 @@ PetscErrorCode  VecDot(Vec x,Vec y,PetscScalar *val)
   PetscCheckSameTypeAndComm(x,1,y,2);
   VecCheckSameSize(x,1,y,2);
 
-  ierr = PetscLogEventBegin(VEC_Dot,x,y,0,0);CHKERRQ(ierr);
-  ierr = (*x->ops->dot)(x,y,val);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(VEC_Dot,x,y,0,0);CHKERRQ(ierr);
+  PetscCall(PetscLogEventBegin(VEC_Dot,x,y,0,0));
+  PetscCall((*x->ops->dot)(x,y,val));
+  PetscCall(PetscLogEventEnd(VEC_Dot,x,y,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -162,11 +157,10 @@ $    work load imbalance that causes certain processes to arrive much earlier th
 @*/
 PetscErrorCode  VecDotRealPart(Vec x,Vec y,PetscReal *val)
 {
-  PetscErrorCode ierr;
   PetscScalar    fdot;
 
   PetscFunctionBegin;
-  ierr = VecDot(x,y,&fdot);CHKERRQ(ierr);
+  PetscCall(VecDot(x,y,&fdot));
   *val = PetscRealPart(fdot);
   PetscFunctionReturn(0);
 }
@@ -210,7 +204,6 @@ $    work load imbalance that causes certain processes to arrive much earlier th
 PetscErrorCode  VecNorm(Vec x,NormType type,PetscReal *val)
 {
   PetscBool      flg;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
@@ -221,14 +214,14 @@ PetscErrorCode  VecNorm(Vec x,NormType type,PetscReal *val)
    * Cached data?
    */
   if (type!=NORM_1_AND_2) {
-    ierr = PetscObjectComposedDataGetReal((PetscObject)x,NormIds[type],*val,flg);CHKERRQ(ierr);
+    PetscCall(PetscObjectComposedDataGetReal((PetscObject)x,NormIds[type],*val,flg));
     if (flg) PetscFunctionReturn(0);
   }
-  ierr = PetscLogEventBegin(VEC_Norm,x,0,0,0);CHKERRQ(ierr);
-  ierr = (*x->ops->norm)(x,type,val);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(VEC_Norm,x,0,0,0);CHKERRQ(ierr);
+  PetscCall(PetscLogEventBegin(VEC_Norm,x,0,0,0));
+  PetscCall((*x->ops->norm)(x,type,val));
+  PetscCall(PetscLogEventEnd(VEC_Norm,x,0,0,0));
   if (type!=NORM_1_AND_2) {
-    ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[type],*val);CHKERRQ(ierr);
+    PetscCall(PetscObjectComposedDataSetReal((PetscObject)x,NormIds[type],*val));
   }
   PetscFunctionReturn(0);
 }
@@ -271,8 +264,6 @@ $    work load imbalance that causes certain processes to arrive much earlier th
 @*/
 PetscErrorCode  VecNormAvailable(Vec x,NormType type,PetscBool  *available,PetscReal *val)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidRealPointer(val,4);
@@ -280,7 +271,7 @@ PetscErrorCode  VecNormAvailable(Vec x,NormType type,PetscBool  *available,Petsc
 
   *available = PETSC_FALSE;
   if (type!=NORM_1_AND_2) {
-    ierr = PetscObjectComposedDataGetReal((PetscObject)x,NormIds[type],*val,*available);CHKERRQ(ierr);
+    PetscCall(PetscObjectComposedDataGetReal((PetscObject)x,NormIds[type],*val,*available));
   }
   PetscFunctionReturn(0);
 }
@@ -301,22 +292,21 @@ PetscErrorCode  VecNormAvailable(Vec x,NormType type,PetscBool  *available,Petsc
 @*/
 PetscErrorCode  VecNormalize(Vec x,PetscReal *val)
 {
-  PetscErrorCode ierr;
   PetscReal      norm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidType(x,1);
-  ierr = PetscLogEventBegin(VEC_Normalize,x,0,0,0);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
+  PetscCall(PetscLogEventBegin(VEC_Normalize,x,0,0,0));
+  PetscCall(VecNorm(x,NORM_2,&norm));
   if (norm == 0.0) {
-    ierr = PetscInfo(x,"Vector of zero norm can not be normalized; Returning only the zero norm\n");CHKERRQ(ierr);
+    PetscCall(PetscInfo(x,"Vector of zero norm can not be normalized; Returning only the zero norm\n"));
   } else if (norm != 1.0) {
     PetscScalar tmp = 1.0/norm;
-    ierr = VecScale(x,tmp);CHKERRQ(ierr);
+    PetscCall(VecScale(x,tmp));
   }
   if (val) *val = norm;
-  ierr = PetscLogEventEnd(VEC_Normalize,x,0,0,0);CHKERRQ(ierr);
+  PetscCall(PetscLogEventEnd(VEC_Normalize,x,0,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -342,15 +332,13 @@ PetscErrorCode  VecNormalize(Vec x,PetscReal *val)
 @*/
 PetscErrorCode  VecMax(Vec x,PetscInt *p,PetscReal *val)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidRealPointer(val,3);
   PetscValidType(x,1);
-  ierr = PetscLogEventBegin(VEC_Max,x,0,0,0);CHKERRQ(ierr);
-  ierr = (*x->ops->max)(x,p,val);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(VEC_Max,x,0,0,0);CHKERRQ(ierr);
+  PetscCall(PetscLogEventBegin(VEC_Max,x,0,0,0));
+  PetscCall((*x->ops->max)(x,p,val));
+  PetscCall(PetscLogEventEnd(VEC_Max,x,0,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -377,15 +365,13 @@ PetscErrorCode  VecMax(Vec x,PetscInt *p,PetscReal *val)
 @*/
 PetscErrorCode  VecMin(Vec x,PetscInt *p,PetscReal *val)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidRealPointer(val,3);
   PetscValidType(x,1);
-  ierr = PetscLogEventBegin(VEC_Min,x,0,0,0);CHKERRQ(ierr);
-  ierr = (*x->ops->min)(x,p,val);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(VEC_Min,x,0,0,0);CHKERRQ(ierr);
+  PetscCall(PetscLogEventBegin(VEC_Min,x,0,0,0));
+  PetscCall((*x->ops->min)(x,p,val));
+  PetscCall(PetscLogEventEnd(VEC_Min,x,0,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -416,8 +402,6 @@ $     val = (x,y) = y^H x,
 @*/
 PetscErrorCode  VecTDot(Vec x,Vec y,PetscScalar *val)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidHeaderSpecific(y,VEC_CLASSID,2);
@@ -427,9 +411,9 @@ PetscErrorCode  VecTDot(Vec x,Vec y,PetscScalar *val)
   PetscCheckSameTypeAndComm(x,1,y,2);
   VecCheckSameSize(x,1,y,2);
 
-  ierr = PetscLogEventBegin(VEC_TDot,x,y,0,0);CHKERRQ(ierr);
-  ierr = (*x->ops->tdot)(x,y,val);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(VEC_TDot,x,y,0,0);CHKERRQ(ierr);
+  PetscCall(PetscLogEventBegin(VEC_TDot,x,y,0,0));
+  PetscCall((*x->ops->tdot)(x,y,val));
+  PetscCall(PetscLogEventEnd(VEC_TDot,x,y,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -453,30 +437,29 @@ PetscErrorCode  VecScale(Vec x, PetscScalar alpha)
 {
   PetscReal      norms[4] = {0.0,0.0,0.0, 0.0};
   PetscBool      flgs[4];
-  PetscErrorCode ierr;
   PetscInt       i;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidType(x,1);
   PetscCheckFalse(x->stash.insertmode != NOT_SET_VALUES,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
-  ierr = PetscLogEventBegin(VEC_Scale,x,0,0,0);CHKERRQ(ierr);
+  PetscCall(PetscLogEventBegin(VEC_Scale,x,0,0,0));
   if (alpha != (PetscScalar)1.0) {
-    ierr = VecSetErrorIfLocked(x,1);CHKERRQ(ierr);
+    PetscCall(VecSetErrorIfLocked(x,1));
     /* get current stashed norms */
     for (i=0; i<4; i++) {
-      ierr = PetscObjectComposedDataGetReal((PetscObject)x,NormIds[i],norms[i],flgs[i]);CHKERRQ(ierr);
+      PetscCall(PetscObjectComposedDataGetReal((PetscObject)x,NormIds[i],norms[i],flgs[i]));
     }
-    ierr = (*x->ops->scale)(x,alpha);CHKERRQ(ierr);
-    ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
+    PetscCall((*x->ops->scale)(x,alpha));
+    PetscCall(PetscObjectStateIncrease((PetscObject)x));
     /* put the scaled stashed norms back into the Vec */
     for (i=0; i<4; i++) {
       if (flgs[i]) {
-        ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[i],PetscAbsScalar(alpha)*norms[i]);CHKERRQ(ierr);
+        PetscCall(PetscObjectComposedDataSetReal((PetscObject)x,NormIds[i],PetscAbsScalar(alpha)*norms[i]));
       }
     }
   }
-  ierr = PetscLogEventEnd(VEC_Scale,x,0,0,0);CHKERRQ(ierr);
+  PetscCall(PetscLogEventEnd(VEC_Scale,x,0,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -509,36 +492,35 @@ $     x[i] = alpha, for i=1,...,n,
 @*/
 PetscErrorCode  VecSet(Vec x,PetscScalar alpha)
 {
-  PetscReal      val;
-  PetscErrorCode ierr;
+  PetscReal val;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidType(x,1);
-  PetscCheckFalse(x->stash.insertmode != NOT_SET_VALUES,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"You cannot call this after you have called VecSetValues() but\n before you have called VecAssemblyBegin/End()");
+  PetscCheck(x->stash.insertmode == NOT_SET_VALUES,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"You cannot call this after you have called VecSetValues() but\n before you have called VecAssemblyBegin/End()");
   PetscValidLogicalCollectiveScalar(x,alpha,2);
-  ierr = VecSetErrorIfLocked(x,1);CHKERRQ(ierr);
+  PetscCall(VecSetErrorIfLocked(x,1));
 
-  ierr = PetscLogEventBegin(VEC_Set,x,0,0,0);CHKERRQ(ierr);
-  ierr = (*x->ops->set)(x,alpha);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(VEC_Set,x,0,0,0);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
+  PetscCall(PetscLogEventBegin(VEC_Set,x,0,0,0));
+  PetscCall((*x->ops->set)(x,alpha));
+  PetscCall(PetscLogEventEnd(VEC_Set,x,0,0,0));
+  PetscCall(PetscObjectStateIncrease((PetscObject)x));
 
   /*  norms can be simply set (if |alpha|*N not too large) */
-  val  = PetscAbsScalar(alpha);
+  val = PetscAbsScalar(alpha);
   if (x->map->N == 0) {
-    ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_1],0.0l);CHKERRQ(ierr);
-    ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_INFINITY],0.0);CHKERRQ(ierr);
-    ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_2],0.0);CHKERRQ(ierr);
-    ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_FROBENIUS],0.0);CHKERRQ(ierr);
+    PetscCall(PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_1],0.0l));
+    PetscCall(PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_INFINITY],0.0));
+    PetscCall(PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_2],0.0));
+    PetscCall(PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_FROBENIUS],0.0));
   } else if (val > PETSC_MAX_REAL/x->map->N) {
-    ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_INFINITY],val);CHKERRQ(ierr);
+    PetscCall(PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_INFINITY],val));
   } else {
-    ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_1],x->map->N * val);CHKERRQ(ierr);
-    ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_INFINITY],val);CHKERRQ(ierr);
+    PetscCall(PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_1],x->map->N * val));
+    PetscCall(PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_INFINITY],val));
     val  = PetscSqrtReal((PetscReal)x->map->N) * val;
-    ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_2],val);CHKERRQ(ierr);
-    ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_FROBENIUS],val);CHKERRQ(ierr);
+    PetscCall(PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_2],val));
+    PetscCall(PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_FROBENIUS],val));
   }
   PetscFunctionReturn(0);
 }
@@ -572,8 +554,6 @@ $    VecMAXPY(y,nv,alpha[],x[])           y = sum alpha[i] x[i] +      y
 @*/
 PetscErrorCode  VecAXPY(Vec y,PetscScalar alpha,Vec x)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,3);
   PetscValidHeaderSpecific(y,VEC_CLASSID,1);
@@ -584,14 +564,14 @@ PetscErrorCode  VecAXPY(Vec y,PetscScalar alpha,Vec x)
   PetscCheckFalse(x == y,PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_IDN,"x and y cannot be the same vector");
   PetscValidLogicalCollectiveScalar(y,alpha,2);
   if (alpha == (PetscScalar)0.0) PetscFunctionReturn(0);
-  ierr = VecSetErrorIfLocked(y,1);CHKERRQ(ierr);
+  PetscCall(VecSetErrorIfLocked(y,1));
 
-  ierr = VecLockReadPush(x);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(VEC_AXPY,x,y,0,0);CHKERRQ(ierr);
-  ierr = (*y->ops->axpy)(y,alpha,x);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(VEC_AXPY,x,y,0,0);CHKERRQ(ierr);
-  ierr = VecLockReadPop(x);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
+  PetscCall(VecLockReadPush(x));
+  PetscCall(PetscLogEventBegin(VEC_AXPY,x,y,0,0));
+  PetscCall((*y->ops->axpy)(y,alpha,x));
+  PetscCall(PetscLogEventEnd(VEC_AXPY,x,y,0,0));
+  PetscCall(VecLockReadPop(x));
+  PetscCall(PetscObjectStateIncrease((PetscObject)y));
   PetscFunctionReturn(0);
 }
 
@@ -617,8 +597,6 @@ PetscErrorCode  VecAXPY(Vec y,PetscScalar alpha,Vec x)
 @*/
 PetscErrorCode  VecAXPBY(Vec y,PetscScalar alpha,PetscScalar beta,Vec x)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,4);
   PetscValidHeaderSpecific(y,VEC_CLASSID,1);
@@ -630,11 +608,11 @@ PetscErrorCode  VecAXPBY(Vec y,PetscScalar alpha,PetscScalar beta,Vec x)
   PetscValidLogicalCollectiveScalar(y,alpha,2);
   PetscValidLogicalCollectiveScalar(y,beta,3);
   if (alpha == (PetscScalar)0.0 && beta == (PetscScalar)1.0) PetscFunctionReturn(0);
-  ierr = VecSetErrorIfLocked(y,1);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(VEC_AXPY,x,y,0,0);CHKERRQ(ierr);
-  ierr = (*y->ops->axpby)(y,alpha,beta,x);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(VEC_AXPY,x,y,0,0);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
+  PetscCall(VecSetErrorIfLocked(y,1));
+  PetscCall(PetscLogEventBegin(VEC_AXPY,x,y,0,0));
+  PetscCall((*y->ops->axpby)(y,alpha,beta,x));
+  PetscCall(PetscLogEventEnd(VEC_AXPY,x,y,0,0));
+  PetscCall(PetscObjectStateIncrease((PetscObject)y));
   PetscFunctionReturn(0);
 }
 
@@ -660,8 +638,6 @@ PetscErrorCode  VecAXPBY(Vec y,PetscScalar alpha,PetscScalar beta,Vec x)
 @*/
 PetscErrorCode  VecAXPBYPCZ(Vec z,PetscScalar alpha,PetscScalar beta,PetscScalar gamma,Vec x,Vec y)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,5);
   PetscValidHeaderSpecific(y,VEC_CLASSID,6);
@@ -679,12 +655,12 @@ PetscErrorCode  VecAXPBYPCZ(Vec z,PetscScalar alpha,PetscScalar beta,PetscScalar
   PetscValidLogicalCollectiveScalar(z,beta,3);
   PetscValidLogicalCollectiveScalar(z,gamma,4);
   if (alpha == (PetscScalar)0.0 && beta == (PetscScalar)0.0 && gamma == (PetscScalar)1.0) PetscFunctionReturn(0);
-  ierr = VecSetErrorIfLocked(z,1);CHKERRQ(ierr);
+  PetscCall(VecSetErrorIfLocked(z,1));
 
-  ierr = PetscLogEventBegin(VEC_AXPBYPCZ,x,y,z,0);CHKERRQ(ierr);
-  ierr = (*y->ops->axpbypcz)(z,alpha,beta,gamma,x,y);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(VEC_AXPBYPCZ,x,y,z,0);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject)z);CHKERRQ(ierr);
+  PetscCall(PetscLogEventBegin(VEC_AXPBYPCZ,x,y,z,0));
+  PetscCall((*y->ops->axpbypcz)(z,alpha,beta,gamma,x,y));
+  PetscCall(PetscLogEventEnd(VEC_AXPBYPCZ,x,y,z,0));
+  PetscCall(PetscObjectStateIncrease((PetscObject)z));
   PetscFunctionReturn(0);
 }
 
@@ -710,8 +686,6 @@ PetscErrorCode  VecAXPBYPCZ(Vec z,PetscScalar alpha,PetscScalar beta,PetscScalar
 @*/
 PetscErrorCode  VecAYPX(Vec y,PetscScalar beta,Vec x)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,3);
   PetscValidHeaderSpecific(y,VEC_CLASSID,1);
@@ -721,12 +695,12 @@ PetscErrorCode  VecAYPX(Vec y,PetscScalar beta,Vec x)
   VecCheckSameSize(x,1,y,3);
   PetscCheckFalse(x == y,PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   PetscValidLogicalCollectiveScalar(y,beta,2);
-  ierr = VecSetErrorIfLocked(y,1);CHKERRQ(ierr);
+  PetscCall(VecSetErrorIfLocked(y,1));
 
-  ierr = PetscLogEventBegin(VEC_AYPX,x,y,0,0);CHKERRQ(ierr);
-  ierr =  (*y->ops->aypx)(y,beta,x);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(VEC_AYPX,x,y,0,0);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
+  PetscCall(PetscLogEventBegin(VEC_AYPX,x,y,0,0));
+  PetscCall((*y->ops->aypx)(y,beta,x));
+  PetscCall(PetscLogEventEnd(VEC_AYPX,x,y,0,0));
+  PetscCall(PetscObjectStateIncrease((PetscObject)y));
   PetscFunctionReturn(0);
 }
 
@@ -752,8 +726,6 @@ PetscErrorCode  VecAYPX(Vec y,PetscScalar beta,Vec x)
 @*/
 PetscErrorCode  VecWAXPY(Vec w,PetscScalar alpha,Vec x,Vec y)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(w,VEC_CLASSID,1);
   PetscValidHeaderSpecific(x,VEC_CLASSID,3);
@@ -768,12 +740,12 @@ PetscErrorCode  VecWAXPY(Vec w,PetscScalar alpha,Vec x,Vec y)
   PetscCheckFalse(w == y,PETSC_COMM_SELF,PETSC_ERR_SUP,"Result vector w cannot be same as input vector y, suggest VecAXPY()");
   PetscCheckFalse(w == x,PETSC_COMM_SELF,PETSC_ERR_SUP,"Result vector w cannot be same as input vector x, suggest VecAYPX()");
   PetscValidLogicalCollectiveScalar(y,alpha,2);
-  ierr = VecSetErrorIfLocked(w,1);CHKERRQ(ierr);
+  PetscCall(VecSetErrorIfLocked(w,1));
 
-  ierr = PetscLogEventBegin(VEC_WAXPY,x,y,w,0);CHKERRQ(ierr);
-  ierr =  (*w->ops->waxpy)(w,alpha,x,y);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(VEC_WAXPY,x,y,w,0);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject)w);CHKERRQ(ierr);
+  PetscCall(PetscLogEventBegin(VEC_WAXPY,x,y,w,0));
+  PetscCall((*w->ops->waxpy)(w,alpha,x,y));
+  PetscCall(PetscLogEventEnd(VEC_WAXPY,x,y,w,0));
+  PetscCall(PetscObjectStateIncrease((PetscObject)w));
   PetscFunctionReturn(0);
 }
 
@@ -816,8 +788,6 @@ PetscErrorCode  VecWAXPY(Vec w,PetscScalar alpha,Vec x,Vec y)
 @*/
 PetscErrorCode  VecSetValues(Vec x,PetscInt ni,const PetscInt ix[],const PetscScalar y[],InsertMode iora)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   if (!ni) PetscFunctionReturn(0);
@@ -825,10 +795,10 @@ PetscErrorCode  VecSetValues(Vec x,PetscInt ni,const PetscInt ix[],const PetscSc
   PetscValidScalarPointer(y,4);
   PetscValidType(x,1);
 
-  ierr = PetscLogEventBegin(VEC_SetValues,x,0,0,0);CHKERRQ(ierr);
-  ierr = (*x->ops->setvalues)(x,ni,ix,y,iora);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(VEC_SetValues,x,0,0,0);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
+  PetscCall(PetscLogEventBegin(VEC_SetValues,x,0,0,0));
+  PetscCall((*x->ops->setvalues)(x,ni,ix,y,iora));
+  PetscCall(PetscLogEventEnd(VEC_SetValues,x,0,0,0));
+  PetscCall(PetscObjectStateIncrease((PetscObject)x));
   PetscFunctionReturn(0);
 }
 
@@ -865,15 +835,13 @@ PetscErrorCode  VecSetValues(Vec x,PetscInt ni,const PetscInt ix[],const PetscSc
 @*/
 PetscErrorCode  VecGetValues(Vec x,PetscInt ni,const PetscInt ix[],PetscScalar y[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   if (!ni) PetscFunctionReturn(0);
   PetscValidIntPointer(ix,3);
   PetscValidScalarPointer(y,4);
   PetscValidType(x,1);
-  ierr = (*x->ops->getvalues)(x,ni,ix,y);CHKERRQ(ierr);
+  PetscCall((*x->ops->getvalues)(x,ni,ix,y));
   PetscFunctionReturn(0);
 }
 
@@ -916,8 +884,6 @@ PetscErrorCode  VecGetValues(Vec x,PetscInt ni,const PetscInt ix[],PetscScalar y
 @*/
 PetscErrorCode  VecSetValuesBlocked(Vec x,PetscInt ni,const PetscInt ix[],const PetscScalar y[],InsertMode iora)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   if (!ni) PetscFunctionReturn(0);
@@ -925,10 +891,10 @@ PetscErrorCode  VecSetValuesBlocked(Vec x,PetscInt ni,const PetscInt ix[],const 
   PetscValidScalarPointer(y,4);
   PetscValidType(x,1);
 
-  ierr = PetscLogEventBegin(VEC_SetValues,x,0,0,0);CHKERRQ(ierr);
-  ierr = (*x->ops->setvaluesblocked)(x,ni,ix,y,iora);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(VEC_SetValues,x,0,0,0);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
+  PetscCall(PetscLogEventBegin(VEC_SetValues,x,0,0,0));
+  PetscCall((*x->ops->setvaluesblocked)(x,ni,ix,y,iora));
+  PetscCall(PetscLogEventEnd(VEC_SetValues,x,0,0,0));
+  PetscCall(PetscObjectStateIncrease((PetscObject)x));
   PetscFunctionReturn(0);
 }
 
@@ -966,7 +932,6 @@ PetscErrorCode  VecSetValuesBlocked(Vec x,PetscInt ni,const PetscInt ix[],const 
 @*/
 PetscErrorCode  VecSetValuesLocal(Vec x,PetscInt ni,const PetscInt ix[],const PetscScalar y[],InsertMode iora)
 {
-  PetscErrorCode ierr;
   PetscInt       lixp[128],*lix = lixp;
 
   PetscFunctionBeginHot;
@@ -976,25 +941,25 @@ PetscErrorCode  VecSetValuesLocal(Vec x,PetscInt ni,const PetscInt ix[],const Pe
   PetscValidScalarPointer(y,4);
   PetscValidType(x,1);
 
-  ierr = PetscLogEventBegin(VEC_SetValues,x,0,0,0);CHKERRQ(ierr);
+  PetscCall(PetscLogEventBegin(VEC_SetValues,x,0,0,0));
   if (!x->ops->setvalueslocal) {
     if (x->map->mapping) {
       if (ni > 128) {
-        ierr = PetscMalloc1(ni,&lix);CHKERRQ(ierr);
+        PetscCall(PetscMalloc1(ni,&lix));
       }
-      ierr = ISLocalToGlobalMappingApply(x->map->mapping,ni,(PetscInt*)ix,lix);CHKERRQ(ierr);
-      ierr = (*x->ops->setvalues)(x,ni,lix,y,iora);CHKERRQ(ierr);
+      PetscCall(ISLocalToGlobalMappingApply(x->map->mapping,ni,(PetscInt*)ix,lix));
+      PetscCall((*x->ops->setvalues)(x,ni,lix,y,iora));
       if (ni > 128) {
-        ierr = PetscFree(lix);CHKERRQ(ierr);
+        PetscCall(PetscFree(lix));
       }
     } else {
-      ierr = (*x->ops->setvalues)(x,ni,ix,y,iora);CHKERRQ(ierr);
+      PetscCall((*x->ops->setvalues)(x,ni,ix,y,iora));
     }
   } else {
-    ierr = (*x->ops->setvalueslocal)(x,ni,ix,y,iora);CHKERRQ(ierr);
+    PetscCall((*x->ops->setvalueslocal)(x,ni,ix,y,iora));
   }
-  ierr = PetscLogEventEnd(VEC_SetValues,x,0,0,0);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
+  PetscCall(PetscLogEventEnd(VEC_SetValues,x,0,0,0));
+  PetscCall(PetscObjectStateIncrease((PetscObject)x));
   PetscFunctionReturn(0);
 }
 
@@ -1033,7 +998,6 @@ PetscErrorCode  VecSetValuesLocal(Vec x,PetscInt ni,const PetscInt ix[],const Pe
 @*/
 PetscErrorCode  VecSetValuesBlockedLocal(Vec x,PetscInt ni,const PetscInt ix[],const PetscScalar y[],InsertMode iora)
 {
-  PetscErrorCode ierr;
   PetscInt       lixp[128],*lix = lixp;
 
   PetscFunctionBeginHot;
@@ -1042,21 +1006,21 @@ PetscErrorCode  VecSetValuesBlockedLocal(Vec x,PetscInt ni,const PetscInt ix[],c
   PetscValidIntPointer(ix,3);
   PetscValidScalarPointer(y,4);
   PetscValidType(x,1);
-  ierr = PetscLogEventBegin(VEC_SetValues,x,0,0,0);CHKERRQ(ierr);
+  PetscCall(PetscLogEventBegin(VEC_SetValues,x,0,0,0));
   if (x->map->mapping) {
     if (ni > 128) {
-      ierr = PetscMalloc1(ni,&lix);CHKERRQ(ierr);
+      PetscCall(PetscMalloc1(ni,&lix));
     }
-    ierr = ISLocalToGlobalMappingApplyBlock(x->map->mapping,ni,(PetscInt*)ix,lix);CHKERRQ(ierr);
-    ierr = (*x->ops->setvaluesblocked)(x,ni,lix,y,iora);CHKERRQ(ierr);
+    PetscCall(ISLocalToGlobalMappingApplyBlock(x->map->mapping,ni,(PetscInt*)ix,lix));
+    PetscCall((*x->ops->setvaluesblocked)(x,ni,lix,y,iora));
     if (ni > 128) {
-      ierr = PetscFree(lix);CHKERRQ(ierr);
+      PetscCall(PetscFree(lix));
     }
   } else {
-    ierr = (*x->ops->setvaluesblocked)(x,ni,ix,y,iora);CHKERRQ(ierr);
+    PetscCall((*x->ops->setvaluesblocked)(x,ni,ix,y,iora));
   }
-  ierr = PetscLogEventEnd(VEC_SetValues,x,0,0,0);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
+  PetscCall(PetscLogEventEnd(VEC_SetValues,x,0,0,0));
+  PetscCall(PetscObjectStateIncrease((PetscObject)x));
   PetscFunctionReturn(0);
 }
 
@@ -1089,8 +1053,6 @@ $      val = (x,y) = y^H x,
 @*/
 PetscErrorCode  VecMTDot(Vec x,PetscInt nv,const Vec y[],PetscScalar val[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidLogicalCollectiveInt(x,nv,2);
@@ -1103,9 +1065,9 @@ PetscErrorCode  VecMTDot(Vec x,PetscInt nv,const Vec y[],PetscScalar val[])
   PetscCheckSameTypeAndComm(x,1,*y,3);
   VecCheckSameSize(x,1,*y,3);
 
-  ierr = PetscLogEventBegin(VEC_MTDot,x,*y,0,0);CHKERRQ(ierr);
-  ierr = (*x->ops->mtdot)(x,nv,y,val);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(VEC_MTDot,x,*y,0,0);CHKERRQ(ierr);
+  PetscCall(PetscLogEventBegin(VEC_MTDot,x,*y,0,0));
+  PetscCall((*x->ops->mtdot)(x,nv,y,val));
+  PetscCall(PetscLogEventEnd(VEC_MTDot,x,*y,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -1137,8 +1099,6 @@ $     val = (x,y) = y^T x,
 @*/
 PetscErrorCode  VecMDot(Vec x,PetscInt nv,const Vec y[],PetscScalar val[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidLogicalCollectiveInt(x,nv,2);
@@ -1152,9 +1112,9 @@ PetscErrorCode  VecMDot(Vec x,PetscInt nv,const Vec y[],PetscScalar val[])
   PetscCheckSameTypeAndComm(x,1,*y,3);
   VecCheckSameSize(x,1,*y,3);
 
-  ierr = PetscLogEventBegin(VEC_MDot,x,*y,0,0);CHKERRQ(ierr);
-  ierr = (*x->ops->mdot)(x,nv,y,val);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(VEC_MDot,x,*y,0,0);CHKERRQ(ierr);
+  PetscCall(PetscLogEventBegin(VEC_MDot,x,*y,0,0));
+  PetscCall((*x->ops->mdot)(x,nv,y,val));
+  PetscCall(PetscLogEventEnd(VEC_MDot,x,*y,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -1178,7 +1138,6 @@ PetscErrorCode  VecMDot(Vec x,PetscInt nv,const Vec y[],PetscScalar val[])
 @*/
 PetscErrorCode  VecMAXPY(Vec y,PetscInt nv,const PetscScalar alpha[],Vec x[])
 {
-  PetscErrorCode ierr;
   PetscInt       i;
   PetscBool      nonzero;
 
@@ -1197,11 +1156,11 @@ PetscErrorCode  VecMAXPY(Vec y,PetscInt nv,const PetscScalar alpha[],Vec x[])
   for (i=0; i<nv; i++) PetscValidLogicalCollectiveScalar(y,alpha[i],3);
   for (i=0, nonzero = PETSC_FALSE; i<nv && !nonzero; i++) nonzero = (PetscBool)(nonzero || alpha[i] != (PetscScalar)0.0);
   if (!nonzero) PetscFunctionReturn(0);
-  ierr = VecSetErrorIfLocked(y,1);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(VEC_MAXPY,*x,y,0,0);CHKERRQ(ierr);
-  ierr = (*y->ops->maxpy)(y,nv,alpha,x);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(VEC_MAXPY,*x,y,0,0);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
+  PetscCall(VecSetErrorIfLocked(y,1));
+  PetscCall(PetscLogEventBegin(VEC_MAXPY,*x,y,0,0));
+  PetscCall((*y->ops->maxpy)(y,nv,alpha,x));
+  PetscCall(PetscLogEventEnd(VEC_MAXPY,*x,y,0,0));
+  PetscCall(PetscObjectStateIncrease((PetscObject)y));
   PetscFunctionReturn(0);
 }
 
@@ -1241,7 +1200,6 @@ PetscErrorCode VecConcatenate(PetscInt nx, const Vec X[], Vec *Y, IS *x_is[])
   Vec            Ytmp, Xtmp;
   IS             *is_tmp;
   PetscInt       i, shift=0, Xnl, Xng, Xbegin;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidLogicalCollectiveInt(*X,nx,1);
@@ -1251,38 +1209,38 @@ PetscErrorCode VecConcatenate(PetscInt nx, const Vec X[], Vec *Y, IS *x_is[])
 
   if ((*X)->ops->concatenate) {
     /* use the dedicated concatenation function if available */
-    ierr = (*(*X)->ops->concatenate)(nx,X,Y,x_is);CHKERRQ(ierr);
+    PetscCall((*(*X)->ops->concatenate)(nx,X,Y,x_is));
   } else {
     /* loop over vectors and start creating IS */
     comm = PetscObjectComm((PetscObject)(*X));
-    ierr = VecGetType(*X, &vec_type);CHKERRQ(ierr);
-    ierr = PetscMalloc1(nx, &is_tmp);CHKERRQ(ierr);
+    PetscCall(VecGetType(*X, &vec_type));
+    PetscCall(PetscMalloc1(nx, &is_tmp));
     for (i=0; i<nx; i++) {
-      ierr = VecGetSize(X[i], &Xng);CHKERRQ(ierr);
-      ierr = VecGetLocalSize(X[i], &Xnl);CHKERRQ(ierr);
-      ierr = VecGetOwnershipRange(X[i], &Xbegin, NULL);CHKERRQ(ierr);
-      ierr = ISCreateStride(comm, Xnl, shift + Xbegin, 1, &is_tmp[i]);CHKERRQ(ierr);
+      PetscCall(VecGetSize(X[i], &Xng));
+      PetscCall(VecGetLocalSize(X[i], &Xnl));
+      PetscCall(VecGetOwnershipRange(X[i], &Xbegin, NULL));
+      PetscCall(ISCreateStride(comm, Xnl, shift + Xbegin, 1, &is_tmp[i]));
       shift += Xng;
     }
     /* create the concatenated vector */
-    ierr = VecCreate(comm, &Ytmp);CHKERRQ(ierr);
-    ierr = VecSetType(Ytmp, vec_type);CHKERRQ(ierr);
-    ierr = VecSetSizes(Ytmp, PETSC_DECIDE, shift);CHKERRQ(ierr);
-    ierr = VecSetUp(Ytmp);CHKERRQ(ierr);
+    PetscCall(VecCreate(comm, &Ytmp));
+    PetscCall(VecSetType(Ytmp, vec_type));
+    PetscCall(VecSetSizes(Ytmp, PETSC_DECIDE, shift));
+    PetscCall(VecSetUp(Ytmp));
     /* copy data from X array to Y and return */
     for (i=0; i<nx; i++) {
-      ierr = VecGetSubVector(Ytmp, is_tmp[i], &Xtmp);CHKERRQ(ierr);
-      ierr = VecCopy(X[i], Xtmp);CHKERRQ(ierr);
-      ierr = VecRestoreSubVector(Ytmp, is_tmp[i], &Xtmp);CHKERRQ(ierr);
+      PetscCall(VecGetSubVector(Ytmp, is_tmp[i], &Xtmp));
+      PetscCall(VecCopy(X[i], Xtmp));
+      PetscCall(VecRestoreSubVector(Ytmp, is_tmp[i], &Xtmp));
     }
     *Y = Ytmp;
     if (x_is) {
       *x_is = is_tmp;
     } else {
       for (i=0; i<nx; i++) {
-        ierr = ISDestroy(&is_tmp[i]);CHKERRQ(ierr);
+        PetscCall(ISDestroy(&is_tmp[i]));
       }
-      ierr = PetscFree(is_tmp);CHKERRQ(ierr);
+      PetscCall(PetscFree(is_tmp));
     }
   }
   PetscFunctionReturn(0);
@@ -1303,25 +1261,24 @@ PetscErrorCode VecConcatenate(PetscInt nx, const Vec X[], Vec *Y, IS *x_is[])
 */
 PetscErrorCode VecGetSubVectorContiguityAndBS_Private(Vec X,IS is,PetscBool *contig,PetscInt *start,PetscInt *blocksize)
 {
-  PetscErrorCode   ierr;
   PetscInt         gstart,gend,lstart;
   PetscBool        red[2] = {PETSC_TRUE/*contiguous*/,PETSC_TRUE/*validVBS*/};
   PetscInt         n,N,ibs,vbs,bs = -1;
 
   PetscFunctionBegin;
-  ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
-  ierr = ISGetSize(is,&N);CHKERRQ(ierr);
-  ierr = ISGetBlockSize(is,&ibs);CHKERRQ(ierr);
-  ierr = VecGetBlockSize(X,&vbs);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(X,&gstart,&gend);CHKERRQ(ierr);
-  ierr = ISContiguousLocal(is,gstart,gend,&lstart,&red[0]);CHKERRQ(ierr);
+  PetscCall(ISGetLocalSize(is,&n));
+  PetscCall(ISGetSize(is,&N));
+  PetscCall(ISGetBlockSize(is,&ibs));
+  PetscCall(VecGetBlockSize(X,&vbs));
+  PetscCall(VecGetOwnershipRange(X,&gstart,&gend));
+  PetscCall(ISContiguousLocal(is,gstart,gend,&lstart,&red[0]));
   /* block size is given by IS if ibs > 1; otherwise, check the vector */
   if (ibs > 1) {
-    ierr = MPIU_Allreduce(MPI_IN_PLACE,red,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)is));CHKERRMPI(ierr);
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE,red,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)is)));
     bs   = ibs;
   } else {
     if (n%vbs || vbs == 1) red[1] = PETSC_FALSE; /* this process invalidate the collectiveness of block size */
-    ierr = MPIU_Allreduce(MPI_IN_PLACE,red,2,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)is));CHKERRMPI(ierr);
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE,red,2,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)is)));
     if (red[0] && red[1]) bs = vbs; /* all processes have a valid block size and the access will be contiguous */
   }
 
@@ -1343,23 +1300,22 @@ PetscErrorCode VecGetSubVectorContiguityAndBS_Private(Vec X,IS is,PetscBool *con
 */
 PetscErrorCode VecGetSubVectorThroughVecScatter_Private(Vec X,IS is,PetscInt bs,Vec *Z)
 {
-  PetscErrorCode ierr;
   PetscInt       n,N;
   VecScatter     vscat;
   Vec            Y;
 
   PetscFunctionBegin;
-  ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
-  ierr = ISGetSize(is,&N);CHKERRQ(ierr);
-  ierr = VecCreate(PetscObjectComm((PetscObject)is),&Y);CHKERRQ(ierr);
-  ierr = VecSetSizes(Y,n,N);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(Y,bs);CHKERRQ(ierr);
-  ierr = VecSetType(Y,((PetscObject)X)->type_name);CHKERRQ(ierr);
-  ierr = VecScatterCreate(X,is,Y,NULL,&vscat);CHKERRQ(ierr);
-  ierr = VecScatterBegin(vscat,X,Y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(vscat,X,Y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)Y,"VecGetSubVector_Scatter",(PetscObject)vscat);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&vscat);CHKERRQ(ierr);
+  PetscCall(ISGetLocalSize(is,&n));
+  PetscCall(ISGetSize(is,&N));
+  PetscCall(VecCreate(PetscObjectComm((PetscObject)is),&Y));
+  PetscCall(VecSetSizes(Y,n,N));
+  PetscCall(VecSetBlockSize(Y,bs));
+  PetscCall(VecSetType(Y,((PetscObject)X)->type_name));
+  PetscCall(VecScatterCreate(X,is,Y,NULL,&vscat));
+  PetscCall(VecScatterBegin(vscat,X,Y,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(vscat,X,Y,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(PetscObjectCompose((PetscObject)Y,"VecGetSubVector_Scatter",(PetscObject)vscat));
+  PetscCall(VecScatterDestroy(&vscat));
   *Z   = Y;
   PetscFunctionReturn(0);
 }
@@ -1390,7 +1346,6 @@ PetscErrorCode VecGetSubVectorThroughVecScatter_Private(Vec X,IS is,PetscInt bs,
 @*/
 PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
 {
-  PetscErrorCode   ierr;
   Vec              Z;
 
   PetscFunctionBegin;
@@ -1399,38 +1354,38 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
   PetscCheckSameComm(X,1,is,2);
   PetscValidPointer(Y,3);
   if (X->ops->getsubvector) {
-    ierr = (*X->ops->getsubvector)(X,is,&Z);CHKERRQ(ierr);
+    PetscCall((*X->ops->getsubvector)(X,is,&Z));
   } else { /* Default implementation currently does no caching */
     PetscBool   contig;
     PetscInt    n,N,start,bs;
 
-    ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
-    ierr = ISGetSize(is,&N);CHKERRQ(ierr);
-    ierr = VecGetSubVectorContiguityAndBS_Private(X,is,&contig,&start,&bs);CHKERRQ(ierr);
+    PetscCall(ISGetLocalSize(is,&n));
+    PetscCall(ISGetSize(is,&N));
+    PetscCall(VecGetSubVectorContiguityAndBS_Private(X,is,&contig,&start,&bs));
     if (contig) { /* We can do a no-copy implementation */
       const PetscScalar *x;
       PetscInt          state = 0;
       PetscBool         isstd,iscuda,iship;
 
-      ierr = PetscObjectTypeCompareAny((PetscObject)X,&isstd,VECSEQ,VECMPI,VECSTANDARD,"");CHKERRQ(ierr);
-      ierr = PetscObjectTypeCompareAny((PetscObject)X,&iscuda,VECSEQCUDA,VECMPICUDA,"");CHKERRQ(ierr);
-      ierr = PetscObjectTypeCompareAny((PetscObject)X,&iship,VECSEQHIP,VECMPIHIP,"");CHKERRQ(ierr);
+      PetscCall(PetscObjectTypeCompareAny((PetscObject)X,&isstd,VECSEQ,VECMPI,VECSTANDARD,""));
+      PetscCall(PetscObjectTypeCompareAny((PetscObject)X,&iscuda,VECSEQCUDA,VECMPICUDA,""));
+      PetscCall(PetscObjectTypeCompareAny((PetscObject)X,&iship,VECSEQHIP,VECMPIHIP,""));
       if (iscuda) {
 #if defined(PETSC_HAVE_CUDA)
         const PetscScalar *x_d;
         PetscMPIInt       size;
         PetscOffloadMask  flg;
 
-        ierr = VecCUDAGetArrays_Private(X,&x,&x_d,&flg);CHKERRQ(ierr);
+        PetscCall(VecCUDAGetArrays_Private(X,&x,&x_d,&flg));
         PetscCheckFalse(flg == PETSC_OFFLOAD_UNALLOCATED,PETSC_COMM_SELF,PETSC_ERR_SUP,"Not for PETSC_OFFLOAD_UNALLOCATED");
         PetscCheckFalse(n && !x && !x_d,PETSC_COMM_SELF,PETSC_ERR_SUP,"Missing vector data");
         if (x) x += start;
         if (x_d) x_d += start;
-        ierr = MPI_Comm_size(PetscObjectComm((PetscObject)X),&size);CHKERRMPI(ierr);
+        PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)X),&size));
         if (size == 1) {
-          ierr = VecCreateSeqCUDAWithArrays(PetscObjectComm((PetscObject)X),bs,n,x,x_d,&Z);CHKERRQ(ierr);
+          PetscCall(VecCreateSeqCUDAWithArrays(PetscObjectComm((PetscObject)X),bs,n,x,x_d,&Z));
         } else {
-          ierr = VecCreateMPICUDAWithArrays(PetscObjectComm((PetscObject)X),bs,n,N,x,x_d,&Z);CHKERRQ(ierr);
+          PetscCall(VecCreateMPICUDAWithArrays(PetscObjectComm((PetscObject)X),bs,n,N,x,x_d,&Z));
         }
         Z->offloadmask = flg;
 #endif
@@ -1440,55 +1395,55 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
         PetscMPIInt       size;
         PetscOffloadMask  flg;
 
-        ierr = VecHIPGetArrays_Private(X,&x,&x_d,&flg);CHKERRQ(ierr);
+        PetscCall(VecHIPGetArrays_Private(X,&x,&x_d,&flg));
         PetscCheckFalse(flg == PETSC_OFFLOAD_UNALLOCATED,PETSC_COMM_SELF,PETSC_ERR_SUP,"Not for PETSC_OFFLOAD_UNALLOCATED");
         PetscCheckFalse(n && !x && !x_d,PETSC_COMM_SELF,PETSC_ERR_SUP,"Missing vector data");
         if (x) x += start;
         if (x_d) x_d += start;
-        ierr = MPI_Comm_size(PetscObjectComm((PetscObject)X),&size);CHKERRMPI(ierr);
+        PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)X),&size));
         if (size == 1) {
-          ierr = VecCreateSeqHIPWithArrays(PetscObjectComm((PetscObject)X),bs,n,x,x_d,&Z);CHKERRQ(ierr);
+          PetscCall(VecCreateSeqHIPWithArrays(PetscObjectComm((PetscObject)X),bs,n,x,x_d,&Z));
         } else {
-          ierr = VecCreateMPIHIPWithArrays(PetscObjectComm((PetscObject)X),bs,n,N,x,x_d,&Z);CHKERRQ(ierr);
+          PetscCall(VecCreateMPIHIPWithArrays(PetscObjectComm((PetscObject)X),bs,n,N,x,x_d,&Z));
         }
         Z->offloadmask = flg;
 #endif
       } else if (isstd) {
         PetscMPIInt size;
 
-        ierr = MPI_Comm_size(PetscObjectComm((PetscObject)X),&size);CHKERRMPI(ierr);
-        ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
+        PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)X),&size));
+        PetscCall(VecGetArrayRead(X,&x));
         if (x) x += start;
         if (size == 1) {
-          ierr = VecCreateSeqWithArray(PetscObjectComm((PetscObject)X),bs,n,x,&Z);CHKERRQ(ierr);
+          PetscCall(VecCreateSeqWithArray(PetscObjectComm((PetscObject)X),bs,n,x,&Z));
         } else {
-          ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)X),bs,n,N,x,&Z);CHKERRQ(ierr);
+          PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)X),bs,n,N,x,&Z));
         }
-        ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+        PetscCall(VecRestoreArrayRead(X,&x));
       } else { /* default implementation: use place array */
-        ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-        ierr = VecCreate(PetscObjectComm((PetscObject)X),&Z);CHKERRQ(ierr);
-        ierr = VecSetType(Z,((PetscObject)X)->type_name);CHKERRQ(ierr);
-        ierr = VecSetSizes(Z,n,N);CHKERRQ(ierr);
-        ierr = VecSetBlockSize(Z,bs);CHKERRQ(ierr);
-        ierr = VecPlaceArray(Z,x ? x+start : NULL);CHKERRQ(ierr);
-        ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+        PetscCall(VecGetArrayRead(X,&x));
+        PetscCall(VecCreate(PetscObjectComm((PetscObject)X),&Z));
+        PetscCall(VecSetType(Z,((PetscObject)X)->type_name));
+        PetscCall(VecSetSizes(Z,n,N));
+        PetscCall(VecSetBlockSize(Z,bs));
+        PetscCall(VecPlaceArray(Z,x ? x+start : NULL));
+        PetscCall(VecRestoreArrayRead(X,&x));
       }
 
       /* this is relevant only in debug mode */
-      ierr = VecLockGet(X,&state);CHKERRQ(ierr);
+      PetscCall(VecLockGet(X,&state));
       if (state) {
-        ierr = VecLockReadPush(Z);CHKERRQ(ierr);
+        PetscCall(VecLockReadPush(Z));
       }
       Z->ops->placearray = NULL;
       Z->ops->replacearray = NULL;
     } else { /* Have to create a scatter and do a copy */
-      ierr = VecGetSubVectorThroughVecScatter_Private(X,is,bs,&Z);CHKERRQ(ierr);
+      PetscCall(VecGetSubVectorThroughVecScatter_Private(X,is,bs,&Z));
     }
   }
   /* Record the state when the subvector was gotten so we know whether its values need to be put back */
-  if (VecGetSubVectorSavedStateId < 0) {ierr = PetscObjectComposedDataRegister(&VecGetSubVectorSavedStateId);CHKERRQ(ierr);}
-  ierr = PetscObjectComposedDataSetInt((PetscObject)Z,VecGetSubVectorSavedStateId,1);CHKERRQ(ierr);
+  if (VecGetSubVectorSavedStateId < 0) PetscCall(PetscObjectComposedDataRegister(&VecGetSubVectorSavedStateId));
+  PetscCall(PetscObjectComposedDataSetInt((PetscObject)Z,VecGetSubVectorSavedStateId,1));
   *Y   = Z;
   PetscFunctionReturn(0);
 }
@@ -1509,7 +1464,6 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
 @*/
 PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
 {
-  PetscErrorCode                ierr;
   PETSC_UNUSED PetscObjectState dummystate = 0;
   PetscBool                     unchanged;
 
@@ -1521,24 +1475,24 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
   PetscValidHeaderSpecific(*Y,VEC_CLASSID,3);
 
   if (X->ops->restoresubvector) {
-    ierr = (*X->ops->restoresubvector)(X,is,Y);CHKERRQ(ierr);
+    PetscCall((*X->ops->restoresubvector)(X,is,Y));
   } else {
-    ierr = PetscObjectComposedDataGetInt((PetscObject)*Y,VecGetSubVectorSavedStateId,dummystate,unchanged);CHKERRQ(ierr);
+    PetscCall(PetscObjectComposedDataGetInt((PetscObject)*Y,VecGetSubVectorSavedStateId,dummystate,unchanged));
     if (!unchanged) { /* If Y's state has not changed since VecGetSubVector(), we only need to destroy Y */
       VecScatter scatter;
       PetscInt   state;
 
-      ierr = VecLockGet(X,&state);CHKERRQ(ierr);
+      PetscCall(VecLockGet(X,&state));
       PetscCheckFalse(state != 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Vec X is locked for read-only or read/write access");
 
-      ierr = PetscObjectQuery((PetscObject)*Y,"VecGetSubVector_Scatter",(PetscObject*)&scatter);CHKERRQ(ierr);
+      PetscCall(PetscObjectQuery((PetscObject)*Y,"VecGetSubVector_Scatter",(PetscObject*)&scatter));
       if (scatter) {
-        ierr = VecScatterBegin(scatter,*Y,X,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-        ierr = VecScatterEnd(scatter,*Y,X,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+        PetscCall(VecScatterBegin(scatter,*Y,X,INSERT_VALUES,SCATTER_REVERSE));
+        PetscCall(VecScatterEnd(scatter,*Y,X,INSERT_VALUES,SCATTER_REVERSE));
       } else {
         PetscBool         iscuda,iship;
-        ierr = PetscObjectTypeCompareAny((PetscObject)X,&iscuda,VECSEQCUDA,VECMPICUDA,"");CHKERRQ(ierr);
-        ierr = PetscObjectTypeCompareAny((PetscObject)X,&iship,VECSEQHIP,VECMPIHIP,"");CHKERRQ(ierr);
+        PetscCall(PetscObjectTypeCompareAny((PetscObject)X,&iscuda,VECSEQCUDA,VECMPICUDA,""));
+        PetscCall(PetscObjectTypeCompareAny((PetscObject)X,&iship,VECSEQHIP,VECMPIHIP,""));
 
         if (iscuda) {
 #if defined(PETSC_HAVE_CUDA)
@@ -1550,19 +1504,19 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
           switch (X->offloadmask) {
           case PETSC_OFFLOAD_BOTH:
             if (ymask == PETSC_OFFLOAD_CPU) {
-              ierr = VecCUDAResetArray(*Y);CHKERRQ(ierr);
+              PetscCall(VecCUDAResetArray(*Y));
             } else if (ymask == PETSC_OFFLOAD_GPU) {
               X->offloadmask = PETSC_OFFLOAD_GPU;
             }
             break;
           case PETSC_OFFLOAD_GPU:
             if (ymask == PETSC_OFFLOAD_CPU) {
-              ierr = VecCUDAResetArray(*Y);CHKERRQ(ierr);
+              PetscCall(VecCUDAResetArray(*Y));
             }
             break;
           case PETSC_OFFLOAD_CPU:
             if (ymask == PETSC_OFFLOAD_GPU) {
-              ierr = VecResetArray(*Y);CHKERRQ(ierr);
+              PetscCall(VecResetArray(*Y));
             }
             break;
           case PETSC_OFFLOAD_UNALLOCATED:
@@ -1580,19 +1534,19 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
           switch (X->offloadmask) {
           case PETSC_OFFLOAD_BOTH:
             if (ymask == PETSC_OFFLOAD_CPU) {
-              ierr = VecHIPResetArray(*Y);CHKERRQ(ierr);
+              PetscCall(VecHIPResetArray(*Y));
             } else if (ymask == PETSC_OFFLOAD_GPU) {
               X->offloadmask = PETSC_OFFLOAD_GPU;
             }
             break;
           case PETSC_OFFLOAD_GPU:
             if (ymask == PETSC_OFFLOAD_CPU) {
-              ierr = VecHIPResetArray(*Y);CHKERRQ(ierr);
+              PetscCall(VecHIPResetArray(*Y));
             }
             break;
           case PETSC_OFFLOAD_CPU:
             if (ymask == PETSC_OFFLOAD_GPU) {
-              ierr = VecResetArray(*Y);CHKERRQ(ierr);
+              PetscCall(VecResetArray(*Y));
             }
             break;
           case PETSC_OFFLOAD_UNALLOCATED:
@@ -1602,13 +1556,13 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
 #endif
         } else {
           /* If OpenCL vecs updated the device memory, this triggers a copy on the CPU */
-          ierr = VecResetArray(*Y);CHKERRQ(ierr);
+          PetscCall(VecResetArray(*Y));
         }
-        ierr = PetscObjectStateIncrease((PetscObject)X);CHKERRQ(ierr);
+        PetscCall(PetscObjectStateIncrease((PetscObject)X));
       }
     }
   }
-  ierr = VecDestroy(Y);CHKERRQ(ierr);
+  PetscCall(VecDestroy(Y));
   PetscFunctionReturn(0);
 }
 
@@ -1645,7 +1599,6 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
 @*/
 PetscErrorCode VecGetLocalVectorRead(Vec v,Vec w)
 {
-  PetscErrorCode ierr;
   PetscScalar    *a;
 
   PetscFunctionBegin;
@@ -1653,14 +1606,14 @@ PetscErrorCode VecGetLocalVectorRead(Vec v,Vec w)
   PetscValidHeaderSpecific(w,VEC_CLASSID,2);
   VecCheckSameLocalSize(v,1,w,2);
   if (v->ops->getlocalvectorread) {
-    ierr = (*v->ops->getlocalvectorread)(v,w);CHKERRQ(ierr);
+    PetscCall((*v->ops->getlocalvectorread)(v,w));
   } else {
-    ierr = VecGetArrayRead(v,(const PetscScalar**)&a);CHKERRQ(ierr);
-    ierr = VecPlaceArray(w,a);CHKERRQ(ierr);
+    PetscCall(VecGetArrayRead(v,(const PetscScalar**)&a));
+    PetscCall(VecPlaceArray(w,a));
   }
-  ierr = PetscObjectStateIncrease((PetscObject)w);CHKERRQ(ierr);
-  ierr = VecLockReadPush(v);CHKERRQ(ierr);
-  ierr = VecLockReadPush(w);CHKERRQ(ierr);
+  PetscCall(PetscObjectStateIncrease((PetscObject)w));
+  PetscCall(VecLockReadPush(v));
+  PetscCall(VecLockReadPush(w));
   PetscFunctionReturn(0);
 }
 
@@ -1680,22 +1633,21 @@ PetscErrorCode VecGetLocalVectorRead(Vec v,Vec w)
 @*/
 PetscErrorCode VecRestoreLocalVectorRead(Vec v,Vec w)
 {
-  PetscErrorCode ierr;
   PetscScalar    *a;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidHeaderSpecific(w,VEC_CLASSID,2);
   if (v->ops->restorelocalvectorread) {
-    ierr = (*v->ops->restorelocalvectorread)(v,w);CHKERRQ(ierr);
+    PetscCall((*v->ops->restorelocalvectorread)(v,w));
   } else {
-    ierr = VecGetArrayRead(w,(const PetscScalar**)&a);CHKERRQ(ierr);
-    ierr = VecRestoreArrayRead(v,(const PetscScalar**)&a);CHKERRQ(ierr);
-    ierr = VecResetArray(w);CHKERRQ(ierr);
+    PetscCall(VecGetArrayRead(w,(const PetscScalar**)&a));
+    PetscCall(VecRestoreArrayRead(v,(const PetscScalar**)&a));
+    PetscCall(VecResetArray(w));
   }
-  ierr = VecLockReadPop(v);CHKERRQ(ierr);
-  ierr = VecLockReadPop(w);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject)w);CHKERRQ(ierr);
+  PetscCall(VecLockReadPop(v));
+  PetscCall(VecLockReadPop(w));
+  PetscCall(PetscObjectStateIncrease((PetscObject)w));
   PetscFunctionReturn(0);
 }
 
@@ -1728,7 +1680,6 @@ PetscErrorCode VecRestoreLocalVectorRead(Vec v,Vec w)
 @*/
 PetscErrorCode VecGetLocalVector(Vec v,Vec w)
 {
-  PetscErrorCode ierr;
   PetscScalar    *a;
 
   PetscFunctionBegin;
@@ -1736,12 +1687,12 @@ PetscErrorCode VecGetLocalVector(Vec v,Vec w)
   PetscValidHeaderSpecific(w,VEC_CLASSID,2);
   VecCheckSameLocalSize(v,1,w,2);
   if (v->ops->getlocalvector) {
-    ierr = (*v->ops->getlocalvector)(v,w);CHKERRQ(ierr);
+    PetscCall((*v->ops->getlocalvector)(v,w));
   } else {
-    ierr = VecGetArray(v,&a);CHKERRQ(ierr);
-    ierr = VecPlaceArray(w,a);CHKERRQ(ierr);
+    PetscCall(VecGetArray(v,&a));
+    PetscCall(VecPlaceArray(w,a));
   }
-  ierr = PetscObjectStateIncrease((PetscObject)w);CHKERRQ(ierr);
+  PetscCall(PetscObjectStateIncrease((PetscObject)w));
   PetscFunctionReturn(0);
 }
 
@@ -1761,21 +1712,20 @@ PetscErrorCode VecGetLocalVector(Vec v,Vec w)
 @*/
 PetscErrorCode VecRestoreLocalVector(Vec v,Vec w)
 {
-  PetscErrorCode ierr;
   PetscScalar    *a;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidHeaderSpecific(w,VEC_CLASSID,2);
   if (v->ops->restorelocalvector) {
-    ierr = (*v->ops->restorelocalvector)(v,w);CHKERRQ(ierr);
+    PetscCall((*v->ops->restorelocalvector)(v,w));
   } else {
-    ierr = VecGetArray(w,&a);CHKERRQ(ierr);
-    ierr = VecRestoreArray(v,&a);CHKERRQ(ierr);
-    ierr = VecResetArray(w);CHKERRQ(ierr);
+    PetscCall(VecGetArray(w,&a));
+    PetscCall(VecRestoreArray(v,&a));
+    PetscCall(VecResetArray(w));
   }
-  ierr = PetscObjectStateIncrease((PetscObject)w);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
+  PetscCall(PetscObjectStateIncrease((PetscObject)w));
+  PetscCall(PetscObjectStateIncrease((PetscObject)v));
   PetscFunctionReturn(0);
 }
 
@@ -1821,13 +1771,11 @@ $       call VecRestoreArray(x,x_array,i_x,ierr)
 @*/
 PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
-  ierr = VecSetErrorIfLocked(x,1);CHKERRQ(ierr);
+  PetscCall(VecSetErrorIfLocked(x,1));
   if (x->ops->getarray) { /* The if-else order matters! VECNEST, VECCUDA etc should have ops->getarray while VECCUDA etc are petscnative */
-    ierr = (*x->ops->getarray)(x,a);CHKERRQ(ierr);
+    PetscCall((*x->ops->getarray)(x,a));
   } else if (x->petscnative) { /* VECSTANDARD */
     *a = *((PetscScalar**)x->data);
   } else SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_SUP,"Cannot get array for vector type \"%s\"",((PetscObject)x)->type_name);
@@ -1850,17 +1798,15 @@ PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
 @*/
 PetscErrorCode VecRestoreArray(Vec x,PetscScalar **a)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   if (x->ops->restorearray) { /* VECNEST, VECCUDA etc */
-    ierr = (*x->ops->restorearray)(x,a);CHKERRQ(ierr);
+    PetscCall((*x->ops->restorearray)(x,a));
   } else if (x->petscnative) { /* VECSTANDARD */
     /* nothing */
   } else SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_SUP,"Cannot restore array for vector type \"%s\"",((PetscObject)x)->type_name);
   if (a) *a = NULL;
-  ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
+  PetscCall(PetscObjectStateIncrease((PetscObject)x));
   PetscFunctionReturn(0);
 }
 /*@C
@@ -1889,12 +1835,10 @@ PetscErrorCode VecRestoreArray(Vec x,PetscScalar **a)
 @*/
 PetscErrorCode VecGetArrayRead(Vec x,const PetscScalar **a)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   if (x->ops->getarray) { /* VECNEST, VECCUDA, VECKOKKOS etc */
-    ierr = (*x->ops->getarray)(x,(PetscScalar**)a);CHKERRQ(ierr);
+    PetscCall((*x->ops->getarray)(x,(PetscScalar**)a));
   } else if (x->petscnative) { /* VECSTANDARD */
     *a = *((PetscScalar**)x->data);
   } else SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_SUP,"Cannot get array read for vector type \"%s\"",((PetscObject)x)->type_name);
@@ -1916,16 +1860,14 @@ PetscErrorCode VecGetArrayRead(Vec x,const PetscScalar **a)
 @*/
 PetscErrorCode VecRestoreArrayRead(Vec x,const PetscScalar **a)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   if (x->petscnative) { /* VECSTANDARD, VECCUDA, VECKOKKOS etc */
     /* nothing */
   } else if (x->ops->restorearrayread) { /* VECNEST */
-    ierr = (*x->ops->restorearrayread)(x,a);CHKERRQ(ierr);
+    PetscCall((*x->ops->restorearrayread)(x,a));
   } else { /* No one? */
-    ierr = (*x->ops->restorearray)(x,(PetscScalar**)a);CHKERRQ(ierr);
+    PetscCall((*x->ops->restorearray)(x,(PetscScalar**)a));
   }
   if (a) *a = NULL;
   PetscFunctionReturn(0);
@@ -1956,15 +1898,13 @@ PetscErrorCode VecRestoreArrayRead(Vec x,const PetscScalar **a)
 @*/
 PetscErrorCode VecGetArrayWrite(Vec x,PetscScalar **a)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
-  ierr = VecSetErrorIfLocked(x,1);CHKERRQ(ierr);
+  PetscCall(VecSetErrorIfLocked(x,1));
   if (x->ops->getarraywrite) {
-    ierr = (*x->ops->getarraywrite)(x,a);CHKERRQ(ierr);
+    PetscCall((*x->ops->getarraywrite)(x,a));
   } else {
-    ierr = VecGetArray(x,a);CHKERRQ(ierr);
+    PetscCall(VecGetArray(x,a));
   }
   PetscFunctionReturn(0);
 }
@@ -1985,17 +1925,15 @@ PetscErrorCode VecGetArrayWrite(Vec x,PetscScalar **a)
 @*/
 PetscErrorCode VecRestoreArrayWrite(Vec x,PetscScalar **a)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   if (x->ops->restorearraywrite) {
-    ierr = (*x->ops->restorearraywrite)(x,a);CHKERRQ(ierr);
+    PetscCall((*x->ops->restorearraywrite)(x,a));
   } else if (x->ops->restorearray) {
-    ierr = (*x->ops->restorearray)(x,a);CHKERRQ(ierr);
+    PetscCall((*x->ops->restorearray)(x,a));
   }
   if (a) *a = NULL;
-  ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
+  PetscCall(PetscObjectStateIncrease((PetscObject)x));
   PetscFunctionReturn(0);
 }
 
@@ -2022,7 +1960,6 @@ PetscErrorCode VecRestoreArrayWrite(Vec x,PetscScalar **a)
 @*/
 PetscErrorCode  VecGetArrays(const Vec x[],PetscInt n,PetscScalar **a[])
 {
-  PetscErrorCode ierr;
   PetscInt       i;
   PetscScalar    **q;
 
@@ -2031,9 +1968,9 @@ PetscErrorCode  VecGetArrays(const Vec x[],PetscInt n,PetscScalar **a[])
   PetscValidHeaderSpecific(*x,VEC_CLASSID,1);
   PetscValidPointer(a,3);
   PetscCheckFalse(n <= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must get at least one array n = %" PetscInt_FMT,n);
-  ierr = PetscMalloc1(n,&q);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(n,&q));
   for (i=0; i<n; ++i) {
-    ierr = VecGetArray(x[i],&q[i]);CHKERRQ(ierr);
+    PetscCall(VecGetArray(x[i],&q[i]));
   }
   *a = q;
   PetscFunctionReturn(0);
@@ -2065,7 +2002,6 @@ PetscErrorCode  VecGetArrays(const Vec x[],PetscInt n,PetscScalar **a[])
 @*/
 PetscErrorCode  VecRestoreArrays(const Vec x[],PetscInt n,PetscScalar **a[])
 {
-  PetscErrorCode ierr;
   PetscInt       i;
   PetscScalar    **q = *a;
 
@@ -2075,9 +2011,9 @@ PetscErrorCode  VecRestoreArrays(const Vec x[],PetscInt n,PetscScalar **a[])
   PetscValidPointer(a,3);
 
   for (i=0; i<n; ++i) {
-    ierr = VecRestoreArray(x[i],&q[i]);CHKERRQ(ierr);
+    PetscCall(VecRestoreArray(x[i],&q[i]));
   }
-  ierr = PetscFree(q);CHKERRQ(ierr);
+  PetscCall(PetscFree(q));
   PetscFunctionReturn(0);
 }
 
@@ -2105,17 +2041,16 @@ PetscErrorCode  VecRestoreArrays(const Vec x[],PetscInt n,PetscScalar **a[])
 @*/
 PetscErrorCode VecGetArrayAndMemType(Vec x,PetscScalar **a,PetscMemType *mtype)
 {
-  PetscErrorCode ierr;
   PetscMemType   omtype;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidType(x,1);
-  ierr = VecSetErrorIfLocked(x,1);CHKERRQ(ierr);
+  PetscCall(VecSetErrorIfLocked(x,1));
   if (x->ops->getarrayandmemtype) { /* VECCUDA, VECKOKKOS etc */
-    ierr = (*x->ops->getarrayandmemtype)(x,a,&omtype);CHKERRQ(ierr);
+    PetscCall((*x->ops->getarrayandmemtype)(x,a,&omtype));
   } else { /* VECSTANDARD, VECNEST, VECVIENNACL */
-    ierr = VecGetArray(x,a);CHKERRQ(ierr);
+    PetscCall(VecGetArray(x,a));
     omtype = PETSC_MEMTYPE_HOST;
   }
   if (mtype) *mtype = omtype;
@@ -2138,18 +2073,16 @@ PetscErrorCode VecGetArrayAndMemType(Vec x,PetscScalar **a,PetscMemType *mtype)
 @*/
 PetscErrorCode VecRestoreArrayAndMemType(Vec x,PetscScalar **a)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidType(x,1);
   if (x->ops->restorearrayandmemtype) { /* VECCUDA, VECKOKKOS etc */
-    ierr = (*x->ops->restorearrayandmemtype)(x,a);CHKERRQ(ierr);
+    PetscCall((*x->ops->restorearrayandmemtype)(x,a));
   } else if (x->ops->restorearray) { /* VECNEST, VECVIENNACL */
-    ierr = (*x->ops->restorearray)(x,a);CHKERRQ(ierr);
+    PetscCall((*x->ops->restorearray)(x,a));
   } /* VECSTANDARD does nothing */
   if (a) *a = NULL;
-  ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
+  PetscCall(PetscObjectStateIncrease((PetscObject)x));
   PetscFunctionReturn(0);
 }
 
@@ -2174,20 +2107,19 @@ PetscErrorCode VecRestoreArrayAndMemType(Vec x,PetscScalar **a)
 @*/
 PetscErrorCode VecGetArrayReadAndMemType(Vec x,const PetscScalar **a,PetscMemType *mtype)
 {
-  PetscErrorCode ierr;
   PetscMemType   omtype;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidType(x,1);
  #if defined(PETSC_USE_DEBUG)
-  PetscCheckFalse(x->ops->getarrayreadandmemtype,PetscObjectComm((PetscObject)x),PETSC_ERR_SUP,"Not expected vector type \"%s\" has ops->getarrayreadandmemtype",((PetscObject)x)->type_name);
+  PetscCheck(!x->ops->getarrayreadandmemtype,PetscObjectComm((PetscObject)x),PETSC_ERR_SUP,"Not expected vector type \"%s\" has ops->getarrayreadandmemtype",((PetscObject)x)->type_name);
  #endif
 
   if (x->ops->getarrayandmemtype) { /* VECCUDA, VECKOKKOS etc, though they are also petscnative */
-    ierr = (*x->ops->getarrayandmemtype)(x,(PetscScalar**)a,&omtype);CHKERRQ(ierr);
+    PetscCall((*x->ops->getarrayandmemtype)(x,(PetscScalar**)a,&omtype));
   } else if (x->ops->getarray) { /* VECNEST, VECVIENNACL */
-    ierr = (*x->ops->getarray)(x,(PetscScalar**)a);CHKERRQ(ierr);
+    PetscCall((*x->ops->getarray)(x,(PetscScalar**)a));
     omtype = PETSC_MEMTYPE_HOST;
   } else if (x->petscnative) { /* VECSTANDARD */
     *a = *((PetscScalar**)x->data);
@@ -2212,15 +2144,13 @@ PetscErrorCode VecGetArrayReadAndMemType(Vec x,const PetscScalar **a,PetscMemTyp
 @*/
 PetscErrorCode VecRestoreArrayReadAndMemType(Vec x,const PetscScalar **a)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidType(x,1);
   if (x->petscnative) { /* VECSTANDARD, VECCUDA, VECKOKKOS, VECVIENNACL etc */
     /* nothing */
   } else if (x->ops->restorearrayread) { /* VECNEST */
-    ierr = (*x->ops->restorearrayread)(x,a);CHKERRQ(ierr);
+    PetscCall((*x->ops->restorearrayread)(x,a));
   } else SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_SUP,"Cannot restore array read in place for vector type \"%s\"",((PetscObject)x)->type_name);
   if (a) *a = NULL;
   PetscFunctionReturn(0);
@@ -2248,16 +2178,15 @@ PetscErrorCode VecRestoreArrayReadAndMemType(Vec x,const PetscScalar **a)
 @*/
 PetscErrorCode VecGetArrayWriteAndMemType(Vec x,PetscScalar **a,PetscMemType *mtype)
 {
-  PetscErrorCode ierr;
   PetscMemType   omtype;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidType(x,1);
   if (x->ops->getarraywriteandmemtype) { /* VECCUDA, VECHIP, VECKOKKOS etc, though they are also petscnative */
-    ierr = (*x->ops->getarrayandmemtype)(x,a,&omtype);CHKERRQ(ierr);
+    PetscCall((*x->ops->getarrayandmemtype)(x,a,&omtype));
   } else if (x->ops->getarraywrite) { /* VECNEST, VECVIENNACL */
-    ierr = (*x->ops->getarraywrite)(x,a);CHKERRQ(ierr);
+    PetscCall((*x->ops->getarraywrite)(x,a));
     omtype = PETSC_MEMTYPE_HOST;
   } else if (x->petscnative) { /* VECSTANDARD */
     *a = *((PetscScalar**)x->data);
@@ -2282,10 +2211,8 @@ PetscErrorCode VecGetArrayWriteAndMemType(Vec x,PetscScalar **a,PetscMemType *mt
 @*/
 PetscErrorCode VecRestoreArrayWriteAndMemType(Vec x,PetscScalar **a)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = VecRestoreArrayAndMemType(x,a);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayAndMemType(x,a));
   PetscFunctionReturn(0);
 }
 
@@ -2310,16 +2237,14 @@ PetscErrorCode VecRestoreArrayWriteAndMemType(Vec x,PetscScalar **a)
 @*/
 PetscErrorCode  VecPlaceArray(Vec vec,const PetscScalar array[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
   PetscValidType(vec,1);
   if (array) PetscValidScalarPointer(array,2);
   if (vec->ops->placearray) {
-    ierr = (*vec->ops->placearray)(vec,array);CHKERRQ(ierr);
+    PetscCall((*vec->ops->placearray)(vec,array));
   } else SETERRQ(PetscObjectComm((PetscObject)vec),PETSC_ERR_SUP,"Cannot place array in this type of vector");
-  ierr = PetscObjectStateIncrease((PetscObject)vec);CHKERRQ(ierr);
+  PetscCall(PetscObjectStateIncrease((PetscObject)vec));
   PetscFunctionReturn(0);
 }
 
@@ -2350,15 +2275,13 @@ PetscErrorCode  VecPlaceArray(Vec vec,const PetscScalar array[])
 @*/
 PetscErrorCode  VecReplaceArray(Vec vec,const PetscScalar array[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
   PetscValidType(vec,1);
   if (vec->ops->replacearray) {
-    ierr = (*vec->ops->replacearray)(vec,array);CHKERRQ(ierr);
+    PetscCall((*vec->ops->replacearray)(vec,array));
   } else SETERRQ(PetscObjectComm((PetscObject)vec),PETSC_ERR_SUP,"Cannot replace array in this type of vector");
-  ierr = PetscObjectStateIncrease((PetscObject)vec);CHKERRQ(ierr);
+  PetscCall(PetscObjectStateIncrease((PetscObject)vec));
   PetscFunctionReturn(0);
 }
 
@@ -2399,8 +2322,7 @@ PETSC_EXTERN PetscErrorCode VecCUDAGetArray(Vec v, PetscScalar **a)
   PetscCheckTypeNames(v,VECSEQCUDA,VECMPICUDA);
  #if defined(PETSC_HAVE_CUDA)
   {
-    PetscErrorCode ierr;
-    ierr = VecCUDACopyToGPU(v);CHKERRQ(ierr);
+    PetscCall(VecCUDACopyToGPU(v));
     *a   = ((Vec_CUDA*)v->spptr)->GPUarray;
   }
  #endif
@@ -2428,14 +2350,12 @@ PETSC_EXTERN PetscErrorCode VecCUDAGetArray(Vec v, PetscScalar **a)
 @*/
 PETSC_EXTERN PetscErrorCode VecCUDARestoreArray(Vec v, PetscScalar **a)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscCheckTypeNames(v,VECSEQCUDA,VECMPICUDA);
 #if defined(PETSC_HAVE_CUDA)
   v->offloadmask = PETSC_OFFLOAD_GPU;
 #endif
-  ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
+  PetscCall(PetscObjectStateIncrease((PetscObject)v));
   PetscFunctionReturn(0);
 }
 
@@ -2472,9 +2392,8 @@ PETSC_EXTERN PetscErrorCode VecCUDARestoreArray(Vec v, PetscScalar **a)
 @*/
 PETSC_EXTERN PetscErrorCode VecCUDAGetArrayRead(Vec v,const PetscScalar** a)
 {
-   PetscErrorCode ierr;
    PetscFunctionBegin;
-   ierr = VecCUDAGetArray(v,(PetscScalar**)a);CHKERRQ(ierr);
+   PetscCall(VecCUDAGetArray(v,(PetscScalar**)a));
    PetscFunctionReturn(0);
 }
 
@@ -2540,8 +2459,7 @@ PETSC_EXTERN PetscErrorCode VecCUDAGetArrayWrite(Vec v, PetscScalar **a)
   PetscCheckTypeNames(v,VECSEQCUDA,VECMPICUDA);
  #if defined(PETSC_HAVE_CUDA)
   {
-    PetscErrorCode ierr;
-    ierr = VecCUDAAllocateCheck(v);CHKERRQ(ierr);
+    PetscCall(VecCUDAAllocateCheck(v));
     *a   = ((Vec_CUDA*)v->spptr)->GPUarray;
   }
  #endif
@@ -2569,15 +2487,13 @@ PETSC_EXTERN PetscErrorCode VecCUDAGetArrayWrite(Vec v, PetscScalar **a)
 @*/
 PETSC_EXTERN PetscErrorCode VecCUDARestoreArrayWrite(Vec v, PetscScalar **a)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscCheckTypeNames(v,VECSEQCUDA,VECMPICUDA);
  #if defined(PETSC_HAVE_CUDA)
   v->offloadmask = PETSC_OFFLOAD_GPU;
   if (a) *a = NULL;
  #endif
-  ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
+  PetscCall(PetscObjectStateIncrease((PetscObject)v));
   PetscFunctionReturn(0);
 }
 
@@ -2604,18 +2520,16 @@ PETSC_EXTERN PetscErrorCode VecCUDARestoreArrayWrite(Vec v, PetscScalar **a)
 @*/
 PetscErrorCode VecCUDAPlaceArray(Vec vin,const PetscScalar a[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscCheckTypeNames(vin,VECSEQCUDA,VECMPICUDA);
 #if defined(PETSC_HAVE_CUDA)
-  ierr = VecCUDACopyToGPU(vin);CHKERRQ(ierr);
+  PetscCall(VecCUDACopyToGPU(vin));
   PetscCheckFalse(((Vec_Seq*)vin->data)->unplacedarray,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"VecCUDAPlaceArray()/VecPlaceArray() was already called on this vector, without a call to VecCUDAResetArray()/VecResetArray()");
   ((Vec_Seq*)vin->data)->unplacedarray  = (PetscScalar *) ((Vec_CUDA*)vin->spptr)->GPUarray; /* save previous GPU array so reset can bring it back */
   ((Vec_CUDA*)vin->spptr)->GPUarray = (PetscScalar*)a;
   vin->offloadmask = PETSC_OFFLOAD_GPU;
 #endif
-  ierr = PetscObjectStateIncrease((PetscObject)vin);CHKERRQ(ierr);
+  PetscCall(PetscObjectStateIncrease((PetscObject)vin));
   PetscFunctionReturn(0);
 }
 
@@ -2647,20 +2561,18 @@ PetscErrorCode VecCUDAPlaceArray(Vec vin,const PetscScalar a[])
 PetscErrorCode VecCUDAReplaceArray(Vec vin,const PetscScalar a[])
 {
 #if defined(PETSC_HAVE_CUDA)
-  cudaError_t err;
 #endif
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscCheckTypeNames(vin,VECSEQCUDA,VECMPICUDA);
 #if defined(PETSC_HAVE_CUDA)
   if (((Vec_CUDA*)vin->spptr)->GPUarray_allocated) {
-    err = cudaFree(((Vec_CUDA*)vin->spptr)->GPUarray_allocated);CHKERRCUDA(err);
+    PetscCallCUDA(cudaFree(((Vec_CUDA*)vin->spptr)->GPUarray_allocated));
   }
   ((Vec_CUDA*)vin->spptr)->GPUarray_allocated = ((Vec_CUDA*)vin->spptr)->GPUarray = (PetscScalar*)a;
   vin->offloadmask = PETSC_OFFLOAD_GPU;
 #endif
-  ierr = PetscObjectStateIncrease((PetscObject)vin);CHKERRQ(ierr);
+  PetscCall(PetscObjectStateIncrease((PetscObject)vin));
   PetscFunctionReturn(0);
 }
 
@@ -2680,17 +2592,15 @@ PetscErrorCode VecCUDAReplaceArray(Vec vin,const PetscScalar a[])
 @*/
 PetscErrorCode VecCUDAResetArray(Vec vin)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscCheckTypeNames(vin,VECSEQCUDA,VECMPICUDA);
 #if defined(PETSC_HAVE_CUDA)
-  ierr = VecCUDACopyToGPU(vin);CHKERRQ(ierr);
+  PetscCall(VecCUDACopyToGPU(vin));
   ((Vec_CUDA*)vin->spptr)->GPUarray = (PetscScalar *) ((Vec_Seq*)vin->data)->unplacedarray;
   ((Vec_Seq*)vin->data)->unplacedarray = 0;
   vin->offloadmask = PETSC_OFFLOAD_GPU;
 #endif
-  ierr = PetscObjectStateIncrease((PetscObject)vin);CHKERRQ(ierr);
+  PetscCall(PetscObjectStateIncrease((PetscObject)vin));
   PetscFunctionReturn(0);
 }
 
@@ -2727,15 +2637,11 @@ PetscErrorCode VecCUDAResetArray(Vec vin)
 @*/
 PETSC_EXTERN PetscErrorCode VecHIPGetArray(Vec v, PetscScalar **a)
 {
-#if defined(PETSC_HAVE_HIP)
-  PetscErrorCode ierr;
-#endif
-
   PetscFunctionBegin;
   PetscCheckTypeNames(v,VECSEQHIP,VECMPIHIP);
 #if defined(PETSC_HAVE_HIP)
   *a   = 0;
-  ierr = VecHIPCopyToGPU(v);CHKERRQ(ierr);
+  PetscCall(VecHIPCopyToGPU(v));
   *a   = ((Vec_HIP*)v->spptr)->GPUarray;
 #endif
   PetscFunctionReturn(0);
@@ -2762,15 +2668,13 @@ PETSC_EXTERN PetscErrorCode VecHIPGetArray(Vec v, PetscScalar **a)
 @*/
 PETSC_EXTERN PetscErrorCode VecHIPRestoreArray(Vec v, PetscScalar **a)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscCheckTypeNames(v,VECSEQHIP,VECMPIHIP);
 #if defined(PETSC_HAVE_HIP)
   v->offloadmask = PETSC_OFFLOAD_GPU;
 #endif
 
-  ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
+  PetscCall(PetscObjectStateIncrease((PetscObject)v));
   PetscFunctionReturn(0);
 }
 
@@ -2807,15 +2711,11 @@ PETSC_EXTERN PetscErrorCode VecHIPRestoreArray(Vec v, PetscScalar **a)
 @*/
 PETSC_EXTERN PetscErrorCode VecHIPGetArrayRead(Vec v, const PetscScalar **a)
 {
-#if defined(PETSC_HAVE_HIP)
-  PetscErrorCode ierr;
-#endif
-
   PetscFunctionBegin;
   PetscCheckTypeNames(v,VECSEQHIP,VECMPIHIP);
 #if defined(PETSC_HAVE_HIP)
   *a   = 0;
-  ierr = VecHIPCopyToGPU(v);CHKERRQ(ierr);
+  PetscCall(VecHIPCopyToGPU(v));
   *a   = ((Vec_HIP*)v->spptr)->GPUarray;
 #endif
   PetscFunctionReturn(0);
@@ -2879,15 +2779,11 @@ PETSC_EXTERN PetscErrorCode VecHIPRestoreArrayRead(Vec v, const PetscScalar **a)
 @*/
 PETSC_EXTERN PetscErrorCode VecHIPGetArrayWrite(Vec v, PetscScalar **a)
 {
-#if defined(PETSC_HAVE_HIP)
-  PetscErrorCode ierr;
-#endif
-
   PetscFunctionBegin;
   PetscCheckTypeNames(v,VECSEQHIP,VECMPIHIP);
 #if defined(PETSC_HAVE_HIP)
   *a   = 0;
-  ierr = VecHIPAllocateCheck(v);CHKERRQ(ierr);
+  PetscCall(VecHIPAllocateCheck(v));
   *a   = ((Vec_HIP*)v->spptr)->GPUarray;
 #endif
   PetscFunctionReturn(0);
@@ -2914,15 +2810,13 @@ PETSC_EXTERN PetscErrorCode VecHIPGetArrayWrite(Vec v, PetscScalar **a)
 @*/
 PETSC_EXTERN PetscErrorCode VecHIPRestoreArrayWrite(Vec v, PetscScalar **a)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscCheckTypeNames(v,VECSEQHIP,VECMPIHIP);
 #if defined(PETSC_HAVE_HIP)
   v->offloadmask = PETSC_OFFLOAD_GPU;
 #endif
 
-  ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
+  PetscCall(PetscObjectStateIncrease((PetscObject)v));
   PetscFunctionReturn(0);
 }
 
@@ -2949,18 +2843,16 @@ PETSC_EXTERN PetscErrorCode VecHIPRestoreArrayWrite(Vec v, PetscScalar **a)
 @*/
 PetscErrorCode VecHIPPlaceArray(Vec vin,const PetscScalar a[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscCheckTypeNames(vin,VECSEQHIP,VECMPIHIP);
 #if defined(PETSC_HAVE_HIP)
-  ierr = VecHIPCopyToGPU(vin);CHKERRQ(ierr);
+  PetscCall(VecHIPCopyToGPU(vin));
   PetscCheckFalse(((Vec_Seq*)vin->data)->unplacedarray,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"VecHIPPlaceArray()/VecPlaceArray() was already called on this vector, without a call to VecHIPResetArray()/VecResetArray()");
   ((Vec_Seq*)vin->data)->unplacedarray  = (PetscScalar *) ((Vec_HIP*)vin->spptr)->GPUarray; /* save previous GPU array so reset can bring it back */
   ((Vec_HIP*)vin->spptr)->GPUarray = (PetscScalar*)a;
   vin->offloadmask = PETSC_OFFLOAD_GPU;
 #endif
-  ierr = PetscObjectStateIncrease((PetscObject)vin);CHKERRQ(ierr);
+  PetscCall(PetscObjectStateIncrease((PetscObject)vin));
   PetscFunctionReturn(0);
 }
 
@@ -2991,19 +2883,14 @@ PetscErrorCode VecHIPPlaceArray(Vec vin,const PetscScalar a[])
 @*/
 PetscErrorCode VecHIPReplaceArray(Vec vin,const PetscScalar a[])
 {
-#if defined(PETSC_HAVE_HIP)
-  hipError_t err;
-#endif
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscCheckTypeNames(vin,VECSEQHIP,VECMPIHIP);
 #if defined(PETSC_HAVE_HIP)
-  err = hipFree(((Vec_HIP*)vin->spptr)->GPUarray);CHKERRHIP(err);
+  PetscCallHIP(hipFree(((Vec_HIP*)vin->spptr)->GPUarray));
   ((Vec_HIP*)vin->spptr)->GPUarray = (PetscScalar*)a;
   vin->offloadmask = PETSC_OFFLOAD_GPU;
 #endif
-  ierr = PetscObjectStateIncrease((PetscObject)vin);CHKERRQ(ierr);
+  PetscCall(PetscObjectStateIncrease((PetscObject)vin));
   PetscFunctionReturn(0);
 }
 
@@ -3023,17 +2910,15 @@ PetscErrorCode VecHIPReplaceArray(Vec vin,const PetscScalar a[])
 @*/
 PetscErrorCode VecHIPResetArray(Vec vin)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscCheckTypeNames(vin,VECSEQHIP,VECMPIHIP);
 #if defined(PETSC_HAVE_HIP)
-  ierr = VecHIPCopyToGPU(vin);CHKERRQ(ierr);
+  PetscCall(VecHIPCopyToGPU(vin));
   ((Vec_HIP*)vin->spptr)->GPUarray = (PetscScalar *) ((Vec_Seq*)vin->data)->unplacedarray;
   ((Vec_Seq*)vin->data)->unplacedarray = 0;
   vin->offloadmask = PETSC_OFFLOAD_GPU;
 #endif
-  ierr = PetscObjectStateIncrease((PetscObject)vin);CHKERRQ(ierr);
+  PetscCall(PetscObjectStateIncrease((PetscObject)vin));
   PetscFunctionReturn(0);
 }
 
@@ -3281,7 +3166,6 @@ M*/
 @*/
 PetscErrorCode  VecGetArray2d(Vec x,PetscInt m,PetscInt n,PetscInt mstart,PetscInt nstart,PetscScalar **a[])
 {
-  PetscErrorCode ierr;
   PetscInt       i,N;
   PetscScalar    *aa;
 
@@ -3289,11 +3173,11 @@ PetscErrorCode  VecGetArray2d(Vec x,PetscInt m,PetscInt n,PetscInt mstart,PetscI
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidPointer(a,6);
   PetscValidType(x,1);
-  ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
+  PetscCall(VecGetLocalSize(x,&N));
   PetscCheckFalse(m*n != N,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local array size %" PetscInt_FMT " does not match 2d array dimensions %" PetscInt_FMT " by %" PetscInt_FMT,N,m,n);
-  ierr = VecGetArray(x,&aa);CHKERRQ(ierr);
+  PetscCall(VecGetArray(x,&aa));
 
-  ierr = PetscMalloc1(m,a);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(m,a));
   for (i=0; i<m; i++) (*a)[i] = aa + i*n - nstart;
   *a -= mstart;
   PetscFunctionReturn(0);
@@ -3334,7 +3218,6 @@ PetscErrorCode  VecGetArray2d(Vec x,PetscInt m,PetscInt n,PetscInt mstart,PetscI
 @*/
 PetscErrorCode  VecGetArray2dWrite(Vec x,PetscInt m,PetscInt n,PetscInt mstart,PetscInt nstart,PetscScalar **a[])
 {
-  PetscErrorCode ierr;
   PetscInt       i,N;
   PetscScalar    *aa;
 
@@ -3342,11 +3225,11 @@ PetscErrorCode  VecGetArray2dWrite(Vec x,PetscInt m,PetscInt n,PetscInt mstart,P
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidPointer(a,6);
   PetscValidType(x,1);
-  ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
+  PetscCall(VecGetLocalSize(x,&N));
   PetscCheckFalse(m*n != N,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local array size %" PetscInt_FMT " does not match 2d array dimensions %" PetscInt_FMT " by %" PetscInt_FMT,N,m,n);
-  ierr = VecGetArrayWrite(x,&aa);CHKERRQ(ierr);
+  PetscCall(VecGetArrayWrite(x,&aa));
 
-  ierr = PetscMalloc1(m,a);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(m,a));
   for (i=0; i<m; i++) (*a)[i] = aa + i*n - nstart;
   *a -= mstart;
   PetscFunctionReturn(0);
@@ -3381,7 +3264,6 @@ PetscErrorCode  VecGetArray2dWrite(Vec x,PetscInt m,PetscInt n,PetscInt mstart,P
 @*/
 PetscErrorCode  VecRestoreArray2d(Vec x,PetscInt m,PetscInt n,PetscInt mstart,PetscInt nstart,PetscScalar **a[])
 {
-  PetscErrorCode ierr;
   void           *dummy;
 
   PetscFunctionBegin;
@@ -3389,8 +3271,8 @@ PetscErrorCode  VecRestoreArray2d(Vec x,PetscInt m,PetscInt n,PetscInt mstart,Pe
   PetscValidPointer(a,6);
   PetscValidType(x,1);
   dummy = (void*)(*a + mstart);
-  ierr  = PetscFree(dummy);CHKERRQ(ierr);
-  ierr  = VecRestoreArray(x,NULL);CHKERRQ(ierr);
+  PetscCall(PetscFree(dummy));
+  PetscCall(VecRestoreArray(x,NULL));
   PetscFunctionReturn(0);
 }
 
@@ -3423,7 +3305,6 @@ PetscErrorCode  VecRestoreArray2d(Vec x,PetscInt m,PetscInt n,PetscInt mstart,Pe
 @*/
 PetscErrorCode  VecRestoreArray2dWrite(Vec x,PetscInt m,PetscInt n,PetscInt mstart,PetscInt nstart,PetscScalar **a[])
 {
-  PetscErrorCode ierr;
   void           *dummy;
 
   PetscFunctionBegin;
@@ -3431,8 +3312,8 @@ PetscErrorCode  VecRestoreArray2dWrite(Vec x,PetscInt m,PetscInt n,PetscInt msta
   PetscValidPointer(a,6);
   PetscValidType(x,1);
   dummy = (void*)(*a + mstart);
-  ierr  = PetscFree(dummy);CHKERRQ(ierr);
-  ierr  = VecRestoreArrayWrite(x,NULL);CHKERRQ(ierr);
+  PetscCall(PetscFree(dummy));
+  PetscCall(VecRestoreArrayWrite(x,NULL));
   PetscFunctionReturn(0);
 }
 
@@ -3466,16 +3347,15 @@ PetscErrorCode  VecRestoreArray2dWrite(Vec x,PetscInt m,PetscInt n,PetscInt msta
 @*/
 PetscErrorCode  VecGetArray1d(Vec x,PetscInt m,PetscInt mstart,PetscScalar *a[])
 {
-  PetscErrorCode ierr;
   PetscInt       N;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidPointer(a,4);
   PetscValidType(x,1);
-  ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
+  PetscCall(VecGetLocalSize(x,&N));
   PetscCheckFalse(m != N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local array size %" PetscInt_FMT " does not match 1d array dimensions %" PetscInt_FMT,N,m);
-  ierr = VecGetArray(x,a);CHKERRQ(ierr);
+  PetscCall(VecGetArray(x,a));
   *a  -= mstart;
   PetscFunctionReturn(0);
 }
@@ -3510,16 +3390,15 @@ PetscErrorCode  VecGetArray1d(Vec x,PetscInt m,PetscInt mstart,PetscScalar *a[])
 @*/
 PetscErrorCode  VecGetArray1dWrite(Vec x,PetscInt m,PetscInt mstart,PetscScalar *a[])
 {
-  PetscErrorCode ierr;
   PetscInt       N;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidPointer(a,4);
   PetscValidType(x,1);
-  ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
+  PetscCall(VecGetLocalSize(x,&N));
   PetscCheckFalse(m != N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local array size %" PetscInt_FMT " does not match 1d array dimensions %" PetscInt_FMT,N,m);
-  ierr = VecGetArrayWrite(x,a);CHKERRQ(ierr);
+  PetscCall(VecGetArrayWrite(x,a));
   *a  -= mstart;
   PetscFunctionReturn(0);
 }
@@ -3551,12 +3430,10 @@ PetscErrorCode  VecGetArray1dWrite(Vec x,PetscInt m,PetscInt mstart,PetscScalar 
 @*/
 PetscErrorCode  VecRestoreArray1d(Vec x,PetscInt m,PetscInt mstart,PetscScalar *a[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidType(x,1);
-  ierr = VecRestoreArray(x,NULL);CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(x,NULL));
   PetscFunctionReturn(0);
 }
 
@@ -3589,12 +3466,10 @@ PetscErrorCode  VecRestoreArray1d(Vec x,PetscInt m,PetscInt mstart,PetscScalar *
 @*/
 PetscErrorCode  VecRestoreArray1dWrite(Vec x,PetscInt m,PetscInt mstart,PetscScalar *a[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidType(x,1);
-  ierr = VecRestoreArrayWrite(x,NULL);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayWrite(x,NULL));
   PetscFunctionReturn(0);
 }
 
@@ -3633,7 +3508,6 @@ PetscErrorCode  VecRestoreArray1dWrite(Vec x,PetscInt m,PetscInt mstart,PetscSca
 @*/
 PetscErrorCode  VecGetArray3d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt mstart,PetscInt nstart,PetscInt pstart,PetscScalar ***a[])
 {
-  PetscErrorCode ierr;
   PetscInt       i,N,j;
   PetscScalar    *aa,**b;
 
@@ -3641,11 +3515,11 @@ PetscErrorCode  VecGetArray3d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt ms
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidPointer(a,8);
   PetscValidType(x,1);
-  ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
+  PetscCall(VecGetLocalSize(x,&N));
   PetscCheckFalse(m*n*p != N,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local array size %" PetscInt_FMT " does not match 3d array dimensions %" PetscInt_FMT " by %" PetscInt_FMT " by %" PetscInt_FMT,N,m,n,p);
-  ierr = VecGetArray(x,&aa);CHKERRQ(ierr);
+  PetscCall(VecGetArray(x,&aa));
 
-  ierr = PetscMalloc(m*sizeof(PetscScalar**)+m*n*sizeof(PetscScalar*),a);CHKERRQ(ierr);
+  PetscCall(PetscMalloc(m*sizeof(PetscScalar**)+m*n*sizeof(PetscScalar*),a));
   b    = (PetscScalar**)((*a) + m);
   for (i=0; i<m; i++) (*a)[i] = b + i*n - nstart;
   for (i=0; i<m; i++)
@@ -3692,7 +3566,6 @@ PetscErrorCode  VecGetArray3d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt ms
 @*/
 PetscErrorCode  VecGetArray3dWrite(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt mstart,PetscInt nstart,PetscInt pstart,PetscScalar ***a[])
 {
-  PetscErrorCode ierr;
   PetscInt       i,N,j;
   PetscScalar    *aa,**b;
 
@@ -3700,11 +3573,11 @@ PetscErrorCode  VecGetArray3dWrite(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscI
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidPointer(a,8);
   PetscValidType(x,1);
-  ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
+  PetscCall(VecGetLocalSize(x,&N));
   PetscCheckFalse(m*n*p != N,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local array size %" PetscInt_FMT " does not match 3d array dimensions %" PetscInt_FMT " by %" PetscInt_FMT " by %" PetscInt_FMT,N,m,n,p);
-  ierr = VecGetArrayWrite(x,&aa);CHKERRQ(ierr);
+  PetscCall(VecGetArrayWrite(x,&aa));
 
-  ierr = PetscMalloc(m*sizeof(PetscScalar**)+m*n*sizeof(PetscScalar*),a);CHKERRQ(ierr);
+  PetscCall(PetscMalloc(m*sizeof(PetscScalar**)+m*n*sizeof(PetscScalar*),a));
   b    = (PetscScalar**)((*a) + m);
   for (i=0; i<m; i++) (*a)[i] = b + i*n - nstart;
   for (i=0; i<m; i++)
@@ -3746,7 +3619,6 @@ PetscErrorCode  VecGetArray3dWrite(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscI
 @*/
 PetscErrorCode  VecRestoreArray3d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt mstart,PetscInt nstart,PetscInt pstart,PetscScalar ***a[])
 {
-  PetscErrorCode ierr;
   void           *dummy;
 
   PetscFunctionBegin;
@@ -3754,8 +3626,8 @@ PetscErrorCode  VecRestoreArray3d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscIn
   PetscValidPointer(a,8);
   PetscValidType(x,1);
   dummy = (void*)(*a + mstart);
-  ierr  = PetscFree(dummy);CHKERRQ(ierr);
-  ierr  = VecRestoreArray(x,NULL);CHKERRQ(ierr);
+  PetscCall(PetscFree(dummy));
+  PetscCall(VecRestoreArray(x,NULL));
   PetscFunctionReturn(0);
 }
 
@@ -3790,7 +3662,6 @@ PetscErrorCode  VecRestoreArray3d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscIn
 @*/
 PetscErrorCode  VecRestoreArray3dWrite(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt mstart,PetscInt nstart,PetscInt pstart,PetscScalar ***a[])
 {
-  PetscErrorCode ierr;
   void           *dummy;
 
   PetscFunctionBegin;
@@ -3798,8 +3669,8 @@ PetscErrorCode  VecRestoreArray3dWrite(Vec x,PetscInt m,PetscInt n,PetscInt p,Pe
   PetscValidPointer(a,8);
   PetscValidType(x,1);
   dummy = (void*)(*a + mstart);
-  ierr  = PetscFree(dummy);CHKERRQ(ierr);
-  ierr  = VecRestoreArrayWrite(x,NULL);CHKERRQ(ierr);
+  PetscCall(PetscFree(dummy));
+  PetscCall(VecRestoreArrayWrite(x,NULL));
   PetscFunctionReturn(0);
 }
 
@@ -3840,7 +3711,6 @@ PetscErrorCode  VecRestoreArray3dWrite(Vec x,PetscInt m,PetscInt n,PetscInt p,Pe
 @*/
 PetscErrorCode  VecGetArray4d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt q,PetscInt mstart,PetscInt nstart,PetscInt pstart,PetscInt qstart,PetscScalar ****a[])
 {
-  PetscErrorCode ierr;
   PetscInt       i,N,j,k;
   PetscScalar    *aa,***b,**c;
 
@@ -3848,11 +3718,11 @@ PetscErrorCode  VecGetArray4d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt q,
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidPointer(a,10);
   PetscValidType(x,1);
-  ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
+  PetscCall(VecGetLocalSize(x,&N));
   PetscCheckFalse(m*n*p*q != N,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local array size %" PetscInt_FMT " does not match 4d array dimensions %" PetscInt_FMT " by %" PetscInt_FMT " by %" PetscInt_FMT " by %" PetscInt_FMT,N,m,n,p,q);
-  ierr = VecGetArray(x,&aa);CHKERRQ(ierr);
+  PetscCall(VecGetArray(x,&aa));
 
-  ierr = PetscMalloc(m*sizeof(PetscScalar***)+m*n*sizeof(PetscScalar**)+m*n*p*sizeof(PetscScalar*),a);CHKERRQ(ierr);
+  PetscCall(PetscMalloc(m*sizeof(PetscScalar***)+m*n*sizeof(PetscScalar**)+m*n*p*sizeof(PetscScalar*),a));
   b    = (PetscScalar***)((*a) + m);
   c    = (PetscScalar**)(b + m*n);
   for (i=0; i<m; i++) (*a)[i] = b + i*n - nstart;
@@ -3906,7 +3776,6 @@ PetscErrorCode  VecGetArray4d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt q,
 @*/
 PetscErrorCode  VecGetArray4dWrite(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt q,PetscInt mstart,PetscInt nstart,PetscInt pstart,PetscInt qstart,PetscScalar ****a[])
 {
-  PetscErrorCode ierr;
   PetscInt       i,N,j,k;
   PetscScalar    *aa,***b,**c;
 
@@ -3914,11 +3783,11 @@ PetscErrorCode  VecGetArray4dWrite(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscI
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidPointer(a,10);
   PetscValidType(x,1);
-  ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
+  PetscCall(VecGetLocalSize(x,&N));
   PetscCheckFalse(m*n*p*q != N,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local array size %" PetscInt_FMT " does not match 4d array dimensions %" PetscInt_FMT " by %" PetscInt_FMT " by %" PetscInt_FMT " by %" PetscInt_FMT,N,m,n,p,q);
-  ierr = VecGetArrayWrite(x,&aa);CHKERRQ(ierr);
+  PetscCall(VecGetArrayWrite(x,&aa));
 
-  ierr = PetscMalloc(m*sizeof(PetscScalar***)+m*n*sizeof(PetscScalar**)+m*n*p*sizeof(PetscScalar*),a);CHKERRQ(ierr);
+  PetscCall(PetscMalloc(m*sizeof(PetscScalar***)+m*n*sizeof(PetscScalar**)+m*n*p*sizeof(PetscScalar*),a));
   b    = (PetscScalar***)((*a) + m);
   c    = (PetscScalar**)(b + m*n);
   for (i=0; i<m; i++) (*a)[i] = b + i*n - nstart;
@@ -3966,7 +3835,6 @@ PetscErrorCode  VecGetArray4dWrite(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscI
 @*/
 PetscErrorCode  VecRestoreArray4d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt q,PetscInt mstart,PetscInt nstart,PetscInt pstart,PetscInt qstart,PetscScalar ****a[])
 {
-  PetscErrorCode ierr;
   void           *dummy;
 
   PetscFunctionBegin;
@@ -3974,8 +3842,8 @@ PetscErrorCode  VecRestoreArray4d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscIn
   PetscValidPointer(a,10);
   PetscValidType(x,1);
   dummy = (void*)(*a + mstart);
-  ierr  = PetscFree(dummy);CHKERRQ(ierr);
-  ierr  = VecRestoreArray(x,NULL);CHKERRQ(ierr);
+  PetscCall(PetscFree(dummy));
+  PetscCall(VecRestoreArray(x,NULL));
   PetscFunctionReturn(0);
 }
 
@@ -4012,7 +3880,6 @@ PetscErrorCode  VecRestoreArray4d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscIn
 @*/
 PetscErrorCode  VecRestoreArray4dWrite(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt q,PetscInt mstart,PetscInt nstart,PetscInt pstart,PetscInt qstart,PetscScalar ****a[])
 {
-  PetscErrorCode ierr;
   void           *dummy;
 
   PetscFunctionBegin;
@@ -4020,8 +3887,8 @@ PetscErrorCode  VecRestoreArray4dWrite(Vec x,PetscInt m,PetscInt n,PetscInt p,Pe
   PetscValidPointer(a,10);
   PetscValidType(x,1);
   dummy = (void*)(*a + mstart);
-  ierr  = PetscFree(dummy);CHKERRQ(ierr);
-  ierr  = VecRestoreArrayWrite(x,NULL);CHKERRQ(ierr);
+  PetscCall(PetscFree(dummy));
+  PetscCall(VecRestoreArrayWrite(x,NULL));
   PetscFunctionReturn(0);
 }
 
@@ -4058,7 +3925,6 @@ PetscErrorCode  VecRestoreArray4dWrite(Vec x,PetscInt m,PetscInt n,PetscInt p,Pe
 @*/
 PetscErrorCode  VecGetArray2dRead(Vec x,PetscInt m,PetscInt n,PetscInt mstart,PetscInt nstart,PetscScalar **a[])
 {
-  PetscErrorCode    ierr;
   PetscInt          i,N;
   const PetscScalar *aa;
 
@@ -4066,11 +3932,11 @@ PetscErrorCode  VecGetArray2dRead(Vec x,PetscInt m,PetscInt n,PetscInt mstart,Pe
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidPointer(a,6);
   PetscValidType(x,1);
-  ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
+  PetscCall(VecGetLocalSize(x,&N));
   PetscCheckFalse(m*n != N,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local array size %" PetscInt_FMT " does not match 2d array dimensions %" PetscInt_FMT " by %" PetscInt_FMT,N,m,n);
-  ierr = VecGetArrayRead(x,&aa);CHKERRQ(ierr);
+  PetscCall(VecGetArrayRead(x,&aa));
 
-  ierr = PetscMalloc1(m,a);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(m,a));
   for (i=0; i<m; i++) (*a)[i] = (PetscScalar*) aa + i*n - nstart;
   *a -= mstart;
   PetscFunctionReturn(0);
@@ -4105,7 +3971,6 @@ PetscErrorCode  VecGetArray2dRead(Vec x,PetscInt m,PetscInt n,PetscInt mstart,Pe
 @*/
 PetscErrorCode  VecRestoreArray2dRead(Vec x,PetscInt m,PetscInt n,PetscInt mstart,PetscInt nstart,PetscScalar **a[])
 {
-  PetscErrorCode ierr;
   void           *dummy;
 
   PetscFunctionBegin;
@@ -4113,8 +3978,8 @@ PetscErrorCode  VecRestoreArray2dRead(Vec x,PetscInt m,PetscInt n,PetscInt mstar
   PetscValidPointer(a,6);
   PetscValidType(x,1);
   dummy = (void*)(*a + mstart);
-  ierr  = PetscFree(dummy);CHKERRQ(ierr);
-  ierr  = VecRestoreArrayRead(x,NULL);CHKERRQ(ierr);
+  PetscCall(PetscFree(dummy));
+  PetscCall(VecRestoreArrayRead(x,NULL));
   PetscFunctionReturn(0);
 }
 
@@ -4148,16 +4013,15 @@ PetscErrorCode  VecRestoreArray2dRead(Vec x,PetscInt m,PetscInt n,PetscInt mstar
 @*/
 PetscErrorCode  VecGetArray1dRead(Vec x,PetscInt m,PetscInt mstart,PetscScalar *a[])
 {
-  PetscErrorCode ierr;
   PetscInt       N;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidPointer(a,4);
   PetscValidType(x,1);
-  ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
+  PetscCall(VecGetLocalSize(x,&N));
   PetscCheckFalse(m != N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local array size %" PetscInt_FMT " does not match 1d array dimensions %" PetscInt_FMT,N,m);
-  ierr = VecGetArrayRead(x,(const PetscScalar**)a);CHKERRQ(ierr);
+  PetscCall(VecGetArrayRead(x,(const PetscScalar**)a));
   *a  -= mstart;
   PetscFunctionReturn(0);
 }
@@ -4189,12 +4053,10 @@ PetscErrorCode  VecGetArray1dRead(Vec x,PetscInt m,PetscInt mstart,PetscScalar *
 @*/
 PetscErrorCode  VecRestoreArray1dRead(Vec x,PetscInt m,PetscInt mstart,PetscScalar *a[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidType(x,1);
-  ierr = VecRestoreArrayRead(x,NULL);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(x,NULL));
   PetscFunctionReturn(0);
 }
 
@@ -4233,7 +4095,6 @@ PetscErrorCode  VecRestoreArray1dRead(Vec x,PetscInt m,PetscInt mstart,PetscScal
 @*/
 PetscErrorCode  VecGetArray3dRead(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt mstart,PetscInt nstart,PetscInt pstart,PetscScalar ***a[])
 {
-  PetscErrorCode    ierr;
   PetscInt          i,N,j;
   const PetscScalar *aa;
   PetscScalar       **b;
@@ -4242,11 +4103,11 @@ PetscErrorCode  VecGetArray3dRead(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscIn
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidPointer(a,8);
   PetscValidType(x,1);
-  ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
+  PetscCall(VecGetLocalSize(x,&N));
   PetscCheckFalse(m*n*p != N,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local array size %" PetscInt_FMT " does not match 3d array dimensions %" PetscInt_FMT " by %" PetscInt_FMT " by %" PetscInt_FMT,N,m,n,p);
-  ierr = VecGetArrayRead(x,&aa);CHKERRQ(ierr);
+  PetscCall(VecGetArrayRead(x,&aa));
 
-  ierr = PetscMalloc(m*sizeof(PetscScalar**)+m*n*sizeof(PetscScalar*),a);CHKERRQ(ierr);
+  PetscCall(PetscMalloc(m*sizeof(PetscScalar**)+m*n*sizeof(PetscScalar*),a));
   b    = (PetscScalar**)((*a) + m);
   for (i=0; i<m; i++) (*a)[i] = b + i*n - nstart;
   for (i=0; i<m; i++)
@@ -4287,7 +4148,6 @@ PetscErrorCode  VecGetArray3dRead(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscIn
 @*/
 PetscErrorCode  VecRestoreArray3dRead(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt mstart,PetscInt nstart,PetscInt pstart,PetscScalar ***a[])
 {
-  PetscErrorCode ierr;
   void           *dummy;
 
   PetscFunctionBegin;
@@ -4295,8 +4155,8 @@ PetscErrorCode  VecRestoreArray3dRead(Vec x,PetscInt m,PetscInt n,PetscInt p,Pet
   PetscValidPointer(a,8);
   PetscValidType(x,1);
   dummy = (void*)(*a + mstart);
-  ierr  = PetscFree(dummy);CHKERRQ(ierr);
-  ierr  = VecRestoreArrayRead(x,NULL);CHKERRQ(ierr);
+  PetscCall(PetscFree(dummy));
+  PetscCall(VecRestoreArrayRead(x,NULL));
   PetscFunctionReturn(0);
 }
 
@@ -4337,7 +4197,6 @@ PetscErrorCode  VecRestoreArray3dRead(Vec x,PetscInt m,PetscInt n,PetscInt p,Pet
 @*/
 PetscErrorCode  VecGetArray4dRead(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt q,PetscInt mstart,PetscInt nstart,PetscInt pstart,PetscInt qstart,PetscScalar ****a[])
 {
-  PetscErrorCode    ierr;
   PetscInt          i,N,j,k;
   const PetscScalar *aa;
   PetscScalar       ***b,**c;
@@ -4346,11 +4205,11 @@ PetscErrorCode  VecGetArray4dRead(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscIn
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidPointer(a,10);
   PetscValidType(x,1);
-  ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
+  PetscCall(VecGetLocalSize(x,&N));
   PetscCheckFalse(m*n*p*q != N,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local array size %" PetscInt_FMT " does not match 4d array dimensions %" PetscInt_FMT " by %" PetscInt_FMT " by %" PetscInt_FMT " by %" PetscInt_FMT,N,m,n,p,q);
-  ierr = VecGetArrayRead(x,&aa);CHKERRQ(ierr);
+  PetscCall(VecGetArrayRead(x,&aa));
 
-  ierr = PetscMalloc(m*sizeof(PetscScalar***)+m*n*sizeof(PetscScalar**)+m*n*p*sizeof(PetscScalar*),a);CHKERRQ(ierr);
+  PetscCall(PetscMalloc(m*sizeof(PetscScalar***)+m*n*sizeof(PetscScalar**)+m*n*p*sizeof(PetscScalar*),a));
   b    = (PetscScalar***)((*a) + m);
   c    = (PetscScalar**)(b + m*n);
   for (i=0; i<m; i++) (*a)[i] = b + i*n - nstart;
@@ -4398,7 +4257,6 @@ PetscErrorCode  VecGetArray4dRead(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscIn
 @*/
 PetscErrorCode  VecRestoreArray4dRead(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt q,PetscInt mstart,PetscInt nstart,PetscInt pstart,PetscInt qstart,PetscScalar ****a[])
 {
-  PetscErrorCode ierr;
   void           *dummy;
 
   PetscFunctionBegin;
@@ -4406,8 +4264,8 @@ PetscErrorCode  VecRestoreArray4dRead(Vec x,PetscInt m,PetscInt n,PetscInt p,Pet
   PetscValidPointer(a,10);
   PetscValidType(x,1);
   dummy = (void*)(*a + mstart);
-  ierr  = PetscFree(dummy);CHKERRQ(ierr);
-  ierr  = VecRestoreArrayRead(x,NULL);CHKERRQ(ierr);
+  PetscCall(PetscFree(dummy));
+  PetscCall(VecRestoreArrayRead(x,NULL));
   PetscFunctionReturn(0);
 }
 
@@ -4539,9 +4397,8 @@ PetscErrorCode VecLockWriteSet_Private(Vec x,PetscBool flg)
 @*/
 PetscErrorCode VecLockPush(Vec x)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = VecLockReadPush(x);CHKERRQ(ierr);
+  PetscCall(VecLockReadPush(x));
   PetscFunctionReturn(0);
 }
 
@@ -4554,9 +4411,8 @@ PetscErrorCode VecLockPush(Vec x)
 @*/
 PetscErrorCode VecLockPop(Vec x)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = VecLockReadPop(x);CHKERRQ(ierr);
+  PetscCall(VecLockReadPop(x));
   PetscFunctionReturn(0);
 }
 

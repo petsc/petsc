@@ -82,7 +82,7 @@ PetscErrorCode  PetscSortReal(PetscInt n,PetscReal v[])
   PetscReal tmp,vk;
 
   PetscFunctionBegin;
-  PetscValidPointer(v,2);
+  PetscValidRealPointer(v,2);
   if (n<8) {
     for (k=0; k<n; k++) {
       vk = v[k];
@@ -102,7 +102,6 @@ PetscErrorCode  PetscSortReal(PetscInt n,PetscReal v[])
 /* modified from PetscSortIntWithArray_Private */
 static PetscErrorCode PetscSortRealWithArrayInt_Private(PetscReal *v,PetscInt *V,PetscInt right)
 {
-  PetscErrorCode ierr;
   PetscInt       i,last,itmp;
   PetscReal      rvl,rtmp;
 
@@ -120,8 +119,8 @@ static PetscErrorCode PetscSortRealWithArrayInt_Private(PetscReal *v,PetscInt *V
     if (v[i] < rvl) {last++; SWAP2ri(v[last],v[i],V[last],V[i],rtmp,itmp);}
   }
   SWAP2ri(v[0],v[last],V[0],V[last],rtmp,itmp);
-  ierr = PetscSortRealWithArrayInt_Private(v,V,last-1);CHKERRQ(ierr);
-  ierr = PetscSortRealWithArrayInt_Private(v+last+1,V+last+1,right-(last+1));CHKERRQ(ierr);
+  PetscCall(PetscSortRealWithArrayInt_Private(v,V,last-1));
+  PetscCall(PetscSortRealWithArrayInt_Private(v+last+1,V+last+1,right-(last+1)));
   PetscFunctionReturn(0);
 }
 /*@
@@ -141,13 +140,12 @@ static PetscErrorCode PetscSortRealWithArrayInt_Private(PetscReal *v,PetscInt *V
 @*/
 PetscErrorCode  PetscSortRealWithArrayInt(PetscInt n,PetscReal r[],PetscInt Ii[])
 {
-  PetscErrorCode ierr;
   PetscInt       j,k,itmp;
   PetscReal      rk,rtmp;
 
   PetscFunctionBegin;
-  PetscValidPointer(r,2);
-  PetscValidPointer(Ii,3);
+  PetscValidRealPointer(r,2);
+  PetscValidIntPointer(Ii,3);
   if (n<8) {
     for (k=0; k<n; k++) {
       rk = r[k];
@@ -159,7 +157,7 @@ PetscErrorCode  PetscSortRealWithArrayInt(PetscInt n,PetscReal r[],PetscInt Ii[]
       }
     }
   } else {
-    ierr = PetscSortRealWithArrayInt_Private(r,Ii,n-1);CHKERRQ(ierr);
+    PetscCall(PetscSortRealWithArrayInt_Private(r,Ii,n-1));
   }
   PetscFunctionReturn(0);
 }
@@ -187,9 +185,9 @@ PetscErrorCode PetscFindReal(PetscReal key, PetscInt n, const PetscReal t[], Pet
   PetscInt lo = 0,hi = n;
 
   PetscFunctionBegin;
-  PetscValidPointer(loc,5);
+  PetscValidIntPointer(loc,5);
   if (!n) {*loc = -1; PetscFunctionReturn(0);}
-  PetscValidPointer(t,3);
+  PetscValidRealPointer(t,3);
   PetscCheckSorted(n,t);
   while (hi - lo > 1) {
     PetscInt mid = lo + (hi - lo)/2;
@@ -218,11 +216,10 @@ PetscErrorCode PetscFindReal(PetscReal key, PetscInt n, const PetscReal t[], Pet
 @*/
 PetscErrorCode  PetscSortRemoveDupsReal(PetscInt *n,PetscReal v[])
 {
-  PetscErrorCode ierr;
   PetscInt       i,s = 0,N = *n, b = 0;
 
   PetscFunctionBegin;
-  ierr = PetscSortReal(N,v);CHKERRQ(ierr);
+  PetscCall(PetscSortReal(N,v));
   for (i=0; i<N-1; i++) {
     if (v[b+s+1] != v[b]) {
       v[b+1] = v[b+s+1]; b++;

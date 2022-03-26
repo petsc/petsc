@@ -33,45 +33,42 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->v0[0]   = PetscSqrtReal(BOLTZMANN_K * options->T[0] / options->mass[0]); /* electron mean velocity in 1D */
   options->v0[1]   = PetscSqrtReal(BOLTZMANN_K * options->T[1] / options->mass[1]); /* ion mean velocity in 1D */
 
-  ierr = PetscOptionsBegin(comm, "", "KS Test Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm, "", "KS Test Options", "DMPLEX");PetscCall(ierr);
+  ierr = PetscOptionsEnd();PetscCall(ierr);
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
-  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
-  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
+  PetscCall(DMCreate(comm, dm));
+  PetscCall(DMSetType(*dm, DMPLEX));
+  PetscCall(DMSetFromOptions(*dm));
+  PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode CreateSwarm(DM dm, AppCtx *user, DM *sw)
 {
   PetscInt       dim;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMCreate(PetscObjectComm((PetscObject) dm), sw);CHKERRQ(ierr);
-  ierr = DMSetType(*sw, DMSWARM);CHKERRQ(ierr);
-  ierr = DMSetDimension(*sw, dim);CHKERRQ(ierr);
-  ierr = DMSwarmSetType(*sw, DMSWARM_PIC);CHKERRQ(ierr);
-  ierr = DMSwarmSetCellDM(*sw, dm);CHKERRQ(ierr);
-  ierr = DMSwarmRegisterPetscDatatypeField(*sw, "w_q", 1, PETSC_SCALAR);CHKERRQ(ierr);
-  ierr = DMSwarmRegisterPetscDatatypeField(*sw, "velocity", dim, PETSC_REAL);CHKERRQ(ierr);
-  ierr = DMSwarmRegisterPetscDatatypeField(*sw, "species", 1, PETSC_INT);CHKERRQ(ierr);
-  ierr = DMSwarmFinalizeFieldRegister(*sw);CHKERRQ(ierr);
-  ierr = DMSwarmComputeLocalSizeFromOptions(*sw);CHKERRQ(ierr);
-  ierr = DMSwarmInitializeCoordinates(*sw);CHKERRQ(ierr);
-  ierr = DMSwarmInitializeVelocitiesFromOptions(*sw, user->v0);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*sw);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) *sw, "Particles");CHKERRQ(ierr);
-  ierr = DMViewFromOptions(*sw, NULL, "-swarm_view");CHKERRQ(ierr);
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMCreate(PetscObjectComm((PetscObject) dm), sw));
+  PetscCall(DMSetType(*sw, DMSWARM));
+  PetscCall(DMSetDimension(*sw, dim));
+  PetscCall(DMSwarmSetType(*sw, DMSWARM_PIC));
+  PetscCall(DMSwarmSetCellDM(*sw, dm));
+  PetscCall(DMSwarmRegisterPetscDatatypeField(*sw, "w_q", 1, PETSC_SCALAR));
+  PetscCall(DMSwarmRegisterPetscDatatypeField(*sw, "velocity", dim, PETSC_REAL));
+  PetscCall(DMSwarmRegisterPetscDatatypeField(*sw, "species", 1, PETSC_INT));
+  PetscCall(DMSwarmFinalizeFieldRegister(*sw));
+  PetscCall(DMSwarmComputeLocalSizeFromOptions(*sw));
+  PetscCall(DMSwarmInitializeCoordinates(*sw));
+  PetscCall(DMSwarmInitializeVelocitiesFromOptions(*sw, user->v0));
+  PetscCall(DMSetFromOptions(*sw));
+  PetscCall(PetscObjectSetName((PetscObject) *sw, "Particles"));
+  PetscCall(DMViewFromOptions(*sw, NULL, "-swarm_view"));
   PetscFunctionReturn(0);
 }
 
@@ -82,22 +79,21 @@ static PetscErrorCode TestDistribution(DM sw, PetscReal confidenceLevel, AppCtx 
   PetscReal      alpha;
   PetscInt       dim;
   MPI_Comm       comm;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscObjectGetComm((PetscObject) sw, &comm);CHKERRQ(ierr);
-  ierr = DMGetDimension(sw, &dim);CHKERRQ(ierr);
+  PetscCall(PetscObjectGetComm((PetscObject) sw, &comm));
+  PetscCall(DMGetDimension(sw, &dim));
   switch (dim) {
     case 1: cdf = PetscCDFMaxwellBoltzmann1D;break;
     case 2: cdf = PetscCDFMaxwellBoltzmann2D;break;
     case 3: cdf = PetscCDFMaxwellBoltzmann3D;break;
     default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Dimension %D not supported", dim);
   }
-  ierr = DMSwarmCreateLocalVectorFromField(sw, "velocity", &locv);CHKERRQ(ierr);
-  ierr = PetscProbComputeKSStatistic(locv, cdf, &alpha);CHKERRQ(ierr);
-  ierr = DMSwarmDestroyLocalVectorFromField(sw, "velocity", &locv);CHKERRQ(ierr);
-  if (alpha < confidenceLevel) {ierr = PetscPrintf(comm, "The KS test accepts the null hypothesis at level %.2g\n", (double) confidenceLevel);CHKERRQ(ierr);}
-  else                         {ierr = PetscPrintf(comm, "The KS test rejects the null hypothesis at level %.2g (%.2g)\n", (double) confidenceLevel, (double) alpha);CHKERRQ(ierr);}
+  PetscCall(DMSwarmCreateLocalVectorFromField(sw, "velocity", &locv));
+  PetscCall(PetscProbComputeKSStatistic(locv, cdf, &alpha));
+  PetscCall(DMSwarmDestroyLocalVectorFromField(sw, "velocity", &locv));
+  if (alpha < confidenceLevel) PetscCall(PetscPrintf(comm, "The KS test accepts the null hypothesis at level %.2g\n", (double) confidenceLevel));
+  else                         PetscCall(PetscPrintf(comm, "The KS test rejects the null hypothesis at level %.2g (%.2g)\n", (double) confidenceLevel, (double) alpha));
   PetscFunctionReturn(0);
 }
 
@@ -105,17 +101,16 @@ int main(int argc, char **argv)
 {
   DM             dm, sw;
   AppCtx         user;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
-  ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
-  ierr = CreateMesh(PETSC_COMM_WORLD, &dm);CHKERRQ(ierr);
-  ierr = CreateSwarm(dm, &user, &sw);CHKERRQ(ierr);
-  ierr = TestDistribution(sw, 0.05, &user);CHKERRQ(ierr);
-  ierr = DMDestroy(&sw);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscInitialize(&argc, &argv, NULL,help));
+  PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
+  PetscCall(CreateMesh(PETSC_COMM_WORLD, &dm));
+  PetscCall(CreateSwarm(dm, &user, &sw));
+  PetscCall(TestDistribution(sw, 0.05, &user));
+  PetscCall(DMDestroy(&sw));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

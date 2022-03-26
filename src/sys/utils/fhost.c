@@ -46,7 +46,6 @@ $       call PetscGetHostName(name,ierr)
 PetscErrorCode  PetscGetHostName(char name[],size_t nlen)
 {
   char           *domain;
-  PetscErrorCode ierr;
 #if defined(PETSC_HAVE_UNAME) && !defined(PETSC_HAVE_GETCOMPUTERNAME)
   struct utsname utname;
 #endif
@@ -59,7 +58,7 @@ PetscErrorCode  PetscGetHostName(char name[],size_t nlen)
   }
 #elif defined(PETSC_HAVE_UNAME)
   uname(&utname);
-  ierr = PetscStrncpy(name,utname.nodename,nlen);CHKERRQ(ierr);
+  PetscCall(PetscStrncpy(name,utname.nodename,nlen));
 #elif defined(PETSC_HAVE_GETHOSTNAME)
   gethostname(name,nlen);
 #elif defined(PETSC_HAVE_SYSINFO_3ARG)
@@ -69,10 +68,10 @@ PetscErrorCode  PetscGetHostName(char name[],size_t nlen)
   name[nlen-1] = 0;
 
   /* See if this name includes the domain */
-  ierr = PetscStrchr(name,'.',&domain);CHKERRQ(ierr);
+  PetscCall(PetscStrchr(name,'.',&domain));
   if (!domain) {
     size_t l,ll;
-    ierr = PetscStrlen(name,&l);CHKERRQ(ierr);
+    PetscCall(PetscStrlen(name,&l));
     if (l == nlen-1) PetscFunctionReturn(0);
     name[l++] = '.';
     name[l]   = 0;
@@ -82,13 +81,13 @@ PetscErrorCode  PetscGetHostName(char name[],size_t nlen)
     PetscCheckFalse(getdomainname(name+l,nlen - l),PETSC_COMM_SELF,PETSC_ERR_SYS,"getdomainname()");
 #endif
     /* check if domain name is not a dnsdomainname and nuke it */
-    ierr = PetscStrlen(name,&ll);CHKERRQ(ierr);
+    PetscCall(PetscStrlen(name,&ll));
     if (ll > 4) {
       const char *suffixes[] = {".edu",".com",".net",".org",".mil",NULL};
       PetscInt   index;
-      ierr = PetscStrendswithwhich(name,suffixes,&index);CHKERRQ(ierr);
+      PetscCall(PetscStrendswithwhich(name,suffixes,&index));
       if (!suffixes[index]) {
-        ierr      = PetscInfo(NULL,"Rejecting domainname, likely is NIS %s\n",name);CHKERRQ(ierr);
+        PetscCall(PetscInfo(NULL,"Rejecting domainname, likely is NIS %s\n",name));
         name[l-1] = 0;
       }
     }

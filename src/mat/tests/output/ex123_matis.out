@@ -1,57 +1,57 @@
+LINE 94
+Mat Object: 3 MPI processes
+  Mat Object: (is_) 1 MPI processes
+row 0: (5, 10.) 
+row 1: (1, 10.)  (3, 5.)  (4, 6.) 
+row 2: (0, 8.)  (3, 11.) 
+row 3:
+row 4: (3, 4.) 
+row 5:
+row 6: (4, 1.) 
+row 7: (1, -1.) 
+row 8:
+row 9:
+row 10:
+row 11:
+row 12:
+row 13:
+row 14:
+row 15:
+row 16:
+row 17:
+row 18:
+row 19:
+row 20:
+row 21:
+row 22:
+row 23:
+  Mat Object: (is_) 1 MPI processes
+row 0: (5, 10.) 
+row 1: (1, 10.)  (3, 5.)  (4, 6.) 
+row 2: (0, 8.)  (3, 11.) 
+row 3:
+row 4: (3, 4.) 
+row 5:
+row 6: (4, 1.) 
+row 7: (1, -1.) 
+row 8:
+row 9:
+row 10:
+row 11:
+row 12:
+row 13:
+row 14:
+row 15:
+  Mat Object: (is_) 1 MPI processes
+row 0: (5, 10.) 
+row 1: (1, 10.)  (3, 5.)  (4, 6.) 
+row 2: (0, 8.)  (3, 11.) 
+row 3:
+row 4: (3, 4.) 
+row 5:
+row 6: (4, 1.) 
+row 7: (1, -1.) 
 LINE 95
-Mat Object: 3 MPI processes
-  Mat Object: (is_) 1 MPI processes
-row 0: (5, 10.) 
-row 1: (1, 10.)  (3, 5.)  (4, 6.) 
-row 2: (0, 8.)  (3, 11.) 
-row 3:
-row 4: (3, 4.) 
-row 5:
-row 6: (4, 1.) 
-row 7: (1, -1.) 
-row 8:
-row 9:
-row 10:
-row 11:
-row 12:
-row 13:
-row 14:
-row 15:
-row 16:
-row 17:
-row 18:
-row 19:
-row 20:
-row 21:
-row 22:
-row 23:
-  Mat Object: (is_) 1 MPI processes
-row 0: (5, 10.) 
-row 1: (1, 10.)  (3, 5.)  (4, 6.) 
-row 2: (0, 8.)  (3, 11.) 
-row 3:
-row 4: (3, 4.) 
-row 5:
-row 6: (4, 1.) 
-row 7: (1, -1.) 
-row 8:
-row 9:
-row 10:
-row 11:
-row 12:
-row 13:
-row 14:
-row 15:
-  Mat Object: (is_) 1 MPI processes
-row 0: (5, 10.) 
-row 1: (1, 10.)  (3, 5.)  (4, 6.) 
-row 2: (0, 8.)  (3, 11.) 
-row 3:
-row 4: (3, 4.) 
-row 5:
-row 6: (4, 1.) 
-row 7: (1, -1.) 
-LINE 96
 Vec Object: 3 MPI processes
 Process [0]
 10.
@@ -80,60 +80,60 @@ Process [2]
 0.
 1.
 -1.
+LINE 98
+Mat Object: 3 MPI processes
+  Mat Object: (is_) 1 MPI processes
+row 0: (5, 0.) 
+row 1: (1, 0.)  (3, 0.)  (4, 0.) 
+row 2: (0, 0.)  (3, 0.) 
+row 3:
+row 4: (3, 0.) 
+row 5:
+row 6: (4, 0.) 
+row 7: (1, 0.) 
+row 8:
+row 9:
+row 10:
+row 11:
+row 12:
+row 13:
+row 14:
+row 15:
+row 16:
+row 17:
+row 18:
+row 19:
+row 20:
+row 21:
+row 22:
+row 23:
+  Mat Object: (is_) 1 MPI processes
+row 0: (5, 0.) 
+row 1: (1, 0.)  (3, 0.)  (4, 0.) 
+row 2: (0, 0.)  (3, 0.) 
+row 3:
+row 4: (3, 0.) 
+row 5:
+row 6: (4, 0.) 
+row 7: (1, 0.) 
+row 8:
+row 9:
+row 10:
+row 11:
+row 12:
+row 13:
+row 14:
+row 15:
+  Mat Object: (is_) 1 MPI processes
+row 0: (5, 0.) 
+row 1: (1, 0.)  (3, 0.)  (4, 0.) 
+row 2: (0, 0.)  (3, 0.) 
+row 3:
+row 4: (3, 0.) 
+row 5:
+row 6: (4, 0.) 
+row 7: (1, 0.) 
 LINE 99
-Mat Object: 3 MPI processes
-  Mat Object: (is_) 1 MPI processes
-row 0: (5, 0.) 
-row 1: (1, 0.)  (3, 0.)  (4, 0.) 
-row 2: (0, 0.)  (3, 0.) 
-row 3:
-row 4: (3, 0.) 
-row 5:
-row 6: (4, 0.) 
-row 7: (1, 0.) 
-row 8:
-row 9:
-row 10:
-row 11:
-row 12:
-row 13:
-row 14:
-row 15:
-row 16:
-row 17:
-row 18:
-row 19:
-row 20:
-row 21:
-row 22:
-row 23:
-  Mat Object: (is_) 1 MPI processes
-row 0: (5, 0.) 
-row 1: (1, 0.)  (3, 0.)  (4, 0.) 
-row 2: (0, 0.)  (3, 0.) 
-row 3:
-row 4: (3, 0.) 
-row 5:
-row 6: (4, 0.) 
-row 7: (1, 0.) 
-row 8:
-row 9:
-row 10:
-row 11:
-row 12:
-row 13:
-row 14:
-row 15:
-  Mat Object: (is_) 1 MPI processes
-row 0: (5, 0.) 
-row 1: (1, 0.)  (3, 0.)  (4, 0.) 
-row 2: (0, 0.)  (3, 0.) 
-row 3:
-row 4: (3, 0.) 
-row 5:
-row 6: (4, 0.) 
-row 7: (1, 0.) 
-LINE 100
 Vec Object: 3 MPI processes
 Process [0]
 10.
@@ -162,7 +162,7 @@ Process [2]
 0.
 1.
 -1.
-LINE 115
+LINE 114
 Mat Object: 3 MPI processes
   Mat Object: (is_) 1 MPI processes
 row 0: (5, -10.) 
@@ -215,60 +215,60 @@ row 4: (3, -4.)
 row 5:
 row 6: (4, -1.) 
 row 7: (1, 1.) 
+LINE 126
+Mat Object: 3 MPI processes
+  Mat Object: (is_) 1 MPI processes
+row 0: (5, 3.) 
+row 1: (1, 8.)  (3, 5.)  (4, 6.) 
+row 2: (0, 7.)  (3, 2.) 
+row 3:
+row 4: (3, 4.) 
+row 5:
+row 6: (4, 1.) 
+row 7: (1, -1.) 
+row 8:
+row 9:
+row 10:
+row 11:
+row 12:
+row 13:
+row 14:
+row 15:
+row 16:
+row 17:
+row 18:
+row 19:
+row 20:
+row 21:
+row 22:
+row 23:
+  Mat Object: (is_) 1 MPI processes
+row 0: (5, 3.) 
+row 1: (1, 8.)  (3, 5.)  (4, 6.) 
+row 2: (0, 7.)  (3, 2.) 
+row 3:
+row 4: (3, 4.) 
+row 5:
+row 6: (4, 1.) 
+row 7: (1, -1.) 
+row 8:
+row 9:
+row 10:
+row 11:
+row 12:
+row 13:
+row 14:
+row 15:
+  Mat Object: (is_) 1 MPI processes
+row 0: (5, 3.) 
+row 1: (1, 8.)  (3, 5.)  (4, 6.) 
+row 2: (0, 7.)  (3, 2.) 
+row 3:
+row 4: (3, 4.) 
+row 5:
+row 6: (4, 1.) 
+row 7: (1, -1.) 
 LINE 127
-Mat Object: 3 MPI processes
-  Mat Object: (is_) 1 MPI processes
-row 0: (5, 3.) 
-row 1: (1, 8.)  (3, 5.)  (4, 6.) 
-row 2: (0, 7.)  (3, 2.) 
-row 3:
-row 4: (3, 4.) 
-row 5:
-row 6: (4, 1.) 
-row 7: (1, -1.) 
-row 8:
-row 9:
-row 10:
-row 11:
-row 12:
-row 13:
-row 14:
-row 15:
-row 16:
-row 17:
-row 18:
-row 19:
-row 20:
-row 21:
-row 22:
-row 23:
-  Mat Object: (is_) 1 MPI processes
-row 0: (5, 3.) 
-row 1: (1, 8.)  (3, 5.)  (4, 6.) 
-row 2: (0, 7.)  (3, 2.) 
-row 3:
-row 4: (3, 4.) 
-row 5:
-row 6: (4, 1.) 
-row 7: (1, -1.) 
-row 8:
-row 9:
-row 10:
-row 11:
-row 12:
-row 13:
-row 14:
-row 15:
-  Mat Object: (is_) 1 MPI processes
-row 0: (5, 3.) 
-row 1: (1, 8.)  (3, 5.)  (4, 6.) 
-row 2: (0, 7.)  (3, 2.) 
-row 3:
-row 4: (3, 4.) 
-row 5:
-row 6: (4, 1.) 
-row 7: (1, -1.) 
-LINE 128
 Vec Object: 3 MPI processes
 Process [0]
 3.
@@ -297,60 +297,60 @@ Process [2]
 0.
 1.
 -1.
+LINE 130
+Mat Object: 3 MPI processes
+  Mat Object: (is_) 1 MPI processes
+row 0: (5, 0.) 
+row 1: (1, 0.)  (3, 0.)  (4, 0.) 
+row 2: (0, 0.)  (3, 0.) 
+row 3:
+row 4: (3, 0.) 
+row 5:
+row 6: (4, 0.) 
+row 7: (1, 0.) 
+row 8:
+row 9:
+row 10:
+row 11:
+row 12:
+row 13:
+row 14:
+row 15:
+row 16:
+row 17:
+row 18:
+row 19:
+row 20:
+row 21:
+row 22:
+row 23:
+  Mat Object: (is_) 1 MPI processes
+row 0: (5, 0.) 
+row 1: (1, 0.)  (3, 0.)  (4, 0.) 
+row 2: (0, 0.)  (3, 0.) 
+row 3:
+row 4: (3, 0.) 
+row 5:
+row 6: (4, 0.) 
+row 7: (1, 0.) 
+row 8:
+row 9:
+row 10:
+row 11:
+row 12:
+row 13:
+row 14:
+row 15:
+  Mat Object: (is_) 1 MPI processes
+row 0: (5, 0.) 
+row 1: (1, 0.)  (3, 0.)  (4, 0.) 
+row 2: (0, 0.)  (3, 0.) 
+row 3:
+row 4: (3, 0.) 
+row 5:
+row 6: (4, 0.) 
+row 7: (1, 0.) 
 LINE 131
-Mat Object: 3 MPI processes
-  Mat Object: (is_) 1 MPI processes
-row 0: (5, 0.) 
-row 1: (1, 0.)  (3, 0.)  (4, 0.) 
-row 2: (0, 0.)  (3, 0.) 
-row 3:
-row 4: (3, 0.) 
-row 5:
-row 6: (4, 0.) 
-row 7: (1, 0.) 
-row 8:
-row 9:
-row 10:
-row 11:
-row 12:
-row 13:
-row 14:
-row 15:
-row 16:
-row 17:
-row 18:
-row 19:
-row 20:
-row 21:
-row 22:
-row 23:
-  Mat Object: (is_) 1 MPI processes
-row 0: (5, 0.) 
-row 1: (1, 0.)  (3, 0.)  (4, 0.) 
-row 2: (0, 0.)  (3, 0.) 
-row 3:
-row 4: (3, 0.) 
-row 5:
-row 6: (4, 0.) 
-row 7: (1, 0.) 
-row 8:
-row 9:
-row 10:
-row 11:
-row 12:
-row 13:
-row 14:
-row 15:
-  Mat Object: (is_) 1 MPI processes
-row 0: (5, 0.) 
-row 1: (1, 0.)  (3, 0.)  (4, 0.) 
-row 2: (0, 0.)  (3, 0.) 
-row 3:
-row 4: (3, 0.) 
-row 5:
-row 6: (4, 0.) 
-row 7: (1, 0.) 
-LINE 132
 Vec Object: 3 MPI processes
 Process [0]
 3.
@@ -379,60 +379,60 @@ Process [2]
 0.
 1.
 -1.
+LINE 141
+Mat Object: 3 MPI processes
+  Mat Object: (is_) 1 MPI processes
+row 0: (5, 3.) 
+row 1: (1, 8.)  (3, 5.)  (4, 6.) 
+row 2: (0, 7.)  (3, 2.) 
+row 3:
+row 4: (3, 4.) 
+row 5:
+row 6: (4, 1.) 
+row 7: (1, -1.) 
+row 8:
+row 9:
+row 10:
+row 11:
+row 12:
+row 13:
+row 14:
+row 15:
+row 16:
+row 17:
+row 18:
+row 19:
+row 20:
+row 21:
+row 22:
+row 23:
+  Mat Object: (is_) 1 MPI processes
+row 0: (5, 3.) 
+row 1: (1, 8.)  (3, 5.)  (4, 6.) 
+row 2: (0, 7.)  (3, 2.) 
+row 3:
+row 4: (3, 4.) 
+row 5:
+row 6: (4, 1.) 
+row 7: (1, -1.) 
+row 8:
+row 9:
+row 10:
+row 11:
+row 12:
+row 13:
+row 14:
+row 15:
+  Mat Object: (is_) 1 MPI processes
+row 0: (5, 3.) 
+row 1: (1, 8.)  (3, 5.)  (4, 6.) 
+row 2: (0, 7.)  (3, 2.) 
+row 3:
+row 4: (3, 4.) 
+row 5:
+row 6: (4, 1.) 
+row 7: (1, -1.) 
 LINE 142
-Mat Object: 3 MPI processes
-  Mat Object: (is_) 1 MPI processes
-row 0: (5, 3.) 
-row 1: (1, 8.)  (3, 5.)  (4, 6.) 
-row 2: (0, 7.)  (3, 2.) 
-row 3:
-row 4: (3, 4.) 
-row 5:
-row 6: (4, 1.) 
-row 7: (1, -1.) 
-row 8:
-row 9:
-row 10:
-row 11:
-row 12:
-row 13:
-row 14:
-row 15:
-row 16:
-row 17:
-row 18:
-row 19:
-row 20:
-row 21:
-row 22:
-row 23:
-  Mat Object: (is_) 1 MPI processes
-row 0: (5, 3.) 
-row 1: (1, 8.)  (3, 5.)  (4, 6.) 
-row 2: (0, 7.)  (3, 2.) 
-row 3:
-row 4: (3, 4.) 
-row 5:
-row 6: (4, 1.) 
-row 7: (1, -1.) 
-row 8:
-row 9:
-row 10:
-row 11:
-row 12:
-row 13:
-row 14:
-row 15:
-  Mat Object: (is_) 1 MPI processes
-row 0: (5, 3.) 
-row 1: (1, 8.)  (3, 5.)  (4, 6.) 
-row 2: (0, 7.)  (3, 2.) 
-row 3:
-row 4: (3, 4.) 
-row 5:
-row 6: (4, 1.) 
-row 7: (1, -1.) 
-LINE 143
 Vec Object: 3 MPI processes
 Process [0]
 3.
@@ -461,7 +461,7 @@ Process [2]
 0.
 1.
 -1.
-LINE 146
+LINE 145
 Mat Object: 3 MPI processes
   Mat Object: (is_) 1 MPI processes
 row 0: (5, -3.) 
@@ -514,7 +514,7 @@ row 4: (3, -4.)
 row 5:
 row 6: (4, -1.) 
 row 7: (1, 1.) 
-LINE 147
+LINE 146
 Vec Object: 3 MPI processes
 Process [0]
 0.

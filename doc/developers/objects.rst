@@ -314,19 +314,15 @@ The PETSc object ``compose()`` and ``query()`` functions are as follows
 
     PetscErrorCode PetscObjectCompose_Petsc(PetscObject obj,const char *name,PetscObject ptr)
     {
-      PetscErrorCode ierr;
-
       PetscFunctionBegin;
-      PetscObjectListAdd(&obj->olist,name,ptr);
+      PetscCall(PetscObjectListAdd(&obj->olist,name,ptr));
       PetscFunctionReturn(0);
     }
 
     PetscErrorCode PetscObjectQuery_Petsc(PetscObject obj,const char *name,PetscObject *ptr)
     {
-      PetscErrorCode ierr;
-
       PetscFunctionBegin;
-      PetscObjectListFind(obj->olist,name,ptr);
+      PetscCall(PetscObjectListFind(obj->olist,name,ptr));
       PetscFunctionReturn(0);
     }
 
@@ -355,19 +351,15 @@ following.
 
     PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject obj,const char *name,void *ptr)
     {
-      PetscErrorCode ierr;
-
       PetscFunctionBegin;
-      PetscFunctionListAdd(&obj->qlist,name,fname,ptr);
+      PetscCall(PetscFunctionListAdd(&obj->qlist,name,fname,ptr));
       PetscFunctionReturn(0);
     }
 
     PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject obj,const char *name,void (**ptr)(void))
     {
-      PetscErrorCode ierr;
-
       PetscFunctionBegin;
-      PetscFunctionListFind(obj->qlist,name,ptr);
+      PetscCall(PetscFunctionListFind(obj->qlist,name,ptr));
       PetscFunctionReturn(0);
     }
 

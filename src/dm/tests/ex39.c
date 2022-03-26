@@ -6,47 +6,46 @@ static char help[] = "Tests mirror boundary conditions in 1-d.\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       M = 6,stencil_width = 1, dof = 1,m,xstart,i,j;
   DM             da;
   Vec            global,local;
   PetscScalar    **vglobal;
   PetscViewer    sviewer;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,0,"-stencil_width",&stencil_width,0);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,0,"-dof",&dof,0);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,0,"-stencil_width",&stencil_width,0));
+  PetscCall(PetscOptionsGetInt(NULL,0,"-dof",&dof,0));
 
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_MIRROR,M,dof,stencil_width,NULL,&da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&xstart,0,0,&m,0,0);CHKERRQ(ierr);
+  PetscCall(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_MIRROR,M,dof,stencil_width,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMDAGetCorners(da,&xstart,0,0,&m,0,0));
 
-  ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
-  ierr = DMDAVecGetArrayDOF(da,global,&vglobal);CHKERRQ(ierr);
+  PetscCall(DMCreateGlobalVector(da,&global));
+  PetscCall(DMDAVecGetArrayDOF(da,global,&vglobal));
   for (i=xstart; i<xstart+m; i++) {
     for (j=0; j<dof; j++) {
       vglobal[i][j] = 100*(i+1) + j;
     }
   }
-  ierr = DMDAVecRestoreArrayDOF(da,global,&vglobal);CHKERRQ(ierr);
+  PetscCall(DMDAVecRestoreArrayDOF(da,global,&vglobal));
 
-  ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
+  PetscCall(DMCreateLocalVector(da,&local));
+  PetscCall(DMGlobalToLocalBegin(da,global,INSERT_VALUES,local));
+  PetscCall(DMGlobalToLocalEnd(da,global,INSERT_VALUES,local));
 
-  ierr = PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
-  ierr = VecView(local,sviewer);CHKERRQ(ierr);
-  ierr = PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
-  ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecView(global,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscCall(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer));
+  PetscCall(VecView(local,sviewer));
+  PetscCall(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer));
+  PetscCall(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecView(global,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
-  ierr = VecDestroy(&local);CHKERRQ(ierr);
-  ierr = VecDestroy(&global);CHKERRQ(ierr);
+  PetscCall(DMDestroy(&da));
+  PetscCall(VecDestroy(&local));
+  PetscCall(VecDestroy(&global));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

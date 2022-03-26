@@ -27,7 +27,6 @@
 @*/
 PetscErrorCode  PetscStartMatlab(MPI_Comm comm,const char machine[],const char script[],FILE **fp)
 {
-  PetscErrorCode ierr;
   FILE           *fd;
   char           command[512];
 #if defined(PETSC_HAVE_UCBPS) && defined(PETSC_HAVE_POPEN)
@@ -38,11 +37,11 @@ PetscErrorCode  PetscStartMatlab(MPI_Comm comm,const char machine[],const char s
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_UCBPS) && defined(PETSC_HAVE_POPEN)
   /* check if MATLAB is not already running */
-  ierr = PetscPOpen(comm,machine,"/usr/ucb/ps -ugxww | grep matlab | grep -v grep","r",&fd);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+  PetscCall(PetscPOpen(comm,machine,"/usr/ucb/ps -ugxww | grep matlab | grep -v grep","r",&fd));
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
   if (rank == 0) found = fgets(buf,1024,fd);
-  ierr = MPI_Bcast(&found,1,MPI_CHAR,0,comm);CHKERRMPI(ierr);
-  ierr = PetscPClose(comm,fd);CHKERRQ(ierr);
+  PetscCallMPI(MPI_Bcast(&found,1,MPI_CHAR,0,comm));
+  PetscCall(PetscPClose(comm,fd));
   if (found) PetscFunctionReturn(0);
 #endif
 
@@ -51,13 +50,12 @@ PetscErrorCode  PetscStartMatlab(MPI_Comm comm,const char machine[],const char s
     /* the extra \" are to protect possible () in the script command from the shell */
     sprintf(command,"echo \"delete ${HOMEDIRECTORY}/matlab/startup.m ; path(path,'${WORKINGDIRECTORY}'); %s  \" > ${HOMEDIRECTORY}/matlab/startup.m",script);
 #if defined(PETSC_HAVE_POPEN)
-    ierr = PetscPOpen(comm,machine,command,"r",&fd);CHKERRQ(ierr);
-    ierr = PetscPClose(comm,fd);CHKERRQ(ierr);
+    PetscCall(PetscPOpen(comm,machine,command,"r",&fd));
+    PetscCall(PetscPClose(comm,fd));
 #endif
   }
 #if defined(PETSC_HAVE_POPEN)
-  ierr = PetscPOpen(comm,machine,"xterm -display ${DISPLAY} -e matlab -nosplash","r",fp);CHKERRQ(ierr);
+  PetscCall(PetscPOpen(comm,machine,"xterm -display ${DISPLAY} -e matlab -nosplash","r",fp));
 #endif
   PetscFunctionReturn(0);
 }
-

@@ -34,12 +34,11 @@ PetscErrorCode  PetscGetUserName(char name[],size_t nlen)
 PetscErrorCode  PetscGetUserName(char name[],size_t nlen)
 {
   const char     *user;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   user = getenv("USER");
   if (!user) user = "Unknown";
-  ierr = PetscStrncpy(name,user,nlen);CHKERRQ(ierr);
+  PetscCall(PetscStrncpy(name,user,nlen));
   PetscFunctionReturn(0);
 }
 #endif

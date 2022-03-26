@@ -32,37 +32,37 @@ int main(int argc,char **args)
   PetscBool      view_x = PETSC_FALSE, view_y = PETSC_FALSE, view_z = PETSC_FALSE;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP, "This is a uniprocessor example only!");
-  ierr     = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "USFFT Options", "ex27");CHKERRQ(ierr);
-  ierr     = PetscOptionsEList("-function", "Function type", "ex27", funcNames, NUM_FUNCS, funcNames[function], &func, NULL);CHKERRQ(ierr);
+  ierr     = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "USFFT Options", "ex27");PetscCall(ierr);
+  PetscCall(PetscOptionsEList("-function", "Function type", "ex27", funcNames, NUM_FUNCS, funcNames[function], &func, NULL));
   function = (FuncType) func;
-  ierr     = PetscOptionsEnd();CHKERRQ(ierr);
-  ierr     = PetscOptionsGetBool(NULL,NULL,"-view_x",&view_x,NULL);CHKERRQ(ierr);
-  ierr     = PetscOptionsGetBool(NULL,NULL,"-view_y",&view_y,NULL);CHKERRQ(ierr);
-  ierr     = PetscOptionsGetBool(NULL,NULL,"-view_z",&view_z,NULL);CHKERRQ(ierr);
-  ierr     = PetscOptionsGetIntArray(NULL,NULL,"-dim",dim,&ndim,NULL);CHKERRQ(ierr);
+  ierr     = PetscOptionsEnd();PetscCall(ierr);
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-view_x",&view_x,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-view_y",&view_y,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-view_z",&view_z,NULL));
+  PetscCall(PetscOptionsGetIntArray(NULL,NULL,"-dim",dim,&ndim,NULL));
 
   /* DMDA with the correct fiber dimension */
   ierr = DMDACreate3d(PETSC_COMM_SELF,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,dim[0],dim[1],dim[2],PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,
-                      dof,stencil,NULL,NULL,NULL,&da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
+                      dof,stencil,NULL,NULL,NULL,&da);PetscCall(ierr);
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
   /* DMDA with fiber dimension 1 for split fields */
   ierr = DMDACreate3d(PETSC_COMM_SELF,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,dim[0],dim[1],dim[2],PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,
-                      1,stencil,NULL,NULL,NULL,&da1);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da1);CHKERRQ(ierr);
-  ierr = DMSetUp(da1);CHKERRQ(ierr);
+                      1,stencil,NULL,NULL,NULL,&da1);PetscCall(ierr);
+  PetscCall(DMSetFromOptions(da1));
+  PetscCall(DMSetUp(da1));
 
   /* Coordinates */
-  ierr = DMGetCoordinateDM(da,&coordsda);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(coordsda,&coords);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) coords,"Grid coordinates");CHKERRQ(ierr);
+  PetscCall(DMGetCoordinateDM(da,&coordsda));
+  PetscCall(DMGetGlobalVector(coordsda,&coords));
+  PetscCall(PetscObjectSetName((PetscObject) coords,"Grid coordinates"));
   for (i = 0, N = 1; i < 3; i++) {
     h[i] = 1.0/dim[i];
     PetscScalar *a;
-    ierr = VecGetArray(coords, &a);CHKERRQ(ierr);
+    PetscCall(VecGetArray(coords, &a));
     PetscInt j,k,n = 0;
     for (i = 0; i < 3; ++i) {
       for (j = 0; j < dim[i]; ++j) {
@@ -72,52 +72,52 @@ int main(int argc,char **args)
         }
       }
     }
-    ierr = VecRestoreArray(coords, &a);CHKERRQ(ierr);
+    PetscCall(VecRestoreArray(coords, &a));
 
   }
-  ierr = DMSetCoordinates(da, coords);CHKERRQ(ierr);
-  ierr = VecDestroy(&coords);CHKERRQ(ierr);
+  PetscCall(DMSetCoordinates(da, coords));
+  PetscCall(VecDestroy(&coords));
 
   /* Work vectors */
-  ierr = DMGetGlobalVector(da, &x);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) x, "Real space vector");CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(da, &xx);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) xx, "Real space vector");CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(da, &y);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) y, "USFFT frequency space vector");CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(da, &yy);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) yy, "FFTW frequency space vector");CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(da, &z);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) z, "USFFT reconstructed vector");CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(da, &zz);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) zz, "FFTW reconstructed vector");CHKERRQ(ierr);
+  PetscCall(DMGetGlobalVector(da, &x));
+  PetscCall(PetscObjectSetName((PetscObject) x, "Real space vector"));
+  PetscCall(DMGetGlobalVector(da, &xx));
+  PetscCall(PetscObjectSetName((PetscObject) xx, "Real space vector"));
+  PetscCall(DMGetGlobalVector(da, &y));
+  PetscCall(PetscObjectSetName((PetscObject) y, "USFFT frequency space vector"));
+  PetscCall(DMGetGlobalVector(da, &yy));
+  PetscCall(PetscObjectSetName((PetscObject) yy, "FFTW frequency space vector"));
+  PetscCall(DMGetGlobalVector(da, &z));
+  PetscCall(PetscObjectSetName((PetscObject) z, "USFFT reconstructed vector"));
+  PetscCall(DMGetGlobalVector(da, &zz));
+  PetscCall(PetscObjectSetName((PetscObject) zz, "FFTW reconstructed vector"));
   /* Split vectors for FFTW */
   for (ii = 0; ii < 3; ++ii) {
-    ierr = DMGetGlobalVector(da1, &xxsplit[ii]);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) xxsplit[ii], "Real space split vector");CHKERRQ(ierr);
-    ierr = DMGetGlobalVector(da1, &yysplit[ii]);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) yysplit[ii], "FFTW frequency space split vector");CHKERRQ(ierr);
-    ierr = DMGetGlobalVector(da1, &zzsplit[ii]);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) zzsplit[ii], "FFTW reconstructed split vector");CHKERRQ(ierr);
+    PetscCall(DMGetGlobalVector(da1, &xxsplit[ii]));
+    PetscCall(PetscObjectSetName((PetscObject) xxsplit[ii], "Real space split vector"));
+    PetscCall(DMGetGlobalVector(da1, &yysplit[ii]));
+    PetscCall(PetscObjectSetName((PetscObject) yysplit[ii], "FFTW frequency space split vector"));
+    PetscCall(DMGetGlobalVector(da1, &zzsplit[ii]));
+    PetscCall(PetscObjectSetName((PetscObject) zzsplit[ii], "FFTW reconstructed split vector"));
   }
 
-  ierr = PetscPrintf(PETSC_COMM_SELF, "%3-D: USFFT on vector of ");CHKERRQ(ierr);
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "%3-D: USFFT on vector of "));
   for (i = 0, N = 1; i < 3; i++) {
-    ierr = PetscPrintf(PETSC_COMM_SELF, "dim[%d] = %d ",i,dim[i]);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_SELF, "dim[%d] = %d ",i,dim[i]));
     N   *= dim[i];
   }
-  ierr = PetscPrintf(PETSC_COMM_SELF, "; total size %d \n",N);CHKERRQ(ierr);
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "; total size %d \n",N));
 
   if (function == RANDOM) {
-    ierr = PetscRandomCreate(PETSC_COMM_SELF, &rdm);CHKERRQ(ierr);
-    ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
-    ierr = VecSetRandom(x, rdm);CHKERRQ(ierr);
-    ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
+    PetscCall(PetscRandomCreate(PETSC_COMM_SELF, &rdm));
+    PetscCall(PetscRandomSetFromOptions(rdm));
+    PetscCall(VecSetRandom(x, rdm));
+    PetscCall(PetscRandomDestroy(&rdm));
   } else if (function == CONSTANT) {
-    ierr = VecSet(x, 1.0);CHKERRQ(ierr);
+    PetscCall(VecSet(x, 1.0));
   } else if (function == TANH) {
     PetscScalar *a;
-    ierr = VecGetArray(x, &a);CHKERRQ(ierr);
+    PetscCall(VecGetArray(x, &a));
     PetscInt j,k = 0;
     for (i = 0; i < 3; ++i) {
       for (j = 0; j < dim[i]; ++j) {
@@ -125,94 +125,94 @@ int main(int argc,char **args)
         ++k;
       }
     }
-    ierr = VecRestoreArray(x, &a);CHKERRQ(ierr);
+    PetscCall(VecRestoreArray(x, &a));
   }
   if (view_x) {
-    ierr = VecView(x, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    PetscCall(VecView(x, PETSC_VIEWER_STDOUT_WORLD));
   }
-  ierr = VecCopy(x,xx);CHKERRQ(ierr);
+  PetscCall(VecCopy(x,xx));
   /* Split xx */
-  ierr = VecStrideGatherAll(xx,xxsplit, INSERT_VALUES);CHKERRQ(ierr); /*YES! 'Gather' means 'split' (or maybe 'scatter'?)! */
+  PetscCall(VecStrideGatherAll(xx,xxsplit, INSERT_VALUES)); /*YES! 'Gather' means 'split' (or maybe 'scatter'?)! */
 
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF, "|x|_2 = %g\n",norm);CHKERRQ(ierr);
+  PetscCall(VecNorm(x,NORM_2,&norm));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "|x|_2 = %g\n",norm));
 
   /* create USFFT object */
-  ierr = MatCreateSeqUSFFT(da,da,&A);CHKERRQ(ierr);
+  PetscCall(MatCreateSeqUSFFT(da,da,&A));
   /* create FFTW object */
-  ierr = MatCreateSeqFFTW(PETSC_COMM_SELF,3,dim,&AA);CHKERRQ(ierr);
+  PetscCall(MatCreateSeqFFTW(PETSC_COMM_SELF,3,dim,&AA));
 
   /* apply USFFT and FFTW FORWARD "preemptively", so the fftw_plans can be reused on different vectors */
-  ierr = MatMult(A,x,z);CHKERRQ(ierr);
+  PetscCall(MatMult(A,x,z));
   for (ii = 0; ii < 3; ++ii) {
-    ierr = MatMult(AA,xxsplit[ii],zzsplit[ii]);CHKERRQ(ierr);
+    PetscCall(MatMult(AA,xxsplit[ii],zzsplit[ii]));
   }
   /* Now apply USFFT and FFTW forward several (3) times */
   for (i=0; i<3; ++i) {
-    ierr = MatMult(A,x,y);CHKERRQ(ierr);
+    PetscCall(MatMult(A,x,y));
     for (ii = 0; ii < 3; ++ii) {
-      ierr = MatMult(AA,xxsplit[ii],yysplit[ii]);CHKERRQ(ierr);
+      PetscCall(MatMult(AA,xxsplit[ii],yysplit[ii]));
     }
-    ierr = MatMultTranspose(A,y,z);CHKERRQ(ierr);
+    PetscCall(MatMultTranspose(A,y,z));
     for (ii = 0; ii < 3; ++ii) {
-      ierr = MatMult(AA,yysplit[ii],zzsplit[ii]);CHKERRQ(ierr);
+      PetscCall(MatMult(AA,yysplit[ii],zzsplit[ii]));
     }
   }
   /* Unsplit yy */
-  ierr = VecStrideScatterAll(yysplit, yy, INSERT_VALUES);CHKERRQ(ierr); /*YES! 'Scatter' means 'collect' (or maybe 'gather'?)! */
+  PetscCall(VecStrideScatterAll(yysplit, yy, INSERT_VALUES)); /*YES! 'Scatter' means 'collect' (or maybe 'gather'?)! */
   /* Unsplit zz */
-  ierr = VecStrideScatterAll(zzsplit, zz, INSERT_VALUES);CHKERRQ(ierr); /*YES! 'Scatter' means 'collect' (or maybe 'gather'?)! */
+  PetscCall(VecStrideScatterAll(zzsplit, zz, INSERT_VALUES)); /*YES! 'Scatter' means 'collect' (or maybe 'gather'?)! */
 
   if (view_y) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "y = \n");CHKERRQ(ierr);
-    ierr = VecView(y, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "yy = \n");CHKERRQ(ierr);
-    ierr = VecView(yy, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "y = \n"));
+    PetscCall(VecView(y, PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "yy = \n"));
+    PetscCall(VecView(yy, PETSC_VIEWER_STDOUT_WORLD));
   }
 
   if (view_z) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "z = \n");CHKERRQ(ierr);
-    ierr = VecView(z, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "zz = \n");CHKERRQ(ierr);
-    ierr = VecView(zz, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "z = \n"));
+    PetscCall(VecView(z, PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "zz = \n"));
+    PetscCall(VecView(zz, PETSC_VIEWER_STDOUT_WORLD));
   }
 
   /* compare x and z. USFFT computes an unnormalized DFT, thus z = N*x */
   s    = 1.0/(PetscReal)N;
-  ierr = VecScale(z,s);CHKERRQ(ierr);
-  ierr = VecAXPY(x,-1.0,z);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_1,&enorm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF, "|x-z| = %g\n",enorm);CHKERRQ(ierr);
+  PetscCall(VecScale(z,s));
+  PetscCall(VecAXPY(x,-1.0,z));
+  PetscCall(VecNorm(x,NORM_1,&enorm));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "|x-z| = %g\n",enorm));
 
   /* compare xx and zz. FFTW computes an unnormalized DFT, thus zz = N*x */
   s    = 1.0/(PetscReal)N;
-  ierr = VecScale(zz,s);CHKERRQ(ierr);
-  ierr = VecAXPY(xx,-1.0,zz);CHKERRQ(ierr);
-  ierr = VecNorm(xx,NORM_1,&enorm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF, "|xx-zz| = %g\n",enorm);CHKERRQ(ierr);
+  PetscCall(VecScale(zz,s));
+  PetscCall(VecAXPY(xx,-1.0,zz));
+  PetscCall(VecNorm(xx,NORM_1,&enorm));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "|xx-zz| = %g\n",enorm));
 
   /* compare y and yy: USFFT and FFTW results*/
-  ierr = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = VecAXPY(y,-1.0,yy);CHKERRQ(ierr);
-  ierr = VecNorm(y,NORM_1,&enorm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF, "|y|_2 = %g\n",norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF, "|y-yy| = %g\n",enorm);CHKERRQ(ierr);
+  PetscCall(VecNorm(y,NORM_2,&norm));
+  PetscCall(VecAXPY(y,-1.0,yy));
+  PetscCall(VecNorm(y,NORM_1,&enorm));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "|y|_2 = %g\n",norm));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "|y-yy| = %g\n",enorm));
 
   /* compare z and zz: USFFT and FFTW results*/
-  ierr = VecNorm(z,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = VecAXPY(z,-1.0,zz);CHKERRQ(ierr);
-  ierr = VecNorm(z,NORM_1,&enorm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF, "|z|_2 = %g\n",norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF, "|z-zz| = %g\n",enorm);CHKERRQ(ierr);
+  PetscCall(VecNorm(z,NORM_2,&norm));
+  PetscCall(VecAXPY(z,-1.0,zz));
+  PetscCall(VecNorm(z,NORM_1,&enorm));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "|z|_2 = %g\n",norm));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "|z-zz| = %g\n",enorm));
 
   /* free spaces */
-  ierr = DMRestoreGlobalVector(da,&x);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(da,&xx);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(da,&y);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(da,&yy);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(da,&z);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(da,&zz);CHKERRQ(ierr);
+  PetscCall(DMRestoreGlobalVector(da,&x));
+  PetscCall(DMRestoreGlobalVector(da,&xx));
+  PetscCall(DMRestoreGlobalVector(da,&y));
+  PetscCall(DMRestoreGlobalVector(da,&yy));
+  PetscCall(DMRestoreGlobalVector(da,&z));
+  PetscCall(DMRestoreGlobalVector(da,&zz));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }

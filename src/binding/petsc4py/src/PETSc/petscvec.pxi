@@ -628,4 +628,3 @@ cdef class _Vec_LocalForm:
         cdef PetscVec gvec = self.gvec.vec
         CHKERR( VecGhostRestoreLocalForm(gvec, &self.lvec.vec) )
         self.lvec.vec = NULL
-

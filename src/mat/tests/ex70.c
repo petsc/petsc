@@ -6,7 +6,6 @@ static PetscScalar MAGIC_NUMBER = 12345;
 
 static PetscErrorCode CheckLocal(Mat A, Mat B, PetscScalar *a, PetscScalar *b)
 {
-  PetscErrorCode ierr;
   PetscBool      wA = PETSC_FALSE, wB = PETSC_FALSE;
   PetscBool      wAv = PETSC_FALSE, wBv = PETSC_FALSE;
   PetscInt       lda,i,j,m,n;
@@ -14,29 +13,29 @@ static PetscErrorCode CheckLocal(Mat A, Mat B, PetscScalar *a, PetscScalar *b)
   PetscFunctionBegin;
   if (a) {
     const PetscScalar *Aa;
-    ierr = MatDenseGetArrayRead(A,&Aa);CHKERRQ(ierr);
+    PetscCall(MatDenseGetArrayRead(A,&Aa));
     wA   = (PetscBool)(a != Aa);
-    ierr = MatDenseGetLDA(A,&lda);CHKERRQ(ierr);
-    ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
+    PetscCall(MatDenseGetLDA(A,&lda));
+    PetscCall(MatGetLocalSize(A,&m,&n));
     for (j=0;j<n;j++) {
       for (i=m;i<lda;i++) {
         if (Aa[j*lda +i] != MAGIC_NUMBER) wAv = PETSC_TRUE;
       }
     }
-    ierr = MatDenseRestoreArrayRead(A,&Aa);CHKERRQ(ierr);
+    PetscCall(MatDenseRestoreArrayRead(A,&Aa));
   }
   if (b) {
     const PetscScalar *Bb;
-    ierr = MatDenseGetArrayRead(B,&Bb);CHKERRQ(ierr);
+    PetscCall(MatDenseGetArrayRead(B,&Bb));
     wB   = (PetscBool)(b != Bb);
-    ierr = MatDenseGetLDA(B,&lda);CHKERRQ(ierr);
-    ierr = MatGetLocalSize(B,&m,&n);CHKERRQ(ierr);
+    PetscCall(MatDenseGetLDA(B,&lda));
+    PetscCall(MatGetLocalSize(B,&m,&n));
     for (j=0;j<n;j++) {
       for (i=m;i<lda;i++) {
         if (Bb[j*lda +i] != MAGIC_NUMBER) wBv = PETSC_TRUE;
       }
     }
-    ierr = MatDenseRestoreArrayRead(B,&Bb);CHKERRQ(ierr);
+    PetscCall(MatDenseRestoreArrayRead(B,&Bb));
   }
   PetscCheckFalse(wA || wB,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong array in first Mat? %d, Wrong array in second Mat? %d",wA,wB);
   PetscCheckFalse(wAv || wBv,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong data in first Mat? %d, Wrong data in second Mat? %d",wAv,wBv);
@@ -52,14 +51,13 @@ typedef struct {
 PetscErrorCode proj_destroy(void *ctx)
 {
   proj_data      *userdata = (proj_data*)ctx;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!userdata,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing userdata");
-  ierr = MatDestroy(&userdata->A);CHKERRQ(ierr);
-  ierr = MatDestroy(&userdata->P);CHKERRQ(ierr);
-  ierr = MatDestroy(&userdata->R);CHKERRQ(ierr);
-  ierr = PetscFree(userdata);CHKERRQ(ierr);
+  PetscCheck(userdata,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing userdata");
+  PetscCall(MatDestroy(&userdata->A));
+  PetscCall(MatDestroy(&userdata->P));
+  PetscCall(MatDestroy(&userdata->R));
+  PetscCall(PetscFree(userdata));
   PetscFunctionReturn(0);
 }
 
@@ -69,53 +67,51 @@ PetscErrorCode proj_mult(Mat S, Vec X, Vec Y)
   Vec            Ax,Ay;
   Vec            Px,Py;
   proj_data      *userdata;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(S,&userdata);CHKERRQ(ierr);
-  PetscCheckFalse(!userdata,PetscObjectComm((PetscObject)S),PETSC_ERR_PLIB,"Missing userdata");
+  PetscCall(MatShellGetContext(S,&userdata));
+  PetscCheck(userdata,PetscObjectComm((PetscObject)S),PETSC_ERR_PLIB,"Missing userdata");
   A = userdata->A;
   R = userdata->R;
   P = userdata->P;
-  PetscCheckFalse(!A,PetscObjectComm((PetscObject)S),PETSC_ERR_PLIB,"Missing matrix");
+  PetscCheck(A,PetscObjectComm((PetscObject)S),PETSC_ERR_PLIB,"Missing matrix");
   PetscCheckFalse(!R && !P,PetscObjectComm((PetscObject)S),PETSC_ERR_PLIB,"Missing projectors");
   PetscCheckFalse(R && P,PetscObjectComm((PetscObject)S),PETSC_ERR_PLIB,"Both projectors");
-  ierr = MatCreateVecs(A,&Ax,&Ay);CHKERRQ(ierr);
+  PetscCall(MatCreateVecs(A,&Ax,&Ay));
   if (R) {
-    ierr = MatCreateVecs(R,&Py,&Px);CHKERRQ(ierr);
+    PetscCall(MatCreateVecs(R,&Py,&Px));
   } else {
-    ierr = MatCreateVecs(P,&Px,&Py);CHKERRQ(ierr);
+    PetscCall(MatCreateVecs(P,&Px,&Py));
   }
-  ierr = VecCopy(X,Px);CHKERRQ(ierr);
+  PetscCall(VecCopy(X,Px));
   if (P) {
-    ierr = MatMult(P,Px,Py);CHKERRQ(ierr);
+    PetscCall(MatMult(P,Px,Py));
   } else {
-    ierr = MatMultTranspose(R,Px,Py);CHKERRQ(ierr);
+    PetscCall(MatMultTranspose(R,Px,Py));
   }
-  ierr = VecCopy(Py,Ax);CHKERRQ(ierr);
-  ierr = MatMult(A,Ax,Ay);CHKERRQ(ierr);
-  ierr = VecCopy(Ay,Py);CHKERRQ(ierr);
+  PetscCall(VecCopy(Py,Ax));
+  PetscCall(MatMult(A,Ax,Ay));
+  PetscCall(VecCopy(Ay,Py));
   if (P) {
-    ierr = MatMultTranspose(P,Py,Px);CHKERRQ(ierr);
+    PetscCall(MatMultTranspose(P,Py,Px));
   } else {
-    ierr = MatMult(R,Py,Px);CHKERRQ(ierr);
+    PetscCall(MatMult(R,Py,Px));
   }
-  ierr = VecCopy(Px,Y);CHKERRQ(ierr);
-  ierr = VecDestroy(&Px);CHKERRQ(ierr);
-  ierr = VecDestroy(&Py);CHKERRQ(ierr);
-  ierr = VecDestroy(&Ax);CHKERRQ(ierr);
-  ierr = VecDestroy(&Ay);CHKERRQ(ierr);
+  PetscCall(VecCopy(Px,Y));
+  PetscCall(VecDestroy(&Px));
+  PetscCall(VecDestroy(&Py));
+  PetscCall(VecDestroy(&Ax));
+  PetscCall(VecDestroy(&Ay));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MyPtShellPMultSymbolic(Mat S, Mat P, Mat PtAP, void** ctx)
 {
-  PetscErrorCode ierr;
   proj_data      *userdata;
 
   PetscFunctionBegin;
-  ierr = PetscNew(&userdata);CHKERRQ(ierr);
-  ierr = MatShellSetContext(PtAP,userdata);CHKERRQ(ierr);
+  PetscCall(PetscNew(&userdata));
+  PetscCall(MatShellSetContext(PtAP,userdata));
   *ctx = (void *)userdata;
   PetscFunctionReturn(0);
 }
@@ -123,33 +119,31 @@ PetscErrorCode MyPtShellPMultSymbolic(Mat S, Mat P, Mat PtAP, void** ctx)
 PetscErrorCode MyPtShellPMultNumeric(Mat S, Mat P, Mat PtAP, void *ctx)
 {
   Mat            A;
-  PetscErrorCode ierr;
   proj_data      *userdata = (proj_data*)ctx;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(S,&A);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)P);CHKERRQ(ierr);
-  ierr = MatDestroy(&userdata->A);CHKERRQ(ierr);
-  ierr = MatDestroy(&userdata->P);CHKERRQ(ierr);
-  ierr = MatDestroy(&userdata->R);CHKERRQ(ierr);
+  PetscCall(MatShellGetContext(S,&A));
+  PetscCall(PetscObjectReference((PetscObject)A));
+  PetscCall(PetscObjectReference((PetscObject)P));
+  PetscCall(MatDestroy(&userdata->A));
+  PetscCall(MatDestroy(&userdata->P));
+  PetscCall(MatDestroy(&userdata->R));
   userdata->A = A;
   userdata->P = P;
-  ierr = MatShellSetOperation(PtAP,MATOP_MULT,(void (*)(void))proj_mult);CHKERRQ(ierr);
-  ierr = MatSetUp(PtAP);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(PtAP,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(PtAP,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatShellSetOperation(PtAP,MATOP_MULT,(void (*)(void))proj_mult));
+  PetscCall(MatSetUp(PtAP));
+  PetscCall(MatAssemblyBegin(PtAP,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(PtAP,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MyRShellRtMultSymbolic(Mat S, Mat R, Mat RARt, void **ctx)
 {
-  PetscErrorCode ierr;
   proj_data      *userdata;
 
   PetscFunctionBegin;
-  ierr = PetscNew(&userdata);CHKERRQ(ierr);
-  ierr = MatShellSetContext(RARt,userdata);CHKERRQ(ierr);
+  PetscCall(PetscNew(&userdata));
+  PetscCall(MatShellSetContext(RARt,userdata));
   *ctx = (void *)userdata;
   PetscFunctionReturn(0);
 }
@@ -157,55 +151,51 @@ PetscErrorCode MyRShellRtMultSymbolic(Mat S, Mat R, Mat RARt, void **ctx)
 PetscErrorCode MyRShellRtMultNumeric(Mat S, Mat R, Mat RARt, void *ctx)
 {
   Mat            A;
-  PetscErrorCode ierr;
   proj_data      *userdata = (proj_data*)ctx;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(S,&A);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)R);CHKERRQ(ierr);
-  ierr = MatDestroy(&userdata->A);CHKERRQ(ierr);
-  ierr = MatDestroy(&userdata->P);CHKERRQ(ierr);
-  ierr = MatDestroy(&userdata->R);CHKERRQ(ierr);
+  PetscCall(MatShellGetContext(S,&A));
+  PetscCall(PetscObjectReference((PetscObject)A));
+  PetscCall(PetscObjectReference((PetscObject)R));
+  PetscCall(MatDestroy(&userdata->A));
+  PetscCall(MatDestroy(&userdata->P));
+  PetscCall(MatDestroy(&userdata->R));
   userdata->A = A;
   userdata->R = R;
-  ierr = MatShellSetOperation(RARt,MATOP_MULT,(void (*)(void))proj_mult);CHKERRQ(ierr);
-  ierr = MatSetUp(RARt);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(RARt,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(RARt,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatShellSetOperation(RARt,MATOP_MULT,(void (*)(void))proj_mult));
+  PetscCall(MatSetUp(RARt));
+  PetscCall(MatAssemblyBegin(RARt,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(RARt,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MyMatShellMatMultNumeric(Mat S, Mat B, Mat C, void *ctx)
 {
-  PetscErrorCode ierr;
   Mat            A;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(S,&A);CHKERRQ(ierr);
-  ierr = MatMatMult(A,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
+  PetscCall(MatShellGetContext(S,&A));
+  PetscCall(MatMatMult(A,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MyMatTransposeShellMatMultNumeric(Mat S, Mat B, Mat C, void *ctx)
 {
-  PetscErrorCode ierr;
   Mat            A;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(S,&A);CHKERRQ(ierr);
-  ierr = MatTransposeMatMult(A,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
+  PetscCall(MatShellGetContext(S,&A));
+  PetscCall(MatTransposeMatMult(A,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MyMatShellMatTransposeMultNumeric(Mat S, Mat B, Mat C, void *ctx)
 {
-  PetscErrorCode ierr;
   Mat            A;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(S,&A);CHKERRQ(ierr);
-  ierr = MatMatTransposeMult(A,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
+  PetscCall(MatShellGetContext(S,&A));
+  PetscCall(MatMatTransposeMult(A,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C));
   PetscFunctionReturn(0);
 }
 
@@ -224,529 +214,529 @@ int main(int argc,char **args)
   PetscReal      err;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&args,NULL,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-K",&K,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-symm",&symm,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-local",&local,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-ldx",&ldx,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-ldb",&ldb,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-ldr",&ldr,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-testtranspose",&testtranspose,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-testnest",&testnest,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-testtt",&testtt,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-testcircular",&testcircular,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-testshellops",&testshellops,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-testproj",&testproj,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-testrart",&testrart,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-testmatmatt",&testmatmatt,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-testmattmat",&testmattmat,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-xgpu",&xgpu,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-bgpu",&bgpu,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetScalar(NULL,NULL,"-magic_number",&MAGIC_NUMBER,NULL);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&args,NULL,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-K",&K,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-symm",&symm,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-local",&local,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-ldx",&ldx,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-ldb",&ldb,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-ldr",&ldr,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-testtranspose",&testtranspose,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-testnest",&testnest,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-testtt",&testtt,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-testcircular",&testcircular,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-testshellops",&testshellops,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-testproj",&testproj,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-testrart",&testrart,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-testmatmatt",&testmatmatt,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-testmattmat",&testmattmat,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-xgpu",&xgpu,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-bgpu",&bgpu,NULL));
+  PetscCall(PetscOptionsGetScalar(NULL,NULL,"-magic_number",&MAGIC_NUMBER,NULL));
   if (M != N) testproj = PETSC_FALSE;
 
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
-  ierr = MatSetRandom(A,NULL);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,N));
+  PetscCall(MatSetType(A,MATAIJ));
+  PetscCall(MatSetUp(A));
+  PetscCall(MatSetRandom(A,NULL));
   if (M==N && symm) {
     Mat AT;
 
-    ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&AT);CHKERRQ(ierr);
-    ierr = MatAXPY(A,1.0,AT,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-    ierr = MatDestroy(&AT);CHKERRQ(ierr);
-    ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+    PetscCall(MatTranspose(A,MAT_INITIAL_MATRIX,&AT));
+    PetscCall(MatAXPY(A,1.0,AT,DIFFERENT_NONZERO_PATTERN));
+    PetscCall(MatDestroy(&AT));
+    PetscCall(MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE));
   }
-  ierr = MatViewFromOptions(A,NULL,"-A_init_view");CHKERRQ(ierr);
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","","");CHKERRQ(ierr);
-  ierr = PetscOptionsFList("-A_mat_type","Matrix type","MatSetType",MatList,deft,mattype,256,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(MatViewFromOptions(A,NULL,"-A_init_view"));
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","","");PetscCall(ierr);
+  PetscCall(PetscOptionsFList("-A_mat_type","Matrix type","MatSetType",MatList,deft,mattype,256,&flg));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
   if (flg) {
     Mat A2;
 
-    ierr = MatDuplicate(A,MAT_COPY_VALUES,&A2);CHKERRQ(ierr);
-    ierr = MatConvert(A,mattype,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
-    ierr = MatMultEqual(A,A2,10,&flg);CHKERRQ(ierr);
+    PetscCall(MatDuplicate(A,MAT_COPY_VALUES,&A2));
+    PetscCall(MatConvert(A,mattype,MAT_INPLACE_MATRIX,&A));
+    PetscCall(MatMultEqual(A,A2,10,&flg));
     if (!flg) {
       Mat AE,A2E;
 
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with convert\n");CHKERRQ(ierr);
-      ierr = MatComputeOperator(A,MATDENSE,&AE);CHKERRQ(ierr);
-      ierr = MatComputeOperator(A2,MATDENSE,&A2E);CHKERRQ(ierr);
-      ierr = MatView(AE,NULL);CHKERRQ(ierr);
-      ierr = MatView(A2E,NULL);CHKERRQ(ierr);
-      ierr = MatAXPY(A2E,-1.0,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-      ierr = MatView(A2E,NULL);CHKERRQ(ierr);
-      ierr = MatDestroy(&A2E);CHKERRQ(ierr);
-      ierr = MatDestroy(&AE);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error with convert\n"));
+      PetscCall(MatComputeOperator(A,MATDENSE,&AE));
+      PetscCall(MatComputeOperator(A2,MATDENSE,&A2E));
+      PetscCall(MatView(AE,NULL));
+      PetscCall(MatView(A2E,NULL));
+      PetscCall(MatAXPY(A2E,-1.0,A,SAME_NONZERO_PATTERN));
+      PetscCall(MatView(A2E,NULL));
+      PetscCall(MatDestroy(&A2E));
+      PetscCall(MatDestroy(&AE));
     }
-    ierr = MatDestroy(&A2);CHKERRQ(ierr);
+    PetscCall(MatDestroy(&A2));
   }
-  ierr = MatViewFromOptions(A,NULL,"-A_view");CHKERRQ(ierr);
+  PetscCall(MatViewFromOptions(A,NULL,"-A_view"));
 
-  ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
+  PetscCall(MatGetLocalSize(A,&m,&n));
   if (local) {
     PetscInt i;
 
-    ierr = PetscMalloc1((m+ldx)*K,&dataX);CHKERRQ(ierr);
-    ierr = PetscMalloc1((n+ldb)*K,&dataB);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1((m+ldx)*K,&dataX));
+    PetscCall(PetscMalloc1((n+ldb)*K,&dataB));
     for (i=0;i<(m+ldx)*K;i++) dataX[i] = MAGIC_NUMBER;
     for (i=0;i<(n+ldb)*K;i++) dataB[i] = MAGIC_NUMBER;
   }
-  ierr = MatCreateDense(PETSC_COMM_WORLD,n,PETSC_DECIDE,N,K,dataB,&B);CHKERRQ(ierr);
-  ierr = MatCreateDense(PETSC_COMM_WORLD,m,PETSC_DECIDE,M,K,dataX,&X);CHKERRQ(ierr);
+  PetscCall(MatCreateDense(PETSC_COMM_WORLD,n,PETSC_DECIDE,N,K,dataB,&B));
+  PetscCall(MatCreateDense(PETSC_COMM_WORLD,m,PETSC_DECIDE,M,K,dataX,&X));
   if (local) {
-    ierr = MatDenseSetLDA(X,m+ldx);CHKERRQ(ierr);
-    ierr = MatDenseSetLDA(B,n+ldb);CHKERRQ(ierr);
+    PetscCall(MatDenseSetLDA(X,m+ldx));
+    PetscCall(MatDenseSetLDA(B,n+ldb));
   }
-  ierr = MatGetLocalSize(B,NULL,&k);CHKERRQ(ierr);
+  PetscCall(MatGetLocalSize(B,NULL,&k));
   if (local) {
     PetscInt i;
 
-    ierr = PetscMalloc1((k+ldr)*N,&dataBt);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1((k+ldr)*N,&dataBt));
     for (i=0;i<(k+ldr)*N;i++) dataBt[i] = MAGIC_NUMBER;
   }
-  ierr = MatCreateDense(PETSC_COMM_WORLD,k,n,K,N,dataBt,&Bt);CHKERRQ(ierr);
+  PetscCall(MatCreateDense(PETSC_COMM_WORLD,k,n,K,N,dataBt,&Bt));
   if (local) {
-    ierr = MatDenseSetLDA(Bt,k+ldr);CHKERRQ(ierr);
+    PetscCall(MatDenseSetLDA(Bt,k+ldr));
   }
 
   /* store pointer to dense data for testing */
-  ierr = MatDenseGetArrayRead(B,(const PetscScalar**)&dataB);CHKERRQ(ierr);
-  ierr = MatDenseGetArrayRead(X,(const PetscScalar**)&dataX);CHKERRQ(ierr);
-  ierr = MatDenseGetArrayRead(Bt,(const PetscScalar**)&dataBt);CHKERRQ(ierr);
+  PetscCall(MatDenseGetArrayRead(B,(const PetscScalar**)&dataB));
+  PetscCall(MatDenseGetArrayRead(X,(const PetscScalar**)&dataX));
+  PetscCall(MatDenseGetArrayRead(Bt,(const PetscScalar**)&dataBt));
   aX   = dataX;
   aB   = dataB;
   aBt  = dataBt;
-  ierr = MatDenseRestoreArrayRead(Bt,(const PetscScalar**)&dataBt);CHKERRQ(ierr);
-  ierr = MatDenseRestoreArrayRead(B,(const PetscScalar**)&dataB);CHKERRQ(ierr);
-  ierr = MatDenseRestoreArrayRead(X,(const PetscScalar**)&dataX);CHKERRQ(ierr);
+  PetscCall(MatDenseRestoreArrayRead(Bt,(const PetscScalar**)&dataBt));
+  PetscCall(MatDenseRestoreArrayRead(B,(const PetscScalar**)&dataB));
+  PetscCall(MatDenseRestoreArrayRead(X,(const PetscScalar**)&dataX));
   if (local) {
     dataX  = aX;
     dataB  = aB;
     dataBt = aBt;
   }
 
-  ierr = MatSetRandom(X,NULL);CHKERRQ(ierr);
-  ierr = MatSetRandom(B,NULL);CHKERRQ(ierr);
-  ierr = MatSetRandom(Bt,NULL);CHKERRQ(ierr);
-  ierr = CheckLocal(X,NULL,aX,NULL);CHKERRQ(ierr);
-  ierr = CheckLocal(Bt,B,aBt,aB);CHKERRQ(ierr);
+  PetscCall(MatSetRandom(X,NULL));
+  PetscCall(MatSetRandom(B,NULL));
+  PetscCall(MatSetRandom(Bt,NULL));
+  PetscCall(CheckLocal(X,NULL,aX,NULL));
+  PetscCall(CheckLocal(Bt,B,aBt,aB));
 
   /* convert to CUDA if needed */
   if (bgpu) {
-    ierr = MatConvert(B,MATDENSECUDA,MAT_INPLACE_MATRIX,&B);CHKERRQ(ierr);
-    ierr = MatConvert(Bt,MATDENSECUDA,MAT_INPLACE_MATRIX,&Bt);CHKERRQ(ierr);
+    PetscCall(MatConvert(B,MATDENSECUDA,MAT_INPLACE_MATRIX,&B));
+    PetscCall(MatConvert(Bt,MATDENSECUDA,MAT_INPLACE_MATRIX,&Bt));
   }
   if (xgpu) {
-    ierr = MatConvert(X,MATDENSECUDA,MAT_INPLACE_MATRIX,&X);CHKERRQ(ierr);
+    PetscCall(MatConvert(X,MATDENSECUDA,MAT_INPLACE_MATRIX,&X));
   }
-  ierr = CheckLocal(B,X,aB,aX);CHKERRQ(ierr);
+  PetscCall(CheckLocal(B,X,aB,aX));
 
   /* Test MatDenseGetSubMatrix */
   {
     Mat B2,T3,T4;
 
-    ierr = MatDuplicate(B,MAT_COPY_VALUES,&B2);CHKERRQ(ierr);
-    ierr = MatDuplicate(B,MAT_DO_NOT_COPY_VALUES,&T4);CHKERRQ(ierr);
-    ierr = MatSetRandom(T4,NULL);CHKERRQ(ierr);
-    ierr = MatAXPY(B2,1.0,T4,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-    ierr = MatDenseGetSubMatrix(B,PetscMin(1,K),PetscMin(2,K),&T);CHKERRQ(ierr);
-    ierr = MatDenseGetSubMatrix(T4,PetscMin(1,K),PetscMin(2,K),&T2);CHKERRQ(ierr);
-    ierr = MatDenseGetSubMatrix(B2,PetscMin(1,K),PetscMin(2,K),&T3);CHKERRQ(ierr);
-    ierr = MatAXPY(T,1.0,T2,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-    ierr = MatAXPY(T3,-1.0,T,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-    ierr = MatNorm(T3,NORM_FROBENIUS,&err);CHKERRQ(ierr);
+    PetscCall(MatDuplicate(B,MAT_COPY_VALUES,&B2));
+    PetscCall(MatDuplicate(B,MAT_DO_NOT_COPY_VALUES,&T4));
+    PetscCall(MatSetRandom(T4,NULL));
+    PetscCall(MatAXPY(B2,1.0,T4,SAME_NONZERO_PATTERN));
+    PetscCall(MatDenseGetSubMatrix(B,PetscMin(1,K),PetscMin(2,K),&T));
+    PetscCall(MatDenseGetSubMatrix(T4,PetscMin(1,K),PetscMin(2,K),&T2));
+    PetscCall(MatDenseGetSubMatrix(B2,PetscMin(1,K),PetscMin(2,K),&T3));
+    PetscCall(MatAXPY(T,1.0,T2,SAME_NONZERO_PATTERN));
+    PetscCall(MatAXPY(T3,-1.0,T,SAME_NONZERO_PATTERN));
+    PetscCall(MatNorm(T3,NORM_FROBENIUS,&err));
     if (err > PETSC_SMALL) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with MatDenseGetSubMatrix\n");CHKERRQ(ierr);
-      ierr = MatView(T3,NULL);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error with MatDenseGetSubMatrix\n"));
+      PetscCall(MatView(T3,NULL));
     }
-    ierr = MatDenseRestoreSubMatrix(B,&T);CHKERRQ(ierr);
-    ierr = MatDenseRestoreSubMatrix(T4,&T2);CHKERRQ(ierr);
-    ierr = MatDenseRestoreSubMatrix(B2,&T3);CHKERRQ(ierr);
-    ierr = CheckLocal(B,NULL,aB,NULL);CHKERRQ(ierr);
-    ierr = MatDestroy(&B2);CHKERRQ(ierr);
-    ierr = MatDestroy(&T4);CHKERRQ(ierr);
+    PetscCall(MatDenseRestoreSubMatrix(B,&T));
+    PetscCall(MatDenseRestoreSubMatrix(T4,&T2));
+    PetscCall(MatDenseRestoreSubMatrix(B2,&T3));
+    PetscCall(CheckLocal(B,NULL,aB,NULL));
+    PetscCall(MatDestroy(&B2));
+    PetscCall(MatDestroy(&T4));
   }
 
   /* Test reusing a previously allocated dense buffer */
-  ierr = MatMatMult(A,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&X);CHKERRQ(ierr);
-  ierr = CheckLocal(B,X,aB,aX);CHKERRQ(ierr);
-  ierr = MatMatMultEqual(A,B,X,10,&flg);CHKERRQ(ierr);
+  PetscCall(MatMatMult(A,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&X));
+  PetscCall(CheckLocal(B,X,aB,aX));
+  PetscCall(MatMatMultEqual(A,B,X,10,&flg));
   if (!flg) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with reusage\n");CHKERRQ(ierr);
-    ierr = MatMatMult(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&T);CHKERRQ(ierr);
-    ierr = MatAXPY(T,-1.0,X,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-    ierr = MatView(T,NULL);CHKERRQ(ierr);
-    ierr = MatDestroy(&T);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error with reusage\n"));
+    PetscCall(MatMatMult(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&T));
+    PetscCall(MatAXPY(T,-1.0,X,SAME_NONZERO_PATTERN));
+    PetscCall(MatView(T,NULL));
+    PetscCall(MatDestroy(&T));
   }
 
   /* Test MatTransposeMat and MatMatTranspose */
   if (testmattmat) {
-    ierr = MatTransposeMatMult(A,X,MAT_REUSE_MATRIX,PETSC_DEFAULT,&B);CHKERRQ(ierr);
-    ierr = CheckLocal(B,X,aB,aX);CHKERRQ(ierr);
-    ierr = MatTransposeMatMultEqual(A,X,B,10,&flg);CHKERRQ(ierr);
+    PetscCall(MatTransposeMatMult(A,X,MAT_REUSE_MATRIX,PETSC_DEFAULT,&B));
+    PetscCall(CheckLocal(B,X,aB,aX));
+    PetscCall(MatTransposeMatMultEqual(A,X,B,10,&flg));
     if (!flg) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with reusage (MatTransposeMat)\n");CHKERRQ(ierr);
-      ierr = MatTransposeMatMult(A,X,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&B);CHKERRQ(ierr);
-      ierr = MatAXPY(T,-1.0,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-      ierr = MatView(T,NULL);CHKERRQ(ierr);
-      ierr = MatDestroy(&T);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error with reusage (MatTransposeMat)\n"));
+      PetscCall(MatTransposeMatMult(A,X,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&B));
+      PetscCall(MatAXPY(T,-1.0,B,SAME_NONZERO_PATTERN));
+      PetscCall(MatView(T,NULL));
+      PetscCall(MatDestroy(&T));
     }
   }
   if (testmatmatt) {
-    ierr = MatMatTransposeMult(A,Bt,MAT_REUSE_MATRIX,PETSC_DEFAULT,&X);CHKERRQ(ierr);
-    ierr = CheckLocal(Bt,X,aBt,aX);CHKERRQ(ierr);
-    ierr = MatMatTransposeMultEqual(A,Bt,X,10,&flg);CHKERRQ(ierr);
+    PetscCall(MatMatTransposeMult(A,Bt,MAT_REUSE_MATRIX,PETSC_DEFAULT,&X));
+    PetscCall(CheckLocal(Bt,X,aBt,aX));
+    PetscCall(MatMatTransposeMultEqual(A,Bt,X,10,&flg));
     if (!flg) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with reusage (MatMatTranspose)\n");CHKERRQ(ierr);
-      ierr = MatMatTransposeMult(A,Bt,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&T);CHKERRQ(ierr);
-      ierr = MatAXPY(T,-1.0,X,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-      ierr = MatView(T,NULL);CHKERRQ(ierr);
-      ierr = MatDestroy(&T);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error with reusage (MatMatTranspose)\n"));
+      PetscCall(MatMatTransposeMult(A,Bt,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&T));
+      PetscCall(MatAXPY(T,-1.0,X,SAME_NONZERO_PATTERN));
+      PetscCall(MatView(T,NULL));
+      PetscCall(MatDestroy(&T));
     }
   }
 
   /* Test projection operations (PtAP and RARt) */
   if (testproj) {
-    ierr = MatPtAP(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&PtAP);CHKERRQ(ierr);
-    ierr = MatPtAPMultEqual(A,B,PtAP,10,&flg);CHKERRQ(ierr);
+    PetscCall(MatPtAP(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&PtAP));
+    PetscCall(MatPtAPMultEqual(A,B,PtAP,10,&flg));
     if (!flg) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with PtAP\n");CHKERRQ(ierr);
-      ierr = MatMatMult(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&T);CHKERRQ(ierr);
-      ierr = MatTransposeMatMult(B,T,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&T2);CHKERRQ(ierr);
-      ierr = MatAXPY(T2,-1.0,PtAP,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-      ierr = MatView(T2,NULL);CHKERRQ(ierr);
-      ierr = MatDestroy(&T2);CHKERRQ(ierr);
-      ierr = MatDestroy(&T);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error with PtAP\n"));
+      PetscCall(MatMatMult(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&T));
+      PetscCall(MatTransposeMatMult(B,T,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&T2));
+      PetscCall(MatAXPY(T2,-1.0,PtAP,SAME_NONZERO_PATTERN));
+      PetscCall(MatView(T2,NULL));
+      PetscCall(MatDestroy(&T2));
+      PetscCall(MatDestroy(&T));
     }
-    ierr = PetscMalloc1((k+ldr)*M,&dataR);CHKERRQ(ierr);
-    ierr = MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,m,K,M,dataR,&R);CHKERRQ(ierr);
-    ierr = MatDenseSetLDA(R,k+ldr);CHKERRQ(ierr);
-    ierr = MatSetRandom(R,NULL);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1((k+ldr)*M,&dataR));
+    PetscCall(MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,m,K,M,dataR,&R));
+    PetscCall(MatDenseSetLDA(R,k+ldr));
+    PetscCall(MatSetRandom(R,NULL));
     if (testrart) { /* fails for AIJCUSPARSE because RA operation is not defined */
-      ierr = MatRARt(A,R,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&RARt);CHKERRQ(ierr);
-      ierr = MatRARtMultEqual(A,R,RARt,10,&flg);CHKERRQ(ierr);
+      PetscCall(MatRARt(A,R,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&RARt));
+      PetscCall(MatRARtMultEqual(A,R,RARt,10,&flg));
       if (!flg) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with RARt\n");CHKERRQ(ierr);
-        ierr = MatMatTransposeMult(A,R,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&T);CHKERRQ(ierr);
-        ierr = MatMatMult(R,T,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&T2);CHKERRQ(ierr);
-        ierr = MatAXPY(T2,-1.0,RARt,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-        ierr = MatView(T2,NULL);CHKERRQ(ierr);
-        ierr = MatDestroy(&T2);CHKERRQ(ierr);
-        ierr = MatDestroy(&T);CHKERRQ(ierr);
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error with RARt\n"));
+        PetscCall(MatMatTransposeMult(A,R,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&T));
+        PetscCall(MatMatMult(R,T,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&T2));
+        PetscCall(MatAXPY(T2,-1.0,RARt,SAME_NONZERO_PATTERN));
+        PetscCall(MatView(T2,NULL));
+        PetscCall(MatDestroy(&T2));
+        PetscCall(MatDestroy(&T));
       }
     }
   }
 
   /* Test MatDenseGetColumnVec and friends */
-  ierr = MatMatMult(A,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&X);CHKERRQ(ierr);
-  ierr = MatMatMult(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&T);CHKERRQ(ierr);
-  ierr = MatDuplicate(T,MAT_DO_NOT_COPY_VALUES,&T2);CHKERRQ(ierr);
+  PetscCall(MatMatMult(A,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&X));
+  PetscCall(MatMatMult(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&T));
+  PetscCall(MatDuplicate(T,MAT_DO_NOT_COPY_VALUES,&T2));
   for (k=0;k<K;k++) {
     Vec Xv,Tv,T2v;
 
-    ierr = MatDenseGetColumnVecRead(X,k,&Xv);CHKERRQ(ierr);
-    ierr = MatDenseGetColumnVec(T,k,&Tv);CHKERRQ(ierr);
-    ierr = MatDenseGetColumnVecWrite(T2,k,&T2v);CHKERRQ(ierr);
-    ierr = VecCopy(Xv,T2v);CHKERRQ(ierr);
-    ierr = VecAXPY(Tv,-1.,Xv);CHKERRQ(ierr);
-    ierr = MatDenseRestoreColumnVecRead(X,k,&Xv);CHKERRQ(ierr);
-    ierr = MatDenseRestoreColumnVec(T,k,&Tv);CHKERRQ(ierr);
-    ierr = MatDenseRestoreColumnVecWrite(T2,k,&T2v);CHKERRQ(ierr);
+    PetscCall(MatDenseGetColumnVecRead(X,k,&Xv));
+    PetscCall(MatDenseGetColumnVec(T,k,&Tv));
+    PetscCall(MatDenseGetColumnVecWrite(T2,k,&T2v));
+    PetscCall(VecCopy(Xv,T2v));
+    PetscCall(VecAXPY(Tv,-1.,Xv));
+    PetscCall(MatDenseRestoreColumnVecRead(X,k,&Xv));
+    PetscCall(MatDenseRestoreColumnVec(T,k,&Tv));
+    PetscCall(MatDenseRestoreColumnVecWrite(T2,k,&T2v));
   }
-  ierr = MatNorm(T,NORM_FROBENIUS,&err);CHKERRQ(ierr);
+  PetscCall(MatNorm(T,NORM_FROBENIUS,&err));
   if (err > PETSC_SMALL) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with MatDenseGetColumnVec\n");CHKERRQ(ierr);
-    ierr = MatView(T,NULL);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error with MatDenseGetColumnVec\n"));
+    PetscCall(MatView(T,NULL));
   }
-  ierr = MatAXPY(T2,-1.,X,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatNorm(T2,NORM_FROBENIUS,&err);CHKERRQ(ierr);
+  PetscCall(MatAXPY(T2,-1.,X,SAME_NONZERO_PATTERN));
+  PetscCall(MatNorm(T2,NORM_FROBENIUS,&err));
   if (err > PETSC_SMALL) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with MatDenseGetColumnVecWrite\n");CHKERRQ(ierr);
-    ierr = MatView(T2,NULL);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error with MatDenseGetColumnVecWrite\n"));
+    PetscCall(MatView(T2,NULL));
   }
-  ierr = MatDestroy(&T);CHKERRQ(ierr);
-  ierr = MatDestroy(&T2);CHKERRQ(ierr);
+  PetscCall(MatDestroy(&T));
+  PetscCall(MatDestroy(&T2));
 
   /* Test with MatShell */
-  ierr = MatDuplicate(A,MAT_COPY_VALUES,&T);CHKERRQ(ierr);
-  ierr = MatConvert(T,MATSHELL,MAT_INITIAL_MATRIX,&T2);CHKERRQ(ierr);
-  ierr = MatDestroy(&T);CHKERRQ(ierr);
+  PetscCall(MatDuplicate(A,MAT_COPY_VALUES,&T));
+  PetscCall(MatConvert(T,MATSHELL,MAT_INITIAL_MATRIX,&T2));
+  PetscCall(MatDestroy(&T));
 
   /* scale matrix */
-  ierr = MatScale(A,2.0);CHKERRQ(ierr);
-  ierr = MatScale(T2,2.0);CHKERRQ(ierr);
-  ierr = MatCreateVecs(A,&r,&l);CHKERRQ(ierr);
-  ierr = VecSetRandom(r,NULL);CHKERRQ(ierr);
-  ierr = VecSetRandom(l,NULL);CHKERRQ(ierr);
-  ierr = MatCreateVecs(T2,&rs,&ls);CHKERRQ(ierr);
-  ierr = VecCopy(r,rs);CHKERRQ(ierr);
-  ierr = VecCopy(l,ls);CHKERRQ(ierr);
+  PetscCall(MatScale(A,2.0));
+  PetscCall(MatScale(T2,2.0));
+  PetscCall(MatCreateVecs(A,&r,&l));
+  PetscCall(VecSetRandom(r,NULL));
+  PetscCall(VecSetRandom(l,NULL));
+  PetscCall(MatCreateVecs(T2,&rs,&ls));
+  PetscCall(VecCopy(r,rs));
+  PetscCall(VecCopy(l,ls));
   if (testproj) {
-    ierr = MatDiagonalScale(A,r,r);CHKERRQ(ierr);
-    ierr = MatDiagonalScale(T2,rs,rs);CHKERRQ(ierr);
+    PetscCall(MatDiagonalScale(A,r,r));
+    PetscCall(MatDiagonalScale(T2,rs,rs));
   } else {
-    ierr = MatDiagonalScale(A,l,r);CHKERRQ(ierr);
-    ierr = MatDiagonalScale(T2,ls,rs);CHKERRQ(ierr);
+    PetscCall(MatDiagonalScale(A,l,r));
+    PetscCall(MatDiagonalScale(T2,ls,rs));
   }
-  ierr = MatDuplicate(A,MAT_COPY_VALUES,&T);CHKERRQ(ierr);
-  ierr = MatAXPY(A,4.5,T,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatAXPY(T2,4.5,T,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatMultEqual(T2,A,10,&flg);CHKERRQ(ierr);
+  PetscCall(MatDuplicate(A,MAT_COPY_VALUES,&T));
+  PetscCall(MatAXPY(A,4.5,T,SAME_NONZERO_PATTERN));
+  PetscCall(MatAXPY(T2,4.5,T,DIFFERENT_NONZERO_PATTERN));
+  PetscCall(MatMultEqual(T2,A,10,&flg));
   if (!flg) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with MATSHELL (MatMult)\n");CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error with MATSHELL (MatMult)\n"));
   }
-  ierr = MatMultTransposeEqual(T2,A,10,&flg);CHKERRQ(ierr);
+  PetscCall(MatMultTransposeEqual(T2,A,10,&flg));
   if (!flg) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with MATSHELL (MatMultTranspose)\n");CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error with MATSHELL (MatMultTranspose)\n"));
   }
-  ierr = MatDestroy(&T);CHKERRQ(ierr);
-  ierr = VecDestroy(&ls);CHKERRQ(ierr);
-  ierr = VecDestroy(&rs);CHKERRQ(ierr);
-  ierr = VecDestroy(&l);CHKERRQ(ierr);
-  ierr = VecDestroy(&r);CHKERRQ(ierr);
+  PetscCall(MatDestroy(&T));
+  PetscCall(VecDestroy(&ls));
+  PetscCall(VecDestroy(&rs));
+  PetscCall(VecDestroy(&l));
+  PetscCall(VecDestroy(&r));
 
   /* recompute projections, test reusage */
-  if (PtAP) { ierr = MatPtAP(A,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&PtAP);CHKERRQ(ierr); }
-  if (RARt) { ierr = MatRARt(A,R,MAT_REUSE_MATRIX,PETSC_DEFAULT,&RARt);CHKERRQ(ierr); }
+  if (PtAP) PetscCall(MatPtAP(A,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&PtAP));
+  if (RARt) PetscCall(MatRARt(A,R,MAT_REUSE_MATRIX,PETSC_DEFAULT,&RARt));
   if (testshellops) { /* test callbacks for user defined MatProducts */
-    ierr = MatShellSetMatProductOperation(T2,MATPRODUCT_AB,NULL,MyMatShellMatMultNumeric,NULL,MATDENSE,MATDENSE);CHKERRQ(ierr);
-    ierr = MatShellSetMatProductOperation(T2,MATPRODUCT_AB,NULL,MyMatShellMatMultNumeric,NULL,MATDENSECUDA,MATDENSECUDA);CHKERRQ(ierr);
-    ierr = MatShellSetMatProductOperation(T2,MATPRODUCT_AtB,NULL,MyMatTransposeShellMatMultNumeric,NULL,MATDENSE,MATDENSE);CHKERRQ(ierr);
-    ierr = MatShellSetMatProductOperation(T2,MATPRODUCT_AtB,NULL,MyMatTransposeShellMatMultNumeric,NULL,MATDENSECUDA,MATDENSECUDA);CHKERRQ(ierr);
-    ierr = MatShellSetMatProductOperation(T2,MATPRODUCT_ABt,NULL,MyMatShellMatTransposeMultNumeric,NULL,MATDENSE,MATDENSE);CHKERRQ(ierr);
-    ierr = MatShellSetMatProductOperation(T2,MATPRODUCT_ABt,NULL,MyMatShellMatTransposeMultNumeric,NULL,MATDENSECUDA,MATDENSECUDA);CHKERRQ(ierr);
+    PetscCall(MatShellSetMatProductOperation(T2,MATPRODUCT_AB,NULL,MyMatShellMatMultNumeric,NULL,MATDENSE,MATDENSE));
+    PetscCall(MatShellSetMatProductOperation(T2,MATPRODUCT_AB,NULL,MyMatShellMatMultNumeric,NULL,MATDENSECUDA,MATDENSECUDA));
+    PetscCall(MatShellSetMatProductOperation(T2,MATPRODUCT_AtB,NULL,MyMatTransposeShellMatMultNumeric,NULL,MATDENSE,MATDENSE));
+    PetscCall(MatShellSetMatProductOperation(T2,MATPRODUCT_AtB,NULL,MyMatTransposeShellMatMultNumeric,NULL,MATDENSECUDA,MATDENSECUDA));
+    PetscCall(MatShellSetMatProductOperation(T2,MATPRODUCT_ABt,NULL,MyMatShellMatTransposeMultNumeric,NULL,MATDENSE,MATDENSE));
+    PetscCall(MatShellSetMatProductOperation(T2,MATPRODUCT_ABt,NULL,MyMatShellMatTransposeMultNumeric,NULL,MATDENSECUDA,MATDENSECUDA));
     if (testproj) {
-      ierr = MatShellSetMatProductOperation(T2,MATPRODUCT_PtAP,MyPtShellPMultSymbolic,MyPtShellPMultNumeric,proj_destroy,MATDENSE,MATSHELL);CHKERRQ(ierr);
-      ierr = MatShellSetMatProductOperation(T2,MATPRODUCT_PtAP,MyPtShellPMultSymbolic,MyPtShellPMultNumeric,proj_destroy,MATDENSECUDA,MATSHELL);CHKERRQ(ierr);
-      ierr = MatShellSetMatProductOperation(T2,MATPRODUCT_RARt,MyRShellRtMultSymbolic,MyRShellRtMultNumeric,proj_destroy,MATDENSE,MATSHELL);CHKERRQ(ierr);
-      ierr = MatShellSetMatProductOperation(T2,MATPRODUCT_RARt,MyRShellRtMultSymbolic,MyRShellRtMultNumeric,proj_destroy,MATDENSECUDA,MATSHELL);CHKERRQ(ierr);
+      PetscCall(MatShellSetMatProductOperation(T2,MATPRODUCT_PtAP,MyPtShellPMultSymbolic,MyPtShellPMultNumeric,proj_destroy,MATDENSE,MATSHELL));
+      PetscCall(MatShellSetMatProductOperation(T2,MATPRODUCT_PtAP,MyPtShellPMultSymbolic,MyPtShellPMultNumeric,proj_destroy,MATDENSECUDA,MATSHELL));
+      PetscCall(MatShellSetMatProductOperation(T2,MATPRODUCT_RARt,MyRShellRtMultSymbolic,MyRShellRtMultNumeric,proj_destroy,MATDENSE,MATSHELL));
+      PetscCall(MatShellSetMatProductOperation(T2,MATPRODUCT_RARt,MyRShellRtMultSymbolic,MyRShellRtMultNumeric,proj_destroy,MATDENSECUDA,MATSHELL));
     }
   }
-  ierr = CheckLocal(B,X,aB,aX);CHKERRQ(ierr);
+  PetscCall(CheckLocal(B,X,aB,aX));
   /* we either use the shell operations or the loop over columns code, applying the operator */
-  ierr = MatMatMult(T2,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&X);CHKERRQ(ierr);
-  ierr = CheckLocal(B,X,aB,aX);CHKERRQ(ierr);
-  ierr = MatMatMultEqual(T2,B,X,10,&flg);CHKERRQ(ierr);
+  PetscCall(MatMatMult(T2,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&X));
+  PetscCall(CheckLocal(B,X,aB,aX));
+  PetscCall(MatMatMultEqual(T2,B,X,10,&flg));
   if (!flg) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with reusage (MATSHELL)\n");CHKERRQ(ierr);
-    ierr = MatMatMult(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&T);CHKERRQ(ierr);
-    ierr = MatAXPY(T,-1.0,X,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-    ierr = MatView(T,NULL);CHKERRQ(ierr);
-    ierr = MatDestroy(&T);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error with reusage (MATSHELL)\n"));
+    PetscCall(MatMatMult(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&T));
+    PetscCall(MatAXPY(T,-1.0,X,SAME_NONZERO_PATTERN));
+    PetscCall(MatView(T,NULL));
+    PetscCall(MatDestroy(&T));
   }
   if (testproj) {
-    ierr = MatPtAPMultEqual(T2,B,PtAP,10,&flg);CHKERRQ(ierr);
+    PetscCall(MatPtAPMultEqual(T2,B,PtAP,10,&flg));
     if (!flg) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with PtAP (MATSHELL)\n");CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error with PtAP (MATSHELL)\n"));
     }
     if (testshellops) { /* projections fail if the product operations are not specified */
-      ierr = MatPtAP(T2,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&T);CHKERRQ(ierr);
-      ierr = MatPtAP(T2,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&T);CHKERRQ(ierr);
-      ierr = MatPtAPMultEqual(T2,B,T,10,&flg);CHKERRQ(ierr);
+      PetscCall(MatPtAP(T2,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&T));
+      PetscCall(MatPtAP(T2,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&T));
+      PetscCall(MatPtAPMultEqual(T2,B,T,10,&flg));
       if (!flg) {
         Mat TE;
 
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with PtAP (MATSHELL user defined)\n");CHKERRQ(ierr);
-        ierr = MatComputeOperator(T,MATDENSE,&TE);CHKERRQ(ierr);
-        ierr = MatView(TE,NULL);CHKERRQ(ierr);
-        ierr = MatView(PtAP,NULL);CHKERRQ(ierr);
-        ierr = MatAXPY(TE,-1.0,PtAP,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-        ierr = MatView(TE,NULL);CHKERRQ(ierr);
-        ierr = MatDestroy(&TE);CHKERRQ(ierr);
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error with PtAP (MATSHELL user defined)\n"));
+        PetscCall(MatComputeOperator(T,MATDENSE,&TE));
+        PetscCall(MatView(TE,NULL));
+        PetscCall(MatView(PtAP,NULL));
+        PetscCall(MatAXPY(TE,-1.0,PtAP,SAME_NONZERO_PATTERN));
+        PetscCall(MatView(TE,NULL));
+        PetscCall(MatDestroy(&TE));
       }
-      ierr = MatDestroy(&T);CHKERRQ(ierr);
+      PetscCall(MatDestroy(&T));
     }
     if (RARt) {
-      ierr = MatRARtMultEqual(T2,R,RARt,10,&flg);CHKERRQ(ierr);
+      PetscCall(MatRARtMultEqual(T2,R,RARt,10,&flg));
       if (!flg) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with RARt (MATSHELL)\n");CHKERRQ(ierr);
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error with RARt (MATSHELL)\n"));
       }
     }
     if (testshellops) {
-      ierr = MatRARt(T2,R,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&T);CHKERRQ(ierr);
-      ierr = MatRARt(T2,R,MAT_REUSE_MATRIX,PETSC_DEFAULT,&T);CHKERRQ(ierr);
-      ierr = MatRARtMultEqual(T2,R,T,10,&flg);CHKERRQ(ierr);
+      PetscCall(MatRARt(T2,R,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&T));
+      PetscCall(MatRARt(T2,R,MAT_REUSE_MATRIX,PETSC_DEFAULT,&T));
+      PetscCall(MatRARtMultEqual(T2,R,T,10,&flg));
       if (!flg) {
         Mat TE;
 
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with RARt (MATSHELL user defined)\n");CHKERRQ(ierr);
-        ierr = MatComputeOperator(T,MATDENSE,&TE);CHKERRQ(ierr);
-        ierr = MatView(TE,NULL);CHKERRQ(ierr);
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error with RARt (MATSHELL user defined)\n"));
+        PetscCall(MatComputeOperator(T,MATDENSE,&TE));
+        PetscCall(MatView(TE,NULL));
         if (RARt) {
-          ierr = MatView(RARt,NULL);CHKERRQ(ierr);
-          ierr = MatAXPY(TE,-1.0,RARt,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-          ierr = MatView(TE,NULL);CHKERRQ(ierr);
+          PetscCall(MatView(RARt,NULL));
+          PetscCall(MatAXPY(TE,-1.0,RARt,SAME_NONZERO_PATTERN));
+          PetscCall(MatView(TE,NULL));
         }
-        ierr = MatDestroy(&TE);CHKERRQ(ierr);
+        PetscCall(MatDestroy(&TE));
       }
-      ierr = MatDestroy(&T);CHKERRQ(ierr);
+      PetscCall(MatDestroy(&T));
     }
   }
 
   if (testmattmat) { /* we either use the shell operations or the loop over columns code applying the transposed operator */
-    ierr = MatTransposeMatMult(T2,X,MAT_REUSE_MATRIX,PETSC_DEFAULT,&B);CHKERRQ(ierr);
-    ierr = CheckLocal(B,X,aB,aX);CHKERRQ(ierr);
-    ierr = MatTransposeMatMultEqual(T2,X,B,10,&flg);CHKERRQ(ierr);
+    PetscCall(MatTransposeMatMult(T2,X,MAT_REUSE_MATRIX,PETSC_DEFAULT,&B));
+    PetscCall(CheckLocal(B,X,aB,aX));
+    PetscCall(MatTransposeMatMultEqual(T2,X,B,10,&flg));
     if (!flg) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with reusage (MatTranspose, MATSHELL)\n");CHKERRQ(ierr);
-      ierr = MatTransposeMatMult(A,X,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&T);CHKERRQ(ierr);
-      ierr = MatAXPY(T,-1.0,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-      ierr = MatView(T,NULL);CHKERRQ(ierr);
-      ierr = MatDestroy(&T);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error with reusage (MatTranspose, MATSHELL)\n"));
+      PetscCall(MatTransposeMatMult(A,X,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&T));
+      PetscCall(MatAXPY(T,-1.0,B,SAME_NONZERO_PATTERN));
+      PetscCall(MatView(T,NULL));
+      PetscCall(MatDestroy(&T));
     }
   }
   if (testmatmatt && testshellops) { /* only when shell operations are set */
-    ierr = MatMatTransposeMult(T2,Bt,MAT_REUSE_MATRIX,PETSC_DEFAULT,&X);CHKERRQ(ierr);
-    ierr = CheckLocal(Bt,X,aBt,aX);CHKERRQ(ierr);
-    ierr = MatMatTransposeMultEqual(T2,Bt,X,10,&flg);CHKERRQ(ierr);
+    PetscCall(MatMatTransposeMult(T2,Bt,MAT_REUSE_MATRIX,PETSC_DEFAULT,&X));
+    PetscCall(CheckLocal(Bt,X,aBt,aX));
+    PetscCall(MatMatTransposeMultEqual(T2,Bt,X,10,&flg));
     if (!flg) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with reusage (MatMatTranspose, MATSHELL)\n");CHKERRQ(ierr);
-      ierr = MatMatTransposeMult(A,Bt,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&T);CHKERRQ(ierr);
-      ierr = MatAXPY(T,-1.0,X,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-      ierr = MatView(T,NULL);CHKERRQ(ierr);
-      ierr = MatDestroy(&T);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error with reusage (MatMatTranspose, MATSHELL)\n"));
+      PetscCall(MatMatTransposeMult(A,Bt,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&T));
+      PetscCall(MatAXPY(T,-1.0,X,SAME_NONZERO_PATTERN));
+      PetscCall(MatView(T,NULL));
+      PetscCall(MatDestroy(&T));
     }
   }
-  ierr = MatDestroy(&T2);CHKERRQ(ierr);
+  PetscCall(MatDestroy(&T2));
 
   if (testnest) { /* test with MatNest */
     Mat NA;
 
-    ierr = MatCreateNest(PETSC_COMM_WORLD,1,NULL,1,NULL,&A,&NA);CHKERRQ(ierr);
-    ierr = MatViewFromOptions(NA,NULL,"-NA_view");CHKERRQ(ierr);
-    ierr = MatMatMult(NA,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&X);CHKERRQ(ierr);
-    ierr = CheckLocal(B,X,aB,aX);CHKERRQ(ierr);
-    ierr = MatMatMultEqual(NA,B,X,10,&flg);CHKERRQ(ierr);
+    PetscCall(MatCreateNest(PETSC_COMM_WORLD,1,NULL,1,NULL,&A,&NA));
+    PetscCall(MatViewFromOptions(NA,NULL,"-NA_view"));
+    PetscCall(MatMatMult(NA,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&X));
+    PetscCall(CheckLocal(B,X,aB,aX));
+    PetscCall(MatMatMultEqual(NA,B,X,10,&flg));
     if (!flg) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with Nest\n");CHKERRQ(ierr);
-      ierr = MatMatMult(NA,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&T);CHKERRQ(ierr);
-      ierr = MatAXPY(T,-1.0,X,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-      ierr = MatView(T,NULL);CHKERRQ(ierr);
-      ierr = MatDestroy(&T);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error with Nest\n"));
+      PetscCall(MatMatMult(NA,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&T));
+      PetscCall(MatAXPY(T,-1.0,X,SAME_NONZERO_PATTERN));
+      PetscCall(MatView(T,NULL));
+      PetscCall(MatDestroy(&T));
     }
-    ierr = MatDestroy(&NA);CHKERRQ(ierr);
+    PetscCall(MatDestroy(&NA));
   }
 
   if (testtranspose) { /* test with Transpose */
     Mat TA;
 
-    ierr = MatCreateTranspose(A,&TA);CHKERRQ(ierr);
-    ierr = MatMatMult(TA,X,MAT_REUSE_MATRIX,PETSC_DEFAULT,&B);CHKERRQ(ierr);
-    ierr = CheckLocal(B,X,aB,aX);CHKERRQ(ierr);
-    ierr = MatMatMultEqual(TA,X,B,10,&flg);CHKERRQ(ierr);
+    PetscCall(MatCreateTranspose(A,&TA));
+    PetscCall(MatMatMult(TA,X,MAT_REUSE_MATRIX,PETSC_DEFAULT,&B));
+    PetscCall(CheckLocal(B,X,aB,aX));
+    PetscCall(MatMatMultEqual(TA,X,B,10,&flg));
     if (!flg) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with Transpose\n");CHKERRQ(ierr);
-      ierr = MatMatMult(TA,X,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&T);CHKERRQ(ierr);
-      ierr = MatAXPY(T,-1.0,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-      ierr = MatView(T,NULL);CHKERRQ(ierr);
-      ierr = MatDestroy(&T);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error with Transpose\n"));
+      PetscCall(MatMatMult(TA,X,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&T));
+      PetscCall(MatAXPY(T,-1.0,B,SAME_NONZERO_PATTERN));
+      PetscCall(MatView(T,NULL));
+      PetscCall(MatDestroy(&T));
     }
-    ierr = MatDestroy(&TA);CHKERRQ(ierr);
+    PetscCall(MatDestroy(&TA));
   }
 
   if (testhtranspose) { /* test with Hermitian Transpose */
     Mat TA;
 
-    ierr = MatCreateHermitianTranspose(A,&TA);CHKERRQ(ierr);
-    ierr = MatMatMult(TA,X,MAT_REUSE_MATRIX,PETSC_DEFAULT,&B);CHKERRQ(ierr);
-    ierr = CheckLocal(B,X,aB,aX);CHKERRQ(ierr);
-    ierr = MatMatMultEqual(TA,X,B,10,&flg);CHKERRQ(ierr);
+    PetscCall(MatCreateHermitianTranspose(A,&TA));
+    PetscCall(MatMatMult(TA,X,MAT_REUSE_MATRIX,PETSC_DEFAULT,&B));
+    PetscCall(CheckLocal(B,X,aB,aX));
+    PetscCall(MatMatMultEqual(TA,X,B,10,&flg));
     if (!flg) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with Transpose\n");CHKERRQ(ierr);
-      ierr = MatMatMult(TA,X,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&T);CHKERRQ(ierr);
-      ierr = MatAXPY(T,-1.0,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-      ierr = MatView(T,NULL);CHKERRQ(ierr);
-      ierr = MatDestroy(&T);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error with Transpose\n"));
+      PetscCall(MatMatMult(TA,X,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&T));
+      PetscCall(MatAXPY(T,-1.0,B,SAME_NONZERO_PATTERN));
+      PetscCall(MatView(T,NULL));
+      PetscCall(MatDestroy(&T));
     }
-    ierr = MatDestroy(&TA);CHKERRQ(ierr);
+    PetscCall(MatDestroy(&TA));
   }
 
   if (testtt) { /* test with Transpose(Transpose) */
     Mat TA, TTA;
 
-    ierr = MatCreateTranspose(A,&TA);CHKERRQ(ierr);
-    ierr = MatCreateTranspose(TA,&TTA);CHKERRQ(ierr);
-    ierr = MatMatMult(TTA,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&X);CHKERRQ(ierr);
-    ierr = CheckLocal(B,X,aB,aX);CHKERRQ(ierr);
-    ierr = MatMatMultEqual(TTA,B,X,10,&flg);CHKERRQ(ierr);
+    PetscCall(MatCreateTranspose(A,&TA));
+    PetscCall(MatCreateTranspose(TA,&TTA));
+    PetscCall(MatMatMult(TTA,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&X));
+    PetscCall(CheckLocal(B,X,aB,aX));
+    PetscCall(MatMatMultEqual(TTA,B,X,10,&flg));
     if (!flg) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with Transpose(Transpose)\n");CHKERRQ(ierr);
-      ierr = MatMatMult(TTA,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&T);CHKERRQ(ierr);
-      ierr = MatAXPY(T,-1.0,X,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-      ierr = MatView(T,NULL);CHKERRQ(ierr);
-      ierr = MatDestroy(&T);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error with Transpose(Transpose)\n"));
+      PetscCall(MatMatMult(TTA,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&T));
+      PetscCall(MatAXPY(T,-1.0,X,SAME_NONZERO_PATTERN));
+      PetscCall(MatView(T,NULL));
+      PetscCall(MatDestroy(&T));
     }
-    ierr = MatDestroy(&TA);CHKERRQ(ierr);
-    ierr = MatDestroy(&TTA);CHKERRQ(ierr);
+    PetscCall(MatDestroy(&TA));
+    PetscCall(MatDestroy(&TTA));
   }
 
   if (testcircular) { /* test circular */
     Mat AB;
 
-    ierr = MatMatMult(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AB);CHKERRQ(ierr);
-    ierr = MatMatMult(A,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&X);CHKERRQ(ierr);
-    ierr = CheckLocal(B,X,aB,aX);CHKERRQ(ierr);
+    PetscCall(MatMatMult(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AB));
+    PetscCall(MatMatMult(A,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&X));
+    PetscCall(CheckLocal(B,X,aB,aX));
     if (M == N && N == K) {
-      ierr = MatMatMult(A,X,MAT_REUSE_MATRIX,PETSC_DEFAULT,&B);CHKERRQ(ierr);
+      PetscCall(MatMatMult(A,X,MAT_REUSE_MATRIX,PETSC_DEFAULT,&B));
     } else {
-      ierr = MatTransposeMatMult(A,X,MAT_REUSE_MATRIX,PETSC_DEFAULT,&B);CHKERRQ(ierr);
+      PetscCall(MatTransposeMatMult(A,X,MAT_REUSE_MATRIX,PETSC_DEFAULT,&B));
     }
-    ierr = CheckLocal(B,X,aB,aX);CHKERRQ(ierr);
-    ierr = MatDestroy(&AB);CHKERRQ(ierr);
+    PetscCall(CheckLocal(B,X,aB,aX));
+    PetscCall(MatDestroy(&AB));
   }
 
   /* Test by Pierre Jolivet */
   {
     Mat C,D,D2,AtA;
-    ierr = MatCreateNormal(A,&AtA);CHKERRQ(ierr);
-    ierr = MatDuplicate(X,MAT_DO_NOT_COPY_VALUES,&C);CHKERRQ(ierr);
-    ierr = MatDuplicate(B,MAT_DO_NOT_COPY_VALUES,&D);CHKERRQ(ierr);
-    ierr = MatDuplicate(B,MAT_DO_NOT_COPY_VALUES,&D2);CHKERRQ(ierr);
-    ierr = MatSetRandom(B,NULL);CHKERRQ(ierr);
-    ierr = MatSetRandom(C,NULL);CHKERRQ(ierr);
-    ierr = MatSetRandom(D,NULL);CHKERRQ(ierr);
-    ierr = MatSetRandom(D2,NULL);CHKERRQ(ierr);
-    ierr = MatProductCreateWithMat(A,B,NULL,C);CHKERRQ(ierr);
-    ierr = MatProductSetType(C,MATPRODUCT_AB);CHKERRQ(ierr);
-    ierr = MatProductSetFromOptions(C);CHKERRQ(ierr);
-    ierr = MatProductSymbolic(C);CHKERRQ(ierr);
-    ierr = MatProductCreateWithMat(A,C,NULL,D);CHKERRQ(ierr);
-    ierr = MatProductSetType(D, MATPRODUCT_AtB);CHKERRQ(ierr);
-    ierr = MatProductSetFromOptions(D);CHKERRQ(ierr);
-    ierr = MatProductSymbolic(D);CHKERRQ(ierr);
-    ierr = MatProductNumeric(C);CHKERRQ(ierr);
-    ierr = MatProductNumeric(D);CHKERRQ(ierr);
-    ierr = MatMatMultEqual(AtA,B,D,10,&flg);CHKERRQ(ierr);
+    PetscCall(MatCreateNormal(A,&AtA));
+    PetscCall(MatDuplicate(X,MAT_DO_NOT_COPY_VALUES,&C));
+    PetscCall(MatDuplicate(B,MAT_DO_NOT_COPY_VALUES,&D));
+    PetscCall(MatDuplicate(B,MAT_DO_NOT_COPY_VALUES,&D2));
+    PetscCall(MatSetRandom(B,NULL));
+    PetscCall(MatSetRandom(C,NULL));
+    PetscCall(MatSetRandom(D,NULL));
+    PetscCall(MatSetRandom(D2,NULL));
+    PetscCall(MatProductCreateWithMat(A,B,NULL,C));
+    PetscCall(MatProductSetType(C,MATPRODUCT_AB));
+    PetscCall(MatProductSetFromOptions(C));
+    PetscCall(MatProductSymbolic(C));
+    PetscCall(MatProductCreateWithMat(A,C,NULL,D));
+    PetscCall(MatProductSetType(D, MATPRODUCT_AtB));
+    PetscCall(MatProductSetFromOptions(D));
+    PetscCall(MatProductSymbolic(D));
+    PetscCall(MatProductNumeric(C));
+    PetscCall(MatProductNumeric(D));
+    PetscCall(MatMatMultEqual(AtA,B,D,10,&flg));
     if (!flg) {
-      ierr = MatMatMult(AtA,C,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&T);CHKERRQ(ierr);
-      ierr = MatAXPY(T,-1.0,D,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-      ierr = MatView(T,NULL);CHKERRQ(ierr);
-      ierr = MatDestroy(&T);CHKERRQ(ierr);
+      PetscCall(MatMatMult(AtA,C,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&T));
+      PetscCall(MatAXPY(T,-1.0,D,SAME_NONZERO_PATTERN));
+      PetscCall(MatView(T,NULL));
+      PetscCall(MatDestroy(&T));
     }
-    ierr = MatDestroy(&C);CHKERRQ(ierr);
-    ierr = MatDestroy(&D);CHKERRQ(ierr);
-    ierr = MatDestroy(&D2);CHKERRQ(ierr);
-    ierr = MatDestroy(&AtA);CHKERRQ(ierr);
+    PetscCall(MatDestroy(&C));
+    PetscCall(MatDestroy(&D));
+    PetscCall(MatDestroy(&D2));
+    PetscCall(MatDestroy(&AtA));
   }
 
-  ierr = MatDestroy(&X);CHKERRQ(ierr);
-  ierr = MatDestroy(&Bt);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&R);CHKERRQ(ierr);
-  ierr = MatDestroy(&PtAP);CHKERRQ(ierr);
-  ierr = MatDestroy(&RARt);CHKERRQ(ierr);
-  ierr = PetscFree(dataX);CHKERRQ(ierr);
-  ierr = PetscFree(dataB);CHKERRQ(ierr);
-  ierr = PetscFree(dataR);CHKERRQ(ierr);
-  ierr = PetscFree(dataBt);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(MatDestroy(&X));
+  PetscCall(MatDestroy(&Bt));
+  PetscCall(MatDestroy(&B));
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&R));
+  PetscCall(MatDestroy(&PtAP));
+  PetscCall(MatDestroy(&RARt));
+  PetscCall(PetscFree(dataX));
+  PetscCall(PetscFree(dataB));
+  PetscCall(PetscFree(dataR));
+  PetscCall(PetscFree(dataBt));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

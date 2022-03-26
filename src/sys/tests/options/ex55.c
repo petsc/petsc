@@ -6,38 +6,36 @@ static char help[] = "Tests options database monitoring and precedence.\n\n";
 
 PetscErrorCode PetscOptionsMonitorCustom(const char name[],const char value[],void *ctx)
 {
-  PetscErrorCode ierr;
   PetscViewer    viewer = (PetscViewer)ctx;
 
   PetscFunctionBegin;
   if (!value) {
-    ierr = PetscViewerASCIIPrintf(viewer,"* Removing option: %s\n",name);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"* Removing option: %s\n",name));
   } else if (!value[0]) {
-    ierr = PetscViewerASCIIPrintf(viewer,"* Setting option: %s (no value)\n",name);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"* Setting option: %s (no value)\n",name));
   } else {
-    ierr = PetscViewerASCIIPrintf(viewer,"* Setting option: %s = %s\n",name,value);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"* Setting option: %s = %s\n",name,value));
   }
   PetscFunctionReturn(0);
 }
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode    ierr;
   PetscViewer       viewer=NULL;
   PetscViewerFormat format;
 
-  ierr = PetscInitialize(&argc,&argv,"ex55options",help);if (ierr) return ierr;
-  ierr = PetscOptionsInsertString(NULL,"-option1 1 -option2 -option3 value3");CHKERRQ(ierr);
-  ierr = PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,NULL,"-options_monitor_viewer",&viewer,&format,NULL);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,"ex55options",help));
+  PetscCall(PetscOptionsInsertString(NULL,"-option1 1 -option2 -option3 value3"));
+  PetscCall(PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,NULL,"-options_monitor_viewer",&viewer,&format,NULL));
   if (viewer) {
-    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
-    ierr = PetscOptionsMonitorSet(PetscOptionsMonitorCustom,viewer,NULL);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    PetscCall(PetscViewerPushFormat(viewer,format));
+    PetscCall(PetscOptionsMonitorSet(PetscOptionsMonitorCustom,viewer,NULL));
+    PetscCall(PetscViewerPopFormat(viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
   }
-  ierr = PetscOptionsInsertString(NULL,"-option4 value4 -option5");CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscOptionsInsertString(NULL,"-option4 value4 -option5"));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

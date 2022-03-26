@@ -15,11 +15,9 @@ Input arguments are:\n\
 */
 PetscErrorCode MatNormDifference(Mat A,Mat B,PetscReal *norm)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = MatAXPY(B,-1.0,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatNorm(B,NORM_FROBENIUS,norm);CHKERRQ(ierr);
+  PetscCall(MatAXPY(B,-1.0,A,DIFFERENT_NONZERO_PATTERN));
+  PetscCall(MatNorm(B,NORM_FROBENIUS,norm));
   PetscFunctionReturn(0);
 }
 
@@ -43,237 +41,237 @@ int main(int argc,char **args)
   char           A_mattype[256], B_mattype[256];
   PetscInt       mcheck = 10;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   /*  Load the matrices A_save and B */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","","");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-test_rart","Test MatRARt","",Test_MatRARt,&Test_MatRARt,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-PN","Number of columns of P","",PN,&PN,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mcheck","Number of matmult checks","",mcheck,&mcheck,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-fA","Path for matrix A","",file[0],file[0],sizeof(file[0]),&flg);CHKERRQ(ierr);
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Must indicate a file name for matrix A with the -fA option.");
-  ierr = PetscOptionsString("-fB","Path for matrix B","",file[1],file[1],sizeof(file[1]),&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsFList("-A_mat_type","Matrix type","MatSetType",MatList,deft,A_mattype,256,&flgA);CHKERRQ(ierr);
-  ierr = PetscOptionsFList("-B_mat_type","Matrix type","MatSetType",MatList,deft,B_mattype,256,&flgB);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","","");PetscCall(ierr);
+  PetscCall(PetscOptionsBool("-test_rart","Test MatRARt","",Test_MatRARt,&Test_MatRARt,NULL));
+  PetscCall(PetscOptionsInt("-PN","Number of columns of P","",PN,&PN,NULL));
+  PetscCall(PetscOptionsInt("-mcheck","Number of matmult checks","",mcheck,&mcheck,NULL));
+  PetscCall(PetscOptionsString("-fA","Path for matrix A","",file[0],file[0],sizeof(file[0]),&flg));
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Must indicate a file name for matrix A with the -fA option.");
+  PetscCall(PetscOptionsString("-fB","Path for matrix B","",file[1],file[1],sizeof(file[1]),&flg));
+  PetscCall(PetscOptionsFList("-A_mat_type","Matrix type","MatSetType",MatList,deft,A_mattype,256,&flgA));
+  PetscCall(PetscOptionsFList("-B_mat_type","Matrix type","MatSetType",MatList,deft,B_mattype,256,&flgB));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[0],FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&A_save);CHKERRQ(ierr);
-  ierr = MatLoad(A_save,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[0],FILE_MODE_READ,&viewer));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A_save));
+  PetscCall(MatLoad(A_save,viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
 
   if (flg) {
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[1],FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-    ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
-    ierr = MatLoad(B,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[1],FILE_MODE_READ,&viewer));
+    PetscCall(MatCreate(PETSC_COMM_WORLD,&B));
+    PetscCall(MatLoad(B,viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
   } else {
-    ierr = PetscObjectReference((PetscObject)A_save);CHKERRQ(ierr);
+    PetscCall(PetscObjectReference((PetscObject)A_save));
     B = A_save;
   }
 
   if (flgA) {
-    ierr = MatConvert(A_save,A_mattype,MAT_INPLACE_MATRIX,&A_save);CHKERRQ(ierr);
+    PetscCall(MatConvert(A_save,A_mattype,MAT_INPLACE_MATRIX,&A_save));
   }
   if (flgB) {
-    ierr = MatConvert(B,B_mattype,MAT_INPLACE_MATRIX,&B);CHKERRQ(ierr);
+    PetscCall(MatConvert(B,B_mattype,MAT_INPLACE_MATRIX,&B));
   }
-  ierr = MatSetFromOptions(A_save);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(B);CHKERRQ(ierr);
+  PetscCall(MatSetFromOptions(A_save));
+  PetscCall(MatSetFromOptions(B));
 
-  ierr = MatGetType(B,&mattype);CHKERRQ(ierr);
+  PetscCall(MatGetType(B,&mattype));
 
-  ierr = PetscMalloc(nzp*(sizeof(PetscInt)+sizeof(PetscScalar)),&idxn);CHKERRQ(ierr);
+  PetscCall(PetscMalloc(nzp*(sizeof(PetscInt)+sizeof(PetscScalar)),&idxn));
   a    = (PetscScalar*)(idxn + nzp);
 
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rdm);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
+  PetscCall(PetscRandomCreate(PETSC_COMM_WORLD,&rdm));
+  PetscCall(PetscRandomSetFromOptions(rdm));
 
   /* 1) MatMatMult() */
   /* ----------------*/
   if (Test_MatMatMult) {
-    ierr = MatDuplicate(A_save,MAT_COPY_VALUES,&A);CHKERRQ(ierr);
+    PetscCall(MatDuplicate(A_save,MAT_COPY_VALUES,&A));
 
     /* (1.1) Test developer API */
-    ierr = MatProductCreate(A,B,NULL,&C);CHKERRQ(ierr);
-    ierr = MatSetOptionsPrefix(C,"AB_");CHKERRQ(ierr);
-    ierr = MatProductSetType(C,MATPRODUCT_AB);CHKERRQ(ierr);
-    ierr = MatProductSetAlgorithm(C,MATPRODUCTALGORITHMDEFAULT);CHKERRQ(ierr);
-    ierr = MatProductSetFill(C,PETSC_DEFAULT);CHKERRQ(ierr);
-    ierr = MatProductSetFromOptions(C);CHKERRQ(ierr);
+    PetscCall(MatProductCreate(A,B,NULL,&C));
+    PetscCall(MatSetOptionsPrefix(C,"AB_"));
+    PetscCall(MatProductSetType(C,MATPRODUCT_AB));
+    PetscCall(MatProductSetAlgorithm(C,MATPRODUCTALGORITHMDEFAULT));
+    PetscCall(MatProductSetFill(C,PETSC_DEFAULT));
+    PetscCall(MatProductSetFromOptions(C));
     /* we can inquire about MATOP_PRODUCTSYMBOLIC even if the destination matrix type has not been set yet */
-    ierr = MatHasOperation(C,MATOP_PRODUCTSYMBOLIC,&flg);CHKERRQ(ierr);
-    ierr = MatProductSymbolic(C);CHKERRQ(ierr);
-    ierr = MatProductNumeric(C);CHKERRQ(ierr);
-    ierr = MatMatMultEqual(A,B,C,mcheck,&flg);CHKERRQ(ierr);
-    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in C=A*B");
+    PetscCall(MatHasOperation(C,MATOP_PRODUCTSYMBOLIC,&flg));
+    PetscCall(MatProductSymbolic(C));
+    PetscCall(MatProductNumeric(C));
+    PetscCall(MatMatMultEqual(A,B,C,mcheck,&flg));
+    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in C=A*B");
 
     /* Test reuse symbolic C */
     alpha = 0.9;
-    ierr = MatScale(A,alpha);CHKERRQ(ierr);
-    ierr = MatProductNumeric(C);CHKERRQ(ierr);
+    PetscCall(MatScale(A,alpha));
+    PetscCall(MatProductNumeric(C));
 
-    ierr = MatMatMultEqual(A,B,C,mcheck,&flg);CHKERRQ(ierr);
-    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in C=A*B");
-    ierr = MatDestroy(&C);CHKERRQ(ierr);
+    PetscCall(MatMatMultEqual(A,B,C,mcheck,&flg));
+    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in C=A*B");
+    PetscCall(MatDestroy(&C));
 
     /* (1.2) Test user driver */
-    ierr = MatMatMult(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
+    PetscCall(MatMatMult(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C));
 
     /* Test MAT_REUSE_MATRIX - reuse symbolic C */
     alpha = 1.0;
     for (i=0; i<2; i++) {
       alpha -= 0.1;
-      ierr   = MatScale(A,alpha);CHKERRQ(ierr);
-      ierr   = MatMatMult(A,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
+      PetscCall(MatScale(A,alpha));
+      PetscCall(MatMatMult(A,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C));
     }
-    ierr = MatMatMultEqual(A,B,C,mcheck,&flg);CHKERRQ(ierr);
-    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: MatMatMult()");
-    ierr = MatDestroy(&A);CHKERRQ(ierr);
+    PetscCall(MatMatMultEqual(A,B,C,mcheck,&flg));
+    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: MatMatMult()");
+    PetscCall(MatDestroy(&A));
 
     /* Test MatProductClear() */
-    ierr = MatProductClear(C);CHKERRQ(ierr);
-    ierr = MatDestroy(&C);CHKERRQ(ierr);
+    PetscCall(MatProductClear(C));
+    PetscCall(MatDestroy(&C));
 
     /* Test MatMatMult() for dense and aij matrices */
-    ierr = PetscObjectTypeCompareAny((PetscObject)A,&flg,MATSEQAIJ,MATMPIAIJ,"");CHKERRQ(ierr);
+    PetscCall(PetscObjectTypeCompareAny((PetscObject)A,&flg,MATSEQAIJ,MATMPIAIJ,""));
     if (flg) {
-      ierr = MatConvert(A_save,MATDENSE,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
-      ierr = MatMatMult(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
-      ierr = MatDestroy(&C);CHKERRQ(ierr);
-      ierr = MatDestroy(&A);CHKERRQ(ierr);
+      PetscCall(MatConvert(A_save,MATDENSE,MAT_INITIAL_MATRIX,&A));
+      PetscCall(MatMatMult(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C));
+      PetscCall(MatDestroy(&C));
+      PetscCall(MatDestroy(&A));
     }
   }
 
   /* Create P and R = P^T  */
   /* --------------------- */
-  ierr = MatGetSize(B,&PM,NULL);CHKERRQ(ierr);
+  PetscCall(MatGetSize(B,&PM,NULL));
   if (PN < 0) PN = PM/2;
-  ierr = MatCreate(PETSC_COMM_WORLD,&P);CHKERRQ(ierr);
-  ierr = MatSetSizes(P,PETSC_DECIDE,PETSC_DECIDE,PM,PN);CHKERRQ(ierr);
-  ierr = MatSetType(P,MATAIJ);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(P,nzp,NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(P,nzp,NULL,nzp,NULL);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(P,&rstart,&rend);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&P));
+  PetscCall(MatSetSizes(P,PETSC_DECIDE,PETSC_DECIDE,PM,PN));
+  PetscCall(MatSetType(P,MATAIJ));
+  PetscCall(MatSeqAIJSetPreallocation(P,nzp,NULL));
+  PetscCall(MatMPIAIJSetPreallocation(P,nzp,NULL,nzp,NULL));
+  PetscCall(MatGetOwnershipRange(P,&rstart,&rend));
   for (i=0; i<nzp; i++) {
-    ierr = PetscRandomGetValue(rdm,&a[i]);CHKERRQ(ierr);
+    PetscCall(PetscRandomGetValue(rdm,&a[i]));
   }
   for (i=rstart; i<rend; i++) {
     for (j=0; j<nzp; j++) {
-      ierr    = PetscRandomGetValue(rdm,&rval);CHKERRQ(ierr);
+      PetscCall(PetscRandomGetValue(rdm,&rval));
       idxn[j] = (PetscInt)(PetscRealPart(rval)*PN);
     }
-    ierr = MatSetValues(P,1,&i,nzp,idxn,a,ADD_VALUES);CHKERRQ(ierr);
+    PetscCall(MatSetValues(P,1,&i,nzp,idxn,a,ADD_VALUES));
   }
-  ierr = MatAssemblyBegin(P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(P,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(P,MAT_FINAL_ASSEMBLY));
 
-  ierr = MatTranspose(P,MAT_INITIAL_MATRIX,&R);CHKERRQ(ierr);
-  ierr = MatConvert(P,mattype,MAT_INPLACE_MATRIX,&P);CHKERRQ(ierr);
-  ierr = MatConvert(R,mattype,MAT_INPLACE_MATRIX,&R);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(P);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(R);CHKERRQ(ierr);
+  PetscCall(MatTranspose(P,MAT_INITIAL_MATRIX,&R));
+  PetscCall(MatConvert(P,mattype,MAT_INPLACE_MATRIX,&P));
+  PetscCall(MatConvert(R,mattype,MAT_INPLACE_MATRIX,&R));
+  PetscCall(MatSetFromOptions(P));
+  PetscCall(MatSetFromOptions(R));
 
   /* 2) MatTransposeMatMult() */
   /* ------------------------ */
   if (Test_MatTrMat) {
     /* (2.1) Test developer driver C = P^T*B */
-    ierr = MatProductCreate(P,B,NULL,&C);CHKERRQ(ierr);
-    ierr = MatSetOptionsPrefix(C,"AtB_");CHKERRQ(ierr);
-    ierr = MatProductSetType(C,MATPRODUCT_AtB);CHKERRQ(ierr);
-    ierr = MatProductSetAlgorithm(C,MATPRODUCTALGORITHMDEFAULT);CHKERRQ(ierr);
-    ierr = MatProductSetFill(C,PETSC_DEFAULT);CHKERRQ(ierr);
-    ierr = MatProductSetFromOptions(C);CHKERRQ(ierr);
-    ierr = MatHasOperation(C,MATOP_PRODUCTSYMBOLIC,&flg);CHKERRQ(ierr);
+    PetscCall(MatProductCreate(P,B,NULL,&C));
+    PetscCall(MatSetOptionsPrefix(C,"AtB_"));
+    PetscCall(MatProductSetType(C,MATPRODUCT_AtB));
+    PetscCall(MatProductSetAlgorithm(C,MATPRODUCTALGORITHMDEFAULT));
+    PetscCall(MatProductSetFill(C,PETSC_DEFAULT));
+    PetscCall(MatProductSetFromOptions(C));
+    PetscCall(MatHasOperation(C,MATOP_PRODUCTSYMBOLIC,&flg));
     if (flg) { /* run tests if supported */
-      ierr = MatProductSymbolic(C);CHKERRQ(ierr); /* equivalent to MatSetUp() */
-      ierr = MatSetOption(C,MAT_USE_INODES,PETSC_FALSE);CHKERRQ(ierr); /* illustrate how to call MatSetOption() */
-      ierr = MatProductNumeric(C);CHKERRQ(ierr);
-      ierr = MatProductNumeric(C);CHKERRQ(ierr); /* test reuse symbolic C */
+      PetscCall(MatProductSymbolic(C)); /* equivalent to MatSetUp() */
+      PetscCall(MatSetOption(C,MAT_USE_INODES,PETSC_FALSE)); /* illustrate how to call MatSetOption() */
+      PetscCall(MatProductNumeric(C));
+      PetscCall(MatProductNumeric(C)); /* test reuse symbolic C */
 
-      ierr = MatTransposeMatMultEqual(P,B,C,mcheck,&flg);CHKERRQ(ierr);
-      PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error: developer driver C = P^T*B");
-      ierr = MatDestroy(&C);CHKERRQ(ierr);
+      PetscCall(MatTransposeMatMultEqual(P,B,C,mcheck,&flg));
+      PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error: developer driver C = P^T*B");
+      PetscCall(MatDestroy(&C));
 
       /* (2.2) Test user driver C = P^T*B */
-      ierr = MatTransposeMatMult(P,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
-      ierr = MatTransposeMatMult(P,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
-      ierr = MatGetInfo(C,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
-      ierr = MatProductClear(C);CHKERRQ(ierr);
+      PetscCall(MatTransposeMatMult(P,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C));
+      PetscCall(MatTransposeMatMult(P,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C));
+      PetscCall(MatGetInfo(C,MAT_GLOBAL_SUM,&info));
+      PetscCall(MatProductClear(C));
 
       /* Compare P^T*B and R*B */
-      ierr = MatMatMult(R,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C1);CHKERRQ(ierr);
-      ierr = MatNormDifference(C,C1,&norm);CHKERRQ(ierr);
+      PetscCall(MatMatMult(R,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C1));
+      PetscCall(MatNormDifference(C,C1,&norm));
       PetscCheckFalse(norm > PETSC_SMALL,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatTransposeMatMult(): %g",(double)norm);
-      ierr = MatDestroy(&C1);CHKERRQ(ierr);
+      PetscCall(MatDestroy(&C1));
 
       /* Test MatDuplicate() of C=P^T*B */
-      ierr = MatDuplicate(C,MAT_COPY_VALUES,&C1);CHKERRQ(ierr);
-      ierr = MatDestroy(&C1);CHKERRQ(ierr);
+      PetscCall(MatDuplicate(C,MAT_COPY_VALUES,&C1));
+      PetscCall(MatDestroy(&C1));
     } else {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"MatTransposeMatMult not supported\n");CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"MatTransposeMatMult not supported\n"));
     }
-    ierr = MatDestroy(&C);CHKERRQ(ierr);
+    PetscCall(MatDestroy(&C));
   }
 
   /* 3) MatMatTransposeMult() */
   /* ------------------------ */
   if (Test_MatMatTr) {
     /* C = B*R^T */
-    ierr = PetscObjectBaseTypeCompare((PetscObject)B,MATSEQAIJ,&seqaij);CHKERRQ(ierr);
+    PetscCall(PetscObjectBaseTypeCompare((PetscObject)B,MATSEQAIJ,&seqaij));
     if (seqaij) {
-      ierr = MatMatTransposeMult(B,R,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
-      ierr = MatSetOptionsPrefix(C,"ABt_");CHKERRQ(ierr); /* enable '-ABt_' for matrix C */
-      ierr = MatGetInfo(C,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
+      PetscCall(MatMatTransposeMult(B,R,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C));
+      PetscCall(MatSetOptionsPrefix(C,"ABt_")); /* enable '-ABt_' for matrix C */
+      PetscCall(MatGetInfo(C,MAT_GLOBAL_SUM,&info));
 
       /* Test MAT_REUSE_MATRIX - reuse symbolic C */
-      ierr = MatMatTransposeMult(B,R,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
+      PetscCall(MatMatTransposeMult(B,R,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C));
 
       /* Check */
-      ierr = MatMatMult(B,P,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C1);CHKERRQ(ierr);
-      ierr = MatNormDifference(C,C1,&norm);CHKERRQ(ierr);
+      PetscCall(MatMatMult(B,P,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C1));
+      PetscCall(MatNormDifference(C,C1,&norm));
       PetscCheckFalse(norm > PETSC_SMALL,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatMatTransposeMult() %g",(double)norm);
-      ierr = MatDestroy(&C1);CHKERRQ(ierr);
-      ierr = MatDestroy(&C);CHKERRQ(ierr);
+      PetscCall(MatDestroy(&C1));
+      PetscCall(MatDestroy(&C));
     }
   }
 
   /* 4) Test MatPtAP() */
   /*-------------------*/
   if (Test_MatPtAP) {
-    ierr = MatDuplicate(A_save,MAT_COPY_VALUES,&A);CHKERRQ(ierr);
+    PetscCall(MatDuplicate(A_save,MAT_COPY_VALUES,&A));
 
     /* (4.1) Test developer API */
-    ierr = MatProductCreate(A,P,NULL,&C);CHKERRQ(ierr);
-    ierr = MatSetOptionsPrefix(C,"PtAP_");CHKERRQ(ierr);
-    ierr = MatProductSetType(C,MATPRODUCT_PtAP);CHKERRQ(ierr);
-    ierr = MatProductSetAlgorithm(C,MATPRODUCTALGORITHMDEFAULT);CHKERRQ(ierr);
-    ierr = MatProductSetFill(C,PETSC_DEFAULT);CHKERRQ(ierr);
-    ierr = MatProductSetFromOptions(C);CHKERRQ(ierr);
-    ierr = MatProductSymbolic(C);CHKERRQ(ierr);
-    ierr = MatProductNumeric(C);CHKERRQ(ierr);
-    ierr = MatPtAPMultEqual(A,P,C,mcheck,&flg);CHKERRQ(ierr);
-    PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatProduct_PtAP");
-    ierr = MatProductNumeric(C);CHKERRQ(ierr); /* reuse symbolic C */
+    PetscCall(MatProductCreate(A,P,NULL,&C));
+    PetscCall(MatSetOptionsPrefix(C,"PtAP_"));
+    PetscCall(MatProductSetType(C,MATPRODUCT_PtAP));
+    PetscCall(MatProductSetAlgorithm(C,MATPRODUCTALGORITHMDEFAULT));
+    PetscCall(MatProductSetFill(C,PETSC_DEFAULT));
+    PetscCall(MatProductSetFromOptions(C));
+    PetscCall(MatProductSymbolic(C));
+    PetscCall(MatProductNumeric(C));
+    PetscCall(MatPtAPMultEqual(A,P,C,mcheck,&flg));
+    PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatProduct_PtAP");
+    PetscCall(MatProductNumeric(C)); /* reuse symbolic C */
 
-    ierr = MatPtAPMultEqual(A,P,C,mcheck,&flg);CHKERRQ(ierr);
-    PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatProduct_PtAP");
-    ierr = MatDestroy(&C);CHKERRQ(ierr);
+    PetscCall(MatPtAPMultEqual(A,P,C,mcheck,&flg));
+    PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatProduct_PtAP");
+    PetscCall(MatDestroy(&C));
 
     /* (4.2) Test user driver */
-    ierr = MatPtAP(A,P,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
+    PetscCall(MatPtAP(A,P,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C));
 
     /* Test MAT_REUSE_MATRIX - reuse symbolic C */
     alpha = 1.0;
     for (i=0; i<2; i++) {
       alpha -= 0.1;
-      ierr   = MatScale(A,alpha);CHKERRQ(ierr);
-      ierr   = MatPtAP(A,P,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
+      PetscCall(MatScale(A,alpha));
+      PetscCall(MatPtAP(A,P,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C));
     }
-    ierr = MatPtAPMultEqual(A,P,C,mcheck,&flg);CHKERRQ(ierr);
-    PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatPtAP");
+    PetscCall(MatPtAPMultEqual(A,P,C,mcheck,&flg));
+    PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatPtAP");
 
     /* 5) Test MatRARt() */
     /* ----------------- */
@@ -281,47 +279,47 @@ int main(int argc,char **args)
       Mat RARt;
 
       /* (5.1) Test developer driver RARt = R*A*Rt */
-      ierr = MatProductCreate(A,R,NULL,&RARt);CHKERRQ(ierr);
-      ierr = MatSetOptionsPrefix(RARt,"RARt_");CHKERRQ(ierr);
-      ierr = MatProductSetType(RARt,MATPRODUCT_RARt);CHKERRQ(ierr);
-      ierr = MatProductSetAlgorithm(RARt,MATPRODUCTALGORITHMDEFAULT);CHKERRQ(ierr);
-      ierr = MatProductSetFill(RARt,PETSC_DEFAULT);CHKERRQ(ierr);
-      ierr = MatProductSetFromOptions(RARt);CHKERRQ(ierr);
-      ierr = MatHasOperation(RARt,MATOP_PRODUCTSYMBOLIC,&flg);CHKERRQ(ierr);
+      PetscCall(MatProductCreate(A,R,NULL,&RARt));
+      PetscCall(MatSetOptionsPrefix(RARt,"RARt_"));
+      PetscCall(MatProductSetType(RARt,MATPRODUCT_RARt));
+      PetscCall(MatProductSetAlgorithm(RARt,MATPRODUCTALGORITHMDEFAULT));
+      PetscCall(MatProductSetFill(RARt,PETSC_DEFAULT));
+      PetscCall(MatProductSetFromOptions(RARt));
+      PetscCall(MatHasOperation(RARt,MATOP_PRODUCTSYMBOLIC,&flg));
       if (flg) {
-        ierr = MatProductSymbolic(RARt);CHKERRQ(ierr); /* equivalent to MatSetUp() */
-        ierr = MatSetOption(RARt,MAT_USE_INODES,PETSC_FALSE);CHKERRQ(ierr); /* illustrate how to call MatSetOption() */
-        ierr = MatProductNumeric(RARt);CHKERRQ(ierr);
-        ierr = MatProductNumeric(RARt);CHKERRQ(ierr); /* test reuse symbolic RARt */
-        ierr = MatDestroy(&RARt);CHKERRQ(ierr);
+        PetscCall(MatProductSymbolic(RARt)); /* equivalent to MatSetUp() */
+        PetscCall(MatSetOption(RARt,MAT_USE_INODES,PETSC_FALSE)); /* illustrate how to call MatSetOption() */
+        PetscCall(MatProductNumeric(RARt));
+        PetscCall(MatProductNumeric(RARt)); /* test reuse symbolic RARt */
+        PetscCall(MatDestroy(&RARt));
 
         /* (2.2) Test user driver RARt = R*A*Rt */
-        ierr = MatRARt(A,R,MAT_INITIAL_MATRIX,2.0,&RARt);CHKERRQ(ierr);
-        ierr = MatRARt(A,R,MAT_REUSE_MATRIX,2.0,&RARt);CHKERRQ(ierr);
+        PetscCall(MatRARt(A,R,MAT_INITIAL_MATRIX,2.0,&RARt));
+        PetscCall(MatRARt(A,R,MAT_REUSE_MATRIX,2.0,&RARt));
 
-        ierr = MatNormDifference(C,RARt,&norm);CHKERRQ(ierr);
+        PetscCall(MatNormDifference(C,RARt,&norm));
         PetscCheckFalse(norm > PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"|PtAP - RARt| = %g",(double)norm);
       } else {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"MatRARt not supported\n");CHKERRQ(ierr);
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"MatRARt not supported\n"));
       }
-      ierr = MatDestroy(&RARt);CHKERRQ(ierr);
+      PetscCall(MatDestroy(&RARt));
     }
 
-    ierr = MatDestroy(&A);CHKERRQ(ierr);
-    ierr = MatDestroy(&C);CHKERRQ(ierr);
+    PetscCall(MatDestroy(&A));
+    PetscCall(MatDestroy(&C));
   }
 
   /* Destroy objects */
-  ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
-  ierr = PetscFree(idxn);CHKERRQ(ierr);
+  PetscCall(PetscRandomDestroy(&rdm));
+  PetscCall(PetscFree(idxn));
 
-  ierr = MatDestroy(&A_save);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = MatDestroy(&P);CHKERRQ(ierr);
-  ierr = MatDestroy(&R);CHKERRQ(ierr);
+  PetscCall(MatDestroy(&A_save));
+  PetscCall(MatDestroy(&B));
+  PetscCall(MatDestroy(&P));
+  PetscCall(MatDestroy(&R));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

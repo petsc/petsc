@@ -11,32 +11,29 @@ struct _n_User {
 static PetscErrorCode MatMult_User(Mat A,Vec X,Vec Y)
 {
   User           user;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(A,&user);CHKERRQ(ierr);
-  ierr = MatMult(user->B,X,Y);CHKERRQ(ierr);
+  PetscCall(MatShellGetContext(A,&user));
+  PetscCall(MatMult(user->B,X,Y));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatMultTranspose_User(Mat A,Vec X,Vec Y)
 {
   User           user;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(A,&user);CHKERRQ(ierr);
-  ierr = MatMultTranspose(user->B,X,Y);CHKERRQ(ierr);
+  PetscCall(MatShellGetContext(A,&user));
+  PetscCall(MatMultTranspose(user->B,X,Y));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MyFunction(void *ctx,Vec x,Vec y)
 {
   User           user = (User) ctx;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatMult(user->B,x,y);CHKERRQ(ierr);
+  PetscCall(MatMult(user->B,x,y));
   PetscFunctionReturn(0);
 }
 
@@ -46,31 +43,30 @@ int main(int argc,char **args)
   PetscScalar       avals[] = {2,3,5,7};
   Mat               S;
   User              user;
-  PetscErrorCode    ierr;
   Vec               base;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscNew(&user);CHKERRQ(ierr);
-  ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,2,2,2,NULL,&user->B);CHKERRQ(ierr);
-  ierr = MatSetUp(user->B);CHKERRQ(ierr);
-  ierr = MatSetValues(user->B,2,inds,2,inds,avals,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(user->B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(user->B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatCreateVecs(user->B,&base,NULL);CHKERRQ(ierr);
-  ierr = MatCreateShell(PETSC_COMM_WORLD,2,2,2,2,user,&S);CHKERRQ(ierr);
-  ierr = MatSetUp(S);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(S,MATOP_MULT,(void (*)(void))MatMult_User);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(S,MATOP_MULT_TRANSPOSE,(void (*)(void))MatMultTranspose_User);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscNew(&user));
+  PetscCall(MatCreateSeqAIJ(PETSC_COMM_WORLD,2,2,2,NULL,&user->B));
+  PetscCall(MatSetUp(user->B));
+  PetscCall(MatSetValues(user->B,2,inds,2,inds,avals,INSERT_VALUES));
+  PetscCall(MatAssemblyBegin(user->B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(user->B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatCreateVecs(user->B,&base,NULL));
+  PetscCall(MatCreateShell(PETSC_COMM_WORLD,2,2,2,2,user,&S));
+  PetscCall(MatSetUp(S));
+  PetscCall(MatShellSetOperation(S,MATOP_MULT,(void (*)(void))MatMult_User));
+  PetscCall(MatShellSetOperation(S,MATOP_MULT_TRANSPOSE,(void (*)(void))MatMultTranspose_User));
 
-  ierr = MatShellTestMult(S,MyFunction,base,user,NULL);CHKERRQ(ierr);
-  ierr = MatShellTestMultTranspose(S,MyFunction,base,user,NULL);CHKERRQ(ierr);
+  PetscCall(MatShellTestMult(S,MyFunction,base,user,NULL));
+  PetscCall(MatShellTestMultTranspose(S,MyFunction,base,user,NULL));
 
-  ierr = VecDestroy(&base);CHKERRQ(ierr);
-  ierr = MatDestroy(&user->B);CHKERRQ(ierr);
-  ierr = MatDestroy(&S);CHKERRQ(ierr);
-  ierr = PetscFree(user);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(VecDestroy(&base));
+  PetscCall(MatDestroy(&user->B));
+  PetscCall(MatDestroy(&S));
+  PetscCall(PetscFree(user));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

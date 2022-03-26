@@ -7,10 +7,8 @@
 
 static PetscErrorCode KSPSetUp_FBCGS(KSP ksp)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = KSPSetWorkVecs(ksp,8);CHKERRQ(ierr);
+  PetscCall(KSPSetWorkVecs(ksp,8));
   PetscFunctionReturn(0);
 }
 
@@ -18,7 +16,6 @@ static PetscErrorCode KSPSetUp_FBCGS(KSP ksp)
 
 static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
 {
-  PetscErrorCode ierr;
   PetscInt       i;
   PetscScalar    rho,rhoold,alpha,beta,omega,omegaold,d1;
   Vec            X,B,V,P,R,RP,T,S,P2,S2;
@@ -43,112 +40,112 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
   PetscCheckFalse(ksp->pc_side != PC_RIGHT,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"KSP fbcgs does not support %s",PCSides[ksp->pc_side]);
   if (!ksp->guess_zero) {
     if (!bcgs->guess) {
-      ierr = VecDuplicate(X,&bcgs->guess);CHKERRQ(ierr);
+      PetscCall(VecDuplicate(X,&bcgs->guess));
     }
-    ierr = VecCopy(X,bcgs->guess);CHKERRQ(ierr);
+    PetscCall(VecCopy(X,bcgs->guess));
   } else {
-    ierr = VecSet(X,0.0);CHKERRQ(ierr);
+    PetscCall(VecSet(X,0.0));
   }
 
   /* Compute initial residual */
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PCSetUp(pc);CHKERRQ(ierr);
-  ierr = PCGetOperators(pc,&mat,NULL);CHKERRQ(ierr);
+  PetscCall(KSPGetPC(ksp,&pc));
+  PetscCall(PCSetUp(pc));
+  PetscCall(PCGetOperators(pc,&mat,NULL));
   if (!ksp->guess_zero) {
-    ierr = KSP_MatMult(ksp,mat,X,S2);CHKERRQ(ierr);
-    ierr = VecCopy(B,R);CHKERRQ(ierr);
-    ierr = VecAXPY(R,-1.0,S2);CHKERRQ(ierr);
+    PetscCall(KSP_MatMult(ksp,mat,X,S2));
+    PetscCall(VecCopy(B,R));
+    PetscCall(VecAXPY(R,-1.0,S2));
   } else {
-    ierr = VecCopy(B,R);CHKERRQ(ierr);
+    PetscCall(VecCopy(B,R));
   }
 
   /* Test for nothing to do */
   if (ksp->normtype != KSP_NORM_NONE) {
-    ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
+    PetscCall(VecNorm(R,NORM_2,&dp));
   }
-  ierr       = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+  PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
   ksp->its   = 0;
   ksp->rnorm = dp;
-  ierr = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
-  ierr = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
-  ierr = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
-  ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+  PetscCall(PetscObjectSAWsGrantAccess((PetscObject)ksp));
+  PetscCall(KSPLogResidualHistory(ksp,dp));
+  PetscCall(KSPMonitor(ksp,0,dp));
+  PetscCall((*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP));
   if (ksp->reason) PetscFunctionReturn(0);
 
   /* Make the initial Rp == R */
-  ierr = VecCopy(R,RP);CHKERRQ(ierr);
+  PetscCall(VecCopy(R,RP));
 
   rhoold   = 1.0;
   alpha    = 1.0;
   omegaold = 1.0;
-  ierr     = VecSet(P,0.0);CHKERRQ(ierr);
-  ierr     = VecSet(V,0.0);CHKERRQ(ierr);
+  PetscCall(VecSet(P,0.0));
+  PetscCall(VecSet(V,0.0));
 
   i=0;
   do {
-    ierr = VecDot(R,RP,&rho);CHKERRQ(ierr); /* rho <- (r,rp) */
+    PetscCall(VecDot(R,RP,&rho)); /* rho <- (r,rp) */
     beta = (rho/rhoold) * (alpha/omegaold);
-    ierr = VecAXPBYPCZ(P,1.0,-omegaold*beta,beta,R,V);CHKERRQ(ierr); /* p <- r - omega * beta* v + beta * p */
+    PetscCall(VecAXPBYPCZ(P,1.0,-omegaold*beta,beta,R,V)); /* p <- r - omega * beta* v + beta * p */
 
-    ierr = KSP_PCApply(ksp,P,P2);CHKERRQ(ierr); /* p2 <- K p */
-    ierr = KSP_MatMult(ksp,mat,P2,V);CHKERRQ(ierr); /* v <- A p2 */
+    PetscCall(KSP_PCApply(ksp,P,P2)); /* p2 <- K p */
+    PetscCall(KSP_MatMult(ksp,mat,P2,V)); /* v <- A p2 */
 
-    ierr = VecDot(V,RP,&d1);CHKERRQ(ierr);
+    PetscCall(VecDot(V,RP,&d1));
     if (d1 == 0.0) {
-      PetscCheckFalse(ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve breakdown due to zero inner product");
+      PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve breakdown due to zero inner product");
       else ksp->reason = KSP_DIVERGED_BREAKDOWN;
-      ierr  = PetscInfo(ksp,"Breakdown due to zero inner product\n");CHKERRQ(ierr);
+      PetscCall(PetscInfo(ksp,"Breakdown due to zero inner product\n"));
       break;
     }
     alpha = rho / d1; /* alpha <- rho / (v,rp) */
-    ierr  = VecWAXPY(S,-alpha,V,R);CHKERRQ(ierr); /* s <- r - alpha v */
+    PetscCall(VecWAXPY(S,-alpha,V,R)); /* s <- r - alpha v */
 
-    ierr = KSP_PCApply(ksp,S,S2);CHKERRQ(ierr); /* s2 <- K s */
-    ierr = KSP_MatMult(ksp,mat,S2,T);CHKERRQ(ierr); /* t <- A s2 */
+    PetscCall(KSP_PCApply(ksp,S,S2)); /* s2 <- K s */
+    PetscCall(KSP_MatMult(ksp,mat,S2,T)); /* t <- A s2 */
 
-    ierr = VecDotNorm2(S,T,&d1,&d2);CHKERRQ(ierr);
+    PetscCall(VecDotNorm2(S,T,&d1,&d2));
     if (d2 == 0.0) {
       /* t is 0. if s is 0, then alpha v == r, and hence alpha p may be our solution. Give it a try? */
-      ierr = VecDot(S,S,&d1);CHKERRQ(ierr);
+      PetscCall(VecDot(S,S,&d1));
       if (d1 != 0.0) {
-        PetscCheckFalse(ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has failed due to singular preconditioned operator");
+        PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has failed due to singular preconditioned operator");
         else ksp->reason = KSP_DIVERGED_BREAKDOWN;
-        ierr  = PetscInfo(ksp,"Failed due to singular preconditioned operator\n");CHKERRQ(ierr);
+        PetscCall(PetscInfo(ksp,"Failed due to singular preconditioned operator\n"));
         break;
       }
-      ierr = VecAXPY(X,alpha,P2);CHKERRQ(ierr);   /* x <- x + alpha p2 */
-      ierr = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+      PetscCall(VecAXPY(X,alpha,P2));   /* x <- x + alpha p2 */
+      PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
       ksp->its++;
       ksp->rnorm  = 0.0;
       ksp->reason = KSP_CONVERGED_RTOL;
-      ierr = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
-      ierr = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
-      ierr = KSPMonitor(ksp,i+1,0.0);CHKERRQ(ierr);
+      PetscCall(PetscObjectSAWsGrantAccess((PetscObject)ksp));
+      PetscCall(KSPLogResidualHistory(ksp,dp));
+      PetscCall(KSPMonitor(ksp,i+1,0.0));
       break;
     }
     omega = d1 / d2; /* omega <- (t's) / (t't) */
-    ierr  = VecAXPBYPCZ(X,alpha,omega,1.0,P2,S2);CHKERRQ(ierr); /* x <- alpha * p2 + omega * s2 + x */
+    PetscCall(VecAXPBYPCZ(X,alpha,omega,1.0,P2,S2)); /* x <- alpha * p2 + omega * s2 + x */
 
-    ierr = VecWAXPY(R,-omega,T,S);CHKERRQ(ierr);  /* r <- s - omega t */
+    PetscCall(VecWAXPY(R,-omega,T,S));  /* r <- s - omega t */
     if (ksp->normtype != KSP_NORM_NONE && ksp->chknorm < i+2) {
-      ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
+      PetscCall(VecNorm(R,NORM_2,&dp));
     }
 
     rhoold   = rho;
     omegaold = omega;
 
-    ierr = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+    PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
     ksp->its++;
     ksp->rnorm = dp;
-    ierr = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
-    ierr = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
-    ierr = KSPMonitor(ksp,i+1,dp);CHKERRQ(ierr);
-    ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+    PetscCall(PetscObjectSAWsGrantAccess((PetscObject)ksp));
+    PetscCall(KSPLogResidualHistory(ksp,dp));
+    PetscCall(KSPMonitor(ksp,i+1,dp));
+    PetscCall((*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP));
     if (ksp->reason) break;
     if (rho == 0.0) {
-     PetscCheckFalse(ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve breakdown due to zero rho inner product");
+     PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve breakdown due to zero rho inner product");
       else ksp->reason = KSP_DIVERGED_BREAKDOWN;
-      ierr  = PetscInfo(ksp,"Breakdown due to zero rho inner product\n");CHKERRQ(ierr);
+      PetscCall(PetscInfo(ksp,"Breakdown due to zero rho inner product\n"));
       break;
     }
     i++;
@@ -173,11 +170,10 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_FBCGS(KSP ksp)
 {
-  PetscErrorCode ierr;
   KSP_BCGS       *bcgs;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(ksp,&bcgs);CHKERRQ(ierr);
+  PetscCall(PetscNewLog(ksp,&bcgs));
 
   ksp->data                = bcgs;
   ksp->ops->setup          = KSPSetUp_FBCGS;
@@ -188,9 +184,9 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FBCGS(KSP ksp)
   ksp->ops->setfromoptions = KSPSetFromOptions_BCGS;
   ksp->pc_side             = PC_RIGHT;  /* set default PC side */
 
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1);CHKERRQ(ierr);
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1));
   PetscFunctionReturn(0);
 }

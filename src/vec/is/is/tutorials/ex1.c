@@ -20,65 +20,64 @@ T*/
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       *indices,n;
   const PetscInt *nindices;
   PetscMPIInt    rank;
   IS             is;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   /*
      Create an index set with 5 entries. Each processor creates
    its own index set with its own list of integers.
   */
-  ierr = PetscMalloc1(5,&indices);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(5,&indices));
   indices[0] = rank + 1;
   indices[1] = rank + 2;
   indices[2] = rank + 3;
   indices[3] = rank + 4;
   indices[4] = rank + 5;
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,5,indices,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF,5,indices,PETSC_COPY_VALUES,&is));
   /*
      Note that ISCreateGeneral() has made a copy of the indices
      so we may (and generally should) free indices[]
   */
-  ierr = PetscFree(indices);CHKERRQ(ierr);
+  PetscCall(PetscFree(indices));
 
   /*
      Print the index set to stdout
   */
-  ierr = ISView(is,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  PetscCall(ISView(is,PETSC_VIEWER_STDOUT_SELF));
 
   /*
      Get the number of indices in the set
   */
-  ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
+  PetscCall(ISGetLocalSize(is,&n));
 
   /*
      Get the indices in the index set
   */
-  ierr = ISGetIndices(is,&nindices);CHKERRQ(ierr);
+  PetscCall(ISGetIndices(is,&nindices));
   /*
      Now any code that needs access to the list of integers
    has access to it here through indices[].
    */
-  ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] First index %" PetscInt_FMT "\n",rank,nindices[0]);CHKERRQ(ierr);
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"[%d] First index %" PetscInt_FMT "\n",rank,nindices[0]));
 
   /*
      Once we no longer need access to the indices they should
      returned to the system
   */
-  ierr = ISRestoreIndices(is,&nindices);CHKERRQ(ierr);
+  PetscCall(ISRestoreIndices(is,&nindices));
 
   /*
      One should destroy any PETSc object once one is completely
     done with it.
   */
-  ierr = ISDestroy(&is);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(ISDestroy(&is));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

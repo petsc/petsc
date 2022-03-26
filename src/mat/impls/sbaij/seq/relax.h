@@ -48,7 +48,6 @@ PetscErrorCode MatMult_SeqSBAIJ_1(Mat A,Vec xx,Vec zz)
   PetscScalar       *z,x1,sum;
   const MatScalar   *v;
   MatScalar         vj;
-  PetscErrorCode    ierr;
   PetscInt          mbs=a->mbs,i,j,nz;
   const PetscInt    *ai=a->i;
 #if defined(USESHORT)
@@ -66,9 +65,9 @@ PetscErrorCode MatMult_SeqSBAIJ_1(Mat A,Vec xx,Vec zz)
 #endif
 
   PetscFunctionBegin;
-  ierr = VecSet(zz,0.0);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
+  PetscCall(VecSet(zz,0.0));
+  PetscCall(VecGetArrayRead(xx,&x));
+  PetscCall(VecGetArray(zz,&z));
 
   v = a->a;
   for (i=0; i<mbs; i++) {
@@ -104,9 +103,9 @@ PetscErrorCode MatMult_SeqSBAIJ_1(Mat A,Vec xx,Vec zz)
     ib   += nz;
   }
 
-  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2.0*(2.0*a->nz - nonzerorow) - nonzerorow);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(xx,&x));
+  PetscCall(VecRestoreArray(zz,&z));
+  PetscCall(PetscLogFlops(2.0*(2.0*a->nz - nonzerorow) - nonzerorow));
   PetscFunctionReturn(0);
 }
 
@@ -121,7 +120,6 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
   PetscScalar       *x,*t,sum;
   const PetscScalar *b;
   MatScalar         tmp;
-  PetscErrorCode    ierr;
   PetscInt          m  =a->mbs,bs=A->rmap->bs,j;
   const PetscInt    *ai=a->i;
 #if defined(USESHORT)
@@ -140,19 +138,19 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
 
   PetscCheckFalse(bs > 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"SSOR for block size > 1 is not yet implemented");
 
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
+  PetscCall(VecGetArray(xx,&x));
+  PetscCall(VecGetArrayRead(bb,&b));
 
   if (!a->idiagvalid) {
     if (!a->idiag) {
-      ierr = PetscMalloc1(m,&a->idiag);CHKERRQ(ierr);
+      PetscCall(PetscMalloc1(m,&a->idiag));
     }
     for (i=0; i<a->mbs; i++) a->idiag[i] = 1.0/a->a[a->i[i]];
     a->idiagvalid = PETSC_TRUE;
   }
 
   if (!a->sor_work) {
-    ierr = PetscMalloc1(m,&a->sor_work);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(m,&a->sor_work));
   }
   t = a->sor_work;
 
@@ -174,12 +172,12 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
 #endif
       x[i] = sum;
     }
-    ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
+    PetscCall(PetscLogFlops(a->nz));
   }
 
   if (flag & SOR_ZERO_INITIAL_GUESS) {
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) {
-      ierr = PetscArraycpy(t,b,m);CHKERRQ(ierr);
+      PetscCall(PetscArraycpy(t,b,m));
 
       v  = aa + 1;
       vj = aj + 1;
@@ -190,7 +188,7 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
         v  += nz + 1;
         vj += nz + 1;
       }
-      ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
+      PetscCall(PetscLogFlops(2.0*a->nz));
     }
 
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
@@ -219,7 +217,7 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
           v   -= nz + 1;
           vj  -= nz + 1;
         }
-        ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
+        PetscCall(PetscLogFlops(2.0*a->nz));
       } else {
         v  = aa + ai[m-1] + 1;
         vj = aj + ai[m-1] + 1;
@@ -235,7 +233,7 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
           v   -= nz + 1;
           vj  -= nz + 1;
         }
-        ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
+        PetscCall(PetscLogFlops(2.0*a->nz));
       }
     }
     its--;
@@ -251,7 +249,7 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
 
     */
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) {
-      ierr = PetscArraycpy(t,b,m);CHKERRQ(ierr);
+      PetscCall(PetscArraycpy(t,b,m));
 
       for (i=0; i<m; i++) {
         v    = aa + ai[i] + 1; v1=v;
@@ -262,7 +260,7 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
         x[i] = (1-omega)*x[i] + omega*sum*aidiag[i];
         while (nz--) t[*vj++] -= x[i]*(*v++);
       }
-      ierr = PetscLogFlops(4.0*a->nz);CHKERRQ(ierr);
+      PetscCall(PetscLogFlops(4.0*a->nz));
     }
 
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
@@ -274,7 +272,7 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
          x[i]   = (1-omega)x[i] + omega*sum[i];
       */
       /* if there was a forward sweep done above then I thing the next two for loops are not needed */
-      ierr = PetscArraycpy(t,b,m);CHKERRQ(ierr);
+      PetscCall(PetscArraycpy(t,b,m));
 
       for (i=0; i<m-1; i++) {  /* update rhs */
         v    = aa + ai[i] + 1;
@@ -282,7 +280,7 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
         nz   = ai[i+1] - ai[i] - 1;
         while (nz--) t[*vj++] -= x[i]*(*v++);
       }
-      ierr = PetscLogFlops(2.0*(a->nz - m));CHKERRQ(ierr);
+      PetscCall(PetscLogFlops(2.0*(a->nz - m)));
       for (i=m-1; i>=0; i--) {
         v    = aa + ai[i] + 1;
         vj   = aj + ai[i] + 1;
@@ -291,11 +289,11 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
         while (nz--) sum -= x[*vj++]*(*v++);
         x[i] =   (1-omega)*x[i] + omega*sum*aidiag[i];
       }
-      ierr = PetscLogFlops(2.0*(a->nz + m));CHKERRQ(ierr);
+      PetscCall(PetscLogFlops(2.0*(a->nz + m)));
     }
   }
 
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(xx,&x));
+  PetscCall(VecRestoreArrayRead(bb,&b));
   PetscFunctionReturn(0);
 }

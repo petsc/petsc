@@ -11,22 +11,22 @@ static PetscErrorCode ViewOffsets(DM dm, Vec X)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetName((PetscObject)dm, &name);CHKERRQ(ierr);
-  ierr = DMPlexGetLocalOffsets(dm, NULL, 0, 0, 0, &num_elem, &elem_size, &num_comp, &num_dof, &elem_restr_offsets);CHKERRQ(ierr);
+  PetscCall(PetscObjectGetName((PetscObject)dm, &name));
+  PetscCall(DMPlexGetLocalOffsets(dm, NULL, 0, 0, 0, &num_elem, &elem_size, &num_comp, &num_dof, &elem_restr_offsets));
   ierr = PetscPrintf(PETSC_COMM_SELF,"DM %s offsets: num_elem %" PetscInt_FMT ", size %" PetscInt_FMT
                      ", comp %" PetscInt_FMT ", dof %" PetscInt_FMT "\n",
-                     name, num_elem, elem_size, num_comp, num_dof);CHKERRQ(ierr);
-  if (X) {ierr = VecGetArrayRead(X, &x);CHKERRQ(ierr);}
+                     name, num_elem, elem_size, num_comp, num_dof);PetscCall(ierr);
+  if (X) PetscCall(VecGetArrayRead(X, &x));
   for (PetscInt c=0; c<num_elem; c++) {
-    ierr = PetscIntView(elem_size, &elem_restr_offsets[c*elem_size], PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    PetscCall(PetscIntView(elem_size, &elem_restr_offsets[c*elem_size], PETSC_VIEWER_STDOUT_SELF));
     if (x) {
       for (PetscInt i=0; i<elem_size; i++) {
-        ierr = PetscScalarView(num_comp, &x[elem_restr_offsets[c*elem_size+i]], PETSC_VIEWER_STDERR_SELF);CHKERRQ(ierr);
+        PetscCall(PetscScalarView(num_comp, &x[elem_restr_offsets[c*elem_size+i]], PETSC_VIEWER_STDERR_SELF));
       }
     }
   }
-  if (X) {ierr = VecRestoreArrayRead(X, &x);CHKERRQ(ierr);}
-  ierr = PetscFree(elem_restr_offsets);CHKERRQ(ierr);
+  if (X) PetscCall(VecRestoreArrayRead(X, &x));
+  PetscCall(PetscFree(elem_restr_offsets));
   PetscFunctionReturn(0);
 }
 
@@ -39,58 +39,58 @@ int main(int argc, char **argv)
   PetscBool      view_coord = PETSC_FALSE, tensor = PETSC_TRUE;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Tensor closure restrictions", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-closure_tensor", "Apply DMPlexSetClosurePermutationTensor", "ex8.c", tensor, &tensor, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-view_coord", "View coordinates of element closures", "ex8.c", view_coord, &view_coord, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Tensor closure restrictions", "DMPLEX");PetscCall(ierr);
+  PetscCall(PetscOptionsBool("-closure_tensor", "Apply DMPlexSetClosurePermutationTensor", "ex8.c", tensor, &tensor, NULL));
+  PetscCall(PetscOptionsBool("-view_coord", "View coordinates of element closures", "ex8.c", view_coord, &view_coord, NULL));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
 
-  ierr = DMCreate(PETSC_COMM_WORLD, &dm);CHKERRQ(ierr);
-  ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  PetscCall(DMCreate(PETSC_COMM_WORLD, &dm));
+  PetscCall(DMSetType(dm, DMPLEX));
+  PetscCall(DMSetFromOptions(dm));
+  PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
+  PetscCall(DMGetDimension(dm, &dim));
 
-  ierr = PetscFECreateDefault(PETSC_COMM_SELF,dim,1,PETSC_FALSE,NULL,PETSC_DETERMINE,&fe);CHKERRQ(ierr);
-  ierr = DMAddField(dm,NULL,(PetscObject)fe);CHKERRQ(ierr);
-  ierr = DMCreateDS(dm);CHKERRQ(ierr);
-  if (tensor) {ierr = DMPlexSetClosurePermutationTensor(dm,PETSC_DETERMINE,NULL);CHKERRQ(ierr);}
-  ierr = DMGetLocalSection(dm,&section);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
+  PetscCall(PetscFECreateDefault(PETSC_COMM_SELF,dim,1,PETSC_FALSE,NULL,PETSC_DETERMINE,&fe));
+  PetscCall(DMAddField(dm,NULL,(PetscObject)fe));
+  PetscCall(DMCreateDS(dm));
+  if (tensor) PetscCall(DMPlexSetClosurePermutationTensor(dm,PETSC_DETERMINE,NULL));
+  PetscCall(DMGetLocalSection(dm,&section));
+  PetscCall(DMPlexGetHeightStratum(dm,0,&cStart,&cEnd));
   for (c=cStart; c<cEnd; c++) {
     PetscInt numindices,*indices;
-    ierr = DMPlexGetClosureIndices(dm,section,section,c,PETSC_TRUE,&numindices,&indices,NULL,NULL);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Element #%" PetscInt_FMT "\n",c-cStart);CHKERRQ(ierr);
-    ierr = PetscIntView(numindices,indices,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-    ierr = DMPlexRestoreClosureIndices(dm,section,section,c,PETSC_TRUE,&numindices,&indices,NULL,NULL);CHKERRQ(ierr);
+    PetscCall(DMPlexGetClosureIndices(dm,section,section,c,PETSC_TRUE,&numindices,&indices,NULL,NULL));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"Element #%" PetscInt_FMT "\n",c-cStart));
+    PetscCall(PetscIntView(numindices,indices,PETSC_VIEWER_STDOUT_SELF));
+    PetscCall(DMPlexRestoreClosureIndices(dm,section,section,c,PETSC_TRUE,&numindices,&indices,NULL,NULL));
   }
   if (view_coord) {
     DM cdm;
     Vec X;
     PetscInt cdim;
-    ierr = DMGetCoordinateDM(dm,&cdm);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)cdm, "coords");CHKERRQ(ierr);
-    if (tensor) {ierr = DMPlexSetClosurePermutationTensor(cdm,PETSC_DETERMINE,NULL);CHKERRQ(ierr);}
-    ierr = DMGetCoordinatesLocal(dm, &X);CHKERRQ(ierr);
-    ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
+    PetscCall(DMGetCoordinateDM(dm,&cdm));
+    PetscCall(PetscObjectSetName((PetscObject)cdm, "coords"));
+    if (tensor) PetscCall(DMPlexSetClosurePermutationTensor(cdm,PETSC_DETERMINE,NULL));
+    PetscCall(DMGetCoordinatesLocal(dm, &X));
+    PetscCall(DMGetCoordinateDim(dm, &cdim));
     for (c=cStart; c<cEnd; c++) {
       PetscScalar *x = NULL;
       PetscInt ndof;
-      ierr = DMPlexVecGetClosure(cdm, NULL, X, c, &ndof, &x);CHKERRQ(ierr);
+      PetscCall(DMPlexVecGetClosure(cdm, NULL, X, c, &ndof, &x));
       PetscCheck(ndof % cdim == 0, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "ndof not divisible by cdim");
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Element #%" PetscInt_FMT " coordinates\n",c-cStart);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,"Element #%" PetscInt_FMT " coordinates\n",c-cStart));
       for (PetscInt i=0; i<ndof; i+= cdim) {
-        ierr = PetscScalarView(cdim, &x[i], PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+        PetscCall(PetscScalarView(cdim, &x[i], PETSC_VIEWER_STDOUT_SELF));
       }
-      ierr = DMPlexVecRestoreClosure(cdm, NULL, X, c, &ndof, &x);CHKERRQ(ierr);
+      PetscCall(DMPlexVecRestoreClosure(cdm, NULL, X, c, &ndof, &x));
     }
-    ierr = ViewOffsets(dm, NULL);CHKERRQ(ierr);
-    ierr = ViewOffsets(cdm, X);CHKERRQ(ierr);
+    PetscCall(ViewOffsets(dm, NULL));
+    PetscCall(ViewOffsets(cdm, X));
   }
-  ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFEDestroy(&fe));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

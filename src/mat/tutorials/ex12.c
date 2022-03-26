@@ -24,46 +24,45 @@ T*/
 */
 PetscErrorCode PadMatrix(Mat A,Vec v,PetscScalar c,Mat *B)
 {
-  PetscErrorCode    ierr;
   PetscInt          n,i,*cnt,*indices,nc;
   const PetscInt    *aj;
   const PetscScalar *vv,*aa;
 
   PetscFunctionBegin;
-  ierr = MatGetSize(A,&n,NULL);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(v,&vv);CHKERRQ(ierr);
-  ierr = PetscMalloc1(n,&indices);CHKERRQ(ierr);
+  PetscCall(MatGetSize(A,&n,NULL));
+  PetscCall(VecGetArrayRead(v,&vv));
+  PetscCall(PetscMalloc1(n,&indices));
   for (i=0; i<n; i++) indices[i] = i;
 
   /* determine number of nonzeros per row in the new matrix */
-  ierr = PetscMalloc1(n+1,&cnt);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(n+1,&cnt));
   for (i=0; i<n; i++) {
-    ierr = MatGetRow(A,i,&nc,NULL,NULL);CHKERRQ(ierr);
+    PetscCall(MatGetRow(A,i,&nc,NULL,NULL));
     cnt[i] = nc + (vv[i] != 0.0);
-    ierr = MatRestoreRow(A,i,&nc,NULL,NULL);CHKERRQ(ierr);
+    PetscCall(MatRestoreRow(A,i,&nc,NULL,NULL));
   }
   cnt[n] = 1;
   for (i=0; i<n; i++) {
     cnt[n] += (vv[i] != 0.0);
   }
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n+1,n+1,0,cnt,B);CHKERRQ(ierr);
-  ierr = MatSetOption(*B,MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
+  PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF,n+1,n+1,0,cnt,B));
+  PetscCall(MatSetOption(*B,MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE));
 
   /* copy over the matrix entries from the matrix and then the vector */
   for (i=0; i<n; i++) {
-    ierr = MatGetRow(A,i,&nc,&aj,&aa);CHKERRQ(ierr);
-    ierr = MatSetValues(*B,1,&i,nc,aj,aa,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatRestoreRow(A,i,&nc,&aj,&aa);CHKERRQ(ierr);
+    PetscCall(MatGetRow(A,i,&nc,&aj,&aa));
+    PetscCall(MatSetValues(*B,1,&i,nc,aj,aa,INSERT_VALUES));
+    PetscCall(MatRestoreRow(A,i,&nc,&aj,&aa));
   }
-  ierr = MatSetValues(*B,1,&n,n,indices,vv,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatSetValues(*B,n,indices,1,&n,vv,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatSetValues(*B,1,&n,1,&n,&c,INSERT_VALUES);CHKERRQ(ierr);
+  PetscCall(MatSetValues(*B,1,&n,n,indices,vv,INSERT_VALUES));
+  PetscCall(MatSetValues(*B,n,indices,1,&n,vv,INSERT_VALUES));
+  PetscCall(MatSetValues(*B,1,&n,1,&n,&c,INSERT_VALUES));
 
-  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(v,&vv);CHKERRQ(ierr);
-  ierr = PetscFree(cnt);CHKERRQ(ierr);
-  ierr = PetscFree(indices);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY));
+  PetscCall(VecRestoreArrayRead(v,&vv));
+  PetscCall(PetscFree(cnt));
+  PetscCall(PetscFree(indices));
   PetscFunctionReturn(0);
 }
 
@@ -72,35 +71,34 @@ int main(int argc,char **args)
   Mat            A,B;
   PetscViewer    fd;                        /* viewer */
   char           file[PETSC_MAX_PATH_LEN];  /* input file name */
-  PetscErrorCode ierr;
   PetscBool      flg;
   Vec            v;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   /*
      Determine files from which we read the two linear systems
      (matrix and right-hand-side vector).
   */
-  ierr = PetscOptionsGetString(NULL,NULL,"-f0",file,sizeof(file),&flg);CHKERRQ(ierr);
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f0 option");
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-f0",file,sizeof(file),&flg));
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f0 option");
 
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
 
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatLoad(A,fd);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,&v);CHKERRQ(ierr);
-  ierr = VecLoad(v,fd);CHKERRQ(ierr);
-  ierr = MatView(A,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = PadMatrix(A,v,3.0,&B);CHKERRQ(ierr);
-  ierr = MatView(B,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = VecDestroy(&v);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetType(A,MATSEQAIJ));
+  PetscCall(MatLoad(A,fd));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&v));
+  PetscCall(VecLoad(v,fd));
+  PetscCall(MatView(A,PETSC_VIEWER_STDOUT_SELF));
+  PetscCall(PadMatrix(A,v,3.0,&B));
+  PetscCall(MatView(B,PETSC_VIEWER_STDOUT_SELF));
+  PetscCall(MatDestroy(&B));
+  PetscCall(MatDestroy(&A));
+  PetscCall(VecDestroy(&v));
+  PetscCall(PetscViewerDestroy(&fd));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

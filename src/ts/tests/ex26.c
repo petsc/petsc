@@ -14,76 +14,73 @@ int main(int argc,char **argv)
   Mat             A;
   PetscErrorCode  ierr;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
-  ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = TSSetEquationType(ts,TS_EQ_ODE_IMPLICIT);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,&f);CHKERRQ(ierr);
-  ierr = VecSetSizes(f,1,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(f);CHKERRQ(ierr);
-  ierr = VecSetUp(f);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,f,IFunction,NULL);CHKERRQ(ierr);
-  ierr = VecDestroy(&f);CHKERRQ(ierr);
+  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
+  PetscCall(TSSetEquationType(ts,TS_EQ_ODE_IMPLICIT));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&f));
+  PetscCall(VecSetSizes(f,1,PETSC_DECIDE));
+  PetscCall(VecSetFromOptions(f));
+  PetscCall(VecSetUp(f));
+  PetscCall(TSSetIFunction(ts,f,IFunction,NULL));
+  PetscCall(VecDestroy(&f));
 
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,1,1,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A,1,1,PETSC_DECIDE,PETSC_DECIDE));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSetUp(A));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   /* ensure that the Jacobian matrix has diagonal entries since that is required by TS */
-  ierr = MatShift(A,(PetscReal)1);CHKERRQ(ierr);
-  ierr = MatShift(A,(PetscReal)-1);CHKERRQ(ierr);
-  ierr = TSSetIJacobian(ts,A,A,IJacobian,NULL);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  PetscCall(MatShift(A,(PetscReal)1));
+  PetscCall(MatShift(A,(PetscReal)-1));
+  PetscCall(TSSetIJacobian(ts,A,A,IJacobian,NULL));
+  PetscCall(MatDestroy(&A));
 
-  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,1,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-  ierr = VecSetUp(x);CHKERRQ(ierr);
-  ierr = TSSetSolution(ts,x);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+  PetscCall(VecSetSizes(x,1,PETSC_DECIDE));
+  PetscCall(VecSetFromOptions(x));
+  PetscCall(VecSetUp(x));
+  PetscCall(TSSetSolution(ts,x));
+  PetscCall(VecDestroy(&x));
+  PetscCall(TSSetFromOptions(ts));
 
-  ierr = TSSetStepNumber(ts,0);CHKERRQ(ierr);
-  ierr = TSSetTimeStep(ts,1);CHKERRQ(ierr);
-  ierr = TSSetTime(ts,0);CHKERRQ(ierr);
-  ierr = TSSetMaxTime(ts,PETSC_MAX_REAL);CHKERRQ(ierr);
-  ierr = TSSetMaxSteps(ts,3);CHKERRQ(ierr);
+  PetscCall(TSSetStepNumber(ts,0));
+  PetscCall(TSSetTimeStep(ts,1));
+  PetscCall(TSSetTime(ts,0));
+  PetscCall(TSSetMaxTime(ts,PETSC_MAX_REAL));
+  PetscCall(TSSetMaxSteps(ts,3));
 
   /*
       When an ARKIMEX scheme with an explicit stage is used this will error with a message informing the user it is not possible to use
       a non-trivial mass matrix with ARKIMEX schemes with explicit stages.
   */
   ierr = TSSolve(ts,NULL);
-  if (ierr != PETSC_ERR_ARG_INCOMP) CHKERRQ(ierr);
+  if (ierr != PETSC_ERR_ARG_INCOMP) PetscCall(ierr);
 
-  ierr = TSDestroy(&ts);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(TSDestroy(&ts));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 PetscErrorCode IFunction(TS ts,PetscReal t,Vec x,Vec xdot,Vec f,void *ctx)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = VecCopy(xdot,f);CHKERRQ(ierr);
-  ierr = VecScale(f,2.0);CHKERRQ(ierr);
-  ierr = VecShift(f,-1.0);CHKERRQ(ierr);
+  PetscCall(VecCopy(xdot,f));
+  PetscCall(VecScale(f,2.0));
+  PetscCall(VecShift(f,-1.0));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode IJacobian(TS ts,PetscReal t,Vec x,Vec xdot,PetscReal shift,Mat A,Mat B,void *ctx)
 {
-  PetscErrorCode ierr;
   PetscScalar    j;
 
   PetscFunctionBegin;
   j = shift*2.0;
-  ierr = MatSetValue(B,0,0,j,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatSetValue(B,0,0,j,INSERT_VALUES));
+  PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 

@@ -29,73 +29,72 @@ int main(int argc,char **argv)
   AppCtx         user;                 /* user-defined work context */
   PetscScalar    h,xp = 0.0,v;
   PetscInt       its,n = 5,i;
-  PetscErrorCode ierr;
   PetscBool      puremf = PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,NULL,"-variant",&user.variant);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-variant",&user.variant));
   h    = 1.0/(n-1);
 
   /* Set up data structures */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)x,"Approximate Solution");CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&F);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&U);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)U,"Exact Solution");CHKERRQ(ierr);
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,n,&x));
+  PetscCall(PetscObjectSetName((PetscObject)x,"Approximate Solution"));
+  PetscCall(VecDuplicate(x,&r));
+  PetscCall(VecDuplicate(x,&F));
+  PetscCall(VecDuplicate(x,&U));
+  PetscCall(PetscObjectSetName((PetscObject)U,"Exact Solution"));
 
   /* create explicit matrix preconditioner */
-  ierr         = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,NULL,&B);CHKERRQ(ierr);
+  PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,NULL,&B));
 
   /* Store right-hand-side of PDE and exact solution */
   for (i=0; i<n; i++) {
     v    = 6.0*xp + PetscPowScalar(xp+1.e-12,6.0); /* +1.e-12 is to prevent 0^6 */
-    ierr = VecSetValues(F,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(VecSetValues(F,1,&i,&v,INSERT_VALUES));
     v    = xp*xp*xp;
-    ierr = VecSetValues(U,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(VecSetValues(U,1,&i,&v,INSERT_VALUES));
     xp  += h;
   }
 
   /* Create nonlinear solver */
-  ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
-  ierr = SNESSetType(snes,type);CHKERRQ(ierr);
+  PetscCall(SNESCreate(PETSC_COMM_WORLD,&snes));
+  PetscCall(SNESSetType(snes,type));
 
   /* Set various routines and options */
-  ierr = SNESSetFunction(snes,r,FormFunction,F);CHKERRQ(ierr);
+  PetscCall(SNESSetFunction(snes,r,FormFunction,F));
   if (user.variant) {
     /* this approach is not normally needed, one should use the MatCreateSNESMF() below usually */
-    ierr = MatCreateMFFD(PETSC_COMM_WORLD,n,n,n,n,&J);CHKERRQ(ierr);
-    ierr = MatMFFDSetFunction(J,(PetscErrorCode (*)(void*, Vec, Vec))SNESComputeFunction,snes);CHKERRQ(ierr);
-    ierr = MatMFFDSetFunctioni(J,FormFunctioni);CHKERRQ(ierr);
+    PetscCall(MatCreateMFFD(PETSC_COMM_WORLD,n,n,n,n,&J));
+    PetscCall(MatMFFDSetFunction(J,(PetscErrorCode (*)(void*, Vec, Vec))SNESComputeFunction,snes));
+    PetscCall(MatMFFDSetFunctioni(J,FormFunctioni));
     /* Use the matrix free operator for both the Jacobian used to define the linear system and used to define the preconditioner */
     /* This tests MatGetDiagonal() for MATMFFD */
-    ierr = PetscOptionsHasName(NULL,NULL,"-puremf",&puremf);CHKERRQ(ierr);
+    PetscCall(PetscOptionsHasName(NULL,NULL,"-puremf",&puremf));
   } else {
     /* create matrix free matrix for Jacobian */
-    ierr = MatCreateSNESMF(snes,&J);CHKERRQ(ierr);
+    PetscCall(MatCreateSNESMF(snes,&J));
     /* demonstrates differencing a different function than FormFunction() to apply a matrix operator */
     /* note we use the same context for this function as FormFunction, the F vector */
-    ierr = MatMFFDSetFunction(J,OtherFunctionForDifferencing,F);CHKERRQ(ierr);
+    PetscCall(MatMFFDSetFunction(J,OtherFunctionForDifferencing,F));
   }
 
   /* Set various routines and options */
-  ierr = SNESSetJacobian(snes,J,puremf ? J : B,puremf ? FormJacobianNoMatrix : FormJacobian,&user);CHKERRQ(ierr);
-  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+  PetscCall(SNESSetJacobian(snes,J,puremf ? J : B,puremf ? FormJacobianNoMatrix : FormJacobian,&user));
+  PetscCall(SNESSetFromOptions(snes));
 
   /* Solve nonlinear system */
-  ierr = FormInitialGuess(snes,x);CHKERRQ(ierr);
-  ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
-  ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"number of SNES iterations = %D\n\n",its);CHKERRQ(ierr);
+  PetscCall(FormInitialGuess(snes,x));
+  PetscCall(SNESSolve(snes,NULL,x));
+  PetscCall(SNESGetIterationNumber(snes,&its));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"number of SNES iterations = %D\n\n",its));
 
   /* Free data structures */
-  ierr = VecDestroy(&x);CHKERRQ(ierr);  ierr = VecDestroy(&r);CHKERRQ(ierr);
-  ierr = VecDestroy(&U);CHKERRQ(ierr);  ierr = VecDestroy(&F);CHKERRQ(ierr);
-  ierr = MatDestroy(&J);CHKERRQ(ierr);  ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(VecDestroy(&x));  PetscCall(VecDestroy(&r));
+  PetscCall(VecDestroy(&U));  PetscCall(VecDestroy(&F));
+  PetscCall(MatDestroy(&J));  PetscCall(MatDestroy(&B));
+  PetscCall(SNESDestroy(&snes));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 /* --------------------  Evaluate Function F(x) --------------------- */
 
@@ -104,19 +103,18 @@ PetscErrorCode  FormFunction(SNES snes,Vec x,Vec f,void *dummy)
   const PetscScalar *xx,*FF;
   PetscScalar       *ff,d;
   PetscInt          i,n;
-  PetscErrorCode    ierr;
 
-  ierr  = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
-  ierr  = VecGetArray(f,&ff);CHKERRQ(ierr);
-  ierr  = VecGetArrayRead((Vec) dummy,&FF);CHKERRQ(ierr);
-  ierr  = VecGetSize(x,&n);CHKERRQ(ierr);
+  PetscCall(VecGetArrayRead(x,&xx));
+  PetscCall(VecGetArray(f,&ff));
+  PetscCall(VecGetArrayRead((Vec) dummy,&FF));
+  PetscCall(VecGetSize(x,&n));
   d     = (PetscReal)(n - 1); d = d*d;
   ff[0] = xx[0];
   for (i=1; i<n-1; i++) ff[i] = d*(xx[i-1] - 2.0*xx[i] + xx[i+1]) + xx[i]*xx[i] - FF[i];
   ff[n-1] = xx[n-1] - 1.0;
-  ierr    = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
-  ierr    = VecRestoreArray(f,&ff);CHKERRQ(ierr);
-  ierr    = VecRestoreArrayRead((Vec)dummy,&FF);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(x,&xx));
+  PetscCall(VecRestoreArray(f,&ff));
+  PetscCall(VecRestoreArrayRead((Vec)dummy,&FF));
   return 0;
 }
 
@@ -125,14 +123,13 @@ PetscErrorCode  FormFunctioni(void *dummy,PetscInt i,Vec x,PetscScalar *s)
   const PetscScalar *xx,*FF;
   PetscScalar       d;
   PetscInt          n;
-  PetscErrorCode    ierr;
   SNES              snes = (SNES) dummy;
   Vec               F;
 
-  ierr  = SNESGetFunction(snes,NULL,NULL,(void**)&F);CHKERRQ(ierr);
-  ierr  = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
-  ierr  = VecGetArrayRead(F,&FF);CHKERRQ(ierr);
-  ierr  = VecGetSize(x,&n);CHKERRQ(ierr);
+  PetscCall(SNESGetFunction(snes,NULL,NULL,(void**)&F));
+  PetscCall(VecGetArrayRead(x,&xx));
+  PetscCall(VecGetArrayRead(F,&FF));
+  PetscCall(VecGetSize(x,&n));
   d     = (PetscReal)(n - 1); d = d*d;
   if (i == 0) {
     *s = xx[0];
@@ -141,8 +138,8 @@ PetscErrorCode  FormFunctioni(void *dummy,PetscInt i,Vec x,PetscScalar *s)
   } else {
     *s = d*(xx[i-1] - 2.0*xx[i] + xx[i+1]) + xx[i]*xx[i] - FF[i];
   }
-  ierr    = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
-  ierr    = VecRestoreArrayRead(F,&FF);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(x,&xx));
+  PetscCall(VecRestoreArrayRead(F,&FF));
   return 0;
 }
 
@@ -153,10 +150,9 @@ PetscErrorCode  FormFunctioni(void *dummy,PetscInt i,Vec x,PetscScalar *s)
 */
 PetscErrorCode  OtherFunctionForDifferencing(void *dummy,Vec x,Vec f)
 {
-  PetscErrorCode ierr;
 
-  ierr = FormFunction(NULL,x,f,dummy);CHKERRQ(ierr);
-  ierr = VecShift(f,1.0);CHKERRQ(ierr);
+  PetscCall(FormFunction(NULL,x,f,dummy));
+  PetscCall(VecShift(f,1.0));
   return 0;
 }
 
@@ -164,9 +160,8 @@ PetscErrorCode  OtherFunctionForDifferencing(void *dummy,Vec x,Vec f)
 
 PetscErrorCode  FormInitialGuess(SNES snes,Vec x)
 {
-  PetscErrorCode ierr;
   PetscScalar    pfive = .50;
-  ierr = VecSet(x,pfive);CHKERRQ(ierr);
+  PetscCall(VecSet(x,pfive));
   return 0;
 }
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
@@ -180,44 +175,42 @@ PetscErrorCode  FormJacobian(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
   const PetscScalar *xx;
   PetscScalar       A[3],d;
   PetscInt          i,n,j[3];
-  PetscErrorCode    ierr;
   AppCtx            *user = (AppCtx*) dummy;
 
-  ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
-  ierr = VecGetSize(x,&n);CHKERRQ(ierr);
+  PetscCall(VecGetArrayRead(x,&xx));
+  PetscCall(VecGetSize(x,&n));
   d    = (PetscReal)(n - 1); d = d*d;
 
   i    = 0; A[0] = 1.0;
-  ierr = MatSetValues(B,1,&i,1,&i,&A[0],INSERT_VALUES);CHKERRQ(ierr);
+  PetscCall(MatSetValues(B,1,&i,1,&i,&A[0],INSERT_VALUES));
   for (i=1; i<n-1; i++) {
     j[0] = i - 1; j[1] = i;                   j[2] = i + 1;
     A[0] = d;     A[1] = -2.0*d + 2.0*xx[i];  A[2] = d;
-    ierr = MatSetValues(B,1,&i,3,j,A,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(MatSetValues(B,1,&i,3,j,A,INSERT_VALUES));
   }
   i     = n-1; A[0] = 1.0;
-  ierr  = MatSetValues(B,1,&i,1,&i,&A[0],INSERT_VALUES);CHKERRQ(ierr);
-  ierr  = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr  = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr  = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
+  PetscCall(MatSetValues(B,1,&i,1,&i,&A[0],INSERT_VALUES));
+  PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(VecRestoreArrayRead(x,&xx));
 
   if (user->variant) {
-    ierr = MatMFFDSetBase(jac,x,NULL);CHKERRQ(ierr);
+    PetscCall(MatMFFDSetBase(jac,x,NULL));
   }
-  ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
   return 0;
 }
 
 PetscErrorCode  FormJacobianNoMatrix(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
 {
-  PetscErrorCode    ierr;
   AppCtx            *user = (AppCtx*) dummy;
 
   if (user->variant) {
-    ierr = MatMFFDSetBase(jac,x,NULL);CHKERRQ(ierr);
+    PetscCall(MatMFFDSetBase(jac,x,NULL));
   }
-  ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
   return 0;
 }
 
@@ -225,15 +218,14 @@ PetscErrorCode  FormJacobianNoMatrix(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
 
 PetscErrorCode  Monitor(SNES snes,PetscInt its,PetscReal fnorm,void *dummy)
 {
-  PetscErrorCode ierr;
   MonitorCtx     *monP = (MonitorCtx*) dummy;
   Vec            x;
   MPI_Comm       comm;
 
-  ierr = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,stdout,"iter = %D, SNES Function norm %g \n",its,(double)fnorm);CHKERRQ(ierr);
-  ierr = SNESGetSolution(snes,&x);CHKERRQ(ierr);
-  ierr = VecView(x,monP->viewer);CHKERRQ(ierr);
+  PetscCall(PetscObjectGetComm((PetscObject)snes,&comm));
+  PetscCall(PetscFPrintf(comm,stdout,"iter = %D, SNES Function norm %g \n",its,(double)fnorm));
+  PetscCall(SNESGetSolution(snes,&x));
+  PetscCall(VecView(x,monP->viewer));
   return 0;
 }
 

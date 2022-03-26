@@ -15,37 +15,36 @@ int main(int argc,char **argv)
   Vec            xy,sxy;
   DM             da,sda = NULL;
   PetscSF        sf;
-  PetscErrorCode ierr;
   PetscInt       m = 10, n = 10, dof = 2;
   MatStencil     lower = {0,3,2,0}, upper = {0,7,8,0}; /* These are in the order of the z, y, x, logical coordinates, the fourth entry is ignored */
   MPI_Comm       comm;
   PetscMPIInt    rank;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* create the large DMDA and set coordinates (which we will copy down to the small DA). */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,m,n,PETSC_DECIDE,PETSC_DECIDE,dof,1,0,0,&da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
-  ierr = DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,m,n,PETSC_DECIDE,PETSC_DECIDE,dof,1,0,0,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,1.0));
   /* Just as a simple example we use the coordinates as the variables in the vectors we wish to examine. */
-  ierr = DMGetCoordinates(da,&xy);CHKERRQ(ierr);
+  PetscCall(DMGetCoordinates(da,&xy));
   /* The vector entries are displayed in the "natural" ordering on the two dimensional grid; interlaced x and y with with the x variable increasing more rapidly than the y */
-  ierr = VecView(xy,0);CHKERRQ(ierr);
+  PetscCall(VecView(xy,0));
 
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   if (rank == 0) comm = MPI_COMM_SELF;
   else comm = MPI_COMM_NULL;
 
-  ierr = DMPatchZoom(da,lower,upper,comm,&sda, NULL,&sf);CHKERRQ(ierr);
+  PetscCall(DMPatchZoom(da,lower,upper,comm,&sda, NULL,&sf));
   if (rank == 0) {
-    ierr = DMCreateGlobalVector(sda,&sxy);CHKERRQ(ierr);
+    PetscCall(DMCreateGlobalVector(sda,&sxy));
   } else {
-    ierr = VecCreateSeq(PETSC_COMM_SELF,0,&sxy);CHKERRQ(ierr);
+    PetscCall(VecCreateSeq(PETSC_COMM_SELF,0,&sxy));
   }
   /*  A PetscSF can also be used as a VecScatter context */
-  ierr = VecScatterBegin(sf,xy,sxy,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(sf,xy,sxy,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  PetscCall(VecScatterBegin(sf,xy,sxy,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(sf,xy,sxy,INSERT_VALUES,SCATTER_FORWARD));
   /* Only rank == 0 has the entries of the patch, so run code only at that rank */
   if (rank == 0) {
     Field         **vars;
@@ -54,26 +53,26 @@ int main(int argc,char **argv)
     PetscScalar   sum = 0;
 
     /* The vector entries of the patch are displayed in the "natural" ordering on the two grid; interlaced x and y with with the x variable increasing more rapidly */
-    ierr = VecView(sxy,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    PetscCall(VecView(sxy,PETSC_VIEWER_STDOUT_SELF));
     /* Compute some trivial statistic of the coordinates */
-    ierr = DMDAGetLocalInfo(sda,&info);CHKERRQ(ierr);
-    ierr = DMDAVecGetArray(sda,sxy,&vars);CHKERRQ(ierr);
+    PetscCall(DMDAGetLocalInfo(sda,&info));
+    PetscCall(DMDAVecGetArray(sda,sxy,&vars));
     /* Loop over the patch of the entire domain */
     for (j=info.ys; j<info.ys+info.ym; j++) {
       for (i=info.xs; i<info.xs+info.xm; i++) {
         sum += vars[j][i].x;
       }
     }
-    ierr = PetscPrintf(PETSC_COMM_SELF,"The sum of the x coordinates is %g\n",(double)PetscRealPart(sum));CHKERRQ(ierr);
-    ierr = DMDAVecRestoreArray(sda,sxy,&vars);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"The sum of the x coordinates is %g\n",(double)PetscRealPart(sum)));
+    PetscCall(DMDAVecRestoreArray(sda,sxy,&vars));
   }
 
-  ierr = VecDestroy(&sxy);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
-  ierr = DMDestroy(&sda);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(VecDestroy(&sxy));
+  PetscCall(PetscSFDestroy(&sf));
+  PetscCall(DMDestroy(&sda));
+  PetscCall(DMDestroy(&da));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

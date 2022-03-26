@@ -55,13 +55,12 @@ int main(int argc,char **argv)
   Mat            J;                  /* Jacobian matrix */
   AppCtx         user;               /* user-defined work context */
   PetscInt       its,N;                /* iterations for convergence */
-  PetscErrorCode ierr;
   PetscReal      param_max = 6.81,param_min = 0.,dt;
   PetscReal      ftime;
   PetscMPIInt    size;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only");
 
   user.mx    = 4;
@@ -81,8 +80,8 @@ int main(int argc,char **argv)
   /*
       Create vectors to hold the solution and function value
   */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,N,&x));
+  PetscCall(VecDuplicate(x,&r));
 
   /*
     Create matrix to hold Jacobian. Preallocate 5 nonzeros per row
@@ -90,18 +89,18 @@ int main(int argc,char **argv)
     the Performance chapter of the users manual for information on
     preallocating memory in sparse matrices.
   */
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,5,0,&J);CHKERRQ(ierr);
+  PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,5,0,&J));
 
   /*
      Create timestepper context
   */
-  ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
+  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
+  PetscCall(TSSetProblemType(ts,TS_NONLINEAR));
 
   /*
      Tell the timestepper context where to compute solutions
   */
-  ierr = TSSetSolution(ts,x);CHKERRQ(ierr);
+  PetscCall(TSSetSolution(ts,x));
 
   /*
      Provide the call-back for the nonlinear function we are
@@ -109,75 +108,75 @@ int main(int argc,char **argv)
      function they will call this routine. Note the final argument
      is the application context used by the call-back functions.
   */
-  ierr = TSSetRHSFunction(ts,NULL,FormFunction,&user);CHKERRQ(ierr);
+  PetscCall(TSSetRHSFunction(ts,NULL,FormFunction,&user));
 
   /*
      Set the Jacobian matrix and the function used to compute
      Jacobians.
   */
-  ierr = TSSetRHSJacobian(ts,J,J,FormJacobian,&user);CHKERRQ(ierr);
+  PetscCall(TSSetRHSJacobian(ts,J,J,FormJacobian,&user));
 
   /*
        Form the initial guess for the problem
   */
-  ierr = FormInitialGuess(x,&user);CHKERRQ(ierr);
+  PetscCall(FormInitialGuess(x,&user));
 
   /*
        This indicates that we are using pseudo timestepping to
      find a steady state solution to the nonlinear problem.
   */
-  ierr = TSSetType(ts,TSPSEUDO);CHKERRQ(ierr);
+  PetscCall(TSSetType(ts,TSPSEUDO));
 
   /*
        Set the initial time to start at (this is arbitrary for
      steady state problems); and the initial timestep given above
   */
-  ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
+  PetscCall(TSSetTimeStep(ts,dt));
 
   /*
       Set a large number of timesteps and final duration time
      to insure convergence to steady state.
   */
-  ierr = TSSetMaxSteps(ts,10000);CHKERRQ(ierr);
-  ierr = TSSetMaxTime(ts,1e12);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
+  PetscCall(TSSetMaxSteps(ts,10000));
+  PetscCall(TSSetMaxTime(ts,1e12));
+  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
 
   /*
       Use the default strategy for increasing the timestep
   */
-  ierr = TSPseudoSetTimeStep(ts,TSPseudoTimeStepDefault,0);CHKERRQ(ierr);
+  PetscCall(TSPseudoSetTimeStep(ts,TSPseudoTimeStepDefault,0));
 
   /*
       Set any additional options from the options database. This
      includes all options for the nonlinear and linear solvers used
      internally the timestepping routines.
   */
-  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
+  PetscCall(TSSetFromOptions(ts));
 
-  ierr = TSSetUp(ts);CHKERRQ(ierr);
+  PetscCall(TSSetUp(ts));
 
   /*
       Perform the solve. This is where the timestepping takes place.
   */
-  ierr = TSSolve(ts,x);CHKERRQ(ierr);
-  ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
+  PetscCall(TSSolve(ts,x));
+  PetscCall(TSGetSolveTime(ts,&ftime));
 
   /*
       Get the number of steps
   */
-  ierr = TSGetStepNumber(ts,&its);CHKERRQ(ierr);
+  PetscCall(TSGetStepNumber(ts,&its));
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of pseudo timesteps = %D final time %4.2e\n",its,(double)ftime);CHKERRQ(ierr);
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of pseudo timesteps = %D final time %4.2e\n",its,(double)ftime));
 
   /*
      Free the data structures constructed above
   */
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&r);CHKERRQ(ierr);
-  ierr = MatDestroy(&J);CHKERRQ(ierr);
-  ierr = TSDestroy(&ts);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&r));
+  PetscCall(MatDestroy(&J));
+  PetscCall(TSDestroy(&ts));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 /* ------------------------------------------------------------------ */
 /*           Bratu (Solid Fuel Ignition) Test Problem                 */
@@ -188,7 +187,6 @@ int main(int argc,char **argv)
 PetscErrorCode FormInitialGuess(Vec X,AppCtx *user)
 {
   PetscInt       i,j,row,mx,my;
-  PetscErrorCode ierr;
   PetscReal      one = 1.0,lambda;
   PetscReal      temp1,temp,hx,hy;
   PetscScalar    *x;
@@ -200,7 +198,7 @@ PetscErrorCode FormInitialGuess(Vec X,AppCtx *user)
   hx = one / (PetscReal)(mx-1);
   hy = one / (PetscReal)(my-1);
 
-  ierr  = VecGetArray(X,&x);CHKERRQ(ierr);
+  PetscCall(VecGetArray(X,&x));
   temp1 = lambda/(lambda + one);
   for (j=0; j<my; j++) {
     temp = (PetscReal)(PetscMin(j,my-j-1))*hy;
@@ -213,7 +211,7 @@ PetscErrorCode FormInitialGuess(Vec X,AppCtx *user)
       x[row] = temp1*PetscSqrtReal(PetscMin((PetscReal)(PetscMin(i,mx-i-1))*hx,temp));
     }
   }
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(X,&x));
   return 0;
 }
 /* --------------------  Evaluate Function F(x) --------------------- */
@@ -221,7 +219,6 @@ PetscErrorCode FormInitialGuess(Vec X,AppCtx *user)
 PetscErrorCode FormFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 {
   AppCtx            *user = (AppCtx*)ptr;
-  PetscErrorCode    ierr;
   PetscInt          i,j,row,mx,my;
   PetscReal         two = 2.0,one = 1.0,lambda;
   PetscReal         hx,hy,hxdhy,hydhx;
@@ -238,8 +235,8 @@ PetscErrorCode FormFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
   hxdhy = hx/hy;
   hydhx = hy/hx;
 
-  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+  PetscCall(VecGetArrayRead(X,&x));
+  PetscCall(VecGetArray(F,&f));
   for (j=0; j<my; j++) {
     for (i=0; i<mx; i++) {
       row = i + j*mx;
@@ -257,8 +254,8 @@ PetscErrorCode FormFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
       f[row] = -uxx + -uyy + sc*lambda*PetscExpScalar(u);
     }
   }
-  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(X,&x));
+  PetscCall(VecRestoreArray(F,&f));
   return 0;
 }
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
@@ -275,7 +272,6 @@ PetscErrorCode FormJacobian(TS ts,PetscReal t,Vec X,Mat J,Mat B,void *ptr)
 {
   AppCtx            *user = (AppCtx*)ptr;
   PetscInt          i,j,row,mx,my,col[5];
-  PetscErrorCode    ierr;
   PetscScalar       two = 2.0,one = 1.0,lambda,v[5],sc;
   const PetscScalar *x;
   PetscReal         hx,hy,hxdhy,hydhx;
@@ -290,12 +286,12 @@ PetscErrorCode FormJacobian(TS ts,PetscReal t,Vec X,Mat J,Mat B,void *ptr)
   hxdhy = hx/hy;
   hydhx = hy/hx;
 
-  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
+  PetscCall(VecGetArrayRead(X,&x));
   for (j=0; j<my; j++) {
     for (i=0; i<mx; i++) {
       row = i + j*mx;
       if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
-        ierr = MatSetValues(B,1,&row,1,&row,&one,INSERT_VALUES);CHKERRQ(ierr);
+        PetscCall(MatSetValues(B,1,&row,1,&row,&one,INSERT_VALUES));
         continue;
       }
       v[0] = hxdhy; col[0] = row - mx;
@@ -303,15 +299,15 @@ PetscErrorCode FormJacobian(TS ts,PetscReal t,Vec X,Mat J,Mat B,void *ptr)
       v[2] = -two*(hydhx + hxdhy) + sc*lambda*PetscExpScalar(x[row]); col[2] = row;
       v[3] = hydhx; col[3] = row + 1;
       v[4] = hxdhy; col[4] = row + mx;
-      ierr = MatSetValues(B,1,&row,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
+      PetscCall(MatSetValues(B,1,&row,5,col,v,INSERT_VALUES));
     }
   }
-  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(X,&x));
+  PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
   if (J != B) {
-    ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    PetscCall(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY));
   }
   return 0;
 }

@@ -10,39 +10,38 @@ static char help[] = "Benchmarking hipPointerGetAttributes() time\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode               ierr;
   PetscInt                     i,n=2000;
   hipError_t                   cerr;
   PetscScalar                  **ptrs;
   PetscLogDouble               tstart,tend,time;
   hipPointerAttribute_t        attr;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
-  ierr = PetscMalloc1(n,&ptrs);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(n,&ptrs));
   for (i=0; i<n; i++) {
-    if (i%2) {ierr = PetscMalloc1(i+16,&ptrs[i]);CHKERRQ(ierr);}
-    else {cerr = hipMalloc((void**)&ptrs[i],(i+16)*sizeof(PetscScalar));CHKERRHIP(cerr);}
+    if (i%2) PetscCall(PetscMalloc1(i+16,&ptrs[i]));
+    else PetscCallHIP(hipMalloc((void**)&ptrs[i],(i+16)*sizeof(PetscScalar)));
   }
 
-  ierr = PetscTime(&tstart);CHKERRQ(ierr);
+  PetscCall(PetscTime(&tstart));
   for (i=0; i<n; i++) {
     cerr = hipPointerGetAttributes(&attr,ptrs[i]);
     if (cerr) hipGetLastError();
   }
-  ierr = PetscTime(&tend);CHKERRQ(ierr);
+  PetscCall(PetscTime(&tend));
   time = (tend-tstart)*1e6/n;
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Average hipPointerGetAttributes() time = %.2f microseconds\n",time);CHKERRQ(ierr);
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Average hipPointerGetAttributes() time = %.2f microseconds\n",time));
 
   for (i=0; i<n; i++) {
-    if (i%2) {ierr = PetscFree(ptrs[i]);CHKERRQ(ierr);}
-    else {cerr = hipFree(ptrs[i]);CHKERRHIP(cerr);}
+    if (i%2) PetscCall(PetscFree(ptrs[i]));
+    else PetscCallHIP(hipFree(ptrs[i]));
   }
-  ierr = PetscFree(ptrs);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFree(ptrs));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

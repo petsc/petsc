@@ -14,60 +14,59 @@ static PetscErrorCode private_PetscFECreateDefault_scalar_pk1(DM dm, PetscInt di
   PetscDualSpace  Q;
   PetscInt        order, quadPointsPerEdge;
   PetscBool       tensor = isSimplex ? PETSC_FALSE : PETSC_TRUE;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   /* Create space */
-  ierr = PetscSpaceCreate(PetscObjectComm((PetscObject) dm), &P);CHKERRQ(ierr);
-  /*ierr = PetscObjectSetOptionsPrefix((PetscObject) P, prefix);CHKERRQ(ierr);*/
-  ierr = PetscSpacePolynomialSetTensor(P, tensor);CHKERRQ(ierr);
-  /*ierr = PetscSpaceSetFromOptions(P);CHKERRQ(ierr);*/
-  ierr = PetscSpaceSetType(P,PETSCSPACEPOLYNOMIAL);CHKERRQ(ierr);
-  ierr = PetscSpaceSetDegree(P,1,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = PetscSpaceSetNumComponents(P, Nc);CHKERRQ(ierr);
-  ierr = PetscSpaceSetNumVariables(P, dim);CHKERRQ(ierr);
-  ierr = PetscSpaceSetUp(P);CHKERRQ(ierr);
-  ierr = PetscSpaceGetDegree(P, &order, NULL);CHKERRQ(ierr);
-  ierr = PetscSpacePolynomialGetTensor(P, &tensor);CHKERRQ(ierr);
+  PetscCall(PetscSpaceCreate(PetscObjectComm((PetscObject) dm), &P));
+  /* PetscCall(PetscObjectSetOptionsPrefix((PetscObject) P, prefix)); */
+  PetscCall(PetscSpacePolynomialSetTensor(P, tensor));
+  /* PetscCall(PetscSpaceSetFromOptions(P)); */
+  PetscCall(PetscSpaceSetType(P,PETSCSPACEPOLYNOMIAL));
+  PetscCall(PetscSpaceSetDegree(P,1,PETSC_DETERMINE));
+  PetscCall(PetscSpaceSetNumComponents(P, Nc));
+  PetscCall(PetscSpaceSetNumVariables(P, dim));
+  PetscCall(PetscSpaceSetUp(P));
+  PetscCall(PetscSpaceGetDegree(P, &order, NULL));
+  PetscCall(PetscSpacePolynomialGetTensor(P, &tensor));
   /* Create dual space */
-  ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) dm), &Q);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetType(Q,PETSCDUALSPACELAGRANGE);CHKERRQ(ierr);
-  /*ierr = PetscObjectSetOptionsPrefix((PetscObject) Q, prefix);CHKERRQ(ierr);*/
-  ierr = DMPlexCreateReferenceCell(PETSC_COMM_SELF, DMPolytopeTypeSimpleShape(dim, isSimplex), &K);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetDM(Q, K);CHKERRQ(ierr);
-  ierr = DMDestroy(&K);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetNumComponents(Q, Nc);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetOrder(Q, order);CHKERRQ(ierr);
-  ierr = PetscDualSpaceLagrangeSetTensor(Q, tensor);CHKERRQ(ierr);
-  /*ierr = PetscDualSpaceSetFromOptions(Q);CHKERRQ(ierr);*/
-  ierr = PetscDualSpaceSetType(Q,PETSCDUALSPACELAGRANGE);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetUp(Q);CHKERRQ(ierr);
+  PetscCall(PetscDualSpaceCreate(PetscObjectComm((PetscObject) dm), &Q));
+  PetscCall(PetscDualSpaceSetType(Q,PETSCDUALSPACELAGRANGE));
+  /* PetscCall(PetscObjectSetOptionsPrefix((PetscObject) Q, prefix)); */
+  PetscCall(DMPlexCreateReferenceCell(PETSC_COMM_SELF, DMPolytopeTypeSimpleShape(dim, isSimplex), &K));
+  PetscCall(PetscDualSpaceSetDM(Q, K));
+  PetscCall(DMDestroy(&K));
+  PetscCall(PetscDualSpaceSetNumComponents(Q, Nc));
+  PetscCall(PetscDualSpaceSetOrder(Q, order));
+  PetscCall(PetscDualSpaceLagrangeSetTensor(Q, tensor));
+  /* PetscCall(PetscDualSpaceSetFromOptions(Q)); */
+  PetscCall(PetscDualSpaceSetType(Q,PETSCDUALSPACELAGRANGE));
+  PetscCall(PetscDualSpaceSetUp(Q));
   /* Create element */
-  ierr = PetscFECreate(PetscObjectComm((PetscObject) dm), fem);CHKERRQ(ierr);
-  /*ierr = PetscObjectSetOptionsPrefix((PetscObject) *fem, prefix);CHKERRQ(ierr);*/
-  /*ierr = PetscFESetFromOptions(*fem);CHKERRQ(ierr);*/
-  ierr = PetscFESetType(*fem,PETSCFEBASIC);CHKERRQ(ierr);
-  ierr = PetscFESetBasisSpace(*fem, P);CHKERRQ(ierr);
-  ierr = PetscFESetDualSpace(*fem, Q);CHKERRQ(ierr);
-  ierr = PetscFESetNumComponents(*fem, Nc);CHKERRQ(ierr);
-  ierr = PetscFESetUp(*fem);CHKERRQ(ierr);
-  ierr = PetscSpaceDestroy(&P);CHKERRQ(ierr);
-  ierr = PetscDualSpaceDestroy(&Q);CHKERRQ(ierr);
+  PetscCall(PetscFECreate(PetscObjectComm((PetscObject) dm), fem));
+  /* PetscCall(PetscObjectSetOptionsPrefix((PetscObject) *fem, prefix)); */
+  /* PetscCall(PetscFESetFromOptions(*fem)); */
+  PetscCall(PetscFESetType(*fem,PETSCFEBASIC));
+  PetscCall(PetscFESetBasisSpace(*fem, P));
+  PetscCall(PetscFESetDualSpace(*fem, Q));
+  PetscCall(PetscFESetNumComponents(*fem, Nc));
+  PetscCall(PetscFESetUp(*fem));
+  PetscCall(PetscSpaceDestroy(&P));
+  PetscCall(PetscDualSpaceDestroy(&Q));
   /* Create quadrature (with specified order if given) */
   qorder = qorder >= 0 ? qorder : order;
   quadPointsPerEdge = PetscMax(qorder + 1,1);
   if (isSimplex) {
-    ierr = PetscDTStroudConicalQuadrature(dim,   1, quadPointsPerEdge, -1.0, 1.0, &q);CHKERRQ(ierr);
-    ierr = PetscDTStroudConicalQuadrature(dim-1, 1, quadPointsPerEdge, -1.0, 1.0, &fq);CHKERRQ(ierr);
+    PetscCall(PetscDTStroudConicalQuadrature(dim,   1, quadPointsPerEdge, -1.0, 1.0, &q));
+    PetscCall(PetscDTStroudConicalQuadrature(dim-1, 1, quadPointsPerEdge, -1.0, 1.0, &fq));
   }
   else {
-    ierr = PetscDTGaussTensorQuadrature(dim,   1, quadPointsPerEdge, -1.0, 1.0, &q);CHKERRQ(ierr);
-    ierr = PetscDTGaussTensorQuadrature(dim-1, 1, quadPointsPerEdge, -1.0, 1.0, &fq);CHKERRQ(ierr);
+    PetscCall(PetscDTGaussTensorQuadrature(dim,   1, quadPointsPerEdge, -1.0, 1.0, &q));
+    PetscCall(PetscDTGaussTensorQuadrature(dim-1, 1, quadPointsPerEdge, -1.0, 1.0, &fq));
   }
-  ierr = PetscFESetQuadrature(*fem, q);CHKERRQ(ierr);
-  ierr = PetscFESetFaceQuadrature(*fem, fq);CHKERRQ(ierr);
-  ierr = PetscQuadratureDestroy(&q);CHKERRQ(ierr);
-  ierr = PetscQuadratureDestroy(&fq);CHKERRQ(ierr);
+  PetscCall(PetscFESetQuadrature(*fem, q));
+  PetscCall(PetscFESetFaceQuadrature(*fem, fq));
+  PetscCall(PetscQuadratureDestroy(&q));
+  PetscCall(PetscQuadratureDestroy(&fq));
   PetscFunctionReturn(0);
 }
 
@@ -75,7 +74,6 @@ PetscErrorCode subdivide_triangle(PetscReal v1[2],PetscReal v2[2],PetscReal v3[2
 {
   PetscReal      v12[2],v23[2],v31[2];
   PetscInt       i;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (depth == max) {
@@ -98,16 +96,15 @@ PetscErrorCode subdivide_triangle(PetscReal v1[2],PetscReal v2[2],PetscReal v3[2
   }
 
   /* recursively subdivide new triangles */
-  ierr = subdivide_triangle(v1,v12,v31,depth+1,max,xi,np);CHKERRQ(ierr);
-  ierr = subdivide_triangle(v2,v23,v12,depth+1,max,xi,np);CHKERRQ(ierr);
-  ierr = subdivide_triangle(v3,v31,v23,depth+1,max,xi,np);CHKERRQ(ierr);
-  ierr = subdivide_triangle(v12,v23,v31,depth+1,max,xi,np);CHKERRQ(ierr);
+  PetscCall(subdivide_triangle(v1,v12,v31,depth+1,max,xi,np));
+  PetscCall(subdivide_triangle(v2,v23,v12,depth+1,max,xi,np));
+  PetscCall(subdivide_triangle(v3,v31,v23,depth+1,max,xi,np));
+  PetscCall(subdivide_triangle(v12,v23,v31,depth+1,max,xi,np));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX2D_SubDivide(DM dm,DM dmc,PetscInt nsub)
 {
-  PetscErrorCode ierr;
   const PetscInt dim = 2;
   PetscInt       q,npoints_q,e,nel,npe,pcnt,ps,pe,d,k,depth;
   PetscReal      *xi;
@@ -122,19 +119,19 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX2D_SubDivide(DM dm,DM 
   PetscFunctionBegin;
   npoints_q = 1;
   for (d=0; d<nsub; d++) { npoints_q *= 4; }
-  ierr = PetscMalloc1(dim*npoints_q,&xi);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(dim*npoints_q,&xi));
 
   v1[0] = 0.0;  v1[1] = 0.0;
   v2[0] = 1.0;  v2[1] = 0.0;
   v3[0] = 0.0;  v3[1] = 1.0;
   depth = 0;
   pcnt = 0;
-  ierr = subdivide_triangle(v1,v2,v3,depth,nsub,xi,&pcnt);CHKERRQ(ierr);
+  PetscCall(subdivide_triangle(v1,v2,v3,depth,nsub,xi,&pcnt));
 
   npe = 3; /* nodes per element (triangle) */
-  ierr = PetscMalloc1(npoints_q,&basis);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(npoints_q,&basis));
   for (q=0; q<npoints_q; q++) {
-    ierr = PetscMalloc1(npe,&basis[q]);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(npe,&basis[q]));
 
     basis[q][0] = 1.0 - xi[dim*q+0] - xi[dim*q+1];
     basis[q][1] = xi[dim*q+0];
@@ -142,19 +139,19 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX2D_SubDivide(DM dm,DM 
   }
 
   /* 0->cell, 1->edge, 2->vert */
-  ierr = DMPlexGetHeightStratum(dmc,0,&ps,&pe);CHKERRQ(ierr);
+  PetscCall(DMPlexGetHeightStratum(dmc,0,&ps,&pe));
   nel = pe - ps;
 
-  ierr = DMSwarmSetLocalSizes(dm,npoints_q*nel,-1);CHKERRQ(ierr);
-  ierr = DMSwarmGetField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor);CHKERRQ(ierr);
-  ierr = DMSwarmGetField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid);CHKERRQ(ierr);
+  PetscCall(DMSwarmSetLocalSizes(dm,npoints_q*nel,-1));
+  PetscCall(DMSwarmGetField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor));
+  PetscCall(DMSwarmGetField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid));
 
-  ierr = DMGetCoordinatesLocal(dmc,&coorlocal);CHKERRQ(ierr);
-  ierr = DMGetCoordinateSection(dmc,&coordSection);CHKERRQ(ierr);
+  PetscCall(DMGetCoordinatesLocal(dmc,&coorlocal));
+  PetscCall(DMGetCoordinateSection(dmc,&coordSection));
 
   pcnt = 0;
   for (e=0; e<nel; e++) {
-    ierr = DMPlexVecGetClosure(dmc,coordSection,coorlocal,e,NULL,&elcoor);CHKERRQ(ierr);
+    PetscCall(DMPlexVecGetClosure(dmc,coordSection,coorlocal,e,NULL,&elcoor));
 
     for (q=0; q<npoints_q; q++) {
       for (d=0; d<dim; d++) {
@@ -166,22 +163,21 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX2D_SubDivide(DM dm,DM 
       swarm_cellid[pcnt] = e;
       pcnt++;
     }
-    ierr = DMPlexVecRestoreClosure(dmc,coordSection,coorlocal,e,NULL,&elcoor);CHKERRQ(ierr);
+    PetscCall(DMPlexVecRestoreClosure(dmc,coordSection,coorlocal,e,NULL,&elcoor));
   }
-  ierr = DMSwarmRestoreField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid);CHKERRQ(ierr);
-  ierr = DMSwarmRestoreField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor);CHKERRQ(ierr);
+  PetscCall(DMSwarmRestoreField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid));
+  PetscCall(DMSwarmRestoreField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor));
 
-  ierr = PetscFree(xi);CHKERRQ(ierr);
+  PetscCall(PetscFree(xi));
   for (q=0; q<npoints_q; q++) {
-    ierr = PetscFree(basis[q]);CHKERRQ(ierr);
+    PetscCall(PetscFree(basis[q]));
   }
-  ierr = PetscFree(basis);CHKERRQ(ierr);
+  PetscCall(PetscFree(basis));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX_SubDivide(DM dm,DM dmc,PetscInt nsub)
 {
-  PetscErrorCode  ierr;
   PetscInt        dim,nfaces,nbasis;
   PetscInt        q,npoints_q,e,nel,pcnt,ps,pe,d,k,r;
   PetscTabulation T;
@@ -196,39 +192,39 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX_SubDivide(DM dm,DM dm
   PetscBool       is_simplex;
 
   PetscFunctionBegin;
-  ierr = DMGetDimension(dmc,&dim);CHKERRQ(ierr);
+  PetscCall(DMGetDimension(dmc,&dim));
   is_simplex = PETSC_FALSE;
-  ierr = DMPlexGetHeightStratum(dmc,0,&ps,&pe);CHKERRQ(ierr);
-  ierr = DMPlexGetConeSize(dmc, ps, &nfaces);CHKERRQ(ierr);
+  PetscCall(DMPlexGetHeightStratum(dmc,0,&ps,&pe));
+  PetscCall(DMPlexGetConeSize(dmc, ps, &nfaces));
   if (nfaces == (dim+1)) { is_simplex = PETSC_TRUE; }
 
-  ierr = private_PetscFECreateDefault_scalar_pk1(dmc, dim, is_simplex, 0, &fe);CHKERRQ(ierr);
+  PetscCall(private_PetscFECreateDefault_scalar_pk1(dmc, dim, is_simplex, 0, &fe));
 
   for (r=0; r<nsub; r++) {
-    ierr = PetscFERefine(fe,&feRef);CHKERRQ(ierr);
-    ierr = PetscFECopyQuadrature(feRef,fe);CHKERRQ(ierr);
-    ierr = PetscFEDestroy(&feRef);CHKERRQ(ierr);
+    PetscCall(PetscFERefine(fe,&feRef));
+    PetscCall(PetscFECopyQuadrature(feRef,fe));
+    PetscCall(PetscFEDestroy(&feRef));
   }
 
-  ierr = PetscFEGetQuadrature(fe,&quadrature);CHKERRQ(ierr);
-  ierr = PetscQuadratureGetData(quadrature, NULL, NULL, &npoints_q, &xiq, NULL);CHKERRQ(ierr);
-  ierr = PetscFEGetDimension(fe,&nbasis);CHKERRQ(ierr);
-  ierr = PetscFEGetCellTabulation(fe, 1, &T);CHKERRQ(ierr);
+  PetscCall(PetscFEGetQuadrature(fe,&quadrature));
+  PetscCall(PetscQuadratureGetData(quadrature, NULL, NULL, &npoints_q, &xiq, NULL));
+  PetscCall(PetscFEGetDimension(fe,&nbasis));
+  PetscCall(PetscFEGetCellTabulation(fe, 1, &T));
 
   /* 0->cell, 1->edge, 2->vert */
-  ierr = DMPlexGetHeightStratum(dmc,0,&ps,&pe);CHKERRQ(ierr);
+  PetscCall(DMPlexGetHeightStratum(dmc,0,&ps,&pe));
   nel = pe - ps;
 
-  ierr = DMSwarmSetLocalSizes(dm,npoints_q*nel,-1);CHKERRQ(ierr);
-  ierr = DMSwarmGetField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor);CHKERRQ(ierr);
-  ierr = DMSwarmGetField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid);CHKERRQ(ierr);
+  PetscCall(DMSwarmSetLocalSizes(dm,npoints_q*nel,-1));
+  PetscCall(DMSwarmGetField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor));
+  PetscCall(DMSwarmGetField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid));
 
-  ierr = DMGetCoordinatesLocal(dmc,&coorlocal);CHKERRQ(ierr);
-  ierr = DMGetCoordinateSection(dmc,&coordSection);CHKERRQ(ierr);
+  PetscCall(DMGetCoordinatesLocal(dmc,&coorlocal));
+  PetscCall(DMGetCoordinateSection(dmc,&coordSection));
 
   pcnt = 0;
   for (e=0; e<nel; e++) {
-    ierr = DMPlexVecGetClosure(dmc,coordSection,coorlocal,ps+e,NULL,&elcoor);CHKERRQ(ierr);
+    PetscCall(DMPlexVecGetClosure(dmc,coordSection,coorlocal,ps+e,NULL,&elcoor));
 
     for (q=0; q<npoints_q; q++) {
       for (d=0; d<dim; d++) {
@@ -240,18 +236,17 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX_SubDivide(DM dm,DM dm
       swarm_cellid[pcnt] = e;
       pcnt++;
     }
-    ierr = DMPlexVecRestoreClosure(dmc,coordSection,coorlocal,ps+e,NULL,&elcoor);CHKERRQ(ierr);
+    PetscCall(DMPlexVecRestoreClosure(dmc,coordSection,coorlocal,ps+e,NULL,&elcoor));
   }
-  ierr = DMSwarmRestoreField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid);CHKERRQ(ierr);
-  ierr = DMSwarmRestoreField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor);CHKERRQ(ierr);
+  PetscCall(DMSwarmRestoreField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid));
+  PetscCall(DMSwarmRestoreField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor));
 
-  ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
+  PetscCall(PetscFEDestroy(&fe));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX2D_Regular(DM dm,DM dmc,PetscInt npoints)
 {
-  PetscErrorCode ierr;
   PetscInt       dim;
   PetscInt       ii,jj,q,npoints_q,e,nel,npe,pcnt,ps,pe,d,k,nfaces;
   PetscReal      *xi,ds,ds2;
@@ -264,15 +259,15 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX2D_Regular(DM dm,DM dm
   PetscBool      is_simplex;
 
   PetscFunctionBegin;
-  ierr = DMGetDimension(dmc,&dim);CHKERRQ(ierr);
+  PetscCall(DMGetDimension(dmc,&dim));
   PetscCheckFalse(dim != 2,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only 2D is supported");
   is_simplex = PETSC_FALSE;
-  ierr = DMPlexGetHeightStratum(dmc,0,&ps,&pe);CHKERRQ(ierr);
-  ierr = DMPlexGetConeSize(dmc, ps, &nfaces);CHKERRQ(ierr);
+  PetscCall(DMPlexGetHeightStratum(dmc,0,&ps,&pe));
+  PetscCall(DMPlexGetConeSize(dmc, ps, &nfaces));
   if (nfaces == (dim+1)) { is_simplex = PETSC_TRUE; }
-  PetscCheckFalse(!is_simplex,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only the simplex is supported");
+  PetscCheck(is_simplex,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only the simplex is supported");
 
-  ierr = PetscMalloc1(dim*npoints*npoints,&xi);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(dim*npoints*npoints,&xi));
   pcnt = 0;
   ds = 1.0/((PetscReal)(npoints-1));
   ds2 = 1.0/((PetscReal)(npoints));
@@ -292,9 +287,9 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX2D_Regular(DM dm,DM dm
   npoints_q = pcnt;
 
   npe = 3; /* nodes per element (triangle) */
-  ierr = PetscMalloc1(npoints_q,&basis);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(npoints_q,&basis));
   for (q=0; q<npoints_q; q++) {
-    ierr = PetscMalloc1(npe,&basis[q]);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(npe,&basis[q]));
 
     basis[q][0] = 1.0 - xi[dim*q+0] - xi[dim*q+1];
     basis[q][1] = xi[dim*q+0];
@@ -302,19 +297,19 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX2D_Regular(DM dm,DM dm
   }
 
   /* 0->cell, 1->edge, 2->vert */
-  ierr = DMPlexGetHeightStratum(dmc,0,&ps,&pe);CHKERRQ(ierr);
+  PetscCall(DMPlexGetHeightStratum(dmc,0,&ps,&pe));
   nel = pe - ps;
 
-  ierr = DMSwarmSetLocalSizes(dm,npoints_q*nel,-1);CHKERRQ(ierr);
-  ierr = DMSwarmGetField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor);CHKERRQ(ierr);
-  ierr = DMSwarmGetField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid);CHKERRQ(ierr);
+  PetscCall(DMSwarmSetLocalSizes(dm,npoints_q*nel,-1));
+  PetscCall(DMSwarmGetField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor));
+  PetscCall(DMSwarmGetField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid));
 
-  ierr = DMGetCoordinatesLocal(dmc,&coorlocal);CHKERRQ(ierr);
-  ierr = DMGetCoordinateSection(dmc,&coordSection);CHKERRQ(ierr);
+  PetscCall(DMGetCoordinatesLocal(dmc,&coorlocal));
+  PetscCall(DMGetCoordinateSection(dmc,&coordSection));
 
   pcnt = 0;
   for (e=0; e<nel; e++) {
-    ierr = DMPlexVecGetClosure(dmc,coordSection,coorlocal,e,NULL,&elcoor);CHKERRQ(ierr);
+    PetscCall(DMPlexVecGetClosure(dmc,coordSection,coorlocal,e,NULL,&elcoor));
 
     for (q=0; q<npoints_q; q++) {
       for (d=0; d<dim; d++) {
@@ -326,30 +321,29 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX2D_Regular(DM dm,DM dm
       swarm_cellid[pcnt] = e;
       pcnt++;
     }
-    ierr = DMPlexVecRestoreClosure(dmc,coordSection,coorlocal,e,NULL,&elcoor);CHKERRQ(ierr);
+    PetscCall(DMPlexVecRestoreClosure(dmc,coordSection,coorlocal,e,NULL,&elcoor));
   }
-  ierr = DMSwarmRestoreField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid);CHKERRQ(ierr);
-  ierr = DMSwarmRestoreField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor);CHKERRQ(ierr);
+  PetscCall(DMSwarmRestoreField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid));
+  PetscCall(DMSwarmRestoreField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor));
 
-  ierr = PetscFree(xi);CHKERRQ(ierr);
+  PetscCall(PetscFree(xi));
   for (q=0; q<npoints_q; q++) {
-    ierr = PetscFree(basis[q]);CHKERRQ(ierr);
+    PetscCall(PetscFree(basis[q]));
   }
-  ierr = PetscFree(basis);CHKERRQ(ierr);
+  PetscCall(PetscFree(basis));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX(DM dm,DM celldm,DMSwarmPICLayoutType layout,PetscInt layout_param)
 {
-  PetscErrorCode ierr;
   PetscInt       dim;
 
   PetscFunctionBegin;
-  ierr = DMGetDimension(celldm,&dim);CHKERRQ(ierr);
+  PetscCall(DMGetDimension(celldm,&dim));
   switch (layout) {
     case DMSWARMPIC_LAYOUT_REGULAR:
       PetscCheckFalse(dim == 3,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"No 3D support for REGULAR+PLEX");
-      ierr = private_DMSwarmInsertPointsUsingCellDM_PLEX2D_Regular(dm,celldm,layout_param);CHKERRQ(ierr);
+      PetscCall(private_DMSwarmInsertPointsUsingCellDM_PLEX2D_Regular(dm,celldm,layout_param));
       break;
     case DMSWARMPIC_LAYOUT_GAUSS:
     {
@@ -359,23 +353,23 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX(DM dm,DM celldm,DMSwa
       PetscQuadrature quadrature;
 
       is_simplex = PETSC_FALSE;
-      ierr = DMPlexGetHeightStratum(celldm,0,&ps,&pe);CHKERRQ(ierr);
-      ierr = DMPlexGetConeSize(celldm, ps, &nfaces);CHKERRQ(ierr);
+      PetscCall(DMPlexGetHeightStratum(celldm,0,&ps,&pe));
+      PetscCall(DMPlexGetConeSize(celldm, ps, &nfaces));
       if (nfaces == (dim+1)) { is_simplex = PETSC_TRUE; }
 
       npoints1 = layout_param;
       if (is_simplex) {
-        ierr = PetscDTStroudConicalQuadrature(dim,1,npoints1,-1.0,1.0,&quadrature);CHKERRQ(ierr);
+        PetscCall(PetscDTStroudConicalQuadrature(dim,1,npoints1,-1.0,1.0,&quadrature));
       } else {
-        ierr = PetscDTGaussTensorQuadrature(dim,1,npoints1,-1.0,1.0,&quadrature);CHKERRQ(ierr);
+        PetscCall(PetscDTGaussTensorQuadrature(dim,1,npoints1,-1.0,1.0,&quadrature));
       }
-      ierr = PetscQuadratureGetData(quadrature,NULL,NULL,&npoints,&xi,NULL);CHKERRQ(ierr);
-      ierr = private_DMSwarmSetPointCoordinatesCellwise_PLEX(dm,celldm,npoints,(PetscReal*)xi);CHKERRQ(ierr);
-      ierr = PetscQuadratureDestroy(&quadrature);CHKERRQ(ierr);
+      PetscCall(PetscQuadratureGetData(quadrature,NULL,NULL,&npoints,&xi,NULL));
+      PetscCall(private_DMSwarmSetPointCoordinatesCellwise_PLEX(dm,celldm,npoints,(PetscReal*)xi));
+      PetscCall(PetscQuadratureDestroy(&quadrature));
     }
       break;
     case DMSWARMPIC_LAYOUT_SUBDIVISION:
-      ierr = private_DMSwarmInsertPointsUsingCellDM_PLEX_SubDivide(dm,celldm,layout_param);CHKERRQ(ierr);
+      PetscCall(private_DMSwarmInsertPointsUsingCellDM_PLEX_SubDivide(dm,celldm,layout_param));
       break;
   }
   PetscFunctionReturn(0);
@@ -482,7 +476,6 @@ static PetscErrorCode ComputeLocalCoordinateAffine2d(PetscReal xp[],PetscScalar 
 
 PetscErrorCode DMSwarmProjectField_ApproxP1_PLEX_2D(DM swarm,PetscReal *swarm_field,DM dm,Vec v_field)
 {
-  PetscErrorCode  ierr;
   const PetscReal PLEX_C_EPS = 1.0e-8;
   Vec             v_field_l,denom_l,coor_l,denom;
   PetscInt        k,p,e,npoints;
@@ -494,21 +487,21 @@ PetscErrorCode DMSwarmProjectField_ApproxP1_PLEX_2D(DM swarm,PetscReal *swarm_fi
   PetscScalar     *elcoor = NULL;
 
   PetscFunctionBegin;
-  ierr = VecZeroEntries(v_field);CHKERRQ(ierr);
+  PetscCall(VecZeroEntries(v_field));
 
-  ierr = DMGetLocalVector(dm,&v_field_l);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(dm,&denom);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dm,&denom_l);CHKERRQ(ierr);
-  ierr = VecZeroEntries(v_field_l);CHKERRQ(ierr);
-  ierr = VecZeroEntries(denom);CHKERRQ(ierr);
-  ierr = VecZeroEntries(denom_l);CHKERRQ(ierr);
+  PetscCall(DMGetLocalVector(dm,&v_field_l));
+  PetscCall(DMGetGlobalVector(dm,&denom));
+  PetscCall(DMGetLocalVector(dm,&denom_l));
+  PetscCall(VecZeroEntries(v_field_l));
+  PetscCall(VecZeroEntries(denom));
+  PetscCall(VecZeroEntries(denom_l));
 
-  ierr = DMGetCoordinatesLocal(dm,&coor_l);CHKERRQ(ierr);
-  ierr = DMGetCoordinateSection(dm,&coordSection);CHKERRQ(ierr);
+  PetscCall(DMGetCoordinatesLocal(dm,&coor_l));
+  PetscCall(DMGetCoordinateSection(dm,&coordSection));
 
-  ierr = DMSwarmGetLocalSize(swarm,&npoints);CHKERRQ(ierr);
-  ierr = DMSwarmGetField(swarm,DMSwarmPICField_coor,NULL,NULL,(void**)&mpfield_coor);CHKERRQ(ierr);
-  ierr = DMSwarmGetField(swarm,DMSwarmPICField_cellid,NULL,NULL,(void**)&mpfield_cell);CHKERRQ(ierr);
+  PetscCall(DMSwarmGetLocalSize(swarm,&npoints));
+  PetscCall(DMSwarmGetField(swarm,DMSwarmPICField_coor,NULL,NULL,(void**)&mpfield_coor));
+  PetscCall(DMSwarmGetField(swarm,DMSwarmPICField_cellid,NULL,NULL,(void**)&mpfield_cell));
 
   for (p=0; p<npoints; p++) {
     PetscReal   *coor_p,dJ;
@@ -518,11 +511,11 @@ PetscErrorCode DMSwarmProjectField_ApproxP1_PLEX_2D(DM swarm,PetscReal *swarm_fi
     e       = mpfield_cell[p];
     coor_p  = &mpfield_coor[2*p];
 
-    ierr = DMPlexVecGetClosure(dm,coordSection,coor_l,e,NULL,&elcoor);CHKERRQ(ierr);
+    PetscCall(DMPlexVecGetClosure(dm,coordSection,coor_l,e,NULL,&elcoor));
 
 /*
     while (!point_located && (failed_counter < 25)) {
-      ierr = PointInTriangle(point, coords[0], coords[1], coords[2], &point_located);CHKERRQ(ierr);
+      PetscCall(PointInTriangle(point, coords[0], coords[1], coords[2], &point_located));
       point.x = coor_p[0];
       point.y = coor_p[1];
       point.x += 1.0e-10 * (2.0 * rand()/((double)RAND_MAX)-1.0);
@@ -534,9 +527,9 @@ PetscErrorCode DMSwarmProjectField_ApproxP1_PLEX_2D(DM swarm,PetscReal *swarm_fi
         PetscPrintf(PETSC_COMM_SELF,"Failed to locate point (%1.8e,%1.8e) in local mesh (cell %D) with triangle coords (%1.8e,%1.8e) : (%1.8e,%1.8e) : (%1.8e,%1.8e) in %D iterations\n",point.x,point.y,e,coords[0].x,coords[0].y,coords[1].x,coords[1].y,coords[2].x,coords[2].y,failed_counter);
     }
 
-    PetscCheckFalse(!point_located,PETSC_COMM_SELF,PETSC_ERR_SUP,"Failed to locate point (%1.8e,%1.8e) in local mesh (cell %D)",point.x,point.y,e);
+    PetscCheck(point_located,PETSC_COMM_SELF,PETSC_ERR_SUP,"Failed to locate point (%1.8e,%1.8e) in local mesh (cell %D)",point.x,point.y,e);
     else {
-      ierr = _ComputeLocalCoordinateAffine2d(coor_p,elcoor,xi_p,&dJ);CHKERRQ(ierr);
+      PetscCall(_ComputeLocalCoordinateAffine2d(coor_p,elcoor,xi_p,&dJ));
       xi_p[0] = 0.5*(xi_p[0] + 1.0);
       xi_p[1] = 0.5*(xi_p[1] + 1.0);
 
@@ -545,7 +538,7 @@ PetscErrorCode DMSwarmProjectField_ApproxP1_PLEX_2D(DM swarm,PetscReal *swarm_fi
     }
 */
 
-    ierr = ComputeLocalCoordinateAffine2d(coor_p,elcoor,xi_p,&dJ);CHKERRQ(ierr);
+    PetscCall(ComputeLocalCoordinateAffine2d(coor_p,elcoor,xi_p,&dJ));
     /*
     PetscPrintf(PETSC_COMM_SELF,"[p=%D] x(%+1.4e,%+1.4e) -> mapped to element %D xi(%+1.4e,%+1.4e)\n",p,point.x,point.y,e,xi_p[0],xi_p[1]);
     */
@@ -576,7 +569,7 @@ PetscErrorCode DMSwarmProjectField_ApproxP1_PLEX_2D(DM swarm,PetscReal *swarm_fi
       PetscPrintf(PETSC_COMM_SELF,"[Error] xi,eta = %+1.8e, %+1.8e\n",xi_p[0],xi_p[1]);
       PetscPrintf(PETSC_COMM_SELF,"[Error] Failed to locate point (%1.8e,%1.8e) in local mesh (cell %D) with triangle coords (%1.8e,%1.8e) : (%1.8e,%1.8e) : (%1.8e,%1.8e)\n",coor_p[0],coor_p[1],e,elcoor[0],elcoor[1],elcoor[2],elcoor[3],elcoor[4],elcoor[5]);
     }
-    PetscCheckFalse(!point_located,PETSC_COMM_SELF,PETSC_ERR_SUP,"Failed to locate point (%1.8e,%1.8e) in local mesh (cell %D)",coor_p[0],coor_p[1],e);
+    PetscCheck(point_located,PETSC_COMM_SELF,PETSC_ERR_SUP,"Failed to locate point (%1.8e,%1.8e) in local mesh (cell %D)",coor_p[0],coor_p[1],e);
     */
 
     Ni[0] = 1.0 - xi_p[0] - xi_p[1];
@@ -589,51 +582,50 @@ PetscErrorCode DMSwarmProjectField_ApproxP1_PLEX_2D(DM swarm,PetscReal *swarm_fi
       if (PetscRealPart(Ni[k]) > (1.0+PLEX_C_EPS)) point_located = PETSC_FALSE;
     }
     if (!point_located) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"[Error] xi,eta = %+1.8e, %+1.8e\n",(double)xi_p[0],(double)xi_p[1]);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_SELF,"[Error] Failed to locate point (%1.8e,%1.8e) in local mesh (cell %D) with triangle coords (%1.8e,%1.8e) : (%1.8e,%1.8e) : (%1.8e,%1.8e)\n",(double)coor_p[0],(double)coor_p[1],e,(double)PetscRealPart(elcoor[0]),(double)PetscRealPart(elcoor[1]),(double)PetscRealPart(elcoor[2]),(double)PetscRealPart(elcoor[3]),(double)PetscRealPart(elcoor[4]),(double)PetscRealPart(elcoor[5]));CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,"[Error] xi,eta = %+1.8e, %+1.8e\n",(double)xi_p[0],(double)xi_p[1]));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,"[Error] Failed to locate point (%1.8e,%1.8e) in local mesh (cell %D) with triangle coords (%1.8e,%1.8e) : (%1.8e,%1.8e) : (%1.8e,%1.8e)\n",(double)coor_p[0],(double)coor_p[1],e,(double)PetscRealPart(elcoor[0]),(double)PetscRealPart(elcoor[1]),(double)PetscRealPart(elcoor[2]),(double)PetscRealPart(elcoor[3]),(double)PetscRealPart(elcoor[4]),(double)PetscRealPart(elcoor[5])));
     }
-    PetscCheckFalse(!point_located,PETSC_COMM_SELF,PETSC_ERR_SUP,"Failed to locate point (%1.8e,%1.8e) in local mesh (cell %D)",(double)coor_p[0],(double)coor_p[1],e);
+    PetscCheck(point_located,PETSC_COMM_SELF,PETSC_ERR_SUP,"Failed to locate point (%1.8e,%1.8e) in local mesh (cell %D)",(double)coor_p[0],(double)coor_p[1],e);
 
     for (k=0; k<3; k++) {
       Ni[k] = Ni[k] * dJ;
       elfield[k] = Ni[k] * swarm_field[p];
     }
-    ierr = DMPlexVecRestoreClosure(dm,coordSection,coor_l,e,NULL,&elcoor);CHKERRQ(ierr);
+    PetscCall(DMPlexVecRestoreClosure(dm,coordSection,coor_l,e,NULL,&elcoor));
 
-    ierr = DMPlexVecSetClosure(dm, NULL,v_field_l, e, elfield, ADD_VALUES);CHKERRQ(ierr);
-    ierr = DMPlexVecSetClosure(dm, NULL,denom_l, e, Ni, ADD_VALUES);CHKERRQ(ierr);
+    PetscCall(DMPlexVecSetClosure(dm, NULL,v_field_l, e, elfield, ADD_VALUES));
+    PetscCall(DMPlexVecSetClosure(dm, NULL,denom_l, e, Ni, ADD_VALUES));
   }
 
-  ierr = DMSwarmRestoreField(swarm,DMSwarmPICField_cellid,NULL,NULL,(void**)&mpfield_cell);CHKERRQ(ierr);
-  ierr = DMSwarmRestoreField(swarm,DMSwarmPICField_coor,NULL,NULL,(void**)&mpfield_coor);CHKERRQ(ierr);
+  PetscCall(DMSwarmRestoreField(swarm,DMSwarmPICField_cellid,NULL,NULL,(void**)&mpfield_cell));
+  PetscCall(DMSwarmRestoreField(swarm,DMSwarmPICField_coor,NULL,NULL,(void**)&mpfield_coor));
 
-  ierr = DMLocalToGlobalBegin(dm,v_field_l,ADD_VALUES,v_field);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(dm,v_field_l,ADD_VALUES,v_field);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalBegin(dm,denom_l,ADD_VALUES,denom);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(dm,denom_l,ADD_VALUES,denom);CHKERRQ(ierr);
+  PetscCall(DMLocalToGlobalBegin(dm,v_field_l,ADD_VALUES,v_field));
+  PetscCall(DMLocalToGlobalEnd(dm,v_field_l,ADD_VALUES,v_field));
+  PetscCall(DMLocalToGlobalBegin(dm,denom_l,ADD_VALUES,denom));
+  PetscCall(DMLocalToGlobalEnd(dm,denom_l,ADD_VALUES,denom));
 
-  ierr = VecPointwiseDivide(v_field,v_field,denom);CHKERRQ(ierr);
+  PetscCall(VecPointwiseDivide(v_field,v_field,denom));
 
-  ierr = DMRestoreLocalVector(dm,&v_field_l);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dm,&denom_l);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(dm,&denom);CHKERRQ(ierr);
+  PetscCall(DMRestoreLocalVector(dm,&v_field_l));
+  PetscCall(DMRestoreLocalVector(dm,&denom_l));
+  PetscCall(DMRestoreGlobalVector(dm,&denom));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode private_DMSwarmProjectFields_PLEX(DM swarm,DM celldm,PetscInt project_type,PetscInt nfields,DMSwarmDataField dfield[],Vec vecs[])
 {
-  PetscErrorCode ierr;
   PetscInt       f,dim;
 
   PetscFunctionBegin;
-  ierr = DMGetDimension(swarm,&dim);CHKERRQ(ierr);
+  PetscCall(DMGetDimension(swarm,&dim));
   switch (dim) {
     case 2:
       for (f=0; f<nfields; f++) {
         PetscReal *swarm_field;
 
-        ierr = DMSwarmDataFieldGetEntries(dfield[f],(void**)&swarm_field);CHKERRQ(ierr);
-        ierr = DMSwarmProjectField_ApproxP1_PLEX_2D(swarm,swarm_field,celldm,vecs[f]);CHKERRQ(ierr);
+        PetscCall(DMSwarmDataFieldGetEntries(dfield[f],(void**)&swarm_field));
+        PetscCall(DMSwarmProjectField_ApproxP1_PLEX_2D(swarm,swarm_field,celldm,vecs[f]));
       }
       break;
     case 3:
@@ -647,7 +639,6 @@ PetscErrorCode private_DMSwarmProjectFields_PLEX(DM swarm,DM celldm,PetscInt pro
 PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM dm,DM dmc,PetscInt npoints,PetscReal xi[])
 {
   PetscBool       is_simplex,is_tensorcell;
-  PetscErrorCode  ierr;
   PetscInt        dim,nfaces,ps,pe,p,d,nbasis,pcnt,e,k,nel;
   PetscFE         fe;
   PetscQuadrature quadrature;
@@ -660,12 +651,12 @@ PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM dm,DM dmc,Pets
   PetscInt        *swarm_cellid;
 
   PetscFunctionBegin;
-  ierr = DMGetDimension(dmc,&dim);CHKERRQ(ierr);
+  PetscCall(DMGetDimension(dmc,&dim));
 
   is_simplex = PETSC_FALSE;
   is_tensorcell = PETSC_FALSE;
-  ierr = DMPlexGetHeightStratum(dmc,0,&ps,&pe);CHKERRQ(ierr);
-  ierr = DMPlexGetConeSize(dmc, ps, &nfaces);CHKERRQ(ierr);
+  PetscCall(DMPlexGetHeightStratum(dmc,0,&ps,&pe));
+  PetscCall(DMPlexGetConeSize(dmc, ps, &nfaces));
 
   if (nfaces == (dim+1)) { is_simplex = PETSC_TRUE; }
 
@@ -701,30 +692,30 @@ PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM dm,DM dmc,Pets
     }
   } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only support for d-simplex and d-tensorcell");
 
-  ierr = PetscQuadratureCreate(PetscObjectComm((PetscObject)dm),&quadrature);CHKERRQ(ierr);
-  ierr = PetscMalloc1(npoints*dim,&xiq);CHKERRQ(ierr);
-  ierr = PetscArraycpy(xiq,xi,npoints*dim);CHKERRQ(ierr);
-  ierr = PetscQuadratureSetData(quadrature,dim,1,npoints,(const PetscReal*)xiq,NULL);CHKERRQ(ierr);
-  ierr = private_PetscFECreateDefault_scalar_pk1(dmc, dim, is_simplex, 0, &fe);CHKERRQ(ierr);
-  ierr = PetscFESetQuadrature(fe,quadrature);CHKERRQ(ierr);
-  ierr = PetscFEGetDimension(fe,&nbasis);CHKERRQ(ierr);
-  ierr = PetscFEGetCellTabulation(fe, 1, &T);CHKERRQ(ierr);
+  PetscCall(PetscQuadratureCreate(PetscObjectComm((PetscObject)dm),&quadrature));
+  PetscCall(PetscMalloc1(npoints*dim,&xiq));
+  PetscCall(PetscArraycpy(xiq,xi,npoints*dim));
+  PetscCall(PetscQuadratureSetData(quadrature,dim,1,npoints,(const PetscReal*)xiq,NULL));
+  PetscCall(private_PetscFECreateDefault_scalar_pk1(dmc, dim, is_simplex, 0, &fe));
+  PetscCall(PetscFESetQuadrature(fe,quadrature));
+  PetscCall(PetscFEGetDimension(fe,&nbasis));
+  PetscCall(PetscFEGetCellTabulation(fe, 1, &T));
 
   /* for each cell, interpolate coordaintes and insert the interpolated points coordinates into swarm */
   /* 0->cell, 1->edge, 2->vert */
-  ierr = DMPlexGetHeightStratum(dmc,0,&ps,&pe);CHKERRQ(ierr);
+  PetscCall(DMPlexGetHeightStratum(dmc,0,&ps,&pe));
   nel = pe - ps;
 
-  ierr = DMSwarmSetLocalSizes(dm,npoints*nel,-1);CHKERRQ(ierr);
-  ierr = DMSwarmGetField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor);CHKERRQ(ierr);
-  ierr = DMSwarmGetField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid);CHKERRQ(ierr);
+  PetscCall(DMSwarmSetLocalSizes(dm,npoints*nel,-1));
+  PetscCall(DMSwarmGetField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor));
+  PetscCall(DMSwarmGetField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid));
 
-  ierr = DMGetCoordinatesLocal(dmc,&coorlocal);CHKERRQ(ierr);
-  ierr = DMGetCoordinateSection(dmc,&coordSection);CHKERRQ(ierr);
+  PetscCall(DMGetCoordinatesLocal(dmc,&coorlocal));
+  PetscCall(DMGetCoordinateSection(dmc,&coordSection));
 
   pcnt = 0;
   for (e=0; e<nel; e++) {
-    ierr = DMPlexVecGetClosure(dmc,coordSection,coorlocal,ps+e,NULL,&elcoor);CHKERRQ(ierr);
+    PetscCall(DMPlexVecGetClosure(dmc,coordSection,coorlocal,ps+e,NULL,&elcoor));
 
     for (p=0; p<npoints; p++) {
       for (d=0; d<dim; d++) {
@@ -736,12 +727,12 @@ PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM dm,DM dmc,Pets
       swarm_cellid[pcnt] = e;
       pcnt++;
     }
-    ierr = DMPlexVecRestoreClosure(dmc,coordSection,coorlocal,ps+e,NULL,&elcoor);CHKERRQ(ierr);
+    PetscCall(DMPlexVecRestoreClosure(dmc,coordSection,coorlocal,ps+e,NULL,&elcoor));
   }
-  ierr = DMSwarmRestoreField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid);CHKERRQ(ierr);
-  ierr = DMSwarmRestoreField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor);CHKERRQ(ierr);
+  PetscCall(DMSwarmRestoreField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid));
+  PetscCall(DMSwarmRestoreField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor));
 
-  ierr = PetscQuadratureDestroy(&quadrature);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
+  PetscCall(PetscQuadratureDestroy(&quadrature));
+  PetscCall(PetscFEDestroy(&fe));
   PetscFunctionReturn(0);
 }

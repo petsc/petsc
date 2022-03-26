@@ -12,8 +12,6 @@ typedef struct {
 
 static PetscErrorCode GetOptions(MPI_Comm comm, AppCtx *ctx)
 {
-  PetscErrorCode    ierr;
-
   PetscFunctionBegin;
   ctx->comm = comm;
   ctx->nsfs = 3;
@@ -21,13 +19,13 @@ static PetscErrorCode GetOptions(MPI_Comm comm, AppCtx *ctx)
   ctx->leaveStep = 1;
   ctx->shareRoots = PETSC_FALSE;
   ctx->sparseLeaves = PETSC_FALSE;
-  ierr = PetscOptionsGetInt(NULL, NULL, "-nsfs", &ctx->nsfs, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL, NULL, "-n_leaves_per_rank", &ctx->nLeavesPerRank, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL, NULL, "-leave_step", &ctx->leaveStep, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL, NULL, "-share_roots", &ctx->shareRoots, NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-nsfs", &ctx->nsfs, NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-n_leaves_per_rank", &ctx->nLeavesPerRank, NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-leave_step", &ctx->leaveStep, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-share_roots", &ctx->shareRoots, NULL));
   ctx->sparseLeaves = (PetscBool) (ctx->leaveStep != 1);
-  ierr = MPI_Comm_size(comm, &ctx->size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(comm, &ctx->rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_size(comm, &ctx->size));
+  PetscCallMPI(MPI_Comm_rank(comm, &ctx->rank));
   PetscFunctionReturn(0);
 }
 
@@ -37,47 +35,46 @@ static PetscErrorCode PetscSFCheckEqual_Private(PetscSF sf0, PetscSF sf1)
   Vec               vecRoot0, vecLeave0, vecRoot1, vecLeave1;
   MPI_Comm          comm;
   PetscBool         flg;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)sf0, &comm);CHKERRQ(ierr);
-  ierr = PetscSFGetGraph(sf0, &nRoot, NULL, NULL, NULL);CHKERRQ(ierr);
-  ierr = PetscSFGetLeafRange(sf0, NULL, &nLeave);CHKERRQ(ierr);
+  PetscCall(PetscObjectGetComm((PetscObject)sf0, &comm));
+  PetscCall(PetscSFGetGraph(sf0, &nRoot, NULL, NULL, NULL));
+  PetscCall(PetscSFGetLeafRange(sf0, NULL, &nLeave));
   nLeave++;
-  ierr = VecCreateMPI(comm, nRoot, PETSC_DECIDE, &vecRoot0);CHKERRQ(ierr);
-  ierr = VecCreateMPI(comm, nLeave, PETSC_DECIDE, &vecLeave0);CHKERRQ(ierr);
-  ierr = VecDuplicate(vecRoot0, &vecRoot1);CHKERRQ(ierr);
-  ierr = VecDuplicate(vecLeave0, &vecLeave1);CHKERRQ(ierr);
+  PetscCall(VecCreateMPI(comm, nRoot, PETSC_DECIDE, &vecRoot0));
+  PetscCall(VecCreateMPI(comm, nLeave, PETSC_DECIDE, &vecLeave0));
+  PetscCall(VecDuplicate(vecRoot0, &vecRoot1));
+  PetscCall(VecDuplicate(vecLeave0, &vecLeave1));
   {
     PetscRandom       rand;
 
-    ierr = PetscRandomCreate(comm, &rand);CHKERRQ(ierr);
-    ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
-    ierr = VecSetRandom(vecRoot0, rand);CHKERRQ(ierr);
-    ierr = VecSetRandom(vecLeave0, rand);CHKERRQ(ierr);
-    ierr = VecCopy(vecRoot0, vecRoot1);CHKERRQ(ierr);
-    ierr = VecCopy(vecLeave0, vecLeave1);CHKERRQ(ierr);
-    ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
+    PetscCall(PetscRandomCreate(comm, &rand));
+    PetscCall(PetscRandomSetFromOptions(rand));
+    PetscCall(VecSetRandom(vecRoot0, rand));
+    PetscCall(VecSetRandom(vecLeave0, rand));
+    PetscCall(VecCopy(vecRoot0, vecRoot1));
+    PetscCall(VecCopy(vecLeave0, vecLeave1));
+    PetscCall(PetscRandomDestroy(&rand));
   }
 
-  ierr = VecScatterBegin(sf0, vecRoot0, vecLeave0, ADD_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(  sf0, vecRoot0, vecLeave0, ADD_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterBegin(sf1, vecRoot1, vecLeave1, ADD_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(  sf1, vecRoot1, vecLeave1, ADD_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecEqual(vecLeave0, vecLeave1, &flg);CHKERRQ(ierr);
+  PetscCall(VecScatterBegin(sf0, vecRoot0, vecLeave0, ADD_VALUES, SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(  sf0, vecRoot0, vecLeave0, ADD_VALUES, SCATTER_FORWARD));
+  PetscCall(VecScatterBegin(sf1, vecRoot1, vecLeave1, ADD_VALUES, SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(  sf1, vecRoot1, vecLeave1, ADD_VALUES, SCATTER_FORWARD));
+  PetscCall(VecEqual(vecLeave0, vecLeave1, &flg));
   PetscCheck(flg, comm, PETSC_ERR_PLIB, "leave vectors differ");
 
-  ierr = VecScatterBegin(sf0, vecLeave0, vecRoot0, ADD_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd(  sf0, vecLeave0, vecRoot0, ADD_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterBegin(sf1, vecLeave1, vecRoot1, ADD_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd(  sf1, vecLeave1, vecRoot1, ADD_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecEqual(vecRoot0, vecRoot1, &flg);CHKERRQ(ierr);
+  PetscCall(VecScatterBegin(sf0, vecLeave0, vecRoot0, ADD_VALUES, SCATTER_REVERSE));
+  PetscCall(VecScatterEnd(  sf0, vecLeave0, vecRoot0, ADD_VALUES, SCATTER_REVERSE));
+  PetscCall(VecScatterBegin(sf1, vecLeave1, vecRoot1, ADD_VALUES, SCATTER_REVERSE));
+  PetscCall(VecScatterEnd(  sf1, vecLeave1, vecRoot1, ADD_VALUES, SCATTER_REVERSE));
+  PetscCall(VecEqual(vecRoot0, vecRoot1, &flg));
   PetscCheck(flg, comm, PETSC_ERR_PLIB, "root vectors differ");
 
-  ierr = VecDestroy(&vecRoot0);CHKERRQ(ierr);
-  ierr = VecDestroy(&vecRoot1);CHKERRQ(ierr);
-  ierr = VecDestroy(&vecLeave0);CHKERRQ(ierr);
-  ierr = VecDestroy(&vecLeave1);CHKERRQ(ierr);
+  PetscCall(VecDestroy(&vecRoot0));
+  PetscCall(VecDestroy(&vecRoot1));
+  PetscCall(VecDestroy(&vecLeave0));
+  PetscCall(VecDestroy(&vecLeave1));
   PetscFunctionReturn(0);
 }
 
@@ -89,15 +86,14 @@ PetscErrorCode CreateReferenceSF(AppCtx *ctx, PetscSF *refSF)
   PetscInt          nLeaves = ctx->nsfs * ctx->nLeavesPerRank * ctx->size;
   PetscInt          nroots  = ctx->nLeavesPerRank * ctx->nsfs;
   PetscSF           sf;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ilocal = NULL;
   if (ctx->sparseLeaves) {
-    ierr = PetscCalloc1(nLeaves+1, &ilocal);CHKERRQ(ierr);
+    PetscCall(PetscCalloc1(nLeaves+1, &ilocal));
   }
-  ierr = PetscMalloc1(nLeaves, &iremote);CHKERRQ(ierr);
-  ierr = PetscSFCreate(ctx->comm, &sf);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(nLeaves, &iremote));
+  PetscCall(PetscSFCreate(ctx->comm, &sf));
   for (i=0, j=0; i<ctx->nsfs; i++) {
     for (r=0; r<ctx->size; r++) {
       for (k=0; k<ctx->nLeavesPerRank; k++, j++) {
@@ -109,7 +105,7 @@ PetscErrorCode CreateReferenceSF(AppCtx *ctx, PetscSF *refSF)
       }
     }
   }
-  ierr = PetscSFSetGraph(sf, nroots, nLeaves, ilocal, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  PetscCall(PetscSFSetGraph(sf, nroots, nLeaves, ilocal, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER));
   *refSF = sf;
   PetscFunctionReturn(0);
 }
@@ -121,13 +117,12 @@ PetscErrorCode CreateSFs(AppCtx *ctx, PetscSF *newSFs[], PetscInt *leafOffsets[]
   PetscSF          *sfs;
   PetscInt          nLeaves = ctx->nLeavesPerRank * ctx->size;
   PetscInt          nroots  = ctx->shareRoots ? ctx->nLeavesPerRank * ctx->nsfs : ctx->nLeavesPerRank;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   if (ctx->sparseLeaves) {
-    ierr = PetscCalloc1(ctx->nsfs+1, &lOffsets);CHKERRQ(ierr);
+    PetscCall(PetscCalloc1(ctx->nsfs+1, &lOffsets));
   }
-  ierr = PetscMalloc1(ctx->nsfs, &sfs);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(ctx->nsfs, &sfs));
   for (i=0; i<ctx->nsfs; i++) {
     PetscInt      j, k;
     PetscMPIInt   r;
@@ -135,9 +130,9 @@ PetscErrorCode CreateSFs(AppCtx *ctx, PetscSF *newSFs[], PetscInt *leafOffsets[]
     PetscSFNode  *iremote;
 
     if (ctx->sparseLeaves) {
-      ierr = PetscCalloc1(nLeaves+1, &ilocal);CHKERRQ(ierr);
+      PetscCall(PetscCalloc1(nLeaves+1, &ilocal));
     }
-    ierr = PetscMalloc1(nLeaves, &iremote);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(nLeaves, &iremote));
     for (r=0, j=0; r<ctx->size; r++) {
       for (k=0; k<ctx->nLeavesPerRank; k++, j++) {
         if (ctx->sparseLeaves) {
@@ -149,8 +144,8 @@ PetscErrorCode CreateSFs(AppCtx *ctx, PetscSF *newSFs[], PetscInt *leafOffsets[]
     }
     if (ctx->sparseLeaves) lOffsets[i+1] = lOffsets[i] + ilocal[j];
 
-    ierr = PetscSFCreate(ctx->comm, &sfs[i]);CHKERRQ(ierr);
-    ierr = PetscSFSetGraph(sfs[i], nroots, nLeaves, ilocal, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER);CHKERRQ(ierr);
+    PetscCall(PetscSFCreate(ctx->comm, &sfs[i]));
+    PetscCall(PetscSFSetGraph(sfs[i], nroots, nLeaves, ilocal, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER));
   }
   *newSFs = sfs;
   *leafOffsets = lOffsets;
@@ -160,13 +155,12 @@ PetscErrorCode CreateSFs(AppCtx *ctx, PetscSF *newSFs[], PetscInt *leafOffsets[]
 PetscErrorCode DestroySFs(AppCtx *ctx, PetscSF *sfs[])
 {
   PetscInt          i;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   for (i=0; i<ctx->nsfs; i++) {
-    ierr = PetscSFDestroy(&(*sfs)[i]);CHKERRQ(ierr);
+    PetscCall(PetscSFDestroy(&(*sfs)[i]));
   }
-  ierr = PetscFree(*sfs);CHKERRQ(ierr);
+  PetscCall(PetscFree(*sfs));
   PetscFunctionReturn(0);
 }
 
@@ -177,23 +171,22 @@ int main(int argc, char **argv)
   PetscSF          *sfs;
   PetscInt         *leafOffsets;
   MPI_Comm          comm;
-  PetscErrorCode    ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   comm = PETSC_COMM_WORLD;
-  ierr = GetOptions(comm, &ctx);CHKERRQ(ierr);
+  PetscCall(GetOptions(comm, &ctx));
 
-  ierr = CreateSFs(&ctx, &sfs, &leafOffsets);CHKERRQ(ierr);
-  ierr = PetscSFConcatenate(comm, ctx.nsfs, sfs, ctx.shareRoots, leafOffsets, &sf);CHKERRQ(ierr);
-  ierr = CreateReferenceSF(&ctx, &sfRef);CHKERRQ(ierr);
-  ierr = PetscSFCheckEqual_Private(sf, sfRef);CHKERRQ(ierr);
+  PetscCall(CreateSFs(&ctx, &sfs, &leafOffsets));
+  PetscCall(PetscSFConcatenate(comm, ctx.nsfs, sfs, ctx.shareRoots, leafOffsets, &sf));
+  PetscCall(CreateReferenceSF(&ctx, &sfRef));
+  PetscCall(PetscSFCheckEqual_Private(sf, sfRef));
 
-  ierr = DestroySFs(&ctx, &sfs);CHKERRQ(ierr);
-  ierr = PetscFree(leafOffsets);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&sfRef);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(DestroySFs(&ctx, &sfs));
+  PetscCall(PetscFree(leafOffsets));
+  PetscCall(PetscSFDestroy(&sf));
+  PetscCall(PetscSFDestroy(&sfRef));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

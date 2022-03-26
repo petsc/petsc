@@ -10,46 +10,45 @@ int main(int argc,char **args)
   Vec            x,b;
   PetscViewer    fd;
   char           file[PETSC_MAX_PATH_LEN];
-  PetscErrorCode ierr;
   PetscBool      flg,preload = PETSC_TRUE;
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  ierr = PetscLogDefaultBegin();CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg);CHKERRQ(ierr);
+  PetscCall(PetscLogDefaultBegin());
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
 
   PetscPreLoadBegin(preload,"Load system");
 
   /*
      Load the matrix and vector; then destroy the viewer.
   */
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
-  ierr = MatLoad(A,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
+  PetscCall(MatLoad(A,fd));
+  PetscCall(PetscViewerDestroy(&fd));
 
-  ierr = MatCreateVecs(A,&x,&b);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(b);CHKERRQ(ierr);
-  ierr = VecSet(b,1.0);CHKERRQ(ierr);
+  PetscCall(MatCreateVecs(A,&x,&b));
+  PetscCall(VecSetFromOptions(b));
+  PetscCall(VecSet(b,1.0));
 
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
-  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
-  ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(KSPSetOperators(ksp,A,A));
+  PetscCall(KSPSetUp(ksp));
+  PetscCall(KSPSetUpOnBlocks(ksp));
 
   PetscPreLoadStage("KSPSolve");
-  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+  PetscCall(KSPSolve(ksp,b,x));
 
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+  PetscCall(MatDestroy(&A));
+  PetscCall(VecDestroy(&b));
+  PetscCall(VecDestroy(&x));
+  PetscCall(KSPDestroy(&ksp));
   PetscPreLoadEnd();
-  ierr = PetscLogView_VecScatter(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscCall(PetscLogView_VecScatter(PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 #include <petsctime.h>
@@ -77,35 +76,35 @@ PetscErrorCode  PetscLogView_VecScatter(PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscTime(&locTotalTime);  locTotalTime -= petsc_BaseTime;
-  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
-  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"numProcs   = %d\n",size);CHKERRQ(ierr);
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  PetscCall(PetscLogGetStageLog(&stageLog));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"numProcs   = %d\n",size));
 
-  ierr = PetscGetArchType(arch,sizeof(arch));CHKERRQ(ierr);
-  ierr = PetscGetHostName(hostname,sizeof(hostname));CHKERRQ(ierr);
-  ierr = PetscGetUserName(username,sizeof(username));CHKERRQ(ierr);
-  ierr = PetscGetProgramName(pname,sizeof(pname));CHKERRQ(ierr);
-  ierr = PetscGetDate(date,sizeof(date));CHKERRQ(ierr);
-  ierr = PetscGetVersion(version,sizeof(version));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"%s on a %s named %s with %d processors, by %s %s\n", pname, arch, hostname, size, username, date);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "Using %s\n", version);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "Configure options: %s",petscconfigureoptions);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "%s", petscmachineinfo);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "%s", petsccompilerinfo);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "%s", petsccompilerflagsinfo);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "%s", petsclinkerinfo);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "%s\n", PETSC_MPICC_SHOW);CHKERRQ(ierr);
-  ierr = PetscOptionsView(NULL,viewer);CHKERRQ(ierr);
+  PetscCall(PetscGetArchType(arch,sizeof(arch)));
+  PetscCall(PetscGetHostName(hostname,sizeof(hostname)));
+  PetscCall(PetscGetUserName(username,sizeof(username)));
+  PetscCall(PetscGetProgramName(pname,sizeof(pname)));
+  PetscCall(PetscGetDate(date,sizeof(date)));
+  PetscCall(PetscGetVersion(version,sizeof(version)));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"%s on a %s named %s with %d processors, by %s %s\n", pname, arch, hostname, size, username, date));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "Using %s\n", version));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "Configure options: %s",petscconfigureoptions));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "%s", petscmachineinfo));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "%s", petsccompilerinfo));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "%s", petsccompilerflagsinfo));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "%s", petsclinkerinfo));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "%s\n", PETSC_MPICC_SHOW));
+  PetscCall(PetscOptionsView(NULL,viewer));
 #if defined(PETSC_HAVE_HWLOC)
-  ierr = PetscProcessPlacementView(viewer);CHKERRQ(ierr);
+  PetscCall(PetscProcessPlacementView(viewer));
 #endif
-  ierr = PetscViewerASCIIPrintf(viewer, "----------------------------------------------------\n");CHKERRQ(ierr);
+  PetscCall(PetscViewerASCIIPrintf(viewer, "----------------------------------------------------\n"));
 
-  ierr = PetscViewerASCIIPrintf(viewer,"                Time     Min to Max Range   Proportion of KSP\n");CHKERRQ(ierr);
+  PetscCall(PetscViewerASCIIPrintf(viewer,"                Time     Min to Max Range   Proportion of KSP\n"));
 
   eventInfo = stageLog->stageInfo[stage].eventLog->eventInfo;
-  ierr = MPI_Allreduce(&eventInfo[KSP_Solve].time,&ksptime,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,PETSC_COMM_WORLD);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Allreduce(&eventInfo[KSP_Solve].time,&ksptime,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,PETSC_COMM_WORLD));
   ksptime = ksptime/size;
 
   for (i=0; i<(int)(sizeof(events)/sizeof(int)); i++) {
@@ -116,15 +115,15 @@ PetscErrorCode  PetscLogView_VecScatter(PetscViewer viewer)
     stats[MESSLEN] = eventInfo[event].messageLength;
     stats[REDUCT]  = eventInfo[event].numReductions;
     stats[FLOPS]   = eventInfo[event].flops;
-    ierr = MPI_Allreduce(stats,maxstats,6,MPIU_PETSCLOGDOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRMPI(ierr);
-    ierr = MPI_Allreduce(stats,minstats,6,MPIU_PETSCLOGDOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRMPI(ierr);
-    ierr = MPI_Allreduce(stats,sumstats,6,MPIU_PETSCLOGDOUBLE,MPI_SUM,PETSC_COMM_WORLD);CHKERRMPI(ierr);
+    PetscCallMPI(MPI_Allreduce(stats,maxstats,6,MPIU_PETSCLOGDOUBLE,MPI_MAX,PETSC_COMM_WORLD));
+    PetscCallMPI(MPI_Allreduce(stats,minstats,6,MPIU_PETSCLOGDOUBLE,MPI_MIN,PETSC_COMM_WORLD));
+    PetscCallMPI(MPI_Allreduce(stats,sumstats,6,MPIU_PETSCLOGDOUBLE,MPI_SUM,PETSC_COMM_WORLD));
 
     avetime  = sumstats[1]/size;
     ierr = PetscViewerASCIIPrintf(viewer,"%s %4.2e   -%5.1f %% %5.1f %%   %4.2e %%\n",stageLog->eventLog->eventInfo[event].name,
-                                  avetime,100.*(avetime-minstats[1])/avetime,100.*(maxstats[1]-avetime)/avetime,100.*avetime/ksptime);CHKERRQ(ierr);
+                                  avetime,100.*(avetime-minstats[1])/avetime,100.*(maxstats[1]-avetime)/avetime,100.*avetime/ksptime);PetscCall(ierr);
   }
-  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+  PetscCall(PetscViewerFlush(viewer));
   PetscFunctionReturn(0);
 }
 
