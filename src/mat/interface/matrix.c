@@ -4388,7 +4388,7 @@ PetscErrorCode MatSolverTypeRegister(MatSolverType package,MatType mtype,MatFact
 }
 
 /*@C
-   MatSolveTypeGet - Gets the function that creates the factor matrix if it exist
+   MatSolverTypeGet - Gets the function that creates the factor matrix if it exist
 
    Input Parameters:
 +    type - name of the package, for example petsc or superlu
