@@ -602,7 +602,7 @@ simplehtml: chk_c2html
               idir=`dirname $$i`;\
               if [ ! -d $${loc}/$${idir} ]; then ${MKDIR} -p $${loc}/$${idir}; fi ; \
               ${RM} $${loc}/$$i.html; \
-              sed -E -e "s/PetscCall[A-z_]*\((.*)\)\;/\1;/g" \
+              sed -E -e "s/PetscCall[A-Za-z_]*\((.*)\)\;/\1;/g" \
                      -e "s/\;ierr\;/;/g" \
                      -e "/\s*PetscFunctionBegin\;/d" \
                      -e "s/PetscFunctionReturn\((\w+)\)/return \1/g" \
@@ -635,7 +635,7 @@ html: chk_c2html
               fi;\
               ${RM} $${loc}/$$i.html; \
               echo "<center><a href=\"https://gitlab.com/petsc/petsc/-/blob/$$current_git_sha/$$rel_dir/$$i\">Actual source code: $${iroot}</a></center><br>" > $${loc}/$$i.html; \
-              sed -E -e "s/PetscCall[A-z_]*\((.*)\)\;/\1;/g" \
+              sed -E -e "s/PetscCall[A-Za-z_]*\((.*)\)\;/\1;/g" \
                      -e "s/\;ierr\;/;/g" \
                      -e "/\s*PetscFunctionBegin\;/d" \
                      -e "s/PetscFunctionReturn\((\w+)\)/return \1/g" \

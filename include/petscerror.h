@@ -714,6 +714,8 @@ M*/
   )
 .ve
 
+  Level: beginner
+
 .seealso: PetscCallXX(), SETERRQ(), PetscCall(), SETERRABORT(), PetscCallAbort(),
 PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKMEMQ
 M*/

@@ -1638,6 +1638,8 @@ PetscErrorCode DMRestoreWorkArray(DM dm,PetscInt count,MPI_Datatype dtype,void *
 
   This function is currently not available from Fortran.
 
+   Level: intermediate
+
 .seealso: DMGetNullSpaceConstructor(), DMSetNearNullSpaceConstructor(), DMGetNearNullSpaceConstructor(), DMCreateSubDM(), DMCreateSuperDM()
 @*/
 PetscErrorCode DMSetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (*nullsp)(DM, PetscInt, PetscInt, MatNullSpace*))
@@ -1672,6 +1674,8 @@ PetscErrorCode DMSetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (
 
   This function is currently not available from Fortran.
 
+   Level: intermediate
+
 .seealso: DMSetNullSpaceConstructor(), DMSetNearNullSpaceConstructor(), DMGetNearNullSpaceConstructor(), DMCreateSubDM(), DMCreateSuperDM()
 @*/
 PetscErrorCode DMGetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (**nullsp)(DM, PetscInt, PetscInt, MatNullSpace *))
@@ -1704,6 +1708,8 @@ PetscErrorCode DMGetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (
 -  nullSpace - The nullspace for the given field
 
   This function is currently not available from Fortran.
+
+   Level: intermediate
 
 .seealso: DMGetNearNullSpaceConstructor(), DMSetNullSpaceConstructor(), DMGetNullSpaceConstructor(), DMCreateSubDM(), DMCreateSuperDM()
 @*/
@@ -1738,6 +1744,8 @@ PetscErrorCode DMSetNearNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCo
 -  nullSpace - The nullspace for the given field
 
   This function is currently not available from Fortran.
+
+   Level: intermediate
 
 .seealso: DMSetNearNullSpaceConstructor(), DMSetNullSpaceConstructor(), DMGetNullSpaceConstructor(), DMCreateSubDM(), DMCreateSuperDM()
 @*/

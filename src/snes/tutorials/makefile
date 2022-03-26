@@ -15,7 +15,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c  ex5.c ex6.c ex9.c \
 EXAMPLESF	 = ex1f.F90 ex5f.F90 ex5f90.F90 ex5f90t.F90 ex40f90.F90 ex73f90t.F90
 EXAMPLESCH	 =
 EXAMPLESFH       = ex5f.h
-EXAMPLESMATLAB   = ex5m.m  ex61genm.m ex61m.m
+EXAMPLESMATLAB   = ex5m.m ex29view.m
 DIRS		 = ex10d network
 CLEANFILES       = ex5f90t
 
