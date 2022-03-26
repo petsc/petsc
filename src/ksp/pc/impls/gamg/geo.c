@@ -48,7 +48,7 @@ PetscErrorCode PCSetCoordinates_GEO(PC pc, PetscInt ndm, PetscInt a_nloc, PetscR
   PetscCheckFalse(nloc!=a_nloc && aloc!=a_nloc,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Number of local blocks %D must be %D or %D.",a_nloc,nloc,aloc);
 
   pc_gamg->data_cell_rows = 1;
-  PetscCheckFalse(!coords && nloc > 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Need coordinates for pc_gamg_type 'geo'.");
+  PetscCheck(coords || (nloc <= 0),PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Need coordinates for pc_gamg_type 'geo'.");
   pc_gamg->data_cell_cols = ndm; /* coordinates */
 
   arrsz = nloc*pc_gamg->data_cell_rows*pc_gamg->data_cell_cols;

@@ -1039,7 +1039,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
     if ((mg->galerkin == PC_MG_GALERKIN_MAT) || ((mg->galerkin == PC_MG_GALERKIN_BOTH) && (dA != dB))) doA = PETSC_TRUE;
     if (pc->setupcalled) reuse = MAT_REUSE_MATRIX;
     for (i=n-2; i>-1; i--) {
-      PetscCheckFalse(!mglevels[i+1]->restrct && !mglevels[i+1]->interpolate,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must provide interpolation or restriction for each MG level except level 0");
+      PetscCheck(mglevels[i+1]->restrct || mglevels[i+1]->interpolate,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must provide interpolation or restriction for each MG level except level 0");
       if (!mglevels[i+1]->interpolate) {
         PetscCall(PCMGSetInterpolation(pc,i+1,mglevels[i+1]->restrct));
       }

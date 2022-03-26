@@ -19,7 +19,7 @@ PetscErrorCode  MatDumpSPAI(Mat A,FILE *file)
   PetscFunctionBegin;
   PetscObjectGetComm((PetscObject)A,&comm);
   MPI_Comm_size(comm,&size);
-  PetscCheck(size <= 1,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Only single processor dumps");
+  PetscCheck(size == 1,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Only single processor dumps");
   PetscCall(MatGetSize(A,&n,&n));
   /* print the matrix */
   fprintf(file,"%d\n",n);

@@ -272,7 +272,7 @@ PetscErrorCode PCGASMSetHierarchicalPartitioning(PC pc)
     * For the following cases, we do not need to use HP
     * */
    if (osm->N==PETSC_DETERMINE || osm->N>=size || osm->N==1) PetscFunctionReturn(0);
-   PetscCheckFalse(size%osm->N != 0,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"have to specify the total number of subdomains %D to be a factor of the number of processors %d ",osm->N,size);
+   PetscCheck(size%osm->N == 0,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"have to specify the total number of subdomains %D to be a factor of the number of processors %d ",osm->N,size);
    nlocalsubdomains = size/osm->N;
    osm->n           = 1;
    PetscCall(MatPartitioningCreate(comm,&part));
@@ -1018,7 +1018,7 @@ static PetscErrorCode  PCGASMSetSubdomains_GASM(PC pc,PetscInt n,IS iis[],IS ois
     }
     /* check if we miss any indices */
     for (i=rstart; i<rend; i++) {
-      PetscCheckFalse(!covered[i-rstart],PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"local entity %d was not covered by inner subdomains",i);
+      PetscCheck(covered[i-rstart],PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"local entity %d was not covered by inner subdomains",i);
     }
     PetscCall(PetscFree(covered));
   }

@@ -275,7 +275,7 @@ static PetscErrorCode PCBDDCComputeExplicitSchur(Mat M, PetscBool issym, MatReus
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)M),&size));
-  PetscCheckFalse(size != 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Not for parallel matrices");
+  PetscCheck(size == 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Not for parallel matrices");
   if (reuse == MAT_REUSE_MATRIX) {
     PetscBool Sdense;
 
@@ -423,7 +423,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
   }
 
   /* preliminary checks */
-  PetscCheckFalse(!sub_schurs->schur_explicit && compute_Stilda,PetscObjectComm((PetscObject)sub_schurs->l2gmap),PETSC_ERR_SUP,"Adaptive selection of constraints requires MUMPS and/or MKL_PARDISO");
+  PetscCheck(sub_schurs->schur_explicit || !compute_Stilda,PetscObjectComm((PetscObject)sub_schurs->l2gmap),PETSC_ERR_SUP,"Adaptive selection of constraints requires MUMPS and/or MKL_PARDISO");
 
   if (benign_trick) sub_schurs->is_posdef = PETSC_FALSE;
 

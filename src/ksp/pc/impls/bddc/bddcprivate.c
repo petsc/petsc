@@ -217,7 +217,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   }
 
   /* Get Nedelec field */
-  PetscCheckFalse(pcbddc->n_ISForDofsLocal && field >= pcbddc->n_ISForDofsLocal,comm,PETSC_ERR_USER,"Invalid field for Nedelec %D: number of fields is %D",field,pcbddc->n_ISForDofsLocal);
+  PetscCheck(!pcbddc->n_ISForDofsLocal || field < pcbddc->n_ISForDofsLocal,comm,PETSC_ERR_USER,"Invalid field for Nedelec %D: number of fields is %D",field,pcbddc->n_ISForDofsLocal);
   if (pcbddc->n_ISForDofsLocal && field >= 0) {
     PetscCall(PetscObjectReference((PetscObject)pcbddc->ISForDofsLocal[field]));
     nedfieldlocal = pcbddc->ISForDofsLocal[field];
@@ -249,9 +249,9 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   }
 
   /* Sanity checks */
-  PetscCheckFalse(!order && !conforming,comm,PETSC_ERR_SUP,"Variable order and non-conforming spaces are not supported at the same time");
+  PetscCheck(order || conforming,comm,PETSC_ERR_SUP,"Variable order and non-conforming spaces are not supported at the same time");
   PetscCheck(!pcbddc->user_ChangeOfBasisMatrix,comm,PETSC_ERR_SUP,"Cannot generate Nedelec support with user defined change of basis");
-  PetscCheckFalse(order && ne%order,PETSC_COMM_SELF,PETSC_ERR_USER,"The number of local edge dofs %D it's not a multiple of the order %D",ne,order);
+  PetscCheck(!order || (ne%order == 0),PETSC_COMM_SELF,PETSC_ERR_USER,"The number of local edge dofs %D is not a multiple of the order %D",ne,order);
 
   /* Just set primal dofs and return */
   if (setprimal) {
@@ -541,7 +541,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
 
       for (j=ii[i];j<ii[i+1];j++) vorder += PetscRealPart(vals[j]);
       test = PetscFloorReal(vorder+10.*PETSC_SQRT_MACHINE_EPSILON);
-      PetscCheckFalse(vorder-test > PETSC_SQRT_MACHINE_EPSILON,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected value for vorder: %g (%D)",vorder,test);
+      PetscCheck(vorder-test <= PETSC_SQRT_MACHINE_EPSILON,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected value for vorder: %g (%D)",(double)vorder,test);
       ord  = 1;
     }
     PetscAssert(test%ord == 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected number of edge dofs %" PetscInt_FMT " connected with nodal dof %" PetscInt_FMT " with order %" PetscInt_FMT,test,i,ord);
@@ -724,7 +724,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
     /* create CSR for all local dofs */
     PetscCall(PetscMalloc1(n+1,&iia));
     if (pcbddc->mat_graph->nvtxs_csr) { /* the user has passed in a CSR graph */
-      PetscCheckFalse(pcbddc->mat_graph->nvtxs_csr != n,PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid size of CSR graph %D. Should be %D",pcbddc->mat_graph->nvtxs_csr,n);
+      PetscCheck(pcbddc->mat_graph->nvtxs_csr == n,PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid size of CSR graph %D. Should be %D",pcbddc->mat_graph->nvtxs_csr,n);
       iiu = pcbddc->mat_graph->xadj;
       jju = pcbddc->mat_graph->adjncy;
     } else if (pcbddc->use_local_adj) {
@@ -1101,7 +1101,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
       for (k=ii[ee];k<ii[ee+1];k++) {
         PetscInt vv = jj[k];
         if (PetscBTLookup(btv,vv) && !PetscBTLookupSet(btvc,vv)) {
-          PetscCheckFalse(found == 2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Found more then two corners for edge %D",i);
+          PetscCheck(found != 2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Found more then two corners for edge %D",i);
           corners[i*2+found++] = vv;
         }
       }
@@ -1182,7 +1182,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
     mark--;
     start = mark*extmem+extrowcum[mark];
     size = ii[i+1]-ii[i];
-    PetscCheckFalse(extrowcum[mark] + size > extmem,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Not enough memory allocated %D > %D",extrowcum[mark] + size,extmem);
+    PetscCheck(extrowcum[mark] + size <= extmem,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Not enough memory allocated %D > %D",extrowcum[mark] + size,extmem);
     PetscCall(PetscArraycpy(extrow+start,jj+ii[i],size));
     extrowcum[mark] += size;
   }
@@ -1295,8 +1295,8 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
       /* complement */
       PetscCall(MatGetSize(GKins,&nrc,&ncc));
       PetscCheck(ncc,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Constant function has not been generated for coarse edge %D",i);
-      PetscCheckFalse(ncc + nch != nrc,PETSC_COMM_SELF,PETSC_ERR_PLIB,"The sum of the number of columns of GKins %D and Gins %D does not match %D for coarse edge %D",ncc,nch,nrc,i);
-      PetscCheckFalse(ncc != 1 && pcbddc->nedcG,PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot generate the coarse discrete gradient for coarse edge %D with ncc %D",i,ncc);
+      PetscCheck(ncc + nch == nrc,PETSC_COMM_SELF,PETSC_ERR_PLIB,"The sum of the number of columns of GKins %D and Gins %D does not match %D for coarse edge %D",ncc,nch,nrc,i);
+      PetscCheck(ncc == 1 || !pcbddc->nedcG,PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot generate the coarse discrete gradient for coarse edge %D with ncc %D",i,ncc);
       PetscCall(MatDenseGetArrayRead(GKins,&data));
       PetscCall(MatSetValuesLocal(T,nrc,cols,ncc,cols+nch,data,INSERT_VALUES));
       PetscCall(MatDenseRestoreArrayRead(GKins,&data));
@@ -1419,7 +1419,7 @@ PetscErrorCode PCBDDCNullSpaceCreate(MPI_Comm comm, PetscBool has_const, PetscIn
     PetscInt first,last;
 
     PetscCall(VecGetOwnershipRange(quad_vecs[i],&first,&last));
-    PetscCheckFalse(last-first < 2*nvecs && has_const,PETSC_COMM_SELF,PETSC_ERR_SUP,"Not implemented");
+    PetscCheck(last-first >= 2*nvecs || !has_const,PETSC_COMM_SELF,PETSC_ERR_SUP,"Not implemented");
     if (i>=first && i < last) {
       PetscScalar *data;
       PetscCall(VecGetArray(quad_vecs[i],&data));
@@ -1532,7 +1532,7 @@ PetscErrorCode PCBDDCComputeNoNetFlux(Mat A, Mat divudotp, PetscBool transpose, 
     for (j=0;j<nn;j++) vals[j] = array[idxs[j]];
     PetscCall(PetscFindInt(rank,graph->count[idxs[0]],graph->neighbours_set[idxs[0]],&idx));
     idx  = -(idx+1);
-    PetscCheckFalse(idx < 0 || idx >= maxneighs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid index %D not in [0,%D)",idx,maxneighs);
+    PetscCheck(idx >= 0 && idx < maxneighs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid index %D not in [0,%D)",idx,maxneighs);
     PetscCall(ISLocalToGlobalMappingApply(map,nn,idxs,gidxs));
     PetscCall(VecSetValues(quad_vecs[idx],nn,gidxs,vals,INSERT_VALUES));
   }
@@ -1859,7 +1859,7 @@ PetscErrorCode PCBDDCConsistencyCheckIS(PC pc, MPI_Op mop, IS *is)
   PetscInt        i,nd,n = matis->A->rmap->n,*nidxs,nnd;
 
   PetscFunctionBegin;
-  PetscCheckFalse(mop != MPI_LAND && mop != MPI_LOR,PetscObjectComm((PetscObject)(pc)),PETSC_ERR_SUP,"Supported are MPI_LAND and MPI_LOR");
+  PetscCheck(mop == MPI_LAND || mop == MPI_LOR,PetscObjectComm((PetscObject)(pc)),PETSC_ERR_SUP,"Supported are MPI_LAND and MPI_LOR");
   if (mop == MPI_LAND) {
     /* init rootdata with true */
     for (i=0;i<pc->pmat->rmap->n;i++) matis->sf_rootdata[i] = 1;
@@ -2477,7 +2477,7 @@ PetscErrorCode PCBDDCBenignCheck(PC pc, IS zerodiag)
     PetscCall(MatISGetLocalMat(pc->pmat,&A));
     PetscCall(MatMult(A,pcis->vec1_N,vec3_N));
     PetscCall(VecDot(vec3_N,pcis->vec2_N,&vals[0]));
-    PetscCheckFalse(PetscAbsScalar(vals[0]) > 1.e-1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Benign trick can not be applied! b(v_I,p_0) = %1.6e (should be numerically 0.)",PetscAbsScalar(vals[0]));
+    PetscCheck(PetscAbsScalar(vals[0]) <= 1.e-1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Benign trick can not be applied! b(v_I,p_0) = %1.6e (should be numerically 0.)",(double)PetscAbsScalar(vals[0]));
     PetscCall(PetscFree(vals));
     PetscCall(VecDestroy(&vec3_N));
 
@@ -2487,7 +2487,7 @@ PetscErrorCode PCBDDCBenignCheck(PC pc, IS zerodiag)
     for (i=0;i<pcis->n_B;i++) count[idxs[i]]++;
     PetscCall(ISRestoreIndices(pcis->is_B_local,&idxs));
     PetscCall(ISGetIndices(zerodiag,&idxs));
-    for (i=0;i<nz;i++) PetscCheckFalse(count[idxs[i]],PETSC_COMM_SELF,PETSC_ERR_SUP,"Benign trick can not be applied! pressure dof %D is an interface dof",idxs[i]);
+    for (i=0;i<nz;i++) PetscCheck(!count[idxs[i]],PETSC_COMM_SELF,PETSC_ERR_SUP,"Benign trick can not be applied! pressure dof %D is an interface dof",idxs[i]);
     PetscCall(ISRestoreIndices(zerodiag,&idxs));
     PetscCall(PetscFree(count));
   }
@@ -2501,7 +2501,7 @@ PetscErrorCode PCBDDCBenignCheck(PC pc, IS zerodiag)
   PetscCall(PCBDDCBenignGetOrSetP0(pc,pcis->vec1_global,PETSC_TRUE));
   for (i=0;i<pcbddc->benign_n;i++) {
     PetscInt val = PetscRealPart(pcbddc->benign_p0[i]);
-    PetscCheckFalse(val != -PetscGlobalRank-i,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error testing PCBDDCBenignGetOrSetP0! Found %g at %D instead of %g",PetscRealPart(pcbddc->benign_p0[i]),i,-PetscGlobalRank-i);
+    PetscCheck(val == -PetscGlobalRank-i,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error testing PCBDDCBenignGetOrSetP0! Found %g at %D instead of %g",(double)PetscRealPart(pcbddc->benign_p0[i]),i,-PetscGlobalRank-i);
   }
   PetscFunctionReturn(0);
 }
@@ -2551,7 +2551,7 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, PetscBool reuse, IS *zerodia
     for (p=0;p<n;p++) {
       PetscInt bs;
 
-      PetscCheckFalse(pp[p] < 0 || pp[p] > pcbddc->n_ISForDofsLocal-1,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"Invalid field id for pressures %D",pp[p]);
+      PetscCheck(pp[p] >= 0 && pp[p] < pcbddc->n_ISForDofsLocal,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"Invalid field id for pressures %D",pp[p]);
       PetscCall(ISGetBlockSize(pcbddc->ISForDofsLocal[pp[p]],&bs));
       bsp += bs;
     }
@@ -2839,7 +2839,7 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, PetscBool reuse, IS *zerodia
     PetscCall(MatISGetLocalToGlobalMapping(pc->pmat,&l2gmap,NULL));
     PetscCall(MatISGetLocalMat(pc->pmat,&A));
     PetscCall(MatGetLocalSize(A,&n,NULL));
-    PetscCheckFalse(!isused && n,PETSC_COMM_SELF,PETSC_ERR_USER,"Don't know how to extract div u dot p! Please provide the pressure field");
+    PetscCheck(isused || (n == 0),PETSC_COMM_SELF,PETSC_ERR_USER,"Don't know how to extract div u dot p! Please provide the pressure field");
     n_isused = 0;
     if (isused) {
       PetscCall(ISGetLocalSize(isused,&n_isused));
@@ -3887,7 +3887,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
   PetscScalar     one=1.0,m_one=-1.0;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!pcbddc->symmetric_primal && pcbddc->benign_n,PETSC_COMM_SELF,PETSC_ERR_SUP,"Non-symmetric primal basis computation with benign trick not yet implemented");
+  PetscCheck(pcbddc->symmetric_primal || !pcbddc->benign_n,PETSC_COMM_SELF,PETSC_ERR_SUP,"Non-symmetric primal basis computation with benign trick not yet implemented");
   PetscCall(PetscLogEventBegin(PC_BDDC_CorrectionSetUp[pcbddc->current_level],pc,0,0,0));
 
   /* Set Non-overlapping dimensions */
@@ -5449,7 +5449,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
   if (dirichlet) {
     PCBDDCSubSchurs sub_schurs = pcbddc->sub_schurs;
     if (pcbddc->benign_n && !pcbddc->benign_change_explicit) {
-      PetscCheckFalse(!sub_schurs || !sub_schurs->reuse_solver,PETSC_COMM_SELF,PETSC_ERR_SUP,"Not yet implemented");
+      PetscCheck(sub_schurs && sub_schurs->reuse_solver,PETSC_COMM_SELF,PETSC_ERR_SUP,"Not yet implemented");
       if (pcbddc->dbg_flag) {
         Mat    A_IIn;
 
