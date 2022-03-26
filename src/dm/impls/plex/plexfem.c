@@ -1667,7 +1667,6 @@ PetscErrorCode DMPlexComputeL2DiffVec(DM dm, PetscReal time, PetscErrorCode (**f
           PetscCall((*funcs[field])(coordDim, time, &coords[q*coordDim], Nc, funcVal, ctx));
 #if defined(needs_fix_with_return_code_argument)
           if (ierr) {
-            PetscErrorCode ierr;
             PetscCall(DMPlexVecRestoreClosure(dm, NULL, localX, c, NULL, &x));
             PetscCall(PetscFree6(funcVal,interpolant,coords,fegeom.detJ,fegeom.J,fegeom.invJ));
             PetscCall(DMRestoreLocalVector(dm, &localX));

@@ -224,7 +224,6 @@ PetscErrorCode DMVecViewLocal(DM dm, Vec v, PetscViewer viewer)
   Vec            lv;
   PetscInt       p;
   PetscMPIInt    rank, size;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
@@ -243,8 +242,6 @@ PetscErrorCode DMVecViewLocal(DM dm, Vec v, PetscViewer viewer)
 
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
@@ -256,7 +253,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 PetscErrorCode SetupProblem(DM dm, AppCtx *user)
 {
   PetscDS        prob;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   PetscCall(DMGetDS(dm, &prob));
@@ -289,7 +285,6 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   PetscDS         ds;
   DMLabel         label;
   MPI_Comm        comm;
-  PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
   /* Create finite element */
@@ -319,7 +314,6 @@ PetscErrorCode CreatePressureNullSpace(DM dm, AppCtx *user, Vec *v, MatNullSpace
 {
   Vec              vec;
   PetscErrorCode (*funcs[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void* ctx) = {zero_vector, constant_p};
-  PetscErrorCode   ierr;
 
   PetscFunctionBeginUser;
   PetscCall(DMGetGlobalVector(dm, &vec));
@@ -363,7 +357,6 @@ int main(int argc, char **argv)
   PetscInt      *materials;
   const PetscInt particlesPerCell = 1;
   PetscInt       cStart, cEnd, c, d, bs;
-  PetscErrorCode ierr;
 
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));

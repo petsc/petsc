@@ -6,7 +6,6 @@ static char help[] = "Tests MatCreateSubmatrix() in parallel.";
 
 PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat,IS isrow,IS iscol,IS *isrow_d,IS *iscol_d,IS *iscol_o,const PetscInt *garray[])
 {
-  PetscErrorCode ierr;
   Vec            x,cmap;
   const PetscInt *is_idx;
   PetscScalar    *xarray,*cmaparray;
@@ -129,7 +128,6 @@ int main(int argc,char **args)
   Mat            C,A;
   PetscInt       i,j,m = 3,n = 2,rstart,rend;
   PetscMPIInt    size,rank;
-  PetscErrorCode ierr;
   PetscScalar    v;
   IS             isrow,iscol;
 

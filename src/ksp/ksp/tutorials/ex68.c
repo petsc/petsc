@@ -12,7 +12,6 @@
 */
 PetscErrorCode ComputeSolution(PetscInt n,PetscReal *nodes,PetscReal *weights,Vec x)
 {
-  PetscErrorCode ierr;
   PetscInt       i,m;
   PetscScalar    *xx;
   PetscReal      xd;
@@ -34,7 +33,6 @@ PetscErrorCode ComputeSolution(PetscInt n,PetscReal *nodes,PetscReal *weights,Ve
 */
 PetscErrorCode ComputeRhs(PetscInt n,PetscReal *nodes,PetscReal *weights,Vec b)
 {
-  PetscErrorCode ierr;
   PetscInt       i,m;
   PetscScalar    *bb;
   PetscReal      xd;
@@ -52,7 +50,6 @@ PetscErrorCode ComputeRhs(PetscInt n,PetscReal *nodes,PetscReal *weights,Vec b)
 
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
   PetscReal      *nodes;
   PetscReal      *weights;
   PetscInt       N = 80,n;

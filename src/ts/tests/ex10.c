@@ -21,8 +21,6 @@ struct _p_TSDAESimple {
 
 PetscErrorCode TSDAESimpleCreate(MPI_Comm comm,TSDAESimple *tsdae)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscCall(PetscNew(tsdae));
   (*tsdae)->comm = comm;
@@ -31,8 +29,6 @@ PetscErrorCode TSDAESimpleCreate(MPI_Comm comm,TSDAESimple *tsdae)
 
 PetscErrorCode TSDAESimpleSetRHSFunction(TSDAESimple tsdae,Vec U,PetscErrorCode (*f)(PetscReal,Vec,Vec,Vec,void*),void *ctx)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   tsdae->f    = f;
   tsdae->U    = U;
@@ -43,8 +39,6 @@ PetscErrorCode TSDAESimpleSetRHSFunction(TSDAESimple tsdae,Vec U,PetscErrorCode 
 
 PetscErrorCode TSDAESimpleSetIFunction(TSDAESimple tsdae,Vec V,PetscErrorCode (*F)(PetscReal,Vec,Vec,Vec,void*),void *ctx)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   tsdae->F    = F;
   tsdae->V    = V;
@@ -55,8 +49,6 @@ PetscErrorCode TSDAESimpleSetIFunction(TSDAESimple tsdae,Vec V,PetscErrorCode (*
 
 PetscErrorCode TSDAESimpleDestroy(TSDAESimple *tsdae)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscCall((*(*tsdae)->destroy)(*tsdae));
   PetscCall(VecDestroy(&(*tsdae)->U));
@@ -67,8 +59,6 @@ PetscErrorCode TSDAESimpleDestroy(TSDAESimple *tsdae)
 
 PetscErrorCode TSDAESimpleSolve(TSDAESimple tsdae,Vec Usolution)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscCall((*tsdae->solve)(tsdae,Usolution));
   PetscFunctionReturn(0);
@@ -76,8 +66,6 @@ PetscErrorCode TSDAESimpleSolve(TSDAESimple tsdae,Vec Usolution)
 
 PetscErrorCode TSDAESimpleSetFromOptions(TSDAESimple tsdae)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscCall((*tsdae->setfromoptions)(PetscOptionsObject,tsdae));
   PetscFunctionReturn(0);
@@ -106,7 +94,6 @@ PetscErrorCode TSDAESimple_Reduced_TSFunction(TS ts,PetscReal t,Vec U,Vec F,void
 {
   TSDAESimple         tsdae = (TSDAESimple)actx;
   TSDAESimple_Reduced *red = (TSDAESimple_Reduced*)tsdae->data;
-  PetscErrorCode      ierr;
 
   PetscFunctionBeginUser;
   red->t = t;
@@ -124,7 +111,6 @@ PetscErrorCode TSDAESimple_Reduced_SNESFunction(SNES snes,Vec V,Vec F,void *actx
 {
   TSDAESimple         tsdae = (TSDAESimple)actx;
   TSDAESimple_Reduced *red = (TSDAESimple_Reduced*)tsdae->data;
-  PetscErrorCode      ierr;
 
   PetscFunctionBeginUser;
   PetscCall((*tsdae->F)(red->t,red->U,V,F,tsdae->Fctx));
@@ -133,7 +119,6 @@ PetscErrorCode TSDAESimple_Reduced_SNESFunction(SNES snes,Vec V,Vec F,void *actx
 
 PetscErrorCode TSDAESimpleSolve_Reduced(TSDAESimple tsdae,Vec U)
 {
-  PetscErrorCode      ierr;
   TSDAESimple_Reduced *red = (TSDAESimple_Reduced*)tsdae->data;
 
   PetscFunctionBegin;
@@ -143,7 +128,6 @@ PetscErrorCode TSDAESimpleSolve_Reduced(TSDAESimple tsdae,Vec U)
 
 PetscErrorCode TSDAESimpleSetFromOptions_Reduced(PetscOptionItems *PetscOptionsObject,TSDAESimple tsdae)
 {
-  PetscErrorCode      ierr;
   TSDAESimple_Reduced *red = (TSDAESimple_Reduced*)tsdae->data;
 
   PetscFunctionBegin;
@@ -154,7 +138,6 @@ PetscErrorCode TSDAESimpleSetFromOptions_Reduced(PetscOptionItems *PetscOptionsO
 
 PetscErrorCode TSDAESimpleDestroy_Reduced(TSDAESimple tsdae)
 {
-  PetscErrorCode      ierr;
   TSDAESimple_Reduced *red = (TSDAESimple_Reduced*)tsdae->data;
 
   PetscFunctionBegin;
@@ -166,7 +149,6 @@ PetscErrorCode TSDAESimpleDestroy_Reduced(TSDAESimple tsdae)
 
 PetscErrorCode TSDAESimpleSetUp_Reduced(TSDAESimple tsdae)
 {
-  PetscErrorCode      ierr;
   TSDAESimple_Reduced *red;
   Vec                 tsrhs;
 
@@ -216,7 +198,6 @@ PetscErrorCode TSDAESimple_Full_TSRHSFunction(TS ts,PetscReal t,Vec UV,Vec F,voi
 {
   TSDAESimple      tsdae = (TSDAESimple)actx;
   TSDAESimple_Full *full = (TSDAESimple_Full*)tsdae->data;
-  PetscErrorCode   ierr;
 
   PetscFunctionBeginUser;
   PetscCall(VecSet(F,0.0));
@@ -241,7 +222,6 @@ PetscErrorCode TSDAESimple_Full_TSIFunction(TS ts,PetscReal t,Vec UV,Vec UVdot,V
 {
   TSDAESimple       tsdae = (TSDAESimple)actx;
   TSDAESimple_Full *full = (TSDAESimple_Full*)tsdae->data;
-  PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
   PetscCall(VecCopy(UVdot,F));
@@ -257,7 +237,6 @@ PetscErrorCode TSDAESimple_Full_TSIFunction(TS ts,PetscReal t,Vec UV,Vec UVdot,V
 
 PetscErrorCode TSDAESimpleSolve_Full(TSDAESimple tsdae,Vec U)
 {
-  PetscErrorCode   ierr;
   TSDAESimple_Full *full = (TSDAESimple_Full*)tsdae->data;
 
   PetscFunctionBegin;
@@ -272,7 +251,6 @@ PetscErrorCode TSDAESimpleSolve_Full(TSDAESimple tsdae,Vec U)
 
 PetscErrorCode TSDAESimpleSetFromOptions_Full(PetscOptionItems *PetscOptionsObject,TSDAESimple tsdae)
 {
-  PetscErrorCode   ierr;
   TSDAESimple_Full *full = (TSDAESimple_Full*)tsdae->data;
 
   PetscFunctionBegin;
@@ -282,7 +260,6 @@ PetscErrorCode TSDAESimpleSetFromOptions_Full(PetscOptionItems *PetscOptionsObje
 
 PetscErrorCode TSDAESimpleDestroy_Full(TSDAESimple tsdae)
 {
-  PetscErrorCode   ierr;
   TSDAESimple_Full *full = (TSDAESimple_Full*)tsdae->data;
 
   PetscFunctionBegin;
@@ -298,7 +275,6 @@ PetscErrorCode TSDAESimpleDestroy_Full(TSDAESimple tsdae)
 
 PetscErrorCode TSDAESimpleSetUp_Full(TSDAESimple tsdae)
 {
-  PetscErrorCode   ierr;
   TSDAESimple_Full *full;
   Vec              tsrhs;
   PetscInt         nU,nV,UVstart;
@@ -346,8 +322,6 @@ PetscErrorCode TSDAESimpleSetUp_Full(TSDAESimple tsdae)
 */
 PetscErrorCode f(PetscReal t,Vec U,Vec V,Vec F,void *ctx)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
   PetscCall(VecWAXPY(F,1.0,U,V));
   PetscFunctionReturn(0);
@@ -359,8 +333,6 @@ PetscErrorCode f(PetscReal t,Vec U,Vec V,Vec F,void *ctx)
 */
 PetscErrorCode F(PetscReal t,Vec U,Vec V,Vec F,void *ctx)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
   PetscCall(VecWAXPY(F,-1.0,V,U));
   PetscFunctionReturn(0);
@@ -368,7 +340,6 @@ PetscErrorCode F(PetscReal t,Vec U,Vec V,Vec F,void *ctx)
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   TSDAESimple    tsdae;
   Vec            U,V,Usolution;
 

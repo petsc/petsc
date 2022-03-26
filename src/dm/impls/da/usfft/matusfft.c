@@ -23,7 +23,6 @@ typedef struct {
 PetscErrorCode MatApply_USFFT_Private(Mat A, fftw_plan *plan, int direction, Vec x,Vec y)
 {
 #if 0
-  PetscErrorCode ierr;
   PetscScalar    *r_array, *y_array;
   Mat_USFFT* = (Mat_USFFT*)(A->data);
 #endif
@@ -83,7 +82,6 @@ PetscErrorCode MatApply_USFFT_Private(Mat A, fftw_plan *plan, int direction, Vec
 PetscErrorCode MatUSFFT_ProjectOnBattleLemarie_Private(Vec x,double *r)
 /* Project onto the Battle-Lemarie function centered around r */
 {
-  PetscErrorCode ierr;
   PetscScalar    *x_array, *y_array;
 
   PetscFunctionBegin;
@@ -92,7 +90,6 @@ PetscErrorCode MatUSFFT_ProjectOnBattleLemarie_Private(Vec x,double *r)
 
 PetscErrorCode MatInterpolate_USFFT_Private(Vec x,Vec y)
 {
-  PetscErrorCode ierr;
   PetscScalar    *x_array, *y_array;
 
   PetscFunctionBegin;
@@ -101,7 +98,6 @@ PetscErrorCode MatInterpolate_USFFT_Private(Vec x,Vec y)
 
 PetscErrorCode MatMult_SeqUSFFT(Mat A,Vec x,Vec y)
 {
-  PetscErrorCode ierr;
   Mat_USFFT      *usfft = (Mat_USFFT*)A->data;
 
   PetscFunctionBegin;
@@ -112,7 +108,6 @@ PetscErrorCode MatMult_SeqUSFFT(Mat A,Vec x,Vec y)
 
 PetscErrorCode MatMultTranspose_SeqUSFFT(Mat A,Vec x,Vec y)
 {
-  PetscErrorCode ierr;
   Mat_USFFT      *usfft = (Mat_USFFT*)A->data;
 
   PetscFunctionBegin;
@@ -124,7 +119,6 @@ PetscErrorCode MatMultTranspose_SeqUSFFT(Mat A,Vec x,Vec y)
 PetscErrorCode MatDestroy_SeqUSFFT(Mat A)
 {
   Mat_USFFT      *usfft = (Mat_USFFT*)A->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   fftw_destroy_plan(usfft->p_forward);

@@ -228,7 +228,6 @@ int main(int argc,char **argv)
 static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 {
   User              user = (User)ptr;
-  PetscErrorCode    ierr;
   PetscScalar       *f;
   const PetscScalar *x;
 
@@ -249,7 +248,6 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 static PetscErrorCode FormRHSJacobian(TS ts,PetscReal t,Vec X,Mat Amat,Mat Pmat,void *ptr)
 {
   User              user = (User)ptr;
-  PetscErrorCode    ierr;
   const PetscScalar *x;
   PetscInt          M = user->Nspec+1,i;
 
@@ -280,7 +278,6 @@ static PetscErrorCode FormRHSJacobian(TS ts,PetscReal t,Vec X,Mat Amat,Mat Pmat,
 PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
 {
   PetscScalar    *x;
-  PetscErrorCode ierr;
   PetscInt       i;
   Vec            y;
   const PetscInt maxspecies = 10;
@@ -323,7 +320,6 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
 */
 PetscErrorCode MassFractionToMoleFraction(User user,Vec massf,Vec *molef)
 {
-  PetscErrorCode    ierr;
   PetscScalar       *mof;
   const PetscScalar *maf;
 
@@ -343,7 +339,6 @@ PetscErrorCode MassFractionToMoleFraction(User user,Vec massf,Vec *molef)
 */
 PetscErrorCode MoleFractionToMassFraction(User user,Vec molef,Vec *massf)
 {
-  PetscErrorCode    ierr;
   const PetscScalar *mof;
   PetscScalar       *maf;
 
@@ -360,8 +355,6 @@ PetscErrorCode MoleFractionToMassFraction(User user,Vec molef,Vec *massf)
 
 PetscErrorCode ComputeMassConservation(Vec x,PetscReal *mass,void* ctx)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscCall(VecSum(x,mass));
   PetscFunctionReturn(0);
@@ -371,7 +364,6 @@ PetscErrorCode MonitorMassConservation(TS ts,PetscInt step,PetscReal time,Vec x,
 {
   const PetscScalar  *T;
   PetscReal          mass;
-  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   PetscCall(ComputeMassConservation(x,&mass,ctx));
@@ -386,7 +378,6 @@ PetscErrorCode MonitorTempature(TS ts,PetscInt step,PetscReal time,Vec x,void* c
 {
   User               user = (User) ctx;
   const PetscScalar  *T;
-  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   PetscCall(VecGetArrayRead(x,&T));
@@ -400,7 +391,6 @@ PetscErrorCode MonitorTempature(TS ts,PetscInt step,PetscReal time,Vec x,void* c
 */
 PETSC_UNUSED PetscErrorCode PrintSpecies(User user,Vec molef)
 {
-  PetscErrorCode    ierr;
   const PetscScalar *mof;
   PetscInt          i,*idx,n = user->Nspec+1;
 

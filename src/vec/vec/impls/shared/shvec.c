@@ -10,7 +10,6 @@ extern PetscErrorCode PetscSharedMalloc(MPI_Comm,PetscInt,PetscInt,void**);
 
 PetscErrorCode VecDuplicate_Shared(Vec win,Vec *v)
 {
-  PetscErrorCode ierr;
   Vec_MPI        *w = (Vec_MPI*)win->data;
   PetscScalar    *array;
 
@@ -37,7 +36,6 @@ PetscErrorCode VecDuplicate_Shared(Vec win,Vec *v)
 
 PETSC_EXTERN PetscErrorCode VecCreate_Shared(Vec vv)
 {
-  PetscErrorCode ierr;
   PetscScalar    *array;
 
   PetscFunctionBegin;
@@ -83,8 +81,6 @@ static PetscMPIInt Petsc_ShmComm_keyval = MPI_KEYVAL_INVALID;
 */
 static PetscErrorCode Petsc_DeleteShared(MPI_Comm comm,PetscInt keyval,void *attr_val,void *extra_state)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscCall(PetscFree(attr_val));
   PetscFunctionReturn(MPI_SUCCESS);
@@ -108,7 +104,6 @@ ipcrm to remove the shared memory in use.
 */
 PetscErrorCode PetscSharedMalloc(MPI_Comm comm,PetscInt llen,PetscInt len,void **result)
 {
-  PetscErrorCode ierr;
   PetscInt       shift;
   PetscMPIInt    rank,flag;
   int            *arena,id,key = 0;

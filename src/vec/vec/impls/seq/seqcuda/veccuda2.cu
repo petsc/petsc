@@ -1371,7 +1371,6 @@ PetscErrorCode VecShift_SeqCUDA(Vec v,PetscScalar shift)
  */
 PetscErrorCode  VecAllocateNVSHMEM_SeqCUDA(Vec v)
 {
-  PetscErrorCode ierr;
   cudaError_t    cerr;
   Vec_CUDA       *veccuda = (Vec_CUDA*)v->spptr;
   PetscInt       n;

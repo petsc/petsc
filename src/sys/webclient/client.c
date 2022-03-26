@@ -44,7 +44,6 @@ PetscErrorCode PetscSSLInitializeContext(SSL_CTX **octx)
 #if defined(PETSC_USE_SSL_CERTIFICATE)
     char           keyfile[PETSC_MAX_PATH_LEN];
     PetscBool      exists;
-    PetscErrorCode ierr;
 #endif
 
     PetscFunctionBegin;
@@ -110,7 +109,6 @@ static PetscErrorCode PetscHTTPBuildRequest(const char type[],const char url[],c
   char           *request=0;
   char           contentlength[40],contenttype[80],*path,*host;
   size_t         request_len,headlen,bodylen,contentlen,pathlen,hostlen,typelen,contenttypelen = 0;
-  PetscErrorCode ierr;
   PetscBool      flg;
 
   PetscFunctionBegin;
@@ -186,7 +184,6 @@ PetscErrorCode PetscHTTPSRequest(const char type[],const char url[],const char h
   char           *request;
   int            r;
   size_t         request_len,len;
-  PetscErrorCode ierr;
   PetscBool      foundbody = PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -274,7 +271,6 @@ PetscErrorCode PetscHTTPRequest(const char type[],const char url[],const char he
 {
   char           *request;
   size_t         request_len;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscCall(PetscHTTPBuildRequest(type,url,header,ctype,body,&request));
@@ -307,7 +303,6 @@ PetscErrorCode PetscHTTPRequest(const char type[],const char url[],const char he
 PetscErrorCode PetscHTTPSConnect(const char host[],int port,SSL_CTX *ctx,int *sock,SSL **ssl)
 {
   BIO            *sbio;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* Connect the TCP socket*/
@@ -338,7 +333,6 @@ PetscErrorCode PetscHTTPSConnect(const char host[],int port,SSL_CTX *ctx,int *so
 @*/
 PetscErrorCode PetscPullJSONValue(const char buff[],const char key[],char value[],size_t valuelen,PetscBool *found)
 {
-  PetscErrorCode ierr;
   char           *v,*w;
   char           work[256];
   size_t         len;
@@ -394,7 +388,6 @@ PetscErrorCode PetscPullJSONValue(const char buff[],const char key[],char value[
 @*/
 PetscErrorCode PetscPushJSONValue(char buff[],const char key[],const char value[],size_t bufflen)
 {
-  PetscErrorCode ierr;
   size_t         len;
   PetscBool      special;
 

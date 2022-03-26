@@ -179,7 +179,6 @@ typedef struct  {
 
 PetscErrorCode MatDestroy_LUSOL(Mat A)
 {
-  PetscErrorCode ierr;
   Mat_LUSOL      *lusol=(Mat_LUSOL*)A->spptr;
 
   PetscFunctionBegin;
@@ -209,7 +208,6 @@ PetscErrorCode MatSolve_LUSOL(Mat A,Vec b,Vec x)
   double         *xx;
   const double   *bb;
   int            mode=5;
-  PetscErrorCode ierr;
   int            i,m,n,nnz,status;
 
   PetscFunctionBegin;
@@ -237,7 +235,6 @@ PetscErrorCode MatLUFactorNumeric_LUSOL(Mat F,Mat A,const MatFactorInfo *info)
 {
   Mat_SeqAIJ     *a;
   Mat_LUSOL      *lusol = (Mat_LUSOL*)F->spptr;
-  PetscErrorCode ierr;
   int            m, n, nz, nnz, status;
   int            i, rs, re;
   int            factorizations;
@@ -425,7 +422,6 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_lusol(Mat A,MatFactorType ftype,
 {
   Mat            B;
   Mat_LUSOL      *lusol;
-  PetscErrorCode ierr;
   int            m, n;
 
   PetscFunctionBegin;
@@ -453,8 +449,6 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_lusol(Mat A,MatFactorType ftype,
 
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Lusol(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscCall(MatSolverTypeRegister(MATSOLVERLUSOL,MATSEQAIJ,        MAT_FACTOR_LU,MatGetFactor_seqaij_lusol));
   PetscFunctionReturn(0);

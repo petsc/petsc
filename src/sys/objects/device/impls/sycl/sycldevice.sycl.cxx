@@ -58,7 +58,6 @@ public:
 
   PETSC_NODISCARD PetscErrorCode view(PetscViewer viewer) const noexcept
   {
-    PetscErrorCode ierr;
     MPI_Comm       comm;
     PetscMPIInt    rank;
     PetscBool      iascii;
@@ -96,7 +95,6 @@ private:
   // Is the underlying MPI aware of sycl (GPU) devices?
   bool isMPISyclAware_() noexcept
   {
-    PetscErrorCode ierr;
     const int      bufSize = 2;
     const int      hbuf[bufSize] = {1,0};
     int            *dbuf = nullptr;
@@ -196,8 +194,6 @@ PetscErrorCode Device::finalize_() noexcept
 
 PetscErrorCode Device::getDevice(PetscDevice device, PetscInt id) const noexcept
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscCheckFalse(defaultDevice_ == PETSC_SYCL_DEVICE_NONE,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Trying to retrieve a SYCL PetscDevice when it has been disabled");
   if (id == PETSC_DECIDE) id = defaultDevice_;
@@ -222,8 +218,6 @@ PetscErrorCode Device::configureDevice(PetscDevice device) noexcept
 
 PetscErrorCode Device::viewDevice(PetscDevice device, PetscViewer viewer) noexcept
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscCall(devices_[device->deviceId]->view(viewer));
   PetscFunctionReturn(0);

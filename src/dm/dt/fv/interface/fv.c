@@ -2032,7 +2032,6 @@ static PetscErrorCode PetscFVLeastSquaresDebugCell_Static(PetscFV fvm, PetscInt 
   PetscReal       grad[2] = {0, 0};
   const PetscInt *faces;
   PetscInt        numFaces, f;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscCall(DMPlexGetConeSize(dm, cell, &numFaces));

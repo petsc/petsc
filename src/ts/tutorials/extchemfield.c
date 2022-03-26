@@ -241,7 +241,6 @@ int main(int argc,char **argv)
 static PetscErrorCode FormDiffusionFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 {
   User              user = (User)ptr;
-  PetscErrorCode    ierr;
   PetscScalar       **f;
   const PetscScalar **x;
   DM                dm;
@@ -277,7 +276,6 @@ static PetscErrorCode FormDiffusionFunction(TS ts,PetscReal t,Vec X,Vec F,void *
 static PetscErrorCode FormDiffusionJacobian(TS ts,PetscReal t,Vec X,Mat Amat,Mat Pmat,void *ptr)
 {
   User              user = (User)ptr;
-  PetscErrorCode    ierr;
   DM                dm;
   PetscInt          i,xs,xm,j,dof;
   PetscReal         idx,values[3];
@@ -309,7 +307,6 @@ static PetscErrorCode FormDiffusionJacobian(TS ts,PetscReal t,Vec X,Mat Amat,Mat
 static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 {
   User              user = (User)ptr;
-  PetscErrorCode    ierr;
   PetscScalar       **f;
   const PetscScalar **x;
   DM                dm;
@@ -343,7 +340,6 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 static PetscErrorCode FormRHSJacobian(TS ts,PetscReal t,Vec X,Mat Amat,Mat Pmat,void *ptr)
 {
   User              user = (User)ptr;
-  PetscErrorCode    ierr;
   const PetscScalar **x;
   PetscInt          M = user->Nspec+1,i,j,xs,xm;
   DM                dm;
@@ -386,7 +382,6 @@ static PetscErrorCode FormRHSJacobian(TS ts,PetscReal t,Vec X,Mat Amat,Mat Pmat,
 PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
 {
   PetscScalar    **x,*xc;
-  PetscErrorCode ierr;
   struct {const char *name; PetscReal massfrac;} initial[] = {
     {"CH4", 0.0948178320887},
     {"O2", 0.189635664177},
@@ -428,7 +423,6 @@ typedef struct {
 static PetscErrorCode FormMoleFraction(UserLGCtx *ctx,Vec massf,Vec *molef)
 {
   User              user = ctx->user;
-  PetscErrorCode    ierr;
   PetscReal         *M,tM=0;
   PetscInt          i,n = user->Nspec+1;
   PetscScalar       *mof;
@@ -453,8 +447,6 @@ static PetscErrorCode FormMoleFraction(UserLGCtx *ctx,Vec massf,Vec *molef)
 
 static PetscErrorCode MonitorCellDestroy(UserLGCtx *uctx)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscCall(PetscFree(uctx));
   PetscFunctionReturn(0);
@@ -465,7 +457,6 @@ static PetscErrorCode MonitorCellDestroy(UserLGCtx *uctx)
 */
 static PetscErrorCode MonitorCell(TS ts,User user,PetscInt cell)
 {
-  PetscErrorCode ierr;
   TSMonitorLGCtx ctx;
   char           **snames;
   UserLGCtx      *uctx;

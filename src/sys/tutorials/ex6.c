@@ -12,17 +12,16 @@ T*/
 int main(int argc,char **argv)
 {
   PetscBool      flg = PETSC_TRUE;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   if (PetscLikely(flg)) {
     /* do something */
   }
   if (PetscUnlikely(flg)) {
     /* do something */
   }
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

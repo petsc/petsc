@@ -34,7 +34,6 @@ static PetscErrorCode ComputeVolume(DM dm)
   double         surface = 0., volume = 0., vol;
   PetscInt       dim, pStart, pEnd, p, pid;
   const char    *name;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   PetscCall(DMGetDimension(dm, &dim));
@@ -69,7 +68,6 @@ int main(int argc, char *argv[])
 {
   DM             surface, dm;
   AppCtx         ctx;
-  PetscErrorCode ierr;
 
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &ctx));

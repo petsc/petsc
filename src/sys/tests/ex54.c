@@ -6,11 +6,10 @@ static char help[] = "Tests options file parsing.\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode    ierr;
 
-  ierr = PetscInitialize(&argc,&argv,"ex54options",help);if (ierr) return ierr;
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,"ex54options",help));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

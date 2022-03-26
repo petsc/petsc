@@ -22,7 +22,6 @@ typedef struct {
 
 PetscErrorCode ComputeSolution(DM da,PetscGLL *gll,Vec u)
 {
-  PetscErrorCode ierr;
   PetscInt       j,xs,xn;
   PetscScalar    *uu,*xx;
   PetscReal      xd;
@@ -49,7 +48,6 @@ PetscErrorCode ComputeSolution(DM da,PetscGLL *gll,Vec u)
 */
 PetscErrorCode ComputeRhs(DM da,PetscGLL *gll,Vec b)
 {
-  PetscErrorCode ierr;
   PetscInt       i,j,xs,xn,n = gll->n;
   PetscScalar    *bb,*xx;
   PetscReal      xd;
@@ -90,7 +88,6 @@ PetscErrorCode ComputeRhs(DM da,PetscGLL *gll,Vec b)
 */
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
   PetscGLL       gll;
   PetscInt       N = 80,n,q = 8,xs,xn,j,l;
   PetscReal      **A;

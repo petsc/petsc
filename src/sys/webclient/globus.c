@@ -19,7 +19,6 @@ static PetscErrorCode base64_encode(const unsigned char *data,unsigned char *enc
   static size_t  mod_table[] = {0, 2, 1};
   size_t         i,j;
   size_t         input_length,output_length;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscCall(PetscStrlen((const char*)data,&input_length));
@@ -47,7 +46,6 @@ PETSC_UNUSED static PetscErrorCode base64_decode(const unsigned char *data,unsig
   static char    decoding_table[257];
   static int     decode_table_built = 0;
   size_t         i,j;
-  PetscErrorCode ierr;
   size_t         input_length,output_length;
 
   PetscFunctionBegin;
@@ -110,7 +108,6 @@ PetscErrorCode PetscGlobusAuthorize(MPI_Comm comm,char access_token[],size_t tok
   SSL_CTX        *ctx;
   SSL            *ssl;
   int            sock;
-  PetscErrorCode ierr;
   char           buff[8*1024],*ptr,head[1024];
   PetscMPIInt    rank;
   size_t         len;
@@ -175,7 +172,6 @@ PetscErrorCode PetscGlobusGetTransfers(MPI_Comm comm,const char access_token[],c
   SSL_CTX        *ctx;
   SSL            *ssl;
   int            sock;
-  PetscErrorCode ierr;
   char           head[4096];
   PetscMPIInt    rank;
 
@@ -226,7 +222,6 @@ PetscErrorCode PetscGlobusUpload(MPI_Comm comm,const char access_token[],const c
   SSL_CTX        *ctx;
   SSL            *ssl;
   int            sock;
-  PetscErrorCode ierr;
   char           head[4096],buff[8*1024],body[4096],submission_id[4096];
   PetscMPIInt    rank;
   PetscBool      flg,found;

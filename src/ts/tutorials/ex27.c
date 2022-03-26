@@ -73,7 +73,6 @@ extern PetscErrorCode ReactingFlowPostCheck(SNESLineSearch,Vec,Vec,Vec,PetscBool
 
 PetscErrorCode SetFromOptions(AppCtx * ctx)
 {
-  PetscErrorCode ierr;
   PetscInt       i,j;
 
   PetscFunctionBeginUser;
@@ -125,7 +124,6 @@ int main(int argc,char **argv)
   SNESLineSearch linesearch;
   Vec            x;
   AppCtx         ctx;
-  PetscErrorCode ierr;
   DM             da;
 
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
@@ -198,7 +196,6 @@ PetscErrorCode FormInitialGuess(DM da,AppCtx *ctx,Vec X)
 
 PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info,PetscScalar ptime,Field **x,Field **xt,Field **f,AppCtx *ctx)
 {
-  PetscErrorCode ierr;
   PetscInt       i,j,l,m;
   PetscReal      hx,hy,dhx,dhy,hxdhy,hydhx,scale;
   PetscScalar    u,uxx,uyy;
@@ -329,7 +326,6 @@ PetscErrorCode FormIFunction(TS ts,PetscReal ptime,Vec X,Vec Xdot,Vec F,void *us
 {
   DMDALocalInfo  info;
   Field          **u,**udot,**fu;
-  PetscErrorCode ierr;
   Vec            localX;
   DM             da;
 

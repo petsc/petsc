@@ -72,7 +72,6 @@ PetscErrorCode PetscMkdtemp(char dir[])
     char           name[PETSC_MAX_PATH_LEN];
     PetscInt       i = 0,max_retry = 26;
     size_t         len;
-    PetscErrorCode ierr;
 
     while (err && i < max_retry) {
       PetscCall(PetscStrncpy(name,dir,sizeof(name)));
@@ -95,7 +94,6 @@ PetscErrorCode PetscMkdtemp(char dir[])
 #if defined(PETSC_HAVE_DIRECT_H)
 PetscErrorCode PetscRMTree(const char dir[])
 {
-  PetscErrorCode ierr;
   struct _finddata_t data;
   char loc[PETSC_MAX_PATH_LEN];
   PetscBool flg1, flg2;

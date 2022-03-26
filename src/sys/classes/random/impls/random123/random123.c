@@ -100,8 +100,6 @@ PetscErrorCode  PetscRandomGetValueReal_Random123(PetscRandom r,PetscReal *val)
 
 PetscErrorCode PetscRandomDestroy_Random123(PetscRandom r)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscCall(PetscFree(r->data));
   PetscFunctionReturn(0);
@@ -133,7 +131,6 @@ M*/
 PETSC_EXTERN PetscErrorCode PetscRandomCreate_Random123(PetscRandom r)
 {
   PetscRandom123 *r123;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscCall(PetscNewLog(r,&r123));

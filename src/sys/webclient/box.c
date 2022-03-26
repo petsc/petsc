@@ -31,7 +31,6 @@ static int PetscBoxWebServer_Private(struct mg_connection *conn)
 */
 static PetscErrorCode PetscBoxStartWebServer_Private(void)
 {
-  PetscErrorCode      ierr;
   int                 optionsLen = 5;
   const char          *options[optionsLen];
   struct mg_callbacks callbacks;
@@ -183,7 +182,6 @@ PetscErrorCode PetscBoxRefresh(MPI_Comm comm,const char refresh_token[],char acc
   SSL_CTX        *ctx;
   SSL            *ssl;
   int            sock;
-  PetscErrorCode ierr;
   char           buff[8*1024],body[1024];
   PetscMPIInt    rank;
   char           *refreshtoken = (char*)refresh_token;

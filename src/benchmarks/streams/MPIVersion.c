@@ -82,7 +82,7 @@ int main(int argc,char **args)
   int            ierr;
   FILE           *fd;
 
-  ierr = PetscInitialize(&argc,&args,NULL,NULL);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&args,NULL,NULL));
   ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);if (ierr) return ierr;
   ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);if (ierr) return ierr;
 
@@ -195,35 +195,5 @@ int main(int argc,char **args)
   }
   PetscFinalize();
   return 0;
-}
-
-# define        M        20
-
-int checktick(void)
-{
-  int    i, minDelta, Delta;
-  double t1, t2, timesfound[M];
-
-/*  Collect a sequence of M unique time values from the system. */
-
-  for (i = 0; i < M; i++) {
-    t1 = MPI_Wtime();
-    while (((t2=MPI_Wtime()) - t1) < 1.0E-6) ;
-    timesfound[i] = t1 = t2;
-  }
-
-/*
-  Determine the minimum difference between these M values.
-  This result will be our estimate (in microseconds) for the
-  clock granularity.
- */
-
-  minDelta = 1000000;
-  for (i = 1; i < M; i++) {
-    Delta    = (int)(1.0E6 * (timesfound[i]-timesfound[i-1]));
-    minDelta = MIN(minDelta, MAX(Delta,0));
-  }
-
-  return(minDelta);
 }
 

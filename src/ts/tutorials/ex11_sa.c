@@ -263,7 +263,6 @@ static PetscErrorCode PhysicsFunctional_Advect(Model mod,PetscReal time,const Pe
   Physics        phys    = (Physics)ctx;
   Physics_Advect *advect = (Physics_Advect*)phys->data;
   PetscScalar    yexact[1];
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   PetscCall(PhysicsSolution_Advect(mod,time,x,yexact,phys));
@@ -274,7 +273,6 @@ static PetscErrorCode PhysicsFunctional_Advect(Model mod,PetscReal time,const Pe
 static PetscErrorCode PhysicsCreate_Advect(PetscDS prob, Model mod,Physics phys,PetscOptions *PetscOptionsObject)
 {
   Physics_Advect *advect;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   phys->field_desc = PhysicsFields_Advect;
@@ -432,7 +430,6 @@ static PetscErrorCode PhysicsFunctional_SW(Model mod,PetscReal time,const PetscR
 static PetscErrorCode PhysicsCreate_SW(PetscDS prob, Model mod,Physics phys,PetscOptions *PetscOptionsObject)
 {
   Physics_SW     *sw;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   phys->field_desc = PhysicsFields_SW;
@@ -601,7 +598,6 @@ static PetscErrorCode PhysicsFunctional_Euler(Model mod,PetscReal time,const Pet
 static PetscErrorCode PhysicsCreate_Euler(PetscDS prob, Model mod,Physics phys,PetscOptions *PetscOptionsObject)
 {
   Physics_Euler   *eu;
-  PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
   phys->field_desc = PhysicsFields_Euler;
@@ -644,7 +640,6 @@ PetscErrorCode ConstructCellBoundary(DM dm, User user)
   PetscInt       numRegions, innerRegion, numCells, c;
   PetscInt       cStart, cEnd, cEndInterior, fStart, fEnd;
   PetscBool      hasLabel;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
@@ -722,7 +717,6 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
   PetscInt       dim, depth, maxConeSize, maxSupportSize, numLabels, numGhostCells;
   PetscInt       numFS, fs, pStart, pEnd, p, cEnd, cEndInterior, vStart, vEnd, v, fStart, fEnd, newf, d, l;
   PetscBool      hasLabel;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   PetscCall(DMHasLabel(dm, labelName, &hasLabel));
@@ -918,7 +912,6 @@ PetscErrorCode CreatePartitionVec(DM dm, DM *dmCell, Vec *partition)
   PetscScalar    *part;
   PetscInt       cStart, cEnd, c;
   PetscMPIInt    rank;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   PetscCall(DMGetCoordinateSection(dm, &coordSection));
@@ -960,7 +953,6 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
   PetscScalar       *m;
   const PetscScalar *fgeom, *cgeom, *coords;
   PetscInt          vStart, vEnd, v;
-  PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
   PetscCall(DMConvert(dm, DMPLEX, &plex));
@@ -1033,7 +1025,6 @@ PetscErrorCode SetUpLocalSpace(DM dm, User user)
   PetscSection   stateSection;
   Physics        phys;
   PetscInt       dof = user->model->physics->dof, *cind, d, stateSize, cStart, cEnd, cEndInterior, c, i;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
@@ -1116,7 +1107,6 @@ static PetscErrorCode ModelSolutionSetDefault(Model mod,SolutionFunction func,vo
 
 static PetscErrorCode ModelFunctionalRegister(Model mod,const char *name,PetscInt *offset,FunctionalFunction func,void *ctx)
 {
-  PetscErrorCode ierr;
   FunctionalLink link,*ptr;
   PetscInt       lastoffset = -1;
 
@@ -1135,7 +1125,6 @@ static PetscErrorCode ModelFunctionalRegister(Model mod,const char *name,PetscIn
 
 static PetscErrorCode ModelFunctionalSetFromOptions(Model mod,PetscOptions *PetscOptionsObject)
 {
-  PetscErrorCode ierr;
   PetscInt       i,j;
   FunctionalLink link;
   char           *names[256];
@@ -1179,7 +1168,6 @@ next_name:
 
 static PetscErrorCode FunctionalLinkDestroy(FunctionalLink *link)
 {
-  PetscErrorCode ierr;
   FunctionalLink l,next;
 
   PetscFunctionBeginUser;
@@ -1202,7 +1190,6 @@ PetscErrorCode SetInitialCondition(DM dm, Vec X, User user)
   const PetscScalar *cgeom;
   PetscScalar       *x;
   PetscInt           cStart, cEnd, c;
-  PetscErrorCode     ierr;
 
   PetscFunctionBeginUser;
   PetscCall(DMConvert(dm, DMPLEX, &plex));
@@ -1227,8 +1214,6 @@ PetscErrorCode SetInitialCondition(DM dm, Vec X, User user)
 
 static PetscErrorCode OutputVTK(DM dm, const char *filename, PetscViewer *viewer)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
   PetscCall(PetscViewerCreate(PetscObjectComm((PetscObject)dm), viewer));
   PetscCall(PetscViewerSetType(*viewer, PETSCVIEWERVTK));
@@ -1243,7 +1228,6 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
   PetscViewer    viewer;
   char           filename[PETSC_MAX_PATH_LEN],*ftable = NULL;
   PetscReal      xnorm;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   PetscCall(PetscObjectSetName((PetscObject) X, "solution"));
@@ -1346,8 +1330,6 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
 
 static PetscErrorCode OutputBIN(DM dm, const char *filename, PetscViewer *viewer)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
   PetscCall(PetscViewerCreate(PetscObjectComm((PetscObject)dm), viewer));
   PetscCall(PetscViewerSetType(*viewer, PETSCVIEWERBINARY));
@@ -1363,7 +1345,6 @@ static PetscErrorCode TestMonitor(DM dm, const char *filename, Vec X, PetscReal 
   PetscBool      equal;
   PetscReal      timeread;
   PetscViewer    viewer;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer));
@@ -1394,7 +1375,6 @@ static PetscErrorCode MonitorBIN(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
   DM             dm;
   PetscViewer    viewer;
   char           filename[PETSC_MAX_PATH_LEN];
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   PetscCall(VecGetDM(X,&dm));

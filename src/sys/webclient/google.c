@@ -41,7 +41,6 @@ PetscErrorCode PetscGoogleDriveRefresh(MPI_Comm comm,const char refresh_token[],
   SSL_CTX        *ctx;
   SSL            *ssl;
   int            sock;
-  PetscErrorCode ierr;
   char           buff[8*1024],body[1024];
   PetscMPIInt    rank;
   char           *refreshtoken = (char*)refresh_token;
@@ -280,7 +279,6 @@ PetscErrorCode PetscURLShorten(const char url[],char shorturl[],size_t lenshortu
   SSL_CTX        *ctx;
   SSL            *ssl;
   int            sock;
-  PetscErrorCode ierr;
   char           buff[1024],body[512],post[1024];
   PetscBool      found;
 
