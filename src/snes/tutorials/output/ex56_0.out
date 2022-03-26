@@ -1,20 +1,5 @@
-  0 SNES Function norm 122.396 
-    0 KSP Residual norm 122.396 
-    1 KSP Residual norm 21.3752 
-    2 KSP Residual norm 4.36433 
-    3 KSP Residual norm 0.380326 
-    4 KSP Residual norm 0.0543914 
-    5 KSP Residual norm 0.00670861 
-    6 KSP Residual norm 0.000594669 
-    7 KSP Residual norm 9.72611e-05 
-    8 KSP Residual norm 1.81074e-05 
-    9 KSP Residual norm 2.12337e-06 
-   10 KSP Residual norm 3.13031e-07 
-   11 KSP Residual norm 2.38364e-08 
-   12 KSP Residual norm 3.922e-10 
-  Linear solve converged due to CONVERGED_RTOL iterations 12
-  1 SNES Function norm 3.923e-10 
-Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+  Linear solve converged due to CONVERGED_RTOL iterations 11
+Nonlinear solve converged due to CONVERGED_ITS iterations 1
 DM Object: Mesh (ex56_) 4 MPI processes
   type: plex
 Mesh in 3 dimensions:
@@ -30,25 +15,8 @@ Labels:
   celltype: 4 strata with value/size (0 (8), 1 (12), 4 (6), 7 (1))
 Field deformation:
   adjacency FEM
-  0 SNES Function norm 49.7106 
-    0 KSP Residual norm 49.7106 
-    1 KSP Residual norm 13.0811 
-    2 KSP Residual norm 2.74481 
-    3 KSP Residual norm 0.500328 
-    4 KSP Residual norm 0.0829817 
-    5 KSP Residual norm 0.0153849 
-    6 KSP Residual norm 0.00253209 
-    7 KSP Residual norm 0.000482894 
-    8 KSP Residual norm 8.63384e-05 
-    9 KSP Residual norm 1.42793e-05 
-   10 KSP Residual norm 2.66763e-06 
-   11 KSP Residual norm 4.68062e-07 
-   12 KSP Residual norm 7.03047e-08 
-   13 KSP Residual norm 1.36047e-08 
-   14 KSP Residual norm 2.52779e-09 
-  Linear solve converged due to CONVERGED_RTOL iterations 14
-  1 SNES Function norm 2.5278e-09 
-Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+  Linear solve converged due to CONVERGED_RTOL iterations 18
+Nonlinear solve converged due to CONVERGED_ITS iterations 1
 DM Object: Mesh (ex56_) 4 MPI processes
   type: plex
 Mesh in 3 dimensions:
@@ -64,4 +32,4 @@ Labels:
   boundary: 1 strata with value/size (1 (77))
 Field deformation:
   adjacency FEM
-[0] 1) N=         441, max displ=5.5560415e+01, disp diff= 1.19e+01, error=4.415e+00, rate=1.9
+[0] 1) N=        1815, max displ=5.9169538e+01, disp diff= 3.45e+00, error=8.057e-01, rate=2.4
