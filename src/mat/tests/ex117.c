@@ -18,7 +18,7 @@ int main(int argc,char **args)
 
   PetscCall(PetscInitialize(&argc,&args,0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
+  PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
 
   nnz[0]=2;nnz[1]=1;nnz[2]=1;
   PetscCall(MatCreateSeqSBAIJ(PETSC_COMM_SELF,2,6,6,0,nnz,&mat));

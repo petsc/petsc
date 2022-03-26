@@ -104,19 +104,19 @@ int main(int argc,char **args)
         PetscCall(MatMatSolve(F,B,B));
         PetscCall(MatAYPX(B,-1.0,X,SAME_NONZERO_PATTERN));
         PetscCall(MatNorm(B,NORM_INFINITY,&norm));
-        PetscCheckFalse(norm > 100*PETSC_MACHINE_EPSILON,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"KSPMatSolve() and MatMatSolve() difference has nonzero norm %g",(double)norm);
+        PetscCheck(norm < 100*PETSC_MACHINE_EPSILON,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"KSPMatSolve() and MatMatSolve() difference has nonzero norm %g",(double)norm);
       }
     } else {
       PetscCall(MatZeroEntries(B));
       PetscCall(KSPMatSolve(ksp,B,X));
       PetscCall(KSPGetConvergedReason(ksp,&reason));
-      PetscCheckFalse(reason != KSP_CONVERGED_HAPPY_BREAKDOWN,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"KSPConvergedReason() %s != KSP_CONVERGED_HAPPY_BREAKDOWN",KSPConvergedReasons[reason]);
+      PetscCheck(reason == KSP_CONVERGED_HAPPY_BREAKDOWN,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"KSPConvergedReason() %s != KSP_CONVERGED_HAPPY_BREAKDOWN",KSPConvergedReasons[reason]);
       PetscCall(MatDenseGetArrayWrite(B,&x));
       for (i=0; i<m*N; ++i) x[i] = 1.0;
       PetscCall(MatDenseRestoreArrayWrite(B,&x));
       PetscCall(KSPMatSolve(ksp,B,X));
       PetscCall(KSPGetConvergedReason(ksp,&reason));
-      PetscCheckFalse(reason != KSP_DIVERGED_BREAKDOWN && deflation < 0.0,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"KSPConvergedReason() %s != KSP_DIVERGED_BREAKDOWN",KSPConvergedReasons[reason]);
+      PetscCheck(reason == KSP_DIVERGED_BREAKDOWN || deflation >= 0.0,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"KSPConvergedReason() %s != KSP_DIVERGED_BREAKDOWN",KSPConvergedReasons[reason]);
     }
   } else {
     PetscCall(KSPSetOperators(ksp,KA,KA));

@@ -112,7 +112,7 @@ int main(int argc,char **argv)
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   user.param = 6.0;
   PetscCall(PetscOptionsGetReal(NULL,NULL,"-par",&user.param,NULL));
-  PetscCheckFalse(user.param > bratu_lambda_max || user.param < bratu_lambda_min,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Lambda, %g, is out of range, [%g, %g]", user.param, bratu_lambda_min, bratu_lambda_max);
+  PetscCheck(user.param <= bratu_lambda_max && user.param >= bratu_lambda_min,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Lambda, %g, is out of range, [%g, %g]", (double)user.param, (double)bratu_lambda_min, (double)bratu_lambda_max);
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-mms",&MMS,NULL));
   if (MMS == 3) {
     PetscInt mPar = 2, nPar = 1;
@@ -192,7 +192,7 @@ int main(int argc,char **argv)
   PetscCall(SNESGetLinearSolveIterations(snes,&slits));
   PetscCall(SNESGetKSP(snes,&ksp));
   PetscCall(KSPGetTotalIterations(ksp,&lits));
-  PetscCheckFalse(lits != slits,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Number of total linear iterations reported by SNES %D does not match reported by KSP %D",slits,lits);
+  PetscCheck(lits == slits,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Number of total linear iterations reported by SNES %D does not match reported by KSP %D",slits,lits);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 

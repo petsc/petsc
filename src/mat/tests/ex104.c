@@ -87,7 +87,7 @@ int main(int argc,char **argv)
   /* Test MatMatMult() */
   if (Test_MatMatMult) {
 #if !defined(PETSC_HAVE_ELEMENTAL)
-    PetscCheckFalse(size > 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"This test requires ELEMENTAL");
+    PetscCheck(size == 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"This test requires ELEMENTAL");
 #endif
     PetscCall(MatTranspose(A,MAT_INITIAL_MATRIX,&B)); /* B = A^T */
     PetscCall(MatMatMult(B,A,MAT_INITIAL_MATRIX,fill,&C)); /* C = B*A = A^T*A */
@@ -165,7 +165,7 @@ int main(int argc,char **argv)
 
     PetscCall(MatNorm(C, NORM_FROBENIUS, &diff));
     PetscCall(MatNorm(D, NORM_FROBENIUS, &scale));
-    PetscCheckFalse(diff > PETSC_SMALL * scale,PetscObjectComm((PetscObject)D), PETSC_ERR_PLIB, "MatMatTransposeMult() differs between MAT_INITIAL_MATRIX and MAT_REUSE_MATRIX");
+    PetscCheck(diff <= PETSC_SMALL * scale,PetscObjectComm((PetscObject)D), PETSC_ERR_PLIB, "MatMatTransposeMult() differs between MAT_INITIAL_MATRIX and MAT_REUSE_MATRIX");
     PetscCall(MatDestroy(&C));
 
     PetscCall(MatMatTransposeMultEqual(A,B,D,10,&equal));

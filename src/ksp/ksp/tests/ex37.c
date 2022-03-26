@@ -62,7 +62,7 @@ int main(int argc,char **args)
     PetscMPIInt color,subrank,duprank,subsize;
     duprank = size-1 - rank;
     subsize = size/nsubcomm;
-    PetscCheckFalse(subsize*nsubcomm != size,comm,PETSC_ERR_SUP,"This example requires nsubcomm %D divides size %D",nsubcomm,size);
+    PetscCheck(subsize*nsubcomm == size,comm,PETSC_ERR_SUP,"This example requires nsubcomm %D divides size %D",nsubcomm,size);
     color   = duprank/subsize;
     subrank = duprank - color*subsize;
     PetscCall(PetscSubcommSetTypeGeneral(psubcomm,color,subrank));

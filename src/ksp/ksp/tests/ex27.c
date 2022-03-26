@@ -27,7 +27,7 @@ int main(int argc,char **args)
 
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
+  PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
 
   /* Read matrix and right-hand-side vector */
   PetscCall(PetscOptionsGetString(NULL,NULL,"-f",file[0],sizeof(file[0]),&flg));
@@ -52,7 +52,7 @@ int main(int argc,char **args)
 
     /* Create a new vector b by padding the old one */
     PetscCall(MatGetLocalSize(A,&m,&n));
-    PetscCheckFalse(m != n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%D, %D)", m, n);
+    PetscCheck(m == n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%D, %D)", m, n);
     PetscCall(VecCreate(PETSC_COMM_WORLD,&tmp));
     PetscCall(VecSetSizes(tmp,m,PETSC_DECIDE));
     PetscCall(VecSetFromOptions(tmp));

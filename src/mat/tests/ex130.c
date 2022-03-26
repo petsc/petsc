@@ -33,7 +33,7 @@ int main(int argc,char **args)
   PetscCall(VecLoad(b,fd));
   PetscCall(PetscViewerDestroy(&fd));
   PetscCall(MatGetLocalSize(A,&m,&n));
-  PetscCheckFalse(m != n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);
+  PetscCheck(m == n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);
   PetscCall(MatNorm(A,NORM_INFINITY,&Anorm));
 
   /* Create vectors */

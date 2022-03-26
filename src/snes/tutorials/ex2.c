@@ -49,7 +49,7 @@ int main(int argc,char **argv)
 
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  PetscCheckFalse(size != 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"This is a uniprocessor example only!");
+  PetscCheck(size == 1,PETSC_COMM_SELF,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   h    = 1.0/(n-1);
 

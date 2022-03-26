@@ -58,7 +58,7 @@ int main(int argc,char **args)
 #endif
 
   PetscCall(MatGetOwnershipRange(Amat,&Istart,&Iend));
-  PetscCheckFalse(m != Iend - Istart,PETSC_COMM_SELF,PETSC_ERR_PLIB,"m %D does not equal Iend %D - Istart %D",m,Iend,Istart);
+  PetscCheck(m == Iend - Istart,PETSC_COMM_SELF,PETSC_ERR_PLIB,"m %D does not equal Iend %D - Istart %D",m,Iend,Istart);
   /* Generate vectors */
   PetscCall(MatCreateVecs(Amat,&xx,&bb));
   PetscCall(VecSet(bb,.0));

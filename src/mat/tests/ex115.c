@@ -187,7 +187,7 @@ int main(int argc,char **args)
       PetscCall(MatConvert(hP,MATAIJ,MAT_INPLACE_MATRIX,&hP));
     }
     PetscCall(MatNorm(hP,NORM_INFINITY,&err));
-    PetscCheckFalse(err/norm > PETSC_SMALL,PetscObjectComm((PetscObject)hP),PETSC_ERR_PLIB,"Error MatPtAP %g %g",err,norm);
+    PetscCheck(err/norm <= PETSC_SMALL,PetscObjectComm((PetscObject)hP),PETSC_ERR_PLIB,"Error MatPtAP %g %g",err,norm);
     PetscCall(MatDestroy(&pP));
     PetscCall(MatDestroy(&hP));
 

@@ -241,7 +241,7 @@ int main(int argc,char **args)
     Lx = 1.; /* or ne for rod */
     max_conv_its = 3;
     PetscCall(PetscOptionsInt("-max_conv_its","Number of iterations in convergence study","",max_conv_its,&max_conv_its,NULL));
-    PetscCheckFalse(max_conv_its<=0 || max_conv_its>7,PETSC_COMM_WORLD, PETSC_ERR_USER, "Bad number of iterations for convergence test (%D)",max_conv_its);
+    PetscCheck(max_conv_its > 0 && max_conv_its < 7,PETSC_COMM_WORLD, PETSC_ERR_USER, "Bad number of iterations for convergence test (%D)",max_conv_its);
     PetscCall(PetscOptionsReal("-lx","Length of domain","",Lx,&Lx,NULL));
     PetscCall(PetscOptionsReal("-alpha","material coefficient inside circle","",s_soft_alpha,&s_soft_alpha,NULL));
     PetscCall(PetscOptionsBool("-test_nonzero_cols","nonzero test","",test_nonzero_cols,&test_nonzero_cols,NULL));
@@ -318,9 +318,9 @@ int main(int argc,char **args)
     }
     PetscCall(DMGetCoordinatesLocal(dm,&coordinates));
     PetscCall(DMGetCoordinateDim(dm,&dimEmbed));
-    PetscCheckFalse(dimEmbed != dim,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"dimEmbed != dim %D",dimEmbed);
+    PetscCheck(dimEmbed == dim,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"dimEmbed != dim %D",dimEmbed);
     PetscCall(VecGetLocalSize(coordinates,&nCoords));
-    PetscCheckFalse(nCoords % dimEmbed,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Coordinate vector the wrong size");
+    PetscCheck((nCoords % dimEmbed) == 0,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Coordinate vector the wrong size");
     PetscCall(VecGetArray(coordinates,&coords));
     for (i = 0; i < nCoords; i += dimEmbed) {
       PetscInt    j;

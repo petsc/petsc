@@ -26,7 +26,7 @@ int main(int argc,char **args)
 
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
-  PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP, "This is a uniprocessor example only!");
+  PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE, "This is a uniprocessor example only!");
   ierr     = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "FFTW Options", "ex112");PetscCall(ierr);
   PetscCall(PetscOptionsEList("-function", "Function type", "ex121", funcNames, NUM_FUNCS, funcNames[function], &func, NULL));
   PetscCall(PetscOptionsBool("-vec_view draw", "View the functions", "ex112", view, &view, NULL));

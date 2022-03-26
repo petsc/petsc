@@ -96,7 +96,7 @@ int main(int argc,char **argv)
   PetscCall(VecMean(testvec, &mean));
 
   /* to verify that the loaded data has been transferred */
-  PetscCheckFalse(sum != 150,PETSC_COMM_WORLD, PETSC_ERR_PLIB,"Data has not been transferred from subvector to parent vector");
+  PetscCheck(sum == 150,PETSC_COMM_WORLD, PETSC_ERR_PLIB,"Data has not been transferred from subvector to parent vector");
   PetscCall(PetscPrintf(PETSC_COMM_WORLD,"VecSum on parent vec is : %e\n",(double)PetscAbsScalar(sum)));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD,"VecMean on parent vec is : %e\n",(double)PetscAbsScalar(mean)));
 

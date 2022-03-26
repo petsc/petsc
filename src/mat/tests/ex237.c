@@ -37,7 +37,7 @@ int main(int argc, char** argv)
 
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
-  PetscCheckFalse(size != 1,PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "This is a uniprocessor example only");
+  PetscCheck(size == 1,PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "This is a uniprocessor example only");
   PetscCall(PetscOptionsGetString(NULL, NULL, "-f", file, PETSC_MAX_PATH_LEN, &flg));
   PetscCheck(flg,PETSC_COMM_WORLD, PETSC_ERR_USER_INPUT, "Must indicate binary file with the -f option");
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-trial", &trial, NULL));
@@ -92,7 +92,7 @@ int main(int argc, char** argv)
       PetscCall(MatDestroy(&Tt));
       PetscCall(MatDenseGetArrayRead(T, &ptr));
       PetscCall(MatGetRowIJ(A, 0, PETSC_FALSE, PETSC_FALSE, &An, &Ai, &Aj, &done));
-      PetscCheckFalse(!done || An != m,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Inconsistent sizes");
+      PetscCheck(done && An == m,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Inconsistent sizes");
       PetscCall(MatSeqAIJGetArray(A, &Aa));
       PetscCall(MatCreate(PETSC_COMM_WORLD, &B));
       PetscCall(MatSetType(B, MATSEQBAIJ));

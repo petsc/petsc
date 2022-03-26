@@ -29,7 +29,7 @@ int main(int argc,char **argv)
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   comm = PETSC_COMM_WORLD;
   PetscCallMPI(MPI_Comm_size(comm,&size));
-  PetscCheckFalse(size < 4,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Must run with at least 4 MPI processes");
+  PetscCheck(size >= 4,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must run with at least 4 MPI processes");
   PetscCall(PetscOptionsGetViewer(comm,NULL,NULL,"-viewer",&viewer,&format,&flg));
   PetscCheck(viewer,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Must use -viewer option");
 

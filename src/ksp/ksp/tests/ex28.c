@@ -103,7 +103,7 @@ int main(int argc,char **args)
     PetscCall(PCSetType(pc,PCREDUNDANT));
     PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
     PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-    PetscCheckFalse(size < 3,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Num of processes %d must greater than 2",size);
+    PetscCheck(size > 2,PETSC_COMM_SELF,PETSC_ERR_WRONG_MPI_SIZE, "Num of processes %d must greater than 2",size);
     PetscCall(PCRedundantSetNumber(pc,size-2));
     PetscCall(KSPSetFromOptions(ksp));
 

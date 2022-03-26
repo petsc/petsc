@@ -75,8 +75,8 @@ PetscErrorCode proj_mult(Mat S, Vec X, Vec Y)
   R = userdata->R;
   P = userdata->P;
   PetscCheck(A,PetscObjectComm((PetscObject)S),PETSC_ERR_PLIB,"Missing matrix");
-  PetscCheckFalse(!R && !P,PetscObjectComm((PetscObject)S),PETSC_ERR_PLIB,"Missing projectors");
-  PetscCheckFalse(R && P,PetscObjectComm((PetscObject)S),PETSC_ERR_PLIB,"Both projectors");
+  PetscCheck(R || P,PetscObjectComm((PetscObject)S),PETSC_ERR_PLIB,"Missing projectors");
+  PetscCheck(!R || !P,PetscObjectComm((PetscObject)S),PETSC_ERR_PLIB,"Both projectors");
   PetscCall(MatCreateVecs(A,&Ax,&Ay));
   if (R) {
     PetscCall(MatCreateVecs(R,&Py,&Px));

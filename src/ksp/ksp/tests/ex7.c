@@ -92,12 +92,12 @@ int main(int argc,char **args)
   PetscCall(MatMultTranspose(As,u,x));
   PetscCall(VecAXPY(x,-1.0,b));
   PetscCall(VecNorm(x,NORM_INFINITY,&norm));
-  PetscCheckFalse(norm > PETSC_SMALL,PetscObjectComm((PetscObject)As),PETSC_ERR_PLIB,"Error ||A x-A^T x||_\\infty: %1.6e",norm);
+  PetscCheck(norm <= PETSC_SMALL,PetscObjectComm((PetscObject)As),PETSC_ERR_PLIB,"Error ||A x-A^T x||_\\infty: %1.6e",norm);
   PetscCall(MatSetOption(As,MAT_HERMITIAN,PETSC_TRUE));
   PetscCall(MatMultHermitianTranspose(As,u,x));
   PetscCall(VecAXPY(x,-1.0,b));
   PetscCall(VecNorm(x,NORM_INFINITY,&norm));
-  PetscCheckFalse(norm > PETSC_SMALL,PetscObjectComm((PetscObject)As),PETSC_ERR_PLIB,"Error ||A x-A^H x||_\\infty: %1.6e",norm);
+  PetscCheck(norm <= PETSC_SMALL,PetscObjectComm((PetscObject)As),PETSC_ERR_PLIB,"Error ||A x-A^H x||_\\infty: %1.6e",norm);
 
   /* Create the linear solver and set various options */
   PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));

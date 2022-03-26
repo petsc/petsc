@@ -877,7 +877,7 @@ static PetscErrorCode THISurfaceStatistics(DM da,Vec X,PetscReal *min,PetscReal 
   *min = *max = *mean = 0;
   PetscCall(DMDAGetInfo(da,0, &mz,&my,&mx, 0,0,0, 0,0,0,0,0,0));
   PetscCall(DMDAGetCorners(da,&zs,&ys,&xs,&zm,&ym,&xm));
-  PetscCheckFalse(zs != 0 || zm != mz,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected decomposition");
+  PetscCheck(zs == 0 && zm == mz,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected decomposition");
   PetscCall(DMDAVecGetArray(da,X,&x));
   for (i=xs; i<xs+xm; i++) {
     for (j=ys; j<ys+ym; j++) {
@@ -1257,7 +1257,7 @@ static PetscErrorCode DMRefineHierarchy_THI(DM dac0,PetscInt nlevels,DM hierarch
     dac = dac0;
   }
   PetscCall(DMDAGetInfo(dac,&dim, &N,&M,0, &n,&m,0, &dof,&s,0,0,0,&st));
-  PetscCheckFalse(dim != 2,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"This function can only refine 2D DMDAs");
+  PetscCheck(dim == 2,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"This function can only refine 2D DMDAs");
 
   /* Creates a 3D DMDA with the same map-plane layout as the 2D one, with contiguous columns */
   PetscCall(DMDACreate3d(PetscObjectComm((PetscObject)dac),DM_BOUNDARY_NONE,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,st,thi->zlevels,N,M,1,n,m,dof,s,NULL,NULL,NULL,&daf));
@@ -1330,7 +1330,7 @@ static PetscErrorCode DMCreateMatrix_THI_Tridiagonal(DM da,Mat *J)
 
   PetscFunctionBeginUser;
   PetscCall(DMDAGetInfo(da,&dim, 0,0,0, 0,0,0, 0,0,0,0,0,0));
-  PetscCheckFalse(dim != 3,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Expected DMDA to be 3D");
+  PetscCheck(dim == 3,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Expected DMDA to be 3D");
   PetscCall(DMDAGetCorners(da,0,0,0,&zm,&ym,&xm));
   PetscCall(DMGetLocalToGlobalMapping(da,&ltog));
   PetscCall(MatCreate(PetscObjectComm((PetscObject)da),&A));
@@ -1385,11 +1385,11 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM da,Vec X,const char filena
         PetscCallMPI(MPI_Recv(range,6,MPIU_INT,r,tag,comm,MPI_STATUS_IGNORE));
       }
       zs = range[0];ys = range[1];xs = range[2];zm = range[3];ym = range[4];xm = range[5];
-      PetscCheckFalse(xm*ym*zm*dof > nmax,PETSC_COMM_SELF,PETSC_ERR_PLIB,"should not happen");
+      PetscCheck(xm*ym*zm*dof <= nmax,PETSC_COMM_SELF,PETSC_ERR_PLIB,"should not happen");
       if (r) {
         PetscCallMPI(MPI_Recv(array,nmax,MPIU_SCALAR,r,tag,comm,&status));
         PetscCallMPI(MPI_Get_count(&status,MPIU_SCALAR,&nn));
-        PetscCheckFalse(nn != xm*ym*zm*dof,PETSC_COMM_SELF,PETSC_ERR_PLIB,"should not happen");
+        PetscCheck(nn == xm*ym*zm*dof,PETSC_COMM_SELF,PETSC_ERR_PLIB,"should not happen");
         ptr = array;
       } else ptr = x;
       PetscCall(PetscViewerASCIIPrintf(viewer,"    <Piece Extent=\"%D %D %D %D %D %D\">\n",zs,zs+zm-1,ys,ys+ym-1,xs,xs+xm-1));

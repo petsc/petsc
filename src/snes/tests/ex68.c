@@ -58,7 +58,7 @@ PetscErrorCode CheckProblem1(Mat A, Vec b, Vec u)
   PetscCall(VecWAXPY(errorVec, -1.0, b, u));
   PetscCall(VecNorm(errorVec, NORM_2, &error));
   PetscCall(VecNorm(b, NORM_2, &norm));
-  PetscCheckFalse(error/norm > 1000.*PETSC_MACHINE_EPSILON,PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Relative error %g is too large", error/norm);
+  PetscCheck(error/norm <= 1000.*PETSC_MACHINE_EPSILON,PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Relative error %g is too large", error/norm);
   PetscCall(VecDestroy(&errorVec));
   PetscFunctionReturn(0);
 }
@@ -106,15 +106,15 @@ PetscErrorCode CheckProblem2(Mat A, Vec b, Vec u)
   error = 0.0;
   for (r = 0; r < constraintSize; ++r) error += PetscRealPart(PetscSqr(uArray[r] - bArray[r + N-constraintSize]));
 
-  PetscCheckFalse(error/norm > 10000*PETSC_MACHINE_EPSILON,PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Relative error %g is too large", error/norm);
+  PetscCheck(error/norm <= 10000*PETSC_MACHINE_EPSILON,PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Relative error %g is too large", error/norm);
   error = 0.0;
   for (r = constraintSize; r < N - constraintSize; ++r) error += PetscRealPart(PetscSqr(uArray[r] - bArray[r]));
 
-  PetscCheckFalse(error/norm > 10000*PETSC_MACHINE_EPSILON,PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Relative error %g is too large", error/norm);
+  PetscCheck(error/norm <= 10000*PETSC_MACHINE_EPSILON,PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Relative error %g is too large", error/norm);
   error = 0.0;
   for (r = N - constraintSize; r < N; ++r) error += PetscRealPart(PetscSqr(uArray[r] - (bArray[r - (N-constraintSize)] - bArray[r])));
 
-  PetscCheckFalse(error/norm > 10000*PETSC_MACHINE_EPSILON,PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Relative error %g is too large", error/norm);
+  PetscCheck(error/norm <= 10000*PETSC_MACHINE_EPSILON,PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Relative error %g is too large", error/norm);
   PetscCall(VecRestoreArrayRead(u, &uArray));
   PetscCall(VecRestoreArrayRead(b, &bArray));
   PetscFunctionReturn(0);

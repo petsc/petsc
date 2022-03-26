@@ -3201,7 +3201,7 @@ static PetscErrorCode CreatePressureNullSpace(DM dm, PetscInt origField, PetscIn
   PetscErrorCode (*funcs[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void* ctx) = {zero, one};
 
   PetscFunctionBeginUser;
-  PetscCheckFalse(origField != 1,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Field %D should be 1 for pressure", origField);
+  PetscCheck(origField == 1,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Field %D should be 1 for pressure", origField);
   funcs[field] = one;
   {
     PetscDS ds;
@@ -3293,12 +3293,12 @@ static PetscErrorCode CorrectDiscretePressure(DM dm, MatNullSpace nullspace, Vec
   PetscCall(PetscDSSetObjective(ds, 1, pressure));
   PetscCall(MatNullSpaceGetVecs(nullspace, NULL, NULL, &nullvecs));
   PetscCall(VecDot(nullvecs[0], u, &pintd));
-  PetscCheckFalse(PetscAbsScalar(pintd) > PETSC_SMALL,comm, PETSC_ERR_ARG_WRONG, "Discrete integral of pressure: %g", (double) PetscRealPart(pintd));
+  PetscCheck(PetscAbsScalar(pintd) <= PETSC_SMALL,comm, PETSC_ERR_ARG_WRONG, "Discrete integral of pressure: %g", (double) PetscRealPart(pintd));
   PetscCall(DMPlexComputeIntegralFEM(dm, nullvecs[0], intn, user));
   PetscCall(DMPlexComputeIntegralFEM(dm, u, intc, user));
   PetscCall(VecAXPY(u, -intc[1]/intn[1], nullvecs[0]));
   PetscCall(DMPlexComputeIntegralFEM(dm, u, intc, user));
-  PetscCheckFalse(PetscAbsScalar(intc[1]) > PETSC_SMALL,comm, PETSC_ERR_ARG_WRONG, "Continuum integral of pressure after correction: %g", (double) PetscRealPart(intc[1]));
+  PetscCheck(PetscAbsScalar(intc[1]) <= PETSC_SMALL,comm, PETSC_ERR_ARG_WRONG, "Continuum integral of pressure after correction: %g", (double) PetscRealPart(intc[1]));
   PetscFunctionReturn(0);
 }
 

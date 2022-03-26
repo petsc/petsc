@@ -35,7 +35,7 @@ PetscErrorCode TestMPIDerivedDataType()
 
   PetscFunctionBeginUser;
   PetscCallMPI(MPI_Comm_size(MPI_COMM_WORLD, &size));
-  PetscCheckFalse(size < 2,PETSC_COMM_SELF,PETSC_ERR_SUP,"Must use at least 2 processors");
+  PetscCheck(size >= 2,PETSC_COMM_SELF,PETSC_ERR_WRONG_MPI_SIZE,"Must use at least 2 processors");
   PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD, &rank));
 
   if (rank == 0) {

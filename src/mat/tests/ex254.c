@@ -30,7 +30,7 @@ int main(int argc,char **args)
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
-  PetscCheckFalse(size > 3,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"This test requires at most 3 processes");
+  PetscCheck(size <= 3,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This test requires at most 3 processes");
 
   PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
   PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,N));

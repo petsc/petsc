@@ -111,7 +111,7 @@ int main(int argc,char **args)
   PetscCall(PetscOptionsInsertString(NULL,"-mat_mumps_icntl_13 1"));
 #else
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  PetscCheckFalse(size>1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Configure with MUMPS if you want to run this example in parallel");
+  PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Configure with MUMPS if you want to run this example in parallel");
 #endif
 
   if (!setfromoptions_first) {

@@ -23,7 +23,7 @@ int main(int argc,char **args)
     PetscCheck(flg,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"KSPType and KSPHPDDMType do not match: %s != %s", common[i], type);
     PetscCall(KSPSetFromOptions(ksp));
     PetscCall(KSPHPDDMGetType(ksp,&type));
-    PetscCheckFalse(type != KSP_HPDDM_TYPE_GCRODR,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"-ksp_hpddm_type gcrodr and KSPHPDDMType do not match: gcrodr != %s", KSPHPDDMTypes[type]);
+    PetscCheck(type == KSP_HPDDM_TYPE_GCRODR,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"-ksp_hpddm_type gcrodr and KSPHPDDMType do not match: gcrodr != %s", KSPHPDDMTypes[type]);
     PetscCall(KSPHPDDMSetType(ksp,KSP_HPDDM_TYPE_BGMRES));
 #endif
   }

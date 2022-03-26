@@ -17,15 +17,15 @@ int main(int argc,char **argv)
   PetscCall(PetscOptionsPush(opt1));
   PetscCall(PetscOptionsSetValue(NULL,"-test1","1"));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-test1",&int1,&flg1));
-  PetscCheckFalse(!flg1 || int1 != 1,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Unable to locate option test1 or it has the wrong value");
+  PetscCheck(flg1 && int1 == 1,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Unable to locate option test1 or it has the wrong value");
   PetscCall(PetscOptionsGetString(NULL,NULL,"-testa",str,sizeof(str),&flga));
   PetscCall(PetscStrcmp(str,"a",&match));
-  PetscCheckFalse(!flga|| !match,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Unable to locate option testa or it has the wrong value");
+  PetscCheck(flga && match,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Unable to locate option testa or it has the wrong value");
   PetscCall(PetscOptionsCreate(&opt2));
   PetscCall(PetscOptionsPush(opt2));
   PetscCall(PetscOptionsSetValue(NULL,"-test2","2"));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-test2",&int2,&flg2));
-  PetscCheckFalse(!flg2 || int2 != 2,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Unable to locate option test2 or it has the wrong value");
+  PetscCheck(flg2 && int2 == 2,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Unable to locate option test2 or it has the wrong value");
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-test1",&int1,&flg1));
   PetscCheck(!flg1,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Able to access test1 from a different options database");
 

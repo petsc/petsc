@@ -30,7 +30,7 @@ int main(int argc,char **args)
 
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
+  PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
 
   PetscCall(PetscOptionsHasName(NULL,NULL, "-test_syev", &flg));
   if (flg) {
@@ -91,7 +91,7 @@ int main(int argc,char **args)
     PetscCall(PetscFree(iwork));
   }
   PetscCall(MatDenseRestoreArray(A_dense,&arrayA));
-  PetscCheckFalse(nevs <= 0,PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED, "nev=%" PetscBLASInt_FMT ", no eigensolution has found", nevs);
+  PetscCheck(nevs > 0,PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED, "nev=%" PetscBLASInt_FMT ", no eigensolution has found", nevs);
 
   /* View eigenvalues */
   PetscCall(PetscOptionsHasName(NULL,NULL, "-eig_view", &flg));

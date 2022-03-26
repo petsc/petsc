@@ -47,7 +47,7 @@ int main(int argc,char **args)
   PetscCall(VecAXPY(y,-1.0,x));
   PetscCall(VecNorm(y,NORM_2,&norm));
   PetscCall(VecNorm(x,NORM_2,&dnorm));
-  PetscCheckFalse(norm/dnorm > 1.e-6,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Vec read in 'noBsDim' does not match vector written out %g",(double)(norm/dnorm));
+  PetscCheck(norm/dnorm <= 1.e-6,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Vec read in 'noBsDim' does not match vector written out %g",(double)(norm/dnorm));
 
   /* Load the Vec with one extra, 1-sized, BS dim and compare */
   PetscCall(PetscObjectSetName((PetscObject) y, "bsDim"));
@@ -55,7 +55,7 @@ int main(int argc,char **args)
   PetscCall(VecAXPY(y,-1.0,x));
   PetscCall(VecNorm(y,NORM_2,&norm));
   PetscCall(VecNorm(x,NORM_2,&dnorm));
-  PetscCheckFalse(norm/dnorm > 1.e-6,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Vec read in 'bsDim' does not match vector written out %g",(double)(norm/dnorm));
+  PetscCheck(norm/dnorm <= 1.e-6,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Vec read in 'bsDim' does not match vector written out %g",(double)(norm/dnorm));
 
   PetscCall(PetscViewerDestroy(&H5viewer));
   PetscCall(VecDestroy(&y));

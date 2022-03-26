@@ -44,7 +44,7 @@ int main(int argc,char **args)
   PetscCall(MatLoad(A,fd));
   PetscCall(PetscViewerDestroy(&fd));
   PetscCall(MatGetLocalSize(A,&m,&n));
-  PetscCheckFalse(m != n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%D, %D)", m, n);
+  PetscCheck(m == n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%D, %D)", m, n);
 
   /* Create rhs vector of all ones */
   PetscCall(VecCreate(PETSC_COMM_WORLD,&b));

@@ -16,7 +16,7 @@ int main(int argc,char **args)
 
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
+  PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
 
   /* read the two matrices, A and B */
   PetscCall(PetscOptionsGetString(NULL,NULL,"-fA",file[0],sizeof(file[0]),&flg));
@@ -44,7 +44,7 @@ int main(int argc,char **args)
   PetscCall(MatGetSize(B,&mb,&nb));
 
   /* Compute B = -A + B */
-  PetscCheckFalse(ma != mb || na != nb,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"nonconforming matrix size");
+  PetscCheck(ma == mb && na == nb,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"nonconforming matrix size");
   PetscCall(MatAXPY(B,-1.0,A,DIFFERENT_NONZERO_PATTERN));
   printf("\n B - A:\n");
   printf("----------------------\n");
