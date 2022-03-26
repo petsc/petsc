@@ -93,11 +93,19 @@ html_theme_options = {
     "footer_items": ["copyright", "sphinx-version", "last-updated"],
 }
 
+try:
+  git_ref = subprocess.check_output(["git", "rev-parse", "HEAD"]).rstrip()
+  git_ref_release = subprocess.check_output(["git", "rev-parse", "origin/release"]).rstrip()
+  edit_branch = "release" if git_ref == git_ref_release else "main"
+except subprocess.CalledProcessError:
+  print("WARNING: determining branch for page edit links failed")
+  edit_branch = "main"
+
 html_context = {
     "github_url": "https://gitlab.com",
     "github_user": "petsc",
     "github_repo": "petsc",
-    "github_version": "release",
+    "github_version": edit_branch,
     "doc_path": "doc",
 }
 
