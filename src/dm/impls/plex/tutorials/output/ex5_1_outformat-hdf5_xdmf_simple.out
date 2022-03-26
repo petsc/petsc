@@ -18,9 +18,9 @@ DMPlex Object in 3 dimensions:
 Labels:
   celltype: 4 strata with value/size (0 (45), 7 (14), 4 (63), 1 (93))
   depth: 4 strata with value/size (0 (45), 1 (93), 2 (63), 3 (14))
-DM Object: Parallel Mesh (redistributed_) 4 MPI processes
+DM Object: DMPlex Object (redistributed_) 4 MPI processes
   type: plex
-Parallel Mesh in 3 dimensions:
+DMPlex Object in 3 dimensions:
   Number of 0-cells per rank: 45 45 45 45
   Number of 1-cells per rank: 93 93 93 93
   Number of 2-cells per rank: 63 63 63 63
@@ -50,9 +50,9 @@ DMPlex Object in 3 dimensions:
 Labels:
   celltype: 4 strata with value/size (0 (57), 7 (19), 4 (84), 1 (121))
   depth: 4 strata with value/size (0 (57), 1 (121), 2 (84), 3 (19))
-DM Object: Parallel Mesh (redistributed_) 3 MPI processes
+DM Object: DMPlex Object (redistributed_) 3 MPI processes
   type: plex
-Parallel Mesh in 3 dimensions:
+DMPlex Object in 3 dimensions:
   Number of 0-cells per rank: 57 72 55
   Number of 1-cells per rank: 121 144 116
   Number of 2-cells per rank: 84 92 80
@@ -82,9 +82,9 @@ DMPlex Object in 3 dimensions:
 Labels:
   celltype: 4 strata with value/size (0 (75), 7 (28), 4 (119), 1 (165))
   depth: 4 strata with value/size (0 (75), 1 (165), 2 (119), 3 (28))
-DM Object: Parallel Mesh (redistributed_) 2 MPI processes
+DM Object: DMPlex Object (redistributed_) 2 MPI processes
   type: plex
-Parallel Mesh in 3 dimensions:
+DMPlex Object in 3 dimensions:
   Number of 0-cells per rank: 75 75
   Number of 1-cells per rank: 165 165
   Number of 2-cells per rank: 119 119

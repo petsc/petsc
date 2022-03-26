@@ -390,6 +390,30 @@ int main(int argc, char **argv)
     requires: cgns
     args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/tut21.cgns -dm_view
 
+  # ExodusII reader tests
+  testset:
+    args: -dm_plex_boundary_label boundary -dm_plex_check_all -dm_view
+    test:
+      suffix: exo_0
+      requires: exodusii
+      args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo
+    test:
+      suffix: exo_1
+      requires: exodusii
+      args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo
+    test:
+      suffix: exo_2
+      requires: exodusii
+      args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/squaremotor-30.exo
+    test:
+      suffix: exo_3
+      requires: exodusii
+      args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo
+    test:
+      suffix: exo_4
+      requires: exodusii
+     args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/simpleblock-100.exo
+
   # Gmsh mesh reader tests
   testset:
     args: -dm_coord_space 0 -dm_view
