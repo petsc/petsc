@@ -454,8 +454,7 @@ static PetscErrorCode PetscSFGetWindow(PetscSF sf,MPI_Datatype unit,void *array,
   case PETSCSF_WINDOW_FLAVOR_DYNAMIC:
     PetscCallMPI(MPI_Win_create_dynamic(w->info,PetscObjectComm((PetscObject)sf),&link->win));
 #if defined(PETSC_HAVE_OMPI_MAJOR_VERSION) /* some OpenMPI versions do not support MPI_Win_attach(win,NULL,0); */
-    int dummy = 0;
-    PetscCallMPI(MPI_Win_attach(link->win,wsize ? array : (void*)&dummy,wsize));
+    PetscCallMPI(MPI_Win_attach(link->win,wsize ? array : (void*)dummy,wsize));
 #else
     PetscCallMPI(MPI_Win_attach(link->win,array,wsize));
 #endif
