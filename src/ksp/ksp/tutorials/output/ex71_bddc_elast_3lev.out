@@ -158,14 +158,14 @@ PC Object: 8 MPI processes
         Benign subspace trick is active: 0
         Algebraic computation of no-net-flux: 0
       ********************************** STATISTICS AT LEVEL 1 **********************************
-        Global dofs sizes: all 159 interface 159 coarse 45
-        Coarsening ratios: all/coarse 3 interface/coarse 3
+        Global dofs sizes: all 159 interface 159 coarse 63
+        Coarsening ratios: all/coarse 2 interface/coarse 2
         Active processes : 8
         Total subdomains : 8
         Dofs type        :	MIN	MAX	MEAN
         Interior  dofs   :	0	0	0
         Interface dofs   :	54	54	54
-        Primal    dofs   :	18	24	19
+        Primal    dofs   :	24	24	24
         Local     dofs   :	54	54	54
         Local     subs   :	1	1
         --- Interior solver (rank 0)
@@ -222,21 +222,21 @@ PC Object: 8 MPI processes
                       out-of-place factorization
                       tolerance for zero pivot 2.22045e-14
                       matrix ordering: nd
-                      factor fill ratio given 5., needed 1.26234
+                      factor fill ratio given 5., needed 1.25187
                         Factored matrix follows:
                           Mat Object:       1 MPI processes
                             type: seqaij
-                            rows=45, cols=45
+                            rows=63, cols=63
                             package used to perform factorization: petsc
-                            total: nonzeros=1867, allocated nonzeros=1867
-                              using I-node routines: found 12 nodes, limit used is 5
+                            total: nonzeros=3181, allocated nonzeros=3181
+                              using I-node routines: found 16 nodes, limit used is 5
                     linear system matrix = precond matrix:
                     Mat Object:       1 MPI processes
                       type: seqaij
-                      rows=45, cols=45
-                      total: nonzeros=1479, allocated nonzeros=1479
+                      rows=63, cols=63
+                      total: nonzeros=2541, allocated nonzeros=2541
                       total number of mallocs used during MatSetValues calls=0
-                        using I-node routines: found 13 nodes, limit used is 5
+                        using I-node routines: found 21 nodes, limit used is 5
         --- Coarse solver
           KSP Object:   (pc_bddc_coarse_l1_)   8 MPI processes
             type: preonly
@@ -250,8 +250,8 @@ PC Object: 8 MPI processes
             linear system matrix = precond matrix:
             Mat Object:   (pc_bddc_coarse_l1_)   8 MPI processes
               type: mpiaij
-              rows=45, cols=45
-              total: nonzeros=1479, allocated nonzeros=1910
+              rows=63, cols=63
+              total: nonzeros=2541, allocated nonzeros=3267
               total number of mallocs used during MatSetValues calls=0
                 using I-node (on process 0) routines: found 2 nodes, limit used is 5
       linear system matrix = precond matrix:

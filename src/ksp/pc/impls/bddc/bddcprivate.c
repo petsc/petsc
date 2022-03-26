@@ -1820,6 +1820,11 @@ boundary:
       PetscReal      *coords;
       PetscInt       d,cdim,nl,nf,**ctxs;
       PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal *, PetscInt, PetscScalar *, void *);
+      /* debug coordinates */
+      PetscViewer       viewer;
+      PetscBool         flg;
+      PetscViewerFormat format;
+      const char        *prefix;
 
       PetscCall(DMGetCoordinateDim(dm,&cdim));
       PetscCall(DMGetLocalSection(dm,&section));
@@ -1831,12 +1836,21 @@ boundary:
       PetscCall(PetscMalloc1(nf,&ctxs[0]));
       for (d=0;d<nf;d++) funcs[d] = func_coords_private;
       for (d=1;d<nf;d++) ctxs[d] = ctxs[d-1] + 1;
+
+      /* debug coordinates */
+      PetscCall(PCGetOptionsPrefix(pc,&prefix));
+      PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)vcoords),((PetscObject)vcoords)->options,prefix,"-pc_bddc_coords_vec_view",&viewer,&format,&flg));
+      if (flg) PetscCall(PetscViewerPushFormat(viewer,format));
       for (d=0;d<cdim;d++) {
         PetscInt          i;
         const PetscScalar *v;
+        char              name[16];
 
         for (i=0;i<nf;i++) ctxs[i][0] = d;
+        PetscCall(PetscSNPrintf(name,sizeof(name),"bddc_coords_%d",(int)d));
+        PetscCall(PetscObjectSetName((PetscObject)vcoords,name));
         PetscCall(DMProjectFunction(dm,0.0,funcs,(void**)ctxs,INSERT_VALUES,vcoords));
+        if (flg) PetscCall(VecView(vcoords,viewer));
         PetscCall(VecGetArrayRead(vcoords,&v));
         for (i=0;i<nl;i++) coords[i*cdim+d] = PetscRealPart(v[i]);
         PetscCall(VecRestoreArrayRead(vcoords,&v));
@@ -1846,6 +1860,10 @@ boundary:
       PetscCall(PetscFree(coords));
       PetscCall(PetscFree(ctxs[0]));
       PetscCall(PetscFree2(funcs,ctxs));
+      if (flg) {
+        PetscCall(PetscViewerPopFormat(viewer));
+        PetscCall(PetscViewerDestroy(&viewer));
+      }
     }
   }
   PetscFunctionReturn(0);

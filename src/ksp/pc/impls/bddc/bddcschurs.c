@@ -1854,6 +1854,8 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
   }
 
   /* free workspace */
+  if (matl_dbg_viewer) PetscCall(PetscViewerFlush(matl_dbg_viewer));
+  if (sub_schurs->debug) PetscCallMPI(MPI_Barrier(comm_n));
   PetscCall(PetscViewerDestroy(&matl_dbg_viewer));
   PetscCall(PetscFree2(Bwork,pivots));
   PetscCall(PetscCommDestroy(&comm_n));
