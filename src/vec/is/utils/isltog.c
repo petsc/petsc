@@ -1955,6 +1955,8 @@ PetscErrorCode  ISLocalToGlobalMappingSetType(ISLocalToGlobalMapping ltog, ISLoc
    Output Parameter:
 .  type - the type
 
+   Level: intermediate
+
 .seealso: ISLocalToGlobalMappingType, ISLocalToGlobalMappingRegister(), ISLocalToGlobalMappingCreate(), ISLocalToGlobalMappingSetType()
 @*/
 PetscErrorCode  ISLocalToGlobalMappingGetType(ISLocalToGlobalMapping ltog, ISLocalToGlobalMappingType *type)

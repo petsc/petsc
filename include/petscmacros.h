@@ -453,6 +453,8 @@ M*/
   Input Paramter:
 . x - The preprocessor token to expand
 
+  Level: beginner
+
 .seealso: PetscStringize(), PetscConcat()
 M*/
 #define PetscExpand_(...) __VA_ARGS__
