@@ -1127,7 +1127,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char* prog,const char* 
 .  -viewfromoptions on,off - Enable or disable XXXSetFromOptions() calls, for applications with many small solves turn this off
 -  -check_pointer_intensity 0,1,2 - if pointers are checked for validity (debug version only), using 0 will result in faster code
 
-    Only one of -log_trace, -log_view, -log_view, -log_all, -log, or -log_mpe may be used at a time
+    Only one of -log_trace, -log_view, -log_all, -log, or -log_mpe may be used at a time
 
    Options Database Keys for SAWs:
 +  -saws_port <portnumber> - port number to publish SAWs data, default is 8080
