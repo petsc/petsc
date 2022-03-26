@@ -684,7 +684,7 @@ M*/
 
   void bar()
   {
-    PetscCallCXX(foo()); // ERROR, must return PetscErrorCode
+    PetscCallCXX(foo()); // ERROR bar() does not return PetscErrorCode
   }
 
   PetscErrorCode baz()
@@ -693,7 +693,7 @@ M*/
 
     PetscCallCXX(
       bar();
-      foo(); // OK, mutliple statements allowed
+      foo(); // OK mutliple statements allowed
     );
   }
 
@@ -701,11 +701,11 @@ M*/
   {
     bop()
     {
-      PetscCallCXX(foo()); // ERROR, returns PetscErrorCode, cannot be used in constructors
+      PetscCallCXX(foo()); // ERROR returns PetscErrorCode, cannot be used in constructors
     }
   };
 
-  // ERROR, contains do-while, cannot be used as function-try block
+  // ERROR contains do-while, cannot be used as function-try block
   PetscErrorCode qux() PetscCallCXX(
     bar();
     baz();
@@ -716,7 +716,7 @@ M*/
 
   Level: beginner
 
-.seealso: PetscCallXX(), SETERRQ(), PetscCall(), SETERRABORT(), PetscCallAbort(),
+.seealso: PetscCallThrow(), SETERRQ(), PetscCall(), SETERRABORT(), PetscCallAbort(),
 PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKMEMQ
 M*/
 #define PetscCallCXX(...) do {                                  \
