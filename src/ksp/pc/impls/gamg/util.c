@@ -77,8 +77,7 @@ PetscErrorCode PCGAMGCreateGraph(Mat Amat, Mat *a_Gmat)
 
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)Amat,MATSEQAIJ,&isseqaij));
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)Amat,MATMPIAIJ,&ismpiaij));
-  PetscCheck(isseqaij || ismpiaij,PETSC_COMM_WORLD,PETSC_ERR_USER,"Require (MPI)AIJ matrix type");
-  PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GRAPH],0,0,0,0));
+  PetscCheckFalse(!isseqaij && !ismpiaij,PETSC_COMM_WORLD,PETSC_ERR_USER,"Require (MPI)AIJ matrix type");
 
   /* TODO GPU: these calls are potentially expensive if matrices are large and we want to use the GPU */
   /* A solution consists in providing a new API, MatAIJGetCollapsedAIJ, and each class can provide a fast
@@ -270,8 +269,6 @@ old_bs:
   }
   PetscCall(MatPropagateSymmetryOptions(Amat, Gmat));
 
-  PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GRAPH],0,0,0,0));
-
   *a_Gmat = Gmat;
   PetscFunctionReturn(0);
 }
@@ -306,8 +303,6 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
   Vec               diag;
 
   PetscFunctionBegin;
-  PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[SET16],0,0,0,0));
-
   /* TODO GPU: optimization proposal, each class provides fast implementation of this
      procedure via MatAbs API */
   if (vfilter < 0.0 && !symm) {
@@ -334,7 +329,6 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
       for (jj = 0; jj<info.nz_used; jj++) avals[jj] = PetscAbsScalar(avals[jj]);
       PetscCall(MatSeqAIJRestoreArray(aij->B,&avals));
     }
-    PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[SET16],0,0,0,0));
     PetscFunctionReturn(0);
   }
 
@@ -399,7 +393,6 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
   } else {
     PetscCall(MatPropagateSymmetryOptions(Gmat,tGmat));
   }
-  PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[SET16],0,0,0,0));
 
 #if defined(PETSC_USE_INFO)
   {

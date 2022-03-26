@@ -64,15 +64,8 @@ PetscErrorCode PCGAMGCreateGraph(Mat, Mat*);
 PetscErrorCode PCGAMGFilterGraph(Mat*, PetscReal, PetscBool);
 PetscErrorCode PCGAMGGetDataWithGhosts(Mat, PetscInt, PetscReal[],PetscInt*, PetscReal **);
 
-enum tag {SET1,SET2,GRAPH,GRAPH_MAT,GRAPH_FILTER,GRAPH_SQR,SET4,SET5,SET6,FIND_V,SET7,SET8,SET9,SET10,SET11,SET12,SET13,SET14,SET15,SET16,NUM_SET};
-PETSC_EXTERN PetscLogEvent petsc_gamg_setup_events[NUM_SET];
-PETSC_EXTERN PetscLogEvent PC_GAMGGraph_AGG;
-PETSC_EXTERN PetscLogEvent PC_GAMGGraph_GEO;
-PETSC_EXTERN PetscLogEvent PC_GAMGCoarsen_AGG;
-PETSC_EXTERN PetscLogEvent PC_GAMGCoarsen_GEO;
-PETSC_EXTERN PetscLogEvent PC_GAMGProlongator_AGG;
-PETSC_EXTERN PetscLogEvent PC_GAMGProlongator_GEO;
-PETSC_EXTERN PetscLogEvent PC_GAMGOptProlongator_AGG;
+enum tag {GAMG_SETUP=0,GAMG_MESH,GAMG_MATRIX,GAMG_GRAPH,GAMG_FILTER,GAMG_COARSEN,GAMG_SQUARE,GAMG_MIS,GAMG_PROL,GAMG_PROLA,GAMG_PROLB,GAMG_OPT,GAMG_OPTSM,GAMG_LEVEL,GAMG_PTAP,GAMG_REDUCE,GAMG_REPART,SET13,SET14,SET15,GAMG_NUM_SET};
+PETSC_EXTERN PetscLogEvent petsc_gamg_setup_events[GAMG_NUM_SET];
 PETSC_EXTERN PetscLogEvent petsc_gamg_setup_matmat_events[PETSC_MG_MAXLEVELS][3];
 
 typedef struct _PCGAMGHashTable {

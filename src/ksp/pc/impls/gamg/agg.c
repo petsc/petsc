@@ -799,15 +799,20 @@ static PetscErrorCode PCGAMGGraph_AGG(PC pc,Mat Amat,Mat *a_Gmat)
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)Amat,&comm));
-  PetscCall(PetscLogEventBegin(PC_GAMGGraph_AGG,0,0,0,0));
 
   /* PetscCall(MatIsSymmetricKnown(Amat, &set, &flg)); || !(set && flg) -- this causes lot of symm calls */
   symm = (PetscBool)(pc_gamg_agg->sym_graph); /* && !pc_gamg_agg->square_graph; */
 
+  PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_GRAPH],0,0,0,0));
   PetscCall(PCGAMGCreateGraph(Amat, &Gmat));
+  PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_GRAPH],0,0,0,0));
+
+  PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_FILTER],0,0,0,0));
   PetscCall(PCGAMGFilterGraph(&Gmat, vfilter, symm));
+  PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_FILTER],0,0,0,0));
+
   *a_Gmat = Gmat;
-  PetscCall(PetscLogEventEnd(PC_GAMGGraph_AGG,0,0,0,0));
+
   PetscFunctionReturn(0);
 }
 
@@ -839,7 +844,7 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **
   PetscRandom    random;
 
   PetscFunctionBegin;
-  PetscCall(PetscLogEventBegin(PC_GAMGCoarsen_AGG,0,0,0,0));
+  PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_COARSEN],0,0,0,0));
   PetscCall(PetscObjectGetComm((PetscObject)Gmat1,&comm));
   PetscCall(MatGetLocalSize(Gmat1, &n, &m));
   PetscCall(MatGetBlockSize(Gmat1, &bs));
@@ -847,7 +852,9 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **
   nloc = n/bs;
 
   if (pc_gamg->current_level < pc_gamg_agg->square_graph) {
+    PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_SQUARE],0,0,0,0));
     PetscCall(PCGAMGSquareGraph_GAMG(a_pc,Gmat1,&Gmat2));
+    PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_SQUARE],0,0,0,0));
   } else Gmat2 = Gmat1;
 
   /* get MIS aggs - randomize */
@@ -869,7 +876,7 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **
   PetscCall(PetscFree(bIndexSet));
   PetscCall(PetscRandomDestroy(&random));
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, nloc, permute, PETSC_USE_POINTER, &perm));
-  PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[SET4],0,0,0,0));
+  PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_MIS],0,0,0,0));
   PetscCall(MatCoarsenCreate(comm, &crs));
   PetscCall(MatCoarsenSetFromOptions(crs));
   PetscCall(MatCoarsenSetGreedyOrdering(crs, perm));
@@ -881,7 +888,7 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **
 
   PetscCall(ISDestroy(&perm));
   PetscCall(PetscFree(permute));
-  PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[SET4],0,0,0,0));
+  PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_MIS],0,0,0,0));
 
   /* smooth aggs */
   if (Gmat2 != Gmat1) {
@@ -900,7 +907,7 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **
       *a_Gmat1 = mat; /* output */
     }
   }
-  PetscCall(PetscLogEventEnd(PC_GAMGCoarsen_AGG,0,0,0,0));
+  PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_COARSEN],0,0,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -932,7 +939,7 @@ static PetscErrorCode PCGAMGProlongator_AGG(PC pc,Mat Amat,Mat Gmat,PetscCoarsen
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)Amat,&comm));
   PetscCheckFalse(col_bs < 1,comm,PETSC_ERR_PLIB,"Column bs cannot be less than 1");
-  PetscCall(PetscLogEventBegin(PC_GAMGProlongator_AGG,0,0,0,0));
+  PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_PROL],0,0,0,0));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCall(MatGetOwnershipRange(Amat, &Istart, &Iend));
   PetscCall(MatGetBlockSize(Amat, &bs));
@@ -962,7 +969,7 @@ static PetscErrorCode PCGAMGProlongator_AGG(PC pc,Mat Amat,Mat Gmat,PetscCoarsen
     PetscCall(PetscInfo(pc,"%s: No selected points on coarse grid\n"));
     PetscCall(MatDestroy(&Prol));
     *a_P_out = NULL;  /* out */
-    PetscCall(PetscLogEventEnd(PC_GAMGProlongator_AGG,0,0,0,0));
+    PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_PROL],0,0,0,0));
     PetscFunctionReturn(0);
   }
   PetscCall(PetscInfo(pc,"%s: New grid %D nodes\n",((PetscObject)pc)->prefix,ii/col_bs));
@@ -973,7 +980,7 @@ static PetscErrorCode PCGAMGProlongator_AGG(PC pc,Mat Amat,Mat Gmat,PetscCoarsen
   PetscCheckFalse((kk/col_bs-myCrs0) != nLocalSelected,PETSC_COMM_SELF,PETSC_ERR_PLIB,"(kk %D/col_bs %D - myCrs0 %D) != nLocalSelected %D)",kk,col_bs,myCrs0,nLocalSelected);
 
   /* create global vector of data in 'data_w_ghost' */
-  PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[SET7],0,0,0,0));
+  PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_PROLA],0,0,0,0));
   if (size > 1) { /*  */
     PetscReal *tmp_gdata,*tmp_ldata,*tp2;
     PetscCall(PetscMalloc1(nloc, &tmp_ldata));
@@ -1018,8 +1025,8 @@ static PetscErrorCode PCGAMGProlongator_AGG(PC pc,Mat Amat,Mat Gmat,PetscCoarsen
     PetscCall(PetscMalloc1(nloc, &flid_fgid));
     for (kk=0; kk<nloc; kk++) flid_fgid[kk] = my0 + kk;
   }
-  PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[SET7],0,0,0,0));
-  PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[SET8],0,0,0,0));
+  PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_PROLA],0,0,0,0));
+  PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_PROLB],0,0,0,0));
   {
     PetscReal *data_out = NULL;
     PetscCall(formProl0(agg_lists, bs, col_bs, myCrs0, nbnodes,data_w_ghost, flid_fgid, &data_out, Prol));
@@ -1029,13 +1036,13 @@ static PetscErrorCode PCGAMGProlongator_AGG(PC pc,Mat Amat,Mat Gmat,PetscCoarsen
     pc_gamg->data_cell_rows = col_bs;
     pc_gamg->data_sz        = col_bs*col_bs*nLocalSelected;
   }
-  PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[SET8],0,0,0,0));
-  if (size > 1) PetscCall(PetscFree(data_w_ghost));
+  PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_PROLB],0,0,0,0));
+  if (size > 1) {PetscCall(PetscFree(data_w_ghost));}
   PetscCall(PetscFree(flid_fgid));
 
   *a_P_out = Prol;  /* out */
 
-  PetscCall(PetscLogEventEnd(PC_GAMGProlongator_AGG,0,0,0,0));
+  PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_PROL],0,0,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -1064,7 +1071,7 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)Amat,&comm));
-  PetscCall(PetscLogEventBegin(PC_GAMGOptProlongator_AGG,0,0,0,0));
+  PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_OPT],0,0,0,0));
 
   /* compute maximum singular value of operator to be used in smoother */
   if (0 < pc_gamg_agg->nsmooths) {
@@ -1130,7 +1137,7 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
     Mat tMat;
     Vec diag;
 
-    PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[SET9],0,0,0,0));
+    PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_OPTSM],0,0,0,0));
 
     /* smooth P1 := (I - omega/lam D^{-1}A)P0 */
     PetscCall(PetscLogEventBegin(petsc_gamg_setup_matmat_events[pc_gamg->current_level][2],0,0,0,0));
@@ -1151,9 +1158,9 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
     PetscCall(MatAYPX(tMat, alpha, Prol, SUBSET_NONZERO_PATTERN));
     PetscCall(MatDestroy(&Prol));
     Prol = tMat;
-    PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[SET9],0,0,0,0));
+    PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_OPTSM],0,0,0,0));
   }
-  PetscCall(PetscLogEventEnd(PC_GAMGOptProlongator_AGG,0,0,0,0));
+  PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_OPT],0,0,0,0));
   *a_P = Prol;
   PetscFunctionReturn(0);
 }
