@@ -8,8 +8,6 @@ struct Mat_MPIAIJCUSPARSE {
   /* The following are used by GPU capabilities to store matrix storage formats on the device */
   MatCUSPARSEStorageFormat   diagGPUMatFormat;
   MatCUSPARSEStorageFormat   offdiagGPUMatFormat;
-  cudaStream_t               stream;
-  cusparseHandle_t           handle;
   PetscSplitCSRDataStructure deviceMat;
   PetscInt                   coo_nd,coo_no; /* number of nonzero entries in coo for the diag/offdiag part */
   THRUSTINTARRAY             *coo_p; /* the permutation array that partitions the coo array into diag/offdiag parts */
@@ -29,14 +27,8 @@ struct Mat_MPIAIJCUSPARSE {
     offdiagGPUMatFormat = MAT_CUSPARSE_CSR;
     coo_p               = NULL;
     coo_pw              = NULL;
-    stream              = 0;
     deviceMat           = NULL;
     use_extended_coo    = PETSC_FALSE;
   }
 };
-
-PETSC_INTERN PetscErrorCode MatCUSPARSESetStream(Mat, const cudaStream_t stream);
-PETSC_INTERN PetscErrorCode MatCUSPARSESetHandle(Mat, const cusparseHandle_t handle);
-PETSC_INTERN PetscErrorCode MatCUSPARSEClearHandle(Mat);
-
 #endif

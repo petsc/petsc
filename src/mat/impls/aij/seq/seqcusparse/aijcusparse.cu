@@ -92,45 +92,6 @@ static PetscErrorCode MatSeqAIJCopySubArray_SeqAIJCUSPARSE(Mat,PetscInt,const Pe
 static PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE(Mat,PetscCount,const PetscInt[],const PetscInt[]);
 static PetscErrorCode MatSetValuesCOO_SeqAIJCUSPARSE(Mat,const PetscScalar[],InsertMode);
 
-PetscErrorCode MatCUSPARSESetStream(Mat A,const cudaStream_t stream)
-{
-  Mat_SeqAIJCUSPARSE *cusparsestruct = (Mat_SeqAIJCUSPARSE*)A->spptr;
-
-  PetscFunctionBegin;
-  PetscCheck(cusparsestruct,PETSC_COMM_SELF,PETSC_ERR_COR,"Missing spptr");
-  cusparsestruct->stream = stream;
-  PetscCallCUSPARSE(cusparseSetStream(cusparsestruct->handle,cusparsestruct->stream));
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode MatCUSPARSESetHandle(Mat A,const cusparseHandle_t handle)
-{
-  Mat_SeqAIJCUSPARSE *cusparsestruct = (Mat_SeqAIJCUSPARSE*)A->spptr;
-
-  PetscFunctionBegin;
-  PetscCheck(cusparsestruct,PETSC_COMM_SELF,PETSC_ERR_COR,"Missing spptr");
-  if (cusparsestruct->handle != handle) {
-    if (cusparsestruct->handle) {
-      PetscCallCUSPARSE(cusparseDestroy(cusparsestruct->handle));
-    }
-    cusparsestruct->handle = handle;
-  }
-  PetscCallCUSPARSE(cusparseSetPointerMode(cusparsestruct->handle, CUSPARSE_POINTER_MODE_DEVICE));
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode MatCUSPARSEClearHandle(Mat A)
-{
-  Mat_SeqAIJCUSPARSE *cusparsestruct = (Mat_SeqAIJCUSPARSE*)A->spptr;
-  PetscBool          flg;
-
-  PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)A,MATSEQAIJCUSPARSE,&flg));
-  if (!flg || !cusparsestruct) PetscFunctionReturn(0);
-  if (cusparsestruct->handle) cusparsestruct->handle = 0;
-  PetscFunctionReturn(0);
-}
-
 PetscErrorCode MatFactorGetSolverType_seqaij_cusparse(Mat A,MatSolverType *type)
 {
   PetscFunctionBegin;
