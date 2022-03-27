@@ -4,7 +4,7 @@ static char help[] = "Solves a linear system using PCHPDDM.\n\n";
 
 int main(int argc,char **args)
 {
-  Vec                x,b;        /* computed solution and RHS */
+  Vec                b;          /* computed solution and RHS */
   Mat                A,aux,X,B;  /* linear system matrix */
   KSP                ksp;        /* linear solver context */
   PC                 pc;
@@ -84,7 +84,7 @@ int main(int argc,char **args)
   }
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-set_rhs",&flg,NULL));
-  if (flg) { /* user-provided RHS for concurrent generalized eigenvalue problems                                   */
+  if (flg) { /* user-provided RHS for concurrent generalized eigenvalue problems                                 */
     Mat      a,c,P; /* usually assembled automatically in PCHPDDM, this is solely for testing PCHPDDMSetRHSMat() */
     PetscInt rstart,rend,location;
     PetscCall(MatDuplicate(aux,MAT_DO_NOT_COPY_VALUES,&B)); /* duplicate so that MatStructure is SAME_NONZERO_PATTERN */
@@ -94,15 +94,14 @@ int main(int argc,char **args)
     PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF,rend-rstart,m,1,NULL,&P));
     for (m = rstart; m < rend; ++m) {
       PetscCall(ISLocate(is,m,&location));
-      PetscCheck(location >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "IS of the auxiliary Mat does not include all local rows of A");
+      PetscCheck(location >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"IS of the auxiliary Mat does not include all local rows of A");
       PetscCall(MatSetValue(P,m-rstart,location,1.0,INSERT_VALUES));
     }
     PetscCall(MatAssemblyBegin(P,MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(P,MAT_FINAL_ASSEMBLY));
     PetscCall(PetscObjectTypeCompare((PetscObject)a,MATSEQAIJ,&flg));
-    if (flg) {
-      PetscCall(MatPtAP(a,P,MAT_INITIAL_MATRIX,1.0,&X)); /* MatPtAP() is used to extend diagonal blocks with zeros on the overlap */
-    } else { /* workaround for MatPtAP() limitations with some types */
+    if (flg) PetscCall(MatPtAP(a,P,MAT_INITIAL_MATRIX,1.0,&X)); /* MatPtAP() is used to extend diagonal blocks with zeros on the overlap */
+    else { /* workaround for MatPtAP() limitations with some types */
       PetscCall(MatConvert(a,MATSEQAIJ,MAT_INITIAL_MATRIX,&c));
       PetscCall(MatPtAP(c,P,MAT_INITIAL_MATRIX,1.0,&X));
       PetscCall(MatDestroy(&c));
@@ -115,14 +114,24 @@ int main(int argc,char **args)
     PetscCall(MatDestroy(&B));
   }
 #endif
-  PetscCall(ISDestroy(&is));
   PetscCall(MatDestroy(&aux));
   PetscCall(KSPSetFromOptions(ksp));
-  PetscCall(MatCreateVecs(A,&x,&b));
+  PetscCall(PetscObjectTypeCompare((PetscObject)pc,PCASM,&flg));
+  if (flg) {
+    flg = PETSC_FALSE;
+    PetscCall(PetscOptionsGetBool(NULL,NULL,"-pc_hpddm_define_subdomains",&flg,NULL));
+    if (flg) {
+      IS rows;
+      PetscCall(MatGetOwnershipIS(A,&rows,NULL));
+      PetscCall(PCASMSetLocalSubdomains(pc,1,&is,&rows));
+      PetscCall(ISDestroy(&rows));
+    }
+  }
+  PetscCall(ISDestroy(&is));
+  PetscCall(MatCreateVecs(A,NULL,&b));
   PetscCall(VecSet(b,1.0));
-  PetscCall(KSPSolve(ksp,b,x));
-  PetscCall(VecGetLocalSize(x,&m));
-  PetscCall(VecDestroy(&x));
+  PetscCall(KSPSolve(ksp,b,b));
+  PetscCall(VecGetLocalSize(b,&m));
   PetscCall(VecDestroy(&b));
   if (N > 1) {
     KSPType type;
@@ -158,24 +167,20 @@ int main(int argc,char **args)
   }
   PetscCall(PetscObjectTypeCompare((PetscObject)pc,PCHPDDM,&flg));
 #if defined(PETSC_HAVE_HPDDM) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
-  if (flg) {
-    PetscCall(PCHPDDMGetSTShareSubKSP(pc,&flg));
-  }
+  if (flg) PetscCall(PCHPDDMGetSTShareSubKSP(pc,&flg));
 #endif
   if (flg && PetscDefined(USE_LOG)) {
     PetscCall(PetscLogEventRegister("MatLUFactorSym",PC_CLASSID,&event));
     PetscCall(PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info1));
     PetscCall(PetscLogEventRegister("MatLUFactorNum",PC_CLASSID,&event));
     PetscCall(PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info2));
-    if (info1.count || info2.count) {
-      PetscCheck(info2.count > info1.count,PETSC_COMM_SELF,PETSC_ERR_PLIB,"LU numerical factorization (%d) not called more times than LU symbolic factorization (%d), broken -pc_hpddm_levels_1_st_share_sub_ksp",info2.count,info1.count);
-    } else {
+    if (!info1.count && !info2.count) {
       PetscCall(PetscLogEventRegister("MatCholFctrSym",PC_CLASSID,&event));
       PetscCall(PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info1));
       PetscCall(PetscLogEventRegister("MatCholFctrNum",PC_CLASSID,&event));
       PetscCall(PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info2));
       PetscCheck(info2.count > info1.count,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cholesky numerical factorization (%d) not called more times than Cholesky symbolic factorization (%d), broken -pc_hpddm_levels_1_st_share_sub_ksp",info2.count,info1.count);
-    }
+    } else PetscCheck(info2.count > info1.count,PETSC_COMM_SELF,PETSC_ERR_PLIB,"LU numerical factorization (%d) not called more times than LU symbolic factorization (%d), broken -pc_hpddm_levels_1_st_share_sub_ksp",info2.count,info1.count);
   }
   PetscCall(KSPDestroy(&ksp));
   PetscCall(MatDestroy(&A));
@@ -189,6 +194,12 @@ int main(int argc,char **args)
       requires: hpddm slepc datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
       nsize: 4
       args: -ksp_rtol 1e-3 -ksp_converged_reason -pc_type {{bjacobi hpddm}shared output} -pc_hpddm_coarse_sub_pc_type lu -sub_pc_type lu -options_left no -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO
+
+   test:
+      requires: hpddm slepc datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
+      suffix: define_subdomains
+      nsize: 4
+      args: -ksp_rtol 1e-3 -ksp_converged_reason -pc_type {{asm hpddm}shared output} -pc_hpddm_coarse_sub_pc_type lu -sub_pc_type lu -pc_hpddm_define_subdomains -options_left no -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO
 
    testset:
       requires: hpddm slepc datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
@@ -233,6 +244,11 @@ int main(int argc,char **args)
         output_file: output/ex76_geneo_share.out
         # extra -pc_factor_mat_solver_type mumps needed to avoid failures with PETSc LU
         args: -pc_hpddm_levels_1_sub_pc_type lu -mat_type baij -pc_hpddm_levels_1_sub_pc_factor_mat_solver_type mumps -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_st_matstructure {{same different}shared output} -pc_hpddm_levels_1_st_pc_type lu -pc_hpddm_levels_1_st_pc_factor_mat_solver_type mumps
+      test:
+        suffix: geneo_share_not_asm
+        output_file: output/ex76_geneo_pc_hpddm_levels_1_eps_nev-5.out
+        # extra -pc_hpddm_levels_1_eps_gen_non_hermitian needed to avoid failures with PETSc Cholesky
+        args: -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_st_pc_type cholesky -pc_hpddm_levels_1_eps_gen_non_hermitian -pc_hpddm_has_neumann -pc_hpddm_levels_1_st_share_sub_ksp true -pc_hpddm_levels_1_pc_type gasm
 
    test:
       requires: hpddm slepc datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
