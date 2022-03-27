@@ -128,6 +128,11 @@
 @*/
   template<class MemorySpace> PetscErrorCode VecRestoreKokkosViewWrite(Vec,Kokkos::View<PetscScalar*,MemorySpace>*);
 
+ #if defined(PETSC_HAVE_COMPLEX) && defined(PETSC_USE_COMPLEX)
+  static_assert(std::alignment_of<Kokkos::complex<PetscReal>>::value == std::alignment_of<std::complex<PetscReal>>::value,
+   "Alignment of Kokkos::complex<PetscReal> and std::complex<PetscReal> mismatch. Reconfigure your Kokkos with -DKOKKOS_ENABLE_COMPLEX_ALIGN=OFF, or let PETSc install Kokkos for you with --download-kokkos --download-kokkos-kernels");
+ #endif
+
 #endif
 
 #endif
