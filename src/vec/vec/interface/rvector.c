@@ -172,35 +172,40 @@ PetscErrorCode  VecDotRealPart(Vec x,Vec y,PetscReal *val)
 
    Input Parameters:
 +  x - the vector
--  type - one of NORM_1, NORM_2, NORM_INFINITY.  Also available
-          NORM_1_AND_2, which computes both norms and stores them
-          in a two element array.
+-  type - the type of the norm requested
 
    Output Parameter:
 .  val - the norm
 
-   Notes:
-$     NORM_1 denotes sum_i |x_i|
-$     NORM_2 denotes sqrt(sum_i |x_i|^2)
-$     NORM_INFINITY denotes max_i |x_i|
+   Values of NormType:
++     NORM_1 - sum_i |x_i|
+.     NORM_2 - sqrt(sum_i |x_i|^2)
+.     NORM_INFINITY - max_i |x_i|
+-     NORM_1_AND_2 - computes efficiently both  NORM_1 and NORM_2 and stores them each in an output array
 
+   Notes:
       For complex numbers NORM_1 will return the traditional 1 norm of the 2 norm of the complex numbers; that is the 1
       norm of the absolute values of the complex entries. In PETSc 3.6 and earlier releases it returned the 1 norm of
       the 1 norm of the complex entries (what is returned by the BLAS routine asum()). Both are valid norms but most
       people expect the former.
 
+      This routine stashes the computed norm value, repeated calls before the vector entries are changed are then rapid since the
+      precomputed value is immediately available. Certain vector operations such as VecSet() store the norms so the value is
+      immediately available and does not need to be explicitly computed. VecScale() updates any stashed norm values, thus calls after VecScale()
+      do not need to explicitly recompute the norm.
+
    Level: intermediate
 
    Performance Issues:
-$    per-processor memory bandwidth
-$    interprocessor latency
-$    work load imbalance that causes certain processes to arrive much earlier than others
++    per-processor memory bandwidth - limits the speed of the computation of local portion of the norm
+.    interprocessor latency - limits the accumulation of the result across ranks, .i.e. MPI_Allreduce() time
+.    number of ranks - the time for the result will grow with the log base 2 of the number of ranks sharing the vector
+-    work load imbalance - the rank with the largest number of vector entries will limit the speed up
 
 .seealso: VecDot(), VecTDot(), VecNorm(), VecDotBegin(), VecDotEnd(), VecNormAvailable(),
-          VecNormBegin(), VecNormEnd()
+          VecNormBegin(), VecNormEnd(), NormType()
 
 @*/
-
 PetscErrorCode  VecNorm(Vec x,NormType type,PetscReal *val)
 {
   PetscBool      flg;
