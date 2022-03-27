@@ -138,8 +138,6 @@ static PetscErrorCode MatSetPreallocationCOO_MPIAIJCUSPARSE_Basic(Mat B, PetscCo
   ISLocalToGlobalMapping l2g;
 
   PetscFunctionBegin;
-  if (b->A) PetscCall(MatCUSPARSEClearHandle(b->A));
-  if (b->B) PetscCall(MatCUSPARSEClearHandle(b->B));
   PetscCall(MatDestroy(&b->A));
   PetscCall(MatDestroy(&b->B));
 
@@ -202,12 +200,6 @@ static PetscErrorCode MatSetPreallocationCOO_MPIAIJCUSPARSE_Basic(Mat B, PetscCo
 
   PetscCall(MatCUSPARSESetFormat(b->A,MAT_CUSPARSE_MULT,cusp->diagGPUMatFormat));
   PetscCall(MatCUSPARSESetFormat(b->B,MAT_CUSPARSE_MULT,cusp->offdiagGPUMatFormat));
-  PetscCall(MatCUSPARSESetHandle(b->A,cusp->handle));
-  PetscCall(MatCUSPARSESetHandle(b->B,cusp->handle));
-  /*
-  PetscCall(MatCUSPARSESetStream(b->A,cusp->stream));
-  PetscCall(MatCUSPARSESetStream(b->B,cusp->stream));
-  */
 
   PetscCall(MatBindToCPU(b->A,B->boundtocpu));
   PetscCall(MatBindToCPU(b->B,B->boundtocpu));
@@ -466,8 +458,6 @@ PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJCUSPARSE(Mat B,PetscInt d_nz,cons
   PetscCall(MatSeqAIJSetPreallocation(b->B,o_nz,o_nnz));
   PetscCall(MatCUSPARSESetFormat(b->A,MAT_CUSPARSE_MULT,cusparseStruct->diagGPUMatFormat));
   PetscCall(MatCUSPARSESetFormat(b->B,MAT_CUSPARSE_MULT,cusparseStruct->offdiagGPUMatFormat));
-  PetscCall(MatCUSPARSESetHandle(b->A,cusparseStruct->handle));
-  PetscCall(MatCUSPARSESetHandle(b->B,cusparseStruct->handle));
   B->preallocated = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -621,21 +611,9 @@ PetscErrorCode MatDestroy_MPIAIJCUSPARSE(Mat A)
     PetscCallCUDA(cudaFree(d_mat));
     PetscCall(PetscFree(h_mat));
   }
-  try {
-    if (aij->A) PetscCall(MatCUSPARSEClearHandle(aij->A));
-    if (aij->B) PetscCall(MatCUSPARSEClearHandle(aij->B));
-    PetscCallCUSPARSE(cusparseDestroy(cusparseStruct->handle));
-    /* We want cusparseStruct to use PetscDefaultCudaStream
-    if (cusparseStruct->stream) {
-      PetscCallCUDA(cudaStreamDestroy(cusparseStruct->stream));
-    }
-    */
-    /* Free COO */
-    PetscCall(MatResetPreallocationCOO_MPIAIJCUSPARSE(A));
-    delete cusparseStruct;
-  } catch(char *ex) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Mat_MPIAIJCUSPARSE error: %s", ex);
-  }
+  /* Free COO */
+  PetscCall(MatResetPreallocationCOO_MPIAIJCUSPARSE(A));
+  PetscCallCXX(delete cusparseStruct);
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatMPIAIJSetPreallocation_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatMPIAIJGetLocalMatMerge_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatSetPreallocationCOO_C",NULL));
@@ -666,9 +644,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCUSPARSE(Mat B, MatType mtyp
   if (a->lvec) PetscCall(VecSetType(a->lvec,VECSEQCUDA));
 
   if (reuse != MAT_REUSE_MATRIX && !a->spptr) {
-    Mat_MPIAIJCUSPARSE *cusp = new Mat_MPIAIJCUSPARSE;
-    PetscCallCUSPARSE(cusparseCreate(&(cusp->handle)));
-    a->spptr = cusp;
+    PetscCallCXX(a->spptr = new Mat_MPIAIJCUSPARSE);
   }
 
   A->ops->assemblyend           = MatAssemblyEnd_MPIAIJCUSPARSE;
