@@ -912,14 +912,14 @@ int main(int argc, char **argv)
   test:
     suffix: ref_bl_2_tri
     requires: triangle
-    args: -dm_plex_box_faces 5,3 -dm_view -dm_plex_check_all 0 -ref_dm_refine 1 -ref_dm_plex_transform_type refine_boundary_layer -dm_extrude 3 -final_diagnostics -ref_dm_plex_transform_bl_splits 4
+    args: -dm_coord_space 0 -dm_plex_box_faces 5,3 -dm_view -dm_plex_check_all 0 -ref_dm_refine 1 -ref_dm_plex_transform_type refine_boundary_layer -dm_extrude 3 -final_diagnostics -ref_dm_plex_transform_bl_splits 4
   test:
     suffix: ref_bl_3_quad
     args: -dm_plex_simplex 0 -dm_plex_box_faces 5,1 -dm_view -dm_plex_check_all 0 -ref_dm_refine 1 -ref_dm_plex_transform_type refine_boundary_layer -dm_extrude 3 -final_diagnostics -ref_dm_plex_transform_bl_splits 4
   test:
     suffix: ref_bl_spheresurface_extruded
     nsize : 4
-    args: -dm_extrude 3 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/surfacesphere_bin.msh -dm_plex_gmsh_spacedim 3 -dm_plex_check_all -dm_view -dist_dm_distribute -petscpartitioner_type simple -final_diagnostics -ref_dm_refine 1 -ref_dm_plex_transform_type refine_boundary_layer -ref_dm_plex_transform_bl_splits 2
+    args: -dm_coord_space 0 -dm_extrude 3 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/surfacesphere_bin.msh -dm_plex_gmsh_spacedim 3 -dm_plex_check_all -dm_view -dist_dm_distribute -petscpartitioner_type simple -final_diagnostics -ref_dm_refine 1 -ref_dm_plex_transform_type refine_boundary_layer -ref_dm_plex_transform_bl_splits 2
   test:
     suffix: ref_bl_3d_hyb
     nsize : 4

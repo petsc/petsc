@@ -182,16 +182,14 @@ PetscErrorCode DMPlexCreateCoordinateSpace(DM dm, PetscInt degree, PetscPointFun
 
     PetscCall(DMGetDimension(dm, &dim));
     PetscCall(DMGetCoordinateDim(dm, &dE));
-    PetscCall(DMPlexIsSimplex(dm, &simplex));
     qorder = degree;
     ierr = PetscObjectOptionsBegin((PetscObject) cdm);PetscCall(ierr);
     PetscCall(PetscOptionsBoundedInt("-coord_dm_default_quadrature_order", "Quadrature order is one less than quadrature points per edge", "DMPlexCreateCoordinateSpace", qorder, &qorder, NULL, 0));
     ierr = PetscOptionsEnd();PetscCall(ierr);
     if (degree == PETSC_DECIDE) fe = NULL;
     else {
+      PetscCall(DMPlexIsSimplex(dm, &simplex));
       PetscCall(PetscFECreateLagrange(PETSC_COMM_SELF, dim, dE, simplex, degree, qorder, &fe));
-      PetscCall(DMSetField(cdm, 0, NULL, (PetscObject) fe));
-      PetscCall(DMCreateDS(cdm));
     }
     PetscCall(DMProjectCoordinates(dm, fe));
     PetscCall(PetscFEDestroy(&fe));
