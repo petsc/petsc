@@ -8,7 +8,7 @@ Labels:
   celltype: 3 strata with value/size (0 (98), 1 (192), 4 (96))
   depth: 3 strata with value/size (0 (98), 1 (192), 2 (96))
   marker: 1 strata with value/size (1 (302))
-libCEED Backend: /cpu/self/avx/blocked
+libCEED Backend: /cpu/self/opt/blocked
 Discrete System with 1 fields
     cell total dim 16 total comp 1
   Field indicator FEM 1 component  (implicit) (Nq 25 Nqc 1) 1-jet
@@ -30,5 +30,5 @@ Discrete System with 1 fields
         Quadrature of order 9 on 25 points (dim 2)
   Weak Form System with 1 fields
 Exact mesh surface area    :  6.0
-Computed mesh surface area :  6.0
+Computed mesh surface area :  5.99999999999994
 Area verifies!

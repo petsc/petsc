@@ -66,6 +66,7 @@ PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph graph, PetscInt verbosity_level,
   PetscCall(PetscViewerFlush(viewer));
   PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"Local BDDC graph for subdomain %04d\n",PetscGlobalRank));
   PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"Number of vertices %d\n",graph->nvtxs));
+  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"Number of local subdomains %d\n",graph->n_local_subs ? graph->n_local_subs : 1));
   PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"Custom minimal size %d\n",graph->custom_minimal_size));
   if (graph->maxcount != PETSC_MAX_INT) {
     PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"Max count %d\n",graph->maxcount));
@@ -307,7 +308,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
     for (ns = 1; ns < n_neigh; ns++) { /* first proc is self */
       PetscReal *anchor,mdist;
       PetscInt  fst,j,k,d,cdim = graph->cdim,n = n_shared[ns];
-      PetscInt  point1,point2,point3;
+      PetscInt  point1,point2,point3,point4;
 
       /* import coordinates on shared interface */
       PetscCall(PetscBTMemzero(n,excluded));
@@ -324,10 +325,11 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
       }
       if (fst == -1) continue;
 
-      /* the dofs are sorted by global numbering, so each rank start from the same id and will detect the same corners from the given set */
-      anchor = wdist + fst*cdim;
+      /* the dofs are sorted by global numbering, so each rank starts from the same id
+         and it will detect the same corners from the given set */
 
       /* find the farthest point from the starting one */
+      anchor = wdist + fst*cdim;
       mdist  = -1.0;
       point1 = fst;
       for (j=fst;j<n;j++) {
@@ -376,21 +378,35 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
         }
       }
 
+      /* find the farthest point from point3 different from point1 and point2 */
+      anchor = wdist + point3*cdim;
+      mdist  = -1.0;
+      point4 = point3;
+      for (j=fst;j<n;j++) {
+        PetscReal dist = 0.0;
+
+        if (PetscUnlikely(PetscBTLookup(excluded,j)) || j == point1 || j == point2 || j == point3) continue;
+        for (d=0;d<cdim;d++) dist += (wdist[j*cdim+d]-anchor[d])*(wdist[j*cdim+d]-anchor[d]);
+        if (dist > mdist) { mdist = dist; point4 = j; }
+      }
+
       PetscCall(PetscBTSet(cornerp,shared[ns][point1]));
       PetscCall(PetscBTSet(cornerp,shared[ns][point2]));
       PetscCall(PetscBTSet(cornerp,shared[ns][point3]));
+      PetscCall(PetscBTSet(cornerp,shared[ns][point4]));
 
       /* all dofs having the same coordinates will be primal */
       for (j=fst;j<n;j++) {
-        PetscBool same[3] = {PETSC_TRUE,PETSC_TRUE,PETSC_TRUE};
+        PetscBool same[] = {PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE};
 
         if (PetscUnlikely(PetscBTLookup(excluded,j))) continue;
         for (d=0;d<cdim;d++) {
           same[0] = (PetscBool)(same[0] && (PetscAbsReal(wdist[j*cdim + d]-wdist[point1*cdim+d]) < PETSC_SMALL));
           same[1] = (PetscBool)(same[1] && (PetscAbsReal(wdist[j*cdim + d]-wdist[point2*cdim+d]) < PETSC_SMALL));
           same[2] = (PetscBool)(same[2] && (PetscAbsReal(wdist[j*cdim + d]-wdist[point3*cdim+d]) < PETSC_SMALL));
+          same[3] = (PetscBool)(same[3] && (PetscAbsReal(wdist[j*cdim + d]-wdist[point4*cdim+d]) < PETSC_SMALL));
         }
-        if (same[0] || same[1] || same[2]) {
+        if (same[0] || same[1] || same[2] || same[3]) {
           PetscCall(PetscBTSet(cornerp,shared[ns][j]));
         }
       }
