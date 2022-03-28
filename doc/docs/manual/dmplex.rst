@@ -847,7 +847,7 @@ defined. This can be checked using
 
 .. code-block::
 
-   DMPlexMetricEnforceSPD(DM dm, Vec metricIn, PetscBool restrictSizes, PetscBool restrictAnisotropy, Vec *metricOut, Vec *determinant);
+   DMPlexMetricEnforceSPD(DM dm, Vec metricIn, PetscBool restrictSizes, PetscBool restrictAnisotropy, Vec metricOut, Vec determinant);
 
 This routine may also be used to enforce minimum and maximum tolerated metric
 magnitudes (i.e. cell sizes), as well as maximum anisotropy. These quantities
@@ -874,8 +874,8 @@ the routines
 
 .. code-block::
 
-   DMPlexMetricAverage(DM dm, PetscInt numMetrics, PetscReal weights[], Vec metrics[], Vec *metricAvg);
-   DMPlexMetricIntersection(DM dm, PetscInt numMetrics, Vec metrics[], Vec *metricInt);
+   DMPlexMetricAverage(DM dm, PetscInt numMetrics, PetscReal weights[], Vec metrics[], Vec metricAvg);
+   DMPlexMetricIntersection(DM dm, PetscInt numMetrics, Vec metrics[], Vec metricInt);
 
 However, before combining metrics, it is important that they are scaled in the same
 way. Scaling also allows the user to control the number of vertices in the adapted
@@ -884,7 +884,7 @@ framework, with the routine
 
 .. code-block::
 
-   DMPlexMetricNormalize(DM dm, Vec metricIn, PetscBool restrictSizes, PetscBool restrictAnisotropy, Vec *metricOut);
+   DMPlexMetricNormalize(DM dm, Vec metricIn, PetscBool restrictSizes, PetscBool restrictAnisotropy, Vec metricOut, Vec determinant);
 
 There are two important parameters for the normalization: the normalization order
 :math:`p` and the target metric complexity, which is analogous to the vertex count.
