@@ -627,8 +627,8 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
     break;
     case DM_ADAPTATION_METRIC:
     {
-      DM           dmGrad, dmHess, dmMetric;
-      Vec          xGrad, xHess, metric;
+      DM           dmGrad, dmHess, dmMetric, dmDet;
+      Vec          xGrad, xHess, metric, determinant;
       PetscReal    N;
       DMLabel      bdLabel = NULL, rgLabel = NULL;
       PetscBool    higherOrder = PETSC_FALSE;
@@ -704,7 +704,11 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
         xHess = metric;
       }
       PetscCall(PetscFree(funcs));
-      PetscCall(DMPlexMetricNormalize(dmMetric, xHess, PETSC_TRUE, PETSC_TRUE, &metric));
+      PetscCall(DMPlexMetricCreate(dmMetric, 0, &metric));
+      PetscCall(DMPlexMetricDeterminantCreate(dmMetric, 0, &determinant, &dmDet));
+      PetscCall(DMPlexMetricNormalize(dmMetric, xHess, PETSC_TRUE, PETSC_TRUE, metric, determinant));
+      PetscCall(VecDestroy(&determinant));
+      PetscCall(DMDestroy(&dmDet));
       PetscCall(VecDestroy(&xHess));
       PetscCall(DMDestroy(&dmHess));
       /*     Adapt DM from metric */
