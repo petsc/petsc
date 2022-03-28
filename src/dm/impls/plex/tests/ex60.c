@@ -182,8 +182,8 @@ int main(int argc, char **argv) {
 
     /* Test metric intersection */
     if (isotropic) {
-      PetscCall(DMPlexMetricIntersection(dm, 2, metrics, &metricComb));
-      PetscCall(VecAXPY(metricComb, -1, metric1));
+      PetscCall(DMPlexMetricIntersection(dm, 2, metrics, metricComb));
+      PetscCall(VecAXPY(metricComb, -1, metric2));
       PetscCall(VecNorm(metricComb, NORM_2, &errornorm));
       errornorm /= norm;
       PetscCall(PetscPrintf(comm, "Metric intersection L2 error: %.4f%%\n", (double)(100*errornorm)));

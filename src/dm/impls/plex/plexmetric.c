@@ -1486,7 +1486,7 @@ static PetscErrorCode DMPlexMetricIntersection_Private(PetscInt dim, PetscScalar
 
   /* Isotropic case */
   if (dim == 1) {
-    M2[0] = (PetscScalar)PetscMin(PetscRealPart(M1[0]), PetscRealPart(M2[0]));
+    M2[0] = (PetscScalar)PetscMax(PetscRealPart(M1[0]), PetscRealPart(M2[0]));
     PetscFunctionReturn(0);
   }
 
