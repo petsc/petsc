@@ -836,39 +836,36 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexMetricCreateIsotropic(self.dm, field, indicator.vec, &metric.vec) )
         return metric
 
-    def metricEnforceSPD(self, Vec metric, restrictSizes=False, restrictAnisotropy=False):
-        cdef Vec ometric = Vec()
+    def metricDeterminantCreate(self, field=0):
         cdef Vec determinant = Vec()
         cdef DM dmDet = DM()
-        CHKERR( DMPlexMetricEnforceSPD(self.dm, metric.vec, restrictSizes, restrictAnisotropy, &ometric.vec, &determinant.vec) )
-        CHKERR( VecGetDM(determinant.vec, &dmDet.dm) )
-        CHKERR( DMDestroy(&dmDet.dm) )
-        return ometric
+        CHKERR( DMPlexMetricDeterminantCreate(self.dm, field, &determinant.vec, &dmDet.dm) )
+        return determinant
 
-    def metricNormalize(self, Vec metric, restrictSizes=True, restrictAnisotropy=True):
-        cdef Vec ometric = Vec()
-        CHKERR( DMPlexMetricNormalize(self.dm, metric.vec, restrictSizes, restrictAnisotropy, &ometric.vec) )
-        return ometric
+    def metricEnforceSPD(self, Vec metric, Vec ometric, Vec determinant, restrictSizes=False, restrictAnisotropy=False):
+        cdef DM dmDet = DM()
+        CHKERR( DMPlexMetricEnforceSPD(self.dm, metric.vec, restrictSizes, restrictAnisotropy, ometric.vec, determinant.vec) )
+        return (ometric, determinant)
 
-    def metricAverage2(self, Vec metric1, Vec metric2):
-        cdef Vec metric = Vec()
-        CHKERR( DMPlexMetricAverage2(self.dm, metric1.vec, metric2.vec, &metric.vec) )
-        return metric
+    def metricNormalize(self, Vec metric, Vec ometric, Vec determinant, restrictSizes=True, restrictAnisotropy=True):
+        CHKERR( DMPlexMetricNormalize(self.dm, metric.vec, restrictSizes, restrictAnisotropy, ometric.vec, determinant.vec) )
+        return (ometric, determinant)
 
-    def metricAverage3(self, Vec metric1, Vec metric2, Vec metric3):
-        cdef Vec metric = Vec()
-        CHKERR( DMPlexMetricAverage3(self.dm, metric1.vec, metric2.vec, metric3.vec, &metric.vec) )
-        return metric
+    def metricAverage2(self, Vec metric1, Vec metric2, Vec metricAvg):
+        CHKERR( DMPlexMetricAverage2(self.dm, metric1.vec, metric2.vec, metricAvg.vec) )
+        return metricAvg
 
-    def metricIntersection2(self, Vec metric1, Vec metric2):
-        cdef Vec metric = Vec()
-        CHKERR( DMPlexMetricIntersection2(self.dm, metric1.vec, metric2.vec, &metric.vec) )
-        return metric
+    def metricAverage3(self, Vec metric1, Vec metric2, Vec metric3, Vec metricAvg):
+        CHKERR( DMPlexMetricAverage3(self.dm, metric1.vec, metric2.vec, metric3.vec, metricAvg.vec) )
+        return metricAvg
 
-    def metricIntersection3(self, Vec metric1, Vec metric2, Vec metric3):
-        cdef Vec metric = Vec()
-        CHKERR( DMPlexMetricIntersection3(self.dm, metric1.vec, metric2.vec, metric3.vec, &metric.vec) )
-        return metric
+    def metricIntersection2(self, Vec metric1, Vec metric2, Vec metricInt):
+        CHKERR( DMPlexMetricIntersection2(self.dm, metric1.vec, metric2.vec, metricInt.vec) )
+        return metricInt
+
+    def metricIntersection3(self, Vec metric1, Vec metric2, Vec metric3, Vec metricInt):
+        CHKERR( DMPlexMetricIntersection3(self.dm, metric1.vec, metric2.vec, metric3.vec, metricInt.vec) )
+        return metricInt
 
     def computeGradientClementInterpolant(self, Vec locX, Vec locC):
         CHKERR( DMPlexComputeGradientClementInterpolant(self.dm, locX.vec, locC.vec) )
