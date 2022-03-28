@@ -1687,13 +1687,21 @@ PetscErrorCode MatMarkDiagonal_SeqAIJ(Mat A)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscInt       i,j,m = A->rmap->n;
+  PetscBool      alreadySet = PETSC_TRUE;
 
   PetscFunctionBegin;
   if (!a->diag) {
     PetscCall(PetscMalloc1(m,&a->diag));
     PetscCall(PetscLogObjectMemory((PetscObject)A, m*sizeof(PetscInt)));
+    alreadySet = PETSC_FALSE;
   }
   for (i=0; i<A->rmap->n; i++) {
+    /* If A's diagonal is already correctly set, this fast track enables cheap and repeated MatMarkDiagonal_SeqAIJ() calls */
+    if (alreadySet) {
+      PetscInt pos = a->diag[i];
+      if (pos >= a->i[i] && pos < a->i[i+1] && a->j[pos] == i) continue;
+    }
+
     a->diag[i] = a->i[i+1];
     for (j=a->i[i]; j<a->i[i+1]; j++) {
       if (a->j[j] == i) {
