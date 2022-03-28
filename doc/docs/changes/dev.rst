@@ -57,6 +57,8 @@ Changes: Development
 
 .. rubric:: DMSwarm:
 
+- Add ``DMSwarmGetCoordinateFunction()``, ``DMSwarmSetCoordinateFunction()``, ``DMSwarmGetVelocityFunction()``, ``DMSwarmSetVelocityFunction()`` to allow flexible layout of particles
+
 .. rubric:: DMPlex:
 
 .. rubric:: FE/FV:
