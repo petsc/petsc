@@ -1168,6 +1168,9 @@ PetscErrorCode PCSetUp_MG(PC pc)
       if (mglevels[i]->smoothd->setupstage != KSP_SETUP_NEW) mglevels[i]->smoothd->setupstage = KSP_SETUP_NEWMATRIX;
     }
   }
+  // We got here (PCSetUp_MG) because the matrix has changed, which means the smoother needs to be set up again (e.g.,
+  // new diagonal for Jacobi). Setting it here allows it to be logged under PCSetUp rather than deep inside a PCApply.
+  if (mglevels[n-1]->smoothd->setupstage != KSP_SETUP_NEW) mglevels[n-1]->smoothd->setupstage = KSP_SETUP_NEWMATRIX;
 
   for (i=1; i<n; i++) {
     if (mglevels[i]->smoothu == mglevels[i]->smoothd || mg->am == PC_MG_FULL || mg->am == PC_MG_KASKADE || mg->cyclesperpcapply > 1) {
