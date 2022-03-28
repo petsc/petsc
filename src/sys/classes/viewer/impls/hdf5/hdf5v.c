@@ -439,7 +439,6 @@ static PetscErrorCode PetscViewerSetUp_HDF5(PetscViewer viewer)
 {
   /*
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
-  PetscErrorCode   ierr;
   */
 
   PetscFunctionBegin;

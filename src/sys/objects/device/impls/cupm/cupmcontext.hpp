@@ -121,7 +121,6 @@ private:
 
   PETSC_CXX_COMPAT_DECL(PetscErrorCode initialize_(PetscInt id, PetscDeviceContext_IMPLS *dci))
   {
-
     PetscFunctionBegin;
     PetscCall(PetscDeviceCheckDeviceCount_Internal(id));
     if (!initialized_) {

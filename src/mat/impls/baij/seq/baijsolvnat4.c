@@ -258,7 +258,6 @@ PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion_usj(Mat A,Vec bb,
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
   unsigned short *aj=(unsigned short*)a->j;
-  PetscErrorCode ierr;
   int            *ai=a->i,n=a->mbs,*diag = a->diag;
   MatScalar      *aa=a->a;
   PetscScalar    *x,*b;
@@ -453,7 +452,6 @@ PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion(Mat A,Vec bb,Vec 
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
   int            *aj=a->j;
-  PetscErrorCode ierr;
   int            *ai=a->i,n=a->mbs,*diag = a->diag;
   MatScalar      *aa=a->a;
   PetscScalar    *x,*b;

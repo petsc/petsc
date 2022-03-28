@@ -15,7 +15,6 @@ void FVPOL(int *N,double *X,double *Y,double *F,double *RPAR,void *IPAR)
   DM             dm;
   DMTS           tsdm;
   TSIFunction    ifunction;
-  PetscErrorCode ierr;
 
   PetscCallAbort(PETSC_COMM_SELF,VecPlaceArray(cvode->work,Y));
   PetscCallAbort(PETSC_COMM_SELF,VecPlaceArray(cvode->workf,F));
@@ -47,7 +46,6 @@ void JVPOL(PetscInt *N,PetscScalar *X,PetscScalar *Y,PetscScalar *DFY,int *LDFY,
   Vec            yydot;
   Mat            mat;
   PetscInt       n;
-  PetscErrorCode ierr;
 
   PetscCallAbort(PETSC_COMM_SELF,VecPlaceArray(cvode->work,Y));
   PetscCallAbort(PETSC_COMM_SELF,VecDuplicate(cvode->work,&yydot));
@@ -65,7 +63,6 @@ void SOLOUT(int *NR,double *XOLD,double *X, double *Y,double *CONT,double *LRC,i
 {
   TS             ts = (TS) IPAR;
   TS_Radau5      *cvode = (TS_Radau5*)ts->data;
-  PetscErrorCode ierr;
 
   PetscCallAbort(PETSC_COMM_SELF,VecPlaceArray(cvode->work,Y));
   ts->time_step = *X - *XOLD;
@@ -78,7 +75,6 @@ void radau5_(int *,void*,double*,double*,double*,double*,double*,double*,int*,vo
 PetscErrorCode TSSolve_Radau5(TS ts)
 {
   TS_Radau5      *cvode = (TS_Radau5*)ts->data;
-  PetscErrorCode ierr;
   PetscScalar    *Y,*WORK,X,XEND,RTOL,ATOL,H,RPAR;
   PetscInt       ND,*IWORK,LWORK,LIWORK,MUJAC,MLMAS,MUMAS,IDID,ITOL;
   int            IJAC,MLJAC,IMAS,IOUT;
@@ -126,7 +122,6 @@ PetscErrorCode TSSolve_Radau5(TS ts)
 PetscErrorCode TSDestroy_Radau5(TS ts)
 {
   TS_Radau5      *cvode = (TS_Radau5*)ts->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscCall(VecDestroy(&cvode->work));
@@ -152,7 +147,6 @@ M*/
 PETSC_EXTERN PetscErrorCode TSCreate_Radau5(TS ts)
 {
   TS_Radau5      *cvode;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ts->ops->destroy        = TSDestroy_Radau5;

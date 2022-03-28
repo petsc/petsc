@@ -16,7 +16,6 @@ PetscErrorCode FormInitial(PetscReal t, Vec X, void *ctx)
 {
   PetscScalar    *x;
   AppCtx         *app = (AppCtx*) ctx;
-  PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscCall(VecGetArray(X,&x));
   /**/
@@ -32,7 +31,6 @@ PetscErrorCode FormFunction(TS ts, PetscReal t, Vec X, Vec Xdot,Vec F, void *ctx
   const PetscScalar    *xdot;
   PetscScalar    *f;
   AppCtx         *app = (AppCtx*) ctx;
-  PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscCall(VecGetArrayRead(X,&x));
   PetscCall(VecGetArrayRead(Xdot,&xdot));
@@ -52,7 +50,6 @@ PetscErrorCode RunTest(int nx, int ny, int nz, int loops, double *wt)
   TS             ts;
   AppCtx         _app,*app=&_app;
   double         t1,t2;
-  PetscErrorCode ierr;
   PetscFunctionBegin;
 
   app->nx = nx; app->h[0] = 1./(nx-1);
@@ -105,7 +102,6 @@ PetscErrorCode RunTest(int nx, int ny, int nz, int loops, double *wt)
 
 PetscErrorCode GetInt(const char* name, PetscInt *v, PetscInt defv)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
   *v = defv;
   PetscCall(PetscOptionsGetInt(NULL,NULL,name,v,NULL));

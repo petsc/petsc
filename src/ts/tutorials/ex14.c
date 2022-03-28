@@ -273,7 +273,6 @@ static void PrmHexGetZ(const PrmNode pn[],PetscInt k,PetscInt zm,PetscReal zn[])
 /* Compute a gradient of all the 2D fields at four quadrature points.  Output for [quadrature_point][direction].field_name */
 static PetscErrorCode QuadComputeGrad4(const PetscReal dphi[][4][2],PetscReal hx,PetscReal hy,const PrmNode pn[4],PrmNode dp[4][2])
 {
-  PetscErrorCode ierr;
   PetscInt       q,i,f;
   const PetscScalar (*restrict pg)[PRMNODE_SIZE] = (const PetscScalar(*)[PRMNODE_SIZE])pn; /* Get generic array pointers to the node */
   PetscScalar (*restrict dpg)[2][PRMNODE_SIZE]   = (PetscScalar(*)[2][PRMNODE_SIZE])dp;
@@ -468,8 +467,6 @@ static PetscErrorCode PRangeMinMax(PRange *p,PetscReal min,PetscReal max)
 
 static PetscErrorCode THIDestroy(THI *thi)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
   if (--((PetscObject)(*thi))->refct > 0) PetscFunctionReturn(0);
   PetscCall(PetscFree((*thi)->units));
@@ -643,7 +640,6 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
  * the horizontal. */
 static PetscErrorCode THIFixGhosts(THI thi,DM da3,DM da2,Vec X3,Vec X2)
 {
-  PetscErrorCode ierr;
   DMDALocalInfo  info;
   PrmNode        **x2;
   PetscInt       i,j;
@@ -666,7 +662,6 @@ static PetscErrorCode THIFixGhosts(THI thi,DM da3,DM da2,Vec X3,Vec X2)
 static PetscErrorCode THIInitializePrm(THI thi,DM da2prm,PrmNode **p)
 {
   PetscInt       i,j,xs,xm,ys,ym,mx,my;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   PetscCall(DMDAGetGhostCorners(da2prm,&ys,&xs,0,&ym,&xm,0));
@@ -688,7 +683,6 @@ static PetscErrorCode THIInitial(THI thi,DM pack,Vec X)
   PrmNode        **prm;
   Node           ***x;
   Vec            X3g,X2g,X2;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   PetscCall(DMCompositeGetEntries(pack,&da3,&da2));
@@ -752,7 +746,6 @@ static PetscErrorCode THIFunctionLocal_3D(DMDALocalInfo *info,const Node ***x,co
 {
   PetscInt       xs,ys,xm,ym,zm,i,j,k,q,l;
   PetscReal      hx,hy,etamin,etamax,beta2min,beta2max;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   xs = info->zs;
@@ -906,7 +899,6 @@ static PetscErrorCode THIFunctionLocal_2D(DMDALocalInfo *info,const Node ***x,co
 
 static PetscErrorCode THIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
 {
-  PetscErrorCode ierr;
   THI            thi = (THI)ctx;
   DM             pack,da3,da2;
   Vec            X3,X2,Xdot3,Xdot2,F3,F2,F3g,F2g;
@@ -979,7 +971,6 @@ static PetscErrorCode THIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *c
 
 static PetscErrorCode THIMatrixStatistics(THI thi,Mat B,PetscViewer viewer)
 {
-  PetscErrorCode ierr;
   PetscReal      nrm;
   PetscInt       m;
   PetscMPIInt    rank;
@@ -999,7 +990,6 @@ static PetscErrorCode THIMatrixStatistics(THI thi,Mat B,PetscViewer viewer)
 
 static PetscErrorCode THISurfaceStatistics(DM pack,Vec X,PetscReal *min,PetscReal *max,PetscReal *mean)
 {
-  PetscErrorCode ierr;
   DM             da3,da2;
   Vec            X3,X2;
   Node           ***x;
@@ -1037,7 +1027,6 @@ static PetscErrorCode THISolveStatistics(THI thi,TS ts,PetscInt coarsened,const 
   MPI_Comm       comm;
   DM             pack;
   Vec            X,X3,X2;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   PetscCall(PetscObjectGetComm((PetscObject)thi,&comm));
@@ -1107,7 +1096,6 @@ static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info,const Node *
 {
   PetscInt       xs,ys,xm,ym,zm,i,j,k,q,l,ll;
   PetscReal      hx,hy;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   xs = info->zs;
@@ -1249,7 +1237,6 @@ static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info,const Node *
 
 static PetscErrorCode THIJacobianLocal_2D(DMDALocalInfo *info,const Node ***x3,const PrmNode **x2,const PrmNode **xdot2,PetscReal a,Mat B22,Mat B21,THI thi)
 {
-  PetscErrorCode ierr;
   PetscInt       xs,ys,xm,ym,zm,i,j,k;
 
   PetscFunctionBeginUser;
@@ -1314,7 +1301,6 @@ static PetscErrorCode THIJacobianLocal_2D(DMDALocalInfo *info,const Node ***x3,c
 
 static PetscErrorCode THIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat A,Mat B,void *ctx)
 {
-  PetscErrorCode ierr;
   THI            thi = (THI)ctx;
   DM             pack,da3,da2;
   Vec            X3,X2,Xdot2;
@@ -1388,7 +1374,6 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM pack,Vec X,const char file
   const PetscInt dof   = NODE_SIZE,dof2 = PRMNODE_SIZE;
   Units          units = thi->units;
   MPI_Comm       comm;
-  PetscErrorCode ierr;
   PetscViewer    viewer3,viewer2;
   PetscMPIInt    rank,size,tag,nn,nmax,nn2,nmax2;
   PetscInt       mx,my,mz,r,range[6];
@@ -1525,7 +1510,6 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM pack,Vec X,const char file
 
 static PetscErrorCode THITSMonitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
 {
-  PetscErrorCode ierr;
   THI            thi = (THI)ctx;
   DM             pack;
   char           filename3[PETSC_MAX_PATH_LEN],filename2[PETSC_MAX_PATH_LEN];
@@ -1577,7 +1561,6 @@ int main(int argc,char *argv[])
   Mat            B;
   PetscInt       i,steps;
   PetscReal      ftime;
-  PetscErrorCode ierr;
 
   PetscCall(PetscInitialize(&argc,&argv,0,help));
   comm = PETSC_COMM_WORLD;

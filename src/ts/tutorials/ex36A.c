@@ -33,7 +33,6 @@ PetscErrorCode Ue(PetscScalar t,PetscScalar *U)
 */
 static PetscErrorCode IFunctionImplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,Vec F,void *ctx)
 {
-  PetscErrorCode    ierr;
   const PetscScalar *y,*ydot;
   PetscScalar       *f;
 
@@ -61,7 +60,6 @@ static PetscErrorCode IFunctionImplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,Vec F,v
 */
 static PetscErrorCode IJacobianImplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,PetscReal a,Mat A,Mat B,void *ctx)
 {
-  PetscErrorCode ierr;
   PetscInt       rowcol[] = {0,1,2,3,4,5};
   const PetscScalar    *y,*ydot;
   PetscScalar    J[6][6];
@@ -107,7 +105,6 @@ int main(int argc,char **argv)
   TS             ts;            /* ODE integrator */
   Vec            Y;             /* solution will be stored here */
   Mat            A;             /* Jacobian matrix */
-  PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscInt       n = 6;
   PetscScalar    *y;

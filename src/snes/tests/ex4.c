@@ -42,7 +42,6 @@ int main(int argc,char **argv)
   PC             pc;           /* preconditioner context */
   Vec            x,r;          /* solution, residual vectors */
   Mat            J;            /* Jacobian matrix */
-  PetscErrorCode ierr;
   PetscInt       its;
   PetscMPIInt    size;
   PetscScalar    *xx;
@@ -142,7 +141,6 @@ int main(int argc,char **argv)
 
 PetscErrorCode FormObjective(SNES snes,Vec x,PetscReal *f,void *dummy)
 {
-  PetscErrorCode    ierr;
   Vec               F;
   static PetscInt   cnt = 0;
 
@@ -160,7 +158,6 @@ PetscErrorCode FormObjective(SNES snes,Vec x,PetscReal *f,void *dummy)
 /* ------------------------------------------------------------------- */
 PetscErrorCode FormFunction2(SNES snes,Vec x,Vec f,void *dummy)
 {
-  PetscErrorCode    ierr;
   const PetscScalar *xx;
   PetscScalar       *ff;
 
@@ -192,7 +189,6 @@ PetscErrorCode FormJacobian2(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
 {
   const PetscScalar *xx;
   PetscScalar       A[4];
-  PetscErrorCode    ierr;
   PetscInt          idx[2] = {0,1};
 
   /*

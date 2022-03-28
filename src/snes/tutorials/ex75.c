@@ -552,7 +552,6 @@ PetscErrorCode FEMTest(MPI_Comm comm, AppCtx *ctx)
   Vec              u;
   PetscErrorCode (*funcs[2])(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *) = {SolKxWrapperV, SolKxWrapperP};
   PetscReal        discError;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   if (!ctx->fem) PetscFunctionReturn(0);
@@ -573,7 +572,6 @@ PetscErrorCode FEMTest(MPI_Comm comm, AppCtx *ctx)
 int main(int argc, char **argv)
 {
   AppCtx         user;                 /* user-defined work context */
-  PetscErrorCode ierr;
 
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));

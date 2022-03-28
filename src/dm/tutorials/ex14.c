@@ -17,7 +17,6 @@ PetscErrorCode FillLocalSubdomain(DM da, Vec gvec)
   DMDALocalInfo  info;
   PetscMPIInt    rank;
   PetscInt       i,j,k,l;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
@@ -58,7 +57,6 @@ PetscErrorCode FillLocalSubdomain(DM da, Vec gvec)
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   DM             da,*subda;
   PetscInt       i,dim = 3;
   PetscInt       M = 25, N = 25, P = 25;

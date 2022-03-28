@@ -558,7 +558,6 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat B,Mat A,const Ma
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat B,Mat A,const MatFactorInfo *info)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ*)C->data;
-  PetscErrorCode ierr;
   int            i,j,n = a->mbs;
   int            *bj = b->j,*bjtmp,*pj;
   int            row;
@@ -1000,7 +999,6 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(Mat 
 {
   Mat            A  =C;
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ*)C->data;
-  PetscErrorCode ierr;
   int            i,j,n = a->mbs;
   unsigned short *bj = (unsigned short*)(b->j),*bjtmp,*pj;
   unsigned short *aj = (unsigned short*)(a->j),*ajtmp;
@@ -1443,7 +1441,6 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(Mat 
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat C,Mat A,const MatFactorInfo *info)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ*)C->data;
-  PetscErrorCode ierr;
   int            i,j,n = a->mbs;
   unsigned short *bj = (unsigned short*)(b->j),*bjtmp,*pj;
   unsigned int   row;

@@ -1820,7 +1820,6 @@ void *base64_encodeblock(void *vout,const void *vin,int len)
 /* Write binary data, does not do byte swapping. */
 static PetscErrorCode PetscFWrite_FUN3D(MPI_Comm comm,FILE *fp,void *data,PetscInt n,PetscDataType dtype,PetscBool base64)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
@@ -1920,7 +1919,6 @@ static PetscErrorCode IntersectInt(PetscInt na,const PetscInt *a,PetscInt *nb,Pe
 */
 static PetscErrorCode InferLocalCellConnectivity(PetscInt nnodes,PetscInt nedge,const PetscInt *eptr,PetscInt *incell,PetscInt **iconn)
 {
-  PetscErrorCode ierr;
   PetscInt       ncell,acell,(*conn)[4],node0,node1,node2,node3,i,j,k,l,rowmax;
   PetscInt       *ui,*uj,*utmp,*tmp1,*tmp2,*tmp3,ntmp1,ntmp2,ntmp3;
 #if defined(INTERLACING)
@@ -2017,7 +2015,6 @@ static PetscErrorCode InferLocalCellConnectivity(PetscInt nnodes,PetscInt nedge,
 
 static PetscErrorCode GridCompleteOverlap(GRID *grid,PetscInt *invertices,PetscInt *inedgeOv,PetscInt **ieptrOv)
 {
-  PetscErrorCode ierr;
   PetscInt       nedgeLoc,nedgeOv,i,j,cnt,node0,node1,node0p,node1p,nnodes,nnodesLoc,nvertices,rstart,nodeEdgeCountAll,nodeEdgeRstart;
   PetscInt       *nodeEdgeCount,*nodeEdgeOffset,*eIdxOv,*p2l,*eptrOv;
   Vec            VNodeEdge,VNodeEdgeInfo,VNodeEdgeInfoOv,VNodeEdgeOv;
@@ -2841,7 +2838,6 @@ int EdgeColoring(int nnodes,int nedge,int *e2n,int *eperm,int *ncle,int *counte)
 #if defined(PARCH_IRIX64) && defined(USE_HW_COUNTERS)
 int EventCountersBegin(int *gen_start,PetscScalar *time_start_counters)
 {
-  PetscErrorCode ierr;
   PetscCheckFalse((*gen_start = start_counters(event0,event1)) < 0,PETSC_COMM_SELF,1,"Error in start_counters");
   PetscCall(PetscTime(&time_start_counters));
   return 0;

@@ -2360,8 +2360,6 @@ PETSC_INTERN PetscErrorCode PetscLogEventEndMPE(PetscLogEvent,int,PetscObject,Pe
 @*/
 PetscErrorCode  PetscLogMPEBegin(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   /* Do MPE initialization */
   if (!MPE_Initialized_logging()) { /* This function exists in mpich 1.1.2 and higher */
@@ -2388,7 +2386,6 @@ PetscErrorCode  PetscLogMPEBegin(void)
 PetscErrorCode  PetscLogMPEDump(const char sname[])
 {
   char           name[PETSC_MAX_PATH_LEN];
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (PetscBeganMPE) {

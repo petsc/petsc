@@ -434,7 +434,6 @@ int FormJacobian(SNES snes, Vec x, Mat Jac, Mat jac,void *dummy)
   TstepCtx       *tsCtx = user->tsCtx;
   Vec            localX = grid->qnodeLoc;
   PetscScalar    *qnode;
-  PetscErrorCode ierr;
 
   /*
   PetscCall(VecScatterBegin(scatter,x,localX,INSERT_VALUES,SCATTER_FORWARD));
@@ -668,7 +667,6 @@ int ComputeTimeStep(SNES snes, int iter, void *ctx)
   Vec      func   = tsCtx->func;
   double   inc    = 1.1;
   double   newcfl, fnorm;
-  PetscErrorCode      ierr;
   /*int     iramp = tsCtx->iramp;*/
 
   /*VecDuplicate(tsCtx->qold,&func);*/

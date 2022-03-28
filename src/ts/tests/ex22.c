@@ -37,7 +37,6 @@ typedef struct {
 
 PetscErrorCode InitialConditions(Vec U,DM da,AppCtx *app)
 {
-  PetscErrorCode ierr;
   Vec            xcoord;
   PetscScalar    *x,*u;
   PetscInt       lsize,M,xs,xm,i;
@@ -69,7 +68,6 @@ PetscErrorCode InitialConditions(Vec U,DM da,AppCtx *app)
 PetscErrorCode EventFunction(TS ts,PetscReal t,Vec U,PetscScalar *fvalue,void *ctx)
 {
   AppCtx            *app=(AppCtx*)ctx;
-  PetscErrorCode    ierr;
   const PetscScalar *u;
   PetscInt          i,lsize;
 
@@ -100,7 +98,6 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents_zero,PetscInt events_zer
 static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void *ctx)
 {
   AppCtx            *app=(AppCtx*)ctx;
-  PetscErrorCode    ierr;
   PetscScalar       *f;
   const PetscScalar *u,*udot;
   DM                da;
@@ -147,7 +144,6 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void *ctx
 static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat B,void *ctx)
 {
   AppCtx         *app=(AppCtx*)ctx;
-  PetscErrorCode ierr;
   DM             da;
   MatStencil     row,col[3];
   PetscScalar    v[3];

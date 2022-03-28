@@ -44,8 +44,8 @@ int main(int argc,char **argv)
 
   /* Init/Finalize PETSc multiple times when MPI is initialized */
   for (i=0; i<500; i++) {
-    ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-    ierr = PetscFinalize();if (ierr) return ierr;
+    PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+    PetscCall(PetscFinalize();if (ierr) return ierr);
   }
 
   ierr = MPI_Finalize();

@@ -13,7 +13,6 @@ Options: \n\
 
 PetscErrorCode pic_advect(PetscInt ppcell,PetscInt meshtype)
 {
-  PetscErrorCode ierr;
   const PetscInt dim = 2;
   DM celldm,swarm;
   PetscInt tk,nt = 200;
@@ -239,7 +238,6 @@ PetscErrorCode pic_advect(PetscInt ppcell,PetscInt meshtype)
 
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
   PetscInt ppcell = 1;
   PetscInt meshtype = 0;
 

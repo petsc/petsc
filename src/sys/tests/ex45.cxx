@@ -26,7 +26,6 @@ exampleRoutine (const Teuchos::RCP<const Teuchos::Comm<int> >& comm)
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   // These "using" declarations make the code more concise, in that
   // you don't have to write the namespace along with the class or
   // object name.  This is especially helpful with commonly used
@@ -47,7 +46,7 @@ int main(int argc,char **argv)
                  runtime.  The user can use the "help" variable place
                  additional help messages in this printout.
   */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   RCP<const Comm<int> > comm (new MpiComm<int> (PETSC_COMM_WORLD));
   // Get my process' rank, and the total number of processes.
   // Equivalent to MPI_Comm_rank resp. MPI_Comm_size.
@@ -63,8 +62,8 @@ int main(int argc,char **argv)
     cout << "End Result: TEST PASSED" << endl;
   }
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

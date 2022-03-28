@@ -233,7 +233,6 @@ PetscErrorCode VecCreate_CUDA(Vec v)
  @*/
  PetscErrorCode VecCreateMPICUDA(MPI_Comm comm,PetscInt n,PetscInt N,Vec *v)
  {
-
    PetscFunctionBegin;
    PetscCall(VecCreate(comm,v));
    PetscCall(VecSetSizes(*v,n,N));

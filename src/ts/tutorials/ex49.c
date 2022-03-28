@@ -33,7 +33,6 @@ struct _n_User {
 
 static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
 {
-  PetscErrorCode    ierr;
   User              user = (User)ctx;
   const PetscScalar *x,*xdot;
   PetscScalar       *f;
@@ -52,7 +51,6 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx
 
 static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat A,Mat B,void *ctx)
 {
-  PetscErrorCode    ierr;
   User              user     = (User)ctx;
   PetscInt          rowcol[] = {0,1};
   const PetscScalar *x;

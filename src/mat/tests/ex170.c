@@ -42,7 +42,6 @@ bounded by p. In practice, this should be very fast.
 PetscErrorCode CreateGraph(MPI_Comm comm, PetscInt testnum, Mat *A)
 {
   Mat            G;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscCall(MatCreate(comm, &G));
@@ -137,7 +136,6 @@ int main(int argc, char **argv)
   PetscInt       testnum = 0;
   PetscInt       V, vStart, vEnd, v, n;
   PetscMPIInt    size;
-  PetscErrorCode ierr;
 
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   comm = PETSC_COMM_WORLD;

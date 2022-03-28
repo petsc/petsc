@@ -27,7 +27,6 @@ exampleRoutine (const Teuchos::RCP<const Teuchos::Comm<int> >& comm)
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   // These "using" declarations make the code more concise, in that
   // you don't have to write the namespace along with the class or
   // object name.  This is especially helpful with commonly used
@@ -58,7 +57,7 @@ int main(int argc,char **argv)
   // with size 1, whose only process has rank 0.
   Teuchos::RCP<const Teuchos::Comm<int> > comm = Tpetra::DefaultPlatform::getDefaultPlatform ().getComm ();
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   // Get my process' rank, and the total number of processes.
   // Equivalent to MPI_Comm_rank resp. MPI_Comm_size.
@@ -76,8 +75,8 @@ int main(int argc,char **argv)
   // GlobalMPISession calls MPI_Finalize() in its destructor, if
   // appropriate.  You don't have to do anything here!  Just return
   // from main().  Isn't that helpful?
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

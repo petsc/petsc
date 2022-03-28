@@ -229,8 +229,6 @@ PetscErrorCode PetscEventPerfLogEnsureSize(PetscEventPerfLog eventLog,int size)
 PETSC_INTERN PetscErrorCode PetscLogMPEGetRGBColor(const char*[]);
 PetscErrorCode PetscLogEventBeginMPE(PetscLogEvent event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
-  PetscErrorCode    ierr;
-
   PetscFunctionBegin;
   PetscCall(MPE_Log_event(petsc_stageLog->eventLog->eventInfo[event].mpe_id_begin,0,NULL));
   PetscFunctionReturn(0);
@@ -238,8 +236,6 @@ PetscErrorCode PetscLogEventBeginMPE(PetscLogEvent event,int t,PetscObject o1,Pe
 
 PetscErrorCode PetscLogEventEndMPE(PetscLogEvent event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
-  PetscErrorCode    ierr;
-
   PetscFunctionBegin;
   PetscCall(MPE_Log_event(petsc_stageLog->eventLog->eventInfo[event].mpe_id_end,0,NULL));
   PetscFunctionReturn(0);
