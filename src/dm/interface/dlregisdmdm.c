@@ -70,6 +70,7 @@ PetscErrorCode DMInitializePackage(void)
   PetscCall(PetscLogEventRegister("DMLocalToGlobal",        DM_CLASSID,&DM_LocalToGlobal));
   PetscCall(PetscLogEventRegister("DMLocatePoints",         DM_CLASSID,&DM_LocatePoints));
   PetscCall(PetscLogEventRegister("DMCoarsen",              DM_CLASSID,&DM_Coarsen));
+  PetscCall(PetscLogEventRegister("DMRefine",               DM_CLASSID,&DM_Refine));
   PetscCall(PetscLogEventRegister("DMCreateInterp",         DM_CLASSID,&DM_CreateInterpolation));
   PetscCall(PetscLogEventRegister("DMCreateRestrict",       DM_CLASSID,&DM_CreateRestriction));
   PetscCall(PetscLogEventRegister("DMCreateInject",         DM_CLASSID,&DM_CreateInjection));
