@@ -942,16 +942,6 @@ static PetscErrorCode DMPlexDistributeCones(DM dm, PetscSF migrationSF, ISLocalT
   PetscCall(DMPlexGetConeSection(dmParallel, &newConeSection));
   PetscCall(PetscSFDistributeSection(migrationSF, originalConeSection, &remoteOffsets, newConeSection));
   PetscCall(DMSetUp(dmParallel));
-  {
-    PetscInt pStart, pEnd, p;
-
-    PetscCall(PetscSectionGetChart(newConeSection, &pStart, &pEnd));
-    for (p = pStart; p < pEnd; ++p) {
-      PetscInt coneSize;
-      PetscCall(PetscSectionGetDof(newConeSection, p, &coneSize));
-      pmesh->maxConeSize = PetscMax(pmesh->maxConeSize, coneSize);
-    }
-  }
   /* Communicate and renumber cones */
   PetscCall(PetscSFCreateSectionSF(migrationSF, originalConeSection, remoteOffsets, newConeSection, &coneSF));
   PetscCall(PetscFree(remoteOffsets));

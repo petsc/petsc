@@ -3844,11 +3844,9 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
 
   mesh->refct             = 1;
   PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)dm), &mesh->coneSection));
-  mesh->maxConeSize       = 0;
   mesh->cones             = NULL;
   mesh->coneOrientations  = NULL;
   PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)dm), &mesh->supportSection));
-  mesh->maxSupportSize    = 0;
   mesh->supports          = NULL;
   mesh->refinementUniform = PETSC_TRUE;
   mesh->refinementLimit   = -1.0;

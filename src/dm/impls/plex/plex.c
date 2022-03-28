@@ -2689,8 +2689,6 @@ PetscErrorCode DMPlexSetConeSize(DM dm, PetscInt p, PetscInt size)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(PetscSectionSetDof(mesh->coneSection, p, size));
-
-  mesh->maxConeSize = PetscMax(mesh->maxConeSize, size);
   PetscFunctionReturn(0);
 }
 
@@ -2716,14 +2714,9 @@ PetscErrorCode DMPlexSetConeSize(DM dm, PetscInt p, PetscInt size)
 PetscErrorCode DMPlexAddConeSize(DM dm, PetscInt p, PetscInt size)
 {
   DM_Plex       *mesh = (DM_Plex*) dm->data;
-  PetscInt       csize;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(PetscSectionAddDof(mesh->coneSection, p, size));
-  PetscCall(PetscSectionGetDof(mesh->coneSection, p, &csize));
-
-  mesh->maxConeSize = PetscMax(mesh->maxConeSize, csize);
   PetscFunctionReturn(0);
 }
 
@@ -3216,8 +3209,6 @@ PetscErrorCode DMPlexSetSupportSize(DM dm, PetscInt p, PetscInt size)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(PetscSectionSetDof(mesh->supportSection, p, size));
-
-  mesh->maxSupportSize = PetscMax(mesh->maxSupportSize, size);
   PetscFunctionReturn(0);
 }
 
@@ -3709,15 +3700,19 @@ PetscErrorCode DMPlexGetMaxSizes(DM dm, PetscInt *maxConeSize, PetscInt *maxSupp
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (maxConeSize)    *maxConeSize    = mesh->maxConeSize;
-  if (maxSupportSize) *maxSupportSize = mesh->maxSupportSize;
+  if (maxConeSize) {
+    PetscCall(PetscSectionGetMaxDof(mesh->coneSection, maxConeSize));
+  }
+  if (maxSupportSize) {
+    PetscCall(PetscSectionGetMaxDof(mesh->supportSection, maxSupportSize));
+  }
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode DMSetUp_Plex(DM dm)
 {
   DM_Plex       *mesh = (DM_Plex*) dm->data;
-  PetscInt       size;
+  PetscInt       size, maxSupportSize;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -3726,7 +3721,8 @@ PetscErrorCode DMSetUp_Plex(DM dm)
   PetscCall(PetscMalloc1(size, &mesh->cones));
   PetscCall(PetscCalloc1(size, &mesh->coneOrientations));
   PetscCall(PetscLogObjectMemory((PetscObject) dm, size*2*sizeof(PetscInt)));
-  if (mesh->maxSupportSize) {
+  PetscCall(PetscSectionGetMaxDof(mesh->supportSection, &maxSupportSize));
+  if (maxSupportSize) {
     PetscCall(PetscSectionSetUp(mesh->supportSection));
     PetscCall(PetscSectionGetStorageSize(mesh->supportSection, &size));
     PetscCall(PetscMalloc1(size, &mesh->supports));
@@ -3829,13 +3825,6 @@ PetscErrorCode DMPlexSymmetrize(DM dm)
     for (c = off; c < off+dof; ++c) {
       PetscCall(PetscSectionAddDof(mesh->supportSection, mesh->cones[c], 1));
     }
-  }
-  for (p = pStart; p < pEnd; ++p) {
-    PetscInt dof;
-
-    PetscCall(PetscSectionGetDof(mesh->supportSection, p, &dof));
-
-    mesh->maxSupportSize = PetscMax(mesh->maxSupportSize, dof);
   }
   PetscCall(PetscSectionSetUp(mesh->supportSection));
   /* Calculate supports */
@@ -4173,14 +4162,16 @@ PetscErrorCode DMPlexGetJoin(DM dm, PetscInt numPoints, const PetscInt points[],
   PetscInt      *join[2];
   PetscInt       joinSize, i = 0;
   PetscInt       dof, off, p, c, m;
+  PetscInt       maxSupportSize;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidIntPointer(points, 3);
   PetscValidIntPointer(numCoveredPoints, 4);
   PetscValidPointer(coveredPoints, 5);
-  PetscCall(DMGetWorkArray(dm, mesh->maxSupportSize, MPIU_INT, &join[0]));
-  PetscCall(DMGetWorkArray(dm, mesh->maxSupportSize, MPIU_INT, &join[1]));
+  PetscCall(PetscSectionGetMaxDof(mesh->supportSection, &maxSupportSize));
+  PetscCall(DMGetWorkArray(dm, maxSupportSize, MPIU_INT, &join[0]));
+  PetscCall(DMGetWorkArray(dm, maxSupportSize, MPIU_INT, &join[1]));
   /* Copy in support of first point */
   PetscCall(PetscSectionGetDof(mesh->supportSection, points[0], &dof));
   PetscCall(PetscSectionGetOffset(mesh->supportSection, points[0], &off));
@@ -4208,7 +4199,7 @@ PetscErrorCode DMPlexGetJoin(DM dm, PetscInt numPoints, const PetscInt points[],
   }
   *numCoveredPoints = joinSize;
   *coveredPoints    = join[i];
-  PetscCall(DMRestoreWorkArray(dm, mesh->maxSupportSize, MPIU_INT, &join[1-i]));
+  PetscCall(DMRestoreWorkArray(dm, maxSupportSize, MPIU_INT, &join[1-i]));
   PetscFunctionReturn(0);
 }
 
@@ -4274,7 +4265,6 @@ PetscErrorCode DMPlexRestoreJoin(DM dm, PetscInt numPoints, const PetscInt point
 @*/
 PetscErrorCode DMPlexGetFullJoin(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt **coveredPoints)
 {
-  DM_Plex       *mesh = (DM_Plex*) dm->data;
   PetscInt      *offsets, **closures;
   PetscInt      *join[2];
   PetscInt       depth = 0, maxSize, joinSize = 0, i = 0;
@@ -4289,7 +4279,7 @@ PetscErrorCode DMPlexGetFullJoin(DM dm, PetscInt numPoints, const PetscInt point
   PetscCall(DMPlexGetDepth(dm, &depth));
   PetscCall(PetscCalloc1(numPoints, &closures));
   PetscCall(DMGetWorkArray(dm, numPoints*(depth+2), MPIU_INT, &offsets));
-  ms      = mesh->maxSupportSize;
+  PetscCall(DMPlexGetMaxSizes(dm, NULL, &ms));
   maxSize = (ms > 1) ? ((PetscPowInt(ms,depth+1)-1)/(ms-1)) : depth + 1;
   PetscCall(DMGetWorkArray(dm, maxSize, MPIU_INT, &join[0]));
   PetscCall(DMGetWorkArray(dm, maxSize, MPIU_INT, &join[1]));
@@ -4349,7 +4339,7 @@ PetscErrorCode DMPlexGetFullJoin(DM dm, PetscInt numPoints, const PetscInt point
   }
   PetscCall(PetscFree(closures));
   PetscCall(DMRestoreWorkArray(dm, numPoints*(depth+2), MPIU_INT, &offsets));
-  PetscCall(DMRestoreWorkArray(dm, mesh->maxSupportSize, MPIU_INT, &join[1-i]));
+  PetscCall(DMRestoreWorkArray(dm, ms, MPIU_INT, &join[1-i]));
   PetscFunctionReturn(0);
 }
 
@@ -4385,14 +4375,16 @@ PetscErrorCode DMPlexGetMeet(DM dm, PetscInt numPoints, const PetscInt points[],
   PetscInt      *meet[2];
   PetscInt       meetSize, i = 0;
   PetscInt       dof, off, p, c, m;
+  PetscInt       maxConeSize;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidIntPointer(points, 3);
   PetscValidIntPointer(numCoveringPoints, 4);
   PetscValidPointer(coveringPoints, 5);
-  PetscCall(DMGetWorkArray(dm, mesh->maxConeSize, MPIU_INT, &meet[0]));
-  PetscCall(DMGetWorkArray(dm, mesh->maxConeSize, MPIU_INT, &meet[1]));
+  PetscCall(PetscSectionGetMaxDof(mesh->coneSection, &maxConeSize));
+  PetscCall(DMGetWorkArray(dm, maxConeSize, MPIU_INT, &meet[0]));
+  PetscCall(DMGetWorkArray(dm, maxConeSize, MPIU_INT, &meet[1]));
   /* Copy in cone of first point */
   PetscCall(PetscSectionGetDof(mesh->coneSection, points[0], &dof));
   PetscCall(PetscSectionGetOffset(mesh->coneSection, points[0], &off));
@@ -4420,7 +4412,7 @@ PetscErrorCode DMPlexGetMeet(DM dm, PetscInt numPoints, const PetscInt points[],
   }
   *numCoveringPoints = meetSize;
   *coveringPoints    = meet[i];
-  PetscCall(DMRestoreWorkArray(dm, mesh->maxConeSize, MPIU_INT, &meet[1-i]));
+  PetscCall(DMRestoreWorkArray(dm, maxConeSize, MPIU_INT, &meet[1-i]));
   PetscFunctionReturn(0);
 }
 
@@ -4486,7 +4478,6 @@ PetscErrorCode DMPlexRestoreMeet(DM dm, PetscInt numPoints, const PetscInt point
 @*/
 PetscErrorCode DMPlexGetFullMeet(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt **coveredPoints)
 {
-  DM_Plex       *mesh = (DM_Plex*) dm->data;
   PetscInt      *offsets, **closures;
   PetscInt      *meet[2];
   PetscInt       height = 0, maxSize, meetSize = 0, i = 0;
@@ -4501,7 +4492,7 @@ PetscErrorCode DMPlexGetFullMeet(DM dm, PetscInt numPoints, const PetscInt point
   PetscCall(DMPlexGetDepth(dm, &height));
   PetscCall(PetscMalloc1(numPoints, &closures));
   PetscCall(DMGetWorkArray(dm, numPoints*(height+2), MPIU_INT, &offsets));
-  mc      = mesh->maxConeSize;
+  PetscCall(DMPlexGetMaxSizes(dm, &mc, NULL));
   maxSize = (mc > 1) ? ((PetscPowInt(mc,height+1)-1)/(mc-1)) : height + 1;
   PetscCall(DMGetWorkArray(dm, maxSize, MPIU_INT, &meet[0]));
   PetscCall(DMGetWorkArray(dm, maxSize, MPIU_INT, &meet[1]));
@@ -4561,7 +4552,7 @@ PetscErrorCode DMPlexGetFullMeet(DM dm, PetscInt numPoints, const PetscInt point
   }
   PetscCall(PetscFree(closures));
   PetscCall(DMRestoreWorkArray(dm, numPoints*(height+2), MPIU_INT, &offsets));
-  PetscCall(DMRestoreWorkArray(dm, mesh->maxConeSize, MPIU_INT, &meet[1-i]));
+  PetscCall(DMRestoreWorkArray(dm, mc, MPIU_INT, &meet[1-i]));
   PetscFunctionReturn(0);
 }
 

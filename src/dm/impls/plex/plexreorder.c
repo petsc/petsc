@@ -258,11 +258,8 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
   /* Reorder topology */
   {
     const PetscInt *pperm;
-    PetscInt        maxConeSize, maxSupportSize, n, pStart, pEnd, p;
+    PetscInt        n, pStart, pEnd, p;
 
-    PetscCall(DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize));
-    plexNew->maxConeSize    = maxConeSize;
-    plexNew->maxSupportSize = maxSupportSize;
     PetscCall(PetscSectionDestroy(&plexNew->coneSection));
     PetscCall(PetscSectionPermute(plex->coneSection, perm, &plexNew->coneSection));
     PetscCall(PetscSectionGetStorageSize(plexNew->coneSection, &n));

@@ -251,6 +251,7 @@ static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, Pe
   if (doComm) {
     PetscCall(PetscSFReduceBegin(sfDof, MPIU_INT, leafSectionAdj->atlasDof, rootSectionAdj->atlasDof, MPI_SUM));
     PetscCall(PetscSFReduceEnd(sfDof, MPIU_INT, leafSectionAdj->atlasDof, rootSectionAdj->atlasDof, MPI_SUM));
+    PetscCall(PetscSectionInvalidateMaxDof_Internal(rootSectionAdj));
   }
   if (debug) {
     PetscCall(PetscPrintf(comm, "Adjancency Section for Preallocation on Roots:\n"));

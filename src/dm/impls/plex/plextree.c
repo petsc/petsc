@@ -886,7 +886,6 @@ static PetscErrorCode DMPlexTreeExchangeSupports(DM dm)
         }
         if (j < numCones) newSupports[newOff+offsets[p]++] = q;
       }
-      mesh->maxSupportSize = PetscMax(mesh->maxSupportSize,newDof);
 
       q    = p;
       PetscCall(DMPlexGetTreeParent(dm,q,&parent,NULL));

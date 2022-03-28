@@ -1600,7 +1600,7 @@ PetscErrorCode DMLabelPermute(DMLabel label, IS permutation, DMLabel *labelNew)
 PetscErrorCode DMLabelDistribute_Internal(DMLabel label, PetscSF sf, PetscSection *leafSection, PetscInt **leafStrata)
 {
   MPI_Comm       comm;
-  PetscInt       s, l, nroots, nleaves, dof, offset, size;
+  PetscInt       s, l, nroots, nleaves, offset, size;
   PetscInt      *remoteOffsets, *rootStrata, *rootIdx;
   PetscSection   rootSection;
   PetscSF        labelSF;
@@ -1619,8 +1619,7 @@ PetscErrorCode DMLabelDistribute_Internal(DMLabel label, PetscSF sf, PetscSectio
 
       PetscCall(ISGetIndices(label->points[s], &points));
       for (l = 0; l < label->stratumSizes[s]; l++) {
-        PetscCall(PetscSectionGetDof(rootSection, points[l], &dof));
-        PetscCall(PetscSectionSetDof(rootSection, points[l], dof+1));
+        PetscCall(PetscSectionAddDof(rootSection, points[l], 1));
       }
       PetscCall(ISRestoreIndices(label->points[s], &points));
     }

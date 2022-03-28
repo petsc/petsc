@@ -3148,14 +3148,12 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
       const PetscInt  point    = subpoints[d][p];
       const PetscInt  subpoint = firstSubPoint[d] + p;
       const PetscInt *cone;
-      PetscInt        coneSize, coneSizeNew, c, val;
-      DMPolytopeType  ct;
+      PetscInt        coneSize;
 
       PetscCall(DMPlexGetConeSize(dm, point, &coneSize));
-      PetscCall(DMPlexSetConeSize(subdm, subpoint, coneSize));
-      PetscCall(DMPlexGetCellType(dm, point, &ct));
-      PetscCall(DMPlexSetCellType(subdm, subpoint, ct));
       if (cellHeight && (d == dim)) {
+        PetscInt coneSizeNew, c, val;
+
         PetscCall(DMPlexGetCone(dm, point, &cone));
         for (c = 0, coneSizeNew = 0; c < coneSize; ++c) {
           PetscCall(DMLabelGetValue(subpointMap, cone[c], &val));
@@ -3163,6 +3161,12 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
         }
         PetscCall(DMPlexSetConeSize(subdm, subpoint, coneSizeNew));
         PetscCall(DMPlexSetCellType(subdm, subpoint, DM_POLYTOPE_FV_GHOST));
+      } else {
+        DMPolytopeType  ct;
+
+        PetscCall(DMPlexSetConeSize(subdm, subpoint, coneSize));
+        PetscCall(DMPlexGetCellType(dm, point, &ct));
+        PetscCall(DMPlexSetCellType(subdm, subpoint, ct));
       }
     }
   }
