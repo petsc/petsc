@@ -254,6 +254,53 @@ PetscErrorCode PetscPDFSampleGaussian2D(const PetscReal p[], const PetscReal dum
 }
 
 /*@
+  PetscPDFGaussian3D - PDF for the Gaussian distribution in 3D
+
+  Not collective
+
+  Input Parameters:
++ x - Coordinate in [-\infty, \infty]^3
+- dummy - ignored
+
+  Output Parameter:
+. p - The probability density at x
+
+  Level: beginner
+
+.seealso: PetscPDFSampleGaussian3D(), PetscPDFMaxwellBoltzmann3D()
+@*/
+PetscErrorCode PetscPDFGaussian3D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
+{
+  p[0] = (1. / PETSC_PI*PetscSqrtReal(PETSC_PI)) * PetscExpReal(-0.5 * (PetscSqr(x[0]) + PetscSqr(x[1]) + PetscSqr(x[2])));
+  return 0;
+}
+
+/*@
+  PetscPDFSampleGaussian3D - Sample uniformly from a Gaussian distribution in 3D
+
+  Not collective
+
+  Input Parameters:
++ p - A uniform variable on [0, 1]^3
+- dummy - ignored
+
+  Output Parameter:
+. x - Coordinate in [-\infty, \infty]^3
+
+  Level: beginner
+
+  Note: https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform
+
+.seealso: PetscPDFGaussian3D(), PetscPDFMaxwellBoltzmann3D()
+@*/
+PetscErrorCode PetscPDFSampleGaussian3D(const PetscReal p[], const PetscReal dummy[], PetscReal x[])
+{
+  PetscCall(PetscPDFSampleGaussian1D(p, dummy, x));
+  PetscCall(PetscPDFSampleGaussian2D(&p[1], dummy, &x[1]));
+  return 0;
+}
+
+/*@
   PetscPDFConstant1D - PDF for the uniform distribution in 1D
 
   Not collective
@@ -266,7 +313,7 @@ PetscErrorCode PetscPDFSampleGaussian2D(const PetscReal p[], const PetscReal dum
 
   Level: beginner
 
-.seealso: PetscCDFConstant1D()
+.seealso: PetscCDFConstant1D(), PetscPDFSampleConstant1D(), PetscPDFConstant2D(), PetscPDFConstant3D()
 @*/
 PetscErrorCode PetscPDFConstant1D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
 {
@@ -274,6 +321,21 @@ PetscErrorCode PetscPDFConstant1D(const PetscReal x[], const PetscReal dummy[], 
   return 0;
 }
 
+/*@
+  PetscCDFConstant1D - CDF for the uniform distribution in 1D
+
+  Not collective
+
+  Input Parameter:
+. x - Coordinate in [-1, 1]
+
+  Output Parameter:
+. p - The cumulative probability at x
+
+  Level: beginner
+
+.seealso: PetscPDFConstant1D(), PetscPDFSampleConstant1D(), PetscCDFConstant2D(), PetscCDFConstant3D()
+@*/
 PetscErrorCode PetscCDFConstant1D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
 {
   p[0] = x[0] <= -1. ? 0. : (x[0] > 1. ? 1. : 0.5*(x[0] + 1.));
@@ -293,11 +355,140 @@ PetscErrorCode PetscCDFConstant1D(const PetscReal x[], const PetscReal dummy[], 
 
   Level: beginner
 
-.seealso: PetscPDFConstant1D(), PetscCDFConstant1D()
+.seealso: PetscPDFConstant1D(), PetscCDFConstant1D(), PetscPDFSampleConstant2D(), PetscPDFSampleConstant3D()
 @*/
 PetscErrorCode PetscPDFSampleConstant1D(const PetscReal p[], const PetscReal dummy[], PetscReal x[])
 {
-  x[0] = 2.*p[1] - 1.;
+  x[0] = 2.*p[0] - 1.;
+  return 0;
+}
+
+/*@
+  PetscPDFConstant2D - PDF for the uniform distribution in 2D
+
+  Not collective
+
+  Input Parameter:
+. x - Coordinate in [-1, 1] x [-1, 1]
+
+  Output Parameter:
+. p - The probability density at x
+
+  Level: beginner
+
+.seealso: PetscCDFConstant2D(), PetscPDFSampleConstant2D(), PetscPDFConstant1D(), PetscPDFConstant3D()
+@*/
+PetscErrorCode PetscPDFConstant2D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
+{
+  p[0] = x[0] > -1. && x[0] <= 1. && x[1] > -1. && x[1] <= 1. ? 0.25 : 0.;
+  return 0;
+}
+
+/*@
+  PetscCDFConstant2D - CDF for the uniform distribution in 2D
+
+  Not collective
+
+  Input Parameter:
+. x - Coordinate in [-1, 1] x [-1, 1]
+
+  Output Parameter:
+. p - The cumulative probability at x
+
+  Level: beginner
+
+.seealso: PetscPDFConstant2D(), PetscPDFSampleConstant2D(), PetscCDFConstant1D(), PetscCDFConstant3D()
+@*/
+PetscErrorCode PetscCDFConstant2D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
+{
+  p[0] = x[0] <= -1. || x[1] <= -1. ? 0. : (x[0] > 1. ? 1. : 0.5*(x[0] + 1.))*(x[1] > 1. ? 1. : 0.5*(x[1] + 1.));
+  return 0;
+}
+
+/*@
+  PetscPDFSampleConstant2D - Sample uniformly from a uniform distribution on [-1, 1] x [-1, 1] in 2D
+
+  Not collective
+
+  Input Parameter:
+. p - Two uniform variables on [0, 1]
+
+  Output Parameter:
+. x - Coordinate in [-1, 1] x [-1, 1]
+
+  Level: beginner
+
+.seealso: PetscPDFConstant2D(), PetscCDFConstant2D(), PetscPDFSampleConstant1D(), PetscPDFSampleConstant3D()
+@*/
+PetscErrorCode PetscPDFSampleConstant2D(const PetscReal p[], const PetscReal dummy[], PetscReal x[])
+{
+  x[0] = 2.*p[0] - 1.;
+  x[1] = 2.*p[1] - 1.;
+  return 0;
+}
+
+/*@
+  PetscPDFConstant3D - PDF for the uniform distribution in 3D
+
+  Not collective
+
+  Input Parameter:
+. x - Coordinate in [-1, 1] x [-1, 1] x [-1, 1]
+
+  Output Parameter:
+. p - The probability density at x
+
+  Level: beginner
+
+.seealso: PetscCDFConstant3D(), PetscPDFSampleConstant3D(), PetscPDFSampleConstant1D(), PetscPDFSampleConstant2D()
+@*/
+PetscErrorCode PetscPDFConstant3D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
+{
+  p[0] = x[0] > -1. && x[0] <= 1. && x[1] > -1. && x[1] <= 1. && x[2] > -1. && x[2] <= 1. ? 0.125 : 0.;
+  return 0;
+}
+
+/*@
+  PetscCDFConstant3D - CDF for the uniform distribution in 3D
+
+  Not collective
+
+  Input Parameter:
+. x - Coordinate in [-1, 1] x [-1, 1] x [-1, 1]
+
+  Output Parameter:
+. p - The cumulative probability at x
+
+  Level: beginner
+
+.seealso: PetscPDFConstant3D(), PetscPDFSampleConstant3D(), PetscCDFConstant1D(), PetscCDFConstant2D()
+@*/
+PetscErrorCode PetscCDFConstant3D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
+{
+  p[0] = x[0] <= -1. || x[1] <= -1. || x[2] <= -1. ? 0. : (x[0] > 1. ? 1. : 0.5*(x[0] + 1.))*(x[1] > 1. ? 1. : 0.5*(x[1] + 1.))*(x[2] > 1. ? 1. : 0.5*(x[2] + 1.));
+  return 0;
+}
+
+/*@
+  PetscPDFSampleConstant3D - Sample uniformly from a uniform distribution on [-1, 1] x [-1, 1] in 3D
+
+  Not collective
+
+  Input Parameter:
+. p - Three uniform variables on [0, 1]
+
+  Output Parameter:
+. x - Coordinate in [-1, 1] x [-1, 1] x [-1, 1]
+
+  Level: beginner
+
+.seealso: PetscPDFConstant3D(), PetscCDFConstant3D(), PetscPDFSampleConstant1D(), PetscPDFSampleConstant2D()
+@*/
+PetscErrorCode PetscPDFSampleConstant3D(const PetscReal p[], const PetscReal dummy[], PetscReal x[])
+{
+  x[0] = 2.*p[0] - 1.;
+  x[1] = 2.*p[1] - 1.;
+  x[2] = 2.*p[2] - 1.;
   return 0;
 }
 
@@ -341,6 +532,16 @@ PetscErrorCode PetscProbCreateFromOptions(PetscInt dim, const char prefix[], con
           if (cdf) *cdf = PetscCDFConstant1D;
           if (sampler) *sampler = PetscPDFSampleConstant1D;
           break;
+        case 2:
+          if (pdf) *pdf = PetscPDFConstant2D;
+          if (cdf) *cdf = PetscCDFConstant2D;
+          if (sampler) *sampler = PetscPDFSampleConstant2D;
+          break;
+        case 3:
+          if (pdf) *pdf = PetscPDFConstant3D;
+          if (cdf) *cdf = PetscCDFConstant3D;
+          if (sampler) *sampler = PetscPDFSampleConstant3D;
+          break;
         default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Dimension %" PetscInt_FMT " not supported for density type %s", dim, DTProbDensityTypes[den]);
       }
       break;
@@ -354,6 +555,10 @@ PetscErrorCode PetscProbCreateFromOptions(PetscInt dim, const char prefix[], con
         case 2:
           if (pdf) *pdf = PetscPDFGaussian2D;
           if (sampler) *sampler = PetscPDFSampleGaussian2D;
+          break;
+        case 3:
+          if (pdf) *pdf = PetscPDFGaussian3D;
+          if (sampler) *sampler = PetscPDFSampleGaussian3D;
           break;
         default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Dimension %" PetscInt_FMT " not supported for density type %s", dim, DTProbDensityTypes[den]);
       }
