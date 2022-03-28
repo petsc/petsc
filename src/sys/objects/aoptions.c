@@ -1814,7 +1814,7 @@ PetscErrorCode  PetscOptionsBoolArray_Private(PetscOptionItems *PetscOptionsObje
 
    Synopsis:
    #include "petscsys.h"
-   PetscErrorCode PetscOptionsViewer(const char opt[],const char text[],const char man[],PetscViewer *viewer,PetscViewerFormat *format,PetscBool  *set)
+   PetscErrorCode PetscOptionsViewer(const char opt[],const char text[],const char man[],PetscViewer *viewer,PetscViewerFormat *format,PetscBool *set)
 
    Input Parameters:
 +  opt - option name
@@ -1823,6 +1823,7 @@ PetscErrorCode  PetscOptionsBoolArray_Private(PetscOptionItems *PetscOptionsObje
 
    Output Parameters:
 +  viewer - the viewer
+.  format - the PetscViewerFormat requested by the user, pass NULL if not needed
 -  set - PETSC_TRUE if found, else PETSC_FALSE
 
    Level: beginner

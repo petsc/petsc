@@ -274,4 +274,8 @@ PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,void *ctx)
       requires: hypre !complex
       args: -pc_type mg  -da_refine 2 -ksp_monitor  -matptap_via hypre -pc_mg_galerkin both
 
+   test:
+      suffix: 6
+      args: -pc_type svd -pc_svd_monitor ::all
+
 TEST*/

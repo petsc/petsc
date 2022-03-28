@@ -158,7 +158,8 @@ typedef enum {
   PETSC_VIEWER_HDF5_MAT,
   PETSC_VIEWER_NOFORMAT,
   PETSC_VIEWER_LOAD_BALANCE,
-  PETSC_VIEWER_FAILED
+  PETSC_VIEWER_FAILED,
+  PETSC_VIEWER_ALL
   } PetscViewerFormat;
 PETSC_EXTERN const char *const PetscViewerFormats[];
 
