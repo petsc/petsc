@@ -28,6 +28,7 @@ static PetscErrorCode DMPlexTransformSetFromOptions_Extrude(PetscOptionItems *Pe
   PetscReal                th, normal[3], *thicknesses;
   PetscInt                 nl, Nc;
   PetscBool                tensor, sym, flg;
+  char                     funcname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 2);
@@ -41,10 +42,17 @@ static PetscErrorCode DMPlexTransformSetFromOptions_Extrude(PetscOptionItems *Pe
   PetscCall(PetscOptionsBool("-dm_plex_transform_extrude_symmetric", "Extrude layers symmetrically about the surface", "", ex->symmetric, &sym, &flg));
   if (flg) PetscCall(DMPlexTransformExtrudeSetSymmetric(tr, sym));
   Nc = 3;
-  PetscCall(PetscOptionsRealArray("-dm_plex_transform_extrude_normal", "Input normal vector for extrusion", "", normal, &Nc, &flg));
+  PetscCall(PetscOptionsRealArray("-dm_plex_transform_extrude_normal", "Input normal vector for extrusion", "DMPlexTransformExtrudeSetNormal", normal, &Nc, &flg));
   if (flg) {
     PetscCheckFalse(Nc != ex->cdimEx,PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_SIZ, "Input normal has size %D != %D extruded coordinate dimension", Nc, ex->cdimEx);
     PetscCall(DMPlexTransformExtrudeSetNormal(tr, normal));
+  }
+  PetscCall(PetscOptionsString("-dm_plex_transform_extrude_normal_function", "Function to determine normal vector", "DMPlexTransformExtrudeSetNormalFunction", funcname, funcname, sizeof(funcname), &flg));
+  if (flg) {
+    PetscSimplePointFunc normalFunc;
+
+    PetscCall(PetscDLSym(NULL, funcname, (void **) &normalFunc));
+    PetscCall(DMPlexTransformExtrudeSetNormalFunction(tr, normalFunc));
   }
   nl   = ex->layers;
   PetscCall(PetscMalloc1(nl, &thicknesses));
@@ -70,15 +78,39 @@ static PetscErrorCode DMPlexTransformSetDimensions_Extrude(DMPlexTransform tr, D
   PetscFunctionReturn(0);
 }
 
+/*
+  The refine types for extrusion are:
+
+  ct:       For any normally extruded point
+  ct + 100: For any point which should just return itself
+*/
 static PetscErrorCode DMPlexTransformSetUp_Extrude(DMPlexTransform tr)
 {
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *) tr->data;
   DM                       dm;
+  DMLabel                  active;
   DMPolytopeType           ct;
   PetscInt                 Nl = ex->layers, l, i, ict, Nc, No, coff, ooff;
 
   PetscFunctionBegin;
   PetscCall(DMPlexTransformGetDM(tr, &dm));
+  PetscCall(DMPlexTransformGetActive(tr, &active));
+  if (active) {
+    DMLabel  celltype;
+    PetscInt pStart, pEnd, p;
+
+    PetscCall(DMPlexGetCellTypeLabel(dm, &celltype));
+    PetscCall(DMLabelCreate(PETSC_COMM_SELF, "Refine Type", &tr->trType));
+    PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
+    for (p = pStart; p < pEnd; ++p) {
+      PetscInt ct, val;
+
+      PetscCall(DMLabelGetValue(celltype, p, &ct));
+      PetscCall(DMLabelGetValue(active, p, &val));
+      if (val < 0) {PetscCall(DMLabelSetValue(tr->trType, p, ct + 100));}
+      else         {PetscCall(DMLabelSetValue(tr->trType, p, ct));}
+    }
+  }
   PetscCall(PetscMalloc5(DM_NUM_POLYTOPES, &ex->Nt, DM_NUM_POLYTOPES, &ex->target, DM_NUM_POLYTOPES, &ex->size, DM_NUM_POLYTOPES, &ex->cone, DM_NUM_POLYTOPES, &ex->ornt));
   for (ict = 0; ict < DM_NUM_POLYTOPES; ++ict) {
     ex->Nt[ict]     = -1;
@@ -381,12 +413,18 @@ static PetscErrorCode DMPlexTransformDestroy_Extrude(DMPlexTransform tr)
 
 static PetscErrorCode DMPlexTransformGetSubcellOrientation_Extrude(DMPlexTransform tr, DMPolytopeType sct, PetscInt sp, PetscInt so, DMPolytopeType tct, PetscInt r, PetscInt o, PetscInt *rnew, PetscInt *onew)
 {
-  DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *) tr->data;
+  DMPlexTransform_Extrude *ex     = (DMPlexTransform_Extrude *) tr->data;
+  DMLabel                  trType = tr->trType;
+  PetscInt                 rt;
 
   PetscFunctionBeginHot;
   *rnew = r;
   *onew = DMPolytopeTypeComposeOrientation(tct, o, so);
   if (!so) PetscFunctionReturn(0);
+  if (trType) {
+    PetscCall(DMLabelGetValue(tr->trType, sp, &rt));
+    if (rt >= 100) PetscFunctionReturn(0);
+  }
   if (ex->useTensor) {
     switch (sct) {
       case DM_POLYTOPE_POINT: break;
@@ -421,17 +459,28 @@ static PetscErrorCode DMPlexTransformGetSubcellOrientation_Extrude(DMPlexTransfo
 
 static PetscErrorCode DMPlexTransformCellTransform_Extrude(DMPlexTransform tr, DMPolytopeType source, PetscInt p, PetscInt *rt, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[])
 {
-  DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *) tr->data;
+  DMPlexTransform_Extrude *ex     = (DMPlexTransform_Extrude *) tr->data;
+  DMLabel                  trType = tr->trType;
+  PetscBool                ignore = PETSC_FALSE, identity = PETSC_FALSE;
+  PetscInt                 val    = 0;
 
   PetscFunctionBegin;
-  if (rt) *rt = 0;
-  if (ex->Nt[source] < 0) {
+  if (trType) {
+    PetscCall(DMLabelGetValue(trType, p, &val));
+    identity = val >= 100 ? PETSC_TRUE : PETSC_FALSE;
+  } else {
+    ignore = ex->Nt[source] < 0 ? PETSC_TRUE : PETSC_FALSE;
+  }
+  if (rt) *rt = val;
+  if (ignore) {
     /* Ignore cells that cannot be extruded */
     *Nt     = 0;
     *target = NULL;
     *size   = NULL;
     *cone   = NULL;
     *ornt   = NULL;
+  } else if (identity) {
+    PetscCall(DMPlexTransformCellTransformIdentity(tr, source, p, NULL, Nt, target, size, cone, ornt));
   } else {
     *Nt     = ex->Nt[source];
     *target = ex->target[source];
@@ -483,6 +532,17 @@ static PetscErrorCode DMPlexTransformMapCoordinates_Extrude(DMPlexTransform tr, 
   } else if (ex->cdimEx == 3) {
     for (d = 0; d < dEx; ++d) normal[d] = ones3[d];
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unable to determine normal for extrusion");
+  if (ex->normalFunc) {
+    PetscScalar n[3];
+    PetscReal   x[3];
+
+    for (d = 0; d < ex->cdim; ++d) {
+      x[d] = PetscRealPart(in[d]);
+      n[d] = normal[d];
+    }
+    PetscCall((*ex->normalFunc)(ex->cdim, 0., x, r, n, NULL));
+    for (d = 0; d < dEx; ++d) normal[d] = PetscRealPart(n[d]);
+  }
 
   for (d = 0, norm = 0.0; d < dEx; ++d) norm += PetscSqr(normal[d]);
   for (d = 0; d < dEx; ++d) normal[d] *= 1./PetscSqrtReal(norm);
@@ -630,6 +690,23 @@ PetscErrorCode DMPlexTransformExtrudeSetThickness(DMPlexTransform tr, PetscReal 
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMPlexTransformExtrudeGetTensor - Get the flag to use tensor cells
+
+  Not collective
+
+  Input Parameter:
+. tr  - The DMPlexTransform
+
+  Output Parameter:
+. useTensor - The flag to use tensor cells
+
+  Note: This flag determines the orientation behavior of the created points. For example, if tensor is PETSC_TRUE, then DM_POLYTOPE_POINT_PRISM_TENSOR is made instead of DM_POLYTOPE_SEGMENT, DM_POLYTOPE_SEG_PRISM_TENSOR instead of DM_POLYTOPE_QUADRILATERAL, DM_POLYTOPE_TRI_PRISM_TENSOR instead of DM_POLYTOPE_TRI_PRISM, and DM_POLYTOPE_QUAD_PRISM_TENSOR instead of DM_POLYTOPE_HEXAHEDRON.
+
+  Level: intermediate
+
+.seealso: DMPlexTransformExtrudeSetTensor()
+@*/
 PetscErrorCode DMPlexTransformExtrudeGetTensor(DMPlexTransform tr, PetscBool *useTensor)
 {
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *) tr->data;
@@ -641,6 +718,21 @@ PetscErrorCode DMPlexTransformExtrudeGetTensor(DMPlexTransform tr, PetscBool *us
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMPlexTransformExtrudeSetTensor - Set the flag to use tensor cells
+
+  Not collective
+
+  Input Parameters:
++ tr  - The DMPlexTransform
+- useTensor - The flag for tensor cells
+
+  Note: This flag determines the orientation behavior of the created points. For example, if tensor is PETSC_TRUE, then DM_POLYTOPE_POINT_PRISM_TENSOR is made instead of DM_POLYTOPE_SEGMENT, DM_POLYTOPE_SEG_PRISM_TENSOR instead of DM_POLYTOPE_QUADRILATERAL, DM_POLYTOPE_TRI_PRISM_TENSOR instead of DM_POLYTOPE_TRI_PRISM, and DM_POLYTOPE_QUAD_PRISM_TENSOR instead of DM_POLYTOPE_HEXAHEDRON.
+
+  Level: intermediate
+
+.seealso: DMPlexTransformExtrudeGetTensor()
+@*/
 PetscErrorCode DMPlexTransformExtrudeSetTensor(DMPlexTransform tr, PetscBool useTensor)
 {
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *) tr->data;
@@ -651,6 +743,21 @@ PetscErrorCode DMPlexTransformExtrudeSetTensor(DMPlexTransform tr, PetscBool use
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMPlexTransformExtrudeGetSymmetric - Get the flag to extrude symmetrically from the initial surface
+
+  Not collective
+
+  Input Parameter:
+. tr  - The DMPlexTransform
+
+  Output Parameter:
+. symmetric - The flag to extrude symmetrically
+
+  Level: intermediate
+
+.seealso: DMPlexTransformExtrudeSetSymmetric()
+@*/
 PetscErrorCode DMPlexTransformExtrudeGetSymmetric(DMPlexTransform tr, PetscBool *symmetric)
 {
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *) tr->data;
@@ -662,6 +769,19 @@ PetscErrorCode DMPlexTransformExtrudeGetSymmetric(DMPlexTransform tr, PetscBool 
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMPlexTransformExtrudeSetSymmetric - Set the flag to extrude symmetrically from the initial surface
+
+  Not collective
+
+  Input Parameters:
++ tr  - The DMPlexTransform
+- symmetric - The flag to extrude symmetrically
+
+  Level: intermediate
+
+.seealso: DMPlexTransformExtrudeGetSymmetric()
+@*/
 PetscErrorCode DMPlexTransformExtrudeSetSymmetric(DMPlexTransform tr, PetscBool symmetric)
 {
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *) tr->data;
@@ -672,6 +792,48 @@ PetscErrorCode DMPlexTransformExtrudeSetSymmetric(DMPlexTransform tr, PetscBool 
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMPlexTransformExtrudeGetNormal - Get the extrusion normal vector
+
+  Not collective
+
+  Input Parameter:
+. tr  - The DMPlexTransform
+
+  Output Parameter:
+. normal - The extrusion direction
+
+  Note: The user passes in an array, which is filled by the library.
+
+  Level: intermediate
+
+.seealso: DMPlexTransformExtrudeSetNormal()
+@*/
+PetscErrorCode DMPlexTransformExtrudeGetNormal(DMPlexTransform tr, PetscReal normal[])
+{
+  DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *) tr->data;
+  PetscInt                 d;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
+  if (ex->useNormal) {for (d = 0; d < ex->cdimEx; ++d) normal[d] = ex->normal[d];}
+  else               {for (d = 0; d < ex->cdimEx; ++d) normal[d] = 0.;}
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexTransformExtrudeSetNormal - Set the extrusion normal
+
+  Not collective
+
+  Input Parameters:
++ tr     - The DMPlexTransform
+- normal - The extrusion direction
+
+  Level: intermediate
+
+.seealso: DMPlexTransformExtrudeGetNormal()
+@*/
 PetscErrorCode DMPlexTransformExtrudeSetNormal(DMPlexTransform tr, const PetscReal normal[])
 {
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *) tr->data;
@@ -684,6 +846,51 @@ PetscErrorCode DMPlexTransformExtrudeSetNormal(DMPlexTransform tr, const PetscRe
   PetscFunctionReturn(0);
 }
 
+/*@C
+  DMPlexTransformExtrudeSetNormalFunction - Set a function to determine the extrusion normal
+
+  Not collective
+
+  Input Parameters:
++ tr     - The DMPlexTransform
+- normalFunc - A function determining the extrusion direction
+
+  Note: The calling sequence for the function is normalFunc(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt r, PetscScalar u[], void *ctx)
+$ dim  - The coordinate dimension of the original mesh (usually a surface)
+$ time - The current time, or 0.
+$ x    - The location of the current normal, in the coordinate space of the original mesh
+$ r    - The extrusion replica number (layer number) of this point
+$ u    - On input, this holds the original normal, and the user provides the computed normal on output
+$ ctx  - An optional user context
+
+  Level: intermediate
+
+.seealso: DMPlexTransformExtrudeGetNormal()
+@*/
+PetscErrorCode DMPlexTransformExtrudeSetNormalFunction(DMPlexTransform tr, PetscSimplePointFunc normalFunc)
+{
+  DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *) tr->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
+  ex->normalFunc = normalFunc;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexTransformExtrudeSetThicknesses - Set the thickness of each layer
+
+  Not collective
+
+  Input Parameters:
++ tr  - The DMPlexTransform
+. Nth - The number of thicknesses
+- thickness - The array of thicknesses
+
+  Level: intermediate
+
+.seealso: DMPlexTransformExtrudeSetThickness(), DMPlexTransformExtrudeGetThickness()
+@*/
 PetscErrorCode DMPlexTransformExtrudeSetThicknesses(DMPlexTransform tr, PetscInt Nth, const PetscReal thicknesses[])
 {
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *) tr->data;

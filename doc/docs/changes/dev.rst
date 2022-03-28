@@ -197,6 +197,7 @@ Changes: Development
 
 - Add ``DMExtrude()`` which now the default extrusion
 - Change ``DMPlexExtrude()`` to use DMPlexTransform underneath
+- Add ``DMPlexTransformExtrudeSetNormalFunction()`` to allow computed normals
 - Add ``DMGetNaturalSF()`` and ``DMSetNaturalSF()``
 - Change ``-dm_plex_csr_via_mat`` to ``-dm_plex_csr_alg`` which takes a DMPlexCSRAlgorithm name
 - Add public API for metric-based mesh adaptation:
