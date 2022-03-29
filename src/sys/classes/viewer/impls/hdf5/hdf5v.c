@@ -1196,7 +1196,7 @@ PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char paren
           PetscCall(PetscStrallocpy(*(char**)defaultValue, (char**)value));
         } else {
           size_t len;
-          PetscStackCallHDF5Return(len,H5Tget_size,(dtype));
+          PetscStackCallHDF5ReturnNoCheck(len,H5Tget_size,(dtype));
           PetscCall(PetscMemcpy(value, defaultValue, len));
         }
       }
@@ -1211,7 +1211,7 @@ PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char paren
     size_t len;
     hid_t  atype;
     PetscStackCallHDF5Return(atype,H5Aget_type,(attribute));
-    PetscStackCallHDF5Return(len,H5Tget_size,(atype));
+    PetscStackCallHDF5ReturnNoCheck(len,H5Tget_size,(atype));
     PetscCall(PetscMalloc((len+1) * sizeof(char), value));
     PetscStackCallHDF5(H5Tset_size,(dtype, len+1));
     PetscStackCallHDF5(H5Aread,(attribute, dtype, *(char**)value));
