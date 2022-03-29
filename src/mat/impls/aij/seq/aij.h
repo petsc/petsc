@@ -13,6 +13,7 @@ typedef struct {
   PetscErrorCode (*restorearrayread)(Mat,const PetscScalar **);
   PetscErrorCode (*getarraywrite)(Mat,PetscScalar **);
   PetscErrorCode (*restorearraywrite)(Mat,PetscScalar **);
+  PetscErrorCode (*getcsrandmemtype)(Mat,const PetscInt**,const PetscInt**,PetscScalar**,PetscMemType*);
 } Mat_SeqAIJOps;
 
 /*

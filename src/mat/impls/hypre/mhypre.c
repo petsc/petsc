@@ -150,6 +150,9 @@ static PetscErrorCode MatHYPRE_IJMatrixCopy(Mat A, HYPRE_IJMatrix ij)
     PetscFunctionReturn(0);
   }
 
+  /* Do not need Aux since we have done precise i[],j[] allocation in MatHYPRE_CreateFromMat() */
+  hypre_AuxParCSRMatrixNeedAux((hypre_AuxParCSRMatrix*)hypre_IJMatrixTranslator(ij)) = 0;
+
   PetscCall(MatGetOwnershipRange(A,&rstart,&rend));
   for (i=rstart; i<rend; i++) {
     PetscCall(MatGetRow(A,i,&ncols,&cols,&values));
@@ -1223,8 +1226,14 @@ static PetscErrorCode MatDestroy_HYPRE(Mat A)
   if (hA->comm) PetscCall(PetscCommRestoreComm(PetscObjectComm((PetscObject)A),&hA->comm));
 
   PetscCall(MatStashDestroy_Private(&A->stash));
-
   PetscCall(PetscFree(hA->array));
+
+  if (hA->cooMat) {
+    PetscCall(MatDestroy(&hA->cooMat));
+    PetscStackCall("hypre_TFree",hypre_TFree(hA->diagJ,hA->memType));
+    PetscStackCall("hypre_TFree",hypre_TFree(hA->offdJ,hA->memType));
+    PetscStackCall("hypre_TFree",hypre_TFree(hA->diag,hA->memType));
+  }
 
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatConvert_hypre_aij_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatConvert_hypre_is_C",NULL));
@@ -1232,6 +1241,8 @@ static PetscErrorCode MatDestroy_HYPRE(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_mpiaij_hypre_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatHYPRESetPreallocation_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatHYPREGetParCSR_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatSetPreallocationCOO_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatSetValuesCOO_C",NULL));
   PetscCall(PetscFree(A->data));
   PetscFunctionReturn(0);
 }
@@ -1252,7 +1263,7 @@ static PetscErrorCode MatBindToCPU_HYPRE(Mat A, PetscBool bind)
 
   PetscFunctionBegin;
   A->boundtocpu = bind;
-  if (hypre_IJMatrixAssembleFlag(hA->ij) && hmem != hypre_IJMatrixMemoryLocation(hA->ij)) {
+  if (hA->ij && hypre_IJMatrixAssembleFlag(hA->ij) && hmem != hypre_IJMatrixMemoryLocation(hA->ij)) {
     hypre_ParCSRMatrix *parcsr;
     PetscStackCallStandard(HYPRE_IJMatrixGetObject,hA->ij,(void**)&parcsr);
     PetscStackCallStandard(hypre_ParCSRMatrixMigrate,parcsr, hmem);
@@ -2174,6 +2185,134 @@ static PetscErrorCode MatAXPY_HYPRE(Mat Y,PetscScalar a,Mat X,MatStructure str)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatSetPreallocationCOO_HYPRE(Mat mat, PetscCount coo_n, const PetscInt coo_i[], const PetscInt coo_j[])
+{
+  MPI_Comm               comm;
+  PetscMPIInt            size;
+  PetscLayout            rmap,cmap;
+  Mat_HYPRE              *hmat;
+  hypre_ParCSRMatrix     *parCSR;
+  hypre_CSRMatrix        *diag,*offd;
+  Mat                    A,B,cooMat;
+  PetscScalar            *Aa,*Ba;
+  HYPRE_MemoryLocation   hypreMemtype = HYPRE_MEMORY_HOST;
+  PetscMemType           petscMemtype;
+  MatType                matType = MATAIJ; /* default type of cooMat */
+
+  PetscFunctionBegin;
+  /* Build an agent matrix cooMat whose type is either MATAIJ or MATAIJKOKKOS.
+     It has the same sparsity pattern as mat, and also shares the data array with mat. We use cooMat to do the COO work.
+   */
+  PetscCall(PetscObjectGetComm((PetscObject)mat,&comm));
+  PetscCallMPI(MPI_Comm_size(comm,&size));
+  PetscCall(PetscLayoutSetUp(mat->rmap));
+  PetscCall(PetscLayoutSetUp(mat->cmap));
+  PetscCall(MatGetLayouts(mat,&rmap,&cmap));
+
+  /* I do not know how hypre_ParCSRMatrix stores diagonal elements for non-square matrices, so I just give up now */
+  PetscCheck(rmap->N == cmap->N,comm,PETSC_ERR_SUP,"MATHYPRE COO cannot handle non-square matrices");
+
+ #if defined(PETSC_HAVE_DEVICE)
+  if (!mat->boundtocpu) { /* mat will be on device, so will cooMat */
+   #if defined(PETSC_HAVE_KOKKOS)
+    matType = MATAIJKOKKOS;
+   #else
+    SETERRQ(comm,PETSC_ERR_SUP,"To support MATHYPRE COO assembly on device, we need Kokkos, e.g., --download-kokkos --download-kokkos-kernels");
+   #endif
+  }
+ #endif
+
+  /* Do COO preallocation through cooMat */
+  hmat = (Mat_HYPRE*)mat->data;
+  PetscCall(MatDestroy(&hmat->cooMat));
+  PetscCall(MatCreate(comm,&cooMat));
+  PetscCall(MatSetType(cooMat,matType));
+  PetscCall(MatSetLayouts(cooMat,rmap,cmap));
+  PetscCall(MatSetPreallocationCOO(cooMat,coo_n,coo_i,coo_j));
+
+  /* Copy the sparsity pattern from cooMat to hypre IJMatrix hmat->ij */
+  PetscCall(MatSetOption(mat,MAT_SORTED_FULL,PETSC_TRUE));
+  PetscCall(MatSetOption(mat,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE));
+  PetscCall(MatHYPRE_CreateFromMat(cooMat,hmat)); /* Create hmat->ij and preallocate it */
+  PetscCall(MatHYPRE_IJMatrixCopy(cooMat,hmat->ij)); /* Copy A's (a,i,j) to hmat->ij. To reuse code. Copying 'a' is not really needed */
+
+  mat->preallocated = PETSC_TRUE;
+  PetscCall(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY)); /* Migrate mat to device if it is bound to. Hypre builds its own SpMV context here */
+
+  /* Alias cooMat's data array to IJMatrix's */
+  PetscStackCallStandard(HYPRE_IJMatrixGetObject,hmat->ij,(void**)&parCSR);
+  diag = hypre_ParCSRMatrixDiag(parCSR);
+  offd = hypre_ParCSRMatrixOffd(parCSR);
+
+  hypreMemtype = hypre_CSRMatrixMemoryLocation(diag);
+  A    = (size == 1)? cooMat : ((Mat_MPIAIJ*)cooMat->data)->A;
+  PetscCall(MatSeqAIJGetCSRAndMemType(A,NULL,NULL,&Aa,&petscMemtype));
+  PetscAssert((PetscMemTypeHost(petscMemtype) && hypreMemtype == HYPRE_MEMORY_HOST) ||
+              (PetscMemTypeDevice(petscMemtype) && hypreMemtype == HYPRE_MEMORY_DEVICE),
+              comm,PETSC_ERR_PLIB,"PETSc and hypre's memory types mismatch");
+
+  hmat->diagJ = hypre_CSRMatrixJ(diag);
+  PetscStackCall("hypre_TFree",hypre_TFree(hypre_CSRMatrixData(diag),hypreMemtype));
+  hypre_CSRMatrixData(diag)     = (HYPRE_Complex*)Aa;
+  hypre_CSRMatrixOwnsData(diag) = 0; /* Take ownership of (j,a) away from hypre. As a result, we need to free them on our own */
+
+  /* Copy diagonal pointers of A to device to facilitate MatSeqAIJMoveDiagonalValuesFront_SeqAIJKokkos */
+  if (hypreMemtype == HYPRE_MEMORY_DEVICE) {
+    PetscStackCall("hypre_TAlloc",hmat->diag = hypre_TAlloc(PetscInt,rmap->n,hypreMemtype));
+    PetscCall(MatMarkDiagonal_SeqAIJ(A)); /* We need updated diagonal positions */
+    PetscStackCall("hypre_TMemcpy",hypre_TMemcpy(hmat->diag,((Mat_SeqAIJ*)A->data)->diag,PetscInt,rmap->n,hypreMemtype,HYPRE_MEMORY_HOST));
+  }
+
+  if (size > 1) {
+    B    = ((Mat_MPIAIJ*)cooMat->data)->B;
+    PetscCall(MatSeqAIJGetCSRAndMemType(B,NULL,NULL,&Ba,&petscMemtype));
+    hmat->offdJ = hypre_CSRMatrixJ(offd);
+    PetscStackCall("hypre_TFree",hypre_TFree(hypre_CSRMatrixData(offd),hypreMemtype));
+    hypre_CSRMatrixData(offd)     = (HYPRE_Complex*)Ba;
+    hypre_CSRMatrixOwnsData(offd) = 0;
+  }
+
+  /* Record cooMat for use in MatSetValuesCOO_HYPRE */
+  hmat->cooMat  = cooMat;
+  hmat->memType = hypreMemtype;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatSetValuesCOO_HYPRE(Mat mat, const PetscScalar v[], InsertMode imode)
+{
+  Mat_HYPRE      *hmat = (Mat_HYPRE*)mat->data;
+  PetscMPIInt    size;
+  Mat            A;
+
+  PetscFunctionBegin;
+  PetscCheck(hmat->cooMat,hmat->comm,PETSC_ERR_PLIB,"HYPRE COO delegate matrix has not been created yet");
+  PetscCallMPI(MPI_Comm_size(hmat->comm,&size));
+  PetscCall(MatSetValuesCOO(hmat->cooMat,v,imode));
+
+  /* Move diagonal elements of the diagonal block to the front of their row, as needed by ParCSRMatrix. So damn hacky */
+  A = (size == 1) ? hmat->cooMat : ((Mat_MPIAIJ*)hmat->cooMat->data)->A;
+  if (hmat->memType == HYPRE_MEMORY_HOST) {
+    Mat_SeqAIJ   *aij = (Mat_SeqAIJ*)A->data;
+    PetscInt     i,m,*Ai = aij->i,*Adiag = aij->diag;
+    PetscScalar  *Aa = aij->a,tmp;
+
+    PetscCall(MatGetSize(A,&m,NULL));
+    for (i=0; i<m; i++) {
+      if (Adiag[i] >= Ai[i] && Adiag[i] < Ai[i+1]) { /* Digonal element of this row exists in a[] and j[] */
+        tmp          = Aa[Ai[i]];
+        Aa[Ai[i]]    = Aa[Adiag[i]];
+        Aa[Adiag[i]] = tmp;
+      }
+    }
+  } else {
+   #if defined(PETSC_HAVE_KOKKOS_KERNELS)
+    PetscCall(MatSeqAIJMoveDiagonalValuesFront_SeqAIJKokkos(A,hmat->diag));
+   #endif
+  }
+  PetscFunctionReturn(0);
+}
+
 /*MC
    MATHYPRE - MATHYPRE = "hypre" - A matrix type to be used for sequential and parallel sparse matrices
           based on the hypre IJ interface.
@@ -2240,6 +2379,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
   PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatProductSetFromOptions_mpiaij_hypre_C",MatProductSetFromOptions_HYPRE));
   PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatHYPRESetPreallocation_C",MatHYPRESetPreallocation_HYPRE));
   PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatHYPREGetParCSR_C",MatHYPREGetParCSR_HYPRE));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatSetPreallocationCOO_C",MatSetPreallocationCOO_HYPRE));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatSetValuesCOO_C",MatSetValuesCOO_HYPRE));
 #if defined(PETSC_HAVE_HYPRE_DEVICE)
 #if defined(HYPRE_USING_HIP)
   PetscCall(PetscDeviceInitialize(PETSC_DEVICE_HIP));

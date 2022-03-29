@@ -1606,6 +1606,10 @@ static inline PetscErrorCode PetscLLCondensedDestroy_fast(PetscInt *lnk)
 /* this is extern because it is used in MatFDColoringUseDM() which is in the DM library */
 PETSC_EXTERN PetscErrorCode MatFDColoringApply_AIJ(Mat,MatFDColoring,Vec,void*);
 
+#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+PETSC_INTERN PetscErrorCode MatSeqAIJMoveDiagonalValuesFront_SeqAIJKokkos(Mat,const PetscInt*);
+#endif
+
 PETSC_EXTERN PetscLogEvent MAT_Mult;
 PETSC_EXTERN PetscLogEvent MAT_MultMatrixFree;
 PETSC_EXTERN PetscLogEvent MAT_Mults;

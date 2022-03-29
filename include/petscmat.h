@@ -2135,4 +2135,5 @@ PETSC_EXTERN PetscErrorCode MatPreallocatorPreallocate(Mat,PetscBool,Mat);
 PETSC_INTERN PetscErrorCode MatHeaderMerge(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat,Mat*);
 
+PETSC_EXTERN PetscErrorCode MatSeqAIJGetCSRAndMemType(Mat,const PetscInt**,const PetscInt**,PetscScalar**,PetscMemType*);
 #endif
