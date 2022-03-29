@@ -112,7 +112,7 @@ cd $PETSC_DIR/doc
 python3 -m pip install -r requirements.txt
 make html BUILDDIR="../docs" SPHINXOPTS="-T -E"
 mv ../docs/html/* ../docs/html/.[!.]* ../docs
-make latexpdf && cp _build/latex/manual.pdf ../docs/html/docs/manual/
+make latexpdf && cp _build/latex/manual.pdf ../docs/docs/manual/
 rm -rf ../docs/doctrees
 make clean
 rm -rf images
