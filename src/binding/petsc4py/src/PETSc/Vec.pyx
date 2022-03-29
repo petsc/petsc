@@ -1289,6 +1289,16 @@ cdef class Vec(Object):
 
     #
 
+    def setDM(self, DM dm):
+        CHKERR( VecSetDM(self.vec, dm.dm) )
+
+    def getDM(self):
+        cdef DM dm = DM()
+        CHKERR( VecGetDM(self.vec, &dm.dm) )
+        return dm
+
+    #
+
     property sizes:
         def __get__(self):
             return self.getSizes()
