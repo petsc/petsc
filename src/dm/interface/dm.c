@@ -6177,7 +6177,7 @@ PetscErrorCode DMSetCoordinates(DM dm, Vec c)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidHeaderSpecific(c,VEC_CLASSID,2);
+  if (c) PetscValidHeaderSpecific(c,VEC_CLASSID,2);
   PetscCall(PetscObjectReference((PetscObject) c));
   PetscCall(VecDestroy(&dm->coordinates));
   dm->coordinates = c;
@@ -6668,21 +6668,23 @@ PetscErrorCode DMProjectCoordinates(DM dm, PetscFE disc)
     if (classid == PETSC_CONTAINER_CLASSID) {
       PetscFE        feLinear;
       DMPolytopeType ct;
-      PetscInt       dim, dE, cStart;
+      PetscInt       dim, dE, cStart, cEnd;
       PetscBool      simplex;
 
       /* Assume linear vertex coordinates */
       PetscCall(DMGetDimension(dm, &dim));
       PetscCall(DMGetCoordinateDim(dm, &dE));
-      PetscCall(DMPlexGetHeightStratum(cdmOld, 0, &cStart, NULL));
-      PetscCall(DMPlexGetCellType(dm, cStart, &ct));
-      switch (ct) {
-        case DM_POLYTOPE_TRI_PRISM:
-        case DM_POLYTOPE_TRI_PRISM_TENSOR:
-          SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot autoamtically create coordinate space for prisms");
-        default: break;
+      PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+      if (cEnd > cStart) {
+        PetscCall(DMPlexGetCellType(dm, cStart, &ct));
+        switch (ct) {
+          case DM_POLYTOPE_TRI_PRISM:
+          case DM_POLYTOPE_TRI_PRISM_TENSOR:
+            SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot autoamtically create coordinate space for prisms");
+          default: break;
+        }
       }
-      simplex = DMPolytopeTypeGetNumVertices(ct) == DMPolytopeTypeGetDim(ct)+1 ? PETSC_TRUE : PETSC_FALSE;
+      PetscCall(DMPlexIsSimplex(dm, &simplex));
       PetscCall(PetscFECreateLagrange(PETSC_COMM_SELF, dim, dE, simplex, 1, -1, &feLinear));
       PetscCall(DMSetField(cdmOld, 0, NULL, (PetscObject) feLinear));
       PetscCall(PetscFEDestroy(&feLinear));

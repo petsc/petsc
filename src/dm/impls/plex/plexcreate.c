@@ -183,16 +183,14 @@ PetscErrorCode DMPlexCreateCoordinateSpace(DM dm, PetscInt degree, PetscPointFun
 
     PetscCall(DMGetDimension(dm, &dim));
     PetscCall(DMGetCoordinateDim(dm, &dE));
-    PetscCall(DMPlexIsSimplex(dm, &simplex));
     qorder = degree;
     ierr = PetscObjectOptionsBegin((PetscObject) cdm);PetscCall(ierr);
     PetscCall(PetscOptionsBoundedInt("-coord_dm_default_quadrature_order", "Quadrature order is one less than quadrature points per edge", "DMPlexCreateCoordinateSpace", qorder, &qorder, NULL, 0));
     ierr = PetscOptionsEnd();PetscCall(ierr);
     if (degree == PETSC_DECIDE) fe = NULL;
     else {
+      PetscCall(DMPlexIsSimplex(dm, &simplex));
       PetscCall(PetscFECreateLagrange(PETSC_COMM_SELF, dim, dE, simplex, degree, qorder, &fe));
-      PetscCall(DMSetField(cdm, 0, NULL, (PetscObject) fe));
-      PetscCall(DMCreateDS(cdm));
     }
     PetscCall(DMProjectCoordinates(dm, fe));
     PetscCall(PetscFEDestroy(&fe));
@@ -3165,7 +3163,7 @@ static PetscErrorCode DMPlexCreateBoundaryLabel_Private(DM dm, const char name[]
   PetscFunctionReturn(0);
 }
 
-const char * const DMPlexShapes[] = {"box", "box_surface", "ball", "sphere", "cylinder", "schwarz_p", "gyroid", "unknown", "DMPlexShape", "DM_SHAPE_", NULL};
+const char * const DMPlexShapes[] = {"box", "box_surface", "ball", "sphere", "cylinder", "schwarz_p", "gyroid", "doublet", "unknown", "DMPlexShape", "DM_SHAPE_", NULL};
 
 static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOptionsObject, PetscBool *useCoordSpace, DM dm)
 {
@@ -3333,6 +3331,17 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
         PetscCall(DMPlexDistributeGetDefault(dm, &tps_distribute));
         PetscCall(PetscOptionsBool("-dm_plex_tps_distribute", "Distribute the 2D mesh prior to refinement and extrusion", NULL, tps_distribute, &tps_distribute, NULL));
         PetscCall(DMPlexCreateTPSMesh_Internal(dm, tps_type, extent, periodic, tps_distribute, refine, layers, thickness));
+      }
+      break;
+      case DM_SHAPE_DOUBLET:
+      {
+        DM        dmnew;
+        PetscReal rl = 0.0;
+
+        PetscCall(PetscOptionsReal("-dm_plex_doublet_refinementlimit", "Refinement limit", NULL, rl, &rl, NULL));
+        PetscCall(DMPlexCreateDoublet(PetscObjectComm((PetscObject)dm), dim, simplex, interpolate, rl, &dmnew));
+        PetscCall(DMPlexCopy_Internal(dm, PETSC_FALSE, dmnew));
+        PetscCall(DMPlexReplace_Static(dm, &dmnew));
       }
       break;
       default: SETERRQ(comm, PETSC_ERR_SUP, "Domain shape %s is unsupported", DMPlexShapes[shape]);
