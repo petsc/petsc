@@ -143,6 +143,7 @@ class BaseTestPlex(object):
         p = 1.0
         beta = 1.3
         hausd = 0.01
+        self.plex.metricSetUniform(False)
         self.plex.metricSetIsotropic(False)
         self.plex.metricSetRestrictAnisotropyFirst(False)
         self.plex.metricSetNoInsertion(False)
@@ -159,6 +160,7 @@ class BaseTestPlex(object):
         self.plex.metricSetGradationFactor(beta)
         self.plex.metricSetHausdorffNumber(hausd)
 
+        self.assertFalse(self.plex.metricIsUniform())
         self.assertFalse(self.plex.metricIsIsotropic())
         self.assertFalse(self.plex.metricRestrictAnisotropyFirst())
         self.assertFalse(self.plex.metricNoInsertion())

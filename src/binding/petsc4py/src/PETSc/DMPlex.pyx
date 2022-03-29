@@ -693,6 +693,14 @@ cdef class DMPlex(DM):
     def metricSetFromOptions(self):
         CHKERR( DMPlexMetricSetFromOptions(self.dm) )
 
+    def metricSetUniform(self, PetscBool uniform):
+        CHKERR( DMPlexMetricSetUniform(self.dm, uniform) )
+
+    def metricIsUniform(self):
+        cdef PetscBool uniform = PETSC_FALSE
+        CHKERR( DMPlexMetricIsUniform(self.dm, &uniform) )
+        return toBool(uniform)
+
     def metricSetIsotropic(self, PetscBool isotropic):
         CHKERR( DMPlexMetricSetIsotropic(self.dm, isotropic) )
 
