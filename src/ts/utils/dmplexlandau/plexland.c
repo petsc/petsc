@@ -2766,7 +2766,7 @@ PetscErrorCode DMPlexLandauIFunction(TS ts, PetscReal time_dummy, Vec X, Vec X_t
 #endif
   PetscCall(DMGetDimension(pack, &dim));
   if (!ctx->aux_bool) {
-    PetscCall(PetscInfo(ts, "Create Landau Jacobian t=%g X=%p %s\n",time_dummy,X_t,ctx->aux_bool ? " -- seems to be in line search" : ""));
+    PetscCall(PetscInfo(ts, "Create Landau Jacobian t=%g %s\n",time_dummy,ctx->aux_bool ? " -- seems to be in line search" : ""));
     PetscCall(LandauFormJacobian_Internal(X,ctx->J,dim,0.0,(void*)ctx));
     PetscCall(MatViewFromOptions(ctx->J, NULL, "-dm_landau_jacobian_view"));
     ctx->aux_bool = PETSC_TRUE;
