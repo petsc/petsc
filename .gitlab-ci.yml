@@ -480,7 +480,7 @@ linux-sycl-double:
     - gce-nfs, linux-fast
   variables:
     TEST_ARCH: arch-ci-linux-sycl-double
-    LOAD_MODULES: compiler/latest mpi/latest
+    LOAD_MODULES: compiler/latest mpi/latest cmake/3.20.5-yjp2hz6
     TEST_OPTS: query=requires queryval=kokkos_kernels
 
 linux-c-exodus-dbg:
