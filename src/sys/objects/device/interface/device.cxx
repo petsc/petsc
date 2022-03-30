@@ -435,6 +435,11 @@ PetscErrorCode PetscDeviceInitializeFromOptions_Internal(MPI_Comm comm)
   PetscCall(PetscRegisterFinalize(PetscDeviceFinalize_Private));
   PetscCall(PetscOptionsHasName(PETSC_NULLPTR,PETSC_NULLPTR,"-log_view",&flg));
   if (!flg) PetscCall(PetscOptionsHasName(PETSC_NULLPTR,PETSC_NULLPTR,"-log_summary",&flg));
+#if defined(PETSC_HAVE_DEVICE)
+  PetscBool gtime;
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-log_view_gpu_time",&gtime));
+  if (gtime) PetscCall(PetscLogGpuTime());
+#endif
   {
     PetscInt initIdx = flg ? PETSC_DEVICE_INIT_EAGER : PETSC_DEVICE_INIT_LAZY;
 

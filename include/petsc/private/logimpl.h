@@ -131,5 +131,10 @@ PETSC_EXTERN PetscErrorCode PetscEventRegLogGetEvent(PetscEventRegLog, const cha
 PETSC_INTERN PetscErrorCode PetscLogView_Nested(PetscViewer);
 PETSC_INTERN PetscErrorCode PetscLogNestedEnd(void);
 PETSC_INTERN PetscErrorCode PetscLogView_Flamegraph(PetscViewer);
+
+#if defined(PETSC_HAVE_DEVICE)
+PETSC_EXTERN PetscBool PetscLogGpuTimeFlag;
+#endif
+
 #endif /* PETSC_USE_LOG */
 #endif /* PETSC_LOGIMPL_H */
