@@ -242,7 +242,7 @@ PetscErrorCode  PCEisenstatSetOmega(PC pc,PetscReal omega)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveReal(pc,omega,2);
-  PetscCall(PetscTryMethod(pc,"PCEisenstatSetOmega_C",(PC,PetscReal),(pc,omega)));
+  PetscTryMethod(pc,"PCEisenstatSetOmega_C",(PC,PetscReal),(pc,omega));
   PetscFunctionReturn(0);
 }
 
@@ -272,7 +272,7 @@ PetscErrorCode  PCEisenstatSetNoDiagonalScaling(PC pc,PetscBool flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscTryMethod(pc,"PCEisenstatSetNoDiagonalScaling_C",(PC,PetscBool),(pc,flg)));
+  PetscTryMethod(pc,"PCEisenstatSetNoDiagonalScaling_C",(PC,PetscBool),(pc,flg));
   PetscFunctionReturn(0);
 }
 
@@ -309,7 +309,7 @@ PetscErrorCode  PCEisenstatGetOmega(PC pc,PetscReal *omega)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscUseMethod(pc,"PCEisenstatGetOmega_C",(PC,PetscReal*),(pc,omega)));
+  PetscUseMethod(pc,"PCEisenstatGetOmega_C",(PC,PetscReal*),(pc,omega));
   PetscFunctionReturn(0);
 }
 
@@ -341,7 +341,7 @@ PetscErrorCode  PCEisenstatGetNoDiagonalScaling(PC pc,PetscBool *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscUseMethod(pc,"PCEisenstatGetNoDiagonalScaling_C",(PC,PetscBool*),(pc,flg)));
+  PetscUseMethod(pc,"PCEisenstatGetNoDiagonalScaling_C",(PC,PetscBool*),(pc,flg));
   PetscFunctionReturn(0);
 }
 

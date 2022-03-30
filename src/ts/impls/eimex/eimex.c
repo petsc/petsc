@@ -417,7 +417,7 @@ PetscErrorCode TSEIMEXSetMaxRows(TS ts, PetscInt nrows)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscCall(PetscTryMethod(ts,"TSEIMEXSetMaxRows_C",(TS,PetscInt),(ts,nrows)));
+  PetscTryMethod(ts,"TSEIMEXSetMaxRows_C",(TS,PetscInt),(ts,nrows));
   PetscFunctionReturn(0);
 }
 
@@ -438,7 +438,7 @@ PetscErrorCode TSEIMEXSetRowCol(TS ts, PetscInt row, PetscInt col)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscCall(PetscTryMethod(ts,"TSEIMEXSetRowCol_C",(TS,PetscInt, PetscInt),(ts,row,col)));
+  PetscTryMethod(ts,"TSEIMEXSetRowCol_C",(TS,PetscInt, PetscInt),(ts,row,col));
   PetscFunctionReturn(0);
 }
 
@@ -459,7 +459,7 @@ PetscErrorCode TSEIMEXSetOrdAdapt(TS ts, PetscBool flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscCall(PetscTryMethod(ts,"TSEIMEXSetOrdAdapt_C",(TS,PetscBool),(ts,flg)));
+  PetscTryMethod(ts,"TSEIMEXSetOrdAdapt_C",(TS,PetscBool),(ts,flg));
   PetscFunctionReturn(0);
 }
 

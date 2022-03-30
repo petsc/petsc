@@ -766,7 +766,7 @@ PetscErrorCode SNESMultiblockSetFields(SNES snes, const char name[], PetscInt n,
   PetscValidCharPointer(name, 2);
   PetscCheckFalse(n < 1,PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_OUTOFRANGE, "Provided number of fields %D in split \"%s\" not positive", n, name);
   PetscValidIntPointer(fields, 4);
-  PetscCall(PetscTryMethod(snes, "SNESMultiblockSetFields_C", (SNES, const char[], PetscInt, const PetscInt*), (snes, name, n, fields)));
+  PetscTryMethod(snes, "SNESMultiblockSetFields_C", (SNES, const char[], PetscInt, const PetscInt*), (snes, name, n, fields));
   PetscFunctionReturn(0);
 }
 
@@ -796,7 +796,7 @@ PetscErrorCode SNESMultiblockSetIS(SNES snes, const char name[], IS is)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidCharPointer(name, 2);
   PetscValidHeaderSpecific(is, IS_CLASSID, 3);
-  PetscCall(PetscTryMethod(snes, "SNESMultiblockSetIS_C", (SNES, const char[], IS), (snes, name, is)));
+  PetscTryMethod(snes, "SNESMultiblockSetIS_C", (SNES, const char[], IS), (snes, name, is));
   PetscFunctionReturn(0);
 }
 
@@ -820,7 +820,7 @@ PetscErrorCode SNESMultiblockSetType(SNES snes, PCCompositeType type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscCall(PetscTryMethod(snes, "SNESMultiblockSetType_C", (SNES, PCCompositeType), (snes, type)));
+  PetscTryMethod(snes, "SNESMultiblockSetType_C", (SNES, PCCompositeType), (snes, type));
   PetscFunctionReturn(0);
 }
 
@@ -842,7 +842,7 @@ PetscErrorCode SNESMultiblockSetBlockSize(SNES snes, PetscInt bs)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidLogicalCollectiveInt(snes, bs, 2);
-  PetscCall(PetscTryMethod(snes, "SNESMultiblockSetBlockSize_C", (SNES, PetscInt), (snes,bs)));
+  PetscTryMethod(snes, "SNESMultiblockSetBlockSize_C", (SNES, PetscInt), (snes,bs));
   PetscFunctionReturn(0);
 }
 
@@ -873,7 +873,7 @@ PetscErrorCode SNESMultiblockGetSubSNES(SNES snes, PetscInt *n, SNES *subsnes[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   if (n) PetscValidIntPointer(n, 2);
-  PetscCall(PetscUseMethod(snes, "SNESMultiblockGetSubSNES_C", (SNES, PetscInt*, SNES **), (snes, n, subsnes)));
+  PetscUseMethod(snes, "SNESMultiblockGetSubSNES_C", (SNES, PetscInt*, SNES **), (snes, n, subsnes));
   PetscFunctionReturn(0);
 }
 

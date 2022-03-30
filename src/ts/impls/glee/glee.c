@@ -940,7 +940,7 @@ PetscErrorCode TSGLEESetType(TS ts,TSGLEEType gleetype)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidCharPointer(gleetype,2);
-  PetscCall(PetscTryMethod(ts,"TSGLEESetType_C",(TS,TSGLEEType),(ts,gleetype)));
+  PetscTryMethod(ts,"TSGLEESetType_C",(TS,TSGLEEType),(ts,gleetype));
   PetscFunctionReturn(0);
 }
 
@@ -963,7 +963,7 @@ PetscErrorCode TSGLEEGetType(TS ts,TSGLEEType *gleetype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscCall(PetscUseMethod(ts,"TSGLEEGetType_C",(TS,TSGLEEType*),(ts,gleetype)));
+  PetscUseMethod(ts,"TSGLEEGetType_C",(TS,TSGLEEType*),(ts,gleetype));
   PetscFunctionReturn(0);
 }
 

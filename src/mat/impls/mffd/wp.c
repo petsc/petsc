@@ -183,7 +183,7 @@ PetscErrorCode  MatMFFDWPSetComputeNormU(Mat A,PetscBool flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  PetscCall(PetscTryMethod(A,"MatMFFDWPSetComputeNormU_C",(Mat,PetscBool),(A,flag)));
+  PetscTryMethod(A,"MatMFFDWPSetComputeNormU_C",(Mat,PetscBool),(A,flag));
   PetscFunctionReturn(0);
 }
 

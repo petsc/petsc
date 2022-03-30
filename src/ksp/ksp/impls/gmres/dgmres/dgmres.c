@@ -15,50 +15,50 @@ static PetscErrorCode    KSPDGMRESBuildSoln(PetscScalar*,Vec,Vec,KSP,PetscInt);
 PetscErrorCode  KSPDGMRESSetEigen(KSP ksp,PetscInt nb_eig)
 {
   PetscFunctionBegin;
-  PetscCall(PetscTryMethod((ksp),"KSPDGMRESSetEigen_C",(KSP,PetscInt),(ksp,nb_eig)));
+  PetscTryMethod((ksp),"KSPDGMRESSetEigen_C",(KSP,PetscInt),(ksp,nb_eig));
   PetscFunctionReturn(0);
 }
 PetscErrorCode  KSPDGMRESSetMaxEigen(KSP ksp,PetscInt max_neig)
 {
   PetscFunctionBegin;
-  PetscCall(PetscTryMethod((ksp),"KSPDGMRESSetMaxEigen_C",(KSP,PetscInt),(ksp,max_neig)));
+  PetscTryMethod((ksp),"KSPDGMRESSetMaxEigen_C",(KSP,PetscInt),(ksp,max_neig));
   PetscFunctionReturn(0);
 }
 PetscErrorCode  KSPDGMRESForce(KSP ksp,PetscBool force)
 {
   PetscFunctionBegin;
-  PetscCall(PetscTryMethod((ksp),"KSPDGMRESForce_C",(KSP,PetscBool),(ksp,force)));
+  PetscTryMethod((ksp),"KSPDGMRESForce_C",(KSP,PetscBool),(ksp,force));
   PetscFunctionReturn(0);
 }
 PetscErrorCode  KSPDGMRESSetRatio(KSP ksp,PetscReal ratio)
 {
   PetscFunctionBegin;
-  PetscCall(PetscTryMethod((ksp),"KSPDGMRESSetRatio_C",(KSP,PetscReal),(ksp,ratio)));
+  PetscTryMethod((ksp),"KSPDGMRESSetRatio_C",(KSP,PetscReal),(ksp,ratio));
   PetscFunctionReturn(0);
 }
 PetscErrorCode  KSPDGMRESComputeSchurForm(KSP ksp,PetscInt *neig)
 {
   PetscFunctionBegin;
-  PetscCall(PetscUseMethod((ksp),"KSPDGMRESComputeSchurForm_C",(KSP, PetscInt*),(ksp, neig)));
+  PetscUseMethod((ksp),"KSPDGMRESComputeSchurForm_C",(KSP, PetscInt*),(ksp, neig));
   PetscFunctionReturn(0);
 }
 PetscErrorCode  KSPDGMRESComputeDeflationData(KSP ksp,PetscInt *curneigh)
 {
   PetscFunctionBegin;
-  PetscCall(PetscUseMethod((ksp),"KSPDGMRESComputeDeflationData_C",(KSP,PetscInt*),(ksp,curneigh)));
+  PetscUseMethod((ksp),"KSPDGMRESComputeDeflationData_C",(KSP,PetscInt*),(ksp,curneigh));
   PetscFunctionReturn(0);
 }
 PetscErrorCode  KSPDGMRESApplyDeflation(KSP ksp, Vec x, Vec y)
 {
   PetscFunctionBegin;
-  PetscCall(PetscUseMethod((ksp),"KSPDGMRESApplyDeflation_C",(KSP, Vec, Vec),(ksp, x, y)));
+  PetscUseMethod((ksp),"KSPDGMRESApplyDeflation_C",(KSP, Vec, Vec),(ksp, x, y));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode  KSPDGMRESImproveEig(KSP ksp, PetscInt neig)
 {
   PetscFunctionBegin;
-  PetscCall(PetscUseMethod((ksp), "KSPDGMRESImproveEig_C",(KSP, PetscInt),(ksp, neig)));
+  PetscUseMethod((ksp), "KSPDGMRESImproveEig_C",(KSP, PetscInt),(ksp, neig));
   PetscFunctionReturn(0);
 }
 

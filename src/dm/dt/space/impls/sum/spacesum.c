@@ -17,7 +17,7 @@ PetscErrorCode PetscSpaceSumGetNumSubspaces(PetscSpace sp,PetscInt *numSumSpaces
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp,PETSCSPACE_CLASSID,1);
   PetscValidIntPointer(numSumSpaces,2);
-  PetscCall(PetscTryMethod(sp,"PetscSpaceSumGetNumSubspaces_C",(PetscSpace,PetscInt*),(sp,numSumSpaces)));
+  PetscTryMethod(sp,"PetscSpaceSumGetNumSubspaces_C",(PetscSpace,PetscInt*),(sp,numSumSpaces));
   PetscFunctionReturn(0);
 }
 
@@ -36,7 +36,7 @@ PetscErrorCode PetscSpaceSumSetNumSubspaces(PetscSpace sp,PetscInt numSumSpaces)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp,PETSCSPACE_CLASSID,1);
-  PetscCall(PetscTryMethod(sp,"PetscSpaceSumSetNumSubspaces_C",(PetscSpace,PetscInt),(sp,numSumSpaces)));
+  PetscTryMethod(sp,"PetscSpaceSumSetNumSubspaces_C",(PetscSpace,PetscInt),(sp,numSumSpaces));
   PetscFunctionReturn(0);
 }
 
@@ -59,7 +59,7 @@ PetscErrorCode PetscSpaceSumGetConcatenate(PetscSpace sp,PetscBool *concatenate)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp,PETSCSPACE_CLASSID,1);
-  PetscCall(PetscTryMethod(sp,"PetscSpaceSumGetConcatenate_C",(PetscSpace,PetscBool*),(sp,concatenate)));
+  PetscTryMethod(sp,"PetscSpaceSumGetConcatenate_C",(PetscSpace,PetscBool*),(sp,concatenate));
   PetscFunctionReturn(0);
 }
 
@@ -79,7 +79,7 @@ PetscErrorCode PetscSpaceSumSetConcatenate(PetscSpace sp,PetscBool concatenate)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp,PETSCSPACE_CLASSID,1);
-  PetscCall(PetscTryMethod(sp,"PetscSpaceSumSetConcatenate_C",(PetscSpace,PetscBool),(sp,concatenate)));
+  PetscTryMethod(sp,"PetscSpaceSumSetConcatenate_C",(PetscSpace,PetscBool),(sp,concatenate));
   PetscFunctionReturn(0);
 }
 
@@ -102,7 +102,7 @@ PetscErrorCode PetscSpaceSumGetSubspace(PetscSpace sp,PetscInt s,PetscSpace *sub
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp,PETSCSPACE_CLASSID,1);
   PetscValidPointer(subsp,3);
-  PetscCall(PetscTryMethod(sp,"PetscSpaceSumGetSubspace_C",(PetscSpace,PetscInt,PetscSpace*),(sp,s,subsp)));
+  PetscTryMethod(sp,"PetscSpaceSumGetSubspace_C",(PetscSpace,PetscInt,PetscSpace*),(sp,s,subsp));
   PetscFunctionReturn(0);
 }
 
@@ -123,7 +123,7 @@ PetscErrorCode PetscSpaceSumSetSubspace(PetscSpace sp,PetscInt s,PetscSpace subs
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp,PETSCSPACE_CLASSID,1);
   if (subsp) PetscValidHeaderSpecific(subsp,PETSCSPACE_CLASSID,3);
-  PetscCall(PetscTryMethod(sp,"PetscSpaceSumSetSubspace_C",(PetscSpace,PetscInt,PetscSpace),(sp,s,subsp)));
+  PetscTryMethod(sp,"PetscSpaceSumSetSubspace_C",(PetscSpace,PetscInt,PetscSpace),(sp,s,subsp));
   PetscFunctionReturn(0);
 }
 

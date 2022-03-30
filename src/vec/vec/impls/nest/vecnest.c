@@ -791,7 +791,7 @@ PetscErrorCode  VecNestGetSubVec_Nest(Vec X,PetscInt idxm,Vec *sx)
 PetscErrorCode  VecNestGetSubVec(Vec X,PetscInt idxm,Vec *sx)
 {
   PetscFunctionBegin;
-  PetscCall(PetscUseMethod(X,"VecNestGetSubVec_C",(Vec,PetscInt,Vec*),(X,idxm,sx)));
+  PetscUseMethod(X,"VecNestGetSubVec_C",(Vec,PetscInt,Vec*),(X,idxm,sx));
   PetscFunctionReturn(0);
 }
 
@@ -830,7 +830,7 @@ PetscErrorCode  VecNestGetSubVecs_Nest(Vec X,PetscInt *N,Vec **sx)
 PetscErrorCode  VecNestGetSubVecs(Vec X,PetscInt *N,Vec **sx)
 {
   PetscFunctionBegin;
-  PetscCall(PetscUseMethod(X,"VecNestGetSubVecs_C",(Vec,PetscInt*,Vec**),(X,N,sx)));
+  PetscUseMethod(X,"VecNestGetSubVecs_C",(Vec,PetscInt*,Vec**),(X,N,sx));
   PetscFunctionReturn(0);
 }
 
@@ -929,7 +929,7 @@ PetscErrorCode  VecNestSetSubVec_Nest(Vec X,PetscInt idxm,Vec sx)
 PetscErrorCode  VecNestSetSubVec(Vec X,PetscInt idxm,Vec sx)
 {
   PetscFunctionBegin;
-  PetscCall(PetscUseMethod(X,"VecNestSetSubVec_C",(Vec,PetscInt,Vec),(X,idxm,sx)));
+  PetscUseMethod(X,"VecNestSetSubVec_C",(Vec,PetscInt,Vec),(X,idxm,sx));
   PetscFunctionReturn(0);
 }
 
@@ -966,7 +966,7 @@ PetscErrorCode  VecNestSetSubVecs_Nest(Vec X,PetscInt N,PetscInt *idxm,Vec *sx)
 PetscErrorCode  VecNestSetSubVecs(Vec X,PetscInt N,PetscInt *idxm,Vec *sx)
 {
   PetscFunctionBegin;
-  PetscCall(PetscUseMethod(X,"VecNestSetSubVecs_C",(Vec,PetscInt,PetscInt*,Vec*),(X,N,idxm,sx)));
+  PetscUseMethod(X,"VecNestSetSubVecs_C",(Vec,PetscInt,PetscInt*,Vec*),(X,N,idxm,sx));
   PetscFunctionReturn(0);
 }
 
@@ -1001,7 +1001,7 @@ PetscErrorCode  VecNestGetSize(Vec X,PetscInt *N)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(X,VEC_CLASSID,1);
   PetscValidIntPointer(N,2);
-  PetscCall(PetscUseMethod(X,"VecNestGetSize_C",(Vec,PetscInt*),(X,N)));
+  PetscUseMethod(X,"VecNestGetSize_C",(Vec,PetscInt*),(X,N));
   PetscFunctionReturn(0);
 }
 

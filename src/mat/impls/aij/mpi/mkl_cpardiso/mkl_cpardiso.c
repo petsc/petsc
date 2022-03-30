@@ -844,7 +844,7 @@ PetscErrorCode MatMkl_CPardisoSetCntl_MKL_CPARDISO(Mat F,PetscInt icntl,PetscInt
 PetscErrorCode MatMkl_CPardisoSetCntl(Mat F,PetscInt icntl,PetscInt ival)
 {
   PetscFunctionBegin;
-  PetscCall(PetscTryMethod(F,"MatMkl_CPardisoSetCntl_C",(Mat,PetscInt,PetscInt),(F,icntl,ival)));
+  PetscTryMethod(F,"MatMkl_CPardisoSetCntl_C",(Mat,PetscInt,PetscInt),(F,icntl,ival));
   PetscFunctionReturn(0);
 }
 

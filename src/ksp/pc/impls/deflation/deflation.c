@@ -47,7 +47,7 @@ PetscErrorCode PCDeflationSetInitOnly(PC pc,PetscBool flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveBool(pc,flg,2);
-  PetscCall(PetscTryMethod(pc,"PCDeflationSetInitOnly_C",(PC,PetscBool),(pc,flg)));
+  PetscTryMethod(pc,"PCDeflationSetInitOnly_C",(PC,PetscBool),(pc,flg));
   PetscFunctionReturn(0);
 }
 
@@ -82,7 +82,7 @@ PetscErrorCode PCDeflationSetLevels(PC pc,PetscInt max)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveInt(pc,max,2);
-  PetscCall(PetscTryMethod(pc,"PCDeflationSetLevels_C",(PC,PetscInt,PetscInt),(pc,0,max)));
+  PetscTryMethod(pc,"PCDeflationSetLevels_C",(PC,PetscInt,PetscInt),(pc,0,max));
   PetscFunctionReturn(0);
 }
 
@@ -119,7 +119,7 @@ PetscErrorCode PCDeflationSetReductionFactor(PC pc,PetscInt red)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveInt(pc,red,2);
-  PetscCall(PetscTryMethod(pc,"PCDeflationSetReductionFactor_C",(PC,PetscInt),(pc,red)));
+  PetscTryMethod(pc,"PCDeflationSetReductionFactor_C",(PC,PetscInt),(pc,red));
   PetscFunctionReturn(0);
 }
 
@@ -163,7 +163,7 @@ PetscErrorCode PCDeflationSetCorrectionFactor(PC pc,PetscScalar fact)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveScalar(pc,fact,2);
-  PetscCall(PetscTryMethod(pc,"PCDeflationSetCorrectionFactor_C",(PC,PetscScalar),(pc,fact)));
+  PetscTryMethod(pc,"PCDeflationSetCorrectionFactor_C",(PC,PetscScalar),(pc,fact));
   PetscFunctionReturn(0);
 }
 
@@ -206,7 +206,7 @@ PetscErrorCode PCDeflationSetSpaceToCompute(PC pc,PCDeflationSpaceType type,Pets
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (type) PetscValidLogicalCollectiveEnum(pc,type,2);
   if (size > 0) PetscValidLogicalCollectiveInt(pc,size,3);
-  PetscCall(PetscTryMethod(pc,"PCDeflationSetSpaceToCompute_C",(PC,PCDeflationSpaceType,PetscInt),(pc,type,size)));
+  PetscTryMethod(pc,"PCDeflationSetSpaceToCompute_C",(PC,PCDeflationSpaceType,PetscInt),(pc,type,size));
   PetscFunctionReturn(0);
 }
 
@@ -256,7 +256,7 @@ PetscErrorCode PCDeflationSetSpace(PC pc,Mat W,PetscBool transpose)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(W,MAT_CLASSID,2);
   PetscValidLogicalCollectiveBool(pc,transpose,3);
-  PetscCall(PetscTryMethod(pc,"PCDeflationSetSpace_C",(PC,Mat,PetscBool),(pc,W,transpose)));
+  PetscTryMethod(pc,"PCDeflationSetSpace_C",(PC,Mat,PetscBool),(pc,W,transpose));
   PetscFunctionReturn(0);
 }
 
@@ -290,7 +290,7 @@ PetscErrorCode  PCDeflationSetProjectionNullSpaceMat(PC pc,Mat mat)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(mat,MAT_CLASSID,2);
-  PetscCall(PetscTryMethod(pc,"PCDeflationSetProjectionNullSpaceMat_C",(PC,Mat),(pc,mat)));
+  PetscTryMethod(pc,"PCDeflationSetProjectionNullSpaceMat_C",(PC,Mat),(pc,mat));
   PetscFunctionReturn(0);
 }
 
@@ -324,7 +324,7 @@ PetscErrorCode  PCDeflationSetCoarseMat(PC pc,Mat mat)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(mat,MAT_CLASSID,2);
-  PetscCall(PetscTryMethod(pc,"PCDeflationSetCoarseMat_C",(PC,Mat),(pc,mat)));
+  PetscTryMethod(pc,"PCDeflationSetCoarseMat_C",(PC,Mat),(pc,mat));
   PetscFunctionReturn(0);
 }
 
@@ -357,7 +357,7 @@ PetscErrorCode  PCDeflationGetCoarseKSP(PC pc,KSP *ksp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(ksp,2);
-  PetscCall(PetscTryMethod(pc,"PCDeflationGetCoarseKSP_C",(PC,KSP*),(pc,ksp)));
+  PetscTryMethod(pc,"PCDeflationGetCoarseKSP_C",(PC,KSP*),(pc,ksp));
   PetscFunctionReturn(0);
 }
 
@@ -390,7 +390,7 @@ PetscErrorCode PCDeflationGetPC(PC pc,PC *apc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(pc,1);
-  PetscCall(PetscTryMethod(pc,"PCDeflationGetPC_C",(PC,PC*),(pc,apc)));
+  PetscTryMethod(pc,"PCDeflationGetPC_C",(PC,PC*),(pc,apc));
   PetscFunctionReturn(0);
 }
 

@@ -1018,7 +1018,7 @@ PetscErrorCode MatMkl_PardisoSetCntl_MKL_PARDISO(Mat F,PetscInt icntl,PetscInt i
 PetscErrorCode MatMkl_PardisoSetCntl(Mat F,PetscInt icntl,PetscInt ival)
 {
   PetscFunctionBegin;
-  PetscCall(PetscTryMethod(F,"MatMkl_PardisoSetCntl_C",(Mat,PetscInt,PetscInt),(F,icntl,ival)));
+  PetscTryMethod(F,"MatMkl_PardisoSetCntl_C",(Mat,PetscInt,PetscInt),(F,icntl,ival));
   PetscFunctionReturn(0);
 }
 

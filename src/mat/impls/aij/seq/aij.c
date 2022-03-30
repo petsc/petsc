@@ -3724,7 +3724,7 @@ PetscErrorCode  MatSeqAIJSetColumnIndices(Mat mat,PetscInt *indices)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidIntPointer(indices,2);
-  PetscCall(PetscUseMethod(mat,"MatSeqAIJSetColumnIndices_C",(Mat,PetscInt*),(mat,indices)));
+  PetscUseMethod(mat,"MatSeqAIJSetColumnIndices_C",(Mat,PetscInt*),(mat,indices));
   PetscFunctionReturn(0);
 }
 
@@ -3802,7 +3802,7 @@ PetscErrorCode  MatStoreValues(Mat mat)
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscCheck(mat->assembled,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   PetscCheck(!mat->factortype,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-  PetscCall(PetscUseMethod(mat,"MatStoreValues_C",(Mat),(mat)));
+  PetscUseMethod(mat,"MatStoreValues_C",(Mat),(mat));
   PetscFunctionReturn(0);
 }
 
@@ -3840,7 +3840,7 @@ PetscErrorCode  MatRetrieveValues(Mat mat)
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscCheck(mat->assembled,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   PetscCheck(!mat->factortype,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-  PetscCall(PetscUseMethod(mat,"MatRetrieveValues_C",(Mat),(mat)));
+  PetscUseMethod(mat,"MatRetrieveValues_C",(Mat),(mat));
   PetscFunctionReturn(0);
 }
 
@@ -3961,7 +3961,7 @@ PetscErrorCode  MatSeqAIJSetPreallocation(Mat B,PetscInt nz,const PetscInt nnz[]
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B,MAT_CLASSID,1);
   PetscValidType(B,1);
-  PetscCall(PetscTryMethod(B,"MatSeqAIJSetPreallocation_C",(Mat,PetscInt,const PetscInt[]),(B,nz,nnz)));
+  PetscTryMethod(B,"MatSeqAIJSetPreallocation_C",(Mat,PetscInt,const PetscInt[]),(B,nz,nnz));
   PetscFunctionReturn(0);
 }
 
@@ -4127,7 +4127,7 @@ PetscErrorCode MatSeqAIJSetPreallocationCSR(Mat B,const PetscInt i[],const Petsc
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B,MAT_CLASSID,1);
   PetscValidType(B,1);
-  PetscCall(PetscTryMethod(B,"MatSeqAIJSetPreallocationCSR_C",(Mat,const PetscInt[],const PetscInt[],const PetscScalar[]),(B,i,j,v)));
+  PetscTryMethod(B,"MatSeqAIJSetPreallocationCSR_C",(Mat,const PetscInt[],const PetscInt[],const PetscScalar[]),(B,i,j,v));
   PetscFunctionReturn(0);
 }
 
@@ -4195,7 +4195,7 @@ PetscErrorCode MatSeqAIJKron(Mat A,Mat B,MatReuse reuse,Mat *C)
     PetscValidHeaderSpecific(*C,MAT_CLASSID,4);
     PetscValidType(*C,4);
   }
-  PetscCall(PetscTryMethod(A,"MatSeqAIJKron_C",(Mat,Mat,MatReuse,Mat*),(A,B,reuse,C)));
+  PetscTryMethod(A,"MatSeqAIJKron_C",(Mat,Mat,MatReuse,Mat*),(A,B,reuse,C));
   PetscFunctionReturn(0);
 }
 

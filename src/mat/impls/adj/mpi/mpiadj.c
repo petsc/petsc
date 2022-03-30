@@ -766,7 +766,7 @@ PetscErrorCode MatMPIAdjCreateNonemptySubcommMat(Mat A,Mat *B)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  PetscCall(PetscUseMethod(A,"MatMPIAdjCreateNonemptySubcommMat_C",(Mat,Mat*),(A,B)));
+  PetscUseMethod(A,"MatMPIAdjCreateNonemptySubcommMat_C",(Mat,Mat*),(A,B));
   PetscFunctionReturn(0);
 }
 
@@ -814,7 +814,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAdj(Mat B)
 PetscErrorCode  MatMPIAdjToSeq(Mat A,Mat *B)
 {
   PetscFunctionBegin;
-  PetscCall(PetscUseMethod(A,"MatMPIAdjToSeq_C",(Mat,Mat*),(A,B)));
+  PetscUseMethod(A,"MatMPIAdjToSeq_C",(Mat,Mat*),(A,B));
   PetscFunctionReturn(0);
 }
 
@@ -837,7 +837,7 @@ PetscErrorCode  MatMPIAdjToSeq(Mat A,Mat *B)
 PetscErrorCode  MatMPIAdjSetPreallocation(Mat B,PetscInt *i,PetscInt *j,PetscInt *values)
 {
   PetscFunctionBegin;
-  PetscCall(PetscTryMethod(B,"MatMPIAdjSetPreallocation_C",(Mat,PetscInt*,PetscInt*,PetscInt*),(B,i,j,values)));
+  PetscTryMethod(B,"MatMPIAdjSetPreallocation_C",(Mat,PetscInt*,PetscInt*,PetscInt*),(B,i,j,values));
   PetscFunctionReturn(0);
 }
 

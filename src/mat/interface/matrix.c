@@ -789,7 +789,7 @@ PetscErrorCode MatResetPreallocation(Mat A)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
-  PetscCall(PetscUseMethod(A,"MatResetPreallocation_C",(Mat),(A)));
+  PetscUseMethod(A,"MatResetPreallocation_C",(Mat),(A));
   PetscFunctionReturn(0);
 }
 
@@ -3237,7 +3237,7 @@ PetscErrorCode MatQRFactor(Mat mat, IS col, const MatFactorInfo *info)
   PetscCheck(!mat->factortype,PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   MatCheckPreallocated(mat,1);
   PetscCall(PetscLogEventBegin(MAT_QRFactor,mat,col,0,0));
-  PetscCall(PetscUseMethod(mat,"MatQRFactor_C", (Mat,IS,const MatFactorInfo*), (mat, col, info)));
+  PetscUseMethod(mat,"MatQRFactor_C", (Mat,IS,const MatFactorInfo*), (mat, col, info));
   PetscCall(PetscLogEventEnd(MAT_QRFactor,mat,col,0,0));
   PetscCall(PetscObjectStateIncrease((PetscObject)mat));
   PetscFunctionReturn(0);
@@ -3289,7 +3289,7 @@ PetscErrorCode MatQRFactorSymbolic(Mat fact,Mat mat,IS col,const MatFactorInfo *
   }
 
   if (!fact->trivialsymbolic) PetscCall(PetscLogEventBegin(MAT_QRFactorSymbolic,fact,mat,col,0));
-  PetscCall(PetscUseMethod(fact,"MatQRFactorSymbolic_C", (Mat,Mat,IS,const MatFactorInfo*), (fact, mat, col, info)));
+  PetscUseMethod(fact,"MatQRFactorSymbolic_C", (Mat,Mat,IS,const MatFactorInfo*), (fact, mat, col, info));
   if (!fact->trivialsymbolic) PetscCall(PetscLogEventEnd(MAT_QRFactorSymbolic,fact,mat,col,0));
   PetscCall(PetscObjectStateIncrease((PetscObject)fact));
   PetscFunctionReturn(0);
@@ -3341,7 +3341,7 @@ PetscErrorCode MatQRFactorNumeric(Mat fact,Mat mat,const MatFactorInfo *info)
 
   if (!fact->trivialsymbolic) PetscCall(PetscLogEventBegin(MAT_QRFactorNumeric,mat,fact,0,0));
   else  PetscCall(PetscLogEventBegin(MAT_QRFactor,mat,fact,0,0));
-  PetscCall(PetscUseMethod(fact,"MatQRFactorNumeric_C", (Mat,Mat,const MatFactorInfo*), (fact, mat, info)));
+  PetscUseMethod(fact,"MatQRFactorNumeric_C", (Mat,Mat,const MatFactorInfo*), (fact, mat, info));
   if (!fact->trivialsymbolic) PetscCall(PetscLogEventEnd(MAT_QRFactorNumeric,mat,fact,0,0));
   else PetscCall(PetscLogEventEnd(MAT_QRFactor,mat,fact,0,0));
   PetscCall(MatViewFromOptions(fact,NULL,"-mat_factor_view"));
@@ -8574,7 +8574,7 @@ PetscErrorCode MatDiagonalScaleLocal(Mat mat,Vec diag)
       PetscCall(MatDiagonalScale(mat,NULL,diag));
     } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only supported for sequential matrices when no ghost points/periodic conditions");
   } else {
-    PetscCall(PetscUseMethod(mat,"MatDiagonalScaleLocal_C",(Mat,Vec),(mat,diag)));
+    PetscUseMethod(mat,"MatDiagonalScaleLocal_C",(Mat,Vec),(mat,diag));
   }
   PetscCall(PetscLogEventEnd(MAT_Scale,mat,0,0,0));
   PetscCall(PetscObjectStateIncrease((PetscObject)mat));

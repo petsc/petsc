@@ -239,7 +239,7 @@ static PetscErrorCode  KSPGCRSetModifyPC_GCR(KSP ksp,KSPGCRModifyPCFunction func
 PetscErrorCode  KSPGCRSetModifyPC(KSP ksp,PetscErrorCode (*function)(KSP,PetscInt,PetscReal,void*),void *data,PetscErrorCode (*destroy)(void*))
 {
   PetscFunctionBegin;
-  PetscCall(PetscUseMethod(ksp,"KSPGCRSetModifyPC_C",(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*),void *data,PetscErrorCode (*)(void*)),(ksp,function,data,destroy)));
+  PetscUseMethod(ksp,"KSPGCRSetModifyPC_C",(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*),void *data,PetscErrorCode (*)(void*)),(ksp,function,data,destroy));
   PetscFunctionReturn(0);
 }
 
@@ -281,7 +281,7 @@ static PetscErrorCode KSPGCRGetRestart_GCR(KSP ksp,PetscInt *restart)
 PetscErrorCode KSPGCRSetRestart(KSP ksp, PetscInt restart)
 {
   PetscFunctionBegin;
-  PetscCall(PetscTryMethod(ksp,"KSPGCRSetRestart_C",(KSP,PetscInt),(ksp,restart)));
+  PetscTryMethod(ksp,"KSPGCRSetRestart_C",(KSP,PetscInt),(ksp,restart));
   PetscFunctionReturn(0);
 }
 
@@ -305,7 +305,7 @@ PetscErrorCode KSPGCRSetRestart(KSP ksp, PetscInt restart)
 PetscErrorCode KSPGCRGetRestart(KSP ksp, PetscInt *restart)
 {
   PetscFunctionBegin;
-  PetscCall(PetscTryMethod(ksp,"KSPGCRGetRestart_C",(KSP,PetscInt*),(ksp,restart)));
+  PetscTryMethod(ksp,"KSPGCRGetRestart_C",(KSP,PetscInt*),(ksp,restart));
   PetscFunctionReturn(0);
 }
 

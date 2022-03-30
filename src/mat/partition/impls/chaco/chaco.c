@@ -223,7 +223,7 @@ PetscErrorCode MatPartitioningChacoSetGlobal(MatPartitioning part,MPChacoGlobalT
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
   PetscValidLogicalCollectiveEnum(part,method,2);
-  PetscCall(PetscTryMethod(part,"MatPartitioningChacoSetGlobal_C",(MatPartitioning,MPChacoGlobalType),(part,method)));
+  PetscTryMethod(part,"MatPartitioningChacoSetGlobal_C",(MatPartitioning,MPChacoGlobalType),(part,method));
   PetscFunctionReturn(0);
 }
 
@@ -265,7 +265,7 @@ PetscErrorCode MatPartitioningChacoGetGlobal(MatPartitioning part,MPChacoGlobalT
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
   PetscValidPointer(method,2);
-  PetscCall(PetscTryMethod(part,"MatPartitioningChacoGetGlobal_C",(MatPartitioning,MPChacoGlobalType*),(part,method)));
+  PetscTryMethod(part,"MatPartitioningChacoGetGlobal_C",(MatPartitioning,MPChacoGlobalType*),(part,method));
   PetscFunctionReturn(0);
 }
 
@@ -303,7 +303,7 @@ PetscErrorCode MatPartitioningChacoSetLocal(MatPartitioning part,MPChacoLocalTyp
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
   PetscValidLogicalCollectiveEnum(part,method,2);
-  PetscCall(PetscTryMethod(part,"MatPartitioningChacoSetLocal_C",(MatPartitioning,MPChacoLocalType),(part,method)));
+  PetscTryMethod(part,"MatPartitioningChacoSetLocal_C",(MatPartitioning,MPChacoLocalType),(part,method));
   PetscFunctionReturn(0);
 }
 
@@ -342,7 +342,7 @@ PetscErrorCode MatPartitioningChacoGetLocal(MatPartitioning part,MPChacoLocalTyp
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
   PetscValidPointer(method,2);
-  PetscCall(PetscUseMethod(part,"MatPartitioningChacoGetLocal_C",(MatPartitioning,MPChacoLocalType*),(part,method)));
+  PetscUseMethod(part,"MatPartitioningChacoGetLocal_C",(MatPartitioning,MPChacoLocalType*),(part,method));
   PetscFunctionReturn(0);
 }
 
@@ -375,7 +375,7 @@ PetscErrorCode MatPartitioningChacoSetCoarseLevel(MatPartitioning part,PetscReal
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
   PetscValidLogicalCollectiveReal(part,level,2);
-  PetscCall(PetscTryMethod(part,"MatPartitioningChacoSetCoarseLevel_C",(MatPartitioning,PetscReal),(part,level)));
+  PetscTryMethod(part,"MatPartitioningChacoSetCoarseLevel_C",(MatPartitioning,PetscReal),(part,level));
   PetscFunctionReturn(0);
 }
 
@@ -415,7 +415,7 @@ PetscErrorCode MatPartitioningChacoSetEigenSolver(MatPartitioning part,MPChacoEi
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
   PetscValidLogicalCollectiveEnum(part,method,2);
-  PetscCall(PetscTryMethod(part,"MatPartitioningChacoSetEigenSolver_C",(MatPartitioning,MPChacoEigenType),(part,method)));
+  PetscTryMethod(part,"MatPartitioningChacoSetEigenSolver_C",(MatPartitioning,MPChacoEigenType),(part,method));
   PetscFunctionReturn(0);
 }
 
@@ -454,7 +454,7 @@ PetscErrorCode MatPartitioningChacoGetEigenSolver(MatPartitioning part,MPChacoEi
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
   PetscValidPointer(method,2);
-  PetscCall(PetscUseMethod(part,"MatPartitioningChacoGetEigenSolver_C",(MatPartitioning,MPChacoEigenType*),(part,method)));
+  PetscUseMethod(part,"MatPartitioningChacoGetEigenSolver_C",(MatPartitioning,MPChacoEigenType*),(part,method));
   PetscFunctionReturn(0);
 }
 
@@ -491,7 +491,7 @@ PetscErrorCode MatPartitioningChacoSetEigenTol(MatPartitioning part,PetscReal to
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
   PetscValidLogicalCollectiveReal(part,tol,2);
-  PetscCall(PetscTryMethod(part,"MatPartitioningChacoSetEigenTol_C",(MatPartitioning,PetscReal),(part,tol)));
+  PetscTryMethod(part,"MatPartitioningChacoSetEigenTol_C",(MatPartitioning,PetscReal),(part,tol));
   PetscFunctionReturn(0);
 }
 
@@ -528,7 +528,7 @@ PetscErrorCode MatPartitioningChacoGetEigenTol(MatPartitioning part,PetscReal *t
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
   PetscValidRealPointer(tol,2);
-  PetscCall(PetscUseMethod(part,"MatPartitioningChacoGetEigenTol_C",(MatPartitioning,PetscReal*),(part,tol)));
+  PetscUseMethod(part,"MatPartitioningChacoGetEigenTol_C",(MatPartitioning,PetscReal*),(part,tol));
   PetscFunctionReturn(0);
 }
 
@@ -567,7 +567,7 @@ PetscErrorCode MatPartitioningChacoSetEigenNumber(MatPartitioning part,PetscInt 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
   PetscValidLogicalCollectiveInt(part,num,2);
-  PetscCall(PetscTryMethod(part,"MatPartitioningChacoSetEigenNumber_C",(MatPartitioning,PetscInt),(part,num)));
+  PetscTryMethod(part,"MatPartitioningChacoSetEigenNumber_C",(MatPartitioning,PetscInt),(part,num));
   PetscFunctionReturn(0);
 }
 
@@ -604,7 +604,7 @@ PetscErrorCode MatPartitioningChacoGetEigenNumber(MatPartitioning part,PetscInt 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
   PetscValidIntPointer(num,2);
-  PetscCall(PetscUseMethod(part,"MatPartitioningChacoGetEigenNumber_C",(MatPartitioning,PetscInt*),(part,num)));
+  PetscUseMethod(part,"MatPartitioningChacoGetEigenNumber_C",(MatPartitioning,PetscInt*),(part,num));
   PetscFunctionReturn(0);
 }
 

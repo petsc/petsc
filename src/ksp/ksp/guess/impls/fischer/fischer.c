@@ -451,7 +451,7 @@ PetscErrorCode  KSPGuessFischerSetModel(KSPGuess guess,PetscInt model,PetscInt s
   PetscFunctionBegin;
   PetscValidHeaderSpecific(guess,KSPGUESS_CLASSID,1);
   PetscValidLogicalCollectiveInt(guess,model,2);
-  PetscCall(PetscTryMethod(guess,"KSPGuessFischerSetModel_C",(KSPGuess,PetscInt,PetscInt),(guess,model,size)));
+  PetscTryMethod(guess,"KSPGuessFischerSetModel_C",(KSPGuess,PetscInt,PetscInt),(guess,model,size));
   PetscFunctionReturn(0);
 }
 

@@ -1119,7 +1119,7 @@ PetscErrorCode  PCGASMSetSubdomains(PC pc,PetscInt n,IS iis[],IS ois[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscTryMethod(pc,"PCGASMSetSubdomains_C",(PC,PetscInt,IS[],IS[]),(pc,n,iis,ois)));
+  PetscTryMethod(pc,"PCGASMSetSubdomains_C",(PC,PetscInt,IS[],IS[]),(pc,n,iis,ois));
   osm->dm_subdomains = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -1166,7 +1166,7 @@ PetscErrorCode  PCGASMSetOverlap(PC pc,PetscInt ovl)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveInt(pc,ovl,2);
-  PetscCall(PetscTryMethod(pc,"PCGASMSetOverlap_C",(PC,PetscInt),(pc,ovl)));
+  PetscTryMethod(pc,"PCGASMSetOverlap_C",(PC,PetscInt),(pc,ovl));
   osm->dm_subdomains = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -1200,7 +1200,7 @@ PetscErrorCode  PCGASMSetType(PC pc,PCGASMType type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveEnum(pc,type,2);
-  PetscCall(PetscTryMethod(pc,"PCGASMSetType_C",(PC,PCGASMType),(pc,type)));
+  PetscTryMethod(pc,"PCGASMSetType_C",(PC,PCGASMType),(pc,type));
   PetscFunctionReturn(0);
 }
 
@@ -1223,7 +1223,7 @@ PetscErrorCode  PCGASMSetSortIndices(PC pc,PetscBool doSort)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveBool(pc,doSort,2);
-  PetscCall(PetscTryMethod(pc,"PCGASMSetSortIndices_C",(PC,PetscBool),(pc,doSort)));
+  PetscTryMethod(pc,"PCGASMSetSortIndices_C",(PC,PetscBool),(pc,doSort));
   PetscFunctionReturn(0);
 }
 
@@ -1259,7 +1259,7 @@ PetscErrorCode  PCGASMGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local,KS
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscUseMethod(pc,"PCGASMGetSubKSP_C",(PC,PetscInt*,PetscInt*,KSP **),(pc,n_local,first_local,ksp)));
+  PetscUseMethod(pc,"PCGASMGetSubKSP_C",(PC,PetscInt*,PetscInt*,KSP **),(pc,n_local,first_local,ksp));
   PetscFunctionReturn(0);
 }
 

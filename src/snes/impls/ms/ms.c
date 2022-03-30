@@ -505,7 +505,7 @@ PetscErrorCode SNESMSGetType(SNES snes,SNESMSType *mstype)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidPointer(mstype,2);
-  PetscCall(PetscUseMethod(snes,"SNESMSGetType_C",(SNES,SNESMSType*),(snes,mstype)));
+  PetscUseMethod(snes,"SNESMSGetType_C",(SNES,SNESMSType*),(snes,mstype));
   PetscFunctionReturn(0);
 }
 
@@ -527,7 +527,7 @@ PetscErrorCode SNESMSSetType(SNES snes,SNESMSType mstype)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidCharPointer(mstype,2);
-  PetscCall(PetscTryMethod(snes,"SNESMSSetType_C",(SNES,SNESMSType),(snes,mstype)));
+  PetscTryMethod(snes,"SNESMSSetType_C",(SNES,SNESMSType),(snes,mstype));
   PetscFunctionReturn(0);
 }
 
@@ -569,7 +569,7 @@ PetscErrorCode SNESMSGetDamping(SNES snes,PetscReal *damping)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidRealPointer(damping,2);
-  PetscCall(PetscUseMethod(snes,"SNESMSGetDamping_C",(SNES,PetscReal*),(snes,damping)));
+  PetscUseMethod(snes,"SNESMSGetDamping_C",(SNES,PetscReal*),(snes,damping));
   PetscFunctionReturn(0);
 }
 
@@ -591,7 +591,7 @@ PetscErrorCode SNESMSSetDamping(SNES snes,PetscReal damping)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidLogicalCollectiveReal(snes,damping,2);
-  PetscCall(PetscTryMethod(snes,"SNESMSSetDamping_C",(SNES,PetscReal),(snes,damping)));
+  PetscTryMethod(snes,"SNESMSSetDamping_C",(SNES,PetscReal),(snes,damping));
   PetscFunctionReturn(0);
 }
 

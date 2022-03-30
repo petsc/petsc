@@ -21,7 +21,7 @@ PetscErrorCode  MatPythonSetType(Mat mat,const char pyname[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidCharPointer(pyname,2);
-  PetscCall(PetscTryMethod(mat,"MatPythonSetType_C",(Mat, const char[]),(mat,pyname)));
+  PetscTryMethod(mat,"MatPythonSetType_C",(Mat, const char[]),(mat,pyname));
   PetscFunctionReturn(0);
 }
 

@@ -43,7 +43,7 @@ PetscErrorCode PetscViewerVTKAddField(PetscViewer viewer,PetscObject dm,PetscErr
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidHeader(dm,2);
   PetscValidHeader(vec,7);
-  PetscCall(PetscUseMethod(viewer,"PetscViewerVTKAddField_C",(PetscViewer,PetscObject,PetscErrorCode (*)(PetscObject,PetscViewer),PetscInt,PetscViewerVTKFieldType,PetscBool,PetscObject),(viewer,dm,PetscViewerVTKWriteFunction,fieldnum,fieldtype,checkdm,vec)));
+  PetscUseMethod(viewer,"PetscViewerVTKAddField_C",(PetscViewer,PetscObject,PetscErrorCode (*)(PetscObject,PetscViewer),PetscInt,PetscViewerVTKFieldType,PetscBool,PetscObject),(viewer,dm,PetscViewerVTKWriteFunction,fieldnum,fieldtype,checkdm,vec));
   PetscFunctionReturn(0);
 }
 
@@ -64,7 +64,7 @@ PetscErrorCode PetscViewerVTKGetDM(PetscViewer viewer,PetscObject *dm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  PetscCall(PetscUseMethod(viewer,"PetscViewerVTKGetDM_C",(PetscViewer,PetscObject*),(viewer,dm)));
+  PetscUseMethod(viewer,"PetscViewerVTKGetDM_C",(PetscViewer,PetscObject*),(viewer,dm));
   PetscFunctionReturn(0);
 }
 

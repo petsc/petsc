@@ -87,7 +87,7 @@ PetscErrorCode MatSeqSELLSetPreallocation(Mat B,PetscInt rlenmax,const PetscInt 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B,MAT_CLASSID,1);
   PetscValidType(B,1);
-  PetscCall(PetscTryMethod(B,"MatSeqSELLSetPreallocation_C",(Mat,PetscInt,const PetscInt[]),(B,rlenmax,rlen)));
+  PetscTryMethod(B,"MatSeqSELLSetPreallocation_C",(Mat,PetscInt,const PetscInt[]),(B,rlenmax,rlen));
   PetscFunctionReturn(0);
 }
 
@@ -1912,7 +1912,7 @@ PetscErrorCode MatRetrieveValues_SeqSELL(Mat mat)
 PetscErrorCode MatSeqSELLRestoreArray(Mat A,PetscScalar **array)
 {
   PetscFunctionBegin;
-  PetscCall(PetscUseMethod(A,"MatSeqSELLRestoreArray_C",(Mat,PetscScalar**),(A,array)));
+  PetscUseMethod(A,"MatSeqSELLRestoreArray_C",(Mat,PetscScalar**),(A,array));
   PetscFunctionReturn(0);
 }
 

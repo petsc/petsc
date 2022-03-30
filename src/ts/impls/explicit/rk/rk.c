@@ -520,12 +520,10 @@ PetscErrorCode TSRKGetTableau_RK(TS ts, PetscInt *s, const PetscReal **A, const 
 PetscErrorCode TSRKGetTableau(TS ts, PetscInt *s, const PetscReal **A, const PetscReal **b, const PetscReal **c, const PetscReal **bembed,
                                      PetscInt *p, const PetscReal **binterp, PetscBool *FSAL)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ierr = PetscUseMethod(ts,"TSRKGetTableau_C",(TS,PetscInt*,const PetscReal**,const PetscReal**,const PetscReal**,const PetscReal**,
-                                                  PetscInt*,const PetscReal**,PetscBool*),(ts,s,A,b,c,bembed,p,binterp,FSAL));PetscCall(ierr);
+  PetscUseMethod(ts,"TSRKGetTableau_C",(TS,PetscInt*,const PetscReal**,const PetscReal**,const PetscReal**,const PetscReal**,
+                                        PetscInt*,const PetscReal**,PetscBool*),(ts,s,A,b,c,bembed,p,binterp,FSAL));
   PetscFunctionReturn(0);
 }
 
@@ -1114,9 +1112,9 @@ static PetscErrorCode TSReset_RK(TS ts)
   PetscFunctionBegin;
   PetscCall(TSRKTableauReset(ts));
   if (ts->use_splitrhsfunction) {
-    PetscCall(PetscTryMethod(ts,"TSReset_RK_MultirateSplit_C",(TS),(ts)));
+    PetscTryMethod(ts,"TSReset_RK_MultirateSplit_C",(TS),(ts));
   } else {
-    PetscCall(PetscTryMethod(ts,"TSReset_RK_MultirateNonsplit_C",(TS),(ts)));
+    PetscTryMethod(ts,"TSReset_RK_MultirateNonsplit_C",(TS),(ts));
   }
   PetscFunctionReturn(0);
 }
@@ -1173,9 +1171,9 @@ static PetscErrorCode TSSetUp_RK(TS ts)
   PetscCall(DMCoarsenHookAdd(dm,DMCoarsenHook_TSRK,DMRestrictHook_TSRK,ts));
   PetscCall(DMSubDomainHookAdd(dm,DMSubDomainHook_TSRK,DMSubDomainRestrictHook_TSRK,ts));
   if (ts->use_splitrhsfunction) {
-    PetscCall(PetscTryMethod(ts,"TSSetUp_RK_MultirateSplit_C",(TS),(ts)));
+    PetscTryMethod(ts,"TSSetUp_RK_MultirateSplit_C",(TS),(ts));
   } else {
-    PetscCall(PetscTryMethod(ts,"TSSetUp_RK_MultirateNonsplit_C",(TS),(ts)));
+    PetscTryMethod(ts,"TSSetUp_RK_MultirateNonsplit_C",(TS),(ts));
   }
   PetscFunctionReturn(0);
 }
@@ -1267,7 +1265,7 @@ PetscErrorCode TSRKGetOrder(TS ts,PetscInt *order)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidIntPointer(order,2);
-  PetscCall(PetscUseMethod(ts,"TSRKGetOrder_C",(TS,PetscInt*),(ts,order)));
+  PetscUseMethod(ts,"TSRKGetOrder_C",(TS,PetscInt*),(ts,order));
   PetscFunctionReturn(0);
 }
 
@@ -1292,7 +1290,7 @@ PetscErrorCode TSRKSetType(TS ts,TSRKType rktype)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidCharPointer(rktype,2);
-  PetscCall(PetscTryMethod(ts,"TSRKSetType_C",(TS,TSRKType),(ts,rktype)));
+  PetscTryMethod(ts,"TSRKSetType_C",(TS,TSRKType),(ts,rktype));
   PetscFunctionReturn(0);
 }
 
@@ -1315,7 +1313,7 @@ PetscErrorCode TSRKGetType(TS ts,TSRKType *rktype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscCall(PetscUseMethod(ts,"TSRKGetType_C",(TS,TSRKType*),(ts,rktype)));
+  PetscUseMethod(ts,"TSRKGetType_C",(TS,TSRKType*),(ts,rktype));
   PetscFunctionReturn(0);
 }
 
@@ -1444,7 +1442,7 @@ static PetscErrorCode SNESTSFormJacobian_RK(SNES snes,Vec x,Mat A,Mat B,TS ts)
 PetscErrorCode TSRKSetMultirate(TS ts,PetscBool use_multirate)
 {
   PetscFunctionBegin;
-  PetscCall(PetscTryMethod(ts,"TSRKSetMultirate_C",(TS,PetscBool),(ts,use_multirate)));
+  PetscTryMethod(ts,"TSRKSetMultirate_C",(TS,PetscBool),(ts,use_multirate));
   PetscFunctionReturn(0);
 }
 
@@ -1466,7 +1464,7 @@ PetscErrorCode TSRKSetMultirate(TS ts,PetscBool use_multirate)
 PetscErrorCode TSRKGetMultirate(TS ts,PetscBool *use_multirate)
 {
   PetscFunctionBegin;
-  PetscCall(PetscUseMethod(ts,"TSRKGetMultirate_C",(TS,PetscBool*),(ts,use_multirate)));
+  PetscUseMethod(ts,"TSRKGetMultirate_C",(TS,PetscBool*),(ts,use_multirate));
   PetscFunctionReturn(0);
 }
 

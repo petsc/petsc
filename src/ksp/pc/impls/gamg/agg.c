@@ -33,7 +33,7 @@ PetscErrorCode PCGAMGSetNSmooths(PC pc, PetscInt n)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveInt(pc,n,2);
-  PetscCall(PetscTryMethod(pc,"PCGAMGSetNSmooths_C",(PC,PetscInt),(pc,n)));
+  PetscTryMethod(pc,"PCGAMGSetNSmooths_C",(PC,PetscInt),(pc,n));
   PetscFunctionReturn(0);
 }
 
@@ -69,7 +69,7 @@ PetscErrorCode PCGAMGSetSymGraph(PC pc, PetscBool n)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveBool(pc,n,2);
-  PetscCall(PetscTryMethod(pc,"PCGAMGSetSymGraph_C",(PC,PetscBool),(pc,n)));
+  PetscTryMethod(pc,"PCGAMGSetSymGraph_C",(PC,PetscBool),(pc,n));
   PetscFunctionReturn(0);
 }
 
@@ -108,7 +108,7 @@ PetscErrorCode PCGAMGSetSquareGraph(PC pc, PetscInt n)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveInt(pc,n,2);
-  PetscCall(PetscTryMethod(pc,"PCGAMGSetSquareGraph_C",(PC,PetscInt),(pc,n)));
+  PetscTryMethod(pc,"PCGAMGSetSquareGraph_C",(PC,PetscInt),(pc,n));
   PetscFunctionReturn(0);
 }
 

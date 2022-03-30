@@ -602,7 +602,7 @@ PetscErrorCode  TSGLLESetType(TS ts,TSGLLEType type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidCharPointer(type,2);
-  PetscCall(PetscTryMethod(ts,"TSGLLESetType_C",(TS,TSGLLEType),(ts,type)));
+  PetscTryMethod(ts,"TSGLLESetType_C",(TS,TSGLLEType),(ts,type));
   PetscFunctionReturn(0);
 }
 
@@ -630,7 +630,7 @@ PetscErrorCode  TSGLLESetAcceptType(TS ts,TSGLLEAcceptType type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidCharPointer(type,2);
-  PetscCall(PetscTryMethod(ts,"TSGLLESetAcceptType_C",(TS,TSGLLEAcceptType),(ts,type)));
+  PetscTryMethod(ts,"TSGLLESetAcceptType_C",(TS,TSGLLEAcceptType),(ts,type));
   PetscFunctionReturn(0);
 }
 
@@ -658,7 +658,7 @@ PetscErrorCode  TSGLLEGetAdapt(TS ts,TSGLLEAdapt *adapt)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidPointer(adapt,2);
-  PetscCall(PetscUseMethod(ts,"TSGLLEGetAdapt_C",(TS,TSGLLEAdapt*),(ts,adapt)));
+  PetscUseMethod(ts,"TSGLLEGetAdapt_C",(TS,TSGLLEAdapt*),(ts,adapt));
   PetscFunctionReturn(0);
 }
 

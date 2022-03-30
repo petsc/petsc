@@ -793,7 +793,7 @@ PetscErrorCode  PCBJKOKKOSSetKSP(PC pc,KSP ksp)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,2);
   PetscCheckSameComm(pc,1,ksp,2);
-  PetscCall(PetscTryMethod(pc,"PCBJKOKKOSSetKSP_C",(PC,KSP),(pc,ksp)));
+  PetscTryMethod(pc,"PCBJKOKKOSSetKSP_C",(PC,KSP),(pc,ksp));
   PetscFunctionReturn(0);
 }
 
@@ -831,7 +831,7 @@ PetscErrorCode  PCBJKOKKOSGetKSP(PC pc,KSP *ksp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(ksp,2);
-  PetscCall(PetscUseMethod(pc,"PCBJKOKKOSGetKSP_C",(PC,KSP*),(pc,ksp)));
+  PetscUseMethod(pc,"PCBJKOKKOSGetKSP_C",(PC,KSP*),(pc,ksp));
   PetscFunctionReturn(0);
 }
 

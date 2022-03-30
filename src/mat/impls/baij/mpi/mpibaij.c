@@ -2686,7 +2686,7 @@ PetscErrorCode  MatMPIBAIJSetPreallocationCSR(Mat B,PetscInt bs,const PetscInt i
   PetscValidHeaderSpecific(B,MAT_CLASSID,1);
   PetscValidType(B,1);
   PetscValidLogicalCollectiveInt(B,bs,2);
-  PetscCall(PetscTryMethod(B,"MatMPIBAIJSetPreallocationCSR_C",(Mat,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[]),(B,bs,i,j,v)));
+  PetscTryMethod(B,"MatMPIBAIJSetPreallocationCSR_C",(Mat,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[]),(B,bs,i,j,v));
   PetscFunctionReturn(0);
 }
 
@@ -3052,7 +3052,7 @@ PetscErrorCode  MatMPIBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt d_nz,const
   PetscValidHeaderSpecific(B,MAT_CLASSID,1);
   PetscValidType(B,1);
   PetscValidLogicalCollectiveInt(B,bs,2);
-  PetscCall(PetscTryMethod(B,"MatMPIBAIJSetPreallocation_C",(Mat,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[]),(B,bs,d_nz,d_nnz,o_nz,o_nnz)));
+  PetscTryMethod(B,"MatMPIBAIJSetPreallocation_C",(Mat,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[]),(B,bs,d_nz,d_nnz,o_nz,o_nnz));
   PetscFunctionReturn(0);
 }
 
@@ -3379,7 +3379,7 @@ PetscErrorCode MatLoad_MPIBAIJ(Mat mat,PetscViewer viewer)
 PetscErrorCode  MatMPIBAIJSetHashTableFactor(Mat mat,PetscReal fact)
 {
   PetscFunctionBegin;
-  PetscCall(PetscTryMethod(mat,"MatSetHashTableFactor_C",(Mat,PetscReal),(mat,fact)));
+  PetscTryMethod(mat,"MatSetHashTableFactor_C",(Mat,PetscReal),(mat,fact));
   PetscFunctionReturn(0);
 }
 

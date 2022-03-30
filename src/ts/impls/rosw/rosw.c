@@ -1442,7 +1442,7 @@ PetscErrorCode TSRosWSetType(TS ts,TSRosWType roswtype)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidCharPointer(roswtype,2);
-  PetscCall(PetscTryMethod(ts,"TSRosWSetType_C",(TS,TSRosWType),(ts,roswtype)));
+  PetscTryMethod(ts,"TSRosWSetType_C",(TS,TSRosWType),(ts,roswtype));
   PetscFunctionReturn(0);
 }
 
@@ -1465,7 +1465,7 @@ PetscErrorCode TSRosWGetType(TS ts,TSRosWType *rostype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscCall(PetscUseMethod(ts,"TSRosWGetType_C",(TS,TSRosWType*),(ts,rostype)));
+  PetscUseMethod(ts,"TSRosWGetType_C",(TS,TSRosWType*),(ts,rostype));
   PetscFunctionReturn(0);
 }
 
@@ -1486,7 +1486,7 @@ PetscErrorCode TSRosWSetRecomputeJacobian(TS ts,PetscBool flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscCall(PetscTryMethod(ts,"TSRosWSetRecomputeJacobian_C",(TS,PetscBool),(ts,flg)));
+  PetscTryMethod(ts,"TSRosWSetRecomputeJacobian_C",(TS,PetscBool),(ts,flg));
   PetscFunctionReturn(0);
 }
 

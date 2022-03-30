@@ -2334,7 +2334,7 @@ PetscErrorCode  MatSeqBAIJSetColumnIndices(Mat mat,PetscInt *indices)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidIntPointer(indices,2);
-  PetscCall(PetscUseMethod(mat,"MatSeqBAIJSetColumnIndices_C",(Mat,PetscInt*),(mat,indices)));
+  PetscUseMethod(mat,"MatSeqBAIJSetColumnIndices_C",(Mat,PetscInt*),(mat,indices));
   PetscFunctionReturn(0);
 }
 
@@ -3115,7 +3115,7 @@ PetscErrorCode MatSeqBAIJSetPreallocationCSR_SeqBAIJ(Mat B,PetscInt bs,const Pet
 PetscErrorCode MatSeqBAIJGetArray(Mat A,PetscScalar **array)
 {
   PetscFunctionBegin;
-  PetscCall(PetscUseMethod(A,"MatSeqBAIJGetArray_C",(Mat,PetscScalar**),(A,array)));
+  PetscUseMethod(A,"MatSeqBAIJGetArray_C",(Mat,PetscScalar**),(A,array));
   PetscFunctionReturn(0);
 }
 
@@ -3135,7 +3135,7 @@ PetscErrorCode MatSeqBAIJGetArray(Mat A,PetscScalar **array)
 PetscErrorCode MatSeqBAIJRestoreArray(Mat A,PetscScalar **array)
 {
   PetscFunctionBegin;
-  PetscCall(PetscUseMethod(A,"MatSeqBAIJRestoreArray_C",(Mat,PetscScalar**),(A,array)));
+  PetscUseMethod(A,"MatSeqBAIJRestoreArray_C",(Mat,PetscScalar**),(A,array));
   PetscFunctionReturn(0);
 }
 
@@ -3529,7 +3529,7 @@ PetscErrorCode  MatSeqBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt nz,const P
   PetscValidHeaderSpecific(B,MAT_CLASSID,1);
   PetscValidType(B,1);
   PetscValidLogicalCollectiveInt(B,bs,2);
-  PetscCall(PetscTryMethod(B,"MatSeqBAIJSetPreallocation_C",(Mat,PetscInt,PetscInt,const PetscInt[]),(B,bs,nz,nnz)));
+  PetscTryMethod(B,"MatSeqBAIJSetPreallocation_C",(Mat,PetscInt,PetscInt,const PetscInt[]),(B,bs,nz,nnz));
   PetscFunctionReturn(0);
 }
 
@@ -3563,7 +3563,7 @@ PetscErrorCode  MatSeqBAIJSetPreallocationCSR(Mat B,PetscInt bs,const PetscInt i
   PetscValidHeaderSpecific(B,MAT_CLASSID,1);
   PetscValidType(B,1);
   PetscValidLogicalCollectiveInt(B,bs,2);
-  PetscCall(PetscTryMethod(B,"MatSeqBAIJSetPreallocationCSR_C",(Mat,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[]),(B,bs,i,j,v)));
+  PetscTryMethod(B,"MatSeqBAIJSetPreallocationCSR_C",(Mat,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[]),(B,bs,i,j,v));
   PetscFunctionReturn(0);
 }
 

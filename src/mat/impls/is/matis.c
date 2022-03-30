@@ -1560,7 +1560,7 @@ PetscErrorCode MatISStoreL2L(Mat A, PetscBool store)
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
   PetscValidLogicalCollectiveBool(A,store,2);
-  PetscCall(PetscTryMethod(A,"MatISStoreL2L_C",(Mat,PetscBool),(A,store)));
+  PetscTryMethod(A,"MatISStoreL2L_C",(Mat,PetscBool),(A,store));
   PetscFunctionReturn(0);
 }
 
@@ -1597,7 +1597,7 @@ PetscErrorCode MatISFixLocalEmpty(Mat A, PetscBool fix)
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
   PetscValidLogicalCollectiveBool(A,fix,2);
-  PetscCall(PetscTryMethod(A,"MatISFixLocalEmpty_C",(Mat,PetscBool),(A,fix)));
+  PetscTryMethod(A,"MatISFixLocalEmpty_C",(Mat,PetscBool),(A,fix));
   PetscFunctionReturn(0);
 }
 
@@ -1649,7 +1649,7 @@ PetscErrorCode MatISSetPreallocation(Mat B,PetscInt d_nz,const PetscInt d_nnz[],
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B,MAT_CLASSID,1);
   PetscValidType(B,1);
-  PetscCall(PetscTryMethod(B,"MatISSetPreallocation_C",(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[]),(B,d_nz,d_nnz,o_nz,o_nnz)));
+  PetscTryMethod(B,"MatISSetPreallocation_C",(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[]),(B,d_nz,d_nnz,o_nz,o_nnz));
   PetscFunctionReturn(0);
 }
 
@@ -2096,7 +2096,7 @@ PetscErrorCode MatISGetMPIXAIJ(Mat mat, MatReuse reuse, Mat *newmat)
     PetscCheckSameComm(mat,1,*newmat,3);
     PetscCheckFalse(mat == *newmat,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot reuse the same matrix");
   }
-  PetscCall(PetscUseMethod(mat,"MatISGetMPIXAIJ_C",(Mat,MatType,MatReuse,Mat*),(mat,MATAIJ,reuse,newmat)));
+  PetscUseMethod(mat,"MatISGetMPIXAIJ_C",(Mat,MatType,MatReuse,Mat*),(mat,MATAIJ,reuse,newmat));
   PetscFunctionReturn(0);
 }
 
@@ -2859,7 +2859,7 @@ PetscErrorCode MatISGetLocalMat(Mat mat,Mat *local)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidPointer(local,2);
-  PetscCall(PetscUseMethod(mat,"MatISGetLocalMat_C",(Mat,Mat*),(mat,local)));
+  PetscUseMethod(mat,"MatISGetLocalMat_C",(Mat,Mat*),(mat,local));
   PetscFunctionReturn(0);
 }
 
@@ -2881,7 +2881,7 @@ PetscErrorCode MatISRestoreLocalMat(Mat mat,Mat *local)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidPointer(local,2);
-  PetscCall(PetscUseMethod(mat,"MatISRestoreLocalMat_C",(Mat,Mat*),(mat,local)));
+  PetscUseMethod(mat,"MatISRestoreLocalMat_C",(Mat,Mat*),(mat,local));
   PetscFunctionReturn(0);
 }
 
@@ -2915,7 +2915,7 @@ PetscErrorCode MatISSetLocalMatType(Mat mat,MatType mtype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscCall(PetscUseMethod(mat,"MatISSetLocalMatType_C",(Mat,MatType),(mat,mtype)));
+  PetscUseMethod(mat,"MatISSetLocalMatType_C",(Mat,MatType),(mat,mtype));
   PetscFunctionReturn(0);
 }
 
@@ -2970,7 +2970,7 @@ PetscErrorCode MatISSetLocalMat(Mat mat,Mat local)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidHeaderSpecific(local,MAT_CLASSID,2);
-  PetscCall(PetscUseMethod(mat,"MatISSetLocalMat_C",(Mat,Mat),(mat,local)));
+  PetscUseMethod(mat,"MatISSetLocalMat_C",(Mat,Mat),(mat,local));
   PetscFunctionReturn(0);
 }
 
@@ -3250,7 +3250,7 @@ PetscErrorCode MatISGetLocalToGlobalMapping(Mat A,ISLocalToGlobalMapping *rmappi
   PetscValidType(A,1);
   if (rmapping) PetscValidPointer(rmapping,2);
   if (cmapping) PetscValidPointer(cmapping,3);
-  PetscCall(PetscUseMethod(A,"MatISGetLocalToGlobalMapping_C",(Mat,ISLocalToGlobalMapping*,ISLocalToGlobalMapping*),(A,rmapping,cmapping)));
+  PetscUseMethod(A,"MatISGetLocalToGlobalMapping_C",(Mat,ISLocalToGlobalMapping*,ISLocalToGlobalMapping*),(A,rmapping,cmapping));
   PetscFunctionReturn(0);
 }
 

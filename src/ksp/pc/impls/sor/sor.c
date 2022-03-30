@@ -210,7 +210,7 @@ PetscErrorCode  PCSORGetSymmetric(PC pc,MatSORType *flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscUseMethod(pc,"PCSORGetSymmetric_C",(PC,MatSORType*),(pc,flag)));
+  PetscUseMethod(pc,"PCSORGetSymmetric_C",(PC,MatSORType*),(pc,flag));
   PetscFunctionReturn(0);
 }
 
@@ -237,7 +237,7 @@ PetscErrorCode  PCSORGetOmega(PC pc,PetscReal *omega)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscUseMethod(pc,"PCSORGetOmega_C",(PC,PetscReal*),(pc,omega)));
+  PetscUseMethod(pc,"PCSORGetOmega_C",(PC,PetscReal*),(pc,omega));
   PetscFunctionReturn(0);
 }
 
@@ -269,7 +269,7 @@ PetscErrorCode  PCSORGetIterations(PC pc,PetscInt *its,PetscInt *lits)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscUseMethod(pc,"PCSORGetIterations_C",(PC,PetscInt*,PetscInt*),(pc,its,lits)));
+  PetscUseMethod(pc,"PCSORGetIterations_C",(PC,PetscInt*,PetscInt*),(pc,its,lits));
   PetscFunctionReturn(0);
 }
 
@@ -313,7 +313,7 @@ PetscErrorCode  PCSORSetSymmetric(PC pc,MatSORType flag)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveEnum(pc,flag,2);
-  PetscCall(PetscTryMethod(pc,"PCSORSetSymmetric_C",(PC,MatSORType),(pc,flag)));
+  PetscTryMethod(pc,"PCSORSetSymmetric_C",(PC,MatSORType),(pc,flag));
   PetscFunctionReturn(0);
 }
 
@@ -342,7 +342,7 @@ PetscErrorCode  PCSORSetOmega(PC pc,PetscReal omega)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveReal(pc,omega,2);
-  PetscCall(PetscTryMethod(pc,"PCSORSetOmega_C",(PC,PetscReal),(pc,omega)));
+  PetscTryMethod(pc,"PCSORSetOmega_C",(PC,PetscReal),(pc,omega));
   PetscFunctionReturn(0);
 }
 
@@ -373,7 +373,7 @@ PetscErrorCode  PCSORSetIterations(PC pc,PetscInt its,PetscInt lits)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveInt(pc,its,2);
-  PetscCall(PetscTryMethod(pc,"PCSORSetIterations_C",(PC,PetscInt,PetscInt),(pc,its,lits)));
+  PetscTryMethod(pc,"PCSORSetIterations_C",(PC,PetscInt,PetscInt),(pc,its,lits));
   PetscFunctionReturn(0);
 }
 

@@ -23,7 +23,7 @@ PetscErrorCode  KSPQCGSetTrustRegionRadius(KSP ksp,PetscReal delta)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscCheckFalse(delta < 0.0,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Tolerance must be non-negative");
-  PetscCall(PetscTryMethod(ksp,"KSPQCGSetTrustRegionRadius_C",(KSP,PetscReal),(ksp,delta)));
+  PetscTryMethod(ksp,"KSPQCGSetTrustRegionRadius_C",(KSP,PetscReal),(ksp,delta));
   PetscFunctionReturn(0);
 }
 
@@ -45,7 +45,7 @@ PetscErrorCode  KSPQCGGetTrialStepNorm(KSP ksp,PetscReal *tsnorm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscCall(PetscUseMethod(ksp,"KSPQCGGetTrialStepNorm_C",(KSP,PetscReal*),(ksp,tsnorm)));
+  PetscUseMethod(ksp,"KSPQCGGetTrialStepNorm_C",(KSP,PetscReal*),(ksp,tsnorm));
   PetscFunctionReturn(0);
 }
 
@@ -79,7 +79,7 @@ PetscErrorCode  KSPQCGGetQuadratic(KSP ksp,PetscReal *quadratic)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscCall(PetscUseMethod(ksp,"KSPQCGGetQuadratic_C",(KSP,PetscReal*),(ksp,quadratic)));
+  PetscUseMethod(ksp,"KSPQCGGetQuadratic_C",(KSP,PetscReal*),(ksp,quadratic));
   PetscFunctionReturn(0);
 }
 

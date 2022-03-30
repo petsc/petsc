@@ -871,7 +871,7 @@ PetscErrorCode  PCGAMGSetProcEqLim(PC pc, PetscInt n)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscTryMethod(pc,"PCGAMGSetProcEqLim_C",(PC,PetscInt),(pc,n)));
+  PetscTryMethod(pc,"PCGAMGSetProcEqLim_C",(PC,PetscInt),(pc,n));
   PetscFunctionReturn(0);
 }
 
@@ -908,7 +908,7 @@ PetscErrorCode PCGAMGSetCoarseEqLim(PC pc, PetscInt n)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscTryMethod(pc,"PCGAMGSetCoarseEqLim_C",(PC,PetscInt),(pc,n)));
+  PetscTryMethod(pc,"PCGAMGSetCoarseEqLim_C",(PC,PetscInt),(pc,n));
   PetscFunctionReturn(0);
 }
 
@@ -944,7 +944,7 @@ PetscErrorCode PCGAMGSetRepartition(PC pc, PetscBool n)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscTryMethod(pc,"PCGAMGSetRepartition_C",(PC,PetscBool),(pc,n)));
+  PetscTryMethod(pc,"PCGAMGSetRepartition_C",(PC,PetscBool),(pc,n));
   PetscFunctionReturn(0);
 }
 
@@ -985,7 +985,7 @@ PetscErrorCode PCGAMGSetUseSAEstEig(PC pc, PetscBool n)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscTryMethod(pc,"PCGAMGSetUseSAEstEig_C",(PC,PetscBool),(pc,n)));
+  PetscTryMethod(pc,"PCGAMGSetUseSAEstEig_C",(PC,PetscBool),(pc,n));
   PetscFunctionReturn(0);
 }
 
@@ -1020,7 +1020,7 @@ PetscErrorCode PCGAMGSetEigenvalues(PC pc, PetscReal emax,PetscReal emin)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscTryMethod(pc,"PCGAMGSetEigenvalues_C",(PC,PetscReal,PetscReal),(pc,emax,emin)));
+  PetscTryMethod(pc,"PCGAMGSetEigenvalues_C",(PC,PetscReal,PetscReal),(pc,emax,emin));
   PetscFunctionReturn(0);
 }
 
@@ -1060,7 +1060,7 @@ PetscErrorCode PCGAMGSetReuseInterpolation(PC pc, PetscBool n)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscTryMethod(pc,"PCGAMGSetReuseInterpolation_C",(PC,PetscBool),(pc,n)));
+  PetscTryMethod(pc,"PCGAMGSetReuseInterpolation_C",(PC,PetscBool),(pc,n));
   PetscFunctionReturn(0);
 }
 
@@ -1093,7 +1093,7 @@ PetscErrorCode PCGAMGASMSetUseAggs(PC pc, PetscBool flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscTryMethod(pc,"PCGAMGASMSetUseAggs_C",(PC,PetscBool),(pc,flg)));
+  PetscTryMethod(pc,"PCGAMGASMSetUseAggs_C",(PC,PetscBool),(pc,flg));
   PetscFunctionReturn(0);
 }
 
@@ -1127,7 +1127,7 @@ PetscErrorCode PCGAMGSetUseParallelCoarseGridSolve(PC pc, PetscBool flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscTryMethod(pc,"PCGAMGSetUseParallelCoarseGridSolve_C",(PC,PetscBool),(pc,flg)));
+  PetscTryMethod(pc,"PCGAMGSetUseParallelCoarseGridSolve_C",(PC,PetscBool),(pc,flg));
   PetscFunctionReturn(0);
 }
 
@@ -1161,7 +1161,7 @@ PetscErrorCode PCGAMGSetCpuPinCoarseGrids(PC pc, PetscBool flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscTryMethod(pc,"PCGAMGSetCpuPinCoarseGrids_C",(PC,PetscBool),(pc,flg)));
+  PetscTryMethod(pc,"PCGAMGSetCpuPinCoarseGrids_C",(PC,PetscBool),(pc,flg));
   PetscFunctionReturn(0);
 }
 
@@ -1195,7 +1195,7 @@ PetscErrorCode PCGAMGSetCoarseGridLayoutType(PC pc, PCGAMGLayoutType flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscTryMethod(pc,"PCGAMGSetCoarseGridLayoutType_C",(PC,PCGAMGLayoutType),(pc,flg)));
+  PetscTryMethod(pc,"PCGAMGSetCoarseGridLayoutType_C",(PC,PCGAMGLayoutType),(pc,flg));
   PetscFunctionReturn(0);
 }
 
@@ -1228,7 +1228,7 @@ PetscErrorCode PCGAMGSetNlevels(PC pc, PetscInt n)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscTryMethod(pc,"PCGAMGSetNlevels_C",(PC,PetscInt),(pc,n)));
+  PetscTryMethod(pc,"PCGAMGSetNlevels_C",(PC,PetscInt),(pc,n));
   PetscFunctionReturn(0);
 }
 
@@ -1272,7 +1272,7 @@ PetscErrorCode PCGAMGSetThreshold(PC pc, PetscReal v[], PetscInt n)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (n) PetscValidRealPointer(v,2);
-  PetscCall(PetscTryMethod(pc,"PCGAMGSetThreshold_C",(PC,PetscReal[],PetscInt),(pc,v,n)));
+  PetscTryMethod(pc,"PCGAMGSetThreshold_C",(PC,PetscReal[],PetscInt),(pc,v,n));
   PetscFunctionReturn(0);
 }
 
@@ -1309,7 +1309,7 @@ PetscErrorCode PCGAMGSetRankReductionFactors(PC pc, PetscInt v[], PetscInt n)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (n) PetscValidIntPointer(v,2);
-  PetscCall(PetscTryMethod(pc,"PCGAMGSetRankReductionFactors_C",(PC,PetscInt[],PetscInt),(pc,v,n)));
+  PetscTryMethod(pc,"PCGAMGSetRankReductionFactors_C",(PC,PetscInt[],PetscInt),(pc,v,n));
   PetscFunctionReturn(0);
 }
 
@@ -1348,7 +1348,7 @@ PetscErrorCode PCGAMGSetThresholdScale(PC pc, PetscReal v)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscTryMethod(pc,"PCGAMGSetThresholdScale_C",(PC,PetscReal),(pc,v)));
+  PetscTryMethod(pc,"PCGAMGSetThresholdScale_C",(PC,PetscReal),(pc,v));
   PetscFunctionReturn(0);
 }
 
@@ -1381,7 +1381,7 @@ PetscErrorCode PCGAMGSetType(PC pc, PCGAMGType type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscTryMethod(pc,"PCGAMGSetType_C",(PC,PCGAMGType),(pc,type)));
+  PetscTryMethod(pc,"PCGAMGSetType_C",(PC,PCGAMGType),(pc,type));
   PetscFunctionReturn(0);
 }
 
@@ -1404,7 +1404,7 @@ PetscErrorCode PCGAMGGetType(PC pc, PCGAMGType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscUseMethod(pc,"PCGAMGGetType_C",(PC,PCGAMGType*),(pc,type)));
+  PetscUseMethod(pc,"PCGAMGGetType_C",(PC,PCGAMGType*),(pc,type));
   PetscFunctionReturn(0);
 }
 

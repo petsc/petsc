@@ -1205,7 +1205,7 @@ PetscErrorCode PetscViewerExodusIIGetId(PetscViewer viewer, int *exoid)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscCall(PetscTryMethod(viewer, "PetscViewerGetId_C",(PetscViewer,int*),(viewer,exoid)));
+  PetscTryMethod(viewer, "PetscViewerGetId_C",(PetscViewer,int*),(viewer,exoid));
   PetscFunctionReturn(0);
 }
 
@@ -1230,7 +1230,7 @@ PetscErrorCode PetscViewerExodusIISetOrder(PetscViewer viewer, PetscInt order)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscCall(PetscTryMethod(viewer, "PetscViewerSetOrder_C",(PetscViewer,PetscInt),(viewer,order)));
+  PetscTryMethod(viewer, "PetscViewerSetOrder_C",(PetscViewer,PetscInt),(viewer,order));
   PetscFunctionReturn(0);
 }
 
@@ -1255,7 +1255,7 @@ PetscErrorCode PetscViewerExodusIIGetOrder(PetscViewer viewer, PetscInt *order)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscCall(PetscTryMethod(viewer, "PetscViewerGetOrder_C",(PetscViewer,PetscInt*),(viewer,order)));
+  PetscTryMethod(viewer, "PetscViewerGetOrder_C",(PetscViewer,PetscInt*),(viewer,order));
   PetscFunctionReturn(0);
 }
 

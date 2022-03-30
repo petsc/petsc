@@ -562,7 +562,7 @@ PetscErrorCode TSAlpha2SetRadius(TS ts,PetscReal radius)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidLogicalCollectiveReal(ts,radius,2);
   PetscCheckFalse(radius < 0 || radius > 1,((PetscObject)ts)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Radius %g not in range [0,1]",(double)radius);
-  PetscCall(PetscTryMethod(ts,"TSAlpha2SetRadius_C",(TS,PetscReal),(ts,radius)));
+  PetscTryMethod(ts,"TSAlpha2SetRadius_C",(TS,PetscReal),(ts,radius));
   PetscFunctionReturn(0);
 }
 
@@ -610,7 +610,7 @@ PetscErrorCode TSAlpha2SetParams(TS ts,PetscReal alpha_m,PetscReal alpha_f,Petsc
   PetscValidLogicalCollectiveReal(ts,alpha_f,3);
   PetscValidLogicalCollectiveReal(ts,gamma,4);
   PetscValidLogicalCollectiveReal(ts,beta,5);
-  PetscCall(PetscTryMethod(ts,"TSAlpha2SetParams_C",(TS,PetscReal,PetscReal,PetscReal,PetscReal),(ts,alpha_m,alpha_f,gamma,beta)));
+  PetscTryMethod(ts,"TSAlpha2SetParams_C",(TS,PetscReal,PetscReal,PetscReal,PetscReal),(ts,alpha_m,alpha_f,gamma,beta));
   PetscFunctionReturn(0);
 }
 
@@ -647,6 +647,6 @@ PetscErrorCode TSAlpha2GetParams(TS ts,PetscReal *alpha_m,PetscReal *alpha_f,Pet
   if (alpha_f) PetscValidRealPointer(alpha_f,3);
   if (gamma)   PetscValidRealPointer(gamma,4);
   if (beta)    PetscValidRealPointer(beta,5);
-  PetscCall(PetscUseMethod(ts,"TSAlpha2GetParams_C",(TS,PetscReal*,PetscReal*,PetscReal*,PetscReal*),(ts,alpha_m,alpha_f,gamma,beta)));
+  PetscUseMethod(ts,"TSAlpha2GetParams_C",(TS,PetscReal*,PetscReal*,PetscReal*,PetscReal*),(ts,alpha_m,alpha_f,gamma,beta));
   PetscFunctionReturn(0);
 }

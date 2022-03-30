@@ -2444,7 +2444,7 @@ PetscErrorCode MatMumpsSetIcntl(Mat F,PetscInt icntl,PetscInt ival)
   PetscCheck(F->factortype,PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
   PetscValidLogicalCollectiveInt(F,icntl,2);
   PetscValidLogicalCollectiveInt(F,ival,3);
-  PetscCall(PetscTryMethod(F,"MatMumpsSetIcntl_C",(Mat,PetscInt,PetscInt),(F,icntl,ival)));
+  PetscTryMethod(F,"MatMumpsSetIcntl_C",(Mat,PetscInt,PetscInt),(F,icntl,ival));
   PetscFunctionReturn(0);
 }
 
@@ -2474,7 +2474,7 @@ PetscErrorCode MatMumpsGetIcntl(Mat F,PetscInt icntl,PetscInt *ival)
   PetscCheck(F->factortype,PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
   PetscValidLogicalCollectiveInt(F,icntl,2);
   PetscValidIntPointer(ival,3);
-  PetscCall(PetscUseMethod(F,"MatMumpsGetIcntl_C",(Mat,PetscInt,PetscInt*),(F,icntl,ival)));
+  PetscUseMethod(F,"MatMumpsGetIcntl_C",(Mat,PetscInt,PetscInt*),(F,icntl,ival));
   PetscFunctionReturn(0);
 }
 
@@ -2524,7 +2524,7 @@ PetscErrorCode MatMumpsSetCntl(Mat F,PetscInt icntl,PetscReal val)
   PetscCheck(F->factortype,PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
   PetscValidLogicalCollectiveInt(F,icntl,2);
   PetscValidLogicalCollectiveReal(F,val,3);
-  PetscCall(PetscTryMethod(F,"MatMumpsSetCntl_C",(Mat,PetscInt,PetscReal),(F,icntl,val)));
+  PetscTryMethod(F,"MatMumpsSetCntl_C",(Mat,PetscInt,PetscReal),(F,icntl,val));
   PetscFunctionReturn(0);
 }
 
@@ -2554,7 +2554,7 @@ PetscErrorCode MatMumpsGetCntl(Mat F,PetscInt icntl,PetscReal *val)
   PetscCheck(F->factortype,PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
   PetscValidLogicalCollectiveInt(F,icntl,2);
   PetscValidRealPointer(val,3);
-  PetscCall(PetscUseMethod(F,"MatMumpsGetCntl_C",(Mat,PetscInt,PetscReal*),(F,icntl,val)));
+  PetscUseMethod(F,"MatMumpsGetCntl_C",(Mat,PetscInt,PetscReal*),(F,icntl,val));
   PetscFunctionReturn(0);
 }
 
@@ -2677,7 +2677,7 @@ PetscErrorCode MatMumpsGetInverse(Mat F,Mat spRHS)
   PetscFunctionBegin;
   PetscValidType(F,1);
   PetscCheck(F->factortype,PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
-  PetscCall(PetscUseMethod(F,"MatMumpsGetInverse_C",(Mat,Mat),(F,spRHS)));
+  PetscUseMethod(F,"MatMumpsGetInverse_C",(Mat,Mat),(F,spRHS));
   PetscFunctionReturn(0);
 }
 
@@ -2721,7 +2721,7 @@ PetscErrorCode MatMumpsGetInverseTranspose(Mat F,Mat spRHST)
   PetscCall(PetscObjectTypeCompareAny((PetscObject)spRHST,&flg,MATSEQAIJ,MATMPIAIJ,NULL));
   PetscCheck(flg,PetscObjectComm((PetscObject)spRHST),PETSC_ERR_ARG_WRONG,"Matrix spRHST must be MATAIJ matrix");
 
-  PetscCall(PetscUseMethod(F,"MatMumpsGetInverseTranspose_C",(Mat,Mat),(F,spRHST)));
+  PetscUseMethod(F,"MatMumpsGetInverseTranspose_C",(Mat,Mat),(F,spRHST));
   PetscFunctionReturn(0);
 }
 
@@ -2750,7 +2750,7 @@ PetscErrorCode MatMumpsGetInfo(Mat F,PetscInt icntl,PetscInt *ival)
   PetscValidType(F,1);
   PetscCheck(F->factortype,PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
   PetscValidIntPointer(ival,3);
-  PetscCall(PetscUseMethod(F,"MatMumpsGetInfo_C",(Mat,PetscInt,PetscInt*),(F,icntl,ival)));
+  PetscUseMethod(F,"MatMumpsGetInfo_C",(Mat,PetscInt,PetscInt*),(F,icntl,ival));
   PetscFunctionReturn(0);
 }
 
@@ -2779,7 +2779,7 @@ PetscErrorCode MatMumpsGetInfog(Mat F,PetscInt icntl,PetscInt *ival)
   PetscValidType(F,1);
   PetscCheck(F->factortype,PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
   PetscValidIntPointer(ival,3);
-  PetscCall(PetscUseMethod(F,"MatMumpsGetInfog_C",(Mat,PetscInt,PetscInt*),(F,icntl,ival)));
+  PetscUseMethod(F,"MatMumpsGetInfog_C",(Mat,PetscInt,PetscInt*),(F,icntl,ival));
   PetscFunctionReturn(0);
 }
 
@@ -2808,7 +2808,7 @@ PetscErrorCode MatMumpsGetRinfo(Mat F,PetscInt icntl,PetscReal *val)
   PetscValidType(F,1);
   PetscCheck(F->factortype,PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
   PetscValidRealPointer(val,3);
-  PetscCall(PetscUseMethod(F,"MatMumpsGetRinfo_C",(Mat,PetscInt,PetscReal*),(F,icntl,val)));
+  PetscUseMethod(F,"MatMumpsGetRinfo_C",(Mat,PetscInt,PetscReal*),(F,icntl,val));
   PetscFunctionReturn(0);
 }
 
@@ -2837,7 +2837,7 @@ PetscErrorCode MatMumpsGetRinfog(Mat F,PetscInt icntl,PetscReal *val)
   PetscValidType(F,1);
   PetscCheck(F->factortype,PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
   PetscValidRealPointer(val,3);
-  PetscCall(PetscUseMethod(F,"MatMumpsGetRinfog_C",(Mat,PetscInt,PetscReal*),(F,icntl,val)));
+  PetscUseMethod(F,"MatMumpsGetRinfog_C",(Mat,PetscInt,PetscReal*),(F,icntl,val));
   PetscFunctionReturn(0);
 }
 

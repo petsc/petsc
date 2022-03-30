@@ -1342,7 +1342,7 @@ PetscErrorCode TaoADMMSetRegularizerType(Tao tao, TaoADMMRegularizerType type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidLogicalCollectiveEnum(tao,type,2);
-  PetscCall(PetscTryMethod(tao,"TaoADMMSetRegularizerType_C",(Tao,TaoADMMRegularizerType),(tao,type)));
+  PetscTryMethod(tao,"TaoADMMSetRegularizerType_C",(Tao,TaoADMMRegularizerType),(tao,type));
   PetscFunctionReturn(0);
 }
 
@@ -1365,7 +1365,7 @@ PetscErrorCode TaoADMMGetRegularizerType(Tao tao, TaoADMMRegularizerType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  PetscCall(PetscUseMethod(tao,"TaoADMMGetRegularizerType_C",(Tao,TaoADMMRegularizerType*),(tao,type)));
+  PetscUseMethod(tao,"TaoADMMGetRegularizerType_C",(Tao,TaoADMMRegularizerType*),(tao,type));
   PetscFunctionReturn(0);
 }
 
@@ -1387,7 +1387,7 @@ PetscErrorCode TaoADMMSetUpdateType(Tao tao, TaoADMMUpdateType type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidLogicalCollectiveEnum(tao,type,2);
-  PetscCall(PetscTryMethod(tao,"TaoADMMSetUpdateType_C",(Tao,TaoADMMUpdateType),(tao,type)));
+  PetscTryMethod(tao,"TaoADMMSetUpdateType_C",(Tao,TaoADMMUpdateType),(tao,type));
   PetscFunctionReturn(0);
 }
 
@@ -1410,6 +1410,6 @@ PetscErrorCode TaoADMMGetUpdateType(Tao tao, TaoADMMUpdateType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  PetscCall(PetscUseMethod(tao,"TaoADMMGetUpdateType_C",(Tao,TaoADMMUpdateType*),(tao,type)));
+  PetscUseMethod(tao,"TaoADMMGetUpdateType_C",(Tao,TaoADMMUpdateType*),(tao,type));
   PetscFunctionReturn(0);
 }

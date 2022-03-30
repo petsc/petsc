@@ -405,7 +405,7 @@ PetscErrorCode SNESQNSetRestartType(SNES snes, SNESQNRestartType rtype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  PetscCall(PetscTryMethod(snes,"SNESQNSetRestartType_C",(SNES,SNESQNRestartType),(snes,rtype)));
+  PetscTryMethod(snes,"SNESQNSetRestartType_C",(SNES,SNESQNRestartType),(snes,rtype));
   PetscFunctionReturn(0);
 }
 
@@ -437,7 +437,7 @@ PetscErrorCode SNESQNSetScaleType(SNES snes, SNESQNScaleType stype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  PetscCall(PetscTryMethod(snes,"SNESQNSetScaleType_C",(SNES,SNESQNScaleType),(snes,stype)));
+  PetscTryMethod(snes,"SNESQNSetScaleType_C",(SNES,SNESQNScaleType),(snes,stype));
   PetscFunctionReturn(0);
 }
 
@@ -485,7 +485,7 @@ PetscErrorCode SNESQNSetType(SNES snes, SNESQNType qtype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  PetscCall(PetscTryMethod(snes,"SNESQNSetType_C",(SNES,SNESQNType),(snes,qtype)));
+  PetscTryMethod(snes,"SNESQNSetType_C",(SNES,SNESQNType),(snes,qtype));
   PetscFunctionReturn(0);
 }
 

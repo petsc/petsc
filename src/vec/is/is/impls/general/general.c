@@ -554,7 +554,7 @@ PetscErrorCode  ISGeneralSetIndices(IS is,PetscInt n,const PetscInt idx[],PetscC
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   if (n) PetscValidIntPointer(idx,3);
   PetscCall(ISClearInfoCache(is,PETSC_FALSE));
-  PetscCall(PetscUseMethod(is,"ISGeneralSetIndices_C",(IS,PetscInt,const PetscInt[],PetscCopyMode),(is,n,idx,mode)));
+  PetscUseMethod(is,"ISGeneralSetIndices_C",(IS,PetscInt,const PetscInt[],PetscCopyMode),(is,n,idx,mode));
   PetscFunctionReturn(0);
 }
 
@@ -622,7 +622,7 @@ PetscErrorCode ISGeneralSetIndicesFromMask(IS is,PetscInt rstart,PetscInt rend,c
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   if (rend-rstart) PetscValidBoolPointer(mask,4);
   PetscCall(ISClearInfoCache(is,PETSC_FALSE));
-  PetscCall(PetscUseMethod(is,"ISGeneralSetIndicesFromMask_C",(IS,PetscInt,PetscInt,const PetscBool[]),(is,rstart,rend,mask)));
+  PetscUseMethod(is,"ISGeneralSetIndicesFromMask_C",(IS,PetscInt,PetscInt,const PetscBool[]),(is,rstart,rend,mask));
   PetscFunctionReturn(0);
 }
 
@@ -682,7 +682,7 @@ PetscErrorCode ISGeneralFilter(IS is, PetscInt start, PetscInt end)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscCall(ISClearInfoCache(is,PETSC_FALSE));
-  PetscCall(PetscUseMethod(is,"ISGeneralFilter_C",(IS,PetscInt,PetscInt),(is,start,end)));
+  PetscUseMethod(is,"ISGeneralFilter_C",(IS,PetscInt,PetscInt),(is,start,end));
   PetscFunctionReturn(0);
 }
 

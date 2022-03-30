@@ -427,7 +427,7 @@ PetscErrorCode KSPLSQRMonitorResidual(KSP ksp, PetscInt n, PetscReal rnorm, Pets
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidPointer(vf, 4);
   PetscValidHeaderSpecific(vf->viewer, PETSC_VIEWER_CLASSID, 4);
-  PetscCall(PetscTryMethod(ksp, "KSPLSQRMonitorResidual_C", (KSP,PetscInt,PetscReal,PetscViewerAndFormat*), (ksp,n,rnorm,vf)));
+  PetscTryMethod(ksp, "KSPLSQRMonitorResidual_C", (KSP,PetscInt,PetscReal,PetscViewerAndFormat*), (ksp,n,rnorm,vf));
   PetscFunctionReturn(0);
 }
 
@@ -484,7 +484,7 @@ PetscErrorCode KSPLSQRMonitorResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm
   PetscValidPointer(vf, 4);
   PetscValidHeaderSpecific(vf->viewer, PETSC_VIEWER_CLASSID, 4);
   PetscValidHeaderSpecific(vf->lg, PETSC_DRAWLG_CLASSID, 4);
-  PetscCall(PetscTryMethod(ksp, "KSPLSQRMonitorResidualDrawLG_C", (KSP,PetscInt,PetscReal,PetscViewerAndFormat*), (ksp,n,rnorm,vf)));
+  PetscTryMethod(ksp, "KSPLSQRMonitorResidualDrawLG_C", (KSP,PetscInt,PetscReal,PetscViewerAndFormat*), (ksp,n,rnorm,vf));
   PetscFunctionReturn(0);
 }
 

@@ -364,7 +364,7 @@ PetscErrorCode PCPARMSSetGlobal(PC pc,PCPARMSGlobalType type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveEnum(pc,type,2);
-  PetscCall(PetscTryMethod(pc,"PCPARMSSetGlobal_C",(PC,PCPARMSGlobalType),(pc,type)));
+  PetscTryMethod(pc,"PCPARMSSetGlobal_C",(PC,PCPARMSGlobalType),(pc,type));
   PetscFunctionReturn(0);
 }
 
@@ -414,7 +414,7 @@ PetscErrorCode PCPARMSSetLocal(PC pc,PCPARMSLocalType type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveEnum(pc,type,2);
-  PetscCall(PetscTryMethod(pc,"PCPARMSSetLocal_C",(PC,PCPARMSLocalType),(pc,type)));
+  PetscTryMethod(pc,"PCPARMSSetLocal_C",(PC,PCPARMSLocalType),(pc,type));
   PetscFunctionReturn(0);
 }
 
@@ -460,7 +460,7 @@ PetscErrorCode PCPARMSSetSolveTolerances(PC pc,PetscReal tol,PetscInt maxits)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscTryMethod(pc,"PCPARMSSetSolveTolerances_C",(PC,PetscReal,PetscInt),(pc,tol,maxits)));
+  PetscTryMethod(pc,"PCPARMSSetSolveTolerances_C",(PC,PetscReal,PetscInt),(pc,tol,maxits));
   PetscFunctionReturn(0);
 }
 
@@ -500,7 +500,7 @@ PetscErrorCode PCPARMSSetSolveRestart(PC pc,PetscInt restart)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscTryMethod(pc,"PCPARMSSetSolveRestart_C",(PC,PetscInt),(pc,restart)));
+  PetscTryMethod(pc,"PCPARMSSetSolveRestart_C",(PC,PetscInt),(pc,restart));
   PetscFunctionReturn(0);
 }
 
@@ -541,7 +541,7 @@ PetscErrorCode PCPARMSSetNonsymPerm(PC pc,PetscBool nonsym)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscTryMethod(pc,"PCPARMSSetNonsymPerm_C",(PC,PetscBool),(pc,nonsym)));
+  PetscTryMethod(pc,"PCPARMSSetNonsymPerm_C",(PC,PetscBool),(pc,nonsym));
   PetscFunctionReturn(0);
 }
 
@@ -594,7 +594,7 @@ PetscErrorCode PCPARMSSetFill(PC pc,PetscInt lfil0,PetscInt lfil1,PetscInt lfil2
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscTryMethod(pc,"PCPARMSSetFill_C",(PC,PetscInt,PetscInt,PetscInt),(pc,lfil0,lfil1,lfil2)));
+  PetscTryMethod(pc,"PCPARMSSetFill_C",(PC,PetscInt,PetscInt,PetscInt),(pc,lfil0,lfil1,lfil2));
   PetscFunctionReturn(0);
 }
 

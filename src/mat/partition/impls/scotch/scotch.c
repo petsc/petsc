@@ -39,7 +39,7 @@ PetscErrorCode MatPartitioningPTScotchSetImbalance(MatPartitioning part,PetscRea
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
   PetscValidLogicalCollectiveReal(part,imb,2);
-  PetscCall(PetscTryMethod(part,"MatPartitioningPTScotchSetImbalance_C",(MatPartitioning,PetscReal),(part,imb)));
+  PetscTryMethod(part,"MatPartitioningPTScotchSetImbalance_C",(MatPartitioning,PetscReal),(part,imb));
   PetscFunctionReturn(0);
 }
 
@@ -77,7 +77,7 @@ PetscErrorCode MatPartitioningPTScotchGetImbalance(MatPartitioning part,PetscRea
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
   PetscValidPointer(imb,2);
-  PetscCall(PetscUseMethod(part,"MatPartitioningPTScotchGetImbalance_C",(MatPartitioning,PetscReal*),(part,imb)));
+  PetscUseMethod(part,"MatPartitioningPTScotchGetImbalance_C",(MatPartitioning,PetscReal*),(part,imb));
   PetscFunctionReturn(0);
 }
 
@@ -122,7 +122,7 @@ PetscErrorCode MatPartitioningPTScotchSetStrategy(MatPartitioning part,MPPTScotc
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
   PetscValidLogicalCollectiveEnum(part,strategy,2);
-  PetscCall(PetscTryMethod(part,"MatPartitioningPTScotchSetStrategy_C",(MatPartitioning,MPPTScotchStrategyType),(part,strategy)));
+  PetscTryMethod(part,"MatPartitioningPTScotchSetStrategy_C",(MatPartitioning,MPPTScotchStrategyType),(part,strategy));
   PetscFunctionReturn(0);
 }
 
@@ -162,7 +162,7 @@ PetscErrorCode MatPartitioningPTScotchGetStrategy(MatPartitioning part,MPPTScotc
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
   PetscValidPointer(strategy,2);
-  PetscCall(PetscUseMethod(part,"MatPartitioningPTScotchGetStrategy_C",(MatPartitioning,MPPTScotchStrategyType*),(part,strategy)));
+  PetscUseMethod(part,"MatPartitioningPTScotchGetStrategy_C",(MatPartitioning,MPPTScotchStrategyType*),(part,strategy));
   PetscFunctionReturn(0);
 }
 

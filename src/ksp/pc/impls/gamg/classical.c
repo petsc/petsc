@@ -29,7 +29,7 @@ PetscErrorCode PCGAMGClassicalSetType(PC pc, PCGAMGClassicalType type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscTryMethod(pc,"PCGAMGClassicalSetType_C",(PC,PCGAMGClassicalType),(pc,type)));
+  PetscTryMethod(pc,"PCGAMGClassicalSetType_C",(PC,PCGAMGClassicalType),(pc,type));
   PetscFunctionReturn(0);
 }
 
@@ -52,7 +52,7 @@ PetscErrorCode PCGAMGClassicalGetType(PC pc, PCGAMGClassicalType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscUseMethod(pc,"PCGAMGClassicalGetType_C",(PC,PCGAMGClassicalType*),(pc,type)));
+  PetscUseMethod(pc,"PCGAMGClassicalGetType_C",(PC,PCGAMGClassicalType*),(pc,type));
   PetscFunctionReturn(0);
 }
 

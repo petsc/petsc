@@ -177,7 +177,7 @@ PetscErrorCode  PCKSPSetKSP(PC pc,KSP ksp)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,2);
   PetscCheckSameComm(pc,1,ksp,2);
-  PetscCall(PetscTryMethod(pc,"PCKSPSetKSP_C",(PC,KSP),(pc,ksp)));
+  PetscTryMethod(pc,"PCKSPSetKSP_C",(PC,KSP),(pc,ksp));
   PetscFunctionReturn(0);
 }
 
@@ -215,7 +215,7 @@ PetscErrorCode  PCKSPGetKSP(PC pc,KSP *ksp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(ksp,2);
-  PetscCall(PetscUseMethod(pc,"PCKSPGetKSP_C",(PC,KSP*),(pc,ksp)));
+  PetscUseMethod(pc,"PCKSPGetKSP_C",(PC,KSP*),(pc,ksp));
   PetscFunctionReturn(0);
 }
 

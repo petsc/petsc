@@ -409,7 +409,7 @@ PetscErrorCode SNESNGMRESSetRestartType(SNES snes,SNESNGMRESRestartType rtype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  PetscCall(PetscTryMethod(snes,"SNESNGMRESSetRestartType_C",(SNES,SNESNGMRESRestartType),(snes,rtype)));
+  PetscTryMethod(snes,"SNESNGMRESSetRestartType_C",(SNES,SNESNGMRESRestartType),(snes,rtype));
   PetscFunctionReturn(0);
 }
 
@@ -441,7 +441,7 @@ PetscErrorCode SNESNGMRESSetSelectType(SNES snes,SNESNGMRESSelectType stype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  PetscCall(PetscTryMethod(snes,"SNESNGMRESSetSelectType_C",(SNES,SNESNGMRESSelectType),(snes,stype)));
+  PetscTryMethod(snes,"SNESNGMRESSetSelectType_C",(SNES,SNESNGMRESSelectType),(snes,stype));
   PetscFunctionReturn(0);
 }
 

@@ -4253,7 +4253,7 @@ PetscErrorCode MatSeqAIJInvalidateDiagonal_Inode(Mat A)
 PetscErrorCode  MatInodeAdjustForInodes(Mat A,IS *rperm,IS *cperm)
 {
   PetscFunctionBegin;
-  PetscCall(PetscTryMethod(A,"MatInodeAdjustForInodes_C",(Mat,IS*,IS*),(A,rperm,cperm)));
+  PetscTryMethod(A,"MatInodeAdjustForInodes_C",(Mat,IS*,IS*),(A,rperm,cperm));
   PetscFunctionReturn(0);
 }
 

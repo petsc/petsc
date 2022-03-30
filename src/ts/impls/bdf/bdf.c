@@ -547,7 +547,7 @@ PetscErrorCode TSBDFSetOrder(TS ts,PetscInt order)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidLogicalCollectiveInt(ts,order,2);
-  PetscCall(PetscTryMethod(ts,"TSBDFSetOrder_C",(TS,PetscInt),(ts,order)));
+  PetscTryMethod(ts,"TSBDFSetOrder_C",(TS,PetscInt),(ts,order));
   PetscFunctionReturn(0);
 }
 
@@ -570,6 +570,6 @@ PetscErrorCode TSBDFGetOrder(TS ts,PetscInt *order)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidIntPointer(order,2);
-  PetscCall(PetscUseMethod(ts,"TSBDFGetOrder_C",(TS,PetscInt*),(ts,order)));
+  PetscUseMethod(ts,"TSBDFGetOrder_C",(TS,PetscInt*),(ts,order));
   PetscFunctionReturn(0);
 }
