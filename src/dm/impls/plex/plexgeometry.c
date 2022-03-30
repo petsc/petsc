@@ -2583,6 +2583,10 @@ static PetscErrorCode BuildGradientReconstruction_Internal(DM dm, PetscFV fvm, D
     PetscBool              boundary;
     PetscInt               ghost;
 
+    // do not attempt to compute a gradient reconstruction stencil in a ghost cell.  It will never be used
+    PetscCall(DMLabelGetValue(ghostLabel, c, &ghost));
+    if (ghost >= 0) continue;
+
     PetscCall(DMPlexPointLocalRead(dmCell, c, cgeom, &cg));
     PetscCall(DMPlexGetConeSize(dm, c, &numFaces));
     PetscCall(DMPlexGetCone(dm, c, &faces));
@@ -2699,8 +2703,12 @@ static PetscErrorCode BuildGradientReconstruction_Internal_Tree(DM dm, PetscFV f
     PetscCall(DMPlexPointLocalRead(dmCell, c, cgeom, &cg));
     PetscCall(PetscSectionGetDof(neighSec, c, &numFaces));
     PetscCall(PetscSectionGetOffset(neighSec, c, &off));
+
+    // do not attempt to compute a gradient reconstruction stencil in a ghost cell.  It will never be used
     if (ghostLabel) PetscCall(DMLabelGetValue(ghostLabel, c, &ghost));
-    PetscCheckFalse(ghost < 0 && numFaces < dim,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cell %D has only %D faces, not enough for gradient reconstruction", c, numFaces);
+    if (ghost >= 0) continue;
+
+    PetscCheckFalse(numFaces < dim,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cell %D has only %D faces, not enough for gradient reconstruction", c, numFaces);
     for (f = 0; f < numFaces; ++f) {
       PetscFVCellGeom       *cg1;
       PetscFVFaceGeom       *fg;
