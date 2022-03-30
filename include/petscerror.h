@@ -408,8 +408,8 @@ void PetscCallMPI(PetscErrorCode);
     if (PetscUnlikely(_7_errorcode)) {                                                         \
       char        _7_errorstring[MPI_MAX_ERROR_STRING];                                        \
       PetscMPIInt _7_resultlen;                                                                \
-      MPI_Error_string(_7_errorcode,(char*)_7_errorstring,&_7_resultlen); (void)_7_resultlen;  \
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MPI,"MPI error %d %s",(int)_7_errorcode,_7_errorstring); \
+      MPI_Error_string(_7_errorcode,(char*)_7_errorstring,&_7_resultlen); \
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MPI,"MPI error %d %s Ignore the following value %d",(int)_7_errorcode,_7_errorstring,_7_resultlen); \
     }                                                                                          \
   } while (0)
 #endif
