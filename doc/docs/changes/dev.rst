@@ -23,6 +23,8 @@ Changes: Development
 
 .. rubric:: IS:
 
+- Add ``PetscSectionCreateSubdomainSection()``
+
 .. rubric:: VecScatter / PetscSF:
 
 .. rubric:: PF:
@@ -62,4 +64,3 @@ Changes: Development
 .. rubric:: DT:
 
 .. rubric:: Fortran:
-
