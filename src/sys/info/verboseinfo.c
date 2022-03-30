@@ -429,7 +429,7 @@ PetscErrorCode PetscInfoDestroy(void)
     PetscCall(PetscFClose(MPI_COMM_SELF, PetscInfoFile));
   }
   PetscCall(PetscFree(PetscInfoFilename));
-  for (i=0; i<sizeof(PetscInfoFlags)/sizeof(PetscInfoFlags[0]); i++) PetscInfoFlags[i] = 1;
+  for (i=0; i<PETSC_STATIC_ARRAY_LENGTH(PetscInfoFlags); i++) PetscInfoFlags[i] = 1;
   PetscInfoClassesLocked = PETSC_FALSE;
   PetscInfoInvertClasses = PETSC_FALSE;
   PetscInfoClassesSet = PETSC_FALSE;

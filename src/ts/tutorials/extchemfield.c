@@ -400,7 +400,7 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
   PetscCall(DMDAVecGetArrayDOF(dm,X,&x));
   for (i=xs; i<xs+xm; i++) {
     x[i][0] = 1.0 + .05*PetscSinScalar(2.*PETSC_PI*xc[i]);  /* Non-dimensionalized by user->Tini */
-    for (j=0; j<sizeof(initial)/sizeof(initial[0]); j++) {
+    for (j=0; j<PETSC_STATIC_ARRAY_LENGTH(initial); j++) {
       int ispec = TC_getSpos(initial[j].name, strlen(initial[j].name));
       PetscCheck(ispec >= 0,PETSC_COMM_SELF,PETSC_ERR_USER,"Could not find species %s",initial[j].name);
       PetscCall(PetscPrintf(PETSC_COMM_SELF,"Species %d: %s %g\n",j,initial[j].name,initial[j].massfrac));

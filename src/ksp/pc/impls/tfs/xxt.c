@@ -166,10 +166,10 @@ PetscErrorCode XXT_stats(xxt_ADT xxt_handle)
   vals[0]=vals[1]=vals[2]=xxt_handle->info->nnz;
   vals[3]=vals[4]=vals[5]=xxt_handle->mvi->n;
   vals[6]=vals[7]=vals[8]=xxt_handle->info->msg_buf_sz;
-  PCTFS_giop(vals,work,sizeof(op)/sizeof(op[0])-1,op);
+  PCTFS_giop(vals,work,PETSC_STATIC_ARRAY_LENGTH(op)-1,op);
 
   fvals[0]=fvals[1]=fvals[2] =xxt_handle->info->tot_solve_time/xxt_handle->info->nsolves++;
-  PCTFS_grop(fvals,fwork,sizeof(fop)/sizeof(fop[0])-1,fop);
+  PCTFS_grop(fvals,fwork,PETSC_STATIC_ARRAY_LENGTH(fop)-1,fop);
 
   if (!PCTFS_my_id) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%D :: min   xxt_nnz=%D\n",PCTFS_my_id,vals[0]));
@@ -518,7 +518,7 @@ static PetscErrorCode check_handle(xxt_ADT xxt_handle)
   PetscCheck(xxt_handle,PETSC_COMM_SELF,PETSC_ERR_PLIB,"check_handle() :: bad handle :: NULL %D",xxt_handle);
 
   vals[0]=vals[1]=xxt_handle->id;
-  PCTFS_giop(vals,work,sizeof(op)/sizeof(op[0])-1,op);
+  PCTFS_giop(vals,work,PETSC_STATIC_ARRAY_LENGTH(op)-1,op);
   PetscCheckFalse((vals[0]!=vals[1])||(xxt_handle->id<=0),PETSC_COMM_SELF,PETSC_ERR_PLIB,"check_handle() :: bad handle :: id mismatch min/max %D/%D %D",vals[0],vals[1], xxt_handle->id);
   PetscFunctionReturn(0);
 }

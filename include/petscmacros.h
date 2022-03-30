@@ -831,4 +831,11 @@ M*/
 
 #endif /* !PETSC_SKIP_VARIADIC_MACROS */
 
+/*MC
+  PETSC_STATIC_ARRAY_LENGTH - Return the length of a static array
+
+  Level: intermediate
+M*/
+#define PETSC_STATIC_ARRAY_LENGTH(a) (sizeof(a)/sizeof((a)[0]))
+
 #endif /* PETSC_PREPROCESSOR_MACROS_H */

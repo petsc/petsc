@@ -41,7 +41,6 @@ F*/
 #include <petscblaslapack.h>
 
 #define DIM 2                   /* Geometric dimension */
-#define ALEN(a) (sizeof(a)/sizeof((a)[0]))
 
 static PetscFunctionList PhysicsList;
 
@@ -316,8 +315,8 @@ static PetscErrorCode PhysicsCreate_Advect(PetscDS prob, Model mod,Physics phys,
 
     PetscCall(DMGetLabel(dm, "Face Sets", &label));
     /* Register "canned" boundary conditions and defaults for where to apply. */
-    PetscCall(PetscDSAddBoundary(prob, PETSC_TRUE, "inflow",  label, ALEN(inflowids),  inflowids,  0, 0, NULL, (void (*)()) PhysicsBoundary_Advect_Inflow,  NULL,  phys, NULL));
-    PetscCall(PetscDSAddBoundary(prob, PETSC_TRUE, "outflow", label, ALEN(outflowids), outflowids, 0, 0, NULL, (void (*)()) PhysicsBoundary_Advect_Outflow, NULL, phys, NULL));
+    PetscCall(PetscDSAddBoundary(prob, PETSC_TRUE, "inflow",  label, PETSC_STATIC_ARRAY_LENGTH(inflowids),  inflowids,  0, 0, NULL, (void (*)()) PhysicsBoundary_Advect_Inflow,  NULL,  phys, NULL));
+    PetscCall(PetscDSAddBoundary(prob, PETSC_TRUE, "outflow", label, PETSC_STATIC_ARRAY_LENGTH(outflowids), outflowids, 0, 0, NULL, (void (*)()) PhysicsBoundary_Advect_Outflow, NULL, phys, NULL));
     /* Initial/transient solution with default boundary conditions */
     PetscCall(ModelSolutionSetDefault(mod,PhysicsSolution_Advect,phys));
     /* Register "canned" functionals */
@@ -449,7 +448,7 @@ static PetscErrorCode PhysicsCreate_SW(PetscDS prob, Model mod,Physics phys,Pets
     DMLabel        label;
 
     PetscCall(DMGetLabel(dm, "Face Sets", &label));
-    PetscCall(PetscDSAddBoundary(prob, PETSC_TRUE, "wall", label, ALEN(wallids), wallids, 0, 0, NULL, (void (*)()) PhysicsBoundary_SW_Wall, NULL, phys, NULL));
+    PetscCall(PetscDSAddBoundary(prob, PETSC_TRUE, "wall", label, PETSC_STATIC_ARRAY_LENGTH(wallids), wallids, 0, 0, NULL, (void (*)()) PhysicsBoundary_SW_Wall, NULL, phys, NULL));
     PetscCall(ModelSolutionSetDefault(mod,PhysicsSolution_SW,phys));
     PetscCall(ModelFunctionalRegister(mod,"Height",&sw->functional.Height,PhysicsFunctional_SW,phys));
     PetscCall(ModelFunctionalRegister(mod,"Speed",&sw->functional.Speed,PhysicsFunctional_SW,phys));
@@ -620,7 +619,7 @@ static PetscErrorCode PhysicsCreate_Euler(PetscDS prob, Model mod,Physics phys,P
     DMLabel        label;
 
     PetscCall(DMGetLabel(dm, "Face Sets", &label));
-    PetscCall(PetscDSAddBoundary(prob, PETSC_TRUE, "wall", label, ALEN(wallids), wallids, 0, 0, NULL, (void (*)()) PhysicsBoundary_Euler_Wall, NULL, phys, NULL));
+    PetscCall(PetscDSAddBoundary(prob, PETSC_TRUE, "wall", label, PETSC_STATIC_ARRAY_LENGTH(wallids), wallids, 0, 0, NULL, (void (*)()) PhysicsBoundary_Euler_Wall, NULL, phys, NULL));
     PetscCall(ModelSolutionSetDefault(mod,PhysicsSolution_Euler,phys));
     PetscCall(ModelFunctionalRegister(mod,"Speed",&eu->monitor.Speed,PhysicsFunctional_Euler,phys));
     PetscCall(ModelFunctionalRegister(mod,"Energy",&eu->monitor.Energy,PhysicsFunctional_Euler,phys));
@@ -1130,7 +1129,7 @@ static PetscErrorCode ModelFunctionalSetFromOptions(Model mod,PetscOptions *Pets
   char           *names[256];
 
   PetscFunctionBeginUser;
-  mod->numMonitored = ALEN(names);
+  mod->numMonitored = PETSC_STATIC_ARRAY_LENGTH(names);
   PetscCall(PetscOptionsStringArray("-monitor","list of functionals to monitor","",names,&mod->numMonitored,NULL));
   /* Create list of functionals that will be computed somehow */
   PetscCall(PetscMalloc1(mod->numMonitored,&mod->functionalMonitored));

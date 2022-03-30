@@ -405,7 +405,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftyp
     case 2: lu->Control[UMFPACK_STRATEGY] = UMFPACK_STRATEGY_SYMMETRIC; break;
     }
   }
-  PetscCall(PetscOptionsEList("-mat_umfpack_ordering","Internal ordering method","None",UmfpackOrderingTypes,sizeof(UmfpackOrderingTypes)/sizeof(UmfpackOrderingTypes[0]),UmfpackOrderingTypes[(int)lu->Control[UMFPACK_ORDERING]],&idx,&flg));
+  PetscCall(PetscOptionsEList("-mat_umfpack_ordering","Internal ordering method","None",UmfpackOrderingTypes,PETSC_STATIC_ARRAY_LENGTH(UmfpackOrderingTypes),UmfpackOrderingTypes[(int)lu->Control[UMFPACK_ORDERING]],&idx,&flg));
   if (flg) lu->Control[UMFPACK_ORDERING] = (int)idx;
   PetscCall(PetscOptionsReal("-mat_umfpack_dense_col","Control[UMFPACK_DENSE_COL]","None",lu->Control[UMFPACK_DENSE_COL],&lu->Control[UMFPACK_DENSE_COL],NULL));
   PetscCall(PetscOptionsReal("-mat_umfpack_dense_row","Control[UMFPACK_DENSE_ROW]","None",lu->Control[UMFPACK_DENSE_ROW],&lu->Control[UMFPACK_DENSE_ROW],NULL));

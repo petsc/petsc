@@ -14,8 +14,6 @@ F*/
 
 #include <petsc/private/dmpleximpl.h> /* For DotD */
 
-#define ALEN(a) (sizeof(a)/sizeof((a)[0]))
-
 typedef enum {VEL_ZERO, VEL_CONSTANT, VEL_HARMONIC, VEL_SHEAR} VelocityDistribution;
 
 typedef enum {ZERO, CONSTANT, GAUSSIAN, TILTED, DELTA} PorosityDistribution;
@@ -108,7 +106,7 @@ static PetscErrorCode ProcessMonitorOptions(MPI_Comm comm, AppCtx *options)
 
   PetscFunctionBeginUser;
   ierr = PetscOptionsBegin(comm, "", "Simulation Monitor Options", "DMPLEX");PetscCall(ierr);
-  options->numMonitorFuncs = ALEN(names);
+  options->numMonitorFuncs = PETSC_STATIC_ARRAY_LENGTH(names);
   PetscCall(PetscOptionsStringArray("-monitor", "List of functionals to monitor", "", names, &options->numMonitorFuncs, NULL));
   PetscCall(PetscMalloc1(options->numMonitorFuncs, &options->monitorFuncs));
   for (f = 0; f < options->numMonitorFuncs; ++f) {
@@ -718,8 +716,8 @@ static PetscErrorCode SetupBC(DM dm, AppCtx *user)
   if (label && user->useFV) {
     const PetscInt inflowids[] = {100,200,300}, outflowids[] = {101};
 
-    PetscCall(DMAddBoundary(dm, DM_BC_NATURAL_RIEMANN, "inflow",  label,  ALEN(inflowids),  inflowids, 1, 0, NULL, (void (*)(void)) advect_inflow, NULL, user, NULL));
-    PetscCall(DMAddBoundary(dm, DM_BC_NATURAL_RIEMANN, "outflow", label, ALEN(outflowids), outflowids, 1, 0, NULL, (void (*)(void)) advect_outflow, NULL, user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_NATURAL_RIEMANN, "inflow",  label,  PETSC_STATIC_ARRAY_LENGTH(inflowids),  inflowids, 1, 0, NULL, (void (*)(void)) advect_inflow, NULL, user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_NATURAL_RIEMANN, "outflow", label, PETSC_STATIC_ARRAY_LENGTH(outflowids), outflowids, 1, 0, NULL, (void (*)(void)) advect_outflow, NULL, user, NULL));
   }
   PetscFunctionReturn(0);
 }

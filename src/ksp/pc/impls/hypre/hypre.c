@@ -642,9 +642,6 @@ static PetscErrorCode PCApplyTranspose_HYPRE_BoomerAMG(PC pc,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-/* static array length */
-#define ALEN(a) (sizeof(a)/sizeof((a)[0]))
-
 static PetscErrorCode PCMGGalerkinSetMatProductAlgorithm_HYPRE_BoomerAMG(PC pc,const char name[])
 {
   PC_HYPRE *jac  = (PC_HYPRE*)pc->data;
@@ -823,7 +820,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PetscOptionItems *PetscOp
   }
 
   /* Smooth type */
-  PetscCall(PetscOptionsEList("-pc_hypre_boomeramg_smooth_type","Enable more complex smoothers","None",HYPREBoomerAMGSmoothType,ALEN(HYPREBoomerAMGSmoothType),HYPREBoomerAMGSmoothType[0],&indx,&flg));
+  PetscCall(PetscOptionsEList("-pc_hypre_boomeramg_smooth_type","Enable more complex smoothers","None",HYPREBoomerAMGSmoothType,PETSC_STATIC_ARRAY_LENGTH(HYPREBoomerAMGSmoothType),HYPREBoomerAMGSmoothType[0],&indx,&flg));
   if (flg) {
     jac->smoothtype = indx;
     PetscStackCallStandard(HYPRE_BoomerAMGSetSmoothType,jac->hsolver,indx+6);
@@ -861,7 +858,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PetscOptionItems *PetscOp
   }
 
   /* Relax type */
-  PetscCall(PetscOptionsEList("-pc_hypre_boomeramg_relax_type_all","Relax type for the up and down cycles","None",HYPREBoomerAMGRelaxType,ALEN(HYPREBoomerAMGRelaxType),HYPREBoomerAMGRelaxType[6],&indx,&flg));
+  PetscCall(PetscOptionsEList("-pc_hypre_boomeramg_relax_type_all","Relax type for the up and down cycles","None",HYPREBoomerAMGRelaxType,PETSC_STATIC_ARRAY_LENGTH(HYPREBoomerAMGRelaxType),HYPREBoomerAMGRelaxType[6],&indx,&flg));
   if (flg) {
     jac->relaxtype[0] = jac->relaxtype[1]  = indx;
     PetscStackCallStandard(HYPRE_BoomerAMGSetRelaxType,jac->hsolver, indx);
@@ -869,17 +866,17 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PetscOptionItems *PetscOp
     jac->relaxtype[2] = 9;
     PetscStackCallStandard(HYPRE_BoomerAMGSetCycleRelaxType,jac->hsolver, 9, 3);
   }
-  PetscCall(PetscOptionsEList("-pc_hypre_boomeramg_relax_type_down","Relax type for the down cycles","None",HYPREBoomerAMGRelaxType,ALEN(HYPREBoomerAMGRelaxType),HYPREBoomerAMGRelaxType[6],&indx,&flg));
+  PetscCall(PetscOptionsEList("-pc_hypre_boomeramg_relax_type_down","Relax type for the down cycles","None",HYPREBoomerAMGRelaxType,PETSC_STATIC_ARRAY_LENGTH(HYPREBoomerAMGRelaxType),HYPREBoomerAMGRelaxType[6],&indx,&flg));
   if (flg) {
     jac->relaxtype[0] = indx;
     PetscStackCallStandard(HYPRE_BoomerAMGSetCycleRelaxType,jac->hsolver, indx, 1);
   }
-  PetscCall(PetscOptionsEList("-pc_hypre_boomeramg_relax_type_up","Relax type for the up cycles","None",HYPREBoomerAMGRelaxType,ALEN(HYPREBoomerAMGRelaxType),HYPREBoomerAMGRelaxType[6],&indx,&flg));
+  PetscCall(PetscOptionsEList("-pc_hypre_boomeramg_relax_type_up","Relax type for the up cycles","None",HYPREBoomerAMGRelaxType,PETSC_STATIC_ARRAY_LENGTH(HYPREBoomerAMGRelaxType),HYPREBoomerAMGRelaxType[6],&indx,&flg));
   if (flg) {
     jac->relaxtype[1] = indx;
     PetscStackCallStandard(HYPRE_BoomerAMGSetCycleRelaxType,jac->hsolver, indx, 2);
   }
-  PetscCall(PetscOptionsEList("-pc_hypre_boomeramg_relax_type_coarse","Relax type on coarse grid","None",HYPREBoomerAMGRelaxType,ALEN(HYPREBoomerAMGRelaxType),HYPREBoomerAMGRelaxType[9],&indx,&flg));
+  PetscCall(PetscOptionsEList("-pc_hypre_boomeramg_relax_type_coarse","Relax type on coarse grid","None",HYPREBoomerAMGRelaxType,PETSC_STATIC_ARRAY_LENGTH(HYPREBoomerAMGRelaxType),HYPREBoomerAMGRelaxType[9],&indx,&flg));
   if (flg) {
     jac->relaxtype[2] = indx;
     PetscStackCallStandard(HYPRE_BoomerAMGSetCycleRelaxType,jac->hsolver, indx, 3);
@@ -926,13 +923,13 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PetscOptionItems *PetscOp
     jac->relaxorder = 0;
     PetscStackCallStandard(HYPRE_BoomerAMGSetRelaxOrder,jac->hsolver, jac->relaxorder);
   }
-  PetscCall(PetscOptionsEList("-pc_hypre_boomeramg_measure_type","Measure type","None",HYPREBoomerAMGMeasureType,ALEN(HYPREBoomerAMGMeasureType),HYPREBoomerAMGMeasureType[0],&indx,&flg));
+  PetscCall(PetscOptionsEList("-pc_hypre_boomeramg_measure_type","Measure type","None",HYPREBoomerAMGMeasureType,PETSC_STATIC_ARRAY_LENGTH(HYPREBoomerAMGMeasureType),HYPREBoomerAMGMeasureType[0],&indx,&flg));
   if (flg) {
     jac->measuretype = indx;
     PetscStackCallStandard(HYPRE_BoomerAMGSetMeasureType,jac->hsolver,jac->measuretype);
   }
   /* update list length 3/07 */
-  PetscCall(PetscOptionsEList("-pc_hypre_boomeramg_coarsen_type","Coarsen type","None",HYPREBoomerAMGCoarsenType,ALEN(HYPREBoomerAMGCoarsenType),HYPREBoomerAMGCoarsenType[6],&indx,&flg));
+  PetscCall(PetscOptionsEList("-pc_hypre_boomeramg_coarsen_type","Coarsen type","None",HYPREBoomerAMGCoarsenType,PETSC_STATIC_ARRAY_LENGTH(HYPREBoomerAMGCoarsenType),HYPREBoomerAMGCoarsenType[6],&indx,&flg));
   if (flg) {
     jac->coarsentype = indx;
     PetscStackCallStandard(HYPRE_BoomerAMGSetCoarsenType,jac->hsolver,jac->coarsentype);
@@ -948,7 +945,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PetscOptionItems *PetscOp
   }
 #if PETSC_PKG_HYPRE_VERSION_GE(2,23,0)
   // global parameter but is closely associated with BoomerAMG
-  PetscCall(PetscOptionsEList("-pc_mg_galerkin_mat_product_algorithm","Type of SpGEMM to use in hypre (only for now)","PCMGGalerkinSetMatProductAlgorithm",PCHYPRESpgemmTypes,ALEN(PCHYPRESpgemmTypes),PCHYPRESpgemmTypes[0],&indx,&flg));
+  PetscCall(PetscOptionsEList("-pc_mg_galerkin_mat_product_algorithm","Type of SpGEMM to use in hypre (only for now)","PCMGGalerkinSetMatProductAlgorithm",PCHYPRESpgemmTypes,PETSC_STATIC_ARRAY_LENGTH(PCHYPRESpgemmTypes),PCHYPRESpgemmTypes[0],&indx,&flg));
   if (!flg) indx = 0;
   PetscCall(PCMGGalerkinSetMatProductAlgorithm_HYPRE_BoomerAMG(pc,PCHYPRESpgemmTypes[indx]));
 #endif
@@ -978,7 +975,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PetscOptionItems *PetscOp
 #endif
 
   /* new 3/07 */
-  PetscCall(PetscOptionsEList("-pc_hypre_boomeramg_interp_type","Interpolation type","None",HYPREBoomerAMGInterpType,ALEN(HYPREBoomerAMGInterpType),HYPREBoomerAMGInterpType[0],&indx,&flg));
+  PetscCall(PetscOptionsEList("-pc_hypre_boomeramg_interp_type","Interpolation type","None",HYPREBoomerAMGInterpType,PETSC_STATIC_ARRAY_LENGTH(HYPREBoomerAMGInterpType),HYPREBoomerAMGInterpType[0],&indx,&flg));
   if (flg || jac->Rtype) {
     if (flg) jac->interptype = indx;
     PetscStackCallStandard(HYPRE_BoomerAMGSetInterpType,jac->hsolver,jac->interptype);
@@ -1017,7 +1014,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PetscOptionItems *PetscOp
   PetscStackCallStandard(HYPRE_BoomerAMGSetKeepTranspose,jac->hsolver,jac->keeptranspose ? 1 : 0);
 
   /* options for ParaSails solvers */
-  PetscCall(PetscOptionsEList("-pc_hypre_boomeramg_parasails_sym","Symmetry of matrix and preconditioner","None",symtlist,ALEN(symtlist),symtlist[0],&indx,&flg));
+  PetscCall(PetscOptionsEList("-pc_hypre_boomeramg_parasails_sym","Symmetry of matrix and preconditioner","None",symtlist,PETSC_STATIC_ARRAY_LENGTH(symtlist),symtlist[0],&indx,&flg));
   if (flg) {
     jac->symt = indx;
     PetscStackCallStandard(HYPRE_BoomerAMGSetSym,jac->hsolver,jac->symt);
@@ -1154,7 +1151,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_ParaSails(PetscOptionItems *PetscOp
   PetscCall(PetscOptionsBool("-pc_hypre_parasails_reuse","Reuse nonzero pattern in preconditioner","None",(PetscBool)jac->ruse,(PetscBool*)&jac->ruse,&flag));
   if (flag) PetscStackCallStandard(HYPRE_ParaSailsSetReuse,jac->hsolver,jac->ruse);
 
-  PetscCall(PetscOptionsEList("-pc_hypre_parasails_sym","Symmetry of matrix and preconditioner","None",symtlist,ALEN(symtlist),symtlist[0],&indx,&flag));
+  PetscCall(PetscOptionsEList("-pc_hypre_parasails_sym","Symmetry of matrix and preconditioner","None",symtlist,PETSC_STATIC_ARRAY_LENGTH(symtlist),symtlist[0],&indx,&flag));
   if (flag) {
     jac->symt = indx;
     PetscStackCallStandard(HYPRE_ParaSailsSetSym,jac->hsolver,jac->symt);
@@ -2099,7 +2096,7 @@ PetscErrorCode PCSetFromOptions_HYPRE(PetscOptionItems *PetscOptionsObject,PC pc
 
   PetscFunctionBegin;
   PetscCall(PetscOptionsHead(PetscOptionsObject,"HYPRE preconditioner options"));
-  PetscCall(PetscOptionsEList("-pc_hypre_type","HYPRE preconditioner type","PCHYPRESetType",type,ALEN(type),"boomeramg",&indx,&flg));
+  PetscCall(PetscOptionsEList("-pc_hypre_type","HYPRE preconditioner type","PCHYPRESetType",type,PETSC_STATIC_ARRAY_LENGTH(type),"boomeramg",&indx,&flg));
   if (flg) {
     PetscCall(PCHYPRESetType_HYPRE(pc,type[indx]));
   } else {
@@ -2367,9 +2364,9 @@ PetscErrorCode PCSetFromOptions_PFMG(PetscOptionItems *PetscOptionsObject,PC pc)
 
   PetscCall(PetscOptionsReal("-pc_pfmg_tol","Tolerance of PFMG","HYPRE_StructPFMGSetTol",ex->tol,&ex->tol,NULL));
   PetscStackCallStandard(HYPRE_StructPFMGSetTol,ex->hsolver,ex->tol);
-  PetscCall(PetscOptionsEList("-pc_pfmg_relax_type","Relax type for the up and down cycles","HYPRE_StructPFMGSetRelaxType",PFMGRelaxType,ALEN(PFMGRelaxType),PFMGRelaxType[ex->relax_type],&ex->relax_type,NULL));
+  PetscCall(PetscOptionsEList("-pc_pfmg_relax_type","Relax type for the up and down cycles","HYPRE_StructPFMGSetRelaxType",PFMGRelaxType,PETSC_STATIC_ARRAY_LENGTH(PFMGRelaxType),PFMGRelaxType[ex->relax_type],&ex->relax_type,NULL));
   PetscStackCallStandard(HYPRE_StructPFMGSetRelaxType,ex->hsolver, ex->relax_type);
-  PetscCall(PetscOptionsEList("-pc_pfmg_rap_type","RAP type","HYPRE_StructPFMGSetRAPType",PFMGRAPType,ALEN(PFMGRAPType),PFMGRAPType[ex->rap_type],&ex->rap_type,NULL));
+  PetscCall(PetscOptionsEList("-pc_pfmg_rap_type","RAP type","HYPRE_StructPFMGSetRAPType",PFMGRAPType,PETSC_STATIC_ARRAY_LENGTH(PFMGRAPType),PFMGRAPType[ex->rap_type],&ex->rap_type,NULL));
   PetscStackCallStandard(HYPRE_StructPFMGSetRAPType,ex->hsolver, ex->rap_type);
   PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
@@ -2565,7 +2562,7 @@ PetscErrorCode PCSetFromOptions_SysPFMG(PetscOptionItems *PetscOptionsObject,PC 
 
   PetscCall(PetscOptionsReal("-pc_syspfmg_tol","Tolerance of SysPFMG","HYPRE_SStructSysPFMGSetTol",ex->tol,&ex->tol,NULL));
   PetscStackCallStandard(HYPRE_SStructSysPFMGSetTol,ex->ss_solver,ex->tol);
-  PetscCall(PetscOptionsEList("-pc_syspfmg_relax_type","Relax type for the up and down cycles","HYPRE_SStructSysPFMGSetRelaxType",SysPFMGRelaxType,ALEN(SysPFMGRelaxType),SysPFMGRelaxType[ex->relax_type],&ex->relax_type,NULL));
+  PetscCall(PetscOptionsEList("-pc_syspfmg_relax_type","Relax type for the up and down cycles","HYPRE_SStructSysPFMGSetRelaxType",SysPFMGRelaxType,PETSC_STATIC_ARRAY_LENGTH(SysPFMGRelaxType),SysPFMGRelaxType[ex->relax_type],&ex->relax_type,NULL));
   PetscStackCallStandard(HYPRE_SStructSysPFMGSetRelaxType,ex->ss_solver, ex->relax_type);
   PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);

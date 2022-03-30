@@ -170,7 +170,7 @@ static struct {
 PetscErrorCode  PetscDrawUtilitySetCmap(const char colormap[],int mapsize,unsigned char R[],unsigned char G[],unsigned char B[])
 {
   int             i,j;
-  const char      *cmap_name_list[sizeof(PetscDrawCmapTable)/sizeof(PetscDrawCmapTable[0])];
+  const char      *cmap_name_list[PETSC_STATIC_ARRAY_LENGTH(PetscDrawCmapTable)];
   PetscInt        id = 0, count = (PetscInt)(sizeof(cmap_name_list)/sizeof(char*));
   PetscBool       reverse = PETSC_FALSE, brighten = PETSC_FALSE;
   PetscReal       beta = 0;

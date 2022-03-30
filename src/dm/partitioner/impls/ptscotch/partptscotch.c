@@ -180,7 +180,7 @@ static PetscErrorCode PetscPartitionerSetFromOptions_PTScotch(PetscOptionItems *
 {
   PetscPartitioner_PTScotch *p = (PetscPartitioner_PTScotch *) part->data;
   const char *const         *slist = PTScotchStrategyList;
-  PetscInt                  nlist = (PetscInt)(sizeof(PTScotchStrategyList)/sizeof(PTScotchStrategyList[0]));
+  PetscInt                  nlist = PETSC_STATIC_ARRAY_LENGTH(PTScotchStrategyList);
   PetscBool                 flag;
 
   PetscFunctionBegin;

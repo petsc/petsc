@@ -16,8 +16,8 @@ int main(int argc,char **args)
   PetscInt Bi[] = {0, 0, 1, 1, 2, 2, 4, 4, 5, 5, 5,  6, 7, 7, 8, 8,  9,  9, 10, 10, 12, 12, 13, 13, 14, 14, 15, 15, 16, 16, 17, 17};
   PetscInt Bj[] = {0, 1, 2, 7, 3, 8, 5, 8, 2, 6, 11, 0, 1, 6, 2, 4, 10, 16, 11, 15, 12, 13, 14, 17, 11, 13,  3, 16,  9, 15, 11, 13};
 
-  PetscInt Annz = sizeof(Ai)/sizeof(PetscInt);
-  PetscInt Bnnz = sizeof(Bi)/sizeof(PetscInt);
+  PetscInt Annz = PETSC_STATIC_ARRAY_LENGTH(Ai);
+  PetscInt Bnnz = PETSC_STATIC_ARRAY_LENGTH(Bi);
 
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));

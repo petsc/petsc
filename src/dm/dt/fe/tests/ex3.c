@@ -70,7 +70,7 @@ typedef struct {
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   char           name[PETSC_MAX_PATH_LEN] = "constant";
-  PetscInt       Nfunc = sizeof(names)/sizeof(char *), i;
+  PetscInt       Nfunc = PETSC_STATIC_ARRAY_LENGTH(names), i;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
