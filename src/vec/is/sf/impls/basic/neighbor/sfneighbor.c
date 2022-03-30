@@ -1,18 +1,21 @@
 #include <../src/vec/is/sf/impls/basic/sfpack.h>
 #include <../src/vec/is/sf/impls/basic/sfbasic.h>
 
-/* A convenience temporary type */
+/* Convenience local types */
 #if defined(PETSC_HAVE_MPI_LARGE_COUNT) && defined(PETSC_USE_64BIT_INDICES)
-  typedef PetscInt     PetscSFCount;
+  typedef MPI_Count    PetscSFCount;
+  typedef MPI_Aint     PetscSFAint;
 #else
   typedef PetscMPIInt  PetscSFCount;
+  typedef PetscMPIInt  PetscSFAint;
 #endif
 
 typedef struct {
   SFBASICHEADER;
   MPI_Comm      comms[2];       /* Communicators with distributed topology in both directions */
   PetscBool     initialized[2]; /* Are the two communicators initialized? */
-  PetscSFCount  *rootdispls,*rootcounts,*leafdispls,*leafcounts; /* displs/counts for non-distinguished ranks */
+  PetscSFCount  *rootcounts,*leafcounts; /* counts for non-distinguished ranks */
+  PetscSFAint   *rootdispls,*leafdispls; /* displs for non-distinguished ranks */
   PetscMPIInt   *rootweights,*leafweights;
   PetscInt      rootdegree,leafdegree;
 } PetscSF_Neighbor;
