@@ -210,7 +210,7 @@ PETSC_INTERN PetscErrorCode MatFindNonzeroRowsOrCols_Basic(Mat mat,PetscBool col
   }
   if (tol <= 0.0) { for (i=0,nz=0;i<n;i++) if (al[i] != 0.0) nz++; }
   else { for (i=0,nz=0;i<n;i++) if (PetscAbsScalar(al[i]) > tol) nz++; }
-  PetscCallMPI(MPIU_Allreduce(&nz,&gnz,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mat)));
+  PetscCall(MPIU_Allreduce(&nz,&gnz,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mat)));
   if (gnz != N) {
     PetscInt *nzr;
     PetscCall(PetscMalloc1(nz,&nzr));
@@ -7928,7 +7928,7 @@ PetscErrorCode MatCreateSubMatrix(Mat mat,IS isrow,IS iscol,MatReuse cll,Mat *ne
         }
       }
     }
-    PetscCallMPI(MPIU_Allreduce(&grabentirematrix,&grab,1,MPI_INT,MPI_MIN,PetscObjectComm((PetscObject)mat)));
+    PetscCall(MPIU_Allreduce(&grabentirematrix,&grab,1,MPI_INT,MPI_MIN,PetscObjectComm((PetscObject)mat)));
     if (grab) {
       PetscCall(PetscInfo(mat,"Getting entire matrix as submatrix\n"));
       if (cll == MAT_INITIAL_MATRIX) {

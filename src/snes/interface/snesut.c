@@ -421,7 +421,7 @@ PetscErrorCode  SNESMonitorRange_Private(SNES snes,PetscInt it,PetscReal *per)
   for (i=0; i<n; i++) {
     pwork += (PetscAbsScalar(r[i]) > .20*rmax);
   }
-  PetscCallMPI(MPIU_Allreduce(&pwork,per,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)snes)));
+  PetscCall(MPIU_Allreduce(&pwork,per,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)snes)));
   PetscCall(VecRestoreArray(resid,&r));
   *per = *per/N;
   PetscFunctionReturn(0);

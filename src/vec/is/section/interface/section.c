@@ -307,7 +307,7 @@ PetscErrorCode PetscSectionCompare(PetscSection s1, PetscSection s2, PetscBool *
 
   flg = PETSC_TRUE;
 not_congruent:
-  PetscCallMPI(MPIU_Allreduce(&flg,congruent,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)s1)));
+  PetscCall(MPIU_Allreduce(&flg,congruent,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)s1)));
   PetscFunctionReturn(0);
 }
 

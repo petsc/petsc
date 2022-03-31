@@ -709,7 +709,7 @@ PetscErrorCode DMPlexStratifyMigrationSF(DM dm, PetscSF sf, PetscSF *migrationSF
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCall(DMPlexGetDepth(dm, &ldepth));
   PetscCall(DMGetDimension(dm, &dim));
-  PetscCallMPI(MPIU_Allreduce(&ldepth, &depth, 1, MPIU_INT, MPI_MAX, comm));
+  PetscCall(MPIU_Allreduce(&ldepth, &depth, 1, MPIU_INT, MPI_MAX, comm));
   PetscCheckFalse((ldepth >= 0) && (depth != ldepth),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Inconsistent Plex depth %d != %d", ldepth, depth);
   PetscCall(PetscLogEventBegin(DMPLEX_PartStratSF,dm,0,0,0));
 
@@ -1067,7 +1067,7 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
   PetscCall(DMPlexGetDepthLabel(dm, &depthLabel));
   if (depthLabel) PetscCall(PetscObjectStateGet((PetscObject) depthLabel, &depthState));
   lsendDepth = mesh->depthState != depthState ? PETSC_TRUE : PETSC_FALSE;
-  PetscCallMPI(MPIU_Allreduce(&lsendDepth, &sendDepth, 1, MPIU_BOOL, MPI_LOR, comm));
+  PetscCall(MPIU_Allreduce(&lsendDepth, &sendDepth, 1, MPIU_BOOL, MPI_LOR, comm));
   if (sendDepth) {
     PetscCall(DMPlexGetDepthLabel(dmParallel, &dmParallel->depthLabel));
     PetscCall(DMRemoveLabelBySelf(dmParallel, &dmParallel->depthLabel, PETSC_FALSE));
@@ -1095,7 +1095,7 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
       /* Put in any missing strata which can occur if users are managing the depth label themselves */
       PetscInt gdepth;
 
-      PetscCallMPI(MPIU_Allreduce(&depth, &gdepth, 1, MPIU_INT, MPI_MAX, comm));
+      PetscCall(MPIU_Allreduce(&depth, &gdepth, 1, MPIU_INT, MPI_MAX, comm));
       PetscCheckFalse((depth >= 0) && (gdepth != depth),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Inconsistent Plex depth %d != %d", depth, gdepth);
       for (d = 0; d <= gdepth; ++d) {
         PetscBool has;
@@ -1107,7 +1107,7 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
     PetscCall(DMAddLabel(dmParallel, labelNew));
     /* Put the output flag in the new label */
     if (hasLabels) PetscCall(DMGetLabelOutput(dm, name, &lisOutput));
-    PetscCallMPI(MPIU_Allreduce(&lisOutput, &isOutput, 1, MPIU_BOOL, MPI_LAND, comm));
+    PetscCall(MPIU_Allreduce(&lisOutput, &isOutput, 1, MPIU_BOOL, MPI_LAND, comm));
     PetscCall(PetscObjectGetName((PetscObject) labelNew, &name));
     PetscCall(DMSetLabelOutput(dmParallel, name, isOutput));
     PetscCall(DMLabelDestroy(&labelNew));

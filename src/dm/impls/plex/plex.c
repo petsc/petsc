@@ -1340,12 +1340,12 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     PetscCall(VecRestoreArray(acown,&array));
     lm[0] = numVertices > 0 ?  numVertices : PETSC_MAX_INT;
     lm[1] = -numVertices;
-    PetscCallMPI(MPIU_Allreduce(lm,gm,2,MPIU_INT64,MPI_MIN,comm));
+    PetscCall(MPIU_Allreduce(lm,gm,2,MPIU_INT64,MPI_MIN,comm));
     PetscCall(PetscViewerASCIIPrintf(viewer,"  Cell balance: %.2f (max %D, min %D",-((double)gm[1])/((double)gm[0]),-(PetscInt)gm[1],(PetscInt)gm[0]));
     lm[0] = ect; /* edgeCut */
     lm[1] = ectn; /* node-aware edgeCut */
     lm[2] = numVertices > 0 ? 0 : 1; /* empty processes */
-    PetscCallMPI(MPIU_Allreduce(lm,gm,3,MPIU_INT64,MPI_SUM,comm));
+    PetscCall(MPIU_Allreduce(lm,gm,3,MPIU_INT64,MPI_SUM,comm));
     PetscCall(PetscViewerASCIIPrintf(viewer,", empty %D)\n",(PetscInt)gm[2]));
 #if defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY)
     PetscCall(PetscViewerASCIIPrintf(viewer,"  Edge Cut: %D (on node %.3f)\n",(PetscInt)(gm[0]/2),gm[0] ? ((double)(gm[1]))/((double)gm[0]) : 1.));
@@ -1376,7 +1376,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     else      PetscCall(PetscViewerASCIIPrintf(viewer, "Mesh in %D dimension%s:\n", dim, dim == 1 ? "" : "s"));
     if (cellHeight) PetscCall(PetscViewerASCIIPrintf(viewer, "  Cells are at height %D\n", cellHeight));
     PetscCall(DMPlexGetDepth(dm, &locDepth));
-    PetscCallMPI(MPIU_Allreduce(&locDepth, &depth, 1, MPIU_INT, MPI_MAX, comm));
+    PetscCall(MPIU_Allreduce(&locDepth, &depth, 1, MPIU_INT, MPI_MAX, comm));
     PetscCall(DMPlexGetGhostCellStratum(dm, &gcStart, &gcEnd));
     gcNum = gcEnd - gcStart;
     if (size < maxSize) PetscCall(PetscCalloc3(size, &sizes, size, &hybsizes, size, &ghostsizes));
@@ -1662,8 +1662,8 @@ static PetscErrorCode DMPlexView_Draw(DM dm, PetscViewer viewer)
     bound[1] = PetscMin(bound[1], PetscRealPart(coords[c+1])); bound[3] = PetscMax(bound[3], PetscRealPart(coords[c+1]));
   }
   PetscCall(VecRestoreArrayRead(coordinates, &coords));
-  PetscCallMPI(MPIU_Allreduce(&bound[0],xyl,2,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)dm)));
-  PetscCallMPI(MPIU_Allreduce(&bound[2],xyr,2,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)dm)));
+  PetscCall(MPIU_Allreduce(&bound[0],xyl,2,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)dm)));
+  PetscCall(MPIU_Allreduce(&bound[2],xyr,2,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)dm)));
   PetscCall(PetscDrawSetCoordinates(draw, xyl[0], xyl[1], xyr[0], xyr[1]));
   PetscCall(PetscDrawClear(draw));
 
@@ -8126,7 +8126,7 @@ PetscErrorCode DMPlexCreatePointNumbering(DM dm, IS *globalPointNumbers)
     if (!(starts[d]-end)) { starts[d] = depths[d] = -1; }
   }
   PetscCall(PetscSortIntWithArray(depth+1, starts, depths));
-  PetscCallMPI(MPIU_Allreduce(depths, gdepths, depth+1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject) dm)));
+  PetscCall(MPIU_Allreduce(depths, gdepths, depth+1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject) dm)));
   for (d = 0; d <= depth; ++d) {
     PetscCheckFalse(starts[d] >= 0 && depths[d] != gdepths[d],PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expected depth %D, found %D",depths[d],gdepths[d]);
   }

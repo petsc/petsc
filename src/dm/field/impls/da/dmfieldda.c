@@ -447,7 +447,7 @@ static PetscErrorCode DMFieldInitialize_DA(DMField field)
       }
     }
     PetscCall(VecRestoreArrayRead(coords,&array));
-    PetscCallMPI(MPIU_Allreduce((PetscReal *) mins,&(dafield->coordRange[0][0]),2*dim,MPIU_REAL,MPI_MIN,PetscObjectComm((PetscObject)dm)));
+    PetscCall(MPIU_Allreduce((PetscReal *) mins,&(dafield->coordRange[0][0]),2*dim,MPIU_REAL,MPI_MIN,PetscObjectComm((PetscObject)dm)));
     for (j = 0; j < dim; j++) {
       dafield->coordRange[j][1] = -dafield->coordRange[j][1];
     }

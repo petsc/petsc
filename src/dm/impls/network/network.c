@@ -94,7 +94,7 @@ PetscErrorCode DMNetworkSetNumSubNetworks(DM dm,PetscInt nsubnet,PetscInt Nsubne
 
   if (Nsubnet == PETSC_DECIDE) {
     PetscCheck(nsubnet >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of local subnetworks %" PetscInt_FMT " cannot be less than 0",nsubnet);
-    PetscCallMPI(MPIU_Allreduce(&nsubnet,&Nsubnet,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)dm)));
+    PetscCall(MPIU_Allreduce(&nsubnet,&Nsubnet,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)dm)));
   }
   PetscCheck(Nsubnet >= 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_INCOMP,"Number of global subnetworks %" PetscInt_FMT " cannot be less than 1",Nsubnet);
 
@@ -217,12 +217,12 @@ PetscErrorCode DMNetworkAddSubnetwork(DM dm,const char* name,PetscInt ne,PetscIn
   }
 
   /* Get global total Nvtx = max(edgelist[])+1 for this subnet */
-  PetscCallMPI(MPIU_Allreduce(&nvtx_max,&Nvtx,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)dm)));
+  PetscCall(MPIU_Allreduce(&nvtx_max,&Nvtx,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)dm)));
   Nvtx++;
   PetscCall(PetscBTDestroy(&table));
 
   /* Get global total Nedge for this subnet */
-  PetscCallMPI(MPIU_Allreduce(&ne,&Nedge,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)dm)));
+  PetscCall(MPIU_Allreduce(&ne,&Nedge,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)dm)));
 
   i = network->nsubnet;
   if (name) {

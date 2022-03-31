@@ -146,7 +146,7 @@ PetscErrorCode  PetscSSEIsEnabled(MPI_Comm comm,PetscBool  *lflag,PetscBool  *gf
     }
 
     if (gflag && petsc_sse_global_is_untested) {
-      PetscCallMPI(MPIU_Allreduce(&petsc_sse_enabled_local,&petsc_sse_enabled_global,1,MPIU_BOOL,MPI_LAND,comm));
+      PetscCall(MPIU_Allreduce(&petsc_sse_enabled_local,&petsc_sse_enabled_global,1,MPIU_BOOL,MPI_LAND,comm));
 
       petsc_sse_global_is_untested = PETSC_FALSE;
     }

@@ -281,7 +281,7 @@ PetscErrorCode KSPMonitorRange_Private(KSP ksp, PetscInt it, PetscReal *per)
   for (i = 0; i < n; ++i) pwork += (PetscAbsScalar(r[i]) > .20*rmax);
   PetscCall(VecRestoreArrayRead(resid, &r));
   PetscCall(VecDestroy(&resid));
-  PetscCallMPI(MPIU_Allreduce(&pwork, per, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject) ksp)));
+  PetscCall(MPIU_Allreduce(&pwork, per, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject) ksp)));
   *per = *per/N;
   PetscFunctionReturn(0);
 }

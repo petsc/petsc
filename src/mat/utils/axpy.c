@@ -491,7 +491,7 @@ PetscErrorCode MatChop(Mat A, PetscReal tol)
       PetscCall(MatRestoreRow(A, r, &ncols, NULL, NULL));
     }
     numRows = rEnd - rStart;
-    PetscCallMPI(MPIU_Allreduce(&numRows, &maxRows, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)A)));
+    PetscCall(MPIU_Allreduce(&numRows, &maxRows, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)A)));
     PetscCall(PetscMalloc2(colMax, &newCols, colMax, &newVals));
     PetscCall(MatGetOption(A, MAT_NO_OFF_PROC_ENTRIES, &flg)); /* cache user-defined value */
     PetscCall(MatSetOption(A, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));

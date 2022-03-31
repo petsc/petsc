@@ -308,7 +308,7 @@ PetscErrorCode MatAssemblyEnd_MPISELL(Mat mat,MatAssemblyType mode)
      no processor disassembled thus we can skip this stuff
   */
   if (!((Mat_SeqSELL*)sell->B->data)->nonew) {
-    PetscCallMPI(MPIU_Allreduce(&mat->was_assembled,&other_disassembled,1,MPIU_BOOL,MPI_PROD,PetscObjectComm((PetscObject)mat)));
+    PetscCall(MPIU_Allreduce(&mat->was_assembled,&other_disassembled,1,MPIU_BOOL,MPI_PROD,PetscObjectComm((PetscObject)mat)));
     PetscCheckFalse(mat->was_assembled && !other_disassembled,PETSC_COMM_SELF,PETSC_ERR_SUP,"MatDisAssemble not implemented yet");
   }
   if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) {
@@ -326,7 +326,7 @@ PetscErrorCode MatAssemblyEnd_MPISELL(Mat mat,MatAssemblyType mode)
   /* if no new nonzero locations are allowed in matrix then only set the matrix state the first time through */
   if ((!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) || !((Mat_SeqSELL*)(sell->A->data))->nonew) {
     PetscObjectState state = sell->A->nonzerostate + sell->B->nonzerostate;
-    PetscCallMPI(MPIU_Allreduce(&state,&mat->nonzerostate,1,MPIU_INT64,MPI_SUM,PetscObjectComm((PetscObject)mat)));
+    PetscCall(MPIU_Allreduce(&state,&mat->nonzerostate,1,MPIU_INT64,MPI_SUM,PetscObjectComm((PetscObject)mat)));
   }
   PetscFunctionReturn(0);
 }
@@ -690,7 +690,7 @@ PetscErrorCode MatGetInfo_MPISELL(Mat matin,MatInfoType flag,MatInfo *info)
     info->memory       = isend[3];
     info->mallocs      = isend[4];
   } else if (flag == MAT_GLOBAL_MAX) {
-    PetscCallMPI(MPIU_Allreduce(isend,irecv,5,MPIU_PETSCLOGDOUBLE,MPI_MAX,PetscObjectComm((PetscObject)matin)));
+    PetscCall(MPIU_Allreduce(isend,irecv,5,MPIU_PETSCLOGDOUBLE,MPI_MAX,PetscObjectComm((PetscObject)matin)));
 
     info->nz_used      = irecv[0];
     info->nz_allocated = irecv[1];
@@ -698,7 +698,7 @@ PetscErrorCode MatGetInfo_MPISELL(Mat matin,MatInfoType flag,MatInfo *info)
     info->memory       = irecv[3];
     info->mallocs      = irecv[4];
   } else if (flag == MAT_GLOBAL_SUM) {
-    PetscCallMPI(MPIU_Allreduce(isend,irecv,5,MPIU_PETSCLOGDOUBLE,MPI_SUM,PetscObjectComm((PetscObject)matin)));
+    PetscCall(MPIU_Allreduce(isend,irecv,5,MPIU_PETSCLOGDOUBLE,MPI_SUM,PetscObjectComm((PetscObject)matin)));
 
     info->nz_used      = irecv[0];
     info->nz_allocated = irecv[1];
@@ -828,7 +828,7 @@ PetscErrorCode MatEqual_MPISELL(Mat A,Mat B,PetscBool  *flag)
   if (flg) {
     PetscCall(MatEqual(b,d,&flg));
   }
-  PetscCallMPI(MPIU_Allreduce(&flg,flag,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)A)));
+  PetscCall(MPIU_Allreduce(&flg,flag,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)A)));
   PetscFunctionReturn(0);
 }
 

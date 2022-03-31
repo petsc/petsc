@@ -68,14 +68,14 @@ static PetscErrorCode MatGetInfo_Elemental(Mat A,MatInfoType flag,MatInfo *info)
     info->nz_allocated   = (*a->emat).AllocatedMemory(); /* locally allocated */
     info->nz_used        = info->nz_allocated;
   } else if (flag == MAT_GLOBAL_MAX) {
-    //PetscCallMPI(MPIU_Allreduce(isend,irecv,5,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)matin)));
+    //PetscCall(MPIU_Allreduce(isend,irecv,5,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)matin)));
     /* see MatGetInfo_MPIAIJ() for getting global info->nz_allocated! */
     //SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP," MAT_GLOBAL_MAX not written yet");
   } else if (flag == MAT_GLOBAL_SUM) {
     //SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP," MAT_GLOBAL_SUM not written yet");
     info->nz_allocated   = (*a->emat).AllocatedMemory(); /* locally allocated */
     info->nz_used        = info->nz_allocated; /* assume Elemental does accurate allocation */
-    //PetscCallMPI(MPIU_Allreduce(isend,irecv,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)A)));
+    //PetscCall(MPIU_Allreduce(isend,irecv,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)A)));
     //PetscPrintf(PETSC_COMM_SELF,"    ... [%d] locally allocated %g\n",rank,info->nz_allocated);
   }
 

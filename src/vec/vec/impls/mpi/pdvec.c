@@ -951,7 +951,7 @@ PetscErrorCode VecAssemblyBegin_MPI(Vec xin)
   PetscCall(PetscObjectGetComm((PetscObject)xin,&comm));
   if (xin->stash.donotstash) PetscFunctionReturn(0);
 
-  PetscCallMPI(MPIU_Allreduce((PetscEnum*)&xin->stash.insertmode,(PetscEnum*)&addv,1,MPIU_ENUM,MPI_BOR,comm));
+  PetscCall(MPIU_Allreduce((PetscEnum*)&xin->stash.insertmode,(PetscEnum*)&addv,1,MPIU_ENUM,MPI_BOR,comm));
   PetscCheckFalse(addv == (ADD_VALUES|INSERT_VALUES),comm,PETSC_ERR_ARG_NOTSAMETYPE,"Some processors inserted values while others added");
   xin->stash.insertmode = addv; /* in case this processor had no cache */
   xin->bstash.insertmode = addv; /* Block stash implicitly tracks InsertMode of scalar stash */

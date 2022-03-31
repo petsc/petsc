@@ -45,7 +45,7 @@ int main(int argc,char **argv)
   PetscCall(PetscCalloc1(M*dim,&gcoords));
   PetscCallMPI(MPI_Exscan(&m,&begin,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD));
   PetscCall(PetscArraycpy(gcoords+begin*dim,coords,m*dim));
-  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE,gcoords,M*dim,MPIU_REAL,MPI_SUM,PETSC_COMM_WORLD));
+  PetscCall(MPIU_Allreduce(MPI_IN_PLACE,gcoords,M*dim,MPIU_REAL,MPI_SUM,PETSC_COMM_WORLD));
   PetscCall(MatCreateHtoolFromKernel(PETSC_COMM_WORLD,m,m,M,M,dim,coords,coords,kernel,gcoords,&A));
   PetscCall(MatSetOption(A,MAT_SYMMETRIC,sym));
   PetscCall(MatSetFromOptions(A));

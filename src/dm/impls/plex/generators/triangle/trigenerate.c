@@ -251,7 +251,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Triangle(DM dm, PetscReal *inmaxVolumes
   PetscCall(InitInput_Triangle(&in));
   PetscCall(InitOutput_Triangle(&out));
   PetscCall(DMPlexGetDepth(dm, &depth));
-  PetscCallMPI(MPIU_Allreduce(&depth, &depthGlobal, 1, MPIU_INT, MPI_MAX, comm));
+  PetscCall(MPIU_Allreduce(&depth, &depthGlobal, 1, MPIU_INT, MPI_MAX, comm));
   PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
   PetscCall(DMGetLabel(dm, labelName, &label));
 

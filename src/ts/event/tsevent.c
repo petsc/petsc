@@ -321,7 +321,7 @@ static PetscErrorCode TSPostEvent(TS ts,PetscReal t,Vec U)
   /* Handle termination events and step restart */
   for (i=0; i<event->nevents_zero; i++) if (event->terminate[event->events_zero[i]]) terminate = PETSC_TRUE;
   inflag[0] = restart; inflag[1] = terminate;
-  PetscCallMPI(MPIU_Allreduce(inflag,outflag,2,MPIU_BOOL,MPI_LOR,((PetscObject)ts)->comm));
+  PetscCall(MPIU_Allreduce(inflag,outflag,2,MPIU_BOOL,MPI_LOR,((PetscObject)ts)->comm));
   restart = outflag[0]; terminate = outflag[1];
   if (restart) PetscCall(TSRestartStep(ts));
   if (terminate) PetscCall(TSSetConvergedReason(ts,TS_CONVERGED_EVENT));
@@ -404,7 +404,7 @@ static PetscErrorCode TSEventDetection(TS ts)
     }
   }
   in = (PetscInt)event->status;
-  PetscCallMPI(MPIU_Allreduce(&in,&out,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ts)));
+  PetscCall(MPIU_Allreduce(&in,&out,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ts)));
   event->status = (TSEventStatus)out;
   PetscFunctionReturn(0);
 }
@@ -458,7 +458,7 @@ static PetscErrorCode TSEventLocation(TS ts,PetscReal *dt)
     }
   }
   in[0] = (PetscInt)event->status; in[1] = rollback;
-  PetscCallMPI(MPIU_Allreduce(in,out,2,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ts)));
+  PetscCall(MPIU_Allreduce(in,out,2,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ts)));
   event->status = (TSEventStatus)out[0]; rollback = out[1];
   /* If rollback is true, the status will be overwritten so that an event at the endtime of current time step will be postponed to guarantee corret order */
   if (rollback) event->status = TSEVENT_LOCATED_INTERVAL;
@@ -528,7 +528,7 @@ PetscErrorCode TSEventHandler(TS ts)
       PetscCall(TSSetConvergedReason(ts,TS_CONVERGED_ITERATING));
       event->iterctr++;
     }
-    PetscCallMPI(MPIU_Allreduce(&dt,&dt_min,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)ts)));
+    PetscCall(MPIU_Allreduce(&dt,&dt_min,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)ts)));
     if (dt_reset > 0.0 && dt_reset < dt_min) dt_min = dt_reset;
     PetscCall(TSSetTimeStep(ts,dt_min));
     /* Found the zero crossing */

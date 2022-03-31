@@ -1870,7 +1870,7 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
         PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)dm), fieldSizes[f], fieldIndices[f], PETSC_OWN_POINTER, &(*fields)[f]));
         in[0] = -fieldNc[f];
         in[1] = fieldNc[f];
-        PetscCallMPI(MPIU_Allreduce(in, out, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+        PetscCall(MPIU_Allreduce(in, out, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
         bs    = (-out[0] == out[1]) ? out[1] : 1;
         PetscCall(ISSetBlockSize((*fields)[f], bs));
       }
@@ -4117,8 +4117,8 @@ PetscErrorCode DMGetBoundingBox(DM dm, PetscReal gmin[], PetscReal gmax[])
   PetscCall(DMGetCoordinateDim(dm, &cdim));
   PetscCall(PetscMPIIntCast(cdim, &count));
   PetscCall(DMGetLocalBoundingBox(dm, lmin, lmax));
-  if (gmin) PetscCallMPI(MPIU_Allreduce(lmin, gmin, count, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject) dm)));
-  if (gmax) PetscCallMPI(MPIU_Allreduce(lmax, gmax, count, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject) dm)));
+  if (gmin) PetscCall(MPIU_Allreduce(lmin, gmin, count, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject) dm)));
+  if (gmax) PetscCall(MPIU_Allreduce(lmax, gmax, count, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject) dm)));
   PetscFunctionReturn(0);
 }
 
@@ -4468,7 +4468,7 @@ static PetscErrorCode DMDefaultSectionCheckConsistency_Internal(DM dm, PetscSect
   }
   PetscCall(PetscLayoutDestroy(&layout));
   PetscCall(PetscSynchronizedFlush(comm, NULL));
-  PetscCallMPI(MPIU_Allreduce(&valid, &gvalid, 1, MPIU_BOOL, MPI_LAND, comm));
+  PetscCall(MPIU_Allreduce(&valid, &gvalid, 1, MPIU_BOOL, MPI_LAND, comm));
   if (!gvalid) {
     PetscCall(DMView(dm, NULL));
     SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Inconsistent local and global sections");
@@ -7011,7 +7011,7 @@ PetscErrorCode DMGetCoordinatesLocalized(DM dm,PetscBool *areLocalized)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidBoolPointer(areLocalized, 2);
   PetscCall(DMGetCoordinatesLocalizedLocal(dm,&localized));
-  PetscCallMPI(MPIU_Allreduce(&localized,areLocalized,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)dm)));
+  PetscCall(MPIU_Allreduce(&localized,areLocalized,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)dm)));
   PetscFunctionReturn(0);
 }
 

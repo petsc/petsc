@@ -211,7 +211,7 @@ PetscErrorCode  PetscMaxSum(MPI_Comm comm,const PetscInt sizes[],PetscInt *max,P
     PetscCallMPI(MPI_Comm_size(comm,&size));
     PetscCallMPI(MPI_Comm_rank(comm,&rank));
     PetscCall(PetscMalloc1(size,&work));
-    PetscCallMPI(MPIU_Allreduce((void*)sizes,work,size,MPIU_2INT,MPIU_MAXSUM_OP,comm));
+    PetscCall(MPIU_Allreduce((void*)sizes,work,size,MPIU_2INT,MPIU_MAXSUM_OP,comm));
     *max = work[rank].max;
     *sum = work[rank].sum;
     PetscCall(PetscFree(work));

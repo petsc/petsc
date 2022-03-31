@@ -547,7 +547,7 @@ static PetscErrorCode CreateConesIS_Private(DM dm, PetscInt cStart, PetscInt cEn
     if (!numCornersLocal)           numCornersLocal = Nc;
     else if (numCornersLocal != Nc) numCornersLocal = 1;
   }
-  PetscCallMPI(MPIU_Allreduce(&numCornersLocal, numCorners, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject) dm)));
+  PetscCall(MPIU_Allreduce(&numCornersLocal, numCorners, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject) dm)));
   PetscCheckFalse(numCornersLocal && (numCornersLocal != *numCorners || *numCorners == 1),PETSC_COMM_SELF, PETSC_ERR_SUP, "Visualization topology currently only supports identical cell shapes");
   /* Handle periodic cuts by identifying vertices which should be duplicated */
   PetscCall(DMGetLabel(dm, "periodic_cut", &cutLabel));
@@ -1840,7 +1840,7 @@ PetscErrorCode DMPlexVecLoad_HDF5_Internal(DM dm, PetscViewer viewer, DM section
     {
       PetscInt  MA, MA1;
 
-      PetscCallMPI(MPIU_Allreduce(&mA, &MA, 1, MPIU_INT, MPI_SUM, comm));
+      PetscCall(MPIU_Allreduce(&mA, &MA, 1, MPIU_INT, MPI_SUM, comm));
       PetscCall(PetscViewerHDF5ReadSizes(viewer, vec_name, NULL, &MA1));
       PetscCheckFalse(MA1 != MA,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Total SF root size (%D) != On-disk vector data size (%D)", MA, MA1);
     }

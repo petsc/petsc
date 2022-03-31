@@ -1303,7 +1303,7 @@ PetscErrorCode DMPlexComputeL2DiffLocal(DM dm, PetscReal time, PetscErrorCode (*
     localDiff += elemDiff;
   }
   PetscCall(PetscFree6(funcVal,interpolant,coords,fegeom.detJ,fegeom.J,fegeom.invJ));
-  PetscCallMPI(MPIU_Allreduce(&localDiff, diff, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)dm)));
+  PetscCall(MPIU_Allreduce(&localDiff, diff, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)dm)));
   *diff = PetscSqrtReal(*diff);
   PetscFunctionReturn(0);
 }
@@ -1419,7 +1419,7 @@ PetscErrorCode DMComputeL2GradientDiff_Plex(DM dm, PetscReal time, PetscErrorCod
   }
   PetscCall(PetscFree6(funcVal,coords,fegeom.J,fegeom.invJ,interpolant,fegeom.detJ));
   PetscCall(DMRestoreLocalVector(dm, &localX));
-  PetscCallMPI(MPIU_Allreduce(&localDiff, diff, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)dm)));
+  PetscCall(MPIU_Allreduce(&localDiff, diff, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)dm)));
   *diff = PetscSqrtReal(*diff);
   PetscFunctionReturn(0);
 }
@@ -1566,7 +1566,7 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
     PetscCall(PetscFree6(funcVal, interpolant, coords, fegeom.detJ, fegeom.J, fegeom.invJ));
   }
   PetscCall(DMRestoreLocalVector(dm, &localX));
-  PetscCallMPI(MPIU_Allreduce(localDiff, diff, Nf, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)dm)));
+  PetscCall(MPIU_Allreduce(localDiff, diff, Nf, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)dm)));
   PetscCall(PetscFree(localDiff));
   for (f = 0; f < Nf; ++f) diff[f] = PetscSqrtReal(diff[f]);
   PetscFunctionReturn(0);
@@ -2193,7 +2193,7 @@ PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscScalar *integral, voi
     if (mesh->printFEM > 1) PetscCall(DMPrintCellVector(cell, "Cell Integral", Nf, &cintegral[c*Nf]));
     for (f = 0; f < Nf; ++f) lintegral[f] += cintegral[c*Nf+f];
   }
-  PetscCallMPI(MPIU_Allreduce(lintegral, integral, Nf, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject) dm)));
+  PetscCall(MPIU_Allreduce(lintegral, integral, Nf, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject) dm)));
   if (mesh->printFEM) {
     PetscCall(PetscPrintf(PetscObjectComm((PetscObject) dm), "Integral:"));
     for (f = 0; f < Nf; ++f) PetscCall(PetscPrintf(PetscObjectComm((PetscObject) dm), " %g", (double) PetscRealPart(integral[f])));

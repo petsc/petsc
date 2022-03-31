@@ -279,11 +279,11 @@ PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec 
   PetscCall(ISDestroy(inactive));
 
   /* Collect global sizes */
-  PetscCallMPI(MPIU_Allreduce(&n_isl, &N_isl, 1, MPIU_INT, MPI_SUM, comm));
-  PetscCallMPI(MPIU_Allreduce(&n_isu, &N_isu, 1, MPIU_INT, MPI_SUM, comm));
-  PetscCallMPI(MPIU_Allreduce(&n_isf, &N_isf, 1, MPIU_INT, MPI_SUM, comm));
-  PetscCallMPI(MPIU_Allreduce(&n_isa, &N_isa, 1, MPIU_INT, MPI_SUM, comm));
-  PetscCallMPI(MPIU_Allreduce(&n_isi, &N_isi, 1, MPIU_INT, MPI_SUM, comm));
+  PetscCall(MPIU_Allreduce(&n_isl, &N_isl, 1, MPIU_INT, MPI_SUM, comm));
+  PetscCall(MPIU_Allreduce(&n_isu, &N_isu, 1, MPIU_INT, MPI_SUM, comm));
+  PetscCall(MPIU_Allreduce(&n_isf, &N_isf, 1, MPIU_INT, MPI_SUM, comm));
+  PetscCall(MPIU_Allreduce(&n_isa, &N_isa, 1, MPIU_INT, MPI_SUM, comm));
+  PetscCall(MPIU_Allreduce(&n_isi, &N_isi, 1, MPIU_INT, MPI_SUM, comm));
 
   /* Create index set for lower bounded variables */
   if (N_isl > 0) {
@@ -447,6 +447,6 @@ PetscErrorCode TaoBoundSolution(Vec X, Vec XL, Vec XU, PetscReal bound_tol, Pets
     PetscCall(VecRestoreArrayRead(XU, &xu));
     PetscCall(VecRestoreArray(Xout, &xout));
   }
-  PetscCallMPI(MPIU_Allreduce(&nDiff_loc, nDiff, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)X)));
+  PetscCall(MPIU_Allreduce(&nDiff_loc, nDiff, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)X)));
   PetscFunctionReturn(0);
 }

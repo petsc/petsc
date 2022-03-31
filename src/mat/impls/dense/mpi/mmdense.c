@@ -42,7 +42,7 @@ PetscErrorCode MatCreateSubMatrices_MPIDense(Mat C,PetscInt ismax,const IS isrow
   nstages_local = ismax/nmax + ((ismax % nmax) ? 1 : 0);
 
   /* Make sure every processor loops through the nstages */
-  PetscCallMPI(MPIU_Allreduce(&nstages_local,&nstages,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)C)));
+  PetscCall(MPIU_Allreduce(&nstages_local,&nstages,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)C)));
 
   for (i=0,pos=0; i<nstages; i++) {
     if (pos+nmax <= ismax) max_no = nmax;

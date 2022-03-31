@@ -732,7 +732,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
       PetscCall(ISDestroy(&vals));
       lminl = PetscMin(ldef,lminl);
     }
-    PetscCallMPI(MPIU_Allreduce(&lminl,&minl,1,MPIU_INT,MPI_MIN,PetscObjectComm((PetscObject)dm)));
+    PetscCall(MPIU_Allreduce(&lminl,&minl,1,MPIU_INT,MPI_MIN,PetscObjectComm((PetscObject)dm)));
     if (minl == PETSC_MAX_INT) minl = 1;
   }
   PetscCall(PetscViewerASCIIPrintf(viewer,"\nelements\n"));
@@ -938,7 +938,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
         PetscCall(ISDestroy(&vals));
         lminl = PetscMin(ldef,lminl);
       }
-      PetscCallMPI(MPIU_Allreduce(&lminl,&minl,1,MPIU_INT,MPI_MIN,PetscObjectComm((PetscObject)dm)));
+      PetscCall(MPIU_Allreduce(&lminl,&minl,1,MPIU_INT,MPI_MIN,PetscObjectComm((PetscObject)dm)));
       if (minl == PETSC_MAX_INT) minl = 1;
     }
     PetscCall(PetscViewerASCIIPrintf(viewer,"%D\n",bf));
@@ -1027,7 +1027,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
       PetscCall(DMPlexGetTreeParent(dm,p,&parent,NULL));
       if (parent != p) vp++;
     }
-    PetscCallMPI(MPIU_Allreduce(&vp,&gvp,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)dm)));
+    PetscCall(MPIU_Allreduce(&vp,&gvp,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)dm)));
     if (gvp) {
       PetscInt  maxsupp;
       PetscBool *skip = NULL;

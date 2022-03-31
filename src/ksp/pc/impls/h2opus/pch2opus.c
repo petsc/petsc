@@ -81,7 +81,7 @@ static PetscErrorCode PCSetCoordinates_H2OPUS(PC pc, PetscInt sdim, PetscInt nlo
     PetscCall(PetscArraycmp(pch2opus->coords,coords,sdim*nlocc,&reset));
     reset = (PetscBool)!reset;
   }
-  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE,&reset,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)pc)));
+  PetscCall(MPIU_Allreduce(MPI_IN_PLACE,&reset,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)pc)));
   if (reset) {
     PetscCall(PCReset_H2OPUS(pc));
     PetscCall(PetscMalloc1(sdim*nlocc,&pch2opus->coords));

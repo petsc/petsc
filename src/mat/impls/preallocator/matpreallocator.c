@@ -119,7 +119,7 @@ PetscErrorCode MatAssemblyEnd_Preallocator(Mat A, MatAssemblyType type)
     }
   }
   PetscCall(MatStashScatterEnd_Private(&A->stash));
-  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE,&p->nooffproc,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)A)));
+  PetscCall(MPIU_Allreduce(MPI_IN_PLACE,&p->nooffproc,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)A)));
   PetscFunctionReturn(0);
 }
 

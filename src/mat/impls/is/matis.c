@@ -222,7 +222,7 @@ static PetscErrorCode MatPtAPSymbolic_IS_XAIJ(Mat A,Mat P,PetscReal fill,Mat C)
       PetscCall(ISBlockGetIndices(ptap->ris1,&i2));
       PetscCall(PetscArraycmp(i1,i2,N,&lsame));
     }
-    PetscCallMPI(MPIU_Allreduce(&lsame,&same,1,MPIU_BOOL,MPI_LAND,comm));
+    PetscCall(MPIU_Allreduce(&lsame,&same,1,MPIU_BOOL,MPI_LAND,comm));
     if (same) {
       PetscCall(ISDestroy(&ptap->ris1));
     } else {
@@ -451,7 +451,7 @@ static PetscErrorCode MatMPIXAIJComputeLocalToGlobalMapping_Private(Mat A, ISLoc
       if (ndmapi[i] < 0 && ndmapc[i] < 2)
         cnt++;
 
-    PetscCallMPI(MPIU_Allreduce(&cnt,&i,1,MPIU_INT,MPI_MAX,comm));
+    PetscCall(MPIU_Allreduce(&cnt,&i,1,MPIU_INT,MPI_MAX,comm));
     if (i) { /* we detected isolated separator nodes */
       Mat                    A2,A3;
       IS                     *workis,is2;
@@ -1215,7 +1215,7 @@ static PetscErrorCode MatGetInfo_IS(Mat A,MatInfoType flag,MatInfo *ginfo)
     ginfo->mallocs      = isend[4];
     ginfo->assemblies   = isend[5];
   } else if (flag == MAT_GLOBAL_MAX) {
-    PetscCallMPI(MPIU_Allreduce(isend,irecv,6,MPIU_PETSCLOGDOUBLE,MPI_MAX,PetscObjectComm((PetscObject)A)));
+    PetscCall(MPIU_Allreduce(isend,irecv,6,MPIU_PETSCLOGDOUBLE,MPI_MAX,PetscObjectComm((PetscObject)A)));
 
     ginfo->nz_used      = irecv[0];
     ginfo->nz_allocated = irecv[1];
@@ -1224,7 +1224,7 @@ static PetscErrorCode MatGetInfo_IS(Mat A,MatInfoType flag,MatInfo *ginfo)
     ginfo->mallocs      = irecv[4];
     ginfo->assemblies   = irecv[5];
   } else if (flag == MAT_GLOBAL_SUM) {
-    PetscCallMPI(MPIU_Allreduce(isend,irecv,5,MPIU_PETSCLOGDOUBLE,MPI_SUM,PetscObjectComm((PetscObject)A)));
+    PetscCall(MPIU_Allreduce(isend,irecv,5,MPIU_PETSCLOGDOUBLE,MPI_SUM,PetscObjectComm((PetscObject)A)));
 
     ginfo->nz_used      = irecv[0];
     ginfo->nz_allocated = irecv[1];
@@ -1960,7 +1960,7 @@ general_assembly:
     lb[1] = isseqaij;
     lb[2] = isseqbaij;
     lb[3] = isseqsbaij;
-    PetscCallMPI(MPIU_Allreduce(lb,bb,4,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)mat)));
+    PetscCall(MPIU_Allreduce(lb,bb,4,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)mat)));
     PetscCheckFalse(!bb[0] && !bb[1] && !bb[2] && !bb[3],PETSC_COMM_SELF,PETSC_ERR_SUP,"Local matrices must have the same type");
   }
 
@@ -2134,7 +2134,7 @@ static PetscErrorCode MatIsHermitian_IS(Mat A,PetscReal tol,PetscBool  *flg)
 
   PetscFunctionBegin;
   PetscCall(MatIsHermitian(matis->A,tol,&local_sym));
-  PetscCallMPI(MPIU_Allreduce(&local_sym,flg,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)A)));
+  PetscCall(MPIU_Allreduce(&local_sym,flg,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)A)));
   PetscFunctionReturn(0);
 }
 
@@ -2149,7 +2149,7 @@ static PetscErrorCode MatIsSymmetric_IS(Mat A,PetscReal tol,PetscBool *flg)
     PetscFunctionReturn(0);
   }
   PetscCall(MatIsSymmetric(matis->A,tol,&local_sym));
-  PetscCallMPI(MPIU_Allreduce(&local_sym,flg,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)A)));
+  PetscCall(MPIU_Allreduce(&local_sym,flg,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)A)));
   PetscFunctionReturn(0);
 }
 
@@ -2164,7 +2164,7 @@ static PetscErrorCode MatIsStructurallySymmetric_IS(Mat A,PetscBool *flg)
     PetscFunctionReturn(0);
   }
   PetscCall(MatIsStructurallySymmetric(matis->A,&local_sym));
-  PetscCallMPI(MPIU_Allreduce(&local_sym,flg,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)A)));
+  PetscCall(MPIU_Allreduce(&local_sym,flg,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)A)));
   PetscFunctionReturn(0);
 }
 
@@ -2424,7 +2424,7 @@ static PetscErrorCode MatISFilterL2GMap(Mat A, ISLocalToGlobalMapping map, ISLoc
     else nidxs[c++] = idxs[i];
   }
   PetscCall(PetscHSetIDestroy(&ht));
-  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE,flg,2,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)A)));
+  PetscCall(MPIU_Allreduce(MPI_IN_PLACE,flg,2,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)A)));
   if (!flg[0] && !flg[1]) { /* Entries are all non negative and unique */
     *nmap = NULL;
     *lmap = NULL;
@@ -2534,7 +2534,7 @@ static PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping
       PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(is->rmapping,&idxs1));
       PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(is->cmapping,&idxs2));
     }
-    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE,&same,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)A)));
+    PetscCall(MPIU_Allreduce(MPI_IN_PLACE,&same,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)A)));
     if (same) {
       PetscCall(ISLocalToGlobalMappingDestroy(&is->cmapping));
       PetscCall(PetscObjectReference((PetscObject)is->rmapping));

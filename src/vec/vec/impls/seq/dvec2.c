@@ -717,7 +717,7 @@ PetscErrorCode VecMaxPointwiseDivide_Seq(Vec xin,Vec yin,PetscReal *max)
   }
   PetscCall(VecRestoreArrayRead(xin,&xx));
   PetscCall(VecRestoreArrayRead(yin,&yy));
-  PetscCallMPI(MPIU_Allreduce(&m,max,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)xin)));
+  PetscCall(MPIU_Allreduce(&m,max,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)xin)));
   PetscCall(PetscLogFlops(n));
   PetscFunctionReturn(0);
 }

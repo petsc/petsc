@@ -94,7 +94,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat,PetscInt n
    * generally speaking, we do not need to exchange
    * data when overlap is 1
    * */
-  PetscCallMPI(MPIU_Allreduce(&nrrows,&reducednrrows,1,MPIU_INT,MPIU_MAX,comm));
+  PetscCall(MPIU_Allreduce(&nrrows,&reducednrrows,1,MPIU_INT,MPIU_MAX,comm));
   /* we do not have any messages
    * It usually corresponds to overlap 1
    * */
@@ -1988,7 +1988,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ(Mat C,PetscInt ismax,const IS isrow[]
 
     in[0] = -1*(PetscInt)wantallmatrix;
     in[1] = nstages;
-    PetscCallMPI(MPIU_Allreduce(in,out,2,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)C)));
+    PetscCall(MPIU_Allreduce(in,out,2,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)C)));
     wantallmatrix = (PetscBool)(-out[0]);
     nstages       = out[1]; /* Make sure every processor loops through the global nstages */
 
@@ -3067,7 +3067,7 @@ PetscErrorCode MatCreateSubMatricesMPI_MPIXAIJ(Mat C,PetscInt ismax,const IS isr
      If cismax is zero on all C's ranks, then and only then can we use purely sequential matrix extraction.
      ispar counts the number of parallel ISs across C's comm.
   */
-  PetscCallMPI(MPIU_Allreduce(&cismax,&ispar,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)C)));
+  PetscCall(MPIU_Allreduce(&cismax,&ispar,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)C)));
   if (!ispar) { /* Sequential ISs only across C's comm, so can call the sequential matrix extraction subroutine. */
     PetscCall((*getsubmats_seq)(C,ismax,isrow,iscol,scall,submat));
     PetscFunctionReturn(0);

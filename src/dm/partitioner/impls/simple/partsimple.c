@@ -145,7 +145,7 @@ static PetscErrorCode PetscPartitionerPartition_Simple(PetscPartitioner part, Pe
   PetscCall(PetscObjectGetComm((PetscObject) part, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   if (targetSection) {
-    PetscCallMPI(MPIU_Allreduce(&numVertices, &numVerticesGlobal, 1, MPIU_INT, MPI_SUM, comm));
+    PetscCall(MPIU_Allreduce(&numVertices, &numVerticesGlobal, 1, MPIU_INT, MPI_SUM, comm));
     PetscCall(PetscCalloc1(nparts,&tpwgts));
     for (np = 0; np < nparts; ++np) {
       PetscCall(PetscSectionGetDof(targetSection,np,&tpwgts[np]));

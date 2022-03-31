@@ -1082,7 +1082,7 @@ static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGloba
   for (i=0; i<n; i++) {
     if (lindices[i] > max) max = lindices[i];
   }
-  PetscCallMPI(MPIU_Allreduce(&max,&Ng,1,MPIU_INT,MPI_MAX,comm));
+  PetscCall(MPIU_Allreduce(&max,&Ng,1,MPIU_INT,MPI_MAX,comm));
   Ng++;
   PetscCallMPI(MPI_Comm_size(comm,&size));
   PetscCallMPI(MPI_Comm_rank(comm,&rank));

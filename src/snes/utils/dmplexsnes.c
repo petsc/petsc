@@ -379,7 +379,7 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
     if (foundCells[p].index >= 0) foundProcs[foundPoints ? foundPoints[p] : p] = rank;
   }
   /* Let the lowest rank process own each point */
-  PetscCallMPI(MPIU_Allreduce(foundProcs, globalProcs, N, MPI_INT, MPI_MIN, comm));
+  PetscCall(MPIU_Allreduce(foundProcs, globalProcs, N, MPI_INT, MPI_MIN, comm));
   ctx->n = 0;
   for (p = 0; p < N; ++p) {
     if (globalProcs[p] == size) {
@@ -1180,7 +1180,7 @@ PetscErrorCode SNESMonitorFields(SNES snes, PetscInt its, PetscReal fgnorm, Pets
     }
   }
   PetscCall(VecRestoreArrayRead(res, &r));
-  PetscCallMPI(MPIU_Allreduce(lnorms, norms, numFields, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject) dm)));
+  PetscCall(MPIU_Allreduce(lnorms, norms, numFields, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject) dm)));
   PetscCall(PetscViewerPushFormat(viewer,vf->format));
   PetscCall(PetscViewerASCIIAddTab(viewer, ((PetscObject) snes)->tablevel));
   PetscCall(PetscViewerASCIIPrintf(viewer, "%3D SNES Function norm %14.12e [", its, (double) fgnorm));

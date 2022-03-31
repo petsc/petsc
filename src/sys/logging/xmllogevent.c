@@ -509,9 +509,9 @@ static PetscErrorCode PetscPrintXMLGlobalPerformanceElement(PetscViewer viewer, 
 
   valrank[0] = local_val;
   valrank[1] = (PetscLogDouble) rank;
-  PetscCallMPI(MPIU_Allreduce(&local_val, &min, 1, MPIU_PETSCLOGDOUBLE,  MPI_MIN,    comm));
-  PetscCallMPI(MPIU_Allreduce(valrank,    &max, 1, MPIU_2PETSCLOGDOUBLE, MPI_MAXLOC, comm));
-  PetscCallMPI(MPIU_Allreduce(&local_val, &tot, 1, MPIU_PETSCLOGDOUBLE,  MPI_SUM,    comm));
+  PetscCall(MPIU_Allreduce(&local_val, &min, 1, MPIU_PETSCLOGDOUBLE,  MPI_MIN,    comm));
+  PetscCall(MPIU_Allreduce(valrank,    &max, 1, MPIU_2PETSCLOGDOUBLE, MPI_MAXLOC, comm));
+  PetscCall(MPIU_Allreduce(&local_val, &tot, 1, MPIU_PETSCLOGDOUBLE,  MPI_SUM,    comm));
   avg  = tot/((PetscLogDouble) size);
   if (min != 0.0) ratio = max[0]/min;
   else ratio = 0.0;
@@ -666,7 +666,7 @@ static PetscErrorCode PetscLogNestedTreeCreate(PetscViewer viewer, PetscNestedEv
 
   /* Calculate the global maximum for the default timer index, so array treeIndices can
    * be allocated only once */
-  PetscCallMPI(MPIU_Allreduce(&maxDefaultTimer, &j, 1, MPI_INT, MPI_MAX, comm));
+  PetscCall(MPIU_Allreduce(&maxDefaultTimer, &j, 1, MPI_INT, MPI_MAX, comm));
   maxDefaultTimer = j;
 
   /* Find default timer's place in the tree */
@@ -732,14 +732,14 @@ static PetscErrorCode PetscLogNestedTreeCreate(PetscViewer viewer, PetscNestedEv
 
   /* Allocate an array to store paths */
   depth = maxdepth;
-  PetscCallMPI(MPIU_Allreduce(&depth, &maxdepth, 1, MPI_INT, MPI_MAX, comm));
+  PetscCall(MPIU_Allreduce(&depth, &maxdepth, 1, MPI_INT, MPI_MAX, comm));
   PetscCall(PetscMalloc1(maxdepth+1, &nstPath));
   PetscCall(PetscMalloc1(maxdepth+1, &nstMyPath));
 
   /* Find an illegal nested event index (1+largest nested event index) */
   illegalEvent = 1+nestedEvents[nNestedEvents-1].nstEvent;
   i = illegalEvent;
-  PetscCallMPI(MPIU_Allreduce(&i, &illegalEvent, 1, MPI_INT, MPI_MAX, comm));
+  PetscCall(MPIU_Allreduce(&i, &illegalEvent, 1, MPI_INT, MPI_MAX, comm));
 
   /* First, detect timers which are not available in this process, but are available in others
    *        Allocate a new tree, that can contain all timers
@@ -765,7 +765,7 @@ static PetscErrorCode PetscLogNestedTreeCreate(PetscViewer viewer, PetscNestedEv
       }
 
       /* Communicate with other processes to obtain the next path and its depth */
-      PetscCallMPI(MPIU_Allreduce(nstMyPath, nstPath, depth, MPI_INT, MPI_MIN, comm));
+      PetscCall(MPIU_Allreduce(nstMyPath, nstPath, depth, MPI_INT, MPI_MIN, comm));
       for (j=depth-1; (int) j>=0; j--) {
         if (nstPath[j]==illegalEvent) depth=j;
       }
@@ -851,13 +851,13 @@ static PetscErrorCode PetscPrintXMLNestedLinePerfResults(PetscViewer viewer,cons
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   val_in[0] = value;
   val_in[1] = (PetscLogDouble) rank;
-  PetscCallMPI(MPIU_Allreduce(val_in, max,  1, MPIU_2PETSCLOGDOUBLE, MPI_MAXLOC, comm));
-  PetscCallMPI(MPIU_Allreduce(val_in, min,  1, MPIU_2PETSCLOGDOUBLE, MPI_MINLOC, comm));
+  PetscCall(MPIU_Allreduce(val_in, max,  1, MPIU_2PETSCLOGDOUBLE, MPI_MAXLOC, comm));
+  PetscCall(MPIU_Allreduce(val_in, min,  1, MPIU_2PETSCLOGDOUBLE, MPI_MINLOC, comm));
   maxvalue = max[0];
   maxLoc   = (PetscMPIInt) max[1];
   minvalue = min[0];
   minLoc   = (PetscMPIInt) min[1];
-  PetscCallMPI(MPIU_Allreduce(&value, &tot, 1, MPIU_PETSCLOGDOUBLE,  MPI_SUM,    comm));
+  PetscCall(MPIU_Allreduce(&value, &tot, 1, MPIU_PETSCLOGDOUBLE,  MPI_SUM,    comm));
 
   if (maxvalue<maxthreshold && minvalue>=minthreshold) {
     /* One call per parent or NO value: don't print */
@@ -886,7 +886,7 @@ static PetscErrorCode PetscLogNestedTreePrintLine(PetscViewer viewer,PetscEventP
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)viewer,&comm));
-  PetscCallMPI(MPIU_Allreduce(&time, &timeMx, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
+  PetscCall(MPIU_Allreduce(&time, &timeMx, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
   *isPrinted = ((timeMx/totalTime) >= THRESHOLD) ? PETSC_TRUE : PETSC_FALSE;
   if (*isPrinted) {
     PetscCall(PetscViewerXMLStartSection(viewer, "event", NULL));
@@ -989,7 +989,7 @@ static PetscErrorCode PetscLogNestedTreeSetChildrenSortItems(const PetscViewer v
     for (int i=0; i<nChildren; i++) { times[i] = (*children)[i].val; }
 
     PetscCall(PetscMalloc1(nChildren,&maxTimes));
-    PetscCallMPI(MPIU_Allreduce(times, maxTimes, nChildren, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
+    PetscCall(MPIU_Allreduce(times, maxTimes, nChildren, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
     PetscCall(PetscFree(times));
 
     for (int i=0; i<nChildren; i++) { (*children)[i].val = maxTimes[i]; }
@@ -1072,7 +1072,7 @@ static PetscErrorCode PetscLogNestedTreeSetMaxTimes(MPI_Comm comm,int nChildren,
   times[0] = selfPerfInfo.time;
   times[1] = otherPerfInfo.time;
 
-  PetscCallMPI(MPIU_Allreduce(times,maxTimes,2,MPIU_PETSCLOGDOUBLE,MPI_MAX,comm));
+  PetscCall(MPIU_Allreduce(times,maxTimes,2,MPIU_PETSCLOGDOUBLE,MPI_MAX,comm));
   children[nChildren+0].id = -1;
   children[nChildren+0].val = maxTimes[0];
   children[nChildren+1].id = -2;
@@ -1238,7 +1238,7 @@ static PetscErrorCode PetscCalcSelfTime(PetscViewer viewer, PetscSelfTimer **p_s
   /* Calculate largest nested event-ID */
   nstMax_local = 0;
   for (i=0; i<nNestedEvents; i++) nstMax_local = PetscMax(nestedEvents[i].nstEvent,nstMax_local);
-  PetscCallMPI(MPIU_Allreduce(&nstMax_local, &nstMax, 1, MPI_INT, MPI_MAX, comm));
+  PetscCall(MPIU_Allreduce(&nstMax_local, &nstMax, 1, MPI_INT, MPI_MAX, comm));
 
   /* Initialize all total-times with zero */
   PetscCall(PetscMalloc1(nstMax+1,&selftimes));
@@ -1318,7 +1318,7 @@ static PetscErrorCode PetscPrintSelfTime(PetscViewer viewer, const PetscSelfTime
   PetscCall(PetscMalloc1(nstMax+1,&times));
   PetscCall(PetscMalloc1(nstMax+1,&maxTimes));
   for (nst=0; nst<=nstMax; nst++) { times[nst] = selftimes[nst].time;}
-  PetscCallMPI(MPIU_Allreduce(times, maxTimes, nstMax+1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
+  PetscCall(MPIU_Allreduce(times, maxTimes, nstMax+1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
   PetscCall(PetscFree(times));
 
   PetscCall(PetscMalloc1(nstMax+1,&sortSelfTimes));
@@ -1373,7 +1373,7 @@ PetscErrorCode PetscLogView_Nested(PetscViewer viewer)
 
   /* Get the total elapsed time, local and global maximum */
   PetscCall(PetscTime(&locTotalTime));  locTotalTime -= petsc_BaseTime;
-  PetscCallMPI(MPIU_Allreduce(&locTotalTime, &globTotalTime, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
+  PetscCall(MPIU_Allreduce(&locTotalTime, &globTotalTime, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
 
   /* Print global information about this run */
   PetscCall(PetscPrintExeSpecs(viewer));
@@ -1418,7 +1418,7 @@ static PetscErrorCode PetscGetTotalTime(const PetscViewer viewer,PetscLogDouble 
   PetscCall(PetscObjectGetComm((PetscObject)viewer,&comm));
   PetscCall(PetscTime(&locTotalTime));
   locTotalTime -= petsc_BaseTime;
-  PetscCallMPI(MPIU_Allreduce(&locTotalTime,totalTime,1,MPIU_PETSCLOGDOUBLE,MPI_MAX,comm));
+  PetscCall(MPIU_Allreduce(&locTotalTime,totalTime,1,MPIU_PETSCLOGDOUBLE,MPI_MAX,comm));
   PetscFunctionReturn(0);
 }
 
@@ -1447,7 +1447,7 @@ static PetscErrorCode PetscLogNestedTreePrintFlamegraph(PetscViewer viewer,Petsc
   /* Write line to the file. The time shown is 'self' + 'other' because each entry in the output
    * is the total time spent in the event minus the amount spent in child events. */
   locTime = selfPerfInfo.time + otherPerfInfo.time;
-  PetscCallMPI(MPIU_Allreduce(&locTime,&globTime,1,MPIU_PETSCLOGDOUBLE,MPI_MAX,comm));
+  PetscCall(MPIU_Allreduce(&locTime,&globTime,1,MPIU_PETSCLOGDOUBLE,MPI_MAX,comm));
   if (globTime/totalTime > THRESHOLD && tree[iStart].own) {
     /* Iterate over parent events in the stack and write them */
     for (i=0; i<=eventStack->top; i++) {

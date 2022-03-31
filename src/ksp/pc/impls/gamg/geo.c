@@ -154,7 +154,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2,PetscInt data_stride,
   if (nselected_2 == 1 || nselected_2 == 2) { /* 0 happens on idle processors */
     *a_worst_best = 100.0; /* this will cause a stop, but not globalized (should not happen) */
   } else *a_worst_best = 0.0;
-  PetscCallMPI(MPIU_Allreduce(a_worst_best, &tm, 1, MPIU_REAL, MPIU_MAX, comm));
+  PetscCall(MPIU_Allreduce(a_worst_best, &tm, 1, MPIU_REAL, MPIU_MAX, comm));
   if (tm > 0.0) {
     *a_worst_best = 100.0;
     PetscFunctionReturn(0);
@@ -743,7 +743,7 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,Mat Amat,Mat Gmat,PetscCoarsenData *a
       /* clean up and create coordinates for coarse grid (output) */
       if (size > 1) PetscCall(PetscFree(coords));
 
-      PetscCallMPI(MPIU_Allreduce(&metric, &tm, 1, MPIU_REAL, MPIU_MAX, comm));
+      PetscCall(MPIU_Allreduce(&metric, &tm, 1, MPIU_REAL, MPIU_MAX, comm));
       if (tm > 1.) { /* needs to be globalized - should not happen */
         PetscCall(PetscInfo(pc," failed metric for coarse grid %e\n",(double)tm));
         PetscCall(MatDestroy(&Prol));

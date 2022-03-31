@@ -595,7 +595,7 @@ static PetscErrorCode DMPforestGetRefinementLevel(DM dm, PetscInt *lev)
     p4est_tree_t *tree  = &(((p4est_tree_t*) p4est->trees->array)[t]);
     maxlevelloc = PetscMax((PetscInt)tree->maxlevel,maxlevelloc);
   }
-  PetscCallMPI(MPIU_Allreduce(&maxlevelloc,lev,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)dm)));
+  PetscCall(MPIU_Allreduce(&maxlevelloc,lev,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)dm)));
   PetscFunctionReturn(0);
 }
 
@@ -4673,7 +4673,7 @@ static PetscErrorCode DMForestTransferVecFromBase_pforest(DM dm, Vec vecIn, Vec 
     PetscCall(DMPlexGetCellNumbering(plex,&gnum[1]));
     PetscCall(ISGetMinMax(gnum[0],NULL,&ncells[0]));
     PetscCall(ISGetMinMax(gnum[1],NULL,&ncells[1]));
-    PetscCallMPI(MPIU_Allreduce(ncells,gncells,2,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)dm)));
+    PetscCall(MPIU_Allreduce(ncells,gncells,2,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)dm)));
     PetscCheckFalse(gncells[0] != gncells[1],PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Invalid number of base cells! Expected %D, found %D",gncells[0]+1,gncells[1]+1);
   }
 

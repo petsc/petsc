@@ -85,7 +85,7 @@ PetscErrorCode  DMDANaturalAllToGlobalCreate(DM da,VecScatter *scatter)
   PetscCall(DMDAGetAO(da,&ao));
 
   /* create the scatter context */
-  PetscCallMPI(MPIU_Allreduce(&m,&M,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)da)));
+  PetscCall(MPIU_Allreduce(&m,&M,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)da)));
   PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)da),dd->w,m,PETSC_DETERMINE,NULL,&global));
   PetscCall(VecGetOwnershipRange(global,&start,NULL));
   PetscCall(ISCreateStride(PetscObjectComm((PetscObject)da),m,start,1,&from));

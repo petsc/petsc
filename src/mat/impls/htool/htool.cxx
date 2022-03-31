@@ -877,11 +877,11 @@ PetscErrorCode MatCreateHtoolFromKernel(MPI_Comm comm,PetscInt m,PetscInt n,Pets
   a->kernelctx = kernelctx;
   PetscCall(PetscCalloc1(A->rmap->N*spacedim,&a->gcoords_target));
   PetscCall(PetscArraycpy(a->gcoords_target+A->rmap->rstart*spacedim,coords_target,A->rmap->n*spacedim));
-  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE,a->gcoords_target,A->rmap->N*spacedim,MPIU_REAL,MPI_SUM,PetscObjectComm((PetscObject)A))); /* global target coordinates */
+  PetscCall(MPIU_Allreduce(MPI_IN_PLACE,a->gcoords_target,A->rmap->N*spacedim,MPIU_REAL,MPI_SUM,PetscObjectComm((PetscObject)A))); /* global target coordinates */
   if (coords_target != coords_source) {
     PetscCall(PetscCalloc1(A->cmap->N*spacedim,&a->gcoords_source));
     PetscCall(PetscArraycpy(a->gcoords_source+A->cmap->rstart*spacedim,coords_source,A->cmap->n*spacedim));
-    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE,a->gcoords_source,A->cmap->N*spacedim,MPIU_REAL,MPI_SUM,PetscObjectComm((PetscObject)A))); /* global source coordinates */
+    PetscCall(MPIU_Allreduce(MPI_IN_PLACE,a->gcoords_source,A->cmap->N*spacedim,MPIU_REAL,MPI_SUM,PetscObjectComm((PetscObject)A))); /* global source coordinates */
   } else a->gcoords_source = a->gcoords_target;
   PetscCall(PetscCalloc2(A->cmap->N,&a->work_source,A->rmap->N,&a->work_target));
   *B = A;
