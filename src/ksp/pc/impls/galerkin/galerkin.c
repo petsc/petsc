@@ -170,7 +170,7 @@ PetscErrorCode  PCGalerkinSetRestriction(PC pc,Mat R)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscTryMethod(pc,"PCGalerkinSetRestriction_C",(PC,Mat),(pc,R)));
+  PetscTryMethod(pc,"PCGalerkinSetRestriction_C",(PC,Mat),(pc,R));
   PetscFunctionReturn(0);
 }
 
@@ -196,7 +196,7 @@ PetscErrorCode  PCGalerkinSetInterpolation(PC pc,Mat P)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscTryMethod(pc,"PCGalerkinSetInterpolation_C",(PC,Mat),(pc,P)));
+  PetscTryMethod(pc,"PCGalerkinSetInterpolation_C",(PC,Mat),(pc,P));
   PetscFunctionReturn(0);
 }
 
@@ -240,7 +240,7 @@ PetscErrorCode  PCGalerkinSetComputeSubmatrix(PC pc,PetscErrorCode (*computeAsub
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscTryMethod(pc,"PCGalerkinSetComputeSubmatrix_C",(PC,PetscErrorCode (*)(PC,Mat,Mat,Mat*,void*),void*),(pc,computeAsub,ctx)));
+  PetscTryMethod(pc,"PCGalerkinSetComputeSubmatrix_C",(PC,PetscErrorCode (*)(PC,Mat,Mat,Mat*,void*),void*),(pc,computeAsub,ctx));
   PetscFunctionReturn(0);
 }
 
@@ -270,7 +270,7 @@ PetscErrorCode  PCGalerkinGetKSP(PC pc,KSP *ksp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(ksp,2);
-  PetscCall(PetscUseMethod(pc,"PCGalerkinGetKSP_C",(PC,KSP*),(pc,ksp)));
+  PetscUseMethod(pc,"PCGalerkinGetKSP_C",(PC,KSP*),(pc,ksp));
   PetscFunctionReturn(0);
 }
 

@@ -459,7 +459,7 @@ static PetscErrorCode VecDuplicate_FFTW_bout(Vec bout, Vec *bout_new)
 PetscErrorCode MatCreateVecsFFTW(Mat A,Vec *x,Vec *y,Vec *z)
 {
   PetscFunctionBegin;
-  PetscCall(PetscUseMethod(A,"MatCreateVecsFFTW_C",(Mat,Vec*,Vec*,Vec*),(A,x,y,z)));
+  PetscUseMethod(A,"MatCreateVecsFFTW_C",(Mat,Vec*,Vec*,Vec*),(A,x,y,z));
   PetscFunctionReturn(0);
 }
 
@@ -726,7 +726,7 @@ PetscErrorCode  MatCreateVecsFFTW_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
 PetscErrorCode VecScatterPetscToFFTW(Mat A,Vec x,Vec y)
 {
   PetscFunctionBegin;
-  PetscCall(PetscUseMethod(A,"VecScatterPetscToFFTW_C",(Mat,Vec,Vec),(A,x,y)));
+  PetscUseMethod(A,"VecScatterPetscToFFTW_C",(Mat,Vec,Vec),(A,x,y));
   PetscFunctionReturn(0);
 }
 
@@ -959,7 +959,7 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A,Vec x,Vec y)
 PetscErrorCode VecScatterFFTWToPetsc(Mat A,Vec x,Vec y)
 {
   PetscFunctionBegin;
-  PetscCall(PetscUseMethod(A,"VecScatterFFTWToPetsc_C",(Mat,Vec,Vec),(A,x,y)));
+  PetscUseMethod(A,"VecScatterFFTWToPetsc_C",(Mat,Vec,Vec),(A,x,y));
   PetscFunctionReturn(0);
 }
 

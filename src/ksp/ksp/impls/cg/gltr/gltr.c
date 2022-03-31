@@ -24,7 +24,7 @@ PetscErrorCode  KSPGLTRGetMinEig(KSP ksp, PetscReal *e_min)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscCall(PetscUseMethod(ksp,"KSPGLTRGetMinEig_C",(KSP,PetscReal*),(ksp,e_min)));
+  PetscUseMethod(ksp,"KSPGLTRGetMinEig_C",(KSP,PetscReal*),(ksp,e_min));
   PetscFunctionReturn(0);
 }
 
@@ -44,7 +44,7 @@ PetscErrorCode  KSPGLTRGetLambda(KSP ksp, PetscReal *lambda)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscCall(PetscUseMethod(ksp,"KSPGLTRGetLambda_C",(KSP,PetscReal*),(ksp,lambda)));
+  PetscUseMethod(ksp,"KSPGLTRGetLambda_C",(KSP,PetscReal*),(ksp,lambda));
   PetscFunctionReturn(0);
 }
 

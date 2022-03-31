@@ -50,7 +50,7 @@
 PetscErrorCode  MatReorderForNonzeroDiagonal(Mat mat,PetscReal abstol,IS ris,IS cis)
 {
   PetscFunctionBegin;
-  PetscCall(PetscTryMethod(mat,"MatReorderForNonzeroDiagonal_C",(Mat,PetscReal,IS,IS),(mat,abstol,ris,cis)));
+  PetscTryMethod(mat,"MatReorderForNonzeroDiagonal_C",(Mat,PetscReal,IS,IS),(mat,abstol,ris,cis));
   PetscFunctionReturn(0);
 }
 

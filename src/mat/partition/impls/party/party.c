@@ -182,7 +182,7 @@ PetscErrorCode MatPartitioningPartySetGlobal(MatPartitioning part,const char *gl
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
-  PetscCall(PetscTryMethod(part,"MatPartitioningPartySetGlobal_C",(MatPartitioning,const char*),(part,global)));
+  PetscTryMethod(part,"MatPartitioningPartySetGlobal_C",(MatPartitioning,const char*),(part,global));
   PetscFunctionReturn(0);
 }
 
@@ -219,7 +219,7 @@ PetscErrorCode MatPartitioningPartySetLocal(MatPartitioning part,const char *loc
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
-  PetscCall(PetscTryMethod(part,"MatPartitioningPartySetLocal_C",(MatPartitioning,const char*),(part,local)));
+  PetscTryMethod(part,"MatPartitioningPartySetLocal_C",(MatPartitioning,const char*),(part,local));
   PetscFunctionReturn(0);
 }
 
@@ -253,7 +253,7 @@ PetscErrorCode MatPartitioningPartySetCoarseLevel(MatPartitioning part,PetscReal
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
   PetscValidLogicalCollectiveReal(part,level,2);
-  PetscCall(PetscTryMethod(part,"MatPartitioningPartySetCoarseLevel_C",(MatPartitioning,PetscReal),(part,level)));
+  PetscTryMethod(part,"MatPartitioningPartySetCoarseLevel_C",(MatPartitioning,PetscReal),(part,level));
   PetscFunctionReturn(0);
 }
 
@@ -288,7 +288,7 @@ PetscErrorCode MatPartitioningPartySetMatchOptimization(MatPartitioning part,Pet
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
   PetscValidLogicalCollectiveBool(part,opt,2);
-  PetscCall(PetscTryMethod(part,"MatPartitioningPartySetMatchOptimization_C",(MatPartitioning,PetscBool),(part,opt)));
+  PetscTryMethod(part,"MatPartitioningPartySetMatchOptimization_C",(MatPartitioning,PetscBool),(part,opt));
   PetscFunctionReturn(0);
 }
 
@@ -320,7 +320,7 @@ PetscErrorCode MatPartitioningPartySetBipart(MatPartitioning part,PetscBool bp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
   PetscValidLogicalCollectiveBool(part,bp,2);
-  PetscCall(PetscTryMethod(part,"MatPartitioningPartySetBipart_C",(MatPartitioning,PetscBool),(part,bp)));
+  PetscTryMethod(part,"MatPartitioningPartySetBipart_C",(MatPartitioning,PetscBool),(part,bp));
   PetscFunctionReturn(0);
 }
 

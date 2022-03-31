@@ -1214,7 +1214,7 @@ PetscErrorCode TSMPRKSetType(TS ts,TSMPRKType mprktype)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidCharPointer(mprktype,2);
-  PetscCall(PetscTryMethod(ts,"TSMPRKSetType_C",(TS,TSMPRKType),(ts,mprktype)));
+  PetscTryMethod(ts,"TSMPRKSetType_C",(TS,TSMPRKType),(ts,mprktype));
   PetscFunctionReturn(0);
 }
 
@@ -1237,7 +1237,7 @@ PetscErrorCode TSMPRKGetType(TS ts,TSMPRKType *mprktype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscCall(PetscUseMethod(ts,"TSMPRKGetType_C",(TS,TSMPRKType*),(ts,mprktype)));
+  PetscUseMethod(ts,"TSMPRKGetType_C",(TS,TSMPRKType*),(ts,mprktype));
   PetscFunctionReturn(0);
 }
 

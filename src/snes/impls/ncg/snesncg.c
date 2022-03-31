@@ -225,7 +225,7 @@ PetscErrorCode SNESNCGSetType(SNES snes, SNESNCGType btype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  PetscCall(PetscTryMethod(snes,"SNESNCGSetType_C",(SNES,SNESNCGType),(snes,btype)));
+  PetscTryMethod(snes,"SNESNCGSetType_C",(SNES,SNESNCGType),(snes,btype));
   PetscFunctionReturn(0);
 }
 

@@ -231,7 +231,7 @@ PetscErrorCode MatPreallocatorPreallocate(Mat mat, PetscBool fill, Mat A)
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidLogicalCollectiveBool(mat,fill,2);
   PetscValidHeaderSpecific(A,MAT_CLASSID,3);
-  PetscCall(PetscUseMethod(mat,"MatPreallocatorPreallocate_C",(Mat,PetscBool,Mat),(mat,fill,A)));
+  PetscUseMethod(mat,"MatPreallocatorPreallocate_C",(Mat,PetscBool,Mat),(mat,fill,A));
   PetscFunctionReturn(0);
 }
 

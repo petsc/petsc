@@ -879,7 +879,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_BlockMat,
 PetscErrorCode  MatBlockMatSetPreallocation(Mat B,PetscInt bs,PetscInt nz,const PetscInt nnz[])
 {
   PetscFunctionBegin;
-  PetscCall(PetscTryMethod(B,"MatBlockMatSetPreallocation_C",(Mat,PetscInt,PetscInt,const PetscInt[]),(B,bs,nz,nnz)));
+  PetscTryMethod(B,"MatBlockMatSetPreallocation_C",(Mat,PetscInt,PetscInt,const PetscInt[]),(B,bs,nz,nnz));
   PetscFunctionReturn(0);
 }
 

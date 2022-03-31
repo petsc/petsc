@@ -1104,7 +1104,7 @@ PetscErrorCode MatNestGetSubMat_Nest(Mat A,PetscInt idxm,PetscInt jdxm,Mat *mat)
 PetscErrorCode  MatNestGetSubMat(Mat A,PetscInt idxm,PetscInt jdxm,Mat *sub)
 {
   PetscFunctionBegin;
-  PetscCall(PetscUseMethod(A,"MatNestGetSubMat_C",(Mat,PetscInt,PetscInt,Mat*),(A,idxm,jdxm,sub)));
+  PetscUseMethod(A,"MatNestGetSubMat_C",(Mat,PetscInt,PetscInt,Mat*),(A,idxm,jdxm,sub));
   PetscFunctionReturn(0);
 }
 
@@ -1161,7 +1161,7 @@ PetscErrorCode MatNestSetSubMat_Nest(Mat A,PetscInt idxm,PetscInt jdxm,Mat mat)
 PetscErrorCode  MatNestSetSubMat(Mat A,PetscInt idxm,PetscInt jdxm,Mat sub)
 {
   PetscFunctionBegin;
-  PetscCall(PetscUseMethod(A,"MatNestSetSubMat_C",(Mat,PetscInt,PetscInt,Mat),(A,idxm,jdxm,sub)));
+  PetscUseMethod(A,"MatNestSetSubMat_C",(Mat,PetscInt,PetscInt,Mat),(A,idxm,jdxm,sub));
   PetscFunctionReturn(0);
 }
 
@@ -1205,7 +1205,7 @@ $   call MatNestGetSubMats(A, M, N, mat, ierr)
 PetscErrorCode  MatNestGetSubMats(Mat A,PetscInt *M,PetscInt *N,Mat ***mat)
 {
   PetscFunctionBegin;
-  PetscCall(PetscUseMethod(A,"MatNestGetSubMats_C",(Mat,PetscInt*,PetscInt*,Mat***),(A,M,N,mat)));
+  PetscUseMethod(A,"MatNestGetSubMats_C",(Mat,PetscInt*,PetscInt*,Mat***),(A,M,N,mat));
   PetscFunctionReturn(0);
 }
 
@@ -1241,7 +1241,7 @@ PetscErrorCode  MatNestGetSize_Nest(Mat A,PetscInt *M,PetscInt *N)
 PetscErrorCode  MatNestGetSize(Mat A,PetscInt *M,PetscInt *N)
 {
   PetscFunctionBegin;
-  PetscCall(PetscUseMethod(A,"MatNestGetSize_C",(Mat,PetscInt*,PetscInt*),(A,M,N)));
+  PetscUseMethod(A,"MatNestGetSize_C",(Mat,PetscInt*,PetscInt*),(A,M,N));
   PetscFunctionReturn(0);
 }
 
@@ -1280,7 +1280,7 @@ PetscErrorCode  MatNestGetISs(Mat A,IS rows[],IS cols[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  PetscCall(PetscUseMethod(A,"MatNestGetISs_C",(Mat,IS[],IS[]),(A,rows,cols)));
+  PetscUseMethod(A,"MatNestGetISs_C",(Mat,IS[],IS[]),(A,rows,cols));
   PetscFunctionReturn(0);
 }
 
@@ -1319,7 +1319,7 @@ PetscErrorCode  MatNestGetLocalISs(Mat A,IS rows[],IS cols[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  PetscCall(PetscUseMethod(A,"MatNestGetLocalISs_C",(Mat,IS[],IS[]),(A,rows,cols)));
+  PetscUseMethod(A,"MatNestGetLocalISs_C",(Mat,IS[],IS[]),(A,rows,cols));
   PetscFunctionReturn(0);
 }
 
@@ -1353,7 +1353,7 @@ PetscErrorCode  MatNestSetVecType_Nest(Mat A,VecType vtype)
 PetscErrorCode  MatNestSetVecType(Mat A,VecType vtype)
 {
   PetscFunctionBegin;
-  PetscCall(PetscTryMethod(A,"MatNestSetVecType_C",(Mat,VecType),(A,vtype)));
+  PetscTryMethod(A,"MatNestSetVecType_C",(Mat,VecType),(A,vtype));
   PetscFunctionReturn(0);
 }
 
@@ -1490,7 +1490,7 @@ PetscErrorCode MatNestSetSubMats(Mat A,PetscInt nr,const IS is_row[],PetscInt nc
     for (i=0; i<nc; i++) PetscValidHeaderSpecific(is_col[i],IS_CLASSID,5);
   }
   if (nr*nc > 0) PetscValidPointer(a,6);
-  PetscCall(PetscUseMethod(A,"MatNestSetSubMats_C",(Mat,PetscInt,const IS[],PetscInt,const IS[],const Mat[]),(A,nr,is_row,nc,is_col,a)));
+  PetscUseMethod(A,"MatNestSetSubMats_C",(Mat,PetscInt,const IS[],PetscInt,const IS[],const Mat[]),(A,nr,is_row,nc,is_col,a));
   PetscFunctionReturn(0);
 }
 
@@ -1948,8 +1948,8 @@ PETSC_INTERN PetscErrorCode MatAXPY_Dense_Nest(Mat Y,PetscScalar a,Mat X)
       if (!B) continue;
       PetscCall(PetscObjectTypeCompare((PetscObject)B,MATTRANSPOSEMAT,&flg));
       if (flg) {
-        PetscCall(PetscTryMethod(B,"MatTransposeGetMat_C",(Mat,Mat*),(B,&D)));
-        PetscCall(PetscTryMethod(B,"MatHermitianTransposeGetMat_C",(Mat,Mat*),(B,&D)));
+        PetscTryMethod(B,"MatTransposeGetMat_C",(Mat,Mat*),(B,&D));
+        PetscTryMethod(B,"MatHermitianTransposeGetMat_C",(Mat,Mat*),(B,&D));
         PetscCall(MatConvert(B,((PetscObject)D)->type_name,MAT_INITIAL_MATRIX,&D));
         B = D;
       }

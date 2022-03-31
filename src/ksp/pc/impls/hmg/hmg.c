@@ -303,7 +303,7 @@ PetscErrorCode PCHMGSetReuseInterpolation(PC pc, PetscBool reuse)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscUseMethod(pc,"PCHMGSetReuseInterpolation_C",(PC,PetscBool),(pc,reuse)));
+  PetscUseMethod(pc,"PCHMGSetReuseInterpolation_C",(PC,PetscBool),(pc,reuse));
   PetscFunctionReturn(0);
 }
 
@@ -339,7 +339,7 @@ PetscErrorCode PCHMGSetUseSubspaceCoarsening(PC pc, PetscBool subspace)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscUseMethod(pc,"PCHMGSetUseSubspaceCoarsening_C",(PC,PetscBool),(pc,subspace)));
+  PetscUseMethod(pc,"PCHMGSetUseSubspaceCoarsening_C",(PC,PetscBool),(pc,subspace));
   PetscFunctionReturn(0);
 }
 
@@ -375,7 +375,7 @@ PetscErrorCode PCHMGSetInnerPCType(PC pc, PCType type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscUseMethod(pc,"PCHMGSetInnerPCType_C",(PC,PCType),(pc,type)));
+  PetscUseMethod(pc,"PCHMGSetInnerPCType_C",(PC,PCType),(pc,type));
   PetscFunctionReturn(0);
 }
 
@@ -411,7 +411,7 @@ PetscErrorCode PCHMGSetCoarseningComponent(PC pc, PetscInt component)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscUseMethod(pc,"PCHMGSetCoarseningComponent_C",(PC,PetscInt),(pc,component)));
+  PetscUseMethod(pc,"PCHMGSetCoarseningComponent_C",(PC,PetscInt),(pc,component));
   PetscFunctionReturn(0);
 }
 
@@ -447,7 +447,7 @@ PetscErrorCode PCHMGUseMatMAIJ(PC pc, PetscBool usematmaij)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscUseMethod(pc,"PCHMGUseMatMAIJ_C",(PC,PetscBool),(pc,usematmaij)));
+  PetscUseMethod(pc,"PCHMGUseMatMAIJ_C",(PC,PetscBool),(pc,usematmaij));
   PetscFunctionReturn(0);
 }
 

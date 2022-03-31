@@ -1956,7 +1956,7 @@ PETSC_UNUSED static PetscErrorCode TSTrajectorySetUseDRAM(TSTrajectory tj,PetscB
 PetscErrorCode TSTrajectoryMemorySetType(TSTrajectory tj,TSTrajectoryMemoryType tj_memory_type)
 {
   PetscFunctionBegin;
-  PetscCall(PetscTryMethod(tj,"TSTrajectoryMemorySetType_C",(TSTrajectory,TSTrajectoryMemoryType),(tj,tj_memory_type)));
+  PetscTryMethod(tj,"TSTrajectoryMemorySetType_C",(TSTrajectory,TSTrajectoryMemoryType),(tj,tj_memory_type));
   PetscFunctionReturn(0);
 }
 
@@ -1978,7 +1978,7 @@ PetscErrorCode TSTrajectoryMemorySetType(TSTrajectory tj,TSTrajectoryMemoryType 
 PetscErrorCode TSTrajectorySetMaxCpsRAM(TSTrajectory tj,PetscInt max_cps_ram)
 {
   PetscFunctionBegin;
-  PetscCall(PetscUseMethod(tj,"TSTrajectorySetMaxCpsRAM_C",(TSTrajectory,PetscInt),(tj,max_cps_ram)));
+  PetscUseMethod(tj,"TSTrajectorySetMaxCpsRAM_C",(TSTrajectory,PetscInt),(tj,max_cps_ram));
   PetscFunctionReturn(0);
 }
 
@@ -2000,7 +2000,7 @@ PetscErrorCode TSTrajectorySetMaxCpsRAM(TSTrajectory tj,PetscInt max_cps_ram)
 PetscErrorCode TSTrajectorySetMaxCpsDisk(TSTrajectory tj,PetscInt max_cps_disk)
 {
   PetscFunctionBegin;
-  PetscCall(PetscUseMethod(tj,"TSTrajectorySetMaxCpsDisk_C",(TSTrajectory,PetscInt),(tj,max_cps_disk)));
+  PetscUseMethod(tj,"TSTrajectorySetMaxCpsDisk_C",(TSTrajectory,PetscInt),(tj,max_cps_disk));
   PetscFunctionReturn(0);
 }
 
@@ -2022,7 +2022,7 @@ PetscErrorCode TSTrajectorySetMaxCpsDisk(TSTrajectory tj,PetscInt max_cps_disk)
 PetscErrorCode TSTrajectorySetMaxUnitsRAM(TSTrajectory tj,PetscInt max_units_ram)
 {
   PetscFunctionBegin;
-  PetscCall(PetscUseMethod(tj,"TSTrajectorySetMaxUnitsRAM_C",(TSTrajectory,PetscInt),(tj,max_units_ram)));
+  PetscUseMethod(tj,"TSTrajectorySetMaxUnitsRAM_C",(TSTrajectory,PetscInt),(tj,max_units_ram));
   PetscFunctionReturn(0);
 }
 
@@ -2044,7 +2044,7 @@ PetscErrorCode TSTrajectorySetMaxUnitsRAM(TSTrajectory tj,PetscInt max_units_ram
 PetscErrorCode TSTrajectorySetMaxUnitsDisk(TSTrajectory tj,PetscInt max_units_disk)
 {
   PetscFunctionBegin;
-  PetscCall(PetscUseMethod(tj,"TSTrajectorySetMaxUnitsDisk_C",(TSTrajectory,PetscInt),(tj,max_units_disk)));
+  PetscUseMethod(tj,"TSTrajectorySetMaxUnitsDisk_C",(TSTrajectory,PetscInt),(tj,max_units_disk));
   PetscFunctionReturn(0);
 }
 

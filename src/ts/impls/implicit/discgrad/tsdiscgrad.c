@@ -476,7 +476,7 @@ PetscErrorCode TSDiscGradGetFormulation(TS ts, PetscErrorCode (**Sfunc)(TS, Pets
   PetscValidPointer(Sfunc, 2);
   PetscValidPointer(Ffunc, 3);
   PetscValidPointer(Gfunc, 4);
-  PetscCall(PetscUseMethod(ts,"TSDiscGradGetFormulation_C",(TS,PetscErrorCode(**Sfunc)(TS,PetscReal,Vec,Mat,void*),PetscErrorCode(**Ffunc)(TS,PetscReal,Vec,PetscScalar*,void*),PetscErrorCode(**Gfunc)(TS,PetscReal,Vec,Vec,void*), void*),(ts,Sfunc,Ffunc,Gfunc,ctx)));
+  PetscUseMethod(ts,"TSDiscGradGetFormulation_C",(TS,PetscErrorCode(**Sfunc)(TS,PetscReal,Vec,Mat,void*),PetscErrorCode(**Ffunc)(TS,PetscReal,Vec,PetscScalar*,void*),PetscErrorCode(**Gfunc)(TS,PetscReal,Vec,Vec,void*), void*),(ts,Sfunc,Ffunc,Gfunc,ctx));
   PetscFunctionReturn(0);
 }
 
@@ -510,7 +510,7 @@ PetscErrorCode TSDiscGradSetFormulation(TS ts, PetscErrorCode (*Sfunc)(TS, Petsc
   PetscValidFunction(Sfunc, 2);
   PetscValidFunction(Ffunc, 3);
   PetscValidFunction(Gfunc, 4);
-  PetscCall(PetscTryMethod(ts,"TSDiscGradSetFormulation_C",(TS,PetscErrorCode(*Sfunc)(TS,PetscReal,Vec,Mat,void*),PetscErrorCode(*Ffunc)(TS,PetscReal,Vec,PetscScalar*,void*),PetscErrorCode(*Gfunc)(TS,PetscReal,Vec,Vec,void*), void*),(ts,Sfunc,Ffunc,Gfunc,ctx)));
+  PetscTryMethod(ts,"TSDiscGradSetFormulation_C",(TS,PetscErrorCode(*Sfunc)(TS,PetscReal,Vec,Mat,void*),PetscErrorCode(*Ffunc)(TS,PetscReal,Vec,PetscScalar*,void*),PetscErrorCode(*Gfunc)(TS,PetscReal,Vec,Vec,void*), void*),(ts,Sfunc,Ffunc,Gfunc,ctx));
   PetscFunctionReturn(0);
 }
 
@@ -534,7 +534,7 @@ PetscErrorCode TSDiscGradIsGonzalez(TS ts,PetscBool *gonzalez)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidBoolPointer(gonzalez,2);
-  PetscCall(PetscUseMethod(ts,"TSDiscGradIsGonzalez_C",(TS,PetscBool*),(ts,gonzalez)));
+  PetscUseMethod(ts,"TSDiscGradIsGonzalez_C",(TS,PetscBool*),(ts,gonzalez));
   PetscFunctionReturn(0);
 }
 
@@ -558,6 +558,6 @@ PetscErrorCode TSDiscGradUseGonzalez(TS ts,PetscBool flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscCall(PetscTryMethod(ts,"TSDiscGradUseGonzalez_C",(TS,PetscBool),(ts,flg)));
+  PetscTryMethod(ts,"TSDiscGradUseGonzalez_C",(TS,PetscBool),(ts,flg));
   PetscFunctionReturn(0);
 }

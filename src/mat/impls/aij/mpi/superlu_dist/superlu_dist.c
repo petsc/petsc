@@ -94,7 +94,7 @@ PetscErrorCode MatSuperluDistGetDiagU(Mat F,PetscScalar *diagU)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F,MAT_CLASSID,1);
-  PetscCall(PetscTryMethod(F,"MatSuperluDistGetDiagU_C",(Mat,PetscScalar*),(F,diagU)));
+  PetscTryMethod(F,"MatSuperluDistGetDiagU_C",(Mat,PetscScalar*),(F,diagU));
   PetscFunctionReturn(0);
 }
 

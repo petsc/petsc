@@ -1425,7 +1425,7 @@ PetscErrorCode PCHYPRESetDiscreteGradient(PC pc, Mat G)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(G,MAT_CLASSID,2);
   PetscCheckSameComm(pc,1,G,2);
-  PetscCall(PetscTryMethod(pc,"PCHYPRESetDiscreteGradient_C",(PC,Mat),(pc,G)));
+  PetscTryMethod(pc,"PCHYPRESetDiscreteGradient_C",(PC,Mat),(pc,G));
   PetscFunctionReturn(0);
 }
 
@@ -1471,7 +1471,7 @@ PetscErrorCode PCHYPRESetDiscreteCurl(PC pc, Mat C)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(C,MAT_CLASSID,2);
   PetscCheckSameComm(pc,1,C,2);
-  PetscCall(PetscTryMethod(pc,"PCHYPRESetDiscreteCurl_C",(PC,Mat),(pc,C)));
+  PetscTryMethod(pc,"PCHYPRESetDiscreteCurl_C",(PC,Mat),(pc,C));
   PetscFunctionReturn(0);
 }
 
@@ -1591,7 +1591,7 @@ PetscErrorCode PCHYPRESetInterpolations(PC pc, PetscInt dim, Mat RT_PiFull, Mat 
       }
     }
   }
-  PetscCall(PetscTryMethod(pc,"PCHYPRESetInterpolations_C",(PC,PetscInt,Mat,Mat[],Mat,Mat[]),(pc,dim,RT_PiFull,RT_Pi,ND_PiFull,ND_Pi)));
+  PetscTryMethod(pc,"PCHYPRESetInterpolations_C",(PC,PetscInt,Mat,Mat[],Mat,Mat[]),(pc,dim,RT_PiFull,RT_Pi,ND_PiFull,ND_Pi));
   PetscFunctionReturn(0);
 }
 
@@ -1655,7 +1655,7 @@ PetscErrorCode PCHYPRESetAlphaPoissonMatrix(PC pc, Mat A)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(A,MAT_CLASSID,2);
   PetscCheckSameComm(pc,1,A,2);
-  PetscCall(PetscTryMethod(pc,"PCHYPRESetPoissonMatrix_C",(PC,Mat,PetscBool),(pc,A,PETSC_TRUE)));
+  PetscTryMethod(pc,"PCHYPRESetPoissonMatrix_C",(PC,Mat,PetscBool),(pc,A,PETSC_TRUE));
   PetscFunctionReturn(0);
 }
 
@@ -1684,7 +1684,7 @@ PetscErrorCode PCHYPRESetBetaPoissonMatrix(PC pc, Mat A)
     PetscValidHeaderSpecific(A,MAT_CLASSID,2);
     PetscCheckSameComm(pc,1,A,2);
   }
-  PetscCall(PetscTryMethod(pc,"PCHYPRESetPoissonMatrix_C",(PC,Mat,PetscBool),(pc,A,PETSC_FALSE)));
+  PetscTryMethod(pc,"PCHYPRESetPoissonMatrix_C",(PC,Mat,PetscBool),(pc,A,PETSC_FALSE));
   PetscFunctionReturn(0);
 }
 
@@ -1734,7 +1734,7 @@ PetscErrorCode PCHYPRESetEdgeConstantVectors(PC pc, Vec ozz, Vec zoz, Vec zzo)
   PetscCheckSameComm(pc,1,ozz,2);
   PetscCheckSameComm(pc,1,zoz,3);
   if (zzo) PetscCheckSameComm(pc,1,zzo,4);
-  PetscCall(PetscTryMethod(pc,"PCHYPRESetEdgeConstantVectors_C",(PC,Vec,Vec,Vec),(pc,ozz,zoz,zzo)));
+  PetscTryMethod(pc,"PCHYPRESetEdgeConstantVectors_C",(PC,Vec,Vec,Vec),(pc,ozz,zoz,zzo));
   PetscFunctionReturn(0);
 }
 
@@ -2133,7 +2133,7 @@ PetscErrorCode  PCHYPRESetType(PC pc,const char name[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidCharPointer(name,2);
-  PetscCall(PetscTryMethod(pc,"PCHYPRESetType_C",(PC,const char[]),(pc,name)));
+  PetscTryMethod(pc,"PCHYPRESetType_C",(PC,const char[]),(pc,name));
   PetscFunctionReturn(0);
 }
 
@@ -2157,7 +2157,7 @@ PetscErrorCode  PCHYPREGetType(PC pc,const char *name[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(name,2);
-  PetscCall(PetscTryMethod(pc,"PCHYPREGetType_C",(PC,const char*[]),(pc,name)));
+  PetscTryMethod(pc,"PCHYPREGetType_C",(PC,const char*[]),(pc,name));
   PetscFunctionReturn(0);
 }
 
@@ -2182,7 +2182,7 @@ PetscErrorCode PCMGGalerkinSetMatProductAlgorithm(PC pc,const char name[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscTryMethod(pc,"PCMGGalerkinSetMatProductAlgorithm_C",(PC,const char[]),(pc,name)));
+  PetscTryMethod(pc,"PCMGGalerkinSetMatProductAlgorithm_C",(PC,const char[]),(pc,name));
   PetscFunctionReturn(0);
 }
 
@@ -2206,7 +2206,7 @@ PetscErrorCode PCMGGalerkinGetMatProductAlgorithm(PC pc,const char *name[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscTryMethod(pc,"PCMGGalerkinGetMatProductAlgorithm_C",(PC,const char*[]),(pc,name)));
+  PetscTryMethod(pc,"PCMGGalerkinGetMatProductAlgorithm_C",(PC,const char*[]),(pc,name));
   PetscFunctionReturn(0);
 }
 

@@ -244,7 +244,7 @@ PetscErrorCode  KSPChebyshevSetEigenvalues(KSP ksp,PetscReal emax,PetscReal emin
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidLogicalCollectiveReal(ksp,emax,2);
   PetscValidLogicalCollectiveReal(ksp,emin,3);
-  PetscCall(PetscTryMethod(ksp,"KSPChebyshevSetEigenvalues_C",(KSP,PetscReal,PetscReal),(ksp,emax,emin)));
+  PetscTryMethod(ksp,"KSPChebyshevSetEigenvalues_C",(KSP,PetscReal,PetscReal),(ksp,emax,emin));
   PetscFunctionReturn(0);
 }
 
@@ -289,7 +289,7 @@ PetscErrorCode KSPChebyshevEstEigSet(KSP ksp,PetscReal a,PetscReal b,PetscReal c
   PetscValidLogicalCollectiveReal(ksp,b,3);
   PetscValidLogicalCollectiveReal(ksp,c,4);
   PetscValidLogicalCollectiveReal(ksp,d,5);
-  PetscCall(PetscTryMethod(ksp,"KSPChebyshevEstEigSet_C",(KSP,PetscReal,PetscReal,PetscReal,PetscReal),(ksp,a,b,c,d)));
+  PetscTryMethod(ksp,"KSPChebyshevEstEigSet_C",(KSP,PetscReal,PetscReal,PetscReal,PetscReal),(ksp,a,b,c,d));
   PetscFunctionReturn(0);
 }
 
@@ -316,7 +316,7 @@ PetscErrorCode KSPChebyshevEstEigSetUseNoisy(KSP ksp,PetscBool use)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscCall(PetscTryMethod(ksp,"KSPChebyshevEstEigSetUseNoisy_C",(KSP,PetscBool),(ksp,use)));
+  PetscTryMethod(ksp,"KSPChebyshevEstEigSetUseNoisy_C",(KSP,PetscBool),(ksp,use));
   PetscFunctionReturn(0);
 }
 
@@ -341,7 +341,7 @@ PetscErrorCode KSPChebyshevEstEigGetKSP(KSP ksp, KSP *kspest)
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidPointer(kspest,2);
   *kspest = NULL;
-  PetscCall(PetscTryMethod(ksp,"KSPChebyshevEstEigGetKSP_C",(KSP,KSP*),(ksp,kspest)));
+  PetscTryMethod(ksp,"KSPChebyshevEstEigGetKSP_C",(KSP,KSP*),(ksp,kspest));
   PetscFunctionReturn(0);
 }
 

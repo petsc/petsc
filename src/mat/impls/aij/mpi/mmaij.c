@@ -270,7 +270,7 @@ PetscErrorCode MatMPIAIJDiagonalScaleLocal(Mat A,Vec scale)
   /* This routine should really be abandoned as it duplicates MatDiagonalScaleLocal */
 
   PetscFunctionBegin;
-  PetscCall(PetscTryMethod(A,"MatDiagonalScaleLocal_C",(Mat,Vec),(A,scale)));
+  PetscTryMethod(A,"MatDiagonalScaleLocal_C",(Mat,Vec),(A,scale));
   PetscFunctionReturn(0);
 }
 

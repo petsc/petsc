@@ -509,7 +509,7 @@ PetscErrorCode  PCJacobiSetUseAbs(PC pc,PetscBool flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscTryMethod(pc,"PCJacobiSetUseAbs_C",(PC,PetscBool),(pc,flg)));
+  PetscTryMethod(pc,"PCJacobiSetUseAbs_C",(PC,PetscBool),(pc,flg));
   PetscFunctionReturn(0);
 }
 
@@ -534,7 +534,7 @@ PetscErrorCode  PCJacobiGetUseAbs(PC pc,PetscBool *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscUseMethod(pc,"PCJacobiGetUseAbs_C",(PC,PetscBool*),(pc,flg)));
+  PetscUseMethod(pc,"PCJacobiGetUseAbs_C",(PC,PetscBool*),(pc,flg));
   PetscFunctionReturn(0);
 }
 
@@ -562,7 +562,7 @@ PetscErrorCode  PCJacobiSetFixDiagonal(PC pc,PetscBool flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscTryMethod(pc,"PCJacobiSetFixDiagonal_C",(PC,PetscBool),(pc,flg)));
+  PetscTryMethod(pc,"PCJacobiSetFixDiagonal_C",(PC,PetscBool),(pc,flg));
   PetscFunctionReturn(0);
 }
 
@@ -589,7 +589,7 @@ PetscErrorCode  PCJacobiGetFixDiagonal(PC pc,PetscBool *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscUseMethod(pc,"PCJacobiGetFixDiagonal_C",(PC,PetscBool*),(pc,flg)));
+  PetscUseMethod(pc,"PCJacobiGetFixDiagonal_C",(PC,PetscBool*),(pc,flg));
   PetscFunctionReturn(0);
 }
 
@@ -614,7 +614,7 @@ PetscErrorCode  PCJacobiSetType(PC pc,PCJacobiType type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscTryMethod(pc,"PCJacobiSetType_C",(PC,PCJacobiType),(pc,type)));
+  PetscTryMethod(pc,"PCJacobiSetType_C",(PC,PCJacobiType),(pc,type));
   PetscFunctionReturn(0);
 }
 
@@ -637,6 +637,6 @@ PetscErrorCode  PCJacobiGetType(PC pc,PCJacobiType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscUseMethod(pc,"PCJacobiGetType_C",(PC,PCJacobiType*),(pc,type)));
+  PetscUseMethod(pc,"PCJacobiGetType_C",(PC,PCJacobiType*),(pc,type));
   PetscFunctionReturn(0);
 }

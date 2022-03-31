@@ -1607,7 +1607,7 @@ PetscErrorCode MatScaLAPACKSetBlockSizes(Mat A,PetscInt mb,PetscInt nb)
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidLogicalCollectiveInt(A,mb,2);
   PetscValidLogicalCollectiveInt(A,nb,3);
-  PetscCall(PetscTryMethod(A,"MatScaLAPACKSetBlockSizes_C",(Mat,PetscInt,PetscInt),(A,mb,nb)));
+  PetscTryMethod(A,"MatScaLAPACKSetBlockSizes_C",(Mat,PetscInt,PetscInt),(A,mb,nb));
   PetscFunctionReturn(0);
 }
 
@@ -1642,7 +1642,7 @@ PetscErrorCode MatScaLAPACKGetBlockSizes(Mat A,PetscInt *mb,PetscInt *nb)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  PetscCall(PetscUseMethod(A,"MatScaLAPACKGetBlockSizes_C",(Mat,PetscInt*,PetscInt*),(A,mb,nb)));
+  PetscUseMethod(A,"MatScaLAPACKGetBlockSizes_C",(Mat,PetscInt*,PetscInt*),(A,mb,nb));
   PetscFunctionReturn(0);
 }
 

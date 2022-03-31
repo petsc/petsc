@@ -41,7 +41,7 @@ PetscErrorCode  KSPFGMRESSetModifyPC(KSP ksp,PetscErrorCode (*fcn)(KSP,PetscInt,
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscCall(PetscTryMethod(ksp,"KSPFGMRESSetModifyPC_C",(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscInt,PetscReal,void*),void*,PetscErrorCode (*)(void*)),(ksp,fcn,ctx,d)));
+  PetscTryMethod(ksp,"KSPFGMRESSetModifyPC_C",(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscInt,PetscReal,void*),void*,PetscErrorCode (*)(void*)),(ksp,fcn,ctx,d));
   PetscFunctionReturn(0);
 }
 

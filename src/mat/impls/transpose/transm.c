@@ -272,7 +272,7 @@ PetscErrorCode MatTransposeGetMat(Mat A,Mat *M)
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
   PetscValidPointer(M,2);
-  PetscCall(PetscUseMethod(A,"MatTransposeGetMat_C",(Mat,Mat*),(A,M)));
+  PetscUseMethod(A,"MatTransposeGetMat_C",(Mat,Mat*),(A,M));
   PetscFunctionReturn(0);
 }
 

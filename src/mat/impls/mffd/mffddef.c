@@ -201,7 +201,7 @@ PetscErrorCode  MatMFFDDSSetUmin(Mat A,PetscReal umin)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  PetscCall(PetscTryMethod(A,"MatMFFDDSSetUmin_C",(Mat,PetscReal),(A,umin)));
+  PetscTryMethod(A,"MatMFFDDSSetUmin_C",(Mat,PetscReal),(A,umin));
   PetscFunctionReturn(0);
 }
 

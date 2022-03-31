@@ -1466,7 +1466,7 @@ PETSC_INTERN PetscErrorCode  PCPreSolveChangeRHS(PC pc,PetscBool *change)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(change,2);
   *change = PETSC_FALSE;
-  PetscCall(PetscTryMethod(pc,"PCPreSolveChangeRHS_C",(PC,PetscBool*),(pc,change)));
+  PetscTryMethod(pc,"PCPreSolveChangeRHS_C",(PC,PetscBool*),(pc,change));
   PetscFunctionReturn(0);
 }
 
@@ -1912,7 +1912,7 @@ PetscErrorCode PCSetCoordinates(PC pc, PetscInt dim, PetscInt nloc, PetscReal co
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveInt(pc,dim,2);
-  PetscCall(PetscTryMethod(pc,"PCSetCoordinates_C",(PC,PetscInt,PetscInt,PetscReal*),(pc,dim,nloc,coords)));
+  PetscTryMethod(pc,"PCSetCoordinates_C",(PC,PetscInt,PetscInt,PetscReal*),(pc,dim,nloc,coords));
   PetscFunctionReturn(0);
 }
 
@@ -1940,7 +1940,7 @@ PetscErrorCode PCGetInterpolations(PC pc,PetscInt *num_levels,Mat *interpolation
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidIntPointer(num_levels,2);
   PetscValidPointer(interpolations,3);
-  PetscCall(PetscUseMethod(pc,"PCGetInterpolations_C",(PC,PetscInt*,Mat*[]),(pc,num_levels,interpolations)));
+  PetscUseMethod(pc,"PCGetInterpolations_C",(PC,PetscInt*,Mat*[]),(pc,num_levels,interpolations));
   PetscFunctionReturn(0);
 }
 
@@ -1968,6 +1968,6 @@ PetscErrorCode PCGetCoarseOperators(PC pc,PetscInt *num_levels,Mat *coarseOperat
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidIntPointer(num_levels,2);
   PetscValidPointer(coarseOperators,3);
-  PetscCall(PetscUseMethod(pc,"PCGetCoarseOperators_C",(PC,PetscInt*,Mat*[]),(pc,num_levels,coarseOperators)));
+  PetscUseMethod(pc,"PCGetCoarseOperators_C",(PC,PetscInt*,Mat*[]),(pc,num_levels,coarseOperators));
   PetscFunctionReturn(0);
 }

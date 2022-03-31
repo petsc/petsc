@@ -587,7 +587,7 @@ PETSC_EXTERN PetscErrorCode MatHtoolGetHierarchicalMat(Mat A,const htool::Virtua
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidPointer(hmatrix,2);
-  PetscCall(PetscTryMethod(A,"MatHtoolGetHierarchicalMat_C",(Mat,const htool::VirtualHMatrix<PetscScalar>**),(A,hmatrix)));
+  PetscTryMethod(A,"MatHtoolGetHierarchicalMat_C",(Mat,const htool::VirtualHMatrix<PetscScalar>**),(A,hmatrix));
   PetscFunctionReturn(0);
 }
 
@@ -621,7 +621,7 @@ PETSC_EXTERN PetscErrorCode MatHtoolSetKernel(Mat A,MatHtoolKernel kernel,void *
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   if (!kernelctx) PetscValidFunction(kernel,2);
   if (!kernel)    PetscValidPointer(kernelctx,3);
-  PetscCall(PetscTryMethod(A,"MatHtoolSetKernel_C",(Mat,MatHtoolKernel,void*),(A,kernel,kernelctx)));
+  PetscTryMethod(A,"MatHtoolSetKernel_C",(Mat,MatHtoolKernel,void*),(A,kernel,kernelctx));
   PetscFunctionReturn(0);
 }
 
@@ -655,7 +655,7 @@ PETSC_EXTERN PetscErrorCode MatHtoolGetPermutationSource(Mat A,IS* is)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   if (!is) PetscValidPointer(is,2);
-  PetscCall(PetscTryMethod(A,"MatHtoolGetPermutationSource_C",(Mat,IS*),(A,is)));
+  PetscTryMethod(A,"MatHtoolGetPermutationSource_C",(Mat,IS*),(A,is));
   PetscFunctionReturn(0);
 }
 
@@ -689,7 +689,7 @@ PETSC_EXTERN PetscErrorCode MatHtoolGetPermutationTarget(Mat A,IS* is)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   if (!is) PetscValidPointer(is,2);
-  PetscCall(PetscTryMethod(A,"MatHtoolGetPermutationTarget_C",(Mat,IS*),(A,is)));
+  PetscTryMethod(A,"MatHtoolGetPermutationTarget_C",(Mat,IS*),(A,is));
   PetscFunctionReturn(0);
 }
 
@@ -718,7 +718,7 @@ PETSC_EXTERN PetscErrorCode MatHtoolUsePermutation(Mat A,PetscBool use)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidLogicalCollectiveBool(A,use,2);
-  PetscCall(PetscTryMethod(A,"MatHtoolUsePermutation_C",(Mat,PetscBool),(A,use)));
+  PetscTryMethod(A,"MatHtoolUsePermutation_C",(Mat,PetscBool),(A,use));
   PetscFunctionReturn(0);
 }
 

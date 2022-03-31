@@ -375,7 +375,7 @@ PetscErrorCode TSBasicSymplecticSetType(TS ts,TSBasicSymplecticType bsymptype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscCall(PetscTryMethod(ts,"TSBasicSymplecticSetType_C",(TS,TSBasicSymplecticType),(ts,bsymptype)));
+  PetscTryMethod(ts,"TSBasicSymplecticSetType_C",(TS,TSBasicSymplecticType),(ts,bsymptype));
   PetscFunctionReturn(0);
 }
 
@@ -394,7 +394,7 @@ PetscErrorCode TSBasicSymplecticGetType(TS ts,TSBasicSymplecticType *bsymptype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscCall(PetscUseMethod(ts,"TSBasicSymplecticGetType_C",(TS,TSBasicSymplecticType*),(ts,bsymptype)));
+  PetscUseMethod(ts,"TSBasicSymplecticGetType_C",(TS,TSBasicSymplecticType*),(ts,bsymptype));
   PetscFunctionReturn(0);
 }
 

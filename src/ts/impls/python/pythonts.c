@@ -21,6 +21,6 @@ PetscErrorCode  TSPythonSetType(TS ts,const char pyname[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidCharPointer(pyname,2);
-  PetscCall(PetscTryMethod(ts,"TSPythonSetType_C",(TS, const char[]),(ts,pyname)));
+  PetscTryMethod(ts,"TSPythonSetType_C",(TS, const char[]),(ts,pyname));
   PetscFunctionReturn(0);
 }

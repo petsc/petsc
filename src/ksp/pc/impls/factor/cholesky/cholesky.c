@@ -255,7 +255,7 @@ PetscErrorCode  PCFactorSetReuseOrdering(PC pc,PetscBool flag)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveBool(pc,flag,2);
-  PetscCall(PetscTryMethod(pc,"PCFactorSetReuseOrdering_C",(PC,PetscBool),(pc,flag)));
+  PetscTryMethod(pc,"PCFactorSetReuseOrdering_C",(PC,PetscBool),(pc,flag));
   PetscFunctionReturn(0);
 }
 

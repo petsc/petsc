@@ -625,7 +625,7 @@ PetscErrorCode  PCExoticSetType(PC pc,PCExoticType type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveEnum(pc,type,2);
-  PetscCall(PetscTryMethod(pc,"PCExoticSetType_C",(PC,PCExoticType),(pc,type)));
+  PetscTryMethod(pc,"PCExoticSetType_C",(PC,PCExoticType),(pc,type));
   PetscFunctionReturn(0);
 }
 

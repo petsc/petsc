@@ -21,7 +21,7 @@ PetscErrorCode TaoALMMGetType(Tao tao, TaoALMMType *type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   PetscValidPointer(type, 2);
-  PetscCall(PetscUseMethod(tao,"TaoALMMGetType_C",(Tao,TaoALMMType *),(tao,type)));
+  PetscUseMethod(tao,"TaoALMMGetType_C",(Tao,TaoALMMType *),(tao,type));
   PetscFunctionReturn(0);
 }
 
@@ -49,7 +49,7 @@ PetscErrorCode TaoALMMSetType(Tao tao, TaoALMMType type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
-  PetscCall(PetscTryMethod(tao,"TaoALMMSetType_C",(Tao,TaoALMMType),(tao,type)));
+  PetscTryMethod(tao,"TaoALMMSetType_C",(Tao,TaoALMMType),(tao,type));
   PetscFunctionReturn(0);
 }
 
@@ -81,7 +81,7 @@ PetscErrorCode TaoALMMGetSubsolver(Tao tao, Tao *subsolver)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   PetscValidPointer(subsolver, 2);
-  PetscCall(PetscUseMethod(tao,"TaoALMMGetSubsolver_C",(Tao,Tao *),(tao,subsolver)));
+  PetscUseMethod(tao,"TaoALMMGetSubsolver_C",(Tao,Tao *),(tao,subsolver));
   PetscFunctionReturn(0);
 }
 
@@ -110,7 +110,7 @@ PetscErrorCode TaoALMMSetSubsolver(Tao tao, Tao subsolver)
    PetscFunctionBegin;
    PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
    PetscValidHeaderSpecific(subsolver, TAO_CLASSID, 2);
-   PetscCall(PetscTryMethod(tao,"TaoALMMSetSubsolver_C",(Tao,Tao),(tao,subsolver)));
+   PetscTryMethod(tao,"TaoALMMSetSubsolver_C",(Tao,Tao),(tao,subsolver));
    PetscFunctionReturn(0);
 }
 
@@ -165,7 +165,7 @@ PetscErrorCode TaoALMMGetMultipliers(Tao tao, Vec *Y)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   PetscValidPointer(Y, 2);
-  PetscCall(PetscUseMethod(tao,"TaoALMMGetMultipliers_C",(Tao,Vec *),(tao,Y)));
+  PetscUseMethod(tao,"TaoALMMGetMultipliers_C",(Tao,Vec *),(tao,Y));
   PetscFunctionReturn(0);
 }
 
@@ -207,7 +207,7 @@ PetscErrorCode TaoALMMSetMultipliers(Tao tao, Vec Y)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   PetscValidHeaderSpecific(Y, VEC_CLASSID, 2);
-  PetscCall(PetscTryMethod(tao,"TaoALMMSetMultipliers_C",(Tao,Vec),(tao,Y)));
+  PetscTryMethod(tao,"TaoALMMSetMultipliers_C",(Tao,Vec),(tao,Y));
   PetscFunctionReturn(0);
 }
 
@@ -291,7 +291,7 @@ PetscErrorCode TaoALMMGetPrimalIS(Tao tao, IS *opt_is, IS *slack_is)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
-  PetscCall(PetscUseMethod(tao,"TaoALMMGetPrimalIS_C",(Tao,IS *,IS *),(tao,opt_is,slack_is)));
+  PetscUseMethod(tao,"TaoALMMGetPrimalIS_C",(Tao,IS *,IS *),(tao,opt_is,slack_is));
   PetscFunctionReturn(0);
 }
 
@@ -328,7 +328,7 @@ PetscErrorCode TaoALMMGetDualIS(Tao tao, IS *eq_is, IS *ineq_is)
 {
    PetscFunctionBegin;
    PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
-   PetscCall(PetscUseMethod(tao,"TaoALMMGetDualIS_C",(Tao,IS *,IS *),(tao,eq_is,ineq_is)));
+   PetscUseMethod(tao,"TaoALMMGetDualIS_C",(Tao,IS *,IS *),(tao,eq_is,ineq_is));
    PetscFunctionReturn(0);
 }
 

@@ -327,7 +327,7 @@ PetscErrorCode TSAdaptDSPSetFilter(TSAdapt adapt,const char *name)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
   PetscValidCharPointer(name,2);
-  PetscCall(PetscTryMethod(adapt,"TSAdaptDSPSetFilter_C",(TSAdapt,const char*),(adapt,name)));
+  PetscTryMethod(adapt,"TSAdaptDSPSetFilter_C",(TSAdapt,const char*),(adapt,name));
   PetscFunctionReturn(0);
 }
 
@@ -357,7 +357,7 @@ PetscErrorCode TSAdaptDSPSetPID(TSAdapt adapt,PetscReal kkI,PetscReal kkP,PetscR
   PetscValidLogicalCollectiveReal(adapt,kkI,2);
   PetscValidLogicalCollectiveReal(adapt,kkP,3);
   PetscValidLogicalCollectiveReal(adapt,kkD,4);
-  PetscCall(PetscTryMethod(adapt,"TSAdaptDSPSetPID_C",(TSAdapt,PetscReal,PetscReal,PetscReal),(adapt,kkI,kkP,kkD)));
+  PetscTryMethod(adapt,"TSAdaptDSPSetPID_C",(TSAdapt,PetscReal,PetscReal,PetscReal),(adapt,kkI,kkP,kkD));
   PetscFunctionReturn(0);
 }
 

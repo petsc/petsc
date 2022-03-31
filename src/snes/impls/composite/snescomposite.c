@@ -581,7 +581,7 @@ PetscErrorCode  SNESCompositeSetType(SNES snes,SNESCompositeType type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidLogicalCollectiveEnum(snes,type,2);
-  PetscCall(PetscTryMethod(snes,"SNESCompositeSetType_C",(SNES,SNESCompositeType),(snes,type)));
+  PetscTryMethod(snes,"SNESCompositeSetType_C",(SNES,SNESCompositeType),(snes,type));
   PetscFunctionReturn(0);
 }
 
@@ -601,7 +601,7 @@ PetscErrorCode  SNESCompositeAddSNES(SNES snes,SNESType type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  PetscCall(PetscTryMethod(snes,"SNESCompositeAddSNES_C",(SNES,SNESType),(snes,type)));
+  PetscTryMethod(snes,"SNESCompositeAddSNES_C",(SNES,SNESType),(snes,type));
   PetscFunctionReturn(0);
 }
 
@@ -626,7 +626,7 @@ PetscErrorCode  SNESCompositeGetSNES(SNES snes,PetscInt n,SNES *subsnes)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidPointer(subsnes,3);
-  PetscCall(PetscUseMethod(snes,"SNESCompositeGetSNES_C",(SNES,PetscInt,SNES*),(snes,n,subsnes)));
+  PetscUseMethod(snes,"SNESCompositeGetSNES_C",(SNES,PetscInt,SNES*),(snes,n,subsnes));
   PetscFunctionReturn(0);
 }
 
@@ -696,7 +696,7 @@ PetscErrorCode  SNESCompositeSetDamping(SNES snes,PetscInt n,PetscReal dmp)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  PetscCall(PetscUseMethod(snes,"SNESCompositeSetDamping_C",(SNES,PetscInt,PetscReal),(snes,n,dmp)));
+  PetscUseMethod(snes,"SNESCompositeSetDamping_C",(SNES,PetscInt,PetscReal),(snes,n,dmp));
   PetscFunctionReturn(0);
 }
 

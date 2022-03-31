@@ -177,7 +177,7 @@ PetscErrorCode  MatSNESMFSetReuseBase(Mat J,PetscBool use)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(J,MAT_CLASSID,1);
-  PetscCall(PetscTryMethod(J,"MatSNESMFSetReuseBase_C",(Mat,PetscBool),(J,use)));
+  PetscTryMethod(J,"MatSNESMFSetReuseBase_C",(Mat,PetscBool),(J,use));
   PetscFunctionReturn(0);
 }
 
@@ -219,7 +219,7 @@ PetscErrorCode  MatSNESMFGetReuseBase(Mat J,PetscBool *use)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(J,MAT_CLASSID,1);
-  PetscCall(PetscUseMethod(J,"MatSNESMFGetReuseBase_C",(Mat,PetscBool*),(J,use)));
+  PetscUseMethod(J,"MatSNESMFGetReuseBase_C",(Mat,PetscBool*),(J,use));
   PetscFunctionReturn(0);
 }
 

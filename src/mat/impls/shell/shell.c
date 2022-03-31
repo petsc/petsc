@@ -268,7 +268,7 @@ PetscErrorCode  MatShellGetContext(Mat mat,void *ctx)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidPointer(ctx,2);
-  PetscCall(PetscUseMethod(mat,"MatShellGetContext_C",(Mat,void*),(mat,ctx)));
+  PetscUseMethod(mat,"MatShellGetContext_C",(Mat,void*),(mat,ctx));
   PetscFunctionReturn(0);
 }
 
@@ -906,7 +906,7 @@ PetscErrorCode MatShellSetMatProductOperation(Mat A,MatProductType ptype,PetscEr
   PetscCheck(numeric,PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"Missing numeric routine, argument 4");
   PetscValidCharPointer(Btype,6);
   if (Ctype) PetscValidCharPointer(Ctype,7);
-  PetscCall(PetscTryMethod(A,"MatShellSetMatProductOperation_C",(Mat,MatProductType,PetscErrorCode(*)(Mat,Mat,Mat,void**),PetscErrorCode(*)(Mat,Mat,Mat,void*),PetscErrorCode(*)(void*),MatType,MatType),(A,ptype,symbolic,numeric,destroy,Btype,Ctype)));
+  PetscTryMethod(A,"MatShellSetMatProductOperation_C",(Mat,MatProductType,PetscErrorCode(*)(Mat,Mat,Mat,void**),PetscErrorCode(*)(Mat,Mat,Mat,void*),PetscErrorCode(*)(void*),MatType,MatType),(A,ptype,symbolic,numeric,destroy,Btype,Ctype));
   PetscFunctionReturn(0);
 }
 
@@ -1800,7 +1800,7 @@ PetscErrorCode  MatShellSetContext(Mat mat,void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscCall(PetscTryMethod(mat,"MatShellSetContext_C",(Mat,void*),(mat,ctx)));
+  PetscTryMethod(mat,"MatShellSetContext_C",(Mat,void*),(mat,ctx));
   PetscFunctionReturn(0);
 }
 
@@ -1822,7 +1822,7 @@ PetscErrorCode  MatShellSetContext(Mat mat,void *ctx)
 PetscErrorCode  MatShellSetVecType(Mat mat,VecType vtype)
 {
   PetscFunctionBegin;
-  PetscCall(PetscTryMethod(mat,"MatShellSetVecType_C",(Mat,VecType),(mat,vtype)));
+  PetscTryMethod(mat,"MatShellSetVecType_C",(Mat,VecType),(mat,vtype));
   PetscFunctionReturn(0);
 }
 
@@ -1843,7 +1843,7 @@ PetscErrorCode MatShellSetManageScalingShifts(Mat A)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  PetscCall(PetscTryMethod(A,"MatShellSetManageScalingShifts_C",(Mat),(A)));
+  PetscTryMethod(A,"MatShellSetManageScalingShifts_C",(Mat),(A));
   PetscFunctionReturn(0);
 }
 
@@ -2032,7 +2032,7 @@ PetscErrorCode MatShellSetOperation(Mat mat,MatOperation op,void (*g)(void))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscCall(PetscTryMethod(mat,"MatShellSetOperation_C",(Mat,MatOperation,void (*)(void)),(mat,op,g)));
+  PetscTryMethod(mat,"MatShellSetOperation_C",(Mat,MatOperation,void (*)(void)),(mat,op,g));
   PetscFunctionReturn(0);
 }
 
@@ -2072,7 +2072,7 @@ PetscErrorCode MatShellGetOperation(Mat mat,MatOperation op,void(**g)(void))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscCall(PetscUseMethod(mat,"MatShellGetOperation_C",(Mat,MatOperation,void (**)(void)),(mat,op,g)));
+  PetscUseMethod(mat,"MatShellGetOperation_C",(Mat,MatOperation,void (**)(void)),(mat,op,g));
   PetscFunctionReturn(0);
 }
 

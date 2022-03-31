@@ -631,7 +631,7 @@ PetscErrorCode  PetscViewerFileSetName(PetscViewer viewer,const char name[])
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidCharPointer(name,2);
   PetscCall(PetscStrreplace(PetscObjectComm((PetscObject)viewer),name,filename,sizeof(filename)));
-  PetscCall(PetscTryMethod(viewer,"PetscViewerFileSetName_C",(PetscViewer,const char[]),(viewer,filename)));
+  PetscTryMethod(viewer,"PetscViewerFileSetName_C",(PetscViewer,const char[]),(viewer,filename));
   PetscFunctionReturn(0);
 }
 
@@ -656,7 +656,7 @@ PetscErrorCode  PetscViewerFileGetName(PetscViewer viewer,const char **name)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidPointer(name,2);
-  PetscCall(PetscUseMethod(viewer,"PetscViewerFileGetName_C",(PetscViewer,const char**),(viewer,name)));
+  PetscUseMethod(viewer,"PetscViewerFileGetName_C",(PetscViewer,const char**),(viewer,name));
   PetscFunctionReturn(0);
 }
 

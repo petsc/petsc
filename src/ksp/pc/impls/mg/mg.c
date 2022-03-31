@@ -488,7 +488,7 @@ PetscErrorCode PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (comms) PetscValidPointer(comms,3);
-  PetscCall(PetscTryMethod(pc,"PCMGSetLevels_C",(PC,PetscInt,MPI_Comm*),(pc,levels,comms)));
+  PetscTryMethod(pc,"PCMGSetLevels_C",(PC,PetscInt,MPI_Comm*),(pc,levels,comms));
   PetscFunctionReturn(0);
 }
 
@@ -1300,7 +1300,7 @@ PetscErrorCode PCMGGetLevels(PC pc,PetscInt *levels)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidIntPointer(levels,2);
   *levels = 0;
-  PetscCall(PetscTryMethod(pc,"PCMGGetLevels_C",(PC,PetscInt*),(pc,levels)));
+  PetscTryMethod(pc,"PCMGGetLevels_C",(PC,PetscInt*),(pc,levels));
   PetscFunctionReturn(0);
 }
 
@@ -1507,7 +1507,7 @@ PetscErrorCode PCMGSetGalerkin(PC pc,PCMGGalerkinType use)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscTryMethod(pc,"PCMGSetGalerkin_C",(PC,PCMGGalerkinType),(pc,use)));
+  PetscTryMethod(pc,"PCMGSetGalerkin_C",(PC,PCMGGalerkinType),(pc,use));
   PetscFunctionReturn(0);
 }
 
@@ -1597,7 +1597,7 @@ PetscErrorCode PCMGSetAdaptInterpolation(PC pc, PetscBool adapt)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscCall(PetscTryMethod(pc,"PCMGSetAdaptInterpolation_C",(PC,PetscBool),(pc,adapt)));
+  PetscTryMethod(pc,"PCMGSetAdaptInterpolation_C",(PC,PetscBool),(pc,adapt));
   PetscFunctionReturn(0);
 }
 
@@ -1622,7 +1622,7 @@ PetscErrorCode PCMGGetAdaptInterpolation(PC pc, PetscBool *adapt)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidBoolPointer(adapt, 2);
-  PetscCall(PetscUseMethod(pc,"PCMGGetAdaptInterpolation_C",(PC,PetscBool*),(pc,adapt)));
+  PetscUseMethod(pc,"PCMGGetAdaptInterpolation_C",(PC,PetscBool*),(pc,adapt));
   PetscFunctionReturn(0);
 }
 
@@ -1647,7 +1647,7 @@ PetscErrorCode PCMGSetAdaptCR(PC pc, PetscBool cr)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscCall(PetscTryMethod(pc,"PCMGSetAdaptCR_C",(PC,PetscBool),(pc,cr)));
+  PetscTryMethod(pc,"PCMGSetAdaptCR_C",(PC,PetscBool),(pc,cr));
   PetscFunctionReturn(0);
 }
 
@@ -1672,7 +1672,7 @@ PetscErrorCode PCMGGetAdaptCR(PC pc, PetscBool *cr)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidBoolPointer(cr, 2);
-  PetscCall(PetscUseMethod(pc,"PCMGGetAdaptCR_C",(PC,PetscBool*),(pc,cr)));
+  PetscUseMethod(pc,"PCMGGetAdaptCR_C",(PC,PetscBool*),(pc,cr));
   PetscFunctionReturn(0);
 }
 

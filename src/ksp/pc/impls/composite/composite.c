@@ -417,7 +417,7 @@ PetscErrorCode  PCCompositeSetType(PC pc,PCCompositeType type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveEnum(pc,type,2);
-  PetscCall(PetscTryMethod(pc,"PCCompositeSetType_C",(PC,PCCompositeType),(pc,type)));
+  PetscTryMethod(pc,"PCCompositeSetType_C",(PC,PCCompositeType),(pc,type));
   PetscFunctionReturn(0);
 }
 
@@ -442,7 +442,7 @@ PetscErrorCode  PCCompositeGetType(PC pc,PCCompositeType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscUseMethod(pc,"PCCompositeGetType_C",(PC,PCCompositeType*),(pc,type)));
+  PetscUseMethod(pc,"PCCompositeGetType_C",(PC,PCCompositeType*),(pc,type));
   PetscFunctionReturn(0);
 }
 
@@ -464,7 +464,7 @@ PetscErrorCode  PCCompositeSpecialSetAlpha(PC pc,PetscScalar alpha)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveScalar(pc,alpha,2);
-  PetscCall(PetscTryMethod(pc,"PCCompositeSpecialSetAlpha_C",(PC,PetscScalar),(pc,alpha)));
+  PetscTryMethod(pc,"PCCompositeSpecialSetAlpha_C",(PC,PetscScalar),(pc,alpha));
   PetscFunctionReturn(0);
 }
 
@@ -485,7 +485,7 @@ PetscErrorCode  PCCompositeAddPCType(PC pc,PCType type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscTryMethod(pc,"PCCompositeAddPCType_C",(PC,PCType),(pc,type)));
+  PetscTryMethod(pc,"PCCompositeAddPCType_C",(PC,PCType),(pc,type));
   PetscFunctionReturn(0);
 }
 
@@ -507,7 +507,7 @@ PetscErrorCode PCCompositeAddPC(PC pc, PC subpc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(subpc,PC_CLASSID,2);
-  PetscCall(PetscTryMethod(pc,"PCCompositeAddPC_C",(PC,PC),(pc,subpc)));
+  PetscTryMethod(pc,"PCCompositeAddPC_C",(PC,PC),(pc,subpc));
   PetscFunctionReturn(0);
 }
 
@@ -531,7 +531,7 @@ PetscErrorCode  PCCompositeGetNumberPC(PC pc,PetscInt *num)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidIntPointer(num,2);
-  PetscCall(PetscUseMethod(pc,"PCCompositeGetNumberPC_C",(PC,PetscInt*),(pc,num)));
+  PetscUseMethod(pc,"PCCompositeGetNumberPC_C",(PC,PetscInt*),(pc,num));
   PetscFunctionReturn(0);
 }
 
@@ -560,7 +560,7 @@ PetscErrorCode PCCompositeGetPC(PC pc,PetscInt n,PC *subpc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(subpc,3);
-  PetscCall(PetscUseMethod(pc,"PCCompositeGetPC_C",(PC,PetscInt,PC*),(pc,n,subpc)));
+  PetscUseMethod(pc,"PCCompositeGetPC_C",(PC,PetscInt,PC*),(pc,n,subpc));
   PetscFunctionReturn(0);
 }
 

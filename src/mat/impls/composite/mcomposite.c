@@ -561,7 +561,7 @@ PetscErrorCode MatCompositeAddMat(Mat mat,Mat smat)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidHeaderSpecific(smat,MAT_CLASSID,2);
-  PetscCall(PetscUseMethod(mat,"MatCompositeAddMat_C",(Mat,Mat),(mat,smat)));
+  PetscUseMethod(mat,"MatCompositeAddMat_C",(Mat,Mat),(mat,smat));
   PetscFunctionReturn(0);
 }
 
@@ -602,7 +602,7 @@ PetscErrorCode MatCompositeSetType(Mat mat,MatCompositeType type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidLogicalCollectiveEnum(mat,type,2);
-  PetscCall(PetscUseMethod(mat,"MatCompositeSetType_C",(Mat,MatCompositeType),(mat,type)));
+  PetscUseMethod(mat,"MatCompositeSetType_C",(Mat,MatCompositeType),(mat,type));
   PetscFunctionReturn(0);
 }
 
@@ -636,7 +636,7 @@ PetscErrorCode MatCompositeGetType(Mat mat,MatCompositeType *type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidPointer(type,2);
-  PetscCall(PetscUseMethod(mat,"MatCompositeGetType_C",(Mat,MatCompositeType*),(mat,type)));
+  PetscUseMethod(mat,"MatCompositeGetType_C",(Mat,MatCompositeType*),(mat,type));
   PetscFunctionReturn(0);
 }
 
@@ -670,7 +670,7 @@ PetscErrorCode MatCompositeSetMatStructure(Mat mat,MatStructure str)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscCall(PetscUseMethod(mat,"MatCompositeSetMatStructure_C",(Mat,MatStructure),(mat,str)));
+  PetscUseMethod(mat,"MatCompositeSetMatStructure_C",(Mat,MatStructure),(mat,str));
   PetscFunctionReturn(0);
 }
 
@@ -704,7 +704,7 @@ PetscErrorCode MatCompositeGetMatStructure(Mat mat,MatStructure *str)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidPointer(str,2);
-  PetscCall(PetscUseMethod(mat,"MatCompositeGetMatStructure_C",(Mat,MatStructure*),(mat,str)));
+  PetscUseMethod(mat,"MatCompositeGetMatStructure_C",(Mat,MatStructure*),(mat,str));
   PetscFunctionReturn(0);
 }
 
@@ -742,7 +742,7 @@ PetscErrorCode MatCompositeSetMergeType(Mat mat,MatCompositeMergeType type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidLogicalCollectiveEnum(mat,type,2);
-  PetscCall(PetscUseMethod(mat,"MatCompositeSetMergeType_C",(Mat,MatCompositeMergeType),(mat,type)));
+  PetscUseMethod(mat,"MatCompositeSetMergeType_C",(Mat,MatCompositeMergeType),(mat,type));
   PetscFunctionReturn(0);
 }
 
@@ -831,7 +831,7 @@ PetscErrorCode MatCompositeMerge(Mat mat)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscCall(PetscUseMethod(mat,"MatCompositeMerge_C",(Mat),(mat)));
+  PetscUseMethod(mat,"MatCompositeMerge_C",(Mat),(mat));
   PetscFunctionReturn(0);
 }
 
@@ -865,7 +865,7 @@ PetscErrorCode MatCompositeGetNumberMat(Mat mat,PetscInt *nmat)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidIntPointer(nmat,2);
-  PetscCall(PetscUseMethod(mat,"MatCompositeGetNumberMat_C",(Mat,PetscInt*),(mat,nmat)));
+  PetscUseMethod(mat,"MatCompositeGetNumberMat_C",(Mat,PetscInt*),(mat,nmat));
   PetscFunctionReturn(0);
 }
 
@@ -908,7 +908,7 @@ PetscErrorCode MatCompositeGetMat(Mat mat,PetscInt i,Mat *Ai)
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidLogicalCollectiveInt(mat,i,2);
   PetscValidPointer(Ai,3);
-  PetscCall(PetscUseMethod(mat,"MatCompositeGetMat_C",(Mat,PetscInt,Mat*),(mat,i,Ai)));
+  PetscUseMethod(mat,"MatCompositeGetMat_C",(Mat,PetscInt,Mat*),(mat,i,Ai));
   PetscFunctionReturn(0);
 }
 
@@ -944,7 +944,7 @@ PetscErrorCode MatCompositeSetScalings(Mat mat,const PetscScalar *scalings)
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidScalarPointer(scalings,2);
   PetscValidLogicalCollectiveScalar(mat,*scalings,2);
-  PetscCall(PetscUseMethod(mat,"MatCompositeSetScalings_C",(Mat,const PetscScalar*),(mat,scalings)));
+  PetscUseMethod(mat,"MatCompositeSetScalings_C",(Mat,const PetscScalar*),(mat,scalings));
   PetscFunctionReturn(0);
 }
 

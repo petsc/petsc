@@ -169,7 +169,7 @@ PetscErrorCode PetscViewerHDF5SetBaseDimension2(PetscViewer viewer,PetscBool flg
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  PetscCall(PetscTryMethod(viewer,"PetscViewerHDF5SetBaseDimension2_C",(PetscViewer,PetscBool),(viewer,flg)));
+  PetscTryMethod(viewer,"PetscViewerHDF5SetBaseDimension2_C",(PetscViewer,PetscBool),(viewer,flg));
   PetscFunctionReturn(0);
 }
 
@@ -240,7 +240,7 @@ PetscErrorCode PetscViewerHDF5SetSPOutput(PetscViewer viewer,PetscBool flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  PetscCall(PetscTryMethod(viewer,"PetscViewerHDF5SetSPOutput_C",(PetscViewer,PetscBool),(viewer,flg)));
+  PetscTryMethod(viewer,"PetscViewerHDF5SetSPOutput_C",(PetscViewer,PetscBool),(viewer,flg));
   PetscFunctionReturn(0);
 }
 
@@ -323,7 +323,7 @@ PetscErrorCode PetscViewerHDF5SetCollective(PetscViewer viewer,PetscBool flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidLogicalCollectiveBool(viewer,flg,2);
-  PetscCall(PetscTryMethod(viewer,"PetscViewerHDF5SetCollective_C",(PetscViewer,PetscBool),(viewer,flg)));
+  PetscTryMethod(viewer,"PetscViewerHDF5SetCollective_C",(PetscViewer,PetscBool),(viewer,flg));
   PetscFunctionReturn(0);
 }
 
@@ -370,7 +370,7 @@ PetscErrorCode PetscViewerHDF5GetCollective(PetscViewer viewer,PetscBool *flg)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidBoolPointer(flg,2);
 
-  PetscCall(PetscUseMethod(viewer,"PetscViewerHDF5GetCollective_C",(PetscViewer,PetscBool*),(viewer,flg)));
+  PetscUseMethod(viewer,"PetscViewerHDF5GetCollective_C",(PetscViewer,PetscBool*),(viewer,flg));
   PetscFunctionReturn(0);
 }
 
@@ -486,7 +486,7 @@ PetscErrorCode PetscViewerHDF5SetDefaultTimestepping(PetscViewer viewer, PetscBo
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscCall(PetscTryMethod(viewer, "PetscViewerHDF5SetDefaultTimestepping_C", (PetscViewer,PetscBool), (viewer,flg)));
+  PetscTryMethod(viewer, "PetscViewerHDF5SetDefaultTimestepping_C", (PetscViewer,PetscBool), (viewer,flg));
   PetscFunctionReturn(0);
 }
 
@@ -512,7 +512,7 @@ PetscErrorCode PetscViewerHDF5GetDefaultTimestepping(PetscViewer viewer, PetscBo
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscCall(PetscUseMethod(viewer, "PetscViewerHDF5GetDefaultTimestepping_C", (PetscViewer,PetscBool*), (viewer,flg)));
+  PetscUseMethod(viewer, "PetscViewerHDF5GetDefaultTimestepping_C", (PetscViewer,PetscBool*), (viewer,flg));
   PetscFunctionReturn(0);
 }
 

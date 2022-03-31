@@ -278,7 +278,7 @@ static PetscErrorCode  PCSPAISetSp_SPAI(PC pc,int sp)
 PetscErrorCode  PCSPAISetEpsilon(PC pc,double epsilon1)
 {
   PetscFunctionBegin;
-  PetscCall(PetscTryMethod(pc,"PCSPAISetEpsilon_C",(PC,double),(pc,epsilon1)));
+  PetscTryMethod(pc,"PCSPAISetEpsilon_C",(PC,double),(pc,epsilon1));
   PetscFunctionReturn(0);
 }
 
@@ -307,7 +307,7 @@ PetscErrorCode  PCSPAISetEpsilon(PC pc,double epsilon1)
 PetscErrorCode  PCSPAISetNBSteps(PC pc,int nbsteps1)
 {
   PetscFunctionBegin;
-  PetscCall(PetscTryMethod(pc,"PCSPAISetNBSteps_C",(PC,int),(pc,nbsteps1)));
+  PetscTryMethod(pc,"PCSPAISetNBSteps_C",(PC,int),(pc,nbsteps1));
   PetscFunctionReturn(0);
 }
 
@@ -329,7 +329,7 @@ PetscErrorCode  PCSPAISetNBSteps(PC pc,int nbsteps1)
 PetscErrorCode  PCSPAISetMax(PC pc,int max1)
 {
   PetscFunctionBegin;
-  PetscCall(PetscTryMethod(pc,"PCSPAISetMax_C",(PC,int),(pc,max1)));
+  PetscTryMethod(pc,"PCSPAISetMax_C",(PC,int),(pc,max1));
   PetscFunctionReturn(0);
 }
 
@@ -350,7 +350,7 @@ PetscErrorCode  PCSPAISetMax(PC pc,int max1)
 PetscErrorCode  PCSPAISetMaxNew(PC pc,int maxnew1)
 {
   PetscFunctionBegin;
-  PetscCall(PetscTryMethod(pc,"PCSPAISetMaxNew_C",(PC,int),(pc,maxnew1)));
+  PetscTryMethod(pc,"PCSPAISetMaxNew_C",(PC,int),(pc,maxnew1));
   PetscFunctionReturn(0);
 }
 
@@ -388,7 +388,7 @@ PetscErrorCode  PCSPAISetMaxNew(PC pc,int maxnew1)
 PetscErrorCode  PCSPAISetBlockSize(PC pc,int block_size1)
 {
   PetscFunctionBegin;
-  PetscCall(PetscTryMethod(pc,"PCSPAISetBlockSize_C",(PC,int),(pc,block_size1)));
+  PetscTryMethod(pc,"PCSPAISetBlockSize_C",(PC,int),(pc,block_size1));
   PetscFunctionReturn(0);
 }
 
@@ -414,7 +414,7 @@ PetscErrorCode  PCSPAISetBlockSize(PC pc,int block_size1)
 PetscErrorCode  PCSPAISetCacheSize(PC pc,int cache_size)
 {
   PetscFunctionBegin;
-  PetscCall(PetscTryMethod(pc,"PCSPAISetCacheSize_C",(PC,int),(pc,cache_size)));
+  PetscTryMethod(pc,"PCSPAISetCacheSize_C",(PC,int),(pc,cache_size));
   PetscFunctionReturn(0);
 }
 
@@ -437,7 +437,7 @@ PetscErrorCode  PCSPAISetCacheSize(PC pc,int cache_size)
 PetscErrorCode  PCSPAISetVerbose(PC pc,int verbose)
 {
   PetscFunctionBegin;
-  PetscCall(PetscTryMethod(pc,"PCSPAISetVerbose_C",(PC,int),(pc,verbose)));
+  PetscTryMethod(pc,"PCSPAISetVerbose_C",(PC,int),(pc,verbose));
   PetscFunctionReturn(0);
 }
 
@@ -465,7 +465,7 @@ PetscErrorCode  PCSPAISetVerbose(PC pc,int verbose)
 PetscErrorCode  PCSPAISetSp(PC pc,int sp)
 {
   PetscFunctionBegin;
-  PetscCall(PetscTryMethod(pc,"PCSPAISetSp_C",(PC,int),(pc,sp)));
+  PetscTryMethod(pc,"PCSPAISetSp_C",(PC,int),(pc,sp));
   PetscFunctionReturn(0);
 }
 

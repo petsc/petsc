@@ -161,7 +161,7 @@ PetscErrorCode PetscSFWindowSetFlavorType(PetscSF sf,PetscSFWindowFlavorType fla
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   PetscValidLogicalCollectiveEnum(sf,flavor,2);
-  PetscCall(PetscTryMethod(sf,"PetscSFWindowSetFlavorType_C",(PetscSF,PetscSFWindowFlavorType),(sf,flavor)));
+  PetscTryMethod(sf,"PetscSFWindowSetFlavorType_C",(PetscSF,PetscSFWindowFlavorType),(sf,flavor));
   PetscFunctionReturn(0);
 }
 
@@ -194,7 +194,7 @@ PetscErrorCode PetscSFWindowGetFlavorType(PetscSF sf,PetscSFWindowFlavorType *fl
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   PetscValidPointer(flavor,2);
-  PetscCall(PetscUseMethod(sf,"PetscSFWindowGetFlavorType_C",(PetscSF,PetscSFWindowFlavorType*),(sf,flavor)));
+  PetscUseMethod(sf,"PetscSFWindowGetFlavorType_C",(PetscSF,PetscSFWindowFlavorType*),(sf,flavor));
   PetscFunctionReturn(0);
 }
 
@@ -228,7 +228,7 @@ PetscErrorCode PetscSFWindowSetSyncType(PetscSF sf,PetscSFWindowSyncType sync)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   PetscValidLogicalCollectiveEnum(sf,sync,2);
-  PetscCall(PetscTryMethod(sf,"PetscSFWindowSetSyncType_C",(PetscSF,PetscSFWindowSyncType),(sf,sync)));
+  PetscTryMethod(sf,"PetscSFWindowSetSyncType_C",(PetscSF,PetscSFWindowSyncType),(sf,sync));
   PetscFunctionReturn(0);
 }
 
@@ -261,7 +261,7 @@ PetscErrorCode PetscSFWindowGetSyncType(PetscSF sf,PetscSFWindowSyncType *sync)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   PetscValidPointer(sync,2);
-  PetscCall(PetscUseMethod(sf,"PetscSFWindowGetSyncType_C",(PetscSF,PetscSFWindowSyncType*),(sf,sync)));
+  PetscUseMethod(sf,"PetscSFWindowGetSyncType_C",(PetscSF,PetscSFWindowSyncType*),(sf,sync));
   PetscFunctionReturn(0);
 }
 
@@ -293,7 +293,7 @@ PetscErrorCode PetscSFWindowSetInfo(PetscSF sf,MPI_Info info)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
-  PetscCall(PetscTryMethod(sf,"PetscSFWindowSetInfo_C",(PetscSF,MPI_Info),(sf,info)));
+  PetscTryMethod(sf,"PetscSFWindowSetInfo_C",(PetscSF,MPI_Info),(sf,info));
   PetscFunctionReturn(0);
 }
 
@@ -333,7 +333,7 @@ PetscErrorCode PetscSFWindowGetInfo(PetscSF sf,MPI_Info *info)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   PetscValidPointer(info,2);
-  PetscCall(PetscUseMethod(sf,"PetscSFWindowGetInfo_C",(PetscSF,MPI_Info*),(sf,info)));
+  PetscUseMethod(sf,"PetscSFWindowGetInfo_C",(PetscSF,MPI_Info*),(sf,info));
   PetscFunctionReturn(0);
 }
 

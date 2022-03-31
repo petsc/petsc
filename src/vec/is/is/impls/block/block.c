@@ -431,7 +431,7 @@ PetscErrorCode  ISBlockSetIndices(IS is,PetscInt bs,PetscInt n,const PetscInt id
 {
   PetscFunctionBegin;
   PetscCall(ISClearInfoCache(is,PETSC_FALSE));
-  PetscCall(PetscUseMethod(is,"ISBlockSetIndices_C",(IS,PetscInt,PetscInt,const PetscInt[],PetscCopyMode),(is,bs,n,idx,mode)));
+  PetscUseMethod(is,"ISBlockSetIndices_C",(IS,PetscInt,PetscInt,const PetscInt[],PetscCopyMode),(is,bs,n,idx,mode));
   PetscFunctionReturn(0);
 }
 
@@ -557,7 +557,7 @@ static PetscErrorCode  ISBlockRestoreIndices_Block(IS is,const PetscInt *idx[])
 PetscErrorCode  ISBlockGetIndices(IS is,const PetscInt *idx[])
 {
   PetscFunctionBegin;
-  PetscCall(PetscUseMethod(is,"ISBlockGetIndices_C",(IS,const PetscInt*[]),(is,idx)));
+  PetscUseMethod(is,"ISBlockGetIndices_C",(IS,const PetscInt*[]),(is,idx));
   PetscFunctionReturn(0);
 }
 
@@ -579,7 +579,7 @@ PetscErrorCode  ISBlockGetIndices(IS is,const PetscInt *idx[])
 PetscErrorCode  ISBlockRestoreIndices(IS is,const PetscInt *idx[])
 {
   PetscFunctionBegin;
-  PetscCall(PetscUseMethod(is,"ISBlockRestoreIndices_C",(IS,const PetscInt*[]),(is,idx)));
+  PetscUseMethod(is,"ISBlockRestoreIndices_C",(IS,const PetscInt*[]),(is,idx));
   PetscFunctionReturn(0);
 }
 
@@ -601,7 +601,7 @@ PetscErrorCode  ISBlockRestoreIndices(IS is,const PetscInt *idx[])
 PetscErrorCode  ISBlockGetLocalSize(IS is,PetscInt *size)
 {
   PetscFunctionBegin;
-  PetscCall(PetscUseMethod(is,"ISBlockGetLocalSize_C",(IS,PetscInt*),(is,size)));
+  PetscUseMethod(is,"ISBlockGetLocalSize_C",(IS,PetscInt*),(is,size));
   PetscFunctionReturn(0);
 }
 
@@ -634,7 +634,7 @@ static PetscErrorCode  ISBlockGetLocalSize_Block(IS is,PetscInt *size)
 PetscErrorCode  ISBlockGetSize(IS is,PetscInt *size)
 {
   PetscFunctionBegin;
-  PetscCall(PetscUseMethod(is,"ISBlockGetSize_C",(IS,PetscInt*),(is,size)));
+  PetscUseMethod(is,"ISBlockGetSize_C",(IS,PetscInt*),(is,size));
   PetscFunctionReturn(0);
 }
 

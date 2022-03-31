@@ -113,7 +113,7 @@ PetscErrorCode PCHPDDMSetAuxiliaryMat(PC pc, IS is, Mat A, PetscErrorCode (*setu
   if (reinterpret_cast<void*>(setup) == reinterpret_cast<void*>(PETSC_NULL_FUNCTION_Fortran)) setup = NULL;
   if (setup_ctx == PETSC_NULL_INTEGER_Fortran) setup_ctx = NULL;
 #endif
-  PetscCall(PetscTryMethod(pc, "PCHPDDMSetAuxiliaryMat_C", (PC, IS, Mat, PetscErrorCode (*)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void*), void*), (pc, is, A, setup, setup_ctx)));
+  PetscTryMethod(pc, "PCHPDDMSetAuxiliaryMat_C", (PC, IS, Mat, PetscErrorCode (*)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void*), void*), (pc, is, A, setup, setup_ctx));
   PetscFunctionReturn(0);
 }
 
@@ -141,7 +141,7 @@ PetscErrorCode PCHPDDMHasNeumannMat(PC pc, PetscBool has)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscCall(PetscTryMethod(pc, "PCHPDDMHasNeumannMat_C", (PC, PetscBool), (pc, has)));
+  PetscTryMethod(pc, "PCHPDDMHasNeumannMat_C", (PC, PetscBool), (pc, has));
   PetscFunctionReturn(0);
 }
 
@@ -173,7 +173,7 @@ PetscErrorCode PCHPDDMSetRHSMat(PC pc, Mat B)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   if (B) {
     PetscValidHeaderSpecific(B, MAT_CLASSID, 2);
-    PetscCall(PetscTryMethod(pc, "PCHPDDMSetRHSMat_C", (PC, Mat), (pc, B)));
+    PetscTryMethod(pc, "PCHPDDMSetRHSMat_C", (PC, Mat), (pc, B));
   }
   PetscFunctionReturn(0);
 }
@@ -1167,7 +1167,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
         }
       }
       if (algebraic) {
-        PetscCall(PetscUseMethod(pc->pmat, "PCHPDDMAlgebraicAuxiliaryMat_Private_C", (Mat, IS*, Mat*[], PetscBool), (P, is, &sub, block)));
+        PetscUseMethod(pc->pmat, "PCHPDDMAlgebraicAuxiliaryMat_Private_C", (Mat, IS*, Mat*[], PetscBool), (P, is, &sub, block));
         if (block) {
           PetscCall(PetscObjectQuery((PetscObject)sub[0], "_PCHPDDM_Neumann_Mat", (PetscObject*)&data->aux));
           PetscCall(PetscObjectCompose((PetscObject)sub[0], "_PCHPDDM_Neumann_Mat", NULL));
@@ -1210,7 +1210,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
         PetscCall(PCSetFromOptions(data->levels[0]->pc));
         if (block) PetscCall(PCHPDDMCommunicationAvoidingPCASM_Private(data->levels[0]->pc, C, algebraic));
         else PetscCall(PCSetUp(data->levels[0]->pc));
-        PetscCall(PetscTryMethod(data->levels[0]->pc, "PCASMGetSubKSP_C", (PC, PetscInt*, PetscInt*, KSP**), (data->levels[0]->pc, &size, NULL, &ksp)));
+        PetscTryMethod(data->levels[0]->pc, "PCASMGetSubKSP_C", (PC, PetscInt*, PetscInt*, KSP**), (data->levels[0]->pc, &size, NULL, &ksp));
         if (size != 1) {
           PetscCall(PCDestroy(&data->levels[0]->pc));
           PetscCall(MatDestroy(&C));
@@ -1296,7 +1296,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
       for (n = 1; n < data->N; ++n) {
         if (data->log_separate) PetscCall(PetscLogEventBegin(PC_HPDDM_SetUp[n], data->levels[n]->ksp, 0, 0, 0));
         /* method composed in the loaded symbol since there, SLEPc is used as well */
-        PetscCall(PetscTryMethod(data->levels[0]->ksp, "PCHPDDMSetUp_Private_C", (Mat*, Mat*, PetscInt, PetscInt* const, PC_HPDDM_Level** const), (&P, &N, n, &data->N, data->levels)));
+        PetscTryMethod(data->levels[0]->ksp, "PCHPDDMSetUp_Private_C", (Mat*, Mat*, PetscInt, PetscInt* const, PC_HPDDM_Level** const), (&P, &N, n, &data->N, data->levels));
         if (data->log_separate) PetscCall(PetscLogEventEnd(PC_HPDDM_SetUp[n], data->levels[n]->ksp, 0, 0, 0));
       }
       /* reset to NULL to avoid any faulty use */
@@ -1414,7 +1414,7 @@ PetscErrorCode PCHPDDMSetCoarseCorrectionType(PC pc, PCHPDDMCoarseCorrectionType
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(pc, type, 2);
-  PetscCall(PetscTryMethod(pc, "PCHPDDMSetCoarseCorrectionType_C", (PC, PCHPDDMCoarseCorrectionType), (pc, type)));
+  PetscTryMethod(pc, "PCHPDDMSetCoarseCorrectionType_C", (PC, PCHPDDMCoarseCorrectionType), (pc, type));
   PetscFunctionReturn(0);
 }
 
@@ -1437,7 +1437,7 @@ PetscErrorCode PCHPDDMGetCoarseCorrectionType(PC pc, PCHPDDMCoarseCorrectionType
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   if (type) {
     PetscValidPointer(type, 2);
-    PetscCall(PetscUseMethod(pc, "PCHPDDMGetCoarseCorrectionType_C", (PC, PCHPDDMCoarseCorrectionType*), (pc, type)));
+    PetscUseMethod(pc, "PCHPDDMGetCoarseCorrectionType_C", (PC, PCHPDDMCoarseCorrectionType*), (pc, type));
   }
   PetscFunctionReturn(0);
 }
@@ -1483,7 +1483,7 @@ PetscErrorCode PCHPDDMGetSTShareSubKSP(PC pc, PetscBool *share)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   if (share) {
     PetscValidPointer(share, 2);
-    PetscCall(PetscUseMethod(pc, "PCHPDDMGetSTShareSubKSP_C", (PC, PetscBool*), (pc, share)));
+    PetscUseMethod(pc, "PCHPDDMGetSTShareSubKSP_C", (PC, PetscBool*), (pc, share));
   }
   PetscFunctionReturn(0);
 }

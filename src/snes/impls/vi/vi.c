@@ -20,7 +20,7 @@ PetscErrorCode SNESVISetComputeVariableBounds(SNES snes, PetscErrorCode (*comput
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscCall(PetscObjectQueryFunction((PetscObject)snes,"SNESVISetComputeVariableBounds_C",&f));
-  if (f) PetscCall(PetscUseMethod(snes,"SNESVISetComputeVariableBounds_C",(SNES,PetscErrorCode (*)(SNES,Vec,Vec)),(snes,compute)));
+  if (f) PetscUseMethod(snes,"SNESVISetComputeVariableBounds_C",(SNES,PetscErrorCode (*)(SNES,Vec,Vec)),(snes,compute));
   else PetscCall(SNESVISetComputeVariableBounds_VI(snes,compute));
   PetscFunctionReturn(0);
 }
@@ -435,7 +435,7 @@ PetscErrorCode SNESVISetVariableBounds(SNES snes, Vec xl, Vec xu)
   PetscValidHeaderSpecific(xl,VEC_CLASSID,2);
   PetscValidHeaderSpecific(xu,VEC_CLASSID,3);
   PetscCall(PetscObjectQueryFunction((PetscObject)snes,"SNESVISetVariableBounds_C",&f));
-  if (f) PetscCall(PetscUseMethod(snes,"SNESVISetVariableBounds_C",(SNES,Vec,Vec),(snes,xl,xu)));
+  if (f) PetscUseMethod(snes,"SNESVISetVariableBounds_C",(SNES,Vec,Vec),(snes,xl,xu));
   else PetscCall(SNESVISetVariableBounds_VI(snes, xl, xu));
   snes->usersetbounds = PETSC_TRUE;
   PetscFunctionReturn(0);

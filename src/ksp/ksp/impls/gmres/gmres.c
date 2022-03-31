@@ -718,7 +718,7 @@ PetscErrorCode  KSPGMRESSetCGSRefinementType(KSP ksp,KSPGMRESCGSRefinementType t
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidLogicalCollectiveEnum(ksp,type,2);
-  PetscCall(PetscTryMethod(ksp,"KSPGMRESSetCGSRefinementType_C",(KSP,KSPGMRESCGSRefinementType),(ksp,type)));
+  PetscTryMethod(ksp,"KSPGMRESSetCGSRefinementType_C",(KSP,KSPGMRESCGSRefinementType),(ksp,type));
   PetscFunctionReturn(0);
 }
 
@@ -746,7 +746,7 @@ PetscErrorCode  KSPGMRESGetCGSRefinementType(KSP ksp,KSPGMRESCGSRefinementType *
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscCall(PetscUseMethod(ksp,"KSPGMRESGetCGSRefinementType_C",(KSP,KSPGMRESCGSRefinementType*),(ksp,type)));
+  PetscUseMethod(ksp,"KSPGMRESGetCGSRefinementType_C",(KSP,KSPGMRESCGSRefinementType*),(ksp,type));
   PetscFunctionReturn(0);
 }
 
@@ -773,7 +773,7 @@ PetscErrorCode  KSPGMRESSetRestart(KSP ksp, PetscInt restart)
   PetscFunctionBegin;
   PetscValidLogicalCollectiveInt(ksp,restart,2);
 
-  PetscCall(PetscTryMethod(ksp,"KSPGMRESSetRestart_C",(KSP,PetscInt),(ksp,restart)));
+  PetscTryMethod(ksp,"KSPGMRESSetRestart_C",(KSP,PetscInt),(ksp,restart));
   PetscFunctionReturn(0);
 }
 
@@ -797,7 +797,7 @@ PetscErrorCode  KSPGMRESSetRestart(KSP ksp, PetscInt restart)
 PetscErrorCode  KSPGMRESGetRestart(KSP ksp, PetscInt *restart)
 {
   PetscFunctionBegin;
-  PetscCall(PetscUseMethod(ksp,"KSPGMRESGetRestart_C",(KSP,PetscInt*),(ksp,restart)));
+  PetscUseMethod(ksp,"KSPGMRESGetRestart_C",(KSP,PetscInt*),(ksp,restart));
   PetscFunctionReturn(0);
 }
 
@@ -825,7 +825,7 @@ PetscErrorCode  KSPGMRESSetHapTol(KSP ksp,PetscReal tol)
 {
   PetscFunctionBegin;
   PetscValidLogicalCollectiveReal(ksp,tol,2);
-  PetscCall(PetscTryMethod((ksp),"KSPGMRESSetHapTol_C",(KSP,PetscReal),((ksp),(tol))));
+  PetscTryMethod((ksp),"KSPGMRESSetHapTol_C",(KSP,PetscReal),((ksp),(tol)));
   PetscFunctionReturn(0);
 }
 
@@ -852,7 +852,7 @@ PetscErrorCode  KSPGMRESSetBreakdownTolerance(KSP ksp,PetscReal tol)
 {
   PetscFunctionBegin;
   PetscValidLogicalCollectiveReal(ksp,tol,2);
-  PetscCall(PetscTryMethod((ksp),"KSPGMRESSetBreakdownTolerance_C",(KSP,PetscReal),(ksp,tol)));
+  PetscTryMethod((ksp),"KSPGMRESSetBreakdownTolerance_C",(KSP,PetscReal),(ksp,tol));
   PetscFunctionReturn(0);
 }
 

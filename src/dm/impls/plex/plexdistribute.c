@@ -1840,7 +1840,7 @@ PetscErrorCode DMPlexGetOverlap(DM dm, PetscInt *overlap)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscCall(PetscUseMethod(dm,"DMPlexGetOverlap_C",(DM,PetscInt*),(dm,overlap)));
+  PetscUseMethod(dm,"DMPlexGetOverlap_C",(DM,PetscInt*),(dm,overlap));
   PetscFunctionReturn(0);
 }
 
@@ -1871,7 +1871,7 @@ PetscErrorCode DMPlexDistributeSetDefault(DM dm, PetscBool dist)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidLogicalCollectiveBool(dm, dist, 2);
-  PetscCall(PetscTryMethod(dm,"DMPlexDistributeSetDefault_C",(DM,PetscBool),(dm,dist)));
+  PetscTryMethod(dm,"DMPlexDistributeSetDefault_C",(DM,PetscBool),(dm,dist));
   PetscFunctionReturn(0);
 }
 
@@ -1904,7 +1904,7 @@ PetscErrorCode DMPlexDistributeGetDefault(DM dm, PetscBool *dist)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidBoolPointer(dist, 2);
-  PetscCall(PetscUseMethod(dm,"DMPlexDistributeGetDefault_C",(DM,PetscBool*),(dm,dist)));
+  PetscUseMethod(dm,"DMPlexDistributeGetDefault_C",(DM,PetscBool*),(dm,dist));
   PetscFunctionReturn(0);
 }
 

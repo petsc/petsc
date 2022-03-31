@@ -100,7 +100,7 @@ PetscErrorCode KSPFETIDPSetPressureOperator(KSP ksp, Mat P)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (P) PetscValidHeaderSpecific(P,MAT_CLASSID,2);
-  PetscCall(PetscTryMethod(ksp,"KSPFETIDPSetPressureOperator_C",(KSP,Mat),(ksp,P)));
+  PetscTryMethod(ksp,"KSPFETIDPSetPressureOperator_C",(KSP,Mat),(ksp,P));
   PetscFunctionReturn(0);
 }
 
@@ -131,7 +131,7 @@ PetscErrorCode KSPFETIDPGetInnerKSP(KSP ksp, KSP* innerksp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidPointer(innerksp,2);
-  PetscCall(PetscUseMethod(ksp,"KSPFETIDPGetInnerKSP_C",(KSP,KSP*),(ksp,innerksp)));
+  PetscUseMethod(ksp,"KSPFETIDPGetInnerKSP_C",(KSP,KSP*),(ksp,innerksp));
   PetscFunctionReturn(0);
 }
 
@@ -162,7 +162,7 @@ PetscErrorCode KSPFETIDPGetInnerBDDC(KSP ksp, PC* pc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidPointer(pc,2);
-  PetscCall(PetscUseMethod(ksp,"KSPFETIDPGetInnerBDDC_C",(KSP,PC*),(ksp,pc)));
+  PetscUseMethod(ksp,"KSPFETIDPGetInnerBDDC_C",(KSP,PC*),(ksp,pc));
   PetscFunctionReturn(0);
 }
 
@@ -202,7 +202,7 @@ PetscErrorCode KSPFETIDPSetInnerBDDC(KSP ksp, PC pc)
   PetscValidHeaderSpecific(pc,PC_CLASSID,2);
   PetscCall(PetscObjectTypeCompare((PetscObject)pc,PCBDDC,&isbddc));
   PetscCheck(isbddc,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONG,"KSPFETIDPSetInnerBDDC need a PCBDDC preconditioner");
-  PetscCall(PetscTryMethod(ksp,"KSPFETIDPSetInnerBDDC_C",(KSP,PC),(ksp,pc)));
+  PetscTryMethod(ksp,"KSPFETIDPSetInnerBDDC_C",(KSP,PC),(ksp,pc));
   PetscFunctionReturn(0);
 }
 

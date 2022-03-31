@@ -21,6 +21,6 @@ PetscErrorCode TaoPythonSetType(Tao tao, const char pyname[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidCharPointer(pyname,2);
-  PetscCall(PetscTryMethod(tao,"TaoPythonSetType_C",(Tao,const char[]),(tao,pyname)));
+  PetscTryMethod(tao,"TaoPythonSetType_C",(Tao,const char[]),(tao,pyname));
   PetscFunctionReturn(0);
 }

@@ -982,7 +982,7 @@ PetscErrorCode  PCASMSetLocalSubdomains(PC pc,PetscInt n,IS is[],IS is_local[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscTryMethod(pc,"PCASMSetLocalSubdomains_C",(PC,PetscInt,IS[],IS[]),(pc,n,is,is_local)));
+  PetscTryMethod(pc,"PCASMSetLocalSubdomains_C",(PC,PetscInt,IS[],IS[]),(pc,n,is,is_local));
   PetscFunctionReturn(0);
 }
 
@@ -1027,7 +1027,7 @@ PetscErrorCode  PCASMSetTotalSubdomains(PC pc,PetscInt N,IS is[],IS is_local[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscTryMethod(pc,"PCASMSetTotalSubdomains_C",(PC,PetscInt,IS[],IS[]),(pc,N,is,is_local)));
+  PetscTryMethod(pc,"PCASMSetTotalSubdomains_C",(PC,PetscInt,IS[],IS[]),(pc,N,is,is_local));
   PetscFunctionReturn(0);
 }
 
@@ -1076,7 +1076,7 @@ PetscErrorCode  PCASMSetOverlap(PC pc,PetscInt ovl)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveInt(pc,ovl,2);
-  PetscCall(PetscTryMethod(pc,"PCASMSetOverlap_C",(PC,PetscInt),(pc,ovl)));
+  PetscTryMethod(pc,"PCASMSetOverlap_C",(PC,PetscInt),(pc,ovl));
   PetscFunctionReturn(0);
 }
 
@@ -1113,7 +1113,7 @@ PetscErrorCode  PCASMSetType(PC pc,PCASMType type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveEnum(pc,type,2);
-  PetscCall(PetscTryMethod(pc,"PCASMSetType_C",(PC,PCASMType),(pc,type)));
+  PetscTryMethod(pc,"PCASMSetType_C",(PC,PCASMType),(pc,type));
   PetscFunctionReturn(0);
 }
 
@@ -1148,7 +1148,7 @@ PetscErrorCode  PCASMGetType(PC pc,PCASMType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscUseMethod(pc,"PCASMGetType_C",(PC,PCASMType*),(pc,type)));
+  PetscUseMethod(pc,"PCASMGetType_C",(PC,PCASMType*),(pc,type));
   PetscFunctionReturn(0);
 }
 
@@ -1177,7 +1177,7 @@ PetscErrorCode PCASMSetLocalType(PC pc, PCCompositeType type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(pc, type, 2);
-  PetscCall(PetscTryMethod(pc, "PCASMSetLocalType_C", (PC, PCCompositeType), (pc, type)));
+  PetscTryMethod(pc, "PCASMSetLocalType_C", (PC, PCCompositeType), (pc, type));
   PetscFunctionReturn(0);
 }
 
@@ -1208,7 +1208,7 @@ PetscErrorCode PCASMGetLocalType(PC pc, PCCompositeType *type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidPointer(type, 2);
-  PetscCall(PetscUseMethod(pc, "PCASMGetLocalType_C", (PC, PCCompositeType *), (pc, type)));
+  PetscUseMethod(pc, "PCASMGetLocalType_C", (PC, PCCompositeType *), (pc, type));
   PetscFunctionReturn(0);
 }
 
@@ -1231,7 +1231,7 @@ PetscErrorCode  PCASMSetSortIndices(PC pc,PetscBool doSort)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveBool(pc,doSort,2);
-  PetscCall(PetscTryMethod(pc,"PCASMSetSortIndices_C",(PC,PetscBool),(pc,doSort)));
+  PetscTryMethod(pc,"PCASMSetSortIndices_C",(PC,PetscBool),(pc,doSort));
   PetscFunctionReturn(0);
 }
 
@@ -1267,7 +1267,7 @@ PetscErrorCode  PCASMGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local,KSP
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscUseMethod(pc,"PCASMGetSubKSP_C",(PC,PetscInt*,PetscInt*,KSP **),(pc,n_local,first_local,ksp)));
+  PetscUseMethod(pc,"PCASMGetSubKSP_C",(PC,PetscInt*,PetscInt*,KSP **),(pc,n_local,first_local,ksp));
   PetscFunctionReturn(0);
 }
 
@@ -1827,7 +1827,7 @@ PetscErrorCode  PCASMGetSubMatType(PC pc,MatType *sub_mat_type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscTryMethod(pc,"PCASMGetSubMatType_C",(PC,MatType*),(pc,sub_mat_type)));
+  PetscTryMethod(pc,"PCASMGetSubMatType_C",(PC,MatType*),(pc,sub_mat_type));
   PetscFunctionReturn(0);
 }
 
@@ -1854,6 +1854,6 @@ PetscErrorCode PCASMSetSubMatType(PC pc,MatType sub_mat_type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCall(PetscTryMethod(pc,"PCASMSetSubMatType_C",(PC,MatType),(pc,sub_mat_type)));
+  PetscTryMethod(pc,"PCASMSetSubMatType_C",(PC,MatType),(pc,sub_mat_type));
   PetscFunctionReturn(0);
 }
