@@ -2,7 +2,7 @@
 #define PETSCVERSION_H
 #include <petscconf.h>
 
-#define PETSC_VERSION_RELEASE    1
+#define PETSC_VERSION_RELEASE    0
 #define PETSC_VERSION_MAJOR      3
 #define PETSC_VERSION_MINOR      17
 #define PETSC_VERSION_SUBMINOR   0
