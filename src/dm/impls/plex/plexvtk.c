@@ -497,7 +497,7 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
     PetscCall(DMPlexGetDepthLabel(dm, &label));
     PetscCall(DMLabelGetStratumIS(label, 0, &vStratumIS));
     PetscCall(DMGetCoordinateSection(dm, &section));                                 /* This section includes all points */
-    PetscCall(PetscSectionCreateSubmeshSection(section, vStratumIS, &coordSection)); /* This one includes just vertices */
+    PetscCall(PetscSectionCreateSubdomainSection(section, vStratumIS, &coordSection)); /* This one includes just vertices */
     PetscCall(PetscSectionCreateGlobalSection(coordSection, dm->sf, PETSC_FALSE, PETSC_FALSE, &globalCoordSection));
     PetscCall(PetscSectionGetPointLayout(comm, globalCoordSection, &vLayout));
     PetscCall(PetscLayoutGetSize(vLayout, &totVertices));

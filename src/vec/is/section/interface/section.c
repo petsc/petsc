@@ -1930,33 +1930,15 @@ PetscErrorCode PetscSectionCreateSupersection(PetscSection s[], PetscInt len, Pe
   PetscFunctionReturn(0);
 }
 
-/*@
-  PetscSectionCreateSubmeshSection - Create a new, smaller section with support on the submesh
-
-  Collective
-
-  Input Parameters:
-+ s           - the PetscSection
-- subpointMap - a sorted list of points in the original mesh which are in the submesh
-
-  Output Parameter:
-. subs - the subsection
-
-  Note: The section offsets now refer to a new, smaller vector.
-
-  Level: advanced
-
-.seealso: PetscSectionCreateSubsection(), DMPlexGetSubpointMap(), PetscSectionCreate()
-@*/
-PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointMap, PetscSection *subs)
+PetscErrorCode PetscSectionCreateSubplexSection_Internal(PetscSection s, IS subpointMap, PetscBool renumberPoints, PetscSection *subs)
 {
   const PetscInt *points = NULL, *indices = NULL;
-  PetscInt       numFields, f, c, numSubpoints = 0, pStart, pEnd, p, subp;
+  PetscInt       numFields, f, c, numSubpoints = 0, pStart, pEnd, p, spStart, spEnd, subp;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   PetscValidHeaderSpecific(subpointMap, IS_CLASSID, 2);
-  PetscValidPointer(subs, 3);
+  PetscValidPointer(subs, 4);
   PetscCall(PetscSectionGetNumFields(s, &numFields));
   PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject) s), subs));
   if (numFields) PetscCall(PetscSectionSetNumFields(*subs, numFields));
@@ -1979,12 +1961,20 @@ PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointMap, 
     PetscCall(ISGetIndices(subpointMap, &points));
   }
   PetscCall(PetscSectionGetChart(s, &pStart, &pEnd));
-  PetscCall(PetscSectionSetChart(*subs, 0, numSubpoints));
+  if (renumberPoints) {
+    spStart = 0;
+    spEnd   = numSubpoints;
+  } else {
+    PetscCall(ISGetMinMax(subpointMap, &spStart, &spEnd));
+    ++spEnd;
+  }
+  PetscCall(PetscSectionSetChart(*subs, spStart, spEnd));
   for (p = pStart; p < pEnd; ++p) {
     PetscInt dof, cdof, fdof = 0, cfdof = 0;
 
     PetscCall(PetscFindInt(p, numSubpoints, points, &subp));
     if (subp < 0) continue;
+    if (!renumberPoints) subp = p;
     for (f = 0; f < numFields; ++f) {
       PetscCall(PetscSectionGetFieldDof(s, p, f, &fdof));
       PetscCall(PetscSectionSetFieldDof(*subs, subp, f, fdof));
@@ -2003,6 +1993,7 @@ PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointMap, 
 
     PetscCall(PetscFindInt(p, numSubpoints, points, &subp));
     if (subp < 0) continue;
+    if (!renumberPoints) subp = p;
     for (f = 0; f < numFields; ++f) {
       PetscCall(PetscSectionGetFieldOffset(s, p, f, &foff));
       PetscCall(PetscSectionSetFieldOffset(*subs, subp, f, foff));
@@ -2011,20 +2002,72 @@ PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointMap, 
     PetscCall(PetscSectionSetOffset(*subs, subp, off));
   }
   /* Copy constraint indices */
-  for (subp = 0; subp < numSubpoints; ++subp) {
+  for (subp = spStart; subp < spEnd; ++subp) {
     PetscInt cdof;
 
     PetscCall(PetscSectionGetConstraintDof(*subs, subp, &cdof));
     if (cdof) {
       for (f = 0; f < numFields; ++f) {
-        PetscCall(PetscSectionGetFieldConstraintIndices(s, points[subp], f, &indices));
+        PetscCall(PetscSectionGetFieldConstraintIndices(s, points[subp-spStart], f, &indices));
         PetscCall(PetscSectionSetFieldConstraintIndices(*subs, subp, f, indices));
       }
-      PetscCall(PetscSectionGetConstraintIndices(s, points[subp], &indices));
+      PetscCall(PetscSectionGetConstraintIndices(s, points[subp-spStart], &indices));
       PetscCall(PetscSectionSetConstraintIndices(*subs, subp, indices));
     }
   }
   if (subpointMap) PetscCall(ISRestoreIndices(subpointMap, &points));
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscSectionCreateSubmeshSection - Create a new, smaller section with support on the submesh
+
+  Collective on s
+
+  Input Parameters:
++ s           - the PetscSection
+- subpointMap - a sorted list of points in the original mesh which are in the submesh
+
+  Output Parameter:
+. subs - the subsection
+
+  Note:
+  The points are renumbered from 0, and the section offsets now refer to a new, smaller vector.
+
+  Level: advanced
+
+.seealso: PetscSectionCreateSubdomainSection(), PetscSectionCreateSubsection(), DMPlexGetSubpointMap(), PetscSectionCreate()
+@*/
+PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointMap, PetscSection *subs)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscSectionCreateSubplexSection_Internal(s, subpointMap, PETSC_TRUE, subs));
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscSectionCreateSubdomainSection - Create a new, smaller section with support on a subdomain of the mesh
+
+  Collective on s
+
+  Input Parameters:
++ s           - the PetscSection
+- subpointMap - a sorted list of points in the original mesh which are in the subdomain
+
+  Output Parameter:
+. subs - the subsection
+
+  Note:
+  The point numbers remain the same, but the section offsets now refer to a new, smaller vector.
+
+  Level: advanced
+
+.seealso: PetscSectionCreateSubmeshSection(), PetscSectionCreateSubsection(), DMPlexGetSubpointMap(), PetscSectionCreate()
+@*/
+PetscErrorCode PetscSectionCreateSubdomainSection(PetscSection s, IS subpointMap, PetscSection *subs)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscSectionCreateSubplexSection_Internal(s, subpointMap, PETSC_FALSE, subs));
   PetscFunctionReturn(0);
 }
 
