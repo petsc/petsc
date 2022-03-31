@@ -106,7 +106,7 @@ static PetscErrorCode MPIPetsc_Iallreduce(void *sendbuf,void *recvbuf,PetscMPIIn
 #if defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
   PetscCallMPI(MPI_Iallreduce(sendbuf,recvbuf,count,datatype,op,comm,request));
 #else
-  PetscCallMPI(MPIU_Allreduce(sendbuf,recvbuf,count,datatype,op,comm));
+  PetscCall(MPIU_Allreduce(sendbuf,recvbuf,count,datatype,op,comm));
   *request = MPI_REQUEST_NULL;
 #endif
   PetscFunctionReturn(0);

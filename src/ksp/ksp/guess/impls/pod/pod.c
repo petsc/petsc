@@ -176,7 +176,7 @@ static PetscErrorCode KSPGuessFormGuess_POD(KSPGuess guess,Vec b,Vec x)
   PetscCall(VecRestoreArrayRead(b,(const PetscScalar**)&array));
   PetscCall(VecMDot(pod->bsnap[pod->curr],pod->n,pod->xsnap,pod->swork));
   PetscCall(VecResetArray(pod->bsnap[pod->curr]));
-  PetscCallMPI(MPIU_Allreduce(pod->swork,pod->swork + pod->n,pod->n,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess)));
+  PetscCall(MPIU_Allreduce(pod->swork,pod->swork + pod->n,pod->n,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess)));
   PetscCall(PetscBLASIntCast(pod->n,&bN));
   PetscCall(PetscBLASIntCast(pod->nen,&bNen));
   PetscStackCallBLAS("BLASgemv",BLASgemv_("T",&bN,&bNen,&one,pod->eigv+pod->st*pod->n,&bN,pod->swork+pod->n,&ione,&zero,pod->swork,&ione));
@@ -256,7 +256,7 @@ static PetscErrorCode KSPGuessUpdate_POD(KSPGuess guess, Vec b, Vec x)
   if (pod->Aspd) {
     PetscCall(VecMDot(pod->xsnap[pod->curr],pod->n,pod->bsnap,pod->swork));
 #if !defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
-    PetscCallMPI(MPIU_Allreduce(pod->swork,pod->swork + 3*pod->n,pod->n,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess)));
+    PetscCall(MPIU_Allreduce(pod->swork,pod->swork + 3*pod->n,pod->n,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess)));
 #else
     PetscCallMPI(MPI_Iallreduce(pod->swork,pod->dots_iallreduce,pod->n,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess),&pod->req_iallreduce));
     pod->ndots_iallreduce = 1;
@@ -279,14 +279,14 @@ static PetscErrorCode KSPGuessUpdate_POD(KSPGuess guess, Vec b, Vec x)
       off  = (off == pod->n) ? 2*pod->n : pod->n;
       PetscCall(VecMDot(pod->xsnap[pod->curr],pod->n,pod->bsnap,pod->swork + off));
 #if !defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
-      PetscCallMPI(MPIU_Allreduce(pod->swork,pod->swork + 3*pod->n,3*pod->n,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess)));
+      PetscCall(MPIU_Allreduce(pod->swork,pod->swork + 3*pod->n,3*pod->n,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess)));
 #else
       PetscCallMPI(MPI_Iallreduce(pod->swork,pod->dots_iallreduce,3*pod->n,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess),&pod->req_iallreduce));
       pod->ndots_iallreduce = 3;
 #endif
     } else {
 #if !defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
-      PetscCallMPI(MPIU_Allreduce(pod->swork,pod->swork + 3*pod->n,2*pod->n,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess)));
+      PetscCall(MPIU_Allreduce(pod->swork,pod->swork + 3*pod->n,2*pod->n,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess)));
       for (i=0;i<pod->n;i++) pod->swork[5*pod->n + i] = pod->swork[4*pod->n + i];
 #else
       PetscCallMPI(MPI_Iallreduce(pod->swork,pod->dots_iallreduce,2*pod->n,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess),&pod->req_iallreduce));
@@ -402,7 +402,7 @@ complete_request:
         for (j=0;j<pod->n;j++) pod->swork[j] = -pod->swork[pod->n+j];
         PetscCall(VecMAXPY(v,pod->n,pod->swork,pod->xsnap));
         PetscCall(VecDot(v,v,pod->swork));
-        PetscCallMPI(MPIU_Allreduce(pod->swork,pod->swork + 1,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess)));
+        PetscCall(MPIU_Allreduce(pod->swork,pod->swork + 1,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess)));
         PetscCall(PetscPrintf(PetscObjectComm((PetscObject)guess),"  Error projection %D: %g (expected lower than %g)\n",i,(double)PetscRealPart(pod->swork[1]),(double)(toten-parten)));
         PetscCall(VecDestroy(&v));
       }

@@ -67,7 +67,7 @@ int main(int argc,char **argv)
   PetscCall(MatSetRandom(B,rdm));
   PetscCall(MatGetOwnershipRange(B,&begin,NULL));
   PetscCall(PetscArraycpy(gcoords+begin*dim,coords,m*dim));
-  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE,gcoords,M*dim,MPIU_REAL,MPI_SUM,PETSC_COMM_WORLD));
+  PetscCall(MPIU_Allreduce(MPI_IN_PLACE,gcoords,M*dim,MPIU_REAL,MPI_SUM,PETSC_COMM_WORLD));
   PetscCall(MatCreateHtoolFromKernel(PETSC_COMM_WORLD,m,m,M,M,dim,coords,coords,kernel,gcoords,&A));
   PetscCall(MatSetOption(A,MAT_SYMMETRIC,sym));
   PetscCall(MatSetFromOptions(A));
@@ -165,11 +165,11 @@ int main(int argc,char **argv)
       PetscCall(PetscMalloc1(n*dim,&scoords));
       PetscCall(PetscRandomGetValuesReal(rdm,n*dim,scoords));
       N = n;
-      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE,&N,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD));
+      PetscCall(MPIU_Allreduce(MPI_IN_PLACE,&N,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD));
       PetscCall(PetscCalloc1(N*dim,&gscoords));
       PetscCallMPI(MPI_Exscan(&n,&begin,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD));
       PetscCall(PetscArraycpy(gscoords+begin*dim,scoords,n*dim));
-      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE,gscoords,N*dim,MPIU_REAL,MPI_SUM,PETSC_COMM_WORLD));
+      PetscCall(MPIU_Allreduce(MPI_IN_PLACE,gscoords,N*dim,MPIU_REAL,MPI_SUM,PETSC_COMM_WORLD));
       kernel = GenEntriesRectangular;
       ctx[0] = gcoords;
       ctx[1] = gscoords;

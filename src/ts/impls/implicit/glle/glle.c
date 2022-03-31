@@ -699,7 +699,7 @@ static PetscErrorCode TSGLLEVecNormWRMS(TS ts,Vec X,PetscReal *nrm)
   for (i=0; i<n; i++) sum += PetscAbsScalar(PetscSqr(x[i]*w[i]));
   PetscCall(VecRestoreArray(X,&x));
   PetscCall(VecRestoreArray(gl->W,&w));
-  PetscCallMPI(MPIU_Allreduce(&sum,&gsum,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)ts)));
+  PetscCall(MPIU_Allreduce(&sum,&gsum,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)ts)));
   PetscCall(VecGetSize(gl->W,&N));
   *nrm = PetscSqrtReal(gsum/(1.*N));
   PetscFunctionReturn(0);

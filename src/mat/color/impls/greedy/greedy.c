@@ -169,7 +169,7 @@ static PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring mc,Pets
       }
       nd_global=0;
     }
-    PetscCallMPI(MPIU_Allreduce(&nd,&nd_global,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mc)));
+    PetscCall(MPIU_Allreduce(&nd,&nd_global,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mc)));
   }
   for (i=0;i<n;i++) {
     colors[i] = (ISColoringValue)lcolors[i];
@@ -431,7 +431,7 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc,Pets
       PetscCall(PetscSFBcastBegin(sf,MPIU_INT,dcolors,ocolors,MPI_REPLACE));
       PetscCall(PetscSFBcastEnd(sf,MPIU_INT,dcolors,ocolors,MPI_REPLACE));
       /* find the maximum color assigned locally and allocate a mask */
-      PetscCallMPI(MPIU_Allreduce(&mcol,&mcol_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc)));
+      PetscCall(MPIU_Allreduce(&mcol,&mcol_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc)));
       PetscCall(PetscMalloc1(mcol_global+1,&colorweights));
       /* check for conflicts */
       for (i=0;i<n;i++) {
@@ -527,7 +527,7 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc,Pets
         }
       }
     }
-    PetscCallMPI(MPIU_Allreduce(&nd,&nd_global,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mc)));
+    PetscCall(MPIU_Allreduce(&nd,&nd_global,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mc)));
   }
   if (mo) {
     PetscCall(PetscSFDestroy(&sf));
@@ -571,7 +571,7 @@ static PetscErrorCode MatColoringApply_Greedy(MatColoring mc,ISColoring *iscolor
     if (colors[i] > finalcolor) finalcolor=colors[i];
   }
   finalcolor_global=0;
-  PetscCallMPI(MPIU_Allreduce(&finalcolor,&finalcolor_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc)));
+  PetscCall(MPIU_Allreduce(&finalcolor,&finalcolor_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc)));
   PetscCall(PetscLogEventBegin(MATCOLORING_ISCreate,mc,0,0,0));
   PetscCall(ISColoringCreate(PetscObjectComm((PetscObject)mc),finalcolor_global+1,ncols,colors,PETSC_OWN_POINTER,iscoloring));
   PetscCall(PetscLogEventEnd(MATCOLORING_ISCreate,mc,0,0,0));

@@ -125,7 +125,7 @@ int main(int argc,char **args)
       PetscCall(ISLocalToGlobalMappingRestoreIndices(rmap,&idxs1));
       PetscCall(ISLocalToGlobalMappingRestoreIndices(cmap,&idxs2));
     }
-    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE,&squaretest,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)A)));
+    PetscCall(MPIU_Allreduce(MPI_IN_PLACE,&squaretest,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)A)));
   }
 
   /* test MatISGetLocalMat */

@@ -88,9 +88,9 @@ PetscErrorCode  SNESMonitorVI(SNES snes,PetscInt its,PetscReal fgnorm,void *dumm
   PetscCall(VecRestoreArrayRead(snes->xl,&xl));
   PetscCall(VecRestoreArrayRead(snes->xu,&xu));
   PetscCall(VecRestoreArrayRead(snes->vec_sol,&x));
-  PetscCallMPI(MPIU_Allreduce(&rnorm,&fnorm,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)snes)));
-  PetscCallMPI(MPIU_Allreduce(act,fact,2,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)snes)));
-  PetscCallMPI(MPIU_Allreduce(act_bound,fact_bound,2,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)snes)));
+  PetscCall(MPIU_Allreduce(&rnorm,&fnorm,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)snes)));
+  PetscCall(MPIU_Allreduce(act,fact,2,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)snes)));
+  PetscCall(MPIU_Allreduce(act_bound,fact_bound,2,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)snes)));
   fnorm = PetscSqrtReal(fnorm);
 
   PetscCall(PetscViewerASCIIAddTab(viewer,((PetscObject)snes)->tablevel));
@@ -317,7 +317,7 @@ PetscErrorCode SNESVIComputeInactiveSetFnorm(SNES snes,Vec F,Vec X, PetscReal *f
   PetscCall(VecRestoreArrayRead(snes->xl,&xl));
   PetscCall(VecRestoreArrayRead(snes->xu,&xu));
   PetscCall(VecRestoreArrayRead(X,&x));
-  PetscCallMPI(MPIU_Allreduce(&rnorm,fnorm,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)snes)));
+  PetscCall(MPIU_Allreduce(&rnorm,fnorm,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)snes)));
   *fnorm = PetscSqrtReal(*fnorm);
   PetscFunctionReturn(0);
 }
@@ -468,7 +468,7 @@ PetscErrorCode SNESVISetVariableBounds_VI(SNES snes,Vec xl,Vec xu)
   PetscCall(VecGetArrayRead(xu,&xxu));
   for (i=0; i<n; i++) cnt += ((xxl[i] != PETSC_NINFINITY) || (xxu[i] != PETSC_INFINITY));
 
-  PetscCallMPI(MPIU_Allreduce(&cnt,&snes->ntruebounds,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)snes)));
+  PetscCall(MPIU_Allreduce(&cnt,&snes->ntruebounds,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)snes)));
   PetscCall(VecRestoreArrayRead(xl,&xxl));
   PetscCall(VecRestoreArrayRead(xu,&xxu));
   PetscFunctionReturn(0);

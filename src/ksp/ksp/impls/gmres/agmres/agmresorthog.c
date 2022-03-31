@@ -27,8 +27,8 @@ PetscErrorCode KSPAGMRESRoddecInitNeighboor(KSP ksp)
   PetscCall(PetscObjectGetComm((PetscObject)agmres->vecs[0], &comm));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCallMPI(MPI_Comm_size(comm, &size));
-  PetscCallMPI(MPIU_Allreduce(&rank, &First, 1, MPI_INT, MPI_MIN, comm));
-  PetscCallMPI(MPIU_Allreduce(&rank, &Last, 1, MPI_INT, MPI_MAX, comm));
+  PetscCall(MPIU_Allreduce(&rank, &First, 1, MPI_INT, MPI_MIN, comm));
+  PetscCall(MPIU_Allreduce(&rank, &Last, 1, MPI_INT, MPI_MAX, comm));
 
   if ((rank != Last) && (rank == 0)) {
     agmres->Ileft  = rank - 1;

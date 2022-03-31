@@ -199,7 +199,7 @@ PetscErrorCode PetscGlobalMinMaxReal(MPI_Comm comm, const PetscReal minMaxVal[2]
   PetscFunctionBegin;
   sendbuf[0] = -minMaxVal[0];
   sendbuf[1] = minMaxVal[1];
-  PetscCallMPI(MPIU_Allreduce(sendbuf,minMaxValGlobal,2,MPIU_REAL,MPIU_MAX,comm));
+  PetscCall(MPIU_Allreduce(sendbuf,minMaxValGlobal,2,MPIU_REAL,MPIU_MAX,comm));
   minMaxValGlobal[0] = -minMaxValGlobal[0];
   PetscFunctionReturn(0);
 }

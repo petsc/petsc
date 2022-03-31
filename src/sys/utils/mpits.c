@@ -38,7 +38,7 @@ PetscErrorCode PetscCommBuildTwoSidedSetType(MPI_Comm comm,PetscBuildTwoSidedTyp
     PetscMPIInt b1[2],b2[2];
     b1[0] = -(PetscMPIInt)twosided;
     b1[1] = (PetscMPIInt)twosided;
-    PetscCallMPI(MPIU_Allreduce(b1,b2,2,MPI_INT,MPI_MAX,comm));
+    PetscCall(MPIU_Allreduce(b1,b2,2,MPI_INT,MPI_MAX,comm));
     PetscCheckFalse(-b2[0] != b2[1],comm,PETSC_ERR_ARG_WRONG,"Enum value must be same on all processes");
   }
   _twosided_type = twosided;
@@ -162,7 +162,7 @@ static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm,PetscMPIInt
     PetscCall(PetscArrayzero(iflags,size));
   }
   for (i=0; i<nto; i++) iflags[toranks[i]] = 1;
-  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE,iflags,size,MPI_INT,MPI_SUM,comm));
+  PetscCall(MPIU_Allreduce(MPI_IN_PLACE,iflags,size,MPI_INT,MPI_SUM,comm));
   nrecvs   = iflags[rank];
   PetscCallMPI(MPI_Type_get_extent(dtype,&lb,&unitbytes));
   PetscCheck(lb == 0,comm,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld",(long)lb);

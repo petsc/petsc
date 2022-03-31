@@ -228,7 +228,7 @@ static PetscErrorCode TaoLineSearchApply_OWArmijo(TaoLineSearch ls, Vec x, Petsc
 
     partgdx=0.0;
     PetscCall(ProjWork_OWLQN(armP->work,x,g_old,&partgdx));
-    PetscCallMPI(MPIU_Allreduce(&partgdx,&gdx,1,MPIU_REAL,MPIU_SUM,comm));
+    PetscCall(MPIU_Allreduce(&partgdx,&gdx,1,MPIU_REAL,MPIU_SUM,comm));
 
     /* Check the condition of gdx */
     if (PetscIsInfOrNanReal(gdx)) {

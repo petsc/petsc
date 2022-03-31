@@ -65,7 +65,7 @@ int main(int argc,char **argv)
   PetscCall(PetscCalloc1(M*dim,&gcoords));
   PetscCallMPI(MPI_Exscan(&m,&begin,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD));
   PetscCall(PetscArraycpy(gcoords+begin*dim,coords,m*dim));
-  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE,gcoords,M*dim,MPIU_REAL,MPI_SUM,PETSC_COMM_WORLD));
+  PetscCall(MPIU_Allreduce(MPI_IN_PLACE,gcoords,M*dim,MPIU_REAL,MPI_SUM,PETSC_COMM_WORLD));
   imatrix = new MyIMatrix(M,M,dim,gcoords);
   PetscCall(MatCreateHtoolFromKernel(PETSC_COMM_WORLD,m,m,M,M,dim,coords,coords,NULL,imatrix,&A)); /* block-wise assembly using htool::IMatrix<PetscScalar>::copy_submatrix() */
   PetscCall(MatSetOption(A,MAT_SYMMETRIC,sym));

@@ -752,7 +752,7 @@ PetscErrorCode VecStepMaxBounded(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *stepm
   PetscCall(VecRestoreArrayRead(XL,&xl));
   PetscCall(VecRestoreArrayRead(XU,&xu));
   PetscCall(VecRestoreArrayRead(DX,&dx));
-  PetscCallMPI(MPIU_Allreduce(&localmax,stepmax,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)X)));
+  PetscCall(MPIU_Allreduce(&localmax,stepmax,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)X)));
   PetscFunctionReturn(0);
 }
 
@@ -821,15 +821,15 @@ PetscErrorCode VecStepBoundInfo(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *boundm
   PetscCall(PetscObjectGetComm((PetscObject)X,&comm));
 
   if (boundmin) {
-    PetscCallMPI(MPIU_Allreduce(&localmin,boundmin,1,MPIU_REAL,MPIU_MIN,comm));
+    PetscCall(MPIU_Allreduce(&localmin,boundmin,1,MPIU_REAL,MPIU_MIN,comm));
     PetscCall(PetscInfo(X,"Step Bound Info: Closest Bound: %20.19e\n",(double)*boundmin));
   }
   if (wolfemin) {
-    PetscCallMPI(MPIU_Allreduce(&localwolfemin,wolfemin,1,MPIU_REAL,MPIU_MIN,comm));
+    PetscCall(MPIU_Allreduce(&localwolfemin,wolfemin,1,MPIU_REAL,MPIU_MIN,comm));
     PetscCall(PetscInfo(X,"Step Bound Info: Wolfe: %20.19e\n",(double)*wolfemin));
   }
   if (boundmax) {
-    PetscCallMPI(MPIU_Allreduce(&localmax,boundmax,1,MPIU_REAL,MPIU_MAX,comm));
+    PetscCall(MPIU_Allreduce(&localmax,boundmax,1,MPIU_REAL,MPIU_MAX,comm));
     if (*boundmax < 0) *boundmax=PETSC_INFINITY;
     PetscCall(PetscInfo(X,"Step Bound Info: Max: %20.19e\n",(double)*boundmax));
   }
@@ -872,7 +872,7 @@ PetscErrorCode VecStepMax(Vec X, Vec DX, PetscReal *step)
   }
   PetscCall(VecRestoreArrayRead(X,&xx));
   PetscCall(VecRestoreArrayRead(DX,&dx));
-  PetscCallMPI(MPIU_Allreduce(&stepmax,step,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)X)));
+  PetscCall(MPIU_Allreduce(&stepmax,step,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)X)));
   PetscFunctionReturn(0);
 }
 

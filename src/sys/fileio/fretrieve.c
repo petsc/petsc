@@ -184,7 +184,7 @@ PetscErrorCode  PetscSharedTmp(MPI_Comm comm,PetscBool  *shared)
         }
       } else cnt = 0;
 
-      PetscCallMPI(MPIU_Allreduce(&cnt,&sum,1,MPI_INT,MPI_SUM,comm));
+      PetscCall(MPIU_Allreduce(&cnt,&sum,1,MPI_INT,MPI_SUM,comm));
       if (rank == i) unlink(filename);
 
       if (sum == size) {
@@ -293,7 +293,7 @@ PetscErrorCode PetscSharedWorkingDirectory(MPI_Comm comm, PetscBool *shared)
         }
       } else cnt = 0;
 
-      PetscCallMPI(MPIU_Allreduce(&cnt,&sum,1,MPI_INT,MPI_SUM,comm));
+      PetscCall(MPIU_Allreduce(&cnt,&sum,1,MPI_INT,MPI_SUM,comm));
       if (rank == i) unlink(filename);
 
       if (sum == size) {

@@ -363,7 +363,7 @@ PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const
     if (ncwork < colors[i]) ncwork = colors[i];
   }
   ncwork++;
-  PetscCallMPI(MPIU_Allreduce(&ncwork,&nc,1,MPIU_INT,MPI_MAX,comm));
+  PetscCall(MPIU_Allreduce(&ncwork,&nc,1,MPIU_INT,MPI_MAX,comm));
   PetscCheckFalse(nc > ncolors,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of colors passed in %" PetscInt_FMT " is less then the actual number of colors in array %" PetscInt_FMT,ncolors,nc);
   (*iscoloring)->n      = nc;
   (*iscoloring)->is     = NULL;
@@ -542,7 +542,7 @@ PetscErrorCode  ISPartitioningToNumbering(IS part,IS *is)
   PetscCall(ISGetIndices(part,&indices));
   np   = 0;
   for (i=0; i<n; i++) np = PetscMax(np,indices[i]);
-  PetscCallMPI(MPIU_Allreduce(&np,&npt,1,MPIU_INT,MPI_MAX,comm));
+  PetscCall(MPIU_Allreduce(&np,&npt,1,MPIU_INT,MPI_MAX,comm));
   np   = npt+1; /* so that it looks like a MPI_Comm_size output */
 
   /*
@@ -553,7 +553,7 @@ PetscErrorCode  ISPartitioningToNumbering(IS part,IS *is)
   PetscCall(PetscMalloc3(np,&lsizes,np,&starts,np,&sums));
   PetscCall(PetscArrayzero(lsizes,np));
   for (i=0; i<n; i++) lsizes[indices[i]]++;
-  PetscCallMPI(MPIU_Allreduce(lsizes,sums,np,MPIU_INT,MPI_SUM,comm));
+  PetscCall(MPIU_Allreduce(lsizes,sums,np,MPIU_INT,MPI_SUM,comm));
   PetscCallMPI(MPI_Scan(lsizes,starts,np,MPIU_INT,MPI_SUM,comm));
   for (i=0; i<np; i++) starts[i] -= lsizes[i];
   for (i=1; i<np; i++) {
@@ -625,7 +625,7 @@ PetscErrorCode  ISPartitioningCount(IS part,PetscInt len,PetscInt count[])
   if (PetscDefined(USE_DEBUG)) {
     PetscInt np = 0,npt;
     for (i=0; i<n; i++) np = PetscMax(np,indices[i]);
-    PetscCallMPI(MPIU_Allreduce(&np,&npt,1,MPIU_INT,MPI_MAX,comm));
+    PetscCall(MPIU_Allreduce(&np,&npt,1,MPIU_INT,MPI_MAX,comm));
     np   = npt+1; /* so that it looks like a MPI_Comm_size output */
     PetscCheckFalse(np > len,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Length of count array %" PetscInt_FMT " is less than number of partitions %" PetscInt_FMT,len,np);
   }
@@ -641,7 +641,7 @@ PetscErrorCode  ISPartitioningCount(IS part,PetscInt len,PetscInt count[])
   }
   PetscCall(ISRestoreIndices(part,&indices));
   PetscCall(PetscMPIIntCast(len,&npp));
-  PetscCallMPI(MPIU_Allreduce(lsizes,count,npp,MPIU_INT,MPI_SUM,comm));
+  PetscCall(MPIU_Allreduce(lsizes,count,npp,MPIU_INT,MPI_SUM,comm));
   PetscCall(PetscFree(lsizes));
   PetscFunctionReturn(0);
 }
