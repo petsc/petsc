@@ -910,15 +910,10 @@ PetscErrorCode DMPlexP1FieldCreate_Private(DM dm, PetscInt f, PetscInt size, Vec
 @*/
 PetscErrorCode DMPlexMetricCreate(DM dm, PetscInt f, Vec *metric)
 {
-  DM_Plex       *plex = (DM_Plex *) dm->data;
-  PetscBool      isotropic, uniform;
-  PetscInt       coordDim, Nd;
+  PetscBool isotropic, uniform;
+  PetscInt  coordDim, Nd;
 
   PetscFunctionBegin;
-  if (!plex->metricCtx) {
-    PetscCall(PetscNew(&plex->metricCtx));
-    PetscCall(DMPlexMetricSetFromOptions(dm));
-  }
   PetscCall(DMGetCoordinateDim(dm, &coordDim));
   Nd = coordDim*coordDim;
   PetscCall(DMPlexMetricIsUniform(dm, &uniform));
@@ -931,11 +926,8 @@ PetscErrorCode DMPlexMetricCreate(DM dm, PetscInt f, Vec *metric)
     PetscCall(VecCreate(comm, metric));
     PetscCall(VecSetSizes(*metric, 1, PETSC_DECIDE));
     PetscCall(VecSetFromOptions(*metric));
-  } else if (isotropic) {
-    PetscCall(DMPlexP1FieldCreate_Private(dm, f, 1, metric));
-  } else {
-    PetscCall(DMPlexP1FieldCreate_Private(dm, f, Nd, metric));
-  }
+  } else if (isotropic) PetscCall(DMPlexP1FieldCreate_Private(dm, f, 1, metric));
+  else PetscCall(DMPlexP1FieldCreate_Private(dm, f, Nd, metric));
   PetscFunctionReturn(0);
 }
 
@@ -1019,6 +1011,39 @@ PetscErrorCode DMPlexMetricCreateIsotropic(DM dm, PetscInt f, Vec indicator, Vec
     funcs[0] = identity;
     PetscCall(DMProjectFieldLocal(dmIndi, 0.0, indicator, funcs, INSERT_VALUES, *metric));
   }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexMetricDeterminantCreate - Create the determinant field for a Riemannian metric
+
+  Input parameters:
++ dm          - The DM of the metric field
+- f           - The field number to use
+
+  Output parameter:
++ determinant - The determinant field
+- dmDet       - The corresponding DM
+
+  Level: beginner
+
+.seealso: DMPlexMetricCreateUniform(), DMPlexMetricCreateIsotropic(), DMPlexMetricCreate()
+@*/
+PetscErrorCode DMPlexMetricDeterminantCreate(DM dm, PetscInt f, Vec *determinant, DM *dmDet)
+{
+  PetscBool uniform;
+
+  PetscFunctionBegin;
+  PetscCall(DMPlexMetricIsUniform(dm, &uniform));
+  PetscCall(DMClone(dm, dmDet));
+  if (uniform) {
+    MPI_Comm comm;
+
+    PetscCall(PetscObjectGetComm((PetscObject) *dmDet, &comm));
+    PetscCall(VecCreate(comm, determinant));
+    PetscCall(VecSetSizes(*determinant, 1, PETSC_DECIDE));
+    PetscCall(VecSetFromOptions(*determinant));
+  } else PetscCall(DMPlexP1FieldCreate_Private(*dmDet, f, 1, determinant));
   PetscFunctionReturn(0);
 }
 

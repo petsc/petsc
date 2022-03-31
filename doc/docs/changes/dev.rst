@@ -121,6 +121,7 @@ In addition to the changes above
 - Add ``DMLabelPropagateBegin()``, ``DMLabelPropagatePush()``, and ``DMLabelPropagateEnd()``
 - Add ``DMPlexPointQueue`` and API
 - Add label value argument to ``DMPlexLabelCohesiveComplete()`` and ``DMPlexCreateHybridMesh()``
+- Add ``DMPlexMetricDeterminantCreate()`` for creating determinant fields for Riemannian metrics
 
 .. rubric:: FE/FV:
 
