@@ -257,7 +257,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
   ierr = PetscOptionsBegin(comm, "", "Stokes Problem Options", "DMPLEX");PetscCall(ierr);
   sol  = options->sol;
-  PetscCall(PetscOptionsEList("-sol", "The MMS solution", "ex62.c", SolTypes, (sizeof(SolTypes)/sizeof(SolTypes[0]))-3, SolTypes[options->sol], &sol, NULL));
+  PetscCall(PetscOptionsEList("-sol", "The MMS solution", "ex62.c", SolTypes, PETSC_STATIC_ARRAY_LENGTH(SolTypes)-3, SolTypes[options->sol], &sol, NULL));
   options->sol = (SolType) sol;
   ierr = PetscOptionsEnd();PetscCall(ierr);
   PetscFunctionReturn(0);

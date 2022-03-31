@@ -31,7 +31,7 @@ int main(int argc,char **argv)
   PetscCall(MatGetOwnershipRange(A,&rstart,&rend));
   PetscCall(MatGetOwnershipRangeColumn(A,&cstart,&cend));
 
-  for (i=0; i<(PetscInt)(sizeof(entries)/sizeof(entries[0])); i++) {
+  for (i=0; i<(PetscInt)PETSC_STATIC_ARRAY_LENGTH(entries); i++) {
     PetscCall(MatSetValue(A,entries[i].i,entries[i].j,entries[i].v,INSERT_VALUES));
   }
   PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));

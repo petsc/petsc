@@ -197,12 +197,12 @@ static PetscErrorCode GmshCellInfoSetUp(void)
   if (called) return 0;
   PetscFunctionBegin;
   called = PETSC_TRUE;
-  n = sizeof(GmshCellMap)/sizeof(GmshCellMap[0]);
+  n = PETSC_STATIC_ARRAY_LENGTH(GmshCellMap);
   for (i = 0; i < n; ++i) {
     GmshCellMap[i].cellType = -1;
     GmshCellMap[i].polytope = -1;
   }
-  n = sizeof(GmshCellTable)/sizeof(GmshCellTable[0]);
+  n = PETSC_STATIC_ARRAY_LENGTH(GmshCellTable);
   for (i = 0; i < n; ++i) {
     if (GmshCellTable[i].cellType <= 0) continue;
     GmshCellMap[GmshCellTable[i].cellType] = GmshCellTable[i];
@@ -212,7 +212,7 @@ static PetscErrorCode GmshCellInfoSetUp(void)
 
 #define GmshCellTypeCheck(ct) PetscMacroReturnStandard(                                        \
     const int _ct_ = (int)ct;                                                                  \
-    PetscCheck(_ct_ >= 0 && _ct_ < (int)(sizeof(GmshCellMap)/sizeof(GmshCellMap[0])), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid Gmsh element type %d", _ct_); \
+    PetscCheck(_ct_ >= 0 && _ct_ < (int)PETSC_STATIC_ARRAY_LENGTH(GmshCellMap), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid Gmsh element type %d", _ct_); \
     PetscCheck(GmshCellMap[_ct_].cellType == _ct_, PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported Gmsh element type %d", _ct_); \
     PetscCheck(GmshCellMap[_ct_].polytope != -1, PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported Gmsh element type %d", _ct_); \
   )

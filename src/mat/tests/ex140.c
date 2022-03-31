@@ -68,7 +68,7 @@ const char* const optstr[] = {"mult",
 PetscErrorCode RunHasOperationTest()
 {
   Mat A;
-  PetscInt matop, nop = sizeof(optenum)/sizeof(optenum[0]);
+  PetscInt matop, nop = PETSC_STATIC_ARRAY_LENGTH(optenum);
 
   PetscFunctionBegin;
   for (matop = 0; matop < nop; matop++) {

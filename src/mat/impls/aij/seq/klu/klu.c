@@ -322,7 +322,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_klu(Mat A,MatFactorType ftype,Ma
   /* BTF pre-ordering */
   PetscCall(PetscOptionsInt("-mat_klu_use_btf","Enable BTF preordering","None",(PetscInt)lu->Common.btf,(PetscInt*)&lu->Common.btf,NULL));
   /* Matrix reordering */
-  PetscCall(PetscOptionsEList("-mat_klu_ordering","Internal ordering method","None",KluOrderingTypes,sizeof(KluOrderingTypes)/sizeof(KluOrderingTypes[0]),KluOrderingTypes[0],&idx,&flg));
+  PetscCall(PetscOptionsEList("-mat_klu_ordering","Internal ordering method","None",KluOrderingTypes,PETSC_STATIC_ARRAY_LENGTH(KluOrderingTypes),KluOrderingTypes[0],&idx,&flg));
   lu->Common.ordering = (int)idx;
   /* Matrix row scaling */
   PetscCall(PetscOptionsEList("-mat_klu_row_scale","Matrix row scaling","None",scale,3,scale[0],&idx,&flg));

@@ -339,7 +339,7 @@ PetscErrorCode PetscDrawImageCheckFormat(const char *ext[])
   }
   /* check the extension matches a supported format */
   PetscValidCharPointer(*ext,1);
-  for (k=0; k<sizeof(PetscDrawImageSaveTable)/sizeof(PetscDrawImageSaveTable[0]); k++) {
+  for (k=0; k<PETSC_STATIC_ARRAY_LENGTH(PetscDrawImageSaveTable); k++) {
     PetscCall(PetscStrcasecmp(*ext,PetscDrawImageSaveTable[k].extension,&match));
     if (match && PetscDrawImageSaveTable[k].SaveImage) PetscFunctionReturn(0);
   }
@@ -360,7 +360,7 @@ PetscErrorCode PetscDrawImageSave(const char basename[],const char ext[],unsigne
 
   PetscCall(PetscDrawImageCheckFormat(&ext));
   PetscCall(PetscSNPrintf(filename,sizeof(filename),"%s%s",basename,ext));
-  for (k=0; k<sizeof(PetscDrawImageSaveTable)/sizeof(PetscDrawImageSaveTable[0]); k++) {
+  for (k=0; k<PETSC_STATIC_ARRAY_LENGTH(PetscDrawImageSaveTable); k++) {
     PetscCall(PetscStrcasecmp(ext,PetscDrawImageSaveTable[k].extension,&match));
     if (match && PetscDrawImageSaveTable[k].SaveImage) {
       PetscCall(PetscDrawImageSaveTable[k].SaveImage(filename,palette,w,h,pixels));

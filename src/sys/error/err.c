@@ -28,7 +28,7 @@ static const char* PetscAbortSourceFiles[] = {
 PetscErrorCode PetscAbortFindSourceFile_Private(const char* filepath, PetscInt *idx)
 {
   PetscErrorCode  ierr;
-  PetscInt        i,n = sizeof(PetscAbortSourceFiles)/sizeof(PetscAbortSourceFiles[0]);
+  PetscInt        i,n = PETSC_STATIC_ARRAY_LENGTH(PetscAbortSourceFiles);
   PetscBool       match;
   char            subpath[PETSC_MAX_PATH_LEN];
 
