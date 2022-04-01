@@ -156,50 +156,51 @@ r'''
 
 # -- Setup and event callbacks -------------------------------------------------
 
+def setup(app):
+        app.connect('builder-inited', builder_init_handler)
+        app.connect('build-finished', build_finished_handler)
+
+
+def builder_init_handler(app):
+    if app.builder.name.endswith('html'):
+        _build_classic_docs(app, 'pre')
+        _copy_classic_docs(app, None, '.', 'pre')
+        _update_htmlmap_links(app)
+
+
+def build_finished_handler(app, exception):
+    if app.builder.name.endswith('html'):
+        _build_classic_docs(app, 'post')
+        _copy_classic_docs(app, exception, app.outdir, 'post')
+        _fix_links(app, exception)
+        if app.builder.name == 'html':
+            print("==========================================================================")
+            print("    open %s/index.html in your browser to view the documentation " % app.outdir)
+            print("==========================================================================")
+
+
 def _build_classic_docs(app, stage):
     build_classic_docs.main(stage)
 
 
-def builder_init_handler(app):
-    _build_classic_docs(app, 'pre')
-    _copy_classic_docs(app, None, '.', 'pre')
-    _update_htmlmap_links(app)
-
-
 def _copy_classic_docs(app, exception, destination, stage):
-    if exception is None and app.builder.name.endswith('html'):
+    if exception is None:
         print("============================================")
-        print("    Copying classic docs from conf.py (%s)" % stage)
+        print("    Copying classic docs (%s)" % stage)
         print("============================================")
         build_classic_docs.copy_classic_docs(destination, stage)
 
 
 def _fix_links(app, exception):
-    if exception is None and app.builder.name.endswith('html'):
+    if exception is None:
         print("============================================")
-        print("    Fixing relative links from conf.py      ")
+        print("    Fixing relative links")
         print("============================================")
         make_links_relative.make_links_relative(app.outdir)
 
 
-def build_finished_handler(app, exception):
-    _build_classic_docs(app, 'post')
-    _copy_classic_docs(app, exception, app.outdir, 'post')
-    _fix_links(app, exception)
-    if app.builder.name == 'html':
-        print("==========================================================================")
-        print("    open %s/index.html in your browser to view the documentation " % app.outdir)
-        print("==========================================================================")
-
-
 def _update_htmlmap_links(app):
-    if app.builder.name.endswith('html'):
-        print("============================================")
-        print("    Updating htmlmap from conf.py           ")
-        print("============================================")
-        update_htmlmap_links.update_htmlmap_links(app.builder)
-
-
-def setup(app):
-    app.connect('builder-inited', builder_init_handler)
-    app.connect('build-finished', build_finished_handler)
+    print("============================================")
+    print("    Updating htmlmap")
+    print("============================================")
+    update_htmlmap_links.update_htmlmap_links(app.builder)
