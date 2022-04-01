@@ -380,6 +380,9 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt NUserV, const PetscInt a_Np, cons
         } // active
       }
     } // Landau
+    if (b_target >= global_batch_id && b_target < global_batch_id+ctx->batch_sz) {
+      PetscCall(VecViewFromOptions(globXArray[LAND_PACK_IDX(b_target%ctx->batch_sz,g_target)],NULL,"-ex30_vec_view"));
+    }
     PetscCall(DMCompositeRestoreAccessArray(pack, X, nDMs, NULL, globXArray));
     PetscCall(DMPlexLandauPrintNorms(X,0));
     // advance
@@ -388,9 +391,6 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt NUserV, const PetscInt a_Np, cons
     PetscCall(TSSolve(ts,X));
     PetscCall(DMPlexLandauPrintNorms(X,1));
     PetscCall(DMCompositeGetAccessArray(pack, X, nDMs, NULL, globXArray));
-    if (b_target >= global_batch_id && b_target < global_batch_id+ctx->batch_sz) {
-      PetscCall(VecViewFromOptions(globXArray[LAND_PACK_IDX(b_target%ctx->batch_sz,g_target)],NULL,"-ex30_vec_view"));
-    }
     // map back to particles
     for (PetscInt b_id_0 = 0 ; b_id_0 < ctx->batch_sz ; b_id_0 += numthreads) {
       PetscCall(PetscInfo(pack,"g2p: global batch %" PetscInt_FMT " of %" PetscInt_FMT ", Landau batch %" PetscInt_FMT " of %" PetscInt_FMT ": map back to particles\n",global_batch_id+1,NUserV,b_id_0+1,ctx->batch_sz));
@@ -458,13 +458,16 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt NUserV, const PetscInt a_Np, cons
 
 int main(int argc, char **argv)
 {
-  DM             pack;
-  Vec            X;
-  PetscInt       dim=2,nvert=1,Np=10,btarget=0,gtarget=0;
-  TS             ts;
-  Mat            J;
-  LandauCtx      *ctx;
-  PetscErrorCode ierr;
+  DM               pack;
+  Vec              X;
+  PetscInt         dim=2,nvert=1,Np=10,btarget=0,gtarget=0;
+  TS               ts;
+  Mat              J;
+  LandauCtx        *ctx;
+  PetscErrorCode   ierr;
+#if defined(PETSC_USE_LOG)
+  PetscLogStage    stage;
+#endif
 
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   // process args
@@ -491,8 +494,14 @@ int main(int argc, char **argv)
   PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
   PetscCall(TSSetFromOptions(ts));
   PetscCall(PetscObjectSetName((PetscObject)X, "X"));
-  // do particle advance
+  // do particle advance, warmup
   PetscCall(go(ts,X,nvert,Np,dim,btarget,gtarget));
+  PetscCall(MatZeroEntries(J)); // need to zero out so as to not reuse it in Landau's logic
+  // hot
+  PetscCall(PetscLogStageRegister("ex30 hot solve", &stage));
+  PetscCall(PetscLogStagePush(stage));
+  PetscCall(go(ts,X,nvert,Np,dim,btarget,gtarget));
+  PetscCall(PetscLogStagePop());
   /* clean up */
   PetscCall(DMPlexLandauDestroyVelocitySpace(&pack));
   PetscCall(TSDestroy(&ts));
@@ -507,7 +516,7 @@ int main(int argc, char **argv)
     requires: !complex p4est
 
   testset:
-    requires: double
+    requires: double defined(PETSC_USE_DMLANDAU_2D)
     output_file: output/ex30_0.out
     args: -dim 2 -petscspace_degree 3 -dm_landau_type p4est -dm_landau_num_species_grid 1,1,1 -dm_landau_amr_levels_max 0,0,0 \
           -dm_landau_amr_post_refine 1 -number_particles_per_dimension 10 -dm_plex_hash_location \
@@ -528,6 +537,31 @@ int main(int argc, char **argv)
       args: -dm_landau_device_type kokkos -dm_mat_type aijkokkos -dm_vec_type kokkos
     test:
       suffix: cuda
+      requires: cuda
+      args: -dm_landau_device_type cuda -dm_mat_type aijcusparse -dm_vec_type cuda
+
+  testset:
+    requires: double !defined(PETSC_USE_DMLANDAU_2D)
+    output_file: output/ex30_3d.out
+    args: -dim 3 -petscspace_degree 2 -dm_landau_type p8est -dm_landau_num_species_grid 1,1,1 -dm_landau_amr_levels_max 0,0,0 \
+          -dm_landau_amr_post_refine 0 -number_particles_per_dimension 5 -dm_plex_hash_location \
+          -dm_landau_batch_size 1 -number_spatial_vertices 1 -dm_landau_batch_view_idx 0 -view_vertex_target 0 -view_grid_target 0 \
+          -dm_landau_n 1.000018,1,1e-6 -dm_landau_thermal_temps 2,1,1 -dm_landau_ion_masses 2,180 -dm_landau_ion_charges 1,18 \
+          -ftop_ksp_converged_reason -ftop_ksp_rtol 1e-12 -ftop_ksp_type cg -ftop_pc_type jacobi \
+          -ksp_type preonly -pc_type lu \
+          -ptof_ksp_type cg -ptof_pc_type jacobi -ptof_ksp_converged_reason -ptof_ksp_rtol 1e-12\
+          -snes_converged_reason -snes_monitor -snes_rtol 1e-12 -snes_stol 1e-12\
+          -ts_dt 0.1 -ts_exact_final_time stepover -ts_max_snes_failures -1 -ts_max_steps 1 -ts_monitor -ts_type beuler -info :vec
+
+    test:
+      suffix: cpu_3d
+      args: -dm_landau_device_type cpu
+    test:
+      suffix: kokkos_3d
+      requires: kokkos_kernels
+      args: -dm_landau_device_type kokkos -dm_mat_type aijkokkos -dm_vec_type kokkos
+    test:
+      suffix: cuda_3d
       requires: cuda
       args: -dm_landau_device_type cuda -dm_mat_type aijcusparse -dm_vec_type cuda
 
