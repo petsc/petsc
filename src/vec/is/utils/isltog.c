@@ -435,23 +435,19 @@ PetscErrorCode  ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *map
 PetscErrorCode ISLocalToGlobalMappingCreateSF(PetscSF sf,PetscInt start,ISLocalToGlobalMapping *mapping)
 {
   PetscInt       i,maxlocal,nroots,nleaves,*globals,*ltog;
-  const PetscInt *ilocal;
   MPI_Comm       comm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   PetscValidPointer(mapping,3);
-
   PetscCall(PetscObjectGetComm((PetscObject)sf,&comm));
-  PetscCall(PetscSFGetGraph(sf,&nroots,&nleaves,&ilocal,NULL));
+  PetscCall(PetscSFGetGraph(sf,&nroots,&nleaves,NULL,NULL));
   if (start == PETSC_DECIDE) {
     start = 0;
     PetscCallMPI(MPI_Exscan(&nroots,&start,1,MPIU_INT,MPI_SUM,comm));
-  } else PetscCheckFalse(start < 0,comm, PETSC_ERR_ARG_OUTOFRANGE, "start must be nonnegative or PETSC_DECIDE");
-  if (ilocal) {
-    for (i=0,maxlocal=0; i<nleaves; i++) maxlocal = PetscMax(maxlocal,ilocal[i]+1);
-  }
-  else maxlocal = nleaves;
+  } else PetscCheck(start >= 0,comm, PETSC_ERR_ARG_OUTOFRANGE, "start must be nonnegative or PETSC_DECIDE");
+  PetscCall(PetscSFGetLeafRange(sf, NULL, &maxlocal));
+  ++maxlocal;
   PetscCall(PetscMalloc1(nroots,&globals));
   PetscCall(PetscMalloc1(maxlocal,&ltog));
   for (i=0; i<nroots; i++) globals[i] = start + i;
