@@ -121,7 +121,10 @@ Perhaps the installation has been corrupted or changed, remove the directory '+o
 and run configure again\n')
 
       self.checkBfortVersion()
-      self.buildFortranStubs()
+      if (self.petscclone.isClone and hasattr(self.compilers, 'FC') and self.framework.argDB['with-fortran-bindings']):
+        self.buildFortranStubs()
+      else:
+        self.logPrintBox('Sowing: Skipping fortran stub generation! Reason: Not a clone of PETSc or no Fortran compiler or fortran-bindings disabled')
     else:
       self.logPrint("Not a clone of PETSc or no Fortran compiler or fortran-bindings disabled, don't need Sowing\n")
     return
