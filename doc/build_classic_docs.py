@@ -96,9 +96,7 @@ def copy_classic_docs(outdir):
     for subdir in classic_docs_subdirs():
         source_dir = os.path.join(CLASSIC_DOCS_LOC, subdir)
         target_dir = os.path.join(outdir, subdir)
-        print('============================================')
         print('Copying directory %s to %s' % (source_dir, target_dir))
-        print('============================================')
         _mkdir_p(target_dir)
         for file in os.listdir(source_dir):
             source = os.path.join(source_dir, file)
