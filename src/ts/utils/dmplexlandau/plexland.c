@@ -1554,7 +1554,7 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
   PetscSection      section[LANDAU_MAX_GRIDS],globsection[LANDAU_MAX_GRIDS];
   PetscQuadrature   quad;
   const PetscReal   *quadWeights;
-  PetscInt          numCells[LANDAU_MAX_GRIDS],Nq,Nf[LANDAU_MAX_GRIDS], ncellsTot=0;
+  PetscInt          numCells[LANDAU_MAX_GRIDS],Nq,Nf[LANDAU_MAX_GRIDS], ncellsTot=0, MAP_BF_SIZE = 64*LANDAU_DIM*LANDAU_DIM*LANDAU_MAX_Q_FACE*LANDAU_MAX_SPECIES;
   PetscTabulation   *Tf;
   PetscDS           prob;
 
@@ -1577,12 +1577,11 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
     PetscCall(PetscSectionGetNumFields(section[grid], &Nf[grid]));
     ncellsTot += numCells[grid];
   }
-#define MAP_BF_SIZE (64*LANDAU_DIM*LANDAU_DIM*LANDAU_MAX_Q_FACE*LANDAU_MAX_SPECIES)
   /* create GPU assembly data */
   if (ctx->gpu_assembly) { /* we need GPU object with GPU assembly */
     PetscContainer          container;
     PetscScalar             elemMatrix[LANDAU_MAX_NQ*LANDAU_MAX_NQ*LANDAU_MAX_SPECIES*LANDAU_MAX_SPECIES], *elMat;
-    pointInterpolationP4est pointMaps[MAP_BF_SIZE][LANDAU_MAX_Q_FACE];
+    pointInterpolationP4est (*pointMaps)[LANDAU_MAX_Q_FACE];
     P4estVertexMaps         *maps;
     const PetscInt          *plex_batch=NULL,Nb=Nq; // tensor elements;
     LandauIdx               *coo_elem_offsets=NULL, *coo_elem_fullNb=NULL, (*coo_elem_point_offsets)[LANDAU_MAX_NQ+1] = NULL;
@@ -1590,6 +1589,7 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
     PetscCall(PetscInfo(ctx->plex[0], "Make GPU maps %d\n",1));
     PetscCall(PetscLogEventBegin(ctx->events[2],0,0,0,0));
     PetscCall(PetscMalloc(sizeof(*maps)*ctx->num_grids, &maps));
+    PetscCall(PetscMalloc(sizeof(*pointMaps)*MAP_BF_SIZE, &pointMaps));
 
     if (ctx->coo_assembly) { // setup COO assembly -- put COO metadata directly in ctx->SData_d
       PetscCall(PetscMalloc3(ncellsTot+1,&coo_elem_offsets,ncellsTot,&coo_elem_fullNb,ncellsTot, &coo_elem_point_offsets)); // array of integer pointers
@@ -1801,6 +1801,7 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
       PetscCall(MatSetPreallocationCOO(ctx->J,ctx->SData_d.coo_size,oor,ooc));
       PetscCall(PetscFree2(oor,ooc));
     }
+    PetscCall(PetscFree(pointMaps));
     PetscCall(PetscContainerCreate(PETSC_COMM_SELF, &container));
     PetscCall(PetscContainerSetPointer(container, (void *)maps));
     PetscCall(PetscContainerSetUserDestroy(container, LandauGPUMapsDestroy));
