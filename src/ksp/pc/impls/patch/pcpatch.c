@@ -937,7 +937,7 @@ static PetscErrorCode PCPatchCreateCellPatches(PC pc)
   PC_PATCH       *patch = (PC_PATCH *) pc->data;
   DMLabel         ghost = NULL;
   DM              dm, plex;
-  PetscHSetI      ht, cht;
+  PetscHSetI      ht=NULL, cht=NULL;
   PetscSection    cellCounts,  pointCounts, intFacetCounts, extFacetCounts;
   PetscInt       *cellsArray, *pointsArray, *intFacetsArray, *extFacetsArray, *intFacetsToPatchCell;
   PetscInt        numCells, numPoints, numIntFacets, numExtFacets;
