@@ -288,42 +288,41 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSE(Mat B,Mat A,const MatFac
 
 static PetscErrorCode MatSetFromOptions_SeqAIJCUSPARSE(PetscOptionItems *PetscOptionsObject,Mat A)
 {
-  PetscErrorCode           ierr;
   MatCUSPARSEStorageFormat format;
   PetscBool                flg;
   Mat_SeqAIJCUSPARSE       *cusparsestruct = (Mat_SeqAIJCUSPARSE*)A->spptr;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"SeqAIJCUSPARSE options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"SeqAIJCUSPARSE options");
   if (A->factortype == MAT_FACTOR_NONE) {
-    ierr = PetscOptionsEnum("-mat_cusparse_mult_storage_format","sets storage format of (seq)aijcusparse gpu matrices for SpMV",
-                            "MatCUSPARSESetFormat",MatCUSPARSEStorageFormats,(PetscEnum)cusparsestruct->format,(PetscEnum*)&format,&flg);PetscCall(ierr);
+    PetscCall(PetscOptionsEnum("-mat_cusparse_mult_storage_format","sets storage format of (seq)aijcusparse gpu matrices for SpMV",
+                               "MatCUSPARSESetFormat",MatCUSPARSEStorageFormats,(PetscEnum)cusparsestruct->format,(PetscEnum*)&format,&flg));
     if (flg) PetscCall(MatCUSPARSESetFormat(A,MAT_CUSPARSE_MULT,format));
 
-    ierr = PetscOptionsEnum("-mat_cusparse_storage_format","sets storage format of (seq)aijcusparse gpu matrices for SpMV and TriSolve",
-                            "MatCUSPARSESetFormat",MatCUSPARSEStorageFormats,(PetscEnum)cusparsestruct->format,(PetscEnum*)&format,&flg);PetscCall(ierr);
+    PetscCall(PetscOptionsEnum("-mat_cusparse_storage_format","sets storage format of (seq)aijcusparse gpu matrices for SpMV and TriSolve",
+                               "MatCUSPARSESetFormat",MatCUSPARSEStorageFormats,(PetscEnum)cusparsestruct->format,(PetscEnum*)&format,&flg));
     if (flg) PetscCall(MatCUSPARSESetFormat(A,MAT_CUSPARSE_ALL,format));
     PetscCall(PetscOptionsBool("-mat_cusparse_use_cpu_solve","Use CPU (I)LU solve","MatCUSPARSESetUseCPUSolve",cusparsestruct->use_cpu_solve,&cusparsestruct->use_cpu_solve,&flg));
     if (flg) PetscCall(MatCUSPARSESetUseCPUSolve(A,cusparsestruct->use_cpu_solve));
 #if PETSC_PKG_CUDA_VERSION_GE(11,0,0)
-    ierr = PetscOptionsEnum("-mat_cusparse_spmv_alg","sets cuSPARSE algorithm used in sparse-mat dense-vector multiplication (SpMV)",
-                            "cusparseSpMVAlg_t",MatCUSPARSESpMVAlgorithms,(PetscEnum)cusparsestruct->spmvAlg,(PetscEnum*)&cusparsestruct->spmvAlg,&flg);PetscCall(ierr);
+    PetscCall(PetscOptionsEnum("-mat_cusparse_spmv_alg","sets cuSPARSE algorithm used in sparse-mat dense-vector multiplication (SpMV)",
+                               "cusparseSpMVAlg_t",MatCUSPARSESpMVAlgorithms,(PetscEnum)cusparsestruct->spmvAlg,(PetscEnum*)&cusparsestruct->spmvAlg,&flg));
     /* If user did use this option, check its consistency with cuSPARSE, since PetscOptionsEnum() sets enum values based on their position in MatCUSPARSESpMVAlgorithms[] */
 #if PETSC_PKG_CUDA_VERSION_GE(11,2,0)
     PetscCheckFalse(flg && CUSPARSE_SPMV_CSR_ALG1 != 2,PETSC_COMM_SELF,PETSC_ERR_SUP,"cuSPARSE enum cusparseSpMVAlg_t has been changed but PETSc has not been updated accordingly");
 #else
     PetscCheckFalse(flg && CUSPARSE_CSRMV_ALG1 != 2,PETSC_COMM_SELF,PETSC_ERR_SUP,"cuSPARSE enum cusparseSpMVAlg_t has been changed but PETSc has not been updated accordingly");
 #endif
-    ierr = PetscOptionsEnum("-mat_cusparse_spmm_alg","sets cuSPARSE algorithm used in sparse-mat dense-mat multiplication (SpMM)",
-                            "cusparseSpMMAlg_t",MatCUSPARSESpMMAlgorithms,(PetscEnum)cusparsestruct->spmmAlg,(PetscEnum*)&cusparsestruct->spmmAlg,&flg);PetscCall(ierr);
+    PetscCall(PetscOptionsEnum("-mat_cusparse_spmm_alg","sets cuSPARSE algorithm used in sparse-mat dense-mat multiplication (SpMM)",
+                               "cusparseSpMMAlg_t",MatCUSPARSESpMMAlgorithms,(PetscEnum)cusparsestruct->spmmAlg,(PetscEnum*)&cusparsestruct->spmmAlg,&flg));
     PetscCheckFalse(flg && CUSPARSE_SPMM_CSR_ALG1 != 4,PETSC_COMM_SELF,PETSC_ERR_SUP,"cuSPARSE enum cusparseSpMMAlg_t has been changed but PETSc has not been updated accordingly");
 
-    ierr = PetscOptionsEnum("-mat_cusparse_csr2csc_alg","sets cuSPARSE algorithm used in converting CSR matrices to CSC matrices",
-                            "cusparseCsr2CscAlg_t",MatCUSPARSECsr2CscAlgorithms,(PetscEnum)cusparsestruct->csr2cscAlg,(PetscEnum*)&cusparsestruct->csr2cscAlg,&flg);PetscCall(ierr);
+    PetscCall(PetscOptionsEnum("-mat_cusparse_csr2csc_alg","sets cuSPARSE algorithm used in converting CSR matrices to CSC matrices",
+                               "cusparseCsr2CscAlg_t",MatCUSPARSECsr2CscAlgorithms,(PetscEnum)cusparsestruct->csr2cscAlg,(PetscEnum*)&cusparsestruct->csr2cscAlg,&flg));
     PetscCheckFalse(flg && CUSPARSE_CSR2CSC_ALG1 != 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"cuSPARSE enum cusparseCsr2CscAlg_t has been changed but PETSc has not been updated accordingly");
    #endif
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 
@@ -2825,7 +2824,6 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_SeqAIJ_SeqDense(Mat);
 static PetscErrorCode MatProductSetFromOptions_SeqAIJCUSPARSE(Mat mat)
 {
   Mat_Product    *product = mat->product;
-  PetscErrorCode ierr;
   PetscBool      isdense = PETSC_FALSE,Biscusp = PETSC_FALSE,Ciscusp = PETSC_TRUE;
 
   PetscFunctionBegin;
@@ -2845,57 +2843,57 @@ static PetscErrorCode MatProductSetFromOptions_SeqAIJCUSPARSE(Mat mat)
     switch (product->type) {
     case MATPRODUCT_AB:
       if (product->api_user) {
-        ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"MatMatMult","Mat");PetscCall(ierr);
+        PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"MatMatMult","Mat");
         PetscCall(PetscOptionsBool("-matmatmult_backend_cpu","Use CPU code","MatMatMult",usecpu,&usecpu,NULL));
-        ierr = PetscOptionsEnd();PetscCall(ierr);
+        PetscOptionsEnd();
       } else {
-        ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"MatProduct_AB","Mat");PetscCall(ierr);
+        PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"MatProduct_AB","Mat");
         PetscCall(PetscOptionsBool("-mat_product_algorithm_backend_cpu","Use CPU code","MatMatMult",usecpu,&usecpu,NULL));
-        ierr = PetscOptionsEnd();PetscCall(ierr);
+        PetscOptionsEnd();
       }
       break;
     case MATPRODUCT_AtB:
       if (product->api_user) {
-        ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"MatTransposeMatMult","Mat");PetscCall(ierr);
+        PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"MatTransposeMatMult","Mat");
         PetscCall(PetscOptionsBool("-mattransposematmult_backend_cpu","Use CPU code","MatTransposeMatMult",usecpu,&usecpu,NULL));
-        ierr = PetscOptionsEnd();PetscCall(ierr);
+        PetscOptionsEnd();
       } else {
-        ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"MatProduct_AtB","Mat");PetscCall(ierr);
+        PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"MatProduct_AtB","Mat");
         PetscCall(PetscOptionsBool("-mat_product_algorithm_backend_cpu","Use CPU code","MatTransposeMatMult",usecpu,&usecpu,NULL));
-        ierr = PetscOptionsEnd();PetscCall(ierr);
+        PetscOptionsEnd();
       }
       break;
     case MATPRODUCT_PtAP:
       if (product->api_user) {
-        ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"MatPtAP","Mat");PetscCall(ierr);
+        PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"MatPtAP","Mat");
         PetscCall(PetscOptionsBool("-matptap_backend_cpu","Use CPU code","MatPtAP",usecpu,&usecpu,NULL));
-        ierr = PetscOptionsEnd();PetscCall(ierr);
+        PetscOptionsEnd();
       } else {
-        ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"MatProduct_PtAP","Mat");PetscCall(ierr);
+        PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"MatProduct_PtAP","Mat");
         PetscCall(PetscOptionsBool("-mat_product_algorithm_backend_cpu","Use CPU code","MatPtAP",usecpu,&usecpu,NULL));
-        ierr = PetscOptionsEnd();PetscCall(ierr);
+        PetscOptionsEnd();
       }
       break;
     case MATPRODUCT_RARt:
       if (product->api_user) {
-        ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"MatRARt","Mat");PetscCall(ierr);
+        PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"MatRARt","Mat");
         PetscCall(PetscOptionsBool("-matrart_backend_cpu","Use CPU code","MatRARt",usecpu,&usecpu,NULL));
-        ierr = PetscOptionsEnd();PetscCall(ierr);
+        PetscOptionsEnd();
       } else {
-        ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"MatProduct_RARt","Mat");PetscCall(ierr);
+        PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"MatProduct_RARt","Mat");
         PetscCall(PetscOptionsBool("-mat_product_algorithm_backend_cpu","Use CPU code","MatRARt",usecpu,&usecpu,NULL));
-        ierr = PetscOptionsEnd();PetscCall(ierr);
+        PetscOptionsEnd();
       }
       break;
     case MATPRODUCT_ABC:
       if (product->api_user) {
-        ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"MatMatMatMult","Mat");PetscCall(ierr);
+        PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"MatMatMatMult","Mat");
         PetscCall(PetscOptionsBool("-matmatmatmult_backend_cpu","Use CPU code","MatMatMatMult",usecpu,&usecpu,NULL));
-        ierr = PetscOptionsEnd();PetscCall(ierr);
+        PetscOptionsEnd();
       } else {
-        ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"MatProduct_ABC","Mat");PetscCall(ierr);
+        PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"MatProduct_ABC","Mat");
         PetscCall(PetscOptionsBool("-mat_product_algorithm_backend_cpu","Use CPU code","MatMatMatMult",usecpu,&usecpu,NULL));
-        ierr = PetscOptionsEnd();PetscCall(ierr);
+        PetscOptionsEnd();
       }
       break;
     default:

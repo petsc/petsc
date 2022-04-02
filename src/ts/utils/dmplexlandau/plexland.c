@@ -938,11 +938,10 @@ static PetscErrorCode LandauDMCreateVMeshes(MPI_Comm comm_self, const PetscInt d
     { /* convert to p4est (or whatever), wait for discretization to create pack */
       char           convType[256];
       PetscBool      flg;
-      PetscErrorCode ierr;
 
-      ierr = PetscOptionsBegin(ctx->comm, prefix, "Mesh conversion options", "DMPLEX");PetscCall(ierr);
+      PetscOptionsBegin(ctx->comm, prefix, "Mesh conversion options", "DMPLEX");
       PetscCall(PetscOptionsFList("-dm_landau_type","Convert DMPlex to another format (p4est)","plexland.c",DMList,DMPLEX,convType,256,&flg));
-      ierr = PetscOptionsEnd();PetscCall(ierr);
+      PetscOptionsEnd();
       if (flg) {
         ctx->use_p4est = PETSC_TRUE; /* flag for Forest */
         for (PetscInt grid=0;grid<ctx->num_grids;grid++) {
@@ -1274,7 +1273,6 @@ static PetscErrorCode adapt(PetscInt grid, LandauCtx *ctx, Vec *uu)
 
 static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
 {
-  PetscErrorCode    ierr;
   PetscBool         flg, sph_flg;
   PetscInt          ii,nt,nm,nc,num_species_grid[LANDAU_MAX_GRIDS];
   PetscReal         v0_grid[LANDAU_MAX_GRIDS];
@@ -1344,7 +1342,7 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
   ctx->coo_assembly                   = PETSC_FALSE;
   ctx->SData_d.coo_elem_fullNb        = NULL;
   ctx->SData_d.coo_size               = 0;
-  ierr = PetscOptionsBegin(ctx->comm, prefix, "Options for Fokker-Plank-Landau collision operator", "none");PetscCall(ierr);
+  PetscOptionsBegin(ctx->comm, prefix, "Options for Fokker-Plank-Landau collision operator", "none");
   {
     char opstring[256];
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
@@ -1486,7 +1484,7 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
   }
   PetscCall(PetscOptionsBool("-dm_landau_jacobian_field_major_order", "Reorder Jacobian for GPU assembly with field major, or block diagonal, ordering", "plexland.c", ctx->jacobian_field_major_order, &ctx->jacobian_field_major_order, NULL));
   if (ctx->jacobian_field_major_order) PetscCheck(ctx->gpu_assembly,ctx->comm,PETSC_ERR_ARG_WRONG,"-dm_landau_jacobian_field_major_order requires -dm_landau_gpu_assembly");
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   for (ii=ctx->num_species;ii<LANDAU_MAX_SPECIES;ii++) ctx->masses[ii] = ctx->thermal_temps[ii]  = ctx->charges[ii] = 0;
   if (ctx->verbose > 0) {

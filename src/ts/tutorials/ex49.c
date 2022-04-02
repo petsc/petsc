@@ -77,7 +77,6 @@ int main(int argc,char **argv)
   PetscScalar    *x_ptr;
   PetscMPIInt    size;
   struct _n_User user;
-  PetscErrorCode ierr;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -91,9 +90,9 @@ int main(int argc,char **argv)
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   user.next_output = 0.0;
   user.mu          = 1.0e6;
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Physical parameters",NULL);PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Physical parameters",NULL);
   PetscCall(PetscOptionsReal("-mu","Stiffness parameter","<1.0e6>",user.mu,&user.mu,NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create necessary matrix and vectors, solve same ODE on every process
@@ -147,7 +146,7 @@ int main(int argc,char **argv)
   PetscCall(TSDestroy(&ts));
 
   PetscCall(PetscFinalize());
-  return(ierr);
+  return(0);
 }
 
 /*TEST

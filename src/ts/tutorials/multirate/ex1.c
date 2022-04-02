@@ -78,7 +78,6 @@ int main(int argc,char **argv)
   TS             ts; /* ODE integrator */
   Vec            U;  /* solution will be stored here */
   Vec            Utrue;
-  PetscErrorCode ierr;
   PetscMPIInt    size;
   AppCtx         ctx;
   PetscScalar    *u;
@@ -118,7 +117,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set runtime options
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ODE options","");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ODE options","");
   {
     ctx.a  = 2.0;
     ctx.b  = 25.0;
@@ -129,7 +128,7 @@ int main(int argc,char **argv)
     PetscCall(PetscOptionsReal("-Tf","","",ctx.Tf,&ctx.Tf,NULL));
     PetscCall(PetscOptionsReal("-dt","","",ctx.dt,&ctx.dt,NULL));
   }
- ierr = PetscOptionsEnd();PetscCall(ierr);
+ PetscOptionsEnd();
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize the solution

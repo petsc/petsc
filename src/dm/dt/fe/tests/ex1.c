@@ -13,7 +13,6 @@ typedef struct {
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   options->dim     = 2;
@@ -21,12 +20,12 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->its     = 1;
   options->cbs     = 8;
 
-  ierr = PetscOptionsBegin(comm, "", "FE Integration Performance Options", "PETSCFE");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "FE Integration Performance Options", "PETSCFE");
   PetscCall(PetscOptionsInt("-dim", "The topological dimension", "ex1.c", options->dim, &options->dim, NULL));
   PetscCall(PetscOptionsBool("-simplex", "Simplex or hex cells", "ex1.c", options->simplex, &options->simplex, NULL));
   PetscCall(PetscOptionsInt("-its", "The number of replications for timing", "ex1.c", options->its, &options->its, NULL));
   PetscCall(PetscOptionsInt("-cbs", "The number of cells in an integration block", "ex1.c", options->cbs, &options->cbs, NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

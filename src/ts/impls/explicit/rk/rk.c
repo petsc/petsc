@@ -1181,10 +1181,9 @@ static PetscErrorCode TSSetUp_RK(TS ts)
 static PetscErrorCode TSSetFromOptions_RK(PetscOptionItems *PetscOptionsObject,TS ts)
 {
   TS_RK          *rk = (TS_RK*)ts->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"RK ODE solver options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"RK ODE solver options");
   {
     RKTableauLink link;
     PetscInt      count,choice;
@@ -1202,10 +1201,10 @@ static PetscErrorCode TSSetFromOptions_RK(PetscOptionItems *PetscOptionsObject,T
     if (flg) PetscCall(TSRKSetType(ts,namelist[choice]));
     PetscCall(PetscFree(namelist));
   }
-  PetscCall(PetscOptionsTail());
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)ts),NULL,"Multirate methods options","");PetscCall(ierr);
+  PetscOptionsHeadEnd();
+  PetscOptionsBegin(PetscObjectComm((PetscObject)ts),NULL,"Multirate methods options","");
   PetscCall(PetscOptionsInt("-ts_rk_dtratio","time step ratio between slow and fast","",rk->dtratio,&rk->dtratio,NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

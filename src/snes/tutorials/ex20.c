@@ -68,14 +68,11 @@ static void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
   options->cr = PETSC_FALSE;
-
-  ierr = PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");
   PetscCall(PetscOptionsBool("-cr", "Use compatible relaxarion", "ex20.c", options->cr, &options->cr, NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

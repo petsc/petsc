@@ -569,14 +569,13 @@ PetscErrorCode  KSPGMRESMonitorKrylov(KSP ksp,PetscInt its,PetscReal fgnorm,void
 
 PetscErrorCode KSPSetFromOptions_GMRES(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
-  PetscErrorCode ierr;
   PetscInt       restart;
   PetscReal      haptol,breakdowntol;
   KSP_GMRES      *gmres = (KSP_GMRES*)ksp->data;
   PetscBool      flg;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"KSP GMRES Options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"KSP GMRES Options");
   PetscCall(PetscOptionsInt("-ksp_gmres_restart","Number of Krylov search directions","KSPGMRESSetRestart",gmres->max_k,&restart,&flg));
   if (flg) PetscCall(KSPGMRESSetRestart(ksp,restart));
   PetscCall(PetscOptionsReal("-ksp_gmres_haptol","Tolerance for exact convergence (happy ending)","KSPGMRESSetHapTol",gmres->haptol,&haptol,&flg));
@@ -590,8 +589,8 @@ PetscErrorCode KSPSetFromOptions_GMRES(PetscOptionItems *PetscOptionsObject,KSP 
   if (flg) PetscCall(KSPGMRESSetOrthogonalization(ksp,KSPGMRESClassicalGramSchmidtOrthogonalization));
   PetscCall(PetscOptionsBoolGroupEnd("-ksp_gmres_modifiedgramschmidt","Modified Gram-Schmidt (slow,more stable)","KSPGMRESSetOrthogonalization",&flg));
   if (flg) PetscCall(KSPGMRESSetOrthogonalization(ksp,KSPGMRESModifiedGramSchmidtOrthogonalization));
-  ierr = PetscOptionsEnum("-ksp_gmres_cgs_refinement_type","Type of iterative refinement for classical (unmodified) Gram-Schmidt","KSPGMRESSetCGSRefinementType",
-                          KSPGMRESCGSRefinementTypes,(PetscEnum)gmres->cgstype,(PetscEnum*)&gmres->cgstype,&flg);PetscCall(ierr);
+  PetscCall(PetscOptionsEnum("-ksp_gmres_cgs_refinement_type","Type of iterative refinement for classical (unmodified) Gram-Schmidt","KSPGMRESSetCGSRefinementType",
+                             KSPGMRESCGSRefinementTypes,(PetscEnum)gmres->cgstype,(PetscEnum*)&gmres->cgstype,&flg));
   flg  = PETSC_FALSE;
   PetscCall(PetscOptionsBool("-ksp_gmres_krylov_monitor","Plot the Krylov directions","KSPMonitorSet",flg,&flg,NULL));
   if (flg) {
@@ -599,7 +598,7 @@ PetscErrorCode KSPSetFromOptions_GMRES(PetscOptionItems *PetscOptionsObject,KSP 
     PetscCall(PetscViewersCreate(PetscObjectComm((PetscObject)ksp),&viewers));
     PetscCall(KSPMonitorSet(ksp,KSPGMRESMonitorKrylov,viewers,(PetscErrorCode (*)(void**))PetscViewersDestroy));
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

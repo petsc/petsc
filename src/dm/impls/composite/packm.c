@@ -43,7 +43,6 @@ static PetscErrorCode DMCreateMatrix_Composite_Nest(DM dm,Mat *J)
 
 static PetscErrorCode DMCreateMatrix_Composite_AIJ(DM dm,Mat *J)
 {
-  PetscErrorCode         ierr;
   DM_Composite           *com = (DM_Composite*)dm->data;
   struct DMCompositeLink *next;
   PetscInt               m,*dnz,*onz,i,j,mA;
@@ -85,7 +84,7 @@ static PetscErrorCode DMCreateMatrix_Composite_AIJ(DM dm,Mat *J)
   }
 
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank));
-  ierr = MatPreallocateInitialize(PetscObjectComm((PetscObject)dm),m,m,dnz,onz);PetscCall(ierr);
+  MatPreallocateBegin(PetscObjectComm((PetscObject)dm),m,m,dnz,onz);
   /* loop over packed objects, handling one at at time */
   next = com->next;
   while (next) {
@@ -125,7 +124,7 @@ static PetscErrorCode DMCreateMatrix_Composite_AIJ(DM dm,Mat *J)
   }
   PetscCall(MatMPIAIJSetPreallocation(*J,0,dnz,0,onz));
   PetscCall(MatSeqAIJSetPreallocation(*J,0,dnz));
-  ierr = MatPreallocateFinalize(dnz,onz);PetscCall(ierr);
+  MatPreallocateEnd(dnz,onz);
 
   if (dm->prealloc_only) PetscFunctionReturn(0);
 

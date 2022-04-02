@@ -46,7 +46,6 @@ int main(int argc,char **argv)
   Mat            J;                    /* Jacobian matrix */
   PetscInt       nsteps;
   PetscReal      vmin,vmax,norm;
-  PetscErrorCode ierr;
   DM             da;
   PetscReal      ftime,dt;
   AppCtx         user;              /* user-defined work context */
@@ -103,9 +102,9 @@ int main(int argc,char **argv)
 
   /* Use slow fd Jacobian or fast fd Jacobian with colorings.
      Note: this requirs snes which is not created until TSSetUp()/TSSetFromOptions() is called */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Options for Jacobian evaluation",NULL);PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Options for Jacobian evaluation",NULL);
   PetscCall(PetscOptionsEnum("-jac_type","Type of Jacobian","",JacobianTypes,(PetscEnum)jacType,(PetscEnum*)&jacType,0));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   if (jacType == JACOBIAN_ANALYTIC) {
     PetscCall(TSSetIJacobian(ts,J,J,FormIJacobian,&user));
   } else if (jacType == JACOBIAN_FD_COLORING) {

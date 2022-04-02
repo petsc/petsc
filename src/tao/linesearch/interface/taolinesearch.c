@@ -528,7 +528,6 @@ PetscErrorCode TaoLineSearchMonitor(TaoLineSearch ls, PetscInt its, PetscReal f,
 @*/
 PetscErrorCode TaoLineSearchSetFromOptions(TaoLineSearch ls)
 {
-  PetscErrorCode ierr;
   const char     *default_type=TAOLINESEARCHMT;
   char           type[256],monfilename[PETSC_MAX_PATH_LEN];
   PetscViewer    monviewer;
@@ -536,7 +535,7 @@ PetscErrorCode TaoLineSearchSetFromOptions(TaoLineSearch ls)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
-  ierr = PetscObjectOptionsBegin((PetscObject)ls);PetscCall(ierr);
+  PetscObjectOptionsBegin((PetscObject)ls);
   if (((PetscObject)ls)->type_name) {
     default_type = ((PetscObject)ls)->type_name;
   }
@@ -563,7 +562,7 @@ PetscErrorCode TaoLineSearchSetFromOptions(TaoLineSearch ls)
   if (ls->ops->setfromoptions) {
     PetscCall((*ls->ops->setfromoptions)(PetscOptionsObject,ls));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

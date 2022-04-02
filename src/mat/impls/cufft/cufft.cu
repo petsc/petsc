@@ -156,11 +156,7 @@ PetscErrorCode  MatCreateSeqCUFFT(MPI_Comm comm, PetscInt ndim, const PetscInt d
   (*A)->ops->destroy       = MatDestroy_SeqCUFFT;
 
   /* get runtime options ...what options????? */
-  {
-    PetscErrorCode ierr;
-
-    ierr = PetscOptionsBegin(comm, ((PetscObject)(*A))->prefix, "CUFFT Options", "Mat");PetscCall(ierr);
-    ierr = PetscOptionsEnd();PetscCall(ierr);
-  }
+  PetscOptionsBegin(comm, ((PetscObject)(*A))->prefix, "CUFFT Options", "Mat");
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }

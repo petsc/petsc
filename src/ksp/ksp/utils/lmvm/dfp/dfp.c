@@ -397,9 +397,9 @@ static PetscErrorCode MatSetFromOptions_LMVMDFP(PetscOptionItems *PetscOptionsOb
 {
   PetscFunctionBegin;
   PetscCall(MatSetFromOptions_LMVM(PetscOptionsObject, B));
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"DFP method for approximating SPD Jacobian actions (MATLMVMDFP)"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"DFP method for approximating SPD Jacobian actions (MATLMVMDFP)");
   PetscCall(MatSetFromOptions_LMVMSymBrdn_Private(PetscOptionsObject, B));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

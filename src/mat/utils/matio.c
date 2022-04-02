@@ -22,16 +22,15 @@ PetscErrorCode MatLoad_Binary_BlockSizes(Mat mat,PetscViewer viewer)
 {
   PetscInt       rbs,cbs,bs[2],n = 2;
   PetscBool      set;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* get current block sizes */
   PetscCall(MatGetBlockSizes(mat,&rbs,&cbs));
   bs[0] = rbs; bs[1] = cbs;
   /* get block sizes from the options database */
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)viewer),NULL,"Options for loading matrix block size","Mat");PetscCall(ierr);
+  PetscOptionsBegin(PetscObjectComm((PetscObject)viewer),NULL,"Options for loading matrix block size","Mat");
   PetscCall(PetscOptionsIntArray("-matload_block_size","Set the block size used to store the matrix","MatLoad",bs,&n,&set));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   if (!set) PetscFunctionReturn(0);
   if (n == 1) bs[1] = bs[0]; /* to support -matload_block_size <bs> */
   /* set matrix block sizes */

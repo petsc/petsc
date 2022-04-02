@@ -408,9 +408,9 @@ static PetscErrorCode MatSetFromOptions_LMVMBFGS(PetscOptionItems *PetscOptionsO
 {
   PetscFunctionBegin;
   PetscCall(MatSetFromOptions_LMVM(PetscOptionsObject, B));
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"L-BFGS method for approximating SPD Jacobian actions (MATLMVMBFGS)"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"L-BFGS method for approximating SPD Jacobian actions (MATLMVMBFGS)");
   PetscCall(MatSetFromOptions_LMVMSymBrdn_Private(PetscOptionsObject, B));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

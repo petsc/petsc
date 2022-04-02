@@ -67,12 +67,12 @@ static PetscErrorCode PetscPartitionerSetFromOptions_ParMetis(PetscOptionItems *
   PetscPartitioner_ParMetis *p = (PetscPartitioner_ParMetis *) part->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject, "PetscPartitioner ParMetis Options"));
+  PetscOptionsHeadBegin(PetscOptionsObject, "PetscPartitioner ParMetis Options");
   PetscCall(PetscOptionsEList("-petscpartitioner_parmetis_type", "Partitioning method", "", ptypes, 2, ptypes[p->ptype], &p->ptype, NULL));
   PetscCall(PetscOptionsReal("-petscpartitioner_parmetis_imbalance_ratio", "Load imbalance ratio limit", "", p->imbalanceRatio, &p->imbalanceRatio, NULL));
   PetscCall(PetscOptionsInt("-petscpartitioner_parmetis_debug", "Debugging flag", "", p->debugFlag, &p->debugFlag, NULL));
   PetscCall(PetscOptionsInt("-petscpartitioner_parmetis_seed", "Random seed", "", p->randomSeed, &p->randomSeed, NULL));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

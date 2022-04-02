@@ -114,7 +114,6 @@ int main(int argc,char **argv)
   PetscScalar    *u_ptr;
   PetscMPIInt    size;
   struct _n_User user;
-  PetscErrorCode ierr;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -129,10 +128,10 @@ int main(int argc,char **argv)
   user.omega = 64.;
   user.nts = 100;
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-monitor",&monitor,NULL));
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Physical parameters",NULL);PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Physical parameters",NULL);
   PetscCall(PetscOptionsReal("-omega","parameter","<64>",user.omega,&user.omega,PETSC_NULL));
   PetscCall(PetscOptionsInt("-next_output","time steps for next output point","<100>",user.nts,&user.nts,PETSC_NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create necessary matrix and vectors, solve same ODE on every process

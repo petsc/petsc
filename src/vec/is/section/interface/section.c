@@ -194,15 +194,13 @@ PetscErrorCode PetscSectionClone(PetscSection section, PetscSection *newSection)
 @*/
 PetscErrorCode PetscSectionSetFromOptions(PetscSection s)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  ierr = PetscObjectOptionsBegin((PetscObject) s);PetscCall(ierr);
+  PetscObjectOptionsBegin((PetscObject) s);
   PetscCall(PetscOptionsBool("-petscsection_point_major", "The for ordering, either point major or field major", "PetscSectionSetPointMajor", s->pointMajor, &s->pointMajor, NULL));
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) s));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscCall(PetscObjectViewFromOptions((PetscObject) s, NULL, "-petscsection_view"));
   PetscFunctionReturn(0);
 }

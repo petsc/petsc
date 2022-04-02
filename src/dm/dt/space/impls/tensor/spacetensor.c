@@ -51,10 +51,10 @@ static PetscErrorCode PetscSpaceSetFromOptions_Tensor(PetscOptionItems *PetscOpt
     }
   }
   Ns = (Ns == PETSC_DEFAULT) ? PetscMax(Nv,1) : Ns;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"PetscSpace tensor options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"PetscSpace tensor options");
   PetscCall(PetscOptionsBoundedInt("-petscspace_tensor_spaces", "The number of subspaces", "PetscSpaceTensorSetNumSubspaces", Ns, &Ns, NULL,0));
   PetscCall(PetscOptionsBool("-petscspace_tensor_uniform", "Subspaces are identical", "PetscSpaceTensorSetFromOptions", uniform, &uniform, NULL));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscCheckFalse(Ns < 0 || (Nv > 0 && Ns == 0),PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_OUTOFRANGE,"Cannot have a tensor space made up of %D spaces",Ns);
   PetscCheckFalse(Nv > 0 && Ns > Nv,PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_OUTOFRANGE,"Cannot have a tensor space with %D subspaces over %D variables", Ns, Nv);
   if (Ns != tens->numTensSpaces) PetscCall(PetscSpaceTensorSetNumSubspaces(sp, Ns));

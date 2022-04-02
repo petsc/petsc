@@ -34,20 +34,13 @@ int main(int argc,char **args)
   Mat            A;
   PetscInt       M = 24,N = 48,bs = 2;
   PetscInt       rstart,rend,i,j;
-  PetscErrorCode ierr;
   PetscViewer    view;
 
   PetscCall(PetscInitialize(&argc,&args,NULL,help));
   /*
       Create a parallel BAIJ matrix shared by all processors
   */
-  ierr = MatCreateBAIJ(PETSC_COMM_WORLD,
-                       bs,
-                       PETSC_DECIDE,PETSC_DECIDE,
-                       M,N,
-                       PETSC_DECIDE,NULL,
-                       PETSC_DECIDE,NULL,
-                       &A);PetscCall(ierr);
+  PetscCall(MatCreateBAIJ(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,M,N,PETSC_DECIDE,NULL,PETSC_DECIDE,NULL,&A));
 
   /*
       Set values into the matrix

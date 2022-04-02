@@ -381,7 +381,7 @@ static PetscErrorCode MatSetFromOptions_Htool(PetscOptionItems *PetscOptionsObje
   PetscBool      flg;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"Htool options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"Htool options");
   PetscCall(PetscOptionsInt("-mat_htool_min_cluster_size","Minimal leaf size in cluster tree",NULL,a->bs[0],a->bs,NULL));
   PetscCall(PetscOptionsInt("-mat_htool_max_block_size","Maximal number of coefficients in a dense block",NULL,a->bs[1],a->bs + 1,NULL));
   PetscCall(PetscOptionsReal("-mat_htool_epsilon","Relative error in Frobenius norm when approximating a block",NULL,a->epsilon,&a->epsilon,NULL));
@@ -394,7 +394,7 @@ static PetscErrorCode MatSetFromOptions_Htool(PetscOptionItems *PetscOptionsObje
   n = 0;
   PetscCall(PetscOptionsEList("-mat_htool_clustering","Type of clustering","MatHtoolClusteringType",MatHtoolClusteringTypes,PETSC_STATIC_ARRAY_LENGTH(MatHtoolClusteringTypes),MatHtoolClusteringTypes[MAT_HTOOL_CLUSTERING_PCA_REGULAR],&n,&flg));
   if (flg) a->clustering = MatHtoolClusteringType(n);
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

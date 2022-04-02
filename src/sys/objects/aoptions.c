@@ -660,7 +660,7 @@ $                 if (flg) {
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsGetBool(),
           PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
@@ -718,7 +718,7 @@ PetscErrorCode  PetscOptionsEnum_Private(PetscOptionItems *PetscOptionsObject,co
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsGetBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList(), PetscOptionsRealArray()
@@ -791,7 +791,7 @@ $                 if (flg) {
 .seealso: PetscOptionsInt(), PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsGetBool(), PetscOptionsRangeInt()
           PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
@@ -835,7 +835,7 @@ $                 if (flg) {
 .seealso: PetscOptionsInt(), PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsGetBool(), PetscOptionsBoundedInt()
           PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
@@ -877,7 +877,7 @@ $                 if (flg) {
 .seealso: PetscOptionsBoundedInt(), PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsGetBool(), PetscOptionsRangeInt()
           PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
@@ -946,7 +946,7 @@ PetscErrorCode  PetscOptionsInt_Private(PetscOptionItems *PetscOptionsObject,con
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsGetBool(),
           PetscOptionsInt(), PetscOptionsReal(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
@@ -1007,7 +1007,7 @@ $                 if (flg) {
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsGetBool(),
           PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
@@ -1069,7 +1069,7 @@ $                 if (flg) {
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsGetBool(),
           PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
@@ -1112,7 +1112,7 @@ PetscErrorCode  PetscOptionsScalar_Private(PetscOptionItems *PetscOptionsObject,
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsGetBool(),
           PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
@@ -1178,7 +1178,7 @@ $                 if (flg) {
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
            PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList(), PetscOptionsEnum()
@@ -1239,7 +1239,7 @@ $                 if (flg) {
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
            PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEnum()
@@ -1298,7 +1298,7 @@ PetscErrorCode  PetscOptionsEList_Private(PetscOptionItems *PetscOptionsObject,c
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
            PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
@@ -1351,7 +1351,7 @@ PetscErrorCode  PetscOptionsBoolGroupBegin_Private(PetscOptionItems *PetscOption
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
            PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
@@ -1403,7 +1403,7 @@ PetscErrorCode  PetscOptionsBoolGroup_Private(PetscOptionItems *PetscOptionsObje
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
            PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
@@ -1464,7 +1464,7 @@ PetscErrorCode  PetscOptionsBoolGroupEnd_Private(PetscOptionItems *PetscOptionsO
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsGetBool(),
           PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
@@ -1522,7 +1522,7 @@ PetscErrorCode  PetscOptionsBool_Private(PetscOptionItems *PetscOptionsObject,co
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
            PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
@@ -1585,7 +1585,7 @@ PetscErrorCode PetscOptionsRealArray_Private(PetscOptionItems *PetscOptionsObjec
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
@@ -1653,7 +1653,7 @@ PetscErrorCode PetscOptionsScalarArray_Private(PetscOptionItems *PetscOptionsObj
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
            PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList(), PetscOptionsRealArray()
@@ -1720,7 +1720,7 @@ PetscErrorCode  PetscOptionsIntArray_Private(PetscOptionItems *PetscOptionsObjec
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
            PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
@@ -1775,7 +1775,7 @@ PetscErrorCode  PetscOptionsStringArray_Private(PetscOptionItems *PetscOptionsOb
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
            PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
@@ -1836,7 +1836,7 @@ PetscErrorCode  PetscOptionsBoolArray_Private(PetscOptionItems *PetscOptionsObje
 .seealso: PetscOptionsGetViewer(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
           PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
@@ -1855,38 +1855,6 @@ PetscErrorCode  PetscOptionsViewer_Private(PetscOptionItems *PetscOptionsObject,
   PetscCall(PetscOptionsGetViewer(PetscOptionsObject->comm,PetscOptionsObject->options,PetscOptionsObject->prefix,opt,viewer,format,set));
   if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) {
     PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm,"  -%s%s <%s>: %s (%s)\n",PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "",opt+1,"",text,ManSection(man)));
-  }
-  PetscFunctionReturn(0);
-}
-
-/*@C
-     PetscOptionsHead - Puts a heading before listing any more published options. Used, for example,
-            in KSPSetFromOptions_GMRES().
-
-   Logically Collective on the communicator passed in PetscOptionsBegin()
-
-   Input Parameter:
-.   head - the heading text
-
-   Level: intermediate
-
-   Notes:
-    Must be between a PetscOptionsBegin() and a PetscOptionsEnd(), and PetscOptionsObject created in PetscOptionsBegin() should be the first argument
-
-          Can be followed by a call to PetscOptionsTail() in the same function.
-
-.seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
-           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
-          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsFList(), PetscOptionsEList()
-@*/
-PetscErrorCode  PetscOptionsHead(PetscOptionItems *PetscOptionsObject,const char head[])
-{
-  PetscFunctionBegin;
-  if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) {
-    PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm,"  %s\n",head));
   }
   PetscFunctionReturn(0);
 }

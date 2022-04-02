@@ -23,7 +23,6 @@ static PetscErrorCode GetLocalRef(Mat A,IS isrow,IS iscol,Mat *B)
 
 int main(int argc,char *argv[])
 {
-  PetscErrorCode         ierr;
   MPI_Comm               comm;
   Mat                    J,B;
   PetscInt               i,j,k,l,rstart,rend,m,n,top_bs,row_bs,col_bs,nlocblocks,*idx,nrowblocks,ncolblocks,*ridx,*cidx,*icol,*irow;
@@ -35,7 +34,7 @@ int main(int argc,char *argv[])
   PetscCall(PetscInitialize(&argc,&argv,0,help));
   comm = PETSC_COMM_WORLD;
 
-  ierr = PetscOptionsBegin(comm,NULL,"LocalRef Test Options",NULL);PetscCall(ierr);
+  PetscOptionsBegin(comm,NULL,"LocalRef Test Options",NULL);
   {
     top_bs = 2; row_bs = 2; col_bs = 2; diag = PETSC_FALSE; blocked = PETSC_FALSE;
     PetscCall(PetscOptionsInt("-top_bs","Block size of top-level matrix",0,top_bs,&top_bs,NULL));
@@ -44,7 +43,7 @@ int main(int argc,char *argv[])
     PetscCall(PetscOptionsBool("-diag","Extract a diagonal black",0,diag,&diag,NULL));
     PetscCall(PetscOptionsBool("-blocked","Use block insertion",0,blocked,&blocked,NULL));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscCall(MatCreate(comm,&J));
   PetscCall(MatSetSizes(J,6,6,PETSC_DETERMINE,PETSC_DETERMINE));

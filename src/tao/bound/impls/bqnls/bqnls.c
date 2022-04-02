@@ -43,13 +43,13 @@ static PetscErrorCode TaoSetFromOptions_BQNLS(PetscOptionItems *PetscOptionsObje
   PetscBool      is_spd;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"Quasi-Newton-Krylov method for bound constrained optimization"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"Quasi-Newton-Krylov method for bound constrained optimization");
   PetscCall(PetscOptionsEList("-tao_bnk_as_type", "active set estimation method", "", BNK_AS, BNK_AS_TYPES, BNK_AS[bnk->as_type], &bnk->as_type, NULL));
   PetscCall(PetscOptionsReal("-tao_bnk_epsilon", "(developer) tolerance used when computing actual and predicted reduction", "", bnk->epsilon, &bnk->epsilon,NULL));
   PetscCall(PetscOptionsReal("-tao_bnk_as_tol", "(developer) initial tolerance used when estimating actively bounded variables", "", bnk->as_tol, &bnk->as_tol,NULL));
   PetscCall(PetscOptionsReal("-tao_bnk_as_step", "(developer) step length used when estimating actively bounded variables", "", bnk->as_step, &bnk->as_step,NULL));
   PetscCall(PetscOptionsInt("-tao_bnk_max_cg_its", "number of BNCG iterations to take for each Newton step", "", bnk->max_cg_its, &bnk->max_cg_its,NULL));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
 
   PetscCall(TaoSetOptionsPrefix(bnk->bncg,((PetscObject)(tao))->prefix));
   PetscCall(TaoAppendOptionsPrefix(bnk->bncg,"tao_bnk_"));

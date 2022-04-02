@@ -331,17 +331,15 @@ static void g3_wT(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscInt       sol, pl, n;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   options->solType    = SOL_TRIG_TRIG;
   options->partLayout = PART_LAYOUT_CELL;
   options->Npc        = 1;
   options->Npb        = 1;
-
   options->partLower[0] = options->partLower[1] = options->partLower[2] = 0.;
   options->partUpper[0] = options->partUpper[1] = options->partUpper[2] = 1.;
-  ierr = PetscOptionsBegin(comm, "", "Low Mach flow Problem Options", "DMPLEX");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Low Mach flow Problem Options", "DMPLEX");
   sol  = options->solType;
   PetscCall(PetscOptionsEList("-sol_type", "The solution type", "ex77.c", solTypes, NUM_SOL_TYPES, solTypes[options->solType], &sol, NULL));
   options->solType = (SolType) sol;
@@ -354,7 +352,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   n    = 3;
   PetscCall(PetscOptionsRealArray("-part_upper", "The upper right corner of the particle box", "ex77.c", options->partUpper, &n, NULL));
   PetscCall(PetscOptionsInt("-Npb", "The initial number of particles per box dimension", "ex77.c", options->Npb, &options->Npb, NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

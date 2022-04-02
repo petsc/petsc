@@ -183,17 +183,16 @@ PetscErrorCode MatColoringSetFromOptions(MatColoring mc)
   PetscBool      flg;
   MatColoringType deft = MATCOLORINGSL;
   char           type[256];
-  PetscErrorCode ierr;
   PetscInt       dist,maxcolors;
-  PetscFunctionBegin;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(mc,MAT_COLORING_CLASSID,1);
   PetscCall(MatColoringGetDistance(mc,&dist));
   if (dist == 2) deft = MATCOLORINGSL;
   else           deft = MATCOLORINGGREEDY;
   PetscCall(MatColoringGetMaxColors(mc,&maxcolors));
   PetscCall(MatColoringRegisterAll());
-  ierr = PetscObjectOptionsBegin((PetscObject)mc);PetscCall(ierr);
+  PetscObjectOptionsBegin((PetscObject)mc);
   if (((PetscObject)mc)->type_name) deft = ((PetscObject)mc)->type_name;
   PetscCall(PetscOptionsFList("-mat_coloring_type","The coloring method used","MatColoringSetType",MatColoringList,deft,type,256,&flg));
   if (flg) {
@@ -212,7 +211,7 @@ PetscErrorCode MatColoringSetFromOptions(MatColoring mc)
   PetscCall(PetscOptionsBool("-mat_is_coloring_test","Check that a valid iscoloring has been produced","",mc->valid_iscoloring,&mc->valid_iscoloring,NULL));
   PetscCall(PetscOptionsEnum("-mat_coloring_weight_type","Sets the type of vertex weighting used","MatColoringSetWeightType",MatColoringWeightTypes,(PetscEnum)mc->weight_type,(PetscEnum*)&mc->weight_type,NULL));
   PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)mc));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

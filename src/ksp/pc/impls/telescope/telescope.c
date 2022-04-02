@@ -740,7 +740,7 @@ static PetscErrorCode PCSetFromOptions_Telescope(PetscOptionItems *PetscOptionsO
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)pc,&comm));
   PetscCallMPI(MPI_Comm_size(comm,&size));
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"Telescope options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"Telescope options");
   PetscCall(PetscOptionsEnum("-pc_telescope_subcomm_type","Subcomm type (interlaced or contiguous)","PCTelescopeSetSubcommType",PetscSubcommTypes,(PetscEnum)sred->subcommtype,(PetscEnum*)&subcommtype,&flg));
   if (flg) {
     PetscCall(PCTelescopeSetSubcommType(pc,subcommtype));
@@ -750,7 +750,7 @@ static PetscErrorCode PCSetFromOptions_Telescope(PetscOptionItems *PetscOptionsO
   PetscCall(PetscOptionsBool("-pc_telescope_ignore_dm","Ignore any DM attached to the PC","PCTelescopeSetIgnoreDM",sred->ignore_dm,&sred->ignore_dm,NULL));
   PetscCall(PetscOptionsBool("-pc_telescope_ignore_kspcomputeoperators","Ignore method used to compute A","PCTelescopeSetIgnoreKSPComputeOperators",sred->ignore_kspcomputeoperators,&sred->ignore_kspcomputeoperators,NULL));
   PetscCall(PetscOptionsBool("-pc_telescope_use_coarse_dm","Define sub-communicator from the coarse DM","PCTelescopeSetUseCoarseDM",sred->use_coarse_dm,&sred->use_coarse_dm,NULL));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

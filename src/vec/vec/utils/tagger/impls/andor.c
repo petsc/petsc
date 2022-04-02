@@ -109,9 +109,9 @@ static PetscErrorCode VecTaggerSetFromOptions_AndOr(PetscOptionItems *PetscOptio
   PetscCall(PetscSNPrintf(headstring,sizeof(headstring),"VecTagger %s options",name));
   PetscCall(PetscSNPrintf(funcstring,sizeof(funcstring),"VecTagger%sSetSubs()",name));
   PetscCall(PetscSNPrintf(descstring,sizeof(descstring),"number of sub tags in %s tag",name));
-  PetscCall(PetscOptionsHead(PetscOptionsObject,headstring));
+  PetscOptionsHeadBegin(PetscOptionsObject,headstring);
   PetscCall(PetscOptionsInt("-vec_tagger_num_subs",descstring,funcstring,nsubs,&nsubs,NULL));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   if (nsubs != nsubsOrig) {
     PetscCall(VecTaggerSetSubs_AndOr(tagger,nsubs,NULL,PETSC_OWN_POINTER));
     PetscCall(VecTaggerGetSubs_AndOr(tagger,NULL,&subs));

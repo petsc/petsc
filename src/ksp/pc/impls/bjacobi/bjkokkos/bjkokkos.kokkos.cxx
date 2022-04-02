@@ -756,8 +756,8 @@ static PetscErrorCode PCView_BJKOKKOS(PC pc,PetscViewer viewer)
 static PetscErrorCode PCSetFromOptions_BJKOKKOS(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"PC BJKOKKOS options"));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadBegin(PetscOptionsObject,"PC BJKOKKOS options");
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

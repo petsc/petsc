@@ -225,7 +225,7 @@ static PetscErrorCode PetscViewerAndFormatCreate_Internal(PetscViewer viewer, Pe
 .seealso: PetscOptionsGetViewer(), PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
           PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
@@ -331,7 +331,6 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   PCSide         pcside;
   void           *ctx;
   MPI_Comm       comm;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -343,7 +342,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   }
 
   PetscCall(KSPRegisterAll());
-  ierr = PetscObjectOptionsBegin((PetscObject)ksp);PetscCall(ierr);
+  PetscObjectOptionsBegin((PetscObject)ksp);
   PetscCall(PetscOptionsFList("-ksp_type","Krylov method","KSPSetType",KSPList,(char*)(((PetscObject)ksp)->type_name ? ((PetscObject)ksp)->type_name : KSPGMRES),type,256,&flg));
   if (flg) {
     PetscCall(KSPSetType(ksp,type));
@@ -661,7 +660,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   skipoptions:
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)ksp));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   ksp->setfromoptionscalled++;
   PetscFunctionReturn(0);
 }

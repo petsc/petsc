@@ -133,14 +133,13 @@ typedef struct {
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscBool       flg;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   options->fname[0] = '\0';
-  ierr = PetscOptionsBegin(comm, "", "DMPlex View/Load Test Options", "DMPLEX");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "DMPlex View/Load Test Options", "DMPLEX");
   PetscCall(PetscOptionsString("-fname", "The output mesh file", "ex12.c", options->fname, options->fname, sizeof(options->fname), &flg));
   PetscCall(PetscOptionsBool("-shell", "Use DMShell to wrap sections", "ex12.c", options->shell, &options->shell, NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

@@ -49,7 +49,7 @@ static PetscErrorCode PCSetFromOptions_ILU(PetscOptionItems *PetscOptionsObject,
   PetscReal      tol;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"ILU Options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"ILU Options");
   PetscCall(PCSetFromOptions_Factor(PetscOptionsObject,pc));
 
   PetscCall(PetscOptionsInt("-pc_factor_levels","levels of fill","PCFactorSetLevels",(PetscInt)((PC_Factor*)ilu)->info.levels,&itmp,&flg));
@@ -64,7 +64,7 @@ static PetscErrorCode PCSetFromOptions_ILU(PetscOptionItems *PetscOptionsObject,
     PetscCall(PCFactorReorderForNonzeroDiagonal(pc,tol));
   }
 
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

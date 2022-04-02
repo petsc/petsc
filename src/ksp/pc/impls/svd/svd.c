@@ -290,11 +290,11 @@ static PetscErrorCode PCSetFromOptions_SVD(PetscOptionItems *PetscOptionsObject,
   PetscBool      flg;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"SVD options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"SVD options");
   PetscCall(PetscOptionsReal("-pc_svd_zero_sing","Singular values smaller than this treated as zero","None",jac->zerosing,&jac->zerosing,NULL));
   PetscCall(PetscOptionsInt("-pc_svd_ess_rank","Essential rank of operator (0 to use entire operator)","None",jac->essrank,&jac->essrank,NULL));
   PetscCall(PetscOptionsViewer("-pc_svd_monitor","Monitor the conditioning, and extremal singular values","None",&jac->monitor,&jac->monitorformat,&flg));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

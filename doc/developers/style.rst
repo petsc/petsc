@@ -174,21 +174,18 @@ C Formatting
 
    The only exceptions to this rule are begin-end style macros which embed local variables
    or loops as part of their expansion
-   (e.g. ``PetscOptionsBegin()``/``PetscOptionsEnd()``).  These should assign to ``ierr``
-   and place the ``PetscCall()`` call immediately afterwards on the same line
+   (e.g. ``PetscOptionsBegin()``/``PetscOptionsEnd()``).  These handle errors internally
+   and do not need error checking.
 
    ::
 
       // Correct
-      ierr = PetscOptionsBegin(...);PetscCall(ierr);
-      ierr = PetscOptionsEnd();PetscCall(ierr);
+      PetscOptionsBegin(...);
+      PetscOptionsEnd();
 
-      // Incorrect
-      PetscCall(PetscOptionsBegin(...));
-      PetscCall(PetscOptionsEnd());
 
-   As a rule, always try to wrap the function first, only if this fails to compile may you
-   consider the trailing style.
+   As a rule, always try to wrap the function first, if this fails to compile you do
+   not need to add the error checking.
 
 #. Indentation for ``if`` statements *must* be done as follows.
 

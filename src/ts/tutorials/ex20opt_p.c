@@ -344,7 +344,6 @@ static PetscErrorCode IHessianProductPP(TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,V
 /* Monitor timesteps and use interpolation to output at integer multiples of 0.1 */
 static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
 {
-  PetscErrorCode    ierr;
   const PetscScalar *x;
   PetscReal         tfinal, dt;
   User              user = (User)ctx;
@@ -358,9 +357,9 @@ static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
     PetscCall(VecDuplicate(X,&interpolatedX));
     PetscCall(TSInterpolate(ts,user->next_output,interpolatedX));
     PetscCall(VecGetArrayRead(interpolatedX,&x));
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%g] %D TS %g (dt = %g) X %g %g\n",
-                       (double)user->next_output,step,(double)t,(double)dt,(double)PetscRealPart(x[0]),
-                       (double)PetscRealPart(x[1]));PetscCall(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"[%g] %D TS %g (dt = %g) X %g %g\n",
+                          (double)user->next_output,step,(double)t,(double)dt,(double)PetscRealPart(x[0]),
+                          (double)PetscRealPart(x[1])));
     PetscCall(VecRestoreArrayRead(interpolatedX,&x));
     PetscCall(VecDestroy(&interpolatedX));
     user->next_output += PetscRealConstant(0.1);

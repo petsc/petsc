@@ -1204,7 +1204,7 @@ PetscErrorCode TSAdjointMonitorSensi(TS ts,PetscInt step,PetscReal ptime,Vec v,P
 .seealso: PetscOptionsGetViewer(), PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
           PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
@@ -1402,7 +1402,7 @@ PetscErrorCode TSAdjointSetFromOptions(PetscOptionItems *PetscOptionsObject,TS t
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,2);
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"TS Adjoint options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"TS Adjoint options");
   tflg = ts->adjoint_solve ? PETSC_TRUE : PETSC_FALSE;
   PetscCall(PetscOptionsBool("-ts_adjoint_solve","Solve the adjoint problem immediately after solving the forward problem","",tflg,&tflg,&opt));
   if (opt) {

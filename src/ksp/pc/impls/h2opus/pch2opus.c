@@ -106,7 +106,7 @@ static PetscErrorCode PCSetFromOptions_H2OPUS(PetscOptionItems *PetscOptionsObje
   PC_H2OPUS *pch2opus = (PC_H2OPUS*)pc->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"H2OPUS options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"H2OPUS options");
   PetscCall(PetscOptionsInt("-pc_h2opus_maxits","Maximum number of iterations for Newton-Schultz",NULL,pch2opus->maxits,&pch2opus->maxits,NULL));
   PetscCall(PetscOptionsBool("-pc_h2opus_monitor","Monitor Newton-Schultz convergence",NULL,pch2opus->monitor,&pch2opus->monitor,NULL));
   PetscCall(PetscOptionsReal("-pc_h2opus_atol","Absolute tolerance",NULL,pch2opus->atol,&pch2opus->atol,NULL));
@@ -118,7 +118,7 @@ static PetscErrorCode PCSetFromOptions_H2OPUS(PetscOptionItems *PetscOptionsObje
   PetscCall(PetscOptionsInt("-pc_h2opus_maxrank","Maximum rank when constructed from matvecs",NULL,pch2opus->max_rank,&pch2opus->max_rank,NULL));
   PetscCall(PetscOptionsInt("-pc_h2opus_samples","Number of samples to be taken concurrently when constructing from matvecs",NULL,pch2opus->bs,&pch2opus->bs,NULL));
   PetscCall(PetscOptionsReal("-pc_h2opus_mrtol","Relative tolerance for construction from sampling",NULL,pch2opus->mrtol,&pch2opus->mrtol,NULL));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

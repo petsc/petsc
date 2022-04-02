@@ -14,7 +14,7 @@ To use:
 
 - Register the lgmres method in your code, for example:
 
-    ierr = KSPRegister("lgmres", KSPCreate_LGMRES); PetscCall(ierr);
+    ierr = KSPRegister("lgmres", KSPCreate_LGMRES); 
 
   This is done automatically by Petsc 2.1.5
 

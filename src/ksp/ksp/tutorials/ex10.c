@@ -133,7 +133,6 @@ PetscErrorCode CreateSystem(const char filename[PETSC_MAX_PATH_LEN], RHSType rhs
  */
 int main(int argc,char **args)
 {
-  PetscErrorCode    ierr;
   Vec               x,b;
   Mat               A;           /* linear system matrix */
   KSP               ksp;         /* Krylov subspace method context */
@@ -144,7 +143,7 @@ int main(int argc,char **args)
 
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Preloading example options","");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Preloading example options","");
   {
     /*
        Determine files from which we read the two linear systems
@@ -166,7 +165,7 @@ int main(int argc,char **args)
 
     PetscCall(PetscOptionsEnum("-rhs","Right hand side","",RHSTypes,(PetscEnum)rhstype,(PetscEnum*)&rhstype,NULL));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   /*
     To use preloading, one usually has code like the following:

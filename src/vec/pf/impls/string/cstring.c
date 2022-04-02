@@ -96,13 +96,13 @@ static PetscErrorCode PFSetFromOptions_String(PetscOptionItems *PetscOptionsObje
   PetscErrorCode (*f)(void*,PetscInt,const PetscScalar*,PetscScalar*) = NULL;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"String function options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"String function options");
   PetscCall(PetscOptionsString("-pf_string","Enter the function","PFStringCreateFunction","",value,sizeof(value),&flag));
   if (flag) {
     PetscCall(PFStringCreateFunction(pf,value,(void**)&f));
     pf->ops->apply = f;
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

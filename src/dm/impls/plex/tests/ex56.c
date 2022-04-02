@@ -21,8 +21,6 @@ typedef struct {
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
   options->comm                       = comm;
   options->num_labels                 = -1;
@@ -35,7 +33,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->distribute_after_topo_load = PETSC_FALSE;
   options->verbose                    = 0;
 
-  ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");
   PetscCall(PetscOptionsInt("-num_labels", "Asserted number of labels in meshfile; don't count depth and celltype; -1 to deactivate", EX, options->num_labels, &options->num_labels, NULL));
   PetscCall(PetscOptionsBool("-compare", "Compare the meshes using DMPlexEqual() and DMCompareLabels()", EX, options->compare, &options->compare, NULL));
   PetscCall(PetscOptionsBool("-compare_labels", "Compare labels in the meshes using DMCompareLabels()", "ex55.c", options->compare_labels, &options->compare_labels, NULL));
@@ -45,7 +43,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsBool("-use_low_level_functions", "Use low level functions for viewing and loading", EX, options->use_low_level_functions, &options->use_low_level_functions, NULL));
   PetscCall(PetscOptionsBool("-distribute_after_topo_load", "Distribute topology right after DMPlexTopologyLoad(), if use_low_level_functions=true", EX, options->distribute_after_topo_load, &options->distribute_after_topo_load, NULL));
   PetscCall(PetscOptionsInt("-verbose", "Verbosity level", EX, options->verbose, &options->verbose, NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 };
 

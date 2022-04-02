@@ -643,7 +643,7 @@ static PetscErrorCode TSSetFromOptions_IRK(PetscOptionItems *PetscOptionsObject,
   char           tname[256] = TSIRKGAUSS;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"IRK ODE solver options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"IRK ODE solver options");
   {
     PetscBool flg1,flg2;
     PetscCall(PetscOptionsInt("-ts_irk_nstages","Stages of the IRK method","TSIRKSetNumStages",irk->nstages,&irk->nstages,&flg1));
@@ -652,7 +652,7 @@ static PetscErrorCode TSSetFromOptions_IRK(PetscOptionItems *PetscOptionsObject,
       PetscCall(TSIRKSetType(ts,tname));
     }
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

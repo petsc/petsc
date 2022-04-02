@@ -15,7 +15,6 @@ PetscErrorCode ProcessOptions(AppCtx *options)
 {
   PetscInt       len;
   PetscBool      flg;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   options->numFields     = 1;
@@ -23,7 +22,7 @@ PetscErrorCode ProcessOptions(AppCtx *options)
   options->numDof        = NULL;
   options->numGroups     = 0;
 
-  ierr = PetscOptionsBegin(PETSC_COMM_SELF, "", "Meshing Problem Options", "DMPLEX");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_SELF, "", "Meshing Problem Options", "DMPLEX");
   PetscCall(PetscOptionsBoundedInt("-num_fields", "The number of section fields", "ex10.c", options->numFields, &options->numFields, NULL,1));
   if (options->numFields) {
     len  = options->numFields;
@@ -32,7 +31,7 @@ PetscErrorCode ProcessOptions(AppCtx *options)
     PetscCheck(!flg || !(len != options->numFields),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of components array is %D should be %D", len, options->numFields);
   }
   PetscCall(PetscOptionsBoundedInt("-num_groups", "Group permutation by this many label values", "ex10.c", options->numGroups, &options->numGroups, NULL,0));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 
@@ -140,7 +139,6 @@ int main(int argc, char **argv)
   PetscSection   s;
   AppCtx         user;
   PetscInt       dim;
-  PetscErrorCode ierr;
 
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(ProcessOptions(&user));
@@ -158,10 +156,10 @@ int main(int argc, char **argv)
     PetscBool flg;
 
     PetscCall(PetscCalloc1(len, &user.numDof));
-    ierr = PetscOptionsBegin(PETSC_COMM_SELF, "", "Meshing Problem Options", "DMPLEX");PetscCall(ierr);
+    PetscOptionsBegin(PETSC_COMM_SELF, "", "Meshing Problem Options", "DMPLEX");
     PetscCall(PetscOptionsIntArray("-num_dof", "The dof signature for the section", "ex10.c", user.numDof, &len, &flg));
     PetscCheckFalse(flg && (len != (dim+1) * PetscMax(1, user.numFields)),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of dof array is %D should be %D", len, (dim+1) * PetscMax(1, user.numFields));
-    ierr = PetscOptionsEnd();PetscCall(ierr);
+    PetscOptionsEnd();
   }
   if (user.numGroups < 1) {
     PetscCall(DMSetNumFields(dm, user.numFields));

@@ -5,7 +5,6 @@ static char help[] = "Tests PetscInt64Mult()\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       a = 2009,b = 5612,result,tresult;
   PetscInt64     r64;
 
@@ -15,6 +14,6 @@ int main(int argc,char **argv)
   r64     = PetscInt64Mult(a,b);
   tresult = PetscIntMultTruncate(a,b);
   PetscCall(PetscIntMultError(a,b,&result));
-  ierr    = PetscCall(PetscFinalize());
+  PetscCall(PetscFinalize());
   return 0;
 }

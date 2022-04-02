@@ -309,7 +309,6 @@ $    -mat_partitioning_view
 @*/
 PetscErrorCode  MatPartitioningApply(MatPartitioning matp,IS *partitioning)
 {
-  PetscErrorCode ierr;
   PetscBool      viewbalance,improve;
 
   PetscFunctionBegin;
@@ -325,12 +324,12 @@ PetscErrorCode  MatPartitioningApply(MatPartitioning matp,IS *partitioning)
   PetscCall(MatPartitioningViewFromOptions(matp,NULL,"-mat_partitioning_view"));
   PetscCall(ISViewFromOptions(*partitioning,NULL,"-mat_partitioning_view"));
 
-  ierr = PetscObjectOptionsBegin((PetscObject)matp);PetscCall(ierr);
+  PetscObjectOptionsBegin((PetscObject)matp);
   viewbalance = PETSC_FALSE;
   PetscCall(PetscOptionsBool("-mat_partitioning_view_imbalance","Display imbalance information of a partition",NULL,PETSC_FALSE,&viewbalance,NULL));
   improve = PETSC_FALSE;
   PetscCall(PetscOptionsBool("-mat_partitioning_improve","Improve the quality of a partition",NULL,PETSC_FALSE,&improve,NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   if (improve) {
     PetscCall(MatPartitioningImprove(matp,partitioning));
@@ -770,13 +769,12 @@ $  -mat_partitioning_nparts - number of subgraphs
 @*/
 PetscErrorCode  MatPartitioningSetFromOptions(MatPartitioning part)
 {
-  PetscErrorCode ierr;
   PetscBool      flag;
   char           type[256];
   const char     *def;
 
   PetscFunctionBegin;
-  ierr = PetscObjectOptionsBegin((PetscObject)part);PetscCall(ierr);
+  PetscObjectOptionsBegin((PetscObject)part);
   if (!((PetscObject)part)->type_name) {
 #if defined(PETSC_HAVE_PARMETIS)
     def = MATPARTITIONINGPARMETIS;
@@ -811,6 +809,6 @@ PetscErrorCode  MatPartitioningSetFromOptions(MatPartitioning part)
   if (part->ops->setfromoptions) {
     PetscCall((*part->ops->setfromoptions)(PetscOptionsObject,part));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }

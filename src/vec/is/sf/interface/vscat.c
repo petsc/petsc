@@ -583,16 +583,14 @@ PetscErrorCode  VecScatterRemap(VecScatter sf,PetscInt tomap[],PetscInt frommap[
 @*/
 PetscErrorCode VecScatterSetFromOptions(VecScatter sf)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
-  ierr = PetscObjectOptionsBegin((PetscObject)sf);PetscCall(ierr);
+  PetscObjectOptionsBegin((PetscObject)sf);
 
   sf->vscat.beginandendtogether = PETSC_FALSE;
   PetscCall(PetscOptionsBool("-vecscatter_merge","Use combined (merged) vector scatter begin and end","VecScatterCreate",sf->vscat.beginandendtogether,&sf->vscat.beginandendtogether,NULL));
   if (sf->vscat.beginandendtogether) PetscCall(PetscInfo(sf,"Using combined (merged) vector scatter begin and end\n"));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

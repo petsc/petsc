@@ -991,7 +991,6 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char* prog,const char* 
   {
     PetscBool       omp_view_flag;
     char           *threads = getenv("OMP_NUM_THREADS");
-    PetscErrorCode  ierr;
 
     if (threads) {
       PetscCall(PetscInfo(NULL,"Number of OpenMP threads %s (as given by OMP_NUM_THREADS)\n",threads));
@@ -1000,10 +999,10 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char* prog,const char* 
       PetscNumOMPThreads = (PetscInt) omp_get_max_threads();
       PetscCall(PetscInfo(NULL,"Number of OpenMP threads %" PetscInt_FMT " (as given by omp_get_max_threads())\n",PetscNumOMPThreads));
     }
-    ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"OpenMP options","Sys");PetscCall(ierr);
+    PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"OpenMP options","Sys");
     PetscCall(PetscOptionsInt("-omp_num_threads","Number of OpenMP threads to use (can also use environmental variable OMP_NUM_THREADS","None",PetscNumOMPThreads,&PetscNumOMPThreads,&flg));
     PetscCall(PetscOptionsName("-omp_view","Display OpenMP number of threads",NULL,&omp_view_flag));
-    ierr = PetscOptionsEnd();PetscCall(ierr);
+    PetscOptionsEnd();
     if (flg) {
       PetscCall(PetscInfo(NULL,"Number of OpenMP theads %" PetscInt_FMT " (given by -omp_num_threads)\n",PetscNumOMPThreads));
       omp_set_num_threads((int)PetscNumOMPThreads);

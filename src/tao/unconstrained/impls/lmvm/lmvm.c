@@ -196,11 +196,11 @@ static PetscErrorCode TaoSetFromOptions_LMVM(PetscOptionItems *PetscOptionsObjec
   TAO_LMVM       *lm = (TAO_LMVM *)tao->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"Limited-memory variable-metric method for unconstrained optimization"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"Limited-memory variable-metric method for unconstrained optimization");
   PetscCall(PetscOptionsBool("-tao_lmvm_recycle","enable recycling of the BFGS matrix between subsequent TaoSolve() calls","",lm->recycle,&lm->recycle,NULL));
   PetscCall(TaoLineSearchSetFromOptions(tao->linesearch));
   PetscCall(MatSetFromOptions(lm->M));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

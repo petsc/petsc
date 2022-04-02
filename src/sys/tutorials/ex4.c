@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
          options are chosen (e.g., -log_view).  See PetscFinalize()
      manpage for more information.
   */
-  PetscCall(PetscFinalize();if (ierr) return ierr);
+  PetscCall(PetscFinalize());
   ierr = MPI_Comm_free(&PETSC_COMM_WORLD);if (ierr) return 0;
 #if defined(PETSC_HAVE_ELEMENTAL)
   ierr = PetscElementalFinalizePackage();if (ierr) return ierr;

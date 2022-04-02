@@ -144,18 +144,17 @@ int main(int argc, char *argv[])
   Vec            U,V;
   PetscScalar    *u,*v;
   UserParams     user = {/*Omega=*/ 1, /*Xi=*/ 0, /*u0=*/ 1, /*,v0=*/ 0};
-  PetscErrorCode ierr;
 
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Only for sequential runs");
 
-  ierr = PetscOptionsBegin(PETSC_COMM_SELF,"","ex43 options","");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_SELF,"","ex43 options","");
   PetscCall(PetscOptionsReal("-frequency","Natual frequency",__FILE__,user.Omega,&user.Omega,NULL));
   PetscCall(PetscOptionsReal("-damping","Damping coefficient",__FILE__,user.Xi,&user.Xi,NULL));
   PetscCall(PetscOptionsReal("-initial_u","Initial displacement",__FILE__,user.u0,&user.u0,NULL));
   PetscCall(PetscOptionsReal("-initial_v","Initial velocity",__FILE__,user.v0,&user.v0,NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscCall(TSCreate(PETSC_COMM_SELF,&ts));
   PetscCall(TSSetType(ts,TSALPHA2));

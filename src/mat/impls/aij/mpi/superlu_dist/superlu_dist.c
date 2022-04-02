@@ -584,7 +584,6 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
 {
   Mat                    B;
   Mat_SuperLU_DIST       *lu;
-  PetscErrorCode         ierr;
   PetscInt               M=A->rmap->N,N=A->cmap->N,indx;
   PetscMPIInt            size;
   superlu_dist_options_t options;
@@ -671,7 +670,7 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
       lu->use3d = PETSC_FALSE;
       lu->npdep = 1;
 #endif
-      ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"SuperLU_Dist Options","Mat");PetscCall(ierr);
+      PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"SuperLU_Dist Options","Mat");
 #if PETSC_PKG_SUPERLU_DIST_VERSION_GE(7,2,0)
       PetscCall(PetscOptionsBool("-mat_superlu_dist_3d","Use SuperLU_DIST 3D distribution","None",lu->use3d,&lu->use3d,NULL));
       PetscCheck(!PetscDefined(MISSING_GETLINE) || !lu->use3d,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP_SYS,"-mat_superlu_dist_3d requires a system with a getline() implementation");
@@ -698,7 +697,7 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
 #else
       PetscCheck(size == lu->nprow*lu->npcol,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number of processes %d must equal to nprow %lld * npcol %lld",size,(long long)lu->nprow,(long long)lu->npcol);
 #endif
-      ierr = PetscOptionsEnd();PetscCall(ierr);
+      PetscOptionsEnd();
 #if PETSC_PKG_SUPERLU_DIST_VERSION_GE(7,2,0)
       if (lu->use3d) {
         PetscStackCall("SuperLU_DIST:superlu_gridinit3d",superlu_gridinit3d(context ? context->comm : lu->comm_superlu, lu->nprow, lu->npcol,lu->npdep, &lu->grid3d));
@@ -723,7 +722,7 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
     }
   }
 
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"SuperLU_Dist Options","Mat");PetscCall(ierr);
+  PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"SuperLU_Dist Options","Mat");
   PetscCall(PetscOptionsBool("-mat_superlu_dist_equil","Equilibrate matrix","None",options.Equil ? PETSC_TRUE : PETSC_FALSE,&flg,&set));
   if (set && !flg) options.Equil = NO;
 
@@ -811,7 +810,7 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
   if (PetscLogPrintInfo) options.PrintStat = YES;
   else options.PrintStat = NO;
   PetscCall(PetscOptionsBool("-mat_superlu_dist_statprint","Print factorization information","None",(PetscBool)options.PrintStat,(PetscBool*)&options.PrintStat,NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   lu->options              = options;
   lu->options.Fact         = DOFACT;

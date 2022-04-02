@@ -8,13 +8,12 @@ PetscErrorCode DMPlexMetricSetFromOptions(DM dm)
   MPI_Comm       comm;
   PetscBool      isotropic = PETSC_FALSE, uniform = PETSC_FALSE, restrictAnisotropyFirst = PETSC_FALSE;
   PetscBool      noInsert = PETSC_FALSE, noSwap = PETSC_FALSE, noMove = PETSC_FALSE, noSurf = PETSC_FALSE;
-  PetscErrorCode ierr;
   PetscInt       verbosity = -1, numIter = 3;
   PetscReal      h_min = 1.0e-30, h_max = 1.0e+30, a_max = 1.0e+05, p = 1.0, target = 1000.0, beta = 1.3, hausd = 0.01;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject) dm, &comm));
-  ierr = PetscOptionsBegin(comm, "", "Riemannian metric options", "DMPlexMetric");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Riemannian metric options", "DMPlexMetric");
   PetscCall(PetscOptionsBool("-dm_plex_metric_isotropic", "Is the metric isotropic?", "DMPlexMetricCreateIsotropic", isotropic, &isotropic, NULL));
   PetscCall(DMPlexMetricSetIsotropic(dm, isotropic));
   PetscCall(PetscOptionsBool("-dm_plex_metric_uniform", "Is the metric uniform?", "DMPlexMetricCreateUniform", uniform, &uniform, NULL));
@@ -47,7 +46,7 @@ PetscErrorCode DMPlexMetricSetFromOptions(DM dm)
   PetscCall(DMPlexMetricSetGradationFactor(dm, beta));
   PetscCall(PetscOptionsReal("-dm_plex_metric_hausdorff_number", "Metric Hausdorff number", "DMAdaptMetric", hausd, &hausd, NULL));
   PetscCall(DMPlexMetricSetHausdorffNumber(dm, hausd));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

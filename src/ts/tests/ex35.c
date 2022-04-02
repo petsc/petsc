@@ -12,17 +12,14 @@ typedef struct {
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
   options->dim  = 2;
   options->dim_inp = 2;
   options->Np   = 100;
-
-  ierr = PetscOptionsBegin(comm, "", "Test of colorized scatter plot", "");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Test of colorized scatter plot", "");
   PetscCall(PetscOptionsInt("-Np", "Number of particles", "ex35.c", options->Np, &options->Np, PETSC_NULL));
   PetscCall(PetscOptionsInt("-dim", "Number of dimensions", "ex35.c", options->dim_inp, &options->dim_inp, PETSC_NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

@@ -7,8 +7,8 @@
 static PetscErrorCode PetscViewerSetFromOptions_ADIOS(PetscOptionItems *PetscOptionsObject,PetscViewer v)
 {
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"ADIOS PetscViewer Options"));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadBegin(PetscOptionsObject,"ADIOS PetscViewer Options");
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

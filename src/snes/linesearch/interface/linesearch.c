@@ -708,7 +708,7 @@ PetscErrorCode  SNESLineSearchGetDefaultMonitor(SNESLineSearch linesearch, Petsc
 .seealso: PetscOptionsGetViewer(), PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
           PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
@@ -765,7 +765,6 @@ PetscErrorCode  SNESLineSearchMonitorSetFromOptions(SNESLineSearch ls,const char
 @*/
 PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch)
 {
-  PetscErrorCode    ierr;
   const char        *deft = SNESLINESEARCHBASIC;
   char              type[256];
   PetscBool         flg, set;
@@ -774,7 +773,7 @@ PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch)
   PetscFunctionBegin;
   PetscCall(SNESLineSearchRegisterAll());
 
-  ierr = PetscObjectOptionsBegin((PetscObject)linesearch);PetscCall(ierr);
+  PetscObjectOptionsBegin((PetscObject)linesearch);
   if (((PetscObject)linesearch)->type_name) deft = ((PetscObject)linesearch)->type_name;
   PetscCall(PetscOptionsFList("-snes_linesearch_type","Linesearch type","SNESLineSearchSetType",SNESLineSearchList,deft,type,256,&flg));
   if (flg) {
@@ -809,8 +808,7 @@ PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch)
     if (flg) {
       linesearch->precheck_picard_angle = 10.; /* correction only active if angle is less than 10 degrees */
 
-      ierr = PetscOptionsReal("-snes_linesearch_precheck_picard_angle","Maximum angle at which to activate the correction",
-                              "none",linesearch->precheck_picard_angle,&linesearch->precheck_picard_angle,NULL);PetscCall(ierr);
+      PetscCall(PetscOptionsReal("-snes_linesearch_precheck_picard_angle","Maximum angle at which to activate the correction","none",linesearch->precheck_picard_angle,&linesearch->precheck_picard_angle,NULL));
       PetscCall(SNESLineSearchSetPreCheck(linesearch,SNESLineSearchPreCheckPicard,&linesearch->precheck_picard_angle));
     } else {
       PetscCall(SNESLineSearchSetPreCheck(linesearch,NULL,NULL));
@@ -824,7 +822,7 @@ PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch)
   }
 
   PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)linesearch));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

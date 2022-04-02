@@ -25,7 +25,6 @@ int main(int argc,char **args)
 {
   Mat            A,A_save,B,C,P,C1,R;
   PetscViewer    viewer;
-  PetscErrorCode ierr;
   PetscMPIInt    size,rank;
   PetscInt       i,j,*idxn,PM,PN = PETSC_DECIDE,rstart,rend;
   PetscReal      norm;
@@ -46,7 +45,7 @@ int main(int argc,char **args)
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   /*  Load the matrices A_save and B */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","","");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,"","","");
   PetscCall(PetscOptionsBool("-test_rart","Test MatRARt","",Test_MatRARt,&Test_MatRARt,NULL));
   PetscCall(PetscOptionsInt("-PN","Number of columns of P","",PN,&PN,NULL));
   PetscCall(PetscOptionsInt("-mcheck","Number of matmult checks","",mcheck,&mcheck,NULL));
@@ -55,7 +54,7 @@ int main(int argc,char **args)
   PetscCall(PetscOptionsString("-fB","Path for matrix B","",file[1],file[1],sizeof(file[1]),&flg));
   PetscCall(PetscOptionsFList("-A_mat_type","Matrix type","MatSetType",MatList,deft,A_mattype,256,&flgA));
   PetscCall(PetscOptionsFList("-B_mat_type","Matrix type","MatSetType",MatList,deft,B_mattype,256,&flgB));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[0],FILE_MODE_READ,&viewer));
   PetscCall(MatCreate(PETSC_COMM_WORLD,&A_save));

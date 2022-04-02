@@ -63,7 +63,7 @@ PetscErrorCode PCSetFromOptions_BDDC(PetscOptionItems *PetscOptionsObject,PC pc)
   PetscInt       nt,i;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"BDDC options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"BDDC options");
   /* Verbose debugging */
   PetscCall(PetscOptionsInt("-pc_bddc_check_level","Verbose output for PCBDDC (intended for debug)","none",pcbddc->dbg_flag,&pcbddc->dbg_flag,NULL));
   /* Approximate solvers */
@@ -127,7 +127,7 @@ PetscErrorCode PCSetFromOptions_BDDC(PetscOptionItems *PetscOptionsObject,PC pc)
   PetscCall(PetscOptionsBool("-pc_bddc_detect_disconnected","Detects disconnected subdomains","none",pcbddc->detect_disconnected,&pcbddc->detect_disconnected,NULL));
   PetscCall(PetscOptionsBool("-pc_bddc_detect_disconnected_filter","Filters out small entries in the local matrix when detecting disconnected subdomains","none",pcbddc->detect_disconnected_filter,&pcbddc->detect_disconnected_filter,NULL));
   PetscCall(PetscOptionsBool("-pc_bddc_eliminate_dirichlet","Whether or not we want to eliminate dirichlet dofs during presolve","none",pcbddc->eliminate_dirdofs,&pcbddc->eliminate_dirdofs,NULL));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

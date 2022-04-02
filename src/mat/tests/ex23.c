@@ -28,7 +28,6 @@ int main(int argc,char **args)
   PetscBool              testT,squaretest,isaij;
   PetscBool              permute = PETSC_FALSE, negmap = PETSC_FALSE, repmap = PETSC_FALSE;
   PetscBool              diffmap = PETSC_TRUE, symmetric = PETSC_FALSE, issymmetric;
-  PetscErrorCode         ierr;
 
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
@@ -136,15 +135,15 @@ int main(int argc,char **args)
   PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Test MatGetInfo\n"));
   PetscCall(MatGetInfo(A,MAT_LOCAL,&info));
   PetscCall(PetscViewerASCIIPushSynchronized(PETSC_VIEWER_STDOUT_WORLD));
-  ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"Process  %2d: %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n",PetscGlobalRank,(PetscInt)info.nz_used,
-                                            (PetscInt)info.nz_allocated,(PetscInt)info.nz_unneeded,(PetscInt)info.assemblies,(PetscInt)info.mallocs);PetscCall(ierr);
+  PetscCall(PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"Process  %2d: %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n",PetscGlobalRank,(PetscInt)info.nz_used,
+                                               (PetscInt)info.nz_allocated,(PetscInt)info.nz_unneeded,(PetscInt)info.assemblies,(PetscInt)info.mallocs));
   PetscCall(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(MatGetInfo(A,MAT_GLOBAL_MAX,&info));
-  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"GlobalMax  : %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n",(PetscInt)info.nz_used,
-                                (PetscInt)info.nz_allocated,(PetscInt)info.nz_unneeded,(PetscInt)info.assemblies,(PetscInt)info.mallocs);PetscCall(ierr);
+  PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"GlobalMax  : %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n",(PetscInt)info.nz_used,
+                                   (PetscInt)info.nz_allocated,(PetscInt)info.nz_unneeded,(PetscInt)info.assemblies,(PetscInt)info.mallocs));
   PetscCall(MatGetInfo(A,MAT_GLOBAL_SUM,&info));
-  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"GlobalSum  : %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n",(PetscInt)info.nz_used,
-                                (PetscInt)info.nz_allocated,(PetscInt)info.nz_unneeded,(PetscInt)info.assemblies,(PetscInt)info.mallocs);PetscCall(ierr);
+  PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"GlobalSum  : %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n",(PetscInt)info.nz_used,
+                                   (PetscInt)info.nz_allocated,(PetscInt)info.nz_unneeded,(PetscInt)info.assemblies,(PetscInt)info.mallocs));
 
   /* test MatIsSymmetric */
   PetscCall(MatIsSymmetric(A,0.0,&issymmetric));

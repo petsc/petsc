@@ -15,8 +15,6 @@ typedef struct {
 
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   options->debug          = 0;
   options->dim            = 2;
@@ -27,7 +25,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->uninterpolate  = PETSC_FALSE;
   options->reinterpolate  = PETSC_FALSE;
 
-  ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");
   PetscCall(PetscOptionsBoundedInt("-debug", "The debugging level", "ex4.c", options->debug, &options->debug, NULL,0));
   PetscCall(PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex4.c", options->dim, &options->dim, NULL,1,3));
   PetscCall(PetscOptionsBool("-cell_hybrid", "Use a hybrid mesh", "ex4.c", options->cellHybrid, &options->cellHybrid, NULL));
@@ -36,7 +34,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsBoundedInt("-test_num", "The particular mesh to test", "ex4.c", options->testNum, &options->testNum, NULL,0));
   PetscCall(PetscOptionsBool("-uninterpolate", "Uninterpolate the mesh at the end", "ex4.c", options->uninterpolate, &options->uninterpolate, NULL));
   PetscCall(PetscOptionsBool("-reinterpolate", "Reinterpolate the mesh at the end", "ex4.c", options->reinterpolate, &options->reinterpolate, NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

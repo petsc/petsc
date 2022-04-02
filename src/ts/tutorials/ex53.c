@@ -1601,22 +1601,20 @@ static void g3_pp(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscInt sol;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   options->solType   = SOL_QUADRATIC_TRIG;
   options->niter     = 500;
   options->eps       = PETSC_SMALL;
   options->dtInitial = -1.0;
-
-  ierr = PetscOptionsBegin(comm, "", "Biot Poroelasticity Options", "DMPLEX");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Biot Poroelasticity Options", "DMPLEX");
   PetscCall(PetscOptionsInt("-niter", "Number of series term iterations in exact solutions", "ex53.c", options->niter, &options->niter, NULL));
   sol  = options->solType;
   PetscCall(PetscOptionsEList("-sol_type", "Type of exact solution", "ex53.c", solutionTypes, NUM_SOLUTION_TYPES, solutionTypes[options->solType], &sol, NULL));
   options->solType = (SolutionType) sol;
   PetscCall(PetscOptionsReal("-eps", "Precision value for root finding", "ex53.c", options->eps, &options->eps, NULL));
   PetscCall(PetscOptionsReal("-dt_initial", "Override the initial timestep", "ex53.c", options->dtInitial, &options->dtInitial, NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

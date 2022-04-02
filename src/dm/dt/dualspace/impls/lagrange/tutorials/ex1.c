@@ -10,15 +10,14 @@ int main(int argc, char **argv)
   PetscBool      tensorCell;
   DM             K;
   PetscDualSpace dsp;
-  PetscErrorCode ierr;
 
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   dim = 2;
   tensorCell = PETSC_FALSE;
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","Options for PETSCDUALSPACELAGRANGE test","none");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,"","Options for PETSCDUALSPACELAGRANGE test","none");
   PetscCall(PetscOptionsRangeInt("-dim", "The spatial dimension","ex1.c",dim,&dim,NULL,0,3));
   PetscCall(PetscOptionsBool("-tensor", "Whether the cell is a tensor product cell or a simplex","ex1.c",tensorCell,&tensorCell,NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscCall(PetscDualSpaceCreate(PETSC_COMM_WORLD, &dsp));
   PetscCall(PetscObjectSetName((PetscObject)dsp, "Lagrange dual space"));

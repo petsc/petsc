@@ -132,7 +132,6 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
   IS                from,to;
   PetscInt          i,n,*idx;
   Vec               tmp_vec;
-  PetscErrorCode    ierr;
   const PetscScalar *tmp;
 
   /* Get the size of the vector */
@@ -153,10 +152,10 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
   PetscCall(VecScatterEnd(scatter,global,tmp_vec,INSERT_VALUES,SCATTER_FORWARD));
 
   PetscCall(VecGetArrayRead(tmp_vec,&tmp));
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"At t =%14.6e u = %14.6e  %14.6e  %14.6e \n",
-                     (double)time,(double)PetscRealPart(tmp[0]),(double)PetscRealPart(tmp[1]),(double)PetscRealPart(tmp[2]));PetscCall(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"At t =%14.6e errors = %14.6e  %14.6e  %14.6e \n",
-                     (double)time,(double)PetscRealPart(tmp[0]-solx(time)),(double)PetscRealPart(tmp[1]-soly(time)),(double)PetscRealPart(tmp[2]-solz(time)));PetscCall(ierr);
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"At t =%14.6e u = %14.6e  %14.6e  %14.6e \n",
+                        (double)time,(double)PetscRealPart(tmp[0]),(double)PetscRealPart(tmp[1]),(double)PetscRealPart(tmp[2])));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"At t =%14.6e errors = %14.6e  %14.6e  %14.6e \n",
+                        (double)time,(double)PetscRealPart(tmp[0]-solx(time)),(double)PetscRealPart(tmp[1]-soly(time)),(double)PetscRealPart(tmp[2]-solz(time))));
   PetscCall(VecRestoreArrayRead(tmp_vec,&tmp));
   PetscCall(VecScatterDestroy(&scatter));
   PetscCall(ISDestroy(&from));

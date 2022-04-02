@@ -14,16 +14,14 @@ typedef struct {
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
   options->filename[0] = '\0';
   options->volumeMesh  = PETSC_TRUE;
 
-  ierr = PetscOptionsBegin(comm, "", "EGADSPlex Problem Options", "EGADSLite");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "EGADSPlex Problem Options", "EGADSLite");
   PetscCall(PetscOptionsString("-filename", "The CAD file", "ex37.c", options->filename, options->filename, sizeof(options->filename), NULL));
   PetscCall(PetscOptionsBool("-volume_mesh", "Create a volume mesh", "ex37.c", options->volumeMesh, &options->volumeMesh, NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

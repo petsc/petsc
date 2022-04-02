@@ -195,7 +195,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   const char    *bcTypes[2]  = {"neumann", "dirichlet"};
   const char    *runTypes[2] = {"full", "test"};
   PetscInt       bc, run;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   options->runType      = RUN_FULL;
@@ -204,7 +203,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->showSolution = PETSC_TRUE;
   options->showError    = PETSC_FALSE;
 
-  ierr = PetscOptionsBegin(comm, "", "Stokes Problem Options", "DMPLEX");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Stokes Problem Options", "DMPLEX");
   run  = options->runType;
   PetscCall(PetscOptionsEList("-run_type", "The run type", "ex62.c", runTypes, 2, runTypes[options->runType], &run, NULL));
   options->runType = (RunType) run;
@@ -215,7 +214,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsBool("-show_initial", "Output the initial guess for verification", "ex62.c", options->showInitial, &options->showInitial, NULL));
   PetscCall(PetscOptionsBool("-show_solution", "Output the solution for verification", "ex62.c", options->showSolution, &options->showSolution, NULL));
   PetscCall(PetscOptionsBool("-show_error", "Output the error for verification", "ex62.c", options->showError, &options->showError, NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

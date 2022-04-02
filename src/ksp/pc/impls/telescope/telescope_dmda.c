@@ -503,7 +503,6 @@ PetscErrorCode PCTelescopeSetUp_dmda_repart(PC pc,PC_Telescope sred,PC_Telescope
 
 PetscErrorCode PCTelescopeSetUp_dmda_permutation_3d(PC pc,PC_Telescope sred,PC_Telescope_DMDACtx *ctx)
 {
-  PetscErrorCode ierr;
   DM             dm;
   MPI_Comm       comm;
   Mat            Pscalar,P;
@@ -548,10 +547,10 @@ PetscErrorCode PCTelescopeSetUp_dmda_permutation_3d(PC pc,PC_Telescope sred,PC_T
         PetscInt    lenI_re[3];
 
         location = (i - startI[0]) + (j - startI[1])*lenI[0] + (k - startI[2])*lenI[0]*lenI[1];
-        ierr = _DMDADetermineRankFromGlobalIJK(3,i,j,k,   ctx->Mp_re,ctx->Np_re,ctx->Pp_re,
-                                               ctx->start_i_re,ctx->start_j_re,ctx->start_k_re,
-                                               ctx->range_i_re,ctx->range_j_re,ctx->range_k_re,
-                                               &rank_reI[0],&rank_reI[1],&rank_reI[2],&rank_ijk_re);PetscCall(ierr);
+        PetscCall(_DMDADetermineRankFromGlobalIJK(3,i,j,k,   ctx->Mp_re,ctx->Np_re,ctx->Pp_re,
+                                                  ctx->start_i_re,ctx->start_j_re,ctx->start_k_re,
+                                                  ctx->range_i_re,ctx->range_j_re,ctx->range_k_re,
+                                                  &rank_reI[0],&rank_reI[1],&rank_reI[2],&rank_ijk_re));
         PetscCall(_DMDADetermineGlobalS0(3,rank_ijk_re, ctx->Mp_re,ctx->Np_re,ctx->Pp_re, ctx->range_i_re,ctx->range_j_re,ctx->range_k_re, &s0_re));
         ii = i - ctx->start_i_re[ rank_reI[0] ];
         PetscCheck(ii >= 0,PETSC_COMM_SELF,PETSC_ERR_USER,"[dmdarepart-perm3d] index error ii");
@@ -578,7 +577,6 @@ PetscErrorCode PCTelescopeSetUp_dmda_permutation_3d(PC pc,PC_Telescope sred,PC_T
 
 PetscErrorCode PCTelescopeSetUp_dmda_permutation_2d(PC pc,PC_Telescope sred,PC_Telescope_DMDACtx *ctx)
 {
-  PetscErrorCode ierr;
   DM             dm;
   MPI_Comm       comm;
   Mat            Pscalar,P;
@@ -619,10 +617,10 @@ PetscErrorCode PCTelescopeSetUp_dmda_permutation_2d(PC pc,PC_Telescope sred,PC_T
       PetscInt    lenI_re[3];
 
       location = (i - startI[0]) + (j - startI[1])*lenI[0];
-      ierr = _DMDADetermineRankFromGlobalIJK(2,i,j,0,   ctx->Mp_re,ctx->Np_re,ctx->Pp_re,
-                                             ctx->start_i_re,ctx->start_j_re,ctx->start_k_re,
-                                             ctx->range_i_re,ctx->range_j_re,ctx->range_k_re,
-                                             &rank_reI[0],&rank_reI[1],NULL,&rank_ijk_re);PetscCall(ierr);
+      PetscCall(_DMDADetermineRankFromGlobalIJK(2,i,j,0,   ctx->Mp_re,ctx->Np_re,ctx->Pp_re,
+                                                ctx->start_i_re,ctx->start_j_re,ctx->start_k_re,
+                                                ctx->range_i_re,ctx->range_j_re,ctx->range_k_re,
+                                                &rank_reI[0],&rank_reI[1],NULL,&rank_ijk_re));
 
       PetscCall(_DMDADetermineGlobalS0(2,rank_ijk_re, ctx->Mp_re,ctx->Np_re,ctx->Pp_re, ctx->range_i_re,ctx->range_j_re,ctx->range_k_re, &s0_re));
 

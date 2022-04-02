@@ -509,7 +509,6 @@ PetscErrorCode  MatMFFDSetOptionsPrefix(Mat mat,const char prefix[])
 static PetscErrorCode  MatSetFromOptions_MFFD(PetscOptionItems *PetscOptionsObject,Mat mat)
 {
   MatMFFD        mfctx;
-  PetscErrorCode ierr;
   PetscBool      flg;
   char           ftype[256];
 
@@ -517,7 +516,7 @@ static PetscErrorCode  MatSetFromOptions_MFFD(PetscOptionItems *PetscOptionsObje
   PetscValidHeaderSpecific(mat,MAT_CLASSID,2);
   PetscCall(MatShellGetContext(mat,&mfctx));
   PetscValidHeaderSpecific(mfctx,MATMFFD_CLASSID,2);
-  ierr = PetscObjectOptionsBegin((PetscObject)mfctx);PetscCall(ierr);
+  PetscObjectOptionsBegin((PetscObject)mfctx);
   PetscCall(PetscOptionsFList("-mat_mffd_type","Matrix free type","MatMFFDSetType",MatMFFDList,((PetscObject)mfctx)->type_name,ftype,256,&flg));
   if (flg) {
     PetscCall(MatMFFDSetType(mat,ftype));
@@ -537,7 +536,7 @@ static PetscErrorCode  MatSetFromOptions_MFFD(PetscOptionItems *PetscOptionsObje
   if (mfctx->ops->setfromoptions) {
     PetscCall((*mfctx->ops->setfromoptions)(PetscOptionsObject,mfctx));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

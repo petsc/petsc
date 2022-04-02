@@ -328,18 +328,16 @@ static void g3_wT(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscInt       sol;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   options->solType   = SOL_QUADRATIC;
   options->showError = PETSC_FALSE;
-
-  ierr = PetscOptionsBegin(comm, "", "Stokes Problem Options", "DMPLEX");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Stokes Problem Options", "DMPLEX");
   sol = options->solType;
   PetscCall(PetscOptionsEList("-sol_type", "The solution type", "ex62.c", solTypes, NUM_SOL_TYPES, solTypes[options->solType], &sol, NULL));
   options->solType = (SolType) sol;
   PetscCall(PetscOptionsBool("-show_error", "Output the error for verification", "ex62.c", options->showError, &options->showError, NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

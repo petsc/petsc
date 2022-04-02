@@ -24,7 +24,6 @@ int main(int argc,char **args)
   PetscRandom    rctx;     /* random number generator context */
   PetscReal      norm;     /* norm of solution error */
   PetscInt       i,j,Ii,J,m = 8,n = 7,its;
-  PetscErrorCode ierr;
   PetscBool      flg = PETSC_FALSE;
   PetscScalar    v;
   PetscMPIInt    rank;
@@ -140,8 +139,7 @@ int main(int argc,char **args)
        KSPSetFromOptions().  All of these defaults can be
        overridden at runtime, as indicated below.
   */
-  ierr = KSPSetTolerances(ksp,1.e-2/((m+1)*(n+1)),PETSC_DEFAULT,PETSC_DEFAULT,
-                          PETSC_DEFAULT);PetscCall(ierr);
+  PetscCall(KSPSetTolerances(ksp,1.e-2/((m+1)*(n+1)),PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT));
 
   /*
     Set runtime options, e.g.,

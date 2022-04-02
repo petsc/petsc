@@ -180,17 +180,16 @@ static PetscErrorCode testDerivativesLegendre(PetscInt dim, PetscInt deg, PetscI
 int main(int argc, char **argv)
 {
   PetscInt       dim, deg, k;
-  PetscErrorCode ierr;
 
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   dim = 3;
   deg = 4;
   k = 3;
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","Options for PetscDTPKDEval() tests","none");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,"","Options for PetscDTPKDEval() tests","none");
   PetscCall(PetscOptionsInt("-dim", "Dimension of the simplex","ex9.c",dim,&dim,NULL));
   PetscCall(PetscOptionsInt("-degree", "The degree of the polynomial space","ex9.c",deg,&deg,NULL));
   PetscCall(PetscOptionsInt("-k", "The number of derivatives to use in the taylor test","ex9.c",k,&k,NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscCall(testOrthogonality(dim, deg));
   PetscCall(testDerivativesLegendre(dim, deg, k));
   PetscCall(PetscFinalize());

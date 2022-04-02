@@ -3,8 +3,8 @@
 static PetscErrorCode PetscSpaceSetFromOptions_WXY(PetscOptionItems *PetscOptionsObject,PetscSpace sp)
 {
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"PetscSpace WXY options"));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadBegin(PetscOptionsObject,"PetscSpace WXY options");
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

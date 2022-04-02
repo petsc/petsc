@@ -110,15 +110,15 @@ PetscErrorCode  PetscMatlabEngineCreate(MPI_Comm comm,const char host[],PetscMat
 @*/
 PetscErrorCode  PetscMatlabEngineDestroy(PetscMatlabEngine *v)
 {
-  PetscErrorCode ierr;
+  int err;
 
   PetscFunctionBegin;
   if (!*v) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*v,MATLABENGINE_CLASSID,1);
   if (--((PetscObject)(*v))->refct > 0) PetscFunctionReturn(0);
   PetscCall(PetscInfo(0,"Stopping MATLAB engine\n"));
-  ierr = engClose((*v)->ep);
-  PetscCheck(!ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error closing Matlab engine");
+  err = engClose((*v)->ep);
+  PetscCheck(!err,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error closing Matlab engine");
   PetscCall(PetscInfo(0,"MATLAB engine stopped\n"));
   PetscCall(PetscHeaderDestroy(v));
   PetscFunctionReturn(0);

@@ -278,11 +278,11 @@ static PetscErrorCode TSSetFromOptions_Mimex(PetscOptionItems *PetscOptionsObjec
   TS_Mimex      *mimex = (TS_Mimex *) ts->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject, "MIMEX ODE solver options"));
+  PetscOptionsHeadBegin(PetscOptionsObject, "MIMEX ODE solver options");
   {
     PetscCall(PetscOptionsInt("-ts_mimex_version", "Algorithm version", "TSMimexSetVersion", mimex->version, &mimex->version, NULL));
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

@@ -310,14 +310,12 @@ PetscErrorCode Device<T>::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, P
   PetscCall(PetscRegisterFinalize(finalize_));
 
   {
-    PetscErrorCode ierr;
-
     // the functions to populate the command line strings are named after the string they return
-    ierr = PetscOptionsBegin(comm,nullptr,PetscDevice_CUPMTYPE_Options<T>(),"Sys");PetscCall(ierr);
+    PetscOptionsBegin(comm,nullptr,PetscDevice_CUPMTYPE_Options<T>(),"Sys");
     PetscCall(PetscOptionsEList(device_enable_cupmtype<T>(),"How (or whether) to initialize a device","CUPMDevice<CUPMDeviceType>::initialize()",PetscDeviceInitTypes,3,PetscDeviceInitTypes[initTypeCUPM],&initTypeCUPM,nullptr));
     PetscCall(PetscOptionsRangeInt(device_select_cupmtype<T>(),"Which device to use. Pass " PetscStringize(PETSC_DECIDE) " to have PETSc decide or (given they exist) [0-NUM_DEVICE) for a specific device","PetscDeviceCreate",id,&id,nullptr,PETSC_DECIDE,std::numeric_limits<decltype(defaultDevice_)>::max()));
     PetscCall(PetscOptionsBool(device_view_cupmtype<T>(),"Display device information and assignments (forces eager initialization)",nullptr,view,&view,&flg));
-    ierr = PetscOptionsEnd();PetscCall(ierr);
+    PetscOptionsEnd();
   }
 
   cerr = cupmGetDeviceCount(&ndev);

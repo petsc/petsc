@@ -12,14 +12,13 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscInt       len;
   PetscBool      flg;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   options->Nf = 0;
   options->Nc = NULL;
   options->k  = NULL;
 
-  ierr = PetscOptionsBegin(comm, "", "SEM Problem Options", "DMPLEX");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "SEM Problem Options", "DMPLEX");
   PetscCall(PetscOptionsBoundedInt("-num_fields", "The number of fields", "ex6.c", options->Nf, &options->Nf, NULL,0));
   if (options->Nf) {
     len  = options->Nf;
@@ -31,7 +30,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
     PetscCall(PetscOptionsIntArray("-order", "The spectral order per field", "ex6.c", options->k, &len, &flg));
     PetscCheck(!flg || !(len != options->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of order array is %d should be %d", len, options->Nf);
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

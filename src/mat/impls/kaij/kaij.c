@@ -842,7 +842,6 @@ static PetscErrorCode MatConvert_KAIJ_AIJ(Mat A,MatType newtype,MatReuse reuse,M
 
 PetscErrorCode MatSOR_SeqKAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
-  PetscErrorCode    ierr;
   Mat_SeqKAIJ       *kaij = (Mat_SeqKAIJ*) A->data;
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)kaij->AIJ->data;
   const PetscScalar *aa = a->a, *T = kaij->T, *v;
@@ -876,7 +875,7 @@ PetscErrorCode MatSOR_SeqKAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
   t     = kaij->sor.t;
   arr   = kaij->sor.arr;
 
-  ierr = VecGetArray(xx,&x);    PetscCall(ierr);
+  PetscCall( VecGetArray(xx,&x));
   PetscCall(VecGetArrayRead(bb,&b));
 
   if (flag & SOR_ZERO_INITIAL_GUESS) {
@@ -1122,7 +1121,7 @@ PetscErrorCode MatSOR_SeqKAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
     }
   }
 
-  ierr = VecRestoreArray(xx,&x);    PetscCall(ierr);
+  PetscCall(VecRestoreArray(xx,&x));
   PetscCall(VecRestoreArrayRead(bb,&b));
   PetscFunctionReturn(0);
 }

@@ -163,7 +163,7 @@ PetscErrorCode SNESSetFromOptions_NGS(PetscOptionItems *PetscOptionsObject,SNES 
   PetscBool      flg,flg1,flg2,flg3;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"SNES GS options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"SNES GS options");
   /* GS Options */
   PetscCall(PetscOptionsInt("-snes_ngs_sweeps","Number of sweeps of GS to apply","SNESComputeGS",gs->sweeps,&sweeps,&flg));
   if (flg) {
@@ -185,7 +185,7 @@ PetscErrorCode SNESSetFromOptions_NGS(PetscOptionItems *PetscOptionsObject,SNES 
   PetscCall(PetscOptionsReal("-snes_ngs_secant_h","Differencing parameter for secant search","",gs->h,&gs->h,NULL));
   PetscCall(PetscOptionsBool("-snes_ngs_secant_mat_coloring","Use the graph coloring of the Jacobian for the secant GS","",gs->secant_mat,&gs->secant_mat,&flg));
 
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

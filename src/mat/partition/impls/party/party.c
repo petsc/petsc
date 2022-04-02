@@ -26,7 +26,7 @@ typedef struct {
 
 static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part,IS *partitioning)
 {
-  PetscErrorCode        ierr;
+  int                   perr;
   PetscInt              i,*parttab,*locals,nb_locals,M,N;
   PetscMPIInt           size,rank;
   Mat                   mat = part->adj,matAdj,matSeq,*A;
@@ -98,7 +98,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part,IS *partit
 
   /* library call */
   party_lib_times_start();
-  ierr = party_lib(n,vertex_w,NULL,NULL,NULL,edge_p,edge,NULL,p,part_party,&cutsize,redl,(char*)redm,(char*)redo,party->global,party->local,rec,1);
+  perr = party_lib(n,vertex_w,NULL,NULL,NULL,edge_p,edge,NULL,p,part_party,&cutsize,redl,(char*)redm,(char*)redo,party->global,party->local,rec,1);
 
   party_lib_times_output(1);
   part_info(n,vertex_w,edge_p,edge,NULL,p,part_party,1);
@@ -119,7 +119,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part,IS *partit
   }
   PetscCall(PetscFree(mesg_log));
 #endif
-  PetscCheck(!ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Party failed");
+  PetscCheck(!perr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Party failed");
 
   PetscCall(PetscMalloc1(mat->rmap->N,&parttab));
   for (i=0; i<mat->rmap->N; i++) parttab[i] = part_party[i];
@@ -341,7 +341,7 @@ PetscErrorCode MatPartitioningSetFromOptions_Party(PetscOptionItems *PetscOption
   MatPartitioning_Party *party = (MatPartitioning_Party*)part->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"Set Party partitioning options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"Set Party partitioning options");
   PetscCall(PetscOptionsString("-mat_partitioning_party_global","Global method","MatPartitioningPartySetGlobal",party->global,value,sizeof(value),&flag));
   if (flag) PetscCall(MatPartitioningPartySetGlobal(part,value));
   PetscCall(PetscOptionsString("-mat_partitioning_party_local","Local method","MatPartitioningPartySetLocal",party->local,value,sizeof(value),&flag));
@@ -351,7 +351,7 @@ PetscErrorCode MatPartitioningSetFromOptions_Party(PetscOptionItems *PetscOption
   PetscCall(PetscOptionsBool("-mat_partitioning_party_match_optimization","Matching optimization on/off","MatPartitioningPartySetMatchOptimization",party->redo,&party->redo,NULL));
   PetscCall(PetscOptionsBool("-mat_partitioning_party_bipart","Bipartitioning on/off","MatPartitioningPartySetBipart",party->recursive,&party->recursive,NULL));
   PetscCall(PetscOptionsBool("-mat_partitioning_party_verbose","Show library output","",party->verbose,&party->verbose,NULL));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

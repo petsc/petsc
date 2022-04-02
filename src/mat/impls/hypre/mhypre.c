@@ -1093,7 +1093,6 @@ static PetscErrorCode MatProductSetFromOptions_HYPRE_PtAP(Mat C)
   PetscInt       ntype = 4;
   Mat            A = product->A;
   PetscBool      Ahypre;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)A,MATHYPRE,&Ahypre));
@@ -1107,13 +1106,13 @@ static PetscErrorCode MatProductSetFromOptions_HYPRE_PtAP(Mat C)
   /* A is AIJ, P is Hypre, C = PtAP can be either AIJ or Hypre format */
   /* Get runtime option */
   if (product->api_user) {
-    ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatPtAP_HYPRE","Mat");PetscCall(ierr);
+    PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatPtAP_HYPRE","Mat");
     PetscCall(PetscOptionsEList("-matptap_hypre_outtype","MatPtAP outtype","MatPtAP outtype",outTypes,ntype,outTypes[type],&type,&flg));
-    ierr = PetscOptionsEnd();PetscCall(ierr);
+    PetscOptionsEnd();
   } else {
-    ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatProduct_PtAP_HYPRE","Mat");PetscCall(ierr);
+    PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatProduct_PtAP_HYPRE","Mat");
     PetscCall(PetscOptionsEList("-mat_product_algorithm_hypre_outtype","MatProduct_PtAP outtype","MatProduct_PtAP",outTypes,ntype,outTypes[type],&type,&flg));
-    ierr = PetscOptionsEnd();PetscCall(ierr);
+    PetscOptionsEnd();
   }
 
   if (type == 0 || type == 1 || type == 2) {

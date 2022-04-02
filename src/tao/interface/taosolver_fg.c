@@ -34,13 +34,12 @@ PetscErrorCode TaoTestGradient(Tao tao,Vec x,Vec g1)
   PetscViewerFormat format;
   PetscInt          tabs;
   static PetscBool  directionsprinted = PETSC_FALSE;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectOptionsBegin((PetscObject)tao);PetscCall(ierr);
+  PetscObjectOptionsBegin((PetscObject)tao);
   PetscCall(PetscOptionsName("-tao_test_gradient","Compare hand-coded and finite difference Gradients","None",&test));
   PetscCall(PetscOptionsViewer("-tao_test_gradient_view","View difference between hand-coded and finite difference Gradients element entries","None",&mviewer,&format,&complete_print));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   if (!test) {
     if (complete_print) {
       PetscCall(PetscViewerDestroy(&mviewer));

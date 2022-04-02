@@ -186,10 +186,10 @@ static PetscErrorCode KSPSetFromOptions_GCR(PetscOptionItems *PetscOptionsObject
   PetscBool      flg;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"KSP GCR options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"KSP GCR options");
   PetscCall(PetscOptionsInt("-ksp_gcr_restart","Number of Krylov search directions","KSPGCRSetRestart",ctx->restart,&restart,&flg));
   if (flg) PetscCall(KSPGCRSetRestart(ksp,restart));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

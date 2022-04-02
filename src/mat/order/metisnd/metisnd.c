@@ -8,7 +8,6 @@
 */
 PETSC_INTERN PetscErrorCode MatGetOrdering_METISND(Mat mat,MatOrderingType type,IS *row,IS *col)
 {
-  PetscErrorCode ierr;
   PetscInt       i,j,iptr,ival,nrow,*xadj,*adjncy,*perm,*iperm;
   const PetscInt *ia,*ja;
   int            status;
@@ -24,7 +23,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_METISND(Mat mat,MatOrderingType type,
   }
   METIS_SetDefaultOptions(options);
   options[METIS_OPTION_NUMBERING] = 0;
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"METISND Options","Mat");PetscCall(ierr);
+  PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"METISND Options","Mat");
 
   ival = (PetscInt)options[METIS_OPTION_NSEPS];
   PetscCall(PetscOptionsInt("-mat_ordering_metisnd_nseps","number of different separators per level","None",ival,&ival,NULL));
@@ -42,7 +41,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_METISND(Mat mat,MatOrderingType type,
   PetscCall(PetscOptionsInt("-mat_ordering_metisnd_pfactor","minimum degree of vertices that will be ordered last","None",ival,&ival,NULL));
   options[METIS_OPTION_PFACTOR] = (idx_t)ival;
 
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscCall(PetscMalloc4(nrow+1,&xadj,ia[nrow],&adjncy,nrow,&perm,nrow,&iperm));
   /* The adjacency list of a vertex should not contain the vertex itself.

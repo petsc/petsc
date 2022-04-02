@@ -1215,7 +1215,6 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
 
 int main(int argc, char **argv)
 {
-  PetscErrorCode  ierr;                       /* Error code                                           */
   char            ptype[256] = "hull1972a1";  /* Problem specification                                */
   PetscInt        n_refine   = 1;             /* Number of refinement levels for convergence analysis */
   PetscReal       refine_fac = 2.0;           /* Refinement factor for dt                             */
@@ -1235,13 +1234,13 @@ int main(int argc, char **argv)
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Only for sequential runs");
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex31",NULL);PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex31",NULL);
   PetscCall(PetscOptionsString("-problem","Problem specification","<hull1972a1>",ptype,ptype,sizeof(ptype),NULL));
   PetscCall(PetscOptionsInt("-refinement_levels","Number of refinement levels for convergence analysis","<1>",n_refine,&n_refine,NULL));
   PetscCall(PetscOptionsReal("-refinement_factor","Refinement factor for dt","<2.0>",refine_fac,&refine_fac,NULL));
   PetscCall(PetscOptionsReal("-dt","Time step size (for convergence analysis, initial time step)","<0.01>",dt_initial,&dt_initial,NULL));
   PetscCall(PetscOptionsReal("-final_time","Final time for the time-integration","<20.0>",tfinal,&tfinal,NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscCall(PetscMalloc1(n_refine,&error));
   for (r = 0,dt = dt_initial; r < n_refine; r++) {

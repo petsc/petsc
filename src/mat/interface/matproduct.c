@@ -516,16 +516,14 @@ static PetscErrorCode MatProductSetFromOptions_Private(Mat mat)
 @*/
 PetscErrorCode MatProductSetFromOptions(Mat mat)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   MatCheckProduct(mat,1);
   PetscCheck(!mat->product->data,PetscObjectComm((PetscObject)mat),PETSC_ERR_ORDER,"Cannot call MatProductSetFromOptions with already present data");
-  ierr = PetscObjectOptionsBegin((PetscObject)mat);PetscCall(ierr);
+  PetscObjectOptionsBegin((PetscObject)mat);
   PetscCall(PetscOptionsBool("-mat_product_clear","Clear intermediate data structures after MatProductNumeric() has been called","MatProductClear",mat->product->clear,&mat->product->clear,NULL));
   PetscCall(PetscOptionsDeprecated("-mat_freeintermediatedatastructures","-mat_product_clear","3.13","Or call MatProductClear() after MatProductNumeric()"));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscCall(MatProductSetFromOptions_Private(mat));
   PetscCheck(mat->product,PetscObjectComm((PetscObject)mat),PETSC_ERR_PLIB,"Missing product after setup phase");
   PetscFunctionReturn(0);

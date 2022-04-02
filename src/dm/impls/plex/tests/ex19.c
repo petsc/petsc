@@ -33,8 +33,6 @@ static PetscErrorCode sensor(PetscInt dim, PetscReal time, const PetscReal x[], 
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   options->Nr     = 1;
   options->metOpt = 1;
@@ -42,13 +40,13 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->hmax   = 0.5;
   options->doL2   = PETSC_FALSE;
 
-  ierr = PetscOptionsBegin(comm, "", "Meshing Adaptation Options", "DMPLEX");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Meshing Adaptation Options", "DMPLEX");
   PetscCall(PetscOptionsBoundedInt("-Nr", "Numberof refinement passes", "ex19.c", options->Nr, &options->Nr, NULL, 1));
   PetscCall(PetscOptionsBoundedInt("-met", "Different choices of metric", "ex19.c", options->metOpt, &options->metOpt, NULL,0));
   PetscCall(PetscOptionsReal("-hmax", "Max size prescribed by the metric", "ex19.c", options->hmax, &options->hmax, NULL));
   PetscCall(PetscOptionsReal("-hmin", "Min size prescribed by the metric", "ex19.c", options->hmin, &options->hmin, NULL));
   PetscCall(PetscOptionsBool("-do_L2", "Test L2 projection", "ex19.c", options->doL2, &options->doL2, NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscFunctionReturn(0);
 }

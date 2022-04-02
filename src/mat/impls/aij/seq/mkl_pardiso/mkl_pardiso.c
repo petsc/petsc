@@ -674,12 +674,11 @@ PetscErrorCode MatFactorNumeric_MKL_PARDISO(Mat F,Mat A,const MatFactorInfo *inf
 PetscErrorCode PetscSetMKL_PARDISOFromOptions(Mat F, Mat A)
 {
   Mat_MKL_PARDISO     *mat_mkl_pardiso = (Mat_MKL_PARDISO*)F->data;
-  PetscErrorCode      ierr;
   PetscInt            icntl,bs,threads=1;
   PetscBool           flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"MKL_PARDISO Options","Mat");PetscCall(ierr);
+  PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"MKL_PARDISO Options","Mat");
 
   PetscCall(PetscOptionsInt("-mat_mkl_pardiso_65","Suggested number of threads to use within PARDISO","None",threads,&threads,&flg));
   if (flg) PetscSetMKL_PARDISOThreads((int)threads);

@@ -15,7 +15,6 @@ static char help[] = "Illustrate how to use mpi FFTW and PETSc-FFTW interface \n
 
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    rank,size;
   PetscInt       N0=50,N1=20,N=N0*N1,DIM;
   PetscRandom    rdm;
@@ -25,10 +24,10 @@ int main(int argc,char **args)
   PetscBool      view=PETSC_FALSE,use_interface=PETSC_TRUE;
 
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "FFTW Options", "ex143");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "FFTW Options", "ex143");
   PetscCall(PetscOptionsBool("-vec_view draw", "View the vectors", "ex143", view, &view, NULL));
   PetscCall(PetscOptionsBool("-use_FFTW_interface", "Use PETSc-FFTW interface", "ex143",use_interface, &use_interface, NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-use_FFTW_interface",&use_interface,NULL));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));

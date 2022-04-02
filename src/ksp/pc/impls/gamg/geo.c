@@ -102,7 +102,7 @@ PetscErrorCode PCSetData_GEO(PC pc, Mat m)
 PetscErrorCode PCSetFromOptions_GEO(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"GAMG-GEO options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"GAMG-GEO options");
   {
     /* -pc_gamg_sa_nsmooths */
     /* pc_gamg_sa->smooths = 0; */
@@ -113,7 +113,7 @@ PetscErrorCode PCSetFromOptions_GEO(PetscOptionItems *PetscOptionsObject,PC pc)
     /*                        &pc_gamg_sa->smooths, */
     /*                        &flag);  */
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

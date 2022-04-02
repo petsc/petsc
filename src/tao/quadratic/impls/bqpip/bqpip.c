@@ -474,9 +474,9 @@ static PetscErrorCode TaoSetFromOptions_BQPIP(PetscOptionItems *PetscOptionsObje
   TAO_BQPIP      *qp = (TAO_BQPIP*)tao->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"Interior point method for bound constrained quadratic optimization"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"Interior point method for bound constrained quadratic optimization");
   PetscCall(PetscOptionsInt("-tao_bqpip_predcorr","Use a predictor-corrector method","",qp->predcorr,&qp->predcorr,NULL));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscCall(KSPSetFromOptions(tao->ksp));
   PetscFunctionReturn(0);
 }

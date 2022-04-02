@@ -562,13 +562,13 @@ static PetscErrorCode KSPCGSetFromOptions_NASH(PetscOptionItems *PetscOptionsObj
   KSPCG_NASH     *cg = (KSPCG_NASH*)ksp->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"KSPCG NASH options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"KSPCG NASH options");
 
   PetscCall(PetscOptionsReal("-ksp_cg_radius", "Trust Region Radius", "KSPCGSetRadius", cg->radius, &cg->radius, NULL));
 
   PetscCall(PetscOptionsEList("-ksp_cg_dtype", "Norm used for direction", "", DType_Table, NASH_DIRECTION_TYPES, DType_Table[cg->dtype], &cg->dtype, NULL));
 
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

@@ -16,13 +16,12 @@ int main(int argc, char **args)
   IS              rowis[1],colis[1];
   PetscViewer     viewer;
   PetscBool       permute_indices,flg;
-  PetscErrorCode  ierr;
 
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex183","Mat");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex183","Mat");
   m = 5;
   PetscCall(PetscOptionsInt("-m","Local matrix size","MatSetSizes",m,&m,&flg));
   total_subdomains = size-1;
@@ -33,7 +32,7 @@ int main(int argc, char **args)
   PetscCall(PetscOptionsInt("-hash","Permutation factor, which has to be relatively prime to M = size*m (total matrix size)","ISCreateGeneral",hash,&hash,&flg));
   rep = 2;
   PetscCall(PetscOptionsInt("-rep","Number of times to carry out submatrix extractions; currently only 1 & 2 are supported",NULL,rep,&rep,&flg));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscCheck(total_subdomains <= size,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Number of subdomains %" PetscInt_FMT " must not exceed comm size %d",total_subdomains,size);
   PetscCheckFalse(total_subdomains < 1 || total_subdomains > size,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"number of subdomains must be > 0 and <= %d (comm size), got total_subdomains = %" PetscInt_FMT,size,total_subdomains);

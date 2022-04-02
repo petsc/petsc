@@ -40,7 +40,6 @@ int main(int argc,char **argv)
 {
   AppCtx         user;                /* user-defined work context */
   PetscInt       mx,my;
-  PetscErrorCode ierr;
   MPI_Comm       comm;
   DM             da;
   Vec            x;
@@ -72,8 +71,8 @@ int main(int argc,char **argv)
   PetscCall(DMSetUp(da));
   PetscCall(SNESSetDM(user.snes,da));
 
-  ierr = DMDAGetInfo(da,0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);PetscCall(ierr);
+  PetscCall(DMDAGetInfo(da,0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
+                        PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
   /*
      Problem parameters (velocity of lid, prandtl, and grashof numbers)
   */

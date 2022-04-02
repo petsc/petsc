@@ -820,7 +820,6 @@ static PetscErrorCode MatStashBTSRecv_Private(MPI_Comm comm,const PetscMPIInt ta
  */
 static PetscErrorCode MatStashScatterBegin_BTS(Mat mat,MatStash *stash,PetscInt owners[])
 {
-  PetscErrorCode ierr;
   size_t         nblocks;
   char           *sendblocks;
 
@@ -911,9 +910,9 @@ static PetscErrorCode MatStashScatterBegin_BTS(Mat mat,MatStash *stash,PetscInt 
     }
     stash->use_status = PETSC_TRUE; /* Use count from message status. */
   } else {
-    ierr = PetscCommBuildTwoSidedFReq(stash->comm,1,MPIU_INT,stash->nsendranks,stash->sendranks,(PetscInt*)stash->sendhdr,
-                                      &stash->nrecvranks,&stash->recvranks,(PetscInt*)&stash->recvhdr,1,&stash->sendreqs,&stash->recvreqs,
-                                      MatStashBTSSend_Private,MatStashBTSRecv_Private,stash);PetscCall(ierr);
+    PetscCall(PetscCommBuildTwoSidedFReq(stash->comm,1,MPIU_INT,stash->nsendranks,stash->sendranks,(PetscInt*)stash->sendhdr,
+                                         &stash->nrecvranks,&stash->recvranks,(PetscInt*)&stash->recvhdr,1,&stash->sendreqs,&stash->recvreqs,
+                                         MatStashBTSSend_Private,MatStashBTSRecv_Private,stash));
     PetscCall(PetscMalloc2(stash->nrecvranks,&stash->some_indices,stash->nrecvranks,&stash->some_statuses));
     stash->use_status = PETSC_FALSE; /* Use count from header instead of from message. */
   }

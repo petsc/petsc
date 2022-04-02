@@ -363,10 +363,10 @@ int main(int argc, char *argv[])
 
   PetscCall(PetscInitialize(&argc, &argv, 0, help));
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "STREAM Benchmark Options", "STREAM");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD, "", "STREAM Benchmark Options", "STREAM");
   PetscCall(PetscOptionsBoundedInt("-device", "Specify the CUDA device to be used", "STREAM", device, &device, NULL,0));
   PetscCall(PetscOptionsBool("-double",    "Also run double precision tests",   "STREAM", runDouble, &runDouble, NULL));
-  ierr = PetscOptionsEnd();
+  PetscOptionsEnd();
 
   ierr = setupStream(device, runDouble, cpuTiming);
   if (ierr) {

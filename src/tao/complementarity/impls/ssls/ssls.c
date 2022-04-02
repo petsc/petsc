@@ -6,12 +6,12 @@ PetscErrorCode TaoSetFromOptions_SSLS(PetscOptionItems *PetscOptionsObject,Tao t
   TAO_SSLS       *ssls = (TAO_SSLS *)tao->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"Semismooth method with a linesearch for complementarity problems"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"Semismooth method with a linesearch for complementarity problems");
   PetscCall(PetscOptionsReal("-ssls_delta", "descent test fraction", "",ssls->delta, &ssls->delta, NULL));
   PetscCall(PetscOptionsReal("-ssls_rho", "descent test power", "",ssls->rho, &ssls->rho, NULL));
   PetscCall(TaoLineSearchSetFromOptions(tao->linesearch));
   PetscCall(KSPSetFromOptions(tao->ksp));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

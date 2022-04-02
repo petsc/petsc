@@ -119,14 +119,13 @@ PetscErrorCode CreateMesh(const char name[], DM *newdm)
   DM             dm, dmDist;
   char           filename[PETSC_MAX_PATH_LEN]="";
   PetscBool      interpolate = PETSC_FALSE;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* initialize and get options */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "DMLabel ex1 Options", "DMLabel");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "DMLabel ex1 Options", "DMLabel");
   PetscCall(PetscOptionsString("-i", "filename to read", "ex1.c", filename, filename, sizeof(filename), NULL));
   PetscCall(PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex1.c", interpolate, &interpolate, NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   /* create and distribute DM */
   PetscCall(DMPlexCreateFromFile(PETSC_COMM_WORLD, filename, "ex1_plex", interpolate, &dm));

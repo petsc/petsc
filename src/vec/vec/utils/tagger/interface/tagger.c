@@ -187,19 +187,18 @@ PetscErrorCode VecTaggerSetFromOptions(VecTagger tagger)
 {
   VecTaggerType  deft;
   char           type[256];
-  PetscErrorCode ierr;
   PetscBool      flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tagger,VEC_TAGGER_CLASSID,1);
-  ierr = PetscObjectOptionsBegin((PetscObject)tagger);PetscCall(ierr);
+  PetscObjectOptionsBegin((PetscObject)tagger);
   deft = ((PetscObject)tagger)->type_name ? ((PetscObject)tagger)->type_name : VECTAGGERABSOLUTE;
   PetscCall(PetscOptionsFList("-vec_tagger_type","VecTagger implementation type","VecTaggerSetType",VecTaggerList,deft,type,256,&flg));
   PetscCall(VecTaggerSetType(tagger,flg ? type : deft));
   PetscCall(PetscOptionsInt("-vec_tagger_block_size","block size of the vectors the tagger operates on","VecTaggerSetBlockSize",tagger->blocksize,&tagger->blocksize,NULL));
   PetscCall(PetscOptionsBool("-vec_tagger_invert","invert the set of indices returned by VecTaggerComputeIS()","VecTaggerSetInvert",tagger->invert,&tagger->invert,NULL));
   if (tagger->ops->setfromoptions) PetscCall((*tagger->ops->setfromoptions)(PetscOptionsObject,tagger));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

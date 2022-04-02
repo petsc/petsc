@@ -1967,7 +1967,6 @@ static PetscErrorCode MatProductSymbolic_AtB_SeqAIJ_SeqAIJ(Mat C)
 /* --------------------------------------------------------------- */
 static PetscErrorCode MatProductSetFromOptions_SeqAIJ_AB(Mat C)
 {
-  PetscErrorCode ierr;
   Mat_Product    *product = C->product;
   PetscInt       alg = 0; /* default algorithm */
   PetscBool      flg = PETSC_FALSE;
@@ -1988,13 +1987,13 @@ static PetscErrorCode MatProductSetFromOptions_SeqAIJ_AB(Mat C)
 
   /* Get runtime option */
   if (product->api_user) {
-    ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatMatMult","Mat");PetscCall(ierr);
+    PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatMatMult","Mat");
     PetscCall(PetscOptionsEList("-matmatmult_via","Algorithmic approach","MatMatMult",algTypes,nalg,algTypes[0],&alg,&flg));
-    ierr = PetscOptionsEnd();PetscCall(ierr);
+    PetscOptionsEnd();
   } else {
-    ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatProduct_AB","Mat");PetscCall(ierr);
+    PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatProduct_AB","Mat");
     PetscCall(PetscOptionsEList("-mat_product_algorithm","Algorithmic approach","MatProduct_AB",algTypes,nalg,algTypes[0],&alg,&flg));
-    ierr = PetscOptionsEnd();PetscCall(ierr);
+    PetscOptionsEnd();
   }
   if (flg) {
     PetscCall(MatProductSetAlgorithm(C,(MatProductAlgorithm)algTypes[alg]));
@@ -2007,7 +2006,6 @@ static PetscErrorCode MatProductSetFromOptions_SeqAIJ_AB(Mat C)
 
 static PetscErrorCode MatProductSetFromOptions_SeqAIJ_AtB(Mat C)
 {
-  PetscErrorCode ierr;
   Mat_Product    *product = C->product;
   PetscInt       alg = 0; /* default algorithm */
   PetscBool      flg = PETSC_FALSE;
@@ -2017,13 +2015,13 @@ static PetscErrorCode MatProductSetFromOptions_SeqAIJ_AtB(Mat C)
   PetscFunctionBegin;
   /* Get runtime option */
   if (product->api_user) {
-    ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatTransposeMatMult","Mat");PetscCall(ierr);
+    PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatTransposeMatMult","Mat");
     PetscCall(PetscOptionsEList("-mattransposematmult_via","Algorithmic approach","MatTransposeMatMult",algTypes,nalg,algTypes[alg],&alg,&flg));
-    ierr = PetscOptionsEnd();PetscCall(ierr);
+    PetscOptionsEnd();
   } else {
-    ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatProduct_AtB","Mat");PetscCall(ierr);
+    PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatProduct_AtB","Mat");
     PetscCall(PetscOptionsEList("-mat_product_algorithm","Algorithmic approach","MatProduct_AtB",algTypes,nalg,algTypes[alg],&alg,&flg));
-    ierr = PetscOptionsEnd();PetscCall(ierr);
+    PetscOptionsEnd();
   }
   if (flg) {
     PetscCall(MatProductSetAlgorithm(C,(MatProductAlgorithm)algTypes[alg]));
@@ -2035,7 +2033,6 @@ static PetscErrorCode MatProductSetFromOptions_SeqAIJ_AtB(Mat C)
 
 static PetscErrorCode MatProductSetFromOptions_SeqAIJ_ABt(Mat C)
 {
-  PetscErrorCode ierr;
   Mat_Product    *product = C->product;
   PetscInt       alg = 0; /* default algorithm */
   PetscBool      flg = PETSC_FALSE;
@@ -2052,13 +2049,13 @@ static PetscErrorCode MatProductSetFromOptions_SeqAIJ_ABt(Mat C)
 
   /* Get runtime option */
   if (product->api_user) {
-    ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatMatTransposeMult","Mat");PetscCall(ierr);
+    PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatMatTransposeMult","Mat");
     PetscCall(PetscOptionsEList("-matmattransmult_via","Algorithmic approach","MatMatTransposeMult",algTypes,nalg,algTypes[alg],&alg,&flg));
-    ierr = PetscOptionsEnd();PetscCall(ierr);
+    PetscOptionsEnd();
   } else {
-    ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatProduct_ABt","Mat");PetscCall(ierr);
+    PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatProduct_ABt","Mat");
     PetscCall(PetscOptionsEList("-mat_product_algorithm","Algorithmic approach","MatProduct_ABt",algTypes,nalg,algTypes[alg],&alg,&flg));
-    ierr = PetscOptionsEnd();PetscCall(ierr);
+    PetscOptionsEnd();
   }
   if (flg) {
     PetscCall(MatProductSetAlgorithm(C,(MatProductAlgorithm)algTypes[alg]));
@@ -2071,7 +2068,6 @@ static PetscErrorCode MatProductSetFromOptions_SeqAIJ_ABt(Mat C)
 
 static PetscErrorCode MatProductSetFromOptions_SeqAIJ_PtAP(Mat C)
 {
-  PetscErrorCode ierr;
   Mat_Product    *product = C->product;
   PetscBool      flg = PETSC_FALSE;
   PetscInt       alg = 0; /* default algorithm -- alg=1 should be default!!! */
@@ -2092,13 +2088,13 @@ static PetscErrorCode MatProductSetFromOptions_SeqAIJ_PtAP(Mat C)
 
   /* Get runtime option */
   if (product->api_user) {
-    ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatPtAP","Mat");PetscCall(ierr);
+    PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatPtAP","Mat");
     PetscCall(PetscOptionsEList("-matptap_via","Algorithmic approach","MatPtAP",algTypes,nalg,algTypes[0],&alg,&flg));
-    ierr = PetscOptionsEnd();PetscCall(ierr);
+    PetscOptionsEnd();
   } else {
-    ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatProduct_PtAP","Mat");PetscCall(ierr);
+    PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatProduct_PtAP","Mat");
     PetscCall(PetscOptionsEList("-mat_product_algorithm","Algorithmic approach","MatProduct_PtAP",algTypes,nalg,algTypes[0],&alg,&flg));
-    ierr = PetscOptionsEnd();PetscCall(ierr);
+    PetscOptionsEnd();
   }
   if (flg) {
     PetscCall(MatProductSetAlgorithm(C,(MatProductAlgorithm)algTypes[alg]));
@@ -2110,7 +2106,6 @@ static PetscErrorCode MatProductSetFromOptions_SeqAIJ_PtAP(Mat C)
 
 static PetscErrorCode MatProductSetFromOptions_SeqAIJ_RARt(Mat C)
 {
-  PetscErrorCode ierr;
   Mat_Product    *product = C->product;
   PetscBool      flg = PETSC_FALSE;
   PetscInt       alg = 0; /* default algorithm */
@@ -2126,13 +2121,13 @@ static PetscErrorCode MatProductSetFromOptions_SeqAIJ_RARt(Mat C)
 
   /* Get runtime option */
   if (product->api_user) {
-    ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatRARt","Mat");PetscCall(ierr);
+    PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatRARt","Mat");
     PetscCall(PetscOptionsEList("-matrart_via","Algorithmic approach","MatRARt",algTypes,nalg,algTypes[0],&alg,&flg));
-    ierr = PetscOptionsEnd();PetscCall(ierr);
+    PetscOptionsEnd();
   } else {
-    ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatProduct_RARt","Mat");PetscCall(ierr);
+    PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatProduct_RARt","Mat");
     PetscCall(PetscOptionsEList("-mat_product_algorithm","Algorithmic approach","MatProduct_RARt",algTypes,nalg,algTypes[0],&alg,&flg));
-    ierr = PetscOptionsEnd();PetscCall(ierr);
+    PetscOptionsEnd();
   }
   if (flg) {
     PetscCall(MatProductSetAlgorithm(C,(MatProductAlgorithm)algTypes[alg]));
@@ -2145,7 +2140,6 @@ static PetscErrorCode MatProductSetFromOptions_SeqAIJ_RARt(Mat C)
 /* ABC = A*B*C = A*(B*C); ABC's algorithm must be chosen from AB's algorithm */
 static PetscErrorCode MatProductSetFromOptions_SeqAIJ_ABC(Mat C)
 {
-  PetscErrorCode ierr;
   Mat_Product    *product = C->product;
   PetscInt       alg = 0; /* default algorithm */
   PetscBool      flg = PETSC_FALSE;
@@ -2161,13 +2155,13 @@ static PetscErrorCode MatProductSetFromOptions_SeqAIJ_ABC(Mat C)
 
   /* Get runtime option */
   if (product->api_user) {
-    ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatMatMatMult","Mat");PetscCall(ierr);
+    PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatMatMatMult","Mat");
     PetscCall(PetscOptionsEList("-matmatmatmult_via","Algorithmic approach","MatMatMatMult",algTypes,nalg,algTypes[alg],&alg,&flg));
-    ierr = PetscOptionsEnd();PetscCall(ierr);
+    PetscOptionsEnd();
   } else {
-    ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatProduct_ABC","Mat");PetscCall(ierr);
+    PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatProduct_ABC","Mat");
     PetscCall(PetscOptionsEList("-mat_product_algorithm","Algorithmic approach","MatProduct_ABC",algTypes,nalg,algTypes[alg],&alg,&flg));
-    ierr = PetscOptionsEnd();PetscCall(ierr);
+    PetscOptionsEnd();
   }
   if (flg) {
     PetscCall(MatProductSetAlgorithm(C,(MatProductAlgorithm)algTypes[alg]));

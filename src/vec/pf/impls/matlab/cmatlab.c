@@ -52,10 +52,10 @@ PetscErrorCode PFSetFromOptions_Matlab(PetscOptionItems *PetscOptionsObject,PF p
   PF_Matlab *matlab = (PF_Matlab*)pf->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"Matlab function options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"Matlab function options");
   PetscCall(PetscOptionsString("-pf_matlab","Matlab function","None","",value,sizeof(value),&flag));
   if (flag) PetscCall(PetscStrallocpy((char*)value,&matlab->string));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

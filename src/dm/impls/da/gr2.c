@@ -31,7 +31,6 @@ PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
   PetscInt          m,n,i,j,k,dof,id,c1,c2,c3,c4;
   PetscReal         min,max,x1,x2,x3,x4,y_1,y2,y3,y4;
   const PetscScalar *xy,*v;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   m    = zctx->m;
@@ -44,7 +43,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
   max  = zctx->max;
 
   /* PetscDraw the contour plot patch */
-  ierr = PetscDrawCollectiveBegin(draw);PetscCall(ierr);
+  PetscDrawCollectiveBegin(draw);
   for (j=0; j<n-1; j++) {
     for (i=0; i<m-1; i++) {
       id   = i+j*m;
@@ -108,7 +107,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
       PetscCall(PetscDrawString(draw,xmin - .05*(xmax - xmin),ymax,PETSC_DRAW_BLACK,value));
     }
   }
-  ierr = PetscDrawCollectiveEnd(draw);PetscCall(ierr);
+  PetscDrawCollectiveEnd(draw);
   PetscFunctionReturn(0);
 }
 

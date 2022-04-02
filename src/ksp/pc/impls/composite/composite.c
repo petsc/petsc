@@ -225,7 +225,7 @@ static PetscErrorCode PCSetFromOptions_Composite(PetscOptionItems *PetscOptionsO
   PetscBool        flg;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"Composite preconditioner options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"Composite preconditioner options");
   PetscCall(PetscOptionsEnum("-pc_composite_type","Type of composition","PCCompositeSetType",PCCompositeTypes,(PetscEnum)jac->type,(PetscEnum*)&jac->type,&flg));
   if (flg) {
     PetscCall(PCCompositeSetType(pc,jac->type));
@@ -237,7 +237,7 @@ static PetscErrorCode PCSetFromOptions_Composite(PetscOptionItems *PetscOptionsO
       PetscCall(PetscFree(pcs[i]));   /* deallocate string pcs[i], which is allocated in PetscOptionsStringArray() */
     }
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
 
   next = jac->head;
   while (next) {

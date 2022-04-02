@@ -2809,7 +2809,6 @@ PetscErrorCode MatProductSetFromOptions_SeqAIJ_SeqMAIJ(Mat C)
 
 PetscErrorCode MatProductSetFromOptions_MPIAIJ_MPIMAIJ(Mat C)
 {
-  PetscErrorCode ierr;
   Mat_Product    *product = C->product;
   PetscBool      flg = PETSC_FALSE;
   Mat            A=product->A,P=product->B;
@@ -2837,12 +2836,12 @@ PetscErrorCode MatProductSetFromOptions_MPIAIJ_MPIMAIJ(Mat C)
   }
 
   /* Get runtime option */
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatProduct_PtAP","Mat");PetscCall(ierr);
+  PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatProduct_PtAP","Mat");
   PetscCall(PetscOptionsEList("-mat_product_algorithm","Algorithmic approach","MatPtAP",algTypes,nalg,algTypes[alg],&alg,&flg));
   if (flg) {
     PetscCall(MatProductSetAlgorithm(C,(MatProductAlgorithm)algTypes[alg]));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscCall(PetscStrcmp(C->product->alg,"allatonce",&flg));
   if (flg) {

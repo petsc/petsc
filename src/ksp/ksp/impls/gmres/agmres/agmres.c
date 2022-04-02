@@ -641,7 +641,7 @@ static PetscErrorCode KSPSetFromOptions_AGMRES(PetscOptionItems *PetscOptionsObj
 
   PetscFunctionBegin;
   PetscCall(KSPSetFromOptions_DGMRES(PetscOptionsObject,ksp));  /* Set common options from DGMRES and GMRES */
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"KSP AGMRES Options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"KSP AGMRES Options");
   PetscCall(PetscOptionsInt("-ksp_agmres_eigen", "Number of eigenvalues to deflate", "KSPDGMRESSetEigen", agmres->neig, &neig, &flg));
   if (flg) {
     PetscCall(KSPDGMRESSetEigen_DGMRES(ksp, neig));
@@ -654,7 +654,7 @@ static PetscErrorCode KSPSetFromOptions_AGMRES(PetscOptionItems *PetscOptionsObj
   PetscCall(PetscOptionsBool("-ksp_agmres_ritz", "Compute the Ritz vectors instead of the Harmonic Ritz vectors ", "KSPGMRESHarmonic",agmres->ritz,&agmres->ritz ,&flg));
   PetscCall(PetscOptionsReal("-ksp_agmres_MinRatio", "Relaxation parameter in the adaptive strategy; smallest multiple of the remaining number of steps allowed", "KSPGMRESSetMinRatio", agmres->smv, &agmres->smv, NULL));
   PetscCall(PetscOptionsReal("-ksp_agmres_MaxRatio", "Relaxation parameter in the adaptive strategy; Largest multiple of the remaining number of steps allowed", "KSPGMRESSetMaxRatio",agmres->bgv,&agmres->bgv, &flg));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

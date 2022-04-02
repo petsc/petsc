@@ -391,19 +391,18 @@ static PetscErrorCode KSPGuessSetFromOptions_Fischer(KSPGuess guess)
   KSPGuessFischer *ITG = (KSPGuessFischer *)guess->data;
   PetscInt        nmax = 2, model[2];
   PetscBool       flg;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   model[0] = ITG->method;
   model[1] = ITG->maxl;
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)guess),((PetscObject)guess)->prefix,"Fischer guess options","KSPGuess");PetscCall(ierr);
+  PetscOptionsBegin(PetscObjectComm((PetscObject)guess),((PetscObject)guess)->prefix,"Fischer guess options","KSPGuess");
   PetscCall(PetscOptionsIntArray("-ksp_guess_fischer_model","Model type and dimension of basis","KSPGuessFischerSetModel",model,&nmax,&flg));
   if (flg) {
     PetscCall(KSPGuessFischerSetModel(guess,model[0],model[1]));
   }
   PetscCall(PetscOptionsReal("-ksp_guess_fischer_tol","Tolerance to determine rank via ratio of singular values","KSPGuessSetTolerance",ITG->tol,&ITG->tol,NULL));
   PetscCall(PetscOptionsBool("-ksp_guess_fischer_monitor","Monitor the guess",NULL,ITG->monitor,&ITG->monitor,NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

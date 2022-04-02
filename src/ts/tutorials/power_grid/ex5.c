@@ -94,7 +94,6 @@ PetscErrorCode SaveSolution(TS ts)
 /* Computes the wind speed using Weibull distribution */
 PetscErrorCode WindSpeeds(AppCtx *user)
 {
-  PetscErrorCode ierr;
   PetscScalar    *x,*t,avg_dev,sum;
   PetscInt       i;
 
@@ -103,14 +102,14 @@ PetscErrorCode WindSpeeds(AppCtx *user)
   user->kw       = 2; /* Rayleigh distribution */
   user->nsamples = 2000;
   user->Tw       = 0.2;
-  ierr           = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Wind Speed Options","");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Wind Speed Options","");
   {
     PetscCall(PetscOptionsReal("-cw","","",user->cw,&user->cw,NULL));
     PetscCall(PetscOptionsReal("-kw","","",user->kw,&user->kw,NULL));
     PetscCall(PetscOptionsInt("-nsamples","","",user->nsamples,&user->nsamples,NULL));
     PetscCall(PetscOptionsReal("-Tw","","",user->Tw,&user->Tw,NULL));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscCall(VecCreate(PETSC_COMM_WORLD,&user->wind_data));
   PetscCall(VecSetSizes(user->wind_data,PETSC_DECIDE,user->nsamples));
   PetscCall(VecSetFromOptions(user->wind_data));

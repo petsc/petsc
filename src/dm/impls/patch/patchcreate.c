@@ -7,10 +7,10 @@ PetscErrorCode DMSetFromOptions_Patch(PetscOptionItems *PetscOptionsObject,DM dm
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"DMPatch Options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"DMPatch Options");
   /* Handle associated vectors */
   /* Handle viewing */
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

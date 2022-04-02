@@ -158,14 +158,13 @@ static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscOptionItems *Pe
 @*/
 PetscErrorCode  PetscRandomSetFromOptions(PetscRandom rnd)
 {
-  PetscErrorCode ierr;
   PetscBool      set,noimaginary = PETSC_FALSE;
   PetscInt       seed;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(rnd,PETSC_RANDOM_CLASSID,1);
 
-  ierr = PetscObjectOptionsBegin((PetscObject)rnd);PetscCall(ierr);
+  PetscObjectOptionsBegin((PetscObject)rnd);
 
   /* Handle PetscRandom type options */
   PetscCall(PetscRandomSetTypeFromOptions_Private(PetscOptionsObject,rnd));
@@ -191,7 +190,7 @@ PetscErrorCode  PetscRandomSetFromOptions(PetscRandom rnd)
     }
   }
 #endif
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscCall(PetscRandomViewFromOptions(rnd,NULL, "-random_view"));
   PetscFunctionReturn(0);
 }

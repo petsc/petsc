@@ -180,7 +180,6 @@ int main(int argc,char **argv)
   Mat            A;             /* Jacobian matrix */
   Mat            Jacp;          /* Jacobian matrix */
   Mat            DRDU,DRDP;
-  PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscInt       n = 2;
   AppCtx         ctx;
@@ -223,7 +222,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set runtime options
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Swing equation options","");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Swing equation options","");
   {
     ctx.beta    = 2;
     ctx.c       = 10000.0;
@@ -265,7 +264,7 @@ int main(int argc,char **argv)
       ctx.tcl     = -1;
     }
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context

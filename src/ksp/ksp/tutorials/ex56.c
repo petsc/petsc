@@ -15,7 +15,6 @@ PetscErrorCode elem_3d_elast_v_25(PetscScalar *);
 int main(int argc,char **args)
 {
   Mat            Amat;
-  PetscErrorCode ierr;
   PetscInt       m,nn,M,Istart,Iend,i,j,k,ii,jj,kk,ic,ne=4,id;
   PetscReal      x,y,z,h,*coords,soft_alpha=1.e-3;
   PetscBool      two_solves=PETSC_FALSE,test_nonzero_cols=PETSC_FALSE,use_nearnullspace=PETSC_FALSE,test_late_bs=PETSC_FALSE;
@@ -32,7 +31,7 @@ int main(int argc,char **args)
   PetscCallMPI(MPI_Comm_rank(comm, &mype));
   PetscCallMPI(MPI_Comm_size(comm, &npe));
 
-  ierr = PetscOptionsBegin(comm,NULL,"3D bilinear Q1 elasticity options","");PetscCall(ierr);
+  PetscOptionsBegin(comm,NULL,"3D bilinear Q1 elasticity options","");
   {
     char nestring[256];
     PetscCall(PetscSNPrintf(nestring,sizeof nestring,"number of elements in each direction, ne+1 must be a multiple of %D (sizes^{1/3})",(PetscInt)(PetscPowReal((PetscReal)npe,1./3.) + .5)));
@@ -44,7 +43,7 @@ int main(int argc,char **args)
     PetscCall(PetscOptionsBool("-use_mat_nearnullspace","MatNearNullSpace API test","",use_nearnullspace,&use_nearnullspace,NULL));
     PetscCall(PetscOptionsBool("-test_late_bs","","",test_late_bs,&test_late_bs,NULL));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   if (log_stages) {
     PetscCall(PetscLogStageRegister("Setup", &stage[0]));

@@ -402,7 +402,7 @@ PetscErrorCode TSSetFromOptions_Sundials(PetscOptionItems *PetscOptionsObject,TS
   PC             pc;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"SUNDIALS ODE solver options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"SUNDIALS ODE solver options");
   PetscCall(PetscOptionsEList("-ts_sundials_type","Scheme","TSSundialsSetType",TSSundialsLmmTypes,3,TSSundialsLmmTypes[cvode->cvode_type],&indx,&flag));
   if (flag) {
     PetscCall(TSSundialsSetType(ts,(TSSundialsLmmType)indx));
@@ -420,7 +420,7 @@ PetscErrorCode TSSetFromOptions_Sundials(PetscOptionItems *PetscOptionsObject,TS
   PetscCall(PetscOptionsInt("-ts_sundials_maxl","Max dimension of the Krylov subspace","TSSundialsSetMaxl",cvode->maxl,&cvode->maxl,NULL));
   PetscCall(PetscOptionsBool("-ts_sundials_monitor_steps","Monitor SUNDIALS internal steps","TSSundialsMonitorInternalSteps",cvode->monitorstep,&cvode->monitorstep,NULL));
   PetscCall(PetscOptionsBool("-ts_sundials_use_dense","Use dense internal solver in SUNDIALS (serial only)","TSSundialsSetUseDense",cvode->use_dense,&cvode->use_dense,NULL));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscCall(TSSundialsGetPC(ts,&pc));
   PetscCall(PCSetFromOptions(pc));
   PetscFunctionReturn(0);

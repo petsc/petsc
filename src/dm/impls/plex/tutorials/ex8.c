@@ -4,18 +4,16 @@ static char help[] = "Element closure restrictions in tensor/lexicographic/spect
 
 static PetscErrorCode ViewOffsets(DM dm, Vec X)
 {
-  PetscInt num_elem, elem_size, num_comp, num_dof;
-  PetscInt *elem_restr_offsets;
+  PetscInt          num_elem, elem_size, num_comp, num_dof;
+  PetscInt          *elem_restr_offsets;
   const PetscScalar *x = NULL;
-  const char *name;
-  PetscErrorCode ierr;
+  const char        *name;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetName((PetscObject)dm, &name));
   PetscCall(DMPlexGetLocalOffsets(dm, NULL, 0, 0, 0, &num_elem, &elem_size, &num_comp, &num_dof, &elem_restr_offsets));
-  ierr = PetscPrintf(PETSC_COMM_SELF,"DM %s offsets: num_elem %" PetscInt_FMT ", size %" PetscInt_FMT
-                     ", comp %" PetscInt_FMT ", dof %" PetscInt_FMT "\n",
-                     name, num_elem, elem_size, num_comp, num_dof);PetscCall(ierr);
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"DM %s offsets: num_elem %" PetscInt_FMT ", size %" PetscInt_FMT
+                        ", comp %" PetscInt_FMT ", dof %" PetscInt_FMT "\n",name, num_elem, elem_size, num_comp, num_dof));
   if (X) PetscCall(VecGetArrayRead(X, &x));
   for (PetscInt c=0; c<num_elem; c++) {
     PetscCall(PetscIntView(elem_size, &elem_restr_offsets[c*elem_size], PETSC_VIEWER_STDOUT_SELF));
@@ -37,13 +35,12 @@ int main(int argc, char **argv)
   PetscFE        fe;
   PetscInt       dim,c,cStart,cEnd;
   PetscBool      view_coord = PETSC_FALSE, tensor = PETSC_TRUE;
-  PetscErrorCode ierr;
 
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Tensor closure restrictions", "DMPLEX");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Tensor closure restrictions", "DMPLEX");
   PetscCall(PetscOptionsBool("-closure_tensor", "Apply DMPlexSetClosurePermutationTensor", "ex8.c", tensor, &tensor, NULL));
   PetscCall(PetscOptionsBool("-view_coord", "View coordinates of element closures", "ex8.c", view_coord, &view_coord, NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscCall(DMCreate(PETSC_COMM_WORLD, &dm));
   PetscCall(DMSetType(dm, DMPLEX));

@@ -446,11 +446,11 @@ PetscErrorCode MatSetFromOptions_Composite(PetscOptionItems *PetscOptionsObject,
   Mat_Composite  *a = (Mat_Composite*)A->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"MATCOMPOSITE options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"MATCOMPOSITE options");
   PetscCall(PetscOptionsBool("-mat_composite_merge","Merge at MatAssemblyEnd","MatCompositeMerge",a->merge,&a->merge,NULL));
   PetscCall(PetscOptionsEnum("-mat_composite_merge_type","Set composite merge direction","MatCompositeSetMergeType",MatCompositeMergeTypes,(PetscEnum)a->mergetype,(PetscEnum*)&a->mergetype,NULL));
   PetscCall(PetscOptionsBool("-mat_composite_merge_mvctx","Merge MatMult() vecscat contexts","MatCreateComposite",a->merge_mvctx,&a->merge_mvctx,NULL));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

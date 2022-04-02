@@ -14,7 +14,6 @@ typedef struct {
 
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  PetscErrorCode ierr;
   PetscBool      flg;
 
   PetscFunctionBegin;
@@ -22,11 +21,11 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscStrcpy(options->tagname, "petsc_tag"));
   options->dim = -1;
 
-  ierr = PetscOptionsBegin(comm, "", "MOAB example options", "DMMOAB");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "MOAB example options", "DMMOAB");
   PetscCall(PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex1.cxx", options->dim, &options->dim, NULL,PETSC_DECIDE,3));
   PetscCall(PetscOptionsString("-filename", "The file containing the mesh", "ex1.cxx", options->filename, options->filename, sizeof(options->filename), NULL));
   PetscCall(PetscOptionsString("-tagname", "The tag name from which to create a vector", "ex1.cxx", options->tagname, options->tagname, sizeof(options->tagname), &flg));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscCall(PetscLogEventRegister("CreateMesh",          DM_CLASSID,   &options->createMeshEvent));
   PetscFunctionReturn(0);

@@ -27,16 +27,14 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   const char    *pointTypes[3] = {"centroid", "grid", "grid_replicated"};
   PetscInt       pt;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   options->pointType = CENTROID;
-
-  ierr = PetscOptionsBegin(comm, "", "Interpolation Options", "DMPLEX");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Interpolation Options", "DMPLEX");
   pt   = options->pointType;
   PetscCall(PetscOptionsEList("-point_type", "The point type", "ex2.c", pointTypes, 3, pointTypes[options->pointType], &pt, NULL));
   options->pointType = (PointType) pt;
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

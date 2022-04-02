@@ -311,8 +311,6 @@ typedef struct {
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   options->debug          = 0;
   options->dim            = 2;
@@ -321,14 +319,14 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->testNum        = 0;
   options->cohesiveFields = 1;
 
-  ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");
   PetscCall(PetscOptionsBoundedInt("-debug", "The debugging level", "ex5.c", options->debug, &options->debug, NULL,0));
   PetscCall(PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex5.c", options->dim, &options->dim, NULL,1,3));
   PetscCall(PetscOptionsBool("-cell_simplex", "Use simplices if true, otherwise hexes", "ex5.c", options->cellSimplex, &options->cellSimplex, NULL));
   PetscCall(PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex5.c", options->testPartition, &options->testPartition, NULL));
   PetscCall(PetscOptionsBoundedInt("-test_num", "The particular mesh to test", "ex5.c", options->testNum, &options->testNum, NULL,0));
   PetscCall(PetscOptionsBoundedInt("-cohesive_fields", "The number of cohesive fields", "ex5.c", options->cohesiveFields, &options->cohesiveFields, NULL, 0));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

@@ -201,7 +201,7 @@ static PetscErrorCode SNESSetFromOptions_FAS(PetscOptionItems *PetscOptionsObjec
 
   PetscFunctionBegin;
   PetscCall(SNESFASCycleIsFine(snes, &isFine));
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"SNESFAS Options-----------------------------------"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"SNESFAS Options-----------------------------------");
 
   /* number of levels -- only process most options on the finest level */
   if (isFine) {
@@ -261,7 +261,7 @@ static PetscErrorCode SNESSetFromOptions_FAS(PetscOptionItems *PetscOptionsObjec
     if (flg) PetscCall(SNESFASSetLog(snes,monflg));
   }
 
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
 
   /* setup from the determined types if there is no pointwise procedure or smoother defined */
   if (upflg) {

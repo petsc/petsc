@@ -25,7 +25,6 @@ static const char help[] = "Test ParMETIS handling of negative weights.\n\n";
 
 int main(int argc, char *argv[])
 {
-  PetscErrorCode ierr;
   PetscBool      flg;
   PetscMPIInt    rank, size;
   idx_t          ni,isize,*vtxdist, *xadj, *adjncy, *vwgt, *part;
@@ -47,10 +46,10 @@ int main(int argc, char *argv[])
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Parmetis test options","");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Parmetis test options","");
   PetscCall(PetscOptionsString("-prefix","Path and prefix of test file","",prefix,prefix,sizeof(prefix),&flg));
   PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must specify -prefix");
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscCall(PetscMalloc1(size+1,&vtxdist));
 

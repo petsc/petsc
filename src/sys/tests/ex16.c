@@ -6,13 +6,12 @@ static char help[] = "Demonstrates PetscMatlabEngineXXX()\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    rank;
   char           buffer[256],*output,user[256];
   PetscBool      userhappy = PETSC_FALSE;
 
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   PetscCall(PetscMatlabEngineGetOutput(PETSC_MATLAB_ENGINE_(PETSC_COMM_WORLD),&output));
 

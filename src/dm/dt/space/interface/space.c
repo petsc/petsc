@@ -188,7 +188,6 @@ PetscErrorCode PetscSpaceSetFromOptions(PetscSpace sp)
   const char    *defaultType;
   char           name[256];
   PetscBool      flg;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
@@ -199,7 +198,7 @@ PetscErrorCode PetscSpaceSetFromOptions(PetscSpace sp)
   }
   if (!PetscSpaceRegisterAllCalled) PetscCall(PetscSpaceRegisterAll());
 
-  ierr = PetscObjectOptionsBegin((PetscObject) sp);PetscCall(ierr);
+  PetscObjectOptionsBegin((PetscObject) sp);
   PetscCall(PetscOptionsFList("-petscspace_type", "Linear space", "PetscSpaceSetType", PetscSpaceList, defaultType, name, 256, &flg));
   if (flg) {
     PetscCall(PetscSpaceSetType(sp, name));
@@ -218,7 +217,7 @@ PetscErrorCode PetscSpaceSetFromOptions(PetscSpace sp)
   }
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) sp));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscCall(PetscSpaceViewFromOptions(sp, NULL, "-petscspace_view"));
   PetscFunctionReturn(0);
 }

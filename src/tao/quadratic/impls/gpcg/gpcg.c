@@ -32,9 +32,9 @@ static PetscErrorCode TaoSetFromOptions_GPCG(PetscOptionItems *PetscOptionsObjec
   PetscBool      flg;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"Gradient Projection, Conjugate Gradient method for bound constrained optimization"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"Gradient Projection, Conjugate Gradient method for bound constrained optimization");
   PetscCall(PetscOptionsInt("-tao_gpcg_maxpgits","maximum number of gradient projections per GPCG iterate",NULL,gpcg->maxgpits,&gpcg->maxgpits,&flg));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscCall(KSPSetFromOptions(tao->ksp));
   PetscCall(TaoLineSearchSetFromOptions(tao->linesearch));
   PetscFunctionReturn(0);

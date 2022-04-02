@@ -1113,7 +1113,7 @@ static PetscErrorCode TSSetFromOptions_MPRK(PetscOptionItems *PetscOptionsObject
   TS_MPRK        *mprk = (TS_MPRK*)ts->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"PRK ODE solver options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"PRK ODE solver options");
   {
     MPRKTableauLink link;
     PetscInt        count,choice;
@@ -1126,7 +1126,7 @@ static PetscErrorCode TSSetFromOptions_MPRK(PetscOptionItems *PetscOptionsObject
     if (flg) PetscCall(TSMPRKSetType(ts,namelist[choice]));
     PetscCall(PetscFree(namelist));
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

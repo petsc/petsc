@@ -33,18 +33,16 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   const char    *runTypes[2] = {"full", "test"};
   PetscInt       run;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   options->runType        = RUN_FULL;
   options->useDualPenalty = PETSC_FALSE;
-
-  ierr = PetscOptionsBegin(comm, "", "Inverse Problem Options", "DMPLEX");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Inverse Problem Options", "DMPLEX");
   run  = options->runType;
   PetscCall(PetscOptionsEList("-run_type", "The run type", "ex2.c", runTypes, 2, runTypes[options->runType], &run, NULL));
   options->runType = (RunType) run;
   PetscCall(PetscOptionsBool("-use_dual_penalty", "Penalize deviation from both goals", "ex2.c", options->useDualPenalty, &options->useDualPenalty, NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

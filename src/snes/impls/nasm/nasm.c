@@ -178,7 +178,7 @@ static PetscErrorCode SNESSetFromOptions_NASM(PetscOptionItems *PetscOptionsObje
   SNES_NASM         *nasm = (SNES_NASM*)snes->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"Nonlinear Additive Schwarz options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"Nonlinear Additive Schwarz options");
   PetscCall(PetscOptionsEnum("-snes_nasm_type","Type of restriction/extension","",SNESNASMTypes,(PetscEnum)nasm->type,(PetscEnum*)&asmtype,&flg));
   if (flg) PetscCall(SNESNASMSetType(snes,asmtype));
   flg    = PETSC_FALSE;
@@ -193,7 +193,7 @@ static PetscErrorCode SNESSetFromOptions_NASM(PetscOptionItems *PetscOptionsObje
     PetscCall(PetscLogEventRegister("SNESNASMSubSolve",((PetscObject)snes)->classid,&nasm->eventsubsolve));
     PetscCall(PetscLogEventRegister("SNESNASMRestrict",((PetscObject)snes)->classid,&nasm->eventrestrictinterp));
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

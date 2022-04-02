@@ -212,7 +212,6 @@ int main(int argc,char **args)
   PetscScalar    *dataX = NULL,*dataB = NULL, *dataR = NULL, *dataBt = NULL;
   PetscScalar    *aX,*aB,*aBt;
   PetscReal      err;
-  PetscErrorCode ierr;
 
   PetscCall(PetscInitialize(&argc,&args,NULL,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
@@ -251,9 +250,9 @@ int main(int argc,char **args)
     PetscCall(MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE));
   }
   PetscCall(MatViewFromOptions(A,NULL,"-A_init_view"));
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","","");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,"","","");
   PetscCall(PetscOptionsFList("-A_mat_type","Matrix type","MatSetType",MatList,deft,mattype,256,&flg));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   if (flg) {
     Mat A2;
 

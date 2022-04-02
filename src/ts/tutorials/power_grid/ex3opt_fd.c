@@ -47,7 +47,6 @@ int main(int argc,char **argv)
 {
   Vec                p;
   PetscScalar        *x_ptr;
-  PetscErrorCode     ierr;
   PetscMPIInt        size;
   AppCtx             ctx;
   Vec                lowerb,upperb;
@@ -66,7 +65,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set runtime options
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Swing equation options","");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Swing equation options","");
   {
     ctx.beta    = 2;
     ctx.c       = 10000.0;
@@ -92,7 +91,7 @@ int main(int argc,char **argv)
     printtofile = PETSC_FALSE;
     PetscCall(PetscOptionsBool("-printtofile","Print convergence results to file","",printtofile,&printtofile,NULL));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   /* Create TAO solver and set desired solution method */
   PetscCall(TaoCreate(PETSC_COMM_WORLD,&tao));

@@ -464,21 +464,20 @@ int main(int argc, char **argv)
   TS               ts;
   Mat              J;
   LandauCtx        *ctx;
-  PetscErrorCode   ierr;
 #if defined(PETSC_USE_LOG)
   PetscLogStage    stage;
 #endif
 
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   // process args
-  ierr = PetscOptionsBegin(PETSC_COMM_SELF, "", "Collision Options", "DMPLEX");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_SELF, "", "Collision Options", "DMPLEX");
   PetscCall(PetscOptionsInt("-number_spatial_vertices", "Number of user spatial vertices to be batched for Landau", "ex30.c", nvert, &nvert, NULL));
   PetscCall(PetscOptionsInt("-dim", "Velocity space dimension", "ex30.c", dim, &dim, NULL));
   PetscCall(PetscOptionsInt("-number_particles_per_dimension", "Number of particles per grid, with slight modification per spatial vertex, in each dimension of base Cartesian grid", "ex30.c", Np, &Np, NULL));
   PetscCall(PetscOptionsInt("-view_vertex_target", "Batch to view with diagnostics", "ex30.c", btarget, &btarget, NULL));
   PetscCheck(btarget < nvert, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Batch to view %" PetscInt_FMT " should be < number of vertices %" PetscInt_FMT,btarget,nvert);
   PetscCall(PetscOptionsInt("-view_grid_target", "Grid to view with diagnostics", "ex30.c", gtarget, &gtarget, NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   /* Create a mesh */
   PetscCall(DMPlexLandauCreateVelocitySpace(PETSC_COMM_SELF, dim, "", &X, &J, &pack));
   PetscCall(DMSetUp(pack));

@@ -113,8 +113,6 @@ static void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
   options->shear       = PETSC_FALSE;
   options->spectral    = PETSC_FALSE;
@@ -122,13 +120,13 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->homogeneous = PETSC_FALSE;
   options->viewError   = PETSC_FALSE;
 
-  ierr = PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");
   PetscCall(PetscOptionsBool("-shear", "Shear the domain", "ex13.c", options->shear, &options->shear, NULL));
   PetscCall(PetscOptionsBool("-spectral", "Look at the spectrum along planes of the solution", "ex13.c", options->spectral, &options->spectral, NULL));
   PetscCall(PetscOptionsBool("-adjoint", "Solve the adjoint problem", "ex13.c", options->adjoint, &options->adjoint, NULL));
   PetscCall(PetscOptionsBool("-homogeneous", "Use homogeneous boundary conditions", "ex13.c", options->homogeneous, &options->homogeneous, NULL));
   PetscCall(PetscOptionsBool("-error_view", "Output the solution error", "ex13.c", options->viewError, &options->viewError, NULL));
-  ierr = PetscOptionsEnd();
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

@@ -666,11 +666,11 @@ PetscErrorCode KSPSetFromOptions_LGMRES(PetscOptionItems *PetscOptionsObject,KSP
 
   PetscFunctionBegin;
   PetscCall(KSPSetFromOptions_GMRES(PetscOptionsObject,ksp));
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"KSP LGMRES Options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"KSP LGMRES Options");
   PetscCall(PetscOptionsBool("-ksp_lgmres_constant","Use constant approx. space size","KSPGMRESSetConstant",lgmres->approx_constant,&lgmres->approx_constant,NULL));
   PetscCall(PetscOptionsInt("-ksp_lgmres_augment","Number of error approximations to augment the Krylov space with","KSPLGMRESSetAugDim",lgmres->aug_dim,&aug,&flg));
   if (flg) PetscCall(KSPLGMRESSetAugDim(ksp,aug));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

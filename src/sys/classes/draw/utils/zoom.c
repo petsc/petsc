@@ -20,7 +20,6 @@ PetscErrorCode  PetscDrawZoom(PetscDraw draw,PetscErrorCode (*func)(PetscDraw,vo
   PetscDrawButton button;
   PetscReal       dpause,xc,yc,scale = 1.0,w,h,xr,xl,yr,yl,xmin,xmax,ymin,ymax;
   PetscBool       isnull;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscCall(PetscDrawIsNull(draw,&isnull));
@@ -28,9 +27,9 @@ PetscErrorCode  PetscDrawZoom(PetscDraw draw,PetscErrorCode (*func)(PetscDraw,vo
 
   PetscCall(PetscDrawCheckResizedWindow(draw));
   PetscCall(PetscDrawClear(draw));
-  ierr = PetscDrawCollectiveBegin(draw);PetscCall(ierr);
+  PetscDrawCollectiveBegin(draw);
   PetscCall((*func)(draw,ctx));
-  ierr = PetscDrawCollectiveEnd(draw);PetscCall(ierr);
+  PetscDrawCollectiveEnd(draw);
   PetscCall(PetscDrawFlush(draw));
 
   PetscCall(PetscDrawGetPause(draw,&dpause));
@@ -60,9 +59,9 @@ PetscErrorCode  PetscDrawZoom(PetscDraw draw,PetscErrorCode (*func)(PetscDraw,vo
     w *= scale; h *= scale;
     PetscCall(PetscDrawClear(draw));
     PetscCall(PetscDrawSetCoordinates(draw,xl,yl,xr,yr));
-    ierr = PetscDrawCollectiveBegin(draw);PetscCall(ierr);
+    PetscDrawCollectiveBegin(draw);
     PetscCall((*func)(draw,ctx));
-    ierr = PetscDrawCollectiveEnd(draw);PetscCall(ierr);
+    PetscDrawCollectiveEnd(draw);
     PetscCall(PetscDrawFlush(draw));
     PetscCall(PetscDrawGetMouseButton(draw,&button,&xc,&yc,NULL,NULL));
   }

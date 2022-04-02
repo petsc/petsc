@@ -41,7 +41,6 @@ int main(int argc,char **argv)
   Vec               X;          /* solution, residual vectors */
   Mat               J;          /* Jacobian matrix */
   PetscInt          steps,mx;
-  PetscErrorCode    ierr;
   DM                da;
   PetscReal         ftime,hx,dt;
   struct _User      user;       /* user-defined work context */
@@ -61,7 +60,7 @@ int main(int argc,char **argv)
   PetscCall(DMCreateGlobalVector(da,&X));
 
   /* Initialize user application context */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Advection-reaction options","");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Advection-reaction options","");
   {
     user.A      = 1;
     user.B      = 3;
@@ -78,7 +77,7 @@ int main(int argc,char **argv)
     PetscCall(PetscOptionsReal("-vleft","Dirichlet boundary condition","",user.vleft,&user.vleft,NULL));
     PetscCall(PetscOptionsReal("-vright","Dirichlet boundary condition","",user.vright,&user.vright,NULL));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context

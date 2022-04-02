@@ -44,7 +44,6 @@ int main(int argc, char **argv)
   Vec               x; /*solution vector*/
   Mat               A; /*Jacobian*/
   PetscInt          steps,mx,eimex_rowcol[2],two;
-  PetscErrorCode    ierr;
   PetscScalar       *x_ptr;
   PetscReal         ftime,dt,norm;
   Vec               ref;
@@ -53,10 +52,10 @@ int main(int argc, char **argv)
 
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   /* Initialize user application context */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"van der Pol options","");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"van der Pol options","");
   user.mu      = 1e0;
   PetscCall(PetscOptionsReal("-eps","Stiffness controller","",user.mu,&user.mu,NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Set runtime options

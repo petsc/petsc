@@ -10,14 +10,12 @@ typedef struct {
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
   options->its = 1;
 
-  ierr = PetscOptionsBegin(comm, "", "FE Injection Options", "PETSCFE");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "FE Injection Options", "PETSCFE");
   PetscCall(PetscOptionsInt("-its", "The number of replications for timing", "ex1.c", options->its, &options->its, NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

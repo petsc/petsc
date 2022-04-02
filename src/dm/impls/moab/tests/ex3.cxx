@@ -20,8 +20,6 @@ typedef struct {
 
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   options->debug             = PETSC_FALSE;
   options->nlevels           = 1;
@@ -34,7 +32,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->input_file[0]     = '\0';
   PetscCall(PetscStrcpy(options->output_file,"ex3.h5m"));
 
-  ierr = PetscOptionsBegin(comm, "", "Uniform Mesh Refinement Options", "DMMOAB");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Uniform Mesh Refinement Options", "DMMOAB");
   PetscCall(PetscOptionsBool("-debug", "Enable debug messages", "ex2.cxx", options->debug, &options->debug, NULL));
   PetscCall(PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex3.cxx", options->dim, &options->dim, NULL,0,3));
   PetscCall(PetscOptionsBoundedInt("-n", "The number of elements in each dimension", "ex3.cxx", options->nele, &options->nele, NULL,1));
@@ -44,7 +42,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsBool("-simplex", "Create simplices instead of tensor product elements", "ex3.cxx", options->simplex, &options->simplex, NULL));
   PetscCall(PetscOptionsString("-input", "The input mesh file", "ex3.cxx", options->input_file, options->input_file, sizeof(options->input_file), NULL));
   PetscCall(PetscOptionsString("-io", "Write out the mesh and solution that is defined on it (Default H5M format)", "ex3.cxx", options->output_file, options->output_file, sizeof(options->output_file), &options->write_output));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscCall(PetscLogEventRegister("CreateMesh",          DM_CLASSID,   &options->createMeshEvent));
   PetscFunctionReturn(0);

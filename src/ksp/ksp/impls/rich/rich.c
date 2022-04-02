@@ -175,12 +175,12 @@ PetscErrorCode KSPSetFromOptions_Richardson(PetscOptionItems *PetscOptionsObject
   PetscBool      flg,flg2;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"KSP Richardson Options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"KSP Richardson Options");
   PetscCall(PetscOptionsReal("-ksp_richardson_scale","damping factor","KSPRichardsonSetScale",rich->scale,&tmp,&flg));
   if (flg) PetscCall(KSPRichardsonSetScale(ksp,tmp));
   PetscCall(PetscOptionsBool("-ksp_richardson_self_scale","dynamically determine optimal damping factor","KSPRichardsonSetSelfScale",rich->selfscale,&flg2,&flg));
   if (flg) PetscCall(KSPRichardsonSetSelfScale(ksp,flg2));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

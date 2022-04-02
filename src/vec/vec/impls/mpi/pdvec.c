@@ -447,7 +447,6 @@ PetscErrorCode  VecView_MPI_Draw(Vec xin,PetscViewer viewer)
   PetscBool         isnull;
   PetscDrawAxis     axis;
   const PetscScalar *xarray;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   PetscCall(PetscViewerDrawGetDraw(viewer,0,&draw));
@@ -480,14 +479,14 @@ PetscErrorCode  VecView_MPI_Draw(Vec xin,PetscViewer viewer)
   if (rank) { /* receive value from right */
     PetscCallMPI(MPI_Recv(&tmp,1,MPIU_REAL,rank-1,tag,PetscObjectComm((PetscObject)xin),&status));
   }
-  ierr = PetscDrawCollectiveBegin(draw);PetscCall(ierr);
+  PetscDrawCollectiveBegin(draw);
   if (rank) {
     PetscCall(PetscDrawLine(draw,(PetscReal)start-1,tmp,(PetscReal)start,PetscRealPart(xarray[0]),PETSC_DRAW_RED));
   }
   for (i=1; i<xin->map->n; i++) {
     PetscCall(PetscDrawLine(draw,(PetscReal)(i-1+start),PetscRealPart(xarray[i-1]),(PetscReal)(i+start),PetscRealPart(xarray[i]),PETSC_DRAW_RED));
   }
-  ierr = PetscDrawCollectiveEnd(draw);PetscCall(ierr);
+  PetscDrawCollectiveEnd(draw);
   PetscCall(VecRestoreArrayRead(xin,&xarray));
 
   PetscCall(PetscDrawFlush(draw));

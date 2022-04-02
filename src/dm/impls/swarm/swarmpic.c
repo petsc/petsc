@@ -840,20 +840,19 @@ PetscErrorCode DMSwarmComputeLocalSizeFromOptions(DM sw)
   PetscInt      *N, Ns, dim, n;
   PetscBool      flg;
   PetscMPIInt    size, rank;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject) sw), &size));
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject) sw), &rank));
   PetscCall(PetscCalloc1(size, &N));
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject) sw), "", "DMSwarm Options", "DMSWARM");PetscCall(ierr);
+  PetscOptionsBegin(PetscObjectComm((PetscObject) sw), "", "DMSwarm Options", "DMSWARM");
   n = size;
   PetscCall(PetscOptionsIntArray("-dm_swarm_num_particles", "The target number of particles", "", N, &n, NULL));
   PetscCall(DMSwarmGetNumSpecies(sw, &Ns));
   PetscCall(PetscOptionsInt("-dm_swarm_num_species", "The number of species", "DMSwarmSetNumSpecies", Ns, &Ns, &flg));
   if (flg) PetscCall(DMSwarmSetNumSpecies(sw, Ns));
   PetscCall(PetscOptionsString("-dm_swarm_coordinate_function", "Function to determine particle coordinates", "DMSwarmSetCoordinateFunction", funcname, funcname, sizeof(funcname), &flg));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   if (flg) {
     PetscSimplePointFunc coordFunc;
 
@@ -1046,12 +1045,11 @@ PetscErrorCode DMSwarmInitializeVelocitiesFromOptions(DM sw, const PetscReal v0[
   const char    *prefix;
   char           funcname[PETSC_MAX_PATH_LEN];
   PetscBool      flg;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject) sw), "", "DMSwarm Options", "DMSWARM");PetscCall(ierr);
+  PetscOptionsBegin(PetscObjectComm((PetscObject) sw), "", "DMSwarm Options", "DMSWARM");
   PetscCall(PetscOptionsString("-dm_swarm_velocity_function", "Function to determine particle velocities", "DMSwarmSetVelocityFunction", funcname, funcname, sizeof(funcname), &flg));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   if (flg) {
     PetscSimplePointFunc velFunc;
 

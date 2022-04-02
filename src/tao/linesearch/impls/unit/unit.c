@@ -11,8 +11,8 @@ static PetscErrorCode TaoLineSearchDestroy_Unit(TaoLineSearch ls)
 static PetscErrorCode TaoLineSearchSetFromOptions_Unit(PetscOptionItems *PetscOptionsObject,TaoLineSearch ls)
 {
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"No Unit line search options"));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadBegin(PetscOptionsObject,"No Unit line search options");
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

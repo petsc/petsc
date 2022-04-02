@@ -362,7 +362,6 @@ static PetscErrorCode DMDAViewCoefficientsGnuplot2d(DM da,Vec fields,const char 
   PetscInt               si,sj,nx,ny,i,j,p;
   PetscInt               n_dofs,d;
   GaussPointCoefficients **_coefficients;
-  PetscErrorCode         ierr;
 
   PetscFunctionBeginUser;
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
@@ -397,9 +396,9 @@ static PetscErrorCode DMDAViewCoefficientsGnuplot2d(DM da,Vec fields,const char 
 
         PetscCall(PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e ",PetscRealPart(coord_x),PetscRealPart(coord_y)));
 
-        ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e %1.6e %1.6e",
-                            PetscRealPart(_coefficients[j][i].E[p]),PetscRealPart(_coefficients[j][i].nu[p]),
-                            PetscRealPart(_coefficients[j][i].fx[p]),PetscRealPart(_coefficients[j][i].fy[p]));PetscCall(ierr);
+        PetscCall(PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e %1.6e %1.6e",
+                               PetscRealPart(_coefficients[j][i].E[p]),PetscRealPart(_coefficients[j][i].nu[p]),
+                               PetscRealPart(_coefficients[j][i].fx[p]),PetscRealPart(_coefficients[j][i].fy[p])));
         PetscCall(PetscFPrintf(PETSC_COMM_SELF,fp,"\n"));
       }
     }

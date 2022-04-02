@@ -26,7 +26,6 @@ int main(int argc,char **argv)
 {
   TS             ts,quadts;     /* ODE integrator */
   Vec            U;             /* solution will be stored here */
-  PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscInt       n = 2;
   AppCtx         ctx;
@@ -71,7 +70,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set runtime options
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Swing equation options","");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Swing equation options","");
   {
     ctx.beta    = 2;
     ctx.c       = 10000.0;
@@ -116,7 +115,7 @@ int main(int argc,char **argv)
     sa = SA_ADJ;
     PetscCall(PetscOptionsEnum("-sa_method","Sensitivity analysis method (adj or tlm)","",SAMethods,(PetscEnum)sa,(PetscEnum*)&sa,NULL));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context

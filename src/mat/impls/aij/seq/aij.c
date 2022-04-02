@@ -10,15 +10,14 @@
 
 PetscErrorCode MatSeqAIJSetTypeFromOptions(Mat A)
 {
-  PetscErrorCode       ierr;
   PetscBool            flg;
   char                 type[256];
 
   PetscFunctionBegin;
-  ierr = PetscObjectOptionsBegin((PetscObject)A);PetscCall(ierr);
+  PetscObjectOptionsBegin((PetscObject)A);
   PetscCall(PetscOptionsFList("-mat_seqaij_type","Matrix SeqAIJ type","MatSeqAIJSetType",MatSeqAIJList,"seqaij",type,256,&flg));
   if (flg) PetscCall(MatSeqAIJSetType(A,type));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 
@@ -1002,8 +1001,7 @@ PetscErrorCode MatView_SeqAIJ_Draw_Zoom(PetscDraw draw,void *Aa)
   /* loop over matrix elements drawing boxes */
   PetscCall(MatSeqAIJGetArrayRead(A,&aa));
   if (format != PETSC_VIEWER_DRAW_CONTOUR) {
-    PetscErrorCode ierr;
-    ierr = PetscDrawCollectiveBegin(draw);PetscCall(ierr);
+    PetscDrawCollectiveBegin(draw);
     /* Blue for negative, Cyan for zero and  Red for positive */
     color = PETSC_DRAW_BLUE;
     for (i=0; i<m; i++) {
@@ -1032,14 +1030,13 @@ PetscErrorCode MatView_SeqAIJ_Draw_Zoom(PetscDraw draw,void *Aa)
         PetscCall(PetscDrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color));
       }
     }
-    ierr = PetscDrawCollectiveEnd(draw);PetscCall(ierr);
+    PetscDrawCollectiveEnd(draw);
   } else {
     /* use contour shading to indicate magnitude of values */
     /* first determine max of all nonzero values */
     PetscReal      minv = 0.0, maxv = 0.0;
     PetscInt       nz   = a->nz, count = 0;
     PetscDraw      popup;
-    PetscErrorCode ierr;
 
     for (i=0; i<nz; i++) {
       if (PetscAbsScalar(aa[i]) > maxv) maxv = PetscAbsScalar(aa[i]);
@@ -1048,7 +1045,7 @@ PetscErrorCode MatView_SeqAIJ_Draw_Zoom(PetscDraw draw,void *Aa)
     PetscCall(PetscDrawGetPopup(draw,&popup));
     PetscCall(PetscDrawScalePopup(popup,minv,maxv));
 
-    ierr = PetscDrawCollectiveBegin(draw);PetscCall(ierr);
+    PetscDrawCollectiveBegin(draw);
     for (i=0; i<m; i++) {
       y_l = m - i - 1.0;
       y_r = y_l + 1.0;
@@ -1060,7 +1057,7 @@ PetscErrorCode MatView_SeqAIJ_Draw_Zoom(PetscDraw draw,void *Aa)
         count++;
       }
     }
-    ierr = PetscDrawCollectiveEnd(draw);PetscCall(ierr);
+    PetscDrawCollectiveEnd(draw);
   }
   PetscCall(MatSeqAIJRestoreArrayRead(A,&aa));
   PetscFunctionReturn(0);

@@ -46,7 +46,6 @@ int main(int argc,char **argv)
   PetscInt       i,m,nz,steps,max_steps,k,nphase=1;
   PetscScalar    zInitial,zFinal,val,*z;
   PetscReal      stepsz[4],T,ftime;
-  PetscErrorCode ierr;
   TS             ts;
   SNES           snes;
   Mat            Jmat;
@@ -71,11 +70,11 @@ int main(int argc,char **argv)
   appctx.debug      = PETSC_FALSE;
   appctx.useAlhs    = PETSC_FALSE;
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"","");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"","");
   PetscCall(PetscOptionsName("-debug",NULL,NULL,&appctx.debug));
   PetscCall(PetscOptionsName("-useAlhs",NULL,NULL,&appctx.useAlhs));
   PetscCall(PetscOptionsRangeInt("-nphase",NULL,NULL,nphase,&nphase,NULL,1,3));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   T = 0.014/nphase;
 
   /* create vector to hold ts solution */

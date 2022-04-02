@@ -124,7 +124,6 @@ int main(int argc,char **argv)
   PetscInt       direction[2];
   PetscBool      terminate[2];
   TSAdapt        adapt;
-  PetscErrorCode ierr;
 
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
@@ -133,11 +132,11 @@ int main(int argc,char **argv)
   app.Cr = 0.9;
   app.bounces = 0;
   app.maxbounces = 10;
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex44 options","");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex44 options","");
   PetscCall(PetscOptionsReal("-Cd","Drag coefficient","",app.Cd,&app.Cd,NULL));
   PetscCall(PetscOptionsReal("-Cr","Restitution coefficient","",app.Cr,&app.Cr,NULL));
   PetscCall(PetscOptionsInt("-maxbounces","Maximum number of bounces","",app.maxbounces,&app.maxbounces,NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
   /*PetscCall(TSSetSaveTrajectory(ts));*/

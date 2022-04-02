@@ -278,7 +278,6 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_klu(Mat A,MatFactorType ftype,Ma
 {
   Mat            B;
   Mat_KLU       *lu;
-  PetscErrorCode ierr;
   PetscInt       m=A->rmap->n,n=A->cmap->n,idx = 0,status;
   PetscBool      flg;
 
@@ -316,7 +315,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_klu(Mat A,MatFactorType ftype,Ma
 
   lu->Common.scale = 0; /* No row scaling */
 
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"KLU Options","Mat");PetscCall(ierr);
+  PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"KLU Options","Mat");
   /* Partial pivoting tolerance */
   PetscCall(PetscOptionsReal("-mat_klu_pivot_tol","Partial pivoting tolerance","None",lu->Common.tol,&lu->Common.tol,NULL));
   /* BTF pre-ordering */
@@ -326,7 +325,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_klu(Mat A,MatFactorType ftype,Ma
   lu->Common.ordering = (int)idx;
   /* Matrix row scaling */
   PetscCall(PetscOptionsEList("-mat_klu_row_scale","Matrix row scaling","None",scale,3,scale[0],&idx,&flg));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   *F = B;
   PetscFunctionReturn(0);
 }

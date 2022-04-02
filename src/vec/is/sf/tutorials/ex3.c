@@ -6,7 +6,6 @@ static const char help[] = "Test freeing of MPI types in PetscSF\n\n";
 
 int main(int argc, char **argv)
 {
-  PetscInt    ierr;
   PetscSF     sf;
   Vec         A,Aout;
   PetscScalar *bufA;
@@ -25,10 +24,10 @@ int main(int argc, char **argv)
 
   PetscCheck(size == 1,PETSC_COMM_WORLD, PETSC_ERR_USER, "Only coded for one MPI process");
 
-  ierr             = PetscOptionsBegin(PETSC_COMM_WORLD,"","PetscSF type freeing options","none");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,"","PetscSF type freeing options","none");
   test_dupped_type = PETSC_FALSE;
   PetscCall(PetscOptionsBool("-test_dupped_type", "Test dupped input type","",test_dupped_type,&test_dupped_type,NULL));
-  ierr             = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscCall(PetscSFCreate(PETSC_COMM_WORLD,&sf));
   PetscCall(PetscSFSetFromOptions(sf));

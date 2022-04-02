@@ -174,12 +174,10 @@ CEED_QFUNCTION(SetupMassGeoSphere)(void *ctx, const CeedInt Q, const CeedScalar 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *ctx)
 {
   DMPlexShape    shape = DM_SHAPE_UNKNOWN;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-
-  ierr = PetscOptionsBegin(comm, "", "libCEED Test Options", "DMPLEX");PetscCall(ierr);
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "libCEED Test Options", "DMPLEX");
+  PetscOptionsEnd();
   PetscCall(PetscOptionsGetEnum(NULL, NULL, "-dm_plex_shape", DMPlexShapes, (PetscEnum *) &shape, NULL));
   ctx->setupgeo      = NULL;
   ctx->setupgeofname = NULL;

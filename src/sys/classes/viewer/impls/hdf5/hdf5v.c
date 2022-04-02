@@ -43,7 +43,7 @@ static PetscErrorCode PetscViewerSetFromOptions_HDF5(PetscOptionItems *PetscOpti
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*)v->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"HDF5 PetscViewer Options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"HDF5 PetscViewer Options");
   PetscCall(PetscOptionsBool("-viewer_hdf5_base_dimension2","1d Vectors get 2 dimensions in HDF5","PetscViewerHDF5SetBaseDimension2",hdf5->basedimension2,&hdf5->basedimension2,NULL));
   PetscCall(PetscOptionsBool("-viewer_hdf5_sp_output","Force data to be written in single precision","PetscViewerHDF5SetSPOutput",hdf5->spoutput,&hdf5->spoutput,NULL));
   PetscCall(PetscOptionsBool("-viewer_hdf5_collective","Enable collective transfer mode","PetscViewerHDF5SetCollective",flg,&flg,&set));
@@ -51,7 +51,7 @@ static PetscErrorCode PetscViewerSetFromOptions_HDF5(PetscOptionItems *PetscOpti
   flg  = PETSC_FALSE;
   PetscCall(PetscOptionsBool("-viewer_hdf5_default_timestepping","Set default timestepping state","PetscViewerHDF5SetDefaultTimestepping",flg,&flg,&set));
   if (set) PetscCall(PetscViewerHDF5SetDefaultTimestepping(v,flg));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

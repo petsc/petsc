@@ -4,8 +4,8 @@
 PetscErrorCode KSPSetFromOptions_BCGS(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"KSP BCGS Options"));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadBegin(PetscOptionsObject,"KSP BCGS Options");
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

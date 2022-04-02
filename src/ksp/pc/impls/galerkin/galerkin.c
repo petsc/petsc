@@ -289,11 +289,11 @@ static PetscErrorCode PCSetFromOptions_Galerkin(PetscOptionItems *PetscOptionsOb
     PetscCall(KSPAppendOptionsPrefix(jac->ksp,"galerkin_"));
   }
 
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"Galerkin options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"Galerkin options");
   if (jac->ksp) {
     PetscCall(KSPSetFromOptions(jac->ksp));
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

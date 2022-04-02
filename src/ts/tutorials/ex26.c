@@ -113,7 +113,6 @@ int main(int argc,char **argv)
 {
   AppCtx            user;             /* user-defined work context */
   PetscInt          mx,my,steps;
-  PetscErrorCode    ierr;
   TS                ts;
   DM                da;
   Vec               X;
@@ -127,8 +126,7 @@ int main(int argc,char **argv)
   PetscCall(DMSetUp(da));
   PetscCall(TSSetDM(ts,(DM)da));
 
-  ierr = DMDAGetInfo(da,0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);PetscCall(ierr);
+  PetscCall(DMDAGetInfo(da,0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
   /*
      Problem parameters (velocity of lid, prandtl, and grashof numbers)
   */
@@ -138,13 +136,13 @@ int main(int argc,char **argv)
   user.parabolic   = PETSC_FALSE;
   user.cfl_initial = 50.;
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Driven cavity/natural convection options","");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Driven cavity/natural convection options","");
   PetscCall(PetscOptionsReal("-lidvelocity","Lid velocity, related to Reynolds number","",user.lidvelocity,&user.lidvelocity,NULL));
   PetscCall(PetscOptionsReal("-prandtl","Ratio of viscous to thermal diffusivity","",user.prandtl,&user.prandtl,NULL));
   PetscCall(PetscOptionsReal("-grashof","Ratio of bouyant to viscous forces","",user.grashof,&user.grashof,NULL));
   PetscCall(PetscOptionsBool("-parabolic","Relax incompressibility to make the system parabolic instead of differential-algebraic","",user.parabolic,&user.parabolic,NULL));
   PetscCall(PetscOptionsReal("-cfl_initial","Advective CFL for the first time step","",user.cfl_initial,&user.cfl_initial,NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscCall(DMDASetFieldName(da,0,"x-velocity"));
   PetscCall(DMDASetFieldName(da,1,"y-velocity"));

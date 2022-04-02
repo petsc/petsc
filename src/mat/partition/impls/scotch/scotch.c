@@ -76,7 +76,7 @@ PetscErrorCode MatPartitioningPTScotchGetImbalance(MatPartitioning part,PetscRea
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
-  PetscValidPointer(imb,2);
+  PetscValidRealPointer(imb,2);
   PetscUseMethod(part,"MatPartitioningPTScotchGetImbalance_C",(MatPartitioning,PetscReal*),(part,imb));
   PetscFunctionReturn(0);
 }
@@ -214,12 +214,12 @@ PetscErrorCode MatPartitioningSetFromOptions_PTScotch(PetscOptionItems *PetscOpt
 
   PetscFunctionBegin;
   PetscCall(MatPartitioningPTScotchGetStrategy(part,&strat));
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"PTScotch partitioning options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"PTScotch partitioning options");
   PetscCall(PetscOptionsEnum("-mat_partitioning_ptscotch_strategy","Strategy","MatPartitioningPTScotchSetStrategy",MPPTScotchStrategyTypes,(PetscEnum)strat,(PetscEnum*)&strat,&flag));
   if (flag) PetscCall(MatPartitioningPTScotchSetStrategy(part,strat));
   PetscCall(PetscOptionsReal("-mat_partitioning_ptscotch_imbalance","Load imbalance ratio","MatPartitioningPTScotchSetImbalance",scotch->imbalance,&r,&flag));
   if (flag) PetscCall(MatPartitioningPTScotchSetImbalance(part,r));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

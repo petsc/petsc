@@ -1963,7 +1963,6 @@ PetscErrorCode PCPatchComputeFunction_Internal(PC pc, Vec x, Vec F, PetscInt poi
   const PetscInt *dofsArrayWithAll;
   const PetscInt *cellsArray;
   PetscInt        ncell, offset, pStart, pEnd;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscCall(PetscLogEventBegin(PC_Patch_ComputeOp, pc, 0, 0, 0));
@@ -1986,9 +1985,7 @@ PetscErrorCode PCPatchComputeFunction_Internal(PC pc, Vec x, Vec F, PetscInt poi
   PetscStackPush("PCPatch user callback");
   /* Cannot reuse the same IS because the geometry info is being cached in it */
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, ncell, cellsArray + offset, PETSC_USE_POINTER, &patch->cellIS));
-  ierr = patch->usercomputef(pc, point, x, F, patch->cellIS, ncell*patch->totalDofsPerCell, dofsArray + offset*patch->totalDofsPerCell,
-                                                                                            dofsArrayWithAll + offset*patch->totalDofsPerCell,
-                                                                                            patch->usercomputefctx);PetscCall(ierr);
+  PetscCall(patch->usercomputef(pc, point, x, F, patch->cellIS, ncell*patch->totalDofsPerCell, dofsArray + offset*patch->totalDofsPerCell,dofsArrayWithAll + offset*patch->totalDofsPerCell,patch->usercomputefctx));
   PetscStackPop;
   PetscCall(ISDestroy(&patch->cellIS));
   PetscCall(ISRestoreIndices(patch->dofs, &dofsArray));
@@ -2256,7 +2253,6 @@ static PetscErrorCode PCPatchPrecomputePatchTensors_Private(PC pc)
   IS              dofMap;
   IS              cellIS;
   const PetscInt  ndof  = patch->totalDofsPerCell;
-  PetscErrorCode  ierr;
   Mat             vecMat;
   PetscInt        cStart, cEnd;
   DM              dm, plex;
@@ -2310,8 +2306,7 @@ static PetscErrorCode PCPatchPrecomputePatchTensors_Private(PC pc)
   }
   PetscCall(VecSet(patch->cellMats, 0));
 
-  ierr = MatCreateShell(PETSC_COMM_SELF, ncell*ndof, ncell*ndof, ncell*ndof, ncell*ndof,
-                        (void*)patch->cellMats, &vecMat);PetscCall(ierr);
+  PetscCall(MatCreateShell(PETSC_COMM_SELF, ncell*ndof, ncell*ndof, ncell*ndof, ncell*ndof,(void*)patch->cellMats, &vecMat));
   PetscCall(MatShellSetOperation(vecMat, MATOP_SET_VALUES, (void(*)(void))&MatSetValues_PCPatch_Private));
   PetscCall(ISGetSize(patch->allCells, &ncell));
   PetscCall(ISCreateStride(PETSC_COMM_SELF, ndof*ncell, 0, 1, &dofMap));
@@ -2371,8 +2366,7 @@ static PetscErrorCode PCPatchPrecomputePatchTensors_Private(PC pc)
     }
     PetscCall(VecSet(patch->intFacetMats, 0));
 
-    ierr = MatCreateShell(PETSC_COMM_SELF, nIntFacets*ndof*2, nIntFacets*ndof*2, nIntFacets*ndof*2, nIntFacets*ndof*2,
-                          (void*)patch->intFacetMats, &vecMat);PetscCall(ierr);
+    PetscCall(MatCreateShell(PETSC_COMM_SELF, nIntFacets*ndof*2, nIntFacets*ndof*2, nIntFacets*ndof*2, nIntFacets*ndof*2,(void*)patch->intFacetMats, &vecMat));
     PetscCall(MatShellSetOperation(vecMat, MATOP_SET_VALUES, (void(*)(void))&MatSetValues_PCPatch_Private));
     PetscCall(ISCreateStride(PETSC_COMM_SELF, 2*ndof*nIntFacets, 0, 1, &dofMap));
     PetscCall(ISGetIndices(dofMap, &dofMapArray));
@@ -3078,7 +3072,7 @@ static PetscErrorCode PCSetFromOptions_PATCH(PetscOptionItems *PetscOptionsObjec
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject) pc, &comm));
   PetscCall(PetscObjectGetOptionsPrefix((PetscObject) pc, &prefix));
-  PetscCall(PetscOptionsHead(PetscOptionsObject, "Patch solver options"));
+  PetscOptionsHeadBegin(PetscOptionsObject, "Patch solver options");
 
   PetscCall(PetscSNPrintf(option, PETSC_MAX_PATH_LEN, "-%s_patch_save_operators", patch->classname));
   PetscCall(PetscOptionsBool(option,  "Store all patch operators for lifetime of object?", "PCPatchSetSaveOperators", patch->save_operators, &patch->save_operators, &flg));
@@ -3152,7 +3146,7 @@ static PetscErrorCode PCSetFromOptions_PATCH(PetscOptionItems *PetscOptionsObjec
   PetscCall(PetscOptionsGetViewer(comm,((PetscObject) pc)->options, prefix, option, &patch->viewerSection, &patch->formatSection, &patch->viewSection));
   PetscCall(PetscSNPrintf(option, PETSC_MAX_PATH_LEN, "-%s_patch_mat_view", patch->classname));
   PetscCall(PetscOptionsGetViewer(comm,((PetscObject) pc)->options, prefix, option, &patch->viewerMatrix, &patch->formatMatrix, &patch->viewMatrix));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   patch->optionsSet = PETSC_TRUE;
   PetscFunctionReturn(0);
 }

@@ -42,7 +42,6 @@ int main(int argc,char **argv)
   DM             da;
   UserContext    user;
   const char     *bcTypes[2] = {"dirichlet","neumann"};
-  PetscErrorCode ierr;
   PetscInt       bc;
   Vec            b,x;
   PetscBool      testsolver = PETSC_FALSE;
@@ -55,7 +54,7 @@ int main(int argc,char **argv)
   PetscCall(DMDASetUniformCoordinates(da,0,1,0,1,0,0));
   PetscCall(DMDASetFieldName(da,0,"Pressure"));
 
-  ierr        = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "DMqq");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "DMqq");
   user.rho    = 1.0;
   PetscCall(PetscOptionsReal("-rho", "The conductivity", "ex29.c", user.rho, &user.rho, NULL));
   user.nu     = 0.1;
@@ -64,7 +63,7 @@ int main(int argc,char **argv)
   PetscCall(PetscOptionsEList("-bc_type","Type of boundary condition","ex29.c",bcTypes,2,bcTypes[0],&bc,NULL));
   user.bcType = (BCType)bc;
   PetscCall(PetscOptionsBool("-testsolver", "Run solver multiple times, useful for performance studies of solver", "ex29.c", testsolver, &testsolver, NULL));
-  ierr        = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscCall(KSPSetComputeRHS(ksp,ComputeRHS,&user));
   PetscCall(KSPSetComputeOperators(ksp,ComputeMatrix,&user));

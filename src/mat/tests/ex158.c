@@ -11,7 +11,6 @@ static char help[] = "Illustrate how to use mpi FFTW and PETSc-FFTW interface \n
 
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    rank,size;
   PetscInt       N0=50,N1=20,N=N0*N1;
   PetscRandom    rdm;
@@ -25,9 +24,9 @@ int main(int argc,char **args)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires real numbers. Your current scalar type is complex");
 #endif
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "FFTW Options", "ex158");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "FFTW Options", "ex158");
   PetscCall(PetscOptionsBool("-use_FFTW_interface", "Use PETSc-FFTW interface", "ex158",use_interface, &use_interface, NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));

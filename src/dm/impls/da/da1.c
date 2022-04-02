@@ -68,7 +68,6 @@ static PetscErrorCode DMView_DA_1d(DM da,PetscViewer viewer)
     PetscInt       base;
     char           node[10];
     PetscBool      isnull;
-    PetscErrorCode ierr;
 
     PetscCall(PetscViewerDrawGetDraw(viewer,0,&draw));
     PetscCall(PetscDrawIsNull(draw,&isnull));
@@ -78,7 +77,7 @@ static PetscErrorCode DMView_DA_1d(DM da,PetscViewer viewer)
     PetscCall(PetscDrawClear(draw));
     PetscCall(PetscDrawSetCoordinates(draw,xmin,ymin,xmax,ymax));
 
-    ierr = PetscDrawCollectiveBegin(draw);PetscCall(ierr);
+    PetscDrawCollectiveBegin(draw);
     /* first processor draws all node lines */
     if (rank == 0) {
       PetscInt xmin_tmp;
@@ -90,11 +89,11 @@ static PetscErrorCode DMView_DA_1d(DM da,PetscViewer viewer)
       PetscCall(PetscDrawLine(draw,xmin,ymin,xmax,ymin,PETSC_DRAW_BLACK));
       PetscCall(PetscDrawLine(draw,xmin,ymax,xmax,ymax,PETSC_DRAW_BLACK));
     }
-    ierr = PetscDrawCollectiveEnd(draw);PetscCall(ierr);
+    PetscDrawCollectiveEnd(draw);
     PetscCall(PetscDrawFlush(draw));
     PetscCall(PetscDrawPause(draw));
 
-    ierr = PetscDrawCollectiveBegin(draw);PetscCall(ierr);
+    PetscDrawCollectiveBegin(draw);
     /* draw my box */
     ymin = 0; ymax = 0.3; xmin = dd->xs / dd->w; xmax = (dd->xe / dd->w)  - 1;
     PetscCall(PetscDrawLine(draw,xmin,ymin,xmax,ymin,PETSC_DRAW_RED));
@@ -107,7 +106,7 @@ static PetscErrorCode DMView_DA_1d(DM da,PetscViewer viewer)
       PetscCall(PetscSNPrintf(node,sizeof(node),"%d",(int)base++));
       PetscCall(PetscDrawString(draw,x,ymin,PETSC_DRAW_RED,node));
     }
-    ierr = PetscDrawCollectiveEnd(draw);PetscCall(ierr);
+    PetscDrawCollectiveEnd(draw);
     PetscCall(PetscDrawFlush(draw));
     PetscCall(PetscDrawPause(draw));
     PetscCall(PetscDrawSave(draw));

@@ -438,7 +438,7 @@ static PetscErrorCode TSSetUp_BDF(TS ts)
 static PetscErrorCode TSSetFromOptions_BDF(PetscOptionItems *PetscOptionsObject,TS ts)
 {
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"BDF ODE solver options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"BDF ODE solver options");
   {
     PetscBool flg;
     PetscInt  order;
@@ -446,7 +446,7 @@ static PetscErrorCode TSSetFromOptions_BDF(PetscOptionItems *PetscOptionsObject,
     PetscCall(PetscOptionsInt("-ts_bdf_order","Order of the BDF method","TSBDFSetOrder",order,&order,&flg));
     if (flg) PetscCall(TSBDFSetOrder(ts,order));
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

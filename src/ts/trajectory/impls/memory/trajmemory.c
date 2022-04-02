@@ -2056,7 +2056,7 @@ static PetscErrorCode TSTrajectorySetFromOptions_Memory(PetscOptionItems *PetscO
   PetscBool      flg;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"Memory based TS trajectory options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"Memory based TS trajectory options");
   {
     PetscCall(PetscOptionsInt("-ts_trajectory_max_cps_ram","Maximum number of checkpoints in RAM","TSTrajectorySetMaxCpsRAM",tjsch->max_cps_ram,&max_cps_ram,&flg));
     if (flg) {
@@ -2085,7 +2085,7 @@ static PetscErrorCode TSTrajectorySetFromOptions_Memory(PetscOptionItems *PetscO
       PetscCall(TSTrajectoryMemorySetType(tj,(TSTrajectoryMemoryType)etmp));
     }
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

@@ -5,7 +5,6 @@ static char help[] = "Test -dm_preallocate_only with DMStag\n\n";
 
 int main(int argc, char **argv)
 {
-  PetscErrorCode ierr;
   DM             dm;
   PetscInt       dim;
   Mat            A;
@@ -18,15 +17,7 @@ int main(int argc, char **argv)
 
   switch (dim) {
     case 1:
-      ierr = DMStagCreate1d(
-          PETSC_COMM_WORLD,
-          DM_BOUNDARY_NONE,
-          4,
-          1, 1,
-          DMSTAG_STENCIL_BOX,
-          1,
-          NULL,
-          &dm);PetscCall(ierr);
+      PetscCall(DMStagCreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,4,1, 1,DMSTAG_STENCIL_BOX,1,NULL,&dm));
       break;
     default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unsupported dimension %" PetscInt_FMT,dim);
   }

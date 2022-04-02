@@ -499,13 +499,13 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
   units->second   = 1e-7;
   units->kilogram = 1e-12;
 
-  ierr = PetscOptionsBegin(comm,NULL,"Scaled units options","");PetscCall(ierr);
+  PetscOptionsBegin(comm,NULL,"Scaled units options","");
   {
     PetscCall(PetscOptionsReal("-units_meter","1 meter in scaled length units","",units->meter,&units->meter,NULL));
     PetscCall(PetscOptionsReal("-units_second","1 second in scaled time units","",units->second,&units->second,NULL));
     PetscCall(PetscOptionsReal("-units_kilogram","1 kilogram in scaled mass units","",units->kilogram,&units->kilogram,NULL));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   units->Pascal = units->kilogram / (units->meter * PetscSqr(units->second));
   units->year   = 31556926. * units->second, /* seconds per year */
 
@@ -521,7 +521,7 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
   thi->erosion.exponent = 1.;
   thi->erosion.refvel   = 1.;   /* m/a */
 
-  ierr = PetscOptionsBegin(comm,NULL,"Toy Hydrostatic Ice options","");PetscCall(ierr);
+  PetscOptionsBegin(comm,NULL,"Toy Hydrostatic Ice options","");
   {
     QuadratureType quad       = QUAD_GAUSS;
     char           homexp[]   = "A";
@@ -603,7 +603,7 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
       PetscCall(PetscOptionsInt("-thi_monitor_interval","Frequency at which to write state files",NULL,thi->monitor_interval,&thi->monitor_interval,NULL));
     }
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   /* dimensionalize */
   thi->Lx    *= units->meter;
@@ -1530,18 +1530,17 @@ static PetscErrorCode THICreateDM3d(THI thi,DM *dm3d)
   MPI_Comm       comm;
   PetscInt       M    = 3,N = 3,P = 2;
   DM             da;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   PetscCall(PetscObjectGetComm((PetscObject)thi,&comm));
-  ierr = PetscOptionsBegin(comm,NULL,"Grid resolution options","");PetscCall(ierr);
+  PetscOptionsBegin(comm,NULL,"Grid resolution options","");
   {
     PetscCall(PetscOptionsInt("-M","Number of elements in x-direction on coarse level","",M,&M,NULL));
     N    = M;
     PetscCall(PetscOptionsInt("-N","Number of elements in y-direction on coarse level (if different from M)","",N,&N,NULL));
     PetscCall(PetscOptionsInt("-P","Number of elements in z-direction on coarse level","",P,&P,NULL));
   }
-  ierr  = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscCall(DMDACreate3d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX,P,N,M,1,PETSC_DETERMINE,PETSC_DETERMINE,sizeof(Node)/sizeof(PetscScalar),1,0,0,0,&da));
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));

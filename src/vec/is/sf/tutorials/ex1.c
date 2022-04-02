@@ -39,7 +39,6 @@ static PetscErrorCode PetscSFViewCustomLocals_Private(PetscSF sf,const PetscInt 
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       i,nroots,nrootsalloc,nleaves,nleavesalloc,*mine,stride;
   PetscSFNode    *remote;
   PetscMPIInt    rank,size;
@@ -53,7 +52,7 @@ int main(int argc,char **argv)
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
-  ierr            = PetscOptionsBegin(PETSC_COMM_WORLD,"","PetscSF Test Options","none");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,"","PetscSF Test Options","none");
   test_all        = PETSC_FALSE;
   PetscCall(PetscOptionsBool("-test_all","Test all SF communications","",test_all,&test_all,NULL));
   test_bcast      = test_all;
@@ -124,7 +123,7 @@ int main(int argc,char **argv)
   test_sf_distribute = PETSC_FALSE;
   PetscCall(PetscOptionsBool("-test_sf_distribute","Create an SF that 'distributes' to each process, like an alltoall","",test_sf_distribute,&test_sf_distribute,NULL));
   PetscCall(PetscOptionsString("-test_op","Designate which MPI_Op to use","",opstring,opstring,sizeof(opstring),NULL));
-  ierr            = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   if (test_sf_distribute) {
     nroots = size;

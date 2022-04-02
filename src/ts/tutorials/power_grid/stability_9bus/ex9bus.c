@@ -990,7 +990,6 @@ int main(int argc,char **argv)
 {
   TS               ts;
   SNES              snes_alg;
-  PetscErrorCode    ierr;
   PetscMPIInt       size;
   Userctx           user;
   PetscViewer       Xview,Ybusview,viewer;
@@ -1041,7 +1040,7 @@ int main(int argc,char **argv)
   PetscCall(MatLoad(user.Ybus,Ybusview));
 
   /* Set run time options */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Transient stability fault options","");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Transient stability fault options","");
   {
     user.tfaulton  = 1.0;
     user.tfaultoff = 1.2;
@@ -1059,7 +1058,7 @@ int main(int argc,char **argv)
     PetscCall(PetscOptionsBool("-setisdiff","","",user.setisdiff,&user.setisdiff,NULL));
     PetscCall(PetscOptionsBool("-dae_semiexplicit","","",user.semiexplicit,&user.semiexplicit,NULL));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscCall(PetscViewerDestroy(&Xview));
   PetscCall(PetscViewerDestroy(&Ybusview));

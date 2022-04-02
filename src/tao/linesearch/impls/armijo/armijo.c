@@ -35,7 +35,7 @@ static PetscErrorCode TaoLineSearchSetFromOptions_Armijo(PetscOptionItems *Petsc
   TaoLineSearch_ARMIJO *armP = (TaoLineSearch_ARMIJO *)ls->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"Armijo linesearch options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"Armijo linesearch options");
   PetscCall(PetscOptionsReal("-tao_ls_armijo_alpha", "initial reference constant", "", armP->alpha, &armP->alpha,NULL));
   PetscCall(PetscOptionsReal("-tao_ls_armijo_beta_inf", "decrease constant one", "", armP->beta_inf, &armP->beta_inf,NULL));
   PetscCall(PetscOptionsReal("-tao_ls_armijo_beta", "decrease constant", "", armP->beta, &armP->beta,NULL));
@@ -44,7 +44,7 @@ static PetscErrorCode TaoLineSearchSetFromOptions_Armijo(PetscOptionItems *Petsc
   PetscCall(PetscOptionsInt("-tao_ls_armijo_reference_policy", "policy for updating reference value", "", armP->referencePolicy, &armP->referencePolicy,NULL));
   PetscCall(PetscOptionsInt("-tao_ls_armijo_replacement_policy", "policy for updating memory", "", armP->replacementPolicy, &armP->replacementPolicy,NULL));
   PetscCall(PetscOptionsBool("-tao_ls_armijo_nondescending","Use nondescending armijo algorithm","",armP->nondescending,&armP->nondescending,NULL));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

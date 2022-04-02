@@ -1658,7 +1658,6 @@ PetscErrorCode FormJacobian3D(SNES snes,Vec x,Mat Amat,Mat Pmat,void *ctx)
 
 int main(int argc, char **argv)
 {
-  PetscErrorCode ierr;
   DM             dm;
   PetscInt       dim;
   PetscBool      no_coupling;
@@ -1673,39 +1672,14 @@ int main(int argc, char **argv)
 
   switch (dim) {
     case 1:
-      ierr = DMStagCreate1d(
-          PETSC_COMM_WORLD,
-          DM_BOUNDARY_NONE,
-          4,
-          1, 1,
-          DMSTAG_STENCIL_BOX,
-          1,
-          NULL,
-          &dm);PetscCall(ierr);
+      PetscCall(DMStagCreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,4,1, 1,DMSTAG_STENCIL_BOX,1,NULL,&dm));
       break;
     case 2:
-      ierr = DMStagCreate2d(
-          PETSC_COMM_WORLD,
-          DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
-          4, 3,
-          PETSC_DECIDE, PETSC_DECIDE,
-          1, 1, 1,
-          DMSTAG_STENCIL_BOX,
-          1,
-          NULL, NULL,
-          &dm);PetscCall(ierr);
+      PetscCall(DMStagCreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,4, 3,PETSC_DECIDE, PETSC_DECIDE,1, 1, 1,DMSTAG_STENCIL_BOX,1,NULL, NULL,&dm));
       break;
     case 3:
-      ierr = DMStagCreate3d(
-          PETSC_COMM_WORLD,
-          DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
-          4, 3, 3,
-          PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE,
-          1, 1, 1, 1,
-          DMSTAG_STENCIL_BOX,
-          1,
-          NULL, NULL, NULL,
-          &dm);PetscCall(ierr);
+      PetscCall(DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,4, 3, 3,PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE,1, 1, 1, 1,
+                               DMSTAG_STENCIL_BOX,1, NULL, NULL, NULL, &dm));
       break;
     default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unsupported dimension %" PetscInt_FMT,dim);
   }
@@ -1755,7 +1729,7 @@ int main(int argc, char **argv)
   PetscCall(VecSet(b,0.0)); // RHS
   PetscCall(SNESSolve(snes,b,x));
 
-  ierr = SNESDestroy(&snes);
+  PetscCall(SNESDestroy(&snes));
   PetscCall(VecDestroy(&x));
   PetscCall(VecDestroy(&b));
   PetscCall(DMDestroy(&dm));

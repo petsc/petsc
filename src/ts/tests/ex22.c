@@ -183,7 +183,6 @@ int main(int argc,char **argv)
   TS             ts;            /* ODE integrator */
   Vec            U;             /* solution will be stored here */
   Mat            J;             /* Jacobian matrix */
-  PetscErrorCode ierr;
   PetscInt       n = 16;
   AppCtx         app;
   DM             da;
@@ -193,14 +192,14 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex22 options","");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex22 options","");
   {
     app.A = 200000;
     PetscCall(PetscOptionsReal("-A","","",app.A,&app.A,NULL));
     app.uc = 0.5;
     PetscCall(PetscOptionsReal("-uc","","",app.uc,&app.uc,NULL));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscCall(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,-n,1,1,0,&da));
   PetscCall(DMSetFromOptions(da));

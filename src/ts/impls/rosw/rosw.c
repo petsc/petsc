@@ -1359,7 +1359,7 @@ static PetscErrorCode TSSetFromOptions_RosW(PetscOptionItems *PetscOptionsObject
   SNES           snes;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"RosW ODE solver options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"RosW ODE solver options");
   {
     RosWTableauLink link;
     PetscInt        count,choice;
@@ -1375,7 +1375,7 @@ static PetscErrorCode TSSetFromOptions_RosW(PetscOptionItems *PetscOptionsObject
 
     PetscCall(PetscOptionsBool("-ts_rosw_recompute_jacobian","Recompute the Jacobian at each stage","TSRosWSetRecomputeJacobian",ros->recompute_jacobian,&ros->recompute_jacobian,NULL));
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   /* Rosenbrock methods are linearly implicit, so set that unless the user has specifically asked for something else */
   PetscCall(TSGetSNES(ts,&snes));
   if (!((PetscObject)snes)->type_name) {

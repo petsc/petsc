@@ -14,7 +14,6 @@ _._._._._._._._._._._._._._._._._._._._._.*/
 
 int main(int argc, char *argv[])
 {
-  PetscErrorCode ierr;
   PetscInt       nx = 2;
   PetscInt       ny = 2;
   PetscInt       nz = 128;
@@ -22,10 +21,8 @@ int main(int argc, char *argv[])
   Mat            A;
 
   PetscCall(PetscInitialize(&argc,&argv,NULL,NULL));
-
-  ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_GHOSTED,DMDA_STENCIL_BOX,nx,ny,nz,
-                      PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,2,NULL,NULL,NULL,&da);PetscCall(ierr);
-
+  PetscCall(DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_GHOSTED,DMDA_STENCIL_BOX,nx,ny,nz,
+                         PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,2,NULL,NULL,NULL,&da));
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));
   PetscCall(DMView(da,PETSC_VIEWER_STDOUT_WORLD));

@@ -53,7 +53,6 @@ PetscErrorCode PetscDrawGetImage_X(PetscDraw draw,unsigned char palette[PETSC_DR
 {
   PetscDraw_X      *Xwin = (PetscDraw_X*)draw->data;
   PetscMPIInt      rank;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   if (out_w)      *out_w      = 0;
@@ -62,13 +61,13 @@ PetscErrorCode PetscDrawGetImage_X(PetscDraw draw,unsigned char palette[PETSC_DR
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank));
 
   /* make sure the X server processed requests from all processes */
-  ierr = PetscDrawCollectiveBegin(draw);PetscCall(ierr);
+  PetscDrawCollectiveBegin(draw);
   XSync(Xwin->disp,True);
-  ierr = PetscDrawCollectiveEnd(draw);PetscCall(ierr);
+  PetscDrawCollectiveEnd(draw);
   PetscCallMPI(MPI_Barrier(PetscObjectComm((PetscObject)draw)));
 
   /* only the first process return image data */
-  ierr = PetscDrawCollectiveBegin(draw);PetscCall(ierr);
+  PetscDrawCollectiveBegin(draw);
   if (rank == 0) {
     Window        root;
     XImage        *ximage;
@@ -97,6 +96,6 @@ PetscErrorCode PetscDrawGetImage_X(PetscDraw draw,unsigned char palette[PETSC_DR
     *out_h      = h;
     *out_pixels = pixels;
   }
-  ierr = PetscDrawCollectiveEnd(draw);PetscCall(ierr);
+  PetscDrawCollectiveEnd(draw);
   PetscFunctionReturn(0);
 }

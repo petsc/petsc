@@ -1323,7 +1323,6 @@ static void g3_conduct_wT(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscInt       mod, sol;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   options->modType      = MOD_INCOMPRESSIBLE;
@@ -1331,14 +1330,14 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->hasNullSpace = PETSC_TRUE;
   options->dmCell       = NULL;
 
-  ierr = PetscOptionsBegin(comm, "", "Low Mach flow Problem Options", "DMPLEX");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Low Mach flow Problem Options", "DMPLEX");
   mod = options->modType;
   PetscCall(PetscOptionsEList("-mod_type", "The model type", "ex76.c", modTypes, NUM_MOD_TYPES, modTypes[options->modType], &mod, NULL));
   options->modType = (ModType) mod;
   sol = options->solType;
   PetscCall(PetscOptionsEList("-sol_type", "The solution type", "ex76.c", solTypes, NUM_SOL_TYPES, solTypes[options->solType], &sol, NULL));
   options->solType = (SolType) sol;
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

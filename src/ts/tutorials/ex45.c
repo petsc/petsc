@@ -228,19 +228,18 @@ static void g0_temp(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscInt       sol;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   options->solType  = SOL_QUADRATIC_LINEAR;
   options->expTS    = PETSC_FALSE;
   options->lumped   = PETSC_TRUE;
 
-  ierr = PetscOptionsBegin(comm, "", "Heat Equation Options", "DMPLEX");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Heat Equation Options", "DMPLEX");
   PetscCall(PetscOptionsEList("-sol_type", "Type of exact solution", "ex45.c", solutionTypes, NUM_SOLUTION_TYPES, solutionTypes[options->solType], &sol, NULL));
   options->solType = (SolutionType) sol;
   PetscCall(PetscOptionsBool("-explicit", "Use explicit timestepping", "ex45.c", options->expTS, &options->expTS, NULL));
   PetscCall(PetscOptionsBool("-lumped", "Lump the mass matrix", "ex45.c", options->lumped, &options->lumped, NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

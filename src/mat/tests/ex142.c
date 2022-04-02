@@ -21,7 +21,6 @@ int main(int argc,char **args)
   PetscInt        func     = RANDOM;
   FuncType        function = RANDOM;
   PetscBool       view     = PETSC_FALSE;
-  PetscErrorCode  ierr;
   PetscScalar     *x_array,*y_array,*z_array;
   fftw_plan       fplan,bplan;
 
@@ -32,11 +31,11 @@ int main(int argc,char **args)
 
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE, "This is a uniprocessor example only!");
-  ierr     = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "FFTW Options", "ex142");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "FFTW Options", "ex142");
   PetscCall(PetscOptionsEList("-function", "Function type", "ex142", funcNames, NUM_FUNCS, funcNames[function], &func, NULL));
   PetscCall(PetscOptionsBool("-vec_view draw", "View the functions", "ex142", view, &view, NULL));
   function = (FuncType) func;
-  ierr     = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   for (DIM = 0; DIM < ndim; DIM++) {
     dim[DIM] = n;  /* size of real space vector in DIM-dimension */

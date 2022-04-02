@@ -46,7 +46,6 @@ int main(int argc,char **args)
   PetscInt       m,n;                    /* mesh dimensions in x- and y- directions */
   PetscInt       M,N;                    /* number of subdomains in x- and y- directions */
   PetscInt       i,j,Ii,J,Istart,Iend;
-  PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscBool      flg;
   PetscBool       user_set_subdomains;
@@ -60,7 +59,7 @@ int main(int argc,char **args)
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   comm = PETSC_COMM_WORLD;
   PetscCallMPI(MPI_Comm_size(comm,&size));
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex62","PC");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex62","PC");
   m = 15;
   PetscCall(PetscOptionsInt("-M", "Number of mesh points in the x-direction","PCGASMCreateSubdomains2D",m,&m,NULL));
   n = 17;
@@ -73,7 +72,7 @@ int main(int argc,char **args)
   PetscCall(PetscOptionsInt("-Ndomains","Number of subdomain tiles in the y-direction","PCGASMSetSubdomains2D",N,&N,NULL));
   overlap = 1;
   PetscCall(PetscOptionsInt("-overlap","Size of tile overlap.","PCGASMSetSubdomains2D",overlap,&overlap,NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   /* -------------------------------------------------------------------
          Compute the matrix and right-hand-side vector that define

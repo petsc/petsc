@@ -41,7 +41,7 @@ static PetscErrorCode PetscPartitionerSetFromOptions_Simple(PetscOptionItems *Pe
 
   PetscFunctionBegin;
   for (i = 0; i < 3; ++i) p->processGrid[i] = p->nodeGrid[i] = 1;
-  PetscCall(PetscOptionsHead(PetscOptionsObject, "PetscPartitioner Simple Options"));
+  PetscOptionsHeadBegin(PetscOptionsObject, "PetscPartitioner Simple Options");
   num  = 3;
   PetscCall(PetscOptionsIntArray("-petscpartitioner_simple_node_grid", "Number of nodes in each dimension", "", p->nodeGrid, &num, &flg));
   if (flg) {p->useGrid = PETSC_TRUE; p->gridDim = num;}
@@ -52,7 +52,7 @@ static PetscErrorCode PetscPartitionerSetFromOptions_Simple(PetscOptionItems *Pe
     if (p->gridDim < 0) p->gridDim = num;
     else PetscCheck(p->gridDim == num,PetscObjectComm((PetscObject) part), PETSC_ERR_ARG_INCOMP, "Process grid dimension %D != %D node grid dimension", num, p->gridDim);
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

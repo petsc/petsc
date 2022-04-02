@@ -16,7 +16,6 @@ typedef struct {
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscBool      flg;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   options->infile[0]     = '\0';
@@ -25,7 +24,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->outformat     = PETSC_VIEWER_HDF5_XDMF;
   options->heterogeneous = PETSC_FALSE;
   options->ntimes        = 2;
-  ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");
   PetscCall(PetscOptionsString("-infile", "The input mesh file", EX, options->infile, options->infile, sizeof(options->infile), &flg));
   PetscCheck(flg,comm, PETSC_ERR_USER_INPUT, "-infile needs to be specified");
   PetscCall(PetscOptionsString("-outfile", "The output mesh file (by default it's the same as infile)", EX, options->outfile, options->outfile, sizeof(options->outfile), &flg));
@@ -34,7 +33,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsEnum("-outformat", "Dump/reload mesh format", EX, PetscViewerFormats, (PetscEnum)options->outformat, (PetscEnum*)&options->outformat, NULL));
   PetscCall(PetscOptionsBool("-heterogeneous", "Test save on N / load on M", EX, options->heterogeneous, &options->heterogeneous, NULL));
   PetscCall(PetscOptionsInt("-ntimes", "How many times do the cycle", EX, options->ntimes, &options->ntimes, NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 };
 

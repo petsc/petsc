@@ -450,7 +450,6 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   PetscBool            localized,isascii;
   PetscBool            enable_mfem,enable_boundary,enable_ncmesh,view_ovl = PETSC_FALSE;
   PetscBT              pown,vown;
-  PetscErrorCode       ierr;
   PetscContainer       glvis_container;
   PetscBool            cellvertex = PETSC_FALSE, periodic, enabled = PETSC_TRUE;
   PetscBool            enable_emark,enable_bmark;
@@ -540,14 +539,14 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   enable_emark    = PETSC_FALSE;
   enable_bmark    = PETSC_FALSE;
   /* I'm tired of problems with negative values in the markers, disable them */
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)dm),((PetscObject)dm)->prefix,"GLVis PetscViewer DMPlex Options","PetscViewer");PetscCall(ierr);
+  PetscOptionsBegin(PetscObjectComm((PetscObject)dm),((PetscObject)dm)->prefix,"GLVis PetscViewer DMPlex Options","PetscViewer");
   PetscCall(PetscOptionsBool("-viewer_glvis_dm_plex_enable_boundary","Enable boundary section in mesh representation",NULL,enable_boundary,&enable_boundary,NULL));
   PetscCall(PetscOptionsBool("-viewer_glvis_dm_plex_enable_ncmesh","Enable vertex_parents section in mesh representation (allows derefinement)",NULL,enable_ncmesh,&enable_ncmesh,NULL));
   PetscCall(PetscOptionsBool("-viewer_glvis_dm_plex_enable_mfem","Dump a mesh that can be used with MFEM's FiniteElementSpaces",NULL,enable_mfem,&enable_mfem,NULL));
   PetscCall(PetscOptionsBool("-viewer_glvis_dm_plex_overlap","Include overlap region in local meshes",NULL,view_ovl,&view_ovl,NULL));
   PetscCall(PetscOptionsString("-viewer_glvis_dm_plex_emarker","String for the material id label",NULL,emark,emark,sizeof(emark),&enable_emark));
   PetscCall(PetscOptionsString("-viewer_glvis_dm_plex_bmarker","String for the boundary id label",NULL,bmark,bmark,sizeof(bmark),&enable_bmark));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   if (enable_bmark) enable_boundary = PETSC_TRUE;
 
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dm),&size));

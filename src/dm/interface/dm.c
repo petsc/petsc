@@ -864,14 +864,13 @@ PetscErrorCode DMSetFromOptions(DM dm)
 {
   char           typeName[256];
   PetscBool      flg;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   dm->setfromoptionscalled = PETSC_TRUE;
   if (dm->sf) PetscCall(PetscSFSetFromOptions(dm->sf));
   if (dm->sectionSF) PetscCall(PetscSFSetFromOptions(dm->sectionSF));
-  ierr = PetscObjectOptionsBegin((PetscObject)dm);PetscCall(ierr);
+  PetscObjectOptionsBegin((PetscObject)dm);
   PetscCall(PetscOptionsBool("-dm_preallocate_only","only preallocate matrix, but do not set column indices","DMSetMatrixPreallocateOnly",dm->prealloc_only,&dm->prealloc_only,NULL));
   PetscCall(PetscOptionsFList("-dm_vec_type","Vector type used for created vectors","DMSetVecType",VecList,dm->vectype,typeName,256,&flg));
   if (flg) {
@@ -888,7 +887,7 @@ PetscErrorCode DMSetFromOptions(DM dm)
   }
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) dm));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 
@@ -9545,7 +9544,7 @@ PetscErrorCode DMMonitorCancel(DM dm)
 .seealso: PetscOptionsGetViewer(), PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
           PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()

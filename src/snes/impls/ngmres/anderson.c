@@ -6,7 +6,7 @@ static PetscErrorCode SNESSetFromOptions_Anderson(PetscOptionItems *PetscOptions
   PetscBool      monitor = PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"SNES NGMRES options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"SNES NGMRES options");
   PetscCall(PetscOptionsInt("-snes_anderson_m",            "Number of directions","SNES",ngmres->msize,&ngmres->msize,NULL));
   PetscCall(PetscOptionsReal("-snes_anderson_beta",        "Mixing parameter","SNES",ngmres->andersonBeta,&ngmres->andersonBeta,NULL));
   PetscCall(PetscOptionsInt("-snes_anderson_restart",      "Iterations before forced restart", "SNES",ngmres->restart_periodic,&ngmres->restart_periodic,NULL));
@@ -16,7 +16,7 @@ static PetscErrorCode SNESSetFromOptions_Anderson(PetscOptionItems *PetscOptions
   if (monitor) {
     ngmres->monitor = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)snes));
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

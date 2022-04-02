@@ -21,7 +21,6 @@ int main(int argc,char **args)
   PetscRandom    rctx;     /* random number generator context */
   PetscReal      norm;     /* norm of solution error */
   PetscInt       i,j,Ii,J,Istart,Iend,m,n = 7,its,nloc,matdistribute=0;
-  PetscErrorCode ierr;
   PetscBool      flg = PETSC_FALSE;
   PetscScalar    v;
   PetscMPIInt    rank,size;
@@ -118,8 +117,7 @@ int main(int argc,char **args)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
   PetscCall(KSPSetOperators(ksp,A,A));
-  ierr = KSPSetTolerances(ksp,1.e-2/((m+1)*(n+1)),PETSC_DEFAULT,PETSC_DEFAULT,
-                          PETSC_DEFAULT);PetscCall(ierr);
+  PetscCall(KSPSetTolerances(ksp,1.e-2/((m+1)*(n+1)),PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT));
   PetscCall(KSPSetFromOptions(ksp));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

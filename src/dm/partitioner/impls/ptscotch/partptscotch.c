@@ -184,10 +184,10 @@ static PetscErrorCode PetscPartitionerSetFromOptions_PTScotch(PetscOptionItems *
   PetscBool                 flag;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject, "PetscPartitioner PTScotch Options"));
+  PetscOptionsHeadBegin(PetscOptionsObject, "PetscPartitioner PTScotch Options");
   PetscCall(PetscOptionsEList("-petscpartitioner_ptscotch_strategy","Partitioning strategy","",slist,nlist,slist[p->strategy],&p->strategy,&flag));
   PetscCall(PetscOptionsReal("-petscpartitioner_ptscotch_imbalance","Load imbalance ratio","",p->imbalance,&p->imbalance,&flag));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

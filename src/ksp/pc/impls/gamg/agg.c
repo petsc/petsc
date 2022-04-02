@@ -130,13 +130,13 @@ static PetscErrorCode PCSetFromOptions_GAMG_AGG(PetscOptionItems *PetscOptionsOb
   PC_GAMG_AGG    *pc_gamg_agg = (PC_GAMG_AGG*)pc_gamg->subctx;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"GAMG-AGG options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"GAMG-AGG options");
   {
     PetscCall(PetscOptionsInt("-pc_gamg_agg_nsmooths","smoothing steps for smoothed aggregation, usually 1","PCGAMGSetNSmooths",pc_gamg_agg->nsmooths,&pc_gamg_agg->nsmooths,NULL));
     PetscCall(PetscOptionsBool("-pc_gamg_sym_graph","Set for asymmetric matrices","PCGAMGSetSymGraph",pc_gamg_agg->sym_graph,&pc_gamg_agg->sym_graph,NULL));
     PetscCall(PetscOptionsInt("-pc_gamg_square_graph","Number of levels to square graph for faster coarsening and lower coarse grid complexity","PCGAMGSetSquareGraph",pc_gamg_agg->square_graph,&pc_gamg_agg->square_graph,NULL));
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

@@ -209,7 +209,6 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
 
   /* Loop over each field; drawing each in a different window */
   for (k=0; k<ndisplayfields; k++) {
-    PetscErrorCode ierr;
     j = displayfields[k];
 
     /* determine the min and max value in plot */
@@ -251,7 +250,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
       PetscCallMPI(MPI_Recv(&xgtmp,1,MPIU_REAL,rank-1,tag,comm,&status));
       PetscCallMPI(MPI_Recv(&tmp,1,MPIU_REAL,rank-1,tag,comm,&status));
     }
-    ierr = PetscDrawCollectiveBegin(draw);PetscCall(ierr);
+    PetscDrawCollectiveBegin(draw);
     if (rank) {
       PetscCall(PetscDrawLine(draw,xgtmp,tmp,PetscRealPart(xg[0]),PetscRealPart(array[j]),PETSC_DRAW_RED));
       if (showmarkers) PetscCall(PetscDrawPoint(draw,xgtmp,tmp,PETSC_DRAW_BLACK));
@@ -263,7 +262,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
     if (rank == size-1) {
       if (showmarkers) PetscCall(PetscDrawMarker(draw,PetscRealPart(xg[n-1]),PetscRealPart(array[j+dof*(n-1)]),PETSC_DRAW_BLACK));
     }
-    ierr = PetscDrawCollectiveEnd(draw);PetscCall(ierr);
+    PetscDrawCollectiveEnd(draw);
     PetscCall(PetscDrawFlush(draw));
     PetscCall(PetscDrawPause(draw));
     if (!useports) PetscCall(PetscDrawSave(draw));

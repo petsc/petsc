@@ -410,14 +410,13 @@ PetscErrorCode  PFSetType(PF pf,PFType type,void *ctx)
 @*/
 PetscErrorCode  PFSetFromOptions(PF pf)
 {
-  PetscErrorCode ierr;
   char           type[256];
   PetscBool      flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_CLASSID,1);
 
-  ierr = PetscObjectOptionsBegin((PetscObject)pf);PetscCall(ierr);
+  PetscObjectOptionsBegin((PetscObject)pf);
   PetscCall(PetscOptionsFList("-pf_type","Type of function","PFSetType",PFList,NULL,type,256,&flg));
   if (flg) {
     PetscCall(PFSetType(pf,type,NULL));
@@ -428,7 +427,7 @@ PetscErrorCode  PFSetFromOptions(PF pf)
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)pf));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

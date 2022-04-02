@@ -250,16 +250,14 @@ static void f0_trig_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscInt       sol;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   options->sol = SOL_QUADRATIC;
-
-  ierr = PetscOptionsBegin(comm, "", "Stokes Problem Options", "DMPLEX");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Stokes Problem Options", "DMPLEX");
   sol  = options->sol;
   PetscCall(PetscOptionsEList("-sol", "The MMS solution", "ex62.c", SolTypes, PETSC_STATIC_ARRAY_LENGTH(SolTypes)-3, SolTypes[options->sol], &sol, NULL));
   options->sol = (SolType) sol;
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

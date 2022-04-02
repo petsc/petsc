@@ -471,7 +471,7 @@ static PetscErrorCode DMPlexTransformSetFromOptions_BL(PetscOptionItems *PetscOp
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 2);
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"DMPlexTransform Boundary Layer Options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"DMPlexTransform Boundary Layer Options");
   PetscCall(PetscOptionsBoundedInt("-dm_plex_transform_bl_splits", "Number of divisions of a cell", "", bl->n, &bl->n, NULL, 1));
   PetscCall(PetscOptionsReal("-dm_plex_transform_bl_height_factor", "Factor increase for height at each division", "", bl->r, &bl->r, NULL));
   PetscCall(PetscOptionsIntArray("-dm_plex_transform_bl_ref_cell", "Mark cells for refinement", "", cells, &n, &flg));
@@ -483,7 +483,7 @@ static PetscErrorCode DMPlexTransformSetFromOptions_BL(PetscOptionItems *PetscOp
     PetscCall(DMPlexTransformSetActive(tr, active));
     PetscCall(DMLabelDestroy(&active));
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

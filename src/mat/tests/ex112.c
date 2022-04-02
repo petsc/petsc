@@ -22,16 +22,15 @@ int main(int argc,char **args)
   PetscInt       func;
   FuncType       function = RANDOM;
   PetscBool      view     = PETSC_FALSE;
-  PetscErrorCode ierr;
 
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE, "This is a uniprocessor example only!");
-  ierr     = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "FFTW Options", "ex112");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "FFTW Options", "ex112");
   PetscCall(PetscOptionsEList("-function", "Function type", "ex112", funcNames, NUM_FUNCS, funcNames[function], &func, NULL));
   PetscCall(PetscOptionsBool("-vec_view_draw", "View the functions", "ex112", view, &view, NULL));
   function = (FuncType) func;
-  ierr     = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   for (DIM = 0; DIM < ndim; DIM++) {
     dim[DIM] = n;  /* size of transformation in DIM-dimension */

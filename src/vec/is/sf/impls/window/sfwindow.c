@@ -701,11 +701,11 @@ static PetscErrorCode PetscSFSetFromOptions_Window(PetscOptionItems *PetscOption
   PetscSFWindowFlavorType flavor = w->flavor;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"PetscSF Window options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"PetscSF Window options");
   PetscCall(PetscOptionsEnum("-sf_window_sync","synchronization type to use for PetscSF Window communication","PetscSFWindowSetSyncType",PetscSFWindowSyncTypes,(PetscEnum)w->sync,(PetscEnum*)&w->sync,NULL));
   PetscCall(PetscOptionsEnum("-sf_window_flavor","flavor to use for PetscSF Window creation","PetscSFWindowSetFlavorType",PetscSFWindowFlavorTypes,(PetscEnum)flavor,(PetscEnum*)&flavor,NULL));
   PetscCall(PetscSFWindowSetFlavorType(sf,flavor));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

@@ -7,7 +7,6 @@ int main(int argc,char **argv)
 {
   Mat            mat,tmat = 0;
   PetscInt       m = 4,n,i,j;
-  PetscErrorCode ierr;
   PetscMPIInt    size,rank;
   PetscInt       rstart,rend,rect = 0;
   PetscBool      flg;
@@ -42,8 +41,7 @@ int main(int argc,char **argv)
 
   /* Print info about original matrix */
   PetscCall(MatGetInfo(mat,MAT_GLOBAL_SUM,&info));
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"original matrix nonzeros = %" PetscInt_FMT ", allocated nonzeros = %" PetscInt_FMT "\n",
-                     (PetscInt)info.nz_used,(PetscInt)info.nz_allocated);PetscCall(ierr);
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"original matrix nonzeros = %" PetscInt_FMT ", allocated nonzeros = %" PetscInt_FMT "\n",(PetscInt)info.nz_used,(PetscInt)info.nz_allocated));
   PetscCall(MatNorm(mat,NORM_FROBENIUS,&normf));
   PetscCall(MatNorm(mat,NORM_1,&norm1));
   PetscCall(MatNorm(mat,NORM_INFINITY,&normi));
@@ -61,8 +59,7 @@ int main(int argc,char **argv)
 
   /* Print info about transpose matrix */
   PetscCall(MatGetInfo(tmat,MAT_GLOBAL_SUM,&info));
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"transpose matrix nonzeros = %" PetscInt_FMT ", allocated nonzeros = %" PetscInt_FMT "\n",
-                     (PetscInt)info.nz_used,(PetscInt)info.nz_allocated);PetscCall(ierr);
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"transpose matrix nonzeros = %" PetscInt_FMT ", allocated nonzeros = %" PetscInt_FMT "\n",(PetscInt)info.nz_used,(PetscInt)info.nz_allocated));
   PetscCall(MatNorm(tmat,NORM_FROBENIUS,&normf));
   PetscCall(MatNorm(tmat,NORM_1,&norm1));
   PetscCall(MatNorm(tmat,NORM_INFINITY,&normi));

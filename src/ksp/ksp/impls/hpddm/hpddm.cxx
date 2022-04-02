@@ -32,7 +32,7 @@ static PetscErrorCode KSPSetFromOptions_HPDDM(PetscOptionItems *PetscOptionsObje
   PetscMPIInt size;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject, "KSPHPDDM options, cf. https://github.com/hpddm/hpddm"));
+  PetscOptionsHeadBegin(PetscOptionsObject, "KSPHPDDM options, cf. https://github.com/hpddm/hpddm");
   i = (data->cntl[0] == static_cast<char>(PETSC_DECIDE) ? HPDDM_KRYLOV_METHOD_GMRES : data->cntl[0]);
   PetscCall(PetscOptionsEList("-ksp_hpddm_type", "Type of Krylov method", "KSPHPDDMGetType", KSPHPDDMTypes, PETSC_STATIC_ARRAY_LENGTH(KSPHPDDMTypes), KSPHPDDMTypes[HPDDM_KRYLOV_METHOD_GMRES], &i, NULL));
   if (i == PETSC_STATIC_ARRAY_LENGTH(KSPHPDDMTypes) - 1)
@@ -96,7 +96,7 @@ static PetscErrorCode KSPSetFromOptions_HPDDM(PetscOptionItems *PetscOptionsObje
   }
   PetscCheck(ksp->nmax >= std::numeric_limits<int>::min() && ksp->nmax <= std::numeric_limits<int>::max(), PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "KSPMatSolve() block size %" PetscInt_FMT " not representable by an integer, which is not handled by KSPHPDDM", ksp->nmax);
   else data->icntl[1] = static_cast<int>(ksp->nmax);
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

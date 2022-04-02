@@ -85,7 +85,6 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt,TSAdaptType default_ty
 PetscErrorCode  TSSetFromOptions(TS ts)
 {
   PetscBool              opt,flg,tflg;
-  PetscErrorCode         ierr;
   char                   monfilename[PETSC_MAX_PATH_LEN];
   PetscReal              time_step,tspan[100];
   PetscInt               nt = PETSC_STATIC_ARRAY_LENGTH(tspan);
@@ -101,7 +100,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   PetscCall(TSRegisterAll());
   PetscCall(TSGetIFunction(ts,NULL,&ifun,NULL));
 
-  ierr = PetscObjectOptionsBegin((PetscObject)ts);PetscCall(ierr);
+  PetscObjectOptionsBegin((PetscObject)ts);
   if (((PetscObject)ts)->type_name) defaultType = ((PetscObject)ts)->type_name;
   else defaultType = ifun ? TSBEULER : TSEULER;
   PetscCall(PetscOptionsFList("-ts_type","TS method","TSSetType",TSList,defaultType,typeName,256,&opt));
@@ -405,7 +404,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)ts));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   if (ts->trajectory) {
     PetscCall(TSTrajectorySetFromOptions(ts->trajectory,ts));
@@ -3533,20 +3532,18 @@ PetscErrorCode TSInterpolate(TS ts,PetscReal t,Vec U)
 @*/
 PetscErrorCode  TSStep(TS ts)
 {
-  PetscErrorCode   ierr;
   static PetscBool cite = PETSC_FALSE;
   PetscReal        ptime;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ierr = PetscCitationsRegister("@article{tspaper,\n"
-                                "  title         = {{PETSc/TS}: A Modern Scalable {DAE/ODE} Solver Library},\n"
-                                "  author        = {Abhyankar, Shrirang and Brown, Jed and Constantinescu, Emil and Ghosh, Debojyoti and Smith, Barry F. and Zhang, Hong},\n"
-                                "  journal       = {arXiv e-preprints},\n"
-                                "  eprint        = {1806.01437},\n"
-                                "  archivePrefix = {arXiv},\n"
-                                "  year          = {2018}\n}\n",&cite);PetscCall(ierr);
-
+  PetscCall(PetscCitationsRegister("@article{tspaper,\n"
+                                   "  title         = {{PETSc/TS}: A Modern Scalable {DAE/ODE} Solver Library},\n"
+                                   "  author        = {Abhyankar, Shrirang and Brown, Jed and Constantinescu, Emil and Ghosh, Debojyoti and Smith, Barry F. and Zhang, Hong},\n"
+                                   "  journal       = {arXiv e-preprints},\n"
+                                   "  eprint        = {1806.01437},\n"
+                                   "  archivePrefix = {arXiv},\n"
+                                   "  year          = {2018}\n}\n",&cite));
   PetscCall(TSSetUp(ts));
   PetscCall(TSTrajectorySetUp(ts->trajectory,ts));
 

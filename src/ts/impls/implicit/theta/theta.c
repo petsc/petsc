@@ -1111,13 +1111,13 @@ static PetscErrorCode TSSetFromOptions_Theta(PetscOptionItems *PetscOptionsObjec
   TS_Theta       *th = (TS_Theta*)ts->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"Theta ODE solver options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"Theta ODE solver options");
   {
     PetscCall(PetscOptionsReal("-ts_theta_theta","Location of stage (0<Theta<=1)","TSThetaSetTheta",th->Theta,&th->Theta,NULL));
     PetscCall(PetscOptionsBool("-ts_theta_endpoint","Use the endpoint instead of midpoint form of the Theta method","TSThetaSetEndpoint",th->endpoint,&th->endpoint,NULL));
     PetscCall(PetscOptionsBool("-ts_theta_initial_guess_extrapolate","Extrapolate stage initial guess from previous solution (sometimes unstable)","TSThetaSetExtrapolate",th->extrapolate,&th->extrapolate,NULL));
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

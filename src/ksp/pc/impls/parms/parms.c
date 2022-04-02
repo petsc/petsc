@@ -272,7 +272,7 @@ static PetscErrorCode PCSetFromOptions_PARMS(PetscOptionItems *PetscOptionsObjec
   PCPARMSLocalType   local;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"PARMS Options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"PARMS Options");
   PetscCall(PetscOptionsEnum("-pc_parms_global","Global preconditioner","PCPARMSSetGlobal",PCPARMSGlobalTypes,(PetscEnum)parms->global,(PetscEnum*)&global,&flag));
   if (flag) PetscCall(PCPARMSSetGlobal(pc,global));
   PetscCall(PetscOptionsEnum("-pc_parms_local","Local preconditioner","PCPARMSSetLocal",PCPARMSLocalTypes,(PetscEnum)parms->local,(PetscEnum*)&local,&flag));
@@ -302,7 +302,7 @@ static PetscErrorCode PCSetFromOptions_PARMS(PetscOptionItems *PetscOptionsObjec
   if (flag) parms->droptol[1] = parms->droptol[2] = parms->droptol[3] = parms->droptol[0];
   PetscCall(PetscOptionsReal("-pc_parms_droptol_last_schur","drop tolerance for ILUT in last level schur complement","None",parms->droptol[5],&parms->droptol[5],&flag));
   if (flag) parms->droptol[6] = parms->droptol[5];
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

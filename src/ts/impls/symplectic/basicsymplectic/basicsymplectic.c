@@ -309,7 +309,7 @@ static PetscErrorCode TSSetFromOptions_BasicSymplectic(PetscOptionItems *PetscOp
   TS_BasicSymplectic *bsymp = (TS_BasicSymplectic*)ts->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"Basic symplectic integrator options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"Basic symplectic integrator options");
   {
     BasicSymplecticSchemeLink link;
     PetscInt                  count,choice;
@@ -323,7 +323,7 @@ static PetscErrorCode TSSetFromOptions_BasicSymplectic(PetscOptionItems *PetscOp
     if (flg) PetscCall(TSBasicSymplecticSetType(ts,namelist[choice]));
     PetscCall(PetscFree(namelist));
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

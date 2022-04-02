@@ -133,7 +133,6 @@ extern PetscErrorCode PCGetDefaultType_Private(PC,const char*[]);
 @*/
 PetscErrorCode  PCSetFromOptions(PC pc)
 {
-  PetscErrorCode ierr;
   char           type[256];
   const char     *def;
   PetscBool      flg;
@@ -142,7 +141,7 @@ PetscErrorCode  PCSetFromOptions(PC pc)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
 
   PetscCall(PCRegisterAll());
-  ierr = PetscObjectOptionsBegin((PetscObject)pc);PetscCall(ierr);
+  PetscObjectOptionsBegin((PetscObject)pc);
   if (!((PetscObject)pc)->type_name) {
     PetscCall(PCGetDefaultType_Private(pc,&def));
   } else {
@@ -168,7 +167,7 @@ PetscErrorCode  PCSetFromOptions(PC pc)
   skipoptions:
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)pc));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   pc->setfromoptionscalled++;
   PetscFunctionReturn(0);
 }

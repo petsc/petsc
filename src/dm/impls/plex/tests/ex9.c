@@ -25,7 +25,6 @@ static PetscErrorCode ProcessOptions(AppCtx *options)
 {
   PetscInt       len;
   PetscBool      flg;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   options->dim               = 2;
@@ -44,7 +43,7 @@ static PetscErrorCode ProcessOptions(AppCtx *options)
   options->maxVecClosureTime = 0.0;
   options->printTimes        = PETSC_FALSE;
 
-  ierr = PetscOptionsBegin(PETSC_COMM_SELF, "", "Meshing Problem Options", "DMPLEX");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_SELF, "", "Meshing Problem Options", "DMPLEX");
   PetscCall(PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex9.c", options->dim, &options->dim, NULL,1,3));
   PetscCall(PetscOptionsBool("-cellSimplex", "Flag for simplices", "ex9.c", options->cellSimplex, &options->cellSimplex, NULL));
   PetscCall(PetscOptionsBool("-spectral", "Flag for spectral element layout", "ex9.c", options->spectral, &options->spectral, NULL));
@@ -78,7 +77,7 @@ static PetscErrorCode ProcessOptions(AppCtx *options)
   PetscCall(PetscOptionsReal("-max_closure_time", "The maximum time per run for DMPlexGetTransitiveClosure()", "ex9.c", options->maxClosureTime, &options->maxClosureTime, NULL));
   PetscCall(PetscOptionsReal("-max_vec_closure_time", "The maximum time per run for DMPlexVecGetClosure()", "ex9.c", options->maxVecClosureTime, &options->maxVecClosureTime, NULL));
   PetscCall(PetscOptionsBool("-print_times", "Print total times, do not check limits", "ex9.c", options->printTimes, &options->printTimes, NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

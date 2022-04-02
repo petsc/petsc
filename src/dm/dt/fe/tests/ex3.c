@@ -71,18 +71,17 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   char           name[PETSC_MAX_PATH_LEN] = "constant";
   PetscInt       Nfunc = PETSC_STATIC_ARRAY_LENGTH(names), i;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   options->exactSol = NULL;
   options->shear    = 0.;
   options->flatten  = 1.;
 
-  ierr = PetscOptionsBegin(comm, "", "FE Test Options", "PETSCFE");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "FE Test Options", "PETSCFE");
   PetscCall(PetscOptionsString("-func", "Function to project into space", "", name, name, PETSC_MAX_PATH_LEN, NULL));
   PetscCall(PetscOptionsReal("-shear", "Factor by which to shear along the x-direction", "", options->shear, &(options->shear), NULL));
   PetscCall(PetscOptionsReal("-flatten", "Factor by which to flatten", "", options->flatten, &(options->flatten), NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   for (i = 0; i < Nfunc; ++i) {
     PetscBool flg;

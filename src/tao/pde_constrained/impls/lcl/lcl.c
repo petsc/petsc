@@ -64,7 +64,7 @@ static PetscErrorCode TaoSetFromOptions_LCL(PetscOptionItems *PetscOptionsObject
   TAO_LCL        *lclP = (TAO_LCL*)tao->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"Linearly-Constrained Augmented Lagrangian Method for PDE-constrained optimization"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"Linearly-Constrained Augmented Lagrangian Method for PDE-constrained optimization");
   PetscCall(PetscOptionsReal("-tao_lcl_eps1","epsilon 1 tolerance","",lclP->eps1,&lclP->eps1,NULL));
   PetscCall(PetscOptionsReal("-tao_lcl_eps2","epsilon 2 tolerance","",lclP->eps2,&lclP->eps2,NULL));
   PetscCall(PetscOptionsReal("-tao_lcl_rho0","init value for rho","",lclP->rho0,&lclP->rho0,NULL));
@@ -78,7 +78,7 @@ static PetscErrorCode TaoSetFromOptions_LCL(PetscOptionItems *PetscOptionsObject
   PetscCall(PetscOptionsReal("-tao_lcl_tolb","Tolerance for first adjoint solve","",lclP->tau[1],&lclP->tau[1],NULL));
   PetscCall(PetscOptionsReal("-tao_lcl_tolc","Tolerance for second forward solve","",lclP->tau[2],&lclP->tau[2],NULL));
   PetscCall(PetscOptionsReal("-tao_lcl_told","Tolerance for second adjoint solve","",lclP->tau[3],&lclP->tau[3],NULL));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscCall(TaoLineSearchSetFromOptions(tao->linesearch));
   PetscCall(MatSetFromOptions(lclP->R));
   PetscFunctionReturn(0);
@@ -570,9 +570,9 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
  TAOLCL - linearly constrained lagrangian method for pde-constrained optimization
 
 + -tao_lcl_eps1 - epsilon 1 tolerance
-. -tao_lcl_eps2","epsilon 2 tolerance","",lclP->eps2,&lclP->eps2,NULL);PetscCall(ierr);
-. -tao_lcl_rho0","init value for rho","",lclP->rho0,&lclP->rho0,NULL);PetscCall(ierr);
-. -tao_lcl_rhomax","max value for rho","",lclP->rhomax,&lclP->rhomax,NULL);PetscCall(ierr);
+. -tao_lcl_eps2","epsilon 2 tolerance","",lclP->eps2,&lclP->eps2,NULL);
+. -tao_lcl_rho0","init value for rho","",lclP->rho0,&lclP->rho0,NULL);
+. -tao_lcl_rhomax","max value for rho","",lclP->rhomax,&lclP->rhomax,NULL);
 . -tao_lcl_phase2_niter - Number of phase 2 iterations in LCL algorithm
 . -tao_lcl_verbose - Print verbose output if True
 . -tao_lcl_tola - Tolerance for first forward solve

@@ -319,7 +319,7 @@ static PetscErrorCode PetscViewerSetFromOptions_Socket(PetscOptionItems *PetscOp
        These options are not processed here, they are processed in PetscViewerSocketSetConnection(), they
     are listed here for the GUI to display
   */
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"Socket PetscViewer Options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"Socket PetscViewer Options");
   PetscCall(PetscOptionsGetenv(PetscObjectComm((PetscObject)v),"PETSC_VIEWER_SOCKET_PORT",sdef,16,&tflg));
   if (tflg) {
     PetscCall(PetscOptionsStringToInt(sdef,&def));
@@ -331,7 +331,7 @@ static PetscErrorCode PetscViewerSetFromOptions_Socket(PetscOptionItems *PetscOp
   if (!tflg) {
     PetscCall(PetscGetHostName(sdef,sizeof(sdef)));
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

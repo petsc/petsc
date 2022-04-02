@@ -1219,8 +1219,6 @@ PetscErrorCode PCBDDCGraphResetCSR(PCBDDCGraph graph)
 
 PetscErrorCode PCBDDCGraphReset(PCBDDCGraph graph)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (!graph) PetscFunctionReturn(0);
   PetscCall(ISLocalToGlobalMappingDestroy(&graph->l2gmap));
@@ -1230,11 +1228,7 @@ PetscErrorCode PCBDDCGraphReset(PCBDDCGraph graph)
     PetscCall(PetscFree(graph->neighbours_set[0]));
   }
   PetscCall(PetscBTDestroy(&graph->touched));
-  ierr = PetscFree5(graph->count,
-                    graph->neighbours_set,
-                    graph->subset,
-                    graph->which_dof,
-                    graph->special_dof);PetscCall(ierr);
+  PetscCall(PetscFree5(graph->count,graph->neighbours_set,graph->subset,graph->which_dof,graph->special_dof));
   PetscCall(PetscFree2(graph->cptr,graph->queue));
   if (graph->mirrors) {
     PetscCall(PetscFree(graph->mirrors_set[0]));

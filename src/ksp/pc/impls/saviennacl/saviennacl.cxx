@@ -148,8 +148,8 @@ static PetscErrorCode PCDestroy_SAVIENNACL(PC pc)
 static PetscErrorCode PCSetFromOptions_SAVIENNACL(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"SAVIENNACL options"));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadBegin(PetscOptionsObject,"SAVIENNACL options");
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

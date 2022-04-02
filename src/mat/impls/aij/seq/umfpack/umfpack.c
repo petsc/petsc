@@ -352,7 +352,6 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftyp
 {
   Mat            B;
   Mat_UMFPACK    *lu;
-  PetscErrorCode ierr;
   PetscInt       m=A->rmap->n,n=A->cmap->n,idx;
   const char     *strategy[]={"AUTO","UNSYMMETRIC","SYMMETRIC"};
   const char     *scale[]   ={"NONE","SUM","MAX"};
@@ -392,7 +391,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftyp
   lu->perm_c                  = NULL; /* use defaul UMFPACK col permutation */
   lu->Control[UMFPACK_IRSTEP] = 0;          /* max num of iterative refinement steps to attempt */
 
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"UMFPACK Options","Mat");PetscCall(ierr);
+  PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"UMFPACK Options","Mat");
   /* Control parameters used by reporting routiones */
   PetscCall(PetscOptionsReal("-mat_umfpack_prl","Control[UMFPACK_PRL]","None",lu->Control[UMFPACK_PRL],&lu->Control[UMFPACK_PRL],NULL));
 
@@ -431,7 +430,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftyp
 
   /* Control parameters used by solve */
   PetscCall(PetscOptionsReal("-mat_umfpack_irstep","Control[UMFPACK_IRSTEP]","None",lu->Control[UMFPACK_IRSTEP],&lu->Control[UMFPACK_IRSTEP],NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   *F = B;
   PetscFunctionReturn(0);
 }

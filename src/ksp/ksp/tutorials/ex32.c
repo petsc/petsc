@@ -47,7 +47,6 @@ int main(int argc,char **argv)
   DM             da;
   UserContext    user;
   const char     *bcTypes[2] = {"dirichlet","neumann"};
-  PetscErrorCode ierr;
   PetscInt       bc;
 
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
@@ -59,13 +58,13 @@ int main(int argc,char **argv)
 
   PetscCall(KSPSetDM(ksp,da));
 
-  ierr        = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "DM");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "DM");
   user.nu     = 0.1;
   PetscCall(PetscOptionsScalar("-nu", "The width of the Gaussian source", "ex29.c", 0.1, &user.nu, NULL));
   bc          = (PetscInt)NEUMANN;
   PetscCall(PetscOptionsEList("-bc_type","Type of boundary condition","ex29.c",bcTypes,2,bcTypes[0],&bc,NULL));
   user.bcType = (BCType)bc;
-  ierr        = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscCall(KSPSetComputeRHS(ksp,ComputeRHS,&user));
   PetscCall(KSPSetComputeOperators(ksp,ComputeMatrix,&user));

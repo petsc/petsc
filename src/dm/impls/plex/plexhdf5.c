@@ -40,7 +40,6 @@ static PetscErrorCode DMPlexStorageVersionSetUpWriting_Private(DM dm, PetscViewe
   const char      ATTR_NAME[] = "dmplex_storage_version";
   PetscBool       fileHasVersion;
   char            optVersion[16], fileVersion[16];
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscCall(PetscStrcpy(fileVersion, DMPLEX_STORAGE_VERSION_STABLE));
@@ -53,9 +52,9 @@ static PetscErrorCode DMPlexStorageVersionSetUpWriting_Private(DM dm, PetscViewe
     PetscCall(PetscFree(tmp));
   }
   PetscCall(PetscStrcpy(optVersion, fileVersion));
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)dm),((PetscObject)dm)->prefix,"DMPlex HDF5 Viewer Options","PetscViewer");PetscCall(ierr);
+  PetscOptionsBegin(PetscObjectComm((PetscObject)dm),((PetscObject)dm)->prefix,"DMPlex HDF5 Viewer Options","PetscViewer");
   PetscCall(PetscOptionsString("-dm_plex_view_hdf5_storage_version","DMPlex HDF5 viewer storage version",NULL,optVersion,optVersion,sizeof(optVersion),NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   if (!fileHasVersion) {
     PetscCall(PetscViewerHDF5WriteAttribute(viewer, NULL, ATTR_NAME, PETSC_STRING, optVersion));
   } else {
@@ -1291,6 +1290,7 @@ static herr_t ReadLabelStratumHDF5_Static(hid_t g_id, const char *vname, const H
   return 0;
 }
 
+/* TODO: Fix this code, it is returning PETSc error codes when it should be translating them to herr_t codes */
 static herr_t ReadLabelHDF5_Static(hid_t g_id, const char *lname, const H5L_info_t *info, void *op_data)
 {
   LoadLabelsCtx  ctx = (LoadLabelsCtx) op_data;
@@ -1304,10 +1304,10 @@ static herr_t ReadLabelHDF5_Static(hid_t g_id, const char *lname, const H5L_info
   if (flg) PetscCall(DMRemoveLabel(dm, lname, NULL));
   ierr = DMCreateLabel(dm, lname); if (ierr) return (herr_t) ierr;
   ierr = DMGetLabel(dm, lname, &ctx->label); if (ierr) return (herr_t) ierr;
-  PetscCall(PetscViewerHDF5PushGroup(ctx->viewer, lname)); /* labels/<lname> */
+  ierr = PetscViewerHDF5PushGroup(ctx->viewer, lname); if (ierr) return (herr_t) ierr;
   /* Iterate over the label's strata */
   PetscStackCallHDF5Return(err, H5Literate_by_name, (g_id, lname, H5_INDEX_NAME, H5_ITER_NATIVE, &idx, ReadLabelStratumHDF5_Static, op_data, 0));
-  PetscCall(PetscViewerHDF5PopGroup(ctx->viewer));
+  ierr = PetscViewerHDF5PopGroup(ctx->viewer); if (ierr) return (herr_t) ierr;
   return err;
 }
 

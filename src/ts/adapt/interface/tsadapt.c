@@ -703,7 +703,7 @@ PetscErrorCode  TSAdaptSetFromOptions(PetscOptionItems *PetscOptionsObject,TSAda
   PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,2);
   /* This should use PetscOptionsBegin() if/when this becomes an object used outside of TS, but currently this
    * function can only be called from inside TSSetFromOptions()  */
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"TS Adaptivity options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"TS Adaptivity options");
   PetscCall(PetscOptionsFList("-ts_adapt_type","Algorithm to use for adaptivity","TSAdaptSetType",TSAdaptList,((PetscObject)adapt)->type_name ? ((PetscObject)adapt)->type_name : type,type,sizeof(type),&flg));
   if (flg || !((PetscObject)adapt)->type_name) {
     PetscCall(TSAdaptSetType(adapt,type));
@@ -742,7 +742,7 @@ PetscErrorCode  TSAdaptSetFromOptions(PetscOptionItems *PetscOptionsObject,TSAda
   if (set) PetscCall(TSAdaptSetMonitor(adapt,flg));
 
   if (adapt->ops->setfromoptions) PetscCall((*adapt->ops->setfromoptions)(PetscOptionsObject,adapt));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

@@ -25,7 +25,7 @@ static PetscErrorCode PCSetFromOptions_LU(PetscOptionItems *PetscOptionsObject,P
   PetscReal      tol;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"LU options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"LU options");
   PetscCall(PCSetFromOptions_Factor(PetscOptionsObject,pc));
 
   PetscCall(PetscOptionsName("-pc_factor_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","PCFactorReorderForNonzeroDiagonal",&flg));
@@ -34,7 +34,7 @@ static PetscErrorCode PCSetFromOptions_LU(PetscOptionItems *PetscOptionsObject,P
     PetscCall(PetscOptionsReal("-pc_factor_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","PCFactorReorderForNonzeroDiagonal",lu->nonzerosalongdiagonaltol,&tol,NULL));
     PetscCall(PCFactorReorderForNonzeroDiagonal(pc,tol));
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

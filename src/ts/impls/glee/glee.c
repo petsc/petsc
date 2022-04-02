@@ -363,7 +363,6 @@ PetscErrorCode TSGLEERegisterAll(void)
 @*/
 PetscErrorCode TSGLEERegisterDestroy(void)
 {
-  PetscErrorCode ierr;
   GLEETableauLink link;
 
   PetscFunctionBegin;
@@ -371,13 +370,13 @@ PetscErrorCode TSGLEERegisterDestroy(void)
     GLEETableau t = &link->tab;
     GLEETableauList = link->next;
     PetscCall(PetscFree5(t->A,t->B,t->U,t->V,t->c));
-    ierr = PetscFree2(t->S,t->F);               PetscCall(ierr);
-    ierr = PetscFree (t->Fembed);               PetscCall(ierr);
-    ierr = PetscFree (t->Ferror);               PetscCall(ierr);
-    ierr = PetscFree (t->Serror);               PetscCall(ierr);
-    ierr = PetscFree (t->binterp);              PetscCall(ierr);
-    ierr = PetscFree (t->name);                 PetscCall(ierr);
-    ierr = PetscFree (link);                    PetscCall(ierr);
+    PetscCall(PetscFree2(t->S,t->F));
+    PetscCall(PetscFree (t->Fembed));
+    PetscCall(PetscFree (t->Ferror));
+    PetscCall(PetscFree (t->Serror));
+    PetscCall(PetscFree (t->binterp));
+    PetscCall(PetscFree (t->name));
+    PetscCall(PetscFree (link));
   }
   TSGLEERegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -867,7 +866,7 @@ static PetscErrorCode TSSetFromOptions_GLEE(PetscOptionItems *PetscOptionsObject
   char           gleetype[256];
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"GLEE ODE solver options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"GLEE ODE solver options");
   {
     GLEETableauLink link;
     PetscInt        count,choice;
@@ -882,7 +881,7 @@ static PetscErrorCode TSSetFromOptions_GLEE(PetscOptionItems *PetscOptionsObject
     PetscCall(TSGLEESetType(ts,flg ? namelist[choice] : gleetype));
     PetscCall(PetscFree(namelist));
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

@@ -78,7 +78,6 @@ PetscErrorCode  PetscDrawLGSPDraw(PetscDrawLG lg,PetscDrawSP spin)
   PetscBool      isnull;
   PetscMPIInt    rank;
   PetscDraw      draw;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
@@ -96,7 +95,7 @@ PetscErrorCode  PetscDrawLGSPDraw(PetscDrawLG lg,PetscDrawSP spin)
   PetscCall(PetscDrawAxisSetLimits(lg->axis,xmin,xmax,ymin,ymax));
   PetscCall(PetscDrawAxisDraw(lg->axis));
 
-  ierr = PetscDrawCollectiveBegin(draw);PetscCall(ierr);
+  PetscDrawCollectiveBegin(draw);
   if (rank == 0) {
     int i,j,dim,nopts;
     dim   = lg->dim;
@@ -117,7 +116,7 @@ PetscErrorCode  PetscDrawLGSPDraw(PetscDrawLG lg,PetscDrawSP spin)
       }
     }
   }
-  ierr = PetscDrawCollectiveEnd(draw);PetscCall(ierr);
+  PetscDrawCollectiveEnd(draw);
 
   PetscCall(PetscDrawFlush(draw));
   PetscCall(PetscDrawPause(draw));
@@ -443,7 +442,6 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
   PetscMPIInt    rank;
   PetscDraw      draw;
   PetscBool      isnull;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
@@ -459,7 +457,7 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
   PetscCall(PetscDrawAxisSetLimits(lg->axis,xmin,xmax,ymin,ymax));
   PetscCall(PetscDrawAxisDraw(lg->axis));
 
-  ierr = PetscDrawCollectiveBegin(draw);PetscCall(ierr);
+  PetscDrawCollectiveBegin(draw);
   if (rank == 0) {
     int i,j,dim=lg->dim,nopts=lg->nopts,cl;
     for (i=0; i<dim; i++) {
@@ -497,7 +495,7 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
       PetscCall(PetscDrawString(draw,xl + 6*tw,yr - (i + 1.5)*th,PETSC_DRAW_BLACK,lg->legend[i]));
     }
   }
-  ierr = PetscDrawCollectiveEnd(draw);PetscCall(ierr);
+  PetscDrawCollectiveEnd(draw);
 
   PetscCall(PetscDrawFlush(draw));
   PetscCall(PetscDrawPause(draw));

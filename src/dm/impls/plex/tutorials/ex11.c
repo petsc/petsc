@@ -17,7 +17,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscInt       n = 2;
   PetscBool      flg;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   options->genArr        = PETSC_FALSE;
@@ -28,7 +27,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->numOrnt       = -1;
   options->initOrnt      = 0;
 
-  ierr = PetscOptionsBegin(comm, "", "Mesh Orientation Tutorials Options", "DMPLEX");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Mesh Orientation Tutorials Options", "DMPLEX");
   PetscCall(PetscOptionsBool("-gen_arrangements", "Flag for generating all arrangements of the cell", "ex11.c", options->genArr, &options->genArr, NULL));
   PetscCall(PetscOptionsBool("-ref_arrangements", "Flag for refining all arrangements of the cell", "ex11.c", options->refArr, &options->refArr, NULL));
   PetscCall(PetscOptionsBool("-print_table", "Print the Cayley table", "ex11.c", options->printTable, &options->printTable, NULL));
@@ -40,7 +39,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
     PetscCall(PetscSortInt(n, options->ornts));
   }
   PetscCall(PetscOptionsInt("-init_ornt", "Initial orientation for starting mesh", "ex11.c", options->initOrnt, &options->initOrnt, NULL));
-  ierr = PetscOptionsEnd();
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

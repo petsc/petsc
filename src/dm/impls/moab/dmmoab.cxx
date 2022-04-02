@@ -935,7 +935,7 @@ PETSC_EXTERN PetscErrorCode DMSetFromOptions_Moab(PetscOptionItems *PetscOptions
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscCall(PetscOptionsHead(PetscOptionsObject, "DMMoab Options"));
+  PetscOptionsHeadBegin(PetscOptionsObject, "DMMoab Options");
   PetscCall(PetscOptionsBoundedInt("-dm_moab_rw_dbg", "The verbosity level for reading and writing MOAB meshes", "DMView", dmmoab->rw_dbglevel, &dmmoab->rw_dbglevel, NULL,0));
   PetscCall(PetscOptionsBool("-dm_moab_partiton_by_rank", "Use partition by rank when reading MOAB meshes from file", "DMView", dmmoab->partition_by_rank, &dmmoab->partition_by_rank, NULL));
   /* TODO: typically, the read options are needed before a DM is completely created and available in which case, the options wont be available ?? */
@@ -943,6 +943,7 @@ PETSC_EXTERN PetscErrorCode DMSetFromOptions_Moab(PetscOptionItems *PetscOptions
   PetscCall(PetscOptionsString("-dm_moab_write_opts", "Extra options to enable MOAB writer to serialize DM to file", "DMView", dmmoab->extra_write_options, dmmoab->extra_write_options, sizeof(dmmoab->extra_write_options), NULL));
   PetscCall(PetscOptionsEnum("-dm_moab_read_mode", "MOAB parallel read mode", "DMView", MoabReadModes, (PetscEnum)dmmoab->read_mode, (PetscEnum*)&dmmoab->read_mode, NULL));
   PetscCall(PetscOptionsEnum("-dm_moab_write_mode", "MOAB parallel write mode", "DMView", MoabWriteModes, (PetscEnum)dmmoab->write_mode, (PetscEnum*)&dmmoab->write_mode, NULL));
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

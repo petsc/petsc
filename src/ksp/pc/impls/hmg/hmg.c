@@ -93,7 +93,6 @@ static PetscErrorCode PCHMGExpandInterpolation_Private(Mat subinterp, Mat *inter
 
 PetscErrorCode PCSetUp_HMG(PC pc)
 {
-  PetscErrorCode     ierr;
   Mat                PA, submat;
   PC_MG              *mg   = (PC_MG*)pc->data;
   PC_HMG             *hmg   = (PC_HMG*) mg->innerctx;
@@ -212,9 +211,9 @@ PetscErrorCode PCSetUp_HMG(PC pc)
   PetscCall(PCMGSetGalerkin(pc,hmg->subcoarsening ? PC_MG_GALERKIN_PMAT:PC_MG_GALERKIN_NONE));
   PetscCall(PCSetDM(pc,NULL));
   PetscCall(PCSetUseAmat(pc,PETSC_FALSE));
-  ierr = PetscObjectOptionsBegin((PetscObject)pc);PetscCall(ierr);
+  PetscObjectOptionsBegin((PetscObject)pc);
   PetscCall(PCSetFromOptions_MG(PetscOptionsObject,pc)); /* should be called in PCSetFromOptions_HMG(), but cannot be called prior to PCMGSetLevels() */
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscCall(PCSetUp_MG(pc));
   PetscFunctionReturn(0);
 }
@@ -262,12 +261,12 @@ PetscErrorCode PCSetFromOptions_HMG(PetscOptionItems *PetscOptionsObject,PC pc)
   PC_HMG         *hmg = (PC_HMG*) mg->innerctx;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"HMG"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"HMG");
   PetscCall(PetscOptionsBool("-pc_hmg_reuse_interpolation","Reuse the interpolation operators when possible (cheaper, weaker when matrix entries change a lot)","PCHMGSetReuseInterpolation",hmg->reuseinterp,&hmg->reuseinterp,NULL));
   PetscCall(PetscOptionsBool("-pc_hmg_use_subspace_coarsening","Use the subspace coarsening to compute the interpolations","PCHMGSetUseSubspaceCoarsening",hmg->subcoarsening,&hmg->subcoarsening,NULL));
   PetscCall(PetscOptionsBool("-pc_hmg_use_matmaij","Use MatMAIJ store interpolation for saving memory","PCHMGSetInnerPCType",hmg->usematmaij,&hmg->usematmaij,NULL));
   PetscCall(PetscOptionsInt("-pc_hmg_coarsening_component","Which component is chosen for the subspace-based coarsening algorithm","PCHMGSetCoarseningComponent",hmg->component,&hmg->component,NULL));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

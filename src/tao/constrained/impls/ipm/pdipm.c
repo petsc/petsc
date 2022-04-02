@@ -898,7 +898,6 @@ PetscErrorCode TaoView_PDIPM(Tao tao,PetscViewer viewer)
 PetscErrorCode TaoSetup_PDIPM(Tao tao)
 {
   TAO_PDIPM         *pdipm = (TAO_PDIPM*)tao->data;
-  PetscErrorCode    ierr;
   MPI_Comm          comm;
   PetscMPIInt       size;
   PetscInt          row,col,Jcrstart,Jcrend,k,tmp,nc,proc,*nh_all,*ng_all;
@@ -1130,7 +1129,7 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao)
   }
   PetscCall(MatTranspose(pdipm->Jci_xb,MAT_INITIAL_MATRIX,&Jci_xb_trans));
 
-  ierr = MatPreallocateInitialize(comm,pdipm->n,pdipm->n,dnz,onz);PetscCall(ierr);
+  MatPreallocateBegin(comm,pdipm->n,pdipm->n,dnz,onz);
 
   /* 1st row block of KKT matrix: [Wxx; gradCe'; -gradCi'; 0] */
   PetscCall(TaoPDIPMEvaluateFunctionsAndJacobians(tao,pdipm->x));
@@ -1302,7 +1301,7 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao)
   PetscCall(MatSetFromOptions(J));
   PetscCall(MatSeqAIJSetPreallocation(J,0,dnz));
   PetscCall(MatMPIAIJSetPreallocation(J,0,dnz,0,onz));
-  ierr = MatPreallocateFinalize(dnz,onz);PetscCall(ierr);
+  MatPreallocateEnd(dnz,onz);
   pdipm->K = J;
 
   /* (8) Insert constant entries to  K */
@@ -1499,14 +1498,14 @@ PetscErrorCode TaoSetFromOptions_PDIPM(PetscOptionItems *PetscOptionsObject,Tao 
   TAO_PDIPM      *pdipm = (TAO_PDIPM*)tao->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"PDIPM method for constrained optimization"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"PDIPM method for constrained optimization");
   PetscCall(PetscOptionsReal("-tao_pdipm_push_init_slack","parameter to push initial slack variables away from bounds",NULL,pdipm->push_init_slack,&pdipm->push_init_slack,NULL));
   PetscCall(PetscOptionsReal("-tao_pdipm_push_init_lambdai","parameter to push initial (inequality) dual variables away from bounds",NULL,pdipm->push_init_lambdai,&pdipm->push_init_lambdai,NULL));
   PetscCall(PetscOptionsBool("-tao_pdipm_solve_reduced_kkt","Solve reduced KKT system using Schur-complement",NULL,pdipm->solve_reduced_kkt,&pdipm->solve_reduced_kkt,NULL));
   PetscCall(PetscOptionsReal("-tao_pdipm_mu_update_factor","Update scalar for barrier parameter (mu) update",NULL,pdipm->mu_update_factor,&pdipm->mu_update_factor,NULL));
   PetscCall(PetscOptionsBool("-tao_pdipm_symmetric_kkt","Solve non reduced symmetric KKT system",NULL,pdipm->solve_symmetric_kkt,&pdipm->solve_symmetric_kkt,NULL));
   PetscCall(PetscOptionsBool("-tao_pdipm_kkt_shift_pd","Add shifts to make KKT matrix positive definite",NULL,pdipm->kkt_pd,&pdipm->kkt_pd,NULL));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

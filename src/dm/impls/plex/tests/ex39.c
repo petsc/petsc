@@ -199,17 +199,15 @@ typedef struct
 /* Process command line options and initialize the UserCtx struct */
 static PetscErrorCode ProcessOptions(MPI_Comm comm,UserCtx * user)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   /* Default to  2D, unperturbed triangle mesh and Linear solution.*/
   user->mesh_transform = NONE;
   user->sol_form       = LINEAR;
 
-  ierr = PetscOptionsBegin(comm,"","H-div Test Options","DMPLEX");PetscCall(ierr);
+  PetscOptionsBegin(comm,"","H-div Test Options","DMPLEX");
   PetscCall(PetscOptionsEnum("-mesh_transform","Method used to perturb the mesh vertices. Options are skew, perturb, skew_perturb,or none","ex39.c",TransformTypes,(PetscEnum) user->mesh_transform,(PetscEnum*) &user->mesh_transform,NULL));
   PetscCall(PetscOptionsEnum("-sol_form","Form of the exact solution. Options are Linear or Sinusoidal","ex39.c",SolutionTypes,(PetscEnum) user->sol_form,(PetscEnum*) &user->sol_form,NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 
@@ -385,7 +383,6 @@ static PetscErrorCode SetupDiscretization(DM mesh,PetscErrorCode (*setup)(DM,Use
   PetscFE        fevel,fepres,fedivErr;
   PetscInt       dim;
   PetscBool      simplex;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscCall(DMGetDimension(mesh, &dim));
@@ -398,8 +395,7 @@ static PetscErrorCode SetupDiscretization(DM mesh,PetscErrorCode (*setup)(DM,Use
   PetscCall(PetscFECreateDefault(PetscObjectComm((PetscObject) mesh),dim,1,simplex,"pressure_",-1,&fepres));
   PetscCall(PetscObjectSetName((PetscObject) fepres,"pressure"));
 
-  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject)
-                                              mesh),dim,1,simplex,"divErr_",-1,&fedivErr);PetscCall(ierr);
+  PetscCall(PetscFECreateDefault(PetscObjectComm((PetscObject)mesh),dim,1,simplex,"divErr_",-1,&fedivErr));
   PetscCall(PetscObjectSetName((PetscObject) fedivErr,"divErr"));
 
   PetscCall(PetscFECopyQuadrature(fevel,fepres));

@@ -113,18 +113,17 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
  @*/
 PetscErrorCode TaoSolve(Tao tao)
 {
-  PetscErrorCode   ierr;
   static PetscBool set = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  ierr = PetscCitationsRegister("@TechReport{tao-user-ref,\n"
-                                "title   = {Toolkit for Advanced Optimization (TAO) Users Manual},\n"
-                                "author  = {Todd Munson and Jason Sarich and Stefan Wild and Steve Benson and Lois Curfman McInnes},\n"
-                                "Institution = {Argonne National Laboratory},\n"
-                                "Year   = 2014,\n"
-                                "Number = {ANL/MCS-TM-322 - Revision 3.5},\n"
-                                "url    = {https://www.mcs.anl.gov/research/projects/tao/}\n}\n",&set);PetscCall(ierr);
+  PetscCall(PetscCitationsRegister("@TechReport{tao-user-ref,\n"
+                                   "title   = {Toolkit for Advanced Optimization (TAO) Users Manual},\n"
+                                   "author  = {Todd Munson and Jason Sarich and Stefan Wild and Steve Benson and Lois Curfman McInnes},\n"
+                                   "Institution = {Argonne National Laboratory},\n"
+                                   "Year   = 2014,\n"
+                                   "Number = {ANL/MCS-TM-322 - Revision 3.5},\n"
+                                   "url    = {https://www.mcs.anl.gov/research/projects/tao/}\n}\n",&set));
   tao->header_printed = PETSC_FALSE;
   PetscCall(TaoSetUp(tao));
   PetscCall(TaoResetStatistics(tao));
@@ -308,7 +307,6 @@ PetscErrorCode TaoDestroy(Tao *tao)
 @*/
 PetscErrorCode TaoSetFromOptions(Tao tao)
 {
-  PetscErrorCode ierr;
   TaoType        default_type = TAOLMVM;
   char           type[256], monfilename[PETSC_MAX_PATH_LEN];
   PetscViewer    monviewer;
@@ -322,7 +320,7 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
   /* So no warnings are given about unused options */
   PetscCall(PetscOptionsHasName(((PetscObject)tao)->options,((PetscObject)tao)->prefix,"-tao_ls_type",&flg));
 
-  ierr = PetscObjectOptionsBegin((PetscObject)tao);PetscCall(ierr);
+  PetscObjectOptionsBegin((PetscObject)tao);
   {
     if (((PetscObject)tao)->type_name) default_type = ((PetscObject)tao)->type_name;
     /* Check for type from options */
@@ -468,7 +466,7 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
       PetscCall((*tao->ops->setfromoptions)(PetscOptionsObject,tao));
     }
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

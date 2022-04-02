@@ -58,16 +58,15 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscBool      flg;
   char           filename[2048];
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   filename[0] = '\0';
   user->use_riesz = PETSC_TRUE;
 
-  ierr = PetscOptionsBegin(comm, "", "Poisson mother problem options", "DMPLEX");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Poisson mother problem options", "DMPLEX");
   PetscCall(PetscOptionsBool("-use_riesz", "Use the Riesz map to achieve mesh independence", "ex3.c", user->use_riesz, &user->use_riesz, NULL));
   PetscCall(PetscOptionsString("-f", "filename to read", "ex3.c", filename, filename, sizeof(filename), &flg));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   if (!flg) {
     PetscCall(DMCreate(comm, dm));

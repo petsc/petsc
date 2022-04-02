@@ -1203,7 +1203,6 @@ PetscErrorCode DMPlexComputeL2DiffLocal(DM dm, PetscReal time, PetscErrorCode (*
   const PetscReal *quadWeights;
   PetscInt         dim, coordDim, numFields, numComponents = 0, qNc, Nq, cellHeight, cStart, cEnd, c, field, fieldOffset;
   PetscBool        transform;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   PetscCall(DMGetDimension(dm, &dim));
@@ -1264,7 +1263,8 @@ PetscErrorCode DMPlexComputeL2DiffLocal(DM dm, PetscReal time, PetscErrorCode (*
         PetscCall(DMPrintCellVector(c, title, Nb, &x[fieldOffset]));
       }
       for (q = 0; q < Nq; ++q) {
-        PetscFEGeom qgeom;
+        PetscFEGeom    qgeom;
+        PetscErrorCode ierr;
 
         qgeom.dimEmbed = fegeom.dimEmbed;
         qgeom.J        = &fegeom.J[q*coordDim*coordDim];
@@ -1283,7 +1283,6 @@ PetscErrorCode DMPlexComputeL2DiffLocal(DM dm, PetscReal time, PetscErrorCode (*
           PetscCall(DMPlexVecRestoreClosure(dm, NULL, localX, c, NULL, &x));
           PetscCall(DMRestoreLocalVector(dm, &localX));
           PetscCall(PetscFree6(funcVal,interpolant,coords,fegeom.detJ,fegeom.J,fegeom.invJ));
-          PetscCall(ierr);
         }
         if (transform) PetscCall(DMPlexBasisTransformApply_Internal(dm, &coords[coordDim*q], PETSC_FALSE, Nc, funcVal, funcVal, dm->transformCtx));
         if (id == PETSCFE_CLASSID)      PetscCall(PetscFEInterpolate_Static((PetscFE) obj, &x[fieldOffset], &qgeom, q, interpolant));
@@ -1322,7 +1321,6 @@ PetscErrorCode DMComputeL2GradientDiff_Plex(DM dm, PetscReal time, PetscErrorCod
   PetscReal        localDiff = 0.0;
   PetscInt         dim, coordDim, qNc = 0, Nq = 0, numFields, numComponents = 0, cStart, cEnd, c, field, fieldOffset;
   PetscBool        transform;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   PetscCall(DMGetDimension(dm, &dim));
@@ -1372,7 +1370,8 @@ PetscErrorCode DMComputeL2GradientDiff_Plex(DM dm, PetscReal time, PetscErrorCod
         PetscCall(DMPrintCellVector(c, title, Nb, &x[fieldOffset]));
       }
       for (q = 0; q < Nq; ++q) {
-        PetscFEGeom qgeom;
+        PetscFEGeom    qgeom;
+        PetscErrorCode ierr;
 
         qgeom.dimEmbed = fegeom.dimEmbed;
         qgeom.J        = &fegeom.J[q*coordDim*coordDim];
@@ -1391,7 +1390,6 @@ PetscErrorCode DMComputeL2GradientDiff_Plex(DM dm, PetscReal time, PetscErrorCod
           PetscCall(DMPlexVecRestoreClosure(dm, NULL, localX, c, NULL, &x));
           PetscCall(DMRestoreLocalVector(dm, &localX));
           PetscCall(PetscFree6(funcVal,coords,fegeom.J,fegeom.invJ,interpolant,fegeom.detJ));
-          PetscCall(ierr);
         }
         if (transform) PetscCall(DMPlexBasisTransformApply_Internal(dm, &coords[coordDim*q], PETSC_FALSE, Nc, funcVal, funcVal, dm->transformCtx));
         PetscCall(PetscFEInterpolateGradient_Static(fe, 1, &x[fieldOffset], &qgeom, q, interpolant));
@@ -1434,7 +1432,6 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
   PetscReal       *localDiff;
   PetscInt         dim, depth, dE, Nf, f, Nds, s;
   PetscBool        transform;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   PetscCall(DMGetDimension(dm, &dim));
@@ -1519,7 +1516,8 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
           PetscCall(DMPrintCellVector(cell, title, Nb, &x[fOff]));
         }
         for (q = 0; q < Nq; ++q) {
-          PetscFEGeom qgeom;
+          PetscFEGeom    qgeom;
+          PetscErrorCode ierr;
 
           qgeom.dimEmbed = fegeom.dimEmbed;
           qgeom.J        = &fegeom.J[q*dE*dE];
@@ -1538,7 +1536,6 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
             PetscCall(DMPlexVecRestoreClosure(dm, NULL, localX, cell, NULL, &x));
             PetscCall(DMRestoreLocalVector(dm, &localX));
             PetscCall(PetscFree6(funcVal,interpolant,coords,fegeom.detJ,fegeom.J,fegeom.invJ));
-            PetscCall(ierr);
           }
           if (transform) PetscCall(DMPlexBasisTransformApply_Internal(dm, &coords[dE*q], PETSC_FALSE, Nc, funcVal, funcVal, dm->transformCtx));
           /* Call once for each face, except for lagrange field */

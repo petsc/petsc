@@ -122,16 +122,14 @@ static void g3_oscillatory_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscInt       mod;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   options->modType = MOD_CONSTANT;
-
-  ierr = PetscOptionsBegin(comm, "", "Homogenization Problem Options", "DMPLEX");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Homogenization Problem Options", "DMPLEX");
   mod = options->modType;
   PetscCall(PetscOptionsEList("-mod_type", "The model type", "ex36.c", modTypes, NUM_MOD_TYPES, modTypes[options->modType], &mod, NULL));
   options->modType = (ModType) mod;
-  ierr = PetscOptionsEnd();
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

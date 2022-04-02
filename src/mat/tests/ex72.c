@@ -31,17 +31,18 @@ int main(int argc,char **argv)
   Mat         A;
   char        filein[PETSC_MAX_PATH_LEN],fileout[PETSC_MAX_PATH_LEN];
   char        ordering[256] = MATORDERINGRCM;
-  PetscInt    i,j,nz,ierr,size,*rownz;
+  PetscInt    i,j,nz,*rownz;
   PetscScalar *val,zero = 0.0;
   PetscViewer view;
   PetscBool   sametype,flag,symmetric = PETSC_FALSE,skew = PETSC_FALSE,real = PETSC_FALSE,pattern = PETSC_FALSE,aijonly = PETSC_FALSE, permute = PETSC_FALSE;
   IS          rowperm = NULL,colperm = NULL;
+  PetscMPIInt size;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Matrix Market example options","");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Matrix Market example options","");
   {
     PetscCall(PetscOptionsString("-fin","Input Matrix Market file","",filein,filein,sizeof(filein),&flag));
     PetscCheck(flag,PETSC_COMM_SELF,PETSC_ERR_USER_INPUT,"Please use -fin <filename> to specify the input file name!");
@@ -50,7 +51,7 @@ int main(int argc,char **argv)
     PetscCall(PetscOptionsBool("-aij_only","Use MATAIJ for all cases","",aijonly,&aijonly,NULL));
     PetscCall(PetscOptionsFList("-permute","Permute matrix and vector to solving in new ordering","",MatOrderingList,ordering,ordering,sizeof(ordering),&permute));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   /* Read in matrix */
   PetscCall(PetscFOpen(PETSC_COMM_SELF,filein,"r",&file));

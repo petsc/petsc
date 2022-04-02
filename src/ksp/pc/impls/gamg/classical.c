@@ -900,14 +900,14 @@ PetscErrorCode PCGAMGSetFromOptions_Classical(PetscOptionItems *PetscOptionsObje
   PetscBool         flg;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"GAMG-Classical options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"GAMG-Classical options");
   PetscCall(PetscOptionsFList("-pc_gamg_classical_type","Type of Classical AMG prolongation","PCGAMGClassicalSetType",PCGAMGClassicalProlongatorList,cls->prolongtype, tname, sizeof(tname), &flg));
   if (flg) {
     PetscCall(PCGAMGClassicalSetType(pc,tname));
   }
   PetscCall(PetscOptionsReal("-pc_gamg_classical_interp_threshold","Threshold for classical interpolator entries","",cls->interp_threshold,&cls->interp_threshold,NULL));
   PetscCall(PetscOptionsInt("-pc_gamg_classical_nsmooths","Threshold for classical interpolator entries","",cls->nsmooths,&cls->nsmooths,NULL));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

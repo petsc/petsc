@@ -315,7 +315,6 @@ static PetscErrorCode FormInitial_Coupled(User user,Vec X)
 
 int main(int argc, char *argv[])
 {
-  PetscErrorCode ierr;
   DM             dau,dak,pack;
   const PetscInt *lxu;
   PetscInt       *lxk,m,sizes;
@@ -361,14 +360,14 @@ int main(int argc, char *argv[])
   PetscCall(DMCompositeGetLocalVectors(pack,&user->Uloc,&user->Kloc));
   PetscCall(DMCompositeScatter(pack,X,user->Uloc,user->Kloc));
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Coupled problem options","SNES");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Coupled problem options","SNES");
   {
     user->ptype = 0; pass_dm = PETSC_TRUE;
 
     PetscCall(PetscOptionsInt("-problem_type","0: solve for u only, 1: solve for k only, 2: solve for both",0,user->ptype,&user->ptype,NULL));
     PetscCall(PetscOptionsBool("-pass_dm","Pass the packed DM to SNES to use when determining splits and forward into splits",0,pass_dm,&pass_dm,NULL));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscCall(FormInitial_Coupled(user,X));
 

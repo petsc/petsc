@@ -17,7 +17,6 @@ int main(int argc,char **args)
   Mat             A;                      /* matrix */
   PetscInt        m,n;                    /* mesh dimensions in x- and y- directions */
   PetscInt        i,j,Ii,J,Istart,Iend;
-  PetscErrorCode  ierr;
   PetscMPIInt     size;
   PetscScalar     v;
   MatPartitioning part;
@@ -28,12 +27,12 @@ int main(int argc,char **args)
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   comm = PETSC_COMM_WORLD;
   PetscCallMPI(MPI_Comm_size(comm,&size));
-  ierr = PetscOptionsBegin(comm,NULL,"ex193","hierarchical partitioning");PetscCall(ierr);
+  PetscOptionsBegin(comm,NULL,"ex193","hierarchical partitioning");
   m = 15;
   PetscCall(PetscOptionsInt("-M","Number of mesh points in the x-direction","partitioning",m,&m,NULL));
   n = 15;
   PetscCall(PetscOptionsInt("-N","Number of mesh points in the y-direction","partitioning",n,&n,NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   /*
      Assemble the matrix for the five point stencil (finite difference), YET AGAIN

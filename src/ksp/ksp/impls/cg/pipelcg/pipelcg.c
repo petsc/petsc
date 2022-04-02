@@ -87,7 +87,7 @@ static PetscErrorCode KSPSetFromOptions_PIPELCG(PetscOptionItems *PetscOptionsOb
   PetscBool      flag=PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"KSP PIPELCG options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"KSP PIPELCG options");
   PetscCall(PetscOptionsInt("-ksp_pipelcg_pipel","Pipeline length","",plcg->l,&plcg->l,&flag));
   if (!flag) plcg->l = 1;
   PetscCall(PetscOptionsReal("-ksp_pipelcg_lmin","Estimate for smallest eigenvalue","",plcg->lmin,&plcg->lmin,&flag));
@@ -96,7 +96,7 @@ static PetscErrorCode KSPSetFromOptions_PIPELCG(PetscOptionItems *PetscOptionsOb
   if (!flag) plcg->lmax = 0.0;
   PetscCall(PetscOptionsBool("-ksp_pipelcg_monitor","Output information on restarts when they occur? (default: 0)","",plcg->show_rstrt,&plcg->show_rstrt,&flag));
   if (!flag) plcg->show_rstrt = PETSC_FALSE;
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

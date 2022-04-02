@@ -339,7 +339,6 @@ PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat F,Mat A, IS r, IS c,const MatFactor
   /*     F  - matrix storing the factorization;                           */
   /************************************************************************/
   Mat_LUSOL      *lusol;
-  PetscErrorCode ierr;
   int            i, m, n, nz, nnz;
 
   PetscFunctionBegin;
@@ -391,19 +390,18 @@ PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat F,Mat A, IS r, IS c,const MatFactor
   lusol->nnz    = nnz;
   lusol->luroom = 1.75;
 
-  ierr = PetscMalloc(sizeof(int)*n,&lusol->ip);
-  ierr = PetscMalloc(sizeof(int)*n,&lusol->iq);
-  ierr = PetscMalloc(sizeof(int)*n,&lusol->lenc);
-  ierr = PetscMalloc(sizeof(int)*n,&lusol->lenr);
-  ierr = PetscMalloc(sizeof(int)*n,&lusol->locc);
-  ierr = PetscMalloc(sizeof(int)*n,&lusol->locr);
-  ierr = PetscMalloc(sizeof(int)*n,&lusol->iploc);
-  ierr = PetscMalloc(sizeof(int)*n,&lusol->iqloc);
-  ierr = PetscMalloc(sizeof(int)*n,&lusol->ipinv);
-  ierr = PetscMalloc(sizeof(int)*n,&lusol->iqinv);
-  ierr = PetscMalloc(sizeof(double)*n,&lusol->mnsw);
-  ierr = PetscMalloc(sizeof(double)*n,&lusol->mnsv);
-
+  PetscCall(PetscMalloc(sizeof(int)*n,&lusol->ip));
+  PetscCall(PetscMalloc(sizeof(int)*n,&lusol->iq));
+  PetscCall(PetscMalloc(sizeof(int)*n,&lusol->lenc));
+  PetscCall(PetscMalloc(sizeof(int)*n,&lusol->lenr));
+  PetscCall(PetscMalloc(sizeof(int)*n,&lusol->locc));
+  PetscCall(PetscMalloc(sizeof(int)*n,&lusol->locr));
+  PetscCall(PetscMalloc(sizeof(int)*n,&lusol->iploc));
+  PetscCall(PetscMalloc(sizeof(int)*n,&lusol->iqloc));
+  PetscCall(PetscMalloc(sizeof(int)*n,&lusol->ipinv));
+  PetscCall(PetscMalloc(sizeof(int)*n,&lusol->iqinv));
+  PetscCall(PetscMalloc(sizeof(double)*n,&lusol->mnsw));
+  PetscCall(PetscMalloc(sizeof(double)*n,&lusol->mnsv));
   PetscCall(PetscMalloc3(nnz,&lusol->data,nnz,&lusol->indc,nnz,&lusol->indr));
 
   lusol->CleanUpLUSOL     = PETSC_TRUE;

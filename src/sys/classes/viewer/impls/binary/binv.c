@@ -1478,7 +1478,7 @@ static PetscErrorCode PetscViewerSetFromOptions_Binary(PetscOptionItems *PetscOp
 
   PetscFunctionBegin;
   if (viewer->setupcalled) PetscFunctionReturn(0);
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"Binary PetscViewer Options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"Binary PetscViewer Options");
   PetscCall(PetscSNPrintf(defaultname,PETSC_MAX_PATH_LEN-1,"binaryoutput"));
   PetscCall(PetscOptionsString("-viewer_binary_filename","Specify filename","PetscViewerFileSetName",defaultname,defaultname,sizeof(defaultname),&flg));
   if (flg) PetscCall(PetscViewerFileSetName_Binary(viewer,defaultname));
@@ -1490,7 +1490,7 @@ static PetscErrorCode PetscViewerSetFromOptions_Binary(PetscOptionItems *PetscOp
 #else
   PetscCall(PetscOptionsBool("-viewer_binary_mpiio","Use MPI-IO functionality to write/read binary file (NOT AVAILABLE)","PetscViewerBinarySetUseMPIIO",PETSC_FALSE,NULL,NULL));
 #endif
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   binary->setfromoptionscalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }

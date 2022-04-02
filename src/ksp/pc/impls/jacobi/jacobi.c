@@ -364,14 +364,14 @@ static PetscErrorCode PCSetFromOptions_Jacobi(PetscOptionItems *PetscOptionsObje
 
   PetscFunctionBegin;
   PetscCall(PCJacobiGetType(pc,&deflt));
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"Jacobi options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"Jacobi options");
   PetscCall(PetscOptionsEnum("-pc_jacobi_type","How to construct diagonal matrix","PCJacobiSetType",PCJacobiTypes,(PetscEnum)deflt,(PetscEnum*)&type,&flg));
   if (flg) {
     PetscCall(PCJacobiSetType(pc,type));
   }
   PetscCall(PetscOptionsBool("-pc_jacobi_abs","Use absolute values of diagonal entries","PCJacobiSetUseAbs",jac->useabs,&jac->useabs,NULL));
   PetscCall(PetscOptionsBool("-pc_jacobi_fixdiagonal","Fix null terms on diagonal","PCJacobiSetFixDiagonal",jac->fixdiag,&jac->fixdiag,NULL));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

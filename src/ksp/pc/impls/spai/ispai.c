@@ -481,7 +481,7 @@ static PetscErrorCode PCSetFromOptions_SPAI(PetscOptionItems *PetscOptionsObject
   PetscBool      flg;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"SPAI options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"SPAI options");
   PetscCall(PetscOptionsReal("-pc_spai_epsilon","","PCSPAISetEpsilon",ispai->epsilon,&epsilon1,&flg));
   if (flg) {
     PetscCall(PCSPAISetEpsilon(pc,epsilon1));
@@ -515,7 +515,7 @@ static PetscErrorCode PCSetFromOptions_SPAI(PetscOptionItems *PetscOptionsObject
   if (flg) {
     PetscCall(PCSPAISetSp(pc,sp));
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

@@ -416,7 +416,6 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
   static PetscBool registered = PETSC_FALSE;
   THI              thi;
   Units            units;
-  PetscErrorCode   ierr;
 
   PetscFunctionBeginUser;
   *inthi = 0;
@@ -432,13 +431,13 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
   units->second   = 1e-7;
   units->kilogram = 1e-12;
 
-  ierr = PetscOptionsBegin(comm,NULL,"Scaled units options","");PetscCall(ierr);
+  PetscOptionsBegin(comm,NULL,"Scaled units options","");
   {
     PetscCall(PetscOptionsReal("-units_meter","1 meter in scaled length units","",units->meter,&units->meter,NULL));
     PetscCall(PetscOptionsReal("-units_second","1 second in scaled time units","",units->second,&units->second,NULL));
     PetscCall(PetscOptionsReal("-units_kilogram","1 kilogram in scaled mass units","",units->kilogram,&units->kilogram,NULL));
   }
-  ierr          = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   units->Pascal = units->kilogram / (units->meter * PetscSqr(units->second));
   units->year   = 31556926. * units->second; /* seconds per year */
 
@@ -448,7 +447,7 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
   thi->dirichlet_scale = 1;
   thi->verbose         = PETSC_FALSE;
 
-  ierr = PetscOptionsBegin(comm,NULL,"Toy Hydrostatic Ice options","");PetscCall(ierr);
+  PetscOptionsBegin(comm,NULL,"Toy Hydrostatic Ice options","");
   {
     QuadratureType quad       = QUAD_GAUSS;
     char           homexp[]   = "A";
@@ -521,7 +520,7 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
     PetscCall(PetscStrallocpy(mtype,(char**)&thi->mattype));
     PetscCall(PetscOptionsBool("-thi_verbose","Enable verbose output (like matrix sizes and statistics)","",thi->verbose,&thi->verbose,NULL));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   /* dimensionalize */
   thi->Lx    *= units->meter;
@@ -1442,7 +1441,6 @@ int main(int argc,char *argv[])
 {
   MPI_Comm       comm;
   THI            thi;
-  PetscErrorCode ierr;
   DM             da;
   SNES           snes;
 
@@ -1452,7 +1450,7 @@ int main(int argc,char *argv[])
   PetscCall(THICreate(comm,&thi));
   {
     PetscInt M = 3,N = 3,P = 2;
-    ierr = PetscOptionsBegin(comm,NULL,"Grid resolution options","");PetscCall(ierr);
+    PetscOptionsBegin(comm,NULL,"Grid resolution options","");
     {
       PetscCall(PetscOptionsInt("-M","Number of elements in x-direction on coarse level","",M,&M,NULL));
       N    = M;
@@ -1463,7 +1461,7 @@ int main(int argc,char *argv[])
         PetscCall(PetscOptionsInt("-P","Number of elements in z-direction on coarse level","",P,&P,NULL));
       }
     }
-    ierr = PetscOptionsEnd();PetscCall(ierr);
+    PetscOptionsEnd();
     if (thi->coarse2d) {
       PetscCall(DMDACreate2d(comm,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX,N,M,PETSC_DETERMINE,PETSC_DETERMINE,sizeof(Node)/sizeof(PetscScalar),1,0,0,&da));
       PetscCall(DMSetFromOptions(da));

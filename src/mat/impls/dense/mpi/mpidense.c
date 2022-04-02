@@ -2915,7 +2915,6 @@ static PetscErrorCode MatProductSetFromOptions_MPIDense_AtB(Mat C)
 
 static PetscErrorCode MatProductSetFromOptions_MPIDense_ABt(Mat C)
 {
-  PetscErrorCode ierr;
   Mat_Product    *product = C->product;
   const char     *algTypes[2] = {"allgatherv","cyclic"};
   PetscInt       alg,nalg = 2;
@@ -2931,13 +2930,13 @@ static PetscErrorCode MatProductSetFromOptions_MPIDense_ABt(Mat C)
 
   /* Get runtime option */
   if (product->api_user) {
-    ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatMatTransposeMult","Mat");PetscCall(ierr);
+    PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatMatTransposeMult","Mat");
     PetscCall(PetscOptionsEList("-matmattransmult_mpidense_mpidense_via","Algorithmic approach","MatMatTransposeMult",algTypes,nalg,algTypes[alg],&alg,&flg));
-    ierr = PetscOptionsEnd();PetscCall(ierr);
+    PetscOptionsEnd();
   } else {
-    ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatProduct_ABt","Mat");PetscCall(ierr);
+    PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatProduct_ABt","Mat");
     PetscCall(PetscOptionsEList("-mat_product_algorithm","Algorithmic approach","MatProduct_ABt",algTypes,nalg,algTypes[alg],&alg,&flg));
-    ierr = PetscOptionsEnd();PetscCall(ierr);
+    PetscOptionsEnd();
   }
   if (flg) {
     PetscCall(MatProductSetAlgorithm(C,(MatProductAlgorithm)algTypes[alg]));

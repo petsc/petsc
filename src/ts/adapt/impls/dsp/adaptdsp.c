@@ -273,7 +273,7 @@ static PetscErrorCode TSAdaptSetFromOptions_DSP(PetscOptionItems *PetscOptionsOb
 
   PetscFunctionBegin;
   for (i=0; i<count; i++) names[i] = filterlist[i].name;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"DSP adaptive controller options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"DSP adaptive controller options");
 
   PetscCall(PetscOptionsEList("-ts_adapt_dsp_filter","Filter name","TSAdaptDSPSetFilter",names,count,names[index],&index,&set));
   if (set) PetscCall(TSAdaptDSPSetFilter(adapt,names[index]));
@@ -290,7 +290,7 @@ static PetscErrorCode TSAdaptSetFromOptions_DSP(PetscOptionItems *PetscOptionsOb
   PetscCheck(!set || n,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONG,"Must provide at least one value for parameter alpha");
   if (set) for (i=n; i<2; i++) dsp->Alpha[i] = 0;
 
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

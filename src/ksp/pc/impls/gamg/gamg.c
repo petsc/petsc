@@ -773,10 +773,9 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
     }
 
     /* should be called in PCSetFromOptions_GAMG(), but cannot be called prior to PCMGSetLevels() */
-    PetscErrorCode ierr;
-    ierr = PetscObjectOptionsBegin((PetscObject)pc);PetscCall(ierr);
+    PetscObjectOptionsBegin((PetscObject)pc);
     PetscCall(PCSetFromOptions_MG(PetscOptionsObject,pc));
-    ierr = PetscOptionsEnd();PetscCall(ierr);
+    PetscOptionsEnd();
     PetscCall(PCMGSetGalerkin(pc,PC_MG_GALERKIN_EXTERNAL));
 
     /* setup cheby eigen estimates from SA */
@@ -1500,7 +1499,7 @@ PetscErrorCode PCSetFromOptions_GAMG(PetscOptionItems *PetscOptionsObject,PC pc)
   static const char *LayoutTypes[] = {"compact","spread","PCGAMGLayoutType","PC_GAMG_LAYOUT",NULL};
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)pc,&comm));
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"GAMG options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"GAMG options");
   PetscCall(PetscOptionsFList("-pc_gamg_type","Type of AMG method","PCGAMGSetType",GAMGList, pc_gamg->gamg_type_name, tname, sizeof(tname), &flag));
   if (flag) {
     PetscCall(PCGAMGSetType(pc,tname));
@@ -1542,7 +1541,7 @@ PetscErrorCode PCSetFromOptions_GAMG(PetscOptionItems *PetscOptionsObject,PC pc)
 
   PetscCall(PCGetOptionsPrefix(pc, &pcpre));
   PetscCall(PetscSNPrintf(prefix,sizeof(prefix),"%spc_gamg_",pcpre ? pcpre : ""));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

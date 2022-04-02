@@ -310,7 +310,6 @@ PetscErrorCode TaoBNKComputeHessian(Tao tao)
 
 PetscErrorCode TaoBNKEstimateActiveSet(Tao tao, PetscInt asType)
 {
-  PetscErrorCode ierr;
   TAO_BNK        *bnk = (TAO_BNK *)tao->data;
   PetscBool      hessComputed, diagExists;
 
@@ -349,8 +348,8 @@ PetscErrorCode TaoBNKEstimateActiveSet(Tao tao, PetscInt asType)
       }
     }
     PetscCall(VecScale(bnk->W, -1.0));
-    ierr = TaoEstimateActiveBounds(tao->solution, tao->XL, tao->XU, bnk->unprojected_gradient, bnk->W, bnk->Xwork, bnk->as_step, &bnk->as_tol,
-                                   &bnk->active_lower, &bnk->active_upper, &bnk->active_fixed, &bnk->active_idx, &bnk->inactive_idx);PetscCall(ierr);
+    PetscCall(TaoEstimateActiveBounds(tao->solution, tao->XL, tao->XU, bnk->unprojected_gradient, bnk->W, bnk->Xwork, bnk->as_step, &bnk->as_tol,
+                                      &bnk->active_lower, &bnk->active_upper, &bnk->active_fixed, &bnk->active_idx, &bnk->inactive_idx));
     break;
 
   default:
@@ -1148,7 +1147,7 @@ PetscErrorCode TaoSetFromOptions_BNK(PetscOptionItems *PetscOptionsObject,Tao ta
   TAO_BNK        *bnk = (TAO_BNK *)tao->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"Newton-Krylov method for bound constrained optimization"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"Newton-Krylov method for bound constrained optimization");
   PetscCall(PetscOptionsEList("-tao_bnk_init_type", "radius initialization type", "", BNK_INIT, BNK_INIT_TYPES, BNK_INIT[bnk->init_type], &bnk->init_type, NULL));
   PetscCall(PetscOptionsEList("-tao_bnk_update_type", "radius update type", "", BNK_UPDATE, BNK_UPDATE_TYPES, BNK_UPDATE[bnk->update_type], &bnk->update_type, NULL));
   PetscCall(PetscOptionsEList("-tao_bnk_as_type", "active set estimation method", "", BNK_AS, BNK_AS_TYPES, BNK_AS[bnk->as_type], &bnk->as_type, NULL));
@@ -1200,7 +1199,7 @@ PetscErrorCode TaoSetFromOptions_BNK(PetscOptionItems *PetscOptionsObject,Tao ta
   PetscCall(PetscOptionsReal("-tao_bnk_as_tol", "(developer) initial tolerance used when estimating actively bounded variables", "", bnk->as_tol, &bnk->as_tol,NULL));
   PetscCall(PetscOptionsReal("-tao_bnk_as_step", "(developer) step length used when estimating actively bounded variables", "", bnk->as_step, &bnk->as_step,NULL));
   PetscCall(PetscOptionsInt("-tao_bnk_max_cg_its", "number of BNCG iterations to take for each Newton step", "", bnk->max_cg_its, &bnk->max_cg_its,NULL));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
 
   PetscCall(TaoSetOptionsPrefix(bnk->bncg,((PetscObject)(tao))->prefix));
   PetscCall(TaoAppendOptionsPrefix(bnk->bncg,"tao_bnk_cg_"));

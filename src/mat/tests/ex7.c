@@ -10,7 +10,6 @@ int main(int argc,char **args)
   Mat            C,LU;
   MatInfo        info;
   PetscInt       i,j,m,n,Ii,J;
-  PetscErrorCode ierr;
   PetscScalar    v,one = 1.0;
   IS             perm,iperm;
   Vec            x,u,b;
@@ -19,13 +18,13 @@ int main(int argc,char **args)
 
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Mat test ex7 options","Mat");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Mat test ex7 options","Mat");
   m = 3; n = 3; fill = 2.0;
   PetscCall(PetscOptionsInt("-m","Number of rows in grid",NULL,m,&m,NULL));
   PetscCall(PetscOptionsInt("-n","Number of columns in grid",NULL,n,&n,NULL));
   PetscCall(PetscOptionsReal("-fill","Expected fill ratio for factorization",NULL,fill,&fill,NULL));
 
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   /* Create the matrix for the five point stencil, YET AGAIN */
   PetscCall(MatCreate(PETSC_COMM_SELF,&C));

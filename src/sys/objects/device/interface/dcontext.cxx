@@ -769,18 +769,17 @@ PetscErrorCode PetscDeviceContextSetFromOptions(MPI_Comm comm, const char prefix
 {
   PetscBool      flag;
   PetscInt       stype,dtype;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (prefix) PetscValidCharPointer(prefix,2);
   PetscValidDeviceContext(dctx,3);
-  ierr = PetscOptionsBegin(comm,prefix,"PetscDeviceContext Options","Sys");PetscCall(ierr);
+  PetscOptionsBegin(comm,prefix,"PetscDeviceContext Options","Sys");
   PetscCall(PetscOptionsEList("-device_context_stream_type","PetscDeviceContext PetscStreamType","PetscDeviceContextSetStreamType",PetscStreamTypes,PETSC_STREAM_MAX,PetscStreamTypes[dctx->streamType],&stype,&flag));
   if (flag) PetscCall(PetscDeviceContextSetStreamType(dctx,static_cast<PetscStreamType>(stype)));
   PetscCall(PetscOptionsEList("-device_context_device_type","Underlying PetscDevice","PetscDeviceContextSetDevice",PetscDeviceTypes+1,PETSC_DEVICE_MAX-1,dctx->device ? PetscDeviceTypes[dctx->device->type] : PetscDeviceTypes[PETSC_DEVICE_CONTEXT_DEFAULT_DEVICE],&dtype,&flag));
   if (flag) {
     PetscCall(PetscDeviceContextSetDefaultDeviceForType_Internal(dctx,static_cast<PetscDeviceType>(dtype+1)));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }

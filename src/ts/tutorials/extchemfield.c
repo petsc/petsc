@@ -89,7 +89,6 @@ int main(int argc,char **argv)
   Vec               X;          /* solution vector */
   Mat               J;          /* Jacobian matrix */
   PetscInt          steps,ncells,xs,xm,i;
-  PetscErrorCode    ierr;
   PetscReal         ftime,dt;
   char              chemfile[PETSC_MAX_PATH_LEN] = "chem.inp",thermofile[PETSC_MAX_PATH_LEN] = "therm.dat";
   struct _User      user;
@@ -99,7 +98,7 @@ int main(int argc,char **argv)
   Vec               lambda;     /* used with TSAdjoint for sensitivities */
 
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Chemistry solver options","");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Chemistry solver options","");
   PetscCall(PetscOptionsString("-chem","CHEMKIN input file","",chemfile,chemfile,sizeof(chemfile),NULL));
   PetscCall(PetscOptionsString("-thermo","NASA thermo input file","",thermofile,thermofile,sizeof(thermofile),NULL));
   user.pressure = 1.01325e5;    /* Pascal */
@@ -113,7 +112,7 @@ int main(int argc,char **argv)
   PetscCall(PetscOptionsBool("-diffusion","Have diffusion","",user.diffusion,&user.diffusion,NULL));
   user.reactions = PETSC_TRUE;
   PetscCall(PetscOptionsBool("-reactions","Have reactions","",user.reactions,&user.reactions,NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscCallTC(TC_initChem(chemfile, thermofile, 0, 1.0));
   user.Nspec = TC_getNspec();

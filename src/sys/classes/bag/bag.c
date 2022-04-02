@@ -597,7 +597,6 @@ PetscErrorCode  PetscBagDestroy(PetscBag *bag)
 @*/
 PetscErrorCode  PetscBagSetFromOptions(PetscBag bag)
 {
-  PetscErrorCode ierr;
   PetscBagItem   nitem = bag->bagitems;
   char           name[PETSC_BAG_NAME_LENGTH+1],helpname[PETSC_BAG_NAME_LENGTH+PETSC_BAG_HELP_LENGTH+3];
   PetscInt       n;
@@ -607,7 +606,7 @@ PetscErrorCode  PetscBagSetFromOptions(PetscBag bag)
   PetscCall(PetscStrncpy(helpname,bag->bagname,sizeof(helpname)));
   PetscCall(PetscStrlcat(helpname," ",sizeof(helpname)));
   PetscCall(PetscStrlcat(helpname,bag->baghelp,sizeof(helpname)));
-  ierr = PetscOptionsBegin(bag->bagcomm,bag->bagprefix,helpname,NULL);PetscCall(ierr);
+  PetscOptionsBegin(bag->bagcomm,bag->bagprefix,helpname,NULL);
   while (nitem) {
     name[0] = '-';
     name[1] = 0;
@@ -650,7 +649,7 @@ PetscErrorCode  PetscBagSetFromOptions(PetscBag bag)
     }
     nitem = nitem->next;
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

@@ -1061,11 +1061,10 @@ static PetscErrorCode DMDACreateManufacturedSolution(PetscInt mx,PetscInt my,Pet
   Vec            coords;
   DMDACoor3d     ***_coords;
   PetscInt       si,sj,sk,ei,ej,ek,i,j,k;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,
-                      mx+1,my+1,mz+1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,4,1,NULL,NULL,NULL,&da);PetscCall(ierr);
+  PetscCall(DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,
+                         mx+1,my+1,mz+1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,4,1,NULL,NULL,NULL,&da));
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));
   PetscCall(DMDASetFieldName(da,0,"anlytic_Vx"));
@@ -1651,7 +1650,6 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
   PetscInt       ei,ej,ek,sex,sey,sez,Imx,Jmy,Kmz;
   CellProperties cell_properties;
   PetscBool      write_output = PETSC_FALSE,resolve= PETSC_FALSE;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-resolve",&resolve,NULL));
@@ -1661,8 +1659,8 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
   p_dof         = P_DOFS; /* p - pressure */
   dof           = u_dof+p_dof;
   stencil_width = 1;
-  ierr          = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,
-                               mx+1,my+1,mz+1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,NULL,NULL,NULL,&da_Stokes);PetscCall(ierr);
+  PetscCall(DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,
+                         mx+1,my+1,mz+1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,NULL,NULL,NULL,&da_Stokes));
   PetscCall(DMSetMatType(da_Stokes,MATAIJ));
   PetscCall(DMSetFromOptions(da_Stokes));
   PetscCall(DMSetUp(da_Stokes));
@@ -1892,7 +1890,7 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
 
   /* SOLVE */
   PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp_S));
-  ierr = KSPSetOptionsPrefix(ksp_S,"stokes_"); /* stokes */ PetscCall(ierr);
+  PetscCall(KSPSetOptionsPrefix(ksp_S,"stokes_"));
   PetscCall(KSPSetOperators(ksp_S,A,B));
   PetscCall(KSPSetFromOptions(ksp_S));
 

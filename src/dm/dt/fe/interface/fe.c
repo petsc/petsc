@@ -229,7 +229,6 @@ PetscErrorCode PetscFESetFromOptions(PetscFE fem)
   const char    *defaultType;
   char           name[256];
   PetscBool      flg;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
@@ -240,7 +239,7 @@ PetscErrorCode PetscFESetFromOptions(PetscFE fem)
   }
   if (!PetscFERegisterAllCalled) PetscCall(PetscFERegisterAll());
 
-  ierr = PetscObjectOptionsBegin((PetscObject) fem);PetscCall(ierr);
+  PetscObjectOptionsBegin((PetscObject) fem);
   PetscCall(PetscOptionsFList("-petscfe_type", "Finite element space", "PetscFESetType", PetscFEList, defaultType, name, 256, &flg));
   if (flg) {
     PetscCall(PetscFESetType(fem, name));
@@ -254,7 +253,7 @@ PetscErrorCode PetscFESetFromOptions(PetscFE fem)
   }
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) fem));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscCall(PetscFEViewFromOptions(fem, NULL, "-petscfe_view"));
   PetscFunctionReturn(0);
 }
@@ -1789,7 +1788,6 @@ static PetscErrorCode PetscFECreate_Internal(MPI_Comm comm, PetscInt dim, PetscI
   PetscInt        quadPointsPerEdge;
   PetscBool       tensor;
   char            name[64];
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   if (prefix) PetscValidCharPointer(prefix, 5);
@@ -1869,9 +1867,9 @@ static PetscErrorCode PetscFECreate_Internal(MPI_Comm comm, PetscInt dim, PetscI
   /* Create quadrature (with specified order if given) */
   qorder = qorder >= 0 ? qorder : degree;
   if (setFromOptions) {
-    ierr = PetscObjectOptionsBegin((PetscObject)*fem);PetscCall(ierr);
+    PetscObjectOptionsBegin((PetscObject)*fem);
     PetscCall(PetscOptionsBoundedInt("-petscfe_default_quadrature_order","Quadrature order is one less than quadrature points per edge","PetscFECreateDefault",qorder,&qorder,NULL,0));
-    ierr = PetscOptionsEnd();PetscCall(ierr);
+    PetscOptionsEnd();
   }
   quadPointsPerEdge = PetscMax(qorder + 1,1);
   switch (ct) {

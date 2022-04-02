@@ -63,18 +63,16 @@ typedef struct {
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
   options->omega = 64.0;
   options->error = PETSC_FALSE;
   options->ostep = 100;
 
-  ierr = PetscOptionsBegin(comm, "", "Harmonic Oscillator Options", "DMSWARM");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Harmonic Oscillator Options", "DMSWARM");
   PetscCall(PetscOptionsReal("-omega", "Oscillator frequency", "ex4.c", options->omega, &options->omega, PETSC_NULL));
   PetscCall(PetscOptionsBool("-error", "Flag to print the error", "ex4.c", options->error, &options->error, NULL));
   PetscCall(PetscOptionsInt("-output_step", "Number of time steps between output", "ex4.c", options->ostep, &options->ostep, PETSC_NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

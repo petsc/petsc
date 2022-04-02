@@ -427,7 +427,7 @@ static PetscErrorCode SNESSetFromOptions_MS(PetscOptionItems *PetscOptionsObject
   SNES_MS        *ms = (SNES_MS*)snes->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"SNES MS options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"SNES MS options");
   {
     SNESMSTableauLink link;
     PetscInt          count,choice;
@@ -448,7 +448,7 @@ static PetscErrorCode SNESSetFromOptions_MS(PetscOptionItems *PetscOptionsObject
     if (flg) PetscCall(SNESMSSetDamping(snes,damping));
     PetscCall(PetscOptionsBool("-snes_ms_norms","Compute norms for monitoring","none",ms->norms,&ms->norms,NULL));
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

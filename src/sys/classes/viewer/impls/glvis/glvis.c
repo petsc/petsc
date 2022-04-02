@@ -216,8 +216,7 @@ static PetscErrorCode PetscViewerGLVisGetNewWindow_Private(PetscViewer viewer,Pe
 
   PetscFunctionBegin;
   ierr = PetscViewerASCIISocketOpen(PETSC_COMM_SELF,socket->name,socket->port,&window);
-  /* if we could not estabilish a connection the first time,
-     we disable the socket viewer */
+  /* if we could not estabilish a connection the first time, we disable the socket viewer */
   ldis = ierr ? PETSC_TRUE : PETSC_FALSE;
   PetscCall(MPIU_Allreduce(&ldis,&dis,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)viewer)));
   if (dis) {
@@ -564,7 +563,7 @@ static PetscErrorCode PetscViewerSetFromOptions_GLVis(PetscOptionItems *PetscOpt
   PetscBool        set;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"GLVis PetscViewer Options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"GLVis PetscViewer Options");
   PetscCall(PetscOptionsInt("-glvis_precision","Number of digits for floating point values","PetscViewerGLVisSetPrecision",prec,&prec,&set));
   if (set) PetscCall(PetscViewerGLVisSetPrecision(v,prec));
   PetscCall(PetscOptionsIntArray("-glvis_size","Window sizes",NULL,socket->windowsizes,&nsizes,&set));
@@ -572,7 +571,7 @@ static PetscErrorCode PetscViewerSetFromOptions_GLVis(PetscOptionItems *PetscOpt
   PetscCall(PetscOptionsReal("-glvis_pause","-1 to pause after each visualization, otherwise sleeps for given seconds",NULL,socket->pause,&socket->pause,NULL));
   PetscCall(PetscOptionsName("-glvis_keys","Additional keys to configure visualization",NULL,NULL));
   PetscCall(PetscOptionsName("-glvis_exec","Additional commands to configure visualization",NULL,NULL));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 
@@ -757,12 +756,13 @@ static PetscErrorCode (*PetscViewerDestroy_ASCII)(PetscViewer);
 static PetscErrorCode PetscViewerDestroy_ASCII_Socket(PetscViewer viewer)
 {
   FILE *stream;
-  PetscErrorCode ierr = 0;
+  int  err = 0;
+
   PetscFunctionBegin;
   PetscCall(PetscViewerASCIIGetPointer(viewer,&stream));
   if (stream) {
-    ierr = fclose(stream);
-    PetscCheck(!ierr,PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on stream");
+    err = fclose(stream);
+    PetscCheck(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on stream");
   }
   PetscCall(PetscViewerDestroy_ASCII(viewer));
   PetscFunctionReturn(0);

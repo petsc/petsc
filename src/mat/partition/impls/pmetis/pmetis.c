@@ -325,7 +325,7 @@ PetscErrorCode MatPartitioningSetFromOptions_Parmetis(PetscOptionItems *PetscOpt
   PetscBool      flag = PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"Set ParMeTiS partitioning options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"Set ParMeTiS partitioning options");
   PetscCall(PetscOptionsBool("-mat_partitioning_parmetis_coarse_sequential","Use sequential coarse partitioner","MatPartitioningParmetisSetCoarseSequential",flag,&flag,NULL));
   if (flag) {
     PetscCall(MatPartitioningParmetisSetCoarseSequential(part));
@@ -334,7 +334,7 @@ PetscErrorCode MatPartitioningSetFromOptions_Parmetis(PetscOptionItems *PetscOpt
   if (flag) {
     PetscCall(MatPartitioningParmetisSetRepartition(part));
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

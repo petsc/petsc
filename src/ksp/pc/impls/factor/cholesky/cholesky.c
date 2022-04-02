@@ -14,9 +14,9 @@ typedef struct {
 static PetscErrorCode PCSetFromOptions_Cholesky(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"Cholesky options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"Cholesky options");
   PetscCall(PCSetFromOptions_Factor(PetscOptionsObject,pc));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

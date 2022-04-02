@@ -170,11 +170,10 @@ PetscErrorCode PetscPartitionerSetFromOptions(PetscPartitioner part)
   const char    *currentType = NULL;
   char           name[256];
   PetscBool      flg;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
-  ierr = PetscObjectOptionsBegin((PetscObject) part);PetscCall(ierr);
+  PetscObjectOptionsBegin((PetscObject) part);
   PetscCall(PetscPartitionerGetType(part, &currentType));
   PetscCall(PetscOptionsFList("-petscpartitioner_type", "Graph partitioner", "PetscPartitionerSetType", PetscPartitionerList, currentType, name, sizeof(name), &flg));
   if (flg) {
@@ -190,7 +189,7 @@ PetscErrorCode PetscPartitionerSetFromOptions(PetscPartitioner part)
   PetscCall(PetscOptionsGetViewer(((PetscObject) part)->comm, ((PetscObject) part)->options, ((PetscObject) part)->prefix, "-petscpartitioner_view_graph", &part->viewerGraph, NULL, &part->viewGraph));
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) part));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

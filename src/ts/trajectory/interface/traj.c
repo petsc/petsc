@@ -824,12 +824,11 @@ PetscErrorCode  TSTrajectorySetFromOptions(TSTrajectory tj,TS ts)
 {
   PetscBool      set,flg;
   char           dirname[PETSC_MAX_PATH_LEN],filetemplate[PETSC_MAX_PATH_LEN];
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tj,TSTRAJECTORY_CLASSID,1);
   if (ts) PetscValidHeaderSpecific(ts,TS_CLASSID,2);
-  ierr = PetscObjectOptionsBegin((PetscObject)tj);PetscCall(ierr);
+  PetscObjectOptionsBegin((PetscObject)tj);
   PetscCall(TSTrajectorySetTypeFromOptions_Private(PetscOptionsObject,tj,ts));
   PetscCall(PetscOptionsBool("-ts_trajectory_use_history","Turn on/off usage of TSHistory",NULL,tj->usehistory,&tj->usehistory,NULL));
   PetscCall(PetscOptionsBool("-ts_trajectory_monitor","Print checkpointing schedules","TSTrajectorySetMonitor",tj->monitor ? PETSC_TRUE:PETSC_FALSE,&flg,&set));
@@ -855,7 +854,7 @@ PetscErrorCode  TSTrajectorySetFromOptions(TSTrajectory tj,TS ts)
   if (tj->ops->setfromoptions) {
     PetscCall((*tj->ops->setfromoptions)(PetscOptionsObject,tj));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

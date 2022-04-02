@@ -631,7 +631,6 @@ PetscFunctionList ISLocalToGlobalMappingList = NULL;
 @*/
 PetscErrorCode ISLocalToGlobalMappingSetFromOptions(ISLocalToGlobalMapping mapping)
 {
-  PetscErrorCode             ierr;
   char                       type[256];
   ISLocalToGlobalMappingType defaulttype = "Not set";
   PetscBool                  flg;
@@ -639,12 +638,12 @@ PetscErrorCode ISLocalToGlobalMappingSetFromOptions(ISLocalToGlobalMapping mappi
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,1);
   PetscCall(ISLocalToGlobalMappingRegisterAll());
-  ierr = PetscObjectOptionsBegin((PetscObject)mapping);PetscCall(ierr);
+  PetscObjectOptionsBegin((PetscObject)mapping);
   PetscCall(PetscOptionsFList("-islocaltoglobalmapping_type","ISLocalToGlobalMapping method","ISLocalToGlobalMappingSetType",ISLocalToGlobalMappingList,(char*)(((PetscObject)mapping)->type_name) ? ((PetscObject)mapping)->type_name : defaulttype,type,256,&flg));
   if (flg) {
     PetscCall(ISLocalToGlobalMappingSetType(mapping,type));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

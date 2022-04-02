@@ -80,10 +80,10 @@ PetscErrorCode PCSetFromOptions_Kaczmarz(PetscOptionItems *PetscOptionsObject,PC
   PC_Kaczmarz    *jac = (PC_Kaczmarz*)pc->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"Kaczmarz options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"Kaczmarz options");
   PetscCall(PetscOptionsReal("-pc_kaczmarz_lambda","relaxation factor (0 < lambda)","",jac->lambda,&jac->lambda,NULL));
   PetscCall(PetscOptionsBool("-pc_kaczmarz_symmetric","apply row projections symmetrically","",jac->symmetric,&jac->symmetric,NULL));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

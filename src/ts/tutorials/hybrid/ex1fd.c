@@ -186,7 +186,6 @@ int main(int argc,char **argv)
   Vec            U;             /* solution will be stored here */
   Mat            A;             /* Jacobian matrix */
   Mat            Ap;            /* dfdp */
-  PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscInt       n = 2;
   PetscScalar    *u;
@@ -206,12 +205,12 @@ int main(int argc,char **argv)
   app.mode = 1;
   app.lambda1 = 2.75;
   app.lambda2 = 0.36;
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex1 options","");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex1 options","");
   {
     PetscCall(PetscOptionsReal("-lambda1","","",app.lambda1,&app.lambda1,NULL));
     PetscCall(PetscOptionsReal("-lambda2","","",app.lambda2,&app.lambda2,NULL));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create necessary matrix and vectors

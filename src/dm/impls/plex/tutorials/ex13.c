@@ -10,10 +10,9 @@ int main(int argc, char **argv)
   PetscBool      distribute = PETSC_TRUE;
   DMBoundaryType periodic[3] = {DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE};
   DMPlexTPSType  tps_type = DMPLEX_TPS_SCHWARZ_P;
-  PetscErrorCode ierr;
 
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Schwarz P Example", NULL);PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Schwarz P Example", NULL);
   PetscCall(PetscOptionsIntArray("-extent", "Number of replicas for each of three dimensions", NULL, extent, (three=3, &three), NULL));
   PetscCall(PetscOptionsInt("-refine", "Number of refinements", NULL, refine, &refine, NULL));
   PetscCall(PetscOptionsEnumArray("-periodic", "Periodicity in each of three dimensions", NULL, DMBoundaryTypes, (PetscEnum*)periodic, (three=3, &three), NULL));
@@ -21,7 +20,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsInt("-layers", "Number of layers in volumetric extrusion (or zero to not extrude)", NULL, layers, &layers, NULL));
   PetscCall(PetscOptionsReal("-thickness", "Thickness of volumetric extrusion", NULL, thickness, &thickness, NULL));
   PetscCall(PetscOptionsEnum("-tps_type", "Type of triply-periodic surface", NULL, DMPlexTPSTypes, (PetscEnum)tps_type, (PetscEnum*)&tps_type, NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscCall(DMPlexCreateTPSMesh(PETSC_COMM_WORLD, tps_type, extent, periodic, distribute, refine, layers, thickness, &dm));
   PetscCall(PetscObjectSetName((PetscObject)dm, "TPS"));
   PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));

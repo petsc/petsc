@@ -92,7 +92,7 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, Pet
   int            fd_stdout, fd_pipe[2];
   PetscInt      *points;
   int            i, v, p;
-  PetscErrorCode ierr;
+  int            err;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)part,&comm));
@@ -133,7 +133,7 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, Pet
   }
 #endif
   if (part->usevwgt) PetscCall(PetscInfo(part,"PETSCPARTITIONERCHACO ignores vertex weights\n"));
-  ierr = interface(nvtxs, (int*) start, (int*) adjacency, vwgts, ewgts, x, y, z, outassignname, outfilename,
+  err = interface(nvtxs, (int*) start, (int*) adjacency, vwgts, ewgts, x, y, z, outassignname, outfilename,
                    assignment, architecture, ndims_tot, mesh_dims, goal, global_method, local_method, rqi_flag,
                    vmax, ndims, eigtol, seed);
 #if defined(PETSC_HAVE_UNISTD_H)
@@ -150,10 +150,10 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, Pet
     close(fd_stdout);
     close(fd_pipe[0]);
     close(fd_pipe[1]);
-    PetscCheck(!ierr,PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in Chaco library: %s", msgLog);
+    PetscCheck(!err,PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in Chaco library: %s", msgLog);
   }
 #else
-  PetscCheck(!ierr,PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in Chaco library: %s", "error in stdout");
+  PetscCheck(!err,PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in Chaco library: %s", "error in stdout");
 #endif
   /* Convert to PetscSection+IS */
   for (v = 0; v < nvtxs; ++v) {

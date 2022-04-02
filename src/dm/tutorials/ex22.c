@@ -47,7 +47,6 @@ int main(int argc,char **argv)
   MatStencil        lower, upper;                  /* Stencils to select slice for Vec */
   PetscBool         patchis_offproc = PETSC_FALSE; /* flag to DMDACreatePatchIS indicating that off-proc values are to be ignored */
   PetscMPIInt       rank,size;                     /* MPI rank and size */
-  PetscErrorCode    ierr;                          /* error checking */
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program and set problem parameters
@@ -56,13 +55,13 @@ int main(int argc,char **argv)
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "ex22 DMDA tutorial example options", "DMDA");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD, "", "ex22 DMDA tutorial example options", "DMDA");
   PetscCall(PetscOptionsRangeInt("-Mx", "dimension along x-axis", "ex22.c", Mx, &Mx, NULL, 0, PETSC_MAX_INT));
   PetscCall(PetscOptionsRangeInt("-My", "dimension along y-axis", "ex22.c", My, &My, NULL, 0, PETSC_MAX_INT));
   PetscCall(PetscOptionsRangeInt("-Mz", "dimension along z-axis", "ex22.c", Mz, &Mz, NULL, 0, PETSC_MAX_INT));
   PetscCall(PetscOptionsEnum("-sliceaxis","axis along which 2D slice is extracted from : X, Y, Z","",sliceaxes,(PetscEnum)sliceaxis,(PetscEnum*)&sliceaxis,NULL));
   PetscCall(PetscOptionsRangeInt("-gp", "index along sliceaxis at which 2D slice is extracted", "ex22.c", gp, &gp, NULL, 0, PETSC_MAX_INT));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   /* Ensure that the requested slice is not out of bounds for the selected axis */
   if (sliceaxis==DM_X) {
@@ -76,14 +75,8 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create 3D DMDA object.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-  ierr = DMDACreate3d(PETSC_COMM_WORLD,
-                      DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
-                      DMDA_STENCIL_STAR,
-                      Mx, My, Mz,
-                      PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE,
-                      1, 1,
-                      NULL, NULL, NULL,
-                      &da3D);PetscCall(ierr);
+  PetscCall(DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,Mx, My, Mz,
+                         PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE,1, 1,NULL, NULL, NULL,&da3D));
   PetscCall(DMSetFromOptions(da3D));
   PetscCall(DMSetUp(da3D));
 
@@ -167,14 +160,7 @@ int main(int argc,char **argv)
     PetscCallMPI(MPI_Comm_size(subset_mpi_comm, &size));
     PetscCall(PetscSynchronizedPrintf(subset_mpi_comm, "subset MPI subcomm size is : %d, includes global rank : %d \n", size, rank));
     PetscCall(PetscSynchronizedFlush(subset_mpi_comm, PETSC_STDOUT));
-    ierr = DMDACreate2d(subset_mpi_comm,
-                        DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
-                        DMDA_STENCIL_STAR,
-                        M1, M2,
-                        m1, m2,
-                        1, 1,
-                        l1, l2,
-                        &da2D);PetscCall(ierr);
+    PetscCall(DMDACreate2d(subset_mpi_comm,DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,M1, M2,m1, m2,1, 1,l1, l2,&da2D));
     PetscCall(DMSetFromOptions(da2D));
     PetscCall(DMSetUp(da2D));
 

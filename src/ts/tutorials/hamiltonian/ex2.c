@@ -31,8 +31,6 @@ typedef struct {
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
   options->dim              = 2;
   options->simplex          = PETSC_TRUE;
@@ -48,7 +46,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->stepSize         = 0.01;
   options->bdm              = PETSC_FALSE;
 
-  ierr = PetscOptionsBegin(comm, "", "Two Stream options", "DMPLEX");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Two Stream options", "DMPLEX");
   PetscCall(PetscStrcpy(options->meshFilename, ""));
   PetscCall(PetscOptionsInt("-dim", "The topological mesh dimension", "ex2.c", options->dim, &options->dim, NULL));
   PetscCall(PetscOptionsInt("-steps", "TS steps to take", "ex2.c", options->steps, &options->steps, NULL));
@@ -63,7 +61,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsReal("-stepSize","parameter","<1e-2>",options->stepSize,&options->stepSize,PETSC_NULL));
   PetscCall(PetscOptionsReal("-timeScale","parameter","<1>",options->timeScale,&options->timeScale,PETSC_NULL));
   PetscCall(PetscOptionsReal("-particle_perturbation", "Relative perturbation of particles (0,1)", "ex2.c", options->particleRelDx, &options->particleRelDx, NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

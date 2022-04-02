@@ -65,15 +65,14 @@ static void f0_strong_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   options->nit    = 10;
   options->strong = PETSC_FALSE;
-  ierr = PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");
   PetscCall(PetscOptionsInt("-benchmark_it", "Solve the benchmark problem this many times", "ex13.c", options->nit, &options->nit, NULL));
   PetscCall(PetscOptionsBool("-strong", "Do not integrate the Laplacian by parts", "ex13.c", options->strong, &options->strong, NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

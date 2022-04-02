@@ -208,7 +208,6 @@ int main(int argc, char **argv)
   PetscReal         ftime, hx, dt;
   TSConvergedReason reason;
   struct _User      user;
-  PetscErrorCode    ierr;
 
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   PetscCall(DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, 11, 3, 1, NULL, &dm));
@@ -217,7 +216,7 @@ int main(int argc, char **argv)
   PetscCall(DMDASetUniformCoordinates(dm, 0.0, 20.0, 0.0, 0.0, 0.0, 0.0));
   PetscCall(DMCreateGlobalVector(dm, &X));
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Dynamic Friction Options", "");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Dynamic Friction Options", "");
   {
     user.epsilon    = 0.1;
     user.gamma      = 0.5;
@@ -230,7 +229,7 @@ int main(int argc, char **argv)
     PetscCall(PetscOptionsReal("-xi", "Interblock spring constant", "", user.xi, &user.xi, NULL));
     PetscCall(PetscOptionsReal("-c", "Wavespeed", "", user.c, &user.c, NULL));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
   PetscCall(TSSetDM(ts, dm));

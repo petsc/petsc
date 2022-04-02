@@ -37,7 +37,6 @@ int main(int argc,char **argv)
   TS             ts;            /* ODE integrator */
   Vec            U;             /* solution will be stored here */
   Mat            A;             /* Jacobian matrix */
-  PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscInt       n = 2;
   AppCtx         ctx;
@@ -68,7 +67,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set runtime options
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Swing equation options","");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Swing equation options","");
   {
     ctx.omega_b = 1.0;
     ctx.omega_s = 2.0*PETSC_PI*60.0;
@@ -108,7 +107,7 @@ int main(int argc,char **argv)
       ctx.tcl     = -1;
     }
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context

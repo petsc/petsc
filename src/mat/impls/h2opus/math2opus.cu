@@ -700,7 +700,7 @@ static PetscErrorCode MatSetFromOptions_H2OPUS(PetscOptionItems *PetscOptionsObj
   Mat_H2OPUS     *a = (Mat_H2OPUS*)A->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"H2OPUS options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"H2OPUS options");
   PetscCall(PetscOptionsInt("-mat_h2opus_leafsize","Leaf size of cluster tree",NULL,a->leafsize,&a->leafsize,NULL));
   PetscCall(PetscOptionsReal("-mat_h2opus_eta","Admissibility condition tolerance",NULL,a->eta,&a->eta,NULL));
   PetscCall(PetscOptionsInt("-mat_h2opus_order","Basis order for off-diagonal sampling when constructed from kernel",NULL,a->basisord,&a->basisord,NULL));
@@ -710,7 +710,7 @@ static PetscErrorCode MatSetFromOptions_H2OPUS(PetscOptionItems *PetscOptionsObj
   PetscCall(PetscOptionsReal("-mat_h2opus_rtol","Relative tolerance for construction from sampling",NULL,a->rtol,&a->rtol,NULL));
   PetscCall(PetscOptionsBool("-mat_h2opus_check","Check error when constructing from sampling during MatAssemblyEnd()",NULL,a->check_construction,&a->check_construction,NULL));
   PetscCall(PetscOptionsBool("-mat_h2opus_hara_verbose","Verbose output from hara construction",NULL,a->hara_verbose,&a->hara_verbose,NULL));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

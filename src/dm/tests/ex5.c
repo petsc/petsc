@@ -6,7 +6,6 @@
 
 int main(int argc, char *argv[])
 {
-  PetscErrorCode ierr;
   PetscInt       nx=6,ny=6,nz=6,dim=1,dof=2;
   DM             da;
   Mat            A;
@@ -23,8 +22,8 @@ int main(int argc, char *argv[])
     PetscCall(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,nx,ny,PETSC_DECIDE,PETSC_DECIDE,dof,1,NULL,NULL,&da));
     break;
   default:
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz,
-                      PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,2,NULL,NULL,NULL,&da);PetscCall(ierr);
+    PetscCall(DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz,
+                           PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,2,NULL,NULL,NULL,&da));
   }
 
   PetscCall(DMSetFromOptions(da));

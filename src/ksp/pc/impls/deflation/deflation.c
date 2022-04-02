@@ -736,15 +736,12 @@ static PetscErrorCode PCView_Deflation(PC pc,PetscViewer viewer)
   PC_Deflation      *def = (PC_Deflation*)pc->data;
   PetscInt          its;
   PetscBool         iascii;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
     if (def->correct) {
-      ierr = PetscViewerASCIIPrintf(viewer,"using CP correction, factor = %g+%gi\n",
-                                    (double)PetscRealPart(def->correctfact),
-                                    (double)PetscImaginaryPart(def->correctfact));PetscCall(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer,"using CP correction, factor = %g+%gi\n",(double)PetscRealPart(def->correctfact),(double)PetscImaginaryPart(def->correctfact)));
     }
     if (!def->lvl) {
       PetscCall(PetscViewerASCIIPrintf(viewer,"deflation space type: %s\n",PCDeflationSpaceTypes[def->spacetype]));
@@ -770,7 +767,7 @@ static PetscErrorCode PCSetFromOptions_Deflation(PetscOptionItems *PetscOptionsO
   PC_Deflation      *def = (PC_Deflation*)pc->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"Deflation options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"Deflation options");
   PetscCall(PetscOptionsBool("-pc_deflation_init_only","Use only initialization step - Initdef","PCDeflationSetInitOnly",def->init,&def->init,NULL));
   PetscCall(PetscOptionsInt("-pc_deflation_levels","Maximum of deflation levels","PCDeflationSetLevels",def->maxlvl,&def->maxlvl,NULL));
   PetscCall(PetscOptionsInt("-pc_deflation_reduction_factor","Reduction factor for coarse problem solution using PCTELESCOPE","PCDeflationSetReductionFactor",def->reductionfact,&def->reductionfact,NULL));
@@ -779,7 +776,7 @@ static PetscErrorCode PCSetFromOptions_Deflation(PetscOptionItems *PetscOptionsO
   PetscCall(PetscOptionsEnum("-pc_deflation_compute_space","Compute deflation space","PCDeflationSetSpace",PCDeflationSpaceTypes,(PetscEnum)def->spacetype,(PetscEnum*)&def->spacetype,NULL));
   PetscCall(PetscOptionsInt("-pc_deflation_compute_space_size","Set size of the deflation space to compute","PCDeflationSetSpace",def->spacesize,&def->spacesize,NULL));
   PetscCall(PetscOptionsBool("-pc_deflation_space_extend","Extend deflation space instead of truncating (wavelets)","PCDeflation",def->extendsp,&def->extendsp,NULL));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

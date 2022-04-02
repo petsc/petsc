@@ -278,7 +278,6 @@ PetscErrorCode PetscDualSpaceSetFromOptions(PetscDualSpace sp)
   const char    *defaultType;
   char           name[256];
   PetscBool      flg;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
@@ -289,7 +288,7 @@ PetscErrorCode PetscDualSpaceSetFromOptions(PetscDualSpace sp)
   }
   if (!PetscSpaceRegisterAllCalled) PetscCall(PetscSpaceRegisterAll());
 
-  ierr = PetscObjectOptionsBegin((PetscObject) sp);PetscCall(ierr);
+  PetscObjectOptionsBegin((PetscObject) sp);
   PetscCall(PetscOptionsFList("-petscdualspace_type", "Dual space", "PetscDualSpaceSetType", PetscDualSpaceList, defaultType, name, 256, &flg));
   if (flg) {
     PetscCall(PetscDualSpaceSetType(sp, name));
@@ -313,7 +312,7 @@ PetscErrorCode PetscDualSpaceSetFromOptions(PetscDualSpace sp)
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) sp));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   sp->setfromoptionscalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }

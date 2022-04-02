@@ -5,13 +5,12 @@ static char help[] = "Tests 1D cell-based discretization tools.\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       i,j,degrees[1000],ndegrees,nsrc_points,ntarget_points;
   PetscReal      src_points[1000],target_points[1000],*R;
   PetscBool      flg;
 
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Discretization tools test options",NULL);PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Discretization tools test options",NULL);
   {
     ndegrees   = 1000;
     degrees[0] = 1;
@@ -34,7 +33,7 @@ int main(int argc,char **argv)
     PetscCall(PetscOptionsRealArray("-target_points","list of points defining intervals on which to integrate","",target_points,&ntarget_points,&flg));
     if (!flg) ntarget_points = 3;
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscCall(PetscMalloc1((nsrc_points-1)*(ntarget_points-1),&R));
   for (i=0; i<ndegrees; i++) {

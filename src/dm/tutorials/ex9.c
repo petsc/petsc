@@ -7,7 +7,6 @@ static char help[] = "Demonstrates HDF5 vector input/ouput\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscViewer    viewer;
   DM             da;
   Vec            global,local,global2;
@@ -26,12 +25,12 @@ int main(int argc,char **argv)
   */
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   /* Get number of DOF's from command line */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"DMDA VecView/VecLoad example","");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"DMDA VecView/VecLoad example","");
   {
     ndof = 1;
     PetscOptionsBoundedInt("-ndof","Number of DOF's in DMDA","",ndof,&ndof,NULL,1);
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   /* Create a DMDA and an associated vector */
   PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,100,90,PETSC_DECIDE,PETSC_DECIDE,ndof,1,NULL,NULL,&da));

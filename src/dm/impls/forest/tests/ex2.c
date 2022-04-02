@@ -154,11 +154,10 @@ int main(int argc, char **argv)
   PetscBool      use_bcs = PETSC_TRUE;
   bc_func_ctx    bcCtx;
   DMLabel        adaptLabel;
-  PetscErrorCode ierr;
 
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   comm = PETSC_COMM_WORLD;
-  ierr = PetscOptionsBegin(comm, "", "DMForestTransferVec() Test Options", "DMFOREST");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "DMForestTransferVec() Test Options", "DMFOREST");
   PetscCall(PetscOptionsBool("-linear","Transfer a simple linear function", "ex2.c", linear, &linear, NULL));
   PetscCall(PetscOptionsBool("-coords","Transfer a simple coordinate function", "ex2.c", coords, &coords, NULL));
   PetscCall(PetscOptionsBool("-use_fv","Use a finite volume approximation", "ex2.c", useFV, &useFV, NULL));
@@ -168,7 +167,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsBool("-transfer_from_base_steps","Transfer a vector from base DM to the latest DMForest after the adaptivity steps", "ex2.c", transfer_from_base[1], &transfer_from_base[1], NULL));
   PetscCall(PetscOptionsBool("-use_bcs","Use dirichlet boundary conditions", "ex2.c", use_bcs, &use_bcs, NULL));
   PetscCall(PetscOptionsBoundedInt("-adapt_steps","Number of adaptivity steps", "ex2.c", adaptSteps, &adaptSteps, NULL,0));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   tol = PetscMax(1.e-10,tol); /* XXX fix for quadruple precision -> why do I need to do this? */
 

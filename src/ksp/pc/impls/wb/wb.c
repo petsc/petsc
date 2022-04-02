@@ -715,7 +715,7 @@ PetscErrorCode PCSetFromOptions_Exotic(PetscOptionItems *PetscOptionsObject,PC p
   PC_Exotic      *ctx = (PC_Exotic*) mg->innerctx;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"Exotic coarse space options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"Exotic coarse space options");
   PetscCall(PetscOptionsEnum("-pc_exotic_type","face or wirebasket","PCExoticSetType",PCExoticTypes,(PetscEnum)ctx->type,(PetscEnum*)&mgctype,&flg));
   if (flg) {
     PetscCall(PCExoticSetType(pc,mgctype));
@@ -734,7 +734,7 @@ PetscErrorCode PCSetFromOptions_Exotic(PetscOptionItems *PetscOptionsObject,PC p
     }
     PetscCall(KSPSetFromOptions(ctx->ksp));
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

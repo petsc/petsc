@@ -30,9 +30,9 @@ static PetscErrorCode TaoSetFromOptions_TRON(PetscOptionItems *PetscOptionsObjec
   PetscBool      flg;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"Newton Trust Region Method for bound constrained optimization"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"Newton Trust Region Method for bound constrained optimization");
   PetscCall(PetscOptionsInt("-tao_tron_maxgpits","maximum number of gradient projections per TRON iterate","TaoSetMaxGPIts",tron->maxgpits,&tron->maxgpits,&flg));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscCall(KSPSetFromOptions(tao->ksp));
   PetscFunctionReturn(0);
 }
@@ -246,7 +246,6 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
 
 static PetscErrorCode TronGradientProjections(Tao tao,TAO_TRON *tron)
 {
-  PetscErrorCode               ierr;
   PetscInt                     i;
   TaoLineSearchConvergedReason ls_reason;
   PetscReal                    actred=-1.0,actred_max=0.0;
@@ -270,8 +269,7 @@ static PetscErrorCode TronGradientProjections(Tao tao,TAO_TRON *tron)
     PetscCall(VecCopy(tao->gradient,tao->stepdirection));
     PetscCall(VecScale(tao->stepdirection,-1.0));
     PetscCall(TaoLineSearchSetInitialStepLength(tao->linesearch,tron->pgstepsize));
-    ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f_new, tao->gradient, tao->stepdirection,
-                              &tron->pgstepsize, &ls_reason);PetscCall(ierr);
+    PetscCall(TaoLineSearchApply(tao->linesearch, tao->solution, &f_new, tao->gradient, tao->stepdirection,&tron->pgstepsize, &ls_reason));
     PetscCall(TaoAddLineSearchCounts(tao));
 
     PetscCall(VecBoundGradientProjection(tao->gradient,tao->solution,tao->XL,tao->XU,tao->gradient));
