@@ -4,21 +4,5 @@ Processor [0] M 25 N 13 m 1 n 1 w 1 s 1
 X range of indices: 0 25, Y range of indices: 0 13
 DM Object: Swarm 1 MPI processes
   type: swarm
-DMSwarmDataBucketView: 
-  L                  = 3492 
-  buffer             = 0 
-  allocated          = 3492 
-  nfields registered = 6 
-    [  0]     DMSwarm_pid : Mem. usage       = 2.79e-02 (MB) [rank0]
-                            blocksize        = 1 
-    [  1]    DMSwarm_rank : Mem. usage       = 1.40e-02 (MB) [rank0]
-                            blocksize        = 1 
-    [  2] DMSwarmPIC_coor : Mem. usage       = 5.59e-02 (MB) [rank0]
-                            blocksize        = 2 
-    [  3]  DMSwarm_cellid : Mem. usage       = 1.40e-02 (MB) [rank0]
-                            blocksize        = 1 
-    [  4]       viscosity : Mem. usage       = 2.79e-02 (MB) [rank0]
-                            blocksize        = 1 
-    [  5]         density : Mem. usage       = 2.79e-02 (MB) [rank0]
-                            blocksize        = 1 
-  Total mem. usage                           = 1.68e-01 (MB) (collective)
+Swarm in 2 dimensions:
+  Number of particles per rank: 3492

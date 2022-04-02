@@ -1570,6 +1570,55 @@ PetscErrorCode DMSwarmView_Draw(DM dm, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMView_Swarm_Ascii(DM dm, PetscViewer viewer)
+{
+  PetscViewerFormat format;
+  PetscInt         *sizes;
+  PetscInt          dim, Np, maxSize = 17;
+  MPI_Comm          comm;
+  PetscMPIInt       rank, size, p;
+  const char       *name;
+
+  PetscFunctionBegin;
+  PetscCall(PetscViewerGetFormat(viewer, &format));
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMSwarmGetLocalSize(dm, &Np));
+  PetscCall(PetscObjectGetComm((PetscObject) dm, &comm));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCall(PetscObjectGetName((PetscObject) dm, &name));
+  if (name) PetscCall(PetscViewerASCIIPrintf(viewer, "%s in %D dimension%s:\n", name, dim, dim == 1 ? "" : "s"));
+  else      PetscCall(PetscViewerASCIIPrintf(viewer, "Swarm in %D dimension%s:\n", dim, dim == 1 ? "" : "s"));
+  if (size < maxSize) PetscCall(PetscCalloc1(size, &sizes));
+  else                PetscCall(PetscCalloc1(3,    &sizes));
+  if (size < maxSize) {
+    PetscCallMPI(MPI_Gather(&Np, 1, MPIU_INT, sizes, 1, MPIU_INT, 0, comm));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  Number of particles per rank:"));
+    for (p = 0; p < size; ++p) {
+      if (rank == 0) PetscCall(PetscViewerASCIIPrintf(viewer, " %" PetscInt_FMT, sizes[p]));
+    }
+  } else {
+    PetscInt locMinMax[2] = {Np, Np};
+
+    PetscCall(PetscGlobalMinMaxInt(comm, locMinMax, sizes));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  Min/Max of particles per rank: %" PetscInt_FMT "/%" PetscInt_FMT, sizes[0], sizes[1]));
+  }
+  PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
+  PetscCall(PetscFree(sizes));
+  if (format == PETSC_VIEWER_ASCII_INFO) {
+    PetscInt *cell;
+
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  Cells containing each particle:\n"));
+    PetscCall(PetscViewerASCIIPushSynchronized(viewer));
+    PetscCall(DMSwarmGetField(dm, DMSwarmPICField_cellid, NULL, NULL, (void**) &cell));
+    for (p = 0; p < Np; ++p) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  p%" PetscInt_FMT ": %" PetscInt_FMT "\n", p, cell[p]));
+    PetscCall(PetscViewerFlush(viewer));
+    PetscCall(PetscViewerASCIIPopSynchronized(viewer));
+    PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_cellid, NULL, NULL, (void**) &cell));
+  }
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode DMView_Swarm(DM dm, PetscViewer viewer)
 {
   DM_Swarm       *swarm = (DM_Swarm*)dm->data;
@@ -1589,7 +1638,14 @@ PetscErrorCode DMView_Swarm(DM dm, PetscViewer viewer)
 #endif
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW,  &isdraw));
   if (iascii) {
-    PetscCall(DMSwarmDataBucketView(PetscObjectComm((PetscObject)dm),swarm->db,NULL,DATABUCKET_VIEW_STDOUT));
+    PetscViewerFormat format;
+
+    PetscCall(PetscViewerGetFormat(viewer, &format));
+    switch (format) {
+      case PETSC_VIEWER_ASCII_INFO_DETAIL:
+        PetscCall(DMSwarmDataBucketView(PetscObjectComm((PetscObject) dm), swarm->db, NULL, DATABUCKET_VIEW_STDOUT));break;
+      default: PetscCall(DMView_Swarm_Ascii(dm, viewer));
+    }
   } else PetscCheck(!ibinary,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"NO Binary support");
 #if defined(PETSC_HAVE_HDF5)
   else if (ishdf5) {

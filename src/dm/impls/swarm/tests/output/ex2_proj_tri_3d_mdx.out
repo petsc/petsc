@@ -10,16 +10,8 @@ Labels:
   depth: 4 strata with value/size (0 (8), 1 (19), 2 (18), 3 (6))
 DM Object: Particles 1 MPI processes
   type: swarm
-DMSwarmDataBucketView: 
-  L                  = 6 
-  buffer             = 0 
-  allocated          = 6 
-  nfields registered = 5 
-                            blocksize        = 1 
-                            blocksize        = 1 
-                            blocksize        = 3 
-                            blocksize        = 1 
-                            blocksize        = 1 
+Particles in 3 dimensions:
+  Number of particles per rank: 6
 L2 projection mass:     8.9693939249e+00, x-momentum:     4.5025265624e+00, energy:     7.7276520418e+00.
 L2 projection mass:     8.9693939249e+00, x-momentum:     4.5025265624e+00, energy:     7.7276520418e+00.
 L2 projection mass:     8.9693939249e+00, x-momentum:     4.5025265624e+00, energy:     7.7276520418e+00.

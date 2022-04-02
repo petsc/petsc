@@ -161,6 +161,7 @@ PetscErrorCode ex3_1(void)
   PetscCall(DMCreate(PETSC_COMM_WORLD,&dms));
   PetscCall(DMSetType(dms,DMSWARM));
   PetscCall(DMSetDimension(dms,2));
+  PetscCall(PetscObjectSetName((PetscObject) dms, "Particles"));
 
   PetscCall(DMSwarmSetType(dms,DMSWARM_PIC));
   PetscCall(DMSwarmSetCellDM(dms,dmcell));
