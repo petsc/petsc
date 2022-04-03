@@ -1326,7 +1326,7 @@ static void detMFunc(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 {
   const PetscScalar p = constants[0];
 
-  f0[0] = PetscPowReal(u[0], p/(2.0*p + dim));
+  f0[0] = PetscPowScalar(u[0], p/(2.0*p + dim));
 }
 
 /*@
