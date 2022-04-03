@@ -10,6 +10,8 @@ class Configure(config.package.GNUPackage):
     self.functions         = ['hwloc_topology_init']
     self.includes          = ['hwloc.h']
     self.liblist           = [['libhwloc.a'],['libhwloc.a','libxml2.a']]
+    self.versioninclude    = 'hwloc/autogen/config.h'
+    self.versionname       = 'HWLOC_VERSION'
     self.downloadonWindows = 1
     return
 

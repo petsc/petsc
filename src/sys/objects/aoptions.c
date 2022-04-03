@@ -700,7 +700,7 @@ PetscErrorCode  PetscOptionsEnum_Private(PetscOptionItems *PetscOptionsObject,co
 .  text - short string describing option
 .  man - manual page for option
 .  list - array containing the list of choices, followed by the enum name, followed by the enum prefix, followed by a null
--  n - maximum number of values
+-  n - maximum number of values allowed in the value array
 
    Output Parameters:
 +  value - location to copy values
@@ -1506,11 +1506,11 @@ PetscErrorCode  PetscOptionsBool_Private(PetscOptionItems *PetscOptionsObject,co
 +  opt - the option one is seeking
 .  text - short string describing option
 .  man - manual page for option
--  nmax - maximum number of values
+-  n - maximum number of values that value has room for
 
    Output Parameters:
 +  value - location to copy values
-.  nmax - actual number of values found
+.  n - actual number of values found
 -  set - PETSC_TRUE if found, else PETSC_FALSE
 
    Level: beginner
@@ -1569,11 +1569,11 @@ PetscErrorCode PetscOptionsRealArray_Private(PetscOptionItems *PetscOptionsObjec
 +  opt - the option one is seeking
 .  text - short string describing option
 .  man - manual page for option
--  nmax - maximum number of values
+-  n - maximum number of values allowed in the value array
 
    Output Parameters:
 +  value - location to copy values
-.  nmax - actual number of values found
+.  n - actual number of values found
 -  set - PETSC_TRUE if found, else PETSC_FALSE
 
    Level: beginner
@@ -1759,11 +1759,11 @@ PetscErrorCode  PetscOptionsStringArray_Private(PetscOptionItems *PetscOptionsOb
 +  opt - the option one is seeking
 .  text - short string describing option
 .  man - manual page for option
--  nmax - maximum number of values
+-  n - maximum number of values allowed in the value array
 
    Output Parameters:
 +  value - location to copy values
-.  nmax - actual number of values found
+.  n - actual number of values found
 -  set - PETSC_TRUE if found, else PETSC_FALSE
 
    Level: beginner
