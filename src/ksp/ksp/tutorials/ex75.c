@@ -41,13 +41,13 @@ int main(int argc,char **args)
     PetscCall(PetscObjectTypeCompare((PetscObject)ksp,KSPHPDDM,&flg));
 #if defined(PETSC_HAVE_HPDDM)
     if (flg && reset) {
-      PetscCall(KSPHPDDMGetDeflationSpace(ksp,&U));
+      PetscCall(KSPHPDDMGetDeflationMat(ksp,&U));
       PetscCall(KSPReset(ksp));
       PetscCall(KSPSetOperators(ksp,A,A));
       PetscCall(KSPSetFromOptions(ksp));
       PetscCall(KSPSetUp(ksp));
       if (U) {
-        PetscCall(KSPHPDDMSetDeflationSpace(ksp,U));
+        PetscCall(KSPHPDDMSetDeflationMat(ksp,U));
         PetscCall(MatDestroy(&U));
       }
     }
