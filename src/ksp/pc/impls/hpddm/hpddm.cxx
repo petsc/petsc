@@ -41,6 +41,7 @@ static PetscErrorCode PCReset_HPDDM(PC pc)
   PetscCall(VecDestroy(&data->normal));
   data->correction = PC_HPDDM_COARSE_CORRECTION_DEFLATED;
   data->Neumann    = PETSC_FALSE;
+  data->deflation  = PETSC_FALSE;
   data->setup      = NULL;
   data->setup_ctx  = NULL;
   PetscFunctionReturn(0);
@@ -60,10 +61,11 @@ static PetscErrorCode PCDestroy_HPDDM(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetCoarseCorrectionType_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMGetCoarseCorrectionType_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMGetSTShareSubKSP_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetDeflationMat_C", NULL));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCHPDDMSetAuxiliaryMat_HPDDM(PC pc, IS is, Mat A, PetscErrorCode (*setup)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void*), void* setup_ctx)
+static inline PetscErrorCode PCHPDDMSetAuxiliaryMat_Private(PC pc, IS is, Mat A, PetscBool deflation)
 {
   PC_HPDDM *data = (PC_HPDDM*)pc->data;
 
@@ -82,6 +84,16 @@ static PetscErrorCode PCHPDDMSetAuxiliaryMat_HPDDM(PC pc, IS is, Mat A, PetscErr
     PetscCall(MatDestroy(&data->aux));
     data->aux = A;
   }
+  data->deflation = deflation;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCHPDDMSetAuxiliaryMat_HPDDM(PC pc, IS is, Mat A, PetscErrorCode (*setup)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void*), void* setup_ctx)
+{
+  PC_HPDDM *data = (PC_HPDDM*)pc->data;
+
+  PetscFunctionBegin;
+  PetscCall(PCHPDDMSetAuxiliaryMat_Private(pc, is, A, PETSC_FALSE));
   if (setup) {
     data->setup = setup;
     data->setup_ctx = setup_ctx;
@@ -215,7 +227,7 @@ static PetscErrorCode PCSetFromOptions_HPDDM(PetscOptionItems *PetscOptionsObjec
       PetscCall(PetscOptionsBool(prefix, "Shared KSP between SLEPc ST and the fine-level subdomain solver", "PCHPDDMGetSTShareSubKSP", PETSC_FALSE, &data->share, NULL));
     }
     /* if there is no prescribed coarsening, just break out of the loop */
-    if (data->levels[i - 1]->threshold <= 0.0 && data->levels[i - 1]->nu <= 0) break;
+    if (data->levels[i - 1]->threshold <= 0.0 && data->levels[i - 1]->nu <= 0 && !(data->deflation && i == 1)) break;
     else {
       ++i;
       PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "-pc_hpddm_levels_%d_eps_nev", i));
@@ -364,8 +376,10 @@ static PetscErrorCode PCView_HPDDM(PC pc, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "level%s: %" PetscInt_FMT "\n", data->N > 1 ? "s" : "", data->N));
     PetscCall(PCHPDDMGetComplexities(pc, &gc, &oc));
     if (data->N > 1) {
-      PetscCall(PetscViewerASCIIPrintf(viewer, "Neumann matrix attached? %s\n", PetscBools[data->Neumann]));
-      PetscCall(PetscViewerASCIIPrintf(viewer, "shared subdomain KSP between SLEPc and PETSc? %s\n", PetscBools[data->share]));
+      if (!data->deflation) {
+        PetscCall(PetscViewerASCIIPrintf(viewer, "Neumann matrix attached? %s\n", PetscBools[data->Neumann]));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "shared subdomain KSP between SLEPc and PETSc? %s\n", PetscBools[data->share]));
+      } else PetscCall(PetscViewerASCIIPrintf(viewer, "user-supplied deflation matrix\n"));
       PetscCall(PetscViewerASCIIPrintf(viewer, "coarse correction: %s\n", PCHPDDMCoarseCorrectionTypes[data->correction]));
       PetscCall(PetscViewerASCIIPrintf(viewer, "on process #0, value%s (+ threshold%s if available) for selecting deflation vectors:", data->N > 2 ? "s" : "", data->N > 2 ? "s" : ""));
       PetscCall(PetscViewerASCIIGetTab(viewer, &tabs));
@@ -1119,9 +1133,15 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
       is[0] = data->is;
       if (algebraic) subdomains = PETSC_TRUE;
       PetscCall(PetscOptionsGetBool(NULL, pcpre, "-pc_hpddm_define_subdomains", &subdomains, NULL));
-      if (!subdomains && data->share) {
-        data->share = PETSC_FALSE;
-        PetscCall(PetscInfo(pc, "Cannot share subdomain KSP between SLEPc and PETSc since -%spc_hpddm_define_subdomains is not true\n", pcpre ? pcpre : ""));
+      if (data->share) {
+        if (!subdomains) {
+          PetscCall(PetscInfo(pc, "Cannot share subdomain KSP between SLEPc and PETSc since -%spc_hpddm_define_subdomains is not true\n", pcpre ? pcpre : ""));
+          data->share = PETSC_FALSE;
+        }
+        if (data->deflation) {
+          PetscCall(PetscInfo(pc, "Nothing to share since PCHPDDMSetDeflationMat() has been called\n"));
+          data->share = PETSC_FALSE;
+        }
       }
       if (data->Neumann) {
         PetscCheck(!block, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "-pc_hpddm_block_splitting and -pc_hpddm_has_neumann");
@@ -1265,7 +1285,8 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
       PetscCall(data->levels[0]->P->structure(loc, data->is, sub[0], ismatis ? C : data->aux, data->levels));
       if (!data->log_separate) PetscCall(PetscLogEventEnd(PC_HPDDM_Strc, data->levels[0]->ksp, 0, 0, 0));
       /* matrix pencil of the generalized eigenvalue problem on the overlap (GenEO) */
-      if (!data->B) {
+      if (data->deflation) weighted = data->aux;
+      else if (!data->B) {
         PetscCall(MatDuplicate(sub[0], MAT_COPY_VALUES, &weighted));
         PetscCall(PetscObjectTypeCompare((PetscObject)weighted, MATNORMAL, &flg));
         if (!flg) PetscCall(MatDiagonalScale(weighted, data->levels[0]->D, data->levels[0]->D));
@@ -1496,6 +1517,35 @@ static PetscErrorCode PCHPDDMGetSTShareSubKSP_HPDDM(PC pc, PetscBool *share)
   PetscFunctionReturn(0);
 }
 
+/*@
+     PCHPDDMSetDeflationMat - Sets the deflation space used to assemble a coarser operator.
+
+   Input Parameters:
++     pc - preconditioner context
+.     is - index set of the local deflation matrix
+-     U - deflation sequential matrix stored as a MATSEQDENSE
+
+   Level: advanced
+
+.seealso:  PCDeflationSetSpace(), PCMGSetRestriction()
+@*/
+PetscErrorCode PCHPDDMSetDeflationMat(PC pc, IS is, Mat U)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
+  PetscValidHeaderSpecific(is, IS_CLASSID, 2);
+  PetscValidHeaderSpecific(U, MAT_CLASSID, 3);
+  PetscUseMethod(pc, "PCHPDDMSetDeflationMat_C", (PC, IS, Mat), (pc, is, U));
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCHPDDMSetDeflationMat_HPDDM(PC pc, IS is, Mat U)
+{
+  PetscFunctionBegin;
+  PetscCall(PCHPDDMSetAuxiliaryMat_Private(pc, is, U, PETSC_TRUE));
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode HPDDMLoadDL_Private(PetscBool *found)
 {
   char lib[PETSC_MAX_PATH_LEN], dlib[PETSC_MAX_PATH_LEN], dir[PETSC_MAX_PATH_LEN];
@@ -1587,6 +1637,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_HPDDM(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetCoarseCorrectionType_C", PCHPDDMSetCoarseCorrectionType_HPDDM));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMGetCoarseCorrectionType_C", PCHPDDMGetCoarseCorrectionType_HPDDM));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMGetSTShareSubKSP_C", PCHPDDMGetSTShareSubKSP_HPDDM));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetDeflationMat_C", PCHPDDMSetDeflationMat_HPDDM));
   PetscFunctionReturn(0);
 }
 

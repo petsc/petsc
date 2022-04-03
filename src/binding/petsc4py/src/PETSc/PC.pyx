@@ -863,6 +863,9 @@ cdef class PC(Object):
         CHKERR( PCHPDDMGetSTShareSubKSP(self.pc, &cval) )
         return toBool(cval)
 
+    def setHPDDMDeflationMat(self, IS uis, Mat U):
+        CHKERR( PCHPDDMSetDeflationMat(self.pc, uis.iset, U.mat) )
+
     # --- SPAI ---
 
     def setSPAIEpsilon(self, val):
