@@ -275,7 +275,6 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2,PetscInt data_stride,
       level++;
     }
   }
-  PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[FIND_V],0,0,0,0));
   { /* form P - setup some maps */
     PetscInt clid,mm,*nTri,*node_tri;
 
@@ -405,7 +404,6 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2,PetscInt data_stride,
 
     PetscCall(PetscFree2(node_tri,nTri));
   }
-  PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[FIND_V],0,0,0,0));
   free(mid.trianglelist);
   free(mid.neighborlist);
   free(mid.segmentlist);
@@ -542,7 +540,6 @@ PetscErrorCode PCGAMGGraph_GEO(PC pc,Mat Amat,Mat *a_Gmat)
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)Amat,&comm));
-  PetscCall(PetscLogEventBegin(PC_GAMGGraph_GEO,0,0,0,0));
 
   PetscCall(MatIsSymmetricKnown(Amat, &set, &flg));
   symm = (PetscBool)!(set && flg);
@@ -551,7 +548,7 @@ PetscErrorCode PCGAMGGraph_GEO(PC pc,Mat Amat,Mat *a_Gmat)
   PetscCall(PCGAMGFilterGraph(&Gmat, vfilter, symm));
 
   *a_Gmat = Gmat;
-  PetscCall(PetscLogEventEnd(PC_GAMGGraph_GEO,0,0,0,0));
+
   PetscFunctionReturn(0);
 }
 
@@ -577,7 +574,7 @@ PetscErrorCode PCGAMGCoarsen_GEO(PC a_pc,Mat *a_Gmat,PetscCoarsenData **a_llist_
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)a_pc,&comm));
-  PetscCall(PetscLogEventBegin(PC_GAMGCoarsen_GEO,0,0,0,0));
+
   PetscCall(MatGetOwnershipRange(Gmat, &Istart, &Iend));
   nloc = (Iend-Istart);
 
@@ -635,7 +632,7 @@ PetscErrorCode PCGAMGCoarsen_GEO(PC a_pc,Mat *a_Gmat,PetscCoarsenData **a_llist_
   PetscCall(MatCoarsenDestroy(&crs));
 
   PetscCall(ISDestroy(&perm));
-  PetscCall(PetscLogEventEnd(PC_GAMGCoarsen_GEO,0,0,0,0));
+
   PetscFunctionReturn(0);
 }
 
@@ -667,7 +664,7 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,Mat Amat,Mat Gmat,PetscCoarsenData *a
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)Amat,&comm));
-  PetscCall(PetscLogEventBegin(PC_GAMGProlongator_GEO,0,0,0,0));
+
   PetscCallMPI(MPI_Comm_rank(comm,&rank));
   PetscCallMPI(MPI_Comm_size(comm,&size));
   PetscCall(MatGetOwnershipRange(Amat, &Istart, &Iend));
@@ -718,11 +715,9 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,Mat Amat,Mat Gmat,PetscCoarsenData *a
 
     PetscCheckFalse(dim != data_cols,PETSC_COMM_SELF,PETSC_ERR_PLIB,"dim %D != data_cols %D",dim,data_cols);
     /* grow ghost data for better coarse grid cover of fine grid */
-    PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[SET5],0,0,0,0));
     /* messy method, squares graph and gets some data */
     PetscCall(getGIDsOnSquareGraph(pc, nLocalSelected, clid_flid, Gmat, &selected_2, &Gmat2, &crsGID));
     /* llist is now not valid wrt squared graph, but will work as iterator in 'triangulateAndFormProl' */
-    PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[SET5],0,0,0,0));
     /* create global vector of coorindates in 'coords' */
     if (size > 1) {
       PetscCall(PCGAMGGetDataWithGhosts(Gmat2, dim, pc_gamg->data, &data_stride, &coords));
@@ -735,9 +730,7 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,Mat Amat,Mat Gmat,PetscCoarsenData *a
     /* triangulate */
     if (dim == 2) {
       PetscReal metric,tm;
-      PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[SET6],0,0,0,0));
       PetscCall(triangulateAndFormProl(selected_2, data_stride, coords,nLocalSelected, clid_flid, agg_lists, crsGID, bs, Prol, &metric));
-      PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[SET6],0,0,0,0));
       PetscCall(PetscFree(crsGID));
 
       /* clean up and create coordinates for coarse grid (output) */
@@ -768,7 +761,7 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,Mat Amat,Mat Gmat,PetscCoarsenData *a
 
   *a_P_out = Prol;  /* out */
   PetscCall(PetscFree(clid_flid));
-  PetscCall(PetscLogEventEnd(PC_GAMGProlongator_GEO,0,0,0,0));
+
   PetscFunctionReturn(0);
 }
 

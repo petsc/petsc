@@ -1,4 +1,4 @@
-static char help[] = "3D, tri-quadratic hexahedra (Q1), displacement finite element formulation\n\
+static char help[] = "3D, tensor hexahedra (Q1-K), displacement finite element formulation\n\
 of linear elasticity.  E=1.0, nu=1/3.\n\
 Unit cube domain with Dirichlet boundary\n\n";
 
@@ -203,7 +203,6 @@ PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt 
 int main(int argc,char **args)
 {
   Mat                Amat;
-  PetscErrorCode     ierr;
   SNES               snes;
   KSP                ksp;
   MPI_Comm           comm;
@@ -211,6 +210,7 @@ int main(int argc,char **args)
 #if defined(PETSC_USE_LOG)
   PetscLogStage      stage[17];
 #endif
+  PetscErrorCode     ierr;
   PetscBool          test_nonzero_cols = PETSC_FALSE,use_nearnullspace = PETSC_TRUE,attach_nearnullspace = PETSC_FALSE;
   Vec                xx,bb;
   PetscInt           iter,i,N,dim = 3,cells[3] = {1,1,1},max_conv_its,local_sizes[7],run_type = 1;
@@ -265,7 +265,7 @@ int main(int argc,char **args)
     PetscCall(DMCreateLabel(dm, "boundary"));
     PetscCall(DMGetLabel(dm, "boundary", &label));
     PetscCall(DMPlexMarkBoundaryFaces(dm, 1, label));
-    if (!run_type) {
+    if (run_type == 0) {
       PetscCall(DMGetStratumIS(dm, "boundary", 1,  &is));
       PetscCall(DMCreateLabel(dm,"Faces"));
       if (is) {
@@ -334,7 +334,6 @@ int main(int argc,char **args)
   }
 
   /* convert to p4est, and distribute */
-
   ierr = PetscOptionsBegin(comm, "", "Mesh conversion options", "DMPLEX");PetscCall(ierr);
   PetscCall(PetscOptionsFList("-dm_type","Convert DMPlex to another format (should not be Plex!)","ex56.c",DMList,DMPLEX,convType,256,&flg));
   ierr = PetscOptionsEnd();PetscCall(ierr);
@@ -514,8 +513,8 @@ int main(int argc,char **args)
   for (iter=1 ; iter<max_conv_its ; iter++) {
     if (run_type==1) err[iter] = 59.975208 - mdisp[iter];
     else             err[iter] = 171.038 - mdisp[iter];
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d] %D) N=%12D, max displ=%9.7e, disp diff=%9.2e, error=%4.3e, rate=%3.2g\n",rank,iter,local_sizes[iter],(double)mdisp[iter],
-                       (double)(mdisp[iter]-mdisp[iter-1]),(double)err[iter],(double)(PetscLogReal(err[iter-1]/err[iter])/PetscLogReal(2.)));PetscCall(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"[%d] %D) N=%12D, max displ=%9.7e, disp diff=%9.2e, error=%4.3e, rate=%3.2g\n",rank,iter,local_sizes[iter],(double)mdisp[iter],
+                          (double)(mdisp[iter]-mdisp[iter-1]),(double)err[iter],(double)(PetscLogReal(err[iter-1]/err[iter])/PetscLogReal(2.))));
   }
 
   PetscCall(PetscFinalize());
@@ -528,7 +527,7 @@ int main(int argc,char **args)
     suffix: 0
     nsize: 4
     requires: !single
-    args: -cells 2,2,1 -max_conv_its 2 -petscspace_degree 2 -snes_max_it 2 -ksp_max_it 100 -ksp_type cg -ksp_rtol 1.e-10 -ksp_norm_type unpreconditioned -snes_rtol 1.e-10 -pc_type gamg -pc_gamg_esteig_ksp_max_it 10 -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -ksp_converged_reason -snes_monitor_short -ksp_monitor_short -snes_converged_reason -use_mat_nearnullspace true -mg_levels_ksp_max_it 2 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.1 -mg_levels_pc_type jacobi -petscpartitioner_type simple -matptap_via scalable -ex56_dm_view
+    args: -cells 2,2,1 -max_conv_its 2 -petscspace_degree 3 -snes_max_it 1 -ksp_max_it 100 -ksp_type cg -ksp_rtol 1.e-10 -ksp_norm_type unpreconditioned -pc_type gamg -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 0 -pc_gamg_threshold 0.001 -ksp_converged_reason -snes_converged_reason -use_mat_nearnullspace true -mg_levels_ksp_max_it 2 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.2,0,1.1 -mg_levels_pc_type jacobi -petscpartitioner_type simple -ex56_dm_view -snes_lag_jacobian -2 -snes_type ksponly -use_gpu_aware_mpi true
     timeoutfactor: 2
 
   # HYPRE PtAP broken with complex numbers
