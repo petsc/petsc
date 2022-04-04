@@ -112,9 +112,9 @@ PetscErrorCode PCGAMGCreateGraph(Mat Amat, Mat *a_Gmat)
         for (PetscInt ii=1; ii < bs && nnz[brow/bs] ; ii++) { // check for non-dense blocks
           PetscCall(MatGetRow(c,brow+ii,&jj,&cols,NULL));
           if (jj%bs) ok = 0;
-          if (j0 != cols[0]) ok = 0;
+          if ((cols && j0 != cols[0]) || (!cols && j0 != -1)) ok = 0;
           if (nnz[brow/bs] != jj/bs) ok = 0;
-          PetscCall(MatRestoreRow(c,brow+11,&jj,&cols,NULL));
+          PetscCall(MatRestoreRow(c,brow+ii,&jj,&cols,NULL));
         }
         if (!ok) {
           PetscCall(PetscFree2(d_nnz,o_nnz));
