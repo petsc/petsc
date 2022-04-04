@@ -4,11 +4,10 @@
 
 static const char help[] = "Load and save the mesh to the native HDF5 format\n\n";
 static const char EX[] = "ex56.c";
-static const char LABEL_NAME[] = "BoundaryVertices";
-static const PetscInt LABEL_VALUE = 12345;
 typedef struct {
   MPI_Comm    comm;
   const char *meshname;                     /* Mesh name */
+  PetscInt    num_labels;                   /* Asserted number of labels in loaded mesh */
   PetscBool   compare;                      /* Compare the meshes using DMPlexEqual() and DMCompareLabels() */
   PetscBool   compare_labels;               /* Compare labels in the meshes using DMCompareLabels() */
   PetscBool   compare_boundary;             /* Check label I/O via boundary vertex coordinates */
@@ -17,7 +16,7 @@ typedef struct {
   PetscBool   use_low_level_functions;      /* Use low level functions for viewing and loading */
   //TODO This is meant as temporary option; can be removed once we have full parallel loading in place
   PetscBool   distribute_after_topo_load;   /* Distribute topology right after DMPlexTopologyLoad(), if use_low_level_functions=true */
-  PetscBool   verbose;
+  PetscInt    verbose;
 } AppCtx;
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -26,6 +25,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
   PetscFunctionBeginUser;
   options->comm                       = comm;
+  options->num_labels                 = -1;
   options->compare                    = PETSC_FALSE;
   options->compare_labels             = PETSC_FALSE;
   options->compare_boundary           = PETSC_FALSE;
@@ -33,9 +33,10 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->outfile[0]                 = '\0';
   options->use_low_level_functions    = PETSC_FALSE;
   options->distribute_after_topo_load = PETSC_FALSE;
-  options->verbose                    = PETSC_FALSE;
+  options->verbose                    = 0;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");PetscCall(ierr);
+  PetscCall(PetscOptionsInt("-num_labels", "Asserted number of labels in meshfile; don't count depth and celltype; -1 to deactivate", EX, options->num_labels, &options->num_labels, NULL));
   PetscCall(PetscOptionsBool("-compare", "Compare the meshes using DMPlexEqual() and DMCompareLabels()", EX, options->compare, &options->compare, NULL));
   PetscCall(PetscOptionsBool("-compare_labels", "Compare labels in the meshes using DMCompareLabels()", "ex55.c", options->compare_labels, &options->compare_labels, NULL));
   PetscCall(PetscOptionsBool("-compare_boundary", "Check label I/O via boundary vertex coordinates", "ex55.c", options->compare_boundary, &options->compare_boundary, NULL));
@@ -43,7 +44,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsString("-outfile", "Output mesh file", EX, options->outfile, options->outfile, sizeof(options->outfile), NULL));
   PetscCall(PetscOptionsBool("-use_low_level_functions", "Use low level functions for viewing and loading", EX, options->use_low_level_functions, &options->use_low_level_functions, NULL));
   PetscCall(PetscOptionsBool("-distribute_after_topo_load", "Distribute topology right after DMPlexTopologyLoad(), if use_low_level_functions=true", EX, options->distribute_after_topo_load, &options->distribute_after_topo_load, NULL));
-  PetscCall(PetscOptionsBool("-verbose", "Verbose printing", EX, options->verbose, &options->verbose, NULL));
+  PetscCall(PetscOptionsInt("-verbose", "Verbosity level", EX, options->verbose, &options->verbose, NULL));
   ierr = PetscOptionsEnd();PetscCall(ierr);
   PetscFunctionReturn(0);
 };
@@ -171,33 +172,37 @@ static PetscErrorCode CompareMeshes(AppCtx *options, DM dm0, DM dm1)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MarkBoundaryVertices(DM dm, PetscInt value, DMLabel *label)
+static PetscErrorCode MarkBoundary(DM dm, const char name[], PetscInt value, PetscBool verticesOnly, DMLabel *label)
 {
   DMLabel         l;
-  IS              points;
-  const PetscInt *idx;
-  PetscInt        i, n;
 
   PetscFunctionBeginUser;
-  PetscCall(DMLabelCreate(PetscObjectComm((PetscObject)dm), LABEL_NAME, &l));
+  PetscCall(DMLabelCreate(PetscObjectComm((PetscObject)dm), name, &l));
+  PetscCall(DMAddLabel(dm, l));
   PetscCall(DMPlexMarkBoundaryFaces(dm, value, l));
   PetscCall(DMPlexLabelComplete(dm, l));
-  PetscCall(DMLabelGetStratumIS(l, value, &points));
+  if (verticesOnly) {
+    IS              points;
+    const PetscInt *idx;
+    PetscInt        i, n;
 
-  PetscCall(ISGetLocalSize(points, &n));
-  PetscCall(ISGetIndices(points, &idx));
-  for (i=0; i<n; i++) {
-    const PetscInt p = idx[i];
-    PetscInt       d;
+    PetscCall(DMLabelGetStratumIS(l, value, &points));
+    PetscCall(ISGetLocalSize(points, &n));
+    PetscCall(ISGetIndices(points, &idx));
+    for (i=0; i<n; i++) {
+      const PetscInt p = idx[i];
+      PetscInt       d;
 
-    PetscCall(DMPlexGetPointDepth(dm, p, &d));
-    if (d != 0) {
-      PetscCall(DMLabelClearValue(l, p, value));
+      PetscCall(DMPlexGetPointDepth(dm, p, &d));
+      if (d != 0) {
+        PetscCall(DMLabelClearValue(l, p, value));
+      }
     }
+    PetscCall(ISRestoreIndices(points, &idx));
+    PetscCall(ISDestroy(&points));
   }
-  PetscCall(ISRestoreIndices(points, &idx));
-  PetscCall(ISDestroy(&points));
-  *label = l;
+  if (label) *label = l;
+  else PetscCall(DMLabelDestroy(&l));
   PetscFunctionReturn(0);
 }
 
@@ -235,25 +240,20 @@ static PetscErrorCode VertexCoordinatesToAll(DM dm, IS vertices, Vec *allCoords)
   PetscFunctionReturn(0);
 }
 
-/* Compute boundary label, remember boundary vertices using coordinates, save and load label, check it is defined on the original boundary vertices */
-static PetscErrorCode DMAddBoundaryLabel_GetCoordinateRepresentation(DM dm, Vec *allCoords)
+static PetscErrorCode DMLabelGetCoordinateRepresentation(DM dm, DMLabel label, PetscInt value, Vec *allCoords)
 {
-  DMLabel         label;
-  IS              vertices;
+  IS vertices;
 
   PetscFunctionBeginUser;
-  PetscCall(MarkBoundaryVertices(dm, LABEL_VALUE, &label));
-  PetscCall(DMLabelGetStratumIS(label, LABEL_VALUE, &vertices));
+  PetscCall(DMLabelGetStratumIS(label, value, &vertices));
   PetscCall(VertexCoordinatesToAll(dm, vertices, allCoords));
-  PetscCall(DMAddLabel(dm, label));
-  PetscCall(DMLabelDestroy(&label));
   PetscCall(ISDestroy(&vertices));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMGetBoundaryLabel_CompareWithCoordinateRepresentation(AppCtx *user, DM dm, Vec allCoords)
+static PetscErrorCode DMLabelCompareWithCoordinateRepresentation(DM dm, DMLabel label, PetscInt value, Vec allCoords, PetscInt verbose)
 {
-  DMLabel         label;
+  const char     *labelName;
   IS              pointsIS;
   const PetscInt *points;
   PetscInt        i, n;
@@ -262,10 +262,10 @@ static PetscErrorCode DMGetBoundaryLabel_CompareWithCoordinateRepresentation(App
   PetscMPIInt     rank;
 
   PetscFunctionBeginUser;
+  PetscCheck(label,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Label not loaded");
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
+  PetscCall(PetscObjectGetName((PetscObject)label, &labelName));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
-  PetscCall(DMGetLabel(dm, LABEL_NAME, &label));
-  PetscCheck(label,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Label \"%s\" was not loaded", LABEL_NAME);
   {
     PetscInt pStart, pEnd;
 
@@ -275,7 +275,7 @@ static PetscErrorCode DMGetBoundaryLabel_CompareWithCoordinateRepresentation(App
   PetscCall(DMPlexFindVertices(dm, allCoords, 0.0, &pointsIS));
   PetscCall(ISGetIndices(pointsIS, &points));
   PetscCall(ISGetLocalSize(pointsIS, &n));
-  if (user->verbose) PetscCall(DMLabelView(label, PETSC_VIEWER_STDOUT_(comm)));
+  if (verbose > 1) PetscCall(DMLabelView(label, PETSC_VIEWER_STDOUT_(comm)));
   for (i=0; i<n; i++) {
     const PetscInt  p = points[i];
     PetscBool       has;
@@ -284,29 +284,74 @@ static PetscErrorCode DMGetBoundaryLabel_CompareWithCoordinateRepresentation(App
     if (p < 0) continue;
     PetscCall(DMLabelHasPoint(label, p, &has));
     if (!has) {
-      PetscCall(PetscSynchronizedFPrintf(comm, PETSC_STDERR, "[%d] Label does not have point %D\n", rank, p));
+      if (verbose) PetscCall(PetscSynchronizedFPrintf(comm, PETSC_STDERR, "[%d] Label \"%s\" does not have point %D\n", rank, labelName, p));
       fail = PETSC_TRUE;
       continue;
     }
     PetscCall(DMLabelGetValue(label, p, &v));
-    if (v != LABEL_VALUE) {
-      PetscCall(PetscSynchronizedFPrintf(comm, PETSC_STDERR, "Point %D has bad value %D", p, v));
+    if (v != value) {
+      if (verbose) PetscCall(PetscSynchronizedFPrintf(comm, PETSC_STDERR, "Point %D has bad value %D in label \"%s\"", p, v, labelName));
       fail = PETSC_TRUE;
       continue;
     }
-    if (user->verbose) PetscCall(PetscSynchronizedPrintf(comm, "[%d] OK point %D\n", rank, p));
+    if (verbose > 1) PetscCall(PetscSynchronizedPrintf(comm, "[%d] OK point %D\n", rank, p));
   }
   PetscCall(PetscSynchronizedFlush(comm, PETSC_STDOUT));
   PetscCall(PetscSynchronizedFlush(comm, PETSC_STDERR));
   PetscCall(ISRestoreIndices(pointsIS, &points));
   PetscCall(ISDestroy(&pointsIS));
   PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &fail, 1, MPIU_BOOL, MPI_LOR, comm));
-  PetscCheck(!fail,comm, PETSC_ERR_PLIB, "Label \"%s\" was not loaded correctly - see details above", LABEL_NAME);
+  PetscCheck(!fail,comm, PETSC_ERR_PLIB, "Label \"%s\" was not loaded correctly%s", labelName, verbose ? " - see details above" : "");
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode CheckNumLabels(DM dm, AppCtx *ctx)
+{
+  PetscInt    actualNum;
+  PetscBool   fail = PETSC_FALSE;
+  MPI_Comm    comm;
+  PetscMPIInt rank;
+
+  PetscFunctionBeginUser;
+  if (ctx->num_labels < 0) PetscFunctionReturn(0);
+  PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  PetscCall(DMGetNumLabels(dm, &actualNum));
+  if (ctx->num_labels != actualNum) {
+    fail = PETSC_TRUE;
+    if (ctx->verbose) {
+      PetscInt    i;
+
+      PetscCall(PetscSynchronizedFPrintf(comm, PETSC_STDERR, "[%d] Asserted number of labels: %D, actual: %D\n", rank, ctx->num_labels, actualNum));
+      for (i=0; i<actualNum; i++) {
+        DMLabel     label;
+        const char *name;
+
+        PetscCall(DMGetLabelByNum(dm, i, &label));
+        PetscCall(PetscObjectGetName((PetscObject)label, &name));
+        PetscCall(PetscSynchronizedFPrintf(comm, PETSC_STDERR, "[%d] Label %D \"%s\"\n", rank, i, name));
+      }
+      PetscCall(PetscSynchronizedFlush(comm, PETSC_STDERR));
+    }
+  }
+  PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &fail, 1, MPIU_BOOL, MPI_LOR, comm));
+  PetscCheck(!fail, comm, PETSC_ERR_PLIB, "Wrong number of labels%s", ctx->verbose ? " - see details above" : "");
+  PetscFunctionReturn(0);
+}
+
+static inline PetscErrorCode IncrementNumLabels(AppCtx *ctx)
+{
+  PetscFunctionBeginUser;
+  if (ctx->num_labels >= 0) ctx->num_labels++;
   PetscFunctionReturn(0);
 }
 
 int main(int argc, char **argv)
 {
+  const char     BOUNDARY_NAME[]          = "Boundary";
+  const char     BOUNDARY_VERTICES_NAME[] = "BoundaryVertices";
+  const PetscInt BOUNDARY_VALUE           = 12345;
+  const PetscInt BOUNDARY_VERTICES_VALUE  = 6789;
   DM             dm, dmnew;
   AppCtx         user;
   Vec            allCoords = NULL;
@@ -314,14 +359,28 @@ int main(int argc, char **argv)
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
   PetscCall(CreateMesh(&user, &dm));
+  PetscCall(MarkBoundary(dm, BOUNDARY_NAME, BOUNDARY_VALUE, PETSC_FALSE, NULL));
+  PetscCall(IncrementNumLabels(&user));
   if (user.compare_boundary) {
-    PetscCall(DMAddBoundaryLabel_GetCoordinateRepresentation(dm, &allCoords));
+    DMLabel label;
+
+    PetscCall(MarkBoundary(dm, BOUNDARY_VERTICES_NAME, BOUNDARY_VERTICES_VALUE, PETSC_TRUE, &label));
+    PetscCall(IncrementNumLabels(&user));
+    PetscCall(DMLabelGetCoordinateRepresentation(dm, label, BOUNDARY_VERTICES_VALUE, &allCoords));
+    PetscCall(DMLabelDestroy(&label));
   }
   PetscCall(SaveMesh(&user, dm));
+
   PetscCall(LoadMesh(&user, &dmnew));
+  PetscCall(IncrementNumLabels(&user)); /* account for depth label */
+  PetscCall(IncrementNumLabels(&user)); /* account for celltype label */
+  PetscCall(CheckNumLabels(dm, &user));
   PetscCall(CompareMeshes(&user, dm, dmnew));
   if (user.compare_boundary) {
-    PetscCall(DMGetBoundaryLabel_CompareWithCoordinateRepresentation(&user, dmnew, allCoords));
+    DMLabel label;
+
+    PetscCall(DMGetLabel(dmnew, BOUNDARY_VERTICES_NAME, &label));
+    PetscCall(DMLabelCompareWithCoordinateRepresentation(dmnew, label, BOUNDARY_VERTICES_VALUE, allCoords, user.verbose));
   }
   PetscCall(DMDestroy(&dm));
   PetscCall(DMDestroy(&dmnew));
@@ -344,6 +403,7 @@ int main(int argc, char **argv)
     args: -dm_plex_interpolate
     args: -load_dm_plex_check_all
     args: -use_low_level_functions {{0 1}} -compare_boundary
+    args: -num_labels 1
     args: -outfile ex56_1.h5
     nsize: {{1 3}}
     test:
@@ -358,7 +418,7 @@ int main(int argc, char **argv)
       args: -dm_plex_filename ${DATAFILESPATH}/meshes/hdf5-petsc/petsc-v3.16.0/v1.0.0/blockcylinder-50.h5
     test:
       suffix: d
-      args: -dm_plex_filename ${DATAFILESPATH}/meshes/hdf5-petsc/petsc-v3.16.0/v1.0.0/cube-hexahedra-refined.h5
+      args: -dm_plex_filename ${DATAFILESPATH}/meshes/hdf5-petsc/petsc-v3.16.0/v1.0.0/cube-hexahedra-refined.h5 -num_labels 0
     test:
       suffix: e
       args: -dm_plex_filename ${DATAFILESPATH}/meshes/hdf5-petsc/petsc-v3.16.0/v1.0.0/hybrid_hexwedge.h5
@@ -375,6 +435,7 @@ int main(int argc, char **argv)
     args: -dm_plex_interpolate
     args: -load_dm_plex_check_all
     args: -use_low_level_functions -load_dm_distribute 0 -distribute_after_topo_load -compare_boundary
+    args: -num_labels 1
     args: -outfile ex56_2.h5
     nsize: 3
     test:
@@ -389,7 +450,7 @@ int main(int argc, char **argv)
       args: -dm_plex_filename ${DATAFILESPATH}/meshes/hdf5-petsc/petsc-v3.16.0/v1.0.0/blockcylinder-50.h5
     test:
       suffix: d
-      args: -dm_plex_filename ${DATAFILESPATH}/meshes/hdf5-petsc/petsc-v3.16.0/v1.0.0/cube-hexahedra-refined.h5
+      args: -dm_plex_filename ${DATAFILESPATH}/meshes/hdf5-petsc/petsc-v3.16.0/v1.0.0/cube-hexahedra-refined.h5 -num_labels 0
     test:
       suffix: e
       args: -dm_plex_filename ${DATAFILESPATH}/meshes/hdf5-petsc/petsc-v3.16.0/v1.0.0/hybrid_hexwedge.h5
@@ -405,6 +466,7 @@ int main(int argc, char **argv)
     args: -dm_plex_view_hdf5_storage_version 2.0.0
     args: -dm_plex_interpolate -load_dm_distribute 0
     args: -use_low_level_functions -compare_pre_post
+    args: -num_labels 1
     args: -outfile ex56_3.h5
     nsize: 3
     test:
@@ -419,7 +481,7 @@ int main(int argc, char **argv)
       args: -dm_plex_filename ${DATAFILESPATH}/meshes/hdf5-petsc/petsc-v3.16.0/v1.0.0/blockcylinder-50.h5
     test:
       suffix: d
-      args: -dm_plex_filename ${DATAFILESPATH}/meshes/hdf5-petsc/petsc-v3.16.0/v1.0.0/cube-hexahedra-refined.h5
+      args: -dm_plex_filename ${DATAFILESPATH}/meshes/hdf5-petsc/petsc-v3.16.0/v1.0.0/cube-hexahedra-refined.h5 -num_labels 0
     test:
       suffix: e
       args: -dm_plex_filename ${DATAFILESPATH}/meshes/hdf5-petsc/petsc-v3.16.0/v1.0.0/hybrid_hexwedge.h5
