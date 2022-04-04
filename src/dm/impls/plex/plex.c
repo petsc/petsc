@@ -757,7 +757,7 @@ static PetscErrorCode DMPlexView_Ascii_Coordinates(PetscViewer viewer, CoordSyst
   if (dim > 3) {
     for (i = 0; i < dim; ++i) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %g", (double) PetscRealPart(x[i])));
   } else {
-    PetscReal coords[3], trcoords[3];
+    PetscReal coords[3], trcoords[3] = {0., 0., 0.};
 
     for (i = 0; i < dim; ++i) coords[i] = PetscRealPart(x[i]);
     switch (cs) {
