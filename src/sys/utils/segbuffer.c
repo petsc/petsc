@@ -202,7 +202,7 @@ PetscErrorCode PetscSegBufferExtractAlloc(PetscSegBuffer seg,void *contiguous)
 .  seg - segmented buffer object
 
    Output Parameter:
-.  contig - address of pointer to contiguous memory
+.  contig - address of pointer to contiguous memory, may be NULL
 
    Level: developer
 
@@ -224,7 +224,7 @@ PetscErrorCode PetscSegBufferExtractInPlace(PetscSegBuffer seg,void *contig)
     PetscCall(PetscSegBufferDestroy(&newseg));
     head = seg->head;
   }
-  *(char**)contig = head->u.array;
+  if (contig) *(char**)contig = head->u.array;
   head->used = 0;
   PetscFunctionReturn(0);
 }
