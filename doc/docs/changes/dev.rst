@@ -47,6 +47,8 @@ Changes: Development
 
 .. rubric:: TS:
 
+- Add ``TSSetTimeSpan()``, ``TSGetTimeSpan()`` and ``TSGetTimeSpanSolutions()`` to support time span
+
 .. rubric:: TAO:
 
 .. rubric:: DM/DA:

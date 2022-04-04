@@ -36,6 +36,7 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt,TSAdaptType default_ty
 +  -ts_type <type> - TSEULER, TSBEULER, TSSUNDIALS, TSPSEUDO, TSCN, TSRK, TSTHETA, TSALPHA, TSGLLE, TSSSP, TSGLEE, TSBSYMP, TSIRK
 .  -ts_save_trajectory - checkpoint the solution at each time-step
 .  -ts_max_time <time> - maximum time to compute to
+.  -ts_time_span <t0,...tf> - sets the time span, solutions are computed and stored for each indicated time
 .  -ts_max_steps <steps> - maximum number of time-steps to take
 .  -ts_init_time <time> - initial time to start computation
 .  -ts_final_time <time> - final time to compute to (deprecated: use -ts_max_time)
@@ -86,7 +87,8 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   PetscBool              opt,flg,tflg;
   PetscErrorCode         ierr;
   char                   monfilename[PETSC_MAX_PATH_LEN];
-  PetscReal              time_step;
+  PetscReal              time_step,tspan[100];
+  PetscInt               nt = PETSC_STATIC_ARRAY_LENGTH(tspan);
   TSExactFinalTimeOption eftopt;
   char                   dir[16];
   TSIFunction            ifun;
@@ -112,6 +114,8 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   /* Handle generic TS options */
   PetscCall(PetscOptionsDeprecated("-ts_final_time","-ts_max_time","3.10",NULL));
   PetscCall(PetscOptionsReal("-ts_max_time","Maximum time to run to","TSSetMaxTime",ts->max_time,&ts->max_time,NULL));
+  PetscCall(PetscOptionsRealArray("-ts_time_span","Time span","TSSetTimeSpan",tspan,&nt,&flg));
+  if (flg) PetscCall(TSSetTimeSpan(ts,nt,tspan));
   PetscCall(PetscOptionsInt("-ts_max_steps","Maximum number of time steps","TSSetMaxSteps",ts->max_steps,&ts->max_steps,NULL));
   PetscCall(PetscOptionsReal("-ts_init_time","Initial time","TSSetTime",ts->ptime,&ts->ptime,NULL));
   PetscCall(PetscOptionsReal("-ts_dt","Initial time step","TSSetTimeStep",ts->time_step,&time_step,&flg));
@@ -2652,6 +2656,11 @@ PetscErrorCode  TSSetUp(TS ts)
     } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetSolution() first");
   }
 
+  if (ts->tspan) {
+    if (!ts->tspan->vecs_sol) {
+      PetscCall(VecDuplicateVecs(ts->vec_sol,ts->tspan->num_span_times,&ts->tspan->vecs_sol));
+    }
+  }
   if (!ts->Jacp && ts->Jacprhs) { /* IJacobianP shares the same matrix with RHSJacobianP if only RHSJacobianP is provided */
     PetscCall(PetscObjectReference((PetscObject)ts->Jacprhs));
     ts->Jacp = ts->Jacprhs;
@@ -2774,6 +2783,11 @@ PetscErrorCode  TSReset(TS ts)
   }
   ts->tsrhssplit = NULL;
   ts->num_rhs_splits = 0;
+  if (ts->tspan) {
+    PetscCall(PetscFree(ts->tspan->span_times));
+    PetscCall(VecDestroyVecs(ts->tspan->num_span_times,&ts->tspan->vecs_sol));
+    PetscCall(PetscFree(ts->tspan));
+  }
   ts->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -3551,6 +3565,7 @@ PetscErrorCode  TSStep(TS ts)
     ts->steps++;
     ts->steprollback = PETSC_FALSE;
     ts->steprestart  = PETSC_FALSE;
+    if (ts->tspan && PetscIsCloseAtTol(ts->ptime,ts->tspan->span_times[ts->tspan->spanctr],10*PETSC_MACHINE_EPSILON,0) && ts->tspan->spanctr < ts->tspan->num_span_times) PetscCall(VecCopy(ts->vec_sol,ts->tspan->vecs_sol[ts->tspan->spanctr++]));
   }
 
   if (!ts->reason) {
@@ -3845,6 +3860,12 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   PetscCheck(ts->max_time < PETSC_MAX_REAL || ts->max_steps != PETSC_MAX_INT,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"You must call TSSetMaxTime() or TSSetMaxSteps(), or use -ts_max_time <time> or -ts_max_steps <steps>");
   PetscCheck(ts->exact_final_time != TS_EXACTFINALTIME_UNSPECIFIED,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"You must call TSSetExactFinalTime() or use -ts_exact_final_time <stepover,interpolate,matchstep> before calling TSSolve()");
   PetscCheck(ts->exact_final_time != TS_EXACTFINALTIME_MATCHSTEP || ts->adapt,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Since TS is not adaptive you cannot use TS_EXACTFINALTIME_MATCHSTEP, suggest TS_EXACTFINALTIME_INTERPOLATE");
+  PetscCheck(!(ts->tspan && ts->exact_final_time != TS_EXACTFINALTIME_MATCHSTEP),PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"You must use TS_EXACTFINALTIME_MATCHSTEP when using time span");
+
+  if (ts->tspan && PetscIsCloseAtTol(ts->ptime,ts->tspan->span_times[0],10*PETSC_MACHINE_EPSILON,0)) { /* starting point in time span */
+    PetscCall(VecCopy(ts->vec_sol,ts->tspan->vecs_sol[0]));
+    ts->tspan->spanctr = 1;
+  }
 
   if (ts->forward_solve) {
     PetscCall(TSForwardSetUp(ts));
@@ -3865,11 +3886,13 @@ PetscErrorCode TSSolve(TS ts,Vec u)
     ts->rhsjacobian.time  = PETSC_MIN_REAL;
   }
 
-  /* make sure initial time step does not overshoot final time */
+  /* make sure initial time step does not overshoot final time or the next point in tspan */
   if (ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP) {
-    PetscReal maxdt = ts->max_time-ts->ptime;
+    PetscReal maxdt;
     PetscReal dt = ts->time_step;
 
+    if (ts->tspan) maxdt = ts->tspan->span_times[ts->tspan->spanctr] - ts->ptime;
+    else maxdt = ts->max_time - ts->ptime;
     ts->time_step = dt >= maxdt ? maxdt : (PetscIsCloseAtTol(dt,maxdt,10*PETSC_MACHINE_EPSILON,0) ? maxdt : dt);
   }
   ts->reason = TS_CONVERGED_ITERATING;
@@ -6239,5 +6262,116 @@ PetscErrorCode TSSetMatStructure(TS ts,MatStructure str)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   ts->axpy_pattern = str;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  TSSetTimeSpan - sets the time span. The solution will be computed and stored for each time requested.
+
+  Collective on ts
+
+  Input Parameters:
++ ts - the time-stepper
+. n - number of the time points (>=2)
+- span_times - array of the time points. The first element and the last element are the initial time and the final time respectively.
+
+  Options Database Keys:
+. -ts_time_span <t0,...tf> - Sets the time span
+
+  Level: beginner
+
+  Notes:
+  The elements in tspan must be all increasing. They correspond to the intermediate points for time integration.
+  TS_EXACTFINALTIME_MATCHSTEP must be used to make the last time step in each sub-interval match the intermediate points specified.
+  The intermediate solutions are saved in a vector array that can be accessed with TSGetSolutions(). Thus using time span may
+  pressure the memory system when using a large number of span points.
+
+.seealso: TSGetTimeSpan(),TSGetSolutions()
+ @*/
+PetscErrorCode TSSetTimeSpan(TS ts,PetscInt n,PetscReal *span_times)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscCheck(n >= 2,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONG,"Minimum time span size is 2 but %D is provided",n);
+  if (ts->tspan && n != ts->tspan->num_span_times) {
+    PetscCall(PetscFree(ts->tspan->span_times));
+    PetscCall(VecDestroyVecs(ts->tspan->num_span_times,&ts->tspan->vecs_sol));
+    PetscCall(PetscMalloc1(n,&ts->tspan->span_times));
+  }
+  if (!ts->tspan) {
+    TSTimeSpan tspan;
+    PetscCall(PetscNew(&tspan));
+    PetscCall(PetscMalloc1(n,&tspan->span_times));
+    ts->tspan = tspan;
+  }
+  ts->tspan->num_span_times = n;
+  PetscCall(PetscArraycpy(ts->tspan->span_times,span_times,n));
+  PetscCall(TSSetTime(ts,ts->tspan->span_times[0]));
+  PetscCall(TSSetMaxTime(ts,ts->tspan->span_times[n-1]));
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  TSGetTimeSpan - gets the time span.
+
+  Not Collective
+
+  Input Parameter:
+. ts - the time-stepper
+
+  Output Parameters:
++ n - number of the time points (>=2)
+- span_times - array of the time points. The first element and the last element are the initial time and the final time respectively. The values are valid until the TS object is destroyed.
+
+  Level: beginner
+  Notes: Both n and span_times can be NULL.
+
+.seealso: TSSetTimeSpan(),TSGetSolutions()
+ @*/
+PetscErrorCode TSGetTimeSpan(TS ts,PetscInt *n,const PetscReal **span_times)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (n) PetscValidIntPointer(n,2);
+  if (span_times) PetscValidPointer(span_times,3);
+  if (!ts->tspan) {
+    if (n) *n = 0;
+    if (span_times) *span_times = NULL;
+  } else {
+    if (n) *n = ts->tspan->num_span_times;
+    if (span_times) *span_times = ts->tspan->span_times;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TSGetTimeSpanSolutions - Get the number of solutions and the solutions at the time points specified by the time span.
+
+   Input Parameter:
+.  ts - the TS context obtained from TSCreate()
+
+   Output Parameters:
++  nsol - the number of solutions
+-  Sols - the solution vectors
+
+   Level: beginner
+
+   Notes: Both nsol and Sols can be NULL.
+
+.seealso: TSSetTimeSpan()
+@*/
+PetscErrorCode TSGetTimeSpanSolutions(TS ts,PetscInt *nsol,Vec **Sols)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID,1);
+  if (nsol) PetscValidIntPointer(nsol,2);
+  if (Sols) PetscValidPointer(Sols,3);
+  if (!ts->tspan) {
+    if (nsol) *nsol = 0;
+    if (Sols) *Sols = NULL;
+  } else {
+    if (nsol) *nsol = ts->tspan->num_span_times;
+    if (Sols) *Sols = ts->tspan->vecs_sol;
+  }
   PetscFunctionReturn(0);
 }

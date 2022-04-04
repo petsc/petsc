@@ -898,9 +898,17 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,P
   if (*accept && ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP) {
     /* Increase/reduce step size if end time of next step is close to or overshoots max time */
     PetscReal t = ts->ptime + ts->time_step, h = *next_h;
-    PetscReal tend = t + h, tmax = ts->max_time, hmax = tmax - t;
+    PetscReal tend = t + h, tmax, hmax;
     PetscReal a = (PetscReal)(1.0 + adapt->matchstepfac[0]);
     PetscReal b = adapt->matchstepfac[1];
+
+    if (ts->tspan) {
+      if (PetscIsCloseAtTol(t,ts->tspan->span_times[ts->tspan->spanctr],10*PETSC_MACHINE_EPSILON,0)) /* hit a span time point */
+        if (ts->tspan->spanctr+1 < ts->tspan->num_span_times) tmax = ts->tspan->span_times[ts->tspan->spanctr+1];
+        else tmax = ts->max_time; /* hit the last span time point */
+      else tmax = ts->tspan->span_times[ts->tspan->spanctr];
+    } else tmax = ts->max_time;
+    hmax = tmax - t;
     if (t < tmax && tend > tmax) *next_h = hmax;
     if (t < tmax && tend < tmax && h*b > hmax) *next_h = hmax/2;
     if (t < tmax && tend < tmax && h*a > hmax) *next_h = hmax;
