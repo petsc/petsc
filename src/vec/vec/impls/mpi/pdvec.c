@@ -156,7 +156,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
           outputState = 3;
           doOutput    = 1;
         } else if (outputState == 3) doOutput = 0;
-        else PetscCheckFalse(outputState == 4,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Tried to output POINT_DATA again after intervening CELL_DATA");
+        else PetscCheck(outputState != 4,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Tried to output POINT_DATA again after intervening CELL_DATA");
 
         if (doOutput) {
           PetscCall(PetscViewerASCIIPrintf(viewer, "POINT_DATA %" PetscInt_FMT "\n", xin->map->N/bs));
@@ -169,7 +169,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
           outputState = 4;
           doOutput    = 1;
         } else if (outputState == 2) doOutput = 0;
-        else PetscCheckFalse(outputState == 3,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Tried to output CELL_DATA again after intervening POINT_DATA");
+        else PetscCheck(outputState != 3,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Tried to output CELL_DATA again after intervening POINT_DATA");
         else if (outputState == 4) doOutput = 0;
 
         if (doOutput) {
@@ -952,7 +952,7 @@ PetscErrorCode VecAssemblyBegin_MPI(Vec xin)
   if (xin->stash.donotstash) PetscFunctionReturn(0);
 
   PetscCall(MPIU_Allreduce((PetscEnum*)&xin->stash.insertmode,(PetscEnum*)&addv,1,MPIU_ENUM,MPI_BOR,comm));
-  PetscCheckFalse(addv == (ADD_VALUES|INSERT_VALUES),comm,PETSC_ERR_ARG_NOTSAMETYPE,"Some processors inserted values while others added");
+  PetscCheck(addv != (ADD_VALUES|INSERT_VALUES),comm,PETSC_ERR_ARG_NOTSAMETYPE,"Some processors inserted values while others added");
   xin->stash.insertmode = addv; /* in case this processor had no cache */
   xin->bstash.insertmode = addv; /* Block stash implicitly tracks InsertMode of scalar stash */
 

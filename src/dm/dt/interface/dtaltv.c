@@ -73,7 +73,7 @@ M*/
 PetscErrorCode PetscDTAltVApply(PetscInt N, PetscInt k, const PetscReal *w, const PetscReal *v, PetscReal *wv)
 {
   PetscFunctionBegin;
-  PetscCheckFalse(N < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid dimension");
+  PetscCheck(N >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid dimension");
   PetscCheckFalse(k < 0 || k > N,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid form degree");
   if (N <= 3) {
     if (!k) {
@@ -151,7 +151,7 @@ PetscErrorCode PetscDTAltVWedge(PetscInt N, PetscInt j, PetscInt k, const PetscR
   PetscInt       i;
 
   PetscFunctionBegin;
-  PetscCheckFalse(N < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid dimension");
+  PetscCheck(N >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid dimension");
   PetscCheckFalse(j < 0 || k < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "negative form degree");
   PetscCheckFalse(j + k > N,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Wedge greater than dimension");
   if (N <= 3) {
@@ -229,7 +229,7 @@ PetscErrorCode PetscDTAltVWedgeMatrix(PetscInt N, PetscInt j, PetscInt k, const 
   PetscInt       i;
 
   PetscFunctionBegin;
-  PetscCheckFalse(N < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid dimension");
+  PetscCheck(N >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid dimension");
   PetscCheckFalse(j < 0 || k < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "negative form degree");
   PetscCheckFalse(j + k > N,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Wedge greater than dimension");
   if (N <= 3) {

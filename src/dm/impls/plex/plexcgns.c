@@ -51,7 +51,7 @@ PetscErrorCode DMPlexCreateCGNSFromFile(MPI_Comm comm, const char filename[], Pe
 #if defined(PETSC_HAVE_CGNS)
   if (rank == 0) {
     PetscCallCGNS(cg_open(filename, CG_MODE_READ, &cgid));
-    PetscCheckFalse(cgid <= 0,PETSC_COMM_SELF, PETSC_ERR_LIB, "cg_open(\"%s\",...) did not return a valid file ID", filename);
+    PetscCheck(cgid > 0,PETSC_COMM_SELF, PETSC_ERR_LIB, "cg_open(\"%s\",...) did not return a valid file ID", filename);
   }
   PetscCall(DMPlexCreateCGNS(comm, cgid, interpolate, dm));
   if (rank == 0) PetscCallCGNS(cg_close(cgid));
@@ -110,7 +110,7 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
     int nbases, z;
 
     PetscCallCGNS(cg_nbases(cgid, &nbases));
-    PetscCheckFalse(nbases > 1,PETSC_COMM_SELF,PETSC_ERR_LIB,"CGNS file must have a single base, not %d",nbases);
+    PetscCheck(nbases <= 1,PETSC_COMM_SELF,PETSC_ERR_LIB,"CGNS file must have a single base, not %d",nbases);
     PetscCallCGNS(cg_base_read(cgid, 1, basename, &dim, &physDim));
     PetscCallCGNS(cg_nzones(cgid, 1, &nzones));
     PetscCall(PetscCalloc2(nzones+1, &cellStart, nzones+1, &vertStart));
@@ -155,9 +155,9 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
       DMPolytopeType            ctype;
 
       PetscCallCGNS(cg_zone_type(cgid, 1, z, &zonetype));
-      PetscCheckFalse(zonetype == CGNS_ENUMV(Structured),PETSC_COMM_SELF,PETSC_ERR_LIB,"Can only handle Unstructured zones for CGNS");
+      PetscCheck(zonetype != CGNS_ENUMV(Structured),PETSC_COMM_SELF,PETSC_ERR_LIB,"Can only handle Unstructured zones for CGNS");
       PetscCallCGNS(cg_nsections(cgid, 1, z, &nsections));
-      PetscCheckFalse(nsections > 1,PETSC_COMM_SELF,PETSC_ERR_LIB,"CGNS file must have a single section, not %d",nsections);
+      PetscCheck(nsections <= 1,PETSC_COMM_SELF,PETSC_ERR_LIB,"CGNS file must have a single section, not %d",nsections);
       PetscCallCGNS(cg_section_read(cgid, 1, z, 1, buffer, &cellType, &start, &end, &nbndry, &parentFlag));
       /* This alone is reason enough to bludgeon every single CGNDS developer, this must be what they describe as the "idiocy of crowds" */
       if (cellType == CGNS_ENUMV(MIXED)) {
@@ -307,9 +307,9 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
       PetscCallCGNS(cg_zone_read(cgid, 1, z, buffer, sizes));
       range_max[0] = sizes[0];
       PetscCallCGNS(cg_ngrids(cgid, 1, z, &ngrids));
-      PetscCheckFalse(ngrids > 1,PETSC_COMM_SELF,PETSC_ERR_LIB,"CGNS file must have a single grid, not %d",ngrids);
+      PetscCheck(ngrids <= 1,PETSC_COMM_SELF,PETSC_ERR_LIB,"CGNS file must have a single grid, not %d",ngrids);
       PetscCallCGNS(cg_ncoords(cgid, 1, z, &ncoords));
-      PetscCheckFalse(ncoords != coordDim,PETSC_COMM_SELF,PETSC_ERR_LIB,"CGNS file must have a coordinate array for each dimension, not %d",ncoords);
+      PetscCheck(ncoords == coordDim,PETSC_COMM_SELF,PETSC_ERR_LIB,"CGNS file must have a coordinate array for each dimension, not %d",ncoords);
       for (d = 0; d < coordDim; ++d) {
         PetscCallCGNS(cg_coord_info(cgid, 1, z, 1+d, &datatype, buffer));
         PetscCallCGNS(cg_coord_read(cgid, 1, z, buffer, CGNS_ENUMV(RealSingle), range_min, range_max, x[d]));

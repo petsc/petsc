@@ -37,7 +37,7 @@ static PetscErrorCode SNESSetUp_NCG(SNES snes)
 {
   PetscFunctionBegin;
   PetscCall(SNESSetWorkVecs(snes,2));
-  PetscCheckFalse(snes->npcside== PC_RIGHT,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNESNCG only supports left preconditioning");
+  PetscCheck(snes->npcside!= PC_RIGHT,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNESNCG only supports left preconditioning");
   if (snes->functype == SNES_FUNCTION_DEFAULT) snes->functype = SNES_FUNCTION_UNPRECONDITIONED;
   PetscFunctionReturn(0);
 }

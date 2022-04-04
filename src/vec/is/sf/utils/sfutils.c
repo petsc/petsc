@@ -117,21 +117,21 @@ PetscErrorCode PetscSFSetGraphSection(PetscSF sf, PetscSection localSection, Pet
     if (!gdof) continue; /* Censored point */
     gsize = gdof < 0 ? -(gdof+1)-gcdof : gdof-gcdof;
     if (gsize != dof-cdof) {
-      PetscCheckFalse(gsize != dof,comm, PETSC_ERR_ARG_WRONG, "Global dof %" PetscInt_FMT " for point %" PetscInt_FMT " is neither the constrained size %" PetscInt_FMT ", nor the unconstrained %" PetscInt_FMT, gsize, p, dof-cdof, dof);
+      PetscCheck(gsize == dof,comm, PETSC_ERR_ARG_WRONG, "Global dof %" PetscInt_FMT " for point %" PetscInt_FMT " is neither the constrained size %" PetscInt_FMT ", nor the unconstrained %" PetscInt_FMT, gsize, p, dof-cdof, dof);
       cdof = 0; /* Ignore constraints */
     }
     for (d = 0, c = 0; d < dof; ++d) {
       if ((c < cdof) && (cind[c] == d)) {++c; continue;}
       local[l+d-c] = off+d;
     }
-    PetscCheckFalse(d-c != gsize,comm, PETSC_ERR_ARG_WRONG, "Point %" PetscInt_FMT ": Global dof %" PetscInt_FMT " != %" PetscInt_FMT " size - number of constraints", p, gsize, d-c);
+    PetscCheck(d-c == gsize,comm, PETSC_ERR_ARG_WRONG, "Point %" PetscInt_FMT ": Global dof %" PetscInt_FMT " != %" PetscInt_FMT " size - number of constraints", p, gsize, d-c);
     if (gdof < 0) {
       for (d = 0; d < gsize; ++d, ++l) {
         PetscInt offset = -(goff+1) + d, r;
 
         PetscCall(PetscFindInt(offset,size+1,ranges,&r));
         if (r < 0) r = -(r+2);
-        PetscCheckFalse((r < 0) || (r >= size),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %" PetscInt_FMT " mapped to invalid process %" PetscInt_FMT " (%" PetscInt_FMT ", %" PetscInt_FMT ")", p, r, gdof, goff);
+        PetscCheck(!(r < 0) && !(r >= size),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %" PetscInt_FMT " mapped to invalid process %" PetscInt_FMT " (%" PetscInt_FMT ", %" PetscInt_FMT ")", p, r, gdof, goff);
         remote[l].rank  = r;
         remote[l].index = offset - ranges[r];
       }
@@ -142,7 +142,7 @@ PetscErrorCode PetscSFSetGraphSection(PetscSF sf, PetscSection localSection, Pet
       }
     }
   }
-  PetscCheckFalse(l != nleaves,comm, PETSC_ERR_PLIB, "Iteration error, l %" PetscInt_FMT " != nleaves %" PetscInt_FMT, l, nleaves);
+  PetscCheck(l == nleaves,comm, PETSC_ERR_PLIB, "Iteration error, l %" PetscInt_FMT " != nleaves %" PetscInt_FMT, l, nleaves);
   PetscCall(PetscLayoutDestroy(&layout));
   PetscCall(PetscSFSetGraph(sf, nroots, nleaves, local, PETSC_OWN_POINTER, remote, PETSC_OWN_POINTER));
   PetscFunctionReturn(0);
@@ -410,7 +410,7 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
       }
     }
   }
-  PetscCheckFalse(numIndices != ind,comm, PETSC_ERR_PLIB, "Inconsistency in indices, %" PetscInt_FMT " should be %" PetscInt_FMT, ind, numIndices);
+  PetscCheck(numIndices == ind,comm, PETSC_ERR_PLIB, "Inconsistency in indices, %" PetscInt_FMT " should be %" PetscInt_FMT, ind, numIndices);
   PetscCall(PetscSFSetGraph(*sectionSF, numSectionRoots, numIndices, localIndices, PETSC_OWN_POINTER, remoteIndices, PETSC_OWN_POINTER));
   PetscCall(PetscSFSetUp(*sectionSF));
   PetscCall(PetscLogEventEnd(PETSCSF_SectSF,sf,0,0,0));
@@ -641,8 +641,8 @@ PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout layout, PetscInt numRo
   if (leafLocalIndices) PetscValidIntPointer(leafLocalIndices,8);
   if (sfA)              PetscValidPointer(sfA,10);
   PetscValidPointer(sf,11);
-  PetscCheckFalse(numRootIndices < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "numRootIndices (%" PetscInt_FMT ") must be non-negative", numRootIndices);
-  PetscCheckFalse(numLeafIndices < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "numLeafIndices (%" PetscInt_FMT ") must be non-negative", numLeafIndices);
+  PetscCheck(numRootIndices >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "numRootIndices (%" PetscInt_FMT ") must be non-negative", numRootIndices);
+  PetscCheck(numLeafIndices >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "numLeafIndices (%" PetscInt_FMT ") must be non-negative", numLeafIndices);
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCall(PetscLayoutSetUp(layout));
@@ -655,12 +655,12 @@ PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout layout, PetscInt numRo
   N1 = PETSC_MIN_INT;
   for (i = 0; i < numRootIndices; i++) if (rootIndices[i] > N1) N1 = rootIndices[i];
   PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &N1, 1, MPIU_INT, MPI_MAX, comm));
-  PetscCheckFalse(N1 >= N,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Max. root index (%" PetscInt_FMT ") out of layout range [0,%" PetscInt_FMT ")", N1, N);
+  PetscCheck(N1 < N,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Max. root index (%" PetscInt_FMT ") out of layout range [0,%" PetscInt_FMT ")", N1, N);
   if (!flag) {
     N1 = PETSC_MIN_INT;
     for (i = 0; i < numLeafIndices; i++) if (leafIndices[i] > N1) N1 = leafIndices[i];
     PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &N1, 1, MPIU_INT, MPI_MAX, comm));
-    PetscCheckFalse(N1 >= N,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Max. leaf index (%" PetscInt_FMT ") out of layout range [0,%" PetscInt_FMT ")", N1, N);
+    PetscCheck(N1 < N,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Max. leaf index (%" PetscInt_FMT ") out of layout range [0,%" PetscInt_FMT ")", N1, N);
   }
 #endif
   /* Reduce: owners -> buffer */
@@ -688,7 +688,7 @@ PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout layout, PetscInt numRo
   }
   PetscCall(PetscSFBcastBegin(sf1, MPIU_2INT, buffer, owners, MPI_REPLACE));
   PetscCall(PetscSFBcastEnd(sf1, MPIU_2INT, buffer, owners, MPI_REPLACE));
-  for (i = 0; i < numLeafIndices; ++i) PetscCheckFalse(owners[i].rank < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Global point %" PetscInt_FMT " was unclaimed", leafIndices[i]);
+  for (i = 0; i < numLeafIndices; ++i) PetscCheck(owners[i].rank >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Global point %" PetscInt_FMT " was unclaimed", leafIndices[i]);
   PetscCall(PetscFree(buffer));
   if (sfA) {*sfA = sf1;}
   else     PetscCall(PetscSFDestroy(&sf1));

@@ -43,7 +43,7 @@ static PetscErrorCode  KSPSolve_PIPEBCGS(KSP ksp)
   V  = ksp->work[14];
 
   /* Only supports right preconditioning */
-  PetscCheckFalse(ksp->pc_side != PC_RIGHT,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"KSP pipebcgs does not support %s",PCSides[ksp->pc_side]);
+  PetscCheck(ksp->pc_side == PC_RIGHT,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"KSP pipebcgs does not support %s",PCSides[ksp->pc_side]);
   if (!ksp->guess_zero) {
     if (!bcgs->guess) {
       PetscCall(VecDuplicate(X,&bcgs->guess));

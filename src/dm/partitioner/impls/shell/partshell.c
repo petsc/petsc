@@ -97,9 +97,9 @@ static PetscErrorCode PetscPartitionerPartition_Shell(PetscPartitioner part, Pet
   }
   PetscCheck(p->section,PetscObjectComm((PetscObject) part), PETSC_ERR_ARG_WRONG, "Shell partitioner information not provided. Please call PetscPartitionerShellSetPartition()");
   PetscCall(PetscSectionGetChart(p->section, NULL, &np));
-  PetscCheckFalse(nparts != np,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of requested partitions %d != configured partitions %d", nparts, np);
+  PetscCheck(nparts == np,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of requested partitions %d != configured partitions %d", nparts, np);
   PetscCall(ISGetLocalSize(p->partition, &np));
-  PetscCheckFalse(numVertices != np,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of input vertices %d != configured vertices %d", numVertices, np);
+  PetscCheck(numVertices == np,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of input vertices %d != configured vertices %d", numVertices, np);
   PetscCall(PetscSectionCopy(p->section, partSection));
   *partition = p->partition;
   PetscCall(PetscObjectReference((PetscObject) p->partition));

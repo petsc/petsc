@@ -158,7 +158,7 @@ PetscErrorCode PetscGoogleDriveUpload(MPI_Comm comm,const char access_token[],co
     fd = fopen (filename, "r");
     PetscCheck(fd,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open file: %s",filename);
     rd = fread (body+blen, sizeof (unsigned char), sb.st_size, fd);
-    PetscCheckFalse(rd != (size_t) sb.st_size,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to read entire file: %s %d %d",filename,(int)rd,sb.st_size);
+    PetscCheck(rd == (size_t) sb.st_size,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to read entire file: %s %d %d",filename,(int)rd,sb.st_size);
     fclose(fd);
     body[blen + rd] = 0;
     ierr = PetscStrcat(body,"\r\n\r\n"

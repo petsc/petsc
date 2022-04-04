@@ -37,7 +37,7 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
   P2 = ksp->work[7];
 
   /* Only supports right preconditioning */
-  PetscCheckFalse(ksp->pc_side != PC_RIGHT,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"KSP fbcgs does not support %s",PCSides[ksp->pc_side]);
+  PetscCheck(ksp->pc_side == PC_RIGHT,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"KSP fbcgs does not support %s",PCSides[ksp->pc_side]);
   if (!ksp->guess_zero) {
     if (!bcgs->guess) {
       PetscCall(VecDuplicate(X,&bcgs->guess));

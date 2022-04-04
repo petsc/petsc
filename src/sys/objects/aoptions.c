@@ -218,11 +218,11 @@ PetscErrorCode PetscOptionsGetFromTextInput(PetscOptionItems *PetscOptionsObject
           else i=1;
           for (;i<len; i++) {
             if (value[i] == '-') {
-              PetscCheckFalse(i == len-1,PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %" PetscInt_FMT "-th array entry %s",n,value);
+              PetscCheck(i != len-1,PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %" PetscInt_FMT "-th array entry %s",n,value);
               value[i] = 0;
               PetscCall(PetscOptionsStringToInt(value,&start));
               PetscCall(PetscOptionsStringToInt(value+i+1,&end));
-              PetscCheckFalse(end <= start,PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %" PetscInt_FMT "-th array entry, %s-%s cannot have decreasing list",n,value,value+i+1);
+              PetscCheck(end > start,PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %" PetscInt_FMT "-th array entry, %s-%s cannot have decreasing list",n,value,value+i+1);
               PetscCheckFalse(n + end - start - 1 >= nmax,PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %" PetscInt_FMT "-th array entry, not enough space in left in array (%" PetscInt_FMT ") to contain entire range from %" PetscInt_FMT " to %" PetscInt_FMT,n,nmax-n,start,end);
               for (; start<end; start++) {
                 *dvalue = start; dvalue++;n++;
@@ -674,9 +674,9 @@ PetscErrorCode  PetscOptionsEnum_Private(PetscOptionItems *PetscOptionsObject,co
 
   PetscFunctionBegin;
   while (list[ntext++]) {
-    PetscCheckFalse(ntext > 50,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"List argument appears to be wrong or have more than 50 entries");
+    PetscCheck(ntext <= 50,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"List argument appears to be wrong or have more than 50 entries");
   }
-  PetscCheckFalse(ntext < 3,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"List argument must have at least two entries: typename and type prefix");
+  PetscCheck(ntext >= 3,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"List argument must have at least two entries: typename and type prefix");
   ntext -= 3;
   PetscCall(PetscOptionsEList_Private(PetscOptionsObject,opt,text,man,list,ntext,list[currentvalue],&tval,&tflg));
   /* with PETSC_USE_64BIT_INDICES sizeof(PetscInt) != sizeof(PetscEnum) */
@@ -730,8 +730,8 @@ PetscErrorCode  PetscOptionsEnumArray_Private(PetscOptionItems *PetscOptionsObje
   PetscOptionItem amsopt;
 
   PetscFunctionBegin;
-  while (list[nlist++]) PetscCheckFalse(nlist > 50,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"List argument appears to be wrong or have more than 50 entries");
-  PetscCheckFalse(nlist < 3,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"List argument must have at least two entries: typename and type prefix");
+  while (list[nlist++]) PetscCheck(nlist <= 50,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"List argument appears to be wrong or have more than 50 entries");
+  PetscCheck(nlist >= 3,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"List argument must have at least two entries: typename and type prefix");
   nlist -= 3; /* drop enum name, prefix, and null termination */
   if (0 && !PetscOptionsObject->count) { /* XXX Requires additional support */
     PetscEnum *vals;
@@ -889,8 +889,8 @@ PetscErrorCode  PetscOptionsInt_Private(PetscOptionItems *PetscOptionsObject,con
   PetscBool       wasset;
 
   PetscFunctionBegin;
-  PetscCheckFalse(currentvalue < lb,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Current value %" PetscInt_FMT " less than allowed bound %" PetscInt_FMT,currentvalue,lb);
-  PetscCheckFalse(currentvalue > ub,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Current value %" PetscInt_FMT " greater than allowed bound %" PetscInt_FMT,currentvalue,ub);
+  PetscCheck(currentvalue >= lb,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Current value %" PetscInt_FMT " less than allowed bound %" PetscInt_FMT,currentvalue,lb);
+  PetscCheck(currentvalue <= ub,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Current value %" PetscInt_FMT " greater than allowed bound %" PetscInt_FMT,currentvalue,ub);
      if (!PetscOptionsObject->count) {
     PetscCall(PetscOptionItemCreate_Private(PetscOptionsObject,opt,text,man,OPTION_INT,&amsopt));
     PetscCall(PetscMalloc(sizeof(PetscInt),&amsopt->data));

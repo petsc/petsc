@@ -1141,7 +1141,7 @@ PetscErrorCode  VecCreateSeqKokkosWithArray(MPI_Comm comm,PetscInt bs,PetscInt n
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(comm,&size));
-  PetscCheckFalse(size > 1,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQKOKKOS on more than one process");
+  PetscCheck(size <= 1,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQKOKKOS on more than one process");
 
   PetscCall(PetscKokkosInitializeCheck());
   PetscCall(VecCreate(comm,&w));

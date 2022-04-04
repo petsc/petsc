@@ -634,7 +634,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1_inplace(Mat C,Mat A,const MatFactorI
     for (j=0; j<nz; j++) pv[j] = rtmp[pj[j]];
     diag = diag_offset[i] - bi[i];
     /* check pivot entry for current row */
-    PetscCheckFalse(pv[diag] == 0.0,PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot: row in original ordering %" PetscInt_FMT " in permuted ordering %" PetscInt_FMT,r[i],i);
+    PetscCheck(pv[diag] != 0.0,PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot: row in original ordering %" PetscInt_FMT " in permuted ordering %" PetscInt_FMT,r[i],i);
     pv[diag] = 1.0/pv[diag];
   }
 
@@ -668,7 +668,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqbaij_petsc(Mat A,MatFactorType ftype
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
-  PetscCheckFalse(A->hermitian && (ftype == MAT_FACTOR_CHOLESKY || ftype == MAT_FACTOR_ICC),PETSC_COMM_SELF,PETSC_ERR_SUP,"Hermitian Factor is not supported");
+  PetscCheck(!A->hermitian || !(ftype == MAT_FACTOR_CHOLESKY || ftype == MAT_FACTOR_ICC),PETSC_COMM_SELF,PETSC_ERR_SUP,"Hermitian Factor is not supported");
 #endif
   PetscCall(MatCreate(PetscObjectComm((PetscObject)A),B));
   PetscCall(MatSetSizes(*B,n,n,n,n));

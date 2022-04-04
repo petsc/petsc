@@ -18,7 +18,7 @@ int main(int argc,char **argv)
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&nproc));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
-  PetscCheckFalse(nproc != 2,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This test must run with exactly two MPI ranks");
+  PetscCheck(nproc == 2,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This test must run with exactly two MPI ranks");
 
   /* Create MPI vectors x and y, which are on the same comm (i.e., MPI_IDENT) */
   PetscCall(VecCreateMPI(PETSC_COMM_WORLD,n,PETSC_DECIDE,&x));

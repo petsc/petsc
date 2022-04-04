@@ -600,8 +600,8 @@ static PetscErrorCode DMDAArrayMPIIO(DM da,PetscViewer viewer,Vec xin,PetscBool 
       PetscCall(PetscViewerBinaryRead(viewer,tr,2,NULL,PETSC_INT));
       type = tr[0];
       rows = tr[1];
-      PetscCheckFalse(type != VEC_FILE_CLASSID,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONG,"Not vector next in file");
-      PetscCheckFalse(rows != vecrows,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_SIZ,"Vector in file not same size as DMDA vector");
+      PetscCheck(type == VEC_FILE_CLASSID,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONG,"Not vector next in file");
+      PetscCheck(rows == vecrows,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_SIZ,"Vector in file not same size as DMDA vector");
     }
   } else {
     tr[0] = VEC_FILE_CLASSID;
@@ -836,10 +836,10 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
     if (dd->w == 1 && dims[dofInd] == 1) dim2 = PETSC_TRUE;
 
     /* Special error message for the case where dof does not match the input file */
-    else PetscCheckFalse(dd->w != (PetscInt) dims[dofInd],PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Number of dofs in file is %D, not %D as expected",(PetscInt)dims[dofInd],dd->w);
+    else PetscCheck(dd->w == (PetscInt) dims[dofInd],PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Number of dofs in file is %D, not %D as expected",(PetscInt)dims[dofInd],dd->w);
 
   /* Other cases where rdim != dim cannot be handled currently */
-  } else PetscCheckFalse(rdim != dim,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file is %d, not %d as expected with dof = %D",rdim,dim,dd->w);
+  } else PetscCheck(rdim == dim,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file is %d, not %d as expected with dof = %D",rdim,dim,dd->w);
 
   /* Set up the hyperslab size */
   dim = 0;

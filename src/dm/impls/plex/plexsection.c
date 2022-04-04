@@ -218,7 +218,7 @@ static PetscErrorCode DMPlexCreateSectionBCDof(DM dm, PetscInt numBC, const Pets
         /* We assume that a point may have multiple "nodes", which are collections of Nc dofs,
            and that those dofs are numbered n*Nc+c */
         if (Nf) {
-          PetscCheckFalse(numConst % Nc,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %D has %D dof which is not divisible by %D field components", p, numConst, Nc);
+          PetscCheck(numConst % Nc == 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %D has %D dof which is not divisible by %D field components", p, numConst, Nc);
           numConst = (numConst/Nc) * cNc;
         } else {
           numConst = PetscMin(numConst, cNc);
@@ -461,7 +461,7 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
 
     PetscCall(DMGetRegionNumDS(dm, s, NULL, NULL, &dsBC));
     PetscCall(PetscDSGetNumBoundary(dsBC, &numBd));
-    PetscCheckFalse(!Nf && numBd,PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "number of fields is zero and number of boundary conditions is nonzero (this should never happen)");
+    PetscCheck(Nf || !numBd,PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "number of fields is zero and number of boundary conditions is nonzero (this should never happen)");
     for (bd = 0; bd < numBd; ++bd) {
       PetscInt                field;
       DMBoundaryConditionType type;

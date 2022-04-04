@@ -25,7 +25,7 @@ static PetscErrorCode PCSetUp_CP(PC pc)
   PetscCheck(flg,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Currently only handles SeqAIJ matrices");
 
   PetscCall(MatGetLocalSize(pc->pmat,&cp->m,&cp->n));
-  PetscCheckFalse(cp->m != cp->n,PETSC_COMM_SELF,PETSC_ERR_SUP,"Currently only for square matrices");
+  PetscCheck(cp->m == cp->n,PETSC_COMM_SELF,PETSC_ERR_SUP,"Currently only for square matrices");
 
   if (!cp->work) PetscCall(MatCreateVecs(pc->pmat,&cp->work,NULL));
   if (!cp->d) PetscCall(PetscMalloc1(cp->n,&cp->d));

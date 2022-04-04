@@ -260,7 +260,7 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX2D_Regular(DM dm,DM dm
 
   PetscFunctionBegin;
   PetscCall(DMGetDimension(dmc,&dim));
-  PetscCheckFalse(dim != 2,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only 2D is supported");
+  PetscCheck(dim == 2,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only 2D is supported");
   is_simplex = PETSC_FALSE;
   PetscCall(DMPlexGetHeightStratum(dmc,0,&ps,&pe));
   PetscCall(DMPlexGetConeSize(dmc, ps, &nfaces));
@@ -342,7 +342,7 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX(DM dm,DM celldm,DMSwa
   PetscCall(DMGetDimension(celldm,&dim));
   switch (layout) {
     case DMSWARMPIC_LAYOUT_REGULAR:
-      PetscCheckFalse(dim == 3,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"No 3D support for REGULAR+PLEX");
+      PetscCheck(dim != 3,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"No 3D support for REGULAR+PLEX");
       PetscCall(private_DMSwarmInsertPointsUsingCellDM_PLEX2D_Regular(dm,celldm,layout_param));
       break;
     case DMSWARMPIC_LAYOUT_GAUSS:
@@ -676,18 +676,18 @@ PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM dm,DM dmc,Pets
     for (p=0; p<npoints; p++) {
       PetscReal sum;
       for (d=0; d<dim; d++) {
-        PetscCheckFalse(xi[dim*p+d] < -1.0,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Points do not fail inside the simplex domain");
+        PetscCheck(xi[dim*p+d] >= -1.0,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Points do not fail inside the simplex domain");
       }
       sum = 0.0;
       for (d=0; d<dim; d++) {
         sum += xi[dim*p+d];
       }
-      PetscCheckFalse(sum > 0.0,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Points do not fail inside the simplex domain");
+      PetscCheck(sum <= 0.0,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Points do not fail inside the simplex domain");
     }
   } else if (is_tensorcell) {
     for (p=0; p<npoints; p++) {
       for (d=0; d<dim; d++) {
-        PetscCheckFalse(PetscAbsReal(xi[dim*p+d]) > 1.0,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Points do not fail inside the tensor domain [-1,1]^d");
+        PetscCheck(PetscAbsReal(xi[dim*p+d]) <= 1.0,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Points do not fail inside the tensor domain [-1,1]^d");
       }
     }
   } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only support for d-simplex and d-tensorcell");

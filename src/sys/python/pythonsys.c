@@ -36,7 +36,7 @@ static PetscErrorCode PetscPythonFindLibraryName(const char pythonexe[],const ch
   PetscCall(PetscStrlcat(command,attempt,sizeof(command)));
 #if defined(PETSC_HAVE_POPEN)
   PetscCall(PetscPOpen(PETSC_COMM_SELF,NULL,command,"r",&fp));
-  PetscCheckFalse(!fgets(pythonlib,pl,fp),PETSC_COMM_SELF,PETSC_ERR_PLIB,"Python: bad output from executable: %s\nRunning: %s",pythonexe,command);
+  PetscCheck(fgets(pythonlib,pl,fp),PETSC_COMM_SELF,PETSC_ERR_PLIB,"Python: bad output from executable: %s\nRunning: %s",pythonexe,command);
   PetscCall(PetscPClose(PETSC_COMM_SELF,fp));
 #else
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Python: Aborted due to missing popen()");

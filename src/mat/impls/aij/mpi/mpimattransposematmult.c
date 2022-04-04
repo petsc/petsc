@@ -67,7 +67,7 @@ static PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIDense(Mat A,Mat B,Mat
   PetscFunctionBegin;
   MatCheckProduct(C,3);
   atb = (Mat_MatTransMatMult *)C->product->data;
-  PetscCheckFalse(!atb,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing product struct");
+  PetscCheck(atb,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing product struct");
   if (!BN) {
     PetscCall(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));

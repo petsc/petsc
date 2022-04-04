@@ -30,7 +30,7 @@ PetscErrorCode  SNESNGSSetTolerances(SNES snes,PetscReal abstol,PetscReal rtol,P
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
 
   if (abstol != PETSC_DEFAULT) {
-    PetscCheckFalse(abstol < 0.0,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"Absolute tolerance %g must be non-negative",(double)abstol);
+    PetscCheck(abstol >= 0.0,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"Absolute tolerance %g must be non-negative",(double)abstol);
     gs->abstol = abstol;
   }
   if (rtol != PETSC_DEFAULT) {
@@ -38,11 +38,11 @@ PetscErrorCode  SNESNGSSetTolerances(SNES snes,PetscReal abstol,PetscReal rtol,P
     gs->rtol = rtol;
   }
   if (stol != PETSC_DEFAULT) {
-    PetscCheckFalse(stol < 0.0,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"Step tolerance %g must be non-negative",(double)stol);
+    PetscCheck(stol >= 0.0,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"Step tolerance %g must be non-negative",(double)stol);
     gs->stol = stol;
   }
   if (maxit != PETSC_DEFAULT) {
-    PetscCheckFalse(maxit < 0,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"Maximum number of iterations %D must be non-negative",maxit);
+    PetscCheck(maxit >= 0,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"Maximum number of iterations %D must be non-negative",maxit);
     gs->max_its = maxit;
   }
   PetscFunctionReturn(0);

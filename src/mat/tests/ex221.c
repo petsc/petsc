@@ -44,7 +44,7 @@ static PetscErrorCode MatCopy_User(Mat A,Mat X,MatStructure str)
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(A,&user));
   PetscCall(MatShellGetContext(X,&userX));
-  PetscCheckFalse(user != userX,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"This should not happen");
+  PetscCheck(user == userX,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"This should not happen");
   PetscCall(PetscObjectReference((PetscObject)user->B));
   PetscFunctionReturn(0);
 }

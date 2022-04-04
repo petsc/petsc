@@ -50,7 +50,7 @@ static PetscErrorCode PCPreSolve_Eisenstat(PC pc,KSP ksp,Vec b,Vec x)
 
   PetscFunctionBegin;
   if (pc->presolvedone < 2) {
-    PetscCheckFalse(pc->mat != pc->pmat,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot have different mat and pmat");
+    PetscCheck(pc->mat == pc->pmat,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot have different mat and pmat");
     /* swap shell matrix and true matrix */
     eis->A  = pc->mat;
     pc->mat = eis->shell;

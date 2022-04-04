@@ -118,7 +118,7 @@ static PetscErrorCode DMPlexGetAdjacency_Cone_Internal(DM dm, PetscInt p, PetscI
       for (q = 0; q < numAdj || ((void)(adj[numAdj++] = support[s]),0); ++q) {
         if (support[s] == adj[q]) break;
       }
-      PetscCheckFalse(numAdj > maxAdjSize,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);
+      PetscCheck(numAdj <= maxAdjSize,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);
     }
   }
   *adjSize = numAdj;
@@ -144,7 +144,7 @@ static PetscErrorCode DMPlexGetAdjacency_Support_Internal(DM dm, PetscInt p, Pet
       for (q = 0; q < numAdj || ((void)(adj[numAdj++] = cone[c]),0); ++q) {
         if (cone[c] == adj[q]) break;
       }
-      PetscCheckFalse(numAdj > maxAdjSize,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);
+      PetscCheck(numAdj <= maxAdjSize,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);
     }
   }
   *adjSize = numAdj;
@@ -167,7 +167,7 @@ static PetscErrorCode DMPlexGetAdjacency_Transitive_Internal(DM dm, PetscInt p, 
       for (q = 0; q < numAdj || ((void)(adj[numAdj++] = closure[c]),0); ++q) {
         if (closure[c] == adj[q]) break;
       }
-      PetscCheckFalse(numAdj > maxAdjSize,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);
+      PetscCheck(numAdj <= maxAdjSize,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);
     }
     PetscCall(DMPlexRestoreTransitiveClosure(dm, star[s], (PetscBool)!useClosure, &closureSize, (PetscInt**) &closure));
   }
@@ -249,7 +249,7 @@ PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool useCone,
           for (q = 0; q < numAdj || ((void)(orig[numAdj++] = anchors[aOff+s]),0); ++q) {
             if (anchors[aOff+s] == orig[q]) break;
           }
-          PetscCheckFalse(numAdj > maxAdjSize,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);
+          PetscCheck(numAdj <= maxAdjSize,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);
         }
       }
       else {
@@ -710,7 +710,7 @@ PetscErrorCode DMPlexStratifyMigrationSF(DM dm, PetscSF sf, PetscSF *migrationSF
   PetscCall(DMPlexGetDepth(dm, &ldepth));
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(MPIU_Allreduce(&ldepth, &depth, 1, MPIU_INT, MPI_MAX, comm));
-  PetscCheckFalse((ldepth >= 0) && (depth != ldepth),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Inconsistent Plex depth %d != %d", ldepth, depth);
+  PetscCheck(!(ldepth >= 0) || !(depth != ldepth),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Inconsistent Plex depth %d != %d", ldepth, depth);
   PetscCall(PetscLogEventBegin(DMPLEX_PartStratSF,dm,0,0,0));
 
   /* Before building the migration SF we need to know the new stratum offsets */
@@ -1096,7 +1096,7 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
       PetscInt gdepth;
 
       PetscCall(MPIU_Allreduce(&depth, &gdepth, 1, MPIU_INT, MPI_MAX, comm));
-      PetscCheckFalse((depth >= 0) && (gdepth != depth),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Inconsistent Plex depth %d != %d", depth, gdepth);
+      PetscCheck(!(depth >= 0) || !(gdepth != depth),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Inconsistent Plex depth %d != %d", depth, gdepth);
       for (d = 0; d <= gdepth; ++d) {
         PetscBool has;
 

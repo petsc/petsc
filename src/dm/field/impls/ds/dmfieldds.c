@@ -202,7 +202,7 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
   PetscCall(DMGetLocalSection(field->dm,&section));
   PetscCall(DMFieldDSGetHeightDisc(field,0,&cellDisc));
   PetscCall(PetscObjectGetClassId(cellDisc, &discID));
-  PetscCheckFalse(discID != PETSCFE_CLASSID,PETSC_COMM_SELF,PETSC_ERR_PLIB, "Discretization type not supported");
+  PetscCheck(discID == PETSCFE_CLASSID,PETSC_COMM_SELF,PETSC_ERR_PLIB, "Discretization type not supported");
   cellFE = (PetscFE) cellDisc;
   PetscCall(PetscFEGetDimension(cellFE,&feDim));
   PetscCall(DMGetCoordinateDim(field->dm, &dim));
@@ -210,7 +210,7 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
   PetscCall(DMLocatePoints(field->dm, points, DM_POINTLOCATION_NONE, &cellSF));
   PetscCall(PetscSFGetGraph(cellSF, &numCells, &nFound, NULL, &cells));
   for (c = 0; c < nFound; c++) {
-    PetscCheckFalse(cells[c].index < 0,PetscObjectComm((PetscObject)points),PETSC_ERR_ARG_WRONG, "Point %D could not be located", c);
+    PetscCheck(cells[c].index >= 0,PetscObjectComm((PetscObject)points),PETSC_ERR_ARG_WRONG, "Point %D could not be located", c);
   }
   PetscCall(PetscSFComputeDegreeBegin(cellSF,&cellDegrees));
   PetscCall(PetscSFComputeDegreeEnd(cellSF,&cellDegrees));
@@ -453,7 +453,7 @@ static PetscErrorCode DMFieldEvaluateFV_DS(DMField field, IS pointIS, PetscDataT
   dim -= h;
   PetscCall(DMFieldDSGetHeightDisc(field,h,&disc));
   PetscCall(PetscObjectGetClassId(disc,&id));
-  PetscCheckFalse(id != PETSCFE_CLASSID,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Discretization not supported");
+  PetscCheck(id == PETSCFE_CLASSID,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Discretization not supported");
   PetscCall(DMGetCoordinateField(field->dm, &coordField));
   PetscCall(DMFieldGetDegree(coordField, pointIS, NULL, &maxDegree));
   if (maxDegree <= 1) {
@@ -463,7 +463,7 @@ static PetscErrorCode DMFieldEvaluateFV_DS(DMField field, IS pointIS, PetscDataT
   PetscCheck(quad,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not determine quadrature for cell averages");
   PetscCall(DMFieldCreateFEGeom(coordField,pointIS,quad,PETSC_FALSE,&geom));
   PetscCall(PetscQuadratureGetData(quad, NULL, &qNc, &Nq, NULL, &weights));
-  PetscCheckFalse(qNc != 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected scalar quadrature components");
+  PetscCheck(qNc == 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected scalar quadrature components");
   N = numPoints * Nq * Nc;
   if (B) PetscCall(DMGetWorkArray(field->dm, N, mpitype, &qB));
   if (D) PetscCall(DMGetWorkArray(field->dm, N * dimC, mpitype, &qD));
@@ -763,14 +763,14 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
     PetscCall(DMPlexGetTreeChildren(dm, point, &numChildren, NULL));
     PetscCheck(!numChildren,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Face data not valid for facets with children");
     PetscCall(DMPlexGetSupportSize(dm, point, &suppSize));
-    PetscCheckFalse(suppSize > 2,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D has %D support, expected at most 2", point, suppSize);
+    PetscCheck(suppSize <= 2,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D has %D support, expected at most 2", point, suppSize);
     if (!suppSize) continue;
     PetscCall(DMPlexGetSupport(dm, point, &supp));
     for (s = 0; s < suppSize; ++s) {
       PetscCall(DMPlexGetConeSize(dm, supp[s], &coneSize));
       PetscCall(DMPlexGetCone(dm, supp[s], &cone));
       for (c = 0; c < coneSize; ++c) if (cone[c] == point) break;
-      PetscCheckFalse(c == coneSize,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid connectivity: point %D not found in cone of support point %D", point, supp[s]);
+      PetscCheck(c != coneSize,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid connectivity: point %D not found in cone of support point %D", point, supp[s]);
       geom->face[p][s] = c;
     }
     PetscCall(DMPlexGetConeOrientation(dm, supp[0], &ornt));
@@ -792,7 +792,7 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
       PetscCall(DMPlexGetTreeChildren(dm, point, &numChildren, NULL));
       PetscCheck(!numChildren,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Face data not valid for facets with children");
       PetscCall(DMPlexGetSupportSize(dm, point,&numSupp));
-      PetscCheckFalse(numSupp > 2,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D has %D support, expected at most 2", point, numSupp);
+      PetscCheck(numSupp <= 2,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D has %D support, expected at most 2", point, numSupp);
       numCells += numSupp;
     }
     PetscCall(PetscMalloc1(numCells, &cells));
@@ -871,7 +871,7 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
       PetscCall(DMPlexGetTreeChildren(dm, point, &numChildren, NULL));
       PetscCheck(!numChildren,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Face data not valid for facets with children");
       PetscCall(DMPlexGetSupportSize(dm, point,&numSupp));
-      PetscCheckFalse(numSupp > 2,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D has %D support, expected at most 2", point, numSupp);
+      PetscCheck(numSupp <= 2,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D has %D support, expected at most 2", point, numSupp);
       PetscCall(DMPlexGetSupport(dm, point, &supp));
       for (s = 0; s < numSupp; s++) {
         PetscInt        cell = supp[s];
@@ -879,7 +879,7 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
         const PetscInt *cone, *orient;
 
         PetscCall(DMPlexGetConeSize(dm, cell, &numCone));
-        PetscCheckFalse(numCone != coneSize,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Support point does not match reference element");
+        PetscCheck(numCone == coneSize,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Support point does not match reference element");
         PetscCall(DMPlexGetCone(dm, cell, &cone));
         PetscCall(DMPlexGetConeOrientation(dm, cell, &orient));
         for (f = 0; f < coneSize; f++) {

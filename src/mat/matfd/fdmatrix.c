@@ -451,7 +451,7 @@ PetscErrorCode  MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring 
   PetscCheck(mat->assembled,PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Matrix must be assembled by calls to MatAssemblyBegin/End();");
   PetscCall(PetscLogEventBegin(MAT_FDColoringCreate,mat,0,0,0));
   PetscCall(MatGetSize(mat,&M,&N));
-  PetscCheckFalse(M != N,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Only for square matrices");
+  PetscCheck(M == N,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Only for square matrices");
   PetscCall(PetscObjectGetComm((PetscObject)mat,&comm));
   PetscCall(PetscHeaderCreate(c,MAT_FDCOLORING_CLASSID,"MatFDColoring","Jacobian computation via finite differences with coloring","Mat",comm,MatFDColoringDestroy,MatFDColoringView));
 

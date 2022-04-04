@@ -134,9 +134,9 @@ PetscErrorCode DMDAGetCellPoint(DM dm, PetscInt i, PetscInt j, PetscInt k, Petsc
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1,DMDA);
   PetscValidIntPointer(point,5);
   PetscCall(DMDAGetLocalInfo(dm, &info));
-  if (dim > 0) PetscCheckFalse((i < info.gxs) || (i >= info.gxs+info.gxm),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "X index %d not in [%d, %d)", i, info.gxs, info.gxs+info.gxm);
-  if (dim > 1) PetscCheckFalse((j < info.gys) || (j >= info.gys+info.gym),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Y index %d not in [%d, %d)", j, info.gys, info.gys+info.gym);
-  if (dim > 2) PetscCheckFalse((k < info.gzs) || (k >= info.gzs+info.gzm),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Z index %d not in [%d, %d)", k, info.gzs, info.gzs+info.gzm);
+  if (dim > 0) PetscCheck(!(i < info.gxs) && !(i >= info.gxs+info.gxm),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "X index %d not in [%d, %d)", i, info.gxs, info.gxs+info.gxm);
+  if (dim > 1) PetscCheck(!(j < info.gys) && !(j >= info.gys+info.gym),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Y index %d not in [%d, %d)", j, info.gys, info.gys+info.gym);
+  if (dim > 2) PetscCheck(!(k < info.gzs) && !(k >= info.gzs+info.gzm),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Z index %d not in [%d, %d)", k, info.gzs, info.gzs+info.gzm);
   *point = i + (dim > 1 ? (j + (dim > 2 ? k*info.gym : 0))*info.gxm : 0);
   PetscFunctionReturn(0);
 }
@@ -364,7 +364,7 @@ PetscErrorCode DMDASetVertexCoordinates(DM dm, PetscReal xl, PetscReal xu, Petsc
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1,DMDA);
   PetscCall(DMDAGetInfo(dm, &dim, &M, &N, &P, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
-  PetscCheckFalse(dim > 3,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"The following code only works for dim <= 3");
+  PetscCheck(dim <= 3,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"The following code only works for dim <= 3");
   h[0] = (xu - xl)/M;
   h[1] = (yu - yl)/N;
   h[2] = (zu - zl)/P;

@@ -134,7 +134,7 @@ PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject odm, PetscViewer viewer)
           if (continuous && order > 0) { /* no support for high-order viz, still have to figure out the numbering */
             PetscCall(PetscSNPrintf(fec,64,"FiniteElementCollection: H1_%DD_P1",dim));
           } else {
-            PetscCheckFalse(!continuous && order,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Discontinuous space visualization currently unsupported for order %D",order);
+            PetscCheck(continuous || !order,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Discontinuous space visualization currently unsupported for order %D",order);
             H1   = PETSC_FALSE;
             PetscCall(PetscSNPrintf(fec,64,"FiniteElementCollection: L2_%DD_P%D",dim,order));
           }
@@ -253,11 +253,11 @@ static PetscErrorCode DMPlexGetPointMFEMCellID_Internal(DM dm, DMLabel label, Pe
   } else *mid = 1;
   if (depth >=0 && dim != depth) { /* not interpolated, it assumes cell-vertex mesh */
     PetscCheckFalse(dim < 0 || dim > 3,PETSC_COMM_SELF,PETSC_ERR_SUP,"Dimension %D",dim);
-    PetscCheckFalse(csize > 8,PETSC_COMM_SELF,PETSC_ERR_SUP,"Found cone size %D for point %D",csize,p);
-    PetscCheckFalse(depth != 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Found depth %D for point %D. You should interpolate the mesh first",depth,p);
+    PetscCheck(csize <= 8,PETSC_COMM_SELF,PETSC_ERR_SUP,"Found cone size %D for point %D",csize,p);
+    PetscCheck(depth == 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Found depth %D for point %D. You should interpolate the mesh first",depth,p);
     *cid = mfem_table_cid_unint[dim][csize];
   } else {
-    PetscCheckFalse(csize > 6,PETSC_COMM_SELF,PETSC_ERR_SUP,"Cone size %D for point %D",csize,p);
+    PetscCheck(csize <= 6,PETSC_COMM_SELF,PETSC_ERR_SUP,"Cone size %D for point %D",csize,p);
     PetscCheckFalse(pdepth < 0 || pdepth > 3,PETSC_COMM_SELF,PETSC_ERR_SUP,"Depth %D for point %D",csize,p);
     *cid = mfem_table_cid[pdepth][csize];
   }
@@ -463,7 +463,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii));
   PetscCheck(isascii,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Viewer must be of type VIEWERASCII");
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)viewer),&size));
-  PetscCheckFalse(size > 1,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Use single sequential viewers for parallel visualization");
+  PetscCheck(size <= 1,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Use single sequential viewers for parallel visualization");
   PetscCall(DMGetDimension(dm,&dim));
   PetscCall(DMPlexGetDepth(dm,&depth));
 
@@ -526,7 +526,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   PetscCall(DMGetCoordinateSection(dm,&coordSection));
   PetscCall(DMGetCoordinateDim(dm,&sdim));
   PetscCall(DMGetCoordinatesLocal(dm,&coordinates));
-  PetscCheckFalse(!coordinates && !hovec,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Missing local coordinates vector");
+  PetscCheck(coordinates || hovec,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Missing local coordinates vector");
 
   /*
      a couple of sections of the mesh specification are disabled
@@ -557,7 +557,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   PetscCheckFalse(enable_ncmesh && depth >= 0 && dim != depth,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated. "
                                                            "Alternatively, run with -viewer_glvis_dm_plex_enable_ncmesh 0");
   if (depth >=0 && dim != depth) { /* not interpolated, it assumes cell-vertex mesh */
-    PetscCheckFalse(depth != 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported depth %D. You should interpolate the mesh first",depth);
+    PetscCheck(depth == 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported depth %D. You should interpolate the mesh first",depth);
     cellvertex = PETSC_TRUE;
   }
 
@@ -781,7 +781,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
           PetscScalar *vals = NULL;
 
           uvpc = DMPolytopeTypeGetNumVertices(cellType);
-          PetscCheckFalse(dof%sdim,PETSC_COMM_SELF,PETSC_ERR_USER,"Incompatible number of cell dofs %D and space dimension %D",dof,sdim);
+          PetscCheck(dof%sdim == 0,PETSC_COMM_SELF,PETSC_ERR_USER,"Incompatible number of cell dofs %D and space dimension %D",dof,sdim);
           PetscCall(DMPlexVecGetClosure(dm,coordSection,coordinates,p,&csize,&vals));
           PetscCall(DMPlexGetTransitiveClosure(dm,p,PETSC_TRUE,&cellClosureSize,&cellClosure));
           for (v=0;v<cellClosureSize;v++)
@@ -1081,7 +1081,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
                       skip[i] = PETSC_TRUE;
                     }
                   }
-                  PetscCheckFalse(he == -1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Vertex %D support size %D: hanging edge not found",hv,hvsuppSize);
+                  PetscCheck(he != -1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Vertex %D support size %D: hanging edge not found",hv,hvsuppSize);
                   PetscCall(DMPlexGetCone(dm,he,&cone));
                   vids[0] = (cone[0] == hv) ? cone[1] : cone[0];
                   PetscCall(DMPlexGetSupportSize(dm,he,&hesuppSize));

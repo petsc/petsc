@@ -299,8 +299,8 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, PetscInt nparts,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
   PetscValidLogicalCollectiveInt(part, nparts, 2);
-  PetscCheckFalse(nparts <= 0,PetscObjectComm((PetscObject) part), PETSC_ERR_ARG_OUTOFRANGE, "Number of parts must be positive");
-  PetscCheckFalse(numVertices < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of vertices must be non-negative");
+  PetscCheck(nparts > 0,PetscObjectComm((PetscObject) part), PETSC_ERR_ARG_OUTOFRANGE, "Number of parts must be positive");
+  PetscCheck(numVertices >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of vertices must be non-negative");
   if (numVertices && !part->noGraph) {
     PetscValidIntPointer(start, 4);
     PetscValidIntPointer(start + numVertices, 4);

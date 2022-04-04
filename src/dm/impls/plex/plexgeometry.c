@@ -49,7 +49,7 @@ PetscErrorCode DMPlexFindVertices(DM dm, Vec coordinates, PetscReal eps, IS *poi
     PetscInt n;
 
     PetscCall(VecGetLocalSize(coordinates, &n));
-    PetscCheckFalse(n % cdim,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Given coordinates Vec has local length %D not divisible by coordinate dimension %D of given DM", n, cdim);
+    PetscCheck(n % cdim == 0,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Given coordinates Vec has local length %D not divisible by coordinate dimension %D of given DM", n, cdim);
     npoints = n / cdim;
   }
   PetscCall(DMGetCoordinatesLocal(dm, &allCoordsVec));
@@ -64,7 +64,7 @@ PetscErrorCode DMPlexFindVertices(DM dm, Vec coordinates, PetscReal eps, IS *poi
     PetscCall(DMGetCoordinateSection(dm, &cs));
     for (p = vStart; p < vEnd; p++) {
       PetscCall(PetscSectionGetDof(cs, p, &ndof));
-      PetscCheckFalse(ndof != cdim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "point %D: ndof = %D != %D = cdim", p, ndof, cdim);
+      PetscCheck(ndof == cdim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "point %D: ndof = %D != %D = cdim", p, ndof, cdim);
     }
   }
   PetscCall(PetscMalloc1(npoints, &dagPoints));
@@ -650,7 +650,7 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
         PetscInt     ecsize  = dim*2;
 
         PetscCall(DMPlexVecGetClosure(dm, coordSection, coordsLocal, closure[cl], &ecsize, &ecoords));
-        PetscCheckFalse(ecsize != dim*2,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Got %D coords for edge, instead of %D", ecsize, dim*2);
+        PetscCheck(ecsize == dim*2,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Got %D coords for edge, instead of %D", ecsize, dim*2);
         ++Ne;
       }
     }
@@ -702,7 +702,7 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
             PetscReal segB[6] = {0.,0.,0.,0.,0.,0.};
             PetscReal segC[6] = {0.,0.,0.,0.,0.,0.};
 
-            PetscCheckFalse(dim > 3,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected dim %d > 3",dim);
+            PetscCheck(dim <= 3,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected dim %d > 3",dim);
             for (d = 0; d < dim*2; ++d) segA[d] = PetscRealPart(edgeCoords[edge*dim*2+d]);
             /* 1D: (x) -- (x+h)               0 -- 1
                2D: (x,   y)   -- (x,   y+h)   (0, 0) -- (0, 1)
@@ -788,7 +788,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
   PetscCall(VecGetBlockSize(v, &bs));
   PetscCallMPI(MPI_Comm_compare(PetscObjectComm((PetscObject)cellSF),PETSC_COMM_SELF,&result));
   PetscCheckFalse(result != MPI_IDENT && result != MPI_CONGRUENT,PetscObjectComm((PetscObject)cellSF),PETSC_ERR_SUP, "Trying parallel point location: only local point location supported");
-  PetscCheckFalse(bs != dim,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Block size for point vector %D must be the mesh coordinate dimension %D", bs, dim);
+  PetscCheck(bs == dim,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Block size for point vector %D must be the mesh coordinate dimension %D", bs, dim);
   PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
   PetscCall(VecGetLocalSize(v, &numPoints));
   PetscCall(VecGetArray(v, &a));
@@ -1190,7 +1190,7 @@ static PetscErrorCode DMPlexComputeLineGeometry_Internal(DM dm, PetscInt e, Pets
   if (e >= pStart && e < pEnd) PetscCall(PetscSectionGetDof(coordSection,e,&numSelfCoords));
   PetscCall(DMPlexVecGetClosure(dm, coordSection, coordinates, e, &numCoords, &coords));
   numCoords = numSelfCoords ? numSelfCoords : numCoords;
-  PetscCheckFalse(invJ && !J,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "In order to compute invJ, J must not be NULL");
+  PetscCheck(!invJ || J,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "In order to compute invJ, J must not be NULL");
   *detJ = 0.0;
   if (numCoords == 6) {
     const PetscInt dim = 3;
@@ -1736,7 +1736,7 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_Implicit(DM dm, PetscInt cell
     PetscCall(DMGetDimension(dm, &dim));
   }
   PetscCall(DMGetCoordinateDim(dm, &coordDim));
-  PetscCheckFalse(coordDim > 3,PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported coordinate dimension %D > 3", coordDim);
+  PetscCheck(coordDim <= 3,PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported coordinate dimension %D > 3", coordDim);
   if (quad) PetscCall(PetscQuadratureGetData(quad, NULL, NULL, &Nq, &points, NULL));
   PetscCall(DMPlexGetCellType(dm, cell, &ct));
   switch (ct) {
@@ -1884,21 +1884,21 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_FE(DM dm, PetscFE fe, PetscIn
   PetscCall(PetscFEGetQuadrature(fe, &feQuad));
   if (feQuad == quad) {
     PetscCall(PetscFEGetCellTabulation(fe, J ? 1 : 0, &T));
-    PetscCheckFalse(numCoords != pdim*cdim,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "There are %d coordinates for point %d != %d*%d", numCoords, point, pdim, cdim);
+    PetscCheck(numCoords == pdim*cdim,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "There are %d coordinates for point %d != %d*%d", numCoords, point, pdim, cdim);
   } else {
     PetscCall(PetscFECreateTabulation(fe, 1, Nq, quadPoints, J ? 1 : 0, &T));
   }
-  PetscCheckFalse(qdim != dim,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Point dimension %d != quadrature dimension %d", dim, qdim);
+  PetscCheck(qdim == dim,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Point dimension %d != quadrature dimension %d", dim, qdim);
   {
     const PetscReal *basis    = T->T[0];
     const PetscReal *basisDer = T->T[1];
     PetscReal        detJt;
 
 #if defined(PETSC_USE_DEBUG)
-    PetscCheckFalse(Nq != T->Np,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Np %D != %D", Nq, T->Np);
-    PetscCheckFalse(pdim != T->Nb,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Nb %D != %D", pdim, T->Nb);
-    PetscCheckFalse(dim != T->Nc,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Nc %D != %D", dim, T->Nc);
-    PetscCheckFalse(cdim != T->cdim,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "cdim %D != %D", cdim, T->cdim);
+    PetscCheck(Nq == T->Np,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Np %D != %D", Nq, T->Np);
+    PetscCheck(pdim == T->Nb,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Nb %D != %D", pdim, T->Nb);
+    PetscCheck(dim == T->Nc,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Nc %D != %D", dim, T->Nc);
+    PetscCheck(cdim == T->cdim,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "cdim %D != %D", cdim, T->cdim);
 #endif
     if (v) {
       PetscCall(PetscArrayzero(v, Nq*cdim));
@@ -1951,7 +1951,7 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_FE(DM dm, PetscFE fe, PetscIn
         }
         if (detJ) detJ[q] = detJt;
       }
-    } else PetscCheckFalse(detJ || invJ,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Need J to compute invJ or detJ");
+    } else PetscCheck(!detJ && !invJ,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Need J to compute invJ or detJ");
   }
   if (feQuad != quad) PetscCall(PetscTabulationDestroy(&T));
   PetscCall(DMPlexVecRestoreClosure(dm, coordSection, coordinates, point, &numCoords, &coords));
@@ -2082,7 +2082,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_1D_Internal(DM dm, PetscInt dim, 
   if (normal) {
     PetscReal norm;
 
-    PetscCheckFalse(dim != 2,PETSC_COMM_SELF, PETSC_ERR_SUP, "We only support 2D edges right now");
+    PetscCheck(dim == 2,PETSC_COMM_SELF, PETSC_ERR_SUP, "We only support 2D edges right now");
     normal[0]  = -PetscRealPart(coords[1] - tmp[1]);
     normal[1]  =  PetscRealPart(coords[0] - tmp[0]);
     norm       = DMPlex_NormD_Internal(dim, normal);
@@ -2169,7 +2169,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
   PetscInt        numFaces, f, coordSize, p, d;
 
   PetscFunctionBegin;
-  PetscCheckFalse(dim > 3,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"No support for dim %D > 3",dim);
+  PetscCheck(dim <= 3,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"No support for dim %D > 3",dim);
   /* Must check for hybrid cells because prisms have a different orientation scheme */
   PetscCall(DMPlexGetCellType(dm, cell, &ct));
   switch (ct) {
@@ -2293,7 +2293,7 @@ PetscErrorCode DMPlexComputeCellGeometryFVM(DM dm, PetscInt cell, PetscReal *vol
   PetscFunctionBegin;
   PetscCall(DMPlexGetDepth(dm, &depth));
   PetscCall(DMGetDimension(dm, &dim));
-  PetscCheckFalse(depth != dim,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh must be interpolated");
+  PetscCheck(depth == dim,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh must be interpolated");
   PetscCall(DMPlexGetPointDepth(dm, cell, &depth));
   switch (depth) {
   case 0:
@@ -2358,7 +2358,7 @@ PetscErrorCode DMPlexComputeGeometryFEM(DM dm, Vec *cellgeom)
     PetscCall(DMPlexPointLocalRef(dmCell, c, cgeom, &cg));
     PetscCall(PetscArrayzero(cg, 1));
     PetscCall(DMPlexComputeCellGeometryFEM(dmCell, c, NULL, cg->v, cg->J, cg->invJ, cg->detJ));
-    PetscCheckFalse(*cg->detJ <= 0.0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %D", (double) *cg->detJ, c);
+    PetscCheck(*cg->detJ > 0.0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %D", (double) *cg->detJ, c);
   }
   PetscFunctionReturn(0);
 }
@@ -2464,8 +2464,8 @@ PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
         for (d = 0; d < dim; ++d) fg->normal[d] = -fg->normal[d];
       }
       if (DMPlex_DotRealD_Internal(dim, fg->normal, v) <= 0) {
-        PetscCheckFalse(dim == 2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Direction for face %d could not be fixed, normal (%g,%g) v (%g,%g)", f, (double) fg->normal[0], (double) fg->normal[1], (double) v[0], (double) v[1]);
-        PetscCheckFalse(dim == 3,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Direction for face %d could not be fixed, normal (%g,%g,%g) v (%g,%g,%g)", f, (double) fg->normal[0], (double) fg->normal[1], (double) fg->normal[2], (double) v[0], (double) v[1], (double) v[2]);
+        PetscCheck(dim != 2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Direction for face %d could not be fixed, normal (%g,%g) v (%g,%g)", f, (double) fg->normal[0], (double) fg->normal[1], (double) v[0], (double) v[1]);
+        PetscCheck(dim != 3,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Direction for face %d could not be fixed, normal (%g,%g,%g) v (%g,%g,%g)", f, (double) fg->normal[0], (double) fg->normal[1], (double) fg->normal[2], (double) v[0], (double) v[1], (double) v[2]);
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Direction for face %d could not be fixed", f);
       }
       if (cells[0] < cEndInterior) {
@@ -2487,10 +2487,10 @@ PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
     PetscInt         coneSize, supportSize, s;
 
     PetscCall(DMPlexGetConeSize(dmCell, c, &coneSize));
-    PetscCheckFalse(coneSize != 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Ghost cell %d has cone size %d != 1", c, coneSize);
+    PetscCheck(coneSize == 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Ghost cell %d has cone size %d != 1", c, coneSize);
     PetscCall(DMPlexGetCone(dmCell, c, &cone));
     PetscCall(DMPlexGetSupportSize(dmCell, cone[0], &supportSize));
-    PetscCheckFalse(supportSize != 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %d has support size %d != 2", cone[0], supportSize);
+    PetscCheck(supportSize == 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %d has support size %d != 2", cone[0], supportSize);
     PetscCall(DMPlexGetSupport(dmCell, cone[0], &support));
     PetscCall(DMPlexPointLocalRef(dmFace, cone[0], fgeom, &fg));
     for (s = 0; s < 2; ++s) {
@@ -2590,7 +2590,7 @@ static PetscErrorCode BuildGradientReconstruction_Internal(DM dm, PetscFV fvm, D
     PetscCall(DMPlexPointLocalRead(dmCell, c, cgeom, &cg));
     PetscCall(DMPlexGetConeSize(dm, c, &numFaces));
     PetscCall(DMPlexGetCone(dm, c, &faces));
-    PetscCheckFalse(numFaces < dim,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cell %D has only %D faces, not enough for gradient reconstruction", c, numFaces);
+    PetscCheck(numFaces >= dim,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cell %D has only %D faces, not enough for gradient reconstruction", c, numFaces);
     for (f = 0, usedFaces = 0; f < numFaces; ++f) {
       PetscFVCellGeom       *cg1;
       PetscFVFaceGeom       *fg;
@@ -2708,7 +2708,7 @@ static PetscErrorCode BuildGradientReconstruction_Internal_Tree(DM dm, PetscFV f
     if (ghostLabel) PetscCall(DMLabelGetValue(ghostLabel, c, &ghost));
     if (ghost >= 0) continue;
 
-    PetscCheckFalse(numFaces < dim,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cell %D has only %D faces, not enough for gradient reconstruction", c, numFaces);
+    PetscCheck(numFaces >= dim,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cell %D has only %D faces, not enough for gradient reconstruction", c, numFaces);
     for (f = 0; f < numFaces; ++f) {
       PetscFVCellGeom       *cg1;
       PetscFVFaceGeom       *fg;
@@ -2911,7 +2911,7 @@ static PetscErrorCode DMPlexCoordinatesToReference_NewtonUpdate(PetscInt dimC, P
     for (l = 0; l < dimC; l++) {invJ[l] = resNeg[l];}
 
     PetscStackCallBLAS("LAPACKgels",LAPACKgels_(&transpose,&m,&n,&one,J,&m,invJ,&n,work,&worksize, &info));
-    PetscCheckFalse(info != 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to GELS");
+    PetscCheck(info == 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to GELS");
 
     for (l = 0; l < dimR; l++) {guess[l] += PetscRealPart(invJ[l]);}
   }
@@ -3119,7 +3119,7 @@ static PetscErrorCode DMPlexCoordinatesToReference_FE(DM dm, PetscFE fe, PetscIn
   PetscFunctionBegin;
   PetscCall(PetscFEGetDimension(fe, &pdim));
   PetscCall(PetscFEGetNumComponents(fe, &numComp));
-  PetscCheckFalse(numComp != Nc,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"coordinate discretization must have as many components (%D) as embedding dimension (!= %D)",numComp,Nc);
+  PetscCheck(numComp == Nc,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"coordinate discretization must have as many components (%D) as embedding dimension (!= %D)",numComp,Nc);
   PetscCall(DMPlexVecGetClosure(dm, NULL, coords, cell, &coordSize, &nodes));
   /* convert nodes to values in the stable evaluation basis */
   PetscCall(DMGetWorkArray(dm,pdim,MPIU_REAL,&modes));
@@ -3180,7 +3180,7 @@ static PetscErrorCode DMPlexReferenceToCoordinates_FE(DM dm, PetscFE fe, PetscIn
   PetscFunctionBegin;
   PetscCall(PetscFEGetDimension(fe, &pdim));
   PetscCall(PetscFEGetNumComponents(fe, &numComp));
-  PetscCheckFalse(numComp != Nc,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"coordinate discretization must have as many components (%D) as embedding dimension (!= %D)",numComp,Nc);
+  PetscCheck(numComp == Nc,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"coordinate discretization must have as many components (%D) as embedding dimension (!= %D)",numComp,Nc);
   PetscCall(DMPlexVecGetClosure(dm, NULL, coords, cell, &coordSize, &nodes));
   /* convert nodes to values in the stable evaluation basis */
   PetscCall(DMGetWorkArray(dm,pdim,MPIU_REAL,&modes));

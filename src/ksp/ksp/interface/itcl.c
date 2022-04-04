@@ -441,7 +441,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
     nmax = 2;
     PetscCall(PetscOptionsIntArray("-ksp_fischer_guess","Use Paul Fischer's algorithm or its variants for initial guess","KSPSetUseFischerGuess",model,&nmax,&flag));
     if (flag) {
-      PetscCheckFalse(nmax != 2,comm,PETSC_ERR_ARG_OUTOFRANGE,"Must pass in model,size as arguments");
+      PetscCheck(nmax == 2,comm,PETSC_ERR_ARG_OUTOFRANGE,"Must pass in model,size as arguments");
       PetscCall(KSPSetUseFischerGuess(ksp,model[0],model[1]));
     }
   }

@@ -243,7 +243,7 @@ PetscErrorCode MatLUFactorNumeric_LUSOL(Mat F,Mat A,const MatFactorInfo *info)
   PetscCall(MatGetSize(A,&m,&n));
   a    = (Mat_SeqAIJ*)A->data;
 
-  PetscCheckFalse(m != lusol->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"factorization struct inconsistent");
+  PetscCheck(m == lusol->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"factorization struct inconsistent");
 
   factorizations = 0;
   do {

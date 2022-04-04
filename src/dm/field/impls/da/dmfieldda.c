@@ -199,7 +199,7 @@ static PetscErrorCode DMFieldEvaluate_DA(DMField field, Vec points, PetscDataTyp
   dafield = (DMField_DA *) field->data;
   PetscCall(DMGetDimension(dm,&dim));
   PetscCall(VecGetLocalSize(points,&N));
-  PetscCheckFalse(N % dim,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Point vector size %D not divisible by coordinate dimension %D",N,dim);
+  PetscCheck(N % dim == 0,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Point vector size %D not divisible by coordinate dimension %D",N,dim);
   n = N / dim;
   coordRange = &(dafield->coordRange[0]);
   PetscCall(VecGetArrayRead(points,&array));

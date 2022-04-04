@@ -317,7 +317,7 @@ static PetscErrorCode MatMumpsHandleSchur_Private(Mat F, PetscBool expansion)
     PetscCall(MatMumpsSolveSchur_Private(F));
     mumps->id.ICNTL(26) = 2; /* expansion phase */
     PetscMUMPS_c(mumps);
-    PetscCheckFalse(mumps->id.INFOG(1) < 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in solve phase: INFOG(1)=%d",mumps->id.INFOG(1));
+    PetscCheck(mumps->id.INFOG(1) >= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in solve phase: INFOG(1)=%d",mumps->id.INFOG(1));
     /* restore defaults */
     mumps->id.ICNTL(26) = -1;
     /* free MUMPS internal array for redrhs if we have solved for multiple rhs in order to save memory space */
@@ -509,7 +509,7 @@ PetscErrorCode MatConvertToTriples_seqsbaij_seqsbaij(Mat A,PetscInt shift,MatReu
         nz++;
       }
     }
-    PetscCheckFalse(nz != aa->nz,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Different numbers of nonzeros %" PetscInt64_FMT " != %" PetscInt_FMT,nz,aa->nz);
+    PetscCheck(nz == aa->nz,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Different numbers of nonzeros %" PetscInt64_FMT " != %" PetscInt_FMT,nz,aa->nz);
   }
   if (reuse == MAT_INITIAL_MATRIX) mumps->nnz = nz;
   PetscFunctionReturn(0);
@@ -980,7 +980,7 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
   PetscCall(MatMumpsResetSchur_Private(mumps));
   mumps->id.job = JOB_END;
   PetscMUMPS_c(mumps);
-  PetscCheckFalse(mumps->id.INFOG(1) < 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in MatDestroy_MUMPS: INFOG(1)=%d",mumps->id.INFOG(1));
+  PetscCheck(mumps->id.INFOG(1) >= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in MatDestroy_MUMPS: INFOG(1)=%d",mumps->id.INFOG(1));
 #if defined(PETSC_HAVE_OPENMP_SUPPORT)
   if (mumps->use_petsc_omp_support) {
     PetscCall(PetscOmpCtrlDestroy(&mumps->omp_ctrl));
@@ -1023,7 +1023,7 @@ static PetscErrorCode MatMumpsSetUpDistRHSInfo(Mat A,PetscInt nrhs,const PetscSc
   PetscFunctionBegin;
   PetscCall(MatGetSize(A,&M,NULL));
   PetscCall(MatGetLocalSize(A,&m,NULL));
-  PetscCheckFalse(M > PETSC_MUMPS_INT_MAX,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"PetscInt too long for PetscMUMPSInt");
+  PetscCheck(M <= PETSC_MUMPS_INT_MAX,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"PetscInt too long for PetscMUMPSInt");
   if (ompsize == 1) {
     if (!mumps->irhs_loc) {
       mumps->nloc_rhs = m;
@@ -1078,7 +1078,7 @@ static PetscErrorCode MatMumpsSetUpDistRHSInfo(Mat A,PetscInt nrhs,const PetscSc
       mumps->rhs_disps[0] = 0;
       for (j=1; j<ompsize; j++) {
         mumps->rhs_disps[j] = mumps->rhs_disps[j-1] + mumps->rhs_recvcounts[j-1];
-        PetscCheckFalse(mumps->rhs_disps[j] < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"PetscMPIInt overflow!");
+        PetscCheck(mumps->rhs_disps[j] >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"PetscMPIInt overflow!");
       }
       recvbuf = (nrhs == 1) ? mumps->rhs_loc : mumps->rhs_recvbuf; /* Directly use rhs_loc[] as recvbuf. Single rhs is common in Ax=b */
     }
@@ -1161,7 +1161,7 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
      This requires an extra call to PetscMUMPS_c and the computation of the factors for S
   */
   if (mumps->id.size_schur > 0 && (mumps->id.ICNTL(26) < 0 || mumps->id.ICNTL(26) > 2)) {
-    PetscCheckFalse(mumps->petsc_size > 1,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Parallel Schur complements not yet supported from PETSc");
+    PetscCheck(mumps->petsc_size <= 1,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Parallel Schur complements not yet supported from PETSc");
     second_solve = PETSC_TRUE;
     PetscCall(MatMumpsHandleSchur_Private(A,PETSC_FALSE));
   }
@@ -1169,7 +1169,7 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
   /*-------------*/
   mumps->id.job = JOB_SOLVE;
   PetscMUMPS_c(mumps);
-  PetscCheckFalse(mumps->id.INFOG(1) < 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in solve phase: INFOG(1)=%d",mumps->id.INFOG(1));
+  PetscCheck(mumps->id.INFOG(1) >= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in solve phase: INFOG(1)=%d",mumps->id.INFOG(1));
 
   /* handle expansion step of Schur complement (if any) */
   if (second_solve) {
@@ -1248,10 +1248,10 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
 
   PetscCall(PetscObjectTypeCompareAny((PetscObject)B,&denseB,MATSEQDENSE,MATMPIDENSE,NULL));
   if (denseB) {
-    PetscCheckFalse(B->rmap->n != X->rmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Matrix B and X must have same row distribution");
+    PetscCheck(B->rmap->n == X->rmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Matrix B and X must have same row distribution");
     mumps->id.ICNTL(20)= 0; /* dense RHS */
   } else { /* sparse B */
-    PetscCheckFalse(X == B,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_IDN,"X and B must be different matrices");
+    PetscCheck(X != B,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_IDN,"X and B must be different matrices");
     PetscCall(PetscObjectTypeCompare((PetscObject)B,MATTRANSPOSEMAT,&flgT));
     if (flgT) { /* input B is transpose of actural RHS matrix,
                  because mumps requires sparse compressed COLUMN storage! See MatMatTransposeSolve_MUMPS() */
@@ -1294,7 +1294,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
     /*-------------*/
     mumps->id.job = JOB_SOLVE;
     PetscMUMPS_c(mumps);
-    PetscCheckFalse(mumps->id.INFOG(1) < 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in solve phase: INFOG(1)=%d",mumps->id.INFOG(1));
+    PetscCheck(mumps->id.INFOG(1) >= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in solve phase: INFOG(1)=%d",mumps->id.INFOG(1));
 
     /* handle expansion step of Schur complement (if any) */
     if (second_solve) {
@@ -1406,7 +1406,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
   /*-------------*/
   mumps->id.job = JOB_SOLVE;
   PetscMUMPS_c(mumps);
-  PetscCheckFalse(mumps->id.INFOG(1) < 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in solve phase: INFOG(1)=%d",mumps->id.INFOG(1));
+  PetscCheck(mumps->id.INFOG(1) >= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in solve phase: INFOG(1)=%d",mumps->id.INFOG(1));
 
   /* scatter mumps distributed solution to petsc vector v_mpi, which shares local arrays with solution matrix X */
   PetscCall(MatDenseGetArray(X,&array));
@@ -1505,7 +1505,7 @@ PetscErrorCode MatGetInertia_SBAIJMUMPS(Mat F,PetscInt *nneg,PetscInt *nzero,Pet
 
   if (nneg) *nneg = mumps->id.INFOG(12);
   if (nzero || npos) {
-    PetscCheckFalse(mumps->id.ICNTL(24) != 1,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"-mat_mumps_icntl_24 must be set as 1 for null pivot row detection");
+    PetscCheck(mumps->id.ICNTL(24) == 1,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"-mat_mumps_icntl_24 must be set as 1 for null pivot row detection");
     if (nzero) *nzero = mumps->id.INFOG(28);
     if (npos) *npos   = F->rmap->N - (mumps->id.INFOG(12) + mumps->id.INFOG(28));
   }
@@ -1813,7 +1813,7 @@ PetscErrorCode PetscSetMUMPSFromOptions(Mat F, Mat A)
 
   PetscCall(PetscOptionsIntArray("-mat_mumps_view_info","request INFO local to each processor","",info,&ninfo,NULL));
   if (ninfo) {
-    PetscCheckFalse(ninfo > 80,PETSC_COMM_SELF,PETSC_ERR_USER,"number of INFO %" PetscInt_FMT " must <= 80",ninfo);
+    PetscCheck(ninfo <= 80,PETSC_COMM_SELF,PETSC_ERR_USER,"number of INFO %" PetscInt_FMT " must <= 80",ninfo);
     PetscCall(PetscMalloc1(ninfo,&mumps->info));
     mumps->ninfo = ninfo;
     for (i=0; i<ninfo; i++) {
@@ -1865,7 +1865,7 @@ PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS *mumps)
   mumps->id.sym = mumps->sym;
 
   PetscMUMPS_c(mumps);
-  PetscCheckFalse(mumps->id.INFOG(1) < 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in PetscInitializeMUMPS: INFOG(1)=%d",mumps->id.INFOG(1));
+  PetscCheck(mumps->id.INFOG(1) >= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in PetscInitializeMUMPS: INFOG(1)=%d",mumps->id.INFOG(1));
 
   /* copy MUMPS default control values from master to slaves. Although slaves do not call MUMPS, they may access these values in code.
      For example, ICNTL(9) is initialized to 1 by MUMPS and slaves check ICNTL(9) in MatSolve_MUMPS.
@@ -2340,7 +2340,7 @@ PetscErrorCode MatFactorCreateSchurComplement_MUMPS(Mat F,Mat* S)
 #endif
 
   PetscFunctionBegin;
-  PetscCheckFalse(!mumps->id.ICNTL(19),PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur complement mode not selected! You should call MatFactorSetSchurIS to enable it");
+  PetscCheck(mumps->id.ICNTL(19),PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur complement mode not selected! You should call MatFactorSetSchurIS to enable it");
   PetscCall(MatCreate(PETSC_COMM_SELF,&St));
   PetscCall(MatSetSizes(St,PETSC_DECIDE,PETSC_DECIDE,mumps->id.size_schur,mumps->id.size_schur));
   PetscCall(MatSetType(St,MATDENSE));
@@ -3047,7 +3047,7 @@ static PetscErrorCode MatGetFactor_sbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
 
   PetscFunctionBegin;
  #if defined(PETSC_USE_COMPLEX)
-  PetscCheckFalse(A->hermitian && !A->symmetric,PETSC_COMM_SELF,PETSC_ERR_SUP,"Hermitian CHOLESKY Factor is not supported");
+  PetscCheck(!A->hermitian || A->symmetric,PETSC_COMM_SELF,PETSC_ERR_SUP,"Hermitian CHOLESKY Factor is not supported");
  #endif
   PetscCall(MatCreate(PetscObjectComm((PetscObject)A),&B));
   PetscCall(MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N));

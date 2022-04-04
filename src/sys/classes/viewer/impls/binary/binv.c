@@ -99,12 +99,12 @@ static PetscErrorCode PetscViewerRestoreSubViewer_Binary(PetscViewer viewer,MPI_
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank));
-  PetscCheckFalse(rank && *outviewer,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Subviewer not obtained from viewer");
+  PetscCheck(!rank || !*outviewer,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Subviewer not obtained from viewer");
 
 #if defined(PETSC_HAVE_MPIIO)
   if (vbinary->usempiio && *outviewer) {
     PetscViewer_Binary *obinary = (PetscViewer_Binary*)(*outviewer)->data;
-    PetscCheckFalse(obinary->mfdes != vbinary->mfsub,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Subviewer not obtained from viewer");
+    PetscCheck(obinary->mfdes == vbinary->mfsub,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Subviewer not obtained from viewer");
     if (obinary->mfsub != MPI_FILE_NULL) PetscCallMPI(MPI_File_close(&obinary->mfsub));
     moff = obinary->moff;
   }
@@ -112,7 +112,7 @@ static PetscErrorCode PetscViewerRestoreSubViewer_Binary(PetscViewer viewer,MPI_
 
   if (*outviewer) {
     PetscViewer_Binary *obinary = (PetscViewer_Binary*)(*outviewer)->data;
-    PetscCheckFalse(obinary->fdes != vbinary->fdes,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Subviewer not obtained from viewer");
+    PetscCheck(obinary->fdes == vbinary->fdes,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Subviewer not obtained from viewer");
     PetscCall(PetscFree((*outviewer)->data));
     PetscCall(PetscHeaderDestroy(outviewer));
   }
@@ -338,7 +338,7 @@ static PetscErrorCode PetscViewerBinarySetFlowControl_Binary(PetscViewer viewer,
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(fc <= 1,PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_OUTOFRANGE,"Flow control count must be greater than 1, %" PetscInt_FMT " was set",fc);
+  PetscCheck(fc > 1,PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_OUTOFRANGE,"Flow control count must be greater than 1, %" PetscInt_FMT " was set",fc);
   vbinary->flowcontrol = fc;
   PetscFunctionReturn(0);
 }
@@ -1248,7 +1248,7 @@ PetscErrorCode PetscViewerFileSetMode(PetscViewer viewer,PetscFileMode mode)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidLogicalCollectiveEnum(viewer,mode,2);
-  PetscCheckFalse(mode == FILE_MODE_UNDEFINED,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Cannot set FILE_MODE_UNDEFINED");
+  PetscCheck(mode != FILE_MODE_UNDEFINED,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Cannot set FILE_MODE_UNDEFINED");
   else PetscCheckFalse(mode < FILE_MODE_UNDEFINED || mode > FILE_MODE_APPEND_UPDATE,PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_OUTOFRANGE,"Invalid file mode %d",(int)mode);
   PetscTryMethod(viewer,"PetscViewerFileSetMode_C",(PetscViewer,PetscFileMode),(viewer,mode));
   PetscFunctionReturn(0);
@@ -1439,7 +1439,7 @@ static PetscErrorCode PetscViewerSetUp_Binary(PetscViewer viewer)
   PetscFunctionBegin;
   if (!vbinary->setfromoptionscalled) PetscCall(PetscViewerSetFromOptions(viewer));
   PetscCheck(vbinary->filename,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call PetscViewerFileSetName()");
-  PetscCheckFalse(vbinary->filemode == (PetscFileMode)-1,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call PetscViewerFileSetMode()");
+  PetscCheck(vbinary->filemode != (PetscFileMode)-1,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call PetscViewerFileSetMode()");
   PetscCall(PetscViewerFileClose_Binary(viewer));
 
   PetscCall(PetscViewerBinaryGetUseMPIIO(viewer,&usempiio));

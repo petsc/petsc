@@ -22,7 +22,7 @@ int main(int argc, char** argv)
   PetscCall(VecSet(output,2.));
   PetscCall(MatMult(cuda_matrix,input,output));
   PetscCall(VecNorm(output,NORM_2,&nrm));
-  PetscCheckFalse(nrm > PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"PETSc generated wrong result. Should be 0, but is %g",(double)nrm);
+  PetscCheck(nrm <= PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"PETSc generated wrong result. Should be 0, but is %g",(double)nrm);
   PetscCall(VecDestroy(&input));
   PetscCall(VecDestroy(&output));
   PetscCall(MatDestroy(&cuda_matrix));

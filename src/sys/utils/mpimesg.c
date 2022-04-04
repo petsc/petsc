@@ -271,7 +271,7 @@ PetscErrorCode  PetscGatherMessageLengths2(MPI_Comm comm,PetscMPIInt nsends,Pets
       j++;
     }
   }
-  PetscCheckFalse(j != nsends,PETSC_COMM_SELF,PETSC_ERR_PLIB,"j %d not equal to expected number of sends %d",j,nsends);
+  PetscCheck(j == nsends,PETSC_COMM_SELF,PETSC_ERR_PLIB,"j %d not equal to expected number of sends %d",j,nsends);
 
   /* Post waits on sends and receivs */
   if (nrecvs+nsends) PetscCallMPI(MPI_Waitall(nrecvs+nsends,r_waits,w_status));

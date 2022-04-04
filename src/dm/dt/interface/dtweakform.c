@@ -168,7 +168,7 @@ PetscErrorCode PetscWeakFormGetIndexFunction_Private(PetscWeakForm wf, PetscHMap
   PetscCall(PetscHMapFormGet(ht, key, &chunk));
   if (chunk.size < 0) {*func = NULL;}
   else {
-    PetscCheckFalse(ind >= chunk.size,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Index %D not in [0, %D)", ind, chunk.size);
+    PetscCheck(ind < chunk.size,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Index %D not in [0, %D)", ind, chunk.size);
     *func = ((void (**)()) &wf->funcs->array[chunk.start])[ind];
   }
   PetscFunctionReturn(0);

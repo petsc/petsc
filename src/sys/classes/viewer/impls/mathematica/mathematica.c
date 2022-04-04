@@ -516,7 +516,7 @@ PetscErrorCode  PetscViewerMathematicaGetVector(PetscViewer viewer, Vec v)
   MLEndPacket(link);
   PetscCall(PetscViewerMathematicaSkipPackets(viewer, RETURNPKT));
   MLGetRealList(link, &mArray, &mSize);
-  PetscCheckFalse(n != mSize,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Incompatible vector sizes %d %d",n,mSize);
+  PetscCheck(n == mSize,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Incompatible vector sizes %d %d",n,mSize);
   PetscCall(PetscArraycpy(array, mArray, mSize));
   MLDisownRealList(link, mArray, mSize);
   PetscCall(VecRestoreArray(v, &array));

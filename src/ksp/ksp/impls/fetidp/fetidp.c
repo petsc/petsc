@@ -786,7 +786,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         PetscCall(ISGlobalToLocalMappingApplyIS(l2g_t,IS_GTOLM_DROP,is2,&is1));
         PetscCall(ISGetLocalSize(is1,&i));
         PetscCall(ISGetLocalSize(is2,&j));
-        PetscCheckFalse(i != j,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inconsistent local sizes %D and %D for iV",i,j);
+        PetscCheck(i == j,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inconsistent local sizes %D and %D for iV",i,j);
         PetscCall(PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_iV",(PetscObject)is1));
         PetscCall(ISLocalToGlobalMappingDestroy(&l2g_t));
         PetscCall(ISDestroy(&is1));
@@ -1041,8 +1041,8 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         PetscCall(MatGetLocalSize(A,&am,&an));
         PetscCall(ISGetLocalSize(Pall,&pIl));
         PetscCall(ISGetLocalSize(fetidp->pP,&pl));
-        PetscCheckFalse(PAM != PAN,PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Pressure matrix must be square, unsupported %D x %D",PAM,PAN);
-        PetscCheckFalse(pam != pan,PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Local sizes of pressure matrix must be equal, unsupported %D x %D",pam,pan);
+        PetscCheck(PAM == PAN,PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Pressure matrix must be square, unsupported %D x %D",PAM,PAN);
+        PetscCheck(pam == pan,PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Local sizes of pressure matrix must be equal, unsupported %D x %D",pam,pan);
         PetscCheckFalse(pam != am && pam != pl && pam != pIl,PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid number of local rows %D for pressure matrix! Supported are %D, %D or %D",pam,am,pl,pIl);
         PetscCheckFalse(pan != an && pan != pl && pan != pIl,PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid number of local columns %D for pressure matrix! Supported are %D, %D or %D",pan,an,pl,pIl);
         if (PAM == AM) { /* monolithic ordering, restrict to pressure */

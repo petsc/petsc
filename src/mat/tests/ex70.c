@@ -37,8 +37,8 @@ static PetscErrorCode CheckLocal(Mat A, Mat B, PetscScalar *a, PetscScalar *b)
     }
     PetscCall(MatDenseRestoreArrayRead(B,&Bb));
   }
-  PetscCheckFalse(wA || wB,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong array in first Mat? %d, Wrong array in second Mat? %d",wA,wB);
-  PetscCheckFalse(wAv || wBv,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong data in first Mat? %d, Wrong data in second Mat? %d",wAv,wBv);
+  PetscCheck(!wA && !wB,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong array in first Mat? %d, Wrong array in second Mat? %d",wA,wB);
+  PetscCheck(!wAv && !wBv,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong data in first Mat? %d, Wrong data in second Mat? %d",wAv,wBv);
   PetscFunctionReturn(0);
 }
 

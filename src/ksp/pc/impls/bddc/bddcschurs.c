@@ -531,7 +531,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     for (layer=0;layer<nlayers;layer++) {
       PetscInt n_added = 0;
       if (n_local_dofs == n_I+n_B) break;
-      PetscCheckFalse(n_local_dofs > n_I+n_B,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error querying layer %D. Out of bound access (%D > %D)",layer,n_local_dofs,n_I+n_B);
+      PetscCheck(n_local_dofs <= n_I+n_B,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error querying layer %D. Out of bound access (%D > %D)",layer,n_local_dofs,n_I+n_B);
       PetscCall(PCBDDCAdjGetNextLayer_Private(local_numbering+n_local_dofs,n_prev_added,touched,xadj,adjncy,&n_added));
       n_prev_added = n_added;
       n_local_dofs += n_added;
@@ -652,7 +652,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
   PetscCall(ISDestroy(&all_subsets));
   PetscCall(ISDestroy(&all_subsets_mult));
   PetscCall(ISGetLocalSize(all_subsets_n,&i));
-  PetscCheckFalse(i != local_stash_size,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid size of new subset! %D != %D",i,local_stash_size);
+  PetscCheck(i == local_stash_size,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid size of new subset! %D != %D",i,local_stash_size);
   PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,1,local_stash_size,NULL,&lstash));
   PetscCall(VecCreateMPI(comm_n,PETSC_DECIDE,global_size,&gstash));
   PetscCall(VecScatterCreate(lstash,NULL,gstash,all_subsets_n,&sstash));
@@ -664,7 +664,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 
     PetscCall(PetscMalloc1(local_size,&all_local_idx_B));
     PetscCall(ISGlobalToLocalMappingApply(sub_schurs->BtoNmap,IS_GTOLM_DROP,local_size,all_local_idx_N+extra,&subset_size,all_local_idx_B));
-    PetscCheckFalse(subset_size != local_size,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in sub_schurs serial (BtoNmap)! %D != %D",subset_size,local_size);
+    PetscCheck(subset_size == local_size,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in sub_schurs serial (BtoNmap)! %D != %D",subset_size,local_size);
     PetscCall(ISCreateGeneral(PETSC_COMM_SELF,local_size,all_local_idx_B,PETSC_OWN_POINTER,&sub_schurs->is_Ej_all));
   }
 

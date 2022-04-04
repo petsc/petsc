@@ -250,7 +250,7 @@ static PetscErrorCode KSPSolve_FCG(KSP ksp)
 
     if (eigs) {
       if (i > 0) {
-        PetscCheckFalse(ksp->max_it != stored_max_it,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Can not change maxit AND calculate eigenvalues");
+        PetscCheck(ksp->max_it == stored_max_it,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Can not change maxit AND calculate eigenvalues");
         e[i] = PetscSqrtReal(PetscAbsScalar(beta/betaold))/alphaold;
         d[i] = PetscSqrtReal(PetscAbsScalar(beta/betaold))*e[i] + 1.0/alpha;
       } else {
@@ -393,7 +393,7 @@ PetscErrorCode KSPFCGSetNprealloc(KSP ksp,PetscInt nprealloc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidLogicalCollectiveInt(ksp,nprealloc,2);
-  PetscCheckFalse(nprealloc > fcg->mmax+1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Cannot preallocate more than m_max+1 vectors");
+  PetscCheck(nprealloc <= fcg->mmax+1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Cannot preallocate more than m_max+1 vectors");
   fcg->nprealloc = nprealloc;
   PetscFunctionReturn(0);
 }

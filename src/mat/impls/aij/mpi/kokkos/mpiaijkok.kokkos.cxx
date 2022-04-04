@@ -30,13 +30,13 @@ PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJKokkos(Mat mat,PetscInt d_nz,cons
   if (d_nnz) {
     PetscInt i;
     for (i=0; i<mat->rmap->n; i++) {
-      PetscCheckFalse(d_nnz[i] < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"d_nnz cannot be less than 0: local row %" PetscInt_FMT " value %" PetscInt_FMT,i,d_nnz[i]);
+      PetscCheck(d_nnz[i] >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"d_nnz cannot be less than 0: local row %" PetscInt_FMT " value %" PetscInt_FMT,i,d_nnz[i]);
     }
   }
   if (o_nnz) {
     PetscInt i;
     for (i=0; i<mat->rmap->n; i++) {
-      PetscCheckFalse(o_nnz[i] < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"o_nnz cannot be less than 0: local row %" PetscInt_FMT " value %" PetscInt_FMT,i,o_nnz[i]);
+      PetscCheck(o_nnz[i] >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"o_nnz cannot be less than 0: local row %" PetscInt_FMT " value %" PetscInt_FMT,i,o_nnz[i]);
     }
   }
 #endif
@@ -78,7 +78,7 @@ PetscErrorCode MatMult_MPIAIJKokkos(Mat mat,Vec xx,Vec yy)
 
   PetscFunctionBegin;
   PetscCall(VecGetLocalSize(xx,&nt));
-  PetscCheckFalse(nt != mat->cmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible partition of mat (%" PetscInt_FMT ") and xx (%" PetscInt_FMT ")",mat->cmap->n,nt);
+  PetscCheck(nt == mat->cmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible partition of mat (%" PetscInt_FMT ") and xx (%" PetscInt_FMT ")",mat->cmap->n,nt);
   PetscCall(VecScatterBegin(mpiaij->Mvctx,xx,mpiaij->lvec,INSERT_VALUES,SCATTER_FORWARD));
   PetscCall((*mpiaij->A->ops->mult)(mpiaij->A,xx,yy));
   PetscCall(VecScatterEnd(mpiaij->Mvctx,xx,mpiaij->lvec,INSERT_VALUES,SCATTER_FORWARD));
@@ -93,7 +93,7 @@ PetscErrorCode MatMultAdd_MPIAIJKokkos(Mat mat,Vec xx,Vec yy,Vec zz)
 
   PetscFunctionBegin;
   PetscCall(VecGetLocalSize(xx,&nt));
-  PetscCheckFalse(nt != mat->cmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible partition of mat (%" PetscInt_FMT ") and xx (%" PetscInt_FMT ")",mat->cmap->n,nt);
+  PetscCheck(nt == mat->cmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible partition of mat (%" PetscInt_FMT ") and xx (%" PetscInt_FMT ")",mat->cmap->n,nt);
   PetscCall(VecScatterBegin(mpiaij->Mvctx,xx,mpiaij->lvec,INSERT_VALUES,SCATTER_FORWARD));
   PetscCall((*mpiaij->A->ops->multadd)(mpiaij->A,xx,yy,zz));
   PetscCall(VecScatterEnd(mpiaij->Mvctx,xx,mpiaij->lvec,INSERT_VALUES,SCATTER_FORWARD));
@@ -108,7 +108,7 @@ PetscErrorCode MatMultTranspose_MPIAIJKokkos(Mat mat,Vec xx,Vec yy)
 
   PetscFunctionBegin;
   PetscCall(VecGetLocalSize(xx,&nt));
-  PetscCheckFalse(nt != mat->rmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible partition of mat (%" PetscInt_FMT ") and xx (%" PetscInt_FMT ")",mat->rmap->n,nt);
+  PetscCheck(nt == mat->rmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible partition of mat (%" PetscInt_FMT ") and xx (%" PetscInt_FMT ")",mat->rmap->n,nt);
   PetscCall((*mpiaij->B->ops->multtranspose)(mpiaij->B,xx,mpiaij->lvec));
   PetscCall((*mpiaij->A->ops->multtranspose)(mpiaij->A,xx,yy));
   PetscCall(VecScatterBegin(mpiaij->Mvctx,mpiaij->lvec,yy,ADD_VALUES,SCATTER_REVERSE));
@@ -244,9 +244,9 @@ static PetscErrorCode MatSetMPIAIJKokkosWithSplitSeqAIJKokkosMatrices(Mat mat,Ma
   PetscCall(MatGetLocalSize(B,&Bm,&Bn));
 
   PetscCheckFalse(m != Am || m != Bm,PETSC_COMM_SELF,PETSC_ERR_PLIB,"local number of rows do not match");
-  PetscCheckFalse(n != An,PETSC_COMM_SELF,PETSC_ERR_PLIB,"local number of columns do not match");
-  PetscCheckFalse(N != Bn,PETSC_COMM_SELF,PETSC_ERR_PLIB,"global number of columns do not match");
-  PetscCheckFalse(mpiaij->A || mpiaij->B,PETSC_COMM_SELF,PETSC_ERR_PLIB,"A, B of the MPIAIJ matrix are not empty");
+  PetscCheck(n == An,PETSC_COMM_SELF,PETSC_ERR_PLIB,"local number of columns do not match");
+  PetscCheck(N == Bn,PETSC_COMM_SELF,PETSC_ERR_PLIB,"global number of columns do not match");
+  PetscCheck(!mpiaij->A && !mpiaij->B,PETSC_COMM_SELF,PETSC_ERR_PLIB,"A, B of the MPIAIJ matrix are not empty");
   mpiaij->A = A;
   mpiaij->B = B;
 
@@ -523,7 +523,7 @@ static PetscErrorCode MatSeqAIJKokkosReduce(Mat A,MatReuse reuse,PetscBool local
     PetscCall(PetscSFGetLeafRanks(ownerSF,&niranks,&iranks,&ioffset,&rows)); /* recv info: iranks[] will send rows to me */
     PetscCall(PetscSFGetRootRanks(ownerSF,&nranks,&ranks,&roffset,NULL/*rmine*/,NULL/*rremote*/)); /* send info */
     PetscCall(PetscSFGetGraph(ownerSF,&nroots,&nleaves,NULL,NULL));
-    PetscCheckFalse(nleaves != Am,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ownerSF's nleaves(%" PetscInt_FMT ") != row size of A(%" PetscInt_FMT ")",nleaves,Am);
+    PetscCheck(nleaves == Am,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ownerSF's nleaves(%" PetscInt_FMT ") != row size of A(%" PetscInt_FMT ")",nleaves,Am);
     Cm    = nroots;
     nrows = ioffset[niranks]; /* # of rows to be received. Might receive same row (each is partial) from different senders */
 
@@ -853,7 +853,7 @@ static PetscErrorCode MatSeqAIJCompactOutExtraColumns_SeqAIJKokkos(Mat C,MatColI
   /* Build l2g -- the local to global mapping of C's cols */
   PetscCall(ISLocalToGlobalMappingGetIndices(l2gmap,&garray));
   PetscCall(ISLocalToGlobalMappingGetSize(l2gmap,&sz));
-  PetscCheckFalse(C->cmap->n != sz,PETSC_COMM_SELF,PETSC_ERR_PLIB,"matrix column size(%" PetscInt_FMT ") != l2g mapping size(%" PetscInt_FMT ")", C->cmap->n,sz);
+  PetscCheck(C->cmap->n == sz,PETSC_COMM_SELF,PETSC_ERR_PLIB,"matrix column size(%" PetscInt_FMT ") != l2g mapping size(%" PetscInt_FMT ")", C->cmap->n,sz);
 
   ConstMatColIdxKokkosViewHost tmp(garray,sz);
   l2g = MatColIdxKokkosView("l2g",sz);
@@ -1021,7 +1021,7 @@ PetscErrorCode MatProductNumeric_MPIAIJKokkos(Mat C)
   if (ptype == MATPRODUCT_AB) {
     ab   = mmdata->mmAB;
     /* C1 = Ad * B_local */
-    PetscCheckFalse(!ab->C1->ops->productnumeric || !ab->C2->ops->productnumeric,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing numeric op for MATPRODUCT_AB");
+    PetscCheck(ab->C1->ops->productnumeric && ab->C2->ops->productnumeric,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing numeric op for MATPRODUCT_AB");
     PetscCall(MatMPIAIJGetLocalMatMerge(B,MAT_REUSE_MATRIX,NULL/*glob*/,&ab->B_local));
     PetscCheck(ab->C1->product->B == ab->B_local,PETSC_COMM_SELF,PETSC_ERR_PLIB,"In MATPRODUCT_AB, internal mat product matrix C1->B has unexpectedly changed");
     if (ab->C1->product->A != Ad) PetscCall(MatProductReplaceMats(Ad,NULL,NULL,ab->C1));
@@ -1029,7 +1029,7 @@ PetscErrorCode MatProductNumeric_MPIAIJKokkos(Mat C)
     PetscCall(MatSeqAIJKokkosBcast(ab->B_local,MAT_REUSE_MATRIX,0/*N*/,MatColIdxKokkosView()/*l2g*/,NULL/*ownerSF*/,ab->sf,
                                  ab->abuf,ab->rows,ab->rowoffset,ab->B_other));
     /* C2 = Ao * B_other */
-    PetscCheckFalse(ab->C2->product->B != ab->B_other,PETSC_COMM_SELF,PETSC_ERR_PLIB,"In MATPRODUCT_AB, internal mat product matrix C2->B has unexpectedly changed");
+    PetscCheck(ab->C2->product->B == ab->B_other,PETSC_COMM_SELF,PETSC_ERR_PLIB,"In MATPRODUCT_AB, internal mat product matrix C2->B has unexpectedly changed");
     if (ab->C1->product->A != Ao) PetscCall(MatProductReplaceMats(Ao,NULL,NULL,ab->C2));
     PetscCall((*ab->C2->ops->productnumeric)(ab->C2));
     /* C = C1_global + C2_global */
@@ -1037,15 +1037,15 @@ PetscErrorCode MatProductNumeric_MPIAIJKokkos(Mat C)
     mm = static_cast<MatMatStruct*>(ab);
   } else if (ptype == MATPRODUCT_AtB) {
     atb  = mmdata->mmAtB;
-    PetscCheckFalse(!atb->C1->ops->productnumeric || !atb->C2->ops->productnumeric,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing numeric op for MATPRODUCT_AtB");
+    PetscCheck(atb->C1->ops->productnumeric && atb->C2->ops->productnumeric,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing numeric op for MATPRODUCT_AtB");
     /* C1 = Ad^t * B_local */
     PetscCall(MatMPIAIJGetLocalMatMerge(B,MAT_REUSE_MATRIX,NULL/*glob*/,&atb->B_local));
-    PetscCheckFalse(atb->C1->product->B != atb->B_local,PETSC_COMM_SELF,PETSC_ERR_PLIB,"In MATPRODUCT_AtB, internal mat product matrix C1->B has unexpectedly changed");
+    PetscCheck(atb->C1->product->B == atb->B_local,PETSC_COMM_SELF,PETSC_ERR_PLIB,"In MATPRODUCT_AtB, internal mat product matrix C1->B has unexpectedly changed");
     if (atb->C1->product->A != Ad) PetscCall(MatProductReplaceMats(Ad,NULL,NULL,atb->C1));
     PetscCall((*atb->C1->ops->productnumeric)(atb->C1));
 
     /* C2 = Ao^t * B_local */
-    PetscCheckFalse(atb->C2->product->B != atb->B_local,PETSC_COMM_SELF,PETSC_ERR_PLIB,"In MATPRODUCT_AtB, internal mat product matrix C2->B has unexpectedly changed");
+    PetscCheck(atb->C2->product->B == atb->B_local,PETSC_COMM_SELF,PETSC_ERR_PLIB,"In MATPRODUCT_AtB, internal mat product matrix C2->B has unexpectedly changed");
     if (atb->C2->product->A != Ao) PetscCall(MatProductReplaceMats(Ao,NULL,NULL,atb->C2));
     PetscCall((*atb->C2->ops->productnumeric)(atb->C2));
     /* Form C2_global */
@@ -1059,7 +1059,7 @@ PetscErrorCode MatProductNumeric_MPIAIJKokkos(Mat C)
     PetscCall(MatMPIAIJGetLocalMatMerge(B,MAT_REUSE_MATRIX,NULL/*glob*/,&ab->B_local));
 
     /* ab->C1 = Ad * B_local */
-    PetscCheckFalse(ab->C1->product->B != ab->B_local,PETSC_COMM_SELF,PETSC_ERR_PLIB,"In MATPRODUCT_PtAP, internal mat product matrix ab->C1->B has unexpectedly changed");
+    PetscCheck(ab->C1->product->B == ab->B_local,PETSC_COMM_SELF,PETSC_ERR_PLIB,"In MATPRODUCT_PtAP, internal mat product matrix ab->C1->B has unexpectedly changed");
     if (ab->C1->product->A != Ad) PetscCall(MatProductReplaceMats(Ad,NULL,NULL,ab->C1));
     PetscCall((*ab->C1->ops->productnumeric)(ab->C1));
     PetscCall(MatSeqAIJKokkosBcast(ab->B_local,MAT_REUSE_MATRIX,0/*N*/,MatColIdxKokkosView()/*l2g*/,NULL/*ownerSF*/,ab->sf,
@@ -1071,7 +1071,7 @@ PetscErrorCode MatProductNumeric_MPIAIJKokkos(Mat C)
 
     /* atb->C1 = Bd^t * ab->C_petsc */
     atb  = mmdata->mmAtB;
-    PetscCheckFalse(atb->C1->product->B != ab->C_petsc,PETSC_COMM_SELF,PETSC_ERR_PLIB,"In MATPRODUCT_PtAP, internal mat product matrix atb->C1->B has unexpectedly changed");
+    PetscCheck(atb->C1->product->B == ab->C_petsc,PETSC_COMM_SELF,PETSC_ERR_PLIB,"In MATPRODUCT_PtAP, internal mat product matrix atb->C1->B has unexpectedly changed");
     if (atb->C1->product->A != Bd) PetscCall(MatProductReplaceMats(Bd,NULL,NULL,atb->C1));
     PetscCall((*atb->C1->ops->productnumeric)(atb->C1));
     /* atb->C2 = Bo^t * ab->C_petsc */
@@ -1495,8 +1495,8 @@ PetscErrorCode MatKokkosGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B)
       aijkokA = static_cast<Mat_SeqAIJKokkos*>(aij->A->spptr);
       aijkokB = static_cast<Mat_SeqAIJKokkos*>(aij->B->spptr);
       jaca = (Mat_SeqAIJ*)aij->A->data;
-      PetscCheckFalse(aij->B->cmap->n && !aij->garray,comm,PETSC_ERR_PLIB,"MPIAIJ Matrix was assembled but is missing garray");
-      PetscCheckFalse(aij->B->rmap->n != aij->A->rmap->n,comm,PETSC_ERR_SUP,"Only support aij->B->rmap->n == aij->A->rmap->n");
+      PetscCheck(!aij->B->cmap->n || aij->garray,comm,PETSC_ERR_PLIB,"MPIAIJ Matrix was assembled but is missing garray");
+      PetscCheck(aij->B->rmap->n == aij->A->rmap->n,comm,PETSC_ERR_SUP,"Only support aij->B->rmap->n == aij->A->rmap->n");
       aij->donotstash = PETSC_TRUE;
       aij->A->nooffprocentries = aij->B->nooffprocentries = A->nooffprocentries = PETSC_TRUE;
       jaca->nonew = jacb->nonew = PETSC_TRUE; // no more disassembly

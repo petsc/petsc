@@ -81,11 +81,11 @@ int main(int argc,char **args)
   PetscCall(MatAXPY(Aij,-1.0,B,DIFFERENT_NONZERO_PATTERN));
   PetscCall(MatNorm(Aij,NORM_FROBENIUS,&Aijnorm));
   PetscCall(MatNorm(B,NORM_FROBENIUS,&Bnorm));
-  PetscCheckFalse(Aijnorm/Bnorm > 100.0*PETSC_MACHINE_EPSILON,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Altered matrices do not match, norm of difference %g",(double)(Aijnorm/Bnorm));
+  PetscCheck(Aijnorm/Bnorm <= 100.0*PETSC_MACHINE_EPSILON,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Altered matrices do not match, norm of difference %g",(double)(Aijnorm/Bnorm));
   PetscCall(VecAXPY(Aijdiag,-1.0,Adiag));
   PetscCall(VecNorm(Adiag,NORM_2,&dnorm));
   PetscCall(VecNorm(Aijdiag,NORM_2,&Aijdiagnorm));
-  PetscCheckFalse(Aijdiagnorm/dnorm > 100.0*PETSC_MACHINE_EPSILON,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Altered matrices diagonals do not match, norm of difference %g",(double)(Aijdiagnorm/dnorm));
+  PetscCheck(Aijdiagnorm/dnorm <= 100.0*PETSC_MACHINE_EPSILON,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Altered matrices diagonals do not match, norm of difference %g",(double)(Aijdiagnorm/dnorm));
   PetscCall(MatDestroy(&A));
   PetscCall(MatDestroy(&Aij));
   PetscCall(VecDestroy(&Adiag));

@@ -39,7 +39,7 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
     *flg = PETSC_FALSE;
   }
 #else
-  PetscCheckFalse(m == X_OK,PETSC_COMM_SELF,PETSC_ERR_SUP, "Unable to check execute permission for file %s", fname);
+  PetscCheck(m != X_OK,PETSC_COMM_SELF,PETSC_ERR_SUP, "Unable to check execute permission for file %s", fname);
   if (!_access(fname, m)) *flg = PETSC_TRUE;
 #endif
   PetscFunctionReturn(0);
@@ -62,7 +62,7 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
   PetscFunctionBegin;
   /* Get the number of supplementary group IDs */
 #if !defined(PETSC_MISSING_GETGROUPS)
-  numGroups = getgroups(0, gid); PetscCheckFalse(numGroups < 0,PETSC_COMM_SELF,PETSC_ERR_SYS, "Unable to count supplementary group IDs");
+  numGroups = getgroups(0, gid); PetscCheck(numGroups >= 0,PETSC_COMM_SELF,PETSC_ERR_SYS, "Unable to count supplementary group IDs");
   PetscCall(PetscMalloc1(numGroups+1, &gid));
 #else
   numGroups = 0;
@@ -74,7 +74,7 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
 
   /* Get supplementary group IDs */
 #if !defined(PETSC_MISSING_GETGROUPS)
-  err = getgroups(numGroups, gid+1); PetscCheckFalse(err < 0,PETSC_COMM_SELF,PETSC_ERR_SYS, "Unable to obtain supplementary group IDs");
+  err = getgroups(numGroups, gid+1); PetscCheck(err >= 0,PETSC_COMM_SELF,PETSC_ERR_SYS, "Unable to obtain supplementary group IDs");
 #endif
 
   /* Test for accessibility */
@@ -123,7 +123,7 @@ static PetscErrorCode PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t
 #endif
   if (ierr) {
 #if defined(EOVERFLOW)
-    PetscCheckFalse(errno == EOVERFLOW,PETSC_COMM_SELF,PETSC_ERR_SYS,"EOVERFLOW in stat(), configure PETSc --with-large-file-io=1 to support files larger than 2GiB");
+    PetscCheck(errno != EOVERFLOW,PETSC_COMM_SELF,PETSC_ERR_SYS,"EOVERFLOW in stat(), configure PETSc --with-large-file-io=1 to support files larger than 2GiB");
 #endif
     PetscCall(PetscInfo(NULL,"System call stat() failed on file %s\n",fname));
     *exists = PETSC_FALSE;

@@ -85,7 +85,7 @@ static PetscErrorCode TSAdaptChoose_DSP(TSAdapt adapt,TS ts,PetscReal h,PetscInt
     DM  dm;
     Vec Y;
 
-    PetscCheckFalse(adapt->candidates.n < 1,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONGSTATE,"No candidate has been registered");
+    PetscCheck(adapt->candidates.n >= 1,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONGSTATE,"No candidate has been registered");
     PetscCheck(adapt->candidates.inuse_set,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONGSTATE,"The current in-use scheme is not among the %D candidates",adapt->candidates.n);
     order = adapt->candidates.order[0];
     PetscCall(TSGetDM(ts,&dm));
@@ -279,15 +279,15 @@ static PetscErrorCode TSAdaptSetFromOptions_DSP(PetscOptionItems *PetscOptionsOb
   if (set) PetscCall(TSAdaptDSPSetFilter(adapt,names[index]));
 
   PetscCall(PetscOptionsRealArray("-ts_adapt_dsp_pid","PID parameters <kkI,kkP,kkD>","TSAdaptDSPSetPID",pid,(n=3,&n),&set));
-  PetscCheckFalse(set && !n,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONG,"Must provide at least one value for PID parameters");
+  PetscCheck(!set || n,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONG,"Must provide at least one value for PID parameters");
   if (set) PetscCall(TSAdaptDSPSetPID(adapt,pid[0],pid[1],pid[2]));
 
   PetscCall(PetscOptionsRealArray("-ts_adapt_dsp_kbeta","Filter parameters","",dsp->kBeta,(n=3,&n),&set));
-  PetscCheckFalse(set && !n,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONG,"Must provide at least one value for parameter kbeta");
+  PetscCheck(!set || n,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONG,"Must provide at least one value for parameter kbeta");
   if (set) for (i=n; i<3; i++) dsp->kBeta[i] = 0;
 
   PetscCall(PetscOptionsRealArray("-ts_adapt_dsp_alpha","Filter parameters","",dsp->Alpha,(n=2,&n),&set));
-  PetscCheckFalse(set && !n,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONG,"Must provide at least one value for parameter alpha");
+  PetscCheck(!set || n,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONG,"Must provide at least one value for parameter alpha");
   if (set) for (i=n; i<2; i++) dsp->Alpha[i] = 0;
 
   PetscCall(PetscOptionsTail());

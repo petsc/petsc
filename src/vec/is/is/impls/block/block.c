@@ -335,7 +335,7 @@ static PetscErrorCode ISOnComm_Block(IS is,MPI_Comm comm,PetscCopyMode mode,IS *
   PetscInt       bs, n;
 
   PetscFunctionBegin;
-  PetscCheckFalse(mode == PETSC_OWN_POINTER,comm,PETSC_ERR_ARG_WRONG,"Cannot use PETSC_OWN_POINTER");
+  PetscCheck(mode != PETSC_OWN_POINTER,comm,PETSC_ERR_ARG_WRONG,"Cannot use PETSC_OWN_POINTER");
   PetscCall(PetscLayoutGetBlockSize(is->map, &bs));
   PetscCall(PetscLayoutGetLocalSize(is->map, &n));
   PetscCall(ISCreateBlock(comm,bs,n/bs,sub->idx,mode,newis));
@@ -442,8 +442,8 @@ static PetscErrorCode  ISBlockSetIndices_Block(IS is,PetscInt bs,PetscInt n,cons
   PetscLayout    map;
 
   PetscFunctionBegin;
-  PetscCheckFalse(bs < 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"block size < 1");
-  PetscCheckFalse(n < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"length < 0");
+  PetscCheck(bs >= 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"block size < 1");
+  PetscCheck(n >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"length < 0");
   if (n) PetscValidIntPointer(idx,4);
 
   PetscCall(PetscLayoutCreateFromSizes(PetscObjectComm((PetscObject)is),n*bs,is->map->N,bs,&map));
@@ -514,8 +514,8 @@ PetscErrorCode  ISCreateBlock(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscIn
 {
   PetscFunctionBegin;
   PetscValidPointer(is,6);
-  PetscCheckFalse(bs < 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"block size < 1");
-  PetscCheckFalse(n < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"length < 0");
+  PetscCheck(bs >= 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"block size < 1");
+  PetscCheck(n >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"length < 0");
   if (n) PetscValidIntPointer(idx,4);
 
   PetscCall(ISCreate(comm,is));

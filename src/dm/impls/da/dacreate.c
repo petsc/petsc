@@ -10,9 +10,9 @@ PetscErrorCode  DMSetFromOptions_DA(PetscOptionItems *PetscOptionsObject,DM da)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,2);
 
-  PetscCheckFalse(dd->M < 0,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Dimension must be non-negative, call DMSetFromOptions() if you want to change the value at runtime");
-  PetscCheckFalse(dd->N < 0,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Dimension must be non-negative, call DMSetFromOptions() if you want to change the value at runtime");
-  PetscCheckFalse(dd->P < 0,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Dimension must be non-negative, call DMSetFromOptions() if you want to change the value at runtime");
+  PetscCheck(dd->M >= 0,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Dimension must be non-negative, call DMSetFromOptions() if you want to change the value at runtime");
+  PetscCheck(dd->N >= 0,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Dimension must be non-negative, call DMSetFromOptions() if you want to change the value at runtime");
+  PetscCheck(dd->P >= 0,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Dimension must be non-negative, call DMSetFromOptions() if you want to change the value at runtime");
 
   PetscCall(PetscOptionsHead(PetscOptionsObject,"DMDA Options"));
   PetscCall(PetscOptionsBoundedInt("-da_grid_x","Number of grid points in x direction","DMDASetSizes",dd->M,&dd->M,NULL,1));
@@ -214,7 +214,7 @@ PetscErrorCode DMCreateSubDM_DA(DM dm, PetscInt numFields, const PetscInt fields
         indices[cnt++] = dof*i + fields[j];
       }
     }
-    PetscCheckFalse(cnt != da->Nlocal*numFields/dof,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Count %D does not equal expected value %D", cnt, da->Nlocal*numFields/dof);
+    PetscCheck(cnt == da->Nlocal*numFields/dof,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Count %D does not equal expected value %D", cnt, da->Nlocal*numFields/dof);
     PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject) dm), cnt, indices, PETSC_OWN_POINTER, is));
   }
   PetscFunctionReturn(0);

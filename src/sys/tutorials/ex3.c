@@ -38,7 +38,7 @@ int main(int argc,char **argv)
   */
   PetscCall(PetscLogEventRegister("User event",PETSC_VIEWER_CLASSID,&USER_EVENT));
   PetscCall(PetscLogEventGetId("User event",&check_USER_EVENT));
-  PetscCheckFalse(USER_EVENT != check_USER_EVENT,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Event Ids do not match");
+  PetscCheck(USER_EVENT == check_USER_EVENT,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Event Ids do not match");
 
   PetscCall(PetscLogEventBegin(USER_EVENT,0,0,0,0));
   icount = 0;

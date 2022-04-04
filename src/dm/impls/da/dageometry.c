@@ -24,7 +24,7 @@ PetscErrorCode DMDAConvertToCell(DM dm, MatStencil s, PetscInt *cell)
 
   PetscFunctionBegin;
   *cell = -1;
-  PetscCheckFalse((s.i < da->Xs/da->w) || (s.i >= da->Xe/da->w),PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Stencil i %D should be in [%D, %D)", s.i, da->Xs/da->w, da->Xe/da->w);
+  PetscCheck(!(s.i < da->Xs/da->w) && !(s.i >= da->Xe/da->w),PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Stencil i %D should be in [%D, %D)", s.i, da->Xs/da->w, da->Xe/da->w);
   PetscCheckFalse((dim > 1) && ((s.j < da->Ys) || (s.j >= da->Ye)),PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Stencil j %D should be in [%D, %D)", s.j, da->Ys, da->Ye);
   PetscCheckFalse((dim > 2) && ((s.k < da->Zs) || (s.k >= da->Ze)),PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Stencil k %D should be in [%D, %D)", s.k, da->Zs, da->Ze);
   *cell = (kl*my + jl)*mx + il;

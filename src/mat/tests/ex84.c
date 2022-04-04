@@ -87,7 +87,7 @@ int main(int argc, char **argv)
   PetscCall(MatDestroy(&data_mat));
 
   for (i=0; i<NNORMS; i++) {
-    PetscCheckFalse(PetscAbs(norms0[i] - norms1[i]) > PETSC_SMALL,PETSC_COMM_SELF, PETSC_ERR_PLIB, "norm0[%" PetscInt_FMT "] = %g != %g = norms1[%" PetscInt_FMT "]", i, (double)norms0[i], (double)norms1[i], i);
+    PetscCheck(PetscAbs(norms0[i] - norms1[i]) <= PETSC_SMALL,PETSC_COMM_SELF, PETSC_ERR_PLIB, "norm0[%" PetscInt_FMT "] = %g != %g = norms1[%" PetscInt_FMT "]", i, (double)norms0[i], (double)norms1[i], i);
   }
 
   PetscCall(PetscFinalize());

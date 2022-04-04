@@ -23,7 +23,7 @@ int main(int argc,char **args)
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
-  PetscCheckFalse(2 != size,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"Relevant with 2 processes only");
+  PetscCheck(2 == size,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"Relevant with 2 processes only");
   PetscCall(MatCreate(PETSC_COMM_WORLD,&C));
 
 #ifdef SET_2nd_PROC_TO_HAVE_NO_LOCAL_LINES

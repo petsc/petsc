@@ -186,7 +186,7 @@ int main(int argc, char **argv)
               PetscInt nDof;
 
               PetscCall(PetscSectionGetDof(sec,p,&nDof));
-              PetscCheckFalse(nDof % dim,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Coordinate section point %D has %D dofs != 0 mod %D",p,nDof,dim);
+              PetscCheck(nDof % dim == 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Coordinate section point %D has %D dofs != 0 mod %D",p,nDof,dim);
               PetscCall(PetscSectionSetDof(newSec,p,(nDof/dim)*dimC));
               PetscCall(PetscSectionSetFieldDof(newSec,p,0,(nDof/dim)*dimC));
             }

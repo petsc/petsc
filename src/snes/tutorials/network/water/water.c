@@ -111,7 +111,7 @@ int main(int argc,char ** argv)
   PetscCall(SNESSolve(snes,NULL,X));
   PetscCall(SNESGetConvergedReason(snes,&reason));
 
-  PetscCheckFalse(reason < 0,PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"No solution found for the water network");
+  PetscCheck(reason >= 0,PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"No solution found for the water network");
   /* PetscCall(VecView(X,PETSC_VIEWER_STDOUT_WORLD)); */
 
   PetscCall(VecDestroy(&X));

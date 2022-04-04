@@ -42,7 +42,7 @@ int main(int argc,char **argv)
   /* full CUDA AXPY */
   PetscCall(MatAXPY(B,-1.0,AC,SAME_NONZERO_PATTERN));
   PetscCall(MatNorm(B,NORM_INFINITY,&r));
-  PetscCheckFalse(r != 0.0,PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"Error MatDuplicate + MatCopy + MatAXPY %g",(double)r);
+  PetscCheck(r == 0.0,PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"Error MatDuplicate + MatCopy + MatAXPY %g",(double)r);
 
   /* test Copy */
   PetscCall(MatCopy(AC,B,SAME_NONZERO_PATTERN));
@@ -50,7 +50,7 @@ int main(int argc,char **argv)
   /* call MatAXPY_Basic since B is CUDA, A is CPU,  */
   PetscCall(MatAXPY(B,-1.0,A,SAME_NONZERO_PATTERN));
   PetscCall(MatNorm(B,NORM_INFINITY,&r));
-  PetscCheckFalse(r != 0.0,PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"Error MatDuplicate + MatCopy + MatAXPY_Basic %g",(double)r);
+  PetscCheck(r == 0.0,PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"Error MatDuplicate + MatCopy + MatAXPY_Basic %g",(double)r);
 
   if (m == n) {
     Mat B1,B2;
@@ -64,14 +64,14 @@ int main(int argc,char **argv)
 
     PetscCall(MatAXPY(B2,-1.0,B1,SAME_NONZERO_PATTERN));
     PetscCall(MatNorm(B2,NORM_INFINITY,&r));
-    PetscCheckFalse(r > tol,PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"Error MatPtAP %g",(double)r);
+    PetscCheck(r <= tol,PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"Error MatPtAP %g",(double)r);
 
     /* test reuse */
     PetscCall(MatPtAP(B,AC,MAT_REUSE_MATRIX,PETSC_DEFAULT,&B1));
     PetscCall(MatPtAP(B,A,MAT_REUSE_MATRIX,PETSC_DEFAULT,&B2));
     PetscCall(MatAXPY(B2,-1.0,B1,SAME_NONZERO_PATTERN));
     PetscCall(MatNorm(B2,NORM_INFINITY,&r));
-    PetscCheckFalse(r > tol,PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"Error MatPtAP %g",(double)r);
+    PetscCheck(r <= tol,PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"Error MatPtAP %g",(double)r);
 
     PetscCall(MatDestroy(&B1));
     PetscCall(MatDestroy(&B2));

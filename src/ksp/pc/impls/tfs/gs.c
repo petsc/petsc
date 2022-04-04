@@ -405,7 +405,7 @@ static PetscErrorCode gsi_via_bit_mask(PCTFS_gs_id *gs)
     for (i=0, t1=0; i<gs->num_local; i++, reduce++) {
       if ((PCTFS_ivec_binary_search(**reduce,gs->pw_elm_list,gs->len_pw_list)>=0) || PCTFS_ivec_binary_search(**reduce,gs->tree_map_in,gs->tree_map_sz)>=0) {
         t1++;
-        PetscCheckFalse(gs->num_local_reduce[i]<=0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"nobody in list?");
+        PetscCheck(gs->num_local_reduce[i]>0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"nobody in list?");
         gs->num_local_reduce[i] *= -1;
       }
       **reduce=map[**reduce];
@@ -427,7 +427,7 @@ static PetscErrorCode gsi_via_bit_mask(PCTFS_gs_id *gs)
       gs->num_gop_local_reduce = gs->num_local_reduce;
 
       for (i=0; i<t1; i++) {
-        PetscCheckFalse(gs->num_gop_local_reduce[i]>=0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"they aren't negative?");
+        PetscCheck(gs->num_gop_local_reduce[i]<0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"they aren't negative?");
         gs->num_gop_local_reduce[i] *= -1;
         gs->local_reduce++;
         gs->num_local_reduce++;
@@ -522,7 +522,7 @@ static PetscErrorCode get_ngh_buf(PCTFS_gs_id *gs)
   buf_size = PetscMin(msg_buf,i);
 
   /* can we do it? */
-  PetscCheckFalse(p_mask_size>buf_size,PETSC_COMM_SELF,PETSC_ERR_PLIB,"get_ngh_buf() :: buf<pms :: %d>%d",p_mask_size,buf_size);
+  PetscCheck(p_mask_size<=buf_size,PETSC_COMM_SELF,PETSC_ERR_PLIB,"get_ngh_buf() :: buf<pms :: %d>%d",p_mask_size,buf_size);
 
   /* get PCTFS_giop buf space ... make *only* one malloc */
   buf1 = (PetscInt*) malloc(buf_size<<1);

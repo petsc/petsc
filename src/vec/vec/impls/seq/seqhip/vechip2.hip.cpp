@@ -534,7 +534,7 @@ PetscErrorCode VecMDot_SeqHIP(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z
   PetscFunctionBegin;
   PetscCall(PetscHIPBLASGetHandle(&hipblasv2handle));
   PetscCall(PetscBLASIntCast(xin->map->n,&bn));
-  PetscCheckFalse(nv <= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Number of vectors provided to VecMDot_SeqHIP not positive.");
+  PetscCheck(nv > 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Number of vectors provided to VecMDot_SeqHIP not positive.");
   /* Handle the case of local size zero first */
   if (!xin->map->n) {
     for (i=0; i<nv; ++i) z[i] = 0;

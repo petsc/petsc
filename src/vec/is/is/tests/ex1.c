@@ -26,7 +26,7 @@ int main(int argc,char **argv)
   */
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF,0,&n,PETSC_COPY_VALUES,&is));
   PetscCall(ISGetSize(is,&n));
-  PetscCheckFalse(n != 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetSize");
+  PetscCheck(n == 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetSize");
   PetscCall(ISDestroy(&is));
 
   /*
@@ -38,7 +38,7 @@ int main(int argc,char **argv)
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF,n,indices,PETSC_COPY_VALUES,&is));
   PetscCall(ISGetIndices(is,&ii));
   for (i=0; i<n; i++) {
-    PetscCheckFalse(ii[i] != indices[i],PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetIndices");
+    PetscCheck(ii[i] == indices[i],PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetIndices");
   }
   PetscCall(ISRestoreIndices(is,&ii));
 
@@ -50,13 +50,13 @@ int main(int argc,char **argv)
   PetscCheck(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISPermutation");
   PetscCall(ISGetInfo(is,IS_PERMUTATION,IS_LOCAL,compute,&flg));
   PetscCheckFalse(rank == 0 && !flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_PERMUTATION,IS_LOCAL)");
-  PetscCheckFalse(rank && flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_PERMUTATION,IS_LOCAL)");
+  PetscCheck(!rank || !flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_PERMUTATION,IS_LOCAL)");
   PetscCall(ISIdentity(is,&flg));
   PetscCheckFalse(rank == 0 && !flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISIdentity");
-  PetscCheckFalse(rank && flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISIdentity");
+  PetscCheck(!rank || !flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISIdentity");
   PetscCall(ISGetInfo(is,IS_IDENTITY,IS_LOCAL,compute,&flg));
   PetscCheckFalse(rank == 0 && !flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_IDENTITY,IS_LOCAL)");
-  PetscCheckFalse(rank && flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_IDENTITY,IS_LOCAL)");
+  PetscCheck(!rank || !flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_IDENTITY,IS_LOCAL)");
   /* we can override the computed values with ISSetInfo() */
   PetscCall(ISSetInfo(is,IS_PERMUTATION,IS_LOCAL,permanent,PETSC_TRUE));
   PetscCall(ISSetInfo(is,IS_IDENTITY,IS_LOCAL,permanent,PETSC_TRUE));

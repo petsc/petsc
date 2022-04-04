@@ -16,7 +16,7 @@ int main(int argc,char **args)
   comm = PETSC_COMM_WORLD;
   PetscCallMPI(MPI_Comm_size(comm,&NP));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
-  PetscCheckFalse(M < 6,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Matrix has to have more than 6 columns");
+  PetscCheck(M >= 6,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Matrix has to have more than 6 columns");
   /* Hypre matrix */
   PetscCall(MatCreate(comm,&B));
   PetscCall(MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,M,M));
@@ -54,7 +54,7 @@ int main(int argc,char **args)
   PetscCall(MatConvert(B,MATAIJ,MAT_INITIAL_MATRIX,&C));
   PetscCall(MatAXPY(C,-1.,A,SAME_NONZERO_PATTERN));
   PetscCall(MatNorm(C,NORM_INFINITY,&err));
-  PetscCheckFalse(err > PETSC_SMALL,PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"Error MatSetValues %g",err);
+  PetscCheck(err <= PETSC_SMALL,PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"Error MatSetValues %g",err);
   PetscCall(MatDestroy(&C));
 
   /* MatZeroRows */
@@ -66,7 +66,7 @@ int main(int argc,char **args)
   PetscCall(MatConvert(B,MATAIJ,MAT_INITIAL_MATRIX,&C));
   PetscCall(MatAXPY(C,-1.,A,SAME_NONZERO_PATTERN));
   PetscCall(MatNorm(C,NORM_INFINITY,&err));
-  PetscCheckFalse(err > PETSC_SMALL,PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"Error MatZeroRows %g",err);
+  PetscCheck(err <= PETSC_SMALL,PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"Error MatZeroRows %g",err);
   PetscCall(MatDestroy(&C));
   PetscCall(PetscFree(rows));
 
@@ -74,7 +74,7 @@ int main(int argc,char **args)
   PetscCall(MatZeroEntries(B));
   PetscCall(MatConvert(B,MATAIJ,MAT_INITIAL_MATRIX,&C));
   PetscCall(MatNorm(C,NORM_INFINITY,&err));
-  PetscCheckFalse(err > PETSC_SMALL,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error MatZeroEntries %g",err);
+  PetscCheck(err <= PETSC_SMALL,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error MatZeroEntries %g",err);
   PetscCall(MatDestroy(&C));
 
   /* Insert Values */
@@ -113,7 +113,7 @@ int main(int argc,char **args)
     for (i=rstart; i<rend; i++) {
       PetscCall(MatGetRow(A,i,&nzA,&idxA,&vA));
       PetscCall(MatGetRow(B,i,&nzB,&idxB,&vB));
-      PetscCheckFalse(nzA!=nzB,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error MatGetRow %" PetscInt_FMT, nzA-nzB);
+      PetscCheck(nzA==nzB,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error MatGetRow %" PetscInt_FMT, nzA-nzB);
       PetscCall(PetscSortIntWithScalarArray(nzB,(PetscInt*)idxB,(PetscScalar*)vB));
       PetscCall(PetscArraycmp(idxA,idxB,nzA,&flg));
       PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error MatGetRow %" PetscInt_FMT " (indices)",i);
@@ -141,7 +141,7 @@ int main(int argc,char **args)
   PetscCall(MatConvert(B,MATAIJ,MAT_INITIAL_MATRIX,&C));
   PetscCall(MatAXPY(C,-1.,A,SAME_NONZERO_PATTERN));
   PetscCall(MatNorm(C,NORM_INFINITY,&err));
-  PetscCheckFalse(err > PETSC_SMALL,PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"Error MatSetValues with INSERT_VALUES %g",err);
+  PetscCheck(err <= PETSC_SMALL,PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"Error MatSetValues with INSERT_VALUES %g",err);
 
   PetscCall(MatDestroy(&A));
   PetscCall(MatDestroy(&B));

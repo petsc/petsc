@@ -89,7 +89,7 @@ int main(int argc, char **argv)
       slot = (PetscInt64) (x * d);
       bin += mult * slot;
     }
-    PetscCheckFalse(bin >= k,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Generated point in bin %" PetscInt64_FMT ", but only %" PetscInt64_FMT " bins",bin,k);
+    PetscCheck(bin < k,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Generated point in bin %" PetscInt64_FMT ", but only %" PetscInt64_FMT " bins",bin,k);
     X[i] = bin;
   }
 

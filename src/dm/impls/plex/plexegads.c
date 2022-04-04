@@ -40,7 +40,7 @@ PetscErrorCode DMPlexSnapToGeomModel_EGADS_Internal(DM dm, PetscInt p, ego model
   PetscCall(DMGetCoordinateDim(dm, &dE));
   PetscCall(DMGetCoordinatesLocal(dm, &coordinatesLocal));
   PetscCall(EG_getTopology(model, &geom, &oclass, &mtype, NULL, &Nb, &bodies, &senses));
-  PetscCheckFalse(bodyID >= Nb,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Body %D is not in [0, %d)", bodyID, Nb);
+  PetscCheck(bodyID < Nb,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Body %D is not in [0, %d)", bodyID, Nb);
   body = bodies[bodyID];
 
   if (edgeID >= 0)      {PetscCall(EG_objectBodyTopo(body, EDGE, edgeID, &obj)); Np = 1;}
@@ -58,7 +58,7 @@ PetscErrorCode DMPlexSnapToGeomModel_EGADS_Internal(DM dm, PetscInt p, ego model
     for (d = 0; d < dE; ++d) gcoords[d] = mcoords[d];
     PetscFunctionReturn(0);
   }
-  PetscCheckFalse(Nv > 16,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle %D coordinates associated to point %D", Nv, p);
+  PetscCheck(Nv <= 16,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle %D coordinates associated to point %D", Nv, p);
 
   /* Correct EGADSlite 2pi bug when calculating nearest point on Periodic Surfaces */
   PetscCall(EG_getRange(obj, range, &peri));
@@ -82,7 +82,7 @@ PetscErrorCode DMPlexSnapToGeomModel_EGADS_Internal(DM dm, PetscInt p, ego model
     for (v = 0; v < Nv; ++v) params[pm] += paramsV[v*3+pm];
     params[pm] /= Nv;
   }
-  PetscCheckFalse((params[0] < range[0]) || (params[0] > range[1]),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %D had bad interpolation", p);
+  PetscCheck(!(params[0] < range[0]) && !(params[0] > range[1]),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %D had bad interpolation", p);
   PetscCheckFalse(Np > 1 && ((params[1] < range[2]) || (params[1] > range[3])),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %D had bad interpolation", p);
   /* Put coordinates for new vertex in result[] */
   PetscCall(EG_evaluate(obj, params, result));
@@ -409,7 +409,7 @@ static PetscErrorCode DMPlexCreateEGADS_Internal(MPI_Comm comm, ego context, ego
           PetscCall(EG_getBodyTopos(body, loop, FACE, &Nf, &fobjs));
           face = fobjs[0];
           fid  = EG_indexBodyTopo(body, face);
-          PetscCheckFalse(Nf != 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Loop %d has %d faces, instead of 1 (%d)", lid-1, Nf, fid);
+          PetscCheck(Nf == 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Loop %d has %d faces, instead of 1 (%d)", lid-1, Nf, fid);
           PetscCall(EG_getRange(face, range, periodic));
           params[0] = 0.5*(range[0] + range[1]);
           params[1] = 0.5*(range[2] + range[3]);
@@ -446,7 +446,7 @@ static PetscErrorCode DMPlexCreateEGADS_Internal(MPI_Comm comm, ego context, ego
           PetscCall(EG_getTopology(edge, &geom, &oclass, &mtype, NULL, &Nv, &nobjs, &senses));
           if (mtype == DEGENERATE) continue;
           else                     ++Ner;
-          PetscCheckFalse(Nv != 2,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Edge %d has %d vertices != 2", eid, Nv);
+          PetscCheck(Nv == 2,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Edge %d has %d vertices != 2", eid, Nv);
 
           for (v = 0; v < Nv; ++v) {
             ego vertex = nobjs[v];
@@ -471,9 +471,9 @@ static PetscErrorCode DMPlexCreateEGADS_Internal(MPI_Comm comm, ego context, ego
             else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Edge %d does not match its predecessor", eid);
           }
         }
-        PetscCheckFalse(nc != 2*Ner,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of corners %D != %D", nc, 2*Ner);
+        PetscCheck(nc == 2*Ner,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of corners %D != %D", nc, 2*Ner);
         if (Ner == 4) {cone[nc++] = numVertices - newVertices + numEdges + numQuads++;}
-        PetscCheckFalse(nc > maxCorners,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of corners %D > %D max", nc, maxCorners);
+        PetscCheck(nc <= maxCorners,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of corners %D > %D max", nc, maxCorners);
         /* Triangulate the loop */
         switch (Ner) {
           case 2: /* Bi-Segment -> 2 triangles */
@@ -557,7 +557,7 @@ static PetscErrorCode DMPlexCreateEGADS_Internal(MPI_Comm comm, ego context, ego
       EG_free(lobjs);
     }
   }
-  PetscCheckFalse(cOff != numCells,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Count of total cells %D != %D previous count", cOff, numCells);
+  PetscCheck(cOff == numCells,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Count of total cells %D != %D previous count", cOff, numCells);
   PetscCall(DMPlexCreateFromCellListPetsc(PETSC_COMM_WORLD, dim, numCells, numVertices, numCorners, PETSC_TRUE, cells, cdim, coords, &dm));
   PetscCall(PetscFree3(coords, cells, cone));
   PetscCall(PetscInfo(dm, " Total Number of Unique Cells    = %D (%D)\n", numCells, newCells));
@@ -599,7 +599,7 @@ static PetscErrorCode DMPlexCreateEGADS_Internal(MPI_Comm comm, ego context, ego
 
       lid  = EG_indexBodyTopo(body, loop);
       PetscCall(EG_getBodyTopos(body, loop, FACE, &Nf, &fobjs));
-      PetscCheckFalse(Nf > 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Loop %d has %d > 1 faces, which is not supported", lid, Nf);
+      PetscCheck(Nf <= 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Loop %d has %d > 1 faces, which is not supported", lid, Nf);
       fid  = EG_indexBodyTopo(body, fobjs[0]);
       EG_free(fobjs);
       PetscCall(EG_getTopology(loop, &geom, &oclass, &mtype, NULL, &Ne, &objs, &senses));
@@ -627,13 +627,13 @@ static PetscErrorCode DMPlexCreateEGADS_Internal(MPI_Comm comm, ego context, ego
         support[0] = points[0];
         support[1] = points[1];
         PetscCall(DMPlexGetJoin(dm, 2, support, &numEdges, &edges));
-        PetscCheckFalse(numEdges != 1,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Vertices (%D, %D) should only bound 1 edge, not %D", support[0], support[1], numEdges);
+        PetscCheck(numEdges == 1,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Vertices (%D, %D) should only bound 1 edge, not %D", support[0], support[1], numEdges);
         PetscCall(DMLabelSetValue(edgeLabel, edges[0], eid));
         PetscCall(DMPlexRestoreJoin(dm, 2, support, &numEdges, &edges));
         support[0] = points[1];
         support[1] = points[2];
         PetscCall(DMPlexGetJoin(dm, 2, support, &numEdges, &edges));
-        PetscCheckFalse(numEdges != 1,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Vertices (%D, %D) should only bound 1 edge, not %D", support[0], support[1], numEdges);
+        PetscCheck(numEdges == 1,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Vertices (%D, %D) should only bound 1 edge, not %D", support[0], support[1], numEdges);
         PetscCall(DMLabelSetValue(edgeLabel, edges[0], eid));
         PetscCall(DMPlexRestoreJoin(dm, 2, support, &numEdges, &edges));
       }
@@ -893,7 +893,7 @@ static PetscErrorCode DMPlexCreateEGADS(MPI_Comm comm, ego context, ego model, D
 
     PetscCall(EG_getTopology(face, &geom, &oclass, &mtype, NULL, &Nl, &lobjs, &lSenses));
 
-      PetscCheckFalse(Nl > 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Face has %d Loops. Can only handle Faces with 1 Loop. Please use --dm_plex_egads_with_tess = 1 Option", Nl);
+      PetscCheck(Nl <= 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Face has %d Loops. Can only handle Faces with 1 Loop. Please use --dm_plex_egads_with_tess = 1 Option", Nl);
     for (int l = 0; l < Nl; ++l) {
           ego      loop = lobjs[l];
 
@@ -1007,7 +1007,7 @@ static PetscErrorCode DMPlexCreateEGADS(MPI_Comm comm, ego context, ego model, D
     int  lid;
 
     lid  = EG_indexBodyTopo(body, loop);
-      PetscCheckFalse(Nl > 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Loop %d has %d > 1 faces, which is not supported", lid, Nf);
+      PetscCheck(Nl <= 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Loop %d has %d > 1 faces, which is not supported", lid, Nf);
 
     PetscCall(EG_getTopology(loop, &geom, &oclass, &mtype, NULL, &Ne, &eobjs, &eSenses));
     for (int e = 0; e < Ne; ++e) {
@@ -1442,7 +1442,7 @@ PetscErrorCode DMPlexInflateToGeomModel(DM dm)
     PetscCall(DMLabelGetValue(edgeLabel, v, &edgeID));
     PetscCall(DMLabelGetValue(vertexLabel, v, &vertexID));
 
-    PetscCheckFalse(bodyID >= Nb,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Body %D is not in [0, %d)", bodyID, Nb);
+    PetscCheck(bodyID < Nb,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Body %D is not in [0, %d)", bodyID, Nb);
     body = bodies[bodyID];
 
     PetscCall(DMPlexPointLocalRef(cdm, v, coords, (void *) &vcoords));

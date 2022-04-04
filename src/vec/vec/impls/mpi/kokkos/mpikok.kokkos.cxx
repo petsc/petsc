@@ -316,7 +316,7 @@ PetscErrorCode  VecCreateMPIKokkosWithArray(MPI_Comm comm,PetscInt bs,PetscInt n
   PetscScalar    *harray;
 
   PetscFunctionBegin;
-  PetscCheckFalse(n == PETSC_DECIDE,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must set local size of vector");
+  PetscCheck(n != PETSC_DECIDE,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must set local size of vector");
   PetscCall(PetscKokkosInitializeCheck());
   PetscCall(PetscSplitOwnership(comm,&n,&N));
   PetscCall(VecCreate(comm,&w));

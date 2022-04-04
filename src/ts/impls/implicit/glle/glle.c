@@ -116,9 +116,9 @@ static PetscErrorCode TSGLLESchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscI
   PetscInt       j;
 
   PetscFunctionBegin;
-  PetscCheckFalse(p < 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Scheme order must be positive");
-  PetscCheckFalse(r < 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"At least one item must be carried between steps");
-  PetscCheckFalse(s < 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"At least one stage is required");
+  PetscCheck(p >= 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Scheme order must be positive");
+  PetscCheck(r >= 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"At least one item must be carried between steps");
+  PetscCheck(s >= 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"At least one stage is required");
   PetscValidPointer(inscheme,10);
   *inscheme = NULL;
   PetscCall(PetscNew(&scheme));
@@ -155,8 +155,8 @@ static PetscErrorCode TSGLLESchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscI
     PetscCall(PetscBLASIntCast(r-1,&m));
     PetscCall(PetscBLASIntCast(r,&n));
     PetscStackCallBLAS("LAPACKgesv",LAPACKgesv_(&m,&one,ImV,&n,ipiv,scheme->alpha+1,&n,&info));
-    PetscCheckFalse(info < 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to GESV");
-    PetscCheckFalse(info > 0,PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Bad LU factorization");
+    PetscCheck(info >= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to GESV");
+    PetscCheck(info <= 0,PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Bad LU factorization");
 
     /* Build right hand side for beta (tp1 - glm.B(2:end,:)*(glm.c.^(p+1)./factorial(p+1)) - e.alpha) */
     for (i=1; i<r; i++) {
@@ -164,8 +164,8 @@ static PetscErrorCode TSGLLESchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscI
       for (j=0; j<s; j++) scheme->beta[i] -= b[i*s+j]*CPowF(c[j],p+1);
     }
     PetscStackCallBLAS("LAPACKgetrs",LAPACKgetrs_("No transpose",&m,&one,ImV,&n,ipiv,scheme->beta+1,&n,&info));
-    PetscCheckFalse(info < 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to GETRS");
-    PetscCheckFalse(info > 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Should not happen");
+    PetscCheck(info >= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to GETRS");
+    PetscCheck(info <= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Should not happen");
 
     /* Build stage_error vector
            xi = glm.c.^(p+1)/factorial(p+1) - glm.A*glm.c.^p/factorial(p) + glm.U(:,2:end)*e.alpha;
@@ -189,8 +189,8 @@ static PetscErrorCode TSGLLESchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscI
       for (j=0; j<s; j++) scheme->gamma[i] += b[i*s+j]*scheme->stage_error[j];
     }
     PetscStackCallBLAS("LAPACKgetrs",LAPACKgetrs_("No transpose",&m,&one,ImV,&n,ipiv,scheme->gamma+1,&n,&info));
-    PetscCheckFalse(info < 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to GETRS");
-    PetscCheckFalse(info > 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Should not happen");
+    PetscCheck(info >= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to GETRS");
+    PetscCheck(info <= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Should not happen");
 
     /* beta[0] (rho in B,J,W 2007)
         e.rho = 1/factorial(p+2) - glm.B(1,:)*glm.c.^(p+1)/factorial(p+1) ...
@@ -243,8 +243,8 @@ static PetscErrorCode TSGLLESchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscI
     /* DGELSS( M, N, NRHS, A, LDA, B, LDB, S, RCOND, RANK, WORK, LWORK, INFO) */
     PetscStackCallBLAS("LAPACKgelss",LAPACKgelss_(&m,&n,&m,H,&m,bmat,&ldb,sing,&rcond,&rank,workscalar,&lwork,&info));
 #endif
-    PetscCheckFalse(info < 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to GELSS");
-    PetscCheckFalse(info > 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"SVD failed to converge");
+    PetscCheck(info >= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to GELSS");
+    PetscCheck(info <= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"SVD failed to converge");
 
     for (j=0; j<3; j++) {
       for (k=0; k<s; k++) scheme->phi[k+j*s] = bmat[k+j*ss];
@@ -423,7 +423,7 @@ static PetscErrorCode TSGLLECompleteStep_RescaleAndModify(TSGLLEScheme sc,PetscR
     PetscCall(VecMAXPY(X[i],r,vrow,Xold));
   }
   if (r < next_sc->r) {
-    PetscCheckFalse(r+1 != next_sc->r,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cannot accommodate jump in r greater than 1");
+    PetscCheck(r+1 == next_sc->r,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cannot accommodate jump in r greater than 1");
     PetscCall(VecZeroEntries(X[r]));
     for (j=0; j<s; j++) brow[j] = h*PetscPowRealInt(ratio,p+1)*sc->phi[0*s+j];
     PetscCall(VecMAXPY(X[r],s,brow,Ydot));
@@ -830,7 +830,7 @@ static PetscErrorCode TSSolve_GLLE(TS ts)
     }
   }
 
-  PetscCheckFalse(gl->current_scheme < 0,PETSC_COMM_SELF,PETSC_ERR_ORDER,"A starting scheme has not been provided");
+  PetscCheck(gl->current_scheme >= 0,PETSC_COMM_SELF,PETSC_ERR_ORDER,"A starting scheme has not been provided");
 
   for (k=0,final_step=PETSC_FALSE,finish=PETSC_FALSE; k<ts->max_steps && !finish; k++) {
     PetscInt          j,r,s,next_scheme = 0,rejections;
@@ -1077,7 +1077,7 @@ static PetscErrorCode TSSetUp_GLLE(TS ts)
     PetscInt i;
     for (i=0;; i++) {
       if (gl->schemes[i]->p == gl->start_order) break;
-      PetscCheckFalse(i+1 == gl->nschemes,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"No schemes available with requested start order %d",i);
+      PetscCheck(i+1 != gl->nschemes,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"No schemes available with requested start order %d",i);
     }
     gl->current_scheme = i;
   }

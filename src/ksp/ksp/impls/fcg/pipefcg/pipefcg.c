@@ -104,7 +104,7 @@ static PetscErrorCode KSPSolve_PIPEFCG_cycle(KSP ksp)
   PetscFunctionBegin;
   /* We have not checked these routines for use with complex numbers. The inner products
      are likely not defined correctly for that case */
-  PetscCheckFalse(PetscDefined(USE_COMPLEX) && !PetscDefined(SKIP_COMPLEX),PETSC_COMM_WORLD,PETSC_ERR_SUP,"PIPEFGMRES has not been implemented for use with complex scalars");
+  PetscCheck(!PetscDefined(USE_COMPLEX) || PetscDefined(SKIP_COMPLEX),PETSC_COMM_WORLD,PETSC_ERR_SUP,"PIPEFGMRES has not been implemented for use with complex scalars");
 
 #define VecXDot(x,y,a)         (((pipefcg->type) == (KSP_CG_HERMITIAN)) ? VecDot       (x,y,a)   : VecTDot       (x,y,a))
 #define VecXDotBegin(x,y,a)    (((pipefcg->type) == (KSP_CG_HERMITIAN)) ? VecDotBegin  (x,y,a)   : VecTDotBegin  (x,y,a))

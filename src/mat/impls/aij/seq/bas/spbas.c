@@ -636,7 +636,7 @@ PetscErrorCode spbas_apply_reordering_rows(spbas_matrix *matrix_A, const PetscIn
   PetscScalar    **vals    = NULL;
 
   PetscFunctionBegin;
-  PetscCheckFalse(matrix_A->col_idx_type != SPBAS_DIAGONAL_OFFSETS,PETSC_COMM_SELF, PETSC_ERR_SUP_SYS,"must have diagonal offsets in pattern");
+  PetscCheck(matrix_A->col_idx_type == SPBAS_DIAGONAL_OFFSETS,PETSC_COMM_SELF, PETSC_ERR_SUP_SYS,"must have diagonal offsets in pattern");
 
   if (do_values) {
     PetscCall(PetscMalloc1(nrows, &vals));
@@ -676,7 +676,7 @@ PetscErrorCode spbas_apply_reordering_cols(spbas_matrix *matrix_A,const PetscInt
   PetscScalar    *vals     = NULL;
 
   PetscFunctionBegin;
-  PetscCheckFalse(matrix_A->col_idx_type != SPBAS_DIAGONAL_OFFSETS,PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "must have diagonal offsets in pattern");
+  PetscCheck(matrix_A->col_idx_type == SPBAS_DIAGONAL_OFFSETS,PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "must have diagonal offsets in pattern");
 
   for (i=0; i<nrows; i++) {
     icols   = matrix_A->icols[i];
@@ -789,10 +789,10 @@ PetscErrorCode spbas_power(spbas_matrix in_matrix,PetscInt power, spbas_matrix *
   PetscInt       maxmrk=0;
 
   PetscFunctionBegin;
-  PetscCheckFalse(in_matrix.col_idx_type != SPBAS_DIAGONAL_OFFSETS,PETSC_COMM_SELF, PETSC_ERR_SUP_SYS,"must have diagonal offsets in pattern");
-  PetscCheckFalse(ncols != nrows,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Dimension error");
+  PetscCheck(in_matrix.col_idx_type == SPBAS_DIAGONAL_OFFSETS,PETSC_COMM_SELF, PETSC_ERR_SUP_SYS,"must have diagonal offsets in pattern");
+  PetscCheck(ncols == nrows,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Dimension error");
   PetscCheckFalse(in_matrix.values,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Input array must be sparseness pattern (no values)");
-  PetscCheckFalse(power<=0,PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "Power must be 1 or up");
+  PetscCheck(power>0,PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "Power must be 1 or up");
 
   /* Copy input values*/
   retval.nrows        = ncols;

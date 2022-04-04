@@ -64,7 +64,7 @@ PetscErrorCode  PetscViewerDrawGetDraw(PetscViewer viewer,PetscInt windownumber,
   if (draw) PetscValidPointer(draw,3);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw));
   PetscCheck(isdraw,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
-  PetscCheckFalse(windownumber < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Window number cannot be negative");
+  PetscCheck(windownumber >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Window number cannot be negative");
   vdraw = (PetscViewer_Draw*)viewer->data;
 
   windownumber += vdraw->draw_base;
@@ -159,7 +159,7 @@ PetscErrorCode  PetscViewerDrawBaseSet(PetscViewer viewer,PetscInt windownumber)
   PetscCheck(isdraw,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
   vdraw = (PetscViewer_Draw*)viewer->data;
 
-  PetscCheckFalse(windownumber < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Resulting base %" PetscInt_FMT " cannot be negative",windownumber);
+  PetscCheck(windownumber >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Resulting base %" PetscInt_FMT " cannot be negative",windownumber);
   vdraw->draw_base = windownumber;
   PetscFunctionReturn(0);
 }
@@ -193,7 +193,7 @@ PetscErrorCode  PetscViewerDrawGetDrawLG(PetscViewer viewer,PetscInt windownumbe
   PetscValidPointer(drawlg,3);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw));
   PetscCheck(isdraw,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
-  PetscCheckFalse(windownumber < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Window number cannot be negative");
+  PetscCheck(windownumber >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Window number cannot be negative");
   vdraw = (PetscViewer_Draw*)viewer->data;
 
   if (windownumber+vdraw->draw_base >= vdraw->draw_max || !vdraw->draw[windownumber+vdraw->draw_base]) {
@@ -237,7 +237,7 @@ PetscErrorCode  PetscViewerDrawGetDrawAxis(PetscViewer viewer,PetscInt windownum
   PetscValidPointer(drawaxis,3);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw));
   PetscCheck(isdraw,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
-  PetscCheckFalse(windownumber < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Window number cannot be negative");
+  PetscCheck(windownumber >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Window number cannot be negative");
   vdraw = (PetscViewer_Draw*)viewer->data;
 
   if (windownumber+vdraw->draw_base >= vdraw->draw_max || !vdraw->draw[windownumber+vdraw->draw_base]) {

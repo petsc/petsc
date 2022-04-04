@@ -226,18 +226,18 @@ PetscErrorCode MatCreateLRC(Mat A,Mat U,Vec c,Mat V,Mat *N)
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)U),&size));
   PetscCall(MatGetSize(U,NULL,&k));
   PetscCall(MatGetSize(V,NULL,&k1));
-  PetscCheckFalse(k != k1,PetscObjectComm((PetscObject)U),PETSC_ERR_ARG_INCOMP,"U and V have different number of columns (%" PetscInt_FMT " vs %" PetscInt_FMT ")",k,k1);
+  PetscCheck(k == k1,PetscObjectComm((PetscObject)U),PETSC_ERR_ARG_INCOMP,"U and V have different number of columns (%" PetscInt_FMT " vs %" PetscInt_FMT ")",k,k1);
   PetscCall(MatGetLocalSize(U,&m,NULL));
   PetscCall(MatGetLocalSize(V,&n,NULL));
   if (A) {
     PetscCall(MatGetLocalSize(A,&m1,&n1));
-    PetscCheckFalse(m != m1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local dimensions of U %" PetscInt_FMT " and A %" PetscInt_FMT " do not match",m,m1);
-    PetscCheckFalse(n != n1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local dimensions of V %" PetscInt_FMT " and A %" PetscInt_FMT " do not match",n,n1);
+    PetscCheck(m == m1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local dimensions of U %" PetscInt_FMT " and A %" PetscInt_FMT " do not match",m,m1);
+    PetscCheck(n == n1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local dimensions of V %" PetscInt_FMT " and A %" PetscInt_FMT " do not match",n,n1);
   }
   if (c) {
     PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)c),&csize));
     PetscCall(VecGetSize(c,&k1));
-    PetscCheckFalse(k != k1,PetscObjectComm((PetscObject)c),PETSC_ERR_ARG_INCOMP,"The length of c %" PetscInt_FMT " does not match the number of columns of U and V (%" PetscInt_FMT ")",k1,k);
+    PetscCheck(k == k1,PetscObjectComm((PetscObject)c),PETSC_ERR_ARG_INCOMP,"The length of c %" PetscInt_FMT " does not match the number of columns of U and V (%" PetscInt_FMT ")",k1,k);
     PetscCheckFalse(csize != 1 && csize != size, PetscObjectComm((PetscObject)c),PETSC_ERR_ARG_INCOMP,"U and c must have the same communicator size %d != %d",size,csize);
   }
 

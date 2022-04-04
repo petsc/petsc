@@ -267,7 +267,7 @@ PetscErrorCode  PetscBinaryRead(int fd,void *data,PetscInt num,PetscInt *count,P
 
   PetscFunctionBegin;
   if (count) *count = 0;
-  PetscCheckFalse(num < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to read a negative amount of data %" PetscInt_FMT,num);
+  PetscCheck(num >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to read a negative amount of data %" PetscInt_FMT,num);
   if (!num) PetscFunctionReturn(0);
 
   if (type == PETSC_FUNCTION) {
@@ -300,12 +300,12 @@ PetscErrorCode  PetscBinaryRead(int fd,void *data,PetscInt num,PetscInt *count,P
     int    ret = (int)read(fd,p,len);
     if (ret < 0 && errno == EINTR) continue;
     if (!ret && len > 0) break; /* Proxy for EOF */
-    PetscCheckFalse(ret < 0,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Error reading from file, errno %d",errno);
+    PetscCheck(ret >= 0,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Error reading from file, errno %d",errno);
     m -= (size_t)ret;
     p += ret;
     n += (size_t)ret;
   }
-  PetscCheckFalse(m && !count,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Read past end of file");
+  PetscCheck(!m || count,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Read past end of file");
 
   num = (PetscInt)(n/typesize); /* Should we require `n % typesize == 0` ? */
   if (count) *count = num;      /* TODO: This is most likely wrong for PETSC_BIT_LOGICAL */
@@ -386,7 +386,7 @@ PetscErrorCode  PetscBinaryWrite(int fd,const void *p,PetscInt n,PetscDataType t
   PetscDataType  wtype = type;
 
   PetscFunctionBegin;
-  PetscCheckFalse(n < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to write a negative amount of data %" PetscInt_FMT,n);
+  PetscCheck(n >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to write a negative amount of data %" PetscInt_FMT,n);
   if (!n) PetscFunctionReturn(0);
 
   if (type == PETSC_FUNCTION) {
@@ -397,7 +397,7 @@ PetscErrorCode  PetscBinaryWrite(int fd,const void *p,PetscInt n,PetscDataType t
     fname = (char*)malloc(m*sizeof(char));
     PetscCheck(fname,PETSC_COMM_SELF,PETSC_ERR_MEM,"Cannot allocate space for function name");
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
-    PetscCheckFalse(n > 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Can only binary view a single function at a time");
+    PetscCheck(n <= 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Can only binary view a single function at a time");
     PetscCall(PetscFPTFind(*(void**)p,&fnametmp));
     PetscCall(PetscStrncpy(fname,fnametmp,m));
 #else
@@ -446,7 +446,7 @@ PetscErrorCode  PetscBinaryWrite(int fd,const void *p,PetscInt n,PetscDataType t
     wsize = (m < maxblock) ? m : maxblock;
     err   = write(fd,pp,wsize);
     if (err < 0 && errno == EINTR) continue;
-    PetscCheckFalse(err != wsize,PETSC_COMM_SELF,PETSC_ERR_FILE_WRITE,"Error writing to file total size %d err %d wsize %d",(int)n,(int)err,(int)wsize);
+    PetscCheck(err == wsize,PETSC_COMM_SELF,PETSC_ERR_FILE_WRITE,"Error writing to file total size %d err %d wsize %d",(int)n,(int)err,(int)wsize);
     m  -= wsize;
     pp += wsize;
   }
@@ -496,7 +496,7 @@ PetscErrorCode  PetscBinaryOpen(const char name[],PetscFileMode mode,int *fd)
   case FILE_MODE_APPEND: *fd = open(name,O_BINARY|O_WRONLY|O_APPEND,0); break;
   default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported file mode %s",PetscFileModes[mode]);
   }
-  PetscCheckFalse(*fd == -1,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file %s for %s",name,PetscFileModes[mode]);
+  PetscCheck(*fd != -1,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file %s for %s",name,PetscFileModes[mode]);
   PetscFunctionReturn(0);
 }
 

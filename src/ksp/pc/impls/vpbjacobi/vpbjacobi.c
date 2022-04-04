@@ -109,7 +109,7 @@ static PetscErrorCode PCSetUp_VPBJacobi(PC pc)
   PetscFunctionBegin;
   PetscCall(MatGetVariableBlockSizes(pc->pmat,&nblocks,&bsizes));
   PetscCall(MatGetLocalSize(pc->pmat,&nlocal,NULL));
-  PetscCheckFalse(nlocal && !nblocks,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call MatSetVariableBlockSizes() before using PCVPBJACOBI");
+  PetscCheck(!nlocal || nblocks,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call MatSetVariableBlockSizes() before using PCVPBJACOBI");
   if (!jac->diag) {
     for (i=0; i<nblocks; i++) nsize += bsizes[i]*bsizes[i];
     PetscCall(PetscMalloc1(nsize,&jac->diag));

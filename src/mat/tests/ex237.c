@@ -16,7 +16,7 @@ static char help[] = "Mini-app to benchmark matrix--matrix multiplication\n\n";
     PetscStackPush(#func);                                     \
     __ierr = func args;                                        \
     PetscStackPop;                                             \
-    PetscCheckFalse(__ierr != SPARSE_STATUS_SUCCESS,PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in %s(): error code %d", #func, (int)__ierr); \
+    PetscCheck(__ierr == SPARSE_STATUS_SUCCESS,PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in %s(): error code %d", #func, (int)__ierr); \
   } while (0)
 #else
 #define PetscStackCallMKLSparse(func, args) do {               \

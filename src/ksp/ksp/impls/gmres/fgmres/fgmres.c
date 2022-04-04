@@ -594,7 +594,7 @@ PetscErrorCode  KSPGMRESSetRestart_FGMRES(KSP ksp,PetscInt max_k)
   KSP_FGMRES     *gmres = (KSP_FGMRES*)ksp->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(max_k < 1,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Restart must be positive");
+  PetscCheck(max_k >= 1,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Restart must be positive");
   if (!ksp->setupstage) {
     gmres->max_k = max_k;
   } else if (gmres->max_k != max_k) {

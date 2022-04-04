@@ -50,7 +50,7 @@ static PetscErrorCode PetscPartitionerSetFromOptions_Simple(PetscOptionItems *Pe
   if (flg) {
     p->useGrid = PETSC_TRUE;
     if (p->gridDim < 0) p->gridDim = num;
-    else PetscCheckFalse(p->gridDim != num,PetscObjectComm((PetscObject) part), PETSC_ERR_ARG_INCOMP, "Process grid dimension %D != %D node grid dimension", num, p->gridDim);
+    else PetscCheck(p->gridDim == num,PetscObjectComm((PetscObject) part), PETSC_ERR_ARG_INCOMP, "Process grid dimension %D != %D node grid dimension", num, p->gridDim);
   }
   PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
@@ -73,9 +73,9 @@ static PetscErrorCode PetscPartitionerPartition_Simple_Grid(PetscPartitioner par
   PetscCallMPI(MPI_Comm_size(comm, &size));
   /* Check grid */
   for (i = 0; i < 3; ++i) Np *= nodes[i]*procs[i];
-  PetscCheckFalse(nparts != Np,comm, PETSC_ERR_ARG_INCOMP, "Number of partitions %D != %D grid size", nparts, Np);
-  PetscCheckFalse(nparts != size,comm, PETSC_ERR_ARG_INCOMP, "Number of partitions %D != %D processes", nparts, size);
-  PetscCheckFalse(numVertices % nparts,comm, PETSC_ERR_ARG_INCOMP, "Number of cells %D is not divisible by number of partitions %D", numVertices, nparts);
+  PetscCheck(nparts == Np,comm, PETSC_ERR_ARG_INCOMP, "Number of partitions %D != %D grid size", nparts, Np);
+  PetscCheck(nparts == size,comm, PETSC_ERR_ARG_INCOMP, "Number of partitions %D != %D processes", nparts, size);
+  PetscCheck(numVertices % nparts == 0,comm, PETSC_ERR_ARG_INCOMP, "Number of cells %D is not divisible by number of partitions %D", numVertices, nparts);
   for (i = 0; i < p->gridDim; ++i) cells[i] = nodes[i]*procs[i];
   Nr = numVertices / nparts;
   while (Nr > 1) {
@@ -86,7 +86,7 @@ static PetscErrorCode PetscPartitionerPartition_Simple_Grid(PetscPartitioner par
   }
   PetscCheckFalse(numVertices && Nr != 1,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Odd number of cells %D. Must be nprocs*2^k", numVertices);
   for (i = 0; i < p->gridDim; ++i) {
-    PetscCheckFalse(cells[i] %  (nodes[i]*procs[i]),PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "dir %D. Number of cells (%D) mod number of processors %D", i, cells[i], nodes[i]*procs[i]);
+    PetscCheck(cells[i] %  (nodes[i]*procs[i]) == 0,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "dir %D. Number of cells (%D) mod number of processors %D", i, cells[i], nodes[i]*procs[i]);
     pcells[i] = cells[i] / (nodes[i]*procs[i]);
   }
   /* Compute sizes */

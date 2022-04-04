@@ -2022,7 +2022,7 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m,Pets
 #endif
   PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"xGELSS error");
   /* The following check should be turned into a diagnostic as soon as someone wants to do this intentionally */
-  PetscCheckFalse(irank < PetscMin(M,N),PETSC_COMM_SELF,PETSC_ERR_USER,"Rank deficient least squares fit, indicates an isolated cell with two colinear points");
+  PetscCheck(irank >= PetscMin(M,N),PETSC_COMM_SELF,PETSC_ERR_USER,"Rank deficient least squares fit, indicates an isolated cell with two colinear points");
   PetscFunctionReturn(0);
 }
 
@@ -2079,7 +2079,7 @@ static PetscErrorCode PetscFVComputeGradient_LeastSquares(PetscFV fvm, PetscInt 
 
   PetscFunctionBegin;
   if (numFaces > maxFaces) {
-    PetscCheckFalse(maxFaces < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Reconstruction has not been initialized, call PetscFVLeastSquaresSetMaxFaces()");
+    PetscCheck(maxFaces >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Reconstruction has not been initialized, call PetscFVLeastSquaresSetMaxFaces()");
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of input faces %D > %D maxfaces", numFaces, maxFaces);
   }
   PetscCall(PetscFVGetSpatialDimension(fvm, &dim));

@@ -39,7 +39,7 @@ PetscErrorCode DMPlexOrientPoint(DM dm, PetscInt p, PetscInt o)
     nO   = DMPolytopeTypeGetNumArrangments(ft)/2;
     newcone[c] = cone[arr[c*2+0]];
     newornt[c] = DMPolytopeTypeComposeOrientation(ft, arr[c*2+1], ornt[arr[c*2+0]]);
-    PetscCheckFalse(newornt[c] && (newornt[c] >= nO || newornt[c] < -nO),PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid orientation %D not in [%D,%D) for %s %D", newornt[c], -nO, nO, DMPolytopeTypes[ft], cone[c]);
+    PetscCheck(!newornt[c] || !(newornt[c] >= nO || newornt[c] < -nO),PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid orientation %D not in [%D,%D) for %s %D", newornt[c], -nO, nO, DMPolytopeTypes[ft], cone[c]);
   }
   PetscCall(DMPlexSetCone(dm, p, newcone));
   PetscCall(DMPlexSetConeOrientation(dm, p, newornt));
@@ -81,7 +81,7 @@ static PetscErrorCode DMPlexCheckFace_Internal(DM dm, PetscInt *faceFIFO, PetscI
   PetscCall(DMPlexGetSupportSize(dm, face, &supportSize));
   PetscCall(DMPlexGetSupport(dm, face, &support));
   if (supportSize < 2) PetscFunctionReturn(0);
-  PetscCheckFalse(supportSize != 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Faces should separate only two cells, not %d", supportSize);
+  PetscCheck(supportSize == 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Faces should separate only two cells, not %d", supportSize);
   seenA    = PetscBTLookup(seenCells,    support[0]-cStart);
   flippedA = PetscBTLookup(flippedCells, support[0]-cStart) ? 1 : 0;
   seenB    = PetscBTLookup(seenCells,    support[1]-cStart);
@@ -99,18 +99,18 @@ static PetscErrorCode DMPlexCheckFace_Internal(DM dm, PetscInt *faceFIFO, PetscI
       PetscCall(PetscBTSet(seenFaces, coneA[c]-fStart));
     }
     if (coneA[c] == face) posA = c;
-    PetscCheckFalse(*fBottom > fEnd-fStart,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Face %d was pushed exceeding capacity %d > %d", coneA[c], *fBottom, fEnd-fStart);
+    PetscCheck(*fBottom <= fEnd-fStart,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Face %d was pushed exceeding capacity %d > %d", coneA[c], *fBottom, fEnd-fStart);
   }
-  PetscCheckFalse(posA < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %d could not be located in cell %d", face, support[0]);
+  PetscCheck(posA >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %d could not be located in cell %d", face, support[0]);
   for (c = 0; c < coneSizeB; ++c) {
     if (!PetscBTLookup(seenFaces, coneB[c]-fStart)) {
       faceFIFO[(*fBottom)++] = coneB[c];
       PetscCall(PetscBTSet(seenFaces, coneB[c]-fStart));
     }
     if (coneB[c] == face) posB = c;
-    PetscCheckFalse(*fBottom > fEnd-fStart,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Face %d was pushed exceeding capacity %d > %d", coneA[c], *fBottom, fEnd-fStart);
+    PetscCheck(*fBottom <= fEnd-fStart,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Face %d was pushed exceeding capacity %d > %d", coneA[c], *fBottom, fEnd-fStart);
   }
-  PetscCheckFalse(posB < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %d could not be located in cell %d", face, support[1]);
+  PetscCheck(posB >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %d could not be located in cell %d", face, support[1]);
 
   if (dim == 1) {
     mismatch = posA == posB;
@@ -119,7 +119,7 @@ static PetscErrorCode DMPlexCheckFace_Internal(DM dm, PetscInt *faceFIFO, PetscI
   }
 
   if (mismatch ^ (flippedA ^ flippedB)) {
-    PetscCheckFalse(seenA && seenB,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Previously seen cells %d and %d do not match: Fault mesh is non-orientable", support[0], support[1]);
+    PetscCheck(!seenA || !seenB,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Previously seen cells %d and %d do not match: Fault mesh is non-orientable", support[0], support[1]);
     if (!seenA && !flippedA) {
       PetscCall(PetscBTSet(flippedCells, support[0]-cStart));
     } else if (!seenB && !flippedB) {
@@ -309,7 +309,7 @@ PetscErrorCode DMPlexOrient(DM dm)
           PetscInt supportSize;
 
           PetscCall(DMPlexGetSupportSize(dm, face, &supportSize));
-          PetscCheckFalse(supportSize != 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Boundary faces should see one cell, not %d", supportSize);
+          PetscCheck(supportSize == 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Boundary faces should see one cell, not %d", supportSize);
           if (flg) PetscCall(PetscViewerASCIIPrintf(selfviewer, "[%d]: component %d, Found representative leaf %d (face %d) connecting to face %d on (%d, %d) with orientation %d\n", rank, comp, l, face, rpoints[l].index, rrank, rcomp, lorntComp[face].rank));
           neighbors[comp][numNeighbors[comp]++] = l;
         }

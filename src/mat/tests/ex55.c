@@ -60,7 +60,7 @@ int main(int argc,char **args)
     bs   = 2; mbs=8;
     PetscCall(PetscOptionsGetInt(NULL,NULL,"-mbs",&mbs,NULL));
     PetscCall(PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL));
-    PetscCheckFalse(bs <= 1,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG," bs must be >1 in this case");
+    PetscCheck(bs > 1,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG," bs must be >1 in this case");
     m    = mbs*bs;
     PetscCall(MatCreateBAIJ(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,m,m,d_nz,NULL,o_nz,NULL,&C));
     for (block=0; block<mbs; block++) {

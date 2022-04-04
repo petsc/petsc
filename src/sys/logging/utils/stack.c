@@ -124,7 +124,7 @@ PetscErrorCode PetscIntStackPop(PetscIntStack stack, int *item)
 {
   PetscFunctionBegin;
   PetscValidPointer(item,2);
-  PetscCheckFalse(stack->top == -1,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Stack is empty");
+  PetscCheck(stack->top != -1,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Stack is empty");
   *item = stack->stack[stack->top--];
   PetscFunctionReturn(0);
 }

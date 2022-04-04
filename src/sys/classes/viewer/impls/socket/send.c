@@ -139,7 +139,7 @@ PetscErrorCode  PetscOpenSocket(const char hostname[],int portnum,int *t)
         sleep((unsigned) 1);
       } else if (errno == ECONNREFUSED) {
         refcnt++;
-        PetscCheckFalse(refcnt > 5,PETSC_COMM_SELF,PETSC_ERR_SYS,"Connection refused by remote host %s port %d",hostname,portnum);
+        PetscCheck(refcnt <= 5,PETSC_COMM_SELF,PETSC_ERR_SYS,"Connection refused by remote host %s port %d",hostname,portnum);
         PetscCall(PetscInfo(NULL,"Connection refused in attaching socket, trying again\n"));
         sleep((unsigned) 1);
       } else {

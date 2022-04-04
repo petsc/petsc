@@ -21,7 +21,7 @@ PetscErrorCode PetscViewerHDF5CheckTimestepping_Internal(PetscViewer viewer, con
   PetscFunctionBegin;
   PetscCall(PetscViewerHDF5GetGroup(viewer, &group));
   PetscCall(PetscViewerHDF5ReadAttribute(viewer,name,"timestepping",PETSC_BOOL,&timestepping,&timestepping));
-  PetscCheckFalse(timestepping != hdf5->timestepping,PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_UNEXPECTED,"Dataset %s/%s stored with timesteps? %s Timestepping pushed? %s", group, name, PetscBools[timestepping], PetscBools[hdf5->timestepping]);
+  PetscCheck(timestepping == hdf5->timestepping,PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_UNEXPECTED,"Dataset %s/%s stored with timesteps? %s Timestepping pushed? %s", group, name, PetscBools[timestepping], PetscBools[hdf5->timestepping]);
   PetscFunctionReturn(0);
 }
 
@@ -98,7 +98,7 @@ static PetscErrorCode PetscViewerHDF5ReadSizes_Private(PetscViewer viewer, HDF5R
     ctx->bsInd = ctx->rdim-1;
     ctx->complexInd = -1;
   }
-  PetscCheckFalse(ctx->lenInd > ctx->bsInd,PetscObjectComm((PetscObject)viewer), PETSC_ERR_PLIB, "Calculated block dimension index = %d < %d = length dimension index.",ctx->bsInd,ctx->lenInd);
+  PetscCheck(ctx->lenInd <= ctx->bsInd,PetscObjectComm((PetscObject)viewer), PETSC_ERR_PLIB, "Calculated block dimension index = %d < %d = length dimension index.",ctx->bsInd,ctx->lenInd);
   PetscCheckFalse(ctx->bsInd > ctx->rdim - 1,PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Calculated block dimension index = %d > %d = total number of dimensions - 1.",ctx->bsInd,ctx->rdim-1);
   PetscCheckFalse(ctx->complexVal && ctx->dims[ctx->complexInd] != 2,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Complex numbers must have exactly 2 parts (%llu)",ctx->dims[ctx->complexInd]);
 
@@ -124,10 +124,10 @@ static PetscErrorCode PetscViewerHDF5ReadSizes_Private(PetscViewer viewer, HDF5R
   /* Set global size, blocksize and type if not yet set */
   if (map->bs < 0) {
     PetscCall(PetscLayoutSetBlockSize(map, bs));
-  } else PetscCheckFalse(map->bs != bs,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Block size of array in file is %" PetscInt_FMT ", not %" PetscInt_FMT " as expected",bs,map->bs);
+  } else PetscCheck(map->bs == bs,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Block size of array in file is %" PetscInt_FMT ", not %" PetscInt_FMT " as expected",bs,map->bs);
   if (map->N < 0) {
     PetscCall(PetscLayoutSetSize(map, N));
-  } else PetscCheckFalse(map->N != N,PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_UNEXPECTED, "Global size of array in file is %" PetscInt_FMT ", not %" PetscInt_FMT " as expected",N,map->N);
+  } else PetscCheck(map->N == N,PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_UNEXPECTED, "Global size of array in file is %" PetscInt_FMT ", not %" PetscInt_FMT " as expected",N,map->N);
   if (setup) PetscCall(PetscLayoutSetUp(map));
   PetscFunctionReturn(0);
 }
@@ -220,7 +220,7 @@ PetscErrorCode PetscViewerHDF5Load(PetscViewer viewer, const char *name, PetscLa
 #if defined(PETSC_USE_COMPLEX)
   if (!h->complexVal) {
     H5T_class_t clazz = H5Tget_class(datatype);
-    PetscCheckFalse(clazz == H5T_FLOAT,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Dataset %s/%s is marked as real but PETSc is configured for complex scalars. The conversion is not yet implemented. Configure with --with-scalar-type=real to read this dataset", group ? group : "",name);
+    PetscCheck(clazz != H5T_FLOAT,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Dataset %s/%s is marked as real but PETSc is configured for complex scalars. The conversion is not yet implemented. Configure with --with-scalar-type=real to read this dataset", group ? group : "",name);
   }
 #else
   PetscCheck(!h->complexVal,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Dataset %s/%s is marked as complex but PETSc is configured for real scalars. Configure with --with-scalar-type=complex to read this dataset", group ? group : "",name);

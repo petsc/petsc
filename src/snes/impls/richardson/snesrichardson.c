@@ -35,7 +35,7 @@ PetscErrorCode SNESDestroy_NRichardson(SNES snes)
 PetscErrorCode SNESSetUp_NRichardson(SNES snes)
 {
   PetscFunctionBegin;
-  PetscCheckFalse(snes->npcside== PC_RIGHT,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"NRichardson only supports left preconditioning");
+  PetscCheck(snes->npcside!= PC_RIGHT,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"NRichardson only supports left preconditioning");
   if (snes->functype == SNES_FUNCTION_DEFAULT) snes->functype = SNES_FUNCTION_UNPRECONDITIONED;
   PetscFunctionReturn(0);
 }

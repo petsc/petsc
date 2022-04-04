@@ -190,7 +190,7 @@ PetscErrorCode DMPlexCreateRigidBody(DM dm, PetscInt field, MatNullSpace *sp)
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMGetCoordinateDim(dm, &dimEmbed));
   PetscCall(DMGetNumFields(dm, &Nf));
-  PetscCheckFalse(Nf && (field < 0 || field >= Nf),comm, PETSC_ERR_ARG_OUTOFRANGE, "Field %D is not in [0, Nf)", field, Nf);
+  PetscCheck(!Nf || !(field < 0 || field >= Nf),comm, PETSC_ERR_ARG_OUTOFRANGE, "Field %D is not in [0, Nf)", field, Nf);
   if (dim == 1 && Nf < 2) {
     PetscCall(MatNullSpaceCreate(comm, PETSC_TRUE, 0, NULL, sp));
     PetscFunctionReturn(0);
@@ -1235,7 +1235,7 @@ PetscErrorCode DMPlexComputeL2DiffLocal(DM dm, PetscReal time, PetscErrorCode (*
     numComponents += Nc;
   }
   PetscCall(PetscQuadratureGetData(quad, NULL, &qNc, &Nq, NULL, &quadWeights));
-  PetscCheckFalse((qNc != 1) && (qNc != numComponents),PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_SIZ, "Quadrature components %D != %D field components", qNc, numComponents);
+  PetscCheck(!(qNc != 1) || !(qNc != numComponents),PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_SIZ, "Quadrature components %D != %D field components", qNc, numComponents);
   PetscCall(PetscMalloc6(numComponents,&funcVal,numComponents,&interpolant,coordDim*Nq,&coords,Nq,&fegeom.detJ,coordDim*coordDim*Nq,&fegeom.J,coordDim*coordDim*Nq,&fegeom.invJ));
   PetscCall(DMPlexGetVTKCellHeight(dm, &cellHeight));
   PetscCall(DMPlexGetSimplexOrBoxCells(dm, cellHeight, &cStart, &cEnd));
@@ -1346,7 +1346,7 @@ PetscErrorCode DMComputeL2GradientDiff_Plex(DM dm, PetscReal time, PetscErrorCod
     numComponents += Nc;
   }
   PetscCall(PetscQuadratureGetData(quad, NULL, &qNc, &Nq, NULL, &quadWeights));
-  PetscCheckFalse((qNc != 1) && (qNc != numComponents),PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_SIZ, "Quadrature components %D != %D field components", qNc, numComponents);
+  PetscCheck(!(qNc != 1) || !(qNc != numComponents),PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_SIZ, "Quadrature components %D != %D field components", qNc, numComponents);
   /* PetscCall(DMProjectFunctionLocal(dm, fe, funcs, INSERT_BC_VALUES, localX)); */
   PetscCall(PetscMalloc6(numComponents,&funcVal,coordDim*Nq,&coords,coordDim*coordDim*Nq,&fegeom.J,coordDim*coordDim*Nq,&fegeom.invJ,numComponents*coordDim,&interpolant,Nq,&fegeom.detJ));
   PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
@@ -1474,7 +1474,7 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
     PetscCall(PetscDSGetTotalComponents(ds, &totNc));
     PetscCall(PetscDSGetQuadrature(ds, &quad));
     PetscCall(PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights));
-    PetscCheckFalse((qNc != 1) && (qNc != totNc),PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Quadrature components %D != %D field components", qNc, totNc);
+    PetscCheck(!(qNc != 1) || !(qNc != totNc),PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Quadrature components %D != %D field components", qNc, totNc);
     PetscCall(PetscCalloc6(totNc, &funcVal, totNc, &interpolant, dE*(Nq+1), &coords,Nq, &fegeom.detJ, dE*dE*Nq, &fegeom.J, dE*dE*Nq, &fegeom.invJ));
     if (!label) {
       PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
@@ -1633,7 +1633,7 @@ PetscErrorCode DMPlexComputeL2DiffVec(DM dm, PetscReal time, PetscErrorCode (**f
     numComponents += Nc;
   }
   PetscCall(PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights));
-  PetscCheckFalse((qNc != 1) && (qNc != numComponents),PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_SIZ, "Quadrature components %D != %D field components", qNc, numComponents);
+  PetscCheck(!(qNc != 1) || !(qNc != numComponents),PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_SIZ, "Quadrature components %D != %D field components", qNc, numComponents);
   PetscCall(PetscMalloc6(numComponents,&funcVal,numComponents,&interpolant,coordDim*Nq,&coords,Nq,&fegeom.detJ,coordDim*coordDim*Nq,&fegeom.J,coordDim*coordDim*Nq,&fegeom.invJ));
   PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
   for (c = cStart; c < cEnd; ++c) {
@@ -1882,7 +1882,7 @@ PetscErrorCode DMPlexComputeGradientClementInterpolant(DM dm, Vec locX, Vec locC
     numComponents += Nc;
   }
   PetscCall(PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights));
-  PetscCheckFalse((qNc != 1) && (qNc != numComponents),PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_SIZ, "Quadrature components %D != %D field components", qNc, numComponents);
+  PetscCheck(!(qNc != 1) || !(qNc != numComponents),PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_SIZ, "Quadrature components %D != %D field components", qNc, numComponents);
   PetscCall(PetscMalloc6(coordDim*numComponents*2,&gradsum,coordDim*numComponents,&interpolant,coordDim*Nq,&coords,Nq,&fegeom.detJ,coordDim*coordDim*Nq,&fegeom.J,coordDim*coordDim*Nq,&fegeom.invJ));
   PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
   PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
@@ -3347,7 +3347,7 @@ PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *us
     PetscCall(DMPlexMatGetClosureIndicesRefined(dmf, fsection, fglobalSection, dmc, csection, cglobalSection, c, cellCIndices, cellFIndices));
     for (d = 0; d < cTotDim; ++d) {
       if ((cellCIndices[d] < startC) || (cellCIndices[d] >= endC)) continue;
-      PetscCheckFalse((findices[cellCIndices[d]-startC] >= 0) && (findices[cellCIndices[d]-startC] != cellFIndices[cmap[d]]),PETSC_COMM_SELF, PETSC_ERR_PLIB, "Coarse dof %D maps to both %D and %D", cindices[cellCIndices[d]-startC], findices[cellCIndices[d]-startC], cellFIndices[cmap[d]]);
+      PetscCheck(!(findices[cellCIndices[d]-startC] >= 0) || !(findices[cellCIndices[d]-startC] != cellFIndices[cmap[d]]),PETSC_COMM_SELF, PETSC_ERR_PLIB, "Coarse dof %D maps to both %D and %D", cindices[cellCIndices[d]-startC], findices[cellCIndices[d]-startC], cellFIndices[cmap[d]]);
       cindices[cellCIndices[d]-startC] = cellCIndices[d];
       findices[cellCIndices[d]-startC] = cellFIndices[cmap[d]];
     }
@@ -3524,7 +3524,7 @@ static PetscErrorCode DMPlexGetHybridAuxFields(DM dm, DM dmAux[], PetscDS dsAux[
 
       PetscCall(DMPlexGetSupport(dm, cone[s], &support));
       PetscCall(DMPlexGetSupportSize(dm, cone[s], &ssize));
-      PetscCheckFalse(ssize != 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %D from cell %D has support size %D != 2", cone[s], cell, ssize);
+      PetscCheck(ssize == 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %D from cell %D has support size %D != 2", cone[s], cell, ssize);
       if      (support[0] == cell) scell = support[1];
       else if (support[1] == cell) scell = support[0];
       else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %D does not have cell %D in its support", cone[s], cell);

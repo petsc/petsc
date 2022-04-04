@@ -13,7 +13,7 @@ int main(int argc,char **argv)
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&nproc));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  PetscCheckFalse(nproc != 2,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This test can only run on two MPI ranks");
+  PetscCheck(nproc == 2,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This test can only run on two MPI ranks");
 
   /* Create an MPI vector x of size 12 on two processes, and set x = {0, 1, 2, .., 11} */
   PetscCall(VecCreateMPI(PETSC_COMM_WORLD,6,PETSC_DECIDE,&x));

@@ -22,10 +22,10 @@ int main(int argc,char **argv)
   */
   PetscCall(ISCreateStride(PETSC_COMM_SELF,0,0,2,&is));
   PetscCall(ISGetSize(is,&n));
-  PetscCheckFalse(n != 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISCreateStride");
+  PetscCheck(n == 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISCreateStride");
   PetscCall(ISStrideGetInfo(is,&start,&stride));
-  PetscCheckFalse(start != 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISStrideGetInfo");
-  PetscCheckFalse(stride != 2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISStrideGetInfo");
+  PetscCheck(start == 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISStrideGetInfo");
+  PetscCheck(stride == 2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISStrideGetInfo");
   PetscCall(PetscObjectTypeCompare((PetscObject)is,ISSTRIDE,&flg));
   PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISStride");
   PetscCall(ISGetIndices(is,&ii));

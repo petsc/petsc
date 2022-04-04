@@ -386,7 +386,7 @@ PetscErrorCode PCApplyRichardson_Telescope_CoarseDM(PC pc,Vec x,Vec y,Vec w,Pets
   ctx = (PC_Telescope_CoarseDMCtx*)sred->dm_ctx;
   yred = sred->yred;
 
-  PetscCheckFalse(its > 1,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PCApplyRichardson_Telescope_CoarseDM only supports max_it = 1");
+  PetscCheck(its <= 1,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PCApplyRichardson_Telescope_CoarseDM only supports max_it = 1");
   *reason = (PCRichardsonConvergedReason)0;
 
   if (!zeroguess) {

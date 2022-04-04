@@ -275,7 +275,7 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
   PetscBool      pcnone;
 
   PetscFunctionBegin;
-  PetscCheckFalse(ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for exact final time option 'MATCHSTEP' when using Sundials");
+  PetscCheck(ts->exact_final_time != TS_EXACTFINALTIME_MATCHSTEP,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for exact final time option 'MATCHSTEP' when using Sundials");
 
   /* get the vector size */
   PetscCall(VecGetSize(ts->vec_sol,&glosize));
@@ -329,8 +329,8 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
   if (cvode->mindt > 0) {
     flag = CVodeSetMinStep(mem,(realtype)cvode->mindt);
     if (flag) {
-      PetscCheckFalse(flag == CV_MEM_NULL,PetscObjectComm((PetscObject)ts),PETSC_ERR_LIB,"CVodeSetMinStep() failed, cvode_mem pointer is NULL");
-      else PetscCheckFalse(flag == CV_ILL_INPUT,PetscObjectComm((PetscObject)ts),PETSC_ERR_LIB,"CVodeSetMinStep() failed, hmin is nonpositive or it exceeds the maximum allowable step size");
+      PetscCheck(flag != CV_MEM_NULL,PetscObjectComm((PetscObject)ts),PETSC_ERR_LIB,"CVodeSetMinStep() failed, cvode_mem pointer is NULL");
+      else PetscCheck(flag != CV_ILL_INPUT,PetscObjectComm((PetscObject)ts),PETSC_ERR_LIB,"CVodeSetMinStep() failed, hmin is nonpositive or it exceeds the maximum allowable step size");
       else SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_LIB,"CVodeSetMinStep() failed");
     }
   }

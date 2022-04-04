@@ -334,7 +334,7 @@ PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const
 
   PetscFunctionBegin;
   if (ncolors != PETSC_DECIDE && ncolors > IS_COLORING_MAX) {
-    PetscCheckFalse(ncolors > PETSC_MAX_UINT16,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Max color value exceeds %d limit. This number is unrealistic. Perhaps a bug in code?\nCurrent max: %d user requested: %" PetscInt_FMT,PETSC_MAX_UINT16,PETSC_IS_COLORING_MAX,ncolors);
+    PetscCheck(ncolors <= PETSC_MAX_UINT16,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Max color value exceeds %d limit. This number is unrealistic. Perhaps a bug in code?\nCurrent max: %d user requested: %" PetscInt_FMT,PETSC_MAX_UINT16,PETSC_IS_COLORING_MAX,ncolors);
     else                 SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Max color value exceeds limit. Perhaps reconfigure PETSc with --with-is-color-value-type=short?\n Current max: %d user requested: %" PetscInt_FMT,PETSC_IS_COLORING_MAX,ncolors);
   }
   PetscCall(PetscNew(iscoloring));
@@ -364,7 +364,7 @@ PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const
   }
   ncwork++;
   PetscCall(MPIU_Allreduce(&ncwork,&nc,1,MPIU_INT,MPI_MAX,comm));
-  PetscCheckFalse(nc > ncolors,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of colors passed in %" PetscInt_FMT " is less then the actual number of colors in array %" PetscInt_FMT,ncolors,nc);
+  PetscCheck(nc <= ncolors,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of colors passed in %" PetscInt_FMT " is less then the actual number of colors in array %" PetscInt_FMT,ncolors,nc);
   (*iscoloring)->n      = nc;
   (*iscoloring)->is     = NULL;
   (*iscoloring)->N      = n;
@@ -426,7 +426,7 @@ PetscErrorCode  ISBuildTwoSided(IS ito,IS toindx, IS *rows)
    PetscCall(PetscCalloc2(size,&tosizes_tmp,size+1,&tooffsets_tmp));
    for (i=0; i<ito_ln; i++) {
      if (ito_indices[i]<0) continue;
-     else PetscCheckFalse(ito_indices[i]>=size,comm,PETSC_ERR_ARG_OUTOFRANGE,"target rank %" PetscInt_FMT " is larger than communicator size %d ",ito_indices[i],size);
+     else PetscCheck(ito_indices[i]<size,comm,PETSC_ERR_ARG_OUTOFRANGE,"target rank %" PetscInt_FMT " is larger than communicator size %d ",ito_indices[i],size);
      tosizes_tmp[ito_indices[i]]++;
    }
    nto = 0;
@@ -627,7 +627,7 @@ PetscErrorCode  ISPartitioningCount(IS part,PetscInt len,PetscInt count[])
     for (i=0; i<n; i++) np = PetscMax(np,indices[i]);
     PetscCall(MPIU_Allreduce(&np,&npt,1,MPIU_INT,MPI_MAX,comm));
     np   = npt+1; /* so that it looks like a MPI_Comm_size output */
-    PetscCheckFalse(np > len,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Length of count array %" PetscInt_FMT " is less than number of partitions %" PetscInt_FMT,len,np);
+    PetscCheck(np <= len,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Length of count array %" PetscInt_FMT " is less than number of partitions %" PetscInt_FMT,len,np);
   }
 
   /*
@@ -797,8 +797,8 @@ PetscErrorCode  ISComplement(IS is,PetscInt nmin,PetscInt nmax,IS *isout)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(isout,4);
-  PetscCheckFalse(nmin < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nmin %" PetscInt_FMT " cannot be negative",nmin);
-  PetscCheckFalse(nmin > nmax,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nmin %" PetscInt_FMT " cannot be greater than nmax %" PetscInt_FMT,nmin,nmax);
+  PetscCheck(nmin >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nmin %" PetscInt_FMT " cannot be negative",nmin);
+  PetscCheck(nmin <= nmax,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nmin %" PetscInt_FMT " cannot be greater than nmax %" PetscInt_FMT,nmin,nmax);
   PetscCall(ISSorted(is,&sorted));
   PetscCheck(sorted,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Index set must be sorted");
 
@@ -806,8 +806,8 @@ PetscErrorCode  ISComplement(IS is,PetscInt nmin,PetscInt nmax,IS *isout)
   PetscCall(ISGetIndices(is,&indices));
   if (PetscDefined(USE_DEBUG)) {
     for (i=0; i<n; i++) {
-      PetscCheckFalse(indices[i] <  nmin,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index %" PetscInt_FMT "'s value %" PetscInt_FMT " is smaller than minimum given %" PetscInt_FMT,i,indices[i],nmin);
-      PetscCheckFalse(indices[i] >= nmax,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index %" PetscInt_FMT "'s value %" PetscInt_FMT " is larger than maximum given %" PetscInt_FMT,i,indices[i],nmax);
+      PetscCheck(indices[i] >=  nmin,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index %" PetscInt_FMT "'s value %" PetscInt_FMT " is smaller than minimum given %" PetscInt_FMT,i,indices[i],nmin);
+      PetscCheck(indices[i] < nmax,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index %" PetscInt_FMT "'s value %" PetscInt_FMT " is larger than maximum given %" PetscInt_FMT,i,indices[i],nmax);
     }
   }
   /* Count number of unique entries */
@@ -821,7 +821,7 @@ PetscErrorCode  ISComplement(IS is,PetscInt nmin,PetscInt nmax,IS *isout)
     if (j<n && i==indices[j]) do { j++; } while (j<n && i==indices[j]);
     else nindices[cnt++] = i;
   }
-  PetscCheckFalse(cnt != nmax-nmin-unique,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of entries found in complement %" PetscInt_FMT " does not match expected %" PetscInt_FMT,cnt,nmax-nmin-unique);
+  PetscCheck(cnt == nmax-nmin-unique,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of entries found in complement %" PetscInt_FMT " does not match expected %" PetscInt_FMT,cnt,nmax-nmin-unique);
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)is),cnt,nindices,PETSC_OWN_POINTER,isout));
   PetscCall(ISRestoreIndices(is,&indices));
   PetscFunctionReturn(0);

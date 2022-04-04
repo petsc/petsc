@@ -513,7 +513,7 @@ static PetscErrorCode check_vals(PetscInt ex, PetscInt ey, PetscInt ez, PetscInt
 
   PetscFunctionBeginUser;
   for (i=0; i<n; ++i) {
-    PetscCheckFalse(ref[i] != computed[i],PETSC_COMM_SELF,PETSC_ERR_PLIB,"(%D,%D,%D) Assertion Failure. (ref[%D]) %g != %g (computed)[%D]",ex,ey,ez,i,(double)PetscRealPart(ref[i]),(double)PetscRealPart(computed[i]),i);
+    PetscCheck(ref[i] == computed[i],PETSC_COMM_SELF,PETSC_ERR_PLIB,"(%D,%D,%D) Assertion Failure. (ref[%D]) %g != %g (computed)[%D]",ex,ey,ez,i,(double)PetscRealPart(ref[i]),(double)PetscRealPart(computed[i]),i);
   }
   PetscFunctionReturn(0);
 }

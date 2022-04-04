@@ -959,9 +959,9 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   /* Get the local and shared vertices and cache it */
-  PetscCheckFalse(dmmoab->mbiface == NULL,PETSC_COMM_WORLD, PETSC_ERR_ORDER, "Set the MOAB Interface before calling SetUp.");
+  PetscCheck(dmmoab->mbiface != NULL,PETSC_COMM_WORLD, PETSC_ERR_ORDER, "Set the MOAB Interface before calling SetUp.");
 #ifdef MOAB_HAVE_MPI
-  PetscCheckFalse(dmmoab->pcomm == NULL,PETSC_COMM_WORLD, PETSC_ERR_ORDER, "Set the MOAB ParallelComm object before calling SetUp.");
+  PetscCheck(dmmoab->pcomm != NULL,PETSC_COMM_WORLD, PETSC_ERR_ORDER, "Set the MOAB ParallelComm object before calling SetUp.");
 #endif
 
   /* Get the entities recursively in the current part of the mesh, if user did not set the local vertices explicitly */

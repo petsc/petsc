@@ -78,7 +78,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
   alpha = bt->alpha;
 
   PetscCall(SNESGetJacobian(snes, &jac, NULL, NULL, NULL));
-  PetscCheckFalse(!jac && !objective,PetscObjectComm((PetscObject)linesearch), PETSC_ERR_USER, "SNESLineSearchBT requires a Jacobian matrix");
+  PetscCheck(jac || objective,PetscObjectComm((PetscObject)linesearch), PETSC_ERR_USER, "SNESLineSearchBT requires a Jacobian matrix");
 
   PetscCall(SNESLineSearchPreCheck(linesearch,X,Y,&changed_y));
   PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_SUCCEEDED));

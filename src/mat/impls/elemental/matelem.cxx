@@ -133,7 +133,7 @@ static PetscErrorCode MatSetValues_Elemental(Mat A,PetscInt nr,const PetscInt *r
         PetscCheckFalse(crank < 0 || cidx < 0 || ecol < 0,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Incorrect col translation");
         if (!a->emat->IsLocal(erow,ecol)) { /* off-proc entry */
           /* printf("Will later remotely update (%d,%d)\n",erow,ecol); */
-          PetscCheckFalse(imode != ADD_VALUES,PETSC_COMM_SELF,PETSC_ERR_SUP,"Only ADD_VALUES to off-processor entry is supported");
+          PetscCheck(imode == ADD_VALUES,PETSC_COMM_SELF,PETSC_ERR_SUP,"Only ADD_VALUES to off-processor entry is supported");
           ++numQueues;
           continue;
         }
@@ -175,7 +175,7 @@ static PetscErrorCode MatSetValues_Elemental(Mat A,PetscInt nr,const PetscInt *r
         PetscCheckFalse(rrank < 0 || ridx < 0 || erow < 0,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Incorrect row translation");
         if (!a->emat->IsLocal(erow,ecol)) { /* off-proc entry */
           /* printf("Will later remotely update (%d,%d)\n",erow,ecol); */
-          PetscCheckFalse(imode != ADD_VALUES,PETSC_COMM_SELF,PETSC_ERR_SUP,"Only ADD_VALUES to off-processor entry is supported");
+          PetscCheck(imode == ADD_VALUES,PETSC_COMM_SELF,PETSC_ERR_SUP,"Only ADD_VALUES to off-processor entry is supported");
           ++numQueues;
           continue;
         }

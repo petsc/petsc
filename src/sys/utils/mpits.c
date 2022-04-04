@@ -39,7 +39,7 @@ PetscErrorCode PetscCommBuildTwoSidedSetType(MPI_Comm comm,PetscBuildTwoSidedTyp
     b1[0] = -(PetscMPIInt)twosided;
     b1[1] = (PetscMPIInt)twosided;
     PetscCall(MPIU_Allreduce(b1,b2,2,MPI_INT,MPI_MAX,comm));
-    PetscCheckFalse(-b2[0] != b2[1],comm,PETSC_ERR_ARG_WRONG,"Enum value must be same on all processes");
+    PetscCheck(-b2[0] == b2[1],comm,PETSC_ERR_ARG_WRONG,"Enum value must be same on all processes");
   }
   _twosided_type = twosided;
   PetscFunctionReturn(0);
@@ -89,7 +89,7 @@ static PetscErrorCode PetscCommBuildTwoSided_Ibarrier(MPI_Comm comm,PetscMPIInt 
   PetscFunctionBegin;
   PetscCall(PetscCommDuplicate(comm,&comm,&tag));
   PetscCallMPI(MPI_Type_get_extent(dtype,&lb,&unitbytes));
-  PetscCheckFalse(lb != 0,comm,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld",(long)lb);
+  PetscCheck(lb == 0,comm,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld",(long)lb);
   tdata = (char*)todata;
   PetscCall(PetscMalloc1(nto,&sendreqs));
   for (i=0; i<nto; i++) {
@@ -213,7 +213,7 @@ static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm,PetscMPIIn
   for (i=0; i<nto; i++) iflags[toranks[i]] = 1;
   PetscCallMPI(MPI_Reduce_scatter_block(iflags,&nrecvs,1,MPI_INT,MPI_SUM,comm));
   PetscCallMPI(MPI_Type_get_extent(dtype,&lb,&unitbytes));
-  PetscCheckFalse(lb != 0,comm,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld",(long)lb);
+  PetscCheck(lb == 0,comm,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld",(long)lb);
   PetscCall(PetscMalloc(nrecvs*count*unitbytes,&fdata));
   tdata    = (char*)todata;
   PetscCall(PetscMalloc2(nto+nrecvs,&reqs,nto+nrecvs,&statuses));
@@ -330,7 +330,7 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Reference(MPI_Comm comm,PetscMP
   PetscCall(PetscMalloc1(*nfrom*ntags,&recvreq));
 
   PetscCallMPI(MPI_Type_get_extent(dtype,&lb,&unitbytes));
-  PetscCheckFalse(lb != 0,comm,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld",(long)lb);
+  PetscCheck(lb == 0,comm,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld",(long)lb);
   for (i=0; i<nto; i++) {
     PetscMPIInt k;
     for (k=0; k<ntags; k++) sendreq[i*ntags+k] = MPI_REQUEST_NULL;
@@ -370,7 +370,7 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Ibarrier(MPI_Comm comm,PetscMPI
     PetscCall(PetscCommGetNewTag(comm,&tags[i]));
   }
   PetscCallMPI(MPI_Type_get_extent(dtype,&lb,&unitbytes));
-  PetscCheckFalse(lb != 0,comm,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld",(long)lb);
+  PetscCheck(lb == 0,comm,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld",(long)lb);
   tdata = (char*)todata;
   PetscCall(PetscMalloc1(nto,&sendreqs));
   PetscCall(PetscMalloc1(nto*ntags,&usendreqs));

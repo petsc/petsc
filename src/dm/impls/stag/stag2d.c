@@ -175,7 +175,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm)
       PetscInt Ncheck,j;
       Ncheck = 0;
       for (j=0; j<stag->nRanks[i]; ++j) Ncheck += stag->l[i][j];
-      PetscCheckFalse(Ncheck != stag->N[i],PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local sizes in dimension %d don't add up. %d != %d",i,Ncheck,stag->N[i]);
+      PetscCheck(Ncheck == stag->N[i],PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local sizes in dimension %d don't add up. %d != %d",i,Ncheck,stag->N[i]);
     }
   }
 
@@ -624,7 +624,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm)
       }
     }
 
-    PetscCheckFalse(count != entriesToTransferTotal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of entries computed in gtol (%d) is not as expected (%d)",count,entriesToTransferTotal);
+    PetscCheck(count == entriesToTransferTotal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of entries computed in gtol (%d) is not as expected (%d)",count,entriesToTransferTotal);
 
     /* Create Local and Global ISs (transferring pointer ownership) */
     PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)dm),entriesToTransferTotal,idxLocal,PETSC_OWN_POINTER,&isLocal));
@@ -1028,12 +1028,12 @@ static PetscErrorCode DMStagSetUpBuildRankGrid_2d(DM dm)
   m = stag->nRanks[0];
   n = stag->nRanks[1];
   if (m != PETSC_DECIDE) {
-    PetscCheckFalse(m < 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of ranks in X direction: %D",m);
-    else PetscCheckFalse(m > size,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Too many ranks in X direction: %D %d",m,size);
+    PetscCheck(m >= 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of ranks in X direction: %D",m);
+    else PetscCheck(m <= size,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Too many ranks in X direction: %D %d",m,size);
   }
   if (n != PETSC_DECIDE) {
-    PetscCheckFalse(n < 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of ranks in Y direction: %D",n);
-    else PetscCheckFalse(n > size,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Too many ranks in Y direction: %D %d",n,size);
+    PetscCheck(n >= 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of ranks in Y direction: %D",n);
+    else PetscCheck(n <= size,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Too many ranks in Y direction: %D %d",n,size);
   }
   if (m == PETSC_DECIDE || n == PETSC_DECIDE) {
     if (n != PETSC_DECIDE) {
@@ -1051,10 +1051,10 @@ static PetscErrorCode DMStagSetUpBuildRankGrid_2d(DM dm)
       }
       if (M > N && m < n) {PetscInt _m = m; m = n; n = _m;}
     }
-    PetscCheckFalse(m*n != size,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Unable to create partition, check the size of the communicator and input m and n ");
-  } else PetscCheckFalse(m*n != size,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Given Bad partition. Product of sizes (%D) does not equal communicator size (%d)",m*n,size);
-  PetscCheckFalse(M < m,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Partition in x direction is too fine! %D %D",M,m);
-  PetscCheckFalse(N < n,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Partition in y direction is too fine! %D %D",N,n);
+    PetscCheck(m*n == size,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Unable to create partition, check the size of the communicator and input m and n ");
+  } else PetscCheck(m*n == size,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Given Bad partition. Product of sizes (%D) does not equal communicator size (%d)",m*n,size);
+  PetscCheck(M >= m,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Partition in x direction is too fine! %D %D",M,m);
+  PetscCheck(N >= n,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Partition in y direction is too fine! %D %D",N,n);
   stag->nRanks[0] = m;
   stag->nRanks[1] = n;
   PetscFunctionReturn(0);

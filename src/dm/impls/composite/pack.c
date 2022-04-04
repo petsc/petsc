@@ -1492,7 +1492,7 @@ PetscErrorCode  DMCreateInterpolation_Composite(DM coarse,DM fine,Mat *A,Vec *v)
   PetscCall(DMRestoreGlobalVector(fine,&gfine));
 
   nDM = comfine->nDM;
-  PetscCheckFalse(nDM != comcoarse->nDM,PetscObjectComm((PetscObject)fine),PETSC_ERR_ARG_INCOMP,"Fine DMComposite has %D entries, but coarse has %D",nDM,comcoarse->nDM);
+  PetscCheck(nDM == comcoarse->nDM,PetscObjectComm((PetscObject)fine),PETSC_ERR_ARG_INCOMP,"Fine DMComposite has %D entries, but coarse has %D",nDM,comcoarse->nDM);
   PetscCall(PetscCalloc1(nDM*nDM,&mats));
   if (v) {
     PetscCall(PetscCalloc1(nDM,&vecs));
@@ -1544,7 +1544,7 @@ PetscErrorCode  DMCreateColoring_Composite(DM dm,ISColoringType ctype,ISColoring
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscCheckFalse(ctype == IS_COLORING_LOCAL,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only global coloring supported");
+  PetscCheck(ctype != IS_COLORING_LOCAL,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only global coloring supported");
   else if (ctype == IS_COLORING_GLOBAL) {
     n = com->n;
   } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Unknown ISColoringType");

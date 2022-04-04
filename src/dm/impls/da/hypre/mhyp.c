@@ -33,7 +33,7 @@ PetscErrorCode  MatSetValuesLocal_HYPREStruct_3d(Mat mat,PetscInt nrow,const Pet
   Mat_HYPREStruct *ex     = (Mat_HYPREStruct*) mat->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(ncol > 7,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"ncol %D > 7 too large",ncol);
+  PetscCheck(ncol <= 7,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"ncol %D > 7 too large",ncol);
   for (i=0; i<nrow; i++) {
     for (j=0; j<ncol; j++) {
       stencil = icol[j] - irow[i];
@@ -75,7 +75,7 @@ PetscErrorCode  MatZeroRowsLocal_HYPREStruct_3d(Mat mat,PetscInt nrow,const Pets
   Mat_HYPREStruct *ex = (Mat_HYPREStruct*) mat->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(x && b,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"No support");
+  PetscCheck(!x || !b,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"No support");
   PetscCall(PetscArrayzero(values,7));
   PetscCall(PetscHYPREScalarCast(d,&values[3]));
   for (i=0; i<nrow; i++) {
@@ -140,7 +140,7 @@ static PetscErrorCode  MatSetUp_HYPREStruct(Mat mat)
   ex->hbox.imax[2] = hupper[2];
 
   /* create the hypre grid object and set its information */
-  PetscCheckFalse(dof > 1,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Currently only support for scalar problems");
+  PetscCheck(dof <= 1,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Currently only support for scalar problems");
   PetscCheckFalse(px || py || pz,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Ask us to add periodic support by calling HYPRE_StructGridSetPeriodic()");
   PetscStackCallStandard(HYPRE_StructGridCreate,ex->hcomm,dim,&ex->hgrid);
   PetscStackCallStandard(HYPRE_StructGridSetExtents,ex->hgrid,hlower,hupper);
@@ -150,8 +150,8 @@ static PetscErrorCode  MatSetUp_HYPREStruct(Mat mat)
   PetscStackCallStandard(HYPRE_StructGridSetNumGhost,ex->hgrid,sw);
 
   /* create the hypre stencil object and set its information */
-  PetscCheckFalse(sw[0] > 1,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Ask us to add support for wider stencils");
-  PetscCheckFalse(st == DMDA_STENCIL_BOX,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Ask us to add support for box stencils");
+  PetscCheck(sw[0] <= 1,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Ask us to add support for wider stencils");
+  PetscCheck(st != DMDA_STENCIL_BOX,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Ask us to add support for box stencils");
   if (dim == 1) {
     HYPRE_Int offsets[3][1] = {{-1},{0},{1}};
     ssize = 3;
@@ -453,7 +453,7 @@ PetscErrorCode  MatZeroRowsLocal_HYPRESStruct_3d(Mat mat,PetscInt nrow,const Pet
   PetscInt         row;
 
   PetscFunctionBegin;
-  PetscCheckFalse(x && b,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"No support");
+  PetscCheck(!x || !b,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"No support");
   PetscCall(PetscMalloc1(7*nvars,&entries));
 
   PetscCall(PetscMalloc1(nvars,&values));
@@ -583,8 +583,8 @@ static PetscErrorCode  MatSetUp_HYPRESStruct(Mat mat)
   /* PetscStackCallStandard(HYPRE_SStructGridSetNumGhost,ex->ss_grid,sw); */
 
   /* create the hypre stencil object and set its information */
-  PetscCheckFalse(sw[0] > 1,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Ask us to add support for wider stencils");
-  PetscCheckFalse(st == DMDA_STENCIL_BOX,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Ask us to add support for box stencils");
+  PetscCheck(sw[0] <= 1,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Ask us to add support for wider stencils");
+  PetscCheck(st != DMDA_STENCIL_BOX,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Ask us to add support for box stencils");
 
   if (dim == 1) {
     HYPRE_Int offsets[3][1] = {{-1},{0},{1}};

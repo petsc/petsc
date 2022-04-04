@@ -325,7 +325,7 @@ PetscErrorCode KSPSolve_LGMRES(KSP ksp)
   PetscInt       ii;        /*LGMRES_MOD variable */
 
   PetscFunctionBegin;
-  PetscCheckFalse(ksp->calc_sings && !lgmres->Rsvd,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
+  PetscCheck(!ksp->calc_sings || lgmres->Rsvd,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
 
   PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
 
@@ -428,7 +428,7 @@ static PetscErrorCode KSPLGMRESBuildSoln(PetscScalar *nrs,Vec vguess,Vec vdest,K
 
   /* solve the upper triangular system - GRS is the right side and HH is
      the upper triangular matrix  - put soln in nrs */
-  PetscCheckFalse(*HH(it,it) == 0.0,PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"HH(it,it) is identically zero; it = %D GRS(it) = %g",it,(double)PetscAbsScalar(*GRS(it)));
+  PetscCheck(*HH(it,it) != 0.0,PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"HH(it,it) is identically zero; it = %D GRS(it) = %g",it,(double)PetscAbsScalar(*GRS(it)));
   if (*HH(it,it) != 0.0) {
     nrs[it] = *GRS(it) / *HH(it,it);
   } else {
@@ -689,8 +689,8 @@ static PetscErrorCode  KSPLGMRESSetAugDim_LGMRES(KSP ksp,PetscInt aug_dim)
   KSP_LGMRES *lgmres = (KSP_LGMRES*)ksp->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(aug_dim < 0,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Augmentation dimension must be positive");
-  PetscCheckFalse(aug_dim > (lgmres->max_k -1),PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Augmentation dimension must be <= (restart size-1)");
+  PetscCheck(aug_dim >= 0,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Augmentation dimension must be positive");
+  PetscCheck(aug_dim <= (lgmres->max_k -1),PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Augmentation dimension must be <= (restart size-1)");
   lgmres->aug_dim = aug_dim;
   PetscFunctionReturn(0);
 }

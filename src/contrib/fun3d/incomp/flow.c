@@ -533,7 +533,7 @@ int Update(SNES snes,void *ctx)
 
     PetscCall(SNESGetNonlinearStepFailures(snes,&nfails));
     nfailsCum += nfails; nfails = 0;
-    PetscCheckFalse(nfailsCum >= 2,PETSC_COMM_SELF,1,"Unable to find a Newton Step");
+    PetscCheck(nfailsCum < 2,PETSC_COMM_SELF,1,"Unable to find a Newton Step");
     if (print_flag) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"At Time Step %d cfl = %g and fnorm = %g\n",
                          tsCtx->itstep,tsCtx->cfl,tsCtx->fnorm);PetscCall(ierr);
@@ -1823,7 +1823,7 @@ static PetscErrorCode PetscFWrite_FUN3D(MPI_Comm comm,FILE *fp,void *data,PetscI
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
-  PetscCheckFalse(n < 0,comm,PETSC_ERR_ARG_OUTOFRANGE,"Trying to write a negative amount of data %" PetscInt_FMT,n);
+  PetscCheck(n >= 0,comm,PETSC_ERR_ARG_OUTOFRANGE,"Trying to write a negative amount of data %" PetscInt_FMT,n);
   if (!n) PetscFunctionReturn(0);
   PetscCallMPI(MPI_Comm_rank(comm,&rank));
   if (rank == 0) {
@@ -1967,22 +1967,22 @@ static PetscErrorCode InferLocalCellConnectivity(PetscInt nnodes,PetscInt nedge,
     for (j=0; j<ntmp1; j++) {
       node1 = tmp1[j];
       PetscCheckFalse(node1 < 0 || nnodes <= node1,PETSC_COMM_SELF,1,"node index %" PetscInt_FMT " out of range [0,%" PetscInt_FMT ")",node1,nnodes);
-      PetscCheckFalse(node1 <= node0,PETSC_COMM_SELF,1,"forward neighbor of %" PetscInt_FMT " is %" PetscInt_FMT ", should be larger",node0,node1);
+      PetscCheck(node1 > node0,PETSC_COMM_SELF,1,"forward neighbor of %" PetscInt_FMT " is %" PetscInt_FMT ", should be larger",node0,node1);
       ntmp2 = ui[node1+1] - ui[node1];
       PetscCall(PetscMemcpy(tmp2,&uj[ui[node1]],ntmp2*sizeof(PetscInt)));
       PetscCall(IntersectInt(ntmp1,tmp1,&ntmp2,tmp2));
       for (k=0; k<ntmp2; k++) {
         node2 = tmp2[k];
         PetscCheckFalse(node2 < 0 || nnodes <= node2,PETSC_COMM_SELF,1,"node index %" PetscInt_FMT " out of range [0,%" PetscInt_FMT ")",node2,nnodes);
-        PetscCheckFalse(node2 <= node1,PETSC_COMM_SELF,1,"forward neighbor of %" PetscInt_FMT " is %" PetscInt_FMT ", should be larger",node1,node2);
+        PetscCheck(node2 > node1,PETSC_COMM_SELF,1,"forward neighbor of %" PetscInt_FMT " is %" PetscInt_FMT ", should be larger",node1,node2);
         ntmp3 = ui[node2+1] - ui[node2];
         PetscCall(PetscMemcpy(tmp3,&uj[ui[node2]],ntmp3*sizeof(PetscInt)));
         PetscCall(IntersectInt(ntmp2,tmp2,&ntmp3,tmp3));
         for (l=0; l<ntmp3; l++) {
           node3 = tmp3[l];
           PetscCheckFalse(node3 < 0 || nnodes <= node3,PETSC_COMM_SELF,1,"node index %" PetscInt_FMT " out of range [0,%" PetscInt_FMT ")",node3,nnodes);
-          PetscCheckFalse(node3 <= node2,PETSC_COMM_SELF,1,"forward neighbor of %" PetscInt_FMT " is %" PetscInt_FMT ", should be larger",node2,node3);
-          PetscCheckFalse(ncell > acell,PETSC_COMM_SELF,PETSC_ERR_SUP,"buffer exceeded");
+          PetscCheck(node3 > node2,PETSC_COMM_SELF,1,"forward neighbor of %" PetscInt_FMT " is %" PetscInt_FMT ", should be larger",node2,node3);
+          PetscCheck(ncell <= acell,PETSC_COMM_SELF,PETSC_ERR_SUP,"buffer exceeded");
           if (ntmp3 < 3) continue;
           conn[ncell][0] = node0;
           conn[ncell][1] = node1;
@@ -1996,7 +1996,7 @@ static PetscErrorCode InferLocalCellConnectivity(PetscInt nnodes,PetscInt nedge,
             PetscIntView(ntmp3,tmp3,viewer);
             /* uns3d.msh has a handful of "tetrahedra" that overlap by violating the following condition. As far as I
              * can tell, that means it is an invalid mesh. I don't know what the intent was. */
-            PetscCheckFalse(ntmp3 > 2,PETSC_COMM_SELF,1,"More than two ways to complete a tetrahedron using a common triangle");
+            PetscCheck(ntmp3 <= 2,PETSC_COMM_SELF,1,"More than two ways to complete a tetrahedron using a common triangle");
           }
           ncell++;
         }
@@ -2233,10 +2233,10 @@ static PetscErrorCode WritePVTU(AppCtx *user,const char *fname,PetscBool base64)
   PetscCall(VecScatterBegin(grid->scatter,grid->qnode,Xloc,INSERT_VALUES,SCATTER_FORWARD));
   PetscCall(VecScatterEnd(grid->scatter,grid->qnode,Xloc,INSERT_VALUES,SCATTER_FORWARD));
   PetscCall(VecGetBlockSize(Xloc,&bs));
-  PetscCheckFalse(bs != 4,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"expected block size 4, got %" PetscInt_FMT,bs);
+  PetscCheck(bs == 4,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"expected block size 4, got %" PetscInt_FMT,bs);
   PetscCall(VecGetSize(Xloc,&nloc));
-  PetscCheckFalse(nloc/bs != nvertices,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"expected nloc/bs=%" PetscInt_FMT " to match nvertices=%" PetscInt_FMT,nloc/bs,nvertices);
-  PetscCheckFalse(nvertices != grid->nvertices,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"expected nvertices=%" PetscInt_FMT " to match grid->nvertices=%" PetscInt_FMT,nvertices,grid->nvertices);
+  PetscCheck(nloc/bs == nvertices,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"expected nloc/bs=%" PetscInt_FMT " to match nvertices=%" PetscInt_FMT,nloc/bs,nvertices);
+  PetscCheck(nvertices == grid->nvertices,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"expected nvertices=%" PetscInt_FMT " to match grid->nvertices=%" PetscInt_FMT,nvertices,grid->nvertices);
   PetscCall(VecCreateSeq(PETSC_COMM_SELF,nvertices,&Xploc));
 
   PetscCall(VecCreate(PETSC_COMM_SELF,&Xuloc));
@@ -2473,7 +2473,7 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
   PetscCall(PetscFree(val_offd));
 
 #else
-  PetscCheckFalse(size > 1,PETSC_COMM_SELF,1,"Parallel case not supported in non-interlaced case");
+  PetscCheck(size <= 1,PETSC_COMM_SELF,1,"Parallel case not supported in non-interlaced case");
   ICALLOC(nnodes*4,&val_diag);
   ICALLOC(nnodes*4,&val_offd);
   for (j = 0; j < 4; j++)
@@ -2851,7 +2851,7 @@ int EventCountersEnd(int gen_start,PetscScalar time_start_counters)
 
   PetscCheckFalse((gen_read = read_counters(event0,&_counter0,event1,&_counter1)) < 0,PETSC_COMM_SELF,1,"Error in read_counter");
   PetscCall(PetscTime(&&time_read_counters));
-  PetscCheckFalse(gen_read != gen_start,PETSC_COMM_SELF,1,"Lost Counters!! Aborting ...");
+  PetscCheck(gen_read == gen_start,PETSC_COMM_SELF,1,"Lost Counters!! Aborting ...");
   counter0      += _counter0;
   counter1      += _counter1;
   time_counters += time_read_counters-time_start_counters;

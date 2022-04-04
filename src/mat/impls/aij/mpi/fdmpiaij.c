@@ -179,7 +179,7 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,void 
   PetscFunctionBegin;
   PetscCall(VecBoundToCPU(x1,&alreadyboundtocpu));
   PetscCall(VecBindToCPU(x1,PETSC_TRUE));
-  PetscCheckFalse((ctype == IS_COLORING_LOCAL) && (J->ops->fdcoloringapply == MatFDColoringApply_AIJ),PetscObjectComm((PetscObject)J),PETSC_ERR_SUP,"Must call MatColoringUseDM() with IS_COLORING_LOCAL");
+  PetscCheck(!(ctype == IS_COLORING_LOCAL) || !(J->ops->fdcoloringapply == MatFDColoringApply_AIJ),PetscObjectComm((PetscObject)J),PETSC_ERR_SUP,"Must call MatColoringUseDM() with IS_COLORING_LOCAL");
   /* (1) Set w1 = F(x1) */
   if (!coloring->fset) {
     PetscCall(PetscLogEventBegin(MAT_FDColoringFunction,0,0,0,0));

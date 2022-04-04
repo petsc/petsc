@@ -40,7 +40,7 @@ static PetscErrorCode DMStagGetProductCoordinateArrays_Private(DM dm,void* arrX,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscCall(DMGetDimension(dm,&dim));
-  PetscCheckFalse(dim > DMSTAG_MAX_DIM,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Not implemented for %D dimensions",dim);
+  PetscCheck(dim <= DMSTAG_MAX_DIM,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Not implemented for %D dimensions",dim);
   arr[0] = arrX; arr[1] = arrY; arr[2] = arrZ;
   PetscCall(DMGetCoordinateDM(dm,&dmCoord));
   PetscCheck(dmCoord,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"DM does not have a coordinate DM");
@@ -66,7 +66,7 @@ static PetscErrorCode DMStagGetProductCoordinateArrays_Private(DM dm,void* arrX,
     PetscCall(DMProductGetDM(dmCoord,d,&subDM));
     PetscCheck(subDM,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Coordinate DM is missing sub DM %D",d);
     PetscCall(DMGetDimension(subDM,&subDim));
-    PetscCheckFalse(subDim != 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Coordinate sub-DM is not of dimension 1");
+    PetscCheck(subDim == 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Coordinate sub-DM is not of dimension 1");
     PetscCall(DMGetType(subDM,&dmType));
     PetscCall(PetscStrcmp(DMSTAG,dmType,&isStag));
     PetscCheck(isStag,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Coordinate sub-DM is not of type DMSTAG");
@@ -76,7 +76,7 @@ static PetscErrorCode DMStagGetProductCoordinateArrays_Private(DM dm,void* arrX,
       checkDof = PETSC_TRUE;
     } else {
       for (s=0; s<DMSTAG_MAX_STRATA; ++s) {
-        PetscCheckFalse(dofCheck[s] != dof[s],PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Coordinate sub-DMs have different dofs");
+        PetscCheck(dofCheck[s] == dof[s],PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Coordinate sub-DMs have different dofs");
       }
     }
     PetscCall(DMGetCoordinatesLocal(subDM,&coord1d_local));
@@ -201,7 +201,7 @@ PETSC_EXTERN PetscErrorCode DMStagGetProductCoordinateLocationSlot(DM dm,DMStagS
     PetscCall(DMProductGetDM(dmCoord,d,&subDM));
     PetscCheck(subDM,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Coordinate DM is missing sub DM %D",d);
     PetscCall(DMGetDimension(subDM,&subDim));
-    PetscCheckFalse(subDim != 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Coordinate sub-DM is not of dimension 1");
+    PetscCheck(subDim == 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Coordinate sub-DM is not of dimension 1");
     PetscCall(DMGetType(subDM,&dmType));
     PetscCall(PetscStrcmp(DMSTAG,dmType,&isStag));
     PetscCheck(isStag,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Coordinate sub-DM is not of type DMSTAG");
@@ -212,7 +212,7 @@ PETSC_EXTERN PetscErrorCode DMStagGetProductCoordinateLocationSlot(DM dm,DMStagS
       PetscCall(DMStagGetLocationSlot(subDM,loc,component,slot));
     } else {
       for (s=0; s<DMSTAG_MAX_STRATA; ++s) {
-        PetscCheckFalse(dofCheck[s] != dof[s],PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Coordinate sub-DMs have different dofs");
+        PetscCheck(dofCheck[s] == dof[s],PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Coordinate sub-DMs have different dofs");
       }
     }
   }
@@ -697,8 +697,8 @@ PetscErrorCode DMStagGetLocationSlot(DM dm,DMStagStencilLocation loc,PetscInt c,
   if (PetscDefined(USE_DEBUG)) {
     PetscInt       dof;
     PetscCall(DMStagGetLocationDOF(dm,loc,&dof));
-    PetscCheckFalse(dof < 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Location %s has no dof attached",DMStagStencilLocations[loc]);
-    PetscCheckFalse(c > dof-1,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Supplied component number (%D) for location %s is too big (maximum %D)",c,DMStagStencilLocations[loc],dof-1);
+    PetscCheck(dof >= 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Location %s has no dof attached",DMStagStencilLocations[loc]);
+    PetscCheck(c <= dof-1,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Supplied component number (%D) for location %s is too big (maximum %D)",c,DMStagStencilLocations[loc],dof-1);
   }
   *slot = stag->locationOffsets[loc] + c;
   PetscFunctionReturn(0);
@@ -742,7 +742,7 @@ PetscErrorCode DMStagMigrateVec(DM dm,Vec vec,DM dmTo,Vec vecTo)
   PetscValidHeaderSpecificType(dmTo,DM_CLASSID,3,DMSTAG);
   PetscValidHeaderSpecific(vecTo,VEC_CLASSID,4);
   PetscCall(DMGetCompatibility(dm,dmTo,&compatible,&compatibleSet));
-  PetscCheckFalse(!compatibleSet || !compatible,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_INCOMP,"DMStag objects must be shown to be compatible");
+  PetscCheck(compatibleSet && compatible,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_INCOMP,"DMStag objects must be shown to be compatible");
   PetscCall(DMGetDimension(dm,&dim));
   PetscCall(VecGetLocalSize(vec,&nLocal));
   PetscCall(VecGetLocalSize(vecTo,&nLocalTo));
@@ -882,7 +882,7 @@ static PetscErrorCode DMStagRestoreProductCoordinateArrays_Private(DM dm,void *a
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscCall(DMGetDimension(dm,&dim));
-  PetscCheckFalse(dim > DMSTAG_MAX_DIM,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Not implemented for %D dimensions",dim);
+  PetscCheck(dim <= DMSTAG_MAX_DIM,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Not implemented for %D dimensions",dim);
   arr[0] = arrX; arr[1] = arrY; arr[2] = arrZ;
   PetscCall(DMGetCoordinateDM(dm,&dmCoord));
   for (d=0; d<dim; ++d) {
@@ -1050,8 +1050,8 @@ PetscErrorCode DMStagSetDOF(DM dm,PetscInt dof0, PetscInt dof1,PetscInt dof2,Pet
   PetscValidLogicalCollectiveInt(dm,dof3,5);
   PetscCheck(!dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
   PetscCall(DMGetDimension(dm,&dim));
-  PetscCheckFalse(dof0 < 0,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"dof0 cannot be negative");
-  PetscCheckFalse(dof1 < 0,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"dof1 cannot be negative");
+  PetscCheck(dof0 >= 0,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"dof0 cannot be negative");
+  PetscCheck(dof1 >= 0,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"dof1 cannot be negative");
   PetscCheckFalse(dim > 1 && dof2 < 0,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"dof2 cannot be negative");
   PetscCheckFalse(dim > 2 && dof3 < 0,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"dof3 cannot be negative");
                stag->dof[0] = dof0;
@@ -1147,7 +1147,7 @@ PetscErrorCode DMStagSetStencilWidth(DM dm,PetscInt stencilWidth)
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
   PetscValidLogicalCollectiveInt(dm,stencilWidth,2);
   PetscCheck(!dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
-  PetscCheckFalse(stencilWidth < 0,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Stencil width must be non-negative");
+  PetscCheck(stencilWidth >= 0,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Stencil width must be non-negative");
   stag->stencilWidth = stencilWidth;
   PetscFunctionReturn(0);
 }
@@ -1177,7 +1177,7 @@ PetscErrorCode DMStagSetGlobalSizes(DM dm,PetscInt N0,PetscInt N1,PetscInt N2)
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
   PetscCheck(!dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
   PetscCall(DMGetDimension(dm,&dim));
-  PetscCheckFalse(N0 < 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_SIZ,"Number of elements in X direction must be positive");
+  PetscCheck(N0 >= 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_SIZ,"Number of elements in X direction must be positive");
   PetscCheckFalse(dim > 1 && N1 < 0,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_SIZ,"Number of elements in Y direction must be positive");
   PetscCheckFalse(dim > 2 && N2 < 0,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_SIZ,"Number of elements in Z direction must be positive");
   if (N0) stag->N[0] = N0;
@@ -1215,7 +1215,7 @@ PetscErrorCode DMStagSetOwnershipRanges(DM dm,PetscInt const *lx,PetscInt const 
   PetscCall(DMGetDimension(dm,&dim));
   for (d=0; d<dim; ++d) {
     if (lin[d]) {
-      PetscCheckFalse(stag->nRanks[d] < 0,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot set ownership ranges before setting number of ranks");
+      PetscCheck(stag->nRanks[d] >= 0,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot set ownership ranges before setting number of ranks");
       if (!stag->l[d]) {
         PetscCall(PetscMalloc1(stag->nRanks[d], &stag->l[d]));
       }
@@ -1301,7 +1301,7 @@ PetscErrorCode DMStagSetUniformCoordinatesExplicit(DM dm,PetscReal xmin,PetscRea
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
   PetscCheck(dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called after DMSetUp()");
   PetscCall(PetscStrcmp(stag->coordinateDMType,DMSTAG,&flg));
-  PetscCheckFalse(stag->coordinateDMType && !flg,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Refusing to change an already-set DM coordinate type");
+  PetscCheck(!stag->coordinateDMType || flg,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Refusing to change an already-set DM coordinate type");
   PetscCall(DMStagSetCoordinateDMType(dm,DMSTAG));
   PetscCall(DMGetDimension(dm,&dim));
   switch (dim) {
@@ -1349,7 +1349,7 @@ PetscErrorCode DMStagSetUniformCoordinatesProduct(DM dm,PetscReal xmin,PetscReal
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
   PetscCheck(dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called after DMSetUp()");
   PetscCall(PetscStrcmp(stag->coordinateDMType,DMPRODUCT,&flg));
-  PetscCheckFalse(stag->coordinateDMType && !flg,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Refusing to change an already-set DM coordinate type");
+  PetscCheck(!stag->coordinateDMType || flg,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Refusing to change an already-set DM coordinate type");
   PetscCall(DMStagSetCoordinateDMType(dm,DMPRODUCT));
   PetscCall(DMGetCoordinateDM(dm,&dmc));
   PetscCall(DMGetDimension(dm,&dim));
@@ -1445,7 +1445,7 @@ PetscErrorCode DMStagVecGetArray(DM dm,Vec vec,void *array)
   PetscValidHeaderSpecific(vec,VEC_CLASSID,2);
   PetscCall(DMGetDimension(dm,&dim));
   PetscCall(VecGetLocalSize(vec,&nLocal));
-  PetscCheckFalse(nLocal != stag->entriesGhost,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMStag local size %D",nLocal,stag->entriesGhost);
+  PetscCheck(nLocal == stag->entriesGhost,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMStag local size %D",nLocal,stag->entriesGhost);
   switch (dim) {
     case 1:
       PetscCall(VecGetArray2d(vec,stag->nGhost[0],stag->entriesPerElement,stag->startGhost[0],0,(PetscScalar***)array));
@@ -1493,7 +1493,7 @@ PetscErrorCode DMStagVecGetArrayRead(DM dm,Vec vec,void *array)
   PetscValidHeaderSpecific(vec,VEC_CLASSID,2);
   PetscCall(DMGetDimension(dm,&dim));
   PetscCall(VecGetLocalSize(vec,&nLocal));
-  PetscCheckFalse(nLocal != stag->entriesGhost,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMStag local size %D",nLocal,stag->entriesGhost);
+  PetscCheck(nLocal == stag->entriesGhost,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMStag local size %D",nLocal,stag->entriesGhost);
   switch (dim) {
     case 1:
       PetscCall(VecGetArray2dRead(vec,stag->nGhost[0],stag->entriesPerElement,stag->startGhost[0],0,(PetscScalar***)array));
@@ -1536,7 +1536,7 @@ PetscErrorCode DMStagVecRestoreArray(DM dm,Vec vec,void *array)
   PetscValidHeaderSpecific(vec,VEC_CLASSID,2);
   PetscCall(DMGetDimension(dm,&dim));
   PetscCall(VecGetLocalSize(vec,&nLocal));
-  PetscCheckFalse(nLocal != stag->entriesGhost,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMStag local size %D",nLocal,stag->entriesGhost);
+  PetscCheck(nLocal == stag->entriesGhost,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMStag local size %D",nLocal,stag->entriesGhost);
   switch (dim) {
     case 1:
       PetscCall(VecRestoreArray2d(vec,stag->nGhost[0],stag->entriesPerElement,stag->startGhost[0],0,(PetscScalar***)array));
@@ -1579,7 +1579,7 @@ PetscErrorCode DMStagVecRestoreArrayRead(DM dm,Vec vec,void *array)
   PetscValidHeaderSpecific(vec,VEC_CLASSID,2);
   PetscCall(DMGetDimension(dm,&dim));
   PetscCall(VecGetLocalSize(vec,&nLocal));
-  PetscCheckFalse(nLocal != stag->entriesGhost,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMStag local size %D",nLocal,stag->entriesGhost);
+  PetscCheck(nLocal == stag->entriesGhost,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMStag local size %D",nLocal,stag->entriesGhost);
   switch (dim) {
     case 1:
       PetscCall(VecRestoreArray2dRead(vec,stag->nGhost[0],stag->entriesPerElement,stag->startGhost[0],0,(PetscScalar***)array));

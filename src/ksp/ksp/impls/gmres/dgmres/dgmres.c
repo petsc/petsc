@@ -244,7 +244,7 @@ PetscErrorCode KSPSolve_DGMRES(KSP ksp)
   PetscBool      guess_zero = ksp->guess_zero;
 
   PetscFunctionBegin;
-  PetscCheckFalse(ksp->calc_sings && !dgmres->Rsvd,PetscObjectComm((PetscObject)ksp), PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
+  PetscCheck(!ksp->calc_sings || dgmres->Rsvd,PetscObjectComm((PetscObject)ksp), PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
 
   PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
   ksp->its        = 0;
@@ -342,7 +342,7 @@ static PetscErrorCode KSPDGMRESBuildSoln(PetscScalar *nrs,Vec vs,Vec vdest,KSP k
     PetscCall(VecCopy(vs,vdest));     /* VecCopy() is smart, exists immediately if vguess == vdest */
     PetscFunctionReturn(0);
   }
-  PetscCheckFalse(*HH(it,it) == 0.0,PetscObjectComm((PetscObject)ksp), PETSC_ERR_CONV_FAILED,"Likely your matrix is the zero operator. HH(it,it) is identically zero; it = %D GRS(it) = %g",it,(double)PetscAbsScalar(*GRS(it)));
+  PetscCheck(*HH(it,it) != 0.0,PetscObjectComm((PetscObject)ksp), PETSC_ERR_CONV_FAILED,"Likely your matrix is the zero operator. HH(it,it) is identically zero; it = %D GRS(it) = %g",it,(double)PetscAbsScalar(*GRS(it)));
   if (*HH(it,it) != 0.0) nrs[it] = *GRS(it) / *HH(it,it);
   else nrs[it] = 0.0;
 
@@ -350,7 +350,7 @@ static PetscErrorCode KSPDGMRESBuildSoln(PetscScalar *nrs,Vec vs,Vec vdest,KSP k
     k  = it - ii;
     tt = *GRS(k);
     for (j=k+1; j<=it; j++) tt = tt - *HH(k,j) * nrs[j];
-    PetscCheckFalse(*HH(k,k) == 0.0,PetscObjectComm((PetscObject)ksp), PETSC_ERR_CONV_FAILED,"Likely your matrix is singular. HH(k,k) is identically zero; it = %D k = %D",it,k);
+    PetscCheck(*HH(k,k) != 0.0,PetscObjectComm((PetscObject)ksp), PETSC_ERR_CONV_FAILED,"Likely your matrix is singular. HH(k,k) is identically zero; it = %D k = %D",it,k);
     nrs[k] = tt / *HH(k,k);
   }
 
@@ -529,7 +529,7 @@ static PetscErrorCode  KSPDGMRESSetRatio_DGMRES(KSP ksp,PetscReal ratio)
   KSP_DGMRES *dgmres = (KSP_DGMRES*) ksp->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(ratio <= 0,PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE,"The relaxation parameter value must be positive");
+  PetscCheck(ratio > 0,PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE,"The relaxation parameter value must be positive");
   dgmres->smv=ratio;
   PetscFunctionReturn(0);
 }
@@ -821,7 +821,7 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
     PetscReal    CondEig;         /* lower bound on the reciprocal condition number for the selected cluster of eigenvalues */
     PetscReal    CondSub;         /* estimated reciprocal condition number of the specified invariant subspace. */
     PetscStackCallBLAS("LAPACKtrsen",LAPACKtrsen_("B", "V", select, &bn, A, &ldA, Q, &ldQ, wr, wi, &NbrEig, &CondEig, &CondSub, work, &lwork, iwork, &liwork, &info));
-    PetscCheckFalse(info == 1,PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB, "UNABLE TO REORDER THE EIGENVALUES WITH THE LAPACK ROUTINE : ILL-CONDITIONED PROBLEM");
+    PetscCheck(info != 1,PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB, "UNABLE TO REORDER THE EIGENVALUES WITH THE LAPACK ROUTINE : ILL-CONDITIONED PROBLEM");
   }
   PetscCall(PetscFree(select));
 
@@ -1021,7 +1021,7 @@ static PetscErrorCode  KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
     PetscBLASInt ijob  = 2;
     PetscBLASInt wantQ = 1, wantZ = 1;
     PetscStackCallBLAS("LAPACKtgsen",LAPACKtgsen_(&ijob, &wantQ, &wantZ, select, &N, AUAU, &ldA, AUU, &ldA, wr, wi, beta, Q, &N, Z, &N, &NbrEig, NULL, NULL, &(Dif[0]), work, &lwork, iwork, &liwork, &info));
-    PetscCheckFalse(info == 1,PetscObjectComm((PetscObject)ksp),PETSC_ERR_LIB, "Unable to reorder the eigenvalues with the LAPACK routine: ill-conditioned problem.");
+    PetscCheck(info != 1,PetscObjectComm((PetscObject)ksp),PETSC_ERR_LIB, "Unable to reorder the eigenvalues with the LAPACK routine: ill-conditioned problem.");
   }
   PetscCall(PetscFree(select));
 

@@ -102,7 +102,7 @@ static PetscErrorCode PetscSpaceSetUp_Polynomial(PetscSpace sp)
     PetscCall(PetscSpaceSetUp(sp));
     PetscFunctionReturn(0);
   }
-  PetscCheckFalse(sp->degree < 0,PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_OUTOFRANGE, "Negative degree %D invalid", sp->degree);
+  PetscCheck(sp->degree >= 0,PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_OUTOFRANGE, "Negative degree %D invalid", sp->degree);
   sp->maxDegree = sp->degree;
   poly->setupCalled = PETSC_TRUE;
   PetscFunctionReturn(0);

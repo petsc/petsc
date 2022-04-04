@@ -14,7 +14,7 @@ PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat A,PetscInt is_max,IS is[],PetscIn
   PetscBT        table_out,table_in;
 
   PetscFunctionBegin;
-  PetscCheckFalse(ov < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified");
+  PetscCheck(ov >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified");
   mbs  = a->mbs;
   ai   = a->i;
   aj   = a->j;
@@ -36,7 +36,7 @@ PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat A,PetscInt is_max,IS is[],PetscIn
     bcol_max = 0;
     for (j=0; j<n; ++j) {
       brow = idx[j]/bs; /* convert the indices into block indices */
-      PetscCheckFalse(brow >= mbs,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"index greater than mat-dim");
+      PetscCheck(brow < mbs,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"index greater than mat-dim");
       if (!PetscBTLookupSet(table_out,brow)) {
         nidx[isz++] = brow;
         if (bcol_max < brow) bcol_max = brow;
@@ -1372,7 +1372,7 @@ PetscErrorCode MatDiagonalScale_SeqSBAIJ(Mat A,Vec ll,Vec rr)
 
   PetscCall(VecGetArrayRead(ll,&l));
   PetscCall(VecGetLocalSize(ll,&lm));
-  PetscCheckFalse(lm != m,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Left scaling vector wrong length");
+  PetscCheck(lm == m,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Left scaling vector wrong length");
   for (i=0; i<mbs; i++) { /* for each block row */
     M  = ai[i+1] - ai[i];
     li = l + i*bs;
@@ -1445,7 +1445,7 @@ PetscErrorCode MatGetRowMaxAbs_SeqSBAIJ(Mat A,Vec v,PetscInt idx[])
   PetscCall(VecSet(v,0.0));
   PetscCall(VecGetArray(v,&x));
   PetscCall(VecGetLocalSize(v,&n));
-  PetscCheckFalse(n != A->rmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
+  PetscCheck(n == A->rmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
   for (i=0; i<mbs; i++) {
     ncols = ai[1] - ai[0]; ai++;
     brow  = bs*i;
@@ -1684,9 +1684,9 @@ PetscErrorCode MatMatMultNumeric_SeqSBAIJ_SeqDense(Mat A,Mat B,Mat C)
 
   PetscFunctionBegin;
   if (!cm || !cn) PetscFunctionReturn(0);
-  PetscCheckFalse(B->rmap->n != A->cmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number columns in A %" PetscInt_FMT " not equal rows in B %" PetscInt_FMT,A->cmap->n,B->rmap->n);
-  PetscCheckFalse(A->rmap->n != C->rmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number rows in C %" PetscInt_FMT " not equal rows in A %" PetscInt_FMT,C->rmap->n,A->rmap->n);
-  PetscCheckFalse(B->cmap->n != C->cmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number columns in B %" PetscInt_FMT " not equal columns in C %" PetscInt_FMT,B->cmap->n,C->cmap->n);
+  PetscCheck(B->rmap->n == A->cmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number columns in A %" PetscInt_FMT " not equal rows in B %" PetscInt_FMT,A->cmap->n,B->rmap->n);
+  PetscCheck(A->rmap->n == C->rmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number rows in C %" PetscInt_FMT " not equal rows in A %" PetscInt_FMT,C->rmap->n,A->rmap->n);
+  PetscCheck(B->cmap->n == C->cmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number columns in B %" PetscInt_FMT " not equal columns in C %" PetscInt_FMT,B->cmap->n,C->cmap->n);
   b = bd->v;
   PetscCall(MatZeroEntries(C));
   PetscCall(MatDenseGetArray(C,&c));

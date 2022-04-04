@@ -132,7 +132,7 @@ PetscErrorCode  PFApplyVec(PF pf,Vec x,Vec y)
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
   if (x) {
     PetscValidHeaderSpecific(x,VEC_CLASSID,2);
-    PetscCheckFalse(x == y,PETSC_COMM_SELF,PETSC_ERR_ARG_IDN,"x and y must be different vectors");
+    PetscCheck(x != y,PETSC_COMM_SELF,PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   } else {
     PetscScalar *xx;
     PetscInt    lsize;
@@ -151,7 +151,7 @@ PetscErrorCode  PFApplyVec(PF pf,Vec x,Vec y)
   PetscCall(VecGetLocalSize(y,&p));
   PetscCheckFalse((pf->dimin*(n/pf->dimin)) != n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local input vector length %" PetscInt_FMT " not divisible by dimin %" PetscInt_FMT " of function",n,pf->dimin);
   PetscCheckFalse((pf->dimout*(p/pf->dimout)) != p,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local output vector length %" PetscInt_FMT " not divisible by dimout %" PetscInt_FMT " of function",p,pf->dimout);
-  PetscCheckFalse((n/pf->dimin) != (p/pf->dimout),PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local vector lengths %" PetscInt_FMT " %" PetscInt_FMT " are wrong for dimin and dimout %" PetscInt_FMT " %" PetscInt_FMT " of function",n,p,pf->dimin,pf->dimout);
+  PetscCheck((n/pf->dimin) == (p/pf->dimout),PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local vector lengths %" PetscInt_FMT " %" PetscInt_FMT " are wrong for dimin and dimout %" PetscInt_FMT " %" PetscInt_FMT " of function",n,p,pf->dimin,pf->dimout);
 
   if (pf->ops->applyvec) {
     PetscCall((*pf->ops->applyvec)(pf->data,x,y));
@@ -200,7 +200,7 @@ PetscErrorCode  PFApply(PF pf,PetscInt n,const PetscScalar *x,PetscScalar *y)
   PetscValidHeaderSpecific(pf,PF_CLASSID,1);
   PetscValidScalarPointer(x,3);
   PetscValidScalarPointer(y,4);
-  PetscCheckFalse(x == y,PETSC_COMM_SELF,PETSC_ERR_ARG_IDN,"x and y must be different arrays");
+  PetscCheck(x != y,PETSC_COMM_SELF,PETSC_ERR_ARG_IDN,"x and y must be different arrays");
   PetscCheck(pf->ops->apply,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"No function has been provided for this PF");
 
   PetscCall((*pf->ops->apply)(pf->data,n,x,y));

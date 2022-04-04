@@ -96,7 +96,7 @@ PetscErrorCode gridToParticles(const DM dm, DM sw, PetscReal *moments, Vec rhs, 
         PetscScalar dot = 0;
         PetscCall(MatGetRow(matshellctx->MpTrans,i,&nzl,&cols,&vals));
         for (int ii=0 ; ii<nzl ; ii++) dot += PetscSqr(vals[ii]);
-        PetscCheckFalse(dot==0.0,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Row %D is empty", i);
+        PetscCheck(dot!=0.0,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Row %D is empty", i);
         PetscCall(MatSetValue(D,i,i,dot,INSERT_VALUES));
       }
       PetscCall(MatAssemblyBegin(D, MAT_FINAL_ASSEMBLY));
@@ -238,8 +238,8 @@ PetscErrorCode go()
 
   PetscFunctionBeginUser;
 #if defined(PETSC_HAVE_OPENMP) && defined(PETSC_HAVE_THREADSAFETY)
-  PetscCheckFalse(numthreads>MAX_NUM_THRDS,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Too many threads %D > %D", numthreads, MAX_NUM_THRDS);
-  PetscCheckFalse(numthreads<=0,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "No threads %D > %D ", numthreads,  MAX_NUM_THRDS);
+  PetscCheck(numthreads<=MAX_NUM_THRDS,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Too many threads %D > %D", numthreads, MAX_NUM_THRDS);
+  PetscCheck(numthreads>0,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "No threads %D > %D ", numthreads,  MAX_NUM_THRDS);
 #endif
   if (target >= numthreads) target = numthreads-1;
   PetscCall(PetscLogEventRegister("Create Swarm", DM_CLASSID, &swarm_create_ev));

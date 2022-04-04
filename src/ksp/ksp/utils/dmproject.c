@@ -378,8 +378,8 @@ PetscErrorCode DMAdaptInterpolator(DM dmc, DM dmf, Mat In, KSP smoother, PetscIn
     /* DGELSS( M, N, NRHS, A, LDA, B, LDB, S, RCOND, RANK, WORK, LWORK, INFO) */
     PetscStackCallBLAS("LAPACKgelss",LAPACKgelss_(&M, &N, &one, A, &M, b, M > N ? &M : &N, sing, &rcond, &irank, workscalar, &lwrk, &info));
 #endif
-    PetscCheckFalse(info < 0,PETSC_COMM_SELF, PETSC_ERR_LIB, "Bad argument to GELSS");
-    PetscCheckFalse(info > 0,PETSC_COMM_SELF, PETSC_ERR_LIB, "SVD failed to converge");
+    PetscCheck(info >= 0,PETSC_COMM_SELF, PETSC_ERR_LIB, "Bad argument to GELSS");
+    PetscCheck(info <= 0,PETSC_COMM_SELF, PETSC_ERR_LIB, "SVD failed to converge");
     if (debug) {
       PetscCall(PetscPrintf(PETSC_COMM_SELF, "rank %d rcond %g\n", irank, (double) rcond));
 #if defined(PETSC_USE_COMPLEX)
@@ -434,6 +434,6 @@ PetscErrorCode DMCheckInterpolator(DM dmf, Mat In, PetscInt Nc, Vec vc[], Vec vf
     PetscCall(PetscPrintf(PetscObjectComm((PetscObject) dmf), "Coarse vec %D ||vf - P vc||_\\infty %g, ||vf - P vc||_2 %g\n", k, norminf, norm2));
   }
   PetscCall(DMRestoreGlobalVector(dmf, &tmp));
-  PetscCheckFalse(maxnorm2 > tol,PetscObjectComm((PetscObject) dmf), PETSC_ERR_ARG_WRONG, "max_k ||vf_k - P vc_k||_2 %g > tol %g", maxnorm2, tol);
+  PetscCheck(maxnorm2 <= tol,PetscObjectComm((PetscObject) dmf), PETSC_ERR_ARG_WRONG, "max_k ||vf_k - P vc_k||_2 %g > tol %g", maxnorm2, tol);
   PetscFunctionReturn(0);
 }

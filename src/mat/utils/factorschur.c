@@ -79,7 +79,7 @@ PETSC_INTERN PetscErrorCode MatFactorInvertSchurComplement_Private(Mat F)
     PetscBool      isdense,isdensecuda;
 
     PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)S),&size));
-    PetscCheckFalse(size > 1,PetscObjectComm((PetscObject)S),PETSC_ERR_SUP,"Not yet implemented");
+    PetscCheck(size <= 1,PetscObjectComm((PetscObject)S),PETSC_ERR_SUP,"Not yet implemented");
     PetscCall(PetscObjectTypeCompare((PetscObject)S,MATSEQDENSE,&isdense));
     PetscCall(PetscObjectTypeCompare((PetscObject)S,MATSEQDENSECUDA,&isdensecuda));
     PetscCall(PetscLogEventBegin(MAT_FactorInvS,F,0,0,0));

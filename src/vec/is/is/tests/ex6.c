@@ -41,7 +41,7 @@ int main(int argc,char **argv)
     for (i=0; i<3; i++) {
       for (j=0; j<size; j++) indices[cnt++] = rstart+i*(size+2)+j;
     }
-    PetscCheckFalse(cnt != n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"inconsistent count");
+    PetscCheck(cnt == n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"inconsistent count");
     PetscCall(ISGeneralSetIndices(is[1],n,indices,PETSC_COPY_VALUES));
     PetscCall(PetscFree(indices));
   }

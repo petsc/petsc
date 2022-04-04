@@ -394,7 +394,7 @@ PetscErrorCode PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
-  PetscCheckFalse(comm == MPI_COMM_NULL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Called with MPI_COMM_NULL, likely PetscObjectComm() failed");
+  PetscCheck(comm != MPI_COMM_NULL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Called with MPI_COMM_NULL, likely PetscObjectComm() failed");
   PetscCallMPI(MPI_Comm_rank(comm,&rank));
 
   /* First processor prints immediately to stdout */
@@ -461,7 +461,7 @@ PetscErrorCode PetscSynchronizedFPrintf(MPI_Comm comm,FILE *fp,const char format
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
-  PetscCheckFalse(comm == MPI_COMM_NULL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Called with MPI_COMM_NULL, likely PetscObjectComm() failed");
+  PetscCheck(comm != MPI_COMM_NULL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Called with MPI_COMM_NULL, likely PetscObjectComm() failed");
   PetscCallMPI(MPI_Comm_rank(comm,&rank));
 
   /* First processor prints immediately to fp */
@@ -596,7 +596,7 @@ PetscErrorCode PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
-  PetscCheckFalse(comm == MPI_COMM_NULL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Called with MPI_COMM_NULL, likely PetscObjectComm() failed");
+  PetscCheck(comm != MPI_COMM_NULL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Called with MPI_COMM_NULL, likely PetscObjectComm() failed");
   PetscCallMPI(MPI_Comm_rank(comm,&rank));
   if (rank == 0) {
     va_list Argp;
@@ -638,7 +638,7 @@ PetscErrorCode PetscPrintf(MPI_Comm comm,const char format[],...)
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
-  PetscCheckFalse(comm == MPI_COMM_NULL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Called with MPI_COMM_NULL, likely PetscObjectComm() failed");
+  PetscCheck(comm != MPI_COMM_NULL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Called with MPI_COMM_NULL, likely PetscObjectComm() failed");
   PetscCallMPI(MPI_Comm_rank(comm,&rank));
   if (rank == 0) {
     va_list Argp;
@@ -658,7 +658,7 @@ PetscErrorCode PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
-  PetscCheckFalse(comm == MPI_COMM_NULL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Called with MPI_COMM_NULL, likely PetscObjectComm() failed");
+  PetscCheck(comm != MPI_COMM_NULL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Called with MPI_COMM_NULL, likely PetscObjectComm() failed");
   PetscCallMPI(MPI_Comm_rank(comm,&rank));
   if (rank == 0) {
     va_list Argp;
@@ -706,7 +706,7 @@ PetscErrorCode PetscSynchronizedFGets(MPI_Comm comm,FILE *fp,size_t len,char str
 
     if (!ptr) {
       string[0] = 0;
-      PetscCheckFalse(!feof(fp),PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Error reading from file: %d", errno);
+      PetscCheck(feof(fp),PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Error reading from file: %d", errno);
     }
   }
   PetscCallMPI(MPI_Bcast(string,len,MPI_BYTE,0,comm));
@@ -775,7 +775,7 @@ PetscErrorCode PetscFormatRealArray(char buf[],size_t len,const char *fmt,PetscI
   PetscFunctionBegin;
   for (i=0,p=buf,left=len; i<n; i++) {
     PetscCall(PetscSNPrintfCount(p,left,fmt,&count,(double)x[i]));
-    PetscCheckFalse(count >= left,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Insufficient space in buffer");
+    PetscCheck(count < left,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Insufficient space in buffer");
     left -= count;
     p    += count-1;
     *p++  = ' ';

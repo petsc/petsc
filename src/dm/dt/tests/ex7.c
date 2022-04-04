@@ -153,7 +153,7 @@ int main(int argc, char **argv)
 
         PetscCall(PetscDTEnumSplit(N, k, j, subset, &isOdd));
         PetscCall(PetscDTPermIndex(N, subset, &kCheck, &isOddCheck));
-        PetscCheckFalse(isOddCheck != isOdd,PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDTEnumSplit sign does not mmatch PetscDTPermIndex sign");
+        PetscCheck(isOddCheck == isOdd,PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDTEnumSplit sign does not mmatch PetscDTPermIndex sign");
         if (verbose) {
           PetscInt l;
 
@@ -168,7 +168,7 @@ int main(int argc, char **argv)
           PetscCall(PetscPrintf(PETSC_COMM_WORLD, ", %s\n", isOdd ? "odd" : "even"));
         }
         PetscCall(PetscDTSubsetIndex(N, k, subset, &jCheck));
-        PetscCheckFalse(jCheck != j,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "jCheck (%D) != j (%D)", jCheck, j);
+        PetscCheck(jCheck == j,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "jCheck (%D) != j (%D)", jCheck, j);
       }
       PetscCall(PetscViewerASCIIPopTab(viewer));
       PetscCall(PetscFree(subset));

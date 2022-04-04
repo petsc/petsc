@@ -33,7 +33,7 @@ PetscErrorCode  PetscSplitOwnershipBlock(MPI_Comm comm,PetscInt bs,PetscInt *n,P
   PetscCheckFalse(*N == PETSC_DECIDE && *n == PETSC_DECIDE,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Both n and N cannot be PETSC_DECIDE");
 
   if (*N == PETSC_DECIDE) {
-    PetscCheckFalse(*n % bs != 0,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"local size %" PetscInt_FMT " not divisible by block size %" PetscInt_FMT,*n,bs);
+    PetscCheck(*n % bs == 0,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"local size %" PetscInt_FMT " not divisible by block size %" PetscInt_FMT,*n,bs);
     PetscCall(MPIU_Allreduce(n,N,1,MPIU_INT,MPI_SUM,comm));
   } else if (*n == PETSC_DECIDE) {
     PetscInt Nbs = *N/bs;
@@ -86,7 +86,7 @@ PetscErrorCode  PetscSplitOwnership(MPI_Comm comm,PetscInt *n,PetscInt *N)
   if (*N == PETSC_DECIDE) {
     PetscInt64 m = *n, M;
     PetscCall(MPIU_Allreduce(&m,&M,1,MPIU_INT64,MPI_SUM,comm));
-    PetscCheckFalse(M > PETSC_MAX_INT,comm,PETSC_ERR_INT_OVERFLOW,"Global size overflow %" PetscInt64_FMT ". You may consider ./configure PETSc with --with-64-bit-indices for the case you are running", M);
+    PetscCheck(M <= PETSC_MAX_INT,comm,PETSC_ERR_INT_OVERFLOW,"Global size overflow %" PetscInt64_FMT ". You may consider ./configure PETSc with --with-64-bit-indices for the case you are running", M);
     else *N = (PetscInt)M;
   } else if (*n == PETSC_DECIDE) {
     PetscCallMPI(MPI_Comm_size(comm,&size));
@@ -95,7 +95,7 @@ PetscErrorCode  PetscSplitOwnership(MPI_Comm comm,PetscInt *n,PetscInt *N)
   } else if (PetscDefined(USE_DEBUG)) {
     PetscInt tmp;
     PetscCall(MPIU_Allreduce(n,&tmp,1,MPIU_INT,MPI_SUM,comm));
-    PetscCheckFalse(tmp != *N,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Sum of local lengths %" PetscInt_FMT " does not equal global length %" PetscInt_FMT ", my local length %" PetscInt_FMT "\n  likely a call to VecSetSizes() or MatSetSizes() is wrong.\nSee https://petsc.org/release/faq/#split-ownership",tmp,*N,*n);
+    PetscCheck(tmp == *N,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Sum of local lengths %" PetscInt_FMT " does not equal global length %" PetscInt_FMT ", my local length %" PetscInt_FMT "\n  likely a call to VecSetSizes() or MatSetSizes() is wrong.\nSee https://petsc.org/release/faq/#split-ownership",tmp,*N,*n);
   }
   PetscFunctionReturn(0);
 }
@@ -146,7 +146,7 @@ PetscErrorCode  PetscSplitOwnershipEqual(MPI_Comm comm,PetscInt *n,PetscInt *N)
   if (*N == PETSC_DECIDE) {
     PetscInt64 m = *n, M;
     PetscCall(MPIU_Allreduce(&m,&M,1,MPIU_INT64,MPI_SUM,comm));
-    PetscCheckFalse(M > PETSC_MAX_INT,comm,PETSC_ERR_INT_OVERFLOW,"Global size overflow %" PetscInt64_FMT ". You may consider ./configure PETSc with --with-64-bit-indices for the case you are running", M);
+    PetscCheck(M <= PETSC_MAX_INT,comm,PETSC_ERR_INT_OVERFLOW,"Global size overflow %" PetscInt64_FMT ". You may consider ./configure PETSc with --with-64-bit-indices for the case you are running", M);
     else *N = (PetscInt)M;
   } else if (*n == PETSC_DECIDE) {
     PetscCallMPI(MPI_Comm_size(comm,&size));
@@ -160,7 +160,7 @@ PetscErrorCode  PetscSplitOwnershipEqual(MPI_Comm comm,PetscInt *n,PetscInt *N)
   } else if (PetscDefined(USE_DEBUG)) {
     PetscInt tmp;
     PetscCall(MPIU_Allreduce(n,&tmp,1,MPIU_INT,MPI_SUM,comm));
-    PetscCheckFalse(tmp != *N,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Sum of local lengths %" PetscInt_FMT " does not equal global length %" PetscInt_FMT ", my local length %" PetscInt_FMT,tmp,*N,*n);
+    PetscCheck(tmp == *N,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Sum of local lengths %" PetscInt_FMT " does not equal global length %" PetscInt_FMT ", my local length %" PetscInt_FMT,tmp,*N,*n);
   }
   PetscFunctionReturn(0);
 }

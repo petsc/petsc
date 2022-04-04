@@ -239,7 +239,7 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool has_cnst,PetscInt n,c
   PetscInt       i;
 
   PetscFunctionBegin;
-  PetscCheckFalse(n < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of vectors (given %" PetscInt_FMT ") cannot be negative",n);
+  PetscCheck(n >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of vectors (given %" PetscInt_FMT ") cannot be negative",n);
   if (n) PetscValidPointer(vecs,4);
   for (i=0; i<n; i++) PetscValidHeaderSpecific(vecs[i],VEC_CLASSID,4);
   PetscValidPointer(SP,5);
@@ -254,13 +254,13 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool has_cnst,PetscInt n,c
     for (i=0; i<n; i++) {
       PetscReal norm;
       PetscCall(VecNorm(vecs[i],NORM_2,&norm));
-      PetscCheckFalse(PetscAbsReal(norm - 1) > PETSC_SQRT_MACHINE_EPSILON,PetscObjectComm((PetscObject)vecs[i]),PETSC_ERR_ARG_WRONG,"Vector %" PetscInt_FMT " must have 2-norm of 1.0, it is %g",i,(double)norm);
+      PetscCheck(PetscAbsReal(norm - 1) <= PETSC_SQRT_MACHINE_EPSILON,PetscObjectComm((PetscObject)vecs[i]),PETSC_ERR_ARG_WRONG,"Vector %" PetscInt_FMT " must have 2-norm of 1.0, it is %g",i,(double)norm);
     }
     if (has_cnst) {
       for (i=0; i<n; i++) {
         PetscScalar sum;
         PetscCall(VecSum(vecs[i],&sum));
-        PetscCheckFalse(PetscAbsScalar(sum) > PETSC_SQRT_MACHINE_EPSILON,PetscObjectComm((PetscObject)vecs[i]),PETSC_ERR_ARG_WRONG,"Vector %" PetscInt_FMT " must be orthogonal to constant vector, inner product is %g",i,(double)PetscAbsScalar(sum));
+        PetscCheck(PetscAbsScalar(sum) <= PETSC_SQRT_MACHINE_EPSILON,PetscObjectComm((PetscObject)vecs[i]),PETSC_ERR_ARG_WRONG,"Vector %" PetscInt_FMT " must be orthogonal to constant vector, inner product is %g",i,(double)PetscAbsScalar(sum));
       }
     }
     PetscCall(PetscMalloc1(n-1,&dots));
@@ -268,7 +268,7 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool has_cnst,PetscInt n,c
       PetscInt j;
       PetscCall(VecMDot(vecs[i],n-i-1,vecs+i+1,dots));
       for (j=0;j<n-i-1;j++) {
-        PetscCheckFalse(PetscAbsScalar(dots[j]) > PETSC_SQRT_MACHINE_EPSILON,PetscObjectComm((PetscObject)vecs[i]),PETSC_ERR_ARG_WRONG,"Vector %" PetscInt_FMT " must be orthogonal to vector %" PetscInt_FMT ", inner product is %g",i,i+j+1,(double)PetscAbsScalar(dots[j]));
+        PetscCheck(PetscAbsScalar(dots[j]) <= PETSC_SQRT_MACHINE_EPSILON,PetscObjectComm((PetscObject)vecs[i]),PETSC_ERR_ARG_WRONG,"Vector %" PetscInt_FMT " must be orthogonal to vector %" PetscInt_FMT ", inner product is %g",i,i+j+1,(double)PetscAbsScalar(dots[j]));
       }
     }
     PetscCall(PetscFree(dots));

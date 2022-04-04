@@ -416,7 +416,7 @@ PetscErrorCode DMCreateVector_Moab_Private(DM dm, moab::Tag tag, const moab::Ran
   moab::Interface *mbiface = dmmoab->mbiface;
 
   PetscFunctionBegin;
-  PetscCheckFalse(sizeof(PetscReal) != sizeof(PetscScalar),PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "MOAB tags only support Real types (Complex-type unsupported)");
+  PetscCheck(sizeof(PetscReal) == sizeof(PetscScalar),PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "MOAB tags only support Real types (Complex-type unsupported)");
   if (!userrange) range = dmmoab->vowned;
   else range = userrange;
   PetscCheck(range,PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Input range cannot be empty or call DMSetUp first.");

@@ -25,7 +25,7 @@ PETSC_INTERN PetscErrorCode MatZeroRowsMapLocal_Private(Mat A,PetscInt N,const P
       PetscCall(PetscLayoutFindOwner(A->rmap,idx,&p));
     }
     if (A->nooffproczerorows) {
-      PetscCheckFalse(p != rank,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"MAT_NO_OFF_PROC_ZERO_ROWS set, but row %" PetscInt_FMT " is not owned by rank %d",idx,rank);
+      PetscCheck(p == rank,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"MAT_NO_OFF_PROC_ZERO_ROWS set, but row %" PetscInt_FMT " is not owned by rank %d",idx,rank);
       lrows[len++] = idx - owners[p];
     } else {
       rrows[r].rank = p;

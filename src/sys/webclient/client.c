@@ -312,7 +312,7 @@ PetscErrorCode PetscHTTPSConnect(const char host[],int port,SSL_CTX *ctx,int *so
   *ssl = SSL_new(ctx);
   sbio = BIO_new_socket(*sock,BIO_NOCLOSE);
   SSL_set_bio(*ssl,sbio,sbio);
-  PetscCheckFalse(SSL_connect(*ssl) <= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"SSL connect error");
+  PetscCheck(SSL_connect(*ssl) > 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"SSL connect error");
   PetscFunctionReturn(0);
 }
 

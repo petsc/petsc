@@ -415,7 +415,7 @@ PetscErrorCode  PetscViewerASCIIPopSynchronized(PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
     ascii->allowsynchronized--;
-    PetscCheckFalse(ascii->allowsynchronized < 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Called more times than PetscViewerASCIIPushSynchronized()");
+    PetscCheck(ascii->allowsynchronized >= 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Called more times than PetscViewerASCIIPushSynchronized()");
   }
   PetscFunctionReturn(0);
 }
@@ -477,7 +477,7 @@ PetscErrorCode  PetscViewerASCIIPopTab(PetscViewer viewer)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    PetscCheckFalse(ascii->tab <= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"More tabs popped than pushed");
+    PetscCheck(ascii->tab > 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"More tabs popped than pushed");
     ascii->tab--;
   }
   PetscFunctionReturn(0);
@@ -689,7 +689,7 @@ PetscErrorCode  PetscViewerFileSetName_ASCII(PetscViewer viewer,const char name[
   if (gz) {
     PetscCall(PetscStrlen(gz,&len));
     if (len == 3) {
-      PetscCheckFalse(vascii->mode != FILE_MODE_WRITE,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Cannot open ASCII PetscViewer file that is compressed; uncompress it manually first");
+      PetscCheck(vascii->mode == FILE_MODE_WRITE,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Cannot open ASCII PetscViewer file that is compressed; uncompress it manually first");
       *gz = 0;
       vascii->storecompressed = PETSC_TRUE;
     }
@@ -778,7 +778,7 @@ PetscErrorCode PetscViewerRestoreSubViewer_ASCII(PetscViewer viewer,MPI_Comm com
 
   PetscFunctionBegin;
   PetscCheck(ascii->sviewer,PETSC_COMM_SELF,PETSC_ERR_ORDER,"SubViewer never obtained from PetscViewer");
-  PetscCheckFalse(ascii->sviewer != *outviewer,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"This PetscViewer did not generate this SubViewer");
+  PetscCheck(ascii->sviewer == *outviewer,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"This PetscViewer did not generate this SubViewer");
 
   PetscCall(PetscViewerASCIIPopSynchronized(*outviewer));
   ascii->sviewer             = NULL;
@@ -1035,6 +1035,6 @@ PetscErrorCode PetscViewerASCIIRead(PetscViewer viewer,void *data,PetscInt num,P
     else if (ret < 0) break; /* Proxy for EOF, need to check for it in configure */
   }
   if (count) *count = i;
-  else PetscCheckFalse(ret < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Insufficient data, read only %" PetscInt_FMT " < %" PetscInt_FMT " items", i, num);
+  else PetscCheck(ret >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Insufficient data, read only %" PetscInt_FMT " < %" PetscInt_FMT " items", i, num);
   PetscFunctionReturn(0);
 }

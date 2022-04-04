@@ -63,7 +63,7 @@ static PetscErrorCode DMPlexCreateFluent_ReadValues(PetscViewer viewer, void *da
     for (i = 0; i < count; i++) {
       PetscCall(PetscViewerRead(viewer, cbuf, 1, NULL, PETSC_STRING));
       snum = sscanf(cbuf, "%x", &ibuf);
-      PetscCheckFalse(snum != 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
+      PetscCheck(snum == 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
       ((PetscInt*)data)[i] = (PetscInt)ibuf;
     }
   } else if (binary && dtype == PETSC_INT) {
@@ -108,12 +108,12 @@ static PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentS
   } else if (s->index == 2) {    /* Dimension */
     PetscCall(DMPlexCreateFluent_ReadString(viewer, buffer, ')'));
     snum = sscanf(buffer, "%d", &(s->nd));
-    PetscCheckFalse(snum != 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
+    PetscCheck(snum == 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
 
   } else if (s->index == 10 || s->index == 2010) {   /* Vertices */
     PetscCall(DMPlexCreateFluent_ReadString(viewer, buffer, ')'));
     snum = sscanf(buffer, "(%x %x %x %d %d)", &(s->zoneID), &(s->first), &(s->last), &(s->type), &(s->nd));
-    PetscCheckFalse(snum != 5,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
+    PetscCheck(snum == 5,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
     if (s->zoneID > 0) {
       PetscInt numCoords = s->last - s->first + 1;
       PetscCall(DMPlexCreateFluent_ReadString(viewer, buffer, '('));
@@ -126,13 +126,13 @@ static PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentS
   } else if (s->index == 12 || s->index == 2012) {   /* Cells */
     PetscCall(DMPlexCreateFluent_ReadString(viewer, buffer, ')'));
     snum = sscanf(buffer, "(%x", &(s->zoneID));
-    PetscCheckFalse(snum != 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
+    PetscCheck(snum == 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
     if (s->zoneID == 0) {  /* Header section */
       snum = sscanf(buffer, "(%x %x %x %d)", &(s->zoneID), &(s->first), &(s->last), &(s->nd));
-      PetscCheckFalse(snum != 4,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
+      PetscCheck(snum == 4,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
     } else {               /* Data section */
       snum = sscanf(buffer, "(%x %x %x %d %d)", &(s->zoneID), &(s->first), &(s->last), &(s->type), &(s->nd));
-      PetscCheckFalse(snum != 5,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
+      PetscCheck(snum == 5,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
       if (s->nd == 0) {
         /* Read cell type definitions for mixed cells */
         PetscInt numCells = s->last - s->first + 1;
@@ -148,14 +148,14 @@ static PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentS
   } else if (s->index == 13 || s->index == 2013) {   /* Faces */
     PetscCall(DMPlexCreateFluent_ReadString(viewer, buffer, ')'));
     snum = sscanf(buffer, "(%x", &(s->zoneID));
-    PetscCheckFalse(snum != 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
+    PetscCheck(snum == 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
     if (s->zoneID == 0) {  /* Header section */
       snum = sscanf(buffer, "(%x %x %x %d)", &(s->zoneID), &(s->first), &(s->last), &(s->nd));
-      PetscCheckFalse(snum != 4,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
+      PetscCheck(snum == 4,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
     } else {               /* Data section */
       PetscInt f, numEntries, numFaces;
       snum = sscanf(buffer, "(%x %x %x %d %d)", &(s->zoneID), &(s->first), &(s->last), &(s->type), &(s->nd));
-      PetscCheckFalse(snum != 5,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
+      PetscCheck(snum == 5,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
       PetscCall(DMPlexCreateFluent_ReadString(viewer, buffer, '('));
       switch (s->nd) {
       case 0: numEntries = PETSC_DETERMINE; break;
@@ -274,7 +274,7 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
           unsigned int z;
 
           PetscCheckFalse(numFaceVertices != PETSC_DETERMINE && s.nd != numFaceVertices,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mixed facets in Fluent files are not supported");
-          PetscCheckFalse(numFaces < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No header section for facets in Fluent file");
+          PetscCheck(numFaces >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No header section for facets in Fluent file");
           if (numFaceVertices == PETSC_DETERMINE) numFaceVertices = s.nd;
           numFaceEntries = numFaceVertices + 2;
           if (!faces) PetscCall(PetscMalloc1(numFaces*numFaceEntries, &faces));
@@ -288,7 +288,7 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
     } while (s.index >= 0);
   }
   PetscCallMPI(MPI_Bcast(&dim, 1, MPIU_INT, 0, comm));
-  PetscCheckFalse(dim < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Fluent file does not include dimension");
+  PetscCheck(dim >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Fluent file does not include dimension");
 
   /* Allocate cell-vertex mesh */
   PetscCall(DMCreate(comm, dm));
@@ -296,7 +296,7 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
   PetscCall(DMSetDimension(*dm, dim));
   PetscCall(DMPlexSetChart(*dm, 0, numCells + numVertices));
   if (rank == 0) {
-    PetscCheckFalse(numCells < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown number of cells in Fluent file");
+    PetscCheck(numCells >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown number of cells in Fluent file");
     /* If no cell type was given we assume simplices */
     if (numCellVertices == PETSC_DETERMINE) numCellVertices = numFaceVertices + 1;
     for (c = 0; c < numCells; ++c) PetscCall(DMPlexSetConeSize(*dm, c, numCellVertices));
@@ -362,13 +362,13 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
         /* If we know both adjoining cells we can use a single-level meet */
         cells[0] = cl; cells[1] = cr;
         PetscCall(DMPlexGetMeet(*dm, 2, cells, &meetSize, &meet));
-        PetscCheckFalse(meetSize != 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not determine Plex facet for Fluent face %d", f);
+        PetscCheck(meetSize == 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not determine Plex facet for Fluent face %d", f);
         PetscCall(DMSetLabelValue_Fast(*dm, &faceSets, "Face Sets", meet[0], faceZoneIDs[f]));
         PetscCall(DMPlexRestoreMeet(*dm, numFaceVertices, fverts, &meetSize, &meet));
       } else {
         for (fi = 0; fi < numFaceVertices; fi++) fverts[fi] = faces[f*numFaceEntries + fi] + numCells - 1;
         PetscCall(DMPlexGetFullJoin(*dm, numFaceVertices, fverts, &joinSize, &join));
-        PetscCheckFalse(joinSize != 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not determine Plex facet for Fluent face %d", f);
+        PetscCheck(joinSize == 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not determine Plex facet for Fluent face %d", f);
         PetscCall(DMSetLabelValue_Fast(*dm, &faceSets, "Face Sets", join[0], faceZoneIDs[f]));
         PetscCall(DMPlexRestoreJoin(*dm, numFaceVertices, fverts, &joinSize, &join));
       }

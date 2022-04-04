@@ -29,7 +29,7 @@ static PetscErrorCode KSPCGSolve_STCG(KSP ksp)
   PetscFunctionBegin;
   PetscCall(PCGetDiagonalScale(ksp->pc, &diagonalscale));
   PetscCheck(!diagonalscale,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
-  PetscCheckFalse(cg->radius < 0.0,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE, "Input error: radius < 0");
+  PetscCheck(cg->radius >= 0.0,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE, "Input error: radius < 0");
 
   /***************************************************************************/
   /* Get the workspace vectors and initialize variables                      */

@@ -190,7 +190,7 @@ PetscErrorCode  PetscSharedTmp(MPI_Comm comm,PetscBool  *shared)
       if (sum == size) {
         *shared = PETSC_TRUE;
         break;
-      } else PetscCheckFalse(sum != 1,PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Subset of processes share /tmp ");
+      } else PetscCheck(sum == 1,PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Subset of processes share /tmp ");
     }
     *tagvalp = (int)*shared;
     PetscCall(PetscInfo(NULL,"processors %s %s\n",(*shared) ? "share":"do NOT share",(iflg ? tmpname:"/tmp")));
@@ -299,7 +299,7 @@ PetscErrorCode PetscSharedWorkingDirectory(MPI_Comm comm, PetscBool *shared)
       if (sum == size) {
         *shared = PETSC_TRUE;
         break;
-      } else PetscCheckFalse(sum != 1,PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Subset of processes share working directory");
+      } else PetscCheck(sum == 1,PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Subset of processes share working directory");
     }
     *tagvalp = (int)*shared;
   } else *shared = (PetscBool) *tagvalp;

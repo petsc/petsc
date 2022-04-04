@@ -321,7 +321,7 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin,PetscViewer viewer)
         outputState = 3;
         doOutput = 1;
       } else if (outputState == 3) doOutput = 0;
-      else PetscCheckFalse(outputState == 4,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Tried to output POINT_DATA again after intervening CELL_DATA");
+      else PetscCheck(outputState != 4,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Tried to output POINT_DATA again after intervening CELL_DATA");
 
       if (doOutput) {
         PetscCall(PetscViewerASCIIPrintf(viewer, "POINT_DATA %" PetscInt_FMT "\n", n/bs));
@@ -334,7 +334,7 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin,PetscViewer viewer)
         outputState = 4;
         doOutput = 1;
       } else if (outputState == 2) doOutput = 0;
-      else PetscCheckFalse(outputState == 3,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Tried to output CELL_DATA again after intervening POINT_DATA");
+      else PetscCheck(outputState != 3,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Tried to output CELL_DATA again after intervening POINT_DATA");
       else if (outputState == 4) doOutput = 0;
 
       if (doOutput) {
@@ -614,8 +614,8 @@ PetscErrorCode VecGetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],PetscSca
   for (i=0; i<ni; i++) {
     if (xin->stash.ignorenegidx && ix[i] < 0) continue;
     if (PetscDefined(USE_DEBUG)) {
-      PetscCheckFalse(ix[i] < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %" PetscInt_FMT " cannot be negative",ix[i]);
-      PetscCheckFalse(ix[i] >= xin->map->n,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %" PetscInt_FMT " to large maximum allowed %" PetscInt_FMT,ix[i],xin->map->n);
+      PetscCheck(ix[i] >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %" PetscInt_FMT " cannot be negative",ix[i]);
+      PetscCheck(ix[i] < xin->map->n,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %" PetscInt_FMT " to large maximum allowed %" PetscInt_FMT,ix[i],xin->map->n);
     }
     y[i] = xx[ix[i]];
   }
@@ -634,8 +634,8 @@ PetscErrorCode VecSetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
     for (i=0; i<ni; i++) {
       if (xin->stash.ignorenegidx && ix[i] < 0) continue;
       if (PetscDefined(USE_DEBUG)) {
-        PetscCheckFalse(ix[i] < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %" PetscInt_FMT " cannot be negative",ix[i]);
-        PetscCheckFalse(ix[i] >= xin->map->n,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %" PetscInt_FMT " maximum %" PetscInt_FMT,ix[i],xin->map->n);
+        PetscCheck(ix[i] >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %" PetscInt_FMT " cannot be negative",ix[i]);
+        PetscCheck(ix[i] < xin->map->n,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %" PetscInt_FMT " maximum %" PetscInt_FMT,ix[i],xin->map->n);
       }
       xx[ix[i]] = y[i];
     }
@@ -643,8 +643,8 @@ PetscErrorCode VecSetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
     for (i=0; i<ni; i++) {
       if (xin->stash.ignorenegidx && ix[i] < 0) continue;
       if (PetscDefined(USE_DEBUG)) {
-        PetscCheckFalse(ix[i] < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %" PetscInt_FMT " cannot be negative",ix[i]);
-        PetscCheckFalse(ix[i] >= xin->map->n,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %" PetscInt_FMT " maximum %" PetscInt_FMT,ix[i],xin->map->n);
+        PetscCheck(ix[i] >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %" PetscInt_FMT " cannot be negative",ix[i]);
+        PetscCheck(ix[i] < xin->map->n,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %" PetscInt_FMT " maximum %" PetscInt_FMT,ix[i],xin->map->n);
       }
       xx[ix[i]] += y[i];
     }
@@ -857,7 +857,7 @@ PetscErrorCode  VecCreateSeqWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,const
   PetscCall(VecSetSizes(*V,n,n));
   PetscCall(VecSetBlockSize(*V,bs));
   PetscCallMPI(MPI_Comm_size(comm,&size));
-  PetscCheckFalse(size > 1,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQ on more than one process");
+  PetscCheck(size <= 1,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQ on more than one process");
   PetscCall(VecCreate_Seq_Private(*V,array));
   PetscFunctionReturn(0);
 }

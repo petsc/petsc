@@ -48,7 +48,7 @@ static PetscErrorCode  KSPSolve_FBCGSR(KSP ksp)
   S2 = ksp->work[7]; PetscCall(VecGetArray(S2,(PetscScalar**)&s2)); PetscCall(VecRestoreArray(S2,NULL));
 
   /* Only supports right preconditioning */
-  PetscCheckFalse(ksp->pc_side != PC_RIGHT,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"KSP fbcgsr does not support %s",PCSides[ksp->pc_side]);
+  PetscCheck(ksp->pc_side == PC_RIGHT,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"KSP fbcgsr does not support %s",PCSides[ksp->pc_side]);
   if (!ksp->guess_zero) {
     if (!bcgs->guess) {
       PetscCall(VecDuplicate(X,&bcgs->guess));

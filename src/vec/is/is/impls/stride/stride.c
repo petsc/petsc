@@ -338,7 +338,7 @@ static struct _ISOps myops = {
 PetscErrorCode  ISStrideSetStride(IS is,PetscInt n,PetscInt first,PetscInt step)
 {
   PetscFunctionBegin;
-  PetscCheckFalse(n < 0,PetscObjectComm((PetscObject)is), PETSC_ERR_ARG_OUTOFRANGE, "Negative length %" PetscInt_FMT " not valid", n);
+  PetscCheck(n >= 0,PetscObjectComm((PetscObject)is), PETSC_ERR_ARG_OUTOFRANGE, "Negative length %" PetscInt_FMT " not valid", n);
   PetscCall(ISClearInfoCache(is,PETSC_FALSE));
   PetscUseMethod(is,"ISStrideSetStride_C",(IS,PetscInt,PetscInt,PetscInt),(is,n,first,step));
   PetscFunctionReturn(0);

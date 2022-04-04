@@ -24,12 +24,12 @@ int main(int argc, char **args)
   PetscCall(VecNorm(X,NORM_2,&xnorm));
   PetscCall(MatMult(A,X,Y));
   PetscCall(VecNorm(Y,NORM_2,&ynorm));
-  PetscCheckFalse(PetscAbsReal(ynorm - 3*xnorm) > PETSC_SMALL,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Expected norm %g actual norm %g",(double)(3*xnorm),(double)ynorm);
+  PetscCheck(PetscAbsReal(ynorm - 3*xnorm) <= PETSC_SMALL,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Expected norm %g actual norm %g",(double)(3*xnorm),(double)ynorm);
   PetscCall(MatShift(A,5.0));
   PetscCall(MatScale(A,.5));
   PetscCall(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(MatNorm(A,NORM_FROBENIUS,&anorm));
-  PetscCheckFalse(PetscAbsReal(anorm - 4.0) > PETSC_SMALL,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Expected norm 4.0 actual norm %g",(double)anorm);
+  PetscCheck(PetscAbsReal(anorm - 4.0) <= PETSC_SMALL,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Expected norm 4.0 actual norm %g",(double)anorm);
 
   /* Convert to AIJ (exercises MatGetRow/MatRestoreRow) */
   PetscCall(MatConvert(A,MATAIJ,MAT_INITIAL_MATRIX,&B));
@@ -48,7 +48,7 @@ int main(int argc, char **args)
   PetscCall(MatLUFactorNumeric(Af,A,NULL));
   PetscCall(MatSolve(Af,X,Y));
   PetscCall(VecNorm(Y,NORM_2,&ynorm));
-  PetscCheckFalse(PetscAbsReal(ynorm - xnorm/4) > PETSC_SMALL,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Expected norm %g actual norm %g",(double)(.25*xnorm),(double)ynorm);
+  PetscCheck(PetscAbsReal(ynorm - xnorm/4) <= PETSC_SMALL,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Expected norm %g actual norm %g",(double)(.25*xnorm),(double)ynorm);
 
   PetscCall(MatDestroy(&A));
   PetscCall(MatDestroy(&B));

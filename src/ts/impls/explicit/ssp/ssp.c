@@ -39,7 +39,7 @@ static PetscErrorCode TSSSPRestoreWorkVectors(TS ts,PetscInt n,Vec **work)
 
   PetscFunctionBegin;
   PetscCheck(ssp->workout,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Work vectors have not been gotten");
-  PetscCheckFalse(*work != ssp->work,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong work vectors checked out");
+  PetscCheck(*work == ssp->work,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong work vectors checked out");
   ssp->workout = PETSC_FALSE;
   *work = NULL;
   PetscFunctionReturn(0);

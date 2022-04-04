@@ -554,9 +554,9 @@ PetscErrorCode DMForestSetAdjacencyDimension(DM dm, PetscInt adjDim)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCheck(!dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the adjacency dimension after setup");
-  PetscCheckFalse(adjDim < 0,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"adjacency dim cannot be < 0: %d", adjDim);
+  PetscCheck(adjDim >= 0,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"adjacency dim cannot be < 0: %d", adjDim);
   PetscCall(DMGetDimension(dm,&dim));
-  PetscCheckFalse(adjDim > dim,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"adjacency dim cannot be > %d: %d", dim, adjDim);
+  PetscCheck(adjDim <= dim,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"adjacency dim cannot be > %d: %d", dim, adjDim);
   forest->adjDim = adjDim;
   PetscFunctionReturn(0);
 }
@@ -664,7 +664,7 @@ PetscErrorCode DMForestSetPartitionOverlap(DM dm, PetscInt overlap)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCheck(!dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the overlap after setup");
-  PetscCheckFalse(overlap < 0,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"overlap cannot be < 0: %d", overlap);
+  PetscCheck(overlap >= 0,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"overlap cannot be < 0: %d", overlap);
   forest->overlap = overlap;
   PetscFunctionReturn(0);
 }
@@ -1315,7 +1315,7 @@ PetscErrorCode DMForestSetCellWeights(DM dm, PetscReal weights[], PetscCopyMode 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscCall(DMForestGetCellChart(dm,&cStart,&cEnd));
-  PetscCheckFalse(cEnd < cStart,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"cell chart [%d,%d) is not valid",cStart,cEnd);
+  PetscCheck(cEnd >= cStart,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"cell chart [%d,%d) is not valid",cStart,cEnd);
   if (copyMode == PETSC_COPY_VALUES) {
     if (forest->cellWeightsCopyMode != PETSC_OWN_POINTER || forest->cellWeights == weights) {
       PetscCall(PetscMalloc1(cEnd-cStart,&forest->cellWeights));
@@ -1384,7 +1384,7 @@ PetscErrorCode DMForestSetWeightCapacity(DM dm, PetscReal capacity)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscCheck(!dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the weight capacity after setup");
-  PetscCheckFalse(capacity < 0.,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Cannot have negative weight capacity; %f",capacity);
+  PetscCheck(capacity >= 0.,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Cannot have negative weight capacity; %f",capacity);
   forest->weightCapacity = capacity;
   PetscFunctionReturn(0);
 }

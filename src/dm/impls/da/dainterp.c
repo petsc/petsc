@@ -55,7 +55,7 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
   PetscCall(DMDAGetInfo(daf,NULL,&mx,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
   if (bx == DM_BOUNDARY_PERIODIC) {
     ratio = mx/Mx;
-    PetscCheckFalse(ratio*Mx != mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
+    PetscCheck(ratio*Mx == mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
   } else {
     ratio = (mx-1)/(Mx-1);
     PetscCheckFalse(ratio*(Mx-1) != mx-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %D Mx %D",mx,Mx);
@@ -96,7 +96,7 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
       row = idx_f[i-i_start_ghost];
 
       i_c = (i/ratio);    /* coarse grid node to left of fine grid node */
-      PetscCheckFalse(i_c < i_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
+      PetscCheck(i_c >= i_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
                                           i_start %D i_c %D i_start_ghost_c %D",i_start,i_c,i_start_ghost_c);
 
       /*
@@ -135,7 +135,7 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
       row = idx_f[(i-i_start_ghost)];
 
       i_c = (i/ratio);    /* coarse grid node to left of fine grid node */
-      PetscCheckFalse(i_c < i_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
+      PetscCheck(i_c >= i_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
                                           i_start %D i_c %D i_start_ghost_c %D",i_start,i_c,i_start_ghost_c);
 
       /* remainders */
@@ -196,9 +196,9 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q0(DM dac,DM daf,Mat *A)
   if (bx == DM_BOUNDARY_PERIODIC) {
     PetscCheck(Mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of x coarse grid points %D must be positive",Mx);
     ratio = mx/Mx;
-    PetscCheckFalse(ratio*Mx != mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
+    PetscCheck(ratio*Mx == mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
   } else {
-    PetscCheckFalse(Mx < 2,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of x coarse grid points %D must be greater than 1",Mx);
+    PetscCheck(Mx >= 2,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of x coarse grid points %D must be greater than 1",Mx);
     ratio = (mx-1)/(Mx-1);
     PetscCheckFalse(ratio*(Mx-1) != mx-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %D Mx %D",mx,Mx);
   }
@@ -286,18 +286,18 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
   if (bx == DM_BOUNDARY_PERIODIC) {
     PetscCheck(Mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of x coarse grid points %D must be positive",Mx);
     ratioi = mx/Mx;
-    PetscCheckFalse(ratioi*Mx != mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
+    PetscCheck(ratioi*Mx == mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
   } else {
-    PetscCheckFalse(Mx < 2,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of x coarse grid points %D must be greater than 1",Mx);
+    PetscCheck(Mx >= 2,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of x coarse grid points %D must be greater than 1",Mx);
     ratioi = (mx-1)/(Mx-1);
     PetscCheckFalse(ratioi*(Mx-1) != mx-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %D Mx %D",mx,Mx);
   }
   if (by == DM_BOUNDARY_PERIODIC) {
     PetscCheck(My,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of y coarse grid points %D must be positive",My);
     ratioj = my/My;
-    PetscCheckFalse(ratioj*My != my,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: my/My  must be integer: my %D My %D",my,My);
+    PetscCheck(ratioj*My == my,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: my/My  must be integer: my %D My %D",my,My);
   } else {
-    PetscCheckFalse(My < 2,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of y coarse grid points %D must be greater than 1",My);
+    PetscCheck(My >= 2,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of y coarse grid points %D must be greater than 1",My);
     ratioj = (my-1)/(My-1);
     PetscCheckFalse(ratioj*(My-1) != my-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (my - 1)/(My - 1) must be integer: my %D My %D",my,My);
   }
@@ -337,9 +337,9 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
       i_c = (i/ratioi);    /* coarse grid node to left of fine grid node */
       j_c = (j/ratioj);    /* coarse grid node below fine grid node */
 
-      PetscCheckFalse(j_c < j_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
+      PetscCheck(j_c >= j_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
                                           j_start %D j_c %D j_start_ghost_c %D",j_start,j_c,j_start_ghost_c);
-      PetscCheckFalse(i_c < i_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
+      PetscCheck(i_c >= i_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
                                           i_start %D i_c %D i_start_ghost_c %D",i_start,i_c,i_start_ghost_c);
 
       /*
@@ -525,10 +525,10 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
   PetscCheck(My,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of y coarse grid points %D must be positive",My);
   ratioi = mx/Mx;
   ratioj = my/My;
-  PetscCheckFalse(ratioi*Mx != mx,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in x");
-  PetscCheckFalse(ratioj*My != my,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in y");
-  PetscCheckFalse(ratioi != 2,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Coarsening factor in x must be 2");
-  PetscCheckFalse(ratioj != 2,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Coarsening factor in y must be 2");
+  PetscCheck(ratioi*Mx == mx,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in x");
+  PetscCheck(ratioj*My == my,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in y");
+  PetscCheck(ratioi == 2,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Coarsening factor in x must be 2");
+  PetscCheck(ratioj == 2,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Coarsening factor in y must be 2");
 
   PetscCall(DMDAGetCorners(daf,&i_start,&j_start,NULL,&m_f,&n_f,NULL));
   PetscCall(DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,NULL,&m_ghost,&n_ghost,NULL));
@@ -565,9 +565,9 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
       i_c = (i/ratioi);    /* coarse grid node to left of fine grid node */
       j_c = (j/ratioj);    /* coarse grid node below fine grid node */
 
-      PetscCheckFalse(j_c < j_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
+      PetscCheck(j_c >= j_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
     j_start %D j_c %D j_start_ghost_c %D",j_start,j_c,j_start_ghost_c);
-      PetscCheckFalse(i_c < i_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
+      PetscCheck(i_c >= i_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
     i_start %D i_c %D i_start_ghost_c %D",i_start,i_c,i_start_ghost_c);
 
       /*
@@ -653,9 +653,9 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
   ratioi = mx/Mx;
   ratioj = my/My;
   ratiol = mz/Mz;
-  PetscCheckFalse(ratioi*Mx != mx,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in x");
-  PetscCheckFalse(ratioj*My != my,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in y");
-  PetscCheckFalse(ratiol*Mz != mz,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in z");
+  PetscCheck(ratioi*Mx == mx,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in x");
+  PetscCheck(ratioj*My == my,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in y");
+  PetscCheck(ratiol*Mz == mz,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in z");
   PetscCheckFalse(ratioi != 2 && ratioi != 1,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Coarsening factor in x must be 1 or 2");
   PetscCheckFalse(ratioj != 2 && ratioj != 1,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Coarsening factor in y must be 1 or 2");
   PetscCheckFalse(ratiol != 2 && ratiol != 1,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Coarsening factor in z must be 1 or 2");
@@ -697,11 +697,11 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
         j_c = (j/ratioj);    /* coarse grid node below fine grid node */
         l_c = (l/ratiol);
 
-        PetscCheckFalse(l_c < l_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
+        PetscCheck(l_c >= l_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
     l_start %D l_c %D l_start_ghost_c %D",l_start,l_c,l_start_ghost_c);
-        PetscCheckFalse(j_c < j_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
+        PetscCheck(j_c >= j_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
     j_start %D j_c %D j_start_ghost_c %D",j_start,j_c,j_start_ghost_c);
-        PetscCheckFalse(i_c < i_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
+        PetscCheck(i_c >= i_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
     i_start %D i_c %D i_start_ghost_c %D",i_start,i_c,i_start_ghost_c);
 
         /*
@@ -788,9 +788,9 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
   } else if (bx == DM_BOUNDARY_PERIODIC) {
     PetscCheck(Mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of x coarse grid points %D must be positive",Mx);
     ratioi = mx/Mx;
-    PetscCheckFalse(ratioi*Mx != mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
+    PetscCheck(ratioi*Mx == mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
   } else {
-    PetscCheckFalse(Mx < 2,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of x coarse grid points %D must be greater than 1",Mx);
+    PetscCheck(Mx >= 2,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of x coarse grid points %D must be greater than 1",Mx);
     ratioi = (mx-1)/(Mx-1);
     PetscCheckFalse(ratioi*(Mx-1) != mx-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %D Mx %D",mx,Mx);
   }
@@ -799,9 +799,9 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
   } else if (by == DM_BOUNDARY_PERIODIC) {
     PetscCheck(My,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of y coarse grid points %D must be positive",My);
     ratioj = my/My;
-    PetscCheckFalse(ratioj*My != my,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: my/My  must be integer: my %D My %D",my,My);
+    PetscCheck(ratioj*My == my,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: my/My  must be integer: my %D My %D",my,My);
   } else {
-    PetscCheckFalse(My < 2,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of y coarse grid points %D must be greater than 1",My);
+    PetscCheck(My >= 2,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of y coarse grid points %D must be greater than 1",My);
     ratioj = (my-1)/(My-1);
     PetscCheckFalse(ratioj*(My-1) != my-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (my - 1)/(My - 1) must be integer: my %D My %D",my,My);
   }
@@ -810,9 +810,9 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
   } else if (bz == DM_BOUNDARY_PERIODIC) {
     PetscCheck(Mz,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of z coarse grid points %D must be positive",Mz);
     ratiok = mz/Mz;
-    PetscCheckFalse(ratiok*Mz != mz,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mz/Mz  must be integer: mz %D Mz %D",mz,Mz);
+    PetscCheck(ratiok*Mz == mz,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mz/Mz  must be integer: mz %D Mz %D",mz,Mz);
   } else {
-    PetscCheckFalse(Mz < 2,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of z coarse grid points %D must be greater than 1",Mz);
+    PetscCheck(Mz >= 2,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of z coarse grid points %D must be greater than 1",Mz);
     ratiok = (mz-1)/(Mz-1);
     PetscCheckFalse(ratiok*(Mz-1) != mz-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mz - 1)/(Mz - 1) must be integer: mz %D Mz %D",mz,Mz);
   }
@@ -838,11 +838,11 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
         i_c = (i/ratioi);
         j_c = (j/ratioj);
         l_c = (l/ratiok);
-        PetscCheckFalse(l_c < l_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
+        PetscCheck(l_c >= l_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
                                             l_start %D l_c %D l_start_ghost_c %D",l_start,l_c,l_start_ghost_c);
-        PetscCheckFalse(j_c < j_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
+        PetscCheck(j_c >= j_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
                                             j_start %D j_c %D j_start_ghost_c %D",j_start,j_c,j_start_ghost_c);
-        PetscCheckFalse(i_c < i_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
+        PetscCheck(i_c >= i_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
                                             i_start %D i_c %D i_start_ghost_c %D",i_start,i_c,i_start_ghost_c);
 
         /*
@@ -1074,11 +1074,11 @@ PetscErrorCode  DMCreateInterpolation_DA(DM dac,DM daf,Mat *A,Vec *scale)
 
   PetscCall(DMDAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&bxc,&byc,&bzc,&stc));
   PetscCall(DMDAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&bxf,&byf,&bzf,&stf));
-  PetscCheckFalse(dimc != dimf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Dimensions of DMDA do not match %D %D",dimc,dimf);
-  PetscCheckFalse(dofc != doff,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"DOF of DMDA do not match %D %D",dofc,doff);
-  PetscCheckFalse(sc != sf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil width of DMDA do not match %D %D",sc,sf);
+  PetscCheck(dimc == dimf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Dimensions of DMDA do not match %D %D",dimc,dimf);
+  PetscCheck(dofc == doff,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"DOF of DMDA do not match %D %D",dofc,doff);
+  PetscCheck(sc == sf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil width of DMDA do not match %D %D",sc,sf);
   PetscCheckFalse(bxc != bxf || byc != byf || bzc != bzf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Boundary type different in two DMDAs");
-  PetscCheckFalse(stc != stf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil type different in two DMDAs");
+  PetscCheck(stc == stf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil type different in two DMDAs");
   PetscCheckFalse(Mc < 2 && Mf > 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in x direction");
   PetscCheckFalse(dimc > 1 && Nc < 2 && Nf > 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in y direction");
   PetscCheckFalse(dimc > 2 && Pc < 2 && Pf > 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in z direction");
@@ -1124,7 +1124,7 @@ PetscErrorCode DMCreateInjection_DA_1D(DM dac,DM daf,VecScatter *inject)
   PetscCall(DMDAGetInfo(daf,NULL,&mx,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
   if (bx == DM_BOUNDARY_PERIODIC) {
     ratioi = mx/Mx;
-    PetscCheckFalse(ratioi*Mx != mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
+    PetscCheck(ratioi*Mx == mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
   } else {
     ratioi = (mx-1)/(Mx-1);
     PetscCheckFalse(ratioi*(Mx-1) != mx-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %D Mx %D",mx,Mx);
@@ -1180,14 +1180,14 @@ PetscErrorCode DMCreateInjection_DA_2D(DM dac,DM daf,VecScatter *inject)
   PetscCall(DMDAGetInfo(daf,NULL,&mx,&my,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
   if (bx == DM_BOUNDARY_PERIODIC) {
     ratioi = mx/Mx;
-    PetscCheckFalse(ratioi*Mx != mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
+    PetscCheck(ratioi*Mx == mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
   } else {
     ratioi = (mx-1)/(Mx-1);
     PetscCheckFalse(ratioi*(Mx-1) != mx-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %D Mx %D",mx,Mx);
   }
   if (by == DM_BOUNDARY_PERIODIC) {
     ratioj = my/My;
-    PetscCheckFalse(ratioj*My != my,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: my/My  must be integer: my %D My %D",my,My);
+    PetscCheck(ratioj*My == my,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: my/My  must be integer: my %D My %D",my,My);
   } else {
     ratioj = (my-1)/(My-1);
     PetscCheckFalse(ratioj*(My-1) != my-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (my - 1)/(My - 1) must be integer: my %D My %D",my,My);
@@ -1253,21 +1253,21 @@ PetscErrorCode DMCreateInjection_DA_3D(DM dac,DM daf,VecScatter *inject)
 
   if (bx == DM_BOUNDARY_PERIODIC) {
     ratioi = mx/Mx;
-    PetscCheckFalse(ratioi*Mx != mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
+    PetscCheck(ratioi*Mx == mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
   } else {
     ratioi = (mx-1)/(Mx-1);
     PetscCheckFalse(ratioi*(Mx-1) != mx-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %D Mx %D",mx,Mx);
   }
   if (by == DM_BOUNDARY_PERIODIC) {
     ratioj = my/My;
-    PetscCheckFalse(ratioj*My != my,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: my/My  must be integer: my %D My %D",my,My);
+    PetscCheck(ratioj*My == my,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: my/My  must be integer: my %D My %D",my,My);
   } else {
     ratioj = (my-1)/(My-1);
     PetscCheckFalse(ratioj*(My-1) != my-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (my - 1)/(My - 1) must be integer: my %D My %D",my,My);
   }
   if (bz == DM_BOUNDARY_PERIODIC) {
     ratiok = mz/Mz;
-    PetscCheckFalse(ratiok*Mz != mz,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mz/Mz  must be integer: mz %D My %D",mz,Mz);
+    PetscCheck(ratiok*Mz == mz,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mz/Mz  must be integer: mz %D My %D",mz,Mz);
   } else {
     ratiok = (mz-1)/(Mz-1);
     PetscCheckFalse(ratiok*(Mz-1) != mz-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mz - 1)/(Mz - 1) must be integer: mz %D Mz %D",mz,Mz);
@@ -1328,12 +1328,12 @@ PetscErrorCode  DMCreateInjection_DA(DM dac,DM daf,Mat *mat)
 
   PetscCall(DMDAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&bxc,&byc,&bzc,&stc));
   PetscCall(DMDAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&bxf,&byf,&bzf,&stf));
-  PetscCheckFalse(dimc != dimf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Dimensions of DMDA do not match %D %D",dimc,dimf);
-  PetscCheckFalse(dofc != doff,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"DOF of DMDA do not match %D %D",dofc,doff);
-  PetscCheckFalse(sc != sf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil width of DMDA do not match %D %D",sc,sf);
+  PetscCheck(dimc == dimf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Dimensions of DMDA do not match %D %D",dimc,dimf);
+  PetscCheck(dofc == doff,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"DOF of DMDA do not match %D %D",dofc,doff);
+  PetscCheck(sc == sf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil width of DMDA do not match %D %D",sc,sf);
   PetscCheckFalse(bxc != bxf || byc != byf || bzc != bzf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Boundary type different in two DMDAs");
-  PetscCheckFalse(stc != stf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil type different in two DMDAs");
-  PetscCheckFalse(Mc < 2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in x direction");
+  PetscCheck(stc == stf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil type different in two DMDAs");
+  PetscCheck(Mc >= 2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in x direction");
   PetscCheckFalse(dimc > 1 && Nc < 2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in y direction");
   PetscCheckFalse(dimc > 2 && Pc < 2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in z direction");
 
@@ -1410,15 +1410,15 @@ PetscErrorCode DMDACreateAggregates(DM dac,DM daf,Mat *rest)
 
   PetscCall(DMDAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&bxc,&byc,&bzc,&stc));
   PetscCall(DMDAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&bxf,&byf,&bzf,&stf));
-  PetscCheckFalse(dimc != dimf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Dimensions of DMDA do not match %D %D",dimc,dimf);
-  PetscCheckFalse(dofc != doff,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"DOF of DMDA do not match %D %D",dofc,doff);
-  PetscCheckFalse(sc != sf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil width of DMDA do not match %D %D",sc,sf);
+  PetscCheck(dimc == dimf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Dimensions of DMDA do not match %D %D",dimc,dimf);
+  PetscCheck(dofc == doff,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"DOF of DMDA do not match %D %D",dofc,doff);
+  PetscCheck(sc == sf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil width of DMDA do not match %D %D",sc,sf);
   PetscCheckFalse(bxc != bxf || byc != byf || bzc != bzf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Boundary type different in two DMDAs");
-  PetscCheckFalse(stc != stf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil type different in two DMDAs");
+  PetscCheck(stc == stf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil type different in two DMDAs");
 
-  PetscCheckFalse(Mf < Mc,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Coarse grid has more points than fine grid, Mc %D, Mf %D", Mc, Mf);
-  PetscCheckFalse(Nf < Nc,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Coarse grid has more points than fine grid, Nc %D, Nf %D", Nc, Nf);
-  PetscCheckFalse(Pf < Pc,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Coarse grid has more points than fine grid, Pc %D, Pf %D", Pc, Pf);
+  PetscCheck(Mf >= Mc,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Coarse grid has more points than fine grid, Mc %D, Mf %D", Mc, Mf);
+  PetscCheck(Nf >= Nc,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Coarse grid has more points than fine grid, Nc %D, Nf %D", Nc, Nf);
+  PetscCheck(Pf >= Pc,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Coarse grid has more points than fine grid, Pc %D, Pf %D", Pc, Pf);
 
   if (Pc < 0) Pc = 1;
   if (Pf < 0) Pf = 1;

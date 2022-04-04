@@ -649,7 +649,7 @@ PetscErrorCode PetscFESetQuadrature(PetscFE fem, PetscQuadrature q)
   if (q == fem->quadrature) PetscFunctionReturn(0);
   PetscCall(PetscFEGetNumComponents(fem, &Nc));
   PetscCall(PetscQuadratureGetNumComponents(q, &qNc));
-  PetscCheckFalse((qNc != 1) && (Nc != qNc),PetscObjectComm((PetscObject) fem), PETSC_ERR_ARG_SIZ, "FE components %D != Quadrature components %D and non-scalar quadrature", Nc, qNc);
+  PetscCheck(!(qNc != 1) || !(Nc != qNc),PetscObjectComm((PetscObject) fem), PETSC_ERR_ARG_SIZ, "FE components %D != Quadrature components %D and non-scalar quadrature", Nc, qNc);
   PetscCall(PetscTabulationDestroy(&fem->T));
   PetscCall(PetscTabulationDestroy(&fem->Tc));
   PetscCall(PetscObjectReference((PetscObject) q));
@@ -703,7 +703,7 @@ PetscErrorCode PetscFESetFaceQuadrature(PetscFE fem, PetscQuadrature q)
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
   PetscCall(PetscFEGetNumComponents(fem, &Nc));
   PetscCall(PetscQuadratureGetNumComponents(q, &qNc));
-  PetscCheckFalse((qNc != 1) && (Nc != qNc),PetscObjectComm((PetscObject) fem), PETSC_ERR_ARG_SIZ, "FE components %D != Quadrature components %D and non-scalar quadrature", Nc, qNc);
+  PetscCheck(!(qNc != 1) || !(Nc != qNc),PetscObjectComm((PetscObject) fem), PETSC_ERR_ARG_SIZ, "FE components %D != Quadrature components %D and non-scalar quadrature", Nc, qNc);
   PetscCall(PetscTabulationDestroy(&fem->Tf));
   PetscCall(PetscQuadratureDestroy(&fem->faceQuadrature));
   fem->faceQuadrature = q;
@@ -1005,10 +1005,10 @@ PetscErrorCode PetscFEComputeTabulation(PetscFE fem, PetscInt npoints, const Pet
     PetscCall(DMGetDimension(dm, &cdim));
     PetscCall(PetscDualSpaceGetDimension(Q, &Nb));
     PetscCall(PetscFEGetNumComponents(fem, &Nc));
-    PetscCheckFalse(T->K    != (!cdim ? 0 : K),PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Tabulation K %D must match requested K %D", T->K, !cdim ? 0 : K);
-    PetscCheckFalse(T->Nb   != Nb,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Tabulation Nb %D must match requested Nb %D", T->Nb, Nb);
-    PetscCheckFalse(T->Nc   != Nc,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Tabulation Nc %D must match requested Nc %D", T->Nc, Nc);
-    PetscCheckFalse(T->cdim != cdim,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Tabulation cdim %D must match requested cdim %D", T->cdim, cdim);
+    PetscCheck(T->K    == (!cdim ? 0 : K),PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Tabulation K %D must match requested K %D", T->K, !cdim ? 0 : K);
+    PetscCheck(T->Nb   == Nb,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Tabulation Nb %D must match requested Nb %D", T->Nb, Nb);
+    PetscCheck(T->Nc   == Nc,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Tabulation Nc %D must match requested Nc %D", T->Nc, Nc);
+    PetscCheck(T->cdim == cdim,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Tabulation cdim %D must match requested cdim %D", T->cdim, cdim);
   }
   T->Nr = 1;
   T->Np = npoints;

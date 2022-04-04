@@ -244,7 +244,7 @@ int main(int argc,char **args)
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-ppcell",&ppcell,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-meshtype",&meshtype,NULL));
-  PetscCheckFalse(meshtype > 1,PETSC_COMM_WORLD,PETSC_ERR_USER,"-meshtype <value> must be 0 or 1");
+  PetscCheck(meshtype <= 1,PETSC_COMM_WORLD,PETSC_ERR_USER,"-meshtype <value> must be 0 or 1");
 
   PetscCall(pic_advect(ppcell,meshtype));
 

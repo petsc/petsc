@@ -84,7 +84,7 @@ int main(int argc,char **argv)
   PetscCall(MatConvert(B,MATDENSE,MAT_INITIAL_MATRIX,&R));
   PetscCall(MatAXPY(R,-1.0,P,SAME_NONZERO_PATTERN));
   PetscCall(MatNorm(R,NORM_INFINITY,&norm));
-  PetscCheckFalse(PetscAbsReal(norm/relative) > epsilon,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"||A(!symmetric)-A(symmetric)|| = %g (> %g)",(double)PetscAbsReal(norm/relative),(double)epsilon);
+  PetscCheck(PetscAbsReal(norm/relative) <= epsilon,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"||A(!symmetric)-A(symmetric)|| = %g (> %g)",(double)PetscAbsReal(norm/relative),(double)epsilon);
   PetscCall(MatDestroy(&B));
   PetscCall(MatDestroy(&R));
   PetscCall(MatDestroy(&P));

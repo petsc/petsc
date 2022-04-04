@@ -99,7 +99,7 @@ PetscErrorCode  PetscDrawPushCurrentPoint(PetscDraw draw,PetscReal x,PetscReal y
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  PetscCheckFalse(draw->currentpoint > 19,PETSC_COMM_SELF,PETSC_ERR_SUP,"You have pushed too many current points");
+  PetscCheck(draw->currentpoint <= 19,PETSC_COMM_SELF,PETSC_ERR_SUP,"You have pushed too many current points");
   draw->currentpoint_x[++draw->currentpoint] = x;
   draw->currentpoint_y[draw->currentpoint]   = y;
   PetscFunctionReturn(0);

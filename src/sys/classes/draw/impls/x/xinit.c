@@ -78,7 +78,7 @@ static PetscErrorCode PetscDrawXiCreateGC(PetscDraw_X *XiWin,PetscDrawXiPixVal f
   gcvalues.foreground = fg;
   XiWin->gc.cur_pix   = fg;
   XiWin->gc.set       = XCreateGC(XiWin->disp,RootWindow(XiWin->disp,XiWin->screen),GCFunction|GCForeground,&gcvalues);
-  PetscCheckFalse(!XiWin->gc.set,PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to create X graphics context");
+  PetscCheck(XiWin->gc.set,PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to create X graphics context");
   PetscFunctionReturn(0);
 }
 

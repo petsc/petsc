@@ -188,12 +188,12 @@ PetscErrorCode PetscLayoutCreateFromRanges(MPI_Comm comm,const PetscInt range[],
   if (PetscDefined(USE_DEBUG)) {  /* just check that n, N and bs are consistent */
     PetscInt tmp;
     PetscCall(MPIU_Allreduce(&map->n,&tmp,1,MPIU_INT,MPI_SUM,map->comm));
-    PetscCheckFalse(tmp != map->N,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Sum of local lengths %" PetscInt_FMT " does not equal global length %" PetscInt_FMT ", my local length %" PetscInt_FMT ".\nThe provided PetscLayout is wrong.",tmp,map->N,map->n);
+    PetscCheck(tmp == map->N,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Sum of local lengths %" PetscInt_FMT " does not equal global length %" PetscInt_FMT ", my local length %" PetscInt_FMT ".\nThe provided PetscLayout is wrong.",tmp,map->N,map->n);
     if (map->bs > 1) {
-      PetscCheckFalse(map->n % map->bs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Local size %" PetscInt_FMT " must be divisible by blocksize %" PetscInt_FMT,map->n,map->bs);
+      PetscCheck(map->n % map->bs == 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Local size %" PetscInt_FMT " must be divisible by blocksize %" PetscInt_FMT,map->n,map->bs);
     }
     if (map->bs > 1) {
-      PetscCheckFalse(map->N % map->bs,map->comm,PETSC_ERR_PLIB,"Global size %" PetscInt_FMT " must be divisible by blocksize %" PetscInt_FMT,map->N,map->bs);
+      PetscCheck(map->N % map->bs == 0,map->comm,PETSC_ERR_PLIB,"Global size %" PetscInt_FMT " must be divisible by blocksize %" PetscInt_FMT,map->N,map->bs);
     }
   }
   /* lock the layout */
@@ -237,14 +237,14 @@ PetscErrorCode PetscLayoutSetUp(PetscLayout map)
   PetscInt       p;
 
   PetscFunctionBegin;
-  PetscCheckFalse(map->setupcalled && (map->n != map->oldn || map->N != map->oldN),map->comm,PETSC_ERR_ARG_WRONGSTATE,"Layout is already setup with (local=%" PetscInt_FMT ",global=%" PetscInt_FMT "), cannot call setup again with (local=%" PetscInt_FMT ",global=%" PetscInt_FMT ")", map->oldn, map->oldN, map->n, map->N);
+  PetscCheck(!map->setupcalled || !(map->n != map->oldn || map->N != map->oldN),map->comm,PETSC_ERR_ARG_WRONGSTATE,"Layout is already setup with (local=%" PetscInt_FMT ",global=%" PetscInt_FMT "), cannot call setup again with (local=%" PetscInt_FMT ",global=%" PetscInt_FMT ")", map->oldn, map->oldN, map->n, map->N);
   if (map->setupcalled) PetscFunctionReturn(0);
 
   if (map->n > 0 && map->bs > 1) {
-    PetscCheckFalse(map->n % map->bs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Local size %" PetscInt_FMT " must be divisible by blocksize %" PetscInt_FMT,map->n,map->bs);
+    PetscCheck(map->n % map->bs == 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Local size %" PetscInt_FMT " must be divisible by blocksize %" PetscInt_FMT,map->n,map->bs);
   }
   if (map->N > 0 && map->bs > 1) {
-    PetscCheckFalse(map->N % map->bs,map->comm,PETSC_ERR_PLIB,"Global size %" PetscInt_FMT " must be divisible by blocksize %" PetscInt_FMT,map->N,map->bs);
+    PetscCheck(map->N % map->bs == 0,map->comm,PETSC_ERR_PLIB,"Global size %" PetscInt_FMT " must be divisible by blocksize %" PetscInt_FMT,map->N,map->bs);
   }
 
   PetscCallMPI(MPI_Comm_rank(map->comm, &rank));

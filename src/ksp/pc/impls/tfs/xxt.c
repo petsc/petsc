@@ -298,7 +298,7 @@ static PetscErrorCode xxt_generate(xxt_ADT xxt_handle)
   for (dim=i=j=0; i<m; i++) {
     /* time to move to the next level? */
     while (i==segs[dim]) {
-      PetscCheckFalse(dim==level,PETSC_COMM_SELF,PETSC_ERR_PLIB,"dim about to exceed level");
+      PetscCheck(dim!=level,PETSC_COMM_SELF,PETSC_ERR_PLIB,"dim about to exceed level");
       stages[dim++]=i;
       end         +=lnsep[dim];
     }
@@ -382,7 +382,7 @@ static PetscErrorCode xxt_generate(xxt_ADT xxt_handle)
 
     /* check for small alpha                             */
     /* LATER use this to detect and determine null space */
-    PetscCheckFalse(PetscAbsScalar(alpha)<1.0e-14,PETSC_COMM_SELF,PETSC_ERR_PLIB,"bad alpha! %g",alpha);
+    PetscCheck(PetscAbsScalar(alpha)>=1.0e-14,PETSC_COMM_SELF,PETSC_ERR_PLIB,"bad alpha! %g",alpha);
 
     /* compute v_l = v_l/sqrt(alpha) */
     PCTFS_rvec_scale(v,1.0/alpha,n);
@@ -519,7 +519,7 @@ static PetscErrorCode check_handle(xxt_ADT xxt_handle)
 
   vals[0]=vals[1]=xxt_handle->id;
   PCTFS_giop(vals,work,PETSC_STATIC_ARRAY_LENGTH(op)-1,op);
-  PetscCheckFalse((vals[0]!=vals[1])||(xxt_handle->id<=0),PETSC_COMM_SELF,PETSC_ERR_PLIB,"check_handle() :: bad handle :: id mismatch min/max %D/%D %D",vals[0],vals[1], xxt_handle->id);
+  PetscCheck(!(vals[0]!=vals[1])&&!(xxt_handle->id<=0),PETSC_COMM_SELF,PETSC_ERR_PLIB,"check_handle() :: bad handle :: id mismatch min/max %D/%D %D",vals[0],vals[1], xxt_handle->id);
   PetscFunctionReturn(0);
 }
 
@@ -630,7 +630,7 @@ static PetscErrorCode det_separators(xxt_ADT xxt_handle)
           if ((!used[i])&&(lhs[i]!=0.0)) {
             ct++; nfo++;
 
-            PetscCheckFalse(nfo>n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"nfo about to exceed n");
+            PetscCheck(nfo<=n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"nfo about to exceed n");
 
             *--iptr = local2global[i];
             used[i] = edge;
@@ -649,7 +649,7 @@ static PetscErrorCode det_separators(xxt_ADT xxt_handle)
           if ((!used[i])&&(rhs[i]!=0.0)) {
             ct++; nfo++;
 
-            PetscCheckFalse(nfo>n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"nfo about to exceed n");
+            PetscCheck(nfo<=n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"nfo about to exceed n");
 
             *--iptr = local2global[i];
             used[i] = edge;

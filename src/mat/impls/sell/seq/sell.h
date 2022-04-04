@@ -71,7 +71,7 @@ Mat_SeqSELL *Ain = (Mat_SeqSELL*)Amat->data; \
 PetscInt new_size=Ain->maxallocmat+8,*new_colidx; \
 datatype *new_val; \
 \
-PetscCheckFalse(NONEW == -2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"New nonzero at (%" PetscInt_FMT ",%" PetscInt_FMT ") caused a malloc\nUse MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check",ROW,COL); \
+PetscCheck(NONEW != -2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"New nonzero at (%" PetscInt_FMT ",%" PetscInt_FMT ") caused a malloc\nUse MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check",ROW,COL); \
 /* malloc new storage space */ \
 PetscCall(PetscMalloc2(BS2*new_size,&new_val,BS2*new_size,&new_colidx)); \
 \
@@ -118,14 +118,14 @@ if (WIDTH>=Ain->rlenmax) Ain->rlenmax++; \
     } \
   } \
   if (!found) { \
-    PetscCheckFalse(a->nonew == -1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at global row/column (%" PetscInt_FMT ", %" PetscInt_FMT ") into matrix", orow, ocol); \
+    PetscCheck(a->nonew != -1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at global row/column (%" PetscInt_FMT ", %" PetscInt_FMT ") into matrix", orow, ocol); \
     if (a->nonew != 1 && !(value == 0.0 && a->ignorezeroentries) && a->rlen[row] >= (a->sliidx[row/8+1]-a->sliidx[row/8])/8) { \
       /* there is no extra room in row, therefore enlarge 8 elements (1 slice column) */ \
       if (a->maxallocmat < a->sliidx[a->totalslices]+8) { \
         /* allocates a larger array for the XSELL matrix types; only extend the current slice by one more column. */ \
         PetscInt  new_size=a->maxallocmat+8,*new_colidx; \
         MatScalar *new_val; \
-        PetscCheckFalse(a->nonew == -2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"New nonzero at (%" PetscInt_FMT ",%" PetscInt_FMT ") caused a malloc\nUse MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check",orow,ocol); \
+        PetscCheck(a->nonew != -2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"New nonzero at (%" PetscInt_FMT ",%" PetscInt_FMT ") caused a malloc\nUse MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check",orow,ocol); \
         /* malloc new storage space */ \
         PetscCall(PetscMalloc2(new_size,&new_val,new_size,&new_colidx)); \
         /* copy over old data into new slots by two steps: one step for data before the current slice and the other for the rest */ \
