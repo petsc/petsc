@@ -1097,7 +1097,7 @@ static PetscErrorCode MatDuplicate_H2OPUS(Mat B, MatDuplicateOption op, Mat *nA)
 static PetscErrorCode MatView_H2OPUS(Mat A, PetscViewer view)
 {
   Mat_H2OPUS        *h2opus = (Mat_H2OPUS*)A->data;
-  PetscBool         isascii;
+  PetscBool         isascii, vieweps;
   PetscMPIInt       size;
   PetscViewerFormat format;
 
@@ -1157,16 +1157,17 @@ static PetscErrorCode MatView_H2OPUS(Mat A, PetscViewer view)
       }
     }
   }
-#if 0
-  if (size == 1) {
+  vieweps = PETSC_FALSE;
+  PetscCall(PetscOptionsGetBool(((PetscObject)A)->options,((PetscObject)A)->prefix,"-mat_h2opus_vieweps",&vieweps,NULL));
+  if (vieweps) {
     char filename[256];
     const char *name;
 
     PetscCall(PetscObjectGetName((PetscObject)A,&name));
     PetscCall(PetscSNPrintf(filename,sizeof(filename),"%s_structure.eps",name));
+    PetscCall(PetscOptionsGetString(((PetscObject)A)->options,((PetscObject)A)->prefix,"-mat_h2opus_vieweps_filename",filename,sizeof(filename),NULL));
     outputEps(*h2opus->hmatrix,filename);
   }
-#endif
   PetscFunctionReturn(0);
 }
 
