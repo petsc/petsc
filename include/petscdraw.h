@@ -273,6 +273,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawSPAddPoints(PetscDrawSP,int,PetscReal**,Pet
 PETSC_EXTERN PetscErrorCode PetscDrawSPDraw(PetscDrawSP,PetscBool);
 PETSC_EXTERN PetscErrorCode PetscDrawSPSave(PetscDrawSP);
 PETSC_EXTERN PetscErrorCode PetscDrawSPReset(PetscDrawSP);
+PETSC_EXTERN PetscErrorCode PetscDrawSPGetDimension(PetscDrawSP,int*);
 PETSC_EXTERN PetscErrorCode PetscDrawSPSetDimension(PetscDrawSP,int);
 PETSC_EXTERN PetscErrorCode PetscDrawSPGetAxis(PetscDrawSP,PetscDrawAxis*);
 PETSC_EXTERN PetscErrorCode PetscDrawSPGetDraw(PetscDrawSP,PetscDraw*);

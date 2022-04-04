@@ -19,6 +19,8 @@ Changes: Development
 
 .. rubric:: PetscDraw:
 
+- Add ``PetscDrawSPGetDimension()``
+
 .. rubric:: AO:
 
 .. rubric:: IS:
