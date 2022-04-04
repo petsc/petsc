@@ -21,7 +21,6 @@ typedef struct {
   /* convergence testing */
   Mat       T;
   Vec       w;
-  PetscBool testMA;
 
   /* Support for PCSetCoordinates */
   PetscInt  sdim;
@@ -42,6 +41,8 @@ typedef struct {
   PetscInt  bs;
   PetscReal mrtol;
 
+  /* CPU/GPU */
+  PetscBool forcecpu;
   PetscBool boundtocpu;
 } PC_H2OPUS;
 
@@ -118,6 +119,7 @@ static PetscErrorCode PCSetFromOptions_H2OPUS(PetscOptionItems *PetscOptionsObje
   PetscCall(PetscOptionsInt("-pc_h2opus_maxrank","Maximum rank when constructed from matvecs",NULL,pch2opus->max_rank,&pch2opus->max_rank,NULL));
   PetscCall(PetscOptionsInt("-pc_h2opus_samples","Number of samples to be taken concurrently when constructing from matvecs",NULL,pch2opus->bs,&pch2opus->bs,NULL));
   PetscCall(PetscOptionsReal("-pc_h2opus_mrtol","Relative tolerance for construction from sampling",NULL,pch2opus->mrtol,&pch2opus->mrtol,NULL));
+  PetscCall(PetscOptionsBool("-pc_h2opus_forcecpu","Force construction on CPU",NULL,pch2opus->forcecpu,&pch2opus->forcecpu,NULL));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
@@ -248,7 +250,7 @@ static PetscErrorCode MatMultKernel_MAmI(Mat M, Vec x, Vec y, PetscBool t)
       PetscCall(MatMult(A,pch2opus->w,y));
     }
   }
-  if (!pch2opus->testMA) PetscCall(VecAXPY(y,-1.0,x));
+  PetscCall(VecAXPY(y,-1.0,x));
   PetscFunctionReturn(0);
 }
 
@@ -507,7 +509,6 @@ static PetscErrorCode PCSetUp_H2OPUS(PC pc)
   Mat        A         = pc->useAmat ? pc->mat : pc->pmat;
   NormType   norm      = pch2opus->normtype;
   PetscReal  initerr   = 0.0,err;
-  PetscReal  initerrMA = 0.0,errMA;
   PetscBool  ish2opus;
 
   PetscFunctionBegin;
@@ -548,9 +549,12 @@ static PetscErrorCode PCSetUp_H2OPUS(PC pc)
     PetscCall(MatAssemblyEnd(pch2opus->A,MAT_FINAL_ASSEMBLY));
     /* XXX */
     PetscCall(MatSetOption(pch2opus->A,MAT_SYMMETRIC,PETSC_TRUE));
+
+    /* always perform construction on the GPU unless forcecpu is true */
+    PetscCall(MatBindToCPU(pch2opus->A,pch2opus->forcecpu));
   }
 #if defined(PETSC_H2OPUS_USE_GPU)
-  pch2opus->boundtocpu = pch2opus->A->boundtocpu;
+  pch2opus->boundtocpu = pch2opus->forcecpu ? PETSC_TRUE : pch2opus->A->boundtocpu;
 #endif
   PetscCall(MatBindToCPU(pch2opus->T,pch2opus->boundtocpu));
   if (pch2opus->M) { /* see if we can reuse M as initial guess */
@@ -573,18 +577,11 @@ static PetscErrorCode PCSetUp_H2OPUS(PC pc)
   /* A and M have the same h2 matrix structure, save on reordering routines */
   PetscCall(MatH2OpusSetNativeMult(pch2opus->A,PETSC_TRUE));
   PetscCall(MatH2OpusSetNativeMult(pch2opus->M,PETSC_TRUE));
-  if (norm == NORM_1 || norm == NORM_2 || norm == NORM_INFINITY) {
-    PetscCall(MatNorm(pch2opus->T,norm,&initerr));
-    pch2opus->testMA = PETSC_TRUE;
-    PetscCall(MatNorm(pch2opus->T,norm,&initerrMA));
-    pch2opus->testMA = PETSC_FALSE;
-  }
+  if (norm == NORM_1 || norm == NORM_2 || norm == NORM_INFINITY) PetscCall(MatNorm(pch2opus->T,norm,&initerr));
   if (PetscIsInfOrNanReal(initerr)) pc->failedreason = PC_SETUP_ERROR;
   err   = initerr;
-  errMA = initerrMA;
   if (pch2opus->monitor) {
     PetscCall(PetscPrintf(PetscObjectComm((PetscObject)pc),"%" PetscInt_FMT ": ||M*A - I|| NORM%s abs %g rel %g\n",0,NormTypes[norm],(double)err,(double)(err/initerr)));
-    PetscCall(PetscPrintf(PetscObjectComm((PetscObject)pc),"%" PetscInt_FMT ": ||M*A||     NORM%s abs %g rel %g\n",0,NormTypes[norm],(double)errMA,(double)(errMA/initerrMA)));
   }
   if (initerr > pch2opus->atol && !pc->failedreason) {
     PetscInt i;
@@ -602,18 +599,11 @@ static PetscErrorCode PCSetUp_H2OPUS(PC pc)
       PetscCall(MatH2OpusSetNativeMult(M,PETSC_TRUE));
       PetscCall(MatAssemblyBegin(M,MAT_FINAL_ASSEMBLY));
       PetscCall(MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY));
-
       PetscCall(MatDestroy(&pch2opus->M));
       pch2opus->M = M;
-      if (norm == NORM_1 || norm == NORM_2 || norm == NORM_INFINITY) {
-        PetscCall(MatNorm(pch2opus->T,norm,&err));
-        pch2opus->testMA = PETSC_TRUE;
-        PetscCall(MatNorm(pch2opus->T,norm,&errMA));
-        pch2opus->testMA = PETSC_FALSE;
-      }
+      if (norm == NORM_1 || norm == NORM_2 || norm == NORM_INFINITY) PetscCall(MatNorm(pch2opus->T,norm,&err));
       if (pch2opus->monitor) {
         PetscCall(PetscPrintf(PetscObjectComm((PetscObject)pc),"%" PetscInt_FMT ": ||M*A - I|| NORM%s abs %g rel %g\n",i+1,NormTypes[norm],(double)err,(double)(err/initerr)));
-        PetscCall(PetscPrintf(PetscObjectComm((PetscObject)pc),"%" PetscInt_FMT ": ||M*A||     NORM%s abs %g rel %g\n",i+1,NormTypes[norm],(double)errMA,(double)(errMA/initerrMA)));
       }
       if (PetscIsInfOrNanReal(err)) pc->failedreason = PC_SETUP_ERROR;
       if (err < pch2opus->atol || err < pch2opus->rtol*initerr || pc->failedreason) break;

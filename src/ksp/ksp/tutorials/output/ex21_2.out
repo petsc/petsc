@@ -1,36 +1,21 @@
 Approx err 0.
 Approx err (diag) 0.
 0: ||M*A - I|| NORM2 abs 0.999692 rel 1.
-0: ||M*A||     NORM2 abs 0.801878 rel 1.
 1: ||M*A - I|| NORM2 abs 0.999715 rel 1.00002
-1: ||M*A||     NORM2 abs 0.998459 rel 1.24515
 2: ||M*A - I|| NORM2 abs 0.999899 rel 1.00021
-2: ||M*A||     NORM2 abs 0.999705 rel 1.2467
 3: ||M*A - I|| NORM2 abs 0.999789 rel 1.0001
-3: ||M*A||     NORM2 abs 1. rel 1.24707
 4: ||M*A - I|| NORM2 abs 0.999398 rel 0.999706
-4: ||M*A||     NORM2 abs 0.999977 rel 1.24704
 5: ||M*A - I|| NORM2 abs 0.998234 rel 0.998542
-5: ||M*A||     NORM2 abs 0.99992 rel 1.24697
 6: ||M*A - I|| NORM2 abs 0.994504 rel 0.994811
-6: ||M*A||     NORM2 abs 1. rel 1.24707
 7: ||M*A - I|| NORM2 abs 0.9799 rel 0.980202
-7: ||M*A||     NORM2 abs 0.999997 rel 1.24707
 8: ||M*A - I|| NORM2 abs 0.92246 rel 0.922744
-8: ||M*A||     NORM2 abs 0.999994 rel 1.24707
 9: ||M*A - I|| NORM2 abs 0.724701 rel 0.724924
-9: ||M*A||     NORM2 abs 0.999936 rel 1.24699
 10: ||M*A - I|| NORM2 abs 0.276193 rel 0.276278
-10: ||M*A||     NORM2 abs 0.999887 rel 1.24693
 11: ||M*A - I|| NORM2 abs 0.0058492 rel 0.005851
-11: ||M*A||     NORM2 abs 0.999029 rel 1.24586
 Norm of error 5.68381e-05, Iterations 1
 Approx err 0.
 Approx err (diag) 0.
 0: ||M*A - I|| NORM2 abs 0.502369 rel 1.
-0: ||M*A||     NORM2 abs 0.99921 rel 1.
 1: ||M*A - I|| NORM2 abs 0.0638297 rel 0.127057
-1: ||M*A||     NORM2 abs 0.999756 rel 1.00055
 2: ||M*A - I|| NORM2 abs 1.67151e-05 rel 3.32726e-05
-2: ||M*A||     NORM2 abs 0.999996 rel 1.00079
 Residual norm error 2.58753e-09, Iterations 1
