@@ -393,6 +393,7 @@ class Package(config.base.Configure):
     '''Special case if --package-prefix-hash then even self.publicInstall == 0 are installed in the prefix location'''
     self.confDir    = self.installDirProvider.confDir  # private install location; $PETSC_DIR/$PETSC_ARCH for PETSc
     self.packageDir = self.getDir()
+    self.setupDownload()
     if not self.packageDir: self.packageDir = self.downLoad()
     self.updateGitDir()
     self.updatehgDir()
@@ -804,50 +805,23 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
       self.logPrint('  '+str(pkgdirs))
       return
 
+  def setupDownload(self):
+    import retrieval
+    self.retriever = retrieval.Retriever(self.sourceControl, argDB = self.argDB)
+    self.retriever.setup()
+    self.retriever.setupURLs(self.package,self.download,self.gitsubmodules,self.gitPreReqCheck())
+
   def downLoad(self):
     '''Downloads a package; using hg or ftp; opens it in the with-packages-build-dir directory'''
-    import retrieval
-
-    if self.havePETSc:
-      isClone = self.petscclone.isClone
-    else:
-      isClone = True
-
-    retriever = retrieval.Retriever(self.sourceControl, argDB = self.argDB)
-    retriever.setup()
+    retriever = self.retriever
     retriever.saveLog()
     self.logPrint('Downloading '+self.name)
-    # check if its http://ftp.mcs - and add ftp://ftp.mcs as fallback
-    download_urls = []
-    git_urls      = []
-    for url in self.download:
-      if url.startswith("git://"):
-        git_urls.append(url)
-      else:
-        download_urls.append(url)
-      if url.find('http://ftp.mcs.anl.gov') >=0:
-        download_urls.append(url.replace('http://','ftp://'))
-        download_urls.append(url.replace('http://ftp.mcs.anl.gov/pub/petsc/','https://www.mcs.anl.gov/petsc/mirror/'))
-      # prefer giturl from a petsc gitclone, and tarball urls from a petsc tarball.
-      if git_urls:
-        if not hasattr(self.sourceControl, 'git'):
-          self.logPrint('Git not found - skipping giturls: '+str(git_urls)+'\n')
-        elif isClone or 'with-git' in self.framework.clArgDB:
-          download_urls = git_urls+download_urls
-        else:
-          download_urls = download_urls+git_urls
     # now attempt to download each url until any one succeeds.
     err =''
-    for url in download_urls:
-      if url.startswith('git://'):
-        if not self.gitcommit: raise RuntimeError(self.PACKAGE+': giturl specified but commit not set')
-        if not self.gitPreReqCheck():
-          err += 'Git prerequisite check failed for url: '+url+'\n'
-          self.logPrint('Git prerequisite check failed - required for url: '+url+'\n')
-          continue
+    for proto, url in retriever.generateURLs():
       self.logPrintBox('Trying to download '+url+' for '+self.PACKAGE)
       try:
-        retriever.genericRetrieve(url, self.externalPackagesDir, self.package, self.gitsubmodules)
+        retriever.genericRetrieve(proto, url, self.externalPackagesDir)
         self.logWrite(retriever.restoreLog())
         retriever.saveLog()
         pkgdir = self.getDir()
