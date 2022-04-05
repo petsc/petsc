@@ -120,7 +120,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"should not be here");
 #endif
   } else if (pc_gamg->level_reduction_factors[pc_gamg->current_level] > 0) {
-    PetscCheckFalse(nactive%pc_gamg->level_reduction_factors[pc_gamg->current_level],PETSC_COMM_SELF,PETSC_ERR_PLIB,"odd number of active process %D wrt reduction factor %D",nactive,pc_gamg->level_reduction_factors[pc_gamg->current_level]);
+    PetscCheck(nactive%pc_gamg->level_reduction_factors[pc_gamg->current_level] == 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"odd number of active process %D wrt reduction factor %D",nactive,pc_gamg->level_reduction_factors[pc_gamg->current_level]);
     new_size = nactive/pc_gamg->level_reduction_factors[pc_gamg->current_level];
     PetscCall(PetscInfo(pc,"%s: Manually setting reduction to %d active processes (%d/%D)\n",((PetscObject)pc)->prefix,new_size,nactive,pc_gamg->level_reduction_factors[pc_gamg->current_level]));
   } else if (is_last && !pc_gamg->use_parallel_coarse_grid_solver) {
@@ -153,7 +153,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
     IS             is_eq_newproc,is_eq_num,is_eq_num_prim,new_eq_indices;
     PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_REDUCE],0,0,0,0));
     nloc_old = ncrs_eq/cr_bs;
-    PetscCheckFalse(ncrs_eq % cr_bs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ncrs_eq %D not divisible by cr_bs %D",ncrs_eq,cr_bs);
+    PetscCheck(ncrs_eq % cr_bs == 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ncrs_eq %D not divisible by cr_bs %D",ncrs_eq,cr_bs);
     /* get new_size and rfactor */
     if (pc_gamg->layout_type==PCGAMG_LAYOUT_SPREAD || !pc_gamg->repart) {
       /* find factor */
@@ -281,7 +281,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
       PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_REPART],0,0,0,0));
     } else { /* simple aggregation of parts -- 'is_eq_newproc' */
       PetscInt targetPE;
-      PetscCheckFalse(new_size==nactive,PETSC_COMM_SELF,PETSC_ERR_PLIB,"new_size==nactive. Should not happen");
+      PetscCheck(new_size!=nactive,PETSC_COMM_SELF,PETSC_ERR_PLIB,"new_size==nactive. Should not happen");
       PetscCall(PetscInfo(pc,"%s: Number of equations (loc) %D with simple aggregation\n",((PetscObject)pc)->prefix,ncrs_eq));
       targetPE = (rank/rfactor)*expand_factor;
       PetscCall(ISCreateStride(comm, ncrs_eq, targetPE, 0, &is_eq_newproc));
@@ -1533,7 +1533,7 @@ PetscErrorCode PCSetFromOptions_GAMG(PetscOptionItems *PetscOptionsObject,PC pc)
     n = 2;
     PetscCall(PetscOptionsRealArray("-pc_gamg_eigenvalues","extreme eigenvalues for smoothed aggregation","PCGAMGSetEigenvalues",eminmax,&n,&flag));
     if (flag) {
-      PetscCheckFalse(n != 2,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_INCOMP,"-pc_gamg_eigenvalues: must specify 2 parameters, min and max eigenvalues");
+      PetscCheck(n == 2,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_INCOMP,"-pc_gamg_eigenvalues: must specify 2 parameters, min and max eigenvalues");
       PetscCall(PCGAMGSetEigenvalues(pc, eminmax[1], eminmax[0]));
     }
   }

@@ -502,7 +502,7 @@ PetscErrorCode MatPartitioningChacoSetEigenTol_Chaco(MatPartitioning part,PetscR
   PetscFunctionBegin;
   if (tol==PETSC_DEFAULT) chaco->eigtol = 0.001;
   else {
-    PetscCheckFalse(tol<=0.0,PetscObjectComm((PetscObject)part),PETSC_ERR_ARG_OUTOFRANGE,"Tolerance must be positive");
+    PetscCheck(tol>0.0,PetscObjectComm((PetscObject)part),PETSC_ERR_ARG_OUTOFRANGE,"Tolerance must be positive");
     chaco->eigtol = tol;
   }
   PetscFunctionReturn(0);

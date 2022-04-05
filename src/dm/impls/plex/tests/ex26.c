@@ -39,7 +39,7 @@ int main(int argc, char **argv) {
   PetscCall(PetscOptionsString("-o", "Filename to write", "ex26", ofilename, ofilename, sizeof(ofilename), NULL));
   PetscCall(PetscOptionsBoundedInt("-order", "FEM polynomial order", "ex26", order, &order, NULL,1));
   ierr = PetscOptionsEnd();PetscCall(ierr);
-  PetscCheckFalse((order > 2) || (order < 1),PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Unsupported polynomial order %D not in [1, 2]", order);
+  PetscCheck(!(order > 2) && !(order < 1),PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Unsupported polynomial order %D not in [1, 2]", order);
 
   /* Read the mesh from a file in any supported format */
   PetscCall(DMPlexCreateFromFile(PETSC_COMM_WORLD, ifilename, NULL, PETSC_TRUE, &dm));
@@ -395,7 +395,7 @@ int main(int argc, char **argv) {
     PetscCall(VecLoad(tmpVec, viewer));
     PetscCall(VecAXPY(UA, -1.0, tmpVec));
     PetscCall(VecNorm(UA, NORM_INFINITY, &norm));
-    PetscCheckFalse(norm > PETSC_SQRT_MACHINE_EPSILON,PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "UAlpha ||Vin - Vout|| = %g", (double) norm);
+    PetscCheck(norm <= PETSC_SQRT_MACHINE_EPSILON,PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "UAlpha ||Vin - Vout|| = %g", (double) norm);
     PetscCall(DMRestoreGlobalVector(dmUA, &tmpVec));
 
     /* same thing with the UA2 Vec obtained from the superDM */
@@ -409,7 +409,7 @@ int main(int argc, char **argv) {
     PetscCall(VecLoad(tmpVec,viewer));
     PetscCall(VecAXPY(UA2, -1.0, tmpVec));
     PetscCall(VecNorm(UA2, NORM_INFINITY, &norm));
-    PetscCheckFalse(norm > PETSC_SQRT_MACHINE_EPSILON,PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "UAlpha2 ||Vin - Vout|| = %g", (double) norm);
+    PetscCheck(norm <= PETSC_SQRT_MACHINE_EPSILON,PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "UAlpha2 ||Vin - Vout|| = %g", (double) norm);
     PetscCall(DMRestoreGlobalVector(dmUA2, &tmpVec));
 
     /* Building and saving Sigma
@@ -463,7 +463,7 @@ int main(int argc, char **argv) {
     PetscCall(VecLoad(tmpVec,viewer));
     PetscCall(VecAXPY(S, -1.0, tmpVec));
     PetscCall(VecNorm(S, NORM_INFINITY, &norm));
-    PetscCheckFalse(norm > PETSC_SQRT_MACHINE_EPSILON,PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "Sigma ||Vin - Vout|| = %g", (double) norm);
+    PetscCheck(norm <= PETSC_SQRT_MACHINE_EPSILON,PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "Sigma ||Vin - Vout|| = %g", (double) norm);
     PetscCall(DMRestoreGlobalVector(dmS, &tmpVec));
   }
   PetscCall(PetscViewerDestroy(&viewer));

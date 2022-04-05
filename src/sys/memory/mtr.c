@@ -320,7 +320,7 @@ PetscErrorCode  PetscTrFreeDefault(void *aa,int lineno,const char function[],con
     head->lineno = -head->lineno;
   }
   asize = TRrequestedSize ? head->rsize : head->size;
-  PetscCheckFalse(TRallocated < asize,PETSC_COMM_SELF,PETSC_ERR_MEMC,"TRallocate is smaller than memory just freed");
+  PetscCheck(TRallocated >= asize,PETSC_COMM_SELF,PETSC_ERR_MEMC,"TRallocate is smaller than memory just freed");
   TRallocated -= asize;
   TRfrags--;
   if (head->prev) head->prev->next = head->next;
@@ -633,7 +633,7 @@ PetscErrorCode  PetscMallocPopMaximumUsage(int event,PetscLogDouble *mu)
   PetscFunctionBegin;
   *mu = 0;
   if (NumTRMaxMems-- > MAXTRMAXMEMS) PetscFunctionReturn(0);
-  PetscCheckFalse(TRMaxMemsEvents[NumTRMaxMems] != event,PETSC_COMM_SELF,PETSC_ERR_MEMC,"PetscMallocPush/PopMaximumUsage() are not nested");
+  PetscCheck(TRMaxMemsEvents[NumTRMaxMems] == event,PETSC_COMM_SELF,PETSC_ERR_MEMC,"PetscMallocPush/PopMaximumUsage() are not nested");
   *mu = TRMaxMems[NumTRMaxMems];
   PetscFunctionReturn(0);
 }
@@ -876,7 +876,7 @@ PetscErrorCode  PetscMallocView(FILE *fp)
   err = fflush(fp);
   PetscCheck(!err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
 
-  PetscCheckFalse(PetscLogMalloc < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"PetscMallocView() called without call to PetscMallocViewSet() this is often due to\n                      setting the option -malloc_view AFTER PetscInitialize() with PetscOptionsInsert() or PetscOptionsInsertFile()");
+  PetscCheck(PetscLogMalloc >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"PetscMallocView() called without call to PetscMallocViewSet() this is often due to\n                      setting the option -malloc_view AFTER PetscInitialize() with PetscOptionsInsert() or PetscOptionsInsertFile()");
 
   if (!fp) fp = PETSC_STDOUT;
   PetscCall(PetscMemoryGetMaximumUsage(&rss));
@@ -949,7 +949,7 @@ foundit:;
 PetscErrorCode PetscMallocSetDebug(PetscBool eachcall, PetscBool initializenan)
 {
   PetscFunctionBegin;
-  PetscCheckFalse(PetscTrMalloc == PetscTrMallocDefault,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot call this routine more than once, it can only be called in PetscInitialize()");
+  PetscCheck(PetscTrMalloc != PetscTrMallocDefault,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot call this routine more than once, it can only be called in PetscInitialize()");
   PetscCall(PetscMallocSet(PetscTrMallocDefault,PetscTrFreeDefault,PetscTrReallocDefault));
 
   TRallocated         = 0;

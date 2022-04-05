@@ -71,7 +71,7 @@ PetscErrorCode DMPlexCreatePLYFromFile(MPI_Comm comm, const char filename[], Pet
     PetscCheck(match,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse PLY file header: %s", line);
     PetscCall(PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING));
     snum = sscanf(line, "%d", &Nv);
-    PetscCheckFalse(snum != 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse PLY file header: %s", line);
+    PetscCheck(snum == 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse PLY file header: %s", line);
     match = PETSC_TRUE;
     while (match) {
       PetscCall(PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING));
@@ -80,9 +80,9 @@ PetscErrorCode DMPlexCreatePLYFromFile(MPI_Comm comm, const char filename[], Pet
         PetscBool matchB;
 
         PetscCall(PetscViewerRead(viewer, line, 2, NULL, PETSC_STRING));
-        PetscCheckFalse(Nvp >= 16,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot handle more than 16 property statements in PLY file header: %s", line);
+        PetscCheck(Nvp < 16,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot handle more than 16 property statements in PLY file header: %s", line);
         snum = sscanf(line, "%s %s", ntype, name);
-        PetscCheckFalse(snum != 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse PLY file header: %s", line);
+        PetscCheck(snum == 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse PLY file header: %s", line);
         PetscCall(PetscStrncmp(ntype, "float32", 16, &matchB));
         if (matchB) {
           vtype[Nvp] = 'f';
@@ -114,10 +114,10 @@ PetscErrorCode DMPlexCreatePLYFromFile(MPI_Comm comm, const char filename[], Pet
     PetscCheck(match,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse PLY file header: %s", line);
     PetscCall(PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING));
     snum = sscanf(line, "%d", &Nc);
-    PetscCheckFalse(snum != 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse PLY file header: %s", line);
+    PetscCheck(snum == 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse PLY file header: %s", line);
     PetscCall(PetscViewerRead(viewer, line, 5, NULL, PETSC_STRING));
     snum = sscanf(line, "property list %s %s %s", ntype, itype, name);
-    PetscCheckFalse(snum != 3,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse PLY file header: %s", line);
+    PetscCheck(snum == 3,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse PLY file header: %s", line);
     PetscCall(PetscStrncmp(ntype, "uint8", 1024, &match));
     PetscCheck(match,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid size type in PLY file header: %s", line);
     PetscCall(PetscStrncmp(name, "vertex_indices", 1024, &match));
@@ -189,7 +189,7 @@ PetscErrorCode DMPlexCreatePLYFromFile(MPI_Comm comm, const char filename[], Pet
       if (c > 0) {
         PetscCall(PetscViewerRead(viewer, &ibuf, 1, NULL, PETSC_CHAR));
       }
-      PetscCheckFalse(ibuf[0] != corners,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "All cells must have the same number of vertices in PLY file: %D != %D", ibuf[0], corners);
+      PetscCheck(ibuf[0] == corners,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "All cells must have the same number of vertices in PLY file: %D != %D", ibuf[0], corners);
       PetscCall(PetscViewerRead(viewer, &vbuf, ibuf[0], NULL, PETSC_INT));
       if (byteSwap) PetscCall(PetscByteSwap(&vbuf, PETSC_INT, ibuf[0]));
       for (v = 0; v < ibuf[0]; ++v) vbuf[v] += Nc;

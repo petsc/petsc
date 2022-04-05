@@ -135,10 +135,10 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
   PetscCall(PetscLogEventBegin(KSP_AGMRESRoddec,ksp,0,0,0));
   PetscCall(PetscArrayzero(agmres->Rloc, N*N));
   /* check input arguments */
-  PetscCheckFalse(nvec < 1,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE, "The number of input vectors shoud be positive");
+  PetscCheck(nvec >= 1,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE, "The number of input vectors shoud be positive");
   PetscCall(VecGetLocalSize(VEC_V(0), &nloc));
   PetscCall(PetscBLASIntCast(nloc,&bnloc));
-  PetscCheckFalse(nvec > nloc,PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_WRONG, "In QR factorization, the number of local rows should be greater or equal to the number of columns");
+  PetscCheck(nvec <= nloc,PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_WRONG, "In QR factorization, the number of local rows should be greater or equal to the number of columns");
   pas = 1;
   /* Copy the vectors of the basis */
   for (j = 0; j < nvec; j++) {

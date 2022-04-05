@@ -108,7 +108,7 @@ static PetscErrorCode PerturbVertices(DM dm, AppCtx *user)
   for (d = 0; d < cdim; ++d) hh[d] = (user->L[d])/PetscPowReal(cEnd, 1./cdim);
   PetscCall(VecGetLocalSize(coordinates, &N));
   PetscCall(VecGetBlockSize(coordinates, &bs));
-  PetscCheckFalse(bs != cdim,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_SIZ, "Coordinate vector has wrong block size %D != %D", bs, cdim);
+  PetscCheck(bs == cdim,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_SIZ, "Coordinate vector has wrong block size %D != %D", bs, cdim);
   PetscCall(VecGetArray(coordinates, &coords));
   for (p = 0; p < N; p += cdim) {
     PetscScalar *coord = &coords[p], value;
@@ -494,7 +494,7 @@ static PetscErrorCode InterpolateGradient(DM dm, Vec locX, Vec locC)
     numComponents += Nc;
   }
   PetscCall(PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights));
-  PetscCheckFalse((qNc != 1) && (qNc != numComponents),PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_SIZ, "Quadrature components %D != %D field components", qNc, numComponents);
+  PetscCheck(!(qNc != 1) || !(qNc != numComponents),PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_SIZ, "Quadrature components %D != %D field components", qNc, numComponents);
   PetscCall(PetscMalloc6(coordDim*numComponents*2,&gradsum,coordDim*numComponents,&interpolant,coordDim*Nq,&coords,Nq,&fegeom.detJ,coordDim*coordDim*Nq,&fegeom.J,coordDim*coordDim*Nq,&fegeom.invJ));
   PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
   PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));

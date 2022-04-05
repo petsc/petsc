@@ -12,14 +12,14 @@ static PetscErrorCode TestGeneral(void)
   PetscFunctionBegin;
   PetscCall(ISCreateGeneral(comm,n,idx,PETSC_COPY_VALUES,&is));
   PetscCall(ISLocate(is,key,&location));
-  PetscCheckFalse(location != keylocation,comm,PETSC_ERR_PLIB,"Key %" PetscInt_FMT " not at %" PetscInt_FMT ": %" PetscInt_FMT,key,keylocation,location);
+  PetscCheck(location == keylocation,comm,PETSC_ERR_PLIB,"Key %" PetscInt_FMT " not at %" PetscInt_FMT ": %" PetscInt_FMT,key,keylocation,location);
   PetscCall(ISLocate(is,nonkey,&location));
-  PetscCheckFalse(location >= 0,comm,PETSC_ERR_PLIB,"Nonkey %" PetscInt_FMT " found at %" PetscInt_FMT,nonkey,location);
+  PetscCheck(location < 0,comm,PETSC_ERR_PLIB,"Nonkey %" PetscInt_FMT " found at %" PetscInt_FMT,nonkey,location);
   PetscCall(ISSort(is));
   PetscCall(ISLocate(is,key,&location));
-  PetscCheckFalse(location != sortedlocation,comm,PETSC_ERR_PLIB,"Key %" PetscInt_FMT " not at %" PetscInt_FMT ": %" PetscInt_FMT,key,sortedlocation,location);
+  PetscCheck(location == sortedlocation,comm,PETSC_ERR_PLIB,"Key %" PetscInt_FMT " not at %" PetscInt_FMT ": %" PetscInt_FMT,key,sortedlocation,location);
   PetscCall(ISLocate(is,nonkey,&location));
-  PetscCheckFalse(location >= 0,comm,PETSC_ERR_PLIB,"Nonkey %" PetscInt_FMT " found at %" PetscInt_FMT,nonkey,location);
+  PetscCheck(location < 0,comm,PETSC_ERR_PLIB,"Nonkey %" PetscInt_FMT " found at %" PetscInt_FMT,nonkey,location);
   PetscCall(ISDestroy(&is));
   PetscFunctionReturn(0);
 }
@@ -34,14 +34,14 @@ static PetscErrorCode TestBlock(void)
   PetscFunctionBegin;
   PetscCall(ISCreateBlock(comm,bs,n,idx,PETSC_COPY_VALUES,&is));
   PetscCall(ISLocate(is,key,&location));
-  PetscCheckFalse(location != keylocation,comm,PETSC_ERR_PLIB,"Key %" PetscInt_FMT " not at %" PetscInt_FMT ": %" PetscInt_FMT,key,keylocation,location);
+  PetscCheck(location == keylocation,comm,PETSC_ERR_PLIB,"Key %" PetscInt_FMT " not at %" PetscInt_FMT ": %" PetscInt_FMT,key,keylocation,location);
   PetscCall(ISLocate(is,nonkey,&location));
-  PetscCheckFalse(location >= 0,comm,PETSC_ERR_PLIB,"Nonkey %" PetscInt_FMT " found at %" PetscInt_FMT,nonkey,location);
+  PetscCheck(location < 0,comm,PETSC_ERR_PLIB,"Nonkey %" PetscInt_FMT " found at %" PetscInt_FMT,nonkey,location);
   PetscCall(ISSort(is));
   PetscCall(ISLocate(is,key,&location));
-  PetscCheckFalse(location != sortedlocation,comm,PETSC_ERR_PLIB,"Key %" PetscInt_FMT " not at %" PetscInt_FMT ": %" PetscInt_FMT,key,sortedlocation,location);
+  PetscCheck(location == sortedlocation,comm,PETSC_ERR_PLIB,"Key %" PetscInt_FMT " not at %" PetscInt_FMT ": %" PetscInt_FMT,key,sortedlocation,location);
   PetscCall(ISLocate(is,nonkey,&location));
-  PetscCheckFalse(location >= 0,comm,PETSC_ERR_PLIB,"Nonkey %" PetscInt_FMT " found at %" PetscInt_FMT,nonkey,location);
+  PetscCheck(location < 0,comm,PETSC_ERR_PLIB,"Nonkey %" PetscInt_FMT " found at %" PetscInt_FMT,nonkey,location);
   PetscCall(ISDestroy(&is));
   PetscFunctionReturn(0);
 }
@@ -56,10 +56,10 @@ static PetscErrorCode TestStride(void)
   PetscFunctionBegin;
   PetscCall(ISCreateStride(comm,n,first,stride,&is));
   PetscCall(ISLocate(is,key,&location));
-  PetscCheckFalse(location != keylocation,comm,PETSC_ERR_PLIB,"Key %" PetscInt_FMT " not at %" PetscInt_FMT ": %" PetscInt_FMT,key,keylocation,location);
+  PetscCheck(location == keylocation,comm,PETSC_ERR_PLIB,"Key %" PetscInt_FMT " not at %" PetscInt_FMT ": %" PetscInt_FMT,key,keylocation,location);
   for (i = 0; i < 2; i++) {
     PetscCall(ISLocate(is,nonkey[i],&location));
-    PetscCheckFalse(location >= 0,comm,PETSC_ERR_PLIB,"Nonkey %" PetscInt_FMT " found at %" PetscInt_FMT,nonkey[i],location);
+    PetscCheck(location < 0,comm,PETSC_ERR_PLIB,"Nonkey %" PetscInt_FMT " found at %" PetscInt_FMT,nonkey[i],location);
   }
   PetscCall(ISDestroy(&is));
   PetscFunctionReturn(0);

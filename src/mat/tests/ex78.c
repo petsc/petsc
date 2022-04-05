@@ -63,15 +63,15 @@ int main(int argc,char **args)
     nsizes = 3;
     PetscCall(PetscOptionsGetIntArray(NULL,NULL,"-nosizesinfile",sizes,&nsizes,&flg));
     if (flg) {
-      PetscCheckFalse(nsizes != 3,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must pass in three m,n,nz as arguments for -nosizesinfile");
+      PetscCheck(nsizes == 3,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must pass in three m,n,nz as arguments for -nosizesinfile");
       m  = sizes[0];
       n  = sizes[1];
       nz = sizes[2];
     } else {
-      PetscCheckFalse(fscanf(Afile,"%d %d %d\n",&m,&n,&nz) != 3,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Badly formatted input file");
+      PetscCheck(fscanf(Afile,"%d %d %d\n",&m,&n,&nz) == 3,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Badly formatted input file");
     }
     PetscCall(PetscPrintf(PETSC_COMM_SELF,"m: %d, n: %d, nz: %d \n", m,n,nz));
-    PetscCheckFalse(m != n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Number of rows, cols must be same for this example");
+    PetscCheck(m == n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Number of rows, cols must be same for this example");
     PetscCall(MatCreate(PETSC_COMM_SELF,&A));
     PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,n));
     PetscCall(MatSetFromOptions(A));

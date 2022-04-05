@@ -137,7 +137,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_essl(Mat A,MatFactorType ftype,M
   Mat_Essl       *essl;
 
   PetscFunctionBegin;
-  PetscCheckFalse(A->cmap->N != A->rmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"matrix must be square");
+  PetscCheck(A->cmap->N == A->rmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"matrix must be square");
   PetscCall(MatCreate(PetscObjectComm((PetscObject)A),&B));
   PetscCall(MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,A->rmap->n,A->cmap->n));
   PetscCall(PetscStrallocpy("essl",&((PetscObject)B)->type_name));

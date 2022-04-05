@@ -242,10 +242,10 @@ PetscErrorCode  PetscRandomSetInterval(PetscRandom r,PetscScalar low,PetscScalar
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSC_RANDOM_CLASSID,1);
 #if defined(PETSC_USE_COMPLEX)
-  PetscCheckFalse(PetscRealPart(low) > PetscRealPart(high),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"only low <= high");
-  PetscCheckFalse(PetscImaginaryPart(low) > PetscImaginaryPart(high),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"only low <= high");
+  PetscCheck(PetscRealPart(low) <= PetscRealPart(high),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"only low <= high");
+  PetscCheck(PetscImaginaryPart(low) <= PetscImaginaryPart(high),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"only low <= high");
 #else
-  PetscCheckFalse(low >= high,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"only low <= high: Instead %g %g",(double)low,(double)high);
+  PetscCheck(low < high,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"only low <= high: Instead %g %g",(double)low,(double)high);
 #endif
   r->low   = low;
   r->width = high-low;

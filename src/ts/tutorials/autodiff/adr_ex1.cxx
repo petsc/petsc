@@ -182,7 +182,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  PetscCheckFalse(size > 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
+  PetscCheck(size <= 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
   PetscCall(PetscNew(&adctx));
   adctx->m = n;adctx->n = n;adctx->p = n;
   ctx.adctx = adctx;

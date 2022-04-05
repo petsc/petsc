@@ -1303,7 +1303,7 @@ PetscErrorCode  VecSetSizes(Vec v, PetscInt n, PetscInt N)
     PetscValidLogicalCollectiveInt(v,N,3);
     PetscCheck(n <= N,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local size %" PetscInt_FMT " cannot be larger than global size %" PetscInt_FMT,n,N);
   }
-  PetscCheckFalse((v->map->n >= 0 || v->map->N >= 0) && (v->map->n != n || v->map->N != N),PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change/reset vector sizes to %" PetscInt_FMT " local %" PetscInt_FMT " global after previously setting them to %" PetscInt_FMT " local %" PetscInt_FMT " global",n,N,v->map->n,v->map->N);
+  PetscCheck(!(v->map->n >= 0 || v->map->N >= 0) || !(v->map->n != n || v->map->N != N),PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change/reset vector sizes to %" PetscInt_FMT " local %" PetscInt_FMT " global after previously setting them to %" PetscInt_FMT " local %" PetscInt_FMT " global",n,N,v->map->n,v->map->N);
   v->map->n = n;
   v->map->N = N;
   if (v->ops->create) {

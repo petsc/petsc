@@ -361,8 +361,8 @@ static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, Pe
       PetscInt s;
       for (s = 0; s < indegree[p]; ++s, ++r) rootAdj[l+s] = remoteadj[r];
     }
-    PetscCheckFalse(r != radjsize,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistency in communication %d != %d", r, radjsize);
-    PetscCheckFalse(l != adjSize,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistency in communication %d != %d", l, adjSize);
+    PetscCheck(r == radjsize,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistency in communication %d != %d", r, radjsize);
+    PetscCheck(l == adjSize,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistency in communication %d != %d", l, adjSize);
     PetscCall(PetscFree(remoteadj));
   }
   PetscCall(PetscSFDestroy(&sfAdj));
@@ -557,7 +557,7 @@ static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, Pe
       for (q = 0; q < anDof; q++, i++) {
         cols[aoff+i] = anchorAdj[anOff + q];
       }
-      PetscCheckFalse(i != adof,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of entries %D != %D for dof %D (point %D)", i, adof, d, p);
+      PetscCheck(i == adof,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of entries %D != %D for dof %D (point %D)", i, adof, d, p);
     }
   }
   PetscCall(PetscSectionDestroy(&anchorSectionAdj));

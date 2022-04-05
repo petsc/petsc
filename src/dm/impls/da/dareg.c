@@ -10,8 +10,8 @@ PetscErrorCode  DMSetUp_DA(DM da)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da, DM_CLASSID,1);
-  PetscCheckFalse(dd->w < 1,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Must have 1 or more degrees of freedom per node: %D",dd->w);
-  PetscCheckFalse(dd->s < 0,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Stencil width cannot be negative: %D",dd->s);
+  PetscCheck(dd->w >= 1,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Must have 1 or more degrees of freedom per node: %D",dd->w);
+  PetscCheck(dd->s >= 0,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Stencil width cannot be negative: %D",dd->s);
 
   PetscCall(PetscCalloc1(dd->w+1,&dd->fieldname));
   PetscCall(PetscCalloc1(da->dim,&dd->coordinatename));

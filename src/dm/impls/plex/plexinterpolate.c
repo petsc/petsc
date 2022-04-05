@@ -452,7 +452,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
       PetscBool            missing;
       PetscInt             f;
 
-      PetscCheckFalse(faceSize > 4,PETSC_COMM_SELF, PETSC_ERR_SUP, "Do not support faces of size %D > 4", faceSize);
+      PetscCheck(faceSize <= 4,PETSC_COMM_SELF, PETSC_ERR_SUP, "Do not support faces of size %D > 4", faceSize);
       key.i = face[0];
       key.j = faceSize > 1 ? face[1] : PETSC_MAX_INT;
       key.k = faceSize > 2 ? face[2] : PETSC_MAX_INT;
@@ -510,7 +510,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
       PetscBool        missing;
       PetscInt         f;
 
-      PetscCheckFalse(faceSize > 4,PETSC_COMM_SELF, PETSC_ERR_SUP, "Do not support faces of size %D > 4", faceSize);
+      PetscCheck(faceSize <= 4,PETSC_COMM_SELF, PETSC_ERR_SUP, "Do not support faces of size %D > 4", faceSize);
       key.i = face[0];
       key.j = faceSize > 1 ? face[1] : PETSC_MAX_INT;
       key.k = faceSize > 2 ? face[2] : PETSC_MAX_INT;
@@ -527,7 +527,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
 
         PetscCall(DMPlexGetConeSize(idm, f, &coneSize));
         PetscCall(DMPlexGetCone(idm, f, &cone));
-        PetscCheckFalse(coneSize != faceSize,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of face vertices %D for face %D should be %D", coneSize, f, faceSize);
+        PetscCheck(coneSize == faceSize,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of face vertices %D for face %D should be %D", coneSize, f, faceSize);
         /* Notice that we have to use vertices here because the lower dimensional faces have not been created yet */
         PetscCall(DMPolytopeGetVertexOrientation(faceType, cone, face, &ornt));
         PetscCall(DMPlexInsertConeOrientation(idm, c, cf, ornt));
@@ -596,7 +596,7 @@ PetscErrorCode DMPlexOrientInterface_Internal(DM dm)
     PetscCall(DMPlexGetConeSize(dm, locals[p], &coneSize));
     maxConeSize = PetscMax(maxConeSize, coneSize);
   }
-  PetscCheckFalse(maxConeSize > 4,comm, PETSC_ERR_SUP, "This method does not support cones of size %D", maxConeSize);
+  PetscCheck(maxConeSize <= 4,comm, PETSC_ERR_SUP, "This method does not support cones of size %D", maxConeSize);
   PetscCall(PetscMalloc4(nroots, &roots, nroots, &leaves, nroots, &rootsRanks, nroots, &leavesRanks));
   for (p = 0; p < nroots; ++p) {
     const PetscInt *cone;
@@ -675,13 +675,13 @@ PetscErrorCode DMPlexOrientInterface_Internal(DM dm)
         /* Find index of rank leavesRanks[p][c] among remote ranks */
         /* No need for PetscMPIIntCast because these integers were originally cast from PetscMPIInt. */
         PetscCall(PetscFindMPIInt((PetscMPIInt) leavesRanks[p][c], nranks, ranks, &r));
-        PetscCheckFalse(r < 0,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D cone[%D]=%D root (%d,%D) leaf (%d,%D): leaf rank not found among remote ranks", p, c, cone[c], rootsRanks[p][c], roots[p][c], leavesRanks[p][c], leaves[p][c]);
+        PetscCheck(r >= 0,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D cone[%D]=%D root (%d,%D) leaf (%d,%D): leaf rank not found among remote ranks", p, c, cone[c], rootsRanks[p][c], roots[p][c], leavesRanks[p][c], leaves[p][c]);
         PetscCheckFalse(ranks[r] < 0 || ranks[r] >= size,PETSC_COMM_SELF, PETSC_ERR_PLIB, "p=%D c=%D commsize=%d: ranks[%D] = %d makes no sense", p, c, size, r, ranks[r]);
         /* Find point leaves[p][c] among remote points aimed at rank leavesRanks[p][c] */
         rS = roffset[r];
         rN = roffset[r+1] - rS;
         PetscCall(PetscFindInt(leaves[p][c], rN, &rremote1[rS], &ind0));
-        PetscCheckFalse(ind0 < 0,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D cone[%D]=%D root (%d,%D) leave (%d,%D): corresponding remote point not found - it seems there is missing connection in point SF!", p, c, cone[c], rootsRanks[p][c], roots[p][c], leavesRanks[p][c], leaves[p][c]);
+        PetscCheck(ind0 >= 0,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D cone[%D]=%D root (%d,%D) leave (%d,%D): corresponding remote point not found - it seems there is missing connection in point SF!", p, c, cone[c], rootsRanks[p][c], roots[p][c], leavesRanks[p][c], leaves[p][c]);
         /* Get the corresponding local point */
         mainCone[c] = rmine1[rS + ind0];
       }
@@ -980,7 +980,7 @@ PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
   PetscCall(PetscLogEventBegin(DMPLEX_InterpolateSF,dm,0,0,0));
   /* Step 0: Precalculations */
   PetscCall(PetscSFGetGraph(pointSF, &Nr, &Nl, &localPoints, &remotePoints));
-  PetscCheckFalse(Nr < 0,comm, PETSC_ERR_ARG_WRONGSTATE, "This DMPlex is distributed but input PointSF has no graph set");
+  PetscCheck(Nr >= 0,comm, PETSC_ERR_ARG_WRONGSTATE, "This DMPlex is distributed but input PointSF has no graph set");
   PetscCall(PetscHMapIJCreate(&remoteHash));
   for (l = 0; l < Nl; ++l) {
     PetscHashIJKey key;
@@ -1088,7 +1088,7 @@ PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
           PetscInt               points[1024], p, joinSize;
 
           if (debug) PetscCall(PetscSynchronizedPrintf(PetscObjectComm((PetscObject) dm), "[%d]  Checking face (%D, %D) at (%D, %D, %D) with cone size %D\n", rank, rface.rank, rface.index, r, idx, d, Np));
-          PetscCheckFalse(Np > 4,PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot handle face (%D, %D) at (%D, %D, %D) with %D cone points", rface.rank, rface.index, r, idx, d, Np);
+          PetscCheck(Np <= 4,PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot handle face (%D, %D) at (%D, %D, %D) with %D cone points", rface.rank, rface.index, r, idx, d, Np);
           fcp0.rank  = rank;
           fcp0.index = r;
           d += Np;
@@ -1152,7 +1152,7 @@ PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
           PetscBool              missing;
 
           if (debug) PetscCall(PetscSynchronizedPrintf(PetscObjectComm((PetscObject) dm), "[%d]  Entering face at (%D, %D)\n", rank, r, idx));
-          PetscCheckFalse(Np > 4,PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot handle faces with %D cone points", Np);
+          PetscCheck(Np <= 4,PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot handle faces with %D cone points", Np);
           fcp0.rank  = rank;
           fcp0.index = r;
           d += Np;
@@ -1313,7 +1313,7 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
   PetscCall(DMPlexGetDepth(dm, &depth));
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMPlexIsInterpolated(dm, &interpolated));
-  PetscCheckFalse(interpolated == DMPLEX_INTERPOLATED_PARTIAL,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Not for partially interpolated meshes");
+  PetscCheck(interpolated != DMPLEX_INTERPOLATED_PARTIAL,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Not for partially interpolated meshes");
   if (interpolated == DMPLEX_INTERPOLATED_FULL) {
     PetscCall(PetscObjectReference((PetscObject) dm));
     idm  = dm;
@@ -1389,7 +1389,7 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
   PetscCall(DMSetCoordinateDim(dmB, cdim));
   PetscCall(DMPlexGetDepthStratum(dmA, 0, &vStartA, &vEndA));
   PetscCall(DMPlexGetDepthStratum(dmB, 0, &vStartB, &vEndB));
-  PetscCheckFalse((vEndA-vStartA) != (vEndB-vStartB),PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The number of vertices in first DM %d != %d in the second DM", vEndA-vStartA, vEndB-vStartB);
+  PetscCheck((vEndA-vStartA) == (vEndB-vStartB),PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The number of vertices in first DM %d != %d in the second DM", vEndA-vStartA, vEndB-vStartB);
   /* Copy over discretization if it exists */
   {
     DM                 cdmA, cdmB;
@@ -1423,7 +1423,7 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
   if (coordSectionA == coordSectionB) PetscFunctionReturn(0);
   PetscCall(PetscSectionGetNumFields(coordSectionA, &Nf));
   if (!Nf) PetscFunctionReturn(0);
-  PetscCheckFalse(Nf > 1,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The number of coordinate fields must be 1, not %D", Nf);
+  PetscCheck(Nf <= 1,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The number of coordinate fields must be 1, not %D", Nf);
   if (!coordSectionB) {
     PetscInt dim;
 
@@ -1437,7 +1437,7 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
   PetscCall(PetscSectionSetFieldComponents(coordSectionB, 0, spaceDim));
   PetscCall(PetscSectionGetChart(coordSectionA, &cS, &cE));
   if (cStartA <= cS && cS < cEndA) { /* localized coordinates */
-    PetscCheckFalse((cEndA-cStartA) != (cEndB-cStartB),PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The number of cells in first DM %D != %D in the second DM", cEndA-cStartA, cEndB-cStartB);
+    PetscCheck((cEndA-cStartA) == (cEndB-cStartB),PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The number of cells in first DM %D != %D in the second DM", cEndA-cStartA, cEndB-cStartB);
     cS = cS - cStartA + cStartB;
     cE = vEndB;
     lc = PETSC_TRUE;
@@ -1533,7 +1533,7 @@ PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
   PetscValidPointer(dmUnint, 2);
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMPlexIsInterpolated(dm, &interpolated));
-  PetscCheckFalse(interpolated == DMPLEX_INTERPOLATED_PARTIAL,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Not for partially interpolated meshes");
+  PetscCheck(interpolated != DMPLEX_INTERPOLATED_PARTIAL,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Not for partially interpolated meshes");
   if (interpolated == DMPLEX_INTERPOLATED_NONE || dim <= 1) {
     /* in case dim <= 1 just keep the DMPLEX_INTERPOLATED_FULL flag */
     PetscCall(PetscObjectReference((PetscObject) dm));
@@ -1605,7 +1605,7 @@ PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
           ++n;
         }
       }
-      PetscCheckFalse(n != numLeavesUn,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistent number of leaves %d != %d", n, numLeavesUn);
+      PetscCheck(n == numLeavesUn,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistent number of leaves %d != %d", n, numLeavesUn);
       PetscCall(PetscSFSetGraph(sfPointUn, vEnd, numLeavesUn, localPointsUn, PETSC_OWN_POINTER, remotePointsUn, PETSC_OWN_POINTER));
     }
   }
@@ -1710,7 +1710,7 @@ PetscErrorCode DMPlexIsInterpolated(DM dm, DMPlexInterpolatedFlag *interpolated)
     DMPlexInterpolatedFlag flg;
 
     PetscCall(DMPlexIsInterpolated_Internal(dm, &flg));
-    PetscCheckFalse(flg != plex->interpolated,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Stashed DMPlexInterpolatedFlag %s is inconsistent with current %s", DMPlexInterpolatedFlags[plex->interpolated], DMPlexInterpolatedFlags[flg]);
+    PetscCheck(flg == plex->interpolated,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Stashed DMPlexInterpolatedFlag %s is inconsistent with current %s", DMPlexInterpolatedFlags[plex->interpolated], DMPlexInterpolatedFlags[flg]);
   }
   *interpolated = plex->interpolated;
   PetscFunctionReturn(0);

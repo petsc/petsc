@@ -59,7 +59,7 @@ int main(int argc,char **argv)
   PetscCall(PetscLogEventEnd(event,0,0,0,0));
 
   for (i=1; i<n; i++) {
-    PetscCheckFalse(values[i] < values[i-1],PETSC_COMM_SELF,PETSC_ERR_PLIB,"Values not sorted");
+    PetscCheck(values[i] >= values[i-1],PETSC_COMM_SELF,PETSC_ERR_PLIB,"Values not sorted");
   }
   PetscCall(PetscFree(values));
   PetscCall(PetscRandomDestroy(&rnd));

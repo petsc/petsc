@@ -88,7 +88,7 @@ PETSC_EXTERN PetscErrorCode MPIU_Win_shared_query(MPI_Win win,PetscMPIInt rank,M
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Win_shared_query(win,rank,sz,szind,&tmp));
-  PetscCheckFalse(*szind <= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"szkind %d must be positive",*szind);
+  PetscCheck(*szind > 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"szkind %d must be positive",*szind);
   tmp += ((size_t)tmp) % *szind ? *szind/4 - ((((size_t)tmp) % *szind)/4) : 0;
   *(void**)ptr = (void*)tmp;
   PetscFunctionReturn(0);

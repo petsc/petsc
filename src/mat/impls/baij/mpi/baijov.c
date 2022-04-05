@@ -20,7 +20,7 @@ PetscErrorCode MatIncreaseOverlap_MPIBAIJ(Mat C,PetscInt imax,IS is[],PetscInt o
   PetscCall(PetscMalloc1(imax,&is_new));
   /* Convert the indices into block format */
   PetscCall(ISCompressIndicesGeneral(N,C->rmap->n,bs,imax,is,is_new));
-  PetscCheckFalse(ov < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified");
+  PetscCheck(ov >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified");
   for (i=0; i<ov; ++i) {
     PetscCall(MatIncreaseOverlap_MPIBAIJ_Once(C,imax,is_new));
   }
@@ -93,7 +93,7 @@ PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[])
     len   = n[i];
     for (j=0; j<len; j++) {
       row = idx_i[j];
-      PetscCheckFalse(row < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index set cannot have negative entries");
+      PetscCheck(row >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index set cannot have negative entries");
       PetscCall(PetscLayoutFindOwner(C->rmap,row*C->rmap->bs,&proc));
       w4[proc]++;
     }
@@ -711,7 +711,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS 
     }
 
     if (!ismax){ /* Get dummy submatrices and retrieve struct submatis1 */
-      PetscCheckFalse(!submats[0],PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"submats are null, cannot reuse");
+      PetscCheck(submats[0],PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"submats are null, cannot reuse");
       smat_i = (Mat_SubSppt*)submats[0]->data;
 
       nrqs        = smat_i->nrqs;
@@ -1087,7 +1087,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS 
 #if defined(PETSC_USE_CTABLE)
               PetscCall(PetscTableFind(rmap_i,sbuf1_i[ct1]+1,&row));
               row--;
-              PetscCheckFalse(row < 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"row not found in table");
+              PetscCheck(row >= 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"row not found in table");
 #else
               row = rmap_i[sbuf1_i[ct1]]; /* the val in the new matrix to be */
 #endif
@@ -1303,7 +1303,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS 
           PetscCall(PetscTableFind(rmap_i,row+rstart+1,&row));
           row--;
 
-          PetscCheckFalse(row < 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"row not found in table");
+          PetscCheck(row >= 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"row not found in table");
 #else
           row = rmap_i[row + rstart];
 #endif
@@ -1424,7 +1424,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS 
 #if defined(PETSC_USE_CTABLE)
           PetscCall(PetscTableFind(rmap_i,row+1,&row));
           row--;
-          PetscCheckFalse(row < 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"row not found in table");
+          PetscCheck(row >= 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"row not found in table");
 #else
           row = rmap_i[row];
 #endif

@@ -48,7 +48,7 @@ static PetscErrorCode  KSPSolve_QMRCGS(KSP ksp)
   Z  = ksp->work[13];
 
   /*  Only supports right preconditioning */
-  PetscCheckFalse(ksp->pc_side != PC_RIGHT,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"KSP qmrcgs does not support %s",PCSides[ksp->pc_side]);
+  PetscCheck(ksp->pc_side == PC_RIGHT,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"KSP qmrcgs does not support %s",PCSides[ksp->pc_side]);
   if (!ksp->guess_zero) {
     if (!bcgs->guess) {
       PetscCall(VecDuplicate(X,&bcgs->guess));

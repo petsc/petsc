@@ -2823,7 +2823,7 @@ PetscErrorCode MatProductSetFromOptions_MPIAIJ_MPIMAIJ(Mat C)
 #endif
 
   PetscFunctionBegin;
-  PetscCheckFalse(product->type != MATPRODUCT_PtAP,PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat Product type %s is not supported for MPIAIJ and MPIMAIJ matrices",MatProductTypes[product->type]);
+  PetscCheck(product->type == MATPRODUCT_PtAP,PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat Product type %s is not supported for MPIAIJ and MPIMAIJ matrices",MatProductTypes[product->type]);
 
   /* PtAP */
   /* Check matrix local sizes */

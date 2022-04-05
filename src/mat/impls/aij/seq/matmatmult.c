@@ -14,7 +14,7 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
 {
   PetscFunctionBegin;
   if (C->ops->matmultnumeric) {
-    PetscCheckFalse(C->ops->matmultnumeric == MatMatMultNumeric_SeqAIJ_SeqAIJ,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Recursive call");
+    PetscCheck(C->ops->matmultnumeric != MatMatMultNumeric_SeqAIJ_SeqAIJ,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Recursive call");
     PetscCall((*C->ops->matmultnumeric)(A,B,C));
   } else {
     PetscCall(MatMatMultNumeric_SeqAIJ_SeqAIJ_Sorted(A,B,C));
@@ -1612,9 +1612,9 @@ PETSC_INTERN PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat
 PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
 {
   PetscFunctionBegin;
-  PetscCheckFalse(B->rmap->n != A->cmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number columns in A %" PetscInt_FMT " not equal rows in B %" PetscInt_FMT,A->cmap->n,B->rmap->n);
-  PetscCheckFalse(A->rmap->n != C->rmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number rows in C %" PetscInt_FMT " not equal rows in A %" PetscInt_FMT,C->rmap->n,A->rmap->n);
-  PetscCheckFalse(B->cmap->n != C->cmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number columns in B %" PetscInt_FMT " not equal columns in C %" PetscInt_FMT,B->cmap->n,C->cmap->n);
+  PetscCheck(B->rmap->n == A->cmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number columns in A %" PetscInt_FMT " not equal rows in B %" PetscInt_FMT,A->cmap->n,B->rmap->n);
+  PetscCheck(A->rmap->n == C->rmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number rows in C %" PetscInt_FMT " not equal rows in A %" PetscInt_FMT,C->rmap->n,A->rmap->n);
+  PetscCheck(B->cmap->n == C->cmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number columns in B %" PetscInt_FMT " not equal columns in C %" PetscInt_FMT,B->cmap->n,C->cmap->n);
 
   PetscCall(MatMatMultNumericAdd_SeqAIJ_SeqDense(A,B,C,PETSC_FALSE));
   PetscFunctionReturn(0);

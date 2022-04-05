@@ -48,7 +48,7 @@ int main(int argc,char **argv)
     PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
     switch (dim) {
       case 1:
-        PetscCheckFalse(size != ranksx,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Must run on %D ranks with -dim 1 -setSizes",ranksx);
+        PetscCheck(size == ranksx,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Must run on %D ranks with -dim 1 -setSizes",ranksx);
         PetscCall(DMStagCreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,mx,1,1,DMSTAG_STENCIL_BOX,1,lx,&dm));
         break;
       case 2:

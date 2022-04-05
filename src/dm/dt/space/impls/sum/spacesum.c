@@ -183,7 +183,7 @@ static PetscErrorCode PetscSpaceSumGetSubspace_Sum(PetscSpace space,PetscInt s,P
   PetscInt       Ns   = sum->numSumSpaces;
 
   PetscFunctionBegin;
-  PetscCheckFalse(Ns < 0,PetscObjectComm((PetscObject)space),PETSC_ERR_ARG_WRONGSTATE,"Must call PetscSpaceSumSetNumSubspaces() first");
+  PetscCheck(Ns >= 0,PetscObjectComm((PetscObject)space),PETSC_ERR_ARG_WRONGSTATE,"Must call PetscSpaceSumSetNumSubspaces() first");
   PetscCheckFalse(s<0 || s>=Ns,PetscObjectComm((PetscObject)space),PETSC_ERR_ARG_OUTOFRANGE,"Invalid subspace number %D",subspace);
 
   *subspace = sum->sumspaces[s];
@@ -197,7 +197,7 @@ static PetscErrorCode PetscSpaceSumSetSubspace_Sum(PetscSpace space,PetscInt s,P
 
   PetscFunctionBegin;
   PetscCheck(!sum->setupCalled,PetscObjectComm((PetscObject)space),PETSC_ERR_ARG_WRONGSTATE,"Cannot change subspace after setup called");
-  PetscCheckFalse(Ns < 0,PetscObjectComm((PetscObject)space),PETSC_ERR_ARG_WRONGSTATE,"Must call PetscSpaceSumSetNumSubspaces() first");
+  PetscCheck(Ns >= 0,PetscObjectComm((PetscObject)space),PETSC_ERR_ARG_WRONGSTATE,"Must call PetscSpaceSumSetNumSubspaces() first");
   PetscCheckFalse(s < 0 || s >= Ns,PetscObjectComm((PetscObject)space),PETSC_ERR_ARG_OUTOFRANGE,"Invalid subspace number %D",subspace);
 
   PetscCall(PetscObjectReference((PetscObject)subspace));
@@ -274,7 +274,7 @@ static PetscErrorCode PetscSpaceSetUp_Sum(PetscSpace sp)
     Ns   = 1;
     PetscCall(PetscSpaceSumSetNumSubspaces(sp,Ns));
   }
-  PetscCheckFalse(Ns < 0,PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_OUTOFRANGE,"Cannot have %D subspaces", Ns);
+  PetscCheck(Ns >= 0,PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_OUTOFRANGE,"Cannot have %D subspaces", Ns);
   uniform = PETSC_TRUE;
   if (Ns) {
     PetscSpace s0;
@@ -300,7 +300,7 @@ static PetscErrorCode PetscSpaceSetUp_Sum(PetscSpace sp)
     PetscCall(PetscSpaceSumGetSubspace(sp,i,&si));
     PetscCall(PetscSpaceSetUp(si));
     PetscCall(PetscSpaceGetNumVariables(si,&sNv));
-    PetscCheckFalse(sNv != Nv,PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_WRONGSTATE,"Subspace %D has %D variables, space has %D.",i,sNv,Nv);
+    PetscCheck(sNv == Nv,PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_WRONGSTATE,"Subspace %D has %D variables, space has %D.",i,sNv,Nv);
     PetscCall(PetscSpaceGetNumComponents(si,&sNc));
     if (i == 0 && sNc == Nc) concatenate = PETSC_FALSE;
     minNc = PetscMin(minNc, sNc);

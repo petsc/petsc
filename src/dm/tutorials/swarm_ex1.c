@@ -18,7 +18,7 @@ PetscErrorCode ex1_1(void)
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  PetscCheckFalse((size > 1) && (size != 4),PETSC_COMM_WORLD,PETSC_ERR_SUP,"Must be run wuth 4 MPI ranks");
+  PetscCheck(!(size > 1) || !(size != 4),PETSC_COMM_WORLD,PETSC_ERR_SUP,"Must be run wuth 4 MPI ranks");
 
   PetscCall(DMCreate(PETSC_COMM_WORLD,&dms));
   PetscCall(DMSetType(dms,DMSWARM));

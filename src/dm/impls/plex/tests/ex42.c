@@ -283,7 +283,7 @@ static PetscErrorCode LibCeedSetupByDegree(DM dm, AppCtx *ctx, CeedData *data)
   PetscCall(DMPlexGetCeedRestriction(dm,  NULL, 0, 0, 0, &Erestrictu));
   PetscCall(CeedBasisGetNumQuadraturePoints(basisu, &nqpts));
   PetscCall(CeedBasisGetNumQuadraturePoints(basisx, &nqptsx));
-  PetscCheckFalse(nqptsx != nqpts,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Number of qpoints for u %D != %D Number of qpoints for x", nqpts, nqptsx);
+  PetscCheck(nqptsx == nqpts,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Number of qpoints for u %D != %D Number of qpoints for x", nqpts, nqptsx);
   PetscCall(CeedElemRestrictionCreateStrided(ceed, Ncell, nqpts, Nqdata, Nqdata*Ncell*nqpts, CEED_STRIDES_BACKEND, &Erestrictq));
 
   PetscCall(DMGetCoordinatesLocal(dm, &coords));

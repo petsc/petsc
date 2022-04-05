@@ -24,7 +24,7 @@ int main(int argc,char **argv)
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&nproc));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&grank));
 
-  PetscCheckFalse(nproc < 2,PETSC_COMM_WORLD,PETSC_ERR_ARG_SIZ,"This test must have at least two processes to run");
+  PetscCheck(nproc >= 2,PETSC_COMM_WORLD,PETSC_ERR_ARG_SIZ,"This test must have at least two processes to run");
 
   PetscCall(PetscOptionsGetBool(NULL,0,"-world2sub",&world2sub,NULL));
   PetscCall(PetscOptionsGetBool(NULL,0,"-sub2sub",&sub2sub,NULL));

@@ -23,7 +23,7 @@ int main(int argc, char **argv)
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
-  PetscCheckFalse(size != 2,PETSC_COMM_WORLD, PETSC_ERR_USER, "Only coded for two MPI processes");
+  PetscCheck(size == 2,PETSC_COMM_WORLD, PETSC_ERR_USER, "Only coded for two MPI processes");
 
   PetscCall(PetscSFCreate(PETSC_COMM_WORLD,&sf));
   PetscCall(PetscSFSetFromOptions(sf));

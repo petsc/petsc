@@ -549,13 +549,13 @@ PetscErrorCode MatMPIDenseScatter(Mat A,Mat B,PetscInt Bbidx,Mat C,Mat *outworkB
   PetscCall(PetscMPIIntCast(nrecvs,&nrecvs_mpi));
   if (Bbidx == 0) workB = *outworkB = contents->workB;
   else workB = *outworkB = contents->workB1;
-  PetscCheckFalse(nrows != workB->rmap->n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of rows of workB %" PetscInt_FMT " not equal to columns of aij->B %d",workB->cmap->n,nrows);
+  PetscCheck(nrows == workB->rmap->n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of rows of workB %" PetscInt_FMT " not equal to columns of aij->B %d",workB->cmap->n,nrows);
   swaits = contents->swaits;
   rwaits = contents->rwaits;
 
   PetscCall(MatDenseGetArrayRead(B,&b));
   PetscCall(MatDenseGetLDA(B,&blda));
-  PetscCheckFalse(blda != contents->blda,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot reuse an input matrix with lda %" PetscInt_FMT " != %" PetscInt_FMT,blda,contents->blda);
+  PetscCheck(blda == contents->blda,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot reuse an input matrix with lda %" PetscInt_FMT " != %" PetscInt_FMT,blda,contents->blda);
   PetscCall(MatDenseGetArray(workB,&rvalues));
 
   /* Post recv, use MPI derived data type to save memory */
@@ -606,7 +606,7 @@ static PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat A,Mat B,Mat C)
     PetscInt  BN=B->cmap->N,n=contents->workB->cmap->n,i;
     PetscBool ccpu;
 
-    PetscCheckFalse(n <= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Column block size %" PetscInt_FMT " must be positive",n);
+    PetscCheck(n > 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Column block size %" PetscInt_FMT " must be positive",n);
     /* Prevent from unneeded copies back and forth from the GPU
        when getting and restoring the submatrix
        We need a proper GPU code for AIJ * dense in parallel */

@@ -135,7 +135,7 @@ static PetscErrorCode PetscSFComputeMultiRootOriginalNumberingByRank_Private(Pet
   PetscFunctionBegin;
   PetscCall(PetscSFGetGraph(imsf, NULL, &nileaves, NULL, NULL));
   PetscCall(PetscSFGetRootRanks(imsf, &niranks, NULL, &iroffset, &irmine, NULL));
-  PetscCheckFalse(nileaves != iroffset[niranks],PETSC_COMM_SELF,PETSC_ERR_PLIB,"nileaves != iroffset[niranks])");
+  PetscCheck(nileaves == iroffset[niranks],PETSC_COMM_SELF,PETSC_ERR_PLIB,"nileaves != iroffset[niranks])");
   PetscCall(PetscSFComputeDegreeBegin(sf, &degree));
   PetscCall(PetscSFComputeDegreeEnd(sf, &degree));
   PetscCall(PetscSFComputeMultiRootOriginalNumbering(sf, degree, NULL, &mRootsOrigNumbering));
@@ -202,7 +202,7 @@ PetscErrorCode DMPlexCheckInterfaceCones(DM dm)
   if (!sf) PetscFunctionReturn(0);
   PetscCall(PetscSFGetGraph(sf, &nroots, &nleaves, &mine, &remote));
   if (nroots < 0) PetscFunctionReturn(0);
-  PetscCheckFalse(!dm->coordinates && !dm->coordinatesLocal,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM coordinates must be set");
+  PetscCheck(dm->coordinates || dm->coordinatesLocal,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM coordinates must be set");
   PetscCall(PetscSFSetUp(sf));
   PetscCall(PetscSFGetRootRanks(sf, &nranks, &ranks, &roffset, &rmine, &rremote));
 

@@ -18,7 +18,7 @@ static PetscErrorCode CheckValues(Mat A,PetscBool one)
       PetscInt ii = i - rstart, jj = j;
       PetscReal v = (PetscReal)(one ? 1 : (1 + i + j*M));
       PetscReal w = PetscRealPart(array[ii + jj*lda]);
-      PetscCheckFalse(PetscAbsReal(v-w) > 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Matrix entry (%" PetscInt_FMT ",%" PetscInt_FMT ") should be %g, got %g",i,j,(double)v,(double)w);
+      PetscCheck(PetscAbsReal(v-w) <= 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Matrix entry (%" PetscInt_FMT ",%" PetscInt_FMT ") should be %g, got %g",i,j,(double)v,(double)w);
     }
   }
   PetscCall(MatDenseRestoreArrayRead(A,&array));

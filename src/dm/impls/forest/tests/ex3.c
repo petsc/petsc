@@ -134,7 +134,7 @@ int main (int argc, char **argv)
   /*  Check if the data is the same*/
   PetscCall(VecAXPY(g2, -1.0, g));
   PetscCall(VecNorm(g2, NORM_INFINITY, &nrm));
-  PetscCheckFalse(PetscAbsReal(nrm) > PETSC_SMALL,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Invalid difference norm %g", (double) nrm);
+  PetscCheck(PetscAbsReal(nrm) <= PETSC_SMALL,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Invalid difference norm %g", (double) nrm);
 
   PetscCall(VecDestroy(&g));
   PetscCall(VecDestroy(&g2));

@@ -75,7 +75,7 @@ PetscErrorCode TestLookup(DMLabel label, AppCtx *user)
     PetscCheckFalse(((val >= 0) && !has) || ((val < 0) && has),PETSC_COMM_SELF, PETSC_ERR_PLIB, "Label value %D does not match contains check %D for point %D", val, (PetscInt) has, p);
     if (has) ++n;
   }
-  PetscCheckFalse(n != user->size,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of label points detected %D does not match number set %D", n, user->size);
+  PetscCheck(n == user->size,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of label points detected %D does not match number set %D", n, user->size);
   /* Also put in timing code */
   PetscFunctionReturn(0);
 }
@@ -97,7 +97,7 @@ PetscErrorCode TestClear(DMLabel label, AppCtx *user)
     }
     PetscCall(DMLabelGetValue(label,p,&val));
     PetscCall(DMLabelHasPoint(label,p,&hasPoint));
-    PetscCheckFalse(val != defaultValue,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expected default value %D after clearing point %D, got %D",defaultValue,p,val);
+    PetscCheck(val == defaultValue,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expected default value %D after clearing point %D, got %D",defaultValue,p,val);
     PetscCheck(!hasPoint,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Label contains %D after clearing",p);
   }
   PetscFunctionReturn(0);

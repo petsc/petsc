@@ -22,7 +22,7 @@ static PetscErrorCode testOrthogonality(PetscInt dim, PetscInt deg)
       PetscReal exact = (i == j) ? 1. : 0.;
 
       for (k = 0; k < npoints; k++) integral += weights[k] * p[i * npoints + k] * p[j * npoints + k];
-      PetscCheckFalse(PetscAbsReal(integral - exact) > PETSC_SMALL,PETSC_COMM_SELF, PETSC_ERR_PLIB, "<P[%D], P[%D]> = %g != delta_{%D,%D}", i, j, (double) integral, i, j);
+      PetscCheck(PetscAbsReal(integral - exact) <= PETSC_SMALL,PETSC_COMM_SELF, PETSC_ERR_PLIB, "<P[%D], P[%D]> = %g != delta_{%D,%D}", i, j, (double) integral, i, j);
     }
   }
   PetscCall(PetscFree(p));
@@ -163,7 +163,7 @@ static PetscErrorCode testDerivativesLegendre(PetscInt dim, PetscInt deg, PetscI
     PetscReal scale = 1. + PetscAbsReal(lgndre_jet[i]) + PetscAbsReal(pkd_jet[i]);
     PetscReal tol = 10. * PETSC_SMALL * scale;
 
-    PetscCheckFalse(PetscAbsReal(diff) > tol,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Jet mismatch between PKD and tensor Legendre bases: error %g at tolerance %g", (double) diff, (double) tol);
+    PetscCheck(PetscAbsReal(diff) <= tol,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Jet mismatch between PKD and tensor Legendre bases: error %g at tolerance %g", (double) diff, (double) tol);
   }
 
   PetscCall(PetscFree2(degtup,ktup));

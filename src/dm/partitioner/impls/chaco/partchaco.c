@@ -165,7 +165,7 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, Pet
       if (assignment[v] == p) points[i++] = v;
     }
   }
-  PetscCheckFalse(i != nvtxs,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of points %D should be %D", i, nvtxs);
+  PetscCheck(i == nvtxs,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of points %D should be %D", i, nvtxs);
   PetscCall(ISCreateGeneral(comm, nvtxs, points, PETSC_OWN_POINTER, partition));
   if (global_method == INERTIAL_METHOD) {
     /* manager.destroyCellCoordinates(nvtxs, &x, &y, &z); */

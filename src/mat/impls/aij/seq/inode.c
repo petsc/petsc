@@ -13,7 +13,7 @@ static PetscErrorCode MatCreateColInode_Private(Mat A,PetscInt *size,PetscInt **
   PetscFunctionBegin;
   n = A->cmap->n;
   m = A->rmap->n;
-  PetscCheckFalse(!a->inode.size,PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Inode Structure");
+  PetscCheck(a->inode.size,PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Inode Structure");
   ns_row = a->inode.size;
 
   min_mn = (m < n) ? m : n;
@@ -64,8 +64,8 @@ static PetscErrorCode MatGetRowIJ_SeqAIJ_Inode_Symmetric(Mat A,const PetscInt *i
   nslim_row = a->inode.node_count;
   m         = A->rmap->n;
   n         = A->cmap->n;
-  PetscCheckFalse(m != n,PETSC_COMM_SELF,PETSC_ERR_SUP,"MatGetRowIJ_SeqAIJ_Inode_Symmetric: Matrix should be square");
-  PetscCheckFalse(!a->inode.size,PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Inode Structure");
+  PetscCheck(m == n,PETSC_COMM_SELF,PETSC_ERR_SUP,"MatGetRowIJ_SeqAIJ_Inode_Symmetric: Matrix should be square");
+  PetscCheck(a->inode.size,PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Inode Structure");
 
   /* Use the row_inode as column_inode */
   nslim_col = nslim_row;
@@ -148,7 +148,7 @@ static PetscErrorCode MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric(Mat A,const PetscInt
   const PetscInt *j,*ai= a->i,*aj = a->j,*ns_row = a->inode.size;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!a->inode.size,PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Inode Structure");
+  PetscCheck(a->inode.size,PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Inode Structure");
   nslim_row = a->inode.node_count;
   n         = A->cmap->n;
 
@@ -256,7 +256,7 @@ static PetscErrorCode MatGetColumnIJ_SeqAIJ_Inode_Nonsymmetric(Mat A,const Petsc
   PetscInt       *tns,*tvc,*ns_row = a->inode.size,nsz,i1,i2,*ai= a->i,*aj = a->j;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!a->inode.size,PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Inode Structure");
+  PetscCheck(a->inode.size,PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Inode Structure");
   nslim_row = a->inode.node_count;
   n         = A->cmap->n;
 
@@ -371,7 +371,7 @@ PetscErrorCode MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
 #endif
 
   PetscFunctionBegin;
-  PetscCheckFalse(!a->inode.size,PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Inode Structure");
+  PetscCheck(a->inode.size,PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Inode Structure");
   node_max = a->inode.node_count;
   ns       = a->inode.size;     /* Node Size array */
   PetscCall(VecGetArrayRead(xx,&x));
@@ -556,7 +556,7 @@ PetscErrorCode MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
   const PetscInt    *idx,*ns,*ii;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!a->inode.size,PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Inode Structure");
+  PetscCheck(a->inode.size,PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Inode Structure");
   node_max = a->inode.node_count;
   ns       = a->inode.size;     /* Node Size array */
 
@@ -744,7 +744,7 @@ PetscErrorCode MatSolve_SeqAIJ_Inode_inplace(Mat A,Vec bb,Vec xx)
   const PetscScalar *b;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!a->inode.size,PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Inode Structure");
+  PetscCheck(a->inode.size,PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Inode Structure");
   node_max = a->inode.node_count;
   ns       = a->inode.size;     /* Node Size array */
 
@@ -2282,7 +2282,7 @@ PetscErrorCode MatSolve_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
   const PetscScalar *b;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!a->inode.size,PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Inode Structure");
+  PetscCheck(a->inode.size,PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Inode Structure");
   node_max = a->inode.node_count;
   ns       = a->inode.size;     /* Node Size array */
 
@@ -2661,7 +2661,7 @@ PetscErrorCode MatColoringPatch_SeqAIJ_Inode(Mat mat,PetscInt ncolors,PetscInt n
   ISColoringValue *newcolor;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!a->inode.size,PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Inode Structure");
+  PetscCheck(a->inode.size,PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Inode Structure");
   PetscCall(PetscMalloc1(n+1,&newcolor));
   /* loop over inodes, marking a color for each column*/
   row = 0;
@@ -2708,9 +2708,9 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
 
   PetscFunctionBegin;
   allowzeropivot = PetscNot(A->erroriffailure);
-  PetscCheckFalse(!a->inode.size,PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Inode Structure");
-  PetscCheckFalse(omega != 1.0,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for omega != 1.0; use -mat_no_inode");
-  PetscCheckFalse(fshift != 0.0,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for fshift != 0.0; use -mat_no_inode");
+  PetscCheck(a->inode.size,PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Inode Structure");
+  PetscCheck(omega == 1.0,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for omega != 1.0; use -mat_no_inode");
+  PetscCheck(fshift == 0.0,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for fshift != 0.0; use -mat_no_inode");
 
   if (!a->inode.ibdiagvalid) {
     if (!a->inode.ibdiag) {
@@ -3952,7 +3952,7 @@ PetscErrorCode MatMultDiagonalBlock_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
   const PetscInt    *sizes = a->inode.size;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!a->inode.size,PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Inode Structure");
+  PetscCheck(a->inode.size,PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Inode Structure");
   PetscCall(VecGetArray(xx,&x));
   PetscCall(VecGetArrayRead(bb,&b));
   cnt  = 0;

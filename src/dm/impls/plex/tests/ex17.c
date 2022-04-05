@@ -47,7 +47,7 @@ static PetscErrorCode TestLocation(DM dm)
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Located %D points instead of %D", n, cEnd - cStart);
   }
   for (c = cStart; c < cEnd; ++c) {
-    PetscCheckFalse(cells[c - cStart].index != c,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not locate centroid of cell %D, instead found %D", c, cells[c - cStart].index);
+    PetscCheck(cells[c - cStart].index == c,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not locate centroid of cell %D, instead found %D", c, cells[c - cStart].index);
   }
   PetscCall(PetscSFDestroy(&cellSF));
   PetscFunctionReturn(0);

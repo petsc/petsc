@@ -23,7 +23,7 @@ PetscErrorCode PetscNvshmemMalloc(size_t size, void** ptr)
   PetscFunctionBegin;
   PetscCall(PetscNvshmemInitializeCheck());
   *ptr = nvshmem_malloc(size);
-  PetscCheckFalse(!*ptr,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"nvshmem_malloc() failed to allocate %zu bytes",size);
+  PetscCheck(*ptr,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"nvshmem_malloc() failed to allocate %zu bytes",size);
   PetscFunctionReturn(0);
 }
 
@@ -32,7 +32,7 @@ PetscErrorCode PetscNvshmemCalloc(size_t size, void**ptr)
   PetscFunctionBegin;
   PetscCall(PetscNvshmemInitializeCheck());
   *ptr = nvshmem_calloc(size,1);
-  PetscCheckFalse(!*ptr,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"nvshmem_calloc() failed to allocate %zu bytes",size);
+  PetscCheck(*ptr,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"nvshmem_calloc() failed to allocate %zu bytes",size);
   PetscFunctionReturn(0);
 }
 
@@ -192,7 +192,7 @@ PetscErrorCode PetscSFLinkNvshmemCheck(PetscSF sf,PetscMemType rootmtype,const v
     PetscInt allCuda = oneCuda; /* Assume the same for all ranks. But if not, in opt mode, return value <use_nvshmem> won't be collective! */
    #if defined(PETSC_USE_DEBUG)  /* Check in debug mode. Note MPI_Allreduce is expensive, so only in debug mode */
     PetscCallMPI(MPI_Allreduce(&oneCuda,&allCuda,1,MPIU_INT,MPI_LAND,comm));
-    PetscCheckFalse(allCuda != oneCuda,comm,PETSC_ERR_SUP,"root/leaf mtypes are inconsistent among ranks, which may lead to SF nvshmem failure in opt mode. Add -use_nvshmem 0 to disable it.");
+    PetscCheck(allCuda == oneCuda,comm,PETSC_ERR_SUP,"root/leaf mtypes are inconsistent among ranks, which may lead to SF nvshmem failure in opt mode. Add -use_nvshmem 0 to disable it.");
    #endif
     if (allCuda) {
       PetscCall(PetscNvshmemInitializeCheck());

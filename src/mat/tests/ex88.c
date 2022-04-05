@@ -85,7 +85,7 @@ static PetscErrorCode TestMatrix(Mat A,Vec X,Vec Y,Vec Z)
   PetscCall(VecAXPY(W2,-1.0,diff));
   PetscCall(VecNorm(W2,NORM_2,&nrm));
 #if defined(PETSC_USE_REAL_DOUBLE) || defined(PETSC_USE_REAL___FLOAT128)
-  PetscCheckFalse(nrm > PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatMultAdd(A,x,x,y) produces incorrect result");
+  PetscCheck(nrm <= PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatMultAdd(A,x,x,y) produces incorrect result");
 #endif
 
   PetscCall(VecSet(W2,-1.0));
@@ -94,7 +94,7 @@ static PetscErrorCode TestMatrix(Mat A,Vec X,Vec Y,Vec Z)
   PetscCall(VecAXPY(W2,-1.0,diff));
   PetscCall(VecNorm(W2,NORM_2,&nrm));
 #if defined(PETSC_USE_REAL_DOUBLE) || defined(PETSC_USE_REAL___FLOAT128)
-  PetscCheckFalse(nrm > PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatMultAdd(A,x,y,y) produces incorrect result");
+  PetscCheck(nrm <= PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatMultAdd(A,x,y,y) produces incorrect result");
 #endif
   PetscCall(VecDestroy(&diff));
 
@@ -107,7 +107,7 @@ static PetscErrorCode TestMatrix(Mat A,Vec X,Vec Y,Vec Z)
   PetscCall(VecAXPY(W2,-1.0,diff));
   PetscCall(VecNorm(W2,NORM_2,&nrm));
 #if defined(PETSC_USE_REAL_DOUBLE) || defined(PETSC_USE_REAL___FLOAT128)
-  PetscCheckFalse(nrm > PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatMultTransposeAdd(A,x,x,y) produces incorrect result");
+  PetscCheck(nrm <= PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatMultTransposeAdd(A,x,x,y) produces incorrect result");
 #endif
 
   PetscCall(VecSet(W2,-1.0));
@@ -116,7 +116,7 @@ static PetscErrorCode TestMatrix(Mat A,Vec X,Vec Y,Vec Z)
   PetscCall(VecAXPY(W2,-1.0,diff));
   PetscCall(VecNorm(W2,NORM_2,&nrm));
 #if defined(PETSC_USE_REAL_DOUBLE) || defined(PETSC_USE_REAL___FLOAT128)
-  PetscCheckFalse(nrm > PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatMultTransposeAdd(A,x,y,y) produces incorrect result");
+  PetscCheck(nrm <= PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatMultTransposeAdd(A,x,y,y) produces incorrect result");
 #endif
   PetscCall(VecDestroy(&diff));
 
@@ -126,7 +126,7 @@ static PetscErrorCode TestMatrix(Mat A,Vec X,Vec Y,Vec Z)
   PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,1,2,diag,&diff));
   PetscCall(VecAXPY(diff,-1.0,W2));
   PetscCall(VecNorm(diff,NORM_2,&nrm));
-  PetscCheckFalse(nrm > PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatGetDiagonal() produces incorrect result");
+  PetscCheck(nrm <= PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatGetDiagonal() produces incorrect result");
   PetscCall(VecDestroy(&diff));
 
   /* MATSHELL does not support MatDiagonalSet after MatScale */

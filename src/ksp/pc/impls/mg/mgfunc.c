@@ -713,7 +713,7 @@ PetscErrorCode  PCMGSetRhs(PC pc,PetscInt l,Vec c)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscCheck(mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
-  PetscCheckFalse(l == mglevels[0]->levels-1,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_INCOMP,"Do not set rhs for finest level");
+  PetscCheck(l != mglevels[0]->levels-1,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_INCOMP,"Do not set rhs for finest level");
   PetscCall(PetscObjectReference((PetscObject)c));
   PetscCall(VecDestroy(&mglevels[l]->b));
 
@@ -747,7 +747,7 @@ PetscErrorCode  PCMGSetX(PC pc,PetscInt l,Vec c)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscCheck(mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
-  PetscCheckFalse(l == mglevels[0]->levels-1,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_INCOMP,"Do not set x for finest level");
+  PetscCheck(l != mglevels[0]->levels-1,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_INCOMP,"Do not set x for finest level");
   PetscCall(PetscObjectReference((PetscObject)c));
   PetscCall(VecDestroy(&mglevels[l]->x));
 

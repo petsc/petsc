@@ -46,7 +46,7 @@ int main(int argc,char **args)
 
   PetscCall(MatGetSize(A,&m,&n));
   PetscCall(MatGetSize(B,&m2,&n2));
-  PetscCheckFalse(m!=m2,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrices are of different size. Cannot run this example");
+  PetscCheck(m==m2,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrices are of different size. Cannot run this example");
 
   /* Test MatEqual() */
   PetscCall(MatEqual(B,C,&tflg));
@@ -86,9 +86,9 @@ int main(int argc,char **args)
 
     for (i=0,j=0; i<ncols1 && j<ncols2; i++) {
       while (cols2[j] != cols1[i]) j++;
-      PetscCheckFalse(vals1[i] != vals2[j],PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatGetRow() failed - vals incorrect.");
+      PetscCheck(vals1[i] == vals2[j],PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatGetRow() failed - vals incorrect.");
     }
-    PetscCheckFalse(i<ncols1,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatGetRow() failed - cols incorrect");
+    PetscCheck(i>=ncols1,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatGetRow() failed - cols incorrect");
 
     PetscCall(MatRestoreRow(A,row,&ncols1,&cols1,&vals1));
     PetscCall(MatRestoreRow(B,row,&ncols2,&cols2,&vals2));

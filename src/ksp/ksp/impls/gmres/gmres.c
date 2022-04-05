@@ -229,7 +229,7 @@ PetscErrorCode KSPSolve_GMRES(KSP ksp)
   PetscInt       N = gmres->max_k + 1;
 
   PetscFunctionBegin;
-  PetscCheckFalse(ksp->calc_sings && !gmres->Rsvd,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
+  PetscCheck(!ksp->calc_sings || gmres->Rsvd,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
 
   PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
   ksp->its = 0;
@@ -608,7 +608,7 @@ PetscErrorCode  KSPGMRESSetHapTol_GMRES(KSP ksp,PetscReal tol)
   KSP_GMRES *gmres = (KSP_GMRES*)ksp->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(tol < 0.0,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Tolerance must be non-negative");
+  PetscCheck(tol >= 0.0,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Tolerance must be non-negative");
   gmres->haptol = tol;
   PetscFunctionReturn(0);
 }
@@ -622,7 +622,7 @@ PetscErrorCode  KSPGMRESSetBreakdownTolerance_GMRES(KSP ksp,PetscReal tol)
     gmres->breakdowntol = 0.1;
     PetscFunctionReturn(0);
   }
-  PetscCheckFalse(tol < 0.0,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Breakdown tolerance must be non-negative");
+  PetscCheck(tol >= 0.0,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Breakdown tolerance must be non-negative");
   gmres->breakdowntol = tol;
   PetscFunctionReturn(0);
 }
@@ -641,7 +641,7 @@ PetscErrorCode  KSPGMRESSetRestart_GMRES(KSP ksp,PetscInt max_k)
   KSP_GMRES      *gmres = (KSP_GMRES*)ksp->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(max_k < 1,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Restart must be positive");
+  PetscCheck(max_k >= 1,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Restart must be positive");
   if (!ksp->setupstage) {
     gmres->max_k = max_k;
   } else if (gmres->max_k != max_k) {

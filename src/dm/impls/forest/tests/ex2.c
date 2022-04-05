@@ -318,7 +318,7 @@ int main(int argc, char **argv)
     if (!transfer_from_base[1]) {
       PetscCall(DMForestSetAdaptivityForest(postForest,NULL));
       PetscCall(PetscObjectGetReference((PetscObject)preForest,&postCount));
-      PetscCheckFalse(postCount != preCount,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Adaptation not memory neutral: reference count increase from %d to %d",preCount,postCount);
+      PetscCheck(postCount == preCount,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Adaptation not memory neutral: reference count increase from %d to %d",preCount,postCount);
     }
 
     if (conv) {

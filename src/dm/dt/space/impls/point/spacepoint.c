@@ -68,7 +68,7 @@ static PetscErrorCode PetscSpaceEvaluate_Point(PetscSpace sp, PetscInt npoints, 
   PetscInt          dim = sp->Nv, pdim = pt->quad->numPoints, d, p, i, c;
 
   PetscFunctionBegin;
-  PetscCheckFalse(npoints != pt->quad->numPoints,PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot evaluate Point space on %d points != %d size", npoints, pt->quad->numPoints);
+  PetscCheck(npoints == pt->quad->numPoints,PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot evaluate Point space on %d points != %d size", npoints, pt->quad->numPoints);
   PetscCall(PetscArrayzero(B, npoints*pdim));
   for (p = 0; p < npoints; ++p) {
     for (i = 0; i < pdim; ++i) {

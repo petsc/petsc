@@ -446,10 +446,10 @@ PetscErrorCode PetscQuadraturePushForward(PetscQuadrature q, PetscInt imageDim, 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(q, PETSCQUADRATURE_CLASSID, 1);
-  PetscCheckFalse(imageDim < PetscAbsInt(formDegree),PetscObjectComm((PetscObject)q), PETSC_ERR_ARG_INCOMP, "Cannot represent a %D-form in %D dimensions", PetscAbsInt(formDegree), imageDim);
+  PetscCheck(imageDim >= PetscAbsInt(formDegree),PetscObjectComm((PetscObject)q), PETSC_ERR_ARG_INCOMP, "Cannot represent a %D-form in %D dimensions", PetscAbsInt(formDegree), imageDim);
   PetscCall(PetscQuadratureGetData(q, &dim, &Nc, &Npoints, &points, &weights));
   PetscCall(PetscDTBinomialInt(dim, PetscAbsInt(formDegree), &formSize));
-  PetscCheckFalse(Nc % formSize,PetscObjectComm((PetscObject)q), PETSC_ERR_ARG_INCOMP, "Number of components %D is not a multiple of formSize %D", Nc, formSize);
+  PetscCheck(Nc % formSize == 0,PetscObjectComm((PetscObject)q), PETSC_ERR_ARG_INCOMP, "Number of components %D is not a multiple of formSize %D", Nc, formSize);
   Ncopies = Nc / formSize;
   PetscCall(PetscDTBinomialInt(imageDim, PetscAbsInt(formDegree), &imageFormSize));
   imageNc = Ncopies * imageFormSize;
@@ -685,9 +685,9 @@ PetscErrorCode PetscDTJacobiNorm(PetscReal alpha, PetscReal beta, PetscInt n, Pe
   PetscReal gr;
 
   PetscFunctionBegin;
-  PetscCheckFalse(alpha <= -1.,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Exponent alpha %g <= -1. invalid", (double) alpha);
-  PetscCheckFalse(beta <= -1.,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Exponent beta %g <= -1. invalid", (double) beta);
-  PetscCheckFalse(n < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "n %D < 0 invalid", n);
+  PetscCheck(alpha > -1.,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Exponent alpha %g <= -1. invalid", (double) alpha);
+  PetscCheck(beta > -1.,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Exponent beta %g <= -1. invalid", (double) beta);
+  PetscCheck(n >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "n %D < 0 invalid", n);
   twoab1 = PetscPowReal(2., alpha + beta + 1.);
 #if defined(PETSC_HAVE_LGAMMA)
   if (!n) {
@@ -857,8 +857,8 @@ PetscErrorCode PetscDTJacobiEvalJet(PetscReal alpha, PetscReal beta, PetscInt np
 PetscErrorCode PetscDTJacobiEval(PetscInt npoints,PetscReal alpha, PetscReal beta, const PetscReal *points,PetscInt ndegree,const PetscInt *degrees,PetscReal *B,PetscReal *D,PetscReal *D2)
 {
   PetscFunctionBegin;
-  PetscCheckFalse(alpha <= -1.,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"alpha must be > -1.");
-  PetscCheckFalse(beta <= -1.,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"beta must be > -1.");
+  PetscCheck(alpha > -1.,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"alpha must be > -1.");
+  PetscCheck(beta > -1.,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"beta must be > -1.");
   if (!npoints || !ndegree) PetscFunctionReturn(0);
   if (B)  PetscCall(PetscDTJacobiEval_Internal(npoints, alpha, beta, 0, points, ndegree, degrees, B));
   if (D)  PetscCall(PetscDTJacobiEval_Internal(npoints, alpha, beta, 1, points, ndegree, degrees, D));
@@ -917,8 +917,8 @@ PetscErrorCode PetscDTIndexToGradedOrder(PetscInt len, PetscInt index, PetscInt 
   PetscInt sum;
 
   PetscFunctionBeginHot;
-  PetscCheckFalse(len < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "length must be non-negative");
-  PetscCheckFalse(index < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "index must be non-negative");
+  PetscCheck(len >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "length must be non-negative");
+  PetscCheck(index >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "index must be non-negative");
   total = 1;
   sum = 0;
   while (index >= total) {
@@ -965,7 +965,7 @@ PetscErrorCode PetscDTGradedOrderToIndex(PetscInt len, const PetscInt degtup[], 
   PetscInt i, idx, sum, total;
 
   PetscFunctionBeginHot;
-  PetscCheckFalse(len < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "length must be non-negative");
+  PetscCheck(len >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "length must be non-negative");
   for (i = 0, sum = 0; i < len; i++) sum += degtup[i];
   idx = 0;
   total = 1;
@@ -1305,7 +1305,7 @@ static PetscErrorCode PetscDTPTrimmedEvalJet_Internal(PetscInt dim, PetscInt npo
       }
     }
   }
-  PetscCheckFalse(total != Nbpt,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrectly counted P trimmed polynomials");
+  PetscCheck(total == Nbpt,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrectly counted P trimmed polynomials");
   PetscCall(PetscFree(deriv));
   PetscCall(PetscFree(pattern));
   PetscCall(PetscFree(form_atoms));
@@ -1640,10 +1640,10 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature_GolubWelsch_Internal(PetscInt
 static PetscErrorCode PetscDTGaussJacobiQuadrature_Internal(PetscInt npoints,PetscReal alpha, PetscReal beta, PetscReal x[], PetscReal w[], PetscBool newton)
 {
   PetscFunctionBegin;
-  PetscCheckFalse(npoints < 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of points must be positive");
+  PetscCheck(npoints >= 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of points must be positive");
   /* If asking for a 1D Lobatto point, just return the non-Lobatto 1D point */
-  PetscCheckFalse(alpha <= -1.,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"alpha must be > -1.");
-  PetscCheckFalse(beta <= -1.,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"beta must be > -1.");
+  PetscCheck(alpha > -1.,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"alpha must be > -1.");
+  PetscCheck(beta > -1.,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"beta must be > -1.");
 
   if (newton) {
     PetscCall(PetscDTGaussJacobiQuadrature_Newton_Internal(npoints, alpha, beta, x, w));
@@ -1708,10 +1708,10 @@ static PetscErrorCode PetscDTGaussLobattoJacobiQuadrature_Internal(PetscInt npoi
   PetscInt       i;
 
   PetscFunctionBegin;
-  PetscCheckFalse(npoints < 2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of points must be positive");
+  PetscCheck(npoints >= 2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of points must be positive");
   /* If asking for a 1D Lobatto point, just return the non-Lobatto 1D point */
-  PetscCheckFalse(alpha <= -1.,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"alpha must be > -1.");
-  PetscCheckFalse(beta <= -1.,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"beta must be > -1.");
+  PetscCheck(alpha > -1.,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"alpha must be > -1.");
+  PetscCheck(beta > -1.,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"beta must be > -1.");
 
   x[0] = -1.;
   x[npoints-1] = 1.;
@@ -1829,7 +1829,7 @@ PetscErrorCode PetscDTGaussLobattoLegendreQuadrature(PetscInt npoints,PetscGauss
   PetscBool      newton;
 
   PetscFunctionBegin;
-  PetscCheckFalse(npoints < 2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must provide at least 2 grid points per element");
+  PetscCheck(npoints >= 2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must provide at least 2 grid points per element");
   newton = (PetscBool) (type == PETSCGAUSSLOBATTOLEGENDRE_VIA_NEWTON);
   PetscCall(PetscDTGaussLobattoJacobiQuadrature_Internal(npoints, 0., 0., x, w, newton));
   PetscFunctionReturn(0);
@@ -1948,7 +1948,7 @@ PetscErrorCode PetscDTStroudConicalQuadrature(PetscInt dim, PetscInt Nc, PetscIn
   PetscInt       i, j, k, l, m, pt, c;
 
   PetscFunctionBegin;
-  PetscCheckFalse((a != -1.0) || (b != 1.0),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must use default internal right now");
+  PetscCheck(!(a != -1.0) && !(b != 1.0),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must use default internal right now");
   totpoints = 1;
   for (i = 0, totpoints = 1; i < dim; i++) totpoints *= npoints;
   PetscCall(PetscMalloc1(totpoints*dim, &x));
@@ -2010,7 +2010,7 @@ PetscErrorCode PetscDTTanhSinhTensorQuadrature(PetscInt dim, PetscInt level, Pet
   PetscInt        K, k, npoints;
 
   PetscFunctionBegin;
-  PetscCheckFalse(dim > 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Dimension %d not yet implemented", dim);
+  PetscCheck(dim <= 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Dimension %d not yet implemented", dim);
   PetscCheck(level,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must give a number of significant digits");
   /* Find K such that the weights are < 32 digits of precision */
   for (K = 1; PetscAbsReal(PetscLog10Real(wk)) < 2*p; ++K) {
@@ -2053,7 +2053,7 @@ PetscErrorCode PetscDTTanhSinhIntegrate(void (*func)(const PetscReal[], void *, 
   PetscInt        d;                 /* Digits of precision in the integral */
 
   PetscFunctionBegin;
-  PetscCheckFalse(digits <= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must give a positive number of significant digits");
+  PetscCheck(digits > 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must give a positive number of significant digits");
   /* Center term */
   func(&beta, ctx, &lval);
   sum = 0.5*alpha*PETSC_PI*lval;
@@ -2118,7 +2118,7 @@ PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(const PetscReal[], void
   mpfr_t          pi2, kh, msinh, mcosh, maxTerm, curTerm, tmp;
 
   PetscFunctionBegin;
-  PetscCheckFalse(digits <= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must give a positive number of significant digits");
+  PetscCheck(digits > 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must give a positive number of significant digits");
   /* Create high precision storage */
   mpfr_inits2(PetscCeilReal(safetyFactor*digits*PetscLogReal(10.)/PetscLogReal(2.)), alpha, beta, h, sum, osum, psum, yk, wk, lx, rx, tmp, maxTerm, curTerm, pi2, kh, msinh, mcosh, NULL);
   /* Initialization */
@@ -2391,13 +2391,13 @@ PetscErrorCode PetscDTReconstructPoly(PetscInt degree,PetscInt nsource,const Pet
   PetscValidRealPointer(sourcex,3);
   PetscValidRealPointer(targetx,5);
   PetscValidRealPointer(R,6);
-  PetscCheckFalse(degree >= nsource,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Reconstruction degree %D must be less than number of source intervals %D",degree,nsource);
+  PetscCheck(degree < nsource,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Reconstruction degree %D must be less than number of source intervals %D",degree,nsource);
   if (PetscDefined(USE_DEBUG)) {
     for (i=0; i<nsource; i++) {
-      PetscCheckFalse(sourcex[i] >= sourcex[i+1],PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Source interval %D has negative orientation (%g,%g)",i,(double)sourcex[i],(double)sourcex[i+1]);
+      PetscCheck(sourcex[i] < sourcex[i+1],PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Source interval %D has negative orientation (%g,%g)",i,(double)sourcex[i],(double)sourcex[i+1]);
     }
     for (i=0; i<ntarget; i++) {
-      PetscCheckFalse(targetx[i] >= targetx[i+1],PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Target interval %D has negative orientation (%g,%g)",i,(double)targetx[i],(double)targetx[i+1]);
+      PetscCheck(targetx[i] < targetx[i+1],PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Target interval %D has negative orientation (%g,%g)",i,(double)targetx[i],(double)targetx[i+1]);
     }
   }
   xmin = PetscMin(sourcex[0],targetx[0]);
@@ -2796,8 +2796,8 @@ PetscErrorCode PetscDTIndexToBary(PetscInt len, PetscInt sum, PetscInt index, Pe
   PetscInt c, d, s, total, subtotal, nexttotal;
 
   PetscFunctionBeginHot;
-  PetscCheckFalse(len < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "length must be non-negative");
-  PetscCheckFalse(index < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "index must be non-negative");
+  PetscCheck(len >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "length must be non-negative");
+  PetscCheck(index >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "index must be non-negative");
   if (!len) {
     if (!sum && !index) PetscFunctionReturn(0);
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid index or sum for length 0 barycentric coordinate");
@@ -2807,7 +2807,7 @@ PetscErrorCode PetscDTIndexToBary(PetscInt len, PetscInt sum, PetscInt index, Pe
     if (index < total) break;
     total = (total * (sum + c)) / c;
   }
-  PetscCheckFalse(c > len,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "index out of range");
+  PetscCheck(c <= len,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "index out of range");
   for (d = c; d < len; d++) coord[d] = 0;
   for (s = 0, subtotal = 1, nexttotal = 1; c > 0;) {
     /* subtotal is the number of ways to have a tuple of length c with sum s */
@@ -2854,7 +2854,7 @@ PetscErrorCode PetscDTBaryToIndex(PetscInt len, PetscInt sum, const PetscInt coo
   PetscInt total;
 
   PetscFunctionBeginHot;
-  PetscCheckFalse(len < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "length must be non-negative");
+  PetscCheck(len >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "length must be non-negative");
   if (!len) {
     if (!sum) {
       *index = 0;

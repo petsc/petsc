@@ -201,8 +201,8 @@ PetscErrorCode testLagrange(PetscHashLag lagTable, DM K, PetscInt dim, PetscInt 
   PetscCall(PetscDualSpaceSetUp(sp));
   PetscCall(PetscDualSpaceGetDimension(sp, &spdim));
   PetscCall(PetscDualSpaceGetInteriorDimension(sp, &spintdim));
-  PetscCheckFalse(spdim != exspdim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected dual space dimension %D, got %D", exspdim, spdim);
-  PetscCheckFalse(spintdim != exspintdim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected dual space interior dimension %D, got %D", exspintdim, spintdim);
+  PetscCheck(spdim == exspdim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected dual space dimension %D, got %D", exspdim, spdim);
+  PetscCheck(spintdim == exspintdim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected dual space interior dimension %D, got %D", exspintdim, spintdim);
   key.dim = dim;
   key.formDegree = formDegree;
   PetscCall(PetscDualSpaceGetOrder(sp, &key.order));
@@ -235,8 +235,8 @@ PetscErrorCode testLagrange(PetscHashLag lagTable, DM K, PetscInt dim, PetscInt 
       PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
 
       PetscCall(PetscLagNodeIndicesGetData_Internal(lag->allNodeIndices, &nodeIdxDim, &nodeVecDim, &nNodes, &nodeIdx, &nodeVec));
-      PetscCheckFalse(nodeVecDim != Nk,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect nodeVecDim");
-      PetscCheckFalse(nNodes != spdim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect nNodes");
+      PetscCheck(nodeVecDim == Nk,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect nodeVecDim");
+      PetscCheck(nNodes == spdim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect nNodes");
 
       PetscCall(PetscDualSpaceGetAllData(sp, &allNodes, &allMat));
 
@@ -276,15 +276,15 @@ PetscErrorCode testLagrange(PetscHashLag lagTable, DM K, PetscInt dim, PetscInt 
         PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF, "Interior matrix: %D nonzeros\n", (PetscInt) info.nz_used));
         PetscCall(PetscLagNodeIndicesGetData_Internal(lag->intNodeIndices, &intNodeIdxDim, &intNodeVecDim, &intNnodes, &intNodeIdx, &intNodeVec));
         PetscCheckFalse(intNodeIdxDim != nodeIdxDim || intNodeVecDim != nodeVecDim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Interior node indices not the same shale as all node indices");
-        PetscCheckFalse(intNnodes != spintdim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect interior nNodes");
+        PetscCheck(intNnodes == spintdim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect interior nNodes");
         PetscCall(PetscArraycmp(intNodeIdx, nodeIdx, nodeIdxDim * intNnodes, &same));
         PetscCheck(same,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Interior node indices not the same as start of all node indices");
         PetscCall(PetscArraycmp(intNodeVec, nodeVec, nodeVecDim * intNnodes, &same));
         PetscCheck(same,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Interior node vectors not the same as start of all node vectors");
       } else if (intMat) {
         PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF, "Interior data is the same as all data\n"));
-        PetscCheckFalse(intNodes != allNodes,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Interior nodes should be the same as all nodes");
-        PetscCheckFalse(lag->intNodeIndices != lag->allNodeIndices,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Interior node indices should be the same as all node indices");
+        PetscCheck(intNodes == allNodes,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Interior nodes should be the same as all nodes");
+        PetscCheck(lag->intNodeIndices == lag->allNodeIndices,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Interior node indices should be the same as all node indices");
       }
     }
     if (dim <= 2 && spintdim) {

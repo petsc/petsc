@@ -26,7 +26,7 @@ static PetscErrorCode PointQueueCreate(PetscInt size, PointQueue *queue)
   PointQueue     q;
 
   PetscFunctionBegin;
-  PetscCheckFalse(size < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Queue size %D must be non-negative", size);
+  PetscCheck(size >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Queue size %D must be non-negative", size);
   PetscCall(PetscCalloc1(1, &q));
   q->size = size;
   PetscCall(PetscMalloc1(q->size, &q->points));
@@ -121,7 +121,7 @@ static PetscErrorCode SBRGetEdgeLen_Private(DMPlexTransform tr, PetscInt edge, P
     PetscCall(DMGetCoordinateDM(dm, &cdm));
     PetscCall(DMPlexGetCone(dm, edge, &cone));
     PetscCall(DMPlexGetConeSize(dm, edge, &coneSize));
-    PetscCheckFalse(coneSize != 2,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Edge %D cone size must be 2, not %D", edge, coneSize);
+    PetscCheck(coneSize == 2,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Edge %D cone size must be 2, not %D", edge, coneSize);
     PetscCall(DMGetCoordinateDim(dm, &cdim));
     PetscCall(DMGetCoordinatesLocal(dm, &coordsLocal));
     PetscCall(VecGetArrayRead(coordsLocal, &coords));
@@ -643,7 +643,7 @@ static PetscErrorCode DMPlexTransformCellTransform_SBR(DMPlexTransform tr, DMPol
   PetscInt       val;
 
   PetscFunctionBeginHot;
-  PetscCheckFalse(p < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point argument is invalid");
+  PetscCheck(p >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point argument is invalid");
   PetscCall(DMLabelGetValue(trType, p, &val));
   if (rt) *rt = val;
   switch (source) {

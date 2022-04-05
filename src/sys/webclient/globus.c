@@ -23,7 +23,7 @@ static PetscErrorCode base64_encode(const unsigned char *data,unsigned char *enc
   PetscFunctionBegin;
   PetscCall(PetscStrlen((const char*)data,&input_length));
   output_length = 4 * ((input_length + 2) / 3);
-  PetscCheckFalse(output_length > len,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Output length not large enough");
+  PetscCheck(output_length <= len,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Output length not large enough");
 
   for (i = 0, j = 0; i < input_length;) {
      uint32_t octet_a = i < input_length ? (unsigned char)data[i++] : 0;
@@ -55,12 +55,12 @@ PETSC_UNUSED static PetscErrorCode base64_decode(const unsigned char *data,unsig
   }
 
   PetscCall(PetscStrlen((const char*)data,&input_length));
-  PetscCheckFalse(input_length % 4 != 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Input length must be divisible by 4");
+  PetscCheck(input_length % 4 == 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Input length must be divisible by 4");
 
   output_length = input_length / 4 * 3;
   if (data[input_length - 1] == '=') (output_length)--;
   if (data[input_length - 2] == '=') (output_length)--;
-  PetscCheckFalse(output_length > length,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Output length too shore");
+  PetscCheck(output_length <= length,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Output length too shore");
 
   for (i = 0, j = 0; i < input_length;) {
     uint32_t sextet_a = data[i] == '=' ? 0 & i++ : decoding_table[(int)data[i++]];

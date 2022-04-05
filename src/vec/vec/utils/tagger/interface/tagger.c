@@ -374,7 +374,7 @@ PetscErrorCode VecTaggerComputeBoxes(VecTagger tagger,Vec vec,PetscInt *numBoxes
   PetscValidPointer(boxes,4);
   PetscCall(VecGetLocalSize(vec,&vls));
   PetscCall(VecTaggerGetBlockSize(tagger,&tbs));
-  PetscCheckFalse(vls % tbs,PetscObjectComm((PetscObject)tagger),PETSC_ERR_ARG_INCOMP,"vec local size %" PetscInt_FMT " is not a multiple of tagger block size %" PetscInt_FMT,vls,tbs);
+  PetscCheck(vls % tbs == 0,PetscObjectComm((PetscObject)tagger),PETSC_ERR_ARG_INCOMP,"vec local size %" PetscInt_FMT " is not a multiple of tagger block size %" PetscInt_FMT,vls,tbs);
   if (tagger->ops->computeboxes) {
     *listed = PETSC_TRUE;
     PetscCall((*tagger->ops->computeboxes) (tagger,vec,numBoxes,boxes,listed));
@@ -409,7 +409,7 @@ PetscErrorCode VecTaggerComputeIS(VecTagger tagger,Vec vec,IS *is,PetscBool *lis
   PetscValidPointer(is,3);
   PetscCall(VecGetLocalSize(vec,&vls));
   PetscCall(VecTaggerGetBlockSize(tagger,&tbs));
-  PetscCheckFalse(vls % tbs,PetscObjectComm((PetscObject)tagger),PETSC_ERR_ARG_INCOMP,"vec local size %" PetscInt_FMT " is not a multiple of tagger block size %" PetscInt_FMT,vls,tbs);
+  PetscCheck(vls % tbs == 0,PetscObjectComm((PetscObject)tagger),PETSC_ERR_ARG_INCOMP,"vec local size %" PetscInt_FMT " is not a multiple of tagger block size %" PetscInt_FMT,vls,tbs);
   if (tagger->ops->computeis) {
     PetscCall((*tagger->ops->computeis) (tagger,vec,is,listed));
   } else if (listed) *listed = PETSC_FALSE;
@@ -440,7 +440,7 @@ PetscErrorCode VecTaggerComputeIS_FromBoxes(VecTagger tagger, Vec vec, IS *is,Pe
   numTagged = 0;
   offset = 0;
   tagged = NULL;
-  PetscCheckFalse(n % bs,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"blocksize %" PetscInt_FMT " does not divide vector length %" PetscInt_FMT, bs, n);
+  PetscCheck(n % bs == 0,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"blocksize %" PetscInt_FMT " does not divide vector length %" PetscInt_FMT, bs, n);
   n /= bs;
   for (i = 0; i < 2; i++) {
     if (i) {

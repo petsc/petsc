@@ -84,7 +84,7 @@ PetscErrorCode PetscP4estInitialize(void)
     PetscCall(PetscOptionsGetEnum(NULL,NULL,"-petsc_sc_log_threshold",SCLogTypes,(PetscEnum*)&log_threshold_shifted,&set));
     if (set) psc_log_threshold = log_threshold_shifted - 1;
     sc_init(PETSC_COMM_WORLD,(int)psc_catch_signals,(int)psc_print_backtrace,PetscScLogHandler,psc_log_threshold);
-    PetscCheckFalse(sc_package_id == -1,PETSC_COMM_WORLD,PETSC_ERR_LIB,"Could not initialize libsc package used by p4est");
+    PetscCheck(sc_package_id != -1,PETSC_COMM_WORLD,PETSC_ERR_LIB,"Could not initialize libsc package used by p4est");
     sc_set_abort_handler(PetscScAbort);
   }
   if (p4est_package_id == -1) {
@@ -94,7 +94,7 @@ PetscErrorCode PetscP4estInitialize(void)
     PetscCall(PetscOptionsGetEnum(NULL,NULL,"-petsc_p4est_log_threshold",SCLogTypes,(PetscEnum*)&log_threshold_shifted,&set));
     if (set) pp4est_log_threshold = log_threshold_shifted - 1;
     PetscStackCallP4est(p4est_init,(PetscScLogHandler,pp4est_log_threshold));
-    PetscCheckFalse(p4est_package_id == -1,PETSC_COMM_WORLD,PETSC_ERR_LIB,"Could not initialize p4est");
+    PetscCheck(p4est_package_id != -1,PETSC_COMM_WORLD,PETSC_ERR_LIB,"Could not initialize p4est");
   }
   PetscCall(DMForestRegisterType(DMP4EST));
   PetscCall(DMForestRegisterType(DMP8EST));

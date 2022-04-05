@@ -29,7 +29,7 @@ PetscErrorCode ProcessOptions(AppCtx *options)
     len  = options->numFields;
     PetscCall(PetscCalloc1(len, &options->numComponents));
     PetscCall(PetscOptionsIntArray("-num_components", "The number of components per field", "ex10.c", options->numComponents, &len, &flg));
-    PetscCheckFalse(flg && (len != options->numFields),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of components array is %D should be %D", len, options->numFields);
+    PetscCheck(!flg || !(len != options->numFields),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of components array is %D should be %D", len, options->numFields);
   }
   PetscCall(PetscOptionsBoundedInt("-num_groups", "Group permutation by this many label values", "ex10.c", options->numGroups, &options->numGroups, NULL,0));
   ierr = PetscOptionsEnd();PetscCall(ierr);
@@ -99,7 +99,7 @@ PetscErrorCode CreateGroupLabel(DM dm, PetscInt numGroups, DMLabel *label, AppCt
 
   PetscFunctionBegin;
   if (numGroups < 2) {*label = NULL; PetscFunctionReturn(0);}
-  PetscCheckFalse(numGroups != 2,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Test only coded for 2 groups, not %D", numGroups);
+  PetscCheck(numGroups == 2,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Test only coded for 2 groups, not %D", numGroups);
   PetscCall(DMLabelCreate(PETSC_COMM_SELF, "groups", label));
   for (c = 0; c < 10; ++c) PetscCall(DMLabelSetValue(*label, groupA[c], 101));
   for (c = 0; c < 6;  ++c) PetscCall(DMLabelSetValue(*label, groupB[c], 1001));

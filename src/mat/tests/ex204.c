@@ -83,7 +83,7 @@ int main(int argc,char **args)
     PetscCall(VecCopy(r_vcl,d_vcl));
     PetscCall(VecAXPY(d_vcl,-1.0,r_vcl));
     PetscCall(VecNorm(d_vcl,NORM_INFINITY,&dnorm));
-    PetscCheckFalse(dnorm > tol,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"Sequential CPU and MPI ViennaCL vector results incompatible with inf norm greater than tolerance of %g",tol);
+    PetscCheck(dnorm <= tol,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"Sequential CPU and MPI ViennaCL vector results incompatible with inf norm greater than tolerance of %g",tol);
 
     PetscCall(VecDestroy(&v));
     PetscCall(VecDestroy(&r));
@@ -136,7 +136,7 @@ int main(int argc,char **args)
     PetscCall(VecCopy(r_vcl,d_vcl));
     PetscCall(VecAXPY(d_vcl,-1.0,r_vcl));
     PetscCall(VecNorm(d_vcl,NORM_INFINITY,&dnorm));
-    PetscCheckFalse(dnorm > tol,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MPI CPU and MPI ViennaCL Vector results incompatible with inf norm greater than tolerance of %g",tol);
+    PetscCheck(dnorm <= tol,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MPI CPU and MPI ViennaCL Vector results incompatible with inf norm greater than tolerance of %g",tol);
 
     PetscCall(VecDestroy(&v));
     PetscCall(VecDestroy(&r));
@@ -187,7 +187,7 @@ int main(int argc,char **args)
     PetscCall(VecCopy(r_vcl,d_vcl));
     PetscCall(VecAXPY(d_vcl,-1.0,r_vcl));
     PetscCall(VecNorm(d_vcl,NORM_INFINITY,&dnorm));
-    PetscCheckFalse(dnorm > tol,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MPI CPU and MPI ViennaCL Vector results incompatible with inf norm greater than tolerance of %g",tol);
+    PetscCheck(dnorm <= tol,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MPI CPU and MPI ViennaCL Vector results incompatible with inf norm greater than tolerance of %g",tol);
 
     PetscCall(VecDestroy(&v));
     PetscCall(VecDestroy(&r));
@@ -239,7 +239,7 @@ int main(int argc,char **args)
     PetscCall(VecCopy(r_vcl,d_vcl));
     PetscCall(VecAXPY(d_vcl,-1.0,r_vcl));
     PetscCall(VecNorm(d_vcl,NORM_INFINITY,&dnorm));
-    PetscCheckFalse(dnorm > tol,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MPI CPU and MPI ViennaCL Vector results incompatible with inf norm greater than tolerance of %g",tol);
+    PetscCheck(dnorm <= tol,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MPI CPU and MPI ViennaCL Vector results incompatible with inf norm greater than tolerance of %g",tol);
 
     PetscCall(VecDestroy(&v));
     PetscCall(VecDestroy(&r));

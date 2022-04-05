@@ -74,7 +74,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsGetInt(NULL,NULL, "-testnum", &testnum, NULL));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  PetscCheckFalse(size != 3,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must run with 3 MPI processes");
+  PetscCheck(size == 3,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must run with 3 MPI processes");
 
   switch (testnum) {
   case 0:

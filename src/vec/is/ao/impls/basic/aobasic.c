@@ -224,13 +224,13 @@ PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao)
     PetscCall(PetscArraycpy(sorted,allpetsc,N));
     PetscCall(PetscSortInt(N,sorted));
     for (i=0; i<N; i++) {
-      PetscCheckFalse(sorted[i] != i,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"PETSc ordering requires a permutation of numbers 0 to N-1\n it is missing %" PetscInt_FMT " has %" PetscInt_FMT,i,sorted[i]);
+      PetscCheck(sorted[i] == i,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"PETSc ordering requires a permutation of numbers 0 to N-1\n it is missing %" PetscInt_FMT " has %" PetscInt_FMT,i,sorted[i]);
     }
 
     PetscCall(PetscArraycpy(sorted,allapp,N));
     PetscCall(PetscSortInt(N,sorted));
     for (i=0; i<N; i++) {
-      PetscCheckFalse(sorted[i] != i,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Application ordering requires a permutation of numbers 0 to N-1\n it is missing %" PetscInt_FMT " has %" PetscInt_FMT,i,sorted[i]);
+      PetscCheck(sorted[i] == i,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Application ordering requires a permutation of numbers 0 to N-1\n it is missing %" PetscInt_FMT " has %" PetscInt_FMT,i,sorted[i]);
     }
 
     PetscCall(PetscFree(sorted));

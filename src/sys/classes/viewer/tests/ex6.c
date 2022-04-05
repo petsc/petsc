@@ -67,38 +67,38 @@ static PetscErrorCode TestRead(PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscViewerBinaryRead(viewer,&idata,1,NULL,PETSC_INT));
   PetscCall(PetscViewerBinaryRead(viewer,&rdata,1,NULL,PETSC_REAL));
-  PetscCheckFalse(idata != 42,comm,PETSC_ERR_FILE_UNEXPECTED,"Unexpected idata=%" PetscInt_FMT,idata);
-  PetscCheckFalse(rdata != 42,comm,PETSC_ERR_FILE_UNEXPECTED,"Unexpected rdata=%g",(double)rdata);
+  PetscCheck(idata == 42,comm,PETSC_ERR_FILE_UNEXPECTED,"Unexpected idata=%" PetscInt_FMT,idata);
+  PetscCheck(rdata == 42,comm,PETSC_ERR_FILE_UNEXPECTED,"Unexpected rdata=%g",(double)rdata);
 
   PetscCall(PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&subviewer));
   if (subviewer) {
     MPI_Comm subcomm = PetscObjectComm((PetscObject)subviewer);
     PetscCall(PetscViewerBinaryRead(subviewer,&idata,1,NULL,PETSC_INT));
     PetscCall(PetscViewerBinaryRead(subviewer,&rdata,1,NULL,PETSC_REAL));
-    PetscCheckFalse(idata != 42,subcomm,PETSC_ERR_FILE_UNEXPECTED,"Unexpected idata=%" PetscInt_FMT,idata);
-    PetscCheckFalse(rdata != 42,subcomm,PETSC_ERR_FILE_UNEXPECTED,"Unexpected rdata=%g",(double)rdata);
+    PetscCheck(idata == 42,subcomm,PETSC_ERR_FILE_UNEXPECTED,"Unexpected idata=%" PetscInt_FMT,idata);
+    PetscCheck(rdata == 42,subcomm,PETSC_ERR_FILE_UNEXPECTED,"Unexpected rdata=%g",(double)rdata);
   }
   PetscCall(PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&subviewer));
 
   PetscCall(PetscViewerBinaryReadAll(viewer,&idata,1,s,t,PETSC_INT));
   PetscCall(PetscViewerBinaryReadAll(viewer,&rdata,1,s,t,PETSC_REAL));
-  PetscCheckFalse(idata != 42,comm,PETSC_ERR_FILE_UNEXPECTED,"Unexpected idata=%" PetscInt_FMT,idata);
-  PetscCheckFalse(rdata != 42,comm,PETSC_ERR_FILE_UNEXPECTED,"Unexpected rdata=%g",(double)rdata);
+  PetscCheck(idata == 42,comm,PETSC_ERR_FILE_UNEXPECTED,"Unexpected idata=%" PetscInt_FMT,idata);
+  PetscCheck(rdata == 42,comm,PETSC_ERR_FILE_UNEXPECTED,"Unexpected rdata=%g",(double)rdata);
 
   PetscCall(PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&subviewer));
   if (subviewer) {
     MPI_Comm subcomm = PetscObjectComm((PetscObject)subviewer);
     PetscCall(PetscViewerBinaryRead(subviewer,&idata,1,NULL,PETSC_INT));
     PetscCall(PetscViewerBinaryRead(subviewer,&rdata,1,NULL,PETSC_REAL));
-    PetscCheckFalse(idata != 42,subcomm,PETSC_ERR_FILE_UNEXPECTED,"Unexpected idata=%" PetscInt_FMT,idata);
-    PetscCheckFalse(rdata != 42,subcomm,PETSC_ERR_FILE_UNEXPECTED,"Unexpected rdata=%g",(double)rdata);
+    PetscCheck(idata == 42,subcomm,PETSC_ERR_FILE_UNEXPECTED,"Unexpected idata=%" PetscInt_FMT,idata);
+    PetscCheck(rdata == 42,subcomm,PETSC_ERR_FILE_UNEXPECTED,"Unexpected rdata=%g",(double)rdata);
   }
   PetscCall(PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&subviewer));
 
   PetscCall(PetscViewerBinaryRead(viewer,&idata,1,NULL,PETSC_INT));
   PetscCall(PetscViewerBinaryRead(viewer,&rdata,1,NULL,PETSC_REAL));
-  PetscCheckFalse(idata != 42,comm,PETSC_ERR_FILE_UNEXPECTED,"Unexpected idata=%" PetscInt_FMT,idata);
-  PetscCheckFalse(rdata != 42,comm,PETSC_ERR_FILE_UNEXPECTED,"Unexpected rdata=%g",(double)rdata);
+  PetscCheck(idata == 42,comm,PETSC_ERR_FILE_UNEXPECTED,"Unexpected idata=%" PetscInt_FMT,idata);
+  PetscCheck(rdata == 42,comm,PETSC_ERR_FILE_UNEXPECTED,"Unexpected rdata=%g",(double)rdata);
   PetscFunctionReturn(0);
 }
 

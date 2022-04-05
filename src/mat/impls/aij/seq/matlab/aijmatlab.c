@@ -58,8 +58,8 @@ PETSC_EXTERN PetscErrorCode MatSeqAIJFromMatlab(mxArray *mmat,Mat mat)
     PetscCall(MatSetSizes(mat,n,m,PETSC_DETERMINE,PETSC_DETERMINE));
     PetscCall(MatSetUp(mat));
   } else {
-    PetscCheckFalse(mat->rmap->n != n,PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change size of PETSc matrix %" PetscInt_FMT " to %" PetscInt_FMT,mat->rmap->n,n);
-    PetscCheckFalse(mat->cmap->n != m,PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change size of PETSc matrix %" PetscInt_FMT " to %" PetscInt_FMT,mat->cmap->n,m);
+    PetscCheck(mat->rmap->n == n,PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change size of PETSc matrix %" PetscInt_FMT " to %" PetscInt_FMT,mat->rmap->n,n);
+    PetscCheck(mat->cmap->n == m,PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change size of PETSc matrix %" PetscInt_FMT " to %" PetscInt_FMT,mat->cmap->n,m);
   }
   if (nz != aij->nz) {
     /* number of nonzeros in matrix has changed, so need new data structure */
@@ -159,7 +159,7 @@ PetscErrorCode MatLUFactorNumeric_Matlab(Mat F,Mat A,const MatFactorInfo *info)
 PetscErrorCode MatLUFactorSymbolic_Matlab(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
   PetscFunctionBegin;
-  PetscCheckFalse(A->cmap->N != A->rmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"matrix must be square");
+  PetscCheck(A->cmap->N == A->rmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"matrix must be square");
   F->ops->lufactornumeric = MatLUFactorNumeric_Matlab;
   F->assembled            = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -185,7 +185,7 @@ PetscErrorCode MatDestroy_matlab(Mat A)
 PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_matlab(Mat A,MatFactorType ftype,Mat *F)
 {
   PetscFunctionBegin;
-  PetscCheckFalse(A->cmap->N != A->rmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"matrix must be square");
+  PetscCheck(A->cmap->N == A->rmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"matrix must be square");
   PetscCall(MatCreate(PetscObjectComm((PetscObject)A),F));
   PetscCall(MatSetSizes(*F,A->rmap->n,A->cmap->n,A->rmap->n,A->cmap->n));
   PetscCall(PetscStrallocpy("matlab",&((PetscObject)*F)->type_name));

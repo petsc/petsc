@@ -90,7 +90,7 @@ PetscErrorCode TestInitialMatrix(void)
     PetscCall(MatDenseRestoreColumn(B,&valsB));
   }
   PetscCall(MatNorm(C,NORM_INFINITY,&norm));
-  PetscCheckFalse(norm > PETSC_SMALL,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatMatMult(): %g",(double)norm);
+  PetscCheck(norm <= PETSC_SMALL,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatMatMult(): %g",(double)norm);
   PetscCall(MatDestroy(&C));
   PetscCall(MatDestroy(&B));
 

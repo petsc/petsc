@@ -141,7 +141,7 @@ int main(int argc,char **args)
   PetscCall(VecGetLocalSize(u,&ldim));
   PetscCall(VecGetOwnershipRange(u,&low,NULL));
   for (i=0; i<ldim; i++) {
-    PetscCheckFalse(values[i] != (PetscScalar)(i + low),PETSC_COMM_WORLD,PETSC_ERR_SUP,"Data check failed!");
+    PetscCheck(values[i] == (PetscScalar)(i + low),PETSC_COMM_WORLD,PETSC_ERR_SUP,"Data check failed!");
   }
   PetscCall(VecRestoreArrayRead(u,&values));
 

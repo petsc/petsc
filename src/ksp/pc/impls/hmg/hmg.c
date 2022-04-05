@@ -24,9 +24,9 @@ static PetscErrorCode PCHMGExtractSubMatrix_Private(Mat pmat,Mat *submat,MatReus
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)pmat,&comm));
-  PetscCheckFalse(component>=blocksize,comm,PETSC_ERR_ARG_INCOMP,"Component %D should be less than block size %D ",component,blocksize);
+  PetscCheck(component<blocksize,comm,PETSC_ERR_ARG_INCOMP,"Component %D should be less than block size %D ",component,blocksize);
   PetscCall(MatGetOwnershipRange(pmat,&rstart,&rend));
-  PetscCheckFalse((rend-rstart)%blocksize != 0,comm,PETSC_ERR_ARG_INCOMP,"Block size %D is inconsistent for [%D, %D) ",blocksize,rstart,rend);
+  PetscCheck((rend-rstart)%blocksize == 0,comm,PETSC_ERR_ARG_INCOMP,"Block size %D is inconsistent for [%D, %D) ",blocksize,rstart,rend);
   PetscCall(ISCreateStride(comm,(rend-rstart)/blocksize,rstart+component,blocksize,&isrow));
   PetscCall(MatCreateSubMatrix(pmat,isrow,isrow,reuse,submat));
   PetscCall(ISDestroy(&isrow));

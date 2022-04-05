@@ -61,13 +61,13 @@ int main(int argc,char **argv)
     Determine the block size of the index set
   */
   PetscCall(ISGetBlockSize(set,&bs));
-  PetscCheckFalse(bs != 3,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Block size is not 3!");
+  PetscCheck(bs == 3,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Block size is not 3!");
 
   /*
     Get the number of blocks
   */
   PetscCall(ISBlockGetLocalSize(set,&n));
-  PetscCheckFalse(n != 4,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of blocks not 4!");
+  PetscCheck(n == 4,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of blocks not 4!");
 
   PetscCall(ISDestroy(&set));
   PetscCall(PetscFinalize());

@@ -737,7 +737,7 @@ PetscErrorCode PetscLogEventEndDefault(PetscLogEvent event,int t,PetscObject o1,
   /* Check for double counting */
   eventLog->eventInfo[event].depth--;
   if (eventLog->eventInfo[event].depth > 0) PetscFunctionReturn(0);
-  else PetscCheckFalse(eventLog->eventInfo[event].depth < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Logging event had unbalanced begin/end pairs");
+  else PetscCheck(eventLog->eventInfo[event].depth >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Logging event had unbalanced begin/end pairs");
   /* Log performance info */
   PetscTimeAdd(&eventLog->eventInfo[event].timeTmp);
   eventLog->eventInfo[event].time          += eventLog->eventInfo[event].timeTmp;
@@ -878,7 +878,7 @@ PetscErrorCode PetscLogEventEndComplete(PetscLogEvent event,int t,PetscObject o1
   /* Check for double counting */
   eventPerfLog->eventInfo[event].depth--;
   if (eventPerfLog->eventInfo[event].depth > 0) PetscFunctionReturn(0);
-  else PetscCheckFalse(eventPerfLog->eventInfo[event].depth < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Logging event had unbalanced begin/end pairs");
+  else PetscCheck(eventPerfLog->eventInfo[event].depth >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Logging event had unbalanced begin/end pairs");
   /* Log the performance info */
   eventPerfLog->eventInfo[event].count++;
   eventPerfLog->eventInfo[event].time          += curTime;
@@ -981,7 +981,7 @@ PetscErrorCode PetscLogEventSetDof(PetscLogEvent event, PetscInt n, PetscLogDoub
   int               stage;
 
   PetscFunctionBegin;
-  PetscCheckFalse((n < 0) || (n > 7),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Error index %" PetscInt_FMT " is not in [0, 8)", n);
+  PetscCheck(!(n < 0) && !(n > 7),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Error index %" PetscInt_FMT " is not in [0, 8)", n);
   PetscCall(PetscLogGetStageLog(&stageLog));
   PetscCall(PetscStageLogGetCurrent(stageLog,&stage));
   PetscCall(PetscStageLogGetEventPerfLog(stageLog,stage,&eventLog));
@@ -1016,7 +1016,7 @@ PetscErrorCode PetscLogEventSetError(PetscLogEvent event, PetscInt n, PetscLogDo
   int               stage;
 
   PetscFunctionBegin;
-  PetscCheckFalse((n < 0) || (n > 7),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Error index %" PetscInt_FMT " is not in [0, 8)", n);
+  PetscCheck(!(n < 0) && !(n > 7),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Error index %" PetscInt_FMT " is not in [0, 8)", n);
   PetscCall(PetscLogGetStageLog(&stageLog));
   PetscCall(PetscStageLogGetCurrent(stageLog,&stage));
   PetscCall(PetscStageLogGetEventPerfLog(stageLog,stage,&eventLog));

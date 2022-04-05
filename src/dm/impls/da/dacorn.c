@@ -121,7 +121,7 @@ PetscErrorCode  DMDASetFieldNames(DM da,const char * const *names)
   PetscFunctionBegin;
   PetscCheck(dd->fieldname,PetscObjectComm((PetscObject)da),PETSC_ERR_ORDER,"You should call DMSetUp() first");
   while (names[nf++]) {};
-  PetscCheckFalse(nf != dd->w+1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid number of fields %D",nf-1);
+  PetscCheck(nf == dd->w+1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid number of fields %D",nf-1);
   PetscCall(PetscStrArrayallocpy(names,&fieldname));
   PetscCall(PetscStrArrayDestroy(&dd->fieldname));
   dd->fieldname = fieldname;

@@ -532,9 +532,9 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
   n = pow(npts, dim);
 
   /* do some error checking */
-  PetscCheckFalse(n < 2,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Number of points must be >= 2.");
-  PetscCheckFalse(global_size > n,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Number of processors must be less than or equal to number of elements.");
-  PetscCheckFalse(nghost < 0,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Number of ghost layers cannot be negative.");
+  PetscCheck(n >= 2,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Number of points must be >= 2.");
+  PetscCheck(global_size <= n,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Number of processors must be less than or equal to number of elements.");
+  PetscCheck(nghost >= 0,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Number of ghost layers cannot be negative.");
 
   /* Create the basic DMMoab object and keep the default parameters created by DM impls */
   PetscCall(DMMoabCreateMoab(comm, NULL, NULL, NULL, dm));
@@ -585,7 +585,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
 
   PetscCall(DMMBUtil_InitializeOptions(genCtx, dim, useSimplex, global_rank, global_size, bounds, nele));
 
-  //PetscCheckFalse(nele<nprocs,PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"The dimensional discretization size should be greater or equal to number of processors: %D < %D",nele,nprocs);
+  //PetscCheck(nele>=nprocs,PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"The dimensional discretization size should be greater or equal to number of processors: %D < %D",nele,nprocs);
 
   if (genCtx.adjEnts) genCtx.keep_skins = true; /* do not delete anything - consumes more memory */
 

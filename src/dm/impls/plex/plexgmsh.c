@@ -529,7 +529,7 @@ static PetscErrorCode GmshReadNodes_v22(GmshFile *gmsh, GmshMesh *mesh)
   PetscFunctionBegin;
   PetscCall(PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING));
   snum = sscanf(line, "%d", &num);
-  PetscCheckFalse(snum != 1,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
+  PetscCheck(snum == 1,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
   PetscCall(GmshNodesCreate(num, &nodes));
   mesh->numNodes = num;
   mesh->nodelist = nodes;
@@ -563,7 +563,7 @@ static PetscErrorCode GmshReadElements_v22(GmshFile* gmsh, GmshMesh *mesh)
   PetscFunctionBegin;
   PetscCall(PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING));
   snum = sscanf(line, "%d", &num);
-  PetscCheckFalse(snum != 1,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
+  PetscCheck(snum == 1,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
   PetscCall(GmshElementsCreate(num, &elements));
   mesh->numElems = num;
   mesh->elements = elements;
@@ -801,7 +801,7 @@ static PetscErrorCode GmshReadPeriodic_v40(GmshFile *gmsh, PetscInt periodicMap[
   if (fileFormat == 22 || !binary) {
     PetscCall(PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING));
     snum = sscanf(line, "%d", &numPeriodic);
-    PetscCheckFalse(snum != 1,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
+    PetscCheck(snum == 1,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
   } else {
     PetscCall(PetscViewerRead(viewer, &numPeriodic, 1, NULL, PETSC_ENUM));
     if (byteSwap) PetscCall(PetscByteSwap(&numPeriodic, PETSC_ENUM, 1));
@@ -814,7 +814,7 @@ static PetscErrorCode GmshReadPeriodic_v40(GmshFile *gmsh, PetscInt periodicMap[
     if (fileFormat == 22 || !binary) {
       PetscCall(PetscViewerRead(viewer, line, 3, NULL, PETSC_STRING));
       snum = sscanf(line, "%d %d %d", &correspondingDim, &correspondingTag, &primaryTag);
-      PetscCheckFalse(snum != 3,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
+      PetscCheck(snum == 3,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
     } else {
       PetscCall(PetscViewerRead(viewer, ibuf, 3, NULL, PETSC_ENUM));
       if (byteSwap) PetscCall(PetscByteSwap(ibuf, PETSC_ENUM, 3));
@@ -829,7 +829,7 @@ static PetscErrorCode GmshReadPeriodic_v40(GmshFile *gmsh, PetscInt periodicMap[
         PetscCall(PetscViewerRead(viewer, line, -PETSC_MAX_PATH_LEN, NULL, PETSC_STRING));
         PetscCall(PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING));
         snum = sscanf(line, "%ld", &nNodes);
-        PetscCheckFalse(snum != 1,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
+        PetscCheck(snum == 1,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
       }
     } else {
       PetscCall(PetscViewerRead(viewer, &nNodes, 1, NULL, PETSC_LONG));
@@ -845,7 +845,7 @@ static PetscErrorCode GmshReadPeriodic_v40(GmshFile *gmsh, PetscInt periodicMap[
       if (fileFormat == 22 || !binary) {
         PetscCall(PetscViewerRead(viewer, line, 2, NULL, PETSC_STRING));
         snum = sscanf(line, "%d %d", &correspondingNode, &primaryNode);
-        PetscCheckFalse(snum != 2,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
+        PetscCheck(snum == 2,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
       } else {
         PetscCall(PetscViewerRead(viewer, ibuf, 2, NULL, PETSC_ENUM));
         if (byteSwap) PetscCall(PetscByteSwap(ibuf, PETSC_ENUM, 2));
@@ -1062,12 +1062,12 @@ static PetscErrorCode GmshReadMeshFormat(GmshFile *gmsh)
   PetscFunctionBegin;
   PetscCall(GmshReadString(gmsh, line, 3));
   snum = sscanf(line, "%f %d %d", &version, &fileType, &dataSize);
-  PetscCheckFalse(snum != 3,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Unable to parse Gmsh file header: %s", line);
-  PetscCheckFalse(version < 2.2,PETSC_COMM_SELF, PETSC_ERR_SUP, "Gmsh file version %3.1f must be at least 2.2", (double)version);
+  PetscCheck(snum == 3,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Unable to parse Gmsh file header: %s", line);
+  PetscCheck(version >= 2.2,PETSC_COMM_SELF, PETSC_ERR_SUP, "Gmsh file version %3.1f must be at least 2.2", (double)version);
   PetscCheckFalse((int)version == 3,PETSC_COMM_SELF, PETSC_ERR_SUP, "Gmsh file version %3.1f not supported", (double)version);
-  PetscCheckFalse(version > 4.1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Gmsh file version %3.1f must be at most 4.1", (double)version);
-  PetscCheckFalse(gmsh->binary && !fileType,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Viewer is binary but Gmsh file is ASCII");
-  PetscCheckFalse(!gmsh->binary && fileType,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Viewer is ASCII but Gmsh file is binary");
+  PetscCheck(version <= 4.1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Gmsh file version %3.1f must be at most 4.1", (double)version);
+  PetscCheck(!gmsh->binary || fileType,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Viewer is binary but Gmsh file is ASCII");
+  PetscCheck(gmsh->binary || !fileType,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Viewer is ASCII but Gmsh file is binary");
   fileFormat = (int)roundf(version*10);
   PetscCheckFalse(fileFormat <= 40 && dataSize != sizeof(double),PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Data size %d is not valid for a Gmsh file", dataSize);
   PetscCheckFalse(fileFormat >= 41 && dataSize != sizeof(int) && dataSize != sizeof(PetscInt64),PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Data size %d is not valid for a Gmsh file", dataSize);
@@ -1078,7 +1078,7 @@ static PetscErrorCode GmshReadMeshFormat(GmshFile *gmsh)
     PetscCall(GmshReadInt(gmsh, &checkEndian, 1));
     if (checkEndian != 1) {
       PetscCall(PetscByteSwap(&checkEndian, PETSC_ENUM, 1));
-      PetscCheckFalse(checkEndian != 1,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Unable to detect endianness in Gmsh file header: %s", line);
+      PetscCheck(checkEndian == 1,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Unable to detect endianness in Gmsh file header: %s", line);
       gmsh->byteSwap = PETSC_TRUE;
     }
   }
@@ -1101,17 +1101,17 @@ static PetscErrorCode GmshReadPhysicalNames(GmshFile *gmsh, GmshMesh *mesh)
   PetscCall(GmshReadString(gmsh, line, 1));
   snum = sscanf(line, "%d", &region);
   mesh->numRegions = region;
-  PetscCheckFalse(snum != 1,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
+  PetscCheck(snum == 1,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
   PetscCall(PetscMalloc2(mesh->numRegions, &mesh->regionTags, mesh->numRegions, &mesh->regionNames));
   for (region = 0; region < mesh->numRegions; ++region) {
     PetscCall(GmshReadString(gmsh, line, 2));
     snum = sscanf(line, "%d %d", &dim, &tag);
-    PetscCheckFalse(snum != 2,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
+    PetscCheck(snum == 2,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
     PetscCall(GmshReadString(gmsh, line, -(PetscInt)sizeof(line)));
     PetscCall(PetscStrchr(line, '"', &p));
     PetscCheck(p,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
     PetscCall(PetscStrrchr(line, '"', &q));
-    PetscCheckFalse(q == p,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
+    PetscCheck(q != p,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
     PetscCall(PetscStrncpy(name, p+1, (size_t)(q-p-1)));
     mesh->regionTags[region] = tag;
     PetscCall(PetscStrallocpy(name, &mesh->regionNames[region]));
@@ -1160,7 +1160,7 @@ static PetscErrorCode GmshReadNodes(GmshFile *gmsh, GmshMesh *mesh)
     gmsh->nodeMap = gmsh->nbuf - gmsh->nodeStart;
     for (n = 0; n < mesh->numNodes; ++n) {
       const PetscInt tag = nodes->id[n];
-      PetscCheckFalse(gmsh->nodeMap[tag] >= 0,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Repeated node tag %D", tag);
+      PetscCheck(gmsh->nodeMap[tag] < 0,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Repeated node tag %D", tag);
       gmsh->nodeMap[tag] = n;
     }
   }
@@ -1401,10 +1401,10 @@ PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], Pe
     PetscCall(GmshExpect(gmsh, "$MeshFormat", line));
     PetscCall(GmshReadString(gmsh, line, 2));
     snum = sscanf(line, "%f %d", &version, &fileType);
-    PetscCheckFalse(snum != 2,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Unable to parse Gmsh file header: %s", line);
-    PetscCheckFalse(version < 2.2,PETSC_COMM_SELF, PETSC_ERR_SUP, "Gmsh file version %3.1f must be at least 2.2", (double)version);
+    PetscCheck(snum == 2,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Unable to parse Gmsh file header: %s", line);
+    PetscCheck(version >= 2.2,PETSC_COMM_SELF, PETSC_ERR_SUP, "Gmsh file version %3.1f must be at least 2.2", (double)version);
     PetscCheckFalse((int)version == 3,PETSC_COMM_SELF, PETSC_ERR_SUP, "Gmsh file version %3.1f not supported", (double)version);
-    PetscCheckFalse(version > 4.1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Gmsh file version %3.1f must be at most 4.1", (double)version);
+    PetscCheck(version <= 4.1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Gmsh file version %3.1f must be at most 4.1", (double)version);
     PetscCall(PetscViewerDestroy(&gmsh->viewer));
   }
   PetscCallMPI(MPI_Bcast(&fileType, 1, MPI_INT, 0, comm));
@@ -1594,7 +1594,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   }
 
   if (!highOrderSet) highOrder = (order > 1) ? PETSC_TRUE : PETSC_FALSE;
-  PetscCheckFalse(highOrder && isHybrid,comm, PETSC_ERR_SUP, "No support for discretization on hybrid meshes yet");
+  PetscCheck(!highOrder || !isHybrid,comm, PETSC_ERR_SUP, "No support for discretization on hybrid meshes yet");
 
   /* We do not want this label automatically computed, instead we fill it here */
   PetscCall(DMCreateLabel(*dm, "celltype"));
@@ -1696,7 +1696,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
           cone[v] = vStart + vv;
         }
         PetscCall(DMPlexGetFullJoin(*dm, elem->numVerts, cone, &joinSize, &join));
-        PetscCheckFalse(joinSize != 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Could not determine Plex facet for Gmsh element %D (Plex cell %D)", elem->id, e);
+        PetscCheck(joinSize == 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Could not determine Plex facet for Gmsh element %D (Plex cell %D)", elem->id, e);
         if (!Nr) PetscCall(DMSetLabelValue_Fast(*dm, &faceSets, "Face Sets", join[0], tag));
         for (r = 0; r < Nr; ++r) {
           if (mesh->regionTags[r] == tag) PetscCall(DMSetLabelValue_Fast(*dm, &regionSets[r], mesh->regionNames[r], join[0], tag));

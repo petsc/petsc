@@ -4,8 +4,8 @@
 static PetscErrorCode KSPSetUp_CR(KSP ksp)
 {
   PetscFunctionBegin;
-  PetscCheckFalse(ksp->pc_side == PC_RIGHT,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"no right preconditioning for KSPCR");
-  else PetscCheckFalse(ksp->pc_side == PC_SYMMETRIC,PETSC_COMM_SELF,PETSC_ERR_SUP,"no symmetric preconditioning for KSPCR");
+  PetscCheck(ksp->pc_side != PC_RIGHT,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"no right preconditioning for KSPCR");
+  else PetscCheck(ksp->pc_side != PC_SYMMETRIC,PETSC_COMM_SELF,PETSC_ERR_SUP,"no symmetric preconditioning for KSPCR");
   PetscCall(KSPSetWorkVecs(ksp,6));
   PetscFunctionReturn(0);
 }

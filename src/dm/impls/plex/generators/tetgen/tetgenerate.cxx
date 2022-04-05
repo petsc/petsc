@@ -176,7 +176,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
           PetscInt        numEdges;
 
           PetscCall(DMPlexGetJoin(*dm, 2, vertices, &numEdges, &edges));
-          PetscCheckFalse(numEdges != 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Two vertices must cover only one edge, not %D", numEdges);
+          PetscCheck(numEdges == 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Two vertices must cover only one edge, not %D", numEdges);
           PetscCall(DMUniversalLabelSetLabelValue(universal, *dm, PETSC_TRUE, edges[0], out.edgemarkerlist[e]));
           PetscCall(DMPlexRestoreJoin(*dm, 2, vertices, &numEdges, &edges));
         }
@@ -188,7 +188,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
           PetscInt        numFaces;
 
           PetscCall(DMPlexGetFullJoin(*dm, 3, vertices, &numFaces, &faces));
-          PetscCheckFalse(numFaces != 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Three vertices must cover only one face, not %D", numFaces);
+          PetscCheck(numFaces == 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Three vertices must cover only one face, not %D", numFaces);
           PetscCall(DMUniversalLabelSetLabelValue(universal, *dm, PETSC_TRUE, faces[0], out.trifacemarkerlist[f]));
           PetscCall(DMPlexRestoreJoin(*dm, 3, vertices, &numFaces, &faces));
         }
@@ -393,7 +393,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
       PetscInt       closureSize;
 
       PetscCall(DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure));
-      PetscCheckFalse((closureSize != 5) && (closureSize != 15),comm, PETSC_ERR_ARG_WRONG, "Mesh has cell which is not a tetrahedron, %D vertices in closure", closureSize);
+      PetscCheck(!(closureSize != 5) || !(closureSize != 15),comm, PETSC_ERR_ARG_WRONG, "Mesh has cell which is not a tetrahedron, %D vertices in closure", closureSize);
       for (v = 0; v < 4; ++v) in.tetrahedronlist[idx*in.numberofcorners + v] = closure[(v+closureSize-4)*2] - vStart;
       PetscCall(DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure));
     }
@@ -455,7 +455,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
           PetscInt        numEdges;
 
           PetscCall(DMPlexGetJoin(*dmRefined, 2, vertices, &numEdges, &edges));
-          PetscCheckFalse(numEdges != 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Two vertices must cover only one edge, not %D", numEdges);
+          PetscCheck(numEdges == 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Two vertices must cover only one edge, not %D", numEdges);
           PetscCall(DMUniversalLabelSetLabelValue(universal, *dmRefined, PETSC_TRUE, edges[0], out.edgemarkerlist[e]));
           PetscCall(DMPlexRestoreJoin(*dmRefined, 2, vertices, &numEdges, &edges));
         }
@@ -467,7 +467,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
           PetscInt        numFaces;
 
           PetscCall(DMPlexGetFullJoin(*dmRefined, 3, vertices, &numFaces, &faces));
-          PetscCheckFalse(numFaces != 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Three vertices must cover only one face, not %D", numFaces);
+          PetscCheck(numFaces == 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Three vertices must cover only one face, not %D", numFaces);
           PetscCall(DMUniversalLabelSetLabelValue(universal, *dmRefined, PETSC_TRUE, faces[0], out.trifacemarkerlist[f]));
           PetscCall(DMPlexRestoreJoin(*dmRefined, 3, vertices, &numFaces, &faces));
         }

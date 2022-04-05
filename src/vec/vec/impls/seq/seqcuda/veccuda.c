@@ -492,7 +492,7 @@ PetscErrorCode VecCreate_SeqCUDA_Private(Vec V,const PetscScalar *array)
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)V),&size));
-  PetscCheckFalse(size > 1,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQCUDA on more than one process");
+  PetscCheck(size <= 1,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQCUDA on more than one process");
   PetscCall(VecCreate_Seq_Private(V,0));
   PetscCall(PetscObjectChangeTypeName((PetscObject)V,VECSEQCUDA));
   PetscCall(VecBindToCPU_SeqCUDA(V,PETSC_FALSE));

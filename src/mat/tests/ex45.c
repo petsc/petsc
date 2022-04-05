@@ -23,7 +23,7 @@ static PetscErrorCode CheckValuesAIJ(Mat A)
     for (j=0; j<N; j++) {
       PetscCall(MatGetValue(A,i,j,&val));
       v = MakeValue(i,j,M); w = PetscRealPart(val);
-      PetscCheckFalse(PetscAbsReal(v-w) > 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Matrix entry (%" PetscInt_FMT ",%" PetscInt_FMT ") should be %g, got %g",i,j,(double)v,(double)w);
+      PetscCheck(PetscAbsReal(v-w) <= 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Matrix entry (%" PetscInt_FMT ",%" PetscInt_FMT ") should be %g, got %g",i,j,(double)v,(double)w);
     }
   }
   PetscFunctionReturn(0);

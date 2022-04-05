@@ -557,7 +557,7 @@ int Update(SNES snes, void *ctx)
     PetscCall(SNESGetIterationNumber(snes,&its));
     PetscCall(SNESGetNonlinearStepFailures(snes, &nfails));
     nfailsCum += nfails; nfails = 0;
-    PetscCheckFalse(nfailsCum >= 2,PETSC_COMM_SELF,1,"Unable to find a Newton Step");
+    PetscCheck(nfailsCum < 2,PETSC_COMM_SELF,1,"Unable to find a Newton Step");
     if (print_flag)
       PetscPrintf(MPI_COMM_WORLD,"At Time Step %d cfl = %g and fnorm = %g\n", i,
                   tsCtx->cfl, tsCtx->fnorm);
@@ -1853,7 +1853,7 @@ int SetPetscDS(GRID *grid, TstepCtx *tsCtx)
   PetscCall(PetscFree(val_offd));
 
 #else
-  PetscCheckFalse(CommSize > 1,PETSC_COMM_SELF,1,"Parallel case not supported in non-interlaced case");
+  PetscCheck(CommSize <= 1,PETSC_COMM_SELF,1,"Parallel case not supported in non-interlaced case");
   ICALLOC(nnodes*bs, &val_diag);
   ICALLOC(nnodes*bs, &val_offd);
   for (j = 0; j < bs; j++) {
@@ -2759,7 +2759,7 @@ int EventCountersEnd(int gen_start, PetscScalar time_start_counters)
 
   PetscCheckFalse((gen_read = read_counters(event0,&_counter0,event1,&_counter1)) < 0,PETSC_COMM_SELF,1,"Error in read_counter");
   PetscCall(PetscTime(&&time_read_counters));
-  PetscCheckFalse(gen_read != gen_start,PETSC_COMM_SELF,1,"Lost Counters!! Aborting ...");
+  PetscCheck(gen_read == gen_start,PETSC_COMM_SELF,1,"Lost Counters!! Aborting ...");
 
   counter0      += _counter0;
   counter1      += _counter1;

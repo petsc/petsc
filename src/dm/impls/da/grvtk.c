@@ -58,7 +58,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
   if (Coords) {
     PetscInt csize;
     PetscCall(VecGetSize(Coords,&csize));
-    PetscCheckFalse(csize % (mx*my*mz),PETSC_COMM_SELF,PETSC_ERR_PLIB,"Coordinate vector size mismatch");
+    PetscCheck(csize % (mx*my*mz) == 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Coordinate vector size mismatch");
     cdim = csize/(mx*my*mz);
     PetscCheckFalse(cdim < dim || cdim > 3,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Coordinate vector size mismatch");
   } else {
@@ -170,7 +170,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
           PetscMPIInt nn;
           PetscCallMPI(MPI_Recv(array,nnodes*cdim,MPIU_SCALAR,r,tag,comm,&status));
           PetscCallMPI(MPI_Get_count(&status,MPIU_SCALAR,&nn));
-          PetscCheckFalse(nn != nnodes*cdim,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch");
+          PetscCheck(nn == nnodes*cdim,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch");
         } else {
           PetscCall(PetscArraycpy(array,coords,nnodes*cdim));
         }
@@ -218,7 +218,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
           PetscMPIInt nn;
           PetscCallMPI(MPI_Recv(array,nnodes*bs,MPIU_SCALAR,r,tag,comm,&status));
           PetscCallMPI(MPI_Get_count(&status,MPIU_SCALAR,&nn));
-          PetscCheckFalse(nn != nnodes*bs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch receiving from rank %D",r);
+          PetscCheck(nn == nnodes*bs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch receiving from rank %D",r);
         } else {
           PetscCall(PetscArraycpy(array,x,nnodes*bs));
         }
@@ -392,7 +392,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
             PetscMPIInt nn;
             PetscCallMPI(MPI_Recv(array,xm+ym+zm,MPIU_SCALAR,r,tag,comm,&status));
             PetscCallMPI(MPI_Get_count(&status,MPIU_SCALAR,&nn));
-            PetscCheckFalse(nn != xm+ym+zm,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch");
+            PetscCheck(nn == xm+ym+zm,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch");
           } else {
             /* x coordinates */
             for (j=0, k=0, i=0; i<xm; i++) {
@@ -463,7 +463,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
           PetscMPIInt nn;
           PetscCallMPI(MPI_Recv(array,nnodes*bs,MPIU_SCALAR,r,tag,comm,&status));
           PetscCallMPI(MPI_Get_count(&status,MPIU_SCALAR,&nn));
-          PetscCheckFalse(nn != nnodes*bs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch receiving from rank %D",r);
+          PetscCheck(nn == nnodes*bs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch receiving from rank %D",r);
         } else {
           PetscCall(PetscArraycpy(array,x,nnodes*bs));
         }

@@ -214,7 +214,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
           /* printf("  connected edge[%D]=%D has keye=%D, is appctx_water.compkey_edge with EDGE_TYPE_PUMP\n",k,e,keye); */
         }
       } else { /* ower->compkey_branch */
-        PetscCheckFalse(keye != appctx_power.compkey_branch,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a power branch");
+        PetscCheck(keye == appctx_power.compkey_branch,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a power branch");
       }
     }
   }

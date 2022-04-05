@@ -66,7 +66,7 @@ PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
   fp = fopen(filename,"r");
   /* Reading data */
   for (i=0;i<line_counter;i++) {
-    PetscCheckFalse(!fgets(line,MAXLINE,fp),PETSC_COMM_SELF,PETSC_ERR_SUP,"File is incorrectly formatted");
+    PetscCheck(fgets(line,MAXLINE,fp),PETSC_COMM_SELF,PETSC_ERR_SUP,"File is incorrectly formatted");
 
     if ((i >= bus_start_line) && (i < bus_end_line)) {
       double gl,bl,vm,va,basekV;
@@ -87,7 +87,7 @@ PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
         Load[loadi].area = Bus[busi].area;
         Load[loadi].internal_i = busi;
         Bus[busi].lidx[Bus[busi].nload++] = loadi;
-        PetscCheckFalse(Bus[busi].nload > NLOAD_AT_BUS_MAX,PETSC_COMM_SELF,PETSC_ERR_SUP,"Exceeded maximum number of loads allowed at bus");
+        PetscCheck(Bus[busi].nload <= NLOAD_AT_BUS_MAX,PETSC_COMM_SELF,PETSC_ERR_SUP,"Exceeded maximum number of loads allowed at bus");
         loadi++;
       }
       busi++;
@@ -108,7 +108,7 @@ PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
 
       Bus[intbusnum].vm = Gen[geni].vs;
 
-      PetscCheckFalse(Bus[intbusnum].ngen > NGEN_AT_BUS_MAX,PETSC_COMM_SELF,PETSC_ERR_SUP,"Exceeded maximum number of generators allowed at bus");
+      PetscCheck(Bus[intbusnum].ngen <= NGEN_AT_BUS_MAX,PETSC_COMM_SELF,PETSC_ERR_SUP,"Exceeded maximum number of generators allowed at bus");
       geni++;
     }
 

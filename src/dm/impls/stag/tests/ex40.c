@@ -104,7 +104,7 @@ PetscErrorCode FormJacobian1DNoCoupling(SNES snes,Vec x,Mat Amat,Mat Pmat,void *
 
   PetscCall(MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY));
-  PetscCheckFalse(Amat != Pmat,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented for distinct Amat and Pmat");
+  PetscCheck(Amat == Pmat,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented for distinct Amat and Pmat");
   PetscFunctionReturn(0);
 }
 
@@ -120,7 +120,7 @@ PetscErrorCode FormFunction1D(SNES snes,Vec x,Vec f,void *ctx)
   (void) ctx;
   PetscCall(SNESGetDM(snes,&dm));
   PetscCall(DMGetDimension(dm,&dim));
-  PetscCheckFalse(dim != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"DM dimension must be 1");
+  PetscCheck(dim == 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"DM dimension must be 1");
   PetscCall(DMStagGetStencilType(dm,&stencil_type));
   PetscCheckFalse(stencil_type != DMSTAG_STENCIL_STAR && stencil_type != DMSTAG_STENCIL_BOX,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only star and box stencils supported");
   PetscCall(DMStagGetStencilWidth(dm,&stencil_width));
@@ -237,7 +237,7 @@ PetscErrorCode FormJacobian1D(SNES snes, Vec x, Mat Amat, Mat Pmat, void *ctx)
   (void) ctx;
   PetscCall(SNESGetDM(snes,&dm));
   PetscCall(DMGetDimension(dm,&dim));
-  PetscCheckFalse(dim != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"DM dimension must be 1");
+  PetscCheck(dim == 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"DM dimension must be 1");
   PetscCall(DMStagGetStencilWidth(dm,&stencil_width));
 
   PetscCall(DMGetLocalVector(dm,&x_local));
@@ -338,7 +338,7 @@ PetscErrorCode FormJacobian1D(SNES snes, Vec x, Mat Amat, Mat Pmat, void *ctx)
   PetscCall(DMRestoreLocalVector(dm,&x_local));
   PetscCall(MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY));
-  PetscCheckFalse(Amat != Pmat,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented for distinct Amat and Pmat");
+  PetscCheck(Amat == Pmat,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented for distinct Amat and Pmat");
   PetscFunctionReturn(0);
 }
 
@@ -496,7 +496,7 @@ PetscErrorCode FormJacobian2DNoCoupling(SNES snes,Vec x,Mat Amat,Mat Pmat,void *
 
   PetscCall(MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY));
-  PetscCheckFalse(Amat != Pmat,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented for distinct Amat and Pmat");
+  PetscCheck(Amat == Pmat,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented for distinct Amat and Pmat");
   PetscFunctionReturn(0);
 }
 
@@ -822,7 +822,7 @@ PetscErrorCode FormJacobian2D(SNES snes,Vec x,Mat Amat,Mat Pmat,void *ctx)
   PetscCall(DMRestoreLocalVector(dm,&x_local));
   PetscCall(MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY));
-  PetscCheckFalse(Amat != Pmat,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented for distinct Amat and Pmat");
+  PetscCheck(Amat == Pmat,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented for distinct Amat and Pmat");
   PetscFunctionReturn(0);
 }
 
@@ -1111,7 +1111,7 @@ PetscErrorCode FormJacobian3DNoCoupling(SNES snes,Vec x,Mat Amat,Mat Pmat,void *
   PetscCall(DMRestoreLocalVector(dm,&x_local));
   PetscCall(MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY));
-  PetscCheckFalse(Amat != Pmat,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented for distinct Amat and Pmat");
+  PetscCheck(Amat == Pmat,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented for distinct Amat and Pmat");
   PetscFunctionReturn(0);
 }
 
@@ -1652,7 +1652,7 @@ PetscErrorCode FormJacobian3D(SNES snes,Vec x,Mat Amat,Mat Pmat,void *ctx)
   PetscCall(DMRestoreLocalVector(dm,&x_local));
   PetscCall(MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY));
-  PetscCheckFalse(Amat != Pmat,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented for distinct Amat and Pmat");
+  PetscCheck(Amat == Pmat,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented for distinct Amat and Pmat");
   PetscFunctionReturn(0);
 }
 

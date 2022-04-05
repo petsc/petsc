@@ -146,7 +146,7 @@ PETSC_EXTERN PetscErrorCode VecCreate_Shared(Vec vv)
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)vv),&size));
-  PetscCheckFalse(size > 1,PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"No supported for shared memory vector objects on this machine");
+  PetscCheck(size <= 1,PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"No supported for shared memory vector objects on this machine");
   PetscCall(VecCreate_Seq(vv));
   PetscFunctionReturn(0);
 }

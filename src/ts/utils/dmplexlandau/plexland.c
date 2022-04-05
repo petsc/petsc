@@ -180,7 +180,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
   PetscValidHeaderSpecific(JacP,MAT_CLASSID,2);
   PetscValidPointer(ctx,5);
   /* check for matrix container for GPU assembly. Support CPU assembly for debugging */
-  PetscCheckFalse(ctx->plex[0] == NULL,ctx->comm,PETSC_ERR_ARG_WRONG,"Plex not created");
+  PetscCheck(ctx->plex[0] != NULL,ctx->comm,PETSC_ERR_ARG_WRONG,"Plex not created");
   PetscCall(PetscLogEventBegin(ctx->events[10],0,0,0,0));
   PetscCall(DMGetDS(ctx->plex[0], &prob)); // same DS for all grids
   PetscCall(PetscObjectQuery((PetscObject) JacP, "assembly_maps", (PetscObject *) &container));
@@ -201,11 +201,11 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
   // get dynamic data (Eq is odd, for quench and Spitzer test) for CPU assembly and raw data for Jacobian GPU assembly. Get host numCells[], Nq (yuck)
   PetscCall(PetscFEGetQuadrature(ctx->fe[0], &quad));
   PetscCall(PetscQuadratureGetData(quad, NULL, NULL, &Nq, NULL, NULL)); Nb = Nq;
-  PetscCheckFalse(Nq >LANDAU_MAX_NQ,ctx->comm,PETSC_ERR_ARG_WRONG,"Order too high. Nq = %" PetscInt_FMT " > LANDAU_MAX_NQ (%" PetscInt_FMT ")",Nq,LANDAU_MAX_NQ);
+  PetscCheck(Nq <=LANDAU_MAX_NQ,ctx->comm,PETSC_ERR_ARG_WRONG,"Order too high. Nq = %" PetscInt_FMT " > LANDAU_MAX_NQ (%" PetscInt_FMT ")",Nq,LANDAU_MAX_NQ);
   // get metadata for collecting dynamic data
   for (PetscInt grid=0;grid<ctx->num_grids;grid++) {
     PetscInt cStart, cEnd;
-    PetscCheckFalse(ctx->plex[grid] == NULL,ctx->comm,PETSC_ERR_ARG_WRONG,"Plex not created");
+    PetscCheck(ctx->plex[grid] != NULL,ctx->comm,PETSC_ERR_ARG_WRONG,"Plex not created");
     PetscCall(DMPlexGetHeightStratum(ctx->plex[grid], 0, &cStart, &cEnd));
     numCells[grid] = cEnd - cStart; // grids can have different topology
   }
@@ -1136,7 +1136,7 @@ static PetscErrorCode adaptToleranceFEM(PetscFE fem, Vec sol, PetscInt type, Pet
   PetscCall(DMLabelCreate(PETSC_COMM_SELF,"adapt",&adaptLabel));
   PetscCall(PetscFEGetQuadrature(fem, &quad));
   PetscCall(PetscQuadratureGetData(quad, NULL, NULL, &Nq, NULL, NULL));
-  PetscCheckFalse(Nq >LANDAU_MAX_NQ,ctx->comm,PETSC_ERR_ARG_WRONG,"Order too high. Nq = %" PetscInt_FMT " > LANDAU_MAX_NQ (%" PetscInt_FMT ")",Nq,LANDAU_MAX_NQ);
+  PetscCheck(Nq <=LANDAU_MAX_NQ,ctx->comm,PETSC_ERR_ARG_WRONG,"Order too high. Nq = %" PetscInt_FMT " > LANDAU_MAX_NQ (%" PetscInt_FMT ")",Nq,LANDAU_MAX_NQ);
   PetscCall(PetscDSGetDimensions(prob, &Nb));
   if (type==4) {
     for (c = cStart; c < cEnd; c++) {
@@ -1571,7 +1571,7 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
   /* setup each grid */
   for (PetscInt grid=0;grid<ctx->num_grids;grid++) {
     PetscInt cStart, cEnd;
-    PetscCheckFalse(ctx->plex[grid] == NULL,ctx->comm,PETSC_ERR_ARG_WRONG,"Plex not created");
+    PetscCheck(ctx->plex[grid] != NULL,ctx->comm,PETSC_ERR_ARG_WRONG,"Plex not created");
     PetscCall(DMPlexGetHeightStratum(ctx->plex[grid], 0, &cStart, &cEnd));
     numCells[grid] = cEnd - cStart; // grids can have different topology
     PetscCall(DMGetLocalSection(ctx->plex[grid], &section[grid]));
@@ -1687,7 +1687,7 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
                     }
                   }
                   maps[grid].num_reduced++;
-                  PetscCheckFalse(maps[grid].num_reduced>=MAP_BF_SIZE,PETSC_COMM_SELF, PETSC_ERR_PLIB, "maps[grid].num_reduced %d > %d",maps[grid].num_reduced,MAP_BF_SIZE);
+                  PetscCheck(maps[grid].num_reduced<MAP_BF_SIZE,PETSC_COMM_SELF, PETSC_ERR_PLIB, "maps[grid].num_reduced %d > %d",maps[grid].num_reduced,MAP_BF_SIZE);
                 }
                 break;
               }
@@ -2844,7 +2844,7 @@ PetscErrorCode DMPlexLandauIJacobian(TS ts, PetscReal time_dummy, Vec X, Vec U_t
   starttime = MPI_Wtime();
 #endif
   PetscCall(PetscInfo(ts, "Adding just mass to Jacobian t=%g, shift=%g\n",(double)time_dummy,(double)shift));
-  PetscCheckFalse(shift==0.0,ctx->comm, PETSC_ERR_PLIB, "zero shift");
+  PetscCheck(shift!=0.0,ctx->comm, PETSC_ERR_PLIB, "zero shift");
   PetscCheck(ctx->aux_bool,ctx->comm, PETSC_ERR_PLIB, "wrong state");
   if (!ctx->use_matrix_mass) {
     PetscCall(LandauFormJacobian_Internal(X,ctx->J,dim,shift,(void*)ctx));

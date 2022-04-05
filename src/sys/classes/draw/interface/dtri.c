@@ -147,8 +147,8 @@ PetscErrorCode  PetscDrawTensorContour(PetscDraw draw,int m,int n,const PetscRea
   PetscCall(PetscDrawIsNull(draw,&isnull));
   if (isnull) PetscFunctionReturn(0);
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)draw),&size));
-  PetscCheckFalse(size > 1,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"May only be used with single processor PetscDraw");
-  PetscCheckFalse(N <= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"n %d and m %d must be positive",m,n);
+  PetscCheck(size <= 1,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"May only be used with single processor PetscDraw");
+  PetscCheck(N > 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"n %d and m %d must be positive",m,n);
 
   ctx.v   = v;
   ctx.m   = m;

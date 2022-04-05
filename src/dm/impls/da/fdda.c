@@ -1502,7 +1502,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
 
   */
   PetscCall(DMDAGetInfo(da,&dim,&m,NULL,NULL,NULL,NULL,NULL,&nc,&s,&bx,NULL,NULL,NULL));
-  PetscCheckFalse(s > 1,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Matrix creation for 1d not implemented correctly for stencil width larger than 1");
+  PetscCheck(s <= 1,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Matrix creation for 1d not implemented correctly for stencil width larger than 1");
   PetscCall(DMDAGetCorners(da,&xs,NULL,NULL,&nx,NULL,NULL));
   PetscCall(DMDAGetGhostCorners(da,&gxs,NULL,NULL,&gnx,NULL,NULL));
 

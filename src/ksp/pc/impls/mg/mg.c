@@ -749,7 +749,7 @@ PetscErrorCode PCSetFromOptions_MG(PetscOptionItems *PetscOptionsObject,PC pc)
   /* Check option consistency */
   PetscCall(PCMGGetGalerkin(pc, &gtype));
   PetscCall(PCMGGetAdaptInterpolation(pc, &flg));
-  PetscCheckFalse(flg && (gtype >= PC_MG_GALERKIN_NONE),PetscObjectComm((PetscObject) pc), PETSC_ERR_ARG_INCOMP, "Must use Galerkin coarse operators when adapting the interpolator");
+  PetscCheck(!flg || !(gtype >= PC_MG_GALERKIN_NONE),PetscObjectComm((PetscObject) pc), PETSC_ERR_ARG_INCOMP, "Must use Galerkin coarse operators when adapting the interpolator");
   PetscFunctionReturn(0);
 }
 

@@ -36,7 +36,7 @@ PETSC_EXTERN PetscErrorCode MatColoringCreateBipartiteGraph(MatColoring mc,Petsc
     }
     PetscCall(MatRestoreRow(m,i,&ncol,&icol,&vcol));
   }
-  PetscCheckFalse(idx != nentries,PetscObjectComm((PetscObject)m),PETSC_ERR_NOT_CONVERGED,"Bad number of entries %" PetscInt_FMT " vs %" PetscInt_FMT,idx,nentries);
+  PetscCheck(idx == nentries,PetscObjectComm((PetscObject)m),PETSC_ERR_NOT_CONVERGED,"Bad number of entries %" PetscInt_FMT " vs %" PetscInt_FMT,idx,nentries);
   PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)m),etoc));
   PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)m),etor));
 

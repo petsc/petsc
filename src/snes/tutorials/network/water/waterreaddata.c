@@ -115,13 +115,13 @@ PetscErrorCode GetDataSegment(FILE *fp,char *line,fpos_t *data_segment_start_pos
   PetscFunctionBegin;
   data_segment_end = 0;
   fgetpos(fp,data_segment_start_pos);
-  PetscCheckFalse(!fgets(line,MAXLINE,fp),PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Cannot read data segment from file");
+  PetscCheck(fgets(line,MAXLINE,fp),PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Cannot read data segment from file");
   while (LineStartsWith(line,";")) {
     fgetpos(fp,data_segment_start_pos);
-    PetscCheckFalse(!fgets(line,MAXLINE,fp),PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Cannot read data segment from file");
+    PetscCheck(fgets(line,MAXLINE,fp),PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Cannot read data segment from file");
   }
   while (!data_segment_end) {
-    PetscCheckFalse(!fgets(line,MAXLINE,fp),PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Cannot read data segment from file");
+    PetscCheck(fgets(line,MAXLINE,fp),PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Cannot read data segment from file");
     nlines++;
     data_segment_end = CheckDataSegmentEnd(line);
   }
@@ -204,10 +204,10 @@ PetscErrorCode WaterReadData(WATERDATA *water,char *filename)
   fsetpos(fp,&junc_start_pos);
   for (i=0; i < water->njunction; i++) {
     int id=0,pattern=0;
-    PetscCheckFalse(!fgets(line,MAXLINE,fp),PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Cannot read junction from file");
+    PetscCheck(fgets(line,MAXLINE,fp),PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Cannot read junction from file");
     vert[nv].type = VERTEX_TYPE_JUNCTION;
     junction = &vert[nv].junc;
-    ndata = sscanf(line,"%d %lf %lf %d",&id,&v1,&v2,&pattern);PetscCheckFalse(ndata < 3,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read junction data");
+    ndata = sscanf(line,"%d %lf %lf %d",&id,&v1,&v2,&pattern);PetscCheck(ndata >= 3,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read junction data");
     vert[nv].id          = id;
     junction->dempattern = pattern;
     junction->elev   = (PetscScalar)v1;
@@ -221,10 +221,10 @@ PetscErrorCode WaterReadData(WATERDATA *water,char *filename)
   fsetpos(fp,&res_start_pos);
   for (i=0; i < water->nreservoir; i++) {
     int id=0,pattern=0;
-    PetscCheckFalse(!fgets(line,MAXLINE,fp),PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Cannot read reservoir from file");
+    PetscCheck(fgets(line,MAXLINE,fp),PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Cannot read reservoir from file");
     vert[nv].type = VERTEX_TYPE_RESERVOIR;
     reservoir = &vert[nv].res;
-    ndata = sscanf(line,"%d %lf %d",&id,&v1,&pattern);PetscCheckFalse(ndata < 2,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read reservoir data");
+    ndata = sscanf(line,"%d %lf %d",&id,&v1,&pattern);PetscCheck(ndata >= 2,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read reservoir data");
     vert[nv].id            = id;
     reservoir->headpattern = pattern;
     reservoir->head = (PetscScalar)v1;
@@ -236,10 +236,10 @@ PetscErrorCode WaterReadData(WATERDATA *water,char *filename)
   fsetpos(fp,&tank_start_pos);
   for (i=0; i < water->ntank; i++) {
     int id=0,curve=0;
-    PetscCheckFalse(!fgets(line,MAXLINE,fp),PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Cannot read data tank from file");
+    PetscCheck(fgets(line,MAXLINE,fp),PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Cannot read data tank from file");
     vert[nv].type = VERTEX_TYPE_TANK;
     tank = &vert[nv].tank;
-    ndata = sscanf(line,"%d %lf %lf %lf %lf %lf %lf %d",&id,&v1,&v2,&v3,&v4,&v5,&v6,&curve);PetscCheckFalse(ndata < 7,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read tank data");
+    ndata = sscanf(line,"%d %lf %lf %lf %lf %lf %lf %d",&id,&v1,&v2,&v3,&v4,&v5,&v6,&curve);PetscCheck(ndata >= 7,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read tank data");
     vert[nv].id       = id;
     tank->volumecurve = curve;
     tank->elev      = (PetscScalar)v1;
@@ -256,7 +256,7 @@ PetscErrorCode WaterReadData(WATERDATA *water,char *filename)
   fsetpos(fp,&pipe_start_pos);
   for (i=0; i < water->npipe; i++) {
     int id=0,node1=0,node2=0;
-    PetscCheckFalse(!fgets(line,MAXLINE,fp),PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Cannot read data pipe from file");
+    PetscCheck(fgets(line,MAXLINE,fp),PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Cannot read data pipe from file");
     edge[ne].type = EDGE_TYPE_PIPE;
     pipe = &edge[ne].pipe;
     ndata = sscanf(line,"%d %d %d %lf %lf %lf %lf %s",&id,&node1,&node2,&v1,&v2,&v3,&v4,pipe->stat);
@@ -283,10 +283,10 @@ PetscErrorCode WaterReadData(WATERDATA *water,char *filename)
   fsetpos(fp,&pump_start_pos);
   for (i=0; i < water->npump; i++) {
     int id=0,node1=0,node2=0,paramid=0;
-    PetscCheckFalse(!fgets(line,MAXLINE,fp),PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Cannot read data pump from file");
+    PetscCheck(fgets(line,MAXLINE,fp),PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Cannot read data pump from file");
     edge[ne].type = EDGE_TYPE_PUMP;
     pump = &edge[ne].pump;
-    ndata = sscanf(line,"%d %d %d %s %d",&id,&node1,&node2,pump->param,&paramid);PetscCheckFalse(ndata != 5,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read pump data");
+    ndata = sscanf(line,"%d %d %d %s %d",&id,&node1,&node2,pump->param,&paramid);PetscCheck(ndata == 5,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read pump data");
     pump->id      = id;
     pump->node1   = node1;
     pump->node2   = node2;
@@ -299,8 +299,8 @@ PetscErrorCode WaterReadData(WATERDATA *water,char *filename)
   fsetpos(fp,&curve_start_pos);
   for (i=0; i < ncurve; i++) {
     int icurve_id=0;
-    PetscCheckFalse(!fgets(line,MAXLINE,fp),PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Cannot read data curve from file");
-    ndata = sscanf(line,"%d %lf %lf",&icurve_id,&v1,&v2);PetscCheckFalse(ndata != 3,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read curve data");
+    PetscCheck(fgets(line,MAXLINE,fp),PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Cannot read data curve from file");
+    ndata = sscanf(line,"%d %lf %lf",&icurve_id,&v1,&v2);PetscCheck(ndata == 3,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read curve data");
     curve_id = icurve_id;
     curve_x  = (PetscScalar)v1;
     curve_y  = (PetscScalar)v2;

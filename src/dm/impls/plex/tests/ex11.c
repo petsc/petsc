@@ -20,7 +20,7 @@ static PetscErrorCode TestInsertion()
     PetscInt val;
 
     PetscCall(DMLabelGetValue(label, i, &val));
-    PetscCheckFalse(val != values[i%5],PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Value %d for point %d should be %d", val, i, values[i%5]);
+    PetscCheck(val == values[i%5],PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Value %d for point %d should be %d", val, i, values[i%5]);
   }
   /* Test stratum */
   for (v = 0; v < 5; ++v) {
@@ -33,7 +33,7 @@ static PetscErrorCode TestInsertion()
     PetscCall(ISGetIndices(stratum, &points));
     PetscCall(ISGetLocalSize(stratum, &n));
     for (i = 0; i < n; ++i) {
-      PetscCheckFalse(points[i] != i*5+v,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %d should be %d", points[i], i*5+v);
+      PetscCheck(points[i] == i*5+v,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %d should be %d", points[i], i*5+v);
     }
     PetscCall(ISRestoreIndices(stratum, &points));
     PetscCall(ISDestroy(&stratum));
@@ -43,7 +43,7 @@ static PetscErrorCode TestInsertion()
     PetscInt val;
 
     PetscCall(DMLabelGetValue(label, i, &val));
-    PetscCheckFalse(val != values[i%5],PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Value %d should be %d", val, values[i%5]);
+    PetscCheck(val == values[i%5],PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Value %d should be %d", val, values[i%5]);
   }
   /* Test Duplicate */
   PetscCall(DMLabelDuplicate(label, &label2));
@@ -51,7 +51,7 @@ static PetscErrorCode TestInsertion()
     PetscInt val;
 
     PetscCall(DMLabelGetValue(label2, i, &val));
-    PetscCheckFalse(val != values[i%5],PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Value %d should be %d", val, values[i%5]);
+    PetscCheck(val == values[i%5],PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Value %d should be %d", val, values[i%5]);
   }
   PetscCall(DMLabelDestroy(&label2));
   PetscCall(DMLabelDestroy(&label));

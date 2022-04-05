@@ -268,7 +268,7 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,PetscOptions options,const c
       }
       if (loc3_fmode) *loc3_fmode++ = 0;
       PetscCall(PetscStrendswithwhich(*loc0_vtype ? loc0_vtype : "ascii",viewers,&cnt));
-      PetscCheckFalse(cnt > (PetscInt) sizeof(viewers)-1,comm,PETSC_ERR_ARG_OUTOFRANGE,"Unknown viewer type: %s",loc0_vtype);
+      PetscCheck(cnt <= (PetscInt) sizeof(viewers)-1,comm,PETSC_ERR_ARG_OUTOFRANGE,"Unknown viewer type: %s",loc0_vtype);
       if (viewer) {
         if (!loc1_fname) {
           switch (cnt) {

@@ -67,7 +67,7 @@ int main(int argc,char **args)
   PetscCall(PetscViewerDestroy(&fd));
   PetscCall(MatConvert(A,MATSEQDENSE,MAT_INPLACE_MATRIX,&A));
   PetscCall(MatGetSize(A,&m,&n));
-  PetscCheckFalse(m != n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%" PetscInt_FMT ", %" PetscInt_FMT ")", m, n);
+  PetscCheck(m == n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%" PetscInt_FMT ", %" PetscInt_FMT ")", m, n);
 
   /* Create dense matrix C and X; C holds true solution with identical columns */
   nrhs = 2;

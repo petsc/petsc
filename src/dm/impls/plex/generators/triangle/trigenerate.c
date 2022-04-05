@@ -217,7 +217,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool inter
           PetscInt        numEdges;
 
           PetscCall(DMPlexGetJoin(*dm, 2, vertices, &numEdges, &edges));
-          PetscCheckFalse(numEdges != 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Two vertices must cover only one edge, not %D", numEdges);
+          PetscCheck(numEdges == 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Two vertices must cover only one edge, not %D", numEdges);
           if (glabel)  PetscCall(DMLabelSetValue(glabel,  edges[0], out.edgemarkerlist[e]));
           if (glabel2) PetscCall(DMLabelSetValue(glabel2, edges[0], out.edgemarkerlist[e]));
           PetscCall(DMPlexRestoreJoin(*dm, 2, vertices, &numEdges, &edges));
@@ -304,7 +304,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Triangle(DM dm, PetscReal *inmaxVolumes
       PetscInt       closureSize;
 
       PetscCall(DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure));
-      PetscCheckFalse((closureSize != 4) && (closureSize != 7),comm, PETSC_ERR_ARG_WRONG, "Mesh has cell which is not a triangle, %D vertices in closure", closureSize);
+      PetscCheck(!(closureSize != 4) || !(closureSize != 7),comm, PETSC_ERR_ARG_WRONG, "Mesh has cell which is not a triangle, %D vertices in closure", closureSize);
       for (v = 0; v < 3; ++v) {
         in.trianglelist[idx*in.numberofcorners + v] = closure[(v+closureSize-3)*2] - vStart;
       }
@@ -396,7 +396,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Triangle(DM dm, PetscReal *inmaxVolumes
           PetscInt        numEdges;
 
           PetscCall(DMPlexGetJoin(*dmRefined, 2, vertices, &numEdges, &edges));
-          PetscCheckFalse(numEdges != 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Two vertices must cover only one edge, not %D", numEdges);
+          PetscCheck(numEdges == 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Two vertices must cover only one edge, not %D", numEdges);
           if (rlabel) PetscCall(DMLabelSetValue(rlabel, edges[0], out.edgemarkerlist[e]));
           PetscCall(DMPlexRestoreJoin(*dmRefined, 2, vertices, &numEdges, &edges));
         }

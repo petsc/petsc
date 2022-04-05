@@ -703,7 +703,7 @@ int main(int argc,char *argv[])
 
   /* create index for slow parts and fast parts*/
   count_slow = Mx/(1+ctx.hratio);
-  PetscCheckFalse(count_slow%2,PETSC_COMM_WORLD,PETSC_ERR_USER,"Please adjust grid size Mx (-da_grid_x) and hratio (-hratio) so that Mx/(1+hartio) is even");
+  PetscCheck(count_slow%2 == 0,PETSC_COMM_WORLD,PETSC_ERR_USER,"Please adjust grid size Mx (-da_grid_x) and hratio (-hratio) so that Mx/(1+hartio) is even");
   count_fast = Mx-count_slow;
   ctx.sf = count_slow/2;
   ctx.fs = ctx.sf + count_fast;

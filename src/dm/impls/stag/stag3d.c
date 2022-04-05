@@ -206,7 +206,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_3d(DM dm)
       PetscInt Ncheck,j;
       Ncheck = 0;
       for (j=0; j<stag->nRanks[i]; ++j) Ncheck += stag->l[i][j];
-      PetscCheckFalse(Ncheck != stag->N[i],PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local sizes in dimension %d don't add up. %d != %d",i,Ncheck,stag->N[i]);
+      PetscCheck(Ncheck == stag->N[i],PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local sizes in dimension %d don't add up. %d != %d",i,Ncheck,stag->N[i]);
     }
   }
 
@@ -362,16 +362,16 @@ static PetscErrorCode DMStagSetUpBuildRankGrid_3d(DM dm)
   p = stag->nRanks[2];
 
   if (m != PETSC_DECIDE) {
-    PetscCheckFalse(m < 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in X direction: %D",m);
-    else PetscCheckFalse(m > size,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in X direction: %D %d",m,size);
+    PetscCheck(m >= 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in X direction: %D",m);
+    else PetscCheck(m <= size,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in X direction: %D %d",m,size);
   }
   if (n != PETSC_DECIDE) {
-    PetscCheckFalse(n < 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in Y direction: %D",n);
-    else PetscCheckFalse(n > size,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in Y direction: %D %d",n,size);
+    PetscCheck(n >= 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in Y direction: %D",n);
+    else PetscCheck(n <= size,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in Y direction: %D %d",n,size);
   }
   if (p != PETSC_DECIDE) {
-    PetscCheckFalse(p < 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in Z direction: %D",p);
-    else PetscCheckFalse(p > size,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in Z direction: %D %d",p,size);
+    PetscCheck(p >= 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in Z direction: %D",p);
+    else PetscCheck(p <= size,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in Z direction: %D %d",p,size);
   }
   PetscCheckFalse((m > 0) && (n > 0) && (p > 0) && (m*n*p != size),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"m %D * n %D * p %D != size %d",m,n,p,size);
 
@@ -433,12 +433,12 @@ static PetscErrorCode DMStagSetUpBuildRankGrid_3d(DM dm)
       m--;
     }
     if (M > P && m < p) {PetscInt _m = m; m = p; p = _m;}
-  } else PetscCheckFalse(m*n*p != size,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Given Bad partition");
+  } else PetscCheck(m*n*p == size,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Given Bad partition");
 
-  PetscCheckFalse(m*n*p != size,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Could not find good partition");
-  PetscCheckFalse(M < m,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Partition in x direction is too fine! %D %D",M,m);
-  PetscCheckFalse(N < n,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Partition in y direction is too fine! %D %D",N,n);
-  PetscCheckFalse(P < p,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Partition in z direction is too fine! %D %D",P,p);
+  PetscCheck(m*n*p == size,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Could not find good partition");
+  PetscCheck(M >= m,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Partition in x direction is too fine! %D %D",M,m);
+  PetscCheck(N >= n,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Partition in y direction is too fine! %D %D",N,n);
+  PetscCheck(P >= p,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Partition in z direction is too fine! %D %D",P,p);
 
   stag->nRanks[0] = m;
   stag->nRanks[1] = n;
@@ -1520,7 +1520,7 @@ static PetscErrorCode DMStagSetUpBuildScatter_3d(DM dm,const PetscInt *globalOff
     PetscCall(DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2));
   }
 
-  PetscCheckFalse(count != entriesToTransferTotal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of entries computed in gtol (%d) is not as expected (%d)",count,entriesToTransferTotal);
+  PetscCheck(count == entriesToTransferTotal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of entries computed in gtol (%d) is not as expected (%d)",count,entriesToTransferTotal);
 
   /* Create stag->gtol. The order is computed as PETSc ordering, and doesn't include dummy entries */
   {

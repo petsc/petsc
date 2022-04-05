@@ -174,7 +174,7 @@ PetscErrorCode SNESFASGetCycleSNES(SNES snes,PetscInt level,SNES *lsnes)
   PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
   PetscValidPointer(lsnes,3);
   fas = (SNES_FAS*)snes->data;
-  PetscCheckFalse(level > fas->levels-1,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"Requested level %D from SNESFAS containing %D levels",level,fas->levels);
+  PetscCheck(level <= fas->levels-1,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"Requested level %D from SNESFAS containing %D levels",level,fas->levels);
   PetscCheckFalse(fas->level !=  fas->levels - 1,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"SNESFASGetCycleSNES may only be called on the finest-level SNES.",level,fas->level);
 
   *lsnes = snes;
@@ -182,7 +182,7 @@ PetscErrorCode SNESFASGetCycleSNES(SNES snes,PetscInt level,SNES *lsnes)
     *lsnes = fas->next;
     fas    = (SNES_FAS*)(*lsnes)->data;
   }
-  PetscCheckFalse(fas->level != level,PetscObjectComm((PetscObject)snes),PETSC_ERR_PLIB,"SNESFAS level hierarchy corrupt");
+  PetscCheck(fas->level == level,PetscObjectComm((PetscObject)snes),PETSC_ERR_PLIB,"SNESFAS level hierarchy corrupt");
   PetscFunctionReturn(0);
 }
 

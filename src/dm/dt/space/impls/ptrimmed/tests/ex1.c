@@ -29,12 +29,12 @@ static PetscErrorCode test(PetscInt dim, PetscInt formDegree, PetscInt degree, P
   PetscCall(PetscDTPTrimmedSize(dim, formDegree == 0 ? degree : degree + 1, PetscAbsInt(formDegree), &Nbexp));
   Nbexp *= nCopies;
   PetscCall(PetscSpaceGetDimension(sp, &Nb));
-  PetscCheckFalse(Nb != Nbexp,comm, PETSC_ERR_PLIB, "Space dimension mismatch, %D != %D", Nbexp, Nb);
+  PetscCheck(Nb == Nbexp,comm, PETSC_ERR_PLIB, "Space dimension mismatch, %D != %D", Nbexp, Nb);
 
   maxDexp = (PetscAbsInt(formDegree) == dim || formDegree == 0) ? degree : degree + 1;
   PetscCall(PetscSpaceGetDegree(sp, &d, &maxD));
-  PetscCheckFalse(degree != d,comm, PETSC_ERR_PLIB, "Space degree mismatch, %D != %D", degree, d);
-  PetscCheckFalse(maxDexp != maxD,comm, PETSC_ERR_PLIB, "Space max degree mismatch, %D != %D", maxDexp, maxD);
+  PetscCheck(degree == d,comm, PETSC_ERR_PLIB, "Space degree mismatch, %D != %D", degree, d);
+  PetscCheck(maxDexp == maxD,comm, PETSC_ERR_PLIB, "Space max degree mismatch, %D != %D", maxDexp, maxD);
 
   PetscCall(PetscDTStroudConicalQuadrature(dim, 1, maxD + 1, -1., 1., &quad));
   PetscCall(PetscQuadratureGetData(quad, NULL, NULL, &npoints, &points, NULL));

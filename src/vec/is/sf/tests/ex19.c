@@ -112,7 +112,7 @@ PetscErrorCode CreateSF0(AppCtx *ctx, PetscSF *sf0)
     PetscBool       sorted;
 
     PetscCall(PetscSFGetGraph(sf, NULL, NULL, &tlocal, NULL));
-    PetscCheckFalse(ctx->contiguousLeaves && tlocal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ilocal=NULL expected for contiguous case");
+    PetscCheck(!ctx->contiguousLeaves || !tlocal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ilocal=NULL expected for contiguous case");
     if (tlocal) {
       PetscCall(PetscSortedInt(nLeaves, tlocal, &sorted));
       PetscCheck(sorted,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ilocal expected to be sorted");

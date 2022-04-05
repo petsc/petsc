@@ -94,7 +94,7 @@ PetscErrorCode DMPlexMarkBoundaryFaces(DM dm, PetscInt val, DMLabel label)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(DMPlexIsInterpolated(dm, &flg));
-  PetscCheckFalse(flg != DMPLEX_INTERPOLATED_FULL,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "DM is not fully interpolated on this rank");
+  PetscCheck(flg == DMPLEX_INTERPOLATED_FULL,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "DM is not fully interpolated on this rank");
   PetscCall(DMPlexMarkBoundaryFaces_Internal(dm, val, 0, label));
   PetscFunctionReturn(0);
 }
@@ -875,7 +875,7 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, P
       if (loc >= 0 || numChildren) continue;
       if ((faces[f] < fStart) || (faces[f] >= fEnd)) continue;
       PetscCall(DMPlexGetSupportSize(dm, faces[f], &size));
-      PetscCheckFalse(size != 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "DM has boundary face %d with %d support cells", faces[f], size);
+      PetscCheck(size == 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "DM has boundary face %d with %d support cells", faces[f], size);
       PetscCall(DMPlexSetSupportSize(gdm, faces[f] + Ng, 2));
     }
     PetscCall(ISRestoreIndices(faceIS, &faces));
@@ -1227,7 +1227,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
           PetscCall(PetscFindInt(cone[q], numSplitPoints[dep-1], splitPoints[dep-1], &v));
           if (v < 0) {
             PetscCall(PetscFindInt(cone[q], numUnsplitPoints[dep-1], unsplitPoints[dep-1], &v));
-            PetscCheckFalse(v < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not locate point %d in split or unsplit points of depth %d", cone[q], dep-1);
+            PetscCheck(v >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not locate point %d in split or unsplit points of depth %d", cone[q], dep-1);
             coneNew[2+q] = DMPlexShiftPoint_Internal(cone[q], depth, depthShift) /*cone[q] + depthOffset[dep-1]*/;
             hasUnsplit   = PETSC_TRUE;
           } else {
@@ -1242,7 +1242,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
                 PetscCall(PetscFindInt(econe[r], numSplitPoints[dep-2],   splitPoints[dep-2],   &vs));
                 PetscCall(PetscFindInt(econe[r], numUnsplitPoints[dep-2], unsplitPoints[dep-2], &vu));
                 if (vs >= 0) continue;
-                PetscCheckFalse(vu < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not locate point %d in split or unsplit points of depth %d", econe[r], dep-2);
+                PetscCheck(vu >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not locate point %d in split or unsplit points of depth %d", econe[r], dep-2);
                 hasUnsplit   = PETSC_TRUE;
               }
             }
@@ -1275,7 +1275,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
                   break;
                 }
               }
-              PetscCheckFalse(nc >= nconeSize,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not locate face %d in neighboring cell %d", oldp, support[s]);
+              PetscCheck(nc < nconeSize,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not locate face %d in neighboring cell %d", oldp, support[s]);
             }
           }
         }
@@ -1325,7 +1325,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
           PetscCall(DMLabelGetValue(label, support[e], &val));
           if (val == 1) {
             PetscCall(PetscFindInt(support[e], numSplitPoints[dep+1], splitPoints[dep+1], &edge));
-            PetscCheckFalse(edge < 0,comm, PETSC_ERR_ARG_WRONG, "Edge %d is not a split edge", support[e]);
+            PetscCheck(edge >= 0,comm, PETSC_ERR_ARG_WRONG, "Edge %d is not a split edge", support[e]);
             supportNew[qp++] = edge + pMaxNew[dep+1];
           } else if (val == -(shift + 1)) {
             supportNew[qp++] = DMPlexShiftPoint_Internal(support[e], depth, depthShift) /*support[e] + depthOffset[dep+1]*/;
@@ -1343,7 +1343,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
           PetscCall(DMLabelGetValue(label, support[e], &val));
           if (val == 1) {
             PetscCall(PetscFindInt(support[e], numSplitPoints[dep+1], splitPoints[dep+1], &edge));
-            PetscCheckFalse(edge < 0,comm, PETSC_ERR_ARG_WRONG, "Edge %d is not a split edge", support[e]);
+            PetscCheck(edge >= 0,comm, PETSC_ERR_ARG_WRONG, "Edge %d is not a split edge", support[e]);
             supportNew[qf++] = edge + pMaxNew[dep+2] + numSplitPoints[dep+2];
           }
         }
@@ -1357,7 +1357,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
           PetscCall(PetscFindInt(cone[q], numSplitPoints[dep-1], splitPoints[dep-1], &v));
           if (v < 0) {
             PetscCall(PetscFindInt(cone[q], numUnsplitPoints[dep-1], unsplitPoints[dep-1], &v));
-            PetscCheckFalse(v < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not locate point %d in split or unsplit points of depth %d", cone[q], dep-1);
+            PetscCheck(v >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not locate point %d in split or unsplit points of depth %d", cone[q], dep-1);
             coneNew[q] = DMPlexShiftPoint_Internal(cone[q], depth, depthShift) /*cone[q] + depthOffset[dep-1]*/;
           } else {
             coneNew[q] = v + pMaxNew[dep-1];
@@ -1384,7 +1384,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
           PetscCall(DMLabelGetValue(label, support[e], &val));
           if (val == dim-1) {
             PetscCall(PetscFindInt(support[e], numSplitPoints[dep+1], splitPoints[dep+1], &face));
-            PetscCheckFalse(face < 0,comm, PETSC_ERR_ARG_WRONG, "Face %d is not a split face", support[e]);
+            PetscCheck(face >= 0,comm, PETSC_ERR_ARG_WRONG, "Face %d is not a split face", support[e]);
             supportNew[q++] = face + pMaxNew[dep+1];
           } else if (val == -(shift + dim-1)) {
             supportNew[q++] = DMPlexShiftPoint_Internal(support[e], depth, depthShift) /*support[e] + depthOffset[dep+1]*/;
@@ -1400,7 +1400,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
           PetscCall(PetscFindInt(cone[v], numSplitPoints[dep-1], splitPoints[dep-1], &vertex));
           if (vertex < 0) {
             PetscCall(PetscFindInt(cone[v], numUnsplitPoints[dep-1], unsplitPoints[dep-1], &vertex));
-            PetscCheckFalse(vertex < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not locate point %d in split or unsplit points of depth %d", cone[v], dep-1);
+            PetscCheck(vertex >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not locate point %d in split or unsplit points of depth %d", cone[v], dep-1);
             coneNew[2+v] = vertex + pMaxNew[dep] + numSplitPoints[dep] + numSplitPoints[dep-1];
           } else {
             coneNew[2+v] = vertex + pMaxNew[dep] + numSplitPoints[dep];
@@ -1413,7 +1413,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
           PetscCall(DMLabelGetValue(label, support[e], &val));
           if (val == dim-1) {
             PetscCall(PetscFindInt(support[e], numSplitPoints[dep+1], splitPoints[dep+1], &face));
-            PetscCheckFalse(face < 0,comm, PETSC_ERR_ARG_WRONG, "Face %d is not a split face", support[e]);
+            PetscCheck(face >= 0,comm, PETSC_ERR_ARG_WRONG, "Face %d is not a split face", support[e]);
             supportNew[qf++] = face + pMaxNew[dep+2] + numSplitPoints[dep+2];
           }
         }
@@ -1446,7 +1446,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
         }
         supportNew[q++] = hybedge;
         supportNew[q++] = hybedge;
-        PetscCheckFalse(q != supportSizeNew,comm, PETSC_ERR_ARG_WRONG, "Support size %d != %d for vertex %d", q, supportSizeNew, newp);
+        PetscCheck(q == supportSizeNew,comm, PETSC_ERR_ARG_WRONG, "Support size %d != %d for vertex %d", q, supportSizeNew, newp);
         PetscCall(DMPlexSetSupport(sdm, newp, supportNew));
         /* Hybrid edge */
         coneNew[0] = newp;
@@ -1458,11 +1458,11 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
           PetscCall(DMLabelGetValue(label, support[e], &val));
           if (val == 1) {
             PetscCall(PetscFindInt(support[e], numSplitPoints[dep+1], splitPoints[dep+1], &edge));
-            PetscCheckFalse(edge < 0,comm, PETSC_ERR_ARG_WRONG, "Edge %d is not a split edge", support[e]);
+            PetscCheck(edge >= 0,comm, PETSC_ERR_ARG_WRONG, "Edge %d is not a split edge", support[e]);
             supportNew[qf++] = edge + pMaxNew[dep+2] + numSplitPoints[dep+2];
           } else if  (val ==  (shift2 + 1)) {
             PetscCall(PetscFindInt(support[e], numUnsplitPoints[dep+1], unsplitPoints[dep+1], &edge));
-            PetscCheckFalse(edge < 0,comm, PETSC_ERR_ARG_WRONG, "Edge %d is not a unsplit edge", support[e]);
+            PetscCheck(edge >= 0,comm, PETSC_ERR_ARG_WRONG, "Edge %d is not a unsplit edge", support[e]);
             supportNew[qf++] = edge + pMaxNew[dep+2] + numSplitPoints[dep+2] + numSplitPoints[dep+1];
           }
         }
@@ -1477,7 +1477,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
           PetscCall(DMLabelGetValue(label, support[f], &val));
           if (val == dim-1) {
             PetscCall(PetscFindInt(support[f], numSplitPoints[dep+1], splitPoints[dep+1], &face));
-            PetscCheckFalse(face < 0,comm, PETSC_ERR_ARG_WRONG, "Face %d is not a split face", support[f]);
+            PetscCheck(face >= 0,comm, PETSC_ERR_ARG_WRONG, "Face %d is not a split face", support[f]);
             supportNew[qf++] = DMPlexShiftPoint_Internal(support[f], depth, depthShift) /*support[f] + depthOffset[dep+1]*/;
             supportNew[qf++] = face + pMaxNew[dep+1];
           } else {
@@ -1487,16 +1487,16 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
         supportNew[qf++] = hybface;
         supportNew[qf++] = hybface;
         PetscCall(DMPlexGetSupportSize(sdm, newp, &supportSizeNew));
-        PetscCheckFalse(qf != supportSizeNew,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Support size for unsplit edge %d is %d != %d", newp, qf, supportSizeNew);
+        PetscCheck(qf == supportSizeNew,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Support size for unsplit edge %d is %d != %d", newp, qf, supportSizeNew);
         PetscCall(DMPlexSetSupport(sdm, newp, supportNew));
         /* Add hybrid face */
         coneNew[0] = newp;
         coneNew[1] = newp;
         PetscCall(PetscFindInt(cone[0], numUnsplitPoints[dep-1], unsplitPoints[dep-1], &v));
-        PetscCheckFalse(v < 0,comm, PETSC_ERR_ARG_WRONG, "Vertex %d is not an unsplit vertex", cone[0]);
+        PetscCheck(v >= 0,comm, PETSC_ERR_ARG_WRONG, "Vertex %d is not an unsplit vertex", cone[0]);
         coneNew[2] = v + pMaxNew[dep] + numSplitPoints[dep] + numSplitPoints[dep-1];
         PetscCall(PetscFindInt(cone[1], numUnsplitPoints[dep-1], unsplitPoints[dep-1], &v));
-        PetscCheckFalse(v < 0,comm, PETSC_ERR_ARG_WRONG, "Vertex %d is not an unsplit vertex", cone[1]);
+        PetscCheck(v >= 0,comm, PETSC_ERR_ARG_WRONG, "Vertex %d is not an unsplit vertex", cone[1]);
         coneNew[3] = v + pMaxNew[dep] + numSplitPoints[dep] + numSplitPoints[dep-1];
         PetscCall(DMPlexSetCone(sdm, hybface, coneNew));
         for (f = 0, qf = 0; f < supportSize; ++f) {
@@ -1509,7 +1509,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
           }
         }
         PetscCall(DMPlexGetSupportSize(sdm, hybface, &supportSizeNew));
-        PetscCheckFalse(qf != supportSizeNew,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Support size for hybrid face %d is %d != %d", hybface, qf, supportSizeNew);
+        PetscCheck(qf == supportSizeNew,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Support size for hybrid face %d is %d != %d", hybface, qf, supportSizeNew);
         PetscCall(DMPlexSetSupport(sdm, hybface, supportNew));
       }
     }
@@ -1545,7 +1545,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
         PetscCall(DMLabelGetValue(label, coldp, &val));
         if (val == dep-1) {
           PetscCall(PetscFindInt(coldp, numSplitPoints[dep-1], splitPoints[dep-1], &cp));
-          PetscCheckFalse(cp < 0,comm, PETSC_ERR_ARG_WRONG, "Point %d is not a split point of dimension %d", oldp, dep-1);
+          PetscCheck(cp >= 0,comm, PETSC_ERR_ARG_WRONG, "Point %d is not a split point of dimension %d", oldp, dep-1);
           csplitp  = pMaxNew[dep-1] + cp;
           PetscCall(DMPlexInsertCone(sdm, newp, c, csplitp));
           /* replaced = PETSC_TRUE; */
@@ -1703,14 +1703,14 @@ static PetscErrorCode GetSurfaceSide_Static(DM dm, DM subdm, PetscInt numSubpoin
             break;
           }
         }
-        PetscCheckFalse(sc >= subconeSize,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not find subpoint %d (%d) in cone for subpoint %d (%d)", subface, face, subpoint, cell);
+        PetscCheck(sc < subconeSize,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not find subpoint %d (%d) in cone for subpoint %d (%d)", subface, face, subpoint, cell);
       }
       if (o >= 0) *pos = PETSC_TRUE;
       else        *pos = PETSC_FALSE;
       break;
     }
   }
-  PetscCheckFalse(c == coneSize,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Cell %d in split face %d support does not have it in the cone", cell, face);
+  PetscCheck(c != coneSize,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Cell %d in split face %d support does not have it in the cone", cell, face);
   PetscFunctionReturn(0);
 }
 
@@ -1772,7 +1772,7 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
       /*   THis check only works for the remote side. We would need root side information */
       PetscCall(PetscSFGetGraph(dm->sf, NULL, &Nlp, &lp, NULL));
       PetscCall(PetscFindInt(points[p], Nlp, lp, &pind));
-      PetscCheckFalse(pind < 0,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Split face %d has %d != 2 supports, and the face is not shared with another process", points[p], supportSize);
+      PetscCheck(pind >= 0,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Split face %d has %d != 2 supports, and the face is not shared with another process", points[p], supportSize);
     }
 #endif
     PetscCall(DMPlexGetSupport(dm, points[p], &support));
@@ -1845,7 +1845,7 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
 
         /* Mark as unsplit */
         PetscCall(DMLabelGetValue(label, point, &val));
-        PetscCheckFalse((val < 0) || (val > dim),PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %d has label value %d, should be part of the fault", point, val);
+        PetscCheck(!(val < 0) && !(val > dim),PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %d has label value %d, should be part of the fault", point, val);
         PetscCall(DMLabelClearValue(label, point, val));
         PetscCall(DMLabelSetValue(label, point, shift2+val));
         /* Check for cross-edge
@@ -1856,7 +1856,7 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
         for (s = 0; s < supportSize; ++s) {
           PetscCall(DMPlexGetCone(dm, support[s], &cone));
           PetscCall(DMPlexGetConeSize(dm, support[s], &coneSize));
-          PetscCheckFalse(coneSize != 2,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Edge %D has %D vertices != 2", support[s], coneSize);
+          PetscCheck(coneSize == 2,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Edge %D has %D vertices != 2", support[s], coneSize);
           PetscCall(DMLabelGetValue(blabel, cone[0], &valA));
           PetscCall(DMLabelGetValue(blabel, cone[1], &valB));
           PetscCall(DMLabelGetValue(blabel, support[s], &valE));
@@ -1893,7 +1893,7 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
     /* All points connected to the fault are inside a cell, so at the top level we will only check cells */
     PetscCall(DMPlexGetTransitiveClosure(dm, points[p], PETSC_FALSE, &starSize, &star));
     while (again) {
-      PetscCheckFalse(again > 1,PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Could not classify all cells connected to the fault");
+      PetscCheck(again <= 1,PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Could not classify all cells connected to the fault");
       again = 0;
       for (s = 0; s < starSize*2; s += 2) {
         const PetscInt  point = star[s];
@@ -1912,7 +1912,7 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
             const PetscInt *ccone;
             PetscInt        cconeSize, cc, side;
 
-            PetscCheckFalse(PetscAbs(val) < shift,PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Face %d on cell %d has an invalid label %d", cone[c], point, val);
+            PetscCheck(PetscAbs(val) >= shift,PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Face %d on cell %d has an invalid label %d", cone[c], point, val);
             if (val > 0) side =  1;
             else         side = -1;
             PetscCall(DMLabelSetValue(label, point, side*(shift+dim)));
@@ -1958,7 +1958,7 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
 
           if ((spoint < cStart) || (spoint >= cEnd)) continue;
           PetscCall(DMLabelGetValue(label, spoint, &val));
-          PetscCheckFalse(val == -1,PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Cell %d in star of %d does not have a valid label", spoint, point);
+          PetscCheck(val != -1,PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Cell %d in star of %d does not have a valid label", spoint, point);
           PetscCall(DMLabelGetValue(depthLabel, point, &dep));
           if (val > 0) {
             PetscCall(DMLabelSetValue(label, point,   shift+dep));
@@ -1970,7 +1970,7 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
         }
         PetscCall(DMPlexRestoreTransitiveClosure(dm, point, PETSC_FALSE, &sstarSize, &sstar));
         PetscCall(DMPlexCellIsHybrid_Internal(dm, point, &isHybrid));
-        PetscCheckFalse(!isHybrid && !marked,PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d could not be classified", point);
+        PetscCheck(isHybrid || marked,PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d could not be classified", point);
       }
     }
     PetscCall(DMPlexRestoreTransitiveClosure(dm, points[p], PETSC_FALSE, &starSize, &star));
@@ -2198,7 +2198,7 @@ static PetscErrorCode DMPlexMarkSubmesh_Uninterpolated(DM dm, DMLabel vertexLabe
 
       PetscCall(DMLabelGetValue(subpointMap, cell, &cellLoc));
       if (cellLoc == 2) continue;
-      PetscCheckFalse(cellLoc >= 0,PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Cell %d has dimension %d in the surface label", cell, cellLoc);
+      PetscCheck(cellLoc < 0,PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Cell %d has dimension %d in the surface label", cell, cellLoc);
       PetscCall(DMPlexGetTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure));
       for (cl = 0; cl < closureSize*2; cl += 2) {
         const PetscInt point = closure[cl];
@@ -2211,7 +2211,7 @@ static PetscErrorCode DMPlexMarkSubmesh_Uninterpolated(DM dm, DMLabel vertexLabe
         }
       }
       if (!(*nFV)) PetscCall(DMPlexGetNumFaceVertices(dm, dim, numCorners, nFV));
-      PetscCheckFalse(faceSize > *nFV,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Invalid submesh: Too many vertices %d of an element on the surface", faceSize);
+      PetscCheck(faceSize <= *nFV,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Invalid submesh: Too many vertices %d of an element on the surface", faceSize);
       if (faceSize == *nFV) {
         const PetscInt *cells = NULL;
         PetscInt        numCells, nc;
@@ -2285,7 +2285,7 @@ static PetscErrorCode DMPlexMarkSubmesh_Interpolated(DM dm, DMLabel vertexLabel,
 
       PetscCall(DMLabelGetValue(subpointMap, face, &faceLoc));
       if (faceLoc == dim-1) continue;
-      PetscCheckFalse(faceLoc >= 0,PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Face %d has dimension %d in the surface label", face, faceLoc);
+      PetscCheck(faceLoc < 0,PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Face %d has dimension %d in the surface label", face, faceLoc);
       PetscCall(DMPlexGetTransitiveClosure(dm, face, PETSC_TRUE, &closureSize, &closure));
       for (c = 0; c < closureSize*2; c += 2) {
         const PetscInt point = closure[c];
@@ -2374,7 +2374,7 @@ static PetscErrorCode DMPlexMarkCohesiveSubmesh_Uninterpolated(DM dm, PetscBool 
     /* Negative face */
     PetscCall(DMPlexGetJoin(dm, *nFV, cone, &numCells, &cells));
     /* Not true in parallel
-    PetscCheckFalse(numCells != 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cohesive cells should separate two cells"); */
+    PetscCheck(numCells == 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cohesive cells should separate two cells"); */
     for (p = 0; p < numCells; ++p) {
       PetscCall(DMLabelSetValue(subpointMap, cells[p], 2));
       (*subCells)[subc++] = cells[p];
@@ -2428,7 +2428,7 @@ static PetscErrorCode DMPlexMarkCohesiveSubmesh_Interpolated(DM dm, DMLabel labe
       PetscInt        supportSize, s;
 
       PetscCall(DMPlexGetSupportSize(dm, cone[cl], &supportSize));
-      /* PetscCheckFalse(supportSize != 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cohesive faces should separate two cells"); */
+      /* PetscCheck(supportSize == 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cohesive faces should separate two cells"); */
       PetscCall(DMPlexGetSupport(dm, cone[cl], &support));
       for (s = 0; s < supportSize; ++s) {
         PetscCall(DMLabelSetValue(subpointMap, support[s], dim));
@@ -2816,7 +2816,7 @@ static PetscErrorCode DMPlexInsertFace_Internal(DM dm, DM subdm, PetscInt numFac
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)dm,&comm));
   PetscCall(DMPlexGetConeSize(subdm, subcell, &coneSize));
-  PetscCheckFalse(coneSize != 1,comm, PETSC_ERR_ARG_OUTOFRANGE, "Cone size of cell %d is %d != 1", cell, coneSize);
+  PetscCheck(coneSize == 1,comm, PETSC_ERR_ARG_OUTOFRANGE, "Cone size of cell %d is %d != 1", cell, coneSize);
 #if 0
   /* Cannot use this because support() has not been constructed yet */
   PetscCall(DMPlexGetJoin(subdm, numFaceVertices, subfaceVertices, &numFaces, &faces));
@@ -2848,7 +2848,7 @@ static PetscErrorCode DMPlexInsertFace_Internal(DM dm, DM subdm, PetscInt numFac
     }
   }
 #endif
-  PetscCheckFalse(numFaces > 1,comm, PETSC_ERR_ARG_WRONG, "Vertex set had %d faces, not one", numFaces);
+  PetscCheck(numFaces <= 1,comm, PETSC_ERR_ARG_WRONG, "Vertex set had %d faces, not one", numFaces);
   else if (numFaces == 1) {
     /* Add the other cell neighbor for this face */
     PetscCall(DMPlexSetCone(subdm, subcell, faces));
@@ -2870,7 +2870,7 @@ static PetscErrorCode DMPlexInsertFace_Internal(DM dm, DM subdm, PetscInt numFac
           break;
         }
       }
-      PetscCheckFalse(ov == numFaceVertices,comm, PETSC_ERR_PLIB, "Could not find face vertex %d in orientated set", vertex);
+      PetscCheck(ov != numFaceVertices,comm, PETSC_ERR_PLIB, "Could not find face vertex %d in orientated set", vertex);
     }
     PetscCall(DMPlexSetCone(subdm, *newFacePoint, orientedSubVertices));
     PetscCall(DMPlexSetCone(subdm, subcell, newFacePoint));
@@ -2947,7 +2947,7 @@ static PetscErrorCode DMPlexCreateSubmesh_Uninterpolated(DM dm, DMLabel vertexLa
         }
       }
     }
-    PetscCheckFalse(faceSize > nFV,comm, PETSC_ERR_ARG_WRONG, "Invalid submesh: Too many vertices %d of an element on the surface", faceSize);
+    PetscCheck(faceSize <= nFV,comm, PETSC_ERR_ARG_WRONG, "Invalid submesh: Too many vertices %d of an element on the surface", faceSize);
     if (faceSize == nFV) {
       PetscCall(DMPlexInsertFace_Internal(dm, subdm, faceSize, closure, subface, numCorners, cell, subcell, firstSubFace, &newFacePoint));
     }
@@ -2999,7 +2999,7 @@ static PetscErrorCode DMPlexCreateSubmesh_Uninterpolated(DM dm, DMLabel vertexLa
         PetscCall(PetscSectionGetOffset(coordSection, vertex, &off));
         PetscCall(PetscSectionGetDof(subCoordSection, subvertex, &sdof));
         PetscCall(PetscSectionGetOffset(subCoordSection, subvertex, &soff));
-        PetscCheckFalse(dof != sdof,comm, PETSC_ERR_PLIB, "Coordinate dimension %d on subvertex %d, vertex %d should be %d", sdof, subvertex, vertex, dof);
+        PetscCheck(dof == sdof,comm, PETSC_ERR_PLIB, "Coordinate dimension %d on subvertex %d, vertex %d should be %d", sdof, subvertex, vertex, dof);
         for (d = 0; d < dof; ++d) subCoords[soff+d] = coords[off+d];
       }
       PetscCall(VecRestoreArray(coordinates,    &coords));
@@ -3222,7 +3222,7 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
           ++coneSizeNew;
         }
       }
-      PetscCheckFalse(coneSizeNew != subconeSize,comm, PETSC_ERR_PLIB, "Number of cone points located %d does not match subcone size %d", coneSizeNew, subconeSize);
+      PetscCheck(coneSizeNew == subconeSize,comm, PETSC_ERR_PLIB, "Number of cone points located %d does not match subcone size %d", coneSizeNew, subconeSize);
       PetscCall(DMPlexSetCone(subdm, subpoint, coneNew));
       PetscCall(DMPlexSetConeOrientation(subdm, subpoint, orntNew));
       if (fornt < 0) PetscCall(DMPlexOrientPoint(subdm, subpoint, fornt));
@@ -3275,7 +3275,7 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
       PetscCall(PetscSectionGetOffset(coordSection, vertex, &off));
       PetscCall(PetscSectionGetDof(subCoordSection, subvertex, &sdof));
       PetscCall(PetscSectionGetOffset(subCoordSection, subvertex, &soff));
-      PetscCheckFalse(dof != sdof,comm, PETSC_ERR_PLIB, "Coordinate dimension %d on subvertex %d, vertex %d should be %d", sdof, subvertex, vertex, dof);
+      PetscCheck(dof == sdof,comm, PETSC_ERR_PLIB, "Coordinate dimension %d on subvertex %d, vertex %d should be %d", sdof, subvertex, vertex, dof);
       for (d = 0; d < dof; ++d) subCoords[soff+d] = coords[off+d];
     }
     PetscCall(VecRestoreArray(coordinates,    &coords));
@@ -3348,8 +3348,8 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
         slocalPoints[sl]        = subpoint;
         sremotePoints[sl].rank  = newLocalPoints[point].rank;
         sremotePoints[sl].index = newLocalPoints[point].index;
-        PetscCheckFalse(sremotePoints[sl].rank  < 0,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid remote rank for local point %d", point);
-        PetscCheckFalse(sremotePoints[sl].index < 0,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid remote subpoint for local point %d", point);
+        PetscCheck(sremotePoints[sl].rank  >= 0,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid remote rank for local point %d", point);
+        PetscCheck(sremotePoints[sl].index >= 0,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid remote subpoint for local point %d", point);
         ++sl;
       }
       PetscCheckFalse(sl + ll != numSubleaves,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Mismatch in number of subleaves %d + %d != %d", sl, ll, numSubleaves);
@@ -3411,7 +3411,7 @@ PetscErrorCode DMPlexCreateSubmesh(DM dm, DMLabel vertexLabel, PetscInt value, P
   PetscCall(DMGetCoordinateDim(dm, &cdim));
   PetscCall(DMSetCoordinateDim(*subdm, cdim));
   PetscCall(DMPlexIsInterpolated(dm, &interpolated));
-  PetscCheckFalse(interpolated == DMPLEX_INTERPOLATED_PARTIAL,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Not for partially interpolated meshes");
+  PetscCheck(interpolated != DMPLEX_INTERPOLATED_PARTIAL,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Not for partially interpolated meshes");
   if (interpolated) {
     PetscCall(DMPlexCreateSubmesh_Interpolated(dm, vertexLabel, value, markedFaces, *subdm));
   } else {
@@ -3477,7 +3477,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBoo
     PetscCall(DMPlexSetCone(subdm, subcell, &newFacePoint));
     PetscCall(DMPlexGetJoin(dm, nFV, cone, &numCells, &cells));
     /* Not true in parallel
-    PetscCheckFalse(numCells != 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cohesive cells should separate two cells"); */
+    PetscCheck(numCells == 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cohesive cells should separate two cells"); */
     for (p = 0; p < numCells; ++p) {
       PetscInt  negsubcell;
       PetscBool isHybrid;
@@ -3488,7 +3488,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBoo
       for (negsubcell = 0; negsubcell < numSubCells; ++negsubcell) {
         if (subCells[negsubcell] == cells[p]) break;
       }
-      PetscCheckFalse(negsubcell == numSubCells,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not find negative face neighbor for cohesive cell %d", cell);
+      PetscCheck(negsubcell != numSubCells,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not find negative face neighbor for cohesive cell %d", cell);
       PetscCall(DMPlexSetCone(subdm, negsubcell, &newFacePoint));
     }
     PetscCall(DMPlexRestoreJoin(dm, nFV, cone, &numCells, &cells));
@@ -3541,7 +3541,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBoo
       PetscCall(PetscSectionGetOffset(coordSection, vertex, &off));
       PetscCall(PetscSectionGetDof(subCoordSection, subvertex, &sdof));
       PetscCall(PetscSectionGetOffset(subCoordSection, subvertex, &soff));
-      PetscCheckFalse(dof != sdof,comm, PETSC_ERR_PLIB, "Coordinate dimension %d on subvertex %d, vertex %d should be %d", sdof, subvertex, vertex, dof);
+      PetscCheck(dof == sdof,comm, PETSC_ERR_PLIB, "Coordinate dimension %d on subvertex %d, vertex %d should be %d", sdof, subvertex, vertex, dof);
       for (d = 0; d < dof; ++d) subCoords[soff+d] = coords[off+d];
     }
     PetscCall(VecRestoreArray(coordinates,    &coords));
@@ -3578,7 +3578,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBoo
         const PetscInt point    = localPoints[l];
         const PetscInt subPoint = DMPlexFilterPoint_Internal(point, firstSubVertex, numSubVertices, subVertices);
 
-        PetscCheckFalse((point < vStart) && (point >= vEnd),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Should not be mapping anything but vertices, %d", point);
+        PetscCheck(!(point < vStart) || !(point >= vEnd),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Should not be mapping anything but vertices, %d", point);
         if (subPoint < 0) continue;
         newLocalPoints[point-pStart].rank  = rank;
         newLocalPoints[point-pStart].index = subPoint;
@@ -3611,8 +3611,8 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBoo
         slocalPoints[sl]        = subPoint;
         sremotePoints[sl].rank  = newLocalPoints[point].rank;
         sremotePoints[sl].index = newLocalPoints[point].index;
-        PetscCheckFalse(sremotePoints[sl].rank  < 0,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid remote rank for local point %d", point);
-        PetscCheckFalse(sremotePoints[sl].index < 0,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid remote subpoint for local point %d", point);
+        PetscCheck(sremotePoints[sl].rank  >= 0,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid remote rank for local point %d", point);
+        PetscCheck(sremotePoints[sl].index >= 0,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid remote subpoint for local point %d", point);
         ++sl;
       }
       PetscCall(PetscFree2(newLocalPoints,newOwners));
@@ -3789,7 +3789,7 @@ static PetscErrorCode DMPlexCreateSubpointIS_Internal(DM dm, IS *subpointIS)
       PetscCall(DMPlexGetDepthStratum(dm, dep, &depStart, &depEnd));
       PetscCall(DMLabelGetStratumSize(spmap, dep, &n));
       if (((d < 2) && (depth > 1)) || (d == 1)) { /* Only check vertices and cells for now since the map is broken for others */
-        PetscCheckFalse(n != depEnd-depStart,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The number of mapped submesh points %d at depth %d should be %d", n, dep, depEnd-depStart);
+        PetscCheck(n == depEnd-depStart,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The number of mapped submesh points %d at depth %d should be %d", n, dep, depEnd-depStart);
       } else {
         if (!n) {
           if (d == 0) {
@@ -3813,7 +3813,7 @@ static PetscErrorCode DMPlexCreateSubpointIS_Internal(DM dm, IS *subpointIS)
       }
     }
     PetscCall(DMRestoreWorkArray(dm, depth+1, MPIU_INT, &depths));
-    PetscCheckFalse(off != pEnd,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The number of mapped submesh points %d should be %d", off, pEnd);
+    PetscCheck(off == pEnd,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The number of mapped submesh points %d should be %d", off, pEnd);
     PetscCall(ISCreateGeneral(PETSC_COMM_SELF, pEnd, points, PETSC_OWN_POINTER, subpointIS));
     PetscCall(PetscObjectStateGet((PetscObject) spmap, &mesh->subpointState));
   }

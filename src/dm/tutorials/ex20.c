@@ -146,7 +146,7 @@ PetscErrorCode pic_insert_DMPLEX_with_cell_list(PetscInt dim)
     PetscCall(PetscFree(trivert));
     PetscCall(PetscFree(tricells));
   }
-  PetscCheckFalse(dim == 3,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only 2D PLEX example supported");
+  PetscCheck(dim != 3,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only 2D PLEX example supported");
 
   /* Distribute mesh over processes */
   PetscCall(DMPlexDistribute(celldm,0,NULL,&distributedMesh));

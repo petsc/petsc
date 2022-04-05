@@ -25,11 +25,11 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
     len  = options->Nf;
     PetscCall(PetscMalloc1(len, &options->Nc));
     PetscCall(PetscOptionsIntArray("-num_components", "The number of components per field", "ex6.c", options->Nc, &len, &flg));
-    PetscCheckFalse(flg && (len != options->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of components array is %d should be %d", len, options->Nf);
+    PetscCheck(!flg || !(len != options->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of components array is %d should be %d", len, options->Nf);
     len  = options->Nf;
     PetscCall(PetscMalloc1(len, &options->k));
     PetscCall(PetscOptionsIntArray("-order", "The spectral order per field", "ex6.c", options->k, &len, &flg));
-    PetscCheckFalse(flg && (len != options->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of order array is %d should be %d", len, options->Nf);
+    PetscCheck(!flg || !(len != options->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of order array is %d should be %d", len, options->Nf);
   }
   ierr = PetscOptionsEnd();PetscCall(ierr);
   PetscFunctionReturn(0);

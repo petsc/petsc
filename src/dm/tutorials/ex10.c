@@ -83,7 +83,7 @@ int main(int argc,char **argv)
 
   PetscCall(VecAXPY(input,-1.0,gauss));
   PetscCall(VecNorm(input,NORM_2,&norm));
-  PetscCheckFalse(norm > 1.e-6,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Vec read in does not match vector written out");
+  PetscCheck(norm <= 1.e-6,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Vec read in does not match vector written out");
 
   PetscCall(VecDestroy(&input));
   PetscCall(VecDestroy(&gauss));

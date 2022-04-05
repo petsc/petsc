@@ -85,7 +85,7 @@ PetscErrorCode  PetscViewersGetViewer(PetscViewers viewers,PetscInt n,PetscViewe
   PetscFunctionBegin;
   PetscValidPointer(viewers,1);
   PetscValidPointer(viewer,3);
-  PetscCheckFalse(n < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Cannot access using a negative index - %" PetscInt_FMT,n);
+  PetscCheck(n >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Cannot access using a negative index - %" PetscInt_FMT,n);
   if (n >= viewers->n) {
     PetscViewer *v;
     int         newn = n + 64; /* add 64 new ones at a time */

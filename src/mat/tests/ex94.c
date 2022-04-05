@@ -233,7 +233,7 @@ int main(int argc,char **args)
     /* Compare P^T*B and R*B */
     PetscCall(MatMatMult(R,B,MAT_INITIAL_MATRIX,fill,&C1));
     PetscCall(MatNormDifference(C,C1,&norm));
-    PetscCheckFalse(norm > PETSC_SMALL,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatTransposeMatMult(): %g",(double)norm);
+    PetscCheck(norm <= PETSC_SMALL,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatTransposeMatMult(): %g",(double)norm);
     PetscCall(MatDestroy(&C1));
 
     /* Test MatDuplicate() of C=P^T*B */
@@ -254,7 +254,7 @@ int main(int argc,char **args)
       /* Check */
       PetscCall(MatMatMult(B,P,MAT_INITIAL_MATRIX,fill,&C1));
       PetscCall(MatNormDifference(C,C1,&norm));
-      PetscCheckFalse(norm > PETSC_SMALL,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatMatTransposeMult() %g",(double)norm);
+      PetscCheck(norm <= PETSC_SMALL,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatMatTransposeMult() %g",(double)norm);
       PetscCall(MatDestroy(&C1));
       PetscCall(MatDestroy(&C));
     }
@@ -365,7 +365,7 @@ int main(int argc,char **args)
 
       PetscCall(MatConvert(RARtdense,MATAIJ,MAT_INITIAL_MATRIX,&RARt));
       PetscCall(MatNormDifference(C,RARt,&norm));
-      PetscCheckFalse(norm > PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"|PtAP - RARtdense| = %g",(double)norm);
+      PetscCheck(norm <= PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"|PtAP - RARtdense| = %g",(double)norm);
       PetscCall(MatDestroy(&Rdense));
       PetscCall(MatDestroy(&RARtdense));
       PetscCall(MatDestroy(&RARt));
@@ -374,7 +374,7 @@ int main(int argc,char **args)
       PetscCall(MatRARt(A,R,MAT_INITIAL_MATRIX,2.0,&RARt));
       PetscCall(MatRARt(A,R,MAT_REUSE_MATRIX,2.0,&RARt));
       PetscCall(MatNormDifference(C,RARt,&norm));
-      PetscCheckFalse(norm > PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"|PtAP - RARt| = %g",(double)norm);
+      PetscCheck(norm <= PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"|PtAP - RARt| = %g",(double)norm);
       PetscCall(MatDestroy(&R));
       PetscCall(MatDestroy(&RARt));
     }
@@ -385,7 +385,7 @@ int main(int argc,char **args)
       PetscCall(MatMatMatMult(R,A,P,MAT_INITIAL_MATRIX,2.0,&RAP));
       PetscCall(MatMatMatMult(R,A,P,MAT_REUSE_MATRIX,2.0,&RAP));
       PetscCall(MatNormDifference(C,RAP,&norm));
-      PetscCheckFalse(norm > PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"PtAP != RAP %g",(double)norm);
+      PetscCheck(norm <= PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"PtAP != RAP %g",(double)norm);
       PetscCall(MatDestroy(&R));
       PetscCall(MatDestroy(&RAP));
     }
@@ -416,7 +416,7 @@ int main(int argc,char **args)
       norm_tmp /= norm_abs;
       if (norm_tmp > norm) norm = norm_tmp;
     }
-    PetscCheckFalse(norm >= PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: MatPtAP(), |v1 - v2|: %g",(double)norm);
+    PetscCheck(norm < PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: MatPtAP(), |v1 - v2|: %g",(double)norm);
 
     PetscCall(MatDestroy(&A));
     PetscCall(MatDestroy(&P));

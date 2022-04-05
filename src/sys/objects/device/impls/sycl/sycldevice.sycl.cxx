@@ -195,11 +195,11 @@ PetscErrorCode Device::finalize_() noexcept
 PetscErrorCode Device::getDevice(PetscDevice device, PetscInt id) const noexcept
 {
   PetscFunctionBegin;
-  PetscCheckFalse(defaultDevice_ == PETSC_SYCL_DEVICE_NONE,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Trying to retrieve a SYCL PetscDevice when it has been disabled");
+  PetscCheck(defaultDevice_ != PETSC_SYCL_DEVICE_NONE,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Trying to retrieve a SYCL PetscDevice when it has been disabled");
   if (id == PETSC_DECIDE) id = defaultDevice_;
-  PetscCheckFalse((id < PETSC_SYCL_DEVICE_HOST) || (id-PETSC_SYCL_DEVICE_HOST >= PETSC_DEVICE_MAX_DEVICES),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Only supports %zu number of devices but trying to get device with id %" PetscInt_FMT,devices_array_.size(),id);
+  PetscCheck(!(id < PETSC_SYCL_DEVICE_HOST) && !(id-PETSC_SYCL_DEVICE_HOST >= PETSC_DEVICE_MAX_DEVICES),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Only supports %zu number of devices but trying to get device with id %" PetscInt_FMT,devices_array_.size(),id);
   if (devices_[id]) {
-    PetscCheckFalse(id != devices_[id]->id(),PETSC_COMM_SELF,PETSC_ERR_PLIB,"Entry %" PetscInt_FMT " contains device with mismatching id %" PetscInt_FMT,id,devices_[id]->id());
+    PetscCheck(id == devices_[id]->id(),PETSC_COMM_SELF,PETSC_ERR_PLIB,"Entry %" PetscInt_FMT " contains device with mismatching id %" PetscInt_FMT,id,devices_[id]->id());
   } else devices_[id] = new DeviceInternal(id);
   PetscCall(devices_[id]->initialize());
   device->deviceId           = devices_[id]->id(); // technically id = devices_[id]->id_ here

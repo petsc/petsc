@@ -22,7 +22,7 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char*)0,help);
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  PetscCheckFalse(size != 3,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This example only works for 3 processes");
+  PetscCheck(size == 3,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This example only works for 3 processes");
 
   PetscCall(PetscCommDuplicate(PETSC_COMM_WORLD,&comm,NULL));
   PetscCall(PetscCommSharedGet(comm,&scomm));

@@ -55,7 +55,7 @@ static PetscErrorCode DMPlexTransformCellTransform_1D(DMPlexTransform tr, DMPoly
   PetscInt       val;
 
   PetscFunctionBeginHot;
-  PetscCheckFalse(p < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point argument is invalid");
+  PetscCheck(p >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point argument is invalid");
   PetscCall(DMLabelGetValue(trType, p, &val));
   if (rt) *rt = val;
   switch (source) {

@@ -316,7 +316,7 @@ int main(int argc, char **argv)
 
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
-  PetscCheckFalse(size > 1,PETSC_COMM_WORLD, PETSC_ERR_SUP, "This is a uniprocessor example only.");
+  PetscCheck(size <= 1,PETSC_COMM_WORLD, PETSC_ERR_SUP, "This is a uniprocessor example only.");
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &ctx));
   PetscCall(PetscLogDefaultBegin());
   PetscCall(DMCreate(PETSC_COMM_WORLD, &dm));

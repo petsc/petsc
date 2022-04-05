@@ -352,7 +352,7 @@ PetscErrorCode  AOCreateMappingIS(IS isapp, IS ispetsc, AO *aoout)
   PetscCall(ISGetLocalSize(isapp, &napp));
   if (ispetsc) {
     PetscCall(ISGetLocalSize(ispetsc, &npetsc));
-    PetscCheckFalse(napp != npetsc,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Local IS lengths must match");
+    PetscCheck(napp == npetsc,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Local IS lengths must match");
     PetscCall(ISGetIndices(ispetsc, &mypetsc));
   } else {
     mypetsc = NULL;

@@ -60,7 +60,7 @@ PETSC_EXTERN PetscErrorCode MatColoringTest(MatColoring mc,ISColoring coloring)
           }
           statecol[i]=0.;
         }
-        PetscCheckFalse(idx != nentries,PetscObjectComm((PetscObject)mc),PETSC_ERR_NOT_CONVERGED,"Bad number of entries %" PetscInt_FMT " vs %" PetscInt_FMT,idx,nentries);
+        PetscCheck(idx == nentries,PetscObjectComm((PetscObject)mc),PETSC_ERR_NOT_CONVERGED,"Bad number of entries %" PetscInt_FMT " vs %" PetscInt_FMT,idx,nentries);
         PetscCall(PetscLogEventBegin(MATCOLORING_Comm,mc,0,0,0));
         PetscCall(PetscSFReduceBegin(etoc,itype,stateleafrow,statecol,MPI_MAX));
         PetscCall(PetscSFReduceEnd(etoc,itype,stateleafrow,statecol,MPI_MAX));
@@ -81,7 +81,7 @@ PETSC_EXTERN PetscErrorCode MatColoringTest(MatColoring mc,ISColoring coloring)
           }
           staterow[i]=0.;
         }
-        PetscCheckFalse(idx != nentries,PetscObjectComm((PetscObject)mc),PETSC_ERR_NOT_CONVERGED,"Bad number of entries %" PetscInt_FMT " vs %" PetscInt_FMT,idx,nentries);
+        PetscCheck(idx == nentries,PetscObjectComm((PetscObject)mc),PETSC_ERR_NOT_CONVERGED,"Bad number of entries %" PetscInt_FMT " vs %" PetscInt_FMT,idx,nentries);
         PetscCall(PetscLogEventBegin(MATCOLORING_Comm,mc,0,0,0));
         PetscCall(PetscSFReduceBegin(etor,itype,stateleafcol,staterow,MPI_MAX));
         PetscCall(PetscSFReduceEnd(etor,itype,stateleafcol,staterow,MPI_MAX));
@@ -120,7 +120,7 @@ PETSC_EXTERN PetscErrorCode MatISColoringTest(Mat A,ISColoring iscoloring)
 
   PetscCall(PetscObjectGetComm((PetscObject)A,&comm));
   PetscCallMPI(MPI_Comm_size(comm,&size));
-  PetscCheckFalse(size > 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Only support sequential matrix");
+  PetscCheck(size <= 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Only support sequential matrix");
 
   PetscCall(MatGetColumnIJ(A,0,PETSC_FALSE,PETSC_FALSE,&N,&cia,&cja,&done));
   PetscCheck(done,PETSC_COMM_SELF,PETSC_ERR_SUP,"Ordering requires IJ");

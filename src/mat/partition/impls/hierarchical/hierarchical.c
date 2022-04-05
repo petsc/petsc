@@ -71,7 +71,7 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS 
   /* check parameters */
   /* how many small subdomains we want from a given 'big' suddomain */
   PetscCheck(hpart->nfineparts,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG," must set number of small subdomains for each big subdomain ");
-  PetscCheckFalse(!hpart->ncoarseparts && !part->n,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE," did not either set number of coarse parts or total number of parts ");
+  PetscCheck(hpart->ncoarseparts || part->n,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE," did not either set number of coarse parts or total number of parts ");
 
   /* Partitioning the domain into one single subdomain is a trivial case, and we should just return  */
   if (part->n==1) {
@@ -342,8 +342,8 @@ PetscErrorCode MatPartitioningHierarchical_DetermineDestination(MatPartitioning 
   PetscCall(PetscObjectGetComm((PetscObject)part,&comm));
   PetscCallMPI(MPI_Comm_rank(comm,&rank));
   PetscCallMPI(MPI_Comm_size(comm,&size));
-  PetscCheckFalse((pend-pstart)>size,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"range [%" PetscInt_FMT ", %" PetscInt_FMT "] should be smaller than or equal to size %" PetscInt_FMT,pstart,pend,size);
-  PetscCheckFalse(pstart>pend,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP," pstart %" PetscInt_FMT " should be smaller than pend %" PetscInt_FMT,pstart,pend);
+  PetscCheck((pend-pstart)<=size,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"range [%" PetscInt_FMT ", %" PetscInt_FMT "] should be smaller than or equal to size %" PetscInt_FMT,pstart,pend,size);
+  PetscCheck(pstart<=pend,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP," pstart %" PetscInt_FMT " should be smaller than pend %" PetscInt_FMT,pstart,pend);
   PetscCall(ISGetLocalSize(partitioning,&plocalsize));
   PetscCall(PetscMalloc1(plocalsize,&dest_indices));
   PetscCall(ISGetIndices(partitioning,&part_indices));

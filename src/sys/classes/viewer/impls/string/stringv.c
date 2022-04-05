@@ -208,7 +208,7 @@ PetscErrorCode  PetscViewerStringSetString(PetscViewer viewer,char string[],size
   PetscValidCharPointer(string,2);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring));
   if (!isstring) PetscFunctionReturn(0);
-  PetscCheckFalse(len <= 2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"String must have length at least 2");
+  PetscCheck(len > 2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"String must have length at least 2");
 
   PetscCall(PetscArrayzero(string,len));
   vstr->string = string;

@@ -222,7 +222,7 @@ PETSC_INTERN PetscErrorCode PetscSFFetchAndOpBegin_Allgatherv(PetscSF sf,MPI_Dat
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)sf,&comm));
-  PetscCheckFalse(PetscMemTypeDevice(rootmtype) || PetscMemTypeDevice(leafmtype),comm,PETSC_ERR_SUP,"Do FetchAndOp on device");
+  PetscCheck(!PetscMemTypeDevice(rootmtype) && !PetscMemTypeDevice(leafmtype),comm,PETSC_ERR_SUP,"Do FetchAndOp on device");
   /* Copy leafdata to leafupdate */
   PetscCall(PetscSFLinkCreate(sf,unit,rootmtype,rootdata,leafmtype,leafdata,op,PETSCSF_FETCH,&link));
   PetscCall(PetscSFLinkPackLeafData(sf,link,PETSCSF_REMOTE,leafdata)); /* Sync the device */

@@ -717,7 +717,7 @@ static PetscErrorCode MatMatSolve_ScaLAPACK(Mat A,Mat B,Mat X)
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)B,MATSCALAPACK,&flg1));
   PetscCall(PetscObjectTypeCompare((PetscObject)X,MATSCALAPACK,&flg2));
-  PetscCheckFalse(!(flg1 && flg2),PETSC_COMM_SELF,PETSC_ERR_SUP,"Both B and X must be of type MATSCALAPACK");
+  PetscCheck((flg1 && flg2),PETSC_COMM_SELF,PETSC_ERR_SUP,"Both B and X must be of type MATSCALAPACK");
   MatScaLAPACKCheckDistribution(B,1,X,2);
   b = (Mat_ScaLAPACK*)B->data;
   x = (Mat_ScaLAPACK*)X->data;
@@ -1442,7 +1442,7 @@ static PetscErrorCode MatStashScatterBegin_ScaLAPACK(Mat mat,MatStash *stash,Pet
   {                             /* make sure all processors are either in INSERTMODE or ADDMODE */
     InsertMode addv;
     PetscCall(MPIU_Allreduce((PetscEnum*)&mat->insertmode,(PetscEnum*)&addv,1,MPIU_ENUM,MPI_BOR,PetscObjectComm((PetscObject)mat)));
-    PetscCheckFalse(addv == (ADD_VALUES|INSERT_VALUES),PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Some processors inserted others added");
+    PetscCheck(addv != (ADD_VALUES|INSERT_VALUES),PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Some processors inserted others added");
     mat->insertmode = addv; /* in case this processor had no cache */
   }
 
@@ -1707,7 +1707,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_ScaLAPACK(Mat A)
     ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"ScaLAPACK Grid Options","Mat");PetscCall(ierr);
     PetscCall(PetscOptionsInt("-mat_scalapack_grid_height","Grid Height","None",grid->nprow,&optv1,&flg1));
     if (flg1) {
-      PetscCheckFalse(size % optv1,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"Grid Height %" PetscInt_FMT " must evenly divide CommSize %d",optv1,size);
+      PetscCheck(size % optv1 == 0,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"Grid Height %" PetscInt_FMT " must evenly divide CommSize %d",optv1,size);
       grid->nprow = optv1;
     }
     ierr = PetscOptionsEnd();PetscCall(ierr);

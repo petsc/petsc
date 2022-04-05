@@ -160,7 +160,7 @@ static PetscErrorCode PetscViewerGLVisSetFields_GLVis(PetscViewer viewer, PetscI
     }
   }
   /* number of fields are not allowed to vary */
-  PetscCheckFalse(nfields != socket->nwindow,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Cannot visualize %" PetscInt_FMT " fields using %" PetscInt_FMT " socket windows",nfields,socket->nwindow);
+  PetscCheck(nfields == socket->nwindow,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Cannot visualize %" PetscInt_FMT " fields using %" PetscInt_FMT " socket windows",nfields,socket->nwindow);
   socket->g2lfield = g2l;
   if (socket->destroyctx && socket->userctx) PetscCall((*socket->destroyctx)(socket->userctx));
   socket->userctx = ctx;

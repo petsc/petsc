@@ -120,7 +120,7 @@ int main(int argc,char **args)
     PetscCall(MatSolve(A,b,y));
     PetscCall(VecAXPY(y,-1.0,x));
     PetscCall(VecNorm(y,NORM_2,&norm2_inplace));
-    PetscCheckFalse(PetscAbs(norm2 - norm2_inplace) > tol,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ILU(0) %g and in-place ILU(0) %g give different residuals",(double)norm2,(double)norm2_inplace);
+    PetscCheck(PetscAbs(norm2 - norm2_inplace) <= tol,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ILU(0) %g and in-place ILU(0) %g give different residuals",(double)norm2,(double)norm2_inplace);
     PetscCall(MatDestroy(&A));
   }
 
@@ -178,7 +178,7 @@ int main(int argc,char **args)
     PetscCall(MatSolve(A,b,y));
     PetscCall(VecAXPY(y,-1.0,x));
     PetscCall(VecNorm(y,NORM_2,&norm2_inplace));
-    PetscCheckFalse(PetscAbs(norm2 - norm2_inplace) > tol,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ICC(0) %g and in-place ICC(0) %g give different residuals",(double)norm2,(double)norm2_inplace);
+    PetscCheck(PetscAbs(norm2 - norm2_inplace) <= tol,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ICC(0) %g and in-place ICC(0) %g give different residuals",(double)norm2,(double)norm2_inplace);
     PetscCall(MatDestroy(&A));
   }
 

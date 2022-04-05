@@ -459,7 +459,7 @@ PetscErrorCode  PetscViewerRead(PetscViewer viewer, void *data, PetscInt num, Pe
       c      = i;
     }
     if (count) *count = c;
-    else PetscCheckFalse(c < num,PetscObjectComm((PetscObject) viewer), PETSC_ERR_FILE_READ, "Insufficient data, only read %" PetscInt_FMT " < %" PetscInt_FMT " strings", c, num);
+    else PetscCheck(c >= num,PetscObjectComm((PetscObject) viewer), PETSC_ERR_FILE_READ, "Insufficient data, only read %" PetscInt_FMT " < %" PetscInt_FMT " strings", c, num);
   } else {
     PetscCall((*viewer->ops->read)(viewer, data, num, count, dtype));
   }

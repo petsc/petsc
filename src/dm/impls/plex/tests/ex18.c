@@ -297,7 +297,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsString("-filename", "The mesh file", "ex18.c", options->filename, options->filename, sizeof(options->filename), NULL));
   PetscCall(PetscOptionsBoundedInt("-rotate_interface_0", "Rotation (relative orientation) of interface on rank 0; implies -interpolate create -distribute 0", "ex18.c", options->ornt[0], &options->ornt[0], &options->testOrientIF,0));
   PetscCall(PetscOptionsBoundedInt("-rotate_interface_1", "Rotation (relative orientation) of interface on rank 1; implies -interpolate create -distribute 0", "ex18.c", options->ornt[1], &options->ornt[1], &flg2,0));
-  PetscCheckFalse(flg2 != options->testOrientIF,comm, PETSC_ERR_ARG_OUTOFRANGE, "neither or both -rotate_interface_0 -rotate_interface_1 must be set");
+  PetscCheck(flg2 == options->testOrientIF,comm, PETSC_ERR_ARG_OUTOFRANGE, "neither or both -rotate_interface_0 -rotate_interface_1 must be set");
   if (options->testOrientIF) {
     PetscInt i;
     for (i=0; i<2; i++) {
@@ -326,11 +326,11 @@ static PetscErrorCode CreateMesh_1D(MPI_Comm comm, PetscBool interpolate, AppCtx
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCallMPI(MPI_Comm_size(comm, &size));
-  PetscCheckFalse(size > 2,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for <=2 processes",testNum);
+  PetscCheck(size <= 2,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for <=2 processes",testNum);
 
   numCells = 3;
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-ncells", &numCells, NULL));
-  PetscCheckFalse(numCells < 3,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test ncells must >=3",numCells);
+  PetscCheck(numCells >= 3,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test ncells must >=3",numCells);
 
   if (size == 1) {
     numVertices = numCells + 1;
@@ -411,7 +411,7 @@ static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, PetscBool interpolate, App
   PetscCallMPI(MPI_Comm_size(comm, &size));
   switch (testNum) {
   case 0:
-    PetscCheckFalse(size != 2,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for 2 processes", testNum);
+    PetscCheck(size == 2,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for 2 processes", testNum);
     switch (rank) {
       case 0:
       {
@@ -439,7 +439,7 @@ static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, PetscBool interpolate, App
     }
     break;
   case 1:
-    PetscCheckFalse(size != 3,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for 3 processes", testNum);
+    PetscCheck(size == 3,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for 3 processes", testNum);
     switch (rank) {
       case 0:
       {
@@ -478,7 +478,7 @@ static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, PetscBool interpolate, App
     }
     break;
   case 2:
-    PetscCheckFalse(size != 3,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for 3 processes", testNum);
+    PetscCheck(size == 3,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for 3 processes", testNum);
     switch (rank) {
       case 0:
       {
@@ -531,7 +531,7 @@ static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, PetscBool interpolate, App
   PetscCallMPI(MPI_Comm_size(comm, &size));
   switch (testNum) {
   case 0:
-    PetscCheckFalse(size != 2,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for 2 processes", testNum);
+    PetscCheck(size == 2,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for 2 processes", testNum);
     switch (rank) {
       case 0:
       {
@@ -585,7 +585,7 @@ static PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscBool interpolate, AppCtx
   PetscCallMPI(MPI_Comm_size(comm, &size));
   switch (testNum) {
   case 0:
-    PetscCheckFalse(size != 2,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for 2 processes", testNum);
+    PetscCheck(size == 2,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for 2 processes", testNum);
     switch (rank) {
       case 0:
       {
@@ -627,7 +627,7 @@ static PetscErrorCode CreateHex_3D(MPI_Comm comm, PetscBool interpolate, AppCtx 
   PetscCallMPI(MPI_Comm_size(comm, &size));
   switch (testNum) {
   case 0:
-    PetscCheckFalse(size != 2,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for 2 processes", testNum);
+    PetscCheck(size == 2,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for 2 processes", testNum);
     switch (rank) {
     case 0:
     {
@@ -744,7 +744,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     }
     PetscCall(PetscLogStagePop());
   }
-  PetscCheckFalse(user->ncoords % user->dim,comm, PETSC_ERR_ARG_OUTOFRANGE, "length of coordinates array %D must be divisable by spatial dimension %D", user->ncoords, user->dim);
+  PetscCheck(user->ncoords % user->dim == 0,comm, PETSC_ERR_ARG_OUTOFRANGE, "length of coordinates array %D must be divisable by spatial dimension %D", user->ncoords, user->dim);
   PetscCall(PetscObjectSetName((PetscObject) *dm, "Original Mesh"));
   PetscCall(DMViewFromOptions(*dm, NULL, "-orig_dm_view"));
 
@@ -839,7 +839,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 static inline PetscErrorCode coord2str(char buf[], size_t len, PetscInt dim, const PetscScalar coords[], PetscReal tol)
 {
   PetscFunctionBegin;
-  PetscCheckFalse(dim > 3,PETSC_COMM_SELF, PETSC_ERR_SUP, "dim must be less than or equal 3");
+  PetscCheck(dim <= 3,PETSC_COMM_SELF, PETSC_ERR_SUP, "dim must be less than or equal 3");
   if (tol >= 1e-3) {
     switch (dim) {
       case 1: PetscCall(PetscSNPrintf(buf,len,"(%12.3f)",ps2d(coords[0])));
@@ -940,7 +940,7 @@ static PetscErrorCode DMPlexExpandedConesToFaces_Private(DM dm, IS is, PetscSect
   PetscCall(ISGetLocalSize(is, &n));
   PetscCall(PetscSectionGetStorageSize(section, &n1));
   PetscCall(PetscSectionGetChart(section, &start, &end));
-  PetscCheckFalse(n != n1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "IS size = %D != %D = section storage size", n, n1);
+  PetscCheck(n == n1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "IS size = %D != %D = section storage size", n, n1);
   PetscCall(ISGetIndices(is, &arr));
   PetscCall(PetscMalloc1(end-start, &newarr));
   for (q=start; q<end; q++) {
@@ -956,7 +956,7 @@ static PetscErrorCode DMPlexExpandedConesToFaces_Private(DM dm, IS is, PetscSect
       for (i=0; i<ncone; i++) if (cone[i] < 0) {p = -1; break;}
       if (p >= 0) {
         PetscCall(DMPlexGetJoin(dm, ncone, cone, &numCoveredPoints, &coveredPoints));
-        PetscCheckFalse(numCoveredPoints > 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "more than one covered points for section point %D",q);
+        PetscCheck(numCoveredPoints <= 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "more than one covered points for section point %D",q);
         if (numCoveredPoints) p = coveredPoints[0];
         else                  p = -2;
         PetscCall(DMPlexRestoreJoin(dm, ncone, cone, &numCoveredPoints, &coveredPoints));
@@ -1222,7 +1222,7 @@ static PetscErrorCode DMPlexGetInterfaceFaces_Private(DM ipdm, IS boundary_faces
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)ipdm, &comm));
   PetscCall(DMPlexIsInterpolatedCollective(ipdm, &intp));
-  PetscCheckFalse(intp != DMPLEX_INTERPOLATED_FULL,comm, PETSC_ERR_ARG_WRONG, "only for fully interpolated DMPlex");
+  PetscCheck(intp == DMPLEX_INTERPOLATED_FULL,comm, PETSC_ERR_ARG_WRONG, "only for fully interpolated DMPlex");
 
   /* get ipdm partition boundary (partBoundary) */
   PetscCall(DMLabelCreate(PETSC_COMM_SELF, partBoundaryName, &label));
@@ -1251,7 +1251,7 @@ static PetscErrorCode DMPlexComputeCompleteInterface_Private(DM ipdm, IS interfa
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)ipdm, &comm));
   PetscCall(DMPlexIsInterpolatedCollective(ipdm, &intp));
-  PetscCheckFalse(intp != DMPLEX_INTERPOLATED_FULL,comm, PETSC_ERR_ARG_WRONG, "only for fully interpolated DMPlex");
+  PetscCheck(intp == DMPLEX_INTERPOLATED_FULL,comm, PETSC_ERR_ARG_WRONG, "only for fully interpolated DMPlex");
 
   PetscCall(DMLabelCreate(PETSC_COMM_SELF, interfaceName, &label));
   PetscCall(DMAddLabel(ipdm, label));

@@ -80,7 +80,7 @@ int main(int argc,char **argv)
   PetscCall(MatSetBlockSize(A,2));
   PetscCall(MatIncreaseOverlap(A,1,is+1,1));
   PetscCall(ISGetBlockSize(is[1],&bs));
-  PetscCheckFalse(bs != 2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Incorrect block size %" PetscInt_FMT " != 2",bs);
+  PetscCheck(bs == 2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Incorrect block size %" PetscInt_FMT " != 2",bs);
   PetscCall(MatSetBlockSize(A,1));
   PetscCall(ISEqual(is[0],is[1],&flg));
   PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unequal index sets");
@@ -99,7 +99,7 @@ int main(int argc,char **argv)
   PetscCall(MatMult(A,right,left));
   PetscCall(VecAXPY(left,-1.0,perm));
   PetscCall(VecNorm(left,NORM_INFINITY,&norm));
-  PetscCheckFalse(PetscAbsReal(norm) > PETSC_SMALL,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"||y(with permutation)-y(without permutation)|| = %g (> %g)",(double)PetscAbsReal(norm),(double)PETSC_SMALL);
+  PetscCheck(PetscAbsReal(norm) <= PETSC_SMALL,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"||y(with permutation)-y(without permutation)|| = %g (> %g)",(double)PetscAbsReal(norm),(double)PETSC_SMALL);
   PetscCall(MatHtoolUsePermutation(A,PETSC_TRUE));
   PetscCall(VecDestroy(&perm));
   PetscCall(VecDestroy(&left));
@@ -120,7 +120,7 @@ int main(int argc,char **argv)
     PetscCall(MatConvert(B,MATDENSE,MAT_INITIAL_MATRIX,&R));
     PetscCall(MatAXPY(R,-1.0,P,SAME_NONZERO_PATTERN));
     PetscCall(MatNorm(R,NORM_INFINITY,&norm));
-    PetscCheckFalse(PetscAbsReal(norm/relative) > epsilon,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"||A(!symmetric)-A(symmetric)|| = %g (> %g)",(double)PetscAbsReal(norm/relative),(double)epsilon);
+    PetscCheck(PetscAbsReal(norm/relative) <= epsilon,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"||A(!symmetric)-A(symmetric)|| = %g (> %g)",(double)PetscAbsReal(norm/relative),(double)epsilon);
     PetscCall(MatDestroy(&B));
     PetscCall(MatDestroy(&R));
     PetscCall(MatDestroy(&P));
@@ -149,7 +149,7 @@ int main(int argc,char **argv)
     PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"A^Tx != D^Tx");
     PetscCall(MatAXPY(D,-1.0,AT,SAME_NONZERO_PATTERN));
     PetscCall(MatNorm(D,NORM_INFINITY,&norm));
-    PetscCheckFalse(PetscAbsReal(norm) > PETSC_SMALL,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"||A-D|| = %g (> %g)",(double)norm,(double)PETSC_SMALL);
+    PetscCheck(PetscAbsReal(norm) <= PETSC_SMALL,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"||A-D|| = %g (> %g)",(double)norm,(double)PETSC_SMALL);
     PetscCall(MatDestroy(&AT));
     PetscCall(MatDestroy(&D));
     PetscCall(MatMatMult(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&P));
@@ -215,7 +215,7 @@ int main(int argc,char **argv)
       PetscCall(MatMult(R,right,left));
       PetscCall(VecAXPY(left,-1.0,perm));
       PetscCall(VecNorm(left,NORM_INFINITY,&norm));
-      PetscCheckFalse(PetscAbsReal(norm) > PETSC_SMALL,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"||y(with permutation)-y(without permutation)|| = %g (> %g)",(double)PetscAbsReal(norm),(double)PETSC_SMALL);
+      PetscCheck(PetscAbsReal(norm) <= PETSC_SMALL,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"||y(with permutation)-y(without permutation)|| = %g (> %g)",(double)PetscAbsReal(norm),(double)PETSC_SMALL);
       PetscCall(MatHtoolUsePermutation(R,PETSC_TRUE));
       PetscCall(VecDestroy(&perm));
       PetscCall(VecDestroy(&left));

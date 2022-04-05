@@ -20,7 +20,7 @@ int main(int argc,char **argv)
   PetscFunctionBegin;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uni-processor test");
+  PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uni-processor test");
 
   /* Create two CUDA vectors x, y. Though we only care y's memory on host, we make y a CUDA vector,
      since we want to have y's memory on host pinned (i.e.,non-pagable), to really trigger asynchronous

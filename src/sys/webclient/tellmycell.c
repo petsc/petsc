@@ -41,9 +41,9 @@ PetscErrorCode PetscTellMyCell(MPI_Comm comm,const char number[],const char mess
 
   PetscFunctionBegin;
   PetscCall(PetscStrlen(number,&nlen));
-  PetscCheckFalse(nlen != 10,comm,PETSC_ERR_ARG_WRONG,"Number %s is not ten digits",number);
+  PetscCheck(nlen == 10,comm,PETSC_ERR_ARG_WRONG,"Number %s is not ten digits",number);
   PetscCall(PetscStrlen(message,&mlen));
-  PetscCheckFalse(mlen > 100,comm,PETSC_ERR_ARG_WRONG,"Message  %s is too long",message);
+  PetscCheck(mlen <= 100,comm,PETSC_ERR_ARG_WRONG,"Message  %s is too long",message);
   PetscCallMPI(MPI_Comm_rank(comm,&rank));
   if (rank == 0) {
     int       sock;

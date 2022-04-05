@@ -600,7 +600,7 @@ PetscErrorCode SNESMonitorDefaultField(SNES snes, PetscInt its, PetscReal fgnorm
     PetscCall(DMGetGlobalSection(dm, &gs));
     if (!s || !gs) PetscCall(SNESMonitorDefault(snes, its, fgnorm, vf));
     PetscCall(PetscSectionGetNumFields(s, &Nf));
-    PetscCheckFalse(Nf > 256,PetscObjectComm((PetscObject) snes), PETSC_ERR_SUP, "Do not support %d fields > 256", Nf);
+    PetscCheck(Nf <= 256,PetscObjectComm((PetscObject) snes), PETSC_ERR_SUP, "Do not support %d fields > 256", Nf);
     PetscCall(PetscSectionVecNorm(s, gs, r, NORM_2, res));
     PetscCall(PetscObjectGetTabLevel((PetscObject) snes, &tablevel));
     PetscCall(PetscViewerPushFormat(viewer,vf->format));
