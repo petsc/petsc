@@ -456,7 +456,7 @@ int main(int argc,char **args)
      suffix: 14_mpiaijcusparse_seq_cpu
      nsize: 1
      requires: cuda !complex double !defined(PETSC_USE_64BIT_INDICES)
-     args: -A_mat_type mpiaijcusparse -B_mat_type mpiaijcusparse -mat_form_explicit_transpose -fA ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -fB ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -AB_mat_product_algorithm_backend_cpu -matmatmult_backend_cpu -PtAP_mat_product_algorithm_backend_cpu -matptap_backend_cpu
+     args: -A_mat_type mpiaijcusparse -B_mat_type mpiaijcusparse -mat_form_explicit_transpose -fA ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -fB ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -AB_mat_product_algorithm_backend_cpu -matmatmult_backend_cpu -PtAP_mat_product_algorithm_backend_cpu -matptap_backend_cpu -test_rart 0
      output_file: output/ex62_1.out
 
    test:
@@ -470,7 +470,7 @@ int main(int argc,char **args)
      suffix: 14_mpiaijcusparse_cpu
      nsize: 3
      requires: cuda !complex double !defined(PETSC_USE_64BIT_INDICES)
-     args: -A_mat_type mpiaijcusparse -B_mat_type mpiaijcusparse -mat_form_explicit_transpose -fA ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -fB ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -AB_mat_product_algorithm_backend_cpu -matmatmult_backend_cpu -PtAP_mat_product_algorithm_backend_cpu -matptap_backend_cpu
+     args: -A_mat_type mpiaijcusparse -B_mat_type mpiaijcusparse -mat_form_explicit_transpose -fA ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -fB ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -AB_mat_product_algorithm_backend_cpu -matmatmult_backend_cpu -PtAP_mat_product_algorithm_backend_cpu -matptap_backend_cpu -test_rart 0
      output_file: output/ex62_1.out
 
    test:
