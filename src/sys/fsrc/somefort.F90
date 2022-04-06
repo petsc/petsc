@@ -1,7 +1,7 @@
 !
 !     Prevents: Warning: Same actual argument associated with INTENT(IN)
 !     argument 'errorcode' and INTENT(OUT) argument 'ierror' at (1)
-!     when MPI_Abort() is called directly by PetscCall(ierr);
+!     when MPI_Abort() is called directly by CHKERRQ(ierr);
 !
 
 #include <petsc/finclude/petscsys.h>
