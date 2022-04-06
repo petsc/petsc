@@ -1077,15 +1077,19 @@ int main(int argc, char **argv)
     test:
       suffix: tri_0
       args: -dim 2
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
     test:
       suffix: tri_t1_0
       args: -dim 2 -test_num 1
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
     test:
       suffix: tet_0
       args: -dim 3
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
     test:
       suffix: tet_t1_0
       args: -dim 3 -test_num 1
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
 
   testset:
     args: -orig_dm_plex_check_all -dm_plex_check_all \
@@ -1094,10 +1098,12 @@ int main(int argc, char **argv)
       suffix: tet_1
       nsize: 2
       args: -dim 3
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
     test:
       suffix: tri_1
       nsize: 2
       args: -dim 2
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
 
   testset:
     args: -orig_dm_plex_check_all -dm_plex_check_all \
@@ -1106,26 +1112,33 @@ int main(int argc, char **argv)
     test:
       suffix: quad_0
       args: -dim 2 -cell_simplex 0
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
     test:
       suffix: quad_1
       nsize: 2
       args: -dim 2 -cell_simplex 0
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
     test:
       suffix: quad_t1_0
       args: -dim 2 -cell_simplex 0 -test_num 1 -faulted_dm_plex_check_all
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
     # 3D Hex
     test:
       suffix: hex_0
       args: -dim 3 -cell_simplex 0
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
     test:
       suffix: hex_1
       nsize: 2
       args: -dim 3 -cell_simplex 0
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
     test:
       suffix: hex_t1_0
       args: -dim 3 -cell_simplex 0 -test_num 1
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
     test:
       suffix: hex_t2_0
       args: -dim 3 -cell_simplex 0 -test_num 2
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
 
 TEST*/

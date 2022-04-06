@@ -127,10 +127,10 @@ Discrete System with 2 fields
         Quadrature of order 3 on 4 points (dim 2)
   Weak Form System with 2 fields
     boundary_residual_f0
-      (0, 0) f0_bd_u
-      (0, 0) f0_bd_u
-      (cohesive, 1) (0, 1) f0_bd_l
+      (0, 0)
+      (0, 0)
+      (cohesive, 1) (0, 1)
     boundary_jacobian_g0
-      (0, 1) g0_bd_ul
-      (0, 1) g0_bd_ul
-      (cohesive, 1) (1, 0) g0_bd_lu
+      (0, 1)
+      (0, 1)
+      (cohesive, 1) (1, 0)

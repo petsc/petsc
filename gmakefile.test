@@ -248,7 +248,7 @@ $(testexe.F) $(testexe.F90) : $(TESTDIR)/% : $(TESTDIR)/%.o $$^ $(libpetscall)
 	-$(call macos-firewall-register,$@)
 
 $(testexe.c) $(testexe.cu) : $(TESTDIR)/% : $(TESTDIR)/%.o $$^ $(libpetscall)
-	$(call quiet,CLINKER) -o $@ $^ $(PETSC_TEST_LIB)
+	$(call quiet,CLINKER) $(EXEFLAGS) -o $@ $^ $(PETSC_TEST_LIB)
 	-$(call macos-firewall-register,$@)
 
 $(testexe.hip.cpp) : $(TESTDIR)/% : $(TESTDIR)/%.o $$^ $(libpetscall)
