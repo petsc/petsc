@@ -449,7 +449,7 @@ PetscErrorCode DMPlexMetricSetMinimumMagnitude(DM dm, PetscReal h_min)
     PetscCall(PetscNew(&plex->metricCtx));
     PetscCall(DMPlexMetricSetFromOptions(dm));
   }
-  PetscCheck(h_min > 0.0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Metric magnitudes must be positive, not %.4e", h_min);
+  PetscCheck(h_min > 0.0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Metric magnitudes must be positive, not %.4e", (double)h_min);
   plex->metricCtx->h_min = h_min;
   PetscFunctionReturn(0);
 }
@@ -500,7 +500,7 @@ PetscErrorCode DMPlexMetricSetMaximumMagnitude(DM dm, PetscReal h_max)
     PetscCall(PetscNew(&plex->metricCtx));
     PetscCall(DMPlexMetricSetFromOptions(dm));
   }
-  PetscCheck(h_max > 0.0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Metric magnitudes must be positive, not %.4e", h_max);
+  PetscCheck(h_max > 0.0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Metric magnitudes must be positive, not %.4e", (double)h_max);
   plex->metricCtx->h_max = h_max;
   PetscFunctionReturn(0);
 }
@@ -553,7 +553,7 @@ PetscErrorCode DMPlexMetricSetMaximumAnisotropy(DM dm, PetscReal a_max)
     PetscCall(PetscNew(&plex->metricCtx));
     PetscCall(DMPlexMetricSetFromOptions(dm));
   }
-  PetscCheck(a_max >= 1.0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Anisotropy must be at least one, not %.4e", a_max);
+  PetscCheck(a_max >= 1.0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Anisotropy must be at least one, not %.4e", (double)a_max);
   plex->metricCtx->a_max = a_max;
   PetscFunctionReturn(0);
 }
@@ -1054,7 +1054,7 @@ PetscErrorCode DMPlexMetricCreateUniform(DM dm, PetscInt f, PetscReal alpha, Vec
   PetscCall(DMPlexMetricSetUniform(dm, PETSC_TRUE));
   PetscCall(DMPlexMetricCreate(dm, f, metric));
   PetscCheck(alpha,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Uniform metric scaling is undefined");
-  PetscCheck(alpha >= 1.0e-30,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Uniform metric scaling %e should be positive", alpha);
+  PetscCheck(alpha >= 1.0e-30,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Uniform metric scaling %e should be positive", (double)alpha);
   PetscCall(VecSet(*metric, alpha));
   PetscCall(VecAssemblyBegin(*metric));
   PetscCall(VecAssemblyEnd(*metric));
@@ -1124,8 +1124,8 @@ static PetscErrorCode LAPACKsyevFail(PetscInt dim, PetscScalar Mpos[])
     if (i == 0) PetscPrintf(PETSC_COMM_SELF, "    [[");
     else        PetscPrintf(PETSC_COMM_SELF, "     [");
     for (j = 0; j < dim; ++j) {
-      if (j < dim-1) PetscPrintf(PETSC_COMM_SELF, "%15.8e, ", Mpos[i*dim+j]);
-      else           PetscPrintf(PETSC_COMM_SELF, "%15.8e", Mpos[i*dim+j]);
+      if (j < dim-1) PetscPrintf(PETSC_COMM_SELF, "%15.8e, ", (double)PetscAbsScalar(Mpos[i*dim+j]));
+      else           PetscPrintf(PETSC_COMM_SELF, "%15.8e", (double)PetscAbsScalar(Mpos[i*dim+j]));
     }
     if (i < dim-1) PetscPrintf(PETSC_COMM_SELF, "]\n");
     else           PetscPrintf(PETSC_COMM_SELF, "]]\n");
@@ -1270,7 +1270,7 @@ PetscErrorCode DMPlexMetricEnforceSPD(DM dm, Vec metricIn, PetscBool restrictSiz
     PetscCall(DMPlexMetricGetMaximumMagnitude(dm, &h_max));
     h_min = PetscMax(h_min, 1.0e-30);
     h_max = PetscMin(h_max, 1.0e+30);
-    PetscCheck(h_min < h_max,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Incompatible min/max metric magnitudes (%.4e not smaller than %.4e)", h_min, h_max);
+    PetscCheck(h_min < h_max,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Incompatible min/max metric magnitudes (%.4e not smaller than %.4e)", (double)h_min, (double)h_max);
   }
   if (restrictAnisotropy) {
     PetscCall(DMPlexMetricGetMaximumAnisotropy(dm, &a_max));
@@ -1411,7 +1411,7 @@ PetscErrorCode DMPlexMetricNormalize(DM dm, Vec metricIn, PetscBool restrictSize
     PetscCall(DMPlexComputeIntegralFEM(dmDet, determinant, &integral, NULL));
   }
   realIntegral = PetscRealPart(integral);
-  PetscCheck(realIntegral >= 1.0e-30,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Global metric normalization factor should be strictly positive, not %.4e Is the input metric positive-definite?", realIntegral);
+  PetscCheck(realIntegral >= 1.0e-30,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Global metric normalization factor should be strictly positive, not %.4e Is the input metric positive-definite?", (double)realIntegral);
   factGlob = PetscPowReal(target/realIntegral, 2.0/dim);
 
   /* Apply local scaling */
@@ -1420,7 +1420,7 @@ PetscErrorCode DMPlexMetricNormalize(DM dm, Vec metricIn, PetscBool restrictSize
     PetscCall(DMPlexMetricGetMaximumMagnitude(dm, &h_max));
     h_min = PetscMax(h_min, 1.0e-30);
     h_max = PetscMin(h_max, 1.0e+30);
-    PetscCheck(h_min < h_max,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Incompatible min/max metric magnitudes (%.4e not smaller than %.4e)", h_min, h_max);
+    PetscCheck(h_min < h_max,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Incompatible min/max metric magnitudes (%.4e not smaller than %.4e)", (double)h_min, (double)h_max);
   }
   if (restrictAnisotropy && !restrictAnisotropyFirst) {
     PetscCall(DMPlexMetricGetMaximumAnisotropy(dm, &a_max));
@@ -1489,7 +1489,7 @@ PetscErrorCode DMPlexMetricAverage(DM dm, PetscInt numMetrics, PetscReal weights
 
   PetscFunctionBegin;
   PetscCall(PetscLogEventBegin(DMPLEX_MetricAverage,0,0,0,0));
-  PetscCheck(numMetrics >= 1,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot average %d < 1 metrics", numMetrics);
+  PetscCheck(numMetrics >= 1,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot average %" PetscInt_FMT " < 1 metrics", numMetrics);
   PetscCall(DMPlexMetricCreate(dm, 0, metricAvg));
   PetscCall(VecSet(*metricAvg, 0.0));
   PetscCall(VecGetSize(*metricAvg, &m));
@@ -1723,7 +1723,7 @@ PetscErrorCode DMPlexMetricIntersection(DM dm, PetscInt numMetrics, Vec metrics[
 
   PetscFunctionBegin;
   PetscCall(PetscLogEventBegin(DMPLEX_MetricIntersection,0,0,0,0));
-  PetscCheck(numMetrics >= 1,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot intersect %d < 1 metrics", numMetrics);
+  PetscCheck(numMetrics >= 1,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot intersect %" PetscInt_FMT " < 1 metrics", numMetrics);
 
   /* Copy over the first metric */
   PetscCall(DMPlexMetricCreate(dm, 0, metricInt));

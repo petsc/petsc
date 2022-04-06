@@ -136,9 +136,9 @@ PetscErrorCode DMNetworkMonitorAdd(DMNetworkMonitor monitor,const char *name,Pet
 
   /* Make window title */
   if (vStart <= element && element < vEnd) {
-    PetscCall(PetscSNPrintf(titleBuffer, 64, "%s @ vertex %d [%d / %d]", name, element - vStart, rank, size-1));
+    PetscCall(PetscSNPrintf(titleBuffer, sizeof(titleBuffer), "%s @ vertex %" PetscInt_FMT " [%d / %d]", name, element - vStart, rank, size-1));
   } else if (eStart <= element && element < eEnd) {
-    PetscCall(PetscSNPrintf(titleBuffer, 64, "%s @ edge %d [%d / %d]", name, element - eStart, rank, size-1));
+    PetscCall(PetscSNPrintf(titleBuffer, sizeof(titleBuffer), "%s @ edge %" PetscInt_FMT " [%d / %d]", name, element - eStart, rank, size-1));
   } else {
     /* vertex / edge is not on local machine, so skip! */
     PetscFunctionReturn(0);

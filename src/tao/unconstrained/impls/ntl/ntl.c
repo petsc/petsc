@@ -699,10 +699,10 @@ static PetscErrorCode TaoView_NTL(Tao tao, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii));
   if (isascii) {
     PetscCall(PetscViewerASCIIPushTab(viewer));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "Trust-region steps: %D\n", tl->ntrust));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "Newton search steps: %D\n", tl->newt));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "BFGS search steps: %D\n", tl->bfgs));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "Gradient search steps: %D\n", tl->grad));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Trust-region steps: %" PetscInt_FMT "\n", tl->ntrust));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Newton search steps: %" PetscInt_FMT "\n", tl->newt));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "BFGS search steps: %" PetscInt_FMT "\n", tl->bfgs));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Gradient search steps: %" PetscInt_FMT "\n", tl->grad));
     PetscCall(PetscViewerASCIIPopTab(viewer));
   }
   PetscFunctionReturn(0);

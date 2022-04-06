@@ -196,18 +196,18 @@ int main(int argc, char **argv)
   ksp_old = user.ksp_its;
   for (i=0; i<ntests; i++) {
     PetscCall(TaoSolve(tao));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"KSP Iterations = %D\n",user.ksp_its-ksp_old));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"KSP Iterations = %" PetscInt_FMT "\n",user.ksp_its-ksp_old));
     PetscCall(VecCopy(x0,x));
     PetscCall(TaoSetSolution(tao,x));
   }
   PetscCall(PetscLogStagePop());
   PetscCall(PetscBarrier((PetscObject)x));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD,"KSP iterations within initialization: "));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%D\n",user.ksp_its_initial));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Total KSP iterations over %D trial(s): ",ntests));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%D\n",user.ksp_its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT "\n",user.ksp_its_initial));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Total KSP iterations over %" PetscInt_FMT " trial(s): ",ntests));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT "\n",user.ksp_its));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD,"KSP iterations per trial: "));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%D\n",(user.ksp_its-user.ksp_its_initial)/ntests));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT "\n",(user.ksp_its-user.ksp_its_initial)/ntests));
 
   PetscCall(TaoDestroy(&tao));
   PetscCall(VecDestroy(&x));

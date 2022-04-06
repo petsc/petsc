@@ -15,13 +15,11 @@ static PetscErrorCode TaoLineSearchSetFromOptions_Unit(PetscOptionItems *PetscOp
 
 static PetscErrorCode TaoLineSearchView_Unit(TaoLineSearch ls,PetscViewer viewer)
 {
-  PetscBool      isascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
-  if (isascii) {
-    PetscCall(PetscViewerASCIIPrintf(viewer,"  Line Search: Unit Step %g.\n",ls->initstep));
-  }
+  if (isascii) PetscCall(PetscViewerASCIIPrintf(viewer,"  Line Search: Unit Step %g.\n",(double)ls->initstep));
   PetscFunctionReturn(0);
 }
 

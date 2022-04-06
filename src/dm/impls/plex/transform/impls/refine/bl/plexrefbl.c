@@ -454,8 +454,8 @@ static PetscErrorCode DMPlexTransformMapCoordinates_BL(DMPlexTransform tr, DMPol
   switch (pct) {
     case DM_POLYTOPE_POINT_PRISM_TENSOR:
       PetscCheck(ct == DM_POLYTOPE_POINT,PETSC_COMM_SELF, PETSC_ERR_SUP, "Not for target point type %s", DMPolytopeTypes[ct]);
-      PetscCheck(Nv == 2,PETSC_COMM_SELF, PETSC_ERR_SUP, "Number of parent vertices %D != 2", Nv);
-      PetscCheckFalse(r >= bl->n || r < 0,PETSC_COMM_SELF, PETSC_ERR_SUP, "Invalid replica %D, must be in [0, %D)", r, bl->n);
+      PetscCheck(Nv == 2,PETSC_COMM_SELF, PETSC_ERR_SUP, "Number of parent vertices %" PetscInt_FMT " != 2", Nv);
+      PetscCheckFalse(r >= bl->n || r < 0,PETSC_COMM_SELF, PETSC_ERR_SUP, "Invalid replica %" PetscInt_FMT ", must be in [0, %" PetscInt_FMT ")", r, bl->n);
       for (d = 0; d < dE; ++d) out[d] = in[d] + bl->h[r] * (in[d + dE] - in[d]);
       break;
     default: PetscCall(DMPlexTransformMapCoordinatesBarycenter_Internal(tr, pct, ct, p, r, Nv, dE, in, out));

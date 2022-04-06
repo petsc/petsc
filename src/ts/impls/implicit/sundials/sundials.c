@@ -140,7 +140,7 @@ PetscErrorCode TSStep_Sundials(TS ts)
         PetscReal tcur;
         PetscCall(CVodeGetNumSteps(mem,&nsteps));
         PetscCall(CVodeGetCurrentTime(mem,&tcur));
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, CV_TOO_MUCH_WORK. At t=%g, nsteps %D exceeds maxstep %D. Increase '-ts_max_steps <>' or modify TSSetMaxSteps()",(double)tcur,nsteps,ts->max_steps);
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, CV_TOO_MUCH_WORK. At t=%g, nsteps %ld exceeds maxstep %" PetscInt_FMT ". Increase '-ts_max_steps <>' or modify TSSetMaxSteps()",(double)tcur,nsteps,ts->max_steps);
       } break;
       case CV_TOO_MUCH_ACC:
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, CV_TOO_MUCH_ACC");
@@ -447,13 +447,13 @@ PetscErrorCode TSView_Sundials(TS ts,PetscViewer viewer)
   if (iascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer,"Sundials integrator does not use SNES!\n"));
     PetscCall(PetscViewerASCIIPrintf(viewer,"Sundials integrator type %s\n",type));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"Sundials maxord %D\n",cvode->maxord));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"Sundials maxord %" PetscInt_FMT "\n",cvode->maxord));
     PetscCall(PetscViewerASCIIPrintf(viewer,"Sundials abs tol %g rel tol %g\n",(double)cvode->abstol,(double)cvode->reltol));
     if (cvode->use_dense) {
       PetscCall(PetscViewerASCIIPrintf(viewer,"Sundials integrator using a dense linear solve\n"));
     } else {
       PetscCall(PetscViewerASCIIPrintf(viewer,"Sundials linear solver tolerance factor %g\n",(double)cvode->linear_tol));
-      PetscCall(PetscViewerASCIIPrintf(viewer,"Sundials max dimension of Krylov subspace %D\n",cvode->maxl));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"Sundials max dimension of Krylov subspace %" PetscInt_FMT "\n",cvode->maxl));
       if (cvode->gtype == SUNDIALS_MODIFIED_GS) {
         PetscCall(PetscViewerASCIIPrintf(viewer,"Sundials using modified Gram-Schmidt for orthogonalization in GMRES\n"));
       } else {
@@ -467,31 +467,31 @@ PetscErrorCode TSView_Sundials(TS ts,PetscViewer viewer)
     PetscCall(CVodeGetTolScaleFactor(cvode->mem,&tolsfac));
     PetscCall(PetscViewerASCIIPrintf(viewer,"Sundials suggested factor for tolerance scaling %g\n",tolsfac));
     PetscCall(CVodeGetIntegratorStats(cvode->mem,&nsteps,&nfevals,&nlinsetups,&nfails,&qlast,&qcur,&hinused,&hlast,&hcur,&tcur));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"Sundials cumulative number of internal steps %D\n",nsteps));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"Sundials no. of calls to rhs function %D\n",nfevals));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"Sundials no. of calls to linear solver setup function %D\n",nlinsetups));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"Sundials no. of error test failures %D\n",nfails));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"Sundials cumulative number of internal steps %ld\n",nsteps));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"Sundials no. of calls to rhs function %ld\n",nfevals));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"Sundials no. of calls to linear solver setup function %ld\n",nlinsetups));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"Sundials no. of error test failures %ld\n",nfails));
 
     PetscCall(CVodeGetNonlinSolvStats(cvode->mem,&its,&nfails));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"Sundials no. of nonlinear solver iterations %D\n",its));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"Sundials no. of nonlinear convergence failure %D\n",nfails));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"Sundials no. of nonlinear solver iterations %ld\n",its));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"Sundials no. of nonlinear convergence failure %ld\n",nfails));
     if (!cvode->use_dense) {
       PetscCall(CVSpilsGetNumLinIters(cvode->mem, &its)); /* its = no. of calls to TSPrecond_Sundials() */
-      PetscCall(PetscViewerASCIIPrintf(viewer,"Sundials no. of linear iterations %D\n",its));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"Sundials no. of linear iterations %ld\n",its));
       PetscCall(CVSpilsGetNumConvFails(cvode->mem,&itmp));
-      PetscCall(PetscViewerASCIIPrintf(viewer,"Sundials no. of linear convergence failures %D\n",itmp));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"Sundials no. of linear convergence failures %ld\n",itmp));
 
       PetscCall(TSSundialsGetPC(ts,&pc));
       PetscCall(PCView(pc,viewer));
       PetscCall(CVSpilsGetNumPrecEvals(cvode->mem,&itmp));
-      PetscCall(PetscViewerASCIIPrintf(viewer,"Sundials no. of preconditioner evaluations %D\n",itmp));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"Sundials no. of preconditioner evaluations %ld\n",itmp));
       PetscCall(CVSpilsGetNumPrecSolves(cvode->mem,&itmp));
-      PetscCall(PetscViewerASCIIPrintf(viewer,"Sundials no. of preconditioner solves %D\n",itmp));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"Sundials no. of preconditioner solves %ld\n",itmp));
     }
     PetscCall(CVSpilsGetNumJtimesEvals(cvode->mem,&itmp));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"Sundials no. of Jacobian-vector product evaluations %D\n",itmp));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"Sundials no. of Jacobian-vector product evaluations %ld\n",itmp));
     PetscCall(CVSpilsGetNumRhsEvals(cvode->mem,&itmp));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"Sundials no. of rhs calls for finite diff. Jacobian-vector evals %D\n",itmp));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"Sundials no. of rhs calls for finite diff. Jacobian-vector evals %ld\n",itmp));
   } else if (isstring) {
     PetscCall(PetscViewerStringSPrintf(viewer,"Sundials type %s",type));
   }

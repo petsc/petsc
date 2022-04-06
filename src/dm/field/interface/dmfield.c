@@ -78,7 +78,7 @@ PetscErrorCode DMFieldView(DMField field,PetscViewer viewer)
   if (iascii) {
     PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)field,viewer));
     PetscCall(PetscViewerASCIIPushTab(viewer));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"%D components\n",field->numComponents));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT " components\n",field->numComponents));
     PetscCall(PetscViewerASCIIPrintf(viewer,"%s continuity\n",DMFieldContinuities[field->continuity]));
     PetscCall(PetscViewerPushFormat(viewer,PETSC_VIEWER_DEFAULT));
     PetscCall(DMView(field->dm,viewer));

@@ -289,7 +289,7 @@ int main(int argc,char **argv)
   PetscCall(FormInitialSolution(da,T,&user));
   dt    = TIMESTEP; /* initial time step */
   ftime = TIMESTEP*time;
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"time %D, ftime %g hour, TIMESTEP %g\n",time,(double)(ftime/3600),(double)dt));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"time %" PetscInt_FMT ", ftime %g hour, TIMESTEP %g\n",time,(double)(ftime/3600),(double)dt));
 
   PetscCall(TSSetTimeStep(ts,dt));
   PetscCall(TSSetMaxSteps(ts,time));
@@ -309,7 +309,7 @@ int main(int argc,char **argv)
   PetscCall(TSSolve(ts,T));
   PetscCall(TSGetSolveTime(ts,&ftime));
   PetscCall(TSGetStepNumber(ts,&steps));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Solution T after %g hours %D steps\n",(double)(ftime/3600),steps));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Solution T after %g hours %" PetscInt_FMT " steps\n",(double)(ftime/3600),steps));
 
   if (matfdcoloring) PetscCall(MatFDColoringDestroy(&matfdcoloring));
   if (usermonitor.drawcontours) {
@@ -716,7 +716,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec T,void *ctx)
 
   if (step%user->interval == 0) {
     PetscCall(VecGetArrayRead(T,&array));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"step %D, time %8.1f,  %6.4f, %6.4f, %6.4f, %6.4f, %6.4f, %6.4f\n",step,(double)time,(double)(((array[0]-273)*9)/5 + 32),(double)(((array[1]-273)*9)/5 + 32),(double)array[2],(double)array[3],(double)array[4],(double)array[5]));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"step %" PetscInt_FMT ", time %8.1f,  %6.4f, %6.4f, %6.4f, %6.4f, %6.4f, %6.4f\n",step,(double)time,(double)(((array[0]-273)*9)/5 + 32),(double)(((array[1]-273)*9)/5 + 32),(double)array[2],(double)array[3],(double)array[4],(double)array[5]));
     PetscCall(VecRestoreArrayRead(T,&array));
   }
 

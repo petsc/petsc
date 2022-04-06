@@ -218,7 +218,7 @@ PetscErrorCode ex3_1(void)
   dt = 0.1;
   for (tk=1; tk<20; tk++) {
     char prefix[PETSC_MAX_PATH_LEN];
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Step %D \n",tk));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Step %" PetscInt_FMT " \n",tk));
     /* push points */
     PetscCall(DMSwarmGetLocalSize(dms,&nlocal));
     PetscCall(DMSwarmGetField(dms,DMSwarmPICField_coor,&bs,NULL,(void**)&array));
@@ -238,7 +238,7 @@ PetscErrorCode ex3_1(void)
     /* migrate points */
     PetscCall(DMSwarmMigrate(dms,PETSC_TRUE));
     /* view points */
-    PetscCall(PetscSNPrintf(prefix,PETSC_MAX_PATH_LEN-1,"step%d",tk));
+    PetscCall(PetscSNPrintf(prefix,PETSC_MAX_PATH_LEN-1,"step%" PetscInt_FMT,tk));
     /* should use the regular SwarmView() api, not one for a particular type */
     PetscCall(SwarmViewGP(dms,prefix));
   }

@@ -139,7 +139,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsGetIntArray(NULL,NULL,"-ts_eimex_row_col",eimex_rowcol,&two,NULL));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD,"order %11s %18s %37s\n","dt","norm","final solution components 0 and 1"));
   PetscCall(VecGetArray(x,&x_ptr));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"(%D,%D) %10.8f %18.15f %18.15f %18.15f\n",eimex_rowcol[0],eimex_rowcol[1],(double)dt,(double)norm,(double)PetscRealPart(x_ptr[0]),(double)PetscRealPart(x_ptr[1])));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"(%" PetscInt_FMT ",%" PetscInt_FMT ") %10.8f %18.15f %18.15f %18.15f\n",eimex_rowcol[0],eimex_rowcol[1],(double)dt,(double)norm,(double)PetscRealPart(x_ptr[0]),(double)PetscRealPart(x_ptr[1])));
   PetscCall(VecRestoreArray(x,&x_ptr));
 
   /* Write line in convergence log */
@@ -147,7 +147,7 @@ int main(int argc, char **argv)
   PetscCall(PetscViewerSetType(viewer,PETSCVIEWERASCII));
   PetscCall(PetscViewerFileSetMode(viewer,FILE_MODE_APPEND));
   PetscCall(PetscViewerFileSetName(viewer,"eimex_nonstiff_vdp.txt"));
-  PetscCall(PetscViewerASCIIPrintf(viewer,"%D %D %10.8f %18.15f\n",eimex_rowcol[0],eimex_rowcol[1],(double)dt,(double)norm));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT " %" PetscInt_FMT " %10.8f %18.15f\n",eimex_rowcol[0],eimex_rowcol[1],(double)dt,(double)norm));
   PetscCall(PetscViewerDestroy(&viewer));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

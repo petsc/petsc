@@ -206,7 +206,7 @@ PetscErrorCode PetscCDPrint(const PetscCoarsenData *ail, MPI_Comm comm)
   for (ii=0; ii<ail->size; ii++) {
     kk = 0;
     n  = ail->array[ii];
-    if (n) PetscCall(PetscPrintf(comm,"[%d]%s list %d:\n",rank,PETSC_FUNCTION_NAME,ii));
+    if (n) PetscCall(PetscPrintf(comm,"[%d]%s list %" PetscInt_FMT ":\n",rank,PETSC_FUNCTION_NAME,ii));
     while (n) {
       PetscCall(PetscPrintf(comm,"\t[%d] %" PetscInt_FMT ") id %" PetscInt_FMT "\n",rank,++kk,n->gid));
       n = n->next;

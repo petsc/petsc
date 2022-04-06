@@ -68,7 +68,7 @@ int main(int argc,char **args)
   PetscCall(VecAXPY(x,none,u));
   PetscCall(VecNorm(x,NORM_2,&norm));
   PetscCall(KSPGetIterationNumber(ksp,&its));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %" PetscInt_FMT "\n",(double)norm,its));
 
   /* Free work space */
   PetscCall(VecDestroy(&x));PetscCall(VecDestroy(&u));

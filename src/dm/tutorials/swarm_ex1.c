@@ -75,7 +75,7 @@ PetscErrorCode ex1_1(void)
     PetscCall(DMSwarmGetLocalSize(dms,&npoints[0]));
     PetscCall(DMSwarmGetSize(dms,&npoints[1]));
     PetscCall(PetscViewerASCIIPushSynchronized(PETSC_VIEWER_STDOUT_WORLD));
-    PetscCall(PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"rank[%d] before(%D,%D) after(%D,%D)\n",rank,npoints_orig[0],npoints_orig[1],npoints[0],npoints[1]));
+    PetscCall(PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"rank[%d] before(%" PetscInt_FMT ",%" PetscInt_FMT ") after(%" PetscInt_FMT ",%" PetscInt_FMT ")\n",rank,npoints_orig[0],npoints_orig[1],npoints[0],npoints[1]));
     PetscCall(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
     PetscCall(PetscViewerASCIIPopSynchronized(PETSC_VIEWER_STDOUT_WORLD));
   }
@@ -137,7 +137,7 @@ PetscErrorCode ex1_2(void)
     PetscCall(DMSwarmGetLocalSize(dms,&npoints_orig[0]));
     PetscCall(DMSwarmGetSize(dms,&npoints_orig[1]));
     PetscCall(PetscViewerASCIIPushSynchronized(PETSC_VIEWER_STDOUT_WORLD));
-    PetscCall(PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"rank[%d] before(%D,%D)\n",rank,npoints_orig[0],npoints_orig[1]));
+    PetscCall(PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"rank[%d] before(%" PetscInt_FMT ",%" PetscInt_FMT ")\n",rank,npoints_orig[0],npoints_orig[1]));
     PetscCall(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
     PetscCall(PetscViewerASCIIPopSynchronized(PETSC_VIEWER_STDOUT_WORLD));
 
@@ -158,7 +158,7 @@ PetscErrorCode ex1_2(void)
     PetscCall(DMSwarmGetLocalSize(dms,&npoints[0]));
     PetscCall(DMSwarmGetSize(dms,&npoints[1]));
     PetscCall(PetscViewerASCIIPushSynchronized(PETSC_VIEWER_STDOUT_WORLD));
-    PetscCall(PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"rank[%d] after(%D,%D)\n",rank,npoints[0],npoints[1]));
+    PetscCall(PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"rank[%d] after(%" PetscInt_FMT ",%" PetscInt_FMT ")\n",rank,npoints[0],npoints[1]));
     PetscCall(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
     PetscCall(PetscViewerASCIIPopSynchronized(PETSC_VIEWER_STDOUT_WORLD));
 
@@ -170,7 +170,7 @@ PetscErrorCode ex1_2(void)
     PetscCall(DMSwarmGetLocalSize(dms,&npoints[0]));
     PetscCall(DMSwarmGetSize(dms,&npoints[1]));
     PetscCall(PetscViewerASCIIPushSynchronized(PETSC_VIEWER_STDOUT_WORLD));
-    PetscCall(PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"rank[%d] after_v(%D,%D)\n",rank,npoints[0],npoints[1]));
+    PetscCall(PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"rank[%d] after_v(%" PetscInt_FMT ",%" PetscInt_FMT ")\n",rank,npoints[0],npoints[1]));
     PetscCall(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
     PetscCall(PetscViewerASCIIPopSynchronized(PETSC_VIEWER_STDOUT_WORLD));
 
@@ -257,7 +257,7 @@ PetscErrorCode ex1_3(void)
     PetscCall(DMSwarmGetLocalSize(dms,&npoints_orig[0]));
     PetscCall(DMSwarmGetSize(dms,&npoints_orig[1]));
     PetscCall(PetscViewerASCIIPushSynchronized(PETSC_VIEWER_STDOUT_WORLD));
-    PetscCall(PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"rank[%d] before(%D,%D)\n",rank,npoints_orig[0],npoints_orig[1]));
+    PetscCall(PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"rank[%d] before(%" PetscInt_FMT ",%" PetscInt_FMT ")\n",rank,npoints_orig[0],npoints_orig[1]));
     PetscCall(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
     PetscCall(PetscViewerASCIIPopSynchronized(PETSC_VIEWER_STDOUT_WORLD));
     PetscCall(DMSwarmCollect_DMDABoundingBox(dms,&ng));
@@ -265,7 +265,7 @@ PetscErrorCode ex1_3(void)
     PetscCall(DMSwarmGetLocalSize(dms,&npoints[0]));
     PetscCall(DMSwarmGetSize(dms,&npoints[1]));
     PetscCall(PetscViewerASCIIPushSynchronized(PETSC_VIEWER_STDOUT_WORLD));
-    PetscCall(PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"rank[%d] after(%D,%D)\n",rank,npoints[0],npoints[1]));
+    PetscCall(PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"rank[%d] after(%" PetscInt_FMT ",%" PetscInt_FMT ")\n",rank,npoints[0],npoints[1]));
     PetscCall(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
     PetscCall(PetscViewerASCIIPopSynchronized(PETSC_VIEWER_STDOUT_WORLD));
   }
@@ -452,14 +452,14 @@ PetscErrorCode ex1_4(void)
     PetscCall(DMSwarmGetLocalSize(dms,&npoints_orig[0]));
     PetscCall(DMSwarmGetSize(dms,&npoints_orig[1]));
     PetscCall(PetscViewerASCIIPushSynchronized(PETSC_VIEWER_STDOUT_WORLD));
-    PetscCall(PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"rank[%d] before(%D,%D)\n",rank,npoints_orig[0],npoints_orig[1]));
+    PetscCall(PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"rank[%d] before(%" PetscInt_FMT ",%" PetscInt_FMT ")\n",rank,npoints_orig[0],npoints_orig[1]));
     PetscCall(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
     PetscCall(PetscViewerASCIIPopSynchronized(PETSC_VIEWER_STDOUT_WORLD));
     PetscCall(DMSwarmCollect_General(dms,collect_zone,sizeof(CollectZoneCtx),zone,&ng));
     PetscCall(DMSwarmGetLocalSize(dms,&npoints[0]));
     PetscCall(DMSwarmGetSize(dms,&npoints[1]));
     PetscCall(PetscViewerASCIIPushSynchronized(PETSC_VIEWER_STDOUT_WORLD));
-    PetscCall(PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"rank[%d] after(%D,%D)\n",rank,npoints[0],npoints[1]));
+    PetscCall(PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"rank[%d] after(%" PetscInt_FMT ",%" PetscInt_FMT ")\n",rank,npoints[0],npoints[1]));
     PetscCall(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
     PetscCall(PetscViewerASCIIPopSynchronized(PETSC_VIEWER_STDOUT_WORLD));
   }

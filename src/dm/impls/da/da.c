@@ -71,11 +71,11 @@ PetscErrorCode  DMDASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p)
     PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)da),&size));
     if ((dd->m > 0) && (dd->n < 0)) {
       dd->n = size/dd->m;
-      PetscCheck(dd->n*dd->m == size,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"%D processes in X direction not divisible into comm size %d",m,size);
+      PetscCheck(dd->n*dd->m == size,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"%" PetscInt_FMT " processes in X direction not divisible into comm size %d",m,size);
     }
     if ((dd->n > 0) && (dd->m < 0)) {
       dd->m = size/dd->n;
-      PetscCheck(dd->n*dd->m == size,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"%D processes in Y direction not divisible into comm size %d",n,size);
+      PetscCheck(dd->n*dd->m == size,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"%" PetscInt_FMT " processes in Y direction not divisible into comm size %d",n,size);
     }
   }
   PetscFunctionReturn(0);
@@ -533,7 +533,7 @@ static PetscErrorCode DMDACheckOwnershipRanges_Private(DM da,PetscInt M,PetscInt
   PetscFunctionBegin;
   PetscCheck(M >= 0,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"Global dimension not set");
   for (i=sum=0; i<m; i++) sum += lx[i];
-  PetscCheck(sum == M,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_INCOMP,"Ownership ranges sum to %D but global dimension is %D",sum,M);
+  PetscCheck(sum == M,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_INCOMP,"Ownership ranges sum to %" PetscInt_FMT " but global dimension is %" PetscInt_FMT,sum,M);
   PetscFunctionReturn(0);
 }
 
@@ -826,7 +826,7 @@ static PetscErrorCode DMDARefineOwnershipRanges(DM da,PetscBool periodic,PetscIn
   PetscInt       i,totalc = 0,remaining,startc = 0,startf = 0;
 
   PetscFunctionBegin;
-  PetscCheck(ratio >= 1,PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Requested refinement ratio %D must be at least 1",ratio);
+  PetscCheck(ratio >= 1,PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Requested refinement ratio %" PetscInt_FMT " must be at least 1",ratio);
   if (ratio == 1) {
     PetscCall(PetscArraycpy(lf,lc,m));
     PetscFunctionReturn(0);
@@ -867,7 +867,7 @@ static PetscErrorCode DMDACoarsenOwnershipRanges(DM da,PetscBool periodic,PetscI
   PetscInt       i,totalf,remaining,startc,startf;
 
   PetscFunctionBegin;
-  PetscCheck(ratio >= 1,PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Requested refinement ratio %D must be at least 1",ratio);
+  PetscCheck(ratio >= 1,PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Requested refinement ratio %" PetscInt_FMT " must be at least 1",ratio);
   if (ratio == 1) {
     PetscCall(PetscArraycpy(lc,lf,m));
     PetscFunctionReturn(0);

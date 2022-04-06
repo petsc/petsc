@@ -343,14 +343,14 @@ static PetscErrorCode PCView_Telescope(PC pc,PetscViewer viewer)
         PetscCallMPI(MPI_Comm_size(subcomm,&subcomm_size));
 
         PetscCall(PetscViewerASCIIPushTab(viewer));
-        PetscCall(PetscViewerASCIIPrintf(viewer,"petsc subcomm: parent comm size reduction factor = %D\n",sred->redfactor));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"petsc subcomm: parent comm size reduction factor = %" PetscInt_FMT "\n",sred->redfactor));
         PetscCall(PetscViewerASCIIPrintf(viewer,"petsc subcomm: parent_size = %d , subcomm_size = %d\n",(int)comm_size,(int)subcomm_size));
         switch (sred->subcommtype) {
         case PETSC_SUBCOMM_INTERLACED :
-          PetscCall(PetscViewerASCIIPrintf(viewer,"petsc subcomm: type = interlaced\n",sred->subcommtype));
+          PetscCall(PetscViewerASCIIPrintf(viewer,"petsc subcomm: type = %s\n",PetscSubcommTypes[sred->subcommtype]));
           break;
         case PETSC_SUBCOMM_CONTIGUOUS :
-          PetscCall(PetscViewerASCIIPrintf(viewer,"petsc subcomm type = contiguous\n",sred->subcommtype));
+          PetscCall(PetscViewerASCIIPrintf(viewer,"petsc subcomm type = %s\n",PetscSubcommTypes[sred->subcommtype]));
           break;
         default :
           SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"General subcomm type not supported by PCTelescope");
@@ -797,8 +797,8 @@ static PetscErrorCode PCTelescopeSetReductionFactor_Telescope(PC pc,PetscInt fac
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size));
-  PetscCheck(fact > 0,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Reduction factor of telescoping PC %D must be positive",fact);
-  PetscCheck(fact <= size,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Reduction factor of telescoping PC %D must be <= comm.size",fact);
+  PetscCheck(fact > 0,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Reduction factor of telescoping PC %" PetscInt_FMT " must be positive",fact);
+  PetscCheck(fact <= size,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Reduction factor of telescoping PC %" PetscInt_FMT " must be <= comm.size",fact);
   red->redfactor = fact;
   PetscFunctionReturn(0);
 }

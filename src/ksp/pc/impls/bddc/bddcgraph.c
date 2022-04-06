@@ -65,36 +65,36 @@ PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph graph, PetscInt verbosity_level,
   PetscCall(PetscViewerASCIIPrintf(viewer,"--------------------------------------------------\n"));
   PetscCall(PetscViewerFlush(viewer));
   PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"Local BDDC graph for subdomain %04d\n",PetscGlobalRank));
-  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"Number of vertices %d\n",graph->nvtxs));
-  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"Number of local subdomains %d\n",graph->n_local_subs ? graph->n_local_subs : 1));
-  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"Custom minimal size %d\n",graph->custom_minimal_size));
+  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"Number of vertices %" PetscInt_FMT "\n",graph->nvtxs));
+  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"Number of local subdomains %" PetscInt_FMT "\n",graph->n_local_subs ? graph->n_local_subs : 1));
+  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"Custom minimal size %" PetscInt_FMT "\n",graph->custom_minimal_size));
   if (graph->maxcount != PETSC_MAX_INT) {
-    PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"Max count %d\n",graph->maxcount));
+    PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"Max count %" PetscInt_FMT "\n",graph->maxcount));
   }
-  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"Topological two dim? %d (set %d)\n",graph->twodim,graph->twodimset));
+  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"Topological two dim? %s (set %s)\n",PetscBools[graph->twodim],PetscBools[graph->twodimset]));
   if (verbosity_level > 2) {
     for (i=0;i<graph->nvtxs;i++) {
-      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"%d:\n",i));
-      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"   which_dof: %d\n",graph->which_dof[i]));
-      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"   special_dof: %d\n",graph->special_dof[i]));
-      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"   neighbours: %d\n",graph->count[i]));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"%" PetscInt_FMT ":\n",i));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"   which_dof: %" PetscInt_FMT "\n",graph->which_dof[i]));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"   special_dof: %" PetscInt_FMT "\n",graph->special_dof[i]));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"   neighbours: %" PetscInt_FMT "\n",graph->count[i]));
       PetscCall(PetscViewerASCIIUseTabs(viewer,PETSC_FALSE));
       if (graph->count[i]) {
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"     set of neighbours:"));
         for (j=0;j<graph->count[i];j++) {
-          PetscCall(PetscViewerASCIISynchronizedPrintf(viewer," %d",graph->neighbours_set[i][j]));
+          PetscCall(PetscViewerASCIISynchronizedPrintf(viewer," %" PetscInt_FMT,graph->neighbours_set[i][j]));
         }
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"\n"));
       }
       PetscCall(PetscViewerASCIISetTab(viewer,tabs));
       PetscCall(PetscViewerASCIIUseTabs(viewer,PETSC_TRUE));
       if (graph->mirrors) {
-        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"   mirrors: %d\n",graph->mirrors[i]));
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"   mirrors: %" PetscInt_FMT "\n",graph->mirrors[i]));
         if (graph->mirrors[i]) {
           PetscCall(PetscViewerASCIIUseTabs(viewer,PETSC_FALSE));
           PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"     set of mirrors:"));
           for (j=0;j<graph->mirrors[i];j++) {
-            PetscCall(PetscViewerASCIISynchronizedPrintf(viewer," %d",graph->mirrors_set[i][j]));
+            PetscCall(PetscViewerASCIISynchronizedPrintf(viewer," %" PetscInt_FMT,graph->mirrors_set[i][j]));
           }
           PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"\n"));
           PetscCall(PetscViewerASCIISetTab(viewer,tabs));
@@ -106,7 +106,7 @@ PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph graph, PetscInt verbosity_level,
           PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"   local adj list:"));
           PetscCall(PetscViewerASCIIUseTabs(viewer,PETSC_FALSE));
           for (j=graph->xadj[i];j<graph->xadj[i+1];j++) {
-            PetscCall(PetscViewerASCIISynchronizedPrintf(viewer," %d",graph->adjncy[j]));
+            PetscCall(PetscViewerASCIISynchronizedPrintf(viewer," %" PetscInt_FMT,graph->adjncy[j]));
           }
           PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"\n"));
           PetscCall(PetscViewerASCIISetTab(viewer,tabs));
@@ -116,24 +116,24 @@ PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph graph, PetscInt verbosity_level,
         }
       }
       if (graph->n_local_subs) {
-        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"   local sub id: %d\n",graph->local_subs[i]));
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"   local sub id: %" PetscInt_FMT "\n",graph->local_subs[i]));
       }
-      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"   interface subset id: %d\n",graph->subset[i]));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"   interface subset id: %" PetscInt_FMT "\n",graph->subset[i]));
       if (graph->subset[i] && graph->subset_ncc) {
-        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"   ncc for subset: %d\n",graph->subset_ncc[graph->subset[i]-1]));
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"   ncc for subset: %" PetscInt_FMT "\n",graph->subset_ncc[graph->subset[i]-1]));
       }
     }
   }
-  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"Total number of connected components %d\n",graph->ncc));
+  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"Total number of connected components %" PetscInt_FMT "\n",graph->ncc));
   PetscCall(PetscMalloc1(graph->cptr[graph->ncc],&queue_in_global_numbering));
   PetscCall(ISLocalToGlobalMappingApply(graph->l2gmap,graph->cptr[graph->ncc],graph->queue,queue_in_global_numbering));
   for (i=0;i<graph->ncc;i++) {
     PetscInt node_num=graph->queue[graph->cptr[i]];
     PetscBool printcc = PETSC_FALSE;
-    PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"  cc %d (size %d, fid %d, neighs:",i,graph->cptr[i+1]-graph->cptr[i],graph->which_dof[node_num]));
+    PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"  cc %" PetscInt_FMT " (size %" PetscInt_FMT ", fid %" PetscInt_FMT ", neighs:",i,graph->cptr[i+1]-graph->cptr[i],graph->which_dof[node_num]));
     PetscCall(PetscViewerASCIIUseTabs(viewer,PETSC_FALSE));
     for (j=0;j<graph->count[node_num];j++) {
-      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer," %d",graph->neighbours_set[node_num][j]));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer," %" PetscInt_FMT,graph->neighbours_set[node_num][j]));
     }
     if (verbosity_level > 1) {
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"):"));
@@ -142,7 +142,7 @@ PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph graph, PetscInt verbosity_level,
       }
       if (printcc) {
         for (j=graph->cptr[i];j<graph->cptr[i+1];j++) {
-          PetscCall(PetscViewerASCIISynchronizedPrintf(viewer," %d (%d)",graph->queue[j],queue_in_global_numbering[j]));
+          PetscCall(PetscViewerASCIISynchronizedPrintf(viewer," %" PetscInt_FMT " (%" PetscInt_FMT ")",graph->queue[j],queue_in_global_numbering[j]));
         }
       }
     } else {
@@ -1179,7 +1179,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   PetscCall(ISRenumber(subset,NULL,NULL,&subset_n));
   PetscCall(ISDestroy(&subset));
   PetscCall(ISGetLocalSize(subset_n,&k));
-  PetscCheck(k == graph->ncc,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid size of new subset! %D != %D",k,graph->ncc);
+  PetscCheck(k == graph->ncc,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid size of new subset! %" PetscInt_FMT " != %" PetscInt_FMT,k,graph->ncc);
   PetscCall(ISGetIndices(subset_n,&is_indices));
   PetscCall(PetscArraycpy(graph->subset_ref_node,is_indices,graph->ncc));
   PetscCall(ISRestoreIndices(subset_n,&is_indices));

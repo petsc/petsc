@@ -76,7 +76,7 @@ PetscErrorCode gridToParticles(const DM dm, DM sw, PetscReal *moments, Vec rhs, 
     PetscCall(MatGetLocalSize(M_p, &M, &N));
     if (N>M) {
       PC        pc;
-      PetscCall(PetscInfo(ksp, " M (%D) < M (%D) -- skip revert to lsqr\n",M,N));
+      PetscCall(PetscInfo(ksp, " M (%" PetscInt_FMT ") < M (%" PetscInt_FMT ") -- skip revert to lsqr\n",M,N));
       is_lsqr = PETSC_TRUE;
       PetscCall(KSPSetType(ksp,KSPLSQR));
       PetscCall(KSPGetPC(ksp,&pc));
@@ -96,12 +96,12 @@ PetscErrorCode gridToParticles(const DM dm, DM sw, PetscReal *moments, Vec rhs, 
         PetscScalar dot = 0;
         PetscCall(MatGetRow(matshellctx->MpTrans,i,&nzl,&cols,&vals));
         for (int ii=0 ; ii<nzl ; ii++) dot += PetscSqr(vals[ii]);
-        PetscCheck(dot!=0.0,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Row %D is empty", i);
+        PetscCheck(dot!=0.0,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Row %d is empty", i);
         PetscCall(MatSetValue(D,i,i,dot,INSERT_VALUES));
       }
       PetscCall(MatAssemblyBegin(D, MAT_FINAL_ASSEMBLY));
       PetscCall(MatAssemblyEnd(D, MAT_FINAL_ASSEMBLY));
-      PetscInfo(M_p,"createMtMKSP Have %D eqs, nzl = %D\n",N,nzl);
+      PetscInfo(M_p,"createMtMKSP Have %" PetscInt_FMT " eqs, nzl = %" PetscInt_FMT "\n",N,nzl);
       PetscCall(KSPSetOperators(ksp, MtM, D));
       PetscCall(MatViewFromOptions(D,NULL,"-ftop2_D_mat_view"));
       PetscCall(MatViewFromOptions(M_p,NULL,"-ftop2_Mp_mat_view"));
@@ -237,8 +237,8 @@ PetscErrorCode go()
 
   PetscFunctionBeginUser;
 #if defined(PETSC_HAVE_OPENMP) && defined(PETSC_HAVE_THREADSAFETY)
-  PetscCheck(numthreads<=MAX_NUM_THRDS,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Too many threads %D > %D", numthreads, MAX_NUM_THRDS);
-  PetscCheck(numthreads>0,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "No threads %D > %D ", numthreads,  MAX_NUM_THRDS);
+  PetscCheck(numthreads<=MAX_NUM_THRDS,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Too many threads %" PetscInt_FMT " > %d", numthreads, MAX_NUM_THRDS);
+  PetscCheck(numthreads>0,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "No threads %" PetscInt_FMT " > %d", numthreads,  MAX_NUM_THRDS);
 #endif
   if (target >= numthreads) target = numthreads-1;
   PetscCall(PetscLogEventRegister("Create Swarm", DM_CLASSID, &swarm_create_ev));
@@ -272,7 +272,7 @@ PetscErrorCode go()
         h[i] = (hi[i] - lo[i])/faces[i];
         hp[i] = (hi[i] - lo[i])/Np[i];
         vol *= (hi[i] - lo[i]);
-        PetscCall(PetscInfo(dm_t[tid]," lo = %g hi = %g n = %D h = %g hp = %g\n",lo[i],hi[i],faces[i],h[i],hp[i]));
+        PetscCall(PetscInfo(dm_t[tid]," lo = %g hi = %g n = %" PetscInt_FMT " h = %g hp = %g\n",(double)lo[i],(double)hi[i],faces[i],(double)h[i],(double)hp[i]));
       }
     }
   }
@@ -328,7 +328,7 @@ PetscErrorCode go()
   }
   PetscCall(PetscLogEventEnd(solve_ev,0,0,0,0));
   //
-  PetscCall(PetscPrintf(PETSC_COMM_SELF,"Total number density: %20.12e (%20.12e); x-momentum = %g (%g); energy = %g error = %e, %D particles. Use %D threads\n", moments_1[0], moments_0[0], moments_1[1], moments_0[1], moments_1[2], (moments_1[2]-moments_0[2])/moments_0[2],Np[0]*Np[1],numthreads));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"Total number density: %20.12e (%20.12e); x-momentum = %g (%g); energy = %g error = %e, %" PetscInt_FMT " particles. Use %" PetscInt_FMT " threads\n", (double)moments_1[0], (double)moments_0[0], (double)moments_1[1], (double)moments_0[1], (double)moments_1[2], (double)((moments_1[2]-moments_0[2])/moments_0[2]),Np[0]*Np[1],numthreads));
   /* Cleanup */
   for (int tid=0; tid<numthreads; tid++) {
     PetscCall(VecDestroy(&rho_t[tid]));

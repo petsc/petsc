@@ -61,7 +61,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user)
     if (user->debug) PetscCall(PetscPrintf(comm, "Loading mesh from file: %s and creating the coarse level DM object.\n",user->input_file));
     PetscCall(DMMoabLoadFromFile(comm, user->dim, user->nghost, user->input_file, "", &user->dm));
   } else {
-    if (user->debug) PetscCall(PetscPrintf(comm, "Creating a %D-dimensional structured %s mesh of %Dx%Dx%D in memory and creating a DM object.\n",user->dim,(user->simplex?"simplex":"regular"),user->nele,user->nele,user->nele));
+    if (user->debug) PetscCall(PetscPrintf(comm, "Creating a %" PetscInt_FMT "-dimensional structured %s mesh of %" PetscInt_FMT "x%" PetscInt_FMT "x%" PetscInt_FMT " in memory and creating a DM object.\n",user->dim,(user->simplex?"simplex":"regular"),user->nele,user->nele,user->nele));
     PetscCall(DMMoabCreateBoxMesh(comm, user->dim, user->simplex, NULL, user->nele, user->nghost, &user->dm));
   }
   PetscCall(PetscObjectSetName((PetscObject)user->dm, "Coarse Mesh"));
@@ -101,18 +101,18 @@ int main(int argc, char **argv)
   if (user.nlevels) {
     PetscCall(PetscMalloc1(user.nlevels, &degrees));
     for (i=0; i < user.nlevels; i++) degrees[i] = user.degree;
-    if (user.debug) PetscCall(PetscPrintf(comm, "Generate the MOAB mesh hierarchy with %D levels.\n", user.nlevels));
+    if (user.debug) PetscCall(PetscPrintf(comm, "Generate the MOAB mesh hierarchy with %" PetscInt_FMT " levels.\n", user.nlevels));
     PetscCall(DMMoabGenerateHierarchy(user.dm,user.nlevels,degrees));
 
     PetscBool usehierarchy=PETSC_FALSE;
     if (usehierarchy) PetscCall(DMRefineHierarchy(user.dm,user.nlevels,&dmhierarchy[1]));
     else {
       if (user.debug) {
-        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Level %D\n", 0));
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Level %" PetscInt_FMT "\n", 0));
         PetscCall(DMView(user.dm, 0));
       }
       for (i=1; i<=user.nlevels; i++) {
-        if (user.debug) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Level %D\n", i));
+        if (user.debug) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Level %" PetscInt_FMT "\n", i));
         PetscCall(DMRefine(dmhierarchy[i-1],MPI_COMM_NULL,&dmhierarchy[i]));
         if (createR) PetscCall(DMCreateInterpolation(dmhierarchy[i-1],dmhierarchy[i],&R,NULL));
         if (user.debug) {

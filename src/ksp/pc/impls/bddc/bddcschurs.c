@@ -530,7 +530,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     for (layer=0;layer<nlayers;layer++) {
       PetscInt n_added = 0;
       if (n_local_dofs == n_I+n_B) break;
-      PetscCheck(n_local_dofs <= n_I+n_B,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error querying layer %D. Out of bound access (%D > %D)",layer,n_local_dofs,n_I+n_B);
+      PetscCheck(n_local_dofs <= n_I+n_B,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error querying layer %" PetscInt_FMT ". Out of bound access (%" PetscInt_FMT " > %" PetscInt_FMT ")",layer,n_local_dofs,n_I+n_B);
       PetscCall(PCBDDCAdjGetNextLayer_Private(local_numbering+n_local_dofs,n_prev_added,touched,xadj,adjncy,&n_added));
       n_prev_added = n_added;
       n_local_dofs += n_added;
@@ -651,7 +651,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
   PetscCall(ISDestroy(&all_subsets));
   PetscCall(ISDestroy(&all_subsets_mult));
   PetscCall(ISGetLocalSize(all_subsets_n,&i));
-  PetscCheck(i == local_stash_size,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid size of new subset! %D != %D",i,local_stash_size);
+  PetscCheck(i == local_stash_size,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid size of new subset! %" PetscInt_FMT " != %" PetscInt_FMT,i,local_stash_size);
   PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,1,local_stash_size,NULL,&lstash));
   PetscCall(VecCreateMPI(comm_n,PETSC_DECIDE,global_size,&gstash));
   PetscCall(VecScatterCreate(lstash,NULL,gstash,all_subsets_n,&sstash));
@@ -663,7 +663,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 
     PetscCall(PetscMalloc1(local_size,&all_local_idx_B));
     PetscCall(ISGlobalToLocalMappingApply(sub_schurs->BtoNmap,IS_GTOLM_DROP,local_size,all_local_idx_N+extra,&subset_size,all_local_idx_B));
-    PetscCheck(subset_size == local_size,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in sub_schurs serial (BtoNmap)! %D != %D",subset_size,local_size);
+    PetscCheck(subset_size == local_size,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in sub_schurs serial (BtoNmap)! %" PetscInt_FMT " != %" PetscInt_FMT,subset_size,local_size);
     PetscCall(ISCreateGeneral(PETSC_COMM_SELF,local_size,all_local_idx_B,PETSC_OWN_POINTER,&sub_schurs->is_Ej_all));
   }
 
@@ -1136,7 +1136,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
             char name[16];
 
             PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,1,size_schur,array+n_I,&vv));
-            PetscCall(PetscSNPrintf(name,sizeof(name),"Pvs%D",i));
+            PetscCall(PetscSNPrintf(name,sizeof(name),"Pvs%" PetscInt_FMT,i));
             PetscCall(PetscObjectSetName((PetscObject)vv,name));
             PetscCall(VecView(vv,matl_dbg_viewer));
           }
@@ -1842,7 +1842,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       IS   is;
       char name[16];
 
-      PetscCall(PetscSNPrintf(name,sizeof(name),"IE%D",i));
+      PetscCall(PetscSNPrintf(name,sizeof(name),"IE%" PetscInt_FMT,i));
       PetscCall(ISGetLocalSize(sub_schurs->is_subs[i],&subset_size));
       PetscCall(ISCreateStride(PETSC_COMM_SELF,subset_size,cum,1,&is));
       PetscCall(PetscObjectSetName((PetscObject)is,name));

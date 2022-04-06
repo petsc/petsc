@@ -772,9 +772,9 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw));
   if (iascii) {
     const char *cyclename = levels ? (mglevels[0]->cycles == PC_MG_CYCLE_V ? "v" : "w") : "unknown";
-    PetscCall(PetscViewerASCIIPrintf(viewer,"  type is %s, levels=%D cycles=%s\n", PCMGTypes[mg->am],levels,cyclename));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  type is %s, levels=%" PetscInt_FMT " cycles=%s\n", PCMGTypes[mg->am],levels,cyclename));
     if (mg->am == PC_MG_MULTIPLICATIVE) {
-      PetscCall(PetscViewerASCIIPrintf(viewer,"    Cycles per PCApply=%d\n",mg->cyclesperpcapply));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"    Cycles per PCApply=%" PetscInt_FMT "\n",mg->cyclesperpcapply));
     }
     if (mg->galerkin == PC_MG_GALERKIN_BOTH) {
       PetscCall(PetscViewerASCIIPrintf(viewer,"    Using Galerkin computed coarse grid matrices\n"));
@@ -791,10 +791,10 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
       PetscCall((*mg->view)(pc,viewer));
     }
     for (i=0; i<levels; i++) {
-      if (!i) {
-        PetscCall(PetscViewerASCIIPrintf(viewer,"Coarse grid solver -- level -------------------------------\n",i));
+      if (i) {
+        PetscCall(PetscViewerASCIIPrintf(viewer,"Down solver (pre-smoother) on level %" PetscInt_FMT " -------------------------------\n",i));
       } else {
-        PetscCall(PetscViewerASCIIPrintf(viewer,"Down solver (pre-smoother) on level %D -------------------------------\n",i));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"Coarse grid solver -- level %" PetscInt_FMT " -------------------------------\n",i));
       }
       PetscCall(PetscViewerASCIIPushTab(viewer));
       PetscCall(KSPView(mglevels[i]->smoothd,viewer));
@@ -802,13 +802,13 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
       if (i && mglevels[i]->smoothd == mglevels[i]->smoothu) {
         PetscCall(PetscViewerASCIIPrintf(viewer,"Up solver (post-smoother) same as down solver (pre-smoother)\n"));
       } else if (i) {
-        PetscCall(PetscViewerASCIIPrintf(viewer,"Up solver (post-smoother) on level %D -------------------------------\n",i));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"Up solver (post-smoother) on level %" PetscInt_FMT " -------------------------------\n",i));
         PetscCall(PetscViewerASCIIPushTab(viewer));
         PetscCall(KSPView(mglevels[i]->smoothu,viewer));
         PetscCall(PetscViewerASCIIPopTab(viewer));
       }
       if (i && mglevels[i]->cr) {
-        PetscCall(PetscViewerASCIIPrintf(viewer,"CR solver on level %D -------------------------------\n",i));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"CR solver on level %" PetscInt_FMT " -------------------------------\n",i));
         PetscCall(PetscViewerASCIIPushTab(viewer));
         PetscCall(KSPView(mglevels[i]->cr,viewer));
         PetscCall(PetscViewerASCIIPopTab(viewer));

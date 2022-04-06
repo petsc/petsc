@@ -807,17 +807,17 @@ static PetscErrorCode TaoView_NLS(Tao tao, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii));
   if (isascii) {
     PetscCall(PetscViewerASCIIPushTab(viewer));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "Newton steps: %D\n", nlsP->newt));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "BFGS steps: %D\n", nlsP->bfgs));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "Gradient steps: %D\n", nlsP->grad));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Newton steps: %" PetscInt_FMT "\n", nlsP->newt));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "BFGS steps: %" PetscInt_FMT "\n", nlsP->bfgs));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Gradient steps: %" PetscInt_FMT "\n", nlsP->grad));
 
-    PetscCall(PetscViewerASCIIPrintf(viewer, "nls ksp atol: %D\n", nlsP->ksp_atol));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "nls ksp rtol: %D\n", nlsP->ksp_rtol));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "nls ksp ctol: %D\n", nlsP->ksp_ctol));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "nls ksp negc: %D\n", nlsP->ksp_negc));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "nls ksp dtol: %D\n", nlsP->ksp_dtol));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "nls ksp iter: %D\n", nlsP->ksp_iter));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "nls ksp othr: %D\n", nlsP->ksp_othr));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "nls ksp atol: %" PetscInt_FMT "\n", nlsP->ksp_atol));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "nls ksp rtol: %" PetscInt_FMT "\n", nlsP->ksp_rtol));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "nls ksp ctol: %" PetscInt_FMT "\n", nlsP->ksp_ctol));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "nls ksp negc: %" PetscInt_FMT "\n", nlsP->ksp_negc));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "nls ksp dtol: %" PetscInt_FMT "\n", nlsP->ksp_dtol));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "nls ksp iter: %" PetscInt_FMT "\n", nlsP->ksp_iter));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "nls ksp othr: %" PetscInt_FMT "\n", nlsP->ksp_othr));
     PetscCall(PetscViewerASCIIPopTab(viewer));
   }
   PetscFunctionReturn(0);

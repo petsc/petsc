@@ -132,7 +132,7 @@ PetscErrorCode DMSwarmDataExView(DMSwarmDataEx d)
   PetscMPIInt    p;
 
   PetscFunctionBegin;
-  PetscCall(PetscPrintf( PETSC_COMM_WORLD, "DMSwarmDataEx: instance=%D\n",d->instance));
+  PetscCall(PetscPrintf( PETSC_COMM_WORLD, "DMSwarmDataEx: instance=%" PetscInt_FMT "\n",d->instance));
   PetscCall(PetscPrintf( PETSC_COMM_WORLD, "  topology status:        %s \n", status_names[d->topology_status]));
   PetscCall(PetscPrintf( PETSC_COMM_WORLD, "  message lengths status: %s \n", status_names[d->message_lengths_status]));
   PetscCall(PetscPrintf( PETSC_COMM_WORLD, "  packer status status:   %s \n", status_names[d->packer_status]));
@@ -151,10 +151,10 @@ PetscErrorCode DMSwarmDataExView(DMSwarmDataEx d)
     PetscCall(PetscPrintf( PETSC_COMM_WORLD, "  Message lengths:\n"));
     PetscCall(PetscSynchronizedPrintf( PETSC_COMM_WORLD, "    [%d] atomic size: %ld \n", d->rank, (long int)d->unit_message_size));
     for (p=0; p<d->n_neighbour_procs; p++) {
-      PetscCall(PetscSynchronizedPrintf( PETSC_COMM_WORLD, "    [%d] >>>>> ( %D units :: tag = %d) >>>>> [%d] \n", d->rank, d->messages_to_be_sent[p], d->send_tags[p], d->neighbour_procs[p]));
+      PetscCall(PetscSynchronizedPrintf( PETSC_COMM_WORLD, "    [%d] >>>>> ( %" PetscInt_FMT " units :: tag = %d) >>>>> [%d] \n", d->rank, d->messages_to_be_sent[p], d->send_tags[p], d->neighbour_procs[p]));
     }
     for (p=0; p<d->n_neighbour_procs; p++) {
-      PetscCall(PetscSynchronizedPrintf( PETSC_COMM_WORLD, "    [%d] <<<<< ( %D units :: tag = %d) <<<<< [%d] \n", d->rank, d->messages_to_be_recvieved[p], d->recv_tags[p], d->neighbour_procs[p]));
+      PetscCall(PetscSynchronizedPrintf( PETSC_COMM_WORLD, "    [%d] <<<<< ( %" PetscInt_FMT " units :: tag = %d) <<<<< [%d] \n", d->rank, d->messages_to_be_recvieved[p], d->recv_tags[p], d->neighbour_procs[p]));
     }
     PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,stdout));
   }
@@ -526,7 +526,7 @@ PetscErrorCode DMSwarmDataExPackData(DMSwarmDataEx de,PetscMPIInt proc_id,PetscI
   PetscCheck(de->send_message, de->comm, PETSC_ERR_ORDER, "send_message is not initialized. Call DMSwarmDataExPackInitialize() first");
   PetscCall(_DMSwarmDataExConvertProcIdToLocalIndex( de, proc_id, &local));
   PetscCheck(local != -1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "proc_id %d is not registered neighbour", (int)proc_id);
-  PetscCheck(n+de->pack_cnt[local] <= de->messages_to_be_sent[local], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Trying to pack too many entries to be sent to proc %d. Space requested = %D: Attempt to insert %D",
+  PetscCheck(n+de->pack_cnt[local] <= de->messages_to_be_sent[local], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Trying to pack too many entries to be sent to proc %d. Space requested = %" PetscInt_FMT ": Attempt to insert %" PetscInt_FMT,
               (int)proc_id, de->messages_to_be_sent[local], n+de->pack_cnt[local]);
 
   /* copy memory */
@@ -550,7 +550,7 @@ PetscErrorCode DMSwarmDataExPackFinalize(DMSwarmDataEx de)
   PetscCheck(de->packer_status == DEOBJECT_INITIALIZED, de->comm, PETSC_ERR_ORDER, "Packer has not been initialized. Must call DMSwarmDataExPackInitialize() first.");
   np = de->n_neighbour_procs;
   for (i = 0; i < np; ++i) {
-    PetscCheck(de->pack_cnt[i] == de->messages_to_be_sent[i], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not all messages for neighbour[%d] have been packed. Expected %D : Inserted %D",
+    PetscCheck(de->pack_cnt[i] == de->messages_to_be_sent[i], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not all messages for neighbour[%d] have been packed. Expected %" PetscInt_FMT " : Inserted %" PetscInt_FMT,
                 (int)de->neighbour_procs[i], de->messages_to_be_sent[i], de->pack_cnt[i]);
   }
   /* init */

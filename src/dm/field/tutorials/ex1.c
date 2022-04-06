@@ -245,7 +245,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsBool("-test_shell", "Test the DMFIELDSHELL implementation of DMField", "ex1.c", testShell, &testShell, NULL));
   PetscOptionsEnd();
 
-  PetscCheck(dim <= 3,comm,PETSC_ERR_ARG_OUTOFRANGE,"This examples works for dim <= 3, not %D",dim);
+  PetscCheck(dim <= 3,comm,PETSC_ERR_ARG_OUTOFRANGE,"This examples works for dim <= 3, not %" PetscInt_FMT,dim);
   PetscCall(PetscStrncmp(type,DMPLEX,256,&isplex));
   PetscCall(PetscStrncmp(type,DMDA,256,&isda));
 

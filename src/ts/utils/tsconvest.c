@@ -145,7 +145,7 @@ static PetscErrorCode PetscConvEstGetConvRateTS_Spatial_Private(PetscConvEst ce,
     char          stageName[PETSC_MAX_PATH_LEN];
     const char   *dmname, *uname;
 
-    PetscCall(PetscSNPrintf(stageName, PETSC_MAX_PATH_LEN-1, "ConvEst Refinement Level %D", r));
+    PetscCall(PetscSNPrintf(stageName, PETSC_MAX_PATH_LEN-1, "ConvEst Refinement Level %" PetscInt_FMT, r));
 #if defined(PETSC_USE_LOG)
     PetscCall(PetscLogStageGetId(stageName, &stage));
     if (stage < 0) PetscCall(PetscLogStageRegister(stageName, &stage));

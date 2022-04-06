@@ -110,8 +110,8 @@ int main(int argc,char **argv)
   if (norm != 0.0) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"ex23: Norm of difference %g should be zero\n",(double)norm));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  Number of processors %d\n",size));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  M,N,P,dof %D %D %D %D\n",M,N,P,dof));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  stencil_width %D stencil_type %d periodic %d\n",stencil_width,(int)stencil_type,(int)pt));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  M,N,P,dof %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n",M,N,P,dof));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  stencil_width %" PetscInt_FMT " stencil_type %d periodic %d\n",stencil_width,(int)stencil_type,(int)pt));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  dimension %d\n",1 + (int) flg2 + (int) flg3));
   }
 

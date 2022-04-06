@@ -147,7 +147,7 @@ int main(int argc,char **argv)
   case 2: user.mms_solution = MMSSolution2; user.mms_forcing = MMSForcing2; break;
   case 3: user.mms_solution = MMSSolution3; user.mms_forcing = MMSForcing3; break;
   case 4: user.mms_solution = MMSSolution4; user.mms_forcing = MMSForcing4; break;
-  default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Unknown MMS type %d",MMS);
+  default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Unknown MMS type %" PetscInt_FMT,MMS);
   }
   PetscCall(DMDASNESSetFunctionLocal(da,INSERT_VALUES,(DMDASNESFunction)FormFunctionLocal,&user));
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-fd",&flg,NULL));
@@ -185,7 +185,7 @@ int main(int argc,char **argv)
   PetscCall(SNESGetLinearSolveIterations(snes,&slits));
   PetscCall(SNESGetKSP(snes,&ksp));
   PetscCall(KSPGetTotalIterations(ksp,&lits));
-  PetscCheck(lits == slits,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Number of total linear iterations reported by SNES %D does not match reported by KSP %D",slits,lits);
+  PetscCheck(lits == slits,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Number of total linear iterations reported by SNES %" PetscInt_FMT " does not match reported by KSP %" PetscInt_FMT,slits,lits);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
@@ -206,7 +206,7 @@ int main(int argc,char **argv)
     PetscCall(VecNorm(e, NORM_2, &errorl2));
     PetscCall(VecNorm(e, NORM_INFINITY, &errorinf));
     PetscCall(VecGetSize(e, &N));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "N: %D error L2 %g inf %g\n", N, (double) errorl2/PetscSqrtReal((PetscReal)N), (double) errorinf));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "N: %" PetscInt_FMT " error L2 %g inf %g\n", N, (double)(errorl2/PetscSqrtReal((PetscReal)N)), (double) errorinf));
     PetscCall(VecDestroy(&e));
     PetscCall(PetscLogEventSetDof(SNES_Solve, 0, N));
     PetscCall(PetscLogEventSetError(SNES_Solve, 0, errorl2/PetscSqrtReal(N)));
@@ -620,7 +620,7 @@ PetscErrorCode FormFunctionMatlab(SNES snes,Vec X,Vec F,void *ptr)
   PetscCall(DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX));
   PetscCall(DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX));
   PetscCall(PetscMatlabEnginePut(PETSC_MATLAB_ENGINE_(comm),(PetscObject)localX));
-  PetscCall(PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(comm),"localF=ex5m(localX,%18.16e,%18.16e,%18.16e)",hx,hy,lambda));
+  PetscCall(PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(comm),"localF=ex5m(localX,%18.16e,%18.16e,%18.16e)",(double)hx,(double)hy,(double)lambda));
   PetscCall(PetscMatlabEngineGet(PETSC_MATLAB_ENGINE_(comm),(PetscObject)localF));
 
   /*

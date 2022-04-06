@@ -351,7 +351,7 @@ static PetscErrorCode KSPGMRESBuildSoln(PetscScalar *nrs,Vec vs,Vec vdest,KSP ks
     PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"You reached the break down in GMRES; HH(it,it) = 0");
     else ksp->reason = KSP_DIVERGED_BREAKDOWN;
 
-    PetscCall(PetscInfo(ksp,"Likely your matrix or preconditioner is singular. HH(it,it) is identically zero; it = %D GRS(it) = %g\n",it,(double)PetscAbsScalar(*GRS(it))));
+    PetscCall(PetscInfo(ksp,"Likely your matrix or preconditioner is singular. HH(it,it) is identically zero; it = %" PetscInt_FMT " GRS(it) = %g\n",it,(double)PetscAbsScalar(*GRS(it))));
     PetscFunctionReturn(0);
   }
   for (ii=1; ii<=it; ii++) {
@@ -359,10 +359,10 @@ static PetscErrorCode KSPGMRESBuildSoln(PetscScalar *nrs,Vec vs,Vec vdest,KSP ks
     tt = *GRS(k);
     for (j=k+1; j<=it; j++) tt = tt - *HH(k,j) * nrs[j];
     if (*HH(k,k) == 0.0) {
-      PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"Likely your matrix or preconditioner is singular. HH(k,k) is identically zero; k = %D",k);
+      PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"Likely your matrix or preconditioner is singular. HH(k,k) is identically zero; k = %" PetscInt_FMT,k);
       else {
         ksp->reason = KSP_DIVERGED_BREAKDOWN;
-        PetscCall(PetscInfo(ksp,"Likely your matrix or preconditioner is singular. HH(k,k) is identically zero; k = %D\n",k));
+        PetscCall(PetscInfo(ksp,"Likely your matrix or preconditioner is singular. HH(k,k) is identically zero; k = %" PetscInt_FMT "\n",k));
         PetscFunctionReturn(0);
       }
     }
@@ -519,10 +519,10 @@ PetscErrorCode KSPView_GMRES(KSP ksp,PetscViewer viewer)
     cstr = "unknown orthogonalization";
   }
   if (iascii) {
-    PetscCall(PetscViewerASCIIPrintf(viewer,"  restart=%D, using %s\n",gmres->max_k,cstr));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  restart=%" PetscInt_FMT ", using %s\n",gmres->max_k,cstr));
     PetscCall(PetscViewerASCIIPrintf(viewer,"  happy breakdown tolerance %g\n",(double)gmres->haptol));
   } else if (isstring) {
-    PetscCall(PetscViewerStringSPrintf(viewer,"%s restart %D",cstr,gmres->max_k));
+    PetscCall(PetscViewerStringSPrintf(viewer,"%s restart %" PetscInt_FMT,cstr,gmres->max_k));
   }
   PetscFunctionReturn(0);
 }

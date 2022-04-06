@@ -70,7 +70,7 @@ int main(int argc,char **args)
   PetscCall(VecAXPY(u,-1.0,b));
   PetscCall(VecNorm(u,NORM_2,&norm));
   PetscCall(KSPGetIterationNumber(ksp,&its));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3" PetscInt_FMT "\n",its));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",(double)norm));
 
   /* Cleanup */

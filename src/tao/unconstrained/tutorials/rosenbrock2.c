@@ -93,7 +93,7 @@ int main(int argc,char **argv)
   PetscCheck(reason == TAO_CONVERGED_GATOL,PETSC_COMM_SELF, PETSC_ERR_NOT_CONVERGED, "Solution failed to converge!");
   PetscCall(TaoGetIterationNumber(tao, &oneshot_its));
   PetscCall(PetscPrintf(PETSC_COMM_SELF, "-----------------------\n"));
-  PetscCall(PetscPrintf(PETSC_COMM_SELF, "recycled its: %D | oneshot its: %D\n", recycled_its, oneshot_its));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "recycled its: %" PetscInt_FMT " | oneshot its: %" PetscInt_FMT "\n", recycled_its, oneshot_its));
   PetscCheck(recycled_its == oneshot_its,PETSC_COMM_SELF, PETSC_ERR_NOT_CONVERGED, "LMVM recycling does not work!");
 
   PetscCall(TaoDestroy(&tao));

@@ -583,8 +583,8 @@ static PetscErrorCode PCSetUp_H2OPUS(PC pc)
   err   = initerr;
   errMA = initerrMA;
   if (pch2opus->monitor) {
-    PetscCall(PetscPrintf(PetscObjectComm((PetscObject)pc),"%D: ||M*A - I|| NORM%s abs %g rel %g\n",0,NormTypes[norm],(double)err,(double)(err/initerr)));
-    PetscCall(PetscPrintf(PetscObjectComm((PetscObject)pc),"%D: ||M*A||     NORM%s abs %g rel %g\n",0,NormTypes[norm],(double)errMA,(double)(errMA/initerrMA)));
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject)pc),"%" PetscInt_FMT ": ||M*A - I|| NORM%s abs %g rel %g\n",0,NormTypes[norm],(double)err,(double)(err/initerr)));
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject)pc),"%" PetscInt_FMT ": ||M*A||     NORM%s abs %g rel %g\n",0,NormTypes[norm],(double)errMA,(double)(errMA/initerrMA)));
   }
   if (initerr > pch2opus->atol && !pc->failedreason) {
     PetscInt i;
@@ -612,8 +612,8 @@ static PetscErrorCode PCSetUp_H2OPUS(PC pc)
         pch2opus->testMA = PETSC_FALSE;
       }
       if (pch2opus->monitor) {
-        PetscCall(PetscPrintf(PetscObjectComm((PetscObject)pc),"%D: ||M*A - I|| NORM%s abs %g rel %g\n",i+1,NormTypes[norm],(double)err,(double)(err/initerr)));
-        PetscCall(PetscPrintf(PetscObjectComm((PetscObject)pc),"%D: ||M*A||     NORM%s abs %g rel %g\n",i+1,NormTypes[norm],(double)errMA,(double)(errMA/initerrMA)));
+        PetscCall(PetscPrintf(PetscObjectComm((PetscObject)pc),"%" PetscInt_FMT ": ||M*A - I|| NORM%s abs %g rel %g\n",i+1,NormTypes[norm],(double)err,(double)(err/initerr)));
+        PetscCall(PetscPrintf(PetscObjectComm((PetscObject)pc),"%" PetscInt_FMT ": ||M*A||     NORM%s abs %g rel %g\n",i+1,NormTypes[norm],(double)errMA,(double)(errMA/initerrMA)));
       }
       if (PetscIsInfOrNanReal(err)) pc->failedreason = PC_SETUP_ERROR;
       if (err < pch2opus->atol || err < pch2opus->rtol*initerr || pc->failedreason) break;

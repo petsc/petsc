@@ -25,6 +25,37 @@ In addition to the changes above
 
 - Change ``PetscOptionsBegin()``, ``PetscOptionsEnd()``, and ``PetscObjectOptionsBegin()`` to not return an error code
 - Change ``PetscOptionsHead()``, ``PetscOptionsTail()``, to ``PetscOptionsHeadBegin()`` and ``PetscOptionsHeadEnd()`` and to not return an error code
+- Add ``PETSC_ATTRIBUTE_FORMAT()`` to enable compile-time ``printf()``-style format specifier checking and apply it any PETSc functions taking a format string
+- Deprecate the use of ``%D`` for printing ``PetscInt`` in favor of ``%" PetscInt_FMT "``. Compilers may now emit warnings when using ``%D`` as a result of applying ``PETSC_ATTRIBUTE_FORMAT``. Users that need to support older versions of PETSc may do one of two things:
+
+  #. **Recommended** Insert the following code block *after* all PETSc header-file inclusions
+
+     ::
+
+        #if !defined(PetscInt_FMT)
+        #  if defined(PETSC_USE_64BIT_INDICES)
+        #    if !defined(PetscInt64_FMT)
+        #      if defined(PETSC_HAVE_STDINT_H) && defined(PETSC_HAVE_INTTYPES_H) && defined(PETSC_HAVE_MPI_INT64_T)
+        #        include <inttypes.h>
+        #        define PetscInt64_FMT PRId64
+        #      elif (PETSC_SIZEOF_LONG_LONG == 8)
+        #        define PetscInt64_FMT "lld"
+        #      elif defined(PETSC_HAVE___INT64)
+        #        define PetscInt64_FMT "ld"
+        #      else
+        #        error "cannot determine PetscInt64 type"
+        #      endif
+        #    endif
+        #    define PetscInt_FMT PetscInt64_FMT
+        #  else
+        #    define PetscInt_FMT "d"
+        #  endif
+        #endif
+
+
+     This will ensure that the appropriate format specifiers are defined regardless of PETSc version.
+
+  #. **Not Recommended** Compilers warnings can be permanently suppressed by defining ``PETSC_SKIP_ATTRIBUTE_FORMAT`` prior to all PETSc header-file inclusions
 
 .. rubric:: Configure/Build:
 

@@ -340,7 +340,7 @@ PetscErrorCode  KSPGuessSetUp(KSPGuess guess)
   PetscCall(MatGetSize(guess->A,&M,&N));
   PetscCall(PetscObjectStateGet((PetscObject)guess->A,&matstate));
   if (M != oM || N != oN) {
-    PetscCall(PetscInfo(guess,"Resetting KSPGuess since matrix sizes have changed (%D != %D, %D != %D)\n",oM,M,oN,N));
+    PetscCall(PetscInfo(guess,"Resetting KSPGuess since matrix sizes have changed (%" PetscInt_FMT " != %" PetscInt_FMT ", %" PetscInt_FMT " != %" PetscInt_FMT ")\n",oM,M,oN,N));
   } else if (!reuse && (omat != guess->A || guess->omatstate != matstate)) {
     PetscCall(PetscInfo(guess,"Resetting KSPGuess since %s has changed\n",omat != guess->A ? "matrix" : "matrix state"));
     if (guess->ops->reset) PetscCall((*guess->ops->reset)(guess));

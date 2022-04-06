@@ -139,9 +139,9 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
       PetscCall(PetscViewerASCIIPopTab(viewer));
     }
     if (ksp->guess_zero) {
-      PetscCall(PetscViewerASCIIPrintf(viewer,"  maximum iterations=%D, initial guess is zero\n",ksp->max_it));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  maximum iterations=%" PetscInt_FMT ", initial guess is zero\n",ksp->max_it));
     } else {
-      PetscCall(PetscViewerASCIIPrintf(viewer,"  maximum iterations=%D, nonzero initial guess\n", ksp->max_it));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  maximum iterations=%" PetscInt_FMT ", nonzero initial guess\n", ksp->max_it));
     }
     if (ksp->guess_knoll) PetscCall(PetscViewerASCIIPrintf(viewer,"  using preconditioner applied to right hand side for initial guess\n"));
     PetscCall(PetscViewerASCIIPrintf(viewer,"  tolerances:  relative=%g, absolute=%g, divergence=%g\n",(double)ksp->rtol,(double)ksp->abstol,(double)ksp->divtol));

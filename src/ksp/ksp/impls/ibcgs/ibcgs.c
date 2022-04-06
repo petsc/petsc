@@ -137,7 +137,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
     betan = deltan/omegan_1;
     taun  = sigman_1 + betan*taun_1  - deltan*pin_1;
     if (taun == 0.0) {
-      PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to taun is zero, iteration %D",ksp->its);
+      PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to taun is zero, iteration %" PetscInt_FMT,ksp->its);
       else {
         ksp->reason = KSP_DIVERGED_NANORINF;
         PetscFunctionReturn(0);
@@ -227,14 +227,14 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
     if (ksp->lagnorm && ksp->its > 1 && ksp->normtype != KSP_NORM_NONE) rnorm = PetscSqrtReal(PetscRealPart(outsums[6]));
 
     if (kappan == 0.0) {
-      PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to kappan is zero, iteration %D",ksp->its);
+      PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to kappan is zero, iteration %" PetscInt_FMT,ksp->its);
       else {
         ksp->reason = KSP_DIVERGED_NANORINF;
         PetscFunctionReturn(0);
       }
     }
     if (thetan == 0.0) {
-      PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to thetan is zero, iteration %D",ksp->its);
+      PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to thetan is zero, iteration %" PetscInt_FMT,ksp->its);
       else {
         ksp->reason = KSP_DIVERGED_NANORINF;
         PetscFunctionReturn(0);

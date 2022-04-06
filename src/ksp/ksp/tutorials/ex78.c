@@ -20,7 +20,7 @@ int main(int argc,char **args)
 #if defined(PETSC_HAVE_HPDDM)
     PetscCall(KSPHPDDMGetType(ksp,&type));
     PetscCall(PetscStrcmp(KSPHPDDMTypes[type],common[i],&flg));
-    PetscCheck(flg,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"KSPType and KSPHPDDMType do not match: %s != %s", common[i], type);
+    PetscCheck(flg,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"KSPType and KSPHPDDMType do not match: %s != %s", common[i], KSPHPDDMTypes[type]);
     PetscCall(KSPSetFromOptions(ksp));
     PetscCall(KSPHPDDMGetType(ksp,&type));
     PetscCheck(type == KSP_HPDDM_TYPE_GCRODR,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"-ksp_hpddm_type gcrodr and KSPHPDDMType do not match: gcrodr != %s", KSPHPDDMTypes[type]);

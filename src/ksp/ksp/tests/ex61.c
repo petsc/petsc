@@ -73,7 +73,7 @@ int main(int argc,char **argv)
   PetscCall(KSPSolve(solver,X,Z));
   PetscCall(VecAXPY(Z,-1.0,Y));
   PetscCall(VecNorm(Z,NORM_2,&nrm));
-  PetscCall(PetscPrintf(PETSC_COMM_SELF,"Test1; error norm=%e\n",nrm));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"Test1; error norm=%e\n",(double)nrm));
 
   /* Free spaces */
   PetscCall(PetscFree(b));

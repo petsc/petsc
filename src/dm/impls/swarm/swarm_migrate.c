@@ -362,7 +362,7 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
   /* check for error on removed points */
   if (error_check) {
     PetscCall(DMSwarmGetSize(dm,&npoints2g));
-    PetscCheck(npointsg == npoints2g,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Points from the DMSwarm must remain constant during migration (initial %D - final %D)",npointsg,npoints2g);
+    PetscCheck(npointsg == npoints2g,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Points from the DMSwarm must remain constant during migration (initial %" PetscInt_FMT " - final %" PetscInt_FMT ")",npointsg,npoints2g);
   }
   PetscFunctionReturn(0);
 }

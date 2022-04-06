@@ -43,7 +43,7 @@ int main(int argc,char **argv)
   PetscCall(DMDAGetElements(da,&ne,&nc,&e));
   PetscCall(VecGetArray(local,&lv));
   for (i=0; i<ne; i++) {
-    PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"i %D e[3*i] %D %D %D\n",i,e[3*i],e[3*i+1],e[3*i+2]));
+    PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"i %" PetscInt_FMT " e[3*i] %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n",i,e[3*i],e[3*i+1],e[3*i+2]));
     lv[e[3*i]] = i;
   }
   PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,stdout));

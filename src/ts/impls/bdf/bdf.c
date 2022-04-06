@@ -288,7 +288,7 @@ static PetscErrorCode TSStep_BDF(TS ts)
   reject_step:
     ts->reject++; accept = PETSC_FALSE;
     if (!ts->reason && ++rejections > ts->max_reject && ts->max_reject >= 0) {
-      PetscCall(PetscInfo(ts,"Step=%D, step rejections %D greater than current TS allowed, stopping solve\n",ts->steps,rejections));
+      PetscCall(PetscInfo(ts,"Step=%" PetscInt_FMT ", step rejections %" PetscInt_FMT " greater than current TS allowed, stopping solve\n",ts->steps,rejections));
       ts->reason = TS_DIVERGED_STEP_REJECTED;
     }
   }
@@ -458,7 +458,7 @@ static PetscErrorCode TSView_BDF(TS ts,PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    PetscCall(PetscViewerASCIIPrintf(viewer,"  Order=%D\n",bdf->order));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Order=%" PetscInt_FMT "\n",bdf->order));
   }
   PetscFunctionReturn(0);
 }
@@ -471,7 +471,7 @@ static PetscErrorCode TSBDFSetOrder_BDF(TS ts,PetscInt order)
 
   PetscFunctionBegin;
   if (order == bdf->order) PetscFunctionReturn(0);
-  PetscCheck(order >= 1 && order <= 6,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"BDF Order %D not implemented",order);
+  PetscCheck(order >= 1 && order <= 6,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"BDF Order %" PetscInt_FMT " not implemented",order);
   bdf->order = order;
   PetscFunctionReturn(0);
 }

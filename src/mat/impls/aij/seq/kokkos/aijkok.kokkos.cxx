@@ -1800,7 +1800,7 @@ PETSC_INTERN PetscErrorCode PrintCsrMatrix(const KokkosCsrMatrix& csrmat)
   for (PetscInt k=0; k<m; k++) {
     PetscCall(PetscPrintf(PETSC_COMM_SELF,"%" PetscInt_FMT ": ",k));
     for (PetscInt p=i[k]; p<i[k+1]; p++) {
-      PetscCall(PetscPrintf(PETSC_COMM_SELF,"%" PetscInt_FMT "(%.1f), ",j[p],a[p]));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,"%" PetscInt_FMT "(%.1f), ",j[p],(double)PetscRealPart(a[p])));
     }
     PetscCall(PetscPrintf(PETSC_COMM_SELF,"\n"));
   }

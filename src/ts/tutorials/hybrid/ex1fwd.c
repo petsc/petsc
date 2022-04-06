@@ -39,7 +39,7 @@ PetscErrorCode MyMonitor(TS ts,PetscInt stepnum,PetscReal time,Vec U,void *ctx)
     PetscCall(TSForwardGetSensitivities(ts,&nump,&sp));
     PetscCall(MatDenseGetColumn(sp,2,&u));
     f = fopen("fwd_sp.out", "a");
-    PetscCall(PetscFPrintf(PETSC_COMM_WORLD,f,"%20.15lf %20.15lf %20.15lf\n",time,u[0],u[1]));
+    PetscCall(PetscFPrintf(PETSC_COMM_WORLD,f,"%20.15lf %20.15lf %20.15lf\n",(double)time,(double)PetscRealPart(u[0]),(double)PetscRealPart(u[1])));
     PetscCall(MatDenseRestoreColumn(sp,&u));
     fclose(f);
   }

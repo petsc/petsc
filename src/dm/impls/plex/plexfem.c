@@ -63,7 +63,7 @@ static PetscErrorCode DMPlexGetFEGeom(DMField coordField, IS pointIS, PetscQuadr
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetId((PetscObject)quad,&id));
-  PetscCall(PetscSNPrintf(composeStr, 32, "DMPlexGetFEGeom_%x\n", id));
+  PetscCall(PetscSNPrintf(composeStr, 32, "DMPlexGetFEGeom_%" PetscInt64_FMT "\n", id));
   PetscCall(PetscObjectQuery((PetscObject) pointIS, composeStr, (PetscObject *) &container));
   if (container) {
     PetscCall(PetscContainerGetPointer(container, (void **) geom));
@@ -145,7 +145,7 @@ static PetscErrorCode DMPlexProjectRigidBody_Private(PetscInt dim, PetscReal t, 
   PetscInt  i, j, k = dim > 2 ? d - dim : d;
 
   PetscFunctionBegin;
-  PetscCheck(dim == dim2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Input dimension %D does not match context dimension %D", dim, dim2);
+  PetscCheck(dim == dim2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Input dimension %" PetscInt_FMT " does not match context dimension %" PetscInt_FMT, dim, dim2);
   for (i = 0; i < dim; i++) mode[i] = 0.;
   if (d < dim) {
     mode[d] = 1.; /* Translation along axis d */
@@ -190,7 +190,7 @@ PetscErrorCode DMPlexCreateRigidBody(DM dm, PetscInt field, MatNullSpace *sp)
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMGetCoordinateDim(dm, &dimEmbed));
   PetscCall(DMGetNumFields(dm, &Nf));
-  PetscCheck(!Nf || !(field < 0 || field >= Nf),comm, PETSC_ERR_ARG_OUTOFRANGE, "Field %D is not in [0, Nf)", field, Nf);
+  PetscCheck(!Nf || !(field < 0 || field >= Nf),comm, PETSC_ERR_ARG_OUTOFRANGE, "Field %" PetscInt_FMT " is not in [0, %" PetscInt_FMT ")", field, Nf);
   if (dim == 1 && Nf < 2) {
     PetscCall(MatNullSpaceCreate(comm, PETSC_TRUE, 0, NULL, sp));
     PetscFunctionReturn(0);
@@ -397,7 +397,7 @@ static PetscErrorCode DMPlexBasisTransformSetUp_Rotation_Internal(DM dm, void *c
     PetscCall(PetscArraycpy(rc->RT, rc->R, PetscSqr(dim)));
     DMPlex_Transpose3D_Internal(rc->RT);
     break;
-  default: SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Dimension %D not supported", dim);
+  default: SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Dimension %" PetscInt_FMT " not supported", dim);
   }
   PetscFunctionReturn(0);
 }
@@ -577,11 +577,11 @@ PetscErrorCode DMPlexBasisTransformPointTensor_Internal(DM dm, DM tdm, Vec tv, P
           c += gdof;
         }
       }
-      PetscCheck(c == lda,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of columns %D should be %D", c, lda);
+      PetscCheck(c == lda,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of columns %" PetscInt_FMT " should be %" PetscInt_FMT, c, lda);
       r += fdof;
     }
   }
-  PetscCheck(r == lda,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of rows %D should be %D", c, lda);
+  PetscCheck(r == lda,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of rows %" PetscInt_FMT " should be %" PetscInt_FMT, c, lda);
   PetscCall(DMPlexRestoreCompressedClosure(dm, s, p, &Np, &points, &clSection, &clPoints, &clp));
   PetscFunctionReturn(0);
 }
@@ -1031,7 +1031,7 @@ PetscErrorCode DMPlexInsertBoundaryValues_Plex(DM dm, PetscBool insertEssential,
         if (!faceGeomFVM) continue;
         PetscCall(DMPlexInsertBoundaryValuesRiemann(dm, time, faceGeomFVM, cellGeomFVM, gradFVM, field, Nc, comps, label, numids, ids, func, ctx, locX));
       }
-    } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %D", field);
+    } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %" PetscInt_FMT, field);
   }
   PetscFunctionReturn(0);
 }
@@ -1089,7 +1089,7 @@ PetscErrorCode DMPlexInsertTimeDerivativeBoundaryValues_Plex(DM dm, PetscBool in
         break;
       default: break;
       }
-    } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %D", field);
+    } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %" PetscInt_FMT, field);
   }
   PetscFunctionReturn(0);
 }
@@ -1230,11 +1230,11 @@ PetscErrorCode DMPlexComputeL2DiffLocal(DM dm, PetscReal time, PetscErrorCode (*
 
       PetscCall(PetscFVGetQuadrature(fv, &quad));
       PetscCall(PetscFVGetNumComponents(fv, &Nc));
-    } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %D", field);
+    } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %" PetscInt_FMT, field);
     numComponents += Nc;
   }
   PetscCall(PetscQuadratureGetData(quad, NULL, &qNc, &Nq, NULL, &quadWeights));
-  PetscCheck(!(qNc != 1) || !(qNc != numComponents),PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_SIZ, "Quadrature components %D != %D field components", qNc, numComponents);
+  PetscCheck(!(qNc != 1) || !(qNc != numComponents),PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_SIZ, "Quadrature components %" PetscInt_FMT " != %" PetscInt_FMT " field components", qNc, numComponents);
   PetscCall(PetscMalloc6(numComponents,&funcVal,numComponents,&interpolant,coordDim*Nq,&coords,Nq,&fegeom.detJ,coordDim*coordDim*Nq,&fegeom.J,coordDim*coordDim*Nq,&fegeom.invJ));
   PetscCall(DMPlexGetVTKCellHeight(dm, &cellHeight));
   PetscCall(DMPlexGetSimplexOrBoxCells(dm, cellHeight, &cStart, &cEnd));
@@ -1256,10 +1256,10 @@ PetscErrorCode DMPlexComputeL2DiffLocal(DM dm, PetscReal time, PetscErrorCode (*
       PetscCall(PetscObjectGetClassId(obj, &id));
       if (id == PETSCFE_CLASSID)      {PetscCall(PetscFEGetNumComponents((PetscFE) obj, &Nc));PetscCall(PetscFEGetDimension((PetscFE) obj, &Nb));}
       else if (id == PETSCFV_CLASSID) {PetscCall(PetscFVGetNumComponents((PetscFV) obj, &Nc));Nb = 1;}
-      else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %D", field);
+      else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %" PetscInt_FMT, field);
       if (debug) {
         char title[1024];
-        PetscCall(PetscSNPrintf(title, 1023, "Solution for Field %D", field));
+        PetscCall(PetscSNPrintf(title, 1023, "Solution for Field %" PetscInt_FMT, field));
         PetscCall(DMPrintCellVector(c, title, Nb, &x[fieldOffset]));
       }
       for (q = 0; q < Nq; ++q) {
@@ -1270,7 +1270,7 @@ PetscErrorCode DMPlexComputeL2DiffLocal(DM dm, PetscReal time, PetscErrorCode (*
         qgeom.J        = &fegeom.J[q*coordDim*coordDim];
         qgeom.invJ     = &fegeom.invJ[q*coordDim*coordDim];
         qgeom.detJ     = &fegeom.detJ[q];
-        PetscCheck(fegeom.detJ[q] > 0.0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %D, point %D", (double)fegeom.detJ[q], c, q);
+        PetscCheck(fegeom.detJ[q] > 0.0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %" PetscInt_FMT ", point %" PetscInt_FMT, (double)fegeom.detJ[q], c, q);
         if (transform) {
           gcoords = &coords[coordDim*Nq];
           PetscCall(DMPlexBasisTransformApplyReal_Internal(dm, &coords[coordDim*q], PETSC_TRUE, coordDim, &coords[coordDim*q], gcoords, dm->transformCtx));
@@ -1290,7 +1290,7 @@ PetscErrorCode DMPlexComputeL2DiffLocal(DM dm, PetscReal time, PetscErrorCode (*
         else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %" PetscInt_FMT, field);
         for (fc = 0; fc < Nc; ++fc) {
           const PetscReal wt = quadWeights[q*qNc+(qNc == 1 ? 0 : qc+fc)];
-          if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "    elem %" PetscInt_FMT " field %" PetscInt_FMT ",%" PetscInt_FMT " point %g %g %g diff %g (%g, %g)\n", c, field, fc, (double)(coordDim > 0 ? coords[coordDim*q] : 0.), (double)(coordDim > 1 ? coords[coordDim*q+1] : 0.),(double)(coordDim > 2 ? coords[coordDim*q+2] : 0.), (double)(PetscSqr(PetscRealPart(interpolant[fc] - funcVal[fc]))*wt*fegeom.detJ[q]), PetscRealPart(interpolant[fc]), PetscRealPart(funcVal[fc])));
+          if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "    elem %" PetscInt_FMT " field %" PetscInt_FMT ",%" PetscInt_FMT " point %g %g %g diff %g (%g, %g)\n", c, field, fc, (double)(coordDim > 0 ? coords[coordDim*q] : 0.), (double)(coordDim > 1 ? coords[coordDim*q+1] : 0.),(double)(coordDim > 2 ? coords[coordDim*q+2] : 0.), (double)(PetscSqr(PetscRealPart(interpolant[fc] - funcVal[fc]))*wt*fegeom.detJ[q]), (double)PetscRealPart(interpolant[fc]), (double)PetscRealPart(funcVal[fc])));
           elemDiff += PetscSqr(PetscRealPart(interpolant[fc] - funcVal[fc]))*wt*fegeom.detJ[q];
         }
       }
@@ -1344,7 +1344,7 @@ PetscErrorCode DMComputeL2GradientDiff_Plex(DM dm, PetscReal time, PetscErrorCod
     numComponents += Nc;
   }
   PetscCall(PetscQuadratureGetData(quad, NULL, &qNc, &Nq, NULL, &quadWeights));
-  PetscCheck(!(qNc != 1) || !(qNc != numComponents),PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_SIZ, "Quadrature components %D != %D field components", qNc, numComponents);
+  PetscCheck(!(qNc != 1) || !(qNc != numComponents),PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_SIZ, "Quadrature components %" PetscInt_FMT " != %" PetscInt_FMT " field components", qNc, numComponents);
   /* PetscCall(DMProjectFunctionLocal(dm, fe, funcs, INSERT_BC_VALUES, localX)); */
   PetscCall(PetscMalloc6(numComponents,&funcVal,coordDim*Nq,&coords,coordDim*coordDim*Nq,&fegeom.J,coordDim*coordDim*Nq,&fegeom.invJ,numComponents*coordDim,&interpolant,Nq,&fegeom.detJ));
   PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
@@ -1404,7 +1404,7 @@ PetscErrorCode DMComputeL2GradientDiff_Plex(DM dm, PetscReal time, PetscErrorCod
         }
         for (fc = 0; fc < Nc; ++fc) {
           const PetscReal wt = quadWeights[q*qNc+(qNc == 1 ? 0 : qc+fc)];
-          if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "    elem %D fieldDer %D,%D diff %g\n", c, field, fc, (double)(PetscSqr(PetscRealPart(interpolant[fc] - funcVal[fc]))*wt*fegeom.detJ[q])));
+          if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "    elem %" PetscInt_FMT " fieldDer %" PetscInt_FMT ",%" PetscInt_FMT " diff %g\n", c, field, fc, (double)(PetscSqr(PetscRealPart(interpolant[fc] - funcVal[fc]))*wt*fegeom.detJ[q])));
           elemDiff += PetscSqr(PetscRealPart(interpolant[fc] - funcVal[fc]))*wt*fegeom.detJ[q];
         }
       }
@@ -1412,7 +1412,7 @@ PetscErrorCode DMComputeL2GradientDiff_Plex(DM dm, PetscReal time, PetscErrorCod
       qc          += Nc;
     }
     PetscCall(DMPlexVecRestoreClosure(dm, NULL, localX, c, NULL, &x));
-    if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  elem %D diff %g\n", c, (double)elemDiff));
+    if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  elem %" PetscInt_FMT " diff %g\n", c, (double)elemDiff));
     localDiff += elemDiff;
   }
   PetscCall(PetscFree6(funcVal,coords,fegeom.J,fegeom.invJ,interpolant,fegeom.detJ));
@@ -1471,7 +1471,7 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
     PetscCall(PetscDSGetTotalComponents(ds, &totNc));
     PetscCall(PetscDSGetQuadrature(ds, &quad));
     PetscCall(PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights));
-    PetscCheck(!(qNc != 1) || !(qNc != totNc),PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Quadrature components %D != %D field components", qNc, totNc);
+    PetscCheck(!(qNc != 1) || !(qNc != totNc),PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Quadrature components %" PetscInt_FMT " != %" PetscInt_FMT " field components", qNc, totNc);
     PetscCall(PetscCalloc6(totNc, &funcVal, totNc, &interpolant, dE*(Nq+1), &coords,Nq, &fegeom.detJ, dE*dE*Nq, &fegeom.J, dE*dE*Nq, &fegeom.invJ));
     if (!label) {
       PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
@@ -1509,10 +1509,10 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
         PetscCall(PetscObjectGetClassId(obj, &id));
         if (id == PETSCFE_CLASSID)      {PetscCall(PetscFEGetNumComponents((PetscFE) obj, &Nc));PetscCall(PetscFEGetDimension((PetscFE) obj, &Nb));}
         else if (id == PETSCFV_CLASSID) {PetscCall(PetscFVGetNumComponents((PetscFV) obj, &Nc));Nb = 1;}
-        else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %D", fields[f]);
+        else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %" PetscInt_FMT, fields[f]);
         if (debug) {
           char title[1024];
-          PetscCall(PetscSNPrintf(title, 1023, "Solution for Field %D", fields[f]));
+          PetscCall(PetscSNPrintf(title, 1023, "Solution for Field %" PetscInt_FMT, fields[f]));
           PetscCall(DMPrintCellVector(cell, title, Nb, &x[fOff]));
         }
         for (q = 0; q < Nq; ++q) {
@@ -1523,7 +1523,7 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
           qgeom.J        = &fegeom.J[q*dE*dE];
           qgeom.invJ     = &fegeom.invJ[q*dE*dE];
           qgeom.detJ     = &fegeom.detJ[q];
-          PetscCheck(fegeom.detJ[q] > 0.0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for cell %D, quadrature point %D", (double)fegeom.detJ[q], cell, q);
+          PetscCheck(fegeom.detJ[q] > 0.0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for cell %" PetscInt_FMT ", quadrature point %" PetscInt_FMT, (double)fegeom.detJ[q], cell, q);
           if (transform) {
             gcoords = &coords[dE*Nq];
             PetscCall(DMPlexBasisTransformApplyReal_Internal(dm, &coords[dE*q], PETSC_TRUE, dE, &coords[dE*q], gcoords, dm->transformCtx));
@@ -1541,17 +1541,17 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
           /* Call once for each face, except for lagrange field */
           if (id == PETSCFE_CLASSID)      PetscCall(PetscFEInterpolate_Static((PetscFE) obj, &x[fOff], &qgeom, q, interpolant));
           else if (id == PETSCFV_CLASSID) PetscCall(PetscFVInterpolate_Static((PetscFV) obj, &x[fOff], q, interpolant));
-          else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %D", fields[f]);
+          else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %" PetscInt_FMT, fields[f]);
           for (fc = 0; fc < Nc; ++fc) {
             const PetscReal wt = quadWeights[q*qNc+(qNc == 1 ? 0 : qc+fc)];
-            if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "    cell %D field %D,%D point %g %g %g diff %g\n", cell, fields[f], fc, (double)(dE > 0 ? coords[dE*q] : 0.), (double)(dE > 1 ? coords[dE*q+1] : 0.),(double)(dE > 2 ? coords[dE*q+2] : 0.), (double)(PetscSqr(PetscRealPart(interpolant[fc] - funcVal[fc]))*wt*fegeom.detJ[q])));
+            if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "    cell %" PetscInt_FMT " field %" PetscInt_FMT ",%" PetscInt_FMT " point %g %g %g diff %g\n", cell, fields[f], fc, (double)(dE > 0 ? coords[dE*q] : 0.), (double)(dE > 1 ? coords[dE*q+1] : 0.),(double)(dE > 2 ? coords[dE*q+2] : 0.), (double)(PetscSqr(PetscRealPart(interpolant[fc] - funcVal[fc]))*wt*fegeom.detJ[q])));
             elemDiff += PetscSqr(PetscRealPart(interpolant[fc] - funcVal[fc]))*wt*fegeom.detJ[q];
           }
         }
         fOff += Nb;
         qc   += Nc;
         localDiff[fields[f]] += elemDiff;
-        if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  cell %D field %D cum diff %g\n", cell, fields[f], (double)localDiff[fields[f]]));
+        if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  cell %" PetscInt_FMT " field %" PetscInt_FMT " cum diff %g\n", cell, fields[f], (double)localDiff[fields[f]]));
       }
       PetscCall(DMPlexVecRestoreClosure(dm, NULL, localX, cell, NULL, &x));
     }
@@ -1626,11 +1626,11 @@ PetscErrorCode DMPlexComputeL2DiffVec(DM dm, PetscReal time, PetscErrorCode (**f
 
       PetscCall(PetscFVGetQuadrature(fv, &quad));
       PetscCall(PetscFVGetNumComponents(fv, &Nc));
-    } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %D", field);
+    } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %" PetscInt_FMT, field);
     numComponents += Nc;
   }
   PetscCall(PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights));
-  PetscCheck(!(qNc != 1) || !(qNc != numComponents),PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_SIZ, "Quadrature components %D != %D field components", qNc, numComponents);
+  PetscCheck(!(qNc != 1) || !(qNc != numComponents),PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_SIZ, "Quadrature components %" PetscInt_FMT " != %" PetscInt_FMT " field components", qNc, numComponents);
   PetscCall(PetscMalloc6(numComponents,&funcVal,numComponents,&interpolant,coordDim*Nq,&coords,Nq,&fegeom.detJ,coordDim*coordDim*Nq,&fegeom.J,coordDim*coordDim*Nq,&fegeom.invJ));
   PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
   for (c = cStart; c < cEnd; ++c) {
@@ -1651,7 +1651,7 @@ PetscErrorCode DMPlexComputeL2DiffVec(DM dm, PetscReal time, PetscErrorCode (**f
       PetscCall(PetscObjectGetClassId(obj, &id));
       if (id == PETSCFE_CLASSID)      {PetscCall(PetscFEGetNumComponents((PetscFE) obj, &Nc));PetscCall(PetscFEGetDimension((PetscFE) obj, &Nb));}
       else if (id == PETSCFV_CLASSID) {PetscCall(PetscFVGetNumComponents((PetscFV) obj, &Nc));Nb = 1;}
-      else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %D", field);
+      else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %" PetscInt_FMT, field);
       if (funcs[field]) {
         for (q = 0; q < Nq; ++q) {
           PetscFEGeom qgeom;
@@ -1660,7 +1660,7 @@ PetscErrorCode DMPlexComputeL2DiffVec(DM dm, PetscReal time, PetscErrorCode (**f
           qgeom.J        = &fegeom.J[q*coordDim*coordDim];
           qgeom.invJ     = &fegeom.invJ[q*coordDim*coordDim];
           qgeom.detJ     = &fegeom.detJ[q];
-          PetscCheck(fegeom.detJ[q] > 0.0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %D, quadrature points %D", (double)fegeom.detJ[q], c, q);
+          PetscCheck(fegeom.detJ[q] > 0.0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %" PetscInt_FMT ", quadrature points %" PetscInt_FMT, (double)fegeom.detJ[q], c, q);
           PetscCall((*funcs[field])(coordDim, time, &coords[q*coordDim], Nc, funcVal, ctx));
 #if defined(needs_fix_with_return_code_argument)
           if (ierr) {
@@ -1671,7 +1671,7 @@ PetscErrorCode DMPlexComputeL2DiffVec(DM dm, PetscReal time, PetscErrorCode (**f
 #endif
           if (id == PETSCFE_CLASSID)      PetscCall(PetscFEInterpolate_Static((PetscFE) obj, &x[fieldOffset], &qgeom, q, interpolant));
           else if (id == PETSCFV_CLASSID) PetscCall(PetscFVInterpolate_Static((PetscFV) obj, &x[fieldOffset], q, interpolant));
-          else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %D", field);
+          else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %" PetscInt_FMT, field);
           for (fc = 0; fc < Nc; ++fc) {
             const PetscReal wt = quadWeights[q*qNc+(qNc == 1 ? 0 : qc+fc)];
             elemDiff += PetscSqr(PetscRealPart(interpolant[fc] - funcVal[fc]))*wt*fegeom.detJ[q];
@@ -1746,11 +1746,11 @@ PetscErrorCode DMPlexComputeClementInterpolant(DM dm, Vec locX, Vec locC)
 
       PetscCall(PetscFVGetQuadrature(fv, &quad));
       PetscCall(PetscFVGetNumComponents(fv, &fNc));
-    } else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %D", f);
+    } else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %" PetscInt_FMT, f);
     Nc += fNc;
   }
   PetscCall(PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights));
-  PetscCheck(qNc == 1,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_SIZ, "Quadrature components %D > 1", qNc);
+  PetscCheck(qNc == 1,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_SIZ, "Quadrature components %" PetscInt_FMT " > 1", qNc);
   PetscCall(PetscMalloc6(Nc*2, &valsum, Nc, &interpolant, cdim*Nq, &coords, Nq, &fegeom.detJ, cdim*cdim*Nq, &fegeom.J, cdim*cdim*Nq, &fegeom.invJ));
   PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
   PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
@@ -1781,7 +1781,7 @@ PetscErrorCode DMPlexComputeClementInterpolant(DM dm, Vec locX, Vec locC)
         PetscCall(PetscObjectGetClassId(obj, &id));
         if (id == PETSCFE_CLASSID)      {PetscCall(PetscFEGetNumComponents((PetscFE) obj, &fNc));PetscCall(PetscFEGetDimension((PetscFE) obj, &Nb));}
         else if (id == PETSCFV_CLASSID) {PetscCall(PetscFVGetNumComponents((PetscFV) obj, &fNc));Nb = 1;}
-        else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %D", f);
+        else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %" PetscInt_FMT, f);
         for (q = 0; q < Nq; ++q) {
           const PetscReal wt = quadWeights[q]*fegeom.detJ[q];
           PetscFEGeom     qgeom;
@@ -1790,9 +1790,9 @@ PetscErrorCode DMPlexComputeClementInterpolant(DM dm, Vec locX, Vec locC)
           qgeom.J        = &fegeom.J[q*cdim*cdim];
           qgeom.invJ     = &fegeom.invJ[q*cdim*cdim];
           qgeom.detJ     = &fegeom.detJ[q];
-          PetscCheck(fegeom.detJ[q] > 0.0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %D, quadrature points %D", (double) fegeom.detJ[q], cell, q);
+          PetscCheck(fegeom.detJ[q] > 0.0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %" PetscInt_FMT ", quadrature points %" PetscInt_FMT, (double) fegeom.detJ[q], cell, q);
           if (id == PETSCFE_CLASSID) PetscCall(PetscFEInterpolate_Static((PetscFE) obj, &x[foff], &qgeom, q, interpolant));
-          else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %D", f);
+          else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %" PetscInt_FMT, f);
           for (fc = 0; fc < fNc; ++fc) val[foff+fc] += interpolant[fc]*wt;
           vol += wt;
         }
@@ -1875,11 +1875,11 @@ PetscErrorCode DMPlexComputeGradientClementInterpolant(DM dm, Vec locX, Vec locC
 
       PetscCall(PetscFVGetQuadrature(fv, &quad));
       PetscCall(PetscFVGetNumComponents(fv, &Nc));
-    } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %D", field);
+    } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %" PetscInt_FMT, field);
     numComponents += Nc;
   }
   PetscCall(PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights));
-  PetscCheck(!(qNc != 1) || !(qNc != numComponents),PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_SIZ, "Quadrature components %D != %D field components", qNc, numComponents);
+  PetscCheck(!(qNc != 1) || !(qNc != numComponents),PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_SIZ, "Quadrature components %" PetscInt_FMT " != %" PetscInt_FMT " field components", qNc, numComponents);
   PetscCall(PetscMalloc6(coordDim*numComponents*2,&gradsum,coordDim*numComponents,&interpolant,coordDim*Nq,&coords,Nq,&fegeom.detJ,coordDim*coordDim*Nq,&fegeom.J,coordDim*coordDim*Nq,&fegeom.invJ));
   PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
   PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
@@ -1909,7 +1909,7 @@ PetscErrorCode DMPlexComputeGradientClementInterpolant(DM dm, Vec locX, Vec locC
         PetscCall(PetscObjectGetClassId(obj, &id));
         if (id == PETSCFE_CLASSID)      {PetscCall(PetscFEGetNumComponents((PetscFE) obj, &Nc));PetscCall(PetscFEGetDimension((PetscFE) obj, &Nb));}
         else if (id == PETSCFV_CLASSID) {PetscCall(PetscFVGetNumComponents((PetscFV) obj, &Nc));Nb = 1;}
-        else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %D", field);
+        else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %" PetscInt_FMT, field);
         for (q = 0; q < Nq; ++q) {
           PetscFEGeom qgeom;
 
@@ -1917,9 +1917,9 @@ PetscErrorCode DMPlexComputeGradientClementInterpolant(DM dm, Vec locX, Vec locC
           qgeom.J        = &fegeom.J[q*coordDim*coordDim];
           qgeom.invJ     = &fegeom.invJ[q*coordDim*coordDim];
           qgeom.detJ     = &fegeom.detJ[q];
-          PetscCheck(fegeom.detJ[q] > 0.0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %D, quadrature points %D", (double)fegeom.detJ[q], cell, q);
+          PetscCheck(fegeom.detJ[q] > 0.0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %" PetscInt_FMT ", quadrature points %" PetscInt_FMT, (double)fegeom.detJ[q], cell, q);
           if (id == PETSCFE_CLASSID)      PetscCall(PetscFEInterpolateGradient_Static((PetscFE) obj, 1, &x[fieldOffset], &qgeom, q, interpolant));
-          else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %D", field);
+          else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %" PetscInt_FMT, field);
           for (fc = 0; fc < Nc; ++fc) {
             const PetscReal wt = quadWeights[q*qNc+qc];
 
@@ -2128,7 +2128,7 @@ static PetscErrorCode DMPlexComputeIntegral_Internal(DM dm, Vec X, PetscInt cSta
           cintegral[c*Nf+f] += PetscRealPart(lint)*cgeomFVM[c].volume;
         }
       }
-    } else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %D", f);
+    } else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %" PetscInt_FMT, f);
   }
   /* Cleanup data arrays */
   if (useFVM) {
@@ -2246,7 +2246,7 @@ PetscErrorCode DMPlexComputeCellwiseIntegralFEM(DM dm, Vec X, Vec F, void *user)
     if (mesh->printFEM > 1) PetscCall(DMPrintCellVector(cell, "Cell Integral", Nf, &cintegral[c*Nf]));
     PetscCall(PetscSectionGetDof(sectionF, cell, &dof));
     PetscCall(PetscSectionGetOffset(sectionF, cell, &off));
-    PetscCheck(dof == Nf,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The number of cell dofs %D != %D", dof, Nf);
+    PetscCheck(dof == Nf,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The number of cell dofs %" PetscInt_FMT " != %" PetscInt_FMT, dof, Nf);
     for (f = 0; f < Nf; ++f) af[off+f] = cintegral[c*Nf+f];
   }
   PetscCall(VecRestoreArray(F, &af));
@@ -2287,7 +2287,7 @@ static PetscErrorCode DMPlexComputeBdIntegral_Internal(DM dm, Vec locX, IS point
 
     PetscCall(PetscDSGetDiscretization(prob, f, &obj));
     PetscCall(PetscObjectGetClassId(obj, &id));
-    PetscCheck(id != PETSCFV_CLASSID,PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Not supported for FVM (field %D)", f);
+    PetscCheck(id != PETSCFV_CLASSID,PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Not supported for FVM (field %" PetscInt_FMT ")", f);
   }
   /* Read DS information */
   PetscCall(PetscDSGetTotalDimension(prob, &totDim));
@@ -2601,12 +2601,12 @@ PetscErrorCode DMPlexComputeInterpolatorNested(DM dmc, DM dmf, PetscBool isRefin
         PetscCall(PetscFEGetDimension(fe, &cpdim));
         /* For now, fields only interpolate themselves */
         if (fieldI == fieldJ) {
-          PetscCheck(Nc == NcJ,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of components in fine space field %D does not match coarse field %D", Nc, NcJ);
+          PetscCheck(Nc == NcJ,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of components in fine space field %" PetscInt_FMT " does not match coarse field %" PetscInt_FMT, Nc, NcJ);
           PetscCall(PetscFECreateTabulation(fe, 1, npoints, points, 0, &T));
           for (i = 0, k = 0; i < fpdim; ++i) {
             PetscCall(PetscDualSpaceGetFunctional(Qref, i, &f));
             PetscCall(PetscQuadratureGetData(f, NULL, &qNc, &Np, NULL, &qweights));
-            PetscCheck(qNc == NcJ,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of components in quadrature %D does not match coarse field %D", qNc, NcJ);
+            PetscCheck(qNc == NcJ,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of components in quadrature %" PetscInt_FMT " does not match coarse field %" PetscInt_FMT, qNc, NcJ);
             for (p = 0; p < Np; ++p, ++k) {
               for (j = 0; j < cpdim; ++j) {
                 /*
@@ -2631,11 +2631,11 @@ PetscErrorCode DMPlexComputeInterpolatorNested(DM dmc, DM dmf, PetscBool isRefin
         cpdim = 1;
         /* For now, fields only interpolate themselves */
         if (fieldI == fieldJ) {
-          PetscCheck(Nc == NcJ,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of components in fine space field %D does not match coarse field %D", Nc, NcJ);
+          PetscCheck(Nc == NcJ,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of components in fine space field %" PetscInt_FMT " does not match coarse field %" PetscInt_FMT, Nc, NcJ);
           for (i = 0, k = 0; i < fpdim; ++i) {
             PetscCall(PetscDualSpaceGetFunctional(Qref, i, &f));
             PetscCall(PetscQuadratureGetData(f, NULL, &qNc, &Np, NULL, &qweights));
-            PetscCheck(qNc == NcJ,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of components in quadrature %D does not match coarse field %D", qNc, NcJ);
+            PetscCheck(qNc == NcJ,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of components in quadrature %" PetscInt_FMT " does not match coarse field %" PetscInt_FMT, qNc, NcJ);
             for (p = 0; p < Np; ++p, ++k) {
               for (j = 0; j < cpdim; ++j) {
                 for (c = 0; c < Nc; ++c) elemMat[(offsetI + i)*cTotDim + offsetJ + j] += 1.0*qweights[p*qNc+c];
@@ -2789,7 +2789,7 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
 
       PetscCall(DMPlexGetClosureIndices(dmf, fsection, globalFSection, cell, PETSC_FALSE, &numFIndices, &findices, NULL, NULL));
       PetscCall(DMPlexComputeCellGeometryFEM(dmf, cell, NULL, v0, J, invJ, &detJ));
-      PetscCheck(numFIndices == fpdim,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of fine indices %D != %D dual basis vecs", numFIndices, fpdim);
+      PetscCheck(numFIndices == fpdim,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of fine indices %" PetscInt_FMT " != %" PetscInt_FMT " dual basis vecs", numFIndices, fpdim);
       for (i = 0; i < fpdim; ++i) {
         Vec             pointVec;
         PetscScalar    *pV;
@@ -2872,7 +2872,7 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
 
       PetscCall(PetscFVGetDualSpace(fv, &Q));
       Nc   = 1;
-    } else SETERRQ(PetscObjectComm((PetscObject)dmc),PETSC_ERR_ARG_WRONG,"Unknown discretization type for field %D",field);
+    } else SETERRQ(PetscObjectComm((PetscObject)dmc),PETSC_ERR_ARG_WRONG,"Unknown discretization type for field %" PetscInt_FMT,field);
     PetscCall(PetscDualSpaceGetDimension(Q, &fpdim));
     /* For each fine grid cell */
     for (cell = cStart; cell < cEnd; ++cell) {
@@ -2881,7 +2881,7 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
 
       PetscCall(DMPlexGetClosureIndices(dmf, fsection, globalFSection, cell, PETSC_FALSE, &numFIndices, &findices, NULL, NULL));
       PetscCall(DMPlexComputeCellGeometryFEM(dmf, cell, NULL, v0, J, invJ, &detJ));
-      PetscCheck(numFIndices == fpdim,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of fine indices %D != %D dual basis vecs", numFIndices, fpdim);
+      PetscCheck(numFIndices == fpdim,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of fine indices %" PetscInt_FMT " != %" PetscInt_FMT " dual basis vecs", numFIndices, fpdim);
       for (i = 0; i < fpdim; ++i) {
         Vec             pointVec;
         PetscScalar    *pV;
@@ -2892,7 +2892,7 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
         /* Get points from the dual basis functional quadrature */
         PetscCall(PetscDualSpaceGetFunctional(Q, i, &f));
         PetscCall(PetscQuadratureGetData(f, NULL, &qNc, &Np, &qpoints, &qweights));
-        PetscCheck(qNc == Nc,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of components in quadrature %D does not match coarse field %D", qNc, Nc);
+        PetscCheck(qNc == Nc,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of components in quadrature %" PetscInt_FMT " does not match coarse field %" PetscInt_FMT, qNc, Nc);
         PetscCall(VecCreateSeq(PETSC_COMM_SELF, Np*dim, &pointVec));
         PetscCall(VecSetBlockSize(pointVec, dim));
         PetscCall(VecGetArray(pointVec, &pV));
@@ -2940,7 +2940,7 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
           }
           /* Update interpolator */
           if (mesh->printFEM > 1) PetscCall(DMPrintCellMatrix(cell, name, 1, numCIndices, elemMat));
-          PetscCheck(numCIndices == cpdim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of element matrix columns %D != %D", numCIndices, cpdim);
+          PetscCheck(numCIndices == cpdim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of element matrix columns %" PetscInt_FMT " != %" PetscInt_FMT, numCIndices, cpdim);
           PetscCall(MatSetValues(In, 1, &findices[i], numCIndices, cindices, elemMat, INSERT_VALUES));
           PetscCall(DMPlexRestoreClosureIndices(dmc, csection, globalCSection, coarseCells[ccell].index, PETSC_FALSE, &numCIndices, &cindices, NULL, NULL));
         }
@@ -3162,7 +3162,7 @@ PetscErrorCode DMPlexComputeMassMatrixGeneral(DM dmc, DM dmf, Mat mass, void *us
             }
             /* Update interpolator */
             if (mesh->printFEM > 1) PetscCall(DMPrintCellMatrix(cell, name, 1, numCIndices, elemMat));
-            PetscCheck(numCIndices == cpdim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of element matrix columns %D != %D", numCIndices, cpdim);
+            PetscCheck(numCIndices == cpdim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of element matrix columns %" PetscInt_FMT " != %" PetscInt_FMT, numCIndices, cpdim);
             PetscCall(MatSetValues(mass, 1, &findices[i], numCIndices, cindices, elemMat, ADD_VALUES));
           }
         } else {
@@ -3174,8 +3174,8 @@ PetscErrorCode DMPlexComputeMassMatrixGeneral(DM dmc, DM dmf, Mat mass, void *us
             }
             /* Update interpolator */
             if (mesh->printFEM > 1) PetscCall(DMPrintCellMatrix(cell, name, 1, numCIndices, elemMat));
-            PetscCall(PetscPrintf(PETSC_COMM_SELF, "Nq: %D %D Nf: %D %D Nc: %D %D\n", ccell, Nq, i, numFIndices, j, numCIndices));
-            PetscCheck(numCIndices == cpdim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of element matrix columns %D != %D", numCIndices, cpdim);
+            PetscCall(PetscPrintf(PETSC_COMM_SELF, "Nq: %" PetscInt_FMT " %" PetscInt_FMT " Nf: %" PetscInt_FMT " %" PetscInt_FMT " Nc: %" PetscInt_FMT " %" PetscInt_FMT "\n", ccell, Nq, i, numFIndices, j, numCIndices));
+            PetscCheck(numCIndices == cpdim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of element matrix columns %" PetscInt_FMT " != %" PetscInt_FMT, numCIndices, cpdim);
             PetscCall(MatSetValues(mass, 1, &findices[i], numCIndices, cindices, elemMat, ADD_VALUES));
           }
         }
@@ -3290,7 +3290,7 @@ PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *us
       PetscCall(PetscFVGetDualSpace(fvC, &QC));
       PetscCall(PetscDualSpaceGetDimension(QC, &cpdim));
     }
-    PetscCheck(NcF == NcC,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of components in fine space field %D does not match coarse field %D", NcF, NcC);
+    PetscCheck(NcF == NcC,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of components in fine space field %" PetscInt_FMT " does not match coarse field %" PetscInt_FMT, NcF, NcC);
     for (c = 0; c < cpdim; ++c) {
       PetscQuadrature  cfunc;
       const PetscReal *cqpoints, *cqweights;
@@ -3299,7 +3299,7 @@ PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *us
 
       PetscCall(PetscDualSpaceGetFunctional(QC, c, &cfunc));
       PetscCall(PetscQuadratureGetData(cfunc, NULL, &NqcC, &NpC, &cqpoints, &cqweights));
-      PetscCheck(NqcC == NcC,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of quadrature components %D must match number of field components %D", NqcC, NcC);
+      PetscCheck(NqcC == NcC,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of quadrature components %" PetscInt_FMT " must match number of field components %" PetscInt_FMT, NqcC, NcC);
       PetscCheckFalse(NpC != 1 && feRef[field],PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Do not know how to do injection for moments");
       for (f = 0; f < fpdim; ++f) {
         PetscQuadrature  ffunc;
@@ -3309,7 +3309,7 @@ PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *us
 
         PetscCall(PetscDualSpaceGetFunctional(QF, f, &ffunc));
         PetscCall(PetscQuadratureGetData(ffunc, NULL, &NqcF, &NpF, &fqpoints, &fqweights));
-        PetscCheck(NqcF == NcF,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of quadrature components %D must match number of field components %D", NqcF, NcF);
+        PetscCheck(NqcF == NcF,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of quadrature components %" PetscInt_FMT " must match number of field components %" PetscInt_FMT, NqcF, NcF);
         if (NpC != NpF) continue;
         for (d = 0; d < dim; ++d) sum += PetscAbsReal(cqpoints[d] - fqpoints[d]);
         if (sum > 1.0e-9) continue;
@@ -3344,7 +3344,7 @@ PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *us
     PetscCall(DMPlexMatGetClosureIndicesRefined(dmf, fsection, fglobalSection, dmc, csection, cglobalSection, c, cellCIndices, cellFIndices));
     for (d = 0; d < cTotDim; ++d) {
       if ((cellCIndices[d] < startC) || (cellCIndices[d] >= endC)) continue;
-      PetscCheck(!(findices[cellCIndices[d]-startC] >= 0) || !(findices[cellCIndices[d]-startC] != cellFIndices[cmap[d]]),PETSC_COMM_SELF, PETSC_ERR_PLIB, "Coarse dof %D maps to both %D and %D", cindices[cellCIndices[d]-startC], findices[cellCIndices[d]-startC], cellFIndices[cmap[d]]);
+      PetscCheck(!(findices[cellCIndices[d]-startC] >= 0) || !(findices[cellCIndices[d]-startC] != cellFIndices[cmap[d]]),PETSC_COMM_SELF, PETSC_ERR_PLIB, "Coarse dof %" PetscInt_FMT " maps to both %" PetscInt_FMT " and %" PetscInt_FMT, cindices[cellCIndices[d]-startC], findices[cellCIndices[d]-startC], cellFIndices[cmap[d]]);
       cindices[cellCIndices[d]-startC] = cellCIndices[d];
       findices[cellCIndices[d]-startC] = cellFIndices[cmap[d]];
     }
@@ -3511,7 +3511,7 @@ static PetscErrorCode DMPlexGetHybridAuxFields(DM dm, DM dmAux[], PetscDS dsAux[
 
     PetscCall(DMPlexGetCone(dm, cell, &cone));
     PetscCall(DMPlexGetConeOrientation(dm, cell, &ornt));
-    PetscCheckFalse(ornt[0],PETSC_COMM_SELF, PETSC_ERR_SUP, "Face %D in hybrid cell %D has orientation %D != 0", cone[0], cell, ornt[0]);
+    PetscCheckFalse(ornt[0],PETSC_COMM_SELF, PETSC_ERR_SUP, "Face %" PetscInt_FMT " in hybrid cell %" PetscInt_FMT " has orientation %" PetscInt_FMT " != 0", cone[0], cell, ornt[0]);
     for (s = 0; s < 2; ++s) {
       const PetscInt *support;
       PetscScalar    *x = NULL, *al = a[s];
@@ -3521,10 +3521,10 @@ static PetscErrorCode DMPlexGetHybridAuxFields(DM dm, DM dmAux[], PetscDS dsAux[
 
       PetscCall(DMPlexGetSupport(dm, cone[s], &support));
       PetscCall(DMPlexGetSupportSize(dm, cone[s], &ssize));
-      PetscCheck(ssize == 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %D from cell %D has support size %D != 2", cone[s], cell, ssize);
+      PetscCheck(ssize == 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %" PetscInt_FMT " from cell %" PetscInt_FMT " has support size %" PetscInt_FMT " != 2", cone[s], cell, ssize);
       if      (support[0] == cell) scell = support[1];
       else if (support[1] == cell) scell = support[0];
-      else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %D does not have cell %D in its support", cone[s], cell);
+      else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %" PetscInt_FMT " does not have cell %" PetscInt_FMT " in its support", cone[s], cell);
 
       PetscCall(DMGetEnclosurePoint(plexA[s], dm, encAux[s], scell, &subface));
       PetscCall(DMPlexVecGetClosure(plexA[s], sectionAux[s], locA[s], subface, &Na, &x));
@@ -3650,7 +3650,7 @@ PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec lo
         PetscCall(DMPlexGetCone(dm, cells[1], &cone));
         PetscCall(DMPlexGetConeSize(dm, cells[1], &coneSizeR));
         for (faceLocR = 0; faceLocR < coneSizeR; ++faceLocR) if (cone[faceLocR] == face) break;
-        PetscCheckFalse(faceLocL == coneSizeL && faceLocR == coneSizeR,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not find face %D in cone of cell %D or cell %D", face, cells[0], cells[1]);
+        PetscCheckFalse(faceLocL == coneSizeL && faceLocR == coneSizeR,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not find face %" PetscInt_FMT " in cone of cell %" PetscInt_FMT " or cell %" PetscInt_FMT, face, cells[0], cells[1]);
         /* Check that FEM field has values in the right cell (sometimes its an FV ghost cell) */
         /* TODO: this is a hack that might not be right for nonconforming */
         if (faceLocL < coneSizeL) {
@@ -3840,7 +3840,7 @@ PetscErrorCode DMSNESGetFEGeom(DMField coordField, IS pointIS, PetscQuadrature q
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetId((PetscObject)quad,&id));
-  PetscCall(PetscSNPrintf(composeStr, 32, "DMSNESGetFEGeom_%x\n", id));
+  PetscCall(PetscSNPrintf(composeStr, 32, "DMSNESGetFEGeom_%" PetscInt64_FMT "\n", id));
   PetscCall(PetscObjectQuery((PetscObject) pointIS, composeStr, (PetscObject *) &container));
   if (container) {
     PetscCall(PetscContainerGetPointer(container, (void **) geom));
@@ -4009,7 +4009,7 @@ PetscErrorCode DMPlexComputeResidual_Patch_Internal(DM dm, PetscSection section,
         /* Riemann solve over faces (need fields at face centroids) */
         /*   We need to evaluate FE fields at those coordinates */
         PetscCall(PetscFVIntegrateRHSFunction(fv, prob, f, Ne, fgeom, vol, uL, uR, fluxL, fluxR));
-      } else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %D", f);
+      } else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %" PetscInt_FMT, f);
     }
     /* Loop over domain */
     if (useFEM) {
@@ -4173,7 +4173,7 @@ PetscErrorCode DMPlexComputeJacobian_Patch_Internal(DM dm, PetscSection section,
   elemMat  = hasJac  ? (sz = chunkSize*totDim*totDim, off += sz, work+off-sz) : NULL;
   elemMatP = hasPrec ? (sz = chunkSize*totDim*totDim, off += sz, work+off-sz) : NULL;
   elemMatD = hasDyn  ? (sz = chunkSize*totDim*totDim, off += sz, work+off-sz) : NULL;
-  PetscCheck(off == wsz,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Error is workspace size %D should be %D", off, wsz);
+  PetscCheck(off == wsz,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Error is workspace size %" PetscInt_FMT " should be %" PetscInt_FMT, off, wsz);
   /* Setup geometry */
   PetscCall(DMGetCoordinateField(dm, &coordField));
   PetscCall(DMFieldGetDegree(coordField, cellIS, NULL, &maxDegree));
@@ -4741,7 +4741,7 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscFormKey key, IS cellIS
         /* Riemann solve over faces (need fields at face centroids) */
         /*   We need to evaluate FE fields at those coordinates */
         PetscCall(PetscFVIntegrateRHSFunction(fv, ds, f, Ne, fgeom, vol, uL, uR, fluxL, fluxR));
-      } else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %D", f);
+      } else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %" PetscInt_FMT, f);
     }
     /* Loop over domain */
     if (useFEM) {
@@ -4958,7 +4958,7 @@ PetscErrorCode DMPlexComputeResidual_Hybrid_Internal(DM dm, PetscFormKey key[], 
   if ((key[0].label == key[1].label) && (key[0].value == key[1].value) && (key[0].part == key[1].part)) {
     const char *name;
     PetscCall(PetscObjectGetName((PetscObject) key[0].label, &name));
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Form keys for each side of a cohesive surface must be different (%s, %D, %D)", name, key[0].value, key[0].part);
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Form keys for each side of a cohesive surface must be different (%s, %" PetscInt_FMT ", %" PetscInt_FMT ")", name, key[0].value, key[0].part);
   }
   PetscCall(PetscLogEventBegin(DMPLEX_ResidualFEM,dm,0,0,0));
   /* TODO The places where we have to use isFE are probably the member functions for the PetscDisc class */
@@ -4987,10 +4987,10 @@ PetscErrorCode DMPlexComputeResidual_Hybrid_Internal(DM dm, PetscFormKey key[], 
 
         PetscCall(DMPlexGetSupport(dm, cone[c], &support));
         PetscCall(DMPlexGetSupportSize(dm, cone[c], &ssize));
-        PetscCheck(ssize == 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %D from cell %D has support size %D != 2", cone[c], cStart, ssize);
+        PetscCheck(ssize == 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %" PetscInt_FMT " from cell %" PetscInt_FMT " has support size %" PetscInt_FMT " != 2", cone[c], cStart, ssize);
         if      (support[0] == cStart) s = 1;
         else if (support[1] == cStart) s = 0;
-        else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %D does not have cell %D in its support", cone[c], cStart);
+        else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %" PetscInt_FMT " does not have cell %" PetscInt_FMT " in its support", cone[c], cStart);
         PetscCall(DMGetAuxiliaryVec(dm, key[c].label, key[c].value, key[c].part, &locA[c]));
         if (locA[c]) PetscCall(VecGetDM(locA[c], &dmAux[c]));
         else         {dmAux[c] = dmAux[2];}
@@ -5548,7 +5548,7 @@ PetscErrorCode DMPlexComputeJacobian_Hybrid_Internal(DM dm, PetscFormKey key[], 
   if ((key[0].label == key[1].label) && (key[0].value == key[1].value) && (key[0].part == key[1].part)) {
     const char *name;
     PetscCall(PetscObjectGetName((PetscObject) key[0].label, &name));
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Form keys for each side of a cohesive surface must be different (%s, %D, %D)", name, key[0].value, key[0].part);
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Form keys for each side of a cohesive surface must be different (%s, %" PetscInt_FMT ", %" PetscInt_FMT ")", name, key[0].value, key[0].part);
   }
   PetscCall(PetscLogEventBegin(DMPLEX_JacobianFEM,dm,0,0,0));
   PetscCall(ISGetLocalSize(cellIS, &numCells));
@@ -5580,10 +5580,10 @@ PetscErrorCode DMPlexComputeJacobian_Hybrid_Internal(DM dm, PetscFormKey key[], 
 
         PetscCall(DMPlexGetSupport(dm, cone[c], &support));
         PetscCall(DMPlexGetSupportSize(dm, cone[c], &ssize));
-        PetscCheck(ssize == 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %D from cell %D has support size %D != 2", cone[c], cStart, ssize);
+        PetscCheck(ssize == 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %" PetscInt_FMT " from cell %" PetscInt_FMT " has support size %" PetscInt_FMT " != 2", cone[c], cStart, ssize);
         if      (support[0] == cStart) s = 1;
         else if (support[1] == cStart) s = 0;
-        else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %D does not have cell %D in its support", cone[c], cStart);
+        else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %" PetscInt_FMT " does not have cell %" PetscInt_FMT " in its support", cone[c], cStart);
         PetscCall(DMGetAuxiliaryVec(dm, key[c].label, key[c].value, key[c].part, &locA[c]));
         if (locA[c]) PetscCall(VecGetDM(locA[c], &dmAux[c]));
         else         {dmAux[c] = dmAux[2];}

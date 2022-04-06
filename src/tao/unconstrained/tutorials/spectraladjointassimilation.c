@@ -646,7 +646,7 @@ PetscErrorCode MonitorError(Tao tao,void *ctx)
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%% Iteration Error Objective Gradient-norm\n"));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"history = [\n"));
   }
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%3D %g %g %g\n",its,(double)nrm,(double)fct,(double)gnorm));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%3" PetscInt_FMT " %g %g %g\n",its,(double)nrm,(double)fct,(double)gnorm));
   PetscFunctionReturn(0);
 }
 

@@ -47,7 +47,7 @@ int main(int argc, char **args)
   PetscCall(PetscPrintf(comm, "ranges: "));
   for (p = 0; p <= size; ++p) {
     if (p > 0) PetscCall(PetscPrintf(comm, ", "));
-    PetscCall(PetscPrintf(comm, "%D", ranges[p]));
+    PetscCall(PetscPrintf(comm, "%" PetscInt_FMT, ranges[p]));
   }
   PetscCall(PetscPrintf(comm, "\n"));
   PetscCall(PetscPrintf(comm, "max:%.0lf min:%.0lf balance:%.11lf\n", (double) max,(double) min,(double) balance));

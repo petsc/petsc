@@ -401,7 +401,7 @@ M*/
 PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKMEMQ
 M*/
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
-void PetscCallMPI(PetscErrorCode);
+void PetscCallMPI(PetscMPIInt);
 #else
 #define PetscCallMPI(...) do {                                                                 \
     PetscMPIInt _7_errorcode = __VA_ARGS__;                                                    \

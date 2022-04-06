@@ -19,7 +19,7 @@ static PetscErrorCode SNESTR_KSPConverged_Private(KSP ksp,PetscInt n,PetscReal r
   PetscFunctionBegin;
   PetscCall((*ctx->convtest)(ksp,n,rnorm,reason,ctx->convctx));
   if (*reason) {
-    PetscCall(PetscInfo(snes,"Default or user provided convergence test KSP iterations=%D, rnorm=%g\n",n,(double)rnorm));
+    PetscCall(PetscInfo(snes,"Default or user provided convergence test KSP iterations=%" PetscInt_FMT ", rnorm=%g\n",n,(double)rnorm));
   }
   /* Determine norm of solution */
   PetscCall(KSPBuildSolution(ksp,NULL,&x));
@@ -57,7 +57,7 @@ static PetscErrorCode SNESTR_Converged_Private(SNES snes,PetscInt it,PetscReal x
     PetscCall(PetscInfo(snes,"Converged due to trust region param %g<%g*%g\n",(double)neP->delta,(double)xnorm,(double)snes->deltatol));
     *reason = SNES_DIVERGED_TR_DELTA;
   } else if (snes->nfuncs >= snes->max_funcs && snes->max_funcs >= 0) {
-    PetscCall(PetscInfo(snes,"Exceeded maximum number of function evaluations: %D\n",snes->max_funcs));
+    PetscCall(PetscInfo(snes,"Exceeded maximum number of function evaluations: %" PetscInt_FMT "\n",snes->max_funcs));
     *reason = SNES_DIVERGED_FUNCTION_COUNT;
   }
   PetscFunctionReturn(0);
@@ -467,7 +467,7 @@ static PetscErrorCode SNESView_NEWTONTR(SNES snes,PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    PetscCall(PetscViewerASCIIPrintf(viewer,"  Trust region tolerance (-snes_trtol)\n",(double)snes->deltatol));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Trust region tolerance %g (-snes_trtol)\n",(double)snes->deltatol));
     PetscCall(PetscViewerASCIIPrintf(viewer,"  mu=%g, eta=%g, sigma=%g\n",(double)tr->mu,(double)tr->eta,(double)tr->sigma));
     PetscCall(PetscViewerASCIIPrintf(viewer,"  delta0=%g, delta1=%g, delta2=%g, delta3=%g\n",(double)tr->delta0,(double)tr->delta1,(double)tr->delta2,(double)tr->delta3));
   }

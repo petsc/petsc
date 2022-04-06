@@ -153,15 +153,15 @@ int main(int argc,char **args)
     PetscCall(PetscOptionsGetBool(NULL,NULL,"-subdomain_view",&flg,NULL));
     if (flg) {
       PetscInt i;
-      PetscCall(PetscPrintf(PETSC_COMM_SELF,"Nmesh points: %D x %D; subdomain partition: %D x %D; overlap: %D; Nsub: %D\n",m,n,M,N,overlap,Nsub));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,"Nmesh points: %" PetscInt_FMT " x %" PetscInt_FMT "; subdomain partition: %" PetscInt_FMT " x %" PetscInt_FMT "; overlap: %" PetscInt_FMT "; Nsub: %" PetscInt_FMT "\n",m,n,M,N,overlap,Nsub));
       PetscCall(PetscPrintf(PETSC_COMM_SELF,"Outer IS:\n"));
       for (i=0; i<Nsub; i++) {
-        PetscCall(PetscPrintf(PETSC_COMM_SELF,"  outer IS[%D]\n",i));
+        PetscCall(PetscPrintf(PETSC_COMM_SELF,"  outer IS[%" PetscInt_FMT "]\n",i));
         PetscCall(ISView(outeris[i],PETSC_VIEWER_STDOUT_SELF));
       }
       PetscCall(PetscPrintf(PETSC_COMM_SELF,"Inner IS:\n"));
       for (i=0; i<Nsub; i++) {
-        PetscCall(PetscPrintf(PETSC_COMM_SELF,"  inner IS[%D]\n",i));
+        PetscCall(PetscPrintf(PETSC_COMM_SELF,"  inner IS[%" PetscInt_FMT "]\n",i));
         PetscCall(ISView(inneris[i],PETSC_VIEWER_STDOUT_SELF));
       }
     }

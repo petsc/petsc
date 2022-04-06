@@ -37,7 +37,7 @@ static PetscErrorCode DMPlexCreateOrderingClosure_Static(DM dm, PetscInt numPoin
         }
       }
     }
-    PetscCheck(fMax == fEnd,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of depth %d faces %d does not match permuted number %d", d, fEnd-fStart, fMax-fStart);
+    PetscCheck(fMax == fEnd,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of depth %" PetscInt_FMT " faces %" PetscInt_FMT " does not match permuted number %" PetscInt_FMT, d, fEnd-fStart, fMax-fStart);
   }
   *clperm    = perm;
   *invclperm = iperm;
@@ -106,19 +106,19 @@ PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, DMLabel label, IS
       if (v < numValues-1) voff[v+2] += vsize[v] + voff[v+1];
       numPoints += vsize[v];
     }
-    PetscCheck(numPoints == numCells,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label only covers %D cells < %D total", numPoints, numCells);
+    PetscCheck(numPoints == numCells,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label only covers %" PetscInt_FMT " cells < %" PetscInt_FMT " total", numPoints, numCells);
     for (c = 0; c < numCells; ++c) {
       const PetscInt oldc = cperm[c];
       PetscInt       val, vloc;
 
       PetscCall(DMLabelGetValue(label, oldc, &val));
-      PetscCheck(val != -1,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cell %D not present in label", oldc);
+      PetscCheck(val != -1,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cell %" PetscInt_FMT " not present in label", oldc);
       PetscCall(PetscFindInt(val, numValues, values, &vloc));
-      PetscCheck(vloc >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Value %D not present label", val);
+      PetscCheck(vloc >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Value %" PetscInt_FMT " not present label", val);
       sperm[voff[vloc+1]++] = oldc;
     }
     for (v = 0; v < numValues; ++v) {
-      PetscCheckFalse(voff[v+1] - voff[v] != vsize[v],PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of %D values found is %D != %D", values[v], voff[v+1] - voff[v], vsize[v]);
+      PetscCheckFalse(voff[v+1] - voff[v] != vsize[v],PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of %" PetscInt_FMT " values found is %" PetscInt_FMT " != %" PetscInt_FMT, values[v], voff[v+1] - voff[v], vsize[v]);
     }
     PetscCall(ISRestoreIndices(valueIS, &values));
     PetscCall(ISDestroy(&valueIS));

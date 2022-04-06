@@ -314,13 +314,13 @@ static PetscErrorCode KSPFETIDPCheckOperators(KSP ksp, PetscViewer viewer)
   PetscCall(VecNorm(test_vec,NORM_INFINITY,&val));
   PetscCall(VecDestroy(&test_vec));
   PetscCallMPI(MPI_Reduce(&val,&rval,1,MPIU_REAL,MPIU_MAX,0,comm));
-  PetscCall(PetscViewerASCIIPrintf(viewer,"A: CHECK glob to loc: % 1.14e\n",rval));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"A: CHECK glob to loc: % 1.14e\n",(double)rval));
 
   if (fetidpmat_ctx->l2g_p) {
     PetscCall(VecAXPY(test_vec_p,-1.0,fetidpmat_ctx->vP));
     PetscCall(VecNorm(test_vec_p,NORM_INFINITY,&val));
     PetscCallMPI(MPI_Reduce(&val,&rval,1,MPIU_REAL,MPIU_MAX,0,comm));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"A: CHECK glob to loc (p): % 1.14e\n",rval));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"A: CHECK glob to loc (p): % 1.14e\n",(double)rval));
   }
 
   if (fetidp->fully_redundant) {
@@ -331,7 +331,7 @@ static PetscErrorCode KSPFETIDPCheckOperators(KSP ksp, PetscViewer viewer)
     PetscCall(VecSum(fetidp_global,&sval));
     val  = PetscRealPart(sval)-fetidpmat_ctx->n_lambda;
     PetscCallMPI(MPI_Reduce(&val,&rval,1,MPIU_REAL,MPIU_MAX,0,comm));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"B: CHECK loc to glob: % 1.14e\n",rval));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"B: CHECK loc to glob: % 1.14e\n",(double)rval));
   }
 
   if (fetidpmat_ctx->l2g_p) {
@@ -351,7 +351,7 @@ static PetscErrorCode KSPFETIDPCheckOperators(KSP ksp, PetscViewer viewer)
     PetscCall(VecSum(fetidp_global,&sval));
     val  = PetscRealPart(sval);
     PetscCallMPI(MPI_Reduce(&val,&rval,1,MPIU_REAL,MPIU_MAX,0,comm));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"B: CHECK loc to glob (p): % 1.14e\n",rval));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"B: CHECK loc to glob (p): % 1.14e\n",(double)rval));
   }
 
   /******************************************************************/
@@ -373,7 +373,7 @@ static PetscErrorCode KSPFETIDPCheckOperators(KSP ksp, PetscViewer viewer)
   PetscCall(VecScatterBegin(fetidpmat_ctx->l2g_lambda,fetidpmat_ctx->lambda_local,fetidp_global,ADD_VALUES,SCATTER_FORWARD));
   PetscCall(VecScatterEnd(fetidpmat_ctx->l2g_lambda,fetidpmat_ctx->lambda_local,fetidp_global,ADD_VALUES,SCATTER_FORWARD));
   PetscCall(VecNorm(fetidp_global,NORM_INFINITY,&val));
-  PetscCall(PetscViewerASCIIPrintf(viewer,"C: CHECK infty norm of B_delta*w (w continuous): % 1.14e\n",val));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"C: CHECK infty norm of B_delta*w (w continuous): % 1.14e\n",(double)val));
 
   /******************************************************************/
   /* TEST D: It should hold E_Dw = w - P_Dw w\in\widetilde{W}       */
@@ -425,7 +425,7 @@ static PetscErrorCode KSPFETIDPCheckOperators(KSP ksp, PetscViewer viewer)
   PetscCall(VecNorm(pcis->vec1_B,NORM_INFINITY,&val));
   PetscCall(VecDestroy(&test_vec));
   PetscCallMPI(MPI_Reduce(&val,&rval,1,MPIU_REAL,MPIU_MAX,0,comm));
-  PetscCall(PetscViewerASCIIPrintf(viewer,"D: CHECK infty norm of E_D + P_D - I: % 1.14e\n",PetscGlobalRank,val));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"%d: CHECK infty norm of E_D + P_D - I: %1.14e\n",PetscGlobalRank,(double)val));
 
   /******************************************************************/
   /* TEST E: It should hold R_D^TP_Dw=0 w\in\widetilde{W}           */
@@ -463,7 +463,7 @@ static PetscErrorCode KSPFETIDPCheckOperators(KSP ksp, PetscViewer viewer)
   /* scaling */
   PetscCall(PCBDDCScalingExtension(fetidpmat_ctx->pc,pcis->vec1_B,pcis->vec1_global));
   PetscCall(VecNorm(pcis->vec1_global,NORM_INFINITY,&val));
-  PetscCall(PetscViewerASCIIPrintf(viewer,"E: CHECK infty norm of R^T_D P_D: % 1.14e\n",val));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"E: CHECK infty norm of R^T_D P_D: % 1.14e\n",(double)val));
 
   if (!fetidp->fully_redundant) {
     /******************************************************************/
@@ -488,7 +488,7 @@ static PetscErrorCode KSPFETIDPCheckOperators(KSP ksp, PetscViewer viewer)
     PetscCall(VecScatterEnd(fetidpmat_ctx->l2g_lambda,fetidpmat_ctx->lambda_local,test_vec,ADD_VALUES,SCATTER_FORWARD));
     PetscCall(VecAXPY(fetidp_global,-1.,test_vec));
     PetscCall(VecNorm(fetidp_global,NORM_INFINITY,&val));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"E: CHECK infty norm of P^T_D - I: % 1.14e\n",val));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"E: CHECK infty norm of P^T_D - I: % 1.14e\n",(double)val));
     PetscCall(VecDestroy(&test_vec));
   }
   PetscCall(PetscViewerASCIIPrintf(viewer,"-------------------------------------\n"));
@@ -644,7 +644,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         if (pcbddc->n_ISForDofsLocal) {
           PetscInt np;
 
-          PetscCheckFalse(fid < 0 || fid >= pcbddc->n_ISForDofsLocal,PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Invalid field id for pressure %D, max %D",fid,pcbddc->n_ISForDofsLocal);
+          PetscCheckFalse(fid < 0 || fid >= pcbddc->n_ISForDofsLocal,PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Invalid field id for pressure %" PetscInt_FMT ", max %" PetscInt_FMT,fid,pcbddc->n_ISForDofsLocal);
           /* need a sequential IS */
           PetscCall(ISGetLocalSize(pcbddc->ISForDofsLocal[fid],&np));
           PetscCall(ISGetIndices(pcbddc->ISForDofsLocal[fid],&idxs));
@@ -652,7 +652,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
           PetscCall(ISRestoreIndices(pcbddc->ISForDofsLocal[fid],&idxs));
           ploc = PETSC_TRUE;
         } else if (pcbddc->n_ISForDofs) {
-          PetscCheckFalse(fid < 0 || fid >= pcbddc->n_ISForDofs,PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Invalid field id for pressure %D, max %D",fid,pcbddc->n_ISForDofs);
+          PetscCheckFalse(fid < 0 || fid >= pcbddc->n_ISForDofs,PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Invalid field id for pressure %" PetscInt_FMT ", max %" PetscInt_FMT,fid,pcbddc->n_ISForDofs);
           PetscCall(PetscObjectReference((PetscObject)pcbddc->ISForDofs[fid]));
           Pall = pcbddc->ISForDofs[fid];
         } else SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Cannot detect pressure field! Use KSPFETIDPGetInnerBDDC() + PCBDDCSetDofsSplitting or PCBDDCSetDofsSplittingLocal");
@@ -781,7 +781,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         PetscCall(ISGlobalToLocalMappingApplyIS(l2g_t,IS_GTOLM_DROP,is2,&is1));
         PetscCall(ISGetLocalSize(is1,&i));
         PetscCall(ISGetLocalSize(is2,&j));
-        PetscCheck(i == j,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inconsistent local sizes %D and %D for iV",i,j);
+        PetscCheck(i == j,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inconsistent local sizes %" PetscInt_FMT " and %" PetscInt_FMT " for iV",i,j);
         PetscCall(PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_iV",(PetscObject)is1));
         PetscCall(ISLocalToGlobalMappingDestroy(&l2g_t));
         PetscCall(ISDestroy(&is1));
@@ -1036,10 +1036,10 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         PetscCall(MatGetLocalSize(A,&am,&an));
         PetscCall(ISGetLocalSize(Pall,&pIl));
         PetscCall(ISGetLocalSize(fetidp->pP,&pl));
-        PetscCheck(PAM == PAN,PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Pressure matrix must be square, unsupported %D x %D",PAM,PAN);
-        PetscCheck(pam == pan,PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Local sizes of pressure matrix must be equal, unsupported %D x %D",pam,pan);
-        PetscCheckFalse(pam != am && pam != pl && pam != pIl,PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid number of local rows %D for pressure matrix! Supported are %D, %D or %D",pam,am,pl,pIl);
-        PetscCheckFalse(pan != an && pan != pl && pan != pIl,PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid number of local columns %D for pressure matrix! Supported are %D, %D or %D",pan,an,pl,pIl);
+        PetscCheck(PAM == PAN,PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Pressure matrix must be square, unsupported %" PetscInt_FMT " x %" PetscInt_FMT,PAM,PAN);
+        PetscCheck(pam == pan,PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Local sizes of pressure matrix must be equal, unsupported %" PetscInt_FMT " x %" PetscInt_FMT,pam,pan);
+        PetscCheckFalse(pam != am && pam != pl && pam != pIl,PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid number of local rows %" PetscInt_FMT " for pressure matrix! Supported are %" PetscInt_FMT ", %" PetscInt_FMT " or %" PetscInt_FMT,pam,am,pl,pIl);
+        PetscCheckFalse(pan != an && pan != pl && pan != pIl,PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid number of local columns %" PetscInt_FMT " for pressure matrix! Supported are %" PetscInt_FMT ", %" PetscInt_FMT " or %" PetscInt_FMT,pan,an,pl,pIl);
         if (PAM == AM) { /* monolithic ordering, restrict to pressure */
           if (schp) {
             PetscCall(MatCreateSubMatrix(PPmat,Pall,Pall,MAT_INITIAL_MATRIX,&C));
@@ -1173,7 +1173,7 @@ static PetscErrorCode KSPSolve_FETIDP(KSP ksp)
     PetscCall(KSPGetIterationNumber(fetidp->innerksp,&its));
     ksp->reason = KSP_DIVERGED_PC_FAILED;
     PetscCall(VecSetInf(Xl));
-    PetscCall(PetscInfo(ksp,"Inner KSP solve failed: %s %s at iteration %D",KSPConvergedReasons[reason],PCFailedReasons[pcreason],its));
+    PetscCall(PetscInfo(ksp,"Inner KSP solve failed: %s %s at iteration %" PetscInt_FMT,KSPConvergedReasons[reason],PCFailedReasons[pcreason],its));
   }
   PetscCall(PCBDDCMatFETIDPGetSolution(F,Xl,X));
   PetscCall(MatGetNullSpace(A,&nsp));

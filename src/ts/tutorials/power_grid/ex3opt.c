@@ -33,7 +33,7 @@ PetscErrorCode monitor(Tao tao,AppCtx *ctx)
   PetscCall(TaoGetSolutionStatus(tao,&iterate,&f,&gnorm,&cnorm,&xdiff,&reason));
 
   fp = fopen("ex3opt_conv.out","a");
-  PetscCall(PetscFPrintf(PETSC_COMM_WORLD,fp,"%D %g\n",iterate,(double)gnorm));
+  PetscCall(PetscFPrintf(PETSC_COMM_WORLD,fp,"%" PetscInt_FMT " %g\n",iterate,(double)gnorm));
   fclose(fp);
   PetscFunctionReturn(0);
 }

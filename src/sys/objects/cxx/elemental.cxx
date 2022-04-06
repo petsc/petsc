@@ -20,17 +20,15 @@
 @*/
 PetscErrorCode PetscElementalInitializePackage(void)
 {
-  PetscMPIInt    result;
-  PetscErrorCode ierr;
-
   if (El::Initialized()) return 0;
   if (PETSC_COMM_WORLD != MPI_COMM_NULL) { /* MPI has been initialized and PETSC_COMM_WORLD has been set */
-    ierr = MPI_Comm_compare(PETSC_COMM_WORLD,MPI_COMM_WORLD,&result);if (ierr) return ierr;
+    PetscMPIInt result;
+    PetscCallMPI(MPI_Comm_compare(PETSC_COMM_WORLD,MPI_COMM_WORLD,&result));
     if (result == MPI_UNEQUAL) return result; /* cannot use Elemental with PETSC_COMM_WORLD and MPI_COMM_WORLD comparing to MPI_UNEQUAL, call PetscElementalInitializePackage()/PetscElementalFinalizePackage() collectively */
   }
   El::Initialize(); /* called by PetscInitialize_DynamicLibraries(void) or users */
   if (PetscInitializeCalled) { /* true if MPI is initialized by PETSc, false if MPI has been initialized outside and thus PETSC_COMM_WORLD can't be set to something else than MPI_COMM_NULL, see src/sys/objects/pinit.c */
-    ierr = PetscRegisterFinalize(PetscElementalFinalizePackage);if (ierr) return ierr;
+    PetscCall(PetscRegisterFinalize(PetscElementalFinalizePackage));
   }
   return 0;
 }

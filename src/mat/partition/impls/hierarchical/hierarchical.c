@@ -342,7 +342,7 @@ PetscErrorCode MatPartitioningHierarchical_DetermineDestination(MatPartitioning 
   PetscCall(PetscObjectGetComm((PetscObject)part,&comm));
   PetscCallMPI(MPI_Comm_rank(comm,&rank));
   PetscCallMPI(MPI_Comm_size(comm,&size));
-  PetscCheck((pend-pstart)<=size,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"range [%" PetscInt_FMT ", %" PetscInt_FMT "] should be smaller than or equal to size %" PetscInt_FMT,pstart,pend,size);
+  PetscCheck((pend-pstart)<=size,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"range [%" PetscInt_FMT ", %" PetscInt_FMT "] should be smaller than or equal to size %d",pstart,pend,size);
   PetscCheck(pstart<=pend,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP," pstart %" PetscInt_FMT " should be smaller than pend %" PetscInt_FMT,pstart,pend);
   PetscCall(ISGetLocalSize(partitioning,&plocalsize));
   PetscCall(PetscMalloc1(plocalsize,&dest_indices));

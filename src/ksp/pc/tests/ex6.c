@@ -64,7 +64,7 @@ int main(int argc,char **args)
 
     for (i=0; i<Nsub1; ++i) {
       PetscCall(ISEqual(is1[i],is2[i],&flg));
-      PetscCall(PetscPrintf(PETSC_COMM_SELF,"i =  %D,flg = %d \n",i,(int)flg));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,"i =  %" PetscInt_FMT ",flg = %d \n",i,(int)flg));
 
     }
     for (i=0; i<Nsub1; ++i) PetscCall(ISDestroy(&is1[i]));

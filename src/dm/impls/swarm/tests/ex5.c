@@ -458,7 +458,7 @@ static PetscErrorCode ComputeError(TS ts, Vec U, Vec E)
     if (user->error) {
       const PetscReal en   = 0.5*DMPlex_DotRealD_Internal(dim, v, v);
       const PetscReal exen = 0.5*PetscSqr(v0);
-      PetscCall(PetscPrintf(comm, "t %.4g: p%D error [%.2g %.2g] sol [(%.6lf %.6lf) (%.6lf %.6lf)] exact [(%.6lf %.6lf) (%.6lf %.6lf)] energy/exact energy %g / %g (%.10lf%%)\n", t, p, (double) DMPlex_NormD_Internal(dim, &e[(p*2+0)*dim]), (double) DMPlex_NormD_Internal(dim, &e[(p*2+1)*dim]), (double) x[0], (double) x[1], (double) v[0], (double) v[1], (double) xe[0], (double) xe[1], (double) ve[0], (double) ve[1], (double) en, (double) exen, (double) PetscAbsReal(exen - en)*100./exen));
+      PetscCall(PetscPrintf(comm, "t %.4g: p%" PetscInt_FMT " error [%.2g %.2g] sol [(%.6lf %.6lf) (%.6lf %.6lf)] exact [(%.6lf %.6lf) (%.6lf %.6lf)] energy/exact energy %g / %g (%.10lf%%)\n", (double)t, p, (double) DMPlex_NormD_Internal(dim, &e[(p*2+0)*dim]), (double) DMPlex_NormD_Internal(dim, &e[(p*2+1)*dim]), (double) x[0], (double) x[1], (double) v[0], (double) v[1], (double) xe[0], (double) xe[1], (double) ve[0], (double) ve[1], (double) en, (double) exen, (double) (PetscAbsReal(exen - en)*100./exen)));
     }
   }
   PetscCall(DMSwarmRestoreField(sw, "initCoordinates", NULL, NULL, (void **) &coords));
@@ -486,7 +486,7 @@ static PetscErrorCode EnergyMonitor(TS ts, PetscInt step, PetscReal t, Vec U, vo
     for (p = 0; p < Np; ++p) {
       const PetscReal v2 = DMPlex_DotRealD_Internal(dim, &u[(p*2+1)*dim], &u[(p*2+1)*dim]);
 
-      PetscCall(PetscSynchronizedPrintf(PetscObjectComm((PetscObject) ts), "%.6lf %4D %4D %10.4lf\n", t, step, p, (double) 0.5*v2));
+      PetscCall(PetscSynchronizedPrintf(PetscObjectComm((PetscObject) ts), "%.6lf %4" PetscInt_FMT " %4" PetscInt_FMT " %10.4lf\n", (double)t, step, p, (double)(0.5*v2)));
     }
     PetscCall(PetscSynchronizedFlush(PetscObjectComm((PetscObject) ts), NULL));
     PetscCall(VecRestoreArrayRead(U, &u));

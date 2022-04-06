@@ -254,7 +254,7 @@ int main(int argc, char **argv)
   PetscCall(TSGetSolveTime(ts, &ftime));
   PetscCall(TSGetStepNumber(ts, &steps));
   PetscCall(TSGetConvergedReason(ts, &reason));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%s at time %g after %D steps\n", TSConvergedReasons[reason], (double)ftime, steps));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%s at time %g after %" PetscInt_FMT " steps\n", TSConvergedReasons[reason], (double)ftime, steps));
 
   PetscCall(MatDestroy(&J));
   PetscCall(VecDestroy(&X));

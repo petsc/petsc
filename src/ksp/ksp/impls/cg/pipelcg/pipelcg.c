@@ -121,13 +121,13 @@ static PetscErrorCode KSPView_PIPELCG(KSP ksp,PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring));
   if (iascii) {
-    PetscCall(PetscViewerASCIIPrintf(viewer,"  Pipeline depth: %D\n", plcg->l));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"  Minimal eigenvalue estimate %g\n",plcg->lmin));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"  Maximal eigenvalue estimate %g\n",plcg->lmax));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Pipeline depth: %" PetscInt_FMT "\n", plcg->l));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Minimal eigenvalue estimate %g\n",(double)plcg->lmin));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Maximal eigenvalue estimate %g\n",(double)plcg->lmax));
   } else if (isstring) {
-    PetscCall(PetscViewerStringSPrintf(viewer,"  Pipeline depth: %D\n", plcg->l));
-    PetscCall(PetscViewerStringSPrintf(viewer,"  Minimal eigenvalue estimate %g\n",plcg->lmin));
-    PetscCall(PetscViewerStringSPrintf(viewer,"  Maximal eigenvalue estimate %g\n",plcg->lmax));
+    PetscCall(PetscViewerStringSPrintf(viewer,"  Pipeline depth: %" PetscInt_FMT "\n", plcg->l));
+    PetscCall(PetscViewerStringSPrintf(viewer,"  Minimal eigenvalue estimate %g\n",(double)plcg->lmin));
+    PetscCall(PetscViewerStringSPrintf(viewer,"  Maximal eigenvalue estimate %g\n",(double)plcg->lmax));
   }
   PetscFunctionReturn(0);
 }
@@ -235,7 +235,7 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
       /* Breakdown check */
       if (tmp < 0) {
         if (plcg->show_rstrt) {
-          PetscCall(PetscPrintf(comm,"Sqrt breakdown in iteration %D: sqrt argument is %e. Iteration was restarted.\n",ksp->its+1,(double)tmp));
+          PetscCall(PetscPrintf(comm,"Sqrt breakdown in iteration %" PetscInt_FMT ": sqrt argument is %e. Iteration was restarted.\n",ksp->its+1,(double)tmp));
         }
         /* End hanging dot-products in the pipeline before exiting for-loop */
         start = it-l+2;

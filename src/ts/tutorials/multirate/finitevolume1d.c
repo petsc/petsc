@@ -653,7 +653,7 @@ PetscErrorCode SolutionStatsView(DM da,Vec X,PetscViewer viewer)
     PetscCall(VecMin(X,&imin,&xmin));
     PetscCall(VecMax(X,&imax,&xmax));
     PetscCall(VecSum(X,&sum));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"Solution range [%8.5f,%8.5f] with minimum at %D, mean %8.5f, ||x||_TV %8.5f\n",(double)xmin,(double)xmax,imin,(double)(sum/Mx),(double)(tvgsum/Mx)));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"Solution range [%8.5f,%8.5f] with minimum at %" PetscInt_FMT ", mean %8.5f, ||x||_TV %8.5f\n",(double)xmin,(double)xmax,imin,(double)(sum/Mx),(double)(tvgsum/Mx)));
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type not supported");
   PetscFunctionReturn(0);
 }

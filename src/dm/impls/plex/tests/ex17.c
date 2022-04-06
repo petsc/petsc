@@ -42,12 +42,12 @@ static PetscErrorCode TestLocation(DM dm)
   PetscCall(PetscSFGetGraph(cellSF, NULL, &n, NULL, &cells));
   if (n != (cEnd - cStart)) {
     for (c = 0; c < n; ++c) {
-      if (cells[c].index != c+cStart) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Could not locate centroid of cell %D, error %D\n", c+cStart, cells[c].index));
+      if (cells[c].index != c+cStart) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Could not locate centroid of cell %" PetscInt_FMT ", error %" PetscInt_FMT "\n", c+cStart, cells[c].index));
     }
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Located %D points instead of %D", n, cEnd - cStart);
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Located %" PetscInt_FMT " points instead of %" PetscInt_FMT, n, cEnd - cStart);
   }
   for (c = cStart; c < cEnd; ++c) {
-    PetscCheck(cells[c - cStart].index == c,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not locate centroid of cell %D, instead found %D", c, cells[c - cStart].index);
+    PetscCheck(cells[c - cStart].index == c,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not locate centroid of cell %" PetscInt_FMT ", instead found %" PetscInt_FMT, c, cells[c - cStart].index);
   }
   PetscCall(PetscSFDestroy(&cellSF));
   PetscFunctionReturn(0);

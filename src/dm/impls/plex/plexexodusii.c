@@ -418,14 +418,14 @@ PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer)
         case 2:
           if      (closureSize == 3*dim) {type[cs] = TRI;}
           else if (closureSize == 4*dim) {type[cs] = QUAD;}
-          else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of vertices %D in dimension %D has no ExodusII type", closureSize/dim, dim);
+          else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of vertices %" PetscInt_FMT " in dimension %" PetscInt_FMT " has no ExodusII type", closureSize/dim, dim);
           break;
         case 3:
           if      (closureSize == 4*dim) {type[cs] = TET;}
           else if (closureSize == 8*dim) {type[cs] = HEX;}
-          else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of vertices %D in dimension %D has no ExodusII type", closureSize/dim, dim);
+          else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of vertices %" PetscInt_FMT " in dimension %" PetscInt_FMT " has no ExodusII type", closureSize/dim, dim);
           break;
-        default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Dimension %D not handled by ExodusII viewer", dim);
+        default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Dimension %" PetscInt_FMT " not handled by ExodusII viewer", dim);
       }
       if ((degree == 2) && (type[cs] == QUAD)) {numNodes += csSize;}
       if ((degree == 2) && (type[cs] == HEX))  {numNodes += csSize; numNodes += numFaces;}

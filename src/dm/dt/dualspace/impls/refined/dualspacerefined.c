@@ -142,9 +142,9 @@ static PetscErrorCode PetscDualSpaceRefinedView_Ascii(PetscDualSpace sp, PetscVi
     PetscCall(PetscViewerASCIIPushTab(viewer));
     for (c = cStart; c < cEnd; c++) {
       if (!sp->pointSpaces[c-pStart]) {
-        PetscCall(PetscViewerASCIIPrintf(viewer, "Cell space %D not set yet\n", c));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "Cell space %" PetscInt_FMT " not set yet\n", c));
       } else {
-        PetscCall(PetscViewerASCIIPrintf(viewer, "Cell space %D:ot set yet\n", c));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "Cell space %" PetscInt_FMT ":ot set yet\n", c));
         PetscCall(PetscViewerASCIIPushTab(viewer));
         PetscCall(PetscDualSpaceView(sp->pointSpaces[c-pStart],viewer));
         PetscCall(PetscViewerASCIIPopTab(viewer));

@@ -61,7 +61,7 @@ int main(int argc,char **argv)
     PetscCall(DMStagRestoreProductCoordinateArrays(dm,&cArrX,&cArrY,&cArrZ));
 
     /* View the global coordinates, after explicitly calling a local-global scatter */
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"####### Round %D #######\n",round));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"####### Round %" PetscInt_FMT " #######\n",round));
     PetscCall(DMGetCoordinateDM(dm,&cdm));
     for (d=0; d<3; ++d) {
       DM subdm;
@@ -71,7 +71,7 @@ int main(int argc,char **argv)
       PetscCall(DMGetCoordinates(subdm,&coor));
       PetscCall(DMGetCoordinatesLocal(subdm,&coor_local));
       PetscCall(DMLocalToGlobal(subdm,coor_local,INSERT_VALUES,coor));
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Coordinates dim %D:\n",d));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Coordinates dim %" PetscInt_FMT ":\n",d));
       PetscCall(VecView(coor,PETSC_VIEWER_STDOUT_WORLD));
     }
   }

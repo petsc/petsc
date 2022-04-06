@@ -295,12 +295,12 @@ PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
     if (factor->factortype == MAT_FACTOR_ILU || factor->factortype == MAT_FACTOR_ICC) {
       if (factor->info.dt > 0) {
         PetscCall(PetscViewerASCIIPrintf(viewer,"  drop tolerance %g\n",(double)factor->info.dt));
-        PetscCall(PetscViewerASCIIPrintf(viewer,"  max nonzeros per row %D\n",factor->info.dtcount));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"  max nonzeros per row %" PetscInt_FMT "\n",(PetscInt)factor->info.dtcount));
         PetscCall(PetscViewerASCIIPrintf(viewer,"  column permutation tolerance %g\n",(double)factor->info.dtcol));
       } else if (factor->info.levels == 1) {
-        PetscCall(PetscViewerASCIIPrintf(viewer,"  %D level of fill\n",(PetscInt)factor->info.levels));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"  %" PetscInt_FMT " level of fill\n",(PetscInt)factor->info.levels));
       } else {
-        PetscCall(PetscViewerASCIIPrintf(viewer,"  %D levels of fill\n",(PetscInt)factor->info.levels));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"  %" PetscInt_FMT " levels of fill\n",(PetscInt)factor->info.levels));
       }
     }
 
@@ -337,7 +337,7 @@ PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
     MatFactorType t;
     PetscCall(MatGetFactorType(factor->fact,&t));
     if (t == MAT_FACTOR_ILU || t == MAT_FACTOR_ICC) {
-      PetscCall(PetscViewerStringSPrintf(viewer," lvls=%D,order=%s",(PetscInt)factor->info.levels,factor->ordering));
+      PetscCall(PetscViewerStringSPrintf(viewer," lvls=%" PetscInt_FMT ",order=%s",(PetscInt)factor->info.levels,factor->ordering));
     }
   }
   PetscFunctionReturn(0);

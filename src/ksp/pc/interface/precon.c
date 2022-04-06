@@ -421,8 +421,8 @@ PetscErrorCode  PCApply(PC pc,Vec x,Vec y)
   PetscCall(VecGetLocalSize(x,&mv));
   PetscCall(VecGetLocalSize(y,&nv));
   /* check pmat * y = x is feasible */
-  PetscCheck(mv == m,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Preconditioner number of local rows %D does not equal input vector size %D",m,mv);
-  PetscCheck(nv == n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Preconditioner number of local columns %D does not equal output vector size %D",n,nv);
+  PetscCheck(mv == m,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Preconditioner number of local rows %" PetscInt_FMT " does not equal input vector size %" PetscInt_FMT,m,mv);
+  PetscCheck(nv == n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Preconditioner number of local columns %" PetscInt_FMT " does not equal output vector size %" PetscInt_FMT,n,nv);
   PetscCall(VecSetErrorIfLocked(y,3));
 
   PetscCall(PCSetUp(pc));
@@ -473,9 +473,9 @@ PetscErrorCode  PCMatApply(PC pc,Mat X,Mat Y)
   PetscCall(MatGetSize(A, &M3, &N3));
   PetscCall(MatGetSize(X, &M2, &N2));
   PetscCall(MatGetSize(Y, &M1, &N1));
-  PetscCheck(n1 == n2 && N1 == N2,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible number of columns between block of input vectors (n,N) = (%D,%D) and block of output vectors (n,N) = (%D,%D)", n2, N2, n1, N1);
-  PetscCheck(m2 == m3 && M2 == M3,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible layout between block of input vectors (m,M) = (%D,%D) and Pmat (m,M)x(n,N) = (%D,%D)x(%D,%D)", m2, M2, m3, M3, n3, N3);
-  PetscCheck(m1 == n3 && M1 == N3,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible layout between block of output vectors (m,M) = (%D,%D) and Pmat (m,M)x(n,N) = (%D,%D)x(%D,%D)", m1, M1, m3, M3, n3, N3);
+  PetscCheck(n1 == n2 && N1 == N2,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible number of columns between block of input vectors (n,N) = (%" PetscInt_FMT ",%" PetscInt_FMT ") and block of output vectors (n,N) = (%" PetscInt_FMT ",%" PetscInt_FMT ")", n2, N2, n1, N1);
+  PetscCheck(m2 == m3 && M2 == M3,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible layout between block of input vectors (m,M) = (%" PetscInt_FMT ",%" PetscInt_FMT ") and Pmat (m,M)x(n,N) = (%" PetscInt_FMT ",%" PetscInt_FMT ")x(%" PetscInt_FMT ",%" PetscInt_FMT ")", m2, M2, m3, M3, n3, N3);
+  PetscCheck(m1 == n3 && M1 == N3,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible layout between block of output vectors (m,M) = (%" PetscInt_FMT ",%" PetscInt_FMT ") and Pmat (m,M)x(n,N) = (%" PetscInt_FMT ",%" PetscInt_FMT ")x(%" PetscInt_FMT ",%" PetscInt_FMT ")", m1, M1, m3, M3, n3, N3);
   PetscCall(PetscObjectBaseTypeCompareAny((PetscObject)Y, &match, MATSEQDENSE, MATMPIDENSE, ""));
   PetscCheck(match,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Provided block of output vectors not stored in a dense Mat");
   PetscCall(PetscObjectBaseTypeCompareAny((PetscObject)X, &match, MATSEQDENSE, MATMPIDENSE, ""));
@@ -1154,10 +1154,10 @@ PetscErrorCode  PCSetOperators(PC pc,Mat Amat,Mat Pmat)
   if (pc->setupcalled && pc->mat && pc->pmat && Amat && Pmat) {
     PetscCall(MatGetLocalSize(Amat,&m1,&n1));
     PetscCall(MatGetLocalSize(pc->mat,&m2,&n2));
-    PetscCheck(m1 == m2 && n1 == n2,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot change local size of Amat after use old sizes %D %D new sizes %D %D",m2,n2,m1,n1);
+    PetscCheck(m1 == m2 && n1 == n2,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot change local size of Amat after use old sizes %" PetscInt_FMT " %" PetscInt_FMT " new sizes %" PetscInt_FMT " %" PetscInt_FMT,m2,n2,m1,n1);
     PetscCall(MatGetLocalSize(Pmat,&m1,&n1));
     PetscCall(MatGetLocalSize(pc->pmat,&m2,&n2));
-    PetscCheck(m1 == m2 && n1 == n2,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot change local size of Pmat after use old sizes %D %D new sizes %D %D",m2,n2,m1,n1);
+    PetscCheck(m1 == m2 && n1 == n2,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot change local size of Pmat after use old sizes %" PetscInt_FMT " %" PetscInt_FMT " new sizes %" PetscInt_FMT " %" PetscInt_FMT,m2,n2,m1,n1);
   }
 
   if (Pmat != pc->pmat) {
@@ -1771,7 +1771,7 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
     PetscCall(PetscDrawGetCurrentPoint(draw,&x,&y));
     if (pc->mat) {
       PetscCall(MatGetSize(pc->mat,&n,NULL));
-      PetscCall(PetscSNPrintf(str,25,"PC: %s (%D)",((PetscObject)pc)->type_name,n));
+      PetscCall(PetscSNPrintf(str,25,"PC: %s (%" PetscInt_FMT ")",((PetscObject)pc)->type_name,n));
     } else {
       PetscCall(PetscSNPrintf(str,25,"PC: %s",((PetscObject)pc)->type_name));
     }

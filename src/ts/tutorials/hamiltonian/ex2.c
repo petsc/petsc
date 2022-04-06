@@ -281,7 +281,7 @@ static PetscErrorCode RHSFunction2(TS ts,PetscReal t,Vec X,Vec Vres,void *ctx)
     PetscCall(VecShift(rho, -sum/n));
 
     PetscCall(VecSum(rho, &sum));
-    PetscCheck(PetscAbsScalar(sum) <= 1.0e-10,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Charge should have no DC component %g", sum);
+    PetscCheck(PetscAbsScalar(sum) <= 1.0e-10,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Charge should have no DC component %g", (double)PetscAbsScalar(sum));
     PetscCall(VecScale(rho, phi_0));
   }
   PetscCall(VecSet(phi, 0.0));

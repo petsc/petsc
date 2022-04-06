@@ -1330,7 +1330,7 @@ PetscErrorCode TSAdjointMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,8);
   PetscCall(PetscViewerPushFormat(viewer,vf->format));
   PetscCall(PetscViewerASCIIAddTab(viewer,((PetscObject)ts)->tablevel));
-  PetscCall(PetscViewerASCIIPrintf(viewer,"%D TS dt %g time %g%s",step,(double)ts->time_step,(double)ptime,ts->steprollback ? " (r)\n" : "\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT " TS dt %g time %g%s",step,(double)ts->time_step,(double)ptime,ts->steprollback ? " (r)\n" : "\n"));
   PetscCall(PetscViewerASCIISubtractTab(viewer,((PetscObject)ts)->tablevel));
   PetscCall(PetscViewerPopFormat(viewer));
   PetscFunctionReturn(0);

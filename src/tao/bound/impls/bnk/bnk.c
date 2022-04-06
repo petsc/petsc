@@ -1225,23 +1225,23 @@ PetscErrorCode TaoView_BNK(Tao tao, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPushTab(viewer));
     if (bnk->M) {
       PetscCall(MatLMVMGetRejectCount(bnk->M,&nrejects));
-      PetscCall(PetscViewerASCIIPrintf(viewer, "Rejected BFGS updates: %D\n",nrejects));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "Rejected BFGS updates: %" PetscInt_FMT "\n",nrejects));
     }
-    PetscCall(PetscViewerASCIIPrintf(viewer, "CG steps: %D\n", bnk->tot_cg_its));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "Newton steps: %D\n", bnk->newt));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "CG steps: %" PetscInt_FMT "\n", bnk->tot_cg_its));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Newton steps: %" PetscInt_FMT "\n", bnk->newt));
     if (bnk->M) {
-      PetscCall(PetscViewerASCIIPrintf(viewer, "BFGS steps: %D\n", bnk->bfgs));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "BFGS steps: %" PetscInt_FMT "\n", bnk->bfgs));
     }
-    PetscCall(PetscViewerASCIIPrintf(viewer, "Scaled gradient steps: %D\n", bnk->sgrad));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "Gradient steps: %D\n", bnk->grad));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Scaled gradient steps: %" PetscInt_FMT "\n", bnk->sgrad));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Gradient steps: %" PetscInt_FMT "\n", bnk->grad));
     PetscCall(PetscViewerASCIIPrintf(viewer, "KSP termination reasons:\n"));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  atol: %D\n", bnk->ksp_atol));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  rtol: %D\n", bnk->ksp_rtol));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  ctol: %D\n", bnk->ksp_ctol));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  negc: %D\n", bnk->ksp_negc));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  dtol: %D\n", bnk->ksp_dtol));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  iter: %D\n", bnk->ksp_iter));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  othr: %D\n", bnk->ksp_othr));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  atol: %" PetscInt_FMT "\n", bnk->ksp_atol));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  rtol: %" PetscInt_FMT "\n", bnk->ksp_rtol));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  ctol: %" PetscInt_FMT "\n", bnk->ksp_ctol));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  negc: %" PetscInt_FMT "\n", bnk->ksp_negc));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  dtol: %" PetscInt_FMT "\n", bnk->ksp_dtol));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  iter: %" PetscInt_FMT "\n", bnk->ksp_iter));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  othr: %" PetscInt_FMT "\n", bnk->ksp_othr));
     PetscCall(PetscViewerASCIIPopTab(viewer));
   }
   PetscFunctionReturn(0);

@@ -60,7 +60,7 @@ int main(int argc,char **argv)
   if (flg) fine_ctx.mx = mx;
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-my",&my,&flg));
   if (flg) fine_ctx.my = my;
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Fine grid size %D by %D\n",fine_ctx.mx,fine_ctx.my));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Fine grid size %" PetscInt_FMT " by %" PetscInt_FMT "\n",fine_ctx.mx,fine_ctx.my));
   n    = fine_ctx.mx*fine_ctx.my;
 
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
@@ -100,7 +100,7 @@ int main(int argc,char **argv)
     PetscCall(KSPSolve(ksp,fine_ctx.b,fine_ctx.x));
     PetscCall(KSPGetIterationNumber(ksp,&its));
     if (its > 6) {
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Warning: Number of iterations = %D greater than expected\n",its));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Warning: Number of iterations = %" PetscInt_FMT " greater than expected\n",its));
     }
   }
 

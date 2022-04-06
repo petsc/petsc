@@ -129,7 +129,7 @@ PetscErrorCode StubFunction(SNES snes ,Vec x,Vec r,void *ctx)
   PetscCall(VecAXPY(rk,-1.0,r));
   PetscCall(VecNorm(rk,NORM_2,&norm));
   PetscCall(DMRestoreGlobalVector(da,&rk));
-  PetscCheck(norm <= 1e-6,PETSC_COMM_SELF,PETSC_ERR_PLIB,"KokkosFunction() different from CpuFunction() with a diff norm = %g",norm);
+  PetscCheck(norm <= 1e-6,PETSC_COMM_SELF,PETSC_ERR_PLIB,"KokkosFunction() different from CpuFunction() with a diff norm = %g",(double)norm);
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */
@@ -281,7 +281,7 @@ int main(int argc,char **argv)
   PetscCall(SNESSetJacobian(snes,J,J,FormJacobian,&ctx));
   PetscCall(SNESSetFromOptions(snes));
   PetscCall(SNESGetTolerances(snes,&abstol,&rtol,&stol,&maxit,&maxf));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"atol=%g, rtol=%g, stol=%g, maxit=%D, maxf=%D\n",(double)abstol,(double)rtol,(double)stol,maxit,maxf));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"atol=%g, rtol=%g, stol=%g, maxit=%" PetscInt_FMT ", maxf=%" PetscInt_FMT "\n",(double)abstol,(double)rtol,(double)stol,maxit,maxf));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize application:
@@ -318,7 +318,7 @@ int main(int argc,char **argv)
   PetscCall(FormInitialGuess(x));
   PetscCall(SNESSolve(snes,NULL,x));
   PetscCall(SNESGetIterationNumber(snes,&its));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n",its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %" PetscInt_FMT "\n",its));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Check solution and clean up
@@ -328,7 +328,7 @@ int main(int argc,char **argv)
   */
   PetscCall(VecAXPY(x,none,U));
   PetscCall(VecNorm(x,NORM_2,&norm));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g Iterations %D\n",(double)norm,its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g Iterations %" PetscInt_FMT "\n",(double)norm,its));
 
   /*
      Free work space.  All PETSc objects should be destroyed when they

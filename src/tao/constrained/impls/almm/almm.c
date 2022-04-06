@@ -61,13 +61,13 @@ static PetscErrorCode TaoSolve_ALMM(Tao tao)
       break;
   }
   auglag->gtol = auglag->gtol0;
-  PetscCall(PetscInfo(tao,"Initial penalty: %.2f\n",auglag->mu));
+  PetscCall(PetscInfo(tao,"Initial penalty: %.2g\n",(double)auglag->mu));
 
   /* start aug-lag outer loop */
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     ++tao->niter;
     /* update subsolver tolerance */
-    PetscCall(PetscInfo(tao,"Subsolver tolerance: ||G|| <= %e\n",auglag->gtol));
+    PetscCall(PetscInfo(tao,"Subsolver tolerance: ||G|| <= %e\n",(double)auglag->gtol));
     PetscCall(TaoSetTolerances(auglag->subsolver, auglag->gtol, 0.0, 0.0));
     /* solve the bound-constrained or unconstrained subproblem */
     PetscCall(TaoSolve(auglag->subsolver));
@@ -82,7 +82,7 @@ static PetscErrorCode TaoSolve_ALMM(Tao tao)
     /* decide whether to update multipliers or not */
     updated = 0.0;
     if (auglag->cnorm <= auglag->ytol) {
-      PetscCall(PetscInfo(tao,"Multipliers updated: ||C|| <= %e\n",auglag->ytol));
+      PetscCall(PetscInfo(tao,"Multipliers updated: ||C|| <= %e\n",(double)auglag->ytol));
       /* constraints are good, update multipliers and convergence tolerances */
       if (tao->eq_constrained) {
         PetscCall(VecAXPY(auglag->Ye, auglag->mu, auglag->Ce));
@@ -112,7 +112,7 @@ static PetscErrorCode TaoSolve_ALMM(Tao tao)
         auglag->ytol = PetscMax(tao->catol, 0.1/PetscPowReal(auglag->mu, auglag->mu_pow_bad));
         auglag->gtol = PetscMax(tao->gatol, 1.0/auglag->mu);
       }
-      PetscCall(PetscInfo(tao,"Penalty increased: mu = %.2f\n",auglag->mu));
+      PetscCall(PetscInfo(tao,"Penalty increased: mu = %.2g\n",(double)auglag->mu));
     }
     PetscCall(TaoLogConvergenceHistory(tao, auglag->fval, auglag->gnorm, auglag->cnorm, tao->ksp_its));
     PetscCall(TaoMonitor(tao, tao->niter, auglag->fval, auglag->gnorm, auglag->cnorm, updated));

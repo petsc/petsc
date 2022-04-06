@@ -20,7 +20,7 @@ int main(int argc,char *argv[])
   case 3:
     PetscCall(DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR, 3,5,7,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,NULL,&da));
     break;
-  default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"No support for %D dimensions",dim);
+  default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"No support for %" PetscInt_FMT " dimensions",dim);
   }
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));

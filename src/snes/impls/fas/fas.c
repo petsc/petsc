@@ -299,7 +299,7 @@ static PetscErrorCode SNESView_FAS(SNES snes, PetscViewer viewer)
     PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
     PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw));
     if (iascii) {
-      PetscCall(PetscViewerASCIIPrintf(viewer, "  type is %s, levels=%D, cycles=%D\n",  SNESFASTypes[fas->fastype], fas->levels, fas->n_cycles));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "  type is %s, levels=%" PetscInt_FMT ", cycles=%" PetscInt_FMT "\n",  SNESFASTypes[fas->fastype], fas->levels, fas->n_cycles));
       if (fas->galerkin) {
         PetscCall(PetscViewerASCIIPrintf(viewer,"  Using Galerkin computed coarse grid function evaluation\n"));
       } else {
@@ -310,9 +310,9 @@ static PetscErrorCode SNESView_FAS(SNES snes, PetscViewer viewer)
         PetscCall(SNESFASCycleGetSmootherUp(levelsnes, &smoothu));
         PetscCall(SNESFASCycleGetSmootherDown(levelsnes, &smoothd));
         if (!i) {
-          PetscCall(PetscViewerASCIIPrintf(viewer,"  Coarse grid solver -- level %D -------------------------------\n",i));
+          PetscCall(PetscViewerASCIIPrintf(viewer,"  Coarse grid solver -- level %" PetscInt_FMT " -------------------------------\n",i));
         } else {
-          PetscCall(PetscViewerASCIIPrintf(viewer,"  Down solver (pre-smoother) on level %D -------------------------------\n",i));
+          PetscCall(PetscViewerASCIIPrintf(viewer,"  Down solver (pre-smoother) on level %" PetscInt_FMT " -------------------------------\n",i));
         }
         PetscCall(PetscViewerASCIIPushTab(viewer));
         if (smoothd) {
@@ -324,7 +324,7 @@ static PetscErrorCode SNESView_FAS(SNES snes, PetscViewer viewer)
         if (i && (smoothd == smoothu)) {
           PetscCall(PetscViewerASCIIPrintf(viewer,"  Up solver (post-smoother) same as down solver (pre-smoother)\n"));
         } else if (i) {
-          PetscCall(PetscViewerASCIIPrintf(viewer,"  Up solver (post-smoother) on level %D -------------------------------\n",i));
+          PetscCall(PetscViewerASCIIPrintf(viewer,"  Up solver (post-smoother) on level %" PetscInt_FMT " -------------------------------\n",i));
           PetscCall(PetscViewerASCIIPushTab(viewer));
           if (smoothu) {
             PetscCall(SNESView(smoothu,viewer));
@@ -929,7 +929,7 @@ static PetscErrorCode SNESSolve_FAS(SNES snes)
     }
   }
   if (i == snes->max_its) {
-    PetscCall(PetscInfo(snes, "Maximum number of iterations has been reached: %D\n", i));
+    PetscCall(PetscInfo(snes, "Maximum number of iterations has been reached: %" PetscInt_FMT "\n", i));
     if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
   }
   PetscFunctionReturn(0);

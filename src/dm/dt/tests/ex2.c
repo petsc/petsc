@@ -42,7 +42,7 @@ int main(int argc,char **argv)
       if (PetscAbs(R[j]) < 10*PETSC_MACHINE_EPSILON) R[j] = 0;
     }
     for (j=0; j<ntarget_points-1; j++) {
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Degree %D target interval (%g,%g)\n",degrees[i],(double)target_points[j],(double)target_points[j+1]));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Degree %" PetscInt_FMT " target interval (%g,%g)\n",degrees[i],(double)target_points[j],(double)target_points[j+1]));
       PetscCall(PetscRealView(nsrc_points-1,R+j*(nsrc_points-1),PETSC_VIEWER_STDOUT_WORLD));
     }
   }

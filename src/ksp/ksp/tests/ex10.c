@@ -64,7 +64,7 @@ int main(int argc,char **args)
   PetscCall(VecAXPY(x,neg1,u));
   PetscCall(VecNorm(x,NORM_2,&norm));
 
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of residual %g Number of iterations %D\n",(double)norm,its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of residual %g Number of iterations %" PetscInt_FMT "\n",(double)norm,its));
 
   /* Free work space */
   PetscCall(KSPDestroy(&ksp));
@@ -91,7 +91,7 @@ PetscErrorCode GetElasticityMatrix(PetscInt m,Mat *newmat)
 
   m   /= 2; /* This is done just to be consistent with the old example */
   N    = 3*(2*m+1)*(2*m+1)*(2*m+1);
-  PetscCall(PetscPrintf(PETSC_COMM_SELF,"m = %D, N=%D\n",m,N));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"m = %" PetscInt_FMT ", N=%" PetscInt_FMT "\n",m,N));
   PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,80,NULL,&mat));
 
   /* Form stiffness for element */

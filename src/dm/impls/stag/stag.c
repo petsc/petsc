@@ -394,7 +394,7 @@ static PetscErrorCode DMGetCompatibility_Stag(DM dm,DM dm2,PetscBool *compatible
   PetscCall(PetscObjectGetComm((PetscObject)dm,&comm));
   PetscCallMPI(MPI_Comm_compare(comm,PetscObjectComm((PetscObject)dm2),&sameComm));
   if (sameComm != MPI_IDENT) {
-    PetscCall(PetscInfo((PetscObject)dm,"DMStag objects have different communicators: %d != %d\n",comm,PetscObjectComm((PetscObject)dm2)));
+    PetscCall(PetscInfo((PetscObject)dm,"DMStag objects have different communicators: %" PETSC_MPI_COMM_FMT " != %" PETSC_MPI_COMM_FMT "\n",comm,PetscObjectComm((PetscObject)dm2)));
     *set = PETSC_FALSE;
     PetscFunctionReturn(0);
   }
@@ -408,19 +408,19 @@ static PetscErrorCode DMGetCompatibility_Stag(DM dm,DM dm2,PetscBool *compatible
   }
   for (i=0; i<dim; ++i) {
     if (stag->N[i] != stag2->N[i]) {
-      PetscCall(PetscInfo((PetscObject)dm,"DMStag objects have different global numbers of elements in dimension %D: %D != %D\n",i,stag->n[i],stag2->n[i]));
+      PetscCall(PetscInfo((PetscObject)dm,"DMStag objects have different global numbers of elements in dimension %" PetscInt_FMT ": %" PetscInt_FMT " != %" PetscInt_FMT "\n",i,stag->n[i],stag2->n[i]));
       *set = PETSC_TRUE;
       *compatible = PETSC_FALSE;
       PetscFunctionReturn(0);
     }
     if (stag->n[i] != stag2->n[i]) {
-      PetscCall(PetscInfo((PetscObject)dm,"DMStag objects have different local numbers of elements in dimension %D: %D != %D\n",i,stag->n[i],stag2->n[i]));
+      PetscCall(PetscInfo((PetscObject)dm,"DMStag objects have different local numbers of elements in dimension %" PetscInt_FMT ": %" PetscInt_FMT " != %" PetscInt_FMT "\n",i,stag->n[i],stag2->n[i]));
       *set = PETSC_TRUE;
       *compatible = PETSC_FALSE;
       PetscFunctionReturn(0);
     }
     if (stag->boundaryType[i] != stag2->boundaryType[i]) {
-      PetscCall(PetscInfo((PetscObject)dm,"DMStag objects have different boundary types in dimension %d: %s != %s\n",i,stag->boundaryType[i],stag2->boundaryType[i]));
+      PetscCall(PetscInfo((PetscObject)dm,"DMStag objects have different boundary types in dimension %" PetscInt_FMT ": %s != %s\n",i,DMBoundaryTypes[stag->boundaryType[i]],DMBoundaryTypes[stag2->boundaryType[i]]));
       *set = PETSC_TRUE;
       *compatible = PETSC_FALSE;
       PetscFunctionReturn(0);
@@ -437,7 +437,7 @@ static PetscErrorCode DMGetCompatibility_Stag(DM dm,DM dm2,PetscBool *compatible
     PetscFunctionReturn(0);
   }
   if (stag->stencilWidth != stag2->stencilWidth) {
-    PetscCall(PetscInfo((PetscObject)dm,"DMStag objects have different ghost stencil widths: %D != %D\n",stag->stencilWidth,stag->stencilWidth));
+    PetscCall(PetscInfo((PetscObject)dm,"DMStag objects have different ghost stencil widths: %" PetscInt_FMT " != %" PetscInt_FMT "\n",stag->stencilWidth,stag->stencilWidth));
     *set = PETSC_TRUE;
     *compatible = PETSC_FALSE;
     PetscFunctionReturn(0);
@@ -551,7 +551,7 @@ static PetscErrorCode DMGetNeighbors_Stag(DM dm,PetscInt *nRanks,const PetscMPII
     case 1: *nRanks = 3; break;
     case 2: *nRanks = 9; break;
     case 3: *nRanks = 27; break;
-    default : SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Get neighbors not implemented for dim = %D",dim);
+    default : SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Get neighbors not implemented for dim = %" PetscInt_FMT,dim);
   }
   *ranks = stag->neighbors;
   PetscFunctionReturn(0);
@@ -570,20 +570,20 @@ static PetscErrorCode DMView_Stag(DM dm,PetscViewer viewer)
   PetscCall(DMGetDimension(dm,&dim));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii));
   if (isascii) {
-    PetscCall(PetscViewerASCIIPrintf(viewer,"Dimension: %D\n",dim));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"Dimension: %" PetscInt_FMT "\n",dim));
     switch (dim) {
       case 1:
-        PetscCall(PetscViewerASCIIPrintf(viewer,"Global size: %D\n",stag->N[0]));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"Global size: %" PetscInt_FMT "\n",stag->N[0]));
         break;
       case 2:
-        PetscCall(PetscViewerASCIIPrintf(viewer,"Global sizes: %D x %D\n",stag->N[0],stag->N[1]));
-        PetscCall(PetscViewerASCIIPrintf(viewer,"Parallel decomposition: %D x %D ranks\n",stag->nRanks[0],stag->nRanks[1]));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"Global sizes: %" PetscInt_FMT " x %" PetscInt_FMT "\n",stag->N[0],stag->N[1]));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"Parallel decomposition: %" PetscInt_FMT " x %" PetscInt_FMT " ranks\n",stag->nRanks[0],stag->nRanks[1]));
         break;
       case 3:
-        PetscCall(PetscViewerASCIIPrintf(viewer,"Global sizes: %D x %D x %D\n",stag->N[0],stag->N[1],stag->N[2]));
-        PetscCall(PetscViewerASCIIPrintf(viewer,"Parallel decomposition: %D x %D x %D ranks\n",stag->nRanks[0],stag->nRanks[1],stag->nRanks[2]));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"Global sizes: %" PetscInt_FMT " x %" PetscInt_FMT " x %" PetscInt_FMT "\n",stag->N[0],stag->N[1],stag->N[2]));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"Parallel decomposition: %" PetscInt_FMT " x %" PetscInt_FMT " x %" PetscInt_FMT " ranks\n",stag->nRanks[0],stag->nRanks[1],stag->nRanks[2]));
         break;
-      default: SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"not implemented for dim==%D",dim);
+      default: SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"not implemented for dim==%" PetscInt_FMT,dim);
     }
     PetscCall(PetscViewerASCIIPrintf(viewer,"Boundary ghosting:"));
     for (i=0; i<dim; ++i) {
@@ -592,18 +592,18 @@ static PetscErrorCode DMView_Stag(DM dm,PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer,"\n"));
     PetscCall(PetscViewerASCIIPrintf(viewer,"Elementwise ghost stencil: %s",DMStagStencilTypes[stag->stencilType]));
     if (stag->stencilType != DMSTAG_STENCIL_NONE) {
-      PetscCall(PetscViewerASCIIPrintf(viewer,", width %D\n",stag->stencilWidth));
+      PetscCall(PetscViewerASCIIPrintf(viewer,", width %" PetscInt_FMT "\n",stag->stencilWidth));
     } else {
       PetscCall(PetscViewerASCIIPrintf(viewer,"\n"));
     }
-    PetscCall(PetscViewerASCIIPrintf(viewer,"%D DOF per vertex (0D)\n",stag->dof[0]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT " DOF per vertex (0D)\n",stag->dof[0]));
     if (dim == 3) {
-      PetscCall(PetscViewerASCIIPrintf(viewer,"%D DOF per edge (1D)\n",stag->dof[1]));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT " DOF per edge (1D)\n",stag->dof[1]));
     }
     if (dim > 1) {
-      PetscCall(PetscViewerASCIIPrintf(viewer,"%D DOF per face (%DD)\n",stag->dof[dim-1],dim-1));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT " DOF per face (%" PetscInt_FMT "D)\n",stag->dof[dim-1],dim-1));
     }
-    PetscCall(PetscViewerASCIIPrintf(viewer,"%D DOF per element (%DD)\n",stag->dof[dim],dim));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT " DOF per element (%" PetscInt_FMT "D)\n",stag->dof[dim],dim));
     if (dm->coordinateDM) {
       PetscCall(PetscViewerASCIIPrintf(viewer,"Has coordinate DM\n"));
     }
@@ -613,24 +613,24 @@ static PetscErrorCode DMView_Stag(DM dm,PetscViewer viewer)
       PetscCall(PetscViewerASCIIPushSynchronized(viewer));
       switch (dim) {
         case 1:
-          PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Local elements : %D (%D with ghosts)\n",rank,stag->n[0],stag->nGhost[0]));
+          PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Local elements : %" PetscInt_FMT " (%" PetscInt_FMT " with ghosts)\n",rank,stag->n[0],stag->nGhost[0]));
           break;
         case 2:
           PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Rank coordinates (%d,%d)\n",rank,stag->rank[0],stag->rank[1]));
-          PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Local elements : %D x %D (%D x %D with ghosts)\n",rank,stag->n[0],stag->n[1],stag->nGhost[0],stag->nGhost[1]));
+          PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Local elements : %" PetscInt_FMT " x %" PetscInt_FMT " (%" PetscInt_FMT " x %" PetscInt_FMT " with ghosts)\n",rank,stag->n[0],stag->n[1],stag->nGhost[0],stag->nGhost[1]));
           break;
         case 3:
           PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Rank coordinates (%d,%d,%d)\n",rank,stag->rank[0],stag->rank[1],stag->rank[2]));
-          PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Local elements : %D x %D x %D (%D x %D x %D with ghosts)\n",rank,stag->n[0],stag->n[1],stag->n[2],stag->nGhost[0],stag->nGhost[1],stag->nGhost[2]));
+          PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Local elements : %" PetscInt_FMT " x %" PetscInt_FMT " x %" PetscInt_FMT " (%" PetscInt_FMT " x %" PetscInt_FMT " x %" PetscInt_FMT " with ghosts)\n",rank,stag->n[0],stag->n[1],stag->n[2],stag->nGhost[0],stag->nGhost[1],stag->nGhost[2]));
           break;
-        default: SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"not implemented for dim==%D",dim);
+        default: SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"not implemented for dim==%" PetscInt_FMT,dim);
       }
-      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Local native entries: %d\n",rank,stag->entries));
-      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Local entries total : %d\n",rank,stag->entriesGhost));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Local native entries: %" PetscInt_FMT "\n",rank,stag->entries));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Local entries total : %" PetscInt_FMT "\n",rank,stag->entriesGhost));
       PetscCall(PetscViewerFlush(viewer));
       PetscCall(PetscViewerASCIIPopSynchronized(viewer));
     } else {
-      PetscCall(PetscViewerASCIIPrintf(viewer,"(Per-rank information omitted since >%D ranks used)\n",maxRanksToView));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"(Per-rank information omitted since >%" PetscInt_FMT " ranks used)\n",maxRanksToView));
     }
   }
   PetscFunctionReturn(0);
@@ -729,7 +729,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Stag(DM dm)
     case 1: dm->ops->setup          = DMSetUp_Stag_1d; break;
     case 2: dm->ops->setup          = DMSetUp_Stag_2d; break;
     case 3: dm->ops->setup          = DMSetUp_Stag_3d; break;
-    default : SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Unsupported dimension %d",dim);
+    default : SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Unsupported dimension %" PetscInt_FMT,dim);
   }
   dm->ops->clone                    = DMClone_Stag;
   dm->ops->view                     = DMView_Stag;

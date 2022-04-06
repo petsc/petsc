@@ -33,7 +33,7 @@ static PetscErrorCode DMPlexLabelToVolumeConstraint(DM dm, DMLabel adaptLabel, P
       case DM_ADAPT_DETERMINE:
         break;
       default:
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "DMPlex does not support refinement flag %D", refFlag);
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "DMPlex does not support refinement flag %" PetscInt_FMT, refFlag);
       }
       if (anyRefine) break;
     }
@@ -202,7 +202,7 @@ PetscErrorCode DMPlexRefine_Internal(DM dm, PETSC_UNUSED Vec metric, DMLabel ada
       }
       fl = fl->next;
     }
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"No grid refiner of dimension %D registered",dim);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"No grid refiner of dimension %" PetscInt_FMT " registered",dim);
   }
 
   gotit:
@@ -230,7 +230,7 @@ PetscErrorCode DMPlexRefine_Internal(DM dm, PETSC_UNUSED Vec metric, DMLabel ada
         PetscCall(PetscFree(maxVolumes));
       }
       break;
-    default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Mesh refinement in dimension %D is not supported.", dim);
+    default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Mesh refinement in dimension %" PetscInt_FMT " is not supported.", dim);
   }
   PetscCall(DMCopyDisc(dm, *dmRefined));
   PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, *dmRefined));
@@ -303,7 +303,7 @@ PetscErrorCode DMAdaptLabel_Plex(DM dm, PETSC_UNUSED Vec metric, DMLabel adaptLa
     case DM_ADAPT_COARSEN:
       PetscCall(DMCoarsen(dm, MPI_COMM_NULL, dmAdapted));break;
     default:
-      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP,"DMPlex does not support refinement flag %D", minFlag);
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP,"DMPlex does not support refinement flag %" PetscInt_FMT, minFlag);
     }
   } else {
     PetscCall(DMPlexSetRefinementUniform(dm, PETSC_FALSE));

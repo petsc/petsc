@@ -144,7 +144,7 @@ static PetscErrorCode SetupDiscretization(DM dm, const char name[], AppCtx *user
   char           prefix[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBeginUser;
-  PetscCall(PetscSNPrintf(prefix, PETSC_MAX_PATH_LEN, "%s_", name));
+  if (name) PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%s_", name));
   PetscCall(DMCreateFEDefault(dm, 1, name ? prefix : NULL, -1, &fe));
   PetscCall(PetscObjectSetName((PetscObject) fe, name ? name : "Solution"));
   /* Set discretization and boundary conditions for each mesh */

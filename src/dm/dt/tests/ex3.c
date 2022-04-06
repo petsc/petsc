@@ -165,7 +165,7 @@ int main(int argc, char **argv)
 #endif
     PetscCall(PetscDTTanhSinhIntegrate(funcs[f], bounds[f*2+0], bounds[f*2+1], digits, NULL, &integral));
     if (PetscAbsReal(integral - analytic[f]) > PetscMax(epsilon, PetscPowRealInt(10.0, -digits)) || PetscIsInfOrNanScalar(integral - analytic[f])) {
-      PetscCall(PetscPrintf(PETSC_COMM_SELF, "The integral of func%2d is wrong: %g (%g)\n", f+1, (double)integral, (double) PetscAbsReal(integral - analytic[f])));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, "The integral of func%2" PetscInt_FMT " is wrong: %g (%g)\n", f+1, (double)integral, (double) PetscAbsReal(integral - analytic[f])));
     }
   }
 #if defined(PETSC_HAVE_MPFR)

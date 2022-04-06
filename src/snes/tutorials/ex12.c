@@ -622,7 +622,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
       PetscCall(PetscDSSetResidual(ds, 0, f0_cross_u_3d, f1_u));
       break;
     default:
-      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", dim);
+      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %" PetscInt_FMT, dim);
     }
     PetscCall(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_uu));
     break;
@@ -678,7 +678,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
     }
     break;
   default:
-    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", dim);
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %" PetscInt_FMT, dim);
   }
   /* Setup constants */
   switch (user->variableCoefficient) {

@@ -14,10 +14,10 @@ PetscErrorCode CheckMesh(DM dm)
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   for (c = cStart; c < cEnd; ++c) {
     PetscCall(DMPlexComputeCellGeometryFEM(dm, c, NULL, NULL, J, NULL, &detJ));
-    PetscCheck(detJ > 0.0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %" PetscInt_FMT " is inverted, |J| = %g", c, detJ);
+    PetscCheck(detJ > 0.0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %" PetscInt_FMT " is inverted, |J| = %g", c, (double)detJ);
     if (depth > 1) {
       PetscCall(DMPlexComputeCellGeometryFVM(dm, c, &vol, NULL, NULL));
-      PetscCheck(vol > 0.0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %" PetscInt_FMT " is inverted, vol = %g", c, vol);
+      PetscCheck(vol > 0.0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %" PetscInt_FMT " is inverted, vol = %g", c, (double)vol);
     }
   }
   PetscFunctionReturn(0);

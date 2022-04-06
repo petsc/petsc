@@ -15,13 +15,13 @@ static PetscErrorCode VerifyDistribution(const char name[], PetscBool pos, Petsc
 
   PetscFunctionBeginUser;
   PetscCall(PetscDTTanhSinhIntegrate((void (*)(const PetscReal[], void *, PetscReal *)) pdf, lower, upper, digits, NULL, &integral));
-  PetscCheck(PetscAbsReal(integral - 1.0) < 100*PETSC_MACHINE_EPSILON, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "PDF %s must integrate to 1, not %g", name, integral);
+  PetscCheck(PetscAbsReal(integral - 1.0) < 100*PETSC_MACHINE_EPSILON, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "PDF %s must integrate to 1, not %g", name, (double)integral);
   for (i = 0; i <= 10; ++i) {
     const PetscReal x = i;
 
     PetscCall(PetscDTTanhSinhIntegrate((void (*)(const PetscReal[], void *, PetscReal *)) pdf, lower, x, digits, NULL, &integral));
     PetscCall(cdf(&x, NULL, &integral2));
-    PetscCheck(PetscAbsReal(integral - integral2) < PETSC_SQRT_MACHINE_EPSILON, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Integral of PDF %s %g != %g CDF at x = %g", name, integral, integral2, x);
+    PetscCheck(PetscAbsReal(integral - integral2) < PETSC_SQRT_MACHINE_EPSILON, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Integral of PDF %s %g != %g CDF at x = %g", name, (double)integral, (double)integral2, (double)x);
   }
   PetscFunctionReturn(0);
 }
@@ -69,7 +69,7 @@ static PetscErrorCode TestSampling()
     }
     PetscCall(VecRestoreArray(v, &a));
     PetscCall(PetscProbComputeKSStatistic(v, cdf[s], &alpha));
-    PetscCheck(alpha < confidenceLevel, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "KS finds sampling does not match the distribution at confidence level %.2g", confidenceLevel);
+    PetscCheck(alpha < confidenceLevel, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "KS finds sampling does not match the distribution at confidence level %.2g", (double)confidenceLevel);
     PetscCall(VecDestroy(&v));
   }
   PetscCall(PetscRandomDestroy(&rnd));

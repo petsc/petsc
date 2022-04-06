@@ -156,7 +156,7 @@ PetscErrorCode PreStep(TS ts)
   PetscCall(TSGetTime(ts,&t));
   PetscCall(TSGetSolution(ts,&x));
   PetscCall(VecGetArrayRead(x,&a));
-  PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts),"%-10s-> step %D time %g value %g\n",PETSC_FUNCTION_NAME,n,(double)t,(double)PetscRealPart(a[0])));
+  PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts),"%-10s-> step %" PetscInt_FMT " time %g value %g\n",PETSC_FUNCTION_NAME,n,(double)t,(double)PetscRealPart(a[0])));
   PetscCall(VecRestoreArrayRead(x,&a));
   PetscFunctionReturn(0);
 }
@@ -173,7 +173,7 @@ PetscErrorCode PostStep(TS ts)
   PetscCall(TSGetTime(ts,&t));
   PetscCall(TSGetSolution(ts,&x));
   PetscCall(VecGetArrayRead(x,&a));
-  PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts),"%-10s-> step %D time %g value %g\n",PETSC_FUNCTION_NAME,n,(double)t,(double)PetscRealPart(a[0])));
+  PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts),"%-10s-> step %" PetscInt_FMT " time %g value %g\n",PETSC_FUNCTION_NAME,n,(double)t,(double)PetscRealPart(a[0])));
   PetscCall(VecRestoreArrayRead(x,&a));
   PetscFunctionReturn(0);
 }
@@ -184,7 +184,7 @@ PetscErrorCode Monitor(TS ts,PetscInt n,PetscReal t,Vec x,void *ctx)
 
   PetscFunctionBegin;
   PetscCall(VecGetArrayRead(x,&a));
-  PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts),"%-10s-> step %D time %g value %g\n",PETSC_FUNCTION_NAME,n,(double)t,(double)PetscRealPart(a[0])));
+  PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts),"%-10s-> step %" PetscInt_FMT " time %g value %g\n",PETSC_FUNCTION_NAME,n,(double)t,(double)PetscRealPart(a[0])));
   PetscCall(VecRestoreArrayRead(x,&a));
   PetscFunctionReturn(0);
 }
@@ -206,7 +206,7 @@ PetscErrorCode PostEvent(TS ts,PetscInt nevents,PetscInt event_list[],PetscReal 
   PetscFunctionBegin;
   PetscCall(TSGetStepNumber(ts,&i));
   PetscCall(VecGetArrayRead(x,&a));
-  PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts),"%-10s-> step %D time %g value %g\n",PETSC_FUNCTION_NAME,i,(double)t,(double)PetscRealPart(a[0])));
+  PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts),"%-10s-> step %" PetscInt_FMT " time %g value %g\n",PETSC_FUNCTION_NAME,i,(double)t,(double)PetscRealPart(a[0])));
   PetscCall(VecRestoreArrayRead(x,&a));
   PetscFunctionReturn(0);
 }

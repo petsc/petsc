@@ -61,7 +61,7 @@ int main(int argc, char **argv)
   N = user.mx*user.my;
 
   PetscCall(PetscPrintf(PETSC_COMM_SELF,"\n---- Minimum Surface Area Problem -----\n"));
-  PetscCall(PetscPrintf(PETSC_COMM_SELF,"mx:%D, my:%D\n", user.mx,user.my));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"mx:%" PetscInt_FMT ", my:%" PetscInt_FMT "\n", user.mx,user.my));
 
   /* Create appropriate vectors and matrices */
   PetscCall(VecCreateSeq(MPI_COMM_SELF, N, &x));

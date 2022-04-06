@@ -186,7 +186,7 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
       }
       break;
     default:
-      SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Unsupported dimension %D",dim);
+      SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Unsupported dimension %" PetscInt_FMT,dim);
     }
     PetscCall(DMSetApplicationContext(daview,dactx));
     PetscCall(DMSetApplicationContextDestroy(daview,DMDAGhostedDestroyGLVisViewerCtx_Private));
@@ -211,7 +211,7 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
       nc   = ien*(jen>0 ? jen : 1)*(ken>0 ? ken : 1);
 
       PetscCall(VecGetLocalSize(xcoor,&nl));
-      PetscCheckFalse(nc && nl % nc,PETSC_COMM_SELF,PETSC_ERR_SUP,"Incompatible local coordinate size %D and number of cells %D",nl,nc);
+      PetscCheckFalse(nc && nl % nc,PETSC_COMM_SELF,PETSC_ERR_SUP,"Incompatible local coordinate size %" PetscInt_FMT " and number of cells %" PetscInt_FMT,nl,nc);
       PetscCall(VecDuplicate(xcoor,&xcoorl));
       PetscCall(VecCopy(xcoor,xcoorl));
       PetscCall(VecSetDM(xcoorl,NULL));
@@ -225,12 +225,12 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
           while (1) {
             PetscInt degd = 1;
             for (i=0;i<dim;i++) degd *= (deg+1);
-            PetscCheck(degd <= cdof,PETSC_COMM_SELF,PETSC_ERR_SUP,"Cell dofs %D",cdof);
+            PetscCheck(degd <= cdof,PETSC_COMM_SELF,PETSC_ERR_SUP,"Cell dofs %" PetscInt_FMT,cdof);
             if (degd == cdof) break;
             deg++;
           }
         }
-        PetscCall(PetscSNPrintf(fecmesh,sizeof(fecmesh),"FiniteElementCollection: L2_T1_%DD_P%D",dim,deg));
+        PetscCall(PetscSNPrintf(fecmesh,sizeof(fecmesh),"FiniteElementCollection: L2_T1_%" PetscInt_FMT "D_P%" PetscInt_FMT,dim,deg));
         PetscCall(PetscObjectSetName((PetscObject)xcoorl,fecmesh));
       } else {
         PetscCall(PetscObjectSetName((PetscObject)xcoorl,name));
@@ -263,7 +263,7 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
     PetscCall(DMCreateLocalVector(daview,&xlocal));
     PetscCall(DMDAGetFieldNames(da,(const char * const **)&dafieldname));
     PetscCall(DMDAGetNumVerticesGhosted(daview,&M,&N,&P));
-    PetscCall(PetscSNPrintf(fec,sizeof(fec),"FiniteElementCollection: H1_%DD_P1",dim));
+    PetscCall(PetscSNPrintf(fec,sizeof(fec),"FiniteElementCollection: H1_%" PetscInt_FMT "D_P1",dim));
     PetscCall(PetscMalloc6(dof,&fec_type,dof,&nlocal,dof,&bss,dof,&dims,dof,&fieldname,dof,&Ufield));
     for (i=0;i<dof;i++) bss[i] = 1;
     nf = dof;
@@ -274,7 +274,7 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
     if (bsset) {
       PetscInt t;
       for (i=0,t=0;i<nf;i++) t += bss[i];
-      PetscCheck(t == dof,PetscObjectComm(oda),PETSC_ERR_USER,"Sum of block sizes %D should equal %D",t,dof);
+      PetscCheck(t == dof,PetscObjectComm(oda),PETSC_ERR_USER,"Sum of block sizes %" PetscInt_FMT " should equal %" PetscInt_FMT,t,dof);
     } else nf = dof;
 
     for (i=0,s=0;i<nf;i++) {
@@ -365,16 +365,16 @@ static PetscErrorCode DMDAView_GLVis_ASCII(DM dm, PetscViewer viewer)
 
   PetscCall(PetscViewerASCIIPrintf(viewer,"MFEM mesh v1.0\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer,"\ndimension\n"));
-  PetscCall(PetscViewerASCIIPrintf(viewer,"%D\n",dim));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT "\n",dim));
 
   if (!enabled) {
     PetscCall(PetscViewerASCIIPrintf(viewer,"\nelements\n"));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"%D\n",0));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"0\n"));
     PetscCall(PetscViewerASCIIPrintf(viewer,"\nboundary\n"));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"%D\n",0));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"0\n"));
     PetscCall(PetscViewerASCIIPrintf(viewer,"\nvertices\n"));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"%D\n",0));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"%D\n",sdim));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"0\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT "\n",sdim));
     PetscFunctionReturn(0);
   }
 
@@ -383,7 +383,7 @@ static PetscErrorCode DMDAView_GLVis_ASCII(DM dm, PetscViewer viewer)
   if (dim > 1) nel *= jen;
   if (dim > 2) nel *= ken;
   PetscCall(PetscViewerASCIIPrintf(viewer,"\nelements\n"));
-  PetscCall(PetscViewerASCIIPrintf(viewer,"%D\n",nel));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT "\n",nel));
   switch (dim) {
   case 1:
     for (ie = 0; ie < ien; ie++) {
@@ -391,7 +391,7 @@ static PetscErrorCode DMDAView_GLVis_ASCII(DM dm, PetscViewer viewer)
       vid[1] = ie+1;
       mid    = 1; /* material id */
       cid    = 1; /* segment */
-      PetscCall(PetscViewerASCIIPrintf(viewer,"%D %D %D %D\n",mid,cid,vid[0],vid[1]));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n",mid,cid,vid[0],vid[1]));
     }
     break;
   case 2:
@@ -403,7 +403,7 @@ static PetscErrorCode DMDAView_GLVis_ASCII(DM dm, PetscViewer viewer)
         vid[3] = (je+1)*(ien+1) + ie;
         mid    = 1; /* material id */
         cid    = 3; /* quad */
-        PetscCall(PetscViewerASCIIPrintf(viewer,"%D %D %D %D %D %D\n",mid,cid,vid[0],vid[1],vid[2],vid[3]));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n",mid,cid,vid[0],vid[1],vid[2],vid[3]));
       }
     }
     break;
@@ -421,23 +421,23 @@ static PetscErrorCode DMDAView_GLVis_ASCII(DM dm, PetscViewer viewer)
           vid[7] = (ke+1)*(jen+1)*(ien+1) + (je+1)*(ien+1) + ie;
           mid    = 1; /* material id */
           cid    = 5; /* hex */
-          PetscCall(PetscViewerASCIIPrintf(viewer,"%D %D %D %D %D %D %D %D %D %D\n",mid,cid,vid[0],vid[1],vid[2],vid[3],vid[4],vid[5],vid[6],vid[7]));
+          PetscCall(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n",mid,cid,vid[0],vid[1],vid[2],vid[3],vid[4],vid[5],vid[6],vid[7]));
         }
       }
     }
     break;
   default:
-    SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Unsupported dimension %D",dim);
+    SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Unsupported dimension %" PetscInt_FMT,dim);
   }
   PetscCall(PetscViewerASCIIPrintf(viewer,"\nboundary\n"));
-  PetscCall(PetscViewerASCIIPrintf(viewer,"%D\n",0));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"0\n"));
 
   /* vertex coordinates */
   PetscCall(PetscObjectQuery((PetscObject)da,"GLVisGraphicsCoordsGhosted",(PetscObject*)&xcoorl));
   PetscCheck(xcoorl,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Missing GLVis ghosted coords");
   PetscCall(DMDAGetNumVerticesGhosted(da,&ien,&jen,&ken));
   PetscCall(PetscViewerASCIIPrintf(viewer,"\nvertices\n"));
-  PetscCall(PetscViewerASCIIPrintf(viewer,"%D\n",ien*jen*ken));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT "\n",ien*jen*ken));
   if (nel) {
     PetscCall(VecGetDM(xcoorl,&cda));
     PetscCall(VecGetArrayRead(xcoorl,&array));
@@ -449,7 +449,7 @@ static PetscErrorCode DMDAView_GLVis_ASCII(DM dm, PetscViewer viewer)
       PetscCall(PetscViewerASCIIPrintf(viewer,"nodes\n"));
       PetscCall(PetscViewerASCIIPrintf(viewer,"FiniteElementSpace\n"));
       PetscCall(PetscViewerASCIIPrintf(viewer,"%s\n",fecname));
-      PetscCall(PetscViewerASCIIPrintf(viewer,"VDim: %D\n",sdim));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"VDim: %" PetscInt_FMT "\n",sdim));
       PetscCall(PetscViewerASCIIPrintf(viewer,"Ordering: 1\n\n")); /*Ordering::byVDIM*/
       /* L2 coordinates */
       PetscCall(DMDAGetNumElementsGhosted(da,&ien,&jen,&ken));
@@ -467,7 +467,7 @@ static PetscErrorCode DMDAView_GLVis_ASCII(DM dm, PetscViewer viewer)
       DMDAGhostedGLVisViewerCtx *dactx;
 
       PetscCall(DMGetApplicationContext(da,&dactx));
-      PetscCall(PetscViewerASCIIPrintf(viewer,"%D\n",sdim));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT "\n",sdim));
       cdof = sdim;
       PetscCall(DMDAGetCorners(da,&sx,&sy,&sz,NULL,NULL,NULL));
       PetscCall(DMDAGetGhostCorners(da,&gsx,&gsy,&gsz,&gm,&gn,&gp));

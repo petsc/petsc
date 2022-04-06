@@ -42,7 +42,7 @@ static PetscErrorCode CheckSymmetry(PetscInt dim, PetscInt order, PetscBool tens
 
     PetscCall(PetscDualSpaceGetFunctional(sp,i,&q));
     PetscCall(PetscQuadratureGetData(q,NULL,&Nc,&numPoints,&points,&weights));
-    PetscCheck(Nc == 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Only support scalar quadrature, not %D components",Nc);
+    PetscCheck(Nc == 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Only support scalar quadrature, not %" PetscInt_FMT " components",Nc);
     for (j = 0; j < dim; j++) vals[dim * i + j] = valsCopy2[dim * i + j] = (PetscScalar) points[j];
   }
   PetscCall(PetscDualSpaceGetNumDof(sp,&numDofs));
@@ -82,7 +82,7 @@ static PetscErrorCode CheckSymmetry(PetscInt dim, PetscInt order, PetscBool tens
         char name[256];
 
         anyPrinted = PETSC_TRUE;
-        PetscCall(PetscSNPrintf(name,256,"%DD, %s, Order %D, Point %D Symmetry %D",dim,tensor ? "Tensor" : "Simplex", order, point,j));
+        PetscCall(PetscSNPrintf(name,256,"%" PetscInt_FMT "D, %s, Order %" PetscInt_FMT ", Point %" PetscInt_FMT " Symmetry %" PetscInt_FMT,dim,tensor ? "Tensor" : "Simplex", order, point,j));
         PetscCall(ISCreateGeneral(PETSC_COMM_SELF,numDofs[depth],idsCopy,PETSC_USE_POINTER,&is));
         PetscCall(PetscObjectSetName((PetscObject)is,name));
         PetscCall(ISView(is,PETSC_VIEWER_STDOUT_SELF));
@@ -101,9 +101,9 @@ static PetscErrorCode CheckSymmetry(PetscInt dim, PetscInt order, PetscBool tens
         }
       }
       for (k = 0; k < nFunc; k++) {
-        PetscCheck(idsCopy2[k] == ids[k],PETSC_COMM_SELF,PETSC_ERR_PLIB,"Symmetry failure: %DD, %s, point %D, symmetry %D, order %D, functional %D: (%D != %D)",dim, tensor ? "Tensor" : "Simplex",point,j,order,k,ids[k],k);
+        PetscCheck(idsCopy2[k] == ids[k],PETSC_COMM_SELF,PETSC_ERR_PLIB,"Symmetry failure: %" PetscInt_FMT "D, %s, point %" PetscInt_FMT ", symmetry %" PetscInt_FMT ", order %" PetscInt_FMT ", functional %" PetscInt_FMT ": (%" PetscInt_FMT " != %" PetscInt_FMT ")",dim, tensor ? "Tensor" : "Simplex",point,j,order,k,ids[k],k);
         for (l = 0; l < dim; l++) {
-          PetscCheck(valsCopy2[dim * k + l] == vals[dim * k + l],PETSC_COMM_SELF,PETSC_ERR_PLIB,"Symmetry failure: %DD, %s, point %D, symmetry %D, order %D, functional %D, component %D: (%D != %D)",dim, tensor ? "Tensor" : "Simplex",point,j,order,k,l);
+          PetscCheck(valsCopy2[dim * k + l] == vals[dim * k + l],PETSC_COMM_SELF,PETSC_ERR_PLIB,"Symmetry failure: %" PetscInt_FMT "D, %s, point %" PetscInt_FMT ", symmetry %" PetscInt_FMT ", order %" PetscInt_FMT ", functional %" PetscInt_FMT ", component %" PetscInt_FMT ": (%g != %g)",dim, tensor ? "Tensor" : "Simplex",point,j,order,k,l,(double)PetscAbsScalar(valsCopy2[dim * k + l]),(double)PetscAbsScalar(vals[dim * k + l]));
         }
       }
     }

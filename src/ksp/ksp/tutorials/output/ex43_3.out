@@ -33,7 +33,7 @@ PC Object: (stokes_) 4 MPI processes
     type is MULTIPLICATIVE, levels=4 cycles=v
       Cycles per PCApply=1
       Using Galerkin computed coarse grid matrices for pmat
-  Coarse grid solver -- level -------------------------------
+  Coarse grid solver -- level 0 -------------------------------
     KSP Object: (stokes_mg_coarse_) 4 MPI processes
       type: preonly
       maximum iterations=10000, initial guess is zero

@@ -144,7 +144,7 @@ PetscErrorCode Brusselator(int argc,char **argv,PetscInt cycle)
   PetscCall(TSGetConvergedReason(ts,&reason));
   PetscCall(VecMin(X,NULL,&xmin));
   PetscCall(VecMax(X,NULL,&xmax));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after % 3D steps. Range [%6.4f,%6.4f]\n",TSConvergedReasons[reason],(double)ftime,steps,(double)xmin,(double)xmax));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after % 3" PetscInt_FMT " steps. Range [%6.4f,%6.4f]\n",TSConvergedReasons[reason],(double)ftime,steps,(double)xmin,(double)xmax));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.

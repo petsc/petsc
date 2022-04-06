@@ -118,8 +118,8 @@ PetscErrorCode PetscPartitionerView(PetscPartitioner part, PetscViewer v)
     PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject) part), &size));
     PetscCall(PetscViewerASCIIPrintf(v, "Graph Partitioner: %d MPI Process%s\n", size, size > 1 ? "es" : ""));
     PetscCall(PetscViewerASCIIPrintf(v, "  type: %s\n", ((PetscObject)part)->type_name));
-    PetscCall(PetscViewerASCIIPrintf(v, "  edge cut: %D\n", part->edgeCut));
-    PetscCall(PetscViewerASCIIPrintf(v, "  balance: %.2g\n", part->balance));
+    PetscCall(PetscViewerASCIIPrintf(v, "  edge cut: %" PetscInt_FMT "\n", part->edgeCut));
+    PetscCall(PetscViewerASCIIPrintf(v, "  balance: %.2g\n", (double)part->balance));
     PetscCall(PetscViewerASCIIPrintf(v, "  use vertex weights: %d\n", part->usevwgt));
   }
   if (part->ops->view) PetscCall((*part->ops->view)(part, v));
@@ -310,14 +310,14 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, PetscInt nparts,
 
     PetscValidHeaderSpecific(vertexSection, PETSC_SECTION_CLASSID, 6);
     PetscCall(PetscSectionGetChart(vertexSection, &s, &e));
-    PetscCheckFalse(s > 0 || e < numVertices,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid vertexSection chart [%D,%D)",s,e);
+    PetscCheckFalse(s > 0 || e < numVertices,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid vertexSection chart [%" PetscInt_FMT ",%" PetscInt_FMT ")",s,e);
   }
   if (targetSection) {
     PetscInt s,e;
 
     PetscValidHeaderSpecific(targetSection, PETSC_SECTION_CLASSID, 7);
     PetscCall(PetscSectionGetChart(targetSection, &s, &e));
-    PetscCheckFalse(s > 0 || e < nparts,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid targetSection chart [%D,%D)",s,e);
+    PetscCheckFalse(s > 0 || e < nparts,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid targetSection chart [%" PetscInt_FMT ",%" PetscInt_FMT ")",s,e);
   }
   PetscValidHeaderSpecific(partSection, PETSC_SECTION_CLASSID, 8);
   PetscValidPointer(partition, 9);
@@ -342,14 +342,14 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, PetscInt nparts,
     PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii));
     if (isascii) {
       PetscCall(PetscViewerASCIIPushSynchronized(viewer));
-      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d]Nv: %D\n", rank, numVertices));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d]Nv: %" PetscInt_FMT "\n", rank, numVertices));
       for (v = 0; v < numVertices; ++v) {
         const PetscInt s = start[v];
         const PetscInt e = start[v+1];
 
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d]  ", rank));
-        for (i = s; i < e; ++i) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%D ", adjacency[i]));
-        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%D-%D)\n", s, e));
+        for (i = s; i < e; ++i) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%" PetscInt_FMT " ", adjacency[i]));
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%" PetscInt_FMT "-%" PetscInt_FMT ")\n", s, e));
       }
       PetscCall(PetscViewerFlush(viewer));
       PetscCall(PetscViewerASCIIPopSynchronized(viewer));

@@ -177,7 +177,7 @@ int main(int argc,char **argv)
           iloc = w*((k-Zs)*Xm*Ym + (j-Ys)*Xm + i-Xs);
           for (l=0; l<w; l++) {
             if (iglobal[kk] != ltog[iloc+l]) {
-              PetscCall(PetscPrintf(MPI_COMM_WORLD,"[%D] Problem with mapping: z=%D, j=%D, i=%D, l=%D, petsc1=%D, petsc2=%D\n",rank,k,j,i,l,ltog[iloc+l],iglobal[kk]));
+              PetscCall(PetscPrintf(MPI_COMM_WORLD,"[%d] Problem with mapping: z=%" PetscInt_FMT ", j=%" PetscInt_FMT ", i=%" PetscInt_FMT ", l=%" PetscInt_FMT ", petsc1=%" PetscInt_FMT ", petsc2=%" PetscInt_FMT "\n",rank,k,j,i,l,ltog[iloc+l],iglobal[kk]));
             }
             kk++;
           }

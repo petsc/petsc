@@ -171,7 +171,7 @@ static PetscErrorCode DMView_Redundant(DM dm,PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    PetscCall(PetscViewerASCIIPrintf(viewer,"redundant: rank=%D N=%D\n",red->rank,red->N));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"redundant: rank=%d N=%" PetscInt_FMT "\n",red->rank,red->N));
   }
   PetscFunctionReturn(0);
 }

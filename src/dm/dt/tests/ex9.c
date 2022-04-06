@@ -22,7 +22,7 @@ static PetscErrorCode testOrthogonality(PetscInt dim, PetscInt deg)
       PetscReal exact = (i == j) ? 1. : 0.;
 
       for (k = 0; k < npoints; k++) integral += weights[k] * p[i * npoints + k] * p[j * npoints + k];
-      PetscCheck(PetscAbsReal(integral - exact) <= PETSC_SMALL,PETSC_COMM_SELF, PETSC_ERR_PLIB, "<P[%D], P[%D]> = %g != delta_{%D,%D}", i, j, (double) integral, i, j);
+      PetscCheck(PetscAbsReal(integral - exact) <= PETSC_SMALL,PETSC_COMM_SELF, PETSC_ERR_PLIB, "<P[%" PetscInt_FMT "], P[%" PetscInt_FMT "]> = %g != delta_{%" PetscInt_FMT ",%" PetscInt_FMT "}", i, j, (double) integral, i, j);
     }
   }
   PetscCall(PetscFree(p));

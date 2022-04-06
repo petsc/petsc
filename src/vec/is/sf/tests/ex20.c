@@ -197,7 +197,7 @@ int main(int argc,char **argv)
   PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\t##  PetscSF Ping-pong test on %s ##\n  Message(Bytes) \t\tLatency(us)\n", mtype==PETSC_MEMTYPE_HOST? "Host" : "Device"));
   for (n=1,j=0; n<=maxn; n*=2,j++) {
     PetscCall(PetscSFDestroy(&sf[j]));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%16D \t %16.4f\n",sizeof(PetscScalar)*n,time[j]));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%16" PetscInt_FMT " \t %16.4f\n",sizeof(PetscScalar)*n,time[j]));
   }
 
   PetscCall(PetscFree2(pbuf,ebuf));

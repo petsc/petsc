@@ -127,7 +127,7 @@ static PetscErrorCode OrderHybridMesh(DM *dm)
 
   PetscFunctionBegin;
   PetscCall(DMGetDimension(*dm, &dim));
-  PetscCheck(dim == 3,PetscObjectComm((PetscObject) *dm), PETSC_ERR_SUP, "No support for dimension %D", dim);
+  PetscCheck(dim == 3,PetscObjectComm((PetscObject) *dm), PETSC_ERR_SUP, "No support for dimension %" PetscInt_FMT, dim);
   PetscCall(DMPlexGetChart(*dm, &pStart, &pEnd));
   PetscCall(PetscMalloc1(pEnd-pStart, &ind));
   for (p = 0; p < pEnd-pStart; ++p) ind[p] = p;
@@ -147,8 +147,8 @@ static PetscErrorCode OrderHybridMesh(DM *dm)
     if (coneSize == 6) ind[c] = off[1]++;
     else               ind[c] = off[0]++;
   }
-  PetscCheckFalse(off[0] != cEnd - Nhyb,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of normal cells %D should be %D", off[0], cEnd - Nhyb);
-  PetscCheck(off[1] == cEnd,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of hybrid cells %D should be %D", off[1] - off[0], Nhyb);
+  PetscCheckFalse(off[0] != cEnd - Nhyb,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of normal cells %" PetscInt_FMT " should be %" PetscInt_FMT, off[0], cEnd - Nhyb);
+  PetscCheck(off[1] == cEnd,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of hybrid cells %" PetscInt_FMT " should be %" PetscInt_FMT, off[1] - off[0], Nhyb);
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, pEnd-pStart, ind, PETSC_OWN_POINTER, &perm));
   PetscCall(DMPlexPermute(*dm, perm, &pdm));
   PetscCall(ISDestroy(&perm));
@@ -184,7 +184,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       PetscCall(CreateHybridMesh(comm, interpolate, dm));break;
     case 1:
       PetscCall(CreateReverseHybridMesh(comm, interpolate, dm));break;
-    default: SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Unknown mesh number %D", user->meshNum);
+    default: SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Unknown mesh number %" PetscInt_FMT, user->meshNum);
     }
   }
   PetscFunctionReturn(0);

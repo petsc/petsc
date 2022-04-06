@@ -220,7 +220,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     PetscCall(DMGetCoordinates(*dm, &coordinates));
     PetscCall(VecGetLocalSize(coordinates, &N));
     PetscCall(VecGetBlockSize(coordinates, &bs));
-    PetscCheck(bs == cdim,comm, PETSC_ERR_ARG_WRONG, "Invalid coordinate blocksize %D != embedding dimension %D", bs, cdim);
+    PetscCheck(bs == cdim,comm, PETSC_ERR_ARG_WRONG, "Invalid coordinate blocksize %" PetscInt_FMT " != embedding dimension %" PetscInt_FMT, bs, cdim);
     PetscCall(VecGetArray(coordinates, &coords));
     PetscCall(PetscBagGetData(user->bag, (void **) &param));
     alpha = param->alpha;

@@ -40,7 +40,7 @@ PetscErrorCode DMPlexSnapToGeomModel_EGADS_Internal(DM dm, PetscInt p, ego model
   PetscCall(DMGetCoordinateDim(dm, &dE));
   PetscCall(DMGetCoordinatesLocal(dm, &coordinatesLocal));
   PetscCall(EG_getTopology(model, &geom, &oclass, &mtype, NULL, &Nb, &bodies, &senses));
-  PetscCheck(bodyID < Nb,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Body %D is not in [0, %d)", bodyID, Nb);
+  PetscCheck(bodyID < Nb,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Body %" PetscInt_FMT " is not in [0, %d)", bodyID, Nb);
   body = bodies[bodyID];
 
   if (edgeID >= 0)      {PetscCall(EG_objectBodyTopo(body, EDGE, edgeID, &obj)); Np = 1;}
@@ -58,7 +58,7 @@ PetscErrorCode DMPlexSnapToGeomModel_EGADS_Internal(DM dm, PetscInt p, ego model
     for (d = 0; d < dE; ++d) gcoords[d] = mcoords[d];
     PetscFunctionReturn(0);
   }
-  PetscCheck(Nv <= 16,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle %D coordinates associated to point %D", Nv, p);
+  PetscCheck(Nv <= 16,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle %" PetscInt_FMT " coordinates associated to point %" PetscInt_FMT, Nv, p);
 
   /* Correct EGADSlite 2pi bug when calculating nearest point on Periodic Surfaces */
   PetscCall(EG_getRange(obj, range, &peri));
@@ -82,8 +82,8 @@ PetscErrorCode DMPlexSnapToGeomModel_EGADS_Internal(DM dm, PetscInt p, ego model
     for (v = 0; v < Nv; ++v) params[pm] += paramsV[v*3+pm];
     params[pm] /= Nv;
   }
-  PetscCheck(!(params[0] < range[0]) && !(params[0] > range[1]),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %D had bad interpolation", p);
-  PetscCheckFalse(Np > 1 && ((params[1] < range[2]) || (params[1] > range[3])),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %D had bad interpolation", p);
+  PetscCheck(!(params[0] < range[0]) && !(params[0] > range[1]),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %" PetscInt_FMT " had bad interpolation", p);
+  PetscCheckFalse(Np > 1 && ((params[1] < range[2]) || (params[1] > range[3])),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %" PetscInt_FMT " had bad interpolation", p);
   /* Put coordinates for new vertex in result[] */
   PetscCall(EG_evaluate(obj, params, result));
   for (d = 0; d < dE; ++d) gcoords[d] = result[d];
@@ -420,7 +420,7 @@ static PetscErrorCode DMPlexCreateEGADS_Internal(MPI_Comm comm, ego context, ego
         }
       }
     }
-    PetscCheckFalse(numEdges + numQuads != newVertices,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of new vertices %D != %D previous count", numEdges + numQuads, newVertices);
+    PetscCheckFalse(numEdges + numQuads != newVertices,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of new vertices %" PetscInt_FMT " != %" PetscInt_FMT " previous count", numEdges + numQuads, newVertices);
 
     /* Get cell vertices by traversing loops */
     numQuads = 0;
@@ -471,9 +471,9 @@ static PetscErrorCode DMPlexCreateEGADS_Internal(MPI_Comm comm, ego context, ego
             else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Edge %d does not match its predecessor", eid);
           }
         }
-        PetscCheck(nc == 2*Ner,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of corners %D != %D", nc, 2*Ner);
+        PetscCheck(nc == 2*Ner,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of corners %" PetscInt_FMT " != %" PetscInt_FMT, nc, 2*Ner);
         if (Ner == 4) {cone[nc++] = numVertices - newVertices + numEdges + numQuads++;}
-        PetscCheck(nc <= maxCorners,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of corners %D > %D max", nc, maxCorners);
+        PetscCheck(nc <= maxCorners,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of corners %" PetscInt_FMT " > %" PetscInt_FMT " max", nc, maxCorners);
         /* Triangulate the loop */
         switch (Ner) {
           case 2: /* Bi-Segment -> 2 triangles */
@@ -545,10 +545,10 @@ static PetscErrorCode DMPlexCreateEGADS_Internal(MPI_Comm comm, ego context, ego
         }
         if (debug) {
           for (t = 0; t < Nt; ++t) {
-            PetscCall(PetscPrintf(PETSC_COMM_SELF, "  LOOP Corner NODEs Triangle %D (", t));
+            PetscCall(PetscPrintf(PETSC_COMM_SELF, "  LOOP Corner NODEs Triangle %" PetscInt_FMT " (", t));
             for (c = 0; c < numCorners; ++c) {
               if (c > 0) PetscCall(PetscPrintf(PETSC_COMM_SELF, ", "));
-              PetscCall(PetscPrintf(PETSC_COMM_SELF, "%D", cells[(cOff-Nt+t)*numCorners+c]));
+              PetscCall(PetscPrintf(PETSC_COMM_SELF, "%" PetscInt_FMT, cells[(cOff-Nt+t)*numCorners+c]));
             }
             PetscCall(PetscPrintf(PETSC_COMM_SELF, ")\n"));
           }
@@ -557,11 +557,11 @@ static PetscErrorCode DMPlexCreateEGADS_Internal(MPI_Comm comm, ego context, ego
       EG_free(lobjs);
     }
   }
-  PetscCheck(cOff == numCells,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Count of total cells %D != %D previous count", cOff, numCells);
+  PetscCheck(cOff == numCells,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Count of total cells %" PetscInt_FMT " != %" PetscInt_FMT " previous count", cOff, numCells);
   PetscCall(DMPlexCreateFromCellListPetsc(PETSC_COMM_WORLD, dim, numCells, numVertices, numCorners, PETSC_TRUE, cells, cdim, coords, &dm));
   PetscCall(PetscFree3(coords, cells, cone));
-  PetscCall(PetscInfo(dm, " Total Number of Unique Cells    = %D (%D)\n", numCells, newCells));
-  PetscCall(PetscInfo(dm, " Total Number of Unique Vertices = %D (%D)\n", numVertices, newVertices));
+  PetscCall(PetscInfo(dm, " Total Number of Unique Cells    = %" PetscInt_FMT " (%" PetscInt_FMT ")\n", numCells, newCells));
+  PetscCall(PetscInfo(dm, " Total Number of Unique Vertices = %" PetscInt_FMT " (%" PetscInt_FMT ")\n", numVertices, newVertices));
   /* Embed EGADS model in DM */
   {
     PetscContainer modelObj, contextObj;
@@ -627,13 +627,13 @@ static PetscErrorCode DMPlexCreateEGADS_Internal(MPI_Comm comm, ego context, ego
         support[0] = points[0];
         support[1] = points[1];
         PetscCall(DMPlexGetJoin(dm, 2, support, &numEdges, &edges));
-        PetscCheck(numEdges == 1,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Vertices (%D, %D) should only bound 1 edge, not %D", support[0], support[1], numEdges);
+        PetscCheck(numEdges == 1,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Vertices (%" PetscInt_FMT ", %" PetscInt_FMT ") should only bound 1 edge, not %" PetscInt_FMT, support[0], support[1], numEdges);
         PetscCall(DMLabelSetValue(edgeLabel, edges[0], eid));
         PetscCall(DMPlexRestoreJoin(dm, 2, support, &numEdges, &edges));
         support[0] = points[1];
         support[1] = points[2];
         PetscCall(DMPlexGetJoin(dm, 2, support, &numEdges, &edges));
-        PetscCheck(numEdges == 1,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Vertices (%D, %D) should only bound 1 edge, not %D", support[0], support[1], numEdges);
+        PetscCheck(numEdges == 1,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Vertices (%" PetscInt_FMT ", %" PetscInt_FMT ") should only bound 1 edge, not %" PetscInt_FMT, support[0], support[1], numEdges);
         PetscCall(DMLabelSetValue(edgeLabel, edges[0], eid));
         PetscCall(DMPlexRestoreJoin(dm, 2, support, &numEdges, &edges));
       }
@@ -938,8 +938,8 @@ static PetscErrorCode DMPlexCreateEGADS(MPI_Comm comm, ego context, ego model, D
   // Generate DMPlex
   PetscCall(DMPlexCreateFromCellListPetsc(PETSC_COMM_WORLD, dim, numCells, numPoints, numCorners, PETSC_TRUE, cells, cdim, coords, &dm));
   PetscCall(PetscFree2(coords, cells));
-  PetscCall(PetscInfo(dm, " Total Number of Unique Cells    = %D \n", numCells));
-  PetscCall(PetscInfo(dm, " Total Number of Unique Vertices = %D \n", numVertices));
+  PetscCall(PetscInfo(dm, " Total Number of Unique Cells    = %" PetscInt_FMT " \n", numCells));
+  PetscCall(PetscInfo(dm, " Total Number of Unique Vertices = %" PetscInt_FMT " \n", numVertices));
 
   // Embed EGADS model in DM
   {
@@ -1442,7 +1442,7 @@ PetscErrorCode DMPlexInflateToGeomModel(DM dm)
     PetscCall(DMLabelGetValue(edgeLabel, v, &edgeID));
     PetscCall(DMLabelGetValue(vertexLabel, v, &vertexID));
 
-    PetscCheck(bodyID < Nb,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Body %D is not in [0, %d)", bodyID, Nb);
+    PetscCheck(bodyID < Nb,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Body %" PetscInt_FMT " is not in [0, %d)", bodyID, Nb);
     body = bodies[bodyID];
 
     PetscCall(DMPlexPointLocalRef(cdm, v, coords, (void *) &vcoords));

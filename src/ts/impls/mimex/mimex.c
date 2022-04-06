@@ -237,7 +237,7 @@ static PetscErrorCode TSStep_Mimex(TS ts)
   case 1:
     PetscCall(TSStep_Mimex_Implicit(ts)); break;
   default:
-    SETERRQ(PetscObjectComm((PetscObject) ts), PETSC_ERR_ARG_OUTOFRANGE, "Unknown MIMEX version %d", mimex->version);
+    SETERRQ(PetscObjectComm((PetscObject) ts), PETSC_ERR_ARG_OUTOFRANGE, "Unknown MIMEX version %" PetscInt_FMT, mimex->version);
   }
   PetscFunctionReturn(0);
 }
@@ -294,7 +294,7 @@ static PetscErrorCode TSView_Mimex(TS ts,PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) {
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  Version = %D\n", mimex->version));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  Version = %" PetscInt_FMT "\n", mimex->version));
   }
   PetscFunctionReturn(0);
 }

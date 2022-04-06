@@ -18,8 +18,8 @@ PetscErrorCode printMumpsMemoryInfo(Mat F)
   PetscFunctionBeginUser;
   PetscCall(MatMumpsGetInfog(F,16,&maxMem));
   PetscCall(MatMumpsGetInfog(F,17,&sumMem));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n MUMPS INFOG(16) :: Max memory in MB = %d", maxMem));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n MUMPS INFOG(17) :: Sum memory in MB = %d \n", sumMem));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n MUMPS INFOG(16) :: Max memory in MB = %" PetscInt_FMT, maxMem));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n MUMPS INFOG(17) :: Sum memory in MB = %" PetscInt_FMT "\n", sumMem));
   PetscFunctionReturn(0);
 }
 #endif
@@ -370,7 +370,7 @@ int main(int argc,char **args)
       PetscCall(MatMumpsGetRinfog(F,12,&rinfo12));
       PetscCall(MatMumpsGetRinfog(F,13,&rinfo13));
       PetscCall(PetscPrintf(PETSC_COMM_SELF,"  Mumps row pivot threshold = %g\n",cntl));
-      PetscCall(PetscPrintf(PETSC_COMM_SELF,"  Mumps determinant = (%g, %g) * 2^%D \n",(double)rinfo12,(double)rinfo13,infog34));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,"  Mumps determinant = (%g, %g) * 2^%" PetscInt_FMT " \n",(double)rinfo12,(double)rinfo13,infog34));
     }
   }
 #endif
@@ -393,9 +393,9 @@ int main(int argc,char **args)
      An alternative is PetscFPrintf(), which prints to a file.
   */
   if (norm < 1.e-12) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error < 1.e-12 iterations %D\n",its));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error < 1.e-12 iterations %" PetscInt_FMT "\n",its));
   } else {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %D\n",(double)norm,its));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %" PetscInt_FMT "\n",(double)norm,its));
  }
 
   /*

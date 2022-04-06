@@ -181,7 +181,7 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat* inte
   // Columns = Parent DoFs ;  Rows = Child DoFs
   // Interpolation matrix: \sum_{i=1}^P Owned(Child) * (Owned(Parent) + Ghosted(Parent))
   // Size: nlsizc * nlghsizp
-  PetscInfo(NULL, "Creating interpolation matrix %D X %D to apply transformation between levels %D -> %D.\n", ngsizc, nlghsizp, dmbp->hlevel, dmbc->hlevel);
+  PetscInfo(NULL, "Creating interpolation matrix %" PetscInt_FMT " X %" PetscInt_FMT " to apply transformation between levels %" PetscInt_FMT " -> %" PetscInt_FMT ".\n", ngsizc, nlghsizp, dmbp->hlevel, dmbc->hlevel);
 
   PetscCall(DMGetDimension(dmp, &dim));
 
@@ -422,8 +422,8 @@ static PetscErrorCode DMMoab_UMR_Private(DM dm, MPI_Comm comm, PetscBool refine,
   PetscValidPointer(dmref, 4);
 
   if ((dmb->hlevel == dmb->nhlevels && refine) || (dmb->hlevel == 0 && !refine)) {
-    if (dmb->hlevel + 1 > dmb->nhlevels && refine) PetscInfo(NULL, "Invalid multigrid refinement hierarchy level specified (%D). MOAB UMR max levels = %D. Creating a NULL object.\n", dmb->hlevel + 1, dmb->nhlevels);
-    if (dmb->hlevel - 1 < 0 && !refine) PetscInfo(NULL, "Invalid multigrid coarsen hierarchy level specified (%D). Creating a NULL object.\n", dmb->hlevel - 1);
+    if (dmb->hlevel + 1 > dmb->nhlevels && refine) PetscInfo(NULL, "Invalid multigrid refinement hierarchy level specified (%" PetscInt_FMT "). MOAB UMR max levels = %" PetscInt_FMT ". Creating a NULL object.\n", dmb->hlevel + 1, dmb->nhlevels);
+    if (dmb->hlevel - 1 < 0 && !refine) PetscInfo(NULL, "Invalid multigrid coarsen hierarchy level specified (%" PetscInt_FMT "). Creating a NULL object.\n", dmb->hlevel - 1);
     *dmref = PETSC_NULL;
     PetscFunctionReturn(0);
   }

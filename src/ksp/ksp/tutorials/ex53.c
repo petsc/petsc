@@ -78,7 +78,7 @@ int main(int argc,char **args)
   PetscCall(VecNorm(x,NORM_2,&norm));
   PetscCall(KSPGetIterationNumber(ksp,&its));
   if (norm > tol) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"1. Norm of error for Ax=b: %g, Iterations %D\n",(double)norm,its));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"1. Norm of error for Ax=b: %g, Iterations %" PetscInt_FMT "\n",(double)norm,its));
   }
 
   /* 2. Solve linear system A^T x = b*/
@@ -90,7 +90,7 @@ int main(int argc,char **args)
   PetscCall(VecNorm(x2,NORM_2,&norm));
   PetscCall(KSPGetIterationNumber(ksp,&its));
   if (norm > tol) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"2. Norm of error for A^T x=b: %g, Iterations %D\n",(double)norm,its));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"2. Norm of error for A^T x=b: %g, Iterations %" PetscInt_FMT "\n",(double)norm,its));
   }
 
   /* 3. Change A and solve A x = b with an iterative solver using A=LU as a preconditioner*/
@@ -109,7 +109,7 @@ int main(int argc,char **args)
   PetscCall(VecNorm(x,NORM_2,&norm));
   PetscCall(KSPGetIterationNumber(ksp,&its));
   if (norm > tol) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"3. Norm of error for (A+Delta) x=b: %g, Iterations %D\n",(double)norm,its));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"3. Norm of error for (A+Delta) x=b: %g, Iterations %" PetscInt_FMT "\n",(double)norm,its));
   }
 
   /* Free work space. */

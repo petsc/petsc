@@ -282,17 +282,17 @@ static PetscErrorCode DMLabelCompareWithCoordinateRepresentation(DM dm, DMLabel 
     if (p < 0) continue;
     PetscCall(DMLabelHasPoint(label, p, &has));
     if (!has) {
-      if (verbose) PetscCall(PetscSynchronizedFPrintf(comm, PETSC_STDERR, "[%d] Label \"%s\" does not have point %D\n", rank, labelName, p));
+      if (verbose) PetscCall(PetscSynchronizedFPrintf(comm, PETSC_STDERR, "[%d] Label \"%s\" does not have point %" PetscInt_FMT "\n", rank, labelName, p));
       fail = PETSC_TRUE;
       continue;
     }
     PetscCall(DMLabelGetValue(label, p, &v));
     if (v != value) {
-      if (verbose) PetscCall(PetscSynchronizedFPrintf(comm, PETSC_STDERR, "Point %D has bad value %D in label \"%s\"", p, v, labelName));
+      if (verbose) PetscCall(PetscSynchronizedFPrintf(comm, PETSC_STDERR, "Point %" PetscInt_FMT " has bad value %" PetscInt_FMT " in label \"%s\"", p, v, labelName));
       fail = PETSC_TRUE;
       continue;
     }
-    if (verbose > 1) PetscCall(PetscSynchronizedPrintf(comm, "[%d] OK point %D\n", rank, p));
+    if (verbose > 1) PetscCall(PetscSynchronizedPrintf(comm, "[%d] OK point %" PetscInt_FMT "\n", rank, p));
   }
   PetscCall(PetscSynchronizedFlush(comm, PETSC_STDOUT));
   PetscCall(PetscSynchronizedFlush(comm, PETSC_STDERR));
@@ -320,14 +320,14 @@ static PetscErrorCode CheckNumLabels(DM dm, AppCtx *ctx)
     if (ctx->verbose) {
       PetscInt    i;
 
-      PetscCall(PetscSynchronizedFPrintf(comm, PETSC_STDERR, "[%d] Asserted number of labels: %D, actual: %D\n", rank, ctx->num_labels, actualNum));
+      PetscCall(PetscSynchronizedFPrintf(comm, PETSC_STDERR, "[%d] Asserted number of labels: %" PetscInt_FMT ", actual: %" PetscInt_FMT "\n", rank, ctx->num_labels, actualNum));
       for (i=0; i<actualNum; i++) {
         DMLabel     label;
         const char *name;
 
         PetscCall(DMGetLabelByNum(dm, i, &label));
         PetscCall(PetscObjectGetName((PetscObject)label, &name));
-        PetscCall(PetscSynchronizedFPrintf(comm, PETSC_STDERR, "[%d] Label %D \"%s\"\n", rank, i, name));
+        PetscCall(PetscSynchronizedFPrintf(comm, PETSC_STDERR, "[%d] Label %" PetscInt_FMT " \"%s\"\n", rank, i, name));
       }
       PetscCall(PetscSynchronizedFlush(comm, PETSC_STDERR));
     }

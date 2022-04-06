@@ -46,7 +46,7 @@ SNESLineSearch Object: 1 MPI processes
     type: mg
       type is FULL, levels=4 cycles=v
         Using Galerkin computed coarse grid matrices for pmat
-    Coarse grid solver -- level -------------------------------
+    Coarse grid solver -- level 0 -------------------------------
       KSP Object: (mg_coarse_) 1 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero

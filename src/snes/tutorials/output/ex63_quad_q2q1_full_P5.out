@@ -55,7 +55,7 @@ SNES Object: 5 MPI processes
                   Symmetric graph false
                   Number of levels to square graph 1
                   Number smoothing steps 1
-          Coarse grid solver -- level -------------------------------
+          Coarse grid solver -- level 0 -------------------------------
             KSP Object: (fieldsplit_velocity_mg_coarse_) 5 MPI processes
               type: preonly
               maximum iterations=10000, initial guess is zero
@@ -221,7 +221,7 @@ SNES Object: 5 MPI processes
                           Symmetric graph false
                           Number of levels to square graph 1
                           Number smoothing steps 1
-                  Coarse grid solver -- level -------------------------------
+                  Coarse grid solver -- level 0 -------------------------------
                     KSP Object: (fieldsplit_velocity_mg_coarse_) 5 MPI processes
                       type: preonly
                       maximum iterations=10000, initial guess is zero

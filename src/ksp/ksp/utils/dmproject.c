@@ -278,16 +278,16 @@ PetscErrorCode DMAdaptInterpolator(DM dmc, DM dmf, Mat In, KSP smoother, PetscIn
     PetscCall(MatRestoreRow(In, r, &ncols, &cols, &vals));
   }
   #endif
-  if (Nc < maxcols) PetscPrintf(PETSC_COMM_SELF, "The number of input vectors %D < %D the maximum number of column entries\n", Nc, maxcols);
+  if (Nc < maxcols) PetscPrintf(PETSC_COMM_SELF, "The number of input vectors %" PetscInt_FMT " < %" PetscInt_FMT " the maximum number of column entries\n", Nc, maxcols);
   for (k = 0; k < Nc; ++k) {
     char        name[PETSC_MAX_PATH_LEN];
     const char *prefix;
 
     PetscCall(PetscObjectGetOptionsPrefix((PetscObject) smoother, &prefix));
-    PetscCall(PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "%sCoarse Vector %D", prefix ? prefix : NULL, k));
+    PetscCall(PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "%sCoarse Vector %" PetscInt_FMT, prefix ? prefix : NULL, k));
     PetscCall(PetscObjectSetName((PetscObject) vc[k], name));
     PetscCall(VecViewFromOptions(vc[k], NULL, "-dm_adapt_interp_view_coarse"));
-    PetscCall(PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "%sFine Vector %D", prefix ? prefix : NULL, k));
+    PetscCall(PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "%sFine Vector %" PetscInt_FMT, prefix ? prefix : NULL, k));
     PetscCall(PetscObjectSetName((PetscObject) vf[k], name));
     PetscCall(VecViewFromOptions(vf[k], NULL, "-dm_adapt_interp_view_fine"));
   }
@@ -381,7 +381,7 @@ PetscErrorCode DMAdaptInterpolator(DM dmc, DM dmf, Mat In, KSP smoother, PetscIn
     PetscCheck(info >= 0,PETSC_COMM_SELF, PETSC_ERR_LIB, "Bad argument to GELSS");
     PetscCheck(info <= 0,PETSC_COMM_SELF, PETSC_ERR_LIB, "SVD failed to converge");
     if (debug) {
-      PetscCall(PetscPrintf(PETSC_COMM_SELF, "rank %d rcond %g\n", irank, (double) rcond));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, "rank %" PetscBLASInt_FMT " rcond %g\n", irank, (double) rcond));
 #if defined(PETSC_USE_COMPLEX)
       {
         PetscScalar *tmp;
@@ -431,9 +431,9 @@ PetscErrorCode DMCheckInterpolator(DM dmf, Mat In, PetscInt Nc, Vec vc[], Vec vf
     PetscCall(VecNorm(tmp, NORM_2, &norm2));
     maxnorminf = PetscMax(maxnorminf, norminf);
     maxnorm2   = PetscMax(maxnorm2,   norm2);
-    PetscCall(PetscPrintf(PetscObjectComm((PetscObject) dmf), "Coarse vec %D ||vf - P vc||_\\infty %g, ||vf - P vc||_2 %g\n", k, norminf, norm2));
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject) dmf), "Coarse vec %" PetscInt_FMT " ||vf - P vc||_\\infty %g, ||vf - P vc||_2 %g\n", k, (double)norminf, (double)norm2));
   }
   PetscCall(DMRestoreGlobalVector(dmf, &tmp));
-  PetscCheck(maxnorm2 <= tol,PetscObjectComm((PetscObject) dmf), PETSC_ERR_ARG_WRONG, "max_k ||vf_k - P vc_k||_2 %g > tol %g", maxnorm2, tol);
+  PetscCheck(maxnorm2 <= tol,PetscObjectComm((PetscObject) dmf), PETSC_ERR_ARG_WRONG, "max_k ||vf_k - P vc_k||_2 %g > tol %g", (double)maxnorm2, (double)tol);
   PetscFunctionReturn(0);
 }

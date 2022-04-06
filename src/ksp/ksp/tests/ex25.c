@@ -88,7 +88,7 @@ int main(int argc,char **args)
     PetscCall(VecAXPY(u_tmp,none,b));
     PetscCall(VecNorm(u_tmp,NORM_2,&res_norm));
 
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3d\n",its));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3" PetscInt_FMT "\n",its));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Residual norm: %g;",(double)res_norm));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  Error norm: %g.\n",(double)err_norm));
 

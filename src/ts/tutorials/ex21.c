@@ -433,7 +433,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
      PetscPrintf() causes only the first processor in this
      communicator to print the timestep information.
   */
-  PetscCall(PetscPrintf(appctx->comm,"Timestep %D: time = %g,2-norm error = %g, max norm error = %g\n",step,(double)time,(double)en2s,(double)enmax));
+  PetscCall(PetscPrintf(appctx->comm,"Timestep %" PetscInt_FMT ": time = %g,2-norm error = %g, max norm error = %g\n",step,(double)time,(double)en2s,(double)enmax));
 
   /*
      Print debugging information if desired

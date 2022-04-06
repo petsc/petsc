@@ -421,7 +421,7 @@ static PetscErrorCode ComputeError(TS ts, Vec U, Vec E)
     if (user->error) {
       const PetscReal en   = 0.5*(v*v + PetscSqr(omega)*x*x);
       const PetscReal exen = 0.5*PetscSqr(omega*x0);
-      PetscCall(PetscPrintf(comm, "p%D error [%.2g %.2g] sol [%.6lf %.6lf] exact [%.6lf %.6lf] energy/exact energy %g / %g (%.10lf%%)\n", p, (double) PetscAbsReal(x-ex), (double) PetscAbsReal(v-ev), (double) x, (double) v, (double) ex, (double) ev, (double) en, (double) exen, (double) PetscAbsReal(exen - en)*100./exen));
+      PetscCall(PetscPrintf(comm, "p%" PetscInt_FMT " error [%.2g %.2g] sol [%.6lf %.6lf] exact [%.6lf %.6lf] energy/exact energy %g / %g (%.10lf%%)\n", p, (double) PetscAbsReal(x-ex), (double) PetscAbsReal(v-ev), (double) x, (double) v, (double) ex, (double) ev, (double) en, (double) exen, (double) (PetscAbsReal(exen - en)*100./exen)));
     }
     for (d = 0; d < dim; ++d) {
       e[(p*2+0)*dim+d] = u[(p*2+0)*dim+d] - coords[p*dim+d]*ct;
@@ -460,7 +460,7 @@ static PetscErrorCode EnergyMonitor(TS ts, PetscInt step, PetscReal t, Vec U, vo
       const PetscReal E  = 0.5*(v2 + PetscSqr(omega)*x2);
       const PetscReal mE = 0.5*(v2 + PetscSqr(omega)*x2 - PetscSqr(omega)*dt*PetscSqrtReal(x2*v2));
 
-      PetscCall(PetscPrintf(comm, "%.6lf %4D %4D %10.4lf %10.4lf\n", t, step, p, (double) E, (double) mE));
+      PetscCall(PetscPrintf(comm, "%.6lf %4" PetscInt_FMT " %4" PetscInt_FMT " %10.4lf %10.4lf\n", (double) t, step, p, (double) E, (double) mE));
     }
     PetscCall(VecRestoreArrayRead(U, &u));
   }

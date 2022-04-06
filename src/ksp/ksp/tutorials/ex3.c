@@ -154,7 +154,7 @@ int main(int argc,char **args)
   PetscCall(VecAXPY(u,-1.0,ustar));
   PetscCall(VecNorm(u,NORM_2,&norm));
   PetscCall(KSPGetIterationNumber(ksp,&its));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g Iterations %D\n",(double)(norm*h),its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g Iterations %" PetscInt_FMT "\n",(double)(norm*h),its));
 
   /*
      Free work space.  All PETSc objects should be destroyed when they

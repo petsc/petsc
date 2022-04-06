@@ -233,7 +233,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsReal("-D_h", "Diffusion rate of the inhibitor", "ex42.c",user.D_h, &user.D_h,NULL));
   PetscOptionsEnd();
 
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "nb_cells: %D\n", user.nb_cells));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "nb_cells: %" PetscInt_FMT "\n", user.nb_cells));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "alpha: %5.5g\n", (double)user.alpha));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "beta:  %5.5g\n", (double)user.beta));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "rho_a: %5.5g\n", (double)user.rho_a));
@@ -333,7 +333,7 @@ int main(int argc, char **argv)
   PetscCall(TSSolve(ts, x));
   PetscCall(TSGetSolveTime(ts, &ftime));
   PetscCall(TSGetStepNumber(ts,&its));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Number of time steps = %D, final time: %4.2e\nResult:\n\n", its, (double)ftime));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Number of time steps = %" PetscInt_FMT ", final time: %4.2e\nResult:\n\n", its, (double)ftime));
   PetscCall(PrintSolution(x, &user));
 
   /*

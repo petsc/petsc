@@ -320,7 +320,7 @@ PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec v, PetscViewer viewer)
       for (c = 0; c < Nc; ++c){
         char componentNameLabel[PETSC_MAX_PATH_LEN];
         PetscCall(PetscSectionGetComponentName(section, f, c, &componentName));
-        PetscCall(PetscSNPrintf(componentNameLabel, sizeof(componentNameLabel), "componentName%D", c));
+        PetscCall(PetscSNPrintf(componentNameLabel, sizeof(componentNameLabel), "componentName%" PetscInt_FMT, c));
         PetscCall(PetscViewerHDF5WriteObjectAttribute(viewer, (PetscObject) subv, componentNameLabel, PETSC_STRING, componentName));
       }
 
@@ -487,8 +487,8 @@ PetscErrorCode DMPlexTopologyView_HDF5_Internal(DM dm, IS globalPointNumbers, Pe
       ++s;
     }
   }
-  PetscCheck(s == nPoints,PETSC_COMM_SELF, PETSC_ERR_LIB, "Total number of points %D != %D", s, nPoints);
-  PetscCheck(c == conesSize,PETSC_COMM_SELF, PETSC_ERR_LIB, "Total number of cone points %D != %D", c, conesSize);
+  PetscCheck(s == nPoints,PETSC_COMM_SELF, PETSC_ERR_LIB, "Total number of points %" PetscInt_FMT " != %" PetscInt_FMT, s, nPoints);
+  PetscCheck(c == conesSize,PETSC_COMM_SELF, PETSC_ERR_LIB, "Total number of cone points %" PetscInt_FMT " != %" PetscInt_FMT, c, conesSize);
   PetscCall(ISCreateGeneral(comm, nPoints, points, PETSC_OWN_POINTER, &pointsIS));
   PetscCall(ISCreateGeneral(comm, nPoints, coneSizes, PETSC_OWN_POINTER, &coneSizesIS));
   PetscCall(ISCreateGeneral(comm, conesSize, cones, PETSC_OWN_POINTER, &conesIS));
@@ -610,7 +610,7 @@ static PetscErrorCode CreateConesIS_Private(DM dm, PetscInt cStart, PetscInt cEn
   if (cutvertices) PetscCall(ISRestoreIndices(cutvertices, &cutverts));
   PetscCall(ISDestroy(&cutvertices));
   PetscCall(DMLabelDestroy(&cutVertexLabel));
-  PetscCheck(v == conesSize,PETSC_COMM_SELF, PETSC_ERR_LIB, "Total number of cell vertices %D != %D", v, conesSize);
+  PetscCheck(v == conesSize,PETSC_COMM_SELF, PETSC_ERR_LIB, "Total number of cell vertices %" PetscInt_FMT " != %" PetscInt_FMT, v, conesSize);
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject) dm), conesSize, vertices, PETSC_OWN_POINTER, cellIS));
   PetscCall(PetscLayoutSetBlockSize((*cellIS)->map, *numCorners));
   PetscCall(PetscObjectSetName((PetscObject) *cellIS, "cells"));
@@ -656,7 +656,7 @@ static PetscErrorCode DMPlexWriteTopology_Vertices_HDF5_Static(DM dm, IS globalC
     } else {
       char group[PETSC_MAX_PATH_LEN];
 
-      PetscCall(PetscSNPrintf(group, PETSC_MAX_PATH_LEN, "/viz/topology_%D", n));
+      PetscCall(PetscSNPrintf(group, PETSC_MAX_PATH_LEN, "/viz/topology_%" PetscInt_FMT, n));
       PetscCall(PetscViewerHDF5PushGroup(viewer, group));
     }
     PetscCall(ISView(cellIS, viewer));
@@ -781,7 +781,7 @@ static PetscErrorCode DMPlexWriteCoordinates_Vertices_HDF5_Static(DM dm, PetscVi
   PetscCall(DMPlexCreateCutVertexLabel_Private(dm, cutLabel, &cutVertexLabel));
   PetscCall(VecCreate(PetscObjectComm((PetscObject) dm), &newcoords));
   PetscCall(PetscSectionGetDof(cSection, vStart, &dof));
-  PetscCall(PetscPrintf(PETSC_COMM_SELF, "DOF: %D\n", dof));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "DOF: %" PetscInt_FMT "\n", dof));
   embedded  = (PetscBool) (L && dof == 2 && !cutLabel);
   if (cutVertexLabel) {
     PetscCall(DMLabelGetStratumSize(cutVertexLabel, 1, &v));
@@ -865,7 +865,7 @@ static PetscErrorCode DMPlexWriteCoordinates_Vertices_HDF5_Static(DM dm, PetscVi
       PetscCall(ISDestroy(&vertices));
     }
   }
-  PetscCheck(coordSize == N,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Mismatched sizes: %D != %D", coordSize, N);
+  PetscCheck(coordSize == N,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Mismatched sizes: %" PetscInt_FMT " != %" PetscInt_FMT, coordSize, N);
   PetscCall(DMLabelDestroy(&cutVertexLabel));
   PetscCall(VecRestoreArray(coordinatesLocal, &coords));
   PetscCall(VecRestoreArray(newcoords,        &ncoords));
@@ -933,7 +933,7 @@ PetscErrorCode DMPlexLabelsView_HDF5_Internal(DM dm, IS globalPointNumbers, Pets
       const char     *iname = "indices";
       char            group[PETSC_MAX_PATH_LEN];
 
-      PetscCall(PetscSNPrintf(group, sizeof(group), "%D", values[v]));
+      PetscCall(PetscSNPrintf(group, sizeof(group), "%" PetscInt_FMT, values[v]));
       PetscCall(PetscViewerHDF5PushGroup(viewer, group));
       PetscCall(DMLabelGetStratumIS(label, values[v], &stratumIS));
 
@@ -1669,7 +1669,7 @@ PetscErrorCode DMPlexSectionLoad_HDF5_Internal(DM dm, PetscViewer viewer, DM sec
 
     PetscCall(PetscViewerHDF5ReadSizes(viewer, "order", NULL, &N1));
     PetscCallMPI(MPI_Allreduce(&n, &N, 1, MPIU_INT, MPI_SUM, comm));
-    PetscCheck(N1 == N,comm, PETSC_ERR_ARG_SIZ, "Mismatching sizes: on-disk order array size (%D) != number of loaded section points (%D)", N1, N);
+    PetscCheck(N1 == N,comm, PETSC_ERR_ARG_SIZ, "Mismatching sizes: on-disk order array size (%" PetscInt_FMT ") != number of loaded section points (%" PetscInt_FMT ")", N1, N);
   }
 #endif
   {
@@ -1842,14 +1842,14 @@ PetscErrorCode DMPlexVecLoad_HDF5_Internal(DM dm, PetscViewer viewer, DM section
 
       PetscCall(MPIU_Allreduce(&mA, &MA, 1, MPIU_INT, MPI_SUM, comm));
       PetscCall(PetscViewerHDF5ReadSizes(viewer, vec_name, NULL, &MA1));
-      PetscCheck(MA1 == MA,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Total SF root size (%D) != On-disk vector data size (%D)", MA, MA1);
+      PetscCheck(MA1 == MA,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Total SF root size (%" PetscInt_FMT ") != On-disk vector data size (%" PetscInt_FMT ")", MA, MA1);
     }
 #endif
     PetscCall(VecGetLocalSize(vec, &m1));
-    PetscCheck(m1 >= m,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Target vector size (%D) < SF leaf size (%D)", m1, m);
+    PetscCheck(m1 >= m,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Target vector size (%" PetscInt_FMT ") < SF leaf size (%" PetscInt_FMT ")", m1, m);
     for (i = 0; i < m; ++i) {
       j = ilocal ? ilocal[i] : i;
-      PetscCheckFalse(j < 0 || j >= m1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Leaf's %D-th index, %D, not in [%D, %D)", i, j, 0, m1);
+      PetscCheckFalse(j < 0 || j >= m1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Leaf's %" PetscInt_FMT "-th index, %" PetscInt_FMT ", not in [%" PetscInt_FMT ", %" PetscInt_FMT ")", i, j, 0, m1);
     }
   }
   PetscCall(VecSetSizes(vecA, mA, PETSC_DECIDE));

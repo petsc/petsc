@@ -62,7 +62,7 @@ int main(int argc,char **argv)
 
   PetscCall(PetscInitialize(&argc,&argv,(char *)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-wtype",&wtype,&flg));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"wtype=%d\n",wtype));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"wtype=%" PetscInt_FMT "\n",wtype));
   /* Allocate vectors */
   PetscCall(VecCreateSeq(MPI_COMM_SELF,NPARAMETERS,&x));
   PetscCall(VecCreateSeq(MPI_COMM_SELF,NOBSERVATIONS,&f));

@@ -77,11 +77,11 @@ PetscErrorCode TaoLineSearchView(TaoLineSearch ls, PetscViewer viewer)
       PetscCall(PetscViewerASCIIPopTab(viewer));
     }
     PetscCall(PetscViewerASCIIPushTab(viewer));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"maximum function evaluations=%D\n",ls->max_funcs));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"maximum function evaluations=%" PetscInt_FMT "\n",ls->max_funcs));
     PetscCall(PetscViewerASCIIPrintf(viewer,"tolerances: ftol=%g, rtol=%g, gtol=%g\n",(double)ls->ftol,(double)ls->rtol,(double)ls->gtol));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"total number of function evaluations=%D\n",ls->nfeval));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"total number of gradient evaluations=%D\n",ls->ngeval));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"total number of function/gradient evaluations=%D\n",ls->nfgeval));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"total number of function evaluations=%" PetscInt_FMT "\n",ls->nfeval));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"total number of gradient evaluations=%" PetscInt_FMT "\n",ls->ngeval));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"total number of function/gradient evaluations=%" PetscInt_FMT "\n",ls->nfgeval));
 
     if (ls->bounded) {
       PetscCall(PetscViewerASCIIPrintf(viewer,"using variable bounds\n"));
@@ -473,7 +473,7 @@ PetscErrorCode TaoLineSearchMonitor(TaoLineSearch ls, PetscInt its, PetscReal f,
   if (ls->usemonitor) {
     PetscCall(PetscViewerASCIIGetTab(ls->viewer, &tabs));
     PetscCall(PetscViewerASCIISetTab(ls->viewer, ((PetscObject)ls)->tablevel));
-    PetscCall(PetscViewerASCIIPrintf(ls->viewer, "%3D LS", its));
+    PetscCall(PetscViewerASCIIPrintf(ls->viewer, "%3" PetscInt_FMT " LS", its));
     PetscCall(PetscViewerASCIIPrintf(ls->viewer, "  Function value: %g,", (double)f));
     PetscCall(PetscViewerASCIIPrintf(ls->viewer, "  Step length: %g\n", (double)step));
     if (ls->ops->monitor && its > 0) {

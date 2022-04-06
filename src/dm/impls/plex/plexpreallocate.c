@@ -361,8 +361,8 @@ static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, Pe
       PetscInt s;
       for (s = 0; s < indegree[p]; ++s, ++r) rootAdj[l+s] = remoteadj[r];
     }
-    PetscCheck(r == radjsize,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistency in communication %d != %d", r, radjsize);
-    PetscCheck(l == adjSize,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistency in communication %d != %d", l, adjSize);
+    PetscCheck(r == radjsize,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistency in communication %" PetscInt_FMT " != %" PetscInt_FMT, r, radjsize);
+    PetscCheck(l == adjSize,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistency in communication %" PetscInt_FMT " != %" PetscInt_FMT, l, adjSize);
     PetscCall(PetscFree(remoteadj));
   }
   PetscCall(PetscSFDestroy(&sfAdj));
@@ -557,7 +557,7 @@ static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, Pe
       for (q = 0; q < anDof; q++, i++) {
         cols[aoff+i] = anchorAdj[anOff + q];
       }
-      PetscCheck(i == adof,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of entries %D != %D for dof %D (point %D)", i, adof, d, p);
+      PetscCheck(i == adof,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of entries %" PetscInt_FMT " != %" PetscInt_FMT " for dof %" PetscInt_FMT " (point %" PetscInt_FMT ")", i, adof, d, p);
     }
   }
   PetscCall(PetscSectionDestroy(&anchorSectionAdj));
@@ -588,7 +588,7 @@ static PetscErrorCode DMPlexUpdateAllocation_Static(DM dm, PetscLayout rLayout, 
   PetscFunctionBegin;
   /* This loop needs to change to a loop over points, then field dofs, which means we need to look both sections */
   PetscCall(PetscLayoutGetRange(rLayout, &rStart, &rEnd));
-  PetscCheckFalse(rStart%bs || rEnd%bs,PetscObjectComm((PetscObject) rLayout), PETSC_ERR_ARG_WRONG, "Invalid layout [%d, %d) for matrix, must be divisible by block size %d", rStart, rEnd, bs);
+  PetscCheckFalse(rStart%bs || rEnd%bs,PetscObjectComm((PetscObject) rLayout), PETSC_ERR_ARG_WRONG, "Invalid layout [%" PetscInt_FMT ", %" PetscInt_FMT ") for matrix, must be divisible by block size %" PetscInt_FMT, rStart, rEnd, bs);
   if (f >= 0 && bs == 1) {
     PetscCall(DMGetLocalSection(dm, &section));
     PetscCall(PetscSectionGetChart(section, &pStart, &pEnd));

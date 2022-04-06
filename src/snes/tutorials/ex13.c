@@ -147,7 +147,7 @@ static PetscErrorCode CreateSpectralPlanes(DM dm, PetscInt numPlanes, const Pets
     DMLabel label;
     char    name[PETSC_MAX_PATH_LEN];
 
-    PetscCall(PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "spectral_plane_%D", p));
+    PetscCall(PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "spectral_plane_%" PetscInt_FMT, p));
     PetscCall(DMCreateLabel(dm, name));
     PetscCall(DMGetLabel(dm, name, &label));
     PetscCall(DMLabelAddStratum(label, 1));
@@ -291,7 +291,7 @@ static PetscErrorCode ComputeSpectral(DM dm, Vec u, PetscInt numPlanes, const Pe
     PetscInt        n, N, i, j, off, offu;
     const PetscInt *points;
 
-    PetscCall(PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "spectral_plane_%D", p));
+    PetscCall(PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "spectral_plane_%" PetscInt_FMT, p));
     PetscCall(DMGetLabel(dm, name, &label));
     PetscCall(DMLabelGetStratumIS(label, 1, &stratum));
     PetscCall(ISGetLocalSize(stratum, &n));
@@ -396,7 +396,7 @@ int main(int argc, char **argv)
     PetscCall(PetscDSGetExactSolution(ds, 0, &sol, &ctx));
     PetscCall(VecGetSize(u, &N));
     PetscCall(DMComputeL2Diff(dm, 0.0, &sol, &ctx, u, &error));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "N: %D L2 error: %g\n", N, (double)error));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "N: %" PetscInt_FMT " L2 error: %g\n", N, (double)error));
   }
   if (user.spectral) {
     PetscInt  planeDir[2]   = {0,  1};
@@ -499,7 +499,7 @@ int main(int argc, char **argv)
       PetscCall(VecPointwiseDivide(errorEst, errorEst, errorL2));
       PetscCall(PetscObjectSetName((PetscObject) errorEst, "Error ratio"));
       PetscCall(VecViewFromOptions(errorEst, NULL, "-error_ratio_view"));
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "N: %D L2 error: %g Error Ratio: %g/%g = %g\n", N, (double) errorL2Norm, (double) errorEstTot, (double) PetscSqrtReal(errorL2Tot), (double) errorEstTot/PetscSqrtReal(errorL2Tot)));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "N: %" PetscInt_FMT " L2 error: %g Error Ratio: %g/%g = %g\n", N, (double) errorL2Norm, (double) errorEstTot, (double) PetscSqrtReal(errorL2Tot), (double)(errorEstTot/PetscSqrtReal(errorL2Tot))));
       PetscCall(DMRestoreGlobalVector(dmErr, &errorEst));
       PetscCall(DMRestoreGlobalVector(dmErr, &errorL2));
       PetscCall(DMDestroy(&dmErr));

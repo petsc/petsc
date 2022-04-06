@@ -372,7 +372,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
   if (norm_2   < 1e-14) norm_2   = 0;
   if (norm_max < 1e-14) norm_max = 0;
 
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Timestep %D: time = %g, 2-norm error = %g, max norm error = %g\n",step,(double)time,(double)norm_2,(double)norm_max));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Timestep %" PetscInt_FMT ": time = %g, 2-norm error = %g, max norm error = %g\n",step,(double)time,(double)norm_2,(double)norm_max));
   appctx->norm_2   += norm_2;
   appctx->norm_max += norm_max;
 

@@ -79,7 +79,7 @@ PetscErrorCode PetscConvEstView(PetscConvEst ce, PetscViewer viewer)
 {
   PetscFunctionBegin;
   PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject) ce, viewer));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "ConvEst with %D levels\n", ce->Nr+1));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "ConvEst with %" PetscInt_FMT " levels\n", ce->Nr+1));
   PetscFunctionReturn(0);
 }
 
@@ -172,7 +172,7 @@ PetscErrorCode PetscConvEstSetUp(PetscConvEst ce)
     if (fieldIS) PetscCall(ISRestoreIndices(fieldIS, &fields));
   }
   for (f = 0; f < Nf; ++f) {
-    PetscCheck(ce->exactSol[f],PetscObjectComm((PetscObject) ce), PETSC_ERR_ARG_WRONG, "DS must contain exact solution functions in order to estimate convergence, missing for field %D", f);
+    PetscCheck(ce->exactSol[f],PetscObjectComm((PetscObject) ce), PETSC_ERR_ARG_WRONG, "DS must contain exact solution functions in order to estimate convergence, missing for field %" PetscInt_FMT, f);
   }
   PetscFunctionReturn(0);
 }
@@ -229,7 +229,7 @@ PetscErrorCode PetscConvEstMonitorDefault(PetscConvEst ce, PetscInt r)
     if (ce->Nf > 1) PetscCall(PetscPrintf(comm, "["));
     for (f = 0; f < ce->Nf; ++f) {
       if (f > 0) PetscCall(PetscPrintf(comm, ", "));
-      PetscCall(PetscPrintf(comm, "%7D", dofs[f]));
+      PetscCall(PetscPrintf(comm, "%7" PetscInt_FMT, dofs[f]));
     }
     if (ce->Nf > 1) PetscCall(PetscPrintf(comm, "]"));
     PetscCall(PetscPrintf(comm, "  "));
@@ -323,7 +323,7 @@ static PetscErrorCode PetscConvEstGetConvRateSNES_Private(PetscConvEst ce, Petsc
     char          stageName[PETSC_MAX_PATH_LEN];
     const char   *dmname, *uname;
 
-    PetscCall(PetscSNPrintf(stageName, PETSC_MAX_PATH_LEN-1, "ConvEst Refinement Level %D", r));
+    PetscCall(PetscSNPrintf(stageName, PETSC_MAX_PATH_LEN-1, "ConvEst Refinement Level %" PetscInt_FMT, r));
 #if defined(PETSC_USE_LOG)
     PetscCall(PetscLogStageGetId(stageName, &stage));
     if (stage < 0) PetscCall(PetscLogStageRegister(stageName, &stage));

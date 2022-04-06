@@ -115,7 +115,7 @@ static PetscErrorCode DMProjectPoint_Func_Private(DM dm, PetscDS ds, DM dmIn, Pe
                 /* We just need to inject into the higher dimensional space assuming the last dimension is collapsed */
                 for (d = 0; d < dim; ++d) injpoint[d] = refpoint[d];
                 refpoint = injpoint;
-              } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Reference spatial dimension %D != %D dual basis spatial dimension", fegeom->dim, dim);
+              } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Reference spatial dimension %" PetscInt_FMT " != %" PetscInt_FMT " dual basis spatial dimension", fegeom->dim, dim);
             }
             CoordinatesRefToReal(coordDim, fegeom->dim, fegeom->xi, fegeom->v, fegeom->J, refpoint, x);
             v0 = x;
@@ -453,7 +453,7 @@ static PetscErrorCode PetscDualSpaceGetAllPointsUnion(PetscInt Nf, PetscDualSpac
 
       PetscCall(PetscDualSpaceGetAllData(sp[f],&fAllPoints, NULL));
       PetscCall(PetscQuadratureGetData(fAllPoints, &qdim, NULL, &fNumPoints, &fPoints, NULL));
-      PetscCheck(qdim == dim,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Spatial dimension %D for dual basis does not match input dimension %D", qdim, dim);
+      PetscCheck(qdim == dim,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Spatial dimension %" PetscInt_FMT " for dual basis does not match input dimension %" PetscInt_FMT, qdim, dim);
       for (q = 0; q < fNumPoints*dim; ++q) points[numPoints*dim+q] = fPoints[q];
       numPoints += fNumPoints;
     }
@@ -643,7 +643,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
   PetscCall(DMPlexGetDepthLabel(plex, &depthLabel));
   PetscCall(DMPlexGetMaxProjectionHeight(plex, &maxHeight));
   maxHeight = PetscMax(maxHeight, minHeight);
-  PetscCheck(maxHeight >= 0 && maxHeight <= dim,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Maximum projection height %D not in [0, %D)", maxHeight, dim);
+  PetscCheck(maxHeight >= 0 && maxHeight <= dim,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Maximum projection height %" PetscInt_FMT " not in [0, %" PetscInt_FMT ")", maxHeight, dim);
   PetscCall(DMGetFirstLabeledPoint(dm, dm, label, numIds, ids, 0, NULL, &ds));
   if (!ds) PetscCall(DMGetDS(dm, &ds));
   PetscCall(DMGetFirstLabeledPoint(dmIn, dm, label, numIds, ids, 0, NULL, &dsIn));
@@ -779,7 +779,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
     }
     p    = lStart < 0 ? pStart : lStart;
     PetscCall(DMPlexVecGetClosure(plex, section, localX, p, &numValues, NULL));
-    PetscCheck(numValues == totDim,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The output section point (%D) closure size %D != dual space dimension %D at height %D in [%D, %D]", p, numValues, totDim, h, minHeight, maxHeight);
+    PetscCheck(numValues == totDim,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The output section point (%" PetscInt_FMT ") closure size %" PetscInt_FMT " != dual space dimension %" PetscInt_FMT " at height %" PetscInt_FMT " in [%" PetscInt_FMT ", %" PetscInt_FMT "]", p, numValues, totDim, h, minHeight, maxHeight);
     if (!totDim) {
       PetscCall(ISDestroy(&heightIS));
       continue;
@@ -801,7 +801,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
       }
       PetscCall(DMGetEnclosurePoint(dmIn, dm, encIn, lStart < 0 ? pStart : lStart, &pIn));
       PetscCall(DMPlexVecGetClosure(plexIn, NULL, localU, pIn, &numValuesIn, NULL));
-      PetscCheck(numValuesIn == totDimIn,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The input section point (%D) closure size %D != dual space dimension %D at height %D", pIn, numValuesIn, totDimIn, htIncIn);
+      PetscCheck(numValuesIn == totDimIn,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The input section point (%" PetscInt_FMT ") closure size %" PetscInt_FMT " != dual space dimension %" PetscInt_FMT " at height %" PetscInt_FMT, pIn, numValuesIn, totDimIn, htIncIn);
       if (htIncIn) PetscCall(PetscDSGetHeightSubspace(dsIn, hEffIn, &dsEffIn));
     }
     if (htIncAux) PetscCall(PetscDSGetHeightSubspace(dsAux, hEffAux, &dsEffAux));

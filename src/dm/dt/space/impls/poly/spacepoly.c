@@ -16,7 +16,7 @@ static PetscErrorCode PetscSpacePolynomialView_Ascii(PetscSpace sp, PetscViewer 
   PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscViewerASCIIPrintf(v, "%s space of degree %D\n", poly->tensor ? "Tensor polynomial" : "Polynomial", sp->degree));
+  PetscCall(PetscViewerASCIIPrintf(v, "%s space of degree %" PetscInt_FMT "\n", poly->tensor ? "Tensor polynomial" : "Polynomial", sp->degree));
   PetscFunctionReturn(0);
 }
 
@@ -102,7 +102,7 @@ static PetscErrorCode PetscSpaceSetUp_Polynomial(PetscSpace sp)
     PetscCall(PetscSpaceSetUp(sp));
     PetscFunctionReturn(0);
   }
-  PetscCheck(sp->degree >= 0,PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_OUTOFRANGE, "Negative degree %D invalid", sp->degree);
+  PetscCheck(sp->degree >= 0,PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_OUTOFRANGE, "Negative degree %" PetscInt_FMT " invalid", sp->degree);
   sp->maxDegree = sp->degree;
   poly->setupCalled = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -323,7 +323,7 @@ static PetscErrorCode PetscSpaceGetHeightSubspace_Polynomial(PetscSpace sp, Pets
   PetscCall(PetscSpaceGetNumVariables(sp, &dim));
   PetscCall(PetscSpaceGetDegree(sp, &order, NULL));
   PetscCall(PetscSpacePolynomialGetTensor(sp, &tensor));
-  PetscCheckFalse(height > dim || height < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Asked for space at height %D for dimension %D space", height, dim);
+  PetscCheckFalse(height > dim || height < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Asked for space at height %" PetscInt_FMT " for dimension %" PetscInt_FMT " space", height, dim);
   if (!poly->subspaces) PetscCall(PetscCalloc1(dim, &poly->subspaces));
   if (height <= dim) {
     if (!poly->subspaces[height-1]) {

@@ -31,9 +31,9 @@ PetscErrorCode UserMonitor(SNES snes,PetscInt its,PetscReal fnorm ,void *appctx)
   if (rank == 0) {
     PetscInt       subsnes_id = user->subsnes_id;
     if (subsnes_id == 2) {
-      PetscCall(PetscPrintf(PETSC_COMM_SELF," it %D, subsnes_id %D, fnorm %g\n",user->it,user->subsnes_id,(double)fnorm));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF," it %" PetscInt_FMT ", subsnes_id %" PetscInt_FMT ", fnorm %g\n",user->it,user->subsnes_id,(double)fnorm));
     } else {
-      PetscCall(PetscPrintf(PETSC_COMM_SELF,"       subsnes_id %D, fnorm %g\n",user->subsnes_id,(double)fnorm));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,"       subsnes_id %" PetscInt_FMT ", fnorm %g\n",user->subsnes_id,(double)fnorm));
     }
   }
 #endif
@@ -173,7 +173,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
 
     PetscCall(DMNetworkGetComponent(networkdm,vtx[v],ALL_COMPONENTS,NULL,NULL,&nvar));
     PetscCall(DMNetworkGetNumComponents(networkdm,vtx[v],&ncomp));
-    /* printf("  [%d] coupling vertex[%D]: v %D, ncomp %D; nvar %D\n",rank,v,vtx[v], ncomp,nvar); */
+    /* printf("  [%d] coupling vertex[%" PetscInt_FMT "]: v %" PetscInt_FMT ", ncomp %" PetscInt_FMT "; nvar %" PetscInt_FMT "\n",rank,v,vtx[v], ncomp,nvar); */
 
     for (k=0; k<ncomp; k++) {
       PetscCall(DMNetworkGetComponent(networkdm,vtx[v],k,&key,&component,&nvar));
@@ -182,7 +182,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
       /* Verify the coupling vertex is a powernet load vertex or a water vertex */
       switch (k) {
       case 0:
-        PetscCheckFalse(key != appctx_power.compkey_bus || nvar != 2,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"key %D not a power bus vertex or nvar %D != 2",key,nvar);
+        PetscCheckFalse(key != appctx_power.compkey_bus || nvar != 2,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"key %" PetscInt_FMT " not a power bus vertex or nvar %" PetscInt_FMT " != 2",key,nvar);
         break;
       case 1:
         PetscCheckFalse(key != appctx_power.compkey_load || nvar != 0 || goffset[1] != goffset[0]+2,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a power load vertex");
@@ -190,23 +190,23 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
       case 2:
         PetscCheckFalse(key != appctx_water.compkey_vtx || nvar != 1 || goffset[2] != goffset[1],PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a water vertex");
         break;
-      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "k %D is wrong",k);
+      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "k %" PetscInt_FMT " is wrong",k);
       }
-      /* printf("  [%d] coupling vertex[%D]: key %D; nvar %D, goffset %D\n",rank,v,key,nvar,goffset[k]); */
+      /* printf("  [%d] coupling vertex[%" PetscInt_FMT "]: key %" PetscInt_FMT "; nvar %" PetscInt_FMT ", goffset %" PetscInt_FMT "\n",rank,v,key,nvar,goffset[k]); */
     }
 
     /* Get its supporting edges */
     PetscCall(DMNetworkGetSupportingEdges(networkdm,vtx[v],&nconnedges,&connedges));
-    /* printf("\n[%d] coupling vertex: nconnedges %D\n",rank,nconnedges); */
+    /* printf("\n[%d] coupling vertex: nconnedges %" PetscInt_FMT "\n",rank,nconnedges); */
     for (k=0; k<nconnedges; k++) {
       e = connedges[k];
       PetscCall(DMNetworkGetNumComponents(networkdm,e,&ncomp));
-      /* printf("\n  [%d] connected edge[%D]=%D has ncomp %D\n",rank,k,e,ncomp); */
+      /* printf("\n  [%d] connected edge[%" PetscInt_FMT "]=%" PetscInt_FMT " has ncomp %" PetscInt_FMT "\n",rank,k,e,ncomp); */
       PetscCall(DMNetworkGetComponent(networkdm,e,0,&keye,&component,NULL));
       if (keye == appctx_water.compkey_edge) { /* water_compkey_edge */
         EDGE_Water        edge=(EDGE_Water)component;
         if (edge->type == EDGE_TYPE_PUMP) {
-          /* printf("  connected edge[%D]=%D has keye=%D, is appctx_water.compkey_edge with EDGE_TYPE_PUMP\n",k,e,keye); */
+          /* printf("  connected edge[%" PetscInt_FMT "]=%" PetscInt_FMT " has keye=%" PetscInt_FMT ", is appctx_water.compkey_edge with EDGE_TYPE_PUMP\n",k,e,keye); */
         }
       } else { /* ower->compkey_branch */
         PetscCheck(keye == appctx_power.compkey_branch,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a power branch");
@@ -341,7 +341,7 @@ int main(int argc,char **argv)
   PetscCall(PetscNew(&pfdata));
   PetscCall(PFReadMatPowerData(pfdata,pfdata_file));
   if (rank == 0) {
-    PetscCall(PetscPrintf(PETSC_COMM_SELF,"Power network: nb = %D, ngen = %D, nload = %D, nbranch = %D\n",pfdata->nbus,pfdata->ngen,pfdata->nload,pfdata->nbranch));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"Power network: nb = %" PetscInt_FMT ", ngen = %" PetscInt_FMT ", nload = %" PetscInt_FMT ", nbranch = %" PetscInt_FMT "\n",pfdata->nbus,pfdata->ngen,pfdata->nload,pfdata->nbranch));
   }
   Sbase = pfdata->sbase;
   if (rank == 0) { /* proc[0] will create Electric Power Grid */
@@ -399,7 +399,7 @@ int main(int argc,char **argv)
   PetscCall(PetscPrintf(PETSC_COMM_WORLD,"water->compkey_edge   %d\n",appctx_water->compkey_edge));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD,"water->compkey_vtx    %d\n",appctx_water->compkey_vtx));
 #endif
-  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Total local nvertices %D + %D = %D, nedges %D + %D = %D\n",rank,numVertices[0],numVertices[1],numVertices[0]+numVertices[1],numEdges[0],numEdges[1],numEdges[0]+numEdges[1]));
+  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Total local nvertices %" PetscInt_FMT " + %" PetscInt_FMT " = %" PetscInt_FMT ", nedges %" PetscInt_FMT " + %" PetscInt_FMT " = %" PetscInt_FMT "\n",rank,numVertices[0],numVertices[1],numVertices[0]+numVertices[1],numEdges[0],numEdges[1],numEdges[0]+numEdges[1]));
   PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
 
   PetscCall(DMNetworkSetNumSubNetworks(networkdm,PETSC_DECIDE,Nsubnet));
@@ -501,23 +501,23 @@ int main(int argc,char **argv)
     PetscCallMPI(MPI_Barrier(PETSC_COMM_WORLD));
     for (i=0; i<Nsubnet; i++) {
       PetscCall(DMNetworkGetSubnetwork(networkdm,i,&nv,&ne,&vtx,&edges));
-      PetscCall(PetscPrintf(PETSC_COMM_SELF,"[%d] After distribute, subnet[%d] ne %d, nv %d\n",rank,i,ne,nv));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,"[%d] After distribute, subnet[%" PetscInt_FMT "] ne %" PetscInt_FMT ", nv %" PetscInt_FMT "\n",rank,i,ne,nv));
       PetscCallMPI(MPI_Barrier(PETSC_COMM_WORLD));
 
       for (v=0; v<nv; v++) {
         PetscCall(DMNetworkIsGhostVertex(networkdm,vtx[v],&ghost));
         PetscCall(DMNetworkGetGlobalVertexIndex(networkdm,vtx[v],&gidx));
-        PetscCall(PetscPrintf(PETSC_COMM_SELF,"[%d] subnet[%d] v %d %d; ghost %d\n",rank,i,vtx[v],gidx,ghost));
+        PetscCall(PetscPrintf(PETSC_COMM_SELF,"[%d] subnet[%" PetscInt_FMT "] v %" PetscInt_FMT " %" PetscInt_FMT "; ghost %d\n",rank,i,vtx[v],gidx,ghost));
       }
       PetscCallMPI(MPI_Barrier(PETSC_COMM_WORLD));
     }
     PetscCallMPI(MPI_Barrier(PETSC_COMM_WORLD));
 
     PetscCall(DMNetworkGetSharedVertices(networkdm,&nv,&vtx));
-    PetscCall(PetscPrintf(PETSC_COMM_SELF,"[%d] After distribute, num of shared vertices nsv = %d\n",rank,nv));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"[%d] After distribute, num of shared vertices nsv = %" PetscInt_FMT "\n",rank,nv));
     for (v=0; v<nv; v++) {
       PetscCall(DMNetworkGetGlobalVertexIndex(networkdm,vtx[v],&gidx));
-      PetscCall(PetscPrintf(PETSC_COMM_SELF,"[%d] sv %d, gidx=%d\n",rank,vtx[v],gidx));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,"[%d] sv %" PetscInt_FMT ", gidx=%" PetscInt_FMT "\n",rank,vtx[v],gidx));
     }
     PetscCallMPI(MPI_Barrier(PETSC_COMM_WORLD));
   }
@@ -630,7 +630,7 @@ int main(int argc,char **argv)
     PetscCall(SNESGetConvergedReason(snes,&reason));
     user.it++;
   }
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Coupled_SNES converged in %D iterations\n",user.it));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Coupled_SNES converged in %" PetscInt_FMT " iterations\n",user.it));
   if (viewX) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Final Solution:\n"));
     PetscCall(VecView(X,PETSC_VIEWER_STDOUT_WORLD));

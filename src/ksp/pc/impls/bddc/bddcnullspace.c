@@ -197,9 +197,9 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
     PetscCall(KSPGetIterationNumber(check_ksp,&k));
     if (pcbddc->dbg_flag) {
       if (isdir) {
-        PetscCall(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Dirichlet adapted solver (no scale) %1.14e (it %D, eigs %1.6e %1.6e)\n",PetscGlobalRank,test_err,k,lambda_min,lambda_max));
+        PetscCall(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Dirichlet adapted solver (no scale) %1.14e (it %" PetscInt_FMT ", eigs %1.6e %1.6e)\n",PetscGlobalRank,(double)test_err,k,(double)lambda_min,(double)lambda_max));
       } else {
-        PetscCall(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Neumann adapted solver (no scale) %1.14e (it %D, eigs %1.6e %1.6e)\n",PetscGlobalRank,test_err,k,lambda_min,lambda_max));
+        PetscCall(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Neumann adapted solver (no scale) %1.14e (it %" PetscInt_FMT ", eigs %1.6e %1.6e)\n",PetscGlobalRank,(double)test_err,k,(double)lambda_min,(double)lambda_max));
       }
     }
     if (needscaling) shell_ctx->scale = 1.0/lambda_max;
@@ -226,9 +226,9 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
       PetscCall(KSPGetIterationNumber(check_ksp,&k));
       if (pcbddc->dbg_flag) {
         if (isdir) {
-          PetscCall(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Dirichlet adapted solver (scale %g) %1.14e (it %D, eigs %1.6e %1.6e)\n",PetscGlobalRank,(double)PetscRealPart(shell_ctx->scale),test_err,k,lambda_min,lambda_max));
+          PetscCall(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Dirichlet adapted solver (scale %g) %1.14e (it %" PetscInt_FMT ", eigs %1.6e %1.6e)\n",PetscGlobalRank,(double)PetscRealPart(shell_ctx->scale),(double)test_err,k,(double)lambda_min,(double)lambda_max));
         } else {
-          PetscCall(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Neumann adapted solver (scale %g) %1.14e (it %D, eigs %1.6e %1.6e)\n",PetscGlobalRank,(double)PetscRealPart(shell_ctx->scale),test_err,k,lambda_min,lambda_max));
+          PetscCall(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Neumann adapted solver (scale %g) %1.14e (it %" PetscInt_FMT ", eigs %1.6e %1.6e)\n",PetscGlobalRank,(double)PetscRealPart(shell_ctx->scale),(double)test_err,k,(double)lambda_min,(double)lambda_max));
         }
       }
     }
@@ -254,9 +254,9 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
     PetscCall(VecAXPY(work1,-1.,work2));
     PetscCall(VecNorm(work1,NORM_INFINITY,&test_err));
     if (isdir) {
-      PetscCall(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Dirichlet nullspace correction solver: %1.14e\n",PetscGlobalRank,test_err));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Dirichlet nullspace correction solver: %1.14e\n",PetscGlobalRank,(double)test_err));
     } else {
-      PetscCall(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Neumann nullspace correction solver: %1.14e\n",PetscGlobalRank,test_err));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Neumann nullspace correction solver: %1.14e\n",PetscGlobalRank,(double)test_err));
     }
     PetscCall(VecDestroy(&work1));
     PetscCall(VecDestroy(&work2));

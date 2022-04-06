@@ -93,7 +93,7 @@ int main(int Argc,char **Args)
     PetscCall(PCSetType(pc,PCSHELL));
     PetscCall(PCShellSetName(pc,"user_precond"));
     PetscCall(PCShellGetName(pc,&shellname));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"level=%D, PCShell name is %s\n",i,shellname));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"level=%" PetscInt_FMT ", PCShell name is %s\n",i,shellname));
 
     /* this is not used unless different options are passed to the solver */
     PetscCall(MatCreateShell(PETSC_COMM_WORLD,N[i],N[i],N[i],N[i],NULL,&dummy));
@@ -156,7 +156,7 @@ int main(int Argc,char **Args)
   PetscCall(KSPGetIterationNumber(kspmg,&its));
   PetscCall(residual((Mat)0,B[levels-1],X[levels-1],R[levels-1]));
   PetscCall(CalculateError(solution,X[levels-1],R[levels-1],e));
-  PetscCall(PetscPrintf(PETSC_COMM_SELF,"its %D l_2 error %g max error %g resi %g\n",its,(double)e[0],(double)e[1],(double)e[2]));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"its %" PetscInt_FMT " l_2 error %g max error %g resi %g\n",its,(double)e[0],(double)e[1],(double)e[2]));
 
   PetscCall(PetscFree(N));
   PetscCall(VecDestroy(&solution));

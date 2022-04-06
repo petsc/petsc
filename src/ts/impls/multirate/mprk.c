@@ -1145,7 +1145,7 @@ static PetscErrorCode TSView_MPRK(TS ts,PetscViewer viewer)
     PetscInt    i;
     PetscCall(TSMPRKGetType(ts,&mprktype));
     PetscCall(PetscViewerASCIIPrintf(viewer,"  MPRK type %s\n",mprktype));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"  Order: %D\n",tab->order));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Order: %" PetscInt_FMT "\n",tab->order));
 
     PetscCall(PetscFormatRealArray(fbuf,sizeof(fbuf),"% 8.6f",tab->s,tab->cf));
     PetscCall(PetscViewerASCIIPrintf(viewer,"  Abscissa cf = %s\n",fbuf));

@@ -36,7 +36,7 @@ int main(int argc,char **argv)
         PetscCall(DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,3,2,4,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,1,1,DMSTAG_STENCIL_BOX,1,NULL,NULL,NULL,&dm));
         break;
       default:
-        SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"No support for dimension %D",dim);
+        SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"No support for dimension %" PetscInt_FMT,dim);
     }
   } else {
     /* Creation (test providing decomp exactly)*/
@@ -48,19 +48,19 @@ int main(int argc,char **argv)
     PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
     switch (dim) {
       case 1:
-        PetscCheck(size == ranksx,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Must run on %D ranks with -dim 1 -setSizes",ranksx);
+        PetscCheck(size == ranksx,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Must run on %" PetscInt_FMT " ranks with -dim 1 -setSizes",ranksx);
         PetscCall(DMStagCreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,mx,1,1,DMSTAG_STENCIL_BOX,1,lx,&dm));
         break;
       case 2:
-        PetscCheckFalse(size != ranksx * ranksy,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Must run on %D ranks with -dim 2 -setSizes",ranksx * ranksy);
+        PetscCheckFalse(size != ranksx * ranksy,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Must run on %" PetscInt_FMT " ranks with -dim 2 -setSizes",ranksx * ranksy);
         PetscCall(DMStagCreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,mx,my,ranksx,ranksy,1,1,1,DMSTAG_STENCIL_BOX,1,lx,ly,&dm));
         break;
       case 3:
-        PetscCheckFalse(size != ranksx * ranksy * ranksz,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Must run on %D ranks with -dim 3 -setSizes", ranksx * ranksy * ranksz);
+        PetscCheckFalse(size != ranksx * ranksy * ranksz,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Must run on %" PetscInt_FMT " ranks with -dim 3 -setSizes", ranksx * ranksy * ranksz);
         PetscCall(DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,mx,my,mz,ranksx,ranksy,ranksz,1,1,1,1,DMSTAG_STENCIL_BOX,1,lx,ly,lz,&dm));
         break;
       default:
-        SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"No support for dimension %D",dim);
+        SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"No support for dimension %" PetscInt_FMT,dim);
     }
   }
 
@@ -82,7 +82,7 @@ int main(int argc,char **argv)
     case 1: PetscCall(Test2_1d(dm)); break;
     case 2: PetscCall(Test2_2d(dm)); break;
     case 3: PetscCall(Test2_3d(dm)); break;
-    default: SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Not implemented for dimension %D",dim);
+    default: SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Not implemented for dimension %" PetscInt_FMT,dim);
   }
 
   /* Clean up and finalize PETSc */
@@ -124,7 +124,7 @@ static PetscErrorCode CompareValues(PetscInt i,PetscInt j, PetscInt k, PetscInt 
   PetscFunctionBeginUser;
   if (val != valRef && PetscAbsScalar(val-valRef)/PetscAbsScalar(valRef) > 10*PETSC_MACHINE_EPSILON)
   {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"(%D,%D,%D,%D) Value %.17g does not match the expected %.17g",i,j,k,c,(double)PetscRealPart(val),(double)PetscRealPart(valRef));
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"(%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ") Value %.17g does not match the expected %.17g",i,j,k,c,(double)PetscRealPart(val),(double)PetscRealPart(valRef));
   }
   PetscFunctionReturn(0);
 }

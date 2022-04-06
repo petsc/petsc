@@ -396,7 +396,7 @@ PetscErrorCode  DMDAGetElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt
     PetscCall(DMDAGetElements_2D(dm,nel,nen,e));
   } else if (dim==3) {
     PetscCall(DMDAGetElements_3D(dm,nel,nen,e));
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"DMDA dimension not 1, 2, or 3, it is %D",dim);
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT,dim);
   PetscFunctionReturn(0);
 }
 

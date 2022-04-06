@@ -97,7 +97,7 @@ static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec U,void *ctx)
     PetscCall(VecGetArrayRead(U,&u));
     menergy = (u[1]*u[1]+user->omega*user->omega*u[0]*u[0]-user->omega*user->omega*dt*u[0]*u[1])/2.;
     energy = (u[1]*u[1]+user->omega*user->omega*u[0]*u[0])/2.;
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"At time %.6lf, Energy = %8g, Modified Energy = %8g\n",t,(double)energy,(double)menergy));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"At time %.6lf, Energy = %8g, Modified Energy = %8g\n",(double)t,(double)energy,(double)menergy));
     PetscCall(VecRestoreArrayRead(U,&u));
   }
   PetscFunctionReturn(0);
@@ -183,7 +183,7 @@ int main(int argc,char **argv)
   PetscCall(TSGetSolveTime(ts,&ftime));
   PetscCall(VecView(U,PETSC_VIEWER_STDOUT_WORLD));
 
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"The exact solution at time %.6lf is [%g %g]\n",(double)ftime,(double)0.2*PetscCosReal(user.omega*ftime),(double)-0.2*user.omega*PetscSinReal(user.omega*ftime)));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"The exact solution at time %.6lf is [%g %g]\n",(double)ftime,(double)(0.2*PetscCosReal(user.omega*ftime)),(double)(-0.2*user.omega*PetscSinReal(user.omega*ftime))));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they

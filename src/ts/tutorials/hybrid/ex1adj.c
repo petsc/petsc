@@ -312,7 +312,7 @@ int main(int argc,char **argv)
   PetscCall(VecGetArray(mu[0],&u));
   PetscCall(VecGetArray(mu[1],&v));
   f = fopen("adj_mu.out", "a");
-  PetscCall(PetscFPrintf(PETSC_COMM_WORLD,f,"%20.15lf %20.15lf %20.15lf\n",tend,u[0],v[0]));
+  PetscCall(PetscFPrintf(PETSC_COMM_WORLD,f,"%20.15lf %20.15lf %20.15lf\n",(double)tend,(double)PetscRealPart(u[0]),(double)PetscRealPart(v[0])));
   PetscCall(VecRestoreArray(mu[0],&u));
   PetscCall(VecRestoreArray(mu[1],&v));
   fclose(f);

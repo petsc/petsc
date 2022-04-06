@@ -164,7 +164,7 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x, PetscReal
       break;
     }
     if ((ls->nfeval+ls->nfgeval) >= ls->max_funcs) {
-      PetscCall(PetscInfo(ls,"Number of line search function evals (%D) > maximum (%D)\n",ls->nfeval+ls->nfgeval,ls->max_funcs));
+      PetscCall(PetscInfo(ls,"Number of line search function evals (%" PetscInt_FMT ") > maximum (%" PetscInt_FMT ")\n",ls->nfeval+ls->nfgeval,ls->max_funcs));
       ls->reason = TAOLINESEARCH_HALTED_MAXFCN;
       break;
     }
@@ -174,7 +174,7 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x, PetscReal
       break;
     }
   }
-  PetscCall(PetscInfo(ls,"%D function evals in line search, step = %g\n",ls->nfeval+ls->nfgeval,(double)ls->step));
+  PetscCall(PetscInfo(ls,"%" PetscInt_FMT " function evals in line search, step = %g\n",ls->nfeval+ls->nfgeval,(double)ls->step));
   /* set new solution vector and compute gradient if necessary */
   PetscCall(VecCopy(neP->W2, x));
   if (ls->reason == TAOLINESEARCH_CONTINUE_ITERATING) {

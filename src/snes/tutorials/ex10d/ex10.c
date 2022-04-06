@@ -169,12 +169,12 @@ int main(int argc,char **argv)
     PetscCheck(fgets(str,256,fptr),PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"fgets read failed");
     sscanf(str,"%d",&dtmp);user.v2p[inode] = dtmp;
     if (user.v2p[inode] == rank) {
-      PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"Node %D belongs to processor %D\n",inode,user.v2p[inode]));
+      PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"Node %" PetscInt_FMT " belongs to processor %" PetscInt_FMT "\n",inode,user.v2p[inode]));
 
       user.gloInd[user.Nvlocal] = inode;
       sscanf(str,"%*d %d",&dtmp);
       nbrs = dtmp;
-      PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"Number of neighbors for the vertex %D is %D\n",inode,nbrs));
+      PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"Number of neighbors for the vertex %" PetscInt_FMT " is %" PetscInt_FMT "\n",inode,nbrs));
 
       user.itot[user.Nvlocal] = nbrs;
       Nvneighborstotal       += nbrs;
@@ -188,13 +188,13 @@ int main(int argc,char **argv)
         sscanf(str,form,&dtmp);
         user.AdjM[user.Nvlocal][i] = dtmp;
 
-        PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"%D ",user.AdjM[user.Nvlocal][i]));
+        PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"%" PetscInt_FMT " ",user.AdjM[user.Nvlocal][i]));
       }
       PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"\n"));
       user.Nvlocal++;
     }
   }
-  PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"Total # of Local Vertices is %D \n",user.Nvlocal));
+  PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"Total # of Local Vertices is %" PetscInt_FMT " \n",user.Nvlocal));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create different orderings
@@ -230,16 +230,16 @@ int main(int argc,char **argv)
 
   PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"Before AOApplicationToPetsc, local indices are : \n"));
   for (i=0; i < user.Nvlocal; i++) {
-    PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1," %D ",user.gloInd[i]));
+    PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1," %" PetscInt_FMT " ",user.gloInd[i]));
 
     user.locInd[i] = user.gloInd[i];
   }
   PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"\n"));
   jstart = 0;
   for (i=0; i < user.Nvlocal; i++) {
-    PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"Neghbors of local vertex %D are : ",user.gloInd[i]));
+    PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"Neghbors of local vertex %" PetscInt_FMT " are : ",user.gloInd[i]));
     for (j=0; j < user.itot[i]; j++) {
-      PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"%D ",user.AdjM[i][j]));
+      PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"%" PetscInt_FMT " ",user.AdjM[i][j]));
 
       tmp[j + jstart] = user.AdjM[i][j];
     }
@@ -256,17 +256,17 @@ int main(int argc,char **argv)
 
   PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"After AOApplicationToPetsc, local indices are : \n"));
   for (i=0; i < user.Nvlocal; i++) {
-    PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1," %D ",user.locInd[i]));
+    PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1," %" PetscInt_FMT " ",user.locInd[i]));
   }
   PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"\n"));
 
   jstart = 0;
   for (i=0; i < user.Nvlocal; i++) {
-    PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"Neghbors of local vertex %D are : ",user.locInd[i]));
+    PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"Neghbors of local vertex %" PetscInt_FMT " are : ",user.locInd[i]));
     for (j=0; j < user.itot[i]; j++) {
       user.AdjM[i][j] = tmp[j+jstart];
 
-      PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"%D ",user.AdjM[i][j]));
+      PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"%" PetscInt_FMT " ",user.AdjM[i][j]));
     }
     jstart += user.itot[i];
     PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"\n"));
@@ -319,7 +319,7 @@ int main(int argc,char **argv)
   PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"\n"));
   PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"The array vertices is :\n"));
   for (i=0; i < nvertices; i++) {
-    PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"%D ",vertices[i]));
+    PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"%" PetscInt_FMT " ",vertices[i]));
   }
   PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"\n"));
 
@@ -330,12 +330,12 @@ int main(int argc,char **argv)
   PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"\n"));
   PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"After mapping neighbors in the local contiguous ordering\n"));
   for (i=0; i<user.Nvlocal; i++) {
-    PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"Neghbors of local vertex %D are :\n",i));
+    PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"Neghbors of local vertex %" PetscInt_FMT " are :\n",i));
     for (j = 0; j < user.itot[i]; j++) {
       nb              = user.AdjM[i][j];
       user.AdjM[i][j] = verticesmask[nb] - 1;
 
-      PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"%D ",user.AdjM[i][j]));
+      PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"%" PetscInt_FMT " ",user.AdjM[i][j]));
     }
     PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"\n"));
   }
@@ -441,7 +441,7 @@ int main(int argc,char **argv)
   */
   PetscCall(VecGetArray(x,&xx));
   for (inode = 0; inode < user.Nvlocal; inode++) {
-    PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"Initial Solution at node %D is %f \n",inode,xx[inode]));
+    PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"Initial Solution at node %" PetscInt_FMT " is %f \n",inode,(double)PetscRealPart(xx[inode])));
   }
   PetscCall(VecRestoreArray(x,&xx));
 
@@ -461,12 +461,12 @@ int main(int argc,char **argv)
 
   PetscCall(VecGetArray(x,&xx));
   for (inode = 0; inode < user.Nvlocal; inode++) {
-    PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"Solution at node %D is %f \n",inode,xx[inode]));
+    PetscCall(PetscFPrintf(PETSC_COMM_SELF,fptr1,"Solution at node %" PetscInt_FMT " is %f \n",inode,(double)PetscRealPart(xx[inode])));
   }
   PetscCall(VecRestoreArray(x,&xx));
   fclose(fptr1);
-  PetscCall(PetscPrintf(MPI_COMM_WORLD,"number of SNES iterations = %D, ",its));
-  PetscCall(PetscPrintf(MPI_COMM_WORLD,"number of unsuccessful steps = %D\n",nfails));
+  PetscCall(PetscPrintf(MPI_COMM_WORLD,"number of SNES iterations = %" PetscInt_FMT ", ",its));
+  PetscCall(PetscPrintf(MPI_COMM_WORLD,"number of unsuccessful steps = %" PetscInt_FMT "\n",nfails));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they

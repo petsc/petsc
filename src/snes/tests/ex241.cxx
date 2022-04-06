@@ -51,7 +51,7 @@ int main(int argc,char **argv)
   /* Set initial guess / solve */
   PetscCall(SNESSolve(snes,NULL,x));
   PetscCall(SNESGetIterationNumber(snes,&its));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n",its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %" PetscInt_FMT "\n",its));
   PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
 
   /* Done */

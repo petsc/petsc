@@ -36,7 +36,7 @@ int main(int argc, char **argv)
   PetscCall(DMGetBoundingBox(dm, lo, hi));
   for (i=0;i<dim;i++) {
     h[i] = (hi[i] - lo[i])/faces[i];
-    PetscCall(PetscPrintf(PETSC_COMM_SELF," lo = %g hi = %g n = %D h = %g\n",lo[i],hi[i],faces[i],h[i]));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF," lo = %g hi = %g n = %" PetscInt_FMT " h = %g\n",(double)lo[i],(double)hi[i],faces[i],(double)h[i]));
   }
 
   PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, Nc, PETSC_FALSE, "", PETSC_DECIDE, &fe));
@@ -117,7 +117,7 @@ int main(int argc, char **argv)
   }
   PetscCall(DMSwarmRestoreField(sw, "DMSwarmPIC_coor", &bs, &dtype, (void**)&coords));
   PetscCall(DMSwarmRestoreField(sw, "w_q", &bs, &dtype, (void**)&wq));
-  PetscCall(PetscPrintf(PETSC_COMM_SELF,"Total number = %20.12e. energy = %20.12e error = %20.12e\n", norm, energy_0, (energy_1-energy_0)/energy_0));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"Total number = %20.12e. energy = %20.12e error = %20.12e\n", (double)norm, (double)energy_0, (double)((energy_1-energy_0)/energy_0)));
   /* Cleanup */
   PetscCall(MatDestroy(&M_p));
   PetscCall(MatDestroy(&PM_p));

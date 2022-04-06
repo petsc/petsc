@@ -52,7 +52,7 @@ int main(int argc,char **args)
 
     /* Create a new vector b by padding the old one */
     PetscCall(MatGetLocalSize(A,&m,&n));
-    PetscCheck(m == n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%D, %D)", m, n);
+    PetscCheck(m == n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%" PetscInt_FMT ", %" PetscInt_FMT ")", m, n);
     PetscCall(VecCreate(PETSC_COMM_WORLD,&tmp));
     PetscCall(VecSetSizes(tmp,m,PETSC_DECIDE));
     PetscCall(VecSetFromOptions(tmp));
@@ -112,7 +112,7 @@ int main(int argc,char **args)
   PetscCall(MatMult(A,x,u));
   PetscCall(VecAXPY(u,-1.0,b));
   PetscCall(VecNorm(u,NORM_2,&norm));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3" PetscInt_FMT "\n",its));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",(double)norm));
 
   /* Free work space.  */

@@ -1251,7 +1251,7 @@ int main(int argc,char *argv[])
     mass_difference = mass_final - mass_initial;
     PetscCallMPI(MPI_Allreduce(&mass_difference,&mass_differenceg,1,MPIU_SCALAR,MPIU_SUM,comm));
     PetscCall(PetscPrintf(comm,"Mass difference %g\n",(double)mass_differenceg));
-    PetscCall(PetscPrintf(comm,"Final time %g, steps %D\n",(double)ptime,steps));
+    PetscCall(PetscPrintf(comm,"Final time %g, steps %" PetscInt_FMT "\n",(double)ptime,steps));
     PetscCall(PetscPrintf(comm,"Maximum allowable stepsize according to CFL %g\n",(double)(1.0/ctx.cfl_idt)));
     if (ctx.exact) {
       PetscReal nrm1=0;

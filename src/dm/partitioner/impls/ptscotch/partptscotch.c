@@ -280,7 +280,7 @@ static PetscErrorCode PetscPartitionerPartition_PTScotch(PetscPartitioner part, 
       if (assignment[v] == p) points[i++] = v;
     }
   }
-  PetscCheck(i == nvtxs,comm, PETSC_ERR_PLIB, "Number of points %D should be %D", i, nvtxs);
+  PetscCheck(i == nvtxs,comm, PETSC_ERR_PLIB, "Number of points %" PetscInt_FMT " should be %" PetscInt_FMT, i, nvtxs);
   PetscCall(ISCreateGeneral(comm, nvtxs, points, PETSC_OWN_POINTER, partition));
 
   PetscCall(PetscFree2(vtxdist,assignment));

@@ -186,7 +186,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
       PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_SUCCEEDED));
       if (monitor) {
         PetscCall(PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel));
-        PetscCall(PetscViewerASCIIPrintf(monitor,"    Line search: Ended due to ynorm < stol*xnorm (%14.12e < %14.12e).\n",(double)ynorm,(double)stol*xnorm));
+        PetscCall(PetscViewerASCIIPrintf(monitor,"    Line search: Ended due to ynorm < stol*xnorm (%14.12e < %14.12e).\n",(double)ynorm,(double)(stol*xnorm)));
         PetscCall(PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel));
       }
       PetscFunctionReturn(0);
@@ -204,7 +204,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
       PetscCall((*linesearch->ops->viproject)(snes, W));
     }
     if (snes->nfuncs >= snes->max_funcs && snes->max_funcs >= 0) {
-      PetscCall(PetscInfo(snes,"Exceeded maximum function evaluations, while attempting quadratic backtracking! %D \n",snes->nfuncs));
+      PetscCall(PetscInfo(snes,"Exceeded maximum function evaluations, while attempting quadratic backtracking! %" PetscInt_FMT " \n",snes->nfuncs));
       snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
       PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_FUNCTION));
       PetscFunctionReturn(0);
@@ -247,7 +247,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
         if (lambda <= minlambda) {
           if (monitor) {
             PetscCall(PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel));
-            PetscCall(PetscViewerASCIIPrintf(monitor,"    Line search: unable to find good step length! After %D tries \n",count));
+            PetscCall(PetscViewerASCIIPrintf(monitor,"    Line search: unable to find good step length! After %" PetscInt_FMT " tries \n",count));
             if (!objective) {
               PetscCall(PetscViewerASCIIPrintf(monitor,"    Line search: fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, minlambda=%18.16e, lambda=%18.16e, initial slope=%18.16e\n",
                                                (double)fnorm, (double)gnorm, (double)ynorm, (double)minlambda, (double)lambda, (double)initslope));
@@ -283,7 +283,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
           PetscCall((*linesearch->ops->viproject)(snes,W));
         }
         if (snes->nfuncs >= snes->max_funcs && snes->max_funcs >= 0) {
-          PetscCall(PetscInfo(snes,"Exceeded maximum function evaluations, while looking for good step length! %D \n",count));
+          PetscCall(PetscInfo(snes,"Exceeded maximum function evaluations, while looking for good step length! %" PetscInt_FMT " \n",count));
           if (!objective) {
             PetscCall(PetscInfo(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lambda=%18.16e, initial slope=%18.16e\n",(double)fnorm,(double)gnorm,(double)ynorm,(double)lambda,(double)initslope));
           }

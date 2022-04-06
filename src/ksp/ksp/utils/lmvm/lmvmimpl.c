@@ -269,11 +269,11 @@ PetscErrorCode MatView_LMVM(Mat B, PetscViewer pv)
   PetscCall(PetscObjectTypeCompare((PetscObject)pv,PETSCVIEWERASCII,&isascii));
   if (isascii) {
     PetscCall(MatGetType(B, &type));
-    PetscCall(PetscViewerASCIIPrintf(pv,"Max. storage: %D\n",lmvm->m));
-    PetscCall(PetscViewerASCIIPrintf(pv,"Used storage: %D\n",lmvm->k+1));
-    PetscCall(PetscViewerASCIIPrintf(pv,"Number of updates: %D\n",lmvm->nupdates));
-    PetscCall(PetscViewerASCIIPrintf(pv,"Number of rejects: %D\n",lmvm->nrejects));
-    PetscCall(PetscViewerASCIIPrintf(pv,"Number of resets: %D\n",lmvm->nresets));
+    PetscCall(PetscViewerASCIIPrintf(pv,"Max. storage: %" PetscInt_FMT "\n",lmvm->m));
+    PetscCall(PetscViewerASCIIPrintf(pv,"Used storage: %" PetscInt_FMT "\n",lmvm->k+1));
+    PetscCall(PetscViewerASCIIPrintf(pv,"Number of updates: %" PetscInt_FMT "\n",lmvm->nupdates));
+    PetscCall(PetscViewerASCIIPrintf(pv,"Number of rejects: %" PetscInt_FMT "\n",lmvm->nrejects));
+    PetscCall(PetscViewerASCIIPrintf(pv,"Number of resets: %" PetscInt_FMT "\n",lmvm->nresets));
     if (lmvm->J0) {
       PetscCall(PetscViewerASCIIPrintf(pv,"J0 Matrix:\n"));
       PetscCall(PetscViewerPushFormat(pv, PETSC_VIEWER_ASCII_INFO));

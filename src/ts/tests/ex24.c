@@ -220,7 +220,7 @@ int main(int argc,char **argv)
   PetscCall(MatAXPY(Jac,-1,Jac2,SAME_NONZERO_PATTERN));
   PetscCall(MatNorm(Jac,NORM_INFINITY,&norm));
   if (norm > 100.0*PETSC_MACHINE_EPSILON) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error Norm %g \n Incorrect behaviour of TSComputeIJacobian(). The two matrices should have the same results.\n",norm));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error Norm %g \n Incorrect behaviour of TSComputeIJacobian(). The two matrices should have the same results.\n",(double)norm));
   }
   PetscCall(MatDestroy(&Jac));
   PetscCall(MatDestroy(&Jac2));

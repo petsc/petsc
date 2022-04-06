@@ -180,7 +180,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Print norm2 error
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"l2 error norm: %g\n", error));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"l2 error norm: %g\n", (double)PetscAbsScalar(error)));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they are no longer needed.

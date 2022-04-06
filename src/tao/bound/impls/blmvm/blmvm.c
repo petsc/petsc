@@ -194,7 +194,7 @@ static PetscErrorCode TaoView_BLMVM(Tao tao, PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   if (isascii) {
-    PetscCall(PetscViewerASCIIPrintf(viewer, "Gradient steps: %D\n", lmP->grad));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Gradient steps: %" PetscInt_FMT "\n", lmP->grad));
     PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO));
     PetscCall(MatView(lmP->M, viewer));
     PetscCall(PetscViewerPopFormat(viewer));

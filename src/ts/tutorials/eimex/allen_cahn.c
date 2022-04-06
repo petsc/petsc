@@ -88,7 +88,7 @@ int main(int argc, char **argv)
   PetscCall(TSSolve(ts,x));
   PetscCall(TSGetTime(ts,&ftime));
   PetscCall(TSGetStepNumber(ts,&steps));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"eps %g, steps %D, ftime %g\n",(double)user.param,steps,(double)ftime));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"eps %g, steps %" PetscInt_FMT ", ftime %g\n",(double)user.param,steps,(double)ftime));
   /*   PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));*/
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

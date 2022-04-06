@@ -104,7 +104,7 @@ PetscErrorCode PostEvent(TS ts,PetscInt nevents,PetscInt event_list[],PetscReal 
   PetscFunctionBegin;
   PetscCall(TSGetStepNumber(ts,&i));
   PetscCall(VecGetArrayRead(x,&a));
-  PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts),"%-10s-> step %D time %g value %g\n",PETSC_FUNCTION_NAME,i,(double)t,(double)PetscRealPart(a[0])));
+  PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts),"%-10s-> step %" PetscInt_FMT " time %g value %g\n",PETSC_FUNCTION_NAME,i,(double)t,(double)PetscRealPart(a[0])));
   PetscCall(VecRestoreArrayRead(x,&a));
   PetscFunctionReturn(0);
 }

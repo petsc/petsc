@@ -54,7 +54,7 @@ PetscErrorCode DMPlexGetLocalOffsets(DM dm, DMLabel domain_label, PetscInt label
     }
     PetscCall(ISRestoreIndices(field_is, &fields));
   }
-  PetscCheck(ds_field != -1,PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Could not find dm_field %D in DS", dm_field);
+  PetscCheck(ds_field != -1,PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Could not find dm_field %" PetscInt_FMT " in DS", dm_field);
 
   {
     PetscInt depth;
@@ -96,7 +96,7 @@ PetscErrorCode DMPlexGetLocalOffsets(DM dm, DMLabel domain_label, PetscInt label
     PetscCall(PetscFEGetDualSpace(fe, &dual_space));
     PetscCall(PetscDualSpaceGetDimension(dual_space, &num_dual_basis_vectors));
     PetscCall(PetscDualSpaceGetNumComponents(dual_space, num_comp));
-    PetscCheck(num_dual_basis_vectors % *num_comp == 0,PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for number of dual basis vectors %D not divisible by %D components", num_dual_basis_vectors, *num_comp);
+    PetscCheck(num_dual_basis_vectors % *num_comp == 0,PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for number of dual basis vectors %" PetscInt_FMT " not divisible by %" PetscInt_FMT " components", num_dual_basis_vectors, *num_comp);
     *cell_size = num_dual_basis_vectors / *num_comp;
   }
   PetscInt restr_size = (*num_cells)*(*cell_size);
@@ -131,7 +131,7 @@ PetscErrorCode DMPlexGetLocalOffsets(DM dm, DMLabel domain_label, PetscInt label
         else if (*cell_size == P*P) {
           PetscInt row = i / P, col = i % P;
           ii = row + col * P;
-        } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for flipping point with cell size %D != P (%D) or P^2", *cell_size, P);
+        } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for flipping point with cell size %" PetscInt_FMT " != P (%" PetscInt_FMT ") or P^2", *cell_size, P);
       }
       // Essential boundary conditions are encoded as -(loc+1), but we don't care so we decode.
       PetscInt loc = indices[field_offsets[dm_field] + ii*(*num_comp)];
@@ -139,7 +139,7 @@ PetscErrorCode DMPlexGetLocalOffsets(DM dm, DMLabel domain_label, PetscInt label
     }
     PetscCall(DMPlexRestoreClosureIndices(dm, section, section, c, PETSC_TRUE, &num_indices, &indices, field_offsets, NULL));
   }
-  PetscCheck(cell_offset == restr_size,PETSC_COMM_SELF, PETSC_ERR_SUP, "Shape mismatch, offsets array of shape (%D, %D) initialized for %D nodes", *num_cells, (*cell_size), cell_offset);
+  PetscCheck(cell_offset == restr_size,PETSC_COMM_SELF, PETSC_ERR_SUP, "Shape mismatch, offsets array of shape (%" PetscInt_FMT ", %" PetscInt_FMT ") initialized for %" PetscInt_FMT " nodes", *num_cells, (*cell_size), cell_offset);
   if (iter_is) PetscCall(ISRestoreIndices(iter_is, &iter_indices));
   PetscCall(ISDestroy(&iter_is));
 

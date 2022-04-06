@@ -214,7 +214,7 @@ PetscErrorCode DMCreateSubDM_DA(DM dm, PetscInt numFields, const PetscInt fields
         indices[cnt++] = dof*i + fields[j];
       }
     }
-    PetscCheck(cnt == da->Nlocal*numFields/dof,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Count %D does not equal expected value %D", cnt, da->Nlocal*numFields/dof);
+    PetscCheck(cnt == da->Nlocal*numFields/dof,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Count %" PetscInt_FMT " does not equal expected value %" PetscInt_FMT, cnt, da->Nlocal*numFields/dof);
     PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject) dm), cnt, indices, PETSC_OWN_POINTER, is));
   }
   PetscFunctionReturn(0);

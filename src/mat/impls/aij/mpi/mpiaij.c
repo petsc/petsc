@@ -6284,7 +6284,7 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, const Pe
   PetscCall(PetscSFFetchAndOpWithMemTypeBegin(sf1,MPIU_INT,PETSC_MEMTYPE_HOST,&nroots2/*rootdata*/,PETSC_MEMTYPE_HOST,nentries/*leafdata*/,PETSC_MEMTYPE_HOST,offsets/*leafupdate*/,MPI_SUM));
   PetscCall(PetscSFFetchAndOpEnd(sf1,MPIU_INT,&nroots2,nentries,offsets,MPI_SUM)); /* Would nroots2 overflow, we check offsets[] below */
   PetscCall(PetscSFDestroy(&sf1));
-  PetscAssert(nleaves2 == n1-rem,PETSC_COMM_SELF,PETSC_ERR_PLIB,"nleaves2 " PetscInt_FMT " != number of remote entries " PetscCount_FMT "",nleaves2,n1-rem);
+  PetscAssert(nleaves2 == n1-rem,PETSC_COMM_SELF,PETSC_ERR_PLIB,"nleaves2 %" PetscInt_FMT " != number of remote entries %" PetscCount_FMT "",nleaves2,n1-rem);
 
   /* Build 2nd SF to send remote COOs to their owner */
   PetscSF sf2;
@@ -7474,7 +7474,7 @@ PETSC_EXTERN void matsetvaluesmpiaij_(Mat *mmat,PetscInt *mm,const PetscInt im[]
           } else if (in[j] < 0) continue;
           else if (PetscUnlikelyDebug(in[j] >= mat->cmap->N)) {
             /* extra brace on SETERRQ() is required for --with-errorchecking=0 - due to the next 'else' clause */
-            SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",in[j],mat->cmap->N-1);
+            SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT,in[j],mat->cmap->N-1);
           } else {
             if (mat->was_assembled) {
               if (!aij->colmap) {

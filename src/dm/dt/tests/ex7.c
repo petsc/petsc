@@ -77,7 +77,7 @@ static PetscErrorCode CheckPullback(PetscInt N, PetscInt M, const PetscReal *L, 
   }
   PetscCall(PetscDTAltVApply(M, k, ww, Lx, &wLx));
   diff = PetscAbsReal(wLx - Lstarwx);
-  PetscCheckFalse(diff > 10. * PETSC_SMALL * (PetscAbsReal(wLx) + PetscAbsReal(Lstarwx)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "pullback check: pullback does not commute with application: w(Lx)(%g) != (L* w)(x)(%g)", wLx, Lstarwx);
+  PetscCheckFalse(diff > 10. * PETSC_SMALL * (PetscAbsReal(wLx) + PetscAbsReal(Lstarwx)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "pullback check: pullback does not commute with application: w(Lx)(%g) != (L* w)(x)(%g)", (double)wLx, (double)Lstarwx);
   PetscCheckFalse(diffMat > PETSC_SMALL * normMat,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "pullback check: pullback matrix does match matrix free result");
   PetscCall(PetscFree2(Lstar, Lstarwcheck));
   PetscCall(PetscFree2(Lstarw, Lx));
@@ -105,7 +105,7 @@ int main(int argc, char **argv)
   for (i = 0; i < numTests; i++) {
     PetscInt       k, N = n[i];
 
-    if (verbose) PetscCall(PetscViewerASCIIPrintf(viewer, "N = %D:\n", N));
+    if (verbose) PetscCall(PetscViewerASCIIPrintf(viewer, "N = %" PetscInt_FMT ":\n", N));
     PetscCall(PetscViewerASCIIPushTab(viewer));
 
     if (verbose) {
@@ -115,20 +115,20 @@ int main(int argc, char **argv)
       PetscCall(PetscMalloc1(N, &perm));
 
       for (k = 1; k <= N; k++) fac *= k;
-      PetscCall(PetscViewerASCIIPrintf(viewer, "Permutations of %D:\n", N));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "Permutations of %" PetscInt_FMT ":\n", N));
       PetscCall(PetscViewerASCIIPushTab(viewer));
       for (k = 0; k < fac; k++) {
         PetscBool isOdd, isOddCheck;
         PetscInt  j, kCheck;
 
         PetscCall(PetscDTEnumPerm(N, k, perm, &isOdd));
-        PetscCall(PetscViewerASCIIPrintf(viewer, "%D:", k));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT ":", k));
         for (j = 0; j < N; j++) {
-          PetscCall(PetscPrintf(PETSC_COMM_WORLD, " %D", perm[j]));
+          PetscCall(PetscPrintf(PETSC_COMM_WORLD, " %" PetscInt_FMT, perm[j]));
         }
         PetscCall(PetscPrintf(PETSC_COMM_WORLD, ", %s\n", isOdd ? "odd" : "even"));
         PetscCall(PetscDTPermIndex(N, perm, &kCheck, &isOddCheck));
-        PetscCheckFalse(kCheck != k || isOddCheck != isOdd,PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDTEnumPerm / PetscDTPermIndex mismatch for (%D, %D)", N, k);
+        PetscCheckFalse(kCheck != k || isOddCheck != isOdd,PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDTEnumPerm / PetscDTPermIndex mismatch for (%" PetscInt_FMT ", %" PetscInt_FMT ")", N, k);
       }
       PetscCall(PetscViewerASCIIPopTab(viewer));
       PetscCall(PetscFree(perm));
@@ -139,9 +139,9 @@ int main(int argc, char **argv)
       PetscInt  *subset;
 
       PetscCall(PetscDTBinomialInt(N, k, &Nk));
-      if (verbose) PetscCall(PetscViewerASCIIPrintf(viewer, "k = %D:\n", k));
+      if (verbose) PetscCall(PetscViewerASCIIPrintf(viewer, "k = %" PetscInt_FMT ":\n", k));
       PetscCall(PetscViewerASCIIPushTab(viewer));
-      if (verbose) PetscCall(PetscViewerASCIIPrintf(viewer, "(%D choose %D): %D\n", N, k, Nk));
+      if (verbose) PetscCall(PetscViewerASCIIPrintf(viewer, "(%" PetscInt_FMT " choose %" PetscInt_FMT "): %" PetscInt_FMT "\n", N, k, Nk));
 
       /* Test subset and complement enumeration */
       PetscCall(PetscMalloc1(N, &subset));
@@ -156,18 +156,18 @@ int main(int argc, char **argv)
         if (verbose) {
           PetscInt l;
 
-          PetscCall(PetscViewerASCIIPrintf(viewer, "subset %D:", j));
+          PetscCall(PetscViewerASCIIPrintf(viewer, "subset %" PetscInt_FMT ":", j));
           for (l = 0; l < k; l++) {
-            PetscCall(PetscPrintf(PETSC_COMM_WORLD, " %D", subset[l]));
+            PetscCall(PetscPrintf(PETSC_COMM_WORLD, " %" PetscInt_FMT, subset[l]));
           }
           PetscCall(PetscPrintf(PETSC_COMM_WORLD, " |"));
           for (l = k; l < N; l++) {
-            PetscCall(PetscPrintf(PETSC_COMM_WORLD, " %D", subset[l]));
+            PetscCall(PetscPrintf(PETSC_COMM_WORLD, " %" PetscInt_FMT, subset[l]));
           }
           PetscCall(PetscPrintf(PETSC_COMM_WORLD, ", %s\n", isOdd ? "odd" : "even"));
         }
         PetscCall(PetscDTSubsetIndex(N, k, subset, &jCheck));
-        PetscCheck(jCheck == j,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "jCheck (%D) != j (%D)", jCheck, j);
+        PetscCheck(jCheck == j,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "jCheck (%" PetscInt_FMT ") != j (%" PetscInt_FMT ")", jCheck, j);
       }
       PetscCall(PetscViewerASCIIPopTab(viewer));
       PetscCall(PetscFree(subset));
@@ -268,7 +268,7 @@ int main(int argc, char **argv)
         PetscCall(PetscDTAltVApply(N, k, w, axv, &waxv));
         waxvcheck = alpha * wx + wv;
         diff = waxv - waxvcheck;
-        PetscCheckFalse(PetscAbsReal(diff) > 10. * PETSC_SMALL * (PetscAbsReal(waxv) + PetscAbsReal(waxvcheck)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "linearity check: component %D, waxvcheck (%g) != waxv (%g)", j, (double) waxvcheck, (double) waxv);
+        PetscCheckFalse(PetscAbsReal(diff) > 10. * PETSC_SMALL * (PetscAbsReal(waxv) + PetscAbsReal(waxvcheck)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "linearity check: component %" PetscInt_FMT ", waxvcheck (%g) != waxv (%g)", j, (double) waxvcheck, (double) waxv);
         PetscCall(PetscFree2(x,axv));
       }
       if (k > 1) { /* k-forms are antisymmetric */
@@ -292,7 +292,7 @@ int main(int argc, char **argv)
         }
         PetscCall(PetscDTAltVApply(N, k, w, swapv, &wswapv));
         diff = PetscAbsReal(wswapv + wv);
-        PetscCheckFalse(diff > PETSC_SMALL * (PetscAbsReal(wswapv) + PetscAbsReal(wv)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "antisymmetry check: components %D & %D, wswapv (%g) != -wv (%g)", j, l, (double) wswapv, (double) wv);
+        PetscCheckFalse(diff > PETSC_SMALL * (PetscAbsReal(wswapv) + PetscAbsReal(wv)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "antisymmetry check: components %" PetscInt_FMT " & %" PetscInt_FMT ", wswapv (%g) != -wv (%g)", j, l, (double) wswapv, (double) wv);
         PetscCall(PetscFree(swapv));
       }
       for (j = 0; j <= k && j + k <= N; j++) { /* wedge product */
@@ -300,7 +300,7 @@ int main(int argc, char **argv)
         PetscReal *u, *uWw, *uWwcheck, *uWwmat, *x, *xsplit, uWwx, uWwxcheck, diff, norm;
         PetscInt  *split;
 
-        if (verbose) PetscCall(PetscViewerASCIIPrintf(viewer, "wedge j = %D:\n", j));
+        if (verbose) PetscCall(PetscViewerASCIIPrintf(viewer, "wedge j = %" PetscInt_FMT ":\n", j));
         PetscCall(PetscViewerASCIIPushTab(viewer));
         PetscCall(PetscDTBinomialInt(N, j,   &Nj));
         PetscCall(PetscDTBinomialInt(N, j+k, &Njk));
@@ -340,7 +340,7 @@ int main(int argc, char **argv)
           uWwxcheck += isOdd ? -(ux * wx) : (ux * wx);
         }
         diff = PetscAbsReal(uWwx - uWwxcheck);
-        PetscCheckFalse(diff > 10. * PETSC_SMALL * (PetscAbsReal(uWwx) + PetscAbsReal(uWwxcheck)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "wedge check: forms %D & %D, uWwxcheck (%g) != uWwx (%g)", j, k, (double) uWwxcheck, (double) uWwx);
+        PetscCheckFalse(diff > 10. * PETSC_SMALL * (PetscAbsReal(uWwx) + PetscAbsReal(uWwxcheck)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "wedge check: forms %" PetscInt_FMT " & %" PetscInt_FMT ", uWwxcheck (%g) != uWwx (%g)", j, k, (double) uWwxcheck, (double) uWwx);
         PetscCall(PetscFree(split));
         PetscCall(PetscMalloc2(Nk * Njk, &uWwmat, Njk, &uWwcheck));
         PetscCall(PetscDTAltVWedgeMatrix(N, j, k, u, uWwmat));
@@ -377,13 +377,13 @@ int main(int argc, char **argv)
         for (l = 0; l < M*N; l++) PetscCall(PetscRandomGetValueReal(rand, &L[l]));
         for (l = 0; l < Mk; l++) PetscCall(PetscRandomGetValueReal(rand, &u[l]));
         for (l = 0; l < M*k; l++) PetscCall(PetscRandomGetValueReal(rand, &x[l]));
-        if (verbose) PetscCall(PetscViewerASCIIPrintf(viewer, "pullback M = %D:\n", M));
+        if (verbose) PetscCall(PetscViewerASCIIPrintf(viewer, "pullback M = %" PetscInt_FMT ":\n", M));
         PetscCall(PetscViewerASCIIPushTab(viewer));
         PetscCall(CheckPullback(M, N, L, k, w, x, verbose, viewer));
         if (M != N) PetscCall(CheckPullback(N, M, L, k, u, v, PETSC_FALSE, viewer));
         PetscCall(PetscViewerASCIIPopTab(viewer));
         if ((k % N) && (N > 1)) {
-          if (verbose) PetscCall(PetscViewerASCIIPrintf(viewer, "negative pullback M = %D:\n", M));
+          if (verbose) PetscCall(PetscViewerASCIIPrintf(viewer, "negative pullback M = %" PetscInt_FMT ":\n", M));
           PetscCall(PetscViewerASCIIPushTab(viewer));
           PetscCall(CheckPullback(M, N, L, -k, w, x, verbose, viewer));
           if (M != N) PetscCall(CheckPullback(N, M, L, -k, u, v, PETSC_FALSE, viewer));
@@ -410,7 +410,7 @@ int main(int argc, char **argv)
             PetscInt col = indices[l][1];
             PetscInt x   = indices[l][2];
 
-            PetscCall(PetscViewerASCIIPrintf(viewer,"intV[%D,%D] = %sV[%D]\n", row, col, x < 0 ? "-" : " ", x < 0 ? -(x + 1) : x));
+            PetscCall(PetscViewerASCIIPrintf(viewer,"intV[%" PetscInt_FMT ",%" PetscInt_FMT "] = %sV[%" PetscInt_FMT "]\n", row, col, x < 0 ? "-" : " ", x < 0 ? -(x + 1) : x));
           }
           PetscCall(PetscViewerASCIIPopTab(viewer));
         }

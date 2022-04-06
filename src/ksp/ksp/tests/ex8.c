@@ -125,7 +125,7 @@ int main(int argc,char **args)
   PetscCall(KSPSetUp(ksp));
   PetscCall(PCFactorGetMatrix(pc,&F));
   PetscCall(MatGetInertia(F,&in,NULL,NULL));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"INERTIA=%D\n",in));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"INERTIA=%" PetscInt_FMT "\n",in));
   if (solve) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Solving the intermediate KSP\n"));
     PetscCall(KSPSolve(ksp,b,x));
@@ -147,7 +147,7 @@ int main(int argc,char **args)
   PetscCall(KSPSetUp(ksp));
   PetscCall(PCFactorGetMatrix(pc,&F));
   PetscCall(MatGetInertia(F,&in,NULL,NULL));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"INERTIA=%D\n",in));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"INERTIA=%" PetscInt_FMT "\n",in));
   PetscCall(KSPSolve(ksp,b,x));
   PetscCall(MatDestroy(&B));
 

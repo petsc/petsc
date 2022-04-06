@@ -194,10 +194,10 @@ int main(int argc,char ** argv)
           PetscCall(PetscPrintf(PETSC_COMM_SELF,"Rank %d ncomps = %d Bus %d\n",crank,numComponents,bus->internal_i));
         } else if (key == 2) {
           gen = (GEN)(component);
-          PetscCall(PetscPrintf(PETSC_COMM_SELF,"Rank %d Gen pg = %f qg = %f\n",crank,gen->pg,gen->qg));
+          PetscCall(PetscPrintf(PETSC_COMM_SELF,"Rank %d Gen pg = %f qg = %f\n",crank,(double)gen->pg,(double)gen->qg));
         } else if (key == 3) {
           load = (LOAD)(component);
-          PetscCall(PetscPrintf(PETSC_COMM_SELF,"Rank %d Load pl = %f ql = %f\n",crank,load->pl,load->ql));
+          PetscCall(PetscPrintf(PETSC_COMM_SELF,"Rank %d Load pl = %f ql = %f\n",crank,(double)load->pl,(double)load->ql));
         }
       }
     }

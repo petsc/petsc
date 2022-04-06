@@ -36,7 +36,7 @@ PetscErrorCode monitor(Tao tao,AppCtx *ctx)
   PetscCall(VecGetArrayRead(X,&x));
   PetscCall(VecGetArrayRead(G,&g));
   fp = fopen("ex3opt_fd_conv.out","a");
-  PetscCall(PetscFPrintf(PETSC_COMM_WORLD,fp,"%d %g %.12lf %.12lf\n",iterate,gnorm,x[0],g[0]));
+  PetscCall(PetscFPrintf(PETSC_COMM_WORLD,fp,"%" PetscInt_FMT " %g %.12lf %.12lf\n",iterate,(double)gnorm,(double)PetscRealPart(x[0]),(double)PetscRealPart(g[0])));
   PetscCall(VecRestoreArrayRead(X,&x));
   PetscCall(VecRestoreArrayRead(G,&g));
   fclose(fp);

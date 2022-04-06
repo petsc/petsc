@@ -128,7 +128,7 @@ PetscErrorCode LandauKokkosStaticDataSet(DM plex, const PetscInt Nq, const Petsc
   PetscFunctionBegin;
   PetscCall(DMGetDimension(plex, &dim));
   PetscCall(DMGetDS(plex, &prob));
-  PetscCheck(LANDAU_DIM == dim,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dim %D != LANDAU_DIM %d",dim,LANDAU_DIM);
+  PetscCheck(LANDAU_DIM == dim,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dim %" PetscInt_FMT " != LANDAU_DIM %d",dim,LANDAU_DIM);
   PetscCall(PetscDSGetTabulation(prob, &Tf));
   BB   = Tf[0]->T[0]; DD = Tf[0]->T[1];
   ip_offset[0] = ipf_offset[0] = elem_offset[0] = 0;
@@ -465,7 +465,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
   PetscCall(DMGetApplicationContext(plex[0], &ctx));
   PetscCheck(ctx,PETSC_COMM_SELF, PETSC_ERR_PLIB, "no context");
   PetscCall(DMGetDimension(plex[0], &dim));
-  PetscCheck(LANDAU_DIM == dim,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dim %D != LANDAU_DIM %d",dim,LANDAU_DIM);
+  PetscCheck(LANDAU_DIM == dim,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dim %" PetscInt_FMT " != LANDAU_DIM %d",dim,LANDAU_DIM);
   if (ctx->gpu_assembly) {
     PetscCall(PetscObjectQuery((PetscObject) JacP, "assembly_maps", (PetscObject *) &container));
     if (container) {
@@ -531,7 +531,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
     PetscCall(PetscLogGpuTimeBegin());
 
     const int scr_bytes_fdf = real2_scr_t::shmem_size(Nf_max,Nb);
-    PetscCall(PetscInfo(plex[0], "Jacobian shared memory size: %d bytes in level %d num cells total=%D team size=%D #face=%D Nf_max=%D\n",scr_bytes_fdf,KOKKOS_SHARED_LEVEL,num_cells_batch*batch_sz,team_size,nfaces,Nf_max));
+    PetscCall(PetscInfo(plex[0], "Jacobian shared memory size: %d bytes in level %d num cells total=%" PetscInt_FMT " team size=%" PetscInt_FMT " #face=%" PetscInt_FMT " Nf_max=%" PetscInt_FMT "\n",scr_bytes_fdf,KOKKOS_SHARED_LEVEL,num_cells_batch*batch_sz,team_size,nfaces,Nf_max));
     Kokkos::parallel_for("f, df", Kokkos::TeamPolicy<>(num_cells_batch*batch_sz, team_size, /* Kokkos::AUTO */ 16).set_scratch_size(KOKKOS_SHARED_LEVEL, Kokkos::PerTeam(scr_bytes_fdf)), KOKKOS_LAMBDA (const team_member team) {
         const PetscInt b_Nelem = d_elem_offset[num_grids], b_elem_idx = team.league_rank()%b_Nelem, b_id = team.league_rank()/b_Nelem, IPf_sz_glb = d_ipf_offset[num_grids];
         // find my grid
@@ -744,7 +744,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
     PetscCall(PetscLogGpuTimeBegin());
     if (loc_ass_sz) loc_ass_sz = ctx->SData_d.coo_max_fullnb*ctx->SData_d.coo_max_fullnb;
     int scr_bytes = fieldMats_scr_t::shmem_size(loc_ass_sz); // + idx_scr_t::shmem_size(Nb,nfaces) + scale_scr_t::shmem_size(Nb,nfaces);
-    PetscCall(PetscInfo(plex[0], "Mass shared memory size: %d bytes in level %d conc=%D team size=%D #face=%D Nb=%D, %s assembly\n",scr_bytes,KOKKOS_SHARED_LEVEL,conc,team_size,nfaces,Nb, d_coo_vals ? (loc_ass_sz==0 ? "COO" : "optimized COO") : "CSR"));
+    PetscCall(PetscInfo(plex[0], "Mass shared memory size: %d bytes in level %d conc=%" PetscInt_FMT " team size=%" PetscInt_FMT " #face=%" PetscInt_FMT " Nb=%" PetscInt_FMT ", %s assembly\n",scr_bytes,KOKKOS_SHARED_LEVEL,conc,team_size,nfaces,Nb, d_coo_vals ? (loc_ass_sz==0 ? "COO" : "optimized COO") : "CSR"));
     Kokkos::parallel_for("Mass", Kokkos::TeamPolicy<>(num_cells_batch*batch_sz, team_size, /* Kokkos::AUTO */ 16).set_scratch_size(KOKKOS_SHARED_LEVEL, Kokkos::PerTeam(scr_bytes)), KOKKOS_LAMBDA (const team_member team) {
         fieldMats_scr_t s_fieldMats(team.team_scratch(KOKKOS_SHARED_LEVEL),loc_ass_sz); // Only used for GPU assembly (ie, not first pass)
         const PetscInt  b_Nelem = d_elem_offset[num_grids], b_elem_idx = team.league_rank()%b_Nelem, b_id = team.league_rank()/b_Nelem;
@@ -876,7 +876,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
         PetscCall(MatGetSize(B, &nloc, NULL));
         for (int i=0 ; i<nloc ; i++) {
           PetscCall(MatGetRow(B,i,&nzl,&cols,&vals));
-          PetscCheck(nzl<=1024,PetscObjectComm((PetscObject) B), PETSC_ERR_PLIB, "Row too big: %D",nzl);
+          PetscCheck(nzl<=1024,PetscObjectComm((PetscObject) B), PETSC_ERR_PLIB, "Row too big: %" PetscInt_FMT,nzl);
           for (int j=0; j<nzl; j++) colbuf[j] = cols[j] + moffset;
           row = i + moffset;
           PetscCall(MatSetValues(JacP,1,&row,nzl,colbuf,vals,ADD_VALUES));

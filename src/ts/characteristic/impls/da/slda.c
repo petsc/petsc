@@ -12,9 +12,9 @@ PetscErrorCode CharacteristicView_DA(Characteristic c, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii));
   PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERSTRING, &isstring));
   if (iascii) {
-    PetscCall(PetscViewerASCIIPrintf(viewer,"  DMDA: dummy=%D\n", da->dummy));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  DMDA: dummy=%" PetscInt_FMT "\n", da->dummy));
   } else if (isstring) {
-    PetscCall(PetscViewerStringSPrintf(viewer,"dummy %D", da->dummy));
+    PetscCall(PetscViewerStringSPrintf(viewer,"dummy %" PetscInt_FMT, da->dummy));
   }
   PetscFunctionReturn(0);
 }
@@ -38,7 +38,7 @@ PetscErrorCode CharacteristicSetUp_DA(Characteristic c)
   PetscCall(DMDAGetInfo(c->velocityDA, &dim, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   if (c->structured) c->numIds = dim;
   else c->numIds = 3;
-  PetscCheck(c->numFieldComp <= MAX_COMPONENTS,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "The maximum number of fields allowed is %d, you have %d. You can recompile after increasing MAX_COMPONENTS.", MAX_COMPONENTS, c->numFieldComp);
+  PetscCheck(c->numFieldComp <= MAX_COMPONENTS,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "The maximum number of fields allowed is %d, you have %" PetscInt_FMT ". You can recompile after increasing MAX_COMPONENTS.", MAX_COMPONENTS, c->numFieldComp);
   numValues = 4 + MAX_COMPONENTS;
 
   /* Create new MPI datatype for communication of characteristic point structs */
@@ -53,7 +53,7 @@ PetscErrorCode CharacteristicSetUp_DA(Characteristic c)
   c->queueSize = 0;
 
   /* Allocate communication structures */
-  PetscCheck(c->numNeighbors > 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Invalid number of neighbors %d. Call CharactersiticSetNeighbors() before setup.", c->numNeighbors);
+  PetscCheck(c->numNeighbors > 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Invalid number of neighbors %" PetscInt_FMT ". Call CharactersiticSetNeighbors() before setup.", c->numNeighbors);
   PetscCall(PetscMalloc1(c->numNeighbors, &c->needCount));
   PetscCall(PetscMalloc1(c->numNeighbors, &c->localOffsets));
   PetscCall(PetscMalloc1(c->numNeighbors, &c->fillCount));

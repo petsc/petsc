@@ -198,7 +198,7 @@ int main(int argc,char **args)
     PetscCall(PetscGaussLobattoLegendreIntegrate(gll.n,gll.nodes,gll.weights,f,&norm));
     PetscCall(VecRestoreArray(x,&f));
     norm = PetscSqrtReal(norm);
-    PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"L^2 norm of the error %D %g\n",n,(double)norm));
+    PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"L^2 norm of the error %" PetscInt_FMT " %g\n",n,(double)norm));
     PetscCheck(n <= 10 || norm <= 1.e-8,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Slower convergence than expected");
     xc   = (PetscReal)n;
     yc   = PetscLog10Real(norm);

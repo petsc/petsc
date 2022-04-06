@@ -96,7 +96,7 @@ static PetscErrorCode TestExplicitTS(TS ts,PetscInt order,const char subtype[])
   PetscCall(TSSetErrorIfStepFails(ts,PETSC_TRUE));
   PetscCall(TSGetStepNumber(ts,&step));
   PetscCall(TSGetConvergedReason(ts,&reason));
-  PetscCheck(step == 2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Bad step number %D, %s '%s'",step,type,subtype);
+  PetscCheck(step == 2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Bad step number %" PetscInt_FMT ", %s '%s'",step,type,subtype);
   PetscCheck(reason == TS_DIVERGED_STEP_REJECTED,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Bad reason %s, %s '%s'",TSConvergedReasons[reason],type,subtype);
   PetscFunctionReturn(0);
 }

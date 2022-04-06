@@ -112,7 +112,7 @@ static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
   PetscCall(TSGetMaxTime(ts,&tfinal));
   PetscCall(TSGetPrevTime(ts,&tprev));
   PetscCall(VecGetArrayRead(X,&x));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"[%.1f] %D TS %.6f (dt = %.6f) X % 12.6e % 12.6e\n",(double)user->next_output,step,(double)t,(double)dt,(double)PetscRealPart(x[0]),(double)PetscRealPart(x[1])));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"[%.1f] %" PetscInt_FMT " TS %.6f (dt = %.6f) X % 12.6e % 12.6e\n",(double)user->next_output,step,(double)t,(double)dt,(double)PetscRealPart(x[0]),(double)PetscRealPart(x[1])));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD,"t %.6f (tprev = %.6f) \n",(double)t,(double)tprev));
   PetscCall(VecGetArrayRead(X,&x));
   PetscFunctionReturn(0);
@@ -191,7 +191,7 @@ int main(int argc,char **argv)
   }
 
   PetscCall(TSSetTime(ts,0.0));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"mu %g, steps %D, ftime %g\n",(double)user.mu,user.steps,(double)(user.ftime)));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"mu %g, steps %" PetscInt_FMT ", ftime %g\n",(double)user.mu,user.steps,(double)(user.ftime)));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Save trajectory of solution so that TSAdjointSolve() may be used
@@ -209,7 +209,7 @@ int main(int argc,char **argv)
   PetscCall(TSSolve(ts,user.x));
   PetscCall(TSGetSolveTime(ts,&(user.ftime)));
   PetscCall(TSGetStepNumber(ts,&user.steps));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"mu %g, steps %D, ftime %g\n",(double)user.mu,user.steps,(double)user.ftime));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"mu %g, steps %" PetscInt_FMT ", ftime %g\n",(double)user.mu,user.steps,(double)user.ftime));
 
   PetscCall(VecGetArray(user.x,&x_ptr));
   user.x_ob[0] = x_ptr[0];
@@ -318,7 +318,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
   PetscCall(TSSolve(ts,user->x));
   PetscCall(TSGetSolveTime(ts,&user->ftime));
   PetscCall(TSGetStepNumber(ts,&user->steps));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"mu %.6f, steps %D, ftime %g\n",(double)user->mu,user->steps,(double)user->ftime));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"mu %.6f, steps %" PetscInt_FMT ", ftime %g\n",(double)user->mu,user->steps,(double)user->ftime));
 
   PetscCall(VecGetArray(user->x,&x_ptr));
   *f   = (x_ptr[0]-user->x_ob[0])*(x_ptr[0]-user->x_ob[0])+(x_ptr[1]-user->x_ob[1])*(x_ptr[1]-user->x_ob[1]);

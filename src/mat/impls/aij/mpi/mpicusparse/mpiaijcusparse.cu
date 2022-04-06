@@ -922,9 +922,10 @@ PetscErrorCode MatCUSPARSEGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B
     h_mat->M      = A->cmap->N;
 #if defined(PETSC_USE_64BIT_INDICES)
     {
-      PetscCheck(sizeof(PetscInt) == 8,PETSC_COMM_SELF,PETSC_ERR_PLIB,"size pof PetscInt = %d",sizeof(PetscInt));
       int        *h_ai32, *h_aj32;
       PetscInt   *h_ai64, *h_aj64, *d_ai64, *d_aj64;
+
+      static_assert(sizeof(PetscInt) == 8,"");
       PetscCall(PetscCalloc4(A->rmap->n+1,&h_ai32,jaca->nz,&h_aj32,A->rmap->n+1,&h_ai64,jaca->nz,&h_aj64));
       PetscCallCUDA(cudaMemcpy(h_ai32, ai, (A->rmap->n+1)*sizeof(*h_ai32),cudaMemcpyDeviceToHost));
       for (int i=0;i<A->rmap->n+1;i++) h_ai64[i] = h_ai32[i];

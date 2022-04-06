@@ -50,7 +50,7 @@ static PetscErrorCode _DMDADetermineRankFromGlobalIJK(PetscInt dim,PetscInt i,Pe
         break;
       }
     }
-    PetscCheck(pi != -1,PETSC_COMM_SELF,PETSC_ERR_USER,"[dmda-ijk] pi cannot be determined : range %D, val %D",Mp,i);
+    PetscCheck(pi != -1,PETSC_COMM_SELF,PETSC_ERR_USER,"[dmda-ijk] pi cannot be determined : range %" PetscInt_FMT ", val %" PetscInt_FMT,Mp,i);
     *_pi = pi;
   }
 
@@ -61,7 +61,7 @@ static PetscErrorCode _DMDADetermineRankFromGlobalIJK(PetscInt dim,PetscInt i,Pe
         break;
       }
     }
-    PetscCheck(pj != -1,PETSC_COMM_SELF,PETSC_ERR_USER,"[dmda-ijk] pj cannot be determined : range %D, val %D",Np,j);
+    PetscCheck(pj != -1,PETSC_COMM_SELF,PETSC_ERR_USER,"[dmda-ijk] pj cannot be determined : range %" PetscInt_FMT ", val %" PetscInt_FMT,Np,j);
     *_pj = pj;
   }
 
@@ -72,7 +72,7 @@ static PetscErrorCode _DMDADetermineRankFromGlobalIJK(PetscInt dim,PetscInt i,Pe
         break;
       }
     }
-    PetscCheck(pk != -1,PETSC_COMM_SELF,PETSC_ERR_USER,"[dmda-ijk] pk cannot be determined : range %D, val %D",Pp,k);
+    PetscCheck(pk != -1,PETSC_COMM_SELF,PETSC_ERR_USER,"[dmda-ijk] pk cannot be determined : range %" PetscInt_FMT ", val %" PetscInt_FMT,Pp,k);
     *_pk = pk;
   }
 
@@ -178,7 +178,7 @@ static PetscErrorCode PCTelescopeSetUp_dmda_repart_coors2d(PC_Telescope sred,DM 
         c = c + 2;
       }
     }
-    PetscCheck(c == Ml*Nl*2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"c %D should equal 2 * Ml %D * Nl %D",c,Ml,Nl);
+    PetscCheck(c == Ml*Nl*2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"c %" PetscInt_FMT " should equal 2 * Ml %" PetscInt_FMT " * Nl %" PetscInt_FMT,c,Ml,Nl);
   }
 
   /* generate scatter */
@@ -1046,7 +1046,7 @@ PetscErrorCode DMView_DA_Short_3d(DM dm,PetscViewer v)
   PetscCall(DMDAGetInfo(dm,NULL,&M,&N,&P,&m,&n,&p,&ndof,&nsw,NULL,NULL,NULL,NULL));
   if (prefix) PetscCall(PetscViewerASCIIPrintf(v,"DMDA Object:    (%s)    %d MPI processes\n",prefix,size));
   else PetscCall(PetscViewerASCIIPrintf(v,"DMDA Object:    %d MPI processes\n",size));
-  PetscCall(PetscViewerASCIIPrintf(v,"  M %D N %D P %D m %D n %D p %D dof %D overlap %D\n",M,N,P,m,n,p,ndof,nsw));
+  PetscCall(PetscViewerASCIIPrintf(v,"  M %" PetscInt_FMT " N %" PetscInt_FMT " P %" PetscInt_FMT " m %" PetscInt_FMT " n %" PetscInt_FMT " p %" PetscInt_FMT " dof %" PetscInt_FMT " overlap %" PetscInt_FMT "\n",M,N,P,m,n,p,ndof,nsw));
   PetscFunctionReturn(0);
 }
 
@@ -1064,7 +1064,7 @@ PetscErrorCode DMView_DA_Short_2d(DM dm,PetscViewer v)
   PetscCall(DMDAGetInfo(dm,NULL,&M,&N,NULL,&m,&n,NULL,&ndof,&nsw,NULL,NULL,NULL,NULL));
   if (prefix) PetscCall(PetscViewerASCIIPrintf(v,"DMDA Object:    (%s)    %d MPI processes\n",prefix,size));
   else PetscCall(PetscViewerASCIIPrintf(v,"DMDA Object:    %d MPI processes\n",size));
-  PetscCall(PetscViewerASCIIPrintf(v,"  M %D N %D m %D n %D dof %D overlap %D\n",M,N,m,n,ndof,nsw));
+  PetscCall(PetscViewerASCIIPrintf(v,"  M %" PetscInt_FMT " N %" PetscInt_FMT " m %" PetscInt_FMT " n %" PetscInt_FMT " dof %" PetscInt_FMT " overlap %" PetscInt_FMT "\n",M,N,m,n,ndof,nsw));
   PetscFunctionReturn(0);
 }
 

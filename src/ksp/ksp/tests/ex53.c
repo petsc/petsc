@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
    PetscCall(PetscOptionsGetInt(PETSC_NULL,PETSC_NULL,"-block_size",&block_size,PETSC_NULL));
 
    if (rank == 0) {
-     PetscCall(PetscPrintf(PETSC_COMM_SELF,"  matrix size = %D, block size = %D\n",mat_size,block_size));
+     PetscCall(PetscPrintf(PETSC_COMM_SELF,"  matrix size = %" PetscInt_FMT ", block size = %" PetscInt_FMT "\n",mat_size,block_size));
    }
 
    PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
 
    PetscCall(ISCreateGeneral(PETSC_COMM_WORLD,A_size,A_indices,PETSC_OWN_POINTER,&A_IS));
    PetscCall(ISCreateGeneral(PETSC_COMM_WORLD,B_size,B_indices,PETSC_OWN_POINTER,&B_IS));
-   PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d]: A_size = %D, B_size = %D\n",rank,A_size,B_size));
+   PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d]: A_size = %" PetscInt_FMT ", B_size = %" PetscInt_FMT "\n",rank,A_size,B_size));
    PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
 
    /* Solve the system */

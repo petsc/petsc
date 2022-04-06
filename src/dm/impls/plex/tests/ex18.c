@@ -290,7 +290,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   dim = 3;
   PetscCall(PetscOptionsIntArray("-faces", "Number of faces per dimension", "ex18.c", options->faces, &dim, &flg2));
   if (flg2) {
-    PetscCheckFalse(flg1 && dim != options->dim,comm, PETSC_ERR_ARG_OUTOFRANGE, "specified -dim %D is not equal to length %D of -faces (note that -dim can be omitted)", options->dim, dim);
+    PetscCheckFalse(flg1 && dim != options->dim,comm, PETSC_ERR_ARG_OUTOFRANGE, "specified -dim %" PetscInt_FMT " is not equal to length %" PetscInt_FMT " of -faces (note that -dim can be omitted)", options->dim, dim);
     options->dim = dim;
   }
   PetscCall(PetscOptionsString("-filename", "The mesh file", "ex18.c", options->filename, options->filename, sizeof(options->filename), NULL));
@@ -325,11 +325,11 @@ static PetscErrorCode CreateMesh_1D(MPI_Comm comm, PetscBool interpolate, AppCtx
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCallMPI(MPI_Comm_size(comm, &size));
-  PetscCheck(size <= 2,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for <=2 processes",testNum);
+  PetscCheck(size <= 2,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %" PetscInt_FMT " only for <=2 processes",testNum);
 
   numCells = 3;
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-ncells", &numCells, NULL));
-  PetscCheck(numCells >= 3,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test ncells must >=3",numCells);
+  PetscCheck(numCells >= 3,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test ncells %" PetscInt_FMT " must >=3",numCells);
 
   if (size == 1) {
     numVertices = numCells + 1;
@@ -410,7 +410,7 @@ static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, PetscBool interpolate, App
   PetscCallMPI(MPI_Comm_size(comm, &size));
   switch (testNum) {
   case 0:
-    PetscCheck(size == 2,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for 2 processes", testNum);
+    PetscCheck(size == 2,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %" PetscInt_FMT " only for 2 processes", testNum);
     switch (rank) {
       case 0:
       {
@@ -438,7 +438,7 @@ static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, PetscBool interpolate, App
     }
     break;
   case 1:
-    PetscCheck(size == 3,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for 3 processes", testNum);
+    PetscCheck(size == 3,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %" PetscInt_FMT " only for 3 processes", testNum);
     switch (rank) {
       case 0:
       {
@@ -477,7 +477,7 @@ static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, PetscBool interpolate, App
     }
     break;
   case 2:
-    PetscCheck(size == 3,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for 3 processes", testNum);
+    PetscCheck(size == 3,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %" PetscInt_FMT " only for 3 processes", testNum);
     switch (rank) {
       case 0:
       {
@@ -515,7 +515,7 @@ static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, PetscBool interpolate, App
       default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
     }
     break;
-  default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %D", testNum);
+  default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %" PetscInt_FMT, testNum);
   }
   PetscFunctionReturn(0);
 }
@@ -530,7 +530,7 @@ static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, PetscBool interpolate, App
   PetscCallMPI(MPI_Comm_size(comm, &size));
   switch (testNum) {
   case 0:
-    PetscCheck(size == 2,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for 2 processes", testNum);
+    PetscCheck(size == 2,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %" PetscInt_FMT " only for 2 processes", testNum);
     switch (rank) {
       case 0:
       {
@@ -557,7 +557,7 @@ static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, PetscBool interpolate, App
       default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
     }
     break;
-  default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %D", testNum);
+  default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %" PetscInt_FMT, testNum);
   }
   if (user->testOrientIF) {
     PetscInt ifp[] = {8, 6};
@@ -584,7 +584,7 @@ static PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscBool interpolate, AppCtx
   PetscCallMPI(MPI_Comm_size(comm, &size));
   switch (testNum) {
   case 0:
-    PetscCheck(size == 2,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for 2 processes", testNum);
+    PetscCheck(size == 2,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %" PetscInt_FMT " only for 2 processes", testNum);
     switch (rank) {
       case 0:
       {
@@ -611,7 +611,7 @@ static PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscBool interpolate, AppCtx
       default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
     }
     break;
-  default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %D", testNum);
+  default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %" PetscInt_FMT, testNum);
   }
   PetscFunctionReturn(0);
 }
@@ -626,7 +626,7 @@ static PetscErrorCode CreateHex_3D(MPI_Comm comm, PetscBool interpolate, AppCtx 
   PetscCallMPI(MPI_Comm_size(comm, &size));
   switch (testNum) {
   case 0:
-    PetscCheck(size == 2,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for 2 processes", testNum);
+    PetscCheck(size == 2,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %" PetscInt_FMT " only for 2 processes", testNum);
     switch (rank) {
     case 0:
     {
@@ -653,7 +653,7 @@ static PetscErrorCode CreateHex_3D(MPI_Comm comm, PetscBool interpolate, AppCtx 
     default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
     }
   break;
-  default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %D", testNum);
+  default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %" PetscInt_FMT, testNum);
   }
   PetscFunctionReturn(0);
 }
@@ -739,11 +739,11 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       }
       break;
     default:
-      SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make meshes for dimension %D", user->dim);
+      SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make meshes for dimension %" PetscInt_FMT, user->dim);
     }
     PetscCall(PetscLogStagePop());
   }
-  PetscCheck(user->ncoords % user->dim == 0,comm, PETSC_ERR_ARG_OUTOFRANGE, "length of coordinates array %D must be divisable by spatial dimension %D", user->ncoords, user->dim);
+  PetscCheck(user->ncoords % user->dim == 0,comm, PETSC_ERR_ARG_OUTOFRANGE, "length of coordinates array %" PetscInt_FMT " must be divisable by spatial dimension %" PetscInt_FMT, user->ncoords, user->dim);
   PetscCall(PetscObjectSetName((PetscObject) *dm, "Original Mesh"));
   PetscCall(DMViewFromOptions(*dm, NULL, "-orig_dm_view"));
 
@@ -877,7 +877,7 @@ static PetscErrorCode ViewVerticesFromCoords(DM dm, Vec coordsVec, PetscReal tol
   for (i=0; i < npoints; i++) {
     PetscCall(coord2str(coordstr, sizeof(coordstr), dim, &coords[i*dim], tol));
     if (rank == 0 && i) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "-----\n"));
-    PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %s --> points[%D] = %D\n", rank, coordstr, i, points[i]));
+    PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %s --> points[%" PetscInt_FMT "] = %" PetscInt_FMT "\n", rank, coordstr, i, points[i]));
     PetscCall(PetscViewerFlush(viewer));
   }
   PetscCall(PetscViewerASCIIPopSynchronized(viewer));
@@ -910,7 +910,7 @@ static PetscErrorCode TestExpandPoints(DM dm, AppCtx *user)
     IS          checkIS;
     PetscBool   flg;
 
-    PetscCall(PetscViewerASCIIPrintf(sviewer, "depth %D ---------------\n",d));
+    PetscCall(PetscViewerASCIIPrintf(sviewer, "depth %" PetscInt_FMT " ---------------\n",d));
     PetscCall(PetscSectionView(sects[d], sviewer));
     PetscCall(ISView(iss[d], sviewer));
     /* check reverse operation */
@@ -939,7 +939,7 @@ static PetscErrorCode DMPlexExpandedConesToFaces_Private(DM dm, IS is, PetscSect
   PetscCall(ISGetLocalSize(is, &n));
   PetscCall(PetscSectionGetStorageSize(section, &n1));
   PetscCall(PetscSectionGetChart(section, &start, &end));
-  PetscCheck(n == n1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "IS size = %D != %D = section storage size", n, n1);
+  PetscCheck(n == n1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "IS size = %" PetscInt_FMT " != %" PetscInt_FMT " = section storage size", n, n1);
   PetscCall(ISGetIndices(is, &arr));
   PetscCall(PetscMalloc1(end-start, &newarr));
   for (q=start; q<end; q++) {
@@ -955,7 +955,7 @@ static PetscErrorCode DMPlexExpandedConesToFaces_Private(DM dm, IS is, PetscSect
       for (i=0; i<ncone; i++) if (cone[i] < 0) {p = -1; break;}
       if (p >= 0) {
         PetscCall(DMPlexGetJoin(dm, ncone, cone, &numCoveredPoints, &coveredPoints));
-        PetscCheck(numCoveredPoints <= 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "more than one covered points for section point %D",q);
+        PetscCheck(numCoveredPoints <= 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "more than one covered points for section point %" PetscInt_FMT,q);
         if (numCoveredPoints) p = coveredPoints[0];
         else                  p = -2;
         PetscCall(DMPlexRestoreJoin(dm, ncone, cone, &numCoveredPoints, &coveredPoints));
@@ -1335,7 +1335,7 @@ static PetscErrorCode ViewPointsWithType_Internal(DM dm, IS pointsIS, PetscViewe
       PetscCall(PetscSectionGetDof(coordsSection, p, &n));
       PetscCall(PetscSectionGetOffset(coordsSection, p, &o));
       PetscCall(coord2str(coordstr, sizeof(coordstr), n, &coordsScalar[o], 1.0));
-      PetscCall(PetscViewerASCIISynchronizedPrintf(v, "vertex %D w/ coordinates %s\n", p, coordstr));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(v, "vertex %" PetscInt_FMT " w/ coordinates %s\n", p, coordstr));
     } else {
       char            entityType[16];
 
@@ -1348,7 +1348,7 @@ static PetscErrorCode ViewPointsWithType_Internal(DM dm, IS pointsIS, PetscViewe
       if (depth == dim && dim < 3) {
         PetscCall(PetscStrlcat(entityType, " (cell)", sizeof(entityType)));
       }
-      PetscCall(PetscViewerASCIISynchronizedPrintf(v, "%s %D\n", entityType, p));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(v, "%s %" PetscInt_FMT "\n", entityType, p));
     }
     PetscCall(DMPlexGetConeSize(dm, p, &coneSize));
     if (coneSize) {

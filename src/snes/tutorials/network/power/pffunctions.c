@@ -16,15 +16,15 @@ PetscErrorCode GetListofEdges_Power(PFDATA *pfdata,PetscInt *edgelist)
     edgelist[2*i]   = fbus;
     edgelist[2*i+1] = tbus;
     if (netview) {
-      PetscCall(PetscPrintf(PETSC_COMM_SELF,"branch %d, bus[%d] -> bus[%d]\n",i,fbus,tbus));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,"branch %" PetscInt_FMT ", bus[%" PetscInt_FMT "] -> bus[%" PetscInt_FMT "]\n",i,fbus,tbus));
     }
   }
   if (netview) {
     for (i=0; i<pfdata->nbus; i++) {
       if (pfdata->bus[i].ngen) {
-        PetscCall(PetscPrintf(PETSC_COMM_SELF," bus %D: gen\n",i));
+        PetscCall(PetscPrintf(PETSC_COMM_SELF," bus %" PetscInt_FMT ": gen\n",i));
       } else if (pfdata->bus[i].nload) {
-        PetscCall(PetscPrintf(PETSC_COMM_SELF," bus %D: load\n",i));
+        PetscCall(PetscPrintf(PETSC_COMM_SELF," bus %" PetscInt_FMT ": load\n",i));
       }
     }
   }

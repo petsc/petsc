@@ -34,7 +34,7 @@ int main(int argc,char **args)
   PetscOptionsBegin(comm,NULL,"3D bilinear Q1 elasticity options","");
   {
     char nestring[256];
-    PetscCall(PetscSNPrintf(nestring,sizeof nestring,"number of elements in each direction, ne+1 must be a multiple of %D (sizes^{1/3})",(PetscInt)(PetscPowReal((PetscReal)npe,1./3.) + .5)));
+    PetscCall(PetscSNPrintf(nestring,sizeof nestring,"number of elements in each direction, ne+1 must be a multiple of %" PetscInt_FMT " (sizes^{1/3})",(PetscInt)(PetscPowReal((PetscReal)npe,1./3.) + .5)));
     PetscCall(PetscOptionsInt("-ne",nestring,"",ne,&ne,NULL));
     PetscCall(PetscOptionsBool("-log_stages","Log stages of solve separately","",log_stages,&log_stages,NULL));
     PetscCall(PetscOptionsReal("-alpha","material coefficient inside circle","",soft_alpha,&soft_alpha,NULL));
@@ -82,7 +82,7 @@ int main(int argc,char **args)
     PetscInt       *d_nnz, *o_nnz,osz[4]={0,9,15,19},nbc;
     PetscScalar    vv[24], v2[24];
     PetscCheck(npe == NP*NP*NP,comm,PETSC_ERR_ARG_WRONG, "npe=%d: npe^{1/3} must be integer",npe);
-    PetscCheck(nn == NP*(nn/NP),comm,PETSC_ERR_ARG_WRONG, "-ne %d: (ne+1)%(npe^{1/3}) must equal zero",ne);
+    PetscCheck(nn == NP*(nn/NP),comm,PETSC_ERR_ARG_WRONG, "-ne %" PetscInt_FMT ": (ne+1)%%(npe^{1/3}) must equal zero",ne);
 
     /* count nnz */
     PetscCall(PetscMalloc1(m+1, &d_nnz));
@@ -101,7 +101,7 @@ int main(int argc,char **args)
         }
       }
     }
-    PetscCheck(ic == m,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ic %D does not equal m %D",ic,m);
+    PetscCheck(ic == m,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ic %" PetscInt_FMT " does not equal m %" PetscInt_FMT,ic,m);
 
     /* create stiffness matrix */
     PetscCall(MatCreate(comm,&Amat));
@@ -121,7 +121,7 @@ int main(int argc,char **args)
 
     PetscCall(MatGetOwnershipRange(Amat,&Istart,&Iend));
 
-    PetscCheck(m == Iend - Istart,PETSC_COMM_SELF,PETSC_ERR_PLIB,"m %D does not equal Iend %D - Istart %D",m,Iend,Istart);
+    PetscCheck(m == Iend - Istart,PETSC_COMM_SELF,PETSC_ERR_PLIB,"m %" PetscInt_FMT " does not equal Iend %" PetscInt_FMT " - Istart %" PetscInt_FMT,m,Iend,Istart);
     /* generate element matrices */
     {
       PetscBool hasData = PETSC_TRUE;

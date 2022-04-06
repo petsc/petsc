@@ -33,7 +33,7 @@ PetscErrorCode  MatSetValuesLocal_HYPREStruct_3d(Mat mat,PetscInt nrow,const Pet
   Mat_HYPREStruct *ex     = (Mat_HYPREStruct*) mat->data;
 
   PetscFunctionBegin;
-  PetscCheck(ncol <= 7,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"ncol %D > 7 too large",ncol);
+  PetscCheck(ncol <= 7,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"ncol %" PetscInt_FMT " > 7 too large",ncol);
   for (i=0; i<nrow; i++) {
     for (j=0; j<ncol; j++) {
       stencil = icol[j] - irow[i];
@@ -51,7 +51,7 @@ PetscErrorCode  MatSetValuesLocal_HYPREStruct_3d(Mat mat,PetscInt nrow,const Pet
         entries[j] = 0;
       } else if (stencil == ex->gnxgny) {
         entries[j] = 6;
-      } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Local row %D local column %D have bad stencil %D",irow[i],icol[j],stencil);
+      } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Local row %" PetscInt_FMT " local column %" PetscInt_FMT " have bad stencil %" PetscInt_FMT,irow[i],icol[j],stencil);
     }
     row      = ex->gindices[irow[i]] - ex->rstart;
     index[0] = (HYPRE_Int)(ex->xs + (row % ex->nx));
@@ -376,7 +376,7 @@ PetscErrorCode  MatSetValuesLocal_HYPRESStruct_3d(Mat mat,PetscInt nrow,const Pe
           entries[j] += 0;
         } else if (stencil == ex->gnxgny) {
           entries[j] += 6;
-        } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Local row %D local column %D have bad stencil %D",irow[i],icol[j],stencil);
+        } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Local row %" PetscInt_FMT " local column %" PetscInt_FMT " have bad stencil %" PetscInt_FMT,irow[i],icol[j],stencil);
       }
 
       row      = ex->gindices[grid_rank] - ex->rstart;
@@ -418,7 +418,7 @@ PetscErrorCode  MatSetValuesLocal_HYPRESStruct_3d(Mat mat,PetscInt nrow,const Pe
           entries[j] += 0;
         } else if (stencil == ex->gnxgny) {
           entries[j] += 6;
-        } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Local row %D local column %D have bad stencil %D",irow[i],icol[j],stencil);
+        } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Local row %" PetscInt_FMT " local column %" PetscInt_FMT " have bad stencil %" PetscInt_FMT,irow[i],icol[j],stencil);
       }
 
       row      = ex->gindices[grid_rank] - ex->rstart;

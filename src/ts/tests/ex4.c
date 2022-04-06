@@ -261,7 +261,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
   PetscCall(VecScatterEnd(scatter,global,tmp_vec,INSERT_VALUES,SCATTER_FORWARD));
 
   PetscCall(VecGetArrayRead(tmp_vec,&tmp));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"At t[%D] =%14.2e u= %14.2e at the center \n",nsteps,(double)time,(double)PetscRealPart(tmp[n/2])));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"At t[%" PetscInt_FMT "] =%14.2e u= %14.2e at the center \n",nsteps,(double)time,(double)PetscRealPart(tmp[n/2])));
   PetscCall(VecRestoreArrayRead(tmp_vec,&tmp));
 
   PetscCall(PetscFree(idx));

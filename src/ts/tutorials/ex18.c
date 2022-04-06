@@ -90,7 +90,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsReal("-inflow_state", "The inflow state", "ex18.c", options->inflowState, &options->inflowState, NULL));
   d    = 2;
   PetscCall(PetscOptionsRealArray("-source_loc", "The source location", "ex18.c", options->source, &d, &flg));
-  PetscCheck(!flg || d == 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Must give dim coordinates for the source location, not %d", d);
+  PetscCheck(!flg || d == 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Must give dim coordinates for the source location, not %" PetscInt_FMT, d);
   PetscOptionsEnd();
 
   PetscFunctionReturn(0);
@@ -657,7 +657,7 @@ static PetscErrorCode SetupBC(DM dm, AppCtx *user)
         break;
       }
       break;
-    default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Dimension %D not supported", dim);
+    default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Dimension %" PetscInt_FMT " not supported", dim);
   }
   exactFuncs[0] = user->initialGuess[0];
   exactFuncs[1] = user->initialGuess[1];
@@ -684,10 +684,10 @@ static PetscErrorCode SetupBC(DM dm, AppCtx *user)
           break;
         case VEL_SHEAR:
           exactFuncs[0] = shear_bc; break;
-        default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", dim);
+        default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %" PetscInt_FMT, dim);
       }
       break;
-    default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Dimension %D not supported", dim);
+    default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Dimension %" PetscInt_FMT " not supported", dim);
   }
   {
     PetscBool isImplicit = PETSC_FALSE;
@@ -1024,7 +1024,7 @@ static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time
     }
     PetscCall(PetscFree4(fmin, fmax, fint, ftmp));
     PetscCall(PetscFree3(fdm, fv, fx));
-    PetscCall(PetscPrintf(PetscObjectComm((PetscObject) ts), "% 3D  time %8.4g  |x| (", stepnum, (double) time));
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject) ts), "% 3" PetscInt_FMT "  time %8.4g  |x| (", stepnum, (double) time));
     for (f = 0; f < Nf; ++f) {
       if (f > 0) PetscCall(PetscPrintf(PetscObjectComm((PetscObject) ts), ", "));
       PetscCall(PetscPrintf(PetscObjectComm((PetscObject) ts), "%8.4g", (double) xnorms[f*2+0]));
@@ -1106,7 +1106,7 @@ int main(int argc, char **argv)
     PetscCall(TSGetSolveTime(ts, &ftime));
     PetscCall(TSGetStepNumber(ts, &nsteps));
     PetscCall(TSGetConvergedReason(ts, &reason));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%s at time %g after %D steps\n", TSConvergedReasons[reason], (double) ftime, nsteps));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%s at time %g after %" PetscInt_FMT " steps\n", TSConvergedReasons[reason], (double) ftime, nsteps));
   }
 
   PetscCall(VecDestroy(&u));

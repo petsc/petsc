@@ -108,7 +108,7 @@ PetscErrorCode MyTSMonitor(TS ts, PetscInt step, PetscReal ptime, Vec v, void *c
     if (step < 0) PetscFunctionReturn(0); /* step of -1 indicates an interpolated solution */
     PetscCall(VecNorm(v, NORM_2, &norm));
     PetscCall(PetscObjectGetComm((PetscObject) ts, &comm));
-    PetscCall(PetscPrintf(comm, "timestep %D time %g norm %g\n", step, (double) ptime, (double) norm));
+    PetscCall(PetscPrintf(comm, "timestep %" PetscInt_FMT " time %g norm %g\n", step, (double) ptime, (double) norm));
     PetscFunctionReturn(0);
 }
 

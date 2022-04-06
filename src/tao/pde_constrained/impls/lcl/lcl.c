@@ -158,7 +158,7 @@ static PetscErrorCode TaoSetup_LCL(Tao tao)
     PetscInt sizeU,sizeV;
     PetscCall(VecGetSize(lclP->U,&sizeU));
     PetscCall(VecGetSize(lclP->V,&sizeV));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"size(U)=%D, size(V)=%D\n",sizeU,sizeV));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"size(U)=%" PetscInt_FMT ", size(V)=%" PetscInt_FMT "\n",sizeU,sizeV));
   }
   PetscCall(ISCreateStride(((PetscObject)lclP->V)->comm,hi-lo,lo,1,&is_design));
   PetscCall(VecScatterCreate(tao->solution,tao->state_is,lclP->U,is_state,&lclP->state_scatter));

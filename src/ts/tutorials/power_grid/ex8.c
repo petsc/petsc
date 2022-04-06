@@ -153,10 +153,10 @@ PetscErrorCode ini_bou(Vec X,AppCtx* user)
   PetscCall(DMDAVecGetArray(user->da,X,&p));
 
   /* Point mass at (mux,muy) */
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Original user->mux = %f, user->muy = %f\n",user->mux,user->muy));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Original user->mux = %f, user->muy = %f\n",(double)PetscRealPart(user->mux),(double)PetscRealPart(user->muy)));
   PetscCall(DMDAGetLogicalCoordinate(user->da,user->mux,user->muy,0.0,&Ir,&J,NULL,&user->mux,&user->muy,NULL));
   user->PM_min = user->Pmax*PetscSinScalar(user->mux);
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Corrected user->mux = %f, user->muy = %f user->PM_min = %f,user->dx = %f\n",user->mux,user->muy,user->PM_min,user->dx));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Corrected user->mux = %f, user->muy = %f user->PM_min = %f,user->dx = %f\n",(double)PetscRealPart(user->mux),(double)PetscRealPart(user->muy),(double)PetscRealPart(user->PM_min),(double)PetscRealPart(user->dx)));
   if (Ir > -1 && J > -1) {
     p[J][Ir] = 1.0;
   }

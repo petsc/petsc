@@ -249,8 +249,8 @@ static PetscErrorCode TaoView_CG(Tao tao, PetscViewer viewer)
   if (isascii) {
     PetscCall(PetscViewerASCIIPushTab(viewer));
     PetscCall(PetscViewerASCIIPrintf(viewer, "CG Type: %s\n", CG_Table[cgP->cg_type]));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "Gradient steps: %D\n", cgP->ngradsteps));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "Reset steps: %D\n", cgP->nresetsteps));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Gradient steps: %" PetscInt_FMT "\n", cgP->ngradsteps));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Reset steps: %" PetscInt_FMT "\n", cgP->nresetsteps));
     PetscCall(PetscViewerASCIIPopTab(viewer));
   }
   PetscFunctionReturn(0);

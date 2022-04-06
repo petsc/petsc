@@ -136,9 +136,9 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS ds, PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscDSGetNumFields(ds, &Nf));
   PetscCall(PetscViewerGetFormat(viewer, &format));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "Discrete System with %d fields\n", Nf));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "Discrete System with %" PetscInt_FMT " fields\n", Nf));
   PetscCall(PetscViewerASCIIPushTab(viewer));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "  cell total dim %D total comp %D\n", ds->totDim, ds->totComp));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "  cell total dim %" PetscInt_FMT " total comp %" PetscInt_FMT "\n", ds->totDim, ds->totComp));
   if (ds->isCohesive) PetscCall(PetscViewerASCIIPrintf(viewer, "  cohesive cell\n"));
   for (f = 0; f < Nf; ++f) {
     DSBoundary      b;
@@ -162,16 +162,16 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS ds, PetscViewer viewer)
       PetscCall(PetscFVGetQuadrature((PetscFV) obj, &q));
       PetscCall(PetscViewerASCIIPrintf(viewer, " FVM"));
     }
-    else SETERRQ(PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %D", f);
-    if (Nc > 1) PetscCall(PetscViewerASCIIPrintf(viewer, " %D components", Nc));
-    else        PetscCall(PetscViewerASCIIPrintf(viewer, " %D component ", Nc));
+    else SETERRQ(PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %" PetscInt_FMT, f);
+    if (Nc > 1) PetscCall(PetscViewerASCIIPrintf(viewer, " %" PetscInt_FMT " components", Nc));
+    else        PetscCall(PetscViewerASCIIPrintf(viewer, " %" PetscInt_FMT " component ", Nc));
     if (ds->implicit[f]) PetscCall(PetscViewerASCIIPrintf(viewer, " (implicit)"));
     else                 PetscCall(PetscViewerASCIIPrintf(viewer, " (explicit)"));
     if (q) {
       PetscCall(PetscQuadratureGetData(q, NULL, &Nqc, &Nq, NULL, NULL));
-      PetscCall(PetscViewerASCIIPrintf(viewer, " (Nq %D Nqc %D)", Nq, Nqc));
+      PetscCall(PetscViewerASCIIPrintf(viewer, " (Nq %" PetscInt_FMT " Nqc %" PetscInt_FMT ")", Nq, Nqc));
     }
-    PetscCall(PetscViewerASCIIPrintf(viewer, " %D-jet", ds->jetDegree[f]));
+    PetscCall(PetscViewerASCIIPrintf(viewer, " %" PetscInt_FMT "-jet", ds->jetDegree[f]));
     PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
     PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_TRUE));
     PetscCall(PetscViewerASCIIPushTab(viewer));
@@ -193,7 +193,7 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS ds, PetscViewer viewer)
         PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_FALSE));
         for (c = 0; c < b->Nc; ++c) {
           if (c > 0) PetscCall(PetscViewerASCIIPrintf(viewer, ", "));
-          PetscCall(PetscViewerASCIIPrintf(viewer, "%D", b->comps[c]));
+          PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT, b->comps[c]));
         }
         PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
         PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_TRUE));
@@ -202,7 +202,7 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS ds, PetscViewer viewer)
       PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_FALSE));
       for (i = 0; i < b->Nv; ++i) {
         if (i > 0) PetscCall(PetscViewerASCIIPrintf(viewer, ", "));
-        PetscCall(PetscViewerASCIIPrintf(viewer, "%D", b->values[i]));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT, b->values[i]));
       }
       PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
       PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_TRUE));
@@ -224,7 +224,7 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS ds, PetscViewer viewer)
   }
   PetscCall(PetscDSGetConstants(ds, &numConstants, &constants));
   if (numConstants) {
-    PetscCall(PetscViewerASCIIPrintf(viewer, "%D constants\n", numConstants));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT " constants\n", numConstants));
     PetscCall(PetscViewerASCIIPushTab(viewer));
     for (f = 0; f < numConstants; ++f) PetscCall(PetscViewerASCIIPrintf(viewer, "%g\n", (double) PetscRealPart(constants[f])));
     PetscCall(PetscViewerASCIIPopTab(viewer));
@@ -418,7 +418,7 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
         Nb   = Nc;
         PetscCall(PetscFVGetCellTabulation(fv, &prob->T[f]));
         /* TODO: should PetscFV also have face tabulation? Otherwise there will be a null pointer in prob->basisFace */
-      } else SETERRQ(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", f);
+      } else SETERRQ(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %" PetscInt_FMT, f);
     }
     prob->Nc[f]       = Nc;
     prob->Nb[f]       = Nb;
@@ -701,7 +701,7 @@ PetscErrorCode PetscDSSetCoordinateDimension(PetscDS prob, PetscInt dimEmbed)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  PetscCheck(dimEmbed >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Coordinate dimension must be non-negative, not %D", dimEmbed);
+  PetscCheck(dimEmbed >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Coordinate dimension must be non-negative, not %" PetscInt_FMT, dimEmbed);
   prob->dimEmbed = dimEmbed;
   PetscFunctionReturn(0);
 }
@@ -778,7 +778,7 @@ PetscErrorCode PetscDSGetCohesive(PetscDS ds, PetscInt f, PetscBool *isCohesive)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscValidBoolPointer(isCohesive, 3);
-  PetscCheck(!(f < 0) && !(f >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, ds->Nf);
+  PetscCheck(!(f < 0) && !(f >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, ds->Nf);
   *isCohesive = ds->cohesive[f];
   PetscFunctionReturn(0);
 }
@@ -803,7 +803,7 @@ PetscErrorCode PetscDSSetCohesive(PetscDS ds, PetscInt f, PetscBool isCohesive)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
-  PetscCheck(!(f < 0) && !(f >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, ds->Nf);
+  PetscCheck(!(f < 0) && !(f >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, ds->Nf);
   ds->cohesive[f] = isCohesive;
   ds->isCohesive = PETSC_FALSE;
   for (i = 0; i < ds->Nf; ++i) ds->isCohesive = ds->isCohesive || ds->cohesive[f] ? PETSC_TRUE : PETSC_FALSE;
@@ -881,7 +881,7 @@ PetscErrorCode PetscDSGetDiscretization(PetscDS prob, PetscInt f, PetscObject *d
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscValidPointer(disc, 3);
-  PetscCheck(!(f < 0) && !(f >= prob->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
+  PetscCheck(!(f < 0) && !(f >= prob->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, prob->Nf);
   *disc = prob->disc[f];
   PetscFunctionReturn(0);
 }
@@ -905,7 +905,7 @@ PetscErrorCode PetscDSSetDiscretization(PetscDS prob, PetscInt f, PetscObject di
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   if (disc) PetscValidPointer(disc, 3);
-  PetscCheck(f >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
+  PetscCheck(f >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", f);
   PetscCall(PetscDSEnlarge_Static(prob, f+1));
   PetscCall(PetscObjectDereference(prob->disc[f]));
   prob->disc[f] = disc;
@@ -1045,7 +1045,7 @@ PetscErrorCode PetscDSGetImplicit(PetscDS prob, PetscInt f, PetscBool *implicit)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscValidBoolPointer(implicit, 3);
-  PetscCheck(!(f < 0) && !(f >= prob->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
+  PetscCheck(!(f < 0) && !(f >= prob->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, prob->Nf);
   *implicit = prob->implicit[f];
   PetscFunctionReturn(0);
 }
@@ -1068,7 +1068,7 @@ PetscErrorCode PetscDSSetImplicit(PetscDS prob, PetscInt f, PetscBool implicit)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  PetscCheck(!(f < 0) && !(f >= prob->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
+  PetscCheck(!(f < 0) && !(f >= prob->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, prob->Nf);
   prob->implicit[f] = implicit;
   PetscFunctionReturn(0);
 }
@@ -1094,7 +1094,7 @@ PetscErrorCode PetscDSGetJetDegree(PetscDS ds, PetscInt f, PetscInt *k)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscValidIntPointer(k, 3);
-  PetscCheck(!(f < 0) && !(f >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, ds->Nf);
+  PetscCheck(!(f < 0) && !(f >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, ds->Nf);
   *k = ds->jetDegree[f];
   PetscFunctionReturn(0);
 }
@@ -1117,7 +1117,7 @@ PetscErrorCode PetscDSSetJetDegree(PetscDS ds, PetscInt f, PetscInt k)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
-  PetscCheck(!(f < 0) && !(f >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, ds->Nf);
+  PetscCheck(!(f < 0) && !(f >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, ds->Nf);
   ds->jetDegree[f] = k;
   PetscFunctionReturn(0);
 }
@@ -1134,7 +1134,7 @@ PetscErrorCode PetscDSGetObjective(PetscDS ds, PetscInt f,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscValidPointer(obj, 3);
-  PetscCheck(!(f < 0) && !(f >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, ds->Nf);
+  PetscCheck(!(f < 0) && !(f >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, ds->Nf);
   PetscCall(PetscWeakFormGetObjective(ds->wf, NULL, 0, f, 0, &n, &tmp));
   *obj = tmp ? tmp[0] : NULL;
   PetscFunctionReturn(0);
@@ -1149,7 +1149,7 @@ PetscErrorCode PetscDSSetObjective(PetscDS ds, PetscInt f,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   if (obj) PetscValidFunction(obj, 3);
-  PetscCheck(f >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
+  PetscCheck(f >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", f);
   PetscCall(PetscWeakFormSetIndexObjective(ds->wf, NULL, 0, f, 0, 0, obj));
   PetscFunctionReturn(0);
 }
@@ -1215,7 +1215,7 @@ PetscErrorCode PetscDSGetResidual(PetscDS ds, PetscInt f,
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
-  PetscCheck(!(f < 0) && !(f >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, ds->Nf);
+  PetscCheck(!(f < 0) && !(f >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, ds->Nf);
   PetscCall(PetscWeakFormGetResidual(ds->wf, NULL, 0, f, 0, &n0, &tmp0, &n1, &tmp1));
   *f0  = tmp0 ? tmp0[0] : NULL;
   *f1  = tmp1 ? tmp1[0] : NULL;
@@ -1280,7 +1280,7 @@ PetscErrorCode PetscDSSetResidual(PetscDS ds, PetscInt f,
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   if (f0) PetscValidFunction(f0, 3);
   if (f1) PetscValidFunction(f1, 4);
-  PetscCheck(f >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
+  PetscCheck(f >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", f);
   PetscCall(PetscWeakFormSetIndexResidual(ds->wf, NULL, 0, f, 0, 0, f0, 0, f1));
   PetscFunctionReturn(0);
 }
@@ -1346,7 +1346,7 @@ PetscErrorCode PetscDSGetRHSResidual(PetscDS ds, PetscInt f,
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
-  PetscCheck(!(f < 0) && !(f >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, ds->Nf);
+  PetscCheck(!(f < 0) && !(f >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, ds->Nf);
   PetscCall(PetscWeakFormGetResidual(ds->wf, NULL, 0, f, 100, &n0, &tmp0, &n1, &tmp1));
   *f0  = tmp0 ? tmp0[0] : NULL;
   *f1  = tmp1 ? tmp1[0] : NULL;
@@ -1411,7 +1411,7 @@ PetscErrorCode PetscDSSetRHSResidual(PetscDS ds, PetscInt f,
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   if (f0) PetscValidFunction(f0, 3);
   if (f1) PetscValidFunction(f1, 4);
-  PetscCheck(f >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
+  PetscCheck(f >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", f);
   PetscCall(PetscWeakFormSetIndexResidual(ds->wf, NULL, 0, f, 100, 0, f0, 0, f1));
   PetscFunctionReturn(0);
 }
@@ -1512,8 +1512,8 @@ PetscErrorCode PetscDSGetJacobian(PetscDS ds, PetscInt f, PetscInt g,
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
-  PetscCheck(!(f < 0) && !(f >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, ds->Nf);
-  PetscCheck(!(g < 0) && !(g >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", g, ds->Nf);
+  PetscCheck(!(f < 0) && !(f >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, ds->Nf);
+  PetscCheck(!(g < 0) && !(g >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", g, ds->Nf);
   PetscCall(PetscWeakFormGetJacobian(ds->wf, NULL, 0, f, g, 0, &n0, &tmp0, &n1, &tmp1, &n2, &tmp2, &n3, &tmp3));
   *g0  = tmp0 ? tmp0[0] : NULL;
   *g1  = tmp1 ? tmp1[0] : NULL;
@@ -1594,8 +1594,8 @@ PetscErrorCode PetscDSSetJacobian(PetscDS ds, PetscInt f, PetscInt g,
   if (g1) PetscValidFunction(g1, 5);
   if (g2) PetscValidFunction(g2, 6);
   if (g3) PetscValidFunction(g3, 7);
-  PetscCheck(f >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
-  PetscCheck(g >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", g);
+  PetscCheck(f >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", f);
+  PetscCheck(g >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", g);
   PetscCall(PetscWeakFormSetIndexJacobian(ds->wf, NULL, 0, f, g, 0, 0, g0, 0, g1, 0, g2, 0, g3));
   PetscFunctionReturn(0);
 }
@@ -1719,8 +1719,8 @@ PetscErrorCode PetscDSGetJacobianPreconditioner(PetscDS ds, PetscInt f, PetscInt
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
-  PetscCheck(!(f < 0) && !(f >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, ds->Nf);
-  PetscCheck(!(g < 0) && !(g >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", g, ds->Nf);
+  PetscCheck(!(f < 0) && !(f >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, ds->Nf);
+  PetscCheck(!(g < 0) && !(g >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", g, ds->Nf);
   PetscCall(PetscWeakFormGetJacobianPreconditioner(ds->wf, NULL, 0, f, g, 0, &n0, &tmp0, &n1, &tmp1, &n2, &tmp2, &n3, &tmp3));
   *g0  = tmp0 ? tmp0[0] : NULL;
   *g1  = tmp1 ? tmp1[0] : NULL;
@@ -1801,8 +1801,8 @@ PetscErrorCode PetscDSSetJacobianPreconditioner(PetscDS ds, PetscInt f, PetscInt
   if (g1) PetscValidFunction(g1, 5);
   if (g2) PetscValidFunction(g2, 6);
   if (g3) PetscValidFunction(g3, 7);
-  PetscCheck(f >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
-  PetscCheck(g >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", g);
+  PetscCheck(f >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", f);
+  PetscCheck(g >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", g);
   PetscCall(PetscWeakFormSetIndexJacobianPreconditioner(ds->wf, NULL, 0, f, g, 0, 0, g0, 0, g1, 0, g2, 0, g3));
   PetscFunctionReturn(0);
 }
@@ -1903,8 +1903,8 @@ PetscErrorCode PetscDSGetDynamicJacobian(PetscDS ds, PetscInt f, PetscInt g,
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
-  PetscCheck(!(f < 0) && !(f >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, ds->Nf);
-  PetscCheck(!(g < 0) && !(g >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", g, ds->Nf);
+  PetscCheck(!(f < 0) && !(f >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, ds->Nf);
+  PetscCheck(!(g < 0) && !(g >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", g, ds->Nf);
   PetscCall(PetscWeakFormGetDynamicJacobian(ds->wf, NULL, 0, f, g, 0, &n0, &tmp0, &n1, &tmp1, &n2, &tmp2, &n3, &tmp3));
   *g0  = tmp0 ? tmp0[0] : NULL;
   *g1  = tmp1 ? tmp1[0] : NULL;
@@ -1985,8 +1985,8 @@ PetscErrorCode PetscDSSetDynamicJacobian(PetscDS ds, PetscInt f, PetscInt g,
   if (g1) PetscValidFunction(g1, 5);
   if (g2) PetscValidFunction(g2, 6);
   if (g3) PetscValidFunction(g3, 7);
-  PetscCheck(f >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
-  PetscCheck(g >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", g);
+  PetscCheck(f >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", f);
+  PetscCheck(g >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", g);
   PetscCall(PetscWeakFormSetIndexDynamicJacobian(ds->wf, NULL, 0, f, g, 0, 0, g0, 0, g1, 0, g2, 0, g3));
   PetscFunctionReturn(0);
 }
@@ -2031,7 +2031,7 @@ PetscErrorCode PetscDSGetRiemannSolver(PetscDS ds, PetscInt f,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscValidPointer(r, 3);
-  PetscCheck(!(f < 0) && !(f >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, ds->Nf);
+  PetscCheck(!(f < 0) && !(f >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, ds->Nf);
   PetscCall(PetscWeakFormGetRiemannSolver(ds->wf, NULL, 0, f, 0, &n, &tmp));
   *r   = tmp ? tmp[0] : NULL;
   PetscFunctionReturn(0);
@@ -2072,7 +2072,7 @@ PetscErrorCode PetscDSSetRiemannSolver(PetscDS ds, PetscInt f,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   if (r) PetscValidFunction(r, 3);
-  PetscCheck(f >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
+  PetscCheck(f >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", f);
   PetscCall(PetscWeakFormSetIndexRiemannSolver(ds->wf, NULL, 0, f, 0, 0, r));
   PetscFunctionReturn(0);
 }
@@ -2124,7 +2124,7 @@ PetscErrorCode PetscDSGetUpdate(PetscDS ds, PetscInt f,
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
-  PetscCheck(!(f < 0) && !(f >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, ds->Nf);
+  PetscCheck(!(f < 0) && !(f >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, ds->Nf);
   if (update) {PetscValidPointer(update, 3); *update = ds->update[f];}
   PetscFunctionReturn(0);
 }
@@ -2175,7 +2175,7 @@ PetscErrorCode PetscDSSetUpdate(PetscDS ds, PetscInt f,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   if (update) PetscValidFunction(update, 3);
-  PetscCheck(f >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
+  PetscCheck(f >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", f);
   PetscCall(PetscDSEnlarge_Static(ds, f+1));
   ds->update[f] = update;
   PetscFunctionReturn(0);
@@ -2185,7 +2185,7 @@ PetscErrorCode PetscDSGetContext(PetscDS ds, PetscInt f, void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
-  PetscCheck(!(f < 0) && !(f >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, ds->Nf);
+  PetscCheck(!(f < 0) && !(f >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, ds->Nf);
   PetscValidPointer(ctx, 3);
   *(void**)ctx = ds->ctx[f];
   PetscFunctionReturn(0);
@@ -2195,7 +2195,7 @@ PetscErrorCode PetscDSSetContext(PetscDS ds, PetscInt f, void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
-  PetscCheck(f >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
+  PetscCheck(f >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", f);
   PetscCall(PetscDSEnlarge_Static(ds, f+1));
   ds->ctx[f] = ctx;
   PetscFunctionReturn(0);
@@ -2263,7 +2263,7 @@ PetscErrorCode PetscDSGetBdResidual(PetscDS ds, PetscInt f,
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
-  PetscCheck(!(f < 0) && !(f >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, ds->Nf);
+  PetscCheck(!(f < 0) && !(f >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, ds->Nf);
   PetscCall(PetscWeakFormGetBdResidual(ds->wf, NULL, 0, f, 0, &n0, &tmp0, &n1, &tmp1));
   *f0  = tmp0 ? tmp0[0] : NULL;
   *f1  = tmp1 ? tmp1[0] : NULL;
@@ -2327,7 +2327,7 @@ PetscErrorCode PetscDSSetBdResidual(PetscDS ds, PetscInt f,
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
-  PetscCheck(f >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
+  PetscCheck(f >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", f);
   PetscCall(PetscWeakFormSetIndexBdResidual(ds->wf, NULL, 0, f, 0, 0, f0, 0, f1));
   PetscFunctionReturn(0);
 }
@@ -2430,8 +2430,8 @@ PetscErrorCode PetscDSGetBdJacobian(PetscDS ds, PetscInt f, PetscInt g,
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
-  PetscCheck(!(f < 0) && !(f >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, ds->Nf);
-  PetscCheck(!(g < 0) && !(g >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", g, ds->Nf);
+  PetscCheck(!(f < 0) && !(f >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, ds->Nf);
+  PetscCheck(!(g < 0) && !(g >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", g, ds->Nf);
   PetscCall(PetscWeakFormGetBdJacobian(ds->wf, NULL, 0, f, g, 0, &n0, &tmp0, &n1, &tmp1, &n2, &tmp2, &n3, &tmp3));
   *g0  = tmp0 ? tmp0[0] : NULL;
   *g1  = tmp1 ? tmp1[0] : NULL;
@@ -2513,8 +2513,8 @@ PetscErrorCode PetscDSSetBdJacobian(PetscDS ds, PetscInt f, PetscInt g,
   if (g1) PetscValidFunction(g1, 5);
   if (g2) PetscValidFunction(g2, 6);
   if (g3) PetscValidFunction(g3, 7);
-  PetscCheck(f >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
-  PetscCheck(g >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", g);
+  PetscCheck(f >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", f);
+  PetscCheck(g >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", g);
   PetscCall(PetscWeakFormSetIndexBdJacobian(ds->wf, NULL, 0, f, g, 0, 0, g0, 0, g1, 0, g2, 0, g3));
   PetscFunctionReturn(0);
 }
@@ -2620,8 +2620,8 @@ PetscErrorCode PetscDSGetBdJacobianPreconditioner(PetscDS ds, PetscInt f, PetscI
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
-  PetscCheck(!(f < 0) && !(f >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, ds->Nf);
-  PetscCheck(!(g < 0) && !(g >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", g, ds->Nf);
+  PetscCheck(!(f < 0) && !(f >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, ds->Nf);
+  PetscCheck(!(g < 0) && !(g >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", g, ds->Nf);
   PetscCall(PetscWeakFormGetBdJacobianPreconditioner(ds->wf, NULL, 0, f, g, 0, &n0, &tmp0, &n1, &tmp1, &n2, &tmp2, &n3, &tmp3));
   *g0  = tmp0 ? tmp0[0] : NULL;
   *g1  = tmp1 ? tmp1[0] : NULL;
@@ -2706,8 +2706,8 @@ PetscErrorCode PetscDSSetBdJacobianPreconditioner(PetscDS ds, PetscInt f, PetscI
   if (g1) PetscValidFunction(g1, 5);
   if (g2) PetscValidFunction(g2, 6);
   if (g3) PetscValidFunction(g3, 7);
-  PetscCheck(f >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
-  PetscCheck(g >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", g);
+  PetscCheck(f >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", f);
+  PetscCheck(g >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", g);
   PetscCall(PetscWeakFormSetIndexBdJacobianPreconditioner(ds->wf, NULL, 0, f, g, 0, 0, g0, 0, g1, 0, g2, 0, g3));
   PetscFunctionReturn(0);
 }
@@ -2744,7 +2744,7 @@ PetscErrorCode PetscDSGetExactSolution(PetscDS prob, PetscInt f, PetscErrorCode 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  PetscCheck(!(f < 0) && !(f >= prob->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
+  PetscCheck(!(f < 0) && !(f >= prob->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, prob->Nf);
   if (sol) {PetscValidPointer(sol, 3); *sol = prob->exactSol[f];}
   if (ctx) {PetscValidPointer(ctx, 4); *ctx = prob->exactCtx[f];}
   PetscFunctionReturn(0);
@@ -2780,7 +2780,7 @@ PetscErrorCode PetscDSSetExactSolution(PetscDS prob, PetscInt f, PetscErrorCode 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  PetscCheck(f >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
+  PetscCheck(f >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", f);
   PetscCall(PetscDSEnlarge_Static(prob, f+1));
   if (sol) {PetscValidFunction(sol, 3); prob->exactSol[f] = sol;}
   if (ctx) {PetscValidFunction(ctx, 4); prob->exactCtx[f] = ctx;}
@@ -2819,7 +2819,7 @@ PetscErrorCode PetscDSGetExactSolutionTimeDerivative(PetscDS prob, PetscInt f, P
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  PetscCheck(!(f < 0) && !(f >= prob->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
+  PetscCheck(!(f < 0) && !(f >= prob->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, prob->Nf);
   if (sol) {PetscValidPointer(sol, 3); *sol = prob->exactSol_t[f];}
   if (ctx) {PetscValidPointer(ctx, 4); *ctx = prob->exactCtx_t[f];}
   PetscFunctionReturn(0);
@@ -2855,7 +2855,7 @@ PetscErrorCode PetscDSSetExactSolutionTimeDerivative(PetscDS prob, PetscInt f, P
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  PetscCheck(f >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
+  PetscCheck(f >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", f);
   PetscCall(PetscDSEnlarge_Static(prob, f+1));
   if (sol) {PetscValidFunction(sol, 3); prob->exactSol_t[f] = sol;}
   if (ctx) {PetscValidFunction(ctx, 4); prob->exactCtx_t[f] = ctx;}
@@ -2972,7 +2972,7 @@ PetscErrorCode PetscDSGetFieldSize(PetscDS prob, PetscInt f, PetscInt *size)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscValidIntPointer(size, 3);
-  PetscCheck(!(f < 0) && !(f >= prob->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
+  PetscCheck(!(f < 0) && !(f >= prob->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, prob->Nf);
   PetscCall(PetscDSSetUp(prob));
   *size = prob->Nb[f];
   PetscFunctionReturn(0);
@@ -3001,7 +3001,7 @@ PetscErrorCode PetscDSGetFieldOffset(PetscDS prob, PetscInt f, PetscInt *off)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscValidIntPointer(off, 3);
-  PetscCheck(!(f < 0) && !(f >= prob->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
+  PetscCheck(!(f < 0) && !(f >= prob->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, prob->Nf);
   *off = 0;
   for (g = 0; g < f; ++g) {
     PetscCall(PetscDSGetFieldSize(prob, g, &size));
@@ -3033,7 +3033,7 @@ PetscErrorCode PetscDSGetFieldOffsetCohesive(PetscDS ds, PetscInt f, PetscInt *o
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscValidIntPointer(off, 3);
-  PetscCheck(!(f < 0) && !(f >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, ds->Nf);
+  PetscCheck(!(f < 0) && !(f >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, ds->Nf);
   *off = 0;
   for (g = 0; g < f; ++g) {
     PetscBool cohesive;
@@ -3116,7 +3116,7 @@ PetscErrorCode PetscDSGetComponentOffset(PetscDS prob, PetscInt f, PetscInt *off
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscValidIntPointer(off, 3);
-  PetscCheck(!(f < 0) && !(f >= prob->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
+  PetscCheck(!(f < 0) && !(f >= prob->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, prob->Nf);
   PetscCall(PetscDSSetUp(prob));
   *off = prob->off[f];
   PetscFunctionReturn(0);
@@ -3194,7 +3194,7 @@ PetscErrorCode PetscDSGetComponentOffsetsCohesive(PetscDS ds, PetscInt s, PetscI
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscValidPointer(offsets, 3);
   PetscCheck(ds->isCohesive,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cohesive offsets are only valid for a cohesive DS");
-  PetscCheck(!(s < 0) && !(s > 2),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cohesive side %D is not in [0, 2]", s);
+  PetscCheck(!(s < 0) && !(s > 2),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cohesive side %" PetscInt_FMT " is not in [0, 2]", s);
   PetscCall(PetscDSSetUp(ds));
   *offsets = ds->offCohesive[s];
   PetscFunctionReturn(0);
@@ -3222,7 +3222,7 @@ PetscErrorCode PetscDSGetComponentDerivativeOffsetsCohesive(PetscDS ds, PetscInt
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscValidPointer(offsets, 3);
   PetscCheck(ds->isCohesive,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cohesive offsets are only valid for a cohesive DS");
-  PetscCheck(!(s < 0) && !(s > 2),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cohesive side %D is not in [0, 2]", s);
+  PetscCheck(!(s < 0) && !(s > 2),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cohesive side %" PetscInt_FMT " is not in [0, 2]", s);
   PetscCall(PetscDSSetUp(ds));
   *offsets = ds->offDerCohesive[s];
   PetscFunctionReturn(0);
@@ -3395,9 +3395,9 @@ PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, cons
     PetscInt  c;
 
     PetscCall(PetscDSGetComponents(ds, &fcomps));
-    PetscCheck(Nc <= fcomps[field],PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_OUTOFRANGE, "Number of constrained components %D > %D components for field %D", Nc, fcomps[field], field);
+    PetscCheck(Nc <= fcomps[field],PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_OUTOFRANGE, "Number of constrained components %" PetscInt_FMT " > %" PetscInt_FMT " components for field %" PetscInt_FMT, Nc, fcomps[field], field);
     for (c = 0; c < Nc; ++c) {
-      PetscCheckFalse(comps[c] < 0 || comps[c] >= fcomps[field],PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_OUTOFRANGE, "Constrained component[%D] %D not in [0, %D) components for field %D", c, comps[c], fcomps[field], field);
+      PetscCheckFalse(comps[c] < 0 || comps[c] >= fcomps[field],PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_OUTOFRANGE, "Constrained component[%" PetscInt_FMT "] %" PetscInt_FMT " not in [0, %" PetscInt_FMT ") components for field %" PetscInt_FMT, c, comps[c], fcomps[field], field);
     }
   }
   PetscCall(PetscNew(&b));
@@ -3577,7 +3577,7 @@ PetscErrorCode PetscDSUpdateBoundary(PetscDS ds, PetscInt bd, DMBoundaryConditio
     b = b->next;
     ++n;
   }
-  PetscCheck(b,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Boundary %d is not in [0, %d)", bd, n);
+  PetscCheck(b,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Boundary %" PetscInt_FMT " is not in [0, %" PetscInt_FMT ")", bd, n);
   if (name) {
     PetscCall(PetscFree(b->name));
     PetscCall(PetscStrallocpy(name, (char **) &b->name));
@@ -3676,7 +3676,7 @@ PetscErrorCode PetscDSGetBoundary(PetscDS ds, PetscInt bd, PetscWeakForm *wf, DM
     b = b->next;
     ++n;
   }
-  PetscCheck(b,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Boundary %d is not in [0, %d)", bd, n);
+  PetscCheck(b,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Boundary %" PetscInt_FMT " is not in [0, %" PetscInt_FMT ")", bd, n);
   if (wf) {
     PetscValidPointer(wf, 3);
     *wf = b->wf;
@@ -3894,7 +3894,7 @@ PetscErrorCode PetscDSSelectEquations(PetscDS prob, PetscInt numFields, const Pe
   PetscValidHeaderSpecific(newprob, PETSCDS_CLASSID, 4);
   PetscCall(PetscDSGetNumFields(prob, &Nf));
   PetscCall(PetscDSGetNumFields(newprob, &Nfn));
-  PetscCheck(numFields <= Nfn,PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_SIZ, "Number of fields %D to transfer must not be greater then the total number of fields %D", numFields, Nfn);
+  PetscCheck(numFields <= Nfn,PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_SIZ, "Number of fields %" PetscInt_FMT " to transfer must not be greater then the total number of fields %" PetscInt_FMT, numFields, Nfn);
   for (fn = 0; fn < numFields; ++fn) {
     const PetscInt   f = fields ? fields[fn] : fn;
     PetscPointFunc   obj;
@@ -3954,7 +3954,7 @@ PetscErrorCode PetscDSCopyEquations(PetscDS prob, PetscDS newprob)
   PetscValidHeaderSpecific(newprob, PETSCDS_CLASSID, 2);
   PetscCall(PetscDSGetNumFields(prob, &Nf));
   PetscCall(PetscDSGetNumFields(newprob, &Ng));
-  PetscCheck(Nf == Ng,PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_SIZ, "Number of fields must match %D != %D", Nf, Ng);
+  PetscCheck(Nf == Ng,PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_SIZ, "Number of fields must match %" PetscInt_FMT " != %" PetscInt_FMT, Nf, Ng);
   PetscCall(PetscDSGetWeakForm(prob, &wf));
   PetscCall(PetscDSGetWeakForm(newprob, &newwf));
   PetscCall(PetscWeakFormCopy(wf, newwf));
@@ -4033,7 +4033,7 @@ PetscErrorCode PetscDSGetHeightSubspace(PetscDS prob, PetscInt height, PetscDS *
   if (height == 0) {*subprob = prob; PetscFunctionReturn(0);}
   PetscCall(PetscDSGetNumFields(prob, &Nf));
   PetscCall(PetscDSGetSpatialDimension(prob, &dim));
-  PetscCheck(height <= dim,PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_OUTOFRANGE, "DS can only handle height in [0, %D], not %D", dim, height);
+  PetscCheck(height <= dim,PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_OUTOFRANGE, "DS can only handle height in [0, %" PetscInt_FMT "], not %" PetscInt_FMT, dim, height);
   if (!prob->subprobs) PetscCall(PetscCalloc1(dim, &prob->subprobs));
   if (!prob->subprobs[height-1]) {
     PetscInt cdim;
@@ -4049,7 +4049,7 @@ PetscErrorCode PetscDSGetHeightSubspace(PetscDS prob, PetscInt height, PetscDS *
       PetscCall(PetscDSGetDiscretization(prob, f, &obj));
       PetscCall(PetscObjectGetClassId(obj, &id));
       if (id == PETSCFE_CLASSID) PetscCall(PetscFEGetHeightSubspace((PetscFE) obj, height, &subfe));
-      else SETERRQ(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unsupported discretization type for field %d", f);
+      else SETERRQ(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unsupported discretization type for field %" PetscInt_FMT, f);
       PetscCall(PetscDSSetDiscretization(prob->subprobs[height-1], f, (PetscObject) subfe));
     }
   }
@@ -4068,7 +4068,7 @@ PetscErrorCode PetscDSGetDiscType_Internal(PetscDS ds, PetscInt f, PetscDiscType
   PetscValidPointer(disctype, 3);
   *disctype = PETSC_DISC_NONE;
   PetscCall(PetscDSGetNumFields(ds, &Nf));
-  PetscCheck(f < Nf,PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_SIZ, "Field %D must be in [0, %D)", f, Nf);
+  PetscCheck(f < Nf,PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_SIZ, "Field %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, Nf);
   PetscCall(PetscDSGetDiscretization(ds, f, &obj));
   if (obj) {
     PetscCall(PetscObjectGetClassId(obj, &id));

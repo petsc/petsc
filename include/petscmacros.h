@@ -117,12 +117,63 @@ void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_p
 
   Level: intermediate
 
-.seealso: PetscDefined(), PetscLikely(), PetscUnlikely()
+.seealso: PetscDefined(), PetscLikely(), PetscUnlikely(), PETSC_ATTRIBUTE_FORMAT
 M*/
 #if !defined(__has_attribute)
 #  define __has_attribute(x) 0
 #endif
 #define PetscHasAttribute(name) __has_attribute(name)
+
+/*MC
+  PETSC_ATTRIBUTE_FORMAT - Indicate to the compiler that specified arguments should be treated
+  as format specifiers and checked for validity
+
+  Synopsis:
+  #include <petscmacros.h>
+  <attribute declaration> PETSC_ATTRIBUTE_FORMAT(int strIdx, int vaArgIdx)
+
+  Input Parameters:
++ strIdx   - The (1-indexed) location of the format string in the argument list
+- vaArgIdx - The (1-indexed) location of the first formattable argument in the argument list
+
+  Notes:
+  This function attribute causes the compiler to issue warnings when the format specifier does
+  not match the type of the variable that will be formatted, or when there exists a mismatch
+  between the number of format specifiers and variables to be formatted. It is safe to use this
+  macro if your compiler does not support format specifier checking (though this is
+  exceeedingly rare).
+
+  Both strIdx and vaArgIdx must be compile-time constant integer literals and cannot have the
+  same value.
+
+  The arguments to be formatted (and therefore checked by the compiler) must be "contiguous" in
+  the argument list, that is, there is no way to indicate gaps which should not be checked.
+
+  Definition is suppressed by defining PETSC_SKIP_ATTRIBUTE_FORMAT prior to including PETSc
+  header files. In this case the macro will expand empty.
+
+  Example Usage:
+.vb
+  // format string is 2nd argument, variable argument list containing args is 3rd argument
+  void my_printf(void *obj, const char *fmt_string, ...) PETSC_ATTRIBUTE_FORMAT(2,3)
+
+  int    x = 1;
+  double y = 50.0;
+
+  my_printf(NULL,"%g",x);      // WARNING, format specifier does not match for 'int'!
+  my_printf(NULL,"%d",x,y);    // WARNING, more arguments than format specifiers!
+  my_printf(NULL,"%d %g",x,y); // OK
+.ve
+
+  Level: developer
+
+.seealso: PETSC_ATTRIBUTE_COLD, PetscHasAttribute()
+M*/
+#if PetscHasAttribute(format) && !defined(PETSC_SKIP_ATTRIBUTE_FORMAT)
+#  define PETSC_ATTRIBUTE_FORMAT(strIdx,vaArgIdx) __attribute__((format(printf,strIdx,vaArgIdx)))
+#else
+#  define PETSC_ATTRIBUTE_FORMAT(strIdx,vaArgIdx)
+#endif
 
 /*MC
   PETSC_ATTRIBUTE_COLD - Indicate to the compiler that a function is very unlikely to be
@@ -148,7 +199,7 @@ M*/
   Level: intermediate
 
 .seealso: PetscUnlikely(), PetscUnlikelyDebug(), PetscLikely(), PetscLikelyDebug(),
-PetscUnreachable()
+PetscUnreachable(), PETSC_ATTRIBUTE_FORMAT
 M*/
 #if PetscHasAttribute(__cold__)
 #  define PETSC_ATTRIBUTE_COLD __attribute__((__cold__))

@@ -657,7 +657,7 @@ static PetscErrorCode KKTAddShifts(Tao tao,SNES snes,Vec X)
 
   if (npos < pdipm->Nx+pdipm->Nci) {
     pdipm->deltaw = PetscMax(pdipm->lastdeltaw/3, 1.e-4*PETSC_MACHINE_EPSILON);
-    PetscCall(PetscInfo(tao,"Test reduced deltaw=%g; previous MatInertia: nneg %D, nzero %D, npos %D(<%D)\n",(double)pdipm->deltaw,nneg,nzero,npos,pdipm->Nx+pdipm->Nci));
+    PetscCall(PetscInfo(tao,"Test reduced deltaw=%g; previous MatInertia: nneg %" PetscInt_FMT ", nzero %" PetscInt_FMT ", npos %" PetscInt_FMT "(<%" PetscInt_FMT ")\n",(double)pdipm->deltaw,nneg,nzero,npos,pdipm->Nx+pdipm->Nci));
     PetscCall(TaoSNESJacobian_PDIPM(snes,X, pdipm->K, pdipm->K, tao));
     PetscCall(PCSetUp(pc));
     PetscCall(MatGetInertia(Factor,&nneg,&nzero,&npos));
@@ -665,7 +665,7 @@ static PetscErrorCode KKTAddShifts(Tao tao,SNES snes,Vec X)
     if (npos < pdipm->Nx+pdipm->Nci) {
       pdipm->deltaw = pdipm->lastdeltaw; /* in case reduction update does not help, this prevents that step from impacting increasing update */
       while (npos < pdipm->Nx+pdipm->Nci && pdipm->deltaw <= 1./PETSC_SMALL) { /* increase deltaw */
-        PetscCall(PetscInfo(tao,"  deltaw=%g fails, MatInertia: nneg %D, nzero %D, npos %D(<%D)\n",(double)pdipm->deltaw,nneg,nzero,npos,pdipm->Nx+pdipm->Nci));
+        PetscCall(PetscInfo(tao,"  deltaw=%g fails, MatInertia: nneg %" PetscInt_FMT ", nzero %" PetscInt_FMT ", npos %" PetscInt_FMT "(<%" PetscInt_FMT ")\n",(double)pdipm->deltaw,nneg,nzero,npos,pdipm->Nx+pdipm->Nci));
         pdipm->deltaw = PetscMin(8*pdipm->deltaw,PetscPowReal(10,20));
         PetscCall(TaoSNESJacobian_PDIPM(snes,X, pdipm->K, pdipm->K, tao));
         PetscCall(PCSetUp(pc));
@@ -686,7 +686,7 @@ static PetscErrorCode KKTAddShifts(Tao tao,SNES snes,Vec X)
     } else {
       pdipm->deltac = pdipm->deltac*PetscPowReal(pdipm->mu,.25);
     }
-    PetscCall(PetscInfo(tao,"Updated deltac=%g, MatInertia: nneg %D, nzero %D(!=0), npos %D\n",(double)pdipm->deltac,nneg,nzero,npos));
+    PetscCall(PetscInfo(tao,"Updated deltac=%g, MatInertia: nneg %" PetscInt_FMT ", nzero %" PetscInt_FMT "(!=0), npos %" PetscInt_FMT "\n",(double)pdipm->deltac,nneg,nzero,npos));
     PetscCall(TaoSNESJacobian_PDIPM(snes,X, pdipm->K, pdipm->K, tao));
     PetscCall(PCSetUp(pc));
     PetscCall(MatGetInertia(Factor,&nneg,&nzero,&npos));
@@ -843,9 +843,7 @@ PetscErrorCode TaoSolve_PDIPM(Tao tao)
   PetscCall(TaoMonitor(tao,tao->niter,pdipm->obj,tao->residual,tao->cnorm,pdipm->mu));
   PetscCall(VecDestroy(&dummy));
   PetscCall((*tao->ops->convergencetest)(tao,tao->cnvP));
-  if (tao->reason) {
-    PetscCall(SNESSetConvergedReason(pdipm->snes,SNES_CONVERGED_FNORM_ABS));
-  }
+  if (tao->reason) PetscCall(SNESSetConvergedReason(pdipm->snes,SNES_CONVERGED_FNORM_ABS));
 
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     SNESConvergedReason reason;
@@ -854,7 +852,7 @@ PetscErrorCode TaoSolve_PDIPM(Tao tao)
     /* Check SNES convergence */
     PetscCall(SNESGetConvergedReason(pdipm->snes,&reason));
     if (reason < 0) {
-      PetscCall(PetscPrintf(PetscObjectComm((PetscObject)pdipm->snes),"SNES solve did not converged due to reason %D\n",reason));
+      PetscCall(PetscPrintf(PetscObjectComm((PetscObject)pdipm->snes),"SNES solve did not converged due to reason %s\n",SNESConvergedReasons[reason]));
     }
 
     /* Check TAO convergence */
@@ -879,7 +877,7 @@ PetscErrorCode TaoView_PDIPM(Tao tao,PetscViewer viewer)
   PetscFunctionBegin;
   tao->constrained = PETSC_TRUE;
   PetscCall(PetscViewerASCIIPushTab(viewer));
-  PetscCall(PetscViewerASCIIPrintf(viewer,"Number of prime=%D, Number of dual=%D\n",pdipm->Nx+pdipm->Nci,pdipm->Nce + pdipm->Nci));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"Number of prime=%" PetscInt_FMT ", Number of dual=%" PetscInt_FMT "\n",pdipm->Nx+pdipm->Nci,pdipm->Nce + pdipm->Nci));
   if (pdipm->kkt_pd) {
     PetscCall(PetscViewerASCIIPrintf(viewer,"KKT shifts deltaw=%g, deltac=%g\n",(double)pdipm->deltaw,(double)pdipm->deltac));
   }

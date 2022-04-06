@@ -135,7 +135,7 @@ int main(int argc,char **argv)
   PetscCall(VecMin(u,NULL,&vmin));
   PetscCall(TSGetStepNumber(ts,&nsteps));
   PetscCall(TSGetTime(ts,&ftime));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"timestep %D: time %g, solution norm %g, max %g, min %g\n",nsteps,(double)ftime,(double)norm,(double)vmax,(double)vmin));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"timestep %" PetscInt_FMT ": time %g, solution norm %g, max %g, min %g\n",nsteps,(double)ftime,(double)norm,(double)vmax,(double)vmin));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.

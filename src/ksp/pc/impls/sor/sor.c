@@ -49,7 +49,7 @@ static PetscErrorCode PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,PetscReal rt
   MatSORType     stype = jac->sym;
 
   PetscFunctionBegin;
-  PetscCall(PetscInfo(pc,"Warning, convergence critera ignored, using %D iterations\n",its));
+  PetscCall(PetscInfo(pc,"Warning, convergence critera ignored, using %" PetscInt_FMT " iterations\n",its));
   if (guesszero) stype = (MatSORType) (stype | SOR_ZERO_INITIAL_GUESS);
   PetscCall(MatSOR(pc->pmat,b,jac->omega,stype,jac->fshift,its*jac->its,jac->lits,y));
   PetscCall(MatFactorGetError(pc->pmat,(MatFactorError*)&pc->failedreason));
@@ -106,7 +106,7 @@ PetscErrorCode PCView_SOR(PC pc,PetscViewer viewer)
     else if (sym & SOR_LOCAL_FORWARD_SWEEP)                                  sortype = "local_forward";
     else if (sym & SOR_LOCAL_BACKWARD_SWEEP)                                 sortype = "local_backward";
     else                                                                     sortype = "unknown";
-    PetscCall(PetscViewerASCIIPrintf(viewer,"  type = %s, iterations = %D, local iterations = %D, omega = %g\n",sortype,jac->its,jac->lits,(double)jac->omega));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  type = %s, iterations = %" PetscInt_FMT ", local iterations = %" PetscInt_FMT ", omega = %g\n",sortype,jac->its,jac->lits,(double)jac->omega));
   }
   PetscFunctionReturn(0);
 }

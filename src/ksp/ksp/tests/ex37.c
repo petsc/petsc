@@ -62,7 +62,7 @@ int main(int argc,char **args)
     PetscMPIInt color,subrank,duprank,subsize;
     duprank = size-1 - rank;
     subsize = size/nsubcomm;
-    PetscCheck(subsize*nsubcomm == size,comm,PETSC_ERR_SUP,"This example requires nsubcomm %D divides size %D",nsubcomm,size);
+    PetscCheck(subsize*nsubcomm == size,comm,PETSC_ERR_SUP,"This example requires nsubcomm %" PetscInt_FMT " divides size %d",nsubcomm,size);
     color   = duprank/subsize;
     subrank = duprank - color*subsize;
     PetscCall(PetscSubcommSetTypeGeneral(psubcomm,color,subrank));
@@ -70,7 +70,7 @@ int main(int argc,char **args)
     PetscCall(PetscSubcommSetType(psubcomm,PETSC_SUBCOMM_CONTIGUOUS));
   } else if (type == PETSC_SUBCOMM_INTERLACED) {
     PetscCall(PetscSubcommSetType(psubcomm,PETSC_SUBCOMM_INTERLACED));
-  } else SETERRQ(psubcomm->parent,PETSC_ERR_SUP,"PetscSubcommType %D is not supported yet",type);
+  } else SETERRQ(psubcomm->parent,PETSC_ERR_SUP,"PetscSubcommType %" PetscInt_FMT " is not supported yet",type);
   PetscCall(PetscSubcommSetFromOptions(psubcomm));
   subcomm = PetscSubcommChild(psubcomm);
 
@@ -141,7 +141,7 @@ int main(int argc,char **args)
   PetscCall(VecAXPY(subu,-1.0,subb));
   PetscCall(VecNorm(u,NORM_2,&norm));
   if (norm > 1.e-4 && rank == 0) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"[%D]  Number of iterations = %3D\n",rank,its));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"[%d]  Number of iterations = %3" PetscInt_FMT "\n",rank,its));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error: Residual norm of each block |subb - subA*subx |= %g\n",(double)norm));
   }
   PetscCall(VecResetArray(subb));
@@ -150,11 +150,11 @@ int main(int argc,char **args)
 
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-subvec_view",&id,&flg));
   if (flg && rank == id) {
-    PetscCall(PetscPrintf(PETSC_COMM_SELF,"[%D] subb:\n", rank));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"[%d] subb:\n", rank));
     PetscCall(VecGetArray(subb,&array));
     for (i=0; i<m; i++) PetscCall(PetscPrintf(PETSC_COMM_SELF,"%g\n",(double)PetscRealPart(array[i])));
     PetscCall(VecRestoreArray(subb,&array));
-    PetscCall(PetscPrintf(PETSC_COMM_SELF,"[%D] subx:\n", rank));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"[%d] subx:\n", rank));
     PetscCall(VecGetArray(subx,&array));
     for (i=0; i<m; i++) PetscCall(PetscPrintf(PETSC_COMM_SELF,"%g\n",(double)PetscRealPart(array[i])));
     PetscCall(VecRestoreArray(subx,&array));
