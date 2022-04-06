@@ -986,7 +986,9 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
             self.include = testedincl
           self.found     = 1
           self.dlib      = self.lib+self.dlib
-          self.dinclude  = list(set(incl+self.dinclude))
+          dinc = []
+          [dinc.append(inc) for inc in incl+self.dinclude if inc not in dinc]
+          self.dinclude = dinc
           if not hasattr(self.framework, 'packages'):
             self.framework.packages = []
           self.directory = directory
