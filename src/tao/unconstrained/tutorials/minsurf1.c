@@ -14,17 +14,6 @@ The command line options are:\n\
   -my <yg>, where <yg> = number of grid points in the 2nd coordinate direction\n\
   -start <st>, where <st> =0 for zero vector, and an average of the boundary conditions otherwise \n\n";
 
-/*T
-   Concepts: TAO^Solving an unconstrained minimization problem
-   Routines: TaoCreate(); TaoSetType();
-   Routines: TaoSetSolution();
-   Routines: TaoSetObjectiveAndGradient();
-   Routines: TaoSetHessian(); TaoSetFromOptions();
-   Routines: TaoGetKSP(); TaoSolve();
-   Routines: TaoDestroy();
-   Processors: 1
-T*/
-
 /*
    User-defined application context - contains data needed by the
    application-provided call-back routines, FormFunctionGradient()

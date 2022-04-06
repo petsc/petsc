@@ -1,11 +1,5 @@
 static char help[] = "Example of using graph partitioning with a matrix in which some procs have empty ownership\n\n";
 
-/*T
-   Concepts: Mat^mat partitioning
-   Concepts: Mat^image segmentation
-   Processors: n
-T*/
-
 #include <petscmat.h>
 
 int main(int argc, char **args)

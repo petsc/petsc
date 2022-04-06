@@ -1,14 +1,6 @@
 
 static char help[] = "Demonstrates using ISLocalToGlobalMappings.\n\n";
 
-/*T
-    Concepts: local to global mappings
-    Concepts: global to local mappings
-
-    Description:  Creates an index set based on blocks of integers. Views that index set
-    and then destroys it.
-T*/
-
 #include <petscis.h>
 #include <petscviewer.h>
 

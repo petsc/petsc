@@ -14,13 +14,6 @@ difference. Input parameters include:\n\
   -gamma     : gamma (default 4/h)\n\
   -beta      : beta (default 0.01/h^2)\n\n";
 
-/*T
-   Concepts: KSP^basic parallel example;
-   Concepts: KSP^Laplacian, 2d
-   Concepts: Laplacian, 2d
-   Processors: n
-T*/
-
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:

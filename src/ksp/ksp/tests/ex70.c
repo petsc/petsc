@@ -1,11 +1,6 @@
 
 static char help[] = "Solves an ill-conditioned tridiagonal linear system with KSP for testing GMRES breakdown tolerance.\n\n";
 
-/*T
-   Concepts: KSP^solving an ill-conditioned system of linear equations for testing GMRES breakdown tolerance
-   Processors: 1
-T*/
-
 #include <petscksp.h>
 
 int main(int argc,char **args)

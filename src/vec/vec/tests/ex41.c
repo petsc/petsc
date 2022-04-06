@@ -1,12 +1,5 @@
 static char help[] = "Nest vector set subvector functionality.\n\n";
 
-/*T
-   Concepts: vectors^block operators
-   Concepts: vectors^setting values
-   Concepts: vectors^local access to
-   Processors: n
-T*/
-
 #include <petscvec.h>
 
 PetscErrorCode test_vec_ops(void)

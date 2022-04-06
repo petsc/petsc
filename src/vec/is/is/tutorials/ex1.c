@@ -1,16 +1,6 @@
 
 static char help[] = "Creating a general index set.\n\n";
 
-/*T
-    Concepts: index sets^manipulating a general index set;
-    Concepts: index sets^creating general;
-    Concepts: IS^creating a general index set;
-
-    Description: Creates an index set based on a set of integers. Views that index set
-    and then destroys it.
-
-T*/
-
 /*
     Include petscis.h so we can use PETSc IS objects. Note that this automatically
   includes petscsys.h.

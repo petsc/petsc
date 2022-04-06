@@ -2,11 +2,6 @@
 static char help[] = "Newton method to solve u'' + u^{2} = f, sequentially.\n\
 This example tests PCVPBJacobiSetBlocks().\n\n";
 
-/*T
-   Concepts: SNES^basic uniprocessor example
-   Processors: 1
-T*/
-
 /*
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
    file automatically includes:

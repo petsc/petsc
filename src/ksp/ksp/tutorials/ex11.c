@@ -1,13 +1,6 @@
 
 static char help[] = "Solves a linear system in parallel with KSP.\n\n";
 
-/*T
-   Concepts: KSP^solving a Helmholtz equation
-   Concepts: complex numbers;
-   Concepts: Helmholtz equation
-   Processors: n
-T*/
-
 /*
    Description: Solves a complex linear system in parallel with KSP.
 

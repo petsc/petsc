@@ -1,11 +1,6 @@
 !
 !  Description: Solves a complex linear system in parallel with KSP (Fortran code).
 !
-!!/*T
-!  Concepts: KSP^solving a Helmholtz equation
-!  Concepts: complex numbers
-!  Processors: n
-!T*/
 
 !
 !  The model problem:

@@ -21,11 +21,6 @@
 !  -Ny <npy>, where <npy> = number of processors in the y-direction
 !  -mf use matrix free for matrix vector product
 !
-!!/*T
-!   Concepts: KSP^writing a user-defined nonlinear solver
-!   Concepts: DMDA^using distributed arrays
-!   Processors: n
-!T*/
 
 !  ------------------------------------------------------------------------
 !

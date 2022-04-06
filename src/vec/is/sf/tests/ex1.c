@@ -1,9 +1,5 @@
 static const char help[] = "Test star forest communication (PetscSF)\n\n";
 
-/*T
-    Description: This example creates empty star forests to test the API.
-T*/
-
 #include <petscsf.h>
 #include <petsc/private/sfimpl.h>
 

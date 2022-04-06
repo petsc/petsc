@@ -1,13 +1,5 @@
 static char help[] = "Introductory example that illustrates running PETSc on a subset of processes.\n\n";
 
-/*T
-   Concepts: introduction to PETSc;
-   Concepts: process^subset set PETSC_COMM_WORLD
-   Processors: 2
-
-   Note that this example is not checking the error codes from the MPI calls with PetscCall() before PETSc is initialized
-   and after PETSc is finalized. This is because the PETSc macro PetscCall() will not work in those circumstances.
-T*/
  #include <petscsys.h>
 
 int main(int argc, char *argv[])

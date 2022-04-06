@@ -6,13 +6,6 @@ Input parameters include:\n\
   -debug              : Activate debugging printouts\n\
   -nox                : Deactivate x-window graphics\n\n";
 
-/*
-   Concepts: TS^time-dependent linear problems
-   Concepts: TS^heat equation
-   Concepts: TS^diffusion equation
-   Processors: 1
-*/
-
 /* ------------------------------------------------------------------------
 
    This program solves the one-dimensional heat equation (also called the

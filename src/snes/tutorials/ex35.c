@@ -1,12 +1,5 @@
 static const char help[] = "-Laplacian u = b as a nonlinear problem.\n\n";
 
-/*T
-   Concepts: SNES^parallel Bratu example
-   Concepts: DMDA^using distributed arrays;
-   Concepts: IS coloirng types;
-   Processors: n
-T*/
-
 /*
 
     The linear and nonlinear versions of these should give almost identical results on this problem

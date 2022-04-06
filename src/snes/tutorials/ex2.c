@@ -2,12 +2,6 @@
 static char help[] = "Newton method to solve u'' + u^{2} = f, sequentially.\n\
 This example employs a user-defined monitoring routine.\n\n";
 
-/*T
-   Concepts: SNES^basic uniprocessor example
-   Concepts: SNES^setting a user-defined monitoring routine
-   Processors: 1
-T*/
-
 /*
    Include "petscdraw.h" so that we can use PETSc drawing routines.
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this

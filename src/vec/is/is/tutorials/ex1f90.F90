@@ -2,10 +2,6 @@
 !  Description: Creates an index set based on a set of integers. Views that index set
 !  and then destroys it.
 !
-!/*T
-!    Concepts: index sets^manipulating a general index set;
-!    Concepts: Fortran90^accessing indices of index set;
-!T*/
 !
 
       program main

@@ -1,12 +1,6 @@
 
 static char help[] = "Illustrates creating an options database.\n\n";
 
-/*T
-   Concepts: introduction to PETSc;
-   Concepts: printing^in parallel
-   Processors: n
-T*/
-
 #include <petscsys.h>
 #include <petscviewer.h>
 int main(int argc,char **argv)

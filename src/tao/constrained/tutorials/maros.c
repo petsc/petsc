@@ -8,21 +8,6 @@ TODO Explain maros example
 
 static  char help[]="";
 
-/*T
-   Concepts: TAO^Solving an unconstrained minimization problem
-   Routines: TaoCreate(); TaoSetType();
-   Routines: TaoSetSolution();
-   Routines: TaoSetObjectiveAndGradient();
-   Routines: TaoSetEqualityConstraintsRoutine();
-   Routines: TaoSetInequalityConstraintsRoutine();
-   Routines: TaoSetEqualityJacobianRoutine();
-   Routines: TaoSetInequalityJacobianRoutine();
-   Routines: TaoSetHessian(); TaoSetFromOptions();
-   Routines: TaoGetKSP(); TaoSolve();
-   Routines: TaoGetConvergedReason();TaoDestroy();
-   Processors: 1
-T*/
-
 /*
    User-defined application context - contains data needed by the
    application-provided call-back routines, FormFunction(),

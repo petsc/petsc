@@ -1,10 +1,6 @@
 !
 ! Description: Demonstrates using a local ordering to set values into a parallel vector
 !
-!
-!   Concepts: vectors^assembling vectors with local ordering;
-!   Processors: n
-!
 
   program main
 #include <petsc/finclude/petscvec.h>

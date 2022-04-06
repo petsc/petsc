@@ -1,11 +1,6 @@
 
 static char help[] = "Demonstrates PetscGetVersonNumber().\n\n";
 
-/*T
-   Concepts: introduction to PETSc;
-   Processors: n
-T*/
-
 #include <petscsys.h>
 int main(int argc,char **argv)
 {

@@ -5,13 +5,6 @@ Input parameters include:\n\
   -m <mesh_x>       : number of mesh points in x-direction\n\
   -n <mesh_y>       : number of mesh points in y-direction\n\n";
 
-/*T
-   Concepts: KSP^solving a system of linear equations
-   Concepts: KSP^Laplacian, 2d
-   Concepts: PC^registering preconditioners
-   Processors: n
-T*/
-
 /*
    Demonstrates registering a new preconditioner (PC) type.
 

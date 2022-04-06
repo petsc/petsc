@@ -7,10 +7,6 @@
 !    -mx <xg>, where <xg> = number of grid points in the x-direction
 !    -my <yg>, where <yg> = number of grid points in the y-direction
 !
-!!/*T
-!  Concepts: SNES^sequential Bratu example
-!  Processors: 1
-!T*/
 
 !
 !  --------------------------------------------------------------------------

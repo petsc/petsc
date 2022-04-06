@@ -1,11 +1,6 @@
 
 static char help[] = "Demonstrates using the PetscBag Object\n\n";
 
-/*T
-   Concepts: bags;
-   Processors: n
-T*/
-
 #include <petscsys.h>
 #include <petscbag.h>
 #include <petscviewer.h>

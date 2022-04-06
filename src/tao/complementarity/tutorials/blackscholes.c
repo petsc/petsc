@@ -88,16 +88,6 @@ space.  The command line options are:\n\
   -ms <sg>, where <sg> = number of grid points in space\n\
   -es <se>, where <se> = ending point of the space discretization\n\n";
 
-/*T
-   Concepts: TAO^Solving a complementarity problem
-   Routines: TaoCreate(); TaoDestroy();
-   Routines: TaoSetJacobianRoutine(); TaoAppSetConstraintRoutine();
-   Routines: TaoSetFromOptions();
-   Routines: TaoSolveApplication();
-   Routines: TaoSetVariableBoundsRoutine(); TaoSetInitialSolutionVec();
-   Processors: 1
-T*/
-
 /*
   User-defined application context - contains data needed by the
   application-provided call-back routines, FormFunction(), and FormJacobian().

@@ -6,11 +6,6 @@
 !    -par <parameter>, where <parameter> indicates the nonlinearity of the problem
 !       problem SFI:  <parameter> = Bratu parameter (0 <= par <= 6.81)
 !
-!!/*T
-!  Concepts: SNES^parallel Bratu example
-!  Concepts: DMDA^using distributed arrays;
-!  Processors: n
-!T*/
 
 !
 !  --------------------------------------------------------------------------

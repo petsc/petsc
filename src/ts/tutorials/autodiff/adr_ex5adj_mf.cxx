@@ -1,11 +1,6 @@
 static char help[] = "Demonstrates automatic, matrix-free Jacobian generation using ADOL-C for a time-dependent PDE in 2d, solved using implicit timestepping.\n";
 
 /*
-   Concepts: TS^time-dependent nonlinear problems
-   Concepts: Automatic differentiation using ADOL-C
-   Concepts: Matrix-free methods
-*/
-/*
    REQUIRES configuration of PETSc with option --download-adolc.
 
    For documentation on ADOL-C, see

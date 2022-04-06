@@ -8,18 +8,6 @@
 !    -my <yg>, where <yg> = number of grid points in the 2nd coordinate direction
 !    -par <param>, where <param> = angle of twist per unit length
 !
-!/*T
-!   Concepts: TAO^Solving an unconstrained minimization problem
-!   Routines: TaoCreate(); TaoSetType();
-!   Routines: TaoSetSolution();
-!   Routines: TaoSetObjectiveAndGradient();
-!   Routines: TaoSetHessian(); TaoSetFromOptions();
-!   Routines: TaoSetMonitor(); TaoSetConvergenceTest()
-!   Routines: TaoSolve(); TaoGetSolutionStatus()
-!   Routines: TaoDestroy();
-
-!   Processors: n
-!T*/
 !
 ! ----------------------------------------------------------------------
 !

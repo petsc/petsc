@@ -1,10 +1,6 @@
 !
 !
 !
-!/*T
-!   Concepts: vectors^norms of sub-vectors;
-!   Processors: n
-!T*/
 
       program main
 #include <petsc/finclude/petscvec.h>

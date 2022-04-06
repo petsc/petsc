@@ -23,19 +23,6 @@ Reference:     Chwirut, D., NIST (197?).
 static char help[]="Finds the nonlinear least-squares solution to the model \n\
             y = exp[-b1*x]/(b2+b3*x)  +  e \n";
 
-/* T
-   Concepts: TAO^Solving a system of nonlinear equations, nonlinear least squares
-   Routines: TaoCreate();
-   Routines: TaoSetType();
-   Routines: TaoSetResidualRoutine();
-   Routines: TaoSetMonitor();
-   Routines: TaoSetSolution();
-   Routines: TaoSetFromOptions();
-   Routines: TaoSolve();
-   Routines: TaoDestroy();
-   Processors: n
-T*/
-
 #define NOBSERVATIONS 214
 #define NPARAMETERS 3
 

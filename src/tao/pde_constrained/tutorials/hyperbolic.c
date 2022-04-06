@@ -1,22 +1,5 @@
 #include <petsctao.h>
 
-/*T
-   Concepts: TAO^Solving a system of nonlinear equations, nonlinear least squares
-   Routines: TaoCreate();
-   Routines: TaoSetType();
-   Routines: TaoSetSolution();
-   Routines: TaoSetObjective();
-   Routines: TaoSetGradient();
-   Routines: TaoSetConstraintsRoutine();
-   Routines: TaoSetJacobianStateRoutine();
-   Routines: TaoSetJacobianDesignRoutine();
-   Routines: TaoSetStateDesignIS();
-   Routines: TaoSetFromOptions();
-   Routines: TaoSolve();
-   Routines: TaoDestroy();
-   Processors: 1
-T*/
-
 typedef struct {
   PetscInt n; /*  Number of variables */
   PetscInt m; /*  Number of constraints */

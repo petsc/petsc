@@ -3,11 +3,6 @@
 !   Description: Demonstrates how users can augment the PETSc profiling by
 !                inserting their own event logging.
 !
-!/*T
-!   Concepts: PetscLog^user-defined event profiling (basic example);
-!   Concepts: PetscLog^activating/deactivating events for profiling (basic example);
-!   Processors: n
-!T*/
 ! -----------------------------------------------------------------------
 
       program SchoolDay

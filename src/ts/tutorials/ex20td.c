@@ -6,13 +6,6 @@ global : track parameters at all timesteps together \n\
 Choose one of the two at runtime by -sa_method {track,global}. \n";
 
 /*
-  Concepts: TS^adjoint for time dependent parameters
-  Concepts: TS^Customized adjoint monitor based sensitivity tracking
-  Concepts: TS^All at once approach to sensitivity tracking
-  Processors: 1
-*/
-
-/*
    Simple example to demonstrate TSAdjoint capabilities for time dependent params
    without integral cost terms using either a tracking or global method.
 

@@ -1,14 +1,11 @@
 
 static char help[] = "Demonstrates VecStrideSubSetScatter() and VecStrideSubSetGather().\n\n";
 
-/*T
-   Concepts: vectors^sub-vectors;
-   Processors: n
-
+/*
    Allows one to easily pull out some components of a multi-component vector and put them in another vector.
 
    Note that these are special cases of VecScatter
-T*/
+*/
 
 /*
   Include "petscvec.h" so that we can use vectors.  Note that this file

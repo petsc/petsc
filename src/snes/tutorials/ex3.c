@@ -7,12 +7,6 @@ The command line options include:\n\
   -check_tol <tol>: set tolerance for iterate checking\n\
   -user_precond : activate a (trivial) user-defined preconditioner\n\n";
 
-/*T
-   Concepts: SNES^basic parallel example
-   Concepts: SNES^setting a user-defined monitoring routine
-   Processors: n
-T*/
-
 /*
    Include "petscdm.h" so that we can use data management objects (DMs)
    Include "petscdmda.h" so that we can use distributed arrays (DMDAs).

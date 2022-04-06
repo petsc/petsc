@@ -1,11 +1,6 @@
 
 static char help[] = "Demonstrates VecStrideScatter() and VecStrideGather() with subvectors that are also strided.\n\n";
 
-/*T
-   Concepts: vectors^sub-vectors;
-   Processors: n
-T*/
-
 /*
   Include "petscvec.h" so that we can use vectors.  Note that this file
   automatically includes:

@@ -2,10 +2,6 @@ static const char help[] = "Tests MatGetSchurComplement\n";
 
 #include <petscksp.h>
 
-/*T
-    Concepts: Mat, Schur Complement
-T*/
-
 PetscErrorCode Create(MPI_Comm comm,Mat *inA,IS *is0,IS *is1)
 {
   Mat            A;

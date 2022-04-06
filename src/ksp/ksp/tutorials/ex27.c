@@ -1,10 +1,5 @@
 
 static char help[] = "Reads a PETSc matrix and vector from a file and solves the normal equations.\n\n";
-/*T
-   Concepts: KSP^solving a linear system
-   Concepts: Normal equations
-   Processors: n
-T*/
 
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file

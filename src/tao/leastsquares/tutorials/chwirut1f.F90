@@ -7,17 +7,6 @@
 !
 !  The C version of this code is test_chwirut1.c
 !
-!!/*T
-!  Concepts: TAO^Solving an unconstrained minimization problem
-!  Routines: TaoCreate();
-!  Routines: TaoSetType();
-!  Routines: TaoSetSolution();
-!  Routines: TaoSetResidualRoutine();
-!  Routines: TaoSetFromOptions();
-!  Routines: TaoSolve();
-!  Routines: TaoDestroy();
-!  Processors: 1
-!T*/
 
 !
 ! ----------------------------------------------------------------------

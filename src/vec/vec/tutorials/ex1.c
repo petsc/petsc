@@ -1,11 +1,6 @@
 
 static char help[] = "Basic vector routines.\n\n";
 
-/*T
-   Concepts: vectors^basic routines;
-   Processors: n
-T*/
-
 /*
   Include "petscvec.h" so that we can use vectors.  Note that this file
   automatically includes:

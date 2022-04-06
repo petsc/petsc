@@ -8,13 +8,6 @@ Input parameters include:\n\
   -m <mesh_x>       : number of mesh points in x-direction\n\
   -n <mesh_y>       : number of mesh points in y-direction\n\n";
 
-/*T
-   Concepts: KSP^repeatedly solving linear systems;
-   Concepts: KSP^Laplacian, 2d
-   Concepts: Laplacian, 2d
-   Processors: n
-T*/
-
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:

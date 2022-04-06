@@ -4,12 +4,6 @@ illustrates setting a user-defined shell preconditioner and using the\n\
 Input parameters include:\n\
   -user_defined_pc : Activate a user-defined preconditioner\n\n";
 
-/*T
-   Concepts: KSP^basic parallel example
-   Concepts: PC^setting a user-defined shell preconditioner
-   Processors: n
-T*/
-
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:

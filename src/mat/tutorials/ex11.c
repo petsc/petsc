@@ -1,11 +1,6 @@
 
 static char help[] = "Tests MatMeshToDual()\n\n";
 
-/*T
-   Concepts: Mat^mesh partitioning
-   Processors: n
-T*/
-
 /*
   Include "petscmat.h" so that we can use matrices.
   automatically includes:

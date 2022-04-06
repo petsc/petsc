@@ -23,11 +23,6 @@ Without -user_set_subdomains, the general PCGASM options are meaningful:\n\
    of the GASM preconditioner.
 */
 
-/*T
-   Concepts: KSP^Additive Schwarz Method (GASM) with user-defined subdomains
-   Processors: n
-T*/
-
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:

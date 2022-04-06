@@ -1,11 +1,6 @@
 static const char help[]="Example demonstrating PCCOMPOSITE where one of the inner PCs uses a different operator\n\
 \n";
 
-/*T
-   Concepts: KSP^using nested solves
-   Concepts: PC^using composite PCs
-   Processors: n
-T*/
 #include <petscksp.h>
 
 int main(int argc, char **argv)

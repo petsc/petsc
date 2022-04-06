@@ -1,11 +1,5 @@
 !
 !
-!/*T
-!   Concepts: KSP^basic sequential example
-!   Concepts: KSP^Laplacian, 2d
-!   Concepts: Laplacian, 2d
-!   Processors: 1
-!T*/
 ! -----------------------------------------------------------------------
 
       module UserModule

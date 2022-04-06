@@ -8,10 +8,6 @@ and from Fortran to C\n\n";
   Ugly stuff to insure the function names match between Fortran
   and C. This is out of our PETSc hands to cleanup.
 */
-/*T
-   Concepts: vectors^fortran-c;
-   Processors: n
-T*/
 #include <petsc/private/fortranimpl.h>
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define ex7f_ EX7F

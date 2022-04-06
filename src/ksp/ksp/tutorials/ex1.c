@@ -1,11 +1,6 @@
 
 static char help[] = "Solves a tridiagonal linear system with KSP.\n\n";
 
-/*T
-   Concepts: KSP^solving a system of linear equations
-   Processors: 1
-T*/
-
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:

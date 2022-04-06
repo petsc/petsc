@@ -2,12 +2,6 @@
 static char help[] = "Solves the van der Pol equation.\n\
 Input parameters include:\n";
 
-/*
-   Concepts: TS^time-dependent nonlinear problems
-   Concepts: TS^van der Pol equation DAE equivalent
-   Concepts: TS^Optimization using adjoint sensitivity analysis
-   Processors: 1
-*/
 /* ------------------------------------------------------------------------
 
   Notes:

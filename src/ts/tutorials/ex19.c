@@ -2,11 +2,6 @@
 static char help[] = "Solves the van der Pol DAE.\n\
 Input parameters include:\n";
 
-/*
-   Concepts: TS^time-dependent nonlinear problems
-   Concepts: TS^van der Pol DAE
-   Processors: 1
-*/
 /* ------------------------------------------------------------------------
 
    This program solves the van der Pol DAE

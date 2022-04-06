@@ -7,10 +7,7 @@ associated with it. \n\
 Input parameters include:\n\
   -nc : number of copies of the base case\n\n";
 
-/* T
-   Concepts: DMNetwork
-   Concepts: PETSc TS solver
-
+/*
    This example was modified from ex9busdmnetwork.c.
 */
 

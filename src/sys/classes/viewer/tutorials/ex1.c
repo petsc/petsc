@@ -1,10 +1,6 @@
 
 static char help[] = "Appends to an ASCII file.\n\n";
 
-/*T
-   Concepts: viewers^append
-T*/
-
 #include <petscviewer.h>
 
 int main(int argc,char **args)

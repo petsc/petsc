@@ -1,8 +1,3 @@
-/*T
-   Concepts: KSP^solving a system of linear equations using a MOAB based DM implementation.
-   Concepts: KSP^Laplacian, 3d
-   Processors: n
-T*/
 
 /*
 Inhomogeneous Laplacian in 3-D. Modeled by the partial differential equation

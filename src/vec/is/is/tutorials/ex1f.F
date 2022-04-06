@@ -2,9 +2,6 @@
 !  Description: Creates an index set based on a set of integers. Views that index set
 !  and then destroys it.
 !
-!/*T
-!    Concepts: index sets^manipulating a general index set;
-!T*/
 !
 !
       program main

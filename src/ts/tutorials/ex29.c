@@ -5,14 +5,6 @@ static char help[] = "Time-Dependent Allan-Cahn example in 2D with Varying Coeff
  multigrid and domain decomposition.
  */
 
-/*T
-   Concepts: Alan-Cahn
-   Concepts: DMDA with timestepping
-   Concepts: Variable Coefficient
-   Concepts: Nonlinear Domain Decomposition and Multigrid with Coefficients
-   Processors: n
-T*/
-
 #include <petscdm.h>
 #include <petscdmda.h>
 #include <petscsnes.h>

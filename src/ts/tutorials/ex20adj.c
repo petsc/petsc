@@ -1,11 +1,5 @@
 static char help[] = "Performs adjoint sensitivity analysis for the van der Pol equation.\n";
 
-/*
-   Concepts: TS^time-dependent nonlinear problems
-   Concepts: TS^van der Pol equation DAE equivalent
-   Concepts: TS^adjoint sensitivity analysis
-   Processors: 1
-*/
 /* ------------------------------------------------------------------------
 
    This program solves the van der Pol DAE ODE equivalent

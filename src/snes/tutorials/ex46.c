@@ -1,12 +1,5 @@
 static char help[] = "Surface processes in geophysics.\n\n";
 
-/*T
-   Concepts: SNES^parallel Surface process example
-   Concepts: DMDA^using distributed arrays;
-   Concepts: IS coloirng types;
-   Processors: n
-T*/
-
 #include <petscsnes.h>
 #include <petscdm.h>
 #include <petscdmda.h>
