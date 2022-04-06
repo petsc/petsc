@@ -15,17 +15,13 @@ PETSC_EXTERN PetscErrorCode DMPlexLandauIJacobian(TS, PetscReal,Vec,Vec,PetscRea
 typedef int LandauIdx;
 
 /* the Fokker-Planck-Landau context */
-#if !defined(LANDAU_DIM)
-#define LANDAU_DIM 2
-#endif
-
 #if !defined(LANDAU_MAX_SPECIES)
-#if LANDAU_DIM==2
+#if defined(PETSC_USE_DMLANDAU_2D)
 #define LANDAU_MAX_SPECIES 10
 #define LANDAU_MAX_GRIDS 3
 #else
 #define LANDAU_MAX_SPECIES 3
-#define LANDAU_MAX_GRIDS 2
+#define LANDAU_MAX_GRIDS 3
 #endif
 #else
 #define LANDAU_MAX_GRIDS 3
@@ -35,7 +31,7 @@ typedef int LandauIdx;
 #if defined(LANDAU_MAX_NQ)
 #error"LANDAU_MAX_NQ but not LANDAU_MAX_Q. Use -DLANDAU_MAX_Q=4 for Q3 elements"
 #endif
-#if LANDAU_DIM==2
+#if defined(PETSC_USE_DMLANDAU_2D)
 #define LANDAU_MAX_Q 5
 #else
 #define LANDAU_MAX_Q 3
@@ -44,14 +40,16 @@ typedef int LandauIdx;
 #undef LANDAU_MAX_NQ
 #endif
 
-#if LANDAU_DIM==2
+#if defined(PETSC_USE_DMLANDAU_2D)
 #define LANDAU_MAX_Q_FACE LANDAU_MAX_Q
 #define LANDAU_MAX_NQ (LANDAU_MAX_Q*LANDAU_MAX_Q)
 #define LANDAU_MAX_BATCH_SZ 320
+#define LANDAU_DIM 2
 #else
 #define LANDAU_MAX_Q_FACE (LANDAU_MAX_Q*LANDAU_MAX_Q)
 #define LANDAU_MAX_NQ (LANDAU_MAX_Q*LANDAU_MAX_Q*LANDAU_MAX_Q)
 #define LANDAU_MAX_BATCH_SZ 32
+#define LANDAU_DIM 3
 #endif
 
 typedef enum {LANDAU_CUDA, LANDAU_KOKKOS, LANDAU_CPU} LandauDeviceType;
@@ -165,7 +163,7 @@ typedef struct {
   PetscInt         verbose;
   PetscLogEvent    events[20];
   PetscLogStage    stage;
-  PetscBool        aux_bool;  /* helper */
+  PetscObjectState norm_state;
   PetscInt         batch_sz;
   PetscInt         batch_view_idx;
 } LandauCtx;

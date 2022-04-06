@@ -315,6 +315,7 @@ PETSC_EXTERN PetscLogEvent DM_CreateInterpolation;
 PETSC_EXTERN PetscLogEvent DM_CreateRestriction;
 PETSC_EXTERN PetscLogEvent DM_CreateInjection;
 PETSC_EXTERN PetscLogEvent DM_CreateMatrix;
+PETSC_EXTERN PetscLogEvent DM_CreateMassMatrix;
 PETSC_EXTERN PetscLogEvent DM_Load;
 PETSC_EXTERN PetscLogEvent DM_AdaptInterpolator;
 

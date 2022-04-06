@@ -213,16 +213,16 @@ static PetscErrorCode maxwellian(PetscInt dim, const PetscReal x[], PetscReal kt
   u[0] = n*PetscPowReal(PETSC_PI*theta,-1.5)*(PetscExpReal(-v2/theta)) * 2.*PETSC_PI*x[1]; // radial term for 2D axi-sym.
   PetscFunctionReturn(0);
 }
-#define NUM_SOLVE_LOOPS 100
+
 #define MAX_NUM_THRDS 12
 PetscErrorCode go()
 {
   DM              dm_t[MAX_NUM_THRDS], sw_t[MAX_NUM_THRDS];
   PetscFE         fe;
-  PetscInt        dim = 2, Nc = 1, timestep = 0, i, faces[3];
+  PetscInt        dim = 2, Nc = 1, i, faces[3];
   PetscInt        Np[2] = {10,10}, Np2[2], field = 0, target = 0, Np_t[MAX_NUM_THRDS];
-  PetscReal       time = 0.0, moments_0[3], moments_1[3], vol;
-  PetscReal       lo[3] = {-5,0,-5}, hi[3] = {5,5,5}, h[3], hp[3], *xx_t[MAX_NUM_THRDS], *yy_t[MAX_NUM_THRDS], *wp_t[MAX_NUM_THRDS], solve_time = 0;
+  PetscReal       moments_0[3], moments_1[3], vol = 1;
+  PetscReal       lo[3] = {-5,0,-5}, hi[3] = {5,5,5}, h[3], hp[3], *xx_t[MAX_NUM_THRDS], *yy_t[MAX_NUM_THRDS], *wp_t[MAX_NUM_THRDS];
   Vec             rho_t[MAX_NUM_THRDS], rhs_t[MAX_NUM_THRDS];
   Mat             M_p_t[MAX_NUM_THRDS];
 #if defined PETSC_USE_LOG
@@ -231,7 +231,6 @@ PetscErrorCode go()
 #endif
 #if defined(PETSC_HAVE_OPENMP) && defined(PETSC_HAVE_THREADSAFETY)
   PetscInt        numthreads = PetscNumOMPThreads;
-  double          starttime, endtime;
 #else
   PetscInt        numthreads = 1;
 #endif
@@ -263,7 +262,6 @@ PetscErrorCode go()
     PetscCall(DMCreateDS(dm_t[tid]));
     PetscCall(PetscFEDestroy(&fe));
     // helper vectors
-    PetscCall(DMSetOutputSequenceNumber(dm_t[tid], timestep, time)); // not used
     PetscCall(DMCreateGlobalVector(dm_t[tid], &rho_t[tid]));
     PetscCall(DMCreateGlobalVector(dm_t[tid], &rhs_t[tid]));
     // this mimics application code
@@ -329,49 +327,8 @@ PetscErrorCode go()
     PetscCall(DMDestroy(&sw_t[tid]));
   }
   PetscCall(PetscLogEventEnd(solve_ev,0,0,0,0));
-  /* for timing */
-  PetscCall(PetscOptionsClearValue(NULL,"-ftop_ksp_converged_reason"));
-  PetscCall(PetscOptionsClearValue(NULL,"-ftop_ksp_monitor"));
-  PetscCall(PetscOptionsClearValue(NULL,"-ftop_ksp_view"));
-  PetscCall(PetscOptionsClearValue(NULL,"-info"));
-  // repeat solve many times to get warmed up data
-  PetscCall(PetscLogStagePush(stage));
-#if defined(PETSC_HAVE_OPENMP) && defined(PETSC_HAVE_THREADSAFETY)
-  starttime = MPI_Wtime();
-#endif
-  PetscCall(PetscLogEventBegin(solve_loop_ev,0,0,0,0));
-  for (int d=0; d<NUM_SOLVE_LOOPS; d++) {
-  /* Create particle swarm */
-    PetscPragmaOMP(parallel for)
-    for (int tid=0; tid<numthreads; tid++) {
-      PetscCallAbort(PETSC_COMM_SELF,createSwarm(dm_t[tid], &sw_t[tid]));
-    }
-    PetscPragmaOMP(parallel for)
-    for (int tid=0; tid<numthreads; tid++) {
-      PetscCallAbort(PETSC_COMM_SELF,particlesToGrid(dm_t[tid], sw_t[tid], Np_t[tid], tid, dim, target, xx_t[tid], yy_t[tid], wp_t[tid], rho_t[tid], &M_p_t[tid]));
-    }
-    PetscPragmaOMP(parallel for)
-    for (int tid=0; tid<numthreads; tid++) {
-      PetscCallAbort(PETSC_COMM_SELF,VecCopy(rho_t[tid], rhs_t[tid])); /* Identity: M^1 M rho */
-    }
-    PetscPragmaOMP(parallel for)
-    for (int tid=0; tid<numthreads; tid++) {
-      PetscCallAbort(PETSC_COMM_SELF,gridToParticles(dm_t[tid], sw_t[tid], NULL, rhs_t[tid], M_p_t[tid]));
-    }
-    /* Cleanup */
-    for (int tid=0; tid<numthreads; tid++) {
-      PetscCall(MatDestroy(&M_p_t[tid]));
-      PetscCall(DMDestroy(&sw_t[tid]));
-    }
-  }
-  PetscCall(PetscLogEventEnd(solve_loop_ev,0,0,0,0));
-#if defined(PETSC_HAVE_OPENMP) && defined(PETSC_HAVE_THREADSAFETY)
-  endtime = MPI_Wtime();
-  solve_time += (endtime - starttime);
-#endif
-  PetscCall(PetscLogStagePop());
   //
-  PetscCall(PetscPrintf(PETSC_COMM_SELF,"Total number density: %20.12e (%20.12e); x-momentum = %g (%g); energy = %g error = %e, %D particles. Use %D threads, Solve time: %g\n", moments_1[0], moments_0[0], moments_1[1], moments_0[1], moments_1[2], (moments_1[2]-moments_0[2])/moments_0[2],Np[0]*Np[1],numthreads,solve_time));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"Total number density: %20.12e (%20.12e); x-momentum = %g (%g); energy = %g error = %e, %D particles. Use %D threads\n", moments_1[0], moments_0[0], moments_1[1], moments_0[1], moments_1[2], (moments_1[2]-moments_0[2])/moments_0[2],Np[0]*Np[1],numthreads));
   /* Cleanup */
   for (int tid=0; tid<numthreads; tid++) {
     PetscCall(VecDestroy(&rho_t[tid]));
@@ -398,19 +355,19 @@ int main(int argc, char **argv)
   test:
     suffix: 0
     requires: double triangle
-    args: -dm_plex_simplex 0 -dm_plex_box_faces 4,2 -dm_plex_box_lower -2.0,0.0 -dm_plex_box_upper 2.0,2.0 -petscspace_degree 2 -ftop_ksp_type lsqr -ftop_pc_type none -dm_view -ftop_ksp_converged_reason -ftop_ksp_rtol 1.e-14
+    args: -dm_plex_simplex 0 -dm_plex_box_faces 8,4 -np 10 -dm_plex_box_lower -2.0,0.0 -dm_plex_box_upper 2.0,2.0 -petscspace_degree 2 -ftop_ksp_type lsqr -ftop_pc_type none -dm_view -ftop_ksp_converged_reason -ftop_ksp_rtol 1.e-14
     filter: grep -v DM_ | grep -v atomic
 
   test:
     suffix: 1
     requires: double triangle
-    args: -dm_plex_simplex 0 -dm_plex_box_faces 4,2 -dm_plex_box_lower -2.0,0.0 -dm_plex_box_upper 2.0,2.0 -petscspace_degree 2 -dm_plex_hash_location -ftop_ksp_type lsqr -ftop_pc_type bjacobi -ftop_sub_pc_type lu -ftop_sub_pc_factor_shift_type nonzero -dm_view -ftop_ksp_converged_reason -ftop_ksp_rtol 1.e-14
+    args: -dm_plex_simplex 0 -dm_plex_box_faces 8,4 -np 10 -dm_plex_box_lower -2.0,0.0 -dm_plex_box_upper 2.0,2.0 -petscspace_degree 2 -dm_plex_hash_location -ftop_ksp_type lsqr -ftop_pc_type bjacobi -ftop_sub_pc_type lu -ftop_sub_pc_factor_shift_type nonzero -dm_view -ftop_ksp_converged_reason -ftop_ksp_rtol 1.e-14
     filter: grep -v DM_ | grep -v atomic
 
   test:
     suffix: 2
     requires: double triangle
-    args: -dm_plex_simplex 0 -dm_plex_box_faces 4,2 -dm_plex_box_lower -2.0,0.0 -dm_plex_box_upper 2.0,2.0 -petscspace_degree 2 -dm_plex_hash_location -ftop_ksp_type cg -ftop_pc_type jacobi -dm_view -ftop_ksp_converged_reason -ftop_ksp_rtol 1.e-14
+    args: -dm_plex_simplex 0 -dm_plex_box_faces 8,4 -np 10 -dm_plex_box_lower -2.0,0.0 -dm_plex_box_upper 2.0,2.0 -petscspace_degree 2 -dm_plex_hash_location -ftop_ksp_type cg -ftop_pc_type jacobi -dm_view -ftop_ksp_converged_reason -ftop_ksp_rtol 1.e-14
     filter: grep -v DM_ | grep -v atomic
 
 TEST*/

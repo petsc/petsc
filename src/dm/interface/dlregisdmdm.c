@@ -75,6 +75,7 @@ PetscErrorCode DMInitializePackage(void)
   PetscCall(PetscLogEventRegister("DMCreateRestrict",       DM_CLASSID,&DM_CreateRestriction));
   PetscCall(PetscLogEventRegister("DMCreateInject",         DM_CLASSID,&DM_CreateInjection));
   PetscCall(PetscLogEventRegister("DMCreateMat",            DM_CLASSID,&DM_CreateMatrix));
+  PetscCall(PetscLogEventRegister("DMCreateMassMat",        DM_CLASSID,&DM_CreateMassMatrix));
   PetscCall(PetscLogEventRegister("DMLoad",                 DM_CLASSID,&DM_Load));
   PetscCall(PetscLogEventRegister("DMAdaptInterp",          DM_CLASSID,&DM_AdaptInterpolator));
 

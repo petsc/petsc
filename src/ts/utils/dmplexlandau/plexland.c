@@ -215,7 +215,6 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
     PetscCall(VecGetDM(a_X, &pack));
     PetscCheck(pack,PETSC_COMM_SELF, PETSC_ERR_PLIB, "pack has no DM");
     PetscCall(PetscLogEventBegin(ctx->events[1],0,0,0,0));
-    PetscCall(MatZeroEntries(JacP));
     for (PetscInt fieldA=0;fieldA<ctx->num_species;fieldA++) {
       Eq_m[fieldA] = ctx->Ez * ctx->t_0 * ctx->charges[fieldA] / (ctx->v_0 * ctx->masses[fieldA]); /* normalize dimensionless */
       if (dim==2) Eq_m[fieldA] *=  2 * PETSC_PI; /* add the 2pi term that is not in Landau */
@@ -507,16 +506,16 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
             PetscCheck(IPf_idx == IPf_sz_glb,PETSC_COMM_SELF, PETSC_ERR_PLIB, "IPf_idx != IPf_sz %" PetscInt_FMT " %" PetscInt_FMT,IPf_idx,IPf_sz_glb);
             // add alpha and put in gg2/3
             for (PetscInt fieldA = 0, f_off = ctx->species_offset[grid]; fieldA < loc_Nf; ++fieldA) {
-              for (d2 = 0; d2 < dim; d2++) {
+              for (d2 = 0; d2 < LANDAU_DIM; d2++) {
                 gg2[fieldA][d2] = gg2_temp[d2]*nu_alpha[fieldA+f_off];
-                for (d3 = 0; d3 < dim; d3++) {
+                for (d3 = 0; d3 < LANDAU_DIM; d3++) {
                   gg3[fieldA][d2][d3] = -gg3_temp[d2][d3]*nu_alpha[fieldA+f_off]*invMass[fieldA+f_off];
                 }
               }
             }
             /* add electric field term once per IP */
             for (PetscInt fieldA = 0, f_off = ctx->species_offset[grid] ; fieldA < loc_Nf; ++fieldA) {
-              gg2[fieldA][dim-1] += Eq_m[fieldA+f_off];
+              gg2[fieldA][LANDAU_DIM-1] += Eq_m[fieldA+f_off];
             }
             /* Jacobian transform - g2, g3 */
             for (PetscInt fieldA = 0; fieldA < loc_Nf; ++fieldA) {
@@ -1293,14 +1292,13 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
   ctx->batch_view_idx = 0;
   ctx->interpolate    = PETSC_TRUE;
   ctx->gpu_assembly   = PETSC_TRUE;
-  ctx->aux_bool       = PETSC_FALSE;
+  ctx->norm_state     = 0;
   ctx->electronShift  = 0;
   ctx->M              = NULL;
   ctx->J              = NULL;
   /* geometry and grids */
   ctx->sphere         = PETSC_FALSE;
   ctx->inflate        = PETSC_FALSE;
-  ctx->aux_bool       = PETSC_FALSE;
   ctx->use_p4est      = PETSC_FALSE;
   ctx->num_sections   = 3; /* 2, 3 or 4 */
   for (PetscInt grid=0;grid<LANDAU_MAX_GRIDS;grid++) {
@@ -1556,7 +1554,7 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
   PetscSection      section[LANDAU_MAX_GRIDS],globsection[LANDAU_MAX_GRIDS];
   PetscQuadrature   quad;
   const PetscReal   *quadWeights;
-  PetscInt          numCells[LANDAU_MAX_GRIDS],Nq,Nf[LANDAU_MAX_GRIDS], ncellsTot=0;
+  PetscInt          numCells[LANDAU_MAX_GRIDS],Nq,Nf[LANDAU_MAX_GRIDS], ncellsTot=0, MAP_BF_SIZE = 64*LANDAU_DIM*LANDAU_DIM*LANDAU_MAX_Q_FACE*LANDAU_MAX_SPECIES;
   PetscTabulation   *Tf;
   PetscDS           prob;
 
@@ -1579,12 +1577,11 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
     PetscCall(PetscSectionGetNumFields(section[grid], &Nf[grid]));
     ncellsTot += numCells[grid];
   }
-#define MAP_BF_SIZE (64*LANDAU_DIM*LANDAU_DIM*LANDAU_MAX_Q_FACE*LANDAU_MAX_SPECIES)
   /* create GPU assembly data */
   if (ctx->gpu_assembly) { /* we need GPU object with GPU assembly */
     PetscContainer          container;
     PetscScalar             elemMatrix[LANDAU_MAX_NQ*LANDAU_MAX_NQ*LANDAU_MAX_SPECIES*LANDAU_MAX_SPECIES], *elMat;
-    pointInterpolationP4est pointMaps[MAP_BF_SIZE][LANDAU_MAX_Q_FACE];
+    pointInterpolationP4est (*pointMaps)[LANDAU_MAX_Q_FACE];
     P4estVertexMaps         *maps;
     const PetscInt          *plex_batch=NULL,Nb=Nq; // tensor elements;
     LandauIdx               *coo_elem_offsets=NULL, *coo_elem_fullNb=NULL, (*coo_elem_point_offsets)[LANDAU_MAX_NQ+1] = NULL;
@@ -1592,6 +1589,7 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
     PetscCall(PetscInfo(ctx->plex[0], "Make GPU maps %d\n",1));
     PetscCall(PetscLogEventBegin(ctx->events[2],0,0,0,0));
     PetscCall(PetscMalloc(sizeof(*maps)*ctx->num_grids, &maps));
+    PetscCall(PetscMalloc(sizeof(*pointMaps)*MAP_BF_SIZE, &pointMaps));
 
     if (ctx->coo_assembly) { // setup COO assembly -- put COO metadata directly in ctx->SData_d
       PetscCall(PetscMalloc3(ncellsTot+1,&coo_elem_offsets,ncellsTot,&coo_elem_fullNb,ncellsTot, &coo_elem_point_offsets)); // array of integer pointers
@@ -1803,6 +1801,7 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
       PetscCall(MatSetPreallocationCOO(ctx->J,ctx->SData_d.coo_size,oor,ooc));
       PetscCall(PetscFree2(oor,ooc));
     }
+    PetscCall(PetscFree(pointMaps));
     PetscCall(PetscContainerCreate(PETSC_COMM_SELF, &container));
     PetscCall(PetscContainerSetPointer(container, (void *)maps));
     PetscCall(PetscContainerSetUserDestroy(container, LandauGPUMapsDestroy));
@@ -2724,7 +2723,7 @@ PetscErrorCode DMPlexLandauCreateMassMatrix(DM pack, Mat *Amat)
 }
 
 /*@
- DMPlexLandauIFunction - TS residual calculation
+ DMPlexLandauIFunction - TS residual calculation, confusingly this computes the Jacobian w/o mass
 
  Collective on ts
 
@@ -2745,12 +2744,13 @@ PetscErrorCode DMPlexLandauCreateMassMatrix(DM pack, Mat *Amat)
  @*/
 PetscErrorCode DMPlexLandauIFunction(TS ts, PetscReal time_dummy, Vec X, Vec X_t, Vec F, void *actx)
 {
-  LandauCtx      *ctx=(LandauCtx*)actx;
-  PetscInt       dim;
-  DM             pack;
+  LandauCtx        *ctx=(LandauCtx*)actx;
+  PetscInt         dim;
+  DM               pack;
 #if defined(PETSC_HAVE_THREADSAFETY)
-  double         starttime, endtime;
+  double           starttime, endtime;
 #endif
+  PetscObjectState state;
 
   PetscFunctionBegin;
   PetscCall(TSGetDM(ts,&pack));
@@ -2765,13 +2765,16 @@ PetscErrorCode DMPlexLandauIFunction(TS ts, PetscReal time_dummy, Vec X, Vec X_t
   starttime = MPI_Wtime();
 #endif
   PetscCall(DMGetDimension(pack, &dim));
-  if (!ctx->aux_bool) {
-    PetscCall(PetscInfo(ts, "Create Landau Jacobian t=%g X=%p %s\n",time_dummy,X_t,ctx->aux_bool ? " -- seems to be in line search" : ""));
+  PetscCall(PetscObjectStateGet((PetscObject)ctx->J,&state));
+  if (state != ctx->norm_state) {
+    PetscCall(PetscInfo(ts, "Create Landau Jacobian t=%g J.state %" PetscInt64_FMT " --> %" PetscInt64_FMT "\n",time_dummy, ctx->norm_state, state));
+    PetscCall(MatZeroEntries(ctx->J));
     PetscCall(LandauFormJacobian_Internal(X,ctx->J,dim,0.0,(void*)ctx));
     PetscCall(MatViewFromOptions(ctx->J, NULL, "-dm_landau_jacobian_view"));
-    ctx->aux_bool = PETSC_TRUE;
+    PetscCall(PetscObjectStateGet((PetscObject)ctx->J,&state));
+    ctx->norm_state = state;
   } else {
-    PetscCall(PetscInfo(ts, "Skip forming Jacobian, has not changed (should check norm)\n"));
+    PetscCall(PetscInfo(ts, "WARNING Skip forming Jacobian, has not changed %" PetscInt64_FMT "\n",state));
   }
   /* mat vec for op */
   PetscCall(MatMult(ctx->J,X,F)); /* C*f */
@@ -2799,7 +2802,7 @@ PetscErrorCode DMPlexLandauIFunction(TS ts, PetscReal time_dummy, Vec X, Vec X_t
 }
 
 /*@
- DMPlexLandauIJacobian - TS Jacobian construction
+ DMPlexLandauIJacobian - TS Jacobian construction, confusingly this adds mass
 
  Collective on ts
 
@@ -2822,12 +2825,14 @@ PetscErrorCode DMPlexLandauIFunction(TS ts, PetscReal time_dummy, Vec X, Vec X_t
  @*/
 PetscErrorCode DMPlexLandauIJacobian(TS ts, PetscReal time_dummy, Vec X, Vec U_tdummy, PetscReal shift, Mat Amat, Mat Pmat, void *actx)
 {
-  LandauCtx      *ctx=NULL;
-  PetscInt       dim;
-  DM             pack;
+  LandauCtx        *ctx=NULL;
+  PetscInt         dim;
+  DM               pack;
 #if defined(PETSC_HAVE_THREADSAFETY)
-  double         starttime, endtime;
+  double           starttime, endtime;
 #endif
+  PetscObjectState state;
+
   PetscFunctionBegin;
   PetscCall(TSGetDM(ts,&pack));
   PetscCall(DMGetApplicationContext(pack, &ctx));
@@ -2843,16 +2848,16 @@ PetscErrorCode DMPlexLandauIJacobian(TS ts, PetscReal time_dummy, Vec X, Vec U_t
 #if defined(PETSC_HAVE_THREADSAFETY)
   starttime = MPI_Wtime();
 #endif
-  PetscCall(PetscInfo(ts, "Adding just mass to Jacobian t=%g, shift=%g\n",(double)time_dummy,(double)shift));
+  PetscCall(PetscInfo(ts, "Adding mass to Jacobian t=%g, shift=%g\n",(double)time_dummy,(double)shift));
   PetscCheck(shift!=0.0,ctx->comm, PETSC_ERR_PLIB, "zero shift");
-  PetscCheck(ctx->aux_bool,ctx->comm, PETSC_ERR_PLIB, "wrong state");
+  PetscCall(PetscObjectStateGet((PetscObject)ctx->J,&state));
+  PetscCheck(state == ctx->norm_state,ctx->comm, PETSC_ERR_PLIB, "wrong state, %" PetscInt64_FMT " %" PetscInt64_FMT "",ctx->norm_state,state);
   if (!ctx->use_matrix_mass) {
     PetscCall(LandauFormJacobian_Internal(X,ctx->J,dim,shift,(void*)ctx));
     PetscCall(MatViewFromOptions(ctx->J, NULL, "-dm_landau_mat_view"));
   } else { /* add mass */
     PetscCall(MatAXPY(Pmat,shift,ctx->M,SAME_NONZERO_PATTERN));
   }
-  ctx->aux_bool = PETSC_FALSE;
 #if defined(PETSC_HAVE_THREADSAFETY)
   if (ctx->stage) {
     endtime = MPI_Wtime();

@@ -184,7 +184,7 @@ PetscErrorCode LandauKokkosStaticDataSet(DM plex, const PetscInt Nq, const Petsc
     Kokkos::deep_copy (*w, h_w);
 
     if (dim==3) {
-      const Kokkos::View<PetscReal*, Kokkos::LayoutLeft, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged> > h_z (a_z , dim==3 ? nip : 0);
+      const Kokkos::View<PetscReal*, Kokkos::LayoutLeft, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged> > h_z (a_z , nip);
       auto z = new Kokkos::View<PetscReal*, Kokkos::LayoutLeft> ("z", nip);
       SData_d->z = static_cast<void*>(z);
       Kokkos::deep_copy (*z, h_z);

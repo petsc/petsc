@@ -198,6 +198,7 @@ static PetscErrorCode DMSwarmDestroyVectorFromField_Private(DM dm, const char fi
   PetscCall(PetscObjectQueryFunction((PetscObject) *vec, name, &fptr));
   PetscCheck(fptr,PetscObjectComm((PetscObject) dm), PETSC_ERR_USER, "Vector being destroyed was not created from DMSwarm field(%s)", fieldname);
   PetscCall(DMSwarmDataFieldRestoreAccess(gfield));
+  PetscCall(VecResetArray(*vec));
   PetscCall(VecDestroy(vec));
   PetscFunctionReturn(0);
 }
@@ -210,6 +211,7 @@ static PetscErrorCode DMSwarmCreateVectorFromField_Private(DM dm, const char fie
   PetscInt       bs, n;
   char           name[PETSC_MAX_PATH_LEN];
   PetscMPIInt    size;
+  PetscBool      iscuda,iskokkos;
 
   PetscFunctionBegin;
   if (!swarm->issetup) PetscCall(DMSetUp(dm));
@@ -218,11 +220,16 @@ static PetscErrorCode DMSwarmCreateVectorFromField_Private(DM dm, const char fie
   PetscCheck(type == PETSC_REAL,PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Only valid for PETSC_REAL");
 
   PetscCallMPI(MPI_Comm_size(comm, &size));
-  if (size == 1) {
-    PetscCall(VecCreateSeqWithArray(comm, bs, n*bs, array, vec));
-  } else {
-    PetscCall(VecCreateMPIWithArray(comm, bs, n*bs, PETSC_DETERMINE, array, vec));
-  }
+  PetscCall(PetscStrcmp(dm->vectype,VECKOKKOS,&iskokkos));
+  PetscCall(PetscStrcmp(dm->vectype,VECCUDA,&iscuda));
+  PetscCall(VecCreate(comm,vec));
+  PetscCall(VecSetSizes(*vec,n*bs,PETSC_DETERMINE));
+  PetscCall(VecSetBlockSize(*vec,bs));
+  if (iskokkos) PetscCall(VecSetType(*vec,VECKOKKOS));
+  else if (iscuda) PetscCall(VecSetType(*vec,VECCUDA));
+  else PetscCall(VecSetType(*vec,VECSTANDARD));
+  PetscCall(VecPlaceArray(*vec,array));
+
   PetscCall(PetscSNPrintf(name, PETSC_MAX_PATH_LEN-1, "DMSwarmSharedField_%s", fieldname));
   PetscCall(PetscObjectSetName((PetscObject) *vec, name));
 
