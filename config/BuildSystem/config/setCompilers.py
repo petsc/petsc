@@ -592,6 +592,16 @@ class Configure(config.base.Configure):
       return found
 
   @staticmethod
+  def isARM(log):
+    '''Returns true if system is processor-type is ARM'''
+    (output, error, status) = config.base.Configure.executeShellCommand('uname -p', log = log)
+    if not status:
+      found = (output.lower().strip() == 'arm')
+      if found:
+        if log: log.write('Detected ARM processor\n\n')
+      return found
+
+  @staticmethod
   def isDarwinCatalina(log):
     '''Returns true if system is Darwin/MacOSX Version Catalina or higher'''
     import platform
