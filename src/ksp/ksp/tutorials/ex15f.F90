@@ -4,11 +4,6 @@
 !      -user_defined_pc : Activate a user-defined preconditioner
 !
 !
-!!/*T
-!   Concepts: KSP^basic parallel example
-!   Concepts: PC^setting a user-defined shell preconditioner
-!   Processors: n
-!T*/
 
 !
 !     -------------------------------------------------------------------------

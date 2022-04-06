@@ -1,11 +1,6 @@
 
 static char help[] = "Reads a PETSc matrix and computes the 2 norm of the columns\n\n";
 
-/*T
-   Concepts: Mat^loading a binary matrix;
-   Processors: n
-T*/
-
 /*
   Include "petscmat.h" so that we can use matrices.
   automatically includes:

@@ -7,17 +7,6 @@
 !
 !  The C version of this code is rosenbrock1.c
 !
-!!/*T
-!  Concepts: TAO^Solving an unconstrained minimization problem
-!  Routines: TaoCreate();
-!  Routines: TaoSetType(); TaoSetObjectiveAndGradient();
-!  Routines: TaoSetHessian();
-!  Routines: TaoSetSolution();
-!  Routines: TaoSetFromOptions();
-!  Routines: TaoSolve();
-!  Routines: TaoDestroy();
-!  Processors: 1
-!T*/
 
 !
 

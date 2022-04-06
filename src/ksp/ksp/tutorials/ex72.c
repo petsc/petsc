@@ -21,10 +21,6 @@ users manual for a discussion of preloading.  Input parameters include\n\
    mpiexec -n <np> ./ex72 -f0 <datafile> -ksp_type cg -pc_type asm -pc_asm_type basic -sub_pc_type icc -mat_type sbaij
  \n\n";
 */
-/*T
-   Concepts: KSP^solving a linear system
-   Processors: n
-T*/
 
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file

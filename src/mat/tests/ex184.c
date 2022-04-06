@@ -3,10 +3,6 @@ static char help[] = "Example of inverting a block diagonal matrix.\n"
 
 #include <petscmat.h>
 
-/*T
-    Concepts: Mat
-T*/
-
 int main(int argc, char **args)
 {
     Mat            A,A_inv;

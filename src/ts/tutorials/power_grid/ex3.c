@@ -28,9 +28,6 @@ F*/
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers
 */
-/*T
-
-T*/
 
 #include <petscts.h>
 #include "ex3.h"

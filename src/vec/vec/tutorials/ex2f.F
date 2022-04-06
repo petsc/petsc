@@ -4,10 +4,6 @@
 !               processor, 2 on the second, etc.  Then each processor adds
 !               one to all elements except the last rank.
 !
-!/*T
-!   Concepts: vectors^assembling
-!   Processors: n
-!T*/
 ! -----------------------------------------------------------------------
 
       program main

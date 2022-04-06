@@ -1,17 +1,13 @@
 
 static char help[] = "Demonstrates use of VecCreateGhost().\n\n";
 
-/*T
-   Concepts: vectors^assembling vectors;
-   Concepts: vectors^ghost padding;
-   Processors: n
-
+/*
    Description: Ghost padding is one way to handle local calculations that
       involve values from other processors. VecCreateGhost() provides
       a way to create vectors with extra room at the end of the vector
       array to contain the needed ghost values from other processors,
       vector computations are otherwise unaffected.
-T*/
+*/
 
 /*
   Include "petscvec.h" so that we can use vectors.  Note that this file

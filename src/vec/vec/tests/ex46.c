@@ -1,10 +1,6 @@
 
 static char help[] = "Tests PetscViewerBinary VecView()/VecLoad() function correctly when binary header is skipped.\n\n";
 
-/*T
- Concepts: viewers^skipheader^mpiio
-T*/
-
 #include <petscviewer.h>
 #include <petscvec.h>
 

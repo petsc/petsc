@@ -2,12 +2,6 @@ static char help[] = "Performs adjoint sensitivity analysis for the van der Pol 
 Input parameters include:\n\
       -mu : stiffness parameter\n\n";
 
-/*
-   Concepts: TS^time-dependent nonlinear problems
-   Concepts: TS^van der Pol equation
-   Concepts: TS^adjoint sensitivity analysis
-   Processors: 1
-*/
 /* ------------------------------------------------------------------------
 
    This program solves the van der Pol equation

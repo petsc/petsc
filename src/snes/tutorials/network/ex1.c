@@ -5,11 +5,6 @@ static char help[] = "This example demonstrates the use of DMNetwork interface w
                       This example shows the use of subnetwork feature in DMNetwork. \n\
                       Run this program: mpiexec -n <n> ./ex1 \n\\n";
 
-/* T
-   Concepts: DMNetwork
-   Concepts: PETSc SNES solver
-*/
-
 #include "power/power.h"
 #include "water/water.h"
 

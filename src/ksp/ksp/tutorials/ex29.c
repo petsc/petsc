@@ -1,8 +1,3 @@
-/*T
-   Concepts: KSP^solving a system of linear equations
-   Concepts: KSP^Laplacian, 2d
-   Processors: n
-T*/
 
 /*
 Added at the request of Marc Garbey.

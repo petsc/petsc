@@ -2,10 +2,6 @@
 !
 !  Description: Uses the Newton method to solve a two-variable system.
 !
-!!/*T
-!  Concepts: SNES^basic uniprocessor example
-!  Processors: 1
-!T*/
 
       program main
 #include <petsc/finclude/petsc.h>

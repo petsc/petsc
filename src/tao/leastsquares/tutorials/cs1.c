@@ -23,19 +23,6 @@ static char help[] = "Finds the least-squares solution to the under constraint l
             A is a M*N real matrix (M<N), x is sparse. \n\
             We find the sparse solution by solving 0.5*||Ax-b||^2 + lambda*||D*x||_1, where lambda (by default 1e-4) is a user specified weight.\n\
             D is the K*N transform matrix so that D*x is sparse. By default D is identity matrix, so that D*x = x.\n";
-/*T
-   Concepts: TAO^Solving a system of nonlinear equations, nonlinear least squares
-   Routines: TaoCreate();
-   Routines: TaoSetType();
-   Routines: TaoSetSeparableObjectiveRoutine();
-   Routines: TaoSetJacobianRoutine();
-   Routines: TaoSetSolution();
-   Routines: TaoSetFromOptions();
-   Routines: TaoSetConvergenceHistory(); TaoGetConvergenceHistory();
-   Routines: TaoSolve();
-   Routines: TaoView(); TaoDestroy();
-   Processors: 1
-T*/
 
 #define M 3
 #define N 5

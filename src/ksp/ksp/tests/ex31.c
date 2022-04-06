@@ -4,11 +4,6 @@ This   Input parameters include\n\
   -f <input_file> : file to load \n\
   -partition -mat_partitioning_view \n\\n";
 
-/*T
-   Concepts: KSP^solving a linear system
-   Processors: n
-T*/
-
 #include <petscksp.h>
 
 int main(int argc,char **args)

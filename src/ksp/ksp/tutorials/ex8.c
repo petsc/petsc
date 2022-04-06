@@ -22,11 +22,6 @@ parameters include:\n\
    of the ASM preconditioner.
 */
 
-/*T
-   Concepts: KSP^Additive Schwarz Method (ASM) with user-defined subdomains
-   Processors: n
-T*/
-
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:

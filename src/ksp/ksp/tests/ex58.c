@@ -1,11 +1,6 @@
 
 static char help[] = "Solves a tridiagonal linear system with KSP.\n\n";
 
-/*T
-   Concepts: KSP^solving a system of linear equations
-   Processors: 1
-T*/
-
 /*
   Modified from ex1.c for testing matrix operations when matrix structure is changed.
   Contributed by Jose E. Roman, Feb. 2012.

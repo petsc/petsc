@@ -2,10 +2,6 @@
 !
 !  Description: Displays a vector visually.
 !
-!/*T
-!   Concepts: vectors^drawing vectors;
-!   Processors: n
-!T*/
 ! -----------------------------------------------------------------------
 
       program main

@@ -6,12 +6,6 @@ also uses multiple profiling stages.  Input arguments are\n\
   -m <size> : problem size\n\
   -mat_nonsym : use nonsymmetric matrix (default is symmetric)\n\n";
 
-/*T
-   Concepts: KSP^repeatedly solving linear systems;
-   Concepts: PetscLog^profiling multiple stages of code;
-   Processors: n
-T*/
-
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:

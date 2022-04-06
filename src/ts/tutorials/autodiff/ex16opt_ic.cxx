@@ -3,13 +3,6 @@ Input parameters include:\n\
       -mu : stiffness parameter\n\n";
 
 /*
-   Concepts: TS^time-dependent nonlinear problems
-   Concepts: TS^van der Pol equation
-   Concepts: Optimization using adjoint sensitivities
-   Concepts: Automatic differentation using ADOL-C
-   Processors: 1
-*/
-/*
    REQUIRES configuration of PETSc with option --download-adolc.
 
    For documentation on ADOL-C, see

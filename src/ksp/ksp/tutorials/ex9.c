@@ -4,13 +4,6 @@ Also, this example illustrates the repeated\n\
 solution of linear systems, while reusing matrix, vector, and solver data\n\
 structures throughout the process.  Note the various stages of event logging.\n\n";
 
-/*T
-   Concepts: KSP^repeatedly solving linear systems;
-   Concepts: PetscLog^profiling multiple stages of code;
-   Concepts: PetscLog^user-defined event profiling;
-   Processors: n
-T*/
-
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:

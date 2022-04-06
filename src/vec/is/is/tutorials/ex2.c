@@ -1,15 +1,6 @@
 
 static char help[] = "Demonstrates creating a stride index set.\n\n";
 
-/*T
-    Concepts: index sets^creating a stride index set;
-    Concepts: stride^creating a stride index set;
-    Concepts: IS^creating a stride index set;
-
-    Description: Creates an index set based on a stride. Views that index set
-    and then destroys it.
-T*/
-
 /*
   Include petscis.h so we can use PETSc IS objects. Note that this automatically
   includes petscsys.h.

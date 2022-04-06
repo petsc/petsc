@@ -6,13 +6,6 @@ static char help[] ="Solves a simple data assimilation problem with one dimensio
     Not yet tested in parallel
 
 */
-/*
-   Concepts: TS^time-dependent linear problems
-   Concepts: TS^heat equation
-   Concepts: TS^diffusion equation
-   Concepts: adjoints
-   Processors: n
-*/
 
 /* ------------------------------------------------------------------------
 

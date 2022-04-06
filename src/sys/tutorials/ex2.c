@@ -1,15 +1,6 @@
 
 static char help[] = "Synchronized printing.\n\n";
 
-/*T
-   Concepts: petsc^introduction
-   Concepts: printing^synchronized
-   Concepts: printing^in parallel
-   Concepts: printf^synchronized
-   Concepts: printf^in parallel
-   Processors: n
-T*/
-
 #include <petscsys.h>
 int main(int argc,char **argv)
 {

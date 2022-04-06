@@ -1,11 +1,6 @@
 static char help[] = "Demonstrates automatic Jacobian generation using ADOL-C for a nonlinear reaction problem from chemistry.\n";
 
 /*
-   Concepts: TS^time-dependent nonlinear problems
-   Concepts: Automatic differentiation using ADOL-C
-   Processors: 1
-*/
-/*
    REQUIRES configuration of PETSc with option --download-adolc.
 
    For documentation on ADOL-C, see

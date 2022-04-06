@@ -5,14 +5,6 @@ Accepts an option -eta for the noise amplitude (set to 0 to deactivate)\n\
 Accepts an option -diagfunc [1,2,3] to select from different eigenvalue distributions\n\
 \n";
 
-/*T
-   Concepts: KSP^using nested solves
-   Concepts: KSP^using flexible Krylov methods
-   Concepts: PC^using PCShell to define custom PCs
-   Concepts: PC^using composite PCs
-   Processors: n
-T*/
-
 /*
   Solve (in parallel) a diagonal linear system.
 

@@ -1,12 +1,6 @@
 static char help[] = "Solves a ODE-constrained optimization problem -- finding the optimal initial conditions for the van der Pol equation.\n";
 
 /*
-  Concepts: TS^time-dependent nonlinear problems
-  Concepts: TS^van der Pol equation DAE equivalent
-  Concepts: TS^Optimization using adjoint sensitivity analysis
-  Processors: 1
-*/
-/*
   Notes:
   This code demonstrates how to solve an ODE-constrained optimization problem with TAO, TSAdjoint and TS.
   The nonlinear problem is written in an ODE equivalent form.

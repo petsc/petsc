@@ -1,11 +1,6 @@
 
 static char help[] = "Partition tiny grid.\n\n";
 
-/*T
-   Concepts: partitioning
-   Processors: 4
-T*/
-
 /*
   Include "petscmat.h" so that we can use matrices.  Note that this file
   automatically includes:

@@ -1,10 +1,6 @@
 
 static char help[] = "Test procedural KSPSetFromOptions() or at runtime; Test PCREDUNDANT.\n\n";
 
-/*T
-   Concepts: KSP^basic parallel example;
-   Processors: n
-T*/
 #include <petscksp.h>
 
 int main(int argc,char **args)

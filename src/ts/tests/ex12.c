@@ -1,11 +1,6 @@
 
 static char help[] ="Tests PetscObjectSetOptions() for TS object\n\n";
 
-/*
-   Concepts: TS^time-dependent nonlinear problems
-   Processors: n
-*/
-
 /* ------------------------------------------------------------------------
 
    This program solves the PDE

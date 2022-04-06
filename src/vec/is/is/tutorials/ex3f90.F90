@@ -2,11 +2,6 @@
 !    Description:  Creates an index set based on blocks of integers. Views that index set
 !    and then destroys it.
 !
-!/*T
-!    Concepts: index sets^manipulating a block index set;
-!    Concepts: Fortran90^accessing indices in index set;
-!
-!T*/
 !
       program main
 #include <petsc/finclude/petscis.h>

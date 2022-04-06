@@ -5,11 +5,6 @@
 static char help[] = "Solves the van der Pol equation.\n\
 Input parameters include:\n";
 
-/*
-   Concepts: TS^forward sensitivity analysis for time-dependent nonlinear problems
-   Concepts: TS^van der Pol equation DAE equivalent
-   Processors: 1
-*/
 /* ------------------------------------------------------------------------
 
    This code demonstrates how to compute trajectory sensitivties w.r.t. the stiffness parameter mu.

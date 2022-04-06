@@ -5,8 +5,6 @@ https://petsc.org/release/src/ksp/ksp/tutorials/ex23.c.html
 By: Miguel Arriaga
 
 Solves a tridiagonal linear system.
-Concepts: KSP^basic parallel example
-Processors: n
 
 Vec            x, b, u;           approx solution, RHS, exact solution
 Mat            A;                 linear system matrix

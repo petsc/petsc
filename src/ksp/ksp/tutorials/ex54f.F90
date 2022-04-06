@@ -13,9 +13,6 @@
 !
 !    User can change anisotropic shape with function ex54_psi().  Negative theta will switch to a circular anisotropy.
 !
-!!/*T
-!   Concepts: KSP^solving a system of linear equations
-!T*/
 
 ! -----------------------------------------------------------------------
       program main

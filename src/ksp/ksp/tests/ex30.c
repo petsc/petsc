@@ -20,10 +20,6 @@ It is copied and intended to move dirty codes from ksp/tutorials/ex10.c and simp
    ./ex30 -f0 $D/small -mat_sigma -3.999999999999999 -ksp_type fgmres -pc_type lu -pc_factor_mat_solver_type petsc -pc_factor_shift_type NONZERO -pc_factor_shift_amount 1.e-5 -ckerror
  \n\n";
 */
-/*T
-   Concepts: KSP solving a linear system
-   Processors: n
-T*/
 
 #include <petscksp.h>
 

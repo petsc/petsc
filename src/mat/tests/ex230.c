@@ -1,10 +1,5 @@
 static char help[] = "Example of using MatPreallocator\n\n";
 
-/*T
-   Concepts: Mat^matrix preallocation
-   Processors: n
-T*/
-
 #include <petscmat.h>
 
 PetscErrorCode ex1_nonsquare_bs1(void)

@@ -4,13 +4,6 @@ static char help[] = "Solve a small system and a large system through preloading
   -permute <natural,rcm,nd,...> : solve system in permuted indexing\n\
   -f0 <small_sys_binary> -f1 <large_sys_binary> \n\n";
 
-/*T
-   Concepts: KSP^basic parallel example
-   Concepts: Mat^loading a binary matrix and vector;
-   Concepts: PetscLog^preloading executable
-   Processors: n
-T*/
-
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:

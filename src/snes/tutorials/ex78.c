@@ -1,12 +1,6 @@
 
 static char help[] = "Newton methods to solve u''  = f in parallel with periodic boundary conditions.\n\n";
 
-/*T
-   Concepts: SNES^basic parallel example
-   Concepts: periodic boundary conditions
-   Processors: n
-T*/
-
 /*
    Compare this example to ex3.c that handles Dirichlet boundary conditions
 

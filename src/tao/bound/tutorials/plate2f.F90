@@ -12,18 +12,6 @@
 !    -bmy <byg>, where <byg> = number of grid points under plate in 2nd direction
 !    -bheight <ht>, where <ht> = height of the plate
 !
-!!/*T
-!   Concepts: TAO^Solving a bound constrained minimization problem
-!   Routines: TaoCreate();
-!   Routines: TaoSetType(); TaoSetObjectiveAndGradient();
-!   Routines: TaoSetHessian();
-!   Routines: TaoSetVariableBoundsRoutine();
-!   Routines: TaoSetSolution();
-!   Routines: TaoSetFromOptions();
-!   Routines: TaoSolve();
-!   Routines: TaoDestroy();
-!   Processors: n
-!T*/
 
       module mymodule
 #include "petsc/finclude/petscdmda.h"

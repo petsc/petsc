@@ -1,12 +1,5 @@
 static char help[] = "Nest vector functionality.\n\n";
 
-/*T
-   Concepts: vectors^block operators
-   Concepts: vectors^setting values
-   Concepts: vectors^local access to
-   Processors: n
-T*/
-
 #include <petscvec.h>
 
 static PetscErrorCode GetISs(Vec vecs[],IS is[])

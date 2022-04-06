@@ -2,12 +2,6 @@
 static char help[] = "Krylov methods to solve u''  = f in parallel with periodic boundary conditions,\n\
                       with a singular, inconsistent system.\n\n";
 
-/*T
-   Concepts: KSP^basic parallel example
-   Concepts: periodic boundary conditions
-   Processors: n
-T*/
-
 /*
 
    This tests solving singular inconsistent systems with GMRES

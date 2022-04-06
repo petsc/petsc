@@ -5,11 +5,6 @@ timestepping.  Runtime options include:\n\
   -debug : Activate debugging printouts\n\
   -nox   : Deactivate x-window graphics\n\n";
 
-/*
-   Concepts: TS^time-dependent nonlinear problems
-   Processors: n
-*/
-
 /* ------------------------------------------------------------------------
 
    This program solves the PDE

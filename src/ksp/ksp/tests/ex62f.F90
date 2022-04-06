@@ -3,11 +3,6 @@
 !   use of a user-provided preconditioner.  Input parameters include:
 !
 !
-!!/*T
-!   Concepts: KSP^basic parallel example
-!   Concepts: PC^setting a user-defined shell preconditioner
-!   Processors: n
-!T*/
 
 !
 !  -------------------------------------------------------------------------

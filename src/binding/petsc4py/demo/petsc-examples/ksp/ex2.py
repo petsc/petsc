@@ -12,11 +12,6 @@ Input parameters include:
     -n <mesh_n>       : number of mesh points in y-direction
 
 
-Concepts: KSP^basic parallel example
-Concepts: KSP^Laplacian, 2d
-Concepts: Laplacian, 2d
-Processors: n
-
 Vec            x,b,u;    # approx solution, RHS, exact solution
 Mat            A;        # linear system matrix
 KSP            ksp;      # linear solver context

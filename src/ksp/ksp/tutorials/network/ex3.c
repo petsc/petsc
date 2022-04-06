@@ -1,9 +1,6 @@
 static char help[] = "This example tests subnetwork coupling. \n\
               \n\n";
 
-/* T
-  Concepts: DMNetwork
-*/
 #include <petscdmnetwork.h>
 
 typedef struct{

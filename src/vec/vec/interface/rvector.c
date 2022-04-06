@@ -1896,8 +1896,6 @@ PetscErrorCode VecRestoreArrayRead(Vec x,const PetscScalar **a)
    This is for vectors associate with GPUs, the vector is not copied up before giving access. If you need correct
    values in the array use VecGetArray()
 
-   Concepts: vector^accessing local values
-
 .seealso: VecRestoreArray(), VecGetArrayRead(), VecGetArrays(), VecGetArrayF90(), VecGetArrayReadF90(), VecPlaceArray(), VecGetArray2d(),
           VecGetArrayPair(), VecRestoreArrayPair(), VecGetArray(), VecRestoreArrayWrite()
 @*/
@@ -3215,8 +3213,6 @@ PetscErrorCode  VecGetArray2d(Vec x,PetscInt m,PetscInt n,PetscInt mstart,PetscI
 
    For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
 
-   Concepts: vector^accessing local values as 2d array
-
 .seealso: VecGetArray(), VecRestoreArray(), VecGetArrays(), VecGetArrayF90(), VecPlaceArray(),
           VecRestoreArray2d(), DMDAVecGetArray(), DMDAVecRestoreArray(), VecGetArray3d(), VecRestoreArray3d(),
           VecGetArray1d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d()
@@ -3463,8 +3459,6 @@ PetscErrorCode  VecRestoreArray1d(Vec x,PetscInt m,PetscInt mstart,PetscScalar *
 
    This routine actually zeros out the a pointer.
 
-   Concepts: vector^accessing local values as 1d array
-
 .seealso: VecGetArray(), VecRestoreArray(), VecRestoreArrays(), VecRestoreArrayF90(), VecPlaceArray(),
           VecGetArray2d(), VecGetArray3d(), VecRestoreArray3d(), DMDAVecGetArray(), DMDAVecRestoreArray()
           VecGetArray1d(), VecRestoreArray2d(), VecGetArray4d(), VecRestoreArray4d()
@@ -3562,8 +3556,6 @@ PetscErrorCode  VecGetArray3d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt ms
    the arguments from DMDAGet[Ghost]Corners() are reversed in the call to VecGetArray3d().
 
    For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
-
-   Concepts: vector^accessing local values as 3d array
 
 .seealso: VecGetArray(), VecRestoreArray(), VecGetArrays(), VecGetArrayF90(), VecPlaceArray(),
           VecRestoreArray2d(), DMDAVecGetarray(), DMDAVecRestoreArray(), VecGetArray3d(), VecRestoreArray3d(),
@@ -3772,8 +3764,6 @@ PetscErrorCode  VecGetArray4d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt q,
    the arguments from DMDAGet[Ghost]Corners() are reversed in the call to VecGetArray3d().
 
    For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
-
-   Concepts: vector^accessing local values as 3d array
 
 .seealso: VecGetArray(), VecRestoreArray(), VecGetArrays(), VecGetArrayF90(), VecPlaceArray(),
           VecRestoreArray2d(), DMDAVecGetarray(), DMDAVecRestoreArray(), VecGetArray3d(), VecRestoreArray3d(),

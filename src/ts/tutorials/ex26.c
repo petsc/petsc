@@ -42,13 +42,6 @@ The flow can be driven with the lid or with bouyancy or both:\n\
       See also https://lists.mcs.anl.gov/pipermail/petsc-dev/2010-March/002362.html
 */
 
-/*T
-   Concepts: TS^solving a system of nonlinear equations (parallel multicomponent example);
-   Concepts: DMDA^using distributed arrays;
-   Concepts: TS^multicomponent
-   Concepts: TS^differential-algebraic equation
-   Processors: n
-T*/
 /* ------------------------------------------------------------------------
 
     We thank David E. Keyes for contributing the driven cavity discretization

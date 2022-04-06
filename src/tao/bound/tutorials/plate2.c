@@ -17,19 +17,6 @@ The command line options are:\n\
   -start <st>, where <st> =0 for zero vector, <st> >0 for random start, and <st> <0 \n\
                for an average of the boundary conditions\n\n";
 
-/*T
-   Concepts: TAO^Solving a bound constrained minimization problem
-   Routines: TaoCreate();
-   Routines: TaoSetType(); TaoSetObjectiveAndGradient();
-   Routines: TaoSetHessian();
-   Routines: TaoSetSolution();
-   Routines: TaoSetVariableBounds();
-   Routines: TaoSetFromOptions();
-   Routines: TaoSolve(); TaoView();
-   Routines: TaoDestroy();
-   Processors: n
-T*/
-
 /*
    User-defined application context - contains data needed by the
    application-provided call-back routines, FormFunctionGradient(),

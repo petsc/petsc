@@ -1,14 +1,6 @@
 
 static char help[] ="Solves the time independent Bratu problem using pseudo-timestepping.";
 
-/*
-   Concepts: TS^pseudo-timestepping
-   Concepts: TS^pseudo-timestepping
-   Concepts: TS^nonlinear problems
-   Processors: 1
-
-*/
-
 /* ------------------------------------------------------------------------
 
     This code demonstrates how one may solve a nonlinear problem

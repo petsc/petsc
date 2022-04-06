@@ -22,9 +22,6 @@ F*/
 Reference:
 Power System Modeling and Scripting - F. Milano
 */
-/*T
-
-T*/
 
 #include <petscts.h>
 

@@ -1,12 +1,9 @@
 
 static char help[] = "Computes the integral of 2*x/(1+x^2) from x=0..1 \nThis is equal to the ln(2).\n\n";
 
-/*T
-   Concepts: vectors^assembling vectors;
-   Processors: n
-
+/*
    Contributed by Mike McCourt <mccomic@iit.edu> and Nathan Johnston <johnnat@iit.edu>
-T*/
+*/
 
 /*
   Include "petscvec.h" so that we can use vectors.  Note that this file
