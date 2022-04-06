@@ -4,13 +4,6 @@ Uses 2-dimensional distributed arrays.\n\
   Solves the linear systems via multilevel methods \n\
 \n\n";
 
-/*T
-   Concepts: SNES^solving a system of nonlinear equations
-   Concepts: DMDA^using distributed arrays
-   Concepts: multigrid;
-   Processors: n
-T*/
-
 /*
 
     This example models the partial differential equation

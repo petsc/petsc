@@ -2,11 +2,6 @@ static char help[] = "Example of extracting an array of MPI submatrices from a g
   "This test can only be run in parallel.\n"
   "\n";
 
-/*T
-   Concepts: Mat^mat submatrix, parallel
-   Processors: n
-T*/
-
 #include <petscmat.h>
 
 int main(int argc, char **args)

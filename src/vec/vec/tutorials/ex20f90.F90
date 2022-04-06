@@ -1,10 +1,5 @@
 !
 !
-!/*T
-!   Concepts: vectors^using basic vector routines;
-!   Concepts: Fortran90^using basic vector routines;
-!   Processors: n
-!T*/
 !
 ! -----------------------------------------------------------------------
 

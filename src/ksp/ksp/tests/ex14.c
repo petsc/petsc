@@ -18,12 +18,6 @@ The command line options include:\n\
   -Nx <npx>, where <npx> = number of processors in the x-direction\n\
   -Ny <npy>, where <npy> = number of processors in the y-direction\n\n";
 
-/*T
-   Concepts: KSP^writing a user-defined nonlinear solver (parallel Bratu example);
-   Concepts: DMDA^using distributed arrays;
-   Processors: n
-T*/
-
 /* ------------------------------------------------------------------------
 
     Solid Fuel Ignition (SFI) problem.  This problem is modeled by

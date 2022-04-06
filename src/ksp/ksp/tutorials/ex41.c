@@ -1,11 +1,6 @@
 
 static char help[] = "Reads a PETSc matrix and vector from a socket connection,  solves a linear system and sends the result back.\n";
 
-/*T
-   Concepts: KSP^solving a linear system
-   Processors: n
-T*/
-
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:

@@ -1,11 +1,6 @@
 static const char help[] = "Newton's method to solve a two-variable system, sequentially.\n"
                            "The same problem is solved twice - i) fully assembled system + ii) block system\n\n";
 
-/*T
-Concepts: SNES^basic uniprocessor example, block objects
-Processors: 1
-T*/
-
 /*
 Include "petscsnes.h" so that we can use SNES solvers.  Note that this
 file automatically includes:

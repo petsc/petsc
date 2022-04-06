@@ -1,11 +1,6 @@
 
 static char help[] = "Demonstrates call PETSc and Chombo in the same program.\n\n";
 
-/*T
-   Concepts: introduction to PETSc^Chombo
-   Processors: n
-T*/
-
 #include <petscsys.h>
 #include "Box.H"
 

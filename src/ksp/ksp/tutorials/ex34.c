@@ -1,8 +1,3 @@
-/*T
-   Concepts: KSP^solving a system of linear equations
-   Concepts: KSP^Laplacian, 3d
-   Processors: n
-T*/
 
 /*
 Laplacian in 3D. Modeled by the partial differential equation

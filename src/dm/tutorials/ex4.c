@@ -1,11 +1,6 @@
 
 static char help[] = "Demonstrates various vector routines for DMDA.\n\n";
 
-/*T
-   Concepts: mathematical functions
-   Processors: n
-T*/
-
 /*
   Include "petscpf.h" so that we can use pf functions and "petscdmda.h" so
  we can use the PETSc distributed arrays

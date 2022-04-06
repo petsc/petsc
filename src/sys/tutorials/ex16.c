@@ -1,12 +1,6 @@
 
 static char help[] = "Tests calling PetscOptionsSetValue() before PetscInitialize()\n\n";
 
-/*T
-   Concepts: introduction to PETSc;
-   Concepts: printing^in parallel
-   Processors: n
-T*/
-
 #include <petscsys.h>
 int main(int argc,char **argv)
 {

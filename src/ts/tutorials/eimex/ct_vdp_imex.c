@@ -7,10 +7,6 @@
 static char help[] = "Solves the van der Pol equation. \n Input parameters include:\n";
 
 /*
- * Processors:1
- */
-
-/*
  * This program solves the van der Pol equation
  * y' = z                               (1)
  * z' = (((1-y^2)*z-y)/eps              (2)

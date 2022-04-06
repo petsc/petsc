@@ -1,11 +1,6 @@
 
 static char help[] = "Demonstrates VecStrideNorm().\n\n";
 
-/*T
-   Concepts: vectors^norms of sub-vectors;
-   Processors: n
-T*/
-
 /*
   Include "petscvec.h" so that we can use vectors.  Note that this file
   automatically includes:

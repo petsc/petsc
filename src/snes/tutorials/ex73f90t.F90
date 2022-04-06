@@ -16,11 +16,6 @@
 !  equation  lambda = C * x enforces the surface flux auxiliary equation.  B and C have all
 !  positive entries, areas in C and fraction of area in B.
 !
-!!/*T
-!  Concepts: SNES^parallel Bratu example
-!  Concepts: MatNest
-!  Processors: n
-!T*/
 
 !
 !  --------------------------------------------------------------------------

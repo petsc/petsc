@@ -1,9 +1,6 @@
 ! Computes the integral of 2*x/(1+x^2) from x=0..1
 ! This is equal to the ln(2).
 
-! Concepts: vectors; assembling vectors;
-! Processors: n
-
 ! Contributed by Mike McCourt <mccomic@iit.edu> and Nathan Johnston <johnnat@iit.edu>
 ! Fortran translation by Arko Bhattacharjee <a.bhattacharjee@mpie.de>
 

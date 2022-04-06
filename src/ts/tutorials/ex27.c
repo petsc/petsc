@@ -1,11 +1,5 @@
 static char help[] = "Time-Dependent Reactive Flow example in 2D with Darcy Flow";
 
-/*T
-   Concepts: Solving a multicomponent time-dependent reactive flow system
-   Concepts: DMDA with timestepping
-   Processors: n
-T*/
-
 /*
 
 This example solves the elementary chemical reaction:

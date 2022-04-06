@@ -1,11 +1,5 @@
 static char help[] = "Parallel HDF5 Vec Viewing.\n\n";
 
-/*T
-   Concepts: vectors^viewing
-   Concepts: viewers^hdf5
-   Processors: n
-T*/
-
 #include <petscvec.h>
 #include <petscviewerhdf5.h>
 

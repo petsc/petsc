@@ -1,11 +1,6 @@
 static char help[] = "This example demonstrates the use of DMNetwork interface for solving a simple electric circuit. \n\
                       The example can be found in p.150 of 'Strang, Gilbert. Computational Science and Engineering. Wellesley, MA'.\n\n";
 
-/* T
-  Concepts: DMNetwork
-  Concepts: KSP
-*/
-
 #include <petscdmnetwork.h>
 #include <petscksp.h>
 

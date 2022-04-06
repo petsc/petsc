@@ -9,11 +9,6 @@
 
 ! Recall: The block Jacobi method is equivalent to the ASM preconditioner with zero overlap.
 
-!/*T
-!   Concepts: KSP^customizing the block Jacobi preconditioner
-!   Processors: n
-!T*/
-
 program main
 #include <petsc/finclude/petscksp.h>
       use petscksp

@@ -1,10 +1,5 @@
 static char help[] = "This example is based on ex1 using MATNEST. \n";
 
-/* T
-  Concepts: DMNetwork
-  Concepts: KSP
-*/
-
 #include <petscdmnetwork.h>
 #include <petscksp.h>
 

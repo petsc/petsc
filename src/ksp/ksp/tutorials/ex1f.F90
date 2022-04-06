@@ -1,10 +1,6 @@
 !
 !   Description: Solves a tridiagonal linear system with KSP.
 !
-!/*T
-!   Concepts: KSP^solving a system of linear equations
-!   Processors: 1
-!T*/
 ! -----------------------------------------------------------------------
 
       program main

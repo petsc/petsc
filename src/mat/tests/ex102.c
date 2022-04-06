@@ -1,12 +1,6 @@
 
 static char help[] = "Tests MatCreateLRC()\n\n";
 
-/*T
-   Concepts: Low rank correction
-
-   Processors: n
-T*/
-
 #include <petscmat.h>
 
 int main(int argc,char **args)

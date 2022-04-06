@@ -2,10 +2,6 @@
 !     Description: Creates an index set based on a stride. Views that
 !     index set and then destroys it.
 !
-!/*T
-!     Concepts: index sets^manipulating a stride index set;
-!     Concepts: index sets^accessing indices from Fortran
-!T*/
 !
 !     Include petscis.h so we can use PETSc IS objects.
 !

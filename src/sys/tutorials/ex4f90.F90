@@ -2,11 +2,6 @@
 !     This introductory example illustrates running PETSc on a subset
 !     of processes
 !
-!/*T
-!   Concepts: introduction to PETSc;
-!   Concepts: process^subset set PETSC_COMM_WORLD
-!   Processors: 2
-!T*/
 ! -----------------------------------------------------------------------
 
       program main

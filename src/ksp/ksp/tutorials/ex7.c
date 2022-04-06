@@ -12,11 +12,6 @@ linear solvers on the individual blocks.\n\n";
    with zero overlap.
  */
 
-/*T
-   Concepts: KSP^customizing the block Jacobi preconditioner
-   Processors: n
-T*/
-
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:

@@ -30,13 +30,6 @@ The command line options include:\n\
   -lin_par <alpha>, where alpha is the multiplier for the linear term (u)\n\
   -fd_jacobian_coloring -mat_coloring_type lf\n";
 
-/*T
-   Concepts: SNES^unstructured grid
-   Concepts: AO^application to PETSc ordering or vice versa;
-   Concepts: VecScatter^using vector scatter operations;
-   Processors: n
-T*/
-
 /* ------------------------------------------------------------------------
 
    PDE Solved : L(u) + lambda*u*u + alpha*u = 0 where L(u) is the Laplacian.

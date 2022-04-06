@@ -11,13 +11,6 @@ options are:\n\
   -tright <tr>, where <tr> indicates the right Diriclet BC \n\
   -beta <beta>, where <beta> indicates the exponent in T \n\n";
 
-/*T
-   Concepts: SNES^solving a system of nonlinear equations
-   Concepts: DMDA^using distributed arrays
-   Concepts: multigrid;
-   Processors: n
-T*/
-
 /*
 
     This example models the partial differential equation

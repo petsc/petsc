@@ -4,11 +4,6 @@
 !  matrices.  This example also illustrates how to save PETSc objects
 !  in common blocks.
 !
-!/*T
-!  Concepts: KSP^repeatedly solving linear systems;
-!  Concepts: KSP^different matrices for linear system and preconditioner;
-!  Processors: n
-!T*/
 !
 
       program main

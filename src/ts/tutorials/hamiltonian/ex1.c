@@ -2,11 +2,6 @@
 static char help[] = "Solves the motion of spring.\n\
 Input parameters include:\n";
 
-/*
-   Concepts: TS^Separable Hamiltonian problems
-   Concepts: TS^Symplectic intergrators
-   Processors: 1
-*/
 /* ------------------------------------------------------------------------
 
   This program solves the motion of spring by Hooke's law

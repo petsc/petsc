@@ -7,12 +7,6 @@ timestepping.  Runtime options include:\n\
   -ul   : lower bound\n\
   -uh  : upper bound\n\n";
 
-/*
-   Concepts: TS^time-dependent nonlinear problems
-   Concepts: TS^Variational inequality nonlinear solver
-   Processors: n
-*/
-
 /* ------------------------------------------------------------------------
 
    This is a variation of ex2.c to solve the PDE

@@ -1,10 +1,6 @@
 
 static char help[] = "Tests TSLINESEARCHL2 handing of Inf/Nan.\n\n";
 
-/*T
-   Concepts: SNES^basic example
-T*/
-
 /*
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
    file automatically includes:

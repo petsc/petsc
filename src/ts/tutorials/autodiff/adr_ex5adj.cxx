@@ -1,10 +1,6 @@
 static char help[] = "Demonstrates adjoint sensitivity analysis for Reaction-Diffusion Equations.\n";
 
 /*
-   Concepts: TS^time-dependent nonlinear problems
-   Concepts: Automatic differentiation using ADOL-C
-*/
-/*
    REQUIRES configuration of PETSc with option --download-adolc.
 
    For documentation on ADOL-C, see

@@ -3,10 +3,6 @@ static char help[] = "Tests MatCreateConstantDiagonal().\n"
 
 #include <petscmat.h>
 
-/*T
-    Concepts: Mat
-T*/
-
 int main(int argc, char **args)
 {
   Vec            X, Y;

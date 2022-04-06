@@ -6,11 +6,6 @@ static char help[] ="Solves one dimensional Burger's equation compares with exac
     Not yet tested in parallel
 
 */
-/*
-   Concepts: TS^time-dependent nonlinear problems
-   Concepts: TS^Burger's equation
-   Processors: n
-*/
 
 /* ------------------------------------------------------------------------
 

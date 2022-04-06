@@ -2,7 +2,6 @@ static char help[] = "Solves the ordinary differential equations (IVPs) using ex
 
 /*
 
-  Concepts:   TS
   Useful command line parameters:
   -problem <hull1972a1>: choose which problem to solve (see references
                       for complete listing of problems).

@@ -3,12 +3,6 @@
 !  Description:  Illustrates the use of VecSetValues() to set
 !  multiple values at once; demonstrates VecGetArrayF90().
 !
-!/*T
-!   Concepts: vectors^assembling vectors;
-!   Concepts: vectors^arrays;
-!   Concepts: Fortran90^assembling vectors;
-!   Processors: 1
-!T*/
 ! -----------------------------------------------------------------------
 
       program main

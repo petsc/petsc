@@ -2,12 +2,6 @@
 static char help[] = "Newton method to solve u'' + u^{2} = f, sequentially.\n\
 This example employs a user-defined reasonview routine.\n\n";
 
-/*T
-   Concepts: SNES^basic uniprocessor example
-   Concepts: SNES^setting a user-defined reasonview routine
-   Processors: 1
-T*/
-
 #include <petscsnes.h>
 
 /*

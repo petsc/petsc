@@ -1,11 +1,6 @@
 
 static char help[] = "Demonstrates using a local ordering to set values into a parallel vector.\n\n";
 
-/*T
-   Concepts: vectors^assembling vectors with local ordering;
-   Processors: n
-T*/
-
 /*
   Include "petscvec.h" so that we can use vectors.  Note that this file
   automatically includes:

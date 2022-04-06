@@ -1,10 +1,5 @@
 
 static char help[] = "Large-deformation Elasticity Buckling Example";
-/*T
-   Concepts: SNES^solving a system of nonlinear equations;
-   Concepts: DMDA^using distributed arrays;
-   Processors: n
-T*/
 
 /*F-----------------------------------------------------------------------
 

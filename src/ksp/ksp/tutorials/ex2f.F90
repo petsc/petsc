@@ -3,11 +3,6 @@
 !               Also shows how to set a user-defined monitoring routine.
 !
 !
-!/*T
-!  Concepts: KSP^basic parallel example
-!  Concepts: KSP^setting a user-defined monitoring routine
-!  Processors: n
-!T*/
 !
 ! -----------------------------------------------------------------------
 

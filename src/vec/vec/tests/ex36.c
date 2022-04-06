@@ -1,12 +1,5 @@
 static char help[] = "Parallel vector layout.\n\n";
 
-/*T
-   Concepts: vectors^setting values
-   Concepts: vectors^local access to
-   Concepts: vectors^drawing vectors;
-   Processors: n
-T*/
-
 /*
   Include "petscvec.h" so that we can use vectors.  Note that this file
   automatically includes:

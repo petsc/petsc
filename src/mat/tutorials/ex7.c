@@ -1,10 +1,5 @@
 static char help[] = "Example use of PetscInfo() as a configurable informative logging or warning tool\n";
 
-/*T
-   Concepts: introduction to logging techniques and introspection in PETSc;
-   Processors: n
-T*/
-
 # include <petscsys.h>
 # include <petscmat.h>
 # include <petscvec.h>

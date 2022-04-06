@@ -1,11 +1,6 @@
 !
 !   Solves the time dependent Bratu problem using pseudo-timestepping
 !
-!   Concepts: TS^pseudo-timestepping
-!   Concepts: TS^pseudo-timestepping
-!   Concepts: TS^nonlinear problems
-!   Processors: 1
-!
 !   This code demonstrates how one may solve a nonlinear problem
 !   with pseudo-timestepping. In this simple example, the pseudo-timestep
 !   is the same for all grid points, i.e., this is equivalent to using

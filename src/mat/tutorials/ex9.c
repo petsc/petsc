@@ -1,11 +1,6 @@
 
 static char help[] = "Tests MatCreateComposite()\n\n";
 
-/*T
-   Concepts: Mat^composite matrices
-   Processors: n
-T*/
-
 /*
   Include "petscmat.h" so that we can use matrices.
   automatically includes:

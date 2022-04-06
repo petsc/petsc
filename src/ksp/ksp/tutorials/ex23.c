@@ -1,11 +1,6 @@
 
 static char help[] = "Solves a tridiagonal linear system.\n\n";
 
-/*T
-   Concepts: KSP^basic parallel example;
-   Processors: n
-T*/
-
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:

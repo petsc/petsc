@@ -1,14 +1,6 @@
 
 static char help[] = "Reads a PETSc matrix and vector from a file; expands the matrix with the vector\n\n";
 
-/*T
-   Concepts: Mat^ordering a matrix - loading a binary matrix and vector;
-   Concepts: Mat^loading a binary matrix and vector;
-   Concepts: Vectors^loading a binary vector;
-   Concepts: PetscLog^preloading executable
-   Processors: 1
-T*/
-
 /*
   Include "petscmat.h" so that we can use matrices.
   automatically includes:

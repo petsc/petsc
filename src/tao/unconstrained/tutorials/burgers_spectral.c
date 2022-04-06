@@ -6,12 +6,6 @@ static char help[] ="Solves a simple data assimilation problem with one dimensio
     Not yet tested in parallel
 
 */
-/*
-   Concepts: TS^time-dependent nonlinear problems
-   Concepts: TS^Burger's equation
-   Concepts: adjoints
-   Processors: n
-*/
 
 /* ------------------------------------------------------------------------
 

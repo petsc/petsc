@@ -3,11 +3,6 @@ static char help[] = "This example demonstrates the use of DMNetwork interface f
                       The data file format used is from the EPANET package (https://www.epa.gov/water-research/epanet).\n\
                       Run this program: mpiexec -n <n> ./water\n\\n";
 
-/* T
-   Concepts: DMNetwork
-   Concepts: PETSc SNES solver
-*/
-
 #include "water.h"
 #include <petscdmnetwork.h>
 

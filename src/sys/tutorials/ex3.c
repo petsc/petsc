@@ -6,14 +6,6 @@ following options to generate logging information:  -log, -log_view,\n\
 so this monitoring is intended solely for users to employ in application\n\
 codes.\n\n";
 
-/*T
-   Concepts: PetscLog^user-defined event profiling
-   Concepts: profiling^user-defined event
-   Concepts: PetscLog^activating/deactivating events for profiling
-   Concepts: profiling^activating/deactivating events
-   Processors: n
-T*/
-
 /*
   Include "petscsys.h" so that we can use PETSc profiling routines.
 */

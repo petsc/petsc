@@ -7,13 +7,6 @@ The command line options include:\n\
   -m_par/n_par <parameter>, where <parameter> indicates an integer\n \
       that MMS3 will be evaluated with 2^m_par, 2^n_par";
 
-/*T
-   Concepts: SNES^parallel Bratu example
-   Concepts: DMDA^using distributed arrays;
-   Concepts: IS coloirng types;
-   Processors: n
-T*/
-
 /* ------------------------------------------------------------------------
 
     Solid Fuel Ignition (SFI) problem.  This problem is modeled by

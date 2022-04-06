@@ -6,11 +6,6 @@ This example also illustrates the use of matrix coloring.  Runtime options inclu
   -mx <xg>, where <xg> = number of grid points in the x-direction\n\
   -my <yg>, where <yg> = number of grid points in the y-direction\n\n";
 
-/*T
-   Concepts: SNES^sequential Bratu example
-   Processors: 1
-T*/
-
 /* ------------------------------------------------------------------------
 
     Solid Fuel Ignition (SFI) problem.  This problem is modeled by

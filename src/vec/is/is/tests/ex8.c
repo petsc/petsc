@@ -1,13 +1,6 @@
 
 static char help[] = "Tests ISLocalToGlobalMappingSetBlockSize.\n\n";
 
-/*T
-    Concepts: local to global mappings
-    Concepts: global to local mappings
-
-    Description:  Creates a map with a general set of indices and then change them to blocks of integers.
-T*/
-
 #include <petscis.h>
 #include <petscviewer.h>
 

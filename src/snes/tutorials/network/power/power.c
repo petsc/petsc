@@ -6,11 +6,6 @@ static char help[] = "This example demonstrates the use of DMNetwork interface f
                       Run this program: mpiexec -n <n> ./pf\n\
                       mpiexec -n <n> ./pfc \n";
 
-/* T
-   Concepts: DMNetwork
-   Concepts: PETSc SNES solver
-*/
-
 #include "power.h"
 #include <petscdmnetwork.h>
 

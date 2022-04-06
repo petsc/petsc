@@ -5,10 +5,6 @@
       !  -m <size> : problem size
       !  -mat_nonsym : use nonsymmetric matrix (default is symmetric)
 
-      !Concepts: KSP^repeatedly solving linear systems;
-      !Concepts: PetscLog^profiling multiple stages of code;
-      !Processors: n
-
 program main
 #include <petsc/finclude/petscksp.h>
       use petscksp

@@ -44,12 +44,6 @@ Available IRK Methods:                                              \n\
   gauss       n-stage Gauss method                                  \n\
                                                                     \n";
 
-/*T
-  Concepts: MATKAIJ
-  Concepts: MAT
-  Concepts: KSP
-T*/
-
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
