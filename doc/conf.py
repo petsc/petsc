@@ -15,6 +15,7 @@ import datetime
 sys.path.append(os.getcwd())
 sys.path.append(os.path.abspath('./ext'))
 
+import add_man_page_redirects
 import build_classic_docs
 import make_links_relative
 import update_htmlmap_links
@@ -173,11 +174,19 @@ def build_finished_handler(app, exception):
         _build_classic_docs(app, 'post')
         _copy_classic_docs(app, exception, app.outdir, 'post')
         _fix_links(app, exception)
+        if app.builder.name == 'dirhtml':
+            _add_man_page_redirects(app, exception)
         if app.builder.name == 'html':
             print("==========================================================================")
             print("    open %s/index.html in your browser to view the documentation " % app.outdir)
             print("==========================================================================")
 
+def _add_man_page_redirects(app, exception):
+    if exception is None:
+        print("============================================")
+        print("    Adding man pages redirects")
+        print("============================================")
+        add_man_page_redirects.add_man_page_redirects(app.outdir)
 
 def _build_classic_docs(app, stage):
     build_classic_docs.main(stage)
