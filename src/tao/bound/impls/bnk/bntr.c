@@ -16,7 +16,6 @@
  step_accepted = false
 
  while niter <= max_it
-    niter += 1
 
     if needH
       If max_cg_steps > 0
@@ -84,6 +83,7 @@
 
       check convergence at pg_{k+1}
     end
+    niter += 1
 
  end
 */
@@ -109,7 +109,6 @@ PetscErrorCode TaoSolve_BNTR(Tao tao)
     if (tao->ops->update) {
       PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
     }
-    ++tao->niter;
 
     if (needH && bnk->inactive_idx) {
       /* Take BNCG steps (if enabled) to trade-off Hessian evaluations for more gradient evaluations */
@@ -189,10 +188,13 @@ PetscErrorCode TaoSolve_BNTR(Tao tao)
       PetscCall(VecFischer(tao->solution, bnk->unprojected_gradient, tao->XL, tao->XU, bnk->W));
       PetscCall(VecNorm(bnk->W, NORM_2, &resnorm));
       PetscCheck(!PetscIsInfOrNanReal(resnorm),PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
+      ++tao->niter; /* temporarily increment the iteration number */
       PetscCall(TaoLogConvergenceHistory(tao, bnk->f, resnorm, 0.0, tao->ksp_its));
       PetscCall(TaoMonitor(tao, tao->niter, bnk->f, resnorm, 0.0, steplen));
       PetscCall((*tao->ops->convergencetest)(tao, tao->cnvP));
+      --tao->niter; /* decrement */
     }
+    ++tao->niter; /* finished iterating */
   }
   PetscFunctionReturn(0);
 }
