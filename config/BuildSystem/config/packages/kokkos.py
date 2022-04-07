@@ -21,6 +21,7 @@ class Configure(config.package.CMakePackage):
     self.requiresrpath    = 1
     self.precisions       = ['single','double']
     self.devicePackage    = 1
+    self.minCmakeVersion  = (3,16,0)
     return
 
   def __str__(self):
