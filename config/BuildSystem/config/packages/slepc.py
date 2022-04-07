@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit              = '66942fadcd9b7d31ce38f857451634633a163e74' # jacobf/2023-01-10/petscerrorcode-nodiscard
+    self.gitcommit              = '030521bf1adaa4c0d512257996d6d5a1e74bfe7f' # jose/install-lib feb-25-2023
     self.download               = ['git://https://gitlab.com/slepc/slepc.git','https://gitlab.com/slepc/slepc/-/archive/'+self.gitcommit+'/slepc-'+self.gitcommit+'.tar.gz']
     self.functions              = []
     self.includes               = []
@@ -73,8 +73,9 @@ class Configure(config.package.Package):
             exit 1)'])
     self.addMakeRule('slepcinstall','', \
                        ['@echo "*** Installing SLEPc ***"',\
+                        '@$(eval PETSC_INSTALL ?= install)',\
                         '@(cd '+self.packageDir+' && \\\n\
-            '+barg+' ${OMAKE} install '+barg+') || \\\n\
+            '+barg+' ${OMAKE} ${PETSC_INSTALL} '+barg+') || \\\n\
             (echo "**************************ERROR*************************************" && \\\n\
             echo "Error installing SLEPc." && \\\n\
             echo "********************************************************************" && \\\n\
