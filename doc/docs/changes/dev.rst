@@ -23,7 +23,7 @@ Changes: Development
 
 .. rubric:: IS:
 
-- Add ``PetscSectionCreateSubdomainSection()``
+- Add ``ISShift()``
 
 .. rubric:: VecScatter / PetscSF:
 
@@ -32,6 +32,8 @@ Changes: Development
 .. rubric:: Vec:
 
 .. rubric:: PetscSection:
+
+- Add ``PetscSectionCreateSubdomainSection()``
 
 .. rubric:: PetscPartitioner:
 

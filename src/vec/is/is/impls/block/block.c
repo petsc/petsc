@@ -315,17 +315,12 @@ static PetscErrorCode ISDuplicate_Block(IS is,IS *newIS)
 static PetscErrorCode ISCopy_Block(IS is,IS isy)
 {
   IS_Block       *is_block = (IS_Block*)is->data,*isy_block = (IS_Block*)isy->data;
-  PetscInt       bs, n, N, bsy, ny, Ny;
+  PetscInt       bs, n;
 
   PetscFunctionBegin;
   PetscCall(PetscLayoutGetBlockSize(is->map, &bs));
   PetscCall(PetscLayoutGetLocalSize(is->map, &n));
-  PetscCall(PetscLayoutGetSize(is->map, &N));
-  PetscCall(PetscLayoutGetBlockSize(isy->map, &bsy));
-  PetscCall(PetscLayoutGetLocalSize(isy->map, &ny));
-  PetscCall(PetscLayoutGetSize(isy->map, &Ny));
-  PetscCheckFalse(n != ny || N != Ny || bs != bsy,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Index sets incompatible");
-  PetscCall(PetscArraycpy(isy_block->idx,is_block->idx,(n/bs)));
+  PetscCall(PetscArraycpy(isy_block->idx, is_block->idx, n/bs));
   PetscFunctionReturn(0);
 }
 
