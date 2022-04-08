@@ -90,10 +90,10 @@
 !     DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
 !  By placing code between these two statements, computations can
 !  be done while messages are in transition.
-      call SNESGetDM(snes,da,ierr);PetscCall(ierr)
-      call DMGetLocalVector(da,localX,ierr);PetscCall(ierr)
-      call DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr);PetscCall(ierr)
-      call DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr);PetscCall(ierr)
+      call SNESGetDM(snes,da,ierr);CHKERRQ(ierr)
+      call DMGetLocalVector(da,localX,ierr);CHKERRQ(ierr)
+      call DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr);CHKERRQ(ierr)
+      call DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr);CHKERRQ(ierr)
 
 !  Get a pointer to vector data.
 !    - For default PETSc vectors, VecGetArray90() returns a pointer to
@@ -103,19 +103,19 @@
 !    - Note that the interface to VecGetArrayF90() differs from VecGetArray(),
 !      and is useable from Fortran-90 Only.
 
-      call VecGetArrayF90(localX,lx_v,ierr);PetscCall(ierr)
-      call VecGetArrayF90(F,lf_v,ierr);PetscCall(ierr)
+      call VecGetArrayF90(localX,lx_v,ierr);CHKERRQ(ierr)
+      call VecGetArrayF90(F,lf_v,ierr);CHKERRQ(ierr)
 
 !  Compute function over the locally owned part of the grid
-      call FormFunctionLocal(lx_v,lf_v,user,ierr);PetscCall(ierr)
+      call FormFunctionLocal(lx_v,lf_v,user,ierr);CHKERRQ(ierr)
 
 !  Restore vectors
-      call VecRestoreArrayF90(localX,lx_v,ierr);PetscCall(ierr)
-      call VecRestoreArrayF90(F,lf_v,ierr);PetscCall(ierr)
+      call VecRestoreArrayF90(localX,lx_v,ierr);CHKERRQ(ierr)
+      call VecRestoreArrayF90(F,lf_v,ierr);CHKERRQ(ierr)
 
 !  Insert values into global vector
 
-      call DMRestoreLocalVector(da,localX,ierr);PetscCall(ierr)
+      call DMRestoreLocalVector(da,localX,ierr);CHKERRQ(ierr)
       call PetscLogFlops(11.0d0*user%ym*user%xm,ierr)
 
 !      call VecView(X,PETSC_VIEWER_STDOUT_WORLD,ierr)
@@ -351,8 +351,8 @@
       PetscScalar,pointer :: lx_v(:)
 
       ierr = 0
-      call SNESGetDM(snes,da,ierr);PetscCall(ierr)
-      call SNESGetApplicationContext(snes,puser,ierr);PetscCall(ierr)
+      call SNESGetDM(snes,da,ierr);CHKERRQ(ierr)
+      call SNESGetApplicationContext(snes,puser,ierr);CHKERRQ(ierr)
 !  Get a pointer to vector data.
 !    - For default PETSc vectors, VecGetArray90() returns a pointer to
 !      the data array. Otherwise, the routine is implementation dependent.
@@ -361,13 +361,13 @@
 !    - Note that the interface to VecGetArrayF90() differs from VecGetArray(),
 !      and is useable from Fortran-90 Only.
 
-      call VecGetArrayF90(X,lx_v,ierr);PetscCall(ierr)
+      call VecGetArrayF90(X,lx_v,ierr);CHKERRQ(ierr)
 
 !  Compute initial guess over the locally owned part of the grid
-      call InitialGuessLocal(puser,lx_v,ierr);PetscCall(ierr)
+      call InitialGuessLocal(puser,lx_v,ierr);CHKERRQ(ierr)
 
 !  Restore vector
-      call VecRestoreArrayF90(X,lx_v,ierr);PetscCall(ierr)
+      call VecRestoreArrayF90(X,lx_v,ierr);CHKERRQ(ierr)
 
 !  Insert values into global vector
 
@@ -546,37 +546,37 @@
 !  Computations can be done while messages are in transition,
 !  by placing code between these two statements.
 
-      call SNESGetDM(snes,da,ierr);PetscCall(ierr)
-      call DMGetLocalVector(da,localX,ierr);PetscCall(ierr)
-      call DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr);PetscCall(ierr)
-      call DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr);PetscCall(ierr)
+      call SNESGetDM(snes,da,ierr);CHKERRQ(ierr)
+      call DMGetLocalVector(da,localX,ierr);CHKERRQ(ierr)
+      call DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr);CHKERRQ(ierr)
+      call DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr);CHKERRQ(ierr)
 
 !  Get a pointer to vector data
-      call VecGetArrayF90(localX,lx_v,ierr);PetscCall(ierr)
+      call VecGetArrayF90(localX,lx_v,ierr);CHKERRQ(ierr)
 
 !  Compute entries for the locally owned part of the Jacobian preconditioner.
-      call FormJacobianLocal(lx_v,jac_prec,user,ierr);PetscCall(ierr)
+      call FormJacobianLocal(lx_v,jac_prec,user,ierr);CHKERRQ(ierr)
 
 !  Assemble matrix, using the 2-step process:
 !     MatAssemblyBegin(), MatAssemblyEnd()
 !  Computations can be done while messages are in transition,
 !  by placing code between these two statements.
 
-      call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr);PetscCall(ierr)
+      call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
       if (jac .ne. jac_prec) then
-         call MatAssemblyBegin(jac_prec,MAT_FINAL_ASSEMBLY,ierr);PetscCall(ierr)
+         call MatAssemblyBegin(jac_prec,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
       endif
-      call VecRestoreArrayF90(localX,lx_v,ierr);PetscCall(ierr)
-      call DMRestoreLocalVector(da,localX,ierr);PetscCall(ierr)
-      call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr);PetscCall(ierr)
+      call VecRestoreArrayF90(localX,lx_v,ierr);CHKERRQ(ierr)
+      call DMRestoreLocalVector(da,localX,ierr);CHKERRQ(ierr)
+      call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
       if (jac .ne. jac_prec) then
-        call MatAssemblyEnd(jac_prec,MAT_FINAL_ASSEMBLY,ierr);PetscCall(ierr)
+        call MatAssemblyEnd(jac_prec,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
       endif
 
 !  Tell the matrix we will never add a new nonzero location to the
 !  matrix. If we do it will generate an error.
 
-      call MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE,ierr);PetscCall(ierr)
+      call MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE,ierr);CHKERRQ(ierr)
 
       return
       end
@@ -663,7 +663,7 @@
             if (i .eq. 1 .or. j .eq. 1 .or. i .eq. user%mx .or. j .eq. user%my) then
                col(1) = row
                v(1)   = one
-               call MatSetValuesLocal(jac_prec,ione,row,ione,col,v,INSERT_VALUES,ierr);PetscCall(ierr)
+               call MatSetValuesLocal(jac_prec,ione,row,ione,col,v,INSERT_VALUES,ierr);CHKERRQ(ierr)
 !           interior grid points
             else
                v(1) = -hxdhy
@@ -676,7 +676,7 @@
                col(3) = row
                col(4) = row + 1
                col(5) = row + user%gxm
-               call MatSetValuesLocal(jac_prec,ione,row,ifive,col,v,INSERT_VALUES,ierr);PetscCall(ierr)
+               call MatSetValuesLocal(jac_prec,ione,row,ifive,col,v,INSERT_VALUES,ierr);CHKERRQ(ierr)
             endif
  10      continue
  20   continue
