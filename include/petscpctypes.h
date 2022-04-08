@@ -401,6 +401,7 @@ typedef enum {PC_SETUP_ERROR = -1,PC_NOERROR,PC_FACTOR_STRUCT_ZEROPIVOT,PC_FACTO
     Level: intermediate
 
 .seealso: PCGAMGSetCoarseGridLayoutType()
+
     Any additions/changes here MUST also be made in include/petsc/finclude/petscpc.h
 E*/
 typedef enum {PCGAMG_LAYOUT_COMPACT,PCGAMG_LAYOUT_SPREAD} PCGAMGLayoutType;
