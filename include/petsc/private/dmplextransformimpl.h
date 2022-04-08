@@ -80,7 +80,6 @@ typedef struct {
   DMLabel      splitPoints; /* List of edges to be bisected (1) and cells to be divided (2) */
   PetscSection secEdgeLen;  /* Section for edge length field */
   PetscReal   *edgeLen;     /* Storage for edge length field */
-  PetscInt    *splitArray;  /* Array for communication of split points label */
 } DMPlexRefine_SBR;
 
 typedef struct {

@@ -179,80 +179,12 @@ static PetscErrorCode SBRSplitLocalEdges_Private(DMPlexTransform tr, PointQueue 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SBRInitializeComm(DMPlexTransform tr, PetscSF pointSF)
+static PetscErrorCode splitPoint(PETSC_UNUSED DMLabel label, PetscInt p, PETSC_UNUSED PetscInt val, void *ctx)
 {
-  DMPlexRefine_SBR *sbr = (DMPlexRefine_SBR *) tr->data;
-  DM                dm;
-  DMLabel           splitPoints = sbr->splitPoints;
-  PetscInt         *splitArray  = sbr->splitArray;
-  const PetscInt   *degree;
-  const PetscInt   *points;
-  PetscInt          Nl, l, pStart, pEnd, p, val;
+  PointQueue queue = (PointQueue) ctx;
 
   PetscFunctionBegin;
-  PetscCall(DMPlexTransformGetDM(tr, &dm));
-  /* Add in leaves */
-  PetscCall(PetscSFGetGraph(pointSF, NULL, &Nl, &points, NULL));
-  for (l = 0; l < Nl; ++l) {
-    PetscCall(DMLabelGetValue(splitPoints, points[l], &val));
-    if (val > 0) splitArray[points[l]] = val;
-  }
-  /* Add in shared roots */
-  PetscCall(PetscSFComputeDegreeBegin(pointSF, &degree));
-  PetscCall(PetscSFComputeDegreeEnd(pointSF, &degree));
-  PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
-  for (p = pStart; p < pEnd; ++p) {
-    if (degree[p]) {
-      PetscCall(DMLabelGetValue(splitPoints, p, &val));
-      if (val > 0) splitArray[p] = val;
-    }
-  }
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode SBRFinalizeComm(DMPlexTransform tr, PetscSF pointSF, PointQueue queue)
-{
-  DMPlexRefine_SBR *sbr = (DMPlexRefine_SBR *) tr->data;
-  DM                dm;
-  DMLabel           splitPoints = sbr->splitPoints;
-  PetscInt         *splitArray  = sbr->splitArray;
-  const PetscInt   *degree;
-  const PetscInt   *points;
-  PetscInt          Nl, l, pStart, pEnd, p, val;
-
-  PetscFunctionBegin;
-  PetscCall(DMPlexTransformGetDM(tr, &dm));
-  /* Read out leaves */
-  PetscCall(PetscSFGetGraph(pointSF, NULL, &Nl, &points, NULL));
-  for (l = 0; l < Nl; ++l) {
-    const PetscInt p    = points[l];
-    const PetscInt cval = splitArray[p];
-
-    if (cval) {
-      PetscCall(DMLabelGetValue(splitPoints, p, &val));
-      if (val <= 0) {
-        PetscCall(DMLabelSetValue(splitPoints, p, cval));
-        PetscCall(PointQueueEnqueue(queue, p));
-      }
-    }
-  }
-  /* Read out shared roots */
-  PetscCall(PetscSFComputeDegreeBegin(pointSF, &degree));
-  PetscCall(PetscSFComputeDegreeEnd(pointSF, &degree));
-  PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
-  for (p = pStart; p < pEnd; ++p) {
-    if (degree[p]) {
-      const PetscInt cval = splitArray[p];
-
-      if (cval) {
-        PetscCall(DMLabelGetValue(splitPoints, p, &val));
-        if (val <= 0) {
-          PetscCall(DMLabelSetValue(splitPoints, p, cval));
-          PetscCall(PointQueueEnqueue(queue, p));
-        }
-      }
-    }
-  }
+  PetscCall(PointQueueEnqueue(queue, p));
   PetscFunctionReturn(0);
 }
 
@@ -340,12 +272,7 @@ static PetscErrorCode DMPlexTransformSetUp_SBR(DMPlexTransform tr)
   /* Setup communication */
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size));
   PetscCall(DMGetPointSF(dm, &pointSF));
-  if (size > 1) {
-    PetscInt pStart, pEnd;
-
-    PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
-    PetscCall(PetscCalloc1(pEnd-pStart, &sbr->splitArray));
-  }
+  PetscCall(DMLabelPropagateBegin(sbr->splitPoints, pointSF));
   /* While edge queue is not empty: */
   empty = PointQueueEmpty(queue);
   PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &empty, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject) dm)));
@@ -363,18 +290,11 @@ static PetscErrorCode DMPlexTransformSetUp_SBR(DMPlexTransform tr)
            values will have 1+0=1 and old values will have 1+1=2. Loop over these, resetting the values to 1, and adding any new
            edge to the queue.
     */
-    if (size > 1) {
-      PetscCall(SBRInitializeComm(tr, pointSF));
-      PetscCall(PetscSFReduceBegin(pointSF, MPIU_INT, sbr->splitArray, sbr->splitArray, MPI_MAX));
-      PetscCall(PetscSFReduceEnd(pointSF, MPIU_INT, sbr->splitArray, sbr->splitArray, MPI_MAX));
-      PetscCall(PetscSFBcastBegin(pointSF, MPIU_INT, sbr->splitArray, sbr->splitArray,MPI_REPLACE));
-      PetscCall(PetscSFBcastEnd(pointSF, MPIU_INT, sbr->splitArray, sbr->splitArray,MPI_REPLACE));
-      PetscCall(SBRFinalizeComm(tr, pointSF, queue));
-    }
+    PetscCall(DMLabelPropagatePush(sbr->splitPoints, pointSF, splitPoint, queue));
     empty = PointQueueEmpty(queue);
     PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &empty, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject) dm)));
   }
-  PetscCall(PetscFree(sbr->splitArray));
+  PetscCall(DMLabelPropagateEnd(sbr->splitPoints, pointSF));
   /* Calculate refineType for each cell */
   PetscCall(DMLabelCreate(PETSC_COMM_SELF, "Refine Type", &tr->trType));
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));

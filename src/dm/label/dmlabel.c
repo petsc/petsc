@@ -1864,6 +1864,176 @@ PetscErrorCode DMLabelGather(DMLabel label, PetscSF sf, DMLabel *labelNew)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMLabelPropagateInit_Internal(DMLabel label, PetscSF pointSF, PetscInt valArray[])
+{
+  const PetscInt *degree;
+  const PetscInt *points;
+  PetscInt        Nr, r, Nl, l, val, defVal;
+
+  PetscFunctionBegin;
+  PetscCall(DMLabelGetDefaultValue(label, &defVal));
+  /* Add in leaves */
+  PetscCall(PetscSFGetGraph(pointSF, &Nr, &Nl, &points, NULL));
+  for (l = 0; l < Nl; ++l) {
+    PetscCall(DMLabelGetValue(label, points[l], &val));
+    if (val != defVal) valArray[points[l]] = val;
+  }
+  /* Add in shared roots */
+  PetscCall(PetscSFComputeDegreeBegin(pointSF, &degree));
+  PetscCall(PetscSFComputeDegreeEnd(pointSF, &degree));
+  for (r = 0; r < Nr; ++r) {
+    if (degree[r]) {
+      PetscCall(DMLabelGetValue(label, r, &val));
+      if (val != defVal) valArray[r] = val;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMLabelPropagateFini_Internal(DMLabel label, PetscSF pointSF, PetscInt valArray[], PetscErrorCode (*markPoint)(DMLabel, PetscInt, PetscInt, void *), void *ctx)
+{
+  const PetscInt *degree;
+  const PetscInt *points;
+  PetscInt        Nr, r, Nl, l, val, defVal;
+
+  PetscFunctionBegin;
+  PetscCall(DMLabelGetDefaultValue(label, &defVal));
+  /* Read out leaves */
+  PetscCall(PetscSFGetGraph(pointSF, &Nr, &Nl, &points, NULL));
+  for (l = 0; l < Nl; ++l) {
+    const PetscInt p    = points[l];
+    const PetscInt cval = valArray[p];
+
+    if (cval != defVal) {
+      PetscCall(DMLabelGetValue(label, p, &val));
+      if (val == defVal) {
+        PetscCall(DMLabelSetValue(label, p, cval));
+        if (markPoint) {PetscCall((*markPoint)(label, p, cval, ctx));}
+      }
+    }
+  }
+  /* Read out shared roots */
+  PetscCall(PetscSFComputeDegreeBegin(pointSF, &degree));
+  PetscCall(PetscSFComputeDegreeEnd(pointSF, &degree));
+  for (r = 0; r < Nr; ++r) {
+    if (degree[r]) {
+      const PetscInt cval = valArray[r];
+
+      if (cval != defVal) {
+        PetscCall(DMLabelGetValue(label, r, &val));
+        if (val == defVal) {
+          PetscCall(DMLabelSetValue(label, r, cval));
+          if (markPoint) {PetscCall((*markPoint)(label, r, cval, ctx));}
+        }
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMLabelPropagateBegin - Setup a cycle of label propagation
+
+  Collective on sf
+
+  Input Parameters:
++ label - The DMLabel to propagate across processes
+- sf    - The SF describing parallel layout of the label points
+
+  Level: intermediate
+
+.seealso: DMLabelPropagateEnd(), DMLabelPropagatePush()
+@*/
+PetscErrorCode DMLabelPropagateBegin(DMLabel label, PetscSF sf)
+{
+  PetscInt       Nr, r, defVal;
+  PetscMPIInt    size;
+
+  PetscFunctionBegin;
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject) sf), &size));
+  if (size > 1) {
+    PetscCall(DMLabelGetDefaultValue(label, &defVal));
+    PetscCall(PetscSFGetGraph(sf, &Nr, NULL, NULL, NULL));
+    if (Nr >= 0) PetscCall(PetscMalloc1(Nr, &label->propArray));
+    for (r = 0; r < Nr; ++r) label->propArray[r] = defVal;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMLabelPropagateEnd - Tear down a cycle of label propagation
+
+  Collective on sf
+
+  Input Parameters:
++ label - The DMLabel to propagate across processes
+- sf    - The SF describing parallel layout of the label points
+
+  Level: intermediate
+
+.seealso: DMLabelPropagateBegin(), DMLabelPropagatePush()
+@*/
+PetscErrorCode DMLabelPropagateEnd(DMLabel label, PetscSF pointSF)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscFree(label->propArray));
+  label->propArray = NULL;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMLabelPropagatePush - Tear down a cycle of label propagation
+
+  Collective on sf
+
+  Input Parameters:
++ label     - The DMLabel to propagate across processes
+. sf        - The SF describing parallel layout of the label points
+. markPoint - An optional user callback that is called when a point is marked, or NULL
+- ctx       - An optional user context for the callback, or NULL
+
+  Calling sequence of markPoint:
+$ markPoint(DMLabel label, PetscInt p, PetscInt val, void *ctx);
+
++ label - The DMLabel
+. p     - The point being marked
+. val   - The label value for p
+- ctx   - An optional user context
+
+  Level: intermediate
+
+.seealso: DMLabelPropagateBegin(), DMLabelPropagateEnd()
+@*/
+PetscErrorCode DMLabelPropagatePush(DMLabel label, PetscSF pointSF, PetscErrorCode (*markPoint)(DMLabel, PetscInt, PetscInt, void *), void *ctx)
+{
+  PetscInt      *valArray = label->propArray;
+  PetscMPIInt    size;
+
+  PetscFunctionBegin;
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject) pointSF), &size));
+  if (size > 1) {
+    /* Communicate marked edges
+       The current implementation allocates an array the size of the number of root. We put the label values into the
+       array, and then call PetscSFReduce()+PetscSFBcast() to make the marks consistent.
+
+       TODO: We could use in-place communication with a different SF
+       We use MPI_SUM for the Reduce, and check the result against the rootdegree. If sum >= rootdegree+1, then the edge has
+       already been marked. If not, it might have been handled on the process in this round, but we add it anyway.
+
+       In order to update the queue with the new edges from the label communication, we use BcastAnOp(MPI_SUM), so that new
+       values will have 1+0=1 and old values will have 1+1=2. Loop over these, resetting the values to 1, and adding any new
+       edge to the queue.
+    */
+    PetscCall(DMLabelPropagateInit_Internal(label, pointSF, valArray));
+    PetscCall(PetscSFReduceBegin(pointSF, MPIU_INT, valArray, valArray, MPI_MAX));
+    PetscCall(PetscSFReduceEnd(pointSF, MPIU_INT, valArray, valArray, MPI_MAX));
+    PetscCall(PetscSFBcastBegin(pointSF, MPIU_INT, valArray, valArray,MPI_REPLACE));
+    PetscCall(PetscSFBcastEnd(pointSF, MPIU_INT, valArray, valArray,MPI_REPLACE));
+    PetscCall(DMLabelPropagateFini_Internal(label, pointSF, valArray, markPoint, ctx));
+  }
+  PetscFunctionReturn(0);
+}
+
 /*@
   DMLabelConvertToSection - Make a PetscSection/IS pair that encodes the label
 
