@@ -983,6 +983,7 @@ PetscErrorCode DMPlexConstructGhostCells(DM dm, const char labelName[], PetscInt
   We are adding three kinds of points here:
     Replicated:     Copies of points which exist in the mesh, such as vertices identified across a fault
     Non-replicated: Points which exist on the fault, but are not replicated
+    Ghost:          These are shared fault faces which are not owned by this process. These do not produce hybrid cells and do not replicate
     Hybrid:         Entirely new points, such as cohesive cells
 
   When creating subsequent cohesive cells, we shift the old hybrid cells to the end of the numbering at
@@ -996,12 +997,15 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
   const PetscInt  *values;             /* List of depths for which we have replicated points */
   IS              *splitIS;
   IS              *unsplitIS;
+  IS               ghostIS;
   PetscInt        *numSplitPoints;     /* The number of replicated points at each depth */
   PetscInt        *numUnsplitPoints;   /* The number of non-replicated points at each depth which still give rise to hybrid points */
   PetscInt        *numHybridPoints;    /* The number of new hybrid points at each depth */
   PetscInt        *numHybridPointsOld; /* The number of existing hybrid points at each depth */
+  PetscInt         numGhostPoints;     /* The number of unowned, shared fault faces */
   const PetscInt **splitPoints;        /* Replicated points for each depth */
   const PetscInt **unsplitPoints;      /* Non-replicated points for each depth */
+  const PetscInt  *ghostPoints;        /* Ghost fault faces */
   PetscSection     coordSection;
   Vec              coordinates;
   PetscScalar     *coords;
@@ -1041,6 +1045,8 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
     depthShift[2*d]       = depthMax[d];
     depthShift[2*d+1]     = 0;
   }
+  numGhostPoints = 0;
+  ghostPoints    = NULL;
   if (label) {
     PetscCall(DMLabelGetValueIS(label, &valueIS));
     PetscCall(ISGetLocalSize(valueIS, &numSP));
@@ -1060,6 +1066,11 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
       PetscCall(ISGetLocalSize(unsplitIS[dep], &numUnsplitPoints[dep]));
       PetscCall(ISGetIndices(unsplitIS[dep], &unsplitPoints[dep]));
     }
+  }
+  PetscCall(DMLabelGetStratumIS(label, shift2+dim-1, &ghostIS));
+  if (ghostIS) {
+    PetscCall(ISGetLocalSize(ghostIS, &numGhostPoints));
+    PetscCall(ISGetIndices(ghostIS, &ghostPoints));
   }
   /* Calculate number of hybrid points */
   for (d = 1; d <= depth; ++d) numHybridPoints[d]     = numSplitPoints[d-1] + numUnsplitPoints[d-1]; /* There is a hybrid cell/face/edge for every split face/edge/vertex   */
@@ -1095,6 +1106,17 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
           case 2: PetscCall(DMPlexSetCellType(sdm, hybcell, DM_POLYTOPE_SEG_PRISM_TENSOR));break;
           case 3: PetscCall(DMPlexSetCellType(sdm, hybcell, DM_POLYTOPE_TRI_PRISM_TENSOR));break;
           case 4: PetscCall(DMPlexSetCellType(sdm, hybcell, DM_POLYTOPE_QUAD_PRISM_TENSOR));break;
+        }
+        /* Shared fault faces with only one support cell now have two with the cohesive cell */
+        /*   TODO Check thaat oldp has rootdegree == 1 */
+        if (supportSize == 1) {
+          const PetscInt *support;
+          PetscInt        val;
+
+          PetscCall(DMPlexGetSupport(dm, oldp, &support));
+          PetscCall(DMLabelGetValue(label, support[0], &val));
+          if (val < 0) PetscCall(DMPlexSetSupportSize(sdm, splitp, 2));
+          else         PetscCall(DMPlexSetSupportSize(sdm, newp,   2));
         }
       } else if (dep == 0) {
         const PetscInt hybedge = p + pMaxNew[dep+1] + numSplitPoints[dep+1];
@@ -1218,6 +1240,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
         const PetscInt  hybcell    = p + pMaxNew[dep+1] + numSplitPoints[dep+1];
         const PetscInt *supportF;
 
+        coneONew[0] = coneONew[1] = -1000;
         /* Split face:       copy in old face to new face to start */
         PetscCall(DMPlexGetSupport(sdm, newp,  &supportF));
         PetscCall(DMPlexSetSupport(sdm, splitp, supportF));
@@ -1251,35 +1274,56 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
         PetscCall(DMPlexSetCone(sdm, splitp, &coneNew[2]));
         PetscCall(DMPlexSetConeOrientation(sdm, splitp, ornt));
         /* Face support */
-        for (s = 0; s < supportSize; ++s) {
-          PetscInt val;
+        PetscInt vals[2];
 
-          PetscCall(DMLabelGetValue(label, support[s], &val));
-          if (val < 0) {
-            /* Split old face:   Replace negative side cell with cohesive cell */
-             PetscCall(DMPlexInsertSupport(sdm, newp, s, hybcell));
+        PetscCall(DMLabelGetValue(label, support[0], &vals[0]));
+        if (supportSize > 1) PetscCall(DMLabelGetValue(label, support[1], &vals[1]));
+        else                 vals[1] = -vals[0];
+        PetscCheck(vals[0]*vals[1] < 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid support labels %" PetscInt_FMT " %" PetscInt_FMT, vals[0], vals[1]);
+
+        for (s = 0; s < 2; ++s) {
+          if (s >= supportSize) {
+            if (vals[s] < 0) {
+              /* Ghost old face:   Replace negative side cell with cohesive cell */
+              PetscCall(DMPlexInsertSupport(sdm, newp,   0, hybcell));
+            } else {
+              /* Ghost new face:   Replace positive side cell with cohesive cell */
+              PetscCall(DMPlexInsertSupport(sdm, splitp, 0, hybcell));
+            }
           } else {
-            /* Split new face:   Replace positive side cell with cohesive cell */
-            PetscCall(DMPlexInsertSupport(sdm, splitp, s, hybcell));
-            /* Get orientation for cohesive face */
-            {
-              const PetscInt *ncone, *nconeO;
-              PetscInt        nconeSize, nc;
-
-              PetscCall(DMPlexGetConeSize(dm, support[s], &nconeSize));
-              PetscCall(DMPlexGetCone(dm, support[s], &ncone));
-              PetscCall(DMPlexGetConeOrientation(dm, support[s], &nconeO));
-              for (nc = 0; nc < nconeSize; ++nc) {
-                if (ncone[nc] == oldp) {
-                  coneONew[0] = nconeO[nc];
-                  break;
-                }
-              }
-              PetscCheck(nc < nconeSize,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not locate face %d in neighboring cell %d", oldp, support[s]);
+            if (vals[s] < 0) {
+              /* Split old face:   Replace negative side cell with cohesive cell */
+              PetscCall(DMPlexInsertSupport(sdm, newp,   s, hybcell));
+            } else {
+              /* Split new face:   Replace positive side cell with cohesive cell */
+              PetscCall(DMPlexInsertSupport(sdm, splitp, s, hybcell));
             }
           }
         }
+        /* Get orientation for cohesive face using the positive side cell */
+        {
+          const PetscInt *ncone, *nconeO;
+          PetscInt        nconeSize, nc, ocell;
+          PetscBool       flip;
+
+          if (supportSize > 1) {ocell = vals[0] < 0 ? support[1] : support[0];}
+          else                 {ocell = support[0]; flip = vals[0] < 0 ? PETSC_TRUE : PETSC_FALSE;}
+          PetscCall(DMPlexGetConeSize(dm, ocell, &nconeSize));
+          PetscCall(DMPlexGetCone(dm, ocell, &ncone));
+          PetscCall(DMPlexGetConeOrientation(dm, support[s], &nconeO));
+          for (nc = 0; nc < nconeSize; ++nc) {
+            if (ncone[nc] == oldp) {
+              coneONew[0] = flip ? -(nconeO[nc]+1) : nconeO[nc];
+              break;
+            }
+          }
+          PetscCheck(nc < nconeSize, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not locate face %" PetscInt_FMT " in neighboring cell %" PetscInt_FMT, oldp, ocell);
+        }
         /* Cohesive cell:    Old and new split face, then new cohesive faces */
+        {
+          const PetscInt No = DMPolytopeTypeGetNumArrangments(ct)/2;
+          PetscCheck((coneONew[0] >= -No) && (coneONew[0] < No), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid %s orientation %" PetscInt_FMT, DMPolytopeTypes[ct], coneONew[0]);
+        }
         const PetscInt *arr = DMPolytopeTypeGetArrangment(ct, coneONew[0]);
 
         coneNew[0]  = newp;   /* Extracted negative side orientation above */
@@ -1575,6 +1619,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
   PetscCall(VecRestoreArray(coordinates, &coords));
   /* Step 8: SF, if I can figure this out we can split the mesh in parallel */
   PetscCall(DMPlexShiftSF_Internal(dm, depthShift, sdm));
+  /*   TODO We need to associate the ghost points with the correct replica */
   /* Step 9: Labels */
   PetscCall(DMPlexShiftLabels_Internal(dm, depthShift, sdm));
   PetscCall(DMPlexCreateVTKLabel_Internal(dm, PETSC_FALSE, sdm));
@@ -1617,6 +1662,8 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
     if (unsplitIS[dep]) PetscCall(ISRestoreIndices(unsplitIS[dep], &unsplitPoints[dep]));
     PetscCall(ISDestroy(&unsplitIS[dep]));
   }
+  if (ghostIS) PetscCall(ISRestoreIndices(ghostIS, &ghostPoints));
+  PetscCall(ISDestroy(&ghostIS));
   if (label) {
     PetscCall(ISRestoreIndices(valueIS, &values));
     PetscCall(ISDestroy(&valueIS));
@@ -1740,7 +1787,7 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
   IS              dimIS, subpointIS = NULL, facePosIS, faceNegIS, crossEdgeIS = NULL;
   const PetscInt *points, *subpoints;
   const PetscInt  rev   = flip ? -1 : 1;
-  PetscInt        shift = 100, shift2 = 200, dim, depth, dep, cStart, cEnd, vStart, vEnd, numPoints, numSubpoints, p, val;
+  PetscInt        shift = 100, shift2 = 200, shift3 = 300, dim, depth, dep, cStart, cEnd, vStart, vEnd, numPoints, numSubpoints, p, val;
 
   PetscFunctionBegin;
   PetscCall(DMPlexGetDepth(dm, &depth));
@@ -1813,9 +1860,6 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
       }
     }
   }
-  PetscCall(ISRestoreIndices(dimIS, &points));
-  PetscCall(ISDestroy(&dimIS));
-  if (subpointIS) PetscCall(ISRestoreIndices(subpointIS, &subpoints));
   /* Mark boundary points as unsplit */
   if (blabel) {
     PetscCall(DMLabelGetStratumIS(blabel, 1, &dimIS));
@@ -1867,6 +1911,45 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
     PetscCall(ISRestoreIndices(dimIS, &points));
     PetscCall(ISDestroy(&dimIS));
   }
+  /* Mark ghost fault cells */
+  {
+    PetscSF         sf;
+    const PetscInt *leaves;
+    PetscInt         Nl, l;
+
+    PetscCall(DMGetPointSF(dm, &sf));
+    PetscCall(PetscSFGetGraph(sf, NULL, &Nl, &leaves, NULL));
+    if (Nl > 0) {
+      for (p = 0; p < numPoints; ++p) {
+        const PetscInt point = points[p];
+        PetscInt       val;
+
+        PetscCall(PetscFindInt(point, Nl, leaves, &l));
+        if (l >= 0) {
+          PetscInt *closure = NULL;
+          PetscInt  closureSize, cl;
+
+          PetscCall(DMLabelGetValue(label, point, &val));
+          PetscCheck((val == dim-1) || (val == shift2+dim-1), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %" PetscInt_FMT " has label value %" PetscInt_FMT ", should be a fault face", point, val);
+          PetscCall(DMLabelClearValue(label, point, val));
+          PetscCall(DMLabelSetValue(label, point, shift3+val));
+          PetscCall(DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &closureSize, &closure));
+          for (cl = 0; cl < closureSize*2; cl += 2) {
+            const PetscInt clp  = closure[cl];
+
+            PetscCall(DMLabelGetValue(label, clp, &val));
+            PetscCheck(val != -1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %" PetscInt_FMT " is missing from label, but is in the closure of a fault face", point);
+            PetscCall(DMLabelClearValue(label, clp, val));
+            PetscCall(DMLabelSetValue(label, clp, shift3+val));
+          }
+          PetscCall(DMPlexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &closureSize, &closure));
+        }
+      }
+    }
+  }
+  PetscCall(ISRestoreIndices(dimIS, &points));
+  PetscCall(ISDestroy(&dimIS));
+  if (subpointIS) PetscCall(ISRestoreIndices(subpointIS, &subpoints));
   /* Search for other cells/faces/edges connected to the fault by a vertex */
   PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
   PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
