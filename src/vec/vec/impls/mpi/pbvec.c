@@ -344,9 +344,8 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
   PetscCallMPI(MPI_Waitall(4*x->nsendranks,x->sendreqs,MPI_STATUSES_IGNORE));
   PetscCall(PetscFree2(some_indices,some_statuses));
   if (x->assembly_subset) {
-    void *dummy;                /* reset segbuffers */
-    PetscCall(PetscSegBufferExtractInPlace(x->segrecvint,&dummy));
-    PetscCall(PetscSegBufferExtractInPlace(x->segrecvscalar,&dummy));
+    PetscCall(PetscSegBufferExtractInPlace(x->segrecvint,NULL));
+    PetscCall(PetscSegBufferExtractInPlace(x->segrecvscalar,NULL));
   } else {
     PetscCall(VecAssemblyReset_MPI(X));
   }

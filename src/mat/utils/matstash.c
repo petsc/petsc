@@ -974,8 +974,7 @@ static PetscErrorCode MatStashScatterEnd_BTS(MatStash *stash)
   PetscFunctionBegin;
   PetscCallMPI(MPI_Waitall(stash->nsendranks,stash->sendreqs,MPI_STATUSES_IGNORE));
   if (stash->first_assembly_done) { /* Reuse the communication contexts, so consolidate and reset segrecvblocks  */
-    void *dummy;
-    PetscCall(PetscSegBufferExtractInPlace(stash->segrecvblocks,&dummy));
+    PetscCall(PetscSegBufferExtractInPlace(stash->segrecvblocks,NULL));
   } else {                      /* No reuse, so collect everything. */
     PetscCall(MatStashScatterDestroy_BTS(stash));
   }
