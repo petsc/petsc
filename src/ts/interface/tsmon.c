@@ -1131,9 +1131,9 @@ PetscErrorCode  TSMonitorLGError(TS ts,PetscInt step,PetscReal ptime,Vec u,void 
 PetscErrorCode TSMonitorSPSwarmSolution(TS ts, PetscInt step, PetscReal ptime, Vec u, void *dctx)
 {
   TSMonitorSPCtx     ctx = (TSMonitorSPCtx) dctx;
+  PetscDraw          draw;
   DM                 dm, cdm;
   const PetscScalar *yy;
-  PetscReal         *y, *x;
   PetscInt           Np, p, dim = 2;
 
   PetscFunctionBegin;
@@ -1141,9 +1141,10 @@ PetscErrorCode TSMonitorSPSwarmSolution(TS ts, PetscInt step, PetscReal ptime, V
   if (!step) {
     PetscDrawAxis axis;
     PetscReal     dmboxlower[2], dmboxupper[2];
+
     PetscCall(TSGetDM(ts, &dm));
     PetscCall(DMGetDimension(dm, &dim));
-    PetscCheck(dim == 2,PETSC_COMM_SELF, PETSC_ERR_SUP, "Monitor only supports two dimensional fields");
+    PetscCheck(dim == 2, PETSC_COMM_SELF, PETSC_ERR_SUP, "Monitor only supports two dimensional fields");
     PetscCall(DMSwarmGetCellDM(dm, &cdm));
     PetscCall(DMGetBoundingBox(cdm, dmboxlower, dmboxupper));
     PetscCall(VecGetLocalSize(u, &Np));
@@ -1157,37 +1158,34 @@ PetscErrorCode TSMonitorSPSwarmSolution(TS ts, PetscInt step, PetscReal ptime, V
       PetscCall(PetscDrawAxisSetLimits(axis, dmboxlower[0], dmboxupper[0], dmboxlower[1], dmboxupper[1]));
     }
     PetscCall(PetscDrawAxisSetHoldLimits(axis, PETSC_TRUE));
-    PetscCall(PetscDrawSPSetDimension(ctx->sp, Np));
     PetscCall(PetscDrawSPReset(ctx->sp));
   }
   PetscCall(VecGetLocalSize(u, &Np));
   Np /= dim*2;
-  PetscCall(VecGetArrayRead(u,&yy));
-  PetscCall(PetscMalloc2(Np, &x, Np, &y));
-  /* get points from solution vector */
-  for (p = 0; p < Np; ++p) {
-    if (ctx->phase) {
-      x[p] = PetscRealPart(yy[p*dim*2]);
-      y[p] = PetscRealPart(yy[p*dim*2 + dim]);
-    } else {
-      x[p] = PetscRealPart(yy[p*dim*2]);
-      y[p] = PetscRealPart(yy[p*dim*2 + 1]);
-    }
-  }
-  PetscCall(VecRestoreArrayRead(u,&yy));
   if (((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && ts->reason)) {
-    PetscDraw draw;
     PetscCall(PetscDrawSPGetDraw(ctx->sp, &draw));
     if ((ctx->retain == 0) || (ctx->retain > 0 && !(step % ctx->retain))) {
       PetscCall(PetscDrawClear(draw));
     }
     PetscCall(PetscDrawFlush(draw));
     PetscCall(PetscDrawSPReset(ctx->sp));
-    PetscCall(PetscDrawSPAddPoint(ctx->sp, x, y));
+    PetscCall(VecGetArrayRead(u, &yy));
+    for (p = 0; p < Np; ++p) {
+      PetscReal x, y;
+
+      if (ctx->phase) {
+        x = PetscRealPart(yy[p*dim*2]);
+        y = PetscRealPart(yy[p*dim*2 + dim]);
+      } else {
+        x = PetscRealPart(yy[p*dim*2]);
+        y = PetscRealPart(yy[p*dim*2 + 1]);
+      }
+      PetscCall(PetscDrawSPAddPoint(ctx->sp, &x, &y));
+    }
+    PetscCall(VecRestoreArrayRead(u, &yy));
     PetscCall(PetscDrawSPDraw(ctx->sp, PETSC_FALSE));
     PetscCall(PetscDrawSPSave(ctx->sp));
   }
-  PetscCall(PetscFree2(x, y));
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-static char help[] = "Tests for KS test\n\n";
+static char help[] = "Tests for particle initialization using the KS test\n\n";
 
 #include <petscdmswarm.h>
 #include <petscdmplex.h>
@@ -118,6 +118,6 @@ int main(int argc, char **argv)
   test:
     suffix: 0
     requires: ks !complex
-    args: -dm_plex_dim 1 -dm_plex_box_lower -1 -dm_plex_box_upper 1 -dm_swarm_num_particles 300 -dm_swarm_coordinate_density {{constant gaussian}}
+    args: -dm_plex_dim 1 -dm_plex_box_lower -1 -dm_plex_box_upper 1 -dm_swarm_num_particles 375 -dm_swarm_coordinate_density {{constant gaussian}}
 
 TEST*/

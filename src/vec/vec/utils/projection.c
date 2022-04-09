@@ -444,7 +444,7 @@ PetscErrorCode VecWhichInactive(Vec VecLow, Vec V, Vec D, Vec VecHigh, PetscBool
 
   Level: advanced
 
-.seealso:  VecAXPY(), VecGetOwnershipRange()
+.seealso: VecISCopy(), VecISSet(), VecAXPY()
 @*/
 PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha, Vec vreduced)
 {
@@ -515,7 +515,7 @@ PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha, Vec vreduced)
 
   Level: advanced
 
-.seealso:  VecAXPY(), VecGetOwnershipRange()
+.seealso: VecISSet(), VecISAXPY(), VecCopy()
 @*/
 PetscErrorCode VecISCopy(Vec vfull, IS is, ScatterMode mode, Vec vreduced)
 {
@@ -617,7 +617,7 @@ PetscErrorCode ISComplementVec(IS S, Vec V, IS *T)
 
    Level: advanced
 
-.seealso: VecSet(), VecGetOwnershipRange()
+.seealso: VecISCopy(), VecISAXPY(), VecSet()
 @*/
 PetscErrorCode VecISSet(Vec V,IS S, PetscScalar c)
 {

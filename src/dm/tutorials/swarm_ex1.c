@@ -22,6 +22,7 @@ PetscErrorCode ex1_1(void)
 
   PetscCall(DMCreate(PETSC_COMM_WORLD,&dms));
   PetscCall(DMSetType(dms,DMSWARM));
+  PetscCall(PetscObjectSetName((PetscObject) dms, "Particles"));
 
   PetscCall(DMSwarmInitializeFieldRegister(dms));
   PetscCall(DMSwarmRegisterPetscDatatypeField(dms,"viscosity",1,PETSC_REAL));
@@ -105,6 +106,7 @@ PetscErrorCode ex1_2(void)
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   PetscCall(DMCreate(PETSC_COMM_WORLD,&dms));
   PetscCall(DMSetType(dms,DMSWARM));
+  PetscCall(PetscObjectSetName((PetscObject) dms, "Particles"));
   PetscCall(DMSwarmInitializeFieldRegister(dms));
 
   PetscCall(DMSwarmRegisterPetscDatatypeField(dms,"viscosity",1,PETSC_REAL));
@@ -201,6 +203,7 @@ PetscErrorCode ex1_3(void)
   PetscCall(DMDAGetCorners(dmcell,&is,&js,NULL,&ni,&nj,NULL));
   PetscCall(DMCreate(PETSC_COMM_WORLD,&dms));
   PetscCall(DMSetType(dms,DMSWARM));
+  PetscCall(PetscObjectSetName((PetscObject) dms, "Particles"));
   PetscCall(DMSwarmSetCellDM(dms,dmcell));
 
   /* load in data types */
@@ -363,6 +366,7 @@ PetscErrorCode ex1_4(void)
   PetscCall(DMDAGetCorners(dmcell,&is,&js,NULL,&ni,&nj,NULL));
   PetscCall(DMCreate(PETSC_COMM_WORLD,&dms));
   PetscCall(DMSetType(dms,DMSWARM));
+  PetscCall(PetscObjectSetName((PetscObject) dms, "Particles"));
 
   /* load in data types */
   PetscCall(DMSwarmInitializeFieldRegister(dms));

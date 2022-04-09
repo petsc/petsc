@@ -1,26 +1,7 @@
-DM Object: 4 MPI processes
+DM Object: Particles 4 MPI processes
   type: swarm
-DMSwarmDataBucketView: 
-  L                  = 10404 
-  buffer             = 4 
-  allocated          = 10408 
-  nfields registered = 5 
-    [  0]     DMSwarm_pid : Mem. usage       = 8.33e-02 (MB) [rank0]
-                            blocksize        = 1 
-                            atomic size      = 8 
-    [  1]    DMSwarm_rank : Mem. usage       = 4.16e-02 (MB) [rank0]
-                            blocksize        = 1 
-                            atomic size      = 4 
-    [  2]       viscosity : Mem. usage       = 8.33e-02 (MB) [rank0]
-                            blocksize        = 1 
-                            atomic size      = 8 
-    [  3]           coorx : Mem. usage       = 8.33e-02 (MB) [rank0]
-                            blocksize        = 1 
-                            atomic size      = 8 
-    [  4]           coory : Mem. usage       = 8.33e-02 (MB) [rank0]
-                            blocksize        = 1 
-                            atomic size      = 8 
-  Total mem. usage                           = 1.47e+00 (MB) (collective)
+Particles in 0 dimensions:
+  Number of particles per rank: 10404 10200 10200 10000
 rank[0] before(10404,40804)
 rank[1] before(10200,40804)
 rank[2] before(10200,40804)
@@ -40,18 +21,14 @@ DMSwarmDataEx: instance=0
     [3] neighbours: 1 
     [3]   neighbour[0] = 0 
   Message lengths:
-    [0] atomic size: 36 
-    [0] >>>>> ( 308 units :: tag = 3 ) >>>>> [3] 
-    [0] <<<<< ( 2820 units :: tag = 12 ) <<<<< [3] 
-    [1] atomic size: 36 
-    [1] >>>>> ( 1256 units :: tag = 6 ) >>>>> [2] 
-    [1] <<<<< ( 1972 units :: tag = 9 ) <<<<< [2] 
-    [2] atomic size: 36 
-    [2] >>>>> ( 1972 units :: tag = 9 ) >>>>> [1] 
-    [2] <<<<< ( 1256 units :: tag = 6 ) <<<<< [1] 
-    [3] atomic size: 36 
-    [3] >>>>> ( 2820 units :: tag = 12 ) >>>>> [0] 
-    [3] <<<<< ( 308 units :: tag = 3 ) <<<<< [0] 
+    [0] >>>>> ( 308 units :: tag = 3) >>>>> [3] 
+    [0] <<<<< ( 2820 units :: tag = 12) <<<<< [3] 
+    [1] >>>>> ( 1256 units :: tag = 6) >>>>> [2] 
+    [1] <<<<< ( 1972 units :: tag = 9) <<<<< [2] 
+    [2] >>>>> ( 1972 units :: tag = 9) >>>>> [1] 
+    [2] <<<<< ( 1256 units :: tag = 6) <<<<< [1] 
+    [3] >>>>> ( 2820 units :: tag = 12) >>>>> [0] 
+    [3] <<<<< ( 308 units :: tag = 3) <<<<< [0] 
 rank[0] after(13224,47160)
 rank[1] after(12172,47160)
 rank[2] after(11456,47160)

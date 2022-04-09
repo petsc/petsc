@@ -654,6 +654,106 @@ PetscErrorCode DMSwarmSetNumSpecies(DM sw, PetscInt Ns)
 }
 
 /*@C
+  DMSwarmGetCoordinateFunction - Get the function setting initial particle positions, if it exists
+
+  Not collective
+
+  Input parameter:
+. dm - the DMSwarm
+
+  Output Parameter:
+. coordFunc - the function setting initial particle positions, or NULL
+
+  Level: intermediate
+
+.seealso: DMSwarmSetCoordinateFunction(), DMSwarmGetVelocityFunction(), DMSwarmInitializeCoordinates()
+@*/
+PetscErrorCode DMSwarmGetCoordinateFunction(DM sw, PetscSimplePointFunc *coordFunc)
+{
+  DM_Swarm *swarm = (DM_Swarm *) sw->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sw, DM_CLASSID, 1);
+  PetscValidPointer(coordFunc, 2);
+  *coordFunc = swarm->coordFunc;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMSwarmSetCoordinateFunction - Set the function setting initial particle positions
+
+  Not collective
+
+  Input parameters:
++ dm - the DMSwarm
+- coordFunc - the function setting initial particle positions
+
+  Level: intermediate
+
+.seealso: DMSwarmGetCoordinateFunction(), DMSwarmSetVelocityFunction(), DMSwarmInitializeCoordinates()
+@*/
+PetscErrorCode DMSwarmSetCoordinateFunction(DM sw, PetscSimplePointFunc coordFunc)
+{
+  DM_Swarm *swarm = (DM_Swarm *) sw->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sw, DM_CLASSID, 1);
+  PetscValidFunction(coordFunc, 2);
+  swarm->coordFunc = coordFunc;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMSwarmGetCoordinateFunction - Get the function setting initial particle velocities, if it exists
+
+  Not collective
+
+  Input parameter:
+. dm - the DMSwarm
+
+  Output Parameter:
+. velFunc - the function setting initial particle velocities, or NULL
+
+  Level: intermediate
+
+.seealso: DMSwarmSetVelocityFunction(), DMSwarmGetCoordinateFunction(), DMSwarmInitializeVelocities()
+@*/
+PetscErrorCode DMSwarmGetVelocityFunction(DM sw, PetscSimplePointFunc *velFunc)
+{
+  DM_Swarm *swarm = (DM_Swarm *) sw->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sw, DM_CLASSID, 1);
+  PetscValidPointer(velFunc, 2);
+  *velFunc = swarm->velFunc;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMSwarmSetVelocityFunction - Set the function setting initial particle velocities
+
+  Not collective
+
+  Input parameters:
++ dm - the DMSwarm
+- coordFunc - the function setting initial particle velocities
+
+  Level: intermediate
+
+.seealso: DMSwarmGetVelocityFunction(), DMSwarmSetCoordinateFunction(), DMSwarmInitializeVelocities()
+@*/
+PetscErrorCode DMSwarmSetVelocityFunction(DM sw, PetscSimplePointFunc velFunc)
+{
+  DM_Swarm *swarm = (DM_Swarm *) sw->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sw, DM_CLASSID, 1);
+  PetscValidFunction(velFunc, 2);
+  swarm->velFunc = velFunc;
+  PetscFunctionReturn(0);
+}
+
+/*@C
   DMSwarmComputeLocalSize - Compute the local number and distribution of particles based upon a density function
 
   Not collective
@@ -675,7 +775,7 @@ PetscErrorCode DMSwarmComputeLocalSize(DM sw, PetscInt N, PetscProbFunc density)
   PetscQuadrature  quad;
   const PetscReal *xq, *wq;
   PetscInt        *npc, *cellid;
-  PetscReal        xi0[3], scale[1] = {.01};
+  PetscReal        xi0[3];
   PetscInt         Ns, cStart, cEnd, c, dim, d, Nq, q, Np = 0, p;
   PetscBool        simplex;
 
@@ -701,10 +801,10 @@ PetscErrorCode DMSwarmComputeLocalSize(DM sw, PetscInt N, PetscProbFunc density)
       PetscReal xr[3], den[3];
 
       CoordinatesRefToReal(dim, dim, xi0, v0, J, &xq[q*dim], xr);
-      PetscCall(density(xr, scale, den));
-      n_int += N*den[0]*wq[q];
+      PetscCall(density(xr, NULL, den));
+      n_int += den[0]*wq[q];
     }
-    npc[c]  = (PetscInt) n_int;
+    npc[c]  = (PetscInt) (N*n_int);
     npc[c] *= Ns;
     Np     += npc[c];
   }
@@ -734,25 +834,42 @@ PetscErrorCode DMSwarmComputeLocalSize(DM sw, PetscInt N, PetscProbFunc density)
 @*/
 PetscErrorCode DMSwarmComputeLocalSizeFromOptions(DM sw)
 {
-  DTProbDensityType den = DTPROB_DENSITY_CONSTANT;
-  PetscProbFunc     pdf;
-  PetscInt          N, Ns, dim;
-  PetscBool         flg;
-  const char       *prefix;
-  PetscErrorCode    ierr;
+  PetscProbFunc  pdf;
+  const char    *prefix;
+  char           funcname[PETSC_MAX_PATH_LEN];
+  PetscInt      *N, Ns, dim, n;
+  PetscBool      flg;
+  PetscMPIInt    size, rank;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject) sw), &size));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject) sw), &rank));
+  PetscCall(PetscCalloc1(size, &N));
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject) sw), "", "DMSwarm Options", "DMSWARM");PetscCall(ierr);
-  PetscCall(PetscOptionsInt("-dm_swarm_num_particles", "The target number of particles", "", N, &N, NULL));
+  n = size;
+  PetscCall(PetscOptionsIntArray("-dm_swarm_num_particles", "The target number of particles", "", N, &n, NULL));
+  PetscCall(DMSwarmGetNumSpecies(sw, &Ns));
   PetscCall(PetscOptionsInt("-dm_swarm_num_species", "The number of species", "DMSwarmSetNumSpecies", Ns, &Ns, &flg));
   if (flg) PetscCall(DMSwarmSetNumSpecies(sw, Ns));
-  PetscCall(PetscOptionsEnum("-dm_swarm_density", "Method to compute particle density <constant, gaussian>", "", DTProbDensityTypes, (PetscEnum) den, (PetscEnum *) &den, NULL));
+  PetscCall(PetscOptionsString("-dm_swarm_coordinate_function", "Function to determine particle coordinates", "DMSwarmSetCoordinateFunction", funcname, funcname, sizeof(funcname), &flg));
   ierr = PetscOptionsEnd();PetscCall(ierr);
+  if (flg) {
+    PetscSimplePointFunc coordFunc;
 
-  PetscCall(DMGetDimension(sw, &dim));
-  PetscCall(PetscObjectGetOptionsPrefix((PetscObject) sw, &prefix));
-  PetscCall(PetscProbCreateFromOptions(dim, prefix, "-dm_swarm_coordinate_density", &pdf, NULL, NULL));
-  PetscCall(DMSwarmComputeLocalSize(sw, N, pdf));
+    PetscCall(DMSwarmGetNumSpecies(sw, &Ns));
+    PetscCall(PetscDLSym(NULL, funcname, (void **) &coordFunc));
+    PetscCheck(coordFunc, PetscObjectComm((PetscObject) sw), PETSC_ERR_ARG_WRONG, "Could not locate function %s", funcname);
+    PetscCall(DMSwarmGetNumSpecies(sw, &Ns));
+    PetscCall(DMSwarmSetLocalSizes(sw, N[rank]*Ns, 0));
+    PetscCall(DMSwarmSetCoordinateFunction(sw, coordFunc));
+  } else {
+    PetscCall(DMGetDimension(sw, &dim));
+    PetscCall(PetscObjectGetOptionsPrefix((PetscObject) sw, &prefix));
+    PetscCall(PetscProbCreateFromOptions(dim, prefix, "-dm_swarm_coordinate_density", &pdf, NULL, NULL));
+    PetscCall(DMSwarmComputeLocalSize(sw, N[rank], pdf));
+  }
+  PetscCall(PetscFree(N));
   PetscFunctionReturn(0);
 }
 
@@ -772,53 +889,74 @@ PetscErrorCode DMSwarmComputeLocalSizeFromOptions(DM sw)
 @*/
 PetscErrorCode DMSwarmInitializeCoordinates(DM sw)
 {
-  DM             dm;
-  PetscRandom    rnd;
-  PetscScalar   *weight;
-  PetscReal     *x, xi0[3];
-  PetscInt      *species;
-  PetscBool      removePoints = PETSC_TRUE;
-  PetscDataType  dtype;
-  PetscInt       Ns, cStart, cEnd, c, dim, d, s, bs;
+  PetscSimplePointFunc coordFunc;
+  PetscScalar         *weight;
+  PetscReal           *x;
+  PetscInt            *species;
+  void                *ctx;
+  PetscBool            removePoints = PETSC_TRUE;
+  PetscDataType        dtype;
+  PetscInt             Np, p, Ns, dim, d, bs;
 
   PetscFunctionBeginUser;
+  PetscCall(DMGetDimension(sw, &dim));
+  PetscCall(DMSwarmGetLocalSize(sw, &Np));
   PetscCall(DMSwarmGetNumSpecies(sw, &Ns));
-  PetscCall(DMSwarmGetCellDM(sw, &dm));
-  PetscCall(DMGetDimension(dm, &dim));
-  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+  PetscCall(DMSwarmGetCoordinateFunction(sw, &coordFunc));
 
-  /* Set particle position randomly in cell, set weights to 1 */
-  PetscCall(PetscRandomCreate(PetscObjectComm((PetscObject) dm), &rnd));
-  PetscCall(PetscRandomSetInterval(rnd, -1.0, 1.0));
-  PetscCall(PetscRandomSetFromOptions(rnd));
+  PetscCall(DMSwarmGetField(sw, DMSwarmPICField_coor, &bs, &dtype, (void **) &x));
   PetscCall(DMSwarmGetField(sw, "w_q", &bs, &dtype, (void **) &weight));
-  PetscCall(DMSwarmGetField(sw, "DMSwarmPIC_coor", &bs, &dtype, (void **) &x));
   PetscCall(DMSwarmGetField(sw, "species", NULL, NULL, (void **) &species));
-  PetscCall(DMSwarmSortGetAccess(sw));
-  for (d = 0; d < dim; ++d) xi0[d] = -1.0;
-  for (c = cStart; c < cEnd; ++c) {
-    PetscReal v0[3], J[9], invJ[9], detJ;
-    PetscInt *pidx, Npc, q;
+  if (coordFunc) {
+    PetscCall(DMGetApplicationContext(sw, &ctx));
+    for (p = 0; p < Np; ++p) {
+      PetscScalar X[3];
 
-    PetscCall(DMSwarmSortGetPointsPerCell(sw, c, &Npc, &pidx));
-    PetscCall(DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, invJ, &detJ));
-    for (q = 0; q < Npc; ++q) {
-      const PetscInt p = pidx[q];
-      PetscReal      xref[3];
-
-      for (d = 0; d < dim; ++d) PetscCall(PetscRandomGetValueReal(rnd, &xref[d]));
-      CoordinatesRefToReal(dim, dim, xi0, v0, J, xref, &x[p*dim]);
-
-      weight[p] = 1.0;
-      for (s = 0; s < Ns; ++s) species[p] = p % Ns;
+      PetscCall((*coordFunc)(dim, 0., NULL, p, X, ctx));
+      for (d = 0; d < dim; ++d) x[p*dim+d] = PetscRealPart(X[d]);
+      weight[p]  = 1.0;
+      species[p] = p % Ns;
     }
-    PetscCall(PetscFree(pidx));
+  } else {
+    DM          dm;
+    PetscRandom rnd;
+    PetscReal   xi0[3];
+    PetscInt    cStart, cEnd, c;
+
+    PetscCall(DMSwarmGetCellDM(sw, &dm));
+    PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+
+    /* Set particle position randomly in cell, set weights to 1 */
+    PetscCall(PetscRandomCreate(PetscObjectComm((PetscObject) dm), &rnd));
+    PetscCall(PetscRandomSetInterval(rnd, -1.0, 1.0));
+    PetscCall(PetscRandomSetFromOptions(rnd));
+    PetscCall(DMSwarmSortGetAccess(sw));
+    for (d = 0; d < dim; ++d) xi0[d] = -1.0;
+    for (c = cStart; c < cEnd; ++c) {
+      PetscReal v0[3], J[9], invJ[9], detJ;
+      PetscInt *pidx, Npc, q;
+
+      PetscCall(DMSwarmSortGetPointsPerCell(sw, c, &Npc, &pidx));
+      PetscCall(DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, invJ, &detJ));
+      for (q = 0; q < Npc; ++q) {
+        const PetscInt p = pidx[q];
+        PetscReal      xref[3];
+
+        for (d = 0; d < dim; ++d) PetscCall(PetscRandomGetValueReal(rnd, &xref[d]));
+        CoordinatesRefToReal(dim, dim, xi0, v0, J, xref, &x[p*dim]);
+
+        weight[p]  = 1.0;
+        species[p] = p % Ns;
+      }
+      PetscCall(PetscFree(pidx));
+    }
+    PetscCall(PetscRandomDestroy(&rnd));
+    PetscCall(DMSwarmSortRestoreAccess(sw));
   }
-  PetscCall(PetscRandomDestroy(&rnd));
-  PetscCall(DMSwarmSortRestoreAccess(sw));
-  PetscCall(DMSwarmRestoreField(sw, "w_q", NULL, NULL, (void **) &weight));
   PetscCall(DMSwarmRestoreField(sw, DMSwarmPICField_coor, NULL, NULL, (void **) &x));
+  PetscCall(DMSwarmRestoreField(sw, "w_q", NULL, NULL, (void **) &weight));
   PetscCall(DMSwarmRestoreField(sw, "species", NULL, NULL, (void **) &species));
+
   PetscCall(DMSwarmMigrate(sw, removePoints));
   PetscCall(DMLocalizeCoordinates(sw));
   PetscFunctionReturn(0);
@@ -834,37 +972,57 @@ PetscErrorCode DMSwarmInitializeCoordinates(DM sw)
 . sampler - A function which uniformly samples the velocity PDF
 - v0      - The velocity scale for nondimensionalization for each species
 
+  Note: If v0 is zero for the first species, all velocities are set to zero. If it is zero for any other species, the effect will be to give that species zero velocity.
+
   Level: advanced
 
 .seealso: DMSwarmComputeLocalSize(), DMSwarmInitializeCoordinates(), DMSwarmInitializeVelocitiesFromOptions()
 @*/
 PetscErrorCode DMSwarmInitializeVelocities(DM sw, PetscProbFunc sampler, const PetscReal v0[])
 {
-  PetscRandom  rnd;
-  PetscReal   *v;
-  PetscInt    *species;
-  PetscInt     dim, Np, p;
+  PetscSimplePointFunc velFunc;
+  PetscReal           *v;
+  PetscInt            *species;
+  void                *ctx;
+  PetscInt             dim, Np, p;
 
   PetscFunctionBegin;
-  PetscCall(PetscRandomCreate(PetscObjectComm((PetscObject) sw), &rnd));
-  PetscCall(PetscRandomSetInterval(rnd, 0, 1.));
-  PetscCall(PetscRandomSetFromOptions(rnd));
+  PetscCall(DMSwarmGetVelocityFunction(sw, &velFunc));
 
   PetscCall(DMGetDimension(sw, &dim));
   PetscCall(DMSwarmGetLocalSize(sw, &Np));
   PetscCall(DMSwarmGetField(sw, "velocity", NULL, NULL, (void **) &v));
   PetscCall(DMSwarmGetField(sw, "species", NULL, NULL, (void **) &species));
-  for (p = 0; p < Np; ++p) {
-    PetscInt  s = species[p], d;
-    PetscReal a[3], vel[3];
+  if (v0[0] == 0.) {
+    PetscCall(PetscArrayzero(v, Np*dim));
+  } else if (velFunc) {
+    PetscCall(DMGetApplicationContext(sw, &ctx));
+    for (p = 0; p < Np; ++p) {
+      PetscInt    s = species[p], d;
+      PetscScalar vel[3];
 
-    for (d = 0; d < dim; ++d) PetscCall(PetscRandomGetValueReal(rnd, &a[d]));
-    PetscCall(sampler(a, NULL, vel));
-    for (d = 0; d < dim; ++d) {v[p*dim+d] = (v0[s] / v0[0]) * vel[d];}
+      PetscCall((*velFunc)(dim, 0., NULL, p, vel, ctx));
+      for (d = 0; d < dim; ++d) v[p*dim+d] = (v0[s] / v0[0]) * PetscRealPart(vel[d]);
+    }
+  } else {
+    PetscRandom  rnd;
+
+    PetscCall(PetscRandomCreate(PetscObjectComm((PetscObject) sw), &rnd));
+    PetscCall(PetscRandomSetInterval(rnd, 0, 1.));
+    PetscCall(PetscRandomSetFromOptions(rnd));
+
+    for (p = 0; p < Np; ++p) {
+      PetscInt  s = species[p], d;
+      PetscReal a[3], vel[3];
+
+      for (d = 0; d < dim; ++d) PetscCall(PetscRandomGetValueReal(rnd, &a[d]));
+      PetscCall(sampler(a, NULL, vel));
+      for (d = 0; d < dim; ++d) {v[p*dim+d] = (v0[s] / v0[0]) * vel[d];}
+    }
+    PetscCall(PetscRandomDestroy(&rnd));
   }
   PetscCall(DMSwarmRestoreField(sw, "velocity", NULL, NULL, (void **) &v));
   PetscCall(DMSwarmRestoreField(sw, "species", NULL, NULL, (void **) &species));
-  PetscCall(PetscRandomDestroy(&rnd));
   PetscFunctionReturn(0);
 }
 
@@ -886,8 +1044,21 @@ PetscErrorCode DMSwarmInitializeVelocitiesFromOptions(DM sw, const PetscReal v0[
   PetscProbFunc  sampler;
   PetscInt       dim;
   const char    *prefix;
+  char           funcname[PETSC_MAX_PATH_LEN];
+  PetscBool      flg;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject) sw), "", "DMSwarm Options", "DMSWARM");PetscCall(ierr);
+  PetscCall(PetscOptionsString("-dm_swarm_velocity_function", "Function to determine particle velocities", "DMSwarmSetVelocityFunction", funcname, funcname, sizeof(funcname), &flg));
+  ierr = PetscOptionsEnd();PetscCall(ierr);
+  if (flg) {
+    PetscSimplePointFunc velFunc;
+
+    PetscCall(PetscDLSym(NULL, funcname, (void **) &velFunc));
+    PetscCheck(velFunc, PetscObjectComm((PetscObject) sw), PETSC_ERR_ARG_WRONG, "Could not locate function %s", funcname);
+    PetscCall(DMSwarmSetVelocityFunction(sw, velFunc));
+  }
   PetscCall(DMGetDimension(sw, &dim));
   PetscCall(PetscObjectGetOptionsPrefix((PetscObject) sw, &prefix));
   PetscCall(PetscProbCreateFromOptions(dim, prefix, "-dm_swarm_velocity_density", NULL, NULL, &sampler));

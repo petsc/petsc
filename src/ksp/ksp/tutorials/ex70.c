@@ -938,6 +938,7 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
   PetscCall(DMCreate(PETSC_COMM_WORLD,&dms_quadrature));
   PetscCall(DMSetType(dms_quadrature,DMSWARM));
   PetscCall(DMSetDimension(dms_quadrature,2));
+  PetscCall(PetscObjectSetName((PetscObject) dms_quadrature, "Quadrature Swarm"));
 
   /* Register fields for viscosity and density on the quadrature points */
   PetscCall(DMSwarmRegisterPetscDatatypeField(dms_quadrature,"eta_q",1,PETSC_REAL));
@@ -949,6 +950,7 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
   PetscCall(DMCreate(PETSC_COMM_WORLD,&dms_mpoint));
   PetscCall(DMSetType(dms_mpoint,DMSWARM));
   PetscCall(DMSetDimension(dms_mpoint,2));
+  PetscCall(PetscObjectSetName((PetscObject) dms_mpoint, "Material Point Swarm"));
 
   /* Configure the material point swarm to be of type Particle-In-Cell */
   PetscCall(DMSwarmSetType(dms_mpoint,DMSWARM_PIC));

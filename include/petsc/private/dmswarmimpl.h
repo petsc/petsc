@@ -51,6 +51,9 @@ typedef struct {
 
   /* Support for PIC */
   PetscInt Ns; /* The number of particle species */
+
+  PetscSimplePointFunc coordFunc; /* Function to set particle coordinates */
+  PetscSimplePointFunc velFunc;   /* Function to set particle velocities */
 } DM_Swarm;
 
 typedef struct {

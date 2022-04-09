@@ -1,24 +1,7 @@
-DM Object: 3 MPI processes
+DM Object: Particles 3 MPI processes
   type: swarm
-DMSwarmDataBucketView: 
-  L                  = 5 
-  buffer             = 4 
-  allocated          = 9 
-  nfields registered = 4 
-    [  0]     DMSwarm_pid : Mem. usage       = 7.20e-05 (MB) [rank0]
-                            blocksize        = 1 
-                            atomic size      = 8 
-    [  1]    DMSwarm_rank : Mem. usage       = 3.60e-05 (MB) [rank0]
-                            blocksize        = 1 
-                            atomic size      = 4 
-    [  2]       viscosity : Mem. usage       = 7.20e-05 (MB) [rank0]
-                            blocksize        = 1 
-                            atomic size      = 8 
-    [  3]          strain : Mem. usage       = 2.16e-04 (MB) [rank0]
-                            blocksize        = 3 
-                            atomic size      = 24 [full block, bs=3]
-                            atomic size/item = 8 
-  Total mem. usage                           = 1.32e-03 (MB) (collective)
+Particles in 0 dimensions:
+  Number of particles per rank: 5 6 7
 Vec Object: DMSwarmSharedField_viscosity 3 MPI processes
   type: mpi
 Process [0]

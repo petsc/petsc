@@ -20,6 +20,7 @@ PetscErrorCode ex2_1(void)
 
   PetscCall(DMCreate(PETSC_COMM_WORLD,&dms));
   PetscCall(DMSetType(dms,DMSWARM));
+  PetscCall(PetscObjectSetName((PetscObject) dms, "Particles"));
   PetscCall(DMSwarmInitializeFieldRegister(dms));
   PetscCall(DMSwarmRegisterPetscDatatypeField(dms,"viscosity",1,PETSC_REAL));
   PetscCall(DMSwarmRegisterPetscDatatypeField(dms,"strain",3,PETSC_REAL));

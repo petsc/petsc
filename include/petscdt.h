@@ -490,9 +490,17 @@ PETSC_EXTERN PetscErrorCode PetscCDFGaussian1D(const PetscReal[], const PetscRea
 PETSC_EXTERN PetscErrorCode PetscPDFSampleGaussian1D(const PetscReal[], const PetscReal[], PetscReal[]);
 PETSC_EXTERN PetscErrorCode PetscPDFGaussian2D(const PetscReal[], const PetscReal[], PetscReal[]);
 PETSC_EXTERN PetscErrorCode PetscPDFSampleGaussian2D(const PetscReal[], const PetscReal[], PetscReal[]);
+PETSC_EXTERN PetscErrorCode PetscPDFGaussian3D(const PetscReal[], const PetscReal[], PetscReal[]);
+PETSC_EXTERN PetscErrorCode PetscPDFSampleGaussian3D(const PetscReal[], const PetscReal[], PetscReal[]);
 PETSC_EXTERN PetscErrorCode PetscPDFConstant1D(const PetscReal[], const PetscReal[], PetscReal[]);
 PETSC_EXTERN PetscErrorCode PetscCDFConstant1D(const PetscReal[], const PetscReal[], PetscReal[]);
 PETSC_EXTERN PetscErrorCode PetscPDFSampleConstant1D(const PetscReal[], const PetscReal[], PetscReal[]);
+PETSC_EXTERN PetscErrorCode PetscPDFConstant2D(const PetscReal[], const PetscReal[], PetscReal[]);
+PETSC_EXTERN PetscErrorCode PetscCDFConstant2D(const PetscReal[], const PetscReal[], PetscReal[]);
+PETSC_EXTERN PetscErrorCode PetscPDFSampleConstant2D(const PetscReal[], const PetscReal[], PetscReal[]);
+PETSC_EXTERN PetscErrorCode PetscPDFConstant3D(const PetscReal[], const PetscReal[], PetscReal[]);
+PETSC_EXTERN PetscErrorCode PetscCDFConstant3D(const PetscReal[], const PetscReal[], PetscReal[]);
+PETSC_EXTERN PetscErrorCode PetscPDFSampleConstant3D(const PetscReal[], const PetscReal[], PetscReal[]);
 PETSC_EXTERN PetscErrorCode PetscProbCreateFromOptions(PetscInt, const char[], const char[], PetscProbFunc *, PetscProbFunc *, PetscProbFunc *);
 
 #include <petscvec.h>
