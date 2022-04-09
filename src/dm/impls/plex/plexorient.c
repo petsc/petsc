@@ -151,7 +151,7 @@ PetscErrorCode DMPlexOrient(DM dm)
   const PetscInt    *lpoints;
   const PetscSFNode *rpoints;
   PetscSFNode       *rorntComp = NULL, *lorntComp = NULL;
-  PetscInt          *numNeighbors, **neighbors;
+  PetscInt          *numNeighbors, **neighbors, *locSupport = NULL;
   PetscSFNode       *nrankComp;
   PetscBool         *match, *flipped;
   PetscBT            seenCells, flippedCells, seenFaces;
@@ -257,27 +257,36 @@ PetscErrorCode DMPlexOrient(DM dm)
   }
   /* Now all subdomains are oriented, but we need a consistent parallel orientation */
   if (numLeaves >= 0) {
+    PetscInt maxSupportSize, neighbor;
+
     /* Store orientations of boundary faces*/
-    PetscCall(PetscCalloc2(numRoots,&rorntComp,numRoots,&lorntComp));
+    PetscCall(DMPlexGetMaxSizes(dm, NULL, &maxSupportSize));
+    PetscCall(PetscCalloc3(numRoots, &rorntComp, numRoots, &lorntComp, maxSupportSize, &locSupport));
     for (face = fStart; face < fEnd; ++face) {
       const PetscInt *cone, *support, *ornt;
-      PetscInt        coneSize, supportSize;
+      PetscInt        coneSize, supportSize, Ns = 0, s, l;
 
       PetscCall(DMPlexGetSupportSize(dm, face, &supportSize));
-      if (supportSize != 1) continue;
+      /* Ignore overlapping cells */
       PetscCall(DMPlexGetSupport(dm, face, &support));
-
-      PetscCall(DMPlexGetCone(dm, support[0], &cone));
-      PetscCall(DMPlexGetConeSize(dm, support[0], &coneSize));
-      PetscCall(DMPlexGetConeOrientation(dm, support[0], &ornt));
+      for (s = 0; s < supportSize; ++s) {
+        PetscCall(PetscFindInt(support[s], numLeaves, lpoints, &l));
+        if (l >= 0) continue;
+        locSupport[Ns++] = support[s];
+      }
+      if (Ns != 1) continue;
+      neighbor = locSupport[0];
+      PetscCall(DMPlexGetCone(dm, neighbor, &cone));
+      PetscCall(DMPlexGetConeSize(dm, neighbor, &coneSize));
+      PetscCall(DMPlexGetConeOrientation(dm, neighbor, &ornt));
       for (c = 0; c < coneSize; ++c) if (cone[c] == face) break;
       if (dim == 1) {
         /* Use cone position instead, shifted to -1 or 1 */
-        if (PetscBTLookup(flippedCells, support[0]-cStart)) rorntComp[face].rank = 1-c*2;
-        else                                                rorntComp[face].rank = c*2-1;
+        if (PetscBTLookup(flippedCells, neighbor-cStart)) rorntComp[face].rank = 1-c*2;
+        else                                              rorntComp[face].rank = c*2-1;
       } else {
-        if (PetscBTLookup(flippedCells, support[0]-cStart)) rorntComp[face].rank = ornt[c] < 0 ? -1 :  1;
-        else                                                rorntComp[face].rank = ornt[c] < 0 ?  1 : -1;
+        if (PetscBTLookup(flippedCells, neighbor-cStart)) rorntComp[face].rank = ornt[c] < 0 ? -1 :  1;
+        else                                              rorntComp[face].rank = ornt[c] < 0 ?  1 : -1;
       }
       rorntComp[face].index = faceComp[face-fStart];
     }
@@ -300,7 +309,7 @@ PetscErrorCode DMPlexOrient(DM dm)
       const PetscInt face = lpoints[l];
 
       /* Find a representative face (edge) separating pairs of procs */
-      if ((face >= fStart) && (face < fEnd) && (faceComp[face-fStart] == comp)) {
+      if ((face >= fStart) && (face < fEnd) && (faceComp[face-fStart] == comp) && rorntComp[face].rank) {
         const PetscInt rrank = rpoints[l].rank;
         const PetscInt rcomp = lorntComp[face].index;
 
@@ -491,7 +500,7 @@ PetscErrorCode DMPlexOrient(DM dm)
   PetscCall(PetscBTDestroy(&flippedCells));
   PetscCall(PetscBTDestroy(&seenFaces));
   PetscCall(PetscFree2(numNeighbors, neighbors));
-  PetscCall(PetscFree2(rorntComp, lorntComp));
+  PetscCall(PetscFree3(rorntComp, lorntComp, locSupport));
   PetscCall(PetscFree3(faceFIFO, cellComp, faceComp));
   PetscFunctionReturn(0);
 }
