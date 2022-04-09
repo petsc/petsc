@@ -12,95 +12,6 @@ const char SBRCitation[] = "@article{PlazaCarey2000,\n"
                           "  doi     = {10.1016/S0168-9274(99)00022-7},\n"
                           "  year    = {2000}\n}\n";
 
-typedef struct _p_PointQueue *PointQueue;
-struct _p_PointQueue {
-  PetscInt  size;   /* Size of the storage array */
-  PetscInt *points; /* Array of mesh points */
-  PetscInt  front;  /* Index of the front of the queue */
-  PetscInt  back;   /* Index of the back of the queue */
-  PetscInt  num;    /* Number of enqueued points */
-};
-
-static PetscErrorCode PointQueueCreate(PetscInt size, PointQueue *queue)
-{
-  PointQueue     q;
-
-  PetscFunctionBegin;
-  PetscCheck(size >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Queue size %D must be non-negative", size);
-  PetscCall(PetscCalloc1(1, &q));
-  q->size = size;
-  PetscCall(PetscMalloc1(q->size, &q->points));
-  q->num   = 0;
-  q->front = 0;
-  q->back  = q->size-1;
-  *queue = q;
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode PointQueueDestroy(PointQueue *queue)
-{
-  PointQueue     q = *queue;
-
-  PetscFunctionBegin;
-  PetscCall(PetscFree(q->points));
-  PetscCall(PetscFree(q));
-  *queue = NULL;
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode PointQueueEnsureSize(PointQueue queue)
-{
-  PetscFunctionBegin;
-  if (queue->num < queue->size) PetscFunctionReturn(0);
-  queue->size *= 2;
-  PetscCall(PetscRealloc(queue->size * sizeof(PetscInt), &queue->points));
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode PointQueueEnqueue(PointQueue queue, PetscInt p)
-{
-  PetscFunctionBegin;
-  PetscCall(PointQueueEnsureSize(queue));
-  queue->back = (queue->back + 1) % queue->size;
-  queue->points[queue->back] = p;
-  ++queue->num;
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode PointQueueDequeue(PointQueue queue, PetscInt *p)
-{
-  PetscFunctionBegin;
-  PetscCheck(queue->num,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot dequeue from an empty queue");
-  *p = queue->points[queue->front];
-  queue->front = (queue->front + 1) % queue->size;
-  --queue->num;
-  PetscFunctionReturn(0);
-}
-
-#if 0
-static PetscErrorCode PointQueueFront(PointQueue queue, PetscInt *p)
-{
-  PetscFunctionBegin;
-  PetscCheck(queue->num,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot get the front of an empty queue");
-  *p = queue->points[queue->front];
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode PointQueueBack(PointQueue queue, PetscInt *p)
-{
-  PetscFunctionBegin;
-  PetscCheck(queue->num,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot get the back of an empty queue");
-  *p = queue->points[queue->back];
-  PetscFunctionReturn(0);
-}
-#endif
-
-static inline PetscBool PointQueueEmpty(PointQueue queue)
-{
-  if (!queue->num) return PETSC_TRUE;
-  return PETSC_FALSE;
-}
-
 static PetscErrorCode SBRGetEdgeLen_Private(DMPlexTransform tr, PetscInt edge, PetscReal *len)
 {
   DMPlexRefine_SBR *sbr = (DMPlexRefine_SBR *) tr->data;
@@ -136,19 +47,19 @@ static PetscErrorCode SBRGetEdgeLen_Private(DMPlexTransform tr, PetscInt edge, P
 
 /* Mark local edges that should be split */
 /* TODO This will not work in 3D */
-static PetscErrorCode SBRSplitLocalEdges_Private(DMPlexTransform tr, PointQueue queue)
+static PetscErrorCode SBRSplitLocalEdges_Private(DMPlexTransform tr, DMPlexPointQueue queue)
 {
   DMPlexRefine_SBR *sbr = (DMPlexRefine_SBR *) tr->data;
   DM                dm;
 
   PetscFunctionBegin;
   PetscCall(DMPlexTransformGetDM(tr, &dm));
-  while (!PointQueueEmpty(queue)) {
+  while (!DMPlexPointQueueEmpty(queue)) {
     PetscInt        p = -1;
     const PetscInt *support;
     PetscInt        supportSize, s;
 
-    PetscCall(PointQueueDequeue(queue, &p));
+    PetscCall(DMPlexPointQueueDequeue(queue, &p));
     PetscCall(DMPlexGetSupport(dm, p, &support));
     PetscCall(DMPlexGetSupportSize(dm, p, &supportSize));
     for (s = 0; s < supportSize; ++s) {
@@ -171,7 +82,7 @@ static PetscErrorCode SBRSplitLocalEdges_Private(DMPlexTransform tr, PointQueue 
       PetscCall(DMLabelGetValue(sbr->splitPoints, maxedge, &eval));
       if (eval != 1) {
         PetscCall(DMLabelSetValue(sbr->splitPoints, maxedge, 1));
-        PetscCall(PointQueueEnqueue(queue, maxedge));
+        PetscCall(DMPlexPointQueueEnqueue(queue, maxedge));
       }
       PetscCall(DMLabelSetValue(sbr->splitPoints, cell, 2));
     }
@@ -181,10 +92,10 @@ static PetscErrorCode SBRSplitLocalEdges_Private(DMPlexTransform tr, PointQueue 
 
 static PetscErrorCode splitPoint(PETSC_UNUSED DMLabel label, PetscInt p, PETSC_UNUSED PetscInt val, void *ctx)
 {
-  PointQueue queue = (PointQueue) ctx;
+  DMPlexPointQueue queue = (DMPlexPointQueue) ctx;
 
   PetscFunctionBegin;
-  PetscCall(PointQueueEnqueue(queue, p));
+  PetscCall(DMPlexPointQueueEnqueue(queue, p));
   PetscFunctionReturn(0);
 }
 
@@ -215,10 +126,9 @@ static PetscErrorCode DMPlexTransformSetUp_SBR(DMPlexTransform tr)
   DM                dm;
   DMLabel           active;
   PetscSF           pointSF;
-  PointQueue        queue = NULL;
+  DMPlexPointQueue  queue = NULL;
   IS                refineIS;
   const PetscInt   *refineCells;
-  PetscMPIInt       size;
   PetscInt          pStart, pEnd, p, eStart, eEnd, e, edgeLenSize, Nc, c;
   PetscBool         empty;
 
@@ -237,8 +147,8 @@ static PetscErrorCode DMPlexTransformSetUp_SBR(DMPlexTransform tr)
   PetscCall(PetscCalloc1(edgeLenSize, &sbr->edgeLen));
   /* Add edges of cells that are marked for refinement to edge queue */
   PetscCall(DMPlexTransformGetActive(tr, &active));
-  PetscCheck(active,PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_WRONGSTATE, "DMPlexTransform must have an adaptation label in order to use SBR algorithm");
-  PetscCall(PointQueueCreate(1024, &queue));
+  PetscCheck(active, PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_WRONGSTATE, "DMPlexTransform must have an adaptation label in order to use SBR algorithm");
+  PetscCall(DMPlexPointQueueCreate(1024, &queue));
   PetscCall(DMLabelGetStratumIS(active, DM_ADAPT_REFINE, &refineIS));
   PetscCall(DMLabelGetStratumSize(active, DM_ADAPT_REFINE, &Nc));
   if (refineIS) PetscCall(ISGetIndices(refineIS, &refineCells));
@@ -249,7 +159,7 @@ static PetscErrorCode DMPlexTransformSetUp_SBR(DMPlexTransform tr)
     PetscCall(DMPlexGetPointDepth(dm, cell, &depth));
     if (depth == 1) {
       PetscCall(DMLabelSetValue(sbr->splitPoints, cell, 1));
-      PetscCall(PointQueueEnqueue(queue, cell));
+      PetscCall(DMPlexPointQueueEnqueue(queue, cell));
     } else {
       PetscInt *closure = NULL;
       PetscInt  Ncl, cl;
@@ -261,7 +171,7 @@ static PetscErrorCode DMPlexTransformSetUp_SBR(DMPlexTransform tr)
 
         if (edge >= eStart && edge < eEnd) {
           PetscCall(DMLabelSetValue(sbr->splitPoints, edge, 1));
-          PetscCall(PointQueueEnqueue(queue, edge));
+          PetscCall(DMPlexPointQueueEnqueue(queue, edge));
         }
       }
       PetscCall(DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &Ncl, &closure));
@@ -270,12 +180,10 @@ static PetscErrorCode DMPlexTransformSetUp_SBR(DMPlexTransform tr)
   if (refineIS) PetscCall(ISRestoreIndices(refineIS, &refineCells));
   PetscCall(ISDestroy(&refineIS));
   /* Setup communication */
-  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size));
   PetscCall(DMGetPointSF(dm, &pointSF));
   PetscCall(DMLabelPropagateBegin(sbr->splitPoints, pointSF));
   /* While edge queue is not empty: */
-  empty = PointQueueEmpty(queue);
-  PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &empty, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject) dm)));
+  PetscCall(DMPlexPointQueueEmptyCollective((PetscObject) dm, queue, &empty));
   while (!empty) {
     PetscCall(SBRSplitLocalEdges_Private(tr, queue));
     /* Communicate marked edges
@@ -291,8 +199,7 @@ static PetscErrorCode DMPlexTransformSetUp_SBR(DMPlexTransform tr)
            edge to the queue.
     */
     PetscCall(DMLabelPropagatePush(sbr->splitPoints, pointSF, splitPoint, queue));
-    empty = PointQueueEmpty(queue);
-    PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &empty, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject) dm)));
+    PetscCall(DMPlexPointQueueEmptyCollective((PetscObject) dm, queue, &empty));
   }
   PetscCall(DMLabelPropagateEnd(sbr->splitPoints, pointSF));
   /* Calculate refineType for each cell */
@@ -340,7 +247,7 @@ static PetscErrorCode DMPlexTransformSetUp_SBR(DMPlexTransform tr)
     PetscCall(DMLabelGetValue(sbr->splitPoints, p, &val));
   }
   /* Cleanup */
-  PetscCall(PointQueueDestroy(&queue));
+  PetscCall(DMPlexPointQueueDestroy(&queue));
   PetscFunctionReturn(0);
 }
 

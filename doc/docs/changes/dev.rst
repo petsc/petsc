@@ -81,6 +81,7 @@ In addition to the changes above
 .. rubric:: DMPlex:
 
 - Add ``DMLabelPropagateBegin()``, ``DMLabelPropagatePush()``, and ``DMLabelPropagateEnd()``
+- Add ``DMPlexPointQueue`` and API
 
 .. rubric:: FE/FV:
 
