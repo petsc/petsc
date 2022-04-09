@@ -220,7 +220,7 @@ PetscErrorCode MatStashSetInitialSize_Private(MatStash *stash,PetscInt max)
  */
 static PetscErrorCode MatStashExpand_Private(MatStash *stash,PetscInt incr)
 {
-  PetscInt       newnmax,bs2= stash->bs*stash->bs;
+  PetscInt newnmax,bs2= stash->bs*stash->bs;
 
   PetscFunctionBegin;
   /* allocate a larger stash */
@@ -654,15 +654,11 @@ PETSC_INTERN PetscErrorCode MatStashScatterGetMesg_Ref(MatStash *stash,PetscMPII
     /* Now pack the received message into a structure which is usable by others */
     if (i % 2) {
       PetscCallMPI(MPI_Get_count(&recv_status,MPIU_SCALAR,nvals));
-
       flg_v[2*recv_status.MPI_SOURCE] = i/2;
-
       *nvals = *nvals/bs2;
     } else {
       PetscCallMPI(MPI_Get_count(&recv_status,MPIU_INT,nvals));
-
       flg_v[2*recv_status.MPI_SOURCE+1] = i/2;
-
       *nvals = *nvals/2; /* This message has both row indices and col indices */
     }
 
@@ -683,16 +679,16 @@ PETSC_INTERN PetscErrorCode MatStashScatterGetMesg_Ref(MatStash *stash,PetscMPII
 
 #if !defined(PETSC_HAVE_MPIUNI)
 typedef struct {
-  PetscInt row;
-  PetscInt col;
+  PetscInt    row;
+  PetscInt    col;
   PetscScalar vals[1];          /* Actually an array of length bs2 */
 } MatStashBlock;
 
 static PetscErrorCode MatStashSortCompress_Private(MatStash *stash,InsertMode insertmode)
 {
   PetscMatStashSpace space;
-  PetscInt n = stash->n,bs = stash->bs,bs2 = bs*bs,cnt,*row,*col,*perm,rowstart,i;
-  PetscScalar **valptr;
+  PetscInt           n = stash->n,bs = stash->bs,bs2 = bs*bs,cnt,*row,*col,*perm,rowstart,i;
+  PetscScalar        **valptr;
 
   PetscFunctionBegin;
   PetscCall(PetscMalloc4(n,&row,n,&col,n,&valptr,n,&perm));
@@ -743,7 +739,8 @@ static PetscErrorCode MatStashBlockTypeSetUp(MatStash *stash)
     PetscMPIInt  blocklens[2];
     MPI_Aint     displs[2];
     MPI_Datatype types[2],stype;
-    /* Note that DummyBlock is a type having standard layout, even when PetscScalar is C++ std::complex.
+    /*
+        DummyBlock is a type having standard layout, even when PetscScalar is C++ std::complex.
        std::complex itself has standard layout, so does DummyBlock, recursively.
        To be compatible with C++ std::complex, complex implementations on GPUs must also have standard layout,
        though they can have different alignment, e.g, 16 bytes for double complex, instead of 8 bytes as in GCC stdlibc++.
@@ -788,7 +785,7 @@ static PetscErrorCode MatStashBlockTypeSetUp(MatStash *stash)
  */
 static PetscErrorCode MatStashBTSSend_Private(MPI_Comm comm,const PetscMPIInt tag[],PetscMPIInt rankid,PetscMPIInt rank,void *sdata,MPI_Request req[],void *ctx)
 {
-  MatStash *stash = (MatStash*)ctx;
+  MatStash       *stash = (MatStash*)ctx;
   MatStashHeader *hdr = (MatStashHeader*)sdata;
 
   PetscFunctionBegin;
@@ -799,14 +796,15 @@ static PetscErrorCode MatStashBTSSend_Private(MPI_Comm comm,const PetscMPIInt ta
   PetscFunctionReturn(0);
 }
 
-/* Callback invoked by target after receiving rendezvous message.
- * Here we post the main recvs.
+/*
+    Callback invoked by target after receiving rendezvous message.
+    Here we post the main recvs.
  */
 static PetscErrorCode MatStashBTSRecv_Private(MPI_Comm comm,const PetscMPIInt tag[],PetscMPIInt rank,void *rdata,MPI_Request req[],void *ctx)
 {
-  MatStash *stash = (MatStash*)ctx;
+  MatStash       *stash = (MatStash*)ctx;
   MatStashHeader *hdr = (MatStashHeader*)rdata;
-  MatStashFrame *frame;
+  MatStashFrame  *frame;
 
   PetscFunctionBegin;
   PetscCall(PetscSegBufferGet(stash->segrecvframe,1,&frame));
@@ -823,8 +821,8 @@ static PetscErrorCode MatStashBTSRecv_Private(MPI_Comm comm,const PetscMPIInt ta
 static PetscErrorCode MatStashScatterBegin_BTS(Mat mat,MatStash *stash,PetscInt owners[])
 {
   PetscErrorCode ierr;
-  size_t nblocks;
-  char *sendblocks;
+  size_t         nblocks;
+  char           *sendblocks;
 
   PetscFunctionBegin;
   if (PetscDefined(USE_DEBUG)) { /* make sure all processors are either in INSERTMODE or ADDMODE */
