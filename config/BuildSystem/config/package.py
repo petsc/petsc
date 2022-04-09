@@ -1804,6 +1804,7 @@ class GNUPackage(Package):
 class CMakePackage(Package):
   def __init__(self, framework):
     Package.__init__(self, framework)
+    self.minCmakeVersion = (2,0,0)
     return
 
   def setupHelp(self, help):
@@ -1811,9 +1812,12 @@ class CMakePackage(Package):
     import nargs
     help.addArgument(self.PACKAGE, '-download-'+self.package+'-shared=<bool>',     nargs.ArgBool(None, 0, 'Install '+self.PACKAGE+' with shared libraries'))
     help.addArgument(self.PACKAGE, '-download-'+self.package+'-cmake-arguments=string', nargs.ArgString(None, 0, 'Additional CMake arguments for the build of '+self.name))
+
   def setupDependencies(self, framework):
     Package.setupDependencies(self, framework)
     self.cmake = framework.require('config.packages.cmake',self)
+    if self.argDB['download-'+self.downloadname.lower()]:
+      self.cmake.maxminCmakeVersion = max(self.minCmakeVersion,self.cmake.maxminCmakeVersion)
     return
 
   def formCMakeConfigureArgs(self):

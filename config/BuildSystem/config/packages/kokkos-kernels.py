@@ -16,6 +16,7 @@ class Configure(config.package.CMakePackage):
     self.downloadonWindows= 0
     self.hastests         = 1
     self.requiresrpath    = 1
+    self.minCmakeVersion  = (3,10,0)
     return
 
   def __str__(self):

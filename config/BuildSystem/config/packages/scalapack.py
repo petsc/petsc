@@ -17,6 +17,7 @@ class Configure(config.package.CMakePackage):
     self.precisions       = ['single','double']
     self.downloadonWindows= 1
     self.makerulename     = 'scalapack'
+    self.minCmakeVersion  = (3,2,0)
     return
 
   def setupDependencies(self, framework):

@@ -4,16 +4,17 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download          = ['https://cmake.org/files/v3.22/cmake-3.22.3.tar.gz',
-                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/cmake-3.22.3.tar.gz']
-    self.download_solaris  = ['https://cmake.org/files/v3.11/cmake-3.11.4.tar.gz',
-                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/cmake-3.11.4.tar.gz']
-    self.downloadonWindows = 1
-    self.lookforbydefault  = 1
-    self.publicInstall     = 0  # always install in PETSC_DIR/PETSC_ARCH (not --prefix) since this is not used by users
-    self.linkedbypetsc     = 0
-    self.executablename    = 'cmake'
-    self.useddirectly      = 0
+    self.download           = ['https://cmake.org/files/v3.22/cmake-3.22.3.tar.gz',
+                               'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/cmake-3.22.3.tar.gz']
+    self.download_solaris   = ['https://cmake.org/files/v3.11/cmake-3.11.4.tar.gz',
+                               'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/cmake-3.11.4.tar.gz']
+    self.downloadonWindows  = 1
+    self.lookforbydefault   = 1
+    self.publicInstall      = 0  # always install in PETSC_DIR/PETSC_ARCH (not --prefix) since this is not used by users
+    self.linkedbypetsc      = 0
+    self.executablename     = 'cmake'
+    self.useddirectly       = 0
+    self.maxminCmakeVersion = (2,0,0) # minimum CMake version needed by all active packages
     return
 
   def setupHelp(self, help):
@@ -97,9 +98,12 @@ class Configure(config.package.GNUPackage):
       if gver:
         try:
            self.foundversion = ".".join(gver.groups())
-           self.log.write('cmake version found '+self.foundversion+'\n')
-           return
         except: pass
+        else:
+          self.log.write('cmake version found '+self.foundversion+'\n')
+          if self.versionToTuple(self.foundversion) < self.maxminCmakeVersion:
+            raise RuntimeError('A package requires CMake version '+'.'.join(map(str, self.maxminCmakeVersion))+' (detected version is '+'.'.join(map(str, self.versionToTuple(self.foundversion)))+'): use --download-cmake')
+          return
       gver = None
       try:
         gver = re.compile('cmake version ([0-9]+).([0-9]+)-patch ([0-9]+)').match(output)
@@ -109,10 +113,13 @@ class Configure(config.package.GNUPackage):
            val = list(gver.groups())
            v = [val[0],val[1],'0',val[2]]
            self.foundversion = ".".join(v)
-           self.log.write('cmake version found '+self.foundversion+'\n')
-           return
         except: pass
-      self.log.write('cmake version check failed\n')
+        else:
+          self.log.write('cmake version found '+self.foundversion+'\n')
+          if self.versionToTuple(self.foundversion) < self.maxminCmakeVersion:
+            raise RuntimeError('A package requires CMake version '+'.'.join(map(str, self.maxminCmakeVersion))+' (detected version is '+'.'.join(map(str, self.versionToTuple(self.foundversion)))+'): use --download-cmake')
+          return
+        self.log.write('cmake version check failed\n')
     else:
       self.log.write('cmake not found\n')
     return
