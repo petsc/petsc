@@ -233,33 +233,31 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
     PetscCheck(_7_same,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong subtype object:Parameter # %d must have implementation %s it is %s",arg,t,((PetscObject)(h))->type_name); \
   } while (0)
 
-#define PetscValidPointer_Internal(ptr,arg,ptype,...) do {                                     \
-    PetscCheck(ptr,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Pointer: Parameter # %d",arg);   \
-    PetscCheck(PetscCheckPointer(ptr,ptype),PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Invalid Pointer" __VA_ARGS__ ": Argument '" PetscStringize(ptr) "' (parameter # %d)",arg); \
-} while (0)
-
-#define PetscValidPointerToType_Internal(ptr,arg,ptype,name) PetscValidPointer_Internal(ptr,arg,ptype," to ",PetscStringize(name))
+#define PetscValidPointer_Internal(ptr,arg,ptype,ptrtype) do {                                 \
+    PetscCheck(ptr,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Pointer: Parameter # %d",arg);     \
+    PetscCheck(PetscCheckPointer(ptr,ptype),PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Invalid Pointer to " PetscStringize(ptrtype) ": Argument '" PetscStringize(ptr) "' (parameter # %d)",arg); \
+  } while (0)
 
 #define PetscValidHeaderSpecific(h,ck,arg) do {                                                \
-    PetscValidPointerToType_Internal(h,arg,PETSC_OBJECT,PetscObject);                          \
+    PetscValidPointer_Internal(h,arg,PETSC_OBJECT,PetscObject);                                \
     if (((PetscObject)(h))->classid != ck) {                                                   \
       PetscCheck(((PetscObject)(h))->classid != PETSCFREEDHEADER,PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Object already free: Parameter # %d",arg); \
       else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong type of object: Parameter # %d",arg); \
     }                                                                                          \
   } while (0)
 
-#define PetscValidHeader(h,arg) do {                                    \
-    PetscValidPointerToType_Internal(h,arg,PETSC_OBJECT,PetscObject);   \
+#define PetscValidHeader(h,arg) do {                                                           \
+    PetscValidPointer_Internal(h,arg,PETSC_OBJECT,PetscObject);                                \
     PetscCheck(((PetscObject)(h))->classid != PETSCFREEDHEADER,PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Object already free: Parameter # %d",arg); \
     PetscCheck(((PetscObject)(h))->classid >= PETSC_SMALLEST_CLASSID && ((PetscObject)(h))->classid <= PETSC_LARGEST_CLASSID,PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Invalid type of object: Parameter # %d",arg); \
-} while (0)
+  } while (0)
 
-#define PetscValidPointer(h,arg)       PetscValidPointer_Internal(h,arg,PETSC_CHAR,"")
-#define PetscValidCharPointer(h,arg)   PetscValidPointerToType_Internal(h,arg,PETSC_CHAR,char)
-#define PetscValidIntPointer(h,arg)    PetscValidPointerToType_Internal(h,arg,PETSC_INT,PetscInt)
-#define PetscValidBoolPointer(h,arg)   PetscValidPointerToType_Internal(h,arg,PETSC_BOOL,PetscBool)
-#define PetscValidScalarPointer(h,arg) PetscValidPointerToType_Internal(h,arg,PETSC_SCALAR,PetscScalar)
-#define PetscValidRealPointer(h,arg)   PetscValidPointerToType_Internal(h,arg,PETSC_REAL,PetscReal)
+#define PetscValidPointer(h,arg)       PetscValidPointer_Internal(h,arg,PETSC_CHAR,memory)
+#define PetscValidCharPointer(h,arg)   PetscValidPointer_Internal(h,arg,PETSC_CHAR,char)
+#define PetscValidIntPointer(h,arg)    PetscValidPointer_Internal(h,arg,PETSC_INT,PetscInt)
+#define PetscValidBoolPointer(h,arg)   PetscValidPointer_Internal(h,arg,PETSC_BOOL,PetscBool)
+#define PetscValidScalarPointer(h,arg) PetscValidPointer_Internal(h,arg,PETSC_SCALAR,PetscScalar)
+#define PetscValidRealPointer(h,arg)   PetscValidPointer_Internal(h,arg,PETSC_REAL,PetscReal)
 
 #define PetscValidFunction(f,arg)                                       \
   do {                                                                  \
