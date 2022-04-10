@@ -1,8 +1,7 @@
 #ifndef PETSCDEVICETYPES_H
 #define PETSCDEVICETYPES_H
 
-/* for PETSC_HAVE_CUDA/HIP/KOKKOS etc */
-#include <petscsys.h> /*I petscsys.h I*/
+#include <petscmacros.h> /*I <petscdevicetypes.h> I*/
 
 /*E
   PetscMemType - Memory type of a pointer
