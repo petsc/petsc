@@ -1,7 +1,6 @@
 #if !defined(_PETSCELEMENTAL_H)
 #define _PETSCELEMENTAL_H
 
-#include <El.hpp>
 #include <petsc/private/matimpl.h>
 #include <petscmatelemental.h>
 
