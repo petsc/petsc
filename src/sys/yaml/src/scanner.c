@@ -3178,25 +3178,25 @@ yaml_parser_scan_flow_scalar(yaml_parser_t *parser, yaml_token_t *token,
                         break;
 
                     case 'N':   /* NEL (#x85) */
-                        *(string.pointer++) = '\xC2';
-                        *(string.pointer++) = '\x85';
+                        *(string.pointer++) = (unsigned char)'\xC2';
+                        *(string.pointer++) = (unsigned char)'\x85';
                         break;
 
                     case '_':   /* #xA0 */
-                        *(string.pointer++) = '\xC2';
-                        *(string.pointer++) = '\xA0';
+                        *(string.pointer++) = (unsigned char)'\xC2';
+                        *(string.pointer++) = (unsigned char) '\xA0';
                         break;
 
                     case 'L':   /* LS (#x2028) */
-                        *(string.pointer++) = '\xE2';
-                        *(string.pointer++) = '\x80';
-                        *(string.pointer++) = '\xA8';
+                        *(string.pointer++) = (unsigned char)'\xE2';
+                        *(string.pointer++) = (unsigned char)'\x80';
+                        *(string.pointer++) = (unsigned char)'\xA8';
                         break;
 
                     case 'P':   /* PS (#x2029) */
-                        *(string.pointer++) = '\xE2';
-                        *(string.pointer++) = '\x80';
-                        *(string.pointer++) = '\xA9';
+                        *(string.pointer++) = (unsigned char)'\xE2';
+                        *(string.pointer++) = (unsigned char)'\x80';
+                        *(string.pointer++) = (unsigned char)'\xA9';
                         break;
 
                     case 'x':
