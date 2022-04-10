@@ -168,9 +168,9 @@ PETSC_EXTERN const char *const PetscStreamTypes[];
 /*E
   PetscDeviceContextJoinMode - Describes the type of join operation to perform in PetscDeviceContextJoin()
 
-$ PETSC_DEVICE_CONTEXT_DESTROY - Destroy all incoming sub-contexts after join.
-$ PETSC_CONTEXT_JOIN_SYNC      - Synchronize incoming sub-contexts after join.
-$ PETSC_CONTEXT_JOIN_NO_SYNC   - Do not synchronize incoming sub-contexts after join.
+$ PETSC_DEVICE_CONTEXT_JOIN_DESTROY - Destroy all incoming sub-contexts after join.
+$ PETSC_DEVICE_CONTEXT_JOIN_SYNC    - Synchronize incoming sub-contexts after join.
+$ PETSC_DEVICE_CONTEXT_JOIN_NO_SYNC - Do not synchronize incoming sub-contexts after join.
 
   Level: beginner
 
