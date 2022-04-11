@@ -1,9 +1,11 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from __future__ import print_function
 import os
 import re
 import sys
 import subprocess
+import time
+from pathlib import Path
 #
 #             This script replaces the nagfor compiler wrapper that has design features
 #           that make it impossible to work directly with PETSc (or any standard Unix compile system)
@@ -16,6 +18,8 @@ import subprocess
 #      -verbose and  -v run the compile printing the commands used. -dryrun does NOT run the compiler just prints what nagfor would do
 #
 #      -V or -version cause the version to be printed and then the compiler ends
+#
+#   This script does multiple tries when the NAG license server does not respond
 #
 #   nagfor puts temporary files in /tmp with a process id, if a different user runs and gets the same process id the compiler will fail
 #      thus petscnagfor appends the /tmp file names with the USER id to generate unique file names.
@@ -31,15 +35,21 @@ import subprocess
 #
 def runnagfor(args):
   if not isinstance(args, list): args = args.strip().split(' ')
-  try:
-    sub = subprocess.Popen(args, stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-    sub.wait()
-    output = sub.stdout.read()
-    error = sub.stderr.read()
-    status = sub.returncode
-  except:
-    print('petscnagfor: Unable to run process with job: '+' '.join(args))
-    exit(1)
+  for i in range(1,4):
+    try:
+      sub = subprocess.Popen(args, stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+      sub.wait()
+      output = sub.stdout.read().decode('UTF-8')
+      error = sub.stderr.read().decode('UTF-8')
+      status = sub.returncode
+    except:
+      print('petscnagfor: Unable to run process with job: '+' '.join(args))
+      exit(1)
+    if (output+error).find('No licences currently available') == -1:
+      break;
+    time.sleep(30)
+  if (output+error).find('No licences currently available') > -1:
+    Path(os.path.join(os.path.dirname(__file__),'..','..','..','naglicenseproblem')).touch()
   return (output,error,status)
 
 if __name__ == '__main__':
