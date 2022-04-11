@@ -111,17 +111,40 @@ from conf.petscconf import clean, test, sdist
 
 CYTHON = '0.24'
 
+def get_release():
+    release = 1
+    if topdir.endswith(os.path.join(os.path.sep, 'src', 'binding', name)):
+        topname = name.replace('4py', '')
+        rootdir = os.path.abspath(os.path.join(topdir, *[os.path.pardir]*3))
+        version_h = os.path.join(rootdir, 'include', '%sversion.h' % topname)
+        release_macro = '%s_VERSION_RELEASE' % topname.upper()
+        version_re = re.compile(r"#define\s+%s\s+([-]*\d+)" % release_macro)
+        if os.path.exists(version_h) and os.path.isfile(version_h):
+            with open(version_h, 'r') as f:
+                release = int(version_re.search(f.read()).groups()[0])
+    return bool(release)
+
+def requires(pkgname, major, minor, release=True):
+    minor = minor + int(not release)
+    devel = '' if release else '.dev0'
+    vmin = "%s.%s%s" % (major, minor, devel)
+    vmax = "%s.%s" % (major, minor + 1)
+    return "%s>=%s,<%s" % (pkgname, vmin, vmax)
+
 def run_setup():
     setup_args = metadata.copy()
+    vstr = setup_args['version'].split('.')[:2]
+    x, y = tuple(map(int, vstr))
+    release = get_release()
+    if not release:
+        setup_args['version'] = "%d.%d.0.dev0" %(x, y+1)
     if setuptools:
         setup_args['zip_safe'] = False
         setup_args['install_requires'] = ['numpy']
         PETSC_DIR = os.environ.get('PETSC_DIR')
         if not (PETSC_DIR and os.path.isdir(PETSC_DIR)):
-            vstr = setup_args['version'].split('.')[:2]
-            x, y = int(vstr[0]), int(vstr[1])
-            PETSC = ">=%s.%s,<%s.%s" % (x, y, x, y+1)
-            setup_args['install_requires'] += ['petsc'+PETSC]
+            petsc = requires('petsc', x, y, release)
+            setup_args['install_requires'] += [petsc]
     if setuptools:
         src = os.path.join('src', 'petsc4py.PETSc.c')
         has_src = os.path.exists(os.path.join(topdir, src))
