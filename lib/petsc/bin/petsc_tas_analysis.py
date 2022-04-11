@@ -16,14 +16,18 @@ from tasClasses import Field
 
 
 def main(cmdLineArgs):
+    baseDir = cmdLineArgs.output_base
+    if config.filePath['base']: baseDir = config.filePath['base']
+    config.filePath['absoluteData']   = os.path.join(baseDir, config.filePath['data'])
+    config.filePath['absoluteGraphs'] = os.path.join(baseDir, config.filePath['graphs'])
     data = []
     files = getFiles(cmdLineArgs)
     if len(files['module']) != 0:
         for fileName in files['module']:
-            data.append(dataProces(cmdLineArgs, fileName ))
+            data.append(dataProcess(cmdLineArgs, fileName ))
     if len(files['csv']) != 0:
         for fileName in files['csv']:
-            data.append(dataProcesCSV(cmdLineArgs, fileName ))
+            data.append(dataProcessCSV(cmdLineArgs, fileName ))
     for item in data:
         graphGen(item, cmdLineArgs.enable_graphs, cmdLineArgs.graph_flops_scaling, cmdLineArgs.dim)
 
@@ -69,7 +73,7 @@ def getFiles(cmdLineArgs):
         print(f'key: {key}, items {files[key]}')
     return files
 
-def dataProcesCSV(cmdLineArgs, fileName):
+def dataProcessCSV(cmdLineArgs, fileName):
     """
     This function takes the list of data files in CSV format supplied as a list and parses them into a tasClasses
     object, whose top level key is the file name, followed by data type, i.e. dofs, times, flops, errors, and
@@ -85,9 +89,17 @@ def dataProcesCSV(cmdLineArgs, fileName):
     """
     data = {}
     results = []
-    df                 = pd.read_csv(fileName)
+
+    if(cmdLineArgs.file == None):
+        dataPath = config.filePath['absoluteData']
+        df                 = pd.read_csv(dataPath+fileName)
+        sys.path.append(dataPath)
+
+    else:
+        df                 = pd.read_csv(fileName)
+
     Nf                 = getNfCSV(df)
-    nProcs             = int(df.columns.tolist()[24])
+    nProcs             = int(df.columns.tolist()[25])
     dofs               = []
     errors             = []
 
@@ -120,10 +132,9 @@ def dataProcesCSV(cmdLineArgs, fileName):
     for f in range(Nf): errors.append([])
     for f in range(Nf): dofs.append([])
 
-    #level set to 1 due to problems with coarse grid effecting measurements
-    level  = 1
-    while level >= 1:
-        print('in while loop')
+
+    level  = 0
+    while level >= 0:
         if ("ConvEst Refinement Level " + str(level) in df['Stage Name'].values):
             stageName = "ConvEst Refinement Level "+str(level)
             #Level dependent filters
@@ -147,9 +158,9 @@ def dataProcesCSV(cmdLineArgs, fileName):
             flopsMax.append(SNESSDf['FLOP'].max())
             flopsMin.append(SNESSDf['FLOP'].min())
 
-            if level > 1:
-                timeGrowthRate.append(meanTime[level-1]/meanTime[level-2])
-                flopGrowthRate.append(meanFlop[level-1]/meanFlop[level-2])
+            if level >= 1:
+                timeGrowthRate.append(meanTime[level]/meanTime[level-1])
+                flopGrowthRate.append(meanFlop[level]/meanFlop[level-1])
 
             luFactorMean.append(MatLUFactorDf.sum()/nProcs)
             luFactor.append(MatLUFactorDf.max())
@@ -223,7 +234,7 @@ def dataProcesCSV(cmdLineArgs, fileName):
 
     return file
 
-def dataProces(cmdLineArgs, fileName):
+def dataProcess(cmdLineArgs, fileName):
     """
     This function takes a data file, ASCII type, for supplied as command line arguments and parses it into a multi-level
     dictionary, whose top level key is the file name, followed by data type, i.e. dofs, times, flops, errors, and
@@ -281,9 +292,9 @@ def dataProces(cmdLineArgs, fileName):
     for f in range(Nf): errors.append([])
     for f in range(Nf): dofs.append([])
 
-    #level set to 1 due to problems with coarse grid effecting measurements
-    level  = 1
-    while level >= 1:
+
+    level  = 0
+    while level >= 0:
         stageName = "ConvEst Refinement Level "+str(level)
         if stageName in module.Stages:
             timeTempMax  = module.Stages[stageName]["SNESSolve"][0]["time"]
@@ -351,9 +362,9 @@ def dataProces(cmdLineArgs, fileName):
                 luFactorMean.append(totalLuFactor/nProcs)
 
             #Calculats the growth rate of statistics between levels
-            if level > 1:
-                timeGrowthRate.append(meanTime[level-1]/meanTime[level-2])
-                flopGrowthRate.append(meanFlop[level-1]/meanFlop[level-2])
+            if level >= 1:
+                timeGrowthRate.append(meanTime[level]/meanTime[level-1])
+                flopGrowthRate.append(meanFlop[level]/meanFlop[level-1])
                 #if module.Stages[stageName]["MatLUFactorNum"][n]["time"] != 0:
                 #    luFactorGrowthRate.append(luFactorMean[level-1]/luFactorMean[level-2])
 
@@ -570,6 +581,7 @@ def graphGen(file, enable_graphs, graph_flops_scaling, dim):
             efficLabels = [h.get_label() for h in efficHandles]
             efficFig.legend(handles = efficHandles, labels = efficLabels)
 
+        axStatScale.set_ylim(ymin=0.1)
         meshConvFig.savefig(config.filePath['absoluteGraphs']+'meshConvergenceField_' + field.fileName + '.png')
         statScaleFig.savefig(config.filePath['absoluteGraphs']+'staticScalingField_' + field.fileName + '.png')
         efficFig.savefig(config.filePath['absoluteGraphs']+'efficacyField_' + field.fileName + '.png')
@@ -616,6 +628,8 @@ if __name__ == "__main__":
                    Time-Accuracy-Size(TAS) spectrum analysis')
 
     cmdLine.add_argument('-file', '--file', metavar = '<filename>', nargs = '*', help = 'List of files to import for TAS analysis')
+
+    cmdLine.add_argument('-output_base', '--output_base', default = os.getcwd(), help = 'Base directory for output')
 
     cmdLine.add_argument('-version', '--version', action = 'version', version = '%(prog)s 1.0')
 

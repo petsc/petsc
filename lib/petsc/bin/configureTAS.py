@@ -16,11 +16,9 @@ The dict fieldNames holds key value pairs for the fields of problems.  This is
     The key ex62 contains the name of fields for example 62, ie ex62.c
 """
 filePath = {}
-filePath['absoluteGraphs'] = '/home/arcowie/research/graphs/'
-filePath['absoluteData']   = '/home/arcowie/research/data/poission/'
-#filePath['absoluteData']   = '/home/arcowie/research/data/ex13/'
-#filePath['absoluteData']   = '/home/arcowie/research/data/chrest/'
-
+filePath['base']   = ''
+filePath['graphs'] = 'graphs'
+filePath['data']   = 'data'
 
 fieldNames = {}
 fieldNames['ex62'] = {}
