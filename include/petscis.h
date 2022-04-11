@@ -103,6 +103,7 @@ PETSC_EXTERN PetscErrorCode ISToGeneral(IS);
 
 PETSC_EXTERN PetscErrorCode ISDuplicate(IS,IS*);
 PETSC_EXTERN PetscErrorCode ISCopy(IS,IS);
+PETSC_EXTERN PetscErrorCode ISShift(IS,PetscInt,IS);
 PETSC_EXTERN PetscErrorCode ISAllGather(IS,IS*);
 PETSC_EXTERN PetscErrorCode ISComplement(IS,PetscInt,PetscInt,IS*);
 PETSC_EXTERN PetscErrorCode ISConcatenate(MPI_Comm,PetscInt,const IS[],IS*);

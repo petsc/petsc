@@ -42,7 +42,7 @@ In addition to the changes above
 
 .. rubric:: IS:
 
-- Add ``PetscSectionCreateSubdomainSection()``
+- Add ``ISShift()``
 
 .. rubric:: VecScatter / PetscSF:
 
@@ -51,6 +51,8 @@ In addition to the changes above
 .. rubric:: Vec:
 
 .. rubric:: PetscSection:
+
+- Add ``PetscSectionCreateSubdomainSection()``
 
 .. rubric:: PetscPartitioner:
 

@@ -19,6 +19,16 @@ static PetscErrorCode ISCopy_Stride(IS is,IS isy)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode ISShift_Stride(IS is,PetscInt shift,IS isy)
+{
+  IS_Stride      *is_stride = (IS_Stride*)is->data,*isy_stride = (IS_Stride*)isy->data;
+
+  PetscFunctionBegin;
+  isy_stride->first = is_stride->first + shift;
+  isy_stride->step  = is_stride->step;
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode ISDuplicate_Stride(IS is,IS *newIS)
 {
   IS_Stride      *sub = (IS_Stride*)is->data;
@@ -408,5 +418,6 @@ PETSC_EXTERN PetscErrorCode ISCreate_Stride(IS is)
   is->data = (void *) sub;
   PetscCall(PetscMemcpy(is->ops,&myops,sizeof(myops)));
   PetscCall(PetscObjectComposeFunction((PetscObject)is,"ISStrideSetStride_C",ISStrideSetStride_Stride));
+  PetscCall(PetscObjectComposeFunction((PetscObject)is,"ISShift_C",ISShift_Stride));
   PetscFunctionReturn(0);
 }

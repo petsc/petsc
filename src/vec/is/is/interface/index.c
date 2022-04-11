@@ -1805,19 +1805,66 @@ PetscErrorCode  ISDuplicate(IS is,IS *newIS)
 
    Level: beginner
 
-.seealso: ISDuplicate()
+.seealso: ISDuplicate(), ISShift()
 @*/
 PetscErrorCode  ISCopy(IS is,IS isy)
 {
+  PetscInt bs, bsy;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidHeaderSpecific(isy,IS_CLASSID,2);
   PetscCheckSameComm(is,1,isy,2);
   if (is == isy) PetscFunctionReturn(0);
+  PetscCall(PetscLayoutGetBlockSize(is->map, &bs));
+  PetscCall(PetscLayoutGetBlockSize(isy->map, &bsy));
+  PetscCheck(is->map->N  == isy->map->N,PetscObjectComm((PetscObject)is),PETSC_ERR_ARG_INCOMP,"Index sets have different global size %" PetscInt_FMT " != %" PetscInt_FMT, is->map->N, isy->map->N);
+  PetscCheck(is->map->n  == isy->map->n,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Index sets have different local size %" PetscInt_FMT " != %" PetscInt_FMT, is->map->n, isy->map->n);
+  PetscCheck(bs == bsy,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Index sets have different block size %" PetscInt_FMT " != %" PetscInt_FMT, bs, bsy);
   PetscCall(ISCopyInfo(is,isy));
   isy->max        = is->max;
   isy->min        = is->min;
   PetscCall((*is->ops->copy)(is,isy));
+  PetscFunctionReturn(0);
+}
+
+/*@
+   ISShift - Shift all indices by given offset
+
+   Collective on IS
+
+   Input Parameters:
++  is - the index set
+-  offset - the offset
+
+   Output Parameter:
+.  isy - the shifted copy of the input index set
+
+   Notes:
+   The offset can be different across processes.
+   IS is and isy can be the same.
+
+   Level: beginner
+
+.seealso: ISDuplicate(), ISCopy()
+@*/
+PetscErrorCode ISShift(IS is,PetscInt offset,IS isy)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  PetscValidHeaderSpecific(isy,IS_CLASSID,3);
+  PetscCheckSameComm(is,1,isy,3);
+  if (!offset) {
+    PetscCall(ISCopy(is,isy));
+    PetscFunctionReturn(0);
+  }
+  PetscCheck(is->map->N == isy->map->N,PetscObjectComm((PetscObject)is),PETSC_ERR_ARG_INCOMP,"Index sets have different global size %" PetscInt_FMT " != %" PetscInt_FMT, is->map->N, isy->map->N);
+  PetscCheck(is->map->n == isy->map->n,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Index sets have different local size %" PetscInt_FMT " != %" PetscInt_FMT, is->map->n, isy->map->n);
+  PetscCheck(is->map->bs == isy->map->bs,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Index sets have different block size %" PetscInt_FMT " != %" PetscInt_FMT, is->map->bs, isy->map->bs);
+  PetscCall(ISCopyInfo(is,isy));
+  isy->max = is->max + offset;
+  isy->min = is->min + offset;
+  PetscUseMethod(is,"ISShift_C",(IS,PetscInt,IS),(is,offset,isy));
   PetscFunctionReturn(0);
 }
 

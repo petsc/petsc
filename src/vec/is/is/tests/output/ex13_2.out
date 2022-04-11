@@ -1,0 +1,36 @@
+IS Object: 2 MPI processes
+  type: general
+[0] Number of indices in set 3
+[0] 0 2
+[0] 1 1
+[0] 2 0
+[1] Number of indices in set 3
+[1] 0 -1
+[1] 1 -2
+[1] 2 -3
+IS Object: 2 MPI processes
+  type: stride
+[0] Number of indices in (stride) set 3
+[0] 0 2
+[0] 1 1
+[0] 2 0
+[1] Number of indices in (stride) set 3
+[1] 0 -1
+[1] 1 -2
+[1] 2 -3
+is[00] identical to is[0]
+is[01] identical to is[0]
+is[02] identical to is[0]
+is[03] identical to is[0]
+is[04] identical to is[0]
+is[05] identical to is[0]
+is[06] identical to is[0]
+is[07] identical to is[0]
+is[08] identical to is[0]
+is[09] identical to is[0]
+is[10] identical to is[0]
+is[11] identical to is[0]
+is[12] identical to is[0]
+is[13] identical to is[0]
+is[14] identical to is[0]
+is[15] identical to is[0]
