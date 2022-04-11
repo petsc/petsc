@@ -1,14 +1,8 @@
 #if !defined(_matcliqueimpl_h)
 #define _matcliqueimpl_h
 
-#include <El.hpp>
 #include <petsc/private/matimpl.h>
-
-#if defined(PETSC_USE_COMPLEX)
-typedef El::Complex<PetscReal> PetscElemScalar;
-#else
-typedef PetscScalar PetscElemScalar;
-#endif
+#include <petscmatelemental.h>
 
 typedef struct {
   MatStructure matstruc;
