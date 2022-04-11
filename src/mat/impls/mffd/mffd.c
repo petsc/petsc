@@ -333,6 +333,7 @@ static PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
   PetscCall((*ctx->ops->compute)(ctx,U,a,&h,&zeroa));
   if (zeroa) {
     PetscCall(VecSet(y,0.0));
+    PetscCall(PetscLogEventEnd(MATMFFD_Mult,a,y,0,0));
     PetscFunctionReturn(0);
   }
 
