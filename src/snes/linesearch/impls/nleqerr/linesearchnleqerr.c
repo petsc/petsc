@@ -209,8 +209,7 @@ static PetscErrorCode  SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
       if (lambdadash == 1.0 && lambda == 1.0 && wnorm <= stol) {
         /* store the updated state, X - Y - W, in G:
            I need to keep W for the next linesearch */
-        PetscCall(VecCopy(X, G));
-        PetscCall(VecAXPY(G, -1.0, Y));
+        PetscCall(VecWAXPY(G, -1.0, Y, X));
         PetscCall(VecAXPY(G, -1.0, W));
         break;
       }

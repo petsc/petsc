@@ -132,8 +132,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
     if (stx != 0 && ((mt->bracket && (ls->step <= ls->stepmin || ls->step >= ls->stepmax)) || (mt->bracket && (ls->stepmax - ls->stepmin <= ls->rtol * ls->stepmax)) ||
                      (ls->nfeval + ls->nfgeval >= ls->max_funcs - 1) || mt->infoc == 0)) ls->step = stx;
 
-    PetscCall(VecCopy(x,mt->work));
-    PetscCall(VecAXPY(mt->work,ls->step,s));   /* W = X + step*S */
+    PetscCall(VecWAXPY(mt->work,ls->step,s,x));   /* W = X + step*S */
 
     if (ls->bounded) {
       PetscCall(VecMedian(ls->lower, mt->work, ls->upper, mt->work));

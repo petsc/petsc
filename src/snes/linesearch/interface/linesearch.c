@@ -427,7 +427,7 @@ PetscErrorCode SNESLineSearchPreCheck(SNESLineSearch linesearch,Vec X,Vec Y,Pets
 }
 
 /*@
-   SNESLineSearchPostCheck - Prepares the line search for being applied.
+   SNESLineSearchPostCheck - Hook to modify step direction or updated solution after a successful linesearch
 
    Logically Collective on SNESLineSearch
 
